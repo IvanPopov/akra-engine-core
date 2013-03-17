@@ -41,6 +41,7 @@ module akra {
 		findRoute(pTarget: IUIGraphNode): int;
 		getRoute(i: int): IUIGraphRoute;
 		isSuitable(pTarget: IUIGraphNode): bool;
+		hasConnections(): bool;
 	}
 }
 

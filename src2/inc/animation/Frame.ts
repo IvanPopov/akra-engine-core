@@ -192,7 +192,7 @@ module akra.animation {
 		ALLOCATE_STORAGE(Frame, AF_NUM);
 	} 
 
-	export function createFrame(fTime?: float, pMatrix?: IMat4, fWeight?: float): IAnimationFrame {
+	export function createFrame(fTime: float = 0.0, pMatrix: IMat4 = null, fWeight: float = 1.0): IAnimationFrame {
 		return new Frame(fTime, pMatrix, fWeight);
 	}
 }

@@ -5,16 +5,23 @@ var ui = akra.ui;
 var anim = ui.animation;
 
 var pUI = new ui.UI();
-
-var pRoot, pControls;
+var pRoot = null, 
+	pControls = null;
 
 test("ui basics", () => {
 
 	pRoot = new ui.HTMLNode(pUI);
 	pRoot.render();
 
+	pControls = new anim.Controls(pRoot, pEngine);
 
-	pControls = new anim.Controls(pRoot);
+	createEngine().bind(SIGNAL(depsLoaded), (pEngine: IEngine) => {
+		var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
+		var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+		var pScene: IScene3d = pEngine.getScene();
 
-	console.log(pControls)
+		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+			pControls.graph.setTimer(pEngine.getTimer());			
+		});
+	});
 });

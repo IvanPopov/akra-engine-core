@@ -477,7 +477,7 @@ module akra {
         samplers: IColladaAnimationSampler[];
         channels: IColladaAnimationChannel[];
 
-        animation: IColladaAnimation[];
+        animations: IColladaAnimation[];
     }
 
 

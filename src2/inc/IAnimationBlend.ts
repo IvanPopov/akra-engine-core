@@ -17,7 +17,7 @@ module akra {
 		readonly totalAnimations: int;
 
 		addAnimation(pAnimation: IAnimationBase, fWeight: float, pMask: FloatMap): int;
-		setAnimation(iAnimation: int, pAnimation: IAnimationBase, fWeight: float, pMask: FloatMap): int;
+		setAnimation(iAnimation: int, pAnimation: IAnimationBase, fWeight?: float, pMask?: FloatMap): int;
 		
 		getAnimationIndex(sName: string): int;
 		getAnimation(iAnimation: int): IAnimationBase;

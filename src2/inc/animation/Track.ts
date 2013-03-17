@@ -33,8 +33,8 @@ module akra.animation {
 			this._sTarget = sValue;
 		}
 
-		inline get duration(): float{
-			return this._pKeyFrames.last.fTime;
+		inline get duration(): float {
+			return (<IAnimationFrame>(this._pKeyFrames.last)).time;
 		}
 
 		constructor (sTarget: string = null) {
@@ -171,6 +171,14 @@ module akra.animation {
 
 			return pFrame;
 		}
+
+#ifdef DEBUG
+		toString(): string {
+			var s = "target: " + this.targetName + ", duration: " + this.duration + 
+				", frames: " + this.totalFrames; 
+			return s;
+		}
+#endif
 	}
 
 	export function createTrack(sName: string = null): IAnimationTrack {

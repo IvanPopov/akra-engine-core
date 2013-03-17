@@ -6,7 +6,7 @@
 
 
 module akra.animation {
-	export class Blend extends Base implements IAnimationBlend {
+	class Blend extends Base implements IAnimationBlend {
 		public duration: float = 0;
 
 		private _pAnimationList: IAnimationElement[] = [];
@@ -326,6 +326,10 @@ module akra.animation {
 
 		BROADCAST(durationUpdated, CALL(fDuration));
 	} 
+
+	export function createBlend(sName?: string): IAnimationBlend {
+		return new Blend(sName);
+	}
 }
 
 #endif

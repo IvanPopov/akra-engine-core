@@ -13,26 +13,26 @@ module akra.util {
 		private iLastElapsedTime: int = 0;
 		private iBaseTime: int = 0;
 
-		get absoluteTime(): float {
+		inline get absoluteTime(): float {
 			return this.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
 		}
 
-		get appTime(): float {
+		inline get appTime(): float {
 			return this.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
 		}
 
-		get elapsedTime(): float {
+		inline get elapsedTime(): float {
 			return this.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
 		}
 
-		start(): bool {
+		inline start(): bool {
 			return this.execCommand(EUtilTimerCommands.TIMER_START) === 0;
 		}
-        stop(): bool {
+        inline stop(): bool {
         	return this.execCommand(EUtilTimerCommands.TIMER_STOP) === 0;
         }
 
-        reset(): bool {
+        inline reset(): bool {
         	return this.execCommand(EUtilTimerCommands.TIMER_RESET) === 0;
         }
 

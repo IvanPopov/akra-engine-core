@@ -44,6 +44,10 @@ module akra.animation {
 		inline getTracks(): IAnimationTrack[] {
 			return this._pTracks;
 		}
+
+		inline getTrack(i: int): IAnimationTrack {
+			return this._pTracks[i];
+		}
 		
 		frame(sName: string, fTime: float): IAnimationFrame {
 			var pPointer: IAnimationTarget = this.getTargetByName(sName);
@@ -64,6 +68,19 @@ module akra.animation {
 				}
 			}
 		}
+
+#ifdef DEBUG
+		toString(): string {
+			var s = super.toString();
+			s += "total tracks : " + this.totalTracks + "\n";
+
+			for (var i: int = 0; i < this.totalTracks; ++ i) {
+				s += "\t" + i + ". " + this.getTrack(i) + "\n";
+			}
+
+			return s;
+		}
+#endif
 	}
 
 	export function createAnimation(sName?: string): IAnimation {

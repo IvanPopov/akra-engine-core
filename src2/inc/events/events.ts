@@ -1,6 +1,10 @@
 #ifndef EVENTS_TS
 #define EVENTS_TS
 
+/***********************************************
+ * TODO: check, if event exists on target!!!!!
+ *************************************************/
+
 #include "IEventTable.ts"
 #include "IEventProvider.ts"
 #include "common.ts"

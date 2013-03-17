@@ -33,6 +33,7 @@ module akra.animation {
 		}
 
 		inline set duration(fValue: float){
+			LOG("new duration > " + fValue);
 			this._fDuration = fValue;
 		}
 
@@ -63,9 +64,9 @@ module akra.animation {
 
 		apply(fRealTime: float): void {
 			var pTargetList: IAnimationTarget[] = this._pTargetList;
-		    var pTarget: ISceneNode;
-		    var pFrame: IAnimationFrame;
-		    var pTransform;
+		    var pTarget: ISceneNode = null;
+		    var pFrame: IAnimationFrame = null;
+		    var pTransform: IMat4 = null;
 
 			for (var i = 0; i < pTargetList.length; ++ i) {
 				pFrame = this.frame(pTargetList[i].name, fRealTime);
@@ -184,6 +185,16 @@ module akra.animation {
 
 		    return pMask;
 		}
+
+#ifdef DEBUG
+		toString(): string {
+			var s = "\n";
+			s += "name         : " + this.name + "\n";
+			s += "duration     : " + this.duration + " sec\n";
+			s += "total targets: " + this.targetList().length.toString() + "\n";
+			return s;
+		}
+#endif
 
 		CREATE_EVENT_TABLE(Base);
 		BROADCAST(played, CALL(fRealTime));

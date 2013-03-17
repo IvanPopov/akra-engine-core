@@ -201,6 +201,10 @@ module akra.ui.graph {
 		    this.routing();
 		}
 
+		hasConnections(): bool {
+			return !(this.connectors.length == 0 || isNull(this.connectors[0]));
+		}
+
 		_onConnectorMouseDown(pConnector: IUIGraphConnector, e: IUIEvent): void {
 			pConnector.activate(!pConnector.isActive());
 		}

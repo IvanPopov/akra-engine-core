@@ -31,6 +31,8 @@ module akra {
 		play(pAnimation: IAnimationBase, fRealTime: float): bool;
 
 		update(fTime: float): void;
+
+		toString(bFullInfo?: bool);
 	}
 }
 
