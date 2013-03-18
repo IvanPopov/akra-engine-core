@@ -6,7 +6,6 @@
 
 #define AF_NUM 4 * 4096
 
-#define animationFrame() Frame.stackCeil
 
 module akra.animation {
 	export class Frame implements IAnimationFrame {
@@ -191,6 +190,10 @@ module akra.animation {
 
 		ALLOCATE_STORAGE(Frame, AF_NUM);
 	} 
+
+	export inline function animationFrame(): Frame {
+		return Frame.stackCeil;
+	}
 
 	export function createFrame(fTime: float = 0.0, pMatrix: IMat4 = null, fWeight: float = 1.0): IAnimationFrame {
 		return new Frame(fTime, pMatrix, fWeight);

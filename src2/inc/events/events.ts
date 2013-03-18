@@ -58,7 +58,7 @@
 	protected _pBroadcastSlotList: IEventSlotListMap = null;				\
 	protected static _pEventTable: IEventTable = new events.EventTable(); 							\
 																									\
-	getEventTable(): IEventTable { return object._pEventTable; } 												\
+	inline getEventTable(): IEventTable { return object._pEventTable; } 												\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
 		return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\

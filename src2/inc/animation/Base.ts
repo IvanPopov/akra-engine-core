@@ -28,6 +28,10 @@ module akra.animation {
 			this._eType = eType;
 		}
 
+		inline get type(): EAnimationTypes {
+			return this._eType;
+		}
+
 		inline get duration(): float{
 			return this._fDuration;
 		}
@@ -200,6 +204,8 @@ module akra.animation {
 		BROADCAST(played, CALL(fRealTime));
 		BROADCAST(stoped, CALL(fRealTime));
 	} 
+
+
 }
 
 #endif

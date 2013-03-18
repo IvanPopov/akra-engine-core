@@ -144,20 +144,22 @@ module akra {
     }
 
     export interface IColladaContributor extends IColladaEntry {
-        author: string;
-        authoringTool: string;
-        comments: string;
-        copyright: string;
-        sourceData: any;
+        author?: string;
+        authoringTool?: string;
+        comments?: string;
+        copyright?: string;
+        sourceData?: any;
     }
 
     export interface IColladaAsset extends IColladaEntry {
         unit: IColladaUnit;
         upAxis: string;
-        title: string;
+        title?: string;
+        subject?: string; 
         created: string;
         modified: string;
-        contributor: IColladaContributor;
+        keywords?: string[];
+        contributor?: IColladaContributor;
     }
 
     export interface IColladaInstance extends IColladaEntry {
@@ -188,6 +190,7 @@ module akra {
     }
     
     export interface IColladaAccessor extends IColladaEntry {
+        source?: string;
         data: IColladaArray;
         count: int;
         stride: int;
@@ -477,7 +480,7 @@ module akra {
         samplers: IColladaAnimationSampler[];
         channels: IColladaAnimationChannel[];
 
-        animations: IColladaAnimation[];
+        animations?: IColladaAnimation[];
     }
 
 
@@ -485,16 +488,25 @@ module akra {
 
     }
 
-    export interface IColladaFile {
+    export interface IColladaDocument {
         asset?: IColladaAsset;
 
-        libEffects: IColladaEffectLibrary;
-        libMaterials: IColladaLibrary;
-        libGeometries: IColladaLibrary;
-        libVisualScenes: IColladaLibrary;
+        libEffects?: IColladaEffectLibrary;
+        libMaterials?: IColladaLibrary;
+        libGeometries?: IColladaLibrary;
+        libVisualScenes?: IColladaLibrary;
+        libAnimations?: IColladaLibrary;
 
-        scene: IColladaScene;
+        scene?: IColladaScene;
     }
+
+    export interface IColladaAnimationClip extends IColladaEntry {
+        name?: string;
+        start: float;
+        end: float;
+    }
+
+
 
 
 }

@@ -15,6 +15,7 @@
 #include "Slider.ts"
 #include "Checkbox.ts"
 #include "CheckboxList.ts"
+#include "Window.ts"
 
 #define UI_GRAPH
 #define UI_ANIMATION

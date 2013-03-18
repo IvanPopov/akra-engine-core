@@ -83,6 +83,10 @@ module akra.animation {
 #endif
 	}
 
+	export inline function isAnimation(pAnimation: IAnimationBase): bool {
+		return pAnimation.type === EAnimationTypes.ANIMATION;
+	}
+
 	export function createAnimation(sName?: string): IAnimation {
 		return new Animation(sName);
 	}

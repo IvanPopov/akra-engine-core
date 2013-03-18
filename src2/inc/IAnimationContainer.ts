@@ -25,6 +25,9 @@ module akra {
 		setStartTime(fRealTime: float): void;
 		getStartTime(): float;
 
+		inLeftInfinity(): bool;
+		inRightInfinity(): bool;
+
 		setSpeed(fSpeed: float): void;
 		getSpeed(): float;
 

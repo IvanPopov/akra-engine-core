@@ -3,6 +3,7 @@
 
 #include "IAnimationBase.ts"
 #include "IAnimationController.ts"
+#include "util/unique.ts"
 
 module akra.animation {
 	export class Controller implements IAnimationController {
@@ -152,6 +153,8 @@ module akra.animation {
 			return null;
 #endif			
 		}
+
+		UNIQUE();
 	} 
 
 

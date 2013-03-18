@@ -20,6 +20,11 @@ module akra.util {
 		private sOS: string = null;
 		private sVersionSearch: string = null;
 
+		constructor() {
+			super();
+			this.init();
+		}
+
 		get name(): string {
 			return this.sBrowser;
 		}

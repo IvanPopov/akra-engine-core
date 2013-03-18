@@ -37,6 +37,7 @@ module akra.animation {
 			return (<IAnimationFrame>(this._pKeyFrames.last)).time;
 		}
 
+
 		constructor (sTarget: string = null) {
 			this._sTarget = sTarget;
 		}

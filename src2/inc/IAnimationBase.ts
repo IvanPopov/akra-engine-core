@@ -16,6 +16,8 @@ module akra {
 
 	export enum EAnimationTypes {
 		ANIMATION,
+		LIST,
+		CLIP,
 		CONTAINER,
 		BLEND
 	}
@@ -23,6 +25,7 @@ module akra {
 	export interface IAnimationBase extends IEventProvider {
 		duration: float;
 		name: string;
+		type: EAnimationTypes;
 
 		play(fRealTime: float): void;
 		stop(fRealTime: float): void;

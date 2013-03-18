@@ -10,6 +10,7 @@ module akra {
 	export interface IAnimationTrack {
 		targetName: string;
 		
+		readonly totalFrames: uint;
 		readonly target: ISceneNode;
 		readonly duration: float;
 

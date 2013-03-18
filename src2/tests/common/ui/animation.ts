@@ -1,5 +1,6 @@
-#include "ui/UI.ts"
+#include "akra.ts"
 #include "util/testutils.ts"
+
 
 var ui = akra.ui;
 var anim = ui.animation;
@@ -10,17 +11,17 @@ var pRoot = null,
 
 test("ui basics", () => {
 
-	pRoot = new ui.HTMLNode(pUI);
+	pRoot = new ui.HTMLNode(pUI);/*ui.Window(pUI);*/
+	pControls = new anim.Controls(pRoot);
+
 	pRoot.render();
 
-	pControls = new anim.Controls(pRoot, pEngine);
+	akra.createEngine().bind(SIGNAL(depsLoaded), (pEngine: akra.IEngine) => {
+		var pRmgr = pEngine.getResourceManager();
+		var pModel = <akra.ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+		var pScene = pEngine.getScene();
 
-	createEngine().bind(SIGNAL(depsLoaded), (pEngine: IEngine) => {
-		var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
-		var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
-		var pScene: IScene3d = pEngine.getScene();
-
-		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+		pModel.bind(SIGNAL(loaded), (pModel: akra.ICollada) => {
 			pControls.graph.setTimer(pEngine.getTimer());			
 		});
 	});

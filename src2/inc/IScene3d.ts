@@ -9,11 +9,14 @@
 module akra {
 	IFACE(ISceneNode);
 	IFACE(ISceneModel);
+	IFACE(ISceneObject);
 	IFACE(ILightPoint);
+	IFACE(ICamera);
 	IFACE(ISprite);
 	IFACE(IJoint);
 	IFACE(IText3d);
 	IFACE(IDisplayList);
+	IFACE(IViewport);
 	
 
 

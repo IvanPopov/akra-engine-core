@@ -35,6 +35,7 @@ module akra.ui.animation {
 		}
 
 		_textChanged(pLabel: IUILabel, sValue: string): void {
+			LOG("new blend name > " + sValue);
 			this._pBlend.name = sValue;
 		}
 
@@ -55,7 +56,10 @@ module akra.ui.animation {
 		}
 
 		protected init(): void {
-			this.setRouteAreas([this], [this.children().last]);
+			var pChildren: IUINode[] = <IUINode[]>this.children();
+			var n: int = pChildren.length;
+			LOG([<IUINode>pChildren[n - 1]], [<IUINode>pChildren[n - 2]], this.toString(true));
+			this.setRouteAreas([<IUINode>pChildren[n - 1]], [<IUINode>pChildren[n - 2]]);
 		}
 
 		getMaskNode(iAnimation: int): IUIAnimationMask {
@@ -80,13 +84,16 @@ module akra.ui.animation {
 		}
 
 		protected getRouteArea(pZone: IUINode, eDirection?: EUIGraphDirections): IUINode {
+			var pChildren: IUINode[] = <IUINode[]>this.children();
+			var n: int = pChildren.length;
+			LOG(this.toString(true));
 			if (eDirection === EUIGraphDirections.OUT) {
 				//right layout
-				return <IUINode>this.children().last;
+				return pChildren[2];
 			}
 
 			//left layout
-			return <IUINode>this.children()[1]; 
+			return pChildren[1]; 
 		}
 
 		isSuitable(pTarget: IUIAnimationNode): bool {

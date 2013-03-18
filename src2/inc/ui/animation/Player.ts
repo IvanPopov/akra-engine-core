@@ -127,15 +127,21 @@ module akra.ui.animation {
 		}
 
 		protected init(): void {
-			this.setRouteAreas([this], [<IUINode>this.children().last]);
+			var pChildren: IUINode[] = <IUINode[]>this.children();
+			var n: int = pChildren.length;
+
+			this.setRouteAreas([<IUINode>pChildren[n - 1]], [<IUINode>pChildren[n - 2]]);
 		}
 
 		protected getRouteArea(pNode: IUINode, eDirection: EUIGraphDirections = EUIGraphDirections.IN): IUINode {
+			var pChildren: IUINode[] = <IUINode[]>this.children();
+			var n: int = pChildren.length;
+
 			if (eDirection === EUIGraphDirections.OUT) {
-				return this.children().last;
+				return <IUINode>pChildren[n - 1];
 			}
 
-			return this.children().first;
+			return <IUINode>pChildren[n - 2];
 		}
 
 		isSuitable(pTarget: IUIAnimationNode): bool {

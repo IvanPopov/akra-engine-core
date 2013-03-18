@@ -27,7 +27,7 @@ module akra.ui.animation {
 		}
 
 		protected init(): void {
-			this.setRouteAreas([this], [this.children().last]);
+			this.setRouteAreas([this.children().last], [this.children().first]);
 		}
 
 		protected getRouteArea(pZone: IUINode, eDir?: EUIGraphDirections): IUINode {

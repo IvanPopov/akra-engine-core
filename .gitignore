@@ -43,7 +43,7 @@ node_modules/
 *.nw
 *.ts.html
 #*.css
-
+tmp.ts
 src/*.htm
 src2/tmp.*
 #src2/*.htm
