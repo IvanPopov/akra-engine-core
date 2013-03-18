@@ -115,8 +115,12 @@ module akra {
 		var pRoot: ISceneNode = pScene.getRootNode();
 		var pController: IAnimationController = animation.createController();
 
+
 		pModel.attachToScene(pRoot, pController);
 
+		LOG(pController.toString(true));
+		LOG(pController);
+		
 		pTreeNode.textContent = pRoot.toString(true);
 
 		var pAsset: IColladaAsset = pModel.getAsset();

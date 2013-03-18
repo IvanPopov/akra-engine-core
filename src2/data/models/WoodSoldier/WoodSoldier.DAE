@@ -325,8 +325,7 @@
         </instance_controller>
         <extra>
           <technique profile="OpenCOLLADA">
-            <user_properties>MapChannel:1 = map1
-</user_properties>
+            <user_properties>MapChannel:1 = map1</user_properties>
           </technique>
         </extra>
       </node>
@@ -344,8 +343,7 @@
         </instance_controller>
         <extra>
           <technique profile="OpenCOLLADA">
-            <user_properties>MapChannel:1 = map1
-</user_properties>
+            <user_properties>MapChannel:1 = map1</user_properties>
           </technique>
         </extra>
       </node>

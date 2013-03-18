@@ -182,7 +182,7 @@ module akra.core.pool.resources {
         private buildAnimationTrack(pChannel: IColladaAnimationChannel): IAnimationTrack;
         private buildAnimationTrackList(pAnimationData: IColladaAnimation): IAnimationTrack[];
         private buildAnimation(pAnimationData: IColladaAnimation): IAnimation;
-        private buildAnimations(pAnimations: IColladaAnimation[], pAnimationsList?: IAnimation[]): IAnimation[];
+        private buildAnimations(pAnimationsList?: IAnimation[]): IAnimation[];
 
         // common
         
@@ -235,7 +235,9 @@ module akra.core.pool.resources {
         private isWireframeEnabled(): bool;
         private getSkeletonsOutput(): ISkeleton[];
         private getVisualScene(): IColladaVisualScene;
+        private getAnimations(): IColladaAnimation[];
         public  getAsset(): IColladaAsset;
+
 
         private isLibraryLoaded(sLib: string): bool;
         private isLibraryExists(sLib: string): bool;
@@ -294,6 +296,7 @@ module akra.core.pool.resources {
 
         private _pAsset: IColladaAsset = null;
         private _pVisualScene: IColladaVisualScene = null;
+        private _pAnimations: IColladaAnimation[] = [];
 
         private _sFilename: string = null;
 
@@ -818,6 +821,7 @@ module akra.core.pool.resources {
             var pLib: IColladaLibrary = <IColladaLibrary>{};
             var pData: IColladaEntry;
             var sTag: string = pTemplate.element;
+            var iAutoId: int = 0;
 
             pLib[sTag] = {};
 
@@ -832,7 +836,7 @@ module akra.core.pool.resources {
                     return;
                 }
 
-                pLib[sTag][attr(pXMLData, 'id')] = pData;
+                pLib[sTag][attr(pXMLData, 'id') || (sTag + "_" + (iAutoId ++))] = pData;
             });
 
             return pLib;
@@ -1750,7 +1754,7 @@ module akra.core.pool.resources {
                 sources     : [],
                 samplers    : [],
                 channels    : [],
-                animation   : []
+                animations  : []
             };
 
             var pChannel: IColladaAnimationChannel;
@@ -1781,15 +1785,20 @@ module akra.core.pool.resources {
                         pSubAnimation = this.COLLADAAnimation(pXMLData);
 
                         if (isDefAndNotNull(pSubAnimation)) {
-                            pAnimation.animation.push(pSubAnimation);
+                            pAnimation.animations.push(pSubAnimation);
                         }
                 }
             });
 
-            if (pAnimation.channels.length == 0 && pAnimation.animation.length == 0) {
+            if (pAnimation.channels.length == 0 && pAnimation.animations.length == 0) {
                 WARNING("animation with id \"" + pAnimation.id + "\" skipped, because channels/sub animation are empty");
                 return null;
             }
+
+            debug_assert(pXML.parentNode === firstChild(this.getXMLRoot(), "library_animations"), 
+                "sub animations not supported");
+
+            this._pAnimations.push(pAnimation);
 
             return pAnimation;
         }
@@ -1933,8 +1942,8 @@ module akra.core.pool.resources {
             var pOutputValues: float[] = pOutput.array;
             var pFloatArray: Float32Array;
 
-            var pTransform: IColladaEntry = pChannel.target.object
-            var sTransform: string = pTransform.name;
+            var pTransform: IColladaTransform = <IColladaTransform>pChannel.target.object
+            var sTransform: string = pTransform.transform;
             var v4f: IVec4;
             var pValue: any;
             var nMatrices: uint;
@@ -2011,7 +2020,7 @@ module akra.core.pool.resources {
         }
         
         private buildAnimationTrackList(pAnimationData: IColladaAnimation): IAnimationTrack[] {
-            var pSubAnimations: IColladaAnimation[] = pAnimationData.animation;
+            var pSubAnimations: IColladaAnimation[] = pAnimationData.animations;
             var pSubTracks: IAnimationTrack[];
             var pTrackList: IAnimationTrack[] = [];
             var pTrack: IAnimationTrack;
@@ -2046,11 +2055,13 @@ module akra.core.pool.resources {
             return pAnimation;
         }
 
-        private buildAnimations(pAnimations: IColladaAnimation[], pAnimationsList: IAnimation[] = []): IAnimation[] {
+        private buildAnimations(pAnimationsList: IAnimation[] = []): IAnimation[] {
+            var pAnimations: IColladaAnimation[] = this.getAnimations();
+
             if (isNull(pAnimations)) {
                 return null;
             }
-            LOG(pAnimations);
+     
             for (var i: int = 0; i < pAnimations.length; ++ i) {
                 var pAnimation: IAnimation = this.buildAnimation(pAnimations[i]);
 
@@ -2689,8 +2700,7 @@ module akra.core.pool.resources {
         }
 
         public inline isAnimationLoaded(): bool {
-            return (this.isLibraryLoaded("library_animations") &&  
-                (<IColladaAnimation>this.getLibrary("library_animations")).animation.length > 0);
+            return this._pAnimations.length > 0;
         }
 
         private inline isSceneNeeded(): bool {
@@ -2715,6 +2725,10 @@ module akra.core.pool.resources {
 
         private inline getVisualScene(): IColladaVisualScene {
             return this._pVisualScene;
+        }
+
+        private inline getAnimations(): IColladaAnimation[] {
+            return this._pAnimations;
         }
 
         public inline getAsset(): IColladaAsset {
@@ -2877,7 +2891,7 @@ module akra.core.pool.resources {
 
             if (!isNull(pController) && this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
                 pAnimationOutput = 
-                        this.buildAnimations((<IColladaAnimation>this.getLibrary("library_animations")).animation);
+                        this.buildAnimations();
                 //дополним анимации начальными позициями костей
                 if (this.isPoseExtractionNeeded()) {
                     pSkeletons = this.getSkeletonsOutput() || [];

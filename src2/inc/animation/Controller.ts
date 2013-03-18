@@ -3,6 +3,7 @@
 
 #include "IAnimationBase.ts"
 #include "IAnimationController.ts"
+#include "util/unique.ts"
 
 module akra.animation {
 	export class Controller implements IAnimationController {
@@ -136,6 +137,24 @@ module akra.animation {
 				this._pActiveAnimation.apply(fTime);
 			}
 		}
+
+		toString(bFullInfo: bool = false): string {
+#ifdef DEBUG
+			var s: string = "\n";
+			s += "ANIMATION CONTROLLER (total: " + this.totalAnimations + " animations)\n";
+			s += "-----------------------------------------------------\n";
+
+			for (var i: int = 0; i < this.totalAnimations; ++ i) {
+				s += this.getAnimation(i).toString();
+			}
+
+			return s;
+#else
+			return null;
+#endif			
+		}
+
+		UNIQUE();
 	} 
 
 

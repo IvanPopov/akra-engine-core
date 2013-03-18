@@ -50,7 +50,7 @@ module akra.core {
 		private _pComposer: IAFXComposer;
 
 		/** stop render loop?*/
-		private _pTimer: IUtilTimer;
+		private _pTimer: util.UtilTimer;
 		private _iAppPausedCount: int = 0;
 
 
@@ -64,6 +64,9 @@ module akra.core {
 		private _pGamepads: IGamepadMap = null;
 
 
+		inline get time(): float {
+			return this._pTimer.appTime;
+		}
 
 		constructor (pOptions: IEngineOptions = null) {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
@@ -219,7 +222,7 @@ module akra.core {
 	        render(0);
 		}
 
-		inline getTimer(): IUtilTimer { return this._pTimer; }
+		inline getTimer(): IUtilTimer { return <IUtilTimer>this._pTimer; }
 
 		renderFrame(): bool {
 		    var fElapsedAppTime: float 	= this._pTimer.elapsedTime;

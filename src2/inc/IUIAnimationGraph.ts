@@ -19,7 +19,8 @@ module akra {
 		removeAnimation(sAnimation: string);
 		removeAnimation(iAnimation: int);
 
-		findNodeByAnimation(sName: string): IAnimationBase;
+		findNodeByAnimation(sName: string): IUIAnimationNode;
+		findNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 
 		createNodeByController(pController: IAnimationController): IUIAnimationNode;
 		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;

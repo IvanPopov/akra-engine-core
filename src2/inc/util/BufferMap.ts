@@ -226,7 +226,7 @@ module akra.util {
 		        return -1;
 		    }
 
-		    if (pVertexData.buffer instanceof webgl.WebGLVertexBuffer/*core.pool.resources.VertexBuffer*/) {
+		    if (core.pool.resources.isVBO(<IVertexBuffer>pVertexData.buffer)) {
 		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
 		        this.length = pVertexData.length;
 		        //this.startIndex = pVertexData.getStartIndex();
@@ -272,9 +272,7 @@ module akra.util {
 		};
 
 
-		mapping(iFlow: int, pMap: IVertexData, eSemantics: string, iAddition?: int): bool {
-			iAddition = iAddition || 0;
-
+		mapping(iFlow: int, pMap: IVertexData, eSemantics: string, iAddition: int = 0): bool {
 		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
 		    var pFlow: IDataFlow     = this._pFlows[iFlow];
 

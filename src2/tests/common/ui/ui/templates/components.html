@@ -67,14 +67,14 @@
 	<table class='graph-node-table'>
 		<tr>
 			<td colspan="2" class="graph-node-left" side="left">
-				<layout type="Vertical"></layout>
+				<layout type="Vertical" style="width: 100%; min-height: 40px;"></layout>
 			</td>
 			<td class="graph-node-center-left" style="min-width: 40px;">
 			</td>
 			<td class="graph-node-center-right" style="min-width: 40px;">
 			</td>
 			<td colspan="2" class="graph-node-right" side="right">
-				<layout type="Vertical"></layout>
+				<layout type="Vertical" style="min-width: 15px; min-height: 40px;"></layout>
 			</td>
 		</tr>
 	</table>
@@ -90,7 +90,7 @@
 </component>
 
 <component type="AnimationPlayer">
-	<layout type="Horizontal" align="center" style="height: 15px;"></layout>
+	<layout type="Horizontal" align="center" style="height: 15px;"/>
 	<div class="component-title">Animation Player</div>
 	<div class="controls">
 		<component type="Label" text="Title"></component>
@@ -100,8 +100,8 @@
 		</component>
 		<component type="Checkbox" text="Loop"></component>
 		<component type="Checkbox" text="Reverse"></component>
-		<div>Speed: <component type="Label" text="1"></component>x</div>
+		<div>Speed: <component type="Label" text="1"/>x</div>
 		<component type="Slider"></component>
 	</div>
-	<layout type="Horizontal" align="center" style="height: 15px;">/layout>
+	<layout type="Horizontal" align="center" style="height: 15px;"/>
 </component>
