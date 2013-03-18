@@ -47,6 +47,8 @@ module akra {
     	texture(iSlot: int): ITexture;
     	texcoord(iSlot: int): uint;
     	textureMatrix(iSlot: int): IMat4;
+
+        _getHash(): string;
     }
 
 }

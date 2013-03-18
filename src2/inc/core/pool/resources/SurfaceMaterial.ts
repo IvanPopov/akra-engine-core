@@ -15,6 +15,9 @@ module akra.core.pool.resources {
 		protected _pTexcoords: uint[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 		protected _pTextureMatrices: IMat4[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 
+		//For acceleration of composer
+		protected _sLastHash: string = "";
+		protected _isNeedToUpdateHash: bool = true;
 
 
 		inline get totalTextures(): uint { return this._nTotalTextures; }
@@ -43,6 +46,10 @@ module akra.core.pool.resources {
 		    var pTexture: ITexture = null;
 
 		    this._pTexcoords[iIndex] = iTexcoord;
+
+		    if(iIndex !== iTexcoord) {
+		    	this._isNeedToUpdateHash = true;
+		    }
 		    
 		    if (isString(texture)) {
 		    	pTexture = this._pTextures[iIndex];
@@ -216,6 +223,27 @@ module akra.core.pool.resources {
     	}
 
     	static MAX_TEXTURES_PER_SURFACE: uint = 16;
+
+    	_getHash(): string {
+    		if(this._isNeedToUpdateHash){
+    			this._sLastHash = this.calcHash();
+  				this._isNeedToUpdateHash = false;
+    		}
+
+    		return this._sLastHash;
+    	}
+
+    	private calcHash(): string {
+    		var sHash: string = "";
+
+    		for(var i = 0; i < this._pTexcoords.length; i++){
+    			if(this._pTexcoords[i] !== i){
+    				sHash += i.toString() + "<" + this._pTexcoords[i].toString() + ".";
+    			}
+    		}
+
+    		return sHash;
+    	}
 	}
 }
 

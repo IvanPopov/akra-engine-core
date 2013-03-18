@@ -246,7 +246,7 @@ module akra.fx {
         	return <IAFXVariableDeclInstruction>super.clone(pRelationMap);
         }
 
-        blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction{
+        blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction{            
             var pBlendType: IAFXVariableTypeInstruction = this.getType().blend(pVariableDecl.getType(), eMode);
             
             if(isNull(pBlendType)){

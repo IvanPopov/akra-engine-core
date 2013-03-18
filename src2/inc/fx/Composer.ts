@@ -54,11 +54,14 @@ module akra.fx {
 
 		//Data for render
 		private _pCurrentSceneObject: ISceneObject = null;
-		private _pPreRenderState: IPreRenderState = null;
+		private _pCurrentBufferMap: IBufferMap = null;
+		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
+		//private _pPreRenderState: IPreRenderState = null;
 
-		private _pSamplerBlender: SamplerBlender = null;
+		// private _pSamplerBlender: SamplerBlender = null;
 
 		//Temporary objects for fast work
+		static pDefaultSamplerBlender: SamplerBlender = null;
 
 		constructor(pEngine: IEngine){
 			this._pEngine = pEngine;
@@ -77,18 +80,21 @@ module akra.fx {
 			this._pGlobalComponentBlendStack = [];
 			this._pGlobalComponentBlend = null;
 
-			this._pPreRenderState = {
-				isClear: true,
+			// this._pPreRenderState = {
+			// 	isClear: true,
 
-				primType: 0,
-				offset: 0,
-				length: 0,
-				index: null,
-				flows: new util.ObjectArray()
-			};
+			// 	primType: 0,
+			// 	offset: 0,
+			// 	length: 0,
+			// 	index: null,
+			// 	flows: new util.ObjectArray()
+			// };
 
-			this._pSamplerBlender = new SamplerBlender(this);
+			// this._pSamplerBlender = new SamplerBlender(this);
 			// this._pTempPassInstructionList = new ObjectArray();
+			if(isNull(Composer.pDefaultSamplerBlender)){
+				Composer.pDefaultSamplerBlender = new SamplerBlender();
+			}
 		}
 
 		getComponentByName(sComponentName: string): IAFXComponent {
@@ -343,32 +349,39 @@ module akra.fx {
 		//-----------------------------------------------------------------------------//
 
 		applyBufferMap(pMap: IBufferMap): bool {
-			var pBufferMap: util.BufferMap = <util.BufferMap>pMap;
+			this._pCurrentBufferMap = pMap;
+			return true;
+			// var pBufferMap: util.BufferMap = <util.BufferMap>pMap;
 
-			var pState: IPreRenderState = this._pPreRenderState;
+			// var pState: IPreRenderState = this._pPreRenderState;
 
-			if(pState.isClear){
-				pState.primType = pBufferMap.primType;
-				pState.offset = pBufferMap.offset;
-				pState.length = pBufferMap.length;
-				pState.index = pBufferMap.index;
-			}
-			else if(pState.primType !== pBufferMap.primType ||
-					pState.offset !== pBufferMap.offset ||
-					pState.length !== pBufferMap.length ||
-					pState.index !== pBufferMap.index) {
+			// if(pState.isClear){
+			// 	pState.primType = pBufferMap.primType;
+			// 	pState.offset = pBufferMap.offset;
+			// 	pState.length = pBufferMap.length;
+			// 	pState.index = pBufferMap.index;
+			// }
+			// else if(pState.primType !== pBufferMap.primType ||
+			// 		pState.offset !== pBufferMap.offset ||
+			// 		pState.length !== pBufferMap.length ||
+			// 		pState.index !== pBufferMap.index) {
 
-				ERROR("Could not blend buffer maps");
-				return false;
-			}
+			// 	ERROR("Could not blend buffer maps");
+			// 	return false;
+			// }
 
-			var pFlows: IDataFlow[] = pBufferMap.flows;
+			// var pFlows: IDataFlow[] = pBufferMap.flows;
 
-			for(var i: uint = 0; i < pFlows.length; i++){
-				pState.flows.push(pFlows[i]);
-			}
+			// for(var i: uint = 0; i < pFlows.length; i++){
+			// 	pState.flows.push(pFlows[i]);
+			// }
 
-			pState.isClear = false;
+			// pState.isClear = false;
+		}
+
+		applySurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): bool {
+			this._pCurrentSurfaceMaterial = pSurfaceMaterial;
+			return true;
 		}
 
 		setCurrentSceneObject(pSceneObject: ISceneObject): void {
@@ -402,6 +415,9 @@ module akra.fx {
 					return;
 				}
 
+				pShader = pPassBlend.generateShaderProgram(pPassInput, 
+														   this._pCurrentSurfaceMaterial, 
+														   this._pCurrentBufferMap);
 				//TODO: generate additional shader params and get shader program
 			}
 
@@ -464,13 +480,13 @@ module akra.fx {
 		}
 
 		private clearPreRenderState(): void {
-			this._pPreRenderState.primType = 0;
-			this._pPreRenderState.offset = 0;
-			this._pPreRenderState.length = 0;
-			this._pPreRenderState.index = null;
-			this._pPreRenderState.flows.clear(false);
+			// this._pPreRenderState.primType = 0;
+			// this._pPreRenderState.offset = 0;
+			// this._pPreRenderState.length = 0;
+			// this._pPreRenderState.index = null;
+			// this._pPreRenderState.flows.clear(false);
 
-			this._pPreRenderState.isClear = true;
+			// this._pPreRenderState.isClear = true;
 		}
 	}
 }

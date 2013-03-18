@@ -475,15 +475,6 @@ module akra.fx {
 		private generateNewPassInputs(nCount?: uint = 5): void {
 			for(var i: uint = 0; i < nCount; i++) {
 				var pPassInput: IAFXPassInputBlend = new PassInputBlend(this);
-
-				pPassInput.uniformKeys = this._pUniformRealNameList;
-				pPassInput.foreignKeys = this._pForeignNameList;
-				pPassInput.textureKeys = this._pTextureRealNameList;
-
-				pPassInput.uniformsDefault = this._pUniformDefaultValueMap;
-
-				pPassInput._init();
-
 				this._pFreePassInputBlendList.push(pPassInput);
 			}
 		}

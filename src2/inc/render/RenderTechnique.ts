@@ -171,8 +171,9 @@ module akra.render {
 
 			var pComposer: IAFXComposer = this._pComposer;
 
-			pComposer.setCurrentSceneObject(pSceneObject);
 			pComposer.prepareTechniqueBlend(this);
+			pComposer.setCurrentSceneObject(pSceneObject);
+			pComposer.applySurfaceMaterial(this._pMethod.surfaceMaterial);
 
 			this._isFreeze = true;
 

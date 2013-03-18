@@ -4,153 +4,11 @@
 #include "IAFXPassBlend.ts"
 #include "IAFXComposer.ts"
 #include "util/unique.ts"
+#include "fx/SamplerBlender.ts"
+#include "ITexture.ts"
+#include "fx/BlendContainers.ts"
 
 module akra.fx {
-	export class VariableBlendContainer {
-		
-		private _pVarListMap: IAFXVariableDeclListMap = null;
-		private _pVarKeys: string[] = null;
-
-		private _pVarBlendTypeMap: IAFXVariableTypeMap = null;
-
-		inline get keys(): string[] {
-			return this._pVarKeys;
-		}
-
-		inline getVarList(sKey: string): IAFXVariableDeclInstruction[] {
-			return this._pVarListMap[sKey];
-		}
-
-		inline getBlendType(sKey: string): IAFXVariableTypeInstruction {
-			return this._pVarBlendTypeMap[sKey];
-		}
-
-		constructor() {
-			this._pVarListMap = <IAFXVariableDeclListMap>{};
-			this._pVarKeys = [];
-
-			this._pVarBlendTypeMap = <IAFXVariableTypeMap>{};
-		}
-
-		addVariable(pVariable: IAFXVariableDeclInstruction, eBlendMode: EAFXBlendMode): bool {
-			var sName: string = pVariable.getRealName();
-
-			if(!isDef(this._pVarListMap[sName])){
-				this._pVarListMap[sName] = [pVariable];
-				this._pVarKeys.push(sName);
-
-				this._pVarBlendTypeMap[sName] = pVariable.getType();
-				
-				return true;
-			}
-
-			var pBlendType: IAFXVariableTypeInstruction = this._pVarBlendTypeMap[sName].blend(pVariable.getType(), eBlendMode);
-			if(isNull(pBlendType)){
-				ERROR("Could not blend type for variable '" + sName + "'");
-				return false;
-			}
-
-			this._pVarListMap[sName].push(pVariable);
-			this._pVarBlendTypeMap[sName] = pBlendType;
-
-			return true;
-		}
-	}
-
-	export class ComplexTypeBlendContainer {
-		
-		private _pTypeListMap: IAFXTypeMap = null;
-		private _pTypeKeys: string[] = null;
-
-		constructor() {
-			this._pTypeListMap = <IAFXTypeMap>{};
-			this._pTypeKeys = [];
-		}
-
-		addComplexType(pComplexType: IAFXTypeInstruction): bool {
-			var sName: string = pComplexType.getRealName();
-
-			if(!isDef(this._pTypeListMap[sName])){
-				this._pTypeListMap[sName] = pComplexType;
-				this._pTypeKeys.push(sName);
-
-				return true;
-			}
-
-			var pBlendType: IAFXTypeInstruction = this._pTypeListMap[sName].blend(pComplexType, EAFXBlendMode.k_TypeDecl);
-			if(isNull(pBlendType)){
-				ERROR("Could not blend type declaration '" + sName + "'");
-				return false;
-			}
-
-			this._pTypeListMap[sName]= pBlendType;
-
-			return true;
-		}
-
-		addFromVarConatiner(pContainer: VariableBlendContainer): bool {
-			if(isNull(pContainer)){
-				return true;
-			}
-
-			var pKeys: string[] = pContainer.keys;
-
-			for(var i: uint = 0; i < pKeys.length; i++){
-				var pType: IAFXTypeInstruction = pContainer.getBlendType(pKeys[i]).getBaseType();
-
-				if(pType.isComplex()){
-					if(!this.addComplexType(pType)){
-						return false;
-					}
-				}
-			}
-
-			return true;
-		}
-	}
-
-	export class ExtSystemDataContainer {
-		private _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
-		private _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
-		private _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
-
-		constructor(){
-			this._pExtSystemMacrosList = [];
-			this._pExtSystemTypeList = [];
-			this._pExtSystemFunctionList = [];
-		}
-
-		addFromFunction(pFunction: IAFXFunctionDeclInstruction): void {
-			var pTypes = pFunction._getExtSystemTypeList();
-			var pMacroses = pFunction._getExtSystemMacrosList();
-			var pFunctions = pFunction._getExtSystemFunctionList();
-
-			if(!isNull(pTypes)){
-				for(var j: uint = 0; j < pTypes.length; j++){
-					if(this._pExtSystemTypeList.indexOf(pTypes[j]) === -1){
-						this._pExtSystemTypeList.push(pTypes[j]);
-					}
-				}
-			}
-
-			if(!isNull(pMacroses)){
-				for(var j: uint = 0; j < pMacroses.length; j++){
-					if(this._pExtSystemMacrosList.indexOf(pMacroses[j]) === -1){
-						this._pExtSystemMacrosList.push(pMacroses[j]);
-					}
-				}
-			}
-
-			if(!isNull(pFunctions)){
-				for(var j: uint = 0; j < pFunctions.length; j++){
-					if(this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1){
-						this._pExtSystemFunctionList.push(pFunctions[j]);
-					}
-				}
-			}
-		}
-	}
-
 	export class PassBlend implements IAFXPassBlend {
 		UNIQUE();
 
@@ -162,10 +20,11 @@ module akra.fx {
 		private _pUniformContainerV: VariableBlendContainer = null;
 		private _pSharedContainerV: VariableBlendContainer = null;
 		private _pGlobalContainerV: VariableBlendContainer = null;
-		private _pAttributeContainerV: VariableBlendContainer = null;
+		private _pAttributeContainerV: AttributeBlendContainer = null;
 		private _pVaryingContainerV: VariableBlendContainer = null;
 		private _pVertexOutType: IAFXTypeInstruction = null;
 		private _pUsedFunctionListV: IAFXFunctionDeclInstruction[] = null;
+		private _pTextureMapV: BoolMap = null;
 
 		private _pExtSystemDataP: ExtSystemDataContainer = null;
 		private _pComplexTypeContainerP: ComplexTypeBlendContainer = null;
@@ -174,11 +33,14 @@ module akra.fx {
 		private _pSharedContainerP: VariableBlendContainer = null;
 		private _pGlobalContainerP: VariableBlendContainer = null;
 		private _pVaryingContainerP: VariableBlendContainer = null;
-
 		private _pUsedFunctionListP: IAFXFunctionDeclInstruction[] = null;
+		private _pTextureMapP: BoolMap = null;
+
 
 		private _hasEmptyVertex: bool = true;
 		private _hasEmptyPixel: bool = true;
+
+		private _pDefaultSamplerBlender: SamplerBlender = null;
 
 		constructor(pComposer: IAFXComposer){
 			this._pComposer = pComposer;
@@ -189,10 +51,11 @@ module akra.fx {
 			this._pUniformContainerV = new VariableBlendContainer();
 			this._pSharedContainerV = new VariableBlendContainer();
 			this._pGlobalContainerV = new VariableBlendContainer();
-			this._pAttributeContainerV = new VariableBlendContainer();
+			this._pAttributeContainerV = new AttributeBlendContainer();
 			this._pVaryingContainerV = new VariableBlendContainer();
 			this._pVertexOutType = Effect.getBaseVertexOutType();
 			this._pUsedFunctionListV = [];
+			this._pTextureMapV = <BoolMap>{};
 
 			this._pExtSystemDataP = new ExtSystemDataContainer();
 			this._pComplexTypeContainerP = new ComplexTypeBlendContainer();
@@ -202,6 +65,9 @@ module akra.fx {
 			this._pGlobalContainerP = new VariableBlendContainer();
 			this._pVaryingContainerP = new VariableBlendContainer();
 			this._pUsedFunctionListP = [];
+			this._pTextureMapP = <BoolMap>{};
+
+			this._pDefaultSamplerBlender = Composer.pDefaultSamplerBlender;
 		}
 
 		initFromPassList(pPassList: IAFXPassInstruction[]): bool {
@@ -216,6 +82,26 @@ module akra.fx {
 			}
 
 			return true;
+		}
+
+		generateShaderProgram(pPassInput: IAFXPassInputBlend,
+							  pSurfaceMaterial: ISurfaceMaterial,
+							  pBuffer: IBufferMap): IAFXShaderProgram {
+
+			var pSamlerBlender: SamplerBlender = this._pDefaultSamplerBlender;
+
+			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
+			
+			var sSamplerPartHash: string = this.prepareSamplers(pPassInput);
+			var sMaterialPartHash: string = !isNull(pSurfaceMaterial) ? pSurfaceMaterial._getHash() : "";
+			var sBufferPartHash: string = !isNull(pBuffer) ? this.prepareBufferMap(<util.BufferMap>pBuffer) : "";
+
+
+
+			LOG("generateShaderProgram. HASH: ", sSamplerPartHash + sMaterialPartHash + sBufferPartHash);
+
+			pSamlerBlender.clear();
+			return null;
 		}
 
 		private finalizeBlend(): bool {
@@ -238,6 +124,7 @@ module akra.fx {
 			var pGlobalMap: IAFXVariableDeclMap = null;
 			var pSharedMap: IAFXVariableDeclMap = null;
 			var pUniformMap: IAFXVariableDeclMap = null;
+			var pTextureMap: IAFXVariableDeclMap = null;
 			var pAttributeMap: IAFXVariableDeclMap = null;
 			var pVaryingMap: IAFXVariableDeclMap = null;
 			var pComplexTypeMap: IAFXTypeMap = null;
@@ -247,6 +134,7 @@ module akra.fx {
 			var pGlobalKeys: uint[] = null;
 			var pSharedKeys: uint[] = null;
 			var pUniformKeys: uint[] = null;
+			var pTextureKeys: uint[] = null;
 			var pAttributeKeys: uint[] = null;
 			var pVaryingKeys: uint[] = null;
 			var pComplexTypeKeys: uint[] = null;
@@ -255,6 +143,7 @@ module akra.fx {
 			var pGlobal: IAFXVariableDeclInstruction = null;
 			var pShared: IAFXVariableDeclInstruction = null;
 			var pUniform: IAFXVariableDeclInstruction = null;
+			var pTexture: IAFXVariableDeclInstruction = null;
 			var pAttribute: IAFXVariableDeclInstruction = null;
 			var pVarying: IAFXVariableDeclInstruction = null;
 			var pComplexType: IAFXTypeInstruction = null;
@@ -332,6 +221,23 @@ module akra.fx {
 					}	
 				}
 
+				//TODO: blend textures
+				pTextureMap = pVertex._getTextureVariableMap();
+				pTextureKeys = pVertex._getTextureVariableKeys();
+				
+				if(!isNull(pTextureKeys)){
+					for(var i: uint = 0; i < pTextureKeys.length; i++){
+						pTexture = pTextureMap[pTextureKeys[i]];
+
+						if(isNull(pTexture)){
+							continue;
+						}
+
+						this._pTextureMapV[pTexture.getRealName()] = true;
+					}	
+				}
+
+
 				//TODO: blend attributes
 				pAttributeMap = pVertex._getAttributeVariableMap();
 				pAttributeKeys = pVertex._getAttributeVariableKeys();
@@ -340,7 +246,7 @@ module akra.fx {
 					for(var i: uint = 0; i < pAttributeKeys.length; i++){
 						pAttribute = pAttributeMap[pAttributeKeys[i]];
 
-						if(!this._pAttributeContainerV.addVariable(pAttribute, EAFXBlendMode.k_Attribute)){
+						if(!this._pAttributeContainerV.addAttribute(pAttribute)){
 							ERROR("Could not add attribute variable");
 							return false;
 						}
@@ -464,6 +370,22 @@ module akra.fx {
 					}	
 				}
 
+				//TODO: blend textures
+				pTextureMap = pPixel._getTextureVariableMap();
+				pTextureKeys = pPixel._getTextureVariableKeys();
+				
+				if(!isNull(pTextureKeys)){
+					for(var i: uint = 0; i < pTextureKeys.length; i++){
+						pTexture = pTextureMap[pTextureKeys[i]];
+
+						if(isNull(pTexture)){
+							continue;
+						}
+
+						this._pTextureMapP[pTexture.getRealName()] = true;
+					}	
+				}
+
 				//TODO: blend varyings
 				pVaryingMap = pPixel._getVaryingVariableMap();
 				pVaryingKeys = pPixel._getVaryingVariableKeys();
@@ -516,9 +438,11 @@ module akra.fx {
 				return true;
 			}
 
-			if(!this.finalizeComplexTypeFor(EFunctionType.k_Vertex)){
+			if(!this.finalizeComplexTypeForShader(EFunctionType.k_Vertex)){
 				return false;
 			}
+
+			this._pAttributeContainerV.clear();
 
 			return true;
 		}
@@ -528,14 +452,14 @@ module akra.fx {
 				return true;
 			}
 
-			if(!this.finalizeComplexTypeFor(EFunctionType.k_Pixel)){
+			if(!this.finalizeComplexTypeForShader(EFunctionType.k_Pixel)){
 				return false;
 			}
 
 			return true;
 		}
 
-		private finalizeComplexTypeFor(eType: EFunctionType): bool {
+		private finalizeComplexTypeForShader(eType: EFunctionType): bool {
 			var pTypeContainer: ComplexTypeBlendContainer = null;
 
 			var pUniformContainer: VariableBlendContainer = null;
@@ -543,7 +467,7 @@ module akra.fx {
 			var pSharedContainer: VariableBlendContainer = null;
 			var pUsedFunctions: IAFXFunctionDeclInstruction[] = null;
 
-			var pAttributeContainer: VariableBlendContainer = null;
+			var pAttributeContainer: AttributeBlendContainer = null;
 
 			
 			if(eType === EFunctionType.k_Vertex){
@@ -583,10 +507,96 @@ module akra.fx {
 			}
 
 			return true;
+		}
 
+		private inline hasUniform(pVar: IAFXVariableDeclInstruction): bool {
+			return this.hasUniformWithName(pVar.getRealName());
+		}
+
+		private inline hasUniformWithName(sName: string): bool {
+			return this._pUniformContainerV.hasVariableWithName(sName) ||
+				   this._pUniformContainerP.hasVariableWithName(sName);
+		}
+
+		private inline getUniformByName(sName: string): IAFXVariableDeclInstruction {
+			return this._pUniformContainerV.getVariableByName(sName) ||
+				   this._pUniformContainerP.getVariableByName(sName);
 		}
 
 
+		private prepareSamplers(pPassInput: IAFXPassInputBlend): string {
+			var pBlender: SamplerBlender = this._pDefaultSamplerBlender;
+
+			//Gum samplers
+			var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
+			var pSamplerKeys: string[] = pPassInput.samplerKeys;
+
+			for(var i: uint = 0; i < pSamplerKeys.length; i++){
+				var sName: string = pSamplerKeys[i];
+
+				if(!this.hasUniformWithName(sName)){
+					continue;
+				}
+
+				var pSampler: IAFXVariableDeclInstruction = this.getUniformByName(sName);
+				var pSamplerState: IAFXSamplerState = pSamplers[sName];
+				var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerState);
+
+				if(isNull(pTexture)){
+					pBlender.addObjectToSlotById(pSampler, ZERO_SLOT);
+				}
+				else {
+					pBlender.addTextureSlot(pTexture.getGuid());
+					pBlender.addObjectToSlotById(pSampler, pTexture.getGuid());
+				}
+			}
+
+			//Gum sampler arrays
+			var pSamplerArrays: IAFXSamplerStateListMap = pPassInput.samplerArrays;
+			var pSamplerArrayKeys: string[] = pPassInput.samplerArrayKeys;
+
+			for(var i: uint = 0; i < pSamplerArrayKeys.length; i++){
+				var sName: string = pSamplerArrayKeys[i];
+
+				if(!this.hasUniformWithName(sName)){
+					continue;
+				}
+
+				var pSamplerStateList: IAFXSamplerState[] = pSamplerArrays[sName];
+				var isNeedToCollapse: bool = true;
+				var pTexture: ITexture = null;		
+			
+				for(var j: uint = 0; j < pSamplerStateList.length; j++) {
+					if(j === 0) {
+						pTexture = pPassInput._getTextureForSamplerState(pSamplerStateList[i]);
+					}
+					else {
+						if(pTexture !== pPassInput._getTextureForSamplerState(pSamplerStateList[i])){
+							isNeedToCollapse = false;
+						}
+					}
+				}
+
+				if(isNeedToCollapse){
+					var pSamplerArray: IAFXVariableDeclInstruction = this.getUniformByName(sName);
+
+					if(isNull(pTexture)){
+						pBlender.addObjectToSlotById(pSamplerArray, ZERO_SLOT);
+					}
+					else {
+						pBlender.addTextureSlot(pTexture.getGuid());
+						pBlender.addObjectToSlotById(pSamplerArray, pTexture.getGuid());
+					}
+				}
+			}
+
+			return pBlender.getHash();
+		}
+
+		private prepareBufferMap(pMap: util.BufferMap): string {
+			this._pAttributeContainerV.initFromBufferMap(pMap);
+			return this._pAttributeContainerV.getHash();
+		}
 
 	}
 }

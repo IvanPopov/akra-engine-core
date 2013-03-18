@@ -59,7 +59,7 @@ module akra.fx {
 		protected _pUniformVariableKeys: uint[] = null;
 		protected _pForeignVariableKeys: uint[] = null;
 		protected _pGlobalVariableKeys: uint[] = null;
-
+		protected _pTextureVariableKeys: uint[] = null;
 		protected _pUsedComplexTypeKeys: uint[] = null;
 
 		protected _pVertexShader: IAFXFunctionDeclInstruction = null;
@@ -594,6 +594,14 @@ module akra.fx {
         	}
 
         	return this._pGlobalVariableKeys;
+        }
+
+        _getTextureVariableKeys(): uint[] {
+        	if(isNull(this._pTextureVariableKeys)){
+        		this._pTextureVariableKeys = <uint[]><any[]>Object.keys(this._pTextureVariableMap);
+        	}
+
+        	return this._pTextureVariableKeys;
         }
 
         _getUsedComplexTypeKeys(): uint[] {
@@ -1257,6 +1265,10 @@ module akra.fx {
         }
 
         inline _getGlobalVariableKeys(): uint[] {
+        	return null;
+        }
+
+        inline _getTextureVariableKeys(): uint[] {
         	return null;
         }
 
