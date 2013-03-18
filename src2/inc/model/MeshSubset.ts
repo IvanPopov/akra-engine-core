@@ -14,7 +14,6 @@
 
 module akra.model {
 	export class MeshSubset extends render.RenderableObject implements IMeshSubset {
-		protected _pRenderData: IRenderData = null;
 		protected _sName: string = null;
 		protected _pMesh: IMesh = null;
 		protected _pSkin: ISkin = null;
@@ -23,7 +22,6 @@ module akra.model {
 
 		inline get boundingBox(): IRect3d { return this._pBoundingBox; }
 		inline get boundingSphere(): ISphere { return this._pBoundingSphere; }
-		inline get data(): IRenderData { return this._pRenderData; }
 		inline get skin(): ISkin { return this._pSkin; }
 		inline get name(): string { return this._sName; }
 		inline get mesh(): IMesh { return this._pMesh; }
@@ -290,7 +288,8 @@ module akra.model {
 		}
 
 		_draw (): void {
-		    this._pRenderData._draw();
+//		    this._pRenderData._draw();
+			CRITICAL("Need to do.");
 		}
 
 		show(): void {

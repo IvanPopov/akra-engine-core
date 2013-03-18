@@ -65,6 +65,8 @@ module akra.render {
 		private _iIndexSet: int = 0;
 		private _iRenderable: int = 1;
 
+        private _pComposer: IAFXComposer = null;
+
 
 		inline get buffer(): IRenderDataCollection {
 			return this._pBuffer;
@@ -77,6 +79,7 @@ module akra.render {
 		constructor(pCollection: IRenderDataCollection = null) {
 			super();
 			this._pBuffer = pCollection;
+            this._pComposer = pCollection.getEngine().getComposer();
 		}
 
 		/**
@@ -678,10 +681,12 @@ module akra.render {
         /**
          * Draw this data.
          */
-        _draw(): void {
+        _draw(pTechnique: IRenderTechnique, pSceneObject: ISceneObject): void {
         	for (var i: int = 0; i < this._pIndicesArray.length; i++) {
         	    if (this.isRenderable(i)) {
-        	        this._pIndicesArray[i].pMap._draw();
+        	        //this._pIndicesArray[i].pMap._draw();
+                    this._pComposer.applyBufferMap(this._pIndicesArray[i].pMap);
+                    pTechnique._renderTechnique(pSceneObject);
         	    }
         	}
         }

@@ -4,6 +4,7 @@
 #include "IRenderTechnique.ts"
 #include "IEventProvider.ts"
 #include "ISceneObject.ts"
+#include "IRenderData.ts"
 
 module akra {
 	export interface IRenderableObject extends IEventProvider {
@@ -11,7 +12,7 @@ module akra {
 		
 		readonly effect: IEffect;
 		readonly surfaceMaterial: ISurfaceMaterial;
-
+		readonly data: IRenderData;
 		readonly material: IMaterial;
 
 		getGuid(): uint;

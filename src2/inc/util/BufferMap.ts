@@ -102,7 +102,8 @@ module akra.util {
 		}
 
 		_draw(): void {
-			this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
+			// this._pEngine.getComposer().applyBufferMap(this);
+			// this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
 			isNull(this._pIndex)? this.drawArrays(): this.drawElements();
 		}
 

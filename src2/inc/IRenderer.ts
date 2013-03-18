@@ -24,6 +24,7 @@ module akra {
     IFACE(IColor);
     IFACE(IEngine);
     IFACE(IRenderTarget);
+    IFACE(ICanvas3d);
 
     #define CAPABILITYVALUE(category, value) ((category << (32 - 4)) | (1 << value))
 
@@ -268,6 +269,8 @@ module akra {
         destroyRenderTarget(pTarget: IRenderTarget): void;
 
         getActiveProgram(): IShaderProgram;
+
+        getDefaultCanvas(): ICanvas3d;
     }
 
 

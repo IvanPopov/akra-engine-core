@@ -53,7 +53,7 @@ module akra.util {
 		        iTime = this.iStopTime;
 		    }
 		    else {
-		        iTime = (new Date()).getTime();
+		        iTime = now();
 		    }
 
 		    // Return the elapsed time
