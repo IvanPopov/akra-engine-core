@@ -4,14 +4,26 @@
 #include "ITexture.ts"
 
 module akra {
-	textureName: string;
-	texture: ITexture;
+	export interface IAFXSamplerStateMap {
+		[index: string]: IAFXSamplerState;
+		[index: uint]: IAFXSamplerState;
+	}
 
-	wrap_s: uint;
-	wrap_t: uint;
+	export interface IAFXSamplerStateListMap {
+		[index: string]: IAFXSamplerState[];
+		[index: uint]: IAFXSamplerState[];
+	}
 
-	mag_filter: uint;
-	min_filter: uint;
+	export interface IAFXSamplerState {
+		textureName: string;
+		texture: ITexture;
+
+		wrap_s: uint;
+		wrap_t: uint;
+
+		mag_filter: uint;
+		min_filter: uint;
+	}
 }
 
 #endif

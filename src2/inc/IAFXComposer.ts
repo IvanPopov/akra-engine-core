@@ -13,6 +13,7 @@
 #include "IAFXComponentBlend.ts"
 #include "IAFXPassInputBlend.ts"
 #include "IBufferMap.ts"
+#include "ISurfaceMaterial.ts"
 
 module akra {
 	export interface IAFXComposer {
@@ -49,6 +50,7 @@ module akra {
 		//API for render
 		
 		applyBufferMap(pBufferMap: IBufferMap): bool;
+		applySurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): bool;
 
 		setCurrentSceneObject(pSceneObject: ISceneObject): void;
 		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void;

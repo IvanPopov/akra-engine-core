@@ -21,7 +21,7 @@ module akra {
 		uniformDefaultValue: any;
 
 		textureNameToReal: StringMap;
-		textureByRealName: any;
+		textureByRealName: IAFXVariableDeclMap;
 
 		foreignByName: IAFXVariableDeclMap;
 

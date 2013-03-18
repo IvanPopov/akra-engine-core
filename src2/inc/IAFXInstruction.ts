@@ -7,7 +7,6 @@
 #include "IUnique.ts"
 
 module akra {
-
     export enum EAFXInstructionTypes {
         k_Instruction = 0,
         k_InstructionCollector,
@@ -569,6 +568,7 @@ module akra {
         _getUniformVariableKeys(): uint[];
         _getForeignVariableKeys(): uint[];
         _getGlobalVariableKeys(): uint[];
+        _getTextureVariableKeys(): uint[];
         _getUsedComplexTypeKeys(): uint[];
 
         _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[];
