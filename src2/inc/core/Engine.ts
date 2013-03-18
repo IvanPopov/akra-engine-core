@@ -80,6 +80,7 @@ module akra.core {
 			}
 
 			this._pParticleManager = null;
+			this._pTimer = util.UtilTimer.start(); 
 
 #ifdef WEBGL
 			this._pRenderer = new webgl.WebGLRenderer(this);
@@ -92,7 +93,6 @@ module akra.core {
 			DDSCodec.startup();
 			
 			
-			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 
 			this.parseOptions(pOptions);

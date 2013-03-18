@@ -23,6 +23,7 @@
 #include "IRenderEntry.ts"
 #include "IFrameBuffer.ts"
 #include "IViewport.ts"
+#include "ICanvas3d.ts"
 
 #include "events/events.ts"
 
@@ -165,6 +166,10 @@ module  akra.render {
 		}
 
 		_getViewport(): IViewport {
+			return null;
+		}
+
+		getDefaultCanvas(): ICanvas3d {
 			return null;
 		}
 

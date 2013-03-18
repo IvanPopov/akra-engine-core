@@ -3,6 +3,8 @@
 
 #include "WebGL.ts"
 #include "render/Renderer.ts"
+#include "WebGLCanvas.ts"
+
 
 #define WEBGL_MAX_FRAMEBUFFER_NUM 32
 
@@ -12,6 +14,8 @@ module akra.webgl {
 
 		private _pWebGLContext: WebGLRenderingContext;
 		private _pWebGLFramebufferList: WebGLFramebuffer[];
+
+		private _pDefaultCanvas: ICanvas3d;
 
 		//real context, if debug context used
 		private _pWebGLInternalContext: WebGLRenderingContext = null;
@@ -44,6 +48,8 @@ module akra.webgl {
 			for (var i: int = 0; i < this._pWebGLFramebufferList.length; ++ i) {
 				this._pWebGLFramebufferList[i] = this._pWebGLContext.createFramebuffer();
 			}
+
+			this._pDefaultCanvas = new WebGLCanvas(this);
 		}
 
 		debug(bValue: bool = true, useApiTrace: bool = false): bool {
@@ -173,6 +179,10 @@ module akra.webgl {
 				this._pWebGLContext.disableVertexAttribArray(i);	
 			}
 		
+		}
+
+		getDefaultCanvas(): ICanvas3d {
+			return this._pDefaultCanvas;
 		}
 	}
 }

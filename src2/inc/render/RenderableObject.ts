@@ -15,6 +15,7 @@ module akra.render {
 	}
 
 	export class RenderableObject implements IRenderableObject {
+		protected _pRenderData: IRenderData = null;
 		protected _pRenderer: IRenderer;
 		protected _pTechnique: IRenderTechnique = null;
 		protected _pTechniqueMap: IRenderTechniqueMap = {};
@@ -32,6 +33,8 @@ module akra.render {
 		inline get surfaceMaterial(): ISurfaceMaterial  { return this._pTechnique.getMethod().surfaceMaterial; }
 
 		inline get material(): IMaterial  { return this.surfaceMaterial.material; }
+
+		inline get data(): IRenderData { return this._pRenderData; }
 
 		constructor () {
 			
@@ -185,11 +188,10 @@ module akra.render {
 				return;
 			}
 
-			var pTechnique: IRenderTechnique = this.getTechnique();
-			pTechnique._renderTechnique(pSceneObject);
+			this.data._draw(this.getTechnique(), pSceneObject);
 		}
 
-		inline getTechnique(sName: string = null): IRenderTechnique {
+		inline getTechnique(sName: string = DEFAULT_RT): IRenderTechnique {
 			return this._pTechniqueMap[sName] || null;
 		}
 
