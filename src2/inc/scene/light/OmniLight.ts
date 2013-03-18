@@ -11,9 +11,10 @@ module akra.scene.light {
 		protected _pShadowCasterCube: IShadowCaster[] = null;
 
 		constructor (pScene: IScene3d, isShadowCaster: bool = true, iMaxShadowResolution: uint = 256) {
-			super(pScene, EEntityTypes.LIGHT_OMNI_DIRECTIONAL, isShadowCaster, iMaxShadowResolution);
+			super(pScene, ELightTypes.OMNI, isShadowCaster, iMaxShadowResolution);
 
 			this._pShadowCasterCube = new Array(6);
+			
 			for(var i: int = 0; i<6; i++){
 				this._pShadowCasterCube[i] = new ShadowCaster(this, i);
 			}

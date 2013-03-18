@@ -15,10 +15,13 @@
 #include "IEffect.ts"
 #include "IScene3d.ts"
 #include "util/ObjectArray.ts"
+#include "Screen.ts"
+
+#define OPTIMIZED_DEFFERED 1
 
 module akra.render {
 
-	#define OPTIMIZED_DEFFERED 1
+
 
 	export class DSViewport extends Viewport implements IDSViewport  {
 		private _pDefferedColorTextures: ITexture[] = [];
@@ -48,12 +51,10 @@ module akra.render {
 			var pDeferredData: IRenderTarget[] = <IRenderTarget[]>new Array(2);
 			var pDeferredTextures: ITexture[] = <ITexture[]>new Array(2);
 			var pDepthTexture: ITexture;
-			var pDefferedView: IRenderableObject = this._pDeferredView = new render.RenderableObject();
+			var pDefferedView: IRenderableObject = this._pDeferredView = new Screen(pEngine.getRenderer());
 			var iGuid: int = sid();
 			var iWidth: uint = math.ceilingPowerOfTwo(this.actualWidth);
     		var iHeight: uint = math.ceilingPowerOfTwo(this.actualHeight);
-
-    		pDefferedView._setup(pTarget.getRenderer());
 
     		if (info.browser.name === "Firefox") {
 		        iWidth 	= math.min(iWidth, 1024);
@@ -61,7 +62,7 @@ module akra.render {
 		    }
 
 			pDepthTexture = this._pDeferredDepthTexture = pResMgr.createTexture("deferred-depth-texture-" + iGuid);
-			pDepthTexture.create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0,
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_DEPTH);
 
 			for (var i = 0; i < 2; ++ i) {
@@ -71,8 +72,8 @@ module akra.render {
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
+				pDeferredData[i].setAutoUpdated(false);
 				pDeferredData[i].addViewport(this.getCamera(), "deferred_shading_pass_" + i);
-
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 			}
 
@@ -95,7 +96,10 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.skybox", 1);
 
 			pDSMethod.effect = pDSEffect;
-			pDefferedView.renderMethod = pDSMethod;
+			pDefferedView.addRenderMethod(pDSMethod);
+
+			// LOG(pEngine.getComposer(), pDefferedView.getTechnique().totalPasses);
+			// pDefferedView.renderMethod = pDSMethod;
 
 			
 
@@ -126,7 +130,7 @@ module akra.render {
 			}
 #endif
 			//render defferred
-			this._pDeferredView.render();	
+			//this._pDeferredView.render();	
 
 			return true;
 		}
@@ -303,7 +307,7 @@ module akra.render {
 		        pCameraView.multiplyVec4(v4fLightPosition, v4fTemp)
 		        v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
 
-		        if (pLight.type === <int>EEntityTypes.LIGHT_OMNI_DIRECTIONAL) {
+		        if (pLight.lightType === ELightTypes.OMNI) {
 		        	
 		        	pOmniLight = <IOmniLight>pLight;
 
@@ -334,7 +338,7 @@ module akra.render {
 		                pUniforms.omni.push(<UniformOmni>pUniformData);
 		            }
 		        }
-		        else if (pLight.type === <int>EEntityTypes.LIGHT_PROJECT) {
+		        else if (pLight.lightType === ELightTypes.PROJECT) {
 		        	pProjectLight = <IProjectLight>pLight;
 
 		            if (pLight.isShadowCaster) {

@@ -17,7 +17,7 @@ module akra.scene.light {
 		protected _pShadowCaster: IShadowCaster;
 
 		constructor (pScene: IScene3d, isShadowCaster: bool = true, iMaxShadowResolution: uint = 256) {
-			super(pScene, EEntityTypes.LIGHT_PROJECT, isShadowCaster, iMaxShadowResolution);
+			super(pScene, ELightTypes.PROJECT, isShadowCaster, iMaxShadowResolution);
 		};
 
 		create(): bool {

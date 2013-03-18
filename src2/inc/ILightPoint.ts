@@ -14,9 +14,16 @@ module akra {
 	    attenuation: IVec3;
 	}
 
+	export enum ELightTypes {
+		UNKNOWN,
+		PROJECT,
+		OMNI
+	}
+
 	export interface ILightPoint extends ISceneNode {
 		params: ILightParameters;
 		enabled: bool;
+		lightType: ELightTypes;
 
 		isShadowCaster: bool;
 
