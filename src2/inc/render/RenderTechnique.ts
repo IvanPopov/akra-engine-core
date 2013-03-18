@@ -42,7 +42,8 @@ module akra.render {
 
 		}
 
-		getPass(iPass: uint): IRenderPass {
+		inline getPass(iPass: uint): IRenderPass {
+			this._pComposer.prepareTechniqueBlend(this);
 			return this._pPassList[iPass];
 		}
 
@@ -148,7 +149,7 @@ module akra.render {
 
 			var iTotalPasses: uint = this.totalPasses;
 
-			for(var i: uint = this._pPassList.length; i < iTotalPasses; i++){
+			for(var i: uint = this._pPassList.length; i < iTotalPasses; i++) {
 				this._pPassList[i] = new RenderPass(this, i);
 			}
 			

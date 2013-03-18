@@ -18,10 +18,16 @@ module akra.scene.light {
 		protected _isEnabled: bool = true;
 		protected _iMaxShadowResolution: uint = 256;
 		protected _pLightParameters: ILightParameters = new LightParameters;
+		protected _eLightType: ELightTypes;
 
-		constructor(pScene: IScene3d, eType: EEntityTypes, isShadowCaster: bool = true, iMaxShadowResolution: int = 256){
-			super(pScene, eType);
+		inline get lightType(): ELightTypes {
+			return this._eLightType;
+		}
 
+		constructor(pScene: IScene3d, eType: ELightTypes = ELightTypes.UNKNOWN, isShadowCaster: bool = true, iMaxShadowResolution: int = 256){
+			super(pScene, EEntityTypes.LIGHT);
+
+			this._eLightType = eType;
 			//есть тени от источника или нет
 			this._bCastShadows = isShadowCaster;
 			//мкасимальный размер shadow текстуры
@@ -64,8 +70,7 @@ module akra.scene.light {
 		};
 	}
 	export function isLightPoint(pNode: ISceneNode){
-		var eType: EEntityTypes = pNode.type;
-		return EEntityTypes.LIGHT_PROJECT <= eType && eType <= EEntityTypes.LIGHT_OMNI_DIRECTIONAL;
+		return pNode.type === EEntityTypes.LIGHT;
 	}
 }
 

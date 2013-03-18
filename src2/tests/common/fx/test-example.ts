@@ -26,9 +26,10 @@ module akra {
 
 				pCamera.attachToParent(pScene.getRootNode());
 				var pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
-				pViewport.setAutoUpdated();
+				// pViewport.setAutoUpdated();
 
-
+				// pEngine.exec();
+				pEngine.renderFrame();
 			});
 
 			

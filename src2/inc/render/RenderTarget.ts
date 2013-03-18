@@ -60,7 +60,6 @@ module akra.render {
 
 		inline get priority(): uint { return this._iPriority; }
 
-
 		constructor (pRenderer: IRenderer) {
 			this._pRenderer = pRenderer;
 			this._pTimer = pRenderer.getEngine().getTimer();
@@ -409,10 +408,6 @@ module akra.render {
 			if (isRemoved) {
 				this.cameraRemoved(pCamera);
 			}
-		}
-
-		inline setAutoUpdare(bValue: bool = true): void {
-			this._isAutoUpdate = bValue;
 		}
 
 		inline isAutoUpdated(): bool {

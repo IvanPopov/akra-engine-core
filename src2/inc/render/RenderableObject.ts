@@ -36,9 +36,6 @@ module akra.render {
 
 		inline get data(): IRenderData { return this._pRenderData; }
 
-		constructor () {
-			
-		}
 
 		_setup(pRenderer: IRenderer, csDefaultMethod: string = null): void {
 			this._pRenderer = pRenderer;

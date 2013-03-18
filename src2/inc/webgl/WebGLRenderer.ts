@@ -50,6 +50,7 @@ module akra.webgl {
 			}
 
 			this._pDefaultCanvas = new WebGLCanvas(this);
+			this.attachRenderTarget(this._pDefaultCanvas);
 		}
 
 		debug(bValue: bool = true, useApiTrace: bool = false): bool {
