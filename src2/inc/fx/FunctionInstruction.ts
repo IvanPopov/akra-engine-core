@@ -1001,7 +1001,9 @@ module akra.fx {
         		else {
         			iDepth++;
         			this.generateExtractStmtForComplexVar(
-        									pWhatExtracted, pOffset, iDepth, pCollector,
+        									pWhatExtracted, 
+        									iDepth <= 1 ? pOffset : null, 
+        									iDepth, pCollector,
         									pWhatExtractedType.getPointer(),
         									pWhatExtractedType.getVideoBuffer(), 0);
         		}
@@ -1023,6 +1025,7 @@ module akra.fx {
         	var pField: IAFXVariableDeclInstruction = null;
         	var pFieldType: IAFXVariableTypeInstruction = null;
         	var pSingleExtract: ExtractStmtInstruction = null;
+        	var isNeedPadding: bool = false;
 
         	for(var i: uint = 0; i < pFieldNameList.length; i++){
         		pField = pVarType.getField(pFieldNameList[i]);
@@ -1035,6 +1038,10 @@ module akra.fx {
 
  				if(iDepth <= 1){
  					pOffset = this.createOffsetForAttr(pField);
+ 					isNeedPadding = false;
+ 				}
+ 				else {
+ 					isNeedPadding = true;
  				}
 
  				iDepth++;
@@ -1043,7 +1050,8 @@ module akra.fx {
  					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
  					pSingleExtract = new ExtractStmtInstruction();
  					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), 
- 														   iPadding + pFieldType.getPadding(), pOffset);
+ 														   isNeedPadding ? (iPadding + pFieldType.getPadding()) : 0,
+ 														   pOffset);
 
  					this._addUsedFunction(pSingleExtract.getExtractFunction());
  					
@@ -1052,12 +1060,14 @@ module akra.fx {
  				}
  				else if(pFieldType.isComplex()) {
  					this.generateExtractStmtForComplexVar(pField, pOffset, iDepth, pCollector,
- 														  pPointer, pBuffer, iPadding + pFieldType.getPadding());
+ 														  pPointer, pBuffer, 
+ 														  isNeedPadding ? (iPadding + pFieldType.getPadding()) : 0);
  				}
  				else {
  					pSingleExtract = new ExtractStmtInstruction();
-        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, 
-        												   iPadding + pFieldType.getPadding(), pOffset);
+        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer,
+        												   isNeedPadding ? (iPadding + pFieldType.getPadding()) : 0,
+        												   pOffset);
 
         			this._addUsedFunction(pSingleExtract.getExtractFunction());
 
@@ -1072,11 +1082,16 @@ module akra.fx {
         	var pOffsetId: IAFXIdInstruction = new IdInstruction();
 
         	pOffsetType.pushType(Effect.getSystemType("float"));
+        	pOffsetType.addUsage("uniform");
+
+        	pOffsetId.setName("offset");
+        	pOffsetId.setRealName(pAttr.getRealName() + "_o");
 
         	pOffset.push(pOffsetType, true);
         	pOffset.push(pOffsetId, true);
 
         	pOffset.setParent(pAttr);
+        	pOffset.setSemantic(pAttr.getSemantic());
 
         	pAttr.getType()._addAttrOffset(pOffset);
 

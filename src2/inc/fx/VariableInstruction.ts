@@ -19,6 +19,10 @@ module akra.fx {
         private _pAttrOffset: IAFXVariableDeclInstruction = null;
         private _pAttrExtractionBlock: IAFXInstruction = null;
 
+        private _pValue: any = null;
+
+        private _bLockInitializer: bool = false;
+
         /**
 		 * Represent type var_name [= init_expr]
 		 * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
@@ -37,8 +41,24 @@ module akra.fx {
 			return <IAFXInitExprInstruction>this.getInstructions()[2];
 		}
 
+        inline lockInitializer(): void {
+            this._bLockInitializer = true;
+        }
+
+        inline unlockInitializer(): void {
+            this._bLockInitializer = false;
+        }
+
         getDefaultValue(): any {
             return null;
+        }
+
+        getValue(): any {
+            return this._pValue;
+        }
+
+        setValue(pValue: any): any {
+            this._pValue = pValue;
         }
 
 		inline getType(): IAFXVariableTypeInstruction {
@@ -64,6 +84,19 @@ module akra.fx {
         	if(this._nInstructions < 2) {
         		this._nInstructions = 2;
         	}
+        }
+
+        setRealName(sRealName: string): void {
+            this.getNameId().setRealName(sRealName);
+        }
+
+        setVideoBufferRealName(sSampler: string, sHeader: string): void {
+            if(!this.isVideoBuffer()){
+                return;
+            }
+
+            this._getVideoBufferSampler().setRealName(sSampler);
+            this._getVideoBufferHeader().setRealName(sHeader);
         }
 
         inline getName(): string {
@@ -103,7 +136,7 @@ module akra.fx {
 
         isVideoBuffer(): bool{
             if(isNull(this._isVideoBuffer)){
-                this._isVideoBuffer = this.getType().isEqual(getEffectBaseType("video_buffer"));
+                this._isVideoBuffer = this.getType().isStrongEqual(getEffectBaseType("video_buffer"));
             }
 
             return this._isVideoBuffer;
@@ -129,16 +162,31 @@ module akra.fx {
             if(this._isShaderOutput()){
                 return "";
             }
-            
-            var sCode: string = this.getType().toFinalCode();
-            sCode += " " + this.getNameId().toFinalCode();
-            
-            if(this.getType().isNotBaseArray()){
-                sCode += "[" + this.getType().getLength() + "]";
-            }
+            var sCode: string = "";
 
-            if(this.hasInitializer() && !this.isUniform()){
-                sCode += "=" + this.getInitializeExpr().toFinalCode();
+            if(this.isVideoBuffer()){
+                this._getVideoBufferHeader().lockInitializer();
+
+                sCode = this._getVideoBufferHeader().toFinalCode();
+                sCode += ";\n";
+                sCode += this._getVideoBufferSampler().toFinalCode();
+
+                this._getVideoBufferHeader().unlockInitializer();
+            }
+            else {
+                sCode = this.getType().toFinalCode();
+                sCode += " " + this.getNameId().toFinalCode();
+                
+                if(this.getType().isNotBaseArray()){
+                    sCode += "[" + this.getType().getLength() + "]";
+                }
+
+                if (this.hasInitializer() && 
+                    !this.isSampler() &&
+                    !this.isUniform() && 
+                    !this._bLockInitializer) {
+                    sCode += "=" + this.getInitializeExpr().toFinalCode();
+                }
             }
 
             return sCode;
@@ -165,7 +213,8 @@ module akra.fx {
                 return this._pFullNameExpr;
             }
 
-            if(!this.isField()){
+            if (!this.isField() || 
+                !(<IAFXVariableTypeInstruction>this.getParent())._getParentVarDecl().isVisible()){
                 this._pFullNameExpr = new IdExprInstruction();
                 this._pFullNameExpr.push(this.getNameId(), false);
             }
@@ -193,10 +242,9 @@ module akra.fx {
         }
         
         _getFullName(): string {
-            if(!this.isField()){
-                return this.getName();
-            }
-            else {
+            if (this.isField() &&
+                (<IAFXVariableTypeInstruction>this.getParent())._getParentVarDecl().isVisible()){
+
                 var sName: string = "";
                 var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
 
@@ -207,6 +255,9 @@ module akra.fx {
                 sName += "." + this.getName();
 
                 return sName;
+            }
+            else {
+                return this.getName();
             }
         }
 
@@ -243,14 +294,23 @@ module akra.fx {
 
                 pType.pushType(getEffectBaseType("video_buffer_header"));
                 pId.setName(this.getName() + "_header");
-                pExtarctExpr.initExtractExpr(pType, null, this, "", null);
 
                 this._pVideoBufferHeader.push(pType, true);
                 this._pVideoBufferHeader.push(pId, true);
                 this._pVideoBufferHeader.push(pExtarctExpr, true);
+
+                pExtarctExpr.initExtractExpr(pType, null, this, "", null);
             }
 
             return this._pVideoBufferHeader;
+        }
+
+        _getVideoBufferInitExpr(): IAFXInitExprInstruction{
+            if(!this.isVideoBuffer()){
+                return null;
+            }
+
+            return this._getVideoBufferHeader().getInitializeExpr();
         }
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction {

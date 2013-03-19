@@ -264,6 +264,11 @@ module akra.fx {
 		}
 
 		evaluate(): bool {
+			if(this.getType().isForeign()){
+				this._pLastEvalResult = this.getType()._getParentVarDecl().getValue();
+				return true;
+			}
+
 			return false;
 		}
 
@@ -811,6 +816,7 @@ module akra.fx {
 	 */
 	export class SystemCallInstruction extends ExprInstruction {
 		private _pSystemFunction: SystemFunctionInstruction = null;
+		private _pSamplerDecl: IAFXVariableDeclInstruction = null;
 
 		constructor() { 
 			super();
@@ -819,11 +825,12 @@ module akra.fx {
 		}
 
 		toFinalCode(): string {
+			if(!isNull(this._pSamplerDecl) && this._pSamplerDecl.isDefinedByZero()){
+				return "vec4(0.)";
+			} 
+			
 			var sCode: string = "";
 
-			if(isNull(this.getInstructions())){
-				LOG(this);
-			}
 			for(var i: uint = 0; i < this.getInstructions().length; i++){
 				sCode += this.getInstructions()[i].toFinalCode();
 			}
@@ -854,6 +861,9 @@ module akra.fx {
 			for(var i: uint = 0; i < this._nInstructions; i++){
 				if(pInstructionList[i]._getInstructionType() !== EAFXInstructionTypes.k_SimpleInstruction){
 					pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+					if((<IAFXExprInstruction>pInstructionList[i]).getType().isSampler()){
+						this._pSamplerDecl = (<IAFXExprInstruction>pInstructionList[i]).getType()._getParentVarDecl();
+					}
 				}
 			}
 		}

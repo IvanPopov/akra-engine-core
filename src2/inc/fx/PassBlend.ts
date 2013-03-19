@@ -46,13 +46,20 @@ module akra.fx {
 
 
 		//Code fragments
-		
+		private _isZeroSampler2dV: bool = false;
+		private _isZeroSamplerCubeV: bool = false;
 		private _sUniformSamplerCodeV: string = "";
+
+		private _sAttrBufferDeclCode: string = "";
 		private _sAttrDeclCode: string = "";
+		private _sAFXAttrDeclCode: string = "";
+		private _sAttrBufferInitCode: string = "";
+		private _sAFXAttrInitCode: string = "";
 
 
 
-
+		private _isZeroSampler2dP: bool = false;
+		private _isZeroSamplerCubeP: bool = false;
 		private _sUniformSamplerCodeP: string = "";
 
 		private _pDefaultSamplerBlender: SamplerBlender = null;
@@ -130,6 +137,7 @@ module akra.fx {
 			var pProgram: IAFXShaderProgram = this.getProgramByHash(sTotalHash);
 
 			if(isNull(pProgram)) {
+				this.applyForeigns(pPassInput);
 				this.swapTexcoords(pSurfaceMaterial);
 				this.generateShaderCode();
 			}
@@ -488,7 +496,7 @@ module akra.fx {
 				return false;
 			}
 
-			this._pAttributeContainerV.clear();
+			this._pAttributeContainerV.generateOffsetMap();
 
 			return true;
 		}
@@ -658,13 +666,60 @@ module akra.fx {
 					(eType === EFunctionType.k_Pixel && this._pUniformContainerP.hasVariable(pSampler));
 		}
 
+		private applyForeigns(pPassInput: IAFXPassInputBlend): void {
+			var pForeignValues: any = pPassInput.foreigns;
+			var pKeys: string[] = pPassInput.foreigns;
+
+			var pForeignsV = this._pForeignContainerV;
+			var pForeignsP = this._pForeignContainerP;
+
+			for(var i: uint = 0; i < pKeys.length; i++){
+				var sName: string = pKeys[i];
+				var pVarList: IAFXVariableDeclInstruction[] = null;
+
+				if(pForeignsV.hasVariableWithName(sName)){
+					pVarList = pForeignsV.getVarList(sName);
+					
+					for(var j: uint = 0; j < pVarList.length; j++){
+						pVarList[j].setValue(pForeignValues[sName]);
+					}
+				}
+				if(pForeignsP.hasVariableWithName(sName)){
+					pVarList = pForeignsP.getVarList(sName);
+					
+					for(var j: uint = 0; j < pVarList.length; j++){
+						pVarList[j].setValue(pForeignValues[sName]);
+					}
+				}
+			}
+		}
+
 		private inline generateShaderCode(): void {
 			var sVertexCode: string = "";
 			var sPixelCode: string = "";
 
 			// this.setAttributes();
+			this.clearCodeFragments();
 			this.reduceSamplers();
 			this.reduceAttributes();
+		}
+
+		private clearCodeFragments(): void {
+			this._isZeroSampler2dV = false;
+			this._isZeroSamplerCubeV = false;
+			this._sUniformSamplerCodeV = "";
+
+			this._sAttrBufferDeclCode = "";
+			this._sAttrDeclCode = "";
+			this._sAFXAttrDeclCode = "";
+			this._sAttrBufferInitCode = "";
+			this._sAFXAttrInitCode = "";
+
+
+
+			this._isZeroSampler2dP = false;
+			this._isZeroSamplerCubeP = false;
+			this._sUniformSamplerCodeP = "";
 		}
 
 		private reduceSamplers(): void {
@@ -680,27 +735,65 @@ module akra.fx {
 				var isInVertex: bool = false;
 				var isInPixel: bool = false;
 
+				var sSamplerName: string = "as" + i.toString();
+
 				for (var j: int = 0; j < pSamplers.length; j++) {
 					if(i === ZERO_SLOT){
 						pSamplers.value(j).defineByZero(true);
+
+						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Vertex)){
+							if(pSamplers.value(j).getType().isSampler2D()) {
+								this._isZeroSampler2dV = true;
+							}
+							else {
+								this._isZeroSamplerCubeV = true;
+							}
+						}
+
+						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Pixel)){
+							if(pSamplers.value(j).getType().isSampler2D()) {
+								this._isZeroSampler2dP = true;
+							}
+							else {
+								this._isZeroSamplerCubeP = true;
+							}
+						}
+					}
+					else{
+						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Vertex)){
+							isInVertex = true;
+						}
+						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Pixel)){
+							isInPixel = true;
+						}
 					}
 
-					if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Vertex)){
-						isInVertex = true;
-					}
-					if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Pixel)){
-						isInPixel = true;
-					}
+					pSamplers.value(j).setRealName(sSamplerName);
 				}
 
-				var sSamplerName: string = "as" + i.toString();
 
-				if(isInVertex){
-					sUniformSamplerCodeV += "uniform " + pSamplers.value(0).getType().getBaseType().getRealName() + " " + sSamplerName + ";";
+				if(i === ZERO_SLOT){
+					if(this._isZeroSampler2dV){
+						sUniformSamplerCodeV += "uniform sampler2D as0;";
+					}
+					if(this._isZeroSamplerCubeV){
+						sUniformSamplerCodeV += "uniform samplerCube asc0;"
+					}
+					if(this._isZeroSampler2dP){
+						sUniformSamplerCodeP += "uniform sampler2D as0;";
+					}
+					if(this._isZeroSamplerCubeP){
+						sUniformSamplerCodeP += "uniform samplerCube asc0;"
+					}
 				}
+				else {
+					if(isInVertex){
+						sUniformSamplerCodeV += "uniform " + pSamplers.value(0).getType().getBaseType().getRealName() + " " + sSamplerName + ";";
+					}
 
-				if(isInPixel){
-					sUniformSamplerCodeP += "uniform " + pSamplers.value(0).getType().getBaseType().getRealName() + " " + sSamplerName + ";";
+					if(isInPixel){
+						sUniformSamplerCodeP += "uniform " + pSamplers.value(0).getType().getBaseType().getRealName() + " " + sSamplerName + ";";
+					}
 				}
 			}
 
@@ -711,35 +804,89 @@ module akra.fx {
 
 		private reduceAttributes(): void {
 			var pAttributeContainer: AttributeBlendContainer = this._pAttributeContainerV;
-
-			var sAttrDeclCode: string = "";
-
 			var pSemantics: string[] = pAttributeContainer.semantics;
-			//1) set zero buffer maps for strict pointers attributes
+			
+			var nPreparedBufferSlots: int = -1;
+			var nPreparedAttributeSlots: int = -1;
+
 			for(var i: uint = 0; i < pSemantics.length; i++) {
 				var sSemantic: string = pSemantics[i];
 				var pFlow: IDataFlow = pAttributeContainer.getFlowBySemantic(sSemantic);
-				var pAttributeType: IAFXVariableTypeInstruction = pAttributeContainer.getType(sSemantic);
-				
-				if(isNull(pFlow) && pAttributeType.isStrictPointer()) {
-					pAttributeType.getVideoBuffer().defineByZero(true);
+				var pAttributes: IAFXVariableDeclInstruction[] = pAttributeContainer.getAttributeList(sSemantic);
+				var iBufferSlot: uint = -1;
+				var iSlot: uint = -1;
+				var sAttrName: string = "";
+				//1) set buffer maps for shader attribures
+				if(isNull(pFlow)) {
+					for(var j: uint = 0; j < pAttributes.length; j++){
+						if(pAttributes[j].getType().isStrictPointer()){
+							pAttributes[j].getType().getVideoBuffer().defineByZero(true);
+						}
+					}
+				}
+				else {
+					iSlot = pAttributeContainer.getSlotBySemantic(sSemantic);
+					iBufferSlot = pAttributeContainer.getBufferSlotBySemantic(sSemantic);
+
+					sAttrName = "aa" + iSlot.toString();
+
+					if(iBufferSlot >= 0){
+						var sSamplerBufferName: string = "abs" + iBufferSlot.toString();
+						var sHeaderBufferName: string = "abh" + iBufferSlot.toString();
+
+						var pBufferVar: IAFXVariableDeclInstruction = null;
+
+						for(var j: uint = 0; j < pAttributes.length; j++){
+							pBufferVar = pAttributes[j].getType().getVideoBuffer();
+							pBufferVar.setVideoBufferRealName(sSamplerBufferName, sHeaderBufferName);
+						}
+
+						if(iBufferSlot > nPreparedBufferSlots) {
+							var pBufferVar: IAFXVariableDeclInstruction =  pAttributes[0].getType().getVideoBuffer();
+							this._sAttrBufferDeclCode = pBufferVar.toFinalCode() + ";\n";
+							this._sAttrBufferInitCode = sHeaderBufferName + "=" + pBufferVar._getVideoBufferInitExpr().toFinalCode() + ";\n";
+							nPreparedBufferSlots++;
+						}
+					}
+
+					//2) gnerate real attrs
+					if(iSlot > nPreparedAttributeSlots){
+						this._sAttrDeclCode += "attribute " + pAttributeContainer.getTypeBySlot(i).toFinalCode() + " " + sAttrName + ";\n"; 
+						nPreparedAttributeSlots++;
+					}
+				}
+
+				// 3) add afx attributes 
+				var pAttribute: IAFXVariableDeclInstruction = pAttributeContainer.getAttribute(sSemantic);
+				var pAttributeType: IAFXVariableTypeInstruction = pAttribute.getType();
+
+				this._sAFXAttrDeclCode += pAttribute.toFinalCode() + ";\n";
+
+				if (pAttributeType.isStrictPointer() || 
+					(pAttributeType.isPointer() && iBufferSlot >= 0)){
+
+					var pAttrSubDecls: IAFXVariableDeclInstruction[] = pAttribute.getSubVarDecls();
+
+					for(var j: uint = 0; j < pAttrSubDecls.length; j++){
+						this._sAFXAttrDeclCode += pAttrSubDecls[j].toFinalCode() + ";\n";
+					}
+				}
+
+				if(iSlot >= 0){
+					if(iBufferSlot >= 0){
+						this._sAFXAttrInitCode += pAttributeType._getMainPointer().getRealName() + "=" + sAttrName + ";";
+						this._sAFXAttrInitCode += pAttribute._getAttrExtractionBlock().toFinalCode();
+					}
+					else {
+						this._sAFXAttrDeclCode += pAttribute.getRealName() + "=" + sAttrName + ";";
+					}
 				}
 			}
 
-			//2) gnerate real attrs
-			var iTotalSlots: uint = pAttributeContainer.totalSlots;
-			for(var i: uint = 0; i < iTotalSlots; i++){
-				var sAttrName: string = "aa" + i.toString();
-				var pFlow: IDataFlow = pAttributeContainer.getFlowBySlot(i);
-				var pType: IAFXTypeInstruction = pAttributeContainer.getTypeBySlot(i);
-				sAttrDeclCode += "attribute " + pType.toFinalCode() + " " + sAttrName + ";"; 
-			}
-
-			//3) generate all needed shader vertex input declarations
-			
-			//4) set real attrs to shader vertex input
-			//5) generate samplers for vertexTextures
-			this._sAttrDeclCode = sAttrDeclCode;
+			LOG(this._sAttrBufferDeclCode, this._sAttrDeclCode, 
+				this._sAFXAttrDeclCode, this._sAttrBufferInitCode, 
+				this._sAFXAttrInitCode);
+			LOG(this._pAttributeContainerV);
 		}
 
 		private generateSystemData(eType: EFunctionType): string {

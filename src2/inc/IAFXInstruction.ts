@@ -280,6 +280,8 @@ module akra {
         isConst(): bool;
 
         isSampler(): bool;
+        isSamplerCube(): bool;
+        isSampler2D(): bool;
 
         isWritable(): bool;
         isReadable(): bool;
@@ -462,8 +464,14 @@ module akra {
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
         hasInitializer(): bool;
         getInitializeExpr(): IAFXInitExprInstruction;
-
+        
+        lockInitializer(): void;
+        unlockInitializer(): void;
+        
         getDefaultValue(): any;
+        
+        getValue(): any;
+        setValue(pValue: any): any;
 
         getType(): IAFXVariableTypeInstruction;
         setType(pType: IAFXVariableTypeInstruction): void;
@@ -489,8 +497,11 @@ module akra {
         _getFullName(): string;
         _getVideoBufferSampler(): IAFXVariableDeclInstruction;
         _getVideoBufferHeader(): IAFXVariableDeclInstruction;
+        _getVideoBufferInitExpr(): IAFXInitExprInstruction;
 
-        setName(sName: string):void;
+        setName(sName: string): void;
+        setRealName(sName: string): void;
+        setVideoBufferRealName(sSampler: string, sHeader: string): void;
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
         blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;

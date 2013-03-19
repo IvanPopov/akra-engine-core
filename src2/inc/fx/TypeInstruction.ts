@@ -103,7 +103,7 @@ module akra.fx {
 			var sCode: string = "";
 			if(!isNull(this._pUsageList)){
 				for(var i: uint = 0; i < this._pUsageList.length; i++){
-					sCode += this._pUsageList[i];
+					sCode += this._pUsageList[i] + " ";
 				}
 			}
 
@@ -174,6 +174,14 @@ module akra.fx {
 		isSampler(): bool {
 			return this.getSubType().isSampler();
 		}
+
+		isSamplerCube(): bool {
+			return this.getSubType().isSamplerCube();
+		}
+
+        isSampler2D(): bool {
+        	return this.getSubType().isSampler2D();
+        }
 		
 		isWritable(): bool {
 			if(!isNull(this._isWritable)){
@@ -600,7 +608,7 @@ module akra.fx {
 				var isEval: bool = this._pArrayIndexExpr.evaluate();
 				
 				if(isEval) {
-					this._iLength = <uint>this._pArrayIndexExpr.getEvalValue();
+					this._iLength = <uint>this._pArrayIndexExpr.getEvalValue() || UNDEFINE_LENGTH;
 				}
 			}
 
@@ -702,6 +710,7 @@ module akra.fx {
 				}
 				pField.push(pFieldType, true);
 				pField.push(pSubField.getNameId(), false);
+				pField.setSemantic(pSubField.getSemantic());
 			}
 			else {
 				var pFieldName: IAFXIdInstruction = new IdInstruction();
@@ -1288,6 +1297,15 @@ module akra.fx {
 				   this.getName() === "samplerCUBE";
 		}
 
+		isSamplerCube(): bool {
+			return this.getName() === "samplerCUBE";
+		}
+		
+        isSampler2D(): bool {
+        	return this.getName() === "sampler" ||
+				   this.getName() === "sampler2D";
+        }
+
 
 		inline isWritable(): bool {
 			return this._isWritable;
@@ -1559,6 +1577,14 @@ module akra.fx {
 		}
 
 		isSampler(): bool{
+			return false;
+		}
+
+		isSamplerCube(): bool {
+			return false;
+		}
+
+		isSampler2D(): bool {
 			return false;
 		}
 
