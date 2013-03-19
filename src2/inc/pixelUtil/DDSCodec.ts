@@ -98,8 +98,7 @@
 
 
 
-module akra 
-{
+module akra {
 
 	interface IDDSPixelFormat{
 		dwSize :uint;

@@ -76,7 +76,7 @@ module akra.render {
 		}
 
 		setStruct(sName: string, pValue: any): void {
-
+			//skip
 		}
 
 		setTextureBySemantics(sName: string, pValue: any): void {

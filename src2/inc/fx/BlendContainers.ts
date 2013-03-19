@@ -186,6 +186,8 @@ module akra.fx {
 
 		protected _sHash: string = "";
 
+		protected _pBufferSlotBySlots: util.ObjectArray = null;
+
 		constructor() {
 			super();
 			
@@ -194,6 +196,15 @@ module akra.fx {
 
 			this._pFlowBySlots = new util.ObjectArray();
 			this._pHashBySlots = new util.ObjectArray();
+		}
+
+		inline getSlotBySemantic(sSemantic: string): uint {
+   			return this._pSlotBySemanticMap[sSemantic];
+  		}
+
+		inline getBufferSlotBySemantic(sSemantic: string): uint {
+			return this._pBufferSlotBySlots.value(this.getSlotBySemantic(sSemantic));
+			// return this._pBufferSlotBySlots.value(this._pSlotBySemanticMap[sSemantic]);
 		}
 
 		inline get semantics(): string[] {

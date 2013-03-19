@@ -180,6 +180,8 @@ module akra {
 
     export var isTypedArray = (x: any): bool => x !== null && typeof x === "object" && typeof x.byteOffset === "number";
 
+    export var isBlob = (x: any): bool => x instanceof Blob;
+
     /** @inline */
     export var isArray = (x: any): bool => {
         return typeOf(x) == "array";
