@@ -11,9 +11,10 @@ module akra.scene.light {
 		protected _pShadowCasterCube: IShadowCaster[] = null;
 
 		constructor (pScene: IScene3d, isShadowCaster: bool = true, iMaxShadowResolution: uint = 256) {
-			super(pScene, EEntityTypes.LIGHT_OMNI_DIRECTIONAL, isShadowCaster, iMaxShadowResolution);
+			super(pScene, ELightTypes.OMNI, isShadowCaster, iMaxShadowResolution);
 
 			this._pShadowCasterCube = new Array(6);
+			
 			for(var i: int = 0; i<6; i++){
 				this._pShadowCasterCube[i] = new ShadowCaster(this, i);
 			}
@@ -101,6 +102,10 @@ module akra.scene.light {
 			return this._pShadowCasterCube;
 		};
 
+		inline get isShadowCaster(): bool {
+			return this._bCastShadows;
+		};
+
 		/**
 		 * overridden setter isShadow caster,
 		 * if depth textures don't created then create depth textures
@@ -134,8 +139,8 @@ module akra.scene.light {
 				pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
 				pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 				pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
-
-				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i]); //TODO: Multiple render target
+				//TODO: Multiple render target
+				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i]); 
 			}
 		};
 
@@ -222,7 +227,7 @@ module akra.scene.light {
 				var v3fNormal: IVec3 = pPlane.normal;
 				var fDistance: float = pPlane.distance;
 
-				if(pPlane.signedDistance(v3fLightPosition) <= 0){
+				if(pPlane.signedDistance(v3fLightPosition) > 0){
 					fDistance = -v3fNormal.dot(v3fLightPosition);
 				}
 

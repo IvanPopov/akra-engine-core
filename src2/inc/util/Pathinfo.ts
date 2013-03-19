@@ -77,6 +77,14 @@ module akra.util {
 		}
 
 	}
+
+	// export var pathinfo: (sPath: string) => IPathinfo;
+	// export var pathinfo: (pPath: IPathinfo) => IPathinfo;
+	export var pathinfo: (pPath?) => IPathinfo;
+
+	pathinfo = function (pPath?): IPathinfo {
+		return new Pathinfo(pPath);
+	}
 	
 }
 

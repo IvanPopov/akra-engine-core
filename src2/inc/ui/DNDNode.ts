@@ -21,10 +21,26 @@ module akra.ui {
 				drag: (e: Event) => { return pNode.move(e); }
 			}).draggable("disable");
 
+			this.$element.droppable({
+		      drop: (e: Event) => { return pNode.drop(e); }
+		    });
+
 			if (!isUI(parent)) {
 				this.attachToParent(<Node>parent);
 			}
 		}
+
+		// mousedown(e: IUIEvent): void {
+		// 	//document.ondragstart        = function() { return false }
+		// 	document.body.onselectstart = function() { return false }
+		// 	super.mousedown(e);
+		// }
+
+		// mouseup(e: IUIEvent): void {
+		// 	//document.ondragstart        = function() { return false }
+		// 	document.body.onselectstart = function() { return false }
+		// 	super.mouseup(e);
+		// }
 
 		
 		inline isDraggable(): bool {
@@ -36,8 +52,9 @@ module akra.ui {
 			this.$element.draggable("option", "disabled", !bValue);
 		}
 
-		attachToParent(pParent: IUINode): bool {
-			var isAttached: bool = super.attachToParent(pParent);
+
+		attachToParent(pParent: IUINode, bRender: bool = true): bool {
+			var isAttached: bool = super.attachToParent(pParent, bRender);
 
 			if (!isNull(this.parent) && isDefAndNotNull(this.$element)) {
 				this.$element.draggable("option", "containment", "parent");
@@ -48,7 +65,8 @@ module akra.ui {
 
 		BROADCAST(dragStart, CALL(e));
 		BROADCAST(dragStop, CALL(e));
-		BROADCAST(move, CALL(e))
+		BROADCAST(move, CALL(e));
+		BROADCAST(drop, CALL(e));
 	}
 }
 

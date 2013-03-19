@@ -4,6 +4,10 @@
 #include "IUIDNDNode.ts"
 
 module akra {
+	export interface IUIComponentType {
+		new (...argv: any[]): IUIComponent;
+	}
+
 	export interface IUIComponentOptions {
 		show?: bool;
 		name?: string;
@@ -26,13 +30,20 @@ module akra {
 	export enum EUIComponents {
 		UNKNOWN,
 
+		WINDOW,
+
 		BUTTON,
 		LABEL,
 		TREE,
 		CANVAS,
 		SLIDER,
 		CHECKBOX,
-		CHECKBOX_LIST
+		CHECKBOX_LIST,
+		
+		GRAPH,
+		GRAPH_NODE,
+		GRAPH_CONNECTOR,
+		GRAPH_CONTROLS
 	}
 
 	export interface IUIComponent extends IUIDNDNode {

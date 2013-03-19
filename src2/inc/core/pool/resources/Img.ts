@@ -439,12 +439,12 @@ module akra.core.pool.resources {
             // etc
 
             if(iMipMap > this.numMipMaps){
-                WARNING("Mipmap index out of range");
+                WARNING("Mipmap index out of range",iMipMap,this.numMipMaps);
                 return null;
             }
 
             if(iFace >= this.numFaces){
-                WARNING("Face index out of range");
+                WARNING("Face index out of range",iFace,this.numFaces);
                 return null;
             }
                 
@@ -522,6 +522,38 @@ module akra.core.pool.resources {
                 if(iDepth!=1) iDepth = Math.floor(iDepth/2);
             }
             return iSize;
+        }
+
+        static getMaxMipmaps(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats) : int 
+        {
+            var iCount: int = 0;
+            if((iWidth > 0) && (iHeight > 0)) 
+            {
+                do {
+                    if(iWidth>1)        
+                    {
+                        iWidth = iWidth>>>1;
+                    }
+                    if(iHeight>1)       
+                    {
+                        iHeight = iHeight>>>1;
+                    }
+                    if(iDepth>1)        
+                    {
+                        iDepth = iDepth>>>1;
+                    }
+                    /*
+                     NOT needed, compressed formats will have mipmaps up to 1x1
+                     if(PixelUtil::isValidExtent(width, height, depth, format))
+                     count ++;
+                     else
+                     break;
+                     */
+                    
+                    iCount ++;
+                } while(!(iWidth === 1 && iHeight === 1 && iDepth === 1));
+            }       
+            return iCount;
         }
 	}
 }

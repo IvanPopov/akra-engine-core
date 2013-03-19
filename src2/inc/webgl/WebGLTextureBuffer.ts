@@ -72,6 +72,7 @@ module akra.webgl {
 			this._pWebGLTexture = pTexture;
 			this._iFace = iFace;
 			this._iLevel = iLevel;
+			this._iFlags = iFlags;
 			this._bSoftwareMipmap = bSoftwareMipmap;
 
 			this._eFaceTarget = eTarget;
@@ -215,14 +216,25 @@ module akra.webgl {
 	                // Standard alignment of 4 is not right
 	                pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	            }
-
-	            pWebGLContext.texSubImage2D(this._eFaceTarget,
+	            if (pDestBox.left === 0 && pDestBox.top === 0) {	            	
+	            		pWebGLContext.texImage2D(this._eFaceTarget,
 	                            			this._iLevel,
-	                            			pDestBox.left, pDestBox.top,
-	                            			pDestBox.width, pDestBox.height,
+	                            			webgl.getWebGLFormat(pData.format),	                            			
+	                            			pDestBox.width, pDestBox.height,0,
 	                            			webgl.getWebGLFormat(pData.format),
 	                            			webgl.getWebGLDataType(pData.format),
-	                            			pData.data);
+	                            			new Uint8Array(pData.data));											
+	            }
+	            else
+	            {
+            		pWebGLContext.texSubImage2D(this._eFaceTarget,
+                            			this._iLevel,
+                            			pDestBox.left, pDestBox.top,                            			
+                            			pDestBox.width, pDestBox.height,
+                            			webgl.getWebGLFormat(pData.format),
+                            			webgl.getWebGLDataType(pData.format),
+                            			pData.data);
+	            }
 	        }
 	        
 	        if (TEST_ANY(this._iFlags, ETextureFlags.AUTOMIPMAP) && !this._bSoftwareMipmap && (this._iLevel === 0)) {
@@ -693,7 +705,7 @@ module akra.webgl {
 		getRenderTarget(iZOffest: int): IRenderTarget;
 		getRenderTarget(iZOffest?: int = 0): IRenderTarget {
 			ASSERT(TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET));
-        	ASSERT(iZOffest < this._iDepth);
+        	ASSERT(iZOffest < this._iDepth, "iZOffest: " + iZOffest + ", iDepth: " + this._iDepth);
         	return this._pRTTList[iZOffest];
 		}
 

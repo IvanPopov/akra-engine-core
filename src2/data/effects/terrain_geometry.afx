@@ -1,0 +1,49 @@
+provide akra.system;
+
+struct pos_tex{
+    float3 pos:POSITION;
+    float2 tex_coord:TEXCOORD;
+};
+
+struct VS_IN{
+    pos_tex data[]:DATA;
+};
+
+struct VS_OUT{
+    float4 pos:POSITION;
+    float3 tex_coord : TEXCOORD;
+    float3 edgeTest : EDGE_TEST;
+};
+
+float4x4 model_mat:MODEL_MATRIX;
+float4x4 view_mat:VIEW_MATRIX;
+float4x4 proj_mat:PROJ_MATRIX;
+
+VS_OUT vs_terrain_geometry(VS_IN IN) {
+    VS_OUT Out;
+
+	float4 pos = float4(IN.data.pos, 1.);
+    float3 tex_coord = float3(IN.data.tex_coord, 0.);
+
+    Out.pos = proj_mat * view_mat * model_mat * pos;
+    Out.tex_coord = tex_coord;
+
+    if(mod(@(IN.data),3.) == 0.){
+        Out.edgeTest = float3(1.,0.,0.);
+    }
+    else if(mod(@(IN.data),3.) == 1.){
+        Out.edgeTest = float3(0.,1.,0.);
+    }
+    else{
+        Out.edgeTest = float3(0.,0.,1.);
+    }
+
+    return Out;
+}
+
+technique terrain_geometry{
+    pass p0 {
+        VertexShader = compile vs_terrain_geometry();
+    }
+}
+

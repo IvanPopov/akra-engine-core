@@ -622,8 +622,8 @@ module akra.math {
 		    if(fDeterminant === 0.){
 		        debug_assert(false,"обращение матрицы с нулевым детеминантом:\n" 
 		                        + this.toString());
-
-		        return m4fDestination.set(1.); //чтоб все не навернулось
+				//чтоб все не навернулось
+		        return m4fDestination.set(1.); 
 		    }
 
 		    var fInverseDeterminant: float = 1/fDeterminant;

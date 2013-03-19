@@ -1,0 +1,179 @@
+provide akra.system;
+
+struct pos_tex{
+    float3 pos:POSITION;
+    float2 texcoord:TEXCOORD;
+};
+
+struct VS_IN{
+    pos_tex data[][]:INDEX0;
+};
+
+struct VS_OUT{
+    float4 pos:POSITION;
+    float2 texcoord : TEXCOORD;
+    float3 edgeTest : EDGE_TEST;
+};
+
+float4x4 model_mat:MODEL_MATRIX;
+float4x4 view_mat:VIEW_MATRIX;
+float4x4 proj_mat:PROJ_MATRIX;
+
+VS_OUT vs_terrain(VS_IN IN) {
+    VS_OUT Out;
+
+	float4 pos = float4(IN.data.pos, 1.);
+
+    Out.pos = proj_mat * view_mat * model_mat * pos;
+    Out.texcoord = IN.data.texcoord;
+
+    if(mod(float(@@(IN.data)),3.) == 0.){
+        Out.edgeTest = float3(1.,0.,0.);
+    }
+    else if(mod(float(@@(IN.data)),3.) == 1.){
+        Out.edgeTest = float3(0.,1.,0.);
+    }
+    else{
+        Out.edgeTest = float3(0.,0.,1.);
+    }
+
+    return Out;
+}
+
+struct base_material{
+    float4 diffuse:DIFFUSE;
+    float4 ambient:AMBIENT;
+    float4 emissive:EMISSIVE;
+    float4 specular:SPECULAR;
+    float shininess:SHININESS;
+};;
+
+global base_material Fragment_material;
+global float3 Normal;
+
+texture tex0:TEXTURE0;
+texture tex1:TEXTURE1;
+texture tex2:TEXTURE2;
+texture tex3:TEXTURE3;
+texture tex4:TEXTURE4;
+texture tex5:TEXTURE5;
+texture tex6:TEXTURE6;
+
+sampler textureTerrain0:S_TERRAIN0 = sampler_state
+{
+    Texture = <tex0>;
+};
+sampler textureTerrain1:S_TERRAIN1 = sampler_state
+{
+    Texture = <tex1>;
+};
+sampler textureTerrain2:S_TERRAIN2 = sampler_state
+{
+    Texture = <tex2>;
+};
+sampler textureTerrain3:S_TERRAIN3 = sampler_state
+{
+    Texture = <tex3>;
+};
+sampler textureTerrain4:S_TERRAIN4 = sampler_state
+{
+    Texture = <tex4>;
+};
+sampler textureTerrain5:S_TERRAIN5 = sampler_state
+{
+    Texture = <tex5>;
+};
+sampler ptNormal:S_NORMAL = sampler_state
+{
+    Texture = <tex6>;
+};
+
+bool textureTerrainIsLoaded0;
+bool textureTerrainIsLoaded1;
+bool textureTerrainIsLoaded2;
+bool textureTerrainIsLoaded3;
+bool textureTerrainIsLoaded4;
+bool textureTerrainIsLoaded5;
+
+float2 cameraCoordTerrain : CAMERA_COORD;
+
+void fs_terrain(VS_OUT IN){
+//    float4x4 normal_mat = IN.normal_mat;
+
+    float4 color;
+    float2 new_texcoord;
+    float3 normal;
+
+    new_texcoord = (IN.texcoord-cameraCoordTerrain)*32.+float2(0.5);
+
+    if(textureTerrainIsLoaded5 &&(new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
+    {
+        color = tex2D(textureTerrain5, new_texcoord);
+    }
+    else
+    {
+        new_texcoord =(IN.texcoord-cameraCoordTerrain)*16. + float2(0.5);
+        if(textureTerrainIsLoaded4 && (new_texcoord.x>=0. && new_texcoord.x<1.&&new_texcoord.y>=0. && new_texcoord.y<1.0))
+        {
+            color = tex2D(textureTerrain4, new_texcoord);
+        }
+        else
+        {
+            new_texcoord = (IN.texcoord-cameraCoordTerrain)*8. + float2(0.5);
+            if(textureTerrainIsLoaded3 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
+            {
+                color = tex2D(textureTerrain3, new_texcoord);
+            }
+            else
+            {
+                new_texcoord = (IN.texcoord-cameraCoordTerrain)*4. + float2(0.5);
+                if(textureTerrainIsLoaded2 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
+                {
+                    color = tex2D(textureTerrain2, new_texcoord);
+                }
+                else
+                {
+                    new_texcoord = (IN.texcoord-cameraCoordTerrain)*2. + float2(0.5);
+                    if(textureTerrainIsLoaded1 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
+                    {
+                        color = tex2D(textureTerrain1, new_texcoord);
+                    }
+                    else
+                    {
+                        color = tex2D(textureTerrain0, IN.texcoord);
+                    }
+                }
+            }
+        }
+    }
+
+    normal = tex2D(ptNormal, IN.texcoord).rgb;
+    normal.xy -= 0.5;
+    normal = (view_mat * model_mat * float4(normal, 0.)).xyz;
+    normal = normalize(normal);
+
+    Normal = normal;
+
+    if(IN.edgeTest.x*IN.edgeTest.y*IN.edgeTest.z <= 0.002){
+        Fragment_material.emissive = float4(float3(0.8),1.);
+    }
+    else{
+        Fragment_material.emissive = float4(0.,0.,0.,1.);
+    }
+    //Fragment_material.emissive = float4(0.);
+    Fragment_material.diffuse = color;
+    Fragment_material.ambient = float4(0.);
+    Fragment_material.shininess = 0.;
+}
+
+technique terrain{
+    pass p0 {
+        VertexShader = compile vs_terrain();
+        PixelShader = compile fs_terrain();
+    }
+//    pass p1 {
+//        VertexShader = compile vs_terrain();
+//    }
+}
+
+

@@ -62,6 +62,7 @@ module akra {
         /**
          * Specifies uses advanced index.
          */
+        hasAttributes(): bool;
         useAdvancedIndex(): bool;
         useSingleIndex(): bool;
         useMultiIndex(): bool;
@@ -90,7 +91,7 @@ module akra {
 
         //applyMe(): bool;
 
-        _draw(): void;
+        _draw(pTechnique: IRenderTechnique, pSceneObject: ISceneObject): void;
         
         _getFlow(iDataLocation: int): IDataFlow;
         _getFlow(sSemantics: string, bSearchComplete?: bool): IDataFlow;

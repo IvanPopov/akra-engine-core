@@ -1,7 +1,6 @@
 #ifndef COMMON_TS
 #define COMMON_TS
 
-
 #define int number
 #define uint number
 #define float number
@@ -14,9 +13,8 @@
 #define WEBGL 1
 #define LOGGER_API 1
 // #define CRYPTO_API 1
-
-
-#define IFACE(IF) export interface IF {}
+// #define GUI 1
+// #define WEBGL_DEBUG 1
 
 #include "ILogger.ts"
 
@@ -79,6 +77,8 @@
                                     }\
                                     return pStack})();
 
+#define IFACE(IF) export interface IF {}
+
 module akra {
 
 #ifdef DEBUG
@@ -88,7 +88,9 @@ module akra {
 #endif
 
 #ifdef DEBUG
-#define callStack() ((<any>new Error).stack.split("\n").slice(1).join("\n"))
+#define __CALLSTACK__ ("\n" + (<any>new Error).stack.split("\n").slice(1).join("\n"))
+#else 
+#define __CALLSTACK__ "*** CALL STACK ***"
 #endif
 
     export var logger: ILogger;

@@ -2,32 +2,38 @@
 #define WEBGLCANVAS_TS
 
 #include "render/Canvas3d.ts"
+#include "info/info.ts"
+#include "IRenderer.ts"
+#include "webgl.ts"
 
 module akra.webgl {
 	export class WebGLCanvas extends render.Canvas3d {
 		protected _pCanvas: HTMLCanvasElement;
+		protected _pCanvasCreationInfo: ICanvasInfo;
 
 		//display size, if fullscreen not used
 		protected _iRealWidth: uint;
 		protected _iRealHeight: uint;
 
 		get left(): int {
-			var el: Element = this._pCanvas;
-			for (var lx: int = 0; el: Element != null; lx += el.offsetLeft, el = el.offsetParent);
+			var el: HTMLElement = this._pCanvas;
+			for (var lx: int = 0; el != null; lx += el.offsetLeft, el = <HTMLElement>el.offsetParent);
 			return lx;
 		}
 		get top(): int {
-			var el: Element = this._pCanvas;
-			for (var ly: int = 0; el: Element != null; ly += el.offsetTop, el = el.offsetParent);
+			var el: HTMLElement = this._pCanvas;
+			for (var ly: int = 0; el != null; ly += el.offsetTop, el = <HTMLElement>el.offsetParent);
 			return ly;
 		}
 
-		constructor () {
-			this._pCanvas = (<WebGLRenderer>this.getManager().getEngine().getRenderer()).getHTMLCanvas();
+		constructor (pRenderer: IRenderer) {
+			super(pRenderer);
+			this._pCanvas = (<any>pRenderer).getHTMLCanvas();
 			this._pCanvasCreationInfo = info.canvas(this._pCanvas);
 		}
 
-		create(sName: string = null, iWidth: uint = this._pCanvasCreationInfo.width, iHeight: uint = 0, isFullscreen: bool = false): bool {
+		create(sName: string = null, iWidth: uint = this._pCanvasCreationInfo.width, 
+				iHeight: uint = this._pCanvasCreationInfo.height, isFullscreen: bool = false): bool {
 			
 			this.name = sName;
 
@@ -46,7 +52,6 @@ module akra.webgl {
 
 		setFullscreen(isFullscreen: bool = true): void  {
 			var pCanvas: HTMLCanvasElement = this._pCanvas;
-			var pDisplay: IScreen = this;
 			var pScreen: IScreenInfo;
 			var pCanvasInfo: ICanvasInfo;
 			var iRealWidth: uint = this._iRealWidth;
@@ -71,11 +76,11 @@ module akra.webgl {
 			try {
 				WebGLCanvas.fullscreenLock = true;
 
-				(pCanvas.requestFullscreen || pCanvas.mozRequestFullScreen || pCanvas.webkitRequestFullscreen)();
+				((<any>pCanvas).requestFullscreen || (<any>pCanvas).mozRequestFullScreen || (<any>pCanvas).webkitRequestFullscreen)();
 				
-				pCanvas.onfullscreenchange = pCanvas.onmozfullscreenchange = pCanvas.onwebkitfullscreenchange = function (e) {
+				(<any>pCanvas).onfullscreenchange = (<any>pCanvas).onmozfullscreenchange = (<any>pCanvas).onwebkitfullscreenchange = function (e) {
 
-					if (!!(document.webkitFullscreenElement || document.mozFullScreenElement || document.fullscreenElement)) {
+					if (!!((<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).fullscreenElement)) {
 						this.resize(info.screen.width, info.screen.height);
 					}
 					else {
@@ -85,8 +90,8 @@ module akra.webgl {
 					WebGLCanvas.fullscreenLock = false;
 				}
 			}
-			catch (pError: Error) {
-				ERROR("Fullscreen API not supported", pError);
+			catch (e) {
+				ERROR("Fullscreen API not supported", e);
 			}
 		}
 
@@ -98,35 +103,36 @@ module akra.webgl {
 		}
 
 		resize(iWidth: uint = this._iWidth, iHeight: uint = this._iHeight): void {
-			
+			var pCanvas: HTMLCanvasElement = this._pCanvas;	
+
 			this._iWidth = iWidth;
 			this._iHeight = iHeight;
 
 			pCanvas.width = iWidth;
 			pCanvas.height = iHeight;
 
-			var pRoot: ISceneNode = this.getScene().getRootNode();
+			// var pRoot: ISceneNode = this.getScene().getRootNode();
 
-			//TODO: update textures, lighting etc!
+			// //TODO: update textures, lighting etc!
 
-			pRoot.explore(function(pNode: INode) {
-				var pCamera: ICamera;
+			// pRoot.explore(function(pNode: INode) {
+			// 	var pCamera: ICamera;
 
-				if (pNode.type === EEntityTypes.CAMERA) {
-					pCamera = (<ICamera>pNode);
-					if (!pCamera.isConstantAspect()) {
-						pCamera.setProjParams(
-							pCamera.fov(),
-							pCanvas.width / pCanvas.height,
-							pCamera.nearPlane(),
-							pCamera.farPlane());
+			// 	if (pNode.type === EEntityTypes.CAMERA) {
+			// 		pCamera = (<ICamera>pNode);
+			// 		if (!pCamera.isConstantAspect()) {
+			// 			pCamera.setProjParams(
+			// 				pCamera.fov(),
+			// 				pCanvas.width / pCanvas.height,
+			// 				pCamera.nearPlane(),
+			// 				pCamera.farPlane());
 
-						pCamera.setUpdatedLocalMatrixFlag();
-					}
-				}
-			});
+			// 			pCamera.setUpdatedLocalMatrixFlag();
+			// 		}
+			// 	}
+			// });
 
-			resized();
+			this.resized();
 		}
 
 		readPixels(ppDest: IPixelBox = null, eFramebuffer: EFramebuffer = EFramebuffer.AUTO): IPixelBox {
@@ -145,24 +151,24 @@ module akra.webgl {
 				eFramebuffer = this._isFullscreen? EFramebuffer.FRONT: EFramebuffer.BACK;
 			}
 
-			var eFormat: int = getWebGLOriginFormat(ppDest.format);
-			var eType: int = getWebGLOriginDataType(ppDest.format);
+			var eFormat: int = getWebGLFormat(ppDest.format);
+			var eType: int = getWebGLDataType(ppDest.format);
 
 			if (eFormat == GL_NONE || eType == 0) {
 				CRITICAL("Unsupported format.", "WebGLCanvas::readPixels");
 			}
 
-			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer._setViewport(this.getViewport(0));
-			pWebGLRenderer.bindWebGLFramebuffer(null);
+			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
 
 			// Must change the packing to ensure no overruns!
 			pWebGLContext.pixelStorei(GL_PACK_ALIGNMENT, 1);
 			
 			//glReadBuffer((buffer == FB_FRONT)? GL_FRONT : GL_BACK);
-			pWebGLContext.readPixels((dst.left, dst.top, dst.width, dst.height, eFormat, eType, dst.data);
+			pWebGLContext.readPixels(ppDest.left, ppDest.top, ppDest.width, ppDest.height, eFormat, eType, ppDest.data);
 			
 			// restore default alignment
 			pWebGLContext.pixelStorei(GL_PACK_ALIGNMENT, 4);

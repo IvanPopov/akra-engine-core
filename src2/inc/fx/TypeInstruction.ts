@@ -30,6 +30,18 @@ module akra.fx {
         inline getName(): string {
         	return this.getType().getName();
         }
+
+        inline getRealName(): string {
+        	return this.getType().getRealName();
+        }
+
+        blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction {
+        	if(pDecl !== this){
+        		return null;
+        	}
+
+        	return this;
+        }
 	}
 
 	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
@@ -77,6 +89,7 @@ module akra.fx {
 		private _iPadding: uint = UNDEFINE_PADDING;
 
 		private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
+		private _pAttrOffset: IAFXVariableDeclInstruction = null;
 
 		private _bUnverifiable: bool = false;
 
@@ -102,6 +115,13 @@ module akra.fx {
 		_toDeclString(): string {
 			return this.getSubType()._toDeclString();
 		}
+
+		isBuiltIn(): bool {
+			return false;
+		}
+
+        setBuiltIn(isBuiltIn: bool): void {
+        }
 
 		//-----------------------------------------------------------------//
 		//----------------------------SIMPLE TESTS-------------------------//
@@ -510,12 +530,21 @@ module akra.fx {
         	this._bUnverifiable = true;
         }
 
+        _addAttrOffset(pOffset: IAFXVariableDeclInstruction): void {
+            this._pAttrOffset = pOffset;
+        }
+
+
 		//-----------------------------------------------------------------//
 		//----------------------------GET TYPE INFO------------------------//
 		//-----------------------------------------------------------------//	
 
 		getName(): string {
 			return this._sName;
+		}
+
+		inline getRealName(): string {
+			return this.getBaseType().getRealName();
 		}
 
 		getHash(): string {
@@ -603,6 +632,21 @@ module akra.fx {
 			}
 
 			return this._pArrayElementType;
+		}
+
+		getTypeDecl(): IAFXTypeDeclInstruction {
+			if(!this.isFromTypeDecl()){
+				return null;
+			}
+
+			var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_TypeDeclInstruction){
+				return <IAFXTypeDeclInstruction>this.getParent();
+			}
+			else {
+				return (<IAFXTypeInstruction>this.getParent()).getTypeDecl();
+			}
 		}
 
 		hasField(sFieldName: string): bool {
@@ -919,6 +963,10 @@ module akra.fx {
         	return this._pDownPointIndex;
         }
 
+        _getAttrOffset(): IAFXVariableDeclInstruction {
+            return this._pAttrOffset;
+        }
+
         //-----------------------------------------------------------------//
 		//----------------------------SYSTEM-------------------------------//
 		//-----------------------------------------------------------------//		
@@ -1001,6 +1049,14 @@ module akra.fx {
 		}
 
 		blend(pType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction {
+			if(this === pType){
+				return this;
+			}
+
+			if(eMode === EAFXBlendMode.k_Global){
+				return null;
+			}
+
 			if (this.isComplex() !== pType.isComplex() ||
 				(this.isNotBaseArray() !== pType.isNotBaseArray()) || 
 				(this.isPointer() !== pType.isPointer())) {
@@ -1120,6 +1176,10 @@ module akra.fx {
 			var i: uint = 0;
 
 			if(this.isPointer()){
+				if(!isNull(this._pAttrOffset)){
+					pDeclList.push(this._pAttrOffset);
+				}
+
 				if(isNull(this._getUpPointer())){
 					this.initializePointers();
 				}
@@ -1160,6 +1220,8 @@ module akra.fx {
 		private _isReadable: bool = true;
 		private _pFieldNameList: string[] = null;
 		private _pWrapVariableType: IAFXVariableTypeInstruction = null;
+		private _isBuiltIn: bool = true;
+		private _sDeclString: string = "";
 
 		constructor() {
 			super();
@@ -1169,12 +1231,24 @@ module akra.fx {
 		}
 
 		_toDeclString(): string {
-			return "";
+			return this._sDeclString;
 		}
 
 		toFinalCode(): string {
 			return this._sRealName;
 		}
+
+		isBuiltIn(): bool {
+			return this._isBuiltIn;
+		}
+
+        setBuiltIn(isBuiltIn: bool): void {
+        	this._isBuiltIn = isBuiltIn;
+        }
+
+        setDeclString(sDecl: string): void {
+        	this._sDeclString = sDecl;
+        }
 
 		//-----------------------------------------------------------------//
 		//----------------------------SIMPLE TESTS-------------------------//
@@ -1311,6 +1385,10 @@ module akra.fx {
 			return this._sName;
 		}
 
+		inline getRealName(): string {
+			return this._sRealName;
+		}
+
 		inline getHash(): string {
 			return this._sRealName;
 		}
@@ -1334,6 +1412,15 @@ module akra.fx {
 		inline getArrayElementType(): IAFXTypeInstruction {
 			return this._pElementType;
 		}
+
+		getTypeDecl(): IAFXTypeDeclInstruction {
+			if(this.isBuiltIn()){
+				return null;
+			}
+
+			return <IAFXTypeDeclInstruction>this.getParent();
+		}
+
 
 		inline getLength(): uint {
 			return this._iLength;
@@ -1432,6 +1519,13 @@ module akra.fx {
 			return this._sRealName;
 		}
 
+		isBuiltIn(): bool {
+			return false;
+		}
+
+        setBuiltIn(isBuiltIn: bool): void {
+        }
+
 		//-----------------------------------------------------------------//
 		//----------------------------SIMPLE TESTS-------------------------//
 		//-----------------------------------------------------------------//
@@ -1525,6 +1619,10 @@ module akra.fx {
 				this._pFieldNameList = [];
 			}
 
+			if(isNull(this._pFieldDeclList)){
+				this._pFieldDeclList = [];
+			}
+
 			var sVarName: string = pVariable.getName();
 			this._pFieldDeclMap[sVarName] = pVariable;
 			
@@ -1539,6 +1637,10 @@ module akra.fx {
 			}
 
 			this._pFieldNameList.push(sVarName);
+
+			if(this._pFieldDeclList.length < this._pFieldNameList.length){
+				this._pFieldDeclList.push(pVariable);
+			}
 
 			var pType: IAFXVariableTypeInstruction = pVariable.getType();
 			//pType._markAsField();
@@ -1577,6 +1679,10 @@ module akra.fx {
 
 		inline getName(): string {
 			return this._sName;
+		}
+
+		inline getRealName(): string {
+			return this._sRealName;
 		}
 
 		getHash(): string {
@@ -1660,8 +1766,16 @@ module akra.fx {
 			return null;
 		}
 
+		getTypeDecl(): IAFXTypeDeclInstruction {
+			return <IAFXTypeDeclInstruction>this.getParent();
+		}
+
 		inline getLength(): uint {
 			return 0;
+		}
+
+		_getFieldDeclList(): IAFXVariableDeclInstruction[] {
+			return this._pFieldDeclList;
 		}
 
 		//-----------------------------------------------------------------//
@@ -1703,6 +1817,14 @@ module akra.fx {
 		}
 
 		blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction {
+			if(pType === this){
+				return this;
+			}
+
+			if(eMode === EAFXBlendMode.k_TypeDecl){
+				return null;
+			}
+
 			if(eMode === EAFXBlendMode.k_Uniform || eMode === EAFXBlendMode.k_Attribute){
 				if(this.hasFieldWithoutSemantic() || pType.hasFieldWithoutSemantic()){
 					return null;
@@ -1712,6 +1834,10 @@ module akra.fx {
 			var pFieldList: IAFXVariableDeclInstruction[] = this._pFieldDeclList;
 			var pBlendType: ComplexTypeInstruction = new ComplexTypeInstruction();
 			var pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{};
+
+			if(isNull(pFieldList)){
+				LOG(this, pType);
+			}
 
 			for(var i: uint = 0; i < pFieldList.length; i++){
 				var pField: IAFXVariableDeclInstruction = pFieldList[i];
@@ -1727,16 +1853,21 @@ module akra.fx {
 						pBlendField = pField.clone(pRelationMap);
 					}
 				}
-				else {
+				else if(eMode === EAFXBlendMode.k_Attribute || 
+						eMode === EAFXBlendMode.k_Uniform ||
+						eMode === EAFXBlendMode.k_VertexOut) {
+
 					if(pType.hasFieldWithSematic(sFieldSemantic)){
-						pBlendField = pField.blend(pType.getFieldBySemantic(sFieldSemantic), eMode);
-						if(!isNull(pBlendField)){
-							pBlendField.getNameId().setName(sFieldSemantic);
-						}						
+						pBlendField = pField.blend(pType.getFieldBySemantic(sFieldSemantic), eMode);					
 					}
 					else {
 						pBlendField = pField.clone(pRelationMap);
 					}
+
+					if(!isNull(pBlendField)){
+						pBlendField.getNameId().setName(sFieldSemantic);
+						pBlendField.getNameId().setRealName(sFieldSemantic);
+					}	
 				}
 
 				if(isNull(pBlendField)){
@@ -1745,6 +1876,38 @@ module akra.fx {
 
 				pBlendType.addField(pBlendField);
 			}
+
+			pFieldList = (<ComplexTypeInstruction>pType)._getFieldDeclList();
+
+			for(var i: uint = 0; i < pFieldList.length; i++){
+				var pField: IAFXVariableDeclInstruction = pFieldList[i];
+				var pBlendField: IAFXVariableDeclInstruction = null;
+				var sFieldName: string = pField.getName();
+				var sFieldSemantic: string = pField.getSemantic();
+
+				if(eMode === EAFXBlendMode.k_Shared){
+					if(!this.hasField(sFieldName)){
+						pBlendField = pField.clone(pRelationMap);
+					}
+				}
+				else if(eMode === EAFXBlendMode.k_Attribute || 
+						eMode === EAFXBlendMode.k_Uniform ||
+						eMode === EAFXBlendMode.k_VertexOut) {
+
+					if(!this.hasFieldWithSematic(sFieldSemantic)){
+						pBlendField = pField.clone(pRelationMap);
+						pBlendField.getNameId().setName(sFieldSemantic);
+						pBlendField.getNameId().setRealName(sFieldSemantic);
+					}
+				}
+
+				if(!isNull(pBlendField)){
+					pBlendType.addField(pBlendField);
+				}
+			}
+
+			pBlendType.setName(this.getName());
+			pBlendType.setRealName(this.getRealName());
 
 			return pBlendType;
 		}

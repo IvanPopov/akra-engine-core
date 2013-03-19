@@ -180,15 +180,22 @@ module akra.webgl {
             {
                 WARNING("Заданная высота не поддерживается("+this._iHeight+")");
                 this._iHeight=1;
-
-            }
-
-            
+            }            
             if(this._iDepth!=1)
             {
             	this._iDepth=1;
                 WARNING("Трехмерные текстуры не поддерживаются, сброс глубины в 1");
             }
+            if(!webgl.hasExtension(EXT_TEXTURE_NPOT_2D_MIPMAP) &&(!math.isPowerOfTwo(this._iDepth)||!math.isPowerOfTwo(this._iHeight)||!math.isPowerOfTwo(this._iWidth)))
+            {
+                WARNING("Мип мапы у текстуры не стпени двойки не поддерживаются, сброс мипмапов в 0");
+                this._nMipLevels=0;
+                CLEAR_ALL(this._iFlags, ETextureFlags.AUTOMIPMAP);
+            }
+            
+
+
+
 
             
             if(!webgl.isWebGLFormatSupport(this._eFormat))
@@ -198,7 +205,7 @@ module akra.webgl {
             }
 
             
-            if (this._nMipLevels!=0 && this._nMipLevels!=webgl.getMaxMipmaps(this._iWidth, this._iHeight, this._iDepth, this._eFormat)) 
+            if (this._nMipLevels!=0 && this._nMipLevels!=akra.core.pool.resources.Img.getMaxMipmaps(this._iWidth, this._iHeight, this._iDepth, this._eFormat)) 
             {
                 WARNING("Нехватает мипмапов, сброс в 0");
                 this._nMipLevels=0;
@@ -246,18 +253,16 @@ module akra.webgl {
 	            var mip: uint = 0;
 
 	            for (mip = 0; mip <= this._nMipLevels; mip++) {
-                    
+
 	                iSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
-                    console.log(iSize,iWidth, iHeight, iDepth, this._eFormat);
+                    //console.log(iSize,iWidth, iHeight, iDepth, this._eFormat);
 	                pEmptyData = pTmpData.subarray(0, iSize);
 					switch(this._eTextureType)
                     {
                         
 						case ETextureTypes.TEXTURE_2D:
-                            console.log("==>");
 	                        pWebGLContext.compressedTexImage2D(GL_TEXTURE_2D, mip, iWebGLFormat,
 	                        								   iWidth, iHeight, 0, pEmptyData);
-                            console.log("<==");
 	                        break;
 						case ETextureTypes.TEXTURE_CUBE_MAP:
 							var iFace: uint = 0;
@@ -285,6 +290,7 @@ module akra.webgl {
 					// Normal formats
 					switch(this._eTextureType){
 						case ETextureTypes.TEXTURE_2D:
+                            //console.log(mip,iWidth, iHeight);
 	                        pWebGLContext.texImage2D(GL_TEXTURE_2D, mip, iWebGLFormat,
 	                                     			 iWidth, iHeight, 0, iWebGLFormat, iWebGLDataType, null);
 	                        break;
@@ -299,9 +305,9 @@ module akra.webgl {
 	                        break;
 	                }
 
-	                if(iWidth > 1) iWidth = iWidth / 2;
-	                if(iHeight > 1) iHeight = iHeight / 2;
-	                if(iDepth > 1) iDepth = iDepth / 2;
+	                if(iWidth > 1) iWidth = iWidth >>> 1;
+	                if(iHeight > 1) iHeight = iHeight >>> 1;
+	                if(iDepth > 1) iDepth = iDepth >>> 1;
 	            }
 	        }
 	        this._createSurfaceList();
@@ -376,13 +382,13 @@ module akra.webgl {
         	}
         }
 
-        getBuffer(iFace?: uint = 1, iMipmap?: uint = 0): IPixelBuffer {
+        getBuffer(iFace?: uint = 0, iMipmap?: uint = 0): IPixelBuffer {
             if (iFace >= this.getNumFaces()) {
-	            CRITICAL("Face index out of range");
+	            CRITICAL("Face index out of range", iFace, this.getNumFaces());
 	        }
 
 	        if (iMipmap > this._nMipLevels) {
-	            CRITICAL("Mipmap index out of range");
+	            CRITICAL("Mipmap index out of range", iMipmap, this._nMipLevels);
 	        }
 
 	        var idx: uint = iFace * (this._nMipLevels + 1) + iMipmap;

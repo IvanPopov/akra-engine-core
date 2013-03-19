@@ -355,7 +355,7 @@ module akra.core.pool.resources {
             }
             else
             {
-                CRITICAL("Format not support");
+                WARNING("Format not support("+pixelUtil.getFormatName(pMainImage.format)+")");
                 if(pMainImage.convert(EPixelFormats.B8G8R8A8))
                 {
                     this._eFormat = pMainImage.format;
@@ -378,20 +378,18 @@ module akra.core.pool.resources {
             // The custom mipmaps in the image have priority over everything
             var iImageMips: uint = pMainImage.numMipMaps;
 
-            if(iImageMips==(math.ceil(math.max(math.log(this._iWidth) / Math.LN2,
-                                                                 math.log(this._iHeight) / Math.LN2)))) {
+            if(iImageMips==Img.getMaxMipmaps(this._iWidth,this._iHeight,this._iDepth,this._eFormat)) {
                 this._nMipLevels=iImageMips;
+
                 // Disable flag for auto mip generation
                 CLEAR_ALL(this._iFlags, ETextureFlags.AUTOMIPMAP);
             }
             else
             {
                 this._nMipLevels=0;
-
             }
 
             // Create the texture
-            console.log(1234);
             this.createInternalTexture(null);
 
             
@@ -428,17 +426,18 @@ module akra.core.pool.resources {
             
             var mip: uint = 0;
             var i: uint = 0;
-            for(mip = 0; mip <= iImageMips; ++mip) {
+            for(mip = 0; mip <= this._nMipLevels; ++mip) {
                 for(i = 0; i < iFaces; ++i) {
                     var pSrc: IPixelBox;
 
                     if(isMultiImage){
                         // Load from multiple images
                         pSrc = pImageList[i].getPixels(0, mip);
-                        console.log(mip,i);
+                        //console.log(mip,i);
                     }
                     else {
                         // Load from faces of images[0] or main Image
+                        //console.log(mip,i);
                         pSrc = pMainImage.getPixels(i, mip);
                     }
         

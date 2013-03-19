@@ -4,9 +4,9 @@
 #include "common.ts"
 #include "IParser.ts"
 #include "IAFXComponent.ts"
+#include "IUnique.ts"
 
 module akra {
-
     export enum EAFXInstructionTypes {
         k_Instruction = 0,
         k_InstructionCollector,
@@ -109,6 +109,11 @@ module akra {
         [index: uint]: IAFXInstruction;
     }
 
+    export interface IAFXSimpleInstructionMap {
+        [index: string]: IAFXSimpleInstruction;
+        [index: uint]: IAFXSimpleInstruction;
+    }
+ 
     export interface IAFXIdExprMap {
         [index: string]: IAFXIdExprInstruction;
     }
@@ -123,6 +128,11 @@ module akra {
         [index: uint]: IAFXTypeInstruction;
     }
 
+    export interface IAFXTypeListMap {
+        [index: string] : IAFXTypeInstruction[];
+        [index: uint] : IAFXTypeInstruction[];
+    }
+
     export interface IAFXTypeDeclMap {
         [index: string] : IAFXTypeDeclInstruction;
         [index: uint] : IAFXTypeDeclInstruction;
@@ -131,6 +141,11 @@ module akra {
     export interface IAFXVariableDeclMap {
         [index: uint]: IAFXVariableDeclInstruction;
         [index: string]: IAFXVariableDeclInstruction;
+    }
+
+    export interface IAFXVariableDeclListMap {
+        [index: uint]: IAFXVariableDeclInstruction[];
+        [index: string]: IAFXVariableDeclInstruction[];
     }
 
     export interface IAFXVarUsedModeMap {
@@ -180,7 +195,12 @@ module akra {
     export enum EAFXBlendMode {
         k_Shared,
         k_Uniform,
-        k_Attribute
+        k_Attribute,
+        k_Foreign, 
+        k_Global,
+        k_Varying,
+        k_TypeDecl,
+        k_VertexOut
     }
 
 	/**
@@ -188,7 +208,7 @@ module akra {
 	 * operator : arg1 ... argn
 	 * Operator and instructions may be empty.
 	 */
-	export interface IAFXInstruction {
+	export interface IAFXInstruction extends IUnique {
         setParent(pParent: IAFXInstruction): void;
         getParent(): IAFXInstruction;
 
@@ -244,6 +264,10 @@ module akra {
 
     export interface IAFXTypeInstruction extends IAFXInstruction {
         _toDeclString(): string;
+
+        isBuiltIn(): bool;
+        setBuiltIn(isBuiltIn: bool): void;
+
         /**
          * Simple tests
          */
@@ -277,12 +301,14 @@ module akra {
          * get type info
          */
         getName(): string;
+        getRealName(): string;
         getHash(): string;
         getStrongHash(): string;
         getSize(): uint;
         getBaseType(): IAFXTypeInstruction;
         getLength(): uint;
         getArrayElementType(): IAFXTypeInstruction;
+        getTypeDecl(): IAFXTypeDeclInstruction;
 
         // Fields
 
@@ -347,6 +373,7 @@ module akra {
         _addPointIndexInDepth(): void;
         _setVideoBufferInDepth(): void;
         _markAsUnverifiable(isUnverifiable: bool): void;
+        _addAttrOffset(pOffset: IAFXVariableDeclInstruction): void;
 
         /**
          * Type info
@@ -379,6 +406,7 @@ module akra {
         _getMainPointer(): IAFXVariableDeclInstruction;
         _getUpPointer(): IAFXVariableDeclInstruction;
         _getDownPointer(): IAFXVariableDeclInstruction;
+        _getAttrOffset(): IAFXVariableDeclInstruction;
 
         /**
          * System
@@ -412,6 +440,9 @@ module akra {
         getNameId(): IAFXIdInstruction;
         getSemantic(): string;
 
+        isBuiltIn(): bool;
+        setBuiltIn(isBuiltIn: bool): void;
+
         _isForAll(): bool;
         _isForPixel(): bool;
         _isForVertex(): bool;
@@ -425,6 +456,7 @@ module akra {
 
     export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
         clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction;
+        blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction;
     }
 
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
@@ -447,6 +479,9 @@ module akra {
         isDefinedByZero(): bool;
         defineByZero(isDefine: bool): void;
 
+        _setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void;
+        _getAttrExtractionBlock(): IAFXInstruction;
+
         _markAsShaderOutput(isShaderOutput: bool): void;
         _isShaderOutput(): bool;
 
@@ -462,6 +497,8 @@ module akra {
     }
 
     export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
+        toFinalDefCode(): string;
+
         //getNameId(): IAFXIdInstruction;
         hasImplementation(): bool;
         getArguments(): IAFXTypedInstruction[];
@@ -518,12 +555,30 @@ module akra {
         _prepareForPixel(): void;
 
         _generateInfoAboutUsedData(): void;
+
+        _getAttributeVariableMap(): IAFXVariableDeclMap;
+        _getVaryingVariableMap(): IAFXVariableDeclMap;
+
         _getSharedVariableMap(): IAFXVariableDeclMap;
         _getGlobalVariableMap(): IAFXVariableDeclMap;
         _getUniformVariableMap(): IAFXVariableDeclMap;
         _getForeignVariableMap(): IAFXVariableDeclMap;
         _getTextureVariableMap(): IAFXVariableDeclMap;
-        _getUsedTypeMap(): IAFXTypeDeclMap;
+        _getUsedComplexTypeMap(): IAFXTypeMap;
+
+        _getAttributeVariableKeys(): uint[];
+        _getVaryingVariableKeys(): uint[];
+
+        _getSharedVariableKeys(): uint[];
+        _getUniformVariableKeys(): uint[];
+        _getForeignVariableKeys(): uint[];
+        _getGlobalVariableKeys(): uint[];
+        _getTextureVariableKeys(): uint[];
+        _getUsedComplexTypeKeys(): uint[];
+
+        _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[];
+        _getExtSystemMacrosList(): IAFXSimpleInstruction[];
+        _getExtSystemTypeList(): IAFXTypeDeclInstruction[];
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {
@@ -599,18 +654,22 @@ module akra {
         _getUniformVariableMapV(): IAFXVariableDeclMap;
         _getForeignVariableMapV(): IAFXVariableDeclMap;
         _getTextureVariableMapV(): IAFXVariableDeclMap;
-        _getUsedTypeMapV(): IAFXTypeDeclMap;
+        _getUsedComplexTypeMapV(): IAFXTypeMap;
 
         _getSharedVariableMapP(): IAFXVariableDeclMap;
         _getGlobalVariableMapP(): IAFXVariableDeclMap;
         _getUniformVariableMapP(): IAFXVariableDeclMap;
         _getForeignVariableMapP(): IAFXVariableDeclMap;
         _getTextureVariableMapP(): IAFXVariableDeclMap;
-        _getUsedTypeMapP(): IAFXTypeDeclMap;
+        _getUsedComplexTypeMapP(): IAFXTypeMap;
 
         _getFullUniformMap(): IAFXVariableDeclMap;
         _getFullForeignMap(): IAFXVariableDeclMap;
         _getFullTextureMap(): IAFXVariableDeclMap;
+
+
+        getVertexShader(): IAFXFunctionDeclInstruction;
+        getPixelShader(): IAFXFunctionDeclInstruction;
 
         addShader(pShader: IAFXFunctionDeclInstruction): void;
         setState(sType: string, sValue: string): void;

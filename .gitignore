@@ -6,7 +6,7 @@ demos/
 docreator/
 preprocessor/
 analyzer/
-effects/
+#effects/
 compiled/
 
 # Project property files
@@ -30,8 +30,8 @@ src2/*.png
 compiled/*.js
 build/build.bat
 
-#src/*/node_modules
-#src2/inc/*/node_modules
+src/*/node_modules
+src2/inc/*/node_modules
 node_modules/
 
 #visual
@@ -43,7 +43,7 @@ node_modules/
 *.nw
 *.ts.html
 #*.css
-
+tmp.ts
 src/*.htm
 src2/tmp.*
 #src2/*.htm

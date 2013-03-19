@@ -2,6 +2,9 @@
 #define IRENDERTECHNIQUE_TS
 
 #include "IEventProvider.ts"
+#include "IAFXComposer.ts"
+#include "ISceneObject.ts"
+#include "IRenderPass.ts"
 
 module akra {
 	IFACE(IRenderPass);
@@ -29,7 +32,22 @@ module akra {
 		setShadowSamplerArray(sName: string, pValue: any): void;
 		setVec2BySemantic(sName: string, pValue: any): void;
 
-		signal render(): void;
+		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(sComponent: string, iShift?: int, iPass?: uint, isSet?: bool): bool;
+
+		delComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
+		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
+		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
+
+		isFreeze(): bool;
+
+		updatePasses(bSaveOldUniformValue: bool): void;
+
+		_setComposer(pComposer: IAFXComposer): void;
+		_renderTechnique(pSceneObject: ISceneObject): void;
+
+		signal render(iPass: uint): void;
 	}
 }
 

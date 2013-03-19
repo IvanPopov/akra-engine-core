@@ -124,7 +124,7 @@ module akra.io {
 		    IS_NUMBER(iValue);
 
 		    debug_assert(0 <= iValue && iValue <= Math.pow(2, iX), "Это значение не влезет в тип uint" + iX);
-		    var arrTmpBuf: ArrayBufferView;
+		    var arrTmpBuf: ArrayBufferView = null;
 
 		    switch (iX) {
 		        case 8:
@@ -229,7 +229,8 @@ module akra.io {
 		    IS_NUMBER(iValue)
 		    debug_assert(0 <= iValue && iValue <= Math.pow(2, iX), "Это значение не влезет в тип uint" + iX);
 		    
-		    var arrTmpBuf: ArrayBufferView;
+		    var arrTmpBuf: ArrayBufferView = null;
+
 		    switch (iX) {
 		        case 8: /* WARNING Только private и записи масивов. Нет выравнивания на 4, оно ложится на функцию записи массива.*/
 		            arrTmpBuf = new Uint8Array(1);
@@ -282,7 +283,8 @@ module akra.io {
 		    debug_assert(-Math.pow(2, iX - 1) <= iValue && iValue <= Math.pow(2, iX - 1) - 1,
 		                 "Это значение не влезет в тип int" + iX);
 		    
-		    var arrTmpBuf: ArrayBufferView;
+		    var arrTmpBuf: ArrayBufferView = null;
+
 		    switch (iX) {
 		        case 8:
 		            arrTmpBuf = new Int8Array(4);
@@ -370,7 +372,7 @@ module akra.io {
 		    debug_assert(-Math.pow(2, iX - 1) <= iValue && iValue <= Math.pow(2, iX - 1) - 1,
 		                 "Это значение не влезет в тип int" + iX);
 		    
-		    var arrTmpBuf: ArrayBufferView;
+		    var arrTmpBuf: ArrayBufferView = null;
 
 		    switch (iX) {
 		        case 8:/* WARNING Только private и записи масивов. Нет выравнивания на 4, оно ложится на функцию записи массива.*/
@@ -416,7 +418,7 @@ module akra.io {
 		    
 		    // LOG("float", iX, ": ", fValue);
 
-		    var arrTmpBuf: ArrayBufferView;
+		    var arrTmpBuf: ArrayBufferView = null;
 
 		    switch (iX) {
 		        case 32:
@@ -510,7 +512,7 @@ module akra.io {
 
 		    var iUintArrLength: int = arrUint.byteLength;
 		    var iBitesToAdd: int;
-		    var arrTmpUint: ArrayBufferView;
+		    var arrTmpUint: ArrayBufferView = null;
 
 		    switch (iX) {
 		        case 8:
@@ -537,7 +539,7 @@ module akra.io {
 		        case 32:
 		        	iUintArrLength /= 4;
 		            if (!(arrUint instanceof Uint32Array)) {
-		                arrTmpUint = new Uint32Array(arrUint);
+		                arrTmpUint = new Uint32Array(<any>arrUint);
 		            }
 		            else {
 		                arrTmpUint = arrUint;
@@ -617,9 +619,9 @@ module akra.io {
 		        return;
 		    }
 
-		    var iIntArrLength: int;
-		    var iBitesToAdd: int;
-		    var arrTmpInt: ArrayBufferView;
+		    var iIntArrLength: int = 0;
+		    var iBitesToAdd: int = 0;
+		    var arrTmpInt: ArrayBufferView = null;
 
 		    switch (iX) {
 		        case 8:
@@ -647,7 +649,7 @@ module akra.io {
 		        case 32:
 		        	iIntArrLength = (<Int32Array>arrInt).length;
 		            if (!(arrInt instanceof Int32Array)) {
-		                arrTmpInt = new Int32Array(arrInt);
+		                arrTmpInt = new Int32Array(<any>arrInt);
 		            }
 		            else {
 		                arrTmpInt = arrInt;
@@ -730,12 +732,12 @@ module akra.io {
 		    switch (iX) {
 		        case 32:
 		            if (!(arrFloat instanceof Float32Array)) {
-		                arrFloat = new Float32Array(arrFloat);
+		                arrFloat = new Float32Array(<any>arrFloat);
 		            }
 		            break;
 		        case 64:
 		            if (!(arrFloat instanceof Float64Array)) {
-		                arrFloat = new Float64Array(arrFloat);
+		                arrFloat = new Float64Array(<any>arrFloat);
 		            }
 		            break;
 		    }

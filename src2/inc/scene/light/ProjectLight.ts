@@ -17,7 +17,7 @@ module akra.scene.light {
 		protected _pShadowCaster: IShadowCaster;
 
 		constructor (pScene: IScene3d, isShadowCaster: bool = true, iMaxShadowResolution: uint = 256) {
-			super(pScene, EEntityTypes.LIGHT_PROJECT, isShadowCaster, iMaxShadowResolution);
+			super(pScene, ELightTypes.PROJECT, isShadowCaster, iMaxShadowResolution);
 		};
 
 		create(): bool {
@@ -52,6 +52,10 @@ module akra.scene.light {
 
 		inline getShadowCaster(): IShadowCaster {
 			return this._pShadowCaster;
+		};
+
+		inline get isShadowCaster(): bool {
+			return this._bCastShadows;
 		};
 
 		/**
@@ -93,8 +97,8 @@ module akra.scene.light {
 			// 	0, ETextureTypes.TEXTURE_2D, EPixelFormats.LUMINANCE);
 
 			// this._pColorTexture = pColorTexture;
-
-			this.getRenderTarget().addViewport(this._pShadowCaster); //TODO: Multiple render target
+			//TODO: Multiple render target
+			this.getRenderTarget().addViewport(this._pShadowCaster); 
 		};
 
 		_calculateShadows(): void {
@@ -155,7 +159,6 @@ module akra.scene.light {
 
 			var pRawResult: IObjectArray = pShadowCaster.display(DL_DEFAULT);
 
-
 			var pTestArray: IPlane3d[] = ProjectLight._pFrustumPlanes;
 			var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;
 			var nAdditionalTestLength: int = 0;
@@ -201,7 +204,7 @@ module akra.scene.light {
 					var v3fNormal: IVec3 = pPlane.normal;
 					var fDistance: float = pPlane.distance;
 
-					if(pPlane.signedDistance(v3fLightPosition) <= 0){
+					if(pPlane.signedDistance(v3fLightPosition) > 0){
 						fDistance = -v3fNormal.dot(v3fLightPosition);
 					}
 
@@ -225,7 +228,6 @@ module akra.scene.light {
 							break;
 						}
 					}
-
 					if(j == nAdditionalTestLength){
 						pResult.push(pObject);
 					}	
@@ -235,7 +237,6 @@ module akra.scene.light {
 						pResult.push(pObject);
 					}
 				}
-				
 			}
 
 			pShadowCaster._optimizeProjectionMatrix();

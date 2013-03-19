@@ -1,7 +1,7 @@
 #ifndef IUILAYOUT_TS
 #define IUILAYOUT_TS
 
-#include "IUINode.ts"
+#include "IUIHTMLNode.ts"
 
 module akra {
 	export enum EUILayouts {
@@ -10,8 +10,15 @@ module akra {
 		VERTICAL
 	}
 
-	export interface IUILayout extends IUINode {
+	export interface IUILayoutAttributes {
+		comment?: string;
+	}
+
+	export interface IUILayout extends IUIHTMLNode {
 		layoutType: EUILayouts;
+
+		setAttributes(pAttrs: IUILayoutAttributes): void;
+		attr(sAttr: string): any;
 	}
 }
 

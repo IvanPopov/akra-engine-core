@@ -18,7 +18,7 @@ module akra.core.pool.resources {
 				EHardwareBufferFlags.BACKUP_COPY | EHardwareBufferFlags.DISCARDABLE | 
 				EHardwareBufferFlags.ALIGNMENT);
 
-			var isCreated: bool = super.create(iFlags | EHardwareBufferFlags.SOFTWARE);
+			var isCreated: bool = super.create(0, iFlags | EHardwareBufferFlags.SOFTWARE);
 
 			this._pData = new Uint8Array(iByteSize);
 

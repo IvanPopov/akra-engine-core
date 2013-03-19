@@ -1,0 +1,60 @@
+foreign int nOmniShadows;
+foreign int nOmni;
+foreign int nProjectShadows;
+foreign int nProject;
+
+struct light_material {
+    float4 diffuse:DIFFUSE;
+    float4 ambient:AMBIENT;
+    float4 specular:SPECULAR;
+    float3 attenuation:ATTENUATION;
+};
+
+texture tex0 : TEXTURE0;
+texture tex1 : TEXTURE1;
+texture tex2 : TEXTURE2;
+texture tex3 : TEXTURE3;
+texture tex4 : TEXTURE4;
+texture tex5 : TEXTURE5;
+texture tex6 : TEXTURE6;
+texture tex7 : TEXTURE7;
+texture tex8 : TEXTURE8;
+texture tex9 : TEXTURE9;
+texture tex10 : TEXTURE10;
+texture tex11 : TEXTURE11;
+texture tex12 : TEXTURE12;
+texture tex13 : TEXTURE13;
+texture tex14 : TEXTURE14;
+texture tex15 : TEXTURE15;
+
+struct light_omni_shadows{
+    float3 pos : POSITION;
+    light_material material : MATERIAL;
+    float4x4 shadow_matrix[6] : SHADOW_MATRIX;
+    sampler shadow_sampler[6] : SHADOW_SAMPLER;
+};
+
+struct light_omni{
+    float3 pos : POSITION;
+    light_material material : MATERIAL;
+};
+
+struct light_project_shadows{
+    float3 pos : POSITION;
+    light_material material : MATERIAL;
+    float4x4 shadow_matrix : SHADOW_MATRIX;
+    sampler shadow_sampler : SHADOW_SAMPLER;
+};
+
+struct light_project{
+    float3 pos : POSITION;
+    light_material material : MATERIAL;
+    float4x4 shadow_matrix : SHADOW_MATRIX;
+};
+
+
+light_omni_shadows points_omni_shadows[nOmniShadows];
+light_omni points_omni[nOmni];
+light_project_shadows points_project_shadows[nProjectShadows];
+light_project points_project[nProject];
+

@@ -94,7 +94,7 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-		create(iFlags: int): bool {
+		create(iSize: int, iFlags: int = 0): bool {
 			iFlags |= EHardwareBufferFlags.STATIC;
 
 			if (TEST_ANY(iFlags, EHardwareBufferFlags.DYNAMIC)) {

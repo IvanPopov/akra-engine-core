@@ -12,6 +12,7 @@ module akra {
 		signal dragStart(e: IUIEvent): void;
 		signal dragStop(e: IUIEvent): void;
 		signal move(e: IUIEvent): void;
+		signal drop(e: IUIEvent): void;
 	}
 }
 

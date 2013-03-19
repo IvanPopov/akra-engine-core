@@ -34,8 +34,8 @@ module akra.core.pool.resources {
 		}
 
 		inline getHash(iShift: int, iPass: uint): string {
-			return this.getName() + ">>" + iShift.toString() + 
-				   ">>" + (iPass === ALL_PASSES ? "ALL" : iPass.toString());
+			return this.getGuid() + ">" + iShift.toString() + 
+				   ">" + (iPass === ALL_PASSES ? "A" : iPass.toString());
 		}
 	}
 }

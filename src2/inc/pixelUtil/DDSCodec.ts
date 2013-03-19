@@ -279,19 +279,6 @@ module akra
             pImgData.depth=1;
             var nFace:uint=1;
 
-            if (pHeader.dwFlags & DDSD_MIPMAPCOUNT) {
-                pImgData.numMipMaps = pHeader.dwMipMapCount;
-                if ((pHeader.dwWidth >>> (pHeader.dwMipMapCount - 1)) != 1 || (pHeader.dwHeight >>> (pHeader.dwMipMapCount - 1)) != 1) {
-                WARNING("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1"
-                            + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
-
-            	}
-            }
-            else{
-                pImgData.numMipMaps = 0;
-            }
-            
-
             pImgData.flags=0;
 
             if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP)
@@ -412,7 +399,14 @@ module akra
 				{
 
 
-					//if(pHeader.ddspf.dwFlags & DDPF_RGB )
+					if((!!(pHeader.ddspf.dwFlags&DDPF_LUMINANCE))!=pixelUtil.isLuminance(ePF))
+					{
+						continue;
+					}
+					if((!!(pHeader.ddspf.dwFlags&DDPF_ALPHAPIXELS))!=pixelUtil.hasAlpha(ePF))
+					{
+						continue;
+					}
 
 
 					if (pixelUtil.getNumElemBits(ePF) == pHeader.ddspf.dwRGBBitCount)
@@ -458,7 +452,19 @@ module akra
 			}*/
 
 			pImgData.format = eSourceFormat;
-			console.log("==>",pImgData.format);
+
+			if (pHeader.dwFlags & DDSD_MIPMAPCOUNT) {
+                pImgData.numMipMaps = pHeader.dwMipMapCount-1;
+                if (pImgData.numMipMaps!=core.pool.resources.Img.getMaxMipmaps(pImgData.width,pImgData.height,pImgData.depth,pImgData.format)) {
+                WARNING("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1 "
+                            + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");              	 
+
+            	}
+            }
+            else{
+                pImgData.numMipMaps = 0;
+            }
+
 			var pOutput:Uint8Array=new Uint8Array(pImgData.size)
 			var iOutputOffset:uint=0;
 

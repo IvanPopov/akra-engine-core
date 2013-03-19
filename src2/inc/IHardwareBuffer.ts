@@ -64,7 +64,7 @@ module akra {
 		copyData(pSrcBuffer: IHardwareBuffer, iSrcOffset: uint, 
 				 iDstOffset: uint, iSize: uint, bDiscardWholeBuffer?: bool): bool;
 
-		create(iFlags: int): bool;
+		create(iSize: int, iFlags?: int): bool;
 		// create(iByteSize: uint, iFlags: int, pData: Uint8Array): bool;
 		// create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
 		

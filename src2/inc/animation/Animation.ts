@@ -6,19 +6,17 @@
 #include "IAnimationFrame.ts"
 #include "IAnimationTrack.ts"
 
-#include "AnimationBase.ts"
+#include "Base.ts"
 
 module akra.animation {
-	class Animation implements IAnimation extends AnimationBase {
-
+	class Animation extends Base implements IAnimation {
 		private _pTracks: IAnimationTrack[] = [];
     	
-    	constructor (sName: string = null) {
-    		super();
-    		this.name = sName;
+    	constructor (sName?: string) {
+    		super(EAnimationTypes.ANIMATION, sName);
     	}
 
-		inline get totalTracks(): float{
+		inline get totalTracks(): float {
 			return this._pTracks.length;
 		}
 
@@ -31,6 +29,7 @@ module akra.animation {
 		attach(pTarget: ISceneNode): void {
 			var pPointer;
 		    var pTracks: IAnimationTrack[] = this._pTracks;
+
 			for (var i = 0; i < pTracks.length; ++ i) {
 				if (!pTracks[i].bind(pTarget)) {
 					LOG("cannot bind animation track [", i, "] to joint <", pTracks[i].target, ">");
@@ -39,11 +38,15 @@ module akra.animation {
 					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
 					pPointer.track = pTracks[i];
 				}
-			};
+			}
 		}
 
-		getTracks(): IAnimationTrack[] {
+		inline getTracks(): IAnimationTrack[] {
 			return this._pTracks;
+		}
+
+		inline getTrack(i: int): IAnimationTrack {
+			return this._pTracks[i];
 		}
 		
 		frame(sName: string, fTime: float): IAnimationFrame {
@@ -65,9 +68,26 @@ module akra.animation {
 				}
 			}
 		}
+
+#ifdef DEBUG
+		toString(): string {
+			var s = super.toString();
+			s += "total tracks : " + this.totalTracks + "\n";
+
+			for (var i: int = 0; i < this.totalTracks; ++ i) {
+				s += "\t" + i + ". " + this.getTrack(i) + "\n";
+			}
+
+			return s;
+		}
+#endif
 	}
 
-	export function createAnimation(sName: string = null): IAnimation {
+	export inline function isAnimation(pAnimation: IAnimationBase): bool {
+		return pAnimation.type === EAnimationTypes.ANIMATION;
+	}
+
+	export function createAnimation(sName?: string): IAnimation {
 		return new Animation(sName);
 	}
 }

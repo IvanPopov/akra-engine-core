@@ -220,7 +220,7 @@ module akra {
 	//10-----------------------------------------------------------------------
         ["PF_R8G8B8",
         /* Bytes per element */
-        3,  // 24 bit integer -- special
+        3,  /* 24 bit integer -- special*/
         /* Flags */
         EPixelFormatFlags.NATIVEENDIAN,
         /* Component type and count */
@@ -234,7 +234,7 @@ module akra {
 	//11-----------------------------------------------------------------------
         ["PF_B8G8R8",
         /* Bytes per element */
-        3,  // 24 bit integer -- special
+        3,  /* 24 bit integer -- special*/
         /* Flags */
         EPixelFormatFlags.NATIVEENDIAN,
         /* Component type and count */
@@ -322,7 +322,7 @@ module akra {
         /* Flags */
         EPixelFormatFlags.COMPRESSED | EPixelFormatFlags.HASALPHA,
         /* Component type and count */
-        EPixelComponentTypes.BYTE, 3, // No alpha
+        EPixelComponentTypes.BYTE, 3, /* No alpha*/
         /* rbits, gbits, bbits, abits */
         0, 0, 0, 0,
         /* Masks and shifts */
@@ -481,7 +481,7 @@ module akra {
         /* Flags */
         EPixelFormatFlags.DEPTH,
         /* Component type and count */
-        EPixelComponentTypes.FLOAT32, 1, // ?
+        EPixelComponentTypes.FLOAT32, 1, /* ?*/
         /* rbits, gbits, bbits, abits */
         0, 0, 0, 0,
         /* Masks and shifts */
@@ -1291,7 +1291,7 @@ module akra {
 	                a = <uint>bf.fixedToFixed((value & des.amask)>>des.ashift, des.abits, 8);
 	            }
 	            else {
-	                a = 255; // No alpha, default a component to full
+	                a = 255; /* No alpha, default a component to full*/
 	            }
 	            
 	        } else {
@@ -1347,10 +1347,13 @@ module akra {
 	                a = bf.fixedToFloat((value & des.amask) >>> des.ashift, des.abits);
 	            }
 	            else {
-	                a = 1.0; // No alpha, default a component to full
+                    
+	                a = 1.0; /* No alpha, default a component to full*/
 	            }
+                
 
-	        } else {
+	        } 
+            else {
 	            switch(ePf) {
 	            case EPixelFormats.FLOAT32_R:
 	                r = g = b = dynamic_cast_f32_ptr(pSrc, 1)[0];

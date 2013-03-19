@@ -36,19 +36,19 @@ module akra.model {
 			this._sName = sName;
 		}
 
-		getRootJoint(): IJoint {
+		inline getRootJoint(): IJoint {
 			return this.getRootJoints()[0];
 		}
 
-		getRootJoints(): IJoint[] {
+		inline getRootJoints(): IJoint[] {
 			return this._pRootJoints;
 		}
 
-		getJointMap(): IJointMap {
+		inline getJointMap(): IJointMap {
 			return this._pJointMap;
 		}
 
-		getNodeList(): ISceneNode[]{
+		inline getNodeList(): ISceneNode[] {
 			return this._pNodeList;
 		}
 
@@ -72,27 +72,30 @@ module akra.model {
 		}
 
 		update(): bool {
-			var pRootJoints = this._pRootJoints;
-		    var pJointList = this._pJointMap = <IJointMap>{};
-		    var pNodeList = this._pNodeList = [];
+			var pRootJoints: IJoint[] 	= this.getRootJoints();
+		    var pJointMap: IJointMap 	= this._pJointMap = <IJointMap>{};
+		    var pNodeList: ISceneNode[] = this._pNodeList = [];
 		    //var pNotificationJoints = this._pNotificationJoints = [];
 
-		    function findNodes (pNode) {
-		    	var sJoint;
+		    function findNodes (pNode: ISceneNode): void {
+		    	var sJoint: string = null;
 
-		    	if (pNode) {
-			    	sJoint = pNode.boneName;
+		    	if (!isNull(pNode)) {
+		    		if (scene.isJoint(pNode)) {
+			    		sJoint = (<IJoint>pNode).boneName;
+			    	}
 
-			    	if (sJoint) {
-			    		debug_assert(!pJointList[sJoint], 
+			    	if (!isNull(sJoint)) {
+			    		debug_assert(!pJointMap[sJoint], 
 			    			'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
-			    		pJointList[sJoint] = pNode;
+			    		
+			    		pJointMap[sJoint] = <IJoint>pNode;
 			    	}
 
 			    	pNodeList.push(pNode);
 
-			    	findNodes(pNode.sibling());
-			    	findNodes(pNode.child());
+			    	findNodes(<ISceneNode>pNode.sibling);
+			    	findNodes(<ISceneNode>pNode.child);
 		    	}
 		    }
 
@@ -100,8 +103,8 @@ module akra.model {
 		    	findNodes(pRootJoints[i]);
 		    };
 
-			// for (var sJoint in pJointList) {
-			// 	var pJoint = pJointList[sJoint];
+			// for (var sJoint in pJointMap) {
+			// 	var pJoint = pJointMap[sJoint];
 
 		 //    	if (pJoint.sibling() == null && pJoint.child() == null) {
 		 //    		pNotificationJoints.push(pJoint);

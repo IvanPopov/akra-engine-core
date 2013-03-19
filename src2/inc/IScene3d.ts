@@ -9,11 +9,14 @@
 module akra {
 	IFACE(ISceneNode);
 	IFACE(ISceneModel);
+	IFACE(ISceneObject);
 	IFACE(ILightPoint);
+	IFACE(ICamera);
 	IFACE(ISprite);
 	IFACE(IJoint);
 	IFACE(IText3d);
 	IFACE(IDisplayList);
+	IFACE(IViewport);
 	
 
 
@@ -28,6 +31,10 @@ module akra {
 		recursiveUpdate(): void;
 
 		isUpdated(): bool;
+
+		#ifdef DEBUG
+		createObject(sName?: string): ISceneObject;
+		#endif
 
 		createNode(sName?: string): ISceneNode;
 		createModel(sName?: string): ISceneModel;

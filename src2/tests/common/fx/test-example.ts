@@ -4,28 +4,57 @@
 #include "IEffect.ts"
 
 module akra {
+	export var pEngine: IEngine = null;
 	test("Example creation test", () => {
-		var pEngine: IEngine = createEngine();
+		pEngine = createEngine();
+		var pRmgr = pEngine.getResourceManager();
 
 		pEngine.bind(SIGNAL(depsLoaded), (pEngine: IEngine, pDeps: IDependens) => {
-			var pEffectResourcePool: IResourcePool = pEngine.getResourceManager().effectPool;
-			var pEffect: IEffect = <IEffect>pEffectResourcePool.createResource("test-effect");
-			pEffect.create();
+			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			var pScene: IScene3d = pEngine.getScene();
 
-			shouldBeTrue("Effect resource create");
-			check(!isNull(pEffect));
+			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+				pModel.attachToScene(pScene);
 
-			pEffect.addComponent("akra.system.mesh_texture");
-			pEffect.addComponent("akra.system.prepareForDeferredShading", 0, 0);
-			pEffect.addComponent("akra.system.prepareForDeferredShading", 1, 1);
+				var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 
-			var pComposer: IAFXComposer = pEngine.getComposer();
-			LOG(pEngine.getComposer());
+				document.body.appendChild((<any>pCanvas)._pCanvas);
 
-			var pAnyComposer: any = <any>pComposer;
+				pCanvas.resize(800, 600);
 
-			pAnyComposer._pEffectResourceToComponentBlendMap[0].finalizeBlend();
-		});
+				var pCamera = pScene.createCamera("non-default");
 
+				pCamera.attachToParent(pScene.getRootNode());
+				var pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
+				// pViewport.setAutoUpdated();
+
+				LOG(pEngine.getComposer());
+				
+				// pEngine.exec();
+				pEngine.renderFrame();
+			});
+
+			
+			// var pTestRenderable: IRenderableObject = new render.RenderableObject();
+			// pTestRenderable._setup(pEngine.getRenderer(), "test-method");
+
+			// var pDefaultTechnique: IRenderTechnique = pTestRenderable.getTechniqueDefault();
+			// var pDefaultEffect: IEffect = pTestRenderable.getRenderMethod().effect;
+
+			// pDefaultEffect.addComponent("akra.system.mesh_texture");
+
+			// LOG(pDefaultTechnique.totalPasses);
+
+			// pDefaultTechnique.addComponent("akra.system.prepareForDeferredShading", 0, 0);
+			// pDefaultTechnique.addComponent("akra.system.prepareForDeferredShading", 1, 1);
+
+			// LOG(pDefaultTechnique, pDefaultTechnique.totalPasses);
+
+			// var pComposer: IAFXComposer = pEngine.getComposer();
+			// LOG(pEngine.getComposer());
+
+			// pDefaultTechnique._renderTechnique(null);
+			
+		});		
 	});
 }

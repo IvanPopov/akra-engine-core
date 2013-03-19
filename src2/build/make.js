@@ -17,7 +17,7 @@ function include(file) {
 
 //command line output buffer size
 //default is 5MB
-var BUFFER_SIZE = 5 * 1024 * 1024; 
+var BUFFER_SIZE = 10 * 1024 * 1024; 
 var pCleanFiles = [];
 var iTimeout = -1;
 
@@ -47,6 +47,7 @@ function usage() {
 		'\n\t--clean			Clean tests data.' + 
 		'\n\t--list		[-l] List all available tests.' + 
 		'\n\t--webgl-debug	[-w] Add webgl debug utils.' + 
+		'\n\t--do-magic	[-m] It\'s wonderfull magic!(Спросите у Игоря!).' + 
 		'\n\t--declaration		Generates corresponding .d.ts file.'
 	);
 	
@@ -72,6 +73,10 @@ var pOptions = {
 	clean: false, //clean tests data instead build
 	listOnly: false, //list available tests
 	webglDebug: false,
+	/**
+	 * Поиск всех файлов с комеентариями вида // стоящими не на отдельной строке
+	 */
+	magicMode: false,
 	testsFormat: {nw: false, html: false, js: false}
 };
 
@@ -184,6 +189,10 @@ function parseArguments() {
 			case '--list':
 				pOptions.listOnly = true;
 				break;
+			case '-m':
+			case '--do-magic':
+				pOptions.magicMode = true;
+				break;
 			case '--webgl-debug':
 			case '-w':
 				 pOptions.webglDebug = true;
@@ -282,11 +291,14 @@ function preprocess() {
 	console.log(cmd + " " + argv.join(" "));
 	
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
-	var stdout = '';
+	var stdout = new Buffer(BUFFER_SIZE);
+	var iTotalChars = 0;
 
 	mcpp.stdout.on('data', function (data) {
 	  //console.log('stdout: \n' + data);
-	  stdout += data;
+	  data.copy(stdout, iTotalChars);
+	  
+	  iTotalChars  += data.length;
 	});
 
 	mcpp.stderr.on('data', function (data) {
@@ -295,12 +307,12 @@ function preprocess() {
 
 	mcpp.on('exit', function (code) {
 	  console.log('preprocessing exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
-	  
+	
 	  if (code == 0) {
 	  	pOptions.pathToTemp = pOptions.outputFolder + "/" + pOptions.tempFile;
 
 		console.log("preprocessed to: ", pOptions.pathToTemp);
-		fs.writeFileSync(pOptions.pathToTemp, stdout, "utf8");
+		fs.writeFileSync(pOptions.pathToTemp, stdout.slice(0, iTotalChars), "utf8");
 
 		compile();
 	  }
@@ -383,6 +395,41 @@ function compile() {
 	  }
 	});
 
+}
+
+function doMagic() {
+
+	scanDir(pOptions.includeDir, function (err, files) {
+		for (var i in files) {
+			var sFile = files[i].path;
+			if (path.extname(sFile).toLowerCase() !== ".ts") {
+				continue;
+			}
+			var sData = fs.readFileSync(sFile, "utf8");
+			var sLines = sData.split("\n");
+
+			var pIncorrectComments = [];
+
+			for (var n in sLines) {
+				var sLine = sLines[n];
+				var iPos = sLine.indexOf("//");
+				if (iPos != -1) {
+					if (!sLine.substr(0, iPos).match(/^[\s]*$/ig)) {
+						pIncorrectComments.push({n: n, comment: sLine});
+					}
+				}
+			}
+
+			if (pIncorrectComments.length > 0) {
+				console.log("\nfile: " + sFile);
+				for (var n in pIncorrectComments) {
+					console.log("\t line " + pIncorrectComments[n].n + ":: " + pIncorrectComments[n].comment);
+				}
+			}
+		}
+
+		process.exit(0);
+	});
 }
 
 var pTestQueue = [];
@@ -850,6 +897,10 @@ parseArguments();
 verifyOptions();
 
 process.chdir(pOptions.buildDir);
+
+if (pOptions.magicMode) {
+	doMagic();
+}
 
 if (!fs.existsSync(pOptions.outputFolder)) { 
 	console.log("\n\n> target: CORE\n\n");

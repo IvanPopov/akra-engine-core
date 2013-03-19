@@ -26,10 +26,15 @@ module akra {
 		render(): bool;
 		render(pParent: IUINode): bool;
 		render(pElement: HTMLElement): bool;
+		render(pElement: JQuery): bool;
 		render(sSelector: string): bool;
 
+		attachToParent(pParent: IUINode): bool;
 		recursiveRender(): void;
 		renderTarget(): JQuery;
+		hasRenderTarget(): bool;
+
+		signal relocated(pNode: IUINode): void;
 	}
 }
 

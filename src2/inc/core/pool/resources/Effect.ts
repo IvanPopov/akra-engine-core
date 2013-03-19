@@ -7,15 +7,12 @@
 
 module akra.core.pool.resources {
 	export class Effect implements IEffect extends ResourcePoolItem {
-		private _pComposer: IAFXComposer = null;
-
-
 		get totalComponents(): uint{
-			return this._pComposer.getComponentCountForEffect(this);
+			return this.getComposer().getComponentCountForEffect(this);
 		}
 
 		get totalPasses(): uint{
-			return this._pComposer.getTotalPassesForEffect(this);
+			return this.getComposer().getTotalPassesForEffect(this);
 		}
 
 		 constructor () {
@@ -28,7 +25,8 @@ module akra.core.pool.resources {
 		isParameterUsed(pParam: any, iPass?: uint): bool {return false;}
 
 		create(): void {
-			this._pComposer = this.manager.getEngine().getComposer();
+			this.getComposer() = this.manager.getEngine().getComposer();
+			this.notifyRestored
 		}
 
 		replicable(bValue: bool): void {return;}
@@ -48,18 +46,18 @@ module akra.core.pool.resources {
 			}
 			
 			if(!isDef(pComponent) || isNull(pComponent)){
-				debug_error("Bad component for add/delete.");
+				debug_error("Bad component for add/delete: ", pComponent);
 				return false;
 			}
 
 			if(isSet){
-				if(!this._pComposer.addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
+				if(!this.getComposer().addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
 					debug_error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'");
 					return false;
 				}
 			}
 			else {
-				if(!this._pComposer.removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
+				if(!this.getComposer().removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
 					debug_error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'");
 					return false;
 				}
@@ -84,7 +82,19 @@ module akra.core.pool.resources {
 			return this.addComponent(pComponent, iShift, iPass, false);
 		}
 
+		activate(iShift?: int = 0): bool {
+ 			return this.getComposer().activateEffectResource(this, iShift);
+		}
+
+		deactivate(): bool {
+			return this.getComposer().deactivateEffectResource(this);
+		}
+
 		findParameter(pParam: any, iPass?: uint): any {return null;}
+
+		private inline getComposer(): IAFXComposer {
+			return this.manager.getEngine().getComposer();
+		}
 	}
 }
 
