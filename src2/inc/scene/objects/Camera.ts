@@ -53,7 +53,6 @@ module akra.scene.objects {
 		protected _m4fView: IMat4 = new Mat4;
 		/** internal, un-biased projection matrix */
 		protected _m4fProj: IMat4 = new Mat4;
-		protected _m4fUnitProj: IMat4 = new Mat4;
 		/** internal, un-biased projection+view matrix */
 		protected _m4fProjView: IMat4 = new Mat4;
 
@@ -90,13 +89,9 @@ module akra.scene.objects {
 
 		inline get viewMatrix(): IMat4 { return this._m4fView; }
     	
-    	inline get projectionMatrix(): IMat4 { return this._m4fRenderStageProj; }
+    	inline get projectionMatrix(): IMat4 { return this._m4fProj; }
     	
-    	inline get projViewMatrix(): IMat4 { return this._m4fRenderStageProjView; }
-    	
-    	inline get internalProjectionMatrix(): IMat4 { return this._m4fProj; }
-    	
-    	inline get internalViewProjMatrix(): IMat4 { return this._m4fProjView; }
+    	inline get projViewMatrix(): IMat4 { return this._m4fProjView; }
     	
     	inline get targetPos(): IVec3 { return this._v3fTargetPos; }
     	
@@ -198,7 +193,7 @@ module akra.scene.objects {
 		    // this ensures that the 
 		    // near and far plane enclose 
 		    // the unit space around the camera
-		    Mat4.perspective(fFOV, fAspect, 0.01, 2.0, this._m4fUnitProj);
+		    // Mat4.perspective(fFOV, fAspect, 0.01, 2.0, this._m4fUnitProj);
 
 		    TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
     	}
@@ -238,7 +233,7 @@ module akra.scene.objects {
 		    this._eCameraType = ECameraTypes.OFFSET_ORTHO;
 
 		    // create the regular projection matrix
-		    Mat4./*orthogonalProjection*/orthogonalProjectionAsymmetric(fMinX, fMaxX, fMinY, fMaxY,
+		    Mat4.orthogonalProjectionAsymmetric(fMinX, fMaxX, fMinY, fMaxY,
 		                                fNearPlane, fFarPlane, this._m4fProj);
 
 		    // create a unit-space matrix 
@@ -246,8 +241,8 @@ module akra.scene.objects {
 		    // this ensures that the 
 		    // near and far plane enclose 
 		    // the unit space around the camera
-		    Mat4./*orthogonalProjection*/orthogonalProjectionAsymmetric(fMinX, fMaxX, fMinY, fMaxY,
-		                                0.01, 2.0, this._m4fUnitProj);
+		    // Mat4.orthogonalProjectionorthogonalProjectionAsymmetric(fMinX, fMaxX, fMinY, fMaxY,
+		    //                             0.01, 2.0, this._m4fUnitProj);
 
 		    TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
     	}
@@ -293,9 +288,11 @@ module akra.scene.objects {
 		    if (this.isWorldMatrixNew() || TEST_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix)) {
 		    	this._pFrustum.extractFromMatrix(this._m4fProj, this._m4fWorldMatrix, this._pSearchRect);
 
+		    	// this._m4fRenderStageProj.set(this._m4fProj);
+
 		        // our projView matrix is the projection 
 		        //matrix multiplied by the inverse of our world matrix  
-		        this._m4fProj.multiply(this._m4fView, this._m4fRenderStageProjView);
+		        this._m4fProj.multiply(this._m4fView, this._m4fProjView);
 
 		        isUpdated = true;
 		    
@@ -305,15 +302,15 @@ module akra.scene.objects {
 		    return isUpdated;
     	}
 
-		applyRenderStageBias(iStage: int): void {
-	    	var fZ_bias = iStage > 1 ? 0.001 : 0.0;
+		// applyRenderStageBias(iStage: int): void {
+	 //    	var fZ_bias = iStage > 1 ? 0.001 : 0.0;
 
-		    this._m4fRenderStageProj.set(this._m4fProj);
-		    this._m4fRenderStageProjView.set(this._m4fProjView);
+		//     this._m4fRenderStageProj.set(this._m4fProj);
+		//     this._m4fRenderStageProjView.set(this._m4fProjView);
 
-		    this._m4fRenderStageProj[__34] -= fZ_bias;
-		    this._m4fRenderStageProjView[__34] -= fZ_bias;
-	    }
+		//     this._m4fRenderStageProj[__34] -= fZ_bias;
+		//     this._m4fRenderStageProjView[__34] -= fZ_bias;
+	 //    }
 
     	lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3): void;
     	lookAt(v3fCenter: IVec3, v3fUp?: IVec3): void;

@@ -17,8 +17,7 @@ module akra {
 	IFACE(IText3d);
 	IFACE(IDisplayList);
 	IFACE(IViewport);
-	
-
+	IFACE(IShadowCaster);
 
 	export interface IScene3d extends IScene {
 		totalDL: uint;
@@ -39,10 +38,13 @@ module akra {
 		createNode(sName?: string): ISceneNode;
 		createModel(sName?: string): ISceneModel;
 		createCamera(sName?: string): ICamera;
-		createLightPoint(sName?: string): ILightPoint;
+		createLightPoint(eType?: ELightTypes, isShadowCaster?: bool,
+						 iMaxShadowResolution?: uint, sName?: string): ILightPoint;
 		createSprite(sName?: string): ISprite;
 		createJoint(sName?: string): IJoint;
 		createText3d(sName?: string): IText3d;
+
+		_createShadowCaster(pLightPoint: ILightPoint, iFace?: uint, sName?: string): IShadowCaster;
 
 		getDisplayList(index: uint): IDisplayList;
 		getDisplayListByName(csName: string): int;
