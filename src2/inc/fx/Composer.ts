@@ -15,10 +15,27 @@
 #endif
 
 #include "IAFXComponent.ts"
-#include "fx/ComponentBlend.ts"
 #include "fx/Blender.ts"
 
+#include "IAFXShaderProgram.ts"
+#include "util/ObjectArray.ts"
+
+#include "util/BufferMap.ts"
+#include "fx/SamplerBlender.ts"
+
 module akra.fx {
+
+	export interface IPreRenderState {
+		isClear: bool;
+
+		primType: EPrimitiveTypes;
+		offset: uint;
+		length: uint;
+		index: IIndexData;
+		//flows: IDataFlow[];
+		flows: util.ObjectArray;
+	}
+
 	export class Composer implements IAFXComposer {
 		private _pEngine: IEngine = null;
 
@@ -34,6 +51,17 @@ module akra.fx {
 		// private _pGlobalEffectResorceShiftStack: int[] = null;
 		private _pGlobalComponentBlendStack: IAFXComponentBlend[] = null;
 		private _pGlobalComponentBlend: IAFXComponentBlend = null;
+
+		//Data for render
+		private _pCurrentSceneObject: ISceneObject = null;
+		private _pCurrentBufferMap: IBufferMap = null;
+		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
+		//private _pPreRenderState: IPreRenderState = null;
+
+		// private _pSamplerBlender: SamplerBlender = null;
+
+		//Temporary objects for fast work
+		static pDefaultSamplerBlender: SamplerBlender = null;
 
 		constructor(pEngine: IEngine){
 			this._pEngine = pEngine;
@@ -51,6 +79,22 @@ module akra.fx {
 			// this._pGlobalEffectResorceShiftStack = [];
 			this._pGlobalComponentBlendStack = [];
 			this._pGlobalComponentBlend = null;
+
+			// this._pPreRenderState = {
+			// 	isClear: true,
+
+			// 	primType: 0,
+			// 	offset: 0,
+			// 	length: 0,
+			// 	index: null,
+			// 	flows: new util.ObjectArray()
+			// };
+
+			// this._pSamplerBlender = new SamplerBlender(this);
+			// this._pTempPassInstructionList = new ObjectArray();
+			if(isNull(Composer.pDefaultSamplerBlender)){
+				Composer.pDefaultSamplerBlender = new SamplerBlender();
+			}
 		}
 
 		getComponentByName(sComponentName: string): IAFXComponent {
@@ -236,11 +280,16 @@ module akra.fx {
 		}
 
 		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool {
+			if(pRenderTechnique.isFreeze()){
+				return true;
+			}
+
 			var id: uint = pRenderTechnique.getGuid();
 
 			var isTechniqueUpdate: bool = !!(this._pTechniqueNeedUpdateMap[id]);
 			var isUpdateGlobalBlend: bool = (this._pGlobalComponentBlend !== this._pTechniqueLastGlobalBlendMap[id]);
-			
+			var isNeedToUpdatePasses: bool = false;
+
 			if(isTechniqueUpdate || isUpdateGlobalBlend){
 				var iEffect: uint = pRenderTechnique.getMethod().effect.resourceHandle;
 				var pEffectBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[iEffect] || null;
@@ -251,13 +300,29 @@ module akra.fx {
 				pNewBlend = this._pBlender.addBlendToBlend(this._pGlobalComponentBlend, pEffectBlend, 0);
 				pNewBlend = this._pBlender.addBlendToBlend(pNewBlend, pTechniqueBlend, 0);
 
+				if(this._pTechniqueToBlendMap[id] !== pNewBlend){
+					isNeedToUpdatePasses = true;
+				}
+
 				this._pTechniqueToBlendMap[id] = pNewBlend;
 				this._pTechniqueNeedUpdateMap[id] = false;
 				this._pTechniqueLastGlobalBlendMap[id] = this._pGlobalComponentBlend;
 			}
 
-			if(isDefAndNotNull(this._pTechniqueToBlendMap[id])) {
-				return this._pTechniqueToBlendMap[id].finalizeBlend();
+			var pBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
+
+			if(isDefAndNotNull(pBlend)) {
+				if(!pBlend.isReadyToUse()){
+					isNeedToUpdatePasses = true;
+				}
+
+				if(!pBlend.finalizeBlend()){
+					return false;
+				}
+				
+				if(isNeedToUpdatePasses) {
+					pRenderTechnique.updatePasses(isTechniqueUpdate);
+				}
 			}
 			else {
 				return false;
@@ -266,6 +331,100 @@ module akra.fx {
 
 		markTechniqueAsNeedUpdate(pRenderTechnique: IRenderTechnique): void {
 			this._pTechniqueNeedUpdateMap[pRenderTechnique.getGuid()] = true;
+		}
+
+		getPassInputBlend(pRenderTechnique: IRenderTechnique, iPass: uint): IAFXPassInputBlend {
+			var id: uint = pRenderTechnique.getGuid();
+
+			if(!isDef(this._pTechniqueToBlendMap[id])){
+				return null;
+			}
+
+			return this._pTechniqueToBlendMap[id].getPassInputForPass(iPass);
+		}
+
+
+		//-----------------------------------------------------------------------------//
+		//---------------------------------API for render------------------------------//
+		//-----------------------------------------------------------------------------//
+
+		applyBufferMap(pMap: IBufferMap): bool {
+			this._pCurrentBufferMap = pMap;
+			return true;
+			// var pBufferMap: util.BufferMap = <util.BufferMap>pMap;
+
+			// var pState: IPreRenderState = this._pPreRenderState;
+
+			// if(pState.isClear){
+			// 	pState.primType = pBufferMap.primType;
+			// 	pState.offset = pBufferMap.offset;
+			// 	pState.length = pBufferMap.length;
+			// 	pState.index = pBufferMap.index;
+			// }
+			// else if(pState.primType !== pBufferMap.primType ||
+			// 		pState.offset !== pBufferMap.offset ||
+			// 		pState.length !== pBufferMap.length ||
+			// 		pState.index !== pBufferMap.index) {
+
+			// 	ERROR("Could not blend buffer maps");
+			// 	return false;
+			// }
+
+			// var pFlows: IDataFlow[] = pBufferMap.flows;
+
+			// for(var i: uint = 0; i < pFlows.length; i++){
+			// 	pState.flows.push(pFlows[i]);
+			// }
+
+			// pState.isClear = false;
+		}
+
+		applySurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): bool {
+			this._pCurrentSurfaceMaterial = pSurfaceMaterial;
+			return true;
+		}
+
+		setCurrentSceneObject(pSceneObject: ISceneObject): void {
+			this._pCurrentSceneObject = pSceneObject;
+		}
+
+		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void {
+			var pPass: IRenderPass = pRenderTechnique.getPass(iPass);
+			var pPassInput: IAFXPassInputBlend = pPass.getPassInput();
+
+			var pPassBlend: IAFXPassBlend = null;
+			var pShader: IAFXShaderProgram = null;
+			
+			if(!pPassInput._isNeedToCalcShader()){
+				//TODO: set pShader to shader program by id
+			}
+			else {
+				if(!pPassInput._isNeedToCalcBlend()){
+					pPassBlend = this._pBlender.getPassBlendById(pPassInput._getLastPassBlendId());
+				}
+				else {
+					var id: uint = pRenderTechnique.getGuid();
+					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
+					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
+					
+					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, null, null, null);
+				}
+
+				if(isNull(pPassBlend)){
+					ERROR("Could not render. Error with generation pass-blend.");
+					return;
+				}
+
+				pShader = pPassBlend.generateShaderProgram(pPassInput, 
+														   this._pCurrentSurfaceMaterial, 
+														   this._pCurrentBufferMap);
+				//TODO: generate additional shader params and get shader program
+			}
+
+			//TODO: generate input from PassInputBlend to correct unifoms and attributes list
+			//TODO: generate RenderEntry
+			
+			this.clearPreRenderState();
 		}
 
 		//-----------------------------------------------------------------------------//
@@ -318,6 +477,16 @@ module akra.fx {
 			pComponent.setTechnique(pTechnique);
 
 			return true;
+		}
+
+		private clearPreRenderState(): void {
+			// this._pPreRenderState.primType = 0;
+			// this._pPreRenderState.offset = 0;
+			// this._pPreRenderState.length = 0;
+			// this._pPreRenderState.index = null;
+			// this._pPreRenderState.flows.clear(false);
+
+			// this._pPreRenderState.isClear = true;
 		}
 	}
 }

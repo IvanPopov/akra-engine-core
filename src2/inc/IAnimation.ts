@@ -15,6 +15,7 @@ module akra {
 		attach(pTarget: ISceneNode): void;
 
 		getTracks(): IAnimationTrack[];
+		getTrack(i: int): IAnimationTrack;
 		
 		frame(sName: string, fTime: float): IAnimationFrame;
 		extend(pAnimation: IAnimation): void;

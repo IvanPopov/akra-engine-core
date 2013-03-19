@@ -19,7 +19,7 @@ module akra.util {
 		[handle: int]: IVertexData;
 	}
 
-	class BufferMap implements IBufferMap extends ReferenceCounter{
+	export class BufferMap implements IBufferMap extends ReferenceCounter{
 		private _pFlows: IDataFlow[] = null;
 		private _pMappers: IDataMapper[] = null;
 		private _pIndex: IIndexData = null;
@@ -102,7 +102,8 @@ module akra.util {
 		}
 
 		_draw(): void {
-			this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
+			// this._pEngine.getComposer().applyBufferMap(this);
+			// this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
 			isNull(this._pIndex)? this.drawArrays(): this.drawElements();
 		}
 
@@ -226,7 +227,7 @@ module akra.util {
 		        return -1;
 		    }
 
-		    if (pVertexData.buffer instanceof webgl.WebGLVertexBuffer/*core.pool.resources.VertexBuffer*/) {
+		    if (core.pool.resources.isVBO(<IVertexBuffer>pVertexData.buffer)) {
 		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
 		        this.length = pVertexData.length;
 		        //this.startIndex = pVertexData.getStartIndex();
@@ -272,9 +273,7 @@ module akra.util {
 		};
 
 
-		mapping(iFlow: int, pMap: IVertexData, eSemantics: string, iAddition?: int): bool {
-			iAddition = iAddition || 0;
-
+		mapping(iFlow: int, pMap: IVertexData, eSemantics: string, iAddition: int = 0): bool {
 		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
 		    var pFlow: IDataFlow     = this._pFlows[iFlow];
 

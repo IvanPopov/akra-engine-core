@@ -382,13 +382,13 @@ module akra.webgl {
         	}
         }
 
-        getBuffer(iFace?: uint = 1, iMipmap?: uint = 0): IPixelBuffer {
+        getBuffer(iFace?: uint = 0, iMipmap?: uint = 0): IPixelBuffer {
             if (iFace >= this.getNumFaces()) {
-	            CRITICAL("Face index out of range",iFace,this.getNumFaces());
+	            CRITICAL("Face index out of range", iFace, this.getNumFaces());
 	        }
 
 	        if (iMipmap > this._nMipLevels) {
-	            CRITICAL("Mipmap index out of range",iMipmap,this._nMipLevels);
+	            CRITICAL("Mipmap index out of range", iMipmap, this._nMipLevels);
 	        }
 
 	        var idx: uint = iFace * (this._nMipLevels + 1) + iMipmap;

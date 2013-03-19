@@ -1109,6 +1109,7 @@ module akra.fx {
 		private _eExtractExprType: EExtractExprType = 0;
 		private _pPointer: IAFXVariableDeclInstruction = null;
         private _pBuffer: IAFXVariableDeclInstruction = null;
+        private _pOffsetVar: IAFXVariableDeclInstruction = null;
         private _sPaddingExpr: string = "";
 
         private _sExtractFunction: string = "";
@@ -1120,14 +1121,55 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_ExtractExprInstruction;
 		}
 
+		getExtractFunction(): IAFXFunctionDeclInstruction {
+			var pFunction: IAFXFunctionDeclInstruction = null;
+
+            switch(this._eExtractExprType){
+				case EExtractExprType.k_Header:
+					pFunction = Effect.findSystemFunction("extractHeader", null);
+					break;
+        
+				case EExtractExprType.k_Float:
+				case EExtractExprType.k_Int:
+				case EExtractExprType.k_Bool:
+					pFunction = Effect.findSystemFunction("extractFloat", null);
+					break;
+
+				case EExtractExprType.k_Float2:
+				case EExtractExprType.k_Int2:
+				case EExtractExprType.k_Bool2:
+					pFunction = Effect.findSystemFunction("extractFloat2", null);
+					break;
+
+				case EExtractExprType.k_Float3:
+				case EExtractExprType.k_Int3:
+				case EExtractExprType.k_Bool3:
+					pFunction = Effect.findSystemFunction("extractFloat3", null);
+					break;
+
+				case EExtractExprType.k_Float4:
+				case EExtractExprType.k_Int4:
+				case EExtractExprType.k_Bool4:
+					pFunction = Effect.findSystemFunction("extractFloat4", null);
+					break;
+
+				case EExtractExprType.k_Float4x4:
+					pFunction = Effect.findSystemFunction("extractFloat4x4", null);
+					break;
+            }
+
+            return pFunction;
+        }
+
 		initExtractExpr(pExtractType: IAFXVariableTypeInstruction,
 					    pPointer: IAFXVariableDeclInstruction,
 					    pBuffer: IAFXVariableDeclInstruction,
-					    sPaddingExpr: string): void {
+					    sPaddingExpr: string, pOffsetVar: IAFXVariableDeclInstruction): void {
 			
 			this._pPointer = pPointer;
 			this._pBuffer = pBuffer;
 			this._sPaddingExpr = sPaddingExpr;
+			this._pOffsetVar = pOffsetVar;
 			this.setType(pExtractType);
 
             if (pExtractType.isEqual(Effect.getSystemType("float"))) {
@@ -1305,8 +1347,12 @@ module akra.fx {
 				sCode = this._sExtractFunction;
 				sCode += this._pBuffer._getVideoBufferSampler().getNameId().toFinalCode();
 				sCode += "," + this._pBuffer._getVideoBufferHeader().getNameId().toFinalCode();
-				if(this._eExtractExprType !== EExtractExprType.k_Header){
-					sCode += "," + this._pPointer.getNameId().toFinalCode() + this._sPaddingExpr; 
+				if(this._eExtractExprType !== EExtractExprType.k_Header) {
+					sCode += "," + this._pPointer.getNameId().toFinalCode() + this._sPaddingExpr;
+
+					if(!isNull(this._pOffsetVar)){
+						sCode += "+" + this._pOffsetVar.getNameId().toFinalCode();	
+					}	
 				}
 				sCode += ")";
 				if(this._bNeedSecondBracket){

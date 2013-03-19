@@ -21,7 +21,7 @@ module akra {
 		uniformDefaultValue: any;
 
 		textureNameToReal: StringMap;
-		textureByRealName: any;
+		textureByRealName: IAFXVariableDeclMap;
 
 		foreignByName: IAFXVariableDeclMap;
 
@@ -34,7 +34,7 @@ module akra {
 		foreignNameList: string[];
 
 		addDataFromPass(pPass: IAFXPassInstruction): void;
-		generateKeys(): void;
+		finalizeInput(): void;
 
 		getPassInput(): IAFXPassInputBlend;
 		releasePassInput(pPassInput: IAFXPassInputBlend): void;
@@ -57,9 +57,10 @@ module akra {
 		finalizeBlend(): bool;
 
 		getPassInputForPass(iPass: uint): IAFXPassInputBlend;
+		getPassListAtPass(iPass: uint): IAFXPassInstruction[];
 
 		clone(): IAFXComponentBlend;
-
+		
 		_getComponentList(): IAFXComponent[];
 		_getComponentShiftList(): int[];
 		_getComponentPassIdList(): uint[];

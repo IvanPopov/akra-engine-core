@@ -4,96 +4,56 @@
 #include "IEffect.ts"
 
 module akra {
+	export var pEngine: IEngine = null;
 	test("Example creation test", () => {
-		var pEngine: IEngine = createEngine();
+		pEngine = createEngine();
+		var pRmgr = pEngine.getResourceManager();
 
 		pEngine.bind(SIGNAL(depsLoaded), (pEngine: IEngine, pDeps: IDependens) => {
-			// var pEffectResourcePool: IResourcePool = pEngine.getResourceManager().effectPool;
-			// var pRenderMethodPool: IResourcePool = pEngine.getResourceManager().renderMethodPool;
+			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			var pScene: IScene3d = pEngine.getScene();
+
+			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+				pModel.attachToScene(pScene);
+
+				var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
+
+				document.body.appendChild((<any>pCanvas)._pCanvas);
+
+				pCanvas.resize(800, 600);
+
+				var pCamera = pScene.createCamera("non-default");
+
+				pCamera.attachToParent(pScene.getRootNode());
+				var pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
+				// pViewport.setAutoUpdated();
+
+				LOG(pEngine.getComposer());
+				
+				// pEngine.exec();
+				pEngine.renderFrame();
+			});
+
 			
-			// var pMethod: IRenderMethod = <IRenderMethod>pRenderMethodPool.createResource("test-method");
+			// var pTestRenderable: IRenderableObject = new render.RenderableObject();
+			// pTestRenderable._setup(pEngine.getRenderer(), "test-method");
 
-			// // var pGlobalEffect: IEffect = <IEffect>pEffectResourcePool.createResource("test-global-effect");
-			// var pEffect: IEffect = <IEffect>pEffectResourcePool.createResource("test-effect");
-			// pEffect.create();
+			// var pDefaultTechnique: IRenderTechnique = pTestRenderable.getTechniqueDefault();
+			// var pDefaultEffect: IEffect = pTestRenderable.getRenderMethod().effect;
 
-			// shouldBeTrue("Effect resource create");
-			// check(!isNull(pEffect));
+			// pDefaultEffect.addComponent("akra.system.mesh_texture");
 
-			// pEffect.addComponent("akra.system.mesh_texture");
-			// pEffect.addComponent("akra.system.prepareForDeferredShading", 0, 0);
-			// pEffect.addComponent("akra.system.prepareForDeferredShading", 1, 1);
+			// LOG(pDefaultTechnique.totalPasses);
 
-			// var pTechnique: IRenderTechnique = new render.RenderTechnique(pMethod);
+			// pDefaultTechnique.addComponent("akra.system.prepareForDeferredShading", 0, 0);
+			// pDefaultTechnique.addComponent("akra.system.prepareForDeferredShading", 1, 1);
 
-			// pMethod.effect = pEffect;
-			
-			var pTestRenderable: IRenderableObject = new render.RenderableObject();
-			pTestRenderable._setup(pEngine.getRenderer(), "test-method");
+			// LOG(pDefaultTechnique, pDefaultTechnique.totalPasses);
 
-			var pDefaultTechnique: IRenderTechnique = pTestRenderable.getTechniqueDefault();
-			var pDefaultEffect: IEffect = pTestRenderable.getRenderMethod().effect;
+			// var pComposer: IAFXComposer = pEngine.getComposer();
+			// LOG(pEngine.getComposer());
 
-			pDefaultEffect.addComponent("akra.system.mesh_texture");
-
-			LOG(pDefaultTechnique.totalPasses);
-
-			pDefaultTechnique.addComponent("akra.system.prepareForDeferredShading", 0, 0);
-			pDefaultTechnique.addComponent("akra.system.prepareForDeferredShading", 1, 1);
-
-			LOG(pDefaultTechnique, pDefaultTechnique.totalPasses);
-
-			var pComposer: IAFXComposer = pEngine.getComposer();
-			LOG(pEngine.getComposer());
-
-			// var pAnyComposer: any = <any>pComposer;
-
-			// pAnyComposer._pEffectResourceToComponentBlendMap[0].finalizeBlend();
-			// 
-			
-			// var obj = {a:1,
-			// 	b:2,
-			// 	c:3,
-			// 	d:4
-			// };
-
-			// function wrap(fn, nTime): uint {
-			// 	var time = now();
-
-			// 	for(var i: uint = 0; i < nTime; i++){
-			// 		fn.call(null);
-			// 	}
-
-			// 	return now() - time;
-			// }
-
-			// function t1(): int{
-			// 	var res = 0;
-
-			// 	for(var i = 0; i < 1000; i++){
-			// 		if(!!isDef(obj["c"])){
-			// 			res += i * obj["c"];
-			// 		}
-			// 	}
-
-			// 	return res;
-			// }
-
-			// function t2(): int{
-			// 	var res = 0;
-
-			// 	for(var i = 0; i < 1000; i++){
-			// 		if(!isDef(obj["x"])){
-			// 			res += i * obj["c"];
-			// 		}
-			// 	}
-
-			// 	return res;
-			// }
-
-			// LOG("def", wrap(t1, 10000));
-			// LOG("undef", wrap(t2, 10000));
-
+			// pDefaultTechnique._renderTechnique(null);
 			
 		});		
 	});

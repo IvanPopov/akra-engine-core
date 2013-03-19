@@ -9,7 +9,7 @@ module akra {
 		top: int;
 
 
-		create(sName: string, iWidth: uint, iHeight: uint, isFullscreen: bool = false): bool;
+		create(sName: string, iWidth: uint, iHeight: uint, isFullscreen?: bool): bool;
 		destroy(): void;
 
 		setFullscreen(isFullscreen?: bool): void;

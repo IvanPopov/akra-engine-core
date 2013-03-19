@@ -1,12 +1,14 @@
 #ifndef IANIMATIONCONTROLLER_TS
 #define IANIMATIONCONTROLLER_TS
 
+#include "IUnique.ts"
+
 module akra {
 	IFACE(IAnimationBase);
 	IFACE(IEngine);
 	IFACE(ISceneNode);
 
-	export interface IAnimationController {
+	export interface IAnimationController extends IUnique {
 		readonly totalAnimations: int;
 		readonly active: IAnimationBase;
 
@@ -31,6 +33,8 @@ module akra {
 		play(pAnimation: IAnimationBase, fRealTime: float): bool;
 
 		update(fTime: float): void;
+
+		toString(bFullInfo?: bool);
 	}
 }
 

@@ -17,7 +17,7 @@ struct base_material{
     float shininess:SHININESS;
 };
 
-global base_material Fragment_material;
+shared base_material Fragment_material;
 
 VS_OUT vs_plain(float3 pos:POSITION){
     VS_OUT Out;

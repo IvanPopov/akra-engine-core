@@ -2,37 +2,99 @@
 #define PASSINPUTBLEND_TS
 
 module akra.fx {
+	export enum EShaderVariableType {
+        k_NotVar = 0,
+        
+        k_Texture = 2,
+        
+        k_Float,
+        k_Int,
+        k_Bool,
+
+        k_Float2,
+        k_Int2,
+        k_Bool2,
+
+        k_Float3,
+        k_Int3,
+        k_Bool3,
+
+        k_Float4,
+        k_Int4,
+        k_Bool4,
+
+        k_Float2x2,
+        k_Float3x3,
+        k_Float4x4,
+
+        k_Sampler2D,
+        k_SamplerCUBE,
+
+        k_CustomSystem,
+        k_Complex
+    }
+
+
+    export interface IAFXShaderVarTypeMap {
+		[index: string]: EShaderVariableType;
+		[index: uint]: EShaderVariableType;
+	}
 
 	export class PassInputBlend implements IAFXPassInputBlend {
 		private _isFirstInit: bool = true;
 		private _pCreator: IAFXComponentPassInputBlend = null;
-		private _pHasUniformName: BoolMap = null;
-		private _pHasForeignName: BoolMap = null;
-		private _pHasTextureName: BoolMap = null;
 
-		private _bNeedToCalcBlend: bool = false;
-		private _bNeedToCalcShader: bool = false;
+
+		private _pUniformTypeMap: IAFXShaderVarTypeMap = null;
+		private _isUniformArrayMap: BoolMap = null;
+
+		private _pForeignTypeMap: IAFXShaderVarTypeMap = null;
+
+		private _pTextureTypeMap: IAFXShaderVarTypeMap = null;
+
+
+		private _bNeedToCalcBlend: bool = true;
+		private _bNeedToCalcShader: bool = true;
 
 		private _iLastPassBlendId: uint = 0;
 		private _iLastShaderId: uint = 0;
+
+
+		samplers: IAFXSamplerStateMap = null;
+		samplerArrays: IAFXSamplerStateListMap = null; 
+		samplerArrayLength: IntMap = null;
 
 		uniforms: any = null;
 		foreigns: any = null;
 		textures: any = null;
 
-		uniformsDefault: any = null;
+
+		samplerKeys: string[] = null;
+		samplerArrayKeys: string[] = null;
 
 		uniformKeys: string[] = null;
 		foreignKeys: string[] = null;
 		textureKeys: string[] = null;
 
+
 		constructor(pCreator: IAFXComponentPassInputBlend){
 			this._pCreator = pCreator;
+
+			this.init();
+		}
+
+		hasTexture(sName: string): bool {
+			if(!this._pTextureTypeMap[sName]){
+				this._pTextureTypeMap[sName] = EShaderVariableType.k_NotVar;
+				return false;
+			}
+
+			return true;
 		}
 
 		setUniform(sName: string, pValue: any): void {
-			if(!this._pHasUniformName[sName]){
-				this._pHasUniformName[sName] = false;
+			if(!this._pUniformTypeMap[sName]){
+				this._pUniformTypeMap[sName] = EShaderVariableType.k_NotVar;
 				return;
 			}
 
@@ -42,8 +104,8 @@ module akra.fx {
 		}
 	
 		setForeign(sName: string, pValue: any): void {		
-			if(!this._pHasForeignName[sName]){
-				this._pHasForeignName[sName] = false;
+			if(!this._pForeignTypeMap[sName]){
+				this._pForeignTypeMap[sName] = EShaderVariableType.k_NotVar;
 				return;
 			}
 
@@ -53,6 +115,7 @@ module akra.fx {
 			
 			if(pOldValue !== pValue) {
 				this._bNeedToCalcBlend = true;
+				this._bNeedToCalcShader = true;
 			}
 
 			this.foreigns[sName] = pOldValue;
@@ -60,8 +123,8 @@ module akra.fx {
 
 
 		setTexture(sName: string, pValue: any): void {
-			if(!this._pHasTextureName[sName]){
-				this._pHasTextureName[sName] = false;
+			if(!this._pTextureTypeMap[sName]){
+				this._pTextureTypeMap[sName] = EShaderVariableType.k_NotVar;
 				return;
 			}
 
@@ -71,59 +134,42 @@ module akra.fx {
 		}
 
 		setSamplerTexture(sName: string, pTexture: any): void{
-			if(!this._pHasUniformName[sName]){
-				this._pHasUniformName[sName] = false;
-				return;
-			}
+			// if(!this._pHasUniformName[sName]){
+			// 	this._pHasUniformName[sName] = false;
+			// 	return;
+			// }
 
-			var pOldValue: any =  this.uniforms[sName].texture;
+			// var pOldValue: any =  this.uniforms[sName].texture;
 
-			if(pOldValue !== pTexture) {
-				this._bNeedToCalcShader = true;
-			}
+			// if(pOldValue !== pTexture) {
+			// 	this._bNeedToCalcShader = true;
+			// }
 
-			this.uniforms[sName].texture = pTexture;
+			// this.uniforms[sName].texture = pTexture;
 		}
 
-		_init(): void {
-			if(this._isFirstInit){
-				// this.uniformKeys = Object.keys(this.uniforms);
-				// this.foreignKeys = Object.keys(this.foreigns);
-				// this.textureKeys = Object.keys(this.textures);
+		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void {
+			//TODO: apply surface material
+		}
 
-				this.uniforms = {};
-				this.foreigns = {};
-				this.textures = {};
+		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture {
+			var pTexture: ITexture = null;
 
-				this._pHasUniformName = <BoolMap>{};
-				this._pHasTextureName = <BoolMap>{};
-				this._pHasForeignName = <BoolMap>{};
-
-				for(var i: uint = 0; i < this.uniformKeys.length; i++){
-					this._pHasUniformName[this.uniformKeys[i]] = true;
-					this.uniforms[this.uniformKeys[i]] = this.uniformsDefault[this.uniformKeys[i]];
+			if(!isNull(pSamplerState.texture)){
+				pTexture = pSamplerState.texture;
+			}
+			else if(pSamplerState.textureName !== ""){
+				if(this.hasTexture(pSamplerState.textureName)){
+					pTexture = this.textures[pSamplerState.textureName];
 				}
-
-				for(var i: uint = 0; i < this.foreignKeys.length; i++){
-					this._pHasForeignName[this.foreignKeys[i]] = true;
-					this.foreigns[this.foreignKeys[i]] = null;
-				}
-
-				for(var i: uint = 0; i < this.textureKeys.length; i++){
-					this._pHasTextureName[this.textureKeys[i]] = true;
-					this.textures[this.textureKeys[i]] = null;
-				}
-
-				this._isFirstInit = false;
 			}
 
-			this._bNeedToCalcBlend = true;
-			this._bNeedToCalcShader = true;
+			return pTexture;
 		}
 
 		_release(): void {
 			for(var i: uint = 0; i < this.uniformKeys.length; i++){
-				this.uniforms[this.uniformKeys[i]] = this.uniformsDefault[this.uniformKeys[i]];
+				this.uniforms[this.uniformKeys[i]] = null;
 			}
 
 			for(var i: uint = 0; i < this.foreignKeys.length; i++){
@@ -134,7 +180,24 @@ module akra.fx {
 				this.textures[this.textureKeys[i]] = null;
 			}
 
+			for(var i: uint = 0; i < this.samplerKeys.length; i++){
+				this.clearSamplerState(this.samplers[this.samplerKeys[i]]);
+			}
+
+			for(var i: uint = 0; i < this.samplerArrayKeys.length; i++){
+				var pStateList: IAFXSamplerState[] = this.samplerArrays[this.samplerArrayKeys[i]];
+				
+				for(var j: uint = 0; j < pStateList.length; j++){
+					this.clearSamplerState(pStateList[j]);
+				}
+
+				this.samplerArrayLength[this.samplerArrayKeys[i]] = 0;
+			}
+
 			this._pCreator.releasePassInput(this);
+
+			this._bNeedToCalcShader = true;
+			this._bNeedToCalcBlend = true;
 		}
 
 
@@ -160,6 +223,158 @@ module akra.fx {
 
 		inline _setShaderId(id: uint): void {
 			this._iLastShaderId = id;
+		}
+
+		private init(): void {
+			this._pUniformTypeMap = <IAFXShaderVarTypeMap>{};
+			this._isUniformArrayMap = <BoolMap>{};
+			this._pForeignTypeMap = <IAFXShaderVarTypeMap>{};
+			this._pTextureTypeMap = <IAFXShaderVarTypeMap>{};
+
+			this.samplers = <IAFXSamplerStateMap>{};
+			this.samplerArrays = <IAFXSamplerStateListMap>{};
+			this.samplerArrayLength = <IntMap>{};
+			this.uniforms = <any>{};
+			this.foreigns = <any>{};
+			this.textures = <any>{};
+
+			var pUniformKeys: string[] = this._pCreator.uniformRealNameList;
+			var pForeignKeys: string[] = this._pCreator.foreignNameList;
+			var pTextureKeys: string[] = this._pCreator.textureRealNameList;
+
+			var pUniformMap: IAFXVariableDeclMap = this._pCreator.uniformByRealName;
+			var pForeignMap: IAFXVariableDeclMap = this._pCreator.foreignByName;
+			var pTextureMap: IAFXVariableDeclMap = this._pCreator.textureByRealName;
+
+			var eType: EShaderVariableType = 0;
+			var sName: string = "";
+			var isArray: bool = false;
+
+			for(var i: uint = 0; i < pUniformKeys.length; i++){
+				sName = pUniformKeys[i];
+
+				eType = this.getVariableType(pUniformMap[sName]);
+				isArray = this.isVarArray(pUniformMap[sName]);
+
+				this._pUniformTypeMap[sName] = eType;
+				this._isUniformArrayMap[sName] = isArray;
+
+				if(eType === EShaderVariableType.k_Sampler2D || eType === EShaderVariableType.k_SamplerCUBE){
+					if(isArray){
+						this.samplerArrays[sName] = new Array(16);
+						this.samplerArrayLength[sName] = 0;
+
+						for(var j: uint = 0; j < this.samplerArrays[sName].length; j++) {
+							this.samplerArrays[sName][j] = this.createSamplerState();
+						}
+					}
+					else {
+						this.samplers[sName] = this.createSamplerState();
+					}
+				}
+				else {
+					this.uniforms[sName] = null;
+				}
+			}
+
+			for(var i: uint = 0; i < pForeignKeys.length; i++){
+				sName = pForeignKeys[i];
+				eType = this.getVariableType(pForeignMap[sName]);
+
+				this._pForeignTypeMap[sName] = eType;
+				this.foreigns[sName] = null;
+			}
+
+			for(var i: uint = 0; i < pTextureKeys.length; i++){
+				sName = pTextureKeys[i];
+				eType = EShaderVariableType.k_Texture;
+
+				this._pTextureTypeMap[sName] = eType;
+				this.textures[sName] = null;
+			}
+
+			this.samplerKeys = Object.keys(this.samplers);
+			this.samplerArrayKeys = Object.keys(this.samplerArrays);
+			this.uniformKeys = Object.keys(this.uniforms);
+			this.foreignKeys = Object.keys(this.foreigns);
+			this.textureKeys = Object.keys(this.textures);
+		}
+
+		private getVariableType(pVar: IAFXVariableDeclInstruction): EShaderVariableType {
+			var sBaseType: string = pVar.getType().getBaseType().getName();
+
+			switch(sBaseType){
+				case "texture":
+					return EShaderVariableType.k_Texture;
+        
+		        case "float":
+		        	return EShaderVariableType.k_Float;
+		        case "int":
+		        	return EShaderVariableType.k_Int;
+		        case "bool":
+		        	return EShaderVariableType.k_Bool;
+
+		        case "float2":
+		        	return EShaderVariableType.k_Float2;
+		        case "int2":
+		        	return EShaderVariableType.k_Int2;
+		        case "bool2":
+		        	return EShaderVariableType.k_Bool2;
+
+		        case "float3":
+		        	return EShaderVariableType.k_Float3;
+		        case "int3":
+		        	return EShaderVariableType.k_Int3;
+		        case "bool3":
+		        	return EShaderVariableType.k_Bool3;
+
+		        case "float4":
+		        	return EShaderVariableType.k_Float4;
+		        case "int4":
+		        	return EShaderVariableType.k_Int4;
+		        case "bool4":
+		        	return EShaderVariableType.k_Bool4;
+
+		        case "float2x2":
+		        	return EShaderVariableType.k_Float2x2;
+		        case "float3x3":
+		        	return EShaderVariableType.k_Float3x3;
+		        case "float4x4":
+		        	return EShaderVariableType.k_Float4x4;
+
+		        case "sampler":
+		        case "sampler2D":
+		        	return EShaderVariableType.k_Sampler2D;
+		        case "samplerCUBE":
+		        	return EShaderVariableType.k_SamplerCUBE;
+
+		       	default: 
+		       		return EShaderVariableType.k_NotVar;
+			}
+		}
+
+		private inline isVarArray(pVar: IAFXVariableDeclInstruction): bool {
+			return pVar.getType().isNotBaseArray();
+		}
+
+		private inline createSamplerState(): IAFXSamplerState {
+			return <IAFXSamplerState>{ 
+				textureName: "",
+				texture: null,
+				wrap_s: 0,
+				wrap_t: 0,
+				mag_filter: 0,
+				min_filter: 0
+			};
+		}
+
+		private clearSamplerState(pState: IAFXSamplerState): void {
+			pState.textureName = "";
+			pState.texture = null;
+			pState.wrap_s = 0;
+			pState.wrap_t = 0;
+			pState.mag_filter = 0;
+			pState.min_filter = 0;
 		}
 	}
 }

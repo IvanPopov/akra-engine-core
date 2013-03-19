@@ -1,6 +1,6 @@
 provide akra.system;
 
-include "http://akra/akra-engine-core/src2/data/effects/floatSpecialFunctions.afx";
+include "floatSpecialFunctions.afx";
 
 struct base_material{
     float4 diffuse:DIFFUSE;
@@ -10,8 +10,8 @@ struct base_material{
     float shininess:SHININESS;
 };
 
-global float3 Normal;
-global base_material Fragment_material;
+shared float3 Normal;
+shared base_material Fragment_material;
 
 int objectId : RENDER_OBJECT_ID;
 

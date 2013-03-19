@@ -23,6 +23,7 @@
 #include "IRenderEntry.ts"
 #include "IFrameBuffer.ts"
 #include "IViewport.ts"
+#include "ICanvas3d.ts"
 
 #include "events/events.ts"
 
@@ -55,14 +56,14 @@ module  akra.render {
 	}
 
 	export interface IRenderTargetPriorityMap {
-		[index: int]: IRenderTarget;
+		[priority: int]: IRenderTarget[];
 	}
 
 	export class Renderer implements IRenderer {
 		protected _isActive: bool = false;
 		protected _pEngine: IEngine;
 		protected _pRenderTargets: IRenderTarget[] = [];
-		protected _pPrioritisedRenderTargets: IRenderTargetPriorityMap;
+		protected _pPrioritisedRenderTargets: IRenderTargetPriorityMap = <IRenderTargetPriorityMap>{};
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
@@ -100,25 +101,36 @@ module  akra.render {
 		}
 
  		attachRenderTarget(pTarget: IRenderTarget): bool {
- 			for(var i: uint = 0; i < this._pRenderTargets.length; i++){
-       			if(this._pRenderTargets[i] === pTarget){
-       				return false;
-       			}
-       		}
+ 			if (this._pRenderTargets.indexOf(pTarget) != -1) {
+ 				return false;
+ 			}
+
+ 			var pList: IRenderTarget[] = this._pPrioritisedRenderTargets[pTarget.priority];
+ 			
+ 			if (!isDef(pList)) {
+ 				pList = this._pPrioritisedRenderTargets[pTarget.priority] = [];
+ 			}
+ 			
+ 			pList.push(pTarget);
 
  			this._pRenderTargets.push(pTarget);
+
  			return true; 			
  		}
 
         detachRenderTarget(pTarget: IRenderTarget): bool {
-       		for(var i: uint = 0; i < this._pRenderTargets.length; i++){
-       			if(this._pRenderTargets[i] === pTarget){
-       				this._pRenderTargets.splice(i, 1);
-       				return true;
-       			}
+       		var i = this._pRenderTargets.indexOf(pTarget);
+       		
+       		if (i == -1) {
+       			return false;
        		}
 
-       		return false;
+       		this._pRenderTargets.splice(i, 1);
+
+       		i = this._pPrioritisedRenderTargets[pTarget.priority].indexOf(pTarget);
+       		this._pPrioritisedRenderTargets[pTarget.priority].splice(i, 1);
+
+       		return true;
         }
 
         destroyRenderTarget(pTarget: IRenderTarget): void {
@@ -151,13 +163,18 @@ module  akra.render {
 
 		_updateAllRenderTargets(): void {
 			var pTarget: IRenderTarget;
-			for (var i in this._pPrioritisedRenderTargets) {
-				pTarget = this._pPrioritisedRenderTargets[i];
+			for (var iPriority in this._pPrioritisedRenderTargets) {
+				var pTargetList: IRenderTarget[] = this._pPrioritisedRenderTargets[iPriority];
 
-				if (pTarget.isActive() && pTarget.isAutoUpdated()) {
-					pTarget.update();
+				for (var j = 0; j < pTargetList.length; ++ j) {
+					pTarget = pTargetList[j];
+					
+					if (pTarget.isActive() && pTarget.isAutoUpdated()) {
+						pTarget.update(); 
+					}
 				}
 			}
+			
 		}
 
 		_setViewport(pViewport: IViewport): void {
@@ -165,6 +182,10 @@ module  akra.render {
 		}
 
 		_getViewport(): IViewport {
+			return null;
+		}
+
+		getDefaultCanvas(): ICanvas3d {
 			return null;
 		}
 

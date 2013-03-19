@@ -45,7 +45,7 @@ module akra.render {
 
 		protected _bHwGamma: bool = false;
 
-		protected _pViewportList: IViewport[];
+		protected _pViewportList: IViewport[] = [];
 
 
 		inline get name(): string { return this._sName; }
@@ -60,11 +60,22 @@ module akra.render {
 
 		inline get priority(): uint { return this._iPriority; }
 
-
 		constructor (pRenderer: IRenderer) {
 			this._pRenderer = pRenderer;
 			this._pTimer = pRenderer.getEngine().getTimer();
-
+			this._pFrameStats = {
+				fps: {
+					last: 0.,
+					avg: 0.,
+					best: 0.,
+					worst: 0.
+				},
+				time: {
+					best: 0.,
+					worst: 0.
+				},
+				polygonsCount: 0
+			}
 			this.resetStatistics();
 		}
 
@@ -397,10 +408,6 @@ module akra.render {
 			if (isRemoved) {
 				this.cameraRemoved(pCamera);
 			}
-		}
-
-		inline setAutoUpdare(bValue: bool = true): void {
-			this._isAutoUpdate = bValue;
 		}
 
 		inline isAutoUpdated(): bool {

@@ -104,6 +104,14 @@ module akra.animation {
 			this._bLeftInfinity = bValue;
 		}
 
+		inline inLeftInfinity(): bool {
+			return this._bLeftInfinity;
+		}
+
+		inline inRightInfinity(): bool {
+			return this._bRightInfinity;
+		}
+
 		inline rightInfinity(bValue: bool): void {
 			this._bRightInfinity = bValue;
 		}
@@ -207,6 +215,10 @@ module akra.animation {
 		BROADCAST(durationUpdated, CALL(fDuration));
 		BROADCAST(enterFrame, CALL(fRealTime));
 	} 
+
+	export inline function isContainer(pAnimation: IAnimationBase): bool {
+		return pAnimation.type === EAnimationTypes.CONTAINER;
+	}
 }
 
 #endif

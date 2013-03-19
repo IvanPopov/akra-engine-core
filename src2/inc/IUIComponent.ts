@@ -30,6 +30,8 @@ module akra {
 	export enum EUIComponents {
 		UNKNOWN,
 
+		WINDOW,
+
 		BUTTON,
 		LABEL,
 		TREE,

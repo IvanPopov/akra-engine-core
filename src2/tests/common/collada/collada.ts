@@ -3,9 +3,25 @@
 
 module akra {
 	
+	var pTable: HTMLElement = document.createElement("table");
+	document.body.appendChild(pTable);
+	
+	var pTr: HTMLElement = document.createElement("tr");
+
+	var pTd = [];
+	for (var i = 0; i < 2; ++ i) {
+		pTable.appendChild(pTr);
+		pTd[i] = document.createElement("td");
+		pTr.appendChild(pTd[i]);
+		pTd[i].style.verticalAlign = "top";
+	}
+
 	var pPrintNode: HTMLElement = document.createElement("pre");
-	document.body.appendChild(pPrintNode);
+	pPrintNode.style["float"] = "left";
+	pTd[0].appendChild(pPrintNode);
 	var iGlobalLevel: int = 0;
+	var pTreeNode: HTMLElement = document.createElement("pre");
+	pTd[1].appendChild(pTreeNode);
 
 	function print(...argv: string[]): void {
 		for (var i: int = 0; i < argv.length; ++ i) {
@@ -30,7 +46,7 @@ module akra {
 			iLevel = iGlobalLevel;
 		}
 
-		var N: int = 100;
+		var N: int = 80;
 		var iSubWidth: int = 3;
 		var n: int = N - sName.length - sValue.length - iLevel * iSubWidth;
 		var sDot: string = "";
@@ -52,22 +68,12 @@ module akra {
 		print("<span style=''><span style='color: #CCC;'>" + sLevel + "</span>" + sName + "<span style='color: #CCC;'>" + sDot + "</span>" + sValue + "</span>\n");
 	}
 
-	// function createWindow(sText: string): void {
-	// 	var pWin: Window = window.open("", "", "height=640,width=480", false);
-	// 	pWin.document.write("<pre style='font-family: consolas;'>" + sText + "</pre>");
-	// }
-
-	// function printJSLink(sText: string, fn: EventListener): void {
-	// 	var pLink: HTMLElement = document.createElement("a");
-		
-	// 	pLink.onclick = fn;
-	// 	pLink.innerHTML = sText;
-
-	// 	document.body.appendChild(pLink);
-	// }
+	function fetchAnimationControllerInfo(pController: IAnimationController): void {
+		printLine("total animations", pController.totalAnimations.toString());
+	}
 
 	function fetchRenderDataInfo(pData: IRenderData): void {
-		
+
 	}
 
 	function fetchMeshSubsetInfo(pSubset: IMeshSubset): void {
@@ -107,18 +113,18 @@ module akra {
 		var pEngine: IEngine = pModel.getManager().getEngine();
 		var pScene: IScene3d = pEngine.getScene();
 		var pRoot: ISceneNode = pScene.getRootNode();
+		var pController: IAnimationController = animation.createController();
 
-		pModel.attachToScene(pRoot);
+
+		pModel.attachToScene(pRoot, pController);
+
+		LOG(pController.toString(true));
+		LOG(pController);
+		
+		pTreeNode.textContent = pRoot.toString(true);
 
 		var pAsset: IColladaAsset = pModel.getAsset();
 
-		LOG("\n" + pRoot.toString(true));
-
-		// printJSLink("view model info", (e: Event): void => {
-		// 	createWindow(pRoot.toString(true));
-		// });
-		
-		// print(JSON.stringify(pModel.getAsset(), null, '\t'));
 		printLine("file", pModel.getFilename());
 		printLine("unit", pAsset.unit.meter + "/" + pAsset.unit.name);
 		printLine("up axis", pAsset.upAxis);
@@ -157,6 +163,10 @@ module akra {
 			printLine("total models", nTotalModels.toString());
 			printLine("total joints", nTotalJoints.toString());
 		}
+		indentRem();
+		printLine("animation data", pModel.isAnimationLoaded()? "yes": "no");
+		indentAdd();
+		fetchAnimationControllerInfo(pController);
 		indentRem();
 	}
 

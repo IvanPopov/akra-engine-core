@@ -2,15 +2,18 @@
 #define IRENDERPASS_TS
 
 #include "IUnique.ts"
+#include "IRenderTarget.ts"
+#include "IAFXPassInputBlend.ts"
 
 module akra {
-	IFACE (IAFXPassBlend);
-	IFACE (IRenderTarget);
-
 	export interface IRenderPass extends IUnique {
-		data: IAFXPassBlend;
-
 		getRenderTarget(): IRenderTarget;
+		setRenderTarget(pTarget: IRenderTarget): void;
+
+		getPassInput(): IAFXPassInputBlend;
+		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: bool): void;
+
+		blend(sComponentName: string, iPass: uint): bool;
 	}	
 }
 

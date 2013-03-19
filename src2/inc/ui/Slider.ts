@@ -14,6 +14,23 @@ module akra.ui {
 
 		inline get pin(): IUIComponent { return <IUIComponent>this.child; }
 		inline get value(): float { return this._fValue * this._fRange; }
+		inline get range(): float { return this._fRange; }
+		inline set range(fValue: float) { this._fRange = fValue; }
+		
+		set value(fValue: float) {
+			fValue = math.clamp(fValue / this._fRange, 0., 1.);
+
+			var iElementOffset = this.$element.offset().left;
+
+			var iPixelTotal = this.$element.width() - this.pin.$element.width();
+
+			var iPixelCurrent: int = iPixelTotal * fValue;
+			var iPinOffset: int = iPixelCurrent + iElementOffset + 1;
+
+			this.pin.$element.offset({left: iPinOffset});
+
+			this._fValue = fValue;
+		}
 
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.SLIDER) {
 			super(ui, options, eType);
@@ -29,12 +46,12 @@ module akra.ui {
 			var fValuePrev: float = this._fValue;
 			var fValue: float;
 
-			var iPinOffset = this.pin.$element.offset();
-			var iElementOffset = this.$element.offset();
+			var iPinOffset: int = this.pin.$element.offset().left;
+			var iElementOffset: int = this.$element.offset().left;
 
-			var iPixelTotal = this.$element.width() - this.pin.$element.width();
+			var iPixelTotal: int = this.$element.width() - this.pin.$element.width();
 			//FIXME: white offsets not equals????
-			var iPixelCurrent = iPinOffset.left - iElementOffset.left - 1;
+			var iPixelCurrent: int = iPinOffset - iElementOffset - 1;
 
 			fValue = this._fValue = math.clamp(iPixelCurrent / iPixelTotal, 0., 1.);
 

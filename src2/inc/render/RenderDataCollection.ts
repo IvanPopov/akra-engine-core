@@ -195,13 +195,14 @@ module akra.render {
 
         _draw(): void;
         _draw(iSubset?: uint): void {
-        	if (arguments.length > 0) {
-        	    this._pDataArray[iSubset]._draw();
-        	}
+        	// if (arguments.length > 0) {
+        	//     this._pDataArray[iSubset]._draw();
+        	// }
 
-        	for (var i: int = 0; i < this._pDataArray.length; i++) {
-        	    this._pDataArray[i]._draw();
-        	};
+        	// for (var i: int = 0; i < this._pDataArray.length; i++) {
+        	//     this._pDataArray[i]._draw();
+        	// };
+            CRITICAL("TODO"); 
         }
 
         destroy(): void {

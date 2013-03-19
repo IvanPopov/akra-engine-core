@@ -235,9 +235,6 @@
 .component-graphnode .component-horizontal {
   background: rgba(255, 255, 255, 0.1);
 }
-.component-graphnode .component {
-  margin: 2px;
-}
 .component-graphnode .component .component-checkbox {
   margin: 0;
 }

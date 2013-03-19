@@ -427,10 +427,10 @@ module akra.webgl {
 		        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
 		        pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
-		        //pWebGLContext.disable(GL_DEPTH_TEST);
-		        //pWebGLContext.disable(GL_SCISSOR_TEST);
-		        //pWebGLContext.disable(GL_BLEND);
-		        //pWebGLContext.disable(GL_CULL_FACE);
+		        pWebGLContext.disable(GL_DEPTH_TEST);
+		        pWebGLContext.disable(GL_SCISSOR_TEST);
+		        pWebGLContext.disable(GL_BLEND);
+		        pWebGLContext.disable(GL_CULL_FACE);
 
 		        var iValueAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("VALUE");
 		        var iIndexAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("INDEX");
@@ -596,10 +596,10 @@ module akra.webgl {
 			        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pIndexBufferData, GL_STREAM_DRAW);
 			        pWebGLContext.vertexAttribPointer(iIndexAttribLocation, 1, GL_FLOAT, false, 0, 0);
 
-			        //pWebGLContext.disable(GL_DEPTH_TEST);
-			        //pWebGLContext.disable(GL_SCISSOR_TEST);
-			        //pWebGLContext.disable(GL_BLEND);
-			        //pWebGLContext.disable(GL_CULL_FACE);
+			        pWebGLContext.disable(GL_DEPTH_TEST);
+			        pWebGLContext.disable(GL_SCISSOR_TEST);
+			        pWebGLContext.disable(GL_BLEND);
+			        pWebGLContext.disable(GL_CULL_FACE);
 
 			        pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
 			        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);

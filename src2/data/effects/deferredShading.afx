@@ -1,6 +1,6 @@
 provide akra.system;
 
-include "http://akra/akra-engine-core/src2/data/effects/floatSpecialFunctions.afx";
+include "floatSpecialFunctions.afx";
 
 texture tex0 : DEFERRED_TEXTURE0;
 texture tex1 : DEFERRED_TEXTURE1;
@@ -93,8 +93,8 @@ float3 unproj(float4x4 projMat,float3 screenCoords){
     return float3(x,y,z);
 };
 
-global pixel_data pixelData;
-global float4 result_color;
+shared pixel_data pixelData;
+shared float4 result_color;
 
 float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 	float2 textureCoords = IN.textureCoords;

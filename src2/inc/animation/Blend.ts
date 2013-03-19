@@ -6,7 +6,7 @@
 
 
 module akra.animation {
-	export class Blend extends Base implements IAnimationBlend {
+	class Blend extends Base implements IAnimationBlend {
 		public duration: float = 0;
 
 		private _pAnimationList: IAnimationElement[] = [];
@@ -143,17 +143,19 @@ module akra.animation {
 		}
 
 
-		getAnimation(iAnimation: int): IAnimationBase {
-			if (typeof arguments[0] === 'string') {
-		    	iAnimation = this.getAnimationIndex(arguments[0]);
-		    }
-
+		getAnimation(sName: string): IAnimationBase;
+		getAnimation(iAnimation: int): IAnimationBase;
+		getAnimation(animation): IAnimationBase {
+			var iAnimation: int = isString(animation)? this.getAnimationIndex(animation): <int>animation;
 			return this._pAnimationList[iAnimation].animation;
 		}
 
-		getAnimationWeight(iAnimation: int): float {
-			if (typeof arguments[0] === 'string') {
-				iAnimation = this.getAnimationIndex(arguments[0]);
+		getAnimationWeight(iAnimation: int): float;
+		getAnimationWeight(sName: string): float;
+		getAnimationWeight(animation): float {
+			var iAnimation: int = <int>animation;
+			if (isString(animation)) {
+				iAnimation = this.getAnimationIndex(animation);
 			}
 
 			return this._pAnimationList[iAnimation].weight;
@@ -210,7 +212,10 @@ module akra.animation {
 			return true;
 		}
 
-		setAnimationWeight(iAnimation: int, fWeight: float): bool {
+		setAnimationWeight(fWeight: float): bool;
+		setAnimationWeight(iAnimation: int, fWeight: float): bool;
+		setAnimationWeight(sName: string, fWeight: float): bool;
+		setAnimationWeight(animation, fWeight?: float): bool {
 			var pAnimationList = this._pAnimationList;
 		    var isModified = false;
 		    if (arguments.length === 1) {
@@ -223,9 +228,7 @@ module akra.animation {
 		    	isModified = true;
 		    }
 		    else {
-			    if (typeof arguments[0] === 'string') {
-			    	iAnimation = this.getAnimationIndex(arguments[0]);
-			    }
+			    var iAnimation: int = isString(animation)? this.getAnimationIndex(animation): <int>animation;
 
 			    //trace('set weight for animation: ', iAnimation, 'to ', fWeight);
 			    if (pAnimationList[iAnimation].weight !== fWeight) {
@@ -241,23 +244,31 @@ module akra.animation {
 			return true;
 		}
 
-		setAnimationMask(iAnimation: int, pMask: FloatMap): bool {
-			if (typeof arguments[0] === 'string') {
-		    	iAnimation = this.getAnimationIndex(arguments[0]);
-		    }
+		setAnimationMask(iAnimation: int, pMask: FloatMap): bool;
+		setAnimationMask(sName: string, pMask: FloatMap): bool;
+		setAnimationMask(animation, pMask: FloatMap): bool {
+			var iAnimation: int = isString(animation)? this.getAnimationIndex(animation): <int>animation;
 
 			this._pAnimationList[iAnimation].mask = pMask;
 
 			return true;
 		}
 
-		getAnimationMask(iAnimation: int): FloatMap {
-			if (typeof arguments[0] === 'string') {
-		    	iAnimation = this.getAnimationIndex(arguments[0]);
-		    }
+		getAnimationMask(iAnimation: int): FloatMap;
+		getAnimationMask(sName: string): FloatMap;
+		getAnimationMask(animation): FloatMap {
+			var iAnimation: int = isString(animation)? this.getAnimationIndex(animation): <int>animation;
 
 			return this._pAnimationList[iAnimation].mask;
 		}
+
+		getAnimationAcceleration(iAnimation: int): float;
+		getAnimationAcceleration(sName: string): float;
+		getAnimationAcceleration(animation): float {
+			var iAnimation: int = isString(animation)? this.getAnimationIndex(animation): <int>animation;
+
+			return this._pAnimationList[iAnimation].acceleration;	
+		}	
 
 		createAnimationMask(iAnimation?: int): FloatMap {
 			if (arguments.length === 0) {
@@ -274,7 +285,7 @@ module akra.animation {
 
 		frame(sName: string, fRealTime: float) {
 			var pAnimationList: IAnimationElement[] = this._pAnimationList;
-			var pResultFrame: IAnimationFrame = animation.animationFrame().reset();
+			var pResultFrame: IAnimationFrame = animationFrame().reset();
 			var pFrame: IAnimationFrame;
 			var pMask: FloatMap;
 			var pPointer: IAnimationElement;
@@ -326,6 +337,14 @@ module akra.animation {
 
 		BROADCAST(durationUpdated, CALL(fDuration));
 	} 
+
+	export inline function isBlend(pAnimation: IAnimationBase): bool {
+		return pAnimation.type === EAnimationTypes.BLEND;
+	}
+
+	export function createBlend(sName?: string): IAnimationBlend {
+		return new Blend(sName);
+	}
 }
 
 #endif

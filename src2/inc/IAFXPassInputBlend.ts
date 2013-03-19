@@ -1,17 +1,25 @@
 #ifndef IAFXPASSINPUTBLEND_TS
 #define IAFXPASSINPUTBLEND_TS
 
+#include "IAFXSamplerState.ts"
+#include "ISurfaceMaterial.ts"
+
 module akra {
 	export interface IAFXPassInputBlend {
-		uniforms: any;
+		samplers: IAFXSamplerStateMap;
+		samplerArrays: IAFXSamplerStateListMap;
+		samplerArrayLength: IntMap;
+		uniforms: any; /* all uniforms without samlers */
 		foreigns: any;
 		textures: any;
 
+		samplerKeys: string[];
+		samplerArrayKeys: string[];
 		uniformKeys: string[];
 		foreignKeys: string[];
 		textureKeys: string[];
 
-		uniformsDefault: any;
+		hasTexture(sName: string): bool;
 
 		setUniform(sName: string, pValue: any): void;
 		setForeign(sName: string, pValue: any): void;
@@ -19,7 +27,10 @@ module akra {
 
 		setSamplerTexture(sName: string, pTexture: any): void;
 
-		_init(): void;
+		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void;
+
+		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture;
+
 		_release(): void;
 
 		_isNeedToCalcBlend(): bool;
@@ -27,7 +38,6 @@ module akra {
 
 		_getLastPassBlendId(): uint;
 		_getLastShaderId(): uint;
-
 		_setPassBlendId(id: uint): void;
 		_setShaderId(id: uint): void;
 	}

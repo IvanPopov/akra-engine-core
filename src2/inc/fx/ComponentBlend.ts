@@ -184,13 +184,12 @@ module akra.fx {
 					this._pPassesDList[iShift] = [];
 					this._pComponentInputVarBlend[iShift] = new ComponentPassInputBlend();
 				}
-
 				this._pPassesDList[iShift].push(pPass);
 				this._pComponentInputVarBlend[iShift].addDataFromPass(pPass);
 			}
 
 			for(var i: uint = 0; i < this._pComponentInputVarBlend.length; i++){
-				this._pComponentInputVarBlend[i].generateKeys();
+				this._pComponentInputVarBlend[i].finalizeInput();
 			}
 
 			this._isReady = true;
@@ -208,6 +207,18 @@ module akra.fx {
 			}
 
 			return this._pComponentInputVarBlend[iPass].getPassInput();
+		}
+
+		getPassListAtPass(iPass: uint): IAFXPassInstruction[] {
+			if(!this._isReady){
+				return null;
+			}
+
+			if(iPass < 0 || iPass > this.getTotalPasses()){
+				return null;
+			}
+
+			return this._pPassesDList[iPass];
 		}
 
 		clone(): IAFXComponentBlend {
@@ -386,13 +397,12 @@ module akra.fx {
 
 			for(var i in pUniformMap){
 				pVar = pUniformMap[i];
-
 				this.addUniformVariable(pVar, "", "");
 			}
 
 		}
 
-		generateKeys(): void {
+		finalizeInput(): void {
 			this._pUniformNameList = Object.keys(this._pUniformNameToRealMap);
 			this._pUniformRealNameList = Object.keys(this._pUniformByRealNameMap);
 
@@ -402,7 +412,6 @@ module akra.fx {
 			this._pForeignNameList = Object.keys(this._pForeignByNameMap);
 
 			this._pFreePassInputBlendList = [];
-
 			this.generateNewPassInputs();
 		}
 
@@ -463,15 +472,6 @@ module akra.fx {
 		private generateNewPassInputs(nCount?: uint = 5): void {
 			for(var i: uint = 0; i < nCount; i++) {
 				var pPassInput: IAFXPassInputBlend = new PassInputBlend(this);
-
-				pPassInput.uniformKeys = this._pUniformRealNameList;
-				pPassInput.foreignKeys = this._pForeignNameList;
-				pPassInput.textureKeys = this._pTextureRealNameList;
-
-				pPassInput.uniformsDefault = this._pUniformDefaultValueMap;
-
-				pPassInput._init();
-
 				this._pFreePassInputBlendList.push(pPassInput);
 			}
 		}

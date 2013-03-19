@@ -234,6 +234,14 @@ module akra.core.pool.resources {
 		}
 
 	}
+
+	export inline function isVBO(pBuffer: IVertexBuffer): bool {
+		return pBuffer.type === EVertexBufferTypes.VBO;
+	}
+
+	export inline function isTBO(pBuffer: IVertexBuffer): bool {
+		return pBuffer.type === EVertexBufferTypes.TBO;
+	}
 }
 
 #endif

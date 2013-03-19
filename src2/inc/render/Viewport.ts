@@ -237,10 +237,11 @@ module akra.render {
 				var pRenderable: IRenderableObject;
 
 				for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
-					pRenderable = pVisibleObjects.value(i).getRenderable();
+					var pSceneObject: ISceneObject = pVisibleObjects.value(i);
+					pRenderable = pSceneObject.getRenderable();
 
 					if (!isNull(pRenderable)) {
-						pRenderable.render(csMethod, pVisibleObjects.value(i));
+						pRenderable.render(csMethod, pSceneObject);
 					}
 				}
 		}
