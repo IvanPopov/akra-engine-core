@@ -15,20 +15,86 @@
 #endif
 
 #include "IAFXComponent.ts"
-#include "fx/ComponentBlend.ts"
+#include "fx/Blender.ts"
+
+#include "IAFXShaderProgram.ts"
+#include "util/ObjectArray.ts"
+
+#include "util/BufferMap.ts"
+#include "fx/SamplerBlender.ts"
 
 module akra.fx {
+
+	export interface IPreRenderState {
+		isClear: bool;
+
+		primType: EPrimitiveTypes;
+		offset: uint;
+		length: uint;
+		index: IIndexData;
+		//flows: IDataFlow[];
+		flows: util.ObjectArray;
+	}
+
 	export class Composer implements IAFXComposer {
 		private _pEngine: IEngine = null;
 
+		private _pTechniqueToBlendMap: IAFXComponentBlendMap = null;
+		private _pTechniqueToOwnBlendMap: IAFXComponentBlendMap = null;
+		private _pTechniqueLastGlobalBlendMap: IAFXComponentBlendMap = null;
+		private _pTechniqueNeedUpdateMap: BoolMap = null;
+
 		private _pEffectResourceToComponentBlendMap: IAFXComponentBlendMap = null;
-		private _pComponentBlendByHashMap: IAFXComponentBlendMap = null;
+		private _pBlender: IAFXBlender = null;
+
+		private _pGlobalEffectResorceIdStack: uint[] = null;
+		// private _pGlobalEffectResorceShiftStack: int[] = null;
+		private _pGlobalComponentBlendStack: IAFXComponentBlend[] = null;
+		private _pGlobalComponentBlend: IAFXComponentBlend = null;
+
+		//Data for render
+		private _pCurrentSceneObject: ISceneObject = null;
+		private _pCurrentBufferMap: IBufferMap = null;
+		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
+		//private _pPreRenderState: IPreRenderState = null;
+
+		// private _pSamplerBlender: SamplerBlender = null;
+
+		//Temporary objects for fast work
+		static pDefaultSamplerBlender: SamplerBlender = null;
 
 		constructor(pEngine: IEngine){
 			this._pEngine = pEngine;
 
+			this._pBlender = new Blender(this);
+
+			this._pTechniqueToBlendMap = <IAFXComponentBlendMap>{};
+			this._pTechniqueToOwnBlendMap = <IAFXComponentBlendMap>{};
+			this._pTechniqueLastGlobalBlendMap = <IAFXComponentBlendMap>{};
+			this._pTechniqueNeedUpdateMap = <BoolMap>{};
+
 			this._pEffectResourceToComponentBlendMap = <IAFXComponentBlendMap>{};
-			this._pComponentBlendByHashMap = <IAFXComponentBlendMap>{};
+
+			this._pGlobalEffectResorceIdStack = [];
+			// this._pGlobalEffectResorceShiftStack = [];
+			this._pGlobalComponentBlendStack = [];
+			this._pGlobalComponentBlend = null;
+
+			// this._pPreRenderState = {
+			// 	isClear: true,
+
+			// 	primType: 0,
+			// 	offset: 0,
+			// 	length: 0,
+			// 	index: null,
+			// 	flows: new util.ObjectArray()
+			// };
+
+			// this._pSamplerBlender = new SamplerBlender(this);
+			// this._pTempPassInstructionList = new ObjectArray();
+			if(isNull(Composer.pDefaultSamplerBlender)){
+				Composer.pDefaultSamplerBlender = new SamplerBlender();
+			}
 		}
 
 		getComponentByName(sComponentName: string): IAFXComponent {
@@ -73,7 +139,7 @@ module akra.fx {
 				pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
 			}
 			
-			var pNewBlend: IAFXComponentBlend = this.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
+			var pNewBlend: IAFXComponentBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
 			if(isNull(pNewBlend)){
 				return false;
 			}
@@ -90,7 +156,7 @@ module akra.fx {
 				pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
 			}
 			
-			var pNewBlend: IAFXComponentBlend = this.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
+			var pNewBlend: IAFXComponentBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
 			if(isNull(pNewBlend)){
 				return false;
 			}
@@ -99,6 +165,267 @@ module akra.fx {
 			return true;
 		}
 
+		activateEffectResource(pEffectResource: IEffect, iShift: int): bool {
+			var id: uint = pEffectResource.resourceHandle;
+			var pComponentBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
+
+			if(!isDef(pComponentBlend)){
+				return false
+			}
+
+			var pNewGlobalBlend: IAFXComponentBlend = null;
+
+			if(isNull(this._pGlobalComponentBlend)){
+				pNewGlobalBlend = pComponentBlend;
+			}
+			else {
+				pNewGlobalBlend = this._pBlender.addBlendToBlend(this._pGlobalComponentBlend, pComponentBlend, iShift);
+			}
+
+			if(isNull(pNewGlobalBlend)){
+				return false;
+			}
+
+			this._pGlobalEffectResorceIdStack.push(id);
+			this._pGlobalComponentBlendStack.push(pNewGlobalBlend);
+
+			this._pGlobalComponentBlend = pNewGlobalBlend;
+
+			return true;
+		}
+
+		deactivateEffectResource(pEffectResource: IEffect): bool {
+			var id: uint = pEffectResource.resourceHandle;
+			var iStackLength: uint = this._pGlobalEffectResorceIdStack.length;
+			
+			if(iStackLength === 0){
+				return false;
+			}
+
+			var iLastId: uint = this._pGlobalEffectResorceIdStack[iStackLength - 1];
+
+			if(iLastId !== id){
+				return false;
+			}
+
+			this._pGlobalEffectResorceIdStack.splice(iStackLength - 1, 1);
+			this._pGlobalComponentBlendStack.splice(iStackLength - 1, 1);
+
+			if(iStackLength > 1){
+				this._pGlobalComponentBlend = this._pGlobalComponentBlendStack[iStackLength - 2];
+			}
+			else {
+				this._pGlobalComponentBlend = null;
+			}
+
+			return true;
+		}
+
+
+		//-----------------------------------------------------------------------------//
+		//----------------------------API for RenderTechnique--------------------------//
+		//-----------------------------------------------------------------------------//
+
+		getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique): uint {
+			this.prepareTechniqueBlend(pRenderTechnique);
+			
+			var id: uint = pRenderTechnique.getGuid();
+
+			if(isDefAndNotNull(this._pTechniqueToBlendMap[id])) {
+				return this._pTechniqueToBlendMap[id].getTotalPasses();
+			}
+			else {
+				return 0;
+			}
+		}
+		
+		addOwnComponentToTechnique(pRenderTechnique: IRenderTechnique, 
+								   pComponent: IAFXComponent, iShift: int, iPass: uint): bool {
+			var id: uint = pRenderTechnique.getGuid();
+			var pCurrentBlend: IAFXComponentBlend = null;
+
+			if(isDef(this._pTechniqueToOwnBlendMap[id])){
+				pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
+			}
+			
+			var pNewBlend: IAFXComponentBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
+			
+			if(isNull(pNewBlend)){
+				return false;
+			}
+
+			this._pTechniqueToOwnBlendMap[id] = pNewBlend;
+			this._pTechniqueNeedUpdateMap[id] = true;
+
+			return true;
+		}
+
+		removeOwnComponentToTechnique(pRenderTechnique: IRenderTechnique, 
+									  pComponent: IAFXComponent, iShift: int, iPass: uint): bool {
+			var id: uint = pRenderTechnique.getGuid();
+			var pCurrentBlend: IAFXComponentBlend = null;
+
+			if(isDef(this._pTechniqueToOwnBlendMap[id])){
+				pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
+			}
+			
+			var pNewBlend: IAFXComponentBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
+			if(isNull(pNewBlend)){
+				return false;
+			}
+
+			this._pTechniqueToOwnBlendMap[id] = pNewBlend;
+			this._pTechniqueNeedUpdateMap[id] = true;
+			return true;
+		}
+
+		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool {
+			if(pRenderTechnique.isFreeze()){
+				return true;
+			}
+
+			var id: uint = pRenderTechnique.getGuid();
+
+			var isTechniqueUpdate: bool = !!(this._pTechniqueNeedUpdateMap[id]);
+			var isUpdateGlobalBlend: bool = (this._pGlobalComponentBlend !== this._pTechniqueLastGlobalBlendMap[id]);
+			var isNeedToUpdatePasses: bool = false;
+
+			if(isTechniqueUpdate || isUpdateGlobalBlend){
+				var iEffect: uint = pRenderTechnique.getMethod().effect.resourceHandle;
+				var pEffectBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[iEffect] || null;
+				var pTechniqueBlend: IAFXComponentBlend = this._pTechniqueToOwnBlendMap[id] || null;
+
+				var pNewBlend: IAFXComponentBlend = null;
+				
+				pNewBlend = this._pBlender.addBlendToBlend(this._pGlobalComponentBlend, pEffectBlend, 0);
+				pNewBlend = this._pBlender.addBlendToBlend(pNewBlend, pTechniqueBlend, 0);
+
+				if(this._pTechniqueToBlendMap[id] !== pNewBlend){
+					isNeedToUpdatePasses = true;
+				}
+
+				this._pTechniqueToBlendMap[id] = pNewBlend;
+				this._pTechniqueNeedUpdateMap[id] = false;
+				this._pTechniqueLastGlobalBlendMap[id] = this._pGlobalComponentBlend;
+			}
+
+			var pBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
+
+			if(isDefAndNotNull(pBlend)) {
+				if(!pBlend.isReadyToUse()){
+					isNeedToUpdatePasses = true;
+				}
+
+				if(!pBlend.finalizeBlend()){
+					return false;
+				}
+				
+				if(isNeedToUpdatePasses) {
+					pRenderTechnique.updatePasses(isTechniqueUpdate);
+				}
+			}
+			else {
+				return false;
+			}
+		}
+
+		markTechniqueAsNeedUpdate(pRenderTechnique: IRenderTechnique): void {
+			this._pTechniqueNeedUpdateMap[pRenderTechnique.getGuid()] = true;
+		}
+
+		getPassInputBlend(pRenderTechnique: IRenderTechnique, iPass: uint): IAFXPassInputBlend {
+			var id: uint = pRenderTechnique.getGuid();
+
+			if(!isDef(this._pTechniqueToBlendMap[id])){
+				return null;
+			}
+
+			return this._pTechniqueToBlendMap[id].getPassInputForPass(iPass);
+		}
+
+
+		//-----------------------------------------------------------------------------//
+		//---------------------------------API for render------------------------------//
+		//-----------------------------------------------------------------------------//
+
+		applyBufferMap(pMap: IBufferMap): bool {
+			this._pCurrentBufferMap = pMap;
+			return true;
+			// var pBufferMap: util.BufferMap = <util.BufferMap>pMap;
+
+			// var pState: IPreRenderState = this._pPreRenderState;
+
+			// if(pState.isClear){
+			// 	pState.primType = pBufferMap.primType;
+			// 	pState.offset = pBufferMap.offset;
+			// 	pState.length = pBufferMap.length;
+			// 	pState.index = pBufferMap.index;
+			// }
+			// else if(pState.primType !== pBufferMap.primType ||
+			// 		pState.offset !== pBufferMap.offset ||
+			// 		pState.length !== pBufferMap.length ||
+			// 		pState.index !== pBufferMap.index) {
+
+			// 	ERROR("Could not blend buffer maps");
+			// 	return false;
+			// }
+
+			// var pFlows: IDataFlow[] = pBufferMap.flows;
+
+			// for(var i: uint = 0; i < pFlows.length; i++){
+			// 	pState.flows.push(pFlows[i]);
+			// }
+
+			// pState.isClear = false;
+		}
+
+		applySurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): bool {
+			this._pCurrentSurfaceMaterial = pSurfaceMaterial;
+			return true;
+		}
+
+		setCurrentSceneObject(pSceneObject: ISceneObject): void {
+			this._pCurrentSceneObject = pSceneObject;
+		}
+
+		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void {
+			var pPass: IRenderPass = pRenderTechnique.getPass(iPass);
+			var pPassInput: IAFXPassInputBlend = pPass.getPassInput();
+
+			var pPassBlend: IAFXPassBlend = null;
+			var pShader: IAFXShaderProgram = null;
+			
+			if(!pPassInput._isNeedToCalcShader()){
+				//TODO: set pShader to shader program by id
+			}
+			else {
+				if(!pPassInput._isNeedToCalcBlend()){
+					pPassBlend = this._pBlender.getPassBlendById(pPassInput._getLastPassBlendId());
+				}
+				else {
+					var id: uint = pRenderTechnique.getGuid();
+					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
+					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
+					
+					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, null, null, null);
+				}
+
+				if(isNull(pPassBlend)){
+					ERROR("Could not render. Error with generation pass-blend.");
+					return;
+				}
+
+				pShader = pPassBlend.generateShaderProgram(pPassInput, 
+														   this._pCurrentSurfaceMaterial, 
+														   this._pCurrentBufferMap);
+				//TODO: generate additional shader params and get shader program
+			}
+
+			//TODO: generate input from PassInputBlend to correct unifoms and attributes list
+			//TODO: generate RenderEntry
+			
+			this.clearPreRenderState();
+		}
 
 		//-----------------------------------------------------------------------------//
 		//-----------------------API for load components/AFXEffects--------------------//
@@ -152,119 +479,14 @@ module akra.fx {
 			return true;
 		}
 
-		private addComponentToBlend(pComponentBlend: IAFXComponentBlend, 
-									pComponent: IAFXComponent, iShift: int, iPass: uint): IAFXComponentBlend {
-			
-			var pNewBlend: IAFXComponentBlend = null;
+		private clearPreRenderState(): void {
+			// this._pPreRenderState.primType = 0;
+			// this._pPreRenderState.offset = 0;
+			// this._pPreRenderState.length = 0;
+			// this._pPreRenderState.index = null;
+			// this._pPreRenderState.flows.clear(false);
 
-			if(isNull(pComponentBlend)){
-				pNewBlend = new ComponentBlend(this);
-			}
-			else {
-				pNewBlend = pComponentBlend.clone();
-			}
-
-			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
-			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
-			var pTechComponentShiftList: int[] = pTechnique.getFullComponentShiftList();
-
-			if(iPass === ALL_PASSES) {
-				if(!isNull(pTechComponentList)){
-					for(var i: uint = 0; i < pTechComponentList.length; i++){
-						pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, ALL_PASSES);	
-					}
-				}
-
-				pNewBlend.addComponent(pComponent, iShift, ALL_PASSES);
-			}
-			else {
-				if(!isNull(pTechComponentList)){
-					for(var i: uint = 0; i < pTechComponentList.length; i++){
-						pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);	
-					}
-				}
-
-				pNewBlend.addComponent(pComponent, iShift, iPass);
-			}
-
-			var sNewBlendHash: string = pNewBlend.getHash();
-
-			if(isDef(this._pComponentBlendByHashMap[sNewBlendHash])){
-				return this._pComponentBlendByHashMap[sNewBlendHash];
-			}
-			else {
-				if(!this.registerComponentBlend(pNewBlend)){
-					return null;
-				}
-
-				return pNewBlend;
-			}
-		}
-
-		private removeComponentFromBlend(pComponentBlend: IAFXComponentBlend, 
-										 pComponent: IAFXComponent, iShift: int, iPass: uint): IAFXComponentBlend {
-			if(isNull(pComponentBlend)){
-				WARNING("You try to remove component '" + pComponent.getName() + 
-						"' with shift " + iShift.toString() + "from empty blend.");
-				return null;	
-			}
-
-			var sComponentHash: string = pComponent.getHash(iShift, iPass);
-
-			if(!pComponentBlend.containComponentHash(sComponentHash)){
-				WARNING("You try to remove component '" + pComponent.getName() + 
-						"' with shift " + iShift.toString() + "from blend that not contain it.");
-				return null;
-			}
-
-			var pNewBlend: IAFXComponentBlend = pComponentBlend.clone();
-
-			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
-			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
-			var pTechComponentShiftList: int[] = pTechnique.getFullComponentShiftList();
-			
-			if(iPass === ALL_PASSES) {
-				if(!isNull(pTechComponentList)){
-					for(var i: uint = 0; i < pTechComponentList.length; i++){
-						pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, ALL_PASSES);	
-					}
-				}
-
-				pNewBlend.removeComponent(pComponent, iShift, ALL_PASSES);
-			}
-			else {
-				if(!isNull(pTechComponentList)){
-					for(var i: uint = 0; i < pTechComponentList.length; i++){
-						pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);	
-					}
-				}
-
-				pNewBlend.removeComponent(pComponent, iShift, iPass);
-			}
-
-			var sNewBlendHash: string = pNewBlend.getHash();
-
-			if(isDef(this._pComponentBlendByHashMap[sNewBlendHash])){
-				return this._pComponentBlendByHashMap[sNewBlendHash];
-			}
-			else {
-				if(!this.registerComponentBlend(pNewBlend)){
-					return null;
-				}
-
-				return pNewBlend;
-			}		
-		}
-
-		private registerComponentBlend(pComponentBlend: IAFXComponentBlend): bool {
-			var sHash: string = pComponentBlend.getHash();
-
-			if(isDef(this._pComponentBlendByHashMap[sHash])){
-				return false;
-			}
-
-			this._pComponentBlendByHashMap[sHash] = pComponentBlend;
-			return true;
+			// this._pPreRenderState.isClear = true;
 		}
 	}
 }

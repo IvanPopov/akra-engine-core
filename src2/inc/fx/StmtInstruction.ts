@@ -362,7 +362,7 @@ module akra.fx {
         generateStmtForBaseType(pVarDecl: IAFXVariableDeclInstruction, 
                                 pPointer: IAFXVariableDeclInstruction,
                                 pBuffer: IAFXVariableDeclInstruction,
-                                iPadding: uint): void {
+                                iPadding: uint, pOffset?: IAFXVariableDeclInstruction = null): void {
             var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
             var pVarNameExpr: IAFXExprInstruction = pVarDecl._getFullNameExpr();
             if(pVarType.isComplex() || isNull(pVarNameExpr) || pVarType.getSize() === UNDEFINE_SIZE) {
@@ -406,7 +406,7 @@ module akra.fx {
             var pExtractExpr: ExtractExprInstruction = new ExtractExprInstruction();
             var sPaddingExpr: string = "";
 
-            if(iPadding > 0){
+            if(iPadding > 0 && isNull(pOffset)){
                 sPaddingExpr = "+"+ iPadding.toString() + ".0";
             }
             else{
@@ -417,7 +417,7 @@ module akra.fx {
                 sPaddingExpr += "+float(i*" + pExtractType.getSize().toString() + ")"; 
             }
 
-            pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr);
+            pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr, pOffset);
 
             if(pExtractExpr.isErrorOccured()){
                 this.setError(pExtractExpr.getLastError().code,pExtractExpr.getLastError().info);
@@ -453,6 +453,10 @@ module akra.fx {
                     eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
             this._pExtractInExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
             this._pExtactExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+        }
+
+        getExtractFunction(): IAFXFunctionDeclInstruction {
+            return this._pExtactExpr.getExtractFunction();
         }
     }
 

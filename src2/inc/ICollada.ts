@@ -7,15 +7,24 @@ module akra {
 	IFACE(ISkeleton);
 	IFACE(IModel);
 	IFACE(IEngine);
+    IFACE(IColladaAsset);
+    IFACE(IMesh);
+    IFACE(IAnimationController);
 
     //=============================================
     // COLLADA LOAD OPTIONS
     //=============================================
 
     export interface ICollada extends IModel {
-        //getAnimationController(): IAnimationController;
-        //getMesh(sName: string);
-        //getSkeleton();
+        getAsset(): IColladaAsset;
+        getFilename(): string;
+        getBasename(): string;
+        
+        isVisualSceneLoaded(): bool;
+        isAnimationLoaded(): bool;
+
+        attachToScene(pNode: ISceneNode, pController?: IAnimationController): bool;
+        attachToScene(pScene: IScene3d, pController?: IAnimationController): bool;
     }
 
 	export interface IColladaAnimationLoadOptions {
@@ -75,7 +84,7 @@ module akra {
     }
 
     export interface IColladaEffectLibrary extends IColladaLibrary {
-        effects: { [id: string]: IColladaEffect; };
+        effect: { [id: string]: IColladaEffect; };
     }
 
     export interface IColladaEntryLoader {
@@ -135,20 +144,22 @@ module akra {
     }
 
     export interface IColladaContributor extends IColladaEntry {
-        author: string;
-        authoringTool: string;
-        comments: string;
-        copyright: string;
-        sourceData: any;
+        author?: string;
+        authoringTool?: string;
+        comments?: string;
+        copyright?: string;
+        sourceData?: any;
     }
 
     export interface IColladaAsset extends IColladaEntry {
         unit: IColladaUnit;
         upAxis: string;
-        title: string;
+        title?: string;
+        subject?: string; 
         created: string;
         modified: string;
-        contributor: IColladaContributor;
+        keywords?: string[];
+        contributor?: IColladaContributor;
     }
 
     export interface IColladaInstance extends IColladaEntry {
@@ -179,6 +190,7 @@ module akra {
     }
     
     export interface IColladaAccessor extends IColladaEntry {
+        source?: string;
         data: IColladaArray;
         count: int;
         stride: int;
@@ -329,8 +341,6 @@ module akra {
         sampler: IColladaNewParam;
         surface: IColladaNewParam;
         image: IColladaImage;
-
-
     }
     
 
@@ -470,7 +480,7 @@ module akra {
         samplers: IColladaAnimationSampler[];
         channels: IColladaAnimationChannel[];
 
-        animations: IColladaAnimation[];
+        animations?: IColladaAnimation[];
     }
 
 
@@ -478,16 +488,25 @@ module akra {
 
     }
 
-    export interface IColladaFile {
+    export interface IColladaDocument {
         asset?: IColladaAsset;
 
-        libEffects: IColladaEffectLibrary;
-        libMaterials: IColladaLibrary;
-        libGeometries: IColladaLibrary;
-        libVisualScenes: IColladaLibrary;
+        libEffects?: IColladaEffectLibrary;
+        libMaterials?: IColladaLibrary;
+        libGeometries?: IColladaLibrary;
+        libVisualScenes?: IColladaLibrary;
+        libAnimations?: IColladaLibrary;
 
-        scene: IColladaScene;
+        scene?: IColladaScene;
     }
+
+    export interface IColladaAnimationClip extends IColladaEntry {
+        name?: string;
+        start: float;
+        end: float;
+    }
+
+
 
 
 }

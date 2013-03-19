@@ -7,17 +7,25 @@ module akra {
 	IFACE(IAnimationFrame);
 	IFACE(IAnimationTrack);
 
-	export interface IAnimationTarget{
+	export interface IAnimationTarget {
 		target: ISceneNode;
 		index: int;
 		name: string;
 		track?: IAnimationTrack;
 	}
 
+	export enum EAnimationTypes {
+		ANIMATION,
+		LIST,
+		CLIP,
+		CONTAINER,
+		BLEND
+	}
+
 	export interface IAnimationBase extends IEventProvider {
 		duration: float;
 		name: string;
-
+		type: EAnimationTypes;
 
 		play(fRealTime: float): void;
 		stop(fRealTime: float): void;
@@ -29,16 +37,22 @@ module akra {
 
 		addTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
 		setTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
+
 		getTarget(sTargetName: string): IAnimationTarget;
-		getTargetList(): IAnimationTarget[];
 		getTargetByName(sName: string): IAnimationTarget;
+		
+		getTargetList(): IAnimationTarget[];
+		
 		targetNames(): string[];
 		targetList(): ISceneNode[];
 		jointList(): IJoint[];
+		
 		grab(pAnimationBase: IAnimationBase, bRewrite?: bool): void;
 		
 		createAnimationMask(): FloatMap;
 
+		signal played(fTime: float): void;
+		signal stoped(fTime: float): void;
 	}
 }
 

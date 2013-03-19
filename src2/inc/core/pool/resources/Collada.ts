@@ -7,8 +7,12 @@
 #include "IMesh.ts"
 #include "IRenderDataCollection.ts"
 
-#include "animation/AnimationTrack.ts"
+#include "animation/Track.ts"
 #include "animation/Animation.ts"
+#include "animation/Controller.ts"
+#include "animation/Blend.ts"
+
+#include "scene/Node.ts"
 
 #include "../ResourcePoolItem.ts"
 
@@ -57,6 +61,7 @@ module akra.core.pool.resources {
 
     var pSupportedVertexFormat: IColladaUnknownFormat[];
     var pSupportedTextureFormat: IColladaUnknownFormat[];
+    var pSupportedColorFormat: IColladaUnknownFormat[];
     var pSupportedWeightFormat: IColladaUnknownFormat[];
     var pSupportedJointFormat: IColladaUnknownFormat[];
     var pSupportedInvBindMatrixFormat: IColladaUnknownFormat[];
@@ -76,6 +81,7 @@ module akra.core.pool.resources {
         attachToScene(pNode: ISceneNode): bool;
 
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
+
         // load(sFilename: string, fnCallback?: IColladaLoadCallback, pOptions?: IColladaLoadOptions): void;
 
         // polygon index convertion
@@ -176,11 +182,12 @@ module akra.core.pool.resources {
         private buildAnimationTrack(pChannel: IColladaAnimationChannel): IAnimationTrack;
         private buildAnimationTrackList(pAnimationData: IColladaAnimation): IAnimationTrack[];
         private buildAnimation(pAnimationData: IColladaAnimation): IAnimation;
-        private buildAnimations(pAnimations: IColladaAnimation[], pAnimationsList?: IAnimation[]): IAnimation[];
+        private buildAnimations(pAnimationsList?: IAnimation[]): IAnimation[];
 
         // common
         
         private buildAssetTransform(pNode: ISceneNode, pAsset?: IColladaAsset): ISceneNode;
+        private buildDeclarationFromAccessor(sSemantic: string, pAccessor: IColladaAccessor): IVertexElementInterface[];
 
         // materials & meshes
         
@@ -220,20 +227,23 @@ module akra.core.pool.resources {
         private prepareInput(pInput: IColladaInput): IColladaInput;
 
         private isJointsVisualizationNeeded(): bool;
-        private isVisualSceneLoaded(): bool;
+        public  isVisualSceneLoaded(): bool;
+        public  isAnimationLoaded(): bool;
         private isSceneNeeded(): bool;
         private isAnimationNeeded(): bool;
         private isPoseExtractionNeeded(): bool;
         private isWireframeEnabled(): bool;
         private getSkeletonsOutput(): ISkeleton[];
         private getVisualScene(): IColladaVisualScene;
-        private getAsset(): IColladaAsset;
+        private getAnimations(): IColladaAnimation[];
+        public  getAsset(): IColladaAsset;
+
 
         private isLibraryLoaded(sLib: string): bool;
         private isLibraryExists(sLib: string): bool;
         private getLibrary(sLib: string): IColladaLibrary;
-        private getBasename(): string;
-        private getFilename(): string;
+        public  getBasename(): string;
+        public  getFilename(): string;
         private setFilename(sName: string): void;
 
         private checkLibraries(pXML: Element, pTemplates: IColladaLibraryTemplate[]): void;
@@ -286,6 +296,7 @@ module akra.core.pool.resources {
 
         private _pAsset: IColladaAsset = null;
         private _pVisualScene: IColladaVisualScene = null;
+        private _pAnimations: IColladaAnimation[] = [];
 
         private _sFilename: string = null;
 
@@ -810,6 +821,7 @@ module akra.core.pool.resources {
             var pLib: IColladaLibrary = <IColladaLibrary>{};
             var pData: IColladaEntry;
             var sTag: string = pTemplate.element;
+            var iAutoId: int = 0;
 
             pLib[sTag] = {};
 
@@ -824,7 +836,7 @@ module akra.core.pool.resources {
                     return;
                 }
 
-                pLib[sTag][attr(pXMLData, 'id')] = pData;
+                pLib[sTag][attr(pXMLData, 'id') || (sTag + "_" + (iAutoId ++))] = pData;
             });
 
             return pLib;
@@ -1098,7 +1110,7 @@ module akra.core.pool.resources {
 
             n *= pVertexWeights.inputs.length;
 
-            ERROR(pVertexWeights.inputs.length === 2,
+            ASSERT(pVertexWeights.inputs.length === 2,
                          "more than 2 inputs in <vertex_weights/> not supported currently");
 
             pVData = new Array(n);
@@ -1234,10 +1246,11 @@ module akra.core.pool.resources {
 
             var pXMLData: Element = firstChild(pXML, "skin");
 
-            if (isNull(pXMLData)) {
+            if (!isNull(pXMLData)) {
                 pController.skin = this.COLLADASkin(pXMLData);
             }
             else {
+                debug_warning("Founded controller without skin element!");
                 return null;
             }
 
@@ -1572,7 +1585,6 @@ module akra.core.pool.resources {
                 return null;
             }
 
-
             var pMaterials: IColladaBindMaterial = {};
             var pMat: IColladaInstanceMaterial = null;
             var pSourceMat: IColladaMaterial = null;
@@ -1581,6 +1593,7 @@ module akra.core.pool.resources {
             this.eachByTag(pTech, "instance_material", (pInstMat: Element): void => {
 
                 pSourceMat = <IColladaMaterial>this.source(attr(pInstMat, "target"));
+
                 pMat = {
                     // url         : pSourceMat.instanceEffect.url,
                     target      : attr(pInstMat, "target"), 
@@ -1782,6 +1795,11 @@ module akra.core.pool.resources {
                 return null;
             }
 
+            debug_assert(pXML.parentNode === firstChild(this.getXMLRoot(), "library_animations"), 
+                "sub animations not supported");
+
+            this._pAnimations.push(pAnimation);
+
             return pAnimation;
         }
 
@@ -1795,7 +1813,7 @@ module akra.core.pool.resources {
             var pElement: IColladaEntry = this._pLinks[sUrl];
 
             if (!isDefAndNotNull(pElement)) {
-                WARNING("cannot find element with id: " + sUrl);
+                WARNING("cannot find element with id: " + sUrl + __CALLSTACK__);
             }
 
             return pElement || null;
@@ -1878,7 +1896,8 @@ module akra.core.pool.resources {
                     pObject.value = (<IVec4>pSource.value).w;
                     break;
                 case "ANGLE":
-                    pObject.value = (<IVec4>pSource.value).w; //<rotate sid="rotateY">0 1 0 -4.56752</rotate>
+                    pObject.value = (<IVec4>pSource.value).w; 
+                    //<rotate sid="rotateY">0 1 0 -4.56752</rotate>
                     break;
             }
 
@@ -1923,8 +1942,8 @@ module akra.core.pool.resources {
             var pOutputValues: float[] = pOutput.array;
             var pFloatArray: Float32Array;
 
-            var pTransform: IColladaEntry = pChannel.target.object
-            var sTransform: string = pTransform.name;
+            var pTransform: IColladaTransform = <IColladaTransform>pChannel.target.object
+            var sTransform: string = pTransform.transform;
             var v4f: IVec4;
             var pValue: any;
             var nMatrices: uint;
@@ -2036,11 +2055,13 @@ module akra.core.pool.resources {
             return pAnimation;
         }
 
-        private buildAnimations(pAnimations: IColladaAnimation[], pAnimationsList: IAnimation[] = []): IAnimation[] {
+        private buildAnimations(pAnimationsList: IAnimation[] = []): IAnimation[] {
+            var pAnimations: IColladaAnimation[] = this.getAnimations();
+
             if (isNull(pAnimations)) {
                 return null;
             }
-
+     
             for (var i: int = 0; i < pAnimations.length; ++ i) {
                 var pAnimation: IAnimation = this.buildAnimation(pAnimations[i]);
 
@@ -2070,6 +2091,25 @@ module akra.core.pool.resources {
             return pNode;   
         }
 
+        private buildDeclarationFromAccessor(sSemantic: string, pAccessor: IColladaAccessor): IVertexElementInterface[] {
+            var pDecl: IVertexElementInterface[] = [];
+            
+            for (var i: int = 0; i < pAccessor.params.length; ++ i) {
+                var sUsage: string = pAccessor.params[i].name;
+                var sType: string = pAccessor.params[i].type;
+
+                ASSERT(sType === "float", "Only float type supported for construction declaration from accessor");
+
+                pDecl.push(VE_FLOAT(sUsage));
+            }
+
+            pDecl.push(VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pAccessor.params.length, 0));
+
+            debug_print("Automatically constructed declaration: ", createVertexDeclaration(pDecl).toString());
+            
+            return pDecl;
+        }
+
 
         // materials & meshes
         
@@ -2085,15 +2125,15 @@ module akra.core.pool.resources {
                 var pMaterialInst: IColladaInstanceMaterial = pMaterials[sMaterial];
                 var pInputMap: IColladaBindVertexInputMap = pMaterialInst.vertexInput;
                 // URL --> ID (#somebody ==> somebody)
-                var sEffectId: string = pMaterialInst.url.substr(1);
-                var pEffect: IColladaEffect = pEffects.effects[sEffectId];
+                var sEffectId: string = pMaterialInst.material.instanceEffect.effect.id;
+                var pEffect: IColladaEffect = pEffects.effect[sEffectId];
                 var pPhongMaterial: IColladaPhong = <IColladaPhong>pEffect.profileCommon.technique.value;
                 var pMaterial: IMaterial = material.create(sEffectId)
 
                 pMaterial.set(<IMaterialBase>pPhongMaterial);
 
                 for (var j: int = 0; j < pMesh.length; ++j) {
-                    var pSubMesh: IMeshSubset = pMesh[j];
+                    var pSubMesh: IMeshSubset = pMesh.getSubset(j);
 
                     //if (pSubMesh.surfaceMaterial.findResourceName() === sMaterial) {
                     if (pSubMesh.material.name === sMaterial) {
@@ -2101,16 +2141,19 @@ module akra.core.pool.resources {
                         pSubMesh.material.set(pMaterial);
                         //FIXME: remove flex material setup(needs only demo with flexmats..)
                         // pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
-                        if (!pSubMesh.renderMethod.effect.isResourceLoaded()) {
-                            pSubMesh.renderMethod.effect.create();
-                        }
 
                         pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
                         pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
 
                         //setup textures
                         for (var sTextureType in pPhongMaterial.textures) {
+
                             var pColladaTexture: IColladaTexture = pPhongMaterial.textures[sTextureType];
+
+                            if (isNull(pColladaTexture)) {
+                                continue;
+                            }
+
                             var pInput: IColladaBindVertexInput = pInputMap[pColladaTexture.texcoord];
 
                             if (!isDefAndNotNull(pInput)) {
@@ -2151,8 +2194,8 @@ module akra.core.pool.resources {
 
             for (var i: int = 0; i < pSkeletonsList.length; ++i) {
                 var pJoint: IJoint = <IJoint>(<IColladaNode>this.source(pSkeletonsList[i])).constructedNode;
-
-                ERROR(scene.isJoint(pJoint), "skeleton node must be joint");
+                
+                ASSERT(scene.isJoint(pJoint), "skeleton node must be joint");
 
                 pSkeleton.addRootJoint(pJoint);
             }
@@ -2181,7 +2224,7 @@ module akra.core.pool.resources {
 
             pMesh = this.getEngine().createMesh(
                 sMeshName,
-                <int>(EMeshOptions.HB_READABLE), /*|EMeshOptions.RD_ADVANCED_INDEX,  //0,//*/
+                <int>(EMeshOptions.HB_READABLE), /*|EMeshOptions.RD_ADVANCED_INDEX,  0,*/
                 this.sharedBuffer());    /*shared buffer, if supported*/
 
             var pPolyGroup: IColladaPolygons[] = pNodeData.polygons;
@@ -2242,7 +2285,8 @@ module akra.core.pool.resources {
                                 pDecl = [VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pInput.accessor.stride)];
                                 break;
                             default:
-                                ERROR("unsupported semantics used: " + sSemantic);
+                                pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
+                                WARNING("unsupported semantics used: " + sSemantic);
                         }
 
                         pMeshData.allocateData(pDecl, pData);
@@ -2286,8 +2330,8 @@ module akra.core.pool.resources {
                 pSubMesh.material.name = pPolygons.material;
             }
 
-            pMesh.addFlexMaterial("default");
-            pMesh.setFlexMaterial("default");
+            ASSERT(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
+            ASSERT(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
 
             //adding all data to cahce data
             this.addMesh(pMesh);
@@ -2318,10 +2362,12 @@ module akra.core.pool.resources {
             pMesh = this.buildMesh({geometry : pGeometry, material : pMaterials});
 
             pSkin = pMesh.createSkin();
+
             pSkin.setBindMatrix(m4fBindMatrix);
             pSkin.setBoneNames(pBoneList);
             pSkin.setBoneOffsetMatrices(pBoneOffsetMatrices);
-            pSkin.setSkeleton(pSkeleton);
+            
+            ASSERT(pSkin.setSkeleton(pSkeleton), "Could not set skeleton to skin.");
 
             if (!pSkin.setVertexWeights(
                 <uint[]>pVertexWeights.vcount,
@@ -2330,6 +2376,7 @@ module akra.core.pool.resources {
                 ERROR("cannot set vertex weight info to skin");
             }
 
+            pMesh.setSkin(pSkin);
             pMesh.setSkeleton(pSkeleton);
             pSkeleton.attachMesh(pMesh);
 
@@ -2420,9 +2467,10 @@ module akra.core.pool.resources {
                 pSceneNode = pScene.createNode();
             }
 
+            ASSERT(pSceneNode.create(), "Can not initialize scene node!");
+
             pSceneNode.attachToParent(pParentNode);
         
-
             return pSceneNode;
         }
         
@@ -2443,6 +2491,9 @@ module akra.core.pool.resources {
             }
 
             pJointNode = pParentNode.scene.createJoint();
+                
+            ASSERT(pJointNode.create(), "Can not initialize joint node!");
+
             pJointNode.boneName = sJointSid;
             pJointNode.attachToParent(pParentNode);
 
@@ -2632,7 +2683,6 @@ module akra.core.pool.resources {
 
         private prepareInput(pInput: IColladaInput): IColladaInput {
             var pSupportedFormat: IColladaUnknownFormat[] = getSupportedFormat(pInput.semantics);
-            
             debug_assert(isDefAndNotNull(pSupportedFormat), "unsupported semantic used <" + pInput.semantics + ">");
 
             pInput.array    = <any[]><any>this.COLLADAGetSourceData(pInput.source, pSupportedFormat);
@@ -2645,8 +2695,12 @@ module akra.core.pool.resources {
             return this._pOptions.drawJoints === true;
         }
 
-        private inline isVisualSceneLoaded(): bool {
+        public inline isVisualSceneLoaded(): bool {
             return isDefAndNotNull(this._pVisualScene);
+        }
+
+        public inline isAnimationLoaded(): bool {
+            return this._pAnimations.length > 0;
         }
 
         private inline isSceneNeeded(): bool {
@@ -2673,7 +2727,11 @@ module akra.core.pool.resources {
             return this._pVisualScene;
         }
 
-        private inline getAsset(): IColladaAsset {
+        private inline getAnimations(): IColladaAnimation[] {
+            return this._pAnimations;
+        }
+
+        public inline getAsset(): IColladaAsset {
             return this._pAsset;
         }        
 
@@ -2682,18 +2740,18 @@ module akra.core.pool.resources {
         }
 
         private inline isLibraryExists(sLib: string): bool {
-            return false;
+            return !isNull(firstChild(this.getXMLRoot(), "library_animations"));
         }
 
         private inline getLibrary(sLib: string): IColladaLibrary {
             return this._pLib[sLib] || null;
         }
 
-        private inline getBasename(): string {
+        public inline getBasename(): string {
             return util.pathinfo(this._sFilename).basename || "unknown";
         }
 
-        private inline getFilename(): string {
+        public inline getFilename(): string {
             return this._sFilename;
         }
 
@@ -2706,7 +2764,6 @@ module akra.core.pool.resources {
             
             for (var i: int = 0; i < pTemplates.length; i++) {
                 var sLib: string = pTemplates[i].lib;
-
                 pLibraries[sLib] = this.COLLADALibrary(firstChild(pXML, sLib), pTemplates[i]);
             }
         } 
@@ -2781,25 +2838,50 @@ module akra.core.pool.resources {
             });
         }
 
-        attachToScene(pNode: ISceneNode): bool {
+
+        attachToScene(pScene: IScene3d, pController?: IAnimationController): bool;
+        attachToScene(pNode: ISceneNode, pController?: IAnimationController): bool;
+        attachToScene(parent, pController: IAnimationController = null): bool {
             var pSkeletons: ISkeleton[], 
                 pSkeleton: ISkeleton;
             var pPoses: IAnimation[];
+            var pScene: IScene3d;
+            var pNode: ISceneNode;
             var pRoot: ISceneNode;
 
             var pSceneOutput: ISceneNode[] = null;
             var pAnimationOutput: IAnimation[] = null;
             var pMeshOutput: IMesh[] = null;
             var pInitialPosesOutput: IAnimation[] = null;
-            var pController: IAnimationController = null;
 
 
-            if (isNull(pNode)) {
+            if (isNull(parent)) {
                 return false;
             }
 
+            if (parent instanceof scene.Node) {
+                //attach collada scene to give node
+                pNode = <ISceneNode>parent;
+                pScene = pNode.scene;
+                pRoot = pNode;
+            }
+            else {
+                //attaching collada scene to new node, that is child of scene root
+                pScene = <IScene3d>parent;
+                pNode = pScene.getRootNode();
+                pRoot = pScene.createNode();
+
+                pRoot.setInheritance(ENodeInheritance.ALL);
+
+                if (!pRoot.attachToParent(pNode)) {
+                    return false;
+                }
+            }
+
+          
+
             if (this.isVisualSceneLoaded() && this.isSceneNeeded()) {
-                pSceneOutput = this.buildScene(pNode);
+                pSceneOutput = this.buildScene(pRoot);
                 pMeshOutput = this.buildMeshes();
             }
 
@@ -2807,11 +2889,9 @@ module akra.core.pool.resources {
                 pInitialPosesOutput = this.buildInitialPoses();
             }
 
-            if (this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
-
+            if (!isNull(pController) && this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
                 pAnimationOutput = 
-                        this.buildAnimations((<IColladaAnimation>this.getLibrary("library_animations")).animations);
-
+                        this.buildAnimations();
                 //дополним анимации начальными позициями костей
                 if (this.isPoseExtractionNeeded()) {
                     pSkeletons = this.getSkeletonsOutput() || [];
@@ -2848,17 +2928,15 @@ module akra.core.pool.resources {
                 }
             }
 
+            //clear all links from collada nodes to scene nodes
             this.buildComplete();
 
-            pRoot = pNode.scene.createNode();
-            pRoot.setInheritance(ENodeInheritance.ALL);
+            if (!isNull(pController) && !isNull(pAnimationOutput)) {
+                for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
+                    pController.addAnimation(pAnimationOutput[i]);
+                }
 
-            if (!pRoot.attachToParent(pNode)) {
-                return false;
-            }
-
-            if (!isNull(pController)) {
-                //TODO: bind controller
+                pController.attach(pRoot);
             }
 
             return true;
@@ -2875,6 +2953,12 @@ module akra.core.pool.resources {
         {name : ["S"], type : ["float"]},
         {name : ["T"], type : ["float"]},
         {name : ["P"], type : ["float"]}
+    ];
+
+    pSupportedColorFormat = [
+        {name : ["R"], type : ["float"]},
+        {name : ["G"], type : ["float"]},
+        {name : ["B"], type : ["float"]}
     ];
 
     pSupportedWeightFormat = [
@@ -2977,14 +3061,14 @@ module akra.core.pool.resources {
 
             case "OUTPUT":
                 return pSupportedOutputFormat;
-
+            case "COLOR":
+                return pSupportedColorFormat;
             case "UV":
             case "MORPH_WEIGHT":
             case "MORPH_TARGET":
             case "LINEAR_STEPS":
             case "IMAGE":
             case "CONTINUITY":
-            case "COLOR":
                 return null;
         }
         

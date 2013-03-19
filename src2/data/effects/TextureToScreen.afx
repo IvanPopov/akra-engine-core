@@ -1,0 +1,43 @@
+struct VS_IN{
+	float2 position : POSITION;
+};
+
+struct VS_OUT{
+	float4 position : POSITION;
+	float2 texCoord : TEXCOORD0;
+};
+
+texture tex0:TEXTURE0;
+
+sampler sampler0:SAMPLER_TEXTURE0  = sampler_state
+{
+    Texture = <tex0>;
+};
+
+VS_OUT vs_sprite(VS_IN IN){
+	VS_OUT Out;
+
+	float4 pos = float4(IN.position,0.,1.);
+
+	Out.position = pos;
+	Out.texCoord = (IN.position +  1.)/2.;
+
+	return Out;
+};
+
+float4 fs_sprite(VS_OUT IN) : COLOR{
+
+	float2 texturePosition = IN.texCoord;
+	float4 textureColor = float4(0.);
+
+    textureColor = tex2D(sampler0, texturePosition);
+
+    return float4(textureColor.xyz, 1.0);
+};
+
+technique akra.system.texture_to_screen{
+	pass p0{
+		VertexShader = compile vs_sprite();
+		PixelShader = compile fs_sprite();
+	}
+}

@@ -1,5 +1,5 @@
-#ifndef IDISPLAY_TS
-#define IDISPLAY_TS
+#ifndef ICanvas_TS
+#define ICanvas_TS
 
 module akra {
 	export enum ECanvasTypes {
@@ -8,12 +8,12 @@ module akra {
 		TYPE_3D
 	};
 
-	export interface IDisplay {
-		type: EDisplayTypes;
+	export interface ICanvas {
+		type: ECanvasTypes;
 
 
 		isFullscreen(): bool;
-		fullscreen(): bool;
+		setFullscreen(isFullscreen?: bool): void;
 	}
 }
 

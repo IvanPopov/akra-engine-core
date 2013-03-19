@@ -34,6 +34,9 @@ module akra.fx {
 		protected _pUsedFunctionMap: IAFXFunctionDeclMap = null;
 		protected _pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
 
+		protected _pAttributeVariableMap: IAFXVariableDeclMap = null;
+		protected _pVaryingVariableMap: IAFXVariableDeclMap = null;
+
 		protected _pUsedVarTypeMap: IAFXTypeUseInfoMap = null;
 		
 		protected _pSharedVariableMap: IAFXVariableDeclMap = null;
@@ -47,10 +50,24 @@ module akra.fx {
 		// protected _pUniformVariableTypeList: IAFXVariableTypeInstruction[] = null;
 		// protected _pForeignVariableTypeList: IAFXVariableTypeInstructionnt[] = null;
 
-		protected _pUsedTypeMap: IAFXTypeDeclMap = null;
+		protected _pUsedComplexTypeMap: IAFXTypeMap = null;
+
+		protected _pAttributeVariableKeys: uint[] = null;
+		protected _pVaryingVariableKeys: uint[] = null;
+
+		protected _pSharedVariableKeys: uint[] = null;
+		protected _pUniformVariableKeys: uint[] = null;
+		protected _pForeignVariableKeys: uint[] = null;
+		protected _pGlobalVariableKeys: uint[] = null;
+		protected _pTextureVariableKeys: uint[] = null;
+		protected _pUsedComplexTypeKeys: uint[] = null;
 
 		protected _pVertexShader: IAFXFunctionDeclInstruction = null;
 		protected _pPixelShader: IAFXFunctionDeclInstruction = null;
+
+		private _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
+		private _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
+		private _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
 
 
 		constructor() { 
@@ -66,6 +83,10 @@ module akra.fx {
 			sCode += this._pImplementation.toFinalCode();
 
 			return sCode;
+		}
+
+		toFinalDefCode(): string {
+			return this._pFunctionDefenition.toFinalCode();
 		}
 
 		inline getType(): IAFXTypeInstruction {
@@ -149,7 +170,7 @@ module akra.fx {
 			var pUniformVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pUniformVariableMap, pRelationMap);
 			var pForeignVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pForeignVariableMap, pRelationMap);
 			var pTextureVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pTextureVariableMap, pRelationMap);
-			var pUsedTypeMap: IAFXTypeDeclMap = this.cloneTypeDeclMap(this._pUsedTypeMap, pRelationMap);
+			var pUsedComplexTypeMap: IAFXTypeMap = this.cloneTypeMap(this._pUsedComplexTypeMap, pRelationMap);
 
 			pClone._setUsedFunctions(this._pUsedFunctionMap, this._pUsedFunctionList);
 			pClone._setUsedVariableData(pUsedVarTypeMap, 
@@ -158,7 +179,7 @@ module akra.fx {
 										pUniformVariableMap,
 										pForeignVariableMap,
 										pTextureVariableMap,
-										pUsedTypeMap);
+										pUsedComplexTypeMap);
 			pClone._initAfterClone();
 
 			return pClone;
@@ -273,6 +294,13 @@ module akra.fx {
 		}
 
 		_addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool {
+			if (pFunction._getInstructionType() === EAFXInstructionTypes.k_SystemFunctionInstruction &&
+				!pFunction.isBuiltIn()) {
+
+				this.addExtSystemFunction(pFunction);
+				return true;
+			}
+
 			if(isNull(this._pUsedFunctionMap)){
 				this._pUsedFunctionMap = <IAFXFunctionDeclMap>{};
 				this._pUsedFunctionList = [];
@@ -424,14 +452,14 @@ module akra.fx {
 							pUniformVariableMap: IAFXVariableDeclMap,
 							pForeignVariableMap: IAFXVariableDeclMap,
 							pTextureVariableMap: IAFXVariableDeclMap,
-							pUsedTypeMap: IAFXTypeDeclMap): void {
+							pUsedComplexTypeMap: IAFXTypeMap): void {
         	this._pUsedVarTypeMap = pUsedVarTypeMap;
         	this._pSharedVariableMap = pSharedVariableMap;
         	this._pGlobalVariableMap = pGlobalVariableMap;
         	this._pUniformVariableMap = pUniformVariableMap;
         	this._pForeignVariableMap = pForeignVariableMap;
         	this._pTextureVariableMap = pTextureVariableMap;
-        	this._pUsedTypeMap = pUsedTypeMap;
+        	this._pUsedComplexTypeMap = pUsedComplexTypeMap;
         }
 
         _initAfterClone(): void{
@@ -449,16 +477,16 @@ module akra.fx {
 
         	this._pUsedVarTypeMap = pUsedData;
 
-        	if(isNull(this._pUsedTypeMap)){
+        	if(isNull(this._pUsedComplexTypeMap)){
         		this._pSharedVariableMap = <IAFXVariableDeclMap>{};
 				this._pGlobalVariableMap = <IAFXVariableDeclMap>{};
 				this._pUniformVariableMap = <IAFXVariableDeclMap>{};
 				this._pForeignVariableMap = <IAFXVariableDeclMap>{};
 				this._pTextureVariableMap = <IAFXVariableDeclMap>{};
-				this._pUsedTypeMap = <IAFXTypeDeclMap>{};
+				this._pUsedComplexTypeMap = <IAFXTypeMap>{};
         	}
 
-        	this.addUsedTypeDecl(this.getReturnType().getBaseType());
+        	//this.addUsedComplexType(this.getReturnType().getBaseType());
 
         	for(var i in pUsedData) {
         		var pAnalyzedInfo: IAFXTypeUseInfoContainer = pUsedData[i];
@@ -470,8 +498,14 @@ module akra.fx {
         		else if(pAnalyzedType.isUniform()){
         			this.addUniformParameter(pAnalyzedType);
         		}
-        		else {
-        			this.addUsedTypeDecl(pAnalyzedType.getBaseType());
+        		else if(pAnalyzedType._getScope() < this._getImplementationScope()){
+        			if(!this._isUsedAsFunction()){
+        				if (!isNull(this._getOutVariable()) && 
+        					this._getOutVariable().getType() !== pAnalyzedType){
+        					
+        					this.addUsedComplexType(pAnalyzedType.getBaseType());
+        				}
+        			}
         		}
         	}
         	if(!isNull(this._pUsedFunctionList)){
@@ -479,6 +513,14 @@ module akra.fx {
 	        		this.addUsedInfoFromFunction(this._pUsedFunctionList[j]);
 	        	}
         	}
+        }
+
+        inline _getAttributeVariableMap(): IAFXVariableDeclMap {
+        	return this._pAttributeVariableMap;
+        }
+
+        inline _getVaryingVariableMap(): IAFXVariableDeclMap {
+        	return this._pVaryingVariableMap;
         }
 
         inline _getSharedVariableMap(): IAFXVariableDeclMap{
@@ -501,20 +543,187 @@ module akra.fx {
         	return this._pTextureVariableMap;
         }
 
-        inline _getUsedTypeMap(): IAFXTypeDeclMap{
-        	return this._pUsedTypeMap;
+        inline _getUsedComplexTypeMap(): IAFXTypeMap{
+        	return this._pUsedComplexTypeMap;
+        }
+
+        _getAttributeVariableKeys(): uint[] {
+        	if(isNull(this._pAttributeVariableKeys)){
+        		this._pAttributeVariableKeys = <uint[]><any>Object.keys(this._pAttributeVariableMap);
+        	}
+
+        	return this._pAttributeVariableKeys;
+        }
+
+        _getVaryingVariableKeys(): uint[] {
+        	if(isNull(this._pVaryingVariableKeys)){
+        		this._pVaryingVariableKeys = <uint[]><any>Object.keys(this._pVaryingVariableMap);
+        	}
+        	
+        	return this._pVaryingVariableKeys;
+        }
+
+
+        _getSharedVariableKeys(): uint[] {
+        	if(isNull(this._pSharedVariableKeys)){
+        		this._pSharedVariableKeys = <uint[]><any[]>Object.keys(this._pSharedVariableMap);
+        	}
+
+        	return this._pSharedVariableKeys;
+        }
+
+        _getUniformVariableKeys(): uint[] {
+        	if(isNull(this._pUniformVariableKeys)){
+        		this._pUniformVariableKeys = <uint[]><any[]>Object.keys(this._pUniformVariableMap);
+        	}
+
+        	return this._pUniformVariableKeys;
+        }
+
+        _getForeignVariableKeys(): uint[] {
+        	if(isNull(this._pForeignVariableKeys)){
+        		this._pForeignVariableKeys = <uint[]><any[]>Object.keys(this._pForeignVariableMap);
+        	}
+
+        	return this._pForeignVariableKeys;
+        }
+
+        _getGlobalVariableKeys(): uint[] {
+        	if(isNull(this._pGlobalVariableKeys)){
+        		this._pGlobalVariableKeys = <uint[]><any[]>Object.keys(this._pGlobalVariableMap);
+        	}
+
+        	return this._pGlobalVariableKeys;
+        }
+
+        _getTextureVariableKeys(): uint[] {
+        	if(isNull(this._pTextureVariableKeys)){
+        		this._pTextureVariableKeys = <uint[]><any[]>Object.keys(this._pTextureVariableMap);
+        	}
+
+        	return this._pTextureVariableKeys;
+        }
+
+        _getUsedComplexTypeKeys(): uint[] {
+        	if(isNull(this._pUsedComplexTypeKeys)){
+        		this._pUsedComplexTypeKeys = <uint[]><any[]>Object.keys(this._pUsedComplexTypeMap);
+        	}
+
+        	return this._pUsedComplexTypeKeys;
+        }
+
+        _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[] {
+        	return this._pExtSystemFunctionList;
+        }
+
+        _getExtSystemMacrosList(): IAFXSimpleInstruction[] {
+        	return this._pExtSystemMacrosList;
+        }
+
+        _getExtSystemTypeList(): IAFXTypeDeclInstruction[] {
+        	return this._pExtSystemTypeList;
         }
 
         private generatesVertexAttrubutes(): void {
+        	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
+        	var isComplexInput: bool = this._pFunctionDefenition.isComplexShaderInput();
 
+        	this._pAttributeVariableMap = <IAFXVariableDeclMap>{};
+
+        	if(isComplexInput){
+        		var pContainerVariable: IAFXVariableDeclInstruction = pShaderInputParamList[0];
+        		var pContainerType: IAFXVariableTypeInstruction = pContainerVariable.getType();
+
+        		var pAttributeNames: string[] = pContainerType.getFieldNameList();
+
+        		for(var i: uint = 0; i < pAttributeNames.length; i++){
+        			var pAttr: IAFXVariableDeclInstruction = pContainerType.getField(pAttributeNames[i]);
+
+        			if(!this.isVariableTypeUse(pAttr.getType())){
+        				continue;
+        			}
+
+        			this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
+        			this.generateExtractBlockForAttribute(pAttr);
+        		}
+        	}
+        	else {
+        		for(var i: uint = 0; i < pShaderInputParamList.length; i++){
+        			var pAttr: IAFXVariableDeclInstruction = pShaderInputParamList[i];
+
+        			if(!this.isVariableTypeUse(pAttr.getType())){
+        				continue;
+        			}
+
+        			this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
+        			this.generateExtractBlockForAttribute(pAttr);
+        		}
+        	}
+
+        	this._pAttributeVariableKeys = this._getAttributeVariableKeys();
         }
         
         private generateVertexVaryings(): void {
+        	if(isNull(this._getOutVariable())){
+        		return;
+        	}
 
+        	this._pVaryingVariableMap = <IAFXVariableDeclMap>{};
+			
+			var pContainerVariable: IAFXVariableDeclInstruction = this._getOutVariable();
+        	var pContainerType: IAFXVariableTypeInstruction = pContainerVariable.getType();
+
+
+        	var pVaryingNames: string[] = pContainerType.getFieldNameList();
+
+        	for(var i: uint = 0; i < pVaryingNames.length; i++){
+    			var pVarying: IAFXVariableDeclInstruction = pContainerType.getField(pVaryingNames[i]);
+
+    			if(!this.isVariableTypeUse(pVarying.getType())){
+    				continue;
+    			}
+
+    			this._pVaryingVariableMap[pVarying._getInstructionID()] = pVarying;
+    		}
+
+    		this._pVaryingVariableKeys = this._getVaryingVariableKeys();
         }
 
         private generatePixelVaryings(): void {
+        	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
+        	var isComplexInput: bool = this._pFunctionDefenition.isComplexShaderInput();
 
+        	this._pVaryingVariableMap = <IAFXVariableDeclMap>{};
+
+        	if(isComplexInput){
+        		var pContainerVariable: IAFXVariableDeclInstruction = pShaderInputParamList[0];
+        		var pContainerType: IAFXVariableTypeInstruction = pContainerVariable.getType();
+
+        		var pVaryingNames: string[] = pContainerType.getFieldNameList();
+
+        		for(var i: uint = 0; i < pVaryingNames.length; i++){
+        			var pVarying: IAFXVariableDeclInstruction = pContainerType.getField(pVaryingNames[i]);
+
+        			if(!this.isVariableTypeUse(pVarying.getType())){
+        				continue;
+        			}
+
+        			this._pVaryingVariableMap[pVarying._getInstructionID()] = pVarying;
+        		}
+        	}
+        	else {
+        		for(var i: uint = 0; i < pShaderInputParamList.length; i++){
+        			var pVarying: IAFXVariableDeclInstruction = pShaderInputParamList[i];
+
+        			if(!this.isVariableTypeUse(pVarying.getType())){
+        				continue;
+        			}
+
+        			this._pVaryingVariableMap[pVarying._getInstructionID()] = pVarying;
+        		}
+        	}
+
+        	this._pVaryingVariableKeys = this._getVaryingVariableKeys();
         }
 
         private cloneVarTypeUsedMap(pMap: IAFXTypeUseInfoMap, pRelationMap: IAFXInstructionMap): IAFXTypeUseInfoMap{
@@ -551,11 +760,11 @@ module akra.fx {
         	return pCloneMap;
         }
 
-        private cloneTypeDeclMap(pMap: IAFXTypeDeclMap, pRelationMap: IAFXInstructionMap): IAFXTypeDeclMap {
-        	var pCloneMap: IAFXTypeDeclMap = <IAFXVariableDeclMap>{};
+        private cloneTypeMap(pMap: IAFXTypeMap, pRelationMap: IAFXInstructionMap): IAFXTypeMap {
+        	var pCloneMap: IAFXTypeMap = <IAFXTypeMap>{};
 
         	for(var i in pMap){
-        		var pVar: IAFXTypeDeclInstruction = (isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i]);
+        		var pVar: IAFXTypeInstruction = (isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i]);
         		var id: uint = pVar._getInstructionID();
         		pCloneMap[id] = pVar;
         	}
@@ -575,7 +784,7 @@ module akra.fx {
         	var iVar: uint = pVariable._getInstructionID();
 
         	if(pMainVariable.getType().isShared()){
-        		this._pSharedVariableMap[iVar] = pVariable;
+        		// this._pSharedVariableMap[iVar] = pVariable;
         		this._pSharedVariableMap[iMainVar] = pMainVariable;
         	}
         	else if(pMainVariable.getType().isForeign()){
@@ -615,7 +824,7 @@ module akra.fx {
         		}
         	}
 
-        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+        	// this.addUsedComplexType(pMainVariable.getType().getBaseType());
         }
 
         private addUniformParameter(pType: IAFXVariableTypeInstruction): void {
@@ -627,20 +836,20 @@ module akra.fx {
         	}
 
         	this._pUniformVariableMap[iMainVar] = pMainVariable;
-        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+        	this.addUsedComplexType(pMainVariable.getType().getBaseType());
         }
 
-        private addUsedTypeDecl(pType: IAFXTypeInstruction): void {
-        	if(pType.isBase() || isDef(this._pUsedTypeMap[pType._getInstructionID()])){
+        private addUsedComplexType(pType: IAFXTypeInstruction): void {
+        	if(pType.isBase() || isDef(this._pUsedComplexTypeMap[pType._getInstructionID()])){
         		return;
         	}
 
-        	this._pUsedTypeMap[pType._getInstructionID()] = <IAFXTypeDeclInstruction>pType.getParent();
+        	this._pUsedComplexTypeMap[pType._getInstructionID()] = pType;
         	
         	var pFieldNameList: string[] = pType.getFieldNameList();
 
         	for(var i: uint = 0; i < pFieldNameList.length; i++){
-        		this.addUsedTypeDecl(pType.getFieldType(pFieldNameList[i]).getBaseType());
+        		this.addUsedComplexType(pType.getFieldType(pFieldNameList[i]).getBaseType());
         	}
         }
 
@@ -652,7 +861,7 @@ module akra.fx {
     		var pUniformVarMap: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
     		var pForeignVarMap: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
     		var pTextureVarMap: IAFXVariableDeclMap = pFunction._getTextureVariableMap();
-    		var pUsedTypeMap: IAFXTypeDeclMap = pFunction._getUsedTypeMap();
+    		var pUsedComplexTypeMap: IAFXTypeMap = pFunction._getUsedComplexTypeMap();
 
     		for(var j in pSharedVarMap){
     			this._pSharedVariableMap[pSharedVarMap[j]._getInstructionID()] = pSharedVarMap[j];
@@ -680,10 +889,201 @@ module akra.fx {
     			}
     		}
 
-    		for(var j in pUsedTypeMap){
-    			this._pUsedTypeMap[pUsedTypeMap[j]._getInstructionID()] = pUsedTypeMap[j];
+    		for(var j in pUsedComplexTypeMap){
+    			this._pUsedComplexTypeMap[pUsedComplexTypeMap[j]._getInstructionID()] = pUsedComplexTypeMap[j];
     		}
+
+    		this.addExtSystemFunction(pFunction);
         }
+
+        private addExtSystemFunction(pFunction: IAFXFunctionDeclInstruction): void {
+        	if(isNull(this._pExtSystemFunctionList)){
+        		this._pExtSystemFunctionList = [];
+        		this._pExtSystemTypeList = [];
+        		this._pExtSystemMacrosList = [];
+        	}
+
+        	if(pFunction._getInstructionType() === EAFXInstructionTypes.k_SystemFunctionInstruction){
+	        	if(this._pExtSystemFunctionList.indexOf(pFunction) !== -1){
+	        		return;
+	        	}
+
+	        	this._pExtSystemFunctionList.push(pFunction);
+        	}
+
+        	var pTypes = pFunction._getExtSystemTypeList();
+			var pMacroses = pFunction._getExtSystemMacrosList();
+			var pFunctions = pFunction._getExtSystemFunctionList();
+
+			if(!isNull(pTypes)){
+				for(var j: uint = 0; j < pTypes.length; j++){
+					if(this._pExtSystemTypeList.indexOf(pTypes[j]) === -1){
+						this._pExtSystemTypeList.push(pTypes[j]);
+					}
+				}
+			}
+
+			if(!isNull(pMacroses)){
+				for(var j: uint = 0; j < pMacroses.length; j++){
+					if(this._pExtSystemMacrosList.indexOf(pMacroses[j]) === -1){
+						this._pExtSystemMacrosList.push(pMacroses[j]);
+					}
+				}
+			}
+
+			if(!isNull(pFunctions)){
+				for(var j: uint = 0; j < pFunctions.length; j++){
+					if(this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1){
+						this._pExtSystemFunctionList.push(pFunctions[j]);
+					}
+				}
+			}
+        }
+
+        private isVariableTypeUse(pVariableType: IAFXVariableTypeInstruction): bool {
+        	var id: uint = pVariableType._getInstructionID();
+
+        	if(!isDef(this._pUsedVarTypeMap[id])){
+        		return false;
+        	}
+
+        	if(this._pUsedVarTypeMap[id].numUsed === 0){
+        		return false;
+        	}
+
+        	return true;
+        }
+
+        private generateExtractBlockForAttribute(pAttr: IAFXVariableDeclInstruction): IAFXInstruction {
+        	if(!pAttr.getType().isPointer()){
+        		return null;
+        	}
+
+        	var pExtractCollector: IAFXInstruction = new InstructionCollector();
+        	var pMainPointer: IAFXVariableDeclInstruction = pAttr.getType()._getMainPointer();
+
+        	pAttr._setAttrExtractionBlock(pExtractCollector);
+
+        	this.generateExtractStmtFromPointer(pMainPointer, null, 0, pExtractCollector);
+
+        	pAttr.getType().getSubVarDecls();
+
+        	return pExtractCollector;
+
+        }
+
+        private generateExtractStmtFromPointer(pPointer: IAFXVariableDeclInstruction, 
+        									   pOffset: IAFXVariableDeclInstruction,
+        									   iDepth: uint,
+        									   pCollector: IAFXInstruction): void {
+        	var pPointerType: IAFXVariableTypeInstruction = pPointer.getType();
+        	var pWhatExtracted: IAFXVariableDeclInstruction = pPointerType._getDownPointer();
+        	var pWhatExtractedType: IAFXVariableTypeInstruction = null;
+
+        	while(!isNull(pWhatExtracted)){
+        		pWhatExtractedType = pWhatExtracted.getType();
+
+        		if(!pWhatExtractedType.isPointIndex() && iDepth === 0){
+        			pOffset = this.createOffsetForAttr(pWhatExtracted);
+        		}
+
+        		if(!pWhatExtractedType.isComplex()){
+        			var pSingleExtract: ExtractStmtInstruction = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(
+        									pWhatExtracted,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0, 
+        									pWhatExtractedType.isPointIndex() ? null : pOffset);
+
+        			this._addUsedFunction(pSingleExtract.getExtractFunction());
+        			pCollector.push(pSingleExtract, true);
+        		}
+        		else {
+        			iDepth++;
+        			this.generateExtractStmtForComplexVar(
+        									pWhatExtracted, pOffset, iDepth, pCollector,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0);
+        		}
+
+        		pWhatExtracted = pWhatExtractedType._getDownPointer();
+        	}
+        }
+
+        private generateExtractStmtForComplexVar(pVarDecl: IAFXVariableDeclInstruction, 
+        										 pOffset: IAFXVariableDeclInstruction,
+        										 iDepth: uint,
+        										 pCollector: IAFXInstruction,
+        										 pPointer: IAFXVariableDeclInstruction,
+        										 pBuffer: IAFXVariableDeclInstruction,
+        										 iPadding: uint): void {
+
+        	var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
+        	var pFieldNameList: string[] = pVarType.getFieldNameList();
+        	var pField: IAFXVariableDeclInstruction = null;
+        	var pFieldType: IAFXVariableTypeInstruction = null;
+        	var pSingleExtract: ExtractStmtInstruction = null;
+
+        	for(var i: uint = 0; i < pFieldNameList.length; i++){
+        		pField = pVarType.getField(pFieldNameList[i]);
+
+        		if(isNull(pField)){
+        			continue;
+				}
+
+ 				pFieldType = pField.getType();
+
+ 				if(iDepth <= 1){
+ 					pOffset = this.createOffsetForAttr(pField);
+ 				}
+
+ 				iDepth++;
+
+ 				if(pFieldType.isPointer()){
+ 					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
+ 					pSingleExtract = new ExtractStmtInstruction();
+ 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), 
+ 														   iPadding + pFieldType.getPadding(), pOffset);
+
+ 					this._addUsedFunction(pSingleExtract.getExtractFunction());
+ 					
+ 					pCollector.push(pSingleExtract, true);
+ 					this.generateExtractStmtFromPointer(pFieldPointer, pOffset, iDepth, pCollector);
+ 				}
+ 				else if(pFieldType.isComplex()) {
+ 					this.generateExtractStmtForComplexVar(pField, pOffset, iDepth, pCollector,
+ 														  pPointer, pBuffer, iPadding + pFieldType.getPadding());
+ 				}
+ 				else {
+ 					pSingleExtract = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, 
+        												   iPadding + pFieldType.getPadding(), pOffset);
+
+        			this._addUsedFunction(pSingleExtract.getExtractFunction());
+
+        			pCollector.push(pSingleExtract, true);
+ 				}
+ 	       	}        	
+        }
+
+        private createOffsetForAttr(pAttr: IAFXVariableDeclInstruction): IAFXVariableDeclInstruction {
+        	var pOffset: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+        	var pOffsetType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+        	var pOffsetId: IAFXIdInstruction = new IdInstruction();
+
+        	pOffsetType.pushType(Effect.getSystemType("float"));
+
+        	pOffset.push(pOffsetType, true);
+        	pOffset.push(pOffsetId, true);
+
+        	pOffset.setParent(pAttr);
+
+        	pAttr.getType()._addAttrOffset(pOffset);
+
+        	return pOffset;
+        }
+
+
 	}
 
 	export class SystemFunctionInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
@@ -691,6 +1091,13 @@ module akra.fx {
 	    private _pName: IAFXIdInstruction = null;
 	    private _pReturnType: VariableTypeInstruction = null;
 	    private	_pArguments: IAFXTypedInstruction[] = null;
+
+	    private _sDefinition: string = "";
+	    private _sImplementation: string = "";
+
+	    private _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
+	    private _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
+	    private _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
 
 		constructor(sName: string, pReturnType: IAFXTypeInstruction,
 					pExprTranslator: ExprTemplateTranslator,
@@ -709,15 +1116,67 @@ module akra.fx {
 
 			this._pArguments = [];
 
-			for(var i: uint = 0; i < pArgumentTypes.length; i++){
-				var pArgument: TypedInstruction = new TypedInstruction();
-				pArgument.setType(pArgumentTypes[i]);
-				pArgument.setParent(this);
+			if(!isNull(pArgumentTypes)){
+				for(var i: uint = 0; i < pArgumentTypes.length; i++){
+					var pArgument: TypedInstruction = new TypedInstruction();
+					pArgument.setType(pArgumentTypes[i]);
+					pArgument.setParent(this);
 
-				this._pArguments.push(pArgument);
+					this._pArguments.push(pArgument);
+				}
 			}
 
 			this._pExprTranslator = pExprTranslator;
+		}
+
+		setDeclCode(sDefenition: string, sImplementation: string){
+			this._sDefinition = sDefenition;
+			this._sImplementation = sImplementation;
+		}
+
+		toFinalCode() : string {
+			return this._sDefinition + this._sImplementation;
+		}
+
+		toFinalDefCode(): string {
+			return this._sDefinition;
+		}
+
+		setUsedSystemData(pTypeList: IAFXTypeDeclInstruction[], 
+						  pFunctionList: IAFXFunctionDeclInstruction[],
+						  pMacrosList: IAFXSimpleInstruction[]): void {
+
+			this._pExtSystemTypeList = pTypeList;
+			this._pExtSystemFunctionList = pFunctionList;
+			this._pExtSystemMacrosList = pMacrosList;
+		}
+
+		closeSystemDataInfo(): void {
+			for(var i: uint = 0; i < this._pExtSystemFunctionList.length; i++){
+				var pFunction: IAFXFunctionDeclInstruction = this._pExtSystemFunctionList[i];
+
+				var pTypes = pFunction._getExtSystemTypeList();
+				var pMacroses = pFunction._getExtSystemMacrosList();
+				var pFunctions = pFunction._getExtSystemFunctionList();
+
+				for(var j: uint = 0; j < pTypes.length; j++){
+					if(this._pExtSystemTypeList.indexOf(pTypes[j]) === -1){
+						this._pExtSystemTypeList.push(pTypes[j]);
+					}
+				}
+
+				for(var j: uint = 0; j < pMacroses.length; j++){
+					if(this._pExtSystemMacrosList.indexOf(pMacroses[j]) === -1){
+						this._pExtSystemMacrosList.push(pMacroses[j]);
+					}
+				}
+
+				for(var j: uint = 0; j < pFunctions.length; j++){
+					if(this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1){
+						this._pExtSystemFunctionList.push(pFunctions[j]);
+					}
+				}
+			}
 		}
 
 		setExprTranslator(pExprTranslator: ExprTemplateTranslator): void {
@@ -886,6 +1345,14 @@ module akra.fx {
 
         }
 
+        inline _getAttributeVariableMap(): IAFXVariableDeclMap {
+        	return null;
+        }
+
+        inline _getVaryingVariableMap(): IAFXVariableDeclMap {
+        	return null;
+        }
+
         inline _getSharedVariableMap(): IAFXVariableDeclMap{
 			return null;
         }
@@ -906,9 +1373,52 @@ module akra.fx {
         	return null;
         }
 
-
-        inline _getUsedTypeMap(): IAFXTypeDeclMap{
+        inline _getUsedComplexTypeMap(): IAFXTypeMap{
         	return null;
+        }
+
+        inline _getAttributeVariableKeys(): uint[] {
+        	return null;
+        }
+
+        inline _getVaryingVariableKeys(): uint[] {
+        	return null;
+        }
+
+        inline _getSharedVariableKeys(): uint[] {
+        	return null;
+        }
+
+        inline _getUniformVariableKeys(): uint[] {
+        	return null;
+        }
+
+        inline _getForeignVariableKeys(): uint[] {
+        	return null;
+        }
+
+        inline _getGlobalVariableKeys(): uint[] {
+        	return null;
+        }
+
+        inline _getTextureVariableKeys(): uint[] {
+        	return null;
+        }
+
+        inline _getUsedComplexTypeKeys(): uint[] {
+        	return null;
+        }
+
+        _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[] {
+        	return this._pExtSystemFunctionList;
+        }
+
+        _getExtSystemMacrosList(): IAFXSimpleInstruction[] {
+        	return this._pExtSystemMacrosList;
+        }
+
+        _getExtSystemTypeList(): IAFXTypeDeclInstruction[] {
+        	return this._pExtSystemTypeList;
         }
 
 	}

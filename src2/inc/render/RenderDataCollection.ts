@@ -4,6 +4,7 @@
 #include "IRenderDataCollection.ts"
 #include "IHardwareBuffer.ts"
 #include "RenderData.ts"
+#include "data/VertexDeclaration.ts"
 
 module akra.render {
 
@@ -29,7 +30,6 @@ module akra.render {
         constructor (pEngine: IEngine, eOptions: ERenderDataBufferOptions = 0) {
             super();
             this._pEngine = pEngine;
-
             this.setup(eOptions);
         }
 
@@ -71,7 +71,7 @@ module akra.render {
         	    else {
         	        for (var i: int = 0; i < n; i++) {
                         pData = pBuffer.getVertexData(i);
-        	            if (pData.byteLength === <uint>arguments[0]) {
+        	            if (pData.byteOffset === <uint>arguments[0]) {
         	                return pData;
         	            }
         	        };
@@ -95,7 +95,7 @@ module akra.render {
         	    this.createDataBuffer();
         	}
 
-        	var pVertexDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	var pVertexDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
         	var pVertexData: IVertexData;
         	
         	if ((arguments.length < 2) || isNumber(arguments[1]) || isNull(arguments[1])) {
@@ -117,14 +117,14 @@ module akra.render {
 
         allocateData(pDecl?, pData?, isCommon: bool = true): int {
         	    var pVertexData: IVertexData;
-        	    var pDataDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	    var pDataDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
 
 #ifdef DEBUG
         	    
         	    for (var i: int = 0; i < pDataDecl.length; i++) {
-        	        if (this.getData(pDataDecl[i].eUsage) !== null && pDataDecl[i].nCount !== 0) { 
+        	        if (this.getData(pDataDecl.element(i).usage) !== null && pDataDecl.element(i).count !== 0) { 
         	            WARNING("data buffer already contains data with similar vertex decloration <" + 
-        	                pDataDecl[i].eUsage + ">.");
+        	                pDataDecl.element(i).usage + ">.");
         	        }
         	    };
 
@@ -138,7 +138,7 @@ module akra.render {
         	        }
         	    }
 
-        	    return pVertexData.byteLength;
+        	    return pVertexData.byteOffset;
         }
 
         getDataLocation(sSemantics: string): int {
@@ -148,7 +148,7 @@ module akra.render {
         	    for (var i: int = 0, n: uint = this._pDataBuffer.length; i < n; i++) {
                     pData = this._pDataBuffer.getVertexData(i);
         	        if (pData.hasSemantics(sSemantics)) {
-        	            return pData.byteLength;
+        	            return pData.byteOffset;
         	        }
         	    };
         	}
@@ -162,11 +162,12 @@ module akra.render {
             var eOptions: ERenderDataBufferOptions = this._eDataOptions;
 
             if (eOptions & ERenderDataBufferOptions.VB_READABLE) {
-                SET_BIT(iVbOption, FLAG(EHardwareBufferFlags.READABLE), true);
+                iVbOption = ERenderDataBufferOptions.VB_READABLE;
             }
+
             //trace('creating new video buffer for render data buffer ...');
             this._pDataBuffer = this._pEngine.getResourceManager().createVideoBuffer("render_data_buffer" + "_" + sid());
-            this._pDataBuffer.create(iVbOption);
+            this._pDataBuffer.create(0, iVbOption);
             this._pDataBuffer.addRef();
             return this._pDataBuffer !== null;
         };
@@ -194,13 +195,14 @@ module akra.render {
 
         _draw(): void;
         _draw(iSubset?: uint): void {
-        	if (arguments.length > 0) {
-        	    this._pDataArray[iSubset]._draw();
-        	}
+        	// if (arguments.length > 0) {
+        	//     this._pDataArray[iSubset]._draw();
+        	// }
 
-        	for (var i: int = 0; i < this._pDataArray.length; i++) {
-        	    this._pDataArray[i]._draw();
-        	};
+        	// for (var i: int = 0; i < this._pDataArray.length; i++) {
+        	//     this._pDataArray[i]._draw();
+        	// };
+            CRITICAL("TODO"); 
         }
 
         destroy(): void {

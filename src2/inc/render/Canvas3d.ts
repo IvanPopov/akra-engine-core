@@ -3,22 +3,19 @@
 
 #include "ICanvas3d.ts"
 #include "IRenderer.ts"
-#include "IScreen.ts"
 #include "IUtilTimer.ts"
-#include "IBuildScenario.ts"
 #include "ICanvasInfo.ts"
 #include "util/UtilTimer.ts"
 #include "render/RenderTarget.ts"
 
 
-module akra.display {
+module akra.render {
 	export class Canvas3d extends RenderTarget implements ICanvas3d {
-		private _pEngine: IEngine;
 		// private _useHarwareAntialiasing: bool = false;
 
-		private _isFullscreen: bool = false;
-		private _isPrimary: bool = false;
-		private _bAutoDeactivatedOnFocusChange: bool = false;
+		protected _isFullscreen: bool = false;
+		protected _isPrimary: bool = false;
+		protected _bAutoDeactivatedOnFocusChange: bool = false;
 
 		left: int = 0;
 		top: int = 0;
@@ -28,12 +25,9 @@ module akra.display {
 		}
 
 
-		constructor (pEngine: IEngine) {
-			this._pEngine = pEngine;
-		}
-
-		inline getEngine(): IEngine {
-			return this._pEngine;
+		constructor (pRenderer: IRenderer) {
+			super(pRenderer);
+			this._pRenderer = pRenderer;
 		}
 
 

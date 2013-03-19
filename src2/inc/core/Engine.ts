@@ -24,7 +24,7 @@
 #include "render/RenderDataCollection.ts"
 #include "model/Mesh.ts"
 #include "util/BufferMap.ts"
-#include "animation/AnimationController.ts"
+#include "animation/Controller.ts"
 #include "model/Skeleton.ts"
 #include "util/DepsManager.ts"
 #include "controls/GamepadMap.ts"
@@ -34,6 +34,10 @@
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
+#endif
+
+#ifdef GUI
+#include "ui/UI.ts"
 #endif
 
 module akra.core {
@@ -46,7 +50,7 @@ module akra.core {
 		private _pComposer: IAFXComposer;
 
 		/** stop render loop?*/
-		private _pTimer: IUtilTimer;
+		private _pTimer: util.UtilTimer;
 		private _iAppPausedCount: int = 0;
 
 
@@ -60,6 +64,9 @@ module akra.core {
 		private _pGamepads: IGamepadMap = null;
 
 
+		inline get time(): float {
+			return this._pTimer.appTime;
+		}
 
 		constructor (pOptions: IEngineOptions = null) {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
@@ -73,6 +80,7 @@ module akra.core {
 			}
 
 			this._pParticleManager = null;
+			this._pTimer = util.UtilTimer.start(); 
 
 #ifdef WEBGL
 			this._pRenderer = new webgl.WebGLRenderer(this);
@@ -85,7 +93,6 @@ module akra.core {
 			DDSCodec.startup();
 			
 			
-			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 
 			this.parseOptions(pOptions);
@@ -215,7 +222,7 @@ module akra.core {
 	        render(0);
 		}
 
-		inline getTimer(): IUtilTimer { return this._pTimer; }
+		inline getTimer(): IUtilTimer { return <IUtilTimer>this._pTimer; }
 
 		renderFrame(): bool {
 		    var fElapsedAppTime: float 	= this._pTimer.elapsedTime;
@@ -237,6 +244,7 @@ module akra.core {
 		    this._pRenderer._updateAllRenderTargets();
 		    this.frameEnded();
 
+		    LOG("frame rendered();");
 			return true;
 		}
 
@@ -288,7 +296,7 @@ module akra.core {
 		}
 
 		inline createAnimationController(iOptions: int = 0): IAnimationController {
-			return animation.createController(this, iOptions);
+			return animation.createController(iOptions);
 		}
 
 		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {

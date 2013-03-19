@@ -17,7 +17,7 @@ module akra.webgl {
 		protected _pWebGLBuffer: WebGLBuffer;
 
 		private _pLockData: Uint8Array = null;
-
+		protected _sCS: string = null;
 
 		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.VBO; }
 		inline get byteLength(): uint { return this._iByteSize; }
@@ -29,7 +29,7 @@ module akra.webgl {
 		// create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): bool{
 		// create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {
-			
+
 			iByteSize = math.max(iByteSize, WEBGL_VERTEX_BUFFER_MIN_SIZE);
 
 			if (TEST_ANY(iFlags, EHardwareBufferFlags.READABLE)) {
@@ -161,8 +161,12 @@ module akra.webgl {
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			if(!this.isBackupPresent()) {
+				debug_print("Not resized, because backup not present!");
 				return false;		
 			}
+
+			debug_print("WebGLVertexBuffer resized from " + this.byteLength + " to " + iSize);
+
 
 			if(iSize < this.byteLength) {
 				for(var k: int = 0; k < this._pVertexDataArray.length; ++ k) {

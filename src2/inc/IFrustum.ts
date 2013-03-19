@@ -30,6 +30,8 @@ module akra{
 
 		isEqual(pFrustum: IFrustum): bool;
 
+		getPlanePoints(sPlaneKey: string, pDestination?: IVec3[]): IVec3[];
+
 		testPoint(v3fPoint: IVec3): bool;
 		testRect(pRect: IRect3): bool;
 		testSphere(pSphere: ISphere): bool;

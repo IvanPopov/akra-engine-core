@@ -19,7 +19,7 @@ module akra.util {
 		[handle: int]: IVertexData;
 	}
 
-	class BufferMap implements IBufferMap extends ReferenceCounter{
+	export class BufferMap implements IBufferMap extends ReferenceCounter{
 		private _pFlows: IDataFlow[] = null;
 		private _pMappers: IDataMapper[] = null;
 		private _pIndex: IIndexData = null;
@@ -102,7 +102,8 @@ module akra.util {
 		}
 
 		_draw(): void {
-			this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
+			// this._pEngine.getComposer().applyBufferMap(this);
+			// this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
 			isNull(this._pIndex)? this.drawArrays(): this.drawElements();
 		}
 
@@ -226,7 +227,7 @@ module akra.util {
 		        return -1;
 		    }
 
-		    if (pVertexData.buffer instanceof webgl.WebGLVertexBuffer/*core.pool.resources.VertexBuffer*/) {
+		    if (core.pool.resources.isVBO(<IVertexBuffer>pVertexData.buffer)) {
 		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
 		        this.length = pVertexData.length;
 		        //this.startIndex = pVertexData.getStartIndex();
@@ -272,9 +273,7 @@ module akra.util {
 		};
 
 
-		mapping(iFlow: int, pMap: IVertexData, eSemantics: string, iAddition?: int): bool {
-			iAddition = iAddition || 0;
-
+		mapping(iFlow: int, pMap: IVertexData, eSemantics: string, iAddition: int = 0): bool {
 		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
 		    var pFlow: IDataFlow     = this._pFlows[iFlow];
 
@@ -404,7 +403,7 @@ module akra.util {
 
 		    return pMap;
 		} 
-		toString(): string {
+		toString(bListAll: bool = false): string {
 			function _an(sValue, n: int, bBackward?: bool) {
 		        sValue = String(sValue);
 		        bBackward = bBackward || false;
@@ -424,17 +423,20 @@ module akra.util {
 		    }
 
 		    var s = '\n\n', t;
-		    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+		    s += '      $1 Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+		    s = s.replace("$1", bListAll? "   Total": "Complete");
 		    t  = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
 		    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
 		    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
 		    s += t;
 
-		    for (var i: int = 0; i < this._nCompleteFlows; ++ i) {
-		        var pFlow: IDataFlow = this._pCompleteFlows[i];
+		    var pFlows: IDataFlow[] = bListAll? this._pFlows: this._pCompleteFlows;
+		    var nFlows: uint = bListAll? this._nUsedFlows: this._nCompleteFlows;
+		    for (var i: int = 0; i < nFlows; ++ i) {
+		        var pFlow: IDataFlow = pFlows[i];
 		        var pMapper: IDataMapper = pFlow.mapper;
 		        var pVertexData: IVertexData = pFlow.data;
-		        var pDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
+		        var pDecl: data.VertexDeclaration = pVertexData.getVertexDeclaration();
 		        //trace(pMapper); window['pMapper'] = pMapper;
 		        s += '#' + _an(pFlow.flow, 2) + ' ' + 
 		            _an('[ ' + (pDecl.element(0).usage !== DeclUsages.END? pDecl.element(0).usage: '<end>') + ' ]', 20) + 

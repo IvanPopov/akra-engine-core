@@ -16,6 +16,9 @@ module akra.fx {
         private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
         private _bShaderOutput: bool = false;
 
+        private _pAttrOffset: IAFXVariableDeclInstruction = null;
+        private _pAttrExtractionBlock: IAFXInstruction = null;
+
         /**
 		 * Represent type var_name [= init_expr]
 		 * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
@@ -149,6 +152,14 @@ module akra.fx {
             return this._bShaderOutput;
         }
 
+        _setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void {
+            this._pAttrExtractionBlock = pCodeBlock;
+        }
+
+        _getAttrExtractionBlock(): IAFXInstruction {
+            return this._pAttrExtractionBlock;
+        }
+
         _getFullNameExpr(): IAFXExprInstruction {
             if(!isNull(this._pFullNameExpr)){
                 return this._pFullNameExpr;
@@ -232,7 +243,7 @@ module akra.fx {
 
                 pType.pushType(getEffectBaseType("video_buffer_header"));
                 pId.setName(this.getName() + "_header");
-                pExtarctExpr.initExtractExpr(pType, null, this, "");
+                pExtarctExpr.initExtractExpr(pType, null, this, "", null);
 
                 this._pVideoBufferHeader.push(pType, true);
                 this._pVideoBufferHeader.push(pId, true);
@@ -246,7 +257,7 @@ module akra.fx {
         	return <IAFXVariableDeclInstruction>super.clone(pRelationMap);
         }
 
-        blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction{
+        blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction{            
             var pBlendType: IAFXVariableTypeInstruction = this.getType().blend(pVariableDecl.getType(), eMode);
             
             if(isNull(pBlendType)){
@@ -259,6 +270,7 @@ module akra.fx {
             pId.setName(this.getNameId().getName());
             pId.setRealName(this.getNameId().getRealName());
 
+            pBlendVar.setSemantic(this.getSemantic());
             pBlendVar.push(pBlendType, true);
             pBlendVar.push(pId, true);
 

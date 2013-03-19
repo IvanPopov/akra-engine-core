@@ -12,7 +12,7 @@ module akra {
     IFACE(IReferenceCounter);
     
 	export enum ERenderDataBufferOptions {
-        VB_READABLE       = FLAG(EHardwareBufferFlags.BACKUP_COPY),
+        VB_READABLE       = <int>EHardwareBufferFlags.READABLE,
         RD_ADVANCED_INDEX = <int>ERenderDataOptions.ADVANCED_INDEX,
         RD_SINGLE_INDEX   = <int>ERenderDataOptions.SINGLE_INDEX,
         RD_RENDERABLE     = <int>ERenderDataOptions.RENDERABLE
@@ -24,6 +24,8 @@ module akra {
 
 	export interface IRenderDataCollection extends /*IHardwareBuffer*/IBuffer, IReferenceCounter {
 		readonly buffer: IVertexBuffer;
+        readonly byteLength: uint;
+        readonly length: uint;
 
         getEngine(): IEngine;
         getOptions(): int;
@@ -31,7 +33,7 @@ module akra {
         getData(sUsage: string): IVertexData;
         getData(iOffset: uint): IVertexData;
         getRenderData(iSubset: uint): IRenderData;
-        getEmptyRenderData(ePrimType: EPrimitiveTypes, eOptions: ERenderDataBufferOptions): IRenderData;
+        getEmptyRenderData(ePrimType: EPrimitiveTypes, eOptions?: ERenderDataBufferOptions): IRenderData;
         getDataLocation(sSemantics: string): int;
         
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool): int;

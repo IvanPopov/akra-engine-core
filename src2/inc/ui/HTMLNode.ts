@@ -26,9 +26,15 @@ module akra.ui {
 		     	return (<any>this)[e.type](e);
 			});
 
+			//this.$element.mousedown((e: IUIEvent) => { pNode.mousedown(e); });
+
 			if (!isUI(parent)) {
 				this.attachToParent(<Node>parent);
 			}
+		}
+
+		hasRenderTarget(): bool {
+			return true;
 		}
 
 		renderTarget(): JQuery {
@@ -36,12 +42,13 @@ module akra.ui {
 		}
 
 		inline getHTMLElement(): HTMLElement {
-			return this.$element.get();
+			return this.$element.get()[0];
 		}
 
 		render(): bool;
 		render(pParent: IUINode): bool;
 		render(pElement: HTMLElement): bool;
+		render(pElement: JQuery): bool;
 		render(sSelector: string): bool;
 		render(to?): bool {
 			var $to = $body;
@@ -53,11 +60,11 @@ module akra.ui {
 			}
 			else {
 				if (to instanceof Node) {
-					$to = (<IUINode>to).renderTarget();
-
 					if (this.parent != <IUINode>to) {
 						return this.attachToParent(<IUINode>to);
 					}
+
+					$to = (<IUINode>to).renderTarget();
 				}
 				else {
 					$to = $(to)
@@ -72,9 +79,11 @@ module akra.ui {
 			return true;
 		}
 
-		attachToParent(pParent: IUINode): bool {
+		attachToParent(pParent: IUINode, bRender: bool = true): bool {
 			if (super.attachToParent(pParent)) {
-				this.render(pParent);
+				if (bRender) {
+					this.render(pParent);
+				}
 				return true;
 			}
 			return false;
@@ -87,6 +96,19 @@ module akra.ui {
 		isRendered(): bool {
 			//console.log((<any>new Error).stack)
 			return !isNull(this.$element) && this.$element.parent().length > 0;
+		}
+
+		destroy(): void {
+			super.destroy();
+			this.$element.remove();
+		}
+
+		inline width(): uint {
+			return this.$element.width();
+		}
+
+		inline height(): uint {
+			return this.$element.height();
 		}
 
 		valueOf(): JQuery {
@@ -116,6 +138,7 @@ module akra.ui {
 		BROADCAST(keydown, CALL(e));
 		BROADCAST(keyup, CALL(e));
 
+		BROADCAST(resize, VOID);
 		BROADCAST(rendered, VOID);
 
 
@@ -124,6 +147,7 @@ module akra.ui {
 			"dblclick",
 			"mousemove",
 			"mouseup",
+			"mousedown",
 			"mouseover",
 			"mouseout",
 			"focusin",
@@ -131,7 +155,8 @@ module akra.ui {
 			"blur",
 			"change",
 			"keydown",
-			"keyup"
+			"keyup",
+			"resize"
 		];
 	}
 }

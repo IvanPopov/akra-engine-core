@@ -3,6 +3,8 @@
 
 #include "WebGL.ts"
 #include "render/Renderer.ts"
+#include "WebGLCanvas.ts"
+
 
 #define WEBGL_MAX_FRAMEBUFFER_NUM 32
 
@@ -12,6 +14,8 @@ module akra.webgl {
 
 		private _pWebGLContext: WebGLRenderingContext;
 		private _pWebGLFramebufferList: WebGLFramebuffer[];
+
+		private _pDefaultCanvas: ICanvas3d;
 
 		//real context, if debug context used
 		private _pWebGLInternalContext: WebGLRenderingContext = null;
@@ -37,19 +41,23 @@ module akra.webgl {
 			}
 
 			this._pWebGLContext = createContext(this._pCanvas);
+
 			this._pWebGLFramebufferList = new Array(WEBGL_MAX_FRAMEBUFFER_NUM);
 
 
 			for (var i: int = 0; i < this._pWebGLFramebufferList.length; ++ i) {
 				this._pWebGLFramebufferList[i] = this._pWebGLContext.createFramebuffer();
 			}
+
+			this._pDefaultCanvas = new WebGLCanvas(this);
+			this.attachRenderTarget(this._pDefaultCanvas);
 		}
 
 		debug(bValue: bool = true, useApiTrace: bool = false): bool {
 			var pWebGLInternalContext: WebGLRenderingContext = this._pWebGLContext;
 
 			if (bValue) {
-				if (isDef(WebGLDebugUtils) && !isNull(pWebGLInternalContext)) {
+				if (isDef((<any>window).WebGLDebugUtils) && !isNull(pWebGLInternalContext)) {
 		            
 		            this._pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLInternalContext, 
 		                (err: int, funcName: string, args: IArguments): void => {
@@ -168,10 +176,14 @@ module akra.webgl {
 
 			//TODO: check attrib array from last shader program
 			var i:uint = 0;
-			for(i = 0; i < 16; i++) {
+			for(i = 0; i < maxVertexAttributes; i++) {
 				this._pWebGLContext.disableVertexAttribArray(i);	
 			}
 		
+		}
+
+		getDefaultCanvas(): ICanvas3d {
+			return this._pDefaultCanvas;
 		}
 	}
 }

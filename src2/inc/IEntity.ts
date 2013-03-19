@@ -17,8 +17,7 @@ module akra {
 		CAMERA,
 		SHADOW_CASTER,
 
-		LIGHT_PROJECT = 37,
-		LIGHT_OMNI_DIRECTIONAL,
+		LIGHT = 37,
 
 		SCENE_OBJECT = 64,
 
@@ -62,6 +61,9 @@ module akra {
 		childOf(pParent: IEntity): bool;
 		siblingCount(): uint;
 		childCount(): uint;
+		children(): IEntity[];
+		childAt(i: int): IEntity;
+		descCount(): uint;
 
 		update(): bool;
 		recursiveUpdate(): bool;

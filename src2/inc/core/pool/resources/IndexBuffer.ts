@@ -29,7 +29,7 @@ module akra.core.pool.resources {
 		//create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
 		create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool{
 		//create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool {
-			super.create(iFlags || 0);
+			super.create(0, iFlags || 0);
 
 			if (TEST_ANY(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
 				this._pBackupCopy = new MemoryBuffer();

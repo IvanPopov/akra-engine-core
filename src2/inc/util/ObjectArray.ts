@@ -141,6 +141,16 @@ module akra.util {
 			return pValue;
 		}
 
+		indexOf(pObject: any): int {
+			for(var i: uint = 0; i < this._iLength; i++){
+				if(pObject === this._pData[i]){
+					return i;
+				}
+			}
+
+			return -1;
+		}
+
 	}
 }
 

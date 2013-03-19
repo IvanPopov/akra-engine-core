@@ -7,8 +7,8 @@
 #include "events/events.ts"
 #include "objects/Camera.ts"
 #include "IDisplayList.ts"
-// #include "OcTree.ts"
-// #include "LightGraph.ts"
+#include "OcTree.ts"
+#include "LightGraph.ts"
 
 #include "SceneModel.ts"
 #include "Joint.ts"
@@ -41,6 +41,19 @@ module akra.scene {
 			this._pRootNode.create();
 
 			var i: int;
+
+			//TODO: fix this method, do right!!
+			var pOctree: IOcTree = new scene.OcTree();
+			pOctree.create(new geometry.Rect3d(1024, 1024, 1024), 5, 100);
+
+			var i: int = this.addDisplayList(pOctree);
+			debug_assert(i == DL_DEFAULT, "invalid default list index");
+
+			var pLightGraph: ILightGraph = new scene.LightGraph();
+
+			i = this.addDisplayList(pLightGraph);
+			debug_assert(i == DL_LIGHTING, "invalid default list index");
+
 
 			// this._pNodeList = [];
 			// this._pObjectList = [];
@@ -86,6 +99,20 @@ module akra.scene {
 			return false;
 		}
 
+		#ifdef DEBUG
+
+		createObject(sName: string = null): ISceneObject {
+			var pNode: ISceneNode = new SceneObject(this);
+			
+			if (!pNode.create()) {
+				ERROR("cannot create scene node..");
+				return null;
+			}
+
+			return <ISceneObject>this.setupNode(pNode, sName);
+		}
+
+		#endif
 
 		createNode(sName: string = null): ISceneNode {
 			var pNode: ISceneNode = new SceneNode(this);
@@ -136,6 +163,7 @@ module akra.scene {
 			return null;
 		}
 
+
 		// inline getAllNodes(): ISceneNode[] {
 		// 	return this._pNodeList;
 		// }
@@ -175,8 +203,8 @@ module akra.scene {
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {
 			pNode.name = sName;
 
-			// this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
-			// this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+			this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
+			this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
 
 			return pNode;
 		}

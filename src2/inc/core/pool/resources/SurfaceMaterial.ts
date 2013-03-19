@@ -15,6 +15,9 @@ module akra.core.pool.resources {
 		protected _pTexcoords: uint[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 		protected _pTextureMatrices: IMat4[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 
+		//For acceleration of composer
+		protected _sLastHash: string = "";
+		protected _isNeedToUpdateHash: bool = true;
 
 
 		inline get totalTextures(): uint { return this._nTotalTextures; }
@@ -34,8 +37,8 @@ module akra.core.pool.resources {
     	setTexture(iIndex: int, iTextureHandle: int, iTexcoord: int = 0): bool;
     	setTexture(iIndex: int, sTexture: string, iTexcoord: int = 0): bool;
     	setTexture(iIndex: int, pTexture: ITexture, iTexcoord: int = 0): bool;
-    	setTexture(iIndex: int, pTexture: any, iTexcoord: int = 0): bool {
-
+    	setTexture(iIndex: int, texture: any, iTexcoord: int = 0): bool {
+    		//LOG(iIndex, pTexture, iTexcoord);
 		    debug_assert(iIndex < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE,
 		                 "invalid texture slot");
 
@@ -43,8 +46,12 @@ module akra.core.pool.resources {
 		    var pTexture: ITexture = null;
 
 		    this._pTexcoords[iIndex] = iTexcoord;
+
+		    if(iIndex !== iTexcoord) {
+		    	this._isNeedToUpdateHash = true;
+		    }
 		    
-		    if (isString(arguments[0])) {
+		    if (isString(texture)) {
 		    	pTexture = this._pTextures[iIndex];
 
 		        if (pTexture) {
@@ -63,7 +70,7 @@ module akra.core.pool.resources {
 		        }
 
 
-		        this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.loadResource(<string>arguments[0]);
+		        this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.loadResource(<string>texture);
 
 		        if (this._pTextures[iIndex]) {
 		            TRUE_BIT(this._iTextureFlags, iIndex);
@@ -75,7 +82,7 @@ module akra.core.pool.resources {
 
 		        return true;
 		    }
-		    else if (arguments[0] instanceof Texture) {
+		    else if (texture instanceof Texture) {
 		        if (!this._pTextures[iIndex] || pTexture != this._pTextures[iIndex]) {
 		            if (this._pTextures[iIndex]) {
 		                // realise first
@@ -116,8 +123,8 @@ module akra.core.pool.resources {
 		        return true;
 		    }
 		    //similar to [cPoolHandle texture]
-		    else if (isNumber(arguments[0])) {
-		        if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != <int>arguments[0]) {
+		    else if (isNumber(texture)) {
+		        if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != <int>texture) {
 		            if (this._pTextures[iIndex]) {
 		                //TheGameHost.displayManager().texturePool().releaseResource(m_pTextures[index]);
 		                if (this._pTextures[iIndex].release() === 0) {
@@ -132,7 +139,7 @@ module akra.core.pool.resources {
 		                -- this._nTotalTextures;
 		            }
 
-		            this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.getResource(<int>arguments[0]);
+		            this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.getResource(<int>texture);
 
 		            if (this._pTextures[iIndex]) {
 		                TRUE_BIT(this._iTextureFlags, iIndex);
@@ -216,6 +223,27 @@ module akra.core.pool.resources {
     	}
 
     	static MAX_TEXTURES_PER_SURFACE: uint = 16;
+
+    	_getHash(): string {
+    		if(this._isNeedToUpdateHash){
+    			this._sLastHash = this.calcHash();
+  				this._isNeedToUpdateHash = false;
+    		}
+
+    		return this._sLastHash;
+    	}
+
+    	private calcHash(): string {
+    		var sHash: string = "";
+
+    		for(var i = 0; i < this._pTexcoords.length; i++){
+    			if(this._pTexcoords[i] !== i){
+    				sHash += i.toString() + "<" + this._pTexcoords[i].toString() + ".";
+    			}
+    		}
+
+    		return sHash;
+    	}
 	}
 }
 

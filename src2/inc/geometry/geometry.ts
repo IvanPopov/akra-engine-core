@@ -72,16 +72,16 @@ module akra.geometry {
 
 			pTempData = new Float32Array(pData, i, 3);
 			fTemp = pTempData[0];
-			fX0 = fX0 > fTemp ? fTemp : fX0; //Min
-			fX1 = fX1 > fTemp ? fX1 : fTemp; //Max
+			fX0 = fX0 > fTemp ? fTemp : fX0; /*Min*/
+			fX1 = fX1 > fTemp ? fX1 : fTemp; /*Max*/
 
 			fTemp = pTempData[1];
-			fY0 = fY0 > fTemp ? fTemp : fY0; //Min
-			fY1 = fY1 > fTemp ? fY1 : fTemp; //Max
+			fY0 = fY0 > fTemp ? fTemp : fY0; /*Min*/
+			fY1 = fY1 > fTemp ? fY1 : fTemp; /*Max*/
 
 			fTemp = pTempData[2];
-			fZ0 = fZ0 > fTemp ? fTemp : fZ0; //Min
-			fZ1 = fZ1 > fTemp ? fZ1 : fTemp; //Max
+			fZ0 = fZ0 > fTemp ? fTemp : fZ0; /*Min*/
+			fZ1 = fZ1 > fTemp ? fZ1 : fTemp; /*Max*/
 		}
 
 		pBoundingBox.set(fX0,fX1,fY0,fY1,fZ0,fZ1);

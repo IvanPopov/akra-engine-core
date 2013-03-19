@@ -72,6 +72,7 @@ module akra.webgl {
 			this._pWebGLTexture = pTexture;
 			this._iFace = iFace;
 			this._iLevel = iLevel;
+			this._iFlags = iFlags;
 			this._bSoftwareMipmap = bSoftwareMipmap;
 
 			this._eFaceTarget = eTarget;
@@ -704,7 +705,7 @@ module akra.webgl {
 		getRenderTarget(iZOffest: int): IRenderTarget;
 		getRenderTarget(iZOffest?: int = 0): IRenderTarget {
 			ASSERT(TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET));
-        	ASSERT(iZOffest < this._iDepth);
+        	ASSERT(iZOffest < this._iDepth, "iZOffest: " + iZOffest + ", iDepth: " + this._iDepth);
         	return this._pRTTList[iZOffest];
 		}
 

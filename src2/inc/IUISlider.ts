@@ -6,6 +6,8 @@
 module akra {
 	export interface IUISlider extends IUIComponent {
 		readonly pin: IUIComponent;
+		value: float;
+		range: float;
 	}
 }
 

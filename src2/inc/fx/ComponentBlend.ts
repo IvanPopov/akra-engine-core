@@ -4,39 +4,46 @@
 #include "IAFXComponentBlend.ts"
 #include "IAFXComposer.ts"
 #include "IAFXInstruction.ts"
+#include "util/unique.ts"
+#include "fx/PassInputBlend.ts"
 
 module akra.fx {
 	export class ComponentBlend implements IAFXComponentBlend {
+		UNIQUE();
 		private _pComposer: IAFXComposer = null;
 
 		private _isReady: bool = false;
 		private _sHash: string = "";
 		private _bNeedToUpdateHash: bool = false;
 
-		private _pComponentCountMap: IntMap = null;
+		private _pComponentHashMap: BoolMap = null;
 
 		private _pComponentList: IAFXComponent[] = null;
 		private _pComponentShiftList: int[] = null;
-		private _pComponentPassNumberList: uint[] = null;
+		private _pComponentPassIdList: uint[] = null;
 
 		private _iShiftMin: int = 0;
 		private _iShiftMax: int = 0;
 
 		private _pPassesDList: IAFXPassInstruction[][] = null;
-		private _pShaderInputVarBlend: ShaderInputBlend[] = null;
+		private _pComponentInputVarBlend: ComponentPassInputBlend[] = null;
 
 		constructor(pComposer: IAFXComposer){
 			this._pComposer = pComposer;
 
-			this._pComponentCountMap = <IntMap>{};
+			this._pComponentHashMap = <BoolMap>{};
 
 			this._pComponentList = [];
 			this._pComponentShiftList = [];
-			this._pComponentPassNumberList = [];
+			this._pComponentPassIdList = [];
 		}
 
 		inline isReadyToUse(): bool {
 			return this._isReady;
+		}
+
+		inline isEmpty(): bool {
+			return this._pComponentList.length === 0;
 		}
 
 		inline getComponentCount(): uint {
@@ -61,7 +68,7 @@ module akra.fx {
 		}
 
 		inline containComponentHash(sComponentHash: string): bool {
-			return isDef(this._pComponentCountMap[sComponentHash]) && this._pComponentCountMap[sComponentHash] > 0;
+			return (this._pComponentHashMap[sComponentHash]);
 		}
 
 		addComponent(pComponent: IAFXComponent, iShift: int, iPass: int): void {
@@ -69,12 +76,7 @@ module akra.fx {
 			var iPassCount: uint = pComponent.getTotalPasses();
 
 			if(iPass === ALL_PASSES) {
-				if(!this.containComponentHash(sComponentHash)){
-					this._pComponentCountMap[sComponentHash] = 0;
-				}
-				
-				this._pComponentCountMap[sComponentHash]++;
-				
+
 				for(var i: uint = 0; i < iPassCount; i++){
 					this.addComponent(pComponent, iShift + i, i);
 				}
@@ -88,13 +90,9 @@ module akra.fx {
 			var sComponentHash: string = pComponent.getHash(iShift, iPass);
 			
 			if(this.containComponentHash(sComponentHash)){
-				this._pComponentCountMap[sComponentHash]++;
-				this._bNeedToUpdateHash = true;
-
 				debug_warning("You try to add already used component '" + sComponentHash + "' in blend.");
 				return;
 			}
-
 
 			if(iShift < this._iShiftMin){
 				this._iShiftMin = iShift;
@@ -104,10 +102,10 @@ module akra.fx {
 				this._iShiftMax = iShift;
 			}
 
-			this._pComponentCountMap[sComponentHash] = 1;
+			this._pComponentHashMap[sComponentHash] = true;
 			this._pComponentList.push(pComponent);
 			this._pComponentShiftList.push(iShift);
-			this._pComponentPassNumberList.push(iPass);
+			this._pComponentPassIdList.push(iPass);
 
 			this._isReady = false;
 			this._bNeedToUpdateHash = true;
@@ -123,9 +121,7 @@ module akra.fx {
 				return;
 			}
 
-			if(iPass === ALL_PASSES) {
-				this._pComponentCountMap[sComponentHash]--;
-				
+			if(iPass === ALL_PASSES) {		
 				for(var i: uint = 0; i < iPassCount; i++){
 					this.removeComponent(pComponent, iShift + i, i);
 				}
@@ -136,24 +132,16 @@ module akra.fx {
 				return;
 			}
 
-			if(this._pComponentCountMap[sComponentHash] > 1){
-				this._pComponentCountMap[sComponentHash]--;
-				this._bNeedToUpdateHash = true;
-
-				debug_warning("You try to remove component '" + sComponentHash + "' from blend. But it used more then 1 time.");
-				return;
-			}
-
-			this._pComponentCountMap[sComponentHash] = 0;
+			this._pComponentHashMap[sComponentHash] = false;
 
 			for(var i: uint = 0; i < this._pComponentList.length; i++){
 				if (this._pComponentList[i] === pComponent &&
 					this._pComponentShiftList[i] === iShift &&
-					this._pComponentPassNumberList[i] === iPass) {
+					this._pComponentPassIdList[i] === iPass) {
 
 					this._pComponentList.splice(i, 1);
 					this._pComponentShiftList.splice(i, 1);
-					this._pComponentPassNumberList.splice(i, 1);
+					this._pComponentPassIdList.splice(i, 1);
 					break;
 				}
 			}
@@ -183,26 +171,25 @@ module akra.fx {
 			}
 
 			this._pPassesDList = [];
-			this._pShaderInputVarBlend = [];
+			this._pComponentInputVarBlend = [];
 
 			for(var i: uint = 0; i < this._pComponentList.length; i++){
 				var pComponentTechnique: IAFXTechniqueInstruction = this._pComponentList[i].getTechnique();
 				var iShift: int = this._pComponentShiftList[i] - this._iShiftMin;
-				var iPass: int = this._pComponentPassNumberList[i];
+				var iPass: int = this._pComponentPassIdList[i];
 
 				var pPass: IAFXPassInstruction = pComponentTechnique.getPass(iPass);
 
 				if(!isDef(this._pPassesDList[iShift])) {
 					this._pPassesDList[iShift] = [];
-					this._pShaderInputVarBlend[iShift] = new ShaderInputBlend();
+					this._pComponentInputVarBlend[iShift] = new ComponentPassInputBlend();
 				}
-
 				this._pPassesDList[iShift].push(pPass);
-				this._pShaderInputVarBlend[iShift].addDataFromPass(pPass);
+				this._pComponentInputVarBlend[iShift].addDataFromPass(pPass);
 			}
 
-			for(var i: uint = 0; i < this._pShaderInputVarBlend.length; i++){
-				this._pShaderInputVarBlend[i].generateKeys();
+			for(var i: uint = 0; i < this._pComponentInputVarBlend.length; i++){
+				this._pComponentInputVarBlend[i].finalizeInput();
 			}
 
 			this._isReady = true;
@@ -210,31 +197,67 @@ module akra.fx {
 			return true;
 		}
 
+		getPassInputForPass(iPass: uint): IAFXPassInputBlend {
+			if(!this._isReady){
+				return null;
+			}
+
+			if(iPass < 0 || iPass > this.getTotalPasses()){
+				return null;
+			}
+
+			return this._pComponentInputVarBlend[iPass].getPassInput();
+		}
+
+		getPassListAtPass(iPass: uint): IAFXPassInstruction[] {
+			if(!this._isReady){
+				return null;
+			}
+
+			if(iPass < 0 || iPass > this.getTotalPasses()){
+				return null;
+			}
+
+			return this._pPassesDList[iPass];
+		}
+
 		clone(): IAFXComponentBlend {
 			var pClone: IAFXComponentBlend = new ComponentBlend(this._pComposer);
 
 			pClone._setDataForClone(this._pComponentList, 
 									this._pComponentShiftList, 
-									this._pComponentPassNumberList,
-									this._pComponentCountMap,
+									this._pComponentPassIdList,
+									this._pComponentHashMap,
 									this._iShiftMin, this._iShiftMax);
 			return pClone;
+		}
+
+		inline _getComponentList(): IAFXComponent[] {
+			return this._pComponentList;
+		}
+
+		inline _getComponentShiftList(): int[] {
+			return this._pComponentShiftList;
+		}
+
+		inline _getComponentPassIdList(): uint[] {
+			return this._pComponentPassIdList;
 		}
 
 		_setDataForClone(pComponentList: IAFXComponent[],
 						 pComponentShiftList: int[],
 						 pComponentPassNumnerList: int[],
-						 pComponentCountMap: IntMap,
+						 pComponentHashMap: BoolMap,
 						 iShiftMin: int, iShiftMax: int): void {
 
 			for(var i: uint = 0; i < pComponentList.length; i++){
 				this._pComponentList.push(pComponentList[i]);
 				this._pComponentShiftList.push(pComponentShiftList[i]);
-				this._pComponentPassNumberList.push(pComponentPassNumnerList[i]);
+				this._pComponentPassIdList.push(pComponentPassNumnerList[i]);
 
 				var sComponentHash: string = pComponentList[i].getHash(pComponentShiftList[i], pComponentPassNumnerList[i]);
 
-				this._pComponentCountMap[sComponentHash] = pComponentCountMap[sComponentHash];
+				this._pComponentHashMap[sComponentHash] = pComponentHashMap[sComponentHash];
 			}
 
 			this._iShiftMin = iShiftMin;
@@ -245,17 +268,21 @@ module akra.fx {
 		private calcHash(): string {
 			var sHash: string = "";
 
+			if(this.isEmpty()) {
+				return EMPTY_BLEND;
+			}
+
 			for(var i: uint = 0; i < this._pComponentList.length; i++){
 				var sComponentHash: string = this._pComponentList[i].getHash(this._pComponentShiftList[i], 
-																			 this._pComponentPassNumberList[i]);
-				sHash += sComponentHash + ":" + this._pComponentCountMap[sComponentHash].toString() + ":";	
+																			 this._pComponentPassIdList[i]);
+				sHash += sComponentHash + ":";	
 			}
 
 			return sHash;
 		}
 	}
 
-	export class ShaderInputBlend implements IAFXShaderInputBlend {
+	export class ComponentPassInputBlend implements IAFXComponentPassInputBlend {
 		private _pUniformNameToRealMap: StringMap = null;
 		private _pUniformByRealNameMap: IAFXVariableDeclMap = null;
 		private _pUniformDefaultValueMap: any = null;
@@ -273,6 +300,8 @@ module akra.fx {
 		private _pTextureNameList: string[] = null;
 
 		private _pForeignNameList: string[] = null;
+
+		private _pFreePassInputBlendList: IAFXPassInputBlend[] = null;
 
 		inline get uniformNameToReal(): StringMap{
 			return this._pUniformNameToRealMap;
@@ -368,13 +397,12 @@ module akra.fx {
 
 			for(var i in pUniformMap){
 				pVar = pUniformMap[i];
-
 				this.addUniformVariable(pVar, "", "");
 			}
 
 		}
 
-		generateKeys(): void {
+		finalizeInput(): void {
 			this._pUniformNameList = Object.keys(this._pUniformNameToRealMap);
 			this._pUniformRealNameList = Object.keys(this._pUniformByRealNameMap);
 
@@ -382,6 +410,21 @@ module akra.fx {
 			this._pTextureRealNameList = Object.keys(this._pTextureByRealNameMap);
 
 			this._pForeignNameList = Object.keys(this._pForeignByNameMap);
+
+			this._pFreePassInputBlendList = [];
+			this.generateNewPassInputs();
+		}
+
+		getPassInput(): IAFXPassInputBlend {
+			if(this._pFreePassInputBlendList.length === 0){
+				this.generateNewPassInputs();
+			}
+
+			return this._pFreePassInputBlendList.pop();
+		}
+
+		releasePassInput(pInput: IAFXPassInputBlend) : void {
+			this._pFreePassInputBlendList.push(pInput);
 		}
 
 		private addUniformVariable(pVariable: IAFXVariableDeclInstruction, 
@@ -426,7 +469,14 @@ module akra.fx {
 			}
 		}
 
+		private generateNewPassInputs(nCount?: uint = 5): void {
+			for(var i: uint = 0; i < nCount; i++) {
+				var pPassInput: IAFXPassInputBlend = new PassInputBlend(this);
+				this._pFreePassInputBlendList.push(pPassInput);
+			}
+		}
 	}
+
 }
 
 #endif

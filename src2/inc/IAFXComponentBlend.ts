@@ -3,15 +3,25 @@
 
 #include "IAFXComponent.ts"
 #include "IAFXInstruction.ts"
+#include "IUnique.ts"
+#include "IAFXPassInputBlend.ts"
+
+#define EMPTY_BLEND "EMPTY_BLEND"
 
 module akra {
-	export interface IAFXShaderInputBlend {
+	
+	export interface IAFXComponentBlendMap {
+		[index: uint]: IAFXComponentBlend;
+		[index: string]: IAFXComponentBlend; 
+	}
+
+	export interface IAFXComponentPassInputBlend {
 		uniformNameToReal: StringMap;
 		uniformByRealName: IAFXVariableDeclMap;
 		uniformDefaultValue: any;
 
 		textureNameToReal: StringMap;
-		textureByRealName: any;
+		textureByRealName: IAFXVariableDeclMap;
 
 		foreignByName: IAFXVariableDeclMap;
 
@@ -24,11 +34,15 @@ module akra {
 		foreignNameList: string[];
 
 		addDataFromPass(pPass: IAFXPassInstruction): void;
-		generateKeys(): void;
+		finalizeInput(): void;
+
+		getPassInput(): IAFXPassInputBlend;
+		releasePassInput(pPassInput: IAFXPassInputBlend): void;
 	}
 
-	export interface IAFXComponentBlend {
+	export interface IAFXComponentBlend extends IUnique {
 		isReadyToUse(): bool;
+		isEmpty(): bool;
 
 		getComponentCount(): uint;
 		getTotalPasses(): uint;
@@ -42,11 +56,19 @@ module akra {
 
 		finalizeBlend(): bool;
 
+		getPassInputForPass(iPass: uint): IAFXPassInputBlend;
+		getPassListAtPass(iPass: uint): IAFXPassInstruction[];
+
 		clone(): IAFXComponentBlend;
+		
+		_getComponentList(): IAFXComponent[];
+		_getComponentShiftList(): int[];
+		_getComponentPassIdList(): uint[];
+
 		_setDataForClone(pComponentList: IAFXComponent[],
 						 pComponentShiftList: int[],
 						 pComponentPassNumnerList: int[],
-						 pComponentCountMap: IntMap,
+						 pComponentHashMap: BoolMap,
 						 nShiftMin: int, nShiftMax: int): void;
 	}
 }

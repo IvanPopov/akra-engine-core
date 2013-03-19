@@ -89,6 +89,12 @@ module akra.geometry{
 			return this;
 		};
 
+		inline negate(): IPlane3d{
+			this.normal.negate();
+			this.distance = -this.distance;
+			return this;
+		};
+
 		normalize(): IPlane3d{
 			var v3fNormal: IVec3 = this.normal;
 			var x: float = v3fNormal.x, y: float = v3fNormal.y, z: float = v3fNormal.z;

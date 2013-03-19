@@ -240,7 +240,7 @@ module akra.terrain {
 			    //trace("Terraim Map Size ", iMaxX, iMaxY);
 
 			    var pColorData: Uint8Array = new Uint8Array(4 * iMaxY * iMaxX);
-			    this._pHeightTable = new Array(iMaxX * iMaxY); //float
+			    this._pHeightTable = new Array(iMaxX * iMaxY); /*float*/
 
 
 			    var temp: ITexture = new core.pool.resources.Texture(/*this._pEngine*/);

@@ -50,6 +50,8 @@ module akra.fx {
 		private _pStatistics: IAFXEffectStats = null;
 
 		private _sAnalyzedFileName: string = "";
+
+		private _pSystemMacros: IAFXSimpleInstructionMap = null;
 		private _pSystemTypes: SystemTypeMap = null;
 		private _pSystemFunctionsMap: SystemFunctionMap = null;
 		private _pSystemFunctionHashMap: BoolMap = null;
@@ -71,9 +73,11 @@ module akra.fx {
 
 		private _pAddedTechniqueList: IAFXTechniqueInstruction[] = null;
 
+		static pSystemMacros: IAFXSimpleInstructionMap= null;
 		static pSystemTypes: SystemTypeMap = null;
 		static pSystemFunctions: SystemFunctionMap = null;
 		static pSystemVariables: IAFXVariableDeclMap = null;
+		static pSystemVertexOut: ComplexTypeInstruction = null;
 
 		constructor(pComposer: IAFXComposer) {
 			this._pComposer = pComposer;
@@ -93,6 +97,7 @@ module akra.fx {
 			this._pTechniqueList = [];
 			this._pTechniqueMap = <TechniqueMap>{};
 
+			this.initSystemMacros();
 			this.initSystemTypes();
 			this.initSystemFunctions();
 			this.initSystemVariables();
@@ -175,6 +180,9 @@ module akra.fx {
 			return this._pTechniqueList;
 		}
 
+		static getBaseVertexOutType(): ComplexTypeInstruction {
+			return Effect.pSystemVertexOut;
+		}
 		static getSystemType(sTypeName: string): SystemTypeInstruction {
         	//bool, string, float and others
         	return isDef(Effect.pSystemTypes[sTypeName]) ? Effect.pSystemTypes[sTypeName] : null;
@@ -184,12 +192,24 @@ module akra.fx {
         	return isDef(Effect.pSystemVariables[sName]) ? Effect.pSystemVariables[sName] : null;
         }
 
+        static getSystemMacros(sName: string): IAFXSimpleInstruction {
+        	return isDef(Effect.pSystemMacros[sName]) ? Effect.pSystemMacros[sName] : null;
+        }
+
         static findSystemFunction(sFunctionName: string, 
 							 	  pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
 			var pSystemFunctions: SystemFunctionInstruction[] = Effect.pSystemFunctions[sFunctionName];
 
 			if(!isDef(pSystemFunctions)){
 				return null;
+			}
+
+			if(isNull(pArguments)) {
+				for(var i: uint = 0; i < pSystemFunctions.length; i++){
+					if(pSystemFunctions[i].getNumNeededArguments() === 0){
+						return pSystemFunctions[i];
+					} 
+				}
 			}
 
 			for(var i: uint = 0; i < pSystemFunctions.length; i++){
@@ -261,12 +281,23 @@ module akra.fx {
 			this.generateSuffixLiterals(pLiterals, pOutput, iDepth);
 		}
 
+		private initSystemMacros(): void {
+			if(isNull(Effect.pSystemMacros)){
+				this._pSystemMacros = Effect.pSystemMacros = <IAFXSimpleInstructionMap>{};
+				this.addSystemMacros();
+			}
+
+			this._pSystemMacros = Effect.pSystemMacros;
+		}
+
 		private initSystemTypes(): void {
 			if(isNull(Effect.pSystemTypes)){
 				this._pSystemTypes = Effect.pSystemTypes = {};
 				this.addSystemTypeScalar();
 				this.addSystemTypeVector();
 				this.addSystemTypeMatrix();
+
+				this.generateBaseVertexOutput();
 			}
 
 			this._pSystemTypes = Effect.pSystemTypes;
@@ -289,6 +320,27 @@ module akra.fx {
 
 			this._pSystemVariables = Effect.pSystemVariables;
 		}
+
+		private addSystemMacros(): void {
+			this.generateSystemMacros("ExtractMacros",
+									  "\n#ifdef AKRA_FRAGMENT\n" +
+									  "//#define texture2D(sampler, ) texture2D\n" +
+									  "#else\n" +
+									  "#define texture2D(A, B) texture2DLod(A, B, 0.)\n" +
+									  "#endif\n" +
+									  "#ifndef A_VB_COMPONENT3\n" +
+									  "#define A_VB_COMPONENT4\n" +
+									  "#endif\n" +
+									  "#ifdef A_VB_COMPONENT4\n" +
+									  "#define A_VB_ELEMENT_SIZE 4.\n" +
+									  "#endif\n" +
+									  "#ifdef A_VB_COMPONENT3\n" +
+									  "#define A_VB_ELEMENT_SIZE 3.\n" +
+									  "#endif\n" +
+									  "#define A_tex2D(S, H, X, Y) texture2D(S, vec2(H.stepX * X , H.stepY * Y))\n" +
+									  "#define A_tex2Dv(S, H, V) texture2D(S, V)\n");
+		}
+
 
 		private addSystemVariables(): void {
 			this.generateSystemVariable("fragCoord", "gl_FragCoord", "float4", false, true, true);
@@ -326,6 +378,8 @@ module akra.fx {
 			pVariableDecl.push(pName, true);
 
 			this._pSystemVariables[sName] = pVariableDecl;
+
+			pVariableDecl.setBuiltIn(true);
 		}
 
 		private generatePassEngineVariable(): void {
@@ -343,6 +397,48 @@ module akra.fx {
 			pVariableDecl.push(pName, true);
 
 			this._pSystemVariables["engine"] = pVariableDecl;
+		}
+
+		private generateBaseVertexOutput(): void {
+			//TODO: fix defenition of this variables
+			
+			var pOutBasetype: ComplexTypeInstruction = new ComplexTypeInstruction();
+
+			var pPosition: VariableDeclInstruction = new VariableDeclInstruction();
+			var pPointSize: VariableDeclInstruction = new VariableDeclInstruction();
+			var pPositionType: VariableTypeInstruction = new VariableTypeInstruction();
+			var pPointSizeType: VariableTypeInstruction = new VariableTypeInstruction();
+			var pPositionId: IdInstruction = new IdInstruction();
+			var pPointSizeId: IdInstruction = new IdInstruction();
+
+			pPositionType.pushType(Effect.getSystemType("float4"));
+			pPointSizeType.pushType(Effect.getSystemType("float"));
+
+			pPositionId.setName("pos");
+			pPositionId.setRealName("pos");
+
+			pPointSizeId.setName("psize");
+			pPointSizeId.setRealName("psize");
+
+			pPosition.push(pPositionType, true);
+			pPosition.push(pPositionId, true);
+
+			pPointSize.push(pPointSizeType, true);
+			pPointSize.push(pPointSizeId, true);
+
+			pPosition.setSemantic("POSITION");
+			pPointSize.setSemantic("PSIZE");
+
+			var pFieldCollector: IAFXInstruction = new InstructionCollector();
+			pFieldCollector.push(pPosition, false);
+			pFieldCollector.push(pPointSize, false);
+
+			pOutBasetype.addFields(pFieldCollector, true);
+
+			pOutBasetype.setName("VS_OUT");
+			pOutBasetype.setRealName("VS_OUT_S");
+
+			Effect.pSystemVertexOut = pOutBasetype;
 		}
 
 		private addSystemFunctions(): void {
@@ -420,6 +516,124 @@ module akra.fx {
 		    this.generateSystemFunction("texCUBELod", "textureCubeLod($1,$2,$3)", "float4", ["samplerCUBE", "float3", "float"], null, true, false);
 
 		    //Extracts
+
+		    this.generateNotBuiltInSystemFuction("extractHeader", 
+												 "void A_extractTextureHeader(const sampler2D src, out A_TextureHeader texture)",
+												 "{vec4 v = texture2D(src, vec2(0.)); " +
+												 "texture = A_TextureHeader(v.r, v.g, v.b, v.a);}",
+												 "void",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+
+		    this.generateNotBuiltInSystemFuction("extractFloat", 
+												 "float A_extractFloat(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "float y = floor(pixelNumber / header.width) + .5; " +
+												 "float x = mod(pixelNumber, header.width) + .5; " +
+												 "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+												 "\n#ifdef A_VB_COMPONENT4\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header, x, y).r; " +
+												 "else if(shift == 1) return A_tex2D(sampler, header, x, y).g; " +
+												 "else if(shift == 2) return A_tex2D(sampler, header, x, y).b; " +
+												 "else if(shift == 3) return A_tex2D(sampler, header, x, y).a; " +
+												 "\n#endif\n" +
+												 "return 0.;}",
+												 "float",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+			
+			this.generateNotBuiltInSystemFuction("extractFloat2", 
+												 "vec2 A_extractVec2(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "float y = floor(pixelNumber / header.width) + .5; " +
+												 "float x = mod(pixelNumber, header.width) + .5; " +
+												 "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+												 "\n#ifdef A_VB_COMPONENT4\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header, x, y).rg; " +
+												 "else if(shift == 1) return A_tex2D(sampler, header, x, y).gb; " +
+												 "else if(shift == 2) return A_tex2D(sampler, header, x, y).ba; " +
+												 "else if(shift == 3) { " +
+												 "if(int(x) == int(header.width - 1.)) " +
+												 "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "else " +
+												 "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).r); " +
+												 "} " +
+												 "\n#endif\n" +
+												 "return vec2(0.);}",
+												 "float2",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+			
+			this.generateNotBuiltInSystemFuction("extractFloat3", 
+												 "vec3 A_extractVec3(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "float y = floor(pixelNumber / header.width) + .5; " +
+												 "float x = mod(pixelNumber, header.width) + .5; " +
+												 "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+												 "\n#ifdef A_VB_COMPONENT4\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header, x, y).rgb; " +
+												 "else if(shift == 1) return A_tex2D(sampler, header, x, y).gba; " +
+												 "else if(shift == 2){ " +
+												 "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "else return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+												 "else if(shift == 3){ " +
+												 "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+												 "else return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rg);} " +
+												 "\n#endif\n" +
+												 "\n#ifdef A_VB_COMPONENT3\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header,vec2(x,header.stepY*y)).rgb; " +
+												 "else if(shift == 1){ " +
+												 "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "else return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+												 "else if(shift == 3){ " +
+												 "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+												 "else return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, (x + 1)., y).rg);} " +
+												 "\n#endif\n" +
+												 "return vec3(0);}",
+												 "float3",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+
+			this.generateNotBuiltInSystemFuction("extractFloat4", 
+												 "vec4 A_extractVec4(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "float y = floor(pixelNumber / header.width) + .5; " +
+												 "float x = mod(pixelNumber, header.width) + .5; " +
+												 "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+												 "\n#ifdef A_VB_COMPONENT4\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header, x, y); " +
+												 "else if(shift == 1){ " +
+												 "if(int(x) == int(header.width - 1.)) " +
+												 "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "else " +
+												 "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+												 "else if(shift == 2){ " +
+												 "if(int(x) == int(header.width - 1.)) " +
+												 "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+												 "else " +
+												 "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).rg);} " +
+												 "else if(shift == 3){ " +
+												 "if(int(x) == int(header.width - 1.)) " +
+												 "return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rgb); " +
+												 "else return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rgb);} " +
+												 "\n#endif\n" +
+												 "\n#ifdef A_VB_COMPONENT3\n" +
+												 "\n#endif\n" +
+												 "return vec4(0);}",
+												 "float4",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+			
+			this.generateNotBuiltInSystemFuction("findPixel", 
+												 "vec2 A_findPixel(const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "return vec2(header.stepX * (mod(pixelNumber, header.width) + .5), header.stepY * (floor(pixelNumber / header.width) + .5));}",
+												 "float2",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+
+			this.generateNotBuiltInSystemFuction("extractFloat4x4", 
+												 "mat4 A_extractMat4(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{return mat4(A_tex2Dv(sampler, header, A_findPixel(header, offset))," +
+												 "A_tex2Dv(sampler, header, A_findPixel(header, offset + 4.))," +
+												 "A_tex2Dv(sampler, header, A_findPixel(header, offset + 8.))," +
+												 "A_tex2Dv(sampler, header, A_findPixel(header, offset + 12.)));}",
+												 "float4x4",
+												 ["video_buffer_header"], ["findPixel"], ["ExtractMacros"]);
 		}
 
 		private generateSystemFunction(sName: string, sTranslationExpr: string, 
@@ -471,6 +685,7 @@ module akra.fx {
 					pFunction._setForPixel(isForPixel);
 
 					pSystemFunctions[sName].push(pFunction);
+					pFunction.setBuiltIn(true);
 				}
 			}
 			else {
@@ -509,7 +724,66 @@ module akra.fx {
 				}
 
 				pSystemFunctions[sName].push(pFunction);
+				pFunction.setBuiltIn(true);
 			}
+		}
+
+		private generateSystemMacros(sMacrosName: string, sMacrosCode: string): void {
+			if(isDef(this._pSystemMacros[sMacrosName])){
+				return;
+			}
+
+			var pMacros: IAFXSimpleInstruction = new SimpleInstruction(sMacrosCode);
+
+			this._pSystemMacros[sMacrosName] = pMacros;
+		}
+
+		private generateNotBuiltInSystemFuction(sName: string, sDefenition: string, sImplementation: string,
+												sReturnType: string, 
+												pUsedTypes: string[], 
+												pUsedFunctions: string[], 
+												pUsedMacros: string[]): void {
+
+			if(isDef(this._pSystemFunctionsMap[sName])){
+				return;
+			}
+
+			var pReturnType: IAFXTypeInstruction = Effect.getSystemType(sReturnType);
+			var pFunction: SystemFunctionInstruction = new SystemFunctionInstruction(sName, pReturnType, null, null);
+
+			pFunction.setDeclCode(sDefenition, sImplementation);
+
+			var pUsedExtSystemTypes: IAFXTypeDeclInstruction[] = [];
+			var pUsedExtSystemFunctions: IAFXFunctionDeclInstruction[] = [];
+			var pUsedExtSystemMacros: IAFXSimpleInstruction[] = [];
+
+			if(!isNull(pUsedTypes)){
+				for(var i: uint = 0; i < pUsedTypes.length; i++){
+					var pTypeDecl: IAFXTypeDeclInstruction = <IAFXTypeDeclInstruction>Effect.getSystemType(pUsedTypes[i]).getParent();
+					if(!isNull(pTypeDecl)){
+						pUsedExtSystemTypes.push(pTypeDecl);
+					}
+				}
+			}
+
+			if(!isNull(pUsedMacros)){
+				for(var i: uint = 0; i < pUsedMacros.length; i++) {
+					pUsedExtSystemMacros.push(Effect.getSystemMacros(pUsedMacros[i]));
+				}
+			}
+
+			if(!isNull(pUsedFunctions)){
+				for(var i: uint = 0; i < pUsedFunctions.length; i++) {
+					var pFindFunction: IAFXFunctionDeclInstruction = Effect.findSystemFunction(pUsedFunctions[i], null);
+					pUsedExtSystemFunctions.push(pFindFunction);
+				}
+			}
+
+			pFunction.setUsedSystemData(pUsedExtSystemTypes, pUsedExtSystemFunctions, pUsedExtSystemMacros);
+			pFunction.closeSystemDataInfo();
+			pFunction.setBuiltIn(false);
+
+			this._pSystemFunctionsMap[sName] = [pFunction];
 		}
 
 		private generateSystemType(sName: string, sRealName: string, 
@@ -531,6 +805,35 @@ module akra.fx {
 			}
 
 			this._pSystemTypes[sName] = pSystemType;
+			pSystemType.setBuiltIn(true);
+
+			return pSystemType;
+		}
+
+		private generateNotBuildtInSystemType(sName: string, sRealName: string, sDeclString: string,
+											  iSize: uint = 1, isArray: bool = false, 
+								  			  pElementType: IAFXTypeInstruction = null, iLength: uint = 1
+								  			 ): IAFXTypeInstruction {
+
+			if(isDef(this._pSystemTypes[sName])){
+				return null;
+			}
+
+			var pSystemType: SystemTypeInstruction = new SystemTypeInstruction();
+			pSystemType.setName(sName);
+			pSystemType.setRealName(sRealName);
+			pSystemType.setSize(iSize);
+
+			if(isArray){
+				pSystemType.addIndex(pElementType, iLength);
+			}
+
+			this._pSystemTypes[sName] = pSystemType;
+			pSystemType.setBuiltIn(false);
+
+			var pSystemTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
+			pSystemTypeDecl.push(pSystemType, true);
+			pSystemTypeDecl.setBuiltIn(false);
 
 			return pSystemType;
 		}
@@ -547,7 +850,10 @@ module akra.fx {
 			this.generateSystemType("sampler2D", "sampler2D", 1);
 			this.generateSystemType("samplerCUBE", "samplerCube", 1);
 			this.generateSystemType("video_buffer", "sampler2D", 1);
-			this.generateSystemType("video_buffer_header", "", 0);
+
+
+			this.generateNotBuildtInSystemType("video_buffer_header", "A_TextureHeader",
+				"struct A_TextureHeader { float width; float height; float stepX; float stepY; }");
 		}
 		
 		private addSystemTypeVector(): void {
@@ -1315,6 +1621,7 @@ module akra.fx {
         		else if(pChildren[i].name === "Semantic"){
         			sSemantic = this.analyzeSemantic(pChildren[i]);
         			pVarDecl.setSemantic(sSemantic);
+        			pVarDecl.getNameId().setRealName(sSemantic);
         		}
         		else if(pChildren[i].name === "Initializer"){
         			pInitExpr = this.analyzeInitializer(pChildren[i]);
@@ -1795,6 +2102,10 @@ module akra.fx {
         		}
 
         		pExpr = pSystemCallExpr;
+
+        		if(!pFunction.isBuiltIn() && !isNull(pCurrentAnalyzedFunction)){
+        			pCurrentAnalyzedFunction._addUsedFunction(pFunction);
+        		}
         	}
 
         	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
@@ -4041,6 +4352,8 @@ module akra.fx {
         	var pWhatExtracted: IAFXVariableDeclInstruction = pPointerType._getDownPointer();
         	var pWhatExtractedType: IAFXVariableTypeInstruction = null;
 
+        	var pFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
+
         	while(!isNull(pWhatExtracted)){
         		pWhatExtractedType = pWhatExtracted.getType();
 
@@ -4049,11 +4362,15 @@ module akra.fx {
         			pSingleExtract.generateStmtForBaseType(
         									pWhatExtracted,
         									pWhatExtractedType.getPointer(),
-        									pWhatExtractedType.getVideoBuffer(), 0);
+        									pWhatExtractedType.getVideoBuffer(), 0, null);
 
         			CHECK_INSTRUCTION(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT); 
 
         			pParentStmt.push(pSingleExtract, true);
+
+        			if(!isNull(pFunction)){
+        				pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
+        			}
         		}
         		else {
         			this.generateExtractStmtForComplexVar(
@@ -4079,6 +4396,8 @@ module akra.fx {
         	var pFieldType: IAFXVariableTypeInstruction = null;
         	var pSingleExtract: ExtractStmtInstruction = null;
 
+        	var pFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
+
         	for(var i: uint = 0; i < pFieldNameList.length; i++){
         		pField = pVarType.getField(pFieldNameList[i]);
 
@@ -4091,23 +4410,31 @@ module akra.fx {
  				if(pFieldType.isPointer()){
  					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
  					pSingleExtract = new ExtractStmtInstruction();
- 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding());
+ 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding(), null);
  					
  					CHECK_INSTRUCTION(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT); 
 
  					pParentStmt.push(pSingleExtract, true);
  					this.generateExtractStmtFromPointer(pFieldPointer, pParentStmt);
+
+ 					if(!isNull(pFunction)){
+        				pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
+        			}
  				}
  				else if(pFieldType.isComplex()) {
  					this.generateExtractStmtForComplexVar(pField, pParentStmt, pPointer, pBuffer, iPadding + pFieldType.getPadding());
  				}
  				else {
  					pSingleExtract = new ExtractStmtInstruction();
-        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding());
+        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding(), null);
         			
         			CHECK_INSTRUCTION(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT); 
 
         			pParentStmt.push(pSingleExtract, true);
+
+        			if(!isNull(pFunction)){
+        				pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
+        			}
  				}
  	       	}        	
         }
