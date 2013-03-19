@@ -251,11 +251,12 @@ module akra.core.pool.resources {
                 }
                 else
                 {
-
+                    console.log("io.fopen==>>");
                     io.fopen(pData,"rb").onread=function(pError:Error,pDataInFile:ArrayBuffer)
                     {
-
+                        console.log("io.fopen==<<");
                         pMe.load(new Uint8Array(pDataInFile),sExt,sType);
+
                     }
                 }
 
@@ -290,7 +291,9 @@ module akra.core.pool.resources {
 
                 var pImgData:IImgData=new ImgData();
 
+                console.log("DDS.decode==>>");
                 this._pBuffer=pCodec.decode(pData,pImgData);
+                console.log("DDS.decode<<==");
 
                 this._iWidth=pImgData.width;
                 this._iHeight=pImgData.height;
