@@ -319,7 +319,7 @@ module akra.fx {
 				if(!pBlend.finalizeBlend()){
 					return false;
 				}
-			
+				
 				if(isNeedToUpdatePasses) {
 					pRenderTechnique.updatePasses(isTechniqueUpdate);
 				}

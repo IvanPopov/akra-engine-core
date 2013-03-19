@@ -2,18 +2,27 @@
 #define AFXSAMPLERBLENDER_TS
 
 #include "IAFXComposer.ts"
-#include "IAFXSamplerBlender.ts"
 
 module akra.fx {
 	#define INIT_SLOT_SIZE 32
 	#define ZERO_SLOT 0
 
-	export class SamplerBlender implements IAFXSamplerBlender {
+	//TODO: CHECK SAMPLER TYPE
+	
+	export class SamplerBlender {
 		protected _pSlotList: util.ObjectArray[] = null;
 		protected _nActiveSlots: uint = 0;
 
 		protected _pIdToSlotMap: IntMap = null;
 		protected _pIdList: uint[] = null;
+
+		inline get slots(): util.ObjectArray[] {
+			return this._pSlotList;
+		}
+
+		inline get totalActiveSlots(): uint {
+			return this._nActiveSlots;
+		}
 
 		constructor() {
 			this._pSlotList = new Array(INIT_SLOT_SIZE);
@@ -27,6 +36,10 @@ module akra.fx {
 			this._pIdToSlotMap = <IntMap><any>{0 : 0};
 			this._pIdList = [];
 		}
+
+		inline getSamplersBySlot(iSlot: uint): util.ObjectArray {
+			return this.slots[iSlot];
+		} 
 
 		clear(): void {
 			for(var i: uint = 0; i < this._nActiveSlots; i++){

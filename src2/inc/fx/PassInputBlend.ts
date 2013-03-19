@@ -252,6 +252,7 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pUniformKeys.length; i++){
 				sName = pUniformKeys[i];
+
 				eType = this.getVariableType(pUniformMap[sName]);
 				isArray = this.isVarArray(pUniformMap[sName]);
 
@@ -263,8 +264,8 @@ module akra.fx {
 						this.samplerArrays[sName] = new Array(16);
 						this.samplerArrayLength[sName] = 0;
 
-						for(var i: uint = 0; i < this.samplerArrayLength[sName]; i++) {
-							this.samplerArrays[sName].push(this.createSamplerState());
+						for(var j: uint = 0; j < this.samplerArrays[sName].length; j++) {
+							this.samplerArrays[sName][j] = this.createSamplerState();
 						}
 					}
 					else {
@@ -281,7 +282,7 @@ module akra.fx {
 				eType = this.getVariableType(pForeignMap[sName]);
 
 				this._pForeignTypeMap[sName] = eType;
-				this.foreigns = null;
+				this.foreigns[sName] = null;
 			}
 
 			for(var i: uint = 0; i < pTextureKeys.length; i++){

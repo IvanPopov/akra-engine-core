@@ -373,6 +373,7 @@ module akra {
         _addPointIndexInDepth(): void;
         _setVideoBufferInDepth(): void;
         _markAsUnverifiable(isUnverifiable: bool): void;
+        _addAttrOffset(pOffset: IAFXVariableDeclInstruction): void;
 
         /**
          * Type info
@@ -405,6 +406,7 @@ module akra {
         _getMainPointer(): IAFXVariableDeclInstruction;
         _getUpPointer(): IAFXVariableDeclInstruction;
         _getDownPointer(): IAFXVariableDeclInstruction;
+        _getAttrOffset(): IAFXVariableDeclInstruction;
 
         /**
          * System
@@ -476,6 +478,9 @@ module akra {
 
         isDefinedByZero(): bool;
         defineByZero(isDefine: bool): void;
+
+        _setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void;
+        _getAttrExtractionBlock(): IAFXInstruction;
 
         _markAsShaderOutput(isShaderOutput: bool): void;
         _isShaderOutput(): bool;

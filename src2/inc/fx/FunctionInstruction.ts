@@ -644,6 +644,7 @@ module akra.fx {
         			}
 
         			this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
+        			this.generateExtractBlockForAttribute(pAttr);
         		}
         	}
         	else {
@@ -655,6 +656,7 @@ module akra.fx {
         			}
 
         			this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
+        			this.generateExtractBlockForAttribute(pAttr);
         		}
         	}
 
@@ -951,6 +953,137 @@ module akra.fx {
 
         	return true;
         }
+
+        private generateExtractBlockForAttribute(pAttr: IAFXVariableDeclInstruction): IAFXInstruction {
+        	if(!pAttr.getType().isPointer()){
+        		return null;
+        	}
+
+        	var pExtractCollector: IAFXInstruction = new InstructionCollector();
+        	var pMainPointer: IAFXVariableDeclInstruction = pAttr.getType()._getMainPointer();
+
+        	pAttr._setAttrExtractionBlock(pExtractCollector);
+
+        	this.generateExtractStmtFromPointer(pMainPointer, null, 0, pExtractCollector);
+
+        	pAttr.getType().getSubVarDecls();
+
+        	return pExtractCollector;
+
+        }
+
+        private generateExtractStmtFromPointer(pPointer: IAFXVariableDeclInstruction, 
+        									   pOffset: IAFXVariableDeclInstruction,
+        									   iDepth: uint,
+        									   pCollector: IAFXInstruction): void {
+        	var pPointerType: IAFXVariableTypeInstruction = pPointer.getType();
+        	var pWhatExtracted: IAFXVariableDeclInstruction = pPointerType._getDownPointer();
+        	var pWhatExtractedType: IAFXVariableTypeInstruction = null;
+
+        	while(!isNull(pWhatExtracted)){
+        		pWhatExtractedType = pWhatExtracted.getType();
+
+        		if(!pWhatExtractedType.isPointIndex() && iDepth === 0){
+        			pOffset = this.createOffsetForAttr(pWhatExtracted);
+        		}
+
+        		if(!pWhatExtractedType.isComplex()){
+        			var pSingleExtract: ExtractStmtInstruction = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(
+        									pWhatExtracted,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0, 
+        									pWhatExtractedType.isPointIndex() ? null : pOffset);
+
+        			this._addUsedFunction(pSingleExtract.getExtractFunction());
+        			pCollector.push(pSingleExtract, true);
+        		}
+        		else {
+        			iDepth++;
+        			this.generateExtractStmtForComplexVar(
+        									pWhatExtracted, pOffset, iDepth, pCollector,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0);
+        		}
+
+        		pWhatExtracted = pWhatExtractedType._getDownPointer();
+        	}
+        }
+
+        private generateExtractStmtForComplexVar(pVarDecl: IAFXVariableDeclInstruction, 
+        										 pOffset: IAFXVariableDeclInstruction,
+        										 iDepth: uint,
+        										 pCollector: IAFXInstruction,
+        										 pPointer: IAFXVariableDeclInstruction,
+        										 pBuffer: IAFXVariableDeclInstruction,
+        										 iPadding: uint): void {
+
+        	var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
+        	var pFieldNameList: string[] = pVarType.getFieldNameList();
+        	var pField: IAFXVariableDeclInstruction = null;
+        	var pFieldType: IAFXVariableTypeInstruction = null;
+        	var pSingleExtract: ExtractStmtInstruction = null;
+
+        	for(var i: uint = 0; i < pFieldNameList.length; i++){
+        		pField = pVarType.getField(pFieldNameList[i]);
+
+        		if(isNull(pField)){
+        			continue;
+				}
+
+ 				pFieldType = pField.getType();
+
+ 				if(iDepth <= 1){
+ 					pOffset = this.createOffsetForAttr(pField);
+ 				}
+
+ 				iDepth++;
+
+ 				if(pFieldType.isPointer()){
+ 					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
+ 					pSingleExtract = new ExtractStmtInstruction();
+ 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), 
+ 														   iPadding + pFieldType.getPadding(), pOffset);
+
+ 					this._addUsedFunction(pSingleExtract.getExtractFunction());
+ 					
+ 					pCollector.push(pSingleExtract, true);
+ 					this.generateExtractStmtFromPointer(pFieldPointer, pOffset, iDepth, pCollector);
+ 				}
+ 				else if(pFieldType.isComplex()) {
+ 					this.generateExtractStmtForComplexVar(pField, pOffset, iDepth, pCollector,
+ 														  pPointer, pBuffer, iPadding + pFieldType.getPadding());
+ 				}
+ 				else {
+ 					pSingleExtract = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, 
+        												   iPadding + pFieldType.getPadding(), pOffset);
+
+        			this._addUsedFunction(pSingleExtract.getExtractFunction());
+
+        			pCollector.push(pSingleExtract, true);
+ 				}
+ 	       	}        	
+        }
+
+        private createOffsetForAttr(pAttr: IAFXVariableDeclInstruction): IAFXVariableDeclInstruction {
+        	var pOffset: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+        	var pOffsetType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+        	var pOffsetId: IAFXIdInstruction = new IdInstruction();
+
+        	pOffsetType.pushType(Effect.getSystemType("float"));
+
+        	pOffset.push(pOffsetType, true);
+        	pOffset.push(pOffsetId, true);
+
+        	pOffset.setParent(pAttr);
+
+        	pAttr.getType()._addAttrOffset(pOffset);
+
+        	return pOffset;
+        }
+
+
 	}
 
 	export class SystemFunctionInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {

@@ -74,6 +74,10 @@ module akra.fx {
 		inline getVariableByName(sName: string): IAFXVariableDeclInstruction {
 			return this.hasVariableWithName(sName) ? this._pVarListMap[sName][0] : null;
 		}
+
+		inline getDeclCodeForVar(sName: string): string {
+			return this.getBlendType(sName).toFinalCode() + " " + sName;
+		}
 	}
 
 
@@ -81,6 +85,14 @@ module akra.fx {
 		
 		private _pTypeListMap: IAFXTypeMap = null;
 		private _pTypeKeys: string[] = null;
+
+		inline get keys(): string[]{
+			return this._pTypeKeys;
+		}
+
+		inline get types(): IAFXTypeMap {
+			return this._pTypeListMap;
+		}
 
 		constructor() {
 			this._pTypeListMap = <IAFXTypeMap>{};
@@ -130,9 +142,21 @@ module akra.fx {
 	}
 
 	export class ExtSystemDataContainer {
-		private _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
-		private _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
-		private _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
+		protected _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
+		protected _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
+		protected _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
+
+		inline get macroses(): IAFXSimpleInstruction[] {
+			return this._pExtSystemMacrosList;
+		}
+
+		inline get types(): IAFXTypeDeclInstruction[] {
+			return this._pExtSystemTypeList;
+		}
+
+		inline get functions(): IAFXFunctionDeclInstruction[] {
+			return this._pExtSystemFunctionList;
+		}
 
 		constructor(){
 			this._pExtSystemMacrosList = [];
@@ -180,11 +204,23 @@ module akra.fx {
 		private _pSlotBySemanticMap: IntMap = null;
 		private _pFlowsBySemanticMap: IDataFlowMap = null;
 
-		private _nSlots: uint = 0;
 		private _pFlowBySlots: util.ObjectArray = null;
 		private _pHashBySlots: util.ObjectArray = null;
+		private _pTypesBySlots: util.ObjectArray = null;
+		
+		private _pBufferByBufferSlots: util.ObjectArray = null;
+		private _pHashByBufferSlots: util.ObjectArray = null;
+		private _pBufferSlotBySlots: util.ObjectArray = null;
 
 		protected _sHash: string = "";
+
+		inline get semantics(): string[] {
+			return this.keys;
+		}
+
+		inline get totalSlots(): uint {
+			return this._pFlowBySlots.length;
+		}
 
 		constructor() {
 			super();
@@ -194,10 +230,23 @@ module akra.fx {
 
 			this._pFlowBySlots = new util.ObjectArray();
 			this._pHashBySlots = new util.ObjectArray();
+			this._pTypesBySlots = new util.ObjectArray();
+
+			this._pBufferByBufferSlots = new util.ObjectArray();
+			this._pHashByBufferSlots = new util.ObjectArray();
+			this._pBufferSlotBySlots = new util.ObjectArray();
 		}
 
-		inline get semantics(): string[] {
-			return this.keys;
+		inline getFlowBySemantic(sSemantic: string): IDataFlow {
+			return this._pFlowsBySemanticMap[sSemantic];
+		}
+
+		inline getFlowBySlot(iSlot: uint): IDataFlow {
+			return this._pFlowBySlots.value(iSlot);
+		}
+
+		inline getTypeBySlot(iSlot: int): IAFXTypeInstruction {
+			return this._pTypesBySlots.value(iSlot);
 		}
 
 		inline getType(sSemantic: string): IAFXVariableTypeInstruction {
@@ -206,6 +255,22 @@ module akra.fx {
 
 		inline addAttribute(pVariable: IAFXVariableDeclInstruction): bool {
 			return this.addVariable(pVariable, EAFXBlendMode.k_Attribute);
+		}
+
+		inline hasAttrWithSemantic(sSemantic: string): bool {
+			return this.hasVariableWithName(sSemantic);
+		}
+
+		inline getAttribute(sSemantic: string): IAFXVariableDeclInstruction {
+			return this.getVariableByName(sSemantic);
+		}
+
+		inline hasTexcoord(iSlot: uint): bool {
+			return this.hasAttrWithSemantic(DeclUsages.TEXCOORD + iSlot.toString());
+		}
+
+		inline getTexcoordVar(iSlot: uint): IAFXVariableDeclInstruction {
+			return this.getVariableByName(DeclUsages.TEXCOORD + iSlot.toString());
 		}
 
 		clear(): void {
@@ -217,7 +282,11 @@ module akra.fx {
 
 			this._pFlowBySlots.clear(false);
 			this._pHashBySlots.clear(false);
-			this._nSlots = 0;
+
+			this._pBufferByBufferSlots.clear(false);
+			this._pHashByBufferSlots.clear(false);
+			this._pBufferSlotBySlots.clear(false);
+
 			this._sHash = "";
 		}
 
@@ -225,6 +294,11 @@ module akra.fx {
 
 		initFromBufferMap(pMap: util.BufferMap): bool {
 			this.clear();
+			
+			if(isNull(pMap)){
+				WARNING("Yoy don`t set any buffermap for render");
+				return false;
+			}
 
 			var pFlows: IDataFlow[] = pMap.flows;
 			var pSemanticList: string[] = this.semantics;
@@ -236,6 +310,8 @@ module akra.fx {
 				this._pFlowsBySemanticMap[sSemantic] = pFindFlow;
 
 				if(!isNull(pFindFlow)){
+					var iBufferSlot: int = -1;
+
 					if (pFindFlow.type === EDataFlowTypes.MAPPABLE) {
 						if(!this.getType(sSemantic).isPointer()) {
 							WARNING("You try to put pointer data into non-pointer attribute with semantic '" + sSemantic + "'");
@@ -243,10 +319,27 @@ module akra.fx {
 						}
 
 						var iSlot: int = this._pFlowBySlots.indexOf(pFindFlow);
+						
+
 						if (iSlot !== -1) {
 							this._pHashBySlots.value(iSlot) += this.getType(sSemantic).getGuid().toString() + "*";
 							this._pSlotBySemanticMap[sSemantic] = iSlot;
+
+							iBufferSlot = this._pBufferSlotBySlots.value(iSlot);
+							this._pHashByBufferSlots.value(iBufferSlot) += iSlot.toString() + "$";
 							continue;
+						}
+
+						iBufferSlot = this._pBufferByBufferSlots.indexOf(pFindFlow.data.buffer);
+						iSlot = this._pFlowBySlots.length;
+
+						if(iBufferSlot !== -1){
+							this._pHashByBufferSlots.value(iBufferSlot) += iSlot.toString() + "$";
+						}
+						else {
+							iBufferSlot = this._pBufferByBufferSlots.length;
+							this._pBufferByBufferSlots.push(pFindFlow.data.buffer);
+							this._pHashByBufferSlots.push(this._pFlowBySlots.length.toString() + "$");
 						}
 					}
 					else if(this.getType(sSemantic).isStrictPointer()) {
@@ -254,18 +347,33 @@ module akra.fx {
 						return false;
 					}
 					
+
 					//new slot
+					if(pFindFlow.type === EDataFlowTypes.MAPPABLE){
+						this._pTypesBySlots.push(Effect.getSystemType("ptr"));
+					}
+					else {
+						this._pTypesBySlots.push(this.getType(sSemantic).getBaseType());
+					}
+					
 					this._pSlotBySemanticMap[sSemantic] = this._pFlowBySlots.length;
 					this._pFlowBySlots.push(pFindFlow);
 					this._pHashBySlots.push(this.getType(sSemantic).getGuid().toString() + "*");
-					
+
+					this._pBufferSlotBySlots.push(iBufferSlot);
+
+
 				}
 			}
 
 			this._sHash = "";
 			for(var i: uint = 0; i < this._pHashBySlots.length; i++) {
-				this._sHash += this._pHashBySlots[i] + "*";
-			}			
+				this._sHash += this._pHashBySlots.value(i) + "*";
+			}
+
+			for(var i: uint = 0; i < this._pHashByBufferSlots.length; i++) {
+				this._sHash += this._pHashByBufferSlots.value(i) + "$";
+			}
 		}
 
 		inline getHash(): string {

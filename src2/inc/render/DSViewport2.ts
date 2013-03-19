@@ -96,7 +96,7 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.skybox", 1);
 
 			pDSMethod.effect = pDSEffect;
-			pDefferedView.addRenderMethod(pDSMethod);
+			pDefferedView.getTechnique().setMethod(pDSMethod);
 
 			// LOG(pEngine.getComposer(), pDefferedView.getTechnique().totalPasses);
 			// pDefferedView.renderMethod = pDSMethod;
@@ -130,7 +130,7 @@ module akra.render {
 			}
 #endif
 			//render defferred
-			//this._pDeferredView.render();	
+			this._pDeferredView.render();	
 
 			return true;
 		}
