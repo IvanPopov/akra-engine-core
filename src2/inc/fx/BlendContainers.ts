@@ -82,7 +82,6 @@ module akra.fx {
 
 
 	export class ComplexTypeBlendContainer {
-		
 		private _pTypeListMap: IAFXTypeMap = null;
 		private _pTypeKeys: string[] = null;
 
@@ -249,8 +248,8 @@ module akra.fx {
 		}
 
 		inline getBufferSlotBySemantic(sSemantic: string): uint {
-			// return this._pBufferSlotBySlots.value(this.getSlotBySemantic(sSemantic));
-			return this._pBufferSlotBySlots.value(this._pSlotBySemanticMap[sSemantic]);
+			return this._pBufferSlotBySlots.value(this.getSlotBySemantic(sSemantic));
+			// return this._pBufferSlotBySlots.value(this._pSlotBySemanticMap[sSemantic]);
 		}
 
 		inline getAttributeList(sSemantic: string): IAFXVariableDeclInstruction[] {
@@ -341,7 +340,7 @@ module akra.fx {
 
 		initFromBufferMap(pMap: util.BufferMap): bool {
 			this.clear();
-			
+
 			if(isNull(pMap)){
 				WARNING("Yoy don`t set any buffermap for render");
 				return false;
@@ -365,8 +364,7 @@ module akra.fx {
 							return false;
 						}
 
-						var iSlot: int = this._pFlowBySlots.indexOf(pFindFlow);
-						
+						var iSlot: int = this._pFlowBySlots.indexOf(pFindFlow);					
 
 						if (iSlot !== -1) {
 							this._pHashBySlots.value(iSlot) += this.getType(sSemantic).getGuid().toString() + "*";
@@ -394,7 +392,6 @@ module akra.fx {
 						return false;
 					}
 					
-
 					//new slot
 					if(pFindFlow.type === EDataFlowTypes.MAPPABLE){
 						this._pTypesBySlots.push(Effect.getSystemType("ptr"));
@@ -408,8 +405,6 @@ module akra.fx {
 					this._pHashBySlots.push(this.getType(sSemantic).getGuid().toString() + "*");
 
 					this._pBufferSlotBySlots.push(iBufferSlot);
-
-
 				}
 			}
 

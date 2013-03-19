@@ -20,7 +20,8 @@ module akra {
 		textureKeys: string[];
 
 		hasTexture(sName: string): bool;
-
+		hasUniform(sName: string): bool;
+		
 		setUniform(sName: string, pValue: any): void;
 		setForeign(sName: string, pValue: any): void;
 		setTexture(sName: string, pValue: any): void;

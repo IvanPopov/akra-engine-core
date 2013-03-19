@@ -17,7 +17,7 @@ module akra {
 			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 			var pScene: IScene3d = pEngine.getScene();
 			var pController: IAnimationController = animation.createController();
-			var pDocument = new io.Document;
+			var pDocument = new io.Document(pEngine);
 
 			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
 				check(pModel);

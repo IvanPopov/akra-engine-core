@@ -72,7 +72,6 @@ module akra.fx {
 
 			this._pShaderProgramByHashMap = <IAFXShaderProgramMap>{};
 
-
 			this._pExtSystemDataV = new ExtSystemDataContainer();
 			this._pComplexTypeContainerV = new ComplexTypeBlendContainer();
 			this._pForeignContainerV = new VariableBlendContainer();

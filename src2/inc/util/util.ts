@@ -63,10 +63,24 @@ module akra.util {
         }
     }
 
-
 	export function parseJSON(sJSON: string): Object {
 		return eval('(' + sJSON + ')');
-	};
+	}
+
+	export function btoa(pBlob: Blob, fn: (e: ErrorEvent, pBuffer: ArrayBuffer) => void): void {
+		var pReader: FileReader = new FileReader();
+		
+		pReader.onload = function(e) {
+			fn(null, e.target.result);
+		};
+
+		pReader.onerror = function(e: ErrorEvent) {
+			fn(e, null);
+		};
+
+		pReader.readAsArrayBuffer(pBlob);
+		
+	}
 
 	/**
 	 * Преобразование html-сформированного текста

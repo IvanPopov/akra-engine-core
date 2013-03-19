@@ -1,6 +1,8 @@
 #ifndef PASSINPUTBLEND_TS
 #define PASSINPUTBLEND_TS
 
+#include "IAFXPassInputBlend.ts"
+
 module akra.fx {
 	export enum EShaderVariableType {
         k_NotVar = 0,
@@ -92,6 +94,15 @@ module akra.fx {
 			return true;
 		}
 
+		hasUniform(sName: string): bool {
+			if(!this._pUniformTypeMap[sName]){
+				this._pUniformTypeMap[sName] = EShaderVariableType.k_NotVar;
+				return false;
+			}
+
+			return true;
+		}
+
 		setUniform(sName: string, pValue: any): void {
 			if(!this._pUniformTypeMap[sName]){
 				this._pUniformTypeMap[sName] = EShaderVariableType.k_NotVar;
@@ -121,7 +132,7 @@ module akra.fx {
 			this.foreigns[sName] = pOldValue;
 		}
 
-
+		//complete
 		setTexture(sName: string, pValue: any): void {
 			if(!this._pTextureTypeMap[sName]){
 				this._pTextureTypeMap[sName] = EShaderVariableType.k_NotVar;
@@ -133,19 +144,11 @@ module akra.fx {
 			this.textures[sName] = pValue;
 		}
 
-		setSamplerTexture(sName: string, pTexture: any): void{
-			// if(!this._pHasUniformName[sName]){
-			// 	this._pHasUniformName[sName] = false;
-			// 	return;
-			// }
-
-			// var pOldValue: any =  this.uniforms[sName].texture;
-
-			// if(pOldValue !== pTexture) {
-			// 	this._bNeedToCalcShader = true;
-			// }
-
-			// this.uniforms[sName].texture = pTexture;
+		setSamplerTexture(sName: string, pState: any): void {
+			if (!this.hasUniform(sName)) {
+				return;
+			}
+			//this.samplers[sName]
 		}
 
 		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void {
@@ -252,7 +255,6 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pUniformKeys.length; i++){
 				sName = pUniformKeys[i];
-
 				eType = this.getVariableType(pUniformMap[sName]);
 				isArray = this.isVarArray(pUniformMap[sName]);
 
