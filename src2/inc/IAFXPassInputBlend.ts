@@ -5,6 +5,38 @@
 #include "ISurfaceMaterial.ts"
 
 module akra {
+	export enum EAFXShaderVariableType {
+        k_NotVar = 0,
+        
+        k_Texture = 2,
+        
+        k_Float,
+        k_Int,
+        k_Bool,
+
+        k_Float2,
+        k_Int2,
+        k_Bool2,
+
+        k_Float3,
+        k_Int3,
+        k_Bool3,
+
+        k_Float4,
+        k_Int4,
+        k_Bool4,
+
+        k_Float2x2,
+        k_Float3x3,
+        k_Float4x4,
+
+        k_Sampler2D,
+        k_SamplerCUBE,
+
+        k_CustomSystem,
+        k_Complex
+    }
+
 	export interface IAFXPassInputBlend {
 		samplers: IAFXSamplerStateMap;
 		samplerArrays: IAFXSamplerStateListMap;
@@ -31,6 +63,9 @@ module akra {
 		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void;
 
 		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture;
+
+		_getUnifromLength(sName: string): uint;
+		_getUniformType(sName: string): EAFXShaderVariableType;
 
 		_release(): void;
 

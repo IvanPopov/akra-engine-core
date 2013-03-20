@@ -1344,7 +1344,7 @@ module akra.fx {
         			var pUsedFunctionList: IAFXFunctionDeclInstruction[] = pTestedFunction._getUsedFunctionList();
 
         			if(!pTestedFunction._isUsed()){
-        				WARNING("Unused function '" + pTestedFunction._getStringDef() + "'.");
+        				//WARNING("Unused function '" + pTestedFunction._getStringDef() + "'.");
         				continue mainFor;
         			}
         			if(pTestedFunction._isBlackListFunction()){

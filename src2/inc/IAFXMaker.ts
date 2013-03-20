@@ -3,6 +3,9 @@
 
 #include "IShaderProgram.ts"
 #include "IUnique.ts"
+#include "IAFXPassInputBlend.ts"
+#include "fx/BlendContainers.ts"
+#include "fx/SamplerBlender.ts"
 
 module akra {
 	export interface IAFXMakerMap {

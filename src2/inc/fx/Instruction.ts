@@ -1,6 +1,12 @@
 #ifndef AFXINSTRUCTION_TS
 #define AFXINSTRUCTION_TS
 
+#define UNDEFINE_LENGTH 0xffffff
+#define UNDEFINE_SIZE 0xffffff
+#define UNDEFINE_SCOPE 0xffffff
+#define UNDEFINE_PADDING 0xffffff
+#define UNDEFINE_NAME "undef"
+
 #include "IAFXInstruction.ts"
 #include "fx/EffectErrors.ts"
 #include "fx/EffectUtil.ts"
@@ -19,12 +25,6 @@ module akra.fx {
     		   pType.isEqual(getEffectBaseType("samplerCUBE")) ||
     		   pType.isEqual(getEffectBaseType("video_buffer"));
     }
-
-    #define UNDEFINE_LENGTH 0xffffff
-    #define UNDEFINE_SIZE 0xffffff
-    #define UNDEFINE_SCOPE 0xffffff
-    #define UNDEFINE_PADDING 0xffffff
-    #define UNDEFINE_NAME "undef"
 
 	export class Instruction implements IAFXInstruction{
 		protected _pParentInstruction: IAFXInstruction = null;

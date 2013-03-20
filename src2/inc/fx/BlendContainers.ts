@@ -2,7 +2,6 @@
 #define AFXVARIABLEBLENDCONTAINER
 
 #include "IAFXInstruction.ts"
-#include "TypeInstruction.ts"
 
 module akra.fx {
 	export class VariableBlendContainer {

@@ -67,6 +67,7 @@ module akra.fx {
 		private _isShared: bool = null;
 		private _isForeign: bool = null;
 		private _iLength: uint = UNDEFINE_LENGTH;
+		private _isNeedToUpdateLength: bool = false;
 
 		// private $length = 0;
 		// inline get _iLength() {
@@ -447,6 +448,10 @@ module akra.fx {
 			this._iLength = this._pArrayIndexExpr.evaluate() ? this._pArrayIndexExpr.getEvalValue() : UNDEFINE_LENGTH;
 
 			this._isArray = true;
+
+			if(this._iLength === UNDEFINE_LENGTH){
+				this._isNeedToUpdateLength = true;
+			}
 		}
 
 		addPointIndex(isStrict?: bool = true): void {
@@ -618,7 +623,7 @@ module akra.fx {
 			if(this.isNotBaseArray() && !this._isArray){
 				this._iLength = this.getSubType().getLength();
 			}
-			else if(this._iLength === UNDEFINE_LENGTH){
+			else if(this._iLength === UNDEFINE_LENGTH || this._isNeedToUpdateLength){
 				var isEval: bool = this._pArrayIndexExpr.evaluate();
 				
 				if(isEval) {

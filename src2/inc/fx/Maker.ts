@@ -7,7 +7,13 @@
 #include "IResourcePoolManager.ts"
 
 module akra.fx {
-	export interface IShaderInput extends Object {};
+	export interface IShaderInput{
+		[index: string]: any;
+	}
+
+	export interface IUniformTypeMap {
+		[name: string]: EAFXShaderVariableType;
+	}
 
 	export class Maker implements IAFXMaker {
 		UNIQUE();
@@ -21,6 +27,26 @@ module akra.fx {
 		// is really exists uniform & attr?
 		private _pUniformMap: StringMap = <StringMap>{};
 		private _pAttrExistMap: BoolMap = <BoolMap>{};
+
+		private _pRealUniformLengthMap: IntMap = <IntMap>{};
+		private _pRealUniformTypeMap: IUniformTypeMap = <IUniformTypeMap>{};
+
+		//For fast set uniforms
+		private _pRealUnifromFromInput: string[] = null; /* without sampler array */
+		private _pRealSampleArraysFromInput: string[] = null; /* only sampler arrays */
+		private _pRealSamplersFromInput: string[] = null;
+		private _isUsedZero2D: bool = false;
+		private _isUsedZeroCube: bool = false;
+
+		//For fast set offsets
+		private _pRealOffsetsFromBufferFlows: uint[] = null;
+		private _pDefaultOffsets: uint[] = null;
+
+		//for fast set buffers slots
+		private _pRealAttrSlotFormBufferFlows: uint[] = null;
+
+		//for fast set buffers vertex textures
+		private _pBufferSamplersFormBufferFlow: uint[] = null;
 
 		//стек объектов храняих все юниформы и аттрибуты
 		private _pDataPoolArray: util.ObjectArray = new util.ObjectArray();
@@ -88,32 +114,72 @@ module akra.fx {
 			return pInput;
 		}
 
-		_initInput(pBlend: SamplerBlender): bool {
-			var iTotalSlots: uint = pBlend.totalActiveSlots;
+		_initInput(pPassInput: IAFXPassInputBlend, pBlend: SamplerBlender, pAttrs: AttributeBlendContainer): bool {
+			var pUniformKeys: string[] = pPassInput.uniformKeys;
 
-			for(var i: uint = 0; i < iTotalSlots; i++){
+			this._pRealUnifromFromInput = [];
+			this._pRealSampleArraysFromInput = [];
+
+			for(var i: uint = 0; i < pUniformKeys.length; i++){
+				var sName: string = pUniformKeys[i];
+
+				if(this.isUniformExists(sName)){
+					var eType: EAFXShaderVariableType =  pPassInput._getUniformType(sName);
+					var iLength: uint = pPassInput._getUnifromLength(sName);
+					
+					this._pRealUniformTypeMap[sName] = eType;
+					this._pRealUniformLengthMap[sName] = iLength;
+
+					if (iLength > 0 && 
+						(eType === EAFXShaderVariableType.k_Sampler2D || eType === EAFXShaderVariableType.k_SamplerCUBE)){
+
+						this._pRealSampleArraysFromInput.push(sName);
+					}
+					else {
+						this._pRealUnifromFromInput.push(sName);
+					}
+				}
+			}
+
+			this._pRealSamplersFromInput = [];
+			var iTotalSamplerSlots: uint = pBlend.totalActiveSlots;
+
+			for(var i: uint = 0; i < iTotalSamplerSlots; i++){
+				if(i === ZERO_SLOT) {
+					this._isUsedZero2D = this.isUniformExists("as0");
+					this._isUsedZeroCube = this.isUniformExists("asc0");
+					continue;
+				}
+
 				var pSamplers: util.ObjectArray = pBlend.getSamplersBySlot(i);
 				var sRealSamplerName: string = "as" + i.toString();
 
-				var pSampler: IAFXVariableDeclInstruction = null;
+				if(this.isUniformExists(sRealSamplerName)){
+					var pSampler: IAFXVariableDeclInstruction = pBlend.getSamplersBySlot(i).value(0);
+					var sSampler: string = pSampler.getRealName();
 
-				for(var j: uint = 0; j < pSamplers.length; j++){
-					pSampler = pSamplers.value(j);
-					var sSamplerName: string = pSampler.getRealName();
-					
-					if(this.isUniformExists(sRealSamplerName)){
-						this._pUniformMap[sSamplerName] = sRealSamplerName;
-					}
-					else {
-						this._pUniformMap[sSamplerName] = null;
-						this._pUniformMap[sRealSamplerName] = null;
-					}
-				}
+					this._pRealUnifromFromInput.push(sSampler);
 
-				if(i !== ZERO_SLOT) { /* Avoid Zero sampler`s */
-
+					this._pRealUniformTypeMap[sRealSamplerName] = pSampler.getType().isSampler2D() ?
+																 		EAFXShaderVariableType.k_Sampler2D :
+																 		EAFXShaderVariableType.k_SamplerCUBE;
+					this._pRealUniformLengthMap[sRealSamplerName] = 0;
 				}
 			}
+
+
+
+
+			this._pRealAttrSlotFormBufferFlows = [];
+			this._pBufferSamplersFormBufferFlow = [];
+
+			this._pRealOffsetsFromBufferFlows = [];
+			this._pDefaultOffsets = [];
+
+			//var iTotalAttrSlots: uint = this.
+
+
+
 
 			return true;
 		}
