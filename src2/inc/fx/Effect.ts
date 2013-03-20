@@ -726,6 +726,12 @@ module akra.fx {
 				pSystemFunctions[sName].push(pFunction);
 				pFunction.setBuiltIn(true);
 			}
+
+			pFunction.setUsedSystemData(pUsedExtSystemTypes, pUsedExtSystemFunctions, pUsedExtSystemMacros);
+			pFunction.closeSystemDataInfo();
+			pFunction.setBuiltIn(false);
+
+			this._pSystemFunctionsMap[sName] = [pFunction];
 		}
 
 		private generateSystemMacros(sMacrosName: string, sMacrosCode: string): void {
@@ -1621,6 +1627,7 @@ module akra.fx {
         		else if(pChildren[i].name === "Semantic"){
         			sSemantic = this.analyzeSemantic(pChildren[i]);
         			pVarDecl.setSemantic(sSemantic);
+        			pVarDecl.getNameId().setRealName(sSemantic);
         		}
         		else if(pChildren[i].name === "Initializer"){
         			pInitExpr = this.analyzeInitializer(pChildren[i]);
@@ -4361,7 +4368,7 @@ module akra.fx {
         			pSingleExtract.generateStmtForBaseType(
         									pWhatExtracted,
         									pWhatExtractedType.getPointer(),
-        									pWhatExtractedType.getVideoBuffer(), 0);
+        									pWhatExtractedType.getVideoBuffer(), 0, null);
 
         			CHECK_INSTRUCTION(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT); 
 
@@ -4409,7 +4416,7 @@ module akra.fx {
  				if(pFieldType.isPointer()){
  					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
  					pSingleExtract = new ExtractStmtInstruction();
- 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding());
+ 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding(), null);
  					
  					CHECK_INSTRUCTION(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT); 
 
@@ -4425,7 +4432,7 @@ module akra.fx {
  				}
  				else {
  					pSingleExtract = new ExtractStmtInstruction();
-        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding());
+        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding(), null);
         			
         			CHECK_INSTRUCTION(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT); 
 

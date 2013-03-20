@@ -184,13 +184,12 @@ module akra.fx {
 					this._pPassesDList[iShift] = [];
 					this._pComponentInputVarBlend[iShift] = new ComponentPassInputBlend();
 				}
-
 				this._pPassesDList[iShift].push(pPass);
 				this._pComponentInputVarBlend[iShift].addDataFromPass(pPass);
 			}
 
 			for(var i: uint = 0; i < this._pComponentInputVarBlend.length; i++){
-				this._pComponentInputVarBlend[i].generateKeys();
+				this._pComponentInputVarBlend[i].finalizeInput();
 			}
 
 			this._isReady = true;
@@ -398,13 +397,12 @@ module akra.fx {
 
 			for(var i in pUniformMap){
 				pVar = pUniformMap[i];
-
 				this.addUniformVariable(pVar, "", "");
 			}
 
 		}
 
-		generateKeys(): void {
+		finalizeInput(): void {
 			this._pUniformNameList = Object.keys(this._pUniformNameToRealMap);
 			this._pUniformRealNameList = Object.keys(this._pUniformByRealNameMap);
 
@@ -414,7 +412,6 @@ module akra.fx {
 			this._pForeignNameList = Object.keys(this._pForeignByNameMap);
 
 			this._pFreePassInputBlendList = [];
-
 			this.generateNewPassInputs();
 		}
 

@@ -1,0 +1,76 @@
+provide akra.system;
+
+include "http://akra/akra-engine-general/effects/math.afx";
+
+struct VS_IN{
+    float4 pos0:POSITION0;
+    float4 pos1:POSITION1;
+    float4 pos2:POSITION2;
+    float4 norm:NORMAL;
+    float2 tex_coord0:TEXCOORD0;
+    float2 tex_coord1:TEXCOORD1;
+    float2 tex_coord2:TEXCOORD2;
+    float position_index : OUT_POSITION_INDEX;
+};
+
+struct VS_OUT_TANGENT {
+    float4 position : POSITION;
+    float3 tangent : TANGENT;
+};
+
+//struct VS_OUT_BINORMAL {
+//    float4 position : POSITION;
+//    float3 binormal : BINORMAL;
+//};
+
+float2 output_texture_size : OUTPUT_SIZE;
+
+float2 screenPosition(float2 texture_size, float index){
+ 	return float2(2.*(mod(index,texture_size.x) + 0.5) / texture_size.x - 1.,
+ 	              2.*(floor(index/texture_size.x) + 0.5) / texture_size.y - 1.);
+}
+
+VS_OUT_TANGENT vs_compute_tangent(VS_IN IN){
+    VS_OUT_TANGENT Out;
+
+    float3x3 A; //матрица для решения системы линейных уравнений для вычесления тангентов
+    float3 pos0 = IN.pos0.xyz,
+           pos1 = IN.pos1.xyz,
+           pos2 = IN.pos2.xyz,
+           norm = IN.norm.xyz;
+
+    A[0][0] = pos1.x - pos0.x;
+    A[1][0] = pos1.y - pos0.y;
+    A[2][0] = pos1.z - pos0.z;
+
+    A[0][1] = pos2.x - pos0.x;
+    A[1][1] = pos2.y - pos0.y;
+    A[2][1] = pos2.z - pos0.z;
+
+    A[0][2] = norm.x;
+    A[1][2] = norm.y;
+    A[2][2] = norm.z;
+
+    float3x3 invA = inverse(A);
+    float3 b = float3(IN.tex_coord1.x - IN.tex_coord0.x, IN.tex_coord2.x - IN.tex_coord0.x, 0.);
+
+    Out.tangent = normalize(float3(invA * b));
+
+    Out.position = float4(screenPosition(output_texture_size, IN.position_index),0.,1.);
+
+    return Out;
+}
+
+float4 fs_compute_tangent(VS_OUT_TANGENT IN) : COLOR {
+    return float4((IN.tangent + 1.)/2.,1.);
+}
+
+technique compute_tangent{
+    pass compute_tangent{
+        VertexShader = compile vs_compute_tangent();
+        PixelShader = compile fs_compute_tangent();
+    };
+//    pass compute_binormal{
+//        VertexShader = compile vs_compute_binormal();
+//    };
+};

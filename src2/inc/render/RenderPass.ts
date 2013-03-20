@@ -30,9 +30,6 @@ module akra.render {
 			return this._pInput;
 		}
 
-		inline setSamplerState(): void {
-			// this._pInput.setSamplerState();
-		}
 
 		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: bool): void {
 			if(isNeedRelocate){

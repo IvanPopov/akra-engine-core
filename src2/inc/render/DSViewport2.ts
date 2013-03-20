@@ -130,7 +130,8 @@ module akra.render {
 			}
 #endif
 			//render defferred
-			//this._pDeferredView.render();	
+
+			this._pDeferredView.render();	
 
 			return true;
 		}

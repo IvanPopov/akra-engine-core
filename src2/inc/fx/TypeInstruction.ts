@@ -89,6 +89,7 @@ module akra.fx {
 		private _iPadding: uint = UNDEFINE_PADDING;
 
 		private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
+		private _pAttrOffset: IAFXVariableDeclInstruction = null;
 
 		private _bUnverifiable: bool = false;
 
@@ -529,6 +530,11 @@ module akra.fx {
         	this._bUnverifiable = true;
         }
 
+        _addAttrOffset(pOffset: IAFXVariableDeclInstruction): void {
+            this._pAttrOffset = pOffset;
+        }
+
+
 		//-----------------------------------------------------------------//
 		//----------------------------GET TYPE INFO------------------------//
 		//-----------------------------------------------------------------//	
@@ -957,6 +963,10 @@ module akra.fx {
         	return this._pDownPointIndex;
         }
 
+        _getAttrOffset(): IAFXVariableDeclInstruction {
+            return this._pAttrOffset;
+        }
+
         //-----------------------------------------------------------------//
 		//----------------------------SYSTEM-------------------------------//
 		//-----------------------------------------------------------------//		
@@ -1166,6 +1176,10 @@ module akra.fx {
 			var i: uint = 0;
 
 			if(this.isPointer()){
+				if(!isNull(this._pAttrOffset)){
+					pDeclList.push(this._pAttrOffset);
+				}
+
 				if(isNull(this._getUpPointer())){
 					this.initializePointers();
 				}

@@ -34,7 +34,7 @@ module akra {
 		foreignNameList: string[];
 
 		addDataFromPass(pPass: IAFXPassInstruction): void;
-		generateKeys(): void;
+		finalizeInput(): void;
 
 		getPassInput(): IAFXPassInputBlend;
 		releasePassInput(pPassInput: IAFXPassInputBlend): void;

@@ -92,15 +92,6 @@ module akra.fx {
 			return true;
 		}
 
-		hasUniform(sName: string): bool {
-			if(!this._pUniformTypeMap[sName]){
-				this._pUniformTypeMap[sName] = EShaderVariableType.k_NotVar;
-				return false;
-			}
-
-			return true;
-		}
-
 		setUniform(sName: string, pValue: any): void {
 			if(!this._pUniformTypeMap[sName]){
 				this._pUniformTypeMap[sName] = EShaderVariableType.k_NotVar;
@@ -142,11 +133,20 @@ module akra.fx {
 			this.textures[sName] = pValue;
 		}
 
-		setSamplerTexture(sName: string, pState: any): void {
-			if (!this.hasUniform(sName)) {
-				return;
-			}
-			//this.samplers[sName]
+
+		setSamplerTexture(sName: string, pTexture: any): void{
+			// if(!this._pHasUniformName[sName]){
+			// 	this._pHasUniformName[sName] = false;
+			// 	return;
+			// }
+
+			// var pOldValue: any =  this.uniforms[sName].texture;
+
+			// if(pOldValue !== pTexture) {
+			// 	this._bNeedToCalcShader = true;
+			// }
+
+			// this.uniforms[sName].texture = pTexture;
 		}
 
 		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void {
@@ -253,6 +253,7 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pUniformKeys.length; i++){
 				sName = pUniformKeys[i];
+
 				eType = this.getVariableType(pUniformMap[sName]);
 				isArray = this.isVarArray(pUniformMap[sName]);
 
@@ -264,8 +265,9 @@ module akra.fx {
 						this.samplerArrays[sName] = new Array(16);
 						this.samplerArrayLength[sName] = 0;
 
-						for(var i: uint = 0; i < this.samplerArrayLength[sName]; i++) {
-							this.samplerArrays[sName].push(this.createSamplerState());
+
+						for(var j: uint = 0; j < this.samplerArrays[sName].length; j++) {
+							this.samplerArrays[sName][j] = this.createSamplerState();
 						}
 					}
 					else {
@@ -282,7 +284,7 @@ module akra.fx {
 				eType = this.getVariableType(pForeignMap[sName]);
 
 				this._pForeignTypeMap[sName] = eType;
-				this.foreigns = null;
+				this.foreigns[sName] = null;
 			}
 
 			for(var i: uint = 0; i < pTextureKeys.length; i++){
