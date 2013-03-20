@@ -230,8 +230,11 @@ module akra.fx {
 		private _pHashByBufferSlots: util.ObjectArray = null;
 		private _pBufferSlotBySlots: util.ObjectArray = null;
 
-		private _pOffsetBySemanticMap: IAFXVariableDeclMap = null;
-		private _pOffsetSemantickeys: string[] = null; 
+		// private _pOffsetBySemanticMap: IAFXVariableDeclMap = null;
+		// private _pOffsetSemantickeys: string[] = null; 
+		private _pSlotByOffsetsMap: IntMap = null;
+		private _pOffsetDefault: IntMap = null;
+		private _pOffsetKeys: string[] = null;
 
 		protected _sHash: string = "";
 
@@ -245,6 +248,10 @@ module akra.fx {
 
 		inline get totalBufferSlots(): uint {
 			return this._pVBByBufferSlots.length;
+		}
+
+		inline get offsetKeys(): string[] {
+			return this._pOffsetKeys;
 		}
 
 		constructor() {
@@ -269,6 +276,14 @@ module akra.fx {
 				this._pSlotBySemanticMap[sSemantic] = -1;
 				this._pFlowsBySemanticMap[sSemantic] = null;
 			}
+		}
+
+		inline getSlotByOffset(sName: string): uint {
+			return this._pSlotByOffsetsMap[sName];
+		} 
+
+		inline getOffsetDefault(sName: string): uint {
+			return this._pOffsetDefault[sName];
 		}
 
 		inline getSlotBySemantic(sSemantic: string): uint {
@@ -339,30 +354,48 @@ module akra.fx {
 			this._sHash = "";
 		}
 
-		generateOffsetMap(): void {
-			var pSemantics: string[] = this.semantics;
+		generateOffsetMap(): void {		
+			this._pSlotByOffsetsMap = <IntMap>{};
+			this._pOffsetDefault = <IntMap>{};
 
-			var pOffsetVarBySemanticMap: IAFXVariableDeclMap = <IAFXVariableDeclMap>{};
+			var pSemantics: string[] = this.semantics;
 
 			for(var i: uint = 0; i < pSemantics.length; i++){
 				var sSemantic: string = pSemantics[i];
 				var pAttr: IAFXVariableDeclInstruction = this.getAttribute(sSemantic);
-				
+				var iSlot: uint = this.getSlotBySemantic(sSemantic);
+
+				if(iSlot === -1){
+					continue;
+				}
+
 				if(pAttr.isPointer()){
-					var pAttrSubDecls: IAFXVariableDeclInstruction[] = pAttr.getSubVarDecls();
+					if(pAttr.getType().isComplex()){
+						var pAttrSubDecls: IAFXVariableDeclInstruction[] = pAttr.getSubVarDecls();
 
-					for(var j: uint = 0; j < pAttrSubDecls.length; j++){
-						var pSubDecl: IAFXVariableDeclInstruction = pAttrSubDecls[j];
+						for(var j: uint = 0; j < pAttrSubDecls.length; j++){
+							var pSubDecl: IAFXVariableDeclInstruction = pAttrSubDecls[j];
 
-						if(pSubDecl.getName() === "offset") {
-							pOffsetVarBySemanticMap[pSubDecl.getSemantic()] = pSubDecl;
+							if(pSubDecl.getName() === "offset") {
+								var sOffsetName: string = pSubDecl.getRealName();
+
+								this._pSlotByOffsetsMap[sOffsetName] = iSlot;
+								this._pOffsetDefault[sOffsetName] = pSubDecl.getType().getPadding();
+							}
 						}
 					}
+					else {
+						var pOffsetVar: IAFXVariableDeclInstruction = pAttr.getType()._getAttrOffset();
+						var sOffsetName: string = pOffsetVar.getRealName();
+
+						this._pSlotByOffsetsMap[sOffsetName] = iSlot;
+						this._pOffsetDefault[sOffsetName] = 0;
+					}
+					
 				}
 			}
 
-			this._pOffsetBySemanticMap = pOffsetVarBySemanticMap;
-			this._pOffsetSemantickeys = Object.keys(pOffsetVarBySemanticMap);
+			this._pOffsetKeys = Object.keys(this._pSlotByOffsetsMap);
 		}
 
 
@@ -435,6 +468,9 @@ module akra.fx {
 					this._pHashBySlots.push(this.getType(sSemantic).getGuid().toString() + "*");
 
 					this._pBufferSlotBySlots.push(iBufferSlot);
+				}
+				else {
+					this._pSlotBySemanticMap[sSemantic] = -1;
 				}
 			}
 
