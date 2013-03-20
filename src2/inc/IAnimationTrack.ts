@@ -17,6 +17,7 @@ module akra {
 		/** Get keyframe by number */
 		getKeyFrame(iFrame: int): IAnimationFrame;
 		/** Set keyframe */
+		keyFrame(pFrame: IAnimationFrame): bool;
 		keyFrame(fTime: float, pMatrix: IMat4): bool;
 		/** Find keyframe by time */
 		findKeyFrame(fTime: float): int;

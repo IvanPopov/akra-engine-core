@@ -5,7 +5,7 @@
 #define IAnimationBaseInstance IInstance
 #define ISceneInstance IInstance
 
-
+#include "IUnique.ts"
 
 module akra {
 	export enum EDocumentEntry {
@@ -19,6 +19,11 @@ module akra {
 		k_SceneNode
 	}
 
+	export enum EDocumentFormat {
+		JSON,
+		BINARY_JSON
+	}
+
 	export interface IEntry {
 		guid: int;
 	}
@@ -26,6 +31,16 @@ module akra {
 	export interface IDataEntry {
 		type: EDocumentEntry;
 	}
+
+	export interface ILibraryEntry extends IEntry {
+		data: IUnique;
+		entry: IDataEntry;
+	}
+
+	export interface ILibrary {
+		[guid: int]: ILibraryEntry;
+	}
+
 
 	export interface IInstance extends Number {
 		
@@ -76,7 +91,6 @@ module akra {
 	export interface IAnimationBaseEntry extends IDataEntry {
 		name: string;
 		targets: IAnimationTargetEntry[];
-		duration: float;
 	}
 
 	export interface IAnimationEntry extends IAnimationBaseEntry {
@@ -87,7 +101,7 @@ module akra {
 		animation: IAnimationBaseInstance;
 		weight: float;
 		mask: FloatMap;
-		acceleration: float;
+		// acceleration: float;
 	}
 
 	export interface IAnimationBlendEntry extends IAnimationBaseEntry {

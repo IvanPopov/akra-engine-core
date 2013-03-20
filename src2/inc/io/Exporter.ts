@@ -16,37 +16,16 @@
 
 #include "util/util.ts"
 
-/*
-		writeController(pController: IAnimationController): void;
-		writeAnimation(pAnimation: IAnimationBase): void;
-		export(): IDocument;
- */
 
 module akra.io {
 
-	export enum EDocumentFormat {
-		JSON,
-		BINARY_JSON
-	}
-
-	export interface ILibraryEntry extends IEntry {
-		data: IUnique;
-		entry: IDataEntry;
-	}
-
-	export interface ILibrary {
-		[guid: int]: ILibraryEntry;
-	}
-
-	export class Document {
+	export class Exporter {
 		static VERSION = "0.0.1";
 		static UP_AXIS: string = "Y_UP";
 		static TOOL: string = "Akra Engine exporter";
 
 		protected _pLibrary: ILibrary = <ILibrary><any>{};
 		protected _pDocument: IDocument = null;
-
-		protected _pEngine: IEngine = null;
 
 		//записаны ли сцены в документе?
 		protected _bScenesWrited: bool = false;
@@ -61,14 +40,6 @@ module akra.io {
 		protected _sComments: string = null;
 		protected _sCopyright: string = null;
 		protected _sSourceData: string = null;
-
-		constructor (pEngine: IEngine) {
-			this._pEngine = pEngine;
-		}
-
-		inline getEngine(): IEngine {
-			return this._pEngine;
-		}
 
 		inline writeAnimation(pAnimation: IAnimationBase): void {
 			switch (pAnimation.type) {
@@ -104,7 +75,6 @@ module akra.io {
 		}
 
 		protected makeEntry(eType: EDocumentEntry, pData: IUnique): void {
-			LOG(arguments);
 			if (!this.isEntryExists(pData.getGuid())) {
 				this.writeEntry(eType, {guid: pData.getGuid(), data: pData, entry: null});
 			}
@@ -114,7 +84,7 @@ module akra.io {
 			if (isDefAndNotNull(pEntry.entry)) {
 				return ;
 			}
-			LOG(eType, pEntry);
+
 			ASSERT(this.encodeEntry(eType, pEntry), "cannot encode entry with type: " + eType);
 			this._pLibrary[pEntry.guid] = pEntry;
 		}
@@ -143,7 +113,6 @@ module akra.io {
 		protected encodeAnimationBaseEntry(pAnimation: IAnimationBase): IDataEntry {
 			var pEntry: IAnimationBaseEntry = {
 				name: pAnimation.name,
-				duration: pAnimation.duration,
 				targets: [],
 				type: EDocumentEntry.k_Unknown
 			}
@@ -242,7 +211,7 @@ module akra.io {
 				var pBlendElement: IAnimationBlendElementEntry = {
 					animation: pAnimation.getGuid(),
 					weight: pBlend.getAnimationWeight(i),
-					acceleration: pBlend.getAnimationAcceleration(i),
+					// acceleration: pBlend.getAnimationAcceleration(i),
 					mask: pBlend.getAnimationMask(i)
 				};
 				
@@ -274,8 +243,8 @@ module akra.io {
 
 		protected toolInfo(): string {
 			return [
-				Document.TOOL, 
-				"Version " + Document.VERSION,
+				Exporter.TOOL, 
+				"Version " + Exporter.VERSION,
 				"Browser " + info.browser.name + ", " + info.browser.version + " (" + info.browser.os + ")"
 				].join(";");
 		}
@@ -300,11 +269,11 @@ module akra.io {
 		protected createAsset(): IAsset {
 			return {
 				unit: this.createUnit(),
-				upAxis: Document.UP_AXIS,
+				upAxis: Exporter.UP_AXIS,
 				title: this._sTitle,
 				subject: this._sSubject,
-				created: Document.getDate(),
-				modified: Document.getDate(),
+				created: Exporter.getDate(),
+				modified: Exporter.getDate(),
 				contributor: this.createContributor(),
 				keywords: this._pKeywords
 			}
@@ -334,116 +303,21 @@ module akra.io {
 			return null;
 		}
 
-		protected exportAsJSON(pDocument: IDocument): Blob {
+		saveAs(sName: string, eFormat: EDocumentFormat): void {
+			saveAs(this.export(eFormat), sName);
+		}
+
+		exportAsJSON(pDocument: IDocument): Blob {
 			return new Blob([JSON.stringify(pDocument/*, null, "\t"*/)], {type: "text/plain;charset=utf-8"});
 		}
 
-		protected exportAsJSONBinary(pDocument: IDocument): Blob {
+		exportAsJSONBinary(pDocument: IDocument): Blob {
 			return new Blob([io.dump(pDocument)], {type: "application/octet-stream"});
 		}
 
 		static protected inline getDate(): string {
 			return (new Date()).toString();
 		}
-
-		import(pData: string, eFormat?: EDocumentFormat): void;
-		import(pData: Object, eFormat?: EDocumentFormat): void;
-		import(pData: ArrayBuffer, eFormat?: EDocumentFormat): void;
-		import(pData: Blob, eFormat?: EDocumentFormat): void;
-		import(pData: any, eFormat: EDocumentFormat = EDocumentFormat.JSON): void {
-			if (eFormat !== EDocumentFormat.JSON) {
-				CRITICAL("TODO: Add support for all formats");
-			}
-
-			this._pDocument = this.importFromJSON(pData);
-		}
-
-		protected importFromJSON(pData): IDocument {
-			var sData: string = null;
-			
-			if (isArrayBuffer(pData)) {
-				sData = util.abtos(<ArrayBuffer>pData);
-			}
-			else if (isString(sData)) {
-				sData = <string>pData;
-			}
-			else if(isBlob(pData)) {
-				CRITICAL("TODO: Blob support!");
-			}
-			else {
-				return <IDocument>pData;
-			}
-
-			return <IDocument>util.parseJSON(sData);
-		}
-
-		//--------------- IMPORT -------------------------
-		
-		protected findEntries(eType: EDocumentEntry, fnCallback: (pEntry: ILibraryEntry, n?: uint) => bool): void {
-			var pLibrary: ILibrary = this._pLibrary;
-			var i: uint = 0;
-
-			for (var iGuid in pLibrary) {
-				var pEntry: ILibraryEntry = pLibrary[iGuid];
-				
-				if (!isNull(pEntry.entry) && pEntry.entry.type === eType) {
-					if (fnCallback.call(this, pEntry, i ++) === false) {
-						return;
-					}
-				}
-			}
-		}
-
-		protected findEntryByIndex(eType: EDocumentEntry, i: uint): ILibraryEntry {
-			var pEntry: ILibraryEntry = null;
-			this.findEntries(eType, (pLibEntry: ILibraryEntry, n?: uint) => {
-				pEntry = pLibEntry;
-
-				if (i === n) {
-					return;
-				}
-			});
-
-			return pEntry;
-		}
-
-		protected find(eType: EDocumentEntry, fnCallback: (pData: any, n?: uint) => bool): void {
-			this.findEntries(eType, (pEntry: ILibraryEntry, n?: uint): bool => {
-				if (fnCallback.call(this, pEntry.data, n) === false) {
-					return;
-				}
-			});
-		}
-
-		protected inline findByIndex(eType: EDocumentEntry, i: uint = 0): any {
-			return this.findEntryByIndex(eType, i).data;
-		}
-
-		protected inline findFirst(eType: EDocumentEntry): any {
-			return this.findByIndex(eType, 0);
-		}
-
-		getController(iContrller: int = 0): IAnimationController {
-			return <IAnimationController>this.decodeEntry(this.findEntryByIndex(EDocumentEntry.k_Controller, iContrller));
-		}
-
-		protected decodeEntry(pEntry: ILibraryEntry): any {
-			if (isNull(pEntry) || isNull(pEntry.data)) {
-				return null;
-			}
-
-			switch(pEntry.entry.type) {
-				case EDocumentEntry.k_Controller:
-					return this.decodeControllerEntry(pEntry);
-			}
-			WARNING("USED UNKNOWN TYPE FOR DECODING!!");
-			return null;
-		}
-
-		protected decodeControllerEntry(pEntry: ILibraryEntry): any {
-			// var pController: IAnimationController = 
-		}
-
 	}
 }
 
