@@ -30,7 +30,6 @@ module akra.render {
 			return this._pInput;
 		}
 
-
 		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: bool): void {
 			if(isNeedRelocate){
 				this.relocateOldInput(pInput);

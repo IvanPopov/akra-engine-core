@@ -406,7 +406,7 @@ module akra.fx {
             var pExtractExpr: ExtractExprInstruction = new ExtractExprInstruction();
             var sPaddingExpr: string = "";
 
-            if(iPadding > 0 && isNull(pOffset)){
+            if(iPadding > 0){
                 sPaddingExpr = "+"+ iPadding.toString() + ".0";
             }
             else{

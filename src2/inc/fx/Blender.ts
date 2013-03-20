@@ -202,7 +202,6 @@ module akra.fx {
 				pPass.evaluate({ 
 						mesh : { isSkinning : true },
 				 		lights : {omni: true, project: true, omniShadows: true, projectShadows: true} }, null, null);
-
 				
 				var pVertexShader: IAFXFunctionDeclInstruction = pPass.getVertexShader();
 				var pPixelShader: IAFXFunctionDeclInstruction = pPass.getPixelShader();

@@ -28,7 +28,6 @@ module akra {
 				var pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
 				// pViewport.setAutoUpdated();
 
-
 				LOG(pEngine.getComposer());
 				
 				// pEngine.exec();

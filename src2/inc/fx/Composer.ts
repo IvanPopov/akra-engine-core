@@ -17,7 +17,7 @@
 #include "IAFXComponent.ts"
 #include "fx/Blender.ts"
 
-#include "IAFXShaderProgram.ts"
+#include "IAFXMaker.ts"
 #include "util/ObjectArray.ts"
 
 #include "util/BufferMap.ts"
@@ -393,7 +393,7 @@ module akra.fx {
 			var pPassInput: IAFXPassInputBlend = pPass.getPassInput();
 
 			var pPassBlend: IAFXPassBlend = null;
-			var pShader: IAFXShaderProgram = null;
+			var pMaker: IAFXMaker = null;
 			
 			if(!pPassInput._isNeedToCalcShader()){
 				//TODO: set pShader to shader program by id
@@ -415,9 +415,9 @@ module akra.fx {
 					return;
 				}
 
-				pShader = pPassBlend.generateShaderProgram(pPassInput, 
-														   this._pCurrentSurfaceMaterial, 
-														   this._pCurrentBufferMap);
+				pMaker = pPassBlend.generateFXMaker(pPassInput, 
+													this._pCurrentSurfaceMaterial, 
+													this._pCurrentBufferMap);
 				//TODO: generate additional shader params and get shader program
 			}
 

@@ -373,6 +373,10 @@ module akra.core.pool {
             return <IIndexBuffer>this.indexBufferPool.createResource(sResourceName);
         };
 
+        inline createShaderProgram(sResourceName: string): IShaderProgram {
+            return <IShaderProgram>this.shaderProgramPool.createResource(sResourceName);
+        };
+
         inline createModel(sResourceName: string): IModel {
             return <IModel>this.colladaPool.createResource(sResourceName);   
         }
