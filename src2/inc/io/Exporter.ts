@@ -87,6 +87,7 @@ module akra.io {
 
 			ASSERT(this.encodeEntry(eType, pEntry), "cannot encode entry with type: " + eType);
 			this._pLibrary[pEntry.guid] = pEntry;
+			pEntry.entry.guid = pEntry.guid;
 		}
 
 		protected encodeEntry(eType: EDocumentEntry, pEntry: ILibraryEntry): bool {
@@ -279,7 +280,7 @@ module akra.io {
 			}
 		}
 
-		export(eFormat: EDocumentFormat = EDocumentFormat.JSON): Blob {
+		createDocument(): IDocument {
 			var pDocument: IDocument  = {
 				asset: this.createAsset(),
 				library: [],
@@ -288,11 +289,17 @@ module akra.io {
 
 			var pLibrary: ILibrary = this._pLibrary;
 
-			for (var i in pLibrary) {
-				var pLibEntry: ILibraryEntry = pLibrary[i];
+			for (var iGuid in pLibrary) {
+				var pLibEntry: ILibraryEntry = pLibrary[iGuid];
 				pDocument.library.push(pLibEntry.entry);
 			}
 
+			return pDocument;
+		}
+
+		export(eFormat: EDocumentFormat = EDocumentFormat.JSON): Blob {
+			var pDocument: IDocument = this.createDocument();
+			
 			if (eFormat === EDocumentFormat.JSON) {
 				return this.exportAsJSON(pDocument);
 			}
@@ -308,6 +315,7 @@ module akra.io {
 		}
 
 		exportAsJSON(pDocument: IDocument): Blob {
+			LOG(pDocument);
 			return new Blob([JSON.stringify(pDocument/*, null, "\t"*/)], {type: "text/plain;charset=utf-8"});
 		}
 

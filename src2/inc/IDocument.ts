@@ -1,9 +1,9 @@
 #ifndef IDOCUMENT_TS
 #define IDOCUMENT_TS
 
-#define ISceneNodeInstance IInstance
-#define IAnimationBaseInstance IInstance
-#define ISceneInstance IInstance
+#define ISceneNodeInstance int
+#define IAnimationBaseInstance int
+#define ISceneInstance int
 
 #include "IUnique.ts"
 
@@ -25,10 +25,10 @@ module akra {
 	}
 
 	export interface IEntry {
-		guid: int;
+		guid?: int;
 	}
 
-	export interface IDataEntry {
+	export interface IDataEntry extends IEntry {
 		type: EDocumentEntry;
 	}
 
@@ -41,10 +41,6 @@ module akra {
 		[guid: int]: ILibraryEntry;
 	}
 
-
-	export interface IInstance extends Number {
-		
-	}
 
 	export interface IContributor {
         author?: string;

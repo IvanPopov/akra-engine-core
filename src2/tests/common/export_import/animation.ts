@@ -13,22 +13,26 @@ module akra {
 		var pScene: IScene3d = pEngine.getScene();
 		var pController: IAnimationController = animation.createController();
 		var pExporter = new io.Exporter;
-		var pImporter = new io.Importer;
+		var pImporter = new io.Importer(pEngine);
 
 		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
-			
-
 			pModel.attachToScene(pScene, pController);
 
-				test("Export basic usage", () => {
-					shouldBeNotNull("Collada model must be laoded");
-					check(pModel);
+			test("Export basic usage", () => {
+				shouldBeNotNull("Collada model must be laoded");
+				check(pModel);
 
-					shouldBeNotNull("Export must return result");
-					pExporter.writeController(pController);
+				shouldBeNotNull("Export must return result");
+				pExporter.writeController(pController);
 
-					var pData = pExporter.export(EDocumentFormat.BINARY_JSON);
-				});
+				var pDocument = pExporter.createDocument();
+
+				check(pDocument);
+
+				pImporter.loadDocument(pDocument);
+			});
+
+			run();
 		});
 	});	
 }

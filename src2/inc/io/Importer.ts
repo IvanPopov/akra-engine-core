@@ -4,12 +4,9 @@
 #include "IDocument.ts"
 #include "info/info.ts"
 
-#include "IAnimationFrame.ts"
-#include "IAnimationTrack.ts"
-#include "IAnimation.ts"
-#include "IAnimationBlend.ts"
-#include "IAnimationContainer.ts"
-#include "IAnimationController.ts"
+#include "animation/Animation.ts"
+#include "animation/Container.ts"
+#include "animation/Blend.ts"
 
 #include "io/Packer.ts"
 #include "io/save.ts"
@@ -21,8 +18,9 @@ module akra.io {
 	export class Importer {
 		
 		private _pDocument: IDocument = null;
+		private _pLibrary: ILibrary = <ILibrary><any>{};
 
-		constructor (private pEngine: IEngine) {
+		constructor (private _pEngine: IEngine) {
 			
 		}
 
@@ -32,6 +30,10 @@ module akra.io {
 
 		inline getDocument(): IDocument {
 			return this._pDocument;
+		}
+
+		inline getLibrary(): ILibrary {
+			return this._pLibrary;
 		}
 
 		//inline getLibrary(): I
@@ -45,7 +47,12 @@ module akra.io {
 				CRITICAL("TODO: Add support for all formats");
 			}
 
-			this._pDocument = this.importFromJSON(pData);
+			this.loadDocument(this.importFromJSON(pData));
+		}
+
+		loadDocument(pDocument: IDocument): void {
+			this._pDocument = pDocument;
+			this.updateLibrary();
 		}
 
 		protected importFromJSON(pData): IDocument {
@@ -67,8 +74,20 @@ module akra.io {
 			return <IDocument>util.parseJSON(sData);
 		}
 
+		protected updateLibrary(): void {
+			var pDocument: IDocument = this.getDocument();
+			var pLibrary: ILibrary = this.getLibrary();
+
+			for (var i: int = 0; i < pDocument.library.length; ++ i) {
+				var pEntry: IDataEntry = pDocument.library[i];
+				var iGuid: int = pEntry.guid;
+				
+				pLibrary[iGuid] = {guid: iGuid, data: null, entry: pEntry};
+			};
+		}
+
 		protected findEntries(eType: EDocumentEntry, fnCallback: (pEntry: ILibraryEntry, n?: uint) => bool): void {
-			var pLibrary: ILibrary = this._pLibrary;
+			var pLibrary: ILibrary = this.getLibrary();
 			var i: uint = 0;
 
 			for (var iGuid in pLibrary) {
@@ -120,26 +139,53 @@ module akra.io {
 				return null;
 			}
 
+			var pData: any = this.getLibrary()[pEntry.guid];
+
+			if (!isNull(pData)) {
+				return pData;
+			}
+
 			switch(pEntry.type) {
 				case EDocumentEntry.k_Controller:
-					return this.decodeControllerEntry(<IControllerEntry>pEntry);
+					pData = this.decodeControllerEntry(<IControllerEntry>pEntry);
+					break;
 				case EDocumentEntry.k_Animation:
-					return this.decodeAnimationEntry(<IAnimationEntry>pEntry);
+					pData = this.decodeAnimationEntry(<IAnimationEntry>pEntry);
 					break;
 				case EDocumentEntry.k_AnimationBlend:
-					return this.decodeAnimationBlendEntry(<IAnimationBlendEntry>pEntry);
+					pData = this.decodeAnimationBlendEntry(<IAnimationBlendEntry>pEntry);
 					break;
 				case EDocumentEntry.k_AnimationContainer:
-					return this.decodeAnimationContanerEntry(<IAnimationContainerEntry>pEntry);
+					pData = this.decodeAnimationContanerEntry(<IAnimationContainerEntry>pEntry);
 					break;
 			}
+
+			if (!isNull(pData)) {
+				this.registerData(pEntry.guid, pData);
+			}
+
 			WARNING("USED UNKNOWN TYPE FOR DECODING!!");
 			return null;
 		}
 
+		protected registerData(iGuid: int, pData: any): void {
+			var pLibEntry: ILibraryEntry = this.getLibrary()[iGuid];
+			pLibEntry.data = pData;
+		}
+
+		protected decodeInstance(iGuid: int): any {
+			var pLibEntry: ILibraryEntry = this.getLibrary()[iGuid];
+			
+			if (!isNull(pLibEntry.data)) {
+				return pLibEntry.data;
+			}
+
+			return this.decodeEntry(pLibEntry.entry);
+		}
+
 		protected decodeEntryList(pEntryList: IDataEntry[], fnCallback: (pData: any) => void): void {
 			if (isNull(pEntryList)) {
-				return null;
+				return;
 			}
 
 			for (var i: int = 0; i < pEntryList.length; ++ i) {
@@ -147,8 +193,14 @@ module akra.io {
 			}
 		}
 
+		protected decodeInstanceList(pInstances: int[], fnCallback: (pData: any, n?: int) => void): void {
+			for (var i: int = 0; i < pInstances.length; ++ i) {
+				fnCallback.call(this, this.decodeInstance(pInstances[i]), i);
+			}
+		}
+
 		protected decodeAnimationFrame(pEntry: IAnimationFrameEntry): IAnimationFrame {
-			var pFrame: IAnimationFrame = animation.createFrame(pEntry.time, pEntry.matrix, pEntry.weight);
+			var pFrame: IAnimationFrame = animation.createFrame(pEntry.time, new Mat4(pEntry.matrix), pEntry.weight);
 			return pFrame;
 		}
 
@@ -159,8 +211,8 @@ module akra.io {
 			//TODO: set interpolation mode
 			//TODO: set target
 			
-			for (var i: int = 0; i < pTrack.keyframes.length; ++ i) {
-				pTrack.keyFrame(this.decodeAnimationFrame(pAnimation.tracks[i])); 
+			for (var i: int = 0; i < pEntry.keyframes.length; ++ i) {
+				pTrack.keyFrame(this.decodeAnimationFrame(pEntry.keyframes[i])); 
 			};
 
 			return pTrack;
@@ -170,8 +222,8 @@ module akra.io {
 			var pAnimation: IAnimation = animation.createAnimation(pEntry.name);
 			//TODO: load read targets!!
 
-			for (var i: int = 0; i < pAnimation.tracks.length; ++ i) {
-				pAnimation.push(this.decodeAnimationTrack(pAnimation.tracks[i])); 
+			for (var i: int = 0; i < pEntry.tracks.length; ++ i) {
+				pAnimation.push(this.decodeAnimationTrack(pEntry.tracks[i])); 
 			};
 
 			return pAnimation;
@@ -184,9 +236,9 @@ module akra.io {
 			//TODO: set targets
 
 			for (var i: int = 0; i < pEntry.animations.length; ++ i) {
-				var pElement: IAnimationBlendElement = pEntry.animations[i];
+				var pElement: IAnimationBlendElementEntry = pEntry.animations[i];
 				
-				var pAnimation: IAnimationBase = this.decodeEntry(pElement.animation);
+				var pAnimation: IAnimationBase = <IAnimationBase>this.decodeInstance(pElement.animation);
 				var fWeight: float = pElement.weight;
 				var pMask: FloatMap = pElement.mask;
 				// var fAcceleration: float = pEntry.acceleration;
@@ -200,7 +252,7 @@ module akra.io {
 		}
 
 		protected decodeAnimationContanerEntry(pEntry: IAnimationContainerEntry): IAnimationContainer {
-			var pAnimation: IAnimationBase = this.decodeEntry(pEntry.animation);
+			var pAnimation: IAnimationBase = this.decodeInstance(pEntry.animation);
 			var pContainer: IAnimationContainer = animation.createContainer(pAnimation, pEntry.name);
 
 			//TODO: decode base entry!
@@ -224,7 +276,7 @@ module akra.io {
 		protected decodeControllerEntry(pEntry: IControllerEntry): IAnimationController {
 			var pController: IAnimationController = animation.createController(pEntry.options);
 			
-			this.decodeEntryList(pEntry.animations, (pAnimation: IAnimationBase) => {
+			this.decodeInstanceList(pEntry.animations, (pAnimation: IAnimationBase) => {
 				pController.addAnimation(pAnimation);
 			});
 
