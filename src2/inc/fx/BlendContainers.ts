@@ -255,6 +255,7 @@ module akra.fx {
 
 			this._pFlowBySlots = new util.ObjectArray();
 			this._pHashBySlots = new util.ObjectArray();
+
 			this._pTypesBySlots = new util.ObjectArray();
 
 			this._pVBByBufferSlots = new util.ObjectArray();
@@ -383,6 +384,7 @@ module akra.fx {
 				this._pFlowsBySemanticMap[sSemantic] = pFindFlow;
 
 				if(!isNull(pFindFlow)){
+
 					var iBufferSlot: int = -1;
 
 					if (pFindFlow.type === EDataFlowTypes.MAPPABLE) {
@@ -392,6 +394,7 @@ module akra.fx {
 						}
 
 						var iSlot: int = this._pFlowBySlots.indexOf(pFindFlow);					
+
 
 						if (iSlot !== -1) {
 							this._pHashBySlots.value(iSlot) += this.getType(sSemantic).getGuid().toString() + "*";

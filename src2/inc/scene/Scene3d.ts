@@ -12,6 +12,7 @@
 
 #include "SceneModel.ts"
 #include "Joint.ts"
+// #include "Light"
 
 #define DEFAULT_DLIST DEFAULT_NAME
 

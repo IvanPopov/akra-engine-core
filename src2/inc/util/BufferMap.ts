@@ -19,6 +19,10 @@ module akra.util {
 		[handle: int]: IVertexData;
 	}
 
+	export interface ISemanticsMap {
+		[semantics: string]: IDataFlow;
+	}
+
 	export class BufferMap implements IBufferMap extends ReferenceCounter{
 		private _pFlows: IDataFlow[] = null;
 		private _pMappers: IDataMapper[] = null;
@@ -33,6 +37,7 @@ module akra.util {
 		private _pEngine: IEngine = null;
 		private _nStartIndex: uint = 0;
 		private _pBuffersCompatibleMap: IBuffersCompatibleMap = null;
+		private _pSemanticsMap: ISemanticsMap = null;
 
 		constructor(pEngine: IEngine){
 			super();
@@ -136,27 +141,29 @@ module akra.util {
 		getFlow(iFlow: any, bComplete: bool = true): IDataFlow {
 
 		    if (isString(arguments[0])) {
-		        var nTotal: int; 
-		        var pFlows: IDataFlow[];
-		        
-		        if (bComplete) {
-		            pFlows = this._pCompleteFlows;
-		            nTotal = this._nCompleteFlows;
-		        }
-		        else {
-		            pFlows = this._pFlows;
-		            nTotal = this._pFlows.length;
-		        }
+		    	var sSemantics: string = arguments[0];
 
+		        if (bComplete) {
+		        	if (!isDef(this._pSemanticsMap[sSemantics])) {
+		        		//debug_print("called undefined semantics: " + sSemantics);
+		        		this._pSemanticsMap[sSemantics] = null;
+		        	}
+
+		        	return this._pSemanticsMap[sSemantics];
+		        }
+		       
+	            var pFlows: IDataFlow[] = this._pFlows;
+	            var nTotal: int = this._pFlows.length;
+	       
 		        for (var i: int = 0; i < nTotal; ++ i) {
 		            if (!pFlows[i].data) {
 		                continue;
 		            }
-		            if (pFlows[i].data.hasSemantics(arguments[0])) {
+		            if (pFlows[i].data.hasSemantics(sSemantics)) {
 		                return pFlows[i];
 		            }
 		        }
-
+	        
 		        return null;
 		    }
 		    
@@ -204,6 +211,8 @@ module akra.util {
 		    this._pCompleteVideoBuffers = new Array(nFlowLimit);
 		    this._nCompleteVideoBuffers = 0;
 		    this._nUsedFlows = 0;
+
+		    this._pSemanticsMap = {};
 		}
 
 		flow(pVertexData: IVertexData): int;
@@ -240,9 +249,33 @@ module akra.util {
 		        pFlow.type = EDataFlowTypes.MAPPABLE;
 		    }
 
+
 		    pFlow.data = pVertexData;
+		    // this.linkFlow(pFlow);
 
 		    return this.update() ? iFlow : -1;
+		}
+
+		private clearLinks(): void {
+			for (var sSemantics in this._pSemanticsMap) {
+				this._pSemanticsMap[sSemantics] = null;
+			}
+		}
+
+		private linkFlow(pFlow: IDataFlow): void {
+			var pDecl: data.VertexDeclaration = pFlow.data.getVertexDeclaration();
+
+			for (var i: int = 0; i < pDecl.length; ++ i) {
+				var pElement: data.VertexElement = <data.VertexElement>pDecl.element(i);
+				
+				if (pElement.isEnd()) {
+					continue;
+				}
+
+				if (!isDefAndNotNull(this._pSemanticsMap[pElement.semantics])) {
+					this._pSemanticsMap[pElement.semantics] = pFlow;
+				}
+			}
 		}
 
 		checkData(pData: IVertexData): bool {
@@ -309,7 +342,7 @@ module akra.util {
 		    return this.update();
 		}
 
-		private pushEtalon(pData: IVertexData): void {
+		private inline pushEtalon(pData: IVertexData): void {
 			this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
 		}
 
@@ -327,6 +360,8 @@ module akra.util {
 		    var isVideoBufferAdded: bool = false;
 		    var nStartIndex: int = MAX_INT32, nCurStartIndex: int;
 
+		    this.clearLinks();
+
 		    for (var i: int = 0; i < pFlows.length; i++) {
 		        pFlow = pFlows[i];
 		        pMapper = pFlow.mapper;
@@ -341,6 +376,7 @@ module akra.util {
 		        }
 
 		        pCompleteFlows[nCompleteFlows ++] = pFlow;
+		        this.linkFlow(pFlow);
 
 		        if (isMappable) {
 		            nCurStartIndex = pMapper.data.startIndex;
@@ -375,6 +411,7 @@ module akra.util {
 
 		    return true;
 		}
+
 		clone(bWithMapping?: bool): IBufferMap {
 			bWithMapping = isDef(bWithMapping) ? bWithMapping : true;
 
@@ -403,6 +440,7 @@ module akra.util {
 
 		    return pMap;
 		} 
+
 		toString(bListAll: bool = false): string {
 			function _an(sValue, n: int, bBackward?: bool) {
 		        sValue = String(sValue);

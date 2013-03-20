@@ -28,7 +28,7 @@ module akra.model {
 
 
 		constructor (pMesh: IMesh, pRenderData: IRenderData, sName: string = null) {
-			super(); 
+			super(ERenderDataTypes.MESH_SUBSET); 
 			this.setup(pMesh, pRenderData, sName);
 		}
 

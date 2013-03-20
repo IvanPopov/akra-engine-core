@@ -726,7 +726,8 @@ module akra.fx {
 				pSystemFunctions[sName].push(pFunction);
 				pFunction.setBuiltIn(true);
 			}
-		}
+
+	}
 
 		private generateSystemMacros(sMacrosName: string, sMacrosCode: string): void {
 			if(isDef(this._pSystemMacros[sMacrosName])){

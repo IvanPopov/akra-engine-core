@@ -50,6 +50,8 @@ src2/tmp.*
 src2/tmp.ts
 src2/tests/common/*/*.t.js
 
+~tmp.ts
+
 obj/
 bin/
 properties/

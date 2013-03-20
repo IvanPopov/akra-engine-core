@@ -40,6 +40,8 @@ module akra {
 
 		clone(): IVertexElement;
 
+		isEnd(): bool;
+
 		//DEBUG!!
 		toString(): string;
 	}

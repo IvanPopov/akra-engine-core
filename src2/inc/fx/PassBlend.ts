@@ -11,6 +11,7 @@
 #include "fx/Maker.ts"
 
 
+
 module akra.fx {
 	export class PassBlend implements IAFXPassBlend {
 		UNIQUE();
@@ -29,6 +30,7 @@ module akra.fx {
 		private _pVaryingContainerV: VariableBlendContainer = null;
 		private _pVertexOutType: IAFXTypeInstruction = null;
 		private _pUsedFunctionListV: IAFXFunctionDeclInstruction[] = null;
+
 		private _pPassFunctionListV: IAFXFunctionDeclInstruction[] = null;
 		private _pTextureMapV: BoolMap = null;
 
@@ -1297,6 +1299,7 @@ module akra.fx {
 			return this._sAttrDeclCode;
 		}
 
+
 		private inline generateAFXAttrs(): string {
 			return this._sAFXAttrDeclCode;
 		}
@@ -1367,8 +1370,6 @@ module akra.fx {
 			this._sVertexOutToVaryingCode = sCode;
 			return this._sVertexOutToVaryingCode;
 		}
-
-
 	}
 }
 
