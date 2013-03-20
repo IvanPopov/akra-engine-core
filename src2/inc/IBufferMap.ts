@@ -61,6 +61,9 @@ module akra {
 		 */
 		getFlow(sSemantics: string, bComplete?: bool): IDataFlow;
 		getFlow(iFlow: int, bComplete?: bool): IDataFlow;
+
+		findFlow(sSemantics: string): IDataFlow;
+
 		reset(): void;
 
 		/**
