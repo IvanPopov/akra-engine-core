@@ -68,6 +68,18 @@ module akra.fx {
 		private _isForeign: bool = null;
 		private _iLength: uint = UNDEFINE_LENGTH;
 
+		// private $length = 0;
+		// inline get _iLength() {
+		// 	return this.$length;
+		// }
+
+		// inline set _iLength(n: int) {
+		// 	if (n === null) {
+		// 		LOG(__CALLSTACK__);
+		// 	}
+		// 	this.$length = n;
+		// }
+
 		private _isFromVariableDecl: bool = null;
 		private _isFromTypeDecl: bool = null;
 		private _isField: bool = false;
@@ -102,8 +114,10 @@ module akra.fx {
 		toFinalCode(): string {
 			var sCode: string = "";
 			if(!isNull(this._pUsageList)){
-				for(var i: uint = 0; i < this._pUsageList.length; i++){
-					sCode += this._pUsageList[i] + " ";
+				if(!this.isShared()){
+					for(var i: uint = 0; i < this._pUsageList.length; i++){
+						sCode += this._pUsageList[i] + " ";
+					}
 				}
 			}
 
@@ -608,7 +622,8 @@ module akra.fx {
 				var isEval: bool = this._pArrayIndexExpr.evaluate();
 				
 				if(isEval) {
-					this._iLength = <uint>this._pArrayIndexExpr.getEvalValue() || UNDEFINE_LENGTH;
+					var iValue: uint = <uint>this._pArrayIndexExpr.getEvalValue();
+					this._iLength = isInt(iValue) ? iValue : UNDEFINE_LENGTH;
 				}
 			}
 
@@ -1618,7 +1633,7 @@ module akra.fx {
 
 		inline setName(sName: string): void {
 			this._sName = sName;
-			this._sRealName = sName + "R";
+			this._sRealName = sName;
 		}
 
 		inline setRealName(sRealName: string): void {

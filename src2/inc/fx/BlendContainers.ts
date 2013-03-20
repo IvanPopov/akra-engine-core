@@ -2,6 +2,7 @@
 #define AFXVARIABLEBLENDCONTAINER
 
 #include "IAFXInstruction.ts"
+#include "TypeInstruction.ts"
 
 module akra.fx {
 	export class VariableBlendContainer {
@@ -76,7 +77,17 @@ module akra.fx {
 		}
 
 		inline getDeclCodeForVar(sName: string): string {
-			return this.getBlendType(sName).toFinalCode() + " " + sName;
+			var pType: IAFXVariableTypeInstruction = this.getBlendType(sName);
+			var sCode: string = pType.toFinalCode() + " ";
+			var pVar: IAFXVariableDeclInstruction = this.getVariableByName(sName);
+			
+			sCode += pVar.getRealName();
+			
+			if(pVar.getType().isNotBaseArray()){
+				sCode += "[" + pVar.getType().getLength() + "]";
+			}
+
+			return sCode;
 		}
 	}
 
@@ -99,6 +110,15 @@ module akra.fx {
 		}
 
 		addComplexType(pComplexType: IAFXTypeInstruction): bool {
+			var pFieldList: IAFXVariableDeclInstruction[] = (<ComplexTypeInstruction>pComplexType)._getFieldDeclList();
+			for(var i: uint = 0; i < pFieldList.length; i++){
+				if(pFieldList[i].getType().isComplex()){
+					if(!this.addComplexType(pFieldList[i].getType().getBaseType())){
+						return false;
+					}
+				}
+			}
+
 			var sName: string = pComplexType.getRealName();
 
 			if(!isDef(this._pTypeListMap[sName])){
@@ -241,6 +261,14 @@ module akra.fx {
 			this._pVBByBufferSlots = new util.ObjectArray();
 			this._pHashByBufferSlots = new util.ObjectArray();
 			this._pBufferSlotBySlots = new util.ObjectArray();
+
+			var pSemantics: string[] = this.semantics;
+
+			for(var i: uint = 0; i < pSemantics.length; i++){
+				var sSemantic: string = pSemantics[i];
+				this._pSlotBySemanticMap[sSemantic] = -1;
+				this._pFlowsBySemanticMap[sSemantic] = null;
+			}
 		}
 
 		inline getSlotBySemantic(sSemantic: string): uint {

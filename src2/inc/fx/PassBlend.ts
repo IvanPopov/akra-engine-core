@@ -8,13 +8,15 @@
 #include "ITexture.ts"
 #include "fx/BlendContainers.ts"
 #include "fx/TexcoordSwapper.ts"
+#include "fx/Maker.ts"
+
 
 module akra.fx {
 	export class PassBlend implements IAFXPassBlend {
 		UNIQUE();
 
 		private _pComposer: IAFXComposer = null;
-		private _pShaderProgramByHashMap: IAFXShaderProgramMap = null;
+		private _pFXMakerByHashMap: IAFXMakerMap = null;
 
 		
 		private _pExtSystemDataV: ExtSystemDataContainer = null;
@@ -46,8 +48,8 @@ module akra.fx {
 
 
 		//Code fragments
-		private _isZeroSampler2dV: bool = false;
-		private _isZeroSamplerCubeV: bool = false;
+		// private _isZeroSampler2dV: bool = false;
+		// private _isZeroSamplerCubeV: bool = false;
 		private _sUniformSamplerCodeV: string = "";
 
 		private _sAttrBufferDeclCode: string = "";
@@ -56,11 +58,28 @@ module akra.fx {
 		private _sAttrBufferInitCode: string = "";
 		private _sAFXAttrInitCode: string = "";
 
+		private _sSystemExtBlockCodeV: string = "";
+		private _sFunctionDefCodeV: string = "";
+		private _sSharedVarCodeV: string = "";
+		private _sVaryingDeclCodeV: string = "";
+		private _sVertexOutDeclCode: string = "";
+		private _sVertexOutToVaryingCode: string = "";
+		private _sPassFunctionCallCodeV: string = "";
 
 
-		private _isZeroSampler2dP: bool = false;
-		private _isZeroSamplerCubeP: bool = false;
-		private _sUniformSamplerCodeP: string = "";
+		// private _isZeroSampler2dP: bool = false;
+		// private _isZeroSamplerCubeP: bool = false;
+		private _sUniformSamplerCodeP: string = ""; 
+		
+		private _sSystemExtBlockCodeP: string = "";
+		private _sFunctionDefCodeP: string = "";
+		private _sSharedVarCodeP: string = "";
+		private _sVaryingDeclCodeP: string = "";
+		private _sPassFunctionCallCodeP: string = "";
+
+
+		private _sVertexCode: string = "";
+		private _sPixelCode: string = "";
 
 		private _pDefaultSamplerBlender: SamplerBlender = null;
 		private _pTexcoordSwapper: TexcoordSwapper = null;
@@ -70,7 +89,7 @@ module akra.fx {
 		constructor(pComposer: IAFXComposer){
 			this._pComposer = pComposer;
 
-			this._pShaderProgramByHashMap = <IAFXShaderProgramMap>{};
+			this._pFXMakerByHashMap = <IAFXMakerMap>{};
 
 			this._pExtSystemDataV = new ExtSystemDataContainer();
 			this._pComplexTypeContainerV = new ComplexTypeBlendContainer();
@@ -119,39 +138,58 @@ module akra.fx {
 			return true;
 		}
 
-		generateShaderProgram(pPassInput: IAFXPassInputBlend,
+		generateFXMaker(pPassInput: IAFXPassInputBlend,
 							  pSurfaceMaterial: ISurfaceMaterial,
-							  pBuffer: IBufferMap): IAFXShaderProgram {
+							  pBuffer: IBufferMap, isFirst?: bool = true): IAFXMaker {
 
 			// var pSamplerBlender: SamplerBlender = this._pDefaultSamplerBlender;
 
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
 			
+			var iTime: uint = now();
+
 			var sSamplerPartHash: string = this.prepareSamplers(pPassInput);
 			var sMaterialPartHash: string = this.prepareSurfaceMaterial(pSurfaceMaterial);
 			var sBufferPartHash: string = this.prepareBufferMap(pBuffer);
 
 			var sTotalHash: string = sSamplerPartHash + sMaterialPartHash + sBufferPartHash;
 
-			var pProgram: IAFXShaderProgram = this.getProgramByHash(sTotalHash);
+			var pMaker: IAFXMaker = this.getMakerByHash(sTotalHash);
 
-			if(isNull(pProgram)) {
+			if(isNull(pMaker)) {
 				this.applyForeigns(pPassInput);
 				this.swapTexcoords(pSurfaceMaterial);
 				this.generateShaderCode();
+
+				pMaker = new Maker(this._pComposer);
+				var isCreate: bool = pMaker._create(this._sVertexCode, this._sPixelCode);
+				if(!isCreate){
+					return null;
+				}
+
+
+				this._pFXMakerByHashMap[sTotalHash] = pMaker;
+				LOG("generateShaderProgram. HASH: ", sTotalHash, "---NEW---", now() - iTime);
+			}
+			else {
+				// if(isFirst){
+				// 	iTime = now();
+				// 	for (var i: int = 0; i < 100; i++) {
+				// 		this.generateFXMaker(pPassInput, pSurfaceMaterial, pBuffer, false);
+				// 	}
+				// 	LOG("generateShaderProgram. HASH: ", sTotalHash, "---OLD---", now() - iTime, (now()-iTime)/100);
+				// }
 			}
 
-
-			LOG("generateShaderProgram. HASH: ", sTotalHash, this._pTexcoordSwapper.getTmpDeclCode(),
-															 this._pTexcoordSwapper.getTecoordSwapCode());
+			// LOG("------------------------------------\n\n",this._sVertexCode, "###########################\n\n", this._sPixelCode);
 			// LOG(this._pAttributeContainerV);
-			LOG(pBuffer, pBuffer.toString());
+			// LOG(pBuffer, pBuffer.toString());
 			
 			return null;
 		}
 
-		private inline getProgramByHash(sHash: string): IAFXShaderProgram {
-			return this._pShaderProgramByHashMap[sHash] || null;
+		private inline getMakerByHash(sHash: string): IAFXMaker {
+			return this._pFXMakerByHashMap[sHash] || null;
 		}
 
 		private finalizeBlend(): bool {
@@ -512,6 +550,28 @@ module akra.fx {
 			return true;
 		}
 
+		private enableVaringPrefixes(eType: EFunctionType, bEnabled: bool): void {
+			var pVars: VariableBlendContainer = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pVars = this._pVaryingContainerV;
+			}
+			else {
+				pVars = this._pVaryingContainerP;
+			}
+
+			var pKeys: string[] = pVars.keys;
+
+			for(var i: uint = 0; i < pKeys.length; i++){
+				var sName: string = pKeys[i];
+				var pVarList: IAFXVariableDeclInstruction[] = pVars.getVarList(sName);
+
+				for(var j: uint = 0; j < pVarList.length; j++) {
+					pVarList[j]._markAsVarying(bEnabled);
+				}
+			}
+		}
+
 		private finalizeComplexTypeForShader(eType: EFunctionType): bool {
 			var pTypeContainer: ComplexTypeBlendContainer = null;
 
@@ -546,9 +606,9 @@ module akra.fx {
 				return false;
 			}
 
-			if(eType === EFunctionType.k_Vertex){
-				pTypeContainer.addComplexType(this._pVertexOutType);
-			}
+			// if(eType === EFunctionType.k_Vertex){
+			// 	pTypeContainer.addComplexType(this._pVertexOutType);
+			// }
 
 			for(var i: uint = 0; i < pUsedFunctions.length; i++){
 				var pReturnBaseType: IAFXTypeInstruction = pUsedFunctions[i].getReturnType().getBaseType();
@@ -667,7 +727,7 @@ module akra.fx {
 
 		private applyForeigns(pPassInput: IAFXPassInputBlend): void {
 			var pForeignValues: any = pPassInput.foreigns;
-			var pKeys: string[] = pPassInput.foreigns;
+			var pKeys: string[] = pPassInput.foreignKeys;
 
 			var pForeignsV = this._pForeignContainerV;
 			var pForeignsP = this._pForeignContainerP;
@@ -680,32 +740,106 @@ module akra.fx {
 					pVarList = pForeignsV.getVarList(sName);
 					
 					for(var j: uint = 0; j < pVarList.length; j++){
-						pVarList[j].setValue(pForeignValues[sName]);
+						pVarList[j].setValue(pForeignValues[sName] || 1);
 					}
 				}
 				if(pForeignsP.hasVariableWithName(sName)){
 					pVarList = pForeignsP.getVarList(sName);
 					
 					for(var j: uint = 0; j < pVarList.length; j++){
-						pVarList[j].setValue(pForeignValues[sName]);
+						pVarList[j].setValue(pForeignValues[sName] || 1);
 					}
 				}
 			}
 		}
 
 		private inline generateShaderCode(): void {
-			var sVertexCode: string = "";
-			var sPixelCode: string = "";
-
-			// this.setAttributes();
 			this.clearCodeFragments();
 			this.reduceSamplers();
 			this.reduceAttributes();
+
+			this._sVertexCode = this.generateCodeForVertex();
+			this._sPixelCode = this.generateCodeForPixel();
+		}
+
+		private generateCodeForVertex(): string {
+			var sCode: string = "";
+			var eType: EFunctionType = EFunctionType.k_Vertex;
+
+			sCode = this.generateSystemExtBlock(eType) + "\n" +
+					
+					this.generateTypeDels(eType) + "\n" +
+					this.generateFunctionDefenitions(eType) + "\n" +
+					
+					this.generateSharedVars(eType) + "\n" +
+					
+					this.generateVertexOut() + "\n";
+
+			this.enableVaringPrefixes(eType, true);
+			sCode += this.generateVaryings(eType) + "\n";
+			this.enableVaringPrefixes(eType, false);
+					
+			sCode += this.generateUniformSamplers(eType) + "\n" +
+					this.generateUniformVars(eType) + "\n" +
+					this.generateAttrBuffers() + "\n" +
+
+					this.generateGlobalVars(eType) + "\n" + 
+					this.generateFunctions(eType) + "\n" +
+
+					this.generateRealAttrs() + "\n" +
+					this.generateAFXAttrs() + "\n" + 
+
+					this.generatePassFunctions(eType) + "\n" +
+
+					"void main() {\n" +
+
+					this.generateAttrBufferInit() + "\n" +
+					this.generateAFXAttrInit() + "\n" +
+
+					this.generateTexcoordSwap() + "\n" +
+
+					this.generatePassFunctionCall(eType) + "\n" +
+
+					this.generateVertexOutToVaryings() + "\n" +
+
+					"}";
+
+			return sCode;
+		}
+
+		private generateCodeForPixel(): string {
+			var sCode: string = "";
+			var eType: EFunctionType = EFunctionType.k_Pixel;
+
+			this.enableVaringPrefixes(eType, true);
+			sCode = this.generateSystemExtBlock(eType) + "\n" +
+					
+					this.generateTypeDels(eType) + "\n" +
+					this.generateFunctionDefenitions(eType) + "\n" +
+					
+					this.generateSharedVars(eType) + "\n" +
+					
+					this.generateVaryings(eType) + "\n" +
+					
+					this.generateUniformSamplers(eType) + "\n" +
+					this.generateUniformVars(eType) + "\n" +
+
+					this.generateGlobalVars(eType) + "\n" + 
+					this.generateFunctions(eType) + "\n" +
+
+					this.generatePassFunctions(eType) + "\n" +
+
+					"void main() {\n" +
+
+					this.generatePassFunctionCall(eType) + "\n" +
+
+					"}";
+			this.enableVaringPrefixes(eType, false);
+
+			return sCode;
 		}
 
 		private clearCodeFragments(): void {
-			this._isZeroSampler2dV = false;
-			this._isZeroSamplerCubeV = false;
 			this._sUniformSamplerCodeV = "";
 
 			this._sAttrBufferDeclCode = "";
@@ -714,10 +848,6 @@ module akra.fx {
 			this._sAttrBufferInitCode = "";
 			this._sAFXAttrInitCode = "";
 
-
-
-			this._isZeroSampler2dP = false;
-			this._isZeroSamplerCubeP = false;
 			this._sUniformSamplerCodeP = "";
 		}
 
@@ -727,6 +857,11 @@ module akra.fx {
 
 			var sUniformSamplerCodeV: string = "";
 			var sUniformSamplerCodeP: string = "";
+
+			var isZeroSampler2DV: bool = false;
+			var isZeroSamplerCubeV: bool = false;
+			var isZeroSampler2DP: bool = false;
+			var isZeroSamplerCubeP: bool = false;
 
 			for(var i: uint = 0; i < iTotalSlots; i++){
 				var pSamplers = pSamplerBlender.getSamplersBySlot(i);
@@ -742,19 +877,19 @@ module akra.fx {
 
 						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Vertex)){
 							if(pSamplers.value(j).getType().isSampler2D()) {
-								this._isZeroSampler2dV = true;
+								isZeroSampler2DV = true;
 							}
 							else {
-								this._isZeroSamplerCubeV = true;
+								isZeroSamplerCubeV = true;
 							}
 						}
 
 						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Pixel)){
 							if(pSamplers.value(j).getType().isSampler2D()) {
-								this._isZeroSampler2dP = true;
+								isZeroSampler2DP = true;
 							}
 							else {
-								this._isZeroSamplerCubeP = true;
+								isZeroSamplerCubeP = true;
 							}
 						}
 					}
@@ -772,16 +907,16 @@ module akra.fx {
 
 
 				if(i === ZERO_SLOT){
-					if(this._isZeroSampler2dV){
+					if(isZeroSampler2DV){
 						sUniformSamplerCodeV += "uniform sampler2D as0;";
 					}
-					if(this._isZeroSamplerCubeV){
+					if(isZeroSamplerCubeV){
 						sUniformSamplerCodeV += "uniform samplerCube asc0;"
 					}
-					if(this._isZeroSampler2dP){
+					if(isZeroSampler2DP){
 						sUniformSamplerCodeP += "uniform sampler2D as0;";
 					}
-					if(this._isZeroSamplerCubeP){
+					if(isZeroSamplerCubeP){
 						sUniformSamplerCodeP += "uniform samplerCube asc0;"
 					}
 				}
@@ -843,7 +978,7 @@ module akra.fx {
 						if(iBufferSlot > nPreparedBufferSlots) {
 							var pBufferVar: IAFXVariableDeclInstruction =  pAttributes[0].getType().getVideoBuffer();
 							this._sAttrBufferDeclCode = pBufferVar.toFinalCode() + ";\n";
-							this._sAttrBufferInitCode = sHeaderBufferName + "=" + pBufferVar._getVideoBufferInitExpr().toFinalCode() + ";\n";
+							this._sAttrBufferInitCode = pBufferVar._getVideoBufferInitExpr().toFinalCode() + ";\n";
 							nPreparedBufferSlots++;
 						}
 					}
@@ -877,25 +1012,26 @@ module akra.fx {
 						this._sAFXAttrInitCode += pAttribute._getAttrExtractionBlock().toFinalCode();
 					}
 					else {
-						this._sAFXAttrDeclCode += pAttribute.getRealName() + "=" + sAttrName + ";";
+						this._sAFXAttrInitCode += pAttribute.getRealName() + "=" + sAttrName + ";";
 					}
 				}
 			}
-
-			LOG(this._sAttrBufferDeclCode, this._sAttrDeclCode, 
-				this._sAFXAttrDeclCode, this._sAttrBufferInitCode, 
-				this._sAFXAttrInitCode);
-			LOG(this._pAttributeContainerV);
 		}
 
-		private generateSystemData(eType: EFunctionType): string {
+		private generateSystemExtBlock(eType: EFunctionType): string {
 			var pExtBlock: ExtSystemDataContainer = null;
 
 			if(eType === EFunctionType.k_Vertex){
 				pExtBlock = this._pExtSystemDataV;
+				if(this._sSystemExtBlockCodeV !== ""){
+					return this._sSystemExtBlockCodeV;
+				}
 			}
 			else {
 				pExtBlock = this._pExtSystemDataP;
+				if(this._sSystemExtBlockCodeP !== ""){
+					return this._sSystemExtBlockCodeP;
+				}
 			}
 
 			var sCode: string = "";
@@ -914,6 +1050,17 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pFunctions.length; i++){
 				sCode += pFunctions[i].toFinalCode() + "\n";
+			}
+
+
+			if(eType === EFunctionType.k_Vertex){
+				this._sSystemExtBlockCodeV = sCode;
+			}
+			else {
+				sCode = "#define AKRA_FRAGMENT 1\n" + 
+						"#ifdef GL_ES\nprecision highp float;\n#endif\n" +
+						sCode;
+				this._sSystemExtBlockCodeP = sCode;
 			}
 
 			return sCode;
@@ -946,15 +1093,28 @@ module akra.fx {
 
 			if(eType === EFunctionType.k_Vertex){
 				pFunctions = this._pUsedFunctionListV;
+				if(this._sFunctionDefCodeV !== ""){
+					return this._sFunctionDefCodeV;
+				}
 			}
 			else {
 				pFunctions = this._pUsedFunctionListP;
+				if(this._sFunctionDefCodeP !== ""){
+					return this._sFunctionDefCodeP;
+				}
 			}
 
 			var sCode: string = "";
 
 			for(var i: uint = 0; i < pFunctions.length; i++){
 				sCode += pFunctions[i].toFinalDefCode() + ";\n";
+			}
+
+			if(eType === EFunctionType.k_Vertex){
+				this._sFunctionDefCodeV = sCode;
+			}
+			else {
+				this._sFunctionDefCodeP = sCode;
 			}
 
 			return sCode;
@@ -965,9 +1125,15 @@ module akra.fx {
 
 			if(eType === EFunctionType.k_Vertex){
 				pVars = this._pSharedContainerV;
+				if(this._sSharedVarCodeV !== ""){
+					return this._sSharedVarCodeV;
+				}
 			}
 			else {
 				pVars = this._pSharedContainerP;
+				if(this._sSharedVarCodeP !== ""){
+					return this._sSharedVarCodeP;
+				}
 			}
 
 			var sCode: string = "";
@@ -977,11 +1143,22 @@ module akra.fx {
 				sCode += pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
 			}
 
+			if(eType === EFunctionType.k_Vertex){
+				this._sSharedVarCodeV = sCode;
+			}
+			else {
+				this._sSharedVarCodeP = sCode;
+			}
+
 			return sCode;
 		}
 
 		private generateVertexOut(): string {
-			return this._pVertexOutType._toDeclString() + " Out";
+			if(this._sVertexOutDeclCode === ""){
+				this._sVertexOutDeclCode = this._pVertexOutType._toDeclString() + " Out;\n";
+			}
+
+			return this._sVertexOutDeclCode;
 		}
 
 		private generateVaryings(eType: EFunctionType): string {
@@ -989,9 +1166,16 @@ module akra.fx {
 
 			if(eType === EFunctionType.k_Vertex){
 				pVars = this._pVaryingContainerV;
+
+				if(this._sVaryingDeclCodeV !== ""){
+					return this._sVaryingDeclCodeV;
+				}
 			}
 			else {
 				pVars = this._pVaryingContainerP;
+				if(this._sVaryingDeclCodeP !== ""){
+					return this._sVaryingDeclCodeP;
+				}
 			}
 
 			var sCode: string = "";
@@ -1001,7 +1185,23 @@ module akra.fx {
 				sCode += "varying " + pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
 			}
 
+			if(eType === EFunctionType.k_Vertex){
+				this._sVaryingDeclCodeV = sCode;
+			}
+			else {
+				this._sVaryingDeclCodeP = sCode;
+			}
+
 			return sCode;
+		}
+
+		private generateUniformSamplers(eType: EFunctionType): string {
+			if(eType === EFunctionType.k_Vertex){
+				return this._sUniformSamplerCodeV;
+			}
+			else {
+				return this._sUniformSamplerCodeP;
+			}
 		}
 
 		private generateUniformVars(eType: EFunctionType): string {
@@ -1018,7 +1218,10 @@ module akra.fx {
 			var pKeys = pVars.keys;
 
 			for(var i: uint = 0; i < pKeys.length; i++){
-				if(pVars.getBlendType(pKeys[i]).isSampler()){
+				var pVar: IAFXVariableDeclInstruction = pVars.getVariableByName(pKeys[i]);
+				var pType: IAFXVariableTypeInstruction = pVars.getBlendType(pKeys[i]);
+				if (pType.isSampler() && 
+					(!pType.isArray() || pVar.isDefinedByZero())){
 					continue;
 				}
 
@@ -1028,29 +1231,9 @@ module akra.fx {
 			return sCode;
 		}
 
-		// private generateUniformSamplers(eType: EFunctionType): string {
-		// 	var pSamplerBlender: I = null;
-
-		// 	if(eType === EFunctionType.k_Vertex){
-		// 		pVars = this._pUniformContainerV;
-		// 	}
-		// 	else {
-		// 		pVars = this._pUniformContainerP;
-		// 	}
-
-		// 	var sCode: string = "";
-		// 	var pKeys = pVars.keys;
-
-		// 	for(var i: uint = 0; i < pKeys.length; i++){
-		// 		if(pVars.getBlendType(pKeys[i]).isSampler()){
-		// 			continue;
-		// 		}
-				
-		// 		sCode += "uniform " + pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
-		// 	}
-
-		// 	return sCode;
-		// }
+		private inline generateAttrBuffers(): string {
+			return this._sAttrBufferDeclCode;
+		}
 
 		private generateGlobalVars(eType: EFunctionType): string {
 			var pVars: VariableBlendContainer = null;
@@ -1085,7 +1268,7 @@ module akra.fx {
 			var sCode: string = "";
 
 			for(var i: uint = 0; i < pFunctions.length; i++){
-				sCode += pFunctions[i].toFinalCode() + ";\n";
+				sCode += pFunctions[i].toFinalCode() + "\n";
 			}
 
 			return sCode;
@@ -1104,17 +1287,87 @@ module akra.fx {
 			var sCode: string = "";
 
 			for(var i: uint = 0; i < pFunctions.length; i++){
-				sCode += pFunctions[i].toFinalCode() + ";\n";
+				sCode += pFunctions[i].toFinalCode() + "\n";
 			}
 
 			return sCode;
 		}
 
-		private generateAttributes(): string {
-			return "";
+		private inline generateRealAttrs(): string {
+			return this._sAttrDeclCode;
 		}
-		
-		// private inline setAttributes()
+
+		private inline generateAFXAttrs(): string {
+			return this._sAFXAttrDeclCode;
+		}
+
+		private inline generateAttrBufferInit(): string {
+			return this._sAttrBufferInitCode;
+		}
+
+		private inline generateAFXAttrInit(): string {
+			return this._sAFXAttrInitCode;
+		}
+
+		private inline generateTexcoordSwap(): string {
+			return this._pTexcoordSwapper.getTmpDeclCode() + "\n" + 
+				   this._pTexcoordSwapper.getTecoordSwapCode();
+		}
+
+		private inline generatePassFunctionCall(eType: EFunctionType): string {
+			var pFunctions: IAFXFunctionDeclInstruction[] = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pFunctions = this._pPassFunctionListV;
+				if(this._sPassFunctionCallCodeV !== ""){
+					return this._sPassFunctionCallCodeV;
+				}
+			}
+			else {
+				pFunctions = this._pPassFunctionListP;				
+				if(this._sPassFunctionCallCodeP !== ""){
+					return this._sPassFunctionCallCodeP;
+				}
+			}
+
+			var sCode = "";
+
+			for(var i: uint = 0; i < pFunctions.length; i++){
+				sCode += pFunctions[i].getRealName() + "();\n";
+			}
+
+			if(eType === EFunctionType.k_Vertex){
+				this._sPassFunctionCallCodeV = sCode;
+			}
+			else {
+				this._sPassFunctionCallCodeP = sCode;
+			}
+
+			return sCode;
+		}		
+
+
+		private generateVertexOutToVaryings(): string {
+			if(this._sVertexOutToVaryingCode !== ""){
+				return this._sVertexOutToVaryingCode;
+			}
+
+			var pVars: VariableBlendContainer = this._pVaryingContainerV;
+			var pKeys: string[] = pVars.keys;
+			var sCode: string = "";
+
+			sCode += "gl_Position=Out.POSITION;\ngl_PointSize=Out.PSIZE;\n";
+			for(var i: uint = 0; i < pKeys.length; i++) {
+				var sName: string = pKeys[i];
+				if(sName !== "POSITION" && sName !== "PSIZE"){
+					sCode += "V_"+sName + "=" + "Out." + sName + ";\n";
+				}
+			}
+
+			this._sVertexOutToVaryingCode = sCode;
+			return this._sVertexOutToVaryingCode;
+		}
+
 
 	}
 }

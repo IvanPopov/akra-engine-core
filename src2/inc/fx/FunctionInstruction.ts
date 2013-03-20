@@ -96,6 +96,10 @@ module akra.fx {
 		inline getName(): string {
 			return this._pFunctionDefenition.getName();
 		}
+
+		inline getRealName(): string {
+			return this._pFunctionDefenition.getRealName();
+		}
 		
 		inline getNameId(): IAFXIdInstruction {
 			return this._pFunctionDefenition.getNameId();
@@ -934,7 +938,7 @@ module akra.fx {
 			if(!isNull(pFunctions)){
 				for(var j: uint = 0; j < pFunctions.length; j++){
 					if(this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1){
-						this._pExtSystemFunctionList.push(pFunctions[j]);
+						this._pExtSystemFunctionList.unshift(pFunctions[j]);
 					}
 				}
 			}
@@ -1188,7 +1192,7 @@ module akra.fx {
 
 				for(var j: uint = 0; j < pFunctions.length; j++){
 					if(this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1){
-						this._pExtSystemFunctionList.push(pFunctions[j]);
+						this._pExtSystemFunctionList.unshift(pFunctions[j]);
 					}
 				}
 			}
@@ -1518,6 +1522,10 @@ module akra.fx {
 
 		inline getName(): string {
 			return this._pFunctionName.getName();
+		}
+
+		inline getRealName(): string {
+			return this._pFunctionName.getRealName();
 		}
 
 		inline getNameId(): IAFXIdInstruction {

@@ -265,8 +265,11 @@ module akra.fx {
 
 		evaluate(): bool {
 			if(this.getType().isForeign()){
-				this._pLastEvalResult = this.getType()._getParentVarDecl().getValue();
-				return true;
+				var pVal = this.getType()._getParentVarDecl().getValue();
+				if(!isNull(pVal)){
+					this._pLastEvalResult = pVal;
+					return true;
+				}		
 			}
 
 			return false;
@@ -576,6 +579,8 @@ module akra.fx {
 	 * EMPTY_OPERATOR Instruction ExprInstruction
 	 */
 	export class PostfixIndexInstruction extends ExprInstruction {
+		private _pSamplerArrayDecl: IAFXVariableDeclInstruction = null;
+
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
@@ -585,8 +590,13 @@ module akra.fx {
 		toFinalCode(): string {
 			var sCode: string = "";
 
-			sCode += this.getInstructions()[0].toFinalCode();	
-			sCode += "[" + this.getInstructions()[1].toFinalCode() + "]";
+			if(!isNull(this._pSamplerArrayDecl) && this._pSamplerArrayDecl.isDefinedByZero()){
+				sCode += this.getInstructions()[0].toFinalCode();	
+			}
+			else {
+				sCode += this.getInstructions()[0].toFinalCode();	
+				sCode += "[" + this.getInstructions()[1].toFinalCode() + "]";
+			}
 
 			return sCode;
 		}
@@ -598,6 +608,10 @@ module akra.fx {
 
 			pSubExpr.addUsedData(pUsedDataCollector, eUsedMode);
 			pIndex.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+
+			if(pSubExpr.getType().isFromVariableDecl() && pSubExpr.getType().isSampler()){
+				this._pSamplerArrayDecl = pSubExpr.getType()._getParentVarDecl();
+			}
         }
 	}
 
@@ -774,7 +788,7 @@ module akra.fx {
 			sCode += this.getInstructions()[0].toFinalCode();
 			sCode += "(";
 			for(var i: uint = 1; i < this._nInstructions; i++){
-				sCode += this.getInstructions()[1].toFinalCode();
+				sCode += this.getInstructions()[i].toFinalCode();
 				if(i !== this._nInstructions - 1){
 					sCode +=","
 				}

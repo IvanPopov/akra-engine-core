@@ -72,11 +72,11 @@ module akra {
     }
 
     export enum EFunctionType{
-        k_Vertex,
-        k_Pixel,
-        k_Fragment = k_Pixel,
-        k_Function,
-        k_PassFunction
+        k_Vertex = 0,
+        k_Pixel = 1,
+        k_Fragment = 1,
+        k_Function = 2,
+        k_PassFunction = 3
     }
 
     export enum ECheckStage {
@@ -490,8 +490,10 @@ module akra {
         _setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void;
         _getAttrExtractionBlock(): IAFXInstruction;
 
+        _markAsVarying(bValue: bool): void;
         _markAsShaderOutput(isShaderOutput: bool): void;
         _isShaderOutput(): bool;
+
 
         _getFullNameExpr(): IAFXExprInstruction;
         _getFullName(): string;
@@ -608,6 +610,8 @@ module akra {
 
         setName(sName: string): void;
         setRealName(sName: string): void;
+
+        _markAsVarying(bValue: bool): void;
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXIdInstruction;
     }

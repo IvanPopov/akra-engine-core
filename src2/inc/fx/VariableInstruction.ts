@@ -59,6 +59,10 @@ module akra.fx {
 
         setValue(pValue: any): any {
             this._pValue = pValue;
+
+            if(this.getType().isForeign()){
+                this.setRealName(pValue);
+            }
         }
 
 		inline getType(): IAFXVariableTypeInstruction {
@@ -192,6 +196,10 @@ module akra.fx {
             return sCode;
         }
 
+        inline _markAsVarying(bValue: bool): void {
+            this.getNameId()._markAsVarying(bValue);
+        }
+
         inline _markAsShaderOutput(isShaderOutput: bool): void {
             this._bShaderOutput = isShaderOutput;
         }
@@ -272,6 +280,7 @@ module akra.fx {
                 var pId: IAFXIdInstruction = new IdInstruction();
 
                 pType.pushType(getEffectBaseType("sampler2D"));
+                pType.addUsage("uniform");
                 pId.setName(this.getName() + "_sampler");
 
                 this._pVideoBufferSampler.push(pType, true);

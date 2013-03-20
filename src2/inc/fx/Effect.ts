@@ -538,7 +538,7 @@ module akra.fx {
 												 "\n#endif\n" +
 												 "return 0.;}",
 												 "float",
-												 ["video_buffer_header"], null, ["ExtractMacros"]);
+												 ["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 			
 			this.generateNotBuiltInSystemFuction("extractFloat2", 
 												 "vec2 A_extractVec2(const sampler2D sampler, const A_TextureHeader header, const float offset)",
@@ -559,7 +559,7 @@ module akra.fx {
 												 "\n#endif\n" +
 												 "return vec2(0.);}",
 												 "float2",
-												 ["video_buffer_header"], null, ["ExtractMacros"]);
+												 ["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 			
 			this.generateNotBuiltInSystemFuction("extractFloat3", 
 												 "vec3 A_extractVec3(const sampler2D sampler, const A_TextureHeader header, const float offset)",
@@ -588,7 +588,7 @@ module akra.fx {
 												 "\n#endif\n" +
 												 "return vec3(0);}",
 												 "float3",
-												 ["video_buffer_header"], null, ["ExtractMacros"]);
+												 ["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 
 			this.generateNotBuiltInSystemFuction("extractFloat4", 
 												 "vec4 A_extractVec4(const sampler2D sampler, const A_TextureHeader header, const float offset)",
@@ -617,14 +617,14 @@ module akra.fx {
 												 "\n#endif\n" +
 												 "return vec4(0);}",
 												 "float4",
-												 ["video_buffer_header"], null, ["ExtractMacros"]);
+												 ["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 			
 			this.generateNotBuiltInSystemFuction("findPixel", 
 												 "vec2 A_findPixel(const A_TextureHeader header, const float offset)",
 												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
 												 "return vec2(header.stepX * (mod(pixelNumber, header.width) + .5), header.stepY * (floor(pixelNumber / header.width) + .5));}",
 												 "float2",
-												 ["video_buffer_header"], null, ["ExtractMacros"]);
+												 ["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 
 			this.generateNotBuiltInSystemFuction("extractFloat4x4", 
 												 "mat4 A_extractMat4(const sampler2D sampler, const A_TextureHeader header, const float offset)",
@@ -823,6 +823,7 @@ module akra.fx {
 			pSystemType.setName(sName);
 			pSystemType.setRealName(sRealName);
 			pSystemType.setSize(iSize);
+			pSystemType.setDeclString(sDeclString);
 
 			if(isArray){
 				pSystemType.addIndex(pElementType, iLength);
@@ -1343,7 +1344,7 @@ module akra.fx {
         			var pUsedFunctionList: IAFXFunctionDeclInstruction[] = pTestedFunction._getUsedFunctionList();
 
         			if(!pTestedFunction._isUsed()){
-        				//WARNING("Unused function '" + pTestedFunction._getStringDef() + "'.");
+        				WARNING("Unused function '" + pTestedFunction._getStringDef() + "'.");
         				continue mainFor;
         			}
         			if(pTestedFunction._isBlackListFunction()){
@@ -1358,7 +1359,7 @@ module akra.fx {
         				var pAddedUsedFunctionList: IAFXFunctionDeclInstruction[] = pUsedFunctionList[j]._getUsedFunctionList();
         				
         				if(isNull(pAddedUsedFunctionList)){
-        					continue mainFor;
+        					continue;
         				}
 
         				for(var k: uint = 0; k < pAddedUsedFunctionList.length; k++) {
