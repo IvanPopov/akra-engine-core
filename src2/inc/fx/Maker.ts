@@ -25,7 +25,7 @@ module akra.fx {
 		private _pRealAttrNameList: string[] = null;
 
 		// is really exists uniform & attr?
-		private _pUniformMap: StringMap = <StringMap>{};
+		private _pUniformExistMap: BoolMap = <BoolMap>{};
 		private _pAttrExistMap: BoolMap = <BoolMap>{};
 
 		private _pRealUniformLengthMap: IntMap = <IntMap>{};
@@ -39,14 +39,14 @@ module akra.fx {
 		private _isUsedZeroCube: bool = false;
 
 		//For fast set offsets
-		private _pRealOffsetsFromBufferFlows: uint[] = null;
+		private _pRealOffsetsFromFlows: uint[] = null;
 		private _pDefaultOffsets: uint[] = null;
 
 		//for fast set buffers slots
-		private _pRealAttrSlotFormBufferFlows: uint[] = null;
+		private _pRealAttrSlotFromFlows: string[] = null;
 
 		//for fast set buffers vertex textures
-		private _pBufferSamplersFormBufferFlow: uint[] = null;
+		private _pBufferSamplersFromFlows: string[] = null;
 
 		//стек объектов храняих все юниформы и аттрибуты
 		private _pDataPoolArray: util.ObjectArray = new util.ObjectArray();
@@ -69,7 +69,7 @@ module akra.fx {
 			this._pShaderProgram = pProgram; 
 
 			for (var i: int = 0; i < this._pRealUniformNameList.length; i++) {
-				this._pUniformMap[this._pRealUniformNameList[i]] = this._pRealUniformNameList[i];
+				this._pUniformExistMap[this._pRealUniformNameList[i]] = true;
 			}
 
 			for (var i: int = 0; i < this._pRealAttrNameList.length; i++) {
@@ -88,7 +88,7 @@ module akra.fx {
 		}
 
 		inline isUniformExists(sName: string): bool {
-			return isDefAndNotNull(this._pUniformMap[sName]);
+			return this._pUniformExistMap[sName];
 		}
 
 		inline isAttrExists(sName: string): bool {
@@ -139,6 +139,9 @@ module akra.fx {
 						this._pRealUnifromFromInput.push(sName);
 					}
 				}
+				else {
+					this._pUniformExistMap[sName] = false;
+				}
 			}
 
 			this._pRealSamplersFromInput = [];
@@ -165,18 +168,58 @@ module akra.fx {
 																 		EAFXShaderVariableType.k_SamplerCUBE;
 					this._pRealUniformLengthMap[sRealSamplerName] = 0;
 				}
+				else {
+					this._pUniformExistMap[sRealSamplerName] = false;
+				}
 			}
 
 
+			this._pRealAttrSlotFromFlows = [];
+			this._pBufferSamplersFromFlows = [];
 
-
-			this._pRealAttrSlotFormBufferFlows = [];
-			this._pBufferSamplersFormBufferFlow = [];
-
-			this._pRealOffsetsFromBufferFlows = [];
+			this._pRealOffsetsFromFlows = [];
 			this._pDefaultOffsets = [];
 
-			//var iTotalAttrSlots: uint = this.
+			var iTotalAttrSlots: uint = pAttrs.totalSlots;
+			var pSemantics: string[] = pAttrs.semantics;
+			
+			var nPreparedAttrs: int = -1;
+			var nPreparedBuffers: int = -1;
+
+			for(var i: uint = 0; i < pSemantics.length; i++){
+				var sSemantic: string = pSemantics[i];
+				var iSlot: uint = pAttrs.getSlotBySemantic(sSemantic);
+				var iBufferSlot: uint = pAttrs.getBufferSlotBySemantic(sSemantic);
+
+				if(iSlot > nPreparedAttrs){
+					var sAttrName: string = "aa" + iSlot.toString();
+					
+					if(this.isAttrExists(sAttrName)){
+						this._pRealAttrSlotFromFlows.push(sSemantic);
+					}
+					else {
+						this._pAttrExistMap[sAttrName] = false;
+					}
+
+					nPreparedAttrs++;
+				}
+
+				if(iBufferSlot > nPreparedBuffers){
+					var sBufferName: string = "abs" + iBufferSlot.toString();
+					
+					if(this.isUniformExists(sBufferName)){
+						this._pBufferSamplersFromFlows.push(sSemantic);
+					}
+					else {
+						this._pUniformExistMap[sBufferName] = false;
+					}
+					
+					nPreparedBuffers++;
+				}
+
+				//Offsets
+
+			}
 
 
 
