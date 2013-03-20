@@ -13,15 +13,13 @@
 
 
 
-
 //#define trace(...) console.log(__VA_ARGS__)
 
 
 
 // #define CRYPTO_API 1
-
-
-
+// #define GUI 1
+// #define WEBGL_DEBUG 1
 
 
 
@@ -139,6 +137,8 @@ module akra {
 /*I ## */
 /*I ## */
 /*I ## */
+
+
 
 
 module akra {
@@ -471,7 +471,7 @@ module akra {
             case EDataTypes.FLOAT:
                 return 4;
             default:
-                logger.setSourceLocation( "common.ts" , 407 ); logger.error('unknown data/image type used'); ;
+                logger.setSourceLocation( "common.ts" , 409 ); logger.error('unknown data/image type used'); ;
         }
     }
 
@@ -1698,7 +1698,9 @@ module akra.util {
 //Default log routines
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
-        var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
+        var pDate: Date = new Date;
+        var sTime: string = pDate.getHours() + ":" + pDate.getMinutes() + "." + pDate.getSeconds();
+        var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + " " + sTime + "]: ";
         return sLocation;
     }
 
@@ -1772,6 +1774,8 @@ module akra {
     }
 
     export interface IEngine extends IEventProvider {
+        time:  number ;
+
         getScene(): IScene3d;
 
         getSceneManager(): ISceneManager;
@@ -2102,6 +2106,7 @@ module akra {
     export interface IColor {} ;
     export interface IEngine {} ;
     export interface IRenderTarget {} ;
+    export interface ICanvas3d {} ;
 
 
 
@@ -2346,6 +2351,8 @@ module akra {
         destroyRenderTarget(pTarget: IRenderTarget): void;
 
         getActiveProgram(): IShaderProgram;
+
+        getDefaultCanvas(): ICanvas3d;
     }
 
 
@@ -2403,11 +2410,14 @@ module akra {
 module akra {
 	export interface ISceneNode {} ;
 	export interface ISceneModel {} ;
+	export interface ISceneObject {} ;
 	export interface ILightPoint {} ;
+	export interface ICamera {} ;
 	export interface ISprite {} ;
 	export interface IJoint {} ;
 	export interface IText3d {} ;
 	export interface IDisplayList {} ;
+	export interface IViewport {} ;
 
 
 
@@ -2422,6 +2432,10 @@ module akra {
 		recursiveUpdate(): void;
 
 		isUpdated(): bool;
+
+
+		createObject(sName?: string): ISceneObject;
+
 
 		createNode(sName?: string): ISceneNode;
 		createModel(sName?: string): ISceneModel;
@@ -2894,8 +2908,9 @@ module akra {
 
 
 
-module akra {
 
+
+module akra {
     export enum EAFXInstructionTypes {
         k_Instruction = 0,
         k_InstructionCollector,
@@ -3000,6 +3015,11 @@ module akra {
         [index:  number ]: IAFXInstruction;
     }
 
+    export interface IAFXSimpleInstructionMap {
+        [index: string]: IAFXSimpleInstruction;
+        [index:  number ]: IAFXSimpleInstruction;
+    }
+
     export interface IAFXIdExprMap {
         [index: string]: IAFXIdExprInstruction;
     }
@@ -3014,6 +3034,11 @@ module akra {
         [index:  number ]: IAFXTypeInstruction;
     }
 
+    export interface IAFXTypeListMap {
+        [index: string] : IAFXTypeInstruction[];
+        [index:  number ] : IAFXTypeInstruction[];
+    }
+
     export interface IAFXTypeDeclMap {
         [index: string] : IAFXTypeDeclInstruction;
         [index:  number ] : IAFXTypeDeclInstruction;
@@ -3022,6 +3047,11 @@ module akra {
     export interface IAFXVariableDeclMap {
         [index:  number ]: IAFXVariableDeclInstruction;
         [index: string]: IAFXVariableDeclInstruction;
+    }
+
+    export interface IAFXVariableDeclListMap {
+        [index:  number ]: IAFXVariableDeclInstruction[];
+        [index: string]: IAFXVariableDeclInstruction[];
     }
 
     export interface IAFXVarUsedModeMap {
@@ -3071,7 +3101,12 @@ module akra {
     export enum EAFXBlendMode {
         k_Shared,
         k_Uniform,
-        k_Attribute
+        k_Attribute,
+        k_Foreign,
+        k_Global,
+        k_Varying,
+        k_TypeDecl,
+        k_VertexOut
     }
 
 /**
@@ -3080,7 +3115,7 @@ module akra {
 	 * Operator and instructions may be empty.
 	 */
 
-	export interface IAFXInstruction {
+	export interface IAFXInstruction extends IUnique {
         setParent(pParent: IAFXInstruction): void;
         getParent(): IAFXInstruction;
 
@@ -3136,6 +3171,10 @@ module akra {
 
     export interface IAFXTypeInstruction extends IAFXInstruction {
         _toDeclString(): string;
+
+        isBuiltIn(): bool;
+        setBuiltIn(isBuiltIn: bool): void;
+
 /**
          * Simple tests
          */
@@ -3172,12 +3211,14 @@ module akra {
          */
 
         getName(): string;
+        getRealName(): string;
         getHash(): string;
         getStrongHash(): string;
         getSize():  number ;
         getBaseType(): IAFXTypeInstruction;
         getLength():  number ;
         getArrayElementType(): IAFXTypeInstruction;
+        getTypeDecl(): IAFXTypeDeclInstruction;
 
 // Fields
 
@@ -3245,6 +3286,7 @@ module akra {
         _addPointIndexInDepth(): void;
         _setVideoBufferInDepth(): void;
         _markAsUnverifiable(isUnverifiable: bool): void;
+        _addAttrOffset(pOffset: IAFXVariableDeclInstruction): void;
 
 /**
          * Type info
@@ -3278,6 +3320,7 @@ module akra {
         _getMainPointer(): IAFXVariableDeclInstruction;
         _getUpPointer(): IAFXVariableDeclInstruction;
         _getDownPointer(): IAFXVariableDeclInstruction;
+        _getAttrOffset(): IAFXVariableDeclInstruction;
 
 /**
          * System
@@ -3312,6 +3355,9 @@ module akra {
         getNameId(): IAFXIdInstruction;
         getSemantic(): string;
 
+        isBuiltIn(): bool;
+        setBuiltIn(isBuiltIn: bool): void;
+
         _isForAll(): bool;
         _isForPixel(): bool;
         _isForVertex(): bool;
@@ -3325,6 +3371,7 @@ module akra {
 
     export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
         clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction;
+        blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction;
     }
 
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
@@ -3347,6 +3394,9 @@ module akra {
         isDefinedByZero(): bool;
         defineByZero(isDefine: bool): void;
 
+        _setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void;
+        _getAttrExtractionBlock(): IAFXInstruction;
+
         _markAsShaderOutput(isShaderOutput: bool): void;
         _isShaderOutput(): bool;
 
@@ -3362,6 +3412,8 @@ module akra {
     }
 
     export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
+        toFinalDefCode(): string;
+
 //getNameId(): IAFXIdInstruction;
         hasImplementation(): bool;
         getArguments(): IAFXTypedInstruction[];
@@ -3418,12 +3470,30 @@ module akra {
         _prepareForPixel(): void;
 
         _generateInfoAboutUsedData(): void;
+
+        _getAttributeVariableMap(): IAFXVariableDeclMap;
+        _getVaryingVariableMap(): IAFXVariableDeclMap;
+
         _getSharedVariableMap(): IAFXVariableDeclMap;
         _getGlobalVariableMap(): IAFXVariableDeclMap;
         _getUniformVariableMap(): IAFXVariableDeclMap;
         _getForeignVariableMap(): IAFXVariableDeclMap;
         _getTextureVariableMap(): IAFXVariableDeclMap;
-        _getUsedTypeMap(): IAFXTypeDeclMap;
+        _getUsedComplexTypeMap(): IAFXTypeMap;
+
+        _getAttributeVariableKeys():  number [];
+        _getVaryingVariableKeys():  number [];
+
+        _getSharedVariableKeys():  number [];
+        _getUniformVariableKeys():  number [];
+        _getForeignVariableKeys():  number [];
+        _getGlobalVariableKeys():  number [];
+        _getTextureVariableKeys():  number [];
+        _getUsedComplexTypeKeys():  number [];
+
+        _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[];
+        _getExtSystemMacrosList(): IAFXSimpleInstruction[];
+        _getExtSystemTypeList(): IAFXTypeDeclInstruction[];
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {
@@ -3499,18 +3569,22 @@ module akra {
         _getUniformVariableMapV(): IAFXVariableDeclMap;
         _getForeignVariableMapV(): IAFXVariableDeclMap;
         _getTextureVariableMapV(): IAFXVariableDeclMap;
-        _getUsedTypeMapV(): IAFXTypeDeclMap;
+        _getUsedComplexTypeMapV(): IAFXTypeMap;
 
         _getSharedVariableMapP(): IAFXVariableDeclMap;
         _getGlobalVariableMapP(): IAFXVariableDeclMap;
         _getUniformVariableMapP(): IAFXVariableDeclMap;
         _getForeignVariableMapP(): IAFXVariableDeclMap;
         _getTextureVariableMapP(): IAFXVariableDeclMap;
-        _getUsedTypeMapP(): IAFXTypeDeclMap;
+        _getUsedComplexTypeMapP(): IAFXTypeMap;
 
         _getFullUniformMap(): IAFXVariableDeclMap;
         _getFullForeignMap(): IAFXVariableDeclMap;
         _getFullTextureMap(): IAFXVariableDeclMap;
+
+
+        getVertexShader(): IAFXFunctionDeclInstruction;
+        getPixelShader(): IAFXFunctionDeclInstruction;
 
         addShader(pShader: IAFXFunctionDeclInstruction): void;
         setState(sType: string, sValue: string): void;
@@ -3554,6 +3628,11 @@ module akra {
 
 
 module akra {
+	export interface IAFXComponentMap {
+		[index:  number ]: IAFXComponent;
+		[index: string]: IAFXComponent;
+	}
+
 	export interface IAFXComponent extends IResourcePoolItem {
 		create(): void;
 
@@ -3585,7 +3664,6 @@ module akra {
 		isMixid(): bool;
 		isParameterUsed(pParam: any, iPass?:  number ): bool;
 
-		create(): void;
 		replicable(bValue: bool): void;
 		miscible(bValue: bool): void;
 
@@ -3596,6 +3674,9 @@ module akra {
 		delComponent(iComponentHandle:  number , iShift?:  number , iPass?:  number ): bool;
 		delComponent(sComponent: string, iShift?:  number , iPass?:  number ): bool;
 		delComponent(pComponent: IAFXComponent, iShift?:  number , iPass?:  number ): bool;
+
+		activate(iShift?:  number ): bool;
+		deactivate(): bool;
 
 		findParameter(pParam: any, iPass?:  number ): any;
 	}
@@ -3611,14 +3692,652 @@ module akra {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module akra {
-	export interface IAFXShaderInputBlend {
+	export interface IHardwareObject {} ;
+
+    export interface IRenderResource extends IResourcePoolItem {
+//getHardwareObject(): IHardwareObject;
+    };
+}
+
+
+
+
+
+
+
+
+
+module akra {
+	export enum EPixelFormats {
+/*Unknown pixel format.*/
+        UNKNOWN = 0,
+
+/*8-bit pixel format, all bits luminance.*/
+        L8 = 1,
+        BYTE_L = L8,
+/*16-bit pixel format, all bits luminance.*/
+        L16 = 2,
+        SHORT_L = L16,
+/*8-bit pixel format, all bits alpha.*/
+        A8 = 3,
+        BYTE_A = A8,
+/*8-bit pixel format, 4 bits alpha, 4 bits luminance.*/
+        A4L4 = 4,
+/*2 byte pixel format, 1 byte luminance, 1 byte alpha*/
+        BYTE_LA = 5,
+
+/*16-bit pixel format, 5 bits red, 6 bits green, 5 bits blue.*/
+        R5G6B5 = 6,
+/*16-bit pixel format, 5 bits red, 6 bits green, 5 bits blue.*/
+        B5G6R5 = 7,
+/*8-bit pixel format, 2 bits blue, 3 bits green, 3 bits red.*/
+        R3G3B2 = 31,
+/*16-bit pixel format, 4 bits for alpha, red, green and blue.*/
+        A4R4G4B4 = 8,
+/*16-bit pixel format, 5 bits for blue, green, red and 1 for alpha.*/
+        A1R5G5B5 = 9,
+/*24-bit pixel format, 8 bits for red, green and blue.*/
+        R8G8B8 = 10,
+/*24-bit pixel format, 8 bits for blue, green and red.*/
+        B8G8R8 = 11,
+/*32-bit pixel format, 8 bits for alpha, red, green and blue.*/
+        A8R8G8B8 = 12,
+/*32-bit pixel format, 8 bits for blue, green, red and alpha.*/
+        A8B8G8R8 = 13,
+/*32-bit pixel format, 8 bits for blue, green, red and alpha.*/
+        B8G8R8A8 = 14,
+/*32-bit pixel format, 8 bits for red, green, blue and alpha.*/
+        R8G8B8A8 = 28,
+
+/*32-bit pixel format, 8 bits for red, 8 bits for green, 8 bits for blue like A8R8G8B8, but alpha will get discarded*/
+        X8R8G8B8 = 26,
+/*32-bit pixel format, 8 bits for blue, 8 bits for green, 8 bits for red like A8B8G8R8, but alpha will get discarded*/
+        X8B8G8R8 = 27,
+
+/*3 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue*/
+        BYTE_RGB = R8G8B8,
+/*3 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red*/
+        BYTE_BGR = B8G8R8,
+/*4 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red and one byte for alpha*/
+        BYTE_BGRA = B8G8R8A8,
+/*4 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue, and one byte for alpha*/
+        BYTE_RGBA = R8G8B8A8,
+
+        BYTE_ABGR = A8B8G8R8,
+        BYTE_ARGB = A8R8G8B8,
+
+/*32-bit pixel format, 2 bits for alpha, 10 bits for red, green and blue.*/
+        A2R10G10B10 = 15,
+/*32-bit pixel format, 10 bits for blue, green and red, 2 bits for alpha.*/
+        A2B10G10R10 = 16,
+
+/*DDS (DirectDraw Surface) DXT1 format.*/
+        DXT1 = 17,
+/*DDS (DirectDraw Surface) DXT2 format.*/
+        DXT2 = 18,
+/*DDS (DirectDraw Surface) DXT3 format.*/
+        DXT3 = 19,
+/*DDS (DirectDraw Surface) DXT4 format.*/
+        DXT4 = 20,
+/*DDS (DirectDraw Surface) DXT5 format.*/
+        DXT5 = 21,
+
+/*16-bit pixel format, 16 bits (float) for red*/
+        FLOAT16_R = 32,
+/*48-bit pixel format, 16 bits (float) for red, 16 bits (float) for green, 16 bits (float) for blue*/
+        FLOAT16_RGB = 22,
+/*64-bit pixel format, 16 bits (float) for red, 16 bits (float) for green, 16 bits (float) for blue, 16 bits (float) for alpha*/
+        FLOAT16_RGBA = 23,
+/*32-bit pixel format, 32 bits (float) for red*/
+        FLOAT32_R = 33,
+/*96-bit pixel format, 32 bits (float) for red, 32 bits (float) for green, 32 bits (float) for blue*/
+        FLOAT32_RGB = 24,
+/*128-bit pixel format, 32 bits (float) for red, 32 bits (float) for green, 32 bits (float) for blue, 32 bits (float) for alpha*/
+        FLOAT32_RGBA = 25,
+/*32-bit, 2-channel s10e5 floating point pixel format, 16-bit green, 16-bit red*/
+        FLOAT16_GR = 35,
+/*64-bit, 2-channel floating point pixel format, 32-bit green, 32-bit red*/
+        FLOAT32_GR = 36,
+
+/*Float Depth texture format*/
+        FLOAT32_DEPTH = 29,
+        DEPTH8 = 44,
+/*Byte Depth texture format */
+        BYTE_DEPTH = DEPTH8,
+
+        DEPTH16 = 45,
+        SHORT_DEPTH = DEPTH16,
+        DEPTH32 = 46,
+        DEPTH24STENCIL8=47,
+
+
+/*64-bit pixel format, 16 bits for red, green, blue and alpha*/
+        SHORT_RGBA = 30,
+/*32-bit pixel format, 16-bit green, 16-bit red*/
+        SHORT_GR = 34,
+/*48-bit pixel format, 16 bits for red, green and blue*/
+        SHORT_RGB = 37,
+
+/*PVRTC (PowerVR) RGB 2 bpp.*/
+        PVRTC_RGB2 = 38,
+/*PVRTC (PowerVR) RGBA 2 bpp.*/
+        PVRTC_RGBA2 = 39,
+/*PVRTC (PowerVR) RGB 4 bpp.*/
+        PVRTC_RGB4 = 40,
+/*PVRTC (PowerVR) RGBA 4 bpp.*/
+        PVRTC_RGBA4 = 41,
+
+/*8-bit pixel format, all bits red.*/
+        R8 = 42,
+/*16-bit pixel format, 8 bits red, 8 bits green.*/
+        RG8 = 43,
+        TOTAL = 48
+    };
+
+    export interface PixelFormatList {
+    	[index:  number ]: EPixelFormats;
+    }
+
+
+/**
+     * Flags defining some on/off properties of pixel formats
+     */
+
+    export enum  EPixelFormatFlags {
+// This format has an alpha channel
+        HASALPHA        = 0x00000001,
+// This format is compressed. This invalidates the values in elemBytes,
+// elemBits and the bit counts as these might not be fixed in a compressed format.
+        COMPRESSED    = 0x00000002,
+// This is a floating point format
+        FLOAT           = 0x00000004,
+// This is a depth format (for depth textures)
+        DEPTH           = 0x00000008,
+// Format is in native endian. Generally true for the 16, 24 and 32 bits
+// formats which can be represented as machine integers.
+        NATIVEENDIAN    = 0x00000010,
+// This is an intensity format instead of a RGB one. The luminance
+// replaces R,G and B. (but not A)
+        LUMINANCE       = 0x00000020,
+        STENCIL         = 0x00000040
+    }
+
+/** Pixel component format */
+
+    export enum EPixelComponentTypes
+    {
+/*Byte per component (8 bit fixed 0.0..1.0)*/
+        BYTE = 0,
+/*Short per component (16 bit fixed 0.0..1.0))*/
+        SHORT = 1,
+        INT = 2,
+/*16 bit float per component*/
+        FLOAT16 = 3,
+/*32 bit float per component*/
+        FLOAT32 = 4,
+/*Number of pixel types*/
+        COUNT = 5
+    };
+
+    export enum EFilters {
+        NEAREST,
+        LINEAR,
+        BILINEAR,
+        BOX,
+        TRIANGLE,
+        BICUBIC
+    };
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IBuffer {
+//number of elements
+		 length:  number ;
+
+//size in bytes
+		 byteLength:  number ;
+
+
+	}
+}
+
+
+
+module akra {
+
+	export enum EHardwareBufferFlags {
+		STATIC 		= 0x01,
+		DYNAMIC 	= 0x02,
+		STREAM 		= 0x80,
+
+		READABLE	= 0x04,
+
+		BACKUP_COPY = 0x08,
+/** indicate, that buffer does not use GPU memory or other specific memory. */
+
+		SOFTWARE 	= 0x10,
+/** Indicate, tha buffer uses specific data aligment */
+
+		ALIGNMENT	= 0x20,
+/** Indicates that the application will be refilling the contents
+            of the buffer regularly (not just updating, but generating the
+            contents from scratch), and therefore does not mind if the contents 
+            of the buffer are lost somehow and need to be recreated. This
+            allows and additional level of optimisation on the buffer.
+            This option only really makes sense when combined with 
+            DYNAMIC and without READING.
+            */
+
+		DISCARDABLE = 0x40,
+
+		STATIC_READABLE = STATIC | READABLE,
+		DYNAMIC_DISCARDABLE = DYNAMIC | DISCARDABLE
+	}
+
+	export enum ELockFlags {
+		READ 			= 0x01,
+		WRITE 			= 0x02,
+		DISCARD 		= 0x04,
+		NO_OVERWRITE	= 0x08,
+
+		NORMAL			= READ | WRITE
+	}
+
+	export interface IHardwareBuffer extends IBuffer {
+		clone(pSrc: IHardwareBuffer): bool;
+
+		isValid(): bool;
+		isDynamic(): bool;
+		isStatic(): bool;
+		isStream(): bool;
+		isReadable(): bool;
+		isBackupPresent(): bool;
+		isSoftware(): bool;
+		isAligned(): bool;
+		isLocked(): bool;
+
+		getFlags():  number ;
+
+		readData(ppDest: ArrayBufferView): bool;
+		readData(iOffset:  number , iSize:  number , ppDest: ArrayBufferView): bool;
+
+		 writeData(pData: ArrayBufferView, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer?: bool): bool;
+//writeData(pData: ArrayBuffer, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
+
+		copyData(pSrcBuffer: IHardwareBuffer, iSrcOffset:  number ,
+				 iDstOffset:  number , iSize:  number , bDiscardWholeBuffer?: bool): bool;
+
+		create(iSize:  number , iFlags?:  number ): bool;
+// create(iByteSize: uint, iFlags: int, pData: Uint8Array): bool;
+// create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
+
+		destroy(): void;
+
+		resize(iSize:  number ): bool;
+
+		lock(iLockFlags:  number ): any;
+		lock(iOffset:  number , iSize:  number , iLockFlags?:  number ): any;
+		unlock(): void;
+
+		restoreFromBackup(): bool;
+	}
+}
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IRenderTarget {} ;
+
+	export interface IPixelBuffer extends IHardwareBuffer {
+		 width:  number ;
+		 height:  number ;
+		 depth:  number ;
+
+		 format: EPixelFormats;
+
+		create(iFlags:  number ): bool;
+		create(iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats, iFlags:  number ): bool;
+
+		blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): bool;
+		blit(pSource: IPixelBuffer);
+
+		blitFromMemory(pSource: IPixelBox): bool;
+		blitFromMemory(pSource: IPixelBox, pDestBox?: IBox): bool;
+
+		blitToMemory(pDest: IPixelBox): bool;
+		blitToMemory(pSrcBox: IBox, pDest: IPixelBox): bool;
+
+		getRenderTarget(): IRenderTarget;
+
+		lock(iLockFlags:  number ): any;
+		lock(iOffset:  number , iSize:  number , iLockFlags?:  number ): any;
+		lock(pLockBox: IBox, iLockFlags?:  number ): IPixelBox;
+
+		_clearRTT(iZOffset:  number ): void;
+	}
+}
+
+
+
+
+
+
+
+module akra {
+
+    export interface IImg {} ;
+
+    export enum ETextureFlags {
+        STATIC = < number >EHardwareBufferFlags.STATIC,
+        DYNAMIC = < number >EHardwareBufferFlags.DYNAMIC,
+        READEBLE = < number >EHardwareBufferFlags.READABLE,
+        DYNAMIC_DISCARDABLE = < number >EHardwareBufferFlags.DYNAMIC_DISCARDABLE,
+/// mipmaps will be automatically generated for this texture
+        AUTOMIPMAP = 0x100,
+/// this texture will be a render target, i.e. used as a target for render to texture
+/// setting this flag will ignore all other texture usages except AUTOMIPMAP
+        RENDERTARGET = 0x200,
+/// default to automatic mipmap generation static textures
+        DEFAULT = STATIC
+    }
+
+    export enum ETextureFilters {
+        NEAREST = 0x2600,
+        LINEAR = 0x2601,
+        NEAREST_MIPMAP_NEAREST = 0x2700,
+        LINEAR_MIPMAP_NEAREST = 0x2701,
+        NEAREST_MIPMAP_LINEAR = 0x2702,
+        LINEAR_MIPMAP_LINEAR = 0x2703
+    };
+
+    export enum ETextureWrapModes {
+        REPEAT = 0x2901,
+        CLAMP_TO_EDGE = 0x812F,
+        MIRRORED_REPEAT = 0x8370
+    };
+
+    export enum ETextureParameters {
+        MAG_FILTER = 0x2800,
+        MIN_FILTER,
+        WRAP_S,
+        WRAP_T
+    };
+
+    export enum ETextureTypes {
+        TEXTURE_2D = 0x0DE1,
+        TEXTURE_CUBE_MAP = 0x8513,
+    };
+
+    export enum ECubeFace{
+        POSITIVE_X = 0,
+        NEGATIVE_X = 1,
+        POSITIVE_Y = 2,
+        NEGATIVE_Y = 3,
+        POSITIVE_Z = 4,
+        NEGATIVE_Z = 5,
+        };
+
+    export enum ETextureCubeFlags{
+        POSITIVE_X = 0x00000001,
+        NEGATIVE_X = 0x00000002,
+        POSITIVE_Y = 0x00000004,
+        NEGATIVE_Y = 0x00000008,
+        POSITIVE_Z = 0x0000000c,
+        NEGATIVE_Z = 0x000000010,
+        };
+
+    export enum ETextureUnits {
+        TEXTURE0 = 0x84C0
+    };
+
+// export interface ITextureParameters {
+//     minFilter: ETextureFilters;
+//     magFilter: ETextureFilters;
+
+//     wrapS: ETextureWrapModes;
+//     wrapT: ETextureWrapModes;
+// }
+
+    export interface ITexture extends IRenderResource {
+    	width:  number ;
+        height:  number ;
+        depth:  number ;
+
+        format: EPixelFormats;
+        mipLevels:  number ;
+
+        textureType: ETextureTypes;
+
+//desiredIntegerBitDepth: uint;
+//desiredFloatBitDepth: uint;     
+
+//readonly desiredFormat: EPixelFormats;
+//readonly srcFormat: EPixelFormats;
+//readonly srcWidth: uint;
+//readonly srcHeight: uint;
+//readonly srcDepth: uint;
+
+        setFlags(iTextureFlag:  number ): void;
+        getFlags():  number ;
+
+        calculateSize():  number ;
+        getNumFaces():  number ;
+        getSize():  number ;
+
+        isTexture2D(): bool;
+        isTextureCube(): bool;
+        isCompressed(): bool;
+        isValid(): bool;
+
+        create(iWidth:  number , iHeight:  number , iDepth:  number , cFillColor?: IColor,
+               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
+        create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: Array,
+               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
+        create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: ArrayBufferView,
+               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
+        getBuffer(iFace?:  number , iMipmap?:  number ): IPixelBuffer;
+
+        setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
+        setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
+        getFilter(eParam: ETextureParameters): ETextureFilters;
+        getWrapMode(eParam: ETextureParameters): ETextureWrapModes;
+
+        loadRawData(pData: ArrayBufferView, iWidth:  number , iHeight:  number , eFormat: EPixelFormats): bool;
+        loadImage(pImage: IImg): bool;
+        loadImages(pImages: IImg[]): bool;
+
+        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void;
+
+        copyToTexture(pTarget: ITexture): void;
+
+        createInternalTexture(cFillColor?: IColor): bool;
+        freeInternalTexture(): bool;
+
+    }
+}
+
+
+
+module akra {
+	export interface IAFXSamplerStateMap {
+		[index: string]: IAFXSamplerState;
+		[index:  number ]: IAFXSamplerState;
+	}
+
+	export interface IAFXSamplerStateListMap {
+		[index: string]: IAFXSamplerState[];
+		[index:  number ]: IAFXSamplerState[];
+	}
+
+	export interface IAFXSamplerState {
+		textureName: string;
+		texture: ITexture;
+
+		wrap_s:  number ;
+		wrap_t:  number ;
+
+		mag_filter:  number ;
+		min_filter:  number ;
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface IMaterial {} ;
+	export interface ITexture {} ;
+
+	export enum ESurfaceMaterialTextures {
+		TEXTURE0 = 0,
+        TEXTURE1,
+        TEXTURE2,
+        TEXTURE3,
+        TEXTURE4,
+        TEXTURE5,
+        TEXTURE6,
+        TEXTURE7,
+        TEXTURE8,
+        TEXTURE9,
+        TEXTURE10,
+        TEXTURE11,
+        TEXTURE12,
+        TEXTURE13,
+        TEXTURE14,
+        TEXTURE15,
+        DIFFUSE = TEXTURE0,
+        AMBIENT,
+        SPECULAR,
+        EMISSIVE,
+        EMISSION = EMISSIVE
+	};
+
+
+
+    export interface ISurfaceMaterial extends IResourcePoolItem {
+    	totalTextures:  number ;
+    	material: IMaterial;
+    	textureFlags:  number ;
+    	textureMatrixFlags:  number ;
+
+        setTexture(iIndex:  number , sTexture: string, iTexcoord?:  number ): bool;
+        setTexture(iIndex:  number , iTextureHandle:  number , iTexcoord?:  number ): bool;
+    	setTexture(iIndex:  number , pTexture: ITexture, iTexcoord?:  number ): bool;
+    	setTextureMatrix(iIndex:  number , m4fValue: IMat4): bool;
+    	setMaterial(pMaterial: IMaterial): void;
+    	isEqual(pSurface: ISurfaceMaterial): bool;
+
+    	texture(iSlot:  number ): ITexture;
+    	texcoord(iSlot:  number ):  number ;
+    	textureMatrix(iSlot:  number ): IMat4;
+
+        _getHash(): string;
+    }
+
+}
+
+
+
+
+module akra {
+	export interface IAFXPassInputBlend {
+		samplers: IAFXSamplerStateMap;
+		samplerArrays: IAFXSamplerStateListMap;
+		samplerArrayLength: IntMap;
+/* all uniforms without samlers */
+		uniforms: any;
+		foreigns: any;
+		textures: any;
+
+		samplerKeys: string[];
+		samplerArrayKeys: string[];
+		uniformKeys: string[];
+		foreignKeys: string[];
+		textureKeys: string[];
+
+		hasTexture(sName: string): bool;
+
+		setUniform(sName: string, pValue: any): void;
+		setForeign(sName: string, pValue: any): void;
+		setTexture(sName: string, pValue: any): void;
+
+		setSamplerTexture(sName: string, pTexture: any): void;
+
+		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void;
+
+		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture;
+
+		_release(): void;
+
+		_isNeedToCalcBlend(): bool;
+		_isNeedToCalcShader(): bool;
+
+		_getLastPassBlendId():  number ;
+		_getLastShaderId():  number ;
+		_setPassBlendId(id:  number ): void;
+		_setShaderId(id:  number ): void;
+	}
+}
+
+
+
+
+
+module akra {
+
+	export interface IAFXComponentBlendMap {
+		[index:  number ]: IAFXComponentBlend;
+		[index: string]: IAFXComponentBlend;
+	}
+
+	export interface IAFXComponentPassInputBlend {
 		uniformNameToReal: StringMap;
 		uniformByRealName: IAFXVariableDeclMap;
 		uniformDefaultValue: any;
 
 		textureNameToReal: StringMap;
-		textureByRealName: any;
+		textureByRealName: IAFXVariableDeclMap;
 
 		foreignByName: IAFXVariableDeclMap;
 
@@ -3631,11 +4350,15 @@ module akra {
 		foreignNameList: string[];
 
 		addDataFromPass(pPass: IAFXPassInstruction): void;
-		generateKeys(): void;
+		finalizeInput(): void;
+
+		getPassInput(): IAFXPassInputBlend;
+		releasePassInput(pPassInput: IAFXPassInputBlend): void;
 	}
 
-	export interface IAFXComponentBlend {
+	export interface IAFXComponentBlend extends IUnique {
 		isReadyToUse(): bool;
+		isEmpty(): bool;
 
 		getComponentCount():  number ;
 		getTotalPasses():  number ;
@@ -3649,29 +4372,145 @@ module akra {
 
 		finalizeBlend(): bool;
 
+		getPassInputForPass(iPass:  number ): IAFXPassInputBlend;
+		getPassListAtPass(iPass:  number ): IAFXPassInstruction[];
+
 		clone(): IAFXComponentBlend;
+
+		_getComponentList(): IAFXComponent[];
+		_getComponentShiftList():  number [];
+		_getComponentPassIdList():  number [];
+
 		_setDataForClone(pComponentList: IAFXComponent[],
 						 pComponentShiftList:  number [],
 						 pComponentPassNumnerList:  number [],
-						 pComponentCountMap: IntMap,
+						 pComponentHashMap: BoolMap,
 						 nShiftMin:  number , nShiftMax:  number ): void;
 	}
 }
 
 
 
+
+
+
+
+
 module akra {
+	export interface IReferenceCounter {} ;
+	export interface IVertexData {} ;
+	export interface IDataMapper {} ;
+	export interface IIndexData {} ;
 
-	export interface IAFXComponentBlendMap {
-		[index:  number ]: IAFXComponentBlend;
-		[index: string]: IAFXComponentBlend;
+	export enum EDataFlowTypes {
+/*!< The data stream can be marked up its index.*/
+        MAPPABLE   = 1,
+/*!< The data stream cannot be marked up its index.*/
+        UNMAPPABLE = 0
+    };
+
+    export interface IDataFlow {
+    	flow:    number ;
+        data:   IVertexData;
+        type:   EDataFlowTypes;
+        mapper: IDataMapper;
+    }
+
+    export interface IDataMapper {
+    	data: IVertexData;
+    	semantics: string;
+    	addition:  number ;
+    }
+
+	export interface IBufferMap extends IReferenceCounter{
+		primType: EPrimitiveTypes;
+		index: IIndexData;
+		length:  number ;
+
+//FIXME: hack for terraing, for force limiting length of drawinf index.
+/** writeonly */
+		                 _length:  number ;
+
+/** Number of primitives. */
+
+		 primCount:  number ;
+/** Maximum flow available in buffer map. */
+
+		 limit:  number ;
+/** Start index for drawning. */
+
+		 startIndex:  number ;
+/** Number of completed flows. */
+
+		 size:  number ;
+/** Completed flows. */
+
+		 flows: IDataFlow[];
+/** 
+		 * Mappers. 
+		 * @private
+		 */
+
+		 mappers: IDataMapper[];
+/** 
+		 * Offset in bytes for drawing with global idnex. 
+		 * @deprecated
+		 */
+
+		 offset:  number ;
+
+/**
+		 * Find flow by semantics in.
+		 * @param sSemantics VertexElement usage or semantics.
+		 * @param {bool=} bComplete Find only in completed flows. Default is TRUE.
+		 */
+
+		getFlow(sSemantics: string, bComplete?: bool): IDataFlow;
+		getFlow(iFlow:  number , bComplete?: bool): IDataFlow;
+		reset(): void;
+
+/**
+		 * Add data to flow.
+		 */
+
+		flow(pVertexData: IVertexData):  number ;
+		flow(iFlow:  number , pVertexData: IVertexData):  number ;
+/**
+		 * Add index for flow.
+		 */
+
+		mapping(iFlow:  number , pMap: IVertexData, sSemantics: string, iAddition?:  number ): bool;
+
+/**
+		 * Check, Is pData already used as flow or mapper.
+		 */
+
+		checkData(pData: IVertexData): bool;
+
+/**
+		 * Recals all statistics in buffer map.
+		 */
+
+		update(): bool;
+
+		clone(bWithMapping?: bool): IBufferMap;
+
+/**
+		 * Draw buffer map.
+		 */
+
+		_draw(): void;
+
+		toString(bListAll?: bool): string;
 	}
+}
 
-	export interface IAFXComponentMap {
-		[index:  number ]: IAFXComponent;
-		[index: string]: IAFXComponent;
-	}
 
+
+
+
+
+module akra {
 	export interface IAFXComposer {
 		getComponentByName(sComponentName: string): IAFXComponent;
 		getEngine(): IEngine;
@@ -3680,8 +4519,36 @@ module akra {
 
 		getComponentCountForEffect(pEffectResource: IEffect):  number ;
 		getTotalPassesForEffect(pEffectResource: IEffect):  number ;
-		addComponentToEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool;
-		removeComponentFromEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool;
+		addComponentToEffect(pEffectResource: IEffect,
+							 pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool;
+		removeComponentFromEffect(pEffectResource: IEffect,
+								  pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool;
+
+		activateEffectResource(pEffectResource: IEffect, iShift:  number ): bool;
+		deactivateEffectResource(pEffectResource: IEffect): bool;
+
+//API for RenderTechnique
+
+		getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique):  number ;
+
+		addOwnComponentToTechnique(pRenderTechnique: IRenderTechnique,
+								   pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool;
+		removeOwnComponentToTechnique(pRenderTechnique: IRenderTechnique,
+									  pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool;
+
+		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool;
+
+		markTechniqueAsNeedUpdate(pRenderTechnique: IRenderTechnique): void;
+
+		getPassInputBlend(pRenderTechnique: IRenderTechnique, iPass:  number ): IAFXPassInputBlend;
+
+//API for render
+
+		applyBufferMap(pBufferMap: IBufferMap): bool;
+		applySurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): bool;
+
+		setCurrentSceneObject(pSceneObject: ISceneObject): void;
+		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass:  number ): void;
 
 //API for load components/AFXEffects
 
@@ -3827,15 +4694,24 @@ module akra {
 	export interface ISkeleton {} ;
 	export interface IModel {} ;
 	export interface IEngine {} ;
+    export interface IColladaAsset {} ;
+    export interface IMesh {} ;
+    export interface IAnimationController {} ;
 
 //=============================================
 // COLLADA LOAD OPTIONS
 //=============================================
 
     export interface ICollada extends IModel {
-//getAnimationController(): IAnimationController;
-//getMesh(sName: string);
-//getSkeleton();
+        getAsset(): IColladaAsset;
+        getFilename(): string;
+        getBasename(): string;
+
+        isVisualSceneLoaded(): bool;
+        isAnimationLoaded(): bool;
+
+        attachToScene(pNode: ISceneNode, pController?: IAnimationController): bool;
+        attachToScene(pScene: IScene3d, pController?: IAnimationController): bool;
     }
 
 	export interface IColladaAnimationLoadOptions {
@@ -3898,7 +4774,7 @@ module akra {
     }
 
     export interface IColladaEffectLibrary extends IColladaLibrary {
-        effects: { [id: string]: IColladaEffect; };
+        effect: { [id: string]: IColladaEffect; };
     }
 
     export interface IColladaEntryLoader {
@@ -3962,20 +4838,22 @@ module akra {
     }
 
     export interface IColladaContributor extends IColladaEntry {
-        author: string;
-        authoringTool: string;
-        comments: string;
-        copyright: string;
-        sourceData: any;
+        author?: string;
+        authoringTool?: string;
+        comments?: string;
+        copyright?: string;
+        sourceData?: any;
     }
 
     export interface IColladaAsset extends IColladaEntry {
         unit: IColladaUnit;
         upAxis: string;
-        title: string;
+        title?: string;
+        subject?: string;
         created: string;
         modified: string;
-        contributor: IColladaContributor;
+        keywords?: string[];
+        contributor?: IColladaContributor;
     }
 
     export interface IColladaInstance extends IColladaEntry {
@@ -4006,6 +4884,7 @@ module akra {
     }
 
     export interface IColladaAccessor extends IColladaEntry {
+        source?: string;
         data: IColladaArray;
         count:  number ;
         stride:  number ;
@@ -4157,8 +5036,6 @@ module akra {
         sampler: IColladaNewParam;
         surface: IColladaNewParam;
         image: IColladaImage;
-
-
     }
 
 
@@ -4298,7 +5175,7 @@ module akra {
         samplers: IColladaAnimationSampler[];
         channels: IColladaAnimationChannel[];
 
-        animations: IColladaAnimation[];
+        animations?: IColladaAnimation[];
     }
 
 
@@ -4306,16 +5183,25 @@ module akra {
 
     }
 
-    export interface IColladaFile {
+    export interface IColladaDocument {
         asset?: IColladaAsset;
 
-        libEffects: IColladaEffectLibrary;
-        libMaterials: IColladaLibrary;
-        libGeometries: IColladaLibrary;
-        libVisualScenes: IColladaLibrary;
+        libEffects?: IColladaEffectLibrary;
+        libMaterials?: IColladaLibrary;
+        libGeometries?: IColladaLibrary;
+        libVisualScenes?: IColladaLibrary;
+        libAnimations?: IColladaLibrary;
 
-        scene: IColladaScene;
+        scene?: IColladaScene;
     }
+
+    export interface IColladaAnimationClip extends IColladaEntry {
+        name?: string;
+        start:  number ;
+        end:  number ;
+    }
+
+
 
 
 }
@@ -4336,6 +5222,7 @@ module akra {
 
         loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): bool;
         attachToScene(pNode: ISceneNode): bool;
+        attachToScene(pScene: IScene3d): bool;
     }
 }
 
@@ -4616,6 +5503,11 @@ module akra.util {
 
 
 
+/***********************************************
+ * TODO: check, if event exists on target!!!!!
+ *************************************************/
+
+
 
 
 
@@ -4741,7 +5633,7 @@ module akra.events {
 					return true;
 				}
 			}
-			logger.setSourceLocation( "events/events.ts" , 112 ); logger.warning("cannot remove destination for GUID <%s> with signal <%s>", iGuid, sSignal); ;
+			logger.setSourceLocation( "events/events.ts" , 116 ); logger.warning("cannot remove destination for GUID <%s> with signal <%s>", iGuid, sSignal); ;
 			return false;
 		}
 
@@ -4758,7 +5650,7 @@ module akra.events {
 					return true;
 				}
 			}
-			logger.setSourceLocation( "events/events.ts" , 129 ); logger.warning("cannot add listener for GUID <%s> with signal <%s>", iGuid, sSignal); ;
+			logger.setSourceLocation( "events/events.ts" , 133 ); logger.warning("cannot add listener for GUID <%s> with signal <%s>", iGuid, sSignal); ;
 			return false;
 		}
 
@@ -4801,7 +5693,7 @@ module akra.events {
 
 
 	export class EventProvider implements IEventProvider {
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return EventProvider._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return EventProvider._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 	}
 }
 
@@ -5083,7 +5975,7 @@ module akra.core.pool {
             }
         }
 
-        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return ResourcePool._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return ResourcePool._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
         createdResource (pResource): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).createdResource; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pResource) : _broadcast[i].listener (_recivier, pResource) ; } } } ; ;
 
     }
@@ -5222,7 +6114,7 @@ module akra.core.pool {
 		nextMember() {
 		    logger.setSourceLocation( "DataPool.ts" , 114 ); logger.assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created"); ;
 		    logger.setSourceLocation( "DataPool.ts" , 115 ); logger.assert(this.iTotalOpen != null, "no open slots"); ;
-//Возвра��ает номер первого свободного элемента в группе,
+//Возвращает номер первого свободного элемента в группе,
 //и изменяет номер первого свободного на следующего свободного
 
 		    var iSlot = this.iFirstOpen;
@@ -5994,7 +6886,7 @@ module akra.core.pool {
 		}
 
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return ResourcePoolItem._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return ResourcePoolItem._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 		created (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).created; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 		destroyed (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).destroyed; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 		loaded (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).loaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
@@ -6011,10 +6903,32 @@ module akra.core.pool {
 
 module akra.core.pool.resources {
 	export class RenderMethod extends ResourcePoolItem implements IRenderMethod {
-		effect: IEffect;
-		surfaceMaterial: ISurfaceMaterial;
+		/**@protected*/  _pEffect: IEffect = null;
+		surfaceMaterial: ISurfaceMaterial = null;
+
+		inline get effect(): IEffect{
+			return this._pEffect;
+		}
+
+		set effect(pEffect: IEffect) {
+			if(!isNull(this._pEffect)){
+				this.disconnect(this._pEffect,  "altered" ,  "_updateEffect" , EEventTypes.BROADCAST);
+			}
+
+			this._pEffect = pEffect;
+
+			if(!isNull(pEffect)){
+				this.connect(pEffect,  "altered" ,  "_updateEffect" , EEventTypes.BROADCAST);
+			}
+
+			this.notifyAltered();
+		}
 
 		isEqual(pRenderMethod: IRenderMethod): bool {return false;}
+
+		_updateEffect(pEffect: IEffect): void {
+			this.notifyAltered();
+		}
 	}
 
 
@@ -6025,59 +6939,6 @@ module akra.core.pool.resources {
 
 
 
-
-
-
-
-module akra {
-	export interface IMaterial {} ;
-	export interface ITexture {} ;
-
-	export enum ESurfaceMaterialTextures {
-		TEXTURE0 = 0,
-        TEXTURE1,
-        TEXTURE2,
-        TEXTURE3,
-        TEXTURE4,
-        TEXTURE5,
-        TEXTURE6,
-        TEXTURE7,
-        TEXTURE8,
-        TEXTURE9,
-        TEXTURE10,
-        TEXTURE11,
-        TEXTURE12,
-        TEXTURE13,
-        TEXTURE14,
-        TEXTURE15,
-        DIFFUSE = TEXTURE0,
-        AMBIENT,
-        SPECULAR,
-        EMISSIVE,
-        EMISSION = EMISSIVE
-	};
-
-
-
-    export interface ISurfaceMaterial extends IResourcePoolItem {
-    	totalTextures:  number ;
-    	material: IMaterial;
-    	textureFlags:  number ;
-    	textureMatrixFlags:  number ;
-
-        setTexture(iIndex:  number , sTexture: string, iTexcoord?:  number ): bool;
-        setTexture(iIndex:  number , iTextureHandle:  number , iTexcoord?:  number ): bool;
-    	setTexture(iIndex:  number , pTexture: ITexture, iTexcoord?:  number ): bool;
-    	setTextureMatrix(iIndex:  number , m4fValue: IMat4): bool;
-    	setMaterial(pMaterial: IMaterial): void;
-    	isEqual(pSurface: ISurfaceMaterial): bool;
-
-    	texture(iSlot:  number ): ITexture;
-    	texcoord(iSlot:  number ):  number ;
-    	textureMatrix(iSlot:  number ): IMat4;
-    }
-
-}
 
 
 
@@ -6202,7 +7063,7 @@ module akra {
 
 	export interface IVertexDeclaration {
 		stride:  number ;
-		length:  number ;
+		 length:  number ;
 
 
 //[index: number]: IVertexElement;
@@ -6226,24 +7087,24 @@ module akra {
 
 
 
-	export function VE_CUSTOM(sUsage: string, eType: EDataTypes = EDataTypes.FLOAT, iCount:  number  = 1, iOffset?:  number  =  MAX_INT32 ): IVertexElementInterface {
+	export inline function VE_CUSTOM(sUsage: string, eType: EDataTypes = EDataTypes.FLOAT, iCount:  number  = 1, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface {
 		return {count: iCount, type: eType, usage: sUsage, offset: iOffset};
 	}
 
-	export function VE_FLOAT(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 1, iOffset); };
-	export function VE_FLOAT2(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 2, iOffset); };
-	export function VE_FLOAT3(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 3, iOffset); };
-	export function VE_FLOAT4(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 4, iOffset); };
-	export function VE_FLOAT4x4(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 16, iOffset); };
-	export function VE_VEC2(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 2, iOffset); };
-	export function VE_VEC3(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 3, iOffset); };
-	export function VE_VEC4(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 4, iOffset); };
-	export function VE_MAT4(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 16, iOffset); };
-	export function VE_INT(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.INT, 1, iOffset);};
+	export inline function VE_FLOAT(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 1, iOffset); };
+	export inline function VE_FLOAT2(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 2, iOffset); };
+	export inline function VE_FLOAT3(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 3, iOffset); };
+	export inline function VE_FLOAT4(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 4, iOffset); };
+	export inline function VE_FLOAT4x4(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 16, iOffset); };
+	export inline function VE_VEC2(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 2, iOffset); };
+	export inline function VE_VEC3(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 3, iOffset); };
+	export inline function VE_VEC4(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 4, iOffset); };
+	export inline function VE_MAT4(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 16, iOffset); };
+	export inline function VE_INT(sUsage: string, iOffset:  number  =  MAX_INT32 ): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.INT, 1, iOffset);};
 
-	export function VE_END(iOffset:  number  = 0): IVertexElementInterface { return VE_CUSTOM(DeclUsages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset); };
+	export inline function VE_END(iOffset:  number  = 0): IVertexElementInterface { return VE_CUSTOM(DeclUsages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset); };
 
-	export var createVertexDeclaration: (pData?) => IVertexDeclaration;
+//export var createVertexDeclaration: (pData?) => IVertexDeclaration;
 }
 
 
@@ -6352,9 +7213,9 @@ module akra.data {
 // To avoid the colosseum between the "usage" of the element as POSITION & POSITION0, 
 // given that this is the same thing, here are the elements with index 0 
 // for "usage" with the POSITION.
-		        if (this.index === 0) {
-		        	this.usage = this.semantics;
-		        }
+// if (this.index === 0) {
+// 	this.usage = this.semantics;
+// }
 		    }
 		    else {
 		        this.semantics = this.usage;
@@ -6366,7 +7227,7 @@ module akra.data {
 		};
 
 		inline static hasUnknownOffset(pElement: IVertexElementInterface): bool {
-			return pElement.offset ===  MAX_INT32 ;
+			return (!isDef(pElement.offset) || (pElement.offset ===  MAX_INT32 ));
 		};
 
 		toString(): string {
@@ -6385,7 +7246,7 @@ module akra.data {
 		        return s;
 		    }
 
-		    var s = "[ USAGE: " + _an(this.usage, 12) + ", OFFSET " + _an(this.offset, 4)
+		    var s = "[ USAGE: " + _an(this.usage == DeclUsages.END? "<END>": this.usage, 12) + ", OFFSET " + _an(this.offset, 4)
 		    				+ ", SIZE " + _an(this.size, 4) +" ]";
 
 		    return s;
@@ -6496,14 +7357,15 @@ module akra.data {
 
 
 
-		extend(pDecl: IVertexDeclaration): bool {
+		extend(decl: IVertexDeclaration): bool {
+			var pDecl: VertexDeclaration = <VertexDeclaration>decl;
 			var pElement: IVertexElement;
 
 		    for (var i = 0; i < this.length; ++ i) {
 		        for (var j = 0; j < pDecl.length; ++ j) {
 		            if (pDecl.element(j).usage == this._pElements[i].usage) {
-		                logger.setSourceLocation( "data/VertexDeclaration.ts" , 109 ); logger.log('inconsistent declarations:', this, pDecl); ;
-		                logger.setSourceLocation( "data/VertexDeclaration.ts" , 110 ); logger.error('The attempt to combine the declaration containing the exact same semantics.'); ;
+		                logger.setSourceLocation( "data/VertexDeclaration.ts" , 110 ); logger.log('inconsistent declarations:', this, pDecl); ;
+		                logger.setSourceLocation( "data/VertexDeclaration.ts" , 111 ); logger.error('The attempt to combine the declaration containing the exact same semantics.'); ;
 		                return false;
 		            }
 		        }
@@ -6536,7 +7398,7 @@ module akra.data {
 
 		clone(): IVertexDeclaration {
 			var pElements: IVertexElement[] = [];
-			var pDecl: IVertexDeclaration;
+			var pDecl: VertexDeclaration;
 
 		    for (var i = 0; i < this.length; ++ i) {
 		        pElements.push(this._pElements[i].clone());
@@ -6554,7 +7416,7 @@ module akra.data {
 ///DEBUG!!!
 		toString(): string {
 
-			var s = "";
+			var s = "\n";
 
 	    	s += "  VERTEX DECLARATION ( " + this.stride +" b. ) \n";
 		    s += "---------------------------------------\n";
@@ -6572,7 +7434,7 @@ module akra.data {
 module akra {
 	export var VertexDeclaration = data.VertexDeclaration;
 
-	createVertexDeclaration = function (pData?): IVertexDeclaration {
+	export var createVertexDeclaration = function (pData?): data.VertexDeclaration {
 		if (!(pData instanceof VertexDeclaration)) {
 	        if (!(pData instanceof Array)) {
 	            pData = [pData];
@@ -7048,6 +7910,11 @@ module akra.util {
 			return pHsb;
 		}
 
+		toString(): string {
+			return "{R: " + this.r + ", G: " + this.g + ", B: " + this.b + ", A: " + this.a + "} " +
+			"( 0x" + this.rgba.toString(16) + " )";
+		}
+
 		static toFloat32Array(pValue: IColorValue): Float32Array {
 			var pArr: Float32Array = new Float32Array(4);
 
@@ -7158,16 +8025,32 @@ module akra.material {
 			Color.isEqual(this.emissive, pMat.emissive) &&
 				this.shininess === pMat.shininess;
 		}
+
+
+
+		toString(): string {
+			var s = "\nFLEX MATERIAL - " + this.name + "\n";
+			s += "------------------------------------\n";
+			s += "diffuse:   " + this.diffuse.toString() + "\n";
+			s += "ambient:   " + this.ambient.toString() + "\n";
+			s += "specular:  " + this.ambient.toString() + "\n";
+			s += "emissive:  " + this.emissive.toString() + "\n";
+			s += "shininess: " + this.shininess + "\n";
+
+			return s;
+		}
+
+
 	}
 
 	export  /**@const*/var  VERTEX_DECL: IVertexDeclaration = createVertexDeclaration(
 		[
-            {count: 17, type: EDataTypes.FLOAT, usage: DeclUsages.MATERIAL 	},
-            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.DIFFUSE, offset: 0},
-            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.AMBIENT 	},
-            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.SPECULAR 	},
-            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.EMISSIVE	},
-            {count: 1, 	type: EDataTypes.FLOAT, usage: DeclUsages.SHININESS }
+			VE_CUSTOM(DeclUsages.MATERIAL,  EDataTypes.FLOAT, 17),
+			VE_CUSTOM(DeclUsages.DIFFUSE,   EDataTypes.FLOAT, 4, 0),
+			VE_CUSTOM(DeclUsages.AMBIENT,   EDataTypes.FLOAT, 4, 16),
+			VE_CUSTOM(DeclUsages.SPECULAR,  EDataTypes.FLOAT, 4, 32),
+			VE_CUSTOM(DeclUsages.EMISSIVE,  EDataTypes.FLOAT, 4, 48),
+			VE_CUSTOM(DeclUsages.SHININESS, EDataTypes.FLOAT, 1, 64)
         ]);
 
 	export  /**@const*/var  DEFAULT: IMaterial = new Material;
@@ -7197,6 +8080,9 @@ module akra.core.pool.resources {
 		/**@protected*/  _pTexcoords:  number [] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 		/**@protected*/  _pTextureMatrices: IMat4[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 
+//For acceleration of composer
+		/**@protected*/  _sLastHash: string = "";
+		/**@protected*/  _isNeedToUpdateHash: bool = true;
 
 
 		inline get totalTextures():  number  { return this._nTotalTextures; }
@@ -7216,9 +8102,9 @@ module akra.core.pool.resources {
     	setTexture(iIndex:  number , iTextureHandle:  number , iTexcoord:  number  = 0): bool;
     	setTexture(iIndex:  number , sTexture: string, iTexcoord:  number  = 0): bool;
     	setTexture(iIndex:  number , pTexture: ITexture, iTexcoord:  number  = 0): bool;
-    	setTexture(iIndex:  number , pTexture: any, iTexcoord:  number  = 0): bool {
-
-		    logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 40 ); logger.assert(iIndex < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE, "invalid texture slot");
+    	setTexture(iIndex:  number , texture: any, iTexcoord:  number  = 0): bool {
+//LOG(iIndex, pTexture, iTexcoord);
+		    logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 43 ); logger.assert(iIndex < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE, "invalid texture slot");
                                           ;
 
 		    var pRmgr: IResourcePoolManager = this.getManager();
@@ -7226,7 +8112,11 @@ module akra.core.pool.resources {
 
 		    this._pTexcoords[iIndex] = iTexcoord;
 
-		    if (isString(arguments[0])) {
+		    if(iIndex !== iTexcoord) {
+		    	this._isNeedToUpdateHash = true;
+		    }
+
+		    if (isString(texture)) {
 		    	pTexture = this._pTextures[iIndex];
 
 		        if (pTexture) {
@@ -7237,7 +8127,7 @@ module akra.core.pool.resources {
 //pTexture.destroyResource();
 		            }
 		            else {
-		            	logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 58 ); logger.warning("cannot destroy resource...");
+		            	logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 65 ); logger.warning("cannot destroy resource...");
 		            }
 
 		            ((this._iTextureFlags) &= ~ (1 << ((iIndex))) ) ;
@@ -7245,7 +8135,7 @@ module akra.core.pool.resources {
 		        }
 
 
-		        this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.loadResource(<string>arguments[0]);
+		        this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.loadResource(<string>texture);
 
 		        if (this._pTextures[iIndex]) {
 		            ((this._iTextureFlags) |= (1 << ((iIndex))) ) ;
@@ -7257,7 +8147,7 @@ module akra.core.pool.resources {
 
 		        return true;
 		    }
-		    else if (arguments[0] instanceof Texture) {
+		    else if (texture instanceof Texture) {
 		        if (!this._pTextures[iIndex] || pTexture != this._pTextures[iIndex]) {
 		            if (this._pTextures[iIndex]) {
 // realise first
@@ -7268,7 +8158,7 @@ module akra.core.pool.resources {
 		                	this._pTextures[iIndex] = null;
 		                }
 		                else {
-		                	logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 89 ); logger.warning("cannot destroy resource..."); ;
+		                	logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 96 ); logger.warning("cannot destroy resource..."); ;
 		                }
 
 		                ((this._iTextureFlags) &= ~ (1 << ((iIndex))) ) ;
@@ -7298,8 +8188,8 @@ module akra.core.pool.resources {
 		        return true;
 		    }
 //similar to [cPoolHandle texture]
-		    else if (isNumber(arguments[0])) {
-		        if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != < number >arguments[0]) {
+		    else if (isNumber(texture)) {
+		        if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != < number >texture) {
 		            if (this._pTextures[iIndex]) {
 //TheGameHost.displayManager().texturePool().releaseResource(m_pTextures[index]);
 		                if (this._pTextures[iIndex].release() === 0) {
@@ -7307,14 +8197,14 @@ module akra.core.pool.resources {
 		                	this._pTextures[iIndex] = null;
 		                }
 		                else {
-		                	logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 128 ); logger.warning("cannot destroy resource..."); ;
+		                	logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 135 ); logger.warning("cannot destroy resource..."); ;
 		                }
 
 		                ((this._iTextureFlags) &= ~ (1 << ((iIndex))) ) ;
 		                -- this._nTotalTextures;
 		            }
 
-		            this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.getResource(< number >arguments[0]);
+		            this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.getResource(< number >texture);
 
 		            if (this._pTextures[iIndex]) {
 		                ((this._iTextureFlags) |= (1 << ((iIndex))) ) ;
@@ -7332,7 +8222,7 @@ module akra.core.pool.resources {
     	}
 
     	setTextureMatrix(iIndex:  number , m4fValue: IMat4): bool {
-    		logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 154 ); logger.assert(iIndex < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE, "invalid texture slot");
+    		logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 161 ); logger.assert(iIndex < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE, "invalid texture slot");
                                         ;
 
 		    if (!m4fValue) {
@@ -7380,24 +8270,45 @@ module akra.core.pool.resources {
     	}
 
     	inline texture(iSlot:  number ): ITexture {
-    		logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 202 ); logger.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE), "invalid texture slot");
+    		logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 209 ); logger.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE), "invalid texture slot");
                                         ;
     		return this._pTextures[iSlot];
     	}
 
     	inline texcoord(iSlot:  number ):  number  {
-    		logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 208 ); logger.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE), "invalid texture slot");
+    		logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 215 ); logger.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE), "invalid texture slot");
                                         ;
     		return this._pTexcoords[iSlot];
     	}
 
     	inline textureMatrix(iSlot:  number ): IMat4 {
-    		logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 214 ); logger.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE), "invalid texture slot");
+    		logger.setSourceLocation( "resources/SurfaceMaterial.ts" , 221 ); logger.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE), "invalid texture slot");
                                         ;
     		return this._pTextureMatrices[iSlot];
     	}
 
     	static MAX_TEXTURES_PER_SURFACE:  number  = 16;
+
+    	_getHash(): string {
+    		if(this._isNeedToUpdateHash){
+    			this._sLastHash = this.calcHash();
+  				this._isNeedToUpdateHash = false;
+    		}
+
+    		return this._sLastHash;
+    	}
+
+    	private calcHash(): string {
+    		var sHash: string = "";
+
+    		for(var i = 0; i < this._pTexcoords.length; i++){
+    			if(this._pTexcoords[i] !== i){
+    				sHash += i.toString() + "<" + this._pTexcoords[i].toString() + ".";
+    			}
+    		}
+
+    		return sHash;
+    	}
 	}
 }
 
@@ -7416,15 +8327,12 @@ module akra.core.pool.resources {
 
 module akra.core.pool.resources {
 	export class Effect implements IEffect extends ResourcePoolItem {
-		private _pComposer: IAFXComposer = null;
-
-
 		get totalComponents():  number {
-			return this._pComposer.getComponentCountForEffect(this);
+			return this.getComposer().getComponentCountForEffect(this);
 		}
 
 		get totalPasses():  number {
-			return this._pComposer.getTotalPassesForEffect(this);
+			return this.getComposer().getTotalPassesForEffect(this);
 		}
 
 		 constructor () {
@@ -7437,7 +8345,8 @@ module akra.core.pool.resources {
 		isParameterUsed(pParam: any, iPass?:  number ): bool {return false;}
 
 		create(): void {
-			this._pComposer = this.manager.getEngine().getComposer();
+			this.getComposer() = this.manager.getEngine().getComposer();
+			this.notifyRestored
 		}
 
 		replicable(bValue: bool): void {return;}
@@ -7457,19 +8366,19 @@ module akra.core.pool.resources {
 			}
 
 			if(!isDef(pComponent) || isNull(pComponent)){
-				logger.setSourceLocation( "resources/Effect.ts" , 51 ); logger.error("Bad component for add/delete."); ;
+				logger.setSourceLocation( "resources/Effect.ts" , 49 ); logger.error("Bad component for add/delete: ", pComponent); ;
 				return false;
 			}
 
 			if(isSet){
-				if(!this._pComposer.addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
-					logger.setSourceLocation( "resources/Effect.ts" , 57 ); logger.error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'"); ;
+				if(!this.getComposer().addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
+					logger.setSourceLocation( "resources/Effect.ts" , 55 ); logger.error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'"); ;
 					return false;
 				}
 			}
 			else {
-				if(!this._pComposer.removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
-					logger.setSourceLocation( "resources/Effect.ts" , 63 ); logger.error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'"); ;
+				if(!this.getComposer().removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
+					logger.setSourceLocation( "resources/Effect.ts" , 61 ); logger.error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'"); ;
 					return false;
 				}
 			}
@@ -7493,7 +8402,19 @@ module akra.core.pool.resources {
 			return this.addComponent(pComponent, iShift, iPass, false);
 		}
 
+		activate(iShift?:  number  = 0): bool {
+ 			return this.getComposer().activateEffectResource(this, iShift);
+		}
+
+		deactivate(): bool {
+			return this.getComposer().deactivateEffectResource(this);
+		}
+
 		findParameter(pParam: any, iPass?:  number ): any {return null;}
+
+		private inline getComposer(): IAFXComposer {
+			return this.manager.getEngine().getComposer();
+		}
 	}
 }
 
@@ -7506,194 +8427,6 @@ module akra.core.pool.resources {
 
 
 
-
-
-
-
-
-
-
-module akra {
-	export enum EPixelFormats {
-/*Unknown pixel format.*/
-        UNKNOWN = 0,
-
-/*8-bit pixel format, all bits luminance.*/
-        L8 = 1,
-        BYTE_L = L8,
-/*16-bit pixel format, all bits luminance.*/
-        L16 = 2,
-        SHORT_L = L16,
-/*8-bit pixel format, all bits alpha.*/
-        A8 = 3,
-        BYTE_A = A8,
-/*8-bit pixel format, 4 bits alpha, 4 bits luminance.*/
-        A4L4 = 4,
-/*2 byte pixel format, 1 byte luminance, 1 byte alpha*/
-        BYTE_LA = 5,
-
-/*16-bit pixel format, 5 bits red, 6 bits green, 5 bits blue.*/
-        R5G6B5 = 6,
-/*16-bit pixel format, 5 bits red, 6 bits green, 5 bits blue.*/
-        B5G6R5 = 7,
-/*8-bit pixel format, 2 bits blue, 3 bits green, 3 bits red.*/
-        R3G3B2 = 31,
-/*16-bit pixel format, 4 bits for alpha, red, green and blue.*/
-        A4R4G4B4 = 8,
-/*16-bit pixel format, 5 bits for blue, green, red and 1 for alpha.*/
-        A1R5G5B5 = 9,
-/*24-bit pixel format, 8 bits for red, green and blue.*/
-        R8G8B8 = 10,
-/*24-bit pixel format, 8 bits for blue, green and red.*/
-        B8G8R8 = 11,
-/*32-bit pixel format, 8 bits for alpha, red, green and blue.*/
-        A8R8G8B8 = 12,
-/*32-bit pixel format, 8 bits for blue, green, red and alpha.*/
-        A8B8G8R8 = 13,
-/*32-bit pixel format, 8 bits for blue, green, red and alpha.*/
-        B8G8R8A8 = 14,
-/*32-bit pixel format, 8 bits for red, green, blue and alpha.*/
-        R8G8B8A8 = 28,
-
-/*32-bit pixel format, 8 bits for red, 8 bits for green, 8 bits for blue like A8R8G8B8, but alpha will get discarded*/
-        X8R8G8B8 = 26,
-/*32-bit pixel format, 8 bits for blue, 8 bits for green, 8 bits for red like A8B8G8R8, but alpha will get discarded*/
-        X8B8G8R8 = 27,
-
-/*3 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue*/
-        BYTE_RGB = R8G8B8,
-/*3 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red*/
-        BYTE_BGR = B8G8R8,
-/*4 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red and one byte for alpha*/
-        BYTE_BGRA = B8G8R8A8,
-/*4 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue, and one byte for alpha*/
-        BYTE_RGBA = R8G8B8A8,
-
-        BYTE_ABGR = A8B8G8R8,
-        BYTE_ARGB = A8R8G8B8,
-
-/*32-bit pixel format, 2 bits for alpha, 10 bits for red, green and blue.*/
-        A2R10G10B10 = 15,
-/*32-bit pixel format, 10 bits for blue, green and red, 2 bits for alpha.*/
-        A2B10G10R10 = 16,
-
-/*DDS (DirectDraw Surface) DXT1 format.*/
-        DXT1 = 17,
-/*DDS (DirectDraw Surface) DXT2 format.*/
-        DXT2 = 18,
-/*DDS (DirectDraw Surface) DXT3 format.*/
-        DXT3 = 19,
-/*DDS (DirectDraw Surface) DXT4 format.*/
-        DXT4 = 20,
-/*DDS (DirectDraw Surface) DXT5 format.*/
-        DXT5 = 21,
-
-/*16-bit pixel format, 16 bits (float) for red*/
-        FLOAT16_R = 32,
-/*48-bit pixel format, 16 bits (float) for red, 16 bits (float) for green, 16 bits (float) for blue*/
-        FLOAT16_RGB = 22,
-/*64-bit pixel format, 16 bits (float) for red, 16 bits (float) for green, 16 bits (float) for blue, 16 bits (float) for alpha*/
-        FLOAT16_RGBA = 23,
-/*32-bit pixel format, 32 bits (float) for red*/
-        FLOAT32_R = 33,
-/*96-bit pixel format, 32 bits (float) for red, 32 bits (float) for green, 32 bits (float) for blue*/
-        FLOAT32_RGB = 24,
-/*128-bit pixel format, 32 bits (float) for red, 32 bits (float) for green, 32 bits (float) for blue, 32 bits (float) for alpha*/
-        FLOAT32_RGBA = 25,
-/*32-bit, 2-channel s10e5 floating point pixel format, 16-bit green, 16-bit red*/
-        FLOAT16_GR = 35,
-/*64-bit, 2-channel floating point pixel format, 32-bit green, 32-bit red*/
-        FLOAT32_GR = 36,
-
-/*Float Depth texture format*/
-        FLOAT32_DEPTH = 29,
-        DEPTH8 = 44,
-/*Byte Depth texture format */
-        BYTE_DEPTH = DEPTH8,
-
-        DEPTH16 = 45,
-        SHORT_DEPTH = DEPTH16,
-        DEPTH32 = 46,
-        DEPTH24STENCIL8=47,
-
-
-/*64-bit pixel format, 16 bits for red, green, blue and alpha*/
-        SHORT_RGBA = 30,
-/*32-bit pixel format, 16-bit green, 16-bit red*/
-        SHORT_GR = 34,
-/*48-bit pixel format, 16 bits for red, green and blue*/
-        SHORT_RGB = 37,
-
-/*PVRTC (PowerVR) RGB 2 bpp.*/
-        PVRTC_RGB2 = 38,
-/*PVRTC (PowerVR) RGBA 2 bpp.*/
-        PVRTC_RGBA2 = 39,
-/*PVRTC (PowerVR) RGB 4 bpp.*/
-        PVRTC_RGB4 = 40,
-/*PVRTC (PowerVR) RGBA 4 bpp.*/
-        PVRTC_RGBA4 = 41,
-
-/*8-bit pixel format, all bits red.*/
-        R8 = 42,
-/*16-bit pixel format, 8 bits red, 8 bits green.*/
-        RG8 = 43,
-        TOTAL = 48
-    };
-
-    export interface PixelFormatList {
-    	[index:  number ]: EPixelFormats;
-    }
-
-
-/**
-     * Flags defining some on/off properties of pixel formats
-     */
-
-    export enum  EPixelFormatFlags {
-// This format has an alpha channel
-        HASALPHA        = 0x00000001,
-// This format is compressed. This invalidates the values in elemBytes,
-// elemBits and the bit counts as these might not be fixed in a compressed format.
-        COMPRESSED    = 0x00000002,
-// This is a floating point format
-        FLOAT           = 0x00000004,
-// This is a depth format (for depth textures)
-        DEPTH           = 0x00000008,
-// Format is in native endian. Generally true for the 16, 24 and 32 bits
-// formats which can be represented as machine integers.
-        NATIVEENDIAN    = 0x00000010,
-// This is an intensity format instead of a RGB one. The luminance
-// replaces R,G and B. (but not A)
-        LUMINANCE       = 0x00000020,
-        STENCIL         = 0x00000040
-    }
-
-/** Pixel component format */
-
-    export enum EPixelComponentTypes
-    {
-/*Byte per component (8 bit fixed 0.0..1.0)*/
-        BYTE = 0,
-/*Short per component (16 bit fixed 0.0..1.0))*/
-        SHORT = 1,
-        INT = 2,
-/*16 bit float per component*/
-        FLOAT16 = 3,
-/*32 bit float per component*/
-        FLOAT32 = 4,
-/*Number of pixel types*/
-        COUNT = 5
-    };
-
-    export enum EFilters {
-        NEAREST,
-        LINEAR,
-        BILINEAR,
-        BOX,
-        TRIANGLE,
-        BICUBIC
-    };
-}
 
 
 
@@ -7967,6 +8700,14 @@ module akra.util {
 
 	}
 
+// export var pathinfo: (sPath: string) => IPathinfo;
+// export var pathinfo: (pPath: IPathinfo) => IPathinfo;
+	export var pathinfo: (pPath?) => IPathinfo;
+
+	pathinfo = function (pPath?): IPathinfo {
+		return new Pathinfo(pPath);
+	}
+
 }
 
 module akra {
@@ -8047,6 +8788,11 @@ module akra.util {
 			return this.sHost;
 		}
 
+		inline set host(sHost: string) {
+//TODO: check host format
+			this.sHost = sHost;
+		}
+
 		inline get port():  number  {
 			return this.nPort;
 		}
@@ -8059,8 +8805,20 @@ module akra.util {
 			return this.sPath;
 		}
 
+		inline set path(sPath: string) {
+// debug_assert(!isNull(sPath.match(new RegExp("^(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)$"))), 
+// 	"invalid path used: " + sPath);
+//TODO: check path format
+			this.sPath = sPath;
+		}
+
 		inline get query(): string {
+//TODO: check query format
 			return this.sQuery;
+		}
+
+		inline set query(sQuery: string) {
+			this.sQuery = sQuery;
 		}
 
 		inline get fragment(): string {
@@ -8082,7 +8840,7 @@ module akra.util {
 			if (isString(pData)) {
 				var pUri:RegExpExecArray = URI.uriExp.exec(<string>pData);
 
-				logger.setSourceLocation( "URI.ts" , 86 ); logger.assert(pUri !== null, 'Invalid URI format used.\nused uri: ' + pData); ;
+				logger.setSourceLocation( "URI.ts" , 103 ); logger.assert(pUri !== null, 'Invalid URI format used.\nused uri: ' + pData); ;
 
 				if (!pUri) {
 					return null;
@@ -8103,13 +8861,17 @@ module akra.util {
 				return this.set(pData.toString());
 			}
 
-			logger.setSourceLocation( "URI.ts" , 107 ); logger.error('Unexpected data type was used.'); ;
+			logger.setSourceLocation( "URI.ts" , 124 ); logger.error('Unexpected data type was used.'); ;
 
 			return null;
 		}
 
 		toString(): string {
 			return this.url + this.urn;
+		}
+
+		static here(): IURI {
+			return new URI(document.location.href);
 		}
 
 //------------------------------------------------------------------//
@@ -8156,6 +8918,8 @@ module akra.util {
 		 */
 
 	}
+
+	export var uri = (sUri:string): IURI => new util.URI(sUri);
 }
 
 
@@ -8175,17 +8939,6 @@ module akra.util {
 // #include "ThreadManager.ts"
 
 module akra.util {
-
-	export var uri = (sUri:string): IURI => new util.URI(sUri);
-
-// export var pathinfo: (sPath: string) => IPathinfo;
-// export var pathinfo: (pPath: IPathinfo) => IPathinfo;
-	export var pathinfo: (pPath?) => IPathinfo;
-
-	pathinfo = function (pPath?): IPathinfo {
-		return new Pathinfo(pPath);
-	}
-
 //string to array buffer
 	export var stoab = function (s: string): ArrayBuffer {
 		var len:  number  = s.length;
@@ -8337,6 +9090,11 @@ module akra.util {
 		private sVersion: string = null;
 		private sOS: string = null;
 		private sVersionSearch: string = null;
+
+		constructor() {
+			super();
+			this.init();
+		}
 
 		get name(): string {
 			return this.sBrowser;
@@ -9264,18 +10022,24 @@ interface WebGLRenderingContext
 
 	texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pixels: ArrayBufferView): void;
 	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, pixels: ImageData): void;
-// May throw DOMException	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, image: HTMLImageElement): void;
-// May throw DOMException	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, canvas: HTMLCanvasElement): void;
-// May throw DOMException	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, video: HTMLVideoElement): void;
+/* May throw DOMException*/
+	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, image: HTMLImageElement): void;
+/* May throw DOMException*/
+	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, canvas: HTMLCanvasElement): void;
+/* May throw DOMException*/
+	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, video: HTMLVideoElement): void;
 
 	texParameterf(target: number, pname: number, param: number): void;
 	texParameteri(target: number, pname: number, param: number): void;
 
 	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, pixels: ArrayBufferView): void;
 	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, pixels: ImageData): void;
-// May throw DOMException	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, image: HTMLImageElement): void;
-// May throw DOMException	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, canvas: HTMLCanvasElement): void;
-// May throw DOMException	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, video: HTMLVideoElement): void;
+/* May throw DOMException*/
+	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, image: HTMLImageElement): void;
+/* May throw DOMException*/
+	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, canvas: HTMLCanvasElement): void;
+/* May throw DOMException*/
+	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, video: HTMLVideoElement): void;
 
 	uniform1f(location: WebGLUniformLocation, x: number): void;
 	uniform1fv(location: WebGLUniformLocation, v: Float32Array): void;
@@ -10111,6 +10875,8 @@ declare var WebGLDebugUtils: {
 
 
 
+
+
 //Future
 
 
@@ -10125,106 +10891,6 @@ declare var WebGLDebugUtils: {
 
 
 
-
-
-
-
-
-
-
-module akra {
-	export interface IBuffer {
-//number of elements
-		 length:  number ;
-
-//size in bytes
-		 byteLength:  number ;
-
-
-	}
-}
-
-
-
-module akra {
-
-	export enum EHardwareBufferFlags {
-		STATIC 		= 0x01,
-		DYNAMIC 	= 0x02,
-		STREAM 		= 0x80,
-
-		READABLE	= 0x04,
-
-		BACKUP_COPY = 0x08,
-/** indicate, that buffer does not use GPU memory or other specific memory. */
-
-		SOFTWARE 	= 0x10,
-/** Indicate, tha buffer uses specific data aligment */
-
-		ALIGNMENT	= 0x20,
-/** Indicates that the application will be refilling the contents
-            of the buffer regularly (not just updating, but generating the
-            contents from scratch), and therefore does not mind if the contents 
-            of the buffer are lost somehow and need to be recreated. This
-            allows and additional level of optimisation on the buffer.
-            This option only really makes sense when combined with 
-            DYNAMIC and without READING.
-            */
-
-		DISCARDABLE = 0x40,
-
-		STATIC_READABLE = STATIC | READABLE,
-		DYNAMIC_DISCARDABLE = DYNAMIC | DISCARDABLE
-	}
-
-	export enum ELockFlags {
-		READ 			= 0x01,
-		WRITE 			= 0x02,
-		DISCARD 		= 0x04,
-		NO_OVERWRITE	= 0x08,
-
-		NORMAL			= READ | WRITE
-	}
-
-	export interface IHardwareBuffer extends IBuffer {
-		clone(pSrc: IHardwareBuffer): bool;
-
-		isValid(): bool;
-		isDynamic(): bool;
-		isStatic(): bool;
-		isStream(): bool;
-		isReadable(): bool;
-		isBackupPresent(): bool;
-		isSoftware(): bool;
-		isAligned(): bool;
-		isLocked(): bool;
-
-		getFlags():  number ;
-
-		readData(ppDest: ArrayBufferView): bool;
-		readData(iOffset:  number , iSize:  number , ppDest: ArrayBufferView): bool;
-
-		 writeData(pData: ArrayBufferView, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer?: bool): bool;
-//writeData(pData: ArrayBuffer, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
-
-		copyData(pSrcBuffer: IHardwareBuffer, iSrcOffset:  number ,
-				 iDstOffset:  number , iSize:  number , bDiscardWholeBuffer?: bool): bool;
-
-		create(iFlags:  number ): bool;
-// create(iByteSize: uint, iFlags: int, pData: Uint8Array): bool;
-// create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
-
-		destroy(): void;
-
-		resize(iSize:  number ): bool;
-
-		lock(iLockFlags:  number ): any;
-		lock(iOffset:  number , iSize:  number , iLockFlags?:  number ): any;
-		unlock(): void;
-
-		restoreFromBackup(): bool;
-	}
-}
 
 
 
@@ -17225,8 +17891,8 @@ module akra.math {
 		    if(fDeterminant === 0.){
 		        logger.setSourceLocation( "Mat4.ts" , 624 ); logger.assert(false,"обращение матрицы с нулевым детеминантом:\n" + this.toString());
                                             ;
-
-//чтоб все не навернулось		        return m4fDestination.set(1.);
+//чтоб все не навернулось
+		        return m4fDestination.set(1.);
 		    }
 
 		    var fInverseDeterminant:  number  = 1/fDeterminant;
@@ -18502,7 +19168,7 @@ module akra.math {
 		        fYaw = atan2(yTemp,wTemp)*2.;
 //fRoll = 0;
 
-//убираем дополнительный обор��т
+//убираем дополнительный оборот
 		        var pi:  number  = PI;
 		        if(fYaw > pi){
 		            fYaw -= pi;
@@ -19258,7 +19924,7 @@ module akra.math {
 	export var realToInt32_ceil = (a:  number ):  number  => ceil(a);
 
 /**
-	 * Наибольший ��бщий делитель
+	 * Наибольший общий делитель
 	 */
 
 	export var nod = (n:  number , m:  number ):  number  => {
@@ -20069,7 +20735,8 @@ module akra {
         ["PF_R8G8B8",
 /* Bytes per element */
 
-// 24 bit integer -- special        3,
+/* 24 bit integer -- special*/
+        3,
 /* Flags */
 
         EPixelFormatFlags.NATIVEENDIAN,
@@ -20088,7 +20755,8 @@ module akra {
         ["PF_B8G8R8",
 /* Bytes per element */
 
-// 24 bit integer -- special        3,
+/* 24 bit integer -- special*/
+        3,
 /* Flags */
 
         EPixelFormatFlags.NATIVEENDIAN,
@@ -20208,7 +20876,8 @@ module akra {
         EPixelFormatFlags.COMPRESSED | EPixelFormatFlags.HASALPHA,
 /* Component type and count */
 
-// No alpha        EPixelComponentTypes.BYTE, 3,
+/* No alpha*/
+        EPixelComponentTypes.BYTE, 3,
 /* rbits, gbits, bbits, abits */
 
         0, 0, 0, 0,
@@ -20427,7 +21096,8 @@ module akra {
         EPixelFormatFlags.DEPTH,
 /* Component type and count */
 
-// ?        EPixelComponentTypes.FLOAT32, 1,
+/* ?*/
+        EPixelComponentTypes.FLOAT32, 1,
 /* rbits, gbits, bbits, abits */
 
         0, 0, 0, 0,
@@ -21358,7 +22028,8 @@ module akra {
 	                a = < number >bf.fixedToFixed((value & des.amask)>>des.ashift, des.abits, 8);
 	            }
 	            else {
-// No alpha, default a component to full	                a = 255;
+/* No alpha, default a component to full*/
+	                a = 255;
 	            }
 
 	        } else {
@@ -21415,10 +22086,14 @@ module akra {
 	                a = bf.fixedToFloat((value & des.amask) >>> des.ashift, des.abits);
 	            }
 	            else {
-// No alpha, default a component to full	                a = 1.0;
+
+/* No alpha, default a component to full*/
+	                a = 1.0;
 	            }
 
-	        } else {
+
+	        }
+            else {
 	            switch(ePf) {
 	            case EPixelFormats.FLOAT32_R:
 	                r = g = b =  (new Float32Array(pSrc.buffer, pSrc.byteOffset, 1)) [0];
@@ -21480,7 +22155,7 @@ module akra {
 					break;
 	            default:
 // Not yet supported
-	                logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1417 ); logger.error("unpack from "+ getFormatName(ePf) +" not implemented", "PixelUtil::unpackColour");
+	                logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1420 ); logger.error("unpack from "+ getFormatName(ePf) +" not implemented", "PixelUtil::unpackColour");
                                                ;
 	                break;
 	            }
@@ -21530,7 +22205,7 @@ module akra {
                 dst=pDest;
             }
 
-        	logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1464 ); logger.assert(src.width == dst.width && src.height == dst.height && src.depth == dst.depth,"Size dest and src pictures is different"); ;
+        	logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1467 ); logger.assert(src.width == dst.width && src.height == dst.height && src.depth == dst.depth,"Size dest and src pictures is different"); ;
 
 // Check for compressed formats, we don't support decompression, compression or recoding
 			if(isCompressed(src.format) || isCompressed(dst.format)) {
@@ -21540,7 +22215,7 @@ module akra {
 					return;
 				}
 				else {
-					logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1475 ); logger.error("This method can not be used to compress or decompress images", "PixelUtil::bulkPixelConversion");
+					logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1478 ); logger.error("This method can not be used to compress or decompress images", "PixelUtil::bulkPixelConversion");
                                        ;
 				}
 			}
@@ -21702,47 +22377,75 @@ module akra.webgl {
 	var pSupportedExtensionList: string[] = null;
 // var pLoadedExtensionList: Object = null;
 
+    function makeDebugContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
+        if (isDef((<any>window).WebGLDebugUtils)) {
+            pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLContext,
+                (err:  number , funcName: string, args: IArguments): void => {
+                    logger.setSourceLocation( "webgl/WebGL.ts" , 52 ); logger.log(("\n" + (<any>new Error).stack.split("\n").slice(1).join("\n")) ); ;
+                    throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+                },
+                (funcName: string, args: IArguments): void => {
+                   logger.setSourceLocation( "webgl/WebGL.ts" , 56 ); logger.log("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")"); ;
+                });
+        }
 
+        return pWebGLContext;
+    }
 
-    function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
-        var pWebGLExtentionList: Object = {};
+    export function loadExtension(pWebGLContext: WebGLRenderingContext, sExtName: string): bool {
+        var pWebGLExtentionList: Object = (<any>pWebGLContext).extentionList = (<any>pWebGLContext).extentionList || {};
         var pWebGLExtension: Object;
 
+        if (!hasExtension(sExtName)) {
+            logger.setSourceLocation( "webgl/WebGL.ts" , 68 ); logger.warning("Extension " + sExtName + " unsupported for this platform."); ;
+            return false;
+        }
+
+        if (pWebGLExtension = pWebGLContext.getExtension(sExtName)) {
+
+            if (isDefAndNotNull(pWebGLExtentionList[sExtName])) {
+                logger.setSourceLocation( "webgl/WebGL.ts" , 75 ); logger.log("Extension " + sExtName + " already loaded for this context."); ;
+                return true;
+            }
+
+            pWebGLExtentionList[sExtName] = pWebGLExtension;
+
+            logger.setSourceLocation( "webgl/WebGL.ts" , 81 ); logger.log("loaded WebGL extension: ", sExtName); ;
+
+            for (var j in pWebGLExtension) {
+                if (isFunction(pWebGLExtension[j])) {
+//debug_print("created func WebGLRenderingContext::" + j + "(...)");
+                    pWebGLContext[j] = function () {
+                        pWebGLContext[j] = new Function(
+                            "var t = this.extentionList[" + sExtName + "];" +
+                            "t." + j + ".apply(t, arguments);");
+                    }
+
+                }
+                else {
+//debug_print("created const WebGLRenderingContext::" + j + " = " + pWebGLExtension[j]);
+                    pWebGLContext[j] = pWebGLExtension[j];
+                }
+            }
+
+            return true;
+        }
+
+        logger.setSourceLocation( "webgl/WebGL.ts" , 102 ); logger.warning("cannot load extension: ", sExtName); ;
+        return false;
+    }
+
+    function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
 //test context not created yet
         if (isNull(pSupportedExtensionList)) {
             return pWebGLContext;
         }
 
         for (var i:  number  = 0; i < pSupportedExtensionList.length; ++ i) {
-            if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
-                pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
-
-                logger.setSourceLocation( "webgl/WebGL.ts" , 63 ); logger.log("loaded WebGL extension: ", pSupportedExtensionList[i]); ;
-
-                for (var j in pWebGLExtension) {
-                    if (isFunction(pWebGLExtension[j])) {
-
-                        pWebGLContext[j] = function () {
-                            pWebGLContext[j] = new Function(
-                                "var t = this.pWebGLExtentionList[" + pSupportedExtensionList[i] + "];" +
-                                "t." + j + ".apply(t, arguments);");
-                        }
-
-                    }
-                    else {
-                        pWebGLContext[j] = pWebGLExtentionList[pSupportedExtensionList[i]][j];
-                    }
-                }
-            }
-            else {
-                logger.setSourceLocation( "webgl/WebGL.ts" , 81 ); logger.warning("cannot load extension: ", pSupportedExtensionList[i]); ;
+            if (!loadExtension(pWebGLContext, pSupportedExtensionList[i])) {
                 pSupportedExtensionList.splice(i, 1);
             }
         }
-
-
-        (<any>pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
-// pLoadedExtensionList = pWebGLExtentionList;
 
         return pWebGLContext;
     }
@@ -21762,10 +22465,14 @@ module akra.webgl {
 		catch (e) {}
 
 		if (isDefAndNotNull(pWebGLContext)) {
+
+
+
             return setupContext(pWebGLContext);
+
 		}
 
-        logger.setSourceLocation( "webgl/WebGL.ts" , 111 ); logger.warning("cannot get 3d device"); ;
+        logger.setSourceLocation( "webgl/WebGL.ts" , 143 ); logger.warning("cannot get 3d device"); ;
 
 		return null;
     }
@@ -21829,7 +22536,6 @@ module akra.webgl {
 
 	export function getWebGLFormat(eFormat: EPixelFormats):  number  {
 
-        console.log("getWebGLFormat",eFormat);
         switch(eFormat)
         {
 			case EPixelFormats.L8:
@@ -21929,7 +22635,7 @@ module akra.webgl {
                 return 0;
 
             default:
-                logger.setSourceLocation( "webgl/WebGL.ts" , 275 ); logger.warning("getWebGLFormat unknown format",eFormat); ;
+                logger.setSourceLocation( "webgl/WebGL.ts" , 306 ); logger.warning("getWebGLFormat unknown format",eFormat); ;
                 return 0;
         }
 
@@ -22068,7 +22774,7 @@ module akra.webgl {
                 return  0x1401 ;
 
             default:
-                logger.setSourceLocation( "webgl/WebGL.ts" , 414 ); logger.criticalError("getWebGLFormat unknown format"); ;
+                logger.setSourceLocation( "webgl/WebGL.ts" , 445 ); logger.criticalError("getWebGLFormat unknown format"); ;
                 return 0;
         }
 	}
@@ -22211,38 +22917,6 @@ module akra.webgl {
         }
     }
 
-    export function getMaxMipmaps(iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats) :  number  {
-		var iCount:  number  = 0;
-        if((iWidth > 0) && (iHeight > 0))
-        {
-            do {
-                if(iWidth>1)
-                {
-                    iWidth = iWidth>>>1;
-                }
-                if(iHeight>1)
-                {
-                    iHeight = iHeight>>>1;
-                }
-                if(iDepth>1)
-                {
-                    iDepth = iDepth>>>1;
-                }
-/*
-                 NOT needed, compressed formats will have mipmaps up to 1x1
-                 if(PixelUtil::isValidExtent(width, height, depth, format))
-                 count ++;
-                 else
-                 break;
-                 */
-
-
-                iCount ++;
-            } while(!(iWidth === 1 && iHeight === 1 && iDepth === 1));
-        }
-		return iCount;
-    }
-
     export function optionalPO2(iValue:  number ) :  number  {
         if (webgl.hasNonPowerOf2Textures) {
             return iValue;
@@ -22271,10 +22945,14 @@ module akra.webgl {
             for(z = pSource.front; z < pSource.back; z++) {
                 for(y = pSource.top; y < pSource.bottom; y++) {
                     for(x = 0; x < k; x++) {
-// B                        pDest[iDstPtr + x] = ((pSource[iSrcPtr + x]&0x000F)<<12) |
-// G                                    		 ((pSource[iSrcPtr + x]&0x00F0)<<4)  |
-// R                                    		 ((pSource[iSrcPtr + x]&0x0F00)>>4)  |
-// A                                    	     ((pSource[iSrcPtr + x]&0xF000)>>12);
+/* B*/
+                        pDest[iDstPtr + x] = ((pSource[iSrcPtr + x]&0x000F)<<12) |
+/* G*/
+                                    		 ((pSource[iSrcPtr + x]&0x00F0)<<4)  |
+/* R*/
+                                    		 ((pSource[iSrcPtr + x]&0x0F00)>>4)  |
+/* A*/
+                                    	     ((pSource[iSrcPtr + x]&0xF000)>>12);
                     }
 
                     iSrcPtr += pSource.rowPitch;
@@ -22396,7 +23074,7 @@ module akra.util {
 		}
 
 		private chechTransferableObjects(): bool {
-			var pBlob: Blob = new Blob(["onmessage = function(e) { postMessage(true); }"]);
+			var pBlob: Blob = new Blob(["onmessage = function(e) { postMessage(true); }"], { "type" : "text\/javascript" });
 			var sBlobURL: string = (<any>window).URL.createObjectURL(pBlob);
 			var pWorker: Worker = new Worker(sBlobURL);
 
@@ -24795,12 +25473,12 @@ module akra.core.pool.resources {
 // etc
 
             if(iMipMap > this.numMipMaps){
-                logger.setSourceLocation( "resources/Img.ts" , 442 ); logger.warning("Mipmap index out of range"); ;
+                logger.setSourceLocation( "resources/Img.ts" , 442 ); logger.warning("Mipmap index out of range",iMipMap,this.numMipMaps); ;
                 return null;
             }
 
             if(iFace >= this.numFaces){
-                logger.setSourceLocation( "resources/Img.ts" , 447 ); logger.warning("Face index out of range"); ;
+                logger.setSourceLocation( "resources/Img.ts" , 447 ); logger.warning("Face index out of range",iFace,this.numFaces); ;
                 return null;
             }
 
@@ -24879,6 +25557,39 @@ module akra.core.pool.resources {
             }
             return iSize;
         }
+
+        static getMaxMipmaps(iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats) :  number
+        {
+            var iCount:  number  = 0;
+            if((iWidth > 0) && (iHeight > 0))
+            {
+                do {
+                    if(iWidth>1)
+                    {
+                        iWidth = iWidth>>>1;
+                    }
+                    if(iHeight>1)
+                    {
+                        iHeight = iHeight>>>1;
+                    }
+                    if(iDepth>1)
+                    {
+                        iDepth = iDepth>>>1;
+                    }
+/*
+                     NOT needed, compressed formats will have mipmaps up to 1x1
+                     if(PixelUtil::isValidExtent(width, height, depth, format))
+                     count ++;
+                     else
+                     break;
+                     */
+
+
+                    iCount ++;
+                } while(!(iWidth === 1 && iHeight === 1 && iDepth === 1));
+            }
+            return iCount;
+        }
 	}
 }
 
@@ -24922,8 +25633,8 @@ module akra.core.pool.resources {
 		}
 
 		inline getHash(iShift:  number , iPass:  number ): string {
-			return this.getName() + ">>" + iShift.toString() +
-				   ">>" + (iPass ===  0xffffff  ? "ALL" : iPass.toString());
+			return this.getGuid() + ">" + iShift.toString() +
+				   ">" + (iPass ===  0xffffff  ? "A" : iPass.toString());
 		}
 	}
 }
@@ -25019,6 +25730,7 @@ module akra {
          * Specifies uses advanced index.
          */
 
+        hasAttributes(): bool;
         useAdvancedIndex(): bool;
         useSingleIndex(): bool;
         useMultiIndex(): bool;
@@ -25049,7 +25761,7 @@ module akra {
 
 //applyMe(): bool;
 
-        _draw(): void;
+        _draw(pTechnique: IRenderTechnique, pSceneObject: ISceneObject): void;
 
         _getFlow(iDataLocation:  number ): IDataFlow;
         _getFlow(sSemantics: string, bSearchComplete?: bool): IDataFlow;
@@ -25192,7 +25904,7 @@ module akra {
     export interface IReferenceCounter {} ;
 
 	export enum ERenderDataBufferOptions {
-        VB_READABLE       =  (1 << (EHardwareBufferFlags.BACKUP_COPY)) ,
+        VB_READABLE       = < number >EHardwareBufferFlags.READABLE,
         RD_ADVANCED_INDEX = < number >ERenderDataOptions.ADVANCED_INDEX,
         RD_SINGLE_INDEX   = < number >ERenderDataOptions.SINGLE_INDEX,
         RD_RENDERABLE     = < number >ERenderDataOptions.RENDERABLE
@@ -25205,6 +25917,8 @@ module akra {
 /*IHardwareBuffer*/
 	export interface IRenderDataCollection extends                    IBuffer, IReferenceCounter {
 		 buffer: IVertexBuffer;
+         byteLength:  number ;
+         length:  number ;
 
         getEngine(): IEngine;
         getOptions():  number ;
@@ -25212,7 +25926,7 @@ module akra {
         getData(sUsage: string): IVertexData;
         getData(iOffset:  number ): IVertexData;
         getRenderData(iSubset:  number ): IRenderData;
-        getEmptyRenderData(ePrimType: EPrimitiveTypes, eOptions: ERenderDataBufferOptions): IRenderData;
+        getEmptyRenderData(ePrimType: EPrimitiveTypes, eOptions?: ERenderDataBufferOptions): IRenderData;
         getDataLocation(sSemantics: string):  number ;
 
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool):  number ;
@@ -25251,59 +25965,35 @@ module akra {
 	export interface ISkeleton {} ;
 	export interface ISceneNode {} ;
 	export interface IMat4 {} ;
+
 	export interface IAnimationTrack {
 		targetName: string;
+
+		 totalFrames:  number ;
 		 target: ISceneNode;
 		 duration:  number ;
 
-		keyFrame(fTime:  number , pMatrix: IMat4): bool;
+/** Get keyframe by number */
+
 		getKeyFrame(iFrame:  number ): IAnimationFrame;
+/** Set keyframe */
+
+		keyFrame(fTime:  number , pMatrix: IMat4): bool;
+/** Find keyframe by time */
+
 		findKeyFrame(fTime:  number ):  number ;
+/** Calculate frame by time */
+
+		frame(fTime:  number ): IAnimationFrame;
+
 		bind(sJoint: string, pSkeleton: ISkeleton);
 		bind(pSkeleton: ISkeleton);
 		bind(pNode: ISceneNode);
-		frame(fTime:  number ): IAnimationFrame;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface INode {} ;
-	export interface IJoint {} ;
-
-	export interface IJointMap{
-		[index: string]: IJoint;
-	}
-
-
-
-	export interface ISkeleton {
-		 totalBones:  number ;
-		 totalNodes:  number ;
-		 name: string;
-		 root: IJoint;
-
-		getRootJoint(): IJoint;
-		getRootJoints(): IJoint[];
-		getJointMap(): IJointMap;
-		getNodeList(): ISceneNode[];
-		addRootJoint(pJoint: IJoint): bool;
-		update(): bool;
-		findJoint(sName: string): IJoint;
-		findJointByName(sName: string): IJoint;
-		attachMesh(pMesh: IMesh): bool;
-		detachMesh(): void;
 
 	}
 }
+
+
 
 
 
@@ -25334,8 +26024,7 @@ module akra {
 		CAMERA,
 		SHADOW_CASTER,
 
-		LIGHT_PROJECT = 37,
-		LIGHT_OMNI_DIRECTIONAL,
+		LIGHT = 37,
 
 		SCENE_OBJECT = 64,
 
@@ -25379,6 +26068,9 @@ module akra {
 		childOf(pParent: IEntity): bool;
 		siblingCount():  number ;
 		childCount():  number ;
+		children(): IEntity[];
+		childAt(i:  number ): IEntity;
+		descCount():  number ;
 
 		update(): bool;
 		recursiveUpdate(): bool;
@@ -25523,6 +26215,50 @@ module akra {
     	recursiveRender(): void;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface INode {} ;
+	export interface IJoint {} ;
+
+	export interface IJointMap{
+		[index: string]: IJoint;
+	}
+
+
+
+	export interface ISkeleton {
+		 totalBones:  number ;
+		 totalNodes:  number ;
+		 name: string;
+		 root: IJoint;
+
+		getRootJoint(): IJoint;
+		getRootJoints(): IJoint[];
+		getJointMap(): IJointMap;
+		getNodeList(): ISceneNode[];
+		addRootJoint(pJoint: IJoint): bool;
+		update(): bool;
+		findJoint(sName: string): IJoint;
+		findJointByName(sName: string): IJoint;
+		attachMesh(pMesh: IMesh): bool;
+		detachMesh(): void;
+
+	}
+}
+
+
 
 
 
@@ -25712,6 +26448,32 @@ module akra.util {
 		    return false;
 		}
 
+		children(): IEntity[] {
+			var pChildren: IEntity[] = [];
+			var pChild: IEntity = this.child;
+
+			while (!isNull(pChild)) {
+				pChildren.push(pChild);
+				pChild = pChild.sibling;
+			}
+
+			return pChildren;
+		}
+
+		childAt(i:  number ): IEntity {
+			var pChild: IEntity = this.child;
+			var n:  number  = 0;
+
+			while (!isNull(pChild)) {
+				if (n == i) {
+					return pChild;
+				}
+				n ++;
+				pChild = pChild.sibling;
+			}
+
+			return pChild;
+		}
 
 /**
 		 * Returns the current number of siblings of this object.
@@ -25734,22 +26496,40 @@ module akra.util {
 		}
 
 
+		descCount():  number  {
+			var n:  number  = this.childCount();
+			var pChild: IEntity = this.child;
+
+			while(!isNull(pChild)) {
+				n += pChild.descCount();
+				pChild = pChild.sibling;
+			}
+
+			return n;
+		}
+
 /**
 		 * Returns the current number of children of this object
 		 */
 
 		childCount():  number  {
 			var iCount:  number  = 0;
+			var pChild: IEntity = this.child;
 
-		    var pNextChild: IEntity = this.child;
+			while(!isNull(pChild)) {
+				iCount ++;
+				pChild = pChild.sibling;
+			}
 
-		    if (pNextChild) {
-		        ++ iCount;
-		        while (pNextChild) {
-		            pNextChild = pNextChild.sibling;
-		            ++ iCount;
-		        }
-		    }
+// var pNextChild: IEntity = this.child;
+
+// if (pNextChild) {
+//     ++ iCount;
+//     while (pNextChild) {
+//         pNextChild = pNextChild.sibling;
+//         ++ iCount;
+//     }
+// }
 		    return iCount;
 		}
 
@@ -25975,7 +26755,7 @@ module akra.util {
 
 		attachToParent(pParent: IEntity): bool {
 
-			var pParentPrev: IEntity = this._pParent;
+			var pParentPrev: IEntity = this.parent;
 
 			if (pParent != this._pParent) {
 
@@ -26069,7 +26849,7 @@ module akra.util {
 
 		}
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Entity._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return Entity._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 
 		attached (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).attached; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
 		detached (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).detached; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
@@ -26508,9 +27288,6 @@ module akra.scene {
 		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_NODE) {
 			super(eType);
 
-			pScene.connect(this,  "attached" ,  "nodeAttachment" , EEventTypes.UNICAST);
-			pScene.connect(this,  "detached" ,  "nodeDetachment" , EEventTypes.UNICAST);
-
 			this.scene = pScene;
 		}
 
@@ -26572,7 +27349,7 @@ module akra.scene {
 
 		attachToParent(pParent: IEntity): bool {
 			if ((<ISceneNode>pParent).scene !== this._pScene) {
-				logger.setSourceLocation( "SceneNode.ts" , 80 ); logger.warning("transfer of the scene node between trees scene - forbidden"); ;
+				logger.setSourceLocation( "SceneNode.ts" , 77 ); logger.warning("transfer of the scene node between trees scene - forbidden"); ;
 				return false;
 			}
 
@@ -26606,8 +27383,8 @@ module akra.scene {
 			return this._sBone;
 		}
 
-		inline set boneName(sBone: string){
-			return this._sBone;
+		inline set boneName(sBone: string) {
+			this._sBone = sBone;
 		}
 
 // getEngine(): IEngine {
@@ -26678,19 +27455,19 @@ module akra.model {
 			this._sName = sName;
 		}
 
-		getRootJoint(): IJoint {
+		inline getRootJoint(): IJoint {
 			return this.getRootJoints()[0];
 		}
 
-		getRootJoints(): IJoint[] {
+		inline getRootJoints(): IJoint[] {
 			return this._pRootJoints;
 		}
 
-		getJointMap(): IJointMap {
+		inline getJointMap(): IJointMap {
 			return this._pJointMap;
 		}
 
-		getNodeList(): ISceneNode[]{
+		inline getNodeList(): ISceneNode[] {
 			return this._pNodeList;
 		}
 
@@ -26714,27 +27491,30 @@ module akra.model {
 		}
 
 		update(): bool {
-			var pRootJoints = this._pRootJoints;
-		    var pJointList = this._pJointMap = <IJointMap>{};
-		    var pNodeList = this._pNodeList = [];
+			var pRootJoints: IJoint[] 	= this.getRootJoints();
+		    var pJointMap: IJointMap 	= this._pJointMap = <IJointMap>{};
+		    var pNodeList: ISceneNode[] = this._pNodeList = [];
 //var pNotificationJoints = this._pNotificationJoints = [];
 
-		    function findNodes (pNode) {
-		    	var sJoint;
+		    function findNodes (pNode: ISceneNode): void {
+		    	var sJoint: string = null;
 
-		    	if (pNode) {
-			    	sJoint = pNode.boneName;
+		    	if (!isNull(pNode)) {
+		    		if (scene.isJoint(pNode)) {
+			    		sJoint = (<IJoint>pNode).boneName;
+			    	}
 
-			    	if (sJoint) {
-			    		logger.setSourceLocation( "model/Skeleton.ts" , 88 ); logger.assert(!pJointList[sJoint], 'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
+			    	if (!isNull(sJoint)) {
+			    		logger.setSourceLocation( "model/Skeleton.ts" , 90 ); logger.assert(!pJointMap[sJoint], 'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
                                                                                              ;
-			    		pJointList[sJoint] = pNode;
+
+			    		pJointMap[sJoint] = <IJoint>pNode;
 			    	}
 
 			    	pNodeList.push(pNode);
 
-			    	findNodes(pNode.sibling());
-			    	findNodes(pNode.child());
+			    	findNodes(<ISceneNode>pNode.sibling);
+			    	findNodes(<ISceneNode>pNode.child);
 		    	}
 		    }
 
@@ -26742,8 +27522,8 @@ module akra.model {
 		    	findNodes(pRootJoints[i]);
 		    };
 
-// for (var sJoint in pJointList) {
-// 	var pJoint = pJointList[sJoint];
+// for (var sJoint in pJointMap) {
+// 	var pJoint = pJointMap[sJoint];
 
 //    	if (pJoint.sibling() == null && pJoint.child() == null) {
 //    		pNotificationJoints.push(pJoint);
@@ -26808,20 +27588,21 @@ module akra {
 	export interface IQuat4 {} ;
 	export interface IVec3 {} ;
 	export interface IAnimationFrame {} ;
+
 	export enum EAnimationInterpolations {
 		MATRIX_LINEAR,
 		LINEAR
 	}
 
 	export interface IAnimationFrame {
-		time:  number ;
-		weight:  number ;
+		 time:  number ;
+		 weight:  number ;
 
-		matrix: IMat4;
+		 matrix: IMat4;
 
-		rotation: IQuat4;
-		scale: IVec3;
-		translation: IVec3;
+		 rotation: IQuat4;
+		 scale: IVec3;
+		 translation: IVec3;
 
 		toMatrix(): IMat4;
 		toMatrixFromMatrix(): IMat4;
@@ -26848,17 +27629,21 @@ module akra {
 
 
 
+
 module akra.animation {
-	export class AnimationFrame implements IAnimationFrame{
-		private time:  number  	= 0.0;
-		private weight:  number  	= 1.0;
+	export class Frame implements IAnimationFrame {
+		public time:  number  = 0.0;
+		public weight:  number  = 1.0;
 
-		private matrix: IMat4 	= null;
+		public matrix: IMat4 = null;
 
-		private rotation: IQuat4 	= new Quat4;
-		private scale: IVec3  		= new Vec3;
-		private translation: IVec3  = new Vec3;
+		public rotation: IQuat4 = new Quat4;
+		public scale: IVec3 = new Vec3;
+		public translation: IVec3 = new Vec3;
 
+		constructor();
+		constructor(fTime:  number , pMatrix: IMat4);
+		constructor(fTime:  number , pMatrix: IMat4, fWeight:  number );
 		constructor(fTime?:  number , pMatrix?: IMat4, fWeight?:  number ) {
 			switch (arguments.length) {
 				case 0:
@@ -26947,9 +27732,9 @@ module akra.animation {
 		}
 
 		addMatrix(pFrame: IAnimationFrame): IAnimationFrame {
-			var pMatData = pFrame.matrix.data;
+			var pMatData: Float32Array = pFrame.matrix.data;
 			var fWeight:  number  = pFrame.weight;
-			var pResData = this.matrix.data;
+			var pResData: Float32Array = this.matrix.data;
 
 			for (var i = 0; i < 16; ++ i) {
 				pResData[i] += pMatData[i] * fWeight;
@@ -27027,30 +27812,31 @@ module akra.animation {
 			};
 		}
 
-		static get stackCeil(): AnimationFrame { AnimationFrame.stackPosition = AnimationFrame.stackPosition === AnimationFrame.stackSize - 1? 0: AnimationFrame.stackPosition; return AnimationFrame.stack[AnimationFrame.stackPosition ++]; } static stackSize: number = 4 * 4096 ; static stackPosition: number = 0; static stack: AnimationFrame[] = (function(): AnimationFrame[]{ var pStack: AnimationFrame[] = new Array(AnimationFrame.stackSize); for(var i: number = 0; i<AnimationFrame.stackSize; i++){ pStack[i] = new AnimationFrame(); } return pStack})(); ;
+		static get stackCeil(): Frame { Frame.stackPosition = Frame.stackPosition === Frame.stackSize - 1? 0: Frame.stackPosition; return Frame.stack[Frame.stackPosition ++]; } static stackSize: number = 4 * 4096 ; static stackPosition: number = 0; static stack: Frame[] = (function(): Frame[]{ var pStack: Frame[] = new Array(Frame.stackSize); for(var i: number = 0; i<Frame.stackSize; i++){ pStack[i] = new Frame(); } return pStack})(); ;
 	}
 
-	export function animationFrame(): IAnimationFrame {
-		return null;
+	export inline function animationFrame(): Frame {
+		return Frame.stackCeil;
+	}
+
+	export function createFrame(fTime:  number  = 0.0, pMatrix: IMat4 = null, fWeight:  number  = 1.0): IAnimationFrame {
+		return new Frame(fTime, pMatrix, fWeight);
 	}
 }
 
 
 
 
-
-
-
-
-
-
 module akra.animation {
-	class AnimationTrack implements IAnimationTrack {
+	class Track implements IAnimationTrack {
 		private _sTarget: string = null;
 		private _pTarget: ISceneNode = null;
 		private _pKeyFrames: IAnimationFrame[] = [];
 		private _eInterpolationType: EAnimationInterpolations = EAnimationInterpolations.MATRIX_LINEAR;
 
+		inline get totalFrames():  number  {
+			return this._pKeyFrames.length;
+		}
 
 		inline get target(): ISceneNode{
 			return this._pTarget;
@@ -27064,9 +27850,10 @@ module akra.animation {
 			this._sTarget = sValue;
 		}
 
-		inline get duration():  number {
-			return this._pKeyFrames.last.fTime;
+		inline get duration():  number  {
+			return (<IAnimationFrame>(this._pKeyFrames.last)).time;
 		}
+
 
 		constructor (sTarget: string = null) {
 			this._sTarget = sTarget;
@@ -27080,7 +27867,7 @@ module akra.animation {
 		  	var nTotalFrames:  number  = pKeyFrames.length;
 
 		  	if (arguments.length > 1) {
-		  		pFrame = new animation.AnimationFrame(fTime, pMatrix);
+		  		pFrame = createFrame(fTime, pMatrix);
 		  	}
 		    else {
 		    	pFrame = arguments[0];
@@ -27097,7 +27884,7 @@ module akra.animation {
 		}
 
 		getKeyFrame(iFrame:  number ): IAnimationFrame {
-			logger.setSourceLocation( "animation/AnimationTrack.ts" , 65 ); logger.assert(iFrame < this._pKeyFrames.length, 'iFrame must be less then number of total jey frames.'); ;
+			logger.setSourceLocation( "animation/Track.ts" , 70 ); logger.assert(iFrame < this.totalFrames, 'iFrame must be less then number of total jey frames.'); ;
 
 			return this._pKeyFrames[iFrame];
 		}
@@ -27167,9 +27954,9 @@ module akra.animation {
 
 			var pKeys:  IAnimationFrame[] = this._pKeyFrames
 			var nKeys:   number  = pKeys.length;
-			var pFrame: IAnimationFrame = animation.animationFrame();
+			var pFrame: IAnimationFrame = animationFrame();
 
-			logger.setSourceLocation( "animation/AnimationTrack.ts" , 137 ); logger.assert(nKeys > 0, 'no frames :('); ;
+			logger.setSourceLocation( "animation/Track.ts" , 142 ); logger.assert(nKeys > 0, 'no frames :('); ;
 
 			if (nKeys === 1) {
 				pFrame.set(pKeys[0]);
@@ -27202,10 +27989,18 @@ module akra.animation {
 
 			return pFrame;
 		}
+
+
+		toString(): string {
+			var s = "target: " + this.targetName + ", duration: " + this.duration +
+				", frames: " + this.totalFrames;
+			return s;
+		}
+
 	}
 
 	export function createTrack(sName: string = null): IAnimationTrack {
-		return new AnimationTrack(sName);
+		return new Track(sName);
 	}
 }
 
@@ -27215,6 +28010,67 @@ module akra.animation {
 
 
 
+
+
+
+
+
+
+
+module akra {
+	export interface ISceneNode {} ;
+	export interface IJoint {} ;
+	export interface IAnimationFrame {} ;
+	export interface IAnimationTrack {} ;
+
+	export interface IAnimationTarget {
+		target: ISceneNode;
+		index:  number ;
+		name: string;
+		track?: IAnimationTrack;
+	}
+
+	export enum EAnimationTypes {
+		ANIMATION,
+		LIST,
+		CLIP,
+		CONTAINER,
+		BLEND
+	}
+
+	export interface IAnimationBase extends IEventProvider {
+		duration:  number ;
+		name: string;
+		type: EAnimationTypes;
+
+		play(fRealTime:  number ): void;
+		stop(fRealTime:  number ): void;
+
+		attach(pTarget: ISceneNode): void;
+
+		frame(sName: string, fRealTime:  number ): IAnimationFrame;
+		apply(fRealTime:  number ): void;
+
+		addTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
+		setTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
+
+		getTarget(sTargetName: string): IAnimationTarget;
+		getTargetByName(sName: string): IAnimationTarget;
+
+		getTargetList(): IAnimationTarget[];
+
+		targetNames(): string[];
+		targetList(): ISceneNode[];
+		jointList(): IJoint[];
+
+		grab(pAnimationBase: IAnimationBase, bRewrite?: bool): void;
+
+		createAnimationMask(): FloatMap;
+
+		 played(fTime:  number ): void;
+		 stoped(fTime:  number ): void;
+	}
+}
 
 
 
@@ -27230,6 +28086,7 @@ module akra {
 		attach(pTarget: ISceneNode): void;
 
 		getTracks(): IAnimationTrack[];
+		getTrack(i:  number ): IAnimationTrack;
 
 		frame(sName: string, fTime:  number ): IAnimationFrame;
 		extend(pAnimation: IAnimation): void;
@@ -27252,50 +28109,6 @@ module akra {
 
 
 
-module akra {
-	export interface ISceneNode {} ;
-	export interface IJoint {} ;
-	export interface IAnimationFrame {} ;
-	export interface IAnimationTrack {} ;
-
-	export interface IAnimationTarget{
-		target: ISceneNode;
-		index:  number ;
-		name: string;
-		track?: IAnimationTrack;
-	}
-
-	export interface IAnimationBase extends IEventProvider {
-		duration:  number ;
-		name: string;
-
-
-		play(fRealTime:  number ): void;
-		stop(fRealTime:  number ): void;
-
-		attach(pTarget: ISceneNode): void;
-
-		frame(sName: string, fRealTime:  number ): IAnimationFrame;
-		apply(fRealTime:  number ): void;
-
-		addTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
-		setTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
-		getTarget(sTargetName: string): IAnimationTarget;
-		getTargetList(): IAnimationTarget[];
-		getTargetByName(sName: string): IAnimationTarget;
-		targetNames(): string[];
-		targetList(): ISceneNode[];
-		jointList(): IJoint[];
-		grab(pAnimationBase: IAnimationBase, bRewrite?: bool): void;
-
-		createAnimationMask(): FloatMap;
-
-	}
-}
-
-
-
-
 
 
 
@@ -27305,11 +28118,11 @@ module akra {
 
 
 module akra.animation {
-	export interface IAnimationTargetMap{
+	export interface IAnimationTargetMap {
 		[index: string]: IAnimationTarget;
 	}
 
-	export class AnimationBase implements IAnimationBase {
+	export class Base implements IAnimationBase {
 
 		/**@protected*/  _pTargetMap: IAnimationTargetMap = {};
     	/**@protected*/  _pTargetList: IAnimationTarget[] = [];
@@ -27317,8 +28130,15 @@ module akra.animation {
     	/**@protected*/  _fDuration:  number  = 0.0;
 		/**@protected*/  _sName: string;
 
-		constructor () {
-			this._sName = ("animation-" + now() + "-" + this.getGuid());
+		/**@protected*/  _eType: EAnimationTypes;
+
+		constructor (eType: EAnimationTypes, sName: string = null) {
+			this._sName = sName || ("animation-" + now() + "-" + this.getGuid());
+			this._eType = eType;
+		}
+
+		inline get type(): EAnimationTypes {
+			return this._eType;
 		}
 
 		inline get duration():  number {
@@ -27326,6 +28146,7 @@ module akra.animation {
 		}
 
 		inline set duration(fValue:  number ){
+			logger.setSourceLocation( "Base.ts" , 40 ); logger.log("new duration > " + fValue); ;
 			this._fDuration = fValue;
 		}
 
@@ -27338,16 +28159,16 @@ module akra.animation {
 		};
 
 
-		play(fRealTime:  number ): void {
-			this.onplay(fRealTime);
+		inline play(fRealTime:  number ): void {
+			this.played(fRealTime);
 		}
 
-		stop(fRealTime:  number ): void {
-			this.onstop(fRealTime);
+		inline stop(fRealTime:  number ): void {
+			this.stoped(fRealTime);
 		}
 
 		attach(pTarget: ISceneNode): void {
-			logger.setSourceLocation( "AnimationBase.ts" , 54 ); logger.error("method AnimationBase::bind() must be overwritten."); ;
+			logger.setSourceLocation( "Base.ts" , 62 ); logger.error("method AnimationBase::attach() must be overwritten."); ;
 		}
 
 		frame(sName: string, fRealTime:  number ): IAnimationFrame {
@@ -27356,9 +28177,9 @@ module akra.animation {
 
 		apply(fRealTime:  number ): void {
 			var pTargetList: IAnimationTarget[] = this._pTargetList;
-		    var pTarget: ISceneNode;
-		    var pFrame: IAnimationFrame;
-		    var pTransform;
+		    var pTarget: ISceneNode = null;
+		    var pFrame: IAnimationFrame = null;
+		    var pTransform: IMat4 = null;
 
 			for (var i = 0; i < pTargetList.length; ++ i) {
 				pFrame = this.frame(pTargetList[i].name, fRealTime);
@@ -27478,25 +28299,35 @@ module akra.animation {
 		    return pMask;
 		}
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return AnimationBase._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-		onplay (fRealTime): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).onplay; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, fRealTime) : _broadcast[i].listener (_recivier, fRealTime) ; } } } ; ;
-		onstop (fRealTime): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).onstop; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, fRealTime) : _broadcast[i].listener (_recivier, fRealTime) ; } } } ; ;
+
+		toString(): string {
+			var s = "\n";
+			s += "name         : " + this.name + "\n";
+			s += "duration     : " + this.duration + " sec\n";
+			s += "total targets: " + this.targetList().length.toString() + "\n";
+			return s;
+		}
+
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return Base._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		played (fRealTime): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).played; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, fRealTime) : _broadcast[i].listener (_recivier, fRealTime) ; } } } ; ;
+		stoped (fRealTime): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).stoped; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, fRealTime) : _broadcast[i].listener (_recivier, fRealTime) ; } } } ; ;
 	}
+
+
 }
 
 
 
 module akra.animation {
-	class Animation implements IAnimation extends AnimationBase {
-
+	class Animation extends Base implements IAnimation {
 		private _pTracks: IAnimationTrack[] = [];
 
-    	constructor (sName: string = null) {
-    		super();
-    		this.name = sName;
+    	constructor (sName?: string) {
+    		super(EAnimationTypes.ANIMATION, sName);
     	}
 
-		inline get totalTracks():  number {
+		inline get totalTracks():  number  {
 			return this._pTracks.length;
 		}
 
@@ -27509,19 +28340,24 @@ module akra.animation {
 		attach(pTarget: ISceneNode): void {
 			var pPointer;
 		    var pTracks: IAnimationTrack[] = this._pTracks;
+
 			for (var i = 0; i < pTracks.length; ++ i) {
 				if (!pTracks[i].bind(pTarget)) {
-					logger.setSourceLocation( "animation/Animation.ts" , 36 ); logger.log("cannot bind animation track [", i, "] to joint <", pTracks[i].target, ">"); ;
+					logger.setSourceLocation( "animation/Animation.ts" , 35 ); logger.log("cannot bind animation track [", i, "] to joint <", pTracks[i].target, ">"); ;
 				}
 				else {
 					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
 					pPointer.track = pTracks[i];
 				}
-			};
+			}
 		}
 
-		getTracks(): IAnimationTrack[] {
+		inline getTracks(): IAnimationTrack[] {
 			return this._pTracks;
+		}
+
+		inline getTrack(i:  number ): IAnimationTrack {
+			return this._pTracks[i];
 		}
 
 		frame(sName: string, fTime:  number ): IAnimationFrame {
@@ -27543,12 +28379,641 @@ module akra.animation {
 				}
 			}
 		}
+
+
+		toString(): string {
+			var s = super.toString();
+			s += "total tracks : " + this.totalTracks + "\n";
+
+			for (var i:  number  = 0; i < this.totalTracks; ++ i) {
+				s += "\t" + i + ". " + this.getTrack(i) + "\n";
+			}
+
+			return s;
+		}
+
 	}
 
-	export function createAnimation(sName: string = null): IAnimation {
+	export inline function isAnimation(pAnimation: IAnimationBase): bool {
+		return pAnimation.type === EAnimationTypes.ANIMATION;
+	}
+
+	export function createAnimation(sName?: string): IAnimation {
 		return new Animation(sName);
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IAnimationBase {} ;
+	export interface IEngine {} ;
+	export interface ISceneNode {} ;
+
+	export interface IAnimationController extends IUnique {
+		 totalAnimations:  number ;
+		 active: IAnimationBase;
+
+		setOptions(eOptions): void;
+		addAnimation(pAnimation: IAnimationBase): bool;
+
+		removeAnimation(pAnimation: string): bool;
+		removeAnimation(pAnimation:  number ): bool;
+		removeAnimation(pAnimation: IAnimationBase): bool;
+
+		findAnimation(pAnimation: string): IAnimationBase;
+		findAnimation(pAnimation:  number ): IAnimationBase;
+		findAnimation(pAnimation: IAnimationBase): IAnimationBase;
+
+		getAnimation(iAnim:  number ): IAnimationBase;
+
+		setAnimation(iAnimation:  number , pAnimation: IAnimationBase): void;
+		attach(pTarget: ISceneNode): void;
+
+		play(pAnimation: string, fRealTime:  number ): bool;
+		play(pAnimation:  number , fRealTime:  number ): bool;
+		play(pAnimation: IAnimationBase, fRealTime:  number ): bool;
+
+		update(fTime:  number ): void;
+
+		toString(bFullInfo?: bool);
+	}
+}
+
+
+
+
+
+module akra.animation {
+	export class Controller implements IAnimationController {
+		private _pAnimations: IAnimationBase[] = [];
+		private _iOptions:  number  = 0;
+	    private _pActiveAnimation: IAnimationBase = null;
+	    private _fnPlayAnimation: Function = null;
+
+	    inline get totalAnimations():  number {
+			return this._pAnimations.length;
+		}
+
+		inline get active(): IAnimationBase{
+			return this._pActiveAnimation;
+		}
+
+		constructor(iOptions:  number  = 0) {
+
+			this.setOptions(iOptions);
+		}
+
+		setOptions(iOptions:  number ): void {
+
+		}
+
+
+		addAnimation(pAnimation: IAnimationBase): bool {
+			if (this.findAnimation(pAnimation.name)) {
+				logger.setSourceLocation( "animation/Controller.ts" , 35 ); logger.warning("Animation with name <" + pAnimation.name + "> already exists in this controller"); ;
+				return false;
+			}
+
+//LOG('animation controller :: add animation >> ', pAnimation.name);
+
+			this._pAnimations.push(pAnimation);
+			this._pActiveAnimation = pAnimation;
+		}
+
+		removeAnimation(pAnimation: string): bool;
+		removeAnimation(pAnimation:  number ): bool;
+		removeAnimation(pAnimation: IAnimationBase): bool;
+		removeAnimation(pAnimation: any): bool {
+			var pAnimation = this.findAnimation(arguments[0]);
+		    var pAnimations = this._pAnimations;
+
+			for (var i = 0; i < pAnimations.length; ++ i) {
+				if (pAnimations[i] === pAnimation) {
+					pAnimations.splice(i, 1);
+					logger.setSourceLocation( "animation/Controller.ts" , 55 ); logger.log("animation controller :: remove animation >> ", pAnimation.name); ;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		findAnimation(pAnimation: string): IAnimationBase;
+		findAnimation(pAnimation:  number ): IAnimationBase;
+		findAnimation(pAnimation: IAnimationBase): IAnimationBase;
+		findAnimation(pAnimation: any): IAnimationBase {
+			var pAnimations: IAnimationBase[] = this._pAnimations;
+		    var iAnimation:  number ;
+		    var sAnimation: string;
+
+			if (isString(arguments[0])) {
+				sAnimation = arguments[0];
+
+				for (var i = 0; i < pAnimations.length; ++ i) {
+					if (pAnimations[i].name === sAnimation) {
+						return pAnimations[i];
+					}
+				}
+
+				return null;
+			}
+
+			if (typeof arguments[0] === 'number') {
+				iAnimation = arguments[0];
+				return pAnimations[iAnimation] || null;
+			}
+
+			return arguments[0];
+		}
+
+		inline getAnimation(iAnim:  number ): IAnimationBase {
+			return this._pAnimations[iAnim];
+		}
+
+		setAnimation(iAnimation:  number , pAnimation: IAnimationBase): void {
+			logger.setSourceLocation( "animation/Controller.ts" , 96 ); logger.assert(iAnimation < this._pAnimations.length, 'invalid animation slot'); ;
+
+			this._pAnimations[iAnimation] = pAnimation;
+		}
+
+		attach(pTarget: ISceneNode): void {
+			var pAnimations: IAnimationBase[] = this._pAnimations;
+
+		    for (var i:  number  = 0; i < pAnimations.length; ++ i) {
+		        pAnimations[i].attach(pTarget);
+		    }
+		}
+
+		play(pAnimation: string, fRealTime:  number ): bool;
+		play(pAnimation:  number , fRealTime:  number ): bool;
+		play(pAnimation: IAnimationBase, fRealTime:  number ): bool;
+		play(pAnimation: any, fRealTime:  number ): bool {
+			var pAnimationNext: IAnimationBase = this.findAnimation(arguments[0]);
+			var pAnimationPrev: IAnimationBase = this._pActiveAnimation;
+
+			if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
+				if (this._fnPlayAnimation) {
+					this._fnPlayAnimation(pAnimationNext);
+				}
+//LOG('controller::play(', pAnimationNext.name, ')', pAnimationNext);
+				if (pAnimationPrev) {
+					pAnimationPrev.stop(fRealTime);
+				}
+
+				pAnimationNext.play(fRealTime);
+
+				this._pActiveAnimation = pAnimationNext;
+
+				return true;
+			}
+
+			return false;
+		}
+
+		update(fTime:  number ): void {
+			if (this._pActiveAnimation) {
+				this._pActiveAnimation.apply(fTime);
+			}
+		}
+
+		toString(bFullInfo: bool = false): string {
+
+			var s: string = "\n";
+			s += "ANIMATION CONTROLLER (total: " + this.totalAnimations + " animations)\n";
+			s += "-----------------------------------------------------\n";
+
+			for (var i:  number  = 0; i < this.totalAnimations; ++ i) {
+				s += this.getAnimation(i).toString();
+			}
+
+			return s;
+
+		}
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } ;
+	}
+
+
+	export function createController(iOptions?:  number ): IAnimationController {
+		return new Controller(iOptions);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IAnimationBase {} ;
+
+	export interface IAnimationElement {
+		animation: IAnimationBase;
+		weight:  number ;
+		mask: FloatMap;
+		acceleration?:  number ;
+		time:  number ;
+		realTime:  number ;
+	}
+
+	export interface IAnimationBlend extends IAnimationBase {
+		 totalAnimations:  number ;
+
+		addAnimation(pAnimation: IAnimationBase, fWeight:  number , pMask: FloatMap):  number ;
+		setAnimation(iAnimation:  number , pAnimation: IAnimationBase, fWeight?:  number , pMask?: FloatMap):  number ;
+
+		getAnimationIndex(sName: string):  number ;
+		getAnimation(sName: string): IAnimationBase;
+		getAnimation(iAnimation:  number ): IAnimationBase;
+		getAnimationWeight(sName: string):  number ;
+		getAnimationWeight(iAnimation:  number ):  number ;
+
+		setWeights(): bool;
+		setWeightSwitching(fWeight:  number , iAnimationFrom:  number , iAnimationTo:  number ): bool;
+		setAnimationWeight(iAnimation:  number , fWeight:  number ): bool;
+		setAnimationWeight(fWeight:  number ): bool;
+
+		setAnimationMask(sName: string, pMask: FloatMap): bool;
+		setAnimationMask(iAnimation:  number , pMask: FloatMap): bool;
+
+		getAnimationMask(sName: string): FloatMap;
+		getAnimationMask(iAnimation:  number ): FloatMap;
+
+		getAnimationAcceleration(sName: string):  number ;
+		getAnimationAcceleration(iAnimation:  number ):  number ;
+
+		createAnimationMask(iAnimation?:  number ): FloatMap;
+
+		 durationUpdated(fDuration:  number );
+	}
+}
+
+
+
+
+
+
+module akra.animation {
+	class Blend extends Base implements IAnimationBlend {
+		public duration:  number  = 0;
+
+		private _pAnimationList: IAnimationElement[] = [];
+
+		constructor (sName?: string) {
+			super(EAnimationTypes.BLEND, sName);
+		}
+
+		inline get totalAnimations():  number  {
+			return this._pAnimationList.length;
+		}
+
+		play(fRealTime:  number ): void {
+			var pAnimationList: IAnimationElement[] = this._pAnimationList;
+			var n:  number  = pAnimationList.length;
+
+			for (var i:  number  = 0; i < n; ++ i) {
+
+				pAnimationList[i].realTime = fRealTime;
+				pAnimationList[i].time = fRealTime * pAnimationList[i].acceleration;
+			}
+
+			this.played(fRealTime);
+		}
+
+		stop(): void {
+			this.stoped(0.);
+		}
+
+		attach(pTarget: ISceneNode): void {
+			var pAnimationList: IAnimationElement[] = this._pAnimationList;
+
+			for (var i:  number  = 0; i < pAnimationList.length; ++ i) {
+				var pAnim: IAnimationBase = pAnimationList[i].animation;
+				pAnim.attach(pTarget);
+				this.grab(pAnim, true);
+			}
+		}
+
+		addAnimation(pAnimation: IAnimationBase, fWeight:  number , pMask: FloatMap):  number  {
+			logger.setSourceLocation( "animation/Blend.ts" , 50 ); logger.assert(isDef(pAnimation), 'animation must be setted.'); ;
+
+			this._pAnimationList.push(null);
+
+			return this.setAnimation(this._pAnimationList.length - 1, pAnimation, fWeight, pMask);
+		}
+
+		setAnimation(iAnimation:  number , pAnimation: IAnimationBase, fWeight:  number  = 1.0, pMask: FloatMap = null):  number  {
+			logger.setSourceLocation( "animation/Blend.ts" , 58 ); logger.assert(iAnimation <= this._pAnimationList.length, 'invalid animation slot: ' + iAnimation + '/' + this._pAnimationList.length); ;
+
+		    var pPointer: IAnimationElement = this._pAnimationList[iAnimation];
+		    var pAnimationList: IAnimationElement[] = this._pAnimationList;
+
+		    if (!pAnimation) {
+		    	pAnimationList[iAnimation] = null;
+		    	return iAnimation;
+		    }
+
+		    if (!pPointer) {
+		    	pPointer = {
+					animation: pAnimation,
+					weight: fWeight,
+					mask: pMask,
+					acceleration: 1.0,
+					time: 0.0,
+					realTime: 0.0
+				};
+
+				this.connect(pAnimation, "durationUpdated" , "_onDurationUpdate" )
+
+				if (iAnimation == this._pAnimationList.length) {
+					pAnimationList.push(pPointer);
+				}
+				else {
+					pAnimationList[iAnimation] = pPointer;
+				}
+			}
+
+			this.grab(pAnimation);
+			this.updateDuration();
+
+			return iAnimation;
+		}
+
+		_onDurationUpdate(pAnimation: IAnimationBase, fDuration:  number ): void {
+			this.updateDuration();
+		}
+
+		/**@protected*/  updateDuration(): void {
+			var fWeight:  number  = 0;
+			var fSumm:  number  = 0;
+			var pAnimationList: IAnimationElement[] = this._pAnimationList;
+			var n:  number  = pAnimationList.length;
+
+			for (var i:  number  = 0; i < n; ++ i) {
+				if (pAnimationList[i] === null) {
+					continue;
+				}
+
+				fSumm += pAnimationList[i].weight * pAnimationList[i].animation.duration;
+				fWeight += pAnimationList[i].weight;
+			}
+
+			if (fWeight === 0) {
+				this.duration = 0;
+			}
+			else {
+
+				this.duration = fSumm / fWeight;
+
+				for (var i:  number  = 0; i < n; ++ i) {
+					if (pAnimationList[i] === null) {
+						continue;
+					}
+
+					pAnimationList[i].acceleration = pAnimationList[i].animation.duration / this.duration;
+//trace(pAnimationList[i].animation.name, '> acceleration > ', pAnimationList[i].acceleration);
+				}
+			}
+
+			this.durationUpdated(this.duration);
+		}
+
+		getAnimationIndex(sName: string):  number  {
+			var pAnimationList: IAnimationElement[] = this._pAnimationList;
+
+			for (var i:  number  = 0; i < pAnimationList.length; i++) {
+				if (pAnimationList[i].animation.name === sName) {
+					return i;
+				}
+			};
+
+			return -1;
+		}
+
+
+		getAnimation(sName: string): IAnimationBase;
+		getAnimation(iAnimation:  number ): IAnimationBase;
+		getAnimation(animation): IAnimationBase {
+			var iAnimation:  number  = isString(animation)? this.getAnimationIndex(animation): < number >animation;
+			return this._pAnimationList[iAnimation].animation;
+		}
+
+		getAnimationWeight(iAnimation:  number ):  number ;
+		getAnimationWeight(sName: string):  number ;
+		getAnimationWeight(animation):  number  {
+			var iAnimation:  number  = < number >animation;
+			if (isString(animation)) {
+				iAnimation = this.getAnimationIndex(animation);
+			}
+
+			return this._pAnimationList[iAnimation].weight;
+		}
+
+		setWeights(): bool {
+			var fWeight:  number ;
+    		var isModified: bool = false;
+		    var pAnimationList: IAnimationElement[] = this._pAnimationList;
+
+			for (var i:  number  = 0; i < arguments.length; ++ i) {
+				fWeight = arguments[i];
+
+				if (fWeight < 0 || fWeight === null || !pAnimationList[i]) {
+					continue;
+				}
+
+				if (pAnimationList[i].weight !== fWeight) {
+					pAnimationList[i].weight = fWeight;
+					isModified = true;
+				}
+			}
+
+			if (isModified) {
+				this.updateDuration();
+			}
+
+			return true;
+		}
+
+		setWeightSwitching(fWeight:  number , iAnimationFrom:  number , iAnimationTo:  number ): bool {
+			var pAnimationList: IAnimationElement[] = this._pAnimationList;
+		    var isModified: bool = false;
+		    var fWeightInv:  number  = 1. - fWeight;
+
+		    if (!pAnimationList[iAnimationFrom] || !pAnimationList[iAnimationTo]) {
+		    	return false;
+		    }
+
+		    if (pAnimationList[iAnimationFrom].weight !== fWeightInv) {
+				pAnimationList[iAnimationFrom].weight = fWeightInv;
+				isModified = true;
+			}
+
+			if (pAnimationList[iAnimationTo].weight !== fWeight) {
+				pAnimationList[iAnimationTo].weight = fWeight;
+				isModified = true;
+			}
+
+			if (isModified) {
+				this.updateDuration();
+			}
+
+			return true;
+		}
+
+		setAnimationWeight(fWeight:  number ): bool;
+		setAnimationWeight(iAnimation:  number , fWeight:  number ): bool;
+		setAnimationWeight(sName: string, fWeight:  number ): bool;
+		setAnimationWeight(animation, fWeight?:  number ): bool {
+			var pAnimationList = this._pAnimationList;
+		    var isModified = false;
+		    if (arguments.length === 1) {
+		    	fWeight = arguments[0];
+
+		    	for (var i = 0; i < pAnimationList.length; i++) {
+		    		pAnimationList[i].weight = fWeight;
+		    	};
+
+		    	isModified = true;
+		    }
+		    else {
+			    var iAnimation:  number  = isString(animation)? this.getAnimationIndex(animation): < number >animation;
+
+//trace('set weight for animation: ', iAnimation, 'to ', fWeight);
+			    if (pAnimationList[iAnimation].weight !== fWeight) {
+					pAnimationList[iAnimation].weight = fWeight;
+					isModified = true;
+				}
+			}
+
+			if (isModified) {
+				this.updateDuration();
+			}
+
+			return true;
+		}
+
+		setAnimationMask(iAnimation:  number , pMask: FloatMap): bool;
+		setAnimationMask(sName: string, pMask: FloatMap): bool;
+		setAnimationMask(animation, pMask: FloatMap): bool {
+			var iAnimation:  number  = isString(animation)? this.getAnimationIndex(animation): < number >animation;
+
+			this._pAnimationList[iAnimation].mask = pMask;
+
+			return true;
+		}
+
+		getAnimationMask(iAnimation:  number ): FloatMap;
+		getAnimationMask(sName: string): FloatMap;
+		getAnimationMask(animation): FloatMap {
+			var iAnimation:  number  = isString(animation)? this.getAnimationIndex(animation): < number >animation;
+
+			return this._pAnimationList[iAnimation].mask;
+		}
+
+		getAnimationAcceleration(iAnimation:  number ):  number ;
+		getAnimationAcceleration(sName: string):  number ;
+		getAnimationAcceleration(animation):  number  {
+			var iAnimation:  number  = isString(animation)? this.getAnimationIndex(animation): < number >animation;
+
+			return this._pAnimationList[iAnimation].acceleration;
+		}
+
+		createAnimationMask(iAnimation?:  number ): FloatMap {
+			if (arguments.length === 0) {
+				return super.createAnimationMask();
+			}
+
+			if (typeof arguments[0] === 'string') {
+		    	iAnimation = this.getAnimationIndex(arguments[0]);
+		    }
+
+		    var pAnimation: IAnimationBase = this._pAnimationList[iAnimation].animation;
+			return pAnimation.createAnimationMask();
+		}
+
+		frame(sName: string, fRealTime:  number ) {
+			var pAnimationList: IAnimationElement[] = this._pAnimationList;
+			var pResultFrame: IAnimationFrame = animationFrame().reset();
+			var pFrame: IAnimationFrame;
+			var pMask: FloatMap;
+			var pPointer: IAnimationElement;
+			var fAcceleration:  number ;
+
+			var fBoneWeight:  number ;
+			var fWeight:  number ;
+			var iAnim:  number  = 0;
+
+
+			for (var i:  number  = 0; i < pAnimationList.length; i++) {
+				pPointer = pAnimationList[i];
+
+				if (!pPointer) {
+					continue;
+				}
+
+				fAcceleration = pPointer.acceleration;
+				pMask = pPointer.mask;
+				fBoneWeight = 1.0;
+
+				pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
+		    	pPointer.realTime = fRealTime;
+
+		    	if (pMask) {
+					fBoneWeight = isDef(pMask[sName]) ? pMask[sName] : 1.0;
+				}
+
+				fWeight = fBoneWeight * pPointer.weight;
+
+				if (fWeight > 0.0) {
+					pFrame = pPointer.animation.frame(sName, pPointer.time);
+
+					if (pFrame) {
+						iAnim ++;
+//first, if 1
+						pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);
+					}
+				}
+			}
+
+			if (pResultFrame.weight === 0.0) {
+				return null;
+			}
+
+			return pResultFrame.normilize();
+		}
+
+
+		durationUpdated (fDuration): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).durationUpdated; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, fDuration) : _broadcast[i].listener (_recivier, fDuration) ; } } } ; ;
+	}
+
+	export inline function isBlend(pAnimation: IAnimationBase): bool {
+		return pAnimation.type === EAnimationTypes.BLEND;
+	}
+
+	export function createBlend(sName?: string): IAnimationBlend {
+		return new Blend(sName);
+	}
+}
+
+
+
 
 
 
@@ -27604,6 +29069,7 @@ module akra.core.pool.resources {
 
     var pSupportedVertexFormat: IColladaUnknownFormat[];
     var pSupportedTextureFormat: IColladaUnknownFormat[];
+    var pSupportedColorFormat: IColladaUnknownFormat[];
     var pSupportedWeightFormat: IColladaUnknownFormat[];
     var pSupportedJointFormat: IColladaUnknownFormat[];
     var pSupportedInvBindMatrixFormat: IColladaUnknownFormat[];
@@ -27623,6 +29089,7 @@ module akra.core.pool.resources {
         attachToScene(pNode: ISceneNode): bool;
 
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
+
 // load(sFilename: string, fnCallback?: IColladaLoadCallback, pOptions?: IColladaLoadOptions): void;
 
 // polygon index convertion
@@ -27723,11 +29190,12 @@ module akra.core.pool.resources {
         private buildAnimationTrack(pChannel: IColladaAnimationChannel): IAnimationTrack;
         private buildAnimationTrackList(pAnimationData: IColladaAnimation): IAnimationTrack[];
         private buildAnimation(pAnimationData: IColladaAnimation): IAnimation;
-        private buildAnimations(pAnimations: IColladaAnimation[], pAnimationsList?: IAnimation[]): IAnimation[];
+        private buildAnimations(pAnimationsList?: IAnimation[]): IAnimation[];
 
 // common
 
         private buildAssetTransform(pNode: ISceneNode, pAsset?: IColladaAsset): ISceneNode;
+        private buildDeclarationFromAccessor(sSemantic: string, pAccessor: IColladaAccessor): IVertexElementInterface[];
 
 // materials & meshes
 
@@ -27767,20 +29235,23 @@ module akra.core.pool.resources {
         private prepareInput(pInput: IColladaInput): IColladaInput;
 
         private isJointsVisualizationNeeded(): bool;
-        private isVisualSceneLoaded(): bool;
+        public  isVisualSceneLoaded(): bool;
+        public  isAnimationLoaded(): bool;
         private isSceneNeeded(): bool;
         private isAnimationNeeded(): bool;
         private isPoseExtractionNeeded(): bool;
         private isWireframeEnabled(): bool;
         private getSkeletonsOutput(): ISkeleton[];
         private getVisualScene(): IColladaVisualScene;
-        private getAsset(): IColladaAsset;
+        private getAnimations(): IColladaAnimation[];
+        public  getAsset(): IColladaAsset;
+
 
         private isLibraryLoaded(sLib: string): bool;
         private isLibraryExists(sLib: string): bool;
         private getLibrary(sLib: string): IColladaLibrary;
-        private getBasename(): string;
-        private getFilename(): string;
+        public  getBasename(): string;
+        public  getFilename(): string;
         private setFilename(sName: string): void;
 
         private checkLibraries(pXML: Element, pTemplates: IColladaLibraryTemplate[]): void;
@@ -27833,6 +29304,7 @@ module akra.core.pool.resources {
 
         private _pAsset: IColladaAsset = null;
         private _pVisualScene: IColladaVisualScene = null;
+        private _pAnimations: IColladaAnimation[] = [];
 
         private _sFilename: string = null;
 
@@ -28124,7 +29596,7 @@ module akra.core.pool.resources {
                     return this.COLLADASurface(pXML);
 
                 default:
-                    logger.setSourceLocation( "resources/Collada.ts" , 580 ); logger.error("unsupported COLLADA data type <" + sName + " />"); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 591 ); logger.error("unsupported COLLADA data type <" + sName + " />"); ;
             }
 
 //return null;
@@ -28132,29 +29604,29 @@ module akra.core.pool.resources {
 
         private COLLADAGetSourceData(pSource: IColladaSource, pFormat: IColladaUnknownFormat[]): IColladaArray {
 
-            logger.setSourceLocation( "resources/Collada.ts" , 588 ); logger.assert(isDefAndNotNull(pSource), "<source /> with expected format ", pFormat, " not founded"); ;
+            logger.setSourceLocation( "resources/Collada.ts" , 599 ); logger.assert(isDefAndNotNull(pSource), "<source /> with expected format ", pFormat, " not founded"); ;
 
             var nStride:  number  = calcFormatStride(pFormat);
             var pTech: IColladaTechniqueCommon = pSource.techniqueCommon;
 
-            logger.setSourceLocation( "resources/Collada.ts" , 593 ); logger.assert(isDefAndNotNull(pTech), "<source /> with id <" + pSource.id + "> has no <technique_common />"); ;
+            logger.setSourceLocation( "resources/Collada.ts" , 604 ); logger.assert(isDefAndNotNull(pTech), "<source /> with id <" + pSource.id + "> has no <technique_common />"); ;
 
             var pAccess: IColladaAccessor = pTech.accessor;
             var isFormatSupported: bool;
 
 
             if (!(pAccess.stride <= nStride)) {
-                logger.setSourceLocation( "resources/Collada.ts" , 600 ); logger.log(pAccess.stride, "/", nStride); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 611 ); logger.log(pAccess.stride, "/", nStride); ;
             }
 
 
-            logger.setSourceLocation( "resources/Collada.ts" , 605 ); logger.assert(pAccess.stride <= nStride, "<source /> width id" + pSource.id + " has unsupported stride: " + pAccess.stride);
+            logger.setSourceLocation( "resources/Collada.ts" , 616 ); logger.assert(pAccess.stride <= nStride, "<source /> width id" + pSource.id + " has unsupported stride: " + pAccess.stride);
                                                                                                            ;
 
             var fnUnsupportedFormatError = function (): void {
-                logger.setSourceLocation( "resources/Collada.ts" , 608 ); logger.log("expected format: " , pFormat); ;
-                logger.setSourceLocation( "resources/Collada.ts" , 609 ); logger.log("given format: " , pAccess.params); ;
-                logger.setSourceLocation( "resources/Collada.ts" , 610 ); logger.error("accessor of <" + pSource.id + "> has unsupported format"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 619 ); logger.log("expected format: " , pFormat); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 620 ); logger.log("given format: " , pAccess.params); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 621 ); logger.error("accessor of <" + pSource.id + "> has unsupported format"); ;
             }
 
             for (var i:  number  = 0; i < pAccess.params.length; ++ i) {
@@ -28242,7 +29714,7 @@ module akra.core.pool.resources {
                     break;
 
                 default:
-                    logger.setSourceLocation( "resources/Collada.ts" , 697 ); logger.error("unsupported transform detected: " + pTransform.transform); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 708 ); logger.error("unsupported transform detected: " + pTransform.transform); ;
             }
 
 
@@ -28358,6 +29830,7 @@ module akra.core.pool.resources {
             var pLib: IColladaLibrary = <IColladaLibrary>{};
             var pData: IColladaEntry;
             var sTag: string = pTemplate.element;
+            var iAutoId:  number  = 0;
 
             pLib[sTag] = {};
 
@@ -28372,7 +29845,7 @@ module akra.core.pool.resources {
                     return;
                 }
 
-                pLib[sTag][attr(pXMLData, 'id')] = pData;
+                pLib[sTag][attr(pXMLData, 'id') || (sTag + "_" + (iAutoId ++))] = pData;
             });
 
             return pLib;
@@ -28418,7 +29891,7 @@ module akra.core.pool.resources {
                 pInput.offset = iOffset;
             }
 
-            logger.setSourceLocation( "resources/Collada.ts" , 873 ); logger.assert(isInt(pInput.offset) && pInput.offset >= 0, "invalid offset detected"); ;
+            logger.setSourceLocation( "resources/Collada.ts" , 885 ); logger.assert(isInt(pInput.offset) && pInput.offset >= 0, "invalid offset detected"); ;
 
             return pInput;
         }
@@ -28489,7 +29962,7 @@ module akra.core.pool.resources {
             });
 
 
-            logger.setSourceLocation( "resources/Collada.ts" , 945 ); logger.assert(isDefAndNotNull(pVertices.inputs["POSITION"]), "semantics POSITION must be in the <vertices /> tag");
+            logger.setSourceLocation( "resources/Collada.ts" , 957 ); logger.assert(isDefAndNotNull(pVertices.inputs["POSITION"]), "semantics POSITION must be in the <vertices /> tag");
                                                                               ;
 
             this.link(pVertices);
@@ -28517,7 +29990,7 @@ module akra.core.pool.resources {
                         break;
 
                     default:
-                        logger.setSourceLocation( "resources/Collada.ts" , 972 ); logger.error("semantics are different from JOINT/INV_BIND_MATRIX is not supported in the <joints /> tag"); ;
+                        logger.setSourceLocation( "resources/Collada.ts" , 984 ); logger.error("semantics are different from JOINT/INV_BIND_MATRIX is not supported in the <joints /> tag"); ;
                 }
             });
 
@@ -28579,7 +30052,7 @@ module akra.core.pool.resources {
                     pPolygons.p = this.polygonToTriangles(pXML, iStride);
 
                     this.eachByTag(pXML, "ph", (pXMLData: Element): void => {
-                        logger.setSourceLocation( "resources/Collada.ts" , 1030 ); logger.error("unsupported polygon[polygon] subtype founded: <ph>"); ;
+                        logger.setSourceLocation( "resources/Collada.ts" , 1042 ); logger.error("unsupported polygon[polygon] subtype founded: <ph>"); ;
                     });
 
                     break;
@@ -28601,7 +30074,7 @@ module akra.core.pool.resources {
                     break;
 
                 default:
-                    logger.setSourceLocation( "resources/Collada.ts" , 1052 ); logger.error("unsupported polygon[" + sType + "] type founded"); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 1064 ); logger.error("unsupported polygon[" + sType + "] type founded"); ;
             }
 
             if (!isDef(pPolygons.type)) {
@@ -28650,7 +30123,7 @@ module akra.core.pool.resources {
 
             n *= pVertexWeights.inputs.length;
 
-            logger.setSourceLocation( "resources/Collada.ts" , 1102 ); logger.error(pVertexWeights.inputs.length === 2, "more than 2 inputs in <vertex_weights/> not supported currently");
+            logger.setSourceLocation( "resources/Collada.ts" , 1114 ); logger.assert(pVertexWeights.inputs.length === 2, "more than 2 inputs in <vertex_weights/> not supported currently");
                                                                                            ;
 
             pVData = new Array(n);
@@ -28701,7 +30174,7 @@ module akra.core.pool.resources {
                                     pPolygons.inputs[i].semantics = pPos.semantics;
                                 }
                                 else {
-                                    logger.setSourceLocation( "resources/Collada.ts" , 1152 ); logger.error("<input /> with semantic VERTEX must refer to <vertices /> tag in same mesh."); ;
+                                    logger.setSourceLocation( "resources/Collada.ts" , 1164 ); logger.error("<input /> with semantic VERTEX must refer to <vertices /> tag in same mesh."); ;
                                 }
                             }
 
@@ -28786,10 +30259,11 @@ module akra.core.pool.resources {
 
             var pXMLData: Element = firstChild(pXML, "skin");
 
-            if (isNull(pXMLData)) {
+            if (!isNull(pXMLData)) {
                 pController.skin = this.COLLADASkin(pXMLData);
             }
             else {
+                logger.setSourceLocation( "resources/Collada.ts" , 1253 ); logger.warning("Founded controller without skin element!"); ;
                 return null;
             }
 
@@ -28834,10 +30308,10 @@ module akra.core.pool.resources {
                 pImage.path = sPath;
             }
             else if (isDefAndNotNull(pXMLData = firstChild(pXML, "data"))) {
-                logger.setSourceLocation( "resources/Collada.ts" , 1283 ); logger.error("image loading from <data /> tag unsupported yet."); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 1296 ); logger.error("image loading from <data /> tag unsupported yet."); ;
             }
             else {
-                logger.setSourceLocation( "resources/Collada.ts" , 1286 ); logger.error("image with id: " + pImage.id + " has no data."); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 1299 ); logger.error("image with id: " + pImage.id + " has no data."); ;
             }
 
             this.link(pImage);
@@ -28967,13 +30441,13 @@ module akra.core.pool.resources {
 //FIXME: at now, all materials draws similar..
                 case "blinn":
                 case "lambert":
-                    logger.setSourceLocation( "resources/Collada.ts" , 1416 ); logger.warning("<blinn /> or <lambert /> material interprated as phong"); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 1429 ); logger.warning("<blinn /> or <lambert /> material interprated as phong"); ;
                 case "phong":
                     pTech.value = this.COLLADAPhong(pValue);
                     break;
 
                 default:
-                    logger.setSourceLocation( "resources/Collada.ts" , 1422 ); logger.error("unsupported technique <" + pTech.type + " /> founded"); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 1435 ); logger.error("unsupported technique <" + pTech.type + " /> founded"); ;
             }
 
             this.link(pTech.sid, pTech);
@@ -29013,7 +30487,7 @@ module akra.core.pool.resources {
                         break;
 
                     default:
-                        logger.setSourceLocation( "resources/Collada.ts" , 1462 ); logger.error("<" + sName + " /> unsupported in effect section"); ;
+                        logger.setSourceLocation( "resources/Collada.ts" , 1475 ); logger.error("<" + sName + " /> unsupported in effect section"); ;
                 }
             });
 
@@ -29127,7 +30601,6 @@ module akra.core.pool.resources {
                 return null;
             }
 
-
             var pMaterials: IColladaBindMaterial = {};
             var pMat: IColladaInstanceMaterial = null;
             var pSourceMat: IColladaMaterial = null;
@@ -29136,6 +30609,7 @@ module akra.core.pool.resources {
             this.eachByTag(pTech, "instance_material", (pInstMat: Element): void => {
 
                 pSourceMat = <IColladaMaterial>this.source(attr(pInstMat, "target"));
+
                 pMat = {
 // url         : pSourceMat.instanceEffect.url,
                     target      : attr(pInstMat, "target"),
@@ -29148,7 +30622,7 @@ module akra.core.pool.resources {
                     var sInputSemantic: string = attr(pXMLVertexInput, "input_semantic");
 
                     if (sInputSemantic !== "TEXCOORD") {
-                        logger.setSourceLocation( "resources/Collada.ts" , 1596 ); logger.error("unsupported vertex input semantics founded: " + sInputSemantic); ;
+                        logger.setSourceLocation( "resources/Collada.ts" , 1609 ); logger.error("unsupported vertex input semantics founded: " + sInputSemantic); ;
                     }
 
 
@@ -29191,13 +30665,13 @@ module akra.core.pool.resources {
 
             this.eachByTag(pXML, "technique_hint", (pXMLData: Element): void => {
                 pInstance.techniqueHint[attr(pXMLData, "platform")] = attr(pXMLData, "ref");
-                logger.setSourceLocation( "resources/Collada.ts" , 1638 ); logger.warning("<technique_hint /> used, but will be ignored!"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 1651 ); logger.warning("<technique_hint /> used, but will be ignored!"); ;
             });
 
             this.eachByTag(pXML, "setparam", (pXMLData: Element): void => {
 //can be any type
                 pInstance.parameters[attr(pXMLData, "ref")] = <any>this.COLLADAData(pXMLData);
-                logger.setSourceLocation( "resources/Collada.ts" , 1644 ); logger.warning("<setparam /> used, but will be ignored!"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 1657 ); logger.warning("<setparam /> used, but will be ignored!"); ;
             });
 
             return pInstance;
@@ -29233,7 +30707,7 @@ module akra.core.pool.resources {
             var pScene: IColladaVisualScene = <IColladaVisualScene>this.source(attr(pXMLData, "url"));
 
             if (isNull(pXMLData) || isNull(pScene)) {
-                logger.setSourceLocation( "resources/Collada.ts" , 1680 ); logger.warning("collada model: <" + this.getBasename() + "> has no visual scenes."); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 1693 ); logger.warning("collada model: <" + this.getBasename() + "> has no visual scenes."); ;
             }
 
             return this._pVisualScene = pScene;
@@ -29267,7 +30741,7 @@ module akra.core.pool.resources {
                         break;
 
                     default:
-                        logger.setSourceLocation( "resources/Collada.ts" , 1714 ); logger.error("semantics are different from OUTPUT/INTERPOLATION/IN_TANGENT/OUT_TANGENT is not supported in the <sampler /> tag"); ;
+                        logger.setSourceLocation( "resources/Collada.ts" , 1727 ); logger.error("semantics are different from OUTPUT/INTERPOLATION/IN_TANGENT/OUT_TANGENT is not supported in the <sampler /> tag"); ;
                 }
             });
 
@@ -29282,7 +30756,7 @@ module akra.core.pool.resources {
 
 
             if (isNull(pChannel.target) || isNull(pChannel.target.object)) {
-                logger.setSourceLocation( "resources/Collada.ts" , 1729 ); logger.warning("cound not setup animation channel for <" + attr(pXML, "target") + ">"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 1742 ); logger.warning("cound not setup animation channel for <" + attr(pXML, "target") + ">"); ;
                 return null;
             }
 
@@ -29334,9 +30808,14 @@ module akra.core.pool.resources {
             });
 
             if (pAnimation.channels.length == 0 && pAnimation.animations.length == 0) {
-                logger.setSourceLocation( "resources/Collada.ts" , 1781 ); logger.warning("animation with id \"" + pAnimation.id + "\" skipped, because channels/sub animation are empty"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 1794 ); logger.warning("animation with id \"" + pAnimation.id + "\" skipped, because channels/sub animation are empty"); ;
                 return null;
             }
+
+            logger.setSourceLocation( "resources/Collada.ts" , 1799 ); logger.assert(pXML.parentNode === firstChild(this.getXMLRoot(), "library_animations"), "sub animations not supported");
+                                               ;
+
+            this._pAnimations.push(pAnimation);
 
             return pAnimation;
         }
@@ -29351,7 +30830,7 @@ module akra.core.pool.resources {
             var pElement: IColladaEntry = this._pLinks[sUrl];
 
             if (!isDefAndNotNull(pElement)) {
-                logger.setSourceLocation( "resources/Collada.ts" , 1798 ); logger.warning("cannot find element with id: " + sUrl); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 1816 ); logger.warning("cannot find element with id: " + sUrl + ("\n" + (<any>new Error).stack.split("\n").slice(1).join("\n")) ); ;
             }
 
             return pElement || null;
@@ -29434,7 +30913,8 @@ module akra.core.pool.resources {
                     pObject.value = (<IVec4>pSource.value).w;
                     break;
                 case "ANGLE":
-//<rotate sid="rotateY">0 1 0 -4.56752</rotate>                    pObject.value = (<IVec4>pSource.value).w;
+                    pObject.value = (<IVec4>pSource.value).w;
+//<rotate sid="rotateY">0 1 0 -4.56752</rotate>
                     break;
             }
 
@@ -29456,7 +30936,7 @@ module akra.core.pool.resources {
                 pObject.value = Number(pMatches[1]) * 4 + Number(pMatches[2]);
             }
 
-            logger.setSourceLocation( "resources/Collada.ts" , 1903 ); logger.assert(isDefAndNotNull(pObject.value), "unsupported target value founded: " + sValue); ;
+            logger.setSourceLocation( "resources/Collada.ts" , 1922 ); logger.assert(isDefAndNotNull(pObject.value), "unsupported target value founded: " + sValue); ;
 
             return pObject;
         }
@@ -29469,7 +30949,7 @@ module akra.core.pool.resources {
             var pTrack: IAnimationTrack = null;
             var pSampler: IColladaAnimationSampler = pChannel.sampler;
 
-            logger.setSourceLocation( "resources/Collada.ts" , 1916 ); logger.assert(isDefAndNotNull(pSampler), "could not find sampler for animation channel"); ;
+            logger.setSourceLocation( "resources/Collada.ts" , 1935 ); logger.assert(isDefAndNotNull(pSampler), "could not find sampler for animation channel"); ;
 
             var pInput: IColladaInput = pSampler.inputs["INPUT"];
             var pOutput: IColladaInput = pSampler.inputs["OUTPUT"];
@@ -29479,8 +30959,8 @@ module akra.core.pool.resources {
             var pOutputValues:  number [] = pOutput.array;
             var pFloatArray: Float32Array;
 
-            var pTransform: IColladaEntry = pChannel.target.object
-            var sTransform: string = pTransform.name;
+            var pTransform: IColladaTransform = <IColladaTransform>pChannel.target.object
+            var sTransform: string = pTransform.transform;
             var v4f: IVec4;
             var pValue: any;
             var nMatrices:  number ;
@@ -29500,7 +30980,7 @@ module akra.core.pool.resources {
 //     v3f.Z = pOutputValues[i * 3 + 2];
 //     pTrack.keyFrame(pTimeMarks[i], [v3f.X, v3f.Y, v3f.Z]);
 // };
-                    logger.setSourceLocation( "resources/Collada.ts" , 1947 ); logger.criticalError("TODO: implement animation translation"); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 1966 ); logger.criticalError("TODO: implement animation translation"); ;
 //TODO: implement animation translation
                     break;
                 case "rotate":
@@ -29513,7 +30993,7 @@ module akra.core.pool.resources {
 // for (var i = 0; i < pTimeMarks.length; ++ i) {
 //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
 // };
-                    logger.setSourceLocation( "resources/Collada.ts" , 1960 ); logger.criticalError("TODO: implement animation rotation"); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 1979 ); logger.criticalError("TODO: implement animation rotation"); ;
 //TODO: implement animation rotation
                     break;
                 case "matrix":
@@ -29523,7 +31003,7 @@ module akra.core.pool.resources {
                         nMatrices = pOutputValues.length / 16;
                         pFloatArray = new Float32Array(pOutputValues);
 
-                        logger.setSourceLocation( "resources/Collada.ts" , 1971 ); logger.assert(nMatrices % 1 === 0.0, "incorrect output length of transformation data (" + pFloatArray.length + ")");
+                        logger.setSourceLocation( "resources/Collada.ts" , 1990 ); logger.assert(nMatrices % 1 === 0.0, "incorrect output length of transformation data (" + pFloatArray.length + ")");
                                                                                                                    ;
 
                         for (var i:  number  = 0; i < nMatrices; i++) {
@@ -29542,11 +31022,11 @@ module akra.core.pool.resources {
 // for (var i = 0; i < pTimeMarks.length; ++i) {
 //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i]);
 // }
-                        logger.setSourceLocation( "resources/Collada.ts" , 1989 ); logger.criticalError("TODO: implement animation matrix modification"); ;
+                        logger.setSourceLocation( "resources/Collada.ts" , 2008 ); logger.criticalError("TODO: implement animation matrix modification"); ;
                     }
                     break;
                 default:
-                    logger.setSourceLocation( "resources/Collada.ts" , 1993 ); logger.error("unsupported animation typed founeed: " + sTransform); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 2012 ); logger.error("unsupported animation typed founeed: " + sTransform); ;
             }
 
             if (!isNull(pTrack)) {
@@ -29593,7 +31073,9 @@ module akra.core.pool.resources {
             return pAnimation;
         }
 
-        private buildAnimations(pAnimations: IColladaAnimation[], pAnimationsList: IAnimation[] = []): IAnimation[] {
+        private buildAnimations(pAnimationsList: IAnimation[] = []): IAnimation[] {
+            var pAnimations: IColladaAnimation[] = this.getAnimations();
+
             if (isNull(pAnimations)) {
                 return null;
             }
@@ -29627,6 +31109,25 @@ module akra.core.pool.resources {
             return pNode;
         }
 
+        private buildDeclarationFromAccessor(sSemantic: string, pAccessor: IColladaAccessor): IVertexElementInterface[] {
+            var pDecl: IVertexElementInterface[] = [];
+
+            for (var i:  number  = 0; i < pAccessor.params.length; ++ i) {
+                var sUsage: string = pAccessor.params[i].name;
+                var sType: string = pAccessor.params[i].type;
+
+                logger.setSourceLocation( "resources/Collada.ts" , 2101 ); logger.assert(sType === "float", "Only float type supported for construction declaration from accessor"); ;
+
+                pDecl.push(VE_FLOAT(sUsage));
+            }
+
+            pDecl.push(VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pAccessor.params.length, 0));
+
+            logger.setSourceLocation( "resources/Collada.ts" , 2108 ); logger.log("Automatically constructed declaration: ", createVertexDeclaration(pDecl).toString()); ;
+
+            return pDecl;
+        }
+
 
 // materials & meshes
 
@@ -29642,15 +31143,15 @@ module akra.core.pool.resources {
                 var pMaterialInst: IColladaInstanceMaterial = pMaterials[sMaterial];
                 var pInputMap: IColladaBindVertexInputMap = pMaterialInst.vertexInput;
 // URL --> ID (#somebody ==> somebody)
-                var sEffectId: string = pMaterialInst.url.substr(1);
-                var pEffect: IColladaEffect = pEffects.effects[sEffectId];
+                var sEffectId: string = pMaterialInst.material.instanceEffect.effect.id;
+                var pEffect: IColladaEffect = pEffects.effect[sEffectId];
                 var pPhongMaterial: IColladaPhong = <IColladaPhong>pEffect.profileCommon.technique.value;
                 var pMaterial: IMaterial = material.create(sEffectId)
 
                 pMaterial.set(<IMaterialBase>pPhongMaterial);
 
                 for (var j:  number  = 0; j < pMesh.length; ++j) {
-                    var pSubMesh: IMeshSubset = pMesh[j];
+                    var pSubMesh: IMeshSubset = pMesh.getSubset(j);
 
 //if (pSubMesh.surfaceMaterial.findResourceName() === sMaterial) {
                     if (pSubMesh.material.name === sMaterial) {
@@ -29658,16 +31159,19 @@ module akra.core.pool.resources {
                         pSubMesh.material.set(pMaterial);
 //FIXME: remove flex material setup(needs only demo with flexmats..)
 // pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
-                        if (!pSubMesh.renderMethod.effect.isResourceLoaded()) {
-                            pSubMesh.renderMethod.effect.create();
-                        }
 
                         pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
                         pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
 
 //setup textures
                         for (var sTextureType in pPhongMaterial.textures) {
+
                             var pColladaTexture: IColladaTexture = pPhongMaterial.textures[sTextureType];
+
+                            if (isNull(pColladaTexture)) {
+                                continue;
+                            }
+
                             var pInput: IColladaBindVertexInput = pInputMap[pColladaTexture.texcoord];
 
                             if (!isDefAndNotNull(pInput)) {
@@ -29709,7 +31213,7 @@ module akra.core.pool.resources {
             for (var i:  number  = 0; i < pSkeletonsList.length; ++i) {
                 var pJoint: IJoint = <IJoint>(<IColladaNode>this.source(pSkeletonsList[i])).constructedNode;
 
-                logger.setSourceLocation( "resources/Collada.ts" , 2155 ); logger.error(scene.isJoint(pJoint), "skeleton node must be joint"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 2198 ); logger.assert(scene.isJoint(pJoint), "skeleton node must be joint"); ;
 
                 pSkeleton.addRootJoint(pJoint);
             }
@@ -29738,7 +31242,7 @@ module akra.core.pool.resources {
 
             pMesh = this.getEngine().createMesh(
                 sMeshName,
-/*|EMeshOptions.RD_ADVANCED_INDEX,  //0,//*/
+/*|EMeshOptions.RD_ADVANCED_INDEX,  0,*/
                 < number >(EMeshOptions.HB_READABLE),
 /*shared buffer, if supported*/
                 this.sharedBuffer());
@@ -29803,7 +31307,8 @@ module akra.core.pool.resources {
                                 pDecl = [VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pInput.accessor.stride)];
                                 break;
                             default:
-                                logger.setSourceLocation( "resources/Collada.ts" , 2245 ); logger.error("unsupported semantics used: " + sSemantic); ;
+                                pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
+                                logger.setSourceLocation( "resources/Collada.ts" , 2289 ); logger.warning("unsupported semantics used: " + sSemantic); ;
                         }
 
                         pMeshData.allocateData(pDecl, pData);
@@ -29847,8 +31352,8 @@ module akra.core.pool.resources {
                 pSubMesh.material.name = pPolygons.material;
             }
 
-            pMesh.addFlexMaterial("default");
-            pMesh.setFlexMaterial("default");
+            logger.setSourceLocation( "resources/Collada.ts" , 2333 ); logger.assert(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">"); ;
+            logger.setSourceLocation( "resources/Collada.ts" , 2334 ); logger.assert(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">"); ;
 
 //adding all data to cahce data
             this.addMesh(pMesh);
@@ -29879,18 +31384,21 @@ module akra.core.pool.resources {
             pMesh = this.buildMesh({geometry : pGeometry, material : pMaterials});
 
             pSkin = pMesh.createSkin();
+
             pSkin.setBindMatrix(m4fBindMatrix);
             pSkin.setBoneNames(pBoneList);
             pSkin.setBoneOffsetMatrices(pBoneOffsetMatrices);
-            pSkin.setSkeleton(pSkeleton);
+
+            logger.setSourceLocation( "resources/Collada.ts" , 2370 ); logger.assert(pSkin.setSkeleton(pSkeleton), "Could not set skeleton to skin."); ;
 
             if (!pSkin.setVertexWeights(
                 < number []>pVertexWeights.vcount,
                 new Float32Array(pVertexWeights.v),
                 new Float32Array(pVertexWeights.weightInput.array))) {
-                logger.setSourceLocation( "resources/Collada.ts" , 2330 ); logger.error("cannot set vertex weight info to skin"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 2376 ); logger.error("cannot set vertex weight info to skin"); ;
             }
 
+            pMesh.setSkin(pSkin);
             pMesh.setSkeleton(pSkeleton);
             pSkeleton.attachMesh(pMesh);
 
@@ -29906,7 +31414,7 @@ module akra.core.pool.resources {
                 pMesh = this.buildSkinMesh(pControllers[m]);
                 pMeshList.push(pMesh);
 
-                logger.setSourceLocation( "resources/Collada.ts" , 2348 ); logger.assert(isDefAndNotNull(pMesh), "cannot find instance <" + pControllers[m].url + ">\"s data"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 2395 ); logger.assert(isDefAndNotNull(pMesh), "cannot find instance <" + pControllers[m].url + ">\"s data"); ;
 
                 if (!isNull(pSceneNode)) {
                     pSceneNode.mesh = pMesh;
@@ -29924,7 +31432,7 @@ module akra.core.pool.resources {
                 pMesh = this.buildMesh(pGeometries[m]);
                 pMeshList.push(pMesh);
 
-                logger.setSourceLocation( "resources/Collada.ts" , 2366 ); logger.assert(isDefAndNotNull(pMesh), "cannot find instance <" + pGeometries[m].url + ">\"s data"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 2413 ); logger.assert(isDefAndNotNull(pMesh), "cannot find instance <" + pGeometries[m].url + ">\"s data"); ;
 
                 if (!isNull(pSceneNode)) {
                     pSceneNode.mesh = pMesh;
@@ -29942,7 +31450,7 @@ module akra.core.pool.resources {
                 var pModelNode: ISceneNode = pNode.constructedNode;
 
                 if (isNull(pModelNode)) {
-                    logger.setSourceLocation( "resources/Collada.ts" , 2384 ); logger.error("you must call buildScene() before call buildMeshes() or file corrupt"); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 2431 ); logger.error("you must call buildScene() before call buildMeshes() or file corrupt"); ;
                     return;
                 }
 
@@ -29982,8 +31490,9 @@ module akra.core.pool.resources {
                 pSceneNode = pScene.createNode();
             }
 
-            pSceneNode.attachToParent(pParentNode);
+            logger.setSourceLocation( "resources/Collada.ts" , 2470 ); logger.assert(pSceneNode.create(), "Can not initialize scene node!"); ;
 
+            pSceneNode.attachToParent(pParentNode);
 
             return pSceneNode;
         }
@@ -29994,7 +31503,7 @@ module akra.core.pool.resources {
             var sJointName: string = pNode.id;
             var pSkeleton: ISkeleton;
 
-            logger.setSourceLocation( "resources/Collada.ts" , 2435 ); logger.assert(isDefAndNotNull(pParentNode), "parent node is null"); ;
+            logger.setSourceLocation( "resources/Collada.ts" , 2483 ); logger.assert(isDefAndNotNull(pParentNode), "parent node is null"); ;
 
             if (isDefAndNotNull(pJointNode)) {
                 return pJointNode;
@@ -30005,6 +31514,9 @@ module akra.core.pool.resources {
             }
 
             pJointNode = pParentNode.scene.createJoint();
+
+            logger.setSourceLocation( "resources/Collada.ts" , 2495 ); logger.assert(pJointNode.create(), "Can not initialize joint node!"); ;
+
             pJointNode.boneName = sJointSid;
             pJointNode.attachToParent(pParentNode);
 
@@ -30016,7 +31528,7 @@ module akra.core.pool.resources {
 //     pJointNode);
 // pSceneNode.name = sJointName + '[joint]';
 // pSceneNode.setScale(0.02);
-                logger.setSourceLocation( "resources/Collada.ts" , 2457 ); logger.criticalError("TODO: visualize joints..."); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 2508 ); logger.criticalError("TODO: visualize joints..."); ;
             }
 
 
@@ -30140,7 +31652,7 @@ module akra.core.pool.resources {
             var pScene: IColladaVisualScene = this.getVisualScene();
 
             if (isNull(pScene)) {
-                logger.setSourceLocation( "resources/Collada.ts" , 2581 ); logger.warning("build complete, but visual scene not parsed correctly!"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 2632 ); logger.warning("build complete, but visual scene not parsed correctly!"); ;
                 return;
             }
 
@@ -30194,8 +31706,7 @@ module akra.core.pool.resources {
 
         private prepareInput(pInput: IColladaInput): IColladaInput {
             var pSupportedFormat: IColladaUnknownFormat[] = getSupportedFormat(pInput.semantics);
-
-            logger.setSourceLocation( "resources/Collada.ts" , 2636 ); logger.assert(isDefAndNotNull(pSupportedFormat), "unsupported semantic used <" + pInput.semantics + ">"); ;
+            logger.setSourceLocation( "resources/Collada.ts" , 2686 ); logger.assert(isDefAndNotNull(pSupportedFormat), "unsupported semantic used <" + pInput.semantics + ">"); ;
 
             pInput.array    = <any[]><any>this.COLLADAGetSourceData(pInput.source, pSupportedFormat);
             pInput.accessor = pInput.source.techniqueCommon.accessor;
@@ -30207,8 +31718,12 @@ module akra.core.pool.resources {
             return this._pOptions.drawJoints === true;
         }
 
-        private inline isVisualSceneLoaded(): bool {
+        public inline isVisualSceneLoaded(): bool {
             return isDefAndNotNull(this._pVisualScene);
+        }
+
+        public inline isAnimationLoaded(): bool {
+            return this._pAnimations.length > 0;
         }
 
         private inline isSceneNeeded(): bool {
@@ -30235,7 +31750,11 @@ module akra.core.pool.resources {
             return this._pVisualScene;
         }
 
-        private inline getAsset(): IColladaAsset {
+        private inline getAnimations(): IColladaAnimation[] {
+            return this._pAnimations;
+        }
+
+        public inline getAsset(): IColladaAsset {
             return this._pAsset;
         }
 
@@ -30244,18 +31763,18 @@ module akra.core.pool.resources {
         }
 
         private inline isLibraryExists(sLib: string): bool {
-            return false;
+            return !isNull(firstChild(this.getXMLRoot(), "library_animations"));
         }
 
         private inline getLibrary(sLib: string): IColladaLibrary {
             return this._pLib[sLib] || null;
         }
 
-        private inline getBasename(): string {
+        public inline getBasename(): string {
             return util.pathinfo(this._sFilename).basename || "unknown";
         }
 
-        private inline getFilename(): string {
+        public inline getFilename(): string {
             return this._sFilename;
         }
 
@@ -30268,7 +31787,6 @@ module akra.core.pool.resources {
 
             for (var i:  number  = 0; i < pTemplates.length; i++) {
                 var sLib: string = pTemplates[i].lib;
-
                 pLibraries[sLib] = this.COLLADALibrary(firstChild(pXML, sLib), pTemplates[i]);
             }
         }
@@ -30287,7 +31805,7 @@ module akra.core.pool.resources {
 
         parse(sXMLData: string, pOptions: IColladaLoadOptions = null): bool {
             if (isNull(sXMLData)) {
-                logger.setSourceLocation( "resources/Collada.ts" , 2728 ); logger.error("must be specified collada content."); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 2785 ); logger.error("must be specified collada content."); ;
                 return false;
             }
 
@@ -30319,7 +31837,7 @@ module akra.core.pool.resources {
             }
 
             if (this.isResourceLoaded()) {
-                logger.setSourceLocation( "resources/Collada.ts" , 2760 ); logger.warning("collada model already loaded"); ;
+                logger.setSourceLocation( "resources/Collada.ts" , 2817 ); logger.warning("collada model already loaded"); ;
                 return false;
             }
 
@@ -30332,7 +31850,7 @@ module akra.core.pool.resources {
 
             io.fopen(sFilename).read(function (pErr: Error, sXML: string) {
                 if (!isNull(pErr)) {
-                    logger.setSourceLocation( "resources/Collada.ts" , 2773 ); logger.error(pErr); ;
+                    logger.setSourceLocation( "resources/Collada.ts" , 2830 ); logger.error(pErr); ;
                 }
 
                 pModel.notifyRestored();
@@ -30343,25 +31861,50 @@ module akra.core.pool.resources {
             });
         }
 
-        attachToScene(pNode: ISceneNode): bool {
+
+        attachToScene(pScene: IScene3d, pController?: IAnimationController): bool;
+        attachToScene(pNode: ISceneNode, pController?: IAnimationController): bool;
+        attachToScene(parent, pController: IAnimationController = null): bool {
             var pSkeletons: ISkeleton[],
                 pSkeleton: ISkeleton;
             var pPoses: IAnimation[];
+            var pScene: IScene3d;
+            var pNode: ISceneNode;
             var pRoot: ISceneNode;
 
             var pSceneOutput: ISceneNode[] = null;
             var pAnimationOutput: IAnimation[] = null;
             var pMeshOutput: IMesh[] = null;
             var pInitialPosesOutput: IAnimation[] = null;
-            var pController: IAnimationController = null;
 
 
-            if (isNull(pNode)) {
+            if (isNull(parent)) {
                 return false;
             }
 
+            if (parent instanceof scene.Node) {
+//attach collada scene to give node
+                pNode = <ISceneNode>parent;
+                pScene = pNode.scene;
+                pRoot = pNode;
+            }
+            else {
+//attaching collada scene to new node, that is child of scene root
+                pScene = <IScene3d>parent;
+                pNode = pScene.getRootNode();
+                pRoot = pScene.createNode();
+
+                pRoot.setInheritance(ENodeInheritance.ALL);
+
+                if (!pRoot.attachToParent(pNode)) {
+                    return false;
+                }
+            }
+
+
+
             if (this.isVisualSceneLoaded() && this.isSceneNeeded()) {
-                pSceneOutput = this.buildScene(pNode);
+                pSceneOutput = this.buildScene(pRoot);
                 pMeshOutput = this.buildMeshes();
             }
 
@@ -30369,11 +31912,9 @@ module akra.core.pool.resources {
                 pInitialPosesOutput = this.buildInitialPoses();
             }
 
-            if (this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
-
+            if (!isNull(pController) && this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
                 pAnimationOutput =
-                        this.buildAnimations((<IColladaAnimation>this.getLibrary("library_animations")).animations);
-
+                        this.buildAnimations();
 //дополним анимации начальными позициями костей
                 if (this.isPoseExtractionNeeded()) {
                     pSkeletons = this.getSkeletonsOutput() || [];
@@ -30411,17 +31952,15 @@ module akra.core.pool.resources {
                 }
             }
 
+//clear all links from collada nodes to scene nodes
             this.buildComplete();
 
-            pRoot = pNode.scene.createNode();
-            pRoot.setInheritance(ENodeInheritance.ALL);
+            if (!isNull(pController) && !isNull(pAnimationOutput)) {
+                for (var i:  number  = 0; i < pAnimationOutput.length; ++ i) {
+                    pController.addAnimation(pAnimationOutput[i]);
+                }
 
-            if (!pRoot.attachToParent(pNode)) {
-                return false;
-            }
-
-            if (!isNull(pController)) {
-//TODO: bind controller
+                pController.attach(pRoot);
             }
 
             return true;
@@ -30438,6 +31977,12 @@ module akra.core.pool.resources {
         {name : ["S"], type : ["float"]},
         {name : ["T"], type : ["float"]},
         {name : ["P"], type : ["float"]}
+    ];
+
+    pSupportedColorFormat = [
+        {name : ["R"], type : ["float"]},
+        {name : ["G"], type : ["float"]},
+        {name : ["B"], type : ["float"]}
     ];
 
     pSupportedWeightFormat = [
@@ -30541,18 +32086,18 @@ module akra.core.pool.resources {
 
             case "OUTPUT":
                 return pSupportedOutputFormat;
-
+            case "COLOR":
+                return pSupportedColorFormat;
             case "UV":
             case "MORPH_WEIGHT":
             case "MORPH_TARGET":
             case "LINEAR_STEPS":
             case "IMAGE":
             case "CONTINUITY":
-            case "COLOR":
                 return null;
         }
 
-        logger.setSourceLocation( "resources/Collada.ts" , 2991 ); logger.error("unknown semantics founded: " + sSemantics); ;
+        logger.setSourceLocation( "resources/Collada.ts" , 3075 ); logger.error("unknown semantics founded: " + sSemantics); ;
 
         return null;
     }
@@ -33523,6 +35068,10 @@ module akra.util {
 
 
 
+
+
+
+
 module akra.util {
 
 	export class EffectParser extends Parser {
@@ -33574,13 +35123,31 @@ module akra.util {
 			return EOperationType.k_Ok;
 		}
 
+		private normalizeIncludePath(sFile: string): string {
+			var pCurrentPath: IURI = null;
+			var pFile: IURI = util.uri(sFile);
+
+
+			if (!isNull(pFile.host) || util.pathinfo(pFile.path).isAbsolute()) {
+//another server or absolute path
+				return sFile;
+			}
+
+			pCurrentPath = util.uri(this.getParseFileName());
+			pCurrentPath.path = util.pathinfo(pCurrentPath.path).dirname + "/" + sFile;
+
+			return pCurrentPath.toString();
+		}
+
 		private _includeCode(): EOperationType {
 			var pTree: IParseTree = this.getSyntaxTree();
 		    var pNode: IParseNode = pTree.getLastNode();
 		    var sFile: string = pNode.value;
-		    sFile = sFile.substr(1, sFile.length - 2);
 
-		    if(this._pIncludedFilesMap[sFile]){
+//cuttin qoutes
+		    sFile = this.normalizeIncludePath(sFile.substr(1, sFile.length - 2));
+
+		    if (this._pIncludedFilesMap[sFile]) {
 		    	return EOperationType.k_Ok;
 		    }
 		    else {
@@ -33588,8 +35155,10 @@ module akra.util {
 		    	var me: EffectParser = this;
 		    	var pFile: IFile = io.fopen(sFile, "r+t");
 
-		    	pFile.read(function(err, sData: string){
-		    		if(err){  logger.setSourceLocation( "util/EffectParser.ts" , 75 ); logger.error("Can not read file"); ; }
+		    	pFile.read((err, sData: string) => {
+		    		if (err) {
+		    			logger.setSourceLocation( "util/EffectParser.ts" , 96 ); logger.error("Can not read file"); ;
+		    		}
 		    		else {
 		    			pParserState.source = pParserState.source.substr(0, pParserState.index) +
 		    								  sData + pParserState.source.substr(pParserState.index);
@@ -33714,44 +35283,6 @@ module akra.core.pool.resources {
 
 
 
-
-module akra {
-	export interface IRenderTarget {} ;
-
-	export interface IPixelBuffer extends IHardwareBuffer {
-		 width:  number ;
-		 height:  number ;
-		 depth:  number ;
-
-		 format: EPixelFormats;
-
-		create(iFlags:  number ): bool;
-		create(iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats, iFlags:  number ): bool;
-
-		blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): bool;
-		blit(pSource: IPixelBuffer);
-
-		blitFromMemory(pSource: IPixelBox): bool;
-		blitFromMemory(pSource: IPixelBox, pDestBox?: IBox): bool;
-
-		blitToMemory(pDest: IPixelBox): bool;
-		blitToMemory(pSrcBox: IBox, pDest: IPixelBox): bool;
-
-		getRenderTarget(): IRenderTarget;
-
-		lock(iLockFlags:  number ): any;
-		lock(iOffset:  number , iSize:  number , iLockFlags?:  number ): any;
-		lock(pLockBox: IBox, iLockFlags?:  number ): IPixelBox;
-
-		_clearRTT(iZOffset:  number ): void;
-	}
-}
-
-
-
-
-
-
 /*
 -----------------------------------------------------------------------------
 This source file is part of OGRE
@@ -33848,7 +35379,7 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-		create(iFlags:  number ): bool {
+		create(iSize:  number , iFlags:  number  = 0): bool {
 			iFlags |= EHardwareBufferFlags.STATIC;
 
 			if ( (((iFlags) & (EHardwareBufferFlags.DYNAMIC)) != 0) ) {
@@ -34423,172 +35954,6 @@ module akra.webgl {
 
 
 
-module akra {
-	export interface IHardwareObject {} ;
-
-    export interface IRenderResource extends IResourcePoolItem {
-//getHardwareObject(): IHardwareObject;
-    };
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-    export interface IImg {} ;
-
-    export enum ETextureFlags {
-        STATIC = < number >EHardwareBufferFlags.STATIC,
-        DYNAMIC = < number >EHardwareBufferFlags.DYNAMIC,
-        READEBLE = < number >EHardwareBufferFlags.READABLE,
-        DYNAMIC_DISCARDABLE = < number >EHardwareBufferFlags.DYNAMIC_DISCARDABLE,
-/// mipmaps will be automatically generated for this texture
-        AUTOMIPMAP = 0x100,
-/// this texture will be a render target, i.e. used as a target for render to texture
-/// setting this flag will ignore all other texture usages except AUTOMIPMAP
-        RENDERTARGET = 0x200,
-/// default to automatic mipmap generation static textures
-        DEFAULT = STATIC
-    }
-
-    export enum ETextureFilters {
-        NEAREST = 0x2600,
-        LINEAR = 0x2601,
-        NEAREST_MIPMAP_NEAREST = 0x2700,
-        LINEAR_MIPMAP_NEAREST = 0x2701,
-        NEAREST_MIPMAP_LINEAR = 0x2702,
-        LINEAR_MIPMAP_LINEAR = 0x2703
-    };
-
-    export enum ETextureWrapModes {
-        REPEAT = 0x2901,
-        CLAMP_TO_EDGE = 0x812F,
-        MIRRORED_REPEAT = 0x8370
-    };
-
-    export enum ETextureParameters {
-        MAG_FILTER = 0x2800,
-        MIN_FILTER,
-        WRAP_S,
-        WRAP_T
-    };
-
-    export enum ETextureTypes {
-        TEXTURE_2D = 0x0DE1,
-        TEXTURE_CUBE_MAP = 0x8513,
-    };
-
-    export enum ECubeFace{
-        POSITIVE_X = 0,
-        NEGATIVE_X = 1,
-        POSITIVE_Y = 2,
-        NEGATIVE_Y = 3,
-        POSITIVE_Z = 4,
-        NEGATIVE_Z = 5,
-        };
-
-    export enum ETextureCubeFlags{
-        POSITIVE_X = 0x00000001,
-        NEGATIVE_X = 0x00000002,
-        POSITIVE_Y = 0x00000004,
-        NEGATIVE_Y = 0x00000008,
-        POSITIVE_Z = 0x0000000c,
-        NEGATIVE_Z = 0x000000010,
-        };
-
-    export enum ETextureUnits {
-        TEXTURE0 = 0x84C0
-    };
-
-// export interface ITextureParameters {
-//     minFilter: ETextureFilters;
-//     magFilter: ETextureFilters;
-
-//     wrapS: ETextureWrapModes;
-//     wrapT: ETextureWrapModes;
-// }
-
-    export interface ITexture extends IRenderResource {
-    	width:  number ;
-        height:  number ;
-        depth:  number ;
-
-        format: EPixelFormats;
-        mipLevels:  number ;
-
-        textureType: ETextureTypes;
-
-//desiredIntegerBitDepth: uint;
-//desiredFloatBitDepth: uint;     
-
-//readonly desiredFormat: EPixelFormats;
-//readonly srcFormat: EPixelFormats;
-//readonly srcWidth: uint;
-//readonly srcHeight: uint;
-//readonly srcDepth: uint;
-
-        setFlags(iTextureFlag:  number ): void;
-        getFlags():  number ;
-
-        calculateSize():  number ;
-        getNumFaces():  number ;
-        getSize():  number ;
-
-        isTexture2D(): bool;
-        isTextureCube(): bool;
-        isCompressed(): bool;
-        isValid(): bool;
-
-        create(iWidth:  number , iHeight:  number , iDepth:  number , cFillColor?: IColor,
-               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
-
-        create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: Array,
-               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
-
-        create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: ArrayBufferView,
-               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
-
-        getBuffer(iFace?:  number , iMipmap?:  number ): IPixelBuffer;
-
-        setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
-        setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
-        getFilter(eParam: ETextureParameters): ETextureFilters;
-        getWrapMode(eParam: ETextureParameters): ETextureWrapModes;
-
-        loadRawData(pData: ArrayBufferView, iWidth:  number , iHeight:  number , eFormat: EPixelFormats): bool;
-        loadImage(pImage: IImg): bool;
-        loadImages(pImages: IImg[]): bool;
-
-        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void;
-
-        copyToTexture(pTarget: ITexture): void;
-
-        createInternalTexture(cFillColor?: IColor): bool;
-        freeInternalTexture(): bool;
-
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
 module akra.core.pool.resources {
 
     export enum ETextureForcedFormatFlags {
@@ -34938,7 +36303,7 @@ module akra.core.pool.resources {
             }
             else
             {
-                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 358 ); logger.criticalError("Format not support"); ;
+                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 358 ); logger.warning("Format not support("+pixelUtil.getFormatName(pMainImage.format)+")"); ;
                 if(pMainImage.convert(EPixelFormats.B8G8R8A8))
                 {
                     this._eFormat = pMainImage.format;
@@ -34961,20 +36326,18 @@ module akra.core.pool.resources {
 // The custom mipmaps in the image have priority over everything
             var iImageMips:  number  = pMainImage.numMipMaps;
 
-            if(iImageMips==(math.ceil(math.max(math.log(this._iWidth) / Math.LN2,
-                                                                 math.log(this._iHeight) / Math.LN2)))) {
+            if(iImageMips==Img.getMaxMipmaps(this._iWidth,this._iHeight,this._iDepth,this._eFormat)) {
                 this._nMipLevels=iImageMips;
+
 // Disable flag for auto mip generation
                 ((this._iFlags) &= ~(ETextureFlags.AUTOMIPMAP)) ;
             }
             else
             {
                 this._nMipLevels=0;
-
             }
 
 // Create the texture
-            console.log(1234);
             this.createInternalTexture(null);
 
 
@@ -35011,17 +36374,18 @@ module akra.core.pool.resources {
 
             var mip:  number  = 0;
             var i:  number  = 0;
-            for(mip = 0; mip <= iImageMips; ++mip) {
+            for(mip = 0; mip <= this._nMipLevels; ++mip) {
                 for(i = 0; i < iFaces; ++i) {
                     var pSrc: IPixelBox;
 
                     if(isMultiImage){
 // Load from multiple images
                         pSrc = pImageList[i].getPixels(0, mip);
-                        console.log(mip,i);
+//console.log(mip,i);
                     }
                     else {
 // Load from faces of images[0] or main Image
+//console.log(mip,i);
                         pSrc = pMainImage.getPixels(i, mip);
                     }
 
@@ -35040,7 +36404,7 @@ module akra.core.pool.resources {
 
         convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void
         {
-            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 460 ); logger.criticalError("!!!нехуй");
+            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 459 ); logger.criticalError("!!!нехуй");
             var iNumMips:  number  = bIncludeMipMaps ? this._nMipLevels + 1 : 1;
             var iDataSize:  number  = pixelUtil.calculateSizeForImage(iNumMips, this._nMipLevels,
                                                                   this._iWidth, this._iHeight, this._iDepth,
@@ -35073,9 +36437,9 @@ module akra.core.pool.resources {
         }
 
         copyToTexture(pTarget: ITexture): void {
-            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 493 ); logger.criticalError("!!!нехуй");
+            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 492 ); logger.criticalError("!!!нехуй");
             if(pTarget.getNumFaces() !== this.getNumFaces()){
-                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 495 ); logger.criticalError("Texture types must match"); ;
+                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 494 ); logger.criticalError("Texture types must match"); ;
             }
 
             var nMipLevels:  number  = Math.min(this._nMipLevels, pTarget.mipLevels);
@@ -35522,9 +36886,46 @@ module akra {
 
 
 
+
+
+
+
+
+
+
+
 module akra {
-	export interface IAFXPassBlend {
-		blend(csComponent: string, iPass:  number ): bool;
+	export interface IAFXShaderProgramMap {
+		[index: string]: IAFXShaderProgram;
+		[index:  number ]: IAFXShaderProgram;
+	}
+
+	export interface IAFXShaderProgram {
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IAFXPassBlendMap {
+		[index:  number ]: IAFXPassBlend;
+		[index: string]: IAFXPassBlend;
+	}
+
+	export interface IAFXPassBlend extends IUnique {
+		initFromPassList(pPassList: IAFXPassInstruction[]): bool;
+		generateShaderProgram(pPassInput: IAFXPassInputBlend,
+							  pSurfaceMaterial: ISurfaceMaterial,
+							  pBuffer: IBufferMap): IAFXShaderProgram;
 	}
 }
 
@@ -35539,6 +36940,34 @@ module akra {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IRenderPass extends IUnique {
+		getRenderTarget(): IRenderTarget;
+		setRenderTarget(pTarget: IRenderTarget): void;
+
+		getPassInput(): IAFXPassInputBlend;
+		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: bool): void;
+
+		blend(sComponentName: string, iPass:  number ): bool;
+	}
+}
 
 
 
@@ -35568,9 +36997,28 @@ module akra {
 		setShadowSamplerArray(sName: string, pValue: any): void;
 		setVec2BySemantic(sName: string, pValue: any): void;
 
-		 render(): void;
+		addComponent(iComponentHandle:  number , iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(pComponent: IAFXComponent, iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(sComponent: string, iShift?:  number , iPass?:  number , isSet?: bool): bool;
+
+		delComponent(iComponentHandle:  number , iShift?:  number , iPass?:  number ): bool;
+		delComponent(sComponent: string, iShift?:  number , iPass?:  number ): bool;
+		delComponent(pComponent: IAFXComponent, iShift?:  number , iPass?:  number ): bool;
+
+		isFreeze(): bool;
+
+		updatePasses(bSaveOldUniformValue: bool): void;
+
+		_setComposer(pComposer: IAFXComposer): void;
+		_renderTechnique(pSceneObject: ISceneObject): void;
+
+		 render(iPass:  number ): void;
 	}
 }
+
+
+
+
 
 
 
@@ -35582,12 +37030,13 @@ module akra {
 
 		 effect: IEffect;
 		 surfaceMaterial: ISurfaceMaterial;
-
+		 data: IRenderData;
 		 material: IMaterial;
 
 		getGuid():  number ;
 		getRenderer(): IRenderer;
 		getTechnique(sName?: string): IRenderTechnique;
+		getTechniqueDefault(): IRenderTechnique;
 
 		destroy(): void;
 
@@ -35597,8 +37046,11 @@ module akra {
 // findRenderMethod(csName: string): uint;
 		switchRenderMethod(csName: string): bool;
 		switchRenderMethod(pMethod: IRenderMethod): bool;
+
 		removeRenderMethod(csName: string): bool;
 		getRenderMethod(csName?: string): IRenderMethod;
+
+		getRenderMethodDefault(): IRenderMethod;
 
 		hasShadow(): bool;
 		setShadow(bValue?: bool): void;
@@ -35607,7 +37059,7 @@ module akra {
 		isAllMethodsLoaded(): bool;
 
 
-		render(csMethod?: string): void;
+		render(csMethod?: string, pSceneObject?: ISceneObject): void;
 
 		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
 		_draw(): void;
@@ -35691,117 +37143,6 @@ module akra {
 
 
 
-
-
-
-
-module akra {
-	export interface IReferenceCounter {} ;
-	export interface IVertexData {} ;
-	export interface IDataMapper {} ;
-	export interface IIndexData {} ;
-
-	export enum EDataFlowTypes {
-/*!< The data stream can be marked up its index.*/
-        MAPPABLE   = 1,
-/*!< The data stream cannot be marked up its index.*/
-        UNMAPPABLE = 0
-    };
-
-    export interface IDataFlow {
-    	flow:    number ;
-        data:   IVertexData;
-        type:   EDataFlowTypes;
-        mapper: IDataMapper;
-    }
-
-    export interface IDataMapper {
-    	data: IVertexData;
-    	semantics: string;
-    	addition:  number ;
-    }
-
-	export interface IBufferMap extends IReferenceCounter{
-		primType: EPrimitiveTypes;
-		index: IIndexData;
-		length:  number ;
-
-//FIXME: hack for terraing, for force limiting length of drawinf index.
-/** writeonly */
-		                 _length:  number ;
-
-/** Number of primitives. */
-
-		 primCount:  number ;
-/** Maximum flow available in buffer map. */
-
-		 limit:  number ;
-/** Start index for drawning. */
-
-		 startIndex:  number ;
-/** Number of completed flows. */
-
-		 size:  number ;
-/** Completed flows. */
-
-		 flows: IDataFlow[];
-/** 
-		 * Mappers. 
-		 * @private
-		 */
-
-		 mappers: IDataMapper[];
-/** 
-		 * Offset in bytes for drawing with global idnex. 
-		 * @deprecated
-		 */
-
-		 offset:  number ;
-
-/**
-		 * Find flow by semantics in.
-		 * @param sSemantics VertexElement usage or semantics.
-		 * @param {bool=} bComplete Find only in completed flows. Default is TRUE.
-		 */
-
-		getFlow(sSemantics: string, bComplete?: bool): IDataFlow;
-		getFlow(iFlow:  number , bComplete?: bool): IDataFlow;
-		reset(): void;
-
-/**
-		 * Add data to flow.
-		 */
-
-		flow(pVertexData: IVertexData):  number ;
-		flow(iFlow:  number , pVertexData: IVertexData):  number ;
-/**
-		 * Add index for flow.
-		 */
-
-		mapping(iFlow:  number , pMap: IVertexData, sSemantics: string, iAddition?:  number ): bool;
-
-/**
-		 * Check, Is pData already used as flow or mapper.
-		 */
-
-		checkData(pData: IVertexData): bool;
-
-/**
-		 * Recals all statistics in buffer map.
-		 */
-
-		update(): bool;
-
-		clone(bWithMapping?: bool): IBufferMap;
-		toString(): string;
-
-/**
-		 * Draw buffer map.
-		 */
-
-		_draw(): void;
-	}
-}
 
 
 
@@ -35905,6 +37246,8 @@ module akra {
 
 
 
+
+
 module akra {
 	export interface IBufferDataModifier {} ;
 	export interface IVertexDeclaration {} ;
@@ -35916,7 +37259,7 @@ module akra {
 		 startIndex:  number ;
 		 id:  number ;
 
-		getVertexDeclaration(): IVertexDeclaration;
+		getVertexDeclaration(): data.VertexDeclaration;
 		setVertexDeclaration(pDecl: IVertexDeclaration): bool;
 
 		getVertexElementCount():  number ;
@@ -36117,6 +37460,57 @@ module akra {
          viewportDimensionsChanged(): void;
          viewportCameraChanged(): void;
     }
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export enum ECanvasTypes {
+		TYPE_UNKNOWN = -1,
+		TYPE_2D = 1,
+		TYPE_3D
+	};
+
+	export interface ICanvas {
+		type: ECanvasTypes;
+
+
+		isFullscreen(): bool;
+		setFullscreen(isFullscreen?: bool): void;
+	}
+}
+
+
+
+module akra {
+	export interface ICanvas3d extends ICanvas, IRenderTarget {
+		left:  number ;
+		top:  number ;
+
+
+		create(sName: string, iWidth:  number , iHeight:  number , isFullscreen?: bool): bool;
+		destroy(): void;
+
+		setFullscreen(isFullscreen?: bool): void;
+		setVisible(bVisible?: bool): void;
+		setDeactivateOnFocusChange(bDeactivate?: bool): void;
+
+		isFullscreen(): bool;
+		isVisible(): bool;
+		isDeactivatedOnFocusChange(): bool;
+
+
+		resize(iWidth:  number , iHeight:  number ): void;
+
+		 resized(iWidth:  number , iHeight:  number ): void;
+	}
 }
 
 
@@ -37023,7 +38417,7 @@ module akra {
 		 * @param {Bool=false} bRemoveLinks Remove old pointers to data. 
 		 */
 
-		clear(bQuick?: bool): IObjectArray;
+		clear(bRemoveLinks?: bool): IObjectArray;
 
 /** Get value of <n> element. */
 
@@ -37190,6 +38584,16 @@ module akra.util {
 			this._iLength --;
 
 			return pValue;
+		}
+
+		indexOf(pObject: any):  number  {
+			for(var i:  number  = 0; i < this._iLength; i++){
+				if(pObject === this._pData[i]){
+					return i;
+				}
+			}
+
+			return -1;
 		}
 
 	}
@@ -37429,10 +38833,11 @@ module akra.render {
 				var pRenderable: IRenderableObject;
 
 				for (var i:  number  = 0; i < pVisibleObjects.length; ++ i) {
-					pRenderable = pVisibleObjects.value(i).getRenderable();
+					var pSceneObject: ISceneObject = pVisibleObjects.value(i);
+					pRenderable = pSceneObject.getRenderable();
 
 					if (!isNull(pRenderable)) {
-						pRenderable.render(csMethod);
+						pRenderable.render(csMethod, pSceneObject);
 					}
 				}
 		}
@@ -37450,7 +38855,7 @@ module akra.render {
         	return this._pCamera? this._pCamera._getNumRenderedFaces(): 0;
         }
 
-        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Viewport._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return Viewport._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
     	viewportDimensionsChanged (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportDimensionsChanged; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
     	viewportCameraChanged (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportCameraChanged; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 	}
@@ -37496,9 +38901,16 @@ module akra {
 	    attenuation: IVec3;
 	}
 
+	export enum ELightTypes {
+		UNKNOWN,
+		PROJECT,
+		OMNI
+	}
+
 	export interface ILightPoint extends ISceneNode {
 		params: ILightParameters;
 		enabled: bool;
+		lightType: ELightTypes;
 
 		isShadowCaster: bool;
 
@@ -37667,23 +39079,6 @@ module akra.render {
 
 
 
-module akra {
-	export interface IAFXPassBlend {} ;
-	export interface IRenderTarget {} ;
-
-	export interface IRenderPass extends IUnique {
-		data: IAFXPassBlend;
-
-		getRenderTarget(): IRenderTarget;
-	}
-}
-
-
-
-
-
-
-
 
 
 module akra {
@@ -37766,16 +39161,82 @@ module akra {
 
 
 
+
+
+
+
+
+
+
+
+module akra.render {
+	export class RenderPass implements IRenderPass {
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } ;
+
+		private _pTechnique: IRenderTechnique = null;
+		private _pRenderTarget: IRenderTarget = null;
+		private _iPassNumber:  number  = 0;
+		private _pInput: IAFXPassInputBlend = null;
+
+		constructor(pTechnique: IRenderTechnique, iPass:  number ){
+			this._pTechnique = pTechnique;
+			this._iPassNumber = iPass;
+		}
+
+		getRenderTarget(): IRenderTarget {
+			return this._pRenderTarget;
+		}
+
+		setRenderTarget(pTarget: IRenderTarget): void {
+			this._pRenderTarget = pTarget;
+		}
+
+		getPassInput(): IAFXPassInputBlend {
+			return this._pInput;
+		}
+
+		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: bool): void {
+			if(isNeedRelocate){
+				this.relocateOldInput(pInput);
+			}
+
+			if(!isNull(this._pInput)) {
+				this._pInput._release();
+			}
+
+			this._pInput = pInput;
+		}
+
+		blend(sComponentName: string, iPass:  number ): bool {
+			return this._pTechnique.addComponent(sComponentName, this._iPassNumber, iPass);
+		}
+
+		private relocateOldInput(pNewInput: IAFXPassInputBlend): void {
+//TODO: copy old uniforms to new
+		}
+	}
+}
+
+
+
 module akra.render {
 	export class RenderTechnique implements IRenderTechnique {
-		private _pMethod: IRenderMethod;
+		private _pMethod: IRenderMethod = null;
 
-		get modified():  number  {
-			return 0;
+		private _isFreeze: bool = false;
+		private _pComposer: IAFXComposer = null;
+
+		private _pPassList: IRenderPass[] = null;
+
+		private _iCurrentPass:  number  = 0;
+		private _pCurrentPass: IRenderPass = null;
+
+		inline get modified():  number  {
+			return this.getGuid();
 		}
 
 		get totalPasses():  number  {
-			return 0;
+			return this._pComposer.getTotalPassesForTechnique(this);
 		}
 
 		get data(): IAFXComponentBlend {
@@ -37783,7 +39244,11 @@ module akra.render {
 		}
 
 		constructor (pMethod: IRenderMethod = null) {
-			this._pMethod = pMethod;
+			this._pPassList = [];
+
+			if(!isNull(pMethod)){
+				this.setMethod(pMethod);
+			}
 		}
 
 
@@ -37791,16 +39256,29 @@ module akra.render {
 
 		}
 
-		getPass(n:  number ): IRenderPass {
-			return null;
+		inline getPass(iPass:  number ): IRenderPass {
+			this._pComposer.prepareTechniqueBlend(this);
+			return this._pPassList[iPass];
 		}
 
 		getMethod(): IRenderMethod {
-			return null;
+			return this._pMethod;
 		}
 
 		setMethod(pMethod: IRenderMethod): void {
+			if(!isNull(this._pMethod)){
+				this.disconnect(this._pMethod,  "altered" ,  "_updateMethod" , EEventTypes.BROADCAST);
+			}
 
+			this._pMethod = pMethod;
+
+			if(!isNull(pMethod)){
+				var pComposer: IAFXComposer = pMethod.manager.getEngine().getComposer();
+				this._setComposer(pComposer);
+				this.connect(pMethod,  "altered" ,  "_updateMethod" , EEventTypes.BROADCAST);
+			}
+
+			this.informComposer();
 		}
 
 		setState(sName: string, pValue: any): void {
@@ -37831,8 +39309,118 @@ module akra.render {
 			return false;
 		}
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return RenderTechnique._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-		render (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).render; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
+		addComponent(iComponentHandle:  number , iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(pComponent: IAFXComponent, iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(sComponent: string, iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(pComponent: any, iShift?:  number  = 0, iPass?:  number  =  0xffffff , isSet?: bool = true): bool {
+			if(isNull(this._pComposer)){
+				return false;
+			}
+
+			var pComponentPool: IResourcePool = this._pComposer.getEngine().getResourceManager().componentPool;
+
+			if(isInt(pComponent)) {
+				pComponent = pComponentPool.getResource(< number >pComponent);
+			}
+			else if(isString(pComponent)){
+				pComponent = pComponentPool.findResource(<string>pComponent);
+			}
+
+			if(!isDef(pComponent) || isNull(pComponent)){
+				logger.setSourceLocation( "RenderTechnique.ts" , 116 ); logger.error("Bad component for add/delete."); ;
+				return false;
+			}
+
+			if(isSet){
+				if(!this._pComposer.addOwnComponentToTechnique(this, <IAFXComponent>pComponent, iShift, iPass)){
+					logger.setSourceLocation( "RenderTechnique.ts" , 122 ); logger.error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'"); ;
+					return false;
+				}
+			}
+			else {
+				if(!this._pComposer.removeOwnComponentToTechnique(this, <IAFXComponent>pComponent, iShift, iPass)){
+					logger.setSourceLocation( "RenderTechnique.ts" , 128 ); logger.error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'"); ;
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		delComponent(iComponentHandle:  number , iShift?:  number , iPass?:  number ): bool;
+		delComponent(sComponent: string, iShift?:  number , iPass?:  number ): bool;
+		delComponent(pComponent: IAFXComponent, iShift?:  number , iPass?:  number ): bool;
+		delComponent(pComponent: any, iShift?:  number  = 0, iPass?:  number  =  0xffffff ): bool {
+			return this.addComponent(pComponent, iShift, iPass, false);
+		}
+
+		isFreeze(): bool {
+			return this._isFreeze;
+		}
+
+		updatePasses(bSaveOldUniformValue: bool): void {
+			this._isFreeze = true;
+
+			var iTotalPasses:  number  = this.totalPasses;
+
+			for(var i:  number  = this._pPassList.length; i < iTotalPasses; i++) {
+				this._pPassList[i] = new RenderPass(this, i);
+			}
+
+			for(var i:  number  = 0; i < iTotalPasses; i++){
+				var pInput: IAFXPassInputBlend = this._pComposer.getPassInputBlend(this, i);
+				this._pPassList[i].setPassInput(pInput, bSaveOldUniformValue);
+			}
+
+			this._isFreeze = false;
+		}
+
+		_setComposer(pComposer: IAFXComposer): void {
+			this._pComposer = pComposer;
+		}
+
+		_renderTechnique(pSceneObject: ISceneObject): void {
+			if(isNull(this._pComposer)){
+				return;
+			}
+
+			var pComposer: IAFXComposer = this._pComposer;
+
+			pComposer.prepareTechniqueBlend(this);
+			pComposer.setCurrentSceneObject(pSceneObject);
+			pComposer.applySurfaceMaterial(this._pMethod.surfaceMaterial);
+
+			this._isFreeze = true;
+
+			for(var i:  number  = 0; i < this.totalPasses; i++){
+				this.activatePass(i);
+				this.render(i);
+
+				pComposer.renderTechniquePass(this, i);
+			}
+
+			this._isFreeze = false;
+			pComposer.setCurrentSceneObject(null);
+		}
+
+		_updateMethod(pMethod: IRenderMethod): void {
+			this.informComposer();
+		}
+
+		private informComposer(): void {
+			if(!isNull(this._pComposer)){
+				this._pComposer.markTechniqueAsNeedUpdate(this);
+			}
+		}
+
+		private activatePass(iPass:  number ): void {
+			this._iCurrentPass = iPass;
+			this._pCurrentPass = this._pPassList[iPass];
+		}
+
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return RenderTechnique._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		render (iPass): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).render; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier, iPass) : _unicast.listener (_recivier, iPass) ; } } ; ;
 	}
 }
 
@@ -37850,6 +39438,7 @@ module akra.render {
 	}
 
 	export class RenderableObject implements IRenderableObject {
+		/**@protected*/  _pRenderData: IRenderData = null;
 		/**@protected*/  _pRenderer: IRenderer;
 		/**@protected*/  _pTechnique: IRenderTechnique = null;
 		/**@protected*/  _pTechniqueMap: IRenderTechniqueMap = {};
@@ -37868,14 +39457,13 @@ module akra.render {
 
 		inline get material(): IMaterial  { return this.surfaceMaterial.material; }
 
-		constructor () {
+		inline get data(): IRenderData { return this._pRenderData; }
 
-		}
 
 		_setup(pRenderer: IRenderer, csDefaultMethod: string = null): void {
 			this._pRenderer = pRenderer;
 
-			if (this.addRenderMethod(csDefaultMethod) || this.switchRenderMethod(null) === false) {
+			if (!this.addRenderMethod(csDefaultMethod) || this.switchRenderMethod(null) === false) {
 				logger.setSourceLocation( "RenderableObject.ts" , 44 ); logger.criticalError("cannot add & switch render method to default"); ;
 			}
 		}
@@ -37903,10 +39491,10 @@ module akra.render {
 			var pMethod: IRenderMethod = null;
 
 			if (isNull(csMethod)) {
-				return false;
+				csMethod =  "default" ;
 			}
 
-		    if (isString(arguments[0])) {
+		    if (isString(arguments[0]) || arguments.length === 0) {
 		        pMethod = pRmgr.createRenderMethod((csMethod) + this.getGuid());
 
 		        if (!isDefAndNotNull(pMethod)) {
@@ -37939,7 +39527,10 @@ module akra.render {
 			var pTechnique: IRenderTechnique;
 			var sName: string = null;
 
-			if (isString(arguments[0])) {
+			if(isNull(arguments[0])) {
+				sName =  "default" ;
+			}
+			else if (isString(arguments[0])) {
 				sName = <string>csName;
 			}
 			else if (isDefAndNotNull(arguments[0])) {
@@ -37980,6 +39571,10 @@ module akra.render {
 			return pTechnique? pTechnique.getMethod(): null;
 		}
 
+		inline getRenderMethodDefault(): IRenderMethod {
+			return this.getRenderMethod( "default" );
+		}
+
 		inline hasShadow(): bool {
 			return this._bShadow;
 		}
@@ -38008,20 +39603,27 @@ module akra.render {
 		}
 
 
-		render(csMethod: string = null): void {
-//TODO("DRAW!!!!");
-			logger.setSourceLocation( "RenderableObject.ts" , 178 ); logger.error("TODO(DRAW!!)"); ;
+		render(csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
+			if(!this.switchRenderMethod(csMethod)){
+				return;
+			}
+
+			this.data._draw(this.getTechnique(), pSceneObject);
 		}
 
-		getTechnique(sName: string = null): IRenderTechnique {
+		inline getTechnique(sName: string =  "default" ): IRenderTechnique {
 			return this._pTechniqueMap[sName] || null;
 		}
 
-		_draw(): void {
-			logger.setSourceLocation( "RenderableObject.ts" , 186 ); logger.error("RenderableObject::_draw() pure virtual method() isn't callable!!"); ;
+		inline getTechniqueDefault(): IRenderTechnique{
+			return this.getTechnique( "default" );
 		}
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return RenderableObject._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		_draw(): void {
+			logger.setSourceLocation( "RenderableObject.ts" , 200 ); logger.error("RenderableObject::_draw() pure virtual method() isn't callable!!"); ;
+		}
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return RenderableObject._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 		shadow (bValue): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).shadow; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier, bValue) : _unicast.listener (_recivier, bValue) ; } } ; ;
 	}
 }
@@ -38036,10 +39638,43 @@ module akra.render {
 
 
 
+
+
+
+
+
+
+
+
+module akra.render {
+	export class Screen extends RenderableObject {
+		/**@protected*/  _pBuffer: IRenderDataCollection;
+
+		constructor(pRenderer: IRenderer) {
+			super();
+
+			var pCollection: IRenderDataCollection = pRenderer.getEngine().createRenderDataCollection(0);
+			var pData: IRenderData = pCollection.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP);
+
+			pData.allocateAttribute(createVertexDeclaration([VE_FLOAT2(DeclUsages.POSITION)]),
+				new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]))
+
+			this._pRenderData = pData;
+			this._setup(pRenderer);
+		}
+	}
+}
+
+
+
+
+
 module akra.render {
 
+
+
 	export class DSViewport extends Viewport implements IDSViewport  {
-		private _pDefferedColorTextures: ITexture[];
+		private _pDefferedColorTextures: ITexture[] = [];
 		private _pDeferredDepthTexture: ITexture;
 		private _pDeferredView: IRenderableObject = null;
 		private _pDeferredSkyTexture: ITexture = null;
@@ -38066,7 +39701,7 @@ module akra.render {
 			var pDeferredData: IRenderTarget[] = <IRenderTarget[]>new Array(2);
 			var pDeferredTextures: ITexture[] = <ITexture[]>new Array(2);
 			var pDepthTexture: ITexture;
-			var pDefferedView: IRenderableObject = this._pDeferredView = new render.RenderableObject();
+			var pDefferedView: IRenderableObject = this._pDeferredView = new Screen(pEngine.getRenderer());
 			var iGuid:  number  = sid();
 			var iWidth:  number  = math.ceilingPowerOfTwo(this.actualWidth);
     		var iHeight:  number  = math.ceilingPowerOfTwo(this.actualHeight);
@@ -38083,12 +39718,12 @@ module akra.render {
 			for (var i = 0; i < 2; ++ i) {
 				pDeferredTextures[i] = this._pDefferedColorTextures[i] =
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
-				pDeferredTextures[i].create(iWidth, iHeight, 1, null, 0, 0,0,
+				pDeferredTextures[i].create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0,0,
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
+				pDeferredData[i].setAutoUpdated(false);
 				pDeferredData[i].addViewport(this.getCamera(), "deferred_shading_pass_" + i);
-
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 			}
 
@@ -38111,7 +39746,10 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.skybox", 1);
 
 			pDSMethod.effect = pDSEffect;
-			pDefferedView.renderMethod = pDSMethod;
+			pDefferedView.getTechnique().setMethod(pDSMethod);
+
+// LOG(pEngine.getComposer(), pDefferedView.getTechnique().totalPasses);
+// pDefferedView.renderMethod = pDSMethod;
 
 
 
@@ -38131,8 +39769,15 @@ module akra.render {
 		    this._pLightPoints = pLights;
 
 //prepare deferred textures
-			this._pDefferedColorTextures[0].getBuffer().getRenderTarget().update();
-			this._pDefferedColorTextures[1].getBuffer().getRenderTarget().update();
+
+
+
+
+			var pNodeList: IObjectArray = this.getCamera().display();
+			for (var i:  number  = 0; i < pNodeList.length; ++ i) {
+				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
+				pRenderable.render(null, pNodeList.value(i));
+			}
 
 //render defferred
 			this._pDeferredView.render();
@@ -38141,36 +39786,17 @@ module akra.render {
 		}
 
 		prepareForDeferredShading(): void {
+
 			var pNodeList: IObjectArray = this.getCamera().display();
 
 			for (var i:  number  = 0; i < pNodeList.length; ++ i) {
 				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
+				var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
 
-				if (pRenderable) {
-					for (var j:  number  = 0; j < 2; ++ j) {
-						var sMethod: string = "deferred_shading_pass_" + j;
-						var pMethod: IRenderMethod = pRenderable.getRenderMethod(sMethod);
-						var pTechCurr: IRenderTechnique = pRenderable.getTechnique();
-						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
-
-						if (isNull(pTechnique) || pTechCurr.modified >= pTechnique.modified) {
-							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
-								logger.setSourceLocation( "DSViewport2.ts" , 138 ); logger.criticalError("cannot clone active render method"); ;
-							}
-
-							pTechnique = pRenderable.getTechnique(sMethod);
-
-							for (var k:  number  = 0; k < pTechnique.totalPasses; ++ k) {
-								var pPass: IRenderPass = pTechnique.getPass(k);
-
-								if (isNull(pPass.getRenderTarget())) {
-									pPass.data.blend("akra.system.prepareForDeferredShading", j);
-								}
-							}
-						}
-					}
-				}
+				pTechCurr.getPass(0).setRenderTarget(this._pDefferedColorTextures[0].getBuffer().getRenderTarget());
+				pTechCurr.getPass(1).setRenderTarget(this._pDefferedColorTextures[1].getBuffer().getRenderTarget());
 			};
+
 		}
 
 		setSkybox(pSkyTexture: ITexture): bool {
@@ -38300,7 +39926,7 @@ module akra.render {
 		        pCameraView.multiplyVec4(v4fLightPosition, v4fTemp)
 		        v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
 
-		        if (pLight.type === < number >EEntityTypes.LIGHT_OMNI_DIRECTIONAL) {
+		        if (pLight.lightType === ELightTypes.OMNI) {
 
 		        	pOmniLight = <IOmniLight>pLight;
 
@@ -38331,7 +39957,7 @@ module akra.render {
 		                pUniforms.omni.push(<UniformOmni>pUniformData);
 		            }
 		        }
-		        else if (pLight.type === < number >EEntityTypes.LIGHT_PROJECT) {
+		        else if (pLight.lightType === ELightTypes.PROJECT) {
 		        	pProjectLight = <IProjectLight>pLight;
 
 		            if (pLight.isShadowCaster) {
@@ -38359,7 +39985,7 @@ module akra.render {
 
 		        }
 		        else {
-		        	logger.setSourceLocation( "DSViewport2.ts" , 342 ); logger.criticalError("Invalid light point type detected."); ;
+		        	logger.setSourceLocation( "DSViewport2.ts" , 369 ); logger.criticalError("Invalid light point type detected."); ;
 		        }
 		    }
 		}
@@ -38412,7 +40038,7 @@ module akra.render {
 
 		/**@protected*/  _bHwGamma: bool = false;
 
-		/**@protected*/  _pViewportList: IViewport[];
+		/**@protected*/  _pViewportList: IViewport[] = [];
 
 
 		inline get name(): string { return this._sName; }
@@ -38427,11 +40053,22 @@ module akra.render {
 
 		inline get priority():  number  { return this._iPriority; }
 
-
 		constructor (pRenderer: IRenderer) {
 			this._pRenderer = pRenderer;
 			this._pTimer = pRenderer.getEngine().getTimer();
-
+			this._pFrameStats = {
+				fps: {
+					last: 0.,
+					avg: 0.,
+					best: 0.,
+					worst: 0.
+				},
+				time: {
+					best: 0.,
+					worst: 0.
+				},
+				polygonsCount: 0
+			}
 			this.resetStatistics();
 		}
 
@@ -38448,7 +40085,7 @@ module akra.render {
 
 			this.detachDepthBuffer();
 
-			logger.setSourceLocation( "render/RenderTarget.ts" , 88 ); logger.log("RenderTarget '%s'\n Average FPS: %s\n Best FPS: %s\n Worst FPS: %s", this._sName, this._pFrameStats.fps.avg, this._pFrameStats.fps.best, this._pFrameStats.fps.worst);
+			logger.setSourceLocation( "render/RenderTarget.ts" , 99 ); logger.log("RenderTarget '%s'\n Average FPS: %s\n Best FPS: %s\n Worst FPS: %s", this._sName, this._pFrameStats.fps.avg, this._pFrameStats.fps.best, this._pFrameStats.fps.worst);
                                 ;
 		}
 
@@ -38546,14 +40183,14 @@ module akra.render {
 				iZIndex = < number >arguments[0];
 				pViewport = this._pViewportList[iZIndex];
 
-				logger.setSourceLocation( "render/RenderTarget.ts" , 186 ); logger.assert(isDefAndNotNull(pViewport), "No viewport with given z-index : %s", iZIndex, "RenderTarget::_updateViewport");
+				logger.setSourceLocation( "render/RenderTarget.ts" , 197 ); logger.assert(isDefAndNotNull(pViewport), "No viewport with given z-index : %s", iZIndex, "RenderTarget::_updateViewport");
                                      ;
 			}
 			else {
 				pViewport = <IViewport>arguments[0];
 			}
 
-			logger.setSourceLocation( "render/RenderTarget.ts" , 193 ); logger.assert(pViewport.getTarget() == this, "RenderTarget::_updateViewport the requested viewport is not bound to the rendertarget!");
+			logger.setSourceLocation( "render/RenderTarget.ts" , 204 ); logger.assert(pViewport.getTarget() == this, "RenderTarget::_updateViewport the requested viewport is not bound to the rendertarget!");
                                                                                              ;
 
 			this.viewportPreUpdate(pViewport);
@@ -38573,7 +40210,7 @@ module akra.render {
 			var pViewport: IViewport = this._pViewportList[iZIndex];
 
 			if (isDefAndNotNull(pViewport)) {
-				logger.setSourceLocation( "render/RenderTarget.ts" , 213 ); logger.criticalError("Can't create another viewport for %s with Z-index %s 					because a viewport exists with this Z-Order already.", this._sName, iZIndex, "RenderTarget::addViewport"); ;
+				logger.setSourceLocation( "render/RenderTarget.ts" , 224 ); logger.criticalError("Can't create another viewport for %s with Z-index %s 					because a viewport exists with this Z-Order already.", this._sName, iZIndex, "RenderTarget::addViewport"); ;
 			}
 
 			if (isNumber(arguments[1]) && < number >arguments[1] >= 0) {
@@ -38708,7 +40345,7 @@ module akra.render {
 		}
 
 		getViewport(iIndex:  number ): IViewport {
-			logger.setSourceLocation( "render/RenderTarget.ts" , 348 ); logger.assert(iIndex < this._pViewportList.length, "Index out of bounds"); ;
+			logger.setSourceLocation( "render/RenderTarget.ts" , 359 ); logger.assert(iIndex < this._pViewportList.length, "Index out of bounds"); ;
 
 			for (var i in this._pViewportList) {
 				if (iIndex --) {
@@ -38724,7 +40361,7 @@ module akra.render {
 		getViewportByZIndex(iZIndex:  number ): IViewport {
 			var pViewport: IViewport = this._pViewportList[iZIndex];
 
-			logger.setSourceLocation( "render/RenderTarget.ts" , 365 ); logger.assert(isDefAndNotNull(pViewport), "No viewport with given z-index : " + String(iZIndex), "RenderTarget::getViewportByZIndex");
+			logger.setSourceLocation( "render/RenderTarget.ts" , 376 ); logger.assert(isDefAndNotNull(pViewport), "No viewport with given z-index : " + String(iZIndex), "RenderTarget::getViewportByZIndex");
                                                            ;
 
 			return pViewport;
@@ -38762,10 +40399,6 @@ module akra.render {
 			}
 		}
 
-		inline setAutoUpdare(bValue: bool = true): void {
-			this._isAutoUpdate = bValue;
-		}
-
 		inline isAutoUpdated(): bool {
 			return this._isAutoUpdate;
 		}
@@ -38790,7 +40423,7 @@ module akra.render {
 			this._endUpdate();
 		}
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return RenderTarget._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return RenderTarget._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 
 		preUpdate (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).preUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 		viewportPreUpdate (pViewport): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportPreUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pViewport) : _broadcast[i].listener (_recivier, pViewport) ; } } } ; ;
@@ -38832,14 +40465,14 @@ module  akra.render {
 	}
 
 	export interface IRenderTargetPriorityMap {
-		[index:  number ]: IRenderTarget;
+		[priority:  number ]: IRenderTarget[];
 	}
 
 	export class Renderer implements IRenderer {
 		/**@protected*/  _isActive: bool = false;
 		/**@protected*/  _pEngine: IEngine;
 		/**@protected*/  _pRenderTargets: IRenderTarget[] = [];
-		/**@protected*/  _pPrioritisedRenderTargets: IRenderTargetPriorityMap;
+		/**@protected*/  _pPrioritisedRenderTargets: IRenderTargetPriorityMap = <IRenderTargetPriorityMap>{};
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
@@ -38877,25 +40510,36 @@ module  akra.render {
 		}
 
  		attachRenderTarget(pTarget: IRenderTarget): bool {
- 			for(var i:  number  = 0; i < this._pRenderTargets.length; i++){
-       			if(this._pRenderTargets[i] === pTarget){
-       				return false;
-       			}
-       		}
+ 			if (this._pRenderTargets.indexOf(pTarget) != -1) {
+ 				return false;
+ 			}
+
+ 			var pList: IRenderTarget[] = this._pPrioritisedRenderTargets[pTarget.priority];
+
+ 			if (!isDef(pList)) {
+ 				pList = this._pPrioritisedRenderTargets[pTarget.priority] = [];
+ 			}
+
+ 			pList.push(pTarget);
 
  			this._pRenderTargets.push(pTarget);
+
  			return true;
  		}
 
         detachRenderTarget(pTarget: IRenderTarget): bool {
-       		for(var i:  number  = 0; i < this._pRenderTargets.length; i++){
-       			if(this._pRenderTargets[i] === pTarget){
-       				this._pRenderTargets.splice(i, 1);
-       				return true;
-       			}
+       		var i = this._pRenderTargets.indexOf(pTarget);
+
+       		if (i == -1) {
+       			return false;
        		}
 
-       		return false;
+       		this._pRenderTargets.splice(i, 1);
+
+       		i = this._pPrioritisedRenderTargets[pTarget.priority].indexOf(pTarget);
+       		this._pPrioritisedRenderTargets[pTarget.priority].splice(i, 1);
+
+       		return true;
         }
 
         destroyRenderTarget(pTarget: IRenderTarget): void {
@@ -38907,7 +40551,7 @@ module  akra.render {
         }
 
         getActiveProgram(): IShaderProgram {
-        	logger.setSourceLocation( "render/Renderer.ts" , 133 ); logger.criticalError("Renderer::getActiveProgram() is uncompleted method!"); ;
+        	logger.setSourceLocation( "render/Renderer.ts" , 145 ); logger.criticalError("Renderer::getActiveProgram() is uncompleted method!"); ;
         	return null;
         }
 
@@ -38928,13 +40572,18 @@ module  akra.render {
 
 		_updateAllRenderTargets(): void {
 			var pTarget: IRenderTarget;
-			for (var i in this._pPrioritisedRenderTargets) {
-				pTarget = this._pPrioritisedRenderTargets[i];
+			for (var iPriority in this._pPrioritisedRenderTargets) {
+				var pTargetList: IRenderTarget[] = this._pPrioritisedRenderTargets[iPriority];
 
-				if (pTarget.isActive() && pTarget.isAutoUpdated()) {
-					pTarget.update();
+				for (var j = 0; j < pTargetList.length; ++ j) {
+					pTarget = pTargetList[j];
+
+					if (pTarget.isActive() && pTarget.isAutoUpdated()) {
+						pTarget.update();
+					}
 				}
 			}
+
 		}
 
 		_setViewport(pViewport: IViewport): void {
@@ -38945,7 +40594,11 @@ module  akra.render {
 			return null;
 		}
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Renderer._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		getDefaultCanvas(): ICanvas3d {
+			return null;
+		}
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return Renderer._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 		 active(pEngine: IEngine): void {
 			this._isActive = true;
 			this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).active; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pEngine) : _broadcast[i].listener (_recivier, pEngine) ; } } ;
@@ -38963,12 +40616,432 @@ module  akra.render {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.util {
+
+	export class UtilTimer implements IUtilTimer {
+		private isTimerInitialized: bool = false;
+		private isTimerStopped: bool = false;
+		private fTicksPerSec:  number  = 0.;
+		private iStopTime:  number  = 0;
+		private iLastElapsedTime:  number  = 0;
+		private iBaseTime:  number  = 0;
+
+		inline get absoluteTime():  number  {
+			return this.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
+		}
+
+		inline get appTime():  number  {
+			return this.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
+		}
+
+		inline get elapsedTime():  number  {
+			return this.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
+		}
+
+		inline start(): bool {
+			return this.execCommand(EUtilTimerCommands.TIMER_START) === 0;
+		}
+        inline stop(): bool {
+        	return this.execCommand(EUtilTimerCommands.TIMER_STOP) === 0;
+        }
+
+        inline reset(): bool {
+        	return this.execCommand(EUtilTimerCommands.TIMER_RESET) === 0;
+        }
+
+        execCommand(eCommand: EUtilTimerCommands):  number  {
+		    var fTime:  number  = 0.;
+		    var fElapsedTime:  number  = 0.;
+		    var iTime:  number ;
+
+		    if (this.isTimerInitialized == false) {
+		        this.isTimerInitialized = true;
+		        this.fTicksPerSec = 1000;
+		    }
+
+// Get either the current time or the stop time, depending
+// on whether we're stopped and what command was sent
+		    if (this.iStopTime != 0 && eCommand != EUtilTimerCommands.TIMER_START &&
+		    	eCommand != EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
+		        iTime = this.iStopTime;
+		    }
+		    else {
+		        iTime = now();
+		    }
+
+// Return the elapsed time
+		    if (eCommand == EUtilTimerCommands.TIMER_GET_ELAPSED_TIME) {
+		        fElapsedTime = (iTime - this.iLastElapsedTime) / this.fTicksPerSec;
+		        this.iLastElapsedTime = iTime;
+		        return fElapsedTime;
+		    }
+
+// Return the current time
+		    if (eCommand == EUtilTimerCommands.TIMER_GET_APP_TIME) {
+		        var fAppTime = ( iTime - this.iBaseTime ) / this.fTicksPerSec;
+		        return fAppTime;
+		    }
+
+// Reset the timer
+		    if (eCommand == EUtilTimerCommands.TIMER_RESET) {
+		        this.iBaseTime = iTime;
+		        this.iLastElapsedTime = iTime;
+		        this.iStopTime = 0;
+		        this.isTimerStopped = false;
+		        return 0;
+		    }
+
+// Start the timer
+		    if (eCommand == EUtilTimerCommands.TIMER_START) {
+		        if (this.isTimerStopped) {
+		            this.iBaseTime += iTime - this.iStopTime;
+		        }
+		        this.iStopTime = 0;
+		        this.iLastElapsedTime = iTime;
+		        this.isTimerStopped = false;
+		        return 0;
+		    }
+
+// Stop the timer
+		    if (eCommand == EUtilTimerCommands.TIMER_STOP) {
+		        if (!this.isTimerStopped) {
+		            this.iStopTime = iTime;
+		            this.iLastElapsedTime = iTime;
+		            this.isTimerStopped = true;
+		        }
+		        return 0;
+		    }
+
+// Advance the timer by 1/10th second
+		    if (eCommand == EUtilTimerCommands.TIMER_ADVANCE) {
+		        this.iStopTime += this.fTicksPerSec / 10;
+		        return 0;
+		    }
+
+		    if (eCommand == EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
+		        fTime = iTime / this.fTicksPerSec;
+		        return  fTime;
+		    }
+// Invalid command specified
+		    return -1;
+        }
+
+        static start(): UtilTimer {
+        	var pTimer: UtilTimer = new UtilTimer;
+
+        	if (pTimer.start()) {
+        		return pTimer;
+        	}
+
+        	logger.setSourceLocation( "util/UtilTimer.ts" , 123 ); logger.error('cannot start util timer'); ;
+
+        	return null;
+        }
+	}
+}
+
+
+
+
+
+
+module akra.render {
+	export class Canvas3d extends RenderTarget implements ICanvas3d {
+// private _useHarwareAntialiasing: bool = false;
+
+		/**@protected*/  _isFullscreen: bool = false;
+		/**@protected*/  _isPrimary: bool = false;
+		/**@protected*/  _bAutoDeactivatedOnFocusChange: bool = false;
+
+		left:  number  = 0;
+		top:  number  = 0;
+
+		get type(): ECanvasTypes {
+			return ECanvasTypes.TYPE_3D;
+		}
+
+
+		constructor (pRenderer: IRenderer) {
+			super(pRenderer);
+			this._pRenderer = pRenderer;
+		}
+
+
+		create(sName: string, iWidth:  number , iHeight:  number , isFullscreen: bool = false): bool {
+			return false;
+		}
+
+		destroy(): void {}
+
+		setFullscreen(isFullscreen?: bool): void {}
+
+		setVisible(bVisible?: bool): void {}
+		setDeactivateOnFocusChange(bDeactivate?: bool): void {
+			this._bAutoDeactivatedOnFocusChange = bDeactivate;
+		}
+
+		inline isFullscreen(): bool {
+			return this._isFullscreen;
+		}
+
+		isVisible(): bool {
+			return true;
+		}
+
+		isClosed(): bool {
+			return false;
+		}
+
+		isPrimary(): bool {
+			return this._isPrimary;
+		}
+
+		isDeactivatedOnFocusChange(): bool {
+			return this._bAutoDeactivatedOnFocusChange;
+		}
+
+
+		resize(iWidth:  number , iHeight:  number ): void {
+
+		}
+
+		resized (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).resized; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+	}
+}
+
+
+
+
+
+
+
+
+
+module akra.webgl {
+	export class WebGLCanvas extends render.Canvas3d {
+		/**@protected*/  _pCanvas: HTMLCanvasElement;
+		/**@protected*/  _pCanvasCreationInfo: ICanvasInfo;
+
+//display size, if fullscreen not used
+		/**@protected*/  _iRealWidth:  number ;
+		/**@protected*/  _iRealHeight:  number ;
+
+		get left():  number  {
+			var el: HTMLElement = this._pCanvas;
+			for (var lx:  number  = 0; el != null; lx += el.offsetLeft, el = <HTMLElement>el.offsetParent);
+			return lx;
+		}
+		get top():  number  {
+			var el: HTMLElement = this._pCanvas;
+			for (var ly:  number  = 0; el != null; ly += el.offsetTop, el = <HTMLElement>el.offsetParent);
+			return ly;
+		}
+
+		constructor (pRenderer: IRenderer) {
+			super(pRenderer);
+			this._pCanvas = (<any>pRenderer).getHTMLCanvas();
+			this._pCanvasCreationInfo = info.canvas(this._pCanvas);
+		}
+
+		create(sName: string = null, iWidth:  number  = this._pCanvasCreationInfo.width,
+				iHeight:  number  = this._pCanvasCreationInfo.height, isFullscreen: bool = false): bool {
+
+			this.name = sName;
+
+			this.resize(iWidth, iHeight);
+			this.setFullscreen(isFullscreen);
+
+			return true;
+		}
+
+		destroy(): void {
+			super.destroy();
+
+			this._pCanvas = null;
+			this._pCanvasCreationInfo = null;
+		}
+
+		setFullscreen(isFullscreen: bool = true): void  {
+			var pCanvas: HTMLCanvasElement = this._pCanvas;
+			var pScreen: IScreenInfo;
+			var pCanvasInfo: ICanvasInfo;
+			var iRealWidth:  number  = this._iRealWidth;
+			var iRealHeight:  number  = this._iRealHeight;
+
+			if (this._isFullscreen === isFullscreen) {
+				return;
+			}
+
+			if (WebGLCanvas.fullscreenLock) {
+				logger.setSourceLocation( "WebGLCanvas.ts" , 65 ); logger.warning("fullscreen is changing, do not try change before process will be ended"); ;
+				return;
+			}
+
+			this._isFullscreen = isFullscreen;
+
+			if (isFullscreen) {
+				this._iRealWidth = this._iWidth;
+				this._iRealHeight = this._iHeight;
+			}
+
+			try {
+				WebGLCanvas.fullscreenLock = true;
+
+				((<any>pCanvas).requestFullscreen || (<any>pCanvas).mozRequestFullScreen || (<any>pCanvas).webkitRequestFullscreen)();
+
+				(<any>pCanvas).onfullscreenchange = (<any>pCanvas).onmozfullscreenchange = (<any>pCanvas).onwebkitfullscreenchange = function (e) {
+
+					if (!!((<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).fullscreenElement)) {
+						this.resize(info.screen.width, info.screen.height);
+					}
+					else {
+						this.resize(iRealWidth, iRealHeight);
+					}
+
+					WebGLCanvas.fullscreenLock = false;
+				}
+			}
+			catch (e) {
+				logger.setSourceLocation( "WebGLCanvas.ts" , 94 ); logger.error("Fullscreen API not supported", e); ;
+			}
+		}
+
+
+		inline isVisible(): bool { return this._pCanvas.style.display !== "none"; }
+
+		setVisible(bVisible: bool = true): void {
+			this._pCanvas.style.display = bVisible? "block": "none";
+		}
+
+		resize(iWidth:  number  = this._iWidth, iHeight:  number  = this._iHeight): void {
+			var pCanvas: HTMLCanvasElement = this._pCanvas;
+
+			this._iWidth = iWidth;
+			this._iHeight = iHeight;
+
+			pCanvas.width = iWidth;
+			pCanvas.height = iHeight;
+
+// var pRoot: ISceneNode = this.getScene().getRootNode();
+
+// //TODO: update textures, lighting etc!
+
+// pRoot.explore(function(pNode: INode) {
+// 	var pCamera: ICamera;
+
+// 	if (pNode.type === EEntityTypes.CAMERA) {
+// 		pCamera = (<ICamera>pNode);
+// 		if (!pCamera.isConstantAspect()) {
+// 			pCamera.setProjParams(
+// 				pCamera.fov(),
+// 				pCanvas.width / pCanvas.height,
+// 				pCamera.nearPlane(),
+// 				pCamera.farPlane());
+
+// 			pCamera.setUpdatedLocalMatrixFlag();
+// 		}
+// 	}
+// });
+
+			this.resized();
+		}
+
+		readPixels(ppDest: IPixelBox = null, eFramebuffer: EFramebuffer = EFramebuffer.AUTO): IPixelBox {
+			if (isNull(ppDest)) {
+				var ePixelFormat: EPixelFormats = EPixelFormats.BYTE_RGB;
+
+				ppDest = new pixelUtil.PixelBox(this._iWidth, this._iHeight, 1, ePixelFormat,
+					new Uint8Array(pixelUtil.getMemorySize(this._iWidth, this._iHeight, 1, ePixelFormat)));
+			}
+
+			if ((ppDest.right > this._iWidth) || (ppDest.bottom > this._iHeight) || (ppDest.front != 0) || (ppDest.back != 1)) {
+				logger.setSourceLocation( "WebGLCanvas.ts" , 147 ); logger.criticalError("Invalid box.", "GLXWindow::copyContentsToMemory"); ;
+			}
+
+			if (eFramebuffer == EFramebuffer.AUTO) {
+				eFramebuffer = this._isFullscreen? EFramebuffer.FRONT: EFramebuffer.BACK;
+			}
+
+			var eFormat:  number  = getWebGLFormat(ppDest.format);
+			var eType:  number  = getWebGLDataType(ppDest.format);
+
+			if (eFormat ==  0  || eType == 0) {
+				logger.setSourceLocation( "WebGLCanvas.ts" , 158 ); logger.criticalError("Unsupported format.", "WebGLCanvas::readPixels"); ;
+			}
+
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			pWebGLRenderer._setViewport(this.getViewport(0));
+			pWebGLRenderer.bindWebGLFramebuffer( 0x8D40 , null);
+
+// Must change the packing to ensure no overruns!
+			pWebGLContext.pixelStorei( 0x0D05 , 1);
+
+//glReadBuffer((buffer == FB_FRONT)? GL_FRONT : GL_BACK);
+			pWebGLContext.readPixels(ppDest.left, ppDest.top, ppDest.width, ppDest.height, eFormat, eType, ppDest.data);
+
+// restore default alignment
+			pWebGLContext.pixelStorei( 0x0D05 , 4);
+
+//vertical flip
+// {
+// 	size_t rowSpan = dst.getWidth() * PixelUtil::getNumElemBytes(dst.format);
+// 	size_t height = dst.getHeight();
+// 	uchar *tmpData = new uchar[rowSpan * height];
+// 	uchar *srcRow = (uchar *)dst.data, *tmpRow = tmpData + (height - 1) * rowSpan;
+
+// 	while (tmpRow >= tmpData)
+// 	{
+// 		memcpy(tmpRow, srcRow, rowSpan);
+// 		srcRow += rowSpan;
+// 		tmpRow -= rowSpan;
+// 	}
+// 	memcpy(dst.data, tmpData, rowSpan * height);
+
+// 	delete [] tmpData;
+// }
+
+			return ppDest;
+		}
+
+		static fullscreenLock: bool = false;
+	}
+}
+
+
+
+
+
+
 module akra.webgl {
 	export class WebGLRenderer extends render.Renderer {
 		private _pCanvas: HTMLCanvasElement;
 
 		private _pWebGLContext: WebGLRenderingContext;
 		private _pWebGLFramebufferList: WebGLFramebuffer[];
+
+		private _pDefaultCanvas: ICanvas3d;
 
 //real context, if debug context used
 		private _pWebGLInternalContext: WebGLRenderingContext = null;
@@ -38994,19 +41067,23 @@ module akra.webgl {
 			}
 
 			this._pWebGLContext = createContext(this._pCanvas);
+
 			this._pWebGLFramebufferList = new Array( 32 );
 
 
 			for (var i:  number  = 0; i < this._pWebGLFramebufferList.length; ++ i) {
 				this._pWebGLFramebufferList[i] = this._pWebGLContext.createFramebuffer();
 			}
+
+			this._pDefaultCanvas = new WebGLCanvas(this);
+			this.attachRenderTarget(this._pDefaultCanvas);
 		}
 
 		debug(bValue: bool = true, useApiTrace: bool = false): bool {
 			var pWebGLInternalContext: WebGLRenderingContext = this._pWebGLContext;
 
 			if (bValue) {
-				if (isDef(WebGLDebugUtils) && !isNull(pWebGLInternalContext)) {
+				if (isDef((<any>window).WebGLDebugUtils) && !isNull(pWebGLInternalContext)) {
 
 		            this._pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLInternalContext,
 		                (err:  number , funcName: string, args: IArguments): void => {
@@ -39014,7 +41091,7 @@ module akra.webgl {
 		                },
 		                useApiTrace?
 		                (funcName: string, args: IArguments): void => {
-		                   logger.setSourceLocation( "WebGLRenderer.ts" , 60 ); logger.log("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")"); ;
+		                   logger.setSourceLocation( "WebGLRenderer.ts" , 68 ); logger.log("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")"); ;
 		                }: null);
 
 		            this._pWebGLInternalContext = pWebGLInternalContext;
@@ -39084,7 +41161,7 @@ module akra.webgl {
 		inline createWebGLFramebuffer(): WebGLFramebuffer {
 
 			if (this._pWebGLFramebufferList.length === 0) {
-				logger.setSourceLocation( "WebGLRenderer.ts" , 127 ); logger.criticalError("WebGL framebuffer limit exidit"); ;
+				logger.setSourceLocation( "WebGLRenderer.ts" , 135 ); logger.criticalError("WebGL framebuffer limit exidit"); ;
 			}
 
 			return this._pWebGLFramebufferList.pop();
@@ -39129,10 +41206,14 @@ module akra.webgl {
 
 //TODO: check attrib array from last shader program
 			var i: number  = 0;
-			for(i = 0; i < 16; i++) {
+			for(i = 0; i < maxVertexAttributes; i++) {
 				this._pWebGLContext.disableVertexAttribArray(i);
 			}
 
+		}
+
+		getDefaultCanvas(): ICanvas3d {
+			return this._pDefaultCanvas;
 		}
 	}
 }
@@ -39212,6 +41293,7 @@ module akra.webgl {
 			this._pWebGLTexture = pTexture;
 			this._iFace = iFace;
 			this._iLevel = iLevel;
+			this._iFlags = iFlags;
 			this._bSoftwareMipmap = bSoftwareMipmap;
 
 			this._eFaceTarget = eTarget;
@@ -39282,7 +41364,7 @@ module akra.webgl {
 
 			if(pixelUtil.isCompressed(pData.format)) {
 				if(pData.format !== this._eFormat || !pData.isConsecutive()){
-					logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 167 ); logger.criticalError("Compressed images must be consecutive, in the source format"); ;
+					logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 168 ); logger.criticalError("Compressed images must be consecutive, in the source format"); ;
 				}
 
 				var iWebGLFormat:  number  = webgl.getClosestWebGLInternalFormat(this._eFormat);
@@ -39307,12 +41389,12 @@ module akra.webgl {
 			else if(this._bSoftwareMipmap) {
 				if (pData.width !== pData.rowPitch) {
 // TODO
-	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 192 ); logger.criticalError("Unsupported texture format"); ;
+	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 193 ); logger.criticalError("Unsupported texture format"); ;
 	            }
 
 	            if (pData.height * pData.width !== pData.slicePitch) {
 // TODO
-	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 197 ); logger.criticalError("Unsupported texture format"); ;
+	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 198 ); logger.criticalError("Unsupported texture format"); ;
 	            }
 
 	            pWebGLContext.pixelStorei( 0x0CF5 , 1);
@@ -39321,26 +41403,37 @@ module akra.webgl {
 			else {
 				if(pData.width !== pData.rowPitch) {
 // TODO
-	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 206 ); logger.criticalError("Unsupported texture format"); ;
+	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 207 ); logger.criticalError("Unsupported texture format"); ;
 	            }
 
 	            if(pData.height * pData.width !== pData.slicePitch) {
 // TODO
-	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 211 ); logger.criticalError("Unsupported texture format"); ;
+	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 212 ); logger.criticalError("Unsupported texture format"); ;
 	            }
 
 	            if ((pData.width * pixelUtil.getNumElemBytes(pData.format)) & 3) {
 // Standard alignment of 4 is not right
 	                pWebGLContext.pixelStorei( 0x0CF5 , 1);
 	            }
-
-	            pWebGLContext.texSubImage2D(this._eFaceTarget,
+	            if (pDestBox.left === 0 && pDestBox.top === 0) {
+	            		pWebGLContext.texImage2D(this._eFaceTarget,
 	                            			this._iLevel,
-	                            			pDestBox.left, pDestBox.top,
-	                            			pDestBox.width, pDestBox.height,
+	                            			webgl.getWebGLFormat(pData.format),
+	                            			pDestBox.width, pDestBox.height,0,
 	                            			webgl.getWebGLFormat(pData.format),
 	                            			webgl.getWebGLDataType(pData.format),
-	                            			pData.data);
+	                            			new Uint8Array(pData.data));
+	            }
+	            else
+	            {
+            		pWebGLContext.texSubImage2D(this._eFaceTarget,
+                            			this._iLevel,
+                            			pDestBox.left, pDestBox.top,
+                            			pDestBox.width, pDestBox.height,
+                            			webgl.getWebGLFormat(pData.format),
+                            			webgl.getWebGLDataType(pData.format),
+                            			pData.data);
+	            }
 	        }
 
 	        if ( (((this._iFlags) & (ETextureFlags.AUTOMIPMAP)) != 0)  && !this._bSoftwareMipmap && (this._iLevel === 0)) {
@@ -39382,7 +41475,7 @@ module akra.webgl {
 //     // Restore defaults
 //     glPixelStorei(GL_PACK_ALIGNMENT, 4);
 // }
-			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 267 ); logger.criticalError("Downloading texture buffers is not supported by OpenGL ES"); ;
+			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 279 ); logger.criticalError("Downloading texture buffers is not supported by OpenGL ES"); ;
 		}
 
 		/**@protected*/  buildMipmaps(pData: IPixelBox): void {
@@ -39451,7 +41544,7 @@ module akra.webgl {
 		}
 
 		_bindToFramebuffer(iAttachment:  number , iZOffset:  number ): void {
-			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 336 ); logger.assert(iZOffset < this._iDepth); ;
+			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 348 ); logger.assert(iZOffset < this._iDepth); ;
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			pWebGLContext.framebufferTexture2D( 0x8D40 , iAttachment, this._eFaceTarget, this._pWebGLTexture, this._iLevel);
@@ -39742,7 +41835,7 @@ module akra.webgl {
 	        }
 
 	        if(!this._pBuffer.contains(pDestBox)) {
-	            logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 627 ); logger.criticalError("Destination box out of range"); ;
+	            logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 639 ); logger.criticalError("Destination box out of range"); ;
 	        }
 
 		    var pSource: IPixelBox;
@@ -39775,7 +41868,7 @@ module akra.webgl {
 	        pTempWebGLTexture = pWebGLRenderer.createWebGLTexture();
 
 	        if(isNull(pTempWebGLTexture)){
-	        	logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 660 ); logger.error("Can not create WebGL texture"); ;
+	        	logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 672 ); logger.error("Can not create WebGL texture"); ;
 	        	return false;
 	        }
 
@@ -39810,15 +41903,15 @@ module akra.webgl {
 		getRenderTarget(): IRenderTarget;
 		getRenderTarget(iZOffest:  number ): IRenderTarget;
 		getRenderTarget(iZOffest?:  number  = 0): IRenderTarget {
-			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 695 ); logger.assert( (((this._iFlags) & (ETextureFlags.RENDERTARGET)) != 0) ); ;
-        	logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 696 ); logger.assert(iZOffest < this._iDepth); ;
+			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 707 ); logger.assert( (((this._iFlags) & (ETextureFlags.RENDERTARGET)) != 0) ); ;
+        	logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 708 ); logger.assert(iZOffest < this._iDepth, "iZOffest: " + iZOffest + ", iDepth: " + this._iDepth); ;
         	return this._pRTTList[iZOffest];
 		}
 
 		resize(iSize:  number ): bool;
 		resize(iWidth:  number , iHeight?:  number ): bool {
 			if(arguments.length === 1){
-				logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 703 ); logger.criticalError("resize with one parametr not available for WebGLTextureBuffer"); ;
+				logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 715 ); logger.criticalError("resize with one parametr not available for WebGLTextureBuffer"); ;
 				return false;
 			}
 			var pSrcBox: IBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
@@ -40003,27 +42096,34 @@ module akra.webgl {
             {
                 logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 181 ); logger.warning("Заданная высота не поддерживается("+this._iHeight+")"); ;
                 this._iHeight=1;
-
             }
-
-
             if(this._iDepth!=1)
             {
             	this._iDepth=1;
-                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 190 ); logger.warning("Трехмерные текстуры не поддерживаются, сброс глубины в 1"); ;
+                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 187 ); logger.warning("Трехмерные текстуры не поддерживаются, сброс глубины в 1"); ;
             }
+            if(!webgl.hasExtension( "EXT_texture_npot_2D_mipmap" ) &&(!math.isPowerOfTwo(this._iDepth)||!math.isPowerOfTwo(this._iHeight)||!math.isPowerOfTwo(this._iWidth)))
+            {
+                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 191 ); logger.warning("Мип мапы у текстуры не стпени двойки не поддерживаются, сброс мипмапов в 0"); ;
+                this._nMipLevels=0;
+                ((this._iFlags) &= ~(ETextureFlags.AUTOMIPMAP)) ;
+            }
+
+
+
+
 
 
             if(!webgl.isWebGLFormatSupport(this._eFormat))
             {
-                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 196 ); logger.warning("Данный тип текстуры не поддерживается"); ;
+                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 203 ); logger.warning("Данный тип текстуры не поддерживается"); ;
                 this._eFormat=EPixelFormats.A8B8G8R8;
             }
 
 
-            if (this._nMipLevels!=0 && this._nMipLevels!=webgl.getMaxMipmaps(this._iWidth, this._iHeight, this._iDepth, this._eFormat))
+            if (this._nMipLevels!=0 && this._nMipLevels!=akra.core.pool.resources.Img.getMaxMipmaps(this._iWidth, this._iHeight, this._iDepth, this._eFormat))
             {
-                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 203 ); logger.warning("Нехватает мипмапов, сброс в 0"); ;
+                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 210 ); logger.warning("Нехватает мипмапов, сброс в 0"); ;
                 this._nMipLevels=0;
             }
 
@@ -40071,16 +42171,14 @@ module akra.webgl {
 	            for (mip = 0; mip <= this._nMipLevels; mip++) {
 
 	                iSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
-                    console.log(iSize,iWidth, iHeight, iDepth, this._eFormat);
+//console.log(iSize,iWidth, iHeight, iDepth, this._eFormat);
 	                pEmptyData = pTmpData.subarray(0, iSize);
 					switch(this._eTextureType)
                     {
 
 						case ETextureTypes.TEXTURE_2D:
-                            console.log("==>");
 	                        pWebGLContext.compressedTexImage2D( 0x0DE1 , mip, iWebGLFormat,
 	                        								   iWidth, iHeight, 0, pEmptyData);
-                            console.log("<==");
 	                        break;
 						case ETextureTypes.TEXTURE_CUBE_MAP:
 							var iFace:  number  = 0;
@@ -40108,6 +42206,7 @@ module akra.webgl {
 // Normal formats
 					switch(this._eTextureType){
 						case ETextureTypes.TEXTURE_2D:
+//console.log(mip,iWidth, iHeight);
 	                        pWebGLContext.texImage2D( 0x0DE1 , mip, iWebGLFormat,
 	                                     			 iWidth, iHeight, 0, iWebGLFormat, iWebGLDataType, null);
 	                        break;
@@ -40122,9 +42221,9 @@ module akra.webgl {
 	                        break;
 	                }
 
-	                if(iWidth > 1) iWidth = iWidth / 2;
-	                if(iHeight > 1) iHeight = iHeight / 2;
-	                if(iDepth > 1) iDepth = iDepth / 2;
+	                if(iWidth > 1) iWidth = iWidth >>> 1;
+	                if(iHeight > 1) iHeight = iHeight >>> 1;
+	                if(iDepth > 1) iDepth = iDepth >>> 1;
 	            }
 	        }
 	        this._createSurfaceList();
@@ -40189,7 +42288,7 @@ module akra.webgl {
         			if(pBuf.width === 0 ||
         			   pBuf.height === 0 ||
         			   pBuf.depth === 0) {
-        				logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 372 ); logger.criticalError("Zero sized texture surface on texture " + sResourceName + " face " + iFace + " mipmap " + mip + ". The GL driver probably refused to create the texture.");
+        				logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 378 ); logger.criticalError("Zero sized texture surface on texture " + sResourceName + " face " + iFace + " mipmap " + mip + ". The GL driver probably refused to create the texture.");
                                                                                         ;
         			}
 
@@ -40197,17 +42296,17 @@ module akra.webgl {
         	}
         }
 
-        getBuffer(iFace?:  number  = 1, iMipmap?:  number  = 0): IPixelBuffer {
+        getBuffer(iFace?:  number  = 0, iMipmap?:  number  = 0): IPixelBuffer {
             if (iFace >= this.getNumFaces()) {
-	            logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 381 ); logger.criticalError("Face index out of range"); ;
+	            logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 387 ); logger.criticalError("Face index out of range", iFace, this.getNumFaces()); ;
 	        }
 
 	        if (iMipmap > this._nMipLevels) {
-	            logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 385 ); logger.criticalError("Mipmap index out of range"); ;
+	            logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 391 ); logger.criticalError("Mipmap index out of range", iMipmap, this._nMipLevels); ;
 	        }
 
 	        var idx:  number  = iFace * (this._nMipLevels + 1) + iMipmap;
-	        logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 389 ); logger.assert(idx < this._pSurfaceList.length,"smth"); ;
+	        logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 395 ); logger.assert(idx < this._pSurfaceList.length,"smth"); ;
 
 	        return this._pSurfaceList[idx];
         }
@@ -40278,7 +42377,7 @@ module akra.data {
 		private _iOffset:  number ;
 		private _iStride:  number ;
 		private _iLength:  number ;
-		private _pVertexDeclaration: IVertexDeclaration;
+		private _pVertexDeclaration: VertexDeclaration;
 		private _iId:  number ;
 
 		inline get id():  number  { return this._iId; }
@@ -40318,7 +42417,7 @@ module akra.data {
 		}
 
 
-		getVertexDeclaration(): IVertexDeclaration {
+		getVertexDeclaration(): VertexDeclaration {
 			return this._pVertexDeclaration;
 		}
 
@@ -40331,7 +42430,7 @@ module akra.data {
 
 			var iStride:  number  = pDecl.stride;
 
-		    this._pVertexDeclaration = pDecl.clone();
+		    this._pVertexDeclaration = <VertexDeclaration>pDecl.clone();
 
 
 		    logger.setSourceLocation( "data/VertexData.ts" , 80 ); logger.assert(iStride < <number>EVertexDataLimits.k_MaxElementsSize, "stride max is 255 bytes");
@@ -40411,6 +42510,8 @@ module akra.data {
 		    var pOldVertexDeclaration: IVertexDeclaration;
 		    var iOldStride:  number
 
+//debug_print("VertexData (offset: " + this.byteOffset + ") resized from " + this.byteLength + " to ", arguments);
+
 		    if (arguments.length == 2) {
 		        if (isInt(pDecl)) {
 		            iStride = < number >pDecl;
@@ -40440,7 +42541,7 @@ module akra.data {
 		            }
 
 		            if (this.byteOffset != iOldOffset) {
-		                logger.setSourceLocation( "data/VertexData.ts" , 185 ); logger.warning("vertex data moved from " + iOldOffset + " ---> " + this.byteOffset); ;
+		                logger.setSourceLocation( "data/VertexData.ts" , 187 ); logger.warning("vertex data moved from " + iOldOffset + " ---> " + this.byteOffset); ;
 		                this.relocation(this, iOldOffset, this.byteOffset);
 		            }
 
@@ -40466,7 +42567,7 @@ module akra.data {
 		            this.setVertexDeclaration(pOldVertexDeclaration);
 
 		            if (this.byteOffset != iOldOffset) {
-		                logger.setSourceLocation( "data/VertexData.ts" , 211 ); logger.warning("vertex data moved from " + iOldOffset + " ---> " + this.byteOffset); ;
+		                logger.setSourceLocation( "data/VertexData.ts" , 213 ); logger.warning("vertex data moved from " + iOldOffset + " ---> " + this.byteOffset); ;
 		                this.relocation(this, iOldOffset, this.byteOffset);
 		            }
 
@@ -40508,7 +42609,7 @@ module akra.data {
 		            if (iStride != iSize) {
 //FIXME: очень тормознутое место, крайне медленно работает...
 						if(pVertexBuffer.isBackupPresent() && nCount > 1) {
-							console.log(pVertexBuffer.byteLength);
+// console.log(pVertexBuffer.byteLength);
 							pBackupBuf = new Uint8Array(pVertexBuffer.byteLength);
 							pVertexBuffer.readData(pBackupBuf);
 
@@ -40578,8 +42679,8 @@ module akra.data {
 
 		        case 2:
 		        case 3:
-		            var pDeclaration = this._pVertexDeclaration,
-		                pElement = null;
+		            var pDeclaration: VertexDeclaration = this._pVertexDeclaration,
+		                pElement: VertexElement = null;
 
 		            if (isString(arguments[1])) {
 		                pElement = pDeclaration.findElement(arguments[1]);
@@ -40640,11 +42741,11 @@ module akra.data {
 		            var pBufferData: Uint8Array = new Uint8Array(iSize * iCount);
 	            	for (var i:  number  = 0; i < iCount; i++) {
 	            		var iCurrent:  number  = iFrom + i;
-		            	this._pVertexBuffer.readData(iStride * iCurrent + iOffset + this.byteOffset, iSize,
-		            		pBufferData.subarray(i * iSize, (i + 1) * iSize));
+		            	logger.setSourceLocation( "data/VertexData.ts" , 385 ); logger.assert(this._pVertexBuffer.readData(iStride * iCurrent + iOffset + this.byteOffset, iSize, pBufferData.subarray(i * iSize, (i + 1) * iSize)),"cannot read buffer");
+                                                                                       ;
+
 //pBufferData.set(new Uint8Array(), i * iSize);
 		            }
-
 		            return pBufferData.buffer;
 		        case 3:
 		        case 1:
@@ -40713,7 +42814,7 @@ module akra.data {
 
 
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return VertexData._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return VertexData._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 		relocation (pTarget, iFrom, iTo): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).relocation; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pTarget, iFrom, iTo) : _broadcast[i].listener (_recivier, pTarget, iFrom, iTo) ; } } } ; ;
 	}
 
@@ -40743,7 +42844,7 @@ module akra.core.pool.resources {
 			((iFlags) &= ~(EHardwareBufferFlags.BACKUP_COPY | EHardwareBufferFlags.DISCARDABLE | EHardwareBufferFlags.ALIGNMENT))
                                    ;
 
-			var isCreated: bool = super.create(iFlags | EHardwareBufferFlags.SOFTWARE);
+			var isCreated: bool = super.create(0, iFlags | EHardwareBufferFlags.SOFTWARE);
 
 			this._pData = new Uint8Array(iByteSize);
 
@@ -40838,7 +42939,7 @@ module akra.core.pool.resources {
 // create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
 		create(iByteSize:  number , iFlags?:  number , pData?: ArrayBufferView): bool{
 // create(iByteSize: uint, iFlags?: uint, pData?: any): bool {
-			super.create(iFlags || 0);
+			super.create(0, iFlags || 0);
 
 			if ( (((iFlags) & (EHardwareBufferFlags.BACKUP_COPY)) != 0) ) {
 				this._pBackupCopy = new MemoryBuffer();
@@ -40880,13 +42981,14 @@ module akra.core.pool.resources {
 		getEmptyVertexData(iCount:  number , pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
 		getEmptyVertexData(iCount:  number , pSize:  number , ppVertexDataIn?: IVertexData): IVertexData;
 		getEmptyVertexData(iCount:  number , pDeclData: any, ppVertexDataIn?: IVertexData): IVertexData {
-			var pDecl: IVertexDeclaration;
+			var pDecl: IVertexDeclaration = null;
 			var pHole: IBufferHole[] = [];
 			var i:  number ;
 			var pVertexData: IVertexData;
 			var iTemp:  number ;
 			var iStride:  number  = 0;
 			var iAligStart:  number ;
+			var iNewSize:  number  = 0;
 
 			while(true) {
 
@@ -40958,6 +43060,8 @@ module akra.core.pool.resources {
 				else {
 					iStride = pDeclData;
 				}
+// console.log(arguments[0], arguments[1].toString());
+// console.log("Buffer size >", this.byteLength, iCount * iStride)
 
 				for (i = 0; i < pHole.length; i++) {
 					iAligStart = this.isAligned() ?
@@ -40973,7 +43077,7 @@ module akra.core.pool.resources {
 							return pVertexData;
 						}
 						else if(arguments.length == 3) {
-							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, iAligStart, iCount, pDeclData);
+							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, ppVertexDataIn.id, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(ppVertexDataIn);
 
 							this.notifyAltered();
@@ -40984,7 +43088,10 @@ module akra.core.pool.resources {
 					}
 				}
 
-				if (this.resize(math.max(this.byteLength * 2, this.byteLength + iCount * iStride)) == false) {
+				iNewSize = math.max(this.byteLength * 2, this.byteLength + iCount * iStride);
+				if (this.resize(iNewSize) == false) {
+					logger.setSourceLocation( "core/pool/resources/VertexBuffer.ts" , 181 ); logger.warning("cannot resize buffer from " + this.byteLength + " bytes to " + iNewSize + " bytes ");
+                                                            ;
 					break;
 				}
 			}
@@ -41028,14 +43135,25 @@ module akra.core.pool.resources {
 			var pVertexData: IVertexData;
 		    var iCount:  number  = pData.byteLength / pDecl.stride;
 
-		    logger.setSourceLocation( "core/pool/resources/VertexBuffer.ts" , 219 ); logger.assert(iCount === math.floor(iCount), 'Data size should be a multiple of the vertex declaration.'); ;
+		    logger.setSourceLocation( "core/pool/resources/VertexBuffer.ts" , 225 ); logger.assert(iCount === math.floor(iCount), 'Data size should be a multiple of the vertex declaration.'); ;
 
 		    pVertexData = this.getEmptyVertexData(iCount, pDecl);
+
+		    logger.setSourceLocation( "core/pool/resources/VertexBuffer.ts" , 229 ); logger.assert(!isNull(pVertexData), "Could not allocate vertex data!"); ;
+
 		    pVertexData.setData(pData, 0, pDecl.stride);
 
 		    return pVertexData;
 		}
 
+	}
+
+	export inline function isVBO(pBuffer: IVertexBuffer): bool {
+		return pBuffer.type === EVertexBufferTypes.VBO;
+	}
+
+	export inline function isTBO(pBuffer: IVertexBuffer): bool {
+		return pBuffer.type === EVertexBufferTypes.TBO;
 	}
 }
 
@@ -41053,7 +43171,7 @@ module akra.webgl {
 		/**@protected*/  _pWebGLBuffer: WebGLBuffer;
 
 		private _pLockData: Uint8Array = null;
-
+		/**@protected*/  _sCS: string = null;
 
 		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.VBO; }
 		inline get byteLength():  number  { return this._iByteSize; }
@@ -41200,8 +43318,12 @@ module akra.webgl {
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			if(!this.isBackupPresent()) {
+				logger.setSourceLocation( "webgl/WebGLVertexBuffer.ts" , 164 ); logger.log("Not resized, because backup not present!"); ;
 				return false;
 			}
+
+			logger.setSourceLocation( "webgl/WebGLVertexBuffer.ts" , 168 ); logger.log("WebGLVertexBuffer resized from " + this.byteLength + " to " + iSize); ;
+
 
 			if(iSize < this.byteLength) {
 				for(var k:  number  = 0; k < this._pVertexDataArray.length; ++ k) {
@@ -41212,7 +43334,7 @@ module akra.webgl {
 					}
 				}
 
-				logger.setSourceLocation( "webgl/WebGLVertexBuffer.ts" , 177 ); logger.assert(iMax <= iSize, "Уменьшение невозможно. Страая разметка не укладывается в новый размер");
+				logger.setSourceLocation( "webgl/WebGLVertexBuffer.ts" , 181 ); logger.assert(iMax <= iSize, "Уменьшение невозможно. Страая разметка не укладывается в новый размер");
                                                                                                                                          ;
 			}
 
@@ -41225,7 +43347,7 @@ module akra.webgl {
 		    this._pWebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 
 		    if (!this._pWebGLBuffer) {
-		        logger.setSourceLocation( "webgl/WebGLVertexBuffer.ts" , 189 ); logger.criticalError("Не удалось создать буфер"); ;
+		        logger.setSourceLocation( "webgl/WebGLVertexBuffer.ts" , 193 ); logger.criticalError("Не удалось создать буфер"); ;
 
 		        this.destroy();
 		        return false;
@@ -41238,7 +43360,7 @@ module akra.webgl {
 			pData = new Uint8Array(this._iByteSize);
 
 			if (!this.readData(pData)) {
-				logger.setSourceLocation( "webgl/WebGLVertexBuffer.ts" , 202 ); logger.warning("cannot read data from buffer"); ;
+				logger.setSourceLocation( "webgl/WebGLVertexBuffer.ts" , 206 ); logger.warning("cannot read data from buffer"); ;
 				return false;
 			}
 
@@ -41275,7 +43397,6 @@ module akra.webgl {
 		}
 	}
 }
-
 
 
 
@@ -41814,7 +43935,7 @@ module akra.webgl {
 
 			super.create(iByteSize, iFlags, pData);
 
-			var pPOTSize:  number [] = math.calcPOTtextureSize(math.ceil(iByteSize / akra.pixelUtil.getNumElemBytes(this._ePixelFormat)));
+			var pPOTSize:  number [] = math.calcPOTtextureSize(math.ceil(iByteSize / pixelUtil.getNumElemBytes(this._ePixelFormat)));
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i:  number ;
@@ -41822,31 +43943,34 @@ module akra.webgl {
 		    iWidth = pPOTSize[0];
 		    iHeight = pPOTSize[1];
 
-		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 75 ); logger.assert(this._pWebGLTexture == null, "webgl texture already allocated"); ;
+		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 74 ); logger.assert(this._pWebGLTexture == null, "webgl texture already allocated"); ;
 
 			this._iWidth = iWidth;
 			this._iHeight = iHeight;
 		    this._iFlags = iFlags;
 
-		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 81 ); logger.assert(pWebGLContext !== null, "cannot grab webgl context"); ;
+		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 80 ); logger.assert(pWebGLContext !== null, "cannot grab webgl context"); ;
 
 //Софтварного рендеринга буфера у нас нет
-		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 84 ); logger.assert(!this.isSoftware(), "no software rendering"); ;
+		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 83 ); logger.assert(!this.isSoftware(), "no software rendering"); ;
 
 //Если есть локальная копия то буфер можно читать
 		    if (this.isBackupPresent()) {
 		        ((this._iFlags) |= (EHardwareBufferFlags.READABLE)) ;
 		    }
 
-			logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 92 ); logger.assert(!pData || pData.byteLength <= iByteSize, "Размер переданного массива больше переданного размера буфера");
+			logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 91 ); logger.assert(!pData || pData.byteLength <= iByteSize, "Размер переданного массива больше переданного размера буфера");
                                                                                                                          ;
+
+			logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 94 ); logger.assert(loadExtension(pWebGLContext, "OES_texture_float"), "OES_texture_float extension is necessary for correct work.");
+                                                                 ;
 
 		    this._pWebGLTexture = pWebGLRenderer.createWebGLTexture();
 		    this._eWebGLFormat = getWebGLFormat(this._ePixelFormat);
 		    this._eWebGLType = getWebGLDataType(this._ePixelFormat);
 
 		    if (!this._pWebGLTexture) {
-		        logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 99 ); logger.criticalError("Не удалось создать буфер"); ;
+		        logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 101 ); logger.criticalError("Не удалось создать буфер"); ;
 
 		        this.destroy();
 		        return false;
@@ -41903,6 +44027,16 @@ module akra.webgl {
 				"									\n				#ifdef GL_ES                        \n				    precision highp float;          \n				#endif								\n				varying vec4 v4fValue;              \n				                                    \n				void main(void) {                   \n				    gl_FragColor = v4fValue;        \n				}                                   \n				");
 	        }
 
+	        if(isNull(WebGLVertexTexture._pWebGLBuffer1)){
+		        	WebGLVertexTexture._pWebGLBuffer1 = pWebGLRenderer.createWebGLBuffer();
+	        }
+	        if(isNull(WebGLVertexTexture._pWebGLBuffer2)){
+	        	WebGLVertexTexture._pWebGLBuffer2 = pWebGLRenderer.createWebGLBuffer();
+	        }
+	        if(isNull(WebGLVertexTexture._pWebGLBuffer3)){
+	        	WebGLVertexTexture._pWebGLBuffer3 = pWebGLRenderer.createWebGLBuffer();
+	        }
+
 		    return true;
 		}
 
@@ -41918,7 +44052,7 @@ module akra.webgl {
 		readData(ppDest: ArrayBufferView): bool;
 		readData(iOffset:  number , iSize:  number , ppDest: ArrayBufferView): bool;
 		readData(iOffset: any, iSize?: any, ppDest?: any): bool {
-			logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 256 ); logger.assert(!isNull(this._pWebGLTexture), "Буффер еще не создан"); ;
+			logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 268 ); logger.assert(!isNull(this._pWebGLTexture), "Буффер еще не создан"); ;
 
 		    if (!this.isBackupPresent()) {
 		    	return false;
@@ -41966,7 +44100,7 @@ module akra.webgl {
 
 		    var pDataU8: Uint8Array = pData;
 
-		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 294 ); logger.assert(bDiscardWholeBuffer === false, "Discard option temporary unsupported."); ;
+		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 306 ); logger.assert(bDiscardWholeBuffer === false, "Discard option temporary unsupported."); ;
 
 		    if (pData.BYTES_PER_ELEMENT > 1) {
 		    	pDataU8 = new Uint8Array(pData.buffer, pData.byteOffset, pData.byteLength);
@@ -41987,7 +44121,7 @@ module akra.webgl {
 
 		    this._bForceUpdateBackupCopy = true;
 
-		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 315 ); logger.assert(iOffset % iTypeSize === 0 && iSize % iTypeSize === 0, "Incorrect data size or offset"); ;
+		    logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 327 ); logger.assert(iOffset % iTypeSize === 0 && iSize % iTypeSize === 0, "Incorrect data size or offset"); ;
 
 		    iFrom 	= iOffset / iTypeSize;
 		    iCount 	= iSize / iTypeSize;
@@ -42056,6 +44190,7 @@ module akra.webgl {
 		        return this.writeData(pTempData, iRealOffset, iRealSize);
 		    }
 		    else {
+//console.error(this);
 
 		        var pMarkupDataIndex: Float32Array = new Float32Array(nPixels);
 		        var pMarkupDataShift: Float32Array = new Float32Array(nPixels);
@@ -42078,11 +44213,11 @@ module akra.webgl {
 		        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
 		        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_update");
 
-		        var pValueBuffer: WebGLBuffer 		= pWebGLRenderer.createWebGLBuffer();
-		        var pMarkupIndexBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
-		        var pMarkupShiftBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+		        var pValueBuffer: WebGLBuffer 		= WebGLVertexTexture._pWebGLBuffer1;
+		        var pMarkupIndexBuffer: WebGLBuffer = WebGLVertexTexture._pWebGLBuffer2;
+		        var pMarkupShiftBuffer: WebGLBuffer = WebGLVertexTexture._pWebGLBuffer3;
 
-		        logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 410 ); logger.assert(isDef(pWebGLProgram), "cound not find WEBGL_vertex_texture_update program"); ;
+		        logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 423 ); logger.assert(isDef(pWebGLProgram), "cound not find WEBGL_vertex_texture_update program"); ;
 
 		        pWebGLRenderer.disableAllWebGLVertexAttribs();
 
@@ -42136,9 +44271,9 @@ module akra.webgl {
 		        pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
 		        pWebGLContext.disableVertexAttribArray(iShiftAttribLocation);
 
-		        pWebGLRenderer.deleteWebGLBuffer(pValueBuffer);
-		        pWebGLRenderer.deleteWebGLBuffer(pMarkupShiftBuffer);
-		        pWebGLRenderer.deleteWebGLBuffer(pMarkupIndexBuffer);
+//pWebGLRenderer.deleteWebGLBuffer(pValueBuffer);
+//pWebGLRenderer.deleteWebGLBuffer(pMarkupShiftBuffer);
+//pWebGLRenderer.deleteWebGLBuffer(pMarkupIndexBuffer);
 
 		        pWebGLRenderer.bindWebGLFramebuffer( 0x8D40 , null);
 		        pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
@@ -42163,7 +44298,7 @@ module akra.webgl {
 				}
 
 				if(iMax > iSize){
-					logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 492 ); logger.assert(false, "Уменьшение невозможно. Страая разметка не укладывается в новый размер");
+					logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 505 ); logger.assert(false, "Уменьшение невозможно. Страая разметка не укладывается в новый размер");
                                                                                                                                           ;
 					return false;
 				}
@@ -42193,7 +44328,7 @@ module akra.webgl {
 					var pData: Uint8Array = new Uint8Array(iByteLength);
 
 					if (!this.readData(pData)) {
-						logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 520 ); logger.warning("cannot read data from buffer"); ;
+						logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 533 ); logger.warning("cannot read data from buffer"); ;
 						return false;
 					}
 
@@ -42202,7 +44337,7 @@ module akra.webgl {
 				else{
 			        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_resize");
 
-			        logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 529 ); logger.assert(isDef(pWebGLProgram), "cound not find WEBGL_vertex_texture_resize program"); ;
+			        logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 542 ); logger.assert(isDef(pWebGLProgram), "cound not find WEBGL_vertex_texture_resize program"); ;
 
 			        pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
@@ -42252,7 +44387,12 @@ module akra.webgl {
 
 		        	pWebGLContext.enableVertexAttribArray(iIndexAttribLocation);
 
-			        var pIndexBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+		        	if(isNull(WebGLVertexTexture._pWebGLBuffer1)){
+		        		WebGLVertexTexture._pWebGLBuffer1 = pWebGLRenderer.createWebGLBuffer();
+		        	}
+
+			        var pIndexBuffer: WebGLBuffer = WebGLVertexTexture._pWebGLBuffer1;
+
 			        pWebGLRenderer.bindWebGLBuffer( 0x8892 , pIndexBuffer);
 			        pWebGLContext.bufferData( 0x8892 , pIndexBufferData,  0x88E0 );
 			        pWebGLContext.vertexAttribPointer(iIndexAttribLocation, 1,  0x1406 , false, 0, 0);
@@ -42277,7 +44417,7 @@ module akra.webgl {
 
 			        pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
 			        pWebGLRenderer.bindWebGLBuffer( 0x8892 , null);
-			        pWebGLRenderer.deleteWebGLBuffer(pIndexBuffer);
+//pWebGLRenderer.deleteWebGLBuffer(pIndexBuffer);
 
 			        pWebGLRenderer.bindWebGLFramebuffer( 0x8D40 , null);
 			        pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
@@ -42327,6 +44467,10 @@ module akra.webgl {
 
 			return pHeader;
 		};
+
+		static _pWebGLBuffer1: WebGLBuffer = null;
+		static _pWebGLBuffer2: WebGLBuffer = null;
+		static _pWebGLBuffer3: WebGLBuffer = null;
 	}
 
 
@@ -42554,7 +44698,7 @@ module akra.core.pool.resources {
 //create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
 		create(iByteSize:  number , iFlags?:  number , pData?: ArrayBufferView): bool{
 //create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool {
-			super.create(iFlags || 0);
+			super.create(0, iFlags || 0);
 
 			if ( (((iFlags) & (EHardwareBufferFlags.BACKUP_COPY)) != 0) ) {
 				this._pBackupCopy = new MemoryBuffer();
@@ -44949,7 +47093,6 @@ module akra.geometry {
 		};
 
 		unionRect(pRect: IRect3d): IRect3d{
-			console.log(this,pRect);
 			this.normalize();
 			pRect.normalize();
 
@@ -45158,7 +47301,7 @@ module akra.geometry {
 				v3fDestination = new Vec3();
 			}
 
-			logger.setSourceLocation( "geometry/Rect3d.ts" , 753 ); logger.assert(0 <= iIndex && iIndex < 8, "invalid index"); ;
+			logger.setSourceLocation( "geometry/Rect3d.ts" , 752 ); logger.assert(0 <= iIndex && iIndex < 8, "invalid index"); ;
 
 			switch(iIndex){
 				case 0:
@@ -45378,6 +47521,8 @@ module akra{
 
 		clear(): IPlane3d;
 
+		negate(): IPlane3d;
+
 		normalize(): IPlane3d;
 
 		isEqual(pPlane: IPlane3d): bool;
@@ -45476,6 +47621,12 @@ module akra.geometry{
 		inline clear(): IPlane3d{
 			this.normal.clear();
 			this.distance = 0.;
+			return this;
+		};
+
+		inline negate(): IPlane3d{
+			this.normal.negate();
+			this.distance = -this.distance;
 			return this;
 		};
 
@@ -45600,6 +47751,8 @@ module akra{
 
 		clear(): IPlane2d;
 
+		negate(): IPlane2d;
+
 		normalize(): IPlane2d;
 
 		isEqual(pPlane: IPlane2d): bool;
@@ -45682,6 +47835,12 @@ module akra.geometry{
 		inline clear(): IPlane2d{
 			this.normal.clear();
 			this.distance = 0.;
+			return this;
+		};
+
+		inline negate(): IPlane2d{
+			this.normal.negate();
+			this.distance = -this.distance;
 			return this;
 		};
 
@@ -46100,6 +48259,8 @@ module akra{
 
 		isEqual(pFrustum: IFrustum): bool;
 
+		getPlanePoints(sPlaneKey: string, pDestination?: IVec3[]): IVec3[];
+
 		testPoint(v3fPoint: IVec3): bool;
 		testRect(pRect: IRect3): bool;
 		testSphere(pSphere: ISphere): bool;
@@ -46150,7 +48311,7 @@ module akra.geometry{
 			}
 		};
 
-		get frustumVertices(): IVec3[]{
+		inline get frustumVertices(): IVec3[]{
 			return this._pFrustumVertices;
 		};
 
@@ -46379,6 +48540,57 @@ module akra.geometry{
 				&& this.farPlane.isEqual(pFrustum.farPlane));
 		};
 
+//output - array of vertices in counterclockwise order (around plane normal as axis)
+		getPlanePoints(sPlaneKey: string, pDestination: IVec3[] = new Array(4)): IVec3[]{
+			var pFrustumVertices: IVec3[] = this.frustumVertices;
+			if(pFrustumVertices === null){
+				pFrustumVertices = this.calculateFrustumVertices();
+			}
+
+			switch(sPlaneKey){
+				case "leftPlane":
+					pDestination[0] = pFrustumVertices[6];
+					pDestination[1] = pFrustumVertices[4];
+					pDestination[2] = pFrustumVertices[0];
+					pDestination[3] = pFrustumVertices[2];
+					break;
+				case "rightPlane":
+					pDestination[0] = pFrustumVertices[7];
+					pDestination[1] = pFrustumVertices[3];
+					pDestination[2] = pFrustumVertices[1];
+					pDestination[3] = pFrustumVertices[5];
+					break;
+				case "topPlane":
+					pDestination[0] = pFrustumVertices[7];
+					pDestination[1] = pFrustumVertices[6];
+					pDestination[2] = pFrustumVertices[2];
+					pDestination[3] = pFrustumVertices[3];
+					break;
+				case "bottomPlane":
+					pDestination[0] = pFrustumVertices[5];
+					pDestination[1] = pFrustumVertices[1];
+					pDestination[2] = pFrustumVertices[0];
+					pDestination[3] = pFrustumVertices[4];
+					break;
+				case "nearPlane":
+					pDestination[0] = pFrustumVertices[3];
+					pDestination[1] = pFrustumVertices[2];
+					pDestination[2] = pFrustumVertices[0];
+					pDestination[3] = pFrustumVertices[1];
+					break;
+				case "farPlane":
+					pDestination[0] = pFrustumVertices[7];
+					pDestination[1] = pFrustumVertices[5];
+					pDestination[2] = pFrustumVertices[4];
+					pDestination[3] = pFrustumVertices[6];
+					break;
+				default:
+					logger.setSourceLocation( "geometry/Frustum.ts" , 319 ); logger.assert(false, "invalid plane key"); ;
+					break;
+			}
+			return pDestination;
+		};
+
 		testPoint(v3fPoint: IVec3): bool{
 			if(	   this.leftPlane.signedDistance(v3fPoint) > 0.
 				|| this.rightPlane.signedDistance(v3fPoint) > 0.
@@ -46393,6 +48605,7 @@ module akra.geometry{
 		};
 
 		testRect(pRect: IRect3d): bool{
+
 			if(planeClassifyRect3d(this.leftPlane, pRect) == EPlaneClassifications.PLANE_FRONT
 				|| planeClassifyRect3d(this.rightPlane, pRect) == EPlaneClassifications.PLANE_FRONT
 				|| planeClassifyRect3d(this.topPlane, pRect) == EPlaneClassifications.PLANE_FRONT
@@ -46914,45 +49127,6 @@ module akra {
 }
 
 
-// #include "OcTree.ts"
-// #include "LightGraph.ts"
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IMesh {} ;
-
-	export interface ISceneModel extends ISceneObject {
-		mesh: IMesh;
-
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -46969,59 +49143,111 @@ module akra {
 module akra {
 
 	export interface IRect3d {} ;
-	export interface IMesh {} ;
-	export interface ISkin {} ;
-	export interface IRenderData {} ;
+	export interface IOcTreeNode {} ;
+	export interface ISceneObject {} ;
+	export interface IOcTreeRect {} ;
+	export interface IVec3 {} ;
 
-	export interface IMeshSubset extends IEventProvider, IRenderableObject {
-		name: string;
+	export interface IOcTree extends IDisplayList {
 
-		 mesh: IMesh;
-		 skin: ISkin;
-		 data: IRenderData;
-		 boundingBox: IRect3d;
-         boundingSphere: ISphere;
+		 depth:  number ;
+		 worldScale: IVec3;
+		 worldOffset: IVec3;
 
-		createBoundingBox(): bool;
-		deleteBoundingBox(): bool;
-		showBoundingBox(): bool;
-		hideBoundingBox(): bool;
+		create(pWorldBoundingBox: IRect3d, iDepth:  number , nNode?:  number ): void;
+		isReady(): bool;
+		findTreeNode(pObject: ISceneObject): IOcTreeNode;
+		findTreeNodeByRect(iX0:  number , iX1:  number , iY0:  number , iY1:  number , iZ0:  number , iZ1:  number ): IOcTreeNode;
+		getAndSetFreeNode(iLevel:  number , iComposedIndex:  number , pParentNode: IOcTreeNode): IOcTreeNode;
+		deleteNodeFromTree(pNode: IOcTreeNode): void;
 
-		createBoundingSphere(): bool;
-		deleteBoundingSphere(): bool;
-		showBoundingSphere(): bool;
-		hideBoundingSphere(): bool;
+//debug metod
+		_toSimpleObject(pNode?: IOcTreeNode): any;
 
-		computeNormals(): void;
-		computeTangents(): void;
-		computeBinormals(): void;
-
-		isSkinned(): bool;
-		getSkin(): ISkin;
-		setSkin(pSkin: ISkin): bool;
-
-/** @deprecated */
-
-		applyFlexMaterial(csMaterial: string, pMaterial?: IMaterial): bool;
-/** @deprecated */
-
-		getFlexMaterial(iMaterial:  number ): IMaterial;
-/** @deprecated */
-
-		getFlexMaterial(csName: string): IMaterial;
-/** @deprecated */
-
-		setFlexMaterial(iMaterial:  number ): bool;
-/** @deprecated */
-
-		setFlexMaterial(csName: string): bool;
-
-		show(): void;
-		hide(): void;
-
-		destroy(): void;
+//getAndSetFreeNode(iLevel: int, iX: int, iY: int, iZ: int, iIndex: int): IOcTreeNode;
+//getNodeFromLevelXYZ(iLevel: int, iIndex: int): IOcTreeNode;
+//destroy(): void;
+//findTreeNode(iX0: int, iX1: int, iY0: int, iY1: int, iZ0: int, iZ1: int): IOcTreeNode;
+//buildByteRect(pWorldRect: IRect3d, pWorldByteRect: IOcTreeRect): void;
+//addOrUpdateSceneObject(pNewNode: ISceneObject): IOcTreeNode;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.scene {
+	export class DisplayList implements IDisplayList {
+		/**@protected*/  _pScene: IScene3d = null;
+		/**@protected*/  _sName: string = "";
+
+		inline get name(): string { return this._sName; }
+		inline set name(sName: string) { this._sName = sName; }
+
+		_onNodeAttachment(pScene: IScene3d, pNode: ISceneNode): void {
+			this.attachObject(pNode);
+		}
+
+		_onNodeDetachment(pScene: IScene3d, pNode: ISceneNode): void {
+			this.detachObject(pNode);
+		}
+
+		/**@protected*/  attachObject(pNode: ISceneNode): void {
+			logger.setSourceLocation( "DisplayList.ts" , 29 ); logger.error("pure virtual method DisplayList::attachObject()"); ;
+		}
+
+		/**@protected*/  detachObject(pNode: ISceneNode): void {
+			logger.setSourceLocation( "DisplayList.ts" , 33 ); logger.error("pure virtual method DisplayList::detachObject()"); ;
+		}
+
+		_setup(pScene: IScene3d): void {
+			if (isDefAndNotNull(this._pScene)) {
+				logger.setSourceLocation( "DisplayList.ts" , 38 ); logger.criticalError("list movement from scene to another scene temprary unsupported!"); ;
+			}
+
+			this._pScene = pScene;
+
+			this.connect(pScene, "nodeAttachment" , "_onNodeAttachment" ) ;
+			this.connect(pScene, "nodeDetachment" , "_onNodeDetachment" ) ;
+
+			var me = this;
+
+			pScene.getRootNode().explore(function (pEntity: IEntity) {
+					me._onNodeAttachment(pScene, <ISceneNode>pEntity);
+				});
+		}
+
+		_findObjects(pCamera: ICamera, pResultArray?: IObjectArray, bQuickSearch?: bool = false): IObjectArray {
+			logger.setSourceLocation( "DisplayList.ts" , 54 ); logger.error("pure virtual method"); ;
+			return null;
+		}
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return DisplayList._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+	}
+}
+
+
+
+
+
+
 
 
 
@@ -47029,123 +49255,48 @@ module akra {
 
 
 module akra {
-	export interface ISkeleton {} ;
-	export interface INode {} ;
-	export interface IMesh {} ;
-	export interface IEngine {} ;
-	export interface INodeMap {} ;
-	export interface IMat4 {} ;
-	export interface IVertexData {} ;
 
-// export interface INodeMap {
-// 	[index: string]: INode;
-// }
+	export interface IOcTree {} ;
+	export interface ISceneObject {} ;
+	export interface IRect3d {} ;
+	export interface IObjectList {} ;
 
-	export interface ISkin {
-		 data: IRenderDataCollection;
-		 skeleton: ISkeleton;
-		 totalBones:  number ;
+	export interface IOcTreeNode {
+/** Parent tree */
 
-/**
-		 * Set binding matrix. 
-		 * @see <bind_shape_matrix> in Collada.
-		 */
+		tree: IOcTree;
+/** Level of node */
 
-		setBindMatrix(m4fMatrix: IMat4): void;
+		level:  number ;
+/** Byte x-coord of node */
 
-/**
-		 * @see <bind_shape_matrix> in Collada.
-		 */
+// x: int;
+// /** Byte y-coord of node */
+// y: int;
+// /** Byte z-coord of node */
+// z: int;
+/** Index in array of nodes in tree */
 
-		getBindMatrix(): IMat4;
+		index:  number ;
+/** First SceneObject in this node */
 
-/**
-		 * Bone offset matrices.
-		 * @see Bone offset matrices in Collada.
-		 */
+		membersList: IObjectList;
+/** Rect of node in real world */
 
-		getBoneOffsetMatrices(): IMat4[];
-		getBoneOffsetMatrix(sBoneName: string): IMat4;
-		setBoneOffsetMatrices(pMatrices: IMat4[]): void;
+		worldBounds: IRect3d;
+/** Link ro next node in tree */
 
-		setSkeleton(pSkeleton: ISkeleton): bool;
+//forwardNodeLink: IOcTreeNode;
+/** Link ro previous node in tree */
 
-/**
-		 * Make a skin dependent on scene node whose names match the
-		 * names of the bones that affect the skin.
-		 */
+		rearNodeLink: IOcTreeNode;
 
-		attachToScene(pRootNode: ISceneNode): bool;
+//eight links to possible children nodes;		
+		childrenList: IObjectList[];
 
-// /**
-//  * Bind skin to skeleton or scene.
-//  */
-// bind(pSkeleton: ISkeleton): bool;
-// bind(pNode: ISceneNode): bool;
-
-/**
-		 * Set names of bones, that affect to skin.
-		 */
-
-		setBoneNames(pNames: string[]): bool;
-
-
-/**
-		 * Weights.
-		 */
-
-		setWeights(pWeights: Float32Array): bool;
-		getWeights(): IVertexData;
-
-/**
-		 * разметка влияний на вершины
-		 * пары: {число влияний, адресс индексов влияний}
-		 */
-
-		getInfluenceMetaData(): IVertexData;
-/**
-		 * инф. о вляиниях на вершины
-		 * пары: {индекс матрицы кости, индекс веса}
-		 */
-
-		getInfluences(): IVertexData;
-		setIfluences(pInfluencesCount:  number [], pInfluences: Float32Array): bool;
-
-/**
-		 * Short way to call setWeights() && setIfluences();
-		 */
-
-		setVertexWeights(pInfluencesCount:  number [], pInfluences: Float32Array, pWeights: Float32Array): bool;
-
-/**
-		 * Recalculate skin matrices and fill it to video memory.
-		 */
-
-		applyBoneMatrices(bForce?: bool): bool;
-
-/**
-		 * Is skin ready to use?
-		 */
-
-		isReady(): bool;
-
-/**
-		 * Data with result matrices.
-		 */
-
-		getBoneTransforms(): IVertexData;
-
-/**
-		 * Check, is this skin affect to data?
-		 */
-
-		isAffect(pData: IVertexData): bool;
-
-/**
-		 * Add skin info to data with vertices.
-		 */
-
-		attach(pData: IVertexData): void;
+		addMember(pMember: ISceneObject): void;
+		removeMember(pMember: ISceneObject): void;
+//nodeCoords(): void;
 	}
 }
 
@@ -47164,6 +49315,134 @@ module akra {
 
 
 
+module akra {
+	export interface IListExplorerFunc {
+		(data: any, index?:  number ): bool;
+//(data: any): void;
+	}
+
+/** ObjectList interface. */
+
+	export interface IObjectList {
+/** Number of elements in list */
+
+		length:  number ;
+/** First element in list */
+
+		first: any;
+/** Last element in list */
+
+		last: any;
+/** Current element in list */
+
+		current: any;
+
+/** Lock list for midifications. */
+
+		lock(): void;
+/** Unlock list */
+
+		unlock(): void;
+/** Is list locked ? */
+
+		isLocked(): bool;
+
+/** Set current element to <n> position. */
+
+		seek(n?:  number ): IObjectList;
+/** Get next element */
+
+		next(): any;
+/** Get prev element */
+
+		prev(): any;
+/** Push element to end of list. */
+
+		push(element: any): IObjectList;
+/** Pop element from end of list. */
+
+		pop(): any;
+/** Add element to list head. */
+
+		prepend(element: any): IObjectList;
+
+/** Add element from array. */
+
+		fromArray(elements: any[], iOffset?:  number , iSize?:  number ): IObjectList;
+
+/** Insert element before <n> element. */
+
+		insert(n:  number , data: any): IObjectList;
+/** Get valuie of <n> element */
+
+		value(n:  number , defaultValue?: any): any;
+/** Get index of element with given data */
+
+		indexOf(element: any, from?:  number ):  number ;
+/** Get sub list from this list */
+
+		mid(pos?:  number , size?:  number ): IObjectList;
+/** slice from array */
+
+		slice(start?:  number , end?:  number ): IObjectList;
+/** Move element from <from> postion to <to> position.*/
+
+		move(from:  number , to:  number ): IObjectList;
+
+/** Replace data of <n> element. */
+
+		replace(pos:  number , value: any): IObjectList;
+/** Erase element with number <n>. */
+
+		erase(pos:  number ): IObjectList;
+/** Erase elements from begin to end. */
+
+		erase(begin:  number , end:  number ): IObjectList;
+/** Is list contains data with <value>?*/
+
+		contains(value: any): bool;
+
+/** Get data of <n> item and remove it. */
+
+		takeAt(pos:  number ): any;
+/** Get data of first item and remove it. */
+
+		takeFirst(): any;
+/** Get data of last item and remove it. */
+
+		takeLast(): any;
+/** Get data of current item and remove it. */
+
+		takeCurrent(): any;
+
+/** Remove <n> item. */
+
+		removeAt(n:  number ): void;
+/** Remove one lement with data <element>. */
+
+		removeOne(element: any): void;
+/** Remove all lement with data <element>. */
+
+		removeAll(element: any):  number ;
+
+/** Swap items. */
+
+		swap(i:  number , j:  number ): IObjectList;
+/** Add another list to this */
+
+		add(list: IObjectList): IObjectList;
+/** Is this list equal to <list>. */
+
+		isEqual(list: IObjectList): bool;
+
+/** Clear list. */
+
+		clear(): IObjectList;
+/** For each loop. */
+
+		forEach(fn: IListExplorerFunc): void;
+	}
+}
 
 
 
@@ -47171,472 +49450,575 @@ module akra {
 
 
 
+module akra.util {
+	export interface IObjectListItem {
+		next: IObjectListItem;
+		prev: IObjectListItem;
+		data: any;
+	};
 
 
+	export class ObjectList implements IObjectList {
+		/**@protected*/  _pHead: IObjectListItem = null;
+		/**@protected*/  _pTail: IObjectListItem = null;
+		/**@protected*/  _pCurrent: IObjectListItem = null;
+		/**@protected*/  _iLength:  number  = 0;
+		/**@protected*/  _bLock: bool = false;
 
 
+		inline get length():  number  {
+			return this._iLength;
+		};
 
+		inline get first(): any {
+			this._pCurrent = this._pHead;
+			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
+		};
 
-module akra.model {
-
-	export class Skin implements ISkin {
-		private _pMesh: IMesh;
-
-		private _pSkeleton: ISkeleton = null;
-
-// name of bones/nodes
-		private _pNodeNames: string[] = null;
-
-//bind matrix from collada
-		private _m4fBindMatrix: IMat4;
-
-//BONE_MATRIX = WORLD_MATRIX x OFFSET_MATRIX
-		private _pBoneTransformMatrices: IMat4[]  = null;
-
-/**
-		 * Common buffer for all transform matrices.
-		 * _pBoneOffsetMatrixBuffer = [_pBoneTransformMatrices[0], ..., _pBoneTransformMatrices[N]]
-		 */
-
-		private _pBoneOffsetMatrixBuffer: Float32Array = null;
-
-// bone offset matrices from collada
-		private _pBoneOffsetMatrices: IMat4[] = null;
-
-/**
-		 * Pointers to nodes, that affect to this skin.
-		 */
-
-		private _pAffectingNodes: ISceneNode[] = null;
-
-/**
-		 * Format:
-		 * BONE_INF_COUNT - number of bones, that influence to the vertex.
-		 * BONE_INF_LOC - address of influence, pointer to InfData structire list.
-		 * ..., [BONE_INF_COUNT: float, BONE_INF_LOC: float], ...
-		 * 
-		 */
-
-		private _pInfMetaData: IVertexData = null;
-
-/**
-		 * Format:
-		 * BONE_INF_DATA - bone matrix address, pointer to BONE_MATRIX list
-		 * BONE_WEIGHT_IND - bone weight address, pointer to BONE_WEIGHT list
-		 * ..., [BONE_INF_DATA: float, BONE_WEIGHT_IND: float], ...
-		 */
-
-		private _pInfData: IVertexData = null;
-
-/**
-		 * Format:
-		 * ..., [BONE_MATRIX: matrix4], ...
-		 */
-
-		private _pBoneTransformMatrixData: IVertexData = null;
-
-/**
-		 * Format:
-		 * ..., [BONE_WEIGHT: float], ...
-		 */
-
-		private _pWeightData: IVertexData = null;
-
-/**
-		 * Links to VertexData, that contain meta from this skin.
-		 */
-
-		private _pTiedData: IVertexData[] = [];
-
-
-
-		inline get data(): IRenderDataCollection {
-			return this._pMesh.data;
+		inline get last(): any {
+			this._pCurrent = this._pTail;
+			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
 		}
 
-		inline get skeleton(): ISkeleton{
-			return this._pSkeleton;
+		inline get current(): any {
+			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
 		}
 
-		inline set skeleton(pSkeleton: ISkeleton) {
-			if (isNull(pSkeleton) || pSkeleton.totalBones < this.totalBones) {
-				logger.setSourceLocation( "Skin.ts" , 88 ); logger.warning("cannnot set skeletonm because skeleton has to little bones"); ;
-		        return;
-		    }
-
-		    for (var i:  number  = 0, nMatrices:  number  = this.totalBones; i < nMatrices; i++) {
-		        this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
-		        logger.setSourceLocation( "Skin.ts" , 94 ); logger.assert(isDefAndNotNull(this._pAffectingNodes[i]), "joint<" + this._pNodeNames[i] + "> must exists..."); ;
-		    }
-
-
-		    this._pSkeleton = pSkeleton;
+		inline lock(): void {
+			this._bLock = true;
 		}
 
-		inline get totalBones():  number  {
-			return this._pNodeNames.length;
+		inline unlock(): void {
+			this._bLock = false;
 		}
 
-		constructor(pMesh: IMesh) {
-		    logger.setSourceLocation( "Skin.ts" , 106 ); logger.assert(isDefAndNotNull(pMesh), "you must specify mesh for skin"); ;
-
-		    this._pMesh = pMesh;
+		inline isLocked(): bool {
+			return this._bLock;
 		}
 
-		setBindMatrix(m4fMatrix: IMat4): void {
-			this._m4fBindMatrix.set(m4fMatrix);
+		inline value(n:  number ): any{
+			return this.find(n).data;
+		};
+
+		constructor (pData?: any[]) {
+			if (arguments.length) {
+				this.fromArray(pData);
+			}
 		}
 
-		getBindMatrix(): IMat4 {
-			return this._m4fBindMatrix;
-		}
+		indexOf(pData: any, iFrom:  number  = 0.):  number {
+			var pItem: IObjectListItem = this.find(iFrom);
 
-		getBoneOffsetMatrices(): IMat4[] {
-			return this._pBoneOffsetMatrices;
-		}
+			for(var i:  number  = iFrom; i<this._iLength; i++){
+				if(pItem.data === pData){
+					return i;
+				}
+				pItem = pItem.next;
+			}
+			return -1;
+		};
 
-		getBoneOffsetMatrix(sBoneName: string): IMat4 {
-			var pBoneNames: string[] = this._pNodeNames;
+		mid(iPos:  number  = 0, iSize:  number  = this._iLength): IObjectList{
+			iSize = Math.min(this._iLength - iPos, iSize);
 
-			for (var i = 0; i < pBoneNames.length; i++) {
-			    if (pBoneNames[i] === sBoneName) {
-			        return this._pBoneOffsetMatrices[i];
-			    }
+			if (iPos > this._iLength - 1) {
+				return null;
+			}
+
+			var pNewList: IObjectList = new ObjectList();
+			var pItem: IObjectListItem = this.find(iPos);
+
+			for (var i:  number  = 0; i < iSize; ++ i) {
+				pNewList.push(pItem.data);
+				pItem = pItem.next;
 			};
 
+			return pNewList;
+		};
+
+		inline slice(iStart:  number  = 0, iEnd:  number  = Math.max(this._iLength - iStart, 0)): IObjectList {
+			return this.mid(iStart, iEnd - iStart);
+		}
+
+		inline move(iFrom:  number , iTo:  number ): IObjectList{
+			return this.insert(iTo - 1, this.takeAt(iFrom));
+		};
+
+		inline replace(iPos:  number , pData: any): IObjectList{
+			logger.setSourceLocation( "util/ObjectList.ts" , 102 ); logger.assert(!this.isLocked(), "list locked."); ;
+			this.find(iPos).data = pData;
+			return this;
+		};
+
+		erase(pos:  number ): IObjectList;
+		erase(begin:  number , end:  number ): IObjectList;
+		erase(begin:  number , end?:  number ): IObjectList{
+			if(arguments.length < 2){
+				this.takeAt(< number >arguments[0]);
+			}
+			else{
+				end = Math.min(end, this._iLength);
+				for(var i:  number  = begin; i < end; i++){
+					this.takeAt(i);
+				}
+			}
+			return this;
+		};
+
+		inline contains(pData: any): bool{
+			return (this.indexOf(pData) >= 0);
+		};
+
+		inline removeAt(n:  number ): void{
+			this.takeAt(n);
+		};
+
+		inline removeOne(pData: any): void{
+			this.removeAt(this.indexOf(pData));
+		};
+
+		inline removeAll(pData: any):  number  {
+			var i:  number ;
+			var n:  number  = this.length;
+
+			while((i = this.indexOf(pData)) >= 0){
+				this.removeAt(i);
+				i--;
+			}
+
+			return n;
+		}
+
+		swap(i:  number , j:  number ): IObjectList {
+			logger.setSourceLocation( "util/ObjectList.ts" , 147 ); logger.assert(!this.isLocked(), "list locked."); ;
+
+			i = Math.min(i, this._iLength-1);
+			j = Math.min(j, this._iLength-1);
+
+			if (i != j) {
+				var pItem1: IObjectListItem = this.find(i);
+				var pItem2: IObjectListItem = this.find(j);
+
+				var pTmp: any = pItem1.data;
+
+				pItem1.data = pItem2.data;
+				pItem2.data = pTmp;
+			}
+
+			return this;
+		}
+
+		add(pList: IObjectList): IObjectList{
+			pList.seek(0);
+
+			if(pList.length > 1){
+				this.push(pList.first());
+			}
+
+			for(var i:  number =1; i<pList.length; i++){
+				this.push(pList.next());
+			}
+
+			return this;
+		}
+
+		seek(n:  number  = 0): IObjectList {
+			var pElement: IObjectListItem;
+
+			n = Math.min(n, this._iLength - 1);
+
+			if (n > this._iLength / 2) {
+				pElement = this._pTail;
+
+				for (var m:  number  = this._iLength - 1 - n; m > 0; -- m) {
+					pElement = pElement.prev;
+				}
+			}
+			else {
+				pElement = this._pHead;
+
+				for (var i:  number  = 0; i < n; ++ i) {
+					pElement = pElement.next;
+				}
+			}
+
+			this._pCurrent = pElement;
+
+			return this;
+		};
+
+		inline next(): any {
+			return (isDefAndNotNull(this._pCurrent) && isDefAndNotNull(this._pCurrent.next))? (this._pCurrent = this._pCurrent.next).data: null;
+		}
+
+		inline prev(): any {
+			return (isDefAndNotNull(this._pCurrent) && isDefAndNotNull(this._pCurrent.prev))? (this._pCurrent = this._pCurrent.prev).data: null;
+		}
+
+		inline push(pElement: any): IObjectList{
+			return this.insert(this._iLength, pElement)
+		};
+
+		inline takeAt(n:  number ): any{
+			logger.setSourceLocation( "util/ObjectList.ts" , 217 ); logger.assert(!this.isLocked(), "list locked."); ;
+
+			if(n < 0){
+				return null;
+			}
+
+			return this.pullElement(this.find(n));
+		};
+
+		private pullElement(pItem: IObjectListItem): any {
+			if (isNull(pItem)) {
+//this case theoretically cannot happen, but ....
+				return null;
+			}
+
+			if (isNull(pItem.prev)) {
+				this._pHead = pItem.next;
+			}
+			else {
+				pItem.prev.next = pItem.next;
+			}
+
+			if (isNull(pItem.next)) {
+				this._pTail = pItem.prev;
+			}
+			else {
+				pItem.next.prev = pItem.prev;
+			}
+
+			this._iLength --;
+
+			if (isNull(pItem.next)) {
+				this._pCurrent = this._pTail;
+			}
+			else {
+				this._pCurrent = pItem.next;
+			}
+
+			return this.releaseItem(pItem);
+		};
+
+
+		inline takeFirst(): any{
+			return this.takeAt(0);
+		};
+
+		inline takeLast(): any {
+			return this.takeAt(this._iLength - 1);
+		};
+
+		inline takeCurrent(isPrev: bool = false): any {
+//console.log(isDefAndNotNull(this._pCurrent));
+			return this.pullElement(this._pCurrent);
+		}
+
+		inline pop(): any{
+			return this.takeAt(this._iLength - 1);
+		};
+
+		inline prepend(pElement: any): IObjectList{
+			return this.insert(0,pElement)
+		};
+
+		inline private find(n:  number ): IObjectListItem{
+			if (n < this._iLength) {
+				this.seek(n);
+				return this._pCurrent;
+			}
+
 			return null;
+		};
+
+		inline private releaseItem(pItem: IObjectListItem): any {
+			var pData: any = pItem.data;
+
+			pItem.next = null;
+			pItem.prev = null;
+			pItem.data = null;
+
+			ObjectList.listItemPool.push(pItem);
+
+			return pData;
+		};
+
+		inline private createItem(): IObjectListItem {
+			if (ObjectList.listItemPool.length == 0) {
+// LOG("allocated object list item");
+				return {next: null, prev: null, data: null};
+			}
+// LOG("before pop <----------", this._iLength, this.first);
+			return <IObjectListItem>ObjectList.listItemPool.pop();
 		}
 
-		setSkeleton(pSkeleton: ISkeleton): bool {
-			if (!pSkeleton || pSkeleton.totalBones < this.totalBones) {
-			    return false;
+		fromArray(elements: any[], iOffset:  number  = 0, iSize:  number  = elements.length): IObjectList{
+			iOffset = Math.min(iOffset, this._iLength);
+
+			for(var i:  number  = 0; i < iSize; i++){
+				this.insert(iOffset + i, elements[i]);
 			}
 
-			for (var i:  number  = 0, nMatrices = this.totalBones; i < nMatrices; i++) {
-			    this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
-			    logger.setSourceLocation( "Skin.ts" , 142 ); logger.assert(!isNull(this._pAffectingNodes[i]), "joint<" + this._pNodeNames[i] + "> must exists..."); ;
+			return this;
+		}
+
+		insert(n:  number , pData: any): IObjectList{
+			logger.setSourceLocation( "util/ObjectList.ts" , 321 ); logger.assert(!this.isLocked(), "list locked."); ;
+
+			var pNew: IObjectListItem = this.createItem();
+			var pItem: IObjectListItem;
+
+			n = Math.min(n, this._iLength);
+			pNew.data = pData;
+
+
+			if (n == 0) {
+				if (isNull(this._pHead)) {
+					this._pTail = pNew;
+				}
+
+				pNew.next = this._pHead;
+				this._pHead = pNew;
+			}
+			else {
+				pItem = this.find(n - 1);
+
+				if(pItem == null) {
+					this._pHead = pNew;
+				}
+				else {
+
+					if (pItem.next == null) {
+						this._pTail = pNew;
+					}
+					else {
+						pNew.next = pItem.next;
+						pItem.next.prev = pNew;
+					}
+
+					pItem.next = pNew;
+					pNew.prev = pItem;
+				}
 			}
 
-			this._pSkeleton = pSkeleton;
+			this._iLength ++;
+			this._pCurrent = pNew;
 
-			return true;
-		}
+			return this;
+		};
 
-		attachToScene(pRootNode: ISceneNode): bool {
-			for (var i:  number  = 0, nMatrices:  number  = this.totalBones; i < nMatrices; i++) {
-			    this._pAffectingNodes[i] = <ISceneNode>pRootNode.findEntity(this._pNodeNames[i]);
-			    logger.setSourceLocation( "Skin.ts" , 153 ); logger.assert(isDefAndNotNull(this._pAffectingNodes[i]), "node<" + this._pNodeNames[i] + "> must exists..."); ;
-			}
+		isEqual(pList: IObjectList): bool {
+			if (this._iLength == pList.length) {
+				if (this === pList) {
+					return true;
+				}
 
-			return true;
-		}
+				var l1: IObjectListItem = this.first;
+				var l2: IObjectListItem = pList.first;
 
-		setBoneNames(pNames: string[]): bool {
-			if (isNull(pNames)) {
-				return false;
-			}
+				for (var i:  number  = 0; i < this._iLength; ++i) {
+					if (l1 != l2) {
+						return false;
+					}
 
-			this._pNodeNames = pNames;
-			this._pAffectingNodes = new Array(pNames.length);
+					l1 = this.next();
+					l2 = pList.next();
+				}
 
-			return true;
-		}
-
-		setBoneOffsetMatrices(pMatrices: IMat4[]): void {
-			var pMatrixNames: string[] = this._pNodeNames;
-
-			logger.setSourceLocation( "Skin.ts" , 176 ); logger.assert(isDefAndNotNull(pMatrices) && isDefAndNotNull(pMatrixNames) && pMatrixNames.length === pMatrices.length, "number of matrix names must equal matrices data length:\n" + pMatrixNames.length + " / " + pMatrices.length);
-                                ;
-
-			var nMatrices:  number  = pMatrixNames.length;
-			var pData: IRenderDataCollection = this.data;
-			var pMatrixData: Float32Array = new Float32Array(nMatrices * 16);
-
-//FIXME: правильно положить матрицы...			this._pBoneOffsetMatrices = pMatrices;
-			this._pBoneTransformMatrixData = pData._allocateData([VE_MAT4("BONE_MATRIX")], pMatrixData);
-			this._pBoneTransformMatrices = new Array(nMatrices);
-
-			for (var i:  number  = 0; i < nMatrices; i++) {
-			    this._pBoneTransformMatrices[i] = new Mat4(pMatrixData.subarray(i * 16, (i + 1) * 16), true);
-			}
-
-
-			this._pBoneOffsetMatrixBuffer = pMatrixData;
-		}
-
-		setWeights(pWeights: Float32Array): bool {
-			this._pWeightData = this.data._allocateData([VE_FLOAT("BONE_WEIGHT")], pWeights);
-
-			return this._pWeightData !== null;
-		}
-
-		getWeights(): IVertexData {
-			return this._pWeightData;
-		}
-
-		getInfluenceMetaData(): IVertexData {
-			return this._pInfMetaData;
-		}
-
-		getInfluences(): IVertexData {
-			return this._pInfData;
-		}
-
-		setIfluences(pInfluencesCount:  number [], pInfluences: Float32Array): bool {
-			logger.setSourceLocation( "Skin.ts" , 213 ); logger.assert(this._pInfMetaData == null && this._pInfData == null, "vertex weights already setuped."); ;
-			logger.setSourceLocation( "Skin.ts" , 214 ); logger.assert(!isNull(this.getWeights()), "you must set weight data before setup influences"); ;
-
-			var pData: IRenderDataCollection = this.data;
-			var pInfluencesMeta: Float32Array = new Float32Array(pInfluencesCount.length * 2);
-
-			var iInfLoc:  number  = 0;
-			var iTransformLoc:  number  = 0;
-			var iWeightsLoc:  number  = 0;
-
-//получаем копию массива влияний
-			pInfluences = new Float32Array(pInfluences);
-
-//вычисляем адресса матриц транфсормации и весов
-			iTransformLoc = this._pBoneTransformMatrixData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
-			iWeightsLoc = this._pWeightData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
-
-
-			for (var i:  number  = 0, n:  number  = pInfluences.length; i < n; i += 2) {
-			    pInfluences[i] = pInfluences[i] * 16 + iTransformLoc;
-			    pInfluences[i + 1] += iWeightsLoc;
-			}
-
-//запоминаем модифицированную информацию о влияниях
-			this._pInfData = pData._allocateData([
-//адрес матрицы кости			                                         VE_FLOAT('BONE_INF_DATA'),
-//адрес весового коэффициента			                                         VE_FLOAT('BONE_WEIGHT_IND')
-			                                     ],
-			                                     pInfluences);
-
-			iInfLoc = this._pInfData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
-
-//подсчет мета данных, которые укажут, где взять влияния на кость..
-			for (var i:  number  = 0, j:  number  = 0, n:  number  = iInfLoc; i < pInfluencesMeta.length; i += 2) {
-			    var iCount:  number  = pInfluencesCount[j++];
-//число влия��ий на вершину			    pInfluencesMeta[i] = iCount;
-//адресс начала информации о влияниях 			    pInfluencesMeta[i + 1] = n;
-//(пары индекс коэф. веса и индекс матрицы)
-			    n += 2 * iCount;
-			}
-
-//influences meta: разметка влияний
-			this._pInfMetaData = pData._allocateData([
-//число костей и весов, влияющих на вершину			                                             VE_FLOAT('BONE_INF_COUNT'),
-//адресс начала влияний на вершину			                                             VE_FLOAT('BONE_INF_LOC'),
-			                                         ], pInfluencesMeta);
-
-			return this._pInfMetaData !== null &&
-			       this._pInfData !== null;
-		}
-
-		setVertexWeights(pInfluencesCount:  number [], pInfluences: Float32Array, pWeights: Float32Array): bool {
-			logger.setSourceLocation( "Skin.ts" , 265 ); logger.assert(arguments.length > 1, 'you must specify all parameters'); ;
-
-//загружаем веса 
-			if (pWeights) {
-			    this.setWeights(pWeights);
-			}
-
-			return this.setIfluences(pInfluencesCount, pInfluences);
-		}
-
-		applyBoneMatrices(bForce: bool = false): bool {
-			var pData: Float32Array;
-			var bResult: bool;
-			var pNode: ISceneNode;
-			var isUpdated: bool = false;
-
-			for (var i:  number  = 0, nMatrices = this.totalBones; i < nMatrices; ++i) {
-			    pNode = this._pAffectingNodes[i];
-
-			    if (pNode.isWorldMatrixNew() || bForce) {
-			        pNode.worldMatrix.multiply(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
-			        isUpdated = true;
-			    }
-			}
-
-			if (isUpdated) {
-			    pData = this._pBoneOffsetMatrixBuffer;
-			    return this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
+				return true;
 			}
 
 			return false;
 		}
 
-		isReady(): bool {
-			return !(isNull(this._pInfMetaData) || isNull(this._pInfData) || isNull(this._pWeightData) ||
-			         isNull(this._pBoneOffsetMatrixBuffer) || isNull(this._pBoneOffsetMatrices) ||
-			         isNull(this._pNodeNames) ||
-			         isNull(this._m4fBindMatrix));
-		}
+		clear(): IObjectList {
+			logger.setSourceLocation( "util/ObjectList.ts" , 390 ); logger.assert(!this.isLocked(), "list locked."); ;
 
-		getBoneTransforms(): IVertexData {
-			return this._pBoneTransformMatrixData;
-		}
+			var pPrev: IObjectListItem;
+			var pNext: IObjectListItem;
 
-		isAffect(pData: IVertexData): bool {
-			if (isDefAndNotNull(pData)) {
-			    for (var i:  number  = 0; i < this._pTiedData.length; i++) {
-			        if (this._pTiedData[i] === pData) {
-			            return true;
-			        }
-			    }
+			this._pCurrent = this._pHead;
+
+			for (var i:  number  = 0; i < this._iLength; ++ i) {
+				pPrev = this._pCurrent;
+				pNext = this._pCurrent = this._pCurrent.next;
+
+				this.releaseItem(pPrev);
 			}
 
-			return false;
+			this._pHead = this._pCurrent = this._pTail = null;
+			this._iLength = 0;
+
+			return this;
 		}
 
-		attach(pData: IVertexData): void {
-			logger.setSourceLocation( "Skin.ts" , 323 ); logger.assert(pData.stride === 16, "you cannot add skin to mesh with POSITION: {x, y, z}" + "\nyou need POSITION: {x, y, z, w}");
-                                                                         ;
-
-			pData.getVertexDeclaration().append(VE_FLOAT(DeclUsages.BLENDMETA, 12));
-
-			this._pTiedData.push(pData);
+		forEach(fn: IListExplorerFunc): void {
+			var pItem: IObjectListItem = this._pHead;
+			var n:  number  = 0;
+			do {
+				if (fn(pItem.data, n ++) === false) {
+					return;
+				}
+			} while ((pItem = pItem.next));
 		}
 
-
-
-		static debugMeshSubset(pSubMesh: IMeshSubset) {
-			var pMesh: IMesh = pSubMesh.mesh;
-			var pSkin: ISkin = pSubMesh.skin;
-			var pMatData: IVertexData = pSkin.getBoneTransforms();
-			var pPosData: Float32Array;
-			var pEngine: IEngine = pMesh.getEngine();
-
-			pPosData = <Float32Array>(pSubMesh.data._getData("POSITION")).getTypedData(DeclUsages.BLENDMETA);
-
-			var pVideoBuffer: IVertexBuffer = pSubMesh.mesh.data.buffer;
-			var iFrom:  number  = 2618, iTo:  number  = 2619;
-			var pWeights: Float32Array = <Float32Array>pSkin.getWeights().getTypedData('BONE_WEIGHT');
-
-			logger.setSourceLocation( "Skin.ts" , 345 ); logger.log('===== debug vertices from ', iFrom, 'to', iTo, ' ======'); ;
-			logger.setSourceLocation( "Skin.ts" , 346 ); logger.log('transformation data location:', pMatData.byteOffset / 4.); ;
-			logger.setSourceLocation( "Skin.ts" , 347 ); logger.log('155 weight: ', pSkin.getWeights().getTypedData('BONE_WEIGHT')[155]); ;
-			logger.setSourceLocation( "Skin.ts" , 348 ); logger.log('vertices info ===================>'); ;
-
-			for (var i:  number  = iFrom; i < iTo; i++) {
-			    logger.setSourceLocation( "Skin.ts" , 351 ); logger.log(pPosData[i], '<< inf meta location'); ;
-
-			    var pMetaData: Float32Array = new Float32Array(8);
-			    if (!pVideoBuffer.readData(4 * pPosData[i], 8, pMetaData)) {
-			    	logger.setSourceLocation( "Skin.ts" , 355 ); logger.error("cannot read back meta data"); ;
-			    }
-
-			    logger.setSourceLocation( "Skin.ts" , 358 ); logger.log(pMetaData[0], '<< count'); ;
-			    logger.setSourceLocation( "Skin.ts" , 359 ); logger.log(pMetaData[1], '<< inf. location'); ;
-
-			    for (var j:  number  = 0; j < pMetaData[0]; ++j) {
-			        var pInfData = new Float32Array(8);
-			        if (!pVideoBuffer.readData(4 * (pMetaData[1] + 2 * j), 8, pInfData)) {
-			        	logger.setSourceLocation( "Skin.ts" , 364 ); logger.error("cannot read influence data"); ;
-			        }
-
-			        logger.setSourceLocation( "Skin.ts" , 367 ); logger.log(pInfData[0], '<< matrix location'); ;
-			        logger.setSourceLocation( "Skin.ts" , 368 ); logger.log(pInfData[1], '/', pInfData[1] - 30432, '<< weight location / index'); ;
-
-			        var pWeightData = new Float32Array(4);
-
-			        if (!pVideoBuffer.readData(4 * (pInfData[1]), 4, pWeightData)) {
-			        	logger.setSourceLocation( "Skin.ts" , 373 ); logger.error("cannot read weight data"); ;
-			        }
-
-			        logger.setSourceLocation( "Skin.ts" , 376 ); logger.log(pWeightData[0], '<< weight'); ;
-
-			        var pMatrixData = new Float32Array(4 * 16);
-			        if (!pVideoBuffer.readData(4 * (pInfData[0]), 4 * 16, pMatrixData)) {
-			        	logger.setSourceLocation( "Skin.ts" , 380 ); logger.error("cannot read matrix data"); ;
-			        }
-
-			        logger.setSourceLocation( "Skin.ts" , 383 ); logger.log(pMatrixData.toString()); ;
-			    }
-			}
-
-			logger.setSourceLocation( "Skin.ts" , 387 ); logger.log('#############################################'); ;
-
-			for (var i:  number  = 0; i < pPosData.length; i++) {
-			    var pMetaData: Float32Array = new Float32Array(8);
-			    if(!pVideoBuffer.readData(4 * pPosData[i], 8, pMetaData)) {
-			    	logger.setSourceLocation( "Skin.ts" , 392 ); logger.error("cannot read meta data"); ;
-			    }
-
-			    for (var j:  number  = 0; j < pMetaData[0]; ++j) {
-			        var pInfData: Float32Array = new Float32Array(8);
-
-			        if (!pVideoBuffer.readData(4 * (pMetaData[1] + 2 * j), 8, pInfData)) {
-			        	logger.setSourceLocation( "Skin.ts" , 399 ); logger.error("cannot read influence data"); ;
-			        }
-
-			        var iWeightsIndex:  number  = pInfData[1] - 30432;
-
-			        var fWeightOrigin:  number  = pWeights[iWeightsIndex];
-			        var pWeightData:  number  = new Float32Array(4);
-			        if (!pVideoBuffer.readData(4 * (pInfData[1]), 4, pWeightData)) {
-			        	logger.setSourceLocation( "Skin.ts" , 407 ); logger.error("cannot read weight data"); ;
-			        }
-			        var fWeight:  number  = pWeightData[0];
-
-			        if (Math.abs(fWeight - fWeightOrigin) > 0.001) {
-			            alert("1");
-			            logger.setSourceLocation( "Skin.ts" , 413 ); logger.log("weight with index", iWeightsIndex, "has wrong weight", fWeightOrigin, "/", fWeightOrigin); ;
-			        }
-
-//var pWeightData: Float32Array = new Float32Array(pVideoBuffer.getData(4 * (pInfData[1]), 4));
-//var pMatrixData: Float32Array = new Float32Array(pVideoBuffer.getData(4 * (pInfData[0]), 4 * 16));
-			    }
-			}
-
-			logger.setSourceLocation( "Skin.ts" , 421 ); logger.log('##############################################'); ;
-// var pBoneTransformMatrices = pSkin._pBoneTransformMatrixData;
-// var pBonetmData = pBoneTransformMatrices.getTypedData('BONE_MATRIX');
-
-// for (var i = 0; i < pBonetmData.length; i += 16) {
-//     LOG('bone transform matrix data >>> ');
-//     LOG(Mat4.str(pBonetmData.subarray(i, i + 16)));
-// };
-
-
-//for (var i = 0; i < pMesh.length; i++) {
-// var i = pMesh.length - 1;
-//     var pPosData = pMesh[i].data.getData('POSITION').getTypedData('POSITION');
-//     var pIndData = pMesh[i].data._pIndexData.getTypedData('INDEX0');
-
-//     var j = pIndData[pIndData.length - 1];
-//     var j0 = pMesh[i].data.getData('POSITION').byteOffset/4;
-
-//     j -= j0;
-//     j/=4;
-
-//     LOG('last index >> ', j);
-//     LOG('pos data size', pPosData.length);
-
-//     var pVertex = pPosData.subarray(j * 3, j * 3 + 3);
-
-//     LOG('last vertex in submesh >> ', pVertex[0], pVertex[1], pVertex[2]);
-
-//         var pSceneNode = pEngine.appendMesh(
-//             pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
-//             pEngine.getRootNode());
-
-//         pSceneNode.setPosition(pVertex);
-//         pSceneNode.setScale(0.1);
-//     var pMeta = pSkin.getInfluenceMetaData().getTypedData('BONE_INF_COUNT');
-//     LOG(pMeta[j], 'count << ');
-
-//};
-		}
+		static private listItemPool: IObjectArray = new ObjectArray;
 
 	}
+}
+
+module akra {
+	export var ObjectList = util.ObjectList;
+}
 
 
 
-	export function createSkin(pMesh: IMesh): ISkin {
-		return new Skin(pMesh);
+
+
+module akra.scene {
+
+/** OcTreeNode class represent node of OcTree */
+
+	export class OcTreeNode implements IOcTreeNode {
+/** Parent tree */
+
+		tree: IOcTree;
+/** Level of node */
+
+		level:  number  = 0;
+/** Byte x-coord of node */
+
+//x: int = 0;
+/** Byte y-coord of node */
+
+//y: int = 0;
+/** Byte z-coord of node */
+
+//z: int = 0;
+/** Index in array of nodes in tree */
+
+		index:  number  = 0;
+/** First SceneObject in this node */
+
+		membersList: IObjectList;
+/** Rect of node in real world */
+
+		worldBounds: IRect3d;
+
+/** Link to previous node in tree */
+
+		rearNodeLink: IOcTreeNode = null;
+
+//eight links to possible children nodes;		
+		childrenList: IObjectList[];
+
+//index - is xyz where x-left = 0, x-right = 1 etc.
+
+		constructor(pTree: IOcTree){
+			this.membersList = new util.ObjectList();
+			this.worldBounds = new geometry.Rect3d();
+
+			this.childrenList = new Array(8);
+			for(var i=0; i<8;i++){
+				this.childrenList[i] = new util.ObjectList();
+			}
+
+			this.tree = pTree;
+		}
+
+/**
+		 * Add object in this node
+		 */
+
+		addMember(pObject: ISceneObject): void {
+			this.membersList.push(pObject);
+			this.connect(pObject,  "worldBoundsUpdated" ,  "objectMoved" , EEventTypes.UNICAST);
+// console.log(this.membersList);
+		};
+
+/**
+		 * Remove member object from node and release node if there are not members in it
+		 */
+
+		removeMember(pObject: ISceneObject): void {
+			var i: number  = this.membersList.indexOf(pObject);
+// console.log('position in list ------------>',i);
+
+// make sure this is one of ours
+			logger.setSourceLocation( "OcTreeNode.ts" , 69 ); logger.assert(i>=0, "error removing member cannot find member"); ;
+
+	    	if(i>=0){
+	    		this.membersList.takeAt(i);
+	    		this.disconnect(pObject,  "worldBoundsUpdated" ,  "objectMoved" , EEventTypes.UNICAST);
+	    	}
+
+	    	if(this.membersList.length === 0){
+	    		this.tree.deleteNodeFromTree(this);
+	    	}
+		};
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return OcTreeNode._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+
+		objectMoved(pObject: ISceneObject){
+// console.warn('object moving');
+			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
+//console.error('-----before------>', this, pNode,'<-------arter------');
+			if(pNode !== this){
+				this.removeMember(pObject);
+				pNode.addMember(pObject);
+			}
+		};
+	};
+
+	export class OcTreeRootNode extends OcTreeNode implements IOcTreeNode{
+
+		/**@protected*/  _pBasicWorldBounds: IRect3d;
+
+		constructor(pTree: IOcTree){
+			super(pTree);
+
+			var iTmp:  number  = (1 << this.tree.depth);
+
+			this._pBasicWorldBounds = new geometry.Rect3d(0, iTmp, 0, iTmp, 0, iTmp);
+		    this._pBasicWorldBounds.divSelf(this.tree.worldScale);
+		    this._pBasicWorldBounds.subSelf(this.tree.worldOffset);
+
+		    this.worldBounds.set(this._pBasicWorldBounds);
+		};
+
+		addMember(pMember: ISceneObject): void{
+			super.addMember(pMember);
+//обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
+	    	this._updateNodeBoundingBox();
+		};
+
+		removeMember(pObject: ISceneObject): void{
+			var i: number  = this.membersList.indexOf(pObject);
+
+// make sure this is one of ours
+			logger.setSourceLocation( "OcTreeNode.ts" , 120 ); logger.assert(i>=0, "error removing member cannot find member"); ;
+
+	    	if(i>=0){
+	    		this.membersList.takeAt(i);
+	    		this.disconnect(pObject,  "moved" ,  "objectMoved" , EEventTypes.UNICAST);
+	    	}
+
+//обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
+			this._updateNodeBoundingBox();
+		};
+
+		/**@protected*/  _updateNodeBoundingBox(): void {
+		    var pNodeWorldBounds: IRect3d = this.worldBounds;
+		    pNodeWorldBounds.set(this._pBasicWorldBounds);
+
+		    var pObject: ISceneObject = this.membersList.first;
+		    while(isDefAndNotNull(pObject)){
+		    	pNodeWorldBounds.unionRect(pObject.worldBounds);
+
+		    	pObject = this.membersList.next();
+		    }
+		};
 	}
 }
 
@@ -47646,13 +50028,95 @@ module akra.model {
 
 
 
+// #include "IOcTreeRect.ts"
+// #include "IRect3d.ts"
+// #include "IVec3.ts"
+// #include "geometry/Rect3d.ts"
+
+// #define ocTreeRect() OcTreeRect.stackCeil
+
+// module akra.scene {
+
+// 	/** OcTreeRect class represent simple 3d byte rect */
+// 	export class OcTreeRect implements IOcTreeRect { 
+// 		protected x0: int = 0;
+// 		protected x1: int = 0;
+// 		protected y0: int = 0;
+// 		protected y1: int = 0;
+// 		protected z0: int = 0;
+// 		protected z1: int = 0;
 
 
+// 		constructor (pRect: OcTreeRect);
+// 		constructor (x0: int, x1: int, y0: int, y1: int, z0: int, z1: int);
+// 		constructor (x0, x1?, y0?, y1?, z0?, z1?) {
+// 			switch (arguments.length) {
+// 		        case 1:
+// 		            this.x0 = (<OcTreeRect>arguments[0]).x0;
+// 		            this.x1 = (<OcTreeRect>arguments[0]).x1;
+// 		            this.y0 = (<OcTreeRect>arguments[0]).y0;
+// 		            this.y1 = (<OcTreeRect>arguments[0]).y1;
+// 		            this.z0 = (<OcTreeRect>arguments[0]).z0;
+// 		            this.z1 = (<OcTreeRect>arguments[0]).z1;
+// 		            break;
+// 		        case 6:
+// 		            this.x0 = arguments[0];
+// 		            this.x1 = arguments[1];
+// 		            this.y0 = arguments[2];
+// 		            this.y1 = arguments[3];
+// 		            this.z0 = arguments[4];
+// 		            this.z1 = arguments[5];
+// 		            break;
+// 		    }
+// 		}
 
+// 		/**
+// 		 * Convert Rect3d to byte rect
+// 		 */
+// 		convert(pWorldRect: IRect3d, v3fOffset: IVec3, v3fScale: IVec3): void {
+// 		    var convertedRect: IRect3d = new geometry.Rect3d(pWorldRect);
+// 		    // reposition and v3fScale world coordinates to OcTree coordinates
+// 		    convertedRect.addSelf(v3fOffset);
+// 		    convertedRect.multSelf(v3fScale);
+// 		    //alert([convertedRect.iX0,convertedRect.iY0,convertedRect.iZ0,convertedRect.iX1,convertedRect.iY1,convertedRect.iZ1]);
+// 		    // reduce by a tiny amount to handle tiled data
+// 		    convertedRect.x1 = math.max(convertedRect.x1 - 0.01, convertedRect.x0);
+// 		    convertedRect.y1 = math.max(convertedRect.y1 - 0.01, convertedRect.y0);
+// 		    convertedRect.z1 = math.max(convertedRect.z1 - 0.01, convertedRect.z0);
 
+// 		    // convert to integer values, taking the floor of each real
+// 		    this.x0 = convertedRect.fX0 << 0;
+// 		    this.x1 = convertedRect.fX1 << 0;
+// 		    this.y0 = convertedRect.fY0 << 0;
+// 		    this.y1 = convertedRect.fY1 << 0;
+// 		    this.z0 = convertedRect.fZ0 << 0;
+// 		    this.z1 = convertedRect.fZ1 << 0;
+// 		    // we must be positive
+// 		    this.x0 = math.clamp(this.x0, 0, 1022);
+// 		    this.y0 = math.clamp(this.y0, 0, 1022);
+// 		    this.z0 = math.clamp(this.z0, 0, 1022);
 
+// 		    // we must be at least one unit large
+// 		    this.x1 = math.clamp(this.x1, this.x0 + 1, 1023);
+// 		    this.y1 = math.clamp(this.y1, this.y0 + 1, 1023);
+// 		    this.z1 = math.clamp(this.z1, this.z0 + 1, 1023);
+// 		}
 
+// 		/**
+// 		 * Set
+// 		 */
+// 		set(iX0: int, iX1: int, iY0: int, iY1: int, iZ0: int, iZ: int): void {
+// 		    this.iX0 = iX0;
+// 		    this.iX1 = iX1;
+// 		    this.iY0 = iY0;
+// 		    this.iY1 = iY1;
+// 		    this.iZ0 = iZ0;
+// 		    this.iZ1 = iZ1;
+// 		}
 
+// 		ALLOCATE_STORAGE(OcTreeRect, 8);
+// 	}
+// }
 
 
 
@@ -47733,138 +50197,6 @@ module akra.geometry{
 		};
 	};
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-	export interface IRay2d {} ;
-
-	export interface ISegment2d{
-		ray: IRay2d;
-		distance:  number ;
-
-		point: IVec2;
-		normal: IVec2;
-	};
-}
-
-
-
-module akra.geometry{
-	export class Segment2d implements ISegment2d{
-		ray: IRay2d;
-		distance:  number ;
-
-		constructor(){
-			this.ray = new Ray2d();
-			this.distance = 0.;
-		};
-
-		get point(): IVec2{
-			return this.ray.point;
-		};
-		set point(v2fPoint: IVec2){
-			this.ray.point.set(v2fPoint);
-		};
-
-		get normal(): IVec2{
-			return this.ray.normal;
-		};
-		set normal(v2fNormal: IVec2){
-			this.ray.normal.set(v2fNormal);
-		};
-	};
-}
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-	export interface IRay3d {} ;
-
-	export interface ISegment3d{
-		ray: IRay3d;
-		distance:  number ;
-
-		point: IVec3;
-		normal: IVec3;
-	};
-}
-
-
-
-module akra.geometry{
-	export class Segment3d implements ISegment3d{
-		ray: IRay3d;
-		distance:  number ;
-
-		constructor(){
-			this.ray = new Ray3d();
-			this.distance = 0.;
-		};
-
-		get point(): IVec3{
-			return this.ray.point;
-		};
-		set point(v3fPoint: IVec3){
-			this.ray.point.set(v3fPoint);
-		};
-
-		get normal(): IVec3{
-			return this.ray.normal;
-		};
-		set normal(v3fNormal: IVec3){
-			this.ray.normal.set(v3fNormal);
-		};
-	};
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -48344,6 +50676,1723 @@ module akra.geometry{
 
 
 
+module akra.scene {
+	export enum EOcTreeConstants {
+	    k_MinimumTreeDepth = 0,
+	    k_MaximumTreeDepth = 10
+    };
+
+	export class OcTree extends DisplayList implements IOcTree {
+/** List of OcTreeNodes on each level */
+
+//protected _ppLevelNodes: IOcTreeNode[][] = null;
+/** First node in list of all nodes */
+
+//protected _pFirstNode: IOcTreeNode = null;
+		/**@protected*/  _pHead: IOcTreeNode = null;
+/** Size of world bounding box */
+
+		/**@protected*/  _v3fWorldExtents: IVec3 = new Vec3();
+/** Negate min point of bounding box */
+
+		/**@protected*/  _v3fWorldScale: IVec3 = new Vec3();
+/** Value of relation between (1024,1024,1024) and bounding box size */
+
+		/**@protected*/  _v3fWorldOffset: IVec3 = new Vec3();
+/** Maximum depth of tree. Value set when you call OcTree::create() */
+
+		/**@protected*/  _iDepth:  number  = 0;
+//protected _iSize: int = 0;//2^iDepth;
+/** 
+		 * Список свободных узлов(объектов OcTreeNode). 
+		 * Необходимо для экономии ресурсов памяти и чтобы не делать лишних delete 
+		 */
+
+		/**@protected*/  _pFreeNodePool: IOcTreeNode[] = null;
+/**
+		 * Список байтовых ректов ректа камеры для тестов объектов.
+		 */
+
+//protected _pTestLocalRect: IOcTreeRect[] = null;
+
+		constructor () {
+			super();
+			this.name = "OcTree";
+		};
+
+		inline get depth():  number {
+			return this._iDepth;
+		};
+
+		inline get worldScale(): IVec3{
+			return this._v3fWorldScale;
+		};
+
+		inline get worldOffset(): IVec3{
+			return this._v3fWorldOffset;
+		};
+
+/**
+		 * Create
+		 */
+
+		create(pWorldBoundingBox: IRect3d, iDepth:  number , nNodes:  number  = 64): void {
+
+		    var v3fTemp: IVec3 = vec3();
+		    var i:  number  = 0;
+
+
+		    logger.setSourceLocation( "OcTree.ts" , 72 ); logger.assert(!this.isReady(), "the Oc tree has already been created"); ;
+		    logger.setSourceLocation( "OcTree.ts" , 74 ); logger.assert(iDepth >= EOcTreeConstants.k_MinimumTreeDepth && iDepth <= EOcTreeConstants.k_MaximumTreeDepth, "invalid tree depth");
+                                                                              ;
+
+		    this._iDepth = iDepth;
+
+		    this._v3fWorldExtents.set(pWorldBoundingBox.size(v3fTemp));
+
+		    this._v3fWorldOffset.set(pWorldBoundingBox.minPoint(v3fTemp).negate());
+
+		    var iSize:  number  = 1 << iDepth;
+
+		    this._v3fWorldScale.x = iSize / this._v3fWorldExtents.x;
+		    this._v3fWorldScale.y = iSize / this._v3fWorldExtents.y;
+		    this._v3fWorldScale.z = iSize / this._v3fWorldExtents.z;
+
+// allocate the nodes
+// this._ppLevelNodes = new Array(iDepth);
+
+// for (i = 0; i < iDepth; ++i) {
+//     this._ppLevelNodes[i] = new Array();
+// }
+
+// this._pTestLocalRect = new Array(iDepth);
+
+// for (i = 0; i < iDepth; ++i) {
+//     this._pTestLocalRect[i] = new OcTreeRect;
+// }
+
+		    this._pHead = new OcTreeRootNode(this) ;
+		    this._pHead.level = 0;
+
+		    this._pFreeNodePool = new Array();
+
+		    for (i = 0; i < nNodes; ++i) {
+		        this._pFreeNodePool.push(new OcTreeNode(this));
+		    }
+		}
+
+/**
+		 * is any levels of tree are availeable(some object in a tree)
+		 */
+
+		isReady(): bool {
+			if(this._iDepth > 0){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+
+/**
+		 * find node
+		 */
+
+		findTreeNode(pObject: ISceneObject): IOcTreeNode {
+		    var pRect: IRect3d = pObject.worldBounds;
+		    var iX0:  number  = pRect.x0, iX1:  number  = pRect.x1,
+		        iY0:  number  = pRect.y0, iY1:  number  = pRect.y1,
+		        iZ0:  number  = pRect.z0, iZ1:  number  = pRect.z1;
+
+		    var v3fWorldOffset: IVec3 = this._v3fWorldOffset;
+		    var v3fWorldScale: IVec3 = this._v3fWorldScale;
+
+		    iX0 += v3fWorldOffset.x; iX1 += v3fWorldOffset.x;
+		    iY0 += v3fWorldOffset.y; iY1 += v3fWorldOffset.y;
+		    iZ0 += v3fWorldOffset.z; iZ1 += v3fWorldOffset.z;
+
+		    iX0 *= v3fWorldScale.x; iX1 *= v3fWorldScale.x;
+		    iY0 *= v3fWorldScale.y; iY1 *= v3fWorldScale.y;
+		    iZ0 *= v3fWorldScale.z; iZ1 *= v3fWorldScale.z;
+
+//round it
+		    iX0 = math.floor(iX0); iX1 = math.ceil(iX1);
+		    iY0 = math.floor(iY0); iY1 = math.ceil(iY1);
+		    iZ0 = math.floor(iZ0); iZ1 = math.ceil(iZ1);
+
+		    iX1 = (iX1 === iX0) ? iX0 + 1 : iX1;
+		    iY1 = (iY1 === iY0) ? iY0 + 1 : iY1;
+		    iZ1 = (iZ1 === iZ0) ? iZ0 + 1 : iZ1;
+
+//var iMax1: int = 1 << this._iDepth - 2;
+//var iMax2: int = 1 << this._iDepth - 1;
+
+//iX0 = math.clamp(iX0, 0, iMax1);
+//iY0 = math.clamp(iY0, 0, iMax1);
+//iZ0 = math.clamp(iZ0, 0, iMax1);
+
+//iX1 = math.clamp(iX1, iX0 + 1, iMax2);
+//iY1 = math.clamp(iY1, iY0 + 1, iMax2);
+//iZ1 = math.clamp(iZ1, iZ0 + 1, iMax2);
+
+// console.error('zzzzzz', iX0, iX1, iY0, iY1, iZ0, iZ1);
+
+		    var pNode: IOcTreeNode = this.findTreeNodeByRect(iX0, iX1, iY0, iY1, iZ0, iZ1);
+
+		    return pNode;
+		};
+
+/**
+		 * Find tree node by Rect
+		 */
+
+		findTreeNodeByRect(iX0:  number , iX1:  number , iY0:  number , iY1:  number , iZ0:  number , iZ1:  number ): IOcTreeNode {
+
+			var nMax:  number  = (1 << this._iDepth);
+
+			if(iX0 < 0 || iX1 > nMax || iY0 < 0 || iY1 > nMax
+				|| iZ0 < 0 || iZ1 > nMax){
+
+				return this._pHead;
+			}
+
+			var iDepth:  number  = this._iDepth;
+		    var iLevel:  number ;
+
+///////////////////////////
+		    iLevel = this._findNodeLevel(iX0, iX1, iY0, iY1, iZ0, iZ1);
+
+// console.warn(iLevel);
+///////////////////////////
+
+		    if(iLevel == 0){
+		    	return this._pHead;
+		    }
+
+		    var iComposedIndex:  number ;
+		    var iShift:  number  = iDepth - iLevel;
+		    iComposedIndex = (iX0 >> (iDepth - iLevel)) << (2*iDepth + iShift);
+// console.log(iComposedIndex);
+		    iComposedIndex += (iY0 >> (iDepth - iLevel)) << (iDepth + iShift);
+// console.log(iComposedIndex);
+		    iComposedIndex += (iZ0 >> (iDepth - iLevel)) << (iShift);
+
+//console.log(iComposedIndex, iX0, iY0, iZ0);
+
+			var iWay:  number ;
+
+            var pParentNode: IOcTreeNode, pNode: IOcTreeNode
+		    pParentNode = this._pHead;
+		    pNode = null;
+
+		    var iTmpX:  number , iTmpY:  number , iTmpZ:  number ;
+		    var iX:  number , iY:  number , iZ:  number ;
+
+		    var i:  number  = 0;
+			while(i < iLevel){
+
+				iTmpX = iX0; iTmpY = iY0; iTmpZ = iZ0;
+
+				iX = (iTmpX >> (iDepth - i - 1)) & 1;
+		    	iY = (iTmpY >> (iDepth - i - 1)) & 1;
+		    	iZ = (iTmpZ >> (iDepth - i - 1)) & 1;
+
+				iWay = 4*iX + 2*iY + iZ;
+
+// console.log('iWay -------------->', iWay, '<--------------');
+
+				var pNodeList: IObjectList = pParentNode.childrenList[iWay];
+// console.log(pParentNode);
+
+				if(pNodeList.length === 0){
+					pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+					pNodeList.push(pNode);
+					return pNode;
+				}
+
+				var iPosition:  number  = 0;
+				var pTestNode: IOcTreeNode = pNodeList.first;
+
+				var iTestMask:  number  = (iDepth >= i + 2) ? 1 << (iDepth - i - 2) : 0;
+
+				var iMask:  number   = (iTestMask << (2*iDepth)) + (iTestMask << iDepth) + iTestMask;
+// console.log('mask-------------->',iMask,'<-----------');
+
+				var pParentNodeOld: IOcTreeNode = pParentNode;
+
+				while(isDefAndNotNull(pTestNode)){
+
+					var iTest:  number  = pTestNode.index & iComposedIndex;
+
+// console.log(pTestNode);
+// console.error('iLevel--->', iLevel,'iTest ------------>', iTest);
+// console.error('testNode index', pTestNode.index, 'composed index', iComposedIndex);
+
+					var iResult1:  number  = pTestNode.index & iMask;
+					var iResult2:  number  = iComposedIndex & iMask;
+
+// console.warn(iResult1, iResult2);
+
+					if(iResult1 === iResult2){
+						if(pTestNode.level === iLevel){
+							return pTestNode;
+						}
+						else if(pTestNode.level < iLevel){
+							pParentNode = pTestNode;
+							i = pTestNode.level;
+							break;
+						}
+						else{
+//alert("" + <string><any>pTestNode.level + "  " + <string><any>iLevel);
+							if(pNode === null){
+								pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+								pParentNode.childrenList[iWay].push(pNode);
+								i = iLevel;
+							}
+
+							var iTestIndex:  number  = pTestNode.index;
+							var iShift = iDepth - i - 1;
+
+							iX = (iTestIndex >> (2*iDepth + iShift))&1;
+							iY = (iTestIndex >> (iDepth + iShift))&1;
+							iZ = (iTestIndex >> iShift)&1;
+
+							var iTestWay:  number  = 4*iX + 2*iY + iZ;
+
+							pNodeList.takeAt(iPosition);
+							pNodeList.seek(iPosition-1);
+							iPosition--;
+
+							pNode.childrenList[iTestWay].push(pTestNode);
+							pTestNode.rearNodeLink = pNode;
+						}
+					}
+
+					pTestNode = pNodeList.next();
+					iPosition++;
+				}
+
+				if(pNode === null && pParentNodeOld === pParentNode){
+					pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+					pParentNode.childrenList[iWay].push(pNode);
+					break;
+				}
+			}
+
+			return pNode;
+		};
+
+		private _findNodeLevel(iX0:  number , iX1:  number , iY0:  number , iY1:  number , iZ0:  number , iZ1:  number ):  number {
+			var iLengthX:  number  = iX1 - iX0;
+			var iLengthY:  number  = iY1 - iY0;
+			var iLengthZ:  number  = iZ1 - iZ0;
+
+			var iLength:  number  = math.max(iLengthX, math.max(iLengthY, iLengthZ));
+//maximum possible level
+			var iLevel:  number  = this._iDepth - math.floor(math.log(iLength) / math.LN2);
+
+			while(iLevel > 0){
+				var iPitch:  number  = 1 << (this._iDepth - iLevel);
+				var iTest1:  number , iTest2:  number ;
+
+//first test for x then for y and z
+
+				var i;
+				for(i=0; i<3; i++){
+					iTest1 = math.floor(arguments[2*i] / iPitch);
+					iTest2 = math.floor(arguments[2*i + 1] / iPitch);
+
+					if(iTest1 != iTest2){
+						if((iTest1 + 1) == iTest2){
+							if((arguments[2*i+1]%iPitch) != 0){
+								break;
+							}
+						}
+						else{
+							break;
+						}
+					}
+				}
+				if(i!=3){
+					iLevel--;
+				}
+				else{
+					break;
+				}
+			}
+			return iLevel;
+		};
+
+/**
+		 * Get free node. 
+		 * Get it from _pFreeNodePull or create new OcTreeNode if it`s empty and set his data.
+		 */
+
+		getAndSetFreeNode(iLevel:  number , iComposedIndex:  number , pParentNode: IOcTreeNode): IOcTreeNode {
+			var pNode: IOcTreeNode = this._pFreeNodePool.pop();
+			if (!isDefAndNotNull(pNode)) {
+		        pNode = new OcTreeNode(this);
+		    }
+
+
+			var iDepth:  number  = this._iDepth;
+			var iMask:  number  = (1<<this._iDepth) - 1;
+			var iIndexX:  number  = (iComposedIndex >> (2*iDepth)) & iMask;
+			var iIndexY:  number  = (iComposedIndex >> (iDepth)) & iMask;
+			var iIndexZ:  number  = iComposedIndex & iMask;
+			var iSize:  number  = 1 << (this._iDepth - iLevel);
+
+		    pNode.level = iLevel;
+// pNode.x = iX;
+// pNode.y = iY;
+// pNode.z = iZ;
+		    pNode.index = iComposedIndex;
+		    pNode.rearNodeLink = pParentNode;
+		    pNode.worldBounds.set(iIndexX, iIndexX + iSize, iIndexY, iIndexY + iSize, iIndexZ, iIndexZ + iSize);
+		    pNode.worldBounds.divSelf(this._v3fWorldScale);
+		    pNode.worldBounds.subSelf(this._v3fWorldOffset)
+
+//this._ppLevelNodes[iLevel][iIndex] = pNode;
+
+// if (this._pFirstNode) {
+//     this._pFirstNode.rearNodeLink = pNode;
+// }
+
+// pNode.forwardNodeLink = this.pFirstNode;
+// pNode.rearNodeLink = null;
+
+//this._pFirstNode = pNode;
+/*
+		     var i,j;
+		     var pTempNode;
+		     for(i=iLevel-1; i>=0; --i){
+		     j = (((iZ>>(iLevel-i))<<i)<<i) + ((iY>>(iLevel-i))<<i) + (iX>>(iLevel-i));
+		     pTempNode = this._ppLevelNodes[i][j];
+		     if (pTempNode) {
+		     this.pParentNode = pTempNode;
+		     this.pSibling = pTempNode.pChildren;
+		     pTempNode.pChildren = this;
+		     break;
+		     }
+		     }
+		     */
+
+		    return pNode;
+		};
+
+/**
+		 * Delete node from tree
+		 */
+
+		deleteNodeFromTree(pNode: IOcTreeNode): void {
+			var pParentNode: IOcTreeNode = pNode.rearNodeLink;
+
+// console.error(pNode,pParentNode);
+
+			logger.setSourceLocation( "OcTree.ts" , 413 ); logger.assert(pNode.membersList.length == 0,"list members of node don't empty"); ;
+
+			var iDepth:  number  = this._iDepth;
+			var iParentLevel:  number  = pParentNode.level;
+			var iIndex:  number  = pNode.index;
+			var iShift:  number  = iDepth - iParentLevel - 1;
+
+			var iX:  number  = (iIndex >> (2*iDepth + iShift))&1;
+			var iY:  number  = (iIndex >> (iDepth + iShift))&1;
+			var iZ:  number  = (iIndex >> iShift)&1;
+
+			var iWay:  number  = 4*iX + 2*iY + iZ;
+
+			var pParentBranch: IObjectList = pParentNode.childrenList[iWay];
+
+//console.log('iWay ------------>', iWay);
+
+			var iNode:  number  = pParentBranch.indexOf(pNode);
+
+			logger.setSourceLocation( "OcTree.ts" , 432 ); logger.assert(iNode != -1, "can't remove node from parent, node not found"); ;
+
+//deleting node from parent list
+			pParentBranch.takeAt(iNode);
+
+			for(var i=0;i<8;i++){
+				var pChildrens: IObjectList = pNode.childrenList[i];
+				while(pChildrens.length){
+					var pChildNode: IOcTreeNode = pChildrens.pop();
+					pChildNode.rearNodeLink = pParentNode;
+					pParentBranch.push(pChildNode);
+				}
+			}
+
+			pNode.level = 0;
+			pNode.rearNodeLink = null;
+			pNode.worldBounds.clear();
+
+		    this._pFreeNodePool.push(pNode);
+		};
+
+		_findObjects(pCamera: ICamera,
+				pResultArray?: IObjectArray = new util.ObjectArray(),
+				bFastSearch: bool = false): IObjectArray{
+
+//while we ignore second parametr
+//don't have normal implementation
+
+			pResultArray.clear();
+
+			if(!isDef(pCamera.frustum)){
+				this._buildSearchResultsByRect(pCamera.searchRect, this._pHead, pResultArray);
+			}
+			else{
+				this._buildSearchResultsByRectAndFrustum(pCamera.searchRect,
+									pCamera.frustum, this._pHead, pResultArray);
+			}
+
+			return pResultArray;
+		};
+
+		/**@protected*/  _buildSearchResultsByRect(pSearchRect: IRect3d, pNode: IOcTreeNode, pResultList: IObjectArray){
+			var pNodeRect: IRect3d = pNode.worldBounds;
+
+			var kResult: EVolumeClassifications = geometry.classifyRect3d(pSearchRect, pNodeRect);
+
+			if(kResult == EVolumeClassifications.B_CONTAINS_A
+				|| kResult == EVolumeClassifications.INTERSECTING){
+
+//надо проводить дополнительные тесты
+
+				var pMemberList: IObjectList = pNode.membersList;
+				var pObject: ISceneObject = pMemberList.first;
+				while(isDefAndNotNull(pObject)){
+					if(geometry.intersectRect3dRect3d(pSearchRect, pObject.worldBounds)){
+						pResultList.push(pObject);
+					}
+					pObject = pMemberList.next();
+				}
+
+				for(var i: number  = 0; i < 8; i++){
+					var pChildrenList: IObjectList = pNode.childrenList[i];
+					var pChildNode: IOcTreeNode = pChildrenList.first;
+
+					while(isDefAndNotNull(pChildNode)){
+						this._buildSearchResultsByRect(pSearchRect, pChildNode, pResultList);
+						pChildNode = pChildrenList.next();
+					}
+				}
+			}
+			else if(kResult != EVolumeClassifications.NO_RELATION){
+//объект полностью попал
+				this._includeAllTreeSubbranch(pNode, pResultList);
+			}
+		};
+
+		/**@protected*/  _buildSearchResultsByRectAndFrustum(pSearchRect: IRect3d, pFrustum: IFrustum,
+			pNode: IOcTreeNode, pResultList: IObjectArray){
+
+			var pNodeRect: IRect3d = pNode.worldBounds;
+//var pChildRect: IRect3d;
+
+			if(geometry.intersectRect3dRect3d(pSearchRect, pNodeRect)){
+				var kTestResult:  number  = geometry.classifyFrustumRect3d(pFrustum, pNodeRect);
+				if(kTestResult == EVolumeClassifications.A_CONTAINS_B){
+//объект полностью попал	
+					this._includeAllTreeSubbranch(pNode, pResultList);
+				}
+				else if(kTestResult == EVolumeClassifications.INTERSECTING){
+//объект попал частично
+					var pMemberList: IObjectList = pNode.membersList;
+					var pObject: ISceneObject = pMemberList.first;
+					while(isDefAndNotNull(pObject)){
+						if(pFrustum.testRect(pObject.worldBounds)){
+							pResultList.push(pObject);
+						}
+						pObject = pMemberList.next();
+					}
+
+					for(var i: number  = 0; i < 8; i++){
+//TODO: test by child rect
+						var pChildrenList: IObjectList = pNode.childrenList[i];
+						var pChildNode: IOcTreeNode = pChildrenList.first;
+						while(isDefAndNotNull(pChildNode)){
+							this._buildSearchResultsByRectAndFrustum(pSearchRect, pFrustum, pChildNode, pResultList);
+							pChildNode = pChildrenList.next();
+						}
+					}
+				}
+			}
+		};
+
+		/**@protected*/  _includeAllTreeSubbranch(pNode: IOcTreeNode, pResultList: IObjectArray){
+//console.warn("----------------> including all subbranch <------------------");
+			var pMemberList: IObjectList = pNode.membersList;
+			var pObject: ISceneObject = pMemberList.first;
+			while(isDefAndNotNull(pObject)){
+				pResultList.push(pObject);
+				pObject = pMemberList.next();
+			}
+
+			for(var i: number  = 0; i < 8; i++){
+				var pChildrenList: IObjectList = pNode.childrenList[i];
+				var pChildNode: IOcTreeNode = pChildrenList.first;
+
+				while(isDefAndNotNull(pChildNode)){
+					this._includeAllTreeSubbranch(pChildNode, pResultList);
+					pChildNode = pChildrenList.next();
+				}
+			}
+		};
+
+		/**@protected*/  attachObject(pNode: ISceneNode): void {
+// console.error(pNode, isSceneObject(pNode));
+			if(isSceneObject(pNode)){
+				var pOcTreeNode: IOcTreeNode = this.findTreeNode(<ISceneObject>pNode);
+				pOcTreeNode.addMember(<ISceneObject>pNode);
+			}
+		};
+
+		/**@protected*/  detachObject(pNode: ISceneNode): void {
+			if(isSceneObject(pNode)){
+				var pOcTreeNode: IOcTreeNode = this.findTreeNode(<ISceneObject>pNode);
+				pOcTreeNode.removeMember(<ISceneObject>pNode);
+			}
+		};
+
+		_toSimpleObject(pNode?: IOcTreeNode = this._pHead): any{
+
+			var pResult: any = {};
+			pResult.members = [];
+			pResult.childrens = new Array(8);
+			for(var i: number  = 0; i < 8; i++){
+				pResult.childrens[i] = [];
+			}
+			pResult.level = pNode.level;
+			pResult.index = pNode.index;
+			pResult.worldBounds = pNode.worldBounds;
+
+
+			var pMemberList: IObjectList = pNode.membersList;
+			var pObject: ISceneObject = pMemberList.first;
+			while(isDefAndNotNull(pObject)){
+				pResult.members.push(pObject.worldBounds);
+				pObject = pMemberList.next();
+			}
+
+			for(var i: number  = 0; i < 8; i++){
+				var pList: IObjectList = pNode.childrenList[i];
+				var pChildNode: IOcTreeNode = pList.first;
+
+				while(isDefAndNotNull(pChildNode)){
+					pResult.childrens[i].push(this._toSimpleObject(pChildNode));
+					pChildNode = pList.next();
+				}
+			}
+
+			return pResult;
+		};
+
+/**
+		 * Getter for OcTreeNode by level and x, y, z
+		 */
+
+// getNodeFromLevelXYZ(iLevel: int, iIndex: int): IOcTreeNode {
+//     debug_assert(this.isReady(), "the Oc tree has not been created");
+
+//     if (iLevel >= 0 && iLevel < this._iDepth) {
+//         return this._ppLevelNodes[iLevel][iIndex];
+//     }
+
+//     return null;
+// }
+
+
+
+/**
+		 * Destroy tree and all nodes in tree. Set _iDepth to 0.
+		 */
+
+// destroy(): void {
+//     var i: int;
+
+//     // for (i = 0; i < this._iDepth; ++i) {
+//     //     delete this._ppLevelNodes[i];
+//     // }
+
+//     for (i = 0; i < this._pFreeNodePool.length; ++i) {
+//         delete this._pFreeNodePool[i];
+//     }
+
+//     //this._ppLevelNodes = null;
+//     this._pFreeNodePool = null;
+//     this._iDepth = 0;
+// }
+
+
+
+
+// /**
+//  * Build pByteRect from Rect3d
+//  * Convert to integer values, taking the floor of each real
+//  */
+// inline buildByteRect(pWorldRect: IRect3d, pWorldByteRect: IOcTreeRect): void {
+//     pWorldByteRect.convert(pWorldRect, this._v3fWorldOffset, this._v3fWorldScale);
+// };
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra{
+
+	export interface IDisplayList {} ;
+	export interface ICamera {} ;
+	export interface IObjectArray {} ;
+
+	export interface ILightGraph extends IDisplayList{
+	};
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.scene.light {
+	export  class  LightParameters implements ILightParameters {
+		ambient: IColor = new Color;
+	    diffuse: IColor = new Color;
+	    specular: IColor = new Color;
+	    attenuation: IVec3 = new Vec3;
+	}
+
+	export class LightPoint extends SceneNode implements ILightPoint {
+		/**@protected*/  _bCastShadows: bool = false;
+		/**@protected*/  _isEnabled: bool = true;
+		/**@protected*/  _iMaxShadowResolution:  number  = 256;
+		/**@protected*/  _pLightParameters: ILightParameters = new LightParameters;
+		/**@protected*/  _eLightType: ELightTypes;
+
+		inline get lightType(): ELightTypes {
+			return this._eLightType;
+		}
+
+		constructor(pScene: IScene3d, eType: ELightTypes = ELightTypes.UNKNOWN, isShadowCaster: bool = true, iMaxShadowResolution:  number  = 256){
+			super(pScene, EEntityTypes.LIGHT);
+
+			this._eLightType = eType;
+//есть тени от источника или нет
+			this._bCastShadows = isShadowCaster;
+//мкасимальный размер shadow текстуры
+			this._iMaxShadowResolution = iMaxShadowResolution;
+		}
+
+		inline get enabled(): bool{
+			return this._isEnabled;
+		};
+
+		inline set enabled(bValue: bool){
+			this._isEnabled = bValue;
+		};
+
+
+		inline get params(): ILightParameters {
+			return this._pLightParameters;
+		};
+
+		inline get isShadowCaster(): bool {
+			return this._bCastShadows;
+		};
+
+		inline set isShadowCaster(bValue: bool) {
+			this._bCastShadows = bValue;
+		};
+
+		create(): bool {
+			var isOk: bool = super.create();
+			return isOk;
+		};
+
+		_prepareForLighting(pCamera: ICamera): bool{
+			logger.setSourceLocation( "light/LightPoint.ts" , 64 ); logger.warning("pure virtual method"); ;
+			return false;
+		};
+
+		_calculateShadows(): void {
+			logger.setSourceLocation( "light/LightPoint.ts" , 69 ); logger.criticalError("NOT IMPLEMENTED!"); ;
+		};
+	}
+	export function isLightPoint(pNode: ISceneNode){
+		return pNode.type === EEntityTypes.LIGHT;
+	}
+}
+
+
+
+
+
+
+
+
+module akra.scene {
+	export class LightGraph extends DisplayList implements ILightGraph{
+
+		/**@protected*/  _pLightPoints: IObjectList = new util.ObjectList();
+
+		constructor () {
+			super();
+			this.name = "LightGraph";
+		};
+
+		_findObjects(pCamera: ICamera,
+				pResultArray?: IObjectArray = new util.ObjectArray(),
+				bFastSearch: bool = false): IObjectArray{
+//while we ignore second parametr
+//don't have normal implementation
+
+			pResultArray.clear();
+
+			var pList: IObjectList = this._pLightPoints;
+
+			var pLightPoint: ILightPoint = pList.first;
+
+			while(isDefAndNotNull(pLightPoint)){
+
+				if(pLightPoint._prepareForLighting(pCamera)){
+// LOG("light point added");
+					pResultArray.push(pLightPoint);
+				}
+
+				pLightPoint = pList.next();
+			}
+
+			return pResultArray;
+		};
+
+		/**@protected*/  attachObject(pNode: ISceneNode): void {
+			if(light.isLightPoint(pNode)){
+				this._pLightPoints.push(pNode);
+			}
+		};
+
+		/**@protected*/  detachObject(pNode: ISceneNode): void {
+			if(light.isLightPoint(pNode)){
+				var iPosition:  number  = this._pLightPoints.indexOf(pNode);
+				if(iPosition != -1 ){
+					this._pLightPoints.takeAt(iPosition);
+				}
+				else{
+					logger.setSourceLocation( "LightGraph.ts" , 58 ); logger.assert(false, "cannot find light point"); ;
+				}
+			}
+		};
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IMesh {} ;
+
+	export interface ISceneModel extends ISceneObject {
+		mesh: IMesh;
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IRect3d {} ;
+	export interface IMesh {} ;
+	export interface ISkin {} ;
+	export interface IRenderData {} ;
+
+	export interface IMeshSubset extends IEventProvider, IRenderableObject {
+		name: string;
+
+		 mesh: IMesh;
+		 skin: ISkin;
+		 data: IRenderData;
+		 boundingBox: IRect3d;
+         boundingSphere: ISphere;
+
+		createBoundingBox(): bool;
+		deleteBoundingBox(): bool;
+		showBoundingBox(): bool;
+		hideBoundingBox(): bool;
+
+		createBoundingSphere(): bool;
+		deleteBoundingSphere(): bool;
+		showBoundingSphere(): bool;
+		hideBoundingSphere(): bool;
+
+		computeNormals(): void;
+		computeTangents(): void;
+		computeBinormals(): void;
+
+		isSkinned(): bool;
+		getSkin(): ISkin;
+		setSkin(pSkin: ISkin): bool;
+
+/** @deprecated */
+
+		applyFlexMaterial(csMaterial: string, pMaterial?: IMaterial): bool;
+/** @deprecated */
+
+		getFlexMaterial(iMaterial:  number ): IMaterial;
+/** @deprecated */
+
+		getFlexMaterial(csName: string): IMaterial;
+/** @deprecated */
+
+		setFlexMaterial(iMaterial:  number ): bool;
+/** @deprecated */
+
+		setFlexMaterial(csName: string): bool;
+
+		show(): void;
+		hide(): void;
+
+		destroy(): void;
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface ISkeleton {} ;
+	export interface INode {} ;
+	export interface IMesh {} ;
+	export interface IEngine {} ;
+	export interface INodeMap {} ;
+	export interface IMat4 {} ;
+	export interface IVertexData {} ;
+
+// export interface INodeMap {
+// 	[index: string]: INode;
+// }
+
+	export interface ISkin {
+		 data: IRenderDataCollection;
+		 skeleton: ISkeleton;
+		 totalBones:  number ;
+
+/**
+		 * Set binding matrix. 
+		 * @see <bind_shape_matrix> in Collada.
+		 */
+
+		setBindMatrix(m4fMatrix: IMat4): void;
+
+/**
+		 * @see <bind_shape_matrix> in Collada.
+		 */
+
+		getBindMatrix(): IMat4;
+
+/**
+		 * Bone offset matrices.
+		 * @see Bone offset matrices in Collada.
+		 */
+
+		getBoneOffsetMatrices(): IMat4[];
+		getBoneOffsetMatrix(sBoneName: string): IMat4;
+		setBoneOffsetMatrices(pMatrices: IMat4[]): void;
+
+		setSkeleton(pSkeleton: ISkeleton): bool;
+
+/**
+		 * Make a skin dependent on scene node whose names match the
+		 * names of the bones that affect the skin.
+		 */
+
+		attachToScene(pRootNode: ISceneNode): bool;
+
+// /**
+//  * Bind skin to skeleton or scene.
+//  */
+// bind(pSkeleton: ISkeleton): bool;
+// bind(pNode: ISceneNode): bool;
+
+/**
+		 * Set names of bones, that affect to skin.
+		 */
+
+		setBoneNames(pNames: string[]): bool;
+
+
+/**
+		 * Weights.
+		 */
+
+		setWeights(pWeights: Float32Array): bool;
+		getWeights(): IVertexData;
+
+/**
+		 * разметка влияний на вершины
+		 * пары: {число влияний, адресс индексов влияний}
+		 */
+
+		getInfluenceMetaData(): IVertexData;
+/**
+		 * инф. о вляиниях на вершины
+		 * пары: {индекс матрицы кости, индекс веса}
+		 */
+
+		getInfluences(): IVertexData;
+		setInfluences(pInfluencesCount:  number [], pInfluences: Float32Array): bool;
+
+/**
+		 * Short way to call setWeights() && setIfluences();
+		 */
+
+		setVertexWeights(pInfluencesCount:  number [], pInfluences: Float32Array, pWeights: Float32Array): bool;
+
+/**
+		 * Recalculate skin matrices and fill it to video memory.
+		 */
+
+		applyBoneMatrices(bForce?: bool): bool;
+
+/**
+		 * Is skin ready to use?
+		 */
+
+		isReady(): bool;
+
+/**
+		 * Data with result matrices.
+		 */
+
+		getBoneTransforms(): IVertexData;
+
+/**
+		 * Check, is this skin affect to data?
+		 */
+
+		isAffect(pData: IVertexData): bool;
+
+/**
+		 * Add skin info to data with vertices.
+		 */
+
+		attach(pData: IVertexData): void;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.model {
+
+	export class Skin implements ISkin {
+		private _pMesh: IMesh;
+
+		private _pSkeleton: ISkeleton = null;
+
+// name of bones/nodes
+		private _pNodeNames: string[] = null;
+
+//bind matrix from collada
+		private _m4fBindMatrix: IMat4 = new Mat4(1);
+
+//BONE_MATRIX = WORLD_MATRIX x OFFSET_MATRIX
+		private _pBoneTransformMatrices: IMat4[]  = null;
+
+/**
+		 * Common buffer for all transform matrices.
+		 * _pBoneOffsetMatrixBuffer = [_pBoneTransformMatrices[0], ..., _pBoneTransformMatrices[N]]
+		 */
+
+		private _pBoneOffsetMatrixBuffer: Float32Array = null;
+
+// bone offset matrices from collada
+		private _pBoneOffsetMatrices: IMat4[] = null;
+
+/**
+		 * Pointers to nodes, that affect to this skin.
+		 */
+
+		private _pAffectingNodes: ISceneNode[] = null;
+
+/**
+		 * Format:
+		 * BONE_INF_COUNT - number of bones, that influence to the vertex.
+		 * BONE_INF_LOC - address of influence, pointer to InfData structire list.
+		 * ..., [BONE_INF_COUNT: float, BONE_INF_LOC: float], ...
+		 * 
+		 */
+
+		private _pInfMetaData: IVertexData = null;
+
+/**
+		 * Format:
+		 * BONE_INF_DATA - bone matrix address, pointer to BONE_MATRIX list
+		 * BONE_WEIGHT_IND - bone weight address, pointer to BONE_WEIGHT list
+		 * ..., [BONE_INF_DATA: float, BONE_WEIGHT_IND: float], ...
+		 */
+
+		private _pInfData: IVertexData = null;
+
+/**
+		 * Format:
+		 * ..., [BONE_MATRIX: matrix4], ...
+		 */
+
+		private _pBoneTransformMatrixData: IVertexData = null;
+
+/**
+		 * Format:
+		 * ..., [BONE_WEIGHT: float], ...
+		 */
+
+		private _pWeightData: IVertexData = null;
+
+/**
+		 * Links to VertexData, that contain meta from this skin.
+		 */
+
+		private _pTiedData: IVertexData[] = [];
+
+
+
+		inline get data(): IRenderDataCollection {
+			return this._pMesh.data;
+		}
+
+		inline get skeleton(): ISkeleton{
+			return this._pSkeleton;
+		}
+
+		inline set skeleton(pSkeleton: ISkeleton) {
+			if (isNull(pSkeleton) || pSkeleton.totalBones < this.totalBones) {
+				logger.setSourceLocation( "Skin.ts" , 88 ); logger.warning("cannnot set skeletonm because skeleton has to little bones"); ;
+		        return;
+		    }
+
+		    for (var i:  number  = 0, nMatrices:  number  = this.totalBones; i < nMatrices; i++) {
+		        this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
+		        logger.setSourceLocation( "Skin.ts" , 94 ); logger.assert(isDefAndNotNull(this._pAffectingNodes[i]), "joint<" + this._pNodeNames[i] + "> must exists..."); ;
+		    }
+
+
+		    this._pSkeleton = pSkeleton;
+		}
+
+		inline get totalBones():  number  {
+			return this._pNodeNames.length;
+		}
+
+		constructor(pMesh: IMesh) {
+		    logger.setSourceLocation( "Skin.ts" , 106 ); logger.assert(isDefAndNotNull(pMesh), "you must specify mesh for skin"); ;
+
+		    this._pMesh = pMesh;
+		}
+
+		setBindMatrix(m4fMatrix: IMat4): void {
+			this._m4fBindMatrix.set(m4fMatrix);
+		}
+
+		getBindMatrix(): IMat4 {
+			return this._m4fBindMatrix;
+		}
+
+		getBoneOffsetMatrices(): IMat4[] {
+			return this._pBoneOffsetMatrices;
+		}
+
+		getBoneOffsetMatrix(sBoneName: string): IMat4 {
+			var pBoneNames: string[] = this._pNodeNames;
+
+			for (var i = 0; i < pBoneNames.length; i++) {
+			    if (pBoneNames[i] === sBoneName) {
+			        return this._pBoneOffsetMatrices[i];
+			    }
+			};
+
+			return null;
+		}
+
+		setSkeleton(pSkeleton: ISkeleton): bool {
+			if (!pSkeleton || pSkeleton.totalBones < this.totalBones) {
+				logger.setSourceLocation( "Skin.ts" , 138 ); logger.warning("number of bones in skeleton (" + pSkeleton.totalBones + ") less then number of bones in skin (" + this.totalBones + ").");
+                                                                      ;
+			    return false;
+			}
+
+			for (var i:  number  = 0, nMatrices = this.totalBones; i < nMatrices; i++) {
+			    this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
+			    logger.setSourceLocation( "Skin.ts" , 144 ); logger.assert(!isNull(this._pAffectingNodes[i]), "joint<" + this._pNodeNames[i] + "> must exists..."); ;
+			}
+
+			this._pSkeleton = pSkeleton;
+
+			return true;
+		}
+
+		attachToScene(pRootNode: ISceneNode): bool {
+			for (var i:  number  = 0, nMatrices:  number  = this.totalBones; i < nMatrices; i++) {
+			    this._pAffectingNodes[i] = <ISceneNode>pRootNode.findEntity(this._pNodeNames[i]);
+			    logger.setSourceLocation( "Skin.ts" , 155 ); logger.assert(isDefAndNotNull(this._pAffectingNodes[i]), "node<" + this._pNodeNames[i] + "> must exists..."); ;
+			}
+
+			return true;
+		}
+
+		setBoneNames(pNames: string[]): bool {
+			if (isNull(pNames)) {
+				return false;
+			}
+
+			this._pNodeNames = pNames;
+			this._pAffectingNodes = new Array(pNames.length);
+
+			return true;
+		}
+
+		setBoneOffsetMatrices(pMatrices: IMat4[]): void {
+			var pMatrixNames: string[] = this._pNodeNames;
+
+			logger.setSourceLocation( "Skin.ts" , 178 ); logger.assert(isDefAndNotNull(pMatrices) && isDefAndNotNull(pMatrixNames) && pMatrixNames.length === pMatrices.length, "number of matrix names must equal matrices data length:\n" + pMatrixNames.length + " / " + pMatrices.length);
+                                ;
+
+			var nMatrices:  number  = pMatrixNames.length;
+			var pData: IRenderDataCollection = this.data;
+			var pMatrixData: Float32Array = new Float32Array(nMatrices * 16);
+
+//FIXME: правильно положить матрицы...
+			this._pBoneOffsetMatrices = pMatrices;
+			this._pBoneTransformMatrixData = pData._allocateData([VE_MAT4("BONE_MATRIX")], pMatrixData);
+			this._pBoneTransformMatrices = new Array(nMatrices);
+
+			for (var i:  number  = 0; i < nMatrices; i++) {
+			    this._pBoneTransformMatrices[i] = new Mat4(pMatrixData.subarray(i * 16, (i + 1) * 16), true);
+			}
+
+
+			this._pBoneOffsetMatrixBuffer = pMatrixData;
+		}
+
+		setWeights(pWeights: Float32Array): bool {
+			this._pWeightData = this.data._allocateData([VE_FLOAT("BONE_WEIGHT")], pWeights);
+
+			return this._pWeightData !== null;
+		}
+
+		getWeights(): IVertexData {
+			return this._pWeightData;
+		}
+
+		getInfluenceMetaData(): IVertexData {
+			return this._pInfMetaData;
+		}
+
+		getInfluences(): IVertexData {
+			return this._pInfData;
+		}
+
+		setInfluences(pInfluencesCount:  number [], pInfluences: Float32Array): bool {
+			logger.setSourceLocation( "Skin.ts" , 216 ); logger.assert(this._pInfMetaData == null && this._pInfData == null, "vertex weights already setuped."); ;
+			logger.setSourceLocation( "Skin.ts" , 217 ); logger.assert(!isNull(this.getWeights()), "you must set weight data before setup influences"); ;
+
+			var pData: IRenderDataCollection = this.data;
+			var pInfluencesMeta: Float32Array = new Float32Array(pInfluencesCount.length * 2);
+
+			var iInfLoc:  number  = 0;
+			var iTransformLoc:  number  = 0;
+			var iWeightsLoc:  number  = 0;
+
+//получаем копию массива влияний
+			pInfluences = new Float32Array(pInfluences);
+
+//вычисляем адресса матриц транфсормации и весов
+			iTransformLoc = this._pBoneTransformMatrixData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+			iWeightsLoc = this._pWeightData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+
+
+			for (var i:  number  = 0, n:  number  = pInfluences.length; i < n; i += 2) {
+			    pInfluences[i] = pInfluences[i] * 16 + iTransformLoc;
+			    pInfluences[i + 1] += iWeightsLoc;
+			}
+
+//запоминаем модифицированную информацию о влияниях
+			this._pInfData = pData._allocateData([
+/*адрес матрицы кости*/
+			                                         VE_FLOAT('BONE_INF_DATA'),
+/*адрес весового коэффициента*/
+			                                         VE_FLOAT('BONE_WEIGHT_IND')
+			                                     ],
+			                                     pInfluences);
+
+			iInfLoc = this._pInfData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+
+//подсчет мета данных, которые укажут, где взять влияния на кость..
+			for (var i:  number  = 0, j:  number  = 0, n:  number  = iInfLoc; i < pInfluencesMeta.length; i += 2) {
+			    var iCount:  number  = pInfluencesCount[j++];
+/*число влияний на вершину*/
+			    pInfluencesMeta[i] = iCount;
+/*адрес начала информации о влияниях */
+			    pInfluencesMeta[i + 1] = n;
+//(пары индекс коэф. веса и индекс матрицы)
+			    n += 2 * iCount;
+			}
+
+//influences meta: разметка влияний
+			this._pInfMetaData = pData._allocateData([
+/*число костей и весов, влияющих на вершину*/
+			                                             VE_FLOAT('BONE_INF_COUNT'),
+/*адресс начала влияний на вершину*/
+			                                             VE_FLOAT('BONE_INF_LOC'),
+			                                         ], pInfluencesMeta);
+
+			return this._pInfMetaData !== null &&
+			       this._pInfData !== null;
+		}
+
+		setVertexWeights(pInfluencesCount:  number [], pInfluences: Float32Array, pWeights: Float32Array): bool {
+			logger.setSourceLocation( "Skin.ts" , 268 ); logger.assert(arguments.length > 1, 'you must specify all parameters'); ;
+
+//загружаем веса 
+			if (pWeights) {
+			    this.setWeights(pWeights);
+			}
+
+			return this.setInfluences(pInfluencesCount, pInfluences);
+		}
+
+		applyBoneMatrices(bForce: bool = false): bool {
+			var pData: Float32Array;
+			var bResult: bool;
+			var pNode: ISceneNode;
+			var isUpdated: bool = false;
+
+			for (var i:  number  = 0, nMatrices = this.totalBones; i < nMatrices; ++i) {
+			    pNode = this._pAffectingNodes[i];
+
+			    if (pNode.isWorldMatrixNew() || bForce) {
+			        pNode.worldMatrix.multiply(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
+			        isUpdated = true;
+			    }
+			}
+
+			if (isUpdated) {
+			    pData = this._pBoneOffsetMatrixBuffer;
+			    return this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
+			}
+
+			return false;
+		}
+
+		isReady(): bool {
+			return !(isNull(this._pInfMetaData) || isNull(this._pInfData) || isNull(this._pWeightData) ||
+			         isNull(this._pBoneOffsetMatrixBuffer) || isNull(this._pBoneOffsetMatrices) ||
+			         isNull(this._pNodeNames) ||
+			         isNull(this._m4fBindMatrix));
+		}
+
+		getBoneTransforms(): IVertexData {
+			return this._pBoneTransformMatrixData;
+		}
+
+		isAffect(pData: IVertexData): bool {
+			if (isDefAndNotNull(pData)) {
+			    for (var i:  number  = 0; i < this._pTiedData.length; i++) {
+			        if (this._pTiedData[i] === pData) {
+			            return true;
+			        }
+			    }
+			}
+
+			return false;
+		}
+
+		attach(pData: IVertexData): void {
+			logger.setSourceLocation( "Skin.ts" , 326 ); logger.assert(pData.stride === 16, "you cannot add skin to mesh with POSITION: {x, y, z}" + "\nyou need POSITION: {x, y, z, w}");
+                                                                         ;
+
+			pData.getVertexDeclaration().append(VE_FLOAT(DeclUsages.BLENDMETA, 12));
+
+			this._pTiedData.push(pData);
+		}
+
+
+
+		static debugMeshSubset(pSubMesh: IMeshSubset) {
+			var pMesh: IMesh = pSubMesh.mesh;
+			var pSkin: ISkin = pSubMesh.skin;
+			var pMatData: IVertexData = pSkin.getBoneTransforms();
+			var pPosData: Float32Array;
+			var pEngine: IEngine = pMesh.getEngine();
+
+			pPosData = <Float32Array>(pSubMesh.data._getData("POSITION")).getTypedData(DeclUsages.BLENDMETA);
+
+			var pVideoBuffer: IVertexBuffer = pSubMesh.mesh.data.buffer;
+			var iFrom:  number  = 2618, iTo:  number  = 2619;
+			var pWeights: Float32Array = <Float32Array>pSkin.getWeights().getTypedData('BONE_WEIGHT');
+
+			logger.setSourceLocation( "Skin.ts" , 348 ); logger.log('===== debug vertices from ', iFrom, 'to', iTo, ' ======'); ;
+			logger.setSourceLocation( "Skin.ts" , 349 ); logger.log('transformation data location:', pMatData.byteOffset / 4.); ;
+			logger.setSourceLocation( "Skin.ts" , 350 ); logger.log('155 weight: ', pSkin.getWeights().getTypedData('BONE_WEIGHT')[155]); ;
+			logger.setSourceLocation( "Skin.ts" , 351 ); logger.log('vertices info ===================>'); ;
+
+			for (var i:  number  = iFrom; i < iTo; i++) {
+			    logger.setSourceLocation( "Skin.ts" , 354 ); logger.log(pPosData[i], '<< inf meta location'); ;
+
+			    var pMetaData: Float32Array = new Float32Array(8);
+			    if (!pVideoBuffer.readData(4 * pPosData[i], 8, pMetaData)) {
+			    	logger.setSourceLocation( "Skin.ts" , 358 ); logger.error("cannot read back meta data"); ;
+			    }
+
+			    logger.setSourceLocation( "Skin.ts" , 361 ); logger.log(pMetaData[0], '<< count'); ;
+			    logger.setSourceLocation( "Skin.ts" , 362 ); logger.log(pMetaData[1], '<< inf. location'); ;
+
+			    for (var j:  number  = 0; j < pMetaData[0]; ++j) {
+			        var pInfData = new Float32Array(8);
+			        if (!pVideoBuffer.readData(4 * (pMetaData[1] + 2 * j), 8, pInfData)) {
+			        	logger.setSourceLocation( "Skin.ts" , 367 ); logger.error("cannot read influence data"); ;
+			        }
+
+			        logger.setSourceLocation( "Skin.ts" , 370 ); logger.log(pInfData[0], '<< matrix location'); ;
+			        logger.setSourceLocation( "Skin.ts" , 371 ); logger.log(pInfData[1], '/', pInfData[1] - 30432, '<< weight location / index'); ;
+
+			        var pWeightData = new Float32Array(4);
+
+			        if (!pVideoBuffer.readData(4 * (pInfData[1]), 4, pWeightData)) {
+			        	logger.setSourceLocation( "Skin.ts" , 376 ); logger.error("cannot read weight data"); ;
+			        }
+
+			        logger.setSourceLocation( "Skin.ts" , 379 ); logger.log(pWeightData[0], '<< weight'); ;
+
+			        var pMatrixData = new Float32Array(4 * 16);
+			        if (!pVideoBuffer.readData(4 * (pInfData[0]), 4 * 16, pMatrixData)) {
+			        	logger.setSourceLocation( "Skin.ts" , 383 ); logger.error("cannot read matrix data"); ;
+			        }
+
+			        logger.setSourceLocation( "Skin.ts" , 386 ); logger.log(pMatrixData.toString()); ;
+			    }
+			}
+
+			logger.setSourceLocation( "Skin.ts" , 390 ); logger.log('#############################################'); ;
+
+			for (var i:  number  = 0; i < pPosData.length; i++) {
+			    var pMetaData: Float32Array = new Float32Array(8);
+			    if(!pVideoBuffer.readData(4 * pPosData[i], 8, pMetaData)) {
+			    	logger.setSourceLocation( "Skin.ts" , 395 ); logger.error("cannot read meta data"); ;
+			    }
+
+			    for (var j:  number  = 0; j < pMetaData[0]; ++j) {
+			        var pInfData: Float32Array = new Float32Array(8);
+
+			        if (!pVideoBuffer.readData(4 * (pMetaData[1] + 2 * j), 8, pInfData)) {
+			        	logger.setSourceLocation( "Skin.ts" , 402 ); logger.error("cannot read influence data"); ;
+			        }
+
+			        var iWeightsIndex:  number  = pInfData[1] - 30432;
+
+			        var fWeightOrigin:  number  = pWeights[iWeightsIndex];
+			        var pWeightData:  number  = new Float32Array(4);
+			        if (!pVideoBuffer.readData(4 * (pInfData[1]), 4, pWeightData)) {
+			        	logger.setSourceLocation( "Skin.ts" , 410 ); logger.error("cannot read weight data"); ;
+			        }
+			        var fWeight:  number  = pWeightData[0];
+
+			        if (Math.abs(fWeight - fWeightOrigin) > 0.001) {
+			            alert("1");
+			            logger.setSourceLocation( "Skin.ts" , 416 ); logger.log("weight with index", iWeightsIndex, "has wrong weight", fWeightOrigin, "/", fWeightOrigin); ;
+			        }
+
+//var pWeightData: Float32Array = new Float32Array(pVideoBuffer.getData(4 * (pInfData[1]), 4));
+//var pMatrixData: Float32Array = new Float32Array(pVideoBuffer.getData(4 * (pInfData[0]), 4 * 16));
+			    }
+			}
+
+			logger.setSourceLocation( "Skin.ts" , 424 ); logger.log('##############################################'); ;
+// var pBoneTransformMatrices = pSkin._pBoneTransformMatrixData;
+// var pBonetmData = pBoneTransformMatrices.getTypedData('BONE_MATRIX');
+
+// for (var i = 0; i < pBonetmData.length; i += 16) {
+//     LOG('bone transform matrix data >>> ');
+//     LOG(Mat4.str(pBonetmData.subarray(i, i + 16)));
+// };
+
+
+//for (var i = 0; i < pMesh.length; i++) {
+// var i = pMesh.length - 1;
+//     var pPosData = pMesh[i].data.getData('POSITION').getTypedData('POSITION');
+//     var pIndData = pMesh[i].data._pIndexData.getTypedData('INDEX0');
+
+//     var j = pIndData[pIndData.length - 1];
+//     var j0 = pMesh[i].data.getData('POSITION').byteOffset/4;
+
+//     j -= j0;
+//     j/=4;
+
+//     LOG('last index >> ', j);
+//     LOG('pos data size', pPosData.length);
+
+//     var pVertex = pPosData.subarray(j * 3, j * 3 + 3);
+
+//     LOG('last vertex in submesh >> ', pVertex[0], pVertex[1], pVertex[2]);
+
+//         var pSceneNode = pEngine.appendMesh(
+//             pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
+//             pEngine.getRootNode());
+
+//         pSceneNode.setPosition(pVertex);
+//         pSceneNode.setScale(0.1);
+//     var pMeta = pSkin.getInfluenceMetaData().getTypedData('BONE_INF_COUNT');
+//     LOG(pMeta[j], 'count << ');
+
+//};
+		}
+
+	}
+
+
+
+	export function createSkin(pMesh: IMesh): ISkin {
+		return new Skin(pMesh);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IRay2d {} ;
+
+	export interface ISegment2d{
+		ray: IRay2d;
+		distance:  number ;
+
+		point: IVec2;
+		normal: IVec2;
+	};
+}
+
+
+
+module akra.geometry{
+	export class Segment2d implements ISegment2d{
+		ray: IRay2d;
+		distance:  number ;
+
+		constructor(){
+			this.ray = new Ray2d();
+			this.distance = 0.;
+		};
+
+		get point(): IVec2{
+			return this.ray.point;
+		};
+		set point(v2fPoint: IVec2){
+			this.ray.point.set(v2fPoint);
+		};
+
+		get normal(): IVec2{
+			return this.ray.normal;
+		};
+		set normal(v2fNormal: IVec2){
+			this.ray.normal.set(v2fNormal);
+		};
+	};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IRay3d {} ;
+
+	export interface ISegment3d{
+		ray: IRay3d;
+		distance:  number ;
+
+		point: IVec3;
+		normal: IVec3;
+	};
+}
+
+
+
+module akra.geometry{
+	export class Segment3d implements ISegment3d{
+		ray: IRay3d;
+		distance:  number ;
+
+		constructor(){
+			this.ray = new Ray3d();
+			this.distance = 0.;
+		};
+
+		get point(): IVec3{
+			return this.ray.point;
+		};
+		set point(v3fPoint: IVec3){
+			this.ray.point.set(v3fPoint);
+		};
+
+		get normal(): IVec3{
+			return this.ray.normal;
+		};
+		set normal(v3fNormal: IVec3){
+			this.ray.normal.set(v3fNormal);
+		};
+	};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -48400,16 +52449,22 @@ module akra.geometry {
 
 			pTempData = new Float32Array(pData, i, 3);
 			fTemp = pTempData[0];
-//Min			fX0 = fX0 > fTemp ? fTemp : fX0;
-//Max			fX1 = fX1 > fTemp ? fX1 : fTemp;
+/*Min*/
+			fX0 = fX0 > fTemp ? fTemp : fX0;
+/*Max*/
+			fX1 = fX1 > fTemp ? fX1 : fTemp;
 
 			fTemp = pTempData[1];
-//Min			fY0 = fY0 > fTemp ? fTemp : fY0;
-//Max			fY1 = fY1 > fTemp ? fY1 : fTemp;
+/*Min*/
+			fY0 = fY0 > fTemp ? fTemp : fY0;
+/*Max*/
+			fY1 = fY1 > fTemp ? fY1 : fTemp;
 
 			fTemp = pTempData[2];
-//Min			fZ0 = fZ0 > fTemp ? fTemp : fZ0;
-//Max			fZ1 = fZ1 > fTemp ? fZ1 : fTemp;
+/*Min*/
+			fZ0 = fZ0 > fTemp ? fTemp : fZ0;
+/*Max*/
+			fZ1 = fZ1 > fTemp ? fZ1 : fTemp;
 		}
 
 		pBoundingBox.set(fX0,fX1,fY0,fY1,fZ0,fZ1);
@@ -48779,7 +52834,6 @@ module akra.geometry {
 
 module akra.model {
 	export class MeshSubset extends render.RenderableObject implements IMeshSubset {
-		/**@protected*/  _pRenderData: IRenderData = null;
 		/**@protected*/  _sName: string = null;
 		/**@protected*/  _pMesh: IMesh = null;
 		/**@protected*/  _pSkin: ISkin = null;
@@ -48788,7 +52842,6 @@ module akra.model {
 
 		inline get boundingBox(): IRect3d { return this._pBoundingBox; }
 		inline get boundingSphere(): ISphere { return this._pBoundingSphere; }
-		inline get data(): IRenderData { return this._pRenderData; }
 		inline get skin(): ISkin { return this._pSkin; }
 		inline get name(): string { return this._sName; }
 		inline get mesh(): IMesh { return this._pMesh; }
@@ -48800,7 +52853,7 @@ module akra.model {
 		}
 
 		/**@protected*/  setup(pMesh: IMesh, pRenderData: IRenderData, sName: string): void {
-			logger.setSourceLocation( "MeshSubset.ts" , 38 ); logger.assert(this._pMesh === null, "mesh subset already prepared"); ;
+			logger.setSourceLocation( "MeshSubset.ts" , 36 ); logger.assert(this._pMesh === null, "mesh subset already prepared"); ;
 
 			this._pMesh = pMesh;
 			this._pRenderData = pRenderData;
@@ -49015,19 +53068,20 @@ module akra.model {
 		setFlexMaterial (iMaterial:  number ): bool;
 		setFlexMaterial (csName: string): bool;
 		setFlexMaterial (iMaterial): bool {
+		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
+
+		    if (isNull(pMaterial)) {
+		    	logger.setSourceLocation( "MeshSubset.ts" , 254 ); logger.warning("could not find material <" + iMaterial + "> in sub mesh <" + this.name + ">"); ;
+		        return false;
+		    }
+
 		    var pRenderData: IRenderData = this._pRenderData;
 		    var pIndexData: IBufferData = pRenderData.getIndices();
 		    var pMatFlow: IDataFlow = pRenderData._getFlow(DeclUsages.MATERIAL);
 		    var eSemantics: string = DeclUsages.INDEX10;
 		    var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
 		    var iMatFlow:  number ;
-		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
-		    var iMat:  number  = (<IFlexMaterial>pMaterial).data.byteOffset;
-
-		    if (isNull(pMaterial)) {
-		        return false;
-		    }
-
+			var iMat:  number  = (<IFlexMaterial>pMaterial).data.byteOffset;
 
 		    if (pMatFlow) {
 		        iMatFlow = pMatFlow.flow;
@@ -49043,10 +53097,10 @@ module akra.model {
 		    pFloatArray = new Float32Array((<IVertexData>pIndexData).length);
 		    iMatFlow = pRenderData._addData((<IFlexMaterial>pMaterial).data);
 
-		    logger.setSourceLocation( "MeshSubset.ts" , 281 ); logger.assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset"); ;
+		    logger.setSourceLocation( "MeshSubset.ts" , 280 ); logger.assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset"); ;
 
 		    if (!pRenderData.allocateIndex(pIndexDecl, pFloatArray)) {
-		        logger.setSourceLocation( "MeshSubset.ts" , 284 ); logger.log("cannot allocate index for material!!!"); ;
+		        logger.setSourceLocation( "MeshSubset.ts" , 283 ); logger.warning("cannot allocate index for material!!!"); ;
 		        return false;
 		    }
 
@@ -49054,7 +53108,8 @@ module akra.model {
 		}
 
 		_draw (): void {
-		    this._pRenderData._draw();
+//		    this._pRenderData._draw();
+			logger.setSourceLocation( "MeshSubset.ts" , 292 ); logger.criticalError("Need to do."); ;
 		}
 
 		show(): void {
@@ -49068,7 +53123,6 @@ module akra.model {
 
 //исходим из того, что данные скина 1:1 соотносятся с вершинами.
 		setSkin(pSkin: ISkin): bool {
-
 		    var pPosData: IVertexData;
 		    var pPositionFlow: IDataFlow;
 		    var pMetaData: Float32Array;
@@ -49087,7 +53141,7 @@ module akra.model {
 
 //получаем поток данных с вершиными
 		    pPositionFlow = this.data._getFlow(DeclUsages.POSITION);
-		    logger.setSourceLocation( "MeshSubset.ts" , 324 ); logger.assert(isDefAndNotNull(pPositionFlow), "skin require position with indices in mesh subset"); ;
+		    logger.setSourceLocation( "MeshSubset.ts" , 323 ); logger.assert(isDefAndNotNull(pPositionFlow), "skin require position with indices in mesh subset"); ;
 
 		    pPosData = pPositionFlow.data;
 
@@ -49099,37 +53153,64 @@ module akra.model {
 		            return true;
 		        }
 
-		        logger.setSourceLocation( "MeshSubset.ts" , 336 ); logger.error("mesh subset already has another skin"); ;
+		        logger.setSourceLocation( "MeshSubset.ts" , 335 ); logger.error("mesh subset already has another skin"); ;
 		        return false;
 		    }
 
 //проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
 //или его клону.
-		    logger.setSourceLocation( "MeshSubset.ts" , 343 ); logger.assert(this.data.buffer == pSkin.data, "can not bind to skin mesh subset that does not belong skin's mesh.");
+		    logger.setSourceLocation( "MeshSubset.ts" , 342 ); logger.assert(this.data.buffer == pSkin.data, "can not bind to skin mesh subset that does not belong skin's mesh.");
 
 //подвязывем скин, к данным с вершинами текущего подмеша.
 //т.е. добавляем разметку в конец каждого пикселя
 		    pSkin.attach(pPosData);
 
-//получаем данные разметки
+/*
+		    //получаем данные разметки
 		    pMetaData = <Float32Array>pPosData.getTypedData(DeclUsages.BLENDMETA);
 
-//если по каким то причинам нет разметки...
-		    logger.setSourceLocation( "MeshSubset.ts" , 353 ); logger.assert(isDefAndNotNull(pMetaData), "you must specify location for storage blending data"); ;
+		    //если по каким то причинам нет разметки...
+		    debug_assert(isDefAndNotNull(pMetaData), "you must specify location for storage blending data");
+
+		    //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
+		    pInfMetaData = pSkin.getInfluenceMetaData();
+		    iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+		    iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
+
+		    for (var i: int = 0; i < pMetaData.length; ++ i) {
+		        pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
+		    }
+
+		    //обновляем адреса мета данных вершин
+		    pPosData.setData(pMetaData, DeclUsages.BLENDMETA);
+
+		    //trace(this.data.toString());
+		    this._pSkin = pSkin;*/
+
+
+		    var pDeclaration: IVertexDeclaration = pPosData.getVertexDeclaration();
+		    var pVEMeta: IVertexElement = pDeclaration.findElement(DeclUsages.BLENDMETA);
+//if BLENDMETA not found
+		    logger.setSourceLocation( "MeshSubset.ts" , 373 ); logger.assert(isDefAndNotNull(pVEMeta), "you must specify location for storage blending data"); ;
+
+//read all data for acceleration
+		    pMetaData = new Float32Array(pPosData.getData(0, pDeclaration.stride));
 
 //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
 		    pInfMetaData = pSkin.getInfluenceMetaData();
 		    iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
 		    iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
 
-		    for (var i:  number  = 0; i < pMetaData.length; ++ i) {
-		        pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
+		    var iCount:  number  = pMetaData.byteLength/pDeclaration.stride;
+		    var iOffset:  number  = pVEMeta.offset/EDataTypeSizes.BYTES_PER_FLOAT;
+		    var iStride:  number  = pDeclaration.stride/EDataTypeSizes.BYTES_PER_FLOAT;
+
+		    for (var i:  number  = 0; i < iCount; ++ i) {
+		        pMetaData[iOffset + i*iStride] = iInfMetaDataLoc + i * iInfMetaDataStride;
 		    }
 
-//обновляем адресса мета данных вершин
-		    pPosData.setData(pMetaData, DeclUsages.BLENDMETA);
+		    pPosData.setData(pMetaData, 0, pDeclaration.stride);
 
-//trace(this.data.toString());
 		    this._pSkin = pSkin;
 
 		    return true;
@@ -49319,14 +53400,12 @@ module akra.model {
             return null;
         }
 
-        addFlexMaterial(sName: string, pMaterialData: IMaterial = null): bool {
+        addFlexMaterial(sName: string = 'unknown', pMaterialData: IMaterial = null): bool {
             var pMaterial: IMaterial;
             var pMaterialId:  number ;
 
             logger.setSourceLocation( "model/Mesh.ts" , 202 ); logger.assert(arguments.length < 7, "only base material supported now..."); ;
 //debug_assert(this.getFlexMaterial(sName) === null, 'material with name <' + sName + '> already exists');
-
-            sName = sName || 'unknown';
 
             pMaterial = this.getFlexMaterial(sName);
 
@@ -49354,6 +53433,7 @@ module akra.model {
             pMaterial.set(pMaterialData);
 //pMaterial.id = pMaterialId;
             this._pFlexMaterials.push(pMaterial);
+
             return true;
         }
 
@@ -49363,7 +53443,7 @@ module akra.model {
             var bResult: bool = true;
             for (var i:  number  = 0; i < this.length; ++ i) {
                 if (!this._pSubMeshes[i].setFlexMaterial(< number >iMaterial)) {
-                    logger.setSourceLocation( "model/Mesh.ts" , 243 ); logger.warning("cannot set material<" + iMaterial + "> for mesh<" + this.name + "> subset<" + this._pSubMeshes[i].name + ">");
+                    logger.setSourceLocation( "model/Mesh.ts" , 242 ); logger.warning("cannot set material<" + iMaterial + "> for mesh<" + this.name + "> subset<" + this._pSubMeshes[i].name + ">");
                                                                      ;
                     bResult = false;
                 }
@@ -49403,7 +53483,6 @@ module akra.model {
 
         createSkin(): ISkin {
             var pSkin: ISkin = createSkin(this);
-            this.setSkin(pSkin);
             return pSkin;
         }
 
@@ -49561,7 +53640,6 @@ module akra.model {
                 pMaterial.ambient = new Color(1.0, 1.0, 1.0, 1.0);
                 pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
 
-                pSubMesh.effect.create();
                 pSubMesh.effect.addComponent("akra.system.mesh_texture");
                 pSubMesh.effect.addComponent("akra.system.prepareForDeferredShading");
             }
@@ -49731,7 +53809,7 @@ module akra.model {
             return pSceneModel;
         }
 
-        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Mesh._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return Mesh._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
          shadow(pSubMesh: IMeshSubset, bShadow: bool): void {
 
             this._bShadow = bShadow;
@@ -49860,6 +53938,19 @@ module akra.scene {
 
 			var i:  number ;
 
+//TODO: fix this method, do right!!
+			var pOctree: IOcTree = new scene.OcTree();
+			pOctree.create(new geometry.Rect3d(1024, 1024, 1024), 5, 100);
+
+			var i:  number  = this.addDisplayList(pOctree);
+			logger.setSourceLocation( "Scene3d.ts" , 50 ); logger.assert(i == 0 , "invalid default list index"); ;
+
+			var pLightGraph: ILightGraph = new scene.LightGraph();
+
+			i = this.addDisplayList(pLightGraph);
+			logger.setSourceLocation( "Scene3d.ts" , 55 ); logger.assert(i == 1 , "invalid default list index"); ;
+
+
 // this._pNodeList = [];
 // this._pObjectList = [];
 
@@ -49905,11 +53996,25 @@ module akra.scene {
 		}
 
 
+
+		createObject(sName: string = null): ISceneObject {
+			var pNode: ISceneNode = new SceneObject(this);
+
+			if (!pNode.create()) {
+				logger.setSourceLocation( "Scene3d.ts" , 108 ); logger.error("cannot create scene node.."); ;
+				return null;
+			}
+
+			return <ISceneObject>this.setupNode(pNode, sName);
+		}
+
+
+
 		createNode(sName: string = null): ISceneNode {
 			var pNode: ISceneNode = new SceneNode(this);
 
 			if (!pNode.create()) {
-				logger.setSourceLocation( "Scene3d.ts" , 94 ); logger.error("cannot create scene node.."); ;
+				logger.setSourceLocation( "Scene3d.ts" , 121 ); logger.error("cannot create scene node.."); ;
 				return null;
 			}
 
@@ -49920,7 +54025,7 @@ module akra.scene {
 			var pNode: ISceneModel = new SceneModel(this);
 
 			if (!pNode.create()) {
-				logger.setSourceLocation( "Scene3d.ts" , 105 ); logger.error("cannot create model.."); ;
+				logger.setSourceLocation( "Scene3d.ts" , 132 ); logger.error("cannot create model.."); ;
 				return null;
 			}
 
@@ -49931,7 +54036,7 @@ module akra.scene {
 			var pCamera: ICamera = new objects.Camera(this);
 
 			if (!pCamera.create()) {
-				logger.setSourceLocation( "Scene3d.ts" , 116 ); logger.error("cannot create camera.."); ;
+				logger.setSourceLocation( "Scene3d.ts" , 143 ); logger.error("cannot create camera.."); ;
 				return null;
 			}
 
@@ -49954,6 +54059,7 @@ module akra.scene {
 			return null;
 		}
 
+
 // inline getAllNodes(): ISceneNode[] {
 // 	return this._pNodeList;
 // }
@@ -49963,7 +54069,7 @@ module akra.scene {
 // }
 
 		inline getDisplayList(i:  number ): IDisplayList {
-			logger.setSourceLocation( "Scene3d.ts" , 148 ); logger.assert(isDefAndNotNull(this._pDisplayLists[i]), "display list not defined"); ;
+			logger.setSourceLocation( "Scene3d.ts" , 176 ); logger.assert(isDefAndNotNull(this._pDisplayLists[i]), "display list not defined"); ;
 			return this._pDisplayLists[i];
 		}
 
@@ -49993,8 +54099,8 @@ module akra.scene {
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {
 			pNode.name = sName;
 
-// this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
-// this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+			this.connect(pNode,  "attached" ,  "nodeAttachment" , EEventTypes.UNICAST);
+			this.connect(pNode,  "detached" ,  "nodeDetachment" , EEventTypes.UNICAST);
 
 			return pNode;
 		}
@@ -50017,7 +54123,7 @@ module akra.scene {
 		}
 
 		inline addDisplayList(pList: IDisplayList):  number  {
-			logger.setSourceLocation( "Scene3d.ts" , 203 ); logger.assert(isDefAndNotNull(this.getDisplayListByName(pList.name)), "DL with name <" + pList.name + "> already exists");
+			logger.setSourceLocation( "Scene3d.ts" , 231 ); logger.assert(isDefAndNotNull(this.getDisplayListByName(pList.name)), "DL with name <" + pList.name + "> already exists");
                                                        ;
 
 
@@ -50045,7 +54151,7 @@ module akra.scene {
 			return iIndex;
 		}
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Scene3d._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return Scene3d._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 
 		nodeAttachment (pNode: ISceneNode): void {
 // this._pNodeList.push(pNode);
@@ -50171,8 +54277,8 @@ module akra.scene {
             var pScene: IScene;
 
             if (iScene === 0 && this._pSceneList.length === 0) {
-                logger.setSourceLocation( "scene/SceneManager.ts" , 93 ); logger.log("creating default scene..."); ;
                 this.createScene3D();
+                logger.setSourceLocation( "scene/SceneManager.ts" , 94 ); logger.log("Default scene automatically created."); ;
             }
 
             pScene = this._pSceneList[iScene];
@@ -50263,136 +54369,6 @@ module akra.scene {
 */
 
 
-
-
-
-
-
-
-
-module akra.util {
-
-	export class UtilTimer implements IUtilTimer {
-		private isTimerInitialized: bool = false;
-		private isTimerStopped: bool = false;
-		private fTicksPerSec:  number  = 0.;
-		private iStopTime:  number  = 0;
-		private iLastElapsedTime:  number  = 0;
-		private iBaseTime:  number  = 0;
-
-		get absoluteTime():  number  {
-			return this.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
-		}
-
-		get appTime():  number  {
-			return this.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
-		}
-
-		get elapsedTime():  number  {
-			return this.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
-		}
-
-		start(): bool {
-			return this.execCommand(EUtilTimerCommands.TIMER_START) === 0;
-		}
-        stop(): bool {
-        	return this.execCommand(EUtilTimerCommands.TIMER_STOP) === 0;
-        }
-
-        reset(): bool {
-        	return this.execCommand(EUtilTimerCommands.TIMER_RESET) === 0;
-        }
-
-        execCommand(eCommand: EUtilTimerCommands):  number  {
-		    var fTime:  number  = 0.;
-		    var fElapsedTime:  number  = 0.;
-		    var iTime:  number ;
-
-		    if (this.isTimerInitialized == false) {
-		        this.isTimerInitialized = true;
-		        this.fTicksPerSec = 1000;
-		    }
-
-// Get either the current time or the stop time, depending
-// on whether we're stopped and what command was sent
-		    if (this.iStopTime != 0 && eCommand != EUtilTimerCommands.TIMER_START &&
-		    	eCommand != EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
-		        iTime = this.iStopTime;
-		    }
-		    else {
-		        iTime = (new Date()).getTime();
-		    }
-
-// Return the elapsed time
-		    if (eCommand == EUtilTimerCommands.TIMER_GET_ELAPSED_TIME) {
-		        fElapsedTime = (iTime - this.iLastElapsedTime) / this.fTicksPerSec;
-		        this.iLastElapsedTime = iTime;
-		        return fElapsedTime;
-		    }
-
-// Return the current time
-		    if (eCommand == EUtilTimerCommands.TIMER_GET_APP_TIME) {
-		        var fAppTime = ( iTime - this.iBaseTime ) / this.fTicksPerSec;
-		        return fAppTime;
-		    }
-
-// Reset the timer
-		    if (eCommand == EUtilTimerCommands.TIMER_RESET) {
-		        this.iBaseTime = iTime;
-		        this.iLastElapsedTime = iTime;
-		        this.iStopTime = 0;
-		        this.isTimerStopped = false;
-		        return 0;
-		    }
-
-// Start the timer
-		    if (eCommand == EUtilTimerCommands.TIMER_START) {
-		        if (this.isTimerStopped) {
-		            this.iBaseTime += iTime - this.iStopTime;
-		        }
-		        this.iStopTime = 0;
-		        this.iLastElapsedTime = iTime;
-		        this.isTimerStopped = false;
-		        return 0;
-		    }
-
-// Stop the timer
-		    if (eCommand == EUtilTimerCommands.TIMER_STOP) {
-		        if (!this.isTimerStopped) {
-		            this.iStopTime = iTime;
-		            this.iLastElapsedTime = iTime;
-		            this.isTimerStopped = true;
-		        }
-		        return 0;
-		    }
-
-// Advance the timer by 1/10th second
-		    if (eCommand == EUtilTimerCommands.TIMER_ADVANCE) {
-		        this.iStopTime += this.fTicksPerSec / 10;
-		        return 0;
-		    }
-
-		    if (eCommand == EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
-		        fTime = iTime / this.fTicksPerSec;
-		        return  fTime;
-		    }
-// Invalid command specified
-		    return -1;
-        }
-
-        static start(): UtilTimer {
-        	var pTimer: UtilTimer = new UtilTimer;
-
-        	if (pTimer.start()) {
-        		return pTimer;
-        	}
-
-        	logger.setSourceLocation( "util/UtilTimer.ts" , 123 ); logger.error('cannot start util timer'); ;
-
-        	return null;
-        }
-	}
-}
 
 
 
@@ -51381,6 +55357,8 @@ module akra.fx {
 
 
 
+
+
 module akra.fx {
     export function getEffectBaseType(sTypeName: string): SystemTypeInstruction {
     	return !isNull(Effect.pSystemTypes[sTypeName]) ? (Effect.pSystemTypes[sTypeName] || null) : null;
@@ -51412,6 +55390,10 @@ module akra.fx {
 		private static _nInstructionCounter:  number  = 0;
 
 		private _isVisible: bool = true;
+
+		inline getGuid():  number  {
+			return this._getInstructionID();
+		}
 
 		inline getParent(): IAFXInstruction{
 			return this._pParentInstruction;
@@ -51665,6 +55647,7 @@ module akra.fx {
 		/**@protected*/  _pAnnotation: IAFXAnnotationInstruction = null;
 		/**@protected*/  _bForPixel: bool = true;
 		/**@protected*/  _bForVertex: bool = true;
+		/**@protected*/  _isBuiltIn: bool = false;
 
 		constructor(){
 			super();
@@ -51693,6 +55676,14 @@ module akra.fx {
 
 		inline getSemantic(): string {
 			return this._sSemantic;
+		}
+
+		isBuiltIn(): bool {
+			return this._isBuiltIn;
+		}
+
+		setBuiltIn(isBuiltIn: bool): void {
+			this._isBuiltIn = isBuiltIn;
 		}
 
 		inline _isForAll(): bool{
@@ -51838,14 +55829,14 @@ module akra.fx {
 		private _pUniformVariableMapV: IAFXVariableDeclMap = null;
 		private _pForeignVariableMapV: IAFXVariableDeclMap = null;
 		private _pTextureVariableMapV: IAFXVariableDeclMap = null;
-		private _pUsedTypeMapV: IAFXTypeDeclMap = null;
+		private _pUsedComplexTypeMapV: IAFXTypeMap = null;
 
 		private _pSharedVariableMapP: IAFXVariableDeclMap = null;
 		private _pGlobalVariableMapP: IAFXVariableDeclMap = null;
 		private _pUniformVariableMapP: IAFXVariableDeclMap = null;
 		private _pForeignVariableMapP: IAFXVariableDeclMap = null;
 		private _pTextureVariableMapP: IAFXVariableDeclMap = null;
-		private _pUsedTypeMapP: IAFXTypeDeclMap = null;
+		private _pUsedComplexTypeMapP: IAFXTypeMap = null;
 
 		private _pFullUniformVariableMap: IAFXVariableDeclMap = null;
 		private _pFullForeignVariableMap: IAFXVariableDeclMap = null;
@@ -51936,8 +55927,8 @@ module akra.fx {
         	return this._pTextureVariableMapV;
         }
 
-        inline _getUsedTypeMapV(): IAFXTypeDeclMap{
-        	return this._pUsedTypeMapV;
+        inline _getUsedComplexTypeMapV(): IAFXTypeMap{
+        	return this._pUsedComplexTypeMapV;
         }
 
         inline _getSharedVariableMapP(): IAFXVariableDeclMap{
@@ -51960,8 +55951,8 @@ module akra.fx {
         	return this._pTextureVariableMapP;
         }
 
-        inline _getUsedTypeMapP(): IAFXTypeDeclMap{
-        	return this._pUsedTypeMapP;
+        inline _getUsedComplexTypeMapP(): IAFXTypeMap{
+        	return this._pUsedComplexTypeMapP;
         }
 
         inline _getFullUniformMap(): IAFXVariableDeclMap {
@@ -51980,6 +55971,14 @@ module akra.fx {
         inline isComplexPass(): bool {
         	return this._isComlexPass;
         }
+
+        inline getVertexShader(): IAFXFunctionDeclInstruction {
+			return this._pVertexShader;
+		}
+
+		inline getPixelShader(): IAFXFunctionDeclInstruction {
+			return this._pPixelShader;
+		}
 
         addShader(pShader: IAFXFunctionDeclInstruction): void {
         	var isVertex: bool = pShader.getFunctionType() === EFunctionType.k_Vertex;
@@ -52050,14 +56049,14 @@ module akra.fx {
 				this._pUniformVariableMapV = <IAFXVariableDeclMap>{};
 				this._pForeignVariableMapV = <IAFXVariableDeclMap>{};
 				this._pTextureVariableMapV = <IAFXVariableDeclMap>{};
-				this._pUsedTypeMapV = <IAFXTypeDeclMap>{};
+				this._pUsedComplexTypeMapV = <IAFXTypeMap>{};
 
 				this._pSharedVariableMapP = <IAFXVariableDeclMap>{};
 				this._pGlobalVariableMapP = <IAFXVariableDeclMap>{};
 				this._pUniformVariableMapP = <IAFXVariableDeclMap>{};
 				this._pForeignVariableMapP = <IAFXVariableDeclMap>{};
 				this._pTextureVariableMapP = <IAFXVariableDeclMap>{};
-				this._pUsedTypeMapP = <IAFXTypeDeclMap>{};
+				this._pUsedComplexTypeMapP = <IAFXTypeMap>{};
 
 				this._pFullUniformVariableMap = <IAFXVariableDeclMap>{};
 				this._pFullForeignVariableMap = <IAFXVariableDeclMap>{};
@@ -52085,7 +56084,7 @@ module akra.fx {
         	var pUniformVars: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
         	var pForeignVars: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
         	var pTextureVars: IAFXVariableDeclMap = pFunction._getTextureVariableMap();
-        	var pTypes: IAFXTypeDeclMap = pFunction._getUsedTypeMap();
+        	var pTypes: IAFXTypeMap = pFunction._getUsedComplexTypeMap();
 
 
         	var pSharedVarsTo: IAFXVariableDeclMap = null;
@@ -52093,7 +56092,7 @@ module akra.fx {
         	var pUniformVarsTo: IAFXVariableDeclMap = null;
         	var pForeignVarsTo: IAFXVariableDeclMap = null;
         	var pTextureVarsTo: IAFXVariableDeclMap = null;
-        	var pTypesTo: IAFXTypeDeclMap = null;
+        	var pTypesTo: IAFXTypeMap = null;
 
         	if(pFunction.getFunctionType() === EFunctionType.k_Vertex){
         		pSharedVarsTo = this._pSharedVariableMapV;
@@ -52101,7 +56100,7 @@ module akra.fx {
 	        	pUniformVarsTo = this._pUniformVariableMapV;
 	        	pForeignVarsTo = this._pForeignVariableMapV;
 	        	pTextureVarsTo = this._pTextureVariableMapV;
-	        	pTypesTo = this._pUsedTypeMapV;
+	        	pTypesTo = this._pUsedComplexTypeMapV;
         	}
         	else {
         		pSharedVarsTo = this._pSharedVariableMapP;
@@ -52109,7 +56108,7 @@ module akra.fx {
 	        	pUniformVarsTo = this._pUniformVariableMapP;
 	        	pForeignVarsTo = this._pForeignVariableMapP;
 	        	pTextureVarsTo = this._pTextureVariableMapP;
-	        	pTypesTo = this._pUsedTypeMapP;
+	        	pTypesTo = this._pUsedComplexTypeMapP;
         	}
 
         	for(var i in pSharedVars){
@@ -52376,6 +56375,18 @@ module akra.fx {
         inline getName(): string {
         	return this.getType().getName();
         }
+
+        inline getRealName(): string {
+        	return this.getType().getRealName();
+        }
+
+        blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction {
+        	if(pDecl !== this){
+        		return null;
+        	}
+
+        	return this;
+        }
 	}
 
 	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
@@ -52423,6 +56434,7 @@ module akra.fx {
 		private _iPadding:  number  =  0xffffff ;
 
 		private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
+		private _pAttrOffset: IAFXVariableDeclInstruction = null;
 
 		private _bUnverifiable: bool = false;
 
@@ -52448,6 +56460,13 @@ module akra.fx {
 		_toDeclString(): string {
 			return this.getSubType()._toDeclString();
 		}
+
+		isBuiltIn(): bool {
+			return false;
+		}
+
+        setBuiltIn(isBuiltIn: bool): void {
+        }
 
 //-----------------------------------------------------------------//
 //----------------------------SIMPLE TESTS-------------------------//
@@ -52856,12 +56875,21 @@ module akra.fx {
         	this._bUnverifiable = true;
         }
 
+        _addAttrOffset(pOffset: IAFXVariableDeclInstruction): void {
+            this._pAttrOffset = pOffset;
+        }
+
+
 //-----------------------------------------------------------------//
 //----------------------------GET TYPE INFO------------------------//
 //-----------------------------------------------------------------//	
 
 		getName(): string {
 			return this._sName;
+		}
+
+		inline getRealName(): string {
+			return this.getBaseType().getRealName();
 		}
 
 		getHash(): string {
@@ -52949,6 +56977,21 @@ module akra.fx {
 			}
 
 			return this._pArrayElementType;
+		}
+
+		getTypeDecl(): IAFXTypeDeclInstruction {
+			if(!this.isFromTypeDecl()){
+				return null;
+			}
+
+			var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_TypeDeclInstruction){
+				return <IAFXTypeDeclInstruction>this.getParent();
+			}
+			else {
+				return (<IAFXTypeInstruction>this.getParent()).getTypeDecl();
+			}
 		}
 
 		hasField(sFieldName: string): bool {
@@ -53265,6 +57308,10 @@ module akra.fx {
         	return this._pDownPointIndex;
         }
 
+        _getAttrOffset(): IAFXVariableDeclInstruction {
+            return this._pAttrOffset;
+        }
+
 //-----------------------------------------------------------------//
 //----------------------------SYSTEM-------------------------------//
 //-----------------------------------------------------------------//		
@@ -53347,6 +57394,14 @@ module akra.fx {
 		}
 
 		blend(pType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction {
+			if(this === pType){
+				return this;
+			}
+
+			if(eMode === EAFXBlendMode.k_Global){
+				return null;
+			}
+
 			if (this.isComplex() !== pType.isComplex() ||
 				(this.isNotBaseArray() !== pType.isNotBaseArray()) ||
 				(this.isPointer() !== pType.isPointer())) {
@@ -53466,6 +57521,10 @@ module akra.fx {
 			var i:  number  = 0;
 
 			if(this.isPointer()){
+				if(!isNull(this._pAttrOffset)){
+					pDeclList.push(this._pAttrOffset);
+				}
+
 				if(isNull(this._getUpPointer())){
 					this.initializePointers();
 				}
@@ -53506,6 +57565,8 @@ module akra.fx {
 		private _isReadable: bool = true;
 		private _pFieldNameList: string[] = null;
 		private _pWrapVariableType: IAFXVariableTypeInstruction = null;
+		private _isBuiltIn: bool = true;
+		private _sDeclString: string = "";
 
 		constructor() {
 			super();
@@ -53515,12 +57576,24 @@ module akra.fx {
 		}
 
 		_toDeclString(): string {
-			return "";
+			return this._sDeclString;
 		}
 
 		toFinalCode(): string {
 			return this._sRealName;
 		}
+
+		isBuiltIn(): bool {
+			return this._isBuiltIn;
+		}
+
+        setBuiltIn(isBuiltIn: bool): void {
+        	this._isBuiltIn = isBuiltIn;
+        }
+
+        setDeclString(sDecl: string): void {
+        	this._sDeclString = sDecl;
+        }
 
 //-----------------------------------------------------------------//
 //----------------------------SIMPLE TESTS-------------------------//
@@ -53657,6 +57730,10 @@ module akra.fx {
 			return this._sName;
 		}
 
+		inline getRealName(): string {
+			return this._sRealName;
+		}
+
 		inline getHash(): string {
 			return this._sRealName;
 		}
@@ -53680,6 +57757,15 @@ module akra.fx {
 		inline getArrayElementType(): IAFXTypeInstruction {
 			return this._pElementType;
 		}
+
+		getTypeDecl(): IAFXTypeDeclInstruction {
+			if(this.isBuiltIn()){
+				return null;
+			}
+
+			return <IAFXTypeDeclInstruction>this.getParent();
+		}
+
 
 		inline getLength():  number  {
 			return this._iLength;
@@ -53778,6 +57864,13 @@ module akra.fx {
 			return this._sRealName;
 		}
 
+		isBuiltIn(): bool {
+			return false;
+		}
+
+        setBuiltIn(isBuiltIn: bool): void {
+        }
+
 //-----------------------------------------------------------------//
 //----------------------------SIMPLE TESTS-------------------------//
 //-----------------------------------------------------------------//
@@ -53871,6 +57964,10 @@ module akra.fx {
 				this._pFieldNameList = [];
 			}
 
+			if(isNull(this._pFieldDeclList)){
+				this._pFieldDeclList = [];
+			}
+
 			var sVarName: string = pVariable.getName();
 			this._pFieldDeclMap[sVarName] = pVariable;
 
@@ -53885,6 +57982,10 @@ module akra.fx {
 			}
 
 			this._pFieldNameList.push(sVarName);
+
+			if(this._pFieldDeclList.length < this._pFieldNameList.length){
+				this._pFieldDeclList.push(pVariable);
+			}
 
 			var pType: IAFXVariableTypeInstruction = pVariable.getType();
 //pType._markAsField();
@@ -53923,6 +58024,10 @@ module akra.fx {
 
 		inline getName(): string {
 			return this._sName;
+		}
+
+		inline getRealName(): string {
+			return this._sRealName;
 		}
 
 		getHash(): string {
@@ -54006,8 +58111,16 @@ module akra.fx {
 			return null;
 		}
 
+		getTypeDecl(): IAFXTypeDeclInstruction {
+			return <IAFXTypeDeclInstruction>this.getParent();
+		}
+
 		inline getLength():  number  {
 			return 0;
+		}
+
+		_getFieldDeclList(): IAFXVariableDeclInstruction[] {
+			return this._pFieldDeclList;
 		}
 
 //-----------------------------------------------------------------//
@@ -54049,6 +58162,14 @@ module akra.fx {
 		}
 
 		blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction {
+			if(pType === this){
+				return this;
+			}
+
+			if(eMode === EAFXBlendMode.k_TypeDecl){
+				return null;
+			}
+
 			if(eMode === EAFXBlendMode.k_Uniform || eMode === EAFXBlendMode.k_Attribute){
 				if(this.hasFieldWithoutSemantic() || pType.hasFieldWithoutSemantic()){
 					return null;
@@ -54058,6 +58179,10 @@ module akra.fx {
 			var pFieldList: IAFXVariableDeclInstruction[] = this._pFieldDeclList;
 			var pBlendType: ComplexTypeInstruction = new ComplexTypeInstruction();
 			var pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{};
+
+			if(isNull(pFieldList)){
+				logger.setSourceLocation( "fx/TypeInstruction.ts" , 1839 ); logger.log(this, pType); ;
+			}
 
 			for(var i:  number  = 0; i < pFieldList.length; i++){
 				var pField: IAFXVariableDeclInstruction = pFieldList[i];
@@ -54073,15 +58198,20 @@ module akra.fx {
 						pBlendField = pField.clone(pRelationMap);
 					}
 				}
-				else {
+				else if(eMode === EAFXBlendMode.k_Attribute ||
+						eMode === EAFXBlendMode.k_Uniform ||
+						eMode === EAFXBlendMode.k_VertexOut) {
+
 					if(pType.hasFieldWithSematic(sFieldSemantic)){
 						pBlendField = pField.blend(pType.getFieldBySemantic(sFieldSemantic), eMode);
-						if(!isNull(pBlendField)){
-							pBlendField.getNameId().setName(sFieldSemantic);
-						}
 					}
 					else {
 						pBlendField = pField.clone(pRelationMap);
+					}
+
+					if(!isNull(pBlendField)){
+						pBlendField.getNameId().setName(sFieldSemantic);
+						pBlendField.getNameId().setRealName(sFieldSemantic);
 					}
 				}
 
@@ -54091,6 +58221,38 @@ module akra.fx {
 
 				pBlendType.addField(pBlendField);
 			}
+
+			pFieldList = (<ComplexTypeInstruction>pType)._getFieldDeclList();
+
+			for(var i:  number  = 0; i < pFieldList.length; i++){
+				var pField: IAFXVariableDeclInstruction = pFieldList[i];
+				var pBlendField: IAFXVariableDeclInstruction = null;
+				var sFieldName: string = pField.getName();
+				var sFieldSemantic: string = pField.getSemantic();
+
+				if(eMode === EAFXBlendMode.k_Shared){
+					if(!this.hasField(sFieldName)){
+						pBlendField = pField.clone(pRelationMap);
+					}
+				}
+				else if(eMode === EAFXBlendMode.k_Attribute ||
+						eMode === EAFXBlendMode.k_Uniform ||
+						eMode === EAFXBlendMode.k_VertexOut) {
+
+					if(!this.hasFieldWithSematic(sFieldSemantic)){
+						pBlendField = pField.clone(pRelationMap);
+						pBlendField.getNameId().setName(sFieldSemantic);
+						pBlendField.getNameId().setRealName(sFieldSemantic);
+					}
+				}
+
+				if(!isNull(pBlendField)){
+					pBlendType.addField(pBlendField);
+				}
+			}
+
+			pBlendType.setName(this.getName());
+			pBlendType.setRealName(this.getRealName());
 
 			return pBlendType;
 		}
@@ -55351,6 +59513,7 @@ module akra.fx {
 		private _eExtractExprType: EExtractExprType = 0;
 		private _pPointer: IAFXVariableDeclInstruction = null;
         private _pBuffer: IAFXVariableDeclInstruction = null;
+        private _pOffsetVar: IAFXVariableDeclInstruction = null;
         private _sPaddingExpr: string = "";
 
         private _sExtractFunction: string = "";
@@ -55362,14 +59525,55 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_ExtractExprInstruction;
 		}
 
+		getExtractFunction(): IAFXFunctionDeclInstruction {
+			var pFunction: IAFXFunctionDeclInstruction = null;
+
+            switch(this._eExtractExprType){
+				case EExtractExprType.k_Header:
+					pFunction = Effect.findSystemFunction("extractHeader", null);
+					break;
+
+				case EExtractExprType.k_Float:
+				case EExtractExprType.k_Int:
+				case EExtractExprType.k_Bool:
+					pFunction = Effect.findSystemFunction("extractFloat", null);
+					break;
+
+				case EExtractExprType.k_Float2:
+				case EExtractExprType.k_Int2:
+				case EExtractExprType.k_Bool2:
+					pFunction = Effect.findSystemFunction("extractFloat2", null);
+					break;
+
+				case EExtractExprType.k_Float3:
+				case EExtractExprType.k_Int3:
+				case EExtractExprType.k_Bool3:
+					pFunction = Effect.findSystemFunction("extractFloat3", null);
+					break;
+
+				case EExtractExprType.k_Float4:
+				case EExtractExprType.k_Int4:
+				case EExtractExprType.k_Bool4:
+					pFunction = Effect.findSystemFunction("extractFloat4", null);
+					break;
+
+				case EExtractExprType.k_Float4x4:
+					pFunction = Effect.findSystemFunction("extractFloat4x4", null);
+					break;
+            }
+
+            return pFunction;
+        }
+
 		initExtractExpr(pExtractType: IAFXVariableTypeInstruction,
 					    pPointer: IAFXVariableDeclInstruction,
 					    pBuffer: IAFXVariableDeclInstruction,
-					    sPaddingExpr: string): void {
+					    sPaddingExpr: string, pOffsetVar: IAFXVariableDeclInstruction): void {
 
 			this._pPointer = pPointer;
 			this._pBuffer = pBuffer;
 			this._sPaddingExpr = sPaddingExpr;
+			this._pOffsetVar = pOffsetVar;
 			this.setType(pExtractType);
 
             if (pExtractType.isEqual(Effect.getSystemType("float"))) {
@@ -55547,8 +59751,12 @@ module akra.fx {
 				sCode = this._sExtractFunction;
 				sCode += this._pBuffer._getVideoBufferSampler().getNameId().toFinalCode();
 				sCode += "," + this._pBuffer._getVideoBufferHeader().getNameId().toFinalCode();
-				if(this._eExtractExprType !== EExtractExprType.k_Header){
+				if(this._eExtractExprType !== EExtractExprType.k_Header) {
 					sCode += "," + this._pPointer.getNameId().toFinalCode() + this._sPaddingExpr;
+
+					if(!isNull(this._pOffsetVar)){
+						sCode += "+" + this._pOffsetVar.getNameId().toFinalCode();
+					}
 				}
 				sCode += ")";
 				if(this._bNeedSecondBracket){
@@ -55593,6 +59801,9 @@ module akra.fx {
         private _bDefineByZero: bool = false;
         private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
         private _bShaderOutput: bool = false;
+
+        private _pAttrOffset: IAFXVariableDeclInstruction = null;
+        private _pAttrExtractionBlock: IAFXInstruction = null;
 
 /**
 		 * Represent type var_name [= init_expr]
@@ -55728,6 +59939,14 @@ module akra.fx {
             return this._bShaderOutput;
         }
 
+        _setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void {
+            this._pAttrExtractionBlock = pCodeBlock;
+        }
+
+        _getAttrExtractionBlock(): IAFXInstruction {
+            return this._pAttrExtractionBlock;
+        }
+
         _getFullNameExpr(): IAFXExprInstruction {
             if(!isNull(this._pFullNameExpr)){
                 return this._pFullNameExpr;
@@ -55811,7 +60030,7 @@ module akra.fx {
 
                 pType.pushType(getEffectBaseType("video_buffer_header"));
                 pId.setName(this.getName() + "_header");
-                pExtarctExpr.initExtractExpr(pType, null, this, "");
+                pExtarctExpr.initExtractExpr(pType, null, this, "", null);
 
                 this._pVideoBufferHeader.push(pType, true);
                 this._pVideoBufferHeader.push(pId, true);
@@ -55838,6 +60057,7 @@ module akra.fx {
             pId.setName(this.getNameId().getName());
             pId.setRealName(this.getNameId().getRealName());
 
+            pBlendVar.setSemantic(this.getSemantic());
             pBlendVar.push(pBlendType, true);
             pBlendVar.push(pId, true);
 
@@ -56232,7 +60452,7 @@ module akra.fx {
         generateStmtForBaseType(pVarDecl: IAFXVariableDeclInstruction,
                                 pPointer: IAFXVariableDeclInstruction,
                                 pBuffer: IAFXVariableDeclInstruction,
-                                iPadding:  number ): void {
+                                iPadding:  number , pOffset?: IAFXVariableDeclInstruction = null): void {
             var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
             var pVarNameExpr: IAFXExprInstruction = pVarDecl._getFullNameExpr();
             if(pVarType.isComplex() || isNull(pVarNameExpr) || pVarType.getSize() ===  0xffffff ) {
@@ -56276,7 +60496,7 @@ module akra.fx {
             var pExtractExpr: ExtractExprInstruction = new ExtractExprInstruction();
             var sPaddingExpr: string = "";
 
-            if(iPadding > 0){
+            if(iPadding > 0 && isNull(pOffset)){
                 sPaddingExpr = "+"+ iPadding.toString() + ".0";
             }
             else{
@@ -56287,7 +60507,7 @@ module akra.fx {
                 sPaddingExpr += "+float(i*" + pExtractType.getSize().toString() + ")";
             }
 
-            pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr);
+            pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr, pOffset);
 
             if(pExtractExpr.isErrorOccured()){
                 this.setError(pExtractExpr.getLastError().code,pExtractExpr.getLastError().info);
@@ -56323,6 +60543,10 @@ module akra.fx {
                     eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
             this._pExtractInExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
             this._pExtactExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+        }
+
+        getExtractFunction(): IAFXFunctionDeclInstruction {
+            return this._pExtactExpr.getExtractFunction();
         }
     }
 
@@ -56376,6 +60600,9 @@ module akra.fx {
 		/**@protected*/  _pUsedFunctionMap: IAFXFunctionDeclMap = null;
 		/**@protected*/  _pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
 
+		/**@protected*/  _pAttributeVariableMap: IAFXVariableDeclMap = null;
+		/**@protected*/  _pVaryingVariableMap: IAFXVariableDeclMap = null;
+
 		/**@protected*/  _pUsedVarTypeMap: IAFXTypeUseInfoMap = null;
 
 		/**@protected*/  _pSharedVariableMap: IAFXVariableDeclMap = null;
@@ -56389,10 +60616,24 @@ module akra.fx {
 // protected _pUniformVariableTypeList: IAFXVariableTypeInstruction[] = null;
 // protected _pForeignVariableTypeList: IAFXVariableTypeInstructionnt[] = null;
 
-		/**@protected*/  _pUsedTypeMap: IAFXTypeDeclMap = null;
+		/**@protected*/  _pUsedComplexTypeMap: IAFXTypeMap = null;
+
+		/**@protected*/  _pAttributeVariableKeys:  number [] = null;
+		/**@protected*/  _pVaryingVariableKeys:  number [] = null;
+
+		/**@protected*/  _pSharedVariableKeys:  number [] = null;
+		/**@protected*/  _pUniformVariableKeys:  number [] = null;
+		/**@protected*/  _pForeignVariableKeys:  number [] = null;
+		/**@protected*/  _pGlobalVariableKeys:  number [] = null;
+		/**@protected*/  _pTextureVariableKeys:  number [] = null;
+		/**@protected*/  _pUsedComplexTypeKeys:  number [] = null;
 
 		/**@protected*/  _pVertexShader: IAFXFunctionDeclInstruction = null;
 		/**@protected*/  _pPixelShader: IAFXFunctionDeclInstruction = null;
+
+		private _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
+		private _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
+		private _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
 
 
 		constructor() {
@@ -56408,6 +60649,10 @@ module akra.fx {
 			sCode += this._pImplementation.toFinalCode();
 
 			return sCode;
+		}
+
+		toFinalDefCode(): string {
+			return this._pFunctionDefenition.toFinalCode();
 		}
 
 		inline getType(): IAFXTypeInstruction {
@@ -56491,7 +60736,7 @@ module akra.fx {
 			var pUniformVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pUniformVariableMap, pRelationMap);
 			var pForeignVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pForeignVariableMap, pRelationMap);
 			var pTextureVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pTextureVariableMap, pRelationMap);
-			var pUsedTypeMap: IAFXTypeDeclMap = this.cloneTypeDeclMap(this._pUsedTypeMap, pRelationMap);
+			var pUsedComplexTypeMap: IAFXTypeMap = this.cloneTypeMap(this._pUsedComplexTypeMap, pRelationMap);
 
 			pClone._setUsedFunctions(this._pUsedFunctionMap, this._pUsedFunctionList);
 			pClone._setUsedVariableData(pUsedVarTypeMap,
@@ -56500,7 +60745,7 @@ module akra.fx {
 										pUniformVariableMap,
 										pForeignVariableMap,
 										pTextureVariableMap,
-										pUsedTypeMap);
+										pUsedComplexTypeMap);
 			pClone._initAfterClone();
 
 			return pClone;
@@ -56615,6 +60860,13 @@ module akra.fx {
 		}
 
 		_addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool {
+			if (pFunction._getInstructionType() === EAFXInstructionTypes.k_SystemFunctionInstruction &&
+				!pFunction.isBuiltIn()) {
+
+				this.addExtSystemFunction(pFunction);
+				return true;
+			}
+
 			if(isNull(this._pUsedFunctionMap)){
 				this._pUsedFunctionMap = <IAFXFunctionDeclMap>{};
 				this._pUsedFunctionList = [];
@@ -56766,14 +61018,14 @@ module akra.fx {
 							pUniformVariableMap: IAFXVariableDeclMap,
 							pForeignVariableMap: IAFXVariableDeclMap,
 							pTextureVariableMap: IAFXVariableDeclMap,
-							pUsedTypeMap: IAFXTypeDeclMap): void {
+							pUsedComplexTypeMap: IAFXTypeMap): void {
         	this._pUsedVarTypeMap = pUsedVarTypeMap;
         	this._pSharedVariableMap = pSharedVariableMap;
         	this._pGlobalVariableMap = pGlobalVariableMap;
         	this._pUniformVariableMap = pUniformVariableMap;
         	this._pForeignVariableMap = pForeignVariableMap;
         	this._pTextureVariableMap = pTextureVariableMap;
-        	this._pUsedTypeMap = pUsedTypeMap;
+        	this._pUsedComplexTypeMap = pUsedComplexTypeMap;
         }
 
         _initAfterClone(): void{
@@ -56791,16 +61043,16 @@ module akra.fx {
 
         	this._pUsedVarTypeMap = pUsedData;
 
-        	if(isNull(this._pUsedTypeMap)){
+        	if(isNull(this._pUsedComplexTypeMap)){
         		this._pSharedVariableMap = <IAFXVariableDeclMap>{};
 				this._pGlobalVariableMap = <IAFXVariableDeclMap>{};
 				this._pUniformVariableMap = <IAFXVariableDeclMap>{};
 				this._pForeignVariableMap = <IAFXVariableDeclMap>{};
 				this._pTextureVariableMap = <IAFXVariableDeclMap>{};
-				this._pUsedTypeMap = <IAFXTypeDeclMap>{};
+				this._pUsedComplexTypeMap = <IAFXTypeMap>{};
         	}
 
-        	this.addUsedTypeDecl(this.getReturnType().getBaseType());
+//this.addUsedComplexType(this.getReturnType().getBaseType());
 
         	for(var i in pUsedData) {
         		var pAnalyzedInfo: IAFXTypeUseInfoContainer = pUsedData[i];
@@ -56812,8 +61064,14 @@ module akra.fx {
         		else if(pAnalyzedType.isUniform()){
         			this.addUniformParameter(pAnalyzedType);
         		}
-        		else {
-        			this.addUsedTypeDecl(pAnalyzedType.getBaseType());
+        		else if(pAnalyzedType._getScope() < this._getImplementationScope()){
+        			if(!this._isUsedAsFunction()){
+        				if (!isNull(this._getOutVariable()) &&
+        					this._getOutVariable().getType() !== pAnalyzedType){
+
+        					this.addUsedComplexType(pAnalyzedType.getBaseType());
+        				}
+        			}
         		}
         	}
         	if(!isNull(this._pUsedFunctionList)){
@@ -56821,6 +61079,14 @@ module akra.fx {
 	        		this.addUsedInfoFromFunction(this._pUsedFunctionList[j]);
 	        	}
         	}
+        }
+
+        inline _getAttributeVariableMap(): IAFXVariableDeclMap {
+        	return this._pAttributeVariableMap;
+        }
+
+        inline _getVaryingVariableMap(): IAFXVariableDeclMap {
+        	return this._pVaryingVariableMap;
         }
 
         inline _getSharedVariableMap(): IAFXVariableDeclMap{
@@ -56843,20 +61109,187 @@ module akra.fx {
         	return this._pTextureVariableMap;
         }
 
-        inline _getUsedTypeMap(): IAFXTypeDeclMap{
-        	return this._pUsedTypeMap;
+        inline _getUsedComplexTypeMap(): IAFXTypeMap{
+        	return this._pUsedComplexTypeMap;
+        }
+
+        _getAttributeVariableKeys():  number [] {
+        	if(isNull(this._pAttributeVariableKeys)){
+        		this._pAttributeVariableKeys = < number []><any>Object.keys(this._pAttributeVariableMap);
+        	}
+
+        	return this._pAttributeVariableKeys;
+        }
+
+        _getVaryingVariableKeys():  number [] {
+        	if(isNull(this._pVaryingVariableKeys)){
+        		this._pVaryingVariableKeys = < number []><any>Object.keys(this._pVaryingVariableMap);
+        	}
+
+        	return this._pVaryingVariableKeys;
+        }
+
+
+        _getSharedVariableKeys():  number [] {
+        	if(isNull(this._pSharedVariableKeys)){
+        		this._pSharedVariableKeys = < number []><any[]>Object.keys(this._pSharedVariableMap);
+        	}
+
+        	return this._pSharedVariableKeys;
+        }
+
+        _getUniformVariableKeys():  number [] {
+        	if(isNull(this._pUniformVariableKeys)){
+        		this._pUniformVariableKeys = < number []><any[]>Object.keys(this._pUniformVariableMap);
+        	}
+
+        	return this._pUniformVariableKeys;
+        }
+
+        _getForeignVariableKeys():  number [] {
+        	if(isNull(this._pForeignVariableKeys)){
+        		this._pForeignVariableKeys = < number []><any[]>Object.keys(this._pForeignVariableMap);
+        	}
+
+        	return this._pForeignVariableKeys;
+        }
+
+        _getGlobalVariableKeys():  number [] {
+        	if(isNull(this._pGlobalVariableKeys)){
+        		this._pGlobalVariableKeys = < number []><any[]>Object.keys(this._pGlobalVariableMap);
+        	}
+
+        	return this._pGlobalVariableKeys;
+        }
+
+        _getTextureVariableKeys():  number [] {
+        	if(isNull(this._pTextureVariableKeys)){
+        		this._pTextureVariableKeys = < number []><any[]>Object.keys(this._pTextureVariableMap);
+        	}
+
+        	return this._pTextureVariableKeys;
+        }
+
+        _getUsedComplexTypeKeys():  number [] {
+        	if(isNull(this._pUsedComplexTypeKeys)){
+        		this._pUsedComplexTypeKeys = < number []><any[]>Object.keys(this._pUsedComplexTypeMap);
+        	}
+
+        	return this._pUsedComplexTypeKeys;
+        }
+
+        _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[] {
+        	return this._pExtSystemFunctionList;
+        }
+
+        _getExtSystemMacrosList(): IAFXSimpleInstruction[] {
+        	return this._pExtSystemMacrosList;
+        }
+
+        _getExtSystemTypeList(): IAFXTypeDeclInstruction[] {
+        	return this._pExtSystemTypeList;
         }
 
         private generatesVertexAttrubutes(): void {
+        	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
+        	var isComplexInput: bool = this._pFunctionDefenition.isComplexShaderInput();
 
+        	this._pAttributeVariableMap = <IAFXVariableDeclMap>{};
+
+        	if(isComplexInput){
+        		var pContainerVariable: IAFXVariableDeclInstruction = pShaderInputParamList[0];
+        		var pContainerType: IAFXVariableTypeInstruction = pContainerVariable.getType();
+
+        		var pAttributeNames: string[] = pContainerType.getFieldNameList();
+
+        		for(var i:  number  = 0; i < pAttributeNames.length; i++){
+        			var pAttr: IAFXVariableDeclInstruction = pContainerType.getField(pAttributeNames[i]);
+
+        			if(!this.isVariableTypeUse(pAttr.getType())){
+        				continue;
+        			}
+
+        			this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
+        			this.generateExtractBlockForAttribute(pAttr);
+        		}
+        	}
+        	else {
+        		for(var i:  number  = 0; i < pShaderInputParamList.length; i++){
+        			var pAttr: IAFXVariableDeclInstruction = pShaderInputParamList[i];
+
+        			if(!this.isVariableTypeUse(pAttr.getType())){
+        				continue;
+        			}
+
+        			this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
+        			this.generateExtractBlockForAttribute(pAttr);
+        		}
+        	}
+
+        	this._pAttributeVariableKeys = this._getAttributeVariableKeys();
         }
 
         private generateVertexVaryings(): void {
+        	if(isNull(this._getOutVariable())){
+        		return;
+        	}
 
+        	this._pVaryingVariableMap = <IAFXVariableDeclMap>{};
+
+			var pContainerVariable: IAFXVariableDeclInstruction = this._getOutVariable();
+        	var pContainerType: IAFXVariableTypeInstruction = pContainerVariable.getType();
+
+
+        	var pVaryingNames: string[] = pContainerType.getFieldNameList();
+
+        	for(var i:  number  = 0; i < pVaryingNames.length; i++){
+    			var pVarying: IAFXVariableDeclInstruction = pContainerType.getField(pVaryingNames[i]);
+
+    			if(!this.isVariableTypeUse(pVarying.getType())){
+    				continue;
+    			}
+
+    			this._pVaryingVariableMap[pVarying._getInstructionID()] = pVarying;
+    		}
+
+    		this._pVaryingVariableKeys = this._getVaryingVariableKeys();
         }
 
         private generatePixelVaryings(): void {
+        	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
+        	var isComplexInput: bool = this._pFunctionDefenition.isComplexShaderInput();
 
+        	this._pVaryingVariableMap = <IAFXVariableDeclMap>{};
+
+        	if(isComplexInput){
+        		var pContainerVariable: IAFXVariableDeclInstruction = pShaderInputParamList[0];
+        		var pContainerType: IAFXVariableTypeInstruction = pContainerVariable.getType();
+
+        		var pVaryingNames: string[] = pContainerType.getFieldNameList();
+
+        		for(var i:  number  = 0; i < pVaryingNames.length; i++){
+        			var pVarying: IAFXVariableDeclInstruction = pContainerType.getField(pVaryingNames[i]);
+
+        			if(!this.isVariableTypeUse(pVarying.getType())){
+        				continue;
+        			}
+
+        			this._pVaryingVariableMap[pVarying._getInstructionID()] = pVarying;
+        		}
+        	}
+        	else {
+        		for(var i:  number  = 0; i < pShaderInputParamList.length; i++){
+        			var pVarying: IAFXVariableDeclInstruction = pShaderInputParamList[i];
+
+        			if(!this.isVariableTypeUse(pVarying.getType())){
+        				continue;
+        			}
+
+        			this._pVaryingVariableMap[pVarying._getInstructionID()] = pVarying;
+        		}
+        	}
+
+        	this._pVaryingVariableKeys = this._getVaryingVariableKeys();
         }
 
         private cloneVarTypeUsedMap(pMap: IAFXTypeUseInfoMap, pRelationMap: IAFXInstructionMap): IAFXTypeUseInfoMap{
@@ -56893,11 +61326,11 @@ module akra.fx {
         	return pCloneMap;
         }
 
-        private cloneTypeDeclMap(pMap: IAFXTypeDeclMap, pRelationMap: IAFXInstructionMap): IAFXTypeDeclMap {
-        	var pCloneMap: IAFXTypeDeclMap = <IAFXVariableDeclMap>{};
+        private cloneTypeMap(pMap: IAFXTypeMap, pRelationMap: IAFXInstructionMap): IAFXTypeMap {
+        	var pCloneMap: IAFXTypeMap = <IAFXTypeMap>{};
 
         	for(var i in pMap){
-        		var pVar: IAFXTypeDeclInstruction = (isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i]);
+        		var pVar: IAFXTypeInstruction = (isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i]);
         		var id:  number  = pVar._getInstructionID();
         		pCloneMap[id] = pVar;
         	}
@@ -56917,7 +61350,7 @@ module akra.fx {
         	var iVar:  number  = pVariable._getInstructionID();
 
         	if(pMainVariable.getType().isShared()){
-        		this._pSharedVariableMap[iVar] = pVariable;
+// this._pSharedVariableMap[iVar] = pVariable;
         		this._pSharedVariableMap[iMainVar] = pMainVariable;
         	}
         	else if(pMainVariable.getType().isForeign()){
@@ -56957,7 +61390,7 @@ module akra.fx {
         		}
         	}
 
-        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+// this.addUsedComplexType(pMainVariable.getType().getBaseType());
         }
 
         private addUniformParameter(pType: IAFXVariableTypeInstruction): void {
@@ -56965,24 +61398,24 @@ module akra.fx {
         	var iMainVar:  number  = pMainVariable._getInstructionID();
 
         	if(isDef(this._pGlobalVariableMap[iMainVar])){
-        		logger.setSourceLocation( "fx/FunctionInstruction.ts" , 626 ); logger.error("UNEXPECTED ERROR WITH UNIFORM_PARAMETER"); ;
+        		logger.setSourceLocation( "fx/FunctionInstruction.ts" , 835 ); logger.error("UNEXPECTED ERROR WITH UNIFORM_PARAMETER"); ;
         	}
 
         	this._pUniformVariableMap[iMainVar] = pMainVariable;
-        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+        	this.addUsedComplexType(pMainVariable.getType().getBaseType());
         }
 
-        private addUsedTypeDecl(pType: IAFXTypeInstruction): void {
-        	if(pType.isBase() || isDef(this._pUsedTypeMap[pType._getInstructionID()])){
+        private addUsedComplexType(pType: IAFXTypeInstruction): void {
+        	if(pType.isBase() || isDef(this._pUsedComplexTypeMap[pType._getInstructionID()])){
         		return;
         	}
 
-        	this._pUsedTypeMap[pType._getInstructionID()] = <IAFXTypeDeclInstruction>pType.getParent();
+        	this._pUsedComplexTypeMap[pType._getInstructionID()] = pType;
 
         	var pFieldNameList: string[] = pType.getFieldNameList();
 
         	for(var i:  number  = 0; i < pFieldNameList.length; i++){
-        		this.addUsedTypeDecl(pType.getFieldType(pFieldNameList[i]).getBaseType());
+        		this.addUsedComplexType(pType.getFieldType(pFieldNameList[i]).getBaseType());
         	}
         }
 
@@ -56994,7 +61427,7 @@ module akra.fx {
     		var pUniformVarMap: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
     		var pForeignVarMap: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
     		var pTextureVarMap: IAFXVariableDeclMap = pFunction._getTextureVariableMap();
-    		var pUsedTypeMap: IAFXTypeDeclMap = pFunction._getUsedTypeMap();
+    		var pUsedComplexTypeMap: IAFXTypeMap = pFunction._getUsedComplexTypeMap();
 
     		for(var j in pSharedVarMap){
     			this._pSharedVariableMap[pSharedVarMap[j]._getInstructionID()] = pSharedVarMap[j];
@@ -57022,10 +61455,201 @@ module akra.fx {
     			}
     		}
 
-    		for(var j in pUsedTypeMap){
-    			this._pUsedTypeMap[pUsedTypeMap[j]._getInstructionID()] = pUsedTypeMap[j];
+    		for(var j in pUsedComplexTypeMap){
+    			this._pUsedComplexTypeMap[pUsedComplexTypeMap[j]._getInstructionID()] = pUsedComplexTypeMap[j];
     		}
+
+    		this.addExtSystemFunction(pFunction);
         }
+
+        private addExtSystemFunction(pFunction: IAFXFunctionDeclInstruction): void {
+        	if(isNull(this._pExtSystemFunctionList)){
+        		this._pExtSystemFunctionList = [];
+        		this._pExtSystemTypeList = [];
+        		this._pExtSystemMacrosList = [];
+        	}
+
+        	if(pFunction._getInstructionType() === EAFXInstructionTypes.k_SystemFunctionInstruction){
+	        	if(this._pExtSystemFunctionList.indexOf(pFunction) !== -1){
+	        		return;
+	        	}
+
+	        	this._pExtSystemFunctionList.push(pFunction);
+        	}
+
+        	var pTypes = pFunction._getExtSystemTypeList();
+			var pMacroses = pFunction._getExtSystemMacrosList();
+			var pFunctions = pFunction._getExtSystemFunctionList();
+
+			if(!isNull(pTypes)){
+				for(var j:  number  = 0; j < pTypes.length; j++){
+					if(this._pExtSystemTypeList.indexOf(pTypes[j]) === -1){
+						this._pExtSystemTypeList.push(pTypes[j]);
+					}
+				}
+			}
+
+			if(!isNull(pMacroses)){
+				for(var j:  number  = 0; j < pMacroses.length; j++){
+					if(this._pExtSystemMacrosList.indexOf(pMacroses[j]) === -1){
+						this._pExtSystemMacrosList.push(pMacroses[j]);
+					}
+				}
+			}
+
+			if(!isNull(pFunctions)){
+				for(var j:  number  = 0; j < pFunctions.length; j++){
+					if(this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1){
+						this._pExtSystemFunctionList.push(pFunctions[j]);
+					}
+				}
+			}
+        }
+
+        private isVariableTypeUse(pVariableType: IAFXVariableTypeInstruction): bool {
+        	var id:  number  = pVariableType._getInstructionID();
+
+        	if(!isDef(this._pUsedVarTypeMap[id])){
+        		return false;
+        	}
+
+        	if(this._pUsedVarTypeMap[id].numUsed === 0){
+        		return false;
+        	}
+
+        	return true;
+        }
+
+        private generateExtractBlockForAttribute(pAttr: IAFXVariableDeclInstruction): IAFXInstruction {
+        	if(!pAttr.getType().isPointer()){
+        		return null;
+        	}
+
+        	var pExtractCollector: IAFXInstruction = new InstructionCollector();
+        	var pMainPointer: IAFXVariableDeclInstruction = pAttr.getType()._getMainPointer();
+
+        	pAttr._setAttrExtractionBlock(pExtractCollector);
+
+        	this.generateExtractStmtFromPointer(pMainPointer, null, 0, pExtractCollector);
+
+        	pAttr.getType().getSubVarDecls();
+
+        	return pExtractCollector;
+
+        }
+
+        private generateExtractStmtFromPointer(pPointer: IAFXVariableDeclInstruction,
+        									   pOffset: IAFXVariableDeclInstruction,
+        									   iDepth:  number ,
+        									   pCollector: IAFXInstruction): void {
+        	var pPointerType: IAFXVariableTypeInstruction = pPointer.getType();
+        	var pWhatExtracted: IAFXVariableDeclInstruction = pPointerType._getDownPointer();
+        	var pWhatExtractedType: IAFXVariableTypeInstruction = null;
+
+        	while(!isNull(pWhatExtracted)){
+        		pWhatExtractedType = pWhatExtracted.getType();
+
+        		if(!pWhatExtractedType.isPointIndex() && iDepth === 0){
+        			pOffset = this.createOffsetForAttr(pWhatExtracted);
+        		}
+
+        		if(!pWhatExtractedType.isComplex()){
+        			var pSingleExtract: ExtractStmtInstruction = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(
+        									pWhatExtracted,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0,
+        									pWhatExtractedType.isPointIndex() ? null : pOffset);
+
+        			this._addUsedFunction(pSingleExtract.getExtractFunction());
+        			pCollector.push(pSingleExtract, true);
+        		}
+        		else {
+        			iDepth++;
+        			this.generateExtractStmtForComplexVar(
+        									pWhatExtracted, pOffset, iDepth, pCollector,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0);
+        		}
+
+        		pWhatExtracted = pWhatExtractedType._getDownPointer();
+        	}
+        }
+
+        private generateExtractStmtForComplexVar(pVarDecl: IAFXVariableDeclInstruction,
+        										 pOffset: IAFXVariableDeclInstruction,
+        										 iDepth:  number ,
+        										 pCollector: IAFXInstruction,
+        										 pPointer: IAFXVariableDeclInstruction,
+        										 pBuffer: IAFXVariableDeclInstruction,
+        										 iPadding:  number ): void {
+
+        	var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
+        	var pFieldNameList: string[] = pVarType.getFieldNameList();
+        	var pField: IAFXVariableDeclInstruction = null;
+        	var pFieldType: IAFXVariableTypeInstruction = null;
+        	var pSingleExtract: ExtractStmtInstruction = null;
+
+        	for(var i:  number  = 0; i < pFieldNameList.length; i++){
+        		pField = pVarType.getField(pFieldNameList[i]);
+
+        		if(isNull(pField)){
+        			continue;
+				}
+
+ 				pFieldType = pField.getType();
+
+ 				if(iDepth <= 1){
+ 					pOffset = this.createOffsetForAttr(pField);
+ 				}
+
+ 				iDepth++;
+
+ 				if(pFieldType.isPointer()){
+ 					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
+ 					pSingleExtract = new ExtractStmtInstruction();
+ 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(),
+ 														   iPadding + pFieldType.getPadding(), pOffset);
+
+ 					this._addUsedFunction(pSingleExtract.getExtractFunction());
+
+ 					pCollector.push(pSingleExtract, true);
+ 					this.generateExtractStmtFromPointer(pFieldPointer, pOffset, iDepth, pCollector);
+ 				}
+ 				else if(pFieldType.isComplex()) {
+ 					this.generateExtractStmtForComplexVar(pField, pOffset, iDepth, pCollector,
+ 														  pPointer, pBuffer, iPadding + pFieldType.getPadding());
+ 				}
+ 				else {
+ 					pSingleExtract = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer,
+        												   iPadding + pFieldType.getPadding(), pOffset);
+
+        			this._addUsedFunction(pSingleExtract.getExtractFunction());
+
+        			pCollector.push(pSingleExtract, true);
+ 				}
+ 	       	}
+        }
+
+        private createOffsetForAttr(pAttr: IAFXVariableDeclInstruction): IAFXVariableDeclInstruction {
+        	var pOffset: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+        	var pOffsetType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+        	var pOffsetId: IAFXIdInstruction = new IdInstruction();
+
+        	pOffsetType.pushType(Effect.getSystemType("float"));
+
+        	pOffset.push(pOffsetType, true);
+        	pOffset.push(pOffsetId, true);
+
+        	pOffset.setParent(pAttr);
+
+        	pAttr.getType()._addAttrOffset(pOffset);
+
+        	return pOffset;
+        }
+
+
 	}
 
 	export class SystemFunctionInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
@@ -57033,6 +61657,13 @@ module akra.fx {
 	    private _pName: IAFXIdInstruction = null;
 	    private _pReturnType: VariableTypeInstruction = null;
 	    private	_pArguments: IAFXTypedInstruction[] = null;
+
+	    private _sDefinition: string = "";
+	    private _sImplementation: string = "";
+
+	    private _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
+	    private _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
+	    private _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
 
 		constructor(sName: string, pReturnType: IAFXTypeInstruction,
 					pExprTranslator: ExprTemplateTranslator,
@@ -57051,15 +61682,67 @@ module akra.fx {
 
 			this._pArguments = [];
 
-			for(var i:  number  = 0; i < pArgumentTypes.length; i++){
-				var pArgument: TypedInstruction = new TypedInstruction();
-				pArgument.setType(pArgumentTypes[i]);
-				pArgument.setParent(this);
+			if(!isNull(pArgumentTypes)){
+				for(var i:  number  = 0; i < pArgumentTypes.length; i++){
+					var pArgument: TypedInstruction = new TypedInstruction();
+					pArgument.setType(pArgumentTypes[i]);
+					pArgument.setParent(this);
 
-				this._pArguments.push(pArgument);
+					this._pArguments.push(pArgument);
+				}
 			}
 
 			this._pExprTranslator = pExprTranslator;
+		}
+
+		setDeclCode(sDefenition: string, sImplementation: string){
+			this._sDefinition = sDefenition;
+			this._sImplementation = sImplementation;
+		}
+
+		toFinalCode() : string {
+			return this._sDefinition + this._sImplementation;
+		}
+
+		toFinalDefCode(): string {
+			return this._sDefinition;
+		}
+
+		setUsedSystemData(pTypeList: IAFXTypeDeclInstruction[],
+						  pFunctionList: IAFXFunctionDeclInstruction[],
+						  pMacrosList: IAFXSimpleInstruction[]): void {
+
+			this._pExtSystemTypeList = pTypeList;
+			this._pExtSystemFunctionList = pFunctionList;
+			this._pExtSystemMacrosList = pMacrosList;
+		}
+
+		closeSystemDataInfo(): void {
+			for(var i:  number  = 0; i < this._pExtSystemFunctionList.length; i++){
+				var pFunction: IAFXFunctionDeclInstruction = this._pExtSystemFunctionList[i];
+
+				var pTypes = pFunction._getExtSystemTypeList();
+				var pMacroses = pFunction._getExtSystemMacrosList();
+				var pFunctions = pFunction._getExtSystemFunctionList();
+
+				for(var j:  number  = 0; j < pTypes.length; j++){
+					if(this._pExtSystemTypeList.indexOf(pTypes[j]) === -1){
+						this._pExtSystemTypeList.push(pTypes[j]);
+					}
+				}
+
+				for(var j:  number  = 0; j < pMacroses.length; j++){
+					if(this._pExtSystemMacrosList.indexOf(pMacroses[j]) === -1){
+						this._pExtSystemMacrosList.push(pMacroses[j]);
+					}
+				}
+
+				for(var j:  number  = 0; j < pFunctions.length; j++){
+					if(this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1){
+						this._pExtSystemFunctionList.push(pFunctions[j]);
+					}
+				}
+			}
 		}
 
 		setExprTranslator(pExprTranslator: ExprTemplateTranslator): void {
@@ -57228,6 +61911,14 @@ module akra.fx {
 
         }
 
+        inline _getAttributeVariableMap(): IAFXVariableDeclMap {
+        	return null;
+        }
+
+        inline _getVaryingVariableMap(): IAFXVariableDeclMap {
+        	return null;
+        }
+
         inline _getSharedVariableMap(): IAFXVariableDeclMap{
 			return null;
         }
@@ -57248,9 +61939,52 @@ module akra.fx {
         	return null;
         }
 
-
-        inline _getUsedTypeMap(): IAFXTypeDeclMap{
+        inline _getUsedComplexTypeMap(): IAFXTypeMap{
         	return null;
+        }
+
+        inline _getAttributeVariableKeys():  number [] {
+        	return null;
+        }
+
+        inline _getVaryingVariableKeys():  number [] {
+        	return null;
+        }
+
+        inline _getSharedVariableKeys():  number [] {
+        	return null;
+        }
+
+        inline _getUniformVariableKeys():  number [] {
+        	return null;
+        }
+
+        inline _getForeignVariableKeys():  number [] {
+        	return null;
+        }
+
+        inline _getGlobalVariableKeys():  number [] {
+        	return null;
+        }
+
+        inline _getTextureVariableKeys():  number [] {
+        	return null;
+        }
+
+        inline _getUsedComplexTypeKeys():  number [] {
+        	return null;
+        }
+
+        _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[] {
+        	return this._pExtSystemFunctionList;
+        }
+
+        _getExtSystemMacrosList(): IAFXSimpleInstruction[] {
+        	return this._pExtSystemMacrosList;
+        }
+
+        _getExtSystemTypeList(): IAFXTypeDeclInstruction[] {
+        	return this._pExtSystemTypeList;
         }
 
 	}
@@ -57830,6 +62564,8 @@ module akra.fx {
 		private _pStatistics: IAFXEffectStats = null;
 
 		private _sAnalyzedFileName: string = "";
+
+		private _pSystemMacros: IAFXSimpleInstructionMap = null;
 		private _pSystemTypes: SystemTypeMap = null;
 		private _pSystemFunctionsMap: SystemFunctionMap = null;
 		private _pSystemFunctionHashMap: BoolMap = null;
@@ -57851,9 +62587,11 @@ module akra.fx {
 
 		private _pAddedTechniqueList: IAFXTechniqueInstruction[] = null;
 
+		static pSystemMacros: IAFXSimpleInstructionMap= null;
 		static pSystemTypes: SystemTypeMap = null;
 		static pSystemFunctions: SystemFunctionMap = null;
 		static pSystemVariables: IAFXVariableDeclMap = null;
+		static pSystemVertexOut: ComplexTypeInstruction = null;
 
 		constructor(pComposer: IAFXComposer) {
 			this._pComposer = pComposer;
@@ -57873,6 +62611,7 @@ module akra.fx {
 			this._pTechniqueList = [];
 			this._pTechniqueMap = <TechniqueMap>{};
 
+			this.initSystemMacros();
 			this.initSystemTypes();
 			this.initSystemFunctions();
 			this.initSystemVariables();
@@ -57933,7 +62672,7 @@ module akra.fx {
 			iParseTime = akra.now() - iParseTime;
 			this._pStatistics.time = iParseTime;
 
-			logger.setSourceLocation( "fx/Effect.ts" , 158 ); logger.log(this, iParseTime); ;
+//LOG(this, iParseTime);
 
 			return true;
 		}
@@ -57953,6 +62692,9 @@ module akra.fx {
 			return this._pTechniqueList;
 		}
 
+		static getBaseVertexOutType(): ComplexTypeInstruction {
+			return Effect.pSystemVertexOut;
+		}
 		static getSystemType(sTypeName: string): SystemTypeInstruction {
 //bool, string, float and others
         	return isDef(Effect.pSystemTypes[sTypeName]) ? Effect.pSystemTypes[sTypeName] : null;
@@ -57962,12 +62704,24 @@ module akra.fx {
         	return isDef(Effect.pSystemVariables[sName]) ? Effect.pSystemVariables[sName] : null;
         }
 
+        static getSystemMacros(sName: string): IAFXSimpleInstruction {
+        	return isDef(Effect.pSystemMacros[sName]) ? Effect.pSystemMacros[sName] : null;
+        }
+
         static findSystemFunction(sFunctionName: string,
 							 	  pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
 			var pSystemFunctions: SystemFunctionInstruction[] = Effect.pSystemFunctions[sFunctionName];
 
 			if(!isDef(pSystemFunctions)){
 				return null;
+			}
+
+			if(isNull(pArguments)) {
+				for(var i:  number  = 0; i < pSystemFunctions.length; i++){
+					if(pSystemFunctions[i].getNumNeededArguments() === 0){
+						return pSystemFunctions[i];
+					}
+				}
 			}
 
 			for(var i:  number  = 0; i < pSystemFunctions.length; i++){
@@ -58039,12 +62793,23 @@ module akra.fx {
 			this.generateSuffixLiterals(pLiterals, pOutput, iDepth);
 		}
 
+		private initSystemMacros(): void {
+			if(isNull(Effect.pSystemMacros)){
+				this._pSystemMacros = Effect.pSystemMacros = <IAFXSimpleInstructionMap>{};
+				this.addSystemMacros();
+			}
+
+			this._pSystemMacros = Effect.pSystemMacros;
+		}
+
 		private initSystemTypes(): void {
 			if(isNull(Effect.pSystemTypes)){
 				this._pSystemTypes = Effect.pSystemTypes = {};
 				this.addSystemTypeScalar();
 				this.addSystemTypeVector();
 				this.addSystemTypeMatrix();
+
+				this.generateBaseVertexOutput();
 			}
 
 			this._pSystemTypes = Effect.pSystemTypes;
@@ -58067,6 +62832,27 @@ module akra.fx {
 
 			this._pSystemVariables = Effect.pSystemVariables;
 		}
+
+		private addSystemMacros(): void {
+			this.generateSystemMacros("ExtractMacros",
+									  "\n#ifdef AKRA_FRAGMENT\n" +
+									  "//#define texture2D(sampler, ) texture2D\n" +
+									  "#else\n" +
+									  "#define texture2D(A, B) texture2DLod(A, B, 0.)\n" +
+									  "#endif\n" +
+									  "#ifndef A_VB_COMPONENT3\n" +
+									  "#define A_VB_COMPONENT4\n" +
+									  "#endif\n" +
+									  "#ifdef A_VB_COMPONENT4\n" +
+									  "#define A_VB_ELEMENT_SIZE 4.\n" +
+									  "#endif\n" +
+									  "#ifdef A_VB_COMPONENT3\n" +
+									  "#define A_VB_ELEMENT_SIZE 3.\n" +
+									  "#endif\n" +
+									  "#define A_tex2D(S, H, X, Y) texture2D(S, vec2(H.stepX * X , H.stepY * Y))\n" +
+									  "#define A_tex2Dv(S, H, V) texture2D(S, V)\n");
+		}
+
 
 		private addSystemVariables(): void {
 			this.generateSystemVariable("fragCoord", "gl_FragCoord", "float4", false, true, true);
@@ -58104,6 +62890,8 @@ module akra.fx {
 			pVariableDecl.push(pName, true);
 
 			this._pSystemVariables[sName] = pVariableDecl;
+
+			pVariableDecl.setBuiltIn(true);
 		}
 
 		private generatePassEngineVariable(): void {
@@ -58121,6 +62909,48 @@ module akra.fx {
 			pVariableDecl.push(pName, true);
 
 			this._pSystemVariables["engine"] = pVariableDecl;
+		}
+
+		private generateBaseVertexOutput(): void {
+//TODO: fix defenition of this variables
+
+			var pOutBasetype: ComplexTypeInstruction = new ComplexTypeInstruction();
+
+			var pPosition: VariableDeclInstruction = new VariableDeclInstruction();
+			var pPointSize: VariableDeclInstruction = new VariableDeclInstruction();
+			var pPositionType: VariableTypeInstruction = new VariableTypeInstruction();
+			var pPointSizeType: VariableTypeInstruction = new VariableTypeInstruction();
+			var pPositionId: IdInstruction = new IdInstruction();
+			var pPointSizeId: IdInstruction = new IdInstruction();
+
+			pPositionType.pushType(Effect.getSystemType("float4"));
+			pPointSizeType.pushType(Effect.getSystemType("float"));
+
+			pPositionId.setName("pos");
+			pPositionId.setRealName("pos");
+
+			pPointSizeId.setName("psize");
+			pPointSizeId.setRealName("psize");
+
+			pPosition.push(pPositionType, true);
+			pPosition.push(pPositionId, true);
+
+			pPointSize.push(pPointSizeType, true);
+			pPointSize.push(pPointSizeId, true);
+
+			pPosition.setSemantic("POSITION");
+			pPointSize.setSemantic("PSIZE");
+
+			var pFieldCollector: IAFXInstruction = new InstructionCollector();
+			pFieldCollector.push(pPosition, false);
+			pFieldCollector.push(pPointSize, false);
+
+			pOutBasetype.addFields(pFieldCollector, true);
+
+			pOutBasetype.setName("VS_OUT");
+			pOutBasetype.setRealName("VS_OUT_S");
+
+			Effect.pSystemVertexOut = pOutBasetype;
 		}
 
 		private addSystemFunctions(): void {
@@ -58198,6 +63028,124 @@ module akra.fx {
 		    this.generateSystemFunction("texCUBELod", "textureCubeLod($1,$2,$3)", "float4", ["samplerCUBE", "float3", "float"], null, true, false);
 
 //Extracts
+
+		    this.generateNotBuiltInSystemFuction("extractHeader",
+												 "void A_extractTextureHeader(const sampler2D src, out A_TextureHeader texture)",
+												 "{vec4 v = texture2D(src, vec2(0.)); " +
+												 "texture = A_TextureHeader(v.r, v.g, v.b, v.a);}",
+												 "void",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+
+		    this.generateNotBuiltInSystemFuction("extractFloat",
+												 "float A_extractFloat(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "float y = floor(pixelNumber / header.width) + .5; " +
+												 "float x = mod(pixelNumber, header.width) + .5; " +
+												 "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+												 "\n#ifdef A_VB_COMPONENT4\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header, x, y).r; " +
+												 "else if(shift == 1) return A_tex2D(sampler, header, x, y).g; " +
+												 "else if(shift == 2) return A_tex2D(sampler, header, x, y).b; " +
+												 "else if(shift == 3) return A_tex2D(sampler, header, x, y).a; " +
+												 "\n#endif\n" +
+												 "return 0.;}",
+												 "float",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+
+			this.generateNotBuiltInSystemFuction("extractFloat2",
+												 "vec2 A_extractVec2(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "float y = floor(pixelNumber / header.width) + .5; " +
+												 "float x = mod(pixelNumber, header.width) + .5; " +
+												 "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+												 "\n#ifdef A_VB_COMPONENT4\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header, x, y).rg; " +
+												 "else if(shift == 1) return A_tex2D(sampler, header, x, y).gb; " +
+												 "else if(shift == 2) return A_tex2D(sampler, header, x, y).ba; " +
+												 "else if(shift == 3) { " +
+												 "if(int(x) == int(header.width - 1.)) " +
+												 "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "else " +
+												 "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).r); " +
+												 "} " +
+												 "\n#endif\n" +
+												 "return vec2(0.);}",
+												 "float2",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+
+			this.generateNotBuiltInSystemFuction("extractFloat3",
+												 "vec3 A_extractVec3(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "float y = floor(pixelNumber / header.width) + .5; " +
+												 "float x = mod(pixelNumber, header.width) + .5; " +
+												 "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+												 "\n#ifdef A_VB_COMPONENT4\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header, x, y).rgb; " +
+												 "else if(shift == 1) return A_tex2D(sampler, header, x, y).gba; " +
+												 "else if(shift == 2){ " +
+												 "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "else return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+												 "else if(shift == 3){ " +
+												 "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+												 "else return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rg);} " +
+												 "\n#endif\n" +
+												 "\n#ifdef A_VB_COMPONENT3\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header,vec2(x,header.stepY*y)).rgb; " +
+												 "else if(shift == 1){ " +
+												 "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "else return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+												 "else if(shift == 3){ " +
+												 "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+												 "else return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, (x + 1)., y).rg);} " +
+												 "\n#endif\n" +
+												 "return vec3(0);}",
+												 "float3",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+
+			this.generateNotBuiltInSystemFuction("extractFloat4",
+												 "vec4 A_extractVec4(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "float y = floor(pixelNumber / header.width) + .5; " +
+												 "float x = mod(pixelNumber, header.width) + .5; " +
+												 "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+												 "\n#ifdef A_VB_COMPONENT4\n" +
+												 "if(shift == 0) return A_tex2D(sampler, header, x, y); " +
+												 "else if(shift == 1){ " +
+												 "if(int(x) == int(header.width - 1.)) " +
+												 "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "else " +
+												 "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+												 "else if(shift == 2){ " +
+												 "if(int(x) == int(header.width - 1.)) " +
+												 "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+												 "else " +
+												 "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).rg);} " +
+												 "else if(shift == 3){ " +
+												 "if(int(x) == int(header.width - 1.)) " +
+												 "return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rgb); " +
+												 "else return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rgb);} " +
+												 "\n#endif\n" +
+												 "\n#ifdef A_VB_COMPONENT3\n" +
+												 "\n#endif\n" +
+												 "return vec4(0);}",
+												 "float4",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+
+			this.generateNotBuiltInSystemFuction("findPixel",
+												 "vec2 A_findPixel(const A_TextureHeader header, const float offset)",
+												 "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+												 "return vec2(header.stepX * (mod(pixelNumber, header.width) + .5), header.stepY * (floor(pixelNumber / header.width) + .5));}",
+												 "float2",
+												 ["video_buffer_header"], null, ["ExtractMacros"]);
+
+			this.generateNotBuiltInSystemFuction("extractFloat4x4",
+												 "mat4 A_extractMat4(const sampler2D sampler, const A_TextureHeader header, const float offset)",
+												 "{return mat4(A_tex2Dv(sampler, header, A_findPixel(header, offset))," +
+												 "A_tex2Dv(sampler, header, A_findPixel(header, offset + 4.))," +
+												 "A_tex2Dv(sampler, header, A_findPixel(header, offset + 8.))," +
+												 "A_tex2Dv(sampler, header, A_findPixel(header, offset + 12.)));}",
+												 "float4x4",
+												 ["video_buffer_header"], ["findPixel"], ["ExtractMacros"]);
 		}
 
 		private generateSystemFunction(sName: string, sTranslationExpr: string,
@@ -58249,6 +63197,7 @@ module akra.fx {
 					pFunction._setForPixel(isForPixel);
 
 					pSystemFunctions[sName].push(pFunction);
+					pFunction.setBuiltIn(true);
 				}
 			}
 			else {
@@ -58287,7 +63236,66 @@ module akra.fx {
 				}
 
 				pSystemFunctions[sName].push(pFunction);
+				pFunction.setBuiltIn(true);
 			}
+		}
+
+		private generateSystemMacros(sMacrosName: string, sMacrosCode: string): void {
+			if(isDef(this._pSystemMacros[sMacrosName])){
+				return;
+			}
+
+			var pMacros: IAFXSimpleInstruction = new SimpleInstruction(sMacrosCode);
+
+			this._pSystemMacros[sMacrosName] = pMacros;
+		}
+
+		private generateNotBuiltInSystemFuction(sName: string, sDefenition: string, sImplementation: string,
+												sReturnType: string,
+												pUsedTypes: string[],
+												pUsedFunctions: string[],
+												pUsedMacros: string[]): void {
+
+			if(isDef(this._pSystemFunctionsMap[sName])){
+				return;
+			}
+
+			var pReturnType: IAFXTypeInstruction = Effect.getSystemType(sReturnType);
+			var pFunction: SystemFunctionInstruction = new SystemFunctionInstruction(sName, pReturnType, null, null);
+
+			pFunction.setDeclCode(sDefenition, sImplementation);
+
+			var pUsedExtSystemTypes: IAFXTypeDeclInstruction[] = [];
+			var pUsedExtSystemFunctions: IAFXFunctionDeclInstruction[] = [];
+			var pUsedExtSystemMacros: IAFXSimpleInstruction[] = [];
+
+			if(!isNull(pUsedTypes)){
+				for(var i:  number  = 0; i < pUsedTypes.length; i++){
+					var pTypeDecl: IAFXTypeDeclInstruction = <IAFXTypeDeclInstruction>Effect.getSystemType(pUsedTypes[i]).getParent();
+					if(!isNull(pTypeDecl)){
+						pUsedExtSystemTypes.push(pTypeDecl);
+					}
+				}
+			}
+
+			if(!isNull(pUsedMacros)){
+				for(var i:  number  = 0; i < pUsedMacros.length; i++) {
+					pUsedExtSystemMacros.push(Effect.getSystemMacros(pUsedMacros[i]));
+				}
+			}
+
+			if(!isNull(pUsedFunctions)){
+				for(var i:  number  = 0; i < pUsedFunctions.length; i++) {
+					var pFindFunction: IAFXFunctionDeclInstruction = Effect.findSystemFunction(pUsedFunctions[i], null);
+					pUsedExtSystemFunctions.push(pFindFunction);
+				}
+			}
+
+			pFunction.setUsedSystemData(pUsedExtSystemTypes, pUsedExtSystemFunctions, pUsedExtSystemMacros);
+			pFunction.closeSystemDataInfo();
+			pFunction.setBuiltIn(false);
+
+			this._pSystemFunctionsMap[sName] = [pFunction];
 		}
 
 		private generateSystemType(sName: string, sRealName: string,
@@ -58309,6 +63317,35 @@ module akra.fx {
 			}
 
 			this._pSystemTypes[sName] = pSystemType;
+			pSystemType.setBuiltIn(true);
+
+			return pSystemType;
+		}
+
+		private generateNotBuildtInSystemType(sName: string, sRealName: string, sDeclString: string,
+											  iSize:  number  = 1, isArray: bool = false,
+								  			  pElementType: IAFXTypeInstruction = null, iLength:  number  = 1
+								  			 ): IAFXTypeInstruction {
+
+			if(isDef(this._pSystemTypes[sName])){
+				return null;
+			}
+
+			var pSystemType: SystemTypeInstruction = new SystemTypeInstruction();
+			pSystemType.setName(sName);
+			pSystemType.setRealName(sRealName);
+			pSystemType.setSize(iSize);
+
+			if(isArray){
+				pSystemType.addIndex(pElementType, iLength);
+			}
+
+			this._pSystemTypes[sName] = pSystemType;
+			pSystemType.setBuiltIn(false);
+
+			var pSystemTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
+			pSystemTypeDecl.push(pSystemType, true);
+			pSystemTypeDecl.setBuiltIn(false);
 
 			return pSystemType;
 		}
@@ -58325,7 +63362,10 @@ module akra.fx {
 			this.generateSystemType("sampler2D", "sampler2D", 1);
 			this.generateSystemType("samplerCUBE", "samplerCube", 1);
 			this.generateSystemType("video_buffer", "sampler2D", 1);
-			this.generateSystemType("video_buffer_header", "", 0);
+
+
+			this.generateNotBuildtInSystemType("video_buffer_header", "A_TextureHeader",
+				"struct A_TextureHeader { float width; float height; float stepX; float stepY; }");
 		}
 
 		private addSystemTypeVector(): void {
@@ -59093,6 +64133,7 @@ module akra.fx {
         		else if(pChildren[i].name === "Semantic"){
         			sSemantic = this.analyzeSemantic(pChildren[i]);
         			pVarDecl.setSemantic(sSemantic);
+        			pVarDecl.getNameId().setRealName(sSemantic);
         		}
         		else if(pChildren[i].name === "Initializer"){
         			pInitExpr = this.analyzeInitializer(pChildren[i]);
@@ -59394,7 +64435,7 @@ module akra.fx {
 		                case "MIRROR":
 		                	break;
 		                default:
-		                    logger.setSourceLocation( "fx/Effect.ts" , 1617 ); logger.warning("Webgl don`t support this wrapmode: " + sStateValue); ;
+		                    logger.setSourceLocation( "fx/Effect.ts" , 1924 ); logger.warning("Webgl don`t support this wrapmode: " + sStateValue); ;
 		                    return;
 		            }
 		            break;
@@ -59411,13 +64452,13 @@ module akra.fx {
 		                case "LINEAR_MIPMAP_LINEAR":
 		                    break;
 		                default:
-		                    logger.setSourceLocation( "fx/Effect.ts" , 1634 ); logger.warning("Webgl don`t support this texture filter: " + sStateValue); ;
+		                    logger.setSourceLocation( "fx/Effect.ts" , 1941 ); logger.warning("Webgl don`t support this texture filter: " + sStateValue); ;
 		                    return;
 		            }
             		break;
 
 		        default:
-		            logger.setSourceLocation( "fx/Effect.ts" , 1640 ); logger.warning("Don`t support this texture param: " + sStateType); ;
+		            logger.setSourceLocation( "fx/Effect.ts" , 1947 ); logger.warning("Don`t support this texture param: " + sStateType); ;
 		            return;
 		    }
 
@@ -59575,6 +64616,10 @@ module akra.fx {
         		}
 
         		pExpr = pSystemCallExpr;
+
+        		if(!pFunction.isBuiltIn() && !isNull(pCurrentAnalyzedFunction)){
+        			pCurrentAnalyzedFunction._addUsedFunction(pFunction);
+        		}
         	}
 
         	if(!pExpr.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pExpr.getLastError()); } ;
@@ -61211,13 +66256,13 @@ module akra.fx {
 			            break;
 
 			        default:
-			            logger.setSourceLocation( "fx/Effect.ts" , 3434 ); logger.warning("Unsupported render state type used: " + sType + ". WebGl..."); ;
+			            logger.setSourceLocation( "fx/Effect.ts" , 3745 ); logger.warning("Unsupported render state type used: " + sType + ". WebGl..."); ;
 			            return;
 			    }
 
 			    if (pExprNode.value === "{" || pExprNode.value === "<" ||
 			        isNull(pExprNode.value)) {
-			        logger.setSourceLocation( "fx/Effect.ts" , 3440 ); logger.warning("So pass state are incorrect"); ;
+			        logger.setSourceLocation( "fx/Effect.ts" , 3751 ); logger.warning("So pass state are incorrect"); ;
 			        return;
 			    }
 
@@ -61225,7 +66270,7 @@ module akra.fx {
 			    switch (sType) {
 			        case "ALPHABLENDENABLE":
 			        case "ALPHATESTENABLE":
-			            logger.setSourceLocation( "fx/Effect.ts" , 3448 ); logger.warning("ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL."); ;
+			            logger.setSourceLocation( "fx/Effect.ts" , 3759 ); logger.warning("ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL."); ;
 			            return;
 
 			        case "DITHERENABLE":
@@ -61237,7 +66282,7 @@ module akra.fx {
 			                    break;
 
 			                default:
-			                    logger.setSourceLocation( "fx/Effect.ts" , 3461 ); logger.warning("Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: " + sValue + ".");
+			                    logger.setSourceLocation( "fx/Effect.ts" , 3772 ); logger.warning("Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: " + sValue + ".");
                                                 ;
 								return;
 			            }
@@ -61260,7 +66305,7 @@ module akra.fx {
 			                	break;
 
 			                default:
-			                    logger.setSourceLocation( "fx/Effect.ts" , 3483 ); logger.warning("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + "."); ;
+			                    logger.setSourceLocation( "fx/Effect.ts" , 3794 ); logger.warning("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + "."); ;
 			                    return;
 			            }
 			            break;
@@ -61273,7 +66318,7 @@ module akra.fx {
 			                case "FRONT_AND_BACK":
 			                    break;
 			                default:
-			                    logger.setSourceLocation( "fx/Effect.ts" , 3496 ); logger.warning("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + "."); ;
+			                    logger.setSourceLocation( "fx/Effect.ts" , 3807 ); logger.warning("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + "."); ;
 			                    return;
 			            }
 			            break;
@@ -61290,7 +66335,7 @@ module akra.fx {
 			                case "ALWAYS":
 			                	break;
 			                default:
-			                    logger.setSourceLocation( "fx/Effect.ts" , 3514 ); logger.warning("Unsupported render state ZFUNC value used: " + sValue + ".");
+			                    logger.setSourceLocation( "fx/Effect.ts" , 3825 ); logger.warning("Unsupported render state ZFUNC value used: " + sValue + ".");
                                           ;
 			                   return;
 			            }
@@ -61405,7 +66450,7 @@ module akra.fx {
 		    var iShift:  number  = 0;
 
 		    if(pChildren[0].name === "ExtOpt"){
-		    	logger.setSourceLocation( "fx/Effect.ts" , 3628 ); logger.warning("We don`t suppor ext-commands for import"); ;
+		    	logger.setSourceLocation( "fx/Effect.ts" , 3939 ); logger.warning("We don`t suppor ext-commands for import"); ;
 		    }
 		    if (pChildren.length !== 2) {
 		        iShift = this.analyzeShiftOpt(pChildren[0]);
@@ -61823,6 +66868,8 @@ module akra.fx {
         	var pWhatExtracted: IAFXVariableDeclInstruction = pPointerType._getDownPointer();
         	var pWhatExtractedType: IAFXVariableTypeInstruction = null;
 
+        	var pFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
+
         	while(!isNull(pWhatExtracted)){
         		pWhatExtractedType = pWhatExtracted.getType();
 
@@ -61831,11 +66878,15 @@ module akra.fx {
         			pSingleExtract.generateStmtForBaseType(
         									pWhatExtracted,
         									pWhatExtractedType.getPointer(),
-        									pWhatExtractedType.getVideoBuffer(), 0);
+        									pWhatExtractedType.getVideoBuffer(), 0, null);
 
         			if(!pSingleExtract.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pSingleExtract.getLastError()); } ;
 
         			pParentStmt.push(pSingleExtract, true);
+
+        			if(!isNull(pFunction)){
+        				pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
+        			}
         		}
         		else {
         			this.generateExtractStmtForComplexVar(
@@ -61861,6 +66912,8 @@ module akra.fx {
         	var pFieldType: IAFXVariableTypeInstruction = null;
         	var pSingleExtract: ExtractStmtInstruction = null;
 
+        	var pFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
+
         	for(var i:  number  = 0; i < pFieldNameList.length; i++){
         		pField = pVarType.getField(pFieldNameList[i]);
 
@@ -61873,23 +66926,31 @@ module akra.fx {
  				if(pFieldType.isPointer()){
  					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
  					pSingleExtract = new ExtractStmtInstruction();
- 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding());
+ 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding(), null);
 
  					if(!pSingleExtract.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pSingleExtract.getLastError()); } ;
 
  					pParentStmt.push(pSingleExtract, true);
  					this.generateExtractStmtFromPointer(pFieldPointer, pParentStmt);
+
+ 					if(!isNull(pFunction)){
+        				pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
+        			}
  				}
  				else if(pFieldType.isComplex()) {
  					this.generateExtractStmtForComplexVar(pField, pParentStmt, pPointer, pBuffer, iPadding + pFieldType.getPadding());
  				}
  				else {
  					pSingleExtract = new ExtractStmtInstruction();
-        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding());
+        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding(), null);
 
         			if(!pSingleExtract.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pSingleExtract.getLastError()); } ;
 
         			pParentStmt.push(pSingleExtract, true);
+
+        			if(!isNull(pFunction)){
+        				pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
+        			}
  				}
  	       	}
         }
@@ -61932,38 +66993,2040 @@ module akra.fx {
 
 
 
+
+
+
+
+
+
+module akra {
+	export interface IAFXBlender {
+
+//Component and component blend
+		addComponentToBlend(pComponentBlend: IAFXComponentBlend,
+						    pComponent: IAFXComponent, iShift:  number , iPass:  number ): IAFXComponentBlend;
+
+		removeComponentFromBlend(pComponentBlend: IAFXComponentBlend,
+								 pComponent: IAFXComponent, iShift:  number , iPass:  number ): IAFXComponentBlend;
+
+		addBlendToBlend(pComponentBlend: IAFXComponentBlend,
+						pAddBlend: IAFXComponentBlend, iShift:  number ): IAFXComponentBlend;
+
+//Pass blend
+
+		generatePassBlend(pPassList: IAFXPassInstruction[],
+						  pStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend;
+
+		getPassBlendById(id:  number ): IAFXPassBlend;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.fx {
+
+
+
+//TODO: CHECK SAMPLER TYPE
+
+	export class SamplerBlender {
+		/**@protected*/  _pSlotList: util.ObjectArray[] = null;
+		/**@protected*/  _nActiveSlots:  number  = 0;
+
+		/**@protected*/  _pIdToSlotMap: IntMap = null;
+		/**@protected*/  _pIdList:  number [] = null;
+
+		inline get slots(): util.ObjectArray[] {
+			return this._pSlotList;
+		}
+
+		inline get totalActiveSlots():  number  {
+			return this._nActiveSlots;
+		}
+
+		constructor() {
+			this._pSlotList = new Array( 32 );
+
+			for(var i:  number  = 0; i < this._pSlotList.length; i++){
+				this._pSlotList[i] = new util.ObjectArray();
+			}
+
+			this._nActiveSlots = 1;
+
+			this._pIdToSlotMap = <IntMap><any>{0 : 0};
+			this._pIdList = [];
+		}
+
+		inline getSamplersBySlot(iSlot:  number ): util.ObjectArray {
+			return this.slots[iSlot];
+		}
+
+		clear(): void {
+			for(var i:  number  = 0; i < this._nActiveSlots; i++){
+				this._pSlotList[i].clear(false);
+			}
+
+			this._nActiveSlots = 1;
+
+			for(var i:  number  = 0; i < this._pIdList.length; i++){
+				this._pIdToSlotMap[this._pIdList[i]] = -1;
+			}
+		}
+
+		addTextureSlot(id:  number ): void {
+			if(!isDef(this._pIdToSlotMap[id])){
+				this._pIdList.push(id);
+			}
+			else if(this._pIdToSlotMap[id] > 0){
+				return;
+			}
+
+			if(this._pSlotList.length === this._nActiveSlots){
+				this._pSlotList.push(new util.ObjectArray());
+			}
+
+			this._pIdToSlotMap[id] = this._nActiveSlots;
+			this._nActiveSlots++;
+		}
+
+		inline addObjectToSlotById(pObject: any, id:  number ): void {
+			this._pSlotList[this._pIdToSlotMap[id]].push(pObject);
+		}
+
+		addObjectToSlotIdAuto(pObject: any, id:  number ): void {
+			this.addTextureSlot(id);
+			this.addObjectToSlotById(pObject, id);
+		}
+
+		getHash(): string {
+			var sHash: string = "";
+
+			for(var i:  number  = 0; i < this._nActiveSlots; i++){
+				var pBlend: util.ObjectArray = this._pSlotList[i];
+
+				if(pBlend.length > 0) {
+					if(i === 0) {
+						sHash += "Z";
+					}
+
+					for(var j:  number  = 0; j < pBlend.length; j++){
+						sHash += pBlend.value(j).getGuid() + ".";
+					}
+
+					sHash += ".";
+				}
+			}
+
+			return sHash;
+		}
+	}
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.fx {
+	export class VariableBlendContainer {
+		/**@protected*/  _pVarListMap: IAFXVariableDeclListMap = null;
+		/**@protected*/  _pVarKeys: string[] = null;
+
+		/**@protected*/  _pVarBlendTypeMap: IAFXVariableTypeMap = null;
+
+		inline get keys(): string[] {
+			return this._pVarKeys;
+		}
+
+		inline getVarList(sKey: string): IAFXVariableDeclInstruction[] {
+			return this._pVarListMap[sKey];
+		}
+
+		inline getBlendType(sKey: string): IAFXVariableTypeInstruction {
+			return this._pVarBlendTypeMap[sKey];
+		}
+
+		constructor() {
+			this._pVarListMap = <IAFXVariableDeclListMap>{};
+			this._pVarKeys = [];
+
+			this._pVarBlendTypeMap = <IAFXVariableTypeMap>{};
+		}
+
+		addVariable(pVariable: IAFXVariableDeclInstruction, eBlendMode: EAFXBlendMode): bool {
+			var sName: string = pVariable.getRealName();
+
+			if(!isDef(this._pVarListMap[sName])){
+				this._pVarListMap[sName] = [pVariable];
+				this._pVarKeys.push(sName);
+
+				this._pVarBlendTypeMap[sName] = pVariable.getType();
+
+				return true;
+			}
+
+			var pBlendType: IAFXVariableTypeInstruction = this._pVarBlendTypeMap[sName].blend(pVariable.getType(), eBlendMode);
+
+			if(pBlendType === this._pVarBlendTypeMap[sName]){
+				return true;
+			}
+
+			if(isNull(pBlendType)){
+				logger.setSourceLocation( "fx/BlendContainers.ts" , 51 ); logger.error("Could not blend type for variable '" + sName + "'"); ;
+				return false;
+			}
+
+			this._pVarListMap[sName].push(pVariable);
+			this._pVarBlendTypeMap[sName] = pBlendType;
+
+			return true;
+		}
+
+		hasVariableWithName(sName: string): bool {
+			if(!isDefAndNotNull(this._pVarBlendTypeMap[sName])){
+				this._pVarBlendTypeMap[sName] = null;
+				return false;
+			}
+
+			return true;
+		}
+
+		inline hasVariable(pVar: IAFXVariableDeclInstruction): bool {
+			return this.hasVariableWithName(pVar.getRealName());
+		}
+
+		inline getVariableByName(sName: string): IAFXVariableDeclInstruction {
+			return this.hasVariableWithName(sName) ? this._pVarListMap[sName][0] : null;
+		}
+
+		inline getDeclCodeForVar(sName: string): string {
+			return this.getBlendType(sName).toFinalCode() + " " + sName;
+		}
+	}
+
+
+	export class ComplexTypeBlendContainer {
+
+		private _pTypeListMap: IAFXTypeMap = null;
+		private _pTypeKeys: string[] = null;
+
+		inline get keys(): string[]{
+			return this._pTypeKeys;
+		}
+
+		inline get types(): IAFXTypeMap {
+			return this._pTypeListMap;
+		}
+
+		constructor() {
+			this._pTypeListMap = <IAFXTypeMap>{};
+			this._pTypeKeys = [];
+		}
+
+		addComplexType(pComplexType: IAFXTypeInstruction): bool {
+			var sName: string = pComplexType.getRealName();
+
+			if(!isDef(this._pTypeListMap[sName])){
+				this._pTypeListMap[sName] = pComplexType;
+				this._pTypeKeys.push(sName);
+
+				return true;
+			}
+
+			var pBlendType: IAFXTypeInstruction = this._pTypeListMap[sName].blend(pComplexType, EAFXBlendMode.k_TypeDecl);
+			if(isNull(pBlendType)){
+				logger.setSourceLocation( "fx/BlendContainers.ts" , 114 ); logger.error("Could not blend type declaration '" + sName + "'"); ;
+				return false;
+			}
+
+			this._pTypeListMap[sName]= pBlendType;
+
+			return true;
+		}
+
+		addFromVarConatiner(pContainer: VariableBlendContainer): bool {
+			if(isNull(pContainer)){
+				return true;
+			}
+
+			var pKeys: string[] = pContainer.keys;
+
+			for(var i:  number  = 0; i < pKeys.length; i++){
+				var pType: IAFXTypeInstruction = pContainer.getBlendType(pKeys[i]).getBaseType();
+
+				if(pType.isComplex()){
+					if(!this.addComplexType(pType)){
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+	}
+
+	export class ExtSystemDataContainer {
+		/**@protected*/  _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
+		/**@protected*/  _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
+		/**@protected*/  _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
+
+		inline get macroses(): IAFXSimpleInstruction[] {
+			return this._pExtSystemMacrosList;
+		}
+
+		inline get types(): IAFXTypeDeclInstruction[] {
+			return this._pExtSystemTypeList;
+		}
+
+		inline get functions(): IAFXFunctionDeclInstruction[] {
+			return this._pExtSystemFunctionList;
+		}
+
+		constructor(){
+			this._pExtSystemMacrosList = [];
+			this._pExtSystemTypeList = [];
+			this._pExtSystemFunctionList = [];
+		}
+
+		addFromFunction(pFunction: IAFXFunctionDeclInstruction): void {
+			var pTypes = pFunction._getExtSystemTypeList();
+			var pMacroses = pFunction._getExtSystemMacrosList();
+			var pFunctions = pFunction._getExtSystemFunctionList();
+
+			if(!isNull(pTypes)){
+				for(var j:  number  = 0; j < pTypes.length; j++){
+					if(this._pExtSystemTypeList.indexOf(pTypes[j]) === -1){
+						this._pExtSystemTypeList.push(pTypes[j]);
+					}
+				}
+			}
+
+			if(!isNull(pMacroses)){
+				for(var j:  number  = 0; j < pMacroses.length; j++){
+					if(this._pExtSystemMacrosList.indexOf(pMacroses[j]) === -1){
+						this._pExtSystemMacrosList.push(pMacroses[j]);
+					}
+				}
+			}
+
+			if(!isNull(pFunctions)){
+				for(var j:  number  = 0; j < pFunctions.length; j++){
+					if(this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1){
+						this._pExtSystemFunctionList.push(pFunctions[j]);
+					}
+				}
+			}
+		}
+	}
+
+
+	export interface IDataFlowMap {
+		[index: string]: IDataFlow;
+	}
+
+	export class AttributeBlendContainer extends VariableBlendContainer {
+		private _pSlotBySemanticMap: IntMap = null;
+		private _pFlowsBySemanticMap: IDataFlowMap = null;
+
+		private _pFlowBySlots: util.ObjectArray = null;
+		private _pHashBySlots: util.ObjectArray = null;
+		private _pTypesBySlots: util.ObjectArray = null;
+
+		private _pBufferByBufferSlots: util.ObjectArray = null;
+		private _pHashByBufferSlots: util.ObjectArray = null;
+		private _pBufferSlotBySlots: util.ObjectArray = null;
+
+		/**@protected*/  _sHash: string = "";
+
+		inline get semantics(): string[] {
+			return this.keys;
+		}
+
+		inline get totalSlots():  number  {
+			return this._pFlowBySlots.length;
+		}
+
+		constructor() {
+			super();
+
+			this._pSlotBySemanticMap = <IntMap>{};
+			this._pFlowsBySemanticMap = <IDataFlowMap>{};
+
+			this._pFlowBySlots = new util.ObjectArray();
+			this._pHashBySlots = new util.ObjectArray();
+			this._pTypesBySlots = new util.ObjectArray();
+
+			this._pBufferByBufferSlots = new util.ObjectArray();
+			this._pHashByBufferSlots = new util.ObjectArray();
+			this._pBufferSlotBySlots = new util.ObjectArray();
+		}
+
+		inline getFlowBySemantic(sSemantic: string): IDataFlow {
+			return this._pFlowsBySemanticMap[sSemantic];
+		}
+
+		inline getFlowBySlot(iSlot:  number ): IDataFlow {
+			return this._pFlowBySlots.value(iSlot);
+		}
+
+		inline getTypeBySlot(iSlot:  number ): IAFXTypeInstruction {
+			return this._pTypesBySlots.value(iSlot);
+		}
+
+		inline getType(sSemantic: string): IAFXVariableTypeInstruction {
+			return this.getBlendType(sSemantic);
+		}
+
+		inline addAttribute(pVariable: IAFXVariableDeclInstruction): bool {
+			return this.addVariable(pVariable, EAFXBlendMode.k_Attribute);
+		}
+
+		inline hasAttrWithSemantic(sSemantic: string): bool {
+			return this.hasVariableWithName(sSemantic);
+		}
+
+		inline getAttribute(sSemantic: string): IAFXVariableDeclInstruction {
+			return this.getVariableByName(sSemantic);
+		}
+
+		inline hasTexcoord(iSlot:  number ): bool {
+			return this.hasAttrWithSemantic(DeclUsages.TEXCOORD + iSlot.toString());
+		}
+
+		inline getTexcoordVar(iSlot:  number ): IAFXVariableDeclInstruction {
+			return this.getVariableByName(DeclUsages.TEXCOORD + iSlot.toString());
+		}
+
+		clear(): void {
+			for(var i:  number  = 0; i < this.semantics.length; i++){
+				var sSemantic: string = this.semantics[i];
+				this._pSlotBySemanticMap[sSemantic] = -1;
+				this._pFlowsBySemanticMap[sSemantic] = null;
+			}
+
+			this._pFlowBySlots.clear(false);
+			this._pHashBySlots.clear(false);
+
+			this._pBufferByBufferSlots.clear(false);
+			this._pHashByBufferSlots.clear(false);
+			this._pBufferSlotBySlots.clear(false);
+
+			this._sHash = "";
+		}
+
+
+
+		initFromBufferMap(pMap: util.BufferMap): bool {
+			this.clear();
+
+			if(isNull(pMap)){
+				logger.setSourceLocation( "fx/BlendContainers.ts" , 299 ); logger.warning("Yoy don`t set any buffermap for render"); ;
+				return false;
+			}
+
+			var pFlows: IDataFlow[] = pMap.flows;
+			var pSemanticList: string[] = this.semantics;
+
+			for(var i:  number  = 0; i < pSemanticList.length; i++) {
+				var sSemantic: string = pSemanticList[i];
+				var pFindFlow: IDataFlow = pMap.getFlow(sSemantic, true);
+
+				this._pFlowsBySemanticMap[sSemantic] = pFindFlow;
+
+				if(!isNull(pFindFlow)){
+					var iBufferSlot:  number  = -1;
+
+					if (pFindFlow.type === EDataFlowTypes.MAPPABLE) {
+						if(!this.getType(sSemantic).isPointer()) {
+							logger.setSourceLocation( "fx/BlendContainers.ts" , 317 ); logger.warning("You try to put pointer data into non-pointer attribute with semantic '" + sSemantic + "'"); ;
+							return false;
+						}
+
+						var iSlot:  number  = this._pFlowBySlots.indexOf(pFindFlow);
+
+
+						if (iSlot !== -1) {
+							this._pHashBySlots.value(iSlot) += this.getType(sSemantic).getGuid().toString() + "*";
+							this._pSlotBySemanticMap[sSemantic] = iSlot;
+
+							iBufferSlot = this._pBufferSlotBySlots.value(iSlot);
+							this._pHashByBufferSlots.value(iBufferSlot) += iSlot.toString() + "$";
+							continue;
+						}
+
+						iBufferSlot = this._pBufferByBufferSlots.indexOf(pFindFlow.data.buffer);
+						iSlot = this._pFlowBySlots.length;
+
+						if(iBufferSlot !== -1){
+							this._pHashByBufferSlots.value(iBufferSlot) += iSlot.toString() + "$";
+						}
+						else {
+							iBufferSlot = this._pBufferByBufferSlots.length;
+							this._pBufferByBufferSlots.push(pFindFlow.data.buffer);
+							this._pHashByBufferSlots.push(this._pFlowBySlots.length.toString() + "$");
+						}
+					}
+					else if(this.getType(sSemantic).isStrictPointer()) {
+						logger.setSourceLocation( "fx/BlendContainers.ts" , 346 ); logger.warning("You try to put non-pointer data into pointer attribute with semantic '" + sSemantic + "'"); ;
+						return false;
+					}
+
+
+//new slot
+					if(pFindFlow.type === EDataFlowTypes.MAPPABLE){
+						this._pTypesBySlots.push(Effect.getSystemType("ptr"));
+					}
+					else {
+						this._pTypesBySlots.push(this.getType(sSemantic).getBaseType());
+					}
+
+					this._pSlotBySemanticMap[sSemantic] = this._pFlowBySlots.length;
+					this._pFlowBySlots.push(pFindFlow);
+					this._pHashBySlots.push(this.getType(sSemantic).getGuid().toString() + "*");
+
+					this._pBufferSlotBySlots.push(iBufferSlot);
+
+
+				}
+			}
+
+			this._sHash = "";
+			for(var i:  number  = 0; i < this._pHashBySlots.length; i++) {
+				this._sHash += this._pHashBySlots.value(i) + "*";
+			}
+
+			for(var i:  number  = 0; i < this._pHashByBufferSlots.length; i++) {
+				this._sHash += this._pHashByBufferSlots.value(i) + "$";
+			}
+		}
+
+		inline getHash(): string {
+			return this._sHash;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra.fx {
+	export class TexcoordSwapper {
+		/**@protected*/  _pTmpToTex: string[] = null;
+		/**@protected*/  _pTexToTmp: string[]= null;
+		/**@protected*/  _pTexcoords:  number [] = null;
+
+		/**@protected*/  _sTmpToTexCode: string = "";
+		/**@protected*/  _sTexToTmpCode: string = "";
+
+		/**@protected*/  _iMaxTexcoords:  number  = 0;
+
+		constructor() {
+			this._iMaxTexcoords = core.pool.resources.SurfaceMaterial.MAX_TEXTURES_PER_SURFACE;
+			this._pTmpToTex = new Array(this._iMaxTexcoords);
+			this._pTexToTmp = new Array(this._iMaxTexcoords);
+			this._pTexcoords = new Array(this._iMaxTexcoords);
+		}
+
+		inline getTmpDeclCode(): string {
+			return this._sTexToTmpCode;
+		}
+
+		inline getTecoordSwapCode(): string {
+			return this._sTmpToTexCode;
+		}
+
+		clear(): void {
+			for(var i:  number  = 0; i < this._iMaxTexcoords; i++){
+				this._pTmpToTex[i] = "";
+				this._pTexToTmp[i] = "";
+				this._pTexcoords[i] = 0;
+			}
+
+			this._sTmpToTexCode = "";
+			this._sTexToTmpCode = "";
+		}
+
+		generateSwapCode(pMaterial: core.pool.resources.SurfaceMaterial, pAttrConatiner: AttributeBlendContainer): void {
+			this.clear();
+
+			if(isNull(pMaterial)){
+				return;
+			}
+//TODO: do it faster in one for
+			var pTexcoords:  number [] = this._pTexcoords;
+
+			for(var i:  number  = 0; i < this._iMaxTexcoords; i++){
+				var iTexcoord:  number  = pMaterial.texcoord(i);
+
+				if(iTexcoord !== i && pAttrConatiner.hasTexcoord(i)) {
+					var pAttr = pAttrConatiner.getTexcoordVar(i);
+
+					this._pTexToTmp[i] = pAttr.getType().getBaseType().getRealName() + " " +
+										 "T" + i.toString() + "=" + pAttr.getRealName() + ";";
+
+					this._sTexToTmpCode += this._pTexToTmp[i] + "\n";
+				}
+
+				if(!pAttrConatiner.hasTexcoord(iTexcoord)){
+					pTexcoords[iTexcoord] = 0;
+				}
+				else {
+					pTexcoords[iTexcoord] = iTexcoord;
+				}
+			}
+
+			for(var i:  number  = 0; i < this._iMaxTexcoords; i++){
+				if(pTexcoords[i] !== i && pAttrConatiner.hasTexcoord(i)){
+					var pAttr = pAttrConatiner.getTexcoordVar(i);
+
+					if(this._pTexToTmp[pTexcoords[i]] !== ""){
+						this._pTmpToTex[i] = pAttr.getRealName() + "=" + this._pTexToTmp[pTexcoords[i]] + ";";
+					}
+					else {
+						this._pTmpToTex[i] = pAttr.getRealName() + "=" +
+											 pAttrConatiner.getTexcoordVar(pTexcoords[i]).getRealName() + ";";
+					}
+
+					this._sTmpToTexCode += this._pTmpToTex[i] + "\n";
+				}
+			}
+		}
+	}
+}
+
+
+
+module akra.fx {
+	export class PassBlend implements IAFXPassBlend {
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } ;
+
+		private _pComposer: IAFXComposer = null;
+		private _pShaderProgramByHashMap: IAFXShaderProgramMap = null;
+
+
+		private _pExtSystemDataV: ExtSystemDataContainer = null;
+		private _pComplexTypeContainerV: ComplexTypeBlendContainer = null;
+		private _pForeignContainerV: VariableBlendContainer = null;
+		private _pUniformContainerV: VariableBlendContainer = null;
+		private _pSharedContainerV: VariableBlendContainer = null;
+		private _pGlobalContainerV: VariableBlendContainer = null;
+		private _pAttributeContainerV: AttributeBlendContainer = null;
+		private _pVaryingContainerV: VariableBlendContainer = null;
+		private _pVertexOutType: IAFXTypeInstruction = null;
+		private _pUsedFunctionListV: IAFXFunctionDeclInstruction[] = null;
+		private _pPassFunctionListV: IAFXFunctionDeclInstruction[] = null;
+		private _pTextureMapV: BoolMap = null;
+
+		private _pExtSystemDataP: ExtSystemDataContainer = null;
+		private _pComplexTypeContainerP: ComplexTypeBlendContainer = null;
+		private _pForeignContainerP: VariableBlendContainer = null;
+		private _pUniformContainerP: VariableBlendContainer = null;
+		private _pSharedContainerP: VariableBlendContainer = null;
+		private _pGlobalContainerP: VariableBlendContainer = null;
+		private _pVaryingContainerP: VariableBlendContainer = null;
+		private _pUsedFunctionListP: IAFXFunctionDeclInstruction[] = null;
+		private _pPassFunctionListP: IAFXFunctionDeclInstruction[] = null;
+		private _pTextureMapP: BoolMap = null;
+
+		private _hasEmptyVertex: bool = true;
+		private _hasEmptyPixel: bool = true;
+
+
+//Code fragments
+
+		private _sUniformSamplerCodeV: string = "";
+		private _sAttrDeclCode: string = "";
+
+
+
+
+		private _sUniformSamplerCodeP: string = "";
+
+		private _pDefaultSamplerBlender: SamplerBlender = null;
+		private _pTexcoordSwapper: TexcoordSwapper = null;
+
+		static private texcoordSwapper: TexcoordSwapper = null;
+
+		constructor(pComposer: IAFXComposer){
+			this._pComposer = pComposer;
+
+			this._pShaderProgramByHashMap = <IAFXShaderProgramMap>{};
+
+
+			this._pExtSystemDataV = new ExtSystemDataContainer();
+			this._pComplexTypeContainerV = new ComplexTypeBlendContainer();
+			this._pForeignContainerV = new VariableBlendContainer();
+			this._pUniformContainerV = new VariableBlendContainer();
+			this._pSharedContainerV = new VariableBlendContainer();
+			this._pGlobalContainerV = new VariableBlendContainer();
+			this._pAttributeContainerV = new AttributeBlendContainer();
+			this._pVaryingContainerV = new VariableBlendContainer();
+			this._pVertexOutType = Effect.getBaseVertexOutType();
+			this._pUsedFunctionListV = [];
+			this._pPassFunctionListV = [];
+			this._pTextureMapV = <BoolMap>{};
+
+			this._pExtSystemDataP = new ExtSystemDataContainer();
+			this._pComplexTypeContainerP = new ComplexTypeBlendContainer();
+			this._pForeignContainerP = new VariableBlendContainer();
+			this._pUniformContainerP = new VariableBlendContainer();
+			this._pSharedContainerP = new VariableBlendContainer();
+			this._pGlobalContainerP = new VariableBlendContainer();
+			this._pVaryingContainerP = new VariableBlendContainer();
+			this._pUsedFunctionListP = [];
+			this._pPassFunctionListP = [];
+			this._pTextureMapP = <BoolMap>{};
+
+			this._pDefaultSamplerBlender = Composer.pDefaultSamplerBlender;
+
+			if(isNull(PassBlend.texcoordSwapper)){
+				PassBlend.texcoordSwapper = new TexcoordSwapper();
+			}
+
+			this._pTexcoordSwapper = PassBlend.texcoordSwapper;
+		}
+
+		initFromPassList(pPassList: IAFXPassInstruction[]): bool {
+			for(var i:  number  = 0; i < pPassList.length; i++){
+				if(!this.addPass(pPassList[i])) {
+					return false;
+				}
+			}
+
+			if(!this.finalizeBlend()){
+				return false;
+			}
+
+			return true;
+		}
+
+		generateShaderProgram(pPassInput: IAFXPassInputBlend,
+							  pSurfaceMaterial: ISurfaceMaterial,
+							  pBuffer: IBufferMap): IAFXShaderProgram {
+
+// var pSamplerBlender: SamplerBlender = this._pDefaultSamplerBlender;
+
+			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
+
+			var sSamplerPartHash: string = this.prepareSamplers(pPassInput);
+			var sMaterialPartHash: string = this.prepareSurfaceMaterial(pSurfaceMaterial);
+			var sBufferPartHash: string = this.prepareBufferMap(pBuffer);
+
+			var sTotalHash: string = sSamplerPartHash + sMaterialPartHash + sBufferPartHash;
+
+			var pProgram: IAFXShaderProgram = this.getProgramByHash(sTotalHash);
+
+			if(isNull(pProgram)) {
+				this.swapTexcoords(pSurfaceMaterial);
+				this.generateShaderCode();
+			}
+
+
+			logger.setSourceLocation( "fx/PassBlend.ts" , 139 ); logger.log("generateShaderProgram. HASH: ", sTotalHash, this._pTexcoordSwapper.getTmpDeclCode(), this._pTexcoordSwapper.getTecoordSwapCode());
+                                                            ;
+// LOG(this._pAttributeContainerV);
+			logger.setSourceLocation( "fx/PassBlend.ts" , 141 ); logger.log(pBuffer, pBuffer.toString()); ;
+
+			return null;
+		}
+
+		private inline getProgramByHash(sHash: string): IAFXShaderProgram {
+			return this._pShaderProgramByHashMap[sHash] || null;
+		}
+
+		private finalizeBlend(): bool {
+			if(!this.finalizeBlendForVertex()) {
+				return false;
+			}
+
+			if(!this.finalizeBlendForPixel()) {
+				return false;
+			}
+
+			return true;
+		}
+
+		private addPass(pPass: IAFXPassInstruction): bool {
+			var pVertex: IAFXFunctionDeclInstruction = pPass.getVertexShader();
+			var pPixel: IAFXFunctionDeclInstruction = pPass.getPixelShader();
+
+			var pForeignMap: IAFXVariableDeclMap = null;
+			var pGlobalMap: IAFXVariableDeclMap = null;
+			var pSharedMap: IAFXVariableDeclMap = null;
+			var pUniformMap: IAFXVariableDeclMap = null;
+			var pTextureMap: IAFXVariableDeclMap = null;
+			var pAttributeMap: IAFXVariableDeclMap = null;
+			var pVaryingMap: IAFXVariableDeclMap = null;
+			var pComplexTypeMap: IAFXTypeMap = null;
+
+
+			var pForeignKeys:  number [] = null;
+			var pGlobalKeys:  number [] = null;
+			var pSharedKeys:  number [] = null;
+			var pUniformKeys:  number [] = null;
+			var pTextureKeys:  number [] = null;
+			var pAttributeKeys:  number [] = null;
+			var pVaryingKeys:  number [] = null;
+			var pComplexTypeKeys:  number [] = null;
+
+			var pForeign: IAFXVariableDeclInstruction = null;
+			var pGlobal: IAFXVariableDeclInstruction = null;
+			var pShared: IAFXVariableDeclInstruction = null;
+			var pUniform: IAFXVariableDeclInstruction = null;
+			var pTexture: IAFXVariableDeclInstruction = null;
+			var pAttribute: IAFXVariableDeclInstruction = null;
+			var pVarying: IAFXVariableDeclInstruction = null;
+			var pComplexType: IAFXTypeInstruction = null;
+
+			var pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
+			var pUsedFunction: IAFXFunctionDeclInstruction = null;
+
+			if(!isNull(pVertex)) {
+				this._hasEmptyVertex = false;
+
+//blend system data
+				this._pExtSystemDataV.addFromFunction(pVertex);
+
+//blend foreigns
+				pForeignMap = pVertex._getForeignVariableMap();
+				pForeignKeys = pVertex._getForeignVariableKeys();
+
+				if(!isNull(pForeignKeys)){
+					for(var i:  number  = 0; i < pForeignKeys.length; i++){
+						pForeign = pForeignMap[pForeignKeys[i]];
+
+						if(!this._pForeignContainerV.addVariable(pForeign, EAFXBlendMode.k_Foreign)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 212 ); logger.error("Could not add foreign variable"); ;
+							return false;
+						}
+					}
+				}
+
+//blend globals
+				pGlobalMap = pVertex._getGlobalVariableMap();
+				pGlobalKeys = pVertex._getGlobalVariableKeys();
+
+				if(!isNull(pGlobalKeys)){
+					for(var i:  number  = 0; i < pGlobalKeys.length; i++){
+						pGlobal = pGlobalMap[pGlobalKeys[i]];
+
+						if(!this._pGlobalContainerV.addVariable(pGlobal, EAFXBlendMode.k_Global)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 227 ); logger.error("Could not add global variable"); ;
+							return false;
+						}
+					}
+				}
+
+//blend shareds
+				pSharedMap = pVertex._getSharedVariableMap();
+				pSharedKeys = pVertex._getSharedVariableKeys();
+
+				if(!isNull(pSharedKeys)){
+					for(var i:  number  = 0; i < pSharedKeys.length; i++){
+						pShared = pSharedMap[pSharedKeys[i]];
+
+						if(!this._pSharedContainerV.addVariable(pShared, EAFXBlendMode.k_Shared)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 242 ); logger.error("Could not add shared variable"); ;
+							return false;
+						}
+					}
+				}
+
+//TODO: blend uniforms
+				pUniformMap = pVertex._getUniformVariableMap();
+				pUniformKeys = pVertex._getUniformVariableKeys();
+
+				if(!isNull(pUniformKeys)){
+					for(var i:  number  = 0; i < pUniformKeys.length; i++){
+						pUniform = pUniformMap[pUniformKeys[i]];
+
+						if(isNull(pUniform)){
+							continue;
+						}
+
+						if(!this._pUniformContainerV.addVariable(pUniform, EAFXBlendMode.k_Uniform)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 261 ); logger.error("Could not add uniform variable"); ;
+							return false;
+						}
+					}
+				}
+
+//TODO: blend textures
+				pTextureMap = pVertex._getTextureVariableMap();
+				pTextureKeys = pVertex._getTextureVariableKeys();
+
+				if(!isNull(pTextureKeys)){
+					for(var i:  number  = 0; i < pTextureKeys.length; i++){
+						pTexture = pTextureMap[pTextureKeys[i]];
+
+						if(isNull(pTexture)){
+							continue;
+						}
+
+						this._pTextureMapV[pTexture.getRealName()] = true;
+					}
+				}
+
+
+//TODO: blend attributes
+				pAttributeMap = pVertex._getAttributeVariableMap();
+				pAttributeKeys = pVertex._getAttributeVariableKeys();
+
+				if(!isNull(pAttributeKeys)){
+					for(var i:  number  = 0; i < pAttributeKeys.length; i++){
+						pAttribute = pAttributeMap[pAttributeKeys[i]];
+
+						if(!this._pAttributeContainerV.addAttribute(pAttribute)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 293 ); logger.error("Could not add attribute variable"); ;
+							return false;
+						}
+					}
+				}
+
+//TODO: blend varyings
+				pVaryingMap = pVertex._getVaryingVariableMap();
+				pVaryingKeys = pVertex._getVaryingVariableKeys();
+
+				if(!isNull(pVaryingKeys)){
+					for(var i:  number  = 0; i < pVaryingKeys.length; i++){
+						pVarying = pVaryingMap[pVaryingKeys[i]];
+
+						if(!this._pVaryingContainerV.addVariable(pVarying, EAFXBlendMode.k_Varying)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 308 ); logger.error("Could not add varying variable"); ;
+							return false;
+						}
+					}
+				}
+
+//blend used type
+				pComplexTypeMap = pVertex._getUsedComplexTypeMap();
+				pComplexTypeKeys = pVertex._getUsedComplexTypeKeys();
+
+				if(!isNull(pComplexTypeKeys)){
+					for(var i:  number  = 0; i < pComplexTypeKeys.length; i++){
+						pComplexType = pComplexTypeMap[pComplexTypeKeys[i]];
+
+						if(!this._pComplexTypeContainerV.addComplexType(pComplexType)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 323 ); logger.error("Could not add type declaration"); ;
+							return false;
+						}
+					}
+				}
+
+//blend used functions
+				pUsedFunctionList = pVertex._getUsedFunctionList();
+
+				if(!isNull(pUsedFunctionList)){
+					for(var i:  number  = 0; i < pUsedFunctionList.length; i++) {
+						pUsedFunction = pUsedFunctionList[i];
+
+						if(this._pUsedFunctionListV.indexOf(pUsedFunction) === -1){
+							this._pUsedFunctionListV.push(pUsedFunction);
+						}
+					}
+				}
+
+				var pVertexOut: IAFXTypeInstruction = pVertex.getReturnType().getBaseType();
+
+				this._pVertexOutType = this._pVertexOutType.blend(pVertexOut, EAFXBlendMode.k_VertexOut);
+				this._pPassFunctionListV.push(pVertex);
+			}
+
+			if(!isNull(pPixel)) {
+				this._hasEmptyPixel = false;
+//blend system data
+				this._pExtSystemDataP.addFromFunction(pPixel);
+
+//blend foreigns
+				pForeignMap = pPixel._getForeignVariableMap();
+				pForeignKeys = pPixel._getForeignVariableKeys();
+
+				if(!isNull(pForeignKeys)){
+					for(var i:  number  = 0; i < pForeignKeys.length; i++){
+						pForeign = pForeignMap[pForeignKeys[i]];
+
+						if(!this._pForeignContainerP.addVariable(pForeign, EAFXBlendMode.k_Foreign)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 362 ); logger.error("Could not add foreign variable"); ;
+							return false;
+						}
+					}
+				}
+
+//blend globals
+				pGlobalMap = pPixel._getGlobalVariableMap();
+				pGlobalKeys = pPixel._getGlobalVariableKeys();
+
+				if(!isNull(pGlobalKeys)){
+					for(var i:  number  = 0; i < pGlobalKeys.length; i++){
+						pGlobal = pGlobalMap[pGlobalKeys[i]];
+
+						if(!this._pGlobalContainerP.addVariable(pGlobal, EAFXBlendMode.k_Global)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 377 ); logger.error("Could not add global variable"); ;
+							return false;
+						}
+					}
+				}
+
+//blend shareds
+				pSharedMap = pPixel._getSharedVariableMap();
+				pSharedKeys = pPixel._getSharedVariableKeys();
+
+				if(!isNull(pSharedKeys)){
+					for(var i:  number  = 0; i < pSharedKeys.length; i++){
+						pShared = pSharedMap[pSharedKeys[i]];
+
+						if(!this._pSharedContainerP.addVariable(pShared, EAFXBlendMode.k_Shared)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 392 ); logger.error("Could not add shared variable"); ;
+							return false;
+						}
+					}
+				}
+
+//TODO: blend uniforms
+				pUniformMap = pPixel._getUniformVariableMap();
+				pUniformKeys = pPixel._getUniformVariableKeys();
+
+				if(!isNull(pUniformKeys)){
+					for(var i:  number  = 0; i < pUniformKeys.length; i++){
+						pUniform = pUniformMap[pUniformKeys[i]];
+
+						if(isNull(pUniform)){
+							continue;
+						}
+
+						if(!this._pUniformContainerP.addVariable(pUniform, EAFXBlendMode.k_Uniform)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 411 ); logger.error("Could not add uniform variable"); ;
+							return false;
+						}
+					}
+				}
+
+//TODO: blend textures
+				pTextureMap = pPixel._getTextureVariableMap();
+				pTextureKeys = pPixel._getTextureVariableKeys();
+
+				if(!isNull(pTextureKeys)){
+					for(var i:  number  = 0; i < pTextureKeys.length; i++){
+						pTexture = pTextureMap[pTextureKeys[i]];
+
+						if(isNull(pTexture)){
+							continue;
+						}
+
+						this._pTextureMapP[pTexture.getRealName()] = true;
+					}
+				}
+
+//TODO: blend varyings
+				pVaryingMap = pPixel._getVaryingVariableMap();
+				pVaryingKeys = pPixel._getVaryingVariableKeys();
+
+				if(!isNull(pVaryingKeys)){
+					for(var i:  number  = 0; i < pVaryingKeys.length; i++){
+						pVarying = pVaryingMap[pVaryingKeys[i]];
+
+						if(!this._pVaryingContainerP.addVariable(pVarying, EAFXBlendMode.k_Varying)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 442 ); logger.error("Could not add varying variable"); ;
+							return false;
+						}
+					}
+				}
+
+//blend used type
+				pComplexTypeMap = pPixel._getUsedComplexTypeMap();
+				pComplexTypeKeys = pPixel._getUsedComplexTypeKeys();
+
+				if(!isNull(pComplexTypeKeys)){
+					for(var i:  number  = 0; i < pComplexTypeKeys.length; i++){
+						pComplexType = pComplexTypeMap[pComplexTypeKeys[i]];
+
+						if(!this._pComplexTypeContainerP.addComplexType(pComplexType)){
+							logger.setSourceLocation( "fx/PassBlend.ts" , 457 ); logger.error("Could not add type declaration"); ;
+							return false;
+						}
+					}
+				}
+
+//blend used functions
+				pUsedFunctionList = pPixel._getUsedFunctionList();
+
+				if(!isNull(pUsedFunctionList)){
+					for(var i:  number  = 0; i < pUsedFunctionList.length; i++) {
+						pUsedFunction = pUsedFunctionList[i];
+
+						if(this._pUsedFunctionListP.indexOf(pUsedFunction) === -1){
+							this._pUsedFunctionListP.push(pUsedFunction);
+						}
+					}
+				}
+
+				this._pPassFunctionListP.push(pPixel);
+			}
+
+			return true;
+		}
+
+		private finalizeBlendForVertex(): bool {
+			if(this._hasEmptyVertex){
+				return true;
+			}
+
+			if(!this.finalizeComplexTypeForShader(EFunctionType.k_Vertex)){
+				return false;
+			}
+
+			this._pAttributeContainerV.clear();
+
+			return true;
+		}
+
+		private finalizeBlendForPixel(): bool {
+			if(this._hasEmptyPixel){
+				return true;
+			}
+
+			if(!this.finalizeComplexTypeForShader(EFunctionType.k_Pixel)){
+				return false;
+			}
+
+			return true;
+		}
+
+		private finalizeComplexTypeForShader(eType: EFunctionType): bool {
+			var pTypeContainer: ComplexTypeBlendContainer = null;
+
+			var pUniformContainer: VariableBlendContainer = null;
+			var pGlobalContainer: VariableBlendContainer = null;
+			var pSharedContainer: VariableBlendContainer = null;
+			var pUsedFunctions: IAFXFunctionDeclInstruction[] = null;
+
+			var pAttributeContainer: AttributeBlendContainer = null;
+
+
+			if(eType === EFunctionType.k_Vertex){
+				pTypeContainer = this._pComplexTypeContainerV;
+				pUniformContainer = this._pUniformContainerV;
+				pGlobalContainer = this._pGlobalContainerV;
+				pSharedContainer = this._pSharedContainerV;
+				pUsedFunctions = this._pUsedFunctionListV;
+				pAttributeContainer = this._pAttributeContainerV;
+			}
+			else if(eType === EFunctionType.k_Pixel){
+				pTypeContainer = this._pComplexTypeContainerP;
+				pUniformContainer = this._pUniformContainerP;
+				pGlobalContainer = this._pGlobalContainerP;
+				pSharedContainer = this._pSharedContainerP;
+				pUsedFunctions = this._pUsedFunctionListP;
+			}
+
+			if (!pTypeContainer.addFromVarConatiner(pUniformContainer) ||
+				!pTypeContainer.addFromVarConatiner(pGlobalContainer) ||
+				!pTypeContainer.addFromVarConatiner(pSharedContainer) ||
+				!pTypeContainer.addFromVarConatiner(pAttributeContainer)){
+				return false;
+			}
+
+			if(eType === EFunctionType.k_Vertex){
+				pTypeContainer.addComplexType(this._pVertexOutType);
+			}
+
+			for(var i:  number  = 0; i < pUsedFunctions.length; i++){
+				var pReturnBaseType: IAFXTypeInstruction = pUsedFunctions[i].getReturnType().getBaseType();
+				if(pReturnBaseType.isComplex()){
+					if(!pTypeContainer.addComplexType(pReturnBaseType)){
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+
+		private inline hasUniform(pVar: IAFXVariableDeclInstruction): bool {
+			return this.hasUniformWithName(pVar.getRealName());
+		}
+
+		private inline hasUniformWithName(sName: string): bool {
+			return this._pUniformContainerV.hasVariableWithName(sName) ||
+				   this._pUniformContainerP.hasVariableWithName(sName);
+		}
+
+		private inline getUniformByName(sName: string): IAFXVariableDeclInstruction {
+			return this._pUniformContainerV.getVariableByName(sName) ||
+				   this._pUniformContainerP.getVariableByName(sName);
+		}
+
+		private prepareSamplers(pPassInput: IAFXPassInputBlend): string {
+			var pBlender: SamplerBlender = this._pDefaultSamplerBlender;
+			pBlender.clear();
+
+//Gum samplers
+			var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
+			var pSamplerKeys: string[] = pPassInput.samplerKeys;
+
+			for(var i:  number  = 0; i < pSamplerKeys.length; i++){
+				var sName: string = pSamplerKeys[i];
+
+				if(!this.hasUniformWithName(sName)){
+					continue;
+				}
+
+				var pSampler: IAFXVariableDeclInstruction = this.getUniformByName(sName);
+				var pSamplerState: IAFXSamplerState = pSamplers[sName];
+				var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerState);
+
+				if(isNull(pTexture)){
+					pBlender.addObjectToSlotById(pSampler,  0 );
+				}
+				else {
+					pBlender.addTextureSlot(pTexture.getGuid());
+					pBlender.addObjectToSlotById(pSampler, pTexture.getGuid());
+				}
+			}
+
+//Gum sampler arrays
+			var pSamplerArrays: IAFXSamplerStateListMap = pPassInput.samplerArrays;
+			var pSamplerArrayKeys: string[] = pPassInput.samplerArrayKeys;
+
+			for(var i:  number  = 0; i < pSamplerArrayKeys.length; i++){
+				var sName: string = pSamplerArrayKeys[i];
+
+				if(!this.hasUniformWithName(sName)){
+					continue;
+				}
+
+				var pSamplerStateList: IAFXSamplerState[] = pSamplerArrays[sName];
+				var isNeedToCollapse: bool = true;
+				var pTexture: ITexture = null;
+
+				for(var j:  number  = 0; j < pSamplerStateList.length; j++) {
+					if(j === 0) {
+						pTexture = pPassInput._getTextureForSamplerState(pSamplerStateList[i]);
+					}
+					else {
+						if(pTexture !== pPassInput._getTextureForSamplerState(pSamplerStateList[i])){
+							isNeedToCollapse = false;
+						}
+					}
+				}
+
+				if(isNeedToCollapse){
+					var pSamplerArray: IAFXVariableDeclInstruction = this.getUniformByName(sName);
+
+					if(isNull(pTexture)){
+						pBlender.addObjectToSlotById(pSamplerArray,  0 );
+					}
+					else {
+						pBlender.addTextureSlot(pTexture.getGuid());
+						pBlender.addObjectToSlotById(pSamplerArray, pTexture.getGuid());
+					}
+				}
+			}
+
+			return pBlender.getHash();
+		}
+
+		private inline prepareSurfaceMaterial(pMaterial: ISurfaceMaterial): string{
+			return isNull(pMaterial) ? "" :pMaterial._getHash();
+		}
+
+		private prepareBufferMap(pMap: IBufferMap): string {
+			this._pAttributeContainerV.initFromBufferMap(<util.BufferMap>pMap);
+			return this._pAttributeContainerV.getHash();
+		}
+
+		private inline swapTexcoords(pMaterial: ISurfaceMaterial): void {
+			this._pTexcoordSwapper.generateSwapCode(<core.pool.resources.SurfaceMaterial>pMaterial,
+													this._pAttributeContainerV);
+		}
+
+		private isSamplerUsedInShader(pSampler: IAFXVariableDeclInstruction, eType: EFunctionType): bool{
+			return (eType === EFunctionType.k_Vertex && this._pUniformContainerV.hasVariable(pSampler)) ||
+					(eType === EFunctionType.k_Pixel && this._pUniformContainerP.hasVariable(pSampler));
+		}
+
+		private inline generateShaderCode(): void {
+			var sVertexCode: string = "";
+			var sPixelCode: string = "";
+
+// this.setAttributes();
+			this.reduceSamplers();
+			this.reduceAttributes();
+		}
+
+		private reduceSamplers(): void {
+			var pSamplerBlender: SamplerBlender = this._pDefaultSamplerBlender;
+			var iTotalSlots:  number  = pSamplerBlender.totalActiveSlots;
+
+			var sUniformSamplerCodeV: string = "";
+			var sUniformSamplerCodeP: string = "";
+
+			for(var i:  number  = 0; i < iTotalSlots; i++){
+				var pSamplers = pSamplerBlender.getSamplersBySlot(i);
+
+				var isInVertex: bool = false;
+				var isInPixel: bool = false;
+
+				for (var j:  number  = 0; j < pSamplers.length; j++) {
+					if(i ===  0 ){
+						pSamplers.value(j).defineByZero(true);
+					}
+
+					if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Vertex)){
+						isInVertex = true;
+					}
+					if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Pixel)){
+						isInPixel = true;
+					}
+				}
+
+				var sSamplerName: string = "as" + i.toString();
+
+				if(isInVertex){
+					sUniformSamplerCodeV += "uniform " + pSamplers.value(0).getType().getBaseType().getRealName() + " " + sSamplerName + ";";
+				}
+
+				if(isInPixel){
+					sUniformSamplerCodeP += "uniform " + pSamplers.value(0).getType().getBaseType().getRealName() + " " + sSamplerName + ";";
+				}
+			}
+
+
+			this._sUniformSamplerCodeV = sUniformSamplerCodeV;
+			this._sUniformSamplerCodeP = sUniformSamplerCodeP;
+		}
+
+		private reduceAttributes(): void {
+			var pAttributeContainer: AttributeBlendContainer = this._pAttributeContainerV;
+
+			var sAttrDeclCode: string = "";
+
+			var pSemantics: string[] = pAttributeContainer.semantics;
+//1) set zero buffer maps for strict pointers attributes
+			for(var i:  number  = 0; i < pSemantics.length; i++) {
+				var sSemantic: string = pSemantics[i];
+				var pFlow: IDataFlow = pAttributeContainer.getFlowBySemantic(sSemantic);
+				var pAttributeType: IAFXVariableTypeInstruction = pAttributeContainer.getType(sSemantic);
+
+				if(isNull(pFlow) && pAttributeType.isStrictPointer()) {
+					pAttributeType.getVideoBuffer().defineByZero(true);
+				}
+			}
+
+//2) gnerate real attrs
+			var iTotalSlots:  number  = pAttributeContainer.totalSlots;
+			for(var i:  number  = 0; i < iTotalSlots; i++){
+				var sAttrName: string = "aa" + i.toString();
+				var pFlow: IDataFlow = pAttributeContainer.getFlowBySlot(i);
+				var pType: IAFXTypeInstruction = pAttributeContainer.getTypeBySlot(i);
+				sAttrDeclCode += "attribute " + pType.toFinalCode() + " " + sAttrName + ";";
+			}
+
+//3) generate all needed shader vertex input declarations
+
+//4) set real attrs to shader vertex input
+//5) generate samplers for vertexTextures
+			this._sAttrDeclCode = sAttrDeclCode;
+		}
+
+		private generateSystemData(eType: EFunctionType): string {
+			var pExtBlock: ExtSystemDataContainer = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pExtBlock = this._pExtSystemDataV;
+			}
+			else {
+				pExtBlock = this._pExtSystemDataP;
+			}
+
+			var sCode: string = "";
+
+			var pMacroses = pExtBlock.macroses;
+			var pTypes = pExtBlock.types;
+			var pFunctions = pExtBlock.functions;
+
+			for(var i:  number  = 0; i < pMacroses.length; i++){
+				sCode += pMacroses[i].toFinalCode() + "\n";
+			}
+
+			for(var i:  number  = 0; i < pTypes.length; i++){
+				sCode += pTypes[i].toFinalCode() + "\n";
+			}
+
+			for(var i:  number  = 0; i < pFunctions.length; i++){
+				sCode += pFunctions[i].toFinalCode() + "\n";
+			}
+
+			return sCode;
+		}
+
+		private generateTypeDels(eType: EFunctionType): string {
+			var pTypeBlock: ComplexTypeBlendContainer = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pTypeBlock = this._pComplexTypeContainerV;
+			}
+			else {
+				pTypeBlock = this._pComplexTypeContainerP;
+			}
+
+			var sCode: string = "";
+
+			var pKeys = pTypeBlock.keys;
+			var pTypes = pTypeBlock.types;
+
+			for(var i:  number  = 0; i < pKeys.length; i++){
+				sCode += pTypes[pKeys[i]]._toDeclString() + ";\n";
+			}
+
+			return sCode;
+		}
+
+		private generateFunctionDefenitions(eType: EFunctionType): string {
+			var pFunctions: IAFXFunctionDeclInstruction[] = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pFunctions = this._pUsedFunctionListV;
+			}
+			else {
+				pFunctions = this._pUsedFunctionListP;
+			}
+
+			var sCode: string = "";
+
+			for(var i:  number  = 0; i < pFunctions.length; i++){
+				sCode += pFunctions[i].toFinalDefCode() + ";\n";
+			}
+
+			return sCode;
+		}
+
+		private generateSharedVars(eType: EFunctionType): string {
+			var pVars: VariableBlendContainer = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pVars = this._pSharedContainerV;
+			}
+			else {
+				pVars = this._pSharedContainerP;
+			}
+
+			var sCode: string = "";
+			var pKeys = pVars.keys;
+
+			for(var i:  number  = 0; i < pKeys.length; i++){
+				sCode += pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+			}
+
+			return sCode;
+		}
+
+		private generateVertexOut(): string {
+			return this._pVertexOutType._toDeclString() + " Out";
+		}
+
+		private generateVaryings(eType: EFunctionType): string {
+			var pVars: VariableBlendContainer = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pVars = this._pVaryingContainerV;
+			}
+			else {
+				pVars = this._pVaryingContainerP;
+			}
+
+			var sCode: string = "";
+			var pKeys = pVars.keys;
+
+			for (var i:  number  = 0; i < pKeys.length; i++) {
+				sCode += "varying " + pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+			}
+
+			return sCode;
+		}
+
+		private generateUniformVars(eType: EFunctionType): string {
+			var pVars: VariableBlendContainer = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pVars = this._pUniformContainerV;
+			}
+			else {
+				pVars = this._pUniformContainerP;
+			}
+
+			var sCode: string = "";
+			var pKeys = pVars.keys;
+
+			for(var i:  number  = 0; i < pKeys.length; i++){
+				if(pVars.getBlendType(pKeys[i]).isSampler()){
+					continue;
+				}
+
+				sCode += "uniform " + pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+			}
+
+			return sCode;
+		}
+
+// private generateUniformSamplers(eType: EFunctionType): string {
+// 	var pSamplerBlender: I = null;
+
+// 	if(eType === EFunctionType.k_Vertex){
+// 		pVars = this._pUniformContainerV;
+// 	}
+// 	else {
+// 		pVars = this._pUniformContainerP;
+// 	}
+
+// 	var sCode: string = "";
+// 	var pKeys = pVars.keys;
+
+// 	for(var i: uint = 0; i < pKeys.length; i++){
+// 		if(pVars.getBlendType(pKeys[i]).isSampler()){
+// 			continue;
+// 		}
+
+// 		sCode += "uniform " + pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+// 	}
+
+// 	return sCode;
+// }
+
+		private generateGlobalVars(eType: EFunctionType): string {
+			var pVars: VariableBlendContainer = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pVars = this._pGlobalContainerV;
+			}
+			else {
+				pVars = this._pGlobalContainerP;
+			}
+
+			var sCode: string = "";
+			var pKeys = pVars.keys;
+
+			for(var i:  number  = 0; i < pKeys.length; i++){
+				sCode += pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+			}
+
+			return sCode;
+		}
+
+		private generateFunctions(eType: EFunctionType): string {
+			var pFunctions: IAFXFunctionDeclInstruction[] = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pFunctions = this._pUsedFunctionListV;
+			}
+			else {
+				pFunctions = this._pUsedFunctionListP;
+			}
+
+			var sCode: string = "";
+
+			for(var i:  number  = 0; i < pFunctions.length; i++){
+				sCode += pFunctions[i].toFinalCode() + ";\n";
+			}
+
+			return sCode;
+		}
+
+		private generatePassFunctions(eType: EFunctionType): string {
+			var pFunctions: IAFXFunctionDeclInstruction[] = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pFunctions = this._pPassFunctionListV;
+			}
+			else {
+				pFunctions = this._pPassFunctionListP;
+			}
+
+			var sCode: string = "";
+
+			for(var i:  number  = 0; i < pFunctions.length; i++){
+				sCode += pFunctions[i].toFinalCode() + ";\n";
+			}
+
+			return sCode;
+		}
+
+		private generateAttributes(): string {
+			return "";
+		}
+
+// private inline setAttributes()
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.fx {
+	export enum EShaderVariableType {
+        k_NotVar = 0,
+
+        k_Texture = 2,
+
+        k_Float,
+        k_Int,
+        k_Bool,
+
+        k_Float2,
+        k_Int2,
+        k_Bool2,
+
+        k_Float3,
+        k_Int3,
+        k_Bool3,
+
+        k_Float4,
+        k_Int4,
+        k_Bool4,
+
+        k_Float2x2,
+        k_Float3x3,
+        k_Float4x4,
+
+        k_Sampler2D,
+        k_SamplerCUBE,
+
+        k_CustomSystem,
+        k_Complex
+    }
+
+
+    export interface IAFXShaderVarTypeMap {
+		[index: string]: EShaderVariableType;
+		[index:  number ]: EShaderVariableType;
+	}
+
+	export class PassInputBlend implements IAFXPassInputBlend {
+		private _isFirstInit: bool = true;
+		private _pCreator: IAFXComponentPassInputBlend = null;
+
+
+		private _pUniformTypeMap: IAFXShaderVarTypeMap = null;
+		private _isUniformArrayMap: BoolMap = null;
+
+		private _pForeignTypeMap: IAFXShaderVarTypeMap = null;
+
+		private _pTextureTypeMap: IAFXShaderVarTypeMap = null;
+
+
+		private _bNeedToCalcBlend: bool = true;
+		private _bNeedToCalcShader: bool = true;
+
+		private _iLastPassBlendId:  number  = 0;
+		private _iLastShaderId:  number  = 0;
+
+
+		samplers: IAFXSamplerStateMap = null;
+		samplerArrays: IAFXSamplerStateListMap = null;
+		samplerArrayLength: IntMap = null;
+
+		uniforms: any = null;
+		foreigns: any = null;
+		textures: any = null;
+
+
+		samplerKeys: string[] = null;
+		samplerArrayKeys: string[] = null;
+
+		uniformKeys: string[] = null;
+		foreignKeys: string[] = null;
+		textureKeys: string[] = null;
+
+
+		constructor(pCreator: IAFXComponentPassInputBlend){
+			this._pCreator = pCreator;
+
+			this.init();
+		}
+
+		hasTexture(sName: string): bool {
+			if(!this._pTextureTypeMap[sName]){
+				this._pTextureTypeMap[sName] = EShaderVariableType.k_NotVar;
+				return false;
+			}
+
+			return true;
+		}
+
+		setUniform(sName: string, pValue: any): void {
+			if(!this._pUniformTypeMap[sName]){
+				this._pUniformTypeMap[sName] = EShaderVariableType.k_NotVar;
+				return;
+			}
+
+//Check type
+
+			this.uniforms[sName] = pValue;
+		}
+
+		setForeign(sName: string, pValue: any): void {
+			if(!this._pForeignTypeMap[sName]){
+				this._pForeignTypeMap[sName] = EShaderVariableType.k_NotVar;
+				return;
+			}
+
+//Check type
+
+			var pOldValue: any = this.foreigns[sName];
+
+			if(pOldValue !== pValue) {
+				this._bNeedToCalcBlend = true;
+				this._bNeedToCalcShader = true;
+			}
+
+			this.foreigns[sName] = pOldValue;
+		}
+
+
+		setTexture(sName: string, pValue: any): void {
+			if(!this._pTextureTypeMap[sName]){
+				this._pTextureTypeMap[sName] = EShaderVariableType.k_NotVar;
+				return;
+			}
+
+//Check type
+
+			this.textures[sName] = pValue;
+		}
+
+		setSamplerTexture(sName: string, pTexture: any): void{
+// if(!this._pHasUniformName[sName]){
+// 	this._pHasUniformName[sName] = false;
+// 	return;
+// }
+
+// var pOldValue: any =  this.uniforms[sName].texture;
+
+// if(pOldValue !== pTexture) {
+// 	this._bNeedToCalcShader = true;
+// }
+
+// this.uniforms[sName].texture = pTexture;
+		}
+
+		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void {
+//TODO: apply surface material
+		}
+
+		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture {
+			var pTexture: ITexture = null;
+
+			if(!isNull(pSamplerState.texture)){
+				pTexture = pSamplerState.texture;
+			}
+			else if(pSamplerState.textureName !== ""){
+				if(this.hasTexture(pSamplerState.textureName)){
+					pTexture = this.textures[pSamplerState.textureName];
+				}
+			}
+
+			return pTexture;
+		}
+
+		_release(): void {
+			for(var i:  number  = 0; i < this.uniformKeys.length; i++){
+				this.uniforms[this.uniformKeys[i]] = null;
+			}
+
+			for(var i:  number  = 0; i < this.foreignKeys.length; i++){
+				this.foreigns[this.foreignKeys[i]] = null;
+			}
+
+			for(var i:  number  = 0; i < this.textureKeys.length; i++){
+				this.textures[this.textureKeys[i]] = null;
+			}
+
+			for(var i:  number  = 0; i < this.samplerKeys.length; i++){
+				this.clearSamplerState(this.samplers[this.samplerKeys[i]]);
+			}
+
+			for(var i:  number  = 0; i < this.samplerArrayKeys.length; i++){
+				var pStateList: IAFXSamplerState[] = this.samplerArrays[this.samplerArrayKeys[i]];
+
+				for(var j:  number  = 0; j < pStateList.length; j++){
+					this.clearSamplerState(pStateList[j]);
+				}
+
+				this.samplerArrayLength[this.samplerArrayKeys[i]] = 0;
+			}
+
+			this._pCreator.releasePassInput(this);
+
+			this._bNeedToCalcShader = true;
+			this._bNeedToCalcBlend = true;
+		}
+
+
+		inline _isNeedToCalcBlend(): bool {
+			return this._bNeedToCalcBlend;
+		}
+
+		inline _isNeedToCalcShader(): bool {
+			return this._bNeedToCalcBlend || this._bNeedToCalcShader;
+		}
+
+		inline _getLastPassBlendId():  number  {
+			return this._iLastPassBlendId;
+		}
+
+		inline _getLastShaderId():  number  {
+			return this._iLastShaderId;
+		}
+
+		inline _setPassBlendId(id:  number ): void {
+			this._iLastPassBlendId = id;
+		}
+
+		inline _setShaderId(id:  number ): void {
+			this._iLastShaderId = id;
+		}
+
+		private init(): void {
+			this._pUniformTypeMap = <IAFXShaderVarTypeMap>{};
+			this._isUniformArrayMap = <BoolMap>{};
+			this._pForeignTypeMap = <IAFXShaderVarTypeMap>{};
+			this._pTextureTypeMap = <IAFXShaderVarTypeMap>{};
+
+			this.samplers = <IAFXSamplerStateMap>{};
+			this.samplerArrays = <IAFXSamplerStateListMap>{};
+			this.samplerArrayLength = <IntMap>{};
+			this.uniforms = <any>{};
+			this.foreigns = <any>{};
+			this.textures = <any>{};
+
+			var pUniformKeys: string[] = this._pCreator.uniformRealNameList;
+			var pForeignKeys: string[] = this._pCreator.foreignNameList;
+			var pTextureKeys: string[] = this._pCreator.textureRealNameList;
+
+			var pUniformMap: IAFXVariableDeclMap = this._pCreator.uniformByRealName;
+			var pForeignMap: IAFXVariableDeclMap = this._pCreator.foreignByName;
+			var pTextureMap: IAFXVariableDeclMap = this._pCreator.textureByRealName;
+
+			var eType: EShaderVariableType = 0;
+			var sName: string = "";
+			var isArray: bool = false;
+
+			for(var i:  number  = 0; i < pUniformKeys.length; i++){
+				sName = pUniformKeys[i];
+
+				eType = this.getVariableType(pUniformMap[sName]);
+				isArray = this.isVarArray(pUniformMap[sName]);
+
+				this._pUniformTypeMap[sName] = eType;
+				this._isUniformArrayMap[sName] = isArray;
+
+				if(eType === EShaderVariableType.k_Sampler2D || eType === EShaderVariableType.k_SamplerCUBE){
+					if(isArray){
+						this.samplerArrays[sName] = new Array(16);
+						this.samplerArrayLength[sName] = 0;
+
+						for(var j:  number  = 0; j < this.samplerArrays[sName].length; j++) {
+							this.samplerArrays[sName][j] = this.createSamplerState();
+						}
+					}
+					else {
+						this.samplers[sName] = this.createSamplerState();
+					}
+				}
+				else {
+					this.uniforms[sName] = null;
+				}
+			}
+
+			for(var i:  number  = 0; i < pForeignKeys.length; i++){
+				sName = pForeignKeys[i];
+				eType = this.getVariableType(pForeignMap[sName]);
+
+				this._pForeignTypeMap[sName] = eType;
+				this.foreigns[sName] = null;
+			}
+
+			for(var i:  number  = 0; i < pTextureKeys.length; i++){
+				sName = pTextureKeys[i];
+				eType = EShaderVariableType.k_Texture;
+
+				this._pTextureTypeMap[sName] = eType;
+				this.textures[sName] = null;
+			}
+
+			this.samplerKeys = Object.keys(this.samplers);
+			this.samplerArrayKeys = Object.keys(this.samplerArrays);
+			this.uniformKeys = Object.keys(this.uniforms);
+			this.foreignKeys = Object.keys(this.foreigns);
+			this.textureKeys = Object.keys(this.textures);
+		}
+
+		private getVariableType(pVar: IAFXVariableDeclInstruction): EShaderVariableType {
+			var sBaseType: string = pVar.getType().getBaseType().getName();
+
+			switch(sBaseType){
+				case "texture":
+					return EShaderVariableType.k_Texture;
+
+		        case "float":
+		        	return EShaderVariableType.k_Float;
+		        case "int":
+		        	return EShaderVariableType.k_Int;
+		        case "bool":
+		        	return EShaderVariableType.k_Bool;
+
+		        case "float2":
+		        	return EShaderVariableType.k_Float2;
+		        case "int2":
+		        	return EShaderVariableType.k_Int2;
+		        case "bool2":
+		        	return EShaderVariableType.k_Bool2;
+
+		        case "float3":
+		        	return EShaderVariableType.k_Float3;
+		        case "int3":
+		        	return EShaderVariableType.k_Int3;
+		        case "bool3":
+		        	return EShaderVariableType.k_Bool3;
+
+		        case "float4":
+		        	return EShaderVariableType.k_Float4;
+		        case "int4":
+		        	return EShaderVariableType.k_Int4;
+		        case "bool4":
+		        	return EShaderVariableType.k_Bool4;
+
+		        case "float2x2":
+		        	return EShaderVariableType.k_Float2x2;
+		        case "float3x3":
+		        	return EShaderVariableType.k_Float3x3;
+		        case "float4x4":
+		        	return EShaderVariableType.k_Float4x4;
+
+		        case "sampler":
+		        case "sampler2D":
+		        	return EShaderVariableType.k_Sampler2D;
+		        case "samplerCUBE":
+		        	return EShaderVariableType.k_SamplerCUBE;
+
+		       	default:
+		       		return EShaderVariableType.k_NotVar;
+			}
+		}
+
+		private inline isVarArray(pVar: IAFXVariableDeclInstruction): bool {
+			return pVar.getType().isNotBaseArray();
+		}
+
+		private inline createSamplerState(): IAFXSamplerState {
+			return <IAFXSamplerState>{
+				textureName: "",
+				texture: null,
+				wrap_s: 0,
+				wrap_t: 0,
+				mag_filter: 0,
+				min_filter: 0
+			};
+		}
+
+		private clearSamplerState(pState: IAFXSamplerState): void {
+			pState.textureName = "";
+			pState.texture = null;
+			pState.wrap_s = 0;
+			pState.wrap_t = 0;
+			pState.mag_filter = 0;
+			pState.min_filter = 0;
+		}
+	}
+}
+
+
+
 module akra.fx {
 	export class ComponentBlend implements IAFXComponentBlend {
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } ;
 		private _pComposer: IAFXComposer = null;
 
 		private _isReady: bool = false;
 		private _sHash: string = "";
 		private _bNeedToUpdateHash: bool = false;
 
-		private _pComponentCountMap: IntMap = null;
+		private _pComponentHashMap: BoolMap = null;
 
 		private _pComponentList: IAFXComponent[] = null;
 		private _pComponentShiftList:  number [] = null;
-		private _pComponentPassNumberList:  number [] = null;
+		private _pComponentPassIdList:  number [] = null;
 
 		private _iShiftMin:  number  = 0;
 		private _iShiftMax:  number  = 0;
 
 		private _pPassesDList: IAFXPassInstruction[][] = null;
-		private _pShaderInputVarBlend: ShaderInputBlend[] = null;
+		private _pComponentInputVarBlend: ComponentPassInputBlend[] = null;
 
 		constructor(pComposer: IAFXComposer){
 			this._pComposer = pComposer;
 
-			this._pComponentCountMap = <IntMap>{};
+			this._pComponentHashMap = <BoolMap>{};
 
 			this._pComponentList = [];
 			this._pComponentShiftList = [];
-			this._pComponentPassNumberList = [];
+			this._pComponentPassIdList = [];
 		}
 
 		inline isReadyToUse(): bool {
 			return this._isReady;
+		}
+
+		inline isEmpty(): bool {
+			return this._pComponentList.length === 0;
 		}
 
 		inline getComponentCount():  number  {
@@ -61988,7 +69051,7 @@ module akra.fx {
 		}
 
 		inline containComponentHash(sComponentHash: string): bool {
-			return isDef(this._pComponentCountMap[sComponentHash]) && this._pComponentCountMap[sComponentHash] > 0;
+			return (this._pComponentHashMap[sComponentHash]);
 		}
 
 		addComponent(pComponent: IAFXComponent, iShift:  number , iPass:  number ): void {
@@ -61996,11 +69059,6 @@ module akra.fx {
 			var iPassCount:  number  = pComponent.getTotalPasses();
 
 			if(iPass ===  0xffffff ) {
-				if(!this.containComponentHash(sComponentHash)){
-					this._pComponentCountMap[sComponentHash] = 0;
-				}
-
-				this._pComponentCountMap[sComponentHash]++;
 
 				for(var i:  number  = 0; i < iPassCount; i++){
 					this.addComponent(pComponent, iShift + i, i);
@@ -62015,13 +69073,9 @@ module akra.fx {
 			var sComponentHash: string = pComponent.getHash(iShift, iPass);
 
 			if(this.containComponentHash(sComponentHash)){
-				this._pComponentCountMap[sComponentHash]++;
-				this._bNeedToUpdateHash = true;
-
-				logger.setSourceLocation( "fx/ComponentBlend.ts" , 94 ); logger.warning("You try to add already used component '" + sComponentHash + "' in blend."); ;
+				logger.setSourceLocation( "fx/ComponentBlend.ts" , 93 ); logger.warning("You try to add already used component '" + sComponentHash + "' in blend."); ;
 				return;
 			}
-
 
 			if(iShift < this._iShiftMin){
 				this._iShiftMin = iShift;
@@ -62031,10 +69085,10 @@ module akra.fx {
 				this._iShiftMax = iShift;
 			}
 
-			this._pComponentCountMap[sComponentHash] = 1;
+			this._pComponentHashMap[sComponentHash] = true;
 			this._pComponentList.push(pComponent);
 			this._pComponentShiftList.push(iShift);
-			this._pComponentPassNumberList.push(iPass);
+			this._pComponentPassIdList.push(iPass);
 
 			this._isReady = false;
 			this._bNeedToUpdateHash = true;
@@ -62046,13 +69100,11 @@ module akra.fx {
 			var iPassCount:  number  = pComponent.getTotalPasses();
 
 			if(!this.containComponentHash(sComponentHash)){
-				logger.setSourceLocation( "fx/ComponentBlend.ts" , 122 ); logger.warning("You try to remove not used component '" + sComponentHash + "' from blend."); ;
+				logger.setSourceLocation( "fx/ComponentBlend.ts" , 120 ); logger.warning("You try to remove not used component '" + sComponentHash + "' from blend."); ;
 				return;
 			}
 
 			if(iPass ===  0xffffff ) {
-				this._pComponentCountMap[sComponentHash]--;
-
 				for(var i:  number  = 0; i < iPassCount; i++){
 					this.removeComponent(pComponent, iShift + i, i);
 				}
@@ -62063,24 +69115,16 @@ module akra.fx {
 				return;
 			}
 
-			if(this._pComponentCountMap[sComponentHash] > 1){
-				this._pComponentCountMap[sComponentHash]--;
-				this._bNeedToUpdateHash = true;
-
-				logger.setSourceLocation( "fx/ComponentBlend.ts" , 143 ); logger.warning("You try to remove component '" + sComponentHash + "' from blend. But it used more then 1 time."); ;
-				return;
-			}
-
-			this._pComponentCountMap[sComponentHash] = 0;
+			this._pComponentHashMap[sComponentHash] = false;
 
 			for(var i:  number  = 0; i < this._pComponentList.length; i++){
 				if (this._pComponentList[i] === pComponent &&
 					this._pComponentShiftList[i] === iShift &&
-					this._pComponentPassNumberList[i] === iPass) {
+					this._pComponentPassIdList[i] === iPass) {
 
 					this._pComponentList.splice(i, 1);
 					this._pComponentShiftList.splice(i, 1);
-					this._pComponentPassNumberList.splice(i, 1);
+					this._pComponentPassIdList.splice(i, 1);
 					break;
 				}
 			}
@@ -62110,26 +69154,25 @@ module akra.fx {
 			}
 
 			this._pPassesDList = [];
-			this._pShaderInputVarBlend = [];
+			this._pComponentInputVarBlend = [];
 
 			for(var i:  number  = 0; i < this._pComponentList.length; i++){
 				var pComponentTechnique: IAFXTechniqueInstruction = this._pComponentList[i].getTechnique();
 				var iShift:  number  = this._pComponentShiftList[i] - this._iShiftMin;
-				var iPass:  number  = this._pComponentPassNumberList[i];
+				var iPass:  number  = this._pComponentPassIdList[i];
 
 				var pPass: IAFXPassInstruction = pComponentTechnique.getPass(iPass);
 
 				if(!isDef(this._pPassesDList[iShift])) {
 					this._pPassesDList[iShift] = [];
-					this._pShaderInputVarBlend[iShift] = new ShaderInputBlend();
+					this._pComponentInputVarBlend[iShift] = new ComponentPassInputBlend();
 				}
-
 				this._pPassesDList[iShift].push(pPass);
-				this._pShaderInputVarBlend[iShift].addDataFromPass(pPass);
+				this._pComponentInputVarBlend[iShift].addDataFromPass(pPass);
 			}
 
-			for(var i:  number  = 0; i < this._pShaderInputVarBlend.length; i++){
-				this._pShaderInputVarBlend[i].generateKeys();
+			for(var i:  number  = 0; i < this._pComponentInputVarBlend.length; i++){
+				this._pComponentInputVarBlend[i].finalizeInput();
 			}
 
 			this._isReady = true;
@@ -62137,31 +69180,67 @@ module akra.fx {
 			return true;
 		}
 
+		getPassInputForPass(iPass:  number ): IAFXPassInputBlend {
+			if(!this._isReady){
+				return null;
+			}
+
+			if(iPass < 0 || iPass > this.getTotalPasses()){
+				return null;
+			}
+
+			return this._pComponentInputVarBlend[iPass].getPassInput();
+		}
+
+		getPassListAtPass(iPass:  number ): IAFXPassInstruction[] {
+			if(!this._isReady){
+				return null;
+			}
+
+			if(iPass < 0 || iPass > this.getTotalPasses()){
+				return null;
+			}
+
+			return this._pPassesDList[iPass];
+		}
+
 		clone(): IAFXComponentBlend {
 			var pClone: IAFXComponentBlend = new ComponentBlend(this._pComposer);
 
 			pClone._setDataForClone(this._pComponentList,
 									this._pComponentShiftList,
-									this._pComponentPassNumberList,
-									this._pComponentCountMap,
+									this._pComponentPassIdList,
+									this._pComponentHashMap,
 									this._iShiftMin, this._iShiftMax);
 			return pClone;
+		}
+
+		inline _getComponentList(): IAFXComponent[] {
+			return this._pComponentList;
+		}
+
+		inline _getComponentShiftList():  number [] {
+			return this._pComponentShiftList;
+		}
+
+		inline _getComponentPassIdList():  number [] {
+			return this._pComponentPassIdList;
 		}
 
 		_setDataForClone(pComponentList: IAFXComponent[],
 						 pComponentShiftList:  number [],
 						 pComponentPassNumnerList:  number [],
-						 pComponentCountMap: IntMap,
+						 pComponentHashMap: BoolMap,
 						 iShiftMin:  number , iShiftMax:  number ): void {
 
 			for(var i:  number  = 0; i < pComponentList.length; i++){
 				this._pComponentList.push(pComponentList[i]);
 				this._pComponentShiftList.push(pComponentShiftList[i]);
-				this._pComponentPassNumberList.push(pComponentPassNumnerList[i]);
+				this._pComponentPassIdList.push(pComponentPassNumnerList[i]);
 
 				var sComponentHash: string = pComponentList[i].getHash(pComponentShiftList[i], pComponentPassNumnerList[i]);
 
-				this._pComponentCountMap[sComponentHash] = pComponentCountMap[sComponentHash];
+				this._pComponentHashMap[sComponentHash] = pComponentHashMap[sComponentHash];
 			}
 
 			this._iShiftMin = iShiftMin;
@@ -62172,17 +69251,21 @@ module akra.fx {
 		private calcHash(): string {
 			var sHash: string = "";
 
+			if(this.isEmpty()) {
+				return  "EMPTY_BLEND" ;
+			}
+
 			for(var i:  number  = 0; i < this._pComponentList.length; i++){
 				var sComponentHash: string = this._pComponentList[i].getHash(this._pComponentShiftList[i],
-																			 this._pComponentPassNumberList[i]);
-				sHash += sComponentHash + ":" + this._pComponentCountMap[sComponentHash].toString() + ":";
+																			 this._pComponentPassIdList[i]);
+				sHash += sComponentHash + ":";
 			}
 
 			return sHash;
 		}
 	}
 
-	export class ShaderInputBlend implements IAFXShaderInputBlend {
+	export class ComponentPassInputBlend implements IAFXComponentPassInputBlend {
 		private _pUniformNameToRealMap: StringMap = null;
 		private _pUniformByRealNameMap: IAFXVariableDeclMap = null;
 		private _pUniformDefaultValueMap: any = null;
@@ -62200,6 +69283,8 @@ module akra.fx {
 		private _pTextureNameList: string[] = null;
 
 		private _pForeignNameList: string[] = null;
+
+		private _pFreePassInputBlendList: IAFXPassInputBlend[] = null;
 
 		inline get uniformNameToReal(): StringMap{
 			return this._pUniformNameToRealMap;
@@ -62295,13 +69380,12 @@ module akra.fx {
 
 			for(var i in pUniformMap){
 				pVar = pUniformMap[i];
-
 				this.addUniformVariable(pVar, "", "");
 			}
 
 		}
 
-		generateKeys(): void {
+		finalizeInput(): void {
 			this._pUniformNameList = Object.keys(this._pUniformNameToRealMap);
 			this._pUniformRealNameList = Object.keys(this._pUniformByRealNameMap);
 
@@ -62309,6 +69393,21 @@ module akra.fx {
 			this._pTextureRealNameList = Object.keys(this._pTextureByRealNameMap);
 
 			this._pForeignNameList = Object.keys(this._pForeignByNameMap);
+
+			this._pFreePassInputBlendList = [];
+			this.generateNewPassInputs();
+		}
+
+		getPassInput(): IAFXPassInputBlend {
+			if(this._pFreePassInputBlendList.length === 0){
+				this.generateNewPassInputs();
+			}
+
+			return this._pFreePassInputBlendList.pop();
+		}
+
+		releasePassInput(pInput: IAFXPassInputBlend) : void {
+			this._pFreePassInputBlendList.push(pInput);
 		}
 
 		private addUniformVariable(pVariable: IAFXVariableDeclInstruction,
@@ -62333,7 +69432,7 @@ module akra.fx {
 			var pHasVar: IAFXVariableDeclInstruction = this._pUniformByRealNameMap[sRealName];
 
 			if(isDef(pHasVar) && !pHasVar.getType().isEqual(pVariable.getType())){
-				logger.setSourceLocation( "fx/ComponentBlend.ts" , 409 ); logger.warning("You used uniforms with the same real-names. Now we don`t work very well with that."); ;
+				logger.setSourceLocation( "fx/ComponentBlend.ts" , 452 ); logger.warning("You used uniforms with the same real-names. Now we don`t work very well with that."); ;
 				return;
 			}
 
@@ -62353,23 +69452,820 @@ module akra.fx {
 			}
 		}
 
+		private generateNewPassInputs(nCount?:  number  = 5): void {
+			for(var i:  number  = 0; i < nCount; i++) {
+				var pPassInput: IAFXPassInputBlend = new PassInputBlend(this);
+				this._pFreePassInputBlendList.push(pPassInput);
+			}
+		}
 	}
+
 }
 
 
 
 module akra.fx {
+	export class Blender implements IAFXBlender {
+		private _pComposer: IAFXComposer = null;
+
+
+		private _pComponentBlendByHashMap: IAFXComponentBlendMap = null;
+
+		private _pBlendWithComponentMap: IAFXComponentBlendMap = null;
+		private _pBlendWithBlendMap: IAFXComponentBlendMap = null;
+
+		private _pPassBlendByHashMap: IAFXPassBlendMap = null;
+		private _pPassBlendByIdMap: IAFXPassBlendMap = null;
+
+		constructor(pComposer: IAFXComposer) {
+			this._pComposer = pComposer;
+
+			this._pComponentBlendByHashMap = <IAFXComponentBlendMap>{};
+
+			this._pBlendWithComponentMap = <IAFXComponentBlendMap>{};
+			this._pBlendWithBlendMap = <IAFXComponentBlendMap>{};
+
+			this._pPassBlendByHashMap = <IAFXPassBlendMap>{};
+			this._pPassBlendByIdMap = <IAFXPassBlendMap>{};
+		}
+
+		addComponentToBlend(pComponentBlend: IAFXComponentBlend,
+						    pComponent: IAFXComponent, iShift:  number , iPass:  number ): IAFXComponentBlend {
+
+			var sBlendPartHash: string = isDefAndNotNull(pComponentBlend) ? pComponentBlend.getGuid().toString() : "";
+			var sComponentPartHash: string = pComponent.getHash(iShift, iPass);
+			var sShortHash: string = sBlendPartHash + "+" + sComponentPartHash;
+
+			if(isDef(this._pBlendWithComponentMap[sShortHash])){
+				return this._pBlendWithComponentMap[sShortHash];
+			}
+
+			var pNewBlend: IAFXComponentBlend = null;
+
+			if(isNull(pComponentBlend)){
+				pNewBlend = new ComponentBlend(this._pComposer);
+			}
+			else {
+				pNewBlend = pComponentBlend.clone();
+			}
+
+			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
+			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
+			var pTechComponentShiftList:  number [] = pTechnique.getFullComponentShiftList();
+
+			if(iPass ===  0xffffff ) {
+				if(!isNull(pTechComponentList)){
+					for(var i:  number  = 0; i < pTechComponentList.length; i++){
+						pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift,  0xffffff );
+					}
+				}
+
+				pNewBlend.addComponent(pComponent, iShift,  0xffffff );
+			}
+			else {
+				if(!isNull(pTechComponentList)){
+					for(var i:  number  = 0; i < pTechComponentList.length; i++){
+						pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
+					}
+				}
+
+				pNewBlend.addComponent(pComponent, iShift, iPass);
+			}
+
+			this._pBlendWithComponentMap[sShortHash] = pNewBlend;
+
+			var sNewBlendHash: string = pNewBlend.getHash();
+
+			if(isDef(this._pComponentBlendByHashMap[sNewBlendHash])){
+				return this._pComponentBlendByHashMap[sNewBlendHash];
+			}
+			else {
+				this._pComponentBlendByHashMap[sNewBlendHash] = pNewBlend;
+			}
+
+			return pNewBlend;
+		}
+
+		removeComponentFromBlend(pComponentBlend: IAFXComponentBlend,
+								 pComponent: IAFXComponent, iShift:  number , iPass:  number ): IAFXComponentBlend {
+			if(isNull(pComponentBlend)){
+				logger.setSourceLocation( "fx/Blender.ts" , 95 ); logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from empty blend.");
+                                                                ;
+				return null;
+			}
+
+			var sBlendPartHash: string = isDefAndNotNull(pComponentBlend) ? pComponentBlend.getGuid().toString() : "";
+			var sComponentPartHash: string = pComponent.getHash(iShift, iPass);
+			var sShortHash: string = sBlendPartHash + "-" + sComponentPartHash;
+
+			if(isDef(this._pBlendWithComponentMap[sShortHash])){
+				return this._pBlendWithComponentMap[sShortHash];
+			}
+
+			if(!pComponentBlend.containComponentHash(sComponentPartHash)){
+				logger.setSourceLocation( "fx/Blender.ts" , 109 ); logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from blend that not contain it.");
+                                                                              ;
+				return null;
+			}
+
+			var pNewBlend: IAFXComponentBlend = pComponentBlend.clone();
+
+			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
+			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
+			var pTechComponentShiftList:  number [] = pTechnique.getFullComponentShiftList();
+
+			if(iPass ===  0xffffff ) {
+				if(!isNull(pTechComponentList)){
+					for(var i:  number  = 0; i < pTechComponentList.length; i++){
+						pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift,  0xffffff );
+					}
+				}
+
+				pNewBlend.removeComponent(pComponent, iShift,  0xffffff );
+			}
+			else {
+				if(!isNull(pTechComponentList)){
+					for(var i:  number  = 0; i < pTechComponentList.length; i++){
+						pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
+					}
+				}
+
+				pNewBlend.removeComponent(pComponent, iShift, iPass);
+			}
+
+			this._pBlendWithComponentMap[sShortHash] = pNewBlend;
+
+			var sNewBlendHash: string = pNewBlend.getHash();
+
+			if(isDef(this._pComponentBlendByHashMap[sNewBlendHash])){
+				return this._pComponentBlendByHashMap[sNewBlendHash];
+			}
+			else {
+				this._pComponentBlendByHashMap[sNewBlendHash] = pNewBlend;
+			}
+
+			return pNewBlend;
+		}
+
+		addBlendToBlend(pComponentBlend: IAFXComponentBlend,
+						pAddBlend: IAFXComponentBlend, iShift:  number ): IAFXComponentBlend {
+
+			if(isNull(pComponentBlend)){
+				return pAddBlend;
+			}
+
+			if(isNull(pAddBlend)){
+				return pComponentBlend;
+			}
+
+			var sShortHash: string = pComponentBlend.getGuid().toString() + "+" + pAddBlend.getGuid().toString();
+			if(isDef(this._pBlendWithBlendMap[sShortHash])){
+				return this._pBlendWithBlendMap[sShortHash];
+			}
+
+			var pNewBlend: IAFXComponentBlend = pComponentBlend.clone();
+
+			var pAddComponentList: IAFXComponent[] = pAddBlend._getComponentList();
+			var pAddComponentShiftList:  number [] = pAddBlend._getComponentShiftList();
+			var pAddComponentPassIdList:  number [] = pAddBlend._getComponentPassIdList();
+
+			for(var i:  number  = 0; i < pAddComponentList.length; i++){
+				pNewBlend.addComponent(pAddComponentList[i],
+									   pAddComponentShiftList[i] + iShift,
+									   pAddComponentPassIdList[i]);
+			}
+
+			this._pBlendWithBlendMap[sShortHash] = pNewBlend;
+
+			var sNewBlendHash: string = pNewBlend.getHash();
+
+			if(isDef(this._pComponentBlendByHashMap[sNewBlendHash])){
+				return this._pComponentBlendByHashMap[sNewBlendHash];
+			}
+			else {
+				this._pComponentBlendByHashMap[sNewBlendHash] = pNewBlend;
+			}
+
+			return pNewBlend;
+		}
+
+
+		generatePassBlend(pPassList: IAFXPassInstruction[],
+						  pStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend {
+			var sPassBlendHash: string = "";
+
+			for(var i:  number  = 0; i < pPassList.length; i++) {
+				var pPass: IAFXPassInstruction = pPassList[i];
+
+				pPass.evaluate({
+						mesh : { isSkinning : true },
+				 		lights : {omni: true, project: true, omniShadows: true, projectShadows: true} }, null, null);
+
+				var pVertexShader: IAFXFunctionDeclInstruction = pPass.getVertexShader();
+				var pPixelShader: IAFXFunctionDeclInstruction = pPass.getPixelShader();
+
+				if(!isNull(pVertexShader)){
+					sPassBlendHash += pVertexShader.getGuid().toString() + ":";
+				}
+				else {
+					sPassBlendHash += "E:";
+				}
+
+				if(!isNull(pPixelShader)){
+					sPassBlendHash += pPixelShader.getGuid().toString() + ":";
+				}
+				else {
+					sPassBlendHash += "E:";
+				}
+			}
+
+			if(isDef(this._pPassBlendByHashMap[sPassBlendHash])){
+				return this._pPassBlendByHashMap[sPassBlendHash];
+			}
+
+			var pNewPassBlend: IAFXPassBlend = new PassBlend(this._pComposer);
+			var isOk: bool = pNewPassBlend.initFromPassList(pPassList);
+
+			if(!isOk){
+				return null;
+			}
+
+			this._pPassBlendByHashMap[sPassBlendHash] = pNewPassBlend;
+			this._pPassBlendByIdMap[pNewPassBlend.getGuid()] = pNewPassBlend;
+
+			return pNewPassBlend;
+		}
+
+		inline getPassBlendById(id:  number ): IAFXPassBlend {
+			return this._pPassBlendByIdMap[id] || null;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.util {
+	export interface IBuffersCompatibleMap {
+		[handle:  number ]: IVertexData;
+	}
+
+	export class BufferMap implements IBufferMap extends ReferenceCounter{
+		private _pFlows: IDataFlow[] = null;
+		private _pMappers: IDataMapper[] = null;
+		private _pIndex: IIndexData = null;
+		private _nLength:  number  = 0;
+		private _ePrimitiveType: EPrimitiveTypes;
+		private _pCompleteFlows: IDataFlow[] = null;
+		private _nCompleteFlows:  number  = 0;
+		private _nCompleteVideoBuffers:  number  = 0;
+		private _pCompleteVideoBuffers: IVertexBuffer[] = null;
+		private _nUsedFlows:  number  = 0;
+		private _pEngine: IEngine = null;
+		private _nStartIndex:  number  = 0;
+		private _pBuffersCompatibleMap: IBuffersCompatibleMap = null;
+
+		constructor(pEngine: IEngine){
+			super();
+			this._pEngine = pEngine;
+			this.reset();
+		};
+
+		inline get primType(): EPrimitiveTypes{
+			return this._pIndex ? this._pIndex.getPrimitiveType() : this._ePrimitiveType;
+		};
+
+		inline set primType(eType: EPrimitiveTypes){
+			this._ePrimitiveType = eType;
+		};
+
+		inline get primCount():  number  {
+			return data.IndexData.getPrimitiveCount(this.primType, this.length);
+		};
+
+		inline get index(): IIndexData {
+			return this._pIndex;
+		};
+
+		inline set index(pIndexData: IIndexData) {
+			if (this._pIndex === pIndexData) {
+	            return;
+	        }
+
+	        this._pIndex = pIndexData;
+	        this.update();
+		};
+
+		inline get limit():  number  {
+			return this._pFlows.length;
+		};
+
+		inline get length():  number  {
+			return (this._pIndex ? this._pIndex.length : this._nLength);
+		}
+
+		inline set length(nLength:  number ) {
+			this._nLength = Math.min(this._nLength, nLength);
+		}
+
+		inline set _length(nLength:  number ) {
+			this._nLength = nLength;
+		}
+
+		inline get startIndex():  number  {
+			return this._nStartIndex;
+		}
+
+		inline get size():  number {
+			return this._nCompleteFlows;
+		}
+
+		inline get flows(): IDataFlow[] {
+			return this._pCompleteFlows;
+		}
+
+		inline get mappers(): IDataMapper[] {
+			return this._pMappers;
+		}
+
+		inline get offset():  number  {
+			return (this._pIndex? this._pIndex.byteOffset: 0);
+		}
+
+		_draw(): void {
+// this._pEngine.getComposer().applyBufferMap(this);
+// this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
+			isNull(this._pIndex)? this.drawArrays(): this.drawElements();
+		}
+
+		private inline drawArrays(): void {
+
+			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
+				webgl.getWebGLPrimitiveType(this._ePrimitiveType),
+				this._nStartIndex,
+				this._nLength);
+
+		}
+
+		private inline drawElements(): void {
+
+			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
+				this.primCount,
+				this._pIndex.getPrimitiveCount(),
+				webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()),
+				this._pIndex.byteOffset / 4);
+//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
+
+		}
+
+		getFlow(sSemantics: string, bComplete: bool = true): IDataFlow;
+		getFlow(iFlow:  number , bComplete: bool = true): IDataFlow;
+		getFlow(iFlow: any, bComplete: bool = true): IDataFlow {
+
+		    if (isString(arguments[0])) {
+		        var nTotal:  number ;
+		        var pFlows: IDataFlow[];
+
+		        if (bComplete) {
+		            pFlows = this._pCompleteFlows;
+		            nTotal = this._nCompleteFlows;
+		        }
+		        else {
+		            pFlows = this._pFlows;
+		            nTotal = this._pFlows.length;
+		        }
+
+		        for (var i:  number  = 0; i < nTotal; ++ i) {
+		            if (!pFlows[i].data) {
+		                continue;
+		            }
+		            if (pFlows[i].data.hasSemantics(arguments[0])) {
+		                return pFlows[i];
+		            }
+		        }
+
+		        return null;
+		    }
+
+		    if (bComplete) {
+
+		        for (var i:  number  = 0, pFlows = this._pCompleteFlows; i < this._nCompleteFlows; ++ i) {
+		            if (pFlows[i].flow == iFlow) {
+		                return pFlows[i];
+		            }
+		        }
+
+		        return null;
+		    }
+
+		    return this._pFlows[iFlow];
+		}
+
+		reset(): void {
+			this._pIndex = null
+		    this._ePrimitiveType = EPrimitiveTypes.TRIANGLELIST;
+
+
+		    var nFlowLimit:  number  = 16;
+
+/*webgl.maxVertexTextureImageUnits*/
+			nFlowLimit = Math.min(16                                    , webgl.maxVertexAttributes);
+
+
+		    this._pMappers = [];
+		    this._pFlows = new Array(nFlowLimit);
+		    for (var i = 0; i < nFlowLimit; i++) {
+		        this._pFlows[i] = {
+		            flow: i,
+		            data:  null,
+		            type:  EDataFlowTypes.UNMAPPABLE,
+		            mapper:null
+		        };
+		    }
+
+		    this._nLength = MAX_INT32;
+		    this._pCompleteFlows = new Array(nFlowLimit);
+		    this._nCompleteFlows = 0;
+		    this._nStartIndex = MAX_INT32;
+		    this._pBuffersCompatibleMap = <IBuffersCompatibleMap>{};
+
+		    this._pCompleteVideoBuffers = new Array(nFlowLimit);
+		    this._nCompleteVideoBuffers = 0;
+		    this._nUsedFlows = 0;
+		}
+
+		flow(pVertexData: IVertexData):  number ;
+		flow(iFlow:  number , pVertexData: IVertexData):  number ;
+		flow(iFlow, pData?):  number  {
+			var pFlow: IDataFlow = null;
+			var pVertexData: IVertexData = null;
+
+		    if (arguments.length < 2) {
+		        pVertexData = <IVertexData>arguments[0];
+		        iFlow = (this._nUsedFlows ++);
+		    }
+// trace(iFlow, '<<==', pVertexData.getVertexDeclaration().toString());
+// console.log((new Error).stack);
+		    pFlow = this._pFlows[iFlow];
+
+		    logger.setSourceLocation( "util/BufferMap.ts" , 224 ); logger.assert(iFlow < this.limit, 'Invalid strem. Maximum allowable number of stream ' + this.limit + '.');
+                                                                                  ;
+
+		    if (!pVertexData || pFlow.data === pVertexData) {
+		        return -1;
+		    }
+
+		    if (core.pool.resources.isVBO(<IVertexBuffer>pVertexData.buffer)) {
+		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
+		        this.length = pVertexData.length;
+//this.startIndex = pVertexData.getStartIndex();
+		        logger.setSourceLocation( "util/BufferMap.ts" , 235 ); logger.assert(this.checkData(pVertexData), 'You can use several unmappable data flows from one buffer.');
+                                                                           ;
+
+		        this.pushEtalon(pVertexData);
+		    }
+		    else {
+		        pFlow.type = EDataFlowTypes.MAPPABLE;
+		    }
+
+		    pFlow.data = pVertexData;
+
+		    return this.update() ? iFlow : -1;
+		}
+
+		checkData(pData: IVertexData): bool {
+			var pEtalon = this._pBuffersCompatibleMap[pData.getBufferHandle()];
+		    if (!pEtalon || pEtalon.byteOffset === pData.byteOffset) {
+		        return true;
+		    }
+		    return false;
+		}
+
+		/**@protected*/  findMapping(pMap, eSemantics, iAddition): IDataMapper {
+		    logger.setSourceLocation( "util/BufferMap.ts" , 257 ); logger.assert(this.checkData(pMap), 'You can use several different maps from one buffer.'); ;
+		    for (var i:  number  = 0, pMappers: IDataMapper[] = this._pMappers, pExistsMap; i < pMappers.length; i++) {
+		        pExistsMap = pMappers[i].data;
+		        if (pExistsMap === pMap) {
+//если уже заданные маппинг менял свой стартовый индекс(например при расширении)
+//то необходимо сменить стартовый индекс на новый
+		            if (pMappers[i].semantics === eSemantics && pMappers[i].addition == iAddition) {
+		                return pMappers[i];
+		            }
+		        }
+		        else {
+		            logger.setSourceLocation( "util/BufferMap.ts" , 269 ); logger.assert(pExistsMap.getStartIndex() === pMap.getStartIndex(), 'You can not use maps with different indexing');
+                                                                 ;
+		        }
+		    }
+		    return null;
+		};
+
+
+		mapping(iFlow:  number , pMap: IVertexData, eSemantics: string, iAddition:  number  = 0): bool {
+		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
+		    var pFlow: IDataFlow     = this._pFlows[iFlow];
+
+		    logger.setSourceLocation( "util/BufferMap.ts" , 281 ); logger.assert(isDefAndNotNull(pFlow.data) && (pFlow.type === EDataFlowTypes.MAPPABLE), 'Cannot mapping empty/unmappable flow.');
+                                                  ;
+		    logger.setSourceLocation( "util/BufferMap.ts" , 282 ); logger.assert(isDef(pMap), 'Passed empty mapper.'); ;
+
+		    if (!eSemantics) {
+		        eSemantics = pMap.getVertexDeclaration()[0].eUsage;
+		    }
+		    else if (pMap.hasSemantics(eSemantics) === false) {
+		        logger.setSourceLocation( "util/BufferMap.ts" , 288 ); logger.error('Passed mapper does not have semantics: ' + eSemantics + '.'); ;
+		        return false;
+		    }
+
+		    if (pMapper) {
+		        if (pFlow.mapper === pMapper) {
+		            return pMapper.semantics === eSemantics &&
+		                pMapper.addition === iAddition? true: false;
+		        }
+		    }
+		    else {
+		        pMapper = {data: pMap, semantics: eSemantics, addition: iAddition};
+
+		        this._pMappers.push(pMapper);
+		        this.length = pMap.length;
+//this.startIndex = pMap.getStartIndex();
+		        this.pushEtalon(pMap);
+		    }
+
+		    pFlow.mapper = pMapper;
+
+		    return this.update();
+		}
+
+		private pushEtalon(pData: IVertexData): void {
+			this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
+		}
+
+		update(): bool {
+			var pFlows: IDataFlow[] = this._pFlows;
+		    var pFlow: IDataFlow;
+		    var pMapper: IDataMapper;
+		    var isMappable: bool = false;
+		    var pCompleteFlows: IDataFlow[] = this._pCompleteFlows;
+		    var nCompleteFlows:  number  = 0;
+		    var pCompleteVideoBuffers: IVertexBuffer[] = this._pCompleteVideoBuffers;
+		    var nCompleteVideoBuffers:  number  = 0;
+		    var nUsedFlows:  number  = 0;
+		    var pVideoBuffer: IVertexBuffer;
+		    var isVideoBufferAdded: bool = false;
+		    var nStartIndex:  number  = MAX_INT32, nCurStartIndex:  number ;
+
+		    for (var i:  number  = 0; i < pFlows.length; i++) {
+		        pFlow = pFlows[i];
+		        pMapper = pFlow.mapper;
+		        isMappable = (pFlow.type === EDataFlowTypes.MAPPABLE);
+
+		        if (pFlow.data) {
+		            nUsedFlows ++;
+		        }
+
+		        if (pFlow.data === null || (isMappable && pMapper === null)) {
+		            continue;
+		        }
+
+		        pCompleteFlows[nCompleteFlows ++] = pFlow;
+
+		        if (isMappable) {
+		            nCurStartIndex = pMapper.data.startIndex;
+		            pVideoBuffer = <IVertexBuffer>pFlow.data.buffer;
+		            for (var j = 0; j < nCompleteVideoBuffers; j++) {
+		                if (pCompleteVideoBuffers[j] === pVideoBuffer) {
+		                    isVideoBufferAdded = true;
+		                    break;
+		                }
+		            }
+		            if (!isVideoBufferAdded) {
+		                pCompleteVideoBuffers[nCompleteVideoBuffers ++] = pVideoBuffer;
+		            }
+		        }
+		        else {
+		            nCurStartIndex = pFlow.data.startIndex;
+		        }
+
+		        if (nStartIndex === MAX_INT32) {
+		            nStartIndex = nCurStartIndex;
+		            continue;
+		        }
+
+		        logger.setSourceLocation( "util/BufferMap.ts" , 368 ); logger.assert(nStartIndex == nCurStartIndex, 'You can not use a maps or unmappable buffers having different starting index.');
+                                                                                              ;
+		    }
+
+		    this._nStartIndex = nStartIndex;
+		    this._nCompleteFlows = nCompleteFlows;
+		    this._nCompleteVideoBuffers = nCompleteVideoBuffers;
+		    this._nUsedFlows = nUsedFlows;
+
+		    return true;
+		}
+		clone(bWithMapping?: bool): IBufferMap {
+			bWithMapping = isDef(bWithMapping) ? bWithMapping : true;
+
+		    var pMap: IBufferMap = new BufferMap(this._pEngine);
+		    for (var i = 0, pFlows = this._pFlows; i < pFlows.length; ++ i) {
+		        if (pFlows[i].data === null) {
+		            continue;
+		        }
+
+		        if (pMap.flow(pFlows[i].flow, pFlows[i].data) < 0) {
+		            pMap = null;
+		            return null;
+		        }
+
+		        if (!bWithMapping) {
+		            continue;
+		        }
+
+		        if (pFlows[i].mapper) {
+	                pMap.mapping(pFlows[i].flow,
+	                pFlows[i].mapper.data,
+	                pFlows[i].mapper.semantics,
+	                pFlows[i].mapper.addition);
+		        }
+		    }
+
+		    return pMap;
+		}
+		toString(bListAll: bool = false): string {
+			function _an(sValue, n:  number , bBackward?: bool) {
+		        sValue = String(sValue);
+		        bBackward = bBackward || false;
+
+		        if (sValue.length < n) {
+		            for (var i = 0, l = sValue.length; i < n - l; ++ i) {
+		                if (!bBackward) {
+		                    sValue += ' ';
+		                }
+		                else {
+		                    sValue = ' ' + sValue;
+		                }
+		            }
+		        }
+
+		        return sValue;
+		    }
+
+		    var s = '\n\n', t;
+		    s += '      $1 Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+		    s = s.replace("$1", bListAll? "   Total": "Complete");
+		    t  = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
+// = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+// = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+		    s += t;
+
+		    var pFlows: IDataFlow[] = bListAll? this._pFlows: this._pCompleteFlows;
+		    var nFlows:  number  = bListAll? this._nUsedFlows: this._nCompleteFlows;
+		    for (var i:  number  = 0; i < nFlows; ++ i) {
+		        var pFlow: IDataFlow = pFlows[i];
+		        var pMapper: IDataMapper = pFlow.mapper;
+		        var pVertexData: IVertexData = pFlow.data;
+		        var pDecl: data.VertexDeclaration = pVertexData.getVertexDeclaration();
+//trace(pMapper); window['pMapper'] = pMapper;
+		        s += '#' + _an(pFlow.flow, 2) + ' ' +
+		            _an('[ ' + (pDecl.element(0).usage !== DeclUsages.END? pDecl.element(0).usage: '<end>') + ' ]', 20) +
+		            ' : ' + _an(pDecl.element(0).offset, 6, true) + ' / ' + _an(pDecl.element(0).size, 6) +
+		            ' | ' +
+		            _an(pVertexData.getBufferHandle(), 8, true) + ' / ' + _an(pVertexData.byteOffset, 8) +
+		            ' : ' +
+		            (pMapper? _an(pMapper.semantics, 15, true) + ' / ' + _an(pMapper.addition, 7) + ': ' +
+		                _an(pMapper.data.getVertexDeclaration().findElement(pMapper.semantics).offset, 6) :
+		            _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
+
+
+		        for (var j = 1; j < pDecl.length; ++ j) {
+		            s += '    ' +
+		            _an('[ ' + (pDecl.element(j).usage !== DeclUsages.END? pDecl.element(j).usage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl.element(j).offset, 6, true) + ' / ' + _an(pDecl.element(j).size, 6) +
+		                  ' |                     :                          :        |                  \n';
+		        }
+		        s += t;
+		    };
+		    s += '=================================================================\n';
+		    s += '      PRIMITIVE TYPE : ' + '0x' + Number(this.primType).toString(16) + '\n';
+		    s += '     PRIMITIVE COUNT : ' + this.primCount + '\n';
+		    s += '         START INDEX : ' + this.startIndex + '\n';
+		    s += '              LENGTH : ' + this.length + '\n';
+		    s += '  USING INDEX BUFFER : ' + (this.index? 'TRUE': 'FALSE') + '\n';
+		    s += '=================================================================\n';
+
+		    return s + '\n\n';
+		}
+	}
+
+	export function createBufferMap(pEngine: IEngine): IBufferMap {
+		return new BufferMap(pEngine);
+	}
+}
+
+
+
+
+
+module akra.fx {
+
+	export interface IPreRenderState {
+		isClear: bool;
+
+		primType: EPrimitiveTypes;
+		offset:  number ;
+		length:  number ;
+		index: IIndexData;
+//flows: IDataFlow[];
+		flows: util.ObjectArray;
+	}
+
 	export class Composer implements IAFXComposer {
 		private _pEngine: IEngine = null;
 
+		private _pTechniqueToBlendMap: IAFXComponentBlendMap = null;
+		private _pTechniqueToOwnBlendMap: IAFXComponentBlendMap = null;
+		private _pTechniqueLastGlobalBlendMap: IAFXComponentBlendMap = null;
+		private _pTechniqueNeedUpdateMap: BoolMap = null;
+
 		private _pEffectResourceToComponentBlendMap: IAFXComponentBlendMap = null;
-		private _pComponentBlendByHashMap: IAFXComponentBlendMap = null;
+		private _pBlender: IAFXBlender = null;
+
+		private _pGlobalEffectResorceIdStack:  number [] = null;
+// private _pGlobalEffectResorceShiftStack: int[] = null;
+		private _pGlobalComponentBlendStack: IAFXComponentBlend[] = null;
+		private _pGlobalComponentBlend: IAFXComponentBlend = null;
+
+//Data for render
+		private _pCurrentSceneObject: ISceneObject = null;
+		private _pCurrentBufferMap: IBufferMap = null;
+		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
+//private _pPreRenderState: IPreRenderState = null;
+
+// private _pSamplerBlender: SamplerBlender = null;
+
+//Temporary objects for fast work
+		static pDefaultSamplerBlender: SamplerBlender = null;
 
 		constructor(pEngine: IEngine){
 			this._pEngine = pEngine;
 
+			this._pBlender = new Blender(this);
+
+			this._pTechniqueToBlendMap = <IAFXComponentBlendMap>{};
+			this._pTechniqueToOwnBlendMap = <IAFXComponentBlendMap>{};
+			this._pTechniqueLastGlobalBlendMap = <IAFXComponentBlendMap>{};
+			this._pTechniqueNeedUpdateMap = <BoolMap>{};
+
 			this._pEffectResourceToComponentBlendMap = <IAFXComponentBlendMap>{};
-			this._pComponentBlendByHashMap = <IAFXComponentBlendMap>{};
+
+			this._pGlobalEffectResorceIdStack = [];
+// this._pGlobalEffectResorceShiftStack = [];
+			this._pGlobalComponentBlendStack = [];
+			this._pGlobalComponentBlend = null;
+
+// this._pPreRenderState = {
+// 	isClear: true,
+
+// 	primType: 0,
+// 	offset: 0,
+// 	length: 0,
+// 	index: null,
+// 	flows: new util.ObjectArray()
+// };
+
+// this._pSamplerBlender = new SamplerBlender(this);
+// this._pTempPassInstructionList = new ObjectArray();
+			if(isNull(Composer.pDefaultSamplerBlender)){
+				Composer.pDefaultSamplerBlender = new SamplerBlender();
+			}
 		}
 
 		getComponentByName(sComponentName: string): IAFXComponent {
@@ -62414,7 +70310,7 @@ module akra.fx {
 				pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
 			}
 
-			var pNewBlend: IAFXComponentBlend = this.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
+			var pNewBlend: IAFXComponentBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
 			if(isNull(pNewBlend)){
 				return false;
 			}
@@ -62431,7 +70327,7 @@ module akra.fx {
 				pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
 			}
 
-			var pNewBlend: IAFXComponentBlend = this.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
+			var pNewBlend: IAFXComponentBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
 			if(isNull(pNewBlend)){
 				return false;
 			}
@@ -62440,6 +70336,267 @@ module akra.fx {
 			return true;
 		}
 
+		activateEffectResource(pEffectResource: IEffect, iShift:  number ): bool {
+			var id:  number  = pEffectResource.resourceHandle;
+			var pComponentBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
+
+			if(!isDef(pComponentBlend)){
+				return false
+			}
+
+			var pNewGlobalBlend: IAFXComponentBlend = null;
+
+			if(isNull(this._pGlobalComponentBlend)){
+				pNewGlobalBlend = pComponentBlend;
+			}
+			else {
+				pNewGlobalBlend = this._pBlender.addBlendToBlend(this._pGlobalComponentBlend, pComponentBlend, iShift);
+			}
+
+			if(isNull(pNewGlobalBlend)){
+				return false;
+			}
+
+			this._pGlobalEffectResorceIdStack.push(id);
+			this._pGlobalComponentBlendStack.push(pNewGlobalBlend);
+
+			this._pGlobalComponentBlend = pNewGlobalBlend;
+
+			return true;
+		}
+
+		deactivateEffectResource(pEffectResource: IEffect): bool {
+			var id:  number  = pEffectResource.resourceHandle;
+			var iStackLength:  number  = this._pGlobalEffectResorceIdStack.length;
+
+			if(iStackLength === 0){
+				return false;
+			}
+
+			var iLastId:  number  = this._pGlobalEffectResorceIdStack[iStackLength - 1];
+
+			if(iLastId !== id){
+				return false;
+			}
+
+			this._pGlobalEffectResorceIdStack.splice(iStackLength - 1, 1);
+			this._pGlobalComponentBlendStack.splice(iStackLength - 1, 1);
+
+			if(iStackLength > 1){
+				this._pGlobalComponentBlend = this._pGlobalComponentBlendStack[iStackLength - 2];
+			}
+			else {
+				this._pGlobalComponentBlend = null;
+			}
+
+			return true;
+		}
+
+
+//-----------------------------------------------------------------------------//
+//----------------------------API for RenderTechnique--------------------------//
+//-----------------------------------------------------------------------------//
+
+		getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique):  number  {
+			this.prepareTechniqueBlend(pRenderTechnique);
+
+			var id:  number  = pRenderTechnique.getGuid();
+
+			if(isDefAndNotNull(this._pTechniqueToBlendMap[id])) {
+				return this._pTechniqueToBlendMap[id].getTotalPasses();
+			}
+			else {
+				return 0;
+			}
+		}
+
+		addOwnComponentToTechnique(pRenderTechnique: IRenderTechnique,
+								   pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool {
+			var id:  number  = pRenderTechnique.getGuid();
+			var pCurrentBlend: IAFXComponentBlend = null;
+
+			if(isDef(this._pTechniqueToOwnBlendMap[id])){
+				pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
+			}
+
+			var pNewBlend: IAFXComponentBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
+
+			if(isNull(pNewBlend)){
+				return false;
+			}
+
+			this._pTechniqueToOwnBlendMap[id] = pNewBlend;
+			this._pTechniqueNeedUpdateMap[id] = true;
+
+			return true;
+		}
+
+		removeOwnComponentToTechnique(pRenderTechnique: IRenderTechnique,
+									  pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool {
+			var id:  number  = pRenderTechnique.getGuid();
+			var pCurrentBlend: IAFXComponentBlend = null;
+
+			if(isDef(this._pTechniqueToOwnBlendMap[id])){
+				pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
+			}
+
+			var pNewBlend: IAFXComponentBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
+			if(isNull(pNewBlend)){
+				return false;
+			}
+
+			this._pTechniqueToOwnBlendMap[id] = pNewBlend;
+			this._pTechniqueNeedUpdateMap[id] = true;
+			return true;
+		}
+
+		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool {
+			if(pRenderTechnique.isFreeze()){
+				return true;
+			}
+
+			var id:  number  = pRenderTechnique.getGuid();
+
+			var isTechniqueUpdate: bool = !!(this._pTechniqueNeedUpdateMap[id]);
+			var isUpdateGlobalBlend: bool = (this._pGlobalComponentBlend !== this._pTechniqueLastGlobalBlendMap[id]);
+			var isNeedToUpdatePasses: bool = false;
+
+			if(isTechniqueUpdate || isUpdateGlobalBlend){
+				var iEffect:  number  = pRenderTechnique.getMethod().effect.resourceHandle;
+				var pEffectBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[iEffect] || null;
+				var pTechniqueBlend: IAFXComponentBlend = this._pTechniqueToOwnBlendMap[id] || null;
+
+				var pNewBlend: IAFXComponentBlend = null;
+
+				pNewBlend = this._pBlender.addBlendToBlend(this._pGlobalComponentBlend, pEffectBlend, 0);
+				pNewBlend = this._pBlender.addBlendToBlend(pNewBlend, pTechniqueBlend, 0);
+
+				if(this._pTechniqueToBlendMap[id] !== pNewBlend){
+					isNeedToUpdatePasses = true;
+				}
+
+				this._pTechniqueToBlendMap[id] = pNewBlend;
+				this._pTechniqueNeedUpdateMap[id] = false;
+				this._pTechniqueLastGlobalBlendMap[id] = this._pGlobalComponentBlend;
+			}
+
+			var pBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
+
+			if(isDefAndNotNull(pBlend)) {
+				if(!pBlend.isReadyToUse()){
+					isNeedToUpdatePasses = true;
+				}
+
+				if(!pBlend.finalizeBlend()){
+					return false;
+				}
+
+				if(isNeedToUpdatePasses) {
+					pRenderTechnique.updatePasses(isTechniqueUpdate);
+				}
+			}
+			else {
+				return false;
+			}
+		}
+
+		markTechniqueAsNeedUpdate(pRenderTechnique: IRenderTechnique): void {
+			this._pTechniqueNeedUpdateMap[pRenderTechnique.getGuid()] = true;
+		}
+
+		getPassInputBlend(pRenderTechnique: IRenderTechnique, iPass:  number ): IAFXPassInputBlend {
+			var id:  number  = pRenderTechnique.getGuid();
+
+			if(!isDef(this._pTechniqueToBlendMap[id])){
+				return null;
+			}
+
+			return this._pTechniqueToBlendMap[id].getPassInputForPass(iPass);
+		}
+
+
+//-----------------------------------------------------------------------------//
+//---------------------------------API for render------------------------------//
+//-----------------------------------------------------------------------------//
+
+		applyBufferMap(pMap: IBufferMap): bool {
+			this._pCurrentBufferMap = pMap;
+			return true;
+// var pBufferMap: util.BufferMap = <util.BufferMap>pMap;
+
+// var pState: IPreRenderState = this._pPreRenderState;
+
+// if(pState.isClear){
+// 	pState.primType = pBufferMap.primType;
+// 	pState.offset = pBufferMap.offset;
+// 	pState.length = pBufferMap.length;
+// 	pState.index = pBufferMap.index;
+// }
+// else if(pState.primType !== pBufferMap.primType ||
+// 		pState.offset !== pBufferMap.offset ||
+// 		pState.length !== pBufferMap.length ||
+// 		pState.index !== pBufferMap.index) {
+
+// 	ERROR("Could not blend buffer maps");
+// 	return false;
+// }
+
+// var pFlows: IDataFlow[] = pBufferMap.flows;
+
+// for(var i: uint = 0; i < pFlows.length; i++){
+// 	pState.flows.push(pFlows[i]);
+// }
+
+// pState.isClear = false;
+		}
+
+		applySurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): bool {
+			this._pCurrentSurfaceMaterial = pSurfaceMaterial;
+			return true;
+		}
+
+		setCurrentSceneObject(pSceneObject: ISceneObject): void {
+			this._pCurrentSceneObject = pSceneObject;
+		}
+
+		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass:  number ): void {
+			var pPass: IRenderPass = pRenderTechnique.getPass(iPass);
+			var pPassInput: IAFXPassInputBlend = pPass.getPassInput();
+
+			var pPassBlend: IAFXPassBlend = null;
+			var pShader: IAFXShaderProgram = null;
+
+			if(!pPassInput._isNeedToCalcShader()){
+//TODO: set pShader to shader program by id
+			}
+			else {
+				if(!pPassInput._isNeedToCalcBlend()){
+					pPassBlend = this._pBlender.getPassBlendById(pPassInput._getLastPassBlendId());
+				}
+				else {
+					var id:  number  = pRenderTechnique.getGuid();
+					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
+					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
+
+					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, null, null, null);
+				}
+
+				if(isNull(pPassBlend)){
+					logger.setSourceLocation( "fx/Composer.ts" , 414 ); logger.error("Could not render. Error with generation pass-blend."); ;
+					return;
+				}
+
+				pShader = pPassBlend.generateShaderProgram(pPassInput,
+														   this._pCurrentSurfaceMaterial,
+														   this._pCurrentBufferMap);
+//TODO: generate additional shader params and get shader program
+			}
+
+//TODO: generate input from PassInputBlend to correct unifoms and attributes list
+//TODO: generate RenderEntry
+
+			this.clearPreRenderState();
+		}
 
 //-----------------------------------------------------------------------------//
 //-----------------------API for load components/AFXEffects--------------------//
@@ -62460,13 +70617,13 @@ module akra.fx {
 				for(var i:  number  = 0; i < pTechniqueList.length; i++){
 					isOk = this.initComponent(pTechniqueList[i]);
 					if(!isOk){
-						logger.setSourceLocation( "fx/Composer.ts" , 122 ); logger.warning("Cannot initialize fx-component from technique '" + pTechniqueList[i].getName() + "'."); ;
+						logger.setSourceLocation( "fx/Composer.ts" , 449 ); logger.warning("Cannot initialize fx-component from technique '" + pTechniqueList[i].getName() + "'."); ;
 						return false;
 					}
 				}
 			}
 			else {
-				logger.setSourceLocation( "fx/Composer.ts" , 128 ); logger.warning("Error are occured during analyze of effect file '" + sFileName + "'."); ;
+				logger.setSourceLocation( "fx/Composer.ts" , 455 ); logger.warning("Error are occured during analyze of effect file '" + sFileName + "'."); ;
 				return false;
 			}
 
@@ -62493,119 +70650,14 @@ module akra.fx {
 			return true;
 		}
 
-		private addComponentToBlend(pComponentBlend: IAFXComponentBlend,
-									pComponent: IAFXComponent, iShift:  number , iPass:  number ): IAFXComponentBlend {
+		private clearPreRenderState(): void {
+// this._pPreRenderState.primType = 0;
+// this._pPreRenderState.offset = 0;
+// this._pPreRenderState.length = 0;
+// this._pPreRenderState.index = null;
+// this._pPreRenderState.flows.clear(false);
 
-			var pNewBlend: IAFXComponentBlend = null;
-
-			if(isNull(pComponentBlend)){
-				pNewBlend = new ComponentBlend(this);
-			}
-			else {
-				pNewBlend = pComponentBlend.clone();
-			}
-
-			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
-			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
-			var pTechComponentShiftList:  number [] = pTechnique.getFullComponentShiftList();
-
-			if(iPass ===  0xffffff ) {
-				if(!isNull(pTechComponentList)){
-					for(var i:  number  = 0; i < pTechComponentList.length; i++){
-						pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift,  0xffffff );
-					}
-				}
-
-				pNewBlend.addComponent(pComponent, iShift,  0xffffff );
-			}
-			else {
-				if(!isNull(pTechComponentList)){
-					for(var i:  number  = 0; i < pTechComponentList.length; i++){
-						pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
-					}
-				}
-
-				pNewBlend.addComponent(pComponent, iShift, iPass);
-			}
-
-			var sNewBlendHash: string = pNewBlend.getHash();
-
-			if(isDef(this._pComponentBlendByHashMap[sNewBlendHash])){
-				return this._pComponentBlendByHashMap[sNewBlendHash];
-			}
-			else {
-				if(!this.registerComponentBlend(pNewBlend)){
-					return null;
-				}
-
-				return pNewBlend;
-			}
-		}
-
-		private removeComponentFromBlend(pComponentBlend: IAFXComponentBlend,
-										 pComponent: IAFXComponent, iShift:  number , iPass:  number ): IAFXComponentBlend {
-			if(isNull(pComponentBlend)){
-				logger.setSourceLocation( "fx/Composer.ts" , 208 ); logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from empty blend.");
-                                                                ;
-				return null;
-			}
-
-			var sComponentHash: string = pComponent.getHash(iShift, iPass);
-
-			if(!pComponentBlend.containComponentHash(sComponentHash)){
-				logger.setSourceLocation( "fx/Composer.ts" , 216 ); logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from blend that not contain it.");
-                                                                              ;
-				return null;
-			}
-
-			var pNewBlend: IAFXComponentBlend = pComponentBlend.clone();
-
-			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
-			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
-			var pTechComponentShiftList:  number [] = pTechnique.getFullComponentShiftList();
-
-			if(iPass ===  0xffffff ) {
-				if(!isNull(pTechComponentList)){
-					for(var i:  number  = 0; i < pTechComponentList.length; i++){
-						pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift,  0xffffff );
-					}
-				}
-
-				pNewBlend.removeComponent(pComponent, iShift,  0xffffff );
-			}
-			else {
-				if(!isNull(pTechComponentList)){
-					for(var i:  number  = 0; i < pTechComponentList.length; i++){
-						pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
-					}
-				}
-
-				pNewBlend.removeComponent(pComponent, iShift, iPass);
-			}
-
-			var sNewBlendHash: string = pNewBlend.getHash();
-
-			if(isDef(this._pComponentBlendByHashMap[sNewBlendHash])){
-				return this._pComponentBlendByHashMap[sNewBlendHash];
-			}
-			else {
-				if(!this.registerComponentBlend(pNewBlend)){
-					return null;
-				}
-
-				return pNewBlend;
-			}
-		}
-
-		private registerComponentBlend(pComponentBlend: IAFXComponentBlend): bool {
-			var sHash: string = pComponentBlend.getHash();
-
-			if(isDef(this._pComponentBlendByHashMap[sHash])){
-				return false;
-			}
-
-			this._pComponentBlendByHashMap[sHash] = pComponentBlend;
-			return true;
+// this._pPreRenderState.isClear = true;
 		}
 	}
 }
@@ -62920,19 +70972,6 @@ module akra
             pImgData.depth=1;
             var nFace: number =1;
 
-            if (pHeader.dwFlags &  0x00020000 ) {
-                pImgData.numMipMaps = pHeader.dwMipMapCount;
-                if ((pHeader.dwWidth >>> (pHeader.dwMipMapCount - 1)) != 1 || (pHeader.dwHeight >>> (pHeader.dwMipMapCount - 1)) != 1) {
-                logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 286 ); logger.warning("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1" + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
-                                                                                                           ;
-
-            	}
-            }
-            else{
-                pImgData.numMipMaps = 0;
-            }
-
-
             pImgData.flags=0;
 
             if (pHeader.dwCaps2 &  0x200 )
@@ -62965,7 +71004,7 @@ module akra
                 }
 
                 if(nFace==0){
-                	logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 327 ); logger.warning("Выставлен фдлаг с кубической текстурой, а самих текстур нету"); ;
+                	logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 314 ); logger.warning("Выставлен фдлаг с кубической текстурой, а самих текстур нету"); ;
                 }
 			}
 
@@ -63002,7 +71041,7 @@ module akra
 				    header10.arraySize = pDDS10Header[3];
 				    header10.reserved = pDDS10Header[4];
 
-				    logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 364 ); logger.criticalError("Формат D3DFMT_DX10 не поддерживается"); ;
+				    logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 351 ); logger.criticalError("Формат D3DFMT_DX10 не поддерживается"); ;
 /*console.log("dxgiFormat",header10.dxgiFormat);
 				     console.log("resourceDimension",header10.resourceDimension);					
 				     nCubeMap=1;
@@ -63043,7 +71082,7 @@ module akra
 					eSourceFormat=EPixelFormats.FLOAT32_RGBA;
 				}
 				else {
-				    logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 404 ); logger.criticalError("Флаг DDPF_FOURCC стоит, а подходящего dwFourCC нет"); ;
+				    logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 391 ); logger.criticalError("Флаг DDPF_FOURCC стоит, а подходящего dwFourCC нет"); ;
 				}
 			}
 			else
@@ -63054,7 +71093,14 @@ module akra
 				{
 
 
-//if(pHeader.ddspf.dwFlags & DDPF_RGB )
+					if((!!(pHeader.ddspf.dwFlags& 0x00020000 ))!=pixelUtil.isLuminance(ePF))
+					{
+						continue;
+					}
+					if((!!(pHeader.ddspf.dwFlags& 0x00000001 ))!=pixelUtil.hasAlpha(ePF))
+					{
+						continue;
+					}
 
 
 					if (pixelUtil.getNumElemBits(ePF) == pHeader.ddspf.dwRGBBitCount)
@@ -63075,7 +71121,7 @@ module akra
 
 				if(ePF==EPixelFormats.TOTAL)
 				{
-					logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 436 ); logger.criticalError("Cannot determine pixel format. DDSCodec.decode"); ;
+					logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 430 ); logger.criticalError("Cannot determine pixel format. DDSCodec.decode"); ;
 				}
 				else
 				{
@@ -63101,7 +71147,19 @@ module akra
 
 
 			pImgData.format = eSourceFormat;
-			console.log("==>",pImgData.format);
+
+			if (pHeader.dwFlags &  0x00020000 ) {
+                pImgData.numMipMaps = pHeader.dwMipMapCount-1;
+                if (pImgData.numMipMaps!=core.pool.resources.Img.getMaxMipmaps(pImgData.width,pImgData.height,pImgData.depth,pImgData.format)) {
+                logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 460 ); logger.warning("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1 " + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
+                                                                                                           ;
+
+            	}
+            }
+            else{
+                pImgData.numMipMaps = 0;
+            }
+
 			var pOutput:Uint8Array=new Uint8Array(pImgData.size)
 			var iOutputOffset: number =0;
 
@@ -63141,7 +71199,7 @@ module akra
 						}
 						if (iSrcPitch<iDstPitch)
 						{
-							logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 501 ); logger.warning("Странный размер питча у картинки");
+							logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 507 ); logger.warning("Странный размер питча у картинки");
 						}
 
 						for (var z: number  = 0; z < pImgData.depth; z++)
@@ -63191,6 +71249,8 @@ module akra
 
 
 //include sub creation classes.
+
+
 
 
 
@@ -63281,6 +71341,8 @@ module akra.render {
 		private _iIndexSet:  number  = 0;
 		private _iRenderable:  number  = 1;
 
+        private _pComposer: IAFXComposer = null;
+
 
 		inline get buffer(): IRenderDataCollection {
 			return this._pBuffer;
@@ -63293,6 +71355,7 @@ module akra.render {
 		constructor(pCollection: IRenderDataCollection = null) {
 			super();
 			this._pBuffer = pCollection;
+            this._pComposer = pCollection.getEngine().getComposer();
 		}
 
 /**
@@ -63304,7 +71367,7 @@ module akra.render {
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, hasIndex: bool = true):  number ;
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, hasIndex: bool = true):  number ;
         allocateData(pDecl: any, pData: any, hasIndex: bool = true):  number {
-        	var pDataDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	var pDataDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
         	var eType: ERenderDataTypes = ERenderDataTypes.INDEXED;
 
 		    if (!hasIndex || this.useSingleIndex()) {
@@ -63341,7 +71404,7 @@ module akra.render {
 		    if (!pAttribData) {
 		        if (!pAttribBuffer) {
 		            pAttribBuffer = pBuffer.getEngine().getResourceManager().createVertexBuffer('render_data_attrs_' + sid());
-		            pAttribBuffer.create(EHardwareBufferFlags.BACKUP_COPY);
+		            pAttribBuffer.create((<ArrayBufferView>pData).byteLength, EHardwareBufferFlags.BACKUP_COPY);
 		            this._pAttribBuffer = pAttribBuffer;
 		        }
 
@@ -63352,8 +71415,8 @@ module akra.render {
 		    }
 
 		    if (!pAttribData.extend(pAttrDecl, pData)) {
-		        logger.setSourceLocation( "RenderData.ts" , 135 ); logger.log('invalid data for allocation:', arguments); ;
-		        logger.setSourceLocation( "RenderData.ts" , 136 ); logger.warning('cannot allocate attribute in data subset..'); ;
+		        logger.setSourceLocation( "RenderData.ts" , 139 ); logger.log('invalid data for allocation:', arguments); ;
+		        logger.setSourceLocation( "RenderData.ts" , 140 ); logger.warning('cannot allocate attribute in data subset..'); ;
 		        return false;
 		    }
 
@@ -63369,14 +71432,15 @@ module akra.render {
 		allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
 		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
 		allocateIndex(pDecl: any, pData: any): bool{
-			var pAttrDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+			var pAttrDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+
 			if (this.useAdvancedIndex()) {
 		        return this._allocateAdvancedIndex(pAttrDecl, pData);
 		    }
 		    return this._allocateIndex(pAttrDecl, pData);
 		}
 
-				getAdvancedIndexData(sSemantics: string): IVertexData {
+		getAdvancedIndexData(sSemantics: string): IVertexData {
 			return this._getData(sSemantics, true);
 		}
 
@@ -63469,6 +71533,10 @@ module akra.render {
         	return this._iIndexSet;
         }
 
+        inline hasAttributes(): bool {
+            return !isNull(this._pAttribData);
+        }
+
 /**
 		 * Specifies uses advanced index.
 		 */
@@ -63531,7 +71599,7 @@ module akra.render {
         getDataLocation(sSemantics?):  number  {
         	var pData: IVertexData = this._getData(<string>sSemantics);
 
-        	return pData ? pData.byteLength : -1;
+        	return pData ? pData.byteOffset : -1;
         }
 
 /**
@@ -63556,10 +71624,7 @@ module akra.render {
 
         index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?:  number ): bool;
         index(iData:  number , sSemantics: string, useSame?: bool, iBeginWith?:  number ): bool;
-        index(data: any, sSemantics: string, useSame?: bool, iBeginWith?:  number ): bool {
-        	iBeginWith = iBeginWith || 0;
-        	useSame = useSame || false;
-
+        index(data: any, sSemantics: string, useSame: bool = false, iBeginWith:  number  = 0): bool {
             var iData:  number  = < number >arguments[0];
         	var iFlow:  number  = -1;
         	var iAddition:  number , iRealAddition:  number , iPrevAddition:  number ;
@@ -63574,7 +71639,7 @@ module akra.render {
 
         	if (this.useAdvancedIndex()) {
         	    pRealData = this._getData(<string>arguments[0]);
-        	    iAddition = pRealData.byteLength;
+        	    iAddition = pRealData.byteOffset;
         	    iStride = pRealData.stride;
 //индекс, который подал юзер
         	    pData = this._getData(sSemantics, true);
@@ -63583,10 +71648,9 @@ module akra.render {
         	        for (var i:  number  = 0; i < pTypedData.length; i++) {
         	            pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
         	        }
-        	        ;
         	    });
 
-        	    iData = pData.byteLength;
+        	    iData = pData.byteOffset;
         	    sSemantics = "INDEX_" + sSemantics;
         	}
         	else if (isString(arguments[0])) {
@@ -63597,12 +71661,13 @@ module akra.render {
         	    	iData = this.getDataLocation(<string>arguments[0]);
         		}
 
-        	    logger.setSourceLocation( "RenderData.ts" , 370 ); logger.assert(iData >= 0, "cannot find data with semantics: " + arguments[0]); ;
+        	    logger.setSourceLocation( "RenderData.ts" , 375 ); logger.assert(iData >= 0, "cannot find data with semantics: " + arguments[0]); ;
         	}
 
-        	pFlow = this._getFlow(iData);
+            pFlow = this._getFlow(iData);
 
         	if (pFlow === null) {
+                logger.setSourceLocation( "RenderData.ts" , 381 ); logger.warning("Could not find data flow <" + iData + "> int buffer map: " + this._pMap.toString(true)); ;
         	    return false;
         	}
 
@@ -63675,7 +71740,7 @@ module akra.render {
 		                                 pAdditionCache : <IntMap>null
 		                             });
 
-		    logger.setSourceLocation( "RenderData.ts" , 447 ); logger.assert(this.useSingleIndex() === false, "single indexed data not implimented"); ;
+		    logger.setSourceLocation( "RenderData.ts" , 453 ); logger.assert(this.useSingleIndex() === false, "single indexed data not implimented"); ;
 
 		    return true;
 		}
@@ -63690,13 +71755,13 @@ module akra.render {
 
 		    var iFlow:  number ;
 		    var pVertexData: IVertexData = this._pBuffer._allocateData(pDataDecl, pData);
-		    var iOffset:  number  = pVertexData.byteLength;
+		    var iOffset:  number  = pVertexData.byteOffset;
 
 		    iFlow = this._addData(pVertexData, undefined, eType);
 
 		    if (iFlow < 0) {
-		        logger.setSourceLocation( "RenderData.ts" , 467 ); logger.log("invalid data", pDataDecl, pData); ;
-		        logger.setSourceLocation( "RenderData.ts" , 468 ); logger.error("cannot allocate data for submesh"); ;
+		        logger.setSourceLocation( "RenderData.ts" , 473 ); logger.log("invalid data", pDataDecl, pData); ;
+		        logger.setSourceLocation( "RenderData.ts" , 474 ); logger.error("cannot allocate data for submesh"); ;
 		        return -1;
 		    }
 
@@ -63726,8 +71791,8 @@ module akra.render {
 
 		private _registerData(pVertexData: IVertexData):  number  {
 		    'use strict';
-		    var iOffset:  number  = pVertexData.byteLength;
-		    var pDataDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
+		    var iOffset:  number  = pVertexData.byteOffset;
+		    var pDataDecl: data.VertexDeclaration = <data.VertexDeclaration>pVertexData.getVertexDeclaration();
 
 //необходимо запоминать расположение данных, которые подаются,
 //т.к. иначе их потом нельзя будет найти среди других данных
@@ -63750,7 +71815,7 @@ module akra.render {
 		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
 		 private _allocateAdvancedIndex(pAttrDecl: any, pData: any): bool {
 
-		    var pDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pAttrDecl);
+		    var pDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pAttrDecl);
 		    var nCount:  number  = pData.byteLength / pDecl.stride;
 //TODO: remove index dublicates
 		    var iIndLoc:  number  = this._allocateData(pAttrDecl, pData, ERenderDataTypes.INDEXED);
@@ -63771,7 +71836,7 @@ module akra.render {
 		        this.releaseData(iIndLoc);
 		        pI2IData = null;
 		        pI2IDecl = null;
-		        logger.setSourceLocation( "RenderData.ts" , 540 ); logger.warning('cannot allocate index for index in render data subset'); ;
+		        logger.setSourceLocation( "RenderData.ts" , 546 ); logger.warning('cannot allocate index for index in render data subset'); ;
 		        return false;
 		    }
 
@@ -63792,7 +71857,7 @@ module akra.render {
 		    if (!this._pIndexBuffer) {
 		        if (this.useMultiIndex()) {
 		            this._pIndexBuffer = this._pBuffer.getEngine().getResourceManager().createVertexBuffer('subset_' + sid());
-		            this._pIndexBuffer.create(EHardwareBufferFlags.BACKUP_COPY);
+		            this._pIndexBuffer.create(((<ArrayBufferView>pData).byteLength), < number >EHardwareBufferFlags.BACKUP_COPY);
 		        }
 		        else {
 //TODO: add support for sinle indexed mesh.
@@ -63815,15 +71880,15 @@ module akra.render {
 		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
 		private _allocateIndex(pDecl: any, pData: any): bool {
 		    'use strict';
+            var pAttrDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]> pDecl);
 
-		    var pAttrDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]> pDecl);
 		    var pIndexData: IBufferData = this._pIndexData;
 		    var pIndexBuffer: IHardwareBuffer = this._pIndexBuffer;
 		    var pBuffer: IRenderDataCollection = this._pBuffer;
 
 
 		    for (var i:  number  = 0; i < pAttrDecl.length; i++) {
-		        if (pAttrDecl[i].eType !== EDataTypes.FLOAT) {
+		        if (pAttrDecl.element(i).type !== EDataTypes.FLOAT) {
 		            return false;
 		        }
 		    }
@@ -63834,8 +71899,8 @@ module akra.render {
 		    }
 
 		    if (!(<IVertexData>this._pIndexData).extend(pAttrDecl, pData)) {
-		        logger.setSourceLocation( "RenderData.ts" , 601 ); logger.log('invalid data for allocation:', arguments); ;
-		        logger.setSourceLocation( "RenderData.ts" , 602 ); logger.warning('cannot allocate index in data subset..'); ;
+		        logger.setSourceLocation( "RenderData.ts" , 607 ); logger.log('invalid data for allocation:', arguments); ;
+		        logger.setSourceLocation( "RenderData.ts" , 608 ); logger.warning('cannot allocate index in data subset..'); ;
 		        return false;
 		    }
 
@@ -63868,7 +71933,7 @@ module akra.render {
 		    for (var i:  number  = 0, n = this._pMap.limit; i < n; ++i) {
 		        var pFlow = this._pMap.getFlow(i, false);
 
-		        if (pFlow.data && pFlow.data.byteLength === arguments[0]) {
+		        if (pFlow.data && pFlow.data.byteOffset === arguments[0]) {
 		            return pFlow;
 		        }
 		    }
@@ -63914,10 +71979,12 @@ module akra.render {
          * Draw this data.
          */
 
-        _draw(): void {
+        _draw(pTechnique: IRenderTechnique, pSceneObject: ISceneObject): void {
         	for (var i:  number  = 0; i < this._pIndicesArray.length; i++) {
         	    if (this.isRenderable(i)) {
-        	        this._pIndicesArray[i].pMap._draw();
+//this._pIndicesArray[i].pMap._draw();
+                    this._pComposer.applyBufferMap(this._pIndicesArray[i].pMap);
+                    pTechnique._renderTechnique(pSceneObject);
         	    }
         	}
         }
@@ -63926,15 +71993,17 @@ module akra.render {
 
         toString(): string {
         	var s: string;
-        	s = 'RENDER DATA SUBSET: #' + this._iId + '\n';
-        	s += '        ATTRIBUTES: ' + (this._pAttribData ? 'TRUE' : 'FALSE') + '\n';
-        	s += '----------------------------------------------------------------\n';
+        	s = "\nRENDER DATA SUBSET: #" + this._iId + "\n";
+        	s += "        ATTRIBUTES: " + (this._pAttribData ? "TRUE" : "FALSE") + "\n";
+        	s += "----------------------------------------------------------------\n";
         	s += this._pMap.toString();
 
         	return s;
         }
 	}
 }
+
+
 
 
 
@@ -63962,7 +72031,6 @@ module akra.render {
         constructor (pEngine: IEngine, eOptions: ERenderDataBufferOptions = 0) {
             super();
             this._pEngine = pEngine;
-
             this.setup(eOptions);
         }
 
@@ -64005,7 +72073,7 @@ module akra.render {
         	    else {
         	        for (var i:  number  = 0; i < n; i++) {
                         pData = pBuffer.getVertexData(i);
-        	            if (pData.byteLength === < number >arguments[0]) {
+        	            if (pData.byteOffset === < number >arguments[0]) {
         	                return pData;
         	            }
         	        };
@@ -64030,7 +72098,7 @@ module akra.render {
         	    this.createDataBuffer();
         	}
 
-        	var pVertexDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	var pVertexDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
         	var pVertexData: IVertexData;
 
         	if ((arguments.length < 2) || isNumber(arguments[1]) || isNull(arguments[1])) {
@@ -64052,14 +72120,14 @@ module akra.render {
 
         allocateData(pDecl?, pData?, isCommon: bool = true):  number  {
         	    var pVertexData: IVertexData;
-        	    var pDataDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	    var pDataDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
 
 
 
         	    for (var i:  number  = 0; i < pDataDecl.length; i++) {
-        	        if (this.getData(pDataDecl[i].eUsage) !== null && pDataDecl[i].nCount !== 0) {
-        	            logger.setSourceLocation( "render/RenderDataCollection.ts" , 127 ); logger.warning("data buffer already contains data with similar vertex decloration <" + pDataDecl[i].eUsage + ">.");
-                                                    ;
+        	        if (this.getData(pDataDecl.element(i).usage) !== null && pDataDecl.element(i).count !== 0) {
+        	            logger.setSourceLocation( "render/RenderDataCollection.ts" , 127 ); logger.warning("data buffer already contains data with similar vertex decloration <" + pDataDecl.element(i).usage + ">.");
+                                                           ;
         	        }
         	    };
 
@@ -64073,7 +72141,7 @@ module akra.render {
         	        }
         	    }
 
-        	    return pVertexData.byteLength;
+        	    return pVertexData.byteOffset;
         }
 
         getDataLocation(sSemantics: string):  number  {
@@ -64083,7 +72151,7 @@ module akra.render {
         	    for (var i:  number  = 0, n:  number  = this._pDataBuffer.length; i < n; i++) {
                     pData = this._pDataBuffer.getVertexData(i);
         	        if (pData.hasSemantics(sSemantics)) {
-        	            return pData.byteLength;
+        	            return pData.byteOffset;
         	        }
         	    };
         	}
@@ -64097,11 +72165,12 @@ module akra.render {
             var eOptions: ERenderDataBufferOptions = this._eDataOptions;
 
             if (eOptions & ERenderDataBufferOptions.VB_READABLE) {
-                (true ? ((iVbOption) |= (1 << (((1 << (EHardwareBufferFlags.READABLE)) ))) ) : ((iVbOption) &= ~ (1 << (((1 << (EHardwareBufferFlags.READABLE)) ))) ) ) ;
+                iVbOption = ERenderDataBufferOptions.VB_READABLE;
             }
+
 //trace('creating new video buffer for render data buffer ...');
             this._pDataBuffer = this._pEngine.getResourceManager().createVideoBuffer("render_data_buffer" + "_" + sid());
-            this._pDataBuffer.create(iVbOption);
+            this._pDataBuffer.create(0, iVbOption);
             this._pDataBuffer.addRef();
             return this._pDataBuffer !== null;
         };
@@ -64118,7 +72187,7 @@ module akra.render {
         	eOptions |= this._eDataOptions;
 
         	if (!pDataset._setup(this, iSubsetId, ePrimType, eOptions)) {
-        	    logger.setSourceLocation( "render/RenderDataCollection.ts" , 186 ); logger.error("cannot setup submesh..."); ;
+        	    logger.setSourceLocation( "render/RenderDataCollection.ts" , 187 ); logger.error("cannot setup submesh..."); ;
         	}
 
 
@@ -64129,13 +72198,14 @@ module akra.render {
 
         _draw(): void;
         _draw(iSubset?:  number ): void {
-        	if (arguments.length > 0) {
-        	    this._pDataArray[iSubset]._draw();
-        	}
+// if (arguments.length > 0) {
+//     this._pDataArray[iSubset]._draw();
+// }
 
-        	for (var i:  number  = 0; i < this._pDataArray.length; i++) {
-        	    this._pDataArray[i]._draw();
-        	};
+// for (var i: int = 0; i < this._pDataArray.length; i++) {
+//     this._pDataArray[i]._draw();
+// };
+            logger.setSourceLocation( "render/RenderDataCollection.ts" , 205 ); logger.criticalError("TODO"); ;
         }
 
         destroy(): void {
@@ -64174,666 +72244,6 @@ module akra.render {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra.util {
-	export interface IBuffersCompatibleMap {
-		[handle:  number ]: IVertexData;
-	}
-
-	class BufferMap implements IBufferMap extends ReferenceCounter{
-		private _pFlows: IDataFlow[] = null;
-		private _pMappers: IDataMapper[] = null;
-		private _pIndex: IIndexData = null;
-		private _nLength:  number  = 0;
-		private _ePrimitiveType: EPrimitiveTypes;
-		private _pCompleteFlows: IDataFlow[] = null;
-		private _nCompleteFlows:  number  = 0;
-		private _nCompleteVideoBuffers:  number  = 0;
-		private _pCompleteVideoBuffers: IVertexBuffer[] = null;
-		private _nUsedFlows:  number  = 0;
-		private _pEngine: IEngine = null;
-		private _nStartIndex:  number  = 0;
-		private _pBuffersCompatibleMap: IBuffersCompatibleMap = null;
-
-		constructor(pEngine: IEngine){
-			super();
-			this._pEngine = pEngine;
-			this.reset();
-		};
-
-		inline get primType(): EPrimitiveTypes{
-			return this._pIndex ? this._pIndex.getPrimitiveType() : this._ePrimitiveType;
-		};
-
-		inline set primType(eType: EPrimitiveTypes){
-			this._ePrimitiveType = eType;
-		};
-
-		inline get primCount():  number  {
-			return data.IndexData.getPrimitiveCount(this.primType, this.length);
-		};
-
-		inline get index(): IIndexData {
-			return this._pIndex;
-		};
-
-		inline set index(pIndexData: IIndexData) {
-			if (this._pIndex === pIndexData) {
-	            return;
-	        }
-
-	        this._pIndex = pIndexData;
-	        this.update();
-		};
-
-		inline get limit():  number  {
-			return this._pFlows.length;
-		};
-
-		inline get length():  number  {
-			return (this._pIndex ? this._pIndex.length : this._nLength);
-		}
-
-		inline set length(nLength:  number ) {
-			this._nLength = Math.min(this._nLength, nLength);
-		}
-
-		inline set _length(nLength:  number ) {
-			this._nLength = nLength;
-		}
-
-		inline get startIndex():  number  {
-			return this._nStartIndex;
-		}
-
-		inline get size():  number {
-			return this._nCompleteFlows;
-		}
-
-		inline get flows(): IDataFlow[] {
-			return this._pCompleteFlows;
-		}
-
-		inline get mappers(): IDataMapper[] {
-			return this._pMappers;
-		}
-
-		inline get offset():  number  {
-			return (this._pIndex? this._pIndex.byteOffset: 0);
-		}
-
-		_draw(): void {
-			this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
-			isNull(this._pIndex)? this.drawArrays(): this.drawElements();
-		}
-
-		private inline drawArrays(): void {
-
-			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
-				webgl.getWebGLPrimitiveType(this._ePrimitiveType),
-				this._nStartIndex,
-				this._nLength);
-
-		}
-
-		private inline drawElements(): void {
-
-			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
-				this.primCount,
-				this._pIndex.getPrimitiveCount(),
-				webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()),
-				this._pIndex.byteOffset / 4);
-//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
-
-		}
-
-		getFlow(sSemantics: string, bComplete: bool = true): IDataFlow;
-		getFlow(iFlow:  number , bComplete: bool = true): IDataFlow;
-		getFlow(iFlow: any, bComplete: bool = true): IDataFlow {
-
-		    if (isString(arguments[0])) {
-		        var nTotal:  number ;
-		        var pFlows: IDataFlow[];
-
-		        if (bComplete) {
-		            pFlows = this._pCompleteFlows;
-		            nTotal = this._nCompleteFlows;
-		        }
-		        else {
-		            pFlows = this._pFlows;
-		            nTotal = this._pFlows.length;
-		        }
-
-		        for (var i:  number  = 0; i < nTotal; ++ i) {
-		            if (!pFlows[i].data) {
-		                continue;
-		            }
-		            if (pFlows[i].data.hasSemantics(arguments[0])) {
-		                return pFlows[i];
-		            }
-		        }
-
-		        return null;
-		    }
-
-		    if (bComplete) {
-
-		        for (var i:  number  = 0, pFlows = this._pCompleteFlows; i < this._nCompleteFlows; ++ i) {
-		            if (pFlows[i].flow == iFlow) {
-		                return pFlows[i];
-		            }
-		        }
-
-		        return null;
-		    }
-
-		    return this._pFlows[iFlow];
-		}
-
-		reset(): void {
-			this._pIndex = null
-		    this._ePrimitiveType = EPrimitiveTypes.TRIANGLELIST;
-
-
-		    var nFlowLimit:  number  = 16;
-
-/*webgl.maxVertexTextureImageUnits*/
-			nFlowLimit = Math.min(16                                    , webgl.maxVertexAttributes);
-
-
-		    this._pMappers = [];
-		    this._pFlows = new Array(nFlowLimit);
-		    for (var i = 0; i < nFlowLimit; i++) {
-		        this._pFlows[i] = {
-		            flow: i,
-		            data:  null,
-		            type:  EDataFlowTypes.UNMAPPABLE,
-		            mapper:null
-		        };
-		    }
-
-		    this._nLength = MAX_INT32;
-		    this._pCompleteFlows = new Array(nFlowLimit);
-		    this._nCompleteFlows = 0;
-		    this._nStartIndex = MAX_INT32;
-		    this._pBuffersCompatibleMap = <IBuffersCompatibleMap>{};
-
-		    this._pCompleteVideoBuffers = new Array(nFlowLimit);
-		    this._nCompleteVideoBuffers = 0;
-		    this._nUsedFlows = 0;
-		}
-
-		flow(pVertexData: IVertexData):  number ;
-		flow(iFlow:  number , pVertexData: IVertexData):  number ;
-		flow(iFlow, pData?):  number  {
-			var pFlow: IDataFlow = null;
-			var pVertexData: IVertexData = null;
-
-		    if (arguments.length < 2) {
-		        pVertexData = <IVertexData>arguments[0];
-		        iFlow = (this._nUsedFlows ++);
-		    }
-// trace(iFlow, '<<==', pVertexData.getVertexDeclaration().toString());
-// console.log((new Error).stack);
-		    pFlow = this._pFlows[iFlow];
-
-		    logger.setSourceLocation( "util/BufferMap.ts" , 223 ); logger.assert(iFlow < this.limit, 'Invalid strem. Maximum allowable number of stream ' + this.limit + '.');
-                                                                                  ;
-
-		    if (!pVertexData || pFlow.data === pVertexData) {
-		        return -1;
-		    }
-
-/*core.pool.resources.VertexBuffer*/
-		    if (pVertexData.buffer instanceof webgl.WebGLVertexBuffer                                    ) {
-		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
-		        this.length = pVertexData.length;
-//this.startIndex = pVertexData.getStartIndex();
-		        logger.setSourceLocation( "util/BufferMap.ts" , 234 ); logger.assert(this.checkData(pVertexData), 'You can use several unmappable data flows from one buffer.');
-                                                                           ;
-
-		        this.pushEtalon(pVertexData);
-		    }
-		    else {
-		        pFlow.type = EDataFlowTypes.MAPPABLE;
-		    }
-
-		    pFlow.data = pVertexData;
-
-		    return this.update() ? iFlow : -1;
-		}
-
-		checkData(pData: IVertexData): bool {
-			var pEtalon = this._pBuffersCompatibleMap[pData.getBufferHandle()];
-		    if (!pEtalon || pEtalon.byteOffset === pData.byteOffset) {
-		        return true;
-		    }
-		    return false;
-		}
-
-		/**@protected*/  findMapping(pMap, eSemantics, iAddition): IDataMapper {
-		    logger.setSourceLocation( "util/BufferMap.ts" , 256 ); logger.assert(this.checkData(pMap), 'You can use several different maps from one buffer.'); ;
-		    for (var i:  number  = 0, pMappers: IDataMapper[] = this._pMappers, pExistsMap; i < pMappers.length; i++) {
-		        pExistsMap = pMappers[i].data;
-		        if (pExistsMap === pMap) {
-//если уже заданные маппинг менял свой стартовый индекс(например при расширении)
-//то необходимо сменить стартовый индекс на новый
-		            if (pMappers[i].semantics === eSemantics && pMappers[i].addition == iAddition) {
-		                return pMappers[i];
-		            }
-		        }
-		        else {
-		            logger.setSourceLocation( "util/BufferMap.ts" , 268 ); logger.assert(pExistsMap.getStartIndex() === pMap.getStartIndex(), 'You can not use maps with different indexing');
-                                                                 ;
-		        }
-		    }
-		    return null;
-		};
-
-
-		mapping(iFlow:  number , pMap: IVertexData, eSemantics: string, iAddition?:  number ): bool {
-			iAddition = iAddition || 0;
-
-		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
-		    var pFlow: IDataFlow     = this._pFlows[iFlow];
-
-		    logger.setSourceLocation( "util/BufferMap.ts" , 282 ); logger.assert(isDefAndNotNull(pFlow.data) && (pFlow.type === EDataFlowTypes.MAPPABLE), 'Cannot mapping empty/unmappable flow.');
-                                                  ;
-		    logger.setSourceLocation( "util/BufferMap.ts" , 283 ); logger.assert(isDef(pMap), 'Passed empty mapper.'); ;
-
-		    if (!eSemantics) {
-		        eSemantics = pMap.getVertexDeclaration()[0].eUsage;
-		    }
-		    else if (pMap.hasSemantics(eSemantics) === false) {
-		        logger.setSourceLocation( "util/BufferMap.ts" , 289 ); logger.error('Passed mapper does not have semantics: ' + eSemantics + '.'); ;
-		        return false;
-		    }
-
-		    if (pMapper) {
-		        if (pFlow.mapper === pMapper) {
-		            return pMapper.semantics === eSemantics &&
-		                pMapper.addition === iAddition? true: false;
-		        }
-		    }
-		    else {
-		        pMapper = {data: pMap, semantics: eSemantics, addition: iAddition};
-
-		        this._pMappers.push(pMapper);
-		        this.length = pMap.length;
-//this.startIndex = pMap.getStartIndex();
-		        this.pushEtalon(pMap);
-		    }
-
-		    pFlow.mapper = pMapper;
-
-		    return this.update();
-		}
-
-		private pushEtalon(pData: IVertexData): void {
-			this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
-		}
-
-		update(): bool {
-			var pFlows: IDataFlow[] = this._pFlows;
-		    var pFlow: IDataFlow;
-		    var pMapper: IDataMapper;
-		    var isMappable: bool = false;
-		    var pCompleteFlows: IDataFlow[] = this._pCompleteFlows;
-		    var nCompleteFlows:  number  = 0;
-		    var pCompleteVideoBuffers: IVertexBuffer[] = this._pCompleteVideoBuffers;
-		    var nCompleteVideoBuffers:  number  = 0;
-		    var nUsedFlows:  number  = 0;
-		    var pVideoBuffer: IVertexBuffer;
-		    var isVideoBufferAdded: bool = false;
-		    var nStartIndex:  number  = MAX_INT32, nCurStartIndex:  number ;
-
-		    for (var i:  number  = 0; i < pFlows.length; i++) {
-		        pFlow = pFlows[i];
-		        pMapper = pFlow.mapper;
-		        isMappable = (pFlow.type === EDataFlowTypes.MAPPABLE);
-
-		        if (pFlow.data) {
-		            nUsedFlows ++;
-		        }
-
-		        if (pFlow.data === null || (isMappable && pMapper === null)) {
-		            continue;
-		        }
-
-		        pCompleteFlows[nCompleteFlows ++] = pFlow;
-
-		        if (isMappable) {
-		            nCurStartIndex = pMapper.data.startIndex;
-		            pVideoBuffer = <IVertexBuffer>pFlow.data.buffer;
-		            for (var j = 0; j < nCompleteVideoBuffers; j++) {
-		                if (pCompleteVideoBuffers[j] === pVideoBuffer) {
-		                    isVideoBufferAdded = true;
-		                    break;
-		                }
-		            }
-		            if (!isVideoBufferAdded) {
-		                pCompleteVideoBuffers[nCompleteVideoBuffers ++] = pVideoBuffer;
-		            }
-		        }
-		        else {
-		            nCurStartIndex = pFlow.data.startIndex;
-		        }
-
-		        if (nStartIndex === MAX_INT32) {
-		            nStartIndex = nCurStartIndex;
-		            continue;
-		        }
-
-		        logger.setSourceLocation( "util/BufferMap.ts" , 369 ); logger.assert(nStartIndex == nCurStartIndex, 'You can not use a maps or unmappable buffers having different starting index.');
-                                                                                              ;
-		    }
-
-		    this._nStartIndex = nStartIndex;
-		    this._nCompleteFlows = nCompleteFlows;
-		    this._nCompleteVideoBuffers = nCompleteVideoBuffers;
-		    this._nUsedFlows = nUsedFlows;
-
-		    return true;
-		}
-		clone(bWithMapping?: bool): IBufferMap {
-			bWithMapping = isDef(bWithMapping) ? bWithMapping : true;
-
-		    var pMap: IBufferMap = new BufferMap(this._pEngine);
-		    for (var i = 0, pFlows = this._pFlows; i < pFlows.length; ++ i) {
-		        if (pFlows[i].data === null) {
-		            continue;
-		        }
-
-		        if (pMap.flow(pFlows[i].flow, pFlows[i].data) < 0) {
-		            pMap = null;
-		            return null;
-		        }
-
-		        if (!bWithMapping) {
-		            continue;
-		        }
-
-		        if (pFlows[i].mapper) {
-	                pMap.mapping(pFlows[i].flow,
-	                pFlows[i].mapper.data,
-	                pFlows[i].mapper.semantics,
-	                pFlows[i].mapper.addition);
-		        }
-		    }
-
-		    return pMap;
-		}
-		toString(): string {
-			function _an(sValue, n:  number , bBackward?: bool) {
-		        sValue = String(sValue);
-		        bBackward = bBackward || false;
-
-		        if (sValue.length < n) {
-		            for (var i = 0, l = sValue.length; i < n - l; ++ i) {
-		                if (!bBackward) {
-		                    sValue += ' ';
-		                }
-		                else {
-		                    sValue = ' ' + sValue;
-		                }
-		            }
-		        }
-
-		        return sValue;
-		    }
-
-		    var s = '\n\n', t;
-		    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
-		    t  = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
-// = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
-// = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
-		    s += t;
-
-		    for (var i:  number  = 0; i < this._nCompleteFlows; ++ i) {
-		        var pFlow: IDataFlow = this._pCompleteFlows[i];
-		        var pMapper: IDataMapper = pFlow.mapper;
-		        var pVertexData: IVertexData = pFlow.data;
-		        var pDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
-//trace(pMapper); window['pMapper'] = pMapper;
-		        s += '#' + _an(pFlow.flow, 2) + ' ' +
-		            _an('[ ' + (pDecl.element(0).usage !== DeclUsages.END? pDecl.element(0).usage: '<end>') + ' ]', 20) +
-		            ' : ' + _an(pDecl.element(0).offset, 6, true) + ' / ' + _an(pDecl.element(0).size, 6) +
-		            ' | ' +
-		            _an(pVertexData.getBufferHandle(), 8, true) + ' / ' + _an(pVertexData.byteOffset, 8) +
-		            ' : ' +
-		            (pMapper? _an(pMapper.semantics, 15, true) + ' / ' + _an(pMapper.addition, 7) + ': ' +
-		                _an(pMapper.data.getVertexDeclaration().findElement(pMapper.semantics).offset, 6) :
-		            _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
-
-
-		        for (var j = 1; j < pDecl.length; ++ j) {
-		            s += '    ' +
-		            _an('[ ' + (pDecl.element(j).usage !== DeclUsages.END? pDecl.element(j).usage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl.element(j).offset, 6, true) + ' / ' + _an(pDecl.element(j).size, 6) +
-		                  ' |                     :                          :        |                  \n';
-		        }
-		        s += t;
-		    };
-		    s += '=================================================================\n';
-		    s += '      PRIMITIVE TYPE : ' + '0x' + Number(this.primType).toString(16) + '\n';
-		    s += '     PRIMITIVE COUNT : ' + this.primCount + '\n';
-		    s += '         START INDEX : ' + this.startIndex + '\n';
-		    s += '              LENGTH : ' + this.length + '\n';
-		    s += '  USING INDEX BUFFER : ' + (this.index? 'TRUE': 'FALSE') + '\n';
-		    s += '=================================================================\n';
-
-		    return s + '\n\n';
-		}
-	}
-
-	export function createBufferMap(pEngine: IEngine): IBufferMap {
-		return new BufferMap(pEngine);
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IAnimationBase {} ;
-	export interface IEngine {} ;
-	export interface ISceneNode {} ;
-
-	export interface IAnimationController{
-		 totalAnimations:  number ;
-		 active: IAnimationBase;
-
-		getEngine(): IEngine;
-		setOptions(eOptions): void;
-		addAnimation(pAnimation: IAnimationBase): bool;
-
-		removeAnimation(): bool;
-
-		findAnimation(pAnimation: string): IAnimationBase;
-		findAnimation(pAnimation:  number ): IAnimationBase;
-		findAnimation(pAnimation: IAnimationBase): IAnimationBase;
-
-		getAnimation(iAnim:  number ): IAnimationBase;
-
-		setAnimation(iAnimation:  number , pAnimation: IAnimationBase): void;
-		bind(pTarget: ISceneNode): void;
-		play(pAnimation: IAnimationBase, fRealTime:  number ): bool;
-
-		update(fTime:  number ): void;
-	}
-}
-
-
-
-
-module akra.animation {
-	export class AnimationController implements IAnimationController {
-		private _pEngine: IEngine;
-		private _pAnimations: IAnimationBase[] = [];
-		private _eOptions = 0;
-	    private _pActiveAnimation: IAnimationBase = null;
-	    private _fnPlayAnimation: Function = null;
-
-	    inline get totalAnimations():  number {
-			return this._pAnimations.length;
-		}
-
-		inline get active(): IAnimationBase{
-			return this._pActiveAnimation;
-		}
-
-		constructor(pEngine: IEngine, iOptions:  number  = 0){
-			this._pEngine = pEngine;
-
-
-			this.setOptions(iOptions);
-		}
-
-		getEngine(): IEngine {
-			return this._pEngine;
-		}
-
-		setOptions(iOptions:  number ): void {
-
-		}
-
-		addAnimation(pAnimation: IAnimationBase): bool {
-			if (this.findAnimation(pAnimation.name)) {
-				logger.setSourceLocation( "animation/AnimationController.ts" , 41 ); logger.warning("Animation with name <" + pAnimation.name + "> already exists in this controller"); ;
-				return false;
-			}
-
-//LOG('animation controller :: add animation >> ', pAnimation.name);
-
-			this._pAnimations.push(pAnimation);
-			this._pActiveAnimation = pAnimation;
-		}
-
-		removeAnimation(): bool {
-			var pAnimation = this.findAnimation(arguments[0]);
-		    var pAnimations = this._pAnimations;
-
-			for (var i = 0; i < pAnimations.length; ++ i) {
-				if (pAnimations[i] === pAnimation) {
-					pAnimations.splice(i, 1);
-					logger.setSourceLocation( "animation/AnimationController.ts" , 58 ); logger.log("animation controller :: remove animation >> ", pAnimation.name); ;
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		findAnimation(pAnimation: string): IAnimationBase;
-		findAnimation(pAnimation:  number ): IAnimationBase;
-		findAnimation(pAnimation: IAnimationBase): IAnimationBase;
-		findAnimation(pAnimation: any): IAnimationBase {
-			var pAnimations: IAnimationBase[] = this._pAnimations;
-		    var iAnimation:  number ;
-		    var sAnimation: string;
-
-			if (isString(arguments[0])) {
-				sAnimation = arguments[0];
-
-				for (var i = 0; i < pAnimations.length; ++ i) {
-					if (pAnimations[i].name === sAnimation) {
-						return pAnimations[i];
-					}
-				}
-
-				return null;
-			}
-
-			if (typeof arguments[0] === 'number') {
-				iAnimation = arguments[0];
-				return pAnimations[iAnimation] || null;
-			}
-
-			return arguments[0];
-		}
-
-		getAnimation(iAnim:  number ): IAnimationBase {
-			return this._pAnimations[iAnim];
-		}
-
-		setAnimation(iAnimation:  number , pAnimation: IAnimationBase): void {
-			logger.setSourceLocation( "animation/AnimationController.ts" , 99 ); logger.assert(iAnimation < this._pAnimations.length, 'invalid animation slot'); ;
-
-			this._pAnimations[iAnimation] = pAnimation;
-		}
-
-		bind(pTarget: ISceneNode): void {
-			var pAnimations: IAnimationBase[] = this._pAnimations;
-
-		    for (var i:  number  = 0; i < pAnimations.length; ++ i) {
-		        pAnimations[i].attach(pTarget);
-		    }
-		}
-
-		play(pAnimation: IAnimationBase, fRealTime:  number ): bool {
-			var pAnimationNext: IAnimationBase = this.findAnimation(arguments[0]);
-			var pAnimationPrev: IAnimationBase = this._pActiveAnimation;
-
-			if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
-				if (this._fnPlayAnimation) {
-					this._fnPlayAnimation(pAnimationNext);
-				}
-//LOG('controller::play(', pAnimationNext.name, ')', pAnimationNext);
-				if (pAnimationPrev) {
-					pAnimationPrev.stop(fRealTime);
-				}
-
-				pAnimationNext.play(fRealTime);
-
-				this._pActiveAnimation = pAnimationNext;
-
-				return true;
-			}
-
-			return false;
-		}
-
-		update(fTime:  number ): void {
-			if (this._pActiveAnimation) {
-				this._pActiveAnimation.apply(fTime);
-			}
-		}
-	}
-
-
-	export function createController(pEngine: IEngine, iOptions:  number ): IAnimationController {
-		return new AnimationController(pEngine, iOptions);
-	}
-}
 
 
 
@@ -65021,7 +72431,7 @@ module akra.util {
 // debug_assert(isDefAndNotNull(pDeps.files) && isString(pDeps.files[i]), "something going wrong...");
 
 			if (isDef(n)) {
-				logger.setSourceLocation( "util/DepsManager.ts" , 158 ); logger.log("loaded dependency: " + pDeps.files[n]); ;
+//LOG("loaded dependency: " + pDeps.files[n]);
 				pDeps.files[n] = null;
 			}
 
@@ -65041,7 +72451,7 @@ module akra.util {
 		}
 
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return DepsManager._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return DepsManager._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 		loaded (deps): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).loaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, deps) : _broadcast[i].listener (_recivier, deps) ; } } } ; ;
 // BROADCAST(error, CALL(pErr));
 
@@ -65267,7 +72677,7 @@ module akra.controls {
 	        }
 		}
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return GamepadMap._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return GamepadMap._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 		connected (pGamepad): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).connected; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pGamepad) : _broadcast[i].listener (_recivier, pGamepad) ; } } } ; ;
 		disconnected (pGamepad): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).disconnected; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pGamepad) : _broadcast[i].listener (_recivier, pGamepad) ; } } } ; ;
 		updated (pGamepad): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).updated; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pGamepad) : _broadcast[i].listener (_recivier, pGamepad) ; } } } ; ;
@@ -65518,6 +72928,8 @@ module akra.controls {
 
 
 
+
+
 module akra.core {
 	export class Engine implements IEngine {
 
@@ -65529,7 +72941,7 @@ module akra.core {
 
 /** stop render loop?*/
 
-		private _pTimer: IUtilTimer;
+		private _pTimer: util.UtilTimer;
 		private _iAppPausedCount:  number  = 0;
 
 
@@ -65546,19 +72958,23 @@ module akra.core {
 		private _pGamepads: IGamepadMap = null;
 
 
+		inline get time():  number  {
+			return this._pTimer.appTime;
+		}
 
 		constructor (pOptions: IEngineOptions = null) {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
 			if (!this._pResourceManager.initialize()) {
-				logger.setSourceLocation( "core/Engine.ts" , 67 ); logger.error('cannot initialize ResourcePoolManager'); ;
+				logger.setSourceLocation( "core/Engine.ts" , 74 ); logger.error('cannot initialize ResourcePoolManager'); ;
 			}
 
 			this._pSceneManager = new scene.SceneManager(this);
 			if (!this._pSceneManager.initialize()) {
-				logger.setSourceLocation( "core/Engine.ts" , 72 ); logger.error("cannot initialize SceneManager"); ;
+				logger.setSourceLocation( "core/Engine.ts" , 79 ); logger.error("cannot initialize SceneManager"); ;
 			}
 
 			this._pParticleManager = null;
+			this._pTimer = util.UtilTimer.start();
 
 
 			this._pRenderer = new webgl.WebGLRenderer(this);
@@ -65569,7 +72985,6 @@ module akra.core {
 			DDSCodec.startup();
 
 
-			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 
 			this.parseOptions(pOptions);
@@ -65623,7 +73038,7 @@ module akra.core {
 
 //load depends!
 			if (!pDepsManager.load(pDeps, sDepsRoot)) {
-				logger.setSourceLocation( "core/Engine.ts" , 142 ); logger.criticalError("load dependencies are not started."); ;
+				logger.setSourceLocation( "core/Engine.ts" , 149 ); logger.criticalError("load dependencies are not started."); ;
 			}
 
 //===========================================================
@@ -65671,7 +73086,7 @@ module akra.core {
 // pCanvas = (<IWebGLRenderer>pRenderer).getHTMLCanvas();
 
 
-			logger.setSourceLocation( "core/Engine.ts" , 190 ); logger.assert(!isNull(pRenderer)); ;
+			logger.setSourceLocation( "core/Engine.ts" , 197 ); logger.assert(!isNull(pRenderer)); ;
 
 	        pRenderer._initRenderTargets();
 
@@ -65683,12 +73098,12 @@ module akra.core {
 	        function render(iTime:  number ): void {
 
 				if (pRenderer.isValid()) {
-					logger.setSourceLocation( "core/Engine.ts" , 202 ); logger.error(pRenderer.getError()); ;
+					logger.setSourceLocation( "core/Engine.ts" , 209 ); logger.error(pRenderer.getError()); ;
 				}
 
 	        	if (pEngine.isActive() && pEngine.isDepsLoaded()) {
 					if (!pEngine.renderFrame()) {
-		                logger.setSourceLocation( "core/Engine.ts" , 207 ); logger.error("Engine::exec() error."); ;
+		                logger.setSourceLocation( "core/Engine.ts" , 214 ); logger.error("Engine::exec() error."); ;
 		                return;
 		            }
 	            }
@@ -65700,7 +73115,7 @@ module akra.core {
 	        render(0);
 		}
 
-		inline getTimer(): IUtilTimer { return this._pTimer; }
+		inline getTimer(): IUtilTimer { return <IUtilTimer>this._pTimer; }
 
 		renderFrame(): bool {
 		    var fElapsedAppTime:  number  	= this._pTimer.elapsedTime;
@@ -65722,6 +73137,7 @@ module akra.core {
 		    this._pRenderer._updateAllRenderTargets();
 		    this.frameEnded();
 
+		    logger.setSourceLocation( "core/Engine.ts" , 247 ); logger.log("frame rendered();"); ;
 			return true;
 		}
 
@@ -65773,11 +73189,11 @@ module akra.core {
 		}
 
 		inline createAnimationController(iOptions:  number  = 0): IAnimationController {
-			return animation.createController(this, iOptions);
+			return animation.createController(iOptions);
 		}
 
 		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {
-			logger.setSourceLocation( "core/Engine.ts" , 295 ); logger.log("[ALL DEPTS LOADED]"); ;
+			logger.setSourceLocation( "core/Engine.ts" , 303 ); logger.log("[ALL DEPTS LOADED]"); ;
 			this._isDepsLoaded = true;
 
 			this.depsLoaded(pDeps);
@@ -65832,7 +73248,7 @@ module akra.core {
 			};
 
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Engine._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return Engine._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 		frameStarted (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).frameStarted; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 		frameEnded (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).frameEnded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 		depsLoaded (deps): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).depsLoaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, deps) : _broadcast[i].listener (_recivier, deps) ; } } } ; ;
@@ -66379,7 +73795,7 @@ module akra.net {
 			return !isNull(this._pConnect);
 		}
 
-		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Pipe._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return Pipe._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 		opened (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).opened; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 		closed (ev): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).closed; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, ev) : _broadcast[i].listener (_recivier, ev) ; } } } ; ;
 		error (err): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).error; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, err) : _broadcast[i].listener (_recivier, err) ; } } } ; ;
@@ -66397,570 +73813,6 @@ module akra.net {
 
 
 
-
-
-
-
-
-
-
-
-module akra {
-	export interface IListExplorerFunc {
-		(data: any, index?:  number ): bool;
-//(data: any): void;
-	}
-
-/** ObjectList interface. */
-
-	export interface IObjectList {
-/** Number of elements in list */
-
-		length:  number ;
-/** First element in list */
-
-		first: any;
-/** Last element in list */
-
-		last: any;
-/** Current element in list */
-
-		current: any;
-
-/** Lock list for midifications. */
-
-		lock(): void;
-/** Unlock list */
-
-		unlock(): void;
-/** Is list locked ? */
-
-		isLocked(): bool;
-
-/** Set current element to <n> position. */
-
-		seek(n?:  number ): IObjectList;
-/** Get next element */
-
-		next(): any;
-/** Get prev element */
-
-		prev(): any;
-/** Push element to end of list. */
-
-		push(element: any): IObjectList;
-/** Pop element from end of list. */
-
-		pop(): any;
-/** Add element to list head. */
-
-		prepend(element: any): IObjectList;
-
-/** Add element from array. */
-
-		fromArray(elements: any[], iOffset?:  number , iSize?:  number ): IObjectList;
-
-/** Insert element before <n> element. */
-
-		insert(n:  number , data: any): IObjectList;
-/** Get valuie of <n> element */
-
-		value(n:  number , defaultValue?: any): any;
-/** Get index of element with given data */
-
-		indexOf(element: any, from?:  number ):  number ;
-/** Get sub list from this list */
-
-		mid(pos?:  number , size?:  number ): IObjectList;
-/** slice from array */
-
-		slice(start?:  number , end?:  number ): IObjectList;
-/** Move element from <from> postion to <to> position.*/
-
-		move(from:  number , to:  number ): IObjectList;
-
-/** Replace data of <n> element. */
-
-		replace(pos:  number , value: any): IObjectList;
-/** Erase element with number <n>. */
-
-		erase(pos:  number ): IObjectList;
-/** Erase elements from begin to end. */
-
-		erase(begin:  number , end:  number ): IObjectList;
-/** Is list contains data with <value>?*/
-
-		contains(value: any): bool;
-
-/** Get data of <n> item and remove it. */
-
-		takeAt(pos:  number ): any;
-/** Get data of first item and remove it. */
-
-		takeFirst(): any;
-/** Get data of last item and remove it. */
-
-		takeLast(): any;
-/** Get data of current item and remove it. */
-
-		takeCurrent(): any;
-
-/** Remove <n> item. */
-
-		removeAt(n:  number ): void;
-/** Remove one lement with data <element>. */
-
-		removeOne(element: any): void;
-/** Remove all lement with data <element>. */
-
-		removeAll(element: any):  number ;
-
-/** Swap items. */
-
-		swap(i:  number , j:  number ): IObjectList;
-/** Add another list to this */
-
-		add(list: IObjectList): IObjectList;
-/** Is this list equal to <list>. */
-
-		isEqual(list: IObjectList): bool;
-
-/** Clear list. */
-
-		clear(): IObjectList;
-/** For each loop. */
-
-		forEach(fn: IListExplorerFunc): void;
-	}
-}
-
-
-
-
-
-
-
-module akra.util {
-	export interface IObjectListItem {
-		next: IObjectListItem;
-		prev: IObjectListItem;
-		data: any;
-	};
-
-
-	export class ObjectList implements IObjectList {
-		/**@protected*/  _pHead: IObjectListItem = null;
-		/**@protected*/  _pTail: IObjectListItem = null;
-		/**@protected*/  _pCurrent: IObjectListItem = null;
-		/**@protected*/  _iLength:  number  = 0;
-		/**@protected*/  _bLock: bool = false;
-
-
-		inline get length():  number  {
-			return this._iLength;
-		};
-
-		inline get first(): any {
-			this._pCurrent = this._pHead;
-			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
-		};
-
-		inline get last(): any {
-			this._pCurrent = this._pTail;
-			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
-		}
-
-		inline get current(): any {
-			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
-		}
-
-		inline lock(): void {
-			this._bLock = true;
-		}
-
-		inline unlock(): void {
-			this._bLock = false;
-		}
-
-		inline isLocked(): bool {
-			return this._bLock;
-		}
-
-		inline value(n:  number ): any{
-			return this.find(n).data;
-		};
-
-		constructor (pData?: any[]) {
-			if (arguments.length) {
-				this.fromArray(pData);
-			}
-		}
-
-		indexOf(pData: any, iFrom:  number  = 0.):  number {
-			var pItem: IObjectListItem = this.find(iFrom);
-
-			for(var i:  number  = iFrom; i<this._iLength; i++){
-				if(pItem.data === pData){
-					return i;
-				}
-				pItem = pItem.next;
-			}
-			return -1;
-		};
-
-		mid(iPos:  number  = 0, iSize:  number  = this._iLength): IObjectList{
-			iSize = Math.min(this._iLength - iPos, iSize);
-
-			if (iPos > this._iLength - 1) {
-				return null;
-			}
-
-			var pNewList: IObjectList = new ObjectList();
-			var pItem: IObjectListItem = this.find(iPos);
-
-			for (var i:  number  = 0; i < iSize; ++ i) {
-				pNewList.push(pItem.data);
-				pItem = pItem.next;
-			};
-
-			return pNewList;
-		};
-
-		inline slice(iStart:  number  = 0, iEnd:  number  = Math.max(this._iLength - iStart, 0)): IObjectList {
-			return this.mid(iStart, iEnd - iStart);
-		}
-
-		inline move(iFrom:  number , iTo:  number ): IObjectList{
-			return this.insert(iTo - 1, this.takeAt(iFrom));
-		};
-
-		inline replace(iPos:  number , pData: any): IObjectList{
-			logger.setSourceLocation( "util/ObjectList.ts" , 102 ); logger.assert(!this.isLocked(), "list locked."); ;
-			this.find(iPos).data = pData;
-			return this;
-		};
-
-		erase(pos:  number ): IObjectList;
-		erase(begin:  number , end:  number ): IObjectList;
-		erase(begin:  number , end?:  number ): IObjectList{
-			if(arguments.length < 2){
-				this.takeAt(< number >arguments[0]);
-			}
-			else{
-				end = Math.min(end, this._iLength);
-				for(var i:  number  = begin; i < end; i++){
-					this.takeAt(i);
-				}
-			}
-			return this;
-		};
-
-		inline contains(pData: any): bool{
-			return (this.indexOf(pData) >= 0);
-		};
-
-		inline removeAt(n:  number ): void{
-			this.takeAt(n);
-		};
-
-		inline removeOne(pData: any): void{
-			this.removeAt(this.indexOf(pData));
-		};
-
-		inline removeAll(pData: any):  number  {
-			var i:  number ;
-			var n:  number  = this.length;
-
-			while((i = this.indexOf(pData)) >= 0){
-				this.removeAt(i);
-				i--;
-			}
-
-			return n;
-		}
-
-		swap(i:  number , j:  number ): IObjectList {
-			logger.setSourceLocation( "util/ObjectList.ts" , 147 ); logger.assert(!this.isLocked(), "list locked."); ;
-
-			i = Math.min(i, this._iLength-1);
-			j = Math.min(j, this._iLength-1);
-
-			if (i != j) {
-				var pItem1: IObjectListItem = this.find(i);
-				var pItem2: IObjectListItem = this.find(j);
-
-				var pTmp: any = pItem1.data;
-
-				pItem1.data = pItem2.data;
-				pItem2.data = pTmp;
-			}
-
-			return this;
-		}
-
-		add(pList: IObjectList): IObjectList{
-			pList.seek(0);
-
-			if(pList.length > 1){
-				this.push(pList.first());
-			}
-
-			for(var i:  number =1; i<pList.length; i++){
-				this.push(pList.next());
-			}
-
-			return this;
-		}
-
-		seek(n:  number  = 0): IObjectList {
-			var pElement: IObjectListItem;
-
-			n = Math.min(n, this._iLength - 1);
-
-			if (n > this._iLength / 2) {
-				pElement = this._pTail;
-
-				for (var m:  number  = this._iLength - 1 - n; m > 0; -- m) {
-					pElement = pElement.prev;
-				}
-			}
-			else {
-				pElement = this._pHead;
-
-				for (var i:  number  = 0; i < n; ++ i) {
-					pElement = pElement.next;
-				}
-			}
-
-			this._pCurrent = pElement;
-
-			return this;
-		};
-
-		inline next(): any {
-			return (isDefAndNotNull(this._pCurrent) && isDefAndNotNull(this._pCurrent.next))? (this._pCurrent = this._pCurrent.next).data: null;
-		}
-
-		inline prev(): any {
-			return (isDefAndNotNull(this._pCurrent) && isDefAndNotNull(this._pCurrent.prev))? (this._pCurrent = this._pCurrent.prev).data: null;
-		}
-
-		inline push(pElement: any): IObjectList{
-			return this.insert(this._iLength, pElement)
-		};
-
-		inline takeAt(n:  number ): any{
-			logger.setSourceLocation( "util/ObjectList.ts" , 217 ); logger.assert(!this.isLocked(), "list locked."); ;
-
-			if(n < 0){
-				return null;
-			}
-
-			return this.pullElement(this.find(n));
-		};
-
-		private pullElement(pItem: IObjectListItem): any {
-			if (isNull(pItem)) {
-//this case theoretically cannot happen, but ....
-				return null;
-			}
-
-			if (isNull(pItem.prev)) {
-				this._pHead = pItem.next;
-			}
-			else {
-				pItem.prev.next = pItem.next;
-			}
-
-			if (isNull(pItem.next)) {
-				this._pTail = pItem.prev;
-			}
-			else {
-				pItem.next.prev = pItem.prev;
-			}
-
-			this._iLength --;
-
-			if (isNull(pItem.next)) {
-				this._pCurrent = this._pTail;
-			}
-			else {
-				this._pCurrent = pItem.next;
-			}
-
-			return this.releaseItem(pItem);
-		};
-
-
-		inline takeFirst(): any{
-			return this.takeAt(0);
-		};
-
-		inline takeLast(): any {
-			return this.takeAt(this._iLength - 1);
-		};
-
-		inline takeCurrent(isPrev: bool = false): any {
-//console.log(isDefAndNotNull(this._pCurrent));
-			return this.pullElement(this._pCurrent);
-		}
-
-		inline pop(): any{
-			return this.takeAt(this._iLength - 1);
-		};
-
-		inline prepend(pElement: any): IObjectList{
-			return this.insert(0,pElement)
-		};
-
-		inline private find(n:  number ): IObjectListItem{
-			if (n < this._iLength) {
-				this.seek(n);
-				return this._pCurrent;
-			}
-
-			return null;
-		};
-
-		inline private releaseItem(pItem: IObjectListItem): any {
-			var pData: any = pItem.data;
-
-			pItem.next = null;
-			pItem.prev = null;
-			pItem.data = null;
-
-			ObjectList.listItemPool.push(pItem);
-
-			return pData;
-		};
-
-		inline private createItem(): IObjectListItem {
-			if (ObjectList.listItemPool.length == 0) {
-// LOG("allocated object list item");
-				return {next: null, prev: null, data: null};
-			}
-// LOG("before pop <----------", this._iLength, this.first);
-			return <IObjectListItem>ObjectList.listItemPool.pop();
-		}
-
-		fromArray(elements: any[], iOffset:  number  = 0, iSize:  number  = elements.length): IObjectList{
-			iOffset = Math.min(iOffset, this._iLength);
-
-			for(var i:  number  = 0; i < iSize; i++){
-				this.insert(iOffset + i, elements[i]);
-			}
-
-			return this;
-		}
-
-		insert(n:  number , pData: any): IObjectList{
-			logger.setSourceLocation( "util/ObjectList.ts" , 321 ); logger.assert(!this.isLocked(), "list locked."); ;
-
-			var pNew: IObjectListItem = this.createItem();
-			var pItem: IObjectListItem;
-
-			n = Math.min(n, this._iLength);
-			pNew.data = pData;
-
-
-			if (n == 0) {
-				if (isNull(this._pHead)) {
-					this._pTail = pNew;
-				}
-
-				pNew.next = this._pHead;
-				this._pHead = pNew;
-			}
-			else {
-				pItem = this.find(n - 1);
-
-				if(pItem == null) {
-					this._pHead = pNew;
-				}
-				else {
-
-					if (pItem.next == null) {
-						this._pTail = pNew;
-					}
-					else {
-						pNew.next = pItem.next;
-						pItem.next.prev = pNew;
-					}
-
-					pItem.next = pNew;
-					pNew.prev = pItem;
-				}
-			}
-
-			this._iLength ++;
-			this._pCurrent = pNew;
-
-			return this;
-		};
-
-		isEqual(pList: IObjectList): bool {
-			if (this._iLength == pList.length) {
-				if (this === pList) {
-					return true;
-				}
-
-				var l1: IObjectListItem = this.first;
-				var l2: IObjectListItem = pList.first;
-
-				for (var i:  number  = 0; i < this._iLength; ++i) {
-					if (l1 != l2) {
-						return false;
-					}
-
-					l1 = this.next();
-					l2 = pList.next();
-				}
-
-				return true;
-			}
-
-			return false;
-		}
-
-		clear(): IObjectList {
-			logger.setSourceLocation( "util/ObjectList.ts" , 390 ); logger.assert(!this.isLocked(), "list locked."); ;
-
-			var pPrev: IObjectListItem;
-			var pNext: IObjectListItem;
-
-			this._pCurrent = this._pHead;
-
-			for (var i:  number  = 0; i < this._iLength; ++ i) {
-				pPrev = this._pCurrent;
-				pNext = this._pCurrent = this._pCurrent.next;
-
-				this.releaseItem(pPrev);
-			}
-
-			this._pHead = this._pCurrent = this._pTail = null;
-			this._iLength = 0;
-
-			return this;
-		}
-
-		forEach(fn: IListExplorerFunc): void {
-			var pItem: IObjectListItem = this._pHead;
-			var n:  number  = 0;
-			do {
-				if (fn(pItem.data, n ++) === false) {
-					return;
-				}
-			} while ((pItem = pItem.next));
-		}
-
-		static private listItemPool: IObjectArray = new ObjectArray;
-
-	}
-}
-
-module akra {
-	export var ObjectList = util.ObjectList;
-}
 
 
 
@@ -67357,7 +74209,7 @@ module akra.net {
             return <IRPCCallback>RPC.callbackPool.pop();
         }
 
-        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return RPC._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable { return RPC._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
         joined (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).joined; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 
         private static requestPool: IObjectArray = new ObjectArray;
@@ -67482,8 +74334,8 @@ module akra.terrain {
 /*this._pEngine*/
     	        this._pTexures[i] = new core.pool.resources.Texture(                 );
     	        this._pTexures[i].create(this._iTextureWidth, this._iTextureHeight, 1, new Color(0,0,0,1), < number >ETextureFlags.DYNAMIC, 1, ETextureTypes.TEXTURE_2D, this._eTextureType);
-    			this._pTexures[i].setParameter(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
-    			this._pTexures[i].setParameter(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
+    			this._pTexures[i].setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
+    			this._pTexures[i].setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
     	        if (i == 0) {
     	            this._pBuffer[i] = new Uint8Array(this._iTextureHeight * this._iTextureWidth *
     	                                              pixelUtil.getNumElemBytes(this._eTextureType));
@@ -68734,7 +75586,8 @@ module akra.terrain {
 //trace("Terraim Map Size ", iMaxX, iMaxY);
 
 			    var pColorData: Uint8Array = new Uint8Array(4 * iMaxY * iMaxX);
-//float			    this._pHeightTable = new Array(iMaxX * iMaxY);
+/*float*/
+			    this._pHeightTable = new Array(iMaxX * iMaxY);
 
 
 /*this._pEngine*/
@@ -69625,7 +76478,7 @@ module akra.terrain {
 /*размер сектора/количество ячеек в секторе*/
 				this.heightY / (this._iYVerts-1));
 
-//Координаты вершина в ��екторе
+//Координаты вершина в секторе
 			var v2fVert: IVec2 = new Vec2();
 			v2fVert.set(0.0, 0.0);
 
@@ -70448,4 +77301,122 @@ module akra.util {
 
 
 	export function test(sDescription: string, fnWrapper: () => void, isAsync?: bool);
-	export function test(pManifest: ITestManifest, fnWrapper: () => void,
+	export function test(pManifest: ITestManifest, fnWrapper: () => void, isAsync?: bool);
+	export function test (manifest: any, fnWrapper: () => void, isAsync: bool = false) {
+		var pManifest: ITestManifest;
+
+		if (isString(manifest)) {
+			pManifest = {
+				name: <string>arguments[0],
+				description: null,
+				entry: fnWrapper
+			};
+		}
+		else {
+			pManifest = <ITestManifest>arguments[0];
+			pManifest.entry = fnWrapper;
+		}
+
+		pManifest.async = isAsync;
+
+		pTestList.unshift(pManifest);
+	}
+
+	function printInfo (): void {
+		output("<h4 style=\"font-family: monospace;\">" + pTest.name || "" + "</h4>");
+	}
+
+	function printResults(): void {
+		output(
+			"<pre style=\"margin-left: 20px;\">" +
+			"<hr align=\"left\" style=\"border: 0; background-color: gray; height: 1px; width: 500px;\"/><span style=\"color: gray;\">total time: " + (now() - iBegin) + " msec" + "</span>" +
+			"<br /><b>" + (isPassed? "<span style=\"color: green\">TEST PASSED</span>": "<span style=\"color: red\">TEST FAILED</span>") + "</b>" +
+			"</pre>");
+	}
+
+	function printError(message: string, stack?: string): void {
+		message = "<b>" + message + "</b>";
+
+		if (isDef(stack)) {
+			 message += "\n" + stack;
+		}
+
+		output(
+			"<pre style=\"margin-left: 20px;\">" +
+			"<span style=\"color: red; background-color: rgba(255, 0, 0, .1);\">" + message + "</span>" +
+			"</pre>");
+	}
+
+	export function asyncTest (manifest: any, fnWrapper: () => void) {
+		test(manifest, fnWrapper, true);
+	}
+
+	export function run(): void {
+//если вдруг остались тесты.
+		if (pTestCondList.length) {
+			failed();
+		}
+
+//если предыдущий тест был асинхронным, значит он кончился и надо распечатать результаты
+		if (!isNull(pTest) && pTest.async == true) {
+			printResults();
+		}
+
+		while (pTestList.length) {
+//начинаем новый тест
+			pTest = pTestList.pop();
+			iBegin = now();
+			isPassed = true;
+
+
+			printInfo();
+//start test
+
+			try {
+				pTest.entry();
+			} catch (e) {
+				failed(e);
+				return;
+			}
+
+			if (!pTest.async) {
+				printResults();
+				pTest = null;
+			}
+			else {
+				return;
+			}
+		};
+	}
+
+	window.onload = function () {
+		run();
+	}
+}
+
+var test 			= akra.util.test;
+var asyncTest 		= akra.util.asyncTest;
+var failed 			= akra.util.failed;
+var run 			= akra.util.run;
+var shouldBe 		= akra.util.shouldBe;
+var shouldBeArray 	= akra.util.shouldBeArray;
+var shouldBeTrue 	= akra.util.shouldBeTrue;
+var shouldBeFalse 	= akra.util.shouldBeFalse;
+var shouldBeNotNull	= akra.util.shouldBeNotNull;
+var check 			= akra.util.check;
+var ok = check;
+
+
+module akra {
+
+	test("init tests", () => {
+		shouldBeNotNull("terrain");
+
+		var pEngine: IEngine   = createEngine();
+		var pTerrain: ITerrain = new terrain.TerrainROAM(pEngine);
+
+
+		ok(pTerrain);
+	});
+}
+

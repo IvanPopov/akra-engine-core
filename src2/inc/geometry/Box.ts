@@ -69,6 +69,13 @@ module akra.geometry {
 			return (pDest.left >= this.left && pDest.top >= this.top && pDest.front >= this.front &&
 	    		pDest.right <= this.right && pDest.bottom <= this.bottom && pDest.back <= this.back);
 		}
+
+		setPosition(iLeft: uint, iTop: uint, iWidth: uint, iHeight: uint): void {
+			this.left   = iLeft;
+			this.top    = iTop;
+			this.right  = ileft + iWidth;
+			this.bottom = iTop + iHeight;
+		}
 	}
 }
 

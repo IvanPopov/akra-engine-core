@@ -5,6 +5,8 @@ var __extends = this.__extends || function (d, b) {
 };
 //#define trace(...) console.log(__VA_ARGS__)
 // #define CRYPTO_API 1
+// #define GUI 1
+// #define WEBGL_DEBUG 1
 var akra;
 (function (akra) {
     (function (ELogLevel) {
@@ -101,7 +103,7 @@ var akra;
         return x instanceof ArrayBuffer;
     };
     akra.isTypedArray = /** @inline */function (x) {
-        return typeof x === "object" && typeof x.byteOffset === "number";
+        return x !== null && typeof x === "object" && typeof x.byteOffset === "number";
     };
     /** @inline */
     akra.isArray = function (x) {
@@ -240,7 +242,7 @@ var akra;
             case 5126 /* FLOAT */ :
                 return 4;
             default:
-                akra.logger.setSourceLocation("common.ts", 407);
+                akra.logger.setSourceLocation("common.ts", 409);
                 akra.logger.error('unknown data/image type used');
                 ;
         }
@@ -1120,16 +1122,17 @@ var akra;
                         }
                     } else {
                         eCode = this._eUnknownCode;
-                        if (arguments.length > 0) {
-                            pInfo = new Array(arguments.length);
-                            var i = 0;
-                            for(i = 0; i < pInfo.length; i++) {
-                                pInfo[i] = arguments[i];
-                            }
-                        } else {
-                            pInfo = null;
+                        // if(arguments.length > 0){
+                        pInfo = new Array(arguments.length);
+                        var i = 0;
+                        for(i = 0; i < pInfo.length; i++) {
+                            pInfo[i] = arguments[i];
                         }
-                    }
+                        // }
+                        // else {
+                        //     pInfo = null;
+                        // }
+                                            }
                     var pCodeInfo = this._pCodeInfoMap[eCode];
                     if (((pCodeInfo) !== undefined)) {
                         sMessage = pCodeInfo.message;
@@ -1176,7 +1179,9 @@ var akra;
         util.logger.registerCodeFamily(2200, 2500, "EffectSyntaxErrors");
         //Default log routines
         function sourceLocationToString(pLocation) {
-            var sLocation = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
+            var pDate = new Date();
+            var sTime = pDate.getHours() + ":" + pDate.getMinutes() + "." + pDate.getSeconds();
+            var sLocation = "[" + pLocation.file + ":" + pLocation.line.toString() + " " + sTime + "]: ";
             return sLocation;
         }
         function logRoutine(pLogEntity) {
@@ -1328,6 +1333,7 @@ var akra;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
+    ;
     ;
     ;
     ;
@@ -1835,8 +1841,378 @@ var akra;
         EAFXBlendMode.k_Uniform = 1;
         EAFXBlendMode._map[2] = "k_Attribute";
         EAFXBlendMode.k_Attribute = 2;
+        EAFXBlendMode._map[3] = "k_Foreign";
+        EAFXBlendMode.k_Foreign = 3;
+        EAFXBlendMode._map[4] = "k_Global";
+        EAFXBlendMode.k_Global = 4;
+        EAFXBlendMode._map[5] = "k_Varying";
+        EAFXBlendMode.k_Varying = 5;
+        EAFXBlendMode._map[6] = "k_TypeDecl";
+        EAFXBlendMode.k_TypeDecl = 6;
+        EAFXBlendMode._map[7] = "k_VertexOut";
+        EAFXBlendMode.k_VertexOut = 7;
     })(akra.EAFXBlendMode || (akra.EAFXBlendMode = {}));
     var EAFXBlendMode = akra.EAFXBlendMode;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (EPixelFormats) {
+        EPixelFormats._map = [];
+        /*Unknown pixel format.*/
+        EPixelFormats.UNKNOWN = 0;
+        /*8-bit pixel format, all bits luminance.*/
+        EPixelFormats.L8 = 1;
+        EPixelFormats.BYTE_L = EPixelFormats.L8;
+        /*16-bit pixel format, all bits luminance.*/
+        EPixelFormats.L16 = 2;
+        EPixelFormats.SHORT_L = EPixelFormats.L16;
+        /*8-bit pixel format, all bits alpha.*/
+        EPixelFormats.A8 = 3;
+        EPixelFormats.BYTE_A = EPixelFormats.A8;
+        /*8-bit pixel format, 4 bits alpha, 4 bits luminance.*/
+        EPixelFormats.A4L4 = 4;
+        /*2 byte pixel format, 1 byte luminance, 1 byte alpha*/
+        EPixelFormats.BYTE_LA = 5;
+        /*16-bit pixel format, 5 bits red, 6 bits green, 5 bits blue.*/
+        EPixelFormats.R5G6B5 = 6;
+        /*16-bit pixel format, 5 bits red, 6 bits green, 5 bits blue.*/
+        EPixelFormats.B5G6R5 = 7;
+        /*8-bit pixel format, 2 bits blue, 3 bits green, 3 bits red.*/
+        EPixelFormats.R3G3B2 = 31;
+        /*16-bit pixel format, 4 bits for alpha, red, green and blue.*/
+        EPixelFormats.A4R4G4B4 = 8;
+        /*16-bit pixel format, 5 bits for blue, green, red and 1 for alpha.*/
+        EPixelFormats.A1R5G5B5 = 9;
+        /*24-bit pixel format, 8 bits for red, green and blue.*/
+        EPixelFormats.R8G8B8 = 10;
+        /*24-bit pixel format, 8 bits for blue, green and red.*/
+        EPixelFormats.B8G8R8 = 11;
+        /*32-bit pixel format, 8 bits for alpha, red, green and blue.*/
+        EPixelFormats.A8R8G8B8 = 12;
+        /*32-bit pixel format, 8 bits for blue, green, red and alpha.*/
+        EPixelFormats.A8B8G8R8 = 13;
+        /*32-bit pixel format, 8 bits for blue, green, red and alpha.*/
+        EPixelFormats.B8G8R8A8 = 14;
+        /*32-bit pixel format, 8 bits for red, green, blue and alpha.*/
+        EPixelFormats.R8G8B8A8 = 28;
+        /*32-bit pixel format, 8 bits for red, 8 bits for green, 8 bits for blue like A8R8G8B8, but alpha will get discarded*/
+        EPixelFormats.X8R8G8B8 = 26;
+        /*32-bit pixel format, 8 bits for blue, 8 bits for green, 8 bits for red like A8B8G8R8, but alpha will get discarded*/
+        EPixelFormats.X8B8G8R8 = 27;
+        /*3 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue*/
+        EPixelFormats.BYTE_RGB = EPixelFormats.R8G8B8;
+        /*3 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red*/
+        EPixelFormats.BYTE_BGR = EPixelFormats.B8G8R8;
+        /*4 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red and one byte for alpha*/
+        EPixelFormats.BYTE_BGRA = EPixelFormats.B8G8R8A8;
+        /*4 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue, and one byte for alpha*/
+        EPixelFormats.BYTE_RGBA = EPixelFormats.R8G8B8A8;
+        EPixelFormats.BYTE_ABGR = EPixelFormats.A8B8G8R8;
+        EPixelFormats.BYTE_ARGB = EPixelFormats.A8R8G8B8;
+        /*32-bit pixel format, 2 bits for alpha, 10 bits for red, green and blue.*/
+        EPixelFormats.A2R10G10B10 = 15;
+        /*32-bit pixel format, 10 bits for blue, green and red, 2 bits for alpha.*/
+        EPixelFormats.A2B10G10R10 = 16;
+        /*DDS (DirectDraw Surface) DXT1 format.*/
+        EPixelFormats.DXT1 = 17;
+        /*DDS (DirectDraw Surface) DXT2 format.*/
+        EPixelFormats.DXT2 = 18;
+        /*DDS (DirectDraw Surface) DXT3 format.*/
+        EPixelFormats.DXT3 = 19;
+        /*DDS (DirectDraw Surface) DXT4 format.*/
+        EPixelFormats.DXT4 = 20;
+        /*DDS (DirectDraw Surface) DXT5 format.*/
+        EPixelFormats.DXT5 = 21;
+        /*16-bit pixel format, 16 bits (float) for red*/
+        EPixelFormats.FLOAT16_R = 32;
+        /*48-bit pixel format, 16 bits (float) for red, 16 bits (float) for green, 16 bits (float) for blue*/
+        EPixelFormats.FLOAT16_RGB = 22;
+        /*64-bit pixel format, 16 bits (float) for red, 16 bits (float) for green, 16 bits (float) for blue, 16 bits (float) for alpha*/
+        EPixelFormats.FLOAT16_RGBA = 23;
+        /*32-bit pixel format, 32 bits (float) for red*/
+        EPixelFormats.FLOAT32_R = 33;
+        /*96-bit pixel format, 32 bits (float) for red, 32 bits (float) for green, 32 bits (float) for blue*/
+        EPixelFormats.FLOAT32_RGB = 24;
+        /*128-bit pixel format, 32 bits (float) for red, 32 bits (float) for green, 32 bits (float) for blue, 32 bits (float) for alpha*/
+        EPixelFormats.FLOAT32_RGBA = 25;
+        /*32-bit, 2-channel s10e5 floating point pixel format, 16-bit green, 16-bit red*/
+        EPixelFormats.FLOAT16_GR = 35;
+        /*64-bit, 2-channel floating point pixel format, 32-bit green, 32-bit red*/
+        EPixelFormats.FLOAT32_GR = 36;
+        /*Float Depth texture format*/
+        EPixelFormats.FLOAT32_DEPTH = 29;
+        EPixelFormats.DEPTH8 = 44;
+        /*Byte Depth texture format */
+        EPixelFormats.BYTE_DEPTH = EPixelFormats.DEPTH8;
+        EPixelFormats.DEPTH16 = 45;
+        EPixelFormats.SHORT_DEPTH = EPixelFormats.DEPTH16;
+        EPixelFormats.DEPTH32 = 46;
+        EPixelFormats.DEPTH24STENCIL8 = 47;
+        /*64-bit pixel format, 16 bits for red, green, blue and alpha*/
+        EPixelFormats.SHORT_RGBA = 30;
+        /*32-bit pixel format, 16-bit green, 16-bit red*/
+        EPixelFormats.SHORT_GR = 34;
+        /*48-bit pixel format, 16 bits for red, green and blue*/
+        EPixelFormats.SHORT_RGB = 37;
+        /*PVRTC (PowerVR) RGB 2 bpp.*/
+        EPixelFormats.PVRTC_RGB2 = 38;
+        /*PVRTC (PowerVR) RGBA 2 bpp.*/
+        EPixelFormats.PVRTC_RGBA2 = 39;
+        /*PVRTC (PowerVR) RGB 4 bpp.*/
+        EPixelFormats.PVRTC_RGB4 = 40;
+        /*PVRTC (PowerVR) RGBA 4 bpp.*/
+        EPixelFormats.PVRTC_RGBA4 = 41;
+        /*8-bit pixel format, all bits red.*/
+        EPixelFormats.R8 = 42;
+        /*16-bit pixel format, 8 bits red, 8 bits green.*/
+        EPixelFormats.RG8 = 43;
+        EPixelFormats.TOTAL = 48;
+    })(akra.EPixelFormats || (akra.EPixelFormats = {}));
+    var EPixelFormats = akra.EPixelFormats;
+    ;
+    /**
+    * Flags defining some on/off properties of pixel formats
+    */
+    (function (EPixelFormatFlags) {
+        EPixelFormatFlags._map = [];
+        // This format has an alpha channel
+        EPixelFormatFlags.HASALPHA = 0x00000001;
+        // This format is compressed. This invalidates the values in elemBytes,
+        // elemBits and the bit counts as these might not be fixed in a compressed format.
+        EPixelFormatFlags.COMPRESSED = 0x00000002;
+        // This is a floating point format
+        EPixelFormatFlags.FLOAT = 0x00000004;
+        // This is a depth format (for depth textures)
+        EPixelFormatFlags.DEPTH = 0x00000008;
+        // Format is in native endian. Generally true for the 16, 24 and 32 bits
+        // formats which can be represented as machine integers.
+        EPixelFormatFlags.NATIVEENDIAN = 0x00000010;
+        // This is an intensity format instead of a RGB one. The luminance
+        // replaces R,G and B. (but not A)
+        EPixelFormatFlags.LUMINANCE = 0x00000020;
+        EPixelFormatFlags.STENCIL = 0x00000040;
+    })(akra.EPixelFormatFlags || (akra.EPixelFormatFlags = {}));
+    var EPixelFormatFlags = akra.EPixelFormatFlags;
+    /** Pixel component format */
+    (function (EPixelComponentTypes) {
+        EPixelComponentTypes._map = [];
+        /*Byte per component (8 bit fixed 0.0..1.0)*/
+        EPixelComponentTypes.BYTE = 0;
+        /*Short per component (16 bit fixed 0.0..1.0))*/
+        EPixelComponentTypes.SHORT = 1;
+        EPixelComponentTypes.INT = 2;
+        /*16 bit float per component*/
+        EPixelComponentTypes.FLOAT16 = 3;
+        /*32 bit float per component*/
+        EPixelComponentTypes.FLOAT32 = 4;
+        /*Number of pixel types*/
+        EPixelComponentTypes.COUNT = 5;
+    })(akra.EPixelComponentTypes || (akra.EPixelComponentTypes = {}));
+    var EPixelComponentTypes = akra.EPixelComponentTypes;
+    ;
+    (function (EFilters) {
+        EFilters._map = [];
+        EFilters._map[0] = "NEAREST";
+        EFilters.NEAREST = 0;
+        EFilters._map[1] = "LINEAR";
+        EFilters.LINEAR = 1;
+        EFilters._map[2] = "BILINEAR";
+        EFilters.BILINEAR = 2;
+        EFilters._map[3] = "BOX";
+        EFilters.BOX = 3;
+        EFilters._map[4] = "TRIANGLE";
+        EFilters.TRIANGLE = 4;
+        EFilters._map[5] = "BICUBIC";
+        EFilters.BICUBIC = 5;
+    })(akra.EFilters || (akra.EFilters = {}));
+    var EFilters = akra.EFilters;
+    ;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (EHardwareBufferFlags) {
+        EHardwareBufferFlags._map = [];
+        EHardwareBufferFlags.STATIC = 0x01;
+        EHardwareBufferFlags.DYNAMIC = 0x02;
+        EHardwareBufferFlags.STREAM = 0x80;
+        EHardwareBufferFlags.READABLE = 0x04;
+        EHardwareBufferFlags.BACKUP_COPY = 0x08;
+        /** indicate, that buffer does not use GPU memory or other specific memory. */
+        EHardwareBufferFlags.SOFTWARE = 0x10;
+        /** Indicate, tha buffer uses specific data aligment */
+        EHardwareBufferFlags.ALIGNMENT = 0x20;
+        /** Indicates that the application will be refilling the contents
+        of the buffer regularly (not just updating, but generating the
+        contents from scratch), and therefore does not mind if the contents
+        of the buffer are lost somehow and need to be recreated. This
+        allows and additional level of optimisation on the buffer.
+        This option only really makes sense when combined with
+        DYNAMIC and without READING.
+        */
+        EHardwareBufferFlags.DISCARDABLE = 0x40;
+        EHardwareBufferFlags.STATIC_READABLE = EHardwareBufferFlags.STATIC | EHardwareBufferFlags.READABLE;
+        EHardwareBufferFlags.DYNAMIC_DISCARDABLE = EHardwareBufferFlags.DYNAMIC | EHardwareBufferFlags.DISCARDABLE;
+    })(akra.EHardwareBufferFlags || (akra.EHardwareBufferFlags = {}));
+    var EHardwareBufferFlags = akra.EHardwareBufferFlags;
+    (function (ELockFlags) {
+        ELockFlags._map = [];
+        ELockFlags.READ = 0x01;
+        ELockFlags.WRITE = 0x02;
+        ELockFlags.DISCARD = 0x04;
+        ELockFlags.NO_OVERWRITE = 0x08;
+        ELockFlags.NORMAL = ELockFlags.READ | ELockFlags.WRITE;
+    })(akra.ELockFlags || (akra.ELockFlags = {}));
+    var ELockFlags = akra.ELockFlags;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    ;
+    (function (ETextureFlags) {
+        ETextureFlags._map = [];
+        ETextureFlags.STATIC = 1 /* STATIC */ ;
+        ETextureFlags.DYNAMIC = 2 /* DYNAMIC */ ;
+        ETextureFlags.READEBLE = 4 /* READABLE */ ;
+        ETextureFlags.DYNAMIC_DISCARDABLE = akra.EHardwareBufferFlags.DYNAMIC_DISCARDABLE;
+        /// mipmaps will be automatically generated for this texture
+        ETextureFlags.AUTOMIPMAP = 0x100;
+        /// this texture will be a render target, i.e. used as a target for render to texture
+        /// setting this flag will ignore all other texture usages except AUTOMIPMAP
+        ETextureFlags.RENDERTARGET = 0x200;
+        /// default to automatic mipmap generation static textures
+        ETextureFlags.DEFAULT = ETextureFlags.STATIC;
+    })(akra.ETextureFlags || (akra.ETextureFlags = {}));
+    var ETextureFlags = akra.ETextureFlags;
+    (function (ETextureFilters) {
+        ETextureFilters._map = [];
+        ETextureFilters.NEAREST = 0x2600;
+        ETextureFilters.LINEAR = 0x2601;
+        ETextureFilters.NEAREST_MIPMAP_NEAREST = 0x2700;
+        ETextureFilters.LINEAR_MIPMAP_NEAREST = 0x2701;
+        ETextureFilters.NEAREST_MIPMAP_LINEAR = 0x2702;
+        ETextureFilters.LINEAR_MIPMAP_LINEAR = 0x2703;
+    })(akra.ETextureFilters || (akra.ETextureFilters = {}));
+    var ETextureFilters = akra.ETextureFilters;
+    ;
+    (function (ETextureWrapModes) {
+        ETextureWrapModes._map = [];
+        ETextureWrapModes.REPEAT = 0x2901;
+        ETextureWrapModes.CLAMP_TO_EDGE = 0x812F;
+        ETextureWrapModes.MIRRORED_REPEAT = 0x8370;
+    })(akra.ETextureWrapModes || (akra.ETextureWrapModes = {}));
+    var ETextureWrapModes = akra.ETextureWrapModes;
+    ;
+    (function (ETextureParameters) {
+        ETextureParameters._map = [];
+        ETextureParameters.MAG_FILTER = 0x2800;
+        ETextureParameters._map[10241] = "MIN_FILTER";
+        ETextureParameters.MIN_FILTER = 10241;
+        ETextureParameters._map[10242] = "WRAP_S";
+        ETextureParameters.WRAP_S = 10242;
+        ETextureParameters._map[10243] = "WRAP_T";
+        ETextureParameters.WRAP_T = 10243;
+    })(akra.ETextureParameters || (akra.ETextureParameters = {}));
+    var ETextureParameters = akra.ETextureParameters;
+    ;
+    (function (ETextureTypes) {
+        ETextureTypes._map = [];
+        ETextureTypes.TEXTURE_2D = 0x0DE1;
+        ETextureTypes.TEXTURE_CUBE_MAP = 0x8513;
+    })(akra.ETextureTypes || (akra.ETextureTypes = {}));
+    var ETextureTypes = akra.ETextureTypes;
+    ;
+    (function (ECubeFace) {
+        ECubeFace._map = [];
+        ECubeFace.POSITIVE_X = 0;
+        ECubeFace.NEGATIVE_X = 1;
+        ECubeFace.POSITIVE_Y = 2;
+        ECubeFace.NEGATIVE_Y = 3;
+        ECubeFace.POSITIVE_Z = 4;
+        ECubeFace.NEGATIVE_Z = 5;
+    })(akra.ECubeFace || (akra.ECubeFace = {}));
+    var ECubeFace = akra.ECubeFace;
+    ;
+    (function (ETextureCubeFlags) {
+        ETextureCubeFlags._map = [];
+        ETextureCubeFlags.POSITIVE_X = 0x00000001;
+        ETextureCubeFlags.NEGATIVE_X = 0x00000002;
+        ETextureCubeFlags.POSITIVE_Y = 0x00000004;
+        ETextureCubeFlags.NEGATIVE_Y = 0x00000008;
+        ETextureCubeFlags.POSITIVE_Z = 0x0000000c;
+        ETextureCubeFlags.NEGATIVE_Z = 0x000000010;
+    })(akra.ETextureCubeFlags || (akra.ETextureCubeFlags = {}));
+    var ETextureCubeFlags = akra.ETextureCubeFlags;
+    ;
+    (function (ETextureUnits) {
+        ETextureUnits._map = [];
+        ETextureUnits.TEXTURE0 = 0x84C0;
+    })(akra.ETextureUnits || (akra.ETextureUnits = {}));
+    var ETextureUnits = akra.ETextureUnits;
+    ;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    ;
+    ;
+    (function (ESurfaceMaterialTextures) {
+        ESurfaceMaterialTextures._map = [];
+        ESurfaceMaterialTextures.TEXTURE0 = 0;
+        ESurfaceMaterialTextures._map[1] = "TEXTURE1";
+        ESurfaceMaterialTextures.TEXTURE1 = 1;
+        ESurfaceMaterialTextures._map[2] = "TEXTURE2";
+        ESurfaceMaterialTextures.TEXTURE2 = 2;
+        ESurfaceMaterialTextures._map[3] = "TEXTURE3";
+        ESurfaceMaterialTextures.TEXTURE3 = 3;
+        ESurfaceMaterialTextures._map[4] = "TEXTURE4";
+        ESurfaceMaterialTextures.TEXTURE4 = 4;
+        ESurfaceMaterialTextures._map[5] = "TEXTURE5";
+        ESurfaceMaterialTextures.TEXTURE5 = 5;
+        ESurfaceMaterialTextures._map[6] = "TEXTURE6";
+        ESurfaceMaterialTextures.TEXTURE6 = 6;
+        ESurfaceMaterialTextures._map[7] = "TEXTURE7";
+        ESurfaceMaterialTextures.TEXTURE7 = 7;
+        ESurfaceMaterialTextures._map[8] = "TEXTURE8";
+        ESurfaceMaterialTextures.TEXTURE8 = 8;
+        ESurfaceMaterialTextures._map[9] = "TEXTURE9";
+        ESurfaceMaterialTextures.TEXTURE9 = 9;
+        ESurfaceMaterialTextures._map[10] = "TEXTURE10";
+        ESurfaceMaterialTextures.TEXTURE10 = 10;
+        ESurfaceMaterialTextures._map[11] = "TEXTURE11";
+        ESurfaceMaterialTextures.TEXTURE11 = 11;
+        ESurfaceMaterialTextures._map[12] = "TEXTURE12";
+        ESurfaceMaterialTextures.TEXTURE12 = 12;
+        ESurfaceMaterialTextures._map[13] = "TEXTURE13";
+        ESurfaceMaterialTextures.TEXTURE13 = 13;
+        ESurfaceMaterialTextures._map[14] = "TEXTURE14";
+        ESurfaceMaterialTextures.TEXTURE14 = 14;
+        ESurfaceMaterialTextures._map[15] = "TEXTURE15";
+        ESurfaceMaterialTextures.TEXTURE15 = 15;
+        ESurfaceMaterialTextures.DIFFUSE = ESurfaceMaterialTextures.TEXTURE0;
+        ESurfaceMaterialTextures._map[NaN] = "AMBIENT";
+        ESurfaceMaterialTextures.AMBIENT = NaN;
+        ESurfaceMaterialTextures._map[NaN] = "SPECULAR";
+        ESurfaceMaterialTextures.SPECULAR = NaN;
+        ESurfaceMaterialTextures._map[NaN] = "EMISSIVE";
+        ESurfaceMaterialTextures.EMISSIVE = NaN;
+        ESurfaceMaterialTextures.EMISSION = ESurfaceMaterialTextures.EMISSIVE;
+    })(akra.ESurfaceMaterialTextures || (akra.ESurfaceMaterialTextures = {}));
+    var ESurfaceMaterialTextures = akra.ESurfaceMaterialTextures;
+    ;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    ;
+    ;
+    ;
+    ;
+    (function (EDataFlowTypes) {
+        EDataFlowTypes._map = [];
+        /*!< The data stream can be marked up its index.*/
+        EDataFlowTypes.MAPPABLE = 1;
+        /*!< The data stream cannot be marked up its index.*/
+        EDataFlowTypes.UNMAPPABLE = 0;
+    })(akra.EDataFlowTypes || (akra.EDataFlowTypes = {}));
+    var EDataFlowTypes = akra.EDataFlowTypes;
+    ;
 })(akra || (akra = {}));
 // totalAnimations: uint;
 // totalMeshes: uint;
@@ -2033,7 +2409,7 @@ var akra;
                         return true;
                     }
                 }
-                akra.logger.setSourceLocation("events/events.ts", 112);
+                akra.logger.setSourceLocation("events/events.ts", 116);
                 akra.logger.warning("cannot remove destination for GUID <%s> with signal <%s>", iGuid, sSignal);
                 ;
                 return false;
@@ -2059,7 +2435,7 @@ var akra;
                         return true;
                     }
                 }
-                akra.logger.setSourceLocation("events/events.ts", 129);
+                akra.logger.setSourceLocation("events/events.ts", 133);
                 akra.logger.warning("cannot add listener for GUID <%s> with signal <%s>", iGuid, sSignal);
                 ;
                 return false;
@@ -2108,7 +2484,7 @@ var akra;
                 return this._iGuid;
             };
             EventProvider._pEventTable = new events.EventTable();
-            EventProvider.prototype.getEventTable = function () {
+            EventProvider.prototype.getEventTable = /** @inline */function () {
                 return EventProvider._pEventTable;
             };
             EventProvider.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -2118,10 +2494,10 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             EventProvider.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (EventProvider._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             EventProvider.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (EventProvider._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             return EventProvider;
         })();
@@ -2345,7 +2721,7 @@ var akra;
                     return this._iGuid;
                 };
                 ResourcePool._pEventTable = new akra.events.EventTable();
-                ResourcePool.prototype.getEventTable = function () {
+                ResourcePool.prototype.getEventTable = /** @inline */function () {
                     return ResourcePool._pEventTable;
                 };
                 ResourcePool.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -2355,13 +2731,13 @@ var akra;
                     return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
                 };
                 ResourcePool.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                    return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                    return (ResourcePool._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
                 };
                 ResourcePool.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                    return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                    return (ResourcePool._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
                 };
                 ResourcePool.prototype.createdResource = function (pResource) {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((ResourcePool._pEventTable))).broadcast[(this._iGuid)] = (((ResourcePool._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).createdResource;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -3112,7 +3488,7 @@ var akra;
                     return this._iGuid;
                 };
                 ResourcePoolItem._pEventTable = new akra.events.EventTable();
-                ResourcePoolItem.prototype.getEventTable = function () {
+                ResourcePoolItem.prototype.getEventTable = /** @inline */function () {
                     return ResourcePoolItem._pEventTable;
                 };
                 ResourcePoolItem.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -3122,13 +3498,13 @@ var akra;
                     return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
                 };
                 ResourcePoolItem.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                    return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                    return (ResourcePoolItem._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
                 };
                 ResourcePoolItem.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                    return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                    return (ResourcePoolItem._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
                 };
                 ResourcePoolItem.prototype.created = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] = (((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).created;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -3138,7 +3514,7 @@ var akra;
                     }
                 };
                 ResourcePoolItem.prototype.destroyed = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] = (((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).destroyed;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -3148,7 +3524,7 @@ var akra;
                     }
                 };
                 ResourcePoolItem.prototype.loaded = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] = (((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).loaded;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -3158,7 +3534,7 @@ var akra;
                     }
                 };
                 ResourcePoolItem.prototype.unloaded = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] = (((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).unloaded;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -3168,7 +3544,7 @@ var akra;
                     }
                 };
                 ResourcePoolItem.prototype.restored = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] = (((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).restored;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -3178,7 +3554,7 @@ var akra;
                     }
                 };
                 ResourcePoolItem.prototype.disabled = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] = (((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).disabled;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -3188,7 +3564,7 @@ var akra;
                     }
                 };
                 ResourcePoolItem.prototype.altered = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] = (((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).altered;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -3198,7 +3574,7 @@ var akra;
                     }
                 };
                 ResourcePoolItem.prototype.saved = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] = (((ResourcePoolItem._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).saved;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -3225,9 +3601,31 @@ var akra;
                     function RenderMethod() {
                         _super.apply(this, arguments);
 
+                        /**@protected*/ this._pEffect = null;
+                        this.surfaceMaterial = null;
                     }
+                    Object.defineProperty(RenderMethod.prototype, "effect", {
+                        get: /** @inline */function () {
+                            return this._pEffect;
+                        },
+                        set: function (pEffect) {
+                            if (!((this._pEffect) === null)) {
+                                ((this._pEffect).getEventTable().removeDestination(((((this._pEffect)))._iGuid), ("altered"), (this), ("_updateEffect"), (0 /* BROADCAST */ )));
+                            }
+                            this._pEffect = pEffect;
+                            if (!((pEffect) === null)) {
+                                ((pEffect).getEventTable().addDestination(((((pEffect)))._iGuid), ("altered"), (this), ("_updateEffect"), (0 /* BROADCAST */ )));
+                            }
+                            ((this).setAlteredFlag(true));
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
                     RenderMethod.prototype.isEqual = function (pRenderMethod) {
                         return false;
+                    };
+                    RenderMethod.prototype._updateEffect = function (pEffect) {
+                        ((this).setAlteredFlag(true));
                     };
                     return RenderMethod;
                 })(pool.ResourcePoolItem);
@@ -3238,55 +3636,6 @@ var akra;
         var pool = core.pool;
     })(akra.core || (akra.core = {}));
     var core = akra.core;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    ;
-    ;
-    (function (ESurfaceMaterialTextures) {
-        ESurfaceMaterialTextures._map = [];
-        ESurfaceMaterialTextures.TEXTURE0 = 0;
-        ESurfaceMaterialTextures._map[1] = "TEXTURE1";
-        ESurfaceMaterialTextures.TEXTURE1 = 1;
-        ESurfaceMaterialTextures._map[2] = "TEXTURE2";
-        ESurfaceMaterialTextures.TEXTURE2 = 2;
-        ESurfaceMaterialTextures._map[3] = "TEXTURE3";
-        ESurfaceMaterialTextures.TEXTURE3 = 3;
-        ESurfaceMaterialTextures._map[4] = "TEXTURE4";
-        ESurfaceMaterialTextures.TEXTURE4 = 4;
-        ESurfaceMaterialTextures._map[5] = "TEXTURE5";
-        ESurfaceMaterialTextures.TEXTURE5 = 5;
-        ESurfaceMaterialTextures._map[6] = "TEXTURE6";
-        ESurfaceMaterialTextures.TEXTURE6 = 6;
-        ESurfaceMaterialTextures._map[7] = "TEXTURE7";
-        ESurfaceMaterialTextures.TEXTURE7 = 7;
-        ESurfaceMaterialTextures._map[8] = "TEXTURE8";
-        ESurfaceMaterialTextures.TEXTURE8 = 8;
-        ESurfaceMaterialTextures._map[9] = "TEXTURE9";
-        ESurfaceMaterialTextures.TEXTURE9 = 9;
-        ESurfaceMaterialTextures._map[10] = "TEXTURE10";
-        ESurfaceMaterialTextures.TEXTURE10 = 10;
-        ESurfaceMaterialTextures._map[11] = "TEXTURE11";
-        ESurfaceMaterialTextures.TEXTURE11 = 11;
-        ESurfaceMaterialTextures._map[12] = "TEXTURE12";
-        ESurfaceMaterialTextures.TEXTURE12 = 12;
-        ESurfaceMaterialTextures._map[13] = "TEXTURE13";
-        ESurfaceMaterialTextures.TEXTURE13 = 13;
-        ESurfaceMaterialTextures._map[14] = "TEXTURE14";
-        ESurfaceMaterialTextures.TEXTURE14 = 14;
-        ESurfaceMaterialTextures._map[15] = "TEXTURE15";
-        ESurfaceMaterialTextures.TEXTURE15 = 15;
-        ESurfaceMaterialTextures.DIFFUSE = ESurfaceMaterialTextures.TEXTURE0;
-        ESurfaceMaterialTextures._map[NaN] = "AMBIENT";
-        ESurfaceMaterialTextures.AMBIENT = NaN;
-        ESurfaceMaterialTextures._map[NaN] = "SPECULAR";
-        ESurfaceMaterialTextures.SPECULAR = NaN;
-        ESurfaceMaterialTextures._map[NaN] = "EMISSIVE";
-        ESurfaceMaterialTextures.EMISSIVE = NaN;
-        ESurfaceMaterialTextures.EMISSION = ESurfaceMaterialTextures.EMISSIVE;
-    })(akra.ESurfaceMaterialTextures || (akra.ESurfaceMaterialTextures = {}));
-    var ESurfaceMaterialTextures = akra.ESurfaceMaterialTextures;
-    ;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
@@ -3335,13 +3684,16 @@ var akra;
         SPECULAR: "SPECULAR",
         EMISSIVE: "EMISSIVE",
         SHININESS: "SHININESS",
+        TEXTURE_HEADER: //special semantic for video buffer
+        "TEXTURE_HEADER",
         UNKNOWN: "UNKNOWN",
         END: "\a\n\r"
     };
     /**@const*/ akra.DeclUsages = akra.DeclarationUsages;
-    function VE_CUSTOM(sUsage, eType, iCount, iOffset) {
+    /** @inline */function VE_CUSTOM(sUsage, eType, iCount, iOffset) {
         if (typeof eType === "undefined") { eType = 5126 /* FLOAT */ ; }
         if (typeof iCount === "undefined") { iCount = 1; }
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
         return {
             count: iCount,
             type: eType,
@@ -3350,72 +3702,129 @@ var akra;
         };
     }
     akra.VE_CUSTOM = VE_CUSTOM;
-    function VE_FLOAT(sName, iOffset) {
-        return VE_CUSTOM(sName, 5126 /* FLOAT */ , 1, iOffset);
+    /** @inline */function VE_FLOAT(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_FLOAT = VE_FLOAT;
     ;
-    function VE_FLOAT2(sName, iOffset) {
-        if (typeof iOffset === "undefined") { iOffset = 2; }
-        return VE_CUSTOM(sName, 5126 /* FLOAT */ , 2, iOffset);
+    /** @inline */function VE_FLOAT2(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (2),
+type: (5126 /* FLOAT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_FLOAT2 = VE_FLOAT2;
     ;
-    function VE_FLOAT3(sName, iOffset) {
-        if (typeof iOffset === "undefined") { iOffset = 3; }
-        return VE_CUSTOM(sName, 5126 /* FLOAT */ , 3, iOffset);
+    /** @inline */function VE_FLOAT3(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (3),
+type: (5126 /* FLOAT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_FLOAT3 = VE_FLOAT3;
     ;
-    function VE_FLOAT4(sName, iOffset) {
-        if (typeof iOffset === "undefined") { iOffset = 4; }
-        return VE_CUSTOM(sName, 5126 /* FLOAT */ , 4, iOffset);
+    /** @inline */function VE_FLOAT4(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (4),
+type: (5126 /* FLOAT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_FLOAT4 = VE_FLOAT4;
     ;
-    function VE_FLOAT4x4(sName, iOffset) {
-        if (typeof iOffset === "undefined") { iOffset = 16; }
-        return VE_CUSTOM(sName, 5126 /* FLOAT */ , 16, iOffset);
+    /** @inline */function VE_FLOAT4x4(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (16),
+type: (5126 /* FLOAT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_FLOAT4x4 = VE_FLOAT4x4;
     ;
-    function VE_VEC2(sName, iOffset) {
-        if (typeof iOffset === "undefined") { iOffset = 2; }
-        return VE_CUSTOM(sName, 5126 /* FLOAT */ , 2, iOffset);
+    /** @inline */function VE_VEC2(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (2),
+type: (5126 /* FLOAT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_VEC2 = VE_VEC2;
     ;
-    function VE_VEC3(sName, iOffset) {
-        if (typeof iOffset === "undefined") { iOffset = 3; }
-        return VE_CUSTOM(sName, 5126 /* FLOAT */ , 3, iOffset);
+    /** @inline */function VE_VEC3(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (3),
+type: (5126 /* FLOAT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_VEC3 = VE_VEC3;
     ;
-    function VE_VEC4(sName, iOffset) {
-        if (typeof iOffset === "undefined") { iOffset = 4; }
-        return VE_CUSTOM(sName, 5126 /* FLOAT */ , 4, iOffset);
+    /** @inline */function VE_VEC4(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (4),
+type: (5126 /* FLOAT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_VEC4 = VE_VEC4;
     ;
-    function VE_MAT4(sName, iOffset) {
-        if (typeof iOffset === "undefined") { iOffset = 16; }
-        return VE_CUSTOM(sName, 5126 /* FLOAT */ , 16, iOffset);
+    /** @inline */function VE_MAT4(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (16),
+type: (5126 /* FLOAT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_MAT4 = VE_MAT4;
     ;
-    function VE_INT(sName, iOffset) {
-        return VE_CUSTOM(sName, 5124 /* INT */ , 1, iOffset);
+    /** @inline */function VE_INT(sUsage, iOffset) {
+        if (typeof iOffset === "undefined") { iOffset = akra.MAX_INT32; }
+        return ({
+count: (1),
+type: (5124 /* INT */ ),
+usage: (sUsage),
+offset: (iOffset)
+});
     }
     akra.VE_INT = VE_INT;
     ;
-    function VE_END(iOffset) {
+    /** @inline */function VE_END(iOffset) {
         if (typeof iOffset === "undefined") { iOffset = 0; }
-        return VE_CUSTOM(akra.DeclUsages.END, 5121 /* UNSIGNED_BYTE */ , 0, iOffset);
+        return ({
+count: (0),
+type: (5121 /* UNSIGNED_BYTE */ ),
+usage: (/*checked (origin: akra)>>*/akra.DeclUsages.END),
+offset: (iOffset)
+});
     }
     akra.VE_END = VE_END;
     ;
-    akra.createVertexDeclaration;
-})(akra || (akra = {}));
+    //export var createVertexDeclaration: (pData?) => IVertexDeclaration;
+    })(akra || (akra = {}));
 var akra;
 (function (akra) {
     (function (data) {
@@ -3447,10 +3856,10 @@ var akra;
                     // To avoid the colosseum between the "usage" of the element as POSITION & POSITION0,
                     // given that this is the same thing, here are the elements with index 0
                     // for "usage" with the POSITION.
-                    if (this.index === 0) {
-                        this.usage = this.semantics;
-                    }
-                } else {
+                    // if (this.index === 0) {
+                    // 	this.usage = this.semantics;
+                    // }
+                                    } else {
                     this.semantics = this.usage;
                 }
             };
@@ -3458,7 +3867,7 @@ var akra;
                 return new VertexElement(this.count, this.type, this.usage, this.offset);
             };
             VertexElement.hasUnknownOffset = /** @inline */function hasUnknownOffset(pElement) {
-                return pElement.offset === akra.MAX_INT32;
+                return (!((pElement.offset) !== undefined) || (pElement.offset === akra.MAX_INT32));
             };
             VertexElement.prototype.toString = function () {
                 function _an(data, n, bBackward) {
@@ -3473,7 +3882,7 @@ var akra;
                     }
                     return s;
                 }
-                var s = "[ USAGE: " + _an(this.usage, 12) + ", OFFSET " + _an(this.offset, 4) + " ]";
+                var s = "[ USAGE: " + _an(this.usage == akra.DeclUsages.END ? "<END>" : this.usage, 12) + ", OFFSET " + _an(this.offset, 4) + ", SIZE " + _an(this.size, 4) + " ]";
                 return s;
             };
             return VertexElement;
@@ -3509,24 +3918,27 @@ var akra;
                 return this._pElements[i] || null;
             };
             VertexDeclaration.prototype.append = function (pData) {
-                var iOffset;
                 var pElements;
                 if (!akra.isArray(arguments[0])) {
                     pElements = arguments;
                 } else {
                     pElements = arguments[0];
                 }
-                for(var i = 0; i < pElements.length; ++i) {
-                    iOffset = pElements[i].offset;
-                    if (((pElements[i]).offset === /*checked (origin: akra)>>*/akra.MAX_INT32)) {
-                        //calculation offset
-                        if (i > 0) {
-                            iOffset = this._pElements[i - 1].offset + this._pElements[i - 1].size;
-                        } else {
-                            iOffset = 0;
-                        }
+                for(var i = 0; i < pElements.length; i++) {
+                    var pElement = pElements[i];
+                    var iOffset;
+                    if (((!(((pElement).offset) !== undefined) || ((pElement).offset === /*checked (origin: akra)>>*/akra.MAX_INT32)))) {
+                        //add element to end
+                        iOffset = this.stride;
+                    } else {
+                        iOffset = pElement.offset;
                     }
-                    this._pElements.push(new data.VertexElement(pElements[i].count, pElements[i].type, pElements[i].usage, iOffset));
+                    var pVertexElement = new data.VertexElement(pElement.count, pElement.type, pElement.usage, iOffset);
+                    this._pElements.push(pVertexElement);
+                    var iStride = iOffset + pVertexElement.size;
+                    if (this.stride < iStride) {
+                        this.stride = iStride;
+                    }
                 }
                 return this._update();
             };
@@ -3549,23 +3961,24 @@ var akra;
                 }
                 return true;
             };
-            VertexDeclaration.prototype.extend = function (pDecl) {
+            VertexDeclaration.prototype.extend = function (decl) {
+                var pDecl = decl;
                 var pElement;
                 for(var i = 0; i < ((this)._pElements.length); ++i) {
-                    for(var j = 0; j < pDecl.length; ++j) {
-                        if (pDecl.element(j).usage == this._pElements[i].usage) {
-                            akra.logger.setSourceLocation("data/VertexDeclaration.ts", 103);
+                    for(var j = 0; j < (pDecl._pElements.length); ++j) {
+                        if ((pDecl._pElements[(j)] || null).usage == this._pElements[i].usage) {
+                            akra.logger.setSourceLocation("data/VertexDeclaration.ts", 110);
                             akra.logger.log('inconsistent declarations:', this, pDecl);
                             ;
-                            akra.logger.setSourceLocation("data/VertexDeclaration.ts", 104);
+                            akra.logger.setSourceLocation("data/VertexDeclaration.ts", 111);
                             akra.logger.error('The attempt to combine the declaration containing the exact same semantics.');
                             ;
                             return false;
                         }
                     }
                 }
-                for(var i = 0; i < pDecl.length; i++) {
-                    pElement = pDecl.element(i).clone();
+                for(var i = 0; i < (pDecl._pElements.length); i++) {
+                    pElement = (pDecl._pElements[(i)] || null).clone();
                     pElement.offset += this.stride;
                     this._pElements.push(pElement);
                 }
@@ -3598,7 +4011,7 @@ var akra;
             };
             VertexDeclaration.prototype.toString = ///DEBUG!!!
             function () {
-                var s = "";
+                var s = "\n";
                 s += "  VERTEX DECLARATION ( " + this.stride + " b. ) \n";
                 s += "---------------------------------------\n";
                 for(var i = 0; i < ((this)._pElements.length); ++i) {
@@ -3948,6 +4361,9 @@ var akra;
                 pHsb[2] = brightness;
                 return pHsb;
             };
+            Color.prototype.toString = function () {
+                return "{R: " + this.r + ", G: " + this.g + ", B: " + this.b + ", A: " + this.a + "} " + "( 0x" + this.rgba.toString(16) + " )";
+            };
             Color.toFloat32Array = function toFloat32Array(pValue) {
                 var pArr = new Float32Array(4);
                 pArr[0] = pValue.r;
@@ -4081,40 +4497,55 @@ var akra;
             FlexMaterial.prototype.isEqual = function (pMat) {
                 return akra.Color.isEqual(this.diffuse, pMat.diffuse) && akra.Color.isEqual(this.ambient, pMat.ambient) && akra.Color.isEqual(this.specular, pMat.specular) && akra.Color.isEqual(this.emissive, pMat.emissive) && ((this)._pData.getTypedData(/*checked (origin: akra)>>*/akra.DeclUsages.SHININESS, 0, 1)[0]) === pMat.shininess;
             };
+            FlexMaterial.prototype.toString = function () {
+                var s = "\nFLEX MATERIAL - " + this.name + "\n";
+                s += "------------------------------------\n";
+                s += "diffuse:   " + this.diffuse.toString() + "\n";
+                s += "ambient:   " + this.ambient.toString() + "\n";
+                s += "specular:  " + this.ambient.toString() + "\n";
+                s += "emissive:  " + this.emissive.toString() + "\n";
+                s += "shininess: " + this.shininess + "\n";
+                return s;
+            };
             return FlexMaterial;
         })();        
         /**@const*/ material.VERTEX_DECL = akra.createVertexDeclaration([
-            {
-                count: 17,
-                type: 5126 /* FLOAT */ ,
-                usage: akra.DeclUsages.MATERIAL
-            }, 
-            {
-                count: 4,
-                type: 5126 /* FLOAT */ ,
-                usage: akra.DeclUsages.DIFFUSE,
-                offset: 0
-            }, 
-            {
-                count: 4,
-                type: 5126 /* FLOAT */ ,
-                usage: akra.DeclUsages.AMBIENT
-            }, 
-            {
-                count: 4,
-                type: 5126 /* FLOAT */ ,
-                usage: akra.DeclUsages.SPECULAR
-            }, 
-            {
-                count: 4,
-                type: 5126 /* FLOAT */ ,
-                usage: akra.DeclUsages.EMISSIVE
-            }, 
-            {
-                count: 1,
-                type: 5126 /* FLOAT */ ,
-                usage: akra.DeclUsages.SHININESS
-            }
+            ({
+count: (17),
+type: (5126 /* FLOAT */ ),
+usage: (/*checked (origin: akra)>>*/akra.DeclUsages.MATERIAL),
+offset: (/*checked (origin: akra)>>*/akra.MAX_INT32)
+}), 
+            ({
+count: (4),
+type: (5126 /* FLOAT */ ),
+usage: (/*checked (origin: akra)>>*/akra.DeclUsages.DIFFUSE),
+offset: (0)
+}), 
+            ({
+count: (4),
+type: (5126 /* FLOAT */ ),
+usage: (/*checked (origin: akra)>>*/akra.DeclUsages.AMBIENT),
+offset: (16)
+}), 
+            ({
+count: (4),
+type: (5126 /* FLOAT */ ),
+usage: (/*checked (origin: akra)>>*/akra.DeclUsages.SPECULAR),
+offset: (32)
+}), 
+            ({
+count: (4),
+type: (5126 /* FLOAT */ ),
+usage: (/*checked (origin: akra)>>*/akra.DeclUsages.EMISSIVE),
+offset: (48)
+}), 
+            ({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: (/*checked (origin: akra)>>*/akra.DeclUsages.SHININESS),
+offset: (64)
+})
         ]);
         /**@const*/ material.DEFAULT = new Material();
         function create(sName, pMat) {
@@ -4150,6 +4581,9 @@ var akra;
                         /**@protected*/ this._pTextures = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
                         /**@protected*/ this._pTexcoords = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
                         /**@protected*/ this._pTextureMatrices = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
+                        //For acceleration of composer
+                        /**@protected*/ this._sLastHash = "";
+                        /**@protected*/ this._isNeedToUpdateHash = true;
                         for(var i = 0; i < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE; ++i) {
                             this._pTexcoords[i] = i;
                         }
@@ -4185,15 +4619,19 @@ var akra;
                         enumerable: true,
                         configurable: true
                     });
-                    SurfaceMaterial.prototype.setTexture = function (iIndex, pTexture, iTexcoord) {
+                    SurfaceMaterial.prototype.setTexture = function (iIndex, texture, iTexcoord) {
                         if (typeof iTexcoord === "undefined") { iTexcoord = 0; }
-                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 40);
+                        //LOG(iIndex, pTexture, iTexcoord);
+                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 43);
                         akra.logger.assert(iIndex < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE, "invalid texture slot");
                         ;
                         var pRmgr = (((((this).pResourcePool)).pManager));
                         var pTexture = null;
                         this._pTexcoords[iIndex] = iTexcoord;
-                        if ((typeof (arguments[0]) === "string")) {
+                        if (iIndex !== iTexcoord) {
+                            this._isNeedToUpdateHash = true;
+                        }
+                        if ((typeof (texture) === "string")) {
                             pTexture = this._pTextures[iIndex];
                             if (pTexture) {
                                 //realise first
@@ -4201,20 +4639,20 @@ var akra;
                                     this._pTextures[iIndex] = null;
                                     //pTexture.destroyResource();
                                                                     } else {
-                                    akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 58);
+                                    akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 65);
                                     akra.logger.warning("cannot destroy resource...");
                                 }
                                 ((this._iTextureFlags) &= ~(1 << (iIndex)));
                                 --this._nTotalTextures;
                             }
-                            this._pTextures[iIndex] = pRmgr.texturePool.loadResource(arguments[0]);
+                            this._pTextures[iIndex] = pRmgr.texturePool.loadResource(texture);
                             if (this._pTextures[iIndex]) {
                                 ((this._iTextureFlags) |= (1 << (iIndex)));
                                 ++this._nTotalTextures;
                                 this.sync(this._pTextures[iIndex], 1 /* LOADED */ );
                             }
                             return true;
-                        } else if (arguments[0] instanceof resources.Texture) {
+                        } else if (texture instanceof resources.Texture) {
                             if (!this._pTextures[iIndex] || pTexture != this._pTextures[iIndex]) {
                                 if (this._pTextures[iIndex]) {
                                     // realise first
@@ -4223,7 +4661,7 @@ var akra;
                                         // this._pTextureMatrices[iIndex].destroyResource();
                                         this._pTextures[iIndex] = null;
                                     } else {
-                                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 89);
+                                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 96);
                                         akra.logger.warning("cannot destroy resource...");
                                         ;
                                     }
@@ -4249,22 +4687,22 @@ var akra;
                                                             }
                             return true;
                         } else //similar to [cPoolHandle texture]
-                        if ((typeof (arguments[0]) === "number")) {
-                            if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != arguments[0]) {
+                        if ((typeof (texture) === "number")) {
+                            if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != texture) {
                                 if (this._pTextures[iIndex]) {
                                     //TheGameHost.displayManager().texturePool().releaseResource(m_pTextures[index]);
                                     if (this._pTextures[iIndex].release() === 0) {
                                         // this._pTextures[iIndex].destroyResource();
                                         this._pTextures[iIndex] = null;
                                     } else {
-                                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 128);
+                                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 135);
                                         akra.logger.warning("cannot destroy resource...");
                                         ;
                                     }
                                     ((this._iTextureFlags) &= ~(1 << (iIndex)));
                                     --this._nTotalTextures;
                                 }
-                                this._pTextures[iIndex] = pRmgr.texturePool.getResource(arguments[0]);
+                                this._pTextures[iIndex] = pRmgr.texturePool.getResource(texture);
                                 if (this._pTextures[iIndex]) {
                                     ((this._iTextureFlags) |= (1 << (iIndex)));
                                     ++this._nTotalTextures;
@@ -4277,7 +4715,7 @@ var akra;
                         return false;
                     };
                     SurfaceMaterial.prototype.setTextureMatrix = function (iIndex, m4fValue) {
-                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 154);
+                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 161);
                         akra.logger.assert(iIndex < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE, "invalid texture slot");
                         ;
                         if (!m4fValue) {
@@ -4314,24 +4752,40 @@ var akra;
                         return false;
                     };
                     SurfaceMaterial.prototype.texture = /** @inline */function (iSlot) {
-                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 202);
+                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 209);
                         akra.logger.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE), "invalid texture slot");
                         ;
                         return this._pTextures[iSlot];
                     };
                     SurfaceMaterial.prototype.texcoord = /** @inline */function (iSlot) {
-                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 208);
+                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 215);
                         akra.logger.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE), "invalid texture slot");
                         ;
                         return this._pTexcoords[iSlot];
                     };
                     SurfaceMaterial.prototype.textureMatrix = /** @inline */function (iSlot) {
-                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 214);
+                        akra.logger.setSourceLocation("resources/SurfaceMaterial.ts", 221);
                         akra.logger.assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE), "invalid texture slot");
                         ;
                         return this._pTextureMatrices[iSlot];
                     };
                     SurfaceMaterial.MAX_TEXTURES_PER_SURFACE = 16;
+                    SurfaceMaterial.prototype._getHash = function () {
+                        if (this._isNeedToUpdateHash) {
+                            this._sLastHash = this.calcHash();
+                            this._isNeedToUpdateHash = false;
+                        }
+                        return this._sLastHash;
+                    };
+                    SurfaceMaterial.prototype.calcHash = function () {
+                        var sHash = "";
+                        for(var i = 0; i < this._pTexcoords.length; i++) {
+                            if (this._pTexcoords[i] !== i) {
+                                sHash += i.toString() + "<" + this._pTexcoords[i].toString() + ".";
+                            }
+                        }
+                        return sHash;
+                    };
                     return SurfaceMaterial;
                 })(pool.ResourcePoolItem);
                 resources.SurfaceMaterial = SurfaceMaterial;                
@@ -4352,18 +4806,17 @@ var akra;
                     __extends(Effect, _super);
                     function Effect() {
                                         _super.call(this);
-                        this._pComposer = null;
                     }
                     Object.defineProperty(Effect.prototype, "totalComponents", {
                         get: function () {
-                            return this._pComposer.getComponentCountForEffect(this);
+                            return (((((((((this))).pResourcePool)).pManager))).getEngine().getComposer()).getComponentCountForEffect(this);
                         },
                         enumerable: true,
                         configurable: true
                     });
                     Object.defineProperty(Effect.prototype, "totalPasses", {
                         get: function () {
-                            return this._pComposer.getTotalPassesForEffect(this);
+                            return (((((((((this))).pResourcePool)).pManager))).getEngine().getComposer()).getTotalPassesForEffect(this);
                         },
                         enumerable: true,
                         configurable: true
@@ -4381,7 +4834,8 @@ var akra;
                         return false;
                     };
                     Effect.prototype.create = function () {
-                        this._pComposer = (((((((this)).pResourcePool)).pManager))).getEngine().getComposer();
+                        (((((((((this))).pResourcePool)).pManager))).getEngine().getComposer()) = (((((((this)).pResourcePool)).pManager))).getEngine().getComposer();
+                        this.notifyRestored;
                     };
                     Effect.prototype.replicable = function (bValue) {
                         return;
@@ -4400,21 +4854,21 @@ var akra;
                             pComponent = pComponentPool.findResource(pComponent);
                         }
                         if (!((pComponent) !== undefined) || ((pComponent) === null)) {
-                            akra.logger.setSourceLocation("resources/Effect.ts", 51);
-                            akra.logger.error("Bad component for add/delete.");
+                            akra.logger.setSourceLocation("resources/Effect.ts", 49);
+                            akra.logger.error("Bad component for add/delete: ", pComponent);
                             ;
                             return false;
                         }
                         if (isSet) {
-                            if (!this._pComposer.addComponentToEffect(this, pComponent, iShift, iPass)) {
-                                akra.logger.setSourceLocation("resources/Effect.ts", 57);
+                            if (!(((((((((this))).pResourcePool)).pManager))).getEngine().getComposer()).addComponentToEffect(this, pComponent, iShift, iPass)) {
+                                akra.logger.setSourceLocation("resources/Effect.ts", 55);
                                 akra.logger.error("Can not add component '" + pComponent.findResourceName() + "'");
                                 ;
                                 return false;
                             }
                         } else {
-                            if (!this._pComposer.removeComponentFromEffect(this, pComponent, iShift, iPass)) {
-                                akra.logger.setSourceLocation("resources/Effect.ts", 63);
+                            if (!(((((((((this))).pResourcePool)).pManager))).getEngine().getComposer()).removeComponentFromEffect(this, pComponent, iShift, iPass)) {
+                                akra.logger.setSourceLocation("resources/Effect.ts", 61);
                                 akra.logger.error("Can not delete component '" + pComponent.findResourceName() + "'");
                                 ;
                                 return false;
@@ -4433,8 +4887,18 @@ var akra;
                         if (typeof iPass === "undefined") { iPass = 0xffffff; }
                         return this.addComponent(pComponent, iShift, iPass, false);
                     };
+                    Effect.prototype.activate = function (iShift) {
+                        if (typeof iShift === "undefined") { iShift = 0; }
+                        return (((((((((this))).pResourcePool)).pManager))).getEngine().getComposer()).activateEffectResource(this, iShift);
+                    };
+                    Effect.prototype.deactivate = function () {
+                        return (((((((((this))).pResourcePool)).pManager))).getEngine().getComposer()).deactivateEffectResource(this);
+                    };
                     Effect.prototype.findParameter = function (pParam, iPass) {
                         return null;
+                    };
+                    Effect.prototype.getComposer = /** @inline */function () {
+                        return (((((((this)).pResourcePool)).pManager))).getEngine().getComposer();
                     };
                     return Effect;
                 })(pool.ResourcePoolItem);
@@ -4445,180 +4909,6 @@ var akra;
         var pool = core.pool;
     })(akra.core || (akra.core = {}));
     var core = akra.core;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    (function (EPixelFormats) {
-        EPixelFormats._map = [];
-        /*Unknown pixel format.*/
-        EPixelFormats.UNKNOWN = 0;
-        /*8-bit pixel format, all bits luminance.*/
-        EPixelFormats.L8 = 1;
-        EPixelFormats.BYTE_L = EPixelFormats.L8;
-        /*16-bit pixel format, all bits luminance.*/
-        EPixelFormats.L16 = 2;
-        EPixelFormats.SHORT_L = EPixelFormats.L16;
-        /*8-bit pixel format, all bits alpha.*/
-        EPixelFormats.A8 = 3;
-        EPixelFormats.BYTE_A = EPixelFormats.A8;
-        /*8-bit pixel format, 4 bits alpha, 4 bits luminance.*/
-        EPixelFormats.A4L4 = 4;
-        /*2 byte pixel format, 1 byte luminance, 1 byte alpha*/
-        EPixelFormats.BYTE_LA = 5;
-        /*16-bit pixel format, 5 bits red, 6 bits green, 5 bits blue.*/
-        EPixelFormats.R5G6B5 = 6;
-        /*16-bit pixel format, 5 bits red, 6 bits green, 5 bits blue.*/
-        EPixelFormats.B5G6R5 = 7;
-        /*8-bit pixel format, 2 bits blue, 3 bits green, 3 bits red.*/
-        EPixelFormats.R3G3B2 = 31;
-        /*16-bit pixel format, 4 bits for alpha, red, green and blue.*/
-        EPixelFormats.A4R4G4B4 = 8;
-        /*16-bit pixel format, 5 bits for blue, green, red and 1 for alpha.*/
-        EPixelFormats.A1R5G5B5 = 9;
-        /*24-bit pixel format, 8 bits for red, green and blue.*/
-        EPixelFormats.R8G8B8 = 10;
-        /*24-bit pixel format, 8 bits for blue, green and red.*/
-        EPixelFormats.B8G8R8 = 11;
-        /*32-bit pixel format, 8 bits for alpha, red, green and blue.*/
-        EPixelFormats.A8R8G8B8 = 12;
-        /*32-bit pixel format, 8 bits for blue, green, red and alpha.*/
-        EPixelFormats.A8B8G8R8 = 13;
-        /*32-bit pixel format, 8 bits for blue, green, red and alpha.*/
-        EPixelFormats.B8G8R8A8 = 14;
-        /*32-bit pixel format, 8 bits for red, green, blue and alpha.*/
-        EPixelFormats.R8G8B8A8 = 28;
-        /*32-bit pixel format, 8 bits for red, 8 bits for green, 8 bits for blue like A8R8G8B8, but alpha will get discarded*/
-        EPixelFormats.X8R8G8B8 = 26;
-        /*32-bit pixel format, 8 bits for blue, 8 bits for green, 8 bits for red like A8B8G8R8, but alpha will get discarded*/
-        EPixelFormats.X8B8G8R8 = 27;
-        /*3 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue*/
-        EPixelFormats.BYTE_RGB = EPixelFormats.R8G8B8;
-        /*3 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red*/
-        EPixelFormats.BYTE_BGR = EPixelFormats.B8G8R8;
-        /*4 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red and one byte for alpha*/
-        EPixelFormats.BYTE_BGRA = EPixelFormats.B8G8R8A8;
-        /*4 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue, and one byte for alpha*/
-        EPixelFormats.BYTE_RGBA = EPixelFormats.R8G8B8A8;
-        EPixelFormats.BYTE_ABGR = EPixelFormats.A8B8G8R8;
-        EPixelFormats.BYTE_ARGB = EPixelFormats.A8R8G8B8;
-        /*32-bit pixel format, 2 bits for alpha, 10 bits for red, green and blue.*/
-        EPixelFormats.A2R10G10B10 = 15;
-        /*32-bit pixel format, 10 bits for blue, green and red, 2 bits for alpha.*/
-        EPixelFormats.A2B10G10R10 = 16;
-        /*DDS (DirectDraw Surface) DXT1 format.*/
-        EPixelFormats.DXT1 = 17;
-        /*DDS (DirectDraw Surface) DXT2 format.*/
-        EPixelFormats.DXT2 = 18;
-        /*DDS (DirectDraw Surface) DXT3 format.*/
-        EPixelFormats.DXT3 = 19;
-        /*DDS (DirectDraw Surface) DXT4 format.*/
-        EPixelFormats.DXT4 = 20;
-        /*DDS (DirectDraw Surface) DXT5 format.*/
-        EPixelFormats.DXT5 = 21;
-        /*16-bit pixel format, 16 bits (float) for red*/
-        EPixelFormats.FLOAT16_R = 32;
-        /*48-bit pixel format, 16 bits (float) for red, 16 bits (float) for green, 16 bits (float) for blue*/
-        EPixelFormats.FLOAT16_RGB = 22;
-        /*64-bit pixel format, 16 bits (float) for red, 16 bits (float) for green, 16 bits (float) for blue, 16 bits (float) for alpha*/
-        EPixelFormats.FLOAT16_RGBA = 23;
-        /*32-bit pixel format, 32 bits (float) for red*/
-        EPixelFormats.FLOAT32_R = 33;
-        /*96-bit pixel format, 32 bits (float) for red, 32 bits (float) for green, 32 bits (float) for blue*/
-        EPixelFormats.FLOAT32_RGB = 24;
-        /*128-bit pixel format, 32 bits (float) for red, 32 bits (float) for green, 32 bits (float) for blue, 32 bits (float) for alpha*/
-        EPixelFormats.FLOAT32_RGBA = 25;
-        /*32-bit, 2-channel s10e5 floating point pixel format, 16-bit green, 16-bit red*/
-        EPixelFormats.FLOAT16_GR = 35;
-        /*64-bit, 2-channel floating point pixel format, 32-bit green, 32-bit red*/
-        EPixelFormats.FLOAT32_GR = 36;
-        /*Float Depth texture format*/
-        EPixelFormats.FLOAT32_DEPTH = 29;
-        EPixelFormats.DEPTH8 = 44;
-        /*Byte Depth texture format */
-        EPixelFormats.BYTE_DEPTH = EPixelFormats.DEPTH8;
-        EPixelFormats.DEPTH16 = 45;
-        EPixelFormats.SHORT_DEPTH = EPixelFormats.DEPTH16;
-        EPixelFormats.DEPTH32 = 46;
-        EPixelFormats.DEPTH24STENCIL8 = 47;
-        /*64-bit pixel format, 16 bits for red, green, blue and alpha*/
-        EPixelFormats.SHORT_RGBA = 30;
-        /*32-bit pixel format, 16-bit green, 16-bit red*/
-        EPixelFormats.SHORT_GR = 34;
-        /*48-bit pixel format, 16 bits for red, green and blue*/
-        EPixelFormats.SHORT_RGB = 37;
-        /*PVRTC (PowerVR) RGB 2 bpp.*/
-        EPixelFormats.PVRTC_RGB2 = 38;
-        /*PVRTC (PowerVR) RGBA 2 bpp.*/
-        EPixelFormats.PVRTC_RGBA2 = 39;
-        /*PVRTC (PowerVR) RGB 4 bpp.*/
-        EPixelFormats.PVRTC_RGB4 = 40;
-        /*PVRTC (PowerVR) RGBA 4 bpp.*/
-        EPixelFormats.PVRTC_RGBA4 = 41;
-        /*8-bit pixel format, all bits red.*/
-        EPixelFormats.R8 = 42;
-        /*16-bit pixel format, 8 bits red, 8 bits green.*/
-        EPixelFormats.RG8 = 43;
-        EPixelFormats.TOTAL = 48;
-    })(akra.EPixelFormats || (akra.EPixelFormats = {}));
-    var EPixelFormats = akra.EPixelFormats;
-    ;
-    /**
-    * Flags defining some on/off properties of pixel formats
-    */
-    (function (EPixelFormatFlags) {
-        EPixelFormatFlags._map = [];
-        // This format has an alpha channel
-        EPixelFormatFlags.HASALPHA = 0x00000001;
-        // This format is compressed. This invalidates the values in elemBytes,
-        // elemBits and the bit counts as these might not be fixed in a compressed format.
-        EPixelFormatFlags.COMPRESSED = 0x00000002;
-        // This is a floating point format
-        EPixelFormatFlags.FLOAT = 0x00000004;
-        // This is a depth format (for depth textures)
-        EPixelFormatFlags.DEPTH = 0x00000008;
-        // Format is in native endian. Generally true for the 16, 24 and 32 bits
-        // formats which can be represented as machine integers.
-        EPixelFormatFlags.NATIVEENDIAN = 0x00000010;
-        // This is an intensity format instead of a RGB one. The luminance
-        // replaces R,G and B. (but not A)
-        EPixelFormatFlags.LUMINANCE = 0x00000020;
-        EPixelFormatFlags.STENCIL = 0x00000040;
-    })(akra.EPixelFormatFlags || (akra.EPixelFormatFlags = {}));
-    var EPixelFormatFlags = akra.EPixelFormatFlags;
-    /** Pixel component format */
-    (function (EPixelComponentTypes) {
-        EPixelComponentTypes._map = [];
-        /*Byte per component (8 bit fixed 0.0..1.0)*/
-        EPixelComponentTypes.BYTE = 0;
-        /*Short per component (16 bit fixed 0.0..1.0))*/
-        EPixelComponentTypes.SHORT = 1;
-        EPixelComponentTypes.INT = 2;
-        /*16 bit float per component*/
-        EPixelComponentTypes.FLOAT16 = 3;
-        /*32 bit float per component*/
-        EPixelComponentTypes.FLOAT32 = 4;
-        /*Number of pixel types*/
-        EPixelComponentTypes.COUNT = 5;
-    })(akra.EPixelComponentTypes || (akra.EPixelComponentTypes = {}));
-    var EPixelComponentTypes = akra.EPixelComponentTypes;
-    ;
-    (function (EFilters) {
-        EFilters._map = [];
-        EFilters._map[0] = "NEAREST";
-        EFilters.NEAREST = 0;
-        EFilters._map[1] = "LINEAR";
-        EFilters.LINEAR = 1;
-        EFilters._map[2] = "BILINEAR";
-        EFilters.BILINEAR = 2;
-        EFilters._map[3] = "BOX";
-        EFilters.BOX = 3;
-        EFilters._map[4] = "TRIANGLE";
-        EFilters.TRIANGLE = 4;
-        EFilters._map[5] = "BICUBIC";
-        EFilters.BICUBIC = 5;
-    })(akra.EFilters || (akra.EFilters = {}));
-    var EFilters = akra.EFilters;
-    ;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
@@ -4736,6 +5026,12 @@ var akra;
             return Pathinfo;
         })();
         util.Pathinfo = Pathinfo;        
+        // export var pathinfo: (sPath: string) => IPathinfo;
+        // export var pathinfo: (pPath: IPathinfo) => IPathinfo;
+        util.pathinfo;
+        util.pathinfo = function (pPath) {
+            return new Pathinfo(pPath);
+        };
     })(akra.util || (akra.util = {}));
     var util = akra.util;
 })(akra || (akra = {}));
@@ -4808,6 +5104,10 @@ var akra;
                 get: /** @inline */function () {
                     return this.sHost;
                 },
+                set: /** @inline */function (sHost) {
+                    //TODO: check host format
+                    this.sHost = sHost;
+                },
                 enumerable: true,
                 configurable: true
             });
@@ -4825,12 +5125,22 @@ var akra;
                 get: /** @inline */function () {
                     return this.sPath;
                 },
+                set: /** @inline */function (sPath) {
+                    // debug_assert(!isNull(sPath.match(new RegExp("^(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)$"))),
+                    // 	"invalid path used: " + sPath);
+                    //TODO: check path format
+                    this.sPath = sPath;
+                },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(URI.prototype, "query", {
                 get: /** @inline */function () {
+                    //TODO: check query format
                     return this.sQuery;
+                },
+                set: /** @inline */function (sQuery) {
+                    this.sQuery = sQuery;
                 },
                 enumerable: true,
                 configurable: true
@@ -4845,7 +5155,7 @@ var akra;
             URI.prototype.set = function (pData) {
                 if ((typeof (pData) === "string")) {
                     var pUri = URI.uriExp.exec(pData);
-                    util.logger.setSourceLocation("URI.ts", 86);
+                    util.logger.setSourceLocation("URI.ts", 103);
                     util.logger.assert(pUri !== null, 'Invalid URI format used.\nused uri: ' + pData);
                     ;
                     if (!pUri) {
@@ -4862,13 +5172,16 @@ var akra;
                 } else if (pData instanceof URI) {
                     return this.set(pData.toString());
                 }
-                util.logger.setSourceLocation("URI.ts", 107);
+                util.logger.setSourceLocation("URI.ts", 124);
                 util.logger.error('Unexpected data type was used.');
                 ;
                 return null;
             };
             URI.prototype.toString = function () {
                 return this.url + this.urn;
+            };
+            URI.here = function here() {
+                return new URI(document.location.href);
             };
             URI.uriExp = new RegExp("^([a-z0-9+.-]+:)?(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})*(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?$", "i");
             return URI;
@@ -4896,7 +5209,10 @@ var akra;
         )?
         $
         */
-            })(akra.util || (akra.util = {}));
+        util.uri = /** @inline */function (sUri) {
+            return new akra.util.URI(sUri);
+        };
+    })(akra.util || (akra.util = {}));
     var util = akra.util;
 })(akra || (akra = {}));
 var akra;
@@ -4911,15 +5227,6 @@ var akra;
     // #include "Entity.ts"
     // #include "ThreadManager.ts"
     (function (util) {
-        util.uri = /** @inline */function (sUri) {
-            return new akra.util.URI(sUri);
-        };
-        // export var pathinfo: (sPath: string) => IPathinfo;
-        // export var pathinfo: (pPath: IPathinfo) => IPathinfo;
-        util.pathinfo;
-        util.pathinfo = function (pPath) {
-            return new util.Pathinfo(pPath);
-        };
         //string to array buffer
         util.stoab = function (s) {
             var len = s.length;
@@ -5012,12 +5319,12 @@ var akra;
         var BrowserInfo = (function (_super) {
             __extends(BrowserInfo, _super);
             function BrowserInfo() {
-                _super.apply(this, arguments);
-
+                        _super.call(this);
                 this.sBrowser = null;
                 this.sVersion = null;
                 this.sOS = null;
                 this.sVersionSearch = null;
+                this.init();
             }
             Object.defineProperty(BrowserInfo.prototype, "name", {
                 get: function () {
@@ -5249,42 +5556,6 @@ var akra;
 ;
 ;
 ;
-var akra;
-(function (akra) {
-    (function (EHardwareBufferFlags) {
-        EHardwareBufferFlags._map = [];
-        EHardwareBufferFlags.STATIC = 0x01;
-        EHardwareBufferFlags.DYNAMIC = 0x02;
-        EHardwareBufferFlags.STREAM = 0x80;
-        EHardwareBufferFlags.READABLE = 0x04;
-        EHardwareBufferFlags.BACKUP_COPY = 0x08;
-        /** indicate, that buffer does not use GPU memory or other specific memory. */
-        EHardwareBufferFlags.SOFTWARE = 0x10;
-        /** Indicate, tha buffer uses specific data aligment */
-        EHardwareBufferFlags.ALIGNMENT = 0x20;
-        /** Indicates that the application will be refilling the contents
-        of the buffer regularly (not just updating, but generating the
-        contents from scratch), and therefore does not mind if the contents
-        of the buffer are lost somehow and need to be recreated. This
-        allows and additional level of optimisation on the buffer.
-        This option only really makes sense when combined with
-        DYNAMIC and without READING.
-        */
-        EHardwareBufferFlags.DISCARDABLE = 0x40;
-        EHardwareBufferFlags.STATIC_READABLE = EHardwareBufferFlags.STATIC | EHardwareBufferFlags.READABLE;
-        EHardwareBufferFlags.DYNAMIC_DISCARDABLE = EHardwareBufferFlags.DYNAMIC | EHardwareBufferFlags.DISCARDABLE;
-    })(akra.EHardwareBufferFlags || (akra.EHardwareBufferFlags = {}));
-    var EHardwareBufferFlags = akra.EHardwareBufferFlags;
-    (function (ELockFlags) {
-        ELockFlags._map = [];
-        ELockFlags.READ = 0x01;
-        ELockFlags.WRITE = 0x02;
-        ELockFlags.DISCARD = 0x04;
-        ELockFlags.NO_OVERWRITE = 0x08;
-        ELockFlags.NORMAL = ELockFlags.READ | ELockFlags.WRITE;
-    })(akra.ELockFlags || (akra.ELockFlags = {}));
-    var ELockFlags = akra.ELockFlags;
-})(akra || (akra = {}));
 ;
 var akra;
 (function (akra) {
@@ -11802,8 +12073,9 @@ var akra;
                     akra.logger.setSourceLocation("Mat4.ts", 624);
                     akra.logger.assert(false, "обращение матрицы с нулевым детеминантом:\n" + this.toString());
                     ;
-                    //чтоб все не навернулось		        return m4fDestination.set(1.);
-                                    }
+                    //чтоб все не навернулось
+                    return m4fDestination.set(1.);
+                }
                 var fInverseDeterminant = 1 / fDeterminant;
                 pDataDestination[0] = (a22 * b11 - a23 * b10 + a24 * b09) * fInverseDeterminant;
                 pDataDestination[4] = (-a12 * b11 + a13 * b10 - a14 * b09) * fInverseDeterminant;
@@ -13746,7 +14018,7 @@ var akra;
                 return pixelUtil.getMemorySize(((this).right - (this).left), ((this).bottom - (this).top), ((this).back - (this).front), this.format);
             };
             PixelBox.prototype.getSubBox = function (pDest) {
-                if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((this.format))).flags) & 2 /* COMPRESSED */ ) > 0)) {
+                if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((this.format))).flags) & 2 /* COMPRESSED */ ) > 0)) {
                     if (pDest.left == this.left && pDest.top == this.top && pDest.front == this.front && pDest.right == this.right && pDest.bottom == this.bottom && pDest.back == this.back) {
                         // Entire buffer is being queried
                         return this;
@@ -13760,7 +14032,7 @@ var akra;
                     akra.logger.error("Bounds out of range", "PixelBox::getSubVolume");
                     ;
                 }
-                var elemSize = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this.format)).elemBytes);
+                var elemSize = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this.format)).elemBytes);
                 // Calculate new data origin
                 // Notice how we do not propagate left/top/front from the incoming box, since
                 // the returned pointer is already offset
@@ -13772,15 +14044,15 @@ var akra;
             };
             PixelBox.prototype.getColorAt = function (x, y, z) {
                 var cv = new akra.Color();
-                var pixelSize = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this.format)).elemBytes);
+                var pixelSize = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this.format)).elemBytes);
                 var pixelOffset = pixelSize * (z * this.slicePitch + y * this.rowPitch + x);
                 pixelUtil.unpackColour(cv, this.format, this.data.subarray(pixelOffset));
                 return cv;
             };
             PixelBox.prototype.setColorAt = function (pColor, x, y, z) {
-                var pixelSize = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this.format)).elemBytes);
+                var pixelSize = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this.format)).elemBytes);
                 var pixelOffset = pixelSize * (z * this.slicePitch + y * this.rowPitch + x);
-                (pixelUtil.packColourFloat((pColor).r, (pColor).g, (pColor).b, (pColor).a, (this.format), (this.data.subarray(pixelOffset))));
+                (/*checked (origin: pixelUtil)>>*/akra.pixelUtil.packColourFloat((pColor).r, (pColor).g, (pColor).b, (pColor).a, (this.format), (this.data.subarray(pixelOffset))));
             };
             PixelBox.prototype.scale = function (pDest, eFilter) {
                 if (typeof eFilter === "undefined") { eFilter = 2 /* BILINEAR */ ; }
@@ -14075,7 +14347,8 @@ var akra;
         [
             "PF_R8G8B8", 
             /* Bytes per element */
-            // 24 bit integer -- special        3,
+            /* 24 bit integer -- special*/
+            3, 
             /* Flags */
             16 /* NATIVEENDIAN */ , 
             /* Component type and count */
@@ -14100,7 +14373,8 @@ var akra;
         [
             "PF_B8G8R8", 
             /* Bytes per element */
-            // 24 bit integer -- special        3,
+            /* 24 bit integer -- special*/
+            3, 
             /* Flags */
             16 /* NATIVEENDIAN */ , 
             /* Component type and count */
@@ -14255,7 +14529,9 @@ var akra;
             /* Flags */
             2 /* COMPRESSED */  | 1 /* HASALPHA */ , 
             /* Component type and count */
-            // No alpha        EPixelComponentTypes.BYTE, 3,
+            /* No alpha*/
+            0 /* BYTE */ , 
+            3, 
             /* rbits, gbits, bbits, abits */
             0, 
             0, 
@@ -14554,7 +14830,9 @@ var akra;
             /* Flags */
             8 /* DEPTH */ , 
             /* Component type and count */
-            // ?        EPixelComponentTypes.FLOAT32, 1,
+            /* ?*/
+            4 /* FLOAT32 */ , 
+            1, 
             /* rbits, gbits, bbits, abits */
             0, 
             0, 
@@ -15080,12 +15358,12 @@ var akra;
                     case // DXT formats work by dividing the image into 4x4 blocks, then encoding each
                     // 4x4 block with a certain number of bytes.
                     17 /* DXT1 */ :
-                        return ((iWidth + 3) / 4) * ((iHeight + 3) / 4) * 8 * iDepth;
+                        return Math.floor((iWidth + 3) / 4) * Math.floor((iHeight + 3) / 4) * 8 * iDepth;
                     case 18 /* DXT2 */ :
                     case 19 /* DXT3 */ :
                     case 20 /* DXT4 */ :
                     case 21 /* DXT5 */ :
-                        return ((iWidth + 3) / 4) * ((iHeight + 3) / 4) * 16 * iDepth;
+                        return Math.floor((iWidth + 3) / 4) * Math.floor((iHeight + 3) / 4) * 16 * iDepth;
                         // Size calculations from the PVRTC OpenGL extension spec
                         // http://www.khronos.org/registry/gles/extensions/IMG/IMG_texture_compression_pvrtc.txt
                         // Basically, 32 bytes is the minimum texture size.  Smaller textures are padded up to 32 bytes
@@ -15565,8 +15843,9 @@ var akra;
                 if (des.flags & 1 /* HASALPHA */ ) {
                     a = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/akra.bf.fixedToFixed((value & des.amask) >> des.ashift, des.abits, 8);
                 } else {
-                    // No alpha, default a component to full	                a = 255;
-                                    }
+                    /* No alpha, default a component to full*/
+                    a = 255;
+                }
             } else {
                 // Do the operation with the more generic floating point
                 var pRGBA = _pColorValue;
@@ -15604,8 +15883,9 @@ var akra;
                 if (des.flags & 1 /* HASALPHA */ ) {
                     a = ((((value & des.amask) >>> des.ashift) & ((1 << (des.abits)) - 1)) / ((1 << (des.abits)) - 1));
                 } else {
-                    // No alpha, default a component to full	                a = 1.0;
-                                    }
+                    /* No alpha, default a component to full*/
+                    a = 1.0;
+                }
             } else {
                 switch(ePf) {
                     case 33 /* FLOAT32_R */ :
@@ -15668,7 +15948,7 @@ var akra;
                         break;
                     default:
                         // Not yet supported
-                        akra.logger.setSourceLocation("pixelUtil/pixelUtil.ts", 1417);
+                        akra.logger.setSourceLocation("pixelUtil/pixelUtil.ts", 1420);
                         akra.logger.error("unpack from " + (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/getDescriptionFor((ePf)).name) + " not implemented", "PixelUtil::unpackColour");
                         ;
                         break;
@@ -15689,7 +15969,7 @@ var akra;
                 src = pSrc;
                 dst = pDest;
             }
-            akra.logger.setSourceLocation("pixelUtil/pixelUtil.ts", 1464);
+            akra.logger.setSourceLocation("pixelUtil/pixelUtil.ts", 1467);
             akra.logger.assert(src.width == dst.width && src.height == dst.height && src.depth == dst.depth, "Size dest and src pictures is different");
             ;
             // Check for compressed formats, we don't support decompression, compression or recoding
@@ -15699,7 +15979,7 @@ var akra;
                     dst.data.set(src.data.subarray(0, src.getConsecutiveSize()));
                     return;
                 } else {
-                    akra.logger.setSourceLocation("pixelUtil/pixelUtil.ts", 1475);
+                    akra.logger.setSourceLocation("pixelUtil/pixelUtil.ts", 1478);
                     akra.logger.error("This method can not be used to compress or decompress images", "PixelUtil::bulkPixelConversion");
                     ;
                 }
@@ -15832,37 +16112,70 @@ var akra;
         var isSupported = false;
         var pSupportedExtensionList = null;
         // var pLoadedExtensionList: Object = null;
-        function setupContext(pWebGLContext) {
-            var pWebGLExtentionList = {};
+        function makeDebugContext(pWebGLContext) {
+            if ((((window).WebGLDebugUtils) !== undefined)) {
+                pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLContext, function (err, funcName, args) {
+                    akra.logger.setSourceLocation("webgl/WebGL.ts", 52);
+                    akra.logger.log(("\n" + (new Error()).stack.split("\n").slice(1).join("\n")));
+                    ;
+                    throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+                }, function (funcName, args) {
+                    akra.logger.setSourceLocation("webgl/WebGL.ts", 56);
+                    akra.logger.log("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")");
+                    ;
+                });
+            }
+            return pWebGLContext;
+        }
+        function loadExtension(pWebGLContext, sExtName) {
+            var pWebGLExtentionList = (pWebGLContext).extentionList = (pWebGLContext).extentionList || {};
             var pWebGLExtension;
+            if (!hasExtension(sExtName)) {
+                akra.logger.setSourceLocation("webgl/WebGL.ts", 68);
+                akra.logger.warning("Extension " + sExtName + " unsupported for this platform.");
+                ;
+                return false;
+            }
+            if (pWebGLExtension = pWebGLContext.getExtension(sExtName)) {
+                if (((pWebGLExtentionList[sExtName]) != null)) {
+                    akra.logger.setSourceLocation("webgl/WebGL.ts", 75);
+                    akra.logger.log("Extension " + sExtName + " already loaded for this context.");
+                    ;
+                    return true;
+                }
+                pWebGLExtentionList[sExtName] = pWebGLExtension;
+                akra.logger.setSourceLocation("webgl/WebGL.ts", 81);
+                akra.logger.log("loaded WebGL extension: ", sExtName);
+                ;
+                for(var j in pWebGLExtension) {
+                    if ((/*checked (origin: akra)>>*/akra.typeOf((pWebGLExtension[j])) === "function")) {
+                        //debug_print("created func WebGLRenderingContext::" + j + "(...)");
+                        pWebGLContext[j] = function () {
+                            pWebGLContext[j] = new Function("var t = this.extentionList[" + sExtName + "];" + "t." + j + ".apply(t, arguments);");
+                        };
+                    } else {
+                        //debug_print("created const WebGLRenderingContext::" + j + " = " + pWebGLExtension[j]);
+                        pWebGLContext[j] = pWebGLExtension[j];
+                    }
+                }
+                return true;
+            }
+            akra.logger.setSourceLocation("webgl/WebGL.ts", 102);
+            akra.logger.warning("cannot load extension: ", sExtName);
+            ;
+            return false;
+        }
+        webgl.loadExtension = loadExtension;
+        function setupContext(pWebGLContext) {
             //test context not created yet
             if (((pSupportedExtensionList) === null)) {
                 return pWebGLContext;
             }
             for(var i = 0; i < pSupportedExtensionList.length; ++i) {
-                if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
-                    pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
-                    akra.logger.setSourceLocation("webgl/WebGL.ts", 63);
-                    akra.logger.log("loaded WebGL extension: ", pSupportedExtensionList[i]);
-                    ;
-                    for(var j in pWebGLExtension) {
-                        if ((/*checked (origin: akra)>>*/akra.typeOf((pWebGLExtension[j])) === "function")) {
-                            pWebGLContext[j] = function () {
-                                pWebGLContext[j] = new Function("var t = this.pWebGLExtentionList[" + pSupportedExtensionList[i] + "];" + "t." + j + ".apply(t, arguments);");
-                            };
-                        } else {
-                            pWebGLContext[j] = pWebGLExtentionList[pSupportedExtensionList[i]][j];
-                        }
-                    }
-                } else {
-                    akra.logger.setSourceLocation("webgl/WebGL.ts", 81);
-                    akra.logger.warning("cannot load extension: ", pSupportedExtensionList[i]);
-                    ;
+                if (!loadExtension(pWebGLContext, pSupportedExtensionList[i])) {
                     pSupportedExtensionList.splice(i, 1);
                 }
             }
-            (pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
-            // pLoadedExtensionList = pWebGLExtentionList;
             return pWebGLContext;
         }
         webgl.isEnabled = /** @inline */function () {
@@ -15878,7 +16191,7 @@ var akra;
             if (((pWebGLContext) != null)) {
                 return setupContext(pWebGLContext);
             }
-            akra.logger.setSourceLocation("webgl/WebGL.ts", 111);
+            akra.logger.setSourceLocation("webgl/WebGL.ts", 143);
             akra.logger.warning("cannot get 3d device");
             ;
             return null;
@@ -16012,8 +16325,8 @@ var akra;
                 case 43 /* RG8 */ :
                     return 0;
                 default:
-                    akra.logger.setSourceLocation("webgl/WebGL.ts", 274);
-                    akra.logger.criticalError("getWebGLFormat unknown format");
+                    akra.logger.setSourceLocation("webgl/WebGL.ts", 306);
+                    akra.logger.warning("getWebGLFormat unknown format", eFormat);
                     ;
                     return 0;
             }
@@ -16129,7 +16442,7 @@ var akra;
                 case 43 /* RG8 */ :
                     return 0x1401;
                 default:
-                    akra.logger.setSourceLocation("webgl/WebGL.ts", 412);
+                    akra.logger.setSourceLocation("webgl/WebGL.ts", 445);
                     akra.logger.criticalError("getWebGLFormat unknown format");
                     ;
                     return 0;
@@ -16137,7 +16450,7 @@ var akra;
         }
         webgl.getWebGLDataType = getWebGLDataType;
         function getWebGLInternalFormat(eFormat) {
-            if (!(((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((eFormat))).flags) & 2 /* COMPRESSED */ ) > 0)) {
+            if (!(((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((eFormat))).flags) & 2 /* COMPRESSED */ ) > 0)) {
                 return getWebGLFormat(eFormat);
             } else {
                 switch(eFormat) {
@@ -16253,32 +16566,6 @@ var akra;
             }
         }
         webgl.getClosestAkraFormat = getClosestAkraFormat;
-        function getMaxMipmaps(iWidth, iHeight, iDepth, eFormat) {
-            var iCount = 0;
-            if ((iWidth > 0) && (iHeight > 0)) {
-                do {
-                    if (iWidth > 1) {
-                        iWidth = iWidth >>> 1;
-                    }
-                    if (iHeight > 1) {
-                        iHeight = iHeight >>> 1;
-                    }
-                    if (iDepth > 1) {
-                        iDepth = iDepth >>> 1;
-                    }
-                    /*
-                    NOT needed, compressed formats will have mipmaps up to 1x1
-                    if(PixelUtil::isValidExtent(width, height, depth, format))
-                    count ++;
-                    else
-                    break;
-                    */
-                    iCount++;
-                } while(!(iWidth === 1 && iHeight === 1 && iDepth === 1));
-            }
-            return iCount;
-        }
-        webgl.getMaxMipmaps = getMaxMipmaps;
         function optionalPO2(iValue) {
             if (webgl.hasNonPowerOf2Textures) {
                 return iValue;
@@ -16302,11 +16589,12 @@ var akra;
                 for(z = pSource.front; z < pSource.back; z++) {
                     for(y = pSource.top; y < pSource.bottom; y++) {
                         for(x = 0; x < k; x++) {
-                            // B                        pDest[iDstPtr + x] = ((pSource[iSrcPtr + x]&0x000F)<<12) |
-                            // G                                    		 ((pSource[iSrcPtr + x]&0x00F0)<<4)  |
-                            // R                                    		 ((pSource[iSrcPtr + x]&0x0F00)>>4)  |
-                            // A                                    	     ((pSource[iSrcPtr + x]&0xF000)>>12);
-                                                    }
+                            /* B*/
+                            pDest[iDstPtr + x] = ((pSource[iSrcPtr + x] & 0x000F) << 12) | /* G*/
+                            ((pSource[iSrcPtr + x] & 0x00F0) << 4) | /* R*/
+                            ((pSource[iSrcPtr + x] & 0x0F00) >> 4) | /* A*/
+                            ((pSource[iSrcPtr + x] & 0xF000) >> 12);
+                        }
                         iSrcPtr += pSource.rowPitch;
                         iDstPtr += pDest.rowPitch;
                     }
@@ -16325,7 +16613,7 @@ var akra;
                 return eFormat;
             }
             /// Find first alternative
-            var pct = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((eFormat)).componentType);
+            var pct = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((eFormat)).componentType);
             switch(pct) {
                 case 0 /* BYTE */ :
                     eFormat = 12 /* A8R8G8B8 */ ;
@@ -16447,7 +16735,9 @@ var akra;
             ApiInfo.prototype.chechTransferableObjects = function () {
                 var pBlob = new Blob([
                     "onmessage = function(e) { postMessage(true); }"
-                ]);
+                ], {
+                    "type": "text\/javascript"
+                });
                 var sBlobURL = (window).URL.createObjectURL(pBlob);
                 var pWorker = new Worker(sBlobURL);
                 var pBuffer = new ArrayBuffer(1);
@@ -16487,7 +16777,7 @@ var akra;
         info.browser = new akra.util.BrowserInfo();
         info.api = new akra.util.ApiInfo();
         info.screen = new akra.util.ScreenInfo();
-        info.uri = (new akra.util.URI((document.location.href)));
+        info.uri = (new /*checked (origin: akra)>>*/akra.util.URI((document.location.href)));
         var is;
         (function (is) {
             /**
@@ -16682,7 +16972,7 @@ var akra;
                 if (((sMode) !== undefined)) {
                     this._iMode = (typeof (sMode) === "string") ? io.filemode(sMode) : sMode;
                 }
-                this.setAndValidateUri((new akra.util.URI((sFilename))));
+                this.setAndValidateUri((new /*checked (origin: akra)>>*/akra.util.URI((sFilename))));
                 if (akra.info.api.transferableObjects) {
                     this._eTransferMode = 2 /* k_Fast */ ;
                 } else if (akra.info.browser.name == "Opera") {
@@ -16763,7 +17053,7 @@ var akra;
                 var hasMode = !(/*checked (origin: akra)>>*/akra.typeOf((iMode)) === "function");
                 if (arguments.length < 3) {
                     if ((typeof (arguments[0]) === "string")) {
-                        this.setAndValidateUri((new akra.util.URI((sFilename))));
+                        this.setAndValidateUri((new /*checked (origin: akra)>>*/akra.util.URI((sFilename))));
                         fnCallback = arguments[1];
                     } else if ((typeof (arguments[0]) === "number")) {
                         this._iMode = arguments[0];
@@ -16781,11 +17071,11 @@ var akra;
                 fnCallback = fnCallback || TFile.defaultCallback;
                 if (this.isOpened()) {
                     akra.logger.setSourceLocation("TFile.ts", 177);
-                    akra.logger.warning("file already opened: " + (akra.util.pathinfo((this)._pUri.path).basename));
+                    akra.logger.warning("file already opened: " + (/*checked (origin: akra)>>*/akra.util.pathinfo((this)._pUri.path).basename));
                     ;
                     (fnCallback)(null, this._pFileMeta);
                 }
-                this.setAndValidateUri((new akra.util.URI((arguments[0]))));
+                this.setAndValidateUri((new /*checked (origin: akra)>>*/akra.util.URI((arguments[0]))));
                 if (hasMode) {
                     this._iMode = ((typeof (arguments[1]) === "string") ? io.filemode(arguments[1]) : arguments[1]);
                 }
@@ -17018,10 +17308,10 @@ var akra;
                 });
             };
             TFile.prototype.setAndValidateUri = function (sFilename) {
-                var pUri = (new akra.util.URI((sFilename)));
+                var pUri = (new /*checked (origin: akra)>>*/akra.util.URI((sFilename)));
                 var pUriLocal;
                 if (pUri.protocol === "filesystem") {
-                    pUriLocal = (new akra.util.URI((pUri.path)));
+                    pUriLocal = (new /*checked (origin: akra)>>*/akra.util.URI((pUri.path)));
                     akra.logger.setSourceLocation("TFile.ts", 414);
                     akra.logger.assert(!(pUriLocal.protocol && pUriLocal.host != akra.info.uri.host), "Поддерживаются только локальные файлы в пределах текущего домена.");
                     ;
@@ -17032,7 +17322,7 @@ var akra;
                     akra.logger.setSourceLocation("TFile.ts", 423);
                     akra.logger.assert(pUri.host === "temporary", "Поддерживаются только файловые системы типа \"temporary\".");
                     ;
-                    this._pUri = (new akra.util.URI((pFolders.join("/"))));
+                    this._pUri = (new /*checked (origin: akra)>>*/akra.util.URI((pFolders.join("/"))));
                     this._isLocal = true;
                 } else {
                     this._pUri = pUri;
@@ -17170,7 +17460,7 @@ var akra;
                 if (((sMode) !== undefined)) {
                     this._iMode = (typeof (sMode) === "string") ? io.filemode(sMode) : sMode;
                 }
-                this.setAndValidateUri((new akra.util.URI((sFilename))));
+                this.setAndValidateUri((new /*checked (origin: akra)>>*/akra.util.URI((sFilename))));
                 if (arguments.length > 2) {
                     this.open(sFilename, sMode, fnCallback);
                 }
@@ -17246,7 +17536,7 @@ var akra;
                 var hasMode = !(/*checked (origin: akra)>>*/akra.typeOf((iMode)) === "function");
                 if (arguments.length < 3) {
                     if ((typeof (arguments[0]) === "string")) {
-                        this.setAndValidateUri((new akra.util.URI((sFilename))));
+                        this.setAndValidateUri((new /*checked (origin: akra)>>*/akra.util.URI((sFilename))));
                         fnCallback = arguments[1];
                     } else if ((typeof (arguments[0]) === "number")) {
                         this._iMode = arguments[0];
@@ -17264,11 +17554,11 @@ var akra;
                 fnCallback = fnCallback || LocalFile.defaultCallback;
                 if (this.isOpened()) {
                     akra.logger.setSourceLocation("LocalFile.ts", 216);
-                    akra.logger.warning("file already opened: " + (akra.util.pathinfo((this)._pUri.path).basename));
+                    akra.logger.warning("file already opened: " + (/*checked (origin: akra)>>*/akra.util.pathinfo((this)._pUri.path).basename));
                     ;
                     (fnCallback)(null, this._pFile);
                 }
-                this.setAndValidateUri((new akra.util.URI((arguments[0]))));
+                this.setAndValidateUri((new /*checked (origin: akra)>>*/akra.util.URI((arguments[0]))));
                 if (hasMode) {
                     this._iMode = ((typeof (arguments[1]) === "string") ? io.filemode(arguments[1]) : arguments[1]);
                 }
@@ -17544,10 +17834,10 @@ var akra;
                 return true;
             };
             LocalFile.prototype.setAndValidateUri = function (sFilename) {
-                var pUri = (new akra.util.URI((sFilename)));
+                var pUri = (new /*checked (origin: akra)>>*/akra.util.URI((sFilename)));
                 var pUriLocal;
                 if (pUri.protocol === "filesystem") {
-                    pUriLocal = (new akra.util.URI((pUri.path)));
+                    pUriLocal = (new /*checked (origin: akra)>>*/akra.util.URI((pUri.path)));
                     akra.logger.setSourceLocation("LocalFile.ts", 528);
                     akra.logger.assert(!(pUriLocal.protocol && pUriLocal.host != akra.info.uri.host), "Поддерживаются только локальные файлы в пределах текущего домена.");
                     ;
@@ -17558,7 +17848,7 @@ var akra;
                     akra.logger.setSourceLocation("LocalFile.ts", 537);
                     akra.logger.assert(pUri.host === "temporary", "Поддерживаются только файловые системы типа \"temporary\".");
                     ;
-                    this._pUri = (new akra.util.URI((pFolders.join("/"))));
+                    this._pUri = (new /*checked (origin: akra)>>*/akra.util.URI((pFolders.join("/"))));
                 } else {
                     akra.logger.setSourceLocation("LocalFile.ts", 542);
                     akra.logger.error("used non local uri");
@@ -18343,7 +18633,7 @@ var akra;
                         this._eFormat = eFormat;
                         this._nMipMaps = nMipMaps;
                         this._iFlags = 0;
-                        if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 2 /* COMPRESSED */ ) > 0)) {
+                        if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 2 /* COMPRESSED */ ) > 0)) {
                             this._iFlags |= 1 /* COMPRESSED */ ;
                         }
                         if (this._iDepth != 1) {
@@ -18371,7 +18661,7 @@ var akra;
                         return this.getPixelSize() * 8;
                     };
                     Img.prototype.getPixelSize = function () {
-                        return (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this._eFormat)).elemBytes);
+                        return (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._eFormat)).elemBytes);
                     };
                     Img.prototype.getData = function () {
                         return this._pBuffer;
@@ -18384,13 +18674,13 @@ var akra;
                         }
                     };
                     Img.prototype.hasAlpha = function () {
-                        return (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 1 /* HASALPHA */ ) > 0);
+                        return (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 1 /* HASALPHA */ ) > 0);
                     };
                     Img.prototype.isCompressed = function () {
-                        return (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 2 /* COMPRESSED */ ) > 0);
+                        return (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 2 /* COMPRESSED */ ) > 0);
                     };
                     Img.prototype.isLuminance = function () {
-                        return (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 32 /* LUMINANCE */ ) > 0);
+                        return (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 32 /* LUMINANCE */ ) > 0);
                     };
                     Img.prototype.getColorAt = function (pColor, x, y, z) {
                         if (typeof z === "undefined") { z = 0; }
@@ -18401,7 +18691,7 @@ var akra;
                     Img.prototype.setColorAt = function (pColor, x, y, z) {
                         if (typeof z === "undefined") { z = 0; }
                         var iStart = this.getPixelSize() * (z * this._iWidth * this._iHeight + this._iWidth * y + x);
-                        (pixelUtil.packColourFloat((pColor).r, (pColor).g, (pColor).b, (pColor).a, (this._eFormat), (this._pBuffer.subarray(iStart, iStart + this.getPixelSize()))));
+                        (/*checked (origin: pixelUtil)>>*/akra.pixelUtil.packColourFloat((pColor).r, (pColor).g, (pColor).b, (pColor).a, (this._eFormat), (this._pBuffer.subarray(iStart, iStart + this.getPixelSize()))));
                     };
                     Img.prototype.getPixels = function (iFace, iMipMap) {
                         // Image data is arranged as:
@@ -18414,13 +18704,13 @@ var akra;
                         // etc
                         if (iMipMap > ((this)._nMipMaps)) {
                             akra.logger.setSourceLocation("resources/Img.ts", 442);
-                            akra.logger.warning("Mipmap index out of range");
+                            akra.logger.warning("Mipmap index out of range", iMipMap, ((this)._nMipMaps));
                             ;
                             return null;
                         }
                         if (iFace >= /*not inlined, because first statement is not return/call/dot(cur st.: If)*/this.numFaces) {
                             akra.logger.setSourceLocation("resources/Img.ts", 447);
-                            akra.logger.warning("Face index out of range");
+                            akra.logger.warning("Face index out of range", iFace, /*not inlined, because first statement is not return/call/dot(cur st.: If)*/this.numFaces);
                             ;
                             return null;
                         }
@@ -18492,6 +18782,31 @@ var akra;
                         }
                         return iSize;
                     };
+                    Img.getMaxMipmaps = function getMaxMipmaps(iWidth, iHeight, iDepth, eFormat) {
+                        var iCount = 0;
+                        if ((iWidth > 0) && (iHeight > 0)) {
+                            do {
+                                if (iWidth > 1) {
+                                    iWidth = iWidth >>> 1;
+                                }
+                                if (iHeight > 1) {
+                                    iHeight = iHeight >>> 1;
+                                }
+                                if (iDepth > 1) {
+                                    iDepth = iDepth >>> 1;
+                                }
+                                /*
+                                NOT needed, compressed formats will have mipmaps up to 1x1
+                                if(PixelUtil::isValidExtent(width, height, depth, format))
+                                count ++;
+                                else
+                                break;
+                                */
+                                iCount++;
+                            } while(!(iWidth === 1 && iHeight === 1 && iDepth === 1));
+                        }
+                        return iCount;
+                    };
                     return Img;
                 })(pool.ResourcePoolItem);
                 resources.Img = Img;                
@@ -18530,7 +18845,7 @@ var akra;
                         return this._pTechnique.totalOwnPasses();
                     };
                     Component.prototype.getHash = /** @inline */function (iShift, iPass) {
-                        return ((this)._pTechnique.getName()) + ">>" + iShift.toString() + ">>" + (iPass === 0xffffff ? "ALL" : iPass.toString());
+                        return ((this)._iGuid) + ">" + iShift.toString() + ">" + (iPass === 0xffffff ? "A" : iPass.toString());
                     };
                     return Component;
                 })(pool.ResourcePoolItem);
@@ -18566,7 +18881,7 @@ var akra;
     ;
     (function (ERenderDataOptions) {
         ERenderDataOptions._map = [];
-        /*<! использовать индекс на индекс упаковку да��ных*/
+        /*<! использовать индекс на индекс упаковку данных*/
         ERenderDataOptions.ADVANCED_INDEX = (1 << (0x10));
         ERenderDataOptions.SINGLE_INDEX = (1 << (0x11));
         /*<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.*/
@@ -18611,7 +18926,7 @@ var akra;
     ;
     (function (ERenderDataBufferOptions) {
         ERenderDataBufferOptions._map = [];
-        ERenderDataBufferOptions.VB_READABLE = (1 << (8 /* BACKUP_COPY */ ));
+        ERenderDataBufferOptions.VB_READABLE = 4 /* READABLE */ ;
         ERenderDataBufferOptions.RD_ADVANCED_INDEX = 65536 /* ADVANCED_INDEX */ ;
         ERenderDataBufferOptions.RD_SINGLE_INDEX = 131072 /* SINGLE_INDEX */ ;
         ERenderDataBufferOptions.RD_RENDERABLE = 262144 /* RENDERABLE */ ;
@@ -18637,9 +18952,7 @@ var akra;
         EEntityTypes.CAMERA = 4;
         EEntityTypes._map[5] = "SHADOW_CASTER";
         EEntityTypes.SHADOW_CASTER = 5;
-        EEntityTypes.LIGHT_PROJECT = 37;
-        EEntityTypes._map[38] = "LIGHT_OMNI_DIRECTIONAL";
-        EEntityTypes.LIGHT_OMNI_DIRECTIONAL = 38;
+        EEntityTypes.LIGHT = 37;
         EEntityTypes.SCENE_OBJECT = 64;
         EEntityTypes._map[65] = "MODEL";
         EEntityTypes.MODEL = 65;
@@ -18842,6 +19155,27 @@ var akra;
                 }
                 return false;
             };
+            Entity.prototype.children = function () {
+                var pChildren = [];
+                var pChild = ((this)._pChild);
+                while(!((pChild) === null)) {
+                    pChildren.push(pChild);
+                    pChild = pChild.sibling;
+                }
+                return pChildren;
+            };
+            Entity.prototype.childAt = function (i) {
+                var pChild = ((this)._pChild);
+                var n = 0;
+                while(!((pChild) === null)) {
+                    if (n == i) {
+                        return pChild;
+                    }
+                    n++;
+                    pChild = pChild.sibling;
+                }
+                return pChild;
+            };
             Entity.prototype.siblingCount = /**
             * Returns the current number of siblings of this object.
             */
@@ -18858,19 +19192,33 @@ var akra;
                 }
                 return iCount;
             };
+            Entity.prototype.descCount = function () {
+                var n = this.childCount();
+                var pChild = ((this)._pChild);
+                while(!((pChild) === null)) {
+                    n += pChild.descCount();
+                    pChild = pChild.sibling;
+                }
+                return n;
+            };
             Entity.prototype.childCount = /**
             * Returns the current number of children of this object
             */
             function () {
                 var iCount = 0;
-                var pNextChild = ((this)._pChild);
-                if (pNextChild) {
-                    ++iCount;
-                    while(pNextChild) {
-                        pNextChild = pNextChild.sibling;
-                        ++iCount;
-                    }
+                var pChild = ((this)._pChild);
+                while(!((pChild) === null)) {
+                    iCount++;
+                    pChild = pChild.sibling;
                 }
+                // var pNextChild: IEntity = this.child;
+                // if (pNextChild) {
+                //     ++ iCount;
+                //     while (pNextChild) {
+                //         pNextChild = pNextChild.sibling;
+                //         ++ iCount;
+                //     }
+                // }
                 return iCount;
             };
             Entity.prototype.isUpdated = /** @inline */function () {
@@ -19057,7 +19405,7 @@ var akra;
             };
             Entity.prototype.attachToParent = /** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
             function (pParent) {
-                var pParentPrev = this._pParent;
+                var pParentPrev = ((this)._pParent);
                 if (pParent != this._pParent) {
                     this.detachFromParent();
                     if (pParent) {
@@ -19136,7 +19484,7 @@ var akra;
                 return this._iGuid;
             };
             Entity._pEventTable = new akra.events.EventTable();
-            Entity.prototype.getEventTable = function () {
+            Entity.prototype.getEventTable = /** @inline */function () {
                 return Entity._pEventTable;
             };
             Entity.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -19146,14 +19494,14 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             Entity.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Entity._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Entity.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Entity._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Entity.prototype.attached = function () {
                 var _recivier = this;
-                this._pUnicastSlotMap = this._pUnicastSlotMap || (this.getEventTable()).findUnicastList(this._iGuid);
+                this._pUnicastSlotMap = this._pUnicastSlotMap || ((Entity._pEventTable)).findUnicastList(this._iGuid);
                 var _unicast = (this._pUnicastSlotMap).attached;
                 if (((_unicast) !== undefined)) {
                     _unicast.target ? _unicast.target[_unicast.callback](_recivier) : _unicast.listener(_recivier);
@@ -19161,7 +19509,7 @@ var akra;
             };
             Entity.prototype.detached = function () {
                 var _recivier = this;
-                this._pUnicastSlotMap = this._pUnicastSlotMap || (this.getEventTable()).findUnicastList(this._iGuid);
+                this._pUnicastSlotMap = this._pUnicastSlotMap || ((Entity._pEventTable)).findUnicastList(this._iGuid);
                 var _unicast = (this._pUnicastSlotMap).detached;
                 if (((_unicast) !== undefined)) {
                     _unicast.target ? _unicast.target[_unicast.callback](_recivier) : _unicast.listener(_recivier);
@@ -19169,7 +19517,7 @@ var akra;
             };
             Entity.prototype.childAdded = function (child) {
                 var _recivier = this;
-                this._pUnicastSlotMap = this._pUnicastSlotMap || (this.getEventTable()).findUnicastList(this._iGuid);
+                this._pUnicastSlotMap = this._pUnicastSlotMap || ((Entity._pEventTable)).findUnicastList(this._iGuid);
                 var _unicast = (this._pUnicastSlotMap).childAdded;
                 if (((_unicast) !== undefined)) {
                     _unicast.target ? _unicast.target[_unicast.callback](_recivier, child) : _unicast.listener(_recivier, child);
@@ -19177,7 +19525,7 @@ var akra;
             };
             Entity.prototype.childRemoved = function (child) {
                 var _recivier = this;
-                this._pUnicastSlotMap = this._pUnicastSlotMap || (this.getEventTable()).findUnicastList(this._iGuid);
+                this._pUnicastSlotMap = this._pUnicastSlotMap || ((Entity._pEventTable)).findUnicastList(this._iGuid);
                 var _unicast = (this._pUnicastSlotMap).childRemoved;
                 if (((_unicast) !== undefined)) {
                     _unicast.target ? _unicast.target[_unicast.callback](_recivier, child) : _unicast.listener(_recivier, child);
@@ -19543,8 +19891,6 @@ var akra;
                 if (typeof eType === "undefined") { eType = 3 /* SCENE_NODE */ ; }
                         _super.call(this, eType);
                 /**@protected*/ this._pScene = null;
-                pScene.connect(this, "attached", "nodeAttachment", 1 /* UNICAST */ );
-                pScene.connect(this, "detached", "nodeDetachment", 1 /* UNICAST */ );
                 ((this)._pScene = (pScene));
             }
             Object.defineProperty(SceneNode.prototype, "scene", {
@@ -19600,7 +19946,7 @@ var akra;
             };
             SceneNode.prototype.attachToParent = function (pParent) {
                 if ((pParent).scene !== this._pScene) {
-                    akra.logger.setSourceLocation("SceneNode.ts", 80);
+                    akra.logger.setSourceLocation("SceneNode.ts", 77);
                     akra.logger.warning("transfer of the scene node between trees scene - forbidden");
                     ;
                     return false;
@@ -19637,7 +19983,7 @@ var akra;
                     return this._sBone;
                 },
                 set: /** @inline */function (sBone) {
-                    return this._sBone;
+                    this._sBone = sBone;
                 },
                 enumerable: true,
                 configurable: true
@@ -19716,16 +20062,16 @@ var akra;
                 enumerable: true,
                 configurable: true
             });
-            Skeleton.prototype.getRootJoint = function () {
-                return this.getRootJoints()[0];
+            Skeleton.prototype.getRootJoint = /** @inline */function () {
+                return ((this)._pRootJoints)[0];
             };
-            Skeleton.prototype.getRootJoints = function () {
+            Skeleton.prototype.getRootJoints = /** @inline */function () {
                 return this._pRootJoints;
             };
-            Skeleton.prototype.getJointMap = function () {
+            Skeleton.prototype.getJointMap = /** @inline */function () {
                 return this._pJointMap;
             };
-            Skeleton.prototype.getNodeList = function () {
+            Skeleton.prototype.getNodeList = /** @inline */function () {
                 return this._pNodeList;
             };
             Skeleton.prototype.addRootJoint = function (pJoint) {
@@ -19745,31 +20091,33 @@ var akra;
                 return this.update();
             };
             Skeleton.prototype.update = function () {
-                var pRootJoints = this._pRootJoints;
-                var pJointList = this._pJointMap = {};
+                var pRootJoints = ((this)._pRootJoints);
+                var pJointMap = this._pJointMap = {};
                 var pNodeList = this._pNodeList = [];
                 //var pNotificationJoints = this._pNotificationJoints = [];
                 function findNodes(pNode) {
-                    var sJoint;
-                    if (pNode) {
-                        sJoint = pNode.boneName;
-                        if (sJoint) {
-                            akra.logger.setSourceLocation("model/Skeleton.ts", 88);
-                            akra.logger.assert(!pJointList[sJoint], 'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
+                    var sJoint = null;
+                    if (!((pNode) === null)) {
+                        if (((pNode).type == 2 /* JOINT */ )) {
+                            sJoint = (pNode).boneName;
+                        }
+                        if (!((sJoint) === null)) {
+                            akra.logger.setSourceLocation("model/Skeleton.ts", 90);
+                            akra.logger.assert(!pJointMap[sJoint], 'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
                             ;
-                            pJointList[sJoint] = pNode;
+                            pJointMap[sJoint] = pNode;
                         }
                         pNodeList.push(pNode);
-                        findNodes(pNode.sibling());
-                        findNodes(pNode.child());
+                        findNodes(pNode.sibling);
+                        findNodes(pNode.child);
                     }
                 }
                 for(var i = 0; i < pRootJoints.length; i++) {
                     findNodes(pRootJoints[i]);
                 }
                 ;
-                // for (var sJoint in pJointList) {
-                // 	var pJoint = pJointList[sJoint];
+                // for (var sJoint in pJointMap) {
+                // 	var pJoint = pJointMap[sJoint];
                 //    	if (pJoint.sibling() == null && pJoint.child() == null) {
                 //    		pNotificationJoints.push(pJoint);
                 //    	}
@@ -19831,8 +20179,8 @@ var akra;
 var akra;
 (function (akra) {
     (function (animation) {
-        var AnimationFrame = (function () {
-            function AnimationFrame(fTime, pMatrix, fWeight) {
+        var Frame = (function () {
+            function Frame(fTime, pMatrix, fWeight) {
                 this.time = 0.0;
                 this.weight = 1.0;
                 this.matrix = null;
@@ -19853,13 +20201,13 @@ var akra;
                 ;
                 this.matrix.decompose(this.rotation, this.scale, this.translation);
             }
-            AnimationFrame.prototype.toMatrix = function () {
+            Frame.prototype.toMatrix = function () {
                 return this.rotation.toMat4(this.matrix).setTranslation(this.translation).scaleRight(this.scale);
             };
-            AnimationFrame.prototype.toMatrixFromMatrix = function () {
+            Frame.prototype.toMatrixFromMatrix = function () {
                 return this.matrix;
             };
-            AnimationFrame.prototype.reset = function () {
+            Frame.prototype.reset = function () {
                 this.weight = 0.0;
                 this.time = 0.0;
                 var pData = this.matrix.data;
@@ -19870,7 +20218,7 @@ var akra;
                 this.scale.x = this.scale.y = this.scale.z = 0;
                 return this;
             };
-            AnimationFrame.prototype.set = function (pFrame) {
+            Frame.prototype.set = function (pFrame) {
                 //FIXME: расписать побыстрее
                 this.matrix.set(pFrame.matrix);
                 this.rotation.set(pFrame.rotation);
@@ -19879,7 +20227,7 @@ var akra;
                 this.time = pFrame.time;
                 this.weight = pFrame.weight;
             };
-            AnimationFrame.prototype.add = /**
+            Frame.prototype.add = /**
             * Добавить данные к фрейму с их весом.
             * После данного метода фрейму потребуется нормализация!!!!
             */
@@ -19899,7 +20247,7 @@ var akra;
                 }
                 return this;
             };
-            AnimationFrame.prototype.addMatrix = function (pFrame) {
+            Frame.prototype.addMatrix = function (pFrame) {
                 var pMatData = pFrame.matrix.data;
                 var fWeight = pFrame.weight;
                 var pResData = this.matrix.data;
@@ -19909,11 +20257,11 @@ var akra;
                 this.weight += fWeight;
                 return this;
             };
-            AnimationFrame.prototype.mult = function (fScalar) {
+            Frame.prototype.mult = function (fScalar) {
                 this.weight *= fScalar;
                 return this;
             };
-            AnimationFrame.prototype.normilize = function () {
+            Frame.prototype.normilize = function () {
                 var fScalar = 1.0 / this.weight;
                 this.scale.x *= fScalar;
                 this.scale.y *= fScalar;
@@ -19923,7 +20271,7 @@ var akra;
                 this.translation.z *= fScalar;
                 return this;
             };
-            AnimationFrame.prototype.normilizeMatrix = function () {
+            Frame.prototype.normilizeMatrix = function () {
                 var fScalar = 1.0 / this.weight;
                 var pData = this.matrix.data;
                 pData[0] *= fScalar;
@@ -19944,7 +20292,7 @@ var akra;
                 pData[15] *= fScalar;
                 return this;
             };
-            AnimationFrame.prototype.interpolate = function (pStartFrame, pEndFrame, fBlend) {
+            Frame.prototype.interpolate = function (pStartFrame, pEndFrame, fBlend) {
                 var pResultData = this.matrix.data;
                 var pStartData = pStartFrame.matrix.data;
                 var pEndData = pEndFrame.matrix.data;
@@ -19954,7 +20302,7 @@ var akra;
                 }
                 ;
             };
-            AnimationFrame.prototype.interpolateMatrix = function (pStartFrame, pEndFrame, fBlend) {
+            Frame.prototype.interpolateMatrix = function (pStartFrame, pEndFrame, fBlend) {
                 var pResultData = this.matrix.data;
                 var pStartData = pStartFrame.matrix.data;
                 var pEndData = pEndFrame.matrix.data;
@@ -19964,38 +20312,45 @@ var akra;
                 }
                 ;
             };
-            Object.defineProperty(AnimationFrame, "stackCeil", {
+            Object.defineProperty(Frame, "stackCeil", {
                 get: function () {
-                    AnimationFrame.stackPosition = AnimationFrame.stackPosition === AnimationFrame.stackSize - 1 ? 0 : AnimationFrame.stackPosition;
-                    return AnimationFrame.stack[AnimationFrame.stackPosition++];
+                    Frame.stackPosition = Frame.stackPosition === Frame.stackSize - 1 ? 0 : Frame.stackPosition;
+                    return Frame.stack[Frame.stackPosition++];
                 },
                 enumerable: true,
                 configurable: true
             });
-            AnimationFrame.stackSize = 4 * 4096;
-            AnimationFrame.stackPosition = 0;
-            AnimationFrame.stack = (function () {
-                var pStack = new Array(AnimationFrame.stackSize);
-                for(var i = 0; i < AnimationFrame.stackSize; i++) {
-                    pStack[i] = new AnimationFrame();
+            Frame.stackSize = 4 * 4096;
+            Frame.stackPosition = 0;
+            Frame.stack = (function () {
+                var pStack = new Array(Frame.stackSize);
+                for(var i = 0; i < Frame.stackSize; i++) {
+                    pStack[i] = new Frame();
                 }
                 return pStack;
             })();
-            return AnimationFrame;
+            return Frame;
         })();
-        animation.AnimationFrame = AnimationFrame;        
-        function animationFrame() {
-            return null;
+        animation.Frame = Frame;        
+        /** @inline */function animationFrame() {
+            return Frame.stackCeil;
         }
         animation.animationFrame = animationFrame;
+        function createFrame(fTime, pMatrix, fWeight) {
+            if (typeof fTime === "undefined") { fTime = 0.0; }
+            if (typeof pMatrix === "undefined") { pMatrix = null; }
+            if (typeof fWeight === "undefined") { fWeight = 1.0; }
+            return new Frame(fTime, pMatrix, fWeight);
+        }
+        animation.createFrame = createFrame;
     })(akra.animation || (akra.animation = {}));
     var animation = akra.animation;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
     (function (animation) {
-        var AnimationTrack = (function () {
-            function AnimationTrack(sTarget) {
+        var Track = (function () {
+            function Track(sTarget) {
                 if (typeof sTarget === "undefined") { sTarget = null; }
                 this._sTarget = null;
                 this._pTarget = null;
@@ -20003,14 +20358,21 @@ var akra;
                 this._eInterpolationType = 0 /* MATRIX_LINEAR */ ;
                 this._sTarget = sTarget;
             }
-            Object.defineProperty(AnimationTrack.prototype, "target", {
+            Object.defineProperty(Track.prototype, "totalFrames", {
+                get: /** @inline */function () {
+                    return this._pKeyFrames.length;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Track.prototype, "target", {
                 get: /** @inline */function () {
                     return this._pTarget;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(AnimationTrack.prototype, "targetName", {
+            Object.defineProperty(Track.prototype, "targetName", {
                 get: /** @inline */function () {
                     return this._sTarget;
                 },
@@ -20020,20 +20382,20 @@ var akra;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(AnimationTrack.prototype, "duration", {
+            Object.defineProperty(Track.prototype, "duration", {
                 get: /** @inline */function () {
-                    return this._pKeyFrames.last.fTime;
+                    return ((this._pKeyFrames.last)).time;
                 },
                 enumerable: true,
                 configurable: true
             });
-            AnimationTrack.prototype.keyFrame = function (fTime, pMatrix) {
+            Track.prototype.keyFrame = function (fTime, pMatrix) {
                 var pFrame;
                 var iFrame;
                 var pKeyFrames = this._pKeyFrames;
                 var nTotalFrames = pKeyFrames.length;
                 if (arguments.length > 1) {
-                    pFrame = new akra.animation.AnimationFrame(fTime, pMatrix);
+                    pFrame = animation.createFrame(fTime, pMatrix);
                 } else {
                     pFrame = arguments[0];
                 }
@@ -20044,13 +20406,13 @@ var akra;
                 }
                 return true;
             };
-            AnimationTrack.prototype.getKeyFrame = function (iFrame) {
-                akra.logger.setSourceLocation("animation/AnimationTrack.ts", 65);
-                akra.logger.assert(iFrame < this._pKeyFrames.length, 'iFrame must be less then number of total jey frames.');
+            Track.prototype.getKeyFrame = function (iFrame) {
+                akra.logger.setSourceLocation("animation/Track.ts", 70);
+                akra.logger.assert(iFrame < ((this)._pKeyFrames.length), 'iFrame must be less then number of total jey frames.');
                 ;
                 return this._pKeyFrames[iFrame];
             };
-            AnimationTrack.prototype.findKeyFrame = function (fTime) {
+            Track.prototype.findKeyFrame = function (fTime) {
                 var pKeyFrames = this._pKeyFrames;
                 var nTotalFrames = pKeyFrames.length;
                 if (pKeyFrames[nTotalFrames - 1].time == fTime) {
@@ -20064,7 +20426,7 @@ var akra;
                 }
                 return -1;
             };
-            AnimationTrack.prototype.bind = function (pJoint, pSkeleton) {
+            Track.prototype.bind = function (pJoint, pSkeleton) {
                 var pNode = null, pRootNode;
                 var sJoint;
                 switch(arguments.length) {
@@ -20091,14 +20453,14 @@ var akra;
                 this._pTarget = pNode;
                 return ((pNode) != null);
             };
-            AnimationTrack.prototype.frame = function (fTime) {
+            Track.prototype.frame = function (fTime) {
                 var iKey1 = 0, iKey2 = 0;
                 var fScalar;
                 var fTimeDiff;
                 var pKeys = this._pKeyFrames;
                 var nKeys = pKeys.length;
-                var pFrame = akra.animation.animationFrame();
-                akra.logger.setSourceLocation("animation/AnimationTrack.ts", 137);
+                var pFrame = (/*checked (origin: animation)>>*/akra.animation.Frame.stackCeil);
+                akra.logger.setSourceLocation("animation/Track.ts", 142);
                 akra.logger.assert(nKeys > 0, 'no frames :(');
                 ;
                 if (nKeys === 1) {
@@ -20122,11 +20484,15 @@ var akra;
                 pFrame.weight = 1.0;
                 return pFrame;
             };
-            return AnimationTrack;
+            Track.prototype.toString = function () {
+                var s = "target: " + ((this)._sTarget) + ", duration: " + ((((this)._pKeyFrames.last)).time) + ", frames: " + ((this)._pKeyFrames.length);
+                return s;
+            };
+            return Track;
         })();        
         function createTrack(sName) {
             if (typeof sName === "undefined") { sName = null; }
-            return new AnimationTrack(sName);
+            return new Track(sName);
         }
         animation.createTrack = createTrack;
     })(akra.animation || (akra.animation = {}));
@@ -20134,28 +20500,61 @@ var akra;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
+    ;
+    ;
+    ;
+    ;
+    (function (EAnimationTypes) {
+        EAnimationTypes._map = [];
+        EAnimationTypes._map[0] = "ANIMATION";
+        EAnimationTypes.ANIMATION = 0;
+        EAnimationTypes._map[1] = "LIST";
+        EAnimationTypes.LIST = 1;
+        EAnimationTypes._map[2] = "CLIP";
+        EAnimationTypes.CLIP = 2;
+        EAnimationTypes._map[3] = "CONTAINER";
+        EAnimationTypes.CONTAINER = 3;
+        EAnimationTypes._map[4] = "BLEND";
+        EAnimationTypes.BLEND = 4;
+    })(akra.EAnimationTypes || (akra.EAnimationTypes = {}));
+    var EAnimationTypes = akra.EAnimationTypes;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
     (function (animation) {
-        var AnimationBase = (function () {
-            function AnimationBase() {
+        var Base = (function () {
+            function Base(eType, sName) {
+                if (typeof sName === "undefined") { sName = null; }
                 /**@protected*/ this._pTargetMap = {};
                 /**@protected*/ this._pTargetList = [];
                 /**@protected*/ this._fDuration = 0.0;
                 /**@protected*/ this._iGuid = akra.sid();
                 /**@protected*/ this._pUnicastSlotMap = null;
                 /**@protected*/ this._pBroadcastSlotList = null;
-                this._sName = ("animation-" + akra.now() + "-" + ((this)._iGuid));
+                this._sName = sName || ("animation-" + akra.now() + "-" + ((this)._iGuid));
+                this._eType = eType;
             }
-            Object.defineProperty(AnimationBase.prototype, "duration", {
+            Object.defineProperty(Base.prototype, "type", {
+                get: /** @inline */function () {
+                    return this._eType;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Base.prototype, "duration", {
                 get: /** @inline */function () {
                     return this._fDuration;
                 },
                 set: /** @inline */function (fValue) {
+                    akra.logger.setSourceLocation("Base.ts", 40);
+                    akra.logger.log("new duration > " + fValue);
+                    ;
                     this._fDuration = fValue;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(AnimationBase.prototype, "name", {
+            Object.defineProperty(Base.prototype, "name", {
                 get: /** @inline */function () {
                     return this._sName;
                 },
@@ -20165,25 +20564,25 @@ var akra;
                 enumerable: true,
                 configurable: true
             });
-            AnimationBase.prototype.play = function (fRealTime) {
-                this.onplay(fRealTime);
+            Base.prototype.play = /** @inline */function (fRealTime) {
+                this.played(fRealTime);
             };
-            AnimationBase.prototype.stop = function (fRealTime) {
-                this.onstop(fRealTime);
+            Base.prototype.stop = /** @inline */function (fRealTime) {
+                this.stoped(fRealTime);
             };
-            AnimationBase.prototype.attach = function (pTarget) {
-                akra.logger.setSourceLocation("AnimationBase.ts", 54);
-                akra.logger.error("method AnimationBase::bind() must be overwritten.");
+            Base.prototype.attach = function (pTarget) {
+                akra.logger.setSourceLocation("Base.ts", 62);
+                akra.logger.error("method AnimationBase::attach() must be overwritten.");
                 ;
             };
-            AnimationBase.prototype.frame = function (sName, fRealTime) {
+            Base.prototype.frame = function (sName, fRealTime) {
                 return null;
             };
-            AnimationBase.prototype.apply = function (fRealTime) {
+            Base.prototype.apply = function (fRealTime) {
                 var pTargetList = this._pTargetList;
-                var pTarget;
-                var pFrame;
-                var pTransform;
+                var pTarget = null;
+                var pFrame = null;
+                var pTransform = null;
                 for(var i = 0; i < pTargetList.length; ++i) {
                     pFrame = this.frame(pTargetList[i].name, fRealTime);
                     pTarget = pTargetList[i].target;
@@ -20195,7 +20594,7 @@ var akra;
                 }
                 ;
             };
-            AnimationBase.prototype.addTarget = function (sName, pTarget) {
+            Base.prototype.addTarget = function (sName, pTarget) {
                 if (typeof pTarget === "undefined") { pTarget = null; }
                 //pTarget = pTarget || null;
                 var pPointer = this._pTargetMap[sName];
@@ -20212,21 +20611,21 @@ var akra;
                 this._pTargetMap[sName] = pPointer;
                 return pPointer;
             };
-            AnimationBase.prototype.setTarget = function (sName, pTarget) {
+            Base.prototype.setTarget = function (sName, pTarget) {
                 var pPointer = this._pTargetMap[sName];
                 pPointer.target = pTarget;
                 return pPointer;
             };
-            AnimationBase.prototype.getTarget = function (sTargetName) {
+            Base.prototype.getTarget = function (sTargetName) {
                 return this._pTargetMap[sTargetName];
             };
-            AnimationBase.prototype.getTargetList = /** @inline */function () {
+            Base.prototype.getTargetList = /** @inline */function () {
                 return this._pTargetList;
             };
-            AnimationBase.prototype.getTargetByName = /** @inline */function (sName) {
+            Base.prototype.getTargetByName = /** @inline */function (sName) {
                 return this._pTargetMap[sName];
             };
-            AnimationBase.prototype.targetNames = function () {
+            Base.prototype.targetNames = function () {
                 var pTargets = this._pTargetList;
                 var pTargetNames = [];
                 for(var i = 0; i < pTargets.length; ++i) {
@@ -20234,7 +20633,7 @@ var akra;
                 }
                 return pTargetNames;
             };
-            AnimationBase.prototype.targetList = function () {
+            Base.prototype.targetList = function () {
                 var pTargets = this._pTargetList;
                 var pTargetList = [];
                 for(var i = 0; i < pTargets.length; ++i) {
@@ -20242,7 +20641,7 @@ var akra;
                 }
                 return pTargetList;
             };
-            AnimationBase.prototype.jointList = function () {
+            Base.prototype.jointList = function () {
                 var pTargets = this._pTargetList;
                 var pJointList = [];
                 for(var i = 0; i < pTargets.length; ++i) {
@@ -20252,7 +20651,7 @@ var akra;
                 }
                 return pJointList;
             };
-            AnimationBase.prototype.grab = function (pAnimationBase, bRewrite) {
+            Base.prototype.grab = function (pAnimationBase, bRewrite) {
                 if (typeof bRewrite === "undefined") { bRewrite = true; }
                 var pAdoptTargets = pAnimationBase.getTargetList();
                 for(var i = 0; i < pAdoptTargets.length; ++i) {
@@ -20266,7 +20665,7 @@ var akra;
                 }
                 ;
             };
-            AnimationBase.prototype.createAnimationMask = function () {
+            Base.prototype.createAnimationMask = function () {
                 var pTargets = this.targetNames();
                 var pMask = {};
                 for(var i = 0; i < pTargets.length; ++i) {
@@ -20274,28 +20673,35 @@ var akra;
                 }
                 return pMask;
             };
-            AnimationBase.prototype.getGuid = /** @inline */function () {
+            Base.prototype.toString = function () {
+                var s = "\n";
+                s += "name         : " + ((this)._sName) + "\n";
+                s += "duration     : " + ((this)._fDuration) + " sec\n";
+                s += "total targets: " + this.targetList().length.toString() + "\n";
+                return s;
+            };
+            Base.prototype.getGuid = /** @inline */function () {
                 return this._iGuid;
             };
-            AnimationBase._pEventTable = new akra.events.EventTable();
-            AnimationBase.prototype.getEventTable = function () {
-                return AnimationBase._pEventTable;
+            Base._pEventTable = new akra.events.EventTable();
+            Base.prototype.getEventTable = /** @inline */function () {
+                return Base._pEventTable;
             };
-            AnimationBase.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
+            Base.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
                 return pSender.getEventTable().addDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
-            AnimationBase.prototype.disconnect = /** @inline */function (pSender, sSignal, sSlot, eType) {
+            Base.prototype.disconnect = /** @inline */function (pSender, sSignal, sSlot, eType) {
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
-            AnimationBase.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+            Base.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
+                return (Base._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
-            AnimationBase.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+            Base.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
+                return (Base._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
-            AnimationBase.prototype.onplay = function (fRealTime) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
-                var _broadcast = (this._pBroadcastSlotList).onplay;
+            Base.prototype.played = function (fRealTime) {
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Base._pEventTable))).broadcast[(this._iGuid)] = (((Base._pEventTable))).broadcast[(this._iGuid)] || {}));
+                var _broadcast = (this._pBroadcastSlotList).played;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
                     for(var i = 0; i < _broadcast.length; ++i) {
@@ -20303,9 +20709,9 @@ var akra;
                     }
                 }
             };
-            AnimationBase.prototype.onstop = function (fRealTime) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
-                var _broadcast = (this._pBroadcastSlotList).onstop;
+            Base.prototype.stoped = function (fRealTime) {
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Base._pEventTable))).broadcast[(this._iGuid)] = (((Base._pEventTable))).broadcast[(this._iGuid)] || {}));
+                var _broadcast = (this._pBroadcastSlotList).stoped;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
                     for(var i = 0; i < _broadcast.length; ++i) {
@@ -20313,9 +20719,9 @@ var akra;
                     }
                 }
             };
-            return AnimationBase;
+            return Base;
         })();
-        animation.AnimationBase = AnimationBase;        
+        animation.Base = Base;        
     })(akra.animation || (akra.animation = {}));
     var animation = akra.animation;
 })(akra || (akra = {}));
@@ -20325,10 +20731,8 @@ var akra;
         var Animation = (function (_super) {
             __extends(Animation, _super);
             function Animation(sName) {
-                if (typeof sName === "undefined") { sName = null; }
-                        _super.call(this);
+                        _super.call(this, 0 /* ANIMATION */ , sName);
                 this._pTracks = [];
-                ((this)._sName = (sName));
             }
             Object.defineProperty(Animation.prototype, "totalTracks", {
                 get: /** @inline */function () {
@@ -20347,7 +20751,7 @@ var akra;
                 var pTracks = this._pTracks;
                 for(var i = 0; i < pTracks.length; ++i) {
                     if (!pTracks[i].bind(pTarget)) {
-                        akra.logger.setSourceLocation("animation/Animation.ts", 36);
+                        akra.logger.setSourceLocation("animation/Animation.ts", 35);
                         akra.logger.log("cannot bind animation track [", i, "] to joint <", pTracks[i].target, ">");
                         ;
                     } else {
@@ -20355,10 +20759,12 @@ var akra;
                         pPointer.track = pTracks[i];
                     }
                 }
-                ;
             };
-            Animation.prototype.getTracks = function () {
+            Animation.prototype.getTracks = /** @inline */function () {
                 return this._pTracks;
+            };
+            Animation.prototype.getTrack = /** @inline */function (i) {
+                return this._pTracks[i];
             };
             Animation.prototype.frame = function (sName, fTime) {
                 var pPointer = ((this)._pTargetMap[(sName)]);
@@ -20375,13 +20781,429 @@ var akra;
                     }
                 }
             };
+            Animation.prototype.toString = function () {
+                var s = _super.prototype.toString.call(this);
+                s += "total tracks : " + ((this)._pTracks.length) + "\n";
+                for(var i = 0; i < ((this)._pTracks.length); ++i) {
+                    s += "\t" + i + ". " + ((this)._pTracks[(i)]) + "\n";
+                }
+                return s;
+            };
             return Animation;
-        })(animation.AnimationBase);        
+        })(animation.Base);        
+        /** @inline */function isAnimation(pAnimation) {
+            return pAnimation.type === 0 /* ANIMATION */ ;
+        }
+        animation.isAnimation = isAnimation;
         function createAnimation(sName) {
-            if (typeof sName === "undefined") { sName = null; }
             return new Animation(sName);
         }
         animation.createAnimation = createAnimation;
+    })(akra.animation || (akra.animation = {}));
+    var animation = akra.animation;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (animation) {
+        var Controller = (function () {
+            function Controller(iOptions) {
+                if (typeof iOptions === "undefined") { iOptions = 0; }
+                this._pAnimations = [];
+                this._iOptions = 0;
+                this._pActiveAnimation = null;
+                this._fnPlayAnimation = null;
+                /**@protected*/ this._iGuid = akra.sid();
+                this.setOptions(iOptions);
+            }
+            Object.defineProperty(Controller.prototype, "totalAnimations", {
+                get: /** @inline */function () {
+                    return this._pAnimations.length;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Controller.prototype, "active", {
+                get: /** @inline */function () {
+                    return this._pActiveAnimation;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Controller.prototype.setOptions = function (iOptions) {
+            };
+            Controller.prototype.addAnimation = function (pAnimation) {
+                if (this.findAnimation(pAnimation.name)) {
+                    akra.logger.setSourceLocation("animation/Controller.ts", 35);
+                    akra.logger.warning("Animation with name <" + pAnimation.name + "> already exists in this controller");
+                    ;
+                    return false;
+                }
+                //LOG('animation controller :: add animation >> ', pAnimation.name);
+                this._pAnimations.push(pAnimation);
+                this._pActiveAnimation = pAnimation;
+            };
+            Controller.prototype.removeAnimation = function (pAnimation) {
+                var pAnimation = this.findAnimation(arguments[0]);
+                var pAnimations = this._pAnimations;
+                for(var i = 0; i < pAnimations.length; ++i) {
+                    if (pAnimations[i] === pAnimation) {
+                        pAnimations.splice(i, 1);
+                        akra.logger.setSourceLocation("animation/Controller.ts", 55);
+                        akra.logger.log("animation controller :: remove animation >> ", pAnimation.name);
+                        ;
+                        return true;
+                    }
+                }
+                return false;
+            };
+            Controller.prototype.findAnimation = function (pAnimation) {
+                var pAnimations = this._pAnimations;
+                var iAnimation;
+                var sAnimation;
+                if ((typeof (arguments[0]) === "string")) {
+                    sAnimation = arguments[0];
+                    for(var i = 0; i < pAnimations.length; ++i) {
+                        if (pAnimations[i].name === sAnimation) {
+                            return pAnimations[i];
+                        }
+                    }
+                    return null;
+                }
+                if (typeof arguments[0] === 'number') {
+                    iAnimation = arguments[0];
+                    return pAnimations[iAnimation] || null;
+                }
+                return arguments[0];
+            };
+            Controller.prototype.getAnimation = /** @inline */function (iAnim) {
+                return this._pAnimations[iAnim];
+            };
+            Controller.prototype.setAnimation = function (iAnimation, pAnimation) {
+                akra.logger.setSourceLocation("animation/Controller.ts", 96);
+                akra.logger.assert(iAnimation < this._pAnimations.length, 'invalid animation slot');
+                ;
+                this._pAnimations[iAnimation] = pAnimation;
+            };
+            Controller.prototype.attach = function (pTarget) {
+                var pAnimations = this._pAnimations;
+                for(var i = 0; i < pAnimations.length; ++i) {
+                    pAnimations[i].attach(pTarget);
+                }
+            };
+            Controller.prototype.play = function (pAnimation, fRealTime) {
+                var pAnimationNext = this.findAnimation(arguments[0]);
+                var pAnimationPrev = this._pActiveAnimation;
+                if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
+                    if (this._fnPlayAnimation) {
+                        this._fnPlayAnimation(pAnimationNext);
+                    }
+                    //LOG('controller::play(', pAnimationNext.name, ')', pAnimationNext);
+                    if (pAnimationPrev) {
+                        pAnimationPrev.stop(fRealTime);
+                    }
+                    pAnimationNext.play(fRealTime);
+                    this._pActiveAnimation = pAnimationNext;
+                    return true;
+                }
+                return false;
+            };
+            Controller.prototype.update = function (fTime) {
+                if (this._pActiveAnimation) {
+                    this._pActiveAnimation.apply(fTime);
+                }
+            };
+            Controller.prototype.toString = function (bFullInfo) {
+                if (typeof bFullInfo === "undefined") { bFullInfo = false; }
+                var s = "\n";
+                s += "ANIMATION CONTROLLER (total: " + ((this)._pAnimations.length) + " animations)\n";
+                s += "-----------------------------------------------------\n";
+                for(var i = 0; i < ((this)._pAnimations.length); ++i) {
+                    s += ((this)._pAnimations[(i)]).toString();
+                }
+                return s;
+            };
+            Controller.prototype.getGuid = /** @inline */function () {
+                return this._iGuid;
+            };
+            return Controller;
+        })();
+        animation.Controller = Controller;        
+        function createController(iOptions) {
+            return new Controller(iOptions);
+        }
+        animation.createController = createController;
+    })(akra.animation || (akra.animation = {}));
+    var animation = akra.animation;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (animation) {
+        var Blend = (function (_super) {
+            __extends(Blend, _super);
+            function Blend(sName) {
+                        _super.call(this, 4 /* BLEND */ , sName);
+                this.duration = 0;
+                this._pAnimationList = [];
+            }
+            Object.defineProperty(Blend.prototype, "totalAnimations", {
+                get: /** @inline */function () {
+                    return this._pAnimationList.length;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Blend.prototype.play = function (fRealTime) {
+                var pAnimationList = this._pAnimationList;
+                var n = pAnimationList.length;
+                for(var i = 0; i < n; ++i) {
+                    pAnimationList[i].realTime = fRealTime;
+                    pAnimationList[i].time = fRealTime * pAnimationList[i].acceleration;
+                }
+                this.played(fRealTime);
+            };
+            Blend.prototype.stop = function () {
+                this.stoped(0.);
+            };
+            Blend.prototype.attach = function (pTarget) {
+                var pAnimationList = this._pAnimationList;
+                for(var i = 0; i < pAnimationList.length; ++i) {
+                    var pAnim = pAnimationList[i].animation;
+                    pAnim.attach(pTarget);
+                    this.grab(pAnim, true);
+                }
+            };
+            Blend.prototype.addAnimation = function (pAnimation, fWeight, pMask) {
+                akra.logger.setSourceLocation("animation/Blend.ts", 50);
+                akra.logger.assert(((pAnimation) !== undefined), 'animation must be setted.');
+                ;
+                this._pAnimationList.push(null);
+                return this.setAnimation(this._pAnimationList.length - 1, pAnimation, fWeight, pMask);
+            };
+            Blend.prototype.setAnimation = function (iAnimation, pAnimation, fWeight, pMask) {
+                if (typeof fWeight === "undefined") { fWeight = 1.0; }
+                if (typeof pMask === "undefined") { pMask = null; }
+                akra.logger.setSourceLocation("animation/Blend.ts", 58);
+                akra.logger.assert(iAnimation <= this._pAnimationList.length, 'invalid animation slot: ' + iAnimation + '/' + this._pAnimationList.length);
+                ;
+                var pPointer = this._pAnimationList[iAnimation];
+                var pAnimationList = this._pAnimationList;
+                if (!pAnimation) {
+                    pAnimationList[iAnimation] = null;
+                    return iAnimation;
+                }
+                if (!pPointer) {
+                    pPointer = {
+                        animation: pAnimation,
+                        weight: fWeight,
+                        mask: pMask,
+                        acceleration: 1.0,
+                        time: 0.0,
+                        realTime: 0.0
+                    };
+                    ((pAnimation).getEventTable().addDestination(((((pAnimation)))._iGuid), ("durationUpdated"), (this), ("_onDurationUpdate"), (undefined)));
+                    if (iAnimation == this._pAnimationList.length) {
+                        pAnimationList.push(pPointer);
+                    } else {
+                        pAnimationList[iAnimation] = pPointer;
+                    }
+                }
+                this.grab(pAnimation);
+                this.updateDuration();
+                return iAnimation;
+            };
+            Blend.prototype._onDurationUpdate = function (pAnimation, fDuration) {
+                this.updateDuration();
+            };
+            Blend.prototype.updateDuration = /**@protected*/ function () {
+                var fWeight = 0;
+                var fSumm = 0;
+                var pAnimationList = this._pAnimationList;
+                var n = pAnimationList.length;
+                for(var i = 0; i < n; ++i) {
+                    if (pAnimationList[i] === null) {
+                        continue;
+                    }
+                    fSumm += pAnimationList[i].weight * pAnimationList[i].animation.duration;
+                    fWeight += pAnimationList[i].weight;
+                }
+                if (fWeight === 0) {
+                    this.duration = 0;
+                } else {
+                    this.duration = fSumm / fWeight;
+                    for(var i = 0; i < n; ++i) {
+                        if (pAnimationList[i] === null) {
+                            continue;
+                        }
+                        pAnimationList[i].acceleration = pAnimationList[i].animation.duration / this.duration;
+                        //trace(pAnimationList[i].animation.name, '> acceleration > ', pAnimationList[i].acceleration);
+                                            }
+                }
+                this.durationUpdated(this.duration);
+            };
+            Blend.prototype.getAnimationIndex = function (sName) {
+                var pAnimationList = this._pAnimationList;
+                for(var i = 0; i < pAnimationList.length; i++) {
+                    if (pAnimationList[i].animation.name === sName) {
+                        return i;
+                    }
+                }
+                ;
+                return -1;
+            };
+            Blend.prototype.getAnimation = function (animation) {
+                var iAnimation = (typeof (animation) === "string") ? this.getAnimationIndex(animation) : animation;
+                return this._pAnimationList[iAnimation].animation;
+            };
+            Blend.prototype.getAnimationWeight = function (animation) {
+                var iAnimation = animation;
+                if ((typeof (animation) === "string")) {
+                    iAnimation = this.getAnimationIndex(animation);
+                }
+                return this._pAnimationList[iAnimation].weight;
+            };
+            Blend.prototype.setWeights = function () {
+                var fWeight;
+                var isModified = false;
+                var pAnimationList = this._pAnimationList;
+                for(var i = 0; i < arguments.length; ++i) {
+                    fWeight = arguments[i];
+                    if (fWeight < 0 || fWeight === null || !pAnimationList[i]) {
+                        continue;
+                    }
+                    if (pAnimationList[i].weight !== fWeight) {
+                        pAnimationList[i].weight = fWeight;
+                        isModified = true;
+                    }
+                }
+                if (isModified) {
+                    this.updateDuration();
+                }
+                return true;
+            };
+            Blend.prototype.setWeightSwitching = function (fWeight, iAnimationFrom, iAnimationTo) {
+                var pAnimationList = this._pAnimationList;
+                var isModified = false;
+                var fWeightInv = 1. - fWeight;
+                if (!pAnimationList[iAnimationFrom] || !pAnimationList[iAnimationTo]) {
+                    return false;
+                }
+                if (pAnimationList[iAnimationFrom].weight !== fWeightInv) {
+                    pAnimationList[iAnimationFrom].weight = fWeightInv;
+                    isModified = true;
+                }
+                if (pAnimationList[iAnimationTo].weight !== fWeight) {
+                    pAnimationList[iAnimationTo].weight = fWeight;
+                    isModified = true;
+                }
+                if (isModified) {
+                    this.updateDuration();
+                }
+                return true;
+            };
+            Blend.prototype.setAnimationWeight = function (animation, fWeight) {
+                var pAnimationList = this._pAnimationList;
+                var isModified = false;
+                if (arguments.length === 1) {
+                    fWeight = arguments[0];
+                    for(var i = 0; i < pAnimationList.length; i++) {
+                        pAnimationList[i].weight = fWeight;
+                    }
+                    ;
+                    isModified = true;
+                } else {
+                    var iAnimation = (typeof (animation) === "string") ? this.getAnimationIndex(animation) : animation;
+                    //trace('set weight for animation: ', iAnimation, 'to ', fWeight);
+                    if (pAnimationList[iAnimation].weight !== fWeight) {
+                        pAnimationList[iAnimation].weight = fWeight;
+                        isModified = true;
+                    }
+                }
+                if (isModified) {
+                    this.updateDuration();
+                }
+                return true;
+            };
+            Blend.prototype.setAnimationMask = function (animation, pMask) {
+                var iAnimation = (typeof (animation) === "string") ? this.getAnimationIndex(animation) : animation;
+                this._pAnimationList[iAnimation].mask = pMask;
+                return true;
+            };
+            Blend.prototype.getAnimationMask = function (animation) {
+                var iAnimation = (typeof (animation) === "string") ? this.getAnimationIndex(animation) : animation;
+                return this._pAnimationList[iAnimation].mask;
+            };
+            Blend.prototype.getAnimationAcceleration = function (animation) {
+                var iAnimation = (typeof (animation) === "string") ? this.getAnimationIndex(animation) : animation;
+                return this._pAnimationList[iAnimation].acceleration;
+            };
+            Blend.prototype.createAnimationMask = function (iAnimation) {
+                if (arguments.length === 0) {
+                    return _super.prototype.createAnimationMask.call(this);
+                }
+                if (typeof arguments[0] === 'string') {
+                    iAnimation = this.getAnimationIndex(arguments[0]);
+                }
+                var pAnimation = this._pAnimationList[iAnimation].animation;
+                return pAnimation.createAnimationMask();
+            };
+            Blend.prototype.frame = function (sName, fRealTime) {
+                var pAnimationList = this._pAnimationList;
+                var pResultFrame = (/*checked (origin: animation)>>*/akra.animation.Frame.stackCeil).reset();
+                var pFrame;
+                var pMask;
+                var pPointer;
+                var fAcceleration;
+                var fBoneWeight;
+                var fWeight;
+                var iAnim = 0;
+                for(var i = 0; i < pAnimationList.length; i++) {
+                    pPointer = pAnimationList[i];
+                    if (!pPointer) {
+                        continue;
+                    }
+                    fAcceleration = pPointer.acceleration;
+                    pMask = pPointer.mask;
+                    fBoneWeight = 1.0;
+                    pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
+                    pPointer.realTime = fRealTime;
+                    if (pMask) {
+                        fBoneWeight = ((pMask[sName]) !== undefined) ? pMask[sName] : 1.0;
+                    }
+                    fWeight = fBoneWeight * pPointer.weight;
+                    if (fWeight > 0.0) {
+                        pFrame = pPointer.animation.frame(sName, pPointer.time);
+                        if (pFrame) {
+                            iAnim++;
+                            //first, if 1
+                            pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);
+                        }
+                    }
+                }
+                if (pResultFrame.weight === 0.0) {
+                    return null;
+                }
+                return pResultFrame.normilize();
+            };
+            Blend.prototype.durationUpdated = function (fDuration) {
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((/*checked (origin: animation)>>*/akra.animation.Base._pEventTable))).broadcast[(this._iGuid)] = (((/*checked (origin: animation)>>*/akra.animation.Base._pEventTable))).broadcast[(this._iGuid)] || {}));
+                var _broadcast = (this._pBroadcastSlotList).durationUpdated;
+                var _recivier = this;
+                if (((_broadcast) !== undefined)) {
+                    for(var i = 0; i < _broadcast.length; ++i) {
+                        _broadcast[i].target ? _broadcast[i].target[_broadcast[i].callback](_recivier, fDuration) : _broadcast[i].listener(_recivier, fDuration);
+                    }
+                }
+            };
+            return Blend;
+        })(animation.Base);        
+        /** @inline */function isBlend(pAnimation) {
+            return pAnimation.type === 4 /* BLEND */ ;
+        }
+        animation.isBlend = isBlend;
+        function createBlend(sName) {
+            return new Blend(sName);
+        }
+        animation.createBlend = createBlend;
     })(akra.animation || (akra.animation = {}));
     var animation = akra.animation;
 })(akra || (akra = {}));
@@ -20393,6 +21215,7 @@ var akra;
                                                                                                                                                                                                                                                                                 // globals
                 var pSupportedVertexFormat;
                 var pSupportedTextureFormat;
+                var pSupportedColorFormat;
                 var pSupportedWeightFormat;
                 var pSupportedJointFormat;
                 var pSupportedInvBindMatrixFormat;
@@ -20417,6 +21240,7 @@ var akra;
                         };
                         this._pAsset = null;
                         this._pVisualScene = null;
+                        this._pAnimations = [];
                         this._sFilename = null;
                         this._pXMLRoot = null;
                     }
@@ -20701,39 +21525,39 @@ var akra;
                             case "surface":
                                 return this.COLLADASurface(pXML);
                             default:
-                                akra.logger.setSourceLocation("resources/Collada.ts", 580);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 591);
                                 akra.logger.error("unsupported COLLADA data type <" + sName + " />");
                                 ;
                         }
                         //return null;
                                             };
                     Collada.prototype.COLLADAGetSourceData = function (pSource, pFormat) {
-                        akra.logger.setSourceLocation("resources/Collada.ts", 588);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 599);
                         akra.logger.assert(((pSource) != null), "<source /> with expected format ", pFormat, " not founded");
                         ;
                         var nStride = calcFormatStride(pFormat);
                         var pTech = pSource.techniqueCommon;
-                        akra.logger.setSourceLocation("resources/Collada.ts", 593);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 604);
                         akra.logger.assert(((pTech) != null), "<source /> with id <" + pSource.id + "> has no <technique_common />");
                         ;
                         var pAccess = pTech.accessor;
                         var isFormatSupported;
                         if (!(pAccess.stride <= nStride)) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 600);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 611);
                             akra.logger.log(pAccess.stride, "/", nStride);
                             ;
                         }
-                        akra.logger.setSourceLocation("resources/Collada.ts", 605);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 616);
                         akra.logger.assert(pAccess.stride <= nStride, "<source /> width id" + pSource.id + " has unsupported stride: " + pAccess.stride);
                         ;
                         var fnUnsupportedFormatError = function () {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 608);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 619);
                             akra.logger.log("expected format: ", pFormat);
                             ;
-                            akra.logger.setSourceLocation("resources/Collada.ts", 609);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 620);
                             akra.logger.log("given format: ", pAccess.params);
                             ;
-                            akra.logger.setSourceLocation("resources/Collada.ts", 610);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 621);
                             akra.logger.error("accessor of <" + pSource.id + "> has unsupported format");
                             ;
                         };
@@ -20797,7 +21621,7 @@ var akra;
                                 pTransform.value = m4f;
                                 break;
                             default:
-                                akra.logger.setSourceLocation("resources/Collada.ts", 697);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 708);
                                 akra.logger.error("unsupported transform detected: " + pTransform.transform);
                                 ;
                         }
@@ -20893,6 +21717,7 @@ var akra;
                         var pLib = {};
                         var pData;
                         var sTag = pTemplate.element;
+                        var iAutoId = 0;
                         pLib[sTag] = {};
                         this.eachChild(pXML, function (pXMLData, sName) {
                             if (sTag !== sName) {
@@ -20902,7 +21727,7 @@ var akra;
                             if (((pData) === null)) {
                                 return;
                             }
-                            pLib[sTag][attr(pXMLData, 'id')] = pData;
+                            pLib[sTag][attr(pXMLData, 'id') || (sTag + "_" + (iAutoId++))] = pData;
                         });
                         return pLib;
                     };
@@ -20938,7 +21763,7 @@ var akra;
                         if ((typeof (iOffset) === "number") && pInput.offset === -1) {
                             pInput.offset = iOffset;
                         }
-                        akra.logger.setSourceLocation("resources/Collada.ts", 873);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 885);
                         akra.logger.assert((typeof (pInput.offset) === "number") && pInput.offset >= 0, "invalid offset detected");
                         ;
                         return pInput;
@@ -20996,7 +21821,7 @@ var akra;
                             var sSemantic = attr(pXMLData, "semantic");
                             pVertices.inputs[sSemantic] = this.COLLADAInput(pXMLData);
                         });
-                        akra.logger.setSourceLocation("resources/Collada.ts", 945);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 957);
                         akra.logger.assert(((pVertices.inputs["POSITION"]) != null), "semantics POSITION must be in the <vertices /> tag");
                         ;
                         this.link(pVertices);
@@ -21019,7 +21844,7 @@ var akra;
                                     pJoints.inputs["INV_BIND_MATRIX"] = _this.COLLADAInput(pXMLData);
                                     break;
                                 default:
-                                    akra.logger.setSourceLocation("resources/Collada.ts", 972);
+                                    akra.logger.setSourceLocation("resources/Collada.ts", 984);
                                     akra.logger.error("semantics are different from JOINT/INV_BIND_MATRIX is not supported in the <joints /> tag");
                                     ;
                             }
@@ -21066,7 +21891,7 @@ var akra;
                             case "polygons":
                                 pPolygons.p = this.polygonToTriangles(pXML, iStride);
                                 this.eachByTag(pXML, "ph", function (pXMLData) {
-                                    akra.logger.setSourceLocation("resources/Collada.ts", 1030);
+                                    akra.logger.setSourceLocation("resources/Collada.ts", 1042);
                                     akra.logger.error("unsupported polygon[polygon] subtype founded: <ph>");
                                     ;
                                 });
@@ -21084,7 +21909,7 @@ var akra;
                                 pPolygons.p = this.tristripToTriangles(pXML, iStride);
                                 break;
                             default:
-                                akra.logger.setSourceLocation("resources/Collada.ts", 1052);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 1064);
                                 akra.logger.error("unsupported polygon[" + sType + "] type founded");
                                 ;
                         }
@@ -21121,8 +21946,8 @@ var akra;
                             n += pVcountData[i];
                         }
                         n *= pVertexWeights.inputs.length;
-                        akra.logger.setSourceLocation("resources/Collada.ts", 1102);
-                        akra.logger.error(pVertexWeights.inputs.length === 2, "more than 2 inputs in <vertex_weights/> not supported currently");
+                        akra.logger.setSourceLocation("resources/Collada.ts", 1114);
+                        akra.logger.assert(pVertexWeights.inputs.length === 2, "more than 2 inputs in <vertex_weights/> not supported currently");
                         ;
                         pVData = new Array(n);
                         string2IntArray(stringData(firstChild(pXML, "v")), pVData);
@@ -21161,7 +21986,7 @@ var akra;
                                                 pPolygons.inputs[i].source = pPos.source;
                                                 pPolygons.inputs[i].semantics = pPos.semantics;
                                             } else {
-                                                akra.logger.setSourceLocation("resources/Collada.ts", 1152);
+                                                akra.logger.setSourceLocation("resources/Collada.ts", 1164);
                                                 akra.logger.error("<input /> with semantic VERTEX must refer to <vertices /> tag in same mesh.");
                                                 ;
                                             }
@@ -21228,9 +22053,12 @@ var akra;
                             morph: null
                         };
                         var pXMLData = firstChild(pXML, "skin");
-                        if (((pXMLData) === null)) {
+                        if (!((pXMLData) === null)) {
                             pController.skin = this.COLLADASkin(pXMLData);
                         } else {
+                            akra.logger.setSourceLocation("resources/Collada.ts", 1253);
+                            akra.logger.warning("Founded controller without skin element!");
+                            ;
                             return null;
                         }
                         this.link(pController);
@@ -21263,11 +22091,11 @@ var akra;
                             }
                             pImage.path = sPath;
                         } else if (((pXMLData = firstChild(pXML, "data")) != null)) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 1283);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 1296);
                             akra.logger.error("image loading from <data /> tag unsupported yet.");
                             ;
                         } else {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 1286);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 1299);
                             akra.logger.error("image with id: " + pImage.id + " has no data.");
                             ;
                         }
@@ -21369,14 +22197,14 @@ var akra;
                             case //FIXME: at now, all materials draws similar..
                             "blinn":
                             case "lambert":
-                                akra.logger.setSourceLocation("resources/Collada.ts", 1416);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 1429);
                                 akra.logger.warning("<blinn /> or <lambert /> material interprated as phong");
                                 ;
                             case "phong":
                                 pTech.value = this.COLLADAPhong(pValue);
                                 break;
                             default:
-                                akra.logger.setSourceLocation("resources/Collada.ts", 1422);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 1435);
                                 akra.logger.error("unsupported technique <" + pTech.type + " /> founded");
                                 ;
                         }
@@ -21410,7 +22238,7 @@ var akra;
                                 case "extra":
                                     break;
                                 default:
-                                    akra.logger.setSourceLocation("resources/Collada.ts", 1462);
+                                    akra.logger.setSourceLocation("resources/Collada.ts", 1475);
                                     akra.logger.error("<" + sName + " /> unsupported in effect section");
                                     ;
                             }
@@ -21521,7 +22349,7 @@ var akra;
                             _this.eachByTag(pInstMat, "bind_vertex_input", function (pXMLVertexInput) {
                                 var sInputSemantic = attr(pXMLVertexInput, "input_semantic");
                                 if (sInputSemantic !== "TEXCOORD") {
-                                    akra.logger.setSourceLocation("resources/Collada.ts", 1596);
+                                    akra.logger.setSourceLocation("resources/Collada.ts", 1609);
                                     akra.logger.error("unsupported vertex input semantics founded: " + sInputSemantic);
                                     ;
                                 }
@@ -21557,14 +22385,14 @@ var akra;
                         pInstance.effect = this.source(attr(pXML, "url"));
                         this.eachByTag(pXML, "technique_hint", function (pXMLData) {
                             pInstance.techniqueHint[attr(pXMLData, "platform")] = attr(pXMLData, "ref");
-                            akra.logger.setSourceLocation("resources/Collada.ts", 1638);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 1651);
                             akra.logger.warning("<technique_hint /> used, but will be ignored!");
                             ;
                         });
                         this.eachByTag(pXML, "setparam", function (pXMLData) {
                             //can be any type
                             pInstance.parameters[attr(pXMLData, "ref")] = _this.COLLADAData(pXMLData);
-                            akra.logger.setSourceLocation("resources/Collada.ts", 1644);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 1657);
                             akra.logger.warning("<setparam /> used, but will be ignored!");
                             ;
                         });
@@ -21594,7 +22422,7 @@ var akra;
                         var pXMLData = firstChild(pXML, "instance_visual_scene");
                         var pScene = this.source(attr(pXMLData, "url"));
                         if (((pXMLData) === null) || ((pScene) === null)) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 1680);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 1693);
                             akra.logger.warning("collada model: <" + this.getBasename() + "> has no visual scenes.");
                             ;
                         }
@@ -21622,7 +22450,7 @@ var akra;
                                     pSampler.inputs[sSemantic] = pInput;
                                     break;
                                 default:
-                                    akra.logger.setSourceLocation("resources/Collada.ts", 1714);
+                                    akra.logger.setSourceLocation("resources/Collada.ts", 1727);
                                     akra.logger.error("semantics are different from OUTPUT/INTERPOLATION/IN_TANGENT/OUT_TANGENT is not supported in the <sampler /> tag");
                                     ;
                             }
@@ -21635,7 +22463,7 @@ var akra;
                             target: this.target(attr(pXML, "target"))
                         };
                         if (((pChannel.target) === null) || ((pChannel.target.object) === null)) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 1729);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 1742);
                             akra.logger.warning("cound not setup animation channel for <" + attr(pXML, "target") + ">");
                             ;
                             return null;
@@ -21678,11 +22506,15 @@ var akra;
                             }
                         });
                         if (pAnimation.channels.length == 0 && pAnimation.animations.length == 0) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 1781);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 1794);
                             akra.logger.warning("animation with id \"" + pAnimation.id + "\" skipped, because channels/sub animation are empty");
                             ;
                             return null;
                         }
+                        akra.logger.setSourceLocation("resources/Collada.ts", 1799);
+                        akra.logger.assert(pXML.parentNode === firstChild(this.getXMLRoot(), "library_animations"), "sub animations not supported");
+                        ;
+                        this._pAnimations.push(pAnimation);
                         return pAnimation;
                     };
                     Collada.prototype.source = // collada mapping
@@ -21692,8 +22524,8 @@ var akra;
                         }
                         var pElement = this._pLinks[sUrl];
                         if (!((pElement) != null)) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 1798);
-                            akra.logger.warning("cannot find element with id: " + sUrl);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 1816);
+                            akra.logger.warning("cannot find element with id: " + sUrl + ("\n" + (new Error()).stack.split("\n").slice(1).join("\n")));
                             ;
                         }
                         return pElement || null;
@@ -21762,7 +22594,8 @@ var akra;
                                 pObject.value = (pSource.value).w;
                                 break;
                             case "ANGLE":
-                                //<rotate sid="rotateY">0 1 0 -4.56752</rotate>                    pObject.value = (<IVec4>pSource.value).w;
+                                pObject.value = (pSource.value).w;
+                                //<rotate sid="rotateY">0 1 0 -4.56752</rotate>
                                 break;
                         }
                         if (((pObject.value) != null)) {
@@ -21778,7 +22611,7 @@ var akra;
                             //pObject.value = Number(pMatches[2]) * 4 + Number(pMatches[1]);
                             pObject.value = Number(pMatches[1]) * 4 + Number(pMatches[2]);
                         }
-                        akra.logger.setSourceLocation("resources/Collada.ts", 1903);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 1922);
                         akra.logger.assert(((pObject.value) != null), "unsupported target value founded: " + sValue);
                         ;
                         return pObject;
@@ -21789,7 +22622,7 @@ var akra;
                         var sJoint = this.source(sNodeId).sid || null;
                         var pTrack = null;
                         var pSampler = pChannel.sampler;
-                        akra.logger.setSourceLocation("resources/Collada.ts", 1916);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 1935);
                         akra.logger.assert(((pSampler) != null), "could not find sampler for animation channel");
                         ;
                         var pInput = pSampler.inputs["INPUT"];
@@ -21799,7 +22632,7 @@ var akra;
                         var pOutputValues = pOutput.array;
                         var pFloatArray;
                         var pTransform = pChannel.target.object;
-                        var sTransform = pTransform.name;
+                        var sTransform = pTransform.transform;
                         var v4f;
                         var pValue;
                         var nMatrices;
@@ -21816,7 +22649,7 @@ var akra;
                                 //     v3f.Z = pOutputValues[i * 3 + 2];
                                 //     pTrack.keyFrame(pTimeMarks[i], [v3f.X, v3f.Y, v3f.Z]);
                                 // };
-                                akra.logger.setSourceLocation("resources/Collada.ts", 1947);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 1966);
                                 akra.logger.criticalError("TODO: implement animation translation");
                                 ;
                                 //TODO: implement animation translation
@@ -21829,7 +22662,7 @@ var akra;
                                 // for (var i = 0; i < pTimeMarks.length; ++ i) {
                                 //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
                                 // };
-                                akra.logger.setSourceLocation("resources/Collada.ts", 1960);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 1979);
                                 akra.logger.criticalError("TODO: implement animation rotation");
                                 ;
                                 //TODO: implement animation rotation
@@ -21840,7 +22673,7 @@ var akra;
                                     pTrack = akra.animation.createTrack(sJoint);
                                     nMatrices = pOutputValues.length / 16;
                                     pFloatArray = new Float32Array(pOutputValues);
-                                    akra.logger.setSourceLocation("resources/Collada.ts", 1971);
+                                    akra.logger.setSourceLocation("resources/Collada.ts", 1990);
                                     akra.logger.assert(nMatrices % 1 === 0.0, "incorrect output length of transformation data (" + pFloatArray.length + ")");
                                     ;
                                     for(var i = 0; i < nMatrices; i++) {
@@ -21854,13 +22687,13 @@ var akra;
                                     // for (var i = 0; i < pTimeMarks.length; ++i) {
                                     //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i]);
                                     // }
-                                    akra.logger.setSourceLocation("resources/Collada.ts", 1989);
+                                    akra.logger.setSourceLocation("resources/Collada.ts", 2008);
                                     akra.logger.criticalError("TODO: implement animation matrix modification");
                                     ;
                                 }
                                 break;
                             default:
-                                akra.logger.setSourceLocation("resources/Collada.ts", 1993);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 2012);
                                 akra.logger.error("unsupported animation typed founeed: " + sTransform);
                                 ;
                         }
@@ -21897,8 +22730,9 @@ var akra;
                         }
                         return pAnimation;
                     };
-                    Collada.prototype.buildAnimations = function (pAnimations, pAnimationsList) {
+                    Collada.prototype.buildAnimations = function (pAnimationsList) {
                         if (typeof pAnimationsList === "undefined") { pAnimationsList = []; }
+                        var pAnimations = this.getAnimations();
                         if (((pAnimations) === null)) {
                             return null;
                         }
@@ -21923,6 +22757,32 @@ var akra;
                         }
                         return pNode;
                     };
+                    Collada.prototype.buildDeclarationFromAccessor = function (sSemantic, pAccessor) {
+                        var pDecl = [];
+                        for(var i = 0; i < pAccessor.params.length; ++i) {
+                            var sUsage = pAccessor.params[i].name;
+                            var sType = pAccessor.params[i].type;
+                            akra.logger.setSourceLocation("resources/Collada.ts", 2101);
+                            akra.logger.assert(sType === "float", "Only float type supported for construction declaration from accessor");
+                            ;
+                            pDecl.push((({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((sUsage)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+})));
+                        }
+                        pDecl.push(({
+count: (pAccessor.params.length),
+type: (5126 /* FLOAT */ ),
+usage: (sSemantic),
+offset: (0)
+}));
+                        akra.logger.setSourceLocation("resources/Collada.ts", 2108);
+                        akra.logger.log("Automatically constructed declaration: ", akra.createVertexDeclaration(pDecl).toString());
+                        ;
+                        return pDecl;
+                    };
                     Collada.prototype.buildMaterials = // materials & meshes
                     function (pMesh, pGeometryInstance) {
                         var pMaterials = pGeometryInstance.material;
@@ -21934,27 +22794,27 @@ var akra;
                             var pMaterialInst = pMaterials[sMaterial];
                             var pInputMap = pMaterialInst.vertexInput;
                             // URL --> ID (#somebody ==> somebody)
-                            var sEffectId = pMaterialInst.url.substr(1);
-                            var pEffect = pEffects.effects[sEffectId];
+                            var sEffectId = pMaterialInst.material.instanceEffect.effect.id;
+                            var pEffect = pEffects.effect[sEffectId];
                             var pPhongMaterial = pEffect.profileCommon.technique.value;
                             var pMaterial = akra.material.create(sEffectId);
                             pMaterial.set(pPhongMaterial);
                             for(var j = 0; j < pMesh.length; ++j) {
-                                var pSubMesh = pMesh[j];
+                                var pSubMesh = pMesh.getSubset(j);
                                 //if (pSubMesh.surfaceMaterial.findResourceName() === sMaterial) {
                                 if (pSubMesh.material.name === sMaterial) {
                                     //setup materials
                                     pSubMesh.material.set(pMaterial);
                                     //FIXME: remove flex material setup(needs only demo with flexmats..)
                                     // pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
-                                    if (!pSubMesh.renderMethod.effect.isResourceLoaded()) {
-                                        pSubMesh.renderMethod.effect.create();
-                                    }
                                     pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
                                     pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
                                     //setup textures
                                     for(var sTextureType in pPhongMaterial.textures) {
                                         var pColladaTexture = pPhongMaterial.textures[sTextureType];
+                                        if (((pColladaTexture) === null)) {
+                                            continue;
+                                        }
                                         var pInput = pInputMap[pColladaTexture.texcoord];
                                         if (!((pInput) != null)) {
                                             continue;
@@ -21982,8 +22842,8 @@ var akra;
                         pSkeleton = akra.model.createSkeleton(pSkeletonsList[0]);
                         for(var i = 0; i < pSkeletonsList.length; ++i) {
                             var pJoint = (this.source(pSkeletonsList[i])).constructedNode;
-                            akra.logger.setSourceLocation("resources/Collada.ts", 2155);
-                            akra.logger.error(((pJoint).type == 2 /* JOINT */ ), "skeleton node must be joint");
+                            akra.logger.setSourceLocation("resources/Collada.ts", 2198);
+                            akra.logger.assert(((pJoint).type == 2 /* JOINT */ ), "skeleton node must be joint");
                             ;
                             pSkeleton.addRootJoint(pJoint);
                         }
@@ -22002,7 +22862,7 @@ var akra;
                             return this.buildMaterials(pMesh.clone(0 /* GEOMETRY_ONLY */  | 1 /* SHARED_GEOMETRY */ ), pGeometryInstance);
                         }
                         var iBegin = akra.now();
-                        pMesh = /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/this.getEngine().createMesh(sMeshName, /*|EMeshOptions.RD_ADVANCED_INDEX,  //0,//*/
+                        pMesh = /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/this.getEngine().createMesh(sMeshName, /*|EMeshOptions.RD_ADVANCED_INDEX,  0,*/
                         (akra.EMeshOptions.HB_READABLE), /*shared buffer, if supported*/
                         this.sharedBuffer());
                         var pPolyGroup = pNodeData.polygons;
@@ -22038,8 +22898,18 @@ var akra;
                                             }
                                             pData = pDataExt;
                                             pDecl = [
-                                                akra.VE_FLOAT3(sSemantic), 
-                                                akra.VE_END(16)
+                                                (({
+count: (3),
+type: (5126 /* FLOAT */ ),
+usage: ((sSemantic)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+})), 
+                                                (({
+count: (0),
+type: (5121 /* UNSIGNED_BYTE */ ),
+usage: (/*checked (origin: akra)>>*/akra.DeclUsages.END),
+offset: ((16))
+}))
                                             ];
                                             break;
                                         case akra.DeclUsages.TEXCOORD:
@@ -22053,12 +22923,18 @@ var akra;
                                                 sSemantic = "TEXCOORD0";
                                             }
                                             pDecl = [
-                                                akra.VE_CUSTOM(sSemantic, 5126 /* FLOAT */ , pInput.accessor.stride)
+                                                ({
+count: (pInput.accessor.stride),
+type: (5126 /* FLOAT */ ),
+usage: (sSemantic),
+offset: (/*checked (origin: akra)>>*/akra.MAX_INT32)
+})
                                             ];
                                             break;
                                         default:
-                                            akra.logger.setSourceLocation("resources/Collada.ts", 2245);
-                                            akra.logger.error("unsupported semantics used: " + sSemantic);
+                                            pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
+                                            akra.logger.setSourceLocation("resources/Collada.ts", 2289);
+                                            akra.logger.warning("unsupported semantics used: " + sSemantic);
                                             ;
                                     }
                                     pMeshData.allocateData(pDecl, pData);
@@ -22075,7 +22951,12 @@ var akra;
                             var pSurfaceMaterial = null;
                             var pSurfacePool = null;
                             for(var j = 0; j < pPolygons.inputs.length; ++j) {
-                                pDecl[j] = akra.VE_FLOAT(akra.DeclUsages.INDEX + (iIndex++));
+                                pDecl[j] = (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.INDEX + (iIndex++))),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}));
                             }
                             pSubMeshData.allocateIndex(pDecl, new Float32Array(pPolygons.p));
                             for(var j = 0; j < pDecl.length; ++j) {
@@ -22092,8 +22973,12 @@ var akra;
                             // }
                             pSubMesh.material.name = pPolygons.material;
                         }
-                        pMesh.addFlexMaterial("default");
-                        pMesh.setFlexMaterial("default");
+                        akra.logger.setSourceLocation("resources/Collada.ts", 2333);
+                        akra.logger.assert(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
+                        ;
+                        akra.logger.setSourceLocation("resources/Collada.ts", 2334);
+                        akra.logger.assert(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
+                        ;
                         //adding all data to cahce data
                         this.addMesh(pMesh);
                         return this.buildMaterials(pMesh, pGeometryInstance);
@@ -22120,12 +23005,15 @@ var akra;
                         pSkin.setBindMatrix(m4fBindMatrix);
                         pSkin.setBoneNames(pBoneList);
                         pSkin.setBoneOffsetMatrices(pBoneOffsetMatrices);
-                        pSkin.setSkeleton(pSkeleton);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 2370);
+                        akra.logger.assert(pSkin.setSkeleton(pSkeleton), "Could not set skeleton to skin.");
+                        ;
                         if (!pSkin.setVertexWeights(pVertexWeights.vcount, new Float32Array(pVertexWeights.v), new Float32Array(pVertexWeights.weightInput.array))) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 2330);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 2376);
                             akra.logger.error("cannot set vertex weight info to skin");
                             ;
                         }
+                        pMesh.setSkin(pSkin);
                         pMesh.setSkeleton(pSkeleton);
                         pSkeleton.attachMesh(pMesh);
                         return pMesh;
@@ -22137,7 +23025,7 @@ var akra;
                         for(var m = 0; m < pControllers.length; ++m) {
                             pMesh = this.buildSkinMesh(pControllers[m]);
                             pMeshList.push(pMesh);
-                            akra.logger.setSourceLocation("resources/Collada.ts", 2348);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 2395);
                             akra.logger.assert(((pMesh) != null), "cannot find instance <" + pControllers[m].url + ">\"s data");
                             ;
                             if (!((pSceneNode) === null)) {
@@ -22153,7 +23041,7 @@ var akra;
                         for(var m = 0; m < pGeometries.length; ++m) {
                             pMesh = this.buildMesh(pGeometries[m]);
                             pMeshList.push(pMesh);
-                            akra.logger.setSourceLocation("resources/Collada.ts", 2366);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 2413);
                             akra.logger.assert(((pMesh) != null), "cannot find instance <" + pGeometries[m].url + ">\"s data");
                             ;
                             if (!((pSceneNode) === null)) {
@@ -22168,7 +23056,7 @@ var akra;
                         this.findNode(pScene.nodes, null, function (pNode) {
                             var pModelNode = pNode.constructedNode;
                             if (((pModelNode) === null)) {
-                                akra.logger.setSourceLocation("resources/Collada.ts", 2384);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 2431);
                                 akra.logger.error("you must call buildScene() before call buildMeshes() or file corrupt");
                                 ;
                                 return;
@@ -22200,6 +23088,9 @@ var akra;
                         } else {
                             pSceneNode = pScene.createNode();
                         }
+                        akra.logger.setSourceLocation("resources/Collada.ts", 2470);
+                        akra.logger.assert(pSceneNode.create(), "Can not initialize scene node!");
+                        ;
                         pSceneNode.attachToParent(pParentNode);
                         return pSceneNode;
                     };
@@ -22208,7 +23099,7 @@ var akra;
                         var sJointSid = pNode.sid;
                         var sJointName = pNode.id;
                         var pSkeleton;
-                        akra.logger.setSourceLocation("resources/Collada.ts", 2435);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 2483);
                         akra.logger.assert(((pParentNode) != null), "parent node is null");
                         ;
                         if (((pJointNode) != null)) {
@@ -22218,6 +23109,9 @@ var akra;
                             return null;
                         }
                         pJointNode = pParentNode.scene.createJoint();
+                        akra.logger.setSourceLocation("resources/Collada.ts", 2495);
+                        akra.logger.assert(pJointNode.create(), "Can not initialize joint node!");
+                        ;
                         pJointNode.boneName = sJointSid;
                         pJointNode.attachToParent(pParentNode);
                         if (this.isJointsVisualizationNeeded()) {
@@ -22227,7 +23121,7 @@ var akra;
                             //     pJointNode);
                             // pSceneNode.name = sJointName + '[joint]';
                             // pSceneNode.setScale(0.02);
-                            akra.logger.setSourceLocation("resources/Collada.ts", 2457);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 2508);
                             akra.logger.criticalError("TODO: visualize joints...");
                             ;
                         }
@@ -22322,7 +23216,7 @@ var akra;
                     function () {
                         var pScene = this.getVisualScene();
                         if (((pScene) === null)) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 2581);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 2632);
                             akra.logger.warning("build complete, but visual scene not parsed correctly!");
                             ;
                             return;
@@ -22366,7 +23260,7 @@ var akra;
                                             };
                     Collada.prototype.prepareInput = function (pInput) {
                         var pSupportedFormat = getSupportedFormat(pInput.semantics);
-                        akra.logger.setSourceLocation("resources/Collada.ts", 2636);
+                        akra.logger.setSourceLocation("resources/Collada.ts", 2686);
                         akra.logger.assert(((pSupportedFormat) != null), "unsupported semantic used <" + pInput.semantics + ">");
                         ;
                         pInput.array = this.COLLADAGetSourceData(pInput.source, pSupportedFormat);
@@ -22378,6 +23272,9 @@ var akra;
                     };
                     Collada.prototype.isVisualSceneLoaded = /** @inline */function () {
                         return ((this._pVisualScene) != null);
+                    };
+                    Collada.prototype.isAnimationLoaded = /** @inline */function () {
+                        return this._pAnimations.length > 0;
                     };
                     Collada.prototype.isSceneNeeded = /** @inline */function () {
                         return this._pOptions.scene === true;
@@ -22397,6 +23294,9 @@ var akra;
                     Collada.prototype.getVisualScene = /** @inline */function () {
                         return this._pVisualScene;
                     };
+                    Collada.prototype.getAnimations = /** @inline */function () {
+                        return this._pAnimations;
+                    };
                     Collada.prototype.getAsset = /** @inline */function () {
                         return this._pAsset;
                     };
@@ -22404,7 +23304,7 @@ var akra;
                         return ((this._pLib[sLib]) != null);
                     };
                     Collada.prototype.isLibraryExists = /** @inline */function (sLib) {
-                        return false;
+                        return !((firstChild(this.getXMLRoot(), "library_animations")) === null);
                     };
                     Collada.prototype.getLibrary = /** @inline */function (sLib) {
                         return this._pLib[sLib] || null;
@@ -22437,7 +23337,7 @@ var akra;
                     Collada.prototype.parse = function (sXMLData, pOptions) {
                         if (typeof pOptions === "undefined") { pOptions = null; }
                         if (((sXMLData) === null)) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 2728);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 2785);
                             akra.logger.error("must be specified collada content.");
                             ;
                             return false;
@@ -22464,7 +23364,7 @@ var akra;
                             sFilename = this.findResourceName();
                         }
                         if (((((((this).iResourceFlags) & ((1 << ((1 /* LOADED */ ))))) != 0)))) {
-                            akra.logger.setSourceLocation("resources/Collada.ts", 2760);
+                            akra.logger.setSourceLocation("resources/Collada.ts", 2817);
                             akra.logger.warning("collada model already loaded");
                             ;
                             return false;
@@ -22475,7 +23375,7 @@ var akra;
                         /*not inlined, because first statement is not return/call/dot(cur st.: If)*/this.notifyUnloaded();
                         akra.io.fopen(sFilename).read(function (pErr, sXML) {
                             if (!((pErr) === null)) {
-                                akra.logger.setSourceLocation("resources/Collada.ts", 2773);
+                                akra.logger.setSourceLocation("resources/Collada.ts", 2830);
                                 akra.logger.error(pErr);
                                 ;
                             }
@@ -22485,27 +23385,44 @@ var akra;
                             }
                         });
                     };
-                    Collada.prototype.attachToScene = function (pNode) {
+                    Collada.prototype.attachToScene = function (parent, pController) {
+                        if (typeof pController === "undefined") { pController = null; }
                         var pSkeletons, pSkeleton;
                         var pPoses;
+                        var pScene;
+                        var pNode;
                         var pRoot;
                         var pSceneOutput = null;
                         var pAnimationOutput = null;
                         var pMeshOutput = null;
                         var pInitialPosesOutput = null;
-                        var pController = null;
-                        if (((pNode) === null)) {
+                        if (((parent) === null)) {
                             return false;
                         }
+                        if (parent instanceof akra.scene.Node) {
+                            //attach collada scene to give node
+                            pNode = parent;
+                            pScene = pNode.scene;
+                            pRoot = pNode;
+                        } else {
+                            //attaching collada scene to new node, that is child of scene root
+                            pScene = parent;
+                            pNode = pScene.getRootNode();
+                            pRoot = pScene.createNode();
+                            pRoot.setInheritance(2 /* ALL */ );
+                            if (!pRoot.attachToParent(pNode)) {
+                                return false;
+                            }
+                        }
                         if (this.isVisualSceneLoaded() && this.isSceneNeeded()) {
-                            pSceneOutput = this.buildScene(pNode);
+                            pSceneOutput = this.buildScene(pRoot);
                             pMeshOutput = this.buildMeshes();
                         }
                         if (this.isPoseExtractionNeeded()) {
                             pInitialPosesOutput = this.buildInitialPoses();
                         }
-                        if (this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
-                            pAnimationOutput = this.buildAnimations((this.getLibrary("library_animations")).animations);
+                        if (!((pController) === null) && this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
+                            pAnimationOutput = this.buildAnimations();
                             //дополним анимации начальными позициями костей
                             if (this.isPoseExtractionNeeded()) {
                                 pSkeletons = this.getSkeletonsOutput() || [];
@@ -22538,15 +23455,14 @@ var akra;
                                 }
                             }
                         }
+                        //clear all links from collada nodes to scene nodes
                         this.buildComplete();
-                        pRoot = pNode.scene.createNode();
-                        pRoot.setInheritance(2 /* ALL */ );
-                        if (!pRoot.attachToParent(pNode)) {
-                            return false;
+                        if (!((pController) === null) && !((pAnimationOutput) === null)) {
+                            for(var i = 0; i < pAnimationOutput.length; ++i) {
+                                pController.addAnimation(pAnimationOutput[i]);
+                            }
+                            pController.attach(pRoot);
                         }
-                        if (!((pController) === null)) {
-                            //TODO: bind controller
-                                                    }
                         return true;
                     };
                     return Collada;
@@ -22598,6 +23514,32 @@ var akra;
                     {
                         name: [
                             "P"
+                        ],
+                        type: [
+                            "float"
+                        ]
+                    }
+                ];
+                pSupportedColorFormat = [
+                    {
+                        name: [
+                            "R"
+                        ],
+                        type: [
+                            "float"
+                        ]
+                    }, 
+                    {
+                        name: [
+                            "G"
+                        ],
+                        type: [
+                            "float"
+                        ]
+                    }, 
+                    {
+                        name: [
+                            "B"
                         ],
                         type: [
                             "float"
@@ -22828,16 +23770,17 @@ var akra;
                             return pSupportedTangentFormat;
                         case "OUTPUT":
                             return pSupportedOutputFormat;
+                        case "COLOR":
+                            return pSupportedColorFormat;
                         case "UV":
                         case "MORPH_WEIGHT":
                         case "MORPH_TARGET":
                         case "LINEAR_STEPS":
                         case "IMAGE":
                         case "CONTINUITY":
-                        case "COLOR":
                             return null;
                     }
-                    akra.logger.setSourceLocation("resources/Collada.ts", 2991);
+                    akra.logger.setSourceLocation("resources/Collada.ts", 3075);
                     akra.logger.error("unknown semantics founded: " + sSemantics);
                     ;
                     return null;
@@ -25168,11 +26111,23 @@ var akra;
                 this.addTypeId(sTypeId);
                 return 105 /* k_Ok */ ;
             };
+            EffectParser.prototype.normalizeIncludePath = function (sFile) {
+                var pCurrentPath = null;
+                var pFile = (new /*checked (origin: akra)>>*/akra.util.URI((sFile)));
+                if (!((pFile.host) === null) || akra.util.pathinfo(pFile.path).isAbsolute()) {
+                    //another server or absolute path
+                    return sFile;
+                }
+                pCurrentPath = (new /*checked (origin: akra)>>*/akra.util.URI((this.getParseFileName())));
+                pCurrentPath.path = akra.util.pathinfo(pCurrentPath.path).dirname + "/" + sFile;
+                return pCurrentPath.toString();
+            };
             EffectParser.prototype._includeCode = function () {
                 var pTree = ((this)._pSyntaxTree);
                 var pNode = pTree.getLastNode();
                 var sFile = pNode.value;
-                sFile = sFile.substr(1, sFile.length - 2);
+                //cuttin qoutes
+                sFile = this.normalizeIncludePath(sFile.substr(1, sFile.length - 2));
                 if (this._pIncludedFilesMap[sFile]) {
                     return 105 /* k_Ok */ ;
                 } else {
@@ -25181,7 +26136,7 @@ var akra;
                     var pFile = akra.io.fopen(sFile, "r+t");
                     pFile.read(function (err, sData) {
                         if (err) {
-                            util.logger.setSourceLocation("util/EffectParser.ts", 75);
+                            util.logger.setSourceLocation("util/EffectParser.ts", 96);
                             util.logger.error("Can not read file");
                             ;
                         } else {
@@ -25266,7 +26221,7 @@ var akra;
                         if (eCode === 2 /* k_Error */ ) {
                             return;
                         }
-                        this._pSyntaxTree = ((akra.util.parser)._pSyntaxTree);
+                        this._pSyntaxTree = ((/*checked (origin: akra)>>*/akra.util.parser)._pSyntaxTree);
                         var pComposer = (((((((((this).pResourcePool)).pManager))).pEngine))._pComposer);
                         if (pComposer._loadEffectFromSyntaxTree(this._pSyntaxTree, sFileName)) {
                             /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.notifyLoaded();
@@ -25359,7 +26314,8 @@ var akra;
                         pSrcBuffer.unlock();
                         return true;
                     };
-                    HardwareBuffer.prototype.create = function (iFlags) {
+                    HardwareBuffer.prototype.create = function (iSize, iFlags) {
+                        if (typeof iFlags === "undefined") { iFlags = 0; }
                         iFlags |= 1 /* STATIC */ ;
                         if ((((iFlags) & (2 /* DYNAMIC */ )) != 0)) {
                             ((iFlags) &= ~(1 /* STATIC */ ));
@@ -25590,7 +26546,7 @@ var akra;
                 this._eFormat = eFormat;
                 this._iRowPitch = iWidth;
                 this._iSlicePitch = iHeight * iWidth;
-                this.byteLength = iHeight * iWidth * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((eFormat)).elemBytes);
+                this.byteLength = iHeight * iWidth * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((eFormat)).elemBytes);
                 this._pBuffer = new akra.pixelUtil.PixelBox(iWidth, iHeight, iDepth, eFormat);
                 this._iWebGLInternalFormat = 0;
                 return true;
@@ -25805,91 +26761,6 @@ var akra;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
-    ;
-    (function (ETextureFlags) {
-        ETextureFlags._map = [];
-        ETextureFlags.STATIC = 1 /* STATIC */ ;
-        ETextureFlags.DYNAMIC = 2 /* DYNAMIC */ ;
-        ETextureFlags.READEBLE = 4 /* READABLE */ ;
-        ETextureFlags.DYNAMIC_DISCARDABLE = akra.EHardwareBufferFlags.DYNAMIC_DISCARDABLE;
-        /// mipmaps will be automatically generated for this texture
-        ETextureFlags.AUTOMIPMAP = 0x100;
-        /// this texture will be a render target, i.e. used as a target for render to texture
-        /// setting this flag will ignore all other texture usages except AUTOMIPMAP
-        ETextureFlags.RENDERTARGET = 0x200;
-        /// default to automatic mipmap generation static textures
-        ETextureFlags.DEFAULT = ETextureFlags.STATIC;
-    })(akra.ETextureFlags || (akra.ETextureFlags = {}));
-    var ETextureFlags = akra.ETextureFlags;
-    (function (ETextureFilters) {
-        ETextureFilters._map = [];
-        ETextureFilters.NEAREST = 0x2600;
-        ETextureFilters.LINEAR = 0x2601;
-        ETextureFilters.NEAREST_MIPMAP_NEAREST = 0x2700;
-        ETextureFilters.LINEAR_MIPMAP_NEAREST = 0x2701;
-        ETextureFilters.NEAREST_MIPMAP_LINEAR = 0x2702;
-        ETextureFilters.LINEAR_MIPMAP_LINEAR = 0x2703;
-    })(akra.ETextureFilters || (akra.ETextureFilters = {}));
-    var ETextureFilters = akra.ETextureFilters;
-    ;
-    (function (ETextureWrapModes) {
-        ETextureWrapModes._map = [];
-        ETextureWrapModes.REPEAT = 0x2901;
-        ETextureWrapModes.CLAMP_TO_EDGE = 0x812F;
-        ETextureWrapModes.MIRRORED_REPEAT = 0x8370;
-    })(akra.ETextureWrapModes || (akra.ETextureWrapModes = {}));
-    var ETextureWrapModes = akra.ETextureWrapModes;
-    ;
-    (function (ETextureParameters) {
-        ETextureParameters._map = [];
-        ETextureParameters.MAG_FILTER = 0x2800;
-        ETextureParameters._map[10241] = "MIN_FILTER";
-        ETextureParameters.MIN_FILTER = 10241;
-        ETextureParameters._map[10242] = "WRAP_S";
-        ETextureParameters.WRAP_S = 10242;
-        ETextureParameters._map[10243] = "WRAP_T";
-        ETextureParameters.WRAP_T = 10243;
-    })(akra.ETextureParameters || (akra.ETextureParameters = {}));
-    var ETextureParameters = akra.ETextureParameters;
-    ;
-    (function (ETextureTypes) {
-        ETextureTypes._map = [];
-        ETextureTypes.TEXTURE_2D = 0x0DE1;
-        ETextureTypes.TEXTURE_CUBE_MAP = 0x8513;
-    })(akra.ETextureTypes || (akra.ETextureTypes = {}));
-    var ETextureTypes = akra.ETextureTypes;
-    ;
-    (function (ECubeFace) {
-        ECubeFace._map = [];
-        ECubeFace.POSITIVE_X = 0;
-        ECubeFace.NEGATIVE_X = 1;
-        ECubeFace.POSITIVE_Y = 2;
-        ECubeFace.NEGATIVE_Y = 3;
-        ECubeFace.POSITIVE_Z = 4;
-        ECubeFace.NEGATIVE_Z = 5;
-    })(akra.ECubeFace || (akra.ECubeFace = {}));
-    var ECubeFace = akra.ECubeFace;
-    ;
-    (function (ETextureCubeFlags) {
-        ETextureCubeFlags._map = [];
-        ETextureCubeFlags.POSITIVE_X = 0x00000001;
-        ETextureCubeFlags.NEGATIVE_X = 0x00000002;
-        ETextureCubeFlags.POSITIVE_Y = 0x00000004;
-        ETextureCubeFlags.NEGATIVE_Y = 0x00000008;
-        ETextureCubeFlags.POSITIVE_Z = 0x0000000c;
-        ETextureCubeFlags.NEGATIVE_Z = 0x000000010;
-    })(akra.ETextureCubeFlags || (akra.ETextureCubeFlags = {}));
-    var ETextureCubeFlags = akra.ETextureCubeFlags;
-    ;
-    (function (ETextureUnits) {
-        ETextureUnits._map = [];
-        ETextureUnits.TEXTURE0 = 0x84C0;
-    })(akra.ETextureUnits || (akra.ETextureUnits = {}));
-    var ETextureUnits = akra.ETextureUnits;
-    ;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
     (function (core) {
         (function (pool) {
             (function (resources) {
@@ -26046,12 +26917,10 @@ var akra;
                         this._iFlags = eFlags;
                         this._nMipLevels = nMipLevels;
                         this._eFormat = eFormat;
-                        if (((pPixels) === null)) {
-                            return this.loadRawData(null, iWidth, iHeight, iDepth, eFormat, nFaces, nMipLevels);
-                        } else if (akra.isArray(pPixels)) {
+                        if (akra.isArray(pPixels)) {
                             pPixels = new Uint8Array(pPixels);
                             return this.loadRawData(pPixels, iWidth, iHeight, iDepth, eFormat, nFaces, nMipLevels);
-                        } else if ((typeof (pPixels) === "object" && typeof (pPixels).byteOffset === "number")) {
+                        } else if (((pPixels) !== null && typeof (pPixels) === "object" && typeof (pPixels).byteOffset === "number")) {
                             return this.loadRawData(pPixels, iWidth, iHeight, iDepth, eFormat, nFaces, nMipLevels);
                         } else {
                             return this.createInternalTexture(pPixels);
@@ -26099,25 +26968,25 @@ var akra;
                         return iValue;
                     };
                     Texture.prototype._setFilterInternalTexture = /**@protected*/ function (eParam, eValue) {
-                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 254);
+                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 250);
                         akra.logger.criticalError("virual");
                         ;
                         return false;
                     };
                     Texture.prototype._setWrapModeInternalTexture = /**@protected*/ function (eParam, eValue) {
-                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 258);
+                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 254);
                         akra.logger.criticalError("virual");
                         ;
                         return false;
                     };
                     Texture.prototype._getFilterInternalTexture = /**@protected*/ function (eParam) {
-                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 263);
+                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 259);
                         akra.logger.criticalError("virual");
                         ;
                         return 0;
                     };
                     Texture.prototype._getWrapModeInternalTexture = /**@protected*/ function (eParam) {
-                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 267);
+                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 263);
                         akra.logger.criticalError("virual");
                         ;
                         return 0;
@@ -26156,7 +27025,7 @@ var akra;
                     };
                     Texture.prototype._loadImages = function (pImage) {
                         if (((((((this).iResourceFlags) & ((1 << ((1 /* LOADED */ ))))) != 0)))) {
-                            akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 325);
+                            akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 321);
                             akra.logger.warning("Yoy try to load texture when it already have been loaded. All texture data was destoyed.");
                             ;
                             this.freeInternalTexture();
@@ -26170,7 +27039,7 @@ var akra;
                         } else {
                             pImageList = arguments[0];
                             if (pImageList.length === 0) {
-                                akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 342);
+                                akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 338);
                                 akra.logger.criticalError("Cannot load empty list of images");
                                 ;
                                 return false;
@@ -26184,27 +27053,27 @@ var akra;
                         if (akra.webgl.isWebGLFormatSupport(pMainImage.format)) {
                             this._eFormat = pMainImage.format;
                         } else {
-                            akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 362);
-                            akra.logger.criticalError("Format not support");
+                            akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 358);
+                            akra.logger.warning("Format not support(" + (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((pMainImage.format)).name) + ")");
                             ;
                             if (pMainImage.convert(14 /* B8G8R8A8 */ )) {
                                 this._eFormat = pMainImage.format;
                             } else {
-                                akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 369);
+                                akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 365);
                                 akra.logger.criticalError("Format not convert");
                                 ;
                             }
                         }
                         for(i = 1; i < pImageList.length; i++) {
                             if (!pImageList[i].convert(pMainImage.format)) {
-                                akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 377);
+                                akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 373);
                                 akra.logger.criticalError("Format not support and not convert");
                                 ;
                             }
                         }
                         // The custom mipmaps in the image have priority over everything
                         var iImageMips = pMainImage.numMipMaps;
-                        if (iImageMips == (akra.math.ceil(akra.math.max(akra.math.log(this._iWidth) / Math.LN2, akra.math.log(this._iHeight) / Math.LN2)))) {
+                        if (iImageMips == resources.Img.getMaxMipmaps(this._iWidth, this._iHeight, this._iDepth, this._eFormat)) {
                             this._nMipLevels = iImageMips;
                             // Disable flag for auto mip generation
                             ((this._iFlags) &= ~(256 /* AUTOMIPMAP */ ));
@@ -26236,15 +27105,16 @@ var akra;
                         // imageMips == 0 if the image has no custom mipmaps, otherwise contains the number of custom mips
                         var mip = 0;
                         var i = 0;
-                        for(mip = 0; mip <= iImageMips; ++mip) {
+                        for(mip = 0; mip <= this._nMipLevels; ++mip) {
                             for(i = 0; i < iFaces; ++i) {
                                 var pSrc;
                                 if (isMultiImage) {
                                     // Load from multiple images
                                     pSrc = pImageList[i].getPixels(0, mip);
-                                    console.log(mip, i);
-                                } else {
+                                    //console.log(mip,i);
+                                                                    } else {
                                     // Load from faces of images[0] or main Image
+                                    //console.log(mip,i);
                                     pSrc = pMainImage.getPixels(i, mip);
                                 }
                                 // Destination: entire texture. blitFromMemory does the scaling to
@@ -26257,7 +27127,7 @@ var akra;
                         return true;
                     };
                     Texture.prototype.convertToImage = function (pDestImage, bIncludeMipMaps) {
-                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 464);
+                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 459);
                         akra.logger.criticalError("!!!нехуй");
                         var iNumMips = bIncludeMipMaps ? this._nMipLevels + 1 : 1;
                         var iDataSize = akra.pixelUtil.calculateSizeForImage(iNumMips, this._nMipLevels, this._iWidth, this._iHeight, this._iDepth, this._eFormat);
@@ -26279,10 +27149,10 @@ var akra;
                         pDestImage.loadDynamicImage(pPixData, this._iWidth, this._iHeight, this._iDepth, this._eFormat, ((this)._eTextureType === 34067 /* TEXTURE_CUBE_MAP */  ? 6 : 1), iNumMips - 1);
                     };
                     Texture.prototype.copyToTexture = function (pTarget) {
-                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 497);
+                        akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 492);
                         akra.logger.criticalError("!!!нехуй");
                         if (pTarget.getNumFaces() !== ((this)._eTextureType === 34067 /* TEXTURE_CUBE_MAP */  ? 6 : 1)) {
-                            akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 499);
+                            akra.logger.setSourceLocation("core/pool/resources/Texture.ts", 494);
                             akra.logger.criticalError("Texture types must match");
                             ;
                         }
@@ -26392,22 +27262,6 @@ var akra;
     ;
     ;
     ;
-    ;
-    (function (EDataFlowTypes) {
-        EDataFlowTypes._map = [];
-        /*!< The data stream can be marked up its index.*/
-        EDataFlowTypes.MAPPABLE = 1;
-        /*!< The data stream cannot be marked up its index.*/
-        EDataFlowTypes.UNMAPPABLE = 0;
-    })(akra.EDataFlowTypes || (akra.EDataFlowTypes = {}));
-    var EDataFlowTypes = akra.EDataFlowTypes;
-    ;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    ;
-    ;
-    ;
     (function (EVertexBufferTypes) {
         EVertexBufferTypes._map = [];
         EVertexBufferTypes._map[0] = "UNKNOWN";
@@ -26442,6 +27296,18 @@ var akra;
         EViewportTypes.DSVIEWPORT = 1;
     })(akra.EViewportTypes || (akra.EViewportTypes = {}));
     var EViewportTypes = akra.EViewportTypes;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (ECanvasTypes) {
+        ECanvasTypes._map = [];
+        ECanvasTypes.TYPE_UNKNOWN = -1;
+        ECanvasTypes.TYPE_2D = 1;
+        ECanvasTypes._map[2] = "TYPE_3D";
+        ECanvasTypes.TYPE_3D = 2;
+    })(akra.ECanvasTypes || (akra.ECanvasTypes = {}));
+    var ECanvasTypes = akra.ECanvasTypes;
+    ;
 })(akra || (akra = {}));
 ;
 ;
@@ -27101,6 +27967,14 @@ var akra;
                 this._iLength--;
                 return pValue;
             };
+            ObjectArray.prototype.indexOf = function (pObject) {
+                for(var i = 0; i < this._iLength; i++) {
+                    if (pObject === this._pData[i]) {
+                        return i;
+                    }
+                }
+                return -1;
+            };
             return ObjectArray;
         })();
         util.ObjectArray = ObjectArray;        
@@ -27351,9 +28225,10 @@ var akra;
                 var pVisibleObjects = pCamera.display();
                 var pRenderable;
                 for(var i = 0; i < pVisibleObjects.length; ++i) {
-                    pRenderable = pVisibleObjects.value(i).getRenderable();
+                    var pSceneObject = pVisibleObjects.value(i);
+                    pRenderable = pSceneObject.getRenderable();
                     if (!((pRenderable) === null)) {
-                        pRenderable.render(csMethod);
+                        pRenderable.render(csMethod, pSceneObject);
                     }
                 }
             };
@@ -27370,7 +28245,7 @@ var akra;
                 return this._iGuid;
             };
             Viewport._pEventTable = new akra.events.EventTable();
-            Viewport.prototype.getEventTable = function () {
+            Viewport.prototype.getEventTable = /** @inline */function () {
                 return Viewport._pEventTable;
             };
             Viewport.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -27380,13 +28255,13 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             Viewport.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Viewport._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Viewport.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Viewport._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Viewport.prototype.viewportDimensionsChanged = function () {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Viewport._pEventTable))).broadcast[(this._iGuid)] = (((Viewport._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).viewportDimensionsChanged;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -27396,7 +28271,7 @@ var akra;
                 }
             };
             Viewport.prototype.viewportCameraChanged = function () {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Viewport._pEventTable))).broadcast[(this._iGuid)] = (((Viewport._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).viewportCameraChanged;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -27410,6 +28285,21 @@ var akra;
         render.Viewport = Viewport;        
     })(akra.render || (akra.render = {}));
     var render = akra.render;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    ;
+    ;
+    (function (ELightTypes) {
+        ELightTypes._map = [];
+        ELightTypes._map[0] = "UNKNOWN";
+        ELightTypes.UNKNOWN = 0;
+        ELightTypes._map[1] = "PROJECT";
+        ELightTypes.PROJECT = 1;
+        ELightTypes._map[2] = "OMNI";
+        ELightTypes.OMNI = 2;
+    })(akra.ELightTypes || (akra.ELightTypes = {}));
+    var ELightTypes = akra.ELightTypes;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
@@ -27620,24 +28510,79 @@ var akra;
 var akra;
 (function (akra) {
     (function (render) {
+        var RenderPass = (function () {
+            function RenderPass(pTechnique, iPass) {
+                /**@protected*/ this._iGuid = akra.sid();
+                this._pTechnique = null;
+                this._pRenderTarget = null;
+                this._iPassNumber = 0;
+                this._pInput = null;
+                this._pTechnique = pTechnique;
+                this._iPassNumber = iPass;
+            }
+            RenderPass.prototype.getGuid = /** @inline */function () {
+                return this._iGuid;
+            };
+            RenderPass.prototype.getRenderTarget = function () {
+                return this._pRenderTarget;
+            };
+            RenderPass.prototype.setRenderTarget = function (pTarget) {
+                this._pRenderTarget = pTarget;
+            };
+            RenderPass.prototype.getPassInput = function () {
+                return this._pInput;
+            };
+            RenderPass.prototype.setPassInput = function (pInput, isNeedRelocate) {
+                if (isNeedRelocate) {
+                    this.relocateOldInput(pInput);
+                }
+                if (!((this._pInput) === null)) {
+                    this._pInput._release();
+                }
+                this._pInput = pInput;
+            };
+            RenderPass.prototype.blend = function (sComponentName, iPass) {
+                return this._pTechnique.addComponent(sComponentName, this._iPassNumber, iPass);
+            };
+            RenderPass.prototype.relocateOldInput = function (pNewInput) {
+                //TODO: copy old uniforms to new
+                            };
+            return RenderPass;
+        })();
+        render.RenderPass = RenderPass;        
+    })(akra.render || (akra.render = {}));
+    var render = akra.render;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (render) {
         var RenderTechnique = (function () {
             function RenderTechnique(pMethod) {
                 if (typeof pMethod === "undefined") { pMethod = null; }
+                this._pMethod = null;
+                this._isFreeze = false;
+                this._pComposer = null;
+                this._pPassList = null;
+                this._iCurrentPass = 0;
+                this._pCurrentPass = null;
                 /**@protected*/ this._iGuid = akra.sid();
                 /**@protected*/ this._pUnicastSlotMap = null;
                 /**@protected*/ this._pBroadcastSlotList = null;
-                this._pMethod = pMethod;
+                this._pPassList = [];
+                if (!((pMethod) === null)) {
+                    this.setMethod(pMethod);
+                }
             }
             Object.defineProperty(RenderTechnique.prototype, "modified", {
-                get: function () {
-                    return 0;
+                get: /** @inline */function () {
+                    return ((this)._iGuid);
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(RenderTechnique.prototype, "totalPasses", {
                 get: function () {
-                    return 0;
+                    return this._pComposer.getTotalPassesForTechnique(this);
                 },
                 enumerable: true,
                 configurable: true
@@ -27651,13 +28596,24 @@ var akra;
             });
             RenderTechnique.prototype.destroy = function () {
             };
-            RenderTechnique.prototype.getPass = function (n) {
-                return null;
+            RenderTechnique.prototype.getPass = /** @inline */function (iPass) {
+                this._pComposer.prepareTechniqueBlend(this);
+                return this._pPassList[iPass];
             };
             RenderTechnique.prototype.getMethod = function () {
-                return null;
+                return this._pMethod;
             };
             RenderTechnique.prototype.setMethod = function (pMethod) {
+                if (!((this._pMethod) === null)) {
+                    ((this._pMethod).getEventTable().removeDestination(((((this._pMethod)))._iGuid), ("altered"), (this), ("_updateMethod"), (0 /* BROADCAST */ )));
+                }
+                this._pMethod = pMethod;
+                if (!((pMethod) === null)) {
+                    var pComposer = pMethod.manager.getEngine().getComposer();
+                    this._setComposer(pComposer);
+                    ((pMethod).getEventTable().addDestination(((((pMethod)))._iGuid), ("altered"), (this), ("_updateMethod"), (0 /* BROADCAST */ )));
+                }
+                this.informComposer();
             };
             RenderTechnique.prototype.setState = function (sName, pValue) {
             };
@@ -27674,11 +28630,99 @@ var akra;
             RenderTechnique.prototype.isReady = function () {
                 return false;
             };
+            RenderTechnique.prototype.addComponent = function (pComponent, iShift, iPass, isSet) {
+                if (typeof iShift === "undefined") { iShift = 0; }
+                if (typeof iPass === "undefined") { iPass = 0xffffff; }
+                if (typeof isSet === "undefined") { isSet = true; }
+                if (((this._pComposer) === null)) {
+                    return false;
+                }
+                var pComponentPool = this._pComposer.getEngine().getResourceManager().componentPool;
+                if ((typeof (pComponent) === "number")) {
+                    pComponent = pComponentPool.getResource(pComponent);
+                } else if ((typeof (pComponent) === "string")) {
+                    pComponent = pComponentPool.findResource(pComponent);
+                }
+                if (!((pComponent) !== undefined) || ((pComponent) === null)) {
+                    akra.logger.setSourceLocation("RenderTechnique.ts", 116);
+                    akra.logger.error("Bad component for add/delete.");
+                    ;
+                    return false;
+                }
+                if (isSet) {
+                    if (!this._pComposer.addOwnComponentToTechnique(this, pComponent, iShift, iPass)) {
+                        akra.logger.setSourceLocation("RenderTechnique.ts", 122);
+                        akra.logger.error("Can not add component '" + pComponent.findResourceName() + "'");
+                        ;
+                        return false;
+                    }
+                } else {
+                    if (!this._pComposer.removeOwnComponentToTechnique(this, pComponent, iShift, iPass)) {
+                        akra.logger.setSourceLocation("RenderTechnique.ts", 128);
+                        akra.logger.error("Can not delete component '" + pComponent.findResourceName() + "'");
+                        ;
+                        return false;
+                    }
+                }
+                return true;
+            };
+            RenderTechnique.prototype.delComponent = function (pComponent, iShift, iPass) {
+                if (typeof iShift === "undefined") { iShift = 0; }
+                if (typeof iPass === "undefined") { iPass = 0xffffff; }
+                return this.addComponent(pComponent, iShift, iPass, false);
+            };
+            RenderTechnique.prototype.isFreeze = function () {
+                return this._isFreeze;
+            };
+            RenderTechnique.prototype.updatePasses = function (bSaveOldUniformValue) {
+                this._isFreeze = true;
+                var iTotalPasses = this.totalPasses;
+                for(var i = this._pPassList.length; i < iTotalPasses; i++) {
+                    this._pPassList[i] = new render.RenderPass(this, i);
+                }
+                for(var i = 0; i < iTotalPasses; i++) {
+                    var pInput = this._pComposer.getPassInputBlend(this, i);
+                    this._pPassList[i].setPassInput(pInput, bSaveOldUniformValue);
+                }
+                this._isFreeze = false;
+            };
+            RenderTechnique.prototype._setComposer = function (pComposer) {
+                this._pComposer = pComposer;
+            };
+            RenderTechnique.prototype._renderTechnique = function (pSceneObject) {
+                if (((this._pComposer) === null)) {
+                    return;
+                }
+                var pComposer = this._pComposer;
+                pComposer.prepareTechniqueBlend(this);
+                pComposer.setCurrentSceneObject(pSceneObject);
+                pComposer.applySurfaceMaterial(this._pMethod.surfaceMaterial);
+                this._isFreeze = true;
+                for(var i = 0; i < this.totalPasses; i++) {
+                    this.activatePass(i);
+                    this.render(i);
+                    pComposer.renderTechniquePass(this, i);
+                }
+                this._isFreeze = false;
+                pComposer.setCurrentSceneObject(null);
+            };
+            RenderTechnique.prototype._updateMethod = function (pMethod) {
+                this.informComposer();
+            };
+            RenderTechnique.prototype.informComposer = function () {
+                if (!((this._pComposer) === null)) {
+                    this._pComposer.markTechniqueAsNeedUpdate(this);
+                }
+            };
+            RenderTechnique.prototype.activatePass = function (iPass) {
+                this._iCurrentPass = iPass;
+                this._pCurrentPass = this._pPassList[iPass];
+            };
             RenderTechnique.prototype.getGuid = /** @inline */function () {
                 return this._iGuid;
             };
             RenderTechnique._pEventTable = new akra.events.EventTable();
-            RenderTechnique.prototype.getEventTable = function () {
+            RenderTechnique.prototype.getEventTable = /** @inline */function () {
                 return RenderTechnique._pEventTable;
             };
             RenderTechnique.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -27688,17 +28732,17 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             RenderTechnique.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (RenderTechnique._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             RenderTechnique.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (RenderTechnique._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
-            RenderTechnique.prototype.render = function () {
+            RenderTechnique.prototype.render = function (iPass) {
                 var _recivier = this;
-                this._pUnicastSlotMap = this._pUnicastSlotMap || (this.getEventTable()).findUnicastList(this._iGuid);
+                this._pUnicastSlotMap = this._pUnicastSlotMap || ((RenderTechnique._pEventTable)).findUnicastList(this._iGuid);
                 var _unicast = (this._pUnicastSlotMap).render;
                 if (((_unicast) !== undefined)) {
-                    _unicast.target ? _unicast.target[_unicast.callback](_recivier) : _unicast.listener(_recivier);
+                    _unicast.target ? _unicast.target[_unicast.callback](_recivier, iPass) : _unicast.listener(_recivier, iPass);
                 }
             };
             return RenderTechnique;
@@ -27712,6 +28756,7 @@ var akra;
     (function (render) {
         var RenderableObject = (function () {
             function RenderableObject() {
+                /**@protected*/ this._pRenderData = null;
                 /**@protected*/ this._pTechnique = null;
                 /**@protected*/ this._pTechniqueMap = {};
                 /**@protected*/ this._bShadow = false;
@@ -27750,10 +28795,17 @@ var akra;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(RenderableObject.prototype, "data", {
+                get: /** @inline */function () {
+                    return this._pRenderData;
+                },
+                enumerable: true,
+                configurable: true
+            });
             RenderableObject.prototype._setup = function (pRenderer, csDefaultMethod) {
                 if (typeof csDefaultMethod === "undefined") { csDefaultMethod = null; }
                 this._pRenderer = pRenderer;
-                if (this.addRenderMethod(csDefaultMethod) || this.switchRenderMethod(null) === false) {
+                if (!this.addRenderMethod(csDefaultMethod) || this.switchRenderMethod(null) === false) {
                     akra.logger.setSourceLocation("RenderableObject.ts", 44);
                     akra.logger.criticalError("cannot add & switch render method to default");
                     ;
@@ -27776,9 +28828,9 @@ var akra;
                 var pRmgr = ((this)._pRenderer).getEngine().getResourceManager();
                 var pMethod = null;
                 if (((csMethod) === null)) {
-                    return false;
+                    csMethod = "default";
                 }
-                if ((typeof (arguments[0]) === "string")) {
+                if ((typeof (arguments[0]) === "string") || arguments.length === 0) {
                     pMethod = pRmgr.createRenderMethod((csMethod) + ((this)._iGuid));
                     if (!((pMethod) != null)) {
                         return false;
@@ -27800,7 +28852,9 @@ var akra;
             RenderableObject.prototype.switchRenderMethod = function (csName) {
                 var pTechnique;
                 var sName = null;
-                if ((typeof (arguments[0]) === "string")) {
+                if (((arguments[0]) === null)) {
+                    sName = "default";
+                } else if ((typeof (arguments[0]) === "string")) {
                     sName = csName;
                 } else if (((arguments[0]) != null)) {
                     sName = (arguments[0]).findResourceName();
@@ -27830,6 +28884,9 @@ var akra;
                 var pTechnique = this._pTechniqueMap[csName || "default"];
                 return pTechnique ? pTechnique.getMethod() : null;
             };
+            RenderableObject.prototype.getRenderMethodDefault = /** @inline */function () {
+                return /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.getRenderMethod("default");
+            };
             RenderableObject.prototype.hasShadow = /** @inline */function () {
                 return this._bShadow;
             };
@@ -27852,19 +28909,23 @@ var akra;
                 }
                 return true;
             };
-            RenderableObject.prototype.render = function (csMethod) {
+            RenderableObject.prototype.render = function (csMethod, pSceneObject) {
                 if (typeof csMethod === "undefined") { csMethod = null; }
-                //TODO("DRAW!!!!");
-                akra.logger.setSourceLocation("RenderableObject.ts", 178);
-                akra.logger.error("TODO(DRAW!!)");
-                ;
+                if (typeof pSceneObject === "undefined") { pSceneObject = null; }
+                if (!this.switchRenderMethod(csMethod)) {
+                    return;
+                }
+                ((this)._pRenderData)._draw(((this)._pTechniqueMap[("default")] || null), pSceneObject);
             };
-            RenderableObject.prototype.getTechnique = function (sName) {
-                if (typeof sName === "undefined") { sName = null; }
+            RenderableObject.prototype.getTechnique = /** @inline */function (sName) {
+                if (typeof sName === "undefined") { sName = "default"; }
                 return this._pTechniqueMap[sName] || null;
             };
+            RenderableObject.prototype.getTechniqueDefault = /** @inline */function () {
+                return ((this)._pTechniqueMap[("default")] || null);
+            };
             RenderableObject.prototype._draw = function () {
-                akra.logger.setSourceLocation("RenderableObject.ts", 186);
+                akra.logger.setSourceLocation("RenderableObject.ts", 200);
                 akra.logger.error("RenderableObject::_draw() pure virtual method() isn't callable!!");
                 ;
             };
@@ -27872,7 +28933,7 @@ var akra;
                 return this._iGuid;
             };
             RenderableObject._pEventTable = new akra.events.EventTable();
-            RenderableObject.prototype.getEventTable = function () {
+            RenderableObject.prototype.getEventTable = /** @inline */function () {
                 return RenderableObject._pEventTable;
             };
             RenderableObject.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -27882,14 +28943,14 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             RenderableObject.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (RenderableObject._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             RenderableObject.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (RenderableObject._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             RenderableObject.prototype.shadow = function (bValue) {
                 var _recivier = this;
-                this._pUnicastSlotMap = this._pUnicastSlotMap || (this.getEventTable()).findUnicastList(this._iGuid);
+                this._pUnicastSlotMap = this._pUnicastSlotMap || ((RenderableObject._pEventTable)).findUnicastList(this._iGuid);
                 var _unicast = (this._pUnicastSlotMap).shadow;
                 if (((_unicast) !== undefined)) {
                     _unicast.target ? _unicast.target[_unicast.callback](_recivier, bValue) : _unicast.listener(_recivier, bValue);
@@ -27898,6 +28959,41 @@ var akra;
             return RenderableObject;
         })();
         render.RenderableObject = RenderableObject;        
+    })(akra.render || (akra.render = {}));
+    var render = akra.render;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (render) {
+        var Screen = (function (_super) {
+            __extends(Screen, _super);
+            function Screen(pRenderer) {
+                        _super.call(this);
+                var pCollection = pRenderer.getEngine().createRenderDataCollection(0);
+                var pData = pCollection.getEmptyRenderData(5 /* TRIANGLESTRIP */ );
+                pData.allocateAttribute(akra.createVertexDeclaration([
+                    (({
+count: (2),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.POSITION)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
+                ]), new Float32Array([
+                    -1, 
+                    -1, 
+                    -1, 
+                    1, 
+                    1, 
+                    -1, 
+                    1, 
+                    1
+                ]));
+                this._pRenderData = pData;
+                this._setup(pRenderer);
+            }
+            return Screen;
+        })(render.RenderableObject);
+        render.Screen = Screen;        
     })(akra.render || (akra.render = {}));
     var render = akra.render;
 })(akra || (akra = {}));
@@ -27914,6 +29010,7 @@ var akra;
                 if (typeof fHeight === "undefined") { fHeight = 1.; }
                 if (typeof iZIndex === "undefined") { iZIndex = 0; }
                         _super.call(this, pCamera, pTarget, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+                this._pDefferedColorTextures = [];
                 this._pDeferredView = null;
                 this._pDeferredSkyTexture = null;
                 this._pLightingUnifoms = {
@@ -27931,7 +29028,7 @@ var akra;
                 var pDeferredData = new Array(2);
                 var pDeferredTextures = new Array(2);
                 var pDepthTexture;
-                var pDefferedView = this._pDeferredView = new akra.render.RenderableObject();
+                var pDefferedView = this._pDeferredView = new render.Screen(pEngine.getRenderer());
                 var iGuid = akra.sid();
                 var iWidth = akra.math.ceilingPowerOfTwo(((this)._iActWidth));
                 var iHeight = akra.math.ceilingPowerOfTwo(((this)._iActHeight));
@@ -27943,8 +29040,9 @@ var akra;
                 pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0, 3553 /* TEXTURE_2D */ , 29 /* FLOAT32_DEPTH */ );
                 for(var i = 0; i < 2; ++i) {
                     pDeferredTextures[i] = this._pDefferedColorTextures[i] = pResMgr.createTexture("deferred-color-texture-" + i + "-" + iGuid);
-                    pDeferredTextures[i].create(iWidth, iHeight, 1, null, 0, 0, 0, 3553 /* TEXTURE_2D */ , 25 /* FLOAT32_RGBA */ );
+                    pDeferredTextures[i].create(iWidth, iHeight, 1, null, 512 /* RENDERTARGET */ , 0, 0, 3553 /* TEXTURE_2D */ , 25 /* FLOAT32_RGBA */ );
                     pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
+                    pDeferredData[i].setAutoUpdated(false);
                     pDeferredData[i].addViewport(((this)._pCamera), "deferred_shading_pass_" + i);
                     pDeferredData[i].attachDepthTexture(pDepthTexture);
                 }
@@ -27964,7 +29062,9 @@ var akra;
                 pDSEffect.addComponent("akra.system.projectShadowsLighting");
                 pDSEffect.addComponent("akra.system.skybox", 1);
                 pDSMethod.effect = pDSEffect;
-                pDefferedView.renderMethod = pDSMethod;
+                pDefferedView.getTechnique().setMethod(pDSMethod);
+                // LOG(pEngine.getComposer(), pDefferedView.getTechnique().totalPasses);
+                // pDefferedView.renderMethod = pDSMethod;
                 ((pDefferedView.getTechnique()).getEventTable().addDestination(((((pDefferedView.getTechnique())))._iGuid), ("render"), (this), ("_onRender"), (undefined)));
             }
             DSViewport.prototype.update = function () {
@@ -27975,8 +29075,11 @@ var akra;
                 }
                 this._pLightPoints = pLights;
                 //prepare deferred textures
-                this._pDefferedColorTextures[0].getBuffer().getRenderTarget().update();
-                this._pDefferedColorTextures[1].getBuffer().getRenderTarget().update();
+                var pNodeList = ((this)._pCamera).display();
+                for(var i = 0; i < pNodeList.length; ++i) {
+                    var pRenderable = pNodeList.value(i).getRenderable();
+                    pRenderable.render(null, pNodeList.value(i));
+                }
                 //render defferred
                 this._pDeferredView.render();
                 return true;
@@ -27985,28 +29088,9 @@ var akra;
                 var pNodeList = ((this)._pCamera).display();
                 for(var i = 0; i < pNodeList.length; ++i) {
                     var pRenderable = pNodeList.value(i).getRenderable();
-                    if (pRenderable) {
-                        for(var j = 0; j < 2; ++j) {
-                            var sMethod = "deferred_shading_pass_" + j;
-                            var pMethod = pRenderable.getRenderMethod(sMethod);
-                            var pTechCurr = pRenderable.getTechnique();
-                            var pTechnique = pRenderable.getTechnique(sMethod);
-                            if (((pTechnique) === null) || pTechCurr.modified >= pTechnique.modified) {
-                                if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
-                                    akra.logger.setSourceLocation("DSViewport2.ts", 138);
-                                    akra.logger.criticalError("cannot clone active render method");
-                                    ;
-                                }
-                                pTechnique = pRenderable.getTechnique(sMethod);
-                                for(var k = 0; k < pTechnique.totalPasses; ++k) {
-                                    var pPass = pTechnique.getPass(k);
-                                    if (((pPass.getRenderTarget()) === null)) {
-                                        pPass.data.blend("akra.system.prepareForDeferredShading", j);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    var pTechCurr = pRenderable.getTechniqueDefault();
+                    pTechCurr.getPass(0).setRenderTarget(this._pDefferedColorTextures[0].getBuffer().getRenderTarget());
+                    pTechCurr.getPass(1).setRenderTarget(this._pDefferedColorTextures[1].getBuffer().getRenderTarget());
                 }
                 ;
             };
@@ -28102,7 +29186,7 @@ var akra;
                     v4fLightPosition.set(pLight.worldPosition, 1.);
                     pCameraView.multiplyVec4(v4fLightPosition, v4fTemp);
                     v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
-                    if (pLight.type === 38 /* LIGHT_OMNI_DIRECTIONAL */ ) {
+                    if (pLight.lightType === 2 /* OMNI */ ) {
                         pOmniLight = pLight;
                         if (pLight.isShadowCaster) {
                             pUniformData = render.UniformOmniShadow.stackCeil;
@@ -28125,7 +29209,7 @@ var akra;
                             (pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
                             pUniforms.omni.push(pUniformData);
                         }
-                    } else if (pLight.type === 37 /* LIGHT_PROJECT */ ) {
+                    } else if (pLight.lightType === 1 /* PROJECT */ ) {
                         pProjectLight = pLight;
                         if (pLight.isShadowCaster) {
                             pUniformData = render.UniformProjectShadow.stackCeil;
@@ -28147,7 +29231,7 @@ var akra;
                             pUniforms.project.push(pUniformData);
                         }
                     } else {
-                        akra.logger.setSourceLocation("DSViewport2.ts", 342);
+                        akra.logger.setSourceLocation("DSViewport2.ts", 369);
                         akra.logger.criticalError("Invalid light point type detected.");
                         ;
                     }
@@ -28171,11 +29255,25 @@ var akra;
                 /**@protected*/ this._isActive = true;
                 /**@protected*/ this._isAutoUpdate = true;
                 /**@protected*/ this._bHwGamma = false;
+                /**@protected*/ this._pViewportList = [];
                 /**@protected*/ this._iGuid = akra.sid();
                 /**@protected*/ this._pUnicastSlotMap = null;
                 /**@protected*/ this._pBroadcastSlotList = null;
                 this._pRenderer = pRenderer;
                 this._pTimer = pRenderer.getEngine().getTimer();
+                this._pFrameStats = {
+                    fps: {
+                        last: 0.,
+                        avg: 0.,
+                        best: 0.,
+                        worst: 0.
+                    },
+                    time: {
+                        best: 0.,
+                        worst: 0.
+                    },
+                    polygonsCount: 0
+                };
                 this.resetStatistics();
             }
             Object.defineProperty(RenderTarget.prototype, "name", {
@@ -28241,7 +29339,7 @@ var akra;
                     pViewport.destroy();
                 }
                 this.detachDepthBuffer();
-                akra.logger.setSourceLocation("render/RenderTarget.ts", 88);
+                akra.logger.setSourceLocation("render/RenderTarget.ts", 99);
                 akra.logger.log("RenderTarget '%s'\n Average FPS: %s\n Best FPS: %s\n Worst FPS: %s", this._sName, this._pFrameStats.fps.avg, this._pFrameStats.fps.best, this._pFrameStats.fps.worst);
                 ;
             };
@@ -28313,13 +29411,13 @@ var akra;
                 if ((typeof (arguments[0]) === "number")) {
                     iZIndex = arguments[0];
                     pViewport = this._pViewportList[iZIndex];
-                    akra.logger.setSourceLocation("render/RenderTarget.ts", 186);
+                    akra.logger.setSourceLocation("render/RenderTarget.ts", 197);
                     akra.logger.assert(((pViewport) != null), "No viewport with given z-index : %s", iZIndex, "RenderTarget::_updateViewport");
                     ;
                 } else {
                     pViewport = arguments[0];
                 }
-                akra.logger.setSourceLocation("render/RenderTarget.ts", 193);
+                akra.logger.setSourceLocation("render/RenderTarget.ts", 204);
                 akra.logger.assert(pViewport.getTarget() == this, "RenderTarget::_updateViewport the requested viewport is not bound to the rendertarget!");
                 ;
                 this.viewportPreUpdate(pViewport);
@@ -28338,7 +29436,7 @@ var akra;
                 if (typeof fHeight === "undefined") { fHeight = 1.; }
                 var pViewport = this._pViewportList[iZIndex];
                 if (((pViewport) != null)) {
-                    akra.logger.setSourceLocation("render/RenderTarget.ts", 213);
+                    akra.logger.setSourceLocation("render/RenderTarget.ts", 224);
                     akra.logger.criticalError("Can't create another viewport for %s with Z-index %s 					because a viewport exists with this Z-Order already.", this._sName, iZIndex, "RenderTarget::addViewport");
                     ;
                 }
@@ -28434,7 +29532,7 @@ var akra;
                 return null;
             };
             RenderTarget.prototype.getViewport = function (iIndex) {
-                akra.logger.setSourceLocation("render/RenderTarget.ts", 348);
+                akra.logger.setSourceLocation("render/RenderTarget.ts", 359);
                 akra.logger.assert(iIndex < this._pViewportList.length, "Index out of bounds");
                 ;
                 for(var i in this._pViewportList) {
@@ -28447,7 +29545,7 @@ var akra;
             };
             RenderTarget.prototype.getViewportByZIndex = function (iZIndex) {
                 var pViewport = this._pViewportList[iZIndex];
-                akra.logger.setSourceLocation("render/RenderTarget.ts", 365);
+                akra.logger.setSourceLocation("render/RenderTarget.ts", 376);
                 akra.logger.assert(((pViewport) != null), "No viewport with given z-index : " + String(iZIndex), "RenderTarget::getViewportByZIndex");
                 ;
                 return pViewport;
@@ -28479,10 +29577,6 @@ var akra;
                     this.cameraRemoved(pCamera);
                 }
             };
-            RenderTarget.prototype.setAutoUpdare = /** @inline */function (bValue) {
-                if (typeof bValue === "undefined") { bValue = true; }
-                this._isAutoUpdate = bValue;
-            };
             RenderTarget.prototype.isAutoUpdated = /** @inline */function () {
                 return this._isAutoUpdate;
             };
@@ -28505,7 +29599,7 @@ var akra;
                 return this._iGuid;
             };
             RenderTarget._pEventTable = new akra.events.EventTable();
-            RenderTarget.prototype.getEventTable = function () {
+            RenderTarget.prototype.getEventTable = /** @inline */function () {
                 return RenderTarget._pEventTable;
             };
             RenderTarget.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -28515,13 +29609,13 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             RenderTarget.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (RenderTarget._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             RenderTarget.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (RenderTarget._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             RenderTarget.prototype.preUpdate = function () {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((RenderTarget._pEventTable))).broadcast[(this._iGuid)] = (((RenderTarget._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).preUpdate;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -28531,7 +29625,7 @@ var akra;
                 }
             };
             RenderTarget.prototype.viewportPreUpdate = function (pViewport) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((RenderTarget._pEventTable))).broadcast[(this._iGuid)] = (((RenderTarget._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).viewportPreUpdate;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -28541,7 +29635,7 @@ var akra;
                 }
             };
             RenderTarget.prototype.viewportPostUpdate = function (pViewport) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((RenderTarget._pEventTable))).broadcast[(this._iGuid)] = (((RenderTarget._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).viewportPostUpdate;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -28551,7 +29645,7 @@ var akra;
                 }
             };
             RenderTarget.prototype.viewportAdded = function (pViewport) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((RenderTarget._pEventTable))).broadcast[(this._iGuid)] = (((RenderTarget._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).viewportAdded;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -28561,7 +29655,7 @@ var akra;
                 }
             };
             RenderTarget.prototype.viewportRemoved = function (pViewport) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((RenderTarget._pEventTable))).broadcast[(this._iGuid)] = (((RenderTarget._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).viewportRemoved;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -28571,7 +29665,7 @@ var akra;
                 }
             };
             RenderTarget.prototype.postUpdate = function () {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((RenderTarget._pEventTable))).broadcast[(this._iGuid)] = (((RenderTarget._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).postUpdate;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -28581,7 +29675,7 @@ var akra;
                 }
             };
             RenderTarget.prototype.cameraRemoved = function (pCamera) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((RenderTarget._pEventTable))).broadcast[(this._iGuid)] = (((RenderTarget._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).cameraRemoved;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -28623,6 +29717,7 @@ var akra;
             function Renderer(pEngine) {
                 /**@protected*/ this._isActive = false;
                 /**@protected*/ this._pRenderTargets = [];
+                /**@protected*/ this._pPrioritisedRenderTargets = {};
                 /**@protected*/ this._iGuid = akra.sid();
                 /**@protected*/ this._pUnicastSlotMap = null;
                 /**@protected*/ this._pBroadcastSlotList = null;
@@ -28651,22 +29746,26 @@ var akra;
             Renderer.prototype.clearFrameBuffer = function (iBuffer, cColor, iDepth) {
             };
             Renderer.prototype.attachRenderTarget = function (pTarget) {
-                for(var i = 0; i < this._pRenderTargets.length; i++) {
-                    if (this._pRenderTargets[i] === pTarget) {
-                        return false;
-                    }
+                if (this._pRenderTargets.indexOf(pTarget) != -1) {
+                    return false;
                 }
+                var pList = this._pPrioritisedRenderTargets[pTarget.priority];
+                if (!((pList) !== undefined)) {
+                    pList = this._pPrioritisedRenderTargets[pTarget.priority] = [];
+                }
+                pList.push(pTarget);
                 this._pRenderTargets.push(pTarget);
                 return true;
             };
             Renderer.prototype.detachRenderTarget = function (pTarget) {
-                for(var i = 0; i < this._pRenderTargets.length; i++) {
-                    if (this._pRenderTargets[i] === pTarget) {
-                        this._pRenderTargets.splice(i, 1);
-                        return true;
-                    }
+                var i = this._pRenderTargets.indexOf(pTarget);
+                if (i == -1) {
+                    return false;
                 }
-                return false;
+                this._pRenderTargets.splice(i, 1);
+                i = this._pPrioritisedRenderTargets[pTarget.priority].indexOf(pTarget);
+                this._pPrioritisedRenderTargets[pTarget.priority].splice(i, 1);
+                return true;
             };
             Renderer.prototype.destroyRenderTarget = function (pTarget) {
                 var hasTarget = this.detachRenderTarget(pTarget);
@@ -28676,7 +29775,7 @@ var akra;
                 }
             };
             Renderer.prototype.getActiveProgram = function () {
-                akra.logger.setSourceLocation("render/Renderer.ts", 133);
+                akra.logger.setSourceLocation("render/Renderer.ts", 145);
                 akra.logger.criticalError("Renderer::getActiveProgram() is uncompleted method!");
                 ;
                 return null;
@@ -28694,10 +29793,13 @@ var akra;
             };
             Renderer.prototype._updateAllRenderTargets = function () {
                 var pTarget;
-                for(var i in this._pPrioritisedRenderTargets) {
-                    pTarget = this._pPrioritisedRenderTargets[i];
-                    if (pTarget.isActive() && pTarget.isAutoUpdated()) {
-                        pTarget.update();
+                for(var iPriority in this._pPrioritisedRenderTargets) {
+                    var pTargetList = this._pPrioritisedRenderTargets[iPriority];
+                    for(var j = 0; j < pTargetList.length; ++j) {
+                        pTarget = pTargetList[j];
+                        if (pTarget.isActive() && pTarget.isAutoUpdated()) {
+                            pTarget.update();
+                        }
                     }
                 }
             };
@@ -28706,11 +29808,14 @@ var akra;
             Renderer.prototype._getViewport = function () {
                 return null;
             };
+            Renderer.prototype.getDefaultCanvas = function () {
+                return null;
+            };
             Renderer.prototype.getGuid = /** @inline */function () {
                 return this._iGuid;
             };
             Renderer._pEventTable = new akra.events.EventTable();
-            Renderer.prototype.getEventTable = function () {
+            Renderer.prototype.getEventTable = /** @inline */function () {
                 return Renderer._pEventTable;
             };
             Renderer.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -28720,14 +29825,14 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             Renderer.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Renderer._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Renderer.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Renderer._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Renderer.prototype.active = function (pEngine) {
                 this._isActive = true;
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Renderer._pEventTable))).broadcast[(this._iGuid)] = (((Renderer._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).active;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -28739,7 +29844,7 @@ var akra;
             };
             Renderer.prototype.inactive = function (pEngine) {
                 this._isActive = false;
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Renderer._pEventTable))).broadcast[(this._iGuid)] = (((Renderer._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).inactive;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -28756,6 +29861,371 @@ var akra;
     var render = akra.render;
 })(akra || (akra = {}));
 ;
+var akra;
+(function (akra) {
+    (function (util) {
+        var UtilTimer = (function () {
+            function UtilTimer() {
+                this.isTimerInitialized = false;
+                this.isTimerStopped = false;
+                this.fTicksPerSec = 0.;
+                this.iStopTime = 0;
+                this.iLastElapsedTime = 0;
+                this.iBaseTime = 0;
+            }
+            Object.defineProperty(UtilTimer.prototype, "absoluteTime", {
+                get: /** @inline */function () {
+                    return this.execCommand(4 /* TIMER_GET_ABSOLUTE_TIME */ );
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(UtilTimer.prototype, "appTime", {
+                get: /** @inline */function () {
+                    return this.execCommand(5 /* TIMER_GET_APP_TIME */ );
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(UtilTimer.prototype, "elapsedTime", {
+                get: /** @inline */function () {
+                    return this.execCommand(6 /* TIMER_GET_ELAPSED_TIME */ );
+                },
+                enumerable: true,
+                configurable: true
+            });
+            UtilTimer.prototype.start = /** @inline */function () {
+                return this.execCommand(1 /* TIMER_START */ ) === 0;
+            };
+            UtilTimer.prototype.stop = /** @inline */function () {
+                return this.execCommand(2 /* TIMER_STOP */ ) === 0;
+            };
+            UtilTimer.prototype.reset = /** @inline */function () {
+                return this.execCommand(0 /* TIMER_RESET */ ) === 0;
+            };
+            UtilTimer.prototype.execCommand = function (eCommand) {
+                var fTime = 0.;
+                var fElapsedTime = 0.;
+                var iTime;
+                if (this.isTimerInitialized == false) {
+                    this.isTimerInitialized = true;
+                    this.fTicksPerSec = 1000;
+                }
+                // Get either the current time or the stop time, depending
+                // on whether we're stopped and what command was sent
+                if (this.iStopTime != 0 && eCommand != 1 /* TIMER_START */  && eCommand != 4 /* TIMER_GET_ABSOLUTE_TIME */ ) {
+                    iTime = this.iStopTime;
+                } else {
+                    iTime = akra.now();
+                }
+                // Return the elapsed time
+                if (eCommand == 6 /* TIMER_GET_ELAPSED_TIME */ ) {
+                    fElapsedTime = (iTime - this.iLastElapsedTime) / this.fTicksPerSec;
+                    this.iLastElapsedTime = iTime;
+                    return fElapsedTime;
+                }
+                // Return the current time
+                if (eCommand == 5 /* TIMER_GET_APP_TIME */ ) {
+                    var fAppTime = (iTime - this.iBaseTime) / this.fTicksPerSec;
+                    return fAppTime;
+                }
+                // Reset the timer
+                if (eCommand == 0 /* TIMER_RESET */ ) {
+                    this.iBaseTime = iTime;
+                    this.iLastElapsedTime = iTime;
+                    this.iStopTime = 0;
+                    this.isTimerStopped = false;
+                    return 0;
+                }
+                // Start the timer
+                if (eCommand == 1 /* TIMER_START */ ) {
+                    if (this.isTimerStopped) {
+                        this.iBaseTime += iTime - this.iStopTime;
+                    }
+                    this.iStopTime = 0;
+                    this.iLastElapsedTime = iTime;
+                    this.isTimerStopped = false;
+                    return 0;
+                }
+                // Stop the timer
+                if (eCommand == 2 /* TIMER_STOP */ ) {
+                    if (!this.isTimerStopped) {
+                        this.iStopTime = iTime;
+                        this.iLastElapsedTime = iTime;
+                        this.isTimerStopped = true;
+                    }
+                    return 0;
+                }
+                // Advance the timer by 1/10th second
+                if (eCommand == 3 /* TIMER_ADVANCE */ ) {
+                    this.iStopTime += this.fTicksPerSec / 10;
+                    return 0;
+                }
+                if (eCommand == 4 /* TIMER_GET_ABSOLUTE_TIME */ ) {
+                    fTime = iTime / this.fTicksPerSec;
+                    return fTime;
+                }
+                // Invalid command specified
+                return -1;
+            };
+            UtilTimer.start = function start() {
+                var pTimer = new UtilTimer();
+                if ((pTimer.execCommand(1 /* TIMER_START */ ) === 0)) {
+                    return pTimer;
+                }
+                util.logger.setSourceLocation("util/UtilTimer.ts", 123);
+                util.logger.error('cannot start util timer');
+                ;
+                return null;
+            };
+            return UtilTimer;
+        })();
+        util.UtilTimer = UtilTimer;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (render) {
+        var Canvas3d = (function (_super) {
+            __extends(Canvas3d, _super);
+            function Canvas3d(pRenderer) {
+                        _super.call(this, pRenderer);
+                // private _useHarwareAntialiasing: bool = false;
+                /**@protected*/ this._isFullscreen = false;
+                /**@protected*/ this._isPrimary = false;
+                /**@protected*/ this._bAutoDeactivatedOnFocusChange = false;
+                this.left = 0;
+                this.top = 0;
+                this._pRenderer = pRenderer;
+            }
+            Object.defineProperty(Canvas3d.prototype, "type", {
+                get: function () {
+                    return 2 /* TYPE_3D */ ;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Canvas3d.prototype.create = function (sName, iWidth, iHeight, isFullscreen) {
+                if (typeof isFullscreen === "undefined") { isFullscreen = false; }
+                return false;
+            };
+            Canvas3d.prototype.destroy = function () {
+            };
+            Canvas3d.prototype.setFullscreen = function (isFullscreen) {
+            };
+            Canvas3d.prototype.setVisible = function (bVisible) {
+            };
+            Canvas3d.prototype.setDeactivateOnFocusChange = function (bDeactivate) {
+                this._bAutoDeactivatedOnFocusChange = bDeactivate;
+            };
+            Canvas3d.prototype.isFullscreen = /** @inline */function () {
+                return this._isFullscreen;
+            };
+            Canvas3d.prototype.isVisible = function () {
+                return true;
+            };
+            Canvas3d.prototype.isClosed = function () {
+                return false;
+            };
+            Canvas3d.prototype.isPrimary = function () {
+                return this._isPrimary;
+            };
+            Canvas3d.prototype.isDeactivatedOnFocusChange = function () {
+                return this._bAutoDeactivatedOnFocusChange;
+            };
+            Canvas3d.prototype.resize = function (iWidth, iHeight) {
+            };
+            Canvas3d.prototype.resized = function () {
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((/*checked (origin: render)>>*/akra.render.RenderTarget._pEventTable))).broadcast[(this._iGuid)] = (((/*checked (origin: render)>>*/akra.render.RenderTarget._pEventTable))).broadcast[(this._iGuid)] || {}));
+                var _broadcast = (this._pBroadcastSlotList).resized;
+                var _recivier = this;
+                if (((_broadcast) !== undefined)) {
+                    for(var i = 0; i < _broadcast.length; ++i) {
+                        _broadcast[i].target ? _broadcast[i].target[_broadcast[i].callback](_recivier) : _broadcast[i].listener(_recivier);
+                    }
+                }
+            };
+            return Canvas3d;
+        })(render.RenderTarget);
+        render.Canvas3d = Canvas3d;        
+    })(akra.render || (akra.render = {}));
+    var render = akra.render;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (webgl) {
+        var WebGLCanvas = (function (_super) {
+            __extends(WebGLCanvas, _super);
+            function WebGLCanvas(pRenderer) {
+                        _super.call(this, pRenderer);
+                this._pCanvas = (pRenderer).getHTMLCanvas();
+                this._pCanvasCreationInfo = akra.info.canvas(this._pCanvas);
+            }
+            Object.defineProperty(WebGLCanvas.prototype, "left", {
+                get: function () {
+                    var el = this._pCanvas;
+                    for(var lx = 0; el != null; lx += el.offsetLeft, el = el.offsetParent) {
+                        ;
+                    }
+                    return lx;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(WebGLCanvas.prototype, "top", {
+                get: function () {
+                    var el = this._pCanvas;
+                    for(var ly = 0; el != null; ly += el.offsetTop, el = el.offsetParent) {
+                        ;
+                    }
+                    return ly;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            WebGLCanvas.prototype.create = function (sName, iWidth, iHeight, isFullscreen) {
+                if (typeof sName === "undefined") { sName = null; }
+                if (typeof iWidth === "undefined") { iWidth = this._pCanvasCreationInfo.width; }
+                if (typeof iHeight === "undefined") { iHeight = this._pCanvasCreationInfo.height; }
+                if (typeof isFullscreen === "undefined") { isFullscreen = false; }
+                ((this)._sName = (sName));
+                this.resize(iWidth, iHeight);
+                this.setFullscreen(isFullscreen);
+                return true;
+            };
+            WebGLCanvas.prototype.destroy = function () {
+                _super.prototype.destroy.call(this);
+                this._pCanvas = null;
+                this._pCanvasCreationInfo = null;
+            };
+            WebGLCanvas.prototype.setFullscreen = function (isFullscreen) {
+                if (typeof isFullscreen === "undefined") { isFullscreen = true; }
+                var pCanvas = this._pCanvas;
+                var pScreen;
+                var pCanvasInfo;
+                var iRealWidth = this._iRealWidth;
+                var iRealHeight = this._iRealHeight;
+                if (this._isFullscreen === isFullscreen) {
+                    return;
+                }
+                if (WebGLCanvas.fullscreenLock) {
+                    akra.logger.setSourceLocation("WebGLCanvas.ts", 65);
+                    akra.logger.warning("fullscreen is changing, do not try change before process will be ended");
+                    ;
+                    return;
+                }
+                this._isFullscreen = isFullscreen;
+                if (isFullscreen) {
+                    this._iRealWidth = this._iWidth;
+                    this._iRealHeight = this._iHeight;
+                }
+                try  {
+                    WebGLCanvas.fullscreenLock = true;
+                    ((pCanvas).requestFullscreen || (pCanvas).mozRequestFullScreen || (pCanvas).webkitRequestFullscreen)();
+                    (pCanvas).onfullscreenchange = (pCanvas).onmozfullscreenchange = (pCanvas).onwebkitfullscreenchange = function (e) {
+                        if (!!((document).webkitFullscreenElement || (document).mozFullScreenElement || (document).fullscreenElement)) {
+                            this.resize(akra.info.screen.width, akra.info.screen.height);
+                        } else {
+                            this.resize(iRealWidth, iRealHeight);
+                        }
+                        WebGLCanvas.fullscreenLock = false;
+                    };
+                } catch (e) {
+                    akra.logger.setSourceLocation("WebGLCanvas.ts", 94);
+                    akra.logger.error("Fullscreen API not supported", e);
+                    ;
+                }
+            };
+            WebGLCanvas.prototype.isVisible = /** @inline */function () {
+                return this._pCanvas.style.display !== "none";
+            };
+            WebGLCanvas.prototype.setVisible = function (bVisible) {
+                if (typeof bVisible === "undefined") { bVisible = true; }
+                this._pCanvas.style.display = bVisible ? "block" : "none";
+            };
+            WebGLCanvas.prototype.resize = function (iWidth, iHeight) {
+                if (typeof iWidth === "undefined") { iWidth = this._iWidth; }
+                if (typeof iHeight === "undefined") { iHeight = this._iHeight; }
+                var pCanvas = this._pCanvas;
+                this._iWidth = iWidth;
+                this._iHeight = iHeight;
+                pCanvas.width = iWidth;
+                pCanvas.height = iHeight;
+                // var pRoot: ISceneNode = this.getScene().getRootNode();
+                // //TODO: update textures, lighting etc!
+                // pRoot.explore(function(pNode: INode) {
+                // 	var pCamera: ICamera;
+                // 	if (pNode.type === EEntityTypes.CAMERA) {
+                // 		pCamera = (<ICamera>pNode);
+                // 		if (!pCamera.isConstantAspect()) {
+                // 			pCamera.setProjParams(
+                // 				pCamera.fov(),
+                // 				pCanvas.width / pCanvas.height,
+                // 				pCamera.nearPlane(),
+                // 				pCamera.farPlane());
+                // 			pCamera.setUpdatedLocalMatrixFlag();
+                // 		}
+                // 	}
+                // });
+                this.resized();
+            };
+            WebGLCanvas.prototype.readPixels = function (ppDest, eFramebuffer) {
+                if (typeof ppDest === "undefined") { ppDest = null; }
+                if (typeof eFramebuffer === "undefined") { eFramebuffer = 2 /* AUTO */ ; }
+                if (((ppDest) === null)) {
+                    var ePixelFormat = 10 /* BYTE_RGB */ ;
+                    ppDest = new akra.pixelUtil.PixelBox(this._iWidth, this._iHeight, 1, ePixelFormat, new Uint8Array(akra.pixelUtil.getMemorySize(this._iWidth, this._iHeight, 1, ePixelFormat)));
+                }
+                if ((ppDest.right > this._iWidth) || (ppDest.bottom > this._iHeight) || (ppDest.front != 0) || (ppDest.back != 1)) {
+                    akra.logger.setSourceLocation("WebGLCanvas.ts", 147);
+                    akra.logger.criticalError("Invalid box.", "GLXWindow::copyContentsToMemory");
+                    ;
+                }
+                if (eFramebuffer == 2 /* AUTO */ ) {
+                    eFramebuffer = this._isFullscreen ? 0 /* FRONT */  : 1 /* BACK */ ;
+                }
+                var eFormat = webgl.getWebGLFormat(ppDest.format);
+                var eType = webgl.getWebGLDataType(ppDest.format);
+                if (eFormat == 0 || eType == 0) {
+                    akra.logger.setSourceLocation("WebGLCanvas.ts", 158);
+                    akra.logger.criticalError("Unsupported format.", "WebGLCanvas::readPixels");
+                    ;
+                }
+                var pWebGLRenderer = ((this)._pRenderer);
+                var pWebGLContext = (pWebGLRenderer._pWebGLContext);
+                pWebGLRenderer._setViewport(this.getViewport(0));
+                (pWebGLRenderer._pWebGLContext.bindFramebuffer((0x8D40), (null)));
+                // Must change the packing to ensure no overruns!
+                pWebGLContext.pixelStorei(0x0D05, 1);
+                //glReadBuffer((buffer == FB_FRONT)? GL_FRONT : GL_BACK);
+                pWebGLContext.readPixels(ppDest.left, ppDest.top, ppDest.width, ppDest.height, eFormat, eType, ppDest.data);
+                // restore default alignment
+                pWebGLContext.pixelStorei(0x0D05, 4);
+                //vertical flip
+                // {
+                // 	size_t rowSpan = dst.getWidth() * PixelUtil::getNumElemBytes(dst.format);
+                // 	size_t height = dst.getHeight();
+                // 	uchar *tmpData = new uchar[rowSpan * height];
+                // 	uchar *srcRow = (uchar *)dst.data, *tmpRow = tmpData + (height - 1) * rowSpan;
+                // 	while (tmpRow >= tmpData)
+                // 	{
+                // 		memcpy(tmpRow, srcRow, rowSpan);
+                // 		srcRow += rowSpan;
+                // 		tmpRow -= rowSpan;
+                // 	}
+                // 	memcpy(dst.data, tmpData, rowSpan * height);
+                // 	delete [] tmpData;
+                // }
+                return ppDest;
+            };
+            WebGLCanvas.fullscreenLock = false;
+            return WebGLCanvas;
+        })(akra.render.Canvas3d);
+        webgl.WebGLCanvas = WebGLCanvas;        
+    })(akra.webgl || (akra.webgl = {}));
+    var webgl = akra.webgl;
+})(akra || (akra = {}));
 var akra;
 (function (akra) {
     (function (webgl) {
@@ -28780,17 +30250,19 @@ var akra;
                 for(var i = 0; i < this._pWebGLFramebufferList.length; ++i) {
                     this._pWebGLFramebufferList[i] = this._pWebGLContext.createFramebuffer();
                 }
+                this._pDefaultCanvas = new webgl.WebGLCanvas(this);
+                this.attachRenderTarget(this._pDefaultCanvas);
             }
             WebGLRenderer.prototype.debug = function (bValue, useApiTrace) {
                 if (typeof bValue === "undefined") { bValue = true; }
                 if (typeof useApiTrace === "undefined") { useApiTrace = false; }
                 var pWebGLInternalContext = this._pWebGLContext;
                 if (bValue) {
-                    if (((WebGLDebugUtils) !== undefined) && !((pWebGLInternalContext) === null)) {
+                    if ((((window).WebGLDebugUtils) !== undefined) && !((pWebGLInternalContext) === null)) {
                         this._pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLInternalContext, function (err, funcName, args) {
                             throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
                         }, useApiTrace ? function (funcName, args) {
-                            akra.logger.setSourceLocation("WebGLRenderer.ts", 60);
+                            akra.logger.setSourceLocation("WebGLRenderer.ts", 68);
                             akra.logger.log("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")");
                             ;
                         } : null);
@@ -28839,7 +30311,7 @@ var akra;
             WebGLRenderer.prototype.createWebGLFramebuffer = /** Framebuffer Objects */
             /** @inline */function () {
                 if (this._pWebGLFramebufferList.length === 0) {
-                    akra.logger.setSourceLocation("WebGLRenderer.ts", 127);
+                    akra.logger.setSourceLocation("WebGLRenderer.ts", 135);
                     akra.logger.criticalError("WebGL framebuffer limit exidit");
                     ;
                 }
@@ -28873,9 +30345,12 @@ var akra;
             WebGLRenderer.prototype.disableAllWebGLVertexAttribs = function () {
                 //TODO: check attrib array from last shader program
                 var i = 0;
-                for(i = 0; i < 16; i++) {
+                for(i = 0; i < webgl.maxVertexAttributes; i++) {
                     this._pWebGLContext.disableVertexAttribArray(i);
                 }
+            };
+            WebGLRenderer.prototype.getDefaultCanvas = function () {
+                return this._pDefaultCanvas;
             };
             return WebGLRenderer;
         })(akra.render.Renderer);
@@ -28942,6 +30417,7 @@ var akra;
                 this._pWebGLTexture = pTexture;
                 this._iFace = iFace;
                 this._iLevel = iLevel;
+                this._iFlags = iFlags;
                 this._bSoftwareMipmap = bSoftwareMipmap;
                 this._eFaceTarget = eTarget;
                 if (eTarget === 0x8513) {
@@ -28992,9 +30468,9 @@ var akra;
                 var pWebGLRenderer = (((((((((this).pResourcePool)).pManager))).pEngine))._pRenderer);
                 var pWebGLContext = (pWebGLRenderer._pWebGLContext);
                 (pWebGLRenderer._pWebGLContext.bindTexture((this._eTarget), (this._pWebGLTexture)));
-                if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((pData.format))).flags) & 2 /* COMPRESSED */ ) > 0)) {
+                if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((pData.format))).flags) & 2 /* COMPRESSED */ ) > 0)) {
                     if (pData.format !== this._eFormat || !pData.isConsecutive()) {
-                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 167);
+                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 168);
                         akra.logger.criticalError("Compressed images must be consecutive, in the source format");
                         ;
                     }
@@ -29009,13 +30485,13 @@ var akra;
                 } else if (this._bSoftwareMipmap) {
                     if (pData.width !== pData.rowPitch) {
                         // TODO
-                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 192);
+                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 193);
                         akra.logger.criticalError("Unsupported texture format");
                         ;
                     }
                     if (pData.height * pData.width !== pData.slicePitch) {
                         // TODO
-                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 197);
+                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 198);
                         akra.logger.criticalError("Unsupported texture format");
                         ;
                     }
@@ -29024,21 +30500,25 @@ var akra;
                 } else {
                     if (pData.width !== pData.rowPitch) {
                         // TODO
-                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 206);
+                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 207);
                         akra.logger.criticalError("Unsupported texture format");
                         ;
                     }
                     if (pData.height * pData.width !== pData.slicePitch) {
                         // TODO
-                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 211);
+                        akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 212);
                         akra.logger.criticalError("Unsupported texture format");
                         ;
                     }
-                    if ((pData.width * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((pData.format)).elemBytes)) & 3) {
+                    if ((pData.width * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((pData.format)).elemBytes)) & 3) {
                         // Standard alignment of 4 is not right
                         pWebGLContext.pixelStorei(0x0CF5, 1);
                     }
-                    pWebGLContext.texSubImage2D(this._eFaceTarget, this._iLevel, pDestBox.left, pDestBox.top, pDestBox.width, pDestBox.height, akra.webgl.getWebGLFormat(pData.format), akra.webgl.getWebGLDataType(pData.format), pData.data);
+                    if (pDestBox.left === 0 && pDestBox.top === 0) {
+                        pWebGLContext.texImage2D(this._eFaceTarget, this._iLevel, akra.webgl.getWebGLFormat(pData.format), pDestBox.width, pDestBox.height, 0, akra.webgl.getWebGLFormat(pData.format), akra.webgl.getWebGLDataType(pData.format), new Uint8Array(pData.data));
+                    } else {
+                        pWebGLContext.texSubImage2D(this._eFaceTarget, this._iLevel, pDestBox.left, pDestBox.top, pDestBox.width, pDestBox.height, akra.webgl.getWebGLFormat(pData.format), akra.webgl.getWebGLDataType(pData.format), pData.data);
+                    }
                 }
                 if ((((this._iFlags) & (256 /* AUTOMIPMAP */ )) != 0) && !this._bSoftwareMipmap && (this._iLevel === 0)) {
                     pWebGLContext.generateMipmap(this._eFaceTarget);
@@ -29076,7 +30556,7 @@ var akra;
                 //     // Restore defaults
                 //     glPixelStorei(GL_PACK_ALIGNMENT, 4);
                 // }
-                akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 267);
+                akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 279);
                 akra.logger.criticalError("Downloading texture buffers is not supported by OpenGL ES");
                 ;
             };
@@ -29126,7 +30606,7 @@ var akra;
                 }
             };
             WebGLTextureBuffer.prototype._bindToFramebuffer = function (iAttachment, iZOffset) {
-                akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 336);
+                akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 348);
                 akra.logger.assert(iZOffset < this._iDepth);
                 ;
                 var pWebGLRenderer = (((((((((this).pResourcePool)).pManager))).pEngine))._pRenderer);
@@ -29227,8 +30707,8 @@ var akra;
                 (pWebGLRenderer._pWebGLContext.useProgram((pWebGLShaderProgram)));
                 var iPosAttrIndex = 0;
                 var iTexAttrIndex = 0;
-                iPosAttrIndex = (pWebGLShaderProgram._pWebGLAttributeLocations[("POSITION")] || -1);
-                iTexAttrIndex = (pWebGLShaderProgram._pWebGLAttributeLocations[("TEXCOORD")] || -1);
+                iPosAttrIndex = (((pWebGLShaderProgram._pWebGLAttributeLocations[("POSITION")]) !== undefined) ? pWebGLShaderProgram._pWebGLAttributeLocations[("POSITION")] : -1);
+                iTexAttrIndex = (((pWebGLShaderProgram._pWebGLAttributeLocations[("TEXCOORD")]) !== undefined) ? pWebGLShaderProgram._pWebGLAttributeLocations[("TEXCOORD")] : -1);
                 pWebGLContext.enableVertexAttribArray(iPosAttrIndex);
                 pWebGLContext.enableVertexAttribArray(iTexAttrIndex);
                 var pSquareVertices = new Float32Array([
@@ -29342,11 +30822,11 @@ var akra;
                 // TODO: Check that extension is NOT available
                 var pSourceOrigin = arguments[0];
                 var pDestBox = arguments[1];
-                if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((pSourceOrigin.format))).flags) & 32 /* LUMINANCE */ ) > 0) || (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 32 /* LUMINANCE */ ) > 0) || (pSourceOrigin.width === pDestBox.width && pSourceOrigin.height === pDestBox.height && pSourceOrigin.depth === pDestBox.depth)) {
+                if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((pSourceOrigin.format))).flags) & 32 /* LUMINANCE */ ) > 0) || (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 32 /* LUMINANCE */ ) > 0) || (pSourceOrigin.width === pDestBox.width && pSourceOrigin.height === pDestBox.height && pSourceOrigin.depth === pDestBox.depth)) {
                     return _super.prototype.blitFromMemory.call(this, pSourceOrigin, pDestBox);
                 }
                 if (!this._pBuffer.contains(pDestBox)) {
-                    akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 627);
+                    akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 639);
                     akra.logger.criticalError("Destination box out of range");
                     ;
                 }
@@ -29372,7 +30852,7 @@ var akra;
                 var iWebGLDataType = webgl.getWebGLDataType(pSource.format);
                 pTempWebGLTexture = (pWebGLRenderer._pWebGLContext.createTexture());
                 if (((pTempWebGLTexture) === null)) {
-                    akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 660);
+                    akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 672);
                     akra.logger.error("Can not create WebGL texture");
                     ;
                     return false;
@@ -29396,17 +30876,17 @@ var akra;
             };
             WebGLTextureBuffer.prototype.getRenderTarget = function (iZOffest) {
                 if (typeof iZOffest === "undefined") { iZOffest = 0; }
-                akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 695);
+                akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 707);
                 akra.logger.assert((((this._iFlags) & (512 /* RENDERTARGET */ )) != 0));
                 ;
-                akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 696);
-                akra.logger.assert(iZOffest < this._iDepth);
+                akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 708);
+                akra.logger.assert(iZOffest < this._iDepth, "iZOffest: " + iZOffest + ", iDepth: " + this._iDepth);
                 ;
                 return this._pRTTList[iZOffest];
             };
             WebGLTextureBuffer.prototype.resize = function (iWidth, iHeight) {
                 if (arguments.length === 1) {
-                    akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 703);
+                    akra.logger.setSourceLocation("webgl/WebGLTextureBuffer.ts", 715);
                     akra.logger.criticalError("resize with one parametr not available for WebGLTextureBuffer");
                     ;
                     return false;
@@ -29572,18 +31052,25 @@ var akra;
                 }
                 if (this._iDepth != 1) {
                     this._iDepth = 1;
-                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 190);
+                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 187);
                     akra.logger.warning("Трехмерные текстуры не поддерживаются, сброс глубины в 1");
                     ;
                 }
+                if (!akra.webgl.hasExtension("EXT_texture_npot_2D_mipmap") && (!(((this._iDepth) > 0 && (((this._iDepth)) == 0 ? (null) : (((this._iDepth)) < 0 ? 31 : ((/*checked (origin: math)>>*/akra.math.log(((this._iDepth))) / /*checked (origin: math)>>*/akra.math.LN2) << 0))) == /*checked (origin: math)>>*/akra.math.lowestBitSet((this._iDepth)))) || !(((this._iHeight) > 0 && (((this._iHeight)) == 0 ? (null) : (((this._iHeight)) < 0 ? 31 : ((/*checked (origin: math)>>*/akra.math.log(((this._iHeight))) / /*checked (origin: math)>>*/akra.math.LN2) << 0))) == /*checked (origin: math)>>*/akra.math.lowestBitSet((this._iHeight)))) || !(((this._iWidth) > 0 && (((this._iWidth)) == 0 ? (null) : (((this._iWidth)) < 0 ? 31 : ((/*checked (origin: math)>>*/akra.math.log(((this._iWidth))) / /*checked (origin: math)>>*/akra.math.LN2) << 0))) == /*checked (origin: math)>>*/akra.math.lowestBitSet((this._iWidth)))))) {
+                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 191);
+                    akra.logger.warning("Мип мапы у текстуры не стпени двойки не поддерживаются, сброс мипмапов в 0");
+                    ;
+                    this._nMipLevels = 0;
+                    ((this._iFlags) &= ~(256 /* AUTOMIPMAP */ ));
+                }
                 if (!akra.webgl.isWebGLFormatSupport(this._eFormat)) {
-                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 196);
+                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 203);
                     akra.logger.warning("Данный тип текстуры не поддерживается");
                     ;
                     this._eFormat = 13 /* A8B8G8R8 */ ;
                 }
-                if (this._nMipLevels != 0 && this._nMipLevels != akra.webgl.getMaxMipmaps(this._iWidth, this._iHeight, this._iDepth, this._eFormat)) {
-                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 203);
+                if (this._nMipLevels != 0 && this._nMipLevels != akra.core.pool.resources.Img.getMaxMipmaps(this._iWidth, this._iHeight, this._iDepth, this._eFormat)) {
+                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 210);
                     akra.logger.warning("Нехватает мипмапов, сброс в 0");
                     ;
                     this._nMipLevels = 0;
@@ -29606,27 +31093,27 @@ var akra;
                 var iWidth = this._iWidth;
                 var iHeight = this._iHeight;
                 var iDepth = this._iDepth;
-                if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 2 /* COMPRESSED */ ) > 0)) {
+                if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor(((this._eFormat))).flags) & 2 /* COMPRESSED */ ) > 0)) {
                     // Compressed formats
                     var iSize = akra.pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
                     // Provide temporary buffer filled with zeroes as glCompressedTexImageXD does not
                     // accept a 0 pointer like normal glTexImageXD
                     // Run through this process for every mipmap to pregenerate mipmap pyramid
-                    //TODO: можем мы можем подать просто null, надо проверить
-                    //var pTmpData: Uint8Array = new Uint8Array(iSize);
-                    //var pEmptyData: Uint8Array;
-                    //var mip: uint = 0;
+                    var pTmpData = new Uint8Array(iSize);
+                    var pEmptyData;
+                    var mip = 0;
                     for(mip = 0; mip <= this._nMipLevels; mip++) {
-                        //iSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
-                        //pEmptyData = pTmpData.subarray(0, iSize);
+                        iSize = akra.pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
+                        //console.log(iSize,iWidth, iHeight, iDepth, this._eFormat);
+                        pEmptyData = pTmpData.subarray(0, iSize);
                         switch(this._eTextureType) {
                             case 3553 /* TEXTURE_2D */ :
-                                pWebGLContext.compressedTexImage2D(0x0DE1, mip, iWebGLFormat, iWidth, iHeight, 0, null);
+                                pWebGLContext.compressedTexImage2D(0x0DE1, mip, iWebGLFormat, iWidth, iHeight, 0, pEmptyData);
                                 break;
                             case 34067 /* TEXTURE_CUBE_MAP */ :
                                 var iFace = 0;
                                 for(iFace = 0; iFace < 6; iFace++) {
-                                    pWebGLContext.compressedTexImage2D(0x8515 + iFace, mip, iWebGLFormat, iWidth, iHeight, 0, null);
+                                    pWebGLContext.compressedTexImage2D(0x8515 + iFace, mip, iWebGLFormat, iWidth, iHeight, 0, pEmptyData);
                                 }
                                 break;
                             default:
@@ -29643,15 +31130,16 @@ var akra;
                             iDepth = iDepth / 2;
                         }
                     }
-                    //pTmpData = null;
-                    //pEmptyData = null;
-                                    } else {
+                    pTmpData = null;
+                    pEmptyData = null;
+                } else {
                     var mip = 0;
                     // Run through this process to pregenerate mipmap pyramid
                     for(mip = 0; mip <= this._nMipLevels; mip++) {
                         // Normal formats
                         switch(this._eTextureType) {
                             case 3553 /* TEXTURE_2D */ :
+                                //console.log(mip,iWidth, iHeight);
                                 pWebGLContext.texImage2D(0x0DE1, mip, iWebGLFormat, iWidth, iHeight, 0, iWebGLFormat, iWebGLDataType, null);
                                 break;
                             case 34067 /* TEXTURE_CUBE_MAP */ :
@@ -29664,13 +31152,13 @@ var akra;
                                 break;
                         }
                         if (iWidth > 1) {
-                            iWidth = iWidth / 2;
+                            iWidth = iWidth >>> 1;
                         }
                         if (iHeight > 1) {
-                            iHeight = iHeight / 2;
+                            iHeight = iHeight >>> 1;
                         }
                         if (iDepth > 1) {
-                            iDepth = iDepth / 2;
+                            iDepth = iDepth >>> 1;
                         }
                     }
                 }
@@ -29708,7 +31196,7 @@ var akra;
                         this._pSurfaceList.push(pBuf);
                         //check error
                         if ((pBuf._iWidth) === 0 || (pBuf._iHeight) === 0 || (pBuf._iDepth) === 0) {
-                            akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 369);
+                            akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 378);
                             akra.logger.criticalError("Zero sized texture surface on texture " + sResourceName + " face " + iFace + " mipmap " + mip + ". The GL driver probably refused to create the texture.");
                             ;
                         }
@@ -29716,20 +31204,20 @@ var akra;
                 }
             };
             WebGLInternalTexture.prototype.getBuffer = function (iFace, iMipmap) {
-                if (typeof iFace === "undefined") { iFace = 1; }
+                if (typeof iFace === "undefined") { iFace = 0; }
                 if (typeof iMipmap === "undefined") { iMipmap = 0; }
                 if (iFace >= ((this)._eTextureType === 34067 /* TEXTURE_CUBE_MAP */  ? 6 : 1)) {
-                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 378);
-                    akra.logger.criticalError("Face index out of range");
+                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 387);
+                    akra.logger.criticalError("Face index out of range", iFace, ((this)._eTextureType === 34067 /* TEXTURE_CUBE_MAP */  ? 6 : 1));
                     ;
                 }
                 if (iMipmap > this._nMipLevels) {
-                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 382);
-                    akra.logger.criticalError("Mipmap index out of range");
+                    akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 391);
+                    akra.logger.criticalError("Mipmap index out of range", iMipmap, this._nMipLevels);
                     ;
                 }
                 var idx = iFace * (this._nMipLevels + 1) + iMipmap;
-                akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 386);
+                akra.logger.setSourceLocation("webgl/WebGLInternalTexture.ts", 395);
                 akra.logger.assert(idx < this._pSurfaceList.length, "smth");
                 ;
                 return this._pSurfaceList[idx];
@@ -29768,9 +31256,10 @@ var akra;
                 if ((typeof (pDecl) === "number")) {
                     this._iStride = pDecl;
                 } else {
+                    this._iStride = pDecl.stride;
                     this.setVertexDeclaration(pDecl);
                 }
-                akra.logger.setSourceLocation("data/VertexData.ts", 58);
+                akra.logger.setSourceLocation("data/VertexData.ts", 59);
                 akra.logger.assert(pVertexBuffer.byteLength >= ((this)._iLength * (this)._iStride) + ((this)._iOffset), "vertex data out of array linits");
                 ;
             }
@@ -29832,27 +31321,27 @@ var akra;
             };
             VertexData.prototype.setVertexDeclaration = function (pDecl) {
                 if (this._pVertexDeclaration) {
-                    akra.logger.setSourceLocation("data/VertexData.ts", 68);
+                    akra.logger.setSourceLocation("data/VertexData.ts", 69);
                     akra.logger.error("vertex declaration already exists");
                     ;
                     return false;
                 }
                 var iStride = pDecl.stride;
                 this._pVertexDeclaration = pDecl.clone();
-                akra.logger.setSourceLocation("data/VertexData.ts", 79);
+                akra.logger.setSourceLocation("data/VertexData.ts", 80);
                 akra.logger.assert(iStride < 256 /* k_MaxElementsSize */ , "stride max is 255 bytes");
                 ;
-                akra.logger.setSourceLocation("data/VertexData.ts", 81);
+                akra.logger.setSourceLocation("data/VertexData.ts", 82);
                 akra.logger.assert(iStride <= ((this)._iStride), "stride in VertexDeclaration grather than stride in construtor");
                 ;
                 return true;
             };
             VertexData.prototype.getVertexElementCount = /** @inline */function () {
-                return this._pVertexDeclaration.length;
+                return ((this._pVertexDeclaration)._pElements.length);
             };
             VertexData.prototype.hasSemantics = function (sUsage) {
                 if (this._pVertexDeclaration != null) {
-                    return this._pVertexDeclaration.hasSemantics(sUsage);
+                    return ((this._pVertexDeclaration).findElement((sUsage)) !== null);
                 }
                 return false;
             };
@@ -29868,7 +31357,7 @@ var akra;
                 } else {
                     pData = new Uint8Array(pData.buffer);
                 }
-                akra.logger.setSourceLocation("data/VertexData.ts", 113);
+                akra.logger.setSourceLocation("data/VertexData.ts", 114);
                 akra.logger.assert(((this)._iLength) === pData.byteLength / pDecl.stride, 'invalid data size for extending');
                 ;
                 var nCount = this._iLength;
@@ -29901,6 +31390,7 @@ var akra;
                 var pOldVertexBuffer;
                 var pOldVertexDeclaration;
                 var iOldStride;
+                //debug_print("VertexData (offset: " + this.byteOffset + ") resized from " + this.byteLength + " to ", arguments);
                 if (arguments.length == 2) {
                     if ((typeof (pDecl) === "number")) {
                         iStride = pDecl;
@@ -29922,7 +31412,7 @@ var akra;
                             return false;
                         }
                         if (((this)._iOffset) != iOldOffset) {
-                            akra.logger.setSourceLocation("data/VertexData.ts", 184);
+                            akra.logger.setSourceLocation("data/VertexData.ts", 187);
                             akra.logger.warning("vertex data moved from " + iOldOffset + " ---> " + ((this)._iOffset));
                             ;
                             this.relocation(this, iOldOffset, ((this)._iOffset));
@@ -29943,7 +31433,7 @@ var akra;
                         }
                         this.setVertexDeclaration(pOldVertexDeclaration);
                         if (((this)._iOffset) != iOldOffset) {
-                            akra.logger.setSourceLocation("data/VertexData.ts", 210);
+                            akra.logger.setSourceLocation("data/VertexData.ts", 213);
                             akra.logger.warning("vertex data moved from " + iOldOffset + " ---> " + ((this)._iOffset));
                             ;
                             this.relocation(this, iOldOffset, ((this)._iOffset));
@@ -29969,13 +31459,17 @@ var akra;
                 var pElement;
                 switch(arguments.length) {
                     case 5:
+                        if ((typeof (arguments[1]) === "string")) {
+                            iOffset = this._pVertexDeclaration.findElement(arguments[1]).offset;
+                        }
                         iStride = ((this)._iStride);
                         pDataU8 = new Uint8Array(pData.buffer);
                         if (iStride != iSize) {
                             //FIXME: очень тормознутое место, крайне медленно работает...
                             if (pVertexBuffer.isBackupPresent() && nCount > 1) {
-                                pBackupBuf = new Uint8Array(this._pVertexBuffer.byteLength);
-                                this._pVertexBuffer.readData(pBackupBuf);
+                                // console.log(pVertexBuffer.byteLength);
+                                pBackupBuf = new Uint8Array(pVertexBuffer.byteLength);
+                                pVertexBuffer.readData(pBackupBuf);
                                 iOffsetBuffer = ((this)._iOffset);
                                 for(var i = nCountStart; i < nCount + nCountStart; i++) {
                                     for(k = 0; k < iSize; k++) {
@@ -29984,14 +31478,17 @@ var akra;
                                 }
                                 pVertexBuffer.writeData(pBackupBuf, 0, pVertexBuffer.byteLength);
                             } else {
-                                for(var i = nCountStart; i < nCount + nCountStart; i++) {
+                                for(var i = 0; i < nCount; i++) {
+                                    var iCurrent = i + nCountStart;
                                     pVertexBuffer.writeData(/*pData.buffer.slice*/
-                                    pDataU8.subarray(iSize * (i - nCountStart), iSize * (i - nCountStart) + iSize), iStride * i + iOffset + ((this)._iOffset), iSize);
+                                    pDataU8.subarray(iSize * i, iSize * (i + 1)), iStride * iCurrent + iOffset + ((this)._iOffset), iSize);
                                 }
                             }
                         } else {
                             pVertexBuffer.writeData(/*pData.buffer.slice*/
-                            pDataU8.subarray(0, iStride * nCount), iOffset + ((this)._iOffset), iStride * nCount);
+                            //stride == size => iOffset = 0;
+                            pDataU8.subarray(0, iStride * nCount), /*iOffset + */
+                            ((this)._iOffset) + iStride * nCountStart, iStride * nCount);
                         }
                         return true;
                     case 4:
@@ -30030,7 +31527,7 @@ var akra;
                         }
                         return false;
                     case 1:
-                        return this.setData(pData, this._pVertexDeclaration[0].eUsage);
+                        return this.setData(pData, ((this._pVertexDeclaration)._pElements[(0)] || null).usage);
                     default:
                         return false;
                 }
@@ -30046,9 +31543,12 @@ var akra;
                         iCount = iCount || this._iLength;
                         iCount = akra.math.min(iCount, this._iLength);
                         var iStride = ((this)._iStride);
-                        var pBufferData = new Uint8Array(iSize * ((this)._iLength));
-                        for(var i = iFrom; i < iCount; i++) {
-                            this._pVertexBuffer.readData(iStride * i + iOffset + ((this)._iOffset), iSize, pBufferData.subarray(i * iSize, i * iSize + iSize));
+                        var pBufferData = new Uint8Array(iSize * iCount);
+                        for(var i = 0; i < iCount; i++) {
+                            var iCurrent = iFrom + i;
+                            akra.logger.setSourceLocation("data/VertexData.ts", 385);
+                            akra.logger.assert(this._pVertexBuffer.readData(iStride * iCurrent + iOffset + ((this)._iOffset), iSize, pBufferData.subarray(i * iSize, (i + 1) * iSize)), "cannot read buffer");
+                            ;
                             //pBufferData.set(new Uint8Array(), i * iSize);
                                                     }
                         return pBufferData.buffer;
@@ -30057,7 +31557,7 @@ var akra;
                         var pDeclaration = this._pVertexDeclaration, pElement = null;
                         if ((typeof ("string") === "string")) {
                             pElement = pDeclaration.findElement(arguments[0]);
-                            if (pElement) {
+                            if (((pElement) != null)) {
                                 return this.getData(pElement.offset, pElement.size, arguments[1], arguments[2]);
                             }
                             return null;
@@ -30070,7 +31570,6 @@ var akra;
                 }
             };
             VertexData.prototype.getTypedData = function (sUsage, iFrom, iCount) {
-                sUsage = sUsage || this._pVertexDeclaration[0].sUsage;
                 var pVertexElement = this._pVertexDeclaration.findElement(sUsage);
                 if (pVertexElement) {
                     return akra.util.abtota(this.getData(sUsage, iFrom, iCount), pVertexElement.type);
@@ -30101,7 +31600,7 @@ var akra;
                 return this._iGuid;
             };
             VertexData._pEventTable = new akra.events.EventTable();
-            VertexData.prototype.getEventTable = function () {
+            VertexData.prototype.getEventTable = /** @inline */function () {
                 return VertexData._pEventTable;
             };
             VertexData.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -30111,13 +31610,13 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             VertexData.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (VertexData._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             VertexData.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (VertexData._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             VertexData.prototype.relocation = function (pTarget, iFrom, iTo) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((VertexData._pEventTable))).broadcast[(this._iGuid)] = (((VertexData._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).relocation;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -30153,7 +31652,7 @@ var akra;
                     MemoryBuffer.prototype.create = function (iByteSize, iFlags) {
                         if (typeof iFlags === "undefined") { iFlags = 2 /* DYNAMIC */ ; }
                         ((iFlags) &= ~(8 /* BACKUP_COPY */  | 64 /* DISCARDABLE */  | 32 /* ALIGNMENT */ ));
-                        var isCreated = _super.prototype.create.call(this, iFlags | 16 /* SOFTWARE */ );
+                        var isCreated = _super.prototype.create.call(this, 0, iFlags | 16 /* SOFTWARE */ );
                         this._pData = new Uint8Array(iByteSize);
                         return isCreated;
                     };
@@ -30163,7 +31662,11 @@ var akra;
                     };
                     MemoryBuffer.prototype.resize = function (iSize) {
                         var pData = new Uint8Array(iSize);
-                        pData.set(this._pData);
+                        if (iSize >= ((this)._pData.byteLength)) {
+                            pData.set(this._pData);
+                        } else {
+                            pData.set(this._pData.subarray(0, iSize));
+                        }
                         this._pData = pData;
                         ((this).setAlteredFlag(true));
                         return true;
@@ -30177,22 +31680,28 @@ var akra;
                             iOffset = 0;
                             iSize = ppDest.byteLength;
                         }
-                        akra.logger.setSourceLocation("MemoryBuffer.ts", 55);
+                        akra.logger.setSourceLocation("MemoryBuffer.ts", 62);
                         akra.logger.assert((iOffset + iSize) <= ((this)._pData.byteLength));
                         ;
-                        /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/akra.memcpy((ppDest).buffer, 0, this._pData.buffer, iOffset, iSize);
+                        /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/akra.memcpy((ppDest).buffer, (ppDest).byteOffset, this._pData.buffer, iOffset, iSize);
                         return true;
                     };
-                    MemoryBuffer.prototype.writeData = function (pData, iOffset, iSize, bDiscardWholeBuffer) {
+                    MemoryBuffer.prototype.writeData = // writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+                    function (pData, iOffset, iSize, bDiscardWholeBuffer) {
                         if (typeof bDiscardWholeBuffer === "undefined") { bDiscardWholeBuffer = false; }
-                        akra.logger.setSourceLocation("MemoryBuffer.ts", 64);
-                        akra.logger.assert((iOffset + iSize) <= ((this)._pData.byteLength));
-                        ;
+                        // writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool {
                         if (arguments.length < 3) {
-                            iOffset = 0;
                             iSize = pData.byteLength;
                         }
-                        /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/akra.memcpy(this._pData.buffer, 0, (pData).buffer, iOffset, iSize);
+                        if (arguments.length < 2) {
+                            iOffset = 0;
+                        }
+                        akra.logger.setSourceLocation("MemoryBuffer.ts", 80);
+                        akra.logger.assert((iOffset + iSize) <= ((this)._pData.byteLength));
+                        ;
+                        if (((pData) != null)) {
+                            /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/akra.memcpy(this._pData.buffer, iOffset, (pData).buffer, (pData).byteOffset, iSize);
+                        }
                         ((this).setAlteredFlag(true));
                         return true;
                     };
@@ -30234,8 +31743,10 @@ var akra;
                         enumerable: true,
                         configurable: true
                     });
-                    VertexBuffer.prototype.create = function (iByteSize, iFlags, pData) {
-                        _super.prototype.create.call(this, iFlags || 0);
+                    VertexBuffer.prototype.create = // create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
+                    function (iByteSize, iFlags, pData) {
+                        // create(iByteSize: uint, iFlags?: uint, pData?: any): bool {
+                        _super.prototype.create.call(this, 0, iFlags || 0);
                         if ((((iFlags) & (8 /* BACKUP_COPY */ )) != 0)) {
                             this._pBackupCopy = new resources.MemoryBuffer();
                             this._pBackupCopy.create(iByteSize);
@@ -30260,13 +31771,14 @@ var akra;
                         return pVertexData;
                     };
                     VertexBuffer.prototype.getEmptyVertexData = function (iCount, pDeclData, ppVertexDataIn) {
-                        var pDecl;
+                        var pDecl = null;
                         var pHole = [];
                         var i;
                         var pVertexData;
                         var iTemp;
                         var iStride = 0;
                         var iAligStart;
+                        var iNewSize = 0;
                         while(true) {
                             pHole[0] = {
                                 start: 0,
@@ -30311,12 +31823,14 @@ var akra;
                             pHole.sort(/** @inline */function (a, b) {
                                 return ((a.end - a.start) - (b.end - b.start));
                             });
-                            if ((typeof (pDeclData) === "number")) {
+                            if (!(typeof (pDeclData) === "number")) {
                                 pDecl = akra.createVertexDeclaration(pDeclData);
                                 iStride = pDecl.stride;
                             } else {
                                 iStride = pDeclData;
                             }
+                            // console.log(arguments[0], arguments[1].toString());
+                            // console.log("Buffer size >", this.byteLength, iCount * iStride)
                             for(i = 0; i < pHole.length; i++) {
                                 iAligStart = (((((this)._iFlags) & (32 /* ALIGNMENT */ )) != 0)) ? akra.math.alignUp(pHole[i].start, (/*checked (origin: math)>>*/akra.math.abs((iStride) * (4)) / /*checked (origin: math)>>*/akra.math.nod((iStride), (4)))) : akra.math.alignUp(pHole[i].start, iStride);
                                 if ((pHole[i].end - iAligStart) >= iCount * iStride) {
@@ -30326,7 +31840,7 @@ var akra;
                                         ((this).setAlteredFlag(true));
                                         return pVertexData;
                                     } else if (arguments.length == 3) {
-                                        ((ppVertexDataIn).constructor).call(ppVertexDataIn, this, iAligStart, iCount, pDeclData);
+                                        ((ppVertexDataIn).constructor).call(ppVertexDataIn, this, ppVertexDataIn.id, iAligStart, iCount, pDeclData);
                                         this._pVertexDataArray.push(ppVertexDataIn);
                                         ((this).setAlteredFlag(true));
                                         return ppVertexDataIn;
@@ -30334,7 +31848,11 @@ var akra;
                                     return null;
                                 }
                             }
-                            if (this.resize(akra.math.max(this.byteLength * 2, this.byteLength + iCount * iStride)) == false) {
+                            iNewSize = akra.math.max(this.byteLength * 2, this.byteLength + iCount * iStride);
+                            if (this.resize(iNewSize) == false) {
+                                akra.logger.setSourceLocation("core/pool/resources/VertexBuffer.ts", 181);
+                                akra.logger.warning("cannot resize buffer from " + this.byteLength + " bytes to " + iNewSize + " bytes ");
+                                ;
                                 break;
                             }
                         }
@@ -30364,16 +31882,27 @@ var akra;
                         var pDecl = akra.createVertexDeclaration(pDeclData);
                         var pVertexData;
                         var iCount = pData.byteLength / pDecl.stride;
-                        akra.logger.setSourceLocation("core/pool/resources/VertexBuffer.ts", 221);
+                        akra.logger.setSourceLocation("core/pool/resources/VertexBuffer.ts", 225);
                         akra.logger.assert(iCount === akra.math.floor(iCount), 'Data size should be a multiple of the vertex declaration.');
                         ;
                         pVertexData = this.getEmptyVertexData(iCount, pDecl);
+                        akra.logger.setSourceLocation("core/pool/resources/VertexBuffer.ts", 229);
+                        akra.logger.assert(!((pVertexData) === null), "Could not allocate vertex data!");
+                        ;
                         pVertexData.setData(pData, 0, pDecl.stride);
                         return pVertexData;
                     };
                     return VertexBuffer;
                 })(resources.HardwareBuffer);
                 resources.VertexBuffer = VertexBuffer;                
+                /** @inline */function isVBO(pBuffer) {
+                    return pBuffer.type === 1 /* VBO */ ;
+                }
+                resources.isVBO = isVBO;
+                /** @inline */function isTBO(pBuffer) {
+                    return pBuffer.type === 2 /* TBO */ ;
+                }
+                resources.isTBO = isTBO;
             })(pool.resources || (pool.resources = {}));
             var resources = pool.resources;
         })(core.pool || (core.pool = {}));
@@ -30391,6 +31920,7 @@ var akra;
                 /*pManager*/
                         _super.call(this);
                 this._pLockData = null;
+                /**@protected*/ this._sCS = null;
             }
             Object.defineProperty(WebGLVertexBuffer.prototype, "type", {
                 get: /** @inline */function () {
@@ -30406,9 +31936,11 @@ var akra;
                 enumerable: true,
                 configurable: true
             });
-            WebGLVertexBuffer.prototype.create = function (iByteSize, iFlags, pData) {
+            WebGLVertexBuffer.prototype.create = // create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
+            function (iByteSize, iFlags, pData) {
                 if (typeof iFlags === "undefined") { iFlags = 1 /* STATIC */ ; }
                 if (typeof pData === "undefined") { pData = null; }
+                // create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {
                 iByteSize = akra.math.max(iByteSize, 1024);
                 if ((((iFlags) & (4 /* READABLE */ )) != 0)) {
                     ((iFlags) |= (8 /* BACKUP_COPY */ ));
@@ -30447,8 +31979,10 @@ var akra;
                 }
                 (pWebGLRenderer._pWebGLContext.bindBuffer((0x8892), (this._pWebGLBuffer)));
                 pWebGLContext.bufferData(0x8892, this._iByteSize, webgl.getWebGLUsage(this._iFlags));
-                if (pData) {
-                    pWebGLContext.bufferSubData(0x8892, 0, ((pData) instanceof ArrayBuffer) ? pData : (pData).buffer);
+                if (((pData) != null)) {
+                    /*pWebGLContext.bufferSubData(
+                    GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? <ArrayBuffer>pData: (<Uint8Array>pData).buffer);*/
+                    pWebGLContext.bufferSubData(0x8892, 0, pData.buffer);
                 }
                 return true;
             };
@@ -30460,7 +31994,7 @@ var akra;
                 this._iByteSize = 0;
             };
             WebGLVertexBuffer.prototype.readData = function (iOffset, iSize, ppDest) {
-                akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 99);
+                akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 102);
                 akra.logger.assert(!((this._pWebGLBuffer) === null), "Буффер еще не создан");
                 ;
                 if (!((this)._pBackupCopy != null)) {
@@ -30475,16 +32009,16 @@ var akra;
             };
             WebGLVertexBuffer.prototype.writeData = function (pData, iOffset, iSize, bDiscardWholeBuffer) {
                 if (typeof bDiscardWholeBuffer === "undefined") { bDiscardWholeBuffer = false; }
-                akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 119);
+                akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 122);
                 akra.logger.assert(!((this._pWebGLBuffer) === null), "WebGL buffer not exists");
                 ;
                 var pWebGLRenderer = /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/this.getEngine().getRenderer();
                 var pWebGLContext = (pWebGLRenderer._pWebGLContext);
                 (pWebGLRenderer._pWebGLContext.bindBuffer((0x8892), (this._pWebGLBuffer)));
-                akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 126);
+                akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 129);
                 akra.logger.assert(pData.byteLength <= iSize, "Размер переданного массива больше переданного размера");
                 ;
-                akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 127);
+                akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 130);
                 akra.logger.assert(((this)._iByteSize) >= iOffset + iSize, "Данные выйдут за предел буфера");
                 ;
                 var pU8Data = null;
@@ -30508,9 +32042,15 @@ var akra;
                 var pVertexData;
                 var pWebGLRenderer = /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/this.getEngine().getRenderer();
                 var pWebGLContext = (pWebGLRenderer._pWebGLContext);
-                if (((this)._pBackupCopy != null)) {
+                if (!((this)._pBackupCopy != null)) {
+                    akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 164);
+                    akra.logger.log("Not resized, because backup not present!");
+                    ;
                     return false;
                 }
+                akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 168);
+                akra.logger.log("WebGLVertexBuffer resized from " + ((this)._iByteSize) + " to " + iSize);
+                ;
                 if (iSize < ((this)._iByteSize)) {
                     for(var k = 0; k < this._pVertexDataArray.length; ++k) {
                         pVertexData = this._pVertexDataArray[k];
@@ -30518,7 +32058,7 @@ var akra;
                             iMax = pVertexData.byteOffset + pVertexData.byteLength;
                         }
                     }
-                    akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 174);
+                    akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 181);
                     akra.logger.assert(iMax <= iSize, "Уменьшение невозможно. Страая разметка не укладывается в новый размер");
                     ;
                 }
@@ -30528,7 +32068,7 @@ var akra;
                 eUsage = webgl.getWebGLUsage(this._iFlags);
                 this._pWebGLBuffer = (pWebGLRenderer._pWebGLContext.createBuffer());
                 if (!this._pWebGLBuffer) {
-                    akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 186);
+                    akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 193);
                     akra.logger.criticalError("Не удалось создать буфер");
                     ;
                     this.destroy();
@@ -30537,8 +32077,8 @@ var akra;
                 (pWebGLRenderer._pWebGLContext.bindBuffer((0x8892), (this._pWebGLBuffer)));
                 pWebGLContext.bufferData(0x8892, iSize, eUsage);
                 pData = new Uint8Array(this._iByteSize);
-                if (this.readData(pData)) {
-                    akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 199);
+                if (!this.readData(pData)) {
+                    akra.logger.setSourceLocation("webgl/WebGLVertexBuffer.ts", 206);
                     akra.logger.warning("cannot read data from buffer");
                     ;
                     return false;
@@ -30874,7 +32414,7 @@ var akra;
                 var iLoc;
                 for(var i = 0; i < pVertexDecl.length; ++i) {
                     pVertexElement = pVertexDecl[i];
-                    iLoc = ((this)._pWebGLAttributeLocations[(pVertexElement.usage)] || -1);
+                    iLoc = ((((this)._pWebGLAttributeLocations[(pVertexElement.usage)]) !== undefined) ? (this)._pWebGLAttributeLocations[(pVertexElement.usage)] : -1);
                     if (iLoc < 0) {
                         akra.logger.setSourceLocation("WebGLShaderProgram.ts", 353);
                         akra.logger.warning("founded invalid GLSL attribute location(guid: %s): %s", ((this)._iGuid), pVertexElement.usage);
@@ -30892,7 +32432,7 @@ var akra;
                 ;
             };
             WebGLShaderProgram.prototype.getWebGLAttributeLocation = /** @inline */function (sName) {
-                return this._pWebGLAttributeLocations[sName] || -1;
+                return ((this._pWebGLAttributeLocations[sName]) !== undefined) ? this._pWebGLAttributeLocations[sName] : -1;
             };
             WebGLShaderProgram.prototype.getWebGLUniformLocation = /** @inline */function (sName) {
                 var iLoc = this._pWebGLUniformLocations[sName];
@@ -30980,9 +32520,12 @@ var akra;
                         _super.call(this);
                 /**@protected*/ this._iWidth = 0;
                 /**@protected*/ this._iHeight = 0;
+                /**@protected*/ this._pWebGLTexture = null;
                 /**@protected*/ this._ePixelFormat = 25 /* FLOAT32_RGBA */ ;
                 //переменная нужна, чтобы проигнорировать обновление копии, обычно, это не требуется
                 /**@protected*/ this._bForceUpdateBackupCopy = true;
+                /*vertex data for header updating*/
+                /**@protected*/ this._pHeader = null;
                 this._pLockData = null;
             }
             Object.defineProperty(WebGLVertexTexture.prototype, "type", {
@@ -31006,60 +32549,98 @@ var akra;
                 var iWidth, iHeight;
                 var pTextureData = null;
                 var pDataU8 = pData;
-                iByteSize = akra.math.max(iByteSize, akra.pixelUtil.getMemorySize(iMinWidth, iMinWidth, 1, this._ePixelFormat));
+                /*header size*/
+                var iAdditionalHeaderSize = (((pData) != null)) ? 32 : 0;
+                iByteSize = akra.math.max(iByteSize + iAdditionalHeaderSize, akra.pixelUtil.getMemorySize(iMinWidth, iMinWidth, 1, this._ePixelFormat));
                 if ((((iFlags) & (4 /* READABLE */ )) != 0)) {
                     ((iFlags) |= (8 /* BACKUP_COPY */ ));
                 }
                 _super.prototype.create.call(this, iByteSize, iFlags, pData);
-                var pPOTSize = akra.math.calcPOTtextureSize(akra.math.ceil(iByteSize / (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this._ePixelFormat)).elemBytes)));
+                var pPOTSize = akra.math.calcPOTtextureSize(akra.math.ceil(iByteSize / (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._ePixelFormat)).elemBytes)));
                 var pWebGLRenderer = (((((((((this).pResourcePool)).pManager))).pEngine))._pRenderer);
                 var pWebGLContext = (pWebGLRenderer._pWebGLContext);
                 var i;
                 iWidth = pPOTSize[0];
                 iHeight = pPOTSize[1];
-                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 61);
+                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 74);
                 akra.logger.assert(this._pWebGLTexture == null, "webgl texture already allocated");
                 ;
                 this._iWidth = iWidth;
                 this._iHeight = iHeight;
                 this._iFlags = iFlags;
-                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 67);
+                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 80);
                 akra.logger.assert(pWebGLContext !== null, "cannot grab webgl context");
                 ;
                 //Софтварного рендеринга буфера у нас нет
-                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 70);
-                akra.logger.assert(!(((((this)._iFlags) & (16 /* SOFTWARE */ )) != 0)), "no sftware rendering");
+                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 83);
+                akra.logger.assert(!(((((this)._iFlags) & (16 /* SOFTWARE */ )) != 0)), "no software rendering");
                 ;
                 //Если есть локальная копия то буфер можно читать
                 if (((this)._pBackupCopy != null)) {
                     ((this._iFlags) |= (4 /* READABLE */ ));
                 }
-                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 78);
+                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 91);
                 akra.logger.assert(!pData || pData.byteLength <= iByteSize, "Размер переданного массива больше переданного размера буфера");
+                ;
+                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 94);
+                akra.logger.assert(webgl.loadExtension(pWebGLContext, "OES_texture_float"), "OES_texture_float extension is necessary for correct work.");
                 ;
                 this._pWebGLTexture = (pWebGLRenderer._pWebGLContext.createTexture());
                 this._eWebGLFormat = webgl.getWebGLFormat(this._ePixelFormat);
                 this._eWebGLType = webgl.getWebGLDataType(this._ePixelFormat);
                 if (!this._pWebGLTexture) {
-                    akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 85);
+                    akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 101);
                     akra.logger.criticalError("Не удалось создать буфер");
                     ;
                     this.destroy();
                     return false;
                 }
-                if (pData) {
+                if (((pData) != null)) {
                     if (pData.BYTES_PER_ELEMENT > 1) {
                         pDataU8 = new Uint8Array(pData, pData.byteOffset, pData.byteLength);
                     }
-                    pTextureData = new Uint8Array((akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat)));
+                    pTextureData = new Uint8Array((/*checked (origin: akra)>>*/akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat)));
                     pTextureData.set(pDataU8);
                 }
                 (pWebGLRenderer._pWebGLContext.bindTexture((0x0DE1), (this._pWebGLTexture)));
                 pWebGLContext.texImage2D(0x0DE1, 0, this._eWebGLFormat, this._iWidth, this._iHeight, 0, this._eWebGLFormat, this._eWebGLType, pTextureData);
-                var pProgram = (((((this).pResourcePool)).pManager)).shaderProgramPool.findResource("WEBGL_update_vertex_texture");
+                pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MAG_FILTER, pWebGLContext.NEAREST);
+                pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MIN_FILTER, pWebGLContext.NEAREST);
+                pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_S, pWebGLContext.CLAMP_TO_EDGE);
+                pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_T, pWebGLContext.CLAMP_TO_EDGE);
+                //create header
+                this._pHeader = this.allocateData([
+                    (({
+count: (2),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclarationUsages.TEXTURE_HEADER)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
+                ], this._header());
+                /**
+                * update program
+                **/
+                var pProgram = (((((this).pResourcePool)).pManager)).shaderProgramPool.findResource("WEBGL_vertex_texture_update");
                 if (((pProgram) === null)) {
-                    pProgram = (((((this).pResourcePool)).pManager)).shaderProgramPool.createResource("WEBGL_update_vertex_texture");
-                    pProgram.create("																									\n	        	uniform sampler2D sourceTexture;																	\n				attribute vec4  VALUE;																				\n				attribute float INDEX;																				\n				attribute float SHIFT;																				\n				                      																				\n				uniform vec2 size;																					\n				varying vec4 color;																					\n				                   																					\n				void main(void){																					\n				    vec4 value = VALUE;																				\n				    float  serial = INDEX;																			\n				                          																			\n				    int shift = int(SHIFT);																			\n				    if (shift != 0) {																				\n				        color = texture2D(sourceTexture,                                        					\n				            vec2((mod(serial, size.x) +.5 ) / size.x, (floor(serial / size.x) + .5) / size.y)		\n				            );																						\n																													\n																													\n				        if (shift == 1) {																			\n				            color = vec4(color.r, value.gba);														\n				        }																							\n				        else if (shift == 2) {																		\n				            color = vec4(color.rg, value.ba);														\n				        }																							\n				        else if (shift == 3) {																		\n				            color = vec4(color.rgb, value.a);														\n				        }																							\n				        else if (shift == -1) {																		\n				            color = vec4(value.r, color.gba);														\n				        }																							\n				        else if (shift == -2) {																		\n				            color = vec4(value.rg, color.ba);														\n				        }																							\n				        else {																						\n				            color = vec4(value.rgb, color.a);														\n				        }																							\n				    }																								\n				    else {																							\n				        color = value;																				\n				    }																								\n				    gl_Position = vec4(2. * (mod(serial, size.x) + .5) / size.x - 1.,								\n				                    2. * (floor(serial / size.x)  + .5) / size.y - 1., 0., 1.);						\n				}																									\n				", "									\n				#ifdef GL_ES                        \n				    precision highp float;          \n				#endif								\n				varying vec4 color;                 \n				                                    \n				void main(void) {                   \n				    gl_FragColor = color;           \n				}                                   \n				");
+                    pProgram = (((((this).pResourcePool)).pManager)).shaderProgramPool.createResource("WEBGL_vertex_texture_update");
+                    pProgram.create("																									\n	        	uniform sampler2D sourceTexture;																	\n				attribute vec4  VALUE;																				\n				attribute float INDEX;																				\n				attribute float SHIFT;																				\n				                      																				\n				uniform vec2 size;																					\n				varying vec4 color;																					\n				                   																					\n				void main(void){																					\n				    vec4 value = VALUE;																				\n				    float  serial = INDEX;																			\n				                          																			\n				    int shift = int(SHIFT);																			\n				    if (shift != 0) {																				\n				        color = texture2D(sourceTexture,                                        					\n				            vec2((mod(serial, size.x) +.5 ) / size.x, (floor(serial / size.x) + .5) / size.y)		\n				            );																						\n																													\n																													\n				        if (shift == 1) {																			\n				            color = vec4(color.r, value.gba);														\n				        }																							\n				        else if (shift == 2) {																		\n				            color = vec4(color.rg, value.ba);														\n				        }																							\n				        else if (shift == 3) {																		\n				            color = vec4(color.rgb, value.a);														\n				        }																							\n				        else if (shift == -1) {																		\n				            color = vec4(value.r, color.gba);														\n				        }																							\n				        else if (shift == -2) {																		\n				            color = vec4(value.rg, color.ba);														\n				        }																							\n				        else {																						\n				            color = vec4(value.rgb, color.a);														\n				        }																							\n				    }																								\n				    else {																							\n				        color = value;																				\n				    }																								\n				    gl_PointSize = 1.;																				\n				    gl_Position = vec4(2. * (mod(serial, size.x) + .5) / size.x - 1.,								\n				                    2. * (floor(serial / size.x)  + .5) / size.y - 1., 0., 1.);						\n				}																									\n				", "									\n				#ifdef GL_ES                        \n				    precision highp float;          \n				#endif								\n				varying vec4 color;                 \n				                                    \n				void main(void) {                   \n				    gl_FragColor = color;           \n				}                                   \n				");
+                }
+                /**
+                * resize program
+                **/
+                pProgram = (((((this).pResourcePool)).pManager)).shaderProgramPool.findResource("WEBGL_vertex_texture_resize");
+                if (((pProgram) === null)) {
+                    pProgram = (((((this).pResourcePool)).pManager)).shaderProgramPool.createResource("WEBGL_vertex_texture_resize");
+                    pProgram.create("																									\n	        	attribute float INDEX;																				\n	        																										\n	        	uniform sampler2D sourceTexture;																	\n				                      																				\n				uniform vec2 v2fSrcTexSize;																			\n				uniform vec2 v2fDstTexSize;																			\n																													\n				varying vec4 v4fValue;																				\n				                   																					\n				void main(void){																					\n					                       																			\n				    vec2 v2fSrcPosition = vec2((mod(INDEX, v2fSrcTexSize.x) + 0.5)/v2fSrcTexSize.x,					\n				    						   (floor(INDEX/v2fSrcTexSize.x) + 0.5)/v2fSrcTexSize.y);				\n	        																										\n	        		vec2 v2fDstPosition = vec2((mod(INDEX, v2fDstTexSize.x) + 0.5)/v2fDstTexSize.x,					\n				    						   (floor(INDEX/v2fDstTexSize.x) + 0.5)/v2fDstTexSize.y);				\n	        																										\n	        		v4fValue = texture2D(sourceTexture, v2fSrcPosition);											\n	        																										\n	        		gl_PointSize = 1.;																				\n	        		gl_Position = vec4(v2fDstPosition*2. - 1., 0., 1.);												\n				}																									\n				", "									\n				#ifdef GL_ES                        \n				    precision highp float;          \n				#endif								\n				varying vec4 v4fValue;              \n				                                    \n				void main(void) {                   \n				    gl_FragColor = v4fValue;        \n				}                                   \n				");
+                }
+                if (((WebGLVertexTexture._pWebGLBuffer1) === null)) {
+                    WebGLVertexTexture._pWebGLBuffer1 = (pWebGLRenderer._pWebGLContext.createBuffer());
+                }
+                if (((WebGLVertexTexture._pWebGLBuffer2) === null)) {
+                    WebGLVertexTexture._pWebGLBuffer2 = (pWebGLRenderer._pWebGLContext.createBuffer());
+                }
+                if (((WebGLVertexTexture._pWebGLBuffer3) === null)) {
+                    WebGLVertexTexture._pWebGLBuffer3 = (pWebGLRenderer._pWebGLContext.createBuffer());
                 }
                 return true;
             };
@@ -31070,7 +32651,7 @@ var akra;
                 this._pWebGLTexture = null;
             };
             WebGLVertexTexture.prototype.readData = function (iOffset, iSize, ppDest) {
-                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 184);
+                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 268);
                 akra.logger.assert(!((this._pWebGLTexture) === null), "Буффер еще не создан");
                 ;
                 if (!((this)._pBackupCopy != null)) {
@@ -31087,7 +32668,7 @@ var akra;
                 if (typeof bDiscardWholeBuffer === "undefined") { bDiscardWholeBuffer = false; }
                 /*предпологается, что float*/
                                 var iTypeSize = /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/akra.pixelUtil.getComponentTypeBits(this._ePixelFormat) / 8, nElementsPerPix = /*число float'ов в пикселе*/
-                (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this._ePixelFormat)).componentCount), iFrom, iCount;
+                (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._ePixelFormat)).componentCount), iFrom, iCount;
                 /*номер float'a с которого начинается обновление*/
                 /*исло float'ов для обновления*/
                 /*данные для обновления*/
@@ -31101,7 +32682,7 @@ var akra;
                 var pWebGLRenderer = (((((((((this).pResourcePool)).pManager))).pEngine))._pRenderer);
                 var pWebGLContext = (pWebGLRenderer._pWebGLContext);
                 var pDataU8 = pData;
-                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 222);
+                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 306);
                 akra.logger.assert(bDiscardWholeBuffer === false, "Discard option temporary unsupported.");
                 ;
                 if (pData.BYTES_PER_ELEMENT > 1) {
@@ -31110,14 +32691,14 @@ var akra;
                 iOffset = iOffset || 0;
                 iSize = iSize || pData.byteLength;
                 pDataU8 = pDataU8.subarray(0, iSize);
-                if ((akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat)) < iOffset + iSize) {
+                if ((/*checked (origin: akra)>>*/akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat)) < iOffset + iSize) {
                     this.resize(iOffset + iSize);
                 }
                 if (((this)._pBackupCopy != null) && this._bForceUpdateBackupCopy) {
                     this._pBackupCopy.writeData(pDataU8, iOffset);
                 }
                 this._bForceUpdateBackupCopy = true;
-                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 243);
+                akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 327);
                 akra.logger.assert(iOffset % iTypeSize === 0 && iSize % iTypeSize === 0, "Incorrect data size or offset");
                 ;
                 iFrom = iOffset / iTypeSize;
@@ -31140,11 +32721,12 @@ var akra;
                     //hack: if iEndPixel is first pixel from next row
                     iXend = (iXend === 0 ? iWidth : iXend);
                     //FIX THIS, move this function from here...
+                    var me = this;
                     function updatePixelRect(iX, iY, iW, iH) {
                         iBeginElement = iEndElement;
                         iEndElement = iW * iH * nElementsPerPix + iEndElement;
-                        (pWebGLRenderer._pWebGLContext.bindTexture((0x0DE1), (this._pWebGLTexture)));
-                        pWebGLContext.texSubImage2D(0x0DE1, 0, iX, iY, iW, iH, this._eWebGLFormat, this._eWebGLType, pBufferData.subarray(iBeginElement, iEndElement));
+                        (pWebGLRenderer._pWebGLContext.bindTexture((0x0DE1), (me._pWebGLTexture)));
+                        pWebGLContext.texSubImage2D(0x0DE1, 0, iX, iY, iW, iH, me._eWebGLFormat, me._eWebGLType, pBufferData.subarray(iBeginElement, iEndElement));
                     }
                     ;
                     if (iHeight === 1) {
@@ -31161,9 +32743,12 @@ var akra;
                     var iRealSize = nElements * iTypeSize;
                     var pTempData = this._pBackupCopy.lock(iRealOffset, iRealSize);
                     //var iTotalSize: uint 	= iRealOffset + iRealSize;
+                    //FIX ME:
+                    this._pBackupCopy.unlock();
                     this._bForceUpdateBackupCopy = false;
                     return this.writeData(pTempData, iRealOffset, iRealSize);
                 } else {
+                    //console.error(this);
                     var pMarkupDataIndex = new Float32Array(nPixels);
                     var pMarkupDataShift = new Float32Array(nPixels);
                     var pRealData = new Float32Array(nElements);
@@ -31177,88 +32762,166 @@ var akra;
                     for(var i = 0; i < iCount; i++) {
                         pRealData[iLeftShift + i] = pBufferData[i];
                     }
-                    var pShaderSource;
                     var pWebGLFramebuffer = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/pWebGLRenderer.createWebGLFramebuffer();
-                    var pWebGLProgram = (((((this).pResourcePool)).pManager)).shaderProgramPool.findResource("WEBGL_update_vertex_texture");
-                    var pValueBuffer = (pWebGLRenderer._pWebGLContext.createBuffer());
-                    var pMarkupIndexBuffer = (pWebGLRenderer._pWebGLContext.createBuffer());
-                    var pMarkupShiftBuffer = (pWebGLRenderer._pWebGLContext.createBuffer());
-                    akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 335);
-                    akra.logger.assert(((pWebGLProgram) !== undefined), "cound not find WEBGL_update_vertex_texture program");
+                    var pWebGLProgram = (((((this).pResourcePool)).pManager)).shaderProgramPool.findResource("WEBGL_vertex_texture_update");
+                    var pValueBuffer = WebGLVertexTexture._pWebGLBuffer1;
+                    var pMarkupIndexBuffer = WebGLVertexTexture._pWebGLBuffer2;
+                    var pMarkupShiftBuffer = WebGLVertexTexture._pWebGLBuffer3;
+                    akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 423);
+                    akra.logger.assert(((pWebGLProgram) !== undefined), "cound not find WEBGL_vertex_texture_update program");
                     ;
                     pWebGLRenderer.disableAllWebGLVertexAttribs();
                     (pWebGLRenderer._pWebGLContext.bindFramebuffer((0x8D40), (pWebGLFramebuffer)));
                     (pWebGLRenderer._pWebGLContext.useProgram(((pWebGLProgram._pWebGLProgram))));
-                    //FIXME: set weblg states (GL_DEPTH_FUNC, GL_***)
+                    pWebGLContext.disable(0x0B71);
+                    pWebGLContext.disable(0x0C11);
+                    pWebGLContext.disable(0x0BE2);
+                    pWebGLContext.disable(0x0B44);
+                    var iValueAttribLocation = (((pWebGLProgram._pWebGLAttributeLocations[("VALUE")]) !== undefined) ? pWebGLProgram._pWebGLAttributeLocations[("VALUE")] : -1);
+                    var iIndexAttribLocation = (((pWebGLProgram._pWebGLAttributeLocations[("INDEX")]) !== undefined) ? pWebGLProgram._pWebGLAttributeLocations[("INDEX")] : -1);
+                    var iShiftAttribLocation = (((pWebGLProgram._pWebGLAttributeLocations[("SHIFT")]) !== undefined) ? pWebGLProgram._pWebGLAttributeLocations[("SHIFT")] : -1);
+                    pWebGLContext.enableVertexAttribArray(iValueAttribLocation);
+                    pWebGLContext.enableVertexAttribArray(iIndexAttribLocation);
+                    pWebGLContext.enableVertexAttribArray(iShiftAttribLocation);
                     pWebGLContext.framebufferTexture2D(0x8D40, 0x8CE0, 0x0DE1, this._pWebGLTexture, 0);
                     (pWebGLRenderer._pWebGLContext.bindBuffer((0x8892), (pValueBuffer)));
                     pWebGLContext.bufferData(0x8892, pRealData, 0x88E0);
-                    pWebGLContext.vertexAttribPointer((pWebGLProgram._pWebGLAttributeLocations[("VALUE")] || -1), 4, 0x1406, false, 0, 0);
+                    pWebGLContext.vertexAttribPointer(iValueAttribLocation, 4, 0x1406, false, 0, 0);
                     (pWebGLRenderer._pWebGLContext.bindBuffer((0x8892), (pMarkupIndexBuffer)));
                     pWebGLContext.bufferData(0x8892, pMarkupDataIndex, 0x88E0);
-                    pWebGLContext.vertexAttribPointer((pWebGLProgram._pWebGLAttributeLocations[("INDEX")] || -1), 1, 0x1406, false, 0, 0);
+                    pWebGLContext.vertexAttribPointer(iIndexAttribLocation, 1, 0x1406, false, 0, 0);
                     (pWebGLRenderer._pWebGLContext.bindBuffer((0x8892), (pMarkupShiftBuffer)));
                     pWebGLContext.bufferData(0x8892, pMarkupDataShift, 0x88E0);
-                    pWebGLContext.vertexAttribPointer((pWebGLProgram._pWebGLAttributeLocations[("SHIFT")] || -1), 1, 0x1406, false, 0, 0);
-                    (pWebGLRenderer._pWebGLContext.bindTexture((0x0DE1), (this._pWebGLTexture)));
+                    pWebGLContext.vertexAttribPointer(iShiftAttribLocation, 1, 0x1406, false, 0, 0);
                     (pWebGLRenderer._pWebGLContext.activeTexture((0x84C0)));
-                    pWebGLContext.uniform2i("size", this._iWidth, this._iHeight);
-                    pWebGLContext.uniform1i("sourceTexture", 0);
+                    (pWebGLRenderer._pWebGLContext.bindTexture((0x0DE1), (this._pWebGLTexture)));
+                    pWebGLProgram.setInt("sourceTexture", 0);
+                    pWebGLProgram.setVec2("size", this._iWidth, this._iHeight);
                     pWebGLContext.viewport(0, 0, this._iWidth, this._iHeight);
-                    pWebGLContext.drawArrays(0, 0, nPixels);
+                    pWebGLContext.drawArrays(0x0000, 0, nPixels);
                     pWebGLContext.flush();
                     pWebGLContext.framebufferTexture2D(0x8D40, 0x8CE0, 0x0DE1, null, 0);
                     (pWebGLRenderer._pWebGLContext.bindBuffer((0x8892), (null)));
-                    (pWebGLRenderer._pWebGLContext.deleteBuffer((pValueBuffer)));
-                    (pWebGLRenderer._pWebGLContext.deleteBuffer((pMarkupShiftBuffer)));
-                    (pWebGLRenderer._pWebGLContext.deleteBuffer((pMarkupIndexBuffer)));
+                    pWebGLContext.disableVertexAttribArray(iValueAttribLocation);
+                    pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
+                    pWebGLContext.disableVertexAttribArray(iShiftAttribLocation);
+                    //pWebGLRenderer.deleteWebGLBuffer(pValueBuffer);
+                    //pWebGLRenderer.deleteWebGLBuffer(pMarkupShiftBuffer);
+                    //pWebGLRenderer.deleteWebGLBuffer(pMarkupIndexBuffer);
                     (pWebGLRenderer._pWebGLContext.bindFramebuffer((0x8D40), (null)));
                     (pWebGLRenderer._pWebGLFramebufferList.push((pWebGLFramebuffer)));
                 }
                 return true;
             };
             WebGLVertexTexture.prototype.resize = function (iSize) {
-                var eUsage;
-                var pData;
-                var iMax = 0;
-                var pVertexData;
                 var pWebGLRenderer = /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/this.getEngine().getRenderer();
                 var pWebGLContext = (pWebGLRenderer._pWebGLContext);
-                if (((this)._pBackupCopy != null)) {
-                    return false;
-                }
-                if (iSize < (akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat))) {
+                var iMax = 0;
+                if (iSize < (/*checked (origin: akra)>>*/akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat))) {
                     for(var k = 0; k < this._pVertexDataArray.length; ++k) {
-                        pVertexData = this._pVertexDataArray[k];
+                        var pVertexData = this._pVertexDataArray[k];
                         if (pVertexData.byteOffset + pVertexData.byteLength > iMax) {
                             iMax = pVertexData.byteOffset + pVertexData.byteLength;
                         }
                     }
-                    akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 410);
-                    akra.logger.assert(iMax <= iSize, "Уменьшение невозможно. Страая разметка не укладывается в новый размер");
-                    ;
+                    if (iMax > iSize) {
+                        akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 505);
+                        akra.logger.assert(false, "Уменьшение невозможно. Страая разметка не укладывается в новый размер");
+                        ;
+                        return false;
+                    }
                 }
-                if (pWebGLContext.isTexture(this._pWebGLTexture)) {
-                    (pWebGLRenderer._pWebGLContext.deleteTexture((this._pWebGLTexture)));
+                var pPOTSize = akra.math.calcPOTtextureSize(akra.math.ceil(iSize / (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._ePixelFormat)).elemBytes)));
+                pPOTSize[0] = (pPOTSize[0] < 32) ? 32 : pPOTSize[0];
+                pPOTSize[1] = (pPOTSize[1] < 32) ? 32 : pPOTSize[1];
+                if (pPOTSize[0] !== this._iWidth || pPOTSize[1] !== this._iHeight) {
+                    if (((this)._pBackupCopy != null)) {
+                        this._iWidth = pPOTSize[0];
+                        this._iHeight = pPOTSize[1];
+                        (pWebGLRenderer._pWebGLContext.bindTexture((0x0DE1), (this._pWebGLTexture)));
+                        pWebGLContext.texImage2D(0x0DE1, 0, this._eWebGLFormat, this._iWidth, this._iHeight, 0, this._eWebGLFormat, this._eWebGLType, null);
+                        var iByteLength = (/*checked (origin: akra)>>*/akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat));
+                        /*resing backup copy don't cause data loss*/
+                        this._pBackupCopy.resize(iByteLength);
+                        var pData = new Uint8Array(iByteLength);
+                        if (!this.readData(pData)) {
+                            akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 533);
+                            akra.logger.warning("cannot read data from buffer");
+                            ;
+                            return false;
+                        }
+                        this.writeData(pData, 0, iByteLength);
+                    } else {
+                        var pWebGLProgram = (((((this).pResourcePool)).pManager)).shaderProgramPool.findResource("WEBGL_vertex_texture_resize");
+                        akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 542);
+                        akra.logger.assert(((pWebGLProgram) !== undefined), "cound not find WEBGL_vertex_texture_resize program");
+                        ;
+                        (pWebGLRenderer._pWebGLContext.useProgram(((pWebGLProgram._pWebGLProgram))));
+                        //create new texture for resize
+                        var pTexture = (pWebGLRenderer._pWebGLContext.createTexture());
+                        (pWebGLRenderer._pWebGLContext.activeTexture((0x84C1)));
+                        (pWebGLRenderer._pWebGLContext.bindTexture((0x0DE1), (pTexture)));
+                        pWebGLContext.texImage2D(0x0DE1, 0, this._eWebGLFormat, pPOTSize[0], pPOTSize[1], 0, this._eWebGLFormat, this._eWebGLType, null);
+                        pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MAG_FILTER, pWebGLContext.NEAREST);
+                        pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MIN_FILTER, pWebGLContext.NEAREST);
+                        pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_S, pWebGLContext.CLAMP_TO_EDGE);
+                        pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_T, pWebGLContext.CLAMP_TO_EDGE);
+                        var pWebGLFramebuffer = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/pWebGLRenderer.createWebGLFramebuffer();
+                        (pWebGLRenderer._pWebGLContext.bindFramebuffer((0x8D40), (pWebGLFramebuffer)));
+                        pWebGLContext.framebufferTexture2D(0x8D40, 0x8CE0, 0x0DE1, pTexture, 0);
+                        if (iSize >= (/*checked (origin: akra)>>*/akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat))) {
+                            /*in other case we already have iMax*/
+                            for(var k = 0; k < this._pVertexDataArray.length; ++k) {
+                                var pVertexData = this._pVertexDataArray[k];
+                                if (pVertexData.byteOffset + pVertexData.byteLength > iMax) {
+                                    iMax = pVertexData.byteOffset + pVertexData.byteLength;
+                                }
+                            }
+                        }
+                        /*предпологается, что float*/
+                        var iTypeSize = /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/akra.pixelUtil.getComponentTypeBits(this._ePixelFormat) / 8;
+                        /*число float'ов в пикселе*/
+                        var nElementsPerPix = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._ePixelFormat)).componentCount);
+                        var nPixels = akra.math.ceil(iMax / iTypeSize / nElementsPerPix);
+                        var pIndexBufferData = new Float32Array(nPixels);
+                        for(var i = 0; i < nPixels; i++) {
+                            pIndexBufferData[i] = i;
+                        }
+                        pWebGLRenderer.disableAllWebGLVertexAttribs();
+                        var iIndexAttribLocation = (((pWebGLProgram._pWebGLAttributeLocations[("INDEX")]) !== undefined) ? pWebGLProgram._pWebGLAttributeLocations[("INDEX")] : -1);
+                        pWebGLContext.enableVertexAttribArray(iIndexAttribLocation);
+                        if (((WebGLVertexTexture._pWebGLBuffer1) === null)) {
+                            WebGLVertexTexture._pWebGLBuffer1 = (pWebGLRenderer._pWebGLContext.createBuffer());
+                        }
+                        var pIndexBuffer = WebGLVertexTexture._pWebGLBuffer1;
+                        (pWebGLRenderer._pWebGLContext.bindBuffer((0x8892), (pIndexBuffer)));
+                        pWebGLContext.bufferData(0x8892, pIndexBufferData, 0x88E0);
+                        pWebGLContext.vertexAttribPointer(iIndexAttribLocation, 1, 0x1406, false, 0, 0);
+                        pWebGLContext.disable(0x0B71);
+                        pWebGLContext.disable(0x0C11);
+                        pWebGLContext.disable(0x0BE2);
+                        pWebGLContext.disable(0x0B44);
+                        (pWebGLRenderer._pWebGLContext.activeTexture((0x84C0)));
+                        (pWebGLRenderer._pWebGLContext.bindTexture((0x0DE1), (this._pWebGLTexture)));
+                        pWebGLProgram.setInt("sourceTexture", 0);
+                        pWebGLProgram.setVec2("v2fSrcTexSize", this._iWidth, this._iHeight);
+                        pWebGLProgram.setVec2("v2fDstTexSize", pPOTSize[0], pPOTSize[1]);
+                        pWebGLContext.viewport(0, 0, pPOTSize[0], pPOTSize[1]);
+                        pWebGLContext.drawArrays(0x0000, 0, nPixels);
+                        pWebGLContext.flush();
+                        pWebGLContext.framebufferTexture2D(0x8D40, 0x8CE0, 0x0DE1, null, 0);
+                        pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
+                        (pWebGLRenderer._pWebGLContext.bindBuffer((0x8892), (null)));
+                        //pWebGLRenderer.deleteWebGLBuffer(pIndexBuffer);
+                        (pWebGLRenderer._pWebGLContext.bindFramebuffer((0x8D40), (null)));
+                        (pWebGLRenderer._pWebGLFramebufferList.push((pWebGLFramebuffer)));
+                        (pWebGLRenderer._pWebGLContext.deleteTexture((this._pWebGLTexture)));
+                        this._pWebGLTexture = pTexture;
+                        this._iWidth = pPOTSize[0];
+                        this._iHeight = pPOTSize[1];
+                    }
                 }
-                this._pWebGLTexture = (pWebGLRenderer._pWebGLContext.createTexture());
-                if (!this._pWebGLTexture) {
-                    akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 421);
-                    akra.logger.criticalError("Не удалось создать текстуру");
-                    ;
-                    this.destroy();
-                    return false;
-                }
-                (pWebGLRenderer._pWebGLContext.bindTexture((0x0DE1), (this._pWebGLTexture)));
-                pData = new Uint8Array((akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat)));
-                if (this.readData(pData)) {
-                    akra.logger.setSourceLocation("webgl/WebGLVertexTexture.ts", 433);
-                    akra.logger.warning("cannot read data from buffer");
-                    ;
-                    return false;
-                }
-                this.writeData(pData, 0, (akra.pixelUtil.getMemorySize((this)._iWidth, (this)._iHeight, 1, (this)._ePixelFormat)));
-                this._pBackupCopy.resize(iSize);
+                this._pHeader.setData(this._header());
                 ((this).setAlteredFlag(true));
                 return true;
             };
@@ -31274,6 +32937,21 @@ var akra;
             WebGLVertexTexture.prototype.copyBackupToRealImpl = /**@protected*/ function (pRealData, pBackupData, iLockFlags) {
                 pRealData.set(pBackupData);
             };
+            WebGLVertexTexture.prototype._header = /**@protected*/ function (iTextureSizeX, iTextureSizeY) {
+                if (typeof iTextureSizeX === "undefined") { iTextureSizeX = this._iWidth; }
+                if (typeof iTextureSizeY === "undefined") { iTextureSizeY = this._iHeight; }
+                var pHeader = new Float32Array(8);
+                pHeader[0] = iTextureSizeX;
+                pHeader[1] = iTextureSizeY;
+                pHeader[2] = 1 / iTextureSizeX;
+                pHeader[3] = 1 / iTextureSizeY;
+                pHeader[4] = iTextureSizeX * iTextureSizeY;
+                pHeader[5] = pHeader[4] * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._ePixelFormat)).elemBytes);
+                return pHeader;
+            };
+            WebGLVertexTexture._pWebGLBuffer1 = null;
+            WebGLVertexTexture._pWebGLBuffer2 = null;
+            WebGLVertexTexture._pWebGLBuffer3 = null;
             return WebGLVertexTexture;
         })(akra.core.pool.resources.VertexBuffer);
         webgl.WebGLVertexTexture = WebGLVertexTexture;        
@@ -31294,8 +32972,10 @@ var akra;
                 this._iOffset = iOffset;
                 this._iLength = iCount;
                 this._iId = id;
-                akra.logger.setSourceLocation("data/IndexData.ts", 43);
-                akra.logger.assert(pIndexBuffer.byteLength >= ((this)._iLength * (akra.getTypeSize(((this))._eElementsType))) + ((this)._iOffset), "out of buffer limits.");
+                this._ePrimitiveType = ePrimitiveType;
+                this._eElementsType = eElementsType;
+                akra.logger.setSourceLocation("data/IndexData.ts", 46);
+                akra.logger.assert(pIndexBuffer.byteLength >= ((this)._iLength * (/*checked (origin: akra)>>*/akra.getTypeSize(((this))._eElementsType))) + ((this)._iOffset), "out of buffer limits.");
                 ;
             }
             Object.defineProperty(IndexData.prototype, "id", {
@@ -31335,7 +33015,7 @@ var akra;
             });
             Object.defineProperty(IndexData.prototype, "byteLength", {
                 get: /** @inline */function () {
-                    return this._iLength * (akra.getTypeSize((this)._eElementsType));
+                    return this._iLength * (/*checked (origin: akra)>>*/akra.getTypeSize((this)._eElementsType));
                 },
                 enumerable: true,
                 configurable: true
@@ -31348,25 +33028,47 @@ var akra;
                 configurable: true
             });
             IndexData.prototype.getData = function (iOffset, iSize) {
-                akra.logger.setSourceLocation("data/IndexData.ts", 48);
-                akra.logger.assert(iOffset + iSize <= ((this)._iLength * (akra.getTypeSize(((this))._eElementsType))), "out of buffer limits");
+                akra.logger.setSourceLocation("data/IndexData.ts", 51);
+                akra.logger.assert(iOffset + iSize <= ((this)._iLength * (/*checked (origin: akra)>>*/akra.getTypeSize(((this))._eElementsType))), "out of buffer limits");
                 ;
                 var pBuffer = new Uint8Array(iSize);
                 if (this._pIndexBuffer.readData(((this)._iOffset) + iOffset, iSize, pBuffer)) {
                     return pBuffer.buffer;
                 }
-                akra.logger.setSourceLocation("data/IndexData.ts", 55);
+                akra.logger.setSourceLocation("data/IndexData.ts", 58);
                 akra.logger.error("cannot read data from index buffer");
                 ;
                 return null;
             };
+            IndexData.prototype.getTypedData = function (iStart, iCount) {
+                akra.logger.setSourceLocation("data/IndexData.ts", 64);
+                akra.logger.assert((iStart + iCount) <= this._iLength, "out of buffer limits");
+                ;
+                var iTypeSize = akra.getTypeSize(this._eElementsType);
+                var iOffset = iStart * iTypeSize;
+                var iSize = iCount * iTypeSize;
+                var pBuffer = new Uint8Array(iSize);
+                if (this._pIndexBuffer.readData(((this)._iOffset) + iOffset, iSize, pBuffer)) {
+                    switch(this._eElementsType) {
+                        case 5121 /* UNSIGNED_BYTE */ :
+                            return pBuffer;
+                        case 5123 /* UNSIGNED_SHORT */ :
+                            return new Uint16Array(pBuffer.buffer);
+                        case 5125 /* UNSIGNED_INT */ :
+                            return new Uint32Array(pBuffer.buffer);
+                        default:
+                            return null;
+                    }
+                }
+                return null;
+            };
             IndexData.prototype.setData = function (pData, iOffset, iCount) {
                 if (typeof iOffset === "undefined") { iOffset = 0; }
-                if (typeof iCount === "undefined") { iCount = pData.byteLength / (akra.getTypeSize((this)._eElementsType)); }
-                akra.logger.setSourceLocation("data/IndexData.ts", 61);
-                akra.logger.assert((iOffset + iCount) * (akra.getTypeSize((this)._eElementsType)) <= ((this)._iLength * (akra.getTypeSize(((this))._eElementsType))), "out of buffer limits.");
+                if (typeof iCount === "undefined") { iCount = pData.byteLength / (/*checked (origin: akra)>>*/akra.getTypeSize((this)._eElementsType)); }
+                akra.logger.setSourceLocation("data/IndexData.ts", 90);
+                akra.logger.assert((iOffset + iCount) * (/*checked (origin: akra)>>*/akra.getTypeSize((this)._eElementsType)) <= ((this)._iLength * (/*checked (origin: akra)>>*/akra.getTypeSize(((this))._eElementsType))), "out of buffer limits.");
                 ;
-                return this._pIndexBuffer.writeData(pData, ((this)._iOffset) + iOffset * (akra.getTypeSize((this)._eElementsType)), iCount * (akra.getTypeSize((this)._eElementsType)));
+                return this._pIndexBuffer.writeData(pData, ((this)._iOffset) + iOffset * (/*checked (origin: akra)>>*/akra.getTypeSize((this)._eElementsType)), iCount * (/*checked (origin: akra)>>*/akra.getTypeSize((this)._eElementsType)));
             };
             IndexData.prototype.destroy = function () {
                 this._pIndexBuffer = null;
@@ -31401,7 +33103,7 @@ var akra;
                     case 5 /* TRIANGLESTRIP */ :
                         return nVertices - 2;
                 }
-                akra.logger.setSourceLocation("data/IndexData.ts", 106);
+                akra.logger.setSourceLocation("data/IndexData.ts", 135);
                 akra.logger.error("unhandled case detected..");
                 ;
                 return 0;
@@ -31433,8 +33135,10 @@ var akra;
                         enumerable: true,
                         configurable: true
                     });
-                    IndexBuffer.prototype.create = function (iByteSize, iFlags, pData) {
-                        _super.prototype.create.call(this, iFlags || 0);
+                    IndexBuffer.prototype.create = //create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
+                    function (iByteSize, iFlags, pData) {
+                        //create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool {
+                        _super.prototype.create.call(this, 0, iFlags || 0);
                         if ((((iFlags) & (8 /* BACKUP_COPY */ )) != 0)) {
                             this._pBackupCopy = new resources.MemoryBuffer();
                             this._pBackupCopy.create(iByteSize);
@@ -31891,7 +33595,7 @@ var akra;
                 this._iZOffset = iZOffset;
                 this._iWidth = pBuffer.width;
                 this._iHeight = pBuffer.height;
-                this._iColorDepth = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((pBuffer.format)).elemBytes * 8);
+                this._iColorDepth = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((pBuffer.format)).elemBytes * 8);
             }
             RenderTexture.prototype.destroy = function () {
                 this._pBuffer._clearRTT(this._iZOffset);
@@ -32587,6 +34291,9 @@ var akra;
                 ResourcePoolManager.prototype.createVideoBuffer = /** @inline */function (sResourceName) {
                     return this.videoBufferPool.createResource(sResourceName);
                 };
+                ResourcePoolManager.prototype.createIndexBuffer = /** @inline */function (sResourceName) {
+                    return this.indexBufferPool.createResource(sResourceName);
+                };
                 ResourcePoolManager.prototype.createModel = /** @inline */function (sResourceName) {
                     return this.colladaPool.createResource(sResourceName);
                 };
@@ -32640,7 +34347,7 @@ var akra;
                     this.pComponentPool.initialize(16);
                 };
                 ResourcePoolManager.prototype.registerDeviceResources = function () {
-                    akra.logger.setSourceLocation("pool/ResourcePoolManager.ts", 454);
+                    akra.logger.setSourceLocation("pool/ResourcePoolManager.ts", 458);
                     akra.logger.log("Registering Video Device Resources\n");
                     ;
                     this.pTexturePool.registerResourcePool(new pool.ResourceCode(0 /* VIDEO_RESOURCE */ , 0 /* TEXTURE_RESOURCE */ ));
@@ -32657,7 +34364,7 @@ var akra;
                     this.pEffectDataPool.registerResourcePool(new pool.ResourceCode(0 /* VIDEO_RESOURCE */ , 12 /* EFFECTDATA_RESOURCE */ ));
                 };
                 ResourcePoolManager.prototype.unregisterDeviceResources = function () {
-                    akra.logger.setSourceLocation("pool/ResourcePoolManager.ts", 506);
+                    akra.logger.setSourceLocation("pool/ResourcePoolManager.ts", 510);
                     akra.logger.log("Unregistering Video Device Resources");
                     ;
                     this.pTexturePool.unregisterResourcePool();
@@ -33187,7 +34894,6 @@ var akra;
                 return this;
             };
             Rect3d.prototype.unionRect = function (pRect) {
-                console.log(this, pRect);
                 this.normalize();
                 pRect.normalize();
                 this.x0 = akra.math.min(this.x0, pRect.x0);
@@ -33333,7 +35039,7 @@ var akra;
                 if (!((v3fDestination) !== undefined)) {
                     v3fDestination = new akra.Vec3();
                 }
-                akra.logger.setSourceLocation("geometry/Rect3d.ts", 753);
+                akra.logger.setSourceLocation("geometry/Rect3d.ts", 752);
                 akra.logger.assert(0 <= iIndex && iIndex < 8, "invalid index");
                 ;
                 switch(iIndex) {
@@ -33518,7 +35224,7 @@ var akra;
             };
             SceneObject.prototype.worldBoundsUpdated = function () {
                 var _recivier = this;
-                this._pUnicastSlotMap = this._pUnicastSlotMap || (this.getEventTable()).findUnicastList(this._iGuid);
+                this._pUnicastSlotMap = this._pUnicastSlotMap || ((/*checked (origin: util)>>*/akra.util.Entity._pEventTable)).findUnicastList(this._iGuid);
                 var _unicast = (this._pUnicastSlotMap).worldBoundsUpdated;
                 if (((_unicast) !== undefined)) {
                     _unicast.target ? _unicast.target[_unicast.callback](_recivier) : _unicast.listener(_recivier);
@@ -33594,6 +35300,11 @@ var akra;
             Plane3d.prototype.clear = /** @inline */function () {
                 this.normal.clear();
                 this.distance = 0.;
+                return this;
+            };
+            Plane3d.prototype.negate = /** @inline */function () {
+                this.normal.negate();
+                this.distance = -this.distance;
                 return this;
             };
             Plane3d.prototype.normalize = function () {
@@ -33710,6 +35421,11 @@ var akra;
             Plane2d.prototype.clear = /** @inline */function () {
                 this.normal.clear();
                 this.distance = 0.;
+                return this;
+            };
+            Plane2d.prototype.negate = /** @inline */function () {
+                this.normal.negate();
+                this.distance = -this.distance;
                 return this;
             };
             Plane2d.prototype.normalize = function () {
@@ -34035,7 +35751,7 @@ var akra;
                 }
             }
             Object.defineProperty(Frustum.prototype, "frustumVertices", {
-                get: function () {
+                get: /** @inline */function () {
                     return this._pFrustumVertices;
                 },
                 enumerable: true,
@@ -34200,6 +35916,58 @@ var akra;
             Frustum.prototype.isEqual = /** @inline */function (pFrustum) {
                 return (this.leftPlane.isEqual(pFrustum.leftPlane) && this.rightPlane.isEqual(pFrustum.rightPlane) && this.topPlane.isEqual(pFrustum.topPlane) && this.bottomPlane.isEqual(pFrustum.bottomPlane) && this.nearPlane.isEqual(pFrustum.nearPlane) && this.farPlane.isEqual(pFrustum.farPlane));
             };
+            Frustum.prototype.getPlanePoints = //output - array of vertices in counterclockwise order (around plane normal as axis)
+            function (sPlaneKey, pDestination) {
+                if (typeof pDestination === "undefined") { pDestination = new Array(4); }
+                var pFrustumVertices = ((this)._pFrustumVertices);
+                if (pFrustumVertices === null) {
+                    pFrustumVertices = this.calculateFrustumVertices();
+                }
+                switch(sPlaneKey) {
+                    case "leftPlane":
+                        pDestination[0] = pFrustumVertices[6];
+                        pDestination[1] = pFrustumVertices[4];
+                        pDestination[2] = pFrustumVertices[0];
+                        pDestination[3] = pFrustumVertices[2];
+                        break;
+                    case "rightPlane":
+                        pDestination[0] = pFrustumVertices[7];
+                        pDestination[1] = pFrustumVertices[3];
+                        pDestination[2] = pFrustumVertices[1];
+                        pDestination[3] = pFrustumVertices[5];
+                        break;
+                    case "topPlane":
+                        pDestination[0] = pFrustumVertices[7];
+                        pDestination[1] = pFrustumVertices[6];
+                        pDestination[2] = pFrustumVertices[2];
+                        pDestination[3] = pFrustumVertices[3];
+                        break;
+                    case "bottomPlane":
+                        pDestination[0] = pFrustumVertices[5];
+                        pDestination[1] = pFrustumVertices[1];
+                        pDestination[2] = pFrustumVertices[0];
+                        pDestination[3] = pFrustumVertices[4];
+                        break;
+                    case "nearPlane":
+                        pDestination[0] = pFrustumVertices[3];
+                        pDestination[1] = pFrustumVertices[2];
+                        pDestination[2] = pFrustumVertices[0];
+                        pDestination[3] = pFrustumVertices[1];
+                        break;
+                    case "farPlane":
+                        pDestination[0] = pFrustumVertices[7];
+                        pDestination[1] = pFrustumVertices[5];
+                        pDestination[2] = pFrustumVertices[4];
+                        pDestination[3] = pFrustumVertices[6];
+                        break;
+                    default:
+                        akra.logger.setSourceLocation("geometry/Frustum.ts", 319);
+                        akra.logger.assert(false, "invalid plane key");
+                        ;
+                        break;
+                }
+                return pDestination;
+            };
             Frustum.prototype.testPoint = function (v3fPoint) {
                 if (this.leftPlane.signedDistance(v3fPoint) > 0. || this.rightPlane.signedDistance(v3fPoint) > 0. || this.topPlane.signedDistance(v3fPoint) > 0. || this.bottomPlane.signedDistance(v3fPoint) > 0. || this.nearPlane.signedDistance(v3fPoint) > 0. || this.farPlane.signedDistance(v3fPoint) > 0.) {
                     return false;
@@ -34219,7 +35987,7 @@ var akra;
                 return true;
             };
             Frustum.prototype.testFrustum = function (pFrustum) {
-                var pFrustumVertices1 = this.frustumVertices;
+                var pFrustumVertices1 = ((this)._pFrustumVertices);
                 var pFrustumVertices2 = pFrustum.frustumVertices;
                 if (pFrustumVertices1 == null) {
                     pFrustumVertices1 = this.calculateFrustumVertices();
@@ -34302,8 +36070,9 @@ var akra;
             objects.DLTechnique = DLTechnique;            
             var Camera = (function (_super) {
                 __extends(Camera, _super);
-                function Camera(pScene) {
-                                _super.call(this, pScene, 4 /* CAMERA */ );
+                function Camera(pScene, eType) {
+                    if (typeof eType === "undefined") { eType = 4 /* CAMERA */ ; }
+                                _super.call(this, pScene, eType);
                     /** camera type */
                     /**@protected*/ this._eCameraType = 0 /* PERSPECTIVE */ ;
                     /** camera options */
@@ -34668,7 +36437,7 @@ var akra;
                     this._pDLResultStorage[index] = null;
                 };
                 Camera.prototype.preRenderScene = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((/*checked (origin: util)>>*/akra.util.Entity._pEventTable))).broadcast[(this._iGuid)] = (((/*checked (origin: util)>>*/akra.util.Entity._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).preRenderScene;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -34678,7 +36447,7 @@ var akra;
                     }
                 };
                 Camera.prototype.postRenderScene = function () {
-                    this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                    this._pBroadcastSlotList = this._pBroadcastSlotList || (((((/*checked (origin: util)>>*/akra.util.Entity._pEventTable))).broadcast[(this._iGuid)] = (((/*checked (origin: util)>>*/akra.util.Entity._pEventTable))).broadcast[(this._iGuid)] || {}));
                     var _broadcast = (this._pBroadcastSlotList).postRenderScene;
                     var _recivier = this;
                     if (((_broadcast) !== undefined)) {
@@ -34701,415 +36470,569 @@ var akra;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
-    (function (model) {
-        var Skin = (function () {
-            function Skin(pMesh) {
-                this._pSkeleton = null;
-                // name of bones/nodes
-                this._pNodeNames = null;
-                //BONE_MATRIX = WORLD_MATRIX x OFFSET_MATRIX
-                this._pBoneTransformMatrices = null;
-                /**
-                * Common buffer for all transform matrices.
-                * _pBoneOffsetMatrixBuffer = [_pBoneTransformMatrices[0], ..., _pBoneTransformMatrices[N]]
-                */
-                this._pBoneOffsetMatrixBuffer = null;
-                // bone offset matrices from collada
-                this._pBoneOffsetMatrices = null;
-                /**
-                * Pointers to nodes, that affect to this skin.
-                */
-                this._pAffectingNodes = null;
-                /**
-                * Format:
-                * BONE_INF_COUNT - number of bones, that influence to the vertex.
-                * BONE_INF_LOC - address of influence, pointer to InfData structire list.
-                * ..., [BONE_INF_COUNT: float, BONE_INF_LOC: float], ...
-                *
-                */
-                this._pInfMetaData = null;
-                /**
-                * Format:
-                * BONE_INF_DATA - bone matrix address, pointer to BONE_MATRIX list
-                * BONE_WEIGHT_IND - bone weight address, pointer to BONE_WEIGHT list
-                * ..., [BONE_INF_DATA: float, BONE_WEIGHT_IND: float], ...
-                */
-                this._pInfData = null;
-                /**
-                * Format:
-                * ..., [BONE_MATRIX: matrix4], ...
-                */
-                this._pBoneTransformMatrixData = null;
-                /**
-                * Format:
-                * ..., [BONE_WEIGHT: float], ...
-                */
-                this._pWeightData = null;
-                /**
-                * Links to VertexData, that contain meta from this skin.
-                */
-                this._pTiedData = [];
-                akra.logger.setSourceLocation("Skin.ts", 106);
-                akra.logger.assert(((pMesh) != null), "you must specify mesh for skin");
-                ;
-                this._pMesh = pMesh;
+    (function (scene) {
+        var DisplayList = (function () {
+            function DisplayList() {
+                /**@protected*/ this._pScene = null;
+                /**@protected*/ this._sName = "";
+                /**@protected*/ this._iGuid = akra.sid();
+                /**@protected*/ this._pUnicastSlotMap = null;
+                /**@protected*/ this._pBroadcastSlotList = null;
             }
-            Object.defineProperty(Skin.prototype, "data", {
+            Object.defineProperty(DisplayList.prototype, "name", {
                 get: /** @inline */function () {
-                    return this._pMesh.data;
+                    return this._sName;
+                },
+                set: /** @inline */function (sName) {
+                    this._sName = sName;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Skin.prototype, "skeleton", {
-                get: /** @inline */function () {
-                    return this._pSkeleton;
-                },
-                set: /** @inline */function (pSkeleton) {
-                    if (((pSkeleton) === null) || pSkeleton.totalBones < ((this)._pNodeNames.length)) {
-                        akra.logger.setSourceLocation("Skin.ts", 88);
-                        akra.logger.warning("cannnot set skeletonm because skeleton has to little bones");
-                        ;
-                        return;
-                    }
-                    for(var i = 0, nMatrices = ((this)._pNodeNames.length); i < nMatrices; i++) {
-                        this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
-                        akra.logger.setSourceLocation("Skin.ts", 94);
-                        akra.logger.assert(((this._pAffectingNodes[i]) != null), "joint<" + this._pNodeNames[i] + "> must exists...");
-                        ;
-                    }
-                    this._pSkeleton = pSkeleton;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Skin.prototype, "totalBones", {
-                get: /** @inline */function () {
-                    return this._pNodeNames.length;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Skin.prototype.setBindMatrix = function (m4fMatrix) {
-                this._m4fBindMatrix.set(m4fMatrix);
+            DisplayList.prototype._onNodeAttachment = function (pScene, pNode) {
+                this.attachObject(pNode);
             };
-            Skin.prototype.getBindMatrix = function () {
-                return this._m4fBindMatrix;
+            DisplayList.prototype._onNodeDetachment = function (pScene, pNode) {
+                this.detachObject(pNode);
             };
-            Skin.prototype.getBoneOffsetMatrices = function () {
-                return this._pBoneOffsetMatrices;
+            DisplayList.prototype.attachObject = /**@protected*/ function (pNode) {
+                akra.logger.setSourceLocation("DisplayList.ts", 29);
+                akra.logger.error("pure virtual method DisplayList::attachObject()");
+                ;
             };
-            Skin.prototype.getBoneOffsetMatrix = function (sBoneName) {
-                var pBoneNames = this._pNodeNames;
-                for(var i = 0; i < pBoneNames.length; i++) {
-                    if (pBoneNames[i] === sBoneName) {
-                        return this._pBoneOffsetMatrices[i];
-                    }
+            DisplayList.prototype.detachObject = /**@protected*/ function (pNode) {
+                akra.logger.setSourceLocation("DisplayList.ts", 33);
+                akra.logger.error("pure virtual method DisplayList::detachObject()");
+                ;
+            };
+            DisplayList.prototype._setup = function (pScene) {
+                if (((this._pScene) != null)) {
+                    akra.logger.setSourceLocation("DisplayList.ts", 38);
+                    akra.logger.criticalError("list movement from scene to another scene temprary unsupported!");
+                    ;
                 }
+                this._pScene = pScene;
+                ((pScene).getEventTable().addDestination(((((pScene)))._iGuid), ("nodeAttachment"), (this), ("_onNodeAttachment"), (undefined)));
+                ((pScene).getEventTable().addDestination(((((pScene)))._iGuid), ("nodeDetachment"), (this), ("_onNodeDetachment"), (undefined)));
+                var me = this;
+                pScene.getRootNode().explore(function (pEntity) {
+                    me._onNodeAttachment(pScene, pEntity);
+                });
+            };
+            DisplayList.prototype._findObjects = function (pCamera, pResultArray, bQuickSearch) {
+                if (typeof bQuickSearch === "undefined") { bQuickSearch = false; }
+                akra.logger.setSourceLocation("DisplayList.ts", 54);
+                akra.logger.error("pure virtual method");
                 ;
                 return null;
             };
-            Skin.prototype.setSkeleton = function (pSkeleton) {
-                if (!pSkeleton || pSkeleton.totalBones < ((this)._pNodeNames.length)) {
-                    return false;
-                }
-                for(var i = 0, nMatrices = ((this)._pNodeNames.length); i < nMatrices; i++) {
-                    this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
-                    akra.logger.setSourceLocation("Skin.ts", 142);
-                    akra.logger.assert(!((this._pAffectingNodes[i]) === null), "joint<" + this._pNodeNames[i] + "> must exists...");
-                    ;
-                }
-                this._pSkeleton = pSkeleton;
-                return true;
+            DisplayList.prototype.getGuid = /** @inline */function () {
+                return this._iGuid;
             };
-            Skin.prototype.attachToScene = function (pRootNode) {
-                for(var i = 0, nMatrices = ((this)._pNodeNames.length); i < nMatrices; i++) {
-                    this._pAffectingNodes[i] = pRootNode.findEntity(this._pNodeNames[i]);
-                    akra.logger.setSourceLocation("Skin.ts", 153);
-                    akra.logger.assert(((this._pAffectingNodes[i]) != null), "node<" + this._pNodeNames[i] + "> must exists...");
-                    ;
-                }
-                return true;
+            DisplayList._pEventTable = new akra.events.EventTable();
+            DisplayList.prototype.getEventTable = /** @inline */function () {
+                return DisplayList._pEventTable;
             };
-            Skin.prototype.setBoneNames = function (pNames) {
-                if (((pNames) === null)) {
-                    return false;
-                }
-                this._pNodeNames = pNames;
-                this._pAffectingNodes = new Array(pNames.length);
-                return true;
+            DisplayList.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
+                return pSender.getEventTable().addDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
-            Skin.prototype.setBoneOffsetMatrices = function (pMatrices) {
-                var pMatrixNames = this._pNodeNames;
-                akra.logger.setSourceLocation("Skin.ts", 176);
-                akra.logger.assert(((pMatrices) != null) && ((pMatrixNames) != null) && pMatrixNames.length === pMatrices.length, "number of matrix names must equal matrices data length:\n" + pMatrixNames.length + " / " + pMatrices.length);
-                ;
-                var nMatrices = pMatrixNames.length;
-                var pData = ((this)._pMesh.data);
-                var pMatrixData = new Float32Array(nMatrices * 16);
-                //FIXME: правильно положить матрицы...			this._pBoneOffsetMatrices = pMatrices;
-                this._pBoneTransformMatrixData = pData._allocateData([
-                    akra.VE_MAT4("BONE_MATRIX")
-                ], pMatrixData);
-                this._pBoneTransformMatrices = new Array(nMatrices);
-                for(var i = 0; i < nMatrices; i++) {
-                    this._pBoneTransformMatrices[i] = new akra.Mat4(pMatrixData.subarray(i * 16, (i + 1) * 16), true);
-                }
-                this._pBoneOffsetMatrixBuffer = pMatrixData;
+            DisplayList.prototype.disconnect = /** @inline */function (pSender, sSignal, sSlot, eType) {
+                return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
-            Skin.prototype.setWeights = function (pWeights) {
-                this._pWeightData = ((this)._pMesh.data)._allocateData([
-                    akra.VE_FLOAT("BONE_WEIGHT")
-                ], pWeights);
-                return this._pWeightData !== null;
+            DisplayList.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
+                return (DisplayList._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
-            Skin.prototype.getWeights = function () {
-                return this._pWeightData;
+            DisplayList.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
+                return (DisplayList._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
-            Skin.prototype.getInfluenceMetaData = function () {
-                return this._pInfMetaData;
-            };
-            Skin.prototype.getInfluences = function () {
-                return this._pInfData;
-            };
-            Skin.prototype.setIfluences = function (pInfluencesCount, pInfluences) {
-                akra.logger.setSourceLocation("Skin.ts", 213);
-                akra.logger.assert(this._pInfMetaData == null && this._pInfData == null, "vertex weights already setuped.");
-                ;
-                akra.logger.setSourceLocation("Skin.ts", 214);
-                akra.logger.assert(!((this.getWeights()) === null), "you must set weight data before setup influences");
-                ;
-                var pData = ((this)._pMesh.data);
-                var pInfluencesMeta = new Float32Array(pInfluencesCount.length * 2);
-                var iInfLoc = 0;
-                var iTransformLoc = 0;
-                var iWeightsLoc = 0;
-                //получаем копию массива влияний
-                pInfluences = new Float32Array(pInfluences);
-                //вычисляем адресса матриц транфсормации и весов
-                iTransformLoc = this._pBoneTransformMatrixData.byteOffset / 4 /* BYTES_PER_FLOAT */ ;
-                iWeightsLoc = this._pWeightData.byteOffset / 4 /* BYTES_PER_FLOAT */ ;
-                for(var i = 0, n = pInfluences.length; i < n; i += 2) {
-                    pInfluences[i] = pInfluences[i] * 16 + iTransformLoc;
-                    pInfluences[i + 1] += iWeightsLoc;
-                }
-                //запоминаем модифицированную информацию о влияниях
-                this._pInfData = pData._allocateData([], //адрес матрицы кости			                                         VE_FLOAT('BONE_INF_DATA'),
-                //адрес весового коэффициента			                                         VE_FLOAT('BONE_WEIGHT_IND')
-                pInfluences);
-                iInfLoc = this._pInfData.byteOffset / 4 /* BYTES_PER_FLOAT */ ;
-                //подсчет мета данных, которые укажут, где взять влияния на кость..
-                for(var i = 0, j = 0, n = iInfLoc; i < pInfluencesMeta.length; i += 2) {
-                    var iCount = pInfluencesCount[j++];
-                    //число влияний на вершину			    pInfluencesMeta[i] = iCount;
-                    //адресс начала информации о влияниях 			    pInfluencesMeta[i + 1] = n;
-                    //(пары индекс коэф. веса и индекс матрицы)
-                    n += 2 * iCount;
-                }
-                //influences meta: разметка влияний
-                this._pInfMetaData = pData._allocateData([], //число костей и весов, влияющих на вершину			                                             VE_FLOAT('BONE_INF_COUNT'),
-                //адресс начала влияний на вершину			                                             VE_FLOAT('BONE_INF_LOC'),
-                pInfluencesMeta);
-                return this._pInfMetaData !== null && this._pInfData !== null;
-            };
-            Skin.prototype.setVertexWeights = function (pInfluencesCount, pInfluences, pWeights) {
-                akra.logger.setSourceLocation("Skin.ts", 265);
-                akra.logger.assert(arguments.length > 1, 'you must specify all parameters');
-                ;
-                //загружаем веса
-                if (pWeights) {
-                    this.setWeights(pWeights);
-                }
-                return this.setIfluences(pInfluencesCount, pInfluences);
-            };
-            Skin.prototype.applyBoneMatrices = function (bForce) {
-                if (typeof bForce === "undefined") { bForce = false; }
-                var pData;
-                var bResult;
-                var pNode;
-                var isUpdated = false;
-                for(var i = 0, nMatrices = ((this)._pNodeNames.length); i < nMatrices; ++i) {
-                    pNode = this._pAffectingNodes[i];
-                    if (pNode.isWorldMatrixNew() || bForce) {
-                        pNode.worldMatrix.multiply(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
-                        isUpdated = true;
-                    }
-                }
-                if (isUpdated) {
-                    pData = this._pBoneOffsetMatrixBuffer;
-                    return this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
-                }
-                return false;
-            };
-            Skin.prototype.isReady = function () {
-                return !(((this._pInfMetaData) === null) || ((this._pInfData) === null) || ((this._pWeightData) === null) || ((this._pBoneOffsetMatrixBuffer) === null) || ((this._pBoneOffsetMatrices) === null) || ((this._pNodeNames) === null) || ((this._m4fBindMatrix) === null));
-            };
-            Skin.prototype.getBoneTransforms = function () {
-                return this._pBoneTransformMatrixData;
-            };
-            Skin.prototype.isAffect = function (pData) {
-                if (((pData) != null)) {
-                    for(var i = 0; i < this._pTiedData.length; i++) {
-                        if (this._pTiedData[i] === pData) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            };
-            Skin.prototype.attach = function (pData) {
-                akra.logger.setSourceLocation("Skin.ts", 323);
-                akra.logger.assert(pData.stride === 16, "you cannot add skin to mesh with POSITION: {x, y, z}" + "\nyou need POSITION: {x, y, z, w}");
-                ;
-                pData.getVertexDeclaration().append(akra.VE_FLOAT(akra.DeclUsages.BLENDMETA, 12));
-                this._pTiedData.push(pData);
-            };
-            Skin.debugMeshSubset = function debugMeshSubset(pSubMesh) {
-                var pMesh = pSubMesh.mesh;
-                var pSkin = pSubMesh.skin;
-                var pMatData = pSkin.getBoneTransforms();
-                var pPosData;
-                var pEngine = pMesh.getEngine();
-                pPosData = (pSubMesh.data._getData("POSITION")).getTypedData(akra.DeclUsages.BLENDMETA);
-                var pVideoBuffer = pSubMesh.mesh.data.buffer;
-                var iFrom = 2618, iTo = 2619;
-                var pWeights = pSkin.getWeights().getTypedData('BONE_WEIGHT');
-                akra.logger.setSourceLocation("Skin.ts", 345);
-                akra.logger.log('===== debug vertices from ', iFrom, 'to', iTo, ' ======');
-                ;
-                akra.logger.setSourceLocation("Skin.ts", 346);
-                akra.logger.log('transformation data location:', pMatData.byteOffset / 4.);
-                ;
-                akra.logger.setSourceLocation("Skin.ts", 347);
-                akra.logger.log('155 weight: ', pSkin.getWeights().getTypedData('BONE_WEIGHT')[155]);
-                ;
-                akra.logger.setSourceLocation("Skin.ts", 348);
-                akra.logger.log('vertices info ===================>');
-                ;
-                for(var i = iFrom; i < iTo; i++) {
-                    akra.logger.setSourceLocation("Skin.ts", 351);
-                    akra.logger.log(pPosData[i], '<< inf meta location');
-                    ;
-                    var pMetaData = new Float32Array(8);
-                    if (!pVideoBuffer.readData(4 * pPosData[i], 8, pMetaData)) {
-                        akra.logger.setSourceLocation("Skin.ts", 355);
-                        akra.logger.error("cannot read back meta data");
-                        ;
-                    }
-                    akra.logger.setSourceLocation("Skin.ts", 358);
-                    akra.logger.log(pMetaData[0], '<< count');
-                    ;
-                    akra.logger.setSourceLocation("Skin.ts", 359);
-                    akra.logger.log(pMetaData[1], '<< inf. location');
-                    ;
-                    for(var j = 0; j < pMetaData[0]; ++j) {
-                        var pInfData = new Float32Array(8);
-                        if (!pVideoBuffer.readData(4 * (pMetaData[1] + 2 * j), 8, pInfData)) {
-                            akra.logger.setSourceLocation("Skin.ts", 364);
-                            akra.logger.error("cannot read influence data");
-                            ;
-                        }
-                        akra.logger.setSourceLocation("Skin.ts", 367);
-                        akra.logger.log(pInfData[0], '<< matrix location');
-                        ;
-                        akra.logger.setSourceLocation("Skin.ts", 368);
-                        akra.logger.log(pInfData[1], '/', pInfData[1] - 30432, '<< weight location / index');
-                        ;
-                        var pWeightData = new Float32Array(4);
-                        if (!pVideoBuffer.readData(4 * (pInfData[1]), 4, pWeightData)) {
-                            akra.logger.setSourceLocation("Skin.ts", 373);
-                            akra.logger.error("cannot read weight data");
-                            ;
-                        }
-                        akra.logger.setSourceLocation("Skin.ts", 376);
-                        akra.logger.log(pWeightData[0], '<< weight');
-                        ;
-                        var pMatrixData = new Float32Array(4 * 16);
-                        if (!pVideoBuffer.readData(4 * (pInfData[0]), 4 * 16, pMatrixData)) {
-                            akra.logger.setSourceLocation("Skin.ts", 380);
-                            akra.logger.error("cannot read matrix data");
-                            ;
-                        }
-                        akra.logger.setSourceLocation("Skin.ts", 383);
-                        akra.logger.log(pMatrixData.toString());
-                        ;
-                    }
-                }
-                akra.logger.setSourceLocation("Skin.ts", 387);
-                akra.logger.log('#############################################');
-                ;
-                for(var i = 0; i < pPosData.length; i++) {
-                    var pMetaData = new Float32Array(8);
-                    if (!pVideoBuffer.readData(4 * pPosData[i], 8, pMetaData)) {
-                        akra.logger.setSourceLocation("Skin.ts", 392);
-                        akra.logger.error("cannot read meta data");
-                        ;
-                    }
-                    for(var j = 0; j < pMetaData[0]; ++j) {
-                        var pInfData = new Float32Array(8);
-                        if (!pVideoBuffer.readData(4 * (pMetaData[1] + 2 * j), 8, pInfData)) {
-                            akra.logger.setSourceLocation("Skin.ts", 399);
-                            akra.logger.error("cannot read influence data");
-                            ;
-                        }
-                        var iWeightsIndex = pInfData[1] - 30432;
-                        var fWeightOrigin = pWeights[iWeightsIndex];
-                        var pWeightData = new Float32Array(4);
-                        if (!pVideoBuffer.readData(4 * (pInfData[1]), 4, pWeightData)) {
-                            akra.logger.setSourceLocation("Skin.ts", 407);
-                            akra.logger.error("cannot read weight data");
-                            ;
-                        }
-                        var fWeight = pWeightData[0];
-                        if (Math.abs(fWeight - fWeightOrigin) > 0.001) {
-                            alert("1");
-                            akra.logger.setSourceLocation("Skin.ts", 413);
-                            akra.logger.log("weight with index", iWeightsIndex, "has wrong weight", fWeightOrigin, "/", fWeightOrigin);
-                            ;
-                        }
-                        //var pWeightData: Float32Array = new Float32Array(pVideoBuffer.getData(4 * (pInfData[1]), 4));
-                        //var pMatrixData: Float32Array = new Float32Array(pVideoBuffer.getData(4 * (pInfData[0]), 4 * 16));
-                                            }
-                }
-                akra.logger.setSourceLocation("Skin.ts", 421);
-                akra.logger.log('##############################################');
-                ;
-                // var pBoneTransformMatrices = pSkin._pBoneTransformMatrixData;
-                // var pBonetmData = pBoneTransformMatrices.getTypedData('BONE_MATRIX');
-                // for (var i = 0; i < pBonetmData.length; i += 16) {
-                //     LOG('bone transform matrix data >>> ');
-                //     LOG(Mat4.str(pBonetmData.subarray(i, i + 16)));
-                // };
-                //for (var i = 0; i < pMesh.length; i++) {
-                // var i = pMesh.length - 1;
-                //     var pPosData = pMesh[i].data.getData('POSITION').getTypedData('POSITION');
-                //     var pIndData = pMesh[i].data._pIndexData.getTypedData('INDEX0');
-                //     var j = pIndData[pIndData.length - 1];
-                //     var j0 = pMesh[i].data.getData('POSITION').byteOffset/4;
-                //     j -= j0;
-                //     j/=4;
-                //     LOG('last index >> ', j);
-                //     LOG('pos data size', pPosData.length);
-                //     var pVertex = pPosData.subarray(j * 3, j * 3 + 3);
-                //     LOG('last vertex in submesh >> ', pVertex[0], pVertex[1], pVertex[2]);
-                //         var pSceneNode = pEngine.appendMesh(
-                //             pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
-                //             pEngine.getRootNode());
-                //         pSceneNode.setPosition(pVertex);
-                //         pSceneNode.setScale(0.1);
-                //     var pMeta = pSkin.getInfluenceMetaData().getTypedData('BONE_INF_COUNT');
-                //     LOG(pMeta[j], 'count << ');
-                //};
-                            };
-            return Skin;
+            return DisplayList;
         })();
-        model.Skin = Skin;        
-        function createSkin(pMesh) {
-            return new Skin(pMesh);
-        }
-        model.createSkin = createSkin;
-    })(akra.model || (akra.model = {}));
-    var model = akra.model;
+        scene.DisplayList = DisplayList;        
+    })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
+        ;
+        var ObjectList = (function () {
+            function ObjectList(pData) {
+                /**@protected*/ this._pHead = null;
+                /**@protected*/ this._pTail = null;
+                /**@protected*/ this._pCurrent = null;
+                /**@protected*/ this._iLength = 0;
+                /**@protected*/ this._bLock = false;
+                if (arguments.length) {
+                    this.fromArray(pData);
+                }
+            }
+            Object.defineProperty(ObjectList.prototype, "length", {
+                get: /** @inline */function () {
+                    return this._iLength;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ObjectList.prototype, "first", {
+                get: /** @inline */function () {
+                    this._pCurrent = this._pHead;
+                    return (((this._pCurrent) != null)) ? this._pCurrent.data : null;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ObjectList.prototype, "last", {
+                get: /** @inline */function () {
+                    this._pCurrent = this._pTail;
+                    return (((this._pCurrent) != null)) ? this._pCurrent.data : null;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ObjectList.prototype, "current", {
+                get: /** @inline */function () {
+                    return (((this._pCurrent) != null)) ? this._pCurrent.data : null;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ObjectList.prototype.lock = /** @inline */function () {
+                this._bLock = true;
+            };
+            ObjectList.prototype.unlock = /** @inline */function () {
+                this._bLock = false;
+            };
+            ObjectList.prototype.isLocked = /** @inline */function () {
+                return this._bLock;
+            };
+            ObjectList.prototype.value = /** @inline */function (n) {
+                return /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(n).data;
+            };
+            ObjectList.prototype.indexOf = function (pData, iFrom) {
+                if (typeof iFrom === "undefined") { iFrom = 0.; }
+                var pItem = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(iFrom);
+                for(var i = iFrom; i < this._iLength; i++) {
+                    if (pItem.data === pData) {
+                        return i;
+                    }
+                    pItem = pItem.next;
+                }
+                return -1;
+            };
+            ObjectList.prototype.mid = function (iPos, iSize) {
+                if (typeof iPos === "undefined") { iPos = 0; }
+                if (typeof iSize === "undefined") { iSize = this._iLength; }
+                iSize = Math.min(this._iLength - iPos, iSize);
+                if (iPos > this._iLength - 1) {
+                    return null;
+                }
+                var pNewList = new ObjectList();
+                var pItem = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(iPos);
+                for(var i = 0; i < iSize; ++i) {
+                    pNewList.push(pItem.data);
+                    pItem = pItem.next;
+                }
+                ;
+                return pNewList;
+            };
+            ObjectList.prototype.slice = /** @inline */function (iStart, iEnd) {
+                if (typeof iStart === "undefined") { iStart = 0; }
+                if (typeof iEnd === "undefined") { iEnd = Math.max(this._iLength - iStart, 0); }
+                return this.mid(iStart, iEnd - iStart);
+            };
+            ObjectList.prototype.move = /** @inline */function (iFrom, iTo) {
+                return this.insert(iTo - 1, /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(iFrom));
+            };
+            ObjectList.prototype.replace = /** @inline */function (iPos, pData) {
+                util.logger.setSourceLocation("util/ObjectList.ts", 102);
+                util.logger.assert(!((this)._bLock), "list locked.");
+                ;
+                /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(iPos).data = pData;
+                return this;
+            };
+            ObjectList.prototype.erase = function (begin, end) {
+                if (arguments.length < 2) {
+                    /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(arguments[0]);
+                } else {
+                    end = Math.min(end, this._iLength);
+                    for(var i = begin; i < end; i++) {
+                        /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(i);
+                    }
+                }
+                return this;
+            };
+            ObjectList.prototype.contains = /** @inline */function (pData) {
+                return (this.indexOf(pData) >= 0);
+            };
+            ObjectList.prototype.removeAt = /** @inline */function (n) {
+                /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(n);
+            };
+            ObjectList.prototype.removeOne = /** @inline */function (pData) {
+                (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/(this).takeAt((this.indexOf(pData))));
+            };
+            ObjectList.prototype.removeAll = /** @inline */function (pData) {
+                var i;
+                var n = ((this)._iLength);
+                while((i = this.indexOf(pData)) >= 0) {
+                    (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/(this).takeAt((i)));
+                    i--;
+                }
+                return n;
+            };
+            ObjectList.prototype.swap = function (i, j) {
+                util.logger.setSourceLocation("util/ObjectList.ts", 147);
+                util.logger.assert(!((this)._bLock), "list locked.");
+                ;
+                i = Math.min(i, this._iLength - 1);
+                j = Math.min(j, this._iLength - 1);
+                if (i != j) {
+                    var pItem1 = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(i);
+                    var pItem2 = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(j);
+                    var pTmp = pItem1.data;
+                    pItem1.data = pItem2.data;
+                    pItem2.data = pTmp;
+                }
+                return this;
+            };
+            ObjectList.prototype.add = function (pList) {
+                pList.seek(0);
+                if (pList.length > 1) {
+                    ((this).insert((this)._iLength, (pList.first())));
+                }
+                for(var i = 1; i < pList.length; i++) {
+                    ((this).insert((this)._iLength, (pList.next())));
+                }
+                return this;
+            };
+            ObjectList.prototype.seek = function (n) {
+                if (typeof n === "undefined") { n = 0; }
+                var pElement;
+                n = Math.min(n, this._iLength - 1);
+                if (n > this._iLength / 2) {
+                    pElement = this._pTail;
+                    for(var m = this._iLength - 1 - n; m > 0; --m) {
+                        pElement = pElement.prev;
+                    }
+                } else {
+                    pElement = this._pHead;
+                    for(var i = 0; i < n; ++i) {
+                        pElement = pElement.next;
+                    }
+                }
+                this._pCurrent = pElement;
+                return this;
+            };
+            ObjectList.prototype.next = /** @inline */function () {
+                return (((this._pCurrent) != null) && ((this._pCurrent.next) != null)) ? (this._pCurrent = this._pCurrent.next).data : null;
+            };
+            ObjectList.prototype.prev = /** @inline */function () {
+                return (((this._pCurrent) != null) && ((this._pCurrent.prev) != null)) ? (this._pCurrent = this._pCurrent.prev).data : null;
+            };
+            ObjectList.prototype.push = /** @inline */function (pElement) {
+                return this.insert(this._iLength, pElement);
+            };
+            ObjectList.prototype.takeAt = /** @inline */function (n) {
+                util.logger.setSourceLocation("util/ObjectList.ts", 217);
+                util.logger.assert(!((this)._bLock), "list locked.");
+                ;
+                if (n < 0) {
+                    return null;
+                }
+                return this.pullElement(/*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(n));
+            };
+            ObjectList.prototype.pullElement = function (pItem) {
+                if (((pItem) === null)) {
+                    //this case theoretically cannot happen, but ....
+                    return null;
+                }
+                if (((pItem.prev) === null)) {
+                    this._pHead = pItem.next;
+                } else {
+                    pItem.prev.next = pItem.next;
+                }
+                if (((pItem.next) === null)) {
+                    this._pTail = pItem.prev;
+                } else {
+                    pItem.next.prev = pItem.prev;
+                }
+                this._iLength--;
+                if (((pItem.next) === null)) {
+                    this._pCurrent = this._pTail;
+                } else {
+                    this._pCurrent = pItem.next;
+                }
+                return /*not inlined, because supportes only single statement functions(cur. st. count: 7)*/this.releaseItem(pItem);
+            };
+            ObjectList.prototype.takeFirst = /** @inline */function () {
+                return /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(0);
+            };
+            ObjectList.prototype.takeLast = /** @inline */function () {
+                return /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(this._iLength - 1);
+            };
+            ObjectList.prototype.takeCurrent = /** @inline */function (isPrev) {
+                if (typeof isPrev === "undefined") { isPrev = false; }
+                //console.log(isDefAndNotNull(this._pCurrent));
+                return this.pullElement(this._pCurrent);
+            };
+            ObjectList.prototype.pop = /** @inline */function () {
+                return /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(this._iLength - 1);
+            };
+            ObjectList.prototype.prepend = /** @inline */function (pElement) {
+                return this.insert(0, pElement);
+            };
+            ObjectList.prototype.find = /** @inline */function (n) {
+                if (n < this._iLength) {
+                    this.seek(n);
+                    return this._pCurrent;
+                }
+                return null;
+            };
+            ObjectList.prototype.releaseItem = /** @inline */function (pItem) {
+                var pData = pItem.data;
+                pItem.next = null;
+                pItem.prev = null;
+                pItem.data = null;
+                ObjectList.listItemPool.push(pItem);
+                return pData;
+            };
+            ObjectList.prototype.createItem = /** @inline */function () {
+                if (ObjectList.listItemPool.length == 0) {
+                    // LOG("allocated object list item");
+                    return {
+                        next: null,
+                        prev: null,
+                        data: null
+                    };
+                }
+                // LOG("before pop <----------", this._iLength, this.first);
+                return ObjectList.listItemPool.pop();
+            };
+            ObjectList.prototype.fromArray = function (elements, iOffset, iSize) {
+                if (typeof iOffset === "undefined") { iOffset = 0; }
+                if (typeof iSize === "undefined") { iSize = elements.length; }
+                iOffset = Math.min(iOffset, this._iLength);
+                for(var i = 0; i < iSize; i++) {
+                    this.insert(iOffset + i, elements[i]);
+                }
+                return this;
+            };
+            ObjectList.prototype.insert = function (n, pData) {
+                util.logger.setSourceLocation("util/ObjectList.ts", 321);
+                util.logger.assert(!((this)._bLock), "list locked.");
+                ;
+                var pNew = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.createItem();
+                var pItem;
+                n = Math.min(n, this._iLength);
+                pNew.data = pData;
+                if (n == 0) {
+                    if (((this._pHead) === null)) {
+                        this._pTail = pNew;
+                    }
+                    pNew.next = this._pHead;
+                    this._pHead = pNew;
+                } else {
+                    pItem = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(n - 1);
+                    if (pItem == null) {
+                        this._pHead = pNew;
+                    } else {
+                        if (pItem.next == null) {
+                            this._pTail = pNew;
+                        } else {
+                            pNew.next = pItem.next;
+                            pItem.next.prev = pNew;
+                        }
+                        pItem.next = pNew;
+                        pNew.prev = pItem;
+                    }
+                }
+                this._iLength++;
+                this._pCurrent = pNew;
+                return this;
+            };
+            ObjectList.prototype.isEqual = function (pList) {
+                if (this._iLength == pList.length) {
+                    if (this === pList) {
+                        return true;
+                    }
+                    var l1 = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.first;
+                    var l2 = pList.first;
+                    for(var i = 0; i < this._iLength; ++i) {
+                        if (l1 != l2) {
+                            return false;
+                        }
+                        l1 = (((((this)._pCurrent) != null) && (((this)._pCurrent.next) != null)) ? ((this)._pCurrent = (this)._pCurrent.next).data : null);
+                        l2 = pList.next();
+                    }
+                    return true;
+                }
+                return false;
+            };
+            ObjectList.prototype.clear = function () {
+                util.logger.setSourceLocation("util/ObjectList.ts", 390);
+                util.logger.assert(!((this)._bLock), "list locked.");
+                ;
+                var pPrev;
+                var pNext;
+                this._pCurrent = this._pHead;
+                for(var i = 0; i < this._iLength; ++i) {
+                    pPrev = this._pCurrent;
+                    pNext = this._pCurrent = this._pCurrent.next;
+                    /*not inlined, because supportes only single statement functions(cur. st. count: 7)*/this.releaseItem(pPrev);
+                }
+                this._pHead = this._pCurrent = this._pTail = null;
+                this._iLength = 0;
+                return this;
+            };
+            ObjectList.prototype.forEach = function (fn) {
+                var pItem = this._pHead;
+                var n = 0;
+                do {
+                    if (fn(pItem.data, n++) === false) {
+                        return;
+                    }
+                } while((pItem = pItem.next));
+            };
+            ObjectList.listItemPool = new util.ObjectArray();
+            return ObjectList;
+        })();
+        util.ObjectList = ObjectList;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    akra.ObjectList = akra.util.ObjectList;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (scene) {
+        /** OcTreeNode class represent node of OcTree */
+        var OcTreeNode = (function () {
+            //index - is xyz where x-left = 0, x-right = 1 etc.
+            function OcTreeNode(pTree) {
+                /** Level of node */
+                this.level = 0;
+                /** Byte x-coord of node */
+                //x: int = 0;
+                /** Byte y-coord of node */
+                //y: int = 0;
+                /** Byte z-coord of node */
+                //z: int = 0;
+                /** Index in array of nodes in tree */
+                this.index = 0;
+                /** Link to previous node in tree */
+                this.rearNodeLink = null;
+                /**@protected*/ this._iGuid = akra.sid();
+                /**@protected*/ this._pUnicastSlotMap = null;
+                /**@protected*/ this._pBroadcastSlotList = null;
+                this.membersList = new akra.util.ObjectList();
+                this.worldBounds = new akra.geometry.Rect3d();
+                this.childrenList = new Array(8);
+                for(var i = 0; i < 8; i++) {
+                    this.childrenList[i] = new akra.util.ObjectList();
+                }
+                this.tree = pTree;
+            }
+            OcTreeNode.prototype.addMember = /**
+            * Add object in this node
+            */
+            function (pObject) {
+                this.membersList.push(pObject);
+                ((pObject).getEventTable().addDestination(((((pObject)))._iGuid), ("worldBoundsUpdated"), (this), ("objectMoved"), (1 /* UNICAST */ )));
+                // console.log(this.membersList);
+                            };
+            OcTreeNode.prototype.removeMember = /**
+            * Remove member object from node and release node if there are not members in it
+            */
+            function (pObject) {
+                var i = this.membersList.indexOf(pObject);
+                // console.log('position in list ------------>',i);
+                // make sure this is one of ours
+                akra.logger.setSourceLocation("OcTreeNode.ts", 69);
+                akra.logger.assert(i >= 0, "error removing member cannot find member");
+                ;
+                if (i >= 0) {
+                    this.membersList.takeAt(i);
+                    ((pObject).getEventTable().removeDestination(((((pObject)))._iGuid), ("worldBoundsUpdated"), (this), ("objectMoved"), (1 /* UNICAST */ )));
+                }
+                if (this.membersList.length === 0) {
+                    this.tree.deleteNodeFromTree(this);
+                }
+            };
+            OcTreeNode.prototype.getGuid = /** @inline */function () {
+                return this._iGuid;
+            };
+            OcTreeNode._pEventTable = new akra.events.EventTable();
+            OcTreeNode.prototype.getEventTable = /** @inline */function () {
+                return OcTreeNode._pEventTable;
+            };
+            OcTreeNode.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
+                return pSender.getEventTable().addDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
+            };
+            OcTreeNode.prototype.disconnect = /** @inline */function (pSender, sSignal, sSlot, eType) {
+                return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
+            };
+            OcTreeNode.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
+                return (OcTreeNode._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
+            };
+            OcTreeNode.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
+                return (OcTreeNode._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
+            };
+            OcTreeNode.prototype.objectMoved = function (pObject) {
+                // console.warn('object moving');
+                var pNode = this.tree.findTreeNode(pObject);
+                //console.error('-----before------>', this, pNode,'<-------arter------');
+                if (pNode !== this) {
+                    this.removeMember(pObject);
+                    pNode.addMember(pObject);
+                }
+            };
+            return OcTreeNode;
+        })();
+        scene.OcTreeNode = OcTreeNode;        
+        ;
+        var OcTreeRootNode = (function (_super) {
+            __extends(OcTreeRootNode, _super);
+            function OcTreeRootNode(pTree) {
+                        _super.call(this, pTree);
+                var iTmp = (1 << this.tree.depth);
+                this._pBasicWorldBounds = new akra.geometry.Rect3d(0, iTmp, 0, iTmp, 0, iTmp);
+                this._pBasicWorldBounds.divSelf(this.tree.worldScale);
+                this._pBasicWorldBounds.subSelf(this.tree.worldOffset);
+                this.worldBounds.set(this._pBasicWorldBounds);
+            }
+            OcTreeRootNode.prototype.addMember = function (pMember) {
+                _super.prototype.addMember.call(this, pMember);
+                //обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
+                this._updateNodeBoundingBox();
+            };
+            OcTreeRootNode.prototype.removeMember = function (pObject) {
+                var i = this.membersList.indexOf(pObject);
+                // make sure this is one of ours
+                akra.logger.setSourceLocation("OcTreeNode.ts", 120);
+                akra.logger.assert(i >= 0, "error removing member cannot find member");
+                ;
+                if (i >= 0) {
+                    this.membersList.takeAt(i);
+                    ((pObject).getEventTable().removeDestination(((((pObject)))._iGuid), ("moved"), (this), ("objectMoved"), (1 /* UNICAST */ )));
+                }
+                //обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
+                this._updateNodeBoundingBox();
+            };
+            OcTreeRootNode.prototype._updateNodeBoundingBox = /**@protected*/ function () {
+                var pNodeWorldBounds = this.worldBounds;
+                pNodeWorldBounds.set(this._pBasicWorldBounds);
+                var pObject = this.membersList.first;
+                while(((pObject) != null)) {
+                    pNodeWorldBounds.unionRect(pObject.worldBounds);
+                    pObject = this.membersList.next();
+                }
+            };
+            return OcTreeRootNode;
+        })(OcTreeNode);
+        scene.OcTreeRootNode = OcTreeRootNode;        
+    })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
@@ -35137,76 +37060,6 @@ var akra;
             return Ray3d;
         })();
         geometry.Ray3d = Ray3d;        
-        ;
-    })(akra.geometry || (akra.geometry = {}));
-    var geometry = akra.geometry;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    (function (geometry) {
-        var Segment2d = (function () {
-            function Segment2d() {
-                this.ray = new geometry.Ray2d();
-                this.distance = 0.;
-            }
-            Object.defineProperty(Segment2d.prototype, "point", {
-                get: function () {
-                    return this.ray.point;
-                },
-                set: function (v2fPoint) {
-                    this.ray.point.set(v2fPoint);
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Segment2d.prototype, "normal", {
-                get: function () {
-                    return this.ray.normal;
-                },
-                set: function (v2fNormal) {
-                    this.ray.normal.set(v2fNormal);
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return Segment2d;
-        })();
-        geometry.Segment2d = Segment2d;        
-        ;
-    })(akra.geometry || (akra.geometry = {}));
-    var geometry = akra.geometry;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    (function (geometry) {
-        var Segment3d = (function () {
-            function Segment3d() {
-                this.ray = new geometry.Ray3d();
-                this.distance = 0.;
-            }
-            Object.defineProperty(Segment3d.prototype, "point", {
-                get: function () {
-                    return this.ray.point;
-                },
-                set: function (v3fPoint) {
-                    this.ray.point.set(v3fPoint);
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Segment3d.prototype, "normal", {
-                get: function () {
-                    return this.ray.normal;
-                },
-                set: function (v3fNormal) {
-                    this.ray.normal.set(v3fNormal);
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return Segment3d;
-        })();
-        geometry.Segment3d = Segment3d;        
         ;
     })(akra.geometry || (akra.geometry = {}));
     var geometry = akra.geometry;
@@ -35568,6 +37421,1211 @@ var akra;
 ;
 var akra;
 (function (akra) {
+    (function (scene) {
+        (function (EOcTreeConstants) {
+            EOcTreeConstants._map = [];
+            EOcTreeConstants.k_MinimumTreeDepth = 0;
+            EOcTreeConstants.k_MaximumTreeDepth = 10;
+        })(scene.EOcTreeConstants || (scene.EOcTreeConstants = {}));
+        var EOcTreeConstants = scene.EOcTreeConstants;
+        ;
+        var OcTree = (function (_super) {
+            __extends(OcTree, _super);
+            /**
+            * Список байтовых ректов ректа камеры для тестов объектов.
+            */
+            //protected _pTestLocalRect: IOcTreeRect[] = null;
+            function OcTree() {
+                        _super.call(this);
+                /** List of OcTreeNodes on each level */
+                //protected _ppLevelNodes: IOcTreeNode[][] = null;
+                /** First node in list of all nodes */
+                //protected _pFirstNode: IOcTreeNode = null;
+                /**@protected*/ this._pHead = null;
+                /** Size of world bounding box */
+                /**@protected*/ this._v3fWorldExtents = new akra.Vec3();
+                /** Negate min point of bounding box */
+                /**@protected*/ this._v3fWorldScale = new akra.Vec3();
+                /** Value of relation between (1024,1024,1024) and bounding box size */
+                /**@protected*/ this._v3fWorldOffset = new akra.Vec3();
+                /** Maximum depth of tree. Value set when you call OcTree::create() */
+                /**@protected*/ this._iDepth = 0;
+                //protected _iSize: int = 0;//2^iDepth;
+                /**
+                * Список свободных узлов(объектов OcTreeNode).
+                * Необходимо для экономии ресурсов памяти и чтобы не делать лишних delete
+                */
+                /**@protected*/ this._pFreeNodePool = null;
+                ((this)._sName = ("OcTree"));
+            }
+            Object.defineProperty(OcTree.prototype, "depth", {
+                get: /** @inline */function () {
+                    return this._iDepth;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(OcTree.prototype, "worldScale", {
+                get: /** @inline */function () {
+                    return this._v3fWorldScale;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(OcTree.prototype, "worldOffset", {
+                get: /** @inline */function () {
+                    return this._v3fWorldOffset;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            OcTree.prototype.create = /**
+            * Create
+            */
+            function (pWorldBoundingBox, iDepth, nNodes) {
+                if (typeof nNodes === "undefined") { nNodes = 64; }
+                var v3fTemp = akra.vec3();
+                var i = 0;
+                akra.logger.setSourceLocation("OcTree.ts", 72);
+                akra.logger.assert(!this.isReady(), "the Oc tree has already been created");
+                ;
+                akra.logger.setSourceLocation("OcTree.ts", 74);
+                akra.logger.assert(iDepth >= 0 /* k_MinimumTreeDepth */  && iDepth <= 10 /* k_MaximumTreeDepth */ , "invalid tree depth");
+                ;
+                this._iDepth = iDepth;
+                this._v3fWorldExtents.set(pWorldBoundingBox.size(v3fTemp));
+                this._v3fWorldOffset.set(pWorldBoundingBox.minPoint(v3fTemp).negate());
+                var iSize = 1 << iDepth;
+                this._v3fWorldScale.x = iSize / this._v3fWorldExtents.x;
+                this._v3fWorldScale.y = iSize / this._v3fWorldExtents.y;
+                this._v3fWorldScale.z = iSize / this._v3fWorldExtents.z;
+                // allocate the nodes
+                // this._ppLevelNodes = new Array(iDepth);
+                // for (i = 0; i < iDepth; ++i) {
+                //     this._ppLevelNodes[i] = new Array();
+                // }
+                // this._pTestLocalRect = new Array(iDepth);
+                // for (i = 0; i < iDepth; ++i) {
+                //     this._pTestLocalRect[i] = new OcTreeRect;
+                // }
+                this._pHead = new scene.OcTreeRootNode(this);
+                this._pHead.level = 0;
+                this._pFreeNodePool = new Array();
+                for(i = 0; i < nNodes; ++i) {
+                    this._pFreeNodePool.push(new scene.OcTreeNode(this));
+                }
+            };
+            OcTree.prototype.isReady = /**
+            * is any levels of tree are availeable(some object in a tree)
+            */
+            function () {
+                if (this._iDepth > 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            };
+            OcTree.prototype.findTreeNode = /**
+            * find node
+            */
+            function (pObject) {
+                var pRect = pObject.worldBounds;
+                var iX0 = pRect.x0, iX1 = pRect.x1, iY0 = pRect.y0, iY1 = pRect.y1, iZ0 = pRect.z0, iZ1 = pRect.z1;
+                var v3fWorldOffset = this._v3fWorldOffset;
+                var v3fWorldScale = this._v3fWorldScale;
+                iX0 += v3fWorldOffset.x;
+                iX1 += v3fWorldOffset.x;
+                iY0 += v3fWorldOffset.y;
+                iY1 += v3fWorldOffset.y;
+                iZ0 += v3fWorldOffset.z;
+                iZ1 += v3fWorldOffset.z;
+                iX0 *= v3fWorldScale.x;
+                iX1 *= v3fWorldScale.x;
+                iY0 *= v3fWorldScale.y;
+                iY1 *= v3fWorldScale.y;
+                iZ0 *= v3fWorldScale.z;
+                iZ1 *= v3fWorldScale.z;
+                //round it
+                iX0 = akra.math.floor(iX0);
+                iX1 = akra.math.ceil(iX1);
+                iY0 = akra.math.floor(iY0);
+                iY1 = akra.math.ceil(iY1);
+                iZ0 = akra.math.floor(iZ0);
+                iZ1 = akra.math.ceil(iZ1);
+                iX1 = (iX1 === iX0) ? iX0 + 1 : iX1;
+                iY1 = (iY1 === iY0) ? iY0 + 1 : iY1;
+                iZ1 = (iZ1 === iZ0) ? iZ0 + 1 : iZ1;
+                //var iMax1: int = 1 << this._iDepth - 2;
+                //var iMax2: int = 1 << this._iDepth - 1;
+                //iX0 = math.clamp(iX0, 0, iMax1);
+                //iY0 = math.clamp(iY0, 0, iMax1);
+                //iZ0 = math.clamp(iZ0, 0, iMax1);
+                //iX1 = math.clamp(iX1, iX0 + 1, iMax2);
+                //iY1 = math.clamp(iY1, iY0 + 1, iMax2);
+                //iZ1 = math.clamp(iZ1, iZ0 + 1, iMax2);
+                // console.error('zzzzzz', iX0, iX1, iY0, iY1, iZ0, iZ1);
+                var pNode = this.findTreeNodeByRect(iX0, iX1, iY0, iY1, iZ0, iZ1);
+                return pNode;
+            };
+            OcTree.prototype.findTreeNodeByRect = /**
+            * Find tree node by Rect
+            */
+            function (iX0, iX1, iY0, iY1, iZ0, iZ1) {
+                var nMax = (1 << this._iDepth);
+                if (iX0 < 0 || iX1 > nMax || iY0 < 0 || iY1 > nMax || iZ0 < 0 || iZ1 > nMax) {
+                    return this._pHead;
+                }
+                var iDepth = this._iDepth;
+                var iLevel;
+                ///////////////////////////
+                iLevel = this._findNodeLevel(iX0, iX1, iY0, iY1, iZ0, iZ1);
+                // console.warn(iLevel);
+                ///////////////////////////
+                if (iLevel == 0) {
+                    return this._pHead;
+                }
+                var iComposedIndex;
+                var iShift = iDepth - iLevel;
+                iComposedIndex = (iX0 >> (iDepth - iLevel)) << (2 * iDepth + iShift);
+                // console.log(iComposedIndex);
+                iComposedIndex += (iY0 >> (iDepth - iLevel)) << (iDepth + iShift);
+                // console.log(iComposedIndex);
+                iComposedIndex += (iZ0 >> (iDepth - iLevel)) << (iShift);
+                //console.log(iComposedIndex, iX0, iY0, iZ0);
+                var iWay;
+                var pParentNode, pNode;
+                pParentNode = this._pHead;
+                pNode = null;
+                var iTmpX, iTmpY, iTmpZ;
+                var iX, iY, iZ;
+                var i = 0;
+                while(i < iLevel) {
+                    iTmpX = iX0;
+                    iTmpY = iY0;
+                    iTmpZ = iZ0;
+                    iX = (iTmpX >> (iDepth - i - 1)) & 1;
+                    iY = (iTmpY >> (iDepth - i - 1)) & 1;
+                    iZ = (iTmpZ >> (iDepth - i - 1)) & 1;
+                    iWay = 4 * iX + 2 * iY + iZ;
+                    // console.log('iWay -------------->', iWay, '<--------------');
+                    var pNodeList = pParentNode.childrenList[iWay];
+                    // console.log(pParentNode);
+                    if (pNodeList.length === 0) {
+                        pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+                        pNodeList.push(pNode);
+                        return pNode;
+                    }
+                    var iPosition = 0;
+                    var pTestNode = pNodeList.first;
+                    var iTestMask = (iDepth >= i + 2) ? 1 << (iDepth - i - 2) : 0;
+                    var iMask = (iTestMask << (2 * iDepth)) + (iTestMask << iDepth) + iTestMask;
+                    // console.log('mask-------------->',iMask,'<-----------');
+                    var pParentNodeOld = pParentNode;
+                    while(((pTestNode) != null)) {
+                        var iTest = pTestNode.index & iComposedIndex;
+                        // console.log(pTestNode);
+                        // console.error('iLevel--->', iLevel,'iTest ------------>', iTest);
+                        // console.error('testNode index', pTestNode.index, 'composed index', iComposedIndex);
+                        var iResult1 = pTestNode.index & iMask;
+                        var iResult2 = iComposedIndex & iMask;
+                        // console.warn(iResult1, iResult2);
+                        if (iResult1 === iResult2) {
+                            if (pTestNode.level === iLevel) {
+                                return pTestNode;
+                            } else if (pTestNode.level < iLevel) {
+                                pParentNode = pTestNode;
+                                i = pTestNode.level;
+                                break;
+                            } else {
+                                //alert("" + <string><any>pTestNode.level + "  " + <string><any>iLevel);
+                                if (pNode === null) {
+                                    pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+                                    pParentNode.childrenList[iWay].push(pNode);
+                                    i = iLevel;
+                                }
+                                var iTestIndex = pTestNode.index;
+                                var iShift = iDepth - i - 1;
+                                iX = (iTestIndex >> (2 * iDepth + iShift)) & 1;
+                                iY = (iTestIndex >> (iDepth + iShift)) & 1;
+                                iZ = (iTestIndex >> iShift) & 1;
+                                var iTestWay = 4 * iX + 2 * iY + iZ;
+                                pNodeList.takeAt(iPosition);
+                                pNodeList.seek(iPosition - 1);
+                                iPosition--;
+                                pNode.childrenList[iTestWay].push(pTestNode);
+                                pTestNode.rearNodeLink = pNode;
+                            }
+                        }
+                        pTestNode = pNodeList.next();
+                        iPosition++;
+                    }
+                    if (pNode === null && pParentNodeOld === pParentNode) {
+                        pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+                        pParentNode.childrenList[iWay].push(pNode);
+                        break;
+                    }
+                }
+                return pNode;
+            };
+            OcTree.prototype._findNodeLevel = function (iX0, iX1, iY0, iY1, iZ0, iZ1) {
+                var iLengthX = iX1 - iX0;
+                var iLengthY = iY1 - iY0;
+                var iLengthZ = iZ1 - iZ0;
+                var iLength = akra.math.max(iLengthX, akra.math.max(iLengthY, iLengthZ));
+                //maximum possible level
+                var iLevel = this._iDepth - akra.math.floor(akra.math.log(iLength) / akra.math.LN2);
+                while(iLevel > 0) {
+                    var iPitch = 1 << (this._iDepth - iLevel);
+                    var iTest1, iTest2;
+                    //first test for x then for y and z
+                    var i;
+                    for(i = 0; i < 3; i++) {
+                        iTest1 = akra.math.floor(arguments[2 * i] / iPitch);
+                        iTest2 = akra.math.floor(arguments[2 * i + 1] / iPitch);
+                        if (iTest1 != iTest2) {
+                            if ((iTest1 + 1) == iTest2) {
+                                if ((arguments[2 * i + 1] % iPitch) != 0) {
+                                    break;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    if (i != 3) {
+                        iLevel--;
+                    } else {
+                        break;
+                    }
+                }
+                return iLevel;
+            };
+            OcTree.prototype.getAndSetFreeNode = /**
+            * Get free node.
+            * Get it from _pFreeNodePull or create new OcTreeNode if it`s empty and set his data.
+            */
+            function (iLevel, iComposedIndex, pParentNode) {
+                var pNode = this._pFreeNodePool.pop();
+                if (!((pNode) != null)) {
+                    pNode = new scene.OcTreeNode(this);
+                }
+                var iDepth = this._iDepth;
+                var iMask = (1 << this._iDepth) - 1;
+                var iIndexX = (iComposedIndex >> (2 * iDepth)) & iMask;
+                var iIndexY = (iComposedIndex >> (iDepth)) & iMask;
+                var iIndexZ = iComposedIndex & iMask;
+                var iSize = 1 << (this._iDepth - iLevel);
+                pNode.level = iLevel;
+                // pNode.x = iX;
+                // pNode.y = iY;
+                // pNode.z = iZ;
+                pNode.index = iComposedIndex;
+                pNode.rearNodeLink = pParentNode;
+                pNode.worldBounds.set(iIndexX, iIndexX + iSize, iIndexY, iIndexY + iSize, iIndexZ, iIndexZ + iSize);
+                pNode.worldBounds.divSelf(this._v3fWorldScale);
+                pNode.worldBounds.subSelf(this._v3fWorldOffset);
+                //this._ppLevelNodes[iLevel][iIndex] = pNode;
+                // if (this._pFirstNode) {
+                //     this._pFirstNode.rearNodeLink = pNode;
+                // }
+                // pNode.forwardNodeLink = this.pFirstNode;
+                // pNode.rearNodeLink = null;
+                //this._pFirstNode = pNode;
+                /*
+                var i,j;
+                var pTempNode;
+                for(i=iLevel-1; i>=0; --i){
+                j = (((iZ>>(iLevel-i))<<i)<<i) + ((iY>>(iLevel-i))<<i) + (iX>>(iLevel-i));
+                pTempNode = this._ppLevelNodes[i][j];
+                if (pTempNode) {
+                this.pParentNode = pTempNode;
+                this.pSibling = pTempNode.pChildren;
+                pTempNode.pChildren = this;
+                break;
+                }
+                }
+                */
+                return pNode;
+            };
+            OcTree.prototype.deleteNodeFromTree = /**
+            * Delete node from tree
+            */
+            function (pNode) {
+                var pParentNode = pNode.rearNodeLink;
+                // console.error(pNode,pParentNode);
+                akra.logger.setSourceLocation("OcTree.ts", 413);
+                akra.logger.assert(pNode.membersList.length == 0, "list members of node don't empty");
+                ;
+                var iDepth = this._iDepth;
+                var iParentLevel = pParentNode.level;
+                var iIndex = pNode.index;
+                var iShift = iDepth - iParentLevel - 1;
+                var iX = (iIndex >> (2 * iDepth + iShift)) & 1;
+                var iY = (iIndex >> (iDepth + iShift)) & 1;
+                var iZ = (iIndex >> iShift) & 1;
+                var iWay = 4 * iX + 2 * iY + iZ;
+                var pParentBranch = pParentNode.childrenList[iWay];
+                //console.log('iWay ------------>', iWay);
+                var iNode = pParentBranch.indexOf(pNode);
+                akra.logger.setSourceLocation("OcTree.ts", 432);
+                akra.logger.assert(iNode != -1, "can't remove node from parent, node not found");
+                ;
+                //deleting node from parent list
+                pParentBranch.takeAt(iNode);
+                for(var i = 0; i < 8; i++) {
+                    var pChildrens = pNode.childrenList[i];
+                    while(pChildrens.length) {
+                        var pChildNode = pChildrens.pop();
+                        pChildNode.rearNodeLink = pParentNode;
+                        pParentBranch.push(pChildNode);
+                    }
+                }
+                pNode.level = 0;
+                pNode.rearNodeLink = null;
+                pNode.worldBounds.clear();
+                this._pFreeNodePool.push(pNode);
+            };
+            OcTree.prototype._findObjects = function (pCamera, pResultArray, bFastSearch) {
+                if (typeof pResultArray === "undefined") { pResultArray = new akra.util.ObjectArray(); }
+                if (typeof bFastSearch === "undefined") { bFastSearch = false; }
+                //while we ignore second parametr
+                //don't have normal implementation
+                pResultArray.clear();
+                if (!((pCamera.frustum) !== undefined)) {
+                    this._buildSearchResultsByRect(pCamera.searchRect, this._pHead, pResultArray);
+                } else {
+                    this._buildSearchResultsByRectAndFrustum(pCamera.searchRect, pCamera.frustum, this._pHead, pResultArray);
+                }
+                return pResultArray;
+            };
+            OcTree.prototype._buildSearchResultsByRect = /**@protected*/ function (pSearchRect, pNode, pResultList) {
+                var pNodeRect = pNode.worldBounds;
+                var kResult = akra.geometry.classifyRect3d(pSearchRect, pNodeRect);
+                if (kResult == 3 /* B_CONTAINS_A */  || kResult == 4 /* INTERSECTING */ ) {
+                    //надо проводить дополнительные тесты
+                    var pMemberList = pNode.membersList;
+                    var pObject = pMemberList.first;
+                    while(((pObject) != null)) {
+                        if (akra.geometry.intersectRect3dRect3d(pSearchRect, pObject.worldBounds)) {
+                            pResultList.push(pObject);
+                        }
+                        pObject = pMemberList.next();
+                    }
+                    for(var i = 0; i < 8; i++) {
+                        var pChildrenList = pNode.childrenList[i];
+                        var pChildNode = pChildrenList.first;
+                        while(((pChildNode) != null)) {
+                            this._buildSearchResultsByRect(pSearchRect, pChildNode, pResultList);
+                            pChildNode = pChildrenList.next();
+                        }
+                    }
+                } else if (kResult != 0 /* NO_RELATION */ ) {
+                    //объект полностью попал
+                    this._includeAllTreeSubbranch(pNode, pResultList);
+                }
+            };
+            OcTree.prototype._buildSearchResultsByRectAndFrustum = /**@protected*/ function (pSearchRect, pFrustum, pNode, pResultList) {
+                var pNodeRect = pNode.worldBounds;
+                //var pChildRect: IRect3d;
+                if (akra.geometry.intersectRect3dRect3d(pSearchRect, pNodeRect)) {
+                    var kTestResult = akra.geometry.classifyFrustumRect3d(pFrustum, pNodeRect);
+                    if (kTestResult == 2 /* A_CONTAINS_B */ ) {
+                        //объект полностью попал
+                        this._includeAllTreeSubbranch(pNode, pResultList);
+                    } else if (kTestResult == 4 /* INTERSECTING */ ) {
+                        //объект попал частично
+                        var pMemberList = pNode.membersList;
+                        var pObject = pMemberList.first;
+                        while(((pObject) != null)) {
+                            if (pFrustum.testRect(pObject.worldBounds)) {
+                                pResultList.push(pObject);
+                            }
+                            pObject = pMemberList.next();
+                        }
+                        for(var i = 0; i < 8; i++) {
+                            //TODO: test by child rect
+                            var pChildrenList = pNode.childrenList[i];
+                            var pChildNode = pChildrenList.first;
+                            while(((pChildNode) != null)) {
+                                this._buildSearchResultsByRectAndFrustum(pSearchRect, pFrustum, pChildNode, pResultList);
+                                pChildNode = pChildrenList.next();
+                            }
+                        }
+                    }
+                }
+            };
+            OcTree.prototype._includeAllTreeSubbranch = /**@protected*/ function (pNode, pResultList) {
+                //console.warn("----------------> including all subbranch <------------------");
+                var pMemberList = pNode.membersList;
+                var pObject = pMemberList.first;
+                while(((pObject) != null)) {
+                    pResultList.push(pObject);
+                    pObject = pMemberList.next();
+                }
+                for(var i = 0; i < 8; i++) {
+                    var pChildrenList = pNode.childrenList[i];
+                    var pChildNode = pChildrenList.first;
+                    while(((pChildNode) != null)) {
+                        this._includeAllTreeSubbranch(pChildNode, pResultList);
+                        pChildNode = pChildrenList.next();
+                    }
+                }
+            };
+            OcTree.prototype.attachObject = /**@protected*/ function (pNode) {
+                // console.error(pNode, isSceneObject(pNode));
+                if (((pNode).type >= 64 /* SCENE_OBJECT */  && (pNode).type < 128 /* OBJECTS_LIMIT */ )) {
+                    var pOcTreeNode = this.findTreeNode(pNode);
+                    pOcTreeNode.addMember(pNode);
+                }
+            };
+            OcTree.prototype.detachObject = /**@protected*/ function (pNode) {
+                if (((pNode).type >= 64 /* SCENE_OBJECT */  && (pNode).type < 128 /* OBJECTS_LIMIT */ )) {
+                    var pOcTreeNode = this.findTreeNode(pNode);
+                    pOcTreeNode.removeMember(pNode);
+                }
+            };
+            OcTree.prototype._toSimpleObject = function (pNode) {
+                if (typeof pNode === "undefined") { pNode = this._pHead; }
+                var pResult = {};
+                pResult.members = [];
+                pResult.childrens = new Array(8);
+                for(var i = 0; i < 8; i++) {
+                    pResult.childrens[i] = [];
+                }
+                pResult.level = pNode.level;
+                pResult.index = pNode.index;
+                pResult.worldBounds = pNode.worldBounds;
+                var pMemberList = pNode.membersList;
+                var pObject = pMemberList.first;
+                while(((pObject) != null)) {
+                    pResult.members.push(pObject.worldBounds);
+                    pObject = pMemberList.next();
+                }
+                for(var i = 0; i < 8; i++) {
+                    var pList = pNode.childrenList[i];
+                    var pChildNode = pList.first;
+                    while(((pChildNode) != null)) {
+                        pResult.childrens[i].push(this._toSimpleObject(pChildNode));
+                        pChildNode = pList.next();
+                    }
+                }
+                return pResult;
+            };
+            return OcTree;
+        })(scene.DisplayList);
+        scene.OcTree = OcTree;        
+        /**
+        * Getter for OcTreeNode by level and x, y, z
+        */
+        // getNodeFromLevelXYZ(iLevel: int, iIndex: int): IOcTreeNode {
+        //     debug_assert(this.isReady(), "the Oc tree has not been created");
+        //     if (iLevel >= 0 && iLevel < this._iDepth) {
+        //         return this._ppLevelNodes[iLevel][iIndex];
+        //     }
+        //     return null;
+        // }
+        /**
+        * Destroy tree and all nodes in tree. Set _iDepth to 0.
+        */
+        // destroy(): void {
+        //     var i: int;
+        //     // for (i = 0; i < this._iDepth; ++i) {
+        //     //     delete this._ppLevelNodes[i];
+        //     // }
+        //     for (i = 0; i < this._pFreeNodePool.length; ++i) {
+        //         delete this._pFreeNodePool[i];
+        //     }
+        //     //this._ppLevelNodes = null;
+        //     this._pFreeNodePool = null;
+        //     this._iDepth = 0;
+        // }
+        // /**
+        //  * Build pByteRect from Rect3d
+        //  * Convert to integer values, taking the floor of each real
+        //  */
+        // inline buildByteRect(pWorldRect: IRect3d, pWorldByteRect: IOcTreeRect): void {
+        //     pWorldByteRect.convert(pWorldRect, this._v3fWorldOffset, this._v3fWorldScale);
+        // };
+            })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
+})(akra || (akra = {}));
+;
+var akra;
+(function (akra) {
+    (function (scene) {
+        (function (light) {
+            var LightParameters = (function () {
+                function LightParameters() {
+                    this.ambient = new akra.Color();
+                    this.diffuse = new akra.Color();
+                    this.specular = new akra.Color();
+                    this.attenuation = new akra.Vec3();
+                }
+                return LightParameters;
+            })();
+            light.LightParameters = LightParameters;            
+            var LightPoint = (function (_super) {
+                __extends(LightPoint, _super);
+                function LightPoint(pScene, eType, isShadowCaster, iMaxShadowResolution) {
+                    if (typeof eType === "undefined") { eType = 0 /* UNKNOWN */ ; }
+                    if (typeof isShadowCaster === "undefined") { isShadowCaster = true; }
+                    if (typeof iMaxShadowResolution === "undefined") { iMaxShadowResolution = 256; }
+                                _super.call(this, pScene, 37 /* LIGHT */ );
+                    /**@protected*/ this._bCastShadows = false;
+                    /**@protected*/ this._isEnabled = true;
+                    /**@protected*/ this._iMaxShadowResolution = 256;
+                    /**@protected*/ this._pLightParameters = new LightParameters();
+                    this._eLightType = eType;
+                    //есть тени от источника или нет
+                    this._bCastShadows = isShadowCaster;
+                    //мкасимальный размер shadow текстуры
+                    this._iMaxShadowResolution = iMaxShadowResolution;
+                }
+                Object.defineProperty(LightPoint.prototype, "lightType", {
+                    get: /** @inline */function () {
+                        return this._eLightType;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(LightPoint.prototype, "enabled", {
+                    get: /** @inline */function () {
+                        return this._isEnabled;
+                    },
+                    set: /** @inline */function (bValue) {
+                        this._isEnabled = bValue;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(LightPoint.prototype, "params", {
+                    get: /** @inline */function () {
+                        return this._pLightParameters;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(LightPoint.prototype, "isShadowCaster", {
+                    get: /** @inline */function () {
+                        return this._bCastShadows;
+                    },
+                    set: /** @inline */function (bValue) {
+                        this._bCastShadows = bValue;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                LightPoint.prototype.create = function () {
+                    var isOk = _super.prototype.create.call(this);
+                    return isOk;
+                };
+                LightPoint.prototype._prepareForLighting = function (pCamera) {
+                    akra.logger.setSourceLocation("light/LightPoint.ts", 64);
+                    akra.logger.warning("pure virtual method");
+                    ;
+                    return false;
+                };
+                LightPoint.prototype._calculateShadows = function () {
+                    akra.logger.setSourceLocation("light/LightPoint.ts", 69);
+                    akra.logger.criticalError("NOT IMPLEMENTED!");
+                    ;
+                };
+                return LightPoint;
+            })(scene.SceneNode);
+            light.LightPoint = LightPoint;            
+            function isLightPoint(pNode) {
+                return pNode.type === 37 /* LIGHT */ ;
+            }
+            light.isLightPoint = isLightPoint;
+        })(scene.light || (scene.light = {}));
+        var light = scene.light;
+    })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (scene) {
+        var LightGraph = (function (_super) {
+            __extends(LightGraph, _super);
+            function LightGraph() {
+                        _super.call(this);
+                /**@protected*/ this._pLightPoints = new akra.util.ObjectList();
+                ((this)._sName = ("LightGraph"));
+            }
+            LightGraph.prototype._findObjects = function (pCamera, pResultArray, bFastSearch) {
+                if (typeof pResultArray === "undefined") { pResultArray = new akra.util.ObjectArray(); }
+                if (typeof bFastSearch === "undefined") { bFastSearch = false; }
+                //while we ignore second parametr
+                //don't have normal implementation
+                pResultArray.clear();
+                var pList = this._pLightPoints;
+                var pLightPoint = pList.first;
+                while(((pLightPoint) != null)) {
+                    if (pLightPoint._prepareForLighting(pCamera)) {
+                        // LOG("light point added");
+                        pResultArray.push(pLightPoint);
+                    }
+                    pLightPoint = pList.next();
+                }
+                return pResultArray;
+            };
+            LightGraph.prototype.attachObject = /**@protected*/ function (pNode) {
+                if (scene.light.isLightPoint(pNode)) {
+                    this._pLightPoints.push(pNode);
+                }
+            };
+            LightGraph.prototype.detachObject = /**@protected*/ function (pNode) {
+                if (scene.light.isLightPoint(pNode)) {
+                    var iPosition = this._pLightPoints.indexOf(pNode);
+                    if (iPosition != -1) {
+                        this._pLightPoints.takeAt(iPosition);
+                    } else {
+                        akra.logger.setSourceLocation("LightGraph.ts", 58);
+                        akra.logger.assert(false, "cannot find light point");
+                        ;
+                    }
+                }
+            };
+            return LightGraph;
+        })(scene.DisplayList);
+        scene.LightGraph = LightGraph;        
+    })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (model) {
+        var Skin = (function () {
+            function Skin(pMesh) {
+                this._pSkeleton = null;
+                // name of bones/nodes
+                this._pNodeNames = null;
+                //bind matrix from collada
+                this._m4fBindMatrix = new akra.Mat4(1);
+                //BONE_MATRIX = WORLD_MATRIX x OFFSET_MATRIX
+                this._pBoneTransformMatrices = null;
+                /**
+                * Common buffer for all transform matrices.
+                * _pBoneOffsetMatrixBuffer = [_pBoneTransformMatrices[0], ..., _pBoneTransformMatrices[N]]
+                */
+                this._pBoneOffsetMatrixBuffer = null;
+                // bone offset matrices from collada
+                this._pBoneOffsetMatrices = null;
+                /**
+                * Pointers to nodes, that affect to this skin.
+                */
+                this._pAffectingNodes = null;
+                /**
+                * Format:
+                * BONE_INF_COUNT - number of bones, that influence to the vertex.
+                * BONE_INF_LOC - address of influence, pointer to InfData structire list.
+                * ..., [BONE_INF_COUNT: float, BONE_INF_LOC: float], ...
+                *
+                */
+                this._pInfMetaData = null;
+                /**
+                * Format:
+                * BONE_INF_DATA - bone matrix address, pointer to BONE_MATRIX list
+                * BONE_WEIGHT_IND - bone weight address, pointer to BONE_WEIGHT list
+                * ..., [BONE_INF_DATA: float, BONE_WEIGHT_IND: float], ...
+                */
+                this._pInfData = null;
+                /**
+                * Format:
+                * ..., [BONE_MATRIX: matrix4], ...
+                */
+                this._pBoneTransformMatrixData = null;
+                /**
+                * Format:
+                * ..., [BONE_WEIGHT: float], ...
+                */
+                this._pWeightData = null;
+                /**
+                * Links to VertexData, that contain meta from this skin.
+                */
+                this._pTiedData = [];
+                akra.logger.setSourceLocation("Skin.ts", 106);
+                akra.logger.assert(((pMesh) != null), "you must specify mesh for skin");
+                ;
+                this._pMesh = pMesh;
+            }
+            Object.defineProperty(Skin.prototype, "data", {
+                get: /** @inline */function () {
+                    return this._pMesh.data;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Skin.prototype, "skeleton", {
+                get: /** @inline */function () {
+                    return this._pSkeleton;
+                },
+                set: /** @inline */function (pSkeleton) {
+                    if (((pSkeleton) === null) || pSkeleton.totalBones < ((this)._pNodeNames.length)) {
+                        akra.logger.setSourceLocation("Skin.ts", 88);
+                        akra.logger.warning("cannnot set skeletonm because skeleton has to little bones");
+                        ;
+                        return;
+                    }
+                    for(var i = 0, nMatrices = ((this)._pNodeNames.length); i < nMatrices; i++) {
+                        this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
+                        akra.logger.setSourceLocation("Skin.ts", 94);
+                        akra.logger.assert(((this._pAffectingNodes[i]) != null), "joint<" + this._pNodeNames[i] + "> must exists...");
+                        ;
+                    }
+                    this._pSkeleton = pSkeleton;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Skin.prototype, "totalBones", {
+                get: /** @inline */function () {
+                    return this._pNodeNames.length;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Skin.prototype.setBindMatrix = function (m4fMatrix) {
+                this._m4fBindMatrix.set(m4fMatrix);
+            };
+            Skin.prototype.getBindMatrix = function () {
+                return this._m4fBindMatrix;
+            };
+            Skin.prototype.getBoneOffsetMatrices = function () {
+                return this._pBoneOffsetMatrices;
+            };
+            Skin.prototype.getBoneOffsetMatrix = function (sBoneName) {
+                var pBoneNames = this._pNodeNames;
+                for(var i = 0; i < pBoneNames.length; i++) {
+                    if (pBoneNames[i] === sBoneName) {
+                        return this._pBoneOffsetMatrices[i];
+                    }
+                }
+                ;
+                return null;
+            };
+            Skin.prototype.setSkeleton = function (pSkeleton) {
+                if (!pSkeleton || pSkeleton.totalBones < ((this)._pNodeNames.length)) {
+                    akra.logger.setSourceLocation("Skin.ts", 138);
+                    akra.logger.warning("number of bones in skeleton (" + pSkeleton.totalBones + ") less then number of bones in skin (" + ((this)._pNodeNames.length) + ").");
+                    ;
+                    return false;
+                }
+                for(var i = 0, nMatrices = ((this)._pNodeNames.length); i < nMatrices; i++) {
+                    this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
+                    akra.logger.setSourceLocation("Skin.ts", 144);
+                    akra.logger.assert(!((this._pAffectingNodes[i]) === null), "joint<" + this._pNodeNames[i] + "> must exists...");
+                    ;
+                }
+                this._pSkeleton = pSkeleton;
+                return true;
+            };
+            Skin.prototype.attachToScene = function (pRootNode) {
+                for(var i = 0, nMatrices = ((this)._pNodeNames.length); i < nMatrices; i++) {
+                    this._pAffectingNodes[i] = pRootNode.findEntity(this._pNodeNames[i]);
+                    akra.logger.setSourceLocation("Skin.ts", 155);
+                    akra.logger.assert(((this._pAffectingNodes[i]) != null), "node<" + this._pNodeNames[i] + "> must exists...");
+                    ;
+                }
+                return true;
+            };
+            Skin.prototype.setBoneNames = function (pNames) {
+                if (((pNames) === null)) {
+                    return false;
+                }
+                this._pNodeNames = pNames;
+                this._pAffectingNodes = new Array(pNames.length);
+                return true;
+            };
+            Skin.prototype.setBoneOffsetMatrices = function (pMatrices) {
+                var pMatrixNames = this._pNodeNames;
+                akra.logger.setSourceLocation("Skin.ts", 178);
+                akra.logger.assert(((pMatrices) != null) && ((pMatrixNames) != null) && pMatrixNames.length === pMatrices.length, "number of matrix names must equal matrices data length:\n" + pMatrixNames.length + " / " + pMatrices.length);
+                ;
+                var nMatrices = pMatrixNames.length;
+                var pData = ((this)._pMesh.data);
+                var pMatrixData = new Float32Array(nMatrices * 16);
+                //FIXME: правильно положить матрицы...
+                this._pBoneOffsetMatrices = pMatrices;
+                this._pBoneTransformMatrixData = pData._allocateData([
+                    (({
+count: (16),
+type: (5126 /* FLOAT */ ),
+usage: (("BONE_MATRIX")),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
+                ], pMatrixData);
+                this._pBoneTransformMatrices = new Array(nMatrices);
+                for(var i = 0; i < nMatrices; i++) {
+                    this._pBoneTransformMatrices[i] = new akra.Mat4(pMatrixData.subarray(i * 16, (i + 1) * 16), true);
+                }
+                this._pBoneOffsetMatrixBuffer = pMatrixData;
+            };
+            Skin.prototype.setWeights = function (pWeights) {
+                this._pWeightData = ((this)._pMesh.data)._allocateData([
+                    (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: (("BONE_WEIGHT")),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
+                ], pWeights);
+                return this._pWeightData !== null;
+            };
+            Skin.prototype.getWeights = function () {
+                return this._pWeightData;
+            };
+            Skin.prototype.getInfluenceMetaData = function () {
+                return this._pInfMetaData;
+            };
+            Skin.prototype.getInfluences = function () {
+                return this._pInfData;
+            };
+            Skin.prototype.setInfluences = function (pInfluencesCount, pInfluences) {
+                akra.logger.setSourceLocation("Skin.ts", 216);
+                akra.logger.assert(this._pInfMetaData == null && this._pInfData == null, "vertex weights already setuped.");
+                ;
+                akra.logger.setSourceLocation("Skin.ts", 217);
+                akra.logger.assert(!((this.getWeights()) === null), "you must set weight data before setup influences");
+                ;
+                var pData = ((this)._pMesh.data);
+                var pInfluencesMeta = new Float32Array(pInfluencesCount.length * 2);
+                var iInfLoc = 0;
+                var iTransformLoc = 0;
+                var iWeightsLoc = 0;
+                //получаем копию массива влияний
+                pInfluences = new Float32Array(pInfluences);
+                //вычисляем адресса матриц транфсормации и весов
+                iTransformLoc = this._pBoneTransformMatrixData.byteOffset / 4 /* BYTES_PER_FLOAT */ ;
+                iWeightsLoc = this._pWeightData.byteOffset / 4 /* BYTES_PER_FLOAT */ ;
+                for(var i = 0, n = pInfluences.length; i < n; i += 2) {
+                    pInfluences[i] = pInfluences[i] * 16 + iTransformLoc;
+                    pInfluences[i + 1] += iWeightsLoc;
+                }
+                //запоминаем модифицированную информацию о влияниях
+                this._pInfData = pData._allocateData([
+                    /*адрес матрицы кости*/
+                    (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: (('BONE_INF_DATA')),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+})), 
+                    /*адрес весового коэффициента*/
+                    (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: (('BONE_WEIGHT_IND')),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
+                ], pInfluences);
+                iInfLoc = this._pInfData.byteOffset / 4 /* BYTES_PER_FLOAT */ ;
+                //подсчет мета данных, которые укажут, где взять влияния на кость..
+                for(var i = 0, j = 0, n = iInfLoc; i < pInfluencesMeta.length; i += 2) {
+                    var iCount = pInfluencesCount[j++];
+                    /*число влияний на вершину*/
+                    pInfluencesMeta[i] = iCount;
+                    /*адрес начала информации о влияниях */
+                    pInfluencesMeta[i + 1] = n;
+                    //(пары индекс коэф. веса и индекс матрицы)
+                    n += 2 * iCount;
+                }
+                //influences meta: разметка влияний
+                this._pInfMetaData = pData._allocateData([
+                    /*число костей и весов, влияющих на вершину*/
+                    (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: (('BONE_INF_COUNT')),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+})), 
+                    /*адресс начала влияний на вершину*/
+                    (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: (('BONE_INF_LOC')),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+})), 
+                    
+                ], pInfluencesMeta);
+                return this._pInfMetaData !== null && this._pInfData !== null;
+            };
+            Skin.prototype.setVertexWeights = function (pInfluencesCount, pInfluences, pWeights) {
+                akra.logger.setSourceLocation("Skin.ts", 268);
+                akra.logger.assert(arguments.length > 1, 'you must specify all parameters');
+                ;
+                //загружаем веса
+                if (pWeights) {
+                    this.setWeights(pWeights);
+                }
+                return this.setInfluences(pInfluencesCount, pInfluences);
+            };
+            Skin.prototype.applyBoneMatrices = function (bForce) {
+                if (typeof bForce === "undefined") { bForce = false; }
+                var pData;
+                var bResult;
+                var pNode;
+                var isUpdated = false;
+                for(var i = 0, nMatrices = ((this)._pNodeNames.length); i < nMatrices; ++i) {
+                    pNode = this._pAffectingNodes[i];
+                    if (pNode.isWorldMatrixNew() || bForce) {
+                        pNode.worldMatrix.multiply(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
+                        isUpdated = true;
+                    }
+                }
+                if (isUpdated) {
+                    pData = this._pBoneOffsetMatrixBuffer;
+                    return this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
+                }
+                return false;
+            };
+            Skin.prototype.isReady = function () {
+                return !(((this._pInfMetaData) === null) || ((this._pInfData) === null) || ((this._pWeightData) === null) || ((this._pBoneOffsetMatrixBuffer) === null) || ((this._pBoneOffsetMatrices) === null) || ((this._pNodeNames) === null) || ((this._m4fBindMatrix) === null));
+            };
+            Skin.prototype.getBoneTransforms = function () {
+                return this._pBoneTransformMatrixData;
+            };
+            Skin.prototype.isAffect = function (pData) {
+                if (((pData) != null)) {
+                    for(var i = 0; i < this._pTiedData.length; i++) {
+                        if (this._pTiedData[i] === pData) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
+            Skin.prototype.attach = function (pData) {
+                akra.logger.setSourceLocation("Skin.ts", 326);
+                akra.logger.assert(pData.stride === 16, "you cannot add skin to mesh with POSITION: {x, y, z}" + "\nyou need POSITION: {x, y, z, w}");
+                ;
+                pData.getVertexDeclaration().append((({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.BLENDMETA)),
+offset: ((12))
+})));
+                this._pTiedData.push(pData);
+            };
+            Skin.debugMeshSubset = function debugMeshSubset(pSubMesh) {
+                var pMesh = pSubMesh.mesh;
+                var pSkin = pSubMesh.skin;
+                var pMatData = pSkin.getBoneTransforms();
+                var pPosData;
+                var pEngine = pMesh.getEngine();
+                pPosData = (pSubMesh.data._getData("POSITION")).getTypedData(akra.DeclUsages.BLENDMETA);
+                var pVideoBuffer = pSubMesh.mesh.data.buffer;
+                var iFrom = 2618, iTo = 2619;
+                var pWeights = pSkin.getWeights().getTypedData('BONE_WEIGHT');
+                akra.logger.setSourceLocation("Skin.ts", 348);
+                akra.logger.log('===== debug vertices from ', iFrom, 'to', iTo, ' ======');
+                ;
+                akra.logger.setSourceLocation("Skin.ts", 349);
+                akra.logger.log('transformation data location:', pMatData.byteOffset / 4.);
+                ;
+                akra.logger.setSourceLocation("Skin.ts", 350);
+                akra.logger.log('155 weight: ', pSkin.getWeights().getTypedData('BONE_WEIGHT')[155]);
+                ;
+                akra.logger.setSourceLocation("Skin.ts", 351);
+                akra.logger.log('vertices info ===================>');
+                ;
+                for(var i = iFrom; i < iTo; i++) {
+                    akra.logger.setSourceLocation("Skin.ts", 354);
+                    akra.logger.log(pPosData[i], '<< inf meta location');
+                    ;
+                    var pMetaData = new Float32Array(8);
+                    if (!pVideoBuffer.readData(4 * pPosData[i], 8, pMetaData)) {
+                        akra.logger.setSourceLocation("Skin.ts", 358);
+                        akra.logger.error("cannot read back meta data");
+                        ;
+                    }
+                    akra.logger.setSourceLocation("Skin.ts", 361);
+                    akra.logger.log(pMetaData[0], '<< count');
+                    ;
+                    akra.logger.setSourceLocation("Skin.ts", 362);
+                    akra.logger.log(pMetaData[1], '<< inf. location');
+                    ;
+                    for(var j = 0; j < pMetaData[0]; ++j) {
+                        var pInfData = new Float32Array(8);
+                        if (!pVideoBuffer.readData(4 * (pMetaData[1] + 2 * j), 8, pInfData)) {
+                            akra.logger.setSourceLocation("Skin.ts", 367);
+                            akra.logger.error("cannot read influence data");
+                            ;
+                        }
+                        akra.logger.setSourceLocation("Skin.ts", 370);
+                        akra.logger.log(pInfData[0], '<< matrix location');
+                        ;
+                        akra.logger.setSourceLocation("Skin.ts", 371);
+                        akra.logger.log(pInfData[1], '/', pInfData[1] - 30432, '<< weight location / index');
+                        ;
+                        var pWeightData = new Float32Array(4);
+                        if (!pVideoBuffer.readData(4 * (pInfData[1]), 4, pWeightData)) {
+                            akra.logger.setSourceLocation("Skin.ts", 376);
+                            akra.logger.error("cannot read weight data");
+                            ;
+                        }
+                        akra.logger.setSourceLocation("Skin.ts", 379);
+                        akra.logger.log(pWeightData[0], '<< weight');
+                        ;
+                        var pMatrixData = new Float32Array(4 * 16);
+                        if (!pVideoBuffer.readData(4 * (pInfData[0]), 4 * 16, pMatrixData)) {
+                            akra.logger.setSourceLocation("Skin.ts", 383);
+                            akra.logger.error("cannot read matrix data");
+                            ;
+                        }
+                        akra.logger.setSourceLocation("Skin.ts", 386);
+                        akra.logger.log(pMatrixData.toString());
+                        ;
+                    }
+                }
+                akra.logger.setSourceLocation("Skin.ts", 390);
+                akra.logger.log('#############################################');
+                ;
+                for(var i = 0; i < pPosData.length; i++) {
+                    var pMetaData = new Float32Array(8);
+                    if (!pVideoBuffer.readData(4 * pPosData[i], 8, pMetaData)) {
+                        akra.logger.setSourceLocation("Skin.ts", 395);
+                        akra.logger.error("cannot read meta data");
+                        ;
+                    }
+                    for(var j = 0; j < pMetaData[0]; ++j) {
+                        var pInfData = new Float32Array(8);
+                        if (!pVideoBuffer.readData(4 * (pMetaData[1] + 2 * j), 8, pInfData)) {
+                            akra.logger.setSourceLocation("Skin.ts", 402);
+                            akra.logger.error("cannot read influence data");
+                            ;
+                        }
+                        var iWeightsIndex = pInfData[1] - 30432;
+                        var fWeightOrigin = pWeights[iWeightsIndex];
+                        var pWeightData = new Float32Array(4);
+                        if (!pVideoBuffer.readData(4 * (pInfData[1]), 4, pWeightData)) {
+                            akra.logger.setSourceLocation("Skin.ts", 410);
+                            akra.logger.error("cannot read weight data");
+                            ;
+                        }
+                        var fWeight = pWeightData[0];
+                        if (Math.abs(fWeight - fWeightOrigin) > 0.001) {
+                            alert("1");
+                            akra.logger.setSourceLocation("Skin.ts", 416);
+                            akra.logger.log("weight with index", iWeightsIndex, "has wrong weight", fWeightOrigin, "/", fWeightOrigin);
+                            ;
+                        }
+                        //var pWeightData: Float32Array = new Float32Array(pVideoBuffer.getData(4 * (pInfData[1]), 4));
+                        //var pMatrixData: Float32Array = new Float32Array(pVideoBuffer.getData(4 * (pInfData[0]), 4 * 16));
+                                            }
+                }
+                akra.logger.setSourceLocation("Skin.ts", 424);
+                akra.logger.log('##############################################');
+                ;
+                // var pBoneTransformMatrices = pSkin._pBoneTransformMatrixData;
+                // var pBonetmData = pBoneTransformMatrices.getTypedData('BONE_MATRIX');
+                // for (var i = 0; i < pBonetmData.length; i += 16) {
+                //     LOG('bone transform matrix data >>> ');
+                //     LOG(Mat4.str(pBonetmData.subarray(i, i + 16)));
+                // };
+                //for (var i = 0; i < pMesh.length; i++) {
+                // var i = pMesh.length - 1;
+                //     var pPosData = pMesh[i].data.getData('POSITION').getTypedData('POSITION');
+                //     var pIndData = pMesh[i].data._pIndexData.getTypedData('INDEX0');
+                //     var j = pIndData[pIndData.length - 1];
+                //     var j0 = pMesh[i].data.getData('POSITION').byteOffset/4;
+                //     j -= j0;
+                //     j/=4;
+                //     LOG('last index >> ', j);
+                //     LOG('pos data size', pPosData.length);
+                //     var pVertex = pPosData.subarray(j * 3, j * 3 + 3);
+                //     LOG('last vertex in submesh >> ', pVertex[0], pVertex[1], pVertex[2]);
+                //         var pSceneNode = pEngine.appendMesh(
+                //             pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
+                //             pEngine.getRootNode());
+                //         pSceneNode.setPosition(pVertex);
+                //         pSceneNode.setScale(0.1);
+                //     var pMeta = pSkin.getInfluenceMetaData().getTypedData('BONE_INF_COUNT');
+                //     LOG(pMeta[j], 'count << ');
+                //};
+                            };
+            return Skin;
+        })();
+        model.Skin = Skin;        
+        function createSkin(pMesh) {
+            return new Skin(pMesh);
+        }
+        model.createSkin = createSkin;
+    })(akra.model || (akra.model = {}));
+    var model = akra.model;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (geometry) {
+        var Segment2d = (function () {
+            function Segment2d() {
+                this.ray = new geometry.Ray2d();
+                this.distance = 0.;
+            }
+            Object.defineProperty(Segment2d.prototype, "point", {
+                get: function () {
+                    return this.ray.point;
+                },
+                set: function (v2fPoint) {
+                    this.ray.point.set(v2fPoint);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Segment2d.prototype, "normal", {
+                get: function () {
+                    return this.ray.normal;
+                },
+                set: function (v2fNormal) {
+                    this.ray.normal.set(v2fNormal);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return Segment2d;
+        })();
+        geometry.Segment2d = Segment2d;        
+        ;
+    })(akra.geometry || (akra.geometry = {}));
+    var geometry = akra.geometry;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (geometry) {
+        var Segment3d = (function () {
+            function Segment3d() {
+                this.ray = new geometry.Ray3d();
+                this.distance = 0.;
+            }
+            Object.defineProperty(Segment3d.prototype, "point", {
+                get: function () {
+                    return this.ray.point;
+                },
+                set: function (v3fPoint) {
+                    this.ray.point.set(v3fPoint);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Segment3d.prototype, "normal", {
+                get: function () {
+                    return this.ray.normal;
+                },
+                set: function (v3fNormal) {
+                    this.ray.normal.set(v3fNormal);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return Segment3d;
+        })();
+        geometry.Segment3d = Segment3d;        
+        ;
+    })(akra.geometry || (akra.geometry = {}));
+    var geometry = akra.geometry;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
     (function (geometry) {
                                                                 /**
         * Computes a coordinate-axis oriented bounding box.
@@ -35599,15 +38657,21 @@ var akra;
             for(i = nStride; i < nStride * nCount; i += nStride) {
                 pTempData = new Float32Array(pData, i, 3);
                 fTemp = pTempData[0];
-                //Min			fX0 = fX0 > fTemp ? fTemp : fX0;
-                //Max			fX1 = fX1 > fTemp ? fX1 : fTemp;
+                /*Min*/
+                fX0 = fX0 > fTemp ? fTemp : fX0;
+                /*Max*/
+                fX1 = fX1 > fTemp ? fX1 : fTemp;
                 fTemp = pTempData[1];
-                //Min			fY0 = fY0 > fTemp ? fTemp : fY0;
-                //Max			fY1 = fY1 > fTemp ? fY1 : fTemp;
+                /*Min*/
+                fY0 = fY0 > fTemp ? fTemp : fY0;
+                /*Max*/
+                fY1 = fY1 > fTemp ? fY1 : fTemp;
                 fTemp = pTempData[2];
-                //Min			fZ0 = fZ0 > fTemp ? fTemp : fZ0;
-                //Max			fZ1 = fZ1 > fTemp ? fZ1 : fTemp;
-                            }
+                /*Min*/
+                fZ0 = fZ0 > fTemp ? fTemp : fZ0;
+                /*Max*/
+                fZ1 = fZ1 > fTemp ? fZ1 : fTemp;
+            }
             pBoundingBox.set(fX0, fX1, fY0, fY1, fZ0, fZ1);
             return true;
         }
@@ -35969,7 +39033,6 @@ var akra;
             function MeshSubset(pMesh, pRenderData, sName) {
                 if (typeof sName === "undefined") { sName = null; }
                         _super.call(this);
-                /**@protected*/ this._pRenderData = null;
                 /**@protected*/ this._sName = null;
                 /**@protected*/ this._pMesh = null;
                 /**@protected*/ this._pSkin = null;
@@ -35987,13 +39050,6 @@ var akra;
             Object.defineProperty(MeshSubset.prototype, "boundingSphere", {
                 get: /** @inline */function () {
                     return this._pBoundingSphere;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(MeshSubset.prototype, "data", {
-                get: /** @inline */function () {
-                    return this._pRenderData;
                 },
                 enumerable: true,
                 configurable: true
@@ -36020,7 +39076,7 @@ var akra;
                 configurable: true
             });
             MeshSubset.prototype.setup = /**@protected*/ function (pMesh, pRenderData, sName) {
-                akra.logger.setSourceLocation("MeshSubset.ts", 38);
+                akra.logger.setSourceLocation("MeshSubset.ts", 36);
                 akra.logger.assert(this._pMesh === null, "mesh subset already prepared");
                 ;
                 this._pMesh = pMesh;
@@ -36061,10 +39117,20 @@ var akra;
                 if (!((this)._pRenderData).selectIndexSet(".BoundingBox")) {
                     ((this)._pRenderData).addIndexSet(true, 1 /* LINELIST */ , ".BoundingBox");
                     iData = ((this)._pRenderData).allocateData([
-                        akra.VE_FLOAT3(akra.DeclUsages.POSITION)
+                        (({
+count: (3),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.POSITION)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                     ], new Float32Array(pPoints));
                     ((this)._pRenderData).allocateIndex([
-                        akra.VE_FLOAT(akra.DeclUsages.INDEX0)
+                        (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.INDEX0)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                     ], new Float32Array(pIndexes));
                     ((this)._pRenderData).index(iData, akra.DeclUsages.INDEX0);
                     this.applyFlexMaterial(".MaterialBoundingBox");
@@ -36122,10 +39188,20 @@ var akra;
                 if (!((this)._pRenderData).selectIndexSet(".BoundingSphere")) {
                     ((this)._pRenderData).addIndexSet(false, 1 /* LINELIST */ , ".BoundingSphere");
                     iData = ((this)._pRenderData).allocateData([
-                        akra.VE_FLOAT3(akra.DeclUsages.POSITION)
+                        (({
+count: (3),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.POSITION)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                     ], new Float32Array(pPoints));
                     ((this)._pRenderData).allocateIndex([
-                        akra.VE_FLOAT(akra.DeclUsages.INDEX0)
+                        (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.INDEX0)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                     ], new Float32Array(pIndexes));
                     ((this)._pRenderData).index(iData, akra.DeclUsages.INDEX0);
                     this.applyFlexMaterial(".MaterialBoundingSphere");
@@ -36177,17 +39253,20 @@ var akra;
                 return this._pRenderData.hasSemantics(akra.DeclUsages.MATERIAL);
             };
             MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
+                var pMaterial = this._pMesh.getFlexMaterial(iMaterial);
+                if (((pMaterial) === null)) {
+                    akra.logger.setSourceLocation("MeshSubset.ts", 254);
+                    akra.logger.warning("could not find material <" + iMaterial + "> in sub mesh <" + ((this)._sName) + ">");
+                    ;
+                    return false;
+                }
                 var pRenderData = this._pRenderData;
                 var pIndexData = pRenderData.getIndices();
                 var pMatFlow = pRenderData._getFlow(akra.DeclUsages.MATERIAL);
                 var eSemantics = akra.DeclUsages.INDEX10;
                 var pIndexDecl, pFloatArray;
                 var iMatFlow;
-                var pMaterial = this._pMesh.getFlexMaterial(iMaterial);
                 var iMat = (pMaterial).data.byteOffset;
-                if (((pMaterial) === null)) {
-                    return false;
-                }
                 if (pMatFlow) {
                     iMatFlow = pMatFlow.flow;
                     eSemantics = pMatFlow.mapper.semantics;
@@ -36196,23 +39275,31 @@ var akra;
                     return pRenderData.index(iMat, eSemantics, true);
                 }
                 pIndexDecl = akra.createVertexDeclaration([
-                    akra.VE_FLOAT(eSemantics)
+                    (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((eSemantics)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                 ]);
                 pFloatArray = new Float32Array((pIndexData).length);
                 iMatFlow = pRenderData._addData((pMaterial).data);
-                akra.logger.setSourceLocation("MeshSubset.ts", 281);
+                akra.logger.setSourceLocation("MeshSubset.ts", 280);
                 akra.logger.assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
                 ;
                 if (!pRenderData.allocateIndex(pIndexDecl, pFloatArray)) {
-                    akra.logger.setSourceLocation("MeshSubset.ts", 284);
-                    akra.logger.log("cannot allocate index for material!!!");
+                    akra.logger.setSourceLocation("MeshSubset.ts", 283);
+                    akra.logger.warning("cannot allocate index for material!!!");
                     ;
                     return false;
                 }
                 return pRenderData.index(iMat, eSemantics, true);
             };
             MeshSubset.prototype._draw = function () {
-                this._pRenderData._draw();
+                //		    this._pRenderData._draw();
+                akra.logger.setSourceLocation("MeshSubset.ts", 292);
+                akra.logger.criticalError("Need to do.");
+                ;
             };
             MeshSubset.prototype.show = function () {
                 ((this)._pRenderData).setRenderable(true);
@@ -36237,7 +39324,7 @@ var akra;
                 */
                 //получаем поток данных с вершиными
                 pPositionFlow = ((this)._pRenderData)._getFlow(akra.DeclUsages.POSITION);
-                akra.logger.setSourceLocation("MeshSubset.ts", 324);
+                akra.logger.setSourceLocation("MeshSubset.ts", 323);
                 akra.logger.assert(((pPositionFlow) != null), "skin require position with indices in mesh subset");
                 ;
                 pPosData = pPositionFlow.data;
@@ -36248,34 +39335,58 @@ var akra;
                         this._pSkin = pSkin;
                         return true;
                     }
-                    akra.logger.setSourceLocation("MeshSubset.ts", 336);
+                    akra.logger.setSourceLocation("MeshSubset.ts", 335);
                     akra.logger.error("mesh subset already has another skin");
                     ;
                     return false;
                 }
                 //проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
                 //или его клону.
-                akra.logger.setSourceLocation("MeshSubset.ts", 343);
+                akra.logger.setSourceLocation("MeshSubset.ts", 342);
                 akra.logger.assert(((this)._pRenderData).buffer == pSkin.data, "can not bind to skin mesh subset that does not belong skin's mesh.");
                 //подвязывем скин, к данным с вершинами текущего подмеша.
                 //т.е. добавляем разметку в конец каждого пикселя
                 pSkin.attach(pPosData);
+                /*
                 //получаем данные разметки
-                pMetaData = pPosData.getTypedData(akra.DeclUsages.BLENDMETA);
+                pMetaData = <Float32Array>pPosData.getTypedData(DeclUsages.BLENDMETA);
+                
                 //если по каким то причинам нет разметки...
-                akra.logger.setSourceLocation("MeshSubset.ts", 353);
-                akra.logger.assert(((pMetaData) != null), "you must specify location for storage blending data");
+                debug_assert(isDefAndNotNull(pMetaData), "you must specify location for storage blending data");
+                
+                //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
+                pInfMetaData = pSkin.getInfluenceMetaData();
+                iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+                iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
+                
+                for (var i: int = 0; i < pMetaData.length; ++ i) {
+                pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
+                }
+                
+                //обновляем адреса мета данных вершин
+                pPosData.setData(pMetaData, DeclUsages.BLENDMETA);
+                
+                //trace(this.data.toString());
+                this._pSkin = pSkin;*/
+                var pDeclaration = pPosData.getVertexDeclaration();
+                var pVEMeta = pDeclaration.findElement(akra.DeclUsages.BLENDMETA);
+                //if BLENDMETA not found
+                akra.logger.setSourceLocation("MeshSubset.ts", 373);
+                akra.logger.assert(((pVEMeta) != null), "you must specify location for storage blending data");
                 ;
+                //read all data for acceleration
+                pMetaData = new Float32Array(pPosData.getData(0, pDeclaration.stride));
                 //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
                 pInfMetaData = pSkin.getInfluenceMetaData();
                 iInfMetaDataLoc = pInfMetaData.byteOffset / 4 /* BYTES_PER_FLOAT */ ;
                 iInfMetaDataStride = pInfMetaData.stride / 4 /* BYTES_PER_FLOAT */ ;
-                for(var i = 0; i < pMetaData.length; ++i) {
-                    pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
+                var iCount = pMetaData.byteLength / pDeclaration.stride;
+                var iOffset = pVEMeta.offset / 4 /* BYTES_PER_FLOAT */ ;
+                var iStride = pDeclaration.stride / 4 /* BYTES_PER_FLOAT */ ;
+                for(var i = 0; i < iCount; ++i) {
+                    pMetaData[iOffset + i * iStride] = iInfMetaDataLoc + i * iInfMetaDataStride;
                 }
-                //обновляем адресса мета данных вершин
-                pPosData.setData(pMetaData, akra.DeclUsages.BLENDMETA);
-                //trace(this.data.toString());
+                pPosData.setData(pMetaData, 0, pDeclaration.stride);
                 this._pSkin = pSkin;
                 return true;
             };
@@ -36462,6 +39573,7 @@ var akra;
                 return null;
             };
             Mesh.prototype.addFlexMaterial = function (sName, pMaterialData) {
+                if (typeof sName === "undefined") { sName = 'unknown'; }
                 if (typeof pMaterialData === "undefined") { pMaterialData = null; }
                 var pMaterial;
                 var pMaterialId;
@@ -36469,7 +39581,6 @@ var akra;
                 akra.logger.assert(arguments.length < 7, "only base material supported now...");
                 ;
                 //debug_assert(this.getFlexMaterial(sName) === null, 'material with name <' + sName + '> already exists');
-                sName = sName || 'unknown';
                 pMaterial = this.getFlexMaterial(sName);
                 if (pMaterial) {
                     if (pMaterialData) {
@@ -36494,7 +39605,7 @@ var akra;
                 var bResult = true;
                 for(var i = 0; i < ((this)._pSubMeshes.length); ++i) {
                     if (!this._pSubMeshes[i].setFlexMaterial(iMaterial)) {
-                        akra.logger.setSourceLocation("model/Mesh.ts", 243);
+                        akra.logger.setSourceLocation("model/Mesh.ts", 242);
                         akra.logger.warning("cannot set material<" + iMaterial + "> for mesh<" + ((this)._sName) + "> subset<" + this._pSubMeshes[i].name + ">");
                         ;
                         bResult = false;
@@ -36528,7 +39639,6 @@ var akra;
             };
             Mesh.prototype.createSkin = function () {
                 var pSkin = model.createSkin(this);
-                this.setSkin(pSkin);
                 return pSkin;
             };
             Mesh.prototype.clone = function (iCloneOptions) {
@@ -36639,10 +39749,20 @@ var akra;
                         return false;
                     }
                     iData = pSubMesh.data.allocateData([
-                        akra.VE_FLOAT3(akra.DeclUsages.POSITION)
+                        (({
+count: (3),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.POSITION)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                     ], new Float32Array(pPoints));
                     pSubMesh.data.allocateIndex([
-                        akra.VE_FLOAT(akra.DeclUsages.INDEX0)
+                        (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.INDEX0)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                     ], new Float32Array(pIndexes));
                     pSubMesh.data.index(iData, akra.DeclUsages.INDEX0);
                     // pSubMesh.applyFlexMaterial(".MaterialBoundingBox");
@@ -36652,7 +39772,6 @@ var akra;
                     pMaterial.diffuse = new akra.Color(1.0, 1.0, 1.0, 1.0);
                     pMaterial.ambient = new akra.Color(1.0, 1.0, 1.0, 1.0);
                     pMaterial.specular = new akra.Color(1.0, 1.0, 1.0, 1.0);
-                    pSubMesh.effect.create();
                     pSubMesh.effect.addComponent("akra.system.mesh_texture");
                     pSubMesh.effect.addComponent("akra.system.prepareForDeferredShading");
                 } else {
@@ -36730,10 +39849,20 @@ var akra;
                         return false;
                     }
                     iData = pSubMesh.data.allocateData([
-                        akra.VE_FLOAT3(akra.DeclUsages.POSITION)
+                        (({
+count: (3),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.POSITION)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                     ], new Float32Array(pPoints));
                     pSubMesh.data.allocateIndex([
-                        akra.VE_FLOAT(akra.DeclUsages.INDEX0)
+                        (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclUsages.INDEX0)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                     ], new Float32Array(pIndexes));
                     pSubMesh.data.index(iData, akra.DeclUsages.INDEX0);
                     // pSubMesh.applyFlexMaterial(".MaterialBoundingSphere");
@@ -36785,7 +39914,7 @@ var akra;
                 return this._iGuid;
             };
             Mesh._pEventTable = new akra.events.EventTable();
-            Mesh.prototype.getEventTable = function () {
+            Mesh.prototype.getEventTable = /** @inline */function () {
                 return Mesh._pEventTable;
             };
             Mesh.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -36795,10 +39924,10 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             Mesh.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Mesh._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Mesh.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Mesh._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Mesh.prototype.shadow = function (pSubMesh, bShadow) {
                 this._bShadow = bShadow;
@@ -36810,7 +39939,7 @@ var akra;
                         }
                     }
                 }
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Mesh._pEventTable))).broadcast[(this._iGuid)] = (((Mesh._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).shadow;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -36914,6 +40043,18 @@ var akra;
                 this._pRootNode = this.createNode("root-node");
                 this._pRootNode.create();
                 var i;
+                //TODO: fix this method, do right!!
+                var pOctree = new akra.scene.OcTree();
+                pOctree.create(new akra.geometry.Rect3d(1024, 1024, 1024), 5, 100);
+                var i = /*not inlined, because supportes only single statement functions(cur. st. count: 13)*/this.addDisplayList(pOctree);
+                akra.logger.setSourceLocation("Scene3d.ts", 50);
+                akra.logger.assert(i == 0, "invalid default list index");
+                ;
+                var pLightGraph = new akra.scene.LightGraph();
+                i = /*not inlined, because supportes only single statement functions(cur. st. count: 13)*/this.addDisplayList(pLightGraph);
+                akra.logger.setSourceLocation("Scene3d.ts", 55);
+                akra.logger.assert(i == 1, "invalid default list index");
+                ;
                 // this._pNodeList = [];
                 // this._pObjectList = [];
                 //TODO передача пользовательских параметров в OcTree
@@ -36959,11 +40100,22 @@ var akra;
             Scene3d.prototype.updateScene = function () {
                 return false;
             };
+            Scene3d.prototype.createObject = function (sName) {
+                if (typeof sName === "undefined") { sName = null; }
+                var pNode = new scene.SceneObject(this);
+                if (!pNode.create()) {
+                    akra.logger.setSourceLocation("Scene3d.ts", 108);
+                    akra.logger.error("cannot create scene node..");
+                    ;
+                    return null;
+                }
+                return this.setupNode(pNode, sName);
+            };
             Scene3d.prototype.createNode = function (sName) {
                 if (typeof sName === "undefined") { sName = null; }
                 var pNode = new scene.SceneNode(this);
                 if (!pNode.create()) {
-                    akra.logger.setSourceLocation("Scene3d.ts", 94);
+                    akra.logger.setSourceLocation("Scene3d.ts", 121);
                     akra.logger.error("cannot create scene node..");
                     ;
                     return null;
@@ -36974,7 +40126,7 @@ var akra;
                 if (typeof sName === "undefined") { sName = null; }
                 var pNode = new scene.SceneModel(this);
                 if (!pNode.create()) {
-                    akra.logger.setSourceLocation("Scene3d.ts", 105);
+                    akra.logger.setSourceLocation("Scene3d.ts", 132);
                     akra.logger.error("cannot create model..");
                     ;
                     return null;
@@ -36985,7 +40137,7 @@ var akra;
                 if (typeof sName === "undefined") { sName = null; }
                 var pCamera = new scene.objects.Camera(this);
                 if (!pCamera.create()) {
-                    akra.logger.setSourceLocation("Scene3d.ts", 116);
+                    akra.logger.setSourceLocation("Scene3d.ts", 143);
                     akra.logger.error("cannot create camera..");
                     ;
                     return null;
@@ -37015,7 +40167,7 @@ var akra;
             // 	return this._pObjectList;
             // }
             /** @inline */function (i) {
-                akra.logger.setSourceLocation("Scene3d.ts", 148);
+                akra.logger.setSourceLocation("Scene3d.ts", 176);
                 akra.logger.assert(((this._pDisplayLists[i]) != null), "display list not defined");
                 ;
                 return this._pDisplayLists[i];
@@ -37038,8 +40190,8 @@ var akra;
             Scene3d.prototype.setupNode = function (pNode, sName) {
                 if (typeof sName === "undefined") { sName = null; }
                 pNode.name = sName;
-                // this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
-                // this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+                ((pNode).getEventTable().addDestination(((((pNode)))._iGuid), ("attached"), (this), ("nodeAttachment"), (1 /* UNICAST */ )));
+                ((pNode).getEventTable().addDestination(((((pNode)))._iGuid), ("detached"), (this), ("nodeDetachment"), (1 /* UNICAST */ )));
                 return pNode;
             };
             Scene3d.prototype.delDisplayList = function (index) {
@@ -37056,7 +40208,7 @@ var akra;
                 return false;
             };
             Scene3d.prototype.addDisplayList = /** @inline */function (pList) {
-                akra.logger.setSourceLocation("Scene3d.ts", 203);
+                akra.logger.setSourceLocation("Scene3d.ts", 231);
                 akra.logger.assert(((this.getDisplayListByName(pList.name)) != null), "DL with name <" + pList.name + "> already exists");
                 ;
                 var pLists = this._pDisplayLists;
@@ -37081,7 +40233,7 @@ var akra;
                 return this._iGuid;
             };
             Scene3d._pEventTable = new akra.events.EventTable();
-            Scene3d.prototype.getEventTable = function () {
+            Scene3d.prototype.getEventTable = /** @inline */function () {
                 return Scene3d._pEventTable;
             };
             Scene3d.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -37091,10 +40243,10 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             Scene3d.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Scene3d._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Scene3d.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Scene3d._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Scene3d.prototype.nodeAttachment = function (pNode) {
                 // this._pNodeList.push(pNode);
@@ -37102,7 +40254,7 @@ var akra;
                 // 	this._pObjectList.push(<ISceneObject>pNode);
                 // }
                 // console.warn("------>here");
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Scene3d._pEventTable))).broadcast[(this._iGuid)] = (((Scene3d._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).nodeAttachment;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -37127,7 +40279,7 @@ var akra;
                 // 		}
                 // 	};
                 // }
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Scene3d._pEventTable))).broadcast[(this._iGuid)] = (((Scene3d._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).nodeDetachment;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -37138,7 +40290,7 @@ var akra;
                 ;
             };
             Scene3d.prototype.displayListAdded = function (list, index) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Scene3d._pEventTable))).broadcast[(this._iGuid)] = (((Scene3d._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).displayListAdded;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -37148,7 +40300,7 @@ var akra;
                 }
             };
             Scene3d.prototype.displayListRemoved = function (list, index) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Scene3d._pEventTable))).broadcast[(this._iGuid)] = (((Scene3d._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).displayListRemoved;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -37228,10 +40380,10 @@ var akra;
                 if (typeof iScene === "undefined") { iScene = 0; }
                 var pScene;
                 if (iScene === 0 && this._pSceneList.length === 0) {
-                    akra.logger.setSourceLocation("scene/SceneManager.ts", 93);
-                    akra.logger.log("creating default scene...");
-                    ;
                     this.createScene3D();
+                    akra.logger.setSourceLocation("scene/SceneManager.ts", 94);
+                    akra.logger.log("Default scene automatically created.");
+                    ;
                 }
                 pScene = this._pSceneList[iScene];
                 if (pScene && pScene.type === 0 /* TYPE_3D */ ) {
@@ -37310,129 +40462,6 @@ var akra;
     this.pTextLayer = pDiv;
     }
     */
-    (function (util) {
-        var UtilTimer = (function () {
-            function UtilTimer() {
-                this.isTimerInitialized = false;
-                this.isTimerStopped = false;
-                this.fTicksPerSec = 0.;
-                this.iStopTime = 0;
-                this.iLastElapsedTime = 0;
-                this.iBaseTime = 0;
-            }
-            Object.defineProperty(UtilTimer.prototype, "absoluteTime", {
-                get: function () {
-                    return this.execCommand(4 /* TIMER_GET_ABSOLUTE_TIME */ );
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(UtilTimer.prototype, "appTime", {
-                get: function () {
-                    return this.execCommand(5 /* TIMER_GET_APP_TIME */ );
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(UtilTimer.prototype, "elapsedTime", {
-                get: function () {
-                    return this.execCommand(6 /* TIMER_GET_ELAPSED_TIME */ );
-                },
-                enumerable: true,
-                configurable: true
-            });
-            UtilTimer.prototype.start = function () {
-                return this.execCommand(1 /* TIMER_START */ ) === 0;
-            };
-            UtilTimer.prototype.stop = function () {
-                return this.execCommand(2 /* TIMER_STOP */ ) === 0;
-            };
-            UtilTimer.prototype.reset = function () {
-                return this.execCommand(0 /* TIMER_RESET */ ) === 0;
-            };
-            UtilTimer.prototype.execCommand = function (eCommand) {
-                var fTime = 0.;
-                var fElapsedTime = 0.;
-                var iTime;
-                if (this.isTimerInitialized == false) {
-                    this.isTimerInitialized = true;
-                    this.fTicksPerSec = 1000;
-                }
-                // Get either the current time or the stop time, depending
-                // on whether we're stopped and what command was sent
-                if (this.iStopTime != 0 && eCommand != 1 /* TIMER_START */  && eCommand != 4 /* TIMER_GET_ABSOLUTE_TIME */ ) {
-                    iTime = this.iStopTime;
-                } else {
-                    iTime = (new Date()).getTime();
-                }
-                // Return the elapsed time
-                if (eCommand == 6 /* TIMER_GET_ELAPSED_TIME */ ) {
-                    fElapsedTime = (iTime - this.iLastElapsedTime) / this.fTicksPerSec;
-                    this.iLastElapsedTime = iTime;
-                    return fElapsedTime;
-                }
-                // Return the current time
-                if (eCommand == 5 /* TIMER_GET_APP_TIME */ ) {
-                    var fAppTime = (iTime - this.iBaseTime) / this.fTicksPerSec;
-                    return fAppTime;
-                }
-                // Reset the timer
-                if (eCommand == 0 /* TIMER_RESET */ ) {
-                    this.iBaseTime = iTime;
-                    this.iLastElapsedTime = iTime;
-                    this.iStopTime = 0;
-                    this.isTimerStopped = false;
-                    return 0;
-                }
-                // Start the timer
-                if (eCommand == 1 /* TIMER_START */ ) {
-                    if (this.isTimerStopped) {
-                        this.iBaseTime += iTime - this.iStopTime;
-                    }
-                    this.iStopTime = 0;
-                    this.iLastElapsedTime = iTime;
-                    this.isTimerStopped = false;
-                    return 0;
-                }
-                // Stop the timer
-                if (eCommand == 2 /* TIMER_STOP */ ) {
-                    if (!this.isTimerStopped) {
-                        this.iStopTime = iTime;
-                        this.iLastElapsedTime = iTime;
-                        this.isTimerStopped = true;
-                    }
-                    return 0;
-                }
-                // Advance the timer by 1/10th second
-                if (eCommand == 3 /* TIMER_ADVANCE */ ) {
-                    this.iStopTime += this.fTicksPerSec / 10;
-                    return 0;
-                }
-                if (eCommand == 4 /* TIMER_GET_ABSOLUTE_TIME */ ) {
-                    fTime = iTime / this.fTicksPerSec;
-                    return fTime;
-                }
-                // Invalid command specified
-                return -1;
-            };
-            UtilTimer.start = function start() {
-                var pTimer = new UtilTimer();
-                if (pTimer.start()) {
-                    return pTimer;
-                }
-                util.logger.setSourceLocation("util/UtilTimer.ts", 123);
-                util.logger.error('cannot start util timer');
-                ;
-                return null;
-            };
-            return UtilTimer;
-        })();
-        util.UtilTimer = UtilTimer;        
-    })(akra.util || (akra.util = {}));
-    var util = akra.util;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
     // #ifndef IAFXEFFECT_TS
     // #define IAFXEFFECT_TS
     // #include "IResourcePoolItem.ts"
@@ -38004,7 +41033,7 @@ var akra;
 (function (akra) {
     (function (fx) {
         function getEffectBaseType(sTypeName) {
-            return !((fx.Effect.pSystemTypes[sTypeName]) === null) ? (fx.Effect.pSystemTypes[sTypeName] || null) : null;
+            return !((/*checked (origin: fx)>>*/akra.fx.Effect.pSystemTypes[sTypeName]) === null) ? (fx.Effect.pSystemTypes[sTypeName] || null) : null;
         }
         fx.getEffectBaseType = getEffectBaseType;
         function isSamplerType(pType) {
@@ -38035,6 +41064,9 @@ var akra;
                 };
             }
             Instruction._nInstructionCounter = 0;
+            Instruction.prototype.getGuid = /** @inline */function () {
+                return ((this)._iInstructionID);
+            };
             Instruction.prototype.getParent = /** @inline */function () {
                 return this._pParentInstruction;
             };
@@ -38239,6 +41271,7 @@ var akra;
                 /**@protected*/ this._pAnnotation = null;
                 /**@protected*/ this._bForPixel = true;
                 /**@protected*/ this._bForVertex = true;
+                /**@protected*/ this._isBuiltIn = false;
                 this._eInstructionType = 7 /* k_DeclInstruction */ ;
             }
             DeclInstruction.prototype.setSemantic = function (sSemantic) {
@@ -38258,6 +41291,12 @@ var akra;
             };
             DeclInstruction.prototype.getSemantic = /** @inline */function () {
                 return this._sSemantic;
+            };
+            DeclInstruction.prototype.isBuiltIn = function () {
+                return this._isBuiltIn;
+            };
+            DeclInstruction.prototype.setBuiltIn = function (isBuiltIn) {
+                this._isBuiltIn = isBuiltIn;
             };
             DeclInstruction.prototype._isForAll = /** @inline */function () {
                 return this._bForVertex && this._bForPixel;
@@ -38384,13 +41423,13 @@ var akra;
                 this._pUniformVariableMapV = null;
                 this._pForeignVariableMapV = null;
                 this._pTextureVariableMapV = null;
-                this._pUsedTypeMapV = null;
+                this._pUsedComplexTypeMapV = null;
                 this._pSharedVariableMapP = null;
                 this._pGlobalVariableMapP = null;
                 this._pUniformVariableMapP = null;
                 this._pForeignVariableMapP = null;
                 this._pTextureVariableMapP = null;
-                this._pUsedTypeMapP = null;
+                this._pUsedComplexTypeMapP = null;
                 this._pFullUniformVariableMap = null;
                 this._pFullForeignVariableMap = null;
                 this._pFullTextureVariableMap = null;
@@ -38458,8 +41497,8 @@ var akra;
             PassInstruction.prototype._getTextureVariableMapV = /** @inline */function () {
                 return this._pTextureVariableMapV;
             };
-            PassInstruction.prototype._getUsedTypeMapV = /** @inline */function () {
-                return this._pUsedTypeMapV;
+            PassInstruction.prototype._getUsedComplexTypeMapV = /** @inline */function () {
+                return this._pUsedComplexTypeMapV;
             };
             PassInstruction.prototype._getSharedVariableMapP = /** @inline */function () {
                 return this._pSharedVariableMapP;
@@ -38476,8 +41515,8 @@ var akra;
             PassInstruction.prototype._getTextureVariableMapP = /** @inline */function () {
                 return this._pTextureVariableMapP;
             };
-            PassInstruction.prototype._getUsedTypeMapP = /** @inline */function () {
-                return this._pUsedTypeMapP;
+            PassInstruction.prototype._getUsedComplexTypeMapP = /** @inline */function () {
+                return this._pUsedComplexTypeMapP;
             };
             PassInstruction.prototype._getFullUniformMap = /** @inline */function () {
                 return this._pFullUniformVariableMap;
@@ -38490,6 +41529,12 @@ var akra;
             };
             PassInstruction.prototype.isComplexPass = /** @inline */function () {
                 return this._isComlexPass;
+            };
+            PassInstruction.prototype.getVertexShader = /** @inline */function () {
+                return this._pVertexShader;
+            };
+            PassInstruction.prototype.getPixelShader = /** @inline */function () {
+                return this._pPixelShader;
             };
             PassInstruction.prototype.addShader = function (pShader) {
                 var isVertex = pShader.getFunctionType() === 0 /* k_Vertex */ ;
@@ -38546,13 +41591,13 @@ var akra;
                     this._pUniformVariableMapV = {};
                     this._pForeignVariableMapV = {};
                     this._pTextureVariableMapV = {};
-                    this._pUsedTypeMapV = {};
+                    this._pUsedComplexTypeMapV = {};
                     this._pSharedVariableMapP = {};
                     this._pGlobalVariableMapP = {};
                     this._pUniformVariableMapP = {};
                     this._pForeignVariableMapP = {};
                     this._pTextureVariableMapP = {};
-                    this._pUsedTypeMapP = {};
+                    this._pUsedComplexTypeMapP = {};
                     this._pFullUniformVariableMap = {};
                     this._pFullForeignVariableMap = {};
                     this._pFullTextureVariableMap = {};
@@ -38576,7 +41621,7 @@ var akra;
                 var pUniformVars = pFunction._getUniformVariableMap();
                 var pForeignVars = pFunction._getForeignVariableMap();
                 var pTextureVars = pFunction._getTextureVariableMap();
-                var pTypes = pFunction._getUsedTypeMap();
+                var pTypes = pFunction._getUsedComplexTypeMap();
                 var pSharedVarsTo = null;
                 var pGlobalVarsTo = null;
                 var pUniformVarsTo = null;
@@ -38589,14 +41634,14 @@ var akra;
                     pUniformVarsTo = this._pUniformVariableMapV;
                     pForeignVarsTo = this._pForeignVariableMapV;
                     pTextureVarsTo = this._pTextureVariableMapV;
-                    pTypesTo = this._pUsedTypeMapV;
+                    pTypesTo = this._pUsedComplexTypeMapV;
                 } else {
                     pSharedVarsTo = this._pSharedVariableMapP;
                     pGlobalVarsTo = this._pGlobalVariableMapP;
                     pUniformVarsTo = this._pUniformVariableMapP;
                     pForeignVarsTo = this._pForeignVariableMapP;
                     pTextureVarsTo = this._pTextureVariableMapP;
-                    pTypesTo = this._pUsedTypeMapP;
+                    pTypesTo = this._pUsedComplexTypeMapP;
                 }
                 for(var i in pSharedVars) {
                     if (!((pSharedVars[i]) === null) && !pSharedVars[i].isField()) {
@@ -38810,6 +41855,15 @@ var akra;
             TypeDeclInstruction.prototype.getName = /** @inline */function () {
                 return ((this)._pInstructionList[0]).getName();
             };
+            TypeDeclInstruction.prototype.getRealName = /** @inline */function () {
+                return ((this)._pInstructionList[0]).getRealName();
+            };
+            TypeDeclInstruction.prototype.blend = function (pDecl, eBlendMode) {
+                if (pDecl !== this) {
+                    return null;
+                }
+                return this;
+            };
             return TypeDeclInstruction;
         })(fx.DeclInstruction);
         fx.TypeDeclInstruction = TypeDeclInstruction;        
@@ -38853,6 +41907,7 @@ var akra;
                 this._pPointerList = null;
                 this._iPadding = 0xffffff;
                 this._pSubDeclList = null;
+                this._pAttrOffset = null;
                 this._bUnverifiable = false;
                 this._pInstructionList = null;
                 this._eInstructionType = 3 /* k_VariableTypeInstruction */ ;
@@ -38869,6 +41924,11 @@ var akra;
             };
             VariableTypeInstruction.prototype._toDeclString = function () {
                 return ((this)._pSubType)._toDeclString();
+            };
+            VariableTypeInstruction.prototype.isBuiltIn = function () {
+                return false;
+            };
+            VariableTypeInstruction.prototype.setBuiltIn = function (isBuiltIn) {
             };
             VariableTypeInstruction.prototype.isBase = //-----------------------------------------------------------------//
             //----------------------------SIMPLE TESTS-------------------------//
@@ -39170,11 +42230,17 @@ var akra;
             VariableTypeInstruction.prototype._markAsUnverifiable = /** @inline */function (isUnverifiable) {
                 this._bUnverifiable = true;
             };
+            VariableTypeInstruction.prototype._addAttrOffset = function (pOffset) {
+                this._pAttrOffset = pOffset;
+            };
             VariableTypeInstruction.prototype.getName = //-----------------------------------------------------------------//
             //----------------------------GET TYPE INFO------------------------//
             //-----------------------------------------------------------------//
             function () {
                 return this._sName;
+            };
+            VariableTypeInstruction.prototype.getRealName = /** @inline */function () {
+                return this.getBaseType().getRealName();
             };
             VariableTypeInstruction.prototype.getHash = function () {
                 if (this._sHash === "") {
@@ -39242,6 +42308,17 @@ var akra;
                     this._pArrayElementType.setParent(this);
                 }
                 return this._pArrayElementType;
+            };
+            VariableTypeInstruction.prototype.getTypeDecl = function () {
+                if (!this.isFromTypeDecl()) {
+                    return null;
+                }
+                var eParentType = ((this)._pParentInstruction)._getInstructionType();
+                if (eParentType === 14 /* k_TypeDeclInstruction */ ) {
+                    return ((this)._pParentInstruction);
+                } else {
+                    return (((this)._pParentInstruction)).getTypeDecl();
+                }
             };
             VariableTypeInstruction.prototype.hasField = function (sFieldName) {
                 return ((this)._bUnverifiable) ? true : ((this)._pSubType).hasField(sFieldName);
@@ -39475,6 +42552,9 @@ var akra;
             VariableTypeInstruction.prototype._getDownPointer = function () {
                 return this._pDownPointIndex;
             };
+            VariableTypeInstruction.prototype._getAttrOffset = function () {
+                return this._pAttrOffset;
+            };
             VariableTypeInstruction.prototype.wrap = //-----------------------------------------------------------------//
             //----------------------------SYSTEM-------------------------------//
             //-----------------------------------------------------------------//
@@ -39535,6 +42615,12 @@ var akra;
                 return pClone;
             };
             VariableTypeInstruction.prototype.blend = function (pType, eMode) {
+                if (this === pType) {
+                    return this;
+                }
+                if (eMode === 4 /* k_Global */ ) {
+                    return null;
+                }
                 if (((((this))._pSubType).isComplex()) !== pType.isComplex() || (((this)._isArray || ((((this))._pSubType).isNotBaseArray())) !== pType.isNotBaseArray()) || (this.isPointer() !== pType.isPointer())) {
                     return null;
                 }
@@ -39620,6 +42706,9 @@ var akra;
                 var pDeclList = [];
                 var i = 0;
                 if (this.isPointer()) {
+                    if (!((this._pAttrOffset) === null)) {
+                        pDeclList.push(this._pAttrOffset);
+                    }
                     if (((this._getUpPointer()) === null)) {
                         this.initializePointers();
                     }
@@ -39659,15 +42748,26 @@ var akra;
                 this._isReadable = true;
                 this._pFieldNameList = null;
                 this._pWrapVariableType = null;
+                this._isBuiltIn = true;
+                this._sDeclString = "";
                 this._eInstructionType = 4 /* k_SystemTypeInstruction */ ;
                 this._pWrapVariableType = new VariableTypeInstruction();
                 this._pWrapVariableType.pushType(this);
             }
             SystemTypeInstruction.prototype._toDeclString = function () {
-                return "";
+                return this._sDeclString;
             };
             SystemTypeInstruction.prototype.toFinalCode = function () {
                 return this._sRealName;
+            };
+            SystemTypeInstruction.prototype.isBuiltIn = function () {
+                return this._isBuiltIn;
+            };
+            SystemTypeInstruction.prototype.setBuiltIn = function (isBuiltIn) {
+                this._isBuiltIn = isBuiltIn;
+            };
+            SystemTypeInstruction.prototype.setDeclString = function (sDecl) {
+                this._sDeclString = sDecl;
             };
             SystemTypeInstruction.prototype.isBase = //-----------------------------------------------------------------//
             //----------------------------SIMPLE TESTS-------------------------//
@@ -39768,6 +42868,9 @@ var akra;
             /** @inline */function () {
                 return this._sName;
             };
+            SystemTypeInstruction.prototype.getRealName = /** @inline */function () {
+                return this._sRealName;
+            };
             SystemTypeInstruction.prototype.getHash = /** @inline */function () {
                 return this._sRealName;
             };
@@ -39785,6 +42888,12 @@ var akra;
             };
             SystemTypeInstruction.prototype.getArrayElementType = /** @inline */function () {
                 return this._pElementType;
+            };
+            SystemTypeInstruction.prototype.getTypeDecl = function () {
+                if (this.isBuiltIn()) {
+                    return null;
+                }
+                return ((this)._pParentInstruction);
             };
             SystemTypeInstruction.prototype.getLength = /** @inline */function () {
                 return this._iLength;
@@ -39861,6 +42970,11 @@ var akra;
             ComplexTypeInstruction.prototype.toFinalCode = function () {
                 return this._sRealName;
             };
+            ComplexTypeInstruction.prototype.isBuiltIn = function () {
+                return false;
+            };
+            ComplexTypeInstruction.prototype.setBuiltIn = function (isBuiltIn) {
+            };
             ComplexTypeInstruction.prototype.isBase = //-----------------------------------------------------------------//
             //----------------------------SIMPLE TESTS-------------------------//
             //-----------------------------------------------------------------//
@@ -39931,6 +43045,9 @@ var akra;
                     this._pFieldDeclMap = {};
                     this._pFieldNameList = [];
                 }
+                if (((this._pFieldDeclList) === null)) {
+                    this._pFieldDeclList = [];
+                }
                 var sVarName = pVariable.getName();
                 this._pFieldDeclMap[sVarName] = pVariable;
                 if (this._iSize !== 0xffffff) {
@@ -39942,6 +43059,9 @@ var akra;
                     }
                 }
                 this._pFieldNameList.push(sVarName);
+                if (this._pFieldDeclList.length < this._pFieldNameList.length) {
+                    this._pFieldDeclList.push(pVariable);
+                }
                 var pType = pVariable.getType();
                 //pType._markAsField();
                 if (pType.isNotBaseArray() || pType._containArray()) {
@@ -39971,6 +43091,9 @@ var akra;
             //-----------------------------------------------------------------//
             /** @inline */function () {
                 return this._sName;
+            };
+            ComplexTypeInstruction.prototype.getRealName = /** @inline */function () {
+                return this._sRealName;
             };
             ComplexTypeInstruction.prototype.getHash = function () {
                 if (this._sHash === "") {
@@ -40035,8 +43158,14 @@ var akra;
             ComplexTypeInstruction.prototype.getArrayElementType = /** @inline */function () {
                 return null;
             };
+            ComplexTypeInstruction.prototype.getTypeDecl = function () {
+                return ((this)._pParentInstruction);
+            };
             ComplexTypeInstruction.prototype.getLength = /** @inline */function () {
                 return 0;
+            };
+            ComplexTypeInstruction.prototype._getFieldDeclList = function () {
+                return this._pFieldDeclList;
             };
             ComplexTypeInstruction.prototype.clone = //-----------------------------------------------------------------//
             //----------------------------SYSTEM-------------------------------//
@@ -40066,6 +43195,12 @@ var akra;
                 return pClone;
             };
             ComplexTypeInstruction.prototype.blend = function (pType, eMode) {
+                if (pType === this) {
+                    return this;
+                }
+                if (eMode === 6 /* k_TypeDecl */ ) {
+                    return null;
+                }
                 if (eMode === 1 /* k_Uniform */  || eMode === 2 /* k_Attribute */ ) {
                     if (this.hasFieldWithoutSemantic() || pType.hasFieldWithoutSemantic()) {
                         return null;
@@ -40074,6 +43209,11 @@ var akra;
                 var pFieldList = this._pFieldDeclList;
                 var pBlendType = new ComplexTypeInstruction();
                 var pRelationMap = {};
+                if (((pFieldList) === null)) {
+                    akra.logger.setSourceLocation("fx/TypeInstruction.ts", 1839);
+                    akra.logger.log(this, pType);
+                    ;
+                }
                 for(var i = 0; i < pFieldList.length; i++) {
                     var pField = pFieldList[i];
                     var pBlendField = null;
@@ -40085,14 +43225,15 @@ var akra;
                         } else {
                             pBlendField = pField.clone(pRelationMap);
                         }
-                    } else {
+                    } else if (eMode === 2 /* k_Attribute */  || eMode === 1 /* k_Uniform */  || eMode === 7 /* k_VertexOut */ ) {
                         if (pType.hasFieldWithSematic(sFieldSemantic)) {
                             pBlendField = pField.blend(pType.getFieldBySemantic(sFieldSemantic), eMode);
-                            if (!((pBlendField) === null)) {
-                                pBlendField.getNameId().setName(sFieldSemantic);
-                            }
                         } else {
                             pBlendField = pField.clone(pRelationMap);
+                        }
+                        if (!((pBlendField) === null)) {
+                            pBlendField.getNameId().setName(sFieldSemantic);
+                            pBlendField.getNameId().setRealName(sFieldSemantic);
                         }
                     }
                     if (((pBlendField) === null)) {
@@ -40100,6 +43241,29 @@ var akra;
                     }
                     pBlendType.addField(pBlendField);
                 }
+                pFieldList = (pType)._getFieldDeclList();
+                for(var i = 0; i < pFieldList.length; i++) {
+                    var pField = pFieldList[i];
+                    var pBlendField = null;
+                    var sFieldName = pField.getName();
+                    var sFieldSemantic = pField.getSemantic();
+                    if (eMode === 0 /* k_Shared */ ) {
+                        if (!((((this)._pFieldDeclMap[(sFieldName)]) !== undefined))) {
+                            pBlendField = pField.clone(pRelationMap);
+                        }
+                    } else if (eMode === 2 /* k_Attribute */  || eMode === 1 /* k_Uniform */  || eMode === 7 /* k_VertexOut */ ) {
+                        if (!this.hasFieldWithSematic(sFieldSemantic)) {
+                            pBlendField = pField.clone(pRelationMap);
+                            pBlendField.getNameId().setName(sFieldSemantic);
+                            pBlendField.getNameId().setRealName(sFieldSemantic);
+                        }
+                    }
+                    if (!((pBlendField) === null)) {
+                        pBlendType.addField(pBlendField);
+                    }
+                }
+                /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/pBlendType.setName(((this)._sName));
+                (pBlendType._sRealName = (((this)._sRealName)));
                 return pBlendType;
             };
             ComplexTypeInstruction.prototype._setCloneName = function (sName, sRealName) {
@@ -40239,7 +43403,7 @@ var akra;
             function IntInstruction() {
                         _super.call(this);
                 this._iValue = 0;
-                this._pType = ((fx.getEffectBaseType("int"))._pWrapVariableType);
+                this._pType = ((/*checked (origin: fx)>>*/akra.fx.getEffectBaseType("int"))._pWrapVariableType);
                 this._eInstructionType = 8 /* k_IntInstruction */ ;
             }
             IntInstruction.prototype.setValue = /** @inline */function (iValue) {
@@ -40276,7 +43440,7 @@ var akra;
             function FloatInstruction() {
                         _super.call(this);
                 this._fValue = 0.0;
-                this._pType = ((fx.getEffectBaseType("float"))._pWrapVariableType);
+                this._pType = ((/*checked (origin: fx)>>*/akra.fx.getEffectBaseType("float"))._pWrapVariableType);
                 this._eInstructionType = 9 /* k_FloatInstruction */ ;
             }
             FloatInstruction.prototype.setValue = /** @inline */function (fValue) {
@@ -40316,7 +43480,7 @@ var akra;
             function BoolInstruction() {
                         _super.call(this);
                 this._bValue = true;
-                this._pType = ((fx.getEffectBaseType("bool"))._pWrapVariableType);
+                this._pType = ((/*checked (origin: fx)>>*/akra.fx.getEffectBaseType("bool"))._pWrapVariableType);
                 this._eInstructionType = 10 /* k_BoolInstruction */ ;
             }
             BoolInstruction._pBoolType = null;
@@ -40356,7 +43520,7 @@ var akra;
             function StringInstruction() {
                         _super.call(this);
                 this._sValue = "";
-                this._pType = ((fx.getEffectBaseType("string"))._pWrapVariableType);
+                this._pType = ((/*checked (origin: fx)>>*/akra.fx.getEffectBaseType("string"))._pWrapVariableType);
                 this._eInstructionType = 11 /* k_StringInstruction */ ;
             }
             StringInstruction._pStringType = null;
@@ -41213,16 +44377,50 @@ var akra;
                 this._eExtractExprType = 0;
                 this._pPointer = null;
                 this._pBuffer = null;
+                this._pOffsetVar = null;
                 this._sPaddingExpr = "";
                 this._sExtractFunction = "";
                 this._bNeedSecondBracket = false;
                 this._pInstructionList = null;
                 this._eInstructionType = 42 /* k_ExtractExprInstruction */ ;
             }
-            ExtractExprInstruction.prototype.initExtractExpr = function (pExtractType, pPointer, pBuffer, sPaddingExpr) {
+            ExtractExprInstruction.prototype.getExtractFunction = function () {
+                var pFunction = null;
+                switch(this._eExtractExprType) {
+                    case 0 /* k_Header */ :
+                        pFunction = fx.Effect.findSystemFunction("extractHeader", null);
+                        break;
+                    case 1 /* k_Float */ :
+                    case 2 /* k_Int */ :
+                    case 3 /* k_Bool */ :
+                        pFunction = fx.Effect.findSystemFunction("extractFloat", null);
+                        break;
+                    case 4 /* k_Float2 */ :
+                    case 5 /* k_Int2 */ :
+                    case 6 /* k_Bool2 */ :
+                        pFunction = fx.Effect.findSystemFunction("extractFloat2", null);
+                        break;
+                    case 7 /* k_Float3 */ :
+                    case 8 /* k_Int3 */ :
+                    case 9 /* k_Bool3 */ :
+                        pFunction = fx.Effect.findSystemFunction("extractFloat3", null);
+                        break;
+                    case 10 /* k_Float4 */ :
+                    case 11 /* k_Int4 */ :
+                    case 12 /* k_Bool4 */ :
+                        pFunction = fx.Effect.findSystemFunction("extractFloat4", null);
+                        break;
+                    case 13 /* k_Float4x4 */ :
+                        pFunction = fx.Effect.findSystemFunction("extractFloat4x4", null);
+                        break;
+                }
+                return pFunction;
+            };
+            ExtractExprInstruction.prototype.initExtractExpr = function (pExtractType, pPointer, pBuffer, sPaddingExpr, pOffsetVar) {
                 this._pPointer = pPointer;
                 this._pBuffer = pBuffer;
                 this._sPaddingExpr = sPaddingExpr;
+                this._pOffsetVar = pOffsetVar;
                 this.setType(pExtractType);
                 if (pExtractType.isEqual(fx.Effect.getSystemType("float"))) {
                     this._eExtractExprType = 1 /* k_Float */ ;
@@ -41371,6 +44569,9 @@ var akra;
                     sCode += "," + this._pBuffer._getVideoBufferHeader().getNameId().toFinalCode();
                     if (this._eExtractExprType !== 0 /* k_Header */ ) {
                         sCode += "," + this._pPointer.getNameId().toFinalCode() + this._sPaddingExpr;
+                        if (!((this._pOffsetVar) === null)) {
+                            sCode += "+" + this._pOffsetVar.getNameId().toFinalCode();
+                        }
                     }
                     sCode += ")";
                     if (this._bNeedSecondBracket) {
@@ -41416,6 +44617,8 @@ var akra;
                 this._bDefineByZero = false;
                 this._pSubDeclList = null;
                 this._bShaderOutput = false;
+                this._pAttrOffset = null;
+                this._pAttrExtractionBlock = null;
                 this._pInstructionList = [
                     null, 
                     null, 
@@ -41514,6 +44717,12 @@ var akra;
             VariableDeclInstruction.prototype._isShaderOutput = /** @inline */function () {
                 return this._bShaderOutput;
             };
+            VariableDeclInstruction.prototype._setAttrExtractionBlock = function (pCodeBlock) {
+                this._pAttrExtractionBlock = pCodeBlock;
+            };
+            VariableDeclInstruction.prototype._getAttrExtractionBlock = function () {
+                return this._pAttrExtractionBlock;
+            };
             VariableDeclInstruction.prototype._getFullNameExpr = function () {
                 if (!((this._pFullNameExpr) === null)) {
                     return this._pFullNameExpr;
@@ -41578,7 +44787,7 @@ var akra;
                     var pExtarctExpr = new fx.ExtractExprInstruction();
                     pType.pushType(fx.getEffectBaseType("video_buffer_header"));
                     pId.setName((((this)._pInstructionList[1]).getName()) + "_header");
-                    pExtarctExpr.initExtractExpr(pType, null, this, "");
+                    pExtarctExpr.initExtractExpr(pType, null, this, "", null);
                     this._pVideoBufferHeader.push(pType, true);
                     this._pVideoBufferHeader.push(pId, true);
                     this._pVideoBufferHeader.push(pExtarctExpr, true);
@@ -41597,6 +44806,7 @@ var akra;
                 var pId = new fx.IdInstruction();
                 pId.setName(((this)._pInstructionList[1]).getName());
                 pId.setRealName(((this)._pInstructionList[1]).getRealName());
+                pBlendVar.setSemantic(((this)._sSemantic));
                 pBlendVar.push(pBlendType, true);
                 pBlendVar.push(pId, true);
                 return pBlendVar;
@@ -41951,7 +45161,8 @@ var akra;
                 this._pInstructionList = [];
                 this._eInstructionType = 57 /* k_ExtractStmtInstruction */ ;
             }
-            ExtractStmtInstruction.prototype.generateStmtForBaseType = function (pVarDecl, pPointer, pBuffer, iPadding) {
+            ExtractStmtInstruction.prototype.generateStmtForBaseType = function (pVarDecl, pPointer, pBuffer, iPadding, pOffset) {
+                if (typeof pOffset === "undefined") { pOffset = null; }
                 var pVarType = pVarDecl.getType();
                 var pVarNameExpr = pVarDecl._getFullNameExpr();
                 if (pVarType.isComplex() || ((pVarNameExpr) === null) || pVarType.getSize() === 0xffffff) {
@@ -41984,7 +45195,7 @@ var akra;
                 var pExtractType = isArray ? pVarType.getArrayElementType() : pVarType;
                 var pExtractExpr = new fx.ExtractExprInstruction();
                 var sPaddingExpr = "";
-                if (iPadding > 0) {
+                if (iPadding > 0 && ((pOffset) === null)) {
                     sPaddingExpr = "+" + iPadding.toString() + ".0";
                 } else {
                     sPaddingExpr = "";
@@ -41992,7 +45203,7 @@ var akra;
                 if (isArray) {
                     sPaddingExpr += "+float(i*" + pExtractType.getSize().toString() + ")";
                 }
-                pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr);
+                pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr, pOffset);
                 if ((pExtractExpr._bErrorOccured)) {
                     /*not inlined, because supportes only single statement functions(cur. st. count: 4)*/this.setError((pExtractExpr._pLastError).code, (pExtractExpr._pLastError).info);
                     return;
@@ -42018,6 +45229,9 @@ var akra;
                 if (typeof eUsedMode === "undefined") { eUsedMode = 3 /* k_Undefined */ ; }
                 this._pExtractInExpr.addUsedData(pUsedDataCollector, 1 /* k_Write */ );
                 this._pExtactExpr.addUsedData(pUsedDataCollector, 0 /* k_Read */ );
+            };
+            ExtractStmtInstruction.prototype.getExtractFunction = function () {
+                return this._pExtactExpr.getExtractFunction();
             };
             return ExtractStmtInstruction;
         })(fx.ExprInstruction);
@@ -42069,6 +45283,8 @@ var akra;
                 //Info about used data
                 /**@protected*/ this._pUsedFunctionMap = null;
                 /**@protected*/ this._pUsedFunctionList = null;
+                /**@protected*/ this._pAttributeVariableMap = null;
+                /**@protected*/ this._pVaryingVariableMap = null;
                 /**@protected*/ this._pUsedVarTypeMap = null;
                 /**@protected*/ this._pSharedVariableMap = null;
                 /**@protected*/ this._pGlobalVariableMap = null;
@@ -42079,9 +45295,20 @@ var akra;
                 // protected _pGlobalVariableTypeList: IAFXVariableTypeInstruction[] = null;
                 // protected _pUniformVariableTypeList: IAFXVariableTypeInstruction[] = null;
                 // protected _pForeignVariableTypeList: IAFXVariableTypeInstructionnt[] = null;
-                /**@protected*/ this._pUsedTypeMap = null;
+                /**@protected*/ this._pUsedComplexTypeMap = null;
+                /**@protected*/ this._pAttributeVariableKeys = null;
+                /**@protected*/ this._pVaryingVariableKeys = null;
+                /**@protected*/ this._pSharedVariableKeys = null;
+                /**@protected*/ this._pUniformVariableKeys = null;
+                /**@protected*/ this._pForeignVariableKeys = null;
+                /**@protected*/ this._pGlobalVariableKeys = null;
+                /**@protected*/ this._pTextureVariableKeys = null;
+                /**@protected*/ this._pUsedComplexTypeKeys = null;
                 /**@protected*/ this._pVertexShader = null;
                 /**@protected*/ this._pPixelShader = null;
+                this._pExtSystemTypeList = null;
+                this._pExtSystemFunctionList = null;
+                this._pExtSystemMacrosList = null;
                 this._pInstructionList = [
                     null, 
                     null
@@ -42093,6 +45320,9 @@ var akra;
                 sCode += this._pFunctionDefenition.toFinalCode();
                 sCode += this._pImplementation.toFinalCode();
                 return sCode;
+            };
+            FunctionDeclInstruction.prototype.toFinalDefCode = function () {
+                return this._pFunctionDefenition.toFinalCode();
             };
             FunctionDeclInstruction.prototype.getType = /** @inline */function () {
                 return ((((this)._pFunctionDefenition)._pReturnType));
@@ -42158,9 +45388,9 @@ var akra;
                 var pUniformVariableMap = this.cloneVarDeclMap(this._pUniformVariableMap, pRelationMap);
                 var pForeignVariableMap = this.cloneVarDeclMap(this._pForeignVariableMap, pRelationMap);
                 var pTextureVariableMap = this.cloneVarDeclMap(this._pTextureVariableMap, pRelationMap);
-                var pUsedTypeMap = this.cloneTypeDeclMap(this._pUsedTypeMap, pRelationMap);
+                var pUsedComplexTypeMap = this.cloneTypeMap(this._pUsedComplexTypeMap, pRelationMap);
                 pClone._setUsedFunctions(this._pUsedFunctionMap, this._pUsedFunctionList);
-                pClone._setUsedVariableData(pUsedVarTypeMap, pSharedVariableMap, pGlobalVariableMap, pUniformVariableMap, pForeignVariableMap, pTextureVariableMap, pUsedTypeMap);
+                pClone._setUsedVariableData(pUsedVarTypeMap, pSharedVariableMap, pGlobalVariableMap, pUniformVariableMap, pForeignVariableMap, pTextureVariableMap, pUsedComplexTypeMap);
                 pClone._initAfterClone();
                 return pClone;
             };
@@ -42251,6 +45481,10 @@ var akra;
                 this._bCanUsedAsFunction = false;
             };
             FunctionDeclInstruction.prototype._addUsedFunction = function (pFunction) {
+                if (pFunction._getInstructionType() === 46 /* k_SystemFunctionInstruction */  && !pFunction.isBuiltIn()) {
+                    this.addExtSystemFunction(pFunction);
+                    return true;
+                }
                 if (((this._pUsedFunctionMap) === null)) {
                     this._pUsedFunctionMap = {};
                     this._pUsedFunctionList = [];
@@ -42355,14 +45589,14 @@ var akra;
                 this._pUsedFunctionMap = pUsedFunctionMap;
                 this._pUsedFunctionList = pUsedFunctionList;
             };
-            FunctionDeclInstruction.prototype._setUsedVariableData = function (pUsedVarTypeMap, pSharedVariableMap, pGlobalVariableMap, pUniformVariableMap, pForeignVariableMap, pTextureVariableMap, pUsedTypeMap) {
+            FunctionDeclInstruction.prototype._setUsedVariableData = function (pUsedVarTypeMap, pSharedVariableMap, pGlobalVariableMap, pUniformVariableMap, pForeignVariableMap, pTextureVariableMap, pUsedComplexTypeMap) {
                 this._pUsedVarTypeMap = pUsedVarTypeMap;
                 this._pSharedVariableMap = pSharedVariableMap;
                 this._pGlobalVariableMap = pGlobalVariableMap;
                 this._pUniformVariableMap = pUniformVariableMap;
                 this._pForeignVariableMap = pForeignVariableMap;
                 this._pTextureVariableMap = pTextureVariableMap;
-                this._pUsedTypeMap = pUsedTypeMap;
+                this._pUsedComplexTypeMap = pUsedComplexTypeMap;
             };
             FunctionDeclInstruction.prototype._initAfterClone = function () {
                 this._pFunctionDefenition = this._pInstructionList[0];
@@ -42375,15 +45609,15 @@ var akra;
                 var pUsedData = {};
                 this._pImplementation.addUsedData(pUsedData);
                 this._pUsedVarTypeMap = pUsedData;
-                if (((this._pUsedTypeMap) === null)) {
+                if (((this._pUsedComplexTypeMap) === null)) {
                     this._pSharedVariableMap = {};
                     this._pGlobalVariableMap = {};
                     this._pUniformVariableMap = {};
                     this._pForeignVariableMap = {};
                     this._pTextureVariableMap = {};
-                    this._pUsedTypeMap = {};
+                    this._pUsedComplexTypeMap = {};
                 }
-                this.addUsedTypeDecl(((((this)._pFunctionDefenition)._pReturnType)).getBaseType());
+                //this.addUsedComplexType(this.getReturnType().getBaseType());
                 for(var i in pUsedData) {
                     var pAnalyzedInfo = pUsedData[i];
                     var pAnalyzedType = pAnalyzedInfo.type;
@@ -42391,8 +45625,12 @@ var akra;
                         this.addGlobalVariableType(pAnalyzedType, pAnalyzedInfo.isWrite, pAnalyzedInfo.isRead);
                     } else if (pAnalyzedType.isUniform()) {
                         this.addUniformParameter(pAnalyzedType);
-                    } else {
-                        this.addUsedTypeDecl(pAnalyzedType.getBaseType());
+                    } else if (pAnalyzedType._getScope() < ((this)._iImplementationScope)) {
+                        if (!this._isUsedAsFunction()) {
+                            if (!((this._getOutVariable()) === null) && this._getOutVariable().getType() !== pAnalyzedType) {
+                                this.addUsedComplexType(pAnalyzedType.getBaseType());
+                            }
+                        }
                     }
                 }
                 if (!((this._pUsedFunctionList) === null)) {
@@ -42400,6 +45638,12 @@ var akra;
                         this.addUsedInfoFromFunction(this._pUsedFunctionList[j]);
                     }
                 }
+            };
+            FunctionDeclInstruction.prototype._getAttributeVariableMap = /** @inline */function () {
+                return this._pAttributeVariableMap;
+            };
+            FunctionDeclInstruction.prototype._getVaryingVariableMap = /** @inline */function () {
+                return this._pVaryingVariableMap;
             };
             FunctionDeclInstruction.prototype._getSharedVariableMap = /** @inline */function () {
                 return this._pSharedVariableMap;
@@ -42416,14 +45660,136 @@ var akra;
             FunctionDeclInstruction.prototype._getTextureVariableMap = /** @inline */function () {
                 return this._pTextureVariableMap;
             };
-            FunctionDeclInstruction.prototype._getUsedTypeMap = /** @inline */function () {
-                return this._pUsedTypeMap;
+            FunctionDeclInstruction.prototype._getUsedComplexTypeMap = /** @inline */function () {
+                return this._pUsedComplexTypeMap;
+            };
+            FunctionDeclInstruction.prototype._getAttributeVariableKeys = function () {
+                if (((this._pAttributeVariableKeys) === null)) {
+                    this._pAttributeVariableKeys = Object.keys(this._pAttributeVariableMap);
+                }
+                return this._pAttributeVariableKeys;
+            };
+            FunctionDeclInstruction.prototype._getVaryingVariableKeys = function () {
+                if (((this._pVaryingVariableKeys) === null)) {
+                    this._pVaryingVariableKeys = Object.keys(this._pVaryingVariableMap);
+                }
+                return this._pVaryingVariableKeys;
+            };
+            FunctionDeclInstruction.prototype._getSharedVariableKeys = function () {
+                if (((this._pSharedVariableKeys) === null)) {
+                    this._pSharedVariableKeys = Object.keys(this._pSharedVariableMap);
+                }
+                return this._pSharedVariableKeys;
+            };
+            FunctionDeclInstruction.prototype._getUniformVariableKeys = function () {
+                if (((this._pUniformVariableKeys) === null)) {
+                    this._pUniformVariableKeys = Object.keys(this._pUniformVariableMap);
+                }
+                return this._pUniformVariableKeys;
+            };
+            FunctionDeclInstruction.prototype._getForeignVariableKeys = function () {
+                if (((this._pForeignVariableKeys) === null)) {
+                    this._pForeignVariableKeys = Object.keys(this._pForeignVariableMap);
+                }
+                return this._pForeignVariableKeys;
+            };
+            FunctionDeclInstruction.prototype._getGlobalVariableKeys = function () {
+                if (((this._pGlobalVariableKeys) === null)) {
+                    this._pGlobalVariableKeys = Object.keys(this._pGlobalVariableMap);
+                }
+                return this._pGlobalVariableKeys;
+            };
+            FunctionDeclInstruction.prototype._getTextureVariableKeys = function () {
+                if (((this._pTextureVariableKeys) === null)) {
+                    this._pTextureVariableKeys = Object.keys(this._pTextureVariableMap);
+                }
+                return this._pTextureVariableKeys;
+            };
+            FunctionDeclInstruction.prototype._getUsedComplexTypeKeys = function () {
+                if (((this._pUsedComplexTypeKeys) === null)) {
+                    this._pUsedComplexTypeKeys = Object.keys(this._pUsedComplexTypeMap);
+                }
+                return this._pUsedComplexTypeKeys;
+            };
+            FunctionDeclInstruction.prototype._getExtSystemFunctionList = function () {
+                return this._pExtSystemFunctionList;
+            };
+            FunctionDeclInstruction.prototype._getExtSystemMacrosList = function () {
+                return this._pExtSystemMacrosList;
+            };
+            FunctionDeclInstruction.prototype._getExtSystemTypeList = function () {
+                return this._pExtSystemTypeList;
             };
             FunctionDeclInstruction.prototype.generatesVertexAttrubutes = function () {
+                var pShaderInputParamList = ((this._pFunctionDefenition)._pParamListForShaderInput);
+                var isComplexInput = ((this._pFunctionDefenition)._isComplexShaderInput);
+                this._pAttributeVariableMap = {};
+                if (isComplexInput) {
+                    var pContainerVariable = pShaderInputParamList[0];
+                    var pContainerType = pContainerVariable.getType();
+                    var pAttributeNames = pContainerType.getFieldNameList();
+                    for(var i = 0; i < pAttributeNames.length; i++) {
+                        var pAttr = pContainerType.getField(pAttributeNames[i]);
+                        if (!this.isVariableTypeUse(pAttr.getType())) {
+                            continue;
+                        }
+                        this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
+                        this.generateExtractBlockForAttribute(pAttr);
+                    }
+                } else {
+                    for(var i = 0; i < pShaderInputParamList.length; i++) {
+                        var pAttr = pShaderInputParamList[i];
+                        if (!this.isVariableTypeUse(pAttr.getType())) {
+                            continue;
+                        }
+                        this._pAttributeVariableMap[pAttr._getInstructionID()] = pAttr;
+                        this.generateExtractBlockForAttribute(pAttr);
+                    }
+                }
+                this._pAttributeVariableKeys = this._getAttributeVariableKeys();
             };
             FunctionDeclInstruction.prototype.generateVertexVaryings = function () {
+                if (((this._getOutVariable()) === null)) {
+                    return;
+                }
+                this._pVaryingVariableMap = {};
+                var pContainerVariable = this._getOutVariable();
+                var pContainerType = pContainerVariable.getType();
+                var pVaryingNames = pContainerType.getFieldNameList();
+                for(var i = 0; i < pVaryingNames.length; i++) {
+                    var pVarying = pContainerType.getField(pVaryingNames[i]);
+                    if (!this.isVariableTypeUse(pVarying.getType())) {
+                        continue;
+                    }
+                    this._pVaryingVariableMap[pVarying._getInstructionID()] = pVarying;
+                }
+                this._pVaryingVariableKeys = this._getVaryingVariableKeys();
             };
             FunctionDeclInstruction.prototype.generatePixelVaryings = function () {
+                var pShaderInputParamList = ((this._pFunctionDefenition)._pParamListForShaderInput);
+                var isComplexInput = ((this._pFunctionDefenition)._isComplexShaderInput);
+                this._pVaryingVariableMap = {};
+                if (isComplexInput) {
+                    var pContainerVariable = pShaderInputParamList[0];
+                    var pContainerType = pContainerVariable.getType();
+                    var pVaryingNames = pContainerType.getFieldNameList();
+                    for(var i = 0; i < pVaryingNames.length; i++) {
+                        var pVarying = pContainerType.getField(pVaryingNames[i]);
+                        if (!this.isVariableTypeUse(pVarying.getType())) {
+                            continue;
+                        }
+                        this._pVaryingVariableMap[pVarying._getInstructionID()] = pVarying;
+                    }
+                } else {
+                    for(var i = 0; i < pShaderInputParamList.length; i++) {
+                        var pVarying = pShaderInputParamList[i];
+                        if (!this.isVariableTypeUse(pVarying.getType())) {
+                            continue;
+                        }
+                        this._pVaryingVariableMap[pVarying._getInstructionID()] = pVarying;
+                    }
+                }
+                this._pVaryingVariableKeys = this._getVaryingVariableKeys();
             };
             FunctionDeclInstruction.prototype.cloneVarTypeUsedMap = function (pMap, pRelationMap) {
                 var pCloneMap = {};
@@ -42452,7 +45818,7 @@ var akra;
                 }
                 return pCloneMap;
             };
-            FunctionDeclInstruction.prototype.cloneTypeDeclMap = function (pMap, pRelationMap) {
+            FunctionDeclInstruction.prototype.cloneTypeMap = function (pMap, pRelationMap) {
                 var pCloneMap = {};
                 for(var i in pMap) {
                     var pVar = (((pRelationMap[i]) !== undefined) ? pRelationMap[i] : pMap[i]);
@@ -42470,7 +45836,7 @@ var akra;
                 var iMainVar = pMainVariable._getInstructionID();
                 var iVar = pVariable._getInstructionID();
                 if (pMainVariable.getType().isShared()) {
-                    this._pSharedVariableMap[iVar] = pVariable;
+                    // this._pSharedVariableMap[iVar] = pVariable;
                     this._pSharedVariableMap[iMainVar] = pMainVariable;
                 } else if (pMainVariable.getType().isForeign()) {
                     this._pForeignVariableMap[iMainVar] = pMainVariable;
@@ -42501,27 +45867,27 @@ var akra;
                         this._pTextureVariableMap[pTexture._getInstructionID()] = pTexture;
                     }
                 }
-                this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
-            };
+                // this.addUsedComplexType(pMainVariable.getType().getBaseType());
+                            };
             FunctionDeclInstruction.prototype.addUniformParameter = function (pType) {
                 var pMainVariable = pType._getMainVariable();
                 var iMainVar = pMainVariable._getInstructionID();
                 if (((this._pGlobalVariableMap[iMainVar]) !== undefined)) {
-                    akra.logger.setSourceLocation("fx/FunctionInstruction.ts", 626);
+                    akra.logger.setSourceLocation("fx/FunctionInstruction.ts", 835);
                     akra.logger.error("UNEXPECTED ERROR WITH UNIFORM_PARAMETER");
                     ;
                 }
                 this._pUniformVariableMap[iMainVar] = pMainVariable;
-                this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+                this.addUsedComplexType(pMainVariable.getType().getBaseType());
             };
-            FunctionDeclInstruction.prototype.addUsedTypeDecl = function (pType) {
-                if (pType.isBase() || ((this._pUsedTypeMap[pType._getInstructionID()]) !== undefined)) {
+            FunctionDeclInstruction.prototype.addUsedComplexType = function (pType) {
+                if (pType.isBase() || ((this._pUsedComplexTypeMap[pType._getInstructionID()]) !== undefined)) {
                     return;
                 }
-                this._pUsedTypeMap[pType._getInstructionID()] = pType.getParent();
+                this._pUsedComplexTypeMap[pType._getInstructionID()] = pType;
                 var pFieldNameList = pType.getFieldNameList();
                 for(var i = 0; i < pFieldNameList.length; i++) {
-                    this.addUsedTypeDecl(pType.getFieldType(pFieldNameList[i]).getBaseType());
+                    this.addUsedComplexType(pType.getFieldType(pFieldNameList[i]).getBaseType());
                 }
             };
             FunctionDeclInstruction.prototype.addUsedInfoFromFunction = function (pFunction) {
@@ -42531,7 +45897,7 @@ var akra;
                 var pUniformVarMap = pFunction._getUniformVariableMap();
                 var pForeignVarMap = pFunction._getForeignVariableMap();
                 var pTextureVarMap = pFunction._getTextureVariableMap();
-                var pUsedTypeMap = pFunction._getUsedTypeMap();
+                var pUsedComplexTypeMap = pFunction._getUsedComplexTypeMap();
                 for(var j in pSharedVarMap) {
                     this._pSharedVariableMap[pSharedVarMap[j]._getInstructionID()] = pSharedVarMap[j];
                 }
@@ -42552,9 +45918,133 @@ var akra;
                         this._pUniformVariableMap[pUniformVarMap[j]._getInstructionID()] = pUniformVarMap[j];
                     }
                 }
-                for(var j in pUsedTypeMap) {
-                    this._pUsedTypeMap[pUsedTypeMap[j]._getInstructionID()] = pUsedTypeMap[j];
+                for(var j in pUsedComplexTypeMap) {
+                    this._pUsedComplexTypeMap[pUsedComplexTypeMap[j]._getInstructionID()] = pUsedComplexTypeMap[j];
                 }
+                this.addExtSystemFunction(pFunction);
+            };
+            FunctionDeclInstruction.prototype.addExtSystemFunction = function (pFunction) {
+                if (((this._pExtSystemFunctionList) === null)) {
+                    this._pExtSystemFunctionList = [];
+                    this._pExtSystemTypeList = [];
+                    this._pExtSystemMacrosList = [];
+                }
+                if (pFunction._getInstructionType() === 46 /* k_SystemFunctionInstruction */ ) {
+                    if (this._pExtSystemFunctionList.indexOf(pFunction) !== -1) {
+                        return;
+                    }
+                    this._pExtSystemFunctionList.push(pFunction);
+                }
+                var pTypes = pFunction._getExtSystemTypeList();
+                var pMacroses = pFunction._getExtSystemMacrosList();
+                var pFunctions = pFunction._getExtSystemFunctionList();
+                if (!((pTypes) === null)) {
+                    for(var j = 0; j < pTypes.length; j++) {
+                        if (this._pExtSystemTypeList.indexOf(pTypes[j]) === -1) {
+                            this._pExtSystemTypeList.push(pTypes[j]);
+                        }
+                    }
+                }
+                if (!((pMacroses) === null)) {
+                    for(var j = 0; j < pMacroses.length; j++) {
+                        if (this._pExtSystemMacrosList.indexOf(pMacroses[j]) === -1) {
+                            this._pExtSystemMacrosList.push(pMacroses[j]);
+                        }
+                    }
+                }
+                if (!((pFunctions) === null)) {
+                    for(var j = 0; j < pFunctions.length; j++) {
+                        if (this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1) {
+                            this._pExtSystemFunctionList.push(pFunctions[j]);
+                        }
+                    }
+                }
+            };
+            FunctionDeclInstruction.prototype.isVariableTypeUse = function (pVariableType) {
+                var id = pVariableType._getInstructionID();
+                if (!((this._pUsedVarTypeMap[id]) !== undefined)) {
+                    return false;
+                }
+                if (this._pUsedVarTypeMap[id].numUsed === 0) {
+                    return false;
+                }
+                return true;
+            };
+            FunctionDeclInstruction.prototype.generateExtractBlockForAttribute = function (pAttr) {
+                if (!pAttr.getType().isPointer()) {
+                    return null;
+                }
+                var pExtractCollector = new fx.InstructionCollector();
+                var pMainPointer = pAttr.getType()._getMainPointer();
+                pAttr._setAttrExtractionBlock(pExtractCollector);
+                this.generateExtractStmtFromPointer(pMainPointer, null, 0, pExtractCollector);
+                pAttr.getType().getSubVarDecls();
+                return pExtractCollector;
+            };
+            FunctionDeclInstruction.prototype.generateExtractStmtFromPointer = function (pPointer, pOffset, iDepth, pCollector) {
+                var pPointerType = pPointer.getType();
+                var pWhatExtracted = pPointerType._getDownPointer();
+                var pWhatExtractedType = null;
+                while(!((pWhatExtracted) === null)) {
+                    pWhatExtractedType = pWhatExtracted.getType();
+                    if (!pWhatExtractedType.isPointIndex() && iDepth === 0) {
+                        pOffset = this.createOffsetForAttr(pWhatExtracted);
+                    }
+                    if (!pWhatExtractedType.isComplex()) {
+                        var pSingleExtract = new fx.ExtractStmtInstruction();
+                        pSingleExtract.generateStmtForBaseType(pWhatExtracted, pWhatExtractedType.getPointer(), pWhatExtractedType.getVideoBuffer(), 0, pWhatExtractedType.isPointIndex() ? null : pOffset);
+                        this._addUsedFunction(pSingleExtract.getExtractFunction());
+                        pCollector.push(pSingleExtract, true);
+                    } else {
+                        iDepth++;
+                        this.generateExtractStmtForComplexVar(pWhatExtracted, pOffset, iDepth, pCollector, pWhatExtractedType.getPointer(), pWhatExtractedType.getVideoBuffer(), 0);
+                    }
+                    pWhatExtracted = pWhatExtractedType._getDownPointer();
+                }
+            };
+            FunctionDeclInstruction.prototype.generateExtractStmtForComplexVar = function (pVarDecl, pOffset, iDepth, pCollector, pPointer, pBuffer, iPadding) {
+                var pVarType = pVarDecl.getType();
+                var pFieldNameList = pVarType.getFieldNameList();
+                var pField = null;
+                var pFieldType = null;
+                var pSingleExtract = null;
+                for(var i = 0; i < pFieldNameList.length; i++) {
+                    pField = pVarType.getField(pFieldNameList[i]);
+                    if (((pField) === null)) {
+                        continue;
+                    }
+                    pFieldType = pField.getType();
+                    if (iDepth <= 1) {
+                        pOffset = this.createOffsetForAttr(pField);
+                    }
+                    iDepth++;
+                    if (pFieldType.isPointer()) {
+                        var pFieldPointer = pFieldType._getMainPointer();
+                        pSingleExtract = new fx.ExtractStmtInstruction();
+                        pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding(), pOffset);
+                        this._addUsedFunction(pSingleExtract.getExtractFunction());
+                        pCollector.push(pSingleExtract, true);
+                        this.generateExtractStmtFromPointer(pFieldPointer, pOffset, iDepth, pCollector);
+                    } else if (pFieldType.isComplex()) {
+                        this.generateExtractStmtForComplexVar(pField, pOffset, iDepth, pCollector, pPointer, pBuffer, iPadding + pFieldType.getPadding());
+                    } else {
+                        pSingleExtract = new fx.ExtractStmtInstruction();
+                        pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding(), pOffset);
+                        this._addUsedFunction(pSingleExtract.getExtractFunction());
+                        pCollector.push(pSingleExtract, true);
+                    }
+                }
+            };
+            FunctionDeclInstruction.prototype.createOffsetForAttr = function (pAttr) {
+                var pOffset = new fx.VariableDeclInstruction();
+                var pOffsetType = new fx.VariableTypeInstruction();
+                var pOffsetId = new fx.IdInstruction();
+                pOffsetType.pushType(fx.Effect.getSystemType("float"));
+                pOffset.push(pOffsetType, true);
+                pOffset.push(pOffsetId, true);
+                pOffset.setParent(pAttr);
+                pAttr.getType()._addAttrOffset(pOffset);
+                return pOffset;
             };
             return FunctionDeclInstruction;
         })(fx.DeclInstruction);
@@ -42567,6 +46057,11 @@ var akra;
                 this._pName = null;
                 this._pReturnType = null;
                 this._pArguments = null;
+                this._sDefinition = "";
+                this._sImplementation = "";
+                this._pExtSystemTypeList = null;
+                this._pExtSystemFunctionList = null;
+                this._pExtSystemMacrosList = null;
                 this._eInstructionType = 46 /* k_SystemFunctionInstruction */ ;
                 this._pName = new fx.IdInstruction();
                 this._pName.setName(sName);
@@ -42575,14 +46070,54 @@ var akra;
                 this._pReturnType.pushType(pReturnType);
                 ((this._pReturnType)._pParentInstruction = (this));
                 this._pArguments = [];
-                for(var i = 0; i < pArgumentTypes.length; i++) {
-                    var pArgument = new fx.TypedInstruction();
-                    pArgument.setType(pArgumentTypes[i]);
-                    (pArgument._pParentInstruction = (this));
-                    this._pArguments.push(pArgument);
+                if (!((pArgumentTypes) === null)) {
+                    for(var i = 0; i < pArgumentTypes.length; i++) {
+                        var pArgument = new fx.TypedInstruction();
+                        pArgument.setType(pArgumentTypes[i]);
+                        (pArgument._pParentInstruction = (this));
+                        this._pArguments.push(pArgument);
+                    }
                 }
                 this._pExprTranslator = pExprTranslator;
             }
+            SystemFunctionInstruction.prototype.setDeclCode = function (sDefenition, sImplementation) {
+                this._sDefinition = sDefenition;
+                this._sImplementation = sImplementation;
+            };
+            SystemFunctionInstruction.prototype.toFinalCode = function () {
+                return this._sDefinition + this._sImplementation;
+            };
+            SystemFunctionInstruction.prototype.toFinalDefCode = function () {
+                return this._sDefinition;
+            };
+            SystemFunctionInstruction.prototype.setUsedSystemData = function (pTypeList, pFunctionList, pMacrosList) {
+                this._pExtSystemTypeList = pTypeList;
+                this._pExtSystemFunctionList = pFunctionList;
+                this._pExtSystemMacrosList = pMacrosList;
+            };
+            SystemFunctionInstruction.prototype.closeSystemDataInfo = function () {
+                for(var i = 0; i < this._pExtSystemFunctionList.length; i++) {
+                    var pFunction = this._pExtSystemFunctionList[i];
+                    var pTypes = pFunction._getExtSystemTypeList();
+                    var pMacroses = pFunction._getExtSystemMacrosList();
+                    var pFunctions = pFunction._getExtSystemFunctionList();
+                    for(var j = 0; j < pTypes.length; j++) {
+                        if (this._pExtSystemTypeList.indexOf(pTypes[j]) === -1) {
+                            this._pExtSystemTypeList.push(pTypes[j]);
+                        }
+                    }
+                    for(var j = 0; j < pMacroses.length; j++) {
+                        if (this._pExtSystemMacrosList.indexOf(pMacroses[j]) === -1) {
+                            this._pExtSystemMacrosList.push(pMacroses[j]);
+                        }
+                    }
+                    for(var j = 0; j < pFunctions.length; j++) {
+                        if (this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1) {
+                            this._pExtSystemFunctionList.push(pFunctions[j]);
+                        }
+                    }
+                }
+            };
             SystemFunctionInstruction.prototype.setExprTranslator = function (pExprTranslator) {
                 this._pExprTranslator = pExprTranslator;
             };
@@ -42706,6 +46241,12 @@ var akra;
             };
             SystemFunctionInstruction.prototype._generateInfoAboutUsedData = function () {
             };
+            SystemFunctionInstruction.prototype._getAttributeVariableMap = /** @inline */function () {
+                return null;
+            };
+            SystemFunctionInstruction.prototype._getVaryingVariableMap = /** @inline */function () {
+                return null;
+            };
             SystemFunctionInstruction.prototype._getSharedVariableMap = /** @inline */function () {
                 return null;
             };
@@ -42721,8 +46262,41 @@ var akra;
             SystemFunctionInstruction.prototype._getTextureVariableMap = /** @inline */function () {
                 return null;
             };
-            SystemFunctionInstruction.prototype._getUsedTypeMap = /** @inline */function () {
+            SystemFunctionInstruction.prototype._getUsedComplexTypeMap = /** @inline */function () {
                 return null;
+            };
+            SystemFunctionInstruction.prototype._getAttributeVariableKeys = /** @inline */function () {
+                return null;
+            };
+            SystemFunctionInstruction.prototype._getVaryingVariableKeys = /** @inline */function () {
+                return null;
+            };
+            SystemFunctionInstruction.prototype._getSharedVariableKeys = /** @inline */function () {
+                return null;
+            };
+            SystemFunctionInstruction.prototype._getUniformVariableKeys = /** @inline */function () {
+                return null;
+            };
+            SystemFunctionInstruction.prototype._getForeignVariableKeys = /** @inline */function () {
+                return null;
+            };
+            SystemFunctionInstruction.prototype._getGlobalVariableKeys = /** @inline */function () {
+                return null;
+            };
+            SystemFunctionInstruction.prototype._getTextureVariableKeys = /** @inline */function () {
+                return null;
+            };
+            SystemFunctionInstruction.prototype._getUsedComplexTypeKeys = /** @inline */function () {
+                return null;
+            };
+            SystemFunctionInstruction.prototype._getExtSystemFunctionList = function () {
+                return this._pExtSystemFunctionList;
+            };
+            SystemFunctionInstruction.prototype._getExtSystemMacrosList = function () {
+                return this._pExtSystemMacrosList;
+            };
+            SystemFunctionInstruction.prototype._getExtSystemTypeList = function () {
+                return this._pExtSystemTypeList;
             };
             return SystemFunctionInstruction;
         })(fx.DeclInstruction);
@@ -43120,6 +46694,7 @@ var akra;
                 this._pCurrentFunction = null;
                 this._pStatistics = null;
                 this._sAnalyzedFileName = "";
+                this._pSystemMacros = null;
                 this._pSystemTypes = null;
                 this._pSystemFunctionsMap = null;
                 this._pSystemFunctionHashMap = null;
@@ -43144,13 +46719,16 @@ var akra;
                 this._pFunctionWithImplementationList = [];
                 this._pTechniqueList = [];
                 this._pTechniqueMap = {};
+                this.initSystemMacros();
                 this.initSystemTypes();
                 this.initSystemFunctions();
                 this.initSystemVariables();
             }
+            Effect.pSystemMacros = null;
             Effect.pSystemTypes = null;
             Effect.pSystemFunctions = null;
             Effect.pSystemVariables = null;
+            Effect.pSystemVertexOut = null;
             Effect.prototype.analyze = function (pTree) {
                 var pRootNode = pTree.root;
                 var iParseTime = akra.now();
@@ -43160,7 +46738,7 @@ var akra;
                     time: 0
                 };
                 try  {
-                    ((this)._pEffectScope.newScope((undefined)));
+                    ((this)._pEffectScope.newScope((0 /* k_Default */ )));
                     // LOG("ok");
                     this.analyzeGlobalUseDecls();
                     // LOG("ok");
@@ -43195,9 +46773,7 @@ var akra;
                 
                 iParseTime = akra.now() - iParseTime;
                 this._pStatistics.time = iParseTime;
-                akra.logger.setSourceLocation("fx/Effect.ts", 158);
-                akra.logger.log(this, iParseTime);
-                ;
+                //LOG(this, iParseTime);
                 return true;
             };
             Effect.prototype.getStats = function () {
@@ -43211,6 +46787,9 @@ var akra;
             Effect.prototype.getTechniqueList = /** @inline */function () {
                 return this._pTechniqueList;
             };
+            Effect.getBaseVertexOutType = function getBaseVertexOutType() {
+                return Effect.pSystemVertexOut;
+            };
             Effect.getSystemType = function getSystemType(sTypeName) {
                 //bool, string, float and others
                 return ((Effect.pSystemTypes[sTypeName]) !== undefined) ? Effect.pSystemTypes[sTypeName] : null;
@@ -43218,10 +46797,20 @@ var akra;
             Effect.getSystemVariable = function getSystemVariable(sName) {
                 return ((Effect.pSystemVariables[sName]) !== undefined) ? Effect.pSystemVariables[sName] : null;
             };
+            Effect.getSystemMacros = function getSystemMacros(sName) {
+                return ((Effect.pSystemMacros[sName]) !== undefined) ? Effect.pSystemMacros[sName] : null;
+            };
             Effect.findSystemFunction = function findSystemFunction(sFunctionName, pArguments) {
                 var pSystemFunctions = Effect.pSystemFunctions[sFunctionName];
                 if (!((pSystemFunctions) !== undefined)) {
                     return null;
+                }
+                if (((pArguments) === null)) {
+                    for(var i = 0; i < pSystemFunctions.length; i++) {
+                        if (((pSystemFunctions[i])._pArguments.length) === 0) {
+                            return pSystemFunctions[i];
+                        }
+                    }
                 }
                 for(var i = 0; i < pSystemFunctions.length; i++) {
                     if (pArguments.length !== ((pSystemFunctions[i])._pArguments.length)) {
@@ -43274,12 +46863,20 @@ var akra;
                 iDepth++;
                 this.generateSuffixLiterals(pLiterals, pOutput, iDepth);
             };
+            Effect.prototype.initSystemMacros = function () {
+                if (((Effect.pSystemMacros) === null)) {
+                    this._pSystemMacros = Effect.pSystemMacros = {};
+                    this.addSystemMacros();
+                }
+                this._pSystemMacros = Effect.pSystemMacros;
+            };
             Effect.prototype.initSystemTypes = function () {
                 if (((Effect.pSystemTypes) === null)) {
                     this._pSystemTypes = Effect.pSystemTypes = {};
                     this.addSystemTypeScalar();
                     this.addSystemTypeVector();
                     this.addSystemTypeMatrix();
+                    this.generateBaseVertexOutput();
                 }
                 this._pSystemTypes = Effect.pSystemTypes;
             };
@@ -43296,6 +46893,9 @@ var akra;
                     this.addSystemVariables();
                 }
                 this._pSystemVariables = Effect.pSystemVariables;
+            };
+            Effect.prototype.addSystemMacros = function () {
+                this.generateSystemMacros("ExtractMacros", "\n#ifdef AKRA_FRAGMENT\n" + "//#define texture2D(sampler, ) texture2D\n" + "#else\n" + "#define texture2D(A, B) texture2DLod(A, B, 0.)\n" + "#endif\n" + "#ifndef A_VB_COMPONENT3\n" + "#define A_VB_COMPONENT4\n" + "#endif\n" + "#ifdef A_VB_COMPONENT4\n" + "#define A_VB_ELEMENT_SIZE 4.\n" + "#endif\n" + "#ifdef A_VB_COMPONENT3\n" + "#define A_VB_ELEMENT_SIZE 3.\n" + "#endif\n" + "#define A_tex2D(S, H, X, Y) texture2D(S, vec2(H.stepX * X , H.stepY * Y))\n" + "#define A_tex2Dv(S, H, V) texture2D(S, V)\n");
             };
             Effect.prototype.addSystemVariables = function () {
                 this.generateSystemVariable("fragCoord", "gl_FragCoord", "float4", false, true, true);
@@ -43322,6 +46922,7 @@ var akra;
                 pVariableDecl.push(pType, true);
                 pVariableDecl.push(pName, true);
                 this._pSystemVariables[sName] = pVariableDecl;
+                pVariableDecl.setBuiltIn(true);
             };
             Effect.prototype.generatePassEngineVariable = function () {
                 var pVariableDecl = new fx.VariableDeclInstruction();
@@ -43334,6 +46935,35 @@ var akra;
                 pVariableDecl.push(pType, true);
                 pVariableDecl.push(pName, true);
                 this._pSystemVariables["engine"] = pVariableDecl;
+            };
+            Effect.prototype.generateBaseVertexOutput = function () {
+                //TODO: fix defenition of this variables
+                var pOutBasetype = new fx.ComplexTypeInstruction();
+                var pPosition = new fx.VariableDeclInstruction();
+                var pPointSize = new fx.VariableDeclInstruction();
+                var pPositionType = new fx.VariableTypeInstruction();
+                var pPointSizeType = new fx.VariableTypeInstruction();
+                var pPositionId = new fx.IdInstruction();
+                var pPointSizeId = new fx.IdInstruction();
+                pPositionType.pushType(Effect.getSystemType("float4"));
+                pPointSizeType.pushType(Effect.getSystemType("float"));
+                /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/pPositionId.setName("pos");
+                (pPositionId._sRealName = ("pos"));
+                /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/pPointSizeId.setName("psize");
+                (pPointSizeId._sRealName = ("psize"));
+                pPosition.push(pPositionType, true);
+                pPosition.push(pPositionId, true);
+                pPointSize.push(pPointSizeType, true);
+                pPointSize.push(pPointSizeId, true);
+                pPosition.setSemantic("POSITION");
+                pPointSize.setSemantic("PSIZE");
+                var pFieldCollector = new fx.InstructionCollector();
+                pFieldCollector.push(pPosition, false);
+                pFieldCollector.push(pPointSize, false);
+                pOutBasetype.addFields(pFieldCollector, true);
+                /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/pOutBasetype.setName("VS_OUT");
+                (pOutBasetype._sRealName = ("VS_OUT_S"));
+                Effect.pSystemVertexOut = pOutBasetype;
             };
             Effect.prototype.addSystemFunctions = function () {
                 this._pSystemFunctionHashMap = {};
@@ -43757,7 +47387,44 @@ var akra;
                     "float"
                 ], null, true, false);
                 //Extracts
-                            };
+                this.generateNotBuiltInSystemFuction("extractHeader", "void A_extractTextureHeader(const sampler2D src, out A_TextureHeader texture)", "{vec4 v = texture2D(src, vec2(0.)); " + "texture = A_TextureHeader(v.r, v.g, v.b, v.a);}", "void", [
+                    "video_buffer_header"
+                ], null, [
+                    "ExtractMacros"
+                ]);
+                this.generateNotBuiltInSystemFuction("extractFloat", "float A_extractFloat(const sampler2D sampler, const A_TextureHeader header, const float offset)", "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " + "float y = floor(pixelNumber / header.width) + .5; " + "float x = mod(pixelNumber, header.width) + .5; " + "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " + "\n#ifdef A_VB_COMPONENT4\n" + "if(shift == 0) return A_tex2D(sampler, header, x, y).r; " + "else if(shift == 1) return A_tex2D(sampler, header, x, y).g; " + "else if(shift == 2) return A_tex2D(sampler, header, x, y).b; " + "else if(shift == 3) return A_tex2D(sampler, header, x, y).a; " + "\n#endif\n" + "return 0.;}", "float", [
+                    "video_buffer_header"
+                ], null, [
+                    "ExtractMacros"
+                ]);
+                this.generateNotBuiltInSystemFuction("extractFloat2", "vec2 A_extractVec2(const sampler2D sampler, const A_TextureHeader header, const float offset)", "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " + "float y = floor(pixelNumber / header.width) + .5; " + "float x = mod(pixelNumber, header.width) + .5; " + "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " + "\n#ifdef A_VB_COMPONENT4\n" + "if(shift == 0) return A_tex2D(sampler, header, x, y).rg; " + "else if(shift == 1) return A_tex2D(sampler, header, x, y).gb; " + "else if(shift == 2) return A_tex2D(sampler, header, x, y).ba; " + "else if(shift == 3) { " + "if(int(x) == int(header.width - 1.)) " + "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).r); " + "else " + "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).r); " + "} " + "\n#endif\n" + "return vec2(0.);}", "float2", [
+                    "video_buffer_header"
+                ], null, [
+                    "ExtractMacros"
+                ]);
+                this.generateNotBuiltInSystemFuction("extractFloat3", "vec3 A_extractVec3(const sampler2D sampler, const A_TextureHeader header, const float offset)", "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " + "float y = floor(pixelNumber / header.width) + .5; " + "float x = mod(pixelNumber, header.width) + .5; " + "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " + "\n#ifdef A_VB_COMPONENT4\n" + "if(shift == 0) return A_tex2D(sampler, header, x, y).rgb; " + "else if(shift == 1) return A_tex2D(sampler, header, x, y).gba; " + "else if(shift == 2){ " + "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).r); " + "else return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).r);} " + "else if(shift == 3){ " + "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rg); " + "else return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rg);} " + "\n#endif\n" + "\n#ifdef A_VB_COMPONENT3\n" + "if(shift == 0) return A_tex2D(sampler, header,vec2(x,header.stepY*y)).rgb; " + "else if(shift == 1){ " + "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, 0., (y + 1.)).r); " + "else return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, (x + 1.), y).r);} " + "else if(shift == 3){ " + "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, 0., (y + 1.)).rg); " + "else return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, (x + 1)., y).rg);} " + "\n#endif\n" + "return vec3(0);}", "float3", [
+                    "video_buffer_header"
+                ], null, [
+                    "ExtractMacros"
+                ]);
+                this.generateNotBuiltInSystemFuction("extractFloat4", "vec4 A_extractVec4(const sampler2D sampler, const A_TextureHeader header, const float offset)", "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " + "float y = floor(pixelNumber / header.width) + .5; " + "float x = mod(pixelNumber, header.width) + .5; " + "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " + "\n#ifdef A_VB_COMPONENT4\n" + "if(shift == 0) return A_tex2D(sampler, header, x, y); " + "else if(shift == 1){ " + "if(int(x) == int(header.width - 1.)) " + "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, 0., (y + 1.)).r); " + "else " + "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, (x + 1.), y).r);} " + "else if(shift == 2){ " + "if(int(x) == int(header.width - 1.)) " + "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).rg); " + "else " + "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).rg);} " + "else if(shift == 3){ " + "if(int(x) == int(header.width - 1.)) " + "return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rgb); " + "else return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rgb);} " + "\n#endif\n" + "\n#ifdef A_VB_COMPONENT3\n" + "\n#endif\n" + "return vec4(0);}", "float4", [
+                    "video_buffer_header"
+                ], null, [
+                    "ExtractMacros"
+                ]);
+                this.generateNotBuiltInSystemFuction("findPixel", "vec2 A_findPixel(const A_TextureHeader header, const float offset)", "{float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " + "return vec2(header.stepX * (mod(pixelNumber, header.width) + .5), header.stepY * (floor(pixelNumber / header.width) + .5));}", "float2", [
+                    "video_buffer_header"
+                ], null, [
+                    "ExtractMacros"
+                ]);
+                this.generateNotBuiltInSystemFuction("extractFloat4x4", "mat4 A_extractMat4(const sampler2D sampler, const A_TextureHeader header, const float offset)", "{return mat4(A_tex2Dv(sampler, header, A_findPixel(header, offset))," + "A_tex2Dv(sampler, header, A_findPixel(header, offset + 4.))," + "A_tex2Dv(sampler, header, A_findPixel(header, offset + 8.))," + "A_tex2Dv(sampler, header, A_findPixel(header, offset + 12.)));}", "float4x4", [
+                    "video_buffer_header"
+                ], [
+                    "findPixel"
+                ], [
+                    "ExtractMacros"
+                ]);
+            };
             Effect.prototype.generateSystemFunction = function (sName, sTranslationExpr, sReturnTypeName, pArgumentsTypes, pTemplateTypes, isForVertex, isForPixel) {
                 if (typeof isForVertex === "undefined") { isForVertex = true; }
                 if (typeof isForPixel === "undefined") { isForPixel = true; }
@@ -43794,6 +47461,7 @@ var akra;
                         (pFunction._bForVertex = (isForVertex));
                         (pFunction._bForPixel = (isForPixel));
                         pSystemFunctions[sName].push(pFunction);
+                        pFunction.setBuiltIn(true);
                     }
                 } else {
                     if (sReturnTypeName === "template") {
@@ -43823,7 +47491,51 @@ var akra;
                         pSystemFunctions[sName] = [];
                     }
                     pSystemFunctions[sName].push(pFunction);
+                    pFunction.setBuiltIn(true);
                 }
+            };
+            Effect.prototype.generateSystemMacros = function (sMacrosName, sMacrosCode) {
+                if (((this._pSystemMacros[sMacrosName]) !== undefined)) {
+                    return;
+                }
+                var pMacros = new fx.SimpleInstruction(sMacrosCode);
+                this._pSystemMacros[sMacrosName] = pMacros;
+            };
+            Effect.prototype.generateNotBuiltInSystemFuction = function (sName, sDefenition, sImplementation, sReturnType, pUsedTypes, pUsedFunctions, pUsedMacros) {
+                if (((this._pSystemFunctionsMap[sName]) !== undefined)) {
+                    return;
+                }
+                var pReturnType = Effect.getSystemType(sReturnType);
+                var pFunction = new fx.SystemFunctionInstruction(sName, pReturnType, null, null);
+                pFunction.setDeclCode(sDefenition, sImplementation);
+                var pUsedExtSystemTypes = [];
+                var pUsedExtSystemFunctions = [];
+                var pUsedExtSystemMacros = [];
+                if (!((pUsedTypes) === null)) {
+                    for(var i = 0; i < pUsedTypes.length; i++) {
+                        var pTypeDecl = ((Effect.getSystemType(pUsedTypes[i]))._pParentInstruction);
+                        if (!((pTypeDecl) === null)) {
+                            pUsedExtSystemTypes.push(pTypeDecl);
+                        }
+                    }
+                }
+                if (!((pUsedMacros) === null)) {
+                    for(var i = 0; i < pUsedMacros.length; i++) {
+                        pUsedExtSystemMacros.push(Effect.getSystemMacros(pUsedMacros[i]));
+                    }
+                }
+                if (!((pUsedFunctions) === null)) {
+                    for(var i = 0; i < pUsedFunctions.length; i++) {
+                        var pFindFunction = Effect.findSystemFunction(pUsedFunctions[i], null);
+                        pUsedExtSystemFunctions.push(pFindFunction);
+                    }
+                }
+                pFunction.setUsedSystemData(pUsedExtSystemTypes, pUsedExtSystemFunctions, pUsedExtSystemMacros);
+                pFunction.closeSystemDataInfo();
+                pFunction.setBuiltIn(false);
+                this._pSystemFunctionsMap[sName] = [
+                    pFunction
+                ];
             };
             Effect.prototype.generateSystemType = function (sName, sRealName, iSize, isArray, pElementType, iLength) {
                 if (typeof iSize === "undefined") { iSize = 1; }
@@ -43841,6 +47553,29 @@ var akra;
                     pSystemType.addIndex(pElementType, iLength);
                 }
                 this._pSystemTypes[sName] = pSystemType;
+                pSystemType.setBuiltIn(true);
+                return pSystemType;
+            };
+            Effect.prototype.generateNotBuildtInSystemType = function (sName, sRealName, sDeclString, iSize, isArray, pElementType, iLength) {
+                if (typeof iSize === "undefined") { iSize = 1; }
+                if (typeof isArray === "undefined") { isArray = false; }
+                if (typeof pElementType === "undefined") { pElementType = null; }
+                if (typeof iLength === "undefined") { iLength = 1; }
+                if (((this._pSystemTypes[sName]) !== undefined)) {
+                    return null;
+                }
+                var pSystemType = new fx.SystemTypeInstruction();
+                (pSystemType._sName = (sName));
+                (pSystemType._sRealName = (sRealName));
+                (pSystemType._iSize = (iSize));
+                if (isArray) {
+                    pSystemType.addIndex(pElementType, iLength);
+                }
+                this._pSystemTypes[sName] = pSystemType;
+                pSystemType.setBuiltIn(false);
+                var pSystemTypeDecl = new fx.TypeDeclInstruction();
+                pSystemTypeDecl.push(pSystemType, true);
+                pSystemTypeDecl.setBuiltIn(false);
                 return pSystemType;
             };
             Effect.prototype.addSystemTypeScalar = function () {
@@ -43855,7 +47590,7 @@ var akra;
                 this.generateSystemType("sampler2D", "sampler2D", 1);
                 this.generateSystemType("samplerCUBE", "samplerCube", 1);
                 this.generateSystemType("video_buffer", "sampler2D", 1);
-                this.generateSystemType("video_buffer_header", "", 0);
+                this.generateNotBuildtInSystemType("video_buffer_header", "A_TextureHeader", "struct A_TextureHeader { float width; float height; float stepX; float stepY; }");
             };
             Effect.prototype.addSystemTypeVector = function () {
                 var pXYSuffix = {};
@@ -44547,6 +48282,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                     } else if (pChildren[i].name === "Semantic") {
                         sSemantic = this.analyzeSemantic(pChildren[i]);
                         pVarDecl.setSemantic(sSemantic);
+                        pVarDecl.getNameId().setRealName(sSemantic);
                     } else if (pChildren[i].name === "Initializer") {
                         pInitExpr = this.analyzeInitializer(pChildren[i]);
                         if (!pInitExpr.optimizeForVariableType(pVariableType)) {
@@ -44844,7 +48580,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                             case "MIRROR":
                                 break;
                             default:
-                                akra.logger.setSourceLocation("fx/Effect.ts", 1617);
+                                akra.logger.setSourceLocation("fx/Effect.ts", 1924);
                                 akra.logger.warning("Webgl don`t support this wrapmode: " + sStateValue);
                                 ;
                                 return;
@@ -44862,14 +48598,14 @@ for(var i = 0; i < pFunctionList.length; i++) {
                             case "LINEAR_MIPMAP_LINEAR":
                                 break;
                             default:
-                                akra.logger.setSourceLocation("fx/Effect.ts", 1634);
+                                akra.logger.setSourceLocation("fx/Effect.ts", 1941);
                                 akra.logger.warning("Webgl don`t support this texture filter: " + sStateValue);
                                 ;
                                 return;
                         }
                         break;
                     default:
-                        akra.logger.setSourceLocation("fx/Effect.ts", 1640);
+                        akra.logger.setSourceLocation("fx/Effect.ts", 1947);
                         akra.logger.warning("Don`t support this texture param: " + sStateType);
                         ;
                         return;
@@ -45006,6 +48742,9 @@ for(var i = 0; i < pFunctionList.length; i++) {
                         }
                     }
                     pExpr = pSystemCallExpr;
+                    if (!pFunction.isBuiltIn() && !((pCurrentAnalyzedFunction) === null)) {
+                        pCurrentAnalyzedFunction._addUsedFunction(pFunction);
+                    }
                 }
                 if (!pExpr.check(0 /* CODE_TARGET_SUPPORT */ )) {
                     ((this)._error((pExpr.getLastError()).code, (((pExpr.getLastError()).info) === null) ? {} : (pExpr.getLastError()).info));
@@ -45884,7 +49623,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                     var sSemantic = this.analyzeSemantic(pChildren[0]);
                     pFunctionDef.setSemantic(sSemantic);
                 }
-                ((this)._pEffectScope.newScope((undefined)));
+                ((this)._pEffectScope.newScope((0 /* k_Default */ )));
                 this.analyzeParamList(pChildren[pChildren.length - 3], pFunctionDef);
                 ((this)._pEffectScope.endScope());
                 if (!pFunctionDef.check(0 /* CODE_TARGET_SUPPORT */ )) {
@@ -45953,7 +49692,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                 var pStmt;
                 var i = 0;
                 (pStmtBlock._iScope = (((this)._pEffectScope.getScope())));
-                ((this)._pEffectScope.newScope((undefined)));
+                ((this)._pEffectScope.newScope((0 /* k_Default */ )));
                 for(i = pChildren.length - 2; i > 0; i--) {
                     pStmt = this.analyzeStmt(pChildren[i]);
                     if (!((pStmt) === null)) {
@@ -46231,7 +49970,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                 var isNonIfStmt = (pNode.name === "NonIfStmt");
                 var pForStmtInstruction = new fx.ForStmtInstruction();
                 var pStmt = null;
-                ((this)._pEffectScope.newScope((undefined)));
+                ((this)._pEffectScope.newScope((0 /* k_Default */ )));
                 this.analyzeForInit(pChildren[pChildren.length - 3], pForStmtInstruction);
                 this.analyzeForCond(pChildren[pChildren.length - 4], pForStmtInstruction);
                 if (pChildren.length === 7) {
@@ -46578,13 +50317,13 @@ for(var i = 0; i < pFunctionList.length; i++) {
                         case "ALPHATESTENABLE":
                             break;
                         default:
-                            akra.logger.setSourceLocation("fx/Effect.ts", 3434);
+                            akra.logger.setSourceLocation("fx/Effect.ts", 3745);
                             akra.logger.warning("Unsupported render state type used: " + sType + ". WebGl...");
                             ;
                             return;
                     }
                     if (pExprNode.value === "{" || pExprNode.value === "<" || ((pExprNode.value) === null)) {
-                        akra.logger.setSourceLocation("fx/Effect.ts", 3440);
+                        akra.logger.setSourceLocation("fx/Effect.ts", 3751);
                         akra.logger.warning("So pass state are incorrect");
                         ;
                         return;
@@ -46593,7 +50332,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                     switch(sType) {
                         case "ALPHABLENDENABLE":
                         case "ALPHATESTENABLE":
-                            akra.logger.setSourceLocation("fx/Effect.ts", 3448);
+                            akra.logger.setSourceLocation("fx/Effect.ts", 3759);
                             akra.logger.warning("ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.");
                             ;
                             return;
@@ -46605,7 +50344,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                                 case "FALSE":
                                     break;
                                 default:
-                                    akra.logger.setSourceLocation("fx/Effect.ts", 3461);
+                                    akra.logger.setSourceLocation("fx/Effect.ts", 3772);
                                     akra.logger.warning("Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: " + sValue + ".");
                                     ;
                                     return;
@@ -46627,7 +50366,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                                 case "SRCALPHASAT":
                                     break;
                                 default:
-                                    akra.logger.setSourceLocation("fx/Effect.ts", 3483);
+                                    akra.logger.setSourceLocation("fx/Effect.ts", 3794);
                                     akra.logger.warning("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
                                     ;
                                     return;
@@ -46641,7 +50380,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                                 case "FRONT_AND_BACK":
                                     break;
                                 default:
-                                    akra.logger.setSourceLocation("fx/Effect.ts", 3496);
+                                    akra.logger.setSourceLocation("fx/Effect.ts", 3807);
                                     akra.logger.warning("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
                                     ;
                                     return;
@@ -46659,7 +50398,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                                 case "ALWAYS":
                                     break;
                                 default:
-                                    akra.logger.setSourceLocation("fx/Effect.ts", 3514);
+                                    akra.logger.setSourceLocation("fx/Effect.ts", 3825);
                                     akra.logger.warning("Unsupported render state ZFUNC value used: " + sValue + ".");
                                     ;
                                     return;
@@ -46765,7 +50504,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                 var sComponentName = this.analyzeComplexName(pChildren[pChildren.length - 2]);
                 var iShift = 0;
                 if (pChildren[0].name === "ExtOpt") {
-                    akra.logger.setSourceLocation("fx/Effect.ts", 3628);
+                    akra.logger.setSourceLocation("fx/Effect.ts", 3939);
                     akra.logger.warning("We don`t suppor ext-commands for import");
                     ;
                 }
@@ -47049,16 +50788,20 @@ for(var i = 0; i < pFunctionList.length; i++) {
                 var pPointerType = pPointer.getType();
                 var pWhatExtracted = pPointerType._getDownPointer();
                 var pWhatExtractedType = null;
+                var pFunction = ((this)._pCurrentFunction);
                 while(!((pWhatExtracted) === null)) {
                     pWhatExtractedType = pWhatExtracted.getType();
                     if (!pWhatExtractedType.isComplex()) {
                         var pSingleExtract = new fx.ExtractStmtInstruction();
-                        pSingleExtract.generateStmtForBaseType(pWhatExtracted, pWhatExtractedType.getPointer(), pWhatExtractedType.getVideoBuffer(), 0);
+                        pSingleExtract.generateStmtForBaseType(pWhatExtracted, pWhatExtractedType.getPointer(), pWhatExtractedType.getVideoBuffer(), 0, null);
                         if (!pSingleExtract.check(0 /* CODE_TARGET_SUPPORT */ )) {
                             ((this)._error(((pSingleExtract._pLastError)).code, ((((pSingleExtract._pLastError)).info) === null) ? {} : ((pSingleExtract._pLastError)).info));
                         }
                         ;
                         pParentStmt.push(pSingleExtract, true);
+                        if (!((pFunction) === null)) {
+                            pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
+                        }
                     } else {
                         this.generateExtractStmtForComplexVar(pWhatExtracted, pParentStmt, pWhatExtractedType.getPointer(), pWhatExtractedType.getVideoBuffer(), 0);
                     }
@@ -47072,6 +50815,7 @@ for(var i = 0; i < pFunctionList.length; i++) {
                 var pField = null;
                 var pFieldType = null;
                 var pSingleExtract = null;
+                var pFunction = ((this)._pCurrentFunction);
                 for(var i = 0; i < pFieldNameList.length; i++) {
                     pField = pVarType.getField(pFieldNameList[i]);
                     if (((pField) === null)) {
@@ -47081,23 +50825,29 @@ for(var i = 0; i < pFunctionList.length; i++) {
                     if (pFieldType.isPointer()) {
                         var pFieldPointer = pFieldType._getMainPointer();
                         pSingleExtract = new fx.ExtractStmtInstruction();
-                        pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding());
+                        pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding(), null);
                         if (!pSingleExtract.check(0 /* CODE_TARGET_SUPPORT */ )) {
                             ((this)._error(((pSingleExtract._pLastError)).code, ((((pSingleExtract._pLastError)).info) === null) ? {} : ((pSingleExtract._pLastError)).info));
                         }
                         ;
                         pParentStmt.push(pSingleExtract, true);
                         this.generateExtractStmtFromPointer(pFieldPointer, pParentStmt);
+                        if (!((pFunction) === null)) {
+                            pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
+                        }
                     } else if (pFieldType.isComplex()) {
                         this.generateExtractStmtForComplexVar(pField, pParentStmt, pPointer, pBuffer, iPadding + pFieldType.getPadding());
                     } else {
                         pSingleExtract = new fx.ExtractStmtInstruction();
-                        pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding());
+                        pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding(), null);
                         if (!pSingleExtract.check(0 /* CODE_TARGET_SUPPORT */ )) {
                             ((this)._error(((pSingleExtract._pLastError)).code, ((((pSingleExtract._pLastError)).info) === null) ? {} : ((pSingleExtract._pLastError)).info));
                         }
                         ;
                         pParentStmt.push(pSingleExtract, true);
+                        if (!((pFunction) === null)) {
+                            pFunction._addUsedFunction(pSingleExtract.getExtractFunction());
+                        }
                     }
                 }
             };
@@ -47120,28 +50870,1598 @@ for(var i = 0; i < pFunctionList.length; i++) {
 var akra;
 (function (akra) {
     (function (fx) {
+        //TODO: CHECK SAMPLER TYPE
+        var SamplerBlender = (function () {
+            function SamplerBlender() {
+                /**@protected*/ this._pSlotList = null;
+                /**@protected*/ this._nActiveSlots = 0;
+                /**@protected*/ this._pIdToSlotMap = null;
+                /**@protected*/ this._pIdList = null;
+                this._pSlotList = new Array(32);
+                for(var i = 0; i < this._pSlotList.length; i++) {
+                    this._pSlotList[i] = new akra.util.ObjectArray();
+                }
+                this._nActiveSlots = 1;
+                this._pIdToSlotMap = {
+                    0: 0
+                };
+                this._pIdList = [];
+            }
+            Object.defineProperty(SamplerBlender.prototype, "slots", {
+                get: /** @inline */function () {
+                    return this._pSlotList;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(SamplerBlender.prototype, "totalActiveSlots", {
+                get: /** @inline */function () {
+                    return this._nActiveSlots;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            SamplerBlender.prototype.getSamplersBySlot = /** @inline */function (iSlot) {
+                return ((this)._pSlotList)[iSlot];
+            };
+            SamplerBlender.prototype.clear = function () {
+                for(var i = 0; i < this._nActiveSlots; i++) {
+                    this._pSlotList[i].clear(false);
+                }
+                this._nActiveSlots = 1;
+                for(var i = 0; i < this._pIdList.length; i++) {
+                    this._pIdToSlotMap[this._pIdList[i]] = -1;
+                }
+            };
+            SamplerBlender.prototype.addTextureSlot = function (id) {
+                if (!((this._pIdToSlotMap[id]) !== undefined)) {
+                    this._pIdList.push(id);
+                } else if (this._pIdToSlotMap[id] > 0) {
+                    return;
+                }
+                if (this._pSlotList.length === this._nActiveSlots) {
+                    this._pSlotList.push(new akra.util.ObjectArray());
+                }
+                this._pIdToSlotMap[id] = this._nActiveSlots;
+                this._nActiveSlots++;
+            };
+            SamplerBlender.prototype.addObjectToSlotById = /** @inline */function (pObject, id) {
+                /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/this._pSlotList[this._pIdToSlotMap[id]].push(pObject);
+            };
+            SamplerBlender.prototype.addObjectToSlotIdAuto = function (pObject, id) {
+                this.addTextureSlot(id);
+                (/*not inlined, because supportes only single statement functions(cur. st. count: 5)*/(this)._pSlotList[(this)._pIdToSlotMap[(id)]].push((pObject)));
+            };
+            SamplerBlender.prototype.getHash = function () {
+                var sHash = "";
+                for(var i = 0; i < this._nActiveSlots; i++) {
+                    var pBlend = this._pSlotList[i];
+                    if ((pBlend._iLength) > 0) {
+                        if (i === 0) {
+                            sHash += "Z";
+                        }
+                        for(var j = 0; j < (pBlend._iLength); j++) {
+                            sHash += (pBlend._pData[(j)]).getGuid() + ".";
+                        }
+                        sHash += ".";
+                    }
+                }
+                return sHash;
+            };
+            return SamplerBlender;
+        })();
+        fx.SamplerBlender = SamplerBlender;        
+    })(akra.fx || (akra.fx = {}));
+    var fx = akra.fx;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (fx) {
+        var VariableBlendContainer = (function () {
+            function VariableBlendContainer() {
+                /**@protected*/ this._pVarListMap = null;
+                /**@protected*/ this._pVarKeys = null;
+                /**@protected*/ this._pVarBlendTypeMap = null;
+                this._pVarListMap = {};
+                this._pVarKeys = [];
+                this._pVarBlendTypeMap = {};
+            }
+            Object.defineProperty(VariableBlendContainer.prototype, "keys", {
+                get: /** @inline */function () {
+                    return this._pVarKeys;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            VariableBlendContainer.prototype.getVarList = /** @inline */function (sKey) {
+                return this._pVarListMap[sKey];
+            };
+            VariableBlendContainer.prototype.getBlendType = /** @inline */function (sKey) {
+                return this._pVarBlendTypeMap[sKey];
+            };
+            VariableBlendContainer.prototype.addVariable = function (pVariable, eBlendMode) {
+                var sName = pVariable.getRealName();
+                if (!((this._pVarListMap[sName]) !== undefined)) {
+                    this._pVarListMap[sName] = [
+                        pVariable
+                    ];
+                    this._pVarKeys.push(sName);
+                    this._pVarBlendTypeMap[sName] = pVariable.getType();
+                    return true;
+                }
+                var pBlendType = this._pVarBlendTypeMap[sName].blend(pVariable.getType(), eBlendMode);
+                if (pBlendType === this._pVarBlendTypeMap[sName]) {
+                    return true;
+                }
+                if (((pBlendType) === null)) {
+                    akra.logger.setSourceLocation("fx/BlendContainers.ts", 51);
+                    akra.logger.error("Could not blend type for variable '" + sName + "'");
+                    ;
+                    return false;
+                }
+                this._pVarListMap[sName].push(pVariable);
+                this._pVarBlendTypeMap[sName] = pBlendType;
+                return true;
+            };
+            VariableBlendContainer.prototype.hasVariableWithName = function (sName) {
+                if (!((this._pVarBlendTypeMap[sName]) != null)) {
+                    this._pVarBlendTypeMap[sName] = null;
+                    return false;
+                }
+                return true;
+            };
+            VariableBlendContainer.prototype.hasVariable = /** @inline */function (pVar) {
+                return this.hasVariableWithName(pVar.getRealName());
+            };
+            VariableBlendContainer.prototype.getVariableByName = /** @inline */function (sName) {
+                return this.hasVariableWithName(sName) ? this._pVarListMap[sName][0] : null;
+            };
+            VariableBlendContainer.prototype.getDeclCodeForVar = /** @inline */function (sName) {
+                return ((this)._pVarBlendTypeMap[(sName)]).toFinalCode() + " " + sName;
+            };
+            return VariableBlendContainer;
+        })();
+        fx.VariableBlendContainer = VariableBlendContainer;        
+        var ComplexTypeBlendContainer = (function () {
+            function ComplexTypeBlendContainer() {
+                this._pTypeListMap = null;
+                this._pTypeKeys = null;
+                this._pTypeListMap = {};
+                this._pTypeKeys = [];
+            }
+            Object.defineProperty(ComplexTypeBlendContainer.prototype, "keys", {
+                get: /** @inline */function () {
+                    return this._pTypeKeys;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ComplexTypeBlendContainer.prototype, "types", {
+                get: /** @inline */function () {
+                    return this._pTypeListMap;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ComplexTypeBlendContainer.prototype.addComplexType = function (pComplexType) {
+                var sName = pComplexType.getRealName();
+                if (!((this._pTypeListMap[sName]) !== undefined)) {
+                    this._pTypeListMap[sName] = pComplexType;
+                    this._pTypeKeys.push(sName);
+                    return true;
+                }
+                var pBlendType = this._pTypeListMap[sName].blend(pComplexType, 6 /* k_TypeDecl */ );
+                if (((pBlendType) === null)) {
+                    akra.logger.setSourceLocation("fx/BlendContainers.ts", 114);
+                    akra.logger.error("Could not blend type declaration '" + sName + "'");
+                    ;
+                    return false;
+                }
+                this._pTypeListMap[sName] = pBlendType;
+                return true;
+            };
+            ComplexTypeBlendContainer.prototype.addFromVarConatiner = function (pContainer) {
+                if (((pContainer) === null)) {
+                    return true;
+                }
+                var pKeys = (pContainer._pVarKeys);
+                for(var i = 0; i < pKeys.length; i++) {
+                    var pType = (pContainer._pVarBlendTypeMap[(pKeys[i])]).getBaseType();
+                    if (pType.isComplex()) {
+                        if (!this.addComplexType(pType)) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            };
+            return ComplexTypeBlendContainer;
+        })();
+        fx.ComplexTypeBlendContainer = ComplexTypeBlendContainer;        
+        var ExtSystemDataContainer = (function () {
+            function ExtSystemDataContainer() {
+                /**@protected*/ this._pExtSystemMacrosList = null;
+                /**@protected*/ this._pExtSystemTypeList = null;
+                /**@protected*/ this._pExtSystemFunctionList = null;
+                this._pExtSystemMacrosList = [];
+                this._pExtSystemTypeList = [];
+                this._pExtSystemFunctionList = [];
+            }
+            Object.defineProperty(ExtSystemDataContainer.prototype, "macroses", {
+                get: /** @inline */function () {
+                    return this._pExtSystemMacrosList;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ExtSystemDataContainer.prototype, "types", {
+                get: /** @inline */function () {
+                    return this._pExtSystemTypeList;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ExtSystemDataContainer.prototype, "functions", {
+                get: /** @inline */function () {
+                    return this._pExtSystemFunctionList;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ExtSystemDataContainer.prototype.addFromFunction = function (pFunction) {
+                var pTypes = pFunction._getExtSystemTypeList();
+                var pMacroses = pFunction._getExtSystemMacrosList();
+                var pFunctions = pFunction._getExtSystemFunctionList();
+                if (!((pTypes) === null)) {
+                    for(var j = 0; j < pTypes.length; j++) {
+                        if (this._pExtSystemTypeList.indexOf(pTypes[j]) === -1) {
+                            this._pExtSystemTypeList.push(pTypes[j]);
+                        }
+                    }
+                }
+                if (!((pMacroses) === null)) {
+                    for(var j = 0; j < pMacroses.length; j++) {
+                        if (this._pExtSystemMacrosList.indexOf(pMacroses[j]) === -1) {
+                            this._pExtSystemMacrosList.push(pMacroses[j]);
+                        }
+                    }
+                }
+                if (!((pFunctions) === null)) {
+                    for(var j = 0; j < pFunctions.length; j++) {
+                        if (this._pExtSystemFunctionList.indexOf(pFunctions[j]) === -1) {
+                            this._pExtSystemFunctionList.push(pFunctions[j]);
+                        }
+                    }
+                }
+            };
+            return ExtSystemDataContainer;
+        })();
+        fx.ExtSystemDataContainer = ExtSystemDataContainer;        
+        var AttributeBlendContainer = (function (_super) {
+            __extends(AttributeBlendContainer, _super);
+            function AttributeBlendContainer() {
+                        _super.call(this);
+                this._pSlotBySemanticMap = null;
+                this._pFlowsBySemanticMap = null;
+                this._pFlowBySlots = null;
+                this._pHashBySlots = null;
+                this._pTypesBySlots = null;
+                this._pBufferByBufferSlots = null;
+                this._pHashByBufferSlots = null;
+                this._pBufferSlotBySlots = null;
+                /**@protected*/ this._sHash = "";
+                this._pSlotBySemanticMap = {};
+                this._pFlowsBySemanticMap = {};
+                this._pFlowBySlots = new akra.util.ObjectArray();
+                this._pHashBySlots = new akra.util.ObjectArray();
+                this._pTypesBySlots = new akra.util.ObjectArray();
+                this._pBufferByBufferSlots = new akra.util.ObjectArray();
+                this._pHashByBufferSlots = new akra.util.ObjectArray();
+                this._pBufferSlotBySlots = new akra.util.ObjectArray();
+            }
+            Object.defineProperty(AttributeBlendContainer.prototype, "semantics", {
+                get: /** @inline */function () {
+                    return ((this)._pVarKeys);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeBlendContainer.prototype, "totalSlots", {
+                get: /** @inline */function () {
+                    return ((this._pFlowBySlots)._iLength);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            AttributeBlendContainer.prototype.getFlowBySemantic = /** @inline */function (sSemantic) {
+                return this._pFlowsBySemanticMap[sSemantic];
+            };
+            AttributeBlendContainer.prototype.getFlowBySlot = /** @inline */function (iSlot) {
+                return ((this._pFlowBySlots)._pData[(iSlot)]);
+            };
+            AttributeBlendContainer.prototype.getTypeBySlot = /** @inline */function (iSlot) {
+                return ((this._pTypesBySlots)._pData[(iSlot)]);
+            };
+            AttributeBlendContainer.prototype.getType = /** @inline */function (sSemantic) {
+                return ((this)._pVarBlendTypeMap[(sSemantic)]);
+            };
+            AttributeBlendContainer.prototype.addAttribute = /** @inline */function (pVariable) {
+                return this.addVariable(pVariable, 2 /* k_Attribute */ );
+            };
+            AttributeBlendContainer.prototype.hasAttrWithSemantic = /** @inline */function (sSemantic) {
+                return this.hasVariableWithName(sSemantic);
+            };
+            AttributeBlendContainer.prototype.getAttribute = /** @inline */function (sSemantic) {
+                return ((this).hasVariableWithName((sSemantic)) ? (this)._pVarListMap[(sSemantic)][0] : null);
+            };
+            AttributeBlendContainer.prototype.hasTexcoord = /** @inline */function (iSlot) {
+                return ((this).hasVariableWithName((/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + iSlot.toString())));
+            };
+            AttributeBlendContainer.prototype.getTexcoordVar = /** @inline */function (iSlot) {
+                return ((this).hasVariableWithName((/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + iSlot.toString())) ? (this)._pVarListMap[(/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + iSlot.toString())][0] : null);
+            };
+            AttributeBlendContainer.prototype.clear = function () {
+                for(var i = 0; i < ((((this))._pVarKeys)).length; i++) {
+                    var sSemantic = ((((this))._pVarKeys))[i];
+                    this._pSlotBySemanticMap[sSemantic] = -1;
+                    this._pFlowsBySemanticMap[sSemantic] = null;
+                }
+                this._pFlowBySlots.clear(false);
+                this._pHashBySlots.clear(false);
+                this._pBufferByBufferSlots.clear(false);
+                this._pHashByBufferSlots.clear(false);
+                this._pBufferSlotBySlots.clear(false);
+                this._sHash = "";
+            };
+            AttributeBlendContainer.prototype.initFromBufferMap = function (pMap) {
+                this.clear();
+                if (((pMap) === null)) {
+                    akra.logger.setSourceLocation("fx/BlendContainers.ts", 299);
+                    akra.logger.warning("Yoy don`t set any buffermap for render");
+                    ;
+                    return false;
+                }
+                var pFlows = (pMap._pCompleteFlows);
+                var pSemanticList = ((((this))._pVarKeys));
+                for(var i = 0; i < pSemanticList.length; i++) {
+                    var sSemantic = pSemanticList[i];
+                    var pFindFlow = pMap.getFlow(sSemantic, true);
+                    this._pFlowsBySemanticMap[sSemantic] = pFindFlow;
+                    if (!((pFindFlow) === null)) {
+                        var iBufferSlot = -1;
+                        if (pFindFlow.type === 1 /* MAPPABLE */ ) {
+                            if (!((((this))._pVarBlendTypeMap[((sSemantic))])).isPointer()) {
+                                akra.logger.setSourceLocation("fx/BlendContainers.ts", 317);
+                                akra.logger.warning("You try to put pointer data into non-pointer attribute with semantic '" + sSemantic + "'");
+                                ;
+                                return false;
+                            }
+                            var iSlot = this._pFlowBySlots.indexOf(pFindFlow);
+                            if (iSlot !== -1) {
+                                ((this._pHashBySlots)._pData[(iSlot)]) += ((((this))._pVarBlendTypeMap[((sSemantic))])).getGuid().toString() + "*";
+                                this._pSlotBySemanticMap[sSemantic] = iSlot;
+                                iBufferSlot = ((this._pBufferSlotBySlots)._pData[(iSlot)]);
+                                ((this._pHashByBufferSlots)._pData[(iBufferSlot)]) += iSlot.toString() + "$";
+                                continue;
+                            }
+                            iBufferSlot = this._pBufferByBufferSlots.indexOf(pFindFlow.data.buffer);
+                            iSlot = ((this._pFlowBySlots)._iLength);
+                            if (iBufferSlot !== -1) {
+                                ((this._pHashByBufferSlots)._pData[(iBufferSlot)]) += iSlot.toString() + "$";
+                            } else {
+                                iBufferSlot = ((this._pBufferByBufferSlots)._iLength);
+                                /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/this._pBufferByBufferSlots.push(pFindFlow.data.buffer);
+                                /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/this._pHashByBufferSlots.push(((this._pFlowBySlots)._iLength).toString() + "$");
+                            }
+                        } else if (((((this))._pVarBlendTypeMap[((sSemantic))])).isStrictPointer()) {
+                            akra.logger.setSourceLocation("fx/BlendContainers.ts", 346);
+                            akra.logger.warning("You try to put non-pointer data into pointer attribute with semantic '" + sSemantic + "'");
+                            ;
+                            return false;
+                        }
+                        //new slot
+                        if (pFindFlow.type === 1 /* MAPPABLE */ ) {
+                            /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/this._pTypesBySlots.push(fx.Effect.getSystemType("ptr"));
+                        } else {
+                            /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/this._pTypesBySlots.push(((((this))._pVarBlendTypeMap[((sSemantic))])).getBaseType());
+                        }
+                        this._pSlotBySemanticMap[sSemantic] = ((this._pFlowBySlots)._iLength);
+                        /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/this._pFlowBySlots.push(pFindFlow);
+                        /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/this._pHashBySlots.push(((((this))._pVarBlendTypeMap[((sSemantic))])).getGuid().toString() + "*");
+                        /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/this._pBufferSlotBySlots.push(iBufferSlot);
+                    }
+                }
+                this._sHash = "";
+                for(var i = 0; i < ((this._pHashBySlots)._iLength); i++) {
+                    this._sHash += ((this._pHashBySlots)._pData[(i)]) + "*";
+                }
+                for(var i = 0; i < ((this._pHashByBufferSlots)._iLength); i++) {
+                    this._sHash += ((this._pHashByBufferSlots)._pData[(i)]) + "$";
+                }
+            };
+            AttributeBlendContainer.prototype.getHash = /** @inline */function () {
+                return this._sHash;
+            };
+            return AttributeBlendContainer;
+        })(VariableBlendContainer);
+        fx.AttributeBlendContainer = AttributeBlendContainer;        
+    })(akra.fx || (akra.fx = {}));
+    var fx = akra.fx;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (fx) {
+        var TexcoordSwapper = (function () {
+            function TexcoordSwapper() {
+                /**@protected*/ this._pTmpToTex = null;
+                /**@protected*/ this._pTexToTmp = null;
+                /**@protected*/ this._pTexcoords = null;
+                /**@protected*/ this._sTmpToTexCode = "";
+                /**@protected*/ this._sTexToTmpCode = "";
+                /**@protected*/ this._iMaxTexcoords = 0;
+                this._iMaxTexcoords = akra.core.pool.resources.SurfaceMaterial.MAX_TEXTURES_PER_SURFACE;
+                this._pTmpToTex = new Array(this._iMaxTexcoords);
+                this._pTexToTmp = new Array(this._iMaxTexcoords);
+                this._pTexcoords = new Array(this._iMaxTexcoords);
+            }
+            TexcoordSwapper.prototype.getTmpDeclCode = /** @inline */function () {
+                return this._sTexToTmpCode;
+            };
+            TexcoordSwapper.prototype.getTecoordSwapCode = /** @inline */function () {
+                return this._sTmpToTexCode;
+            };
+            TexcoordSwapper.prototype.clear = function () {
+                for(var i = 0; i < this._iMaxTexcoords; i++) {
+                    this._pTmpToTex[i] = "";
+                    this._pTexToTmp[i] = "";
+                    this._pTexcoords[i] = 0;
+                }
+                this._sTmpToTexCode = "";
+                this._sTexToTmpCode = "";
+            };
+            TexcoordSwapper.prototype.generateSwapCode = function (pMaterial, pAttrConatiner) {
+                this.clear();
+                if (((pMaterial) === null)) {
+                    return;
+                }
+                //TODO: do it faster in one for
+                var pTexcoords = this._pTexcoords;
+                for(var i = 0; i < this._iMaxTexcoords; i++) {
+                    var iTexcoord = /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/pMaterial.texcoord(i);
+                    if (iTexcoord !== i && (((pAttrConatiner).hasVariableWithName((/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + (i).toString()))))) {
+                        var pAttr = (((pAttrConatiner).hasVariableWithName((/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + (i).toString())) ? (pAttrConatiner)._pVarListMap[(/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + (i).toString())][0] : null));
+                        this._pTexToTmp[i] = pAttr.getType().getBaseType().getRealName() + " " + "T" + i.toString() + "=" + pAttr.getRealName() + ";";
+                        this._sTexToTmpCode += this._pTexToTmp[i] + "\n";
+                    }
+                    if (!(((pAttrConatiner).hasVariableWithName((/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + (iTexcoord).toString()))))) {
+                        pTexcoords[iTexcoord] = 0;
+                    } else {
+                        pTexcoords[iTexcoord] = iTexcoord;
+                    }
+                }
+                for(var i = 0; i < this._iMaxTexcoords; i++) {
+                    if (pTexcoords[i] !== i && (((pAttrConatiner).hasVariableWithName((/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + (i).toString()))))) {
+                        var pAttr = (((pAttrConatiner).hasVariableWithName((/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + (i).toString())) ? (pAttrConatiner)._pVarListMap[(/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + (i).toString())][0] : null));
+                        if (this._pTexToTmp[pTexcoords[i]] !== "") {
+                            this._pTmpToTex[i] = pAttr.getRealName() + "=" + this._pTexToTmp[pTexcoords[i]] + ";";
+                        } else {
+                            this._pTmpToTex[i] = pAttr.getRealName() + "=" + (((pAttrConatiner).hasVariableWithName((/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + (pTexcoords[i]).toString())) ? (pAttrConatiner)._pVarListMap[(/*checked (origin: akra)>>*/akra.DeclUsages.TEXCOORD + (pTexcoords[i]).toString())][0] : null)).getRealName() + ";";
+                        }
+                        this._sTmpToTexCode += this._pTmpToTex[i] + "\n";
+                    }
+                }
+            };
+            return TexcoordSwapper;
+        })();
+        fx.TexcoordSwapper = TexcoordSwapper;        
+    })(akra.fx || (akra.fx = {}));
+    var fx = akra.fx;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (fx) {
+        var PassBlend = (function () {
+            function PassBlend(pComposer) {
+                /**@protected*/ this._iGuid = akra.sid();
+                this._pComposer = null;
+                this._pShaderProgramByHashMap = null;
+                this._pExtSystemDataV = null;
+                this._pComplexTypeContainerV = null;
+                this._pForeignContainerV = null;
+                this._pUniformContainerV = null;
+                this._pSharedContainerV = null;
+                this._pGlobalContainerV = null;
+                this._pAttributeContainerV = null;
+                this._pVaryingContainerV = null;
+                this._pVertexOutType = null;
+                this._pUsedFunctionListV = null;
+                this._pPassFunctionListV = null;
+                this._pTextureMapV = null;
+                this._pExtSystemDataP = null;
+                this._pComplexTypeContainerP = null;
+                this._pForeignContainerP = null;
+                this._pUniformContainerP = null;
+                this._pSharedContainerP = null;
+                this._pGlobalContainerP = null;
+                this._pVaryingContainerP = null;
+                this._pUsedFunctionListP = null;
+                this._pPassFunctionListP = null;
+                this._pTextureMapP = null;
+                this._hasEmptyVertex = true;
+                this._hasEmptyPixel = true;
+                //Code fragments
+                this._sUniformSamplerCodeV = "";
+                this._sAttrDeclCode = "";
+                this._sUniformSamplerCodeP = "";
+                this._pDefaultSamplerBlender = null;
+                this._pTexcoordSwapper = null;
+                this._pComposer = pComposer;
+                this._pShaderProgramByHashMap = {};
+                this._pExtSystemDataV = new fx.ExtSystemDataContainer();
+                this._pComplexTypeContainerV = new fx.ComplexTypeBlendContainer();
+                this._pForeignContainerV = new fx.VariableBlendContainer();
+                this._pUniformContainerV = new fx.VariableBlendContainer();
+                this._pSharedContainerV = new fx.VariableBlendContainer();
+                this._pGlobalContainerV = new fx.VariableBlendContainer();
+                this._pAttributeContainerV = new fx.AttributeBlendContainer();
+                this._pVaryingContainerV = new fx.VariableBlendContainer();
+                this._pVertexOutType = fx.Effect.getBaseVertexOutType();
+                this._pUsedFunctionListV = [];
+                this._pPassFunctionListV = [];
+                this._pTextureMapV = {};
+                this._pExtSystemDataP = new fx.ExtSystemDataContainer();
+                this._pComplexTypeContainerP = new fx.ComplexTypeBlendContainer();
+                this._pForeignContainerP = new fx.VariableBlendContainer();
+                this._pUniformContainerP = new fx.VariableBlendContainer();
+                this._pSharedContainerP = new fx.VariableBlendContainer();
+                this._pGlobalContainerP = new fx.VariableBlendContainer();
+                this._pVaryingContainerP = new fx.VariableBlendContainer();
+                this._pUsedFunctionListP = [];
+                this._pPassFunctionListP = [];
+                this._pTextureMapP = {};
+                this._pDefaultSamplerBlender = fx.Composer.pDefaultSamplerBlender;
+                if (((PassBlend.texcoordSwapper) === null)) {
+                    PassBlend.texcoordSwapper = new fx.TexcoordSwapper();
+                }
+                this._pTexcoordSwapper = PassBlend.texcoordSwapper;
+            }
+            PassBlend.prototype.getGuid = /** @inline */function () {
+                return this._iGuid;
+            };
+            PassBlend.texcoordSwapper = null;
+            PassBlend.prototype.initFromPassList = function (pPassList) {
+                for(var i = 0; i < pPassList.length; i++) {
+                    if (!this.addPass(pPassList[i])) {
+                        return false;
+                    }
+                }
+                if (!this.finalizeBlend()) {
+                    return false;
+                }
+                return true;
+            };
+            PassBlend.prototype.generateShaderProgram = function (pPassInput, pSurfaceMaterial, pBuffer) {
+                // var pSamplerBlender: SamplerBlender = this._pDefaultSamplerBlender;
+                pPassInput.setSurfaceMaterial(pSurfaceMaterial);
+                var sSamplerPartHash = this.prepareSamplers(pPassInput);
+                var sMaterialPartHash = ((((pSurfaceMaterial)) === null) ? "" : (pSurfaceMaterial)._getHash());
+                var sBufferPartHash = this.prepareBufferMap(pBuffer);
+                var sTotalHash = sSamplerPartHash + sMaterialPartHash + sBufferPartHash;
+                var pProgram = ((this)._pShaderProgramByHashMap[(sTotalHash)] || null);
+                if (((pProgram) === null)) {
+                    ((this)._pTexcoordSwapper.generateSwapCode((pSurfaceMaterial), (this)._pAttributeContainerV));
+                    /*not inlined, because supportes only single statement functions(cur. st. count: 5)*/this.generateShaderCode();
+                }
+                akra.logger.setSourceLocation("fx/PassBlend.ts", 139);
+                akra.logger.log("generateShaderProgram. HASH: ", sTotalHash, ((this._pTexcoordSwapper)._sTexToTmpCode), ((this._pTexcoordSwapper)._sTmpToTexCode));
+                ;
+                // LOG(this._pAttributeContainerV);
+                akra.logger.setSourceLocation("fx/PassBlend.ts", 141);
+                akra.logger.log(pBuffer, pBuffer.toString());
+                ;
+                return null;
+            };
+            PassBlend.prototype.getProgramByHash = /** @inline */function (sHash) {
+                return this._pShaderProgramByHashMap[sHash] || null;
+            };
+            PassBlend.prototype.finalizeBlend = function () {
+                if (!this.finalizeBlendForVertex()) {
+                    return false;
+                }
+                if (!this.finalizeBlendForPixel()) {
+                    return false;
+                }
+                return true;
+            };
+            PassBlend.prototype.addPass = function (pPass) {
+                var pVertex = pPass.getVertexShader();
+                var pPixel = pPass.getPixelShader();
+                var pForeignMap = null;
+                var pGlobalMap = null;
+                var pSharedMap = null;
+                var pUniformMap = null;
+                var pTextureMap = null;
+                var pAttributeMap = null;
+                var pVaryingMap = null;
+                var pComplexTypeMap = null;
+                var pForeignKeys = null;
+                var pGlobalKeys = null;
+                var pSharedKeys = null;
+                var pUniformKeys = null;
+                var pTextureKeys = null;
+                var pAttributeKeys = null;
+                var pVaryingKeys = null;
+                var pComplexTypeKeys = null;
+                var pForeign = null;
+                var pGlobal = null;
+                var pShared = null;
+                var pUniform = null;
+                var pTexture = null;
+                var pAttribute = null;
+                var pVarying = null;
+                var pComplexType = null;
+                var pUsedFunctionList = null;
+                var pUsedFunction = null;
+                if (!((pVertex) === null)) {
+                    this._hasEmptyVertex = false;
+                    //blend system data
+                    this._pExtSystemDataV.addFromFunction(pVertex);
+                    //blend foreigns
+                    pForeignMap = pVertex._getForeignVariableMap();
+                    pForeignKeys = pVertex._getForeignVariableKeys();
+                    if (!((pForeignKeys) === null)) {
+                        for(var i = 0; i < pForeignKeys.length; i++) {
+                            pForeign = pForeignMap[pForeignKeys[i]];
+                            if (!this._pForeignContainerV.addVariable(pForeign, 3 /* k_Foreign */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 212);
+                                akra.logger.error("Could not add foreign variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //blend globals
+                    pGlobalMap = pVertex._getGlobalVariableMap();
+                    pGlobalKeys = pVertex._getGlobalVariableKeys();
+                    if (!((pGlobalKeys) === null)) {
+                        for(var i = 0; i < pGlobalKeys.length; i++) {
+                            pGlobal = pGlobalMap[pGlobalKeys[i]];
+                            if (!this._pGlobalContainerV.addVariable(pGlobal, 4 /* k_Global */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 227);
+                                akra.logger.error("Could not add global variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //blend shareds
+                    pSharedMap = pVertex._getSharedVariableMap();
+                    pSharedKeys = pVertex._getSharedVariableKeys();
+                    if (!((pSharedKeys) === null)) {
+                        for(var i = 0; i < pSharedKeys.length; i++) {
+                            pShared = pSharedMap[pSharedKeys[i]];
+                            if (!this._pSharedContainerV.addVariable(pShared, 0 /* k_Shared */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 242);
+                                akra.logger.error("Could not add shared variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //TODO: blend uniforms
+                    pUniformMap = pVertex._getUniformVariableMap();
+                    pUniformKeys = pVertex._getUniformVariableKeys();
+                    if (!((pUniformKeys) === null)) {
+                        for(var i = 0; i < pUniformKeys.length; i++) {
+                            pUniform = pUniformMap[pUniformKeys[i]];
+                            if (((pUniform) === null)) {
+                                continue;
+                            }
+                            if (!this._pUniformContainerV.addVariable(pUniform, 1 /* k_Uniform */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 261);
+                                akra.logger.error("Could not add uniform variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //TODO: blend textures
+                    pTextureMap = pVertex._getTextureVariableMap();
+                    pTextureKeys = pVertex._getTextureVariableKeys();
+                    if (!((pTextureKeys) === null)) {
+                        for(var i = 0; i < pTextureKeys.length; i++) {
+                            pTexture = pTextureMap[pTextureKeys[i]];
+                            if (((pTexture) === null)) {
+                                continue;
+                            }
+                            this._pTextureMapV[pTexture.getRealName()] = true;
+                        }
+                    }
+                    //TODO: blend attributes
+                    pAttributeMap = pVertex._getAttributeVariableMap();
+                    pAttributeKeys = pVertex._getAttributeVariableKeys();
+                    if (!((pAttributeKeys) === null)) {
+                        for(var i = 0; i < pAttributeKeys.length; i++) {
+                            pAttribute = pAttributeMap[pAttributeKeys[i]];
+                            if (!((this._pAttributeContainerV).addVariable((pAttribute), 2 /* k_Attribute */ ))) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 293);
+                                akra.logger.error("Could not add attribute variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //TODO: blend varyings
+                    pVaryingMap = pVertex._getVaryingVariableMap();
+                    pVaryingKeys = pVertex._getVaryingVariableKeys();
+                    if (!((pVaryingKeys) === null)) {
+                        for(var i = 0; i < pVaryingKeys.length; i++) {
+                            pVarying = pVaryingMap[pVaryingKeys[i]];
+                            if (!this._pVaryingContainerV.addVariable(pVarying, 5 /* k_Varying */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 308);
+                                akra.logger.error("Could not add varying variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //blend used type
+                    pComplexTypeMap = pVertex._getUsedComplexTypeMap();
+                    pComplexTypeKeys = pVertex._getUsedComplexTypeKeys();
+                    if (!((pComplexTypeKeys) === null)) {
+                        for(var i = 0; i < pComplexTypeKeys.length; i++) {
+                            pComplexType = pComplexTypeMap[pComplexTypeKeys[i]];
+                            if (!this._pComplexTypeContainerV.addComplexType(pComplexType)) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 323);
+                                akra.logger.error("Could not add type declaration");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //blend used functions
+                    pUsedFunctionList = pVertex._getUsedFunctionList();
+                    if (!((pUsedFunctionList) === null)) {
+                        for(var i = 0; i < pUsedFunctionList.length; i++) {
+                            pUsedFunction = pUsedFunctionList[i];
+                            if (this._pUsedFunctionListV.indexOf(pUsedFunction) === -1) {
+                                this._pUsedFunctionListV.push(pUsedFunction);
+                            }
+                        }
+                    }
+                    var pVertexOut = pVertex.getReturnType().getBaseType();
+                    this._pVertexOutType = this._pVertexOutType.blend(pVertexOut, 7 /* k_VertexOut */ );
+                    this._pPassFunctionListV.push(pVertex);
+                }
+                if (!((pPixel) === null)) {
+                    this._hasEmptyPixel = false;
+                    //blend system data
+                    this._pExtSystemDataP.addFromFunction(pPixel);
+                    //blend foreigns
+                    pForeignMap = pPixel._getForeignVariableMap();
+                    pForeignKeys = pPixel._getForeignVariableKeys();
+                    if (!((pForeignKeys) === null)) {
+                        for(var i = 0; i < pForeignKeys.length; i++) {
+                            pForeign = pForeignMap[pForeignKeys[i]];
+                            if (!this._pForeignContainerP.addVariable(pForeign, 3 /* k_Foreign */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 362);
+                                akra.logger.error("Could not add foreign variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //blend globals
+                    pGlobalMap = pPixel._getGlobalVariableMap();
+                    pGlobalKeys = pPixel._getGlobalVariableKeys();
+                    if (!((pGlobalKeys) === null)) {
+                        for(var i = 0; i < pGlobalKeys.length; i++) {
+                            pGlobal = pGlobalMap[pGlobalKeys[i]];
+                            if (!this._pGlobalContainerP.addVariable(pGlobal, 4 /* k_Global */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 377);
+                                akra.logger.error("Could not add global variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //blend shareds
+                    pSharedMap = pPixel._getSharedVariableMap();
+                    pSharedKeys = pPixel._getSharedVariableKeys();
+                    if (!((pSharedKeys) === null)) {
+                        for(var i = 0; i < pSharedKeys.length; i++) {
+                            pShared = pSharedMap[pSharedKeys[i]];
+                            if (!this._pSharedContainerP.addVariable(pShared, 0 /* k_Shared */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 392);
+                                akra.logger.error("Could not add shared variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //TODO: blend uniforms
+                    pUniformMap = pPixel._getUniformVariableMap();
+                    pUniformKeys = pPixel._getUniformVariableKeys();
+                    if (!((pUniformKeys) === null)) {
+                        for(var i = 0; i < pUniformKeys.length; i++) {
+                            pUniform = pUniformMap[pUniformKeys[i]];
+                            if (((pUniform) === null)) {
+                                continue;
+                            }
+                            if (!this._pUniformContainerP.addVariable(pUniform, 1 /* k_Uniform */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 411);
+                                akra.logger.error("Could not add uniform variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //TODO: blend textures
+                    pTextureMap = pPixel._getTextureVariableMap();
+                    pTextureKeys = pPixel._getTextureVariableKeys();
+                    if (!((pTextureKeys) === null)) {
+                        for(var i = 0; i < pTextureKeys.length; i++) {
+                            pTexture = pTextureMap[pTextureKeys[i]];
+                            if (((pTexture) === null)) {
+                                continue;
+                            }
+                            this._pTextureMapP[pTexture.getRealName()] = true;
+                        }
+                    }
+                    //TODO: blend varyings
+                    pVaryingMap = pPixel._getVaryingVariableMap();
+                    pVaryingKeys = pPixel._getVaryingVariableKeys();
+                    if (!((pVaryingKeys) === null)) {
+                        for(var i = 0; i < pVaryingKeys.length; i++) {
+                            pVarying = pVaryingMap[pVaryingKeys[i]];
+                            if (!this._pVaryingContainerP.addVariable(pVarying, 5 /* k_Varying */ )) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 442);
+                                akra.logger.error("Could not add varying variable");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //blend used type
+                    pComplexTypeMap = pPixel._getUsedComplexTypeMap();
+                    pComplexTypeKeys = pPixel._getUsedComplexTypeKeys();
+                    if (!((pComplexTypeKeys) === null)) {
+                        for(var i = 0; i < pComplexTypeKeys.length; i++) {
+                            pComplexType = pComplexTypeMap[pComplexTypeKeys[i]];
+                            if (!this._pComplexTypeContainerP.addComplexType(pComplexType)) {
+                                akra.logger.setSourceLocation("fx/PassBlend.ts", 457);
+                                akra.logger.error("Could not add type declaration");
+                                ;
+                                return false;
+                            }
+                        }
+                    }
+                    //blend used functions
+                    pUsedFunctionList = pPixel._getUsedFunctionList();
+                    if (!((pUsedFunctionList) === null)) {
+                        for(var i = 0; i < pUsedFunctionList.length; i++) {
+                            pUsedFunction = pUsedFunctionList[i];
+                            if (this._pUsedFunctionListP.indexOf(pUsedFunction) === -1) {
+                                this._pUsedFunctionListP.push(pUsedFunction);
+                            }
+                        }
+                    }
+                    this._pPassFunctionListP.push(pPixel);
+                }
+                return true;
+            };
+            PassBlend.prototype.finalizeBlendForVertex = function () {
+                if (this._hasEmptyVertex) {
+                    return true;
+                }
+                if (!this.finalizeComplexTypeForShader(0 /* k_Vertex */ )) {
+                    return false;
+                }
+                this._pAttributeContainerV.clear();
+                return true;
+            };
+            PassBlend.prototype.finalizeBlendForPixel = function () {
+                if (this._hasEmptyPixel) {
+                    return true;
+                }
+                if (!this.finalizeComplexTypeForShader(1 /* k_Pixel */ )) {
+                    return false;
+                }
+                return true;
+            };
+            PassBlend.prototype.finalizeComplexTypeForShader = function (eType) {
+                var pTypeContainer = null;
+                var pUniformContainer = null;
+                var pGlobalContainer = null;
+                var pSharedContainer = null;
+                var pUsedFunctions = null;
+                var pAttributeContainer = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pTypeContainer = this._pComplexTypeContainerV;
+                    pUniformContainer = this._pUniformContainerV;
+                    pGlobalContainer = this._pGlobalContainerV;
+                    pSharedContainer = this._pSharedContainerV;
+                    pUsedFunctions = this._pUsedFunctionListV;
+                    pAttributeContainer = this._pAttributeContainerV;
+                } else if (eType === 1 /* k_Pixel */ ) {
+                    pTypeContainer = this._pComplexTypeContainerP;
+                    pUniformContainer = this._pUniformContainerP;
+                    pGlobalContainer = this._pGlobalContainerP;
+                    pSharedContainer = this._pSharedContainerP;
+                    pUsedFunctions = this._pUsedFunctionListP;
+                }
+                if (!pTypeContainer.addFromVarConatiner(pUniformContainer) || !pTypeContainer.addFromVarConatiner(pGlobalContainer) || !pTypeContainer.addFromVarConatiner(pSharedContainer) || !pTypeContainer.addFromVarConatiner(pAttributeContainer)) {
+                    return false;
+                }
+                if (eType === 0 /* k_Vertex */ ) {
+                    pTypeContainer.addComplexType(this._pVertexOutType);
+                }
+                for(var i = 0; i < pUsedFunctions.length; i++) {
+                    var pReturnBaseType = pUsedFunctions[i].getReturnType().getBaseType();
+                    if (pReturnBaseType.isComplex()) {
+                        if (!pTypeContainer.addComplexType(pReturnBaseType)) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            };
+            PassBlend.prototype.hasUniform = /** @inline */function (pVar) {
+                return ((this)._pUniformContainerV.hasVariableWithName((pVar.getRealName())) || (this)._pUniformContainerP.hasVariableWithName((pVar.getRealName())));
+            };
+            PassBlend.prototype.hasUniformWithName = /** @inline */function (sName) {
+                return this._pUniformContainerV.hasVariableWithName(sName) || this._pUniformContainerP.hasVariableWithName(sName);
+            };
+            PassBlend.prototype.getUniformByName = /** @inline */function (sName) {
+                return ((this._pUniformContainerV).hasVariableWithName((sName)) ? (this._pUniformContainerV)._pVarListMap[(sName)][0] : null) || ((this._pUniformContainerP).hasVariableWithName((sName)) ? (this._pUniformContainerP)._pVarListMap[(sName)][0] : null);
+            };
+            PassBlend.prototype.prepareSamplers = function (pPassInput) {
+                var pBlender = this._pDefaultSamplerBlender;
+                pBlender.clear();
+                //Gum samplers
+                var pSamplers = pPassInput.samplers;
+                var pSamplerKeys = pPassInput.samplerKeys;
+                for(var i = 0; i < pSamplerKeys.length; i++) {
+                    var sName = pSamplerKeys[i];
+                    if (!((this)._pUniformContainerV.hasVariableWithName((sName)) || (this)._pUniformContainerP.hasVariableWithName((sName)))) {
+                        continue;
+                    }
+                    var pSampler = ((((this)._pUniformContainerV).hasVariableWithName(((sName))) ? ((this)._pUniformContainerV)._pVarListMap[((sName))][0] : null) || (((this)._pUniformContainerP).hasVariableWithName(((sName))) ? ((this)._pUniformContainerP)._pVarListMap[((sName))][0] : null));
+                    var pSamplerState = pSamplers[sName];
+                    var pTexture = pPassInput._getTextureForSamplerState(pSamplerState);
+                    if (((pTexture) === null)) {
+                        (/*not inlined, because supportes only single statement functions(cur. st. count: 5)*/pBlender._pSlotList[pBlender._pIdToSlotMap[(0)]].push((pSampler)));
+                    } else {
+                        pBlender.addTextureSlot(pTexture.getGuid());
+                        (/*not inlined, because supportes only single statement functions(cur. st. count: 5)*/pBlender._pSlotList[pBlender._pIdToSlotMap[(pTexture.getGuid())]].push((pSampler)));
+                    }
+                }
+                //Gum sampler arrays
+                var pSamplerArrays = pPassInput.samplerArrays;
+                var pSamplerArrayKeys = pPassInput.samplerArrayKeys;
+                for(var i = 0; i < pSamplerArrayKeys.length; i++) {
+                    var sName = pSamplerArrayKeys[i];
+                    if (!((this)._pUniformContainerV.hasVariableWithName((sName)) || (this)._pUniformContainerP.hasVariableWithName((sName)))) {
+                        continue;
+                    }
+                    var pSamplerStateList = pSamplerArrays[sName];
+                    var isNeedToCollapse = true;
+                    var pTexture = null;
+                    for(var j = 0; j < pSamplerStateList.length; j++) {
+                        if (j === 0) {
+                            pTexture = pPassInput._getTextureForSamplerState(pSamplerStateList[i]);
+                        } else {
+                            if (pTexture !== pPassInput._getTextureForSamplerState(pSamplerStateList[i])) {
+                                isNeedToCollapse = false;
+                            }
+                        }
+                    }
+                    if (isNeedToCollapse) {
+                        var pSamplerArray = ((((this)._pUniformContainerV).hasVariableWithName(((sName))) ? ((this)._pUniformContainerV)._pVarListMap[((sName))][0] : null) || (((this)._pUniformContainerP).hasVariableWithName(((sName))) ? ((this)._pUniformContainerP)._pVarListMap[((sName))][0] : null));
+                        if (((pTexture) === null)) {
+                            (/*not inlined, because supportes only single statement functions(cur. st. count: 5)*/pBlender._pSlotList[pBlender._pIdToSlotMap[(0)]].push((pSamplerArray)));
+                        } else {
+                            pBlender.addTextureSlot(pTexture.getGuid());
+                            (/*not inlined, because supportes only single statement functions(cur. st. count: 5)*/pBlender._pSlotList[pBlender._pIdToSlotMap[(pTexture.getGuid())]].push((pSamplerArray)));
+                        }
+                    }
+                }
+                return pBlender.getHash();
+            };
+            PassBlend.prototype.prepareSurfaceMaterial = /** @inline */function (pMaterial) {
+                return ((pMaterial) === null) ? "" : pMaterial._getHash();
+            };
+            PassBlend.prototype.prepareBufferMap = function (pMap) {
+                this._pAttributeContainerV.initFromBufferMap(pMap);
+                return ((this._pAttributeContainerV)._sHash);
+            };
+            PassBlend.prototype.swapTexcoords = /** @inline */function (pMaterial) {
+                this._pTexcoordSwapper.generateSwapCode(pMaterial, this._pAttributeContainerV);
+            };
+            PassBlend.prototype.isSamplerUsedInShader = function (pSampler, eType) {
+                return (eType === 0 /* k_Vertex */  && ((this._pUniformContainerV).hasVariableWithName((pSampler).getRealName()))) || (eType === 1 /* k_Pixel */  && ((this._pUniformContainerP).hasVariableWithName((pSampler).getRealName())));
+            };
+            PassBlend.prototype.generateShaderCode = /** @inline */function () {
+                var sVertexCode = "";
+                var sPixelCode = "";
+                // this.setAttributes();
+                this.reduceSamplers();
+                this.reduceAttributes();
+            };
+            PassBlend.prototype.reduceSamplers = function () {
+                var pSamplerBlender = this._pDefaultSamplerBlender;
+                var iTotalSlots = (pSamplerBlender._nActiveSlots);
+                var sUniformSamplerCodeV = "";
+                var sUniformSamplerCodeP = "";
+                for(var i = 0; i < iTotalSlots; i++) {
+                    var pSamplers = (((pSamplerBlender)._pSlotList)[(i)]);
+                    var isInVertex = false;
+                    var isInPixel = false;
+                    for(var j = 0; j < (pSamplers._iLength); j++) {
+                        if (i === 0) {
+                            (pSamplers._pData[(j)]).defineByZero(true);
+                        }
+                        if (this.isSamplerUsedInShader((pSamplers._pData[(j)]), 0 /* k_Vertex */ )) {
+                            isInVertex = true;
+                        }
+                        if (this.isSamplerUsedInShader((pSamplers._pData[(j)]), 1 /* k_Pixel */ )) {
+                            isInPixel = true;
+                        }
+                    }
+                    var sSamplerName = "as" + i.toString();
+                    if (isInVertex) {
+                        sUniformSamplerCodeV += "uniform " + (pSamplers._pData[(0)]).getType().getBaseType().getRealName() + " " + sSamplerName + ";";
+                    }
+                    if (isInPixel) {
+                        sUniformSamplerCodeP += "uniform " + (pSamplers._pData[(0)]).getType().getBaseType().getRealName() + " " + sSamplerName + ";";
+                    }
+                }
+                this._sUniformSamplerCodeV = sUniformSamplerCodeV;
+                this._sUniformSamplerCodeP = sUniformSamplerCodeP;
+            };
+            PassBlend.prototype.reduceAttributes = function () {
+                var pAttributeContainer = this._pAttributeContainerV;
+                var sAttrDeclCode = "";
+                var pSemantics = (((pAttributeContainer)._pVarKeys));
+                //1) set zero buffer maps for strict pointers attributes
+                for(var i = 0; i < pSemantics.length; i++) {
+                    var sSemantic = pSemantics[i];
+                    var pFlow = (pAttributeContainer._pFlowsBySemanticMap[(sSemantic)]);
+                    var pAttributeType = (((pAttributeContainer)._pVarBlendTypeMap[((sSemantic))]));
+                    if (((pFlow) === null) && pAttributeType.isStrictPointer()) {
+                        pAttributeType.getVideoBuffer().defineByZero(true);
+                    }
+                }
+                //2) gnerate real attrs
+                var iTotalSlots = (((pAttributeContainer._pFlowBySlots)._iLength));
+                for(var i = 0; i < iTotalSlots; i++) {
+                    var sAttrName = "aa" + i.toString();
+                    var pFlow = (((pAttributeContainer._pFlowBySlots)._pData[((i))]));
+                    var pType = (((pAttributeContainer._pTypesBySlots)._pData[((i))]));
+                    sAttrDeclCode += "attribute " + pType.toFinalCode() + " " + sAttrName + ";";
+                }
+                //3) generate all needed shader vertex input declarations
+                //4) set real attrs to shader vertex input
+                //5) generate samplers for vertexTextures
+                this._sAttrDeclCode = sAttrDeclCode;
+            };
+            PassBlend.prototype.generateSystemData = function (eType) {
+                var pExtBlock = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pExtBlock = this._pExtSystemDataV;
+                } else {
+                    pExtBlock = this._pExtSystemDataP;
+                }
+                var sCode = "";
+                var pMacroses = (pExtBlock._pExtSystemMacrosList);
+                var pTypes = (pExtBlock._pExtSystemTypeList);
+                var pFunctions = (pExtBlock._pExtSystemFunctionList);
+                for(var i = 0; i < pMacroses.length; i++) {
+                    sCode += pMacroses[i].toFinalCode() + "\n";
+                }
+                for(var i = 0; i < pTypes.length; i++) {
+                    sCode += pTypes[i].toFinalCode() + "\n";
+                }
+                for(var i = 0; i < pFunctions.length; i++) {
+                    sCode += pFunctions[i].toFinalCode() + "\n";
+                }
+                return sCode;
+            };
+            PassBlend.prototype.generateTypeDels = function (eType) {
+                var pTypeBlock = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pTypeBlock = this._pComplexTypeContainerV;
+                } else {
+                    pTypeBlock = this._pComplexTypeContainerP;
+                }
+                var sCode = "";
+                var pKeys = (pTypeBlock._pTypeKeys);
+                var pTypes = (pTypeBlock._pTypeListMap);
+                for(var i = 0; i < pKeys.length; i++) {
+                    sCode += pTypes[pKeys[i]]._toDeclString() + ";\n";
+                }
+                return sCode;
+            };
+            PassBlend.prototype.generateFunctionDefenitions = function (eType) {
+                var pFunctions = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pFunctions = this._pUsedFunctionListV;
+                } else {
+                    pFunctions = this._pUsedFunctionListP;
+                }
+                var sCode = "";
+                for(var i = 0; i < pFunctions.length; i++) {
+                    sCode += pFunctions[i].toFinalDefCode() + ";\n";
+                }
+                return sCode;
+            };
+            PassBlend.prototype.generateSharedVars = function (eType) {
+                var pVars = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pVars = this._pSharedContainerV;
+                } else {
+                    pVars = this._pSharedContainerP;
+                }
+                var sCode = "";
+                var pKeys = (pVars._pVarKeys);
+                for(var i = 0; i < pKeys.length; i++) {
+                    sCode += (((pVars)._pVarBlendTypeMap[((pKeys[i]))]).toFinalCode() + " " + (pKeys[i])) + ";\n";
+                }
+                return sCode;
+            };
+            PassBlend.prototype.generateVertexOut = function () {
+                return this._pVertexOutType._toDeclString() + " Out";
+            };
+            PassBlend.prototype.generateVaryings = function (eType) {
+                var pVars = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pVars = this._pVaryingContainerV;
+                } else {
+                    pVars = this._pVaryingContainerP;
+                }
+                var sCode = "";
+                var pKeys = (pVars._pVarKeys);
+                for(var i = 0; i < pKeys.length; i++) {
+                    sCode += "varying " + (((pVars)._pVarBlendTypeMap[((pKeys[i]))]).toFinalCode() + " " + (pKeys[i])) + ";\n";
+                }
+                return sCode;
+            };
+            PassBlend.prototype.generateUniformVars = function (eType) {
+                var pVars = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pVars = this._pUniformContainerV;
+                } else {
+                    pVars = this._pUniformContainerP;
+                }
+                var sCode = "";
+                var pKeys = (pVars._pVarKeys);
+                for(var i = 0; i < pKeys.length; i++) {
+                    if ((pVars._pVarBlendTypeMap[(pKeys[i])]).isSampler()) {
+                        continue;
+                    }
+                    sCode += "uniform " + (((pVars)._pVarBlendTypeMap[((pKeys[i]))]).toFinalCode() + " " + (pKeys[i])) + ";\n";
+                }
+                return sCode;
+            };
+            PassBlend.prototype.generateGlobalVars = // private generateUniformSamplers(eType: EFunctionType): string {
+            // 	var pSamplerBlender: I = null;
+            // 	if(eType === EFunctionType.k_Vertex){
+            // 		pVars = this._pUniformContainerV;
+            // 	}
+            // 	else {
+            // 		pVars = this._pUniformContainerP;
+            // 	}
+            // 	var sCode: string = "";
+            // 	var pKeys = pVars.keys;
+            // 	for(var i: uint = 0; i < pKeys.length; i++){
+            // 		if(pVars.getBlendType(pKeys[i]).isSampler()){
+            // 			continue;
+            // 		}
+            // 		sCode += "uniform " + pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+            // 	}
+            // 	return sCode;
+            // }
+            function (eType) {
+                var pVars = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pVars = this._pGlobalContainerV;
+                } else {
+                    pVars = this._pGlobalContainerP;
+                }
+                var sCode = "";
+                var pKeys = (pVars._pVarKeys);
+                for(var i = 0; i < pKeys.length; i++) {
+                    sCode += (((pVars)._pVarBlendTypeMap[((pKeys[i]))]).toFinalCode() + " " + (pKeys[i])) + ";\n";
+                }
+                return sCode;
+            };
+            PassBlend.prototype.generateFunctions = function (eType) {
+                var pFunctions = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pFunctions = this._pUsedFunctionListV;
+                } else {
+                    pFunctions = this._pUsedFunctionListP;
+                }
+                var sCode = "";
+                for(var i = 0; i < pFunctions.length; i++) {
+                    sCode += pFunctions[i].toFinalCode() + ";\n";
+                }
+                return sCode;
+            };
+            PassBlend.prototype.generatePassFunctions = function (eType) {
+                var pFunctions = null;
+                if (eType === 0 /* k_Vertex */ ) {
+                    pFunctions = this._pPassFunctionListV;
+                } else {
+                    pFunctions = this._pPassFunctionListP;
+                }
+                var sCode = "";
+                for(var i = 0; i < pFunctions.length; i++) {
+                    sCode += pFunctions[i].toFinalCode() + ";\n";
+                }
+                return sCode;
+            };
+            PassBlend.prototype.generateAttributes = function () {
+                return "";
+            };
+            return PassBlend;
+        })();
+        fx.PassBlend = PassBlend;        
+        // private inline setAttributes()
+            })(akra.fx || (akra.fx = {}));
+    var fx = akra.fx;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (fx) {
+        (function (EShaderVariableType) {
+            EShaderVariableType._map = [];
+            EShaderVariableType.k_NotVar = 0;
+            EShaderVariableType.k_Texture = 2;
+            EShaderVariableType._map[3] = "k_Float";
+            EShaderVariableType.k_Float = 3;
+            EShaderVariableType._map[4] = "k_Int";
+            EShaderVariableType.k_Int = 4;
+            EShaderVariableType._map[5] = "k_Bool";
+            EShaderVariableType.k_Bool = 5;
+            EShaderVariableType._map[6] = "k_Float2";
+            EShaderVariableType.k_Float2 = 6;
+            EShaderVariableType._map[7] = "k_Int2";
+            EShaderVariableType.k_Int2 = 7;
+            EShaderVariableType._map[8] = "k_Bool2";
+            EShaderVariableType.k_Bool2 = 8;
+            EShaderVariableType._map[9] = "k_Float3";
+            EShaderVariableType.k_Float3 = 9;
+            EShaderVariableType._map[10] = "k_Int3";
+            EShaderVariableType.k_Int3 = 10;
+            EShaderVariableType._map[11] = "k_Bool3";
+            EShaderVariableType.k_Bool3 = 11;
+            EShaderVariableType._map[12] = "k_Float4";
+            EShaderVariableType.k_Float4 = 12;
+            EShaderVariableType._map[13] = "k_Int4";
+            EShaderVariableType.k_Int4 = 13;
+            EShaderVariableType._map[14] = "k_Bool4";
+            EShaderVariableType.k_Bool4 = 14;
+            EShaderVariableType._map[15] = "k_Float2x2";
+            EShaderVariableType.k_Float2x2 = 15;
+            EShaderVariableType._map[16] = "k_Float3x3";
+            EShaderVariableType.k_Float3x3 = 16;
+            EShaderVariableType._map[17] = "k_Float4x4";
+            EShaderVariableType.k_Float4x4 = 17;
+            EShaderVariableType._map[18] = "k_Sampler2D";
+            EShaderVariableType.k_Sampler2D = 18;
+            EShaderVariableType._map[19] = "k_SamplerCUBE";
+            EShaderVariableType.k_SamplerCUBE = 19;
+            EShaderVariableType._map[20] = "k_CustomSystem";
+            EShaderVariableType.k_CustomSystem = 20;
+            EShaderVariableType._map[21] = "k_Complex";
+            EShaderVariableType.k_Complex = 21;
+        })(fx.EShaderVariableType || (fx.EShaderVariableType = {}));
+        var EShaderVariableType = fx.EShaderVariableType;
+        var PassInputBlend = (function () {
+            function PassInputBlend(pCreator) {
+                this._isFirstInit = true;
+                this._pCreator = null;
+                this._pUniformTypeMap = null;
+                this._isUniformArrayMap = null;
+                this._pForeignTypeMap = null;
+                this._pTextureTypeMap = null;
+                this._bNeedToCalcBlend = true;
+                this._bNeedToCalcShader = true;
+                this._iLastPassBlendId = 0;
+                this._iLastShaderId = 0;
+                this.samplers = null;
+                this.samplerArrays = null;
+                this.samplerArrayLength = null;
+                this.uniforms = null;
+                this.foreigns = null;
+                this.textures = null;
+                this.samplerKeys = null;
+                this.samplerArrayKeys = null;
+                this.uniformKeys = null;
+                this.foreignKeys = null;
+                this.textureKeys = null;
+                this._pCreator = pCreator;
+                this.init();
+            }
+            PassInputBlend.prototype.hasTexture = function (sName) {
+                if (!this._pTextureTypeMap[sName]) {
+                    this._pTextureTypeMap[sName] = 0 /* k_NotVar */ ;
+                    return false;
+                }
+                return true;
+            };
+            PassInputBlend.prototype.setUniform = function (sName, pValue) {
+                if (!this._pUniformTypeMap[sName]) {
+                    this._pUniformTypeMap[sName] = 0 /* k_NotVar */ ;
+                    return;
+                }
+                //Check type
+                this.uniforms[sName] = pValue;
+            };
+            PassInputBlend.prototype.setForeign = function (sName, pValue) {
+                if (!this._pForeignTypeMap[sName]) {
+                    this._pForeignTypeMap[sName] = 0 /* k_NotVar */ ;
+                    return;
+                }
+                //Check type
+                var pOldValue = this.foreigns[sName];
+                if (pOldValue !== pValue) {
+                    this._bNeedToCalcBlend = true;
+                    this._bNeedToCalcShader = true;
+                }
+                this.foreigns[sName] = pOldValue;
+            };
+            PassInputBlend.prototype.setTexture = function (sName, pValue) {
+                if (!this._pTextureTypeMap[sName]) {
+                    this._pTextureTypeMap[sName] = 0 /* k_NotVar */ ;
+                    return;
+                }
+                //Check type
+                this.textures[sName] = pValue;
+            };
+            PassInputBlend.prototype.setSamplerTexture = function (sName, pTexture) {
+                // if(!this._pHasUniformName[sName]){
+                // 	this._pHasUniformName[sName] = false;
+                // 	return;
+                // }
+                // var pOldValue: any =  this.uniforms[sName].texture;
+                // if(pOldValue !== pTexture) {
+                // 	this._bNeedToCalcShader = true;
+                // }
+                // this.uniforms[sName].texture = pTexture;
+                            };
+            PassInputBlend.prototype.setSurfaceMaterial = function (pMaterial) {
+                //TODO: apply surface material
+                            };
+            PassInputBlend.prototype._getTextureForSamplerState = function (pSamplerState) {
+                var pTexture = null;
+                if (!((pSamplerState.texture) === null)) {
+                    pTexture = pSamplerState.texture;
+                } else if (pSamplerState.textureName !== "") {
+                    if (this.hasTexture(pSamplerState.textureName)) {
+                        pTexture = this.textures[pSamplerState.textureName];
+                    }
+                }
+                return pTexture;
+            };
+            PassInputBlend.prototype._release = function () {
+                for(var i = 0; i < this.uniformKeys.length; i++) {
+                    this.uniforms[this.uniformKeys[i]] = null;
+                }
+                for(var i = 0; i < this.foreignKeys.length; i++) {
+                    this.foreigns[this.foreignKeys[i]] = null;
+                }
+                for(var i = 0; i < this.textureKeys.length; i++) {
+                    this.textures[this.textureKeys[i]] = null;
+                }
+                for(var i = 0; i < this.samplerKeys.length; i++) {
+                    this.clearSamplerState(this.samplers[this.samplerKeys[i]]);
+                }
+                for(var i = 0; i < this.samplerArrayKeys.length; i++) {
+                    var pStateList = this.samplerArrays[this.samplerArrayKeys[i]];
+                    for(var j = 0; j < pStateList.length; j++) {
+                        this.clearSamplerState(pStateList[j]);
+                    }
+                    this.samplerArrayLength[this.samplerArrayKeys[i]] = 0;
+                }
+                this._pCreator.releasePassInput(this);
+                this._bNeedToCalcShader = true;
+                this._bNeedToCalcBlend = true;
+            };
+            PassInputBlend.prototype._isNeedToCalcBlend = /** @inline */function () {
+                return this._bNeedToCalcBlend;
+            };
+            PassInputBlend.prototype._isNeedToCalcShader = /** @inline */function () {
+                return this._bNeedToCalcBlend || this._bNeedToCalcShader;
+            };
+            PassInputBlend.prototype._getLastPassBlendId = /** @inline */function () {
+                return this._iLastPassBlendId;
+            };
+            PassInputBlend.prototype._getLastShaderId = /** @inline */function () {
+                return this._iLastShaderId;
+            };
+            PassInputBlend.prototype._setPassBlendId = /** @inline */function (id) {
+                this._iLastPassBlendId = id;
+            };
+            PassInputBlend.prototype._setShaderId = /** @inline */function (id) {
+                this._iLastShaderId = id;
+            };
+            PassInputBlend.prototype.init = function () {
+                this._pUniformTypeMap = {};
+                this._isUniformArrayMap = {};
+                this._pForeignTypeMap = {};
+                this._pTextureTypeMap = {};
+                this.samplers = {};
+                this.samplerArrays = {};
+                this.samplerArrayLength = {};
+                this.uniforms = {};
+                this.foreigns = {};
+                this.textures = {};
+                var pUniformKeys = this._pCreator.uniformRealNameList;
+                var pForeignKeys = this._pCreator.foreignNameList;
+                var pTextureKeys = this._pCreator.textureRealNameList;
+                var pUniformMap = this._pCreator.uniformByRealName;
+                var pForeignMap = this._pCreator.foreignByName;
+                var pTextureMap = this._pCreator.textureByRealName;
+                var eType = 0;
+                var sName = "";
+                var isArray = false;
+                for(var i = 0; i < pUniformKeys.length; i++) {
+                    sName = pUniformKeys[i];
+                    eType = this.getVariableType(pUniformMap[sName]);
+                    isArray = ((pUniformMap[sName]).getType().isNotBaseArray());
+                    this._pUniformTypeMap[sName] = eType;
+                    this._isUniformArrayMap[sName] = isArray;
+                    if (eType === 18 /* k_Sampler2D */  || eType === 19 /* k_SamplerCUBE */ ) {
+                        if (isArray) {
+                            this.samplerArrays[sName] = new Array(16);
+                            this.samplerArrayLength[sName] = 0;
+                            for(var j = 0; j < this.samplerArrays[sName].length; j++) {
+                                this.samplerArrays[sName][j] = ({
+textureName: "",
+texture: null,
+wrap_s: 0,
+wrap_t: 0,
+mag_filter: 0,
+min_filter: 0
+});
+                            }
+                        } else {
+                            this.samplers[sName] = ({
+textureName: "",
+texture: null,
+wrap_s: 0,
+wrap_t: 0,
+mag_filter: 0,
+min_filter: 0
+});
+                        }
+                    } else {
+                        this.uniforms[sName] = null;
+                    }
+                }
+                for(var i = 0; i < pForeignKeys.length; i++) {
+                    sName = pForeignKeys[i];
+                    eType = this.getVariableType(pForeignMap[sName]);
+                    this._pForeignTypeMap[sName] = eType;
+                    this.foreigns[sName] = null;
+                }
+                for(var i = 0; i < pTextureKeys.length; i++) {
+                    sName = pTextureKeys[i];
+                    eType = 2 /* k_Texture */ ;
+                    this._pTextureTypeMap[sName] = eType;
+                    this.textures[sName] = null;
+                }
+                this.samplerKeys = Object.keys(this.samplers);
+                this.samplerArrayKeys = Object.keys(this.samplerArrays);
+                this.uniformKeys = Object.keys(this.uniforms);
+                this.foreignKeys = Object.keys(this.foreigns);
+                this.textureKeys = Object.keys(this.textures);
+            };
+            PassInputBlend.prototype.getVariableType = function (pVar) {
+                var sBaseType = pVar.getType().getBaseType().getName();
+                switch(sBaseType) {
+                    case "texture":
+                        return 2 /* k_Texture */ ;
+                    case "float":
+                        return 3 /* k_Float */ ;
+                    case "int":
+                        return 4 /* k_Int */ ;
+                    case "bool":
+                        return 5 /* k_Bool */ ;
+                    case "float2":
+                        return 6 /* k_Float2 */ ;
+                    case "int2":
+                        return 7 /* k_Int2 */ ;
+                    case "bool2":
+                        return 8 /* k_Bool2 */ ;
+                    case "float3":
+                        return 9 /* k_Float3 */ ;
+                    case "int3":
+                        return 10 /* k_Int3 */ ;
+                    case "bool3":
+                        return 11 /* k_Bool3 */ ;
+                    case "float4":
+                        return 12 /* k_Float4 */ ;
+                    case "int4":
+                        return 13 /* k_Int4 */ ;
+                    case "bool4":
+                        return 14 /* k_Bool4 */ ;
+                    case "float2x2":
+                        return 15 /* k_Float2x2 */ ;
+                    case "float3x3":
+                        return 16 /* k_Float3x3 */ ;
+                    case "float4x4":
+                        return 17 /* k_Float4x4 */ ;
+                    case "sampler":
+                    case "sampler2D":
+                        return 18 /* k_Sampler2D */ ;
+                    case "samplerCUBE":
+                        return 19 /* k_SamplerCUBE */ ;
+                    default:
+                        return 0 /* k_NotVar */ ;
+                }
+            };
+            PassInputBlend.prototype.isVarArray = /** @inline */function (pVar) {
+                return pVar.getType().isNotBaseArray();
+            };
+            PassInputBlend.prototype.createSamplerState = /** @inline */function () {
+                return {
+                    textureName: "",
+                    texture: null,
+                    wrap_s: 0,
+                    wrap_t: 0,
+                    mag_filter: 0,
+                    min_filter: 0
+                };
+            };
+            PassInputBlend.prototype.clearSamplerState = function (pState) {
+                pState.textureName = "";
+                pState.texture = null;
+                pState.wrap_s = 0;
+                pState.wrap_t = 0;
+                pState.mag_filter = 0;
+                pState.min_filter = 0;
+            };
+            return PassInputBlend;
+        })();
+        fx.PassInputBlend = PassInputBlend;        
+    })(akra.fx || (akra.fx = {}));
+    var fx = akra.fx;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (fx) {
         var ComponentBlend = (function () {
             function ComponentBlend(pComposer) {
+                /**@protected*/ this._iGuid = akra.sid();
                 this._pComposer = null;
                 this._isReady = false;
                 this._sHash = "";
                 this._bNeedToUpdateHash = false;
-                this._pComponentCountMap = null;
+                this._pComponentHashMap = null;
                 this._pComponentList = null;
                 this._pComponentShiftList = null;
-                this._pComponentPassNumberList = null;
+                this._pComponentPassIdList = null;
                 this._iShiftMin = 0;
                 this._iShiftMax = 0;
                 this._pPassesDList = null;
-                this._pShaderInputVarBlend = null;
+                this._pComponentInputVarBlend = null;
                 this._pComposer = pComposer;
-                this._pComponentCountMap = {};
+                this._pComponentHashMap = {};
                 this._pComponentList = [];
                 this._pComponentShiftList = [];
-                this._pComponentPassNumberList = [];
+                this._pComponentPassIdList = [];
             }
+            ComponentBlend.prototype.getGuid = /** @inline */function () {
+                return this._iGuid;
+            };
             ComponentBlend.prototype.isReadyToUse = /** @inline */function () {
                 return this._isReady;
+            };
+            ComponentBlend.prototype.isEmpty = /** @inline */function () {
+                return this._pComponentList.length === 0;
             };
             ComponentBlend.prototype.getComponentCount = /** @inline */function () {
                 return this._pComponentList.length;
@@ -47157,19 +52477,15 @@ var akra;
                 return this._sHash;
             };
             ComponentBlend.prototype.containComponentWithShift = /** @inline */function (pComponent, iShift, iPass) {
-                return ((((this)._pComponentCountMap[(pComponent.getHash(iShift, iPass))]) !== undefined) && (this)._pComponentCountMap[(pComponent.getHash(iShift, iPass))] > 0);
+                return (((this)._pComponentHashMap[(pComponent.getHash(iShift, iPass))]));
             };
             ComponentBlend.prototype.containComponentHash = /** @inline */function (sComponentHash) {
-                return ((this._pComponentCountMap[sComponentHash]) !== undefined) && this._pComponentCountMap[sComponentHash] > 0;
+                return (this._pComponentHashMap[sComponentHash]);
             };
             ComponentBlend.prototype.addComponent = function (pComponent, iShift, iPass) {
                 var sComponentHash = pComponent.getHash(iShift, iPass);
                 var iPassCount = pComponent.getTotalPasses();
                 if (iPass === 0xffffff) {
-                    if (!((((this)._pComponentCountMap[(sComponentHash)]) !== undefined) && (this)._pComponentCountMap[(sComponentHash)] > 0)) {
-                        this._pComponentCountMap[sComponentHash] = 0;
-                    }
-                    this._pComponentCountMap[sComponentHash]++;
                     for(var i = 0; i < iPassCount; i++) {
                         this.addComponent(pComponent, iShift + i, i);
                     }
@@ -47178,10 +52494,8 @@ var akra;
                     return;
                 }
                 var sComponentHash = pComponent.getHash(iShift, iPass);
-                if (((((this)._pComponentCountMap[(sComponentHash)]) !== undefined) && (this)._pComponentCountMap[(sComponentHash)] > 0)) {
-                    this._pComponentCountMap[sComponentHash]++;
-                    this._bNeedToUpdateHash = true;
-                    akra.logger.setSourceLocation("fx/ComponentBlend.ts", 94);
+                if ((((this)._pComponentHashMap[(sComponentHash)]))) {
+                    akra.logger.setSourceLocation("fx/ComponentBlend.ts", 93);
                     akra.logger.warning("You try to add already used component '" + sComponentHash + "' in blend.");
                     ;
                     return;
@@ -47192,24 +52506,23 @@ var akra;
                 if (iShift > this._iShiftMax) {
                     this._iShiftMax = iShift;
                 }
-                this._pComponentCountMap[sComponentHash] = 1;
+                this._pComponentHashMap[sComponentHash] = true;
                 this._pComponentList.push(pComponent);
                 this._pComponentShiftList.push(iShift);
-                this._pComponentPassNumberList.push(iPass);
+                this._pComponentPassIdList.push(iPass);
                 this._isReady = false;
                 this._bNeedToUpdateHash = true;
             };
             ComponentBlend.prototype.removeComponent = function (pComponent, iShift, iPass) {
                 var sComponentHash = pComponent.getHash(iShift, iPass);
                 var iPassCount = pComponent.getTotalPasses();
-                if (!((((this)._pComponentCountMap[(sComponentHash)]) !== undefined) && (this)._pComponentCountMap[(sComponentHash)] > 0)) {
-                    akra.logger.setSourceLocation("fx/ComponentBlend.ts", 122);
+                if (!(((this)._pComponentHashMap[(sComponentHash)]))) {
+                    akra.logger.setSourceLocation("fx/ComponentBlend.ts", 120);
                     akra.logger.warning("You try to remove not used component '" + sComponentHash + "' from blend.");
                     ;
                     return;
                 }
                 if (iPass === 0xffffff) {
-                    this._pComponentCountMap[sComponentHash]--;
                     for(var i = 0; i < iPassCount; i++) {
                         this.removeComponent(pComponent, iShift + i, i);
                     }
@@ -47217,20 +52530,12 @@ var akra;
                 } else if (iPass < 0 || iPass >= iPassCount) {
                     return;
                 }
-                if (this._pComponentCountMap[sComponentHash] > 1) {
-                    this._pComponentCountMap[sComponentHash]--;
-                    this._bNeedToUpdateHash = true;
-                    akra.logger.setSourceLocation("fx/ComponentBlend.ts", 143);
-                    akra.logger.warning("You try to remove component '" + sComponentHash + "' from blend. But it used more then 1 time.");
-                    ;
-                    return;
-                }
-                this._pComponentCountMap[sComponentHash] = 0;
+                this._pComponentHashMap[sComponentHash] = false;
                 for(var i = 0; i < this._pComponentList.length; i++) {
-                    if (this._pComponentList[i] === pComponent && this._pComponentShiftList[i] === iShift && this._pComponentPassNumberList[i] === iPass) {
+                    if (this._pComponentList[i] === pComponent && this._pComponentShiftList[i] === iShift && this._pComponentPassIdList[i] === iPass) {
                         this._pComponentList.splice(i, 1);
                         this._pComponentShiftList.splice(i, 1);
-                        this._pComponentPassNumberList.splice(i, 1);
+                        this._pComponentPassIdList.splice(i, 1);
                         break;
                     }
                 }
@@ -47254,37 +52559,64 @@ var akra;
                     return true;
                 }
                 this._pPassesDList = [];
-                this._pShaderInputVarBlend = [];
+                this._pComponentInputVarBlend = [];
                 for(var i = 0; i < this._pComponentList.length; i++) {
                     var pComponentTechnique = this._pComponentList[i].getTechnique();
                     var iShift = this._pComponentShiftList[i] - this._iShiftMin;
-                    var iPass = this._pComponentPassNumberList[i];
+                    var iPass = this._pComponentPassIdList[i];
                     var pPass = pComponentTechnique.getPass(iPass);
                     if (!((this._pPassesDList[iShift]) !== undefined)) {
                         this._pPassesDList[iShift] = [];
-                        this._pShaderInputVarBlend[iShift] = new ShaderInputBlend();
+                        this._pComponentInputVarBlend[iShift] = new ComponentPassInputBlend();
                     }
                     this._pPassesDList[iShift].push(pPass);
-                    this._pShaderInputVarBlend[iShift].addDataFromPass(pPass);
+                    this._pComponentInputVarBlend[iShift].addDataFromPass(pPass);
                 }
-                for(var i = 0; i < this._pShaderInputVarBlend.length; i++) {
-                    this._pShaderInputVarBlend[i].generateKeys();
+                for(var i = 0; i < this._pComponentInputVarBlend.length; i++) {
+                    this._pComponentInputVarBlend[i].finalizeInput();
                 }
                 this._isReady = true;
                 return true;
             };
+            ComponentBlend.prototype.getPassInputForPass = function (iPass) {
+                if (!this._isReady) {
+                    return null;
+                }
+                if (iPass < 0 || iPass > (!(((this)._pPassesDList) === null) ? (this)._pPassesDList.length : 0)) {
+                    return null;
+                }
+                return this._pComponentInputVarBlend[iPass].getPassInput();
+            };
+            ComponentBlend.prototype.getPassListAtPass = function (iPass) {
+                if (!this._isReady) {
+                    return null;
+                }
+                if (iPass < 0 || iPass > (!(((this)._pPassesDList) === null) ? (this)._pPassesDList.length : 0)) {
+                    return null;
+                }
+                return this._pPassesDList[iPass];
+            };
             ComponentBlend.prototype.clone = function () {
                 var pClone = new ComponentBlend(this._pComposer);
-                pClone._setDataForClone(this._pComponentList, this._pComponentShiftList, this._pComponentPassNumberList, this._pComponentCountMap, this._iShiftMin, this._iShiftMax);
+                pClone._setDataForClone(this._pComponentList, this._pComponentShiftList, this._pComponentPassIdList, this._pComponentHashMap, this._iShiftMin, this._iShiftMax);
                 return pClone;
             };
-            ComponentBlend.prototype._setDataForClone = function (pComponentList, pComponentShiftList, pComponentPassNumnerList, pComponentCountMap, iShiftMin, iShiftMax) {
+            ComponentBlend.prototype._getComponentList = /** @inline */function () {
+                return this._pComponentList;
+            };
+            ComponentBlend.prototype._getComponentShiftList = /** @inline */function () {
+                return this._pComponentShiftList;
+            };
+            ComponentBlend.prototype._getComponentPassIdList = /** @inline */function () {
+                return this._pComponentPassIdList;
+            };
+            ComponentBlend.prototype._setDataForClone = function (pComponentList, pComponentShiftList, pComponentPassNumnerList, pComponentHashMap, iShiftMin, iShiftMax) {
                 for(var i = 0; i < pComponentList.length; i++) {
                     this._pComponentList.push(pComponentList[i]);
                     this._pComponentShiftList.push(pComponentShiftList[i]);
-                    this._pComponentPassNumberList.push(pComponentPassNumnerList[i]);
+                    this._pComponentPassIdList.push(pComponentPassNumnerList[i]);
                     var sComponentHash = pComponentList[i].getHash(pComponentShiftList[i], pComponentPassNumnerList[i]);
-                    this._pComponentCountMap[sComponentHash] = pComponentCountMap[sComponentHash];
+                    this._pComponentHashMap[sComponentHash] = pComponentHashMap[sComponentHash];
                 }
                 this._iShiftMin = iShiftMin;
                 this._iShiftMax = iShiftMax;
@@ -47292,17 +52624,20 @@ var akra;
             };
             ComponentBlend.prototype.calcHash = function () {
                 var sHash = "";
+                if (((this)._pComponentList.length === 0)) {
+                    return "EMPTY_BLEND";
+                }
                 for(var i = 0; i < this._pComponentList.length; i++) {
-                    var sComponentHash = this._pComponentList[i].getHash(this._pComponentShiftList[i], this._pComponentPassNumberList[i]);
-                    sHash += sComponentHash + ":" + this._pComponentCountMap[sComponentHash].toString() + ":";
+                    var sComponentHash = this._pComponentList[i].getHash(this._pComponentShiftList[i], this._pComponentPassIdList[i]);
+                    sHash += sComponentHash + ":";
                 }
                 return sHash;
             };
             return ComponentBlend;
         })();
         fx.ComponentBlend = ComponentBlend;        
-        var ShaderInputBlend = (function () {
-            function ShaderInputBlend() {
+        var ComponentPassInputBlend = (function () {
+            function ComponentPassInputBlend() {
                 this._pUniformNameToRealMap = null;
                 this._pUniformByRealNameMap = null;
                 this._pUniformDefaultValueMap = null;
@@ -47314,6 +52649,7 @@ var akra;
                 this._pTextureRealNameList = null;
                 this._pTextureNameList = null;
                 this._pForeignNameList = null;
+                this._pFreePassInputBlendList = null;
                 this._pUniformNameToRealMap = {};
                 this._pUniformByRealNameMap = {};
                 this._pUniformDefaultValueMap = {};
@@ -47338,84 +52674,84 @@ var akra;
                 };
                 this._pForeignByNameMap = {};
             }
-            Object.defineProperty(ShaderInputBlend.prototype, "uniformNameToReal", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "uniformNameToReal", {
                 get: /** @inline */function () {
                     return this._pUniformNameToRealMap;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "uniformByRealName", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "uniformByRealName", {
                 get: /** @inline */function () {
                     return this._pUniformByRealNameMap;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "uniformDefaultValue", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "uniformDefaultValue", {
                 get: /** @inline */function () {
                     return this._pUniformDefaultValueMap;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "textureNameToReal", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "textureNameToReal", {
                 get: /** @inline */function () {
                     return this._pTextureNameToRealMap;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "textureByRealName", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "textureByRealName", {
                 get: /** @inline */function () {
                     return this._pTextureByRealNameMap;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "foreignByName", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "foreignByName", {
                 get: /** @inline */function () {
                     return this._pForeignByNameMap;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "uniformNameList", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "uniformNameList", {
                 get: /** @inline */function () {
                     return this._pUniformNameList;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "uniformRealNameList", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "uniformRealNameList", {
                 get: /** @inline */function () {
                     return this._pUniformRealNameList;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "textureNameList", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "textureNameList", {
                 get: /** @inline */function () {
                     return this._pTextureNameList;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "textureRealNameList", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "textureRealNameList", {
                 get: /** @inline */function () {
                     return this._pTextureRealNameList;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(ShaderInputBlend.prototype, "foreignNameList", {
+            Object.defineProperty(ComponentPassInputBlend.prototype, "foreignNameList", {
                 get: /** @inline */function () {
                     return this._pForeignNameList;
                 },
                 enumerable: true,
                 configurable: true
             });
-            ShaderInputBlend.prototype.addDataFromPass = function (pPass) {
+            ComponentPassInputBlend.prototype.addDataFromPass = function (pPass) {
                 var pUniformMap = pPass._getFullUniformMap();
                 var pForeignMap = pPass._getFullForeignMap();
                 var pTextureMap = pPass._getFullTextureMap();
@@ -47434,14 +52770,25 @@ var akra;
                     this.addUniformVariable(pVar, "", "");
                 }
             };
-            ShaderInputBlend.prototype.generateKeys = function () {
+            ComponentPassInputBlend.prototype.finalizeInput = function () {
                 this._pUniformNameList = Object.keys(this._pUniformNameToRealMap);
                 this._pUniformRealNameList = Object.keys(this._pUniformByRealNameMap);
                 this._pTextureNameList = Object.keys(this._pTextureNameToRealMap);
                 this._pTextureRealNameList = Object.keys(this._pTextureByRealNameMap);
                 this._pForeignNameList = Object.keys(this._pForeignByNameMap);
+                this._pFreePassInputBlendList = [];
+                this.generateNewPassInputs();
             };
-            ShaderInputBlend.prototype.addUniformVariable = function (pVariable, sPrevName, sPrevRealName) {
+            ComponentPassInputBlend.prototype.getPassInput = function () {
+                if (this._pFreePassInputBlendList.length === 0) {
+                    this.generateNewPassInputs();
+                }
+                return this._pFreePassInputBlendList.pop();
+            };
+            ComponentPassInputBlend.prototype.releasePassInput = function (pInput) {
+                this._pFreePassInputBlendList.push(pInput);
+            };
+            ComponentPassInputBlend.prototype.addUniformVariable = function (pVariable, sPrevName, sPrevRealName) {
                 var sName = "";
                 var sRealName = "";
                 if (sPrevName !== "") {
@@ -47456,7 +52803,7 @@ var akra;
                 }
                 var pHasVar = this._pUniformByRealNameMap[sRealName];
                 if (((pHasVar) !== undefined) && !pHasVar.getType().isEqual(pVariable.getType())) {
-                    akra.logger.setSourceLocation("fx/ComponentBlend.ts", 409);
+                    akra.logger.setSourceLocation("fx/ComponentBlend.ts", 452);
                     akra.logger.warning("You used uniforms with the same real-names. Now we don`t work very well with that.");
                     ;
                     return;
@@ -47473,11 +52820,606 @@ var akra;
                     }
                 }
             };
-            return ShaderInputBlend;
+            ComponentPassInputBlend.prototype.generateNewPassInputs = function (nCount) {
+                if (typeof nCount === "undefined") { nCount = 5; }
+                for(var i = 0; i < nCount; i++) {
+                    var pPassInput = new fx.PassInputBlend(this);
+                    this._pFreePassInputBlendList.push(pPassInput);
+                }
+            };
+            return ComponentPassInputBlend;
         })();
-        fx.ShaderInputBlend = ShaderInputBlend;        
+        fx.ComponentPassInputBlend = ComponentPassInputBlend;        
     })(akra.fx || (akra.fx = {}));
     var fx = akra.fx;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (fx) {
+        var Blender = (function () {
+            function Blender(pComposer) {
+                this._pComposer = null;
+                this._pComponentBlendByHashMap = null;
+                this._pBlendWithComponentMap = null;
+                this._pBlendWithBlendMap = null;
+                this._pPassBlendByHashMap = null;
+                this._pPassBlendByIdMap = null;
+                this._pComposer = pComposer;
+                this._pComponentBlendByHashMap = {};
+                this._pBlendWithComponentMap = {};
+                this._pBlendWithBlendMap = {};
+                this._pPassBlendByHashMap = {};
+                this._pPassBlendByIdMap = {};
+            }
+            Blender.prototype.addComponentToBlend = function (pComponentBlend, pComponent, iShift, iPass) {
+                var sBlendPartHash = ((pComponentBlend) != null) ? pComponentBlend.getGuid().toString() : "";
+                var sComponentPartHash = pComponent.getHash(iShift, iPass);
+                var sShortHash = sBlendPartHash + "+" + sComponentPartHash;
+                if (((this._pBlendWithComponentMap[sShortHash]) !== undefined)) {
+                    return this._pBlendWithComponentMap[sShortHash];
+                }
+                var pNewBlend = null;
+                if (((pComponentBlend) === null)) {
+                    pNewBlend = new fx.ComponentBlend(this._pComposer);
+                } else {
+                    pNewBlend = pComponentBlend.clone();
+                }
+                var pTechnique = pComponent.getTechnique();
+                var pTechComponentList = pTechnique.getFullComponentList();
+                var pTechComponentShiftList = pTechnique.getFullComponentShiftList();
+                if (iPass === 0xffffff) {
+                    if (!((pTechComponentList) === null)) {
+                        for(var i = 0; i < pTechComponentList.length; i++) {
+                            pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, 0xffffff);
+                        }
+                    }
+                    pNewBlend.addComponent(pComponent, iShift, 0xffffff);
+                } else {
+                    if (!((pTechComponentList) === null)) {
+                        for(var i = 0; i < pTechComponentList.length; i++) {
+                            pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
+                        }
+                    }
+                    pNewBlend.addComponent(pComponent, iShift, iPass);
+                }
+                this._pBlendWithComponentMap[sShortHash] = pNewBlend;
+                var sNewBlendHash = pNewBlend.getHash();
+                if (((this._pComponentBlendByHashMap[sNewBlendHash]) !== undefined)) {
+                    return this._pComponentBlendByHashMap[sNewBlendHash];
+                } else {
+                    this._pComponentBlendByHashMap[sNewBlendHash] = pNewBlend;
+                }
+                return pNewBlend;
+            };
+            Blender.prototype.removeComponentFromBlend = function (pComponentBlend, pComponent, iShift, iPass) {
+                if (((pComponentBlend) === null)) {
+                    akra.logger.setSourceLocation("fx/Blender.ts", 95);
+                    akra.logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from empty blend.");
+                    ;
+                    return null;
+                }
+                var sBlendPartHash = ((pComponentBlend) != null) ? pComponentBlend.getGuid().toString() : "";
+                var sComponentPartHash = pComponent.getHash(iShift, iPass);
+                var sShortHash = sBlendPartHash + "-" + sComponentPartHash;
+                if (((this._pBlendWithComponentMap[sShortHash]) !== undefined)) {
+                    return this._pBlendWithComponentMap[sShortHash];
+                }
+                if (!pComponentBlend.containComponentHash(sComponentPartHash)) {
+                    akra.logger.setSourceLocation("fx/Blender.ts", 109);
+                    akra.logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from blend that not contain it.");
+                    ;
+                    return null;
+                }
+                var pNewBlend = pComponentBlend.clone();
+                var pTechnique = pComponent.getTechnique();
+                var pTechComponentList = pTechnique.getFullComponentList();
+                var pTechComponentShiftList = pTechnique.getFullComponentShiftList();
+                if (iPass === 0xffffff) {
+                    if (!((pTechComponentList) === null)) {
+                        for(var i = 0; i < pTechComponentList.length; i++) {
+                            pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, 0xffffff);
+                        }
+                    }
+                    pNewBlend.removeComponent(pComponent, iShift, 0xffffff);
+                } else {
+                    if (!((pTechComponentList) === null)) {
+                        for(var i = 0; i < pTechComponentList.length; i++) {
+                            pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
+                        }
+                    }
+                    pNewBlend.removeComponent(pComponent, iShift, iPass);
+                }
+                this._pBlendWithComponentMap[sShortHash] = pNewBlend;
+                var sNewBlendHash = pNewBlend.getHash();
+                if (((this._pComponentBlendByHashMap[sNewBlendHash]) !== undefined)) {
+                    return this._pComponentBlendByHashMap[sNewBlendHash];
+                } else {
+                    this._pComponentBlendByHashMap[sNewBlendHash] = pNewBlend;
+                }
+                return pNewBlend;
+            };
+            Blender.prototype.addBlendToBlend = function (pComponentBlend, pAddBlend, iShift) {
+                if (((pComponentBlend) === null)) {
+                    return pAddBlend;
+                }
+                if (((pAddBlend) === null)) {
+                    return pComponentBlend;
+                }
+                var sShortHash = pComponentBlend.getGuid().toString() + "+" + pAddBlend.getGuid().toString();
+                if (((this._pBlendWithBlendMap[sShortHash]) !== undefined)) {
+                    return this._pBlendWithBlendMap[sShortHash];
+                }
+                var pNewBlend = pComponentBlend.clone();
+                var pAddComponentList = pAddBlend._getComponentList();
+                var pAddComponentShiftList = pAddBlend._getComponentShiftList();
+                var pAddComponentPassIdList = pAddBlend._getComponentPassIdList();
+                for(var i = 0; i < pAddComponentList.length; i++) {
+                    pNewBlend.addComponent(pAddComponentList[i], pAddComponentShiftList[i] + iShift, pAddComponentPassIdList[i]);
+                }
+                this._pBlendWithBlendMap[sShortHash] = pNewBlend;
+                var sNewBlendHash = pNewBlend.getHash();
+                if (((this._pComponentBlendByHashMap[sNewBlendHash]) !== undefined)) {
+                    return this._pComponentBlendByHashMap[sNewBlendHash];
+                } else {
+                    this._pComponentBlendByHashMap[sNewBlendHash] = pNewBlend;
+                }
+                return pNewBlend;
+            };
+            Blender.prototype.generatePassBlend = function (pPassList, pStates, pForeigns, pUniforms) {
+                var sPassBlendHash = "";
+                for(var i = 0; i < pPassList.length; i++) {
+                    var pPass = pPassList[i];
+                    pPass.evaluate({
+                        mesh: {
+                            isSkinning: true
+                        },
+                        lights: {
+                            omni: true,
+                            project: true,
+                            omniShadows: true,
+                            projectShadows: true
+                        }
+                    }, null, null);
+                    var pVertexShader = pPass.getVertexShader();
+                    var pPixelShader = pPass.getPixelShader();
+                    if (!((pVertexShader) === null)) {
+                        sPassBlendHash += pVertexShader.getGuid().toString() + ":";
+                    } else {
+                        sPassBlendHash += "E:";
+                    }
+                    if (!((pPixelShader) === null)) {
+                        sPassBlendHash += pPixelShader.getGuid().toString() + ":";
+                    } else {
+                        sPassBlendHash += "E:";
+                    }
+                }
+                if (((this._pPassBlendByHashMap[sPassBlendHash]) !== undefined)) {
+                    return this._pPassBlendByHashMap[sPassBlendHash];
+                }
+                var pNewPassBlend = new fx.PassBlend(this._pComposer);
+                var isOk = pNewPassBlend.initFromPassList(pPassList);
+                if (!isOk) {
+                    return null;
+                }
+                this._pPassBlendByHashMap[sPassBlendHash] = pNewPassBlend;
+                this._pPassBlendByIdMap[pNewPassBlend.getGuid()] = pNewPassBlend;
+                return pNewPassBlend;
+            };
+            Blender.prototype.getPassBlendById = /** @inline */function (id) {
+                return this._pPassBlendByIdMap[id] || null;
+            };
+            return Blender;
+        })();
+        fx.Blender = Blender;        
+    })(akra.fx || (akra.fx = {}));
+    var fx = akra.fx;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
+        var BufferMap = (function (_super) {
+            __extends(BufferMap, _super);
+            function BufferMap(pEngine) {
+                        _super.call(this);
+                this._pFlows = null;
+                this._pMappers = null;
+                this._pIndex = null;
+                this._nLength = 0;
+                this._pCompleteFlows = null;
+                this._nCompleteFlows = 0;
+                this._nCompleteVideoBuffers = 0;
+                this._pCompleteVideoBuffers = null;
+                this._nUsedFlows = 0;
+                this._pEngine = null;
+                this._nStartIndex = 0;
+                this._pBuffersCompatibleMap = null;
+                this._pEngine = pEngine;
+                this.reset();
+            }
+            Object.defineProperty(BufferMap.prototype, "primType", {
+                get: /** @inline */function () {
+                    return this._pIndex ? this._pIndex.getPrimitiveType() : this._ePrimitiveType;
+                },
+                set: /** @inline */function (eType) {
+                    this._ePrimitiveType = eType;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "primCount", {
+                get: /** @inline */function () {
+                    return akra.data.IndexData.getPrimitiveCount(((this)._pIndex ? (this)._pIndex.getPrimitiveType() : (this)._ePrimitiveType), (((this)._pIndex ? (this)._pIndex.length : (this)._nLength)));
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "index", {
+                get: /** @inline */function () {
+                    return this._pIndex;
+                },
+                set: /** @inline */function (pIndexData) {
+                    if (this._pIndex === pIndexData) {
+                        return;
+                    }
+                    this._pIndex = pIndexData;
+                    this.update();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "limit", {
+                get: /** @inline */function () {
+                    return this._pFlows.length;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "length", {
+                get: /** @inline */function () {
+                    return (this._pIndex ? this._pIndex.length : this._nLength);
+                },
+                set: /** @inline */function (nLength) {
+                    this._nLength = Math.min(this._nLength, nLength);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "_length", {
+                set: /** @inline */function (nLength) {
+                    this._nLength = nLength;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "startIndex", {
+                get: /** @inline */function () {
+                    return this._nStartIndex;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "size", {
+                get: /** @inline */function () {
+                    return this._nCompleteFlows;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "flows", {
+                get: /** @inline */function () {
+                    return this._pCompleteFlows;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "mappers", {
+                get: /** @inline */function () {
+                    return this._pMappers;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BufferMap.prototype, "offset", {
+                get: /** @inline */function () {
+                    return (this._pIndex ? this._pIndex.byteOffset : 0);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            BufferMap.prototype._draw = function () {
+                // this._pEngine.getComposer().applyBufferMap(this);
+                // this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
+                ((this._pIndex) === null) ? (((((this)._pEngine.getRenderer()))._pWebGLContext).drawArrays(/*checked (origin: akra)>>*/akra.webgl.getWebGLPrimitiveType((this)._ePrimitiveType), (this)._nStartIndex, (this)._nLength)) : (((((this)._pEngine.getRenderer()))._pWebGLContext).drawElements((/*checked (origin: akra)>>*/akra.data.IndexData.getPrimitiveCount(((((this)))._pIndex ? (((this)))._pIndex.getPrimitiveType() : (((this)))._ePrimitiveType), (((((this)))._pIndex ? (((this)))._pIndex.length : (((this)))._nLength)))), (this)._pIndex.getPrimitiveCount(), /*checked (origin: akra)>>*/akra.webgl.getWebGLPrimitiveType((this)._pIndex.getPrimitiveType()), (this)._pIndex.byteOffset / 4));
+            };
+            BufferMap.prototype.drawArrays = /** @inline */function () {
+                (((this._pEngine.getRenderer()))._pWebGLContext).drawArrays(akra.webgl.getWebGLPrimitiveType(this._ePrimitiveType), this._nStartIndex, this._nLength);
+            };
+            BufferMap.prototype.drawElements = /** @inline */function () {
+                (((this._pEngine.getRenderer()))._pWebGLContext).drawElements((/*checked (origin: akra)>>*/akra.data.IndexData.getPrimitiveCount((((this))._pIndex ? ((this))._pIndex.getPrimitiveType() : ((this))._ePrimitiveType), ((((this))._pIndex ? ((this))._pIndex.length : ((this))._nLength)))), this._pIndex.getPrimitiveCount(), akra.webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()), this._pIndex.byteOffset / 4);
+                //FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
+                            };
+            BufferMap.prototype.getFlow = function (iFlow, bComplete) {
+                if (typeof bComplete === "undefined") { bComplete = true; }
+                if ((typeof (arguments[0]) === "string")) {
+                    var nTotal;
+                    var pFlows;
+                    if (bComplete) {
+                        pFlows = this._pCompleteFlows;
+                        nTotal = this._nCompleteFlows;
+                    } else {
+                        pFlows = this._pFlows;
+                        nTotal = this._pFlows.length;
+                    }
+                    for(var i = 0; i < nTotal; ++i) {
+                        if (!pFlows[i].data) {
+                            continue;
+                        }
+                        if (pFlows[i].data.hasSemantics(arguments[0])) {
+                            return pFlows[i];
+                        }
+                    }
+                    return null;
+                }
+                if (bComplete) {
+                    for(var i = 0, pFlows = this._pCompleteFlows; i < this._nCompleteFlows; ++i) {
+                        if (pFlows[i].flow == iFlow) {
+                            return pFlows[i];
+                        }
+                    }
+                    return null;
+                }
+                return this._pFlows[iFlow];
+            };
+            BufferMap.prototype.reset = function () {
+                this._pIndex = null;
+                this._ePrimitiveType = 4 /* TRIANGLELIST */ ;
+                var nFlowLimit = 16;
+                /*webgl.maxVertexTextureImageUnits*/
+                nFlowLimit = Math.min(16, akra.webgl.maxVertexAttributes);
+                this._pMappers = [];
+                this._pFlows = new Array(nFlowLimit);
+                for(var i = 0; i < nFlowLimit; i++) {
+                    this._pFlows[i] = {
+                        flow: i,
+                        data: null,
+                        type: 0 /* UNMAPPABLE */ ,
+                        mapper: null
+                    };
+                }
+                this._nLength = akra.MAX_INT32;
+                this._pCompleteFlows = new Array(nFlowLimit);
+                this._nCompleteFlows = 0;
+                this._nStartIndex = akra.MAX_INT32;
+                this._pBuffersCompatibleMap = {};
+                this._pCompleteVideoBuffers = new Array(nFlowLimit);
+                this._nCompleteVideoBuffers = 0;
+                this._nUsedFlows = 0;
+            };
+            BufferMap.prototype.flow = function (iFlow, pData) {
+                var pFlow = null;
+                var pVertexData = null;
+                if (arguments.length < 2) {
+                    pVertexData = arguments[0];
+                    iFlow = (this._nUsedFlows++);
+                }
+                // trace(iFlow, '<<==', pVertexData.getVertexDeclaration().toString());
+                // console.log((new Error).stack);
+                pFlow = this._pFlows[iFlow];
+                util.logger.setSourceLocation("util/BufferMap.ts", 224);
+                util.logger.assert(iFlow < ((this)._pFlows.length), 'Invalid strem. Maximum allowable number of stream ' + ((this)._pFlows.length) + '.');
+                ;
+                if (!pVertexData || pFlow.data === pVertexData) {
+                    return -1;
+                }
+                if (((pVertexData.buffer).type === 1 /* VBO */ )) {
+                    pFlow.type = 0 /* UNMAPPABLE */ ;
+                    ((this)._nLength = Math.min((this)._nLength, (pVertexData.length)));
+                    //this.startIndex = pVertexData.getStartIndex();
+                    util.logger.setSourceLocation("util/BufferMap.ts", 235);
+                    util.logger.assert(this.checkData(pVertexData), 'You can use several unmappable data flows from one buffer.');
+                    ;
+                    this.pushEtalon(pVertexData);
+                } else {
+                    pFlow.type = 1 /* MAPPABLE */ ;
+                }
+                pFlow.data = pVertexData;
+                return this.update() ? iFlow : -1;
+            };
+            BufferMap.prototype.checkData = function (pData) {
+                var pEtalon = this._pBuffersCompatibleMap[pData.getBufferHandle()];
+                if (!pEtalon || pEtalon.byteOffset === pData.byteOffset) {
+                    return true;
+                }
+                return false;
+            };
+            BufferMap.prototype.findMapping = /**@protected*/ function (pMap, eSemantics, iAddition) {
+                util.logger.setSourceLocation("util/BufferMap.ts", 257);
+                util.logger.assert(this.checkData(pMap), 'You can use several different maps from one buffer.');
+                ;
+                for(var i = 0, pMappers = this._pMappers, pExistsMap; i < pMappers.length; i++) {
+                    pExistsMap = pMappers[i].data;
+                    if (pExistsMap === pMap) {
+                        //если уже заданные маппинг менял свой стартовый индекс(например при расширении)
+                        //то необходимо сменить стартовый индекс на новый
+                        if (pMappers[i].semantics === eSemantics && pMappers[i].addition == iAddition) {
+                            return pMappers[i];
+                        }
+                    } else {
+                        util.logger.setSourceLocation("util/BufferMap.ts", 269);
+                        util.logger.assert(pExistsMap.getStartIndex() === pMap.getStartIndex(), 'You can not use maps with different indexing');
+                        ;
+                    }
+                }
+                return null;
+            };
+            BufferMap.prototype.mapping = function (iFlow, pMap, eSemantics, iAddition) {
+                if (typeof iAddition === "undefined") { iAddition = 0; }
+                var pMapper = this.findMapping(pMap, eSemantics, iAddition);
+                var pFlow = this._pFlows[iFlow];
+                util.logger.setSourceLocation("util/BufferMap.ts", 281);
+                util.logger.assert(((pFlow.data) != null) && (pFlow.type === 1 /* MAPPABLE */ ), 'Cannot mapping empty/unmappable flow.');
+                ;
+                util.logger.setSourceLocation("util/BufferMap.ts", 282);
+                util.logger.assert(((pMap) !== undefined), 'Passed empty mapper.');
+                ;
+                if (!eSemantics) {
+                    eSemantics = pMap.getVertexDeclaration()[0].eUsage;
+                } else if (pMap.hasSemantics(eSemantics) === false) {
+                    util.logger.setSourceLocation("util/BufferMap.ts", 288);
+                    util.logger.error('Passed mapper does not have semantics: ' + eSemantics + '.');
+                    ;
+                    return false;
+                }
+                if (pMapper) {
+                    if (pFlow.mapper === pMapper) {
+                        return pMapper.semantics === eSemantics && pMapper.addition === iAddition ? true : false;
+                    }
+                } else {
+                    pMapper = {
+                        data: pMap,
+                        semantics: eSemantics,
+                        addition: iAddition
+                    };
+                    this._pMappers.push(pMapper);
+                    ((this)._nLength = Math.min((this)._nLength, (pMap.length)));
+                    //this.startIndex = pMap.getStartIndex();
+                    this.pushEtalon(pMap);
+                }
+                pFlow.mapper = pMapper;
+                return this.update();
+            };
+            BufferMap.prototype.pushEtalon = function (pData) {
+                this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
+            };
+            BufferMap.prototype.update = function () {
+                var pFlows = this._pFlows;
+                var pFlow;
+                var pMapper;
+                var isMappable = false;
+                var pCompleteFlows = this._pCompleteFlows;
+                var nCompleteFlows = 0;
+                var pCompleteVideoBuffers = this._pCompleteVideoBuffers;
+                var nCompleteVideoBuffers = 0;
+                var nUsedFlows = 0;
+                var pVideoBuffer;
+                var isVideoBufferAdded = false;
+                var nStartIndex = akra.MAX_INT32, nCurStartIndex;
+                for(var i = 0; i < pFlows.length; i++) {
+                    pFlow = pFlows[i];
+                    pMapper = pFlow.mapper;
+                    isMappable = (pFlow.type === 1 /* MAPPABLE */ );
+                    if (pFlow.data) {
+                        nUsedFlows++;
+                    }
+                    if (pFlow.data === null || (isMappable && pMapper === null)) {
+                        continue;
+                    }
+                    pCompleteFlows[nCompleteFlows++] = pFlow;
+                    if (isMappable) {
+                        nCurStartIndex = pMapper.data.startIndex;
+                        pVideoBuffer = pFlow.data.buffer;
+                        for(var j = 0; j < nCompleteVideoBuffers; j++) {
+                            if (pCompleteVideoBuffers[j] === pVideoBuffer) {
+                                isVideoBufferAdded = true;
+                                break;
+                            }
+                        }
+                        if (!isVideoBufferAdded) {
+                            pCompleteVideoBuffers[nCompleteVideoBuffers++] = pVideoBuffer;
+                        }
+                    } else {
+                        nCurStartIndex = pFlow.data.startIndex;
+                    }
+                    if (nStartIndex === akra.MAX_INT32) {
+                        nStartIndex = nCurStartIndex;
+                        continue;
+                    }
+                    util.logger.setSourceLocation("util/BufferMap.ts", 368);
+                    util.logger.assert(nStartIndex == nCurStartIndex, 'You can not use a maps or unmappable buffers having different starting index.');
+                    ;
+                }
+                this._nStartIndex = nStartIndex;
+                this._nCompleteFlows = nCompleteFlows;
+                this._nCompleteVideoBuffers = nCompleteVideoBuffers;
+                this._nUsedFlows = nUsedFlows;
+                return true;
+            };
+            BufferMap.prototype.clone = function (bWithMapping) {
+                bWithMapping = ((bWithMapping) !== undefined) ? bWithMapping : true;
+                var pMap = new BufferMap(this._pEngine);
+                for(var i = 0, pFlows = this._pFlows; i < pFlows.length; ++i) {
+                    if (pFlows[i].data === null) {
+                        continue;
+                    }
+                    if (pMap.flow(pFlows[i].flow, pFlows[i].data) < 0) {
+                        pMap = null;
+                        return null;
+                    }
+                    if (!bWithMapping) {
+                        continue;
+                    }
+                    if (pFlows[i].mapper) {
+                        pMap.mapping(pFlows[i].flow, pFlows[i].mapper.data, pFlows[i].mapper.semantics, pFlows[i].mapper.addition);
+                    }
+                }
+                return pMap;
+            };
+            BufferMap.prototype.toString = function (bListAll) {
+                if (typeof bListAll === "undefined") { bListAll = false; }
+                function _an(sValue, n, bBackward) {
+                    sValue = String(sValue);
+                    bBackward = bBackward || false;
+                    if (sValue.length < n) {
+                        for(var i = 0, l = sValue.length; i < n - l; ++i) {
+                            if (!bBackward) {
+                                sValue += ' ';
+                            } else {
+                                sValue = ' ' + sValue;
+                            }
+                        }
+                    }
+                    return sValue;
+                }
+                var s = '\n\n', t;
+                s += '      $1 Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+                s = s.replace("$1", bListAll ? "   Total" : "Complete");
+                t = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
+                // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+                // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+                s += t;
+                var pFlows = bListAll ? this._pFlows : this._pCompleteFlows;
+                var nFlows = bListAll ? this._nUsedFlows : this._nCompleteFlows;
+                for(var i = 0; i < nFlows; ++i) {
+                    var pFlow = pFlows[i];
+                    var pMapper = pFlow.mapper;
+                    var pVertexData = pFlow.data;
+                    var pDecl = pVertexData.getVertexDeclaration();
+                    //trace(pMapper); window['pMapper'] = pMapper;
+                    s += '#' + _an(pFlow.flow, 2) + ' ' + _an('[ ' + ((pDecl._pElements[(0)] || null).usage !== akra.DeclUsages.END ? (pDecl._pElements[(0)] || null).usage : '<end>') + ' ]', 20) + ' : ' + _an((pDecl._pElements[(0)] || null).offset, 6, true) + ' / ' + _an((pDecl._pElements[(0)] || null).size, 6) + ' | ' + _an(pVertexData.getBufferHandle(), 8, true) + ' / ' + _an(pVertexData.byteOffset, 8) + ' : ' + (pMapper ? _an(pMapper.semantics, 15, true) + ' / ' + _an(pMapper.addition, 7) + ': ' + _an(pMapper.data.getVertexDeclaration().findElement(pMapper.semantics).offset, 6) : _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
+                    for(var j = 1; j < (pDecl._pElements.length); ++j) {
+                        s += '    ' + _an('[ ' + ((pDecl._pElements[(j)] || null).usage !== akra.DeclUsages.END ? (pDecl._pElements[(j)] || null).usage : '<end>') + ' ]', 20) + ' : ' + _an((pDecl._pElements[(j)] || null).offset, 6, true) + ' / ' + _an((pDecl._pElements[(j)] || null).size, 6) + ' |                     :                          :        |                  \n';
+                    }
+                    s += t;
+                }
+                ;
+                s += '=================================================================\n';
+                s += '      PRIMITIVE TYPE : ' + '0x' + Number(((this)._pIndex ? (this)._pIndex.getPrimitiveType() : (this)._ePrimitiveType)).toString(16) + '\n';
+                s += '     PRIMITIVE COUNT : ' + (/*checked (origin: akra)>>*/akra.data.IndexData.getPrimitiveCount((((this))._pIndex ? ((this))._pIndex.getPrimitiveType() : ((this))._ePrimitiveType), (this).length)) + '\n';
+                s += '         START INDEX : ' + ((this)._nStartIndex) + '\n';
+                s += '              LENGTH : ' + this.length + '\n';
+                s += '  USING INDEX BUFFER : ' + (((this)._pIndex) ? 'TRUE' : 'FALSE') + '\n';
+                s += '=================================================================\n';
+                return s + '\n\n';
+            };
+            return BufferMap;
+        })(util.ReferenceCounter);
+        util.BufferMap = BufferMap;        
+        function createBufferMap(pEngine) {
+            return new BufferMap(pEngine);
+        }
+        util.createBufferMap = createBufferMap;
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
@@ -47485,12 +53427,46 @@ var akra;
         var Composer = (function () {
             function Composer(pEngine) {
                 this._pEngine = null;
+                this._pTechniqueToBlendMap = null;
+                this._pTechniqueToOwnBlendMap = null;
+                this._pTechniqueLastGlobalBlendMap = null;
+                this._pTechniqueNeedUpdateMap = null;
                 this._pEffectResourceToComponentBlendMap = null;
-                this._pComponentBlendByHashMap = null;
+                this._pBlender = null;
+                this._pGlobalEffectResorceIdStack = null;
+                // private _pGlobalEffectResorceShiftStack: int[] = null;
+                this._pGlobalComponentBlendStack = null;
+                this._pGlobalComponentBlend = null;
+                //Data for render
+                this._pCurrentSceneObject = null;
+                this._pCurrentBufferMap = null;
+                this._pCurrentSurfaceMaterial = null;
                 this._pEngine = pEngine;
+                this._pBlender = new fx.Blender(this);
+                this._pTechniqueToBlendMap = {};
+                this._pTechniqueToOwnBlendMap = {};
+                this._pTechniqueLastGlobalBlendMap = {};
+                this._pTechniqueNeedUpdateMap = {};
                 this._pEffectResourceToComponentBlendMap = {};
-                this._pComponentBlendByHashMap = {};
+                this._pGlobalEffectResorceIdStack = [];
+                // this._pGlobalEffectResorceShiftStack = [];
+                this._pGlobalComponentBlendStack = [];
+                this._pGlobalComponentBlend = null;
+                // this._pPreRenderState = {
+                // 	isClear: true,
+                // 	primType: 0,
+                // 	offset: 0,
+                // 	length: 0,
+                // 	index: null,
+                // 	flows: new util.ObjectArray()
+                // };
+                // this._pSamplerBlender = new SamplerBlender(this);
+                // this._pTempPassInstructionList = new ObjectArray();
+                if (((Composer.pDefaultSamplerBlender) === null)) {
+                    Composer.pDefaultSamplerBlender = new fx.SamplerBlender();
+                }
             }
+            Composer.pDefaultSamplerBlender = null;
             Composer.prototype.getComponentByName = function (sComponentName) {
                 return this._pEngine.getResourceManager().componentPool.findResource(sComponentName);
             };
@@ -47522,7 +53498,7 @@ var akra;
                 if (((this._pEffectResourceToComponentBlendMap[id]) !== undefined)) {
                     pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
                 }
-                var pNewBlend = this.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
+                var pNewBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
                 if (((pNewBlend) === null)) {
                     return false;
                 }
@@ -47535,12 +53511,201 @@ var akra;
                 if (((this._pEffectResourceToComponentBlendMap[id]) !== undefined)) {
                     pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
                 }
-                var pNewBlend = this.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
+                var pNewBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
                 if (((pNewBlend) === null)) {
                     return false;
                 }
                 this._pEffectResourceToComponentBlendMap[id] = pNewBlend;
                 return true;
+            };
+            Composer.prototype.activateEffectResource = function (pEffectResource, iShift) {
+                var id = pEffectResource.resourceHandle;
+                var pComponentBlend = this._pEffectResourceToComponentBlendMap[id];
+                if (!((pComponentBlend) !== undefined)) {
+                    return false;
+                }
+                var pNewGlobalBlend = null;
+                if (((this._pGlobalComponentBlend) === null)) {
+                    pNewGlobalBlend = pComponentBlend;
+                } else {
+                    pNewGlobalBlend = this._pBlender.addBlendToBlend(this._pGlobalComponentBlend, pComponentBlend, iShift);
+                }
+                if (((pNewGlobalBlend) === null)) {
+                    return false;
+                }
+                this._pGlobalEffectResorceIdStack.push(id);
+                this._pGlobalComponentBlendStack.push(pNewGlobalBlend);
+                this._pGlobalComponentBlend = pNewGlobalBlend;
+                return true;
+            };
+            Composer.prototype.deactivateEffectResource = function (pEffectResource) {
+                var id = pEffectResource.resourceHandle;
+                var iStackLength = this._pGlobalEffectResorceIdStack.length;
+                if (iStackLength === 0) {
+                    return false;
+                }
+                var iLastId = this._pGlobalEffectResorceIdStack[iStackLength - 1];
+                if (iLastId !== id) {
+                    return false;
+                }
+                this._pGlobalEffectResorceIdStack.splice(iStackLength - 1, 1);
+                this._pGlobalComponentBlendStack.splice(iStackLength - 1, 1);
+                if (iStackLength > 1) {
+                    this._pGlobalComponentBlend = this._pGlobalComponentBlendStack[iStackLength - 2];
+                } else {
+                    this._pGlobalComponentBlend = null;
+                }
+                return true;
+            };
+            Composer.prototype.getTotalPassesForTechnique = //-----------------------------------------------------------------------------//
+            //----------------------------API for RenderTechnique--------------------------//
+            //-----------------------------------------------------------------------------//
+            function (pRenderTechnique) {
+                this.prepareTechniqueBlend(pRenderTechnique);
+                var id = pRenderTechnique.getGuid();
+                if (((this._pTechniqueToBlendMap[id]) != null)) {
+                    return this._pTechniqueToBlendMap[id].getTotalPasses();
+                } else {
+                    return 0;
+                }
+            };
+            Composer.prototype.addOwnComponentToTechnique = function (pRenderTechnique, pComponent, iShift, iPass) {
+                var id = pRenderTechnique.getGuid();
+                var pCurrentBlend = null;
+                if (((this._pTechniqueToOwnBlendMap[id]) !== undefined)) {
+                    pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
+                }
+                var pNewBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
+                if (((pNewBlend) === null)) {
+                    return false;
+                }
+                this._pTechniqueToOwnBlendMap[id] = pNewBlend;
+                this._pTechniqueNeedUpdateMap[id] = true;
+                return true;
+            };
+            Composer.prototype.removeOwnComponentToTechnique = function (pRenderTechnique, pComponent, iShift, iPass) {
+                var id = pRenderTechnique.getGuid();
+                var pCurrentBlend = null;
+                if (((this._pTechniqueToOwnBlendMap[id]) !== undefined)) {
+                    pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
+                }
+                var pNewBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
+                if (((pNewBlend) === null)) {
+                    return false;
+                }
+                this._pTechniqueToOwnBlendMap[id] = pNewBlend;
+                this._pTechniqueNeedUpdateMap[id] = true;
+                return true;
+            };
+            Composer.prototype.prepareTechniqueBlend = function (pRenderTechnique) {
+                if (pRenderTechnique.isFreeze()) {
+                    return true;
+                }
+                var id = pRenderTechnique.getGuid();
+                var isTechniqueUpdate = !!(this._pTechniqueNeedUpdateMap[id]);
+                var isUpdateGlobalBlend = (this._pGlobalComponentBlend !== this._pTechniqueLastGlobalBlendMap[id]);
+                var isNeedToUpdatePasses = false;
+                if (isTechniqueUpdate || isUpdateGlobalBlend) {
+                    var iEffect = pRenderTechnique.getMethod().effect.resourceHandle;
+                    var pEffectBlend = this._pEffectResourceToComponentBlendMap[iEffect] || null;
+                    var pTechniqueBlend = this._pTechniqueToOwnBlendMap[id] || null;
+                    var pNewBlend = null;
+                    pNewBlend = this._pBlender.addBlendToBlend(this._pGlobalComponentBlend, pEffectBlend, 0);
+                    pNewBlend = this._pBlender.addBlendToBlend(pNewBlend, pTechniqueBlend, 0);
+                    if (this._pTechniqueToBlendMap[id] !== pNewBlend) {
+                        isNeedToUpdatePasses = true;
+                    }
+                    this._pTechniqueToBlendMap[id] = pNewBlend;
+                    this._pTechniqueNeedUpdateMap[id] = false;
+                    this._pTechniqueLastGlobalBlendMap[id] = this._pGlobalComponentBlend;
+                }
+                var pBlend = this._pTechniqueToBlendMap[id];
+                if (((pBlend) != null)) {
+                    if (!pBlend.isReadyToUse()) {
+                        isNeedToUpdatePasses = true;
+                    }
+                    if (!pBlend.finalizeBlend()) {
+                        return false;
+                    }
+                    if (isNeedToUpdatePasses) {
+                        pRenderTechnique.updatePasses(isTechniqueUpdate);
+                    }
+                } else {
+                    return false;
+                }
+            };
+            Composer.prototype.markTechniqueAsNeedUpdate = function (pRenderTechnique) {
+                this._pTechniqueNeedUpdateMap[pRenderTechnique.getGuid()] = true;
+            };
+            Composer.prototype.getPassInputBlend = function (pRenderTechnique, iPass) {
+                var id = pRenderTechnique.getGuid();
+                if (!((this._pTechniqueToBlendMap[id]) !== undefined)) {
+                    return null;
+                }
+                return this._pTechniqueToBlendMap[id].getPassInputForPass(iPass);
+            };
+            Composer.prototype.applyBufferMap = //-----------------------------------------------------------------------------//
+            //---------------------------------API for render------------------------------//
+            //-----------------------------------------------------------------------------//
+            function (pMap) {
+                this._pCurrentBufferMap = pMap;
+                return true;
+                // var pBufferMap: util.BufferMap = <util.BufferMap>pMap;
+                // var pState: IPreRenderState = this._pPreRenderState;
+                // if(pState.isClear){
+                // 	pState.primType = pBufferMap.primType;
+                // 	pState.offset = pBufferMap.offset;
+                // 	pState.length = pBufferMap.length;
+                // 	pState.index = pBufferMap.index;
+                // }
+                // else if(pState.primType !== pBufferMap.primType ||
+                // 		pState.offset !== pBufferMap.offset ||
+                // 		pState.length !== pBufferMap.length ||
+                // 		pState.index !== pBufferMap.index) {
+                // 	ERROR("Could not blend buffer maps");
+                // 	return false;
+                // }
+                // var pFlows: IDataFlow[] = pBufferMap.flows;
+                // for(var i: uint = 0; i < pFlows.length; i++){
+                // 	pState.flows.push(pFlows[i]);
+                // }
+                // pState.isClear = false;
+                            };
+            Composer.prototype.applySurfaceMaterial = function (pSurfaceMaterial) {
+                this._pCurrentSurfaceMaterial = pSurfaceMaterial;
+                return true;
+            };
+            Composer.prototype.setCurrentSceneObject = function (pSceneObject) {
+                this._pCurrentSceneObject = pSceneObject;
+            };
+            Composer.prototype.renderTechniquePass = function (pRenderTechnique, iPass) {
+                var pPass = pRenderTechnique.getPass(iPass);
+                var pPassInput = pPass.getPassInput();
+                var pPassBlend = null;
+                var pShader = null;
+                if (!pPassInput._isNeedToCalcShader()) {
+                    //TODO: set pShader to shader program by id
+                                    } else {
+                    if (!pPassInput._isNeedToCalcBlend()) {
+                        pPassBlend = this._pBlender.getPassBlendById(pPassInput._getLastPassBlendId());
+                    } else {
+                        var id = pRenderTechnique.getGuid();
+                        var pComponentBlend = this._pTechniqueToBlendMap[id];
+                        var pPassInstructionList = pComponentBlend.getPassListAtPass(iPass);
+                        pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, null, null, null);
+                    }
+                    if (((pPassBlend) === null)) {
+                        akra.logger.setSourceLocation("fx/Composer.ts", 414);
+                        akra.logger.error("Could not render. Error with generation pass-blend.");
+                        ;
+                        return;
+                    }
+                    pShader = pPassBlend.generateShaderProgram(pPassInput, this._pCurrentSurfaceMaterial, this._pCurrentBufferMap);
+                    //TODO: generate additional shader params and get shader program
+                                    }
+                //TODO: generate input from PassInputBlend to correct unifoms and attributes list
+                //TODO: generate RenderEntry
+                this.clearPreRenderState();
             };
             Composer.prototype._loadEffectFromSyntaxTree = //-----------------------------------------------------------------------------//
             //-----------------------API for load components/AFXEffects--------------------//
@@ -47557,14 +53722,14 @@ var akra;
                     for(var i = 0; i < pTechniqueList.length; i++) {
                         isOk = this.initComponent(pTechniqueList[i]);
                         if (!isOk) {
-                            akra.logger.setSourceLocation("fx/Composer.ts", 122);
+                            akra.logger.setSourceLocation("fx/Composer.ts", 449);
                             akra.logger.warning("Cannot initialize fx-component from technique '" + pTechniqueList[i].getName() + "'.");
                             ;
                             return false;
                         }
                     }
                 } else {
-                    akra.logger.setSourceLocation("fx/Composer.ts", 128);
+                    akra.logger.setSourceLocation("fx/Composer.ts", 455);
                     akra.logger.warning("Error are occured during analyze of effect file '" + sFileName + "'.");
                     ;
                     return false;
@@ -47585,92 +53750,14 @@ var akra;
                 pComponent.setTechnique(pTechnique);
                 return true;
             };
-            Composer.prototype.addComponentToBlend = function (pComponentBlend, pComponent, iShift, iPass) {
-                var pNewBlend = null;
-                if (((pComponentBlend) === null)) {
-                    pNewBlend = new fx.ComponentBlend(this);
-                } else {
-                    pNewBlend = pComponentBlend.clone();
-                }
-                var pTechnique = pComponent.getTechnique();
-                var pTechComponentList = pTechnique.getFullComponentList();
-                var pTechComponentShiftList = pTechnique.getFullComponentShiftList();
-                if (iPass === 0xffffff) {
-                    if (!((pTechComponentList) === null)) {
-                        for(var i = 0; i < pTechComponentList.length; i++) {
-                            pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, 0xffffff);
-                        }
-                    }
-                    pNewBlend.addComponent(pComponent, iShift, 0xffffff);
-                } else {
-                    if (!((pTechComponentList) === null)) {
-                        for(var i = 0; i < pTechComponentList.length; i++) {
-                            pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
-                        }
-                    }
-                    pNewBlend.addComponent(pComponent, iShift, iPass);
-                }
-                var sNewBlendHash = pNewBlend.getHash();
-                if (((this._pComponentBlendByHashMap[sNewBlendHash]) !== undefined)) {
-                    return this._pComponentBlendByHashMap[sNewBlendHash];
-                } else {
-                    if (!this.registerComponentBlend(pNewBlend)) {
-                        return null;
-                    }
-                    return pNewBlend;
-                }
-            };
-            Composer.prototype.removeComponentFromBlend = function (pComponentBlend, pComponent, iShift, iPass) {
-                if (((pComponentBlend) === null)) {
-                    akra.logger.setSourceLocation("fx/Composer.ts", 208);
-                    akra.logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from empty blend.");
-                    ;
-                    return null;
-                }
-                var sComponentHash = pComponent.getHash(iShift, iPass);
-                if (!pComponentBlend.containComponentHash(sComponentHash)) {
-                    akra.logger.setSourceLocation("fx/Composer.ts", 216);
-                    akra.logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from blend that not contain it.");
-                    ;
-                    return null;
-                }
-                var pNewBlend = pComponentBlend.clone();
-                var pTechnique = pComponent.getTechnique();
-                var pTechComponentList = pTechnique.getFullComponentList();
-                var pTechComponentShiftList = pTechnique.getFullComponentShiftList();
-                if (iPass === 0xffffff) {
-                    if (!((pTechComponentList) === null)) {
-                        for(var i = 0; i < pTechComponentList.length; i++) {
-                            pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, 0xffffff);
-                        }
-                    }
-                    pNewBlend.removeComponent(pComponent, iShift, 0xffffff);
-                } else {
-                    if (!((pTechComponentList) === null)) {
-                        for(var i = 0; i < pTechComponentList.length; i++) {
-                            pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
-                        }
-                    }
-                    pNewBlend.removeComponent(pComponent, iShift, iPass);
-                }
-                var sNewBlendHash = pNewBlend.getHash();
-                if (((this._pComponentBlendByHashMap[sNewBlendHash]) !== undefined)) {
-                    return this._pComponentBlendByHashMap[sNewBlendHash];
-                } else {
-                    if (!this.registerComponentBlend(pNewBlend)) {
-                        return null;
-                    }
-                    return pNewBlend;
-                }
-            };
-            Composer.prototype.registerComponentBlend = function (pComponentBlend) {
-                var sHash = pComponentBlend.getHash();
-                if (((this._pComponentBlendByHashMap[sHash]) !== undefined)) {
-                    return false;
-                }
-                this._pComponentBlendByHashMap[sHash] = pComponentBlend;
-                return true;
-            };
+            Composer.prototype.clearPreRenderState = function () {
+                // this._pPreRenderState.primType = 0;
+                // this._pPreRenderState.offset = 0;
+                // this._pPreRenderState.length = 0;
+                // this._pPreRenderState.index = null;
+                // this._pPreRenderState.flows.clear(false);
+                // this._pPreRenderState.isClear = true;
+                            };
             return Composer;
         })();
         fx.Composer = Composer;        
@@ -47824,16 +53911,6 @@ var akra;
             pImgData.height = pHeader.dwHeight;
             pImgData.depth = 1;
             var nFace = 1;
-            if (pHeader.dwFlags & 0x00020000) {
-                pImgData.numMipMaps = pHeader.dwMipMapCount;
-                if ((pHeader.dwWidth >>> (pHeader.dwMipMapCount - 1)) != 1 || (pHeader.dwHeight >>> (pHeader.dwMipMapCount - 1)) != 1) {
-                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 286);
-                    akra.logger.warning("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1" + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
-                    ;
-                }
-            } else {
-                pImgData.numMipMaps = 0;
-            }
             pImgData.flags = 0;
             if (pHeader.dwCaps2 & 0x200) {
                 pImgData.flags |= 2 /* CUBEMAP */ ;
@@ -47863,7 +53940,7 @@ var akra;
                     pImgData.cubeFlags |= 16 /* NEGATIVE_Z */ ;
                 }
                 if (nFace == 0) {
-                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 327);
+                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 314);
                     akra.logger.warning("Выставлен фдлаг с кубической текстурой, а самих текстур нету");
                     ;
                 }
@@ -47892,7 +53969,7 @@ var akra;
                     header10.miscFlag = pDDS10Header[2];
                     header10.arraySize = pDDS10Header[3];
                     header10.reserved = pDDS10Header[4];
-                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 364);
+                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 351);
                     akra.logger.criticalError("Формат D3DFMT_DX10 не поддерживается");
                     ;
                     /*console.log("dxgiFormat",header10.dxgiFormat);
@@ -47921,15 +53998,21 @@ var akra;
                 } else if (pHeader.ddspf.dwFourCC == 0x00000074) {
                     eSourceFormat = 25 /* FLOAT32_RGBA */ ;
                 } else {
-                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 404);
+                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 391);
                     akra.logger.criticalError("Флаг DDPF_FOURCC стоит, а подходящего dwFourCC нет");
                     ;
                 }
-            } else if (pHeader.ddspf.dwFlags & 0x00000040) {
+            } else {
                 var iAMask = pHeader.ddspf.dwFlags & 0x00000001 ? pHeader.ddspf.dwABitMask : 0;
                 var ePF;
                 for(ePF = 0 /* UNKNOWN */  + 1; ePF < 48 /* TOTAL */ ; ePF++) {
-                    if ((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((ePF)).elemBytes * 8) == pHeader.ddspf.dwRGBBitCount) {
+                    if ((!!(pHeader.ddspf.dwFlags & 0x00020000)) != (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/pixelUtil.getDescriptionFor(((ePF))).flags) & 32 /* LUMINANCE */ ) > 0)) {
+                        continue;
+                    }
+                    if ((!!(pHeader.ddspf.dwFlags & 0x00000001)) != (((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/pixelUtil.getDescriptionFor(((ePF))).flags) & 1 /* HASALPHA */ ) > 0)) {
+                        continue;
+                    }
+                    if ((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/pixelUtil.getDescriptionFor((ePF)).elemBytes * 8) == pHeader.ddspf.dwRGBBitCount) {
                         var pTestMasks = akra.pixelUtil.getBitMasks(ePF);
                         var pTestBits = akra.pixelUtil.getBitDepths(ePF);
                         if (pTestMasks[0] == pHeader.ddspf.dwRBitMask && pTestMasks[1] == pHeader.ddspf.dwGBitMask && pTestMasks[2] == pHeader.ddspf.dwBBitMask && // for alpha, deal with 'X8' formats by checking bit counts
@@ -47939,28 +54022,37 @@ var akra;
                     }
                 }
                 if (ePF == 48 /* TOTAL */ ) {
-                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 431);
+                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 430);
                     akra.logger.criticalError("Cannot determine pixel format. DDSCodec.decode");
                     ;
                 } else {
                     eSourceFormat = ePF;
                 }
             }
-            if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((eSourceFormat))).flags) & 2 /* COMPRESSED */ ) > 0)) {
-                pImgData.flags |= 1 /* COMPRESSED */ ;
-                if (!(pHeader.dwFlags & 0x00080000)) {
-                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 445);
-                    akra.logger.criticalError("У сжатой текстуры не выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
+            /*if (pixelUtil.isCompressed(eSourceFormat))
+            {
+            pImgData.flags |= EImageFlags.COMPRESSED;
+            if (!(pHeader.dwFlags & DDSD_LINEARSIZE)) {
+            CRITICAL_ERROR("У сжатой текстуры не выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
+            }
+            }
+            else
+            {
+            if (pHeader.dwFlags & DDSD_LINEARSIZE) {
+            CRITICAL_ERROR("У несжатой текстуры выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
+            }
+            }*/
+            pImgData.format = eSourceFormat;
+            if (pHeader.dwFlags & 0x00020000) {
+                pImgData.numMipMaps = pHeader.dwMipMapCount - 1;
+                if (pImgData.numMipMaps != akra.core.pool.resources.Img.getMaxMipmaps(pImgData.width, pImgData.height, pImgData.depth, pImgData.format)) {
+                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 460);
+                    akra.logger.warning("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1 " + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
                     ;
                 }
             } else {
-                if (pHeader.dwFlags & 0x00080000) {
-                    akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 451);
-                    akra.logger.criticalError("У несжатой текстуры выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
-                    ;
-                }
+                pImgData.numMipMaps = 0;
             }
-            pImgData.format = eSourceFormat;
             var pOutput = new Uint8Array(pImgData.size);
             var iOutputOffset = 0;
             for(var i = 0; i < nFace; i++) {
@@ -47968,7 +54060,7 @@ var akra;
                 var iHeight = pImgData.height;
                 var iDepth = pImgData.depth;
                 for(var iMip = 0; iMip <= pImgData.numMipMaps; iMip++) {
-                    if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor(((pImgData.format))).flags) & 2 /* COMPRESSED */ ) > 0)) {
+                    if ((((/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/pixelUtil.getDescriptionFor(((pImgData.format))).flags) & 2 /* COMPRESSED */ ) > 0)) {
                         var iDXTSize = akra.pixelUtil.getMemorySize(iWidth, iHeight, iDepth, pImgData.format);
                         for(var a = 0; a < iDXTSize; a++) {
                             pOutput[a + iOutputOffset] = pData[iOffset + a];
@@ -47976,7 +54068,7 @@ var akra;
                         iOffset += iDXTSize;
                         iOutputOffset += iDXTSize;
                     } else {
-                        var iDstPitch = iWidth * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((pImgData.format)).elemBytes);
+                        var iDstPitch = iWidth * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/pixelUtil.getDescriptionFor((pImgData.format)).elemBytes);
                         var iSrcPitch = 0;
                         if (pHeader.dwFlags & 0x00000008) {
                             iSrcPitch = pHeader.dwPitchOrLinearSize / Math.max(1, iMip * 2);
@@ -47985,7 +54077,7 @@ var akra;
                             iSrcPitch = iDstPitch;
                         }
                         if (iSrcPitch < iDstPitch) {
-                            akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 495);
+                            akra.logger.setSourceLocation("pixelUtil/DDSCodec.ts", 507);
                             akra.logger.warning("Странный размер питча у картинки");
                         }
                         for(var z = 0; z < pImgData.depth; z++) {
@@ -48071,7 +54163,9 @@ var akra;
                 */
                 this._iIndexSet = 0;
                 this._iRenderable = 1;
+                this._pComposer = null;
                 this._pBuffer = pCollection;
+                this._pComposer = pCollection.getEngine().getComposer();
             }
             Object.defineProperty(RenderData.prototype, "buffer", {
                 get: /** @inline */function () {
@@ -48112,7 +54206,7 @@ var akra;
                 if (!pAttribData) {
                     if (!pAttribBuffer) {
                         pAttribBuffer = pBuffer.getEngine().getResourceManager().createVertexBuffer('render_data_attrs_' + akra.sid());
-                        pAttribBuffer.create(8 /* BACKUP_COPY */ );
+                        pAttribBuffer.create((pData).byteLength, 8 /* BACKUP_COPY */ );
                         this._pAttribBuffer = pAttribBuffer;
                     }
                     this._pAttribData = this._pAttribBuffer.allocateData(pAttrDecl, pData);
@@ -48121,10 +54215,10 @@ var akra;
                     return this._pAttribData !== null;
                 }
                 if (!pAttribData.extend(pAttrDecl, pData)) {
-                    akra.logger.setSourceLocation("RenderData.ts", 135);
+                    akra.logger.setSourceLocation("RenderData.ts", 139);
                     akra.logger.log('invalid data for allocation:', arguments);
                     ;
-                    akra.logger.setSourceLocation("RenderData.ts", 136);
+                    akra.logger.setSourceLocation("RenderData.ts", 140);
                     akra.logger.warning('cannot allocate attribute in data subset..');
                     ;
                     return false;
@@ -48210,6 +54304,9 @@ var akra;
             function () {
                 return this._iIndexSet;
             };
+            RenderData.prototype.hasAttributes = /** @inline */function () {
+                return !((this._pAttribData) === null);
+            };
             RenderData.prototype.useAdvancedIndex = /**
             * Specifies uses advanced index.
             */
@@ -48252,7 +54349,7 @@ var akra;
             };
             RenderData.prototype.getDataLocation = function (sSemantics) {
                 var pData = this._getData(sSemantics);
-                return pData ? pData.byteLength : -1;
+                return pData ? pData.byteOffset : -1;
             };
             RenderData.prototype.getIndices = /**
             * Get indices that uses in current index set.
@@ -48267,8 +54364,8 @@ var akra;
                 return this._pMap.primCount;
             };
             RenderData.prototype.index = function (data, sSemantics, useSame, iBeginWith) {
-                iBeginWith = iBeginWith || 0;
-                useSame = useSame || false;
+                if (typeof useSame === "undefined") { useSame = false; }
+                if (typeof iBeginWith === "undefined") { iBeginWith = 0; }
                 var iData = arguments[0];
                 var iFlow = -1;
                 var iAddition, iRealAddition, iPrevAddition;
@@ -48282,7 +54379,7 @@ var akra;
                 var iTypeSize = 4 /* BYTES_PER_FLOAT */ ;
                 if (this.useAdvancedIndex()) {
                     pRealData = this._getData(arguments[0]);
-                    iAddition = pRealData.byteLength;
+                    iAddition = pRealData.byteOffset;
                     iStride = pRealData.stride;
                     //индекс, который подал юзер
                     pData = this._getData(sSemantics, true);
@@ -48290,9 +54387,8 @@ var akra;
                         for(var i = 0; i < pTypedData.length; i++) {
                             pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
                         }
-                        ;
                     });
-                    iData = pData.byteLength;
+                    iData = pData.byteOffset;
                     sSemantics = "INDEX_" + sSemantics;
                 } else if ((typeof (arguments[0]) === "string")) {
                     if (arguments[0] === "TEXCOORD") {
@@ -48300,12 +54396,15 @@ var akra;
                     } else {
                         iData = this.getDataLocation(arguments[0]);
                     }
-                    akra.logger.setSourceLocation("RenderData.ts", 370);
+                    akra.logger.setSourceLocation("RenderData.ts", 375);
                     akra.logger.assert(iData >= 0, "cannot find data with semantics: " + arguments[0]);
                     ;
                 }
                 pFlow = this._getFlow(iData);
                 if (pFlow === null) {
+                    akra.logger.setSourceLocation("RenderData.ts", 381);
+                    akra.logger.warning("Could not find data flow <" + iData + "> int buffer map: " + this._pMap.toString(true));
+                    ;
                     return false;
                 }
                 iFlow = pFlow.flow;
@@ -48362,7 +54461,7 @@ var akra;
                     pI2IDataCache: {},
                     pAdditionCache: null
                 });
-                akra.logger.setSourceLocation("RenderData.ts", 447);
+                akra.logger.setSourceLocation("RenderData.ts", 453);
                 akra.logger.assert(this.useSingleIndex() === false, "single indexed data not implimented");
                 ;
                 return true;
@@ -48373,13 +54472,13 @@ var akra;
                 }
                 var iFlow;
                 var pVertexData = this._pBuffer._allocateData(pDataDecl, pData);
-                var iOffset = pVertexData.byteLength;
+                var iOffset = pVertexData.byteOffset;
                 iFlow = this._addData(pVertexData, undefined, eType);
                 if (iFlow < 0) {
-                    akra.logger.setSourceLocation("RenderData.ts", 467);
+                    akra.logger.setSourceLocation("RenderData.ts", 473);
                     akra.logger.log("invalid data", pDataDecl, pData);
                     ;
-                    akra.logger.setSourceLocation("RenderData.ts", 468);
+                    akra.logger.setSourceLocation("RenderData.ts", 474);
                     akra.logger.error("cannot allocate data for submesh");
                     ;
                     return -1;
@@ -48403,11 +54502,11 @@ var akra;
             */
             function (pVertexData) {
                 'use strict';
-                var iOffset = pVertexData.byteLength;
+                var iOffset = pVertexData.byteOffset;
                 var pDataDecl = pVertexData.getVertexDeclaration();
                 //необходимо запоминать расположение данных, которые подаются,
                 //т.к. иначе их потом нельзя будет найти среди других данных
-                for(var i = 0; i < pDataDecl.length; i++) {
+                for(var i = 0; i < (pDataDecl._pElements.length); i++) {
                     ((this)._pIndicesArray[(this)._iIndexSet]).pI2IDataCache[pDataDecl[i].eUsage] = iOffset;
                 }
                 return 0;
@@ -48419,8 +54518,13 @@ var akra;
                 var iIndLoc = this._allocateData(pAttrDecl, pData, 1 /* INDEXED */ );
                 var pI2IData = new Float32Array(nCount);
                 var pI2IDecl = [];
-                for(var i = 0; i < pDecl.length; i++) {
-                    pI2IDecl.push(akra.VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
+                for(var i = 0; i < (pDecl._pElements.length); i++) {
+                    pI2IDecl.push((({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: (('INDEX_' + pDecl[i].eUsage)),
+offset: ((0))
+})));
                 }
                 for(var i = 0; i < pI2IData.length; i++) {
                     pI2IData[i] = i;
@@ -48429,7 +54533,7 @@ var akra;
                     this.releaseData(iIndLoc);
                     pI2IData = null;
                     pI2IDecl = null;
-                    akra.logger.setSourceLocation("RenderData.ts", 540);
+                    akra.logger.setSourceLocation("RenderData.ts", 546);
                     akra.logger.warning('cannot allocate index for index in render data subset');
                     ;
                     return false;
@@ -48441,7 +54545,7 @@ var akra;
                 if (!this._pIndexBuffer) {
                     if (this.useMultiIndex()) {
                         this._pIndexBuffer = this._pBuffer.getEngine().getResourceManager().createVertexBuffer('subset_' + akra.sid());
-                        this._pIndexBuffer.create(8 /* BACKUP_COPY */ );
+                        this._pIndexBuffer.create(((pData).byteLength), 8 /* BACKUP_COPY */ );
                     } else {
                         //TODO: add support for sinle indexed mesh.
                                             }
@@ -48457,8 +54561,8 @@ var akra;
                 var pIndexData = this._pIndexData;
                 var pIndexBuffer = this._pIndexBuffer;
                 var pBuffer = this._pBuffer;
-                for(var i = 0; i < pAttrDecl.length; i++) {
-                    if (pAttrDecl[i].eType !== 5126 /* FLOAT */ ) {
+                for(var i = 0; i < (pAttrDecl._pElements.length); i++) {
+                    if ((pAttrDecl._pElements[(i)] || null).type !== 5126 /* FLOAT */ ) {
                         return false;
                     }
                 }
@@ -48466,10 +54570,10 @@ var akra;
                     return this._createIndex(pAttrDecl, pData);
                 }
                 if (!(this._pIndexData).extend(pAttrDecl, pData)) {
-                    akra.logger.setSourceLocation("RenderData.ts", 601);
+                    akra.logger.setSourceLocation("RenderData.ts", 607);
                     akra.logger.log('invalid data for allocation:', arguments);
                     ;
-                    akra.logger.setSourceLocation("RenderData.ts", 602);
+                    akra.logger.setSourceLocation("RenderData.ts", 608);
                     akra.logger.warning('cannot allocate index in data subset..');
                     ;
                     return false;
@@ -48489,7 +54593,7 @@ var akra;
                 }
                 for(var i = 0, n = this._pMap.limit; i < n; ++i) {
                     var pFlow = this._pMap.getFlow(i, false);
-                    if (pFlow.data && pFlow.data.byteLength === arguments[0]) {
+                    if (pFlow.data && pFlow.data.byteOffset === arguments[0]) {
                         return pFlow;
                     }
                 }
@@ -48518,19 +54622,21 @@ var akra;
             RenderData.prototype._draw = /**
             * Draw this data.
             */
-            function () {
+            function (pTechnique, pSceneObject) {
                 for(var i = 0; i < this._pIndicesArray.length; i++) {
                     if (this.isRenderable(i)) {
-                        this._pIndicesArray[i].pMap._draw();
+                        //this._pIndicesArray[i].pMap._draw();
+                        this._pComposer.applyBufferMap(this._pIndicesArray[i].pMap);
+                        pTechnique._renderTechnique(pSceneObject);
                     }
                 }
             };
             RenderData.prototype.toString = //applyMe(): bool;
             function () {
                 var s;
-                s = 'RENDER DATA SUBSET: #' + this._iId + '\n';
-                s += '        ATTRIBUTES: ' + (this._pAttribData ? 'TRUE' : 'FALSE') + '\n';
-                s += '----------------------------------------------------------------\n';
+                s = "\nRENDER DATA SUBSET: #" + this._iId + "\n";
+                s += "        ATTRIBUTES: " + (this._pAttribData ? "TRUE" : "FALSE") + "\n";
+                s += "----------------------------------------------------------------\n";
                 s += this._pMap.toString();
                 return s;
             };
@@ -48605,7 +54711,7 @@ var akra;
                     } else {
                         for(var i = 0; i < n; i++) {
                             pData = pBuffer.getVertexData(i);
-                            if (pData.byteLength === arguments[0]) {
+                            if (pData.byteOffset === arguments[0]) {
                                 return pData;
                             }
                         }
@@ -48634,10 +54740,10 @@ var akra;
                 if (typeof isCommon === "undefined") { isCommon = true; }
                 var pVertexData;
                 var pDataDecl = akra.createVertexDeclaration(pDecl);
-                for(var i = 0; i < pDataDecl.length; i++) {
-                    if (this.getData(pDataDecl[i].eUsage) !== null && pDataDecl[i].nCount !== 0) {
+                for(var i = 0; i < (pDataDecl._pElements.length); i++) {
+                    if (this.getData((pDataDecl._pElements[(i)] || null).usage) !== null && (pDataDecl._pElements[(i)] || null).count !== 0) {
                         akra.logger.setSourceLocation("render/RenderDataCollection.ts", 127);
-                        akra.logger.warning("data buffer already contains data with similar vertex decloration <" + pDataDecl[i].eUsage + ">.");
+                        akra.logger.warning("data buffer already contains data with similar vertex decloration <" + (pDataDecl._pElements[(i)] || null).usage + ">.");
                         ;
                     }
                 }
@@ -48648,7 +54754,7 @@ var akra;
                         this._pDataArray[i]._addData(pVertexData);
                     }
                 }
-                return pVertexData.byteLength;
+                return pVertexData.byteOffset;
             };
             RenderDataCollection.prototype.getDataLocation = function (sSemantics) {
                 if (this._pDataBuffer) {
@@ -48656,7 +54762,7 @@ var akra;
                     for(var i = 0, n = this._pDataBuffer.length; i < n; i++) {
                         pData = this._pDataBuffer.getVertexData(i);
                         if (pData.hasSemantics(sSemantics)) {
-                            return pData.byteLength;
+                            return pData.byteOffset;
                         }
                     }
                     ;
@@ -48668,11 +54774,11 @@ var akra;
                 var iVbOption = 0;
                 var eOptions = this._eDataOptions;
                 if (eOptions & akra.ERenderDataBufferOptions.VB_READABLE) {
-                    (true ? ((iVbOption) |= (1 << (1 << (4 /* READABLE */ )))) : ((iVbOption) &= ~(1 << (1 << (4 /* READABLE */ )))));
+                    iVbOption = akra.ERenderDataBufferOptions.VB_READABLE;
                 }
                 //trace('creating new video buffer for render data buffer ...');
                 this._pDataBuffer = this._pEngine.getResourceManager().createVideoBuffer("render_data_buffer" + "_" + akra.sid());
-                this._pDataBuffer.create(iVbOption);
+                this._pDataBuffer.create(0, iVbOption);
                 this._pDataBuffer.addRef();
                 return this._pDataBuffer !== null;
             };
@@ -48685,7 +54791,7 @@ var akra;
                 var pDataset = new render.RenderData(this);
                 eOptions |= this._eDataOptions;
                 if (!pDataset._setup(this, iSubsetId, ePrimType, eOptions)) {
-                    akra.logger.setSourceLocation("render/RenderDataCollection.ts", 186);
+                    akra.logger.setSourceLocation("render/RenderDataCollection.ts", 187);
                     akra.logger.error("cannot setup submesh...");
                     ;
                 }
@@ -48693,12 +54799,14 @@ var akra;
                 return pDataset;
             };
             RenderDataCollection.prototype._draw = function (iSubset) {
-                if (arguments.length > 0) {
-                    this._pDataArray[iSubset]._draw();
-                }
-                for(var i = 0; i < this._pDataArray.length; i++) {
-                    this._pDataArray[i]._draw();
-                }
+                // if (arguments.length > 0) {
+                //     this._pDataArray[iSubset]._draw();
+                // }
+                // for (var i: int = 0; i < this._pDataArray.length; i++) {
+                //     this._pDataArray[i]._draw();
+                // };
+                akra.logger.setSourceLocation("render/RenderDataCollection.ts", 205);
+                akra.logger.criticalError("TODO");
                 ;
             };
             RenderDataCollection.prototype.destroy = function () {
@@ -48731,529 +54839,6 @@ var akra;
         render.createRenderDataCollection = createRenderDataCollection;
     })(akra.render || (akra.render = {}));
     var render = akra.render;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    (function (util) {
-        var BufferMap = (function (_super) {
-            __extends(BufferMap, _super);
-            function BufferMap(pEngine) {
-                        _super.call(this);
-                this._pFlows = null;
-                this._pMappers = null;
-                this._pIndex = null;
-                this._nLength = 0;
-                this._pCompleteFlows = null;
-                this._nCompleteFlows = 0;
-                this._nCompleteVideoBuffers = 0;
-                this._pCompleteVideoBuffers = null;
-                this._nUsedFlows = 0;
-                this._pEngine = null;
-                this._nStartIndex = 0;
-                this._pBuffersCompatibleMap = null;
-                this._pEngine = pEngine;
-                this.reset();
-            }
-            Object.defineProperty(BufferMap.prototype, "primType", {
-                get: /** @inline */function () {
-                    return this._pIndex ? this._pIndex.getPrimitiveType() : this._ePrimitiveType;
-                },
-                set: /** @inline */function (eType) {
-                    this._ePrimitiveType = eType;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "primCount", {
-                get: /** @inline */function () {
-                    return akra.data.IndexData.getPrimitiveCount(this._ePrimitiveType, (((this)._pIndex ? (this)._pIndex.getPrimitiveCount() : (this)._nLength)));
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "index", {
-                get: /** @inline */function () {
-                    return this._pIndex;
-                },
-                set: /** @inline */function (pIndexData) {
-                    if (this._pIndex === pIndexData) {
-                        return;
-                    }
-                    this._pIndex = pIndexData;
-                    this.update();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "limit", {
-                get: /** @inline */function () {
-                    return this._pFlows.length;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "length", {
-                get: /** @inline */function () {
-                    return (this._pIndex ? this._pIndex.getPrimitiveCount() : this._nLength);
-                },
-                set: /** @inline */function (nLength) {
-                    this._nLength = Math.min(this._nLength, nLength);
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "_length", {
-                set: /** @inline */function (nLength) {
-                    this._nLength = nLength;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "startIndex", {
-                get: /** @inline */function () {
-                    return this._nStartIndex;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "size", {
-                get: /** @inline */function () {
-                    return this._nCompleteFlows;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "flows", {
-                get: /** @inline */function () {
-                    return this._pCompleteFlows;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "mappers", {
-                get: /** @inline */function () {
-                    return this._pMappers;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(BufferMap.prototype, "offset", {
-                get: /** @inline */function () {
-                    return (this._pIndex ? this._pIndex.byteOffset : 0);
-                },
-                enumerable: true,
-                configurable: true
-            });
-            BufferMap.prototype._draw = function () {
-                this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
-                ((this._pIndex) === null) ? (((((this)._pEngine.getRenderer()))._pWebGLContext).drawArrays(akra.webgl.getWebGLPrimitiveType((this)._ePrimitiveType), (this)._nStartIndex, (this)._nLength)) : (((((this)._pEngine.getRenderer()))._pWebGLContext).drawElements((akra.data.IndexData.getPrimitiveCount(((this))._ePrimitiveType, (((((this)))._pIndex ? (((this)))._pIndex.getPrimitiveCount() : (((this)))._nLength)))), (this)._pIndex.getPrimitiveCount(), akra.webgl.getWebGLPrimitiveType((this)._ePrimitiveType), (this)._pIndex.byteOffset / 4));
-            };
-            BufferMap.prototype.drawArrays = /** @inline */function () {
-                (((this._pEngine.getRenderer()))._pWebGLContext).drawArrays(akra.webgl.getWebGLPrimitiveType(this._ePrimitiveType), this._nStartIndex, this._nLength);
-            };
-            BufferMap.prototype.drawElements = /** @inline */function () {
-                (((this._pEngine.getRenderer()))._pWebGLContext).drawElements((akra.data.IndexData.getPrimitiveCount((this)._ePrimitiveType, ((((this))._pIndex ? ((this))._pIndex.getPrimitiveCount() : ((this))._nLength)))), this._pIndex.getPrimitiveCount(), akra.webgl.getWebGLPrimitiveType(this._ePrimitiveType), this._pIndex.byteOffset / 4);
-                //FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
-                            };
-            BufferMap.prototype.getFlow = function (iFlow, bComplete) {
-                if (typeof bComplete === "undefined") { bComplete = true; }
-                if ((typeof (arguments[0]) === "string")) {
-                    var nTotal;
-                    var pFlows;
-                    if (bComplete) {
-                        pFlows = this._pCompleteFlows;
-                        nTotal = this._nCompleteFlows;
-                    } else {
-                        pFlows = this._pFlows;
-                        nTotal = this._pFlows.length;
-                    }
-                    for(var i = 0; i < nTotal; ++i) {
-                        if (!pFlows[i].data) {
-                            continue;
-                        }
-                        if (pFlows[i].data.hasSemantics(arguments[0])) {
-                            return pFlows[i];
-                        }
-                    }
-                    return null;
-                }
-                if (bComplete) {
-                    for(var i = 0, pFlows = this._pCompleteFlows; i < this._nCompleteFlows; ++i) {
-                        if (pFlows[i].flow == iFlow) {
-                            return pFlows[i];
-                        }
-                    }
-                    return null;
-                }
-                return this._pFlows[iFlow];
-            };
-            BufferMap.prototype.reset = function () {
-                this._pIndex = null;
-                this._ePrimitiveType = 4 /* TRIANGLELIST */ ;
-                var nFlowLimit = 16;
-                /*webgl.maxVertexTextureImageUnits*/
-                nFlowLimit = Math.min(16, akra.webgl.maxVertexAttributes);
-                this._pMappers = [];
-                this._pFlows = new Array(nFlowLimit);
-                for(var i = 0; i < nFlowLimit; i++) {
-                    this._pFlows[i] = {
-                        flow: i,
-                        data: null,
-                        type: 0 /* UNMAPPABLE */ ,
-                        mapper: null
-                    };
-                }
-                this._nLength = akra.MAX_INT32;
-                this._pCompleteFlows = new Array(nFlowLimit);
-                this._nCompleteFlows = 0;
-                this._nStartIndex = akra.MAX_INT32;
-                this._pBuffersCompatibleMap = {};
-                this._pCompleteVideoBuffers = new Array(nFlowLimit);
-                this._nCompleteVideoBuffers = 0;
-                this._nUsedFlows = 0;
-            };
-            BufferMap.prototype.flow = function (iFlow, pData) {
-                var pFlow = null;
-                var pVertexData = null;
-                if (arguments.length < 2) {
-                    pVertexData = arguments[0];
-                    iFlow = (this._nUsedFlows++);
-                }
-                // trace(iFlow, '<<==', pVertexData.getVertexDeclaration().toString());
-                // console.log((new Error).stack);
-                pFlow = this._pFlows[iFlow];
-                util.logger.setSourceLocation("util/BufferMap.ts", 223);
-                util.logger.assert(iFlow < ((this)._pFlows.length), 'Invalid strem. Maximum allowable number of stream ' + ((this)._pFlows.length) + '.');
-                ;
-                if (!pVertexData || pFlow.data === pVertexData) {
-                    return -1;
-                }
-                if (pVertexData.buffer instanceof akra.core.pool.resources.VertexBuffer) {
-                    pFlow.type = 0 /* UNMAPPABLE */ ;
-                    ((this)._nLength = Math.min((this)._nLength, (pVertexData.length)));
-                    //this.startIndex = pVertexData.getStartIndex();
-                    util.logger.setSourceLocation("util/BufferMap.ts", 234);
-                    util.logger.assert(this.checkData(pVertexData), 'You can use several unmappable data flows from one buffer.');
-                    ;
-                    this.pushEtalon(pVertexData);
-                } else {
-                    pFlow.type = 1 /* MAPPABLE */ ;
-                }
-                pFlow.data = pVertexData;
-                return this.update() ? iFlow : -1;
-            };
-            BufferMap.prototype.checkData = function (pData) {
-                var pEtalon = this._pBuffersCompatibleMap[pData.getBufferHandle()];
-                if (!pEtalon || pEtalon.byteOffset === pData.byteOffset) {
-                    return true;
-                }
-                return false;
-            };
-            BufferMap.prototype.findMapping = /**@protected*/ function (pMap, eSemantics, iAddition) {
-                util.logger.setSourceLocation("util/BufferMap.ts", 256);
-                util.logger.assert(this.checkData(pMap), 'You can use several different maps from one buffer.');
-                ;
-                for(var i = 0, pMappers = this._pMappers, pExistsMap; i < pMappers.length; i++) {
-                    pExistsMap = pMappers[i].data;
-                    if (pExistsMap === pMap) {
-                        //если уже заданные маппинг менял свой стартовый индекс(например при расширении)
-                        //то необходимо сменить стартовый индекс на новый
-                        if (pMappers[i].semantics === eSemantics && pMappers[i].addition == iAddition) {
-                            return pMappers[i];
-                        }
-                    } else {
-                        util.logger.setSourceLocation("util/BufferMap.ts", 268);
-                        util.logger.assert(pExistsMap.getStartIndex() === pMap.getStartIndex(), 'You can not use maps with different indexing');
-                        ;
-                    }
-                }
-                return null;
-            };
-            BufferMap.prototype.mapping = function (iFlow, pMap, eSemantics, iAddition) {
-                iAddition = iAddition || 0;
-                var pMapper = this.findMapping(pMap, eSemantics, iAddition);
-                var pFlow = this._pFlows[iFlow];
-                util.logger.setSourceLocation("util/BufferMap.ts", 282);
-                util.logger.assert(pFlow.data && pFlow.type === 1 /* MAPPABLE */ , 'Cannot mapping empty/unmappable flow.');
-                ;
-                util.logger.setSourceLocation("util/BufferMap.ts", 283);
-                util.logger.assert(((pMap) !== undefined), 'Passed empty mapper.');
-                ;
-                if (!eSemantics) {
-                    eSemantics = pMap.getVertexDeclaration()[0].eUsage;
-                } else if (pMap.hasSemantics(eSemantics) === false) {
-                    util.logger.setSourceLocation("util/BufferMap.ts", 289);
-                    util.logger.error('Passed mapper does not have semantics: ' + eSemantics + '.');
-                    ;
-                    return false;
-                }
-                if (pMapper) {
-                    if (pFlow.mapper === pMapper) {
-                        return pMapper.semantics === eSemantics && pMapper.addition === iAddition ? true : false;
-                    }
-                } else {
-                    pMapper = {
-                        data: pMap,
-                        semantics: eSemantics,
-                        addition: iAddition
-                    };
-                    this._pMappers.push(pMapper);
-                    ((this)._nLength = Math.min((this)._nLength, (pMap.length)));
-                    //this.startIndex = pMap.getStartIndex();
-                    this.pushEtalon(pMap);
-                }
-                pFlow.mapper = pMapper;
-                return this.update();
-            };
-            BufferMap.prototype.pushEtalon = function (pData) {
-                this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
-            };
-            BufferMap.prototype.update = function () {
-                var pFlows = this._pFlows;
-                var pFlow, pMapper;
-                var isMappable = false;
-                var pCompleteFlows = this._pCompleteFlows;
-                var nCompleteFlows = 0;
-                var pCompleteVideoBuffers = this._pCompleteVideoBuffers;
-                var nCompleteVideoBuffers = 0;
-                var nUsedFlows = 0;
-                var pVideoBuffer;
-                var isVideoBufferAdded = false;
-                var nStartIndex = akra.MAX_INT32, nCurStartxIndex;
-                for(var i = 0; i < pFlows.length; i++) {
-                    pFlow = pFlows[i];
-                    pMapper = pFlow.mapper;
-                    isMappable = (pFlow.type === 1 /* MAPPABLE */ );
-                    if (pFlow.data) {
-                        nUsedFlows++;
-                    }
-                    if (pFlow.data === null || (isMappable && pMapper === null)) {
-                        continue;
-                    }
-                    pCompleteFlows[nCompleteFlows++] = pFlow;
-                    if (isMappable) {
-                        nCurStartxIndex = pMapper.data.getStartIndex();
-                        pVideoBuffer = pFlow.data.buffer;
-                        for(var j = 0; j < nCompleteVideoBuffers; j++) {
-                            if (pCompleteVideoBuffers[j] === pVideoBuffer) {
-                                isVideoBufferAdded = true;
-                                break;
-                            }
-                        }
-                        if (!isVideoBufferAdded) {
-                            pCompleteVideoBuffers[nCompleteVideoBuffers++] = pVideoBuffer;
-                        }
-                    } else {
-                        nCurStartxIndex = pFlow.data.getStartIndex();
-                    }
-                    if (nStartIndex === akra.MAX_INT32) {
-                        nStartIndex = nCurStartxIndex;
-                        continue;
-                    }
-                    util.logger.setSourceLocation("util/BufferMap.ts", 368);
-                    util.logger.assert(nStartIndex == nCurStartxIndex, 'You can not use a maps or unmappable buffers having different starting index.');
-                    ;
-                }
-                this._nStartIndex = nStartIndex;
-                this._nCompleteFlows = nCompleteFlows;
-                this._nCompleteVideoBuffers = nCompleteVideoBuffers;
-                this._nUsedFlows = nUsedFlows;
-                return true;
-            };
-            BufferMap.prototype.clone = function (bWithMapping) {
-                bWithMapping = ((bWithMapping) !== undefined) ? bWithMapping : true;
-                var pMap = new BufferMap(this._pEngine);
-                for(var i = 0, pFlows = this._pFlows; i < pFlows.length; ++i) {
-                    if (pFlows[i].data === null) {
-                        continue;
-                    }
-                    if (pMap.flow(pFlows[i].flow, pFlows[i].data) < 0) {
-                        pMap = null;
-                        return null;
-                    }
-                    if (!bWithMapping) {
-                        continue;
-                    }
-                    if (pFlows[i].mapper) {
-                        pMap.mapping(pFlows[i].flow, pFlows[i].mapper.data, pFlows[i].mapper.semantics, pFlows[i].mapper.addition);
-                    }
-                }
-                return pMap;
-            };
-            BufferMap.prototype.toString = function () {
-                function _an(sValue, n, bBackward) {
-                    sValue = String(sValue);
-                    bBackward = bBackward || false;
-                    if (sValue.length < n) {
-                        for(var i = 0, l = sValue.length; i < n - l; ++i) {
-                            if (!bBackward) {
-                                sValue += ' ';
-                            } else {
-                                sValue = ' ' + sValue;
-                            }
-                        }
-                    }
-                    return sValue;
-                }
-                var s = '\n\n', t;
-                s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
-                t = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
-                // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
-                // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
-                s += t;
-                for(var i = 0; i < this._nCompleteFlows; ++i) {
-                    var pFlow = this._pCompleteFlows[i];
-                    var pMapper = pFlow.mapper;
-                    var pVertexData = pFlow.data;
-                    var pDecl = pVertexData.getVertexDeclaration();
-                    //trace(pMapper); window['pMapper'] = pMapper;
-                    s += '#' + _an(pFlow.flow, 2) + ' ' + _an('[ ' + (pDecl.element(0).usage !== akra.DeclUsages.END ? pDecl.element(0).usage : '<end>') + ' ]', 20) + ' : ' + _an(pDecl.element(0).offset, 6, true) + ' / ' + _an(pDecl.element(0).size, 6) + ' | ' + _an(pVertexData.getBufferHandle(), 8, true) + ' / ' + _an(pVertexData.byteOffset, 8) + ' : ' + (pMapper ? _an(pMapper.semantics, 15, true) + ' / ' + _an(pMapper.addition, 7) + ': ' + _an(pMapper.data.getVertexDeclaration().findElement(pMapper.semantics).offset, 6) : _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
-                    for(var j = 1; j < pDecl.length; ++j) {
-                        s += '    ' + _an('[ ' + (pDecl.element(j).usage !== akra.DeclUsages.END ? pDecl.element(j).usage : '<end>') + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) + ' |                     :                          :        |                  \n';
-                    }
-                    s += t;
-                }
-                ;
-                s += '=================================================================\n';
-                s += '      PRIMITIVE TYPE : ' + '0x' + Number(((this)._pIndex ? (this)._pIndex.getPrimitiveType() : (this)._ePrimitiveType)).toString(16) + '\n';
-                s += '     PRIMITIVE COUNT : ' + (akra.data.IndexData.getPrimitiveCount((this)._ePrimitiveType, (this).length)) + '\n';
-                s += '         START INDEX : ' + ((this)._nStartIndex) + '\n';
-                s += '              LENGTH : ' + this.length + '\n';
-                s += '  USING INDEX BUFFER : ' + (((this)._pIndex) ? 'TRUE' : 'FALSE') + '\n';
-                s += '=================================================================\n';
-                return s + '\n\n';
-            };
-            return BufferMap;
-        })(util.ReferenceCounter);        
-        function createBufferMap(pEngine) {
-            return new BufferMap(pEngine);
-        }
-        util.createBufferMap = createBufferMap;
-    })(akra.util || (akra.util = {}));
-    var util = akra.util;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    (function (animation) {
-        var AnimationController = (function () {
-            function AnimationController(pEngine, iOptions) {
-                if (typeof iOptions === "undefined") { iOptions = 0; }
-                this._pAnimations = [];
-                this._eOptions = 0;
-                this._pActiveAnimation = null;
-                this._fnPlayAnimation = null;
-                this._pEngine = pEngine;
-                this.setOptions(iOptions);
-            }
-            Object.defineProperty(AnimationController.prototype, "totalAnimations", {
-                get: /** @inline */function () {
-                    return this._pAnimations.length;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AnimationController.prototype, "active", {
-                get: /** @inline */function () {
-                    return this._pActiveAnimation;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            AnimationController.prototype.getEngine = function () {
-                return this._pEngine;
-            };
-            AnimationController.prototype.setOptions = function (iOptions) {
-            };
-            AnimationController.prototype.addAnimation = function (pAnimation) {
-                if (this.findAnimation(pAnimation.name)) {
-                    akra.logger.setSourceLocation("animation/AnimationController.ts", 41);
-                    akra.logger.warning("Animation with name <" + pAnimation.name + "> already exists in this controller");
-                    ;
-                    return false;
-                }
-                //LOG('animation controller :: add animation >> ', pAnimation.name);
-                this._pAnimations.push(pAnimation);
-                this._pActiveAnimation = pAnimation;
-            };
-            AnimationController.prototype.removeAnimation = function () {
-                var pAnimation = this.findAnimation(arguments[0]);
-                var pAnimations = this._pAnimations;
-                for(var i = 0; i < pAnimations.length; ++i) {
-                    if (pAnimations[i] === pAnimation) {
-                        pAnimations.splice(i, 1);
-                        akra.logger.setSourceLocation("animation/AnimationController.ts", 58);
-                        akra.logger.log("animation controller :: remove animation >> ", pAnimation.name);
-                        ;
-                        return true;
-                    }
-                }
-                return false;
-            };
-            AnimationController.prototype.findAnimation = function (pAnimation) {
-                var pAnimations = this._pAnimations;
-                var iAnimation;
-                var sAnimation;
-                if ((typeof (arguments[0]) === "string")) {
-                    sAnimation = arguments[0];
-                    for(var i = 0; i < pAnimations.length; ++i) {
-                        if (pAnimations[i].name === sAnimation) {
-                            return pAnimations[i];
-                        }
-                    }
-                    return null;
-                }
-                if (typeof arguments[0] === 'number') {
-                    iAnimation = arguments[0];
-                    return pAnimations[iAnimation] || null;
-                }
-                return arguments[0];
-            };
-            AnimationController.prototype.getAnimation = function (iAnim) {
-                return this._pAnimations[iAnim];
-            };
-            AnimationController.prototype.setAnimation = function (iAnimation, pAnimation) {
-                akra.logger.setSourceLocation("animation/AnimationController.ts", 99);
-                akra.logger.assert(iAnimation < this._pAnimations.length, 'invalid animation slot');
-                ;
-                this._pAnimations[iAnimation] = pAnimation;
-            };
-            AnimationController.prototype.bind = function (pTarget) {
-                var pAnimations = this._pAnimations;
-                for(var i = 0; i < pAnimations.length; ++i) {
-                    pAnimations[i].attach(pTarget);
-                }
-            };
-            AnimationController.prototype.play = function (pAnimation, fRealTime) {
-                var pAnimationNext = this.findAnimation(arguments[0]);
-                var pAnimationPrev = this._pActiveAnimation;
-                if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
-                    if (this._fnPlayAnimation) {
-                        this._fnPlayAnimation(pAnimationNext);
-                    }
-                    //LOG('controller::play(', pAnimationNext.name, ')', pAnimationNext);
-                    if (pAnimationPrev) {
-                        pAnimationPrev.stop(fRealTime);
-                    }
-                    pAnimationNext.play(fRealTime);
-                    this._pActiveAnimation = pAnimationNext;
-                    return true;
-                }
-                return false;
-            };
-            AnimationController.prototype.update = function (fTime) {
-                if (this._pActiveAnimation) {
-                    this._pActiveAnimation.apply(fTime);
-                }
-            };
-            return AnimationController;
-        })();
-        animation.AnimationController = AnimationController;        
-        function createController(pEngine, iOptions) {
-            return new AnimationController(pEngine, iOptions);
-        }
-        animation.createController = createController;
-    })(akra.animation || (akra.animation = {}));
-    var animation = akra.animation;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
@@ -49390,9 +54975,7 @@ var akra;
             DepsManager.prototype._onDependencyLoad = function (pDeps, n) {
                 // debug_assert(isDefAndNotNull(pDeps.files) && isString(pDeps.files[i]), "something going wrong...");
                 if (((n) !== undefined)) {
-                    util.logger.setSourceLocation("util/DepsManager.ts", 158);
-                    util.logger.log("loaded dependency: " + pDeps.files[n]);
-                    ;
+                    //LOG("loaded dependency: " + pDeps.files[n]);
                     pDeps.files[n] = null;
                 }
                 for(var i = 0; i < pDeps.files.length; ++i) {
@@ -49412,7 +54995,7 @@ var akra;
                 return this._iGuid;
             };
             DepsManager._pEventTable = new akra.events.EventTable();
-            DepsManager.prototype.getEventTable = function () {
+            DepsManager.prototype.getEventTable = /** @inline */function () {
                 return DepsManager._pEventTable;
             };
             DepsManager.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -49422,13 +55005,13 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             DepsManager.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (DepsManager._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             DepsManager.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (DepsManager._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             DepsManager.prototype.loaded = function (deps) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((DepsManager._pEventTable))).broadcast[(this._iGuid)] = (((DepsManager._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).loaded;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -49442,7 +55025,7 @@ var akra;
                 if (true) {
                     throw pErr;
                 }
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((DepsManager._pEventTable))).broadcast[(this._iGuid)] = (((DepsManager._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).error;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -49631,7 +55214,7 @@ var akra;
                 return this._iGuid;
             };
             GamepadMap._pEventTable = new akra.events.EventTable();
-            GamepadMap.prototype.getEventTable = function () {
+            GamepadMap.prototype.getEventTable = /** @inline */function () {
                 return GamepadMap._pEventTable;
             };
             GamepadMap.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -49641,13 +55224,13 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             GamepadMap.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (GamepadMap._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             GamepadMap.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (GamepadMap._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             GamepadMap.prototype.connected = function (pGamepad) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((GamepadMap._pEventTable))).broadcast[(this._iGuid)] = (((GamepadMap._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).connected;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -49657,7 +55240,7 @@ var akra;
                 }
             };
             GamepadMap.prototype.disconnected = function (pGamepad) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((GamepadMap._pEventTable))).broadcast[(this._iGuid)] = (((GamepadMap._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).disconnected;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -49667,7 +55250,7 @@ var akra;
                 }
             };
             GamepadMap.prototype.updated = function (pGamepad) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((GamepadMap._pEventTable))).broadcast[(this._iGuid)] = (((GamepadMap._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).updated;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50010,25 +55593,32 @@ var akra;
                 /**@protected*/ this._pBroadcastSlotList = null;
                 this._pResourceManager = new core.pool.ResourcePoolManager(this);
                 if (!this._pResourceManager.initialize()) {
-                    akra.logger.setSourceLocation("core/Engine.ts", 67);
+                    akra.logger.setSourceLocation("core/Engine.ts", 74);
                     akra.logger.error('cannot initialize ResourcePoolManager');
                     ;
                 }
                 this._pSceneManager = new akra.scene.SceneManager(this);
                 if (!this._pSceneManager.initialize()) {
-                    akra.logger.setSourceLocation("core/Engine.ts", 72);
+                    akra.logger.setSourceLocation("core/Engine.ts", 79);
                     akra.logger.error("cannot initialize SceneManager");
                     ;
                 }
                 this._pParticleManager = null;
+                this._pTimer = akra.util.UtilTimer.start();
                 this._pRenderer = new akra.webgl.WebGLRenderer(this);
                 this._pComposer = new akra.fx.Composer(this);
                 // Register image codecs
                 akra.DDSCodec.startup();
-                this._pTimer = akra.util.UtilTimer.start();
                 this.pause(false);
                 this.parseOptions(pOptions);
             }
+            Object.defineProperty(Engine.prototype, "time", {
+                get: /** @inline */function () {
+                    return ((this._pTimer).execCommand(5 /* TIMER_GET_APP_TIME */ ));
+                },
+                enumerable: true,
+                configurable: true
+            });
             Engine.prototype.enableGamepads = function () {
                 if (!((this._pGamepads) === null)) {
                     return true;
@@ -50066,7 +55656,7 @@ var akra;
                 ((pDepsManager).getEventTable().addDestination(((((pDepsManager)))._iGuid), ("loaded"), (this), ("_depsLoaded"), (undefined)));
                 //load depends!
                 if (!pDepsManager.load(pDeps, sDepsRoot)) {
-                    akra.logger.setSourceLocation("core/Engine.ts", 142);
+                    akra.logger.setSourceLocation("core/Engine.ts", 149);
                     akra.logger.criticalError("load dependencies are not started.");
                     ;
                 }
@@ -50102,7 +55692,7 @@ var akra;
                 var pEngine = this;
                 // var pCanvas: HTMLCanvasElement = null;
                 // pCanvas = (<IWebGLRenderer>pRenderer).getHTMLCanvas();
-                akra.logger.setSourceLocation("core/Engine.ts", 190);
+                akra.logger.setSourceLocation("core/Engine.ts", 197);
                 akra.logger.assert(!((pRenderer) === null));
                 ;
                 pRenderer._initRenderTargets();
@@ -50111,13 +55701,13 @@ var akra;
                 bValue ? this.active() : this.inactive();
                 function render(iTime) {
                     if (pRenderer.isValid()) {
-                        akra.logger.setSourceLocation("core/Engine.ts", 202);
+                        akra.logger.setSourceLocation("core/Engine.ts", 209);
                         akra.logger.error(pRenderer.getError());
                         ;
                     }
                     if ((pEngine._isActive) && (pEngine._isDepsLoaded)) {
                         if (!pEngine.renderFrame()) {
-                            akra.logger.setSourceLocation("core/Engine.ts", 207);
+                            akra.logger.setSourceLocation("core/Engine.ts", 214);
                             akra.logger.error("Engine::exec() error.");
                             ;
                             return;
@@ -50132,7 +55722,7 @@ var akra;
                 return this._pTimer;
             };
             Engine.prototype.renderFrame = function () {
-                var fElapsedAppTime = this._pTimer.elapsedTime;
+                var fElapsedAppTime = ((this._pTimer).execCommand(6 /* TIMER_GET_ELAPSED_TIME */ ));
                 if (0. == fElapsedAppTime && this._isFrameMoving) {
                     return true;
                 }
@@ -50147,6 +55737,9 @@ var akra;
                 this.frameStarted();
                 this._pRenderer._updateAllRenderTargets();
                 this.frameEnded();
+                akra.logger.setSourceLocation("core/Engine.ts", 247);
+                akra.logger.log("frame rendered();");
+                ;
                 return true;
             };
             Engine.prototype.play = function () {
@@ -50154,7 +55747,7 @@ var akra;
                     this._iAppPausedCount = 0;
                     this.active();
                     if (this._isFrameMoving) {
-                        this._pTimer.start();
+                        ((this._pTimer).execCommand(1 /* TIMER_START */ ) === 0);
                     }
                 }
                 return ((this)._isActive);
@@ -50167,13 +55760,13 @@ var akra;
                 if (isPause && (1 == this._iAppPausedCount)) {
                     // Stop the scene from animating
                     if (this._isFrameMoving) {
-                        this._pTimer.stop();
+                        ((this._pTimer).execCommand(2 /* TIMER_STOP */ ) === 0);
                     }
                 }
                 if (0 == this._iAppPausedCount) {
                     // Restart the timers
                     if (this._isFrameMoving) {
-                        this._pTimer.start();
+                        ((this._pTimer).execCommand(1 /* TIMER_START */ ) === 0);
                     }
                 }
                 return !((this)._isActive);
@@ -50193,10 +55786,10 @@ var akra;
             };
             Engine.prototype.createAnimationController = /** @inline */function (iOptions) {
                 if (typeof iOptions === "undefined") { iOptions = 0; }
-                return akra.animation.createController(this, iOptions);
+                return akra.animation.createController(iOptions);
             };
             Engine.prototype._depsLoaded = function (pLoader, pDeps) {
-                akra.logger.setSourceLocation("core/Engine.ts", 295);
+                akra.logger.setSourceLocation("core/Engine.ts", 303);
                 akra.logger.log("[ALL DEPTS LOADED]");
                 ;
                 this._isDepsLoaded = true;
@@ -50245,7 +55838,7 @@ var akra;
                 return this._iGuid;
             };
             Engine._pEventTable = new akra.events.EventTable();
-            Engine.prototype.getEventTable = function () {
+            Engine.prototype.getEventTable = /** @inline */function () {
                 return Engine._pEventTable;
             };
             Engine.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -50255,13 +55848,13 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             Engine.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Engine._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Engine.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Engine._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Engine.prototype.frameStarted = function () {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Engine._pEventTable))).broadcast[(this._iGuid)] = (((Engine._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).frameStarted;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50271,7 +55864,7 @@ var akra;
                 }
             };
             Engine.prototype.frameEnded = function () {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Engine._pEventTable))).broadcast[(this._iGuid)] = (((Engine._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).frameEnded;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50281,7 +55874,7 @@ var akra;
                 }
             };
             Engine.prototype.depsLoaded = function (deps) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Engine._pEventTable))).broadcast[(this._iGuid)] = (((Engine._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).depsLoaded;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50292,7 +55885,7 @@ var akra;
             };
             Engine.prototype.inactive = function () {
                 this._isActive = false;
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Engine._pEventTable))).broadcast[(this._iGuid)] = (((Engine._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).inactive;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50304,7 +55897,7 @@ var akra;
             };
             Engine.prototype.active = function () {
                 this._isActive = true;
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Engine._pEventTable))).broadcast[(this._iGuid)] = (((Engine._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).active;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50386,7 +55979,7 @@ var akra;
             }
             Object.defineProperty(Pipe.prototype, "uri", {
                 get: /** @inline */function () {
-                    return (new akra.util.URI((this._pAddr.toString())));
+                    return (new /*checked (origin: akra)>>*/akra.util.URI((this._pAddr.toString())));
                 },
                 enumerable: true,
                 configurable: true
@@ -50399,12 +55992,12 @@ var akra;
                 var pWorker = null;
                 var pPipe = this;
                 if (!((sAddr) === null)) {
-                    pAddr = (new akra.util.URI((sAddr)));
+                    pAddr = (new /*checked (origin: akra)>>*/akra.util.URI((sAddr)));
                 } else {
                     if ((!(((this)._pConnect) === null))) {
                         this.close();
                     }
-                    pAddr = ((new akra.util.URI(((this)._pAddr.toString()))));
+                    pAddr = ((new /*checked (origin: akra)>>*/akra.util.URI(((this)._pAddr.toString()))));
                 }
                 // pipe to websocket
                 if (pAddr.protocol.toLowerCase() === "ws") {
@@ -50553,7 +56146,7 @@ var akra;
                 return this._iGuid;
             };
             Pipe._pEventTable = new akra.events.EventTable();
-            Pipe.prototype.getEventTable = function () {
+            Pipe.prototype.getEventTable = /** @inline */function () {
                 return Pipe._pEventTable;
             };
             Pipe.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -50563,13 +56156,13 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             Pipe.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Pipe._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Pipe.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (Pipe._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             Pipe.prototype.opened = function () {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Pipe._pEventTable))).broadcast[(this._iGuid)] = (((Pipe._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).opened;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50579,7 +56172,7 @@ var akra;
                 }
             };
             Pipe.prototype.closed = function (ev) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Pipe._pEventTable))).broadcast[(this._iGuid)] = (((Pipe._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).closed;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50589,7 +56182,7 @@ var akra;
                 }
             };
             Pipe.prototype.error = function (err) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Pipe._pEventTable))).broadcast[(this._iGuid)] = (((Pipe._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).error;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50599,7 +56192,7 @@ var akra;
                 }
             };
             Pipe.prototype.message = function (data, type) {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((Pipe._pEventTable))).broadcast[(this._iGuid)] = (((Pipe._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).message;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -50617,358 +56210,6 @@ var akra;
         net.createPipe = createPipe;
     })(akra.net || (akra.net = {}));
     var net = akra.net;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    (function (util) {
-        ;
-        var ObjectList = (function () {
-            function ObjectList(pData) {
-                /**@protected*/ this._pHead = null;
-                /**@protected*/ this._pTail = null;
-                /**@protected*/ this._pCurrent = null;
-                /**@protected*/ this._iLength = 0;
-                /**@protected*/ this._bLock = false;
-                if (arguments.length) {
-                    this.fromArray(pData);
-                }
-            }
-            Object.defineProperty(ObjectList.prototype, "length", {
-                get: /** @inline */function () {
-                    return this._iLength;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(ObjectList.prototype, "first", {
-                get: /** @inline */function () {
-                    this._pCurrent = this._pHead;
-                    return (((this._pCurrent) != null)) ? this._pCurrent.data : null;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(ObjectList.prototype, "last", {
-                get: /** @inline */function () {
-                    this._pCurrent = this._pTail;
-                    return (((this._pCurrent) != null)) ? this._pCurrent.data : null;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(ObjectList.prototype, "current", {
-                get: /** @inline */function () {
-                    return (((this._pCurrent) != null)) ? this._pCurrent.data : null;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            ObjectList.prototype.lock = /** @inline */function () {
-                this._bLock = true;
-            };
-            ObjectList.prototype.unlock = /** @inline */function () {
-                this._bLock = false;
-            };
-            ObjectList.prototype.isLocked = /** @inline */function () {
-                return this._bLock;
-            };
-            ObjectList.prototype.value = /** @inline */function (n) {
-                return /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(n).data;
-            };
-            ObjectList.prototype.indexOf = function (pData, iFrom) {
-                if (typeof iFrom === "undefined") { iFrom = 0.; }
-                var pItem = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(iFrom);
-                for(var i = iFrom; i < this._iLength; i++) {
-                    if (pItem.data === pData) {
-                        return i;
-                    }
-                    pItem = pItem.next;
-                }
-                return -1;
-            };
-            ObjectList.prototype.mid = function (iPos, iSize) {
-                if (typeof iPos === "undefined") { iPos = 0; }
-                if (typeof iSize === "undefined") { iSize = this._iLength; }
-                iSize = Math.min(this._iLength - iPos, iSize);
-                if (iPos > this._iLength - 1) {
-                    return null;
-                }
-                var pNewList = new ObjectList();
-                var pItem = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(iPos);
-                for(var i = 0; i < iSize; ++i) {
-                    pNewList.push(pItem.data);
-                    pItem = pItem.next;
-                }
-                ;
-                return pNewList;
-            };
-            ObjectList.prototype.slice = /** @inline */function (iStart, iEnd) {
-                if (typeof iStart === "undefined") { iStart = 0; }
-                if (typeof iEnd === "undefined") { iEnd = Math.max(this._iLength - iStart, 0); }
-                return this.mid(iStart, iEnd - iStart);
-            };
-            ObjectList.prototype.move = /** @inline */function (iFrom, iTo) {
-                return this.insert(iTo - 1, /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(iFrom));
-            };
-            ObjectList.prototype.replace = /** @inline */function (iPos, pData) {
-                util.logger.setSourceLocation("util/ObjectList.ts", 102);
-                util.logger.assert(!((this)._bLock), "list locked.");
-                ;
-                /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(iPos).data = pData;
-                return this;
-            };
-            ObjectList.prototype.erase = function (begin, end) {
-                if (arguments.length < 2) {
-                    /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(arguments[0]);
-                } else {
-                    end = Math.min(end, this._iLength);
-                    for(var i = begin; i < end; i++) {
-                        /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(i);
-                    }
-                }
-                return this;
-            };
-            ObjectList.prototype.contains = /** @inline */function (pData) {
-                return (this.indexOf(pData) >= 0);
-            };
-            ObjectList.prototype.removeAt = /** @inline */function (n) {
-                /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(n);
-            };
-            ObjectList.prototype.removeOne = /** @inline */function (pData) {
-                (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/(this).takeAt((this.indexOf(pData))));
-            };
-            ObjectList.prototype.removeAll = /** @inline */function (pData) {
-                var i;
-                var n = ((this)._iLength);
-                while((i = this.indexOf(pData)) >= 0) {
-                    (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/(this).takeAt((i)));
-                    i--;
-                }
-                return n;
-            };
-            ObjectList.prototype.swap = function (i, j) {
-                util.logger.setSourceLocation("util/ObjectList.ts", 147);
-                util.logger.assert(!((this)._bLock), "list locked.");
-                ;
-                i = Math.min(i, this._iLength - 1);
-                j = Math.min(j, this._iLength - 1);
-                if (i != j) {
-                    var pItem1 = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(i);
-                    var pItem2 = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(j);
-                    var pTmp = pItem1.data;
-                    pItem1.data = pItem2.data;
-                    pItem2.data = pTmp;
-                }
-                return this;
-            };
-            ObjectList.prototype.add = function (pList) {
-                pList.seek(0);
-                if (pList.length > 1) {
-                    ((this).insert((this)._iLength, (pList.first())));
-                }
-                for(var i = 1; i < pList.length; i++) {
-                    ((this).insert((this)._iLength, (pList.next())));
-                }
-                return this;
-            };
-            ObjectList.prototype.seek = function (n) {
-                if (typeof n === "undefined") { n = 0; }
-                var pElement;
-                n = Math.min(n, this._iLength - 1);
-                if (n > this._iLength / 2) {
-                    pElement = this._pTail;
-                    for(var m = this._iLength - 1 - n; m > 0; --m) {
-                        pElement = pElement.prev;
-                    }
-                } else {
-                    pElement = this._pHead;
-                    for(var i = 0; i < n; ++i) {
-                        pElement = pElement.next;
-                    }
-                }
-                this._pCurrent = pElement;
-                return this;
-            };
-            ObjectList.prototype.next = /** @inline */function () {
-                return (((this._pCurrent) != null) && ((this._pCurrent.next) != null)) ? (this._pCurrent = this._pCurrent.next).data : null;
-            };
-            ObjectList.prototype.prev = /** @inline */function () {
-                return (((this._pCurrent) != null) && ((this._pCurrent.prev) != null)) ? (this._pCurrent = this._pCurrent.prev).data : null;
-            };
-            ObjectList.prototype.push = /** @inline */function (pElement) {
-                return this.insert(this._iLength, pElement);
-            };
-            ObjectList.prototype.takeAt = /** @inline */function (n) {
-                util.logger.setSourceLocation("util/ObjectList.ts", 217);
-                util.logger.assert(!((this)._bLock), "list locked.");
-                ;
-                if (n < 0) {
-                    return null;
-                }
-                return this.pullElement(/*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(n));
-            };
-            ObjectList.prototype.pullElement = function (pItem) {
-                if (((pItem) === null)) {
-                    //this case theoretically cannot happen, but ....
-                    return null;
-                }
-                if (((pItem.prev) === null)) {
-                    this._pHead = pItem.next;
-                } else {
-                    pItem.prev.next = pItem.next;
-                }
-                if (((pItem.next) === null)) {
-                    this._pTail = pItem.prev;
-                } else {
-                    pItem.next.prev = pItem.prev;
-                }
-                this._iLength--;
-                if (((pItem.next) === null)) {
-                    this._pCurrent = this._pTail;
-                } else {
-                    this._pCurrent = pItem.next;
-                }
-                return /*not inlined, because supportes only single statement functions(cur. st. count: 7)*/this.releaseItem(pItem);
-            };
-            ObjectList.prototype.takeFirst = /** @inline */function () {
-                return /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(0);
-            };
-            ObjectList.prototype.takeLast = /** @inline */function () {
-                return /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(this._iLength - 1);
-            };
-            ObjectList.prototype.takeCurrent = /** @inline */function (isPrev) {
-                if (typeof isPrev === "undefined") { isPrev = false; }
-                //console.log(isDefAndNotNull(this._pCurrent));
-                return this.pullElement(this._pCurrent);
-            };
-            ObjectList.prototype.pop = /** @inline */function () {
-                return /*not inlined, because supportes only single statement functions(cur. st. count: 6)*/this.takeAt(this._iLength - 1);
-            };
-            ObjectList.prototype.prepend = /** @inline */function (pElement) {
-                return this.insert(0, pElement);
-            };
-            ObjectList.prototype.find = /** @inline */function (n) {
-                if (n < this._iLength) {
-                    this.seek(n);
-                    return this._pCurrent;
-                }
-                return null;
-            };
-            ObjectList.prototype.releaseItem = /** @inline */function (pItem) {
-                var pData = pItem.data;
-                pItem.next = null;
-                pItem.prev = null;
-                pItem.data = null;
-                ObjectList.listItemPool.push(pItem);
-                return pData;
-            };
-            ObjectList.prototype.createItem = /** @inline */function () {
-                if (ObjectList.listItemPool.length == 0) {
-                    // LOG("allocated object list item");
-                    return {
-                        next: null,
-                        prev: null,
-                        data: null
-                    };
-                }
-                // LOG("before pop <----------", this._iLength, this.first);
-                return ObjectList.listItemPool.pop();
-            };
-            ObjectList.prototype.fromArray = function (elements, iOffset, iSize) {
-                if (typeof iOffset === "undefined") { iOffset = 0; }
-                if (typeof iSize === "undefined") { iSize = elements.length; }
-                iOffset = Math.min(iOffset, this._iLength);
-                for(var i = 0; i < iSize; i++) {
-                    this.insert(iOffset + i, elements[i]);
-                }
-                return this;
-            };
-            ObjectList.prototype.insert = function (n, pData) {
-                util.logger.setSourceLocation("util/ObjectList.ts", 321);
-                util.logger.assert(!((this)._bLock), "list locked.");
-                ;
-                var pNew = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.createItem();
-                var pItem;
-                n = Math.min(n, this._iLength);
-                pNew.data = pData;
-                if (n == 0) {
-                    if (((this._pHead) === null)) {
-                        this._pTail = pNew;
-                    }
-                    pNew.next = this._pHead;
-                    this._pHead = pNew;
-                } else {
-                    pItem = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.find(n - 1);
-                    if (pItem == null) {
-                        this._pHead = pNew;
-                    } else {
-                        if (pItem.next == null) {
-                            this._pTail = pNew;
-                        } else {
-                            pNew.next = pItem.next;
-                            pItem.next.prev = pNew;
-                        }
-                        pItem.next = pNew;
-                        pNew.prev = pItem;
-                    }
-                }
-                this._iLength++;
-                this._pCurrent = pNew;
-                return this;
-            };
-            ObjectList.prototype.isEqual = function (pList) {
-                if (this._iLength == pList.length) {
-                    if (this === pList) {
-                        return true;
-                    }
-                    var l1 = /*not inlined, because supportes only single statement functions(cur. st. count: 3)*/this.first;
-                    var l2 = pList.first;
-                    for(var i = 0; i < this._iLength; ++i) {
-                        if (l1 != l2) {
-                            return false;
-                        }
-                        l1 = (((((this)._pCurrent) != null) && (((this)._pCurrent.next) != null)) ? ((this)._pCurrent = (this)._pCurrent.next).data : null);
-                        l2 = pList.next();
-                    }
-                    return true;
-                }
-                return false;
-            };
-            ObjectList.prototype.clear = function () {
-                util.logger.setSourceLocation("util/ObjectList.ts", 390);
-                util.logger.assert(!((this)._bLock), "list locked.");
-                ;
-                var pPrev;
-                var pNext;
-                this._pCurrent = this._pHead;
-                for(var i = 0; i < this._iLength; ++i) {
-                    pPrev = this._pCurrent;
-                    pNext = this._pCurrent = this._pCurrent.next;
-                    /*not inlined, because supportes only single statement functions(cur. st. count: 7)*/this.releaseItem(pPrev);
-                }
-                this._pHead = this._pCurrent = this._pTail = null;
-                this._iLength = 0;
-                return this;
-            };
-            ObjectList.prototype.forEach = function (fn) {
-                var pItem = this._pHead;
-                var n = 0;
-                do {
-                    if (fn(pItem.data, n++) === false) {
-                        return;
-                    }
-                } while((pItem = pItem.next));
-            };
-            ObjectList.listItemPool = new util.ObjectArray();
-            return ObjectList;
-        })();
-        util.ObjectList = ObjectList;        
-    })(akra.util || (akra.util = {}));
-    var util = akra.util;
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    akra.ObjectList = akra.util.ObjectList;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
@@ -51313,7 +56554,7 @@ var akra;
                 return this._iGuid;
             };
             RPC._pEventTable = new akra.events.EventTable();
-            RPC.prototype.getEventTable = function () {
+            RPC.prototype.getEventTable = /** @inline */function () {
                 return RPC._pEventTable;
             };
             RPC.prototype.connect = /** @inline */function (pSender, sSignal, sSlot, eType) {
@@ -51323,13 +56564,13 @@ var akra;
                 return pSender.getEventTable().removeDestination((((pSender))._iGuid), sSignal, this, sSlot, eType);
             };
             RPC.prototype.bind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().addListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (RPC._pEventTable).addListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             RPC.prototype.unbind = /** @inline */function (sSignal, fnListener, eType) {
-                return this.getEventTable().removeListener(((this)._iGuid), sSignal, fnListener, eType);
+                return (RPC._pEventTable).removeListener(((this)._iGuid), sSignal, fnListener, eType);
             };
             RPC.prototype.joined = function () {
-                this._pBroadcastSlotList = this._pBroadcastSlotList || ((((this.getEventTable())).broadcast[(this._iGuid)] = ((this.getEventTable())).broadcast[(this._iGuid)] || {}));
+                this._pBroadcastSlotList = this._pBroadcastSlotList || (((((RPC._pEventTable))).broadcast[(this._iGuid)] = (((RPC._pEventTable))).broadcast[(this._iGuid)] || {}));
                 var _broadcast = (this._pBroadcastSlotList).joined;
                 var _recivier = this;
                 if (((_broadcast) !== undefined)) {
@@ -51404,14 +56645,14 @@ var akra;
                 this._pObject = pObject;
                 this._pWorldExtents = pObject.worldExtents();
                 this._sSurfaceTextures = sSurfaceTextures;
-                var iCountTex = (/*checked (origin: math)>>*/akra.math.log((this._iOriginalTextureMaxSize / akra.math.max(this._iTextureHeight, this._iTextureWidth))) / /*checked (origin: math)>>*/akra.math.LN2) + 1;
+                var iCountTex = (/*checked (origin: math)>>*/akra.math.log((this._iOriginalTextureMaxSize / /*checked (origin: akra)>>*/akra.math.max(this._iTextureHeight, this._iTextureWidth))) / /*checked (origin: math)>>*/akra.math.LN2) + 1;
                 this._pTexures = new Array(iCountTex);
                 this._pBuffer = new Array(iCountTex);
                 this._pBufferMap = new Array(iCountTex);
                 this._pXY = new Array(iCountTex);
                 this._iBufferHeight = this._iTextureHeight * 2;
                 this._iBufferWidth = this._iTextureWidth * 2;
-                this._pDataFor = new Uint8Array(this._iBufferWidth * this._iBufferHeight * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes));
+                this._pDataFor = new Uint8Array(this._iBufferWidth * this._iBufferHeight * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes));
                 this._pMapDataFor = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
                 this._pMapDataNULL = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
                 for(var i = 0; i < this._pMapDataNULL.length; i++) {
@@ -51423,16 +56664,16 @@ var akra;
                     /*this._pEngine*/
                     this._pTexures[i] = new akra.core.pool.resources.Texture();
                     this._pTexures[i].create(this._iTextureWidth, this._iTextureHeight, 1, new akra.Color(0, 0, 0, 1), akra.ETextureFlags.DYNAMIC, 1, 3553 /* TEXTURE_2D */ , this._eTextureType);
-                    this._pTexures[i].setParameter(10242 /* WRAP_S */ , 33071 /* CLAMP_TO_EDGE */ );
-                    this._pTexures[i].setParameter(10243 /* WRAP_T */ , 33071 /* CLAMP_TO_EDGE */ );
+                    this._pTexures[i].setWrapMode(10242 /* WRAP_S */ , 33071 /* CLAMP_TO_EDGE */ );
+                    this._pTexures[i].setWrapMode(10243 /* WRAP_T */ , 33071 /* CLAMP_TO_EDGE */ );
                     if (i == 0) {
-                        this._pBuffer[i] = new Uint8Array(this._iTextureHeight * this._iTextureWidth * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes));
+                        this._pBuffer[i] = new Uint8Array(this._iTextureHeight * this._iTextureWidth * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes));
                         //на самом деле this._iTextureHeight*this._iTextureWidth
                         this._pBufferMap[i] = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
                         this.setBufferMapNULL(this._pBufferMap[i]);
                         //Худшего качества статична поэтому размер у буфера такойже как у текстуры this._iBlockSize
                                             } else {
-                        this._pBuffer[i] = new Uint8Array(this._iBufferHeight * this._iBufferWidth * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes));
+                        this._pBuffer[i] = new Uint8Array(this._iBufferHeight * this._iBufferWidth * (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes));
                         this._pBufferMap[i] = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
                         this.setBufferMapNULL(this._pBufferMap[i]);
                     }
@@ -51592,7 +56833,7 @@ var akra;
                             this._pXY[i].iTexY = iTexInBufY / this.getHeightOrig(i);
                             iTexInBufX -= this._pXY[i].iX;
                             iTexInBufY -= this._pXY[i].iY;
-                            this._setData(this._pDataFor, 0, 0, this._iTextureWidth, this._iTextureHeight, this._pBuffer[i], iTexInBufX, iTexInBufY, this._iBufferWidth, this._iBufferHeight, this._iTextureWidth, this._iTextureHeight, (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes));
+                            this._setData(this._pDataFor, 0, 0, this._iTextureWidth, this._iTextureHeight, this._pBuffer[i], iTexInBufX, iTexInBufY, this._iBufferWidth, this._iBufferHeight, this._iTextureWidth, this._iTextureHeight, (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes));
                             this._pTexures[i].setPixelRGBA(0, 0, this._iTextureWidth, this._iTextureHeight, this._pDataFor);
                             /*var c2d=document.getElementById('canvas1_'+i).getContext("2d");
                             var pData=c2d.getImageData(0,0,128,128);
@@ -51786,7 +57027,7 @@ var akra;
             MegaTexture.prototype._setDataBetweenBuffer = function (pBuffer, iX, iY, pBufferIn, iInX, iInY, iBlockWidth, iBlockHeight) {
                 var iInWidth = this._iBufferWidth;
                 var iInHeight = this._iBufferHeight;
-                var iComponents = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes);
+                var iComponents = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes);
                 var iWidth = this._iBufferWidth;
                 var iHeight = this._iBufferHeight;
                 this.setDataT(pBuffer, iX, iY, iWidth, iHeight, pBufferIn, iInX, iInY, iInWidth, iInHeight, iBlockWidth, iBlockHeight, iComponents);
@@ -51806,7 +57047,7 @@ var akra;
                 var iInHeight = this._iBlockSize;
                 var iBlockWidth = this._iBlockSize;
                 var iBlockHeight = this._iBlockSize;
-                var iComponents = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*/pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes);
+                var iComponents = (/*not inlined, because supportes only single statement functions(cur. st. count: 6)*//*checked (origin: pixelUtil)>>*/akra.pixelUtil.getDescriptionFor((this._eTextureType)).elemBytes);
                 var iWidth = 0;
                 var iHeight = 0;
                 if (pBuffer.length == this._iBufferWidth * this._iBufferHeight * iComponents) {
@@ -52016,8 +57257,18 @@ var akra;
                 this._pEngine = null;
                 this._pRenderableObject = new akra.render.RenderableObject();
                 this._pVertexDescription = [
-                    akra.VE_FLOAT3(akra.DeclarationUsages.POSITION), 
-                    akra.VE_FLOAT2(akra.DeclarationUsages.TEXCOORD)
+                    (({
+count: (3),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclarationUsages.POSITION)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+})), 
+                    (({
+count: (2),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclarationUsages.TEXCOORD)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                 ];
                 this._pEngine = pEngine;
             }
@@ -52129,8 +57380,8 @@ var akra;
                 var v3fNormal = new akra.Vec3();
                 //размер ячейки сектора
                 var v2fCellSize = new akra.Vec2();
-                v2fCellSize.set((akra.math.abs((this)._pWorldRect.x1 - (this)._pWorldRect.x0)) / (this._iXVerts - 1), //размер сектора/количество ячеек в секторе
-                (akra.math.abs((this)._pWorldRect.y1 - (this)._pWorldRect.y0)) / (this._iYVerts - 1));
+                v2fCellSize.set((/*checked (origin: akra)>>*/akra.math.abs((this)._pWorldRect.x1 - (this)._pWorldRect.x0)) / (this._iXVerts - 1), //размер сектора/количество ячеек в секторе
+                (/*checked (origin: akra)>>*/akra.math.abs((this)._pWorldRect.y1 - (this)._pWorldRect.y0)) / (this._iYVerts - 1));
                 //Координаты вершина в секторе
                 var v2fVert = new akra.Vec2();
                 v2fVert.set(0.0, 0.0);
@@ -52167,7 +57418,12 @@ var akra;
                 this._iYVerts, 0);
                 //
                 this._pRenderData.allocateIndex(([
-                    akra.VE_FLOAT(akra.DeclarationUsages.INDEX0)
+                    (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclarationUsages.INDEX0)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                 ]), pIndexList);
                 this._pRenderData.index(this._iVertexID, akra.DeclarationUsages.INDEX0);
                 return true;
@@ -52420,7 +57676,8 @@ var akra;
                 var iMaxX = this._iTableWidth;
                 //trace("Terraim Map Size ", iMaxX, iMaxY);
                 var pColorData = new Uint8Array(4 * iMaxY * iMaxX);
-                //float			    this._pHeightTable = new Array(iMaxX * iMaxY);
+                /*float*/
+                this._pHeightTable = new Array(iMaxX * iMaxY);
                 /*this._pEngine*/
                 var temp = new akra.core.pool.resources.Texture();
                 // first, build a table of heights
@@ -53085,8 +58342,8 @@ var akra;
                 var v3fNormal = new akra.Vec3();
                 // размер ячейки сектора
                 var v2fCellSize = new akra.Vec2();
-                v2fCellSize.set((akra.math.abs((this)._pWorldRect.x1 - (this)._pWorldRect.x0)) / (this._iXVerts - 1), /*размер сектора/количество ячеек в секторе*/
-                (akra.math.abs((this)._pWorldRect.y1 - (this)._pWorldRect.y0)) / (this._iYVerts - 1));
+                v2fCellSize.set((/*checked (origin: akra)>>*/akra.math.abs((this)._pWorldRect.x1 - (this)._pWorldRect.x0)) / (this._iXVerts - 1), /*размер сектора/количество ячеек в секторе*/
+                (/*checked (origin: akra)>>*/akra.math.abs((this)._pWorldRect.y1 - (this)._pWorldRect.y0)) / (this._iYVerts - 1));
                 //Координаты вершина в секторе
                 var v2fVert = new akra.Vec2();
                 v2fVert.set(0.0, 0.0);
@@ -53491,8 +58748,18 @@ var akra;
                     }
                 }
                 var pVertexDescription = [
-                    akra.VE_FLOAT3(akra.DeclarationUsages.POSITION), 
-                    akra.VE_FLOAT2(akra.DeclarationUsages.TEXCOORD)
+                    (({
+count: (3),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclarationUsages.POSITION)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+})), 
+                    (({
+count: (2),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclarationUsages.TEXCOORD)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                 ];
                 this._iVertexID = this._pRenderData.allocateData(pVertexDescription, new Float32Array(this._pVerts));
                 //Индексны буфер для всех
@@ -53500,7 +58767,12 @@ var akra;
                 //Максимальное количество треугольников помноженное на 3 вершины на каждый треугольник
                 this._pIndexList = new Float32Array(this._iMaxTriTreeNodes * 3);
                 this._pRenderData.allocateIndex([
-                    akra.VE_FLOAT(akra.DeclarationUsages.INDEX0)
+                    (({
+count: (1),
+type: (5126 /* FLOAT */ ),
+usage: ((/*checked (origin: akra)>>*/akra.DeclarationUsages.INDEX0)),
+offset: ((/*checked (origin: akra)>>*/akra.MAX_INT32))
+}))
                 ], this._pIndexList);
                 this._pRenderData.index(this._iVertexID, akra.DeclarationUsages.INDEX0);
                 this._pDataIndex = this._pRenderData.getAdvancedIndexData(akra.DeclarationUsages.INDEX0);
