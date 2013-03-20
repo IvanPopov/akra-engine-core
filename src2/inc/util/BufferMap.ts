@@ -141,29 +141,27 @@ module akra.util {
 		getFlow(iFlow: any, bComplete: bool = true): IDataFlow {
 
 		    if (isString(arguments[0])) {
-		    	var sSemantics: string = arguments[0];
-
+		        var nTotal: int; 
+		        var pFlows: IDataFlow[];
+		        
 		        if (bComplete) {
-		        	if (!isDef(this._pSemanticsMap[sSemantics])) {
-		        		//debug_print("called undefined semantics: " + sSemantics);
-		        		this._pSemanticsMap[sSemantics] = null;
-		        	}
-
-		        	return this._pSemanticsMap[sSemantics];
+		            pFlows = this._pCompleteFlows;
+		            nTotal = this._nCompleteFlows;
 		        }
-		       
-	            var pFlows: IDataFlow[] = this._pFlows;
-	            var nTotal: int = this._pFlows.length;
-	       
+		        else {
+		            pFlows = this._pFlows;
+		            nTotal = this._pFlows.length;
+		        }
+
 		        for (var i: int = 0; i < nTotal; ++ i) {
 		            if (!pFlows[i].data) {
 		                continue;
 		            }
-		            if (pFlows[i].data.hasSemantics(sSemantics)) {
+		            if (pFlows[i].data.hasSemantics(arguments[0])) {
 		                return pFlows[i];
 		            }
 		        }
-	        
+
 		        return null;
 		    }
 		    
@@ -251,7 +249,6 @@ module akra.util {
 
 
 		    pFlow.data = pVertexData;
-		    // this.linkFlow(pFlow);
 
 		    return this.update() ? iFlow : -1;
 		}
@@ -267,13 +264,29 @@ module akra.util {
 
 			for (var i: int = 0; i < pDecl.length; ++ i) {
 				var pElement: data.VertexElement = <data.VertexElement>pDecl.element(i);
-				
+				var sSemantics: string = pElement.semantics;
+
 				if (pElement.isEnd()) {
 					continue;
 				}
+				
+				var isSemanticsExists: bool = isDefAndNotNull(this._pSemanticsMap[sSemantics]);
 
-				if (!isDefAndNotNull(this._pSemanticsMap[pElement.semantics])) {
-					this._pSemanticsMap[pElement.semantics] = pFlow;
+				debug_assert(!isSemanticsExists, "overwrited semantics: " + sSemantics);
+
+				if (!isSemanticsExists) {
+					this._pSemanticsMap[sSemantics] = pFlow;
+				}
+			}
+
+			if (pFlow.type === EDataFlowTypes.MAPPABLE) {
+				var sSemantics: string = pFlow.mapper.semantics;
+				var isSemanticsExists: bool = isDefAndNotNull(this._pSemanticsMap[sSemantics]);
+
+				debug_assert(!isSemanticsExists, "overwrited semantics(MAPPER!): " + sSemantics);
+
+				if (!isSemanticsExists) {
+					this._pSemanticsMap[sSemantics] = pFlow;
 				}
 			}
 		}
@@ -409,7 +422,14 @@ module akra.util {
 		    this._nCompleteVideoBuffers = nCompleteVideoBuffers;
 		    this._nUsedFlows = nUsedFlows;
 
+		    LOG(this.toString());
+		    LOG("\n" + JSON.stringify(Object.keys(this._pSemanticsMap), null, "\t"))
+
 		    return true;
+		}
+
+		findFlow(sSemantics: string) {
+			return this._pSemanticsMap[sSemantics];
 		}
 
 		clone(bWithMapping?: bool): IBufferMap {
