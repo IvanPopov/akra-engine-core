@@ -166,7 +166,7 @@ module akra.core.pool.resources {
                 return false;
             }    
 
-            this.textureType=eTextureType;
+            this._eTextureType=eTextureType;
 
             this._iWidth = iWidth;
             this._iHeight = iHeight;
@@ -176,6 +176,8 @@ module akra.core.pool.resources {
             this._nMipLevels = nMipLevels;            
 
             this._eFormat = eFormat;
+
+
 
             if(isArray(pPixels)) 
             {
@@ -389,10 +391,7 @@ module akra.core.pool.resources {
                 this._nMipLevels=0;
             }
 
-            // Create the texture
-            this.createInternalTexture(null);
-
-            
+                        
             // Check if we're loading one image with multiple faces
             // or a vector of images representing the faces
             var iFaces: uint = 0;
@@ -402,16 +401,19 @@ module akra.core.pool.resources {
             {
                 iFaces = 6;
                 isMultiImage = true;
+                this._eTextureType = ETextureTypes.TEXTURE_CUBE_MAP;
             }
             else if(pMainImage.numFaces==6)
             {
                 iFaces = 6;
                 isMultiImage = false;
+                this._eTextureType = ETextureTypes.TEXTURE_CUBE_MAP;
             }
             else
             {
                 iFaces = 1;
                 isMultiImage = false;
+                this._eTextureType = ETextureTypes.TEXTURE_2D;
             }
 
             // Check wether number of faces in images exceeds number of faces
@@ -420,6 +422,9 @@ module akra.core.pool.resources {
             {
                 iFaces = this.getNumFaces();
             }
+
+            // Create the texture
+            this.createInternalTexture(null);
 
             // Main loading loop
             // imageMips == 0 if the image has no custom mipmaps, otherwise contains the number of custom mips

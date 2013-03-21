@@ -85,7 +85,7 @@ module akra.webgl {
 
 
 
-        _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
+        protected _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
              if (!this.isValid()) {
                 return false;
             }
@@ -96,7 +96,7 @@ module akra.webgl {
             pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
             return true;         
         }
-        _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
+        protected _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
              if (!this.isValid()) {
                 return false;
             }
@@ -391,7 +391,7 @@ module akra.webgl {
 	        }
 
 	        var idx: uint = iFace * (this._nMipLevels + 1) + iMipmap;
-	        ASSERT(idx < this._pSurfaceList.length,"smth");
+	        ASSERT(idx < this._pSurfaceList.length,"smth "+this._pSurfaceList.length+" , "+ iFace+" , "+this._nMipLevels+" , "+iMipmap);
 	        
 	        return this._pSurfaceList[idx];
         }

@@ -70,7 +70,7 @@ module akra{
 			ok(isResult && pImg.width>0 && pImg.height>0);
 
 		}
-		pImg.load("data/box_ABGR.dds",fnDraw);
+		pImg.load("data/box_DXT5_mip.dds",fnDraw);
 
 		
 

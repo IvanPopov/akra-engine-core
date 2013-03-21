@@ -41,11 +41,17 @@ module akra.core.pool.resources {
     	}
 
     	inline get numFaces():uint{
-            if (this._iFlags&EImageFlags.CUBEMAP){
+            if (this._iFlags&EImageFlags.CUBEMAP)
+            {
                 var nFace:uint=0;
-                for(var i:uint=0;i<32;i++)
+                for(var i:uint=0;i<6;i++)
                 {
-                    nFace++;
+                    if(this._iCubeFlags&(1<<i))
+                    {
+                        nFace++;
+                        
+                    }
+
                 }
                 return nFace;
             }
@@ -251,10 +257,10 @@ module akra.core.pool.resources {
                 }
                 else
                 {
-                    console.log("io.fopen==>>");
+                    
                     io.fopen(pData,"rb").onread=function(pError:Error,pDataInFile:ArrayBuffer)
                     {
-                        console.log("io.fopen==<<");
+                       
                         pMe.load(new Uint8Array(pDataInFile),sExt,sType);
 
                     }
@@ -291,9 +297,9 @@ module akra.core.pool.resources {
 
                 var pImgData:IImgData=new ImgData();
 
-                console.log("DDS.decode==>>");
+             
                 this._pBuffer=pCodec.decode(pData,pImgData);
-                console.log("DDS.decode<<==");
+
 
                 this._iWidth=pImgData.width;
                 this._iHeight=pImgData.height;
@@ -301,6 +307,8 @@ module akra.core.pool.resources {
                 this._nMipMaps=pImgData.numMipMaps;
                 this._iFlags=pImgData.flags;
                 this._iCubeFlags=pImgData.cubeFlags;
+
+                console.log(this._iCubeFlags.toString(16),this._iFlags.toString(16));
 
                 this._eFormat=pImgData.format;
 
