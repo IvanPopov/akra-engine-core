@@ -2,8 +2,21 @@
 #define PASSINPUTBLEND_TS
 
 #include "IAFXPassInputBlend.ts"
+#include "util/Color.ts"
 
 module akra.fx {
+
+	export inline function createSamplerState(): IAFXSamplerState {
+		return <IAFXSamplerState>{ 
+			textureName: "",
+			texture: null,
+			wrap_s: 0,
+			wrap_t: 0,
+			mag_filter: 0,
+			min_filter: 0
+		};
+	}
+
     export interface IAFXShaderVarTypeMap {
 		[index: string]: EAFXShaderVariableType;
 		[index: uint]: EAFXShaderVariableType;
@@ -71,11 +84,26 @@ module akra.fx {
 		}
 
 		setUniform(sName: string, pValue: any): void {
-			if(!this._pUniformTypeMap[sName]){
+			var eType: EAFXShaderVariableType = this._pUniformTypeMap[sName];
+
+			if(!eType){
 				this._pUniformTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
 				return;
 			}
 
+			if (eType === EAFXShaderVariableType.k_Sampler2D || 
+				eType === EAFXShaderVariableType.k_SamplerCUBE) {
+				var isArray: bool = this._isUniformArrayMap[sName];
+
+				if (isArray) {
+					this.setSamplerArray(sName, pValue);
+				}
+				else {
+					this.setSampler(sName, pValue);
+				}
+
+				return;
+			}
 			//Check type
 
 			this.uniforms[sName] = pValue;
@@ -99,6 +127,29 @@ module akra.fx {
 			this.foreigns[sName] = pOldValue;
 		}
 
+		inline setSampler(sName: string, pValue: IAFXSamplerState): void {
+			PassInputBlend.copySamplerState(pValue, this.samplers[sName]);
+		}
+
+		setSamplerArray(sName: string, pValue: IAFXSamplerState[]): void {
+			for (var i: int = 0; i < pValue.length; i++) {
+				PassInputBlend.copySamplerState(pValue[i], this.samplerArrays[sName][i]);
+			}
+
+			this.samplerArrayLength[sName] = pValue.length;
+		}
+
+		static copySamplerState(pFrom: IAFXSamplerState, pTo: IAFXSamplerState): void {
+			pTo.textureName = pFrom.textureName;
+			pTo.texture = pFrom.texture;
+
+			pTo.wrap_s = pFrom.wrap_s;
+			pTo.wrap_t = pFrom.wrap_t;
+
+			pTo.mag_filter = pFrom.mag_filter;
+			pTo.min_filter = pFrom.min_filter;
+		}
+
 		//complete
 		setTexture(sName: string, pValue: any): void {
 			if(!this._pTextureTypeMap[sName]){
@@ -111,15 +162,22 @@ module akra.fx {
 			this.textures[sName] = pValue;
 		}
 
-		setSamplerTexture(sName: string, pState: any): void {
-			if (!this.hasUniform(sName)) {
-				return;
-			}
-			//this.samplers[sName]
-		}
 
-		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void {
-			//TODO: apply surface material
+		setSurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): void {
+			// var pSurfaceMaterial: core.pool.resources.SurfaceMaterial = pSurfaceMaterial;
+			for (var i: int = 0; i < pSurfaceMaterial.totalTextures; i++) {
+				var pTexture: ITexture = pSurfaceMaterial[i].texture(i);
+				// var iTexcord: int = pSurfaceMaterial[i].texcoord(i);
+				this.setTexture("TEXTURE" + i, pTexture);
+			}
+
+			var pMaterial: IMaterial = pSurfaceMaterial.material;
+
+			this.setUniform("MATERIAL.DIFFUSE", util.colorToVec4(pMaterial.diffuse));
+			this.setUniform("MATERIAL.AMBIENT", util.colorToVec4(pMaterial.ambient));
+			this.setUniform("MATERIAL.SPECULAR", util.colorToVec4(pMaterial.specular));
+			this.setUniform("MATERIAL.EMISSIVE", util.colorToVec4(pMaterial.emissive));
+			this.setUniform("MATERIAL.SHININESS", pMaterial.shininess);
 		}
 
 		inline _getUnifromLength(sName: string): uint {
@@ -128,6 +186,14 @@ module akra.fx {
 
 		inline _getUniformType(sName: string): EAFXShaderVariableType {
 			return this._pUniformTypeMap[sName];
+		}
+
+		inline _getSamplerState(sName: string): IAFXSamplerState {
+			return this.samplers[sName];
+		}
+
+		inline _getSamplerTexture(sName: string): ITexture {
+			return this._getTextureForSamplerState(this._getSamplerState(sName));
 		}
 
 		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture {
@@ -243,11 +309,11 @@ module akra.fx {
 						this.samplerArrayLength[sName] = 0;
 
 						for(var j: uint = 0; j < this.samplerArrays[sName].length; j++) {
-							this.samplerArrays[sName][j] = this.createSamplerState();
+							this.samplerArrays[sName][j] = createSamplerState();
 						}
 					}
 					else {
-						this.samplers[sName] = this.createSamplerState();
+						this.samplers[sName] = createSamplerState();
 					}
 				}
 				else {
@@ -333,17 +399,6 @@ module akra.fx {
 
 		private inline isVarArray(pVar: IAFXVariableDeclInstruction): bool {
 			return pVar.getType().isNotBaseArray();
-		}
-
-		private inline createSamplerState(): IAFXSamplerState {
-			return <IAFXSamplerState>{ 
-				textureName: "",
-				texture: null,
-				wrap_s: 0,
-				wrap_t: 0,
-				mag_filter: 0,
-				min_filter: 0
-			};
 		}
 
 		private clearSamplerState(pState: IAFXSamplerState): void {

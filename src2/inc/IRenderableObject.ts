@@ -5,6 +5,7 @@
 #include "IEventProvider.ts"
 #include "ISceneObject.ts"
 #include "IRenderData.ts"
+#include "IViewport.ts"
 
 module akra {
 	
@@ -50,7 +51,7 @@ module akra {
 		isAllMethodsLoaded(): bool;
 
 
-		render(csMethod?: string, pSceneObject?: ISceneObject): void;
+		render(pViewport: IViewport, csMethod?: string, pSceneObject?: ISceneObject): void;
 
 		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
 		_draw(): void;

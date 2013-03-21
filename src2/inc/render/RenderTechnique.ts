@@ -165,7 +165,7 @@ module akra.render {
 			this._pComposer = pComposer;
 		}
 
-		_renderTechnique(pSceneObject: ISceneObject): void {
+		_renderTechnique(pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			if(isNull(this._pComposer)){
 				return;
 			}
@@ -173,7 +173,9 @@ module akra.render {
 			var pComposer: IAFXComposer = this._pComposer;
 
 			pComposer.prepareTechniqueBlend(this);
-			pComposer.setCurrentSceneObject(pSceneObject);
+			pComposer._setCurrentViewport(pViewport);
+			pComposer._setCurrentSceneObject(pSceneObject);
+			pComposer._setCurrentRenderableObject(pRenderable);
 			pComposer.applySurfaceMaterial(this._pMethod.surfaceMaterial);
 
 			this._isFreeze = true;
@@ -186,7 +188,7 @@ module akra.render {
 			}
 
 			this._isFreeze = false;
-			pComposer.setCurrentSceneObject(null);
+			pComposer._setCurrentSceneObject(null);
 		}
 
 		_updateMethod(pMethod: IRenderMethod): void {

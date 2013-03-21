@@ -16,6 +16,10 @@ module akra.webgl {
 		private _pSurfaceList: WebGLTextureBuffer[] = null;	
 		private _pWebGLTexture: WebGLTexture = null;
 
+        inline getWebGLTexture(): WebGLTexture {
+            return this._pWebGLTexture;
+        }
+
 		constructor () {
             super();
         }
@@ -81,7 +85,7 @@ module akra.webgl {
 
 
 
-        protected _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
+        _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
              if (!this.isValid()) {
                 return false;
             }
@@ -92,7 +96,7 @@ module akra.webgl {
             pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
             return true;         
         }
-        protected _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
+        _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
              if (!this.isValid()) {
                 return false;
             }

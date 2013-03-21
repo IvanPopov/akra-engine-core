@@ -205,14 +205,14 @@ module akra.core.pool.resources {
     	}
     	
     	inline texture(iSlot: int): ITexture {
-    		debug_assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE),
-                 "invalid texture slot");
+    		// debug_assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE),
+      //            "invalid texture slot");
     		return this._pTextures[iSlot];
     	}
 
     	inline texcoord(iSlot: int): uint {
-    		debug_assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE),
-                 "invalid texture slot");
+    		// debug_assert((iSlot >= 0 && iSlot < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE),
+      //            "invalid texture slot");
     		return this._pTexcoords[iSlot];
     	}
     	

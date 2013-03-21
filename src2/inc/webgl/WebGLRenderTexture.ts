@@ -70,6 +70,10 @@ module akra.webgl {
 
 		}
 
+		inline _bind(): void {
+			this._pFrameBuffer.bind();
+		}
+
 		detachDepthPixelBuffer(): void {
 			this._pFrameBuffer.unbindSurface(GL_DEPTH_ATTACHMENT);
 			(<WebGLPixelBuffer>this._pDepthPixelBuffer).release();

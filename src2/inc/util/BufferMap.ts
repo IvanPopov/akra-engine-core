@@ -429,7 +429,7 @@ module akra.util {
 		}
 
 		findFlow(sSemantics: string) {
-			return this._pSemanticsMap[sSemantics];
+			return !isDef(this._pSemanticsMap[sSemantics]) ? (this._pSemanticsMap[sSemantics] = null) : this._pSemanticsMap[sSemantics];
 		}
 
 		clone(bWithMapping?: bool): IBufferMap {

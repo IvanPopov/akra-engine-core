@@ -39,6 +39,9 @@ module akra.webgl {
 		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.TBO; }
 		inline get byteLength(): uint { return pixelUtil.getMemorySize(this._iWidth, this._iHeight, 1, this._ePixelFormat); }
 		
+		inline getWebGLTexture(): WebGLTexture {
+			return this._pWebGLTexture;
+		}
 
 		constructor (/*pManager: IResourcePoolManager*/) {
 			super(/*pManager*/);

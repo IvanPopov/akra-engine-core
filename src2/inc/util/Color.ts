@@ -403,6 +403,10 @@ module akra.util {
 					c1.a === c2.a;
 		}
 	}
+
+	export inline function colorToVec4(pValue: IColorValue): IVec4 {
+		return vec4(pValue.r, pValue.g, pValue.b, pValue.a);
+	}
 }
 
 module akra {
