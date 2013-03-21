@@ -33,7 +33,7 @@ module akra.terrain {
 			this._pEngine = pEngine;
 		}
 
-		inline get sectorX(): float{
+		inline get sectorX(): float {
 			return this._iSectorX;
 		};
 

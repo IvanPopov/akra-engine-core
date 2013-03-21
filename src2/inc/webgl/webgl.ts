@@ -42,7 +42,7 @@ module akra.webgl {
 	export var hasNonPowerOf2Textures: bool = false;
 
     var isSupported: bool = false;
-	var pSupportedExtensionList: string[] = null;
+	export var pSupportedExtensionList: string[] = null;
 	// var pLoadedExtensionList: Object = null;
 
     function makeDebugContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {

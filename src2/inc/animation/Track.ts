@@ -42,7 +42,9 @@ module akra.animation {
 			this._sTarget = sTarget;
 		}
 
-		keyFrame(fTime: float, pMatrix: IMat4): bool {
+		keyFrame(pFrame: IAnimationFrame): bool;
+		keyFrame(fTime: float, pMatrix: IMat4): bool;
+		keyFrame(fTime, pMatrix?): bool {
 			var pFrame: IAnimationFrame;
 		    var iFrame: int;
 
@@ -50,7 +52,7 @@ module akra.animation {
 		  	var nTotalFrames: int = pKeyFrames.length;
 
 		  	if (arguments.length > 1) {
-		  		pFrame = createFrame(fTime, pMatrix);
+		  		pFrame = createFrame(<float>fTime, <IMat4>pMatrix);
 		  	}
 		    else {
 		    	pFrame = arguments[0];
@@ -182,8 +184,8 @@ module akra.animation {
 #endif
 	}
 
-	export function createTrack(sName: string = null): IAnimationTrack {
-		return new Track(sName);
+	export function createTrack(sTarget: string = null): IAnimationTrack {
+		return new Track(sTarget);
 	}
 }
 

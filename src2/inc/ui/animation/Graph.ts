@@ -5,6 +5,9 @@
 #include "IUIAnimationNode.ts"
 #include "IUtilTimer.ts"
 #include "../graph/Graph.ts"
+#include "Controls.ts"
+
+#include "animation/Animation.ts"
 
 module akra.ui.animation {
 	export class Graph extends graph.Graph implements IUIAnimationGraph {
@@ -74,12 +77,52 @@ module akra.ui.animation {
 			return null;
 		}
 
-		createNodeByController(pController: IAnimationController): IUIAnimationNode {
-			return null;
+		createNodeByController(pController: IAnimationController): void {
+			var pNode: IUIAnimationNode = null;
+
+			for (var i: int = 0; i < pController.totalAnimations; ++ i) {
+				var pAnimation: IAnimationBase = pController.getAnimation(i);
+				pNode = this.createNodeByAnimation(pAnimation);
+			}
+
+			return;
 		}
 
 		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode {
-			return null;
+			var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
+			var pSubNode: IUIAnimationNode;
+			var pBlend: IUIAnimationBlender;
+			var pPlayer: IUIAnimationPlayer;
+			var pMaskNode: IUIAnimationNode;
+			
+			var pSubAnimation: IAnimationBase;
+			var n: int = 0;
+			var pMask: FloatMap = null;
+
+			if (!isNull(pNode)) {
+				return pNode;
+			}
+
+			if (akra.animation.isAnimation(pAnimation)) {
+				pNode = (<ui.animation.Controls>this.parent).createData();
+				pNode.animation = pAnimation;
+			}
+			else {
+				CRITICAL("AHTUNG!!!");
+			}
+		}
+
+		capture(pController: IAnimationController): bool {
+			this._pAnimationController = pController;
+			
+			this.connect(pController, SIGNAL(play), SLOT(_onControllerPlay));
+			this.createNodeByController(pController);
+			return true;
+		}
+
+		_onControllerPlay(pAnimation: IAnimationBase): void {
+			var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
+			this.selectNode(pNode);
 		}
 	}
 

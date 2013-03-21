@@ -23,6 +23,10 @@ module akra.ui.animation {
 		private _pAnimMap: IntMap = <IntMap>{};
 		private _iTotalAnim: int = 0;
 
+		inline get animation(): IAnimationBase {
+			return this._pBlend;
+		}
+
 		constructor (pGraph: IUIGraph, pBlender: IAnimationBlend = null) {
 			super(pGraph, EUIGraphNodes.ANIMATION_BLENDER);
 
@@ -30,8 +34,9 @@ module akra.ui.animation {
 			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_textChanged));
 
 
-			this._pBlend = pBlender || akra.animation.createBlend();
+			this._pBlend = pBlender = pBlender || akra.animation.createBlend();
 			(<IUIAnimationGraph>this.graph).addAnimation(pBlender);
+			this._pNameLabel.text = pBlender.name;
 		}
 
 		_textChanged(pLabel: IUILabel, sValue: string): void {
@@ -58,7 +63,7 @@ module akra.ui.animation {
 		protected init(): void {
 			var pChildren: IUINode[] = <IUINode[]>this.children();
 			var n: int = pChildren.length;
-			LOG([<IUINode>pChildren[n - 1]], [<IUINode>pChildren[n - 2]], this.toString(true));
+			// LOG([<IUINode>pChildren[n - 1]], [<IUINode>pChildren[n - 2]], this.toString(true));
 			this.setRouteAreas([<IUINode>pChildren[n - 1]], [<IUINode>pChildren[n - 2]]);
 		}
 
@@ -86,7 +91,7 @@ module akra.ui.animation {
 		protected getRouteArea(pZone: IUINode, eDirection?: EUIGraphDirections): IUINode {
 			var pChildren: IUINode[] = <IUINode[]>this.children();
 			var n: int = pChildren.length;
-			LOG(this.toString(true));
+			// LOG(this.toString(true));
 			if (eDirection === EUIGraphDirections.OUT) {
 				//right layout
 				return pChildren[2];
@@ -135,7 +140,7 @@ module akra.ui.animation {
 		        
 		        pSlider.range = 100;
 		        
-		        pSlider.bind(SIGNAL(updated), (iValue) => {
+		        pSlider.bind(SIGNAL(updated), (pSlider: IUISlider, iValue: int) => {
 		        	pBlend.setAnimationWeight(iAnim, iValue);
 		        });
 

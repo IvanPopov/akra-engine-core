@@ -1,6 +1,12 @@
 #ifndef AFXINSTRUCTION_TS
 #define AFXINSTRUCTION_TS
 
+#define UNDEFINE_LENGTH 0xffffff
+#define UNDEFINE_SIZE 0xffffff
+#define UNDEFINE_SCOPE 0xffffff
+#define UNDEFINE_PADDING 0xffffff
+#define UNDEFINE_NAME "undef"
+
 #include "IAFXInstruction.ts"
 #include "fx/EffectErrors.ts"
 #include "fx/EffectUtil.ts"
@@ -19,12 +25,6 @@ module akra.fx {
     		   pType.isEqual(getEffectBaseType("samplerCUBE")) ||
     		   pType.isEqual(getEffectBaseType("video_buffer"));
     }
-
-    #define UNDEFINE_LENGTH 0xffffff
-    #define UNDEFINE_SIZE 0xffffff
-    #define UNDEFINE_SCOPE 0xffffff
-    #define UNDEFINE_PADDING 0xffffff
-    #define UNDEFINE_NAME "undef"
 
 	export class Instruction implements IAFXInstruction{
 		protected _pParentInstruction: IAFXInstruction = null;
@@ -367,6 +367,7 @@ module akra.fx {
 	export class IdInstruction extends Instruction implements IAFXIdInstruction {
 		private _sName: string;
 		private _sRealName: string;
+		private _isForVarying: bool = false;
 
 		inline isVisible(): bool {
 			return this.getParent().isVisible();
@@ -386,16 +387,25 @@ module akra.fx {
 		}
 
 		inline getRealName(): string{
-			return this._sRealName;
+			if(this._isForVarying){
+				return "V_"+this._sRealName;
+			}
+			else {
+				return this._sRealName;
+			}
 		}
 
 		inline setName(sName: string): void{
 			this._sName = sName;
-			this._sRealName = sName + "R";
+			this._sRealName = sName;
 		}
 
 		inline setRealName(sRealName: string): void{
 			this._sRealName = sRealName;
+		}
+
+		inline _markAsVarying(bValue: bool): void{
+			this._isForVarying = bValue;
 		}
 
 		toString(): string {
@@ -403,7 +413,7 @@ module akra.fx {
 		}
 
 		toFinalCode(): string {
-			return this._sRealName;
+			return this.getRealName();
 		}
 
 		clone(pRelationMap?: IAFXInstructionMap): IdInstruction {

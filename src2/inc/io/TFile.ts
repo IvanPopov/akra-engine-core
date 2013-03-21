@@ -46,8 +46,8 @@ module akra.io {
 
 	export enum EFileTransferModes {
 		k_Normal,
-		k_Slow,
-		k_Fast
+		k_Fast,
+		k_Slow
 	}
 
 	export interface IFileCommand {
@@ -131,9 +131,10 @@ module akra.io {
 			if (info.api.transferableObjects) {
 				this._eTransferMode = EFileTransferModes.k_Fast;
 			}
-			else if (info.browser.name == "Opera") {
-				this._eTransferMode = EFileTransferModes.k_Slow;
-			}
+			//OPERA MOVED TO WEBKIT, and this TRAP not more be needed!
+			// else if (info.browser.name == "Opera") {
+			// 	this._eTransferMode = EFileTransferModes.k_Slow;
+			// }
 				
 			if (arguments.length > 2) {
 				this.open(sFilename, sMode, fnCallback);

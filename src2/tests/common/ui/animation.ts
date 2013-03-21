@@ -20,8 +20,14 @@ test("ui basics", () => {
 		var pRmgr = pEngine.getResourceManager();
 		var pModel = <akra.ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 		var pScene = pEngine.getScene();
+		var pController = akra.animation.createController();
+
+		
 
 		pModel.bind(SIGNAL(loaded), (pModel: akra.ICollada) => {
+			pModel.attachToScene(pScene, pController);
+			
+			pControls.graph.capture(pController);
 			pControls.graph.setTimer(pEngine.getTimer());			
 		});
 	});

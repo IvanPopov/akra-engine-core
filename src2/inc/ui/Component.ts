@@ -188,7 +188,7 @@ module akra.ui {
 
 		attachToParent(pParent: IUINode, bRender: bool = true): bool {
 			if (isComponent(pParent) && isLayout(pParent.child) && !isLayout(pParent)) {
-				console.log("redirected to layout ------>", pParent.toString(true));
+				// console.log("redirected to layout ------>", pParent.toString(true));
 				pParent = <IUINode>pParent.child;
 			}
 

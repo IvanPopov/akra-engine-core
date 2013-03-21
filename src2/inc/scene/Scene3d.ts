@@ -12,7 +12,11 @@
 
 #include "SceneModel.ts"
 #include "Joint.ts"
+<<<<<<< HEAD
 #include "light/ShadowCaster.ts"
+=======
+// #include "Light"
+>>>>>>> origin/typescript
 
 #define DEFAULT_DLIST DEFAULT_NAME
 
