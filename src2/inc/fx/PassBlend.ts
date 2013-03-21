@@ -185,7 +185,7 @@ module akra.fx {
 
 			// LOG("------------------------------------\n\n",this._sVertexCode, "###########################\n\n", this._sPixelCode);
 			// LOG(this._pAttributeContainerV);
-			// LOG(pBuffer, pBuffer.toString());
+			LOG(pBuffer, pBuffer.toString());
 			
 			return null;
 		}

@@ -10,7 +10,6 @@ module akra.animation {
 		private _pAnimations: IAnimationBase[] = [];
 		private _iOptions: int = 0;
 	    private _pActiveAnimation: IAnimationBase = null;
-	    private _fnPlayAnimation: Function = null;
 
 	    inline get totalAnimations(): int{
 			return this._pAnimations.length;
@@ -114,9 +113,8 @@ module akra.animation {
 			var pAnimationPrev: IAnimationBase = this._pActiveAnimation;
 
 			if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
-				if (this._fnPlayAnimation) {
-					this._fnPlayAnimation(pAnimationNext);
-				}
+				EMIT_BROADCAST(play, _CALL(pAnimationNext, fRealTime));
+				
 				//LOG('controller::play(', pAnimationNext.name, ')', pAnimationNext);
 				if (pAnimationPrev) {
 					pAnimationPrev.stop(fRealTime);
@@ -125,7 +123,8 @@ module akra.animation {
 				pAnimationNext.play(fRealTime);
 
 				this._pActiveAnimation = pAnimationNext;
-				
+			
+
 				return true;
 			}
 
@@ -154,7 +153,8 @@ module akra.animation {
 #endif			
 		}
 
-		UNIQUE();
+		CREATE_EVENT_TABLE(Controller);
+		//BROADCAST(play, CALL(pAnimation));
 	} 
 
 

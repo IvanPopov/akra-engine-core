@@ -92,7 +92,7 @@ module akra.io {
 
 			for (var iGuid in pLibrary) {
 				var pEntry: ILibraryEntry = pLibrary[iGuid];
-				
+
 				if (!isNull(pEntry.entry) && pEntry.entry.type === eType) {
 					if (fnCallback.call(this, pEntry, i ++) === false) {
 						return;
@@ -103,11 +103,11 @@ module akra.io {
 
 		protected findEntryByIndex(eType: EDocumentEntry, i: uint): ILibraryEntry {
 			var pEntry: ILibraryEntry = null;
-			this.findEntries(eType, (pLibEntry: ILibraryEntry, n?: uint) => {
+			this.findEntries(eType, (pLibEntry: ILibraryEntry, n?: uint): bool => {
 				pEntry = pLibEntry;
 
 				if (i === n) {
-					return;
+					return false;
 				}
 			});
 
@@ -139,7 +139,7 @@ module akra.io {
 				return null;
 			}
 
-			var pData: any = this.getLibrary()[pEntry.guid];
+			var pData: any = this.getLibrary()[pEntry.guid].data;
 
 			if (!isNull(pData)) {
 				return pData;
@@ -162,9 +162,10 @@ module akra.io {
 
 			if (!isNull(pData)) {
 				this.registerData(pEntry.guid, pData);
+				return pData;
 			}
 
-			WARNING("USED UNKNOWN TYPE FOR DECODING!!");
+			WARNING("USED UNKNOWN TYPE FOR DECODING!!", pEntry.type);
 			return null;
 		}
 

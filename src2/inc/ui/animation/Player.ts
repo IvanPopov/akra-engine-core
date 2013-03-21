@@ -43,13 +43,13 @@ module akra.ui.animation {
 
 			this._pSpeedLabel 	= <IUILabel>pChildren[4];
 			this._pSlider 		= <IUISlider>pChildren[5];
-			this._pPlayBtn 		= <IUICheckbox>(<IUICheckboxList>pChildren[1]).childAt(0);
-			this._pPauseBtn 	= <IUICheckbox>(<IUICheckboxList>pChildren[1]).childAt(1);
+			this._pPlayBtn 		= <IUICheckbox>(<IUILayout>(<IUICheckboxList>pChildren[1]).child).childAt(0);
+			this._pPauseBtn 	= <IUICheckbox>(<IUILayout>(<IUICheckboxList>pChildren[1]).child).childAt(1);
 			this._pLoopBtn 		= <IUICheckbox>pChildren[2];
 			this._pReverseBtn 	= <IUICheckbox>pChildren[3];
 			this._pNameLabel 	= <IUILabel>pChildren[0];
 
-			this._pAnimation = pContainer || (new akra.animation.Container);
+			this._pAnimation = pContainer = pContainer || akra.animation.createContainer();
 			this.graph.addAnimation(pContainer);
 			this.connect(pContainer, SIGNAL(enterFrame), SLOT(_enterFrame));
 
@@ -129,23 +129,23 @@ module akra.ui.animation {
 		protected init(): void {
 			var pChildren: IUINode[] = <IUINode[]>this.children();
 			var n: int = pChildren.length;
-
+			LOG([<IUINode>pChildren[n - 1]], [<IUINode>pChildren[n - 2]]);
 			this.setRouteAreas([<IUINode>pChildren[n - 1]], [<IUINode>pChildren[n - 2]]);
 		}
 
 		protected getRouteArea(pNode: IUINode, eDirection: EUIGraphDirections = EUIGraphDirections.IN): IUINode {
 			var pChildren: IUINode[] = <IUINode[]>this.children();
 			var n: int = pChildren.length;
-
+			LOG();
 			if (eDirection === EUIGraphDirections.OUT) {
 				return <IUINode>pChildren[n - 1];
 			}
-
+			LOG("connect to this area: ", pNode);
 			return <IUINode>pChildren[n - 2];
 		}
 
 		isSuitable(pTarget: IUIAnimationNode): bool {
-			if (this.connectors.length === 0 || isNull(this.connectors[0])) {
+			if (!this.hasConnections()) {
 				this.animation = pTarget.animation;
 				return true;
 			}

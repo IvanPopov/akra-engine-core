@@ -422,8 +422,8 @@ module akra.util {
 		    this._nCompleteVideoBuffers = nCompleteVideoBuffers;
 		    this._nUsedFlows = nUsedFlows;
 
-		    LOG(this.toString());
-		    LOG("\n" + JSON.stringify(Object.keys(this._pSemanticsMap), null, "\t"))
+		    // LOG(this.toString());
+		    // LOG("\n" + JSON.stringify(Object.keys(this._pSemanticsMap), null, "\t"))
 
 		    return true;
 		}
