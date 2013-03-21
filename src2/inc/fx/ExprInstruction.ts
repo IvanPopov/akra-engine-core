@@ -1115,7 +1115,6 @@ module akra.fx {
 			}
 
 			this._pSamplerParams[sStateType] = sStateValue;
-
 			return;
 		}
 

@@ -32,6 +32,7 @@ module akra {
 
         k_Sampler2D,
         k_SamplerCUBE,
+        k_SamplerVertexTexture,
 
         k_CustomSystem,
         k_Complex
@@ -58,10 +59,13 @@ module akra {
 		setForeign(sName: string, pValue: any): void;
 		setTexture(sName: string, pValue: any): void;
 
-		setSamplerTexture(sName: string, pTexture: any): void;
+		setSampler(sName: string, pState: IAFXSamplerState): void;
+		setSamplerArray(sName: string, pSamplerArray: IAFXSamplerState[]): void;
 
 		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void;
 
+		_getSamplerState(sName: string): IAFXSamplerState;
+		_getSamplerTexture(sName: string): ITexture;
 		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture;
 
 		_getUnifromLength(sName: string): uint;

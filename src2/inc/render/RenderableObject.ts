@@ -5,6 +5,7 @@
 #include "RenderTechnique.ts"
 #include "IRenderMethod.ts"
 
+
 #define DEFAULT_RM DEFAULT_NAME 
 #define DEFAULT_RT DEFAULT_NAME 
 
@@ -189,12 +190,12 @@ module akra.render {
 		}
 
 
-		render(csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
+		render(pViewport: IViewport, csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
 			if(!this.switchRenderMethod(csMethod)){
 				return;
 			}
 
-			this.data._draw(this.getTechnique(), pSceneObject);
+			this.data._draw(this.getTechnique(), pViewport, this, pSceneObject);
 		}
 
 		inline getTechnique(sName: string = DEFAULT_RT): IRenderTechnique {

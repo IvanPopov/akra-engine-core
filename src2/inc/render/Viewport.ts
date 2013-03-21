@@ -230,20 +230,22 @@ module akra.render {
 			if (this._pCamera) {
 				this.renderAsNormal(this._csDefaultRenderMethod, this._pCamera);
 			}
+
+			this.getTarget().getRenderer().executeQueue();
 		}
 
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
-				var pVisibleObjects: IObjectArray = pCamera.display();
-				var pRenderable: IRenderableObject;
+			var pVisibleObjects: IObjectArray = pCamera.display();
+			var pRenderable: IRenderableObject;
 
-				for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
-					var pSceneObject: ISceneObject = pVisibleObjects.value(i);
-					pRenderable = pSceneObject.getRenderable();
+			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
+				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
+				pRenderable = pSceneObject.getRenderable();
 
-					if (!isNull(pRenderable)) {
-						pRenderable.render(csMethod, pSceneObject);
-					}
+				if (!isNull(pRenderable)) {
+					pRenderable.render(this, csMethod, pSceneObject);
 				}
+			}
 		}
 
 

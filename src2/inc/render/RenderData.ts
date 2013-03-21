@@ -681,12 +681,13 @@ module akra.render {
         /**
          * Draw this data.
          */
-        _draw(pTechnique: IRenderTechnique, pSceneObject: ISceneObject): void {
+        _draw(pTechnique: IRenderTechnique, pViewport: IViewport, 
+              pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
         	for (var i: int = 0; i < this._pIndicesArray.length; i++) {
         	    if (this.isRenderable(i)) {
         	        //this._pIndicesArray[i].pMap._draw();
                     this._pComposer.applyBufferMap(this._pIndicesArray[i].pMap);
-                    pTechnique._renderTechnique(pSceneObject);
+                    pTechnique._renderTechnique(pViewport, pRenderable, pSceneObject);
         	    }
         	}
         }
