@@ -476,7 +476,7 @@ module akra.webgl {
 	        //Get WebGL program
 	        var pWebGLShaderProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_blit_texture_buffer"); 
 	        pWebGLRenderer.disableAllWebGLVertexAttribs();
-	        pWebGLRenderer.useWebGLProgram(pWebGLShaderProgram);
+	        pWebGLRenderer.useWebGLProgram(pWebGLShaderProgram.getWebGLProgram());
 
 	        var iPosAttrIndex: int = 0;
 	        var iTexAttrIndex: int = 0;

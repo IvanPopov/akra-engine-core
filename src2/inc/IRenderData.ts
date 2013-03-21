@@ -91,7 +91,8 @@ module akra {
 
         //applyMe(): bool;
 
-        _draw(pTechnique: IRenderTechnique, pSceneObject: ISceneObject): void;
+        _draw(pTechnique: IRenderTechnique, pViewport: IViewport, 
+              pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
         
         _getFlow(iDataLocation: int): IDataFlow;
         _getFlow(sSemantics: string, bSearchComplete?: bool): IDataFlow;

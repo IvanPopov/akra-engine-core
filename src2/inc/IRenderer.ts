@@ -2,6 +2,7 @@
 #define IRENDERER_TS
 
 #include "IEventProvider.ts"
+#include "IRenderQueue.ts"
 
 module akra {
 
@@ -253,6 +254,10 @@ module akra {
 
         clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void;
 
+        _beginRender(): void;
+        _renderEntry(pEntry: IRenderEntry): void;
+        _endRender(): void;
+
         _disableAllTextureUnits(): void;
         _disableTextureUnitsFrom(iUnit: uint): void;
 
@@ -271,6 +276,11 @@ module akra {
         getActiveProgram(): IShaderProgram;
 
         getDefaultCanvas(): ICanvas3d;
+        
+        createEntry(): IRenderEntry;
+        releaseEntry(pEntry: IRenderEntry): void;
+        pushEntry(pEntry: IRenderEntry): void;
+        executeQueue(): void;
     }
 
 

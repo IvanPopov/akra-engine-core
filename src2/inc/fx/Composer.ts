@@ -22,6 +22,7 @@
 
 #include "util/BufferMap.ts"
 #include "fx/SamplerBlender.ts"
+#include "IRenderer.ts"
 
 module akra.fx {
 
@@ -54,6 +55,9 @@ module akra.fx {
 
 		//Data for render
 		private _pCurrentSceneObject: ISceneObject = null;
+		private _pCurrentViewport: IViewport = null;
+		private _pCurrentRenderable: IRenderableObject = null;
+
 		private _pCurrentBufferMap: IBufferMap = null;
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 		//private _pPreRenderState: IPreRenderState = null;
@@ -384,9 +388,30 @@ module akra.fx {
 			return true;
 		}
 
-		setCurrentSceneObject(pSceneObject: ISceneObject): void {
+		inline _setCurrentSceneObject(pSceneObject: ISceneObject): void {
 			this._pCurrentSceneObject = pSceneObject;
 		}
+
+		inline _setCurrentViewport(pViewport: IViewport): void {
+			this._pCurrentViewport = pViewport;
+		}
+
+		inline _setCurrentRenderableObject(pRenderable: IRenderableObject): void {
+			this._pCurrentRenderable = pRenderable;
+		}
+
+		inline _getCurrentSceneObject(): ISceneObject {
+			return this._pCurrentSceneObject;
+		}
+
+		inline _getCurrentViewport(): IViewport {
+			return this._pCurrentViewport;
+		}
+
+		inline _getCurrentRenderableObject(): IRenderableObject {
+			return this._pCurrentRenderable;
+		}
+
 
 		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void {
 			var pPass: IRenderPass = pRenderTechnique.getPass(iPass);
@@ -423,8 +448,19 @@ module akra.fx {
 
 			//TODO: generate input from PassInputBlend to correct unifoms and attributes list
 			//TODO: generate RenderEntry
-			
-			this.clearPreRenderState();
+				
+			//this.clearPreRenderState();
+
+			var pInput: IShaderInput = pMaker._make(pPassInput, this._pCurrentBufferMap);
+			var pRenderer: IRenderer = this._pEngine.getRenderer();
+			var pEntry: IRenderEntry = pRenderer.createEntry();
+
+			pEntry.maker = pMaker;
+			pEntry.input = pInput;
+			pEntry.viewport = this._pCurrentViewport;
+			pEntry.bufferMap = this._pCurrentBufferMap;
+
+			pRenderer.pushEntry(pEntry);
 		}
 
 		//-----------------------------------------------------------------------------//

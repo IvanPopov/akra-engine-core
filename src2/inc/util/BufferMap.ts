@@ -422,14 +422,14 @@ module akra.util {
 		    this._nCompleteVideoBuffers = nCompleteVideoBuffers;
 		    this._nUsedFlows = nUsedFlows;
 
-		    LOG(this.toString());
-		    LOG("\n" + JSON.stringify(Object.keys(this._pSemanticsMap), null, "\t"))
+		    // LOG(this.toString());
+		    // LOG("\n" + JSON.stringify(Object.keys(this._pSemanticsMap), null, "\t"))
 
 		    return true;
 		}
 
 		findFlow(sSemantics: string) {
-			return this._pSemanticsMap[sSemantics];
+			return !isDef(this._pSemanticsMap[sSemantics]) ? (this._pSemanticsMap[sSemantics] = null) : this._pSemanticsMap[sSemantics];
 		}
 
 		clone(bWithMapping?: bool): IBufferMap {

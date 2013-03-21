@@ -45,7 +45,7 @@ module akra {
 		updatePasses(bSaveOldUniformValue: bool): void;
 
 		_setComposer(pComposer: IAFXComposer): void;
-		_renderTechnique(pSceneObject: ISceneObject): void;
+		_renderTechnique(pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
 
 		signal render(iPass: uint): void;
 	}

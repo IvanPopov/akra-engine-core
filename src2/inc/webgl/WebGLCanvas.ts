@@ -50,6 +50,10 @@ module akra.webgl {
 			this._pCanvasCreationInfo = null;
 		}
 
+		inline _bind(): void {
+			(<WebGLRenderer>this._pRenderer).bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
+		}
+
 		setFullscreen(isFullscreen: bool = true): void  {
 			var pCanvas: HTMLCanvasElement = this._pCanvas;
 			var pScreen: IScreenInfo;

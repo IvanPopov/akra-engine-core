@@ -10,7 +10,6 @@
 #include "IAFXPassBlend.ts"
 #include "IMesh.ts"
 #include "IRenderableObject.ts"
-#include "IRenderSnapshot.ts"
 #include "ISceneObject.ts"
 #include "IBufferMap.ts"
 #include "IShaderProgram.ts"
@@ -24,10 +23,12 @@
 #include "IFrameBuffer.ts"
 #include "IViewport.ts"
 #include "ICanvas3d.ts"
+#include "Viewport.ts"
 
 #include "events/events.ts"
 
 #include "render/RenderTarget.ts"
+#include "render/RenderQueue.ts"
 
 module  akra.render {
 
@@ -64,16 +65,20 @@ module  akra.render {
 		protected _pEngine: IEngine;
 		protected _pRenderTargets: IRenderTarget[] = [];
 		protected _pPrioritisedRenderTargets: IRenderTargetPriorityMap = <IRenderTargetPriorityMap>{};
+		protected _pRenderQueue: RenderQueue = null;
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
 
 			this.connect(pEngine, SIGNAL(active), SLOT(active));
 			this.connect(pEngine, SIGNAL(inactive), SLOT(inactive));
+
+			this._pRenderQueue = new RenderQueue(this);
 		}
 
 
-		inline getEngine(): IEngine { return this. _pEngine; }
+		inline getEngine(): IEngine { return this._pEngine; }
+		
 
 	    hasCapability(eCapability: ERenderCapabilities): bool {
 	      return false;
@@ -95,6 +100,12 @@ module  akra.render {
 		inline getError(): string {
 			return null;
 		}
+
+		_beginRender(): void {}
+		_renderEntry(pEntry: IRenderEntry): void {
+			
+		}
+		_endRender(): void {}
 
 		clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void {
 
@@ -170,7 +181,7 @@ module  akra.render {
 					pTarget = pTargetList[j];
 					
 					if (pTarget.isActive() && pTarget.isAutoUpdated()) {
-						pTarget.update(); 
+						pTarget.update();
 					}
 				}
 			}
@@ -188,6 +199,22 @@ module  akra.render {
 		getDefaultCanvas(): ICanvas3d {
 			return null;
 		}
+
+		inline createEntry(): IRenderEntry {
+			return this._pRenderQueue.createEntry();
+		}
+
+        inline releaseEntry(pEntry: IRenderEntry): void {
+        	this._pRenderQueue.releaseEntry(pEntry);
+        }
+
+        inline pushEntry(pEntry: IRenderEntry): void{
+        	this._pRenderQueue.push(pEntry);
+        }
+
+        inline executeQueue(): void {
+        	this._pRenderQueue.execute();
+        }
 
 		CREATE_EVENT_TABLE(Renderer);
 		signal active(pEngine: IEngine): void {
