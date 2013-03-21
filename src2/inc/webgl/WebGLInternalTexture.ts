@@ -186,17 +186,12 @@ module akra.webgl {
             	this._iDepth=1;
                 WARNING("Трехмерные текстуры не поддерживаются, сброс глубины в 1");
             }
-            if(!webgl.hasExtension(EXT_TEXTURE_NPOT_2D_MIPMAP) &&(!math.isPowerOfTwo(this._iDepth)||!math.isPowerOfTwo(this._iHeight)||!math.isPowerOfTwo(this._iWidth)))
+            if(this._nMipLevels!=0 && !webgl.hasExtension(EXT_TEXTURE_NPOT_2D_MIPMAP) &&(!math.isPowerOfTwo(this._iDepth)||!math.isPowerOfTwo(this._iHeight)||!math.isPowerOfTwo(this._iWidth)))
             {
                 WARNING("Мип мапы у текстуры не стпени двойки не поддерживаются, сброс мипмапов в 0");
                 this._nMipLevels=0;
                 CLEAR_ALL(this._iFlags, ETextureFlags.AUTOMIPMAP);
             }
-            
-
-
-
-
             
             if(!webgl.isWebGLFormatSupport(this._eFormat))
             {

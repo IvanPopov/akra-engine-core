@@ -817,7 +817,7 @@ module akra {
           @remarks
                This replaces the separate functions for formatHasAlpha, formatIsFloat, ...
         */
-        export inline function getFlags(eFormat: EPixelFormats): uint {
+        export  inline function getFlags(eFormat: EPixelFormats): uint {
         	return getDescriptionFor(eFormat).flags;
         }
 
