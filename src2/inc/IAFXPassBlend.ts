@@ -3,7 +3,7 @@
 
 #include "IUnique.ts"
 #include "IAFXInstruction.ts"
-#include "IAFXShaderProgram.ts"
+#include "IAFXMaker.ts"
 #include "IAFXPassInputBlend.ts"
 #include "ISurfaceMaterial.ts"
 #include "IBufferMap.ts"
@@ -17,9 +17,9 @@ module akra {
 
 	export interface IAFXPassBlend extends IUnique {
 		initFromPassList(pPassList: IAFXPassInstruction[]): bool;
-		generateShaderProgram(pPassInput: IAFXPassInputBlend,
-							  pSurfaceMaterial: ISurfaceMaterial,
-							  pBuffer: IBufferMap): IAFXShaderProgram;
+		generateFXMaker(pPassInput: IAFXPassInputBlend,
+						pSurfaceMaterial: ISurfaceMaterial,
+						pBuffer: IBufferMap): IAFXMaker;
 	}
 }
 

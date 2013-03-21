@@ -22,7 +22,7 @@ module akra {
 		findNodeByAnimation(sName: string): IUIAnimationNode;
 		findNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 
-		createNodeByController(pController: IAnimationController): IUIAnimationNode;
+		createNodeByController(pController: IAnimationController): void;
 		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 	}
 }

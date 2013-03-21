@@ -98,6 +98,14 @@ module akra.webgl {
 			return true;
     	}
 
+        _getActiveUniformNames(): string[] {
+            return Object.keys(this._pWebGLUniformLocations);
+        }
+
+        _getActiveAttributeNames(): string[] {
+            return Object.keys(this._pWebGLAttributeLocations);
+        }
+
     	isLinked(): bool {
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
     		return isDefAndNotNull(this._pWebGLProgram) && 

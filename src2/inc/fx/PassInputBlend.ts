@@ -1,43 +1,12 @@
 #ifndef PASSINPUTBLEND_TS
 #define PASSINPUTBLEND_TS
 
+#include "IAFXPassInputBlend.ts"
+
 module akra.fx {
-	export enum EShaderVariableType {
-        k_NotVar = 0,
-        
-        k_Texture = 2,
-        
-        k_Float,
-        k_Int,
-        k_Bool,
-
-        k_Float2,
-        k_Int2,
-        k_Bool2,
-
-        k_Float3,
-        k_Int3,
-        k_Bool3,
-
-        k_Float4,
-        k_Int4,
-        k_Bool4,
-
-        k_Float2x2,
-        k_Float3x3,
-        k_Float4x4,
-
-        k_Sampler2D,
-        k_SamplerCUBE,
-
-        k_CustomSystem,
-        k_Complex
-    }
-
-
     export interface IAFXShaderVarTypeMap {
-		[index: string]: EShaderVariableType;
-		[index: uint]: EShaderVariableType;
+		[index: string]: EAFXShaderVariableType;
+		[index: uint]: EAFXShaderVariableType;
 	}
 
 	export class PassInputBlend implements IAFXPassInputBlend {
@@ -85,7 +54,16 @@ module akra.fx {
 
 		hasTexture(sName: string): bool {
 			if(!this._pTextureTypeMap[sName]){
-				this._pTextureTypeMap[sName] = EShaderVariableType.k_NotVar;
+				this._pTextureTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
+				return false;
+			}
+
+			return true;
+		}
+
+		hasUniform(sName: string): bool {
+			if(!this._pUniformTypeMap[sName]){
+				this._pUniformTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
 				return false;
 			}
 
@@ -94,7 +72,7 @@ module akra.fx {
 
 		setUniform(sName: string, pValue: any): void {
 			if(!this._pUniformTypeMap[sName]){
-				this._pUniformTypeMap[sName] = EShaderVariableType.k_NotVar;
+				this._pUniformTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
 				return;
 			}
 
@@ -105,7 +83,7 @@ module akra.fx {
 	
 		setForeign(sName: string, pValue: any): void {		
 			if(!this._pForeignTypeMap[sName]){
-				this._pForeignTypeMap[sName] = EShaderVariableType.k_NotVar;
+				this._pForeignTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
 				return;
 			}
 
@@ -121,10 +99,10 @@ module akra.fx {
 			this.foreigns[sName] = pOldValue;
 		}
 
-
+		//complete
 		setTexture(sName: string, pValue: any): void {
 			if(!this._pTextureTypeMap[sName]){
-				this._pTextureTypeMap[sName] = EShaderVariableType.k_NotVar;
+				this._pTextureTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
 				return;
 			}
 
@@ -133,23 +111,23 @@ module akra.fx {
 			this.textures[sName] = pValue;
 		}
 
-		setSamplerTexture(sName: string, pTexture: any): void{
-			// if(!this._pHasUniformName[sName]){
-			// 	this._pHasUniformName[sName] = false;
-			// 	return;
-			// }
-
-			// var pOldValue: any =  this.uniforms[sName].texture;
-
-			// if(pOldValue !== pTexture) {
-			// 	this._bNeedToCalcShader = true;
-			// }
-
-			// this.uniforms[sName].texture = pTexture;
+		setSamplerTexture(sName: string, pState: any): void {
+			if (!this.hasUniform(sName)) {
+				return;
+			}
+			//this.samplers[sName]
 		}
 
 		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void {
 			//TODO: apply surface material
+		}
+
+		inline _getUnifromLength(sName: string): uint {
+			return this._pCreator.uniformByRealName[sName].getType().getLength();
+		}
+
+		inline _getUniformType(sName: string): EAFXShaderVariableType {
+			return this._pUniformTypeMap[sName];
 		}
 
 		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture {
@@ -246,7 +224,7 @@ module akra.fx {
 			var pForeignMap: IAFXVariableDeclMap = this._pCreator.foreignByName;
 			var pTextureMap: IAFXVariableDeclMap = this._pCreator.textureByRealName;
 
-			var eType: EShaderVariableType = 0;
+			var eType: EAFXShaderVariableType = 0;
 			var sName: string = "";
 			var isArray: bool = false;
 
@@ -259,7 +237,7 @@ module akra.fx {
 				this._pUniformTypeMap[sName] = eType;
 				this._isUniformArrayMap[sName] = isArray;
 
-				if(eType === EShaderVariableType.k_Sampler2D || eType === EShaderVariableType.k_SamplerCUBE){
+				if(eType === EAFXShaderVariableType.k_Sampler2D || eType === EAFXShaderVariableType.k_SamplerCUBE){
 					if(isArray){
 						this.samplerArrays[sName] = new Array(16);
 						this.samplerArrayLength[sName] = 0;
@@ -287,7 +265,7 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pTextureKeys.length; i++){
 				sName = pTextureKeys[i];
-				eType = EShaderVariableType.k_Texture;
+				eType = EAFXShaderVariableType.k_Texture;
 
 				this._pTextureTypeMap[sName] = eType;
 				this.textures[sName] = null;
@@ -300,56 +278,56 @@ module akra.fx {
 			this.textureKeys = Object.keys(this.textures);
 		}
 
-		private getVariableType(pVar: IAFXVariableDeclInstruction): EShaderVariableType {
+		private getVariableType(pVar: IAFXVariableDeclInstruction): EAFXShaderVariableType {
 			var sBaseType: string = pVar.getType().getBaseType().getName();
 
 			switch(sBaseType){
 				case "texture":
-					return EShaderVariableType.k_Texture;
+					return EAFXShaderVariableType.k_Texture;
         
 		        case "float":
-		        	return EShaderVariableType.k_Float;
+		        	return EAFXShaderVariableType.k_Float;
 		        case "int":
-		        	return EShaderVariableType.k_Int;
+		        	return EAFXShaderVariableType.k_Int;
 		        case "bool":
-		        	return EShaderVariableType.k_Bool;
+		        	return EAFXShaderVariableType.k_Bool;
 
 		        case "float2":
-		        	return EShaderVariableType.k_Float2;
+		        	return EAFXShaderVariableType.k_Float2;
 		        case "int2":
-		        	return EShaderVariableType.k_Int2;
+		        	return EAFXShaderVariableType.k_Int2;
 		        case "bool2":
-		        	return EShaderVariableType.k_Bool2;
+		        	return EAFXShaderVariableType.k_Bool2;
 
 		        case "float3":
-		        	return EShaderVariableType.k_Float3;
+		        	return EAFXShaderVariableType.k_Float3;
 		        case "int3":
-		        	return EShaderVariableType.k_Int3;
+		        	return EAFXShaderVariableType.k_Int3;
 		        case "bool3":
-		        	return EShaderVariableType.k_Bool3;
+		        	return EAFXShaderVariableType.k_Bool3;
 
 		        case "float4":
-		        	return EShaderVariableType.k_Float4;
+		        	return EAFXShaderVariableType.k_Float4;
 		        case "int4":
-		        	return EShaderVariableType.k_Int4;
+		        	return EAFXShaderVariableType.k_Int4;
 		        case "bool4":
-		        	return EShaderVariableType.k_Bool4;
+		        	return EAFXShaderVariableType.k_Bool4;
 
 		        case "float2x2":
-		        	return EShaderVariableType.k_Float2x2;
+		        	return EAFXShaderVariableType.k_Float2x2;
 		        case "float3x3":
-		        	return EShaderVariableType.k_Float3x3;
+		        	return EAFXShaderVariableType.k_Float3x3;
 		        case "float4x4":
-		        	return EShaderVariableType.k_Float4x4;
+		        	return EAFXShaderVariableType.k_Float4x4;
 
 		        case "sampler":
 		        case "sampler2D":
-		        	return EShaderVariableType.k_Sampler2D;
+		        	return EAFXShaderVariableType.k_Sampler2D;
 		        case "samplerCUBE":
-		        	return EShaderVariableType.k_SamplerCUBE;
+		        	return EAFXShaderVariableType.k_SamplerCUBE;
 
 		       	default: 
-		       		return EShaderVariableType.k_NotVar;
+		       		return EAFXShaderVariableType.k_NotVar;
 			}
 		}
 

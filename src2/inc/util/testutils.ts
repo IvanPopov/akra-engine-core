@@ -179,6 +179,8 @@ module akra.util {
 		async?: bool;
 	}
 
+
+
 	export function test(sDescription: string, fnWrapper: () => void, isAsync?: bool);
 	export function test(pManifest: ITestManifest, fnWrapper: () => void, isAsync?: bool);
 	export function test (manifest: any, fnWrapper: () => void, isAsync: bool = false) {

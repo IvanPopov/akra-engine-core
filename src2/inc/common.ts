@@ -13,7 +13,7 @@
 #define WEBGL 1
 #define LOGGER_API 1
 // #define CRYPTO_API 1
-// #define GUI 1
+#define GUI 1
 // #define WEBGL_DEBUG 1
 
 #include "ILogger.ts"
@@ -179,6 +179,8 @@ module akra {
     export var isArrayBuffer = (x: any): bool => x instanceof ArrayBuffer;
 
     export var isTypedArray = (x: any): bool => x !== null && typeof x === "object" && typeof x.byteOffset === "number";
+
+    export var isBlob = (x: any): bool => x instanceof Blob;
 
     /** @inline */
     export var isArray = (x: any): bool => {

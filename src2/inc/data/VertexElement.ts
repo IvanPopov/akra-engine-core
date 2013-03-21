@@ -63,6 +63,10 @@ module akra.data {
 			return (!isDef(pElement.offset) || (pElement.offset === UNKNOWN_OFFSET));
 		};
 
+		inline isEnd(): bool {
+			return this.semantics === DeclUsages.END;
+		}
+
 		toString(): string {
 #ifdef DEBUG
 			function _an(data: any, n: uint, bBackward: bool = false): string {

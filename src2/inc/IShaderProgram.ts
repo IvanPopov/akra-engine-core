@@ -75,6 +75,9 @@ module akra {
     	applyVertexData(sName: string, pData: IVertexData): void;
 
         applyBufferMap(pMap: IBufferMap): void;
+
+        _getActiveUniformNames(): string[];
+        _getActiveAttributeNames(): string[];
     }
 }
 

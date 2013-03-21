@@ -20,6 +20,15 @@ module akra.render {
 		protected _pTechnique: IRenderTechnique = null;
 		protected _pTechniqueMap: IRenderTechniqueMap = {};
 		protected _bShadow: bool = false;
+		protected _eRenderableType: ERenderDataTypes;
+
+		inline get type(): ERenderDataTypes {
+			return this._eRenderableType;
+		}
+
+		constructor (eType: ERenderDataTypes = ERenderDataTypes.UNKNOWN) {
+			this._eRenderableType = eType;
+		}
 
 		inline get renderMethod(): IRenderMethod {
 			return this._pTechnique.getMethod();
@@ -202,6 +211,14 @@ module akra.render {
 
 		CREATE_EVENT_TABLE(RenderableObject);
 		UNICAST(shadow, CALL(bValue));
+	}
+
+	export inline function isMeshSubset(pObject: IRenderableObject): bool {
+		return pObject.type === ERenderDataTypes.MESH_SUBSET;
+	}
+
+	export inline function isScreen(pObject: IRenderableObject): bool {
+		return pObject.type === ERenderDataTypes.SCREEN;
 	}
 }
 

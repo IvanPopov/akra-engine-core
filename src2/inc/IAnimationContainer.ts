@@ -39,7 +39,7 @@ module akra {
 
 		rewind(fRealTime: float): void;
 
-		pause(bValue: bool): void;
+		pause(bValue?: bool): void;
 		isPaused(): bool;
 
 		signal durationUpdated(fDuration: float): void;

@@ -33,19 +33,19 @@ module akra.ui.animation {
 			return new graph.Node(this.graph);
 		}
 
-		createData(): IUIGraphNode {
+		createData(): IUIAnimationNode {
 			return new Data(this.graph);
 		}
 
-		createPlayer(): IUIGraphNode {
+		createPlayer(): IUIAnimationNode {
 			return new Player(this.graph);
 		}
 
-		createBlender(): IUIGraphNode {
+		createBlender(): IUIAnimationNode {
 			return new Blender(this.graph);
 		}
 
-		createMask(): IUIGraphNode {
+		createMask(): IUIAnimationNode {
 			return new Mask(this.graph);
 		}
 

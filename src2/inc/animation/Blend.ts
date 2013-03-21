@@ -161,7 +161,7 @@ module akra.animation {
 			return this._pAnimationList[iAnimation].weight;
 		}
 
-		setWeights(): bool {
+		setWeights(...pWeight: float[]): bool {
 			var fWeight: float;
     		var isModified: bool = false;
 		    var pAnimationList: IAnimationElement[] = this._pAnimationList;

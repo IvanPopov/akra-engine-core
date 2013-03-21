@@ -151,7 +151,7 @@ module akra.animation {
 			return this._bReverse;
 		}
 
-		pause(bValue: bool): void {
+		pause(bValue: bool = true): void {
 			this._fRealTime = -1;
 			this._bPause = bValue;
 		}
@@ -218,6 +218,10 @@ module akra.animation {
 
 	export inline function isContainer(pAnimation: IAnimationBase): bool {
 		return pAnimation.type === EAnimationTypes.CONTAINER;
+	}
+
+	export function createContainer(pAnimation?: IAnimationBase, sName?: string): IAnimationContainer {
+		return new Container(pAnimation, sName);
 	}
 }
 
