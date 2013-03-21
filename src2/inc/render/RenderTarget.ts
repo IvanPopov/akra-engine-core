@@ -6,6 +6,7 @@
 #include "IDepthBuffer.ts"
 #include "Viewport.ts"
 #include "DSViewport2.ts"
+#include "ShadowViewport.ts"
 #include "events/events.ts"
 #include "IFrameStats.ts"
 #include "IPixelBuffer.ts"
@@ -226,6 +227,9 @@ module akra.render {
 
 			if (isNumber(arguments[1]) && <int>arguments[1] >= 0) {
 				pViewport = new DSViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+			}
+			else if(csRenderMethod === "shadow-casting"/*fix me*/){
+				pViewport = new ShadowViewport(pCamera, this, csRenderMethod, fLeft, fTop, fWidth, fHeight, iZIndex);
 			}
 			else {
 				pViewport = new Viewport(pCamera, this, isNumber(arguments[1])? null: csRenderMethod, 

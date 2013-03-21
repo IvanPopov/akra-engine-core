@@ -450,7 +450,7 @@ module akra.fx {
 			//TODO: generate RenderEntry
 				
 			//this.clearPreRenderState();
-
+			pMaker._initInput(pPassInput, Composer.pDefaultSamplerBlender, new AttributeBlendContainer());
 			var pInput: IShaderInput = pMaker._make(pPassInput, this._pCurrentBufferMap);
 			var pRenderer: IRenderer = this._pEngine.getRenderer();
 			var pEntry: IRenderEntry = pRenderer.createEntry();

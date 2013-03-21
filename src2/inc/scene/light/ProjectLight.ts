@@ -93,15 +93,13 @@ module akra.scene.light {
 
 			// this._pColorTexture = pColorTexture;
 			//TODO: Multiple render target
-			// this.getRenderTarget().addViewport(this._pShadowCaster); 
+			this.getRenderTarget().addViewport(this._pShadowCaster, "shadow-casting"/*fix me*/);
 		};
 
 		_calculateShadows(): void {
-			if (!this.enabled || !this.isShadowCaster) {
-				return;
+			if (this.enabled && this.isShadowCaster) {
+				this.getRenderTarget().update();
 			}
-
-			this.getRenderTarget().update();
 		};
 
 		_prepareForLighting(pCamera: ICamera): bool{

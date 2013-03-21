@@ -139,13 +139,15 @@ module akra.scene.light {
 				pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 				pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 				//TODO: Multiple render target
-				// this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i]); 
+				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i], "shadow-casting"/*fix me*/);
 			}
 		};
 
 		_calculateShadows(): void {
-			if (!this.enabled || !this.isShadowCaster) {
-				return;
+			if (this.enabled && this.isShadowCaster) {
+				for(var i: uint = 0; i<6; i++){
+					this.getRenderTarget(i).update();
+				}
 			}
 		};
 
@@ -219,7 +221,7 @@ module akra.scene.light {
 
 			var v3fLightPosition: IVec3 = this.worldPosition;
 
-			var pTestArray: IPlane3d[] = ProjectLight._pFrustumPlanes;
+			var pTestArray: IPlane3d[] = OmniLight._pFrustumPlanes;
 
 			//frustum projection
 
@@ -279,7 +281,7 @@ module akra.scene.light {
 	}
 
 	for(var i:int = 0; i<6; i++){
-		ProjectLight._pFrustumPlanes[i] = new geometry.Plane3d();
+		OmniLight._pFrustumPlanes[i] = new geometry.Plane3d();
 	}
 }
 

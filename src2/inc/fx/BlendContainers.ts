@@ -42,7 +42,7 @@ module akra.fx {
 			}
 
 			var pBlendType: IAFXVariableTypeInstruction = this._pVarBlendTypeMap[sName].blend(pVariable.getType(), eBlendMode);
-			
+
 			if(pBlendType === this._pVarBlendTypeMap[sName]){
 				return true;
 			}

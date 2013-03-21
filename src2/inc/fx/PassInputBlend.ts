@@ -164,6 +164,9 @@ module akra.fx {
 
 
 		setSurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): void {
+			if(isNull(pSurfaceMaterial)){
+				return ;
+			}
 			// var pSurfaceMaterial: core.pool.resources.SurfaceMaterial = pSurfaceMaterial;
 			for (var i: int = 0; i < pSurfaceMaterial.totalTextures; i++) {
 				var pTexture: ITexture = pSurfaceMaterial[i].texture(i);

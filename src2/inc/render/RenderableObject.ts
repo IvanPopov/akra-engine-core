@@ -4,7 +4,7 @@
 #include "IRenderableObject.ts"
 #include "RenderTechnique.ts"
 #include "IRenderMethod.ts"
-
+#include "ShadowViewport.ts"
 
 #define DEFAULT_RM DEFAULT_NAME 
 #define DEFAULT_RT DEFAULT_NAME 

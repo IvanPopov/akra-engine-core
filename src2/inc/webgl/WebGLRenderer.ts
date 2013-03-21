@@ -98,6 +98,8 @@ module akra.webgl {
 			var pInput: IShaderInput = pEntry.input;
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
 
+			console.log(pEntry);
+
 			(<any>pRenderTarget)._bind();
 			var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>(pMaker).shaderProgram;
 

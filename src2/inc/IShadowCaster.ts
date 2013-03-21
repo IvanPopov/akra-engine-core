@@ -12,6 +12,8 @@ module akra {
 		readonly face: uint;
 		readonly affectedObjects: IObjectArray;
 		readonly optimizedProjection: IMat4;
+		//casted shadows in the last frame
+		isShadowCasted: bool;
 
 		_optimizeProjectionMatrix(): void;
 	}

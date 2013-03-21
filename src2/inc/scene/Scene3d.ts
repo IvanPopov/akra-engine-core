@@ -13,6 +13,8 @@
 #include "SceneModel.ts"
 #include "Joint.ts"
 
+#include "light/ProjectLight.ts"
+#include "light/OmniLight.ts"
 #include "light/ShadowCaster.ts"
 
 #define DEFAULT_DLIST DEFAULT_NAME

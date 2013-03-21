@@ -107,7 +107,6 @@ module akra.render {
 		}
 
 		update (): bool {
-			
 			this.prepareForDeferredShading();
 
 			var pLights: ILightPoint[] = <ILightPoint[]><any>this.getCamera().display(DL_LIGHTING);
@@ -126,10 +125,10 @@ module akra.render {
 			var pNodeList: IObjectArray = this.getCamera().display();
 			for (var i: int = 0; i < pNodeList.length; ++ i) {
 				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
-				pRenderable.render(null, pNodeList.value(i));
+				pRenderable.render(this,null, pNodeList.value(i));
 			}
 #endif
-			//render defferred
+			//render deferred
 			this._pDeferredView.render(this);	
 			this.getTarget().getRenderer().executeQueue();
 			return true;

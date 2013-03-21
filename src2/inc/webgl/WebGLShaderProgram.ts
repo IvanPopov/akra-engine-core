@@ -72,7 +72,7 @@ module akra.webgl {
 
 				var sInfo: string = pWebGLContext.getProgramInfoLog(pWebGLProgram);
 
-				LOG("shader program errors: \n %s\n\nvertex code:\n %s\n\n pixel code: %s", sInfo, csVertex, csPixel);
+				LOG("shader program errors: \n" + sInfo + "\n\nvertex code:\n"  + csVertex + "\n\n pixel code: csPixel");
 #endif				
 
 				return false;
