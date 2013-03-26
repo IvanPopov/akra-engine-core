@@ -438,7 +438,8 @@ module akra {
 	(<any>window).requestAnimationFrame = (<any>window).requestAnimationFrame || (<any>window).webkitRequestAnimationFrame ||
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
-    (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
+    // (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitPersistentStorage ;
+    (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitTemporaryStorage ;
     (<any>navigator).gamepads = (<any>navigator).gamepads || (<any>navigator).webkitGamepads;
     (<any>navigator).getGamepads = (<any>navigator).getGamepads || (<any>navigator).webkitGetGamepads;
 

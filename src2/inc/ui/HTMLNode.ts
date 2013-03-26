@@ -2,13 +2,15 @@
 #define UIHTMLNODE_TS
 
 #include "IUIHTMLNode.ts"
-#include "Node.ts"
+#include "ui/Node.ts"
 
 module akra.ui {
 
 	export class HTMLNode extends Node implements IUIHTMLNode {
 		public $element: JQuery = null;
 
+
+		inline get el(): JQuery { return this.$element; }
 
 		constructor (parent, pElement?: HTMLElement, eNodeType?: EUINodeTypes);
 		constructor (parent, $element?: JQuery, eNodeType?: EUINodeTypes);
@@ -71,6 +73,8 @@ module akra.ui {
 				}
 			}
 
+			this.beforeRender();
+
 			//trace($to, this.self());
 			$to.append(this.self());
 
@@ -81,7 +85,7 @@ module akra.ui {
 
 		attachToParent(pParent: IUINode, bRender: bool = true): bool {
 			if (super.attachToParent(pParent)) {
-				if (bRender) {
+				if (bRender && !this.isRendered()) {
 					this.render(pParent);
 				}
 				return true;
@@ -140,6 +144,7 @@ module akra.ui {
 
 		BROADCAST(resize, VOID);
 		BROADCAST(rendered, VOID);
+		BROADCAST(beforeRender, VOID);
 
 
 		static EVENTS: string[] = [

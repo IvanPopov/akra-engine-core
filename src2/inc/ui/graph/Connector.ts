@@ -31,8 +31,9 @@ module akra.ui.graph {
 			}
 		}
 
-		label(): string {
-			return "GraphConnector";
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-graphconnector");
 		}
 
 		inline isValid(): bool {
@@ -80,7 +81,7 @@ module akra.ui.graph {
 		}
 	}
 
-	Component.register("GraphConnector", Connector);
+	register("GraphConnector", Connector);
 }
 
 #endif

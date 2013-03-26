@@ -5252,7 +5252,7 @@ var TypeScript;
             emitter.writeToOutput("(");
             emitter.emitJavascript(res, 56 /* OpenParen */ , true);
             emitter.writeToOutput(")");
-            emitter.writeToOutput("/*writed f: " + funcDecl.treeViewLabel()+ "*/");
+            //emitter.writeToOutput("/*writed f: " + funcDecl.treeViewLabel()+ "*/");
             for(var i = 0; i < argv.length; ++i) {
                 this.rollbackArgument(argv[i]);
             }

@@ -5,7 +5,7 @@
 #include "IUIGraphNode.ts"
 #include "IUIGraphRoute.ts"
 
-/// @script http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js
+/// @script ui/3d-party/raphael/raphael-min.js
 
 module akra.ui.graph {
 	export class Route implements IUIGraphRoute {

@@ -12,7 +12,8 @@ module akra {
 		show?: bool;
 		name?: string;
 		html?: string;
-		css?: string;
+		css?: any;
+		class?: string;
 		width?: uint;
 		height?: uint;
 		draggable?: bool;
@@ -21,10 +22,10 @@ module akra {
 		//string like parent/window/document or array [x, y, w, h]
 		dragZone?: any;
 
-		//string/EUILayouts
-		layout?: any;
-
 		generic?: string;
+
+		//string/EUILayouts/Layout
+		layout?: any;
 	}
 
 	export enum EUIComponents {
@@ -33,6 +34,7 @@ module akra {
 		WINDOW,
 
 		BUTTON,
+		PANEL,
 		LABEL,
 		TREE,
 		CANVAS,

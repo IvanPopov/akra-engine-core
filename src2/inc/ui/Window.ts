@@ -21,13 +21,9 @@ module akra.ui {
 			//clear window content
 			this.$element.html("");
 		}
-
-		label(): string {
-			return "Window";
-		}
 	}
 
-	Component.register("Window", Window);
+	register("Window", Window);
 }
 
 #endif

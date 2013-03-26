@@ -79,13 +79,26 @@ module akra.ui.animation {
 
 			$location.append(pViewBtn.$element);
 
-			pViewBtn.bind(SIGNAL(click), (pBtn: IUIButton, e: IUIEvent) => {
+			var fnViewHide = (pBtn: IUIButton, e: IUIEvent) => {
+				for (var i = 0; i < pSliders.length; ++ i) {
+					var $el = pSliders[i].$element;
+					$el.is(":visible")? $el.hide(): $el.show();
+				}
+			}
+
+			var fnCreate = (pBtn: IUIButton, e: IUIEvent) => {
 				for (var sTarget in pMask) {
 					pSliders.push(Mask.createSlider(pParent, $location, pMask, sTarget));
 				}
 
-				pViewBtn.destroy();
-			});
+				//pViewBtn.destroy();
+				pViewBtn.unbind(SIGNAL(click), fnCreate);
+				pViewBtn.bind(SIGNAL(click), fnViewHide);
+
+				pViewBtn.text = "hide/view";
+			}
+
+			pViewBtn.bind(SIGNAL(click), fnCreate);
 
 			this._pViewBtn = pViewBtn;
 			this._pMask = pMask;

@@ -6,8 +6,20 @@
 #include "../Component.ts"
 #include "Connector.ts"
 #include "Route.ts"
+#include "io/ajax.ts"
+
+#include "swig.d.ts"
+/// @script ui/3d-party/swig/swig.pack.min.js
+
 
 module akra.ui.graph {
+
+	export function template(sUrl: string, pData: any = null): string {
+		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
+		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sUrl});
+		return fnTemplate(pData);
+	}
+
 	export class Node extends Component implements IUIGraphNode {
 		protected _eGraphNodeType: EUIGraphNodes;
 
@@ -31,7 +43,9 @@ module akra.ui.graph {
 		inline get graph(): IUIGraph { return <IUIGraph>this.parent; }
 
 		constructor (pGraph: IUIGraph, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN) {
-			super(getUI(pGraph), null, EUIComponents.GRAPH_NODE);
+			super(getUI(pGraph), null, EUIComponents.GRAPH_NODE, 
+				$(template("ui/templates/GraphNode.tpl")));
+
 			this._eGraphNodeType = eType;
 
 			ASSERT(isComponent(pGraph, EUIComponents.GRAPH), "only graph may be as parent");
@@ -46,8 +60,9 @@ module akra.ui.graph {
 			this.$element.offset(this.graph.$element.offset());
 		}
 
-		label(): string {
-			return "GraphNode";
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-graphnode");
 		}
 
 		move(e: IUIEvent): void {
@@ -80,17 +95,26 @@ module akra.ui.graph {
 		}
 
 		private init(): void {
-			var pChild: IEntity = this.child;
-			var pNode: IUINode[] = [];
+			var pSides: string[] = ["top", "left", "right", "bottom"];
+			var pSidePanels: IUIPanel[] = [];
+			
+			for (var i: int = 0; i < pSides.length; ++ i) {
+				var sSide: string = pSides[i];
 
-			while(pChild) {
-				if (isLayout(pChild)) {
-					pNode.push(<IUINode>pChild);
-				}
-				pChild = pChild.sibling;
-			}
+				pSidePanels[i] = this.ui.createComponent("Panel", {css: 
+					{
+						width: "100%",
+						height: "100%",
+						minHeight: "100%"
+					}
+				});
 
-			this.setRouteAreas(pNode);
+				pSidePanels[i].attachToParent(this, false);
+				pSidePanels[i].render(this.el.find(".graph-node-" + sSide + ":first"));
+			};
+
+
+			this.setRouteAreas(pSidePanels);
 		}
 
 		protected getRouteArea(pNode: IUINode, eDirection: EUIGraphDirections = EUIGraphDirections.IN): IUINode {
@@ -111,6 +135,7 @@ module akra.ui.graph {
 				pNode[i].bind(SIGNAL(mousedown), (pNode: IUINode, e: IUIEvent) => {
 	 				e.stopPropagation();
 	      			pGraphNode.setupOutConnection(pNode); 
+	      			LOG("drag..");
 	 			});
 			}
 		}
@@ -315,7 +340,7 @@ module akra.ui.graph {
 		BROADCAST(beforeDestroy, CALL(node));
 	}
 
-	Component.register("GraphNode", Node);
+	register("GraphNode", Node);
 }
 
 #endif

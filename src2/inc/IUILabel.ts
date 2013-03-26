@@ -4,6 +4,10 @@
 #include "IUIComponent.ts"
 
 module akra {
+	export interface IUILabelOptions extends IUIComponentOptions {
+		text?: string;
+	}
+	
 	export interface IUILabel extends IUIComponent {
 		text: string;
 		

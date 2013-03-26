@@ -5,6 +5,7 @@
 #include "IUIGraph.ts"
 #include "IUIGraphNode.ts"
 #include "IUIGraphConnector.ts"
+
 #include "Route.ts"
 #include "../Component.ts"
 
@@ -37,18 +38,13 @@ module akra.ui.graph {
 
 			this._eGraphType = eType;
 
-			this.getHTMLElement().onselectstart = function() { return false };
+			//FIXME: unblock selection
+			this.getHTMLElement().onselectstart = () => { return false };
 		}
-
-		label(): string {
-			return "Graph";
-		}
-
-		// renderTarget(): JQuery {
-		// 	return this.$element.find("svg");
-		// }
 
 		rendered(): void {
+			super.rendered();
+
 			this._pCanvas = Raphael(this.getHTMLElement(), 0, 0);
 
 			var $svg = this.$element.children(":first");
@@ -56,15 +52,9 @@ module akra.ui.graph {
 				width: "100%",
 				height: "100%"
 			});
+
+			this.el.addClass("component-graph");
 		}
-
-		// relocated(pNode: IUINode): void {
-		// 	if ($.contains(document.documentElement, (<IUIHTMLNode>pNode).getHTMLElement())) {
-		// 		console.log(this.width(), this.height());
-		// 	}
-
-		// 	super.relocated(pNode);
-		// }
 
 		mouseup(e: IUIEvent): void {
 			this._readyForConnect(false);
@@ -247,7 +237,7 @@ module akra.ui.graph {
 		}
 	}
 
-	Component.register("Graph", Graph);
+	register("Graph", Graph);
 }
 
 #endif

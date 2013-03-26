@@ -20,12 +20,19 @@ module akra.ui {
 			this.connect(this.layout, SIGNAL(childRemoved), SLOT(_childRemoved), EEventTypes.UNICAST);\
 
 			var pChild: IUINode = <IUINode>this.layout.child;
+
 			while (!isNull(pChild)) {
 				if (isCheckbox(pChild)) {
 					this.addCheckbox(<IUICheckbox>pChild);
 				}
+
 				pChild = <IUINode>pChild.sibling;
 			}
+		}
+
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-checkboxlist");
 		}
 
 		inline hasMultiSelect(): bool {
@@ -91,13 +98,9 @@ module akra.ui {
 				}
 			}
 		}
-
-		protected label(): string {
-			return "CheckboxList";
-		}
 	}
 
-	Component.register("CheckboxList", CheckboxList);
+	register("CheckboxList", CheckboxList);
 }
 
 #endif

@@ -16,7 +16,7 @@ test("ui basics", () => {
 
 	pControls = new graph.Controls(pRoot);
 	pGraph = pControls.graph;
-	console.log(pControls.getHTMLElement());
+	//console.log(pControls.getHTMLElement());
 
 	for (var i: int = 0; i < 3; ++ i) {
 		new graph.Node(pGraph);
