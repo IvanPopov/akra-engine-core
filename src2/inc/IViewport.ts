@@ -10,7 +10,8 @@ module akra {
 
     export enum EViewportTypes {
         DEFAULT = -1,
-        DSVIEWPORT = 1
+        DSVIEWPORT = 1,
+        SHADOWVIEWPORT = 2
     }
 
     export interface IViewport extends IEventProvider {

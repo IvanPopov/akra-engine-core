@@ -75,7 +75,7 @@ module akra.scene.light {
 
 			var pDepthTexture: ITexture = this._pDepthTexture = 
 				pResMgr.createTexture("depth_texture_" + this.getGuid());
-			pDepthTexture.create(iSize, iSize, 1, null, 0,
+			pDepthTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET,
 				0, 1, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
 			pDepthTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
@@ -93,7 +93,7 @@ module akra.scene.light {
 
 			// this._pColorTexture = pColorTexture;
 			//TODO: Multiple render target
-			this.getRenderTarget().addViewport(this._pShadowCaster, "shadow-casting"/*fix me*/);
+			this.getRenderTarget().addViewport(this._pShadowCaster, EViewportTypes.SHADOWVIEWPORT);
 		};
 
 		_calculateShadows(): void {
@@ -166,7 +166,7 @@ module akra.scene.light {
 			if(pShadowCaster.projectionMatrix.isOrthogonalProjection()){
 				//orthogonal projection
 				//defining light sight direction;
-				
+				//TODO: rewrite additional testing
 				var pLightFrustumVertices: IVec3[] = pShadowCaster.frustum.frustumVertices;
 
 				var v3fDirection1: IVec3 = vec3(0.);
@@ -284,7 +284,7 @@ module akra.scene.light {
 			}
 			else{
 				//frustum projection
-
+				//TODO: rewrite additional testing
 				//create list for additional testing
 				var v3fLightPosition: IVec3 = this.worldPosition;
 

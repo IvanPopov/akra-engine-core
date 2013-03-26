@@ -131,7 +131,7 @@ module akra.scene.light {
 
 				var pDepthTexture: ITexture = this._pDepthTextureCube[i] = 
 					pResMgr.createTexture("depth_texture_" + <string><any>(i) + "_" + <string><any>this.getGuid());
-				pDepthTexture.create(iSize, iSize, 1, null, 0,
+				pDepthTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET,
 				0, 1, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
 				pDepthTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
@@ -139,7 +139,7 @@ module akra.scene.light {
 				pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 				pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 				//TODO: Multiple render target
-				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i], "shadow-casting"/*fix me*/);
+				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i], EViewportTypes.SHADOWVIEWPORT);
 			}
 		};
 

@@ -298,9 +298,10 @@ module akra.render {
 		    for (i = 0; i < pLightPoints.length; i++) {
 		        pLight = pLightPoints[i];
 
-		        if (!pLight.enabled) {
-		            continue;
-		        }
+		        //all cameras in list already enabled
+		        // if (!pLight.enabled) {
+		        //     continue;
+		        // }
 		        
 		        v4fLightPosition.set(pLight.worldPosition, 1.);
 		        pCameraView.multiplyVec4(v4fLightPosition, v4fTemp)
@@ -316,7 +317,6 @@ module akra.render {
 		                
 		                var pDepthCube: ITexture[] 					= pOmniLight.getDepthTextureCube();
 		                var pShadowCasterCube: IShadowCaster[] 	= pOmniLight.getShadowCaster();
-		                //var pOptimizedProjCube: IMat4[] 			= pOmniLight.optimizedProjectionCube;
 		                
 		                for (j = 0; j < 6; ++ j) {
 		                    pShadowCaster = pShadowCasterCube[j];
@@ -339,12 +339,12 @@ module akra.render {
 		        }
 		        else if (pLight.lightType === ELightTypes.PROJECT) {
 		        	pProjectLight = <IProjectLight>pLight;
+		        	pShadowCaster = pProjectLight.getShadowCaster();
 
-		            if (pLight.isShadowCaster) {
+		            if (pLight.isShadowCaster && pShadowCaster.isShadowCasted) {
 		                pUniformData = uniformProjectShadow();
 		                (<UniformProjectShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                
-		                pShadowCaster = pProjectLight.getShadowCaster();
 		                m4fToLightSpace = pShadowCaster.viewMatrix.multiply(pCamera.worldMatrix, mat4());
 		                pUniforms.textures.push(pProjectLight.getDepthTexture());
 		                sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
@@ -357,7 +357,6 @@ module akra.render {
 		            else {
 		                pUniformData = uniformProject();
 		                (<UniformProject>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
-		                pShadowCaster = pProjectLight.getShadowCaster();
 		                m4fShadow = pShadowCaster.projViewMatrix.multiply(pCamera.worldMatrix, mat4());
 		                (<UniformProject>pUniformData).setMatrix(m4fShadow);
 		                pUniforms.project.push(<UniformProject>pUniformData);

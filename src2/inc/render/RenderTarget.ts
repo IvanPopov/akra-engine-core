@@ -225,15 +225,23 @@ module akra.render {
 					because a viewport exists with this Z-Order already.", this._sName, iZIndex, "RenderTarget::addViewport");
 			}
 
-			if (isNumber(arguments[1]) && <int>arguments[1] >= 0) {
-				pViewport = new DSViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+			if(isNumber(arguments[1])){
+
+				switch(arguments[1]){
+					case EViewportTypes.DSVIEWPORT:
+						pViewport = new DSViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+						break;
+					case EViewportTypes.SHADOWVIEWPORT:
+						pViewport = new ShadowViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+						break;
+					default:
+						pViewport = new Viewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+						break;
+				}
 			}
-			else if(csRenderMethod === "shadow-casting"/*fix me*/){
-				pViewport = new ShadowViewport(pCamera, this, csRenderMethod, fLeft, fTop, fWidth, fHeight, iZIndex);
-			}
-			else {
-				pViewport = new Viewport(pCamera, this, isNumber(arguments[1])? null: csRenderMethod, 
-					fLeft, fTop, fWidth, fHeight, iZIndex);
+			else{
+				pViewport = new Viewport(pCamera, this, csRenderMethod, 
+						fLeft, fTop, fWidth, fHeight, iZIndex);
 			}
 
 			this._pViewportList[iZIndex] = pViewport;
