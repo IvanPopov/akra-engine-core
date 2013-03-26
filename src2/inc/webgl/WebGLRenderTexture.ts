@@ -71,7 +71,7 @@ module akra.webgl {
 		}
 
 		inline _bind(): void {
-			this._pFrameBuffer.bind();
+			this._pFrameBuffer._bind();
 		}
 
 		detachDepthPixelBuffer(): void {

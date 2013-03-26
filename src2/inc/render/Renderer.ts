@@ -107,7 +107,7 @@ module  akra.render {
 		}
 		_endRender(): void {}
 
-		clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void {
+		clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int, iStencil: uint): void {
 
 		}
 

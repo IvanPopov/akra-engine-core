@@ -170,6 +170,7 @@ module akra.fx {
 					return null;
 				}
 
+				pMaker._initInput(pPassInput, this._pDefaultSamplerBlender, this._pAttributeContainerV);
 
 				this._pFXMakerByHashMap[sTotalHash] = pMaker;
 				LOG("generateShaderProgram. HASH: ", sTotalHash, "---NEW---", now() - iTime);

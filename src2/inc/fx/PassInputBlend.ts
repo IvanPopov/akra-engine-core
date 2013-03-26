@@ -168,6 +168,7 @@ module akra.fx {
 				return ;
 			}
 			// var pSurfaceMaterial: core.pool.resources.SurfaceMaterial = pSurfaceMaterial;
+			// LOG(pSurfaceMaterial, pSurfaceMaterial.totalTextures);
 			for (var i: int = 0; i < pSurfaceMaterial.totalTextures; i++) {
 				var pTexture: ITexture = pSurfaceMaterial[i].texture(i);
 				// var iTexcord: int = pSurfaceMaterial[i].texcoord(i);

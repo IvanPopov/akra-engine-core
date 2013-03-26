@@ -5014,6 +5014,14 @@ var TypeScript;
             }
             return new TypeScript.StringLiteral(sResult);
         };
+
+        InlineEngine.prototype.inlineInitArg = function (emitter, pExpr, pContext) {
+            this.replaceContext(pContext);
+            var pSubst = this.replaceArgumentByText(emitter, pExpr);
+            this.rollbackContext();
+            return pSubst;
+        }
+
         InlineEngine.prototype.findArgIndex = function (pArg) {
             var argv = this.argv();
             for(var i = 0; i < argv.length; ++i) {
@@ -5240,9 +5248,22 @@ var TypeScript;
             var argv = funcDecl.arguments.members;
             for(var i = 0; i < argv.length; ++i) {
                 var argDecl = argv[i];
-                this.replaceArgument(emitter, argDecl, args[i] || argDecl.init || new TypeScript.Identifier("undefined"));
+                var defArg = null;
+
+                if (!args[i]) {
+                    var initArg = null;
+
+                    if (argDecl.init) {
+                        //initArg = argDecl.init;
+                        initArg = this.inlineInitArg(emitter, argDecl.init, realTarget);
+                    }
+
+                    defArg = initArg || new TypeScript.Identifier("undefined");
+                }
+
+                this.replaceArgument(emitter, argDecl, args[i] || defArg);
             }
-            if (!TypeScript.isNull(type)) {
+            if (!TypeScript.isNull(type)) { 
                 if (type.isClassInstance()) {
                     this.replaceContext(realTarget);
                 }
@@ -5252,7 +5273,7 @@ var TypeScript;
             emitter.writeToOutput("(");
             emitter.emitJavascript(res, 56 /* OpenParen */ , true);
             emitter.writeToOutput(")");
-            emitter.writeToOutput("/*writed f: " + funcDecl.treeViewLabel()+ "*/");
+            // emitter.writeToOutput("/*writed f: " + funcDecl.treeViewLabel()+ "*/");
             for(var i = 0; i < argv.length; ++i) {
                 this.rollbackArgument(argv[i]);
             }

@@ -255,7 +255,7 @@ float4 blur(sampler Sampler,float2 texCoords, float2 invTexSize){
 
 technique omniLighting{
     pass applyOmniLighting{
-        if(engine.lights.omni){
+        if(nOmni > 0){
             PixelShader = compile apply_light_omni();
         }
     };
@@ -263,7 +263,7 @@ technique omniLighting{
 
 technique projectLighting{
     pass applyProjectLighting{
-        if(engine.lights.project){
+        if(nProject > 0){
             PixelShader = compile apply_light_project();
         }
     };
@@ -271,7 +271,7 @@ technique projectLighting{
 
 technique omniShadowsLighting{
     pass applyOmniShadowsLighting{
-        if(engine.lights.omniShadows){
+        if(nOmniShadows > 0){
             PixelShader = compile apply_light_omni_shadow();
         }
     };   
@@ -279,7 +279,7 @@ technique omniShadowsLighting{
 
 technique projectShadowsLighting{
     pass applyProjectShadowsLighting{
-        if(engine.lights.projectShadows){
+        if(nProjectShadows > 0){
             PixelShader = compile apply_light_project_shadows();
         }
     };   

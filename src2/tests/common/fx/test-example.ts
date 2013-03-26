@@ -1,4 +1,4 @@
-#include "util/testutils.ts"
+ #include "util/testutils.ts"
 #include "core/Engine.ts"
 #include "common.ts"
 #include "IEffect.ts"
@@ -8,6 +8,10 @@ module akra {
 	test("Example creation test", () => {
 		pEngine = createEngine();
 		var pRmgr = pEngine.getResourceManager();
+
+		if (pEngine.getRenderer().debug(true, true)) {
+			 LOG("context debugging enabled");
+		}
 
 		pEngine.bind(SIGNAL(depsLoaded), (pEngine: IEngine, pDeps: IDependens) => {
 			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");

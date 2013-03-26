@@ -89,7 +89,8 @@ module akra.webgl {
 		}
 
 		_beginRender(): void {
-
+			this._pWebGLContext.clearColor(0.,0.,0.,1.);
+			this._pWebGLContext.clear(GL_COLOR_BUFFER_BIT);
 		}
 
 		_renderEntry(pEntry: IRenderEntry): void {
@@ -154,7 +155,8 @@ module akra.webgl {
 		}
 
 		_endRender(): void {
-
+			// this._pWebGLContext.clearColor(0.,0.,0.,1.);
+			// this._pWebGLContext.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 		
 		isDebug(): bool {
@@ -188,12 +190,16 @@ module akra.webgl {
 			this._pWebGLContext.bindTexture(eTarget, pTexture);
 		}
 
-		inline activateWebGLTexture(iSlot: int = this.getNextTextureSlot()): void {
-			this._pWebGLContext.activeTexture(iSlot);
+		inline activateWebGLTexture(iWebGLSlot: int): void {
+			this._pWebGLContext.activeTexture(iWebGLSlot);
 		}
 
+		// inline getFreeWebGLTextureSlot(): int {
+		// 	return this._getNextTextureSlot() + GL_TEXTURE0;
+		// }
+
 		inline getNextTextureSlot(): int {
-			return this._iSlot === 15? this._iSlot = 0: this._iSlot ++ ;
+			return this._iSlot === 15 ? (this._iSlot = 0) : (this._iSlot++);
 		}
 
 		inline getTextureSlot(): int {
@@ -278,6 +284,11 @@ module akra.webgl {
 
 		getDefaultCanvas(): ICanvas3d {
 			return this._pDefaultCanvas;
+		}
+
+
+		clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void {
+
 		}
 	}
 }

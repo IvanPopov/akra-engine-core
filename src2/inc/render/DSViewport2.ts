@@ -68,6 +68,7 @@ module akra.render {
 			for (var i = 0; i < 2; ++ i) {
 				pDeferredTextures[i] = this._pDefferedColorTextures[i] = 
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
+
 				pDeferredTextures[i].create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0,0, 
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
@@ -103,7 +104,7 @@ module akra.render {
 
 			
 
-			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender));
+			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		}
 
 		update (): bool {
@@ -125,8 +126,10 @@ module akra.render {
 			var pNodeList: IObjectArray = this.getCamera().display();
 			for (var i: int = 0; i < pNodeList.length; ++ i) {
 				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
-				pRenderable.render(this,null, pNodeList.value(i));
+				pRenderable.render(this._pDefferedColorTextures[i].getBuffer().getRenderTarget().getViewport(0), null, pNodeList.value(i));
 			}
+
+			this.getTarget().getRenderer().executeQueue();
 #endif
 			//render deferred
 			this._pDeferredView.render(this);	
@@ -221,7 +224,7 @@ module akra.render {
 
 		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
 			switch (iPass) {
-				case 2:
+				case 0:
 					var pLightUniforms: UniformMap = this._pLightingUnifoms;
 					var pLightPoints: ILightPoint[] = this._pLightPoints;
 					var pCamera: ICamera = this.getCamera();
@@ -252,7 +255,7 @@ module akra.render {
 				    pTechnique.setShadowSamplerArray("project_shadow_sampler", pLightUniforms.samplersProject);
     				pTechnique.setShadowSamplerArray("omni_shadow_sampler", pLightUniforms.samplersOmni);
 
-    				pTechnique.setVec2BySemantic("SCREEN_TEXTURE_RATIO",
+    				pTechnique.getPass(iPass).setUniform("SCREEN_TEXTURE_RATIO",
                                      vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
 				    
 				    pTechnique.setTextureBySemantics("DEFERRED_TEXTURE0", pDeferredTextures[0]);

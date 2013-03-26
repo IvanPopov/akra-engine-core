@@ -102,7 +102,8 @@ module akra.render {
 		}
 
 
-		clear(iBuffers: uint = 1, cColor: IColor = Color.BLACK, iDepth: float = 1.): void {
+		clear(iBuffers: uint = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+			  cColor: IColor = Color.BLACK, iDepth: float = 1., iStencil: uint = 0): void {
 			
 			var pRenderer: IRenderer = this._pTarget.getRenderer();
 			
@@ -110,11 +111,11 @@ module akra.render {
 				var pCurrentViewport: IViewport = pRenderer._getViewport();
 				
 				if (pCurrentViewport && pCurrentViewport == this) {
-					pRenderer.clearFrameBuffer(iBuffers, cColor, iDepth);
+					pRenderer.clearFrameBuffer(iBuffers, cColor, iDepth, iStencil);
 				}
 				else if (pCurrentViewport) {
 					pRenderer._setViewport(this);
-					pRenderer.clearFrameBuffer(iBuffers, cColor, iDepth);
+					pRenderer.clearFrameBuffer(iBuffers, cColor, iDepth, iStencil);
 					pRenderer._setViewport(pCurrentViewport);
 				}
 			}

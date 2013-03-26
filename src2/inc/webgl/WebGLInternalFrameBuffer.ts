@@ -68,7 +68,7 @@ module akra.webgl {
 			this.releaseAttachment(iWebGLAttachment);
 			this._pAttachments[iWebGLAttachment] = <WebGLPixelBuffer>pSurface;
 			if(this.checkAttachment(iWebGLAttachment)){
-				this.bind();
+				this._bind();
 				(<WebGLPixelBuffer>pSurface)._bindToFramebuffer(iWebGLAttachment, 0);
 				(<WebGLPixelBuffer>pSurface).addRef();
 			}
@@ -89,11 +89,16 @@ module akra.webgl {
 			this.bindSurface(GL_COLOR_ATTACHMENT0 + iAttachment, pSurface);
 		}
 
-		inline bind(): void {
+		inline _bind(): void {
 			this._pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, this._pWebGLFramebuffer);
 		}
 
 		attachDepthBuffer(pDepthBuffer: IDepthBuffer): void {
+			var pWebGLContext: WebGLRenderingContext = this._pWebGLRenderer.getWebGLContext();
+			var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+
+			this._pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, this._pWebGLFramebuffer);
+
 			if(!isNull(pDepthBuffer)) {
 				var pDepthRenderBuffer: WebGLInternalRenderBuffer = (<WebGLDepthBuffer>pDepthBuffer).depthBuffer;
 				var pStencilRenderBuffer: WebGLInternalRenderBuffer = (<WebGLDepthBuffer>pDepthBuffer).stencilBuffer;
@@ -120,7 +125,6 @@ module akra.webgl {
 
 			}
 			else {
-				var pWebGLContext: WebGLRenderingContext = this._pWebGLRenderer.getWebGLContext();
 
 				pWebGLContext.framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
 										  			  GL_RENDERBUFFER, null);
@@ -133,10 +137,13 @@ module akra.webgl {
 				this._pAttachments[GL_DEPTH_ATTACHMENT] = null;
 				this._pAttachments[GL_STENCIL_ATTACHMENT] = null;
 			}
+
+			this._pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
 		}
 		
 		detachDepthBuffer(): void {
 			var pWebGLContext: WebGLRenderingContext = this._pWebGLRenderer.getWebGLContext();
+			var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
 
 			this._pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, this._pWebGLFramebuffer);
 
@@ -150,6 +157,8 @@ module akra.webgl {
 			this.releaseAttachment(GL_STENCIL_ATTACHMENT);
 			this._pAttachments[GL_DEPTH_ATTACHMENT] = null;
 			this._pAttachments[GL_STENCIL_ATTACHMENT] = null;
+
+			this._pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
 		}
 
 		swapBuffers(): void {

@@ -447,6 +447,7 @@ module akra.webgl {
 	        var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
 	        
 	        var pFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
+
 	        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pFramebuffer);
 
 	        var pTempWebGLTexture: WebGLTexture = null;

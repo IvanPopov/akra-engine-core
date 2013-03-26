@@ -432,7 +432,8 @@ module akra.fx {
 					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
 					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
 					
-					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, null, null, null);
+					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, null, 
+																  pPassInput.foreigns, pPassInput.uniforms);
 				}
 
 				if(isNull(pPassBlend)){
@@ -450,7 +451,6 @@ module akra.fx {
 			//TODO: generate RenderEntry
 				
 			//this.clearPreRenderState();
-			pMaker._initInput(pPassInput, Composer.pDefaultSamplerBlender, new AttributeBlendContainer());
 			var pInput: IShaderInput = pMaker._make(pPassInput, this._pCurrentBufferMap);
 			var pRenderer: IRenderer = this._pEngine.getRenderer();
 			var pEntry: IRenderEntry = pRenderer.createEntry();

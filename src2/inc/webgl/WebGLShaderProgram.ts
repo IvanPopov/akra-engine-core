@@ -331,8 +331,9 @@ module akra.webgl {
     	}
 
         inline setVertexBuffer(sName: string, pBuffer: IVertexBuffer): void {
-            this._pWebGLRenderer.activateWebGLTexture();
-            var iSlot: uint = this._pWebGLRenderer.getTextureSlot();
+            var iSlot: uint = this._pWebGLRenderer.getNextTextureSlot();
+
+            this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
             this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
             this.setInt(sName, iSlot);
         }
@@ -353,19 +354,18 @@ module akra.webgl {
         private applySamplerState(pSampler: IAFXSamplerState): int {
             var pTexture: WebGLInternalTexture = <WebGLInternalTexture>pSampler.texture;
 
-           this._pWebGLRenderer.activateWebGLTexture();
+            var iSlot: int = this._pWebGLRenderer.getNextTextureSlot();
+            this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
 
-           var iSlot: int = this._pWebGLRenderer.getTextureSlot();
+            this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pTexture.getWebGLTexture());
 
-           this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pTexture.getWebGLTexture());
-           
-           pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.mag_filter);
-           pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.min_filter);
+            pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.mag_filter);
+            pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.min_filter);
 
-           pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s);
-           pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t);
+            pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s);
+            pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t);
 
-           return iSlot;
+            return iSlot;
         }
 
     	//applyVertexBuffer(sName: string, pBuffer: IVertexBuffer);

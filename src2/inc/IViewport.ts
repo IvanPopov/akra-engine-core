@@ -34,7 +34,7 @@ module akra {
         update(): void;
         destroy(): void;
 
-        clear(iBuffers?: uint, cColor?: IColor, iDepth?: float): void;
+        clear(iBuffers?: uint, cColor?: IColor, iDepth?: float, iStencil?: uint): void;
 
         getTarget(): IRenderTarget;
         getCamera(): ICamera;

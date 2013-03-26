@@ -246,6 +246,9 @@ module akra.fx {
 				this._pAttrExistMap[this._pRealAttrNameList[i]] = true;
 			}
 
+			// this["sTmpVertex"] = sVertex;
+			// this["sTmpPixel"] = sPixel;  
+
 			return true;
 		}
 
@@ -338,8 +341,18 @@ module akra.fx {
 
 			for(var i: uint = 0; i < iTotalSamplerSlots; i++){
 				if(i === ZERO_SLOT) {
-					this._isUsedZero2D = this.isUniformExists("as0");
-					this._isUsedZeroCube = this.isUniformExists("asc0");
+					this._isUsedZero2D = this.isUniformExists("as0") || false;
+					this._isUsedZeroCube = this.isUniformExists("asc0") || false;
+
+					if(this._isUsedZero2D){
+						this._pRealUniformTypeMap["as0"] = EAFXShaderVariableType.k_Int;
+						this._pRealUniformLengthMap["as0"] = 0;
+					}
+
+					if(this._isUsedZeroCube){
+						this._pRealUniformTypeMap["asc0"] = EAFXShaderVariableType.k_Int;
+						this._pRealUniformLengthMap["asc0"] = 0;
+					}
 					continue;
 				}
 
@@ -537,6 +550,14 @@ module akra.fx {
 						}
 					}
 				}
+			}
+
+			if(this._isUsedZero2D){
+				pInput["as0"] = 19;
+			}
+
+			if(this._isUsedZeroCube){
+				pInput["asc0"] = 19;
 			}
 
 

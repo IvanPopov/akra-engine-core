@@ -252,7 +252,7 @@ module akra {
 
         getError();
 
-        clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void;
+        clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int, iStencil: uint): void;
 
         _beginRender(): void;
         _renderEntry(pEntry: IRenderEntry): void;
