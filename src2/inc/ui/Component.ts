@@ -29,10 +29,16 @@ module akra.ui {
 		constructor (parent, sName?: string, eType?: EUIComponents, $el?: JQuery);
 		constructor (parent, pOptions?: IUIComponentOptions, eType?: EUIComponents, $el?: JQuery);
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.UNKNOWN, $el?: JQuery) {
-			super(parent, $el, EUINodeTypes.COMPONENT);
+			super(getUI(parent), $el, EUINodeTypes.COMPONENT);
+
+			var pOptions: IUIComponentOptions = mergeOptions(options, null);
+
+			if (!isUI(parent)) {
+				this.attachToParent(<Node>parent, (!isDef(pOptions.show) || pOptions.show == true));
+			}
 
 			this._eComponentType = eType;
-			this.applyOptions(mergeOptions(options, null));
+			this.applyOptions(pOptions);
 		}
 
 		rendered(): void {

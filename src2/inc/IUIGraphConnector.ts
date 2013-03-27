@@ -9,13 +9,18 @@ module akra {
 	IFACE (IUIGraphNode);
 
 	export interface IUIGraphConnector extends IUIComponent {
-		readonly graphNode: IUIGraphNode;
-		readonly connection: int;
+		route: IUIGraphRoute;
 
-		isValid(): bool;
+		readonly area: IUIGraphConnectionArea;
+		readonly node: IUIGraphNode;
+		readonly graph: IUIGraph;
+
 		isActive(): bool;
 
 		activate(bValue?: bool): void;
+
+		hasRoute(): bool;
+		
 		/** Mark as input connecotr */
 		input(): bool;
 		/** Mark as output connector */
@@ -25,8 +30,11 @@ module akra {
 		setDirection(eDir: EUIGraphDirections): bool;
 
 		highlight(bToogle?: bool): void;
+		
+		routing(): void;
 
 		signal activated(bValue: bool): void;
+		signal routeBreaked(pRoute: IUIGraphRoute): void;
 	}
 }
 

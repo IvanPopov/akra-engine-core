@@ -6,38 +6,44 @@
 #include "IUIGraph.ts"
 #include "IUIGraphNode.ts"
 #include "IUIGraphConnector.ts"
+#include "IUIGraphConnectionArea.ts"
 #include "../Component.ts"
 
 module akra.ui.graph {
 	export class Connector extends Component implements IUIGraphConnector {
 		protected _eDirect: EUIGraphDirections = EUIGraphDirections.IN;
 		protected _bActive: bool = false;
-		protected _pGraphNode: IUIGraphNode = null;
-		protected _iConnection: int = UIGRAPH_INVALID_CONNECTION;
+		protected _pRoute: IUIGraphRoute = null;
 
-		inline get graphNode(): IUIGraphNode { return this._pGraphNode; }
-		inline get connection(): int { return this._iConnection; }
-		inline set connection(i: int) { this._iConnection = i; }
+		inline get route(): IUIGraphRoute { return this._pRoute; }
+		inline get area(): IUIGraphConnectionArea { return (<IUIGraphConnectionArea>this.parent.parent); }
+		inline get node(): IUIGraphNode { return this.area.node; }
+		inline get graph(): IUIGraph { return this.node.graph; }
 
-		constructor (parent, pNode: IUIGraphNode = null) {
-			super(parent, null, EUIComponents.GRAPH_CONNECTOR);
+		set route(pRoute: IUIGraphRoute) {
+			this._pRoute = pRoute;
+		}
 
-			if (!isNull(pNode)) {
-				this._pGraphNode = pNode;
-			}
-			else {
-				ASSERT(!isUI(parent) && isComponent(<IEntity>parent, EUIComponents.GRAPH_NODE));
-				this._pGraphNode = <IUIGraphNode>this.parent;
-			}
+		constructor (parent, options?) {
+			super(parent, options, EUIComponents.GRAPH_CONNECTOR);
+
+			// this.disableEvent("mouseover");
+			// this.disableEvent("mouseout");
+		}
+
+		mousedown(e: IUIEvent): void {
+			e.stopPropagation();
+			
+			this.graph.createRouteFrom(this);
+		}
+
+		hasRoute(): bool {
+			return !isNull(this._pRoute);
 		}
 
 		rendered(): void {
 			super.rendered();
 			this.el.addClass("component-graphconnector");
-		}
-
-		inline isValid(): bool {
-			return this._iConnection >= 0;
 		}
 
 		inline isActive(): bool {
@@ -68,20 +74,20 @@ module akra.ui.graph {
 			bToggle? this.$element.addClass("highlight"): this.$element.removeClass("highlight");
 		}
 
-		// destroy(): void {
-		// 	console.log(callStack())
-		// 	super.destroy();
-		// }
-
+		
+		routing(): void {
+			this.area.routing(this);
+		}		
 
 		BROADCAST(activated, CALL(value));
-
-		static inline isValidConnection(i: int): bool {
-			return i >= 0;
-		}
+		BROADCAST(routeBreaked, CALL(pRoute));
+		// BROADCAST(routeCreated, CALL(_pRoute));
+		// BROADCAST(routeDestroyed, CALL(_pRoute));
 	}
 
 	register("GraphConnector", Connector);
 }
+
+#include "MouseConnector.ts"
 
 #endif
