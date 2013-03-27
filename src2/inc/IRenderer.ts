@@ -3,6 +3,7 @@
 
 #include "IEventProvider.ts"
 #include "IRenderQueue.ts"
+#include "IViewportState.ts"
 
 module akra {
 
@@ -20,7 +21,6 @@ module akra {
     IFACE(IIndexBuffer);
     IFACE(IRenderResource);
     IFACE(IRenderEntry);
-    IFACE(IFrameBuffer);
     IFACE(IViewport);
     IFACE(IColor);
     IFACE(IEngine);
@@ -252,7 +252,7 @@ module akra {
 
         getError();
 
-        clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int, iStencil: uint): void;
+        clearFrameBuffer(iBuffer: int, cColor: IColor, fDepth: float, iStencil: uint): void;
 
         _beginRender(): void;
         _renderEntry(pEntry: IRenderEntry): void;
@@ -265,7 +265,14 @@ module akra {
         _updateAllRenderTargets(): void;
 
         _setViewport(pViewport: IViewport): void;
+        _setViewportForRender(pViewport: IViewport): void;
         _getViewport(): IViewport;
+
+        _setRenderTarget(pTarget: IRenderTarget): void;
+
+        _setCullingMode(eMode: ECullingMode): void;
+        _setDepthBufferParams(bDepthTest: bool, bDepthWrite: bool, 
+                              eDepthFunction: ECompareFunction, fClearDepth?: float): void;
 
         hasCapability(eCapability: ERenderCapabilities): bool;
 

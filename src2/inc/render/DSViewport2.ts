@@ -132,6 +132,7 @@ module akra.render {
 			this.getTarget().getRenderer().executeQueue();
 #endif
 			//render deferred
+			this.newFrame();
 			this._pDeferredView.render(this);	
 			this.getTarget().getRenderer().executeQueue();
 			return true;

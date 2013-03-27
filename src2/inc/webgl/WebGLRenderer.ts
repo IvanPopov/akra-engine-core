@@ -89,8 +89,6 @@ module akra.webgl {
 		}
 
 		_beginRender(): void {
-			this._pWebGLContext.clearColor(0.,0.,0.,1.);
-			this._pWebGLContext.clear(GL_COLOR_BUFFER_BIT);
 		}
 
 		_renderEntry(pEntry: IRenderEntry): void {
@@ -101,7 +99,8 @@ module akra.webgl {
 
 			console.log(pEntry);
 
-			(<any>pRenderTarget)._bind();
+			this._setViewportForRender(pViewport);
+			
 			var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>(pMaker).shaderProgram;
 
 			this.useWebGLProgram(pWebGLProgram.getWebGLProgram());
@@ -155,9 +154,84 @@ module akra.webgl {
 		}
 
 		_endRender(): void {
-			// this._pWebGLContext.clearColor(0.,0.,0.,1.);
-			// this._pWebGLContext.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
+
+		_setViewport(pViewport: IViewport): void {
+			if(isNull(pViewport)){
+				this._pActiveViewport = null;
+				this._setRenderTarget(null);
+			}
+			else if(pViewport !== this._pActiveViewport || pViewport.isUpdated()){
+				var pTarget: IRenderTarget = pViewport.getTarget();
+
+				this._setRenderTarget(pTarget);
+				this._pActiveViewport = pViewport;
+
+				var x: uint = pViewport.actualLeft,
+					y: uint = pViewport.actualTop,
+					w: uint = pViewport.actualWidth,
+					h: uint = pViewport.actualHeight;
+
+
+				this._pWebGLContext.viewport(x, y, w, h);
+				this._pWebGLContext.scissor(x, y, w, h);
+
+				pViewport._clearUpdatedFlag();
+			}
+		}
+
+        _setRenderTarget(pTarget: IRenderTarget): void {
+        	//May be unbind()
+        	
+        	this._pActiveRenderTarget = pTarget;
+
+        	if(!isNull(pTarget)){
+        		var pFrameBuffer: WebGLInternalFrameBuffer = pTarget.getCustomAttribute("FBO");
+        		if(!isNull(pFrameBuffer)){
+        			pFrameBuffer._bind();
+        		}
+        		else {
+        			this.bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
+        		}
+        	}
+        }
+
+        _setCullingMode(eMode: ECullingMode): void {
+        	var iWebGLCullMode: uint = 0;
+
+        	switch(eMode){
+        		case ECullingMode.NONE:
+        			this._pWebGLContext.disable(GL_CULL_FACE);
+        			return;
+
+        		default:
+        		case ECullingMode.CLOCKWISE:
+        			iWebGLCullMode = GL_FRONT;
+        			break;
+
+        		case ECullingMode.ANTICLOCKWISE:
+        			iWebGLCullMode = GL_BACK;
+        			break;
+        	}
+
+        	this._pWebGLContext.enable(GL_CULL_FACE);
+        	this._pWebGLContext.cullFace(iWebGLCullMode);
+        }
+
+        _setDepthBufferParams(bDepthTest: bool, bDepthWrite: bool, 
+        					  eDepthFunction: ECompareFunction, fClearDepth?: float = 1.): void {
+        	if(bDepthTest){
+        		this._pWebGLContext.clearDepth(fClearDepth);
+        		this._pWebGLContext.enable(GL_DEPTH_TEST);
+        	}
+        	else {
+        		this._pWebGLContext.disable(GL_DEPTH_TEST);
+        	}
+
+        	this._pWebGLContext.depthMask(bDepthWrite); 
+
+        	this._pWebGLContext.depthFunc(this.convertCompareFunction(eDepthFunction));
+        }
 		
 		isDebug(): bool {
 			return !isNull(this._pWebGLInternalContext);
@@ -287,9 +361,61 @@ module akra.webgl {
 		}
 
 
-		clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void {
+		clearFrameBuffer(iBuffers: int, cColor: IColor, fDepth: float, iStencil: uint): void {
+			var iWebGLFlag: int = 0;
+			var bOldDepthWrite: bool = this._pWebGLContext.getParameter(GL_DEPTH_WRITEMASK);
 
+			if(iBuffers & EFrameBufferTypes.COLOR){
+				iWebGLFlag |= GL_COLOR_BUFFER_BIT;
+				this._pWebGLContext.clearColor(cColor.r, cColor.g, cColor.b, cColor.a);
+			}
+
+			if(iBuffers & EFrameBufferTypes.DEPTH){
+				iWebGLFlag |= GL_DEPTH_BUFFER_BIT;
+
+				if(!bOldDepthWrite){
+					this._pWebGLContext.depthMask(true);
+				}
+
+				this._pWebGLContext.clearDepth(fDepth);
+			}
+
+			if(iBuffers & EFrameBufferTypes.STENCIL){
+				iWebGLFlag |= GL_STENCIL_BUFFER_BIT;
+
+				this._pWebGLContext.stencilMask(0xFFFFFFFF);
+				this._pWebGLContext.clearStencil(iStencil);
+			}
+
+			this._pWebGLContext.clear(iWebGLFlag);
+
+			if (!bOldDepthWrite && (iBuffers & EFrameBufferTypes.DEPTH)) {
+	            this._pWebGLContext.depthMask(false);
+        	}
 		}
+
+		private convertCompareFunction(eFunc: ECompareFunction): uint {
+	        switch(eFunc) {
+	            case ECompareFunction.ALWAYS_FAIL:
+	                return GL_NEVER;
+	            case ECompareFunction.ALWAYS_PASS:
+	                return GL_ALWAYS;
+	            case ECompareFunction.LESS:
+	                return GL_LESS;
+	            case ECompareFunction.LESS_EQUAL:
+	                return GL_LEQUAL;
+	            case ECompareFunction.EQUAL:
+	                return GL_EQUAL;
+	            case ECompareFunction.NOT_EQUAL:
+	                return GL_NOTEQUAL;
+	            case ECompareFunction.GREATER_EQUAL:
+	                return GL_GEQUAL;
+	            case ECompareFunction.GREATER:
+	                return GL_GREATER;
+	        }
+
+	        return GL_ALWAYS;
+    	}
 	}
 }
 

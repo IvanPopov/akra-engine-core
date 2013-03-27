@@ -20,7 +20,6 @@
 #include "IIndexBuffer.ts"
 #include "IRenderResource.ts"
 #include "IRenderEntry.ts"
-#include "IFrameBuffer.ts"
 #include "IViewport.ts"
 #include "ICanvas3d.ts"
 #include "Viewport.ts"
@@ -66,6 +65,8 @@ module  akra.render {
 		protected _pRenderTargets: IRenderTarget[] = [];
 		protected _pPrioritisedRenderTargets: IRenderTargetPriorityMap = <IRenderTargetPriorityMap>{};
 		protected _pRenderQueue: RenderQueue = null;
+		protected _pActiveViewport: IViewport = null;
+		protected _pActiveRenderTarget: IRenderTarget = null;
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
@@ -101,15 +102,13 @@ module  akra.render {
 			return null;
 		}
 
-		_beginRender(): void {}
-		_renderEntry(pEntry: IRenderEntry): void {
-			
-		}
-		_endRender(): void {}
+		_beginRender(): void { }
+		
+		_renderEntry(pEntry: IRenderEntry): void { }
 
-		clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int, iStencil: uint): void {
+		_endRender(): void { }
 
-		}
+		clearFrameBuffer(iBuffer: int, cColor: IColor, fDepth: float, iStencil: uint): void { }
 
  		attachRenderTarget(pTarget: IRenderTarget): bool {
  			if (this._pRenderTargets.indexOf(pTarget) != -1) {
@@ -188,13 +187,32 @@ module  akra.render {
 			
 		}
 
-		_setViewport(pViewport: IViewport): void {
+		_setViewport(pViewport: IViewport): void {}
 
+		_setViewportForRender(pViewport: IViewport): void {
+			if(pViewport !== this._pActiveViewport || pViewport.isUpdated()){
+				this._setViewport(pViewport);
+
+				pViewport._clearForFrame();
+
+				var pState: IViewportState = pViewport._getViewportState();
+
+				this._setCullingMode(pState.cullingMode);
+	        	this._setDepthBufferParams(pState.depthTest, pState.depthWrite, 
+	        							   pState.depthFunction, pState.clearDepth);
+			}
 		}
 
 		_getViewport(): IViewport {
-			return null;
+			return this._pActiveViewport;
 		}
+
+		_setRenderTarget(pTarget: IRenderTarget): void {}
+
+		_setCullingMode(eMode: ECullingMode): void {}
+
+        _setDepthBufferParams(bDepthTest: bool, bDepthWrite: bool, 
+        					  eDepthFunction: ECompareFunction, fClearDepth?: float): void {}
 
 		getDefaultCanvas(): ICanvas3d {
 			return null;

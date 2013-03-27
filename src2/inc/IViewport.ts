@@ -1,6 +1,8 @@
 #ifndef IVIEWPORT_TS
 #define IVIEWPORT_TS
 
+#include "IViewportState.ts"
+
 module akra {
 
     IFACE(IRect2d);
@@ -33,8 +35,9 @@ module akra {
 
         update(): void;
         destroy(): void;
+        newFrame(): void;
 
-        clear(iBuffers?: uint, cColor?: IColor, iDepth?: float, iStencil?: uint): void;
+        clear(iBuffers?: uint, cColor?: IColor, fDepth?: float, iStencil?: uint): void;
 
         getTarget(): IRenderTarget;
         getCamera(): ICamera;
@@ -50,6 +53,9 @@ module akra {
         getClearEveryFrame(): bool;
         getClearBuffers(): uint;
 
+        setDepthParams(bDepthTest: bool, bDepthWrite: bool, eDepthFunction: ECompareFunction): void;
+        setCullingMode(eCullingMode: ECullingMode): void;
+
         setAutoUpdated(bValue?: bool): void;
         isAutoUpdated(): bool;
 
@@ -58,6 +64,9 @@ module akra {
 
         _getNumRenderedPolygons(): uint;
         _updateDimensions(pDimensions: IRect2d): void;
+
+        _getViewportState(): IViewportState;
+        _clearForFrame(): void;
 
         signal viewportDimensionsChanged(): void;
         signal viewportCameraChanged(): void;

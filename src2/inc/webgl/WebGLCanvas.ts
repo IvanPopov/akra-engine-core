@@ -50,8 +50,12 @@ module akra.webgl {
 			this._pCanvasCreationInfo = null;
 		}
 
-		inline _bind(): void {
-			(<WebGLRenderer>this._pRenderer).bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
+		getCustomAttribute(sName: string): any {
+			// if(sName === "FBO") {
+			// 	return null;
+			// }
+
+			return null;
 		}
 
 		setFullscreen(isFullscreen: bool = true): void  {

@@ -35,6 +35,8 @@ module akra.webgl {
 			if(sName === "FBO") {
 				return this._pFrameBuffer;
 			}
+
+			return null;
 		}
 
 		swapBuffers(): void {
@@ -68,10 +70,6 @@ module akra.webgl {
 
 			return bResult;
 
-		}
-
-		inline _bind(): void {
-			this._pFrameBuffer._bind();
 		}
 
 		detachDepthPixelBuffer(): void {
