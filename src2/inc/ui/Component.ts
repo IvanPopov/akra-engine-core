@@ -72,7 +72,9 @@ module akra.ui {
 			var pLayout: IUILayout = this.ui.createLayout(eType);
 
 			if (isLayout(<IUINode>this.child)) {
-				ERROR("//TODO: LAYOUT");
+				var pLayoutPrev: IUILayout = <IUILayout>this.child;
+				pLayoutPrev.relocateChildren(pLayout);
+				pLayoutPrev.destroy();
 			}
 
 			this.relocateChildren(pLayout);

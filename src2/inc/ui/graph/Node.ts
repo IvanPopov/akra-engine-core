@@ -36,9 +36,9 @@ module akra.ui.graph {
 
 		inline get graph(): IUIGraph { return <IUIGraph>this.parent; }
 
-		constructor (pGraph: IUIGraph, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN) {
-			super(getUI(pGraph), null, EUIComponents.GRAPH_NODE, 
-				$(template("ui/templates/GraphNode.tpl")));
+		constructor (pGraph: IUIGraph, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN, 
+				$el: JQuery = $(template("ui/templates/GraphNode.tpl"))) {
+			super(getUI(pGraph), null, EUIComponents.GRAPH_NODE, $el);
 
 			this._eGraphNodeType = eType;
 
@@ -52,6 +52,43 @@ module akra.ui.graph {
 			this.setDraggable();
 
 			this.$element.offset(this.graph.$element.offset());
+
+			this.connect(pGraph, SIGNAL(connectionBegin), SLOT(onConnectionBegin));
+			this.connect(pGraph, SIGNAL(connectionEnd), SLOT(onConnectionEnd));
+		}
+
+		protected onConnectionEnd(pGraph: IUIGraph): void {
+			this.el.removeClass("open");
+		}
+
+		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
+			if (!this.canAcceptConnect() || pRoute.left.node === this) {
+				return;
+			}
+
+			this.el.addClass("open");
+		}
+
+		canAcceptConnect(): bool {
+			for (var i in this._pAreas) {
+				if (!this._pAreas[i].isSupportsIncoming()) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		mouseenter(e: IUIEvent): void {
+			super.mouseenter(e);
+			this.routing();
+			this.sendEvent(Graph.event(EUIGraphEvents.SHOW_MAP));
+		}
+
+		mouseleave(e: IUIEvent): void {
+			super.mouseleave(e);
+			this.routing();
+			this.sendEvent(Graph.event(EUIGraphEvents.HIDE_MAP));
 		}
 
 		rendered(): void {
@@ -60,7 +97,6 @@ module akra.ui.graph {
 		}
 
 		move(e: IUIEvent): void {
-			//redraw routes
 			this.routing();
 		}
 
@@ -73,7 +109,7 @@ module akra.ui.graph {
 			this.highlight(bValue);
 
 			for (var sArea in this._pAreas) {
-				this._pAreas[sArea].activate();
+				this._pAreas[sArea].activate(bValue);
 			}
 		}
 
@@ -81,44 +117,46 @@ module akra.ui.graph {
 			return this._isActive;
 		}
 
-		private init(): void {
-			var pSides: string[] = ["top", "left", "right", "bottom"];
+		protected init(): void {
+			var pSidesLR: string[] = ["left", "right"];
+			var pSidesTB: string[] = ["top", "bottom"];
 			var pSidePanels: IUIGraphConnectionArea[] = [];
 			
-			for (var i: int = 0; i < pSides.length; ++ i) {
-				var sSide: string = pSides[i];
+			for (var i: int = 0; i < pSidesTB.length; ++ i) {
+				var sSide: string = pSidesTB[i];
 
 				pSidePanels[i] = new ConnectionArea(this, {show: false});
+				pSidePanels[i].setLayout(EUILayouts.HORIZONTAL);
 				pSidePanels[i].render(this.el.find(".graph-node-" + sSide + ":first"));
 
 				this._pAreas[sSide] = pSidePanels[i];
 			}
+
+			for (var i: int = 0; i < pSidesLR.length; ++ i) {
+				var sSide: string = pSidesLR[i];
+
+				pSidePanels[i] = new ConnectionArea(this, {show: false});
+				pSidePanels[i].render(this.el.find(".graph-node-" + sSide + ":first"));
+
+				this.addConnectionArea(sSide, pSidePanels[i]);
+			}
 		}
 
+		protected inline addConnectionArea(sName: string, pArea: IUIGraphConnectionArea): void {
+			this._pAreas[sName] = pArea;
+		}
 
-		grabEvent(iKeyCode: int): void {
-			if (iKeyCode === EKeyCodes.DELETE) {
-		        // var pConnectors: IUIGraphConnector[] = this._pConnectors;
+		sendEvent(e: IUIGraphEvent): void {
+			for (var i in this._pAreas) {
+	        	this._pAreas[i].sendEvent(e);
+	        }
 
-		        // for (var i = 0; i < pConnectors.length; i++) {
-		        //     if (isDefAndNotNull(pConnectors[i]) && pConnectors[i].isActive()) {
-		        //         this.getRoute(i).remove(true);
-		        //     }
-		        // }
-		        
-		        for (var i in this._pAreas) {
-		        	this._pAreas[i].grabEvent(iKeyCode);
-		        }
-
+			if (e.type === EUIGraphEvents.DELETE) {
 		        if (this.isActive()) {
 		            this.beforeDestroy(this);
 		            this.destroy();
 		        }
 		    }
-		}
-
-		isSuitable(pTarget: IUIGraphNode): bool {
-			return true;
 		}
 		
 		highlight(bValue: bool = true): void {
@@ -130,8 +168,10 @@ module akra.ui.graph {
 		    }
 		}
 
-		routing(pConnector?: IUIGraphConnector, pArea?: IUIGraphConnectionArea): void {
-			
+		routing(): void {
+			for(var i in this._pAreas) {
+				this._pAreas[i].routing();
+			}
 		}
 
 

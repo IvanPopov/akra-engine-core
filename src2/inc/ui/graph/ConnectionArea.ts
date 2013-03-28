@@ -9,6 +9,7 @@ module akra.ui.graph {
 		protected _iMode: int = EUIGraphDirections.IN | EUIGraphDirections.OUT;
 		protected _pConnectors: IUIGraphConnector[] = new Connector[];
 		protected _pTempConnect: IUIGraphConnector = null;
+		protected _iConnectionLimit: int = -1;
 
 		inline get connectors(): IUIGraphConnector[] {
 			return this._pConnectors;
@@ -17,14 +18,17 @@ module akra.ui.graph {
 		inline get node(): IUIGraphNode { return <IUIGraphNode>this.parent; }
 		inline get graph(): IUIGraph { return this.node.graph; }
 
-		constructor(parent: IUIGraphNode, options?, eType: EUIComponents = EUIComponents.GRAPH_CONNECTIONAREA) {
+		constructor(parent: IUIGraphNode, options?: IUIConnectionAreaOptions, eType: EUIComponents = EUIComponents.GRAPH_CONNECTIONAREA) {
 			super(parent, options, eType);
 
 			this.connect(this.node, SIGNAL(mouseenter), SLOT(_onNodeMouseover));
 			this.connect(this.node, SIGNAL(mouseleave), SLOT(_onNodeMouseout));
 
-			// this.disableEvent("mouseover");
-			// this.disableEvent("mouseout");
+			if (!isNull(options) && isInt((<IUIConnectionAreaOptions>options).maxConnections)) {
+				this._iConnectionLimit = options.maxConnections;
+			}
+
+			LOG("connection limit is: ", this._iConnectionLimit);
 		}
 
 		inline setMode(iMode: int) {
@@ -32,11 +36,15 @@ module akra.ui.graph {
 		}
 
 		inline isSupportsIncoming(): bool {
-			return TEST_ANY(this._iMode, EUIGraphDirections.IN);
+			return !this.isLimitReached() && TEST_ANY(this._iMode, EUIGraphDirections.IN);
 		}
 
 		inline isSupportsOutgoing(): bool {
-			return TEST_ANY(this._iMode, EUIGraphDirections.OUT);
+			return !this.isLimitReached() && TEST_ANY(this._iMode, EUIGraphDirections.OUT);
+		}
+
+		inline isLimitReached(): bool {
+			return this._iConnectionLimit != -1 && this._pConnectors.length >= this._iConnectionLimit;
 		}
 
 		hasConnections(): bool {
@@ -47,18 +55,32 @@ module akra.ui.graph {
 			return this.node.isActive();
 		}
 
-		activate(): void {
+		activate(bValue: bool = true): void {
 			for (var i: int = 0; i < this._pConnectors.length; ++ i) {
-				this._pConnectors[i].activate();
+				this._pConnectors[i].activate(bValue);
 			}
 		}
 
-		grabEvent(iKeyCode: int): void {
-
+		sendEvent(e: IUIGraphEvent): void {
+			for (var i = 0; i < this._pConnectors.length; ++ i) {
+	        	if (this._pConnectors[i].direction === EUIGraphDirections.OUT) {
+					this._pConnectors[i].route.sendEvent(e);
+				}
+			}
+		
+			if (e.type === EUIGraphEvents.DELETE) {
+		        if (this.isActive()) {
+		            this.destroy();
+		        }
+		    }
 		}
 
 		_onNodeMouseover(pNode: IUIGraphNode, e: IUIEvent): void {
 			if (!this.isSupportsIncoming() && this.graph.isReadyForConnect()) {
+				return;
+			}
+
+			if (!this.isSupportsOutgoing()) {
 				return;
 			}
 
@@ -67,7 +89,17 @@ module akra.ui.graph {
 			}
 
 			var pConnector: IUIGraphConnector = this._pTempConnect = new Connector(this);
+			//this.graph.isReadyForConnect()? pConnector.input(): pConnector.output();
 			this.connect(pConnector, SIGNAL(routeBreaked), SLOT(destroyTempConnect));
+			this.connect(pConnector, SIGNAL(connected), SLOT(onConnection));
+		}
+
+		private onConnection(pConnector: IUIGraphConnector, pTarget: IUIGraphConnector): void {
+			debug_assert(pConnector === this._pTempConnect, "oO!!");
+			// LOG("connected!! node(" + this.node.getGuid() + ") connector(" + pConnector.getGuid() + ")");
+			this.disconnect(pConnector, SIGNAL(connected), SLOT(onConnection));
+			this._pTempConnect = null;
+			this._pConnectors.push(pConnector);
 		}
 
 		private destroyTempConnect(): void {
@@ -84,8 +116,10 @@ module akra.ui.graph {
 		}
 
 		
-		inline routing(pConnector?: IUIGraphConnector): void {
-			this.node.routing(pConnector, this);
+		inline routing(): void {
+			for (var i = 0; i < this._pConnectors.length; ++ i) {
+				this._pConnectors[i].routing();
+			}
 		}
 	}
 

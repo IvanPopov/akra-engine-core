@@ -5,6 +5,8 @@
 
 module akra {
 	IFACE(RaphaelPaper);
+	IFACE(IUIGraphConnector);
+	IFACE(IUIGraphRoute);
 
 	export enum EUIGraphDirections {
 		IN = 0x01,
@@ -16,6 +18,18 @@ module akra {
 		ANIMATION
 	}
 
+	export enum EUIGraphEvents {
+		UNKNOWN,
+		DELETE,
+		SHOW_MAP,
+		HIDE_MAP
+	}
+
+	export interface IUIGraphEvent {
+		type: EUIGraphEvents;
+		traversedRoutes: IUIGraphRoute[];
+	}
+
 	export interface IUIGraph extends IUIComponent {
 		readonly graphType: EUIGraphTypes;
 		readonly nodes: IUIGraphNode[];
@@ -23,6 +37,7 @@ module akra {
 
 		createRouteFrom(pConnector: IUIGraphConnector): void;
 		removeTempRoute(): void;
+		connectTo(pConnector: IUIGraphConnector): void;
 
 		isReadyForConnect(): bool;
 	}

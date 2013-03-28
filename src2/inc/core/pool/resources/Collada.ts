@@ -2402,7 +2402,7 @@ module akra.core.pool.resources {
             return pMeshList;
         }
 
-         private buildMeshInstance(pGeometries: IColladaInstanceGeometry[], pSceneNode: ISceneModel = null): IMesh[] {
+        private buildMeshInstance(pGeometries: IColladaInstanceGeometry[], pSceneNode: ISceneModel = null): IMesh[] {
             var pMesh: IMesh = null;
             var pMeshList: IMesh[] = [];
 

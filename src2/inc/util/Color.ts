@@ -22,6 +22,26 @@ module akra.util {
 			this.set.apply(this, arguments);
 		}
 
+		get html(): string {
+			// LOG(this.r, this.g, this.b);
+			var r = math.round(this.r * 255).toString(16);
+			var g = math.round(this.g * 255).toString(16);
+			var b = math.round(this.b * 255).toString(16);
+			r = r.length < 2? "0" + r: r;
+			g = g.length < 2? "0" + g: g;
+			b = b.length < 2? "0" + b: b;
+			// LOG(r, g, b);
+			return "#" + r + g + b;
+		}
+
+		get htmlRgba(): string {
+			return "rgba(" + 
+				math.floor(255 * this.r) + ", " + 
+				math.floor(255 * this.g) + ", " + 
+				math.floor(255 * this.b) + ", "
+				+ this.a + ")"
+		}
+
 		get rgba(): uint {
 			var val32: uint = 0;
 	        // Convert to 32bit pattern
@@ -29,7 +49,7 @@ module akra.util {
 	        val32 += <uint>(this.b * 255) << 16;
 	        val32 += <uint>(this.g * 255) << 8;
 	        val32 += <uint>(this.r * 255);
-	        
+	        val32 = val32 >>> 0;
 	        return val32;
 		}
 
@@ -40,7 +60,7 @@ module akra.util {
 	        val32 += <uint>(this.g * 255) << 16;
 	        val32 += <uint>(this.r * 255) << 8;
 	        val32 += <uint>(this.a * 255);
-	        
+	        val32 = val32 >>> 0;
 	        return val32;
 		}
 		
@@ -51,7 +71,7 @@ module akra.util {
 	        val32 += <uint>(this.r * 255) << 16;
 	        val32 += <uint>(this.g * 255) << 8;
 	        val32 += <uint>(this.b * 255);
-
+	        val32 = val32 >>> 0;
 	        return val32;
 		}
 
@@ -62,7 +82,7 @@ module akra.util {
 	        val32 += <uint>(this.g * 255) << 16;
 	        val32 += <uint>(this.b * 255) << 8;
 	        val32 += <uint>(this.a * 255);
-	        
+	        val32 = val32 >>> 0;
 	        return val32;
 		}
 
@@ -396,17 +416,42 @@ module akra.util {
 		}
 
 		static BLACK: IColor = new Color(0);
+		static WHITE: IColor = new Color(0xFF, 0xFF, 0xFF);
+
 		static isEqual(c1: IColorValue, c2: IColorValue): bool {
 			return 	c1.r === c2.r && 
 					c1.g === c2.g && 
 					c1.b === c2.b && 
 					c1.a === c2.a;
 		}
+
+		#include "colors.ts"
+	}
+
+	var pVariousColors: string[] = ["BLUE", "BLUE_VIOLET", "BROWN", "CADET_BLUE", "CHARTREUSE", "CRIMSON", "CYAN", 
+		"DEEP_PINK", "DEEP_SKY_BLUE", "DODGER_BLUE", "FIRE_BRICK", "FUCHSIA", "GOLD", "GREEN", "GREEN_YELLOW", 
+		"HOT_PINK", "LAWN_GREEN", "LIME", "LIME_GREEN", "MAGENTA", "MEDIUM_BLUE", "MEDIUM_ORCHID", "MEDIUM_SPRING_GREEN",
+		"MEDIUM_VIOLET_RED", "ORANGE", "ORANGE_RED", "PURPLE", "RED", "SPRING_GREEN", "STEEL_BLUE", "TOMATO", "TURQUOISE", 
+		"VIOLET", "WHEAT", "YELLOW", "YELLOW_GREEN"];
+	var iVariousColor: int = 0;
+
+	export function randomColor(bVarious: bool = false): IColor {
+		if (!bVarious) {
+			return new Color(Math.random(), Math.random(), Math.random(), 1.);
+		}
+
+		if (iVariousColor === pVariousColors.length) {
+			iVariousColor = 0;
+		}
+
+		return (<any>Color)[pVariousColors[iVariousColor ++]] || Color.WHITE;
 	}
 }
 
 module akra {
 	export var Color = util.Color;
 }
+
+
 
 #endif

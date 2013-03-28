@@ -14,6 +14,7 @@ module akra {
 		readonly area: IUIGraphConnectionArea;
 		readonly node: IUIGraphNode;
 		readonly graph: IUIGraph;
+		readonly direction: EUIGraphDirections;
 
 		isActive(): bool;
 
@@ -27,14 +28,17 @@ module akra {
 		output(): bool;
 
 		/** Mark connector as input/output */
-		setDirection(eDir: EUIGraphDirections): bool;
+		//setDirection(eDir: EUIGraphDirections): bool;
 
 		highlight(bToogle?: bool): void;
 		
 		routing(): void;
 
+		sendEvent(e: IUIGraphEvent): void;
+
 		signal activated(bValue: bool): void;
 		signal routeBreaked(pRoute: IUIGraphRoute): void;
+		signal connected(pTarget: IUIGraphConnector);
 	}
 }
 

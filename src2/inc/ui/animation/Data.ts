@@ -20,36 +20,29 @@ module akra.ui.animation {
 		}
 
 		constructor (pGraph: IUIGraph, pAnim: IAnimation = null) {
-			super(pGraph, EUIGraphNodes.ANIMATION_DATA);
+			super(pGraph, EUIGraphNodes.ANIMATION_DATA, $(graph.template("ui/templates/AnimationData.tpl")));
 
 			if (!isNull(pAnim)) {
 				this.animation = pAnim;
 			}
 		}
 
-		protected getRouteArea(pArea: IUILayout, eDir: EUIGraphDirections = EUIGraphDirections.IN) {
-			if (eDir === EUIGraphDirections.OUT) {
-				return pArea;
-			}
-
-			return null;
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-animationdata");
 		}
 
-		//nobody cant connect to this node
-		isSuitable(pTarget: IUIGraphNode): bool {
-			return false;
-		}
+		protected init(): void {
+			var pArea: graph.ConnectionArea = new graph.ConnectionArea(this, {show: false, maxConnections: 1});
+			pArea.setMode(EUIGraphDirections.OUT);
+			pArea.setLayout(EUILayouts.HORIZONTAL);
+			pArea.render(this.el);
 
-		label(): string {
-			return "AnimationData";
-		}
-
-		inline enterFrame(fTime: float): void {
-			this.animation.apply(fTime);
+			this.addConnectionArea("out", pArea);
 		}
 	}
 
-	Component.register("AnimationData", Data);
+	register("AnimationData", Data);
 }
 
 #endif

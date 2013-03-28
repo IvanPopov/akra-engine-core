@@ -8,9 +8,6 @@ module akra {
 
 	export interface IUIAnimationNode extends IUIGraphNode {
 		animation: IAnimationBase;
-		
-		_enterFrame(fTime: float): void;
-		_selected(bValue: bool): void;
 	}
 }
 

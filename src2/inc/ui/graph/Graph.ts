@@ -40,17 +40,32 @@ module akra.ui.graph {
 			this.getHTMLElement().onselectstart = () => { return false };
 		}
 
-		isReadyForConnect(): bool {
-			return !isNull(this._pTempRoute);
-		}
 
 		createRouteFrom(pConnector: IUIGraphConnector): void {
 			this._pTempRoute = new TempRoute(pConnector);
+			this.connectionBegin(this._pTempRoute);
 		}
 
 		removeTempRoute(): void {
 			this._pTempRoute.destroy();
 			this._pTempRoute = null;
+			this.connectionEnd();
+		}
+
+		isReadyForConnect(): bool {
+			return !isNull(this._pTempRoute);
+		}
+
+		connectTo(pConnector: IUIGraphConnector): void {
+			if (isNull(this._pTempRoute)) {
+				return;
+			}
+
+			var pRoute: IUIGraphRoute = new Route(this._pTempRoute.left, pConnector);
+			pRoute.routing();
+
+			this._pTempRoute.detach();
+			this.removeTempRoute();
 		}
 
 		rendered(): void {
@@ -70,6 +85,7 @@ module akra.ui.graph {
 
 		mouseup(e: IUIEvent): void {
 			if (!isNull(this._pTempRoute)) {
+				// LOG("remove temp route!");
 				this.removeTempRoute();
 			}
 		}
@@ -85,7 +101,10 @@ module akra.ui.graph {
 			var pNodes: IUIGraphNode[] = this.nodes;
 
 			for (var i: int = 0; i < pNodes.length; ++ i) {
-				pNodes[i].grabEvent((<KeyboardEvent><any>e).keyCode);
+				var iKeyCode: int = (<KeyboardEvent><any>e).keyCode;
+				if (iKeyCode === EKeyCodes.DELETE) {
+					pNodes[i].sendEvent(Graph.event(EUIGraphEvents.DELETE));
+				}
 			}
 
 			super.keydown(e);
@@ -98,7 +117,16 @@ module akra.ui.graph {
 			}
 			super.click(e);
 		}
-	
+
+		BROADCAST(connectionBegin, CALL(pRoute));
+		BROADCAST(connectionEnd, VOID);
+		
+		static event(eType: EUIGraphEvents): IUIGraphEvent {
+			return {
+				type: eType,
+				traversedRoutes: []
+			};
+		}
 	}
 
 	register("Graph", Graph);

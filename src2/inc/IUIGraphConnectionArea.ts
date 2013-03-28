@@ -7,6 +7,10 @@ module akra {
 	IFACE(IUIGraphConnector);
 	IFACE(IUIGraphNode);
 
+	export interface IUIConnectionAreaOptions extends IUIComponentOptions {
+		maxConnections?: uint;
+	}
+
 	export interface IUIGraphConnectionArea extends IUIPanel {
 		readonly connectors: IUIGraphConnector[];
 		readonly node: IUIGraphNode;
@@ -16,12 +20,12 @@ module akra {
 		isSupportsOutgoing(): bool;
 		hasConnections(): bool;
 
-		routing(pConnector?: IUIGraphConnector): void;
+		routing(): void;
 
 		activate(bValue?: bool): void;
 		isActive(): bool;
 
-		grabEvent(iKeyCode: int): void;
+		sendEvent(e: IUIGraphEvent): void;
 	}
 }
 

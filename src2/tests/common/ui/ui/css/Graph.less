@@ -10,7 +10,7 @@
 .component-graph{
 	border: 1px solid #cccccc;
 	min-height: 300px;
-	background-color: #555555;
+	background-color: #888;
 	min-height: 100%;
 	//zoom: .5;
 }
@@ -23,7 +23,7 @@
 	background-color: darken(white, 50%);
 	//background: rgba(0, 0, 0, .5);
 	box-shadow: 0px 0px 5px rgba(20, 20, 20, 0.7);
-	//border-radius: 5px;
+	border-radius: 5px;
 	//font-size: 10px;
 	.component-title{
 		background-color: #5393c5;
@@ -40,26 +40,26 @@
 		height: 10px;
 		//border-radius: 5px 5px 0px 0px;
 		//.component-graphconnector{top: -5px;}
-		&:hover{background-color: #cccccc;}
+		//&:hover{background-color: #cccccc;}
 	}
 	.graph-node-left{
 		width: 10px;
 		height: 30px;
 		//.component-graphconnector{left: -5px;}
-		&:hover{background-color: #cccccc;}
+		//&:hover{background-color: #cccccc;}
 	}
 	.graph-node-right{
 		width: 10px;
 		height: 30px;
 		//.component-graphconnector{left: 5px;}
-		&:hover{background-color: #cccccc;}
+		//&:hover{background-color: #cccccc;}
 	}
 	.graph-node-bottom{
 		min-width: 100px;
 		height: 10px;
 		//border-radius: 0px 0px 5px 5px;
 		//.component-graphconnector{top: 5px;}
-		&:hover{background-color: #cccccc;}
+		//&:hover{background-color: #cccccc;}
 	}
 
 	.component-horizontal {
@@ -87,12 +87,16 @@
 		margin: 0;
 	}
 
+	&.open {
+		box-shadow: 0 0 5px rgba(0, 255, 0, 1.0);
+	}
+
 }
 
 /* Graph connector */
 .component-graphconnector{
-	border: 1px solid #000000;
-	background-color: #000000;
+	border: 1px solid #444;
+	background-color: #666;
 	//border-radius: 4px;
 	width: 10px;
 	height: 10px;
@@ -101,5 +105,17 @@
 	margin: 0px;
 	&.highlight{
 		box-shadow: 0 0 5px rgba(255, 0, 0, 1.0);
+	}
+
+	&.in {
+		border: 1px solid green;
+	}
+
+	&.out {
+		border: 1px solid blue;
+	}
+
+	&.connected {
+		border-radius: 10px;
 	}
 }

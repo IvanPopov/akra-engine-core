@@ -22,27 +22,12 @@ module akra {
 		activate(bState?: bool): void;
 		isActive(): bool;
 
-		grabEvent(iKeyCode: int): void;
-		//removeRoute(pRoute: IUIGraphRoute, iConnection: int, eDir: EUIGraphDirections): void;
-		//addConnector(pNode: IUINode): void;
-
-		//activateRoute(pRoute: IUIGraphRoute, bValue: bool, iConnection: int): void;
-
-		//uponConnection(pTarget: IUIGraphNode): void;
-		//prepareForConnect(): bool;
-		//input(iConnection: int): IPoint;
-		//output(iConnection: int): IPoint;
+		sendEvent(e: IUIGraphEvent): void;
 		highlight(bValue?: bool);
-		//route(eDirection: EUIGraphDirections, pTarget?: IUIGraphFloatNode): int;
-		//route(eDir: EUIGraphDirections, pTarget?: IUIGraphNode): int;
-		//routing(): void;
-		//addRoute(pRoute: IUIGraphRoute, iConnection: int): void;
-		//findRoute(pTarget: IUIGraphNode): int;
-		//getRoute(i: int): IUIGraphRoute;
-		isSuitable(pTarget: IUIGraphNode): bool;
-		//hasConnections(): bool;
+		canAcceptConnect(): bool;
+
 		
-		routing(pConnector?: IUIGraphConnector, pArea?: IUIGraphConnectionArea): void;
+		routing(): void;
 	}
 }
 

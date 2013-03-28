@@ -5,12 +5,20 @@
 
 module akra {
 	IFACE(IUIGraphConnector);
+	IFACE(IUIGraphEvent);
+	IFACE(IColor);
 	IFACE(RaphaelPath);
 
 	export interface IUIGraphRoute {
 		left: IUIGraphConnector;
 		right: IUIGraphConnector;
 		path: RaphaelPath;
+		color: IColor;
+
+		isConnectedWith(pConnector: IUIGraphConnector): bool;
+		isBridge(): bool;
+
+		sendEvent(e: IUIGraphEvent): void;
 
 		//silent remove connectors
 		detach(): void;

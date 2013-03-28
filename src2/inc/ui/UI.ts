@@ -19,7 +19,7 @@
 #include "Window.ts"
 
 #define UI_GRAPH
-//#define UI_ANIMATION
+#define UI_ANIMATION
 
 #ifdef UI_GRAPH
 

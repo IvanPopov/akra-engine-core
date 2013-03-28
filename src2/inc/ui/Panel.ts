@@ -7,7 +7,7 @@
 module akra.ui {
 	export class Panel extends Component implements IUIPanel {
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.PANEL) {
-			super(parent, mergeOptions({layout: EUILayouts.VERTICAL}, options), eType);
+			super(parent, mergeOptions({layout: EUILayouts.VERTICAL}, options), eType, $("<div style='text-align: center;';/>"));
 		}
 
 		rendered(): void {

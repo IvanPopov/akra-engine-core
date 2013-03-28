@@ -10,14 +10,22 @@ module akra.ui.graph {
 		public controls: IUIComponent;
 		public graph: IUIGraph;
 
-		constructor (parent) {
+		constructor (parent, pGraph: IUIGraph = null) {
 			super(parent, null, EUIComponents.GRAPH_CONTROLS);
 			
 			this.controls = this.ui.createComponent("Controls");
-			this.graph = <IUIGraph>this.ui.createComponent("Graph");
+			this.graph = pGraph || <IUIGraph>this.ui.createComponent("Graph");
 
 			this.controls.attachToParent(this);
 			this.graph.attachToParent(this);
+
+			var pControlPanel: IUIComponent = this.controls;
+			var pNodeBtn: IUIButton = new Button(pControlPanel, {text: "Create graph node"});
+			this.connect(pNodeBtn, SIGNAL(click), SLOT(createNode));
+		}
+
+		createNode(): IUIGraphNode {
+			return new graph.Node(this.graph);
 		}
 
 		rendered(): void {
