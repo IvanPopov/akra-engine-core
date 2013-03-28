@@ -89,6 +89,8 @@ module akra.webgl {
 		}
 
 		_beginRender(): void {
+			this._pWebGLContext.enable(GL_SCISSOR_TEST);
+			this._pWebGLContext.disable(GL_BLEND);
 		}
 
 		_renderEntry(pEntry: IRenderEntry): void {
@@ -100,6 +102,8 @@ module akra.webgl {
 			console.log(pEntry);
 
 			this._setViewportForRender(pViewport);
+
+			//WARNING(this._pWebGLContext.getFramebufferAttachmentParameter(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME));
 			
 			var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>(pMaker).shaderProgram;
 
@@ -111,6 +115,11 @@ module akra.webgl {
 			var pAttributeSemantics: string[] = pMaker.attributeSemantics;
 			var pAttributeNames: string[] = pMaker.attributeNames;
 
+			var pBufferMap: IBufferMap = pEntry.bufferMap;
+
+			if(!isNull(pBufferMap.index)){
+				this.bindWebGLBuffer(GL_ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.index.buffer).getWebGLBuffer());
+			}
 			var nPreparedBuffers: uint = 0;
 			for(var i: uint = 0; i < pAttributeNames.length; i++){
 				var sAttrName: string = pAttributeNames[i];
@@ -136,6 +145,8 @@ module akra.webgl {
 
 				var pDecl: data.VertexDeclaration = <data.VertexDeclaration>pData.getVertexDeclaration();
 				var pVertexElement: data.VertexElement = <data.VertexElement>pDecl.findElement(sSemantics);
+
+				this.bindWebGLBuffer(GL_ARRAY_BUFFER, (<WebGLVertexBuffer>pData.buffer).getWebGLBuffer());
 				this._pWebGLContext.vertexAttribPointer(iLoc,
                                     pVertexElement.count,
                                     pVertexElement.type,
@@ -150,10 +161,12 @@ module akra.webgl {
 				var pValue: any = pInput[sUniformName];
 				pMaker.setUniform(sUniformName, pValue);
 			}
-
+			
+			pEntry.bufferMap._draw();
 		}
 
 		_endRender(): void {
+			this._pWebGLContext.disable(GL_SCISSOR_TEST);
 		}
 
 		_setViewport(pViewport: IViewport): void {

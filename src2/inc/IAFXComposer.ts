@@ -40,6 +40,8 @@ module akra {
 								   pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
 		removeOwnComponentToTechnique(pRenderTechnique: IRenderTechnique, 
 									  pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+		hasOwnComponentInTechnique(pRenderTechnique: IRenderTechnique, 
+								   pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
 
 		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool;
 

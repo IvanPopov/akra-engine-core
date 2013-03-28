@@ -330,10 +330,10 @@ module akra.fx {
 
         toFinalCode(): string {
             if(this._isPositionReturn){
-                return "Out.POSITION=" + this._pInstructionList[0].toFinalCode() + ";";
+                return "Out.POSITION=" + this._pInstructionList[0].toFinalCode() + "; return;";
             }
             if(this._isColorReturn){
-                return "gl_FragColor=" + this._pInstructionList[0].toFinalCode() + ";";
+                return "gl_FragColor=" + this._pInstructionList[0].toFinalCode() + "; return;";
             }
             if(this._isOnlyReturn){
                 return "return;"

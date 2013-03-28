@@ -32,9 +32,9 @@ module akra.render {
 
 			depthTest: true,
 			depthWrite: true,
-			depthFunction: ECompareFunction.NOT_EQUAL,
+			depthFunction: ECompareFunction.LESS,
 
-			clearColor: new Color(Color.BLACK),
+			clearColor: new Color(0,0,0,0),
 			clearDepth: 1.,
 			clearBuffers: EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH
 		};
@@ -118,7 +118,7 @@ module akra.render {
 		}
 
 
-		clear(iBuffers: uint = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+		clear(iBuffers: uint = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH,
 			  cColor: IColor = Color.BLACK, fDepth: float = 1., iStencil: uint = 0): void {
 			
 			var pRenderer: IRenderer = this._pTarget.getRenderer();
@@ -266,6 +266,9 @@ module akra.render {
 			var pVisibleObjects: IObjectArray = pCamera.display();
 			var pRenderable: IRenderableObject;
 
+			ERROR("-------------------------IMPORTANT STRAT-----------------");
+			LOG(pCamera.frustum.frustumVertices);
+
 			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 				pRenderable = pSceneObject.getRenderable();
@@ -273,7 +276,10 @@ module akra.render {
 				if (!isNull(pRenderable)) {
 					pRenderable.render(this, csMethod, pSceneObject);
 				}
+
+				LOG(pSceneObject.worldBounds.toString());
 			}
+			ERROR("-------------------------IMPORTANT END-----------------");
 		}
 
 

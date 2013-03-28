@@ -14,7 +14,8 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), (pEngine: IEngine, pDeps: IDependens) => {
-			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			//var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/cube.dae");
 			var pScene: IScene3d = pEngine.getScene();
 
 			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
@@ -27,6 +28,8 @@ module akra {
 				pCanvas.resize(800, 600);
 
 				var pCamera = pScene.createCamera("non-default");
+
+				pCamera.addPosition(vec3(0,0,100));
 
 				pCamera.attachToParent(pScene.getRootNode());
 				var pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);

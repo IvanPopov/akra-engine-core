@@ -283,6 +283,22 @@ module akra.fx {
 			return true;
 		}
 
+		hasOwnComponentInTechnique(pRenderTechnique: IRenderTechnique, 
+								   pComponent: IAFXComponent, iShift: int, iPass: uint): bool {
+			var id: uint = pRenderTechnique.getGuid();
+			var pCurrentBlend: IAFXComponentBlend = null;
+
+			if(isDef(this._pTechniqueToOwnBlendMap[id])){
+				pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
+			}
+
+			if(isNull(pCurrentBlend)){
+				return false;
+			}
+
+			return pCurrentBlend.containComponentWithShift(pComponent, iShift, iPass);
+		}
+
 		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool {
 			if(pRenderTechnique.isFreeze()){
 				return true;

@@ -287,7 +287,7 @@ module akra.scene.objects {
 
 		    if (this.isWorldMatrixNew() || TEST_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix)) {
 		    	this._pFrustum.extractFromMatrix(this._m4fProj, this._m4fWorldMatrix, this._pSearchRect);
-
+		    	
 		    	// this._m4fRenderStageProj.set(this._m4fProj);
 
 		        // our projView matrix is the projection 

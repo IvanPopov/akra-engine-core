@@ -18,17 +18,19 @@ module akra.render {
 
 		execute(): void {
 			//this.sort()
+			ERROR("@@@@@@@@@@@@@@@@@@@@@@@@@ Start execute @@@@@@@@@@@@@@@@@@@@@@@@");
 			this._pRenderer._beginRender();
 			
 			for (var i: int = 0; i < this._pEntryList.length; i++) {
 				var pEntry: IRenderEntry = this._pEntryList.value(i);
 				this._pRenderer._renderEntry(pEntry);
-				this.releaseEntry(pEntry);
+				// this.releaseEntry(pEntry);
 			}
 
 			this._pEntryList.clear(false);
 
 			this._pRenderer._endRender();
+			ERROR("@@@@@@@@@@@@@@@@@@@@@@@@@ End execute @@@@@@@@@@@@@@@@@@@@@@@@");
 		}
 
 		push(pEntry: IRenderEntry): void {

@@ -140,6 +140,17 @@ module akra.webgl {
 
 			this._pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
 		}
+
+		attachDepthTexture(pDepthTexture: ITexture): void {
+			var pTextureBuffer: WebGLTextureBuffer = <WebGLTextureBuffer>(<WebGLInternalTexture>pDepthTexture).getBuffer();
+			this._bind();
+			this.bindSurface(GL_DEPTH_ATTACHMENT, pTextureBuffer);
+		}
+
+		detachDepthTexture(): void {
+			this._bind();
+			this.unbindSurface(GL_DEPTH_ATTACHMENT);
+		}
 		
 		detachDepthBuffer(): void {
 			var pWebGLContext: WebGLRenderingContext = this._pWebGLRenderer.getWebGLContext();

@@ -13,6 +13,7 @@ module akra.render {
 		private _pComposer: IAFXComposer = null;
 		
 		private _pPassList: IRenderPass[] = null;
+		private _pPassBlackList: bool[] = null;
 		
 		private _iCurrentPass: uint = 0;
 		private _pCurrentPass: IRenderPass = null;
@@ -31,6 +32,7 @@ module akra.render {
 
 		constructor (pMethod: IRenderMethod = null) {
 			this._pPassList = [];
+			this._pPassBlackList = [];
 
 			if(!isNull(pMethod)){
 				this.setMethod(pMethod);
@@ -140,6 +142,19 @@ module akra.render {
 			return this.addComponent(pComponent, iShift, iPass, false);
 		}
 
+		hasComponent(sComponent: string, iShift: int, iPass: uint): bool {
+			if(isNull(this._pComposer)){
+				return false;
+			}
+
+			var pComponentPool: IResourcePool = this._pComposer.getEngine().getResourceManager().componentPool;
+			var pComponent: IAFXComponent = null;
+
+			pComponent = <IAFXComponent>pComponentPool.findResource(sComponent);
+
+			return this._pComposer.hasOwnComponentInTechnique(this, pComponent, iShift, iPass);
+		}
+
 		isFreeze(): bool {
 			return this._isFreeze;
 		}
@@ -150,12 +165,17 @@ module akra.render {
 			var iTotalPasses: uint = this.totalPasses;
 
 			for(var i: uint = this._pPassList.length; i < iTotalPasses; i++) {
-				this._pPassList[i] = new RenderPass(this, i);
+				if(!isDef(this._pPassBlackList[i]) || this._pPassBlackList[i] === false){
+					this._pPassList[i] = new RenderPass(this, i);
+					this._pPassBlackList[i] = false;
+				}
 			}
 			
 			for(var i: uint = 0; i < iTotalPasses; i++){
-				var pInput: IAFXPassInputBlend = this._pComposer.getPassInputBlend(this, i);
-				this._pPassList[i].setPassInput(pInput, bSaveOldUniformValue);
+				if(!this._pPassBlackList[i]){
+					var pInput: IAFXPassInputBlend = this._pComposer.getPassInputBlend(this, i);
+					this._pPassList[i].setPassInput(pInput, bSaveOldUniformValue);
+				}
 			}
 
 			this._isFreeze = false;
@@ -181,10 +201,12 @@ module akra.render {
 			this._isFreeze = true;
 
 			for(var i: uint = 0; i < this.totalPasses; i++){
-				this.activatePass(i);
-				this.render(i);
+				if(this._pPassBlackList[i] === false){
+					this.activatePass(i);
+					this.render(i);
 
-				pComposer.renderTechniquePass(this, i);
+					pComposer.renderTechniquePass(this, i);
+				}
 			}
 
 			this._isFreeze = false;
@@ -194,6 +216,13 @@ module akra.render {
 		_updateMethod(pMethod: IRenderMethod): void {
 			this.informComposer();
 		} 
+
+		_blockPass(iPass: uint): void {
+			this._pPassBlackList[iPass] = true;
+			this._pComposer.prepareTechniqueBlend(this);
+			// this._pPassList[iPass] = null; 
+			
+		}
 
 		private informComposer(): void {
 			if(!isNull(this._pComposer)){

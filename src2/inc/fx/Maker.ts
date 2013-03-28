@@ -337,6 +337,7 @@ module akra.fx {
 			}
 
 			this._pRealSamplersFromInput = [];
+			this._pRealSamplersNames = [];
 			var iTotalSamplerSlots: uint = pBlend.totalActiveSlots;
 
 			for(var i: uint = 0; i < iTotalSamplerSlots; i++){
@@ -361,9 +362,13 @@ module akra.fx {
 
 				if(this.isUniformExists(sRealSamplerName)){
 					var pSampler: IAFXVariableDeclInstruction = pBlend.getSamplersBySlot(i).value(0);
-					var sSampler: string = pSampler.getRealName();
+					//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					//TODO: need to reset names of samlers
+					var sSampler: string = pSampler.getSemantic();
 
-					this._pRealUnifromFromInput.push(sSampler);
+					this._pRealSamplersFromInput.push(sSampler);
 					this._pRealSamplersNames.push(sRealSamplerName);
 
 					this._pRealUniformTypeMap[sRealSamplerName] = pSampler.getType().isSampler2D() ?
@@ -485,7 +490,7 @@ module akra.fx {
 				var pState: IAFXSamplerState = pPassInput._getSamplerState(sName);
 				var pTexture: ITexture = pPassInput._getTextureForSamplerState(pState);
 
-				this.setSamplerState(pInput[sName], pTexture, pState);
+				this.setSamplerState(pInput[sRealName], pTexture, pState);
 			}
 
 			for(var i: uint = 0; i < this._pRealSampleArraysFromInput.length; i++){

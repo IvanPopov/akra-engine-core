@@ -195,7 +195,7 @@ module akra.render {
 				return;
 			}
 
-			this.data._draw(this.getTechnique(), pViewport, this, pSceneObject);
+			this.data._draw(this._pTechnique, pViewport, this, pSceneObject);
 		}
 
 		inline getTechnique(sName: string = DEFAULT_RT): IRenderTechnique {

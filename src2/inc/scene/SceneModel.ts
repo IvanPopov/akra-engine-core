@@ -10,7 +10,7 @@
 
 module akra.scene {
 	export class SceneModel extends SceneObject implements ISceneModel {
-		private _pMesh: IMesh;
+		private _pMesh: IMesh = null;
 
 		constructor (pScene: IScene3d) {
 			super(pScene, EEntityTypes.MODEL);
@@ -21,6 +21,7 @@ module akra.scene {
 		}
 
 		inline set mesh(pMesh: IMesh) {
+			WARNING(pMesh, this);
 			if (!isNull(this._pMesh)) {
 				this.accessLocalBounds().set(0.01, 0.01, 0.01);	
 				this._pMesh = null;
@@ -37,6 +38,9 @@ module akra.scene {
 		}
 
 		inline getRenderable(i: uint = 0): IRenderableObject {
+			if(isNull(this._pMesh)){
+				WARNING(this);
+			}
 			return this._pMesh.getSubset(i);
 		}
 

@@ -72,6 +72,12 @@ module akra.webgl {
 
 		}
 
+		attachDepthTexture(pTexture: ITexture): bool {
+			this._pFrameBuffer.attachDepthTexture(pTexture);
+			return true;
+		}
+
+
 		detachDepthPixelBuffer(): void {
 			this._pFrameBuffer.unbindSurface(GL_DEPTH_ATTACHMENT);
 			(<WebGLPixelBuffer>this._pDepthPixelBuffer).release();
@@ -81,6 +87,10 @@ module akra.webgl {
 		detachDepthBuffer(): void {
 			this._pFrameBuffer.detachDepthBuffer();
 			super.detachDepthBuffer();
+		}
+
+		detachDepthTexture(): void {
+			this._pFrameBuffer.detachDepthTexture();
 		}
 	}
 }

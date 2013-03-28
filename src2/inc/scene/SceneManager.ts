@@ -30,7 +30,7 @@ module akra.scene {
             var isSceneUpdated: bool = false;
             // add the real time elapsed to our
             // internal delay counter
-            this._fUpdateTimeCount += this._pEngine.getTimer().elapsedTime;
+            this._fUpdateTimeCount += this._pEngine.getTimer().elapsedTime + 2. * this._fMillisecondsPerTick;
             // is there an update ready to happen?
             
             var fUpdateTime: float = this._fUpdateTimeCount;
@@ -50,7 +50,6 @@ module akra.scene {
         }
 
         notifyUpdateScene(): void {
-            
             // update the scene attached to the root node
             for (var i = 0; i < this._pSceneList.length; ++ i) {
                 var pScene: IScene = this._pSceneList[i];

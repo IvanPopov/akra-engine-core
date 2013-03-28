@@ -104,9 +104,10 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
     float4 data1 = tex2D(deferredTexture1,textureCoords);
 
     pixelData.position = unproj(projMat, float3(IN.screenPosition.xy,depth));
-//    if(data0.w==0.){
-//        discard;
-//    }
+    if(data0.w==0.){
+        //discard;
+        return float4(0.,1.,0.,1.);
+    }
     //pixelData.position = data1.yzw;
 
 
@@ -115,14 +116,14 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
     float3 temp = floatToFloat3(data0.y);
     temp.xy = (temp.xy*2. - 1.)*0.95;//fix me
 
-    pixelData.normal = normalize(float3(temp.xy,sqrt(1. - dot(temp.xy,temp.xy))));
+    pixelData.normal = normalize(float3(temp.xy,sqrt(1. - clamp(dot(temp.xy,temp.xy),0.,1.))));
     pixelData.shininess = temp.z * 255.;
 
     pixelData.diffuse = float4(floatToFloat3(data0.z),1.);
     pixelData.ambient = float4(floatToFloat3(data1.x),1.);
     pixelData.specular = float4(floatToFloat3(data1.y),1.);
 
-    result_color = emissive;
+    result_color = float4(float3((1. - depth)),1.);//emissive + float4(1.,0.,0.,1.) + float4(pixelData.position, 1.);
 
 //    result_color = float4(float3(data1.w/255./10.),1.);//pixelData.shininess;
 //    result_color = float4(float3(pixelData.normal),1.);
