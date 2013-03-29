@@ -602,6 +602,16 @@ module akra.model {
             return pSceneModel;
         }
 
+        update(): bool {
+            var isOk: bool = false;
+
+            for (var i: uint = 0; i < this.length; ++ i) {
+                isOk = this._pSubMeshes[i].update() ? true : isOk;
+            }
+
+            return isOk;
+        }
+
         CREATE_EVENT_TABLE(Mesh);
         signal shadow(pSubMesh: IMeshSubset, bShadow: bool): void {
 

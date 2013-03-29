@@ -21,7 +21,6 @@ module akra.scene {
 		}
 
 		inline set mesh(pMesh: IMesh) {
-			WARNING(pMesh, this);
 			if (!isNull(this._pMesh)) {
 				this.accessLocalBounds().set(0.01, 0.01, 0.01);	
 				this._pMesh = null;
@@ -55,7 +54,7 @@ module akra.scene {
 		toString(isRecursive: bool = false, iDepth: uint = 0): string {
 #ifdef DEBUG
 		    if (!isRecursive) {
-		        var sData: string = "<model" + (this.name? " " + this.name: "") + "(" + String(isNull(this._pMesh)) + ")" +  '>';
+		        var sData: string = "<model" + (this.name? " " + this.name: "") + "(" + (isNull(this._pMesh)? 0: this._pMesh.length) + ")" +  '>';
 		        
 		        if (!isNull(this._pMesh)) {
 		            sData += "( " + this._pMesh.name + " )";
@@ -68,7 +67,11 @@ module akra.scene {
 #else
 			return null;
 #endif
-		};
+		}
+
+		update(): bool {
+			return super.update() && (!isNull(this._pMesh) ? this._pMesh.update() : false);
+		}
 
 	}
 

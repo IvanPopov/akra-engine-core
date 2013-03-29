@@ -315,7 +315,7 @@ module akra.core.pool.resources {
         private trifanToTriangles(pXML: Element, iStride: int): uint[] {
             var pFans2Tri: uint[] = [0, 0, 0];
             var pData: uint[] = [];
-            var tmp: uint[] = new Array(iStride), n;
+            var tmp: uint[] = new Array(iStride), n: uint;
             var pIndexes: uint[] = [];
 
             this.eachByTag(pXML, "p", function (pXMLData) {
@@ -1014,12 +1014,13 @@ module akra.core.pool.resources {
                 inputs    : [],                     /*потоки данных*/
                 p         : null,                   /*индексы*/
                 material  : attr(pXML, "material"), /*идентификатор материала*/
-                name      : null                    /*имя (встречается редко, не используется)*/
+                name      : null,                   /*имя (встречается редко, не используется)*/
+                count     : parseInt(attr(pXML, "count")) /*полное число индексов*/
             };
 
             var iOffset: int = 0, n: uint = 0;
             var iCount: int = parseInt(attr(pXML, "count"));
-            var iStride: int;
+            var iStride: int = 0;
 
             this.eachByTag(pXML, "input", (pXMLData: Element): void => {
                 pPolygons.inputs.push(this.COLLADAInput(pXMLData, iOffset));
@@ -1028,7 +1029,11 @@ module akra.core.pool.resources {
 
             sortArrayByProperty(pPolygons.inputs, "iOffset");
 
-            iStride = (<IColladaInput>pPolygons.inputs.last).offset + 1;
+            for(var i: uint = 0; i < pPolygons.inputs.length; ++ i) {
+                iStride = math.max((<IColladaInput>pPolygons.inputs[i]).offset + 1, iStride);
+            }
+
+            debug_assert(iStride > 0, "Invalid offset detected.");
 
             switch (sType) {
                 case "polylist":
@@ -1149,7 +1154,7 @@ module akra.core.pool.resources {
                     case "polygons":
                     case "polylist":
                         pPolygons = this.COLLADAPolygons(pXMLData, sName);
-                        
+
                         for (var i: int = 0; i < pPolygons.inputs.length; ++i) {
                             pPos = null;
 
@@ -2269,7 +2274,6 @@ module akra.core.pool.resources {
 
                                 pData = pDataExt;
                                 pDecl = [VE_FLOAT3(sSemantic), VE_END(16)];
-
                                 break;
                             case DeclUsages.TEXCOORD:
                             case DeclUsages.TEXCOORD1:
@@ -2299,21 +2303,26 @@ module akra.core.pool.resources {
                 var pPolygons: IColladaPolygons = pPolyGroup[i];
                 var pSubMesh: IMeshSubset = pMesh.getSubset(i);
                 var pSubMeshData: IRenderData = pSubMesh.data;
-                var pDecl: IVertexElementInterface[] = new Array(pPolygons.inputs.length);
-                var iIndex: int = 0;
+                var pIndexDecl: IVertexDeclaration = createVertexDeclaration();
                 var pSurfaceMaterial: ISurfaceMaterial = null;
                 var pSurfacePool: IResourcePool = null;
 
                 for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
-                    pDecl[j] = VE_FLOAT(DeclUsages.INDEX + (iIndex++));
+                    var iOffset: int = pPolygons.inputs[j].offset;
+                    var sIndexSemantic: string = DeclUsages.INDEX + iOffset;
+                    //total number of offsets can be less then number of inputs
+                    if (!pIndexDecl.hasSemantics(sIndexSemantic)) {
+                        pIndexDecl.append(VE_FLOAT(sIndexSemantic));
+                    }
                 }
 
-                pSubMeshData.allocateIndex(pDecl, new Float32Array(pPolygons.p));
+                pSubMeshData.allocateIndex(pIndexDecl, new Float32Array(pPolygons.p));
 
-                for (var j: int = 0; j < pDecl.length; ++j) {
+                for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
                     var sSemantic: string = pPolygons.inputs[j].semantics;
+                    var sIndexSemantics: string = DeclUsages.INDEX + pPolygons.inputs[j].offset;
 
-                    pSubMeshData.index(sSemantic, pDecl[j].usage);
+                    pSubMeshData.index(sSemantic, sIndexSemantics);
                 }
 
                 // if (!pSubMesh.material) {
@@ -2436,7 +2445,7 @@ module akra.core.pool.resources {
                     return;
                 }
 
-                if (scene.isModel(pModelNode)) {
+                if (!scene.isModel(pModelNode) && pNode.geometry.length > 0) {
                     pModelNode = pModelNode.scene.createModel(".joint-to-model-link-" + sid());
                     pModelNode.attachToParent(pNode.constructedNode);
                 }

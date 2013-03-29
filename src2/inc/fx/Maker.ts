@@ -314,10 +314,10 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pUniformKeys.length; i++){
 				var sName: string = pUniformKeys[i];
+				var eType: EAFXShaderVariableType =  pPassInput._getUniformType(sName);
+				var iLength: uint = pPassInput._getUnifromLength(sName);
 
-				if(this.isUniformExists(sName)){
-					var eType: EAFXShaderVariableType =  pPassInput._getUniformType(sName);
-					var iLength: uint = pPassInput._getUnifromLength(sName);
+				if(this.isUniformExists(sName)){				
 					
 					this._pRealUniformTypeMap[sName] = eType;
 					this._pRealUniformLengthMap[sName] = iLength;

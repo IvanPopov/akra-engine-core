@@ -123,7 +123,7 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
     pixelData.ambient = float4(floatToFloat3(data1.x),1.);
     pixelData.specular = float4(floatToFloat3(data1.y),1.);
 
-    result_color = float4(float3((1. - depth)),1.);//emissive + float4(1.,0.,0.,1.) + float4(pixelData.position, 1.);
+    result_color = emissive; //float4(float3((1. - depth)),1.);//emissive + float4(1.,0.,0.,1.) + float4(pixelData.position, 1.);
 
 //    result_color = float4(float3(data1.w/255./10.),1.);//pixelData.shininess;
 //    result_color = float4(float3(pixelData.normal),1.);

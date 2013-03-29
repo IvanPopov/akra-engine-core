@@ -186,8 +186,8 @@ module akra.webgl {
 					h: uint = pViewport.actualHeight;
 
 
-				this._pWebGLContext.viewport(x, y, w, h);
-				this._pWebGLContext.scissor(x, y, w, h);
+				this._pWebGLContext.viewport(x, y, 800, 600);
+				this._pWebGLContext.scissor(x, y, 800, 600);
 
 				pViewport._clearUpdatedFlag();
 			}

@@ -21,7 +21,7 @@ module akra.data {
 		constructor (...pElements: IVertexElementInterface[]);
 		constructor (pElements: IVertexElementInterface[]);
 		constructor (pElements: any) {
-			if (arguments.length > 0) {
+			if (arguments.length > 0 && isDefAndNotNull(pElements)) {
 				this.append.apply(this, arguments);
 			}
 		}
@@ -181,7 +181,7 @@ module akra {
 	
 	export var createVertexDeclaration = function (pData?): data.VertexDeclaration {
 		if (!(pData instanceof VertexDeclaration)) {
-	        if (!(pData instanceof Array)) {
+	        if (!(pData instanceof Array) && isDefAndNotNull(pData)) {
 	            pData = [pData];
 	        }
 

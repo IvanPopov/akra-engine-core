@@ -287,13 +287,15 @@ module akra.scene.objects {
 
 		    if (this.isWorldMatrixNew() || TEST_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix)) {
 		    	this._pFrustum.extractFromMatrix(this._m4fProj, this._m4fWorldMatrix, this._pSearchRect);
-		    	
 		    	// this._m4fRenderStageProj.set(this._m4fProj);
+
+		    	if (this.isWorldMatrixNew()){
+    				this.recalcMatrices();
+    			}
 
 		        // our projView matrix is the projection 
 		        //matrix multiplied by the inverse of our world matrix  
 		        this._m4fProj.multiply(this._m4fView, this._m4fProjView);
-
 		        isUpdated = true;
 		    
 		        CLEAR_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);

@@ -126,7 +126,7 @@ module akra.render {
 		    //prepare deferred textures
 // #ifndef OPTIMIZED_DEFFERED
 			this._pDefferedColorTextures[0].getBuffer().getRenderTarget().update();
-			// this._pDefferedColorTextures[1].getBuffer().getRenderTarget().update();
+			this._pDefferedColorTextures[1].getBuffer().getRenderTarget().update();
 // #else
 // 			var pNodeList: IObjectArray = this.getCamera().display();
 // 			for (var i: int = 0; i < pNodeList.length; ++ i) {
@@ -137,6 +137,7 @@ module akra.render {
 // 			this.getTarget().getRenderer().executeQueue();
 // #endif
 			//render deferred
+			
 			this.newFrame();
 			this._pDeferredView.render(this);	
 			this.getTarget().getRenderer().executeQueue();
@@ -179,32 +180,36 @@ module akra.render {
 			var pNodeList: IObjectArray = this.getCamera().display();
 
 			for (var i: int = 0; i < pNodeList.length; ++ i) {
-				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
-				var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+				var pSceneObject: ISceneObject = pNodeList.value(i);
 
-				for (var j: int = 0; j < 2; j++) {
-					var sMethod: string = "deferred_shading_pass_" + j;
-					var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
+				for (var k: int = 0; k < pSceneObject.totalRenderable; k++) {
+					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
+					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
 
-					if (isNull(pTechnique) || pTechCurr.modified > pTechnique.modified) {
-						if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
-							CRITICAL("cannot clone active render method");
+					for (var j: int = 0; j < 2; j++) {
+						var sMethod: string = "deferred_shading_pass_" + j;
+						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
+
+						if (isNull(pTechnique) || pTechCurr.modified > pTechnique.modified) {
+							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
+								CRITICAL("cannot clone active render method");
+							}
+
+							pTechnique = pRenderable.getTechnique(sMethod);
+
+							if(j === 0){
+								pTechnique._blockPass(1);
+							}
+							else {
+								pTechnique._blockPass(0);
+							}
+
+							if(pTechnique.totalPasses > j){
+								var pPass: IRenderPass = pTechnique.getPass(j);
+								pPass.blend("akra.system.prepareForDeferredShading", j);
+							}
+
 						}
-
-						pTechnique = pRenderable.getTechnique(sMethod);
-
-						if(j === 0){
-							pTechnique._blockPass(1);
-						}
-						else {
-							pTechnique._blockPass(0);
-						}
-
-						if(pTechnique.totalPasses > j){
-							var pPass: IRenderPass = pTechnique.getPass(j);
-							pPass.blend("akra.system.prepareForDeferredShading", j);
-						}
-
 					}
 				}
 

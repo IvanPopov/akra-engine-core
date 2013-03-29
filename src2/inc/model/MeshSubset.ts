@@ -394,6 +394,10 @@ module akra.model {
 
 		    return true;
 		}
+
+		update(): bool {
+			return this.isSkinned() ? this.skin.applyBoneMatrices() : false;
+		}
 	}
 }
 

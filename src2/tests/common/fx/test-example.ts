@@ -5,6 +5,7 @@
 
 module akra {
 	export var pEngine: IEngine = null;
+
 	test("Example creation test", () => {
 		pEngine = createEngine();
 		var pRmgr = pEngine.getResourceManager();
@@ -14,8 +15,8 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), (pEngine: IEngine, pDeps: IDependens) => {
-			//var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
-			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/cube.dae");
+			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			// var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/cube.dae");
 			var pScene: IScene3d = pEngine.getScene();
 
 			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
@@ -29,7 +30,7 @@ module akra {
 
 				var pCamera = pScene.createCamera("non-default");
 
-				pCamera.addPosition(vec3(0,0,100));
+				pCamera.addPosition(vec3(0,0, 10));
 
 				pCamera.attachToParent(pScene.getRootNode());
 				var pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
@@ -37,8 +38,14 @@ module akra {
 
 				LOG(pEngine.getComposer());
 				
+				// var pBoxNode: ISceneModel = <ISceneModel>pScene.getRootNode().findEntity("Box");
+				// pBoxNode.scale(1/20);
+				// pBoxNode.addRotationByXYZAxis(Math.PI/6, Math.PI/6, 0);
+
 				// pEngine.exec();
 				pEngine.renderFrame();
+
+				LOG(pCamera);
 			});
 
 			

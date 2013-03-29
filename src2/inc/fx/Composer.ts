@@ -60,6 +60,8 @@ module akra.fx {
 
 		private _pCurrentBufferMap: IBufferMap = null;
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
+
+		private _pComposerState: any = { mesh : { isSkinning : false } };
 		//private _pPreRenderState: IPreRenderState = null;
 
 		// private _pSamplerBlender: SamplerBlender = null;
@@ -448,7 +450,16 @@ module akra.fx {
 					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
 					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
 					
-					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, null, 
+					if(!isNull(this._pCurrentRenderable)){
+						if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){
+							this._pComposerState.mesh.isSkinning = true;
+						}
+						else {
+							this._pComposerState.mesh.isSkinning = false;
+						}
+					}
+
+					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
 																  pPassInput.foreigns, pPassInput.uniforms);
 				}
 

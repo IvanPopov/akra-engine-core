@@ -52,6 +52,8 @@ module akra {
 		hide(): void;
 
 		destroy(): void;
+
+		update(): bool;
 	}
 }
 

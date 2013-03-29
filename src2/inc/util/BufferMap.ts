@@ -116,6 +116,7 @@ module akra.util {
 #ifdef WEBGL
 			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
 				webgl.getWebGLPrimitiveType(this._ePrimitiveType), 
+				// GL_POINTS,
 				this._nStartIndex, 
 				this._nLength);
 #else
@@ -345,6 +346,7 @@ module akra.util {
 		        pMapper = {data: pMap, semantics: eSemantics, addition: iAddition};
 
 		        this._pMappers.push(pMapper);
+		        WARNING("#######", pMap.length, pMap.toString());
 		        this.length = pMap.length;
 		        //this.startIndex = pMap.getStartIndex();
 		        this.pushEtalon(pMap);
