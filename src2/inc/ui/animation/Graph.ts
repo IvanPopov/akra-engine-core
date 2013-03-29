@@ -75,38 +75,39 @@ module akra.ui.animation {
 		}
 
 		createNodeByController(pController: IAnimationController): void {
-			// var pNode: IUIAnimationNode = null;
-
-			// for (var i: int = 0; i < pController.totalAnimations; ++ i) {
-			// 	var pAnimation: IAnimationBase = pController.getAnimation(i);
-			// 	pNode = this.createNodeByAnimation(pAnimation);
-			// }
+			var pNode: IUIAnimationNode = null;
+			// LOG("createNodeByController(", pController ,")")
+			for (var i: int = 0; i < pController.totalAnimations; ++ i) {
+				var pAnimation: IAnimationBase = pController.getAnimation(i);
+				pNode = this.createNodeByAnimation(pAnimation);
+			}
 
 			return;
 		}
 
 		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode {
-			// var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
-			// var pSubNode: IUIAnimationNode;
+			var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
+			var pSubNode: IUIAnimationNode;
 			// var pBlend: IUIAnimationBlender;
 			// var pPlayer: IUIAnimationPlayer;
-			// var pMaskNode: IUIAnimationNode;
+			var pMaskNode: IUIAnimationNode;
 			
-			// var pSubAnimation: IAnimationBase;
-			// var n: int = 0;
-			// var pMask: FloatMap = null;
+			var pSubAnimation: IAnimationBase;
+			var n: int = 0;
+			var pMask: FloatMap = null;
 
-			// if (!isNull(pNode)) {
-			// 	return pNode;
-			// }
+			if (!isNull(pNode)) {
+				return pNode;
+			}
 
-			// if (akra.animation.isAnimation(pAnimation)) {
-			// 	pNode = (<ui.animation.Controls>this.parent).createData();
-			// 	pNode.animation = pAnimation;
-			// }
-			// else {
-			// 	CRITICAL("AHTUNG!!!");
-			// }
+			if (akra.animation.isAnimation(pAnimation)) {
+				pNode = (<ui.animation.Controls>this.parent).createData();
+				pNode.animation = pAnimation;
+			}
+			else {
+				CRITICAL("AHTUNG!!!");
+			}
+
 			return null;
 		}
 
@@ -115,6 +116,7 @@ module akra.ui.animation {
 			
 			this.connect(pController, SIGNAL(play), SLOT(onControllerPlay));
 			this.createNodeByController(pController);
+
 			return true;
 		}
 

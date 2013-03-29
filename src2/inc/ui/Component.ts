@@ -98,7 +98,7 @@ module akra.ui {
 
 			var $element: JQuery = this.el;
 
-			this.name = pOptions.name || null;
+			this.name = isDef(pOptions.name)? pOptions.name: null;
 
 			if (isDefAndNotNull(pOptions.html)) {
 				$element.html(pOptions.html);
@@ -136,6 +136,17 @@ module akra.ui {
 			if (isDefAndNotNull(pOptions.dragZone)) {
 				$element.draggable("option", "containment", pOptions.dragZone);
 			}
+		}
+
+		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent {
+			var pComp: IUIComponent = this.ui.createComponent(sType, pOptions);
+			pComp.attachToParent(this);
+			return pComp;
+		}
+
+		_createdFrom($comp: JQuery): void {
+			this.$element.attr("style", $comp.attr("style"));
+			this.$element.attr("class", $comp.attr("class"));
 		}
 
 #ifdef DEBUG

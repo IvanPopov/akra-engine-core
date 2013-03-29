@@ -43,6 +43,10 @@ module akra.ui {
 			this.text = isObject(options)? options.text || "": "";
 		}
 
+		_createdFrom($comp: JQuery): void {
+			this.text = $comp.attr("text");
+		}
+
 		rendered(): void {
 			super.rendered();
 			this.el.addClass("component-checkbox");

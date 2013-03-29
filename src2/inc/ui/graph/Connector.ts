@@ -36,7 +36,7 @@ module akra.ui.graph {
 
 			// this.disableEvent("mouseover");
 			// this.disableEvent("mouseout");
-			this.getHTMLElement().onselectstart = () => { return false };
+			this.el.disableSelection();
 		}
 
 		mousedown(e: IUIEvent): void {

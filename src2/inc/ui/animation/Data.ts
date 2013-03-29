@@ -7,7 +7,7 @@
 #include "Node.ts"
 
 module akra.ui.animation {
-	export class Data extends Node implements IUIAnimationData {
+	export class Data extends graph.Node implements IUIAnimationData {
 		private _pAnimation: IAnimation = null;
 
 		inline get animation(): IAnimationBase {
@@ -20,11 +20,15 @@ module akra.ui.animation {
 		}
 
 		constructor (pGraph: IUIGraph, pAnim: IAnimation = null) {
-			super(pGraph, EUIGraphNodes.ANIMATION_DATA, $(graph.template("ui/templates/AnimationData.tpl")));
+			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_DATA);
+
+			graph.template(this, "ui/templates/AnimationData.tpl");
 
 			if (!isNull(pAnim)) {
 				this.animation = pAnim;
 			}
+
+			this.init();
 		}
 
 		rendered(): void {
@@ -34,6 +38,7 @@ module akra.ui.animation {
 
 		protected init(): void {
 			var pArea: graph.ConnectionArea = new graph.ConnectionArea(this, {show: false, maxConnections: 1});
+			
 			pArea.setMode(EUIGraphDirections.OUT);
 			pArea.setLayout(EUILayouts.HORIZONTAL);
 			pArea.render(this.el);

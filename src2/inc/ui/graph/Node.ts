@@ -15,10 +15,25 @@
 
 module akra.ui.graph {
 
-	export function template(sUrl: string, pData: any = null): string {
+	export function template(pNode: IUIComponent, sUrl: string, pData: any = null): void {
 		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
 		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sUrl});
-		return fnTemplate(pData);
+		var sTplData: string = fnTemplate(pData);
+
+		pNode.el.html(sTplData);
+
+		pNode.el.find("component").each(function(i: int, pComponentElement: HTMLElement) {
+			var $comp: JQuery = $(this);
+			var sType: string = $comp.attr("type");
+			var sName: string = $comp.attr("name");
+
+			var pComponent: IUIComponent = pNode.createComponent(sType, {show: false, name: sName});
+				
+			$comp.before(pComponent.$element);
+			$comp.remove();
+
+			pComponent._createdFrom($comp);
+		});
 	}
 
 	export interface IGraphNodeAreaMap {
@@ -36,19 +51,23 @@ module akra.ui.graph {
 
 		inline get graph(): IUIGraph { return <IUIGraph>this.parent; }
 
-		constructor (pGraph: IUIGraph, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN, 
-				$el: JQuery = $(template("ui/templates/GraphNode.tpl"))) {
-			super(getUI(pGraph), null, EUIComponents.GRAPH_NODE, $el);
+		constructor (pGraph: IUIGraph, options?, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN, $el?: JQuery) {
+			super(getUI(pGraph), options, EUIComponents.GRAPH_NODE, $el);
+
+			template(this, "ui/templates/GraphNode.tpl");
 
 			this._eGraphNodeType = eType;
 
-			ASSERT(isComponent(pGraph, EUIComponents.GRAPH), "only graph may be as parent");
+			ASSERT(isComponent(pGraph, EUIComponents.GRAPH), "only graph may be as parent", pGraph);
 			
 			this.$element.css("position", "absolute");			
 
 			this.attachToParent(pGraph);
 
-			this.init();
+			if (!isDef(options) || options.init !== false) {
+				this.init();
+			}
+
 			this.setDraggable();
 
 			this.$element.offset(this.graph.$element.offset());
@@ -71,23 +90,23 @@ module akra.ui.graph {
 
 		canAcceptConnect(): bool {
 			for (var i in this._pAreas) {
-				if (!this._pAreas[i].isSupportsIncoming()) {
-					return false;
+				if (this._pAreas[i].isSupportsIncoming()) {
+					return true;
 				}
 			}
 
-			return true;
+			return false	;
 		}
 
 		mouseenter(e: IUIEvent): void {
 			super.mouseenter(e);
-			this.routing();
+			// this.routing();
 			this.sendEvent(Graph.event(EUIGraphEvents.SHOW_MAP));
 		}
 
 		mouseleave(e: IUIEvent): void {
 			super.mouseleave(e);
-			this.routing();
+			// this.routing();
 			this.sendEvent(Graph.event(EUIGraphEvents.HIDE_MAP));
 		}
 

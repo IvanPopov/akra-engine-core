@@ -59,6 +59,10 @@ module akra {
 
 		setLayout(eType: EUILayouts): bool;
 		setLayout(sType: string): bool;
+
+		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent;
+
+		_createdFrom($component: JQuery): void;
 	}
 }
 

@@ -27,8 +27,6 @@ module akra.ui.graph {
 			if (!isNull(options) && isInt((<IUIConnectionAreaOptions>options).maxConnections)) {
 				this._iConnectionLimit = options.maxConnections;
 			}
-
-			LOG("connection limit is: ", this._iConnectionLimit);
 		}
 
 		inline setMode(iMode: int) {
@@ -76,11 +74,8 @@ module akra.ui.graph {
 		}
 
 		_onNodeMouseover(pNode: IUIGraphNode, e: IUIEvent): void {
-			if (!this.isSupportsIncoming() && this.graph.isReadyForConnect()) {
-				return;
-			}
-
-			if (!this.isSupportsOutgoing()) {
+			if ((!this.isSupportsIncoming() && this.graph.isReadyForConnect()) || 
+				(!this.isSupportsOutgoing() && !this.graph.isReadyForConnect())) {
 				return;
 			}
 

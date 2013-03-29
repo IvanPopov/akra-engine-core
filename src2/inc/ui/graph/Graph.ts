@@ -56,12 +56,20 @@ module akra.ui.graph {
 			return !isNull(this._pTempRoute);
 		}
 
-		connectTo(pConnector: IUIGraphConnector): void {
+		connectTo(pTo: IUIGraphConnector): void {
 			if (isNull(this._pTempRoute)) {
 				return;
 			}
 
-			var pRoute: IUIGraphRoute = new Route(this._pTempRoute.left, pConnector);
+			var pFrom: IUIGraphConnector = this._pTempRoute.left;
+
+			if (pFrom.node === pTo.node) {
+				debug_print("connection to same node forbidden");
+				this.removeTempRoute();
+				return;
+			}
+
+			var pRoute: IUIGraphRoute = new Route(pFrom, pTo);
 			pRoute.routing();
 
 			this._pTempRoute.detach();

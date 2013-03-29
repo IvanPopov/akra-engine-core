@@ -4,7 +4,7 @@
 #include "IUIGraphNode.ts"
 #include "../graph/Controls.ts"
 #include "Data.ts"
-// #include "Player.ts"
+#include "Player.ts"
 // #include "Blender.ts"
 // #include "Mask.ts"
 
@@ -17,12 +17,12 @@ module akra.ui.animation {
 			var pControlPanel: IUIComponent = this.controls;
 
 			var pDataBtn: IUIButton = new Button(pControlPanel, {text: "Create data"});
-			// var pPlayerBtn: IUIButton = new Button(pControlPanel, {text: "Create player"});
+			var pPlayerBtn: IUIButton = new Button(pControlPanel, {text: "Create player"});
 			// var pBlenderBtn: IUIButton = new Button(pControlPanel, {text: "Create blender"});
 			// var pMaskBtn: IUIButton = new Button(pControlPanel, {text: "Create mask"});
 
 			this.connect(pDataBtn, SIGNAL(click), SLOT(createData));
-			// this.connect(pPlayerBtn, SIGNAL(click), SLOT(createPlayer));
+			this.connect(pPlayerBtn, SIGNAL(click), SLOT(createPlayer));
 			// this.connect(pBlenderBtn, SIGNAL(click), SLOT(createBlender));
 			// this.connect(pMaskBtn, SIGNAL(click), SLOT(createMask));
 		}	
@@ -32,9 +32,9 @@ module akra.ui.animation {
 			return new Data(this.graph);
 		}
 
-		// createPlayer(): IUIAnimationNode {
-		// 	return new Player(this.graph);
-		// }
+		createPlayer(): IUIAnimationNode {
+			return new Player(this.graph);
+		}
 
 		// createBlender(): IUIAnimationNode {
 		// 	return new Blender(this.graph);
