@@ -2148,7 +2148,7 @@ module akra.core.pool.resources {
                         // pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
 
                         pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
-                        pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
+                        // pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
 
                         //setup textures
                         for (var sTextureType in pPhongMaterial.textures) {
@@ -2167,6 +2167,7 @@ module akra.core.pool.resources {
 
                             var sInputSemantics: string = pInputMap[pColladaTexture.texcoord].inputSemantic;
                             var pColladaImage: IColladaImage = pColladaTexture.image;
+
 
                             var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.surfaceMaterial;
                             var pTexture: ITexture = <ITexture>this.getManager().texturePool.loadResource(pColladaImage.path);

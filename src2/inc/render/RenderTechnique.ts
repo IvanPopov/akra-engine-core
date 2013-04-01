@@ -94,7 +94,7 @@ module akra.render {
 		}
 
 		isReady(): bool {
-			return false;
+			return this._pMethod.isResourceLoaded() && !this._pMethod.isResourceDisabled();
 		}
 
 		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint, isSet?: bool): bool;

@@ -84,6 +84,7 @@ module akra.core.pool.resources {
 		    }
 		    else if (texture instanceof Texture) {
 		        if (!this._pTextures[iIndex] || pTexture != this._pTextures[iIndex]) {
+		            pTexture = texture;
 		            if (this._pTextures[iIndex]) {
 		                // realise first
 						// DisplayManager.texturePool().releaseResource(this._pTextures[iIndex]);

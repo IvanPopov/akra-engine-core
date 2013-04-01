@@ -154,8 +154,6 @@ module akra.render {
 		allocateIndex(pDecl: any, pData: any): bool{
 			var pAttrDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
 
-            LOG(pAttrDecl.toString(), pData.byteLength)
-
 			if (this.useAdvancedIndex()) {
 		        return this._allocateAdvancedIndex(pAttrDecl, pData);
 		    }

@@ -145,40 +145,40 @@ module akra.fx {
 		private applyUniform(sName: string, eType: EAFXShaderVariableType, pValue: any): void {
 			switch (eType) {
 		        case EAFXShaderVariableType.k_Float:
-		        	this._pShaderProgram.setFloat(sName, pValue);
+		        	this._pShaderProgram.setFloat(sName, pValue || 0.);
 		        	break;
 		        case EAFXShaderVariableType.k_Int:
-		        	this._pShaderProgram.setInt(sName, pValue);
+		        	this._pShaderProgram.setInt(sName, pValue || 0);
 		        	break;
 		        // case EAFXShaderVariableType.k_Bool:
 		        // 	this._pShaderProgram.setBool(sName, pValue);
 		        // 	break;
 
 		        case EAFXShaderVariableType.k_Float2:
-		        	this._pShaderProgram.setVec2(sName, pValue);
+		        	this._pShaderProgram.setVec2(sName, pValue || vec2(0));
 		        	break;
 		        case EAFXShaderVariableType.k_Int2:
-		        	this._pShaderProgram.setVec2i(sName, pValue);
+		        	this._pShaderProgram.setVec2i(sName, pValue || vec2(0));
 		        	break;
 		        // case EAFXShaderVariableType.k_Bool2:
 		        // 	this._pShaderProgram.setBool2(sName, pValue);
 		        // 	break;
 
 		        case EAFXShaderVariableType.k_Float3:
-		        	this._pShaderProgram.setVec3(sName, pValue);
+		        	this._pShaderProgram.setVec3(sName, pValue || vec3(0));
 		        	break;
 		        case EAFXShaderVariableType.k_Int3:
-		        	this._pShaderProgram.setVec3i(sName, pValue);
+		        	this._pShaderProgram.setVec3i(sName, pValue || vec3(0));
 		        	break;
 		        // case EAFXShaderVariableType.k_Bool3:
 		        // 	this._pShaderProgram.setBool3(sName, pValue);
 		        // 	break;
 
 		        case EAFXShaderVariableType.k_Float4:
-		        	this._pShaderProgram.setVec4(sName, pValue);
+		        	this._pShaderProgram.setVec4(sName, pValue || vec4(0));
 		        	break;
 		        case EAFXShaderVariableType.k_Int4:
-		        	this._pShaderProgram.setVec4i(sName, pValue);
+		        	this._pShaderProgram.setVec4i(sName, pValue || vec4(0));
 		        	break;
 		        // case EAFXShaderVariableType.k_Bool4:
 		        // 	this._pShaderProgram.setBool4(sName, pValue);
@@ -188,10 +188,10 @@ module akra.fx {
 		        // 	this._pShaderProgram.setMat2(sName, pValue);
 		        // 	break;
 		        case EAFXShaderVariableType.k_Float3x3:
-		        	this._pShaderProgram.setMat3(sName, pValue);
+		        	this._pShaderProgram.setMat3(sName, pValue || mat3(0));
 		        	break;
 		        case EAFXShaderVariableType.k_Float4x4:
-		        	this._pShaderProgram.setMat4(sName, pValue);
+		        	this._pShaderProgram.setMat4(sName, pValue || mat4(0));
 		        	break;
 
 		        case EAFXShaderVariableType.k_Sampler2D:
@@ -317,7 +317,16 @@ module akra.fx {
 				var eType: EAFXShaderVariableType =  pPassInput._getUniformType(sName);
 				var iLength: uint = pPassInput._getUnifromLength(sName);
 
-				if(this.isUniformExists(sName)){				
+				if(eType === EAFXShaderVariableType.k_Complex){
+					if(this.expandStructUniforms(pPassInput._getAFXUniformVar(sName))) {
+						this._pRealUnifromFromInput.push(sName);
+					}
+					continue;
+				}
+
+				var sShaderName: string = (iLength > 0) ? (sName + "[0]") : sName;
+
+				if(this.isUniformExists(sShaderName)){				
 					
 					this._pRealUniformTypeMap[sName] = eType;
 					this._pRealUniformLengthMap[sName] = iLength;
@@ -332,7 +341,7 @@ module akra.fx {
 					}
 				}
 				else {
-					this._pUniformExistMap[sName] = false;
+					this._pUniformExistMap[sShaderName] = false;
 				}
 			}
 
@@ -481,7 +490,20 @@ module akra.fx {
 
 			for(var i: uint = 0; i < this._pRealUnifromFromInput.length; i++){
 				var sName: string = this._pRealUnifromFromInput[i];
-				pInput[sName] = pUniforms[sName];
+				var iLength: uint = this._pRealUniformLengthMap[sName];
+				var eType: EAFXShaderVariableType = this._pRealUniformTypeMap[sName];
+				
+				if(eType !== EAFXShaderVariableType.k_Complex){
+					if(iLength > 0){
+						pInput[sName + "[0]"] = pUniforms[sName];
+					}
+					else {
+						pInput[sName] = pUniforms[sName];
+					}
+				}
+				else {
+					this.applyStructUniform(sName, pUniforms[sName], pInput);
+				}				
 			}
 
 			for(var i: uint = 0; i < this._pRealSamplersFromInput.length; i++){
@@ -576,6 +598,149 @@ module akra.fx {
 			pOut.wrap_t = pFrom.wrap_t;
 			pOut.mag_filter = pFrom.mag_filter;
 			pOut.min_filter = pFrom.min_filter;
+		}
+
+		private expandStructUniforms(pVariable: IAFXVariableDeclInstruction, sPrevName?: string = ""): bool {
+			var sRealName: string = pVariable.getRealName();
+
+			if(sPrevName !== ""){
+				sPrevName += "." + sRealName;
+			}
+			else {
+				sPrevName = sRealName;
+			}
+
+			var pVarType: IAFXVariableTypeInstruction = pVariable.getType();
+			var pFieldNameList: string[] = pVarType.getFieldNameList();
+			var isArray: bool = pVarType.isNotBaseArray();
+			var iLength: uint = isArray ? pVarType.getLength() : 1;
+
+			if(isArray && (iLength === UNDEFINE_LENGTH || iLength === 0)){
+				this._pUniformExistMap[sPrevName] = false;
+				return;
+			}
+
+			var isAnyFieldExist: bool = false;
+			var sFieldPrevName: string = "";
+
+			for(var i: uint = 0; i < iLength; i++){
+				sFieldPrevName = sPrevName;
+
+				if(isArray) {
+					sFieldPrevName += "[" + i + "]";
+				}
+
+				for(var j: uint = 0; j < pFieldNameList.length; j++){
+					var sFieldName: string = pFieldNameList[j];
+					var pField: IAFXVariableDeclInstruction = pVarType.getField(sFieldName);
+
+					if(pField.getType().isComplex()){
+						isAnyFieldExist = this.expandStructUniforms(pField, sFieldPrevName) || isAnyFieldExist;
+					}
+					else {
+						var sFieldRealName: string = sFieldPrevName + "." + pField.getRealName();
+
+						var eFieldType: EAFXShaderVariableType = PassInputBlend.getVariableType(pField);
+						var iFieldLength: uint = pField.getType().getLength();
+
+						var sFieldShaderName: string = sFieldRealName;
+
+						if(pField.getType().isNotBaseArray()){
+							sFieldShaderName += "[0]";
+						}
+
+						if(this.isUniformExists(sFieldShaderName)){
+							this._pRealUniformTypeMap[sFieldRealName] = eFieldType;
+							this._pRealUniformLengthMap[sFieldRealName] = iFieldLength;
+							this._pUniformExistMap[sFieldRealName] = true;
+
+							isAnyFieldExist = true;
+						}
+						else {
+							this._pUniformExistMap[sFieldShaderName] = false;
+							this._pUniformExistMap[sFieldRealName] = false;
+						}
+					}
+
+				}
+			}
+
+			if(isAnyFieldExist){
+				this._pRealUniformTypeMap[sPrevName] = EAFXShaderVariableType.k_Complex;
+				this._pRealUniformLengthMap[sPrevName] = isArray ? iLength : 0;
+				this._pUniformExistMap[sPrevName] = true;
+			}
+			else {
+				this._pUniformExistMap[sPrevName] = false;
+			}
+
+			return isAnyFieldExist;
+		}
+
+		private applyStructUniform(sName: string, pValue: any, pInput: IShaderInput): void {
+			if(!isDefAndNotNull(pValue)){
+				return;
+			}
+
+			var iLength: uint = this._pRealUniformLengthMap[sName];
+
+			if(iLength > 0){
+				if(!isDef(pValue.length)){
+					return;
+				}
+
+				iLength = math.min(iLength, pValue.length);
+
+				for(var i: uint = 0; i < iLength; i++){
+					var sFieldPrevName: string = sName + "[" + i + "]";
+					for(var j in pValue[i]){
+						var sFieldName: string = sFieldPrevName + "." + j;
+
+						if(this.isUniformExists(sFieldName)){
+							var eType: EAFXShaderVariableType = this._pRealUniformTypeMap[sFieldName];
+
+							if(eType === EAFXShaderVariableType.k_Complex){
+								this.applyStructUniform(sFieldName, pValue[i][j], pInput);		
+							}
+							else {
+								var iLength: uint = this._pRealUniformLengthMap[sFieldName];
+								if(iLength > 0){
+									pInput[sFieldName + "[0]"] = pValue[i][j];
+								}
+								else {
+									pInput[sFieldName] = pValue[i][j];
+								}
+								
+							}
+						}
+					}
+				}
+			}
+			else {
+				for(var j in pValue) {
+					var sFieldName: string = sName + "." + j;
+
+					if(this.isUniformExists(sFieldName)){
+						var eType: EAFXShaderVariableType = this._pRealUniformTypeMap[sFieldName];
+
+						if(eType === EAFXShaderVariableType.k_Complex){
+							this.applyStructUniform(sFieldName, pValue[j], pInput);		
+						}
+						else {
+							var iLength: uint = this._pRealUniformLengthMap[sFieldName];
+						
+							if(iLength > 0){
+								pInput[sFieldName + "[0]"] = pValue[j];
+							}
+							else {
+								pInput[sFieldName] = pValue[j];
+							}						
+						}
+					}
+				}
+			}
+
+
 		}
 
 	} 

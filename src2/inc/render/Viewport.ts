@@ -266,7 +266,7 @@ module akra.render {
 			var pVisibleObjects: IObjectArray = pCamera.display();
 			var pRenderable: IRenderableObject;
 
-			ERROR("-------------------------IMPORTANT STRAT-----------------");
+			// ERROR("-------------------------IMPORTANT STRAT-----------------");
 
 			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
@@ -280,7 +280,7 @@ module akra.render {
 				}
 			}
 
-			ERROR("-------------------------IMPORTANT END-----------------");
+			// ERROR("-------------------------IMPORTANT END-----------------");
 		}
 
 

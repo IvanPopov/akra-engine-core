@@ -41,7 +41,7 @@ module akra.render {
 	        samplersProject : []
 	    };
 
-	    private _pLightPoints: ILightPoint[] = null;
+	    private _pLightPoints: util.ObjectArray = null;
 
 		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, pTarget, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -74,7 +74,9 @@ module akra.render {
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
 				pDeferredData[i].setAutoUpdated(false);
-				var pViewport:  IViewport = pDeferredData[i].addViewport(this.getCamera(), "deferred_shading_pass_" + i);
+				var pViewport:  IViewport = pDeferredData[i].addViewport(this.getCamera(), "deferred_shading_pass_" + i, 0, 
+											0, 0, this.actualWidth / pDeferredTextures[i].width, 
+											this.actualHeight / pDeferredTextures[i].height);
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 
 				if(i === 1){
@@ -107,6 +109,7 @@ module akra.render {
 			// LOG(pEngine.getComposer(), pDefferedView.getTechnique().totalPasses);
 			// pDefferedView.renderMethod = pDSMethod;
 
+			this.setClearEveryFrame(false);
 			
 
 			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
@@ -115,10 +118,10 @@ module akra.render {
 		update (): bool {
 			this.prepareForDeferredShading();
 
-			var pLights: ILightPoint[] = <ILightPoint[]><any>this.getCamera().display(DL_LIGHTING);
+			var pLights: util.ObjectArray = <util.ObjectArray>this.getCamera().display(DL_LIGHTING);
 		    
 		    for (var i: int = 0; i < pLights.length; i++) {
-		        pLights[i]._calculateShadows();
+		        pLights.value(i)._calculateShadows();
 		    }
 
 		    this._pLightPoints = pLights;
@@ -272,7 +275,7 @@ module akra.render {
 			switch (iPass) {
 				case 0:
 					var pLightUniforms: UniformMap = this._pLightingUnifoms;
-					var pLightPoints: ILightPoint[] = this._pLightPoints;
+					var pLightPoints: util.ObjectArray = this._pLightPoints;
 					var pCamera: ICamera = this.getCamera();
 					var pDepthTexture: ITexture = this._pDeferredDepthTexture;
 					var pDeferredTextures: ITexture[] = this._pDefferedColorTextures;
@@ -284,15 +287,17 @@ module akra.render {
 					// pTechnique.setState("lights.omniShadows", pLightUniforms.omniShadows.length);
 					// pTechnique.setState("lights.projectShadows", pLightUniforms.projectShadows.length);
 
-					pTechnique.setForeign("nOmni", pLightUniforms.omni.length);
-				    pTechnique.setForeign("nProject", pLightUniforms.project.length);
-				    pTechnique.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
-				    pTechnique.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
+					pPass.setForeign("nOmni", pLightUniforms.omni.length);
+				    pPass.setForeign("nProject", pLightUniforms.project.length);
+				    pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
+				    pPass.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
 
-				    // pTechnique.setStruct("points_omni", pLightUniforms.omni);
-				    // pTechnique.setStruct("points_project", pLightUniforms.project);
-				    // pTechnique.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
-				    // pTechnique.setStruct("points_project_shadows", pLightUniforms.projectShadows);
+				    // LOG(pLightUniforms);
+
+				    pPass.setStruct("points_omni", pLightUniforms.omni);
+				    pPass.setStruct("points_project", pLightUniforms.project);
+				    pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
+				    pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
 
 				    // for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
 				    //     pTechnique.setTextureBySemantics("TEXTURE" + i, pLightUniforms.textures[i]);
@@ -351,7 +356,7 @@ module akra.render {
 		    pUniforms.samplersOmni.clear();
 		}
 
-		private createLightingUniforms(pCamera: ICamera, pLightPoints: ILightPoint[], pUniforms: UniformMap): void {
+		private createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray, pUniforms: UniformMap): void {
 			var pLight: ILightPoint;
 			var pOmniLight: IOmniLight;
 			var pProjectLight: IProjectLight;
@@ -372,7 +377,7 @@ module akra.render {
 		    this.resetUniforms();
 
 		    for (i = 0; i < pLightPoints.length; i++) {
-		        pLight = pLightPoints[i];
+		        pLight = pLightPoints.value(i);
 
 		        //all cameras in list already enabled
 		        // if (!pLight.enabled) {

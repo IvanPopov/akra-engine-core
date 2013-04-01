@@ -99,7 +99,7 @@ module akra.webgl {
 			var pInput: IShaderInput = pEntry.input;
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
 
-			console.log(pEntry);
+			// console.log(pEntry);
 
 			this._setViewportForRender(pViewport);
 
@@ -185,9 +185,8 @@ module akra.webgl {
 					w: uint = pViewport.actualWidth,
 					h: uint = pViewport.actualHeight;
 
-
-				this._pWebGLContext.viewport(x, y, 800, 600);
-				this._pWebGLContext.scissor(x, y, 800, 600);
+				this._pWebGLContext.viewport(x, y, w, h);
+				this._pWebGLContext.scissor(x, y, w, h);
 
 				pViewport._clearUpdatedFlag();
 			}
@@ -286,7 +285,7 @@ module akra.webgl {
 		// }
 
 		inline getNextTextureSlot(): int {
-			return this._iSlot === 15 ? (this._iSlot = 0) : (this._iSlot++);
+			return this._iSlot === maxTextureImageUnits ? (this._iSlot = 0) : (++this._iSlot);
 		}
 
 		inline getTextureSlot(): int {

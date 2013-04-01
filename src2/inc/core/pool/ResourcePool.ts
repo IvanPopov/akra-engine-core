@@ -142,7 +142,7 @@ module akra.core.pool {
         loadResource(sResourceName: string): IResourcePoolItem {
             // does the resource already exist?
             var pResource: IResourcePoolItem = this.findResource(sResourceName);
-                                         
+       
             if (pResource == null) {
                 // create a new resource
                 pResource = this.createResource(sResourceName);
@@ -160,7 +160,6 @@ module akra.core.pool {
                     pResource.release();
                     pResource = null;
                 }
-
             }
 
             return pResource;

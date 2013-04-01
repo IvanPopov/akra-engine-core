@@ -191,6 +191,10 @@ module akra.render {
 
 
 		render(pViewport: IViewport, csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
+			if(!this.isReadyForRender()){
+				return;
+			}
+			
 			if(!this.switchRenderMethod(csMethod)){
 				return;
 			}

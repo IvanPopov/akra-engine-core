@@ -346,7 +346,6 @@ module akra.util {
 		        pMapper = {data: pMap, semantics: eSemantics, addition: iAddition};
 
 		        this._pMappers.push(pMapper);
-		        WARNING("#######", pMap.length, pMap.toString());
 		        this.length = pMap.length;
 		        //this.startIndex = pMap.getStartIndex();
 		        this.pushEtalon(pMap);

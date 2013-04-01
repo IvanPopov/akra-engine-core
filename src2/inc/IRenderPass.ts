@@ -10,6 +10,7 @@ module akra {
 		setForeign(sName: string, fValue: float): void;
 		setTexture(sName: string, pTexture: ITexture): void;
 		setUniform(sName: string, pValue: any): void;
+		setStruct(sName: string, pValue: any): void;
 
 		getRenderTarget(): IRenderTarget;
 		setRenderTarget(pTarget: IRenderTarget): void;

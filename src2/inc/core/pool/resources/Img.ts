@@ -125,7 +125,7 @@ module akra.core.pool.resources {
 		}
 
 		loadResource(sFilename?: string): bool {
-			return false;
+			return !isNull(this.load(sFilename));
 		}
 
 		saveResource(sFilename?: string): bool {
@@ -209,8 +209,8 @@ module akra.core.pool.resources {
             }
             else if (isString(pData))
             {
-
                 var sExt : string = (new Pathinfo(pData)).ext;
+
                 if(sExt=="png" || sExt=="jpg" || sExt=="jpeg" || sExt=="gif" || sExt=="bmp")
                 {
                     var pImg:HTMLImageElement=new Image();
@@ -361,6 +361,7 @@ module akra.core.pool.resources {
             }
 
             this._pBuffer=pData;
+            this.notifyLoaded();
             return this;
         }
 

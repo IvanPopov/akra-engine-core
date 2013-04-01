@@ -42,12 +42,14 @@ module akra {
 		samplers: IAFXSamplerStateMap;
 		samplerArrays: IAFXSamplerStateListMap;
 		samplerArrayLength: IntMap;
+
 		uniforms: any; /* all uniforms without samlers */
 		foreigns: any;
 		textures: any;
 
 		samplerKeys: string[];
 		samplerArrayKeys: string[];
+
 		uniformKeys: string[];
 		foreignKeys: string[];
 		textureKeys: string[];
@@ -60,7 +62,10 @@ module akra {
 		setTexture(sName: string, pValue: any): void;
 
 		setSampler(sName: string, pState: IAFXSamplerState): void;
+		setSamplerTexture(sName: string, pTexture: ITexture): void;
 		setSamplerArray(sName: string, pSamplerArray: IAFXSamplerState[]): void;
+
+		setStruct(sName: string, pValue: any): void;
 
 		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void;
 
@@ -80,6 +85,8 @@ module akra {
 		_getLastShaderId(): uint;
 		_setPassBlendId(id: uint): void;
 		_setShaderId(id: uint): void;
+
+		_getAFXUniformVar(sName: string): IAFXVariableDeclInstruction;
 	}
 }
 

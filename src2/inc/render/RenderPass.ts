@@ -30,6 +30,10 @@ module akra.render {
 			this._pInput.setUniform(sName, pValue);
 		}
 
+		inline setStruct(sName: string, pValue: any): void {
+			this._pInput.setStruct(sName, pValue);
+		}
+
 		// inline setSamplerState(sName: string, pState: IAFXSamplerState): void {
 		// 	this._pInput.setSamplerState(sName, pState);
 		// }
