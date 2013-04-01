@@ -92,6 +92,10 @@ module akra.ui.graph {
 			}
 		}
 
+		inline isConnectedWithNode(pNode: IUIGraphNode): bool {
+			return this.left.node === pNode || this.right.node === pNode;
+		}
+
 		inline isConnectedWith(pConnector: IUIGraphConnector): bool {
 			return this.left === pConnector || this.right === pConnector;
 		}

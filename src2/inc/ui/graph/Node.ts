@@ -44,6 +44,7 @@ module akra.ui.graph {
 		protected _eGraphNodeType: EUIGraphNodes;
 		protected _isActive: bool = false;
 		protected _pAreas: IGraphNodeAreaMap = <any>{};
+		protected _isSuitable: bool = true;
 
 		inline get graphNodeType(): EUIGraphNodes {
 			return this._eGraphNodeType;
@@ -77,7 +78,8 @@ module akra.ui.graph {
 		}
 
 		protected onConnectionEnd(pGraph: IUIGraph): void {
-			this.el.removeClass("open");
+			this._isSuitable = false;
+			this.el.removeClass("open blocked");
 		}
 
 		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
@@ -85,7 +87,29 @@ module akra.ui.graph {
 				return;
 			}
 
+			this._isSuitable = true;
 			this.el.addClass("open");
+		}
+
+		inline isSuitable(): bool {
+			return this._isSuitable;
+		}
+
+		findRoute(pNode: IUIGraphNode): IUIGraphRoute {
+			var pRoute: IUIGraphRoute = null;
+
+			for (var i in this._pAreas) {
+				pRoute = this._pAreas[i].findRoute(pNode)
+				if (!isNull(pRoute)) {
+					return pRoute;
+				}
+			}
+
+			return null;
+		}
+
+		inline isConnectedWith(pNode: IUIGraphNode): bool {
+			return !isNull(this.findRoute(pNode));
 		}
 
 		canAcceptConnect(): bool {
@@ -162,7 +186,12 @@ module akra.ui.graph {
 		}
 
 		protected inline addConnectionArea(sName: string, pArea: IUIGraphConnectionArea): void {
+			this.connect(pArea, SIGNAL(connected), SLOT(connected));
 			this._pAreas[sName] = pArea;
+		}
+
+		protected connected(pArea: IUIGraphConnectionArea, pNode: IUIGraphNode, pRoute: IUIGraphRoute): void {
+			
 		}
 
 		sendEvent(e: IUIGraphEvent): void {

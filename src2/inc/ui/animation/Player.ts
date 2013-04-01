@@ -9,7 +9,7 @@
 #include "animation/Container.ts"
 
 module akra.ui.animation {
-	export class Player extends graph.Node implements IUIAnimationPlayer {
+	export class Player extends Node implements IUIAnimationPlayer {
 		private _pSpeedLabel: IUILabel;
 		private _pSlider: IUISlider;
 		private _pPlayBtn: IUICheckbox;
@@ -18,10 +18,6 @@ module akra.ui.animation {
 		private _pNameLabel: IUILabel;
 
 		private _pAnimation: IAnimationContainer = null;
-
-		inline get graph(): IUIAnimationGraph {
-			return <IUIAnimationGraph>this.parent;
-		}
 
 		inline get animation(): IAnimationBase {
 			return this._pAnimation;
@@ -97,21 +93,25 @@ module akra.ui.animation {
 		}
 
 		protected init(): void {
-			var pInput: graph.ConnectionArea = new graph.ConnectionArea(this, {show: false, maxConnections: 1});
+			var pInput: graph.ConnectionArea = new graph.ConnectionArea(this, {
+				show: false, 
+				maxInConnections: 1,
+				maxOutConnections: 1
+			});
 			
-			pInput.setMode(EUIGraphDirections.IN);
+			pInput.setMode(EUIGraphDirections.IN|EUIGraphDirections.OUT);
 			pInput.setLayout(EUILayouts.HORIZONTAL);
 			pInput.render(this.el);
 
 			this.addConnectionArea("in", pInput);
 
-			var pOutput: graph.ConnectionArea = new graph.ConnectionArea(this, {show: false, maxConnections: 1});
+			// var pOutput: graph.ConnectionArea = new graph.ConnectionArea(this, {show: false, maxConnections: 1});
 			
-			pOutput.setMode(EUIGraphDirections.OUT);
-			pOutput.setLayout(EUILayouts.HORIZONTAL);
-			pOutput.render(this.el);
+			// pOutput.setMode(EUIGraphDirections.OUT);
+			// pOutput.setLayout(EUILayouts.HORIZONTAL);
+			// pOutput.render(this.el);
 
-			this.addConnectionArea("out", pOutput);
+			// this.addConnectionArea("out", pOutput);
 		}
 
 

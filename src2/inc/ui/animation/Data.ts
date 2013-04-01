@@ -7,7 +7,7 @@
 #include "Node.ts"
 
 module akra.ui.animation {
-	export class Data extends graph.Node implements IUIAnimationData {
+	export class Data extends Node implements IUIAnimationData {
 		private _pAnimation: IAnimation = null;
 
 		inline get animation(): IAnimationBase {

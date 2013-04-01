@@ -11,11 +11,8 @@ module akra.ui.animation {
 			return null;
 		}
 
-		_enterFrame(fTime: float): void {}
-		_selected(bValue: bool): void {
-			bValue? 
-				this.$element.addClass("selected"): 
-				this.$element.removeClass('selected');
+		inline get graph(): IUIAnimationGraph {
+			return <IUIAnimationGraph>this.parent;
 		}
 	}
 }

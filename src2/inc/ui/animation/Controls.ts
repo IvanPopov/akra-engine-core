@@ -5,8 +5,8 @@
 #include "../graph/Controls.ts"
 #include "Data.ts"
 #include "Player.ts"
-// #include "Blender.ts"
-// #include "Mask.ts"
+#include "Blender.ts"
+#include "Mask.ts"
 
 module akra.ui.animation {
 	export class Controls extends graph.Controls {
@@ -18,13 +18,13 @@ module akra.ui.animation {
 
 			var pDataBtn: IUIButton = new Button(pControlPanel, {text: "Create data"});
 			var pPlayerBtn: IUIButton = new Button(pControlPanel, {text: "Create player"});
-			// var pBlenderBtn: IUIButton = new Button(pControlPanel, {text: "Create blender"});
-			// var pMaskBtn: IUIButton = new Button(pControlPanel, {text: "Create mask"});
+			var pBlenderBtn: IUIButton = new Button(pControlPanel, {text: "Create blender"});
+			var pMaskBtn: IUIButton = new Button(pControlPanel, {text: "Create mask"});
 
 			this.connect(pDataBtn, SIGNAL(click), SLOT(createData));
 			this.connect(pPlayerBtn, SIGNAL(click), SLOT(createPlayer));
-			// this.connect(pBlenderBtn, SIGNAL(click), SLOT(createBlender));
-			// this.connect(pMaskBtn, SIGNAL(click), SLOT(createMask));
+			this.connect(pBlenderBtn, SIGNAL(click), SLOT(createBlender));
+			this.connect(pMaskBtn, SIGNAL(click), SLOT(createMask));
 		}	
 
 
@@ -35,14 +35,14 @@ module akra.ui.animation {
 		createPlayer(): IUIAnimationNode {
 			return new Player(this.graph);
 		}
+		
+		createBlender(): IUIAnimationNode {
+			return new Blender(this.graph);
+		}
 
-		// createBlender(): IUIAnimationNode {
-		// 	return new Blender(this.graph);
-		// }
-
-		// createMask(): IUIAnimationNode {
-		// 	return new Mask(this.graph);
-		// }
+		createMask(): IUIAnimationNode {
+			return new Mask(this.graph);
+		}
 	}
 
 	register("AnimationControls", Controls);

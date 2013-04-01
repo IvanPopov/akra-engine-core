@@ -313,6 +313,9 @@
 .component-graphnode.open {
   box-shadow: 0 0 5px #00ff00;
 }
+.component-graphnode.blocked {
+  box-shadow: 0 0 5px red;
+}
 /* Graph connector */
 .component-graphconnector {
   border: 1px solid #444;

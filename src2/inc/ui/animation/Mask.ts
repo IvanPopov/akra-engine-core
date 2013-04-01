@@ -23,43 +23,28 @@ module akra.ui.animation {
 		}
 
 		constructor (pGraph: IUIGraph) {
-			super(pGraph, EUIGraphNodes.ANIMATION_MASK);
+			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_MASK);
+
+			graph.template(this, "ui/templates/AnimationMask.tpl");
+			this.init();
 		}
 
 		protected init(): void {
-			this.setRouteAreas([this.children().last], [this.children().first]);
+			var pArea: graph.ConnectionArea = new graph.ConnectionArea(this, {
+				show: false,
+				maxInConnections: 1
+			});
+			
+			pArea.setMode(EUIGraphDirections.OUT|EUIGraphDirections.IN);
+			pArea.setLayout(EUILayouts.HORIZONTAL);
+			pArea.render(this.el);
+
+			this.addConnectionArea("out", pArea);
 		}
 
-		protected getRouteArea(pZone: IUINode, eDir?: EUIGraphDirections): IUINode {
-			if (eDir === EUIGraphDirections.OUT) {
-				//bottom layout
-				return <IUINode>this.children().last;
-			}
-
-			//top layout
-			return <IUINode>this.child;
-		}
-
-		label(): string {
-			return "AnimationMask";
-		}
-
-		click(e: IUIEvent): void {
-			return;
-		}
-
-		isSuitable(pTarget: IUIAnimationNode): bool {
-			if (!this.hasConnections()) {
-				
-				if (isNull(pTarget.animation)) {
-					return false;
-				}
-
-				this.animation = pTarget.animation;
-				return true;
-			}
-
-			return false;
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-animationmask");
 		}
 
 		private create(pMask: FloatMap = null, pAnimation: IAnimationBase = null): void {
@@ -116,34 +101,23 @@ module akra.ui.animation {
 			return this._pMask;
 		}
 
-		routeBreaked(pRoute: IUIGraphRoute, iConn: int, eDir: EUIGraphDirections): void {
-			// if (eDir !== EUIGraphDirections.IN) {
-			// 	return;
-			// }
-			super.routeBreaked(pRoute, iConn, eDir);
-		}
-
 		static private createSlider(pParent: IUIAnimationNode, $location: JQuery, pMask: FloatMap, sName: string): IUISlider {
 			var pSlider: IUISlider;
 
-			pSlider = new Slider(pParent);
-			
-			$location.append(pSlider.$element);
-
+			pSlider = new Slider(pParent, {show: false});
+			pSlider.render($location);
 			pSlider.range = 10;
 			pSlider.value = pMask[sName];
 
 			pSlider.bind(SIGNAL(updated), (pSlider: IUISlider, fValue: float) => {
 				pMask[sName] = fValue;
 			});
-
-			//pSlider.text = sName;
 			
 			return pSlider;		
 		}
 	}
 
-	Component.register("AnimationMask", Mask);
+	register("AnimationMask", Mask);
 }
 
 #endif

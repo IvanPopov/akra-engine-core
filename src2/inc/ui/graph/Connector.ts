@@ -50,11 +50,13 @@ module akra.ui.graph {
 		}
 
 		mouseup(e: IUIEvent): void {
-			if (this.direction === EUIGraphDirections.IN && !this.isConnected()) {
+			if (this.direction === EUIGraphDirections.IN && !this.isConnected() && this.node.isSuitable()) {
 				e.stopPropagation();
 				this.graph.connectTo(this);
 			}
 		}
+
+		
 
 		hasRoute(): bool {
 			return !isNull(this.route);

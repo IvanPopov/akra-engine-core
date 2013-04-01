@@ -5,6 +5,7 @@
 
 module akra {
 	IFACE(IUIGraph);
+	IFACE(IUIGraphRoute);
 
 	export enum EUIGraphNodes {
 		UNKNOWN,
@@ -19,8 +20,13 @@ module akra {
 		readonly graphNodeType: EUIGraphNodes;
 		readonly graph: IUIGraph;
 
+		findRoute(pNode: IUIGraphNode): IUIGraphRoute;
+		isConnectedWith(pNode: IUIGraphNode): bool;
+
 		activate(bState?: bool): void;
 		isActive(): bool;
+
+		isSuitable(): bool;
 
 		sendEvent(e: IUIGraphEvent): void;
 		highlight(bValue?: bool);
