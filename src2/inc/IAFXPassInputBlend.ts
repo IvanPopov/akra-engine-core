@@ -32,6 +32,7 @@ module akra {
 
         k_Sampler2D,
         k_SamplerCUBE,
+        k_SamplerVertexTexture,
 
         k_CustomSystem,
         k_Complex
@@ -41,12 +42,14 @@ module akra {
 		samplers: IAFXSamplerStateMap;
 		samplerArrays: IAFXSamplerStateListMap;
 		samplerArrayLength: IntMap;
+
 		uniforms: any; /* all uniforms without samlers */
 		foreigns: any;
 		textures: any;
 
 		samplerKeys: string[];
 		samplerArrayKeys: string[];
+
 		uniformKeys: string[];
 		foreignKeys: string[];
 		textureKeys: string[];
@@ -58,10 +61,16 @@ module akra {
 		setForeign(sName: string, pValue: any): void;
 		setTexture(sName: string, pValue: any): void;
 
-		setSamplerTexture(sName: string, pTexture: any): void;
+		setSampler(sName: string, pState: IAFXSamplerState): void;
+		setSamplerTexture(sName: string, pTexture: ITexture): void;
+		setSamplerArray(sName: string, pSamplerArray: IAFXSamplerState[]): void;
+
+		setStruct(sName: string, pValue: any): void;
 
 		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void;
 
+		_getSamplerState(sName: string): IAFXSamplerState;
+		_getSamplerTexture(sName: string): ITexture;
 		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture;
 
 		_getUnifromLength(sName: string): uint;
@@ -76,6 +85,8 @@ module akra {
 		_getLastShaderId(): uint;
 		_setPassBlendId(id: uint): void;
 		_setShaderId(id: uint): void;
+
+		_getAFXUniformVar(sName: string): IAFXVariableDeclInstruction;
 	}
 }
 

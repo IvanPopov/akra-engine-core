@@ -16,21 +16,10 @@ module akra {
 	// 	LOG("context debugging enabled");
 	// }
 
-	var iLevel: uint = 6;
+	var iLevel: uint = 5;
 	var iWorldSizeX: uint = 1024;
 	var iWorldSizeY: uint = 1024;
 	var iWorldSizeZ: uint = 1024;
-
-	var pOctree: IOcTree = new scene.OcTree();
-	pOctree.create(new geometry.Rect3d(iWorldSizeX, iWorldSizeY, iWorldSizeZ),iLevel,100);
-
-	var i: int = pScene3D.addDisplayList(pOctree);
-	debug_assert(i == DL_DEFAULT, "invalid default list index");
-
-	var pLightGraph: ILightGraph = new scene.LightGraph();
-
-	i = pScene3D.addDisplayList(pLightGraph);
-	debug_assert(i == DL_LIGHTING, "invalid default list index");
 
 	var pObject: ISceneObject;
 
@@ -47,6 +36,8 @@ module akra {
 											-10,10,
 											-iWorldSizeZ/2 + j*iStepZ, -iWorldSizeZ/2 + (j+1)*iStepZ);
 			pObject.attachToParent(pScene3D.getRootNode());
+
+			var z: float = math.floor(math.random()*10);
 
 			pObject.hasShadows = true;
 		}
@@ -82,20 +73,34 @@ module akra {
 	pScene3D.recursiveUpdate();
 	//pScene3D.recursiveUpdate();
 
-	var pCamera: ICamera = new scene.objects.Camera(pScene3D);
-	pCamera.create();
+	var pCamera: ICamera = pScene3D.createCamera("default");
 	pCamera.attachToParent(pScene3D.getRootNode());
 
 	pScene3D.recursiveUpdate();
 
-	var pLight: IProjectLight = new scene.light.ProjectLight(pScene3D, false, 512);
-	pLight.create();
+	var pLight: IProjectLight = <IProjectLight>pScene3D.createLightPoint(ELightTypes.PROJECT, false, 512);
 	pLight.attachToParent(pScene3D.getRootNode());
 	pLight.addPosition(-300, 0, 0);
 
 	pLight.isShadowCaster = true;
+	pLight.enabled = true;
 
-	// pLight.localMatrix = Mat4.fromYawPitchRoll(0*math.PI/6,0.,0.);
+	var pLight2: IProjectLight = <IProjectLight>pScene3D.createLightPoint(ELightTypes.PROJECT, false, 512);
+	pLight2.attachToParent(pScene3D.getRootNode());
+	pLight2.addRotationByEulerAngles(math.PI/4,0,0);
+	pLight2.addPosition(300, 0, 0);
+	pLight2.getShadowCaster().setOffsetOrthoParams(-100,100,-100,100,0.1,500);
+
+	pLight2.isShadowCaster = true;
+
+	var pLight3: IProjectLight = <IProjectLight>pScene3D.createLightPoint(ELightTypes.PROJECT, false, 512);
+	pLight3.attachToParent(pScene3D.getRootNode());
+	pLight3.addRotationByEulerAngles(math.PI/2,0,0);
+	pLight3.addPosition(100, 0, 300);
+	
+
+	pLight3.isShadowCaster = false;
+	pLight3.enabled = true;
 
 	pScene3D.recursiveUpdate();
 
@@ -203,15 +208,21 @@ module akra {
 
 			//draw light affected objects
 
-			pContext2d.beginPath();
+			
 
-			pContext2d.strokeStyle = "rgb(128,0,128)";
 			pContext2d.lineWidth = 2;
 
 			var pAffectedObjects: IObjectArray = pActiveLight.getShadowCaster().affectedObjects;
 
 			for(var i:int = 0; i<pAffectedObjects.length; i++){
 				var pObject: ISceneObject = pAffectedObjects.value(i);
+
+				if(pObject.hasShadows){
+					pContext2d.strokeStyle = "rgb(128,0,128)";
+				}
+				else{
+					pContext2d.strokeStyle = "rgb(255,150,0)";
+				}
 
 				var pRect: IRect3d  = pObject.worldBounds;
 
@@ -220,17 +231,17 @@ module akra {
 				var fY0: float = (pRect.z0 + iWorldSizeZ/2)/iWorldSizeZ * iCanvasSize;
 				var fY1: float = (pRect.z1 + iWorldSizeZ/2)/iWorldSizeZ * iCanvasSize;
 
-
+				pContext2d.beginPath();
 				pContext2d.moveTo(fX0,fY0);
 				pContext2d.lineTo(fX0,fY1);
 				pContext2d.lineTo(fX1,fY1);
 				pContext2d.lineTo(fX1,fY0);
 				pContext2d.lineTo(fX0,fY0);
 				pContext2d.stroke();
-			
+				pContext2d.closePath();
 			}
 
-			pContext2d.closePath();
+			
 
 			//draw light frusum
 			
@@ -281,7 +292,7 @@ module akra {
 		}
 	};
 
-	console.log(pOctree);
+	// console.log(pOctree);
 	// console.log(pOctree._toSimpleObject());
 	// console.warn(pCamera);
 
@@ -300,7 +311,7 @@ module akra {
 
 		displayResult();
 
-		pCamera.addRelRotationByEulerAngles(0.1, 0, 0);
+		pCamera.addRelRotationByEulerAngles(0.02, 0, 0);
 		pScene3D.recursiveUpdate();
 								}
 								, 300)

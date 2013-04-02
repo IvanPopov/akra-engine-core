@@ -244,7 +244,7 @@ module akra.core {
 		    this._pRenderer._updateAllRenderTargets();
 		    this.frameEnded();
 
-		    LOG("frame rendered();");
+		    // LOG("frame rendered();");
 			return true;
 		}
 

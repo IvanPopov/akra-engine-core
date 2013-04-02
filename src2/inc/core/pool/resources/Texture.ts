@@ -192,6 +192,29 @@ module akra.core.pool.resources {
             }
         }
 
+        loadResource(sFilename?: string): bool {
+            if (arguments.length == 0) {
+                return;
+            }
+
+            var pImage: IImg = this.getManager().loadImage(sFilename);
+            
+            
+            
+            if (pImage.isResourceLoaded()) {
+                return this.loadImage(pImage);
+            }
+            LOG("Texture::loadResource(" + sFilename + ")", pImage);
+            this.connect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
+            return true;
+        }
+
+        _onImageLoad(pImage: IImg): void {
+            LOG("resource loaded > ", pImage.findResourceName(), this.findResourceName());
+            this.disconnect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
+            this.loadImage(pImage);
+        }
+
         destroyResource(): bool {
             this.freeInternalTexture();
             this.notifyDestroyed();

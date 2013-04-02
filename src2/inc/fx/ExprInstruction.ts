@@ -297,10 +297,10 @@ module akra.fx {
 			var sCode: string = "";
 			if(this._bToFinalCode){
 				if(this._isInPassForeigns){
-					sCode += "foreigns[" + this.getInstructions()[0].toFinalCode() + "]";
+					sCode += "foreigns[\"" + this.getInstructions()[0].toFinalCode() + "\"]";
 				}
 				else if(this._isInPassUnifoms){
-					sCode += "uniforms[" + this.getInstructions()[0].toFinalCode() + "]";
+					sCode += "uniforms[\"" + this.getInstructions()[0].toFinalCode() + "\"]";
 				}
 				else {
 					sCode += this.getInstructions()[0].toFinalCode();
@@ -1115,7 +1115,6 @@ module akra.fx {
 			}
 
 			this._pSamplerParams[sStateType] = sStateValue;
-
 			return;
 		}
 

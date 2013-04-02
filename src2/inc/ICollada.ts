@@ -259,6 +259,8 @@ module akra {
         material: string;
 
         type?: EPrimitiveTypes;
+
+        count: uint;
     }
 
     export interface IColladaMesh extends IColladaEntry {

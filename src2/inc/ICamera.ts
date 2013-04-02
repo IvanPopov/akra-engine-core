@@ -28,8 +28,8 @@ module akra {
     	readonly viewMatrix: IMat4;
     	readonly projectionMatrix: IMat4;
     	readonly projViewMatrix: IMat4;
-    	readonly internalProjectionMatrix: IMat4;
-    	readonly internalViewProjMatrix: IMat4;
+    	// readonly internalProjectionMatrix: IMat4;
+    	// readonly internalViewProjMatrix: IMat4;
     	readonly targetPos: IVec3;
     	
         fov: float;
@@ -51,7 +51,7 @@ module akra {
         //moved to private.
     	// recalcMatrices(): void;
 
-    	applyRenderStageBias(iStage: int): void;
+    	// applyRenderStageBias(iStage: int): void;
 
     	lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3);
     	lookAt(v3fCenter: IVec3, v3fUp?: IVec3);

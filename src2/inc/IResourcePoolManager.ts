@@ -129,6 +129,7 @@ module akra {
 
         createImg(sResourceName: string): IImg;
         loadModel(sFilename: string, pOptions?: any): IModel;
+        loadImage(sFilename: string): IImg;
 
     }
 }

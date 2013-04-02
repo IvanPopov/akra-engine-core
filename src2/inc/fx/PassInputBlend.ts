@@ -2,8 +2,21 @@
 #define PASSINPUTBLEND_TS
 
 #include "IAFXPassInputBlend.ts"
+#include "util/Color.ts"
 
 module akra.fx {
+
+	export inline function createSamplerState(): IAFXSamplerState {
+		return <IAFXSamplerState>{ 
+			textureName: "",
+			texture: null,
+			wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+			wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+			mag_filter: ETextureFilters.LINEAR,
+			min_filter: ETextureFilters.LINEAR
+		};
+	}
+
     export interface IAFXShaderVarTypeMap {
 		[index: string]: EAFXShaderVariableType;
 		[index: uint]: EAFXShaderVariableType;
@@ -71,8 +84,24 @@ module akra.fx {
 		}
 
 		setUniform(sName: string, pValue: any): void {
-			if(!this._pUniformTypeMap[sName]){
+			var eType: EAFXShaderVariableType = this._pUniformTypeMap[sName];
+
+			if(!eType){
 				this._pUniformTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
+				return;
+			}
+
+			if (eType === EAFXShaderVariableType.k_Sampler2D || 
+				eType === EAFXShaderVariableType.k_SamplerCUBE) {
+				var isArray: bool = this._isUniformArrayMap[sName];
+
+				if (isArray) {
+					this.setSamplerArray(sName, pValue);
+				}
+				else {
+					this.setSampler(sName, pValue);
+				}
+
 				return;
 			}
 
@@ -96,7 +125,40 @@ module akra.fx {
 				this._bNeedToCalcShader = true;
 			}
 
-			this.foreigns[sName] = pOldValue;
+			this.foreigns[sName] = pValue;
+		}
+
+		inline setSampler(sName: string, pValue: IAFXSamplerState): void {
+			PassInputBlend.copySamplerState(pValue, this.samplers[sName]);
+		}
+
+		inline setSamplerTexture(sName: string, pTexture: ITexture): void {
+			if(this.hasUniform(sName)){
+				this.samplers[sName].texture = pTexture;
+			}
+		}
+
+		setSamplerArray(sName: string, pValue: IAFXSamplerState[]): void {
+			for (var i: int = 0; i < pValue.length; i++) {
+				PassInputBlend.copySamplerState(pValue[i], this.samplerArrays[sName][i]);
+			}
+
+			this.samplerArrayLength[sName] = pValue.length;
+		}
+
+		inline setStruct(sName: string, pValue: any): void {
+			this.setUniform(sName, pValue);
+		}
+
+		static copySamplerState(pFrom: IAFXSamplerState, pTo: IAFXSamplerState): void {
+			pTo.textureName = pFrom.textureName;
+			pTo.texture = pFrom.texture;
+
+			pTo.wrap_s = pFrom.wrap_s;
+			pTo.wrap_t = pFrom.wrap_t;
+
+			pTo.mag_filter = pFrom.mag_filter;
+			pTo.min_filter = pFrom.min_filter;
 		}
 
 		//complete
@@ -111,15 +173,39 @@ module akra.fx {
 			this.textures[sName] = pValue;
 		}
 
-		setSamplerTexture(sName: string, pState: any): void {
-			if (!this.hasUniform(sName)) {
-				return;
-			}
-			//this.samplers[sName]
-		}
 
-		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void {
-			//TODO: apply surface material
+		setSurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): void {
+			if(isNull(pSurfaceMaterial)){
+				return ;
+			}
+			// var pSurfaceMaterial: core.pool.resources.SurfaceMaterial = pSurfaceMaterial;
+			// LOG(pSurfaceMaterial, pSurfaceMaterial.totalTextures);
+			for (var i: int = 0; i < pSurfaceMaterial.totalTextures; i++) {
+				var pTexture: ITexture = pSurfaceMaterial.texture(i);
+				// var iTexcord: int = pSurfaceMaterial[i].texcoord(i);
+				this.setTexture("TEXTURE" + i, pTexture);
+			}
+
+			var pMaterial: IMaterial = pSurfaceMaterial.material;
+
+			this.setStruct("MATERIAL", {
+				"DIFFUSE" 	: util.colorToVec4(pMaterial.diffuse),
+				"AMBIENT" 	: util.colorToVec4(pMaterial.ambient),
+				"SPECULAR" 	: util.colorToVec4(pMaterial.specular),
+				"EMISSIVE" 	: util.colorToVec4(pMaterial.emissive),
+				"SHININESS" : pMaterial.shininess
+			});
+
+			this.setSamplerTexture("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
+			this.setSamplerTexture("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
+			this.setSamplerTexture("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
+			this.setSamplerTexture("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
+
+			// this.setUniform("MATERIAL.DIFFUSE", util.colorToVec4(pMaterial.diffuse));
+			// this.setUniform("MATERIAL.AMBIENT", util.colorToVec4(pMaterial.ambient));
+			// this.setUniform("MATERIAL.SPECULAR", util.colorToVec4(pMaterial.specular));
+			// this.setUniform("MATERIAL.EMISSIVE", util.colorToVec4(pMaterial.emissive));
+			// this.setUniform("MATERIAL.SHININESS", pMaterial.shininess);
 		}
 
 		inline _getUnifromLength(sName: string): uint {
@@ -128,6 +214,14 @@ module akra.fx {
 
 		inline _getUniformType(sName: string): EAFXShaderVariableType {
 			return this._pUniformTypeMap[sName];
+		}
+
+		inline _getSamplerState(sName: string): IAFXSamplerState {
+			return this.samplers[sName];
+		}
+
+		inline _getSamplerTexture(sName: string): ITexture {
+			return this._getTextureForSamplerState(this._getSamplerState(sName));
 		}
 
 		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture {
@@ -203,6 +297,10 @@ module akra.fx {
 			this._iLastShaderId = id;
 		}
 
+		inline _getAFXUniformVar(sName: string): IAFXVariableDeclInstruction {
+			return this._pCreator.uniformByRealName[sName];
+		}
+
 		private init(): void {
 			this._pUniformTypeMap = <IAFXShaderVarTypeMap>{};
 			this._isUniformArrayMap = <BoolMap>{};
@@ -212,6 +310,7 @@ module akra.fx {
 			this.samplers = <IAFXSamplerStateMap>{};
 			this.samplerArrays = <IAFXSamplerStateListMap>{};
 			this.samplerArrayLength = <IntMap>{};
+
 			this.uniforms = <any>{};
 			this.foreigns = <any>{};
 			this.textures = <any>{};
@@ -231,7 +330,7 @@ module akra.fx {
 			for(var i: uint = 0; i < pUniformKeys.length; i++){
 				sName = pUniformKeys[i];
 
-				eType = this.getVariableType(pUniformMap[sName]);
+				eType = PassInputBlend.getVariableType(pUniformMap[sName]);
 				isArray = this.isVarArray(pUniformMap[sName]);
 
 				this._pUniformTypeMap[sName] = eType;
@@ -243,11 +342,11 @@ module akra.fx {
 						this.samplerArrayLength[sName] = 0;
 
 						for(var j: uint = 0; j < this.samplerArrays[sName].length; j++) {
-							this.samplerArrays[sName][j] = this.createSamplerState();
+							this.samplerArrays[sName][j] = createSamplerState();
 						}
 					}
 					else {
-						this.samplers[sName] = this.createSamplerState();
+						this.samplers[sName] = createSamplerState();
 					}
 				}
 				else {
@@ -257,7 +356,7 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pForeignKeys.length; i++){
 				sName = pForeignKeys[i];
-				eType = this.getVariableType(pForeignMap[sName]);
+				eType = PassInputBlend.getVariableType(pForeignMap[sName]);
 
 				this._pForeignTypeMap[sName] = eType;
 				this.foreigns[sName] = null;
@@ -278,7 +377,7 @@ module akra.fx {
 			this.textureKeys = Object.keys(this.textures);
 		}
 
-		private getVariableType(pVar: IAFXVariableDeclInstruction): EAFXShaderVariableType {
+		static getVariableType(pVar: IAFXVariableDeclInstruction): EAFXShaderVariableType {
 			var sBaseType: string = pVar.getType().getBaseType().getName();
 
 			switch(sBaseType){
@@ -327,7 +426,12 @@ module akra.fx {
 		        	return EAFXShaderVariableType.k_SamplerCUBE;
 
 		       	default: 
-		       		return EAFXShaderVariableType.k_NotVar;
+		       		if(pVar.getType().isComplex()){
+		       			return EAFXShaderVariableType.k_Complex;
+		       		}
+		       		else {
+		       			return EAFXShaderVariableType.k_NotVar;
+		       		}
 			}
 		}
 
@@ -335,24 +439,13 @@ module akra.fx {
 			return pVar.getType().isNotBaseArray();
 		}
 
-		private inline createSamplerState(): IAFXSamplerState {
-			return <IAFXSamplerState>{ 
-				textureName: "",
-				texture: null,
-				wrap_s: 0,
-				wrap_t: 0,
-				mag_filter: 0,
-				min_filter: 0
-			};
-		}
-
 		private clearSamplerState(pState: IAFXSamplerState): void {
 			pState.textureName = "";
 			pState.texture = null;
-			pState.wrap_s = 0;
-			pState.wrap_t = 0;
-			pState.mag_filter = 0;
-			pState.min_filter = 0;
+			pState.wrap_s = ETextureWrapModes.CLAMP_TO_EDGE;
+			pState.wrap_t = ETextureWrapModes.CLAMP_TO_EDGE;
+			pState.mag_filter = ETextureFilters.LINEAR;
+			pState.min_filter = ETextureFilters.LINEAR;
 		}
 	}
 }

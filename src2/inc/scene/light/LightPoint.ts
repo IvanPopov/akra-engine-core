@@ -14,7 +14,7 @@ module akra.scene.light {
 	}
 
 	export class LightPoint extends SceneNode implements ILightPoint {
-		protected _bCastShadows: bool = false;
+		protected _isShadowCaster: bool = false;
 		protected _isEnabled: bool = true;
 		protected _iMaxShadowResolution: uint = 256;
 		protected _pLightParameters: ILightParameters = new LightParameters;
@@ -24,14 +24,10 @@ module akra.scene.light {
 			return this._eLightType;
 		}
 
-		constructor(pScene: IScene3d, eType: ELightTypes = ELightTypes.UNKNOWN, isShadowCaster: bool = true, iMaxShadowResolution: int = 256){
+		constructor(pScene: IScene3d, eType: ELightTypes = ELightTypes.UNKNOWN){
 			super(pScene, EEntityTypes.LIGHT);
 
 			this._eLightType = eType;
-			//есть тени от источника или нет
-			this._bCastShadows = isShadowCaster;
-			//мкасимальный размер shadow текстуры
-			this._iMaxShadowResolution = iMaxShadowResolution;
 		}
 
 		inline get enabled(): bool{
@@ -48,15 +44,21 @@ module akra.scene.light {
 		};
 
 		inline get isShadowCaster(): bool {
-			return this._bCastShadows;
+			return this._isShadowCaster;
 		};
 
 		inline set isShadowCaster(bValue: bool) {
-			this._bCastShadows = bValue;
+			this._isShadowCaster = bValue;
 		};
 
-		create(): bool {
+		create(isShadowCaster: bool = true, iMaxShadowResolution: int = 256): bool {
 			var isOk: bool = super.create();
+
+			//есть тени от источника или нет
+			this._isShadowCaster = isShadowCaster;
+			//мкасимальный размер shadow текстуры
+			this._iMaxShadowResolution = iMaxShadowResolution;
+
 			return isOk;
 		};
 

@@ -40,6 +40,8 @@ module akra {
 								   pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
 		removeOwnComponentToTechnique(pRenderTechnique: IRenderTechnique, 
 									  pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+		hasOwnComponentInTechnique(pRenderTechnique: IRenderTechnique, 
+								   pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
 
 		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool;
 
@@ -52,7 +54,14 @@ module akra {
 		applyBufferMap(pBufferMap: IBufferMap): bool;
 		applySurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): bool;
 
-		setCurrentSceneObject(pSceneObject: ISceneObject): void;
+		_setCurrentSceneObject(pSceneObject: ISceneObject): void;
+		_setCurrentViewport(pViewport: IViewport): void;
+		_setCurrentRenderableObject(pRenderable: IRenderableObject): void;
+
+		_getCurrentSceneObject(): ISceneObject;
+		_getCurrentViewport(): IViewport;
+		_getCurrentRenderableObject(): IRenderableObject;
+
 		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void;
 
 		//API for load components/AFXEffects

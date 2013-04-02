@@ -28,14 +28,14 @@
 
 #ifdef DEBUG
 
-#define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__);
-#define TRACE(...)          logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__);
-#define INFO(...)           logger.setSourceLocation(__FILE__, __LINE__); logger.info(__VA_ARGS__);
-#define WARNING(...)        logger.setSourceLocation(__FILE__, __LINE__); logger.warning(__VA_ARGS__);
-#define ERROR(...)          logger.setSourceLocation(__FILE__, __LINE__); logger.error(__VA_ARGS__);
-#define CRITICAL(...)       logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__);
-#define CRITICAL_ERROR(...) logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__);
-#define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); logger.assert(__VA_ARGS__);
+#define LOG(...)            { logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__); }
+#define TRACE(...)          { logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__); }
+#define INFO(...)           { logger.setSourceLocation(__FILE__, __LINE__); logger.info(__VA_ARGS__); }
+#define WARNING(...)        { logger.setSourceLocation(__FILE__, __LINE__); logger.warning(__VA_ARGS__); }
+#define ERROR(...)          { logger.setSourceLocation(__FILE__, __LINE__); logger.error(__VA_ARGS__); }
+#define CRITICAL(...)       { logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__); }
+#define CRITICAL_ERROR(...) { logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__); }
+#define ASSERT(...)         { logger.setSourceLocation(__FILE__, __LINE__); logger.assert(__VA_ARGS__); }
 
 #else
 

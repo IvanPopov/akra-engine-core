@@ -18,6 +18,26 @@ module akra.render {
 			this._iPassNumber = iPass;
 		}	
 
+		inline setForeign(sName: string, fValue: float): void {
+			this._pInput.setForeign(sName, fValue);
+		}
+
+		inline setTexture(sName: string, pTexture: ITexture): void {
+			this._pInput.setTexture(sName, pTexture);
+		}
+
+		inline setUniform(sName: string, pValue: any): void {
+			this._pInput.setUniform(sName, pValue);
+		}
+
+		inline setStruct(sName: string, pValue: any): void {
+			this._pInput.setStruct(sName, pValue);
+		}
+
+		// inline setSamplerState(sName: string, pState: IAFXSamplerState): void {
+		// 	this._pInput.setSamplerState(sName, pState);
+		// }
+
 		getRenderTarget(): IRenderTarget {
 			return this._pRenderTarget;
 		}

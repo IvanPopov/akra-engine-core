@@ -403,6 +403,19 @@ module akra.core.pool {
             return null;
         }
 
+        loadImage(sFilename: string): IImg {
+             var pImg: IImg = <IImg>this.imagePool.findResource(sFilename);
+
+            if (isNull(pImg)) {
+                pImg = <IImg>this.imagePool.createResource(sFilename);
+
+                if (!pImg.isResourceLoaded()) {
+                    pImg.loadResource(sFilename);
+                }
+            }
+
+            return pImg; 
+        }
 
 
         private createDeviceResource(): void {

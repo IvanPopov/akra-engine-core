@@ -447,6 +447,7 @@ module akra.webgl {
 	        var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
 	        
 	        var pFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
+
 	        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pFramebuffer);
 
 	        var pTempWebGLTexture: WebGLTexture = null;
@@ -476,7 +477,7 @@ module akra.webgl {
 	        //Get WebGL program
 	        var pWebGLShaderProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_blit_texture_buffer"); 
 	        pWebGLRenderer.disableAllWebGLVertexAttribs();
-	        pWebGLRenderer.useWebGLProgram(pWebGLShaderProgram);
+	        pWebGLRenderer.useWebGLProgram(pWebGLShaderProgram.getWebGLProgram());
 
 	        var iPosAttrIndex: int = 0;
 	        var iTexAttrIndex: int = 0;

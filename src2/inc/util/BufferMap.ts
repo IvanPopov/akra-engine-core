@@ -116,6 +116,7 @@ module akra.util {
 #ifdef WEBGL
 			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
 				webgl.getWebGLPrimitiveType(this._ePrimitiveType), 
+				// GL_POINTS,
 				this._nStartIndex, 
 				this._nLength);
 #else
@@ -429,7 +430,7 @@ module akra.util {
 		}
 
 		findFlow(sSemantics: string) {
-			return this._pSemanticsMap[sSemantics];
+			return !isDef(this._pSemanticsMap[sSemantics]) ? (this._pSemanticsMap[sSemantics] = null) : this._pSemanticsMap[sSemantics];
 		}
 
 		clone(bWithMapping?: bool): IBufferMap {

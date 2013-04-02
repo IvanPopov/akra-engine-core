@@ -42,7 +42,7 @@ module akra.fx {
 			}
 
 			var pBlendType: IAFXVariableTypeInstruction = this._pVarBlendTypeMap[sName].blend(pVariable.getType(), eBlendMode);
-			
+
 			if(pBlendType === this._pVarBlendTypeMap[sName]){
 				return true;
 			}
@@ -218,6 +218,10 @@ module akra.fx {
 		[index: string]: IDataFlow;
 	}
 
+	export interface IAFXVaribaleListMap{
+		[index: string]: IAFXVariableDeclInstruction[];
+	}
+
 	export class AttributeBlendContainer extends VariableBlendContainer {
 		private _pSlotBySemanticMap: IntMap = null;
 		private _pFlowsBySemanticMap: IDataFlowMap = null;
@@ -232,9 +236,10 @@ module akra.fx {
 
 		// private _pOffsetBySemanticMap: IAFXVariableDeclMap = null;
 		// private _pOffsetSemantickeys: string[] = null; 
-		private _pSlotByOffsetsMap: IntMap = null;
-		private _pOffsetDefault: IntMap = null;
-		private _pOffsetKeys: string[] = null;
+		private _pOffsetVarsBySemanticMap: IAFXVaribaleListMap = null; 
+		private _pOffsetDefaultMap: IntMap = null;
+		// private _pSlotByOffsetsMap: IntMap = null;
+		// private _pOffsetKeys: string[] = null;
 
 		protected _sHash: string = "";
 
@@ -248,10 +253,6 @@ module akra.fx {
 
 		inline get totalBufferSlots(): uint {
 			return this._pVBByBufferSlots.length;
-		}
-
-		inline get offsetKeys(): string[] {
-			return this._pOffsetKeys;
 		}
 
 		constructor() {
@@ -278,12 +279,12 @@ module akra.fx {
 			}
 		}
 
-		inline getSlotByOffset(sName: string): uint {
-			return this._pSlotByOffsetsMap[sName];
+		inline getOffsetVarsBySemantic(sName: string): IAFXVariableDeclInstruction[] {
+			return this._pOffsetVarsBySemanticMap[sName];
 		} 
 
 		inline getOffsetDefault(sName: string): uint {
-			return this._pOffsetDefault[sName];
+			return this._pOffsetDefaultMap[sName];
 		}
 
 		inline getSlotBySemantic(sSemantic: string): uint {
@@ -355,21 +356,17 @@ module akra.fx {
 		}
 
 		generateOffsetMap(): void {		
-			this._pSlotByOffsetsMap = <IntMap>{};
-			this._pOffsetDefault = <IntMap>{};
-
+			this._pOffsetVarsBySemanticMap = <IAFXVaribaleListMap>{};
+			this._pOffsetDefaultMap = <IntMap>{};
+			
 			var pSemantics: string[] = this.semantics;
 
 			for(var i: uint = 0; i < pSemantics.length; i++){
 				var sSemantic: string = pSemantics[i];
 				var pAttr: IAFXVariableDeclInstruction = this.getAttribute(sSemantic);
-				var iSlot: uint = this.getSlotBySemantic(sSemantic);
-
-				if(iSlot === -1){
-					continue;
-				}
 
 				if(pAttr.isPointer()){
+					this._pOffsetVarsBySemanticMap[sSemantic] = [];
 					if(pAttr.getType().isComplex()){
 						var pAttrSubDecls: IAFXVariableDeclInstruction[] = pAttr.getSubVarDecls();
 
@@ -379,8 +376,8 @@ module akra.fx {
 							if(pSubDecl.getName() === "offset") {
 								var sOffsetName: string = pSubDecl.getRealName();
 
-								this._pSlotByOffsetsMap[sOffsetName] = iSlot;
-								this._pOffsetDefault[sOffsetName] = pSubDecl.getType().getPadding();
+								this._pOffsetVarsBySemanticMap[sSemantic].push(pSubDecl)
+								this._pOffsetDefaultMap[sOffsetName] = pSubDecl.getType().getPadding();
 							}
 						}
 					}
@@ -388,14 +385,56 @@ module akra.fx {
 						var pOffsetVar: IAFXVariableDeclInstruction = pAttr.getType()._getAttrOffset();
 						var sOffsetName: string = pOffsetVar.getRealName();
 
-						this._pSlotByOffsetsMap[sOffsetName] = iSlot;
-						this._pOffsetDefault[sOffsetName] = 0;
+						this._pOffsetVarsBySemanticMap[sSemantic].push(pOffsetVar);
+						this._pOffsetDefaultMap[sOffsetName] = 0;
 					}
-					
 				}
-			}
+				else{
+					this._pOffsetVarsBySemanticMap[sSemantic] = null;
+				}
 
-			this._pOffsetKeys = Object.keys(this._pSlotByOffsetsMap);
+			}
+			// this._pSlotByOffsetsMap = <IntMap>{};
+			// this._pOffsetDefault = <IntMap>{};
+
+			// var pSemantics: string[] = this.semantics;
+
+			// for(var i: uint = 0; i < pSemantics.length; i++){
+			// 	var sSemantic: string = pSemantics[i];
+			// 	var pAttr: IAFXVariableDeclInstruction = this.getAttribute(sSemantic);
+			// 	var iSlot: uint = this.getSlotBySemantic(sSemantic);
+
+			// 	if(iSlot === -1){
+			// 		continue;
+			// 	}
+
+			// 	if(pAttr.isPointer()){
+			// 		if(pAttr.getType().isComplex()){
+			// 			var pAttrSubDecls: IAFXVariableDeclInstruction[] = pAttr.getSubVarDecls();
+
+			// 			for(var j: uint = 0; j < pAttrSubDecls.length; j++){
+			// 				var pSubDecl: IAFXVariableDeclInstruction = pAttrSubDecls[j];
+
+			// 				if(pSubDecl.getName() === "offset") {
+			// 					var sOffsetName: string = pSubDecl.getRealName();
+
+			// 					this._pSlotByOffsetsMap[sOffsetName] = iSlot;
+			// 					this._pOffsetDefault[sOffsetName] = pSubDecl.getType().getPadding();
+			// 				}
+			// 			}
+			// 		}
+			// 		else {
+			// 			var pOffsetVar: IAFXVariableDeclInstruction = pAttr.getType()._getAttrOffset();
+			// 			var sOffsetName: string = pOffsetVar.getRealName();
+
+			// 			this._pSlotByOffsetsMap[sOffsetName] = iSlot;
+			// 			this._pOffsetDefault[sOffsetName] = 0;
+			// 		}
+					
+			// 	}
+			// }
+
+			// this._pOffsetKeys = Object.keys(this._pSlotByOffsetsMap);
 		}
 
 
@@ -412,7 +451,13 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pSemanticList.length; i++) {
 				var sSemantic: string = pSemanticList[i];
-				var pFindFlow: IDataFlow = pMap.getFlow(sSemantic, true);
+				var pFindFlow: IDataFlow = null;
+				if(this.getType(sSemantic).isComplex()){
+					pFindFlow = pMap.findFlow(sSemantic);
+				}
+				else {
+					pFindFlow = pMap.getFlow(sSemantic);
+				}
 
 				this._pFlowsBySemanticMap[sSemantic] = pFindFlow;
 

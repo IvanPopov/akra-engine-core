@@ -80,9 +80,11 @@ module akra.events {
 
 		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
-				// console.log("add destination(", iGuid, "):: ", "target: ", pTarget, "slot: ", sSlot);
-				//TODO: проверить, что объект уже добавлен с этим колбеом
-				this.findBroadcastSignalMap(iGuid, sSignal).push({target: pTarget, callback: sSlot, listener: null});
+
+				if (this.findDestinationIndexBC(iGuid, sSignal, pTarget, sSlot) === -1) {
+					this.findBroadcastSignalMap(iGuid, sSignal).push({target: pTarget, callback: sSlot, listener: null});
+				}
+
 				return true;
 			}
 			else {
@@ -97,14 +99,27 @@ module akra.events {
 			return false;
 		}
 
+		private findDestinationIndexBC(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string): int {
+		
+			var pList: IEventSlot[] = this.findBroadcastSignalMap(iGuid, sSignal);
+			
+			for (var i: int = 0; i < pList.length; ++ i) {
+				if (pList[i].target === pTarget && pList[i].callback === sSlot) {
+					return i;
+				}
+			}
+			
+			return -1;
+		}
+
 		removeDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
 				var pList: IEventSlot[] = this.findBroadcastSignalMap(iGuid, sSignal);
-				for (var i: int = 0; i < pList.length; ++ i) {
-					if (pList[i].target === pTarget && pList[i].callback === sSlot) {
-						pList.splice(i, 1);
-						return true;
-					}
+				var i: int = this.findDestinationIndexBC(iGuid, sSignal, pTarget, sSlot);
+				
+				if (i != -1) {
+					pList.splice(i, 1);
+					return true;
 				}
 			}
 			else {

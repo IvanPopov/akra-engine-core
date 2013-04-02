@@ -10,7 +10,6 @@
 #include "IAFXPassBlend.ts"
 #include "IMesh.ts"
 #include "IRenderableObject.ts"
-#include "IRenderSnapshot.ts"
 #include "ISceneObject.ts"
 #include "IBufferMap.ts"
 #include "IShaderProgram.ts"
@@ -21,13 +20,14 @@
 #include "IIndexBuffer.ts"
 #include "IRenderResource.ts"
 #include "IRenderEntry.ts"
-#include "IFrameBuffer.ts"
 #include "IViewport.ts"
 #include "ICanvas3d.ts"
+#include "Viewport.ts"
 
 #include "events/events.ts"
 
 #include "render/RenderTarget.ts"
+#include "render/RenderQueue.ts"
 
 module  akra.render {
 
@@ -64,16 +64,22 @@ module  akra.render {
 		protected _pEngine: IEngine;
 		protected _pRenderTargets: IRenderTarget[] = [];
 		protected _pPrioritisedRenderTargets: IRenderTargetPriorityMap = <IRenderTargetPriorityMap>{};
+		protected _pRenderQueue: RenderQueue = null;
+		protected _pActiveViewport: IViewport = null;
+		protected _pActiveRenderTarget: IRenderTarget = null;
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
 
 			this.connect(pEngine, SIGNAL(active), SLOT(active));
 			this.connect(pEngine, SIGNAL(inactive), SLOT(inactive));
+
+			this._pRenderQueue = new RenderQueue(this);
 		}
 
 
-		inline getEngine(): IEngine { return this. _pEngine; }
+		inline getEngine(): IEngine { return this._pEngine; }
+		
 
 	    hasCapability(eCapability: ERenderCapabilities): bool {
 	      return false;
@@ -96,9 +102,13 @@ module  akra.render {
 			return null;
 		}
 
-		clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void {
+		_beginRender(): void { }
+		
+		_renderEntry(pEntry: IRenderEntry): void { }
 
-		}
+		_endRender(): void { }
+
+		clearFrameBuffer(iBuffer: int, cColor: IColor, fDepth: float, iStencil: uint): void { }
 
  		attachRenderTarget(pTarget: IRenderTarget): bool {
  			if (this._pRenderTargets.indexOf(pTarget) != -1) {
@@ -170,24 +180,59 @@ module  akra.render {
 					pTarget = pTargetList[j];
 					
 					if (pTarget.isActive() && pTarget.isAutoUpdated()) {
-						pTarget.update(); 
+						pTarget.update();
 					}
 				}
 			}
 			
 		}
 
-		_setViewport(pViewport: IViewport): void {
+		_setViewport(pViewport: IViewport): void {}
 
+		_setViewportForRender(pViewport: IViewport): void {
+			if(pViewport !== this._pActiveViewport || pViewport.isUpdated()){
+				this._setViewport(pViewport);
+
+				pViewport._clearForFrame();
+
+				var pState: IViewportState = pViewport._getViewportState();
+
+				this._setCullingMode(pState.cullingMode);
+	        	this._setDepthBufferParams(pState.depthTest, pState.depthWrite, 
+	        							   pState.depthFunction, pState.clearDepth);
+			}
 		}
 
 		_getViewport(): IViewport {
-			return null;
+			return this._pActiveViewport;
 		}
+
+		_setRenderTarget(pTarget: IRenderTarget): void {}
+
+		_setCullingMode(eMode: ECullingMode): void {}
+
+        _setDepthBufferParams(bDepthTest: bool, bDepthWrite: bool, 
+        					  eDepthFunction: ECompareFunction, fClearDepth?: float): void {}
 
 		getDefaultCanvas(): ICanvas3d {
 			return null;
 		}
+
+		inline createEntry(): IRenderEntry {
+			return this._pRenderQueue.createEntry();
+		}
+
+        inline releaseEntry(pEntry: IRenderEntry): void {
+        	this._pRenderQueue.releaseEntry(pEntry);
+        }
+
+        inline pushEntry(pEntry: IRenderEntry): void{
+        	this._pRenderQueue.push(pEntry);
+        }
+
+        inline executeQueue(): void {
+        	this._pRenderQueue.execute();
+        }
 
 		CREATE_EVENT_TABLE(Renderer);
 		signal active(pEngine: IEngine): void {

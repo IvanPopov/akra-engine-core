@@ -1356,7 +1356,6 @@ module akra.math {
 			// 	//frustum projection
 			// 	return false;
 			// }
-			 
 			return ((this.data[__44] === 1) ? true : false);
 		};
 

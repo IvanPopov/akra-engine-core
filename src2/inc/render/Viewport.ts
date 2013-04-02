@@ -5,7 +5,6 @@
 #include "ICamera.ts"
 #include "util/Color.ts"
 #include "geometry/Rect2d.ts"
-#include "IFrameBuffer.ts"
 #include "events/events.ts"
 #include "util/ObjectArray.ts"
 
@@ -28,13 +27,26 @@ module akra.render {
 
 		protected _iZIndex: int;
 
-		protected _cBackColor: IColor = new Color(Color.BLACK);
+		protected _pViewportState: IViewportState = {
+			cullingMode: ECullingMode.NONE,
 
-		protected _fDepthClearValue: float = 1.;
+			depthTest: true,
+			depthWrite: true,
+			depthFunction: ECompareFunction.LESS,
+
+			clearColor: new Color(0, 0, 0, 0),
+			clearDepth: 1.,
+			clearBuffers: EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH
+		};
+
+		// protected _cBackColor: IColor = new Color(Color.BLACK);
+
+		// protected _fDepthClearValue: float = 1.;
 
 		protected _bClearEveryFrame: bool = true;
+		protected _bNewFrame: bool = false;
 
-		protected _iClearBuffers: int = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH;
+		// protected _iClearBuffers: int = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH;
 
 		protected _bUpdated: bool = false;
 
@@ -70,11 +82,11 @@ module akra.render {
         inline get actualWidth(): uint { return this._iActWidth; }
         inline get actualHeight(): uint { return this._iActHeight; }
 
-        inline get backgroundColor(): IColor { return this._cBackColor; }
-        inline set backgroundColor(cColor: IColor) { this._cBackColor = cColor; }
+        inline get backgroundColor(): IColor { return this._pViewportState.clearColor; }
+        inline set backgroundColor(cColor: IColor) { this._pViewportState.clearColor.set(cColor); }
 
-        inline get depthClear(): float { return this._fDepthClearValue; }
-        inline set depthClear(fDepthClearValue: float) { this._fDepthClearValue = fDepthClearValue; }
+        inline get depthClear(): float { return this._pViewportState.clearDepth; }
+        inline set depthClear(fDepthClearValue: float) { this._pViewportState.clearDepth = fDepthClearValue; }
 
 
 		constructor (pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
@@ -101,20 +113,25 @@ module akra.render {
 			}
 		}
 
+		inline newFrame(): void {
+			this._bNewFrame = true;
+		}
 
-		clear(iBuffers: uint = 1, cColor: IColor = Color.BLACK, iDepth: float = 1.): void {
+
+		clear(iBuffers: uint = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH,
+			  cColor: IColor = Color.BLACK, fDepth: float = 1., iStencil: uint = 0): void {
 			
 			var pRenderer: IRenderer = this._pTarget.getRenderer();
 			
 			if (pRenderer) {
 				var pCurrentViewport: IViewport = pRenderer._getViewport();
 				
-				if (pCurrentViewport && pCurrentViewport == this) {
-					pRenderer.clearFrameBuffer(iBuffers, cColor, iDepth);
+				if (pCurrentViewport && pCurrentViewport === this) {
+					pRenderer.clearFrameBuffer(iBuffers, cColor, fDepth, iStencil);
 				}
 				else if (pCurrentViewport) {
 					pRenderer._setViewport(this);
-					pRenderer.clearFrameBuffer(iBuffers, cColor, iDepth);
+					pRenderer.clearFrameBuffer(iBuffers, cColor, fDepth, iStencil);
 					pRenderer._setViewport(pCurrentViewport);
 				}
 			}
@@ -183,10 +200,9 @@ module akra.render {
         	return new geometry.Rect2d(<float>this._iActLeft, <float>this._iActTop, <float>this._iActWidth, <float>this._iActHeight);
         }
 
-        //iBuffers=FBT_COLOUR|FBT_DEPTH
-        setClearEveryFrame(isClear: bool, iBuffers?: uint): void {
+        setClearEveryFrame(isClear: bool, iBuffers?: uint = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH): void {
         	this._bClearEveryFrame = isClear;
-			this._iClearBuffers = iBuffers;
+			this._pViewportState.clearBuffers = iBuffers;
         }
 
         inline getClearEveryFrame(): bool {
@@ -194,7 +210,17 @@ module akra.render {
         }
 
         inline getClearBuffers(): uint {
-        	return this._iClearBuffers;
+        	return this._pViewportState.clearBuffers;
+        }
+
+        setDepthParams(bDepthTest: bool, bDepthWrite: bool, eDepthFunction: ECompareFunction): void {
+        	this._pViewportState.depthTest = bDepthTest;
+        	this._pViewportState.depthWrite = bDepthWrite;
+        	this._pViewportState.depthFunction = eDepthFunction;
+        }
+
+        setCullingMode(eCullingMode: ECullingMode): void {
+        	this._pViewportState.cullingMode = eCullingMode;
         }
 
         inline setAutoUpdated(bValue: bool = true): void { this._isAutoUpdated = bValue; }
@@ -227,23 +253,34 @@ module akra.render {
 		}
 
 		update(): void {
+			this.newFrame();
+
 			if (this._pCamera) {
 				this.renderAsNormal(this._csDefaultRenderMethod, this._pCamera);
 			}
+
+			this.getTarget().getRenderer().executeQueue();
 		}
 
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
-				var pVisibleObjects: IObjectArray = pCamera.display();
-				var pRenderable: IRenderableObject;
+			var pVisibleObjects: IObjectArray = pCamera.display();
+			var pRenderable: IRenderableObject;
 
-				for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
-					var pSceneObject: ISceneObject = pVisibleObjects.value(i);
-					pRenderable = pSceneObject.getRenderable();
+			// ERROR("-------------------------IMPORTANT STRAT-----------------");
+
+			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
+				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
+
+				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
+					pRenderable = pSceneObject.getRenderable(j)
 
 					if (!isNull(pRenderable)) {
-						pRenderable.render(csMethod, pSceneObject);
+						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}
+			}
+
+			// ERROR("-------------------------IMPORTANT END-----------------");
 		}
 
 
@@ -257,6 +294,19 @@ module akra.render {
 
         _getNumRenderedPolygons(): uint {
         	return this._pCamera? this._pCamera._getNumRenderedFaces(): 0;
+        }
+
+        inline _getViewportState(): IViewportState {
+        	return this._pViewportState;
+        }
+
+        _clearForFrame(): void {
+        	if(this._bClearEveryFrame && this._bNewFrame){
+        		this.clear(this._pViewportState.clearBuffers, 
+        				   this._pViewportState.clearColor,
+        				   this._pViewportState.clearDepth);
+        		this._bNewFrame = false;
+        	}
         }
 
         CREATE_EVENT_TABLE(Viewport);
