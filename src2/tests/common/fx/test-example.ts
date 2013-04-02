@@ -16,9 +16,9 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), (pEngine: IEngine, pDeps: IDependens) => {
-			// var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 			// var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/cube.dae");
-			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/hero.DAE");
+			// var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/hero.DAE");
 			var pScene: IScene3d = pEngine.getScene();
 			var pModelRoot: ISceneNode = pScene.createNode("model-root");
 			pController = animation.createController();
@@ -62,8 +62,10 @@ module akra {
 				// pBoxNode.addRotationByXYZAxis(Math.PI/6, Math.PI/6, 0);
 
 				pEngine.bind(SIGNAL(frameStarted), () => {
+					
 					pModelRoot.addRelRotationByXYZAxis(0.00, 0.1, 0);
-					//pController.update(pEngine.time);
+					pController.update(pEngine.time);
+
 				});
 
 

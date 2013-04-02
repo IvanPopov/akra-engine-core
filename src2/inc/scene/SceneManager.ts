@@ -32,7 +32,7 @@ module akra.scene {
             // internal delay counter
             this._fUpdateTimeCount += this._pEngine.getTimer().elapsedTime + 2. * this._fMillisecondsPerTick;
             // is there an update ready to happen?
-            
+
             var fUpdateTime: float = this._fUpdateTimeCount;
 
             while (this._fUpdateTimeCount > this._fMillisecondsPerTick) {
