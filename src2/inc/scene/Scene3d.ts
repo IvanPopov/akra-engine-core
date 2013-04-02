@@ -92,7 +92,9 @@ module akra.scene {
 		}
 
 		recursiveUpdate(): void {
+			this.beforeUpdate();
 			this._isUpdated = this._pRootNode.recursiveUpdate();
+			this.postUpdate();
 		}
 
 		updateCamera(): bool {
@@ -326,6 +328,8 @@ module akra.scene {
 	
 		BROADCAST(displayListAdded, CALL(list, index));
 		BROADCAST(displayListRemoved, CALL(list, index));
+		BROADCAST(beforeUpdate, VOID);
+		BROADCAST(postUpdate, VOID);
 
 		// BROADCAST(nodeAttachment, CALL(pNode));
 		// BROADCAST(nodeDetachment, CALL(pNode));

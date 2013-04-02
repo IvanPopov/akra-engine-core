@@ -105,8 +105,9 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 
     pixelData.position = unproj(projMat, float3(IN.screenPosition.xy,depth));
     if(data0.w==0.){
-        //discard;
-        return float4(0.,1.,0.,1.);
+        discard;
+        //result_color = float4(0.,1.,0.,1.);
+        //return result_color; 
     }
     //pixelData.position = data1.yzw;
 

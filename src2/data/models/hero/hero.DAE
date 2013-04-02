@@ -278,8 +278,8 @@
               <texture texture="Default_Material_diffuse_fin_fix_png-sampler" texcoord="CHANNEL1"/>
             </diffuse>
             <specular>
-              <!-- <texture texture="Default_Material_specular_png-sampler" texcoord="CHANNEL1"/> -->
-              <color>0.5 0.5 0.5 1</color>
+              <texture texture="Default_Material_specular_png-sampler" texcoord="CHANNEL1"/>
+              <!-- <color>0.5 0.5 0.5 1</color> -->
             </specular>
             <shininess>
               <float>10</float>

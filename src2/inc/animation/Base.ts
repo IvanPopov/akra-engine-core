@@ -81,7 +81,7 @@ module akra.animation {
 				}
 
 				pTransform = pFrame.toMatrix();
-				pTarget.localMatrix.set(pTransform);
+				pTarget.localMatrix = pTransform;
 			};
 
 		}

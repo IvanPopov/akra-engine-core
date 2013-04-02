@@ -29,6 +29,7 @@ module akra.scene {
 			if (!isNull(pMesh)) {
 				this.accessLocalBounds().set(pMesh.boundingBox);
 				this._pMesh = pMesh;
+				pMesh.connect(this.scene, SIGNAL(postUpdate), SLOT(update));
 			}
 		}
 
@@ -70,10 +71,11 @@ module akra.scene {
 		}
 
 		update(): bool {
-			return super.update() && (!isNull(this._pMesh) ? this._pMesh.update() : false);
+			return super.update();
 		}
 
 	}
+	var iUpdatedOnce: int = 0;
 
 	export inline function isModel(pEntity: IEntity): bool {
 		return pEntity.type === EEntityTypes.MODEL;

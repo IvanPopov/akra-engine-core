@@ -199,12 +199,10 @@ module akra.core.pool.resources {
 
             var pImage: IImg = this.getManager().loadImage(sFilename);
             
-            
-            
             if (pImage.isResourceLoaded()) {
                 return this.loadImage(pImage);
             }
-            LOG("Texture::loadResource(" + sFilename + ")", pImage);
+            // LOG("Texture::loadResource(" + sFilename + ")", pImage);
             this.connect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
             return true;
         }

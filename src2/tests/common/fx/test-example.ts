@@ -16,21 +16,27 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), (pEngine: IEngine, pDeps: IDependens) => {
-			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			// var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 			// var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/cube.dae");
-			// var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/hero.DAE");
+			var pModel: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/hero.DAE");
 			var pScene: IScene3d = pEngine.getScene();
 			var pModelRoot: ISceneNode = pScene.createNode("model-root");
 			pController = animation.createController();
 
 			pModelRoot.attachToParent(pScene.getRootNode());
-			pModelRoot.scale(3.);
-			pModelRoot.addPosition(0, -1.5, 0);
+			pModelRoot.scale(2.);
+			pModelRoot.addPosition(0, -1., 0);
 
 			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
 				pModel.attachToScene(pModelRoot, pController);
 
 				pController.attach(pModelRoot);
+
+				var pContainer: IAnimationContainer = animation.createContainer();
+
+				// pContainer.setAnimation(pController.active);
+				// pContainer.useLoop(true);
+				// pController.addAnimation(pContainer);
 
 				var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 
@@ -61,10 +67,11 @@ module akra {
 				// pBoxNode.scale(1/10);
 				// pBoxNode.addRotationByXYZAxis(Math.PI/6, Math.PI/6, 0);
 
-				pEngine.bind(SIGNAL(frameStarted), () => {
-					
-					pModelRoot.addRelRotationByXYZAxis(0.00, 0.1, 0);
-					pController.update(pEngine.time);
+
+
+				pScene.bind(SIGNAL(beforeUpdate), () => {
+					pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+					// pController.update(pEngine.time);
 
 				});
 
@@ -72,6 +79,9 @@ module akra {
 
 				
 				pEngine.exec();
+				// LOG("BEFORE UPDATE CONTROLLER");
+
+				// LOG("AFTER UPDATE CONTROLLER");
 				// pEngine.renderFrame();
 
 				// // WARNING("RENDER FARME 1");
@@ -80,7 +90,7 @@ module akra {
 
 				// pEngine.renderFrame();
 
-				LOG(pCamera);
+				// LOG(pCamera);
 			});
 
 			

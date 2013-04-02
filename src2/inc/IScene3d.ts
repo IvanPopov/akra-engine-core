@@ -57,6 +57,9 @@ module akra {
 		signal displayListAdded(pList: IDisplayList, index: uint): void;
 		signal displayListRemoved(pList: IDisplayList, index: uint): void;
 
+		signal beforeUpdate(): void;
+		signal postUpdate(): void;
+
 		_render(pCamera: ICamera, pViewport: IViewport): void;
 	}
 }

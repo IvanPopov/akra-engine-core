@@ -63,9 +63,15 @@ module akra.core {
 
 		private _pGamepads: IGamepadMap = null;
 
+		private _fElapsedAppTime: float = 0.0;
+
 
 		inline get time(): float {
 			return this._pTimer.appTime;
+		}
+
+		inline get elapsedTime(): float {
+			return this._fElapsedAppTime;
 		}
 
 		constructor (pOptions: IEngineOptions = null) {
@@ -225,9 +231,9 @@ module akra.core {
 		inline getTimer(): IUtilTimer { return <IUtilTimer>this._pTimer; }
 
 		renderFrame(): bool {
-		    var fElapsedAppTime: float 	= this._pTimer.elapsedTime;
+		    this._fElapsedAppTime = this._pTimer.elapsedTime;
 
-		    if (0. == fElapsedAppTime && this._isFrameMoving) {
+		    if (0. == this._fElapsedAppTime && this._isFrameMoving) {
 		        return true;
 		    }
 
@@ -243,6 +249,8 @@ module akra.core {
 	    	this.frameStarted();
 		    this._pRenderer._updateAllRenderTargets();
 		    this.frameEnded();
+
+		    // this._pSceneManager.preUpdate();
 
 		    // LOG("frame rendered();");
 			return true;
