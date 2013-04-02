@@ -41,6 +41,7 @@ module akra {
 		SLIDER,
 		CHECKBOX,
 		CHECKBOX_LIST,
+		VIEWPORT_STATS,
 		
 		GRAPH,
 		GRAPH_NODE,
