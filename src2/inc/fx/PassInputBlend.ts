@@ -41,6 +41,14 @@ module akra.fx {
 		private _iLastPassBlendId: uint = 0;
 		private _iLastShaderId: uint = 0;
 
+		private _pMaterialContainer: any = {
+			"DIFFUSE" 	: null,
+			"AMBIENT" 	: null,
+			"SPECULAR" 	: null,
+			"EMISSIVE" 	: null,
+			"SHININESS" : 1.
+		};
+
 
 		samplers: IAFXSamplerStateMap = null;
 		samplerArrays: IAFXSamplerStateListMap = null; 
@@ -187,14 +195,15 @@ module akra.fx {
 			}
 
 			var pMaterial: IMaterial = pSurfaceMaterial.material;
+			var pMatContainer: any = this._pMaterialContainer;
 
-			this.setStruct("MATERIAL", {
-				"DIFFUSE" 	: util.colorToVec4(pMaterial.diffuse),
-				"AMBIENT" 	: util.colorToVec4(pMaterial.ambient),
-				"SPECULAR" 	: util.colorToVec4(pMaterial.specular),
-				"EMISSIVE" 	: util.colorToVec4(pMaterial.emissive),
-				"SHININESS" : pMaterial.shininess
-			});
+			pMatContainer.DIFFUSE = util.colorToVec4(pMaterial.diffuse);
+			pMatContainer.AMBIENT = util.colorToVec4(pMaterial.ambient);
+			pMatContainer.SPECULAR = util.colorToVec4(pMaterial.specular);
+			pMatContainer.EMISSIVE = util.colorToVec4(pMaterial.emissive);
+			pMatContainer.SHININESS = pMaterial.shininess;
+
+			this.setStruct("MATERIAL", pMatContainer);
 
 			this.setSamplerTexture("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
 			this.setSamplerTexture("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);

@@ -34,6 +34,11 @@ module akra.core.pool.resources {
     		}
     	}
 
+    	createResource(): bool {
+    		this.notifyLoaded();
+    		return super.createResource();
+    	}
+
     	setTexture(iIndex: int, iTextureHandle: int, iTexcoord: int = 0): bool;
     	setTexture(iIndex: int, sTexture: string, iTexcoord: int = 0): bool;
     	setTexture(iIndex: int, pTexture: ITexture, iTexcoord: int = 0): bool;

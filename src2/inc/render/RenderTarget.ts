@@ -340,12 +340,10 @@ module akra.render {
 
 			var fFrameTime: float = fThisTime - this._fLastTime;
 
-			this._fLastTime = fThisTime;
-
 			this._pFrameStats.time.best = math.min(this._pFrameStats.time.best, fFrameTime);
 			this._pFrameStats.time.worst = math.min(this._pFrameStats.time.worst, fFrameTime);
 
-			if (fThisTime - this._fLastTime > 1) {
+			if (fThisTime - this._fLastTime > 1.) {
 				this._pFrameStats.fps.last = <float>this._iFrameCount / <float>(fThisTime - this._fLastSecond);
 
 				if (this._pFrameStats.fps.avg == 0.) {
@@ -360,6 +358,8 @@ module akra.render {
 					this._fLastSecond = fThisTime;
 					this._iFrameCount = 0;
 				}
+
+				this._fLastTime = fThisTime;
 			}
 		}
 

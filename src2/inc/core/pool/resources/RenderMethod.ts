@@ -9,6 +9,11 @@ module akra.core.pool.resources {
 		protected _pEffect: IEffect = null;
 		protected _pSurfaceMaterial: ISurfaceMaterial = null;
 		
+		// createResource(): bool {
+		// 	this.notifyLoaded();
+		// 	return true;
+		// }
+
 		inline get effect(): IEffect{
 			return this._pEffect;
 		}

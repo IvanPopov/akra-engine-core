@@ -70,9 +70,6 @@ module akra.scene {
 #endif
 		}
 
-		update(): bool {
-			return super.update();
-		}
 
 	}
 	var iUpdatedOnce: int = 0;
