@@ -210,11 +210,11 @@ module akra.util {
 		}
 
 		inline isUpdated(): bool {
-			return TEST_BIT(this._iStateFlags, EEntityStates.k_Updated);
+			return TEST_ALL(this._iStateFlags, EEntityStates.k_Updated);
 		}
 
 		inline hasUpdatedSubNodes(): bool {
-			return TEST_BIT(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
+			return TEST_ALL(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
 		}
 
 		recursiveUpdate(): bool {
@@ -235,7 +235,7 @@ module akra.util {
 		        // bUpdated = true;
 		    }
 
-		    return (this._iStateFlags != 0);/*bUpdated*//* */
+		    return (this._iStateFlags != 0);/*bUpdated */
 		}
 
 		recursivePreUpdate(): void {
@@ -254,7 +254,7 @@ module akra.util {
 
 
 		prepareForUpdate(): void {
-			//this._iStateFlags = 0;
+			this._iStateFlags = 0;
 		};
 
 		/** Parent is not undef */

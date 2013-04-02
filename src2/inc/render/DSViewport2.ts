@@ -110,6 +110,7 @@ module akra.render {
 			// pDefferedView.renderMethod = pDSMethod;
 
 			this.setClearEveryFrame(false);
+			this.setDepthParams(false, false, 0);
 			
 
 			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);

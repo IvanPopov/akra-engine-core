@@ -471,6 +471,7 @@ module akra.fx {
 				pMaker = pPassBlend.generateFXMaker(pPassInput, 
 													this._pCurrentSurfaceMaterial, 
 													this._pCurrentBufferMap);
+
 				//TODO: generate additional shader params and get shader program
 			}
 

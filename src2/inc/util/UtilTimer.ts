@@ -59,6 +59,7 @@ module akra.util {
 		    // Return the elapsed time
 		    if (eCommand == EUtilTimerCommands.TIMER_GET_ELAPSED_TIME) {
 		        fElapsedTime = (iTime - this.iLastElapsedTime) / this.fTicksPerSec;
+		        // LOG(iTime - this.iLastElapsedTime,  this.fTicksPerSec, fElapsedTime);
 		        this.iLastElapsedTime = iTime;
 		        return fElapsedTime;
 		    }

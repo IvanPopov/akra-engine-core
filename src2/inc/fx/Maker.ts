@@ -375,7 +375,7 @@ module akra.fx {
 					//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					//TODO: need to reset names of samlers
-					var sSampler: string = pSampler.getSemantic();
+					var sSampler: string = pSampler.getSemantic() || pSampler.getName();
 
 					this._pRealSamplersFromInput.push(sSampler);
 					this._pRealSamplersNames.push(sRealSamplerName);
