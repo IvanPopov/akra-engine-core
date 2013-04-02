@@ -62,6 +62,8 @@ module akra.fx {
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 
 		private _pComposerState: any = { mesh : { isSkinning : false } };
+
+		// private _pRenderTargetA
 		//private _pPreRenderState: IPreRenderState = null;
 
 		// private _pSamplerBlender: SamplerBlender = null;
@@ -437,6 +439,8 @@ module akra.fx {
 
 			var pPassBlend: IAFXPassBlend = null;
 			var pMaker: IAFXMaker = null;
+
+			this.applySystemUnifoms(pPassInput);
 			
 			if(!pPassInput._isNeedToCalcShader()){
 				//TODO: set pShader to shader program by id
@@ -551,6 +555,30 @@ module akra.fx {
 			// this._pPreRenderState.flows.clear(false);
 
 			// this._pPreRenderState.isClear = true;
+		}
+
+		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
+			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
+			var pViewport: IViewport = this._getCurrentViewport();
+			var pRenderable: IRenderableObject = this._getCurrentRenderableObject();
+
+			if(!isNull(pSceneObject)){
+				pPassInput.setUniform("MODEL_MATRIX", pSceneObject.worldMatrix);
+			}
+
+			if(!isNull(pViewport)){
+				var pCamera: ICamera = pViewport.getCamera();
+				pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
+				pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
+			}
+
+			if(!isNull(pRenderable)){
+				if(render.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()){
+					pPassInput.setUniform("BIND_SHAPE_MATRIX", (<IMeshSubset>pRenderable).skin.getBindMatrix());
+				}
+
+				pPassInput.setUniform("RENDER_OBJECT_ID", pRenderable.getGuid());
+			}
 		}
 	}
 }

@@ -67,6 +67,8 @@ module  akra.render {
 		protected _pRenderQueue: RenderQueue = null;
 		protected _pActiveViewport: IViewport = null;
 		protected _pActiveRenderTarget: IRenderTarget = null;
+		/** TODO: FIX RENDER TARGET LOCK*/
+		protected _bLockRenderTarget: bool = false;
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
@@ -232,6 +234,18 @@ module  akra.render {
 
         inline executeQueue(): void {
         	this._pRenderQueue.execute();
+        }
+
+        protected inline lockRenderTarget(): void {
+        	this._bLockRenderTarget = true;
+        }
+
+        protected inline unlockRenderTarget(): void {
+        	this._bLockRenderTarget = true;
+        }
+
+        protected inline isLockRenderTarget(): bool {
+        	return this._bLockRenderTarget;
         }
 
 		CREATE_EVENT_TABLE(Renderer);

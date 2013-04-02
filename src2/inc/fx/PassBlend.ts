@@ -147,7 +147,6 @@ module akra.fx {
 			// var pSamplerBlender: SamplerBlender = this._pDefaultSamplerBlender;
 
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
-			this.applySystemUnifoms(pPassInput);
 
 			var iTime: uint = now();
 
@@ -206,30 +205,6 @@ module akra.fx {
 			}
 
 			return true;
-		}
-
-		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
-			var pSceneObject: ISceneObject = this._pComposer._getCurrentSceneObject();
-			var pViewport: IViewport = this._pComposer._getCurrentViewport();
-			var pRenderable: IRenderableObject = this._pComposer._getCurrentRenderableObject();
-
-			if(!isNull(pSceneObject)){
-				pPassInput.setUniform("MODEL_MATRIX", pSceneObject.worldMatrix);
-			}
-
-			if(!isNull(pViewport)){
-				var pCamera: ICamera = pViewport.getCamera();
-				pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
-				pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
-			}
-
-			if(!isNull(pRenderable)){
-				if(render.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()){
-					pPassInput.setUniform("BIND_SHAPE_MATRIX", (<IMeshSubset>pRenderable).skin.getBindMatrix());
-				}
-
-				pPassInput.setUniform("RENDER_OBJECT_ID", pRenderable.getGuid());
-			}
 		}
 
 		private addPass(pPass: IAFXPassInstruction): bool {

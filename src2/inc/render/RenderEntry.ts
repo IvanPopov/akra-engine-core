@@ -8,6 +8,7 @@ module akra.render {
 	export class RenderEntry implements IRenderEntry {
 		//target of rendering
 		viewport: IViewport = null;
+		renderTarget: IRenderTarget = null;
 		//wraper for shader program
 		maker: IAFXMaker = null;
 		//complex info of native shader data
@@ -22,6 +23,7 @@ module akra.render {
 		clear(): void {
 			this.maker._releaseShaderInput(this.input);
 			this.viewport = null;
+			this.renderTarget = null;
 			this.bufferMap = null;
 			this.input = null;
 			this.maker = null;

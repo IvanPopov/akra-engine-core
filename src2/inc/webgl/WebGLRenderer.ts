@@ -100,8 +100,19 @@ module akra.webgl {
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
 
 			// console.log(pEntry);
+			if(!isNull(pEntry.renderTarget)){
+				this._setRenderTarget(pEntry.renderTarget);
+				this.lockRenderTarget();
 
-			this._setViewportForRender(pViewport);
+				this._setViewportForRender(pViewport);
+
+				this.unlockRenderTarget();
+			}
+			else {
+				this._setViewportForRender(pViewport);
+			}	
+
+
 
 			//WARNING(this._pWebGLContext.getFramebufferAttachmentParameter(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME));
 			
@@ -195,6 +206,10 @@ module akra.webgl {
         _setRenderTarget(pTarget: IRenderTarget): void {
         	//May be unbind()
         	
+        	if(this.isLockRenderTarget()){
+        		return;
+        	}
+
         	this._pActiveRenderTarget = pTarget;
 
         	if(!isNull(pTarget)){

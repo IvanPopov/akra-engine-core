@@ -1,8 +1,8 @@
 provide akra.system;
 
-texture tex0 : SCREEN_TEXTURE;
+texture tex0 : INPUT_TEXTURE;
 
-sampler screenSampler : SCREEN_SAMPLER = sampler_state
+sampler screenSampler : INPUT_SAMPLER = sampler_state
 {
 	Texture = <tex0>;
 };
