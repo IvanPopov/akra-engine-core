@@ -7,9 +7,6 @@
 
 #include "util/Color.ts"
 
-#include "raphael.d.ts"
-
-/// @script ui/3d-party/raphael/raphael-min.js
 
 module akra.ui.graph {
 	export class Route implements IUIGraphRoute {

@@ -37,6 +37,7 @@ module akra {
 		PANEL,
 		LABEL,
 		TREE,
+		TREE_NODE,
 		CANVAS,
 		SLIDER,
 		CHECKBOX,

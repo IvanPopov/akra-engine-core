@@ -9,33 +9,12 @@
 #include "io/ajax.ts"
 #include "ConnectionArea.ts"
 
-#include "swig.d.ts"
-/// @script ui/3d-party/swig/swig.pack.min.js
+
 
 
 module akra.ui.graph {
 
-	export function template(pNode: IUIComponent, sUrl: string, pData: any = null): void {
-		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
-		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sUrl});
-		var sTplData: string = fnTemplate(pData);
-
-		pNode.el.html(sTplData);
-
-		pNode.el.find("component").each(function(i: int, pComponentElement: HTMLElement) {
-			var $comp: JQuery = $(this);
-			var sType: string = $comp.attr("type");
-			var sName: string = $comp.attr("name");
-
-			var pComponent: IUIComponent = pNode.createComponent(sType, {show: false, name: sName});
-				
-			$comp.before(pComponent.$element);
-			$comp.remove();
-
-			pComponent._createdFrom($comp);
-		});
-	}
-
+	
 	export interface IGraphNodeAreaMap {
 		[name: string]: IUIGraphConnectionArea;
 	}

@@ -30,7 +30,7 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph, pBlender: IAnimationBlend = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_BLENDER);
 
-			graph.template(this, "ui/templates/AnimationBlender.tpl");
+			template(this, "ui/templates/AnimationBlender.tpl");
 
 			this.init();
 

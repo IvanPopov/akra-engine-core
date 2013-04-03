@@ -62,7 +62,6 @@ module akra {
 		 * Weights.
 		 */
 		setWeights(pWeights: Float32Array): bool;
-		getWeights(): IVertexData;
 
 		/**
 		 * разметка влияний на вершины

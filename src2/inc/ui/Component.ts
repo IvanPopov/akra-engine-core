@@ -5,10 +5,39 @@
 #include "DNDNode.ts"
 #include "io/ajax.ts"
 
+#include "raphael.d.ts"
+
+/// @script ui/3d-party/raphael/raphael-min.js
+
+#include "swig.d.ts"
+/// @script ui/3d-party/swig/swig.pack.min.js
+
 /// @dep ../data/ui
 /// @css ui/css/main.css
 
 module akra.ui {
+	export function template(pNode: IUIComponent, sUrl: string, pData: any = null): void {
+		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
+		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sUrl});
+		var sTplData: string = fnTemplate(pData);
+
+		pNode.el.html(sTplData);
+
+		pNode.el.find("component").each(function(i: int, pComponentElement: HTMLElement) {
+			var $comp: JQuery = $(this);
+			var sType: string = $comp.attr("type");
+			var sName: string = $comp.attr("name");
+
+			var pComponent: IUIComponent = pNode.createComponent(sType, {show: false, name: sName});
+				
+			$comp.before(pComponent.$element);
+			$comp.remove();
+
+			pComponent._createdFrom($comp);
+		});
+	}
+
+	
 	export var COMPONENTS: { [type: string]: IUIComponentType; } = <any>{};
 
 	export class Component extends DNDNode implements IUIComponent {

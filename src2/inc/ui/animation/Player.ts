@@ -33,7 +33,7 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph, pContainer: IAnimationContainer = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_PLAYER);
 
-			graph.template(this, "ui/templates/AnimationPlayer.tpl");
+			template(this, "ui/templates/AnimationPlayer.tpl");
 
 			this.init();
 
