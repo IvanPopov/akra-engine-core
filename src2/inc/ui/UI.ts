@@ -17,6 +17,7 @@
 #include "Checkbox.ts"
 #include "CheckboxList.ts"
 #include "Window.ts"
+#include "RenderTargetStats.ts"
 
 #define UI_GRAPH
 #define UI_ANIMATION

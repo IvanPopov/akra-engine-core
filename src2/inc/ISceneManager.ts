@@ -10,10 +10,13 @@ module akra {
     IFACE(IEngine);
     IFACE(IScene3d);
     IFACE(IScene2d);
+    IFACE(IUI);
 
     export interface ISceneManager extends IManager {
         createScene3D(): IScene3d;
-        createScene2D(): IScene2d;
+        // createScene2D(): IScene2d;
+
+        createUI(): IUI;
 
         getEngine(): IEngine;
 

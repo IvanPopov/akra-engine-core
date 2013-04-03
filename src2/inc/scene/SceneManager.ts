@@ -15,7 +15,7 @@ module akra.scene {
         private _pSceneList: IScene[] = [];
 
         private _fUpdateTimeCount: float = 0.;
-        private _fMillisecondsPerTick: float = 0.0333;
+        private _fMillisecondsPerTick: float = 0.01666; /*60 updates per frame*/
         
 
         constructor (pEngine: IEngine) {
@@ -90,6 +90,15 @@ module akra.scene {
 
         createScene2D(): IScene2d {
             return null;
+        }
+
+        createUI(): IUI {
+#ifdef GUI
+                var pUI: IUI = new ui.UI(this);
+                return pUI;
+#else
+                return null;
+#endif
         }
 
         getScene3D(iScene: uint = 0): IScene3d {
