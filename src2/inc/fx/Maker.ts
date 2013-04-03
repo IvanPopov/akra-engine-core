@@ -71,6 +71,11 @@ module akra.fx {
 			var eType: EAFXShaderVariableType = this.getType(sName);
 			var iLength: int = this.getLength(sName);
 
+			if(webgl.isANGLE && (!isDef(eType) || eType === EAFXShaderVariableType.k_NotVar)){
+				this._pRealUniformTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
+				return;
+			}
+
 			if (iLength > 0) {
 				this.applyUnifromArray(sName, eType, pValue);
 			}

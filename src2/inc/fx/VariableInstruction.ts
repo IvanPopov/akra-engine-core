@@ -182,7 +182,13 @@ module akra.fx {
                 sCode += " " + this.getNameId().toFinalCode();
                 
                 if(this.getType().isNotBaseArray()){
-                    sCode += "[" + this.getType().getLength() + "]";
+                    var iLength: uint = this.getType().getLength();
+                    if(webgl.isANGLE && iLength === 1 && this.getType().isComplex()) {
+                        sCode += "[" + 2 + "]";
+                    }
+                    else {
+                        sCode += "[" + iLength + "]";
+                    }
                 }
 
                 if (this.hasInitializer() && 

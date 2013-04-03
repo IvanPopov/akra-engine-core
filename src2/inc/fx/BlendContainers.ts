@@ -83,7 +83,13 @@ module akra.fx {
 			sCode += pVar.getRealName();
 			
 			if(pVar.getType().isNotBaseArray()){
-				sCode += "[" + pVar.getType().getLength() + "]";
+				var iLength: uint = pVar.getType().getLength();
+				if(webgl.isANGLE && iLength === 1 && pVar.getType().isComplex()){
+					sCode += "[" + 2 + "]";
+				}
+				else {
+					sCode += "[" + iLength + "]";
+				}
 			}
 
 			return sCode;
