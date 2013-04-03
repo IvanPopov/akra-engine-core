@@ -58,7 +58,7 @@ module akra {
 		pController = animation.createController();
 
 		pModelRoot.attachToParent(pScene.getRootNode());
-		pModelRoot.scale(2.);
+		pModelRoot.scale(3.);
 		pModelRoot.addPosition(0, -1., 0);
 
 		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
@@ -77,7 +77,7 @@ module akra {
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
-				pController.update(pEngine.time);
+				// pController.update(pEngine.time);
 			});
 
 			if (isFunction(fnCallback)) {
@@ -94,9 +94,9 @@ module akra {
 		createViewports();
 		createLighting();
 		
-		// loadModels("../../../data/models/kr360.dae");
-		loadModels("../../../data/models/hero/hero.DAE");
-		loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+		loadModels("../../../data/models/Weldinggun.dae");
+		// loadModels("../../../data/models/hero/hero.DAE");
+		// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 		// loadModels("../../../data/models/cube.dae").scale(0.1);
 	}
 
