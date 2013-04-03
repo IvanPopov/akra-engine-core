@@ -34,7 +34,7 @@ module akra.render {
 			depthWrite: true,
 			depthFunction: ECompareFunction.LESS,
 
-			clearColor: new Color(0, 0, 0, 0),
+			clearColor: new Color(0., 0., 0., 0.),
 			clearDepth: 1.,
 			clearBuffers: EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH
 		};
@@ -266,8 +266,6 @@ module akra.render {
 			var pVisibleObjects: IObjectArray = pCamera.display();
 			var pRenderable: IRenderableObject;
 
-			// ERROR("-------------------------IMPORTANT STRAT-----------------");
-
 			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 
@@ -281,8 +279,6 @@ module akra.render {
 					}
 				}
 			}
-
-			// ERROR("-------------------------IMPORTANT END-----------------");
 		}
 
 

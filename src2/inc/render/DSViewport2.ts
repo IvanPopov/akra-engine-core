@@ -101,18 +101,20 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.projectLighting");
 			pDSEffect.addComponent("akra.system.omniShadowsLighting");
 			pDSEffect.addComponent("akra.system.projectShadowsLighting");
-			//pDSEffect.addComponent("akra.system.skybox", 1);
+			pDSEffect.addComponent("akra.system.skybox", 1, 0);
 
 			pDSMethod.effect = pDSEffect;
 			pDefferedView.getTechnique().setMethod(pDSMethod);
+			pDefferedView.getTechnique()._setGlobalPostEffectsFrom(1);
 
 			// LOG(pEngine.getComposer(), pDefferedView.getTechnique().totalPasses);
 			// pDefferedView.renderMethod = pDSMethod;
 
 			this.setClearEveryFrame(false);
-			this.setDepthParams(false, false, 0);
-			
+			// this.backgroundColor.set(Color.CYAN);
+			this.setDepthParams(false, false, 0);			
 
+			this.setFXAA(true);
 			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		}
 
@@ -143,7 +145,7 @@ module akra.render {
 			//render deferred
 			
 			this.newFrame();
-			this._pDeferredView.render(this);	
+			this._pDeferredView.render(this);
 			this.getTarget().getRenderer().executeQueue();
 			return true;
 		}
@@ -241,13 +243,15 @@ module akra.render {
 		}
 
 		setFXAA(bValue: bool = true): void {
-			var pEffect: IEffect = this._pDeferredView.renderMethod.effect;
+			var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
 			
 			if (bValue) {
-				pEffect.addComponent("akra.system.fxaa", 2);
+				pEffect.addComponent("akra.system.fxaa", 2, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(2);
 			}
 			else {
-				pEffect.delComponent("akra.system.fxaa", 2);
+				pEffect.delComponent("akra.system.fxaa", 2, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
 			}
 		}
 
@@ -272,14 +276,14 @@ module akra.render {
 
 		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
+			var pDeferredTextures: ITexture[] = this._pDefferedColorTextures;
 
 			switch (iPass) {
 				case 0:
 					var pLightUniforms: UniformMap = this._pLightingUnifoms;
 					var pLightPoints: util.ObjectArray = this._pLightPoints;
 					var pCamera: ICamera = this.getCamera();
-					var pDepthTexture: ITexture = this._pDeferredDepthTexture;
-					var pDeferredTextures: ITexture[] = this._pDefferedColorTextures;
 
 					this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
 
@@ -342,7 +346,32 @@ module akra.render {
 					});
 
 					break;
-				//case 1;
+				case 1:
+					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
+				    pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);
+				    
+				    pPass.setUniform("SCREEN_TEXTURE_RATIO",
+                                     vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+
+				    pPass.setUniform("SAMPLER_SKYBOX", <IAFXSamplerState>{ 
+						textureName: "SKYBOX_TEXTURE",
+						texture: null,
+						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+						mag_filter: ETextureFilters.NEAREST,
+						min_filter: ETextureFilters.NEAREST
+					});
+
+					pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 
+						textureName: "DEFERRED_TEXTURE0",
+						texture: null,
+						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+						mag_filter: ETextureFilters.NEAREST,
+						min_filter: ETextureFilters.NEAREST
+					});
+
+					break;
 			}
 		}
 

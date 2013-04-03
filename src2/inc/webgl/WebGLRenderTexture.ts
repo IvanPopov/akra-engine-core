@@ -12,6 +12,9 @@ module akra.webgl {
 	export class WebGLRenderTexture extends render.RenderTexture {
 		protected _pFrameBuffer: WebGLInternalFrameBuffer = null;
 
+		inline get width(): uint { return this._iWidth = this._pFrameBuffer.width; }
+		inline get height(): uint { return this._iHeight = this._pFrameBuffer.height; }
+
 		constructor(pRenderer: IRenderer, pTarget: IPixelBuffer){
 			super(pRenderer, pTarget, 0);
 			this._pFrameBuffer = new WebGLInternalFrameBuffer(pRenderer);

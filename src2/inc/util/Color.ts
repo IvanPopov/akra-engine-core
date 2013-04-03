@@ -417,6 +417,7 @@ module akra.util {
 
 		static BLACK: IColor = new Color(0);
 		static WHITE: IColor = new Color(0xFF, 0xFF, 0xFF);
+		static ZERO: IColor = new Color(0., 0., 0., 0.);
 
 		static isEqual(c1: IColorValue, c2: IColorValue): bool {
 			return 	c1.r === c2.r && 

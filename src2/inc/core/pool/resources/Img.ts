@@ -301,6 +301,8 @@ module akra.core.pool.resources {
 
                 this._eFormat=pImgData.format;
 
+                this.notifyLoaded();
+                
                 if (fnCallBack)
                 {
                     fnCallBack(true);

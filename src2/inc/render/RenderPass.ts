@@ -12,6 +12,7 @@ module akra.render {
 		private _pRenderTarget: IRenderTarget = null;
 		private _iPassNumber: uint = 0;
 		private _pInput: IAFXPassInputBlend = null;
+		private _isActive: bool = true;
 
 		constructor(pTechnique: IRenderTechnique, iPass: uint){
 			this._pTechnique = pTechnique;
@@ -64,6 +65,18 @@ module akra.render {
 
 		blend(sComponentName: string, iPass: uint): bool {
 			return this._pTechnique.addComponent(sComponentName, this._iPassNumber, iPass);
+		}
+
+		inline activate(): void {
+			this._isActive = true;
+		}
+
+		inline deactivate(): void {
+			this._isActive = false;
+		}
+
+		inline isActive(): bool {
+			return this._isActive;
 		}
 
 		private relocateOldInput(pNewInput: IAFXPassInputBlend): void {

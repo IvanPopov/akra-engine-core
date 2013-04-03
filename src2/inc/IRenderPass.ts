@@ -19,6 +19,10 @@ module akra {
 		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: bool): void;
 
 		blend(sComponentName: string, iPass: uint): bool;
+
+		activate(): void;
+		deactivate(): void;
+		isActive(): bool;
 	}	
 }
 

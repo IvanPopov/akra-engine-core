@@ -41,6 +41,11 @@ module akra {
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
 
 		hasComponent(sComponent: string, iShift: int, iPass: uint): bool;
+		hasGlobalPostEffect(): bool;
+		
+		isPostEffectPass(iPass: uint): bool;
+		isLastPass(iPass: uint): bool;
+		isFirstPass(iPass: uint): bool;
 
 		isFreeze(): bool;
 
@@ -48,6 +53,8 @@ module akra {
 
 		_blockPass(iPass: uint): void;
 
+        _setGlobalPostEffectsFrom(iPass: uint): void;
+        
 		_setComposer(pComposer: IAFXComposer): void;
 		_renderTechnique(pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
 

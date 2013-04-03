@@ -141,6 +141,14 @@ module akra.core.pool.resources {
             return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
         }
 
+        reset(): void;
+        reset(iSize: uint): void;
+        reset(iWidth: uint, iHeight: uint): void;
+        reset(iWidth?: uint = this._iWidth, iHeight?: uint = iWidth): void {
+            this._iWidth = iWidth;
+            this._iHeight = iHeight;
+        }
+
         getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer {
             return null;
         }
@@ -166,7 +174,7 @@ module akra.core.pool.resources {
                 return false;
             }    
 
-            this.textureType=eTextureType;
+            this._eTextureType = eTextureType;
 
             this._iWidth = iWidth;
             this._iHeight = iHeight;

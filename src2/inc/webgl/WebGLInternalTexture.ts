@@ -82,7 +82,16 @@ module akra.webgl {
         	}
         }
 
+        reset(): void;
+        reset(iSize: uint): void;
+        reset(iWidth: uint, iHeight: uint): void;
+        reset(iWidth?: uint = this._iWidth, iHeight?: uint = iWidth): void {
+            super.reset(iWidth, iHeight);
 
+            for(var i: uint = 0; i < this._pSurfaceList.length; i++) {
+                this._pSurfaceList[i].reset(iWidth, iHeight);
+            }
+        };
 
 
         _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{

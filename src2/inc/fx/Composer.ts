@@ -63,10 +63,13 @@ module akra.fx {
 
 		private _pComposerState: any = { mesh : { isSkinning : false } };
 
-		// private _pRenderTargetA
-		//private _pPreRenderState: IPreRenderState = null;
+		/** Render targets for global-post effects */
+		private _pRenderTargetA: IRenderTarget = null;
+		private _pRenderTargetB: IRenderTarget = null;
+		private _pLastRenderTarget: IRenderTarget = null;
 
-		// private _pSamplerBlender: SamplerBlender = null;
+		private _pPostEffectTextureA: ITexture = null;
+		private _pPostEffectTextureB: ITexture = null;
 
 		//Temporary objects for fast work
 		static pDefaultSamplerBlender: SamplerBlender = null;
@@ -84,22 +87,12 @@ module akra.fx {
 			this._pEffectResourceToComponentBlendMap = <IAFXComponentBlendMap>{};
 
 			this._pGlobalEffectResorceIdStack = [];
-			// this._pGlobalEffectResorceShiftStack = [];
 			this._pGlobalComponentBlendStack = [];
 			this._pGlobalComponentBlend = null;
 
-			// this._pPreRenderState = {
-			// 	isClear: true,
+			this.initPostEffectTextures();
 
-			// 	primType: 0,
-			// 	offset: 0,
-			// 	length: 0,
-			// 	index: null,
-			// 	flows: new util.ObjectArray()
-			// };
 
-			// this._pSamplerBlender = new SamplerBlender(this);
-			// this._pTempPassInstructionList = new ObjectArray();
 			if(isNull(Composer.pDefaultSamplerBlender)){
 				Composer.pDefaultSamplerBlender = new SamplerBlender();
 			}
@@ -492,6 +485,42 @@ module akra.fx {
 			pEntry.viewport = this._pCurrentViewport;
 			pEntry.bufferMap = this._pCurrentBufferMap;
 
+			if(pRenderTechnique.hasGlobalPostEffect()){
+				if(!pRenderTechnique.isFirstPass(iPass)){
+					pRenderer._setDepthBufferParams(false, false, 0);
+					
+					pRenderer._setRenderTarget(this._pRenderTargetA);
+					pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR, Color.ZERO, 1., 0);
+				}
+
+				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
+					pEntry.viewport.actualHeight > this._pRenderTargetA.height)
+				{
+					this.resizePostEffectTextures(pEntry.viewport.actualWidth, pEntry.viewport.actualHeight);
+				}
+
+				if(!pRenderTechnique.isPostEffectPass(iPass)){
+					this._pLastRenderTarget = this._pRenderTargetA;
+					pEntry.renderTarget = this._pRenderTargetA;
+				}
+				else {
+					if(pRenderTechnique.isLastPass(iPass)){
+						this._pLastRenderTarget = null;
+						// pEntry.renderTarget = null;
+					}
+					else {
+						if(this._pLastRenderTarget === this._pRenderTargetA){
+							pEntry.renderTarget = this._pRenderTargetB;
+							this._pLastRenderTarget = this._pRenderTargetB;
+						}
+						else {
+							pEntry.renderTarget = this._pRenderTargetA;
+							this._pLastRenderTarget = this._pRenderTargetA;
+						}
+					}
+				}
+			}
+
 			pRenderer.pushEntry(pEntry);
 		}
 
@@ -570,6 +599,8 @@ module akra.fx {
 				var pCamera: ICamera = pViewport.getCamera();
 				pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
 				pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
+				pPassInput.setUniform("INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
+				pPassInput.setUniform("CAMERA_POSITION", pCamera.worldPosition);
 			}
 
 			if(!isNull(pRenderable)){
@@ -579,6 +610,45 @@ module akra.fx {
 
 				pPassInput.setUniform("RENDER_OBJECT_ID", pRenderable.getGuid());
 			}
+
+			if(!isNull(this._pLastRenderTarget)){
+				var pLastTexture: ITexture = this._pLastRenderTarget === this._pRenderTargetA ? 
+												this._pPostEffectTextureA : this._pPostEffectTextureB;
+
+				pPassInput.setTexture("INPUT_TEXTURE", pLastTexture);
+				pPassInput.setSamplerTexture("INPUT_SAMPLER", pLastTexture);
+				pPassInput.setUniform("INPUT_TEXTURE_SIZE", vec2(pLastTexture.width, pLastTexture.height));
+				pPassInput.setUniform("INPUT_TEXTURE_RATIO", 
+							vec2(this._pCurrentViewport.actualWidth / pLastTexture.width,
+								 this._pCurrentViewport.actualHeight / pLastTexture.height));
+			}
+		}
+
+		private initPostEffectTextures(): void{
+			var pRmgr: IResourcePoolManager = this._pEngine.getResourceManager();
+			this._pPostEffectTextureA = pRmgr.createTexture(".global-post-effect-texture-A");
+			this._pPostEffectTextureB = pRmgr.createTexture(".global-post-effect-texture-B");
+
+			this._pPostEffectTextureA.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+								   ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+
+			this._pPostEffectTextureB.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+								   ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+
+			this._pRenderTargetA = this._pPostEffectTextureA.getBuffer().getRenderTarget();
+			this._pRenderTargetB = this._pPostEffectTextureB.getBuffer().getRenderTarget();
+
+			// this._pRenderTargetA.attachDepthBuffer();
+			// this._pRenderTargetA.attachDepthTexture(this._pPostEffectDepthTexture);
+			// this._pRenderTargetB.attachDepthTexture(pDepthTexture);
+		}
+
+		private resizePostEffectTextures(iWidth: uint, iHeight: uint): void {
+			iWidth = math.ceilingPowerOfTwo(iWidth);
+			iHeight = math.ceilingPowerOfTwo(iHeight);
+			
+			this._pPostEffectTextureA.reset(iWidth, iHeight);
+			this._pPostEffectTextureB.reset(iWidth, iHeight);		
 		}
 	}
 }

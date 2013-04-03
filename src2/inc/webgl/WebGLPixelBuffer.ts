@@ -61,6 +61,14 @@ module akra.webgl {
 		_clearRTT(iZOffset: uint): void {
 		}
 
+		reset(): void;
+        reset(iSize: uint): void;
+        reset(iWidth: uint, iHeight: uint): void;
+        reset(iWidth?: uint = this._iWidth, iHeight?: uint = iWidth): void {
+			this._iWidth = iWidth;
+			this._iHeight = iHeight;
+		}
+
 		create(iFlags: int): bool;
 		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): bool;
 		create(): bool {

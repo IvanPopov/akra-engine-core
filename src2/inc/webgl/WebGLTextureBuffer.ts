@@ -44,6 +44,29 @@ module akra.webgl {
 			this._pRTTList[iZOffset] = null;
 		}
 
+		reset(): void;
+        reset(iSize: uint): void;
+        reset(iWidth: uint, iHeight: uint): void;
+        reset(iWidth?: uint = this._iWidth, iHeight?: uint = iWidth): void {
+			iWidth = math.ceilingPowerOfTwo(iWidth);
+			iHeight = math.ceilingPowerOfTwo(iHeight);
+
+			this._iWidth = this._iLevel === 0 ? iWidth : iWidth / Math.pow(2.0, this._iLevel);
+			this._iHeight = this._iLevel === 0 ? iHeight : iHeight / Math.pow(2.0, this._iLevel);
+
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
+
+			pWebGLContext.texImage2D(this._eFaceTarget,
+                        			 this._iLevel,
+                        			 webgl.getClosestWebGLInternalFormat(webgl.getSupportedAlternative(this._eFormat)),	                            			
+                        			 this._iWidth, this._iHeight, 0,
+                        			 GL_RGBA, GL_UNSIGNED_BYTE,
+                        			 null);	
+		}
+
 		create(iFlags: int): bool;
 		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): bool;
 		create(eTarget: int, pTexture: WebGLTexture, iWidth: uint, iHeight: uint, iInternalFormat: int, iFormat: int, 
@@ -711,7 +734,7 @@ module akra.webgl {
 		}
 
 		resize(iSize: uint): bool;
-		resize(iWidth: uint, iHeight?: uint): bool {
+		resize(iWidth: uint, iHeight?: uint = iWidth): bool {
 			if(arguments.length === 1){
 				CRITICAL("resize with one parametr not available for WebGLTextureBuffer");
 				return false;
