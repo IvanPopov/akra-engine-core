@@ -320,12 +320,14 @@ module akra.core.pool.resources {
 
             this.eachByTag(pXML, "p", function (pXMLData) {
                 n = string2IntArray(stringData(pXMLData), pData);
+
                 for (var i: int = 0; i < 3; i++) {
                     retrieve(pData, tmp, iStride, i, 1);
                     for (var j: int = 0; j < iStride; ++j) {
                         pIndexes.push(tmp[j]);
                     }
                 }
+
 
                 for (var i: int = 3, m = n / iStride; i < m; i++) {
                     pFans2Tri[1] = i - 1;
@@ -336,6 +338,7 @@ module akra.core.pool.resources {
                         }
                     }
                 }
+
             });
 
             return pIndexes;
@@ -3153,7 +3156,7 @@ module akra.core.pool.resources {
             }
         }
 
-        return n;
+        return j;
     }
     
     inline function string2IntArray(sData: string, ppData: int[], iFrom?: uint): uint {

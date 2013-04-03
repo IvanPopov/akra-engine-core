@@ -94,12 +94,13 @@ module akra {
 		createViewports();
 		createLighting();
 		
-		loadModels("../../../data/models/Weldinggun.dae");
+		// loadModels("../../../data/models/Weldinggun.dae");
 		// loadModels("../../../data/models/hero/hero.DAE");
-		// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+		loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 		// loadModels("../../../data/models/cube.dae").scale(0.1);
 	}
 
 	pEngine.bind(SIGNAL(depsLoaded), main);		
 	pEngine.exec();
+	// pEngine.renderFrame();
 }
