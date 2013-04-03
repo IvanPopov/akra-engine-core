@@ -2256,7 +2256,7 @@ module akra.core.pool.resources {
             for (var i: int = 0; i < pPolyGroup.length; ++i) {
                 pMesh.createSubset(
                     "submesh-" + i, 
-                    /*this.isWireframeEnabled() ? EPrimitiveTypes.LINELIST : pPolyGroup[i].type);*/  EPrimitiveTypes.POINTLIST);
+                    this.isWireframeEnabled() ? EPrimitiveTypes.LINELIST : pPolyGroup[i].type);
             }
 
             //filling data

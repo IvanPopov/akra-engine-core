@@ -119,9 +119,8 @@ module akra.util {
 			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
 				webgl.getWebGLPrimitiveType(this._ePrimitiveType), 
 				// GL_POINTS,
-				//this._nStartIndex, 
-				(this._nLength > 186) ? this._nLength - 183 : 0,
-				this._nLength - ((this._nLength > 186) ? this._nLength - 183 : 0));
+				this._nStartIndex, 
+				this._nLength);
 
 			
 #else
