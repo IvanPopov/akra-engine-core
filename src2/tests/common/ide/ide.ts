@@ -95,8 +95,10 @@ module akra {
 		createLighting();
 		
 		// loadModels("../../../data/models/Weldinggun.dae");
-		// loadModels("../../../data/models/hero/hero.DAE");
+		// loadModels("../../../data/models/kr360.dae");
+		//loadModels("../../../data/models/hero/hero.DAE");
 		loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+		// loadModels("../../../data/models/teapot.dae", (pModel: ISceneNode) => { pModel.scale(.01); });
 		// loadModels("../../../data/models/cube.dae").scale(0.1);
 	}
 

@@ -469,7 +469,7 @@ module akra.webgl {
     		var pUniformInfo: WebGLActiveInfo;
 
     		for (var i: int = 0; i < nUniforms; ++ i) {
-    			pUniformInfo = pWebGLContext. getActiveUniform(this._pWebGLProgram, i);
+    			pUniformInfo = pWebGLContext.getActiveUniform(this._pWebGLProgram, i);
 				iLoc = pWebGLContext.getUniformLocation(this._pWebGLProgram, pUniformInfo.name);
 				pUniformLocations[pUniformInfo.name] = iLoc;
     		}
