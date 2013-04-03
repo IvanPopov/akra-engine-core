@@ -300,7 +300,7 @@ module akra.webgl {
 		// }
 
 		inline getNextTextureSlot(): int {
-			return this._iSlot === maxTextureImageUnits ? (this._iSlot = 0) : (++this._iSlot);
+			return this._iSlot === (maxTextureImageUnits - 1) ? (this._iSlot = 0) : (++this._iSlot);
 		}
 
 		inline getTextureSlot(): int {
