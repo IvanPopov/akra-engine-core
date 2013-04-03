@@ -53,13 +53,13 @@ module akra {
 	function loadModels(sPath, fnCallback?: Function): ISceneNode {
 		var pController: IAnimationController = null;
 		var pModelRoot: ISceneNode = pScene.createNode();
-		var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
+		var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath, {animation: false});
 		
 		pController = animation.createController();
 
 		pModelRoot.attachToParent(pScene.getRootNode());
 		pModelRoot.scale(3.);
-		pModelRoot.addPosition(0, -1., 0);
+		pModelRoot.addPosition(0, -7., -30);
 
 		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
 			pModel.attachToScene(pModelRoot, pController);
@@ -77,7 +77,7 @@ module akra {
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
-				// pController.update(pEngine.time);
+				pController.update(pEngine.time);
 			});
 
 			if (isFunction(fnCallback)) {
@@ -94,15 +94,22 @@ module akra {
 		createViewports();
 		createLighting();
 		
+		
+		// loadModels("../../../data/models/dragon.dae");
+		loadModels("../../../data/models/astroBoy_walk/astroBoy_walk_Max.DAE");
 		// loadModels("../../../data/models/Weldinggun.dae");
 		// loadModels("../../../data/models/kr360.dae");
-		//loadModels("../../../data/models/hero/hero.DAE");
-		loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+		// loadModels("../../../data/models/hero/hero.DAE");
+		// loadModels("../../../data/models/skeleton-regged.dae", (pModel: ISceneNode) => { pModel.scale(1.);});
+		// loadModels("../../../data/models/seymourplane/seymourplane.DAE", (pModel: ISceneNode) => { pModel.scale(.1); });
+		// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE", (pModelRoot: ISceneNode) => {
+		// 	(<ISceneModel>(<ISceneNode>pModelRoot.findEntity("node-Hips")).child.sibling).detachFromParent();
+		// });
 		// loadModels("../../../data/models/teapot.dae", (pModel: ISceneNode) => { pModel.scale(.01); });
 		// loadModels("../../../data/models/cube.dae").scale(0.1);
 	}
 
 	pEngine.bind(SIGNAL(depsLoaded), main);		
-	pEngine.exec();
+	// pEngine.exec();
 	// pEngine.renderFrame();
 }

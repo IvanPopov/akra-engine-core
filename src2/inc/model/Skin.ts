@@ -195,7 +195,15 @@ module akra.model {
 		}
 
 		setWeights(pWeights: Float32Array): bool {
-			this._pWeightData = this.data._allocateData([VE_FLOAT("BONE_WEIGHT")], pWeights);
+			// var pData: Float32Array = new Float32Array(4*pWeights.length);
+
+			// for(var i=0; i < pWeights.length; i++){
+			// 	pData[4*i] = pWeights[i];
+			// }
+
+			// this._pWeightData = this.data._allocateData([VE_FLOAT("BONE_WEIGHT"), VE_END(16)], pData);
+			// 
+			this._pWeightData = this.data._allocateData([VE_FLOAT("BONE_WEIGHT")], pWeights); 
 
 			return this._pWeightData !== null;
 		}

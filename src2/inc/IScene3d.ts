@@ -59,6 +59,7 @@ module akra {
 
 		signal beforeUpdate(): void;
 		signal postUpdate(): void;
+		signal preUpdate(): void;
 
 		_render(pCamera: ICamera, pViewport: IViewport): void;
 	}

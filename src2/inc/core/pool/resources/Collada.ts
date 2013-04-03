@@ -2256,7 +2256,7 @@ module akra.core.pool.resources {
             for (var i: int = 0; i < pPolyGroup.length; ++i) {
                 pMesh.createSubset(
                     "submesh-" + i, 
-                    this.isWireframeEnabled() ? EPrimitiveTypes.LINELIST : pPolyGroup[i].type);  /*EPrimitiveTypes.POINTLIST);*/
+                    /*this.isWireframeEnabled() ? EPrimitiveTypes.LINELIST : pPolyGroup[i].type);*/  EPrimitiveTypes.POINTLIST);
             }
 
             //filling data
@@ -2734,7 +2734,7 @@ module akra.core.pool.resources {
         }
 
          private inline isAnimationNeeded(): bool {
-            return isDefAndNotNull(this._pOptions.animation);
+            return isDefAndNotNull(this._pOptions.animation) && this._pOptions.animation !== false;
         }
 
         private inline isPoseExtractionNeeded(): bool {

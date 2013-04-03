@@ -79,6 +79,8 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
     int number_matrix = int(meta_data.x);
     int bone_inf_ptr = int(meta_data.y);
 
+    float total_weight = 0.;
+
     for (int i = 0; i < 32; i++) {
         if(i >= number_matrix) {
             break;
@@ -90,15 +92,24 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
         @weight = temp.y;
 
         result_mat += bone_matrix * weight;
+        total_weight += weight;
     }
 
+    result_mat = result_mat/total_weight;
+
+    float4 v4fTmp = result_mat * bind_matrix * pos;
+
     vertex = (view_mat * result_mat * bind_matrix * pos);
+
     Out.pos = vertex_geometry.pos = proj_mat * vertex;
+
+    Out.psize = total_weight;
+
     Out.vert = vertex_geometry.vert = vertex.xyz;
     Out.norm = vertex_geometry.norm = normalize((view_mat*result_mat * float4(IN.norm.xyz,0.)).xyz);
 //    Out.norm = vertex_geometry.norm = IN.norm.xyz;
 //    Out.normal_mat = view_mat*result_mat;
-    Out.psize = point_size;
+    //Out.psize = point_size;
 
     return Out;
 }

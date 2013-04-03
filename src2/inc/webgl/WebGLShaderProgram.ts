@@ -78,6 +78,13 @@ module akra.webgl {
 				return false;
 			}
 
+           /* if (loadExtension(pWebGLContext,WEBGL_DEBUG_SHADERS)) {
+                LOG(pWebGLVs, pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLVs));
+                // LOG("translated(from GLSL) VS shader: \n %s\ntranslated(from GLSL) PS shader: \n%s",
+                //     pWebGLContext.getTranslatedShaderSource(pWebGLVs),
+                //     pWebGLContext.getTranslatedShaderSource(pWebGLFs));
+            }*/
+
 			pWebGLContext.validateProgram(pWebGLProgram);
 
 			if (!this.isValid()) {

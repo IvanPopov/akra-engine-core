@@ -88,6 +88,7 @@ module akra.scene {
 
 		recursivePreUpdate(): void {
 			this._isUpdated = false;
+			this.preUpdate();
 			this._pRootNode.recursivePreUpdate();
 		}
 
@@ -330,6 +331,7 @@ module akra.scene {
 		BROADCAST(displayListRemoved, CALL(list, index));
 		BROADCAST(beforeUpdate, VOID);
 		BROADCAST(postUpdate, VOID);
+		BROADCAST(preUpdate, VOID);
 
 		// BROADCAST(nodeAttachment, CALL(pNode));
 		// BROADCAST(nodeDetachment, CALL(pNode));

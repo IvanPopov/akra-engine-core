@@ -114,11 +114,16 @@ module akra.util {
 
 		private inline drawArrays(): void {
 #ifdef WEBGL
+		
+
 			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
 				webgl.getWebGLPrimitiveType(this._ePrimitiveType), 
 				// GL_POINTS,
-				this._nStartIndex, 
-				this._nLength);
+				//this._nStartIndex, 
+				(this._nLength > 186) ? this._nLength - 183 : 0,
+				this._nLength - ((this._nLength > 186) ? this._nLength - 183 : 0));
+
+			
 #else
 		CRITICAL("BufferMap::drawElements() unsupported for unknown API.");			
 #endif
@@ -127,7 +132,7 @@ module akra.util {
 		private inline drawElements(): void {
 #ifdef WEBGL
 			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
-				this.primCount, 
+				webgl.getWebGLPrimitiveType(this._ePrimitiveType),
 				this._pIndex.getPrimitiveCount(), 
 				webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()), 
 				this._pIndex.byteOffset / 4); 

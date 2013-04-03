@@ -196,7 +196,7 @@ module akra.core.pool.resources {
             if (arguments.length == 0) {
                 return;
             }
-
+            
             var pImage: IImg = this.getManager().loadImage(sFilename);
             
             if (pImage.isResourceLoaded()) {
