@@ -46,6 +46,7 @@ module akra.fx {
 				for(var j: uint = 0; j < this._pSlotList[i].length; j++){
 					var pSampler: IAFXVariableDeclInstruction = this._pSlotList[i].value(j);
 					pSampler.setRealName(pSampler.getSemantic() || pSampler.getName());
+					pSampler.defineByZero(false);
 				}
 
 				this._pSlotList[i].clear(false);
