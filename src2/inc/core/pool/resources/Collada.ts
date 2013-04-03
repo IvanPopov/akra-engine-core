@@ -191,6 +191,7 @@ module akra.core.pool.resources {
 
         // materials & meshes
         
+        private buildDefaultMaterials(pMesh: IMesh): IMesh;
         private buildMaterials(pMesh: IMesh, pGeometryInstance: IColladaInstanceGeometry): IMesh;
         private buildSkeleton(pSkeletonsList: string[]): ISkeleton;
         private buildMesh(pGeometryInstance: IColladaInstanceGeometry): IMesh;
@@ -1586,7 +1587,7 @@ module akra.core.pool.resources {
         }
         
         private COLLADABindMaterial(pXML: Element): IColladaBindMaterial {
-            if (isNull(pXML)) {
+            if (!isDefAndNotNull(pXML)) {
                 return null;
             }
 
@@ -2118,12 +2119,24 @@ module akra.core.pool.resources {
 
         // materials & meshes
         
+        private buildDefaultMaterials(pMesh: IMesh): IMesh {
+            var pDefaultMaterial: IMaterial = material.create("default");
+
+            for (var j: int = 0; j < pMesh.length; ++j) {
+                var pSubMesh: IMeshSubset = pMesh.getSubset(j);
+                pSubMesh.material.set(pDefaultMaterial);
+                pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+            }
+
+            return pMesh;
+        }
+
         private buildMaterials(pMesh: IMesh, pGeometryInstance: IColladaInstanceGeometry): IMesh {
             var pMaterials: IColladaBindMaterial = pGeometryInstance.material;
             var pEffects: IColladaEffectLibrary = <IColladaEffectLibrary>this.getLibrary("library_effects");
 
-            if (isNull(pEffects)) {
-                return pMesh;
+            if (isNull(pEffects) || isNull(pMaterials)) {
+                return this.buildDefaultMaterials(pMesh);
             }
 
             for (var sMaterial in pMaterials) {

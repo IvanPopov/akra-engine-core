@@ -1,3 +1,6 @@
+body {
+  background: black;
+}
 /*Gradient mixins*/
 /* Component */
 .component {
@@ -251,9 +254,8 @@
 .component-fps {
   width: 100px;
   height: 47px;
-  background-color: rgba(0, 0, 66, 0.85);
+  background-color: rgba(0, 0, 66, 0.65);
   cursor: pointer;
-  box-shadow: 0 0 5px black;
 }
 .component-fps .info {
   font-size: 11px;
