@@ -254,7 +254,6 @@ module akra.core.pool.resources {
 
                     io.fopen(pData,"rb").onread=function(pError:Error,pDataInFile:ArrayBuffer)
                     {
-
                         pMe.load(new Uint8Array(pDataInFile),sExt,sType);
                     }
                 }

@@ -147,8 +147,10 @@ module akra.webgl {
             return false;
         }
 
-        return pWebGLContext.getProgramParameter(pProgram, GL_ACTIVE_UNIFORMS) == 1 && 
-            pWebGLContext.getActiveUniform(pProgram, 0).name != "s[0].b[0]";
+        debug_assert(pWebGLContext.getProgramParameter(pProgram, GL_ACTIVE_UNIFORMS) > 0, 
+            "no uniforms founded in angle test shader!");
+
+        return pWebGLContext.getActiveUniform(pProgram, 0).name != "s[0].b[0]";
     }
 
     function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {     

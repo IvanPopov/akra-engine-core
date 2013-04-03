@@ -769,7 +769,8 @@ module akra.fx {
 			var sCode: string = "";
 			var eType: EFunctionType = EFunctionType.k_Vertex;
 
-			sCode = this.generateSystemExtBlock(eType) + "\n" +
+			sCode = /*"precision lowp float;" + "\n" + */
+					this.generateSystemExtBlock(eType) + "\n" +
 					
 					this.generateTypeDels(eType) + "\n" +
 					this.generateFunctionDefenitions(eType) + "\n" +

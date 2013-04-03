@@ -67,33 +67,40 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
 
     float2 meta_data[](memof IN.pos);
 
-    float2 temp[](memof IN.pos);
+    float2 bone_inf[](memof IN.pos);
     float4x4 bone_matrix[](memof IN.pos);
-    float weight[](memof IN.pos);
+    float weight;
 
     float4x4 result_mat = float4x4(0.0);
     float point_size = 30.;
 
     @(meta_data) = IN.pos.w;
 
-    int number_matrix = int(meta_data.x);
-    int bone_inf_ptr = int(meta_data.y);
+    float number_matrix = meta_data.x;
+    float bone_inf_ptr = meta_data.y;
 
-    for (int i = 0; i < 32; i++) {
-        if(i >= number_matrix) {
-            break;
-        }
+
+    float i = 0.;
+    while(number_matrix >= i + 1.) {
         //get data about matrix and weight
-        @temp = float(bone_inf_ptr + i * 2);
+        @bone_inf = bone_inf_ptr + i * 2.;
 
-        @bone_matrix = floor(temp.x);
-        @weight = temp.y;
+        @bone_matrix = bone_inf.x;
+        weight = bone_inf.y;
 
         result_mat += bone_matrix * weight;
+
+        i ++;
     }
 
+    result_mat = result_mat;
+
+    float4 v4fTmp = result_mat * bind_matrix * pos;
+
     vertex = (view_mat * result_mat * bind_matrix * pos);
+
     Out.pos = vertex_geometry.pos = proj_mat * vertex;
+
     Out.vert = vertex_geometry.vert = vertex.xyz;
     Out.norm = vertex_geometry.norm = normalize((view_mat*result_mat * float4(IN.norm.xyz,0.)).xyz);
 //    Out.norm = vertex_geometry.norm = IN.norm.xyz;

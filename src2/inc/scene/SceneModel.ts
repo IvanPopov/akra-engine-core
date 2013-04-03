@@ -29,7 +29,7 @@ module akra.scene {
 			if (!isNull(pMesh)) {
 				this.accessLocalBounds().set(pMesh.boundingBox);
 				this._pMesh = pMesh;
-				pMesh.connect(this.scene, SIGNAL(postUpdate), SLOT(update));
+				pMesh.connect(this.scene, SIGNAL(preUpdate), SLOT(update));
 			}
 		}
 

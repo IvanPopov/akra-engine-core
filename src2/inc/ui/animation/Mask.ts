@@ -25,7 +25,7 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_MASK);
 
-			graph.template(this, "ui/templates/AnimationMask.tpl");
+			template(this, "ui/templates/AnimationMask.tpl");
 			this.init();
 		}
 
