@@ -246,7 +246,56 @@ module akra.webgl {
 	        this.notifyAltered();
 		}
 
-		protected download(pData: IPixelBox): void {
+		protected download(pData: IPixelBox): void 
+		{
+
+
+			if ((pData.right > this._iWidth) || (pData.bottom > this._iHeight) || (pData.front != 0) || (pData.back != 1)) {
+				CRITICAL("Invalid box");
+			}
+
+			var pSrcBox:IPixelBox;
+			if(checkReadPixelFormat(pData.format))
+			{
+				pSrcBox=pData;
+			}
+			else
+			{
+				console.log("download. new Pixel Box подходящего формата");
+				pSrcBox = new pixelUtil.PixelBox(pData,EPixelFormats.BYTE_ABGR);
+			}			
+
+			if(!checkFBOAttachmentFormat(this.format))
+			{
+				CRITICAL("Read from texture this format not support");
+			}
+
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+			var pFrameBuffer:WebGLFramebuffer=pWebGLRenderer.createWebGLFramebuffer();
+			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER,pFrameBuffer);
+
+			var eFormat: int = getWebGLFormat(pSrcBox.format);
+			var eType: int = getWebGLDataType(pSrcBox.format);
+
+			pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, this._eFaceTarget,this._pWebGLTexture,this._iLevel);
+			
+			//console.log(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height,eFormat,eType,pSrcBox.data);
+			pWebGLContext.readPixels(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height,eFormat,eType,pSrcBox.data);
+			//console.log("data after readPixel",pSrcBox.data);
+
+			if(!checkReadPixelFormat(pData.format))
+			{
+				console.log("download. конвертация");
+				pixelUtil.bulkPixelConversion(pSrcBox,pData);
+			}
+
+			//дективировать его
+			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER,pOldFramebuffer);
+			pWebGLRenderer.deleteWebGLFramebuffer(pFrameBuffer);
+
 			// if(data.getWidth() != getWidth() ||
 	        //     data.getHeight() != getHeight() ||
 	        //     data.getDepth() != getDepth())
@@ -276,7 +325,7 @@ module akra.webgl {
 	        //     // Restore defaults
 	        //     glPixelStorei(GL_PACK_ALIGNMENT, 4);
 	        // }
-			CRITICAL("Downloading texture buffers is not supported by OpenGL ES");
+			//CRITICAL("Downloading texture buffers is not supported by OpenGL ES");
 		}
 
 		protected buildMipmaps(pData: IPixelBox): void {

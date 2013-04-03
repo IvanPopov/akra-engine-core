@@ -220,6 +220,10 @@ module akra.webgl {
 			this._pWebGLContext.bindFramebuffer(eTarget, pBuffer);
 		}
 
+		inline bindWebGLFramebufferTexture2D(eTarget: uint, eAttachment:uint,eTexTarget:uint, pTexture: WebGLTexture, iMipLevel?:uint=0): void {
+			this._pWebGLContext.framebufferTexture2D(eTarget, eAttachment, eTexTarget, pTexture, iMipLevel)
+		}
+
 		inline deleteWebGLFramebuffer(pBuffer: WebGLFramebuffer): void {
 			this._pWebGLFramebufferList.push(pBuffer);
 		}

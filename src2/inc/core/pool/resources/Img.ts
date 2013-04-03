@@ -308,7 +308,7 @@ module akra.core.pool.resources {
                 this._iFlags=pImgData.flags;
                 this._iCubeFlags=pImgData.cubeFlags;
 
-                console.log(this._iCubeFlags.toString(16),this._iFlags.toString(16));
+                //console.log(this._iCubeFlags.toString(16),this._iFlags.toString(16));
 
                 this._eFormat=pImgData.format;
 
