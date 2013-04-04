@@ -5,12 +5,12 @@
 
 module akra.geometry {
 	export class Box implements IBox {
-		left: uint;
-		top: uint;
-		front: uint;
-		right: uint;
-		bottom: uint;
-		back: uint;
+		left: uint = 0;
+		top: uint = 0;
+		front: uint = 0;
+		right: uint = 0;
+		bottom: uint = 0;
+		back: uint = 0;
 
 		inline get width(): uint {
 			return this.right - this.left;
@@ -68,6 +68,18 @@ module akra.geometry {
 		contains(pDest: IBox): bool {
 			return (pDest.left >= this.left && pDest.top >= this.top && pDest.front >= this.front &&
 	    		pDest.right <= this.right && pDest.bottom <= this.bottom && pDest.back <= this.back);
+		}
+
+		setPosition(iLeft: uint, iTop: uint, iWidth: uint, iHeight: uint): void {
+			this.left   = iLeft;
+			this.top    = iTop;
+			this.right  = iLeft + iWidth;
+			this.bottom = iTop + iHeight;
+		}
+
+		isEqual(pDest: IBox): bool {
+			return (pDest.left == this.left && pDest.top == this.top && pDest.front == this.front &&
+	    		pDest.right == this.right && pDest.bottom == this.bottom && pDest.back == this.back);
 		}
 	}
 }

@@ -88,7 +88,7 @@ module akra.terrain {
 			//Terrain.prototype.destroy.call(this); с какого то хуя этого метода не оказалось
 		}
 
-		allocateSectors(): bool {
+		protected _allocateSectors(): bool {
 			/*this._pSectorArray =
 			 new cTerrainSection[
 			 this._iSectorCountX*this._iSectorCountY];*/
@@ -99,10 +99,10 @@ module akra.terrain {
 			this._pVerts = new Array((this._iSectorCountX*this._iSectorCountY/*количество секции*/)*(this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/) * (3/*кординаты вершин*/+2/*текстурные координаты*/));
 
 			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
-				this._pSectorArray[i] = new TerrainSectionROAM(this._pEngine);
+				this._pSectorArray[i] = this._pRootNode.scene.createTerrainSectionROAM();
 			}
 
-			this._setRenderMethod(this._pDefaultRenderMethod, "");
+			this._setRenderMethod(this._pDefaultRenderMethod);
 
 			// create the sector objects themselves
 			for (var y: uint = 0; y < this._iSectorCountY; ++y) {
@@ -123,7 +123,7 @@ module akra.terrain {
 					var iYPixel: uint = y << this._iSectorShift;
 					var iIndex: uint = (y * this._iSectorCountX) + x;
 
-					if (!this._pSectorArray[iIndex].create(
+					if (!this._pSectorArray[iIndex]._internalCreate(
 						this._pRootNode,  /*Родительские нод*/
 						this,				/*Терраин*/
 						x, y,				/*Номер секции оп иксу и игрику*/
@@ -138,7 +138,7 @@ module akra.terrain {
 			}
 
 			var pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION),VE_FLOAT2(DeclarationUsages.TEXCOORD)];
-			this._iVertexID=this._pRenderData.allocateData(pVertexDescription,new Float32Array(this._pVerts));
+			this._iVertexID = this._pRenderData.allocateData(pVertexDescription, new Float32Array(this._pVerts));
 
 
 			//Индексны буфер для всех

@@ -238,7 +238,7 @@ module akra.fx {
         }
 
         _containPointer(): bool {
-        	return this.getSubType()._containSampler();
+        	return this.getSubType()._containPointer();
         }
 
         _containComplexType(): bool {

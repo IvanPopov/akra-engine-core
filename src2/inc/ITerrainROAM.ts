@@ -15,7 +15,6 @@ module akra {
 
 		create(pRootNode: ISceneNode, pImgMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool;
 		destroy(): void;
-		allocateSectors(): bool;
 		reset(): void;
 		requestTriNode();
 		addToTessellationQueue(pSection: ITerrainSectionROAM): bool;

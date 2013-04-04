@@ -11,12 +11,13 @@ module akra {
 	export interface ITerrainSection extends ISceneObject {
 		readonly sectorX: uint;
 		readonly sectorY: uint;
+		readonly renderable: IRenderableObject;
 		readonly terrainSystem: ITerrain;
 		readonly sectionIndex: uint;
 		readonly heightY: float;
 		readonly heightX: float;
 		readonly vertexDescription: IVertexElementInterface[];
-		create(pRootNode?: ISceneObject, pParentSystem?: ITerrain, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d): bool;
+		_internalCreate(pRootNode?: ISceneNode, pParentSystem?: ITerrain, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d): bool;
 		render(): bool;
 		setRenderData(pData: IRenderData): void;
 		prepareForRender(): void;

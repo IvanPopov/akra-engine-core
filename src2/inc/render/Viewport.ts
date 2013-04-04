@@ -269,7 +269,7 @@ module akra.render {
 			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 
-				// LOG(pSceneObject.worldBounds.toString());
+				LOG(pSceneObject.worldBounds.toString());
 				
 				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
 					pRenderable = pSceneObject.getRenderable(j)

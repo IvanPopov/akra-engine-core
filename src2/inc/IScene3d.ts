@@ -18,6 +18,8 @@ module akra {
 	IFACE(IDisplayList);
 	IFACE(IViewport);
 	IFACE(IShadowCaster);
+	IFACE(ITerrainSection);
+	IFACE(ITerrainSectionROAM);
 
 	export interface IScene3d extends IScene {
 		totalDL: uint;
@@ -43,6 +45,8 @@ module akra {
 		createSprite(sName?: string): ISprite;
 		createJoint(sName?: string): IJoint;
 		createText3d(sName?: string): IText3d;
+		createTerrainSection(sName?: string): ITerrainSection;
+		createTerrainSectionROAM(sName?: string): ITerrainSectionROAM;
 
 		_createShadowCaster(pLightPoint: ILightPoint, iFace?: uint, sName?: string): IShadowCaster;
 
