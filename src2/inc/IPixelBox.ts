@@ -26,6 +26,8 @@ module akra {
 		setColorAt(pColor: IColor, x: uint, y: uint, z?: uint): void;
 
 		scale(pDest: IPixelBox, eFilter?: EFilters): bool;
+
+		refresh(pExtents: IBox, ePixelFormat: EPixelFormats, pPixelData: Uint8Array): void;
 	}
 }
 

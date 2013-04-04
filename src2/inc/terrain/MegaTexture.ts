@@ -37,7 +37,7 @@ module akra.terrain {
 	    private _iBlockSize: uint = 32;
 
 	    //Тип хранимых тектсур
-	    private _eTextureType: EPixelFormats = EPixelFormats.BYTE_BGR;
+	    private _eTextureFormat: EPixelFormats = EPixelFormats.BYTE_BGR;
 	    private _iTextureHeight: uint = 1024;
 	    private _iTextureWidth: uint = 1024;
 	    
@@ -64,6 +64,10 @@ module akra.terrain {
 	    private _fTexCourdYOld: float = undefined;
 	    private _nCountRender: uint = 0;
 
+	    private _pTmpBox1: IBox = new geometry.Box();
+	    private _pTmpBox2: IBox = new geometry.Box();
+	    private _pTmpPixelBox: IPixelBox = new pixelUtil.PixelBox();
+
 	    constructor(pEngine: IEngine, pObject: any, sSurfaceTextures: string) {
 	    	this._pEngine = pEngine;
 	    	// this._pDevice = pEngine.pDevice;
@@ -81,7 +85,7 @@ module akra.terrain {
 	    	this._iBufferHeight = this._iTextureHeight * 2;
 	    	this._iBufferWidth  = this._iTextureWidth * 2;
 
-	    	this._pDataFor     = new PixelBox(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureType);
+	    	this._pDataFor     = new pixelUtil.PixelBox(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureFormat);
 	    	this._pMapDataFor  = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
 	    	this._pMapDataNULL = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
 
@@ -94,11 +98,11 @@ module akra.terrain {
 	    	//Создаем куски мегатекстуры
     	    for (var i: uint = 0; i < this._pTextures.length; i++) {
     	        this._pTextures[i] = new core.pool.resources.Texture(/*this._pEngine*/);
-    	        this._pTextures[i].create(this._iTextureWidth, this._iTextureHeight, 1, new Color(0,0,0,1), <uint>ETextureFlags.DYNAMIC, 1, ETextureTypes.TEXTURE_2D, this._eTextureType);
+    	        this._pTextures[i].create(this._iTextureWidth, this._iTextureHeight, 1, null, ETextureFlags.DYNAMIC, 0, 1, ETextureTypes.TEXTURE_2D, this._eTextureFormat);
     			this._pTextures[i].setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
     			this._pTextures[i].setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
     	        if (i == 0) {
-    	            this._pBuffer[i] = new PixelBox(this._iTextureWidth, this._iTextureHeight, 1, this._eTextureType);
+    	            this._pBuffer[i] = new pixelUtil.PixelBox(this._iTextureWidth, this._iTextureHeight, 1, this._eTextureFormat);
     	            //на самом деле this._iTextureHeight*this._iTextureWidth
     	            this._pBufferMap[i] = new Uint32Array(this._iBufferHeight * this._iBufferWidth /
     	                                                  (this._iBlockSize * this._iBlockSize)); 
@@ -106,7 +110,7 @@ module akra.terrain {
     	            this.setBufferMapNULL(this._pBufferMap[i]);
     	            //Худшего качества статична поэтому размер у буфера такойже как у текстуры this._iBlockSize
     	        } else {
-    	            this._pBuffer[i] = new PixelBox(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureType);
+    	            this._pBuffer[i] = new pixelUtil.PixelBox(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureFormat);
     	            this._pBufferMap[i] = new Uint32Array(this._iBufferHeight * this._iBufferWidth /
     	                                                  (this._iBlockSize * this._iBlockSize));
     	            this.setBufferMapNULL(this._pBufferMap[i]);
@@ -140,12 +144,6 @@ module akra.terrain {
 		    var iX: uint, iX1: uint, iX2: uint;
 		    var iY: uint, iY1: uint, iY2: uint;
 		    var iWidth: uint, iHeight: uint;
-
-		    var pBox1: IBox = new Box();
-		    var pBox2: IBox = new Box();
-		    var pPixelBox1: IPixelBox = new PixelBox();
-		    var pPixelBox2: IPixelBox = new PixelBox();
-
 
 		    //Нужно ли перекладвывать, отсавим на запас 8 блоков
 
@@ -212,11 +210,11 @@ module akra.terrain {
 
 		                //console.log(this._pDataFor.length,iXOverlappingBlockInNewBuf,iYOverlappingBlockInNewBuf,iOverlappingBlockWidth,iOverlappingBlockHeight);
 
-		                pBox1.setPosition(iXOverlappingBlockInNewBuf, iYOverlappingBlockInNewBuf, iOverlappingBlockWidth, iOverlappingBlockHeight);
-		                pBox2.setPosition(iXOverlappingBlockInOldBuf, iYOverlappingBlockInOldBuf, iOverlappingBlockWidth, iOverlappingBlockHeight);
+		                this._pTmpBox1.setPosition(iXOverlappingBlockInNewBuf, iYOverlappingBlockInNewBuf, iOverlappingBlockWidth, iOverlappingBlockHeight);
+		                this._pTmpBox2.setPosition(iXOverlappingBlockInOldBuf, iYOverlappingBlockInOldBuf, iOverlappingBlockWidth, iOverlappingBlockHeight);
 
-		                pPixelBox1 = this._pDataFor.getSubBox(pBox1);
-		                pPixelBox2 = this._pBuffer[i].getSubBox(pBox2);
+		                var pPixelBox1: IPixelBox = this._pDataFor.getSubBox(this._pTmpBox1);
+		                var pPixelBox2: IPixelBox = this._pBuffer[i].getSubBox(this._pTmpBox2);
 
 		                pixelUtil.bulkPixelConversion(pPixelBox1, pPixelBox2);
 
@@ -236,9 +234,9 @@ module akra.terrain {
 		                this._pBuffer[i] = this._pDataFor;
 		                this._pDataFor = t;
 
-		                var t: Uint32Array = this._pBufferMap[i];
+		                var s: Uint32Array = this._pBufferMap[i];
 		                this._pBufferMap[i] = this._pMapDataFor;
-		                this._pMapDataFor = t;
+		                this._pMapDataFor = s;
 		            }
 		            else {
 		                this.setBufferMapNULL(this._pBufferMap[i]);
@@ -328,7 +326,7 @@ module akra.terrain {
 		        if (i == 0) {
 		            if (this._pXY[i].isUpdated == true) {
 		                // this._pTextures[i].setPixelRGBA(0, 0, this._iTextureWidth, this._iTextureHeight, this._pBuffer[0]);
-		                var pPixelBox: IPixelBox = new PixelBox(this._iTextureWidth, this._iTextureHeight, 1, EPixelFormats.A8B8G8R8, this._pBuffer[0])
+		                var pPixelBox: IPixelBox = new pixelUtil.PixelBox(this._iTextureWidth, this._iTextureHeight, 1, EPixelFormats.A8B8G8R8, this._pBuffer[0])
 		                this._pTextures[i].getBuffer(0,0).blitFromMemory(pPixelBox);
 		            }
 		        }
@@ -344,11 +342,14 @@ module akra.terrain {
 		                iTexInBufX -= this._pXY[i].iX;
 		                iTexInBufY -= this._pXY[i].iY;
 
-
-		                this._setData(this._pDataFor, 0, 0, this._iTextureWidth, this._iTextureHeight,
+		                /*this._setData(this._pDataFor, 0, 0, this._iTextureWidth, this._iTextureHeight,
 		                              this._pBuffer[i], iTexInBufX, iTexInBufY, this._iBufferWidth, this._iBufferHeight,
-		                              this._iTextureWidth, this._iTextureHeight, pixelUtil.getNumElemBytes(this._eTextureType));
-		                this._pTextures[i].setPixelRGBA(0, 0, this._iTextureWidth, this._iTextureHeight, this._pDataFor);
+		                              this._iTextureWidth, this._iTextureHeight, pixelUtil.getNumElemBytes(this._eTextureFormat));
+		                this._pTextures[i].setPixelRGBA(0, 0, this._iTextureWidth, this._iTextureHeight, this._pDataFor);*/
+
+		                this._pTmpBox1.setPosition(iTexInBufX, iTexInBufY, this._iBufferWidth, this._iBufferHeight); 
+		                var pPixelBox: IPixelBox = this._pBuffer[i].getSubBox(this._pTmpBox1);
+		                this._pTextures[i].getBuffer(0,0).blitFromMemory(pPixelBox);
 
 		                /*var c2d=document.getElementById('canvas1_'+i).getContext("2d");
 		                 var pData=c2d.getImageData(0,0,128,128);
@@ -572,7 +573,7 @@ module akra.terrain {
 		private _setDataBetweenBuffer(pBuffer, iX: uint, iY: uint, pBufferIn, iInX: uint, iInY: uint, iBlockWidth: uint, iBlockHeight: uint): void {
 		    var iInWidth: uint    = this._iBufferWidth;
 		    var iInHeight: uint   = this._iBufferHeight;
-		    var iComponents: uint = pixelUtil.getNumElemBytes(this._eTextureType);
+		    var iComponents: uint = pixelUtil.getNumElemBytes(this._eTextureFormat);
 		    var iWidth: uint      = this._iBufferWidth;
 		    var iHeight: uint     = this._iBufferHeight;
 		    this.setDataT(pBuffer, iX, iY, iWidth, iHeight, pBufferIn, iInX, iInY, iInWidth, iInHeight, iBlockWidth,  iBlockHeight, iComponents);
@@ -594,7 +595,7 @@ module akra.terrain {
 		    var iInHeight: uint    = this._iBlockSize;
 		    var iBlockWidth: uint  = this._iBlockSize;
 		    var iBlockHeight: uint = this._iBlockSize;
-		    var iComponents: uint  = pixelUtil.getNumElemBytes(this._eTextureType);
+		    var iComponents: uint  = pixelUtil.getNumElemBytes(this._eTextureFormat);
 		    var iWidth: uint       = 0;
 		    var iHeight: uint      = 0;
 		    if (pBuffer.length == this._iBufferWidth * this._iBufferHeight * iComponents) {
@@ -729,7 +730,7 @@ module akra.terrain {
 		                 //trace('file not found... Load from server');*/
 		                //console.log("=>", me._sSurfaceTextures)
 		                me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
-		                              iY, me._iBlockSize, me._iBlockSize, me._eTextureType,
+		                              iY, me._iBlockSize, me._iBlockSize, me._eTextureFormat,
 		                              function (pData) {
 		                                  //console.log("<=")
 		                                  //console.log(pData);
@@ -766,7 +767,11 @@ module akra.terrain {
 		                                                           iXBuf / me._iBlockSize] = 0xFFFFFFFF;
 		                                  }
 
-		                                  me._setDataFromBlock(me._pBuffer[iLev], iXBuf, iYBuf, pData8);
+		                                  me._pTmpBox1.setPosition(iXBuf, iYBuf, me._iBlockSize, me._iBlockSize);
+		                                  me._pTmpPixelBox.refresh(me._pTmpBox1, me._eTextureFormat, pData);
+		                                  pixelUtil.bulkPixelConversion(me._pBuffer[iLev], me._pTmpPixelBox)
+
+		                                  // me._setDataFromBlock(me._pBuffer[iLev], iXBuf, iYBuf, pData);
 
 		                                  me._pXY[iLev].isUpdated = true;
 		                                  //a.fopen('filesystem://temporary/'+sPiecePath, 'wb').write(pData8);

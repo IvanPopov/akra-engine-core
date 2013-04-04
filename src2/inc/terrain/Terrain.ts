@@ -45,7 +45,8 @@ module akra.terrain {
 		//Таблица(карта высот)
 		private _pHeightTable: float[] = null;  
 
-		private _pNormalMap: IImg = null;
+		private _pNormalMap: ITexture = null;
+		private _pNormalImage: IImg = null;
 		private _pTempNormalColor: IColor = new Color();
 
 		//отоброжаемые куски текстуры
@@ -55,6 +56,8 @@ module akra.terrain {
 		protected _fLimit: float = 0.0;
 
 		protected _pDefaultRenderMethod: IRenderMethod = null;
+
+
 
 		constructor(pEngine: IEngine) {
 			this._pEngine = pEngine;
@@ -152,7 +155,7 @@ module akra.terrain {
 
 			this._v3fMapScale.x = this._v3fWorldSize.x / this._iTableWidth;
 			this._v3fMapScale.y = this._v3fWorldSize.y / this._iTableHeight;
-			this._v3fMapScale.z = this._v3fWorldSize.z / 255.0;
+			this._v3fMapScale.z = this._v3fWorldSize.z;
 
 
 			//Мегатекстурные параметры
@@ -242,20 +245,19 @@ module akra.terrain {
 			    var pColorData: Uint8Array = new Uint8Array(4 * iMaxY * iMaxX);
 			    this._pHeightTable = new Array(iMaxX * iMaxY); /*float*/
 
-
-			    var temp: ITexture = new core.pool.resources.Texture(/*this._pEngine*/);
-
 			    // first, build a table of heights
 			    if (pImageHightMap.isResourceLoaded()) {
-			        temp.uploadImage(pImageHightMap);
-			        temp.resize(iMaxX, iMaxY);
+			        if(pImageHightMap.width !== iMaxX && pImageHightMap.height !== iMaxY){
+			        	WARNING("Размеры карты высот не совпадают с другими размерами.");
+			        	return;
+			        }
 
-			        temp.getPixelRGBA(0, 0, iMaxX, iMaxY, pColorData);
-			        iComponents = temp.numElementsPerPixel;
-			        for (var i: uint = 0; i < iMaxY * iMaxX; i++) {
-			            fHeight = pColorData[i * iComponents + 0];
-			            fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.z0;
-			            this._pHeightTable[i] = fHeight;
+			        for (var iY: uint = 0; iY < iMaxY; iY++) {
+			        	for(var iX: uint = 0; iX < iMaxX; iX++){
+			        		fHeight = pImageHightMap.getColorAt(this._pTempNormalColor, iX, iY).r;
+			        		fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.z0;
+			        		this._pHeightTable[iY*iMaxX + iX] = fHeight;
+			        	}
 			        }
 			    }
 			    else {
@@ -263,13 +265,13 @@ module akra.terrain {
 			    }
 
 			    if (pImageNormalMap.isResourceLoaded()) {
-			        temp.uploadImage(pImageNormalMap);
+			    	this._pNormalMap = new core.pool.resources.Texture()
+			        this._pNormalMap.loadImage(pImageNormalMap);
+			        this._pNormalImage = pImageNormalMap;
 			    }
 			    else {
 			        WARNING("Карта высот не загружена")
 			    }
-
-			    this._pNormalMap = temp
 		}
 
 		readWorldHeight(iIndex: uint): float;
@@ -305,16 +307,16 @@ module akra.terrain {
 		}
 
 		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3{
-			if (iMapX >= this._pNormalMap.width) {
-			    iMapX = this._pNormalMap.width - 1;
+			if (iMapX >= this._pNormalImage.width) {
+			    iMapX = this._pNormalImage.width - 1;
 			}
-			if (iMapY >= this._pNormalMap.height) {
-			    iMapY = this._pNormalMap.height - 1;
+			if (iMapY >= this._pNormalImage.height) {
+			    iMapY = this._pNormalImage.height - 1;
 			}
 
 
-			// var iOffset: uint = this._pNormalMap.getPixelRGBA(iMapX, iMapY, 1, 1, this._pTempNormalColor)
-			this._pNormalMap.getColorAt(this._pTempNormalColor, iMapX, iMapY);
+			// var iOffset: uint = this._pNormalImage.getPixelRGBA(iMapX, iMapY, 1, 1, this._pTempNormalColor)
+			this._pNormalImage.getColorAt(this._pTempNormalColor, iMapX, iMapY);
 			v3fNormal.set(this._pTempNormalColor.r,
 			              this._pTempNormalColor.g,
 			              this._pTempNormalColor.b)
@@ -415,13 +417,13 @@ module akra.terrain {
 	        return v3fNormal;
 		}
 
-		protected _generateTerrainImage(pTerrainImage: IImg, pTextureList, iTextureCount: int): void {
+		protected _generateTerrainImage(pTerrainImage: IImg, pTextureList: any, iTextureCount: int): void {
 			CRITICAL_ERROR("нехуй");
 		    var bSuccess: bool = false;
 		    var x: int, y: int, i: int;
 
-		    var iImage_width: int = pTerrainImage.getWidth();
-		    var iImage_height: int = pTerrainImage.getHeight();
+		    var iImage_width: int = pTerrainImage.width;
+		    var iImage_height: int = pTerrainImage.height;
 
 		    var fUStep: float = 1.0 / (iImage_width - 1);
 		    var fVStep: float = 1.0 / (iImage_height - 1);
@@ -430,10 +432,10 @@ module akra.terrain {
 		    var pSamples: ITerrainSampleData[] = new Array(iTextureCount);
 
 		    // lock all the textures we need
-		    pTerrainImage.lock();
-		    for (i = 0; i < iTextureCount; ++i) {
+		    // pTerrainImage.lock();
+		    /*for (i = 0; i < iTextureCount; ++i) {
 		        pTextureList[i].pImage.lock();
-		    }
+		    }*/
 
 		    // step through and generate each pixel
 		    for (y = 0; y < iImage_height; ++y) {
@@ -506,22 +508,21 @@ module akra.terrain {
 		                fAlpha += ((pSamples[i].iColor >> 24) & 0xff) * fScale;
 		            }
 
-		            var iR: int = math.clamp(fRed, 0.0, 255.0);
-		            var iG: int = math.clamp(fGreen, 0.0, 255.0);
-		            var iB: int = math.clamp(fBlue, 0.0, 255.0);
-		            var iA: int = math.clamp(fAlpha, 0.0, 255.0);
+		            var fR: float = math.clamp(fRed, 0.0, 255.0)   / 255.;
+		            var fG: float = math.clamp(fGreen, 0.0, 255.0) / 255.;
+		            var fB: float = math.clamp(fBlue, 0.0, 255.0)  / 255.;
+		            var fA: float = math.clamp(fAlpha, 0.0, 255.0) / 255.;
 
-		            var iColor: int = (iA << 24) + (iR << 16) + (iG << 8) + iB;
-
-		            pTerrainImage.setColor(x, y, iColor);
+		            this._pTempNormalColor.set(fR, fG, fB, fA);
+		            pTerrainImage.setColorAt(this._pTempNormalColor, x, y);
 		        }
 		    }
 
 		    // unlock all the images
-		    pTerrainImage.unlock();
+		    /*pTerrainImage.unlock();
 		    for (i = 0; i < iTextureCount; ++i) {
 		        pTextureList[i].pImage.unlock();
-		    }
+		    }*/
 		}
 
 		protected _computeWeight(fValue: float, fMinExtent: float, fMaxExtent: float): float {

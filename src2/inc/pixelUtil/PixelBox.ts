@@ -107,6 +107,19 @@ module akra.pixelUtil {
 		scale(pDest: IPixelBox, eFilter: EFilters = EFilters.BILINEAR): bool {
 			return false;
 		}
+
+		refresh(pExtents: IBox, ePixelFormat: EPixelFormats, pPixelData: Uint8Array): void {
+			this.left 	= pExtents.left;
+			this.top 	= pExtents.top;
+			this.front 	= pExtents.front;
+
+			this.right 	= pExtents.right;
+			this.bottom = pExtents.bottom;
+			this.back 	= pExtents.back;
+
+			this.data = <Uint8Array>pPixelData;
+			this.format = <EPixelFormats>ePixelFormat;
+		}
 	}
 
 }
