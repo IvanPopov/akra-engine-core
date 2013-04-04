@@ -56,12 +56,10 @@ module akra {
 
 		function createSkyBox(): void {
 			pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
-			// pSkyBoxTexture["_eTextureType"] = ETextureTypes.TEXTURE_CUBE_MAP;
-			// pSkyBoxTexture.create(1, 1, 1, null, ETextureFlags.DEFAULT,0, 6, ETextureTypes.TEXTURE_CUBE_MAP);
 			pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
 
 			pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
-				LOG((<render.DSViewport>pViewport).setSkybox(pTexture));
+				(<render.DSViewport>pViewport).setSkybox(pTexture);
 			});
 		}
 
