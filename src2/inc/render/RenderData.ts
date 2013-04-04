@@ -505,7 +505,7 @@ module akra.render {
 		    //необходимо запоминать расположение данных, которые подаются,
 		    //т.к. иначе их потом нельзя будет найти среди других данных
 		    for (var i: int = 0; i < pDataDecl.length; i++) {
-		        this.indexSet.pI2IDataCache[pDataDecl[i].eUsage] = iOffset;
+		        this.indexSet.pI2IDataCache[pDataDecl.element(i).usage] = iOffset;
 		    }
 		    
 
@@ -530,7 +530,7 @@ module akra.render {
 		    var pI2IDecl: IVertexElementInterface[] = [];
 
 		    for (var i: int = 0; i < pDecl.length; i++) {
-		        pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
+		        pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl.element(i).usage, 0));
 		    }
 		    
 

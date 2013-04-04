@@ -8,6 +8,7 @@
 #include "terrain/MegaTexture.ts"
 #include "scene/SceneNode.ts"
 #include "terrain/TerrainSection.ts"
+#include "IEffect.ts"
 
 module akra.terrain {
 
@@ -16,7 +17,7 @@ module akra.terrain {
 		// private _pDevice = null;
 
 		//указатель на корень графа сцены
-		protected _pRootNode: ISceneObject = null;  
+		protected _pRootNode: ISceneNode = null;  
 
 		protected _pWorldExtents: IRect3d = new geometry.Rect3d();
 		private _v3fWorldSize: IVec3 = new Vec3();
@@ -56,6 +57,7 @@ module akra.terrain {
 		protected _fLimit: float = 0.0;
 
 		protected _pDefaultRenderMethod: IRenderMethod = null;
+		protected _pRenderMethod: IRenderMethod = null;
 
 
 
@@ -65,7 +67,7 @@ module akra.terrain {
 			this._pDataFactory = new render.RenderDataCollection(this._pEngine, ERenderDataBufferOptions.VB_READABLE);
 		    // this._pDataFactory.dataType = a.RenderData;
 			// this._pDataFactory.setup();
-			this._initSystemData();
+			// this._initSystemData();
 		}
 
 		inline get dataFactory(): IRenderDataCollection{
@@ -125,11 +127,33 @@ module akra.terrain {
 		};
 
 		protected _initSystemData(): bool {
-			CRITICAL_ERROR("ХЗ как это должно работать");
-			return false;
+			if(isNull(this._pDefaultRenderMethod)){
+				var pMethod: IRenderMethod, pEffect: IEffect;
+			    var pEngine: IEngine = this._pEngine;
+			    
+			    pMethod = <IRenderMethod>pEngine.getResourceManager().renderMethodPool.findResource(".terrain_render");
+			    
+			    if (!isNull(pMethod)) {
+			        this._pDefaultRenderMethod = pMethod;
+			        return true;
+			    }
+
+			    pEffect = <IEffect>pEngine.getResourceManager().effectPool.createResource(".terrain_render");
+			    // pEffect.create();
+			    pEffect.addComponent("akra.system.terrain");
+			    // pEffect.use("akra.system.prepareForDeferredShading");
+
+			    pMethod = <IRenderMethod>pEngine.getResourceManager().renderMethodPool.createResource(".terrain_render");
+			    pMethod.effect = pEffect;
+
+			    this._pDefaultRenderMethod = pMethod;
+			}
+
+		    return true;
 		}
 
-		create(pRootNode: ISceneObject, pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool {
+		create(pRootNode: ISceneNode, pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool {
+			this._initSystemData();
 			//Основные параметры
 			this._iSectorShift = iShift;
 			this._iSectorUnits = 1 << iShift;
@@ -147,8 +171,8 @@ module akra.terrain {
 			//this._iTableHeight >> this._iSectorShift;
 			this._iSectorCountY = 1 << iShiftY;
 
-			this._iTableWidth = this._iSectorCountX * this._iSectorUnits;
-			this._iTableHeight = this._iSectorCountY * this._iSectorUnits;
+			this._iTableWidth = this._iSectorCountX * this._iSectorUnits + 1;
+			this._iTableHeight = this._iSectorCountY * this._iSectorUnits + 1;
 
 
 			this._v2fSectorSize.set(this._v3fWorldSize.x / this._iSectorCountX, this._v3fWorldSize.y / this._iSectorCountY);
@@ -209,9 +233,9 @@ module akra.terrain {
 
 			        var iIndex: uint = (y * this._iSectorCountX) + x;
 
-			        this._pSectorArray[iIndex] = new TerrainSection(this._pEngine);
+			        this._pSectorArray[iIndex] = this._pRootNode.scene.createTerrainSection();
 
-			        if (!this._pSectorArray[iIndex].create(
+			        if (!this._pSectorArray[iIndex]._internalCreate(
 			            this._pRootNode,
 			            this,
 			            x, y,
@@ -224,11 +248,20 @@ module akra.terrain {
 			    }
 			}
 
-			this._setRenderMethod(this._pDefaultRenderMethod, "ss");
+			this._setRenderMethod(this._pDefaultRenderMethod);
 		}
 
-		protected _setRenderMethod(pRenderMethod: IRenderMethod, sName: string): void {
-			CRITICAL_ERROR("ХЗ как это должно работать");
+		protected _setRenderMethod(pRenderMethod: IRenderMethod): void {
+			this._pRenderMethod = null;
+		    this._pRenderMethod = pRenderMethod;
+		    if (this._pRenderMethod) {
+		        this._pRenderMethod.addRef();
+		    }
+		    var pSection;
+		    for (var i = 0; i < this._pSectorArray.length; i++) {
+		        pSection = this._pSectorArray[i];
+		        pSection.renderable.renderMethod = pRenderMethod;
+		    }
 		}
 
 		protected _buildHeightAndNormalTables(pImageHightMap: IImg, pImageNormalMap: IImg): void {
@@ -248,7 +281,8 @@ module akra.terrain {
 			    // first, build a table of heights
 			    if (pImageHightMap.isResourceLoaded()) {
 			        if(pImageHightMap.width !== iMaxX && pImageHightMap.height !== iMaxY){
-			        	WARNING("Размеры карты высот не совпадают с другими размерами.");
+			        	WARNING("Размеры карты высот не совпадают с другими размерами. Нужно: " + 
+			        			iMaxX + "x" + iMaxY + ". Есть: " + pImageHightMap.width + "x" + pImageHightMap.height);
 			        	return;
 			        }
 
@@ -265,7 +299,7 @@ module akra.terrain {
 			    }
 
 			    if (pImageNormalMap.isResourceLoaded()) {
-			    	this._pNormalMap = new core.pool.resources.Texture()
+			    	this._pNormalMap = this._pEngine.getResourceManager().createTexture(".terrain-normal-texture" + sid());
 			        this._pNormalMap.loadImage(pImageNormalMap);
 			        this._pNormalImage = pImageNormalMap;
 			    }

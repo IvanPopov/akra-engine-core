@@ -5,12 +5,12 @@
 
 module akra.geometry {
 	export class Box implements IBox {
-		left: uint;
-		top: uint;
-		front: uint;
-		right: uint;
-		bottom: uint;
-		back: uint;
+		left: uint = 0;
+		top: uint = 0;
+		front: uint = 0;
+		right: uint = 0;
+		bottom: uint = 0;
+		back: uint = 0;
 
 		inline get width(): uint {
 			return this.right - this.left;

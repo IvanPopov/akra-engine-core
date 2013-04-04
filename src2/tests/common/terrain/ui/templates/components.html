@@ -1,0 +1,60 @@
+
+<component type="AnimationControls">
+	<component type="Controls"/>
+	<component type="AnimationGraph"></component>
+</component>
+
+
+
+<component type="AnimationData">
+	<div class="component-title">Animation Data</div>
+	<div class="controls">
+		<component type="Label" text="unknown data"></component>
+	</div>
+	<layout type="Horizontal" align="center" style="height: 15px;"></layout>
+</component>
+
+<component type="AnimationBlender">
+	<div class="component-title">Blender</div>
+	<component type="Label" text="Title"></component>
+	<table class='graph-node-table'>
+		<tr>
+			<td colspan="2" class="graph-node-left" side="left">
+				<layout type="Vertical" style="width: 100%; min-height: 40px;"></layout>
+			</td>
+			<td class="graph-node-center-left" style="min-width: 40px;">
+			</td>
+			<td class="graph-node-center-right" style="min-width: 40px;">
+			</td>
+			<td colspan="2" class="graph-node-right" side="right">
+				<layout type="Vertical" style="min-width: 15px; min-height: 40px;"></layout>
+			</td>
+		</tr>
+	</table>
+</component>
+
+<component type="AnimationMask">
+	<layout type="Horizontal" align="center"></layout>
+	<div class="component-title">Animation Mask</div>
+	<div class="controls">
+		
+	</div>
+	<layout type="Horizontal" align="center"></layout>
+</component>
+
+<component type="AnimationPlayer">
+	<layout type="Horizontal" align="center" style="height: 15px;"/>
+	<div class="component-title">Animation Player</div>
+	<div class="controls">
+		<component type="Label" text="Title"></component>
+		<component type="CheckboxList">
+			<component type="Checkbox" text="Play"></component>
+			<component type="Checkbox" text="Pause"></component>
+		</component>
+		<component type="Checkbox" text="Loop"></component>
+		<component type="Checkbox" text="Reverse"></component>
+		<div>Speed: <component type="Label" text="1"/>x</div>
+		<component type="Slider"></component>
+	</div>
+	<layout type="Horizontal" align="center" style="height: 15px;"/>
+</component>

@@ -189,6 +189,28 @@ module akra.scene {
 			return null;
 		};
 
+		createTerrainSection(sName?: string): ITerrainSection {
+			var pNode: ISceneNode = new terrain.TerrainSection(this);
+			
+			if (!pNode.create()) {
+				ERROR("cannot create terrain section..");
+				return null;
+			}
+
+			return <ITerrainSection>this.setupNode(pNode, sName);
+		};
+
+		createTerrainSectionROAM(sName?: string): ITerrainSectionROAM {
+			var pNode: ISceneNode = new terrain.TerrainSectionROAM(this);
+			
+			if (!pNode.create()) {
+				ERROR("cannot create terrain section roam..");
+				return null;
+			}
+
+			return <ITerrainSectionROAM>this.setupNode(pNode, sName);
+		};
+
 		_createShadowCaster(pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X, sName: string = null){
 			var pShadowCaster: IShadowCaster = new light.ShadowCaster(pLightPoint, iFace);
 			

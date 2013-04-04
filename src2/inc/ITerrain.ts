@@ -38,7 +38,7 @@ module akra {
 		 * @param {uint} iShiftY Количество секторов в terrain по оси Y (указывается в степенях двойки).
 		 * @param {string} sSurfaceTextures Название мега текстуры.
 		 */
-		create(pRootNode: ISceneObject, pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool;
+		create(pRootNode: ISceneNode, pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool;
 		/**
 		 * Ищет секцию по координате
 		 */

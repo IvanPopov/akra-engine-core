@@ -72,7 +72,7 @@ module akra.terrain {
 	    	this._pEngine = pEngine;
 	    	// this._pDevice = pEngine.pDevice;
 	    	this._pObject = pObject;
-	    	this._pWorldExtents = pObject.worldExtents();
+	    	this._pWorldExtents = pObject.worldExtents;
 	    	this._sSurfaceTextures = sSurfaceTextures;
 
 	    	var iCountTex: uint = math.log2(this._iOriginalTextureMaxSize / math.max(this._iTextureHeight, this._iTextureWidth)) + 1;
@@ -96,8 +96,9 @@ module akra.terrain {
 	    	this.setBufferMapNULL(this._pMapDataFor);
 
 	    	//Создаем куски мегатекстуры
+	    	var pRmgr: IResourcePoolManager = this._pEngine.getResourceManager();
     	    for (var i: uint = 0; i < this._pTextures.length; i++) {
-    	        this._pTextures[i] = new core.pool.resources.Texture(/*this._pEngine*/);
+    	        this._pTextures[i] = pRmgr.createTexture(".texture-for-mega-" + i + sid());
     	        this._pTextures[i].create(this._iTextureWidth, this._iTextureHeight, 1, null, ETextureFlags.DYNAMIC, 0, 1, ETextureTypes.TEXTURE_2D, this._eTextureFormat);
     			this._pTextures[i].setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
     			this._pTextures[i].setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
@@ -120,8 +121,7 @@ module akra.terrain {
     				isUpdated : true, isLoaded : false};
     	    }
 
-
-    	    this._pRPC=net.createRpc();
+    	    this._pRPC = net.createRpc();
     	    this._pRPC.join('ws://192.168.194.132');
 	    	this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 	    }

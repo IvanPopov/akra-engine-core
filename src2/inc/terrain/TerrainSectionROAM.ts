@@ -38,8 +38,6 @@ module akra.terrain {
 		private _leftNeighborOfB:  ITriTreeNode = null;
 		private _rightNeighborOfB: ITriTreeNode = null;
 
-	    private _pEngine: IEngine = pEngine;
-
 	    private _iStartIndex: uint = undefined;
 
 	    private _pTerrainSystem: ITerrainROAM = null;
@@ -47,9 +45,8 @@ module akra.terrain {
 	    private _pTempIndexList: Float32Array = undefined;
 	    private _iMaxIndices: uint = undefined;
 
-		constructor(pEngine: IEngine) {
-			super(pEngine);
-			this._pEngine = pEngine;
+		constructor(pScene: IScene3d) {
+			super(pScene);
 		}
 
 		inline get terrainSystem(): ITerrainROAM{
@@ -68,7 +65,7 @@ module akra.terrain {
 			return this._fQueueSortValue;
 		}
 
-		create(pRootNode?: ISceneObject, pParentSystem?: ITerrainROAM, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d, iStartIndex?: uint): bool {
+		_internalCreate(pRootNode?: ISceneNode, pParentSystem?: ITerrainROAM, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d, iStartIndex?: uint): bool {
 			if(arguments.length != 10) {
 				CRITICAL_ERROR("Not all arguments where passed");
 			}
@@ -76,7 +73,7 @@ module akra.terrain {
 			var iVerts: uint = math.max(iXVerts,iYVerts)
 			this._iStartIndex=iStartIndex;
 
-			var bResult: bool = super.create(pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iVerts, iVerts, pWorldRect);
+			var bResult: bool = super._internalCreate(pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iVerts, iVerts, pWorldRect);
 
 			this._iTotalDetailLevels=math.ceil(math.log(iVerts)/math.LN2)*2-1;
 			this._iTotalVariances=1<<this._iTotalDetailLevels;
@@ -126,7 +123,7 @@ module akra.terrain {
 		prepareForRender(): void {
 			super.prepareForRender(); /*????*/
 
-			var pCamera: ICamera = this._pEngine.getRenderer()._getViewport().getCamera()/*getActiveCamera();*/
+			var pCamera: ICamera = null;/*this.scene.getCamera();*//*getActiveCamera();*/
 
 			var v3fViewPoint: IVec3 = pCamera.worldPosition;
 			// compute view distance to our 4 corners

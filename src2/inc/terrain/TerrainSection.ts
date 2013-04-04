@@ -24,13 +24,12 @@ module akra.terrain {
 	    protected _iYVerts: uint = 0;
 	    //Положение сетора в мире
 	    protected _pWorldRect: IRect3d = new geometry.Rect3d(); 
-	    private _pEngine: IEngine = null;
-	    private _pRenderableObject: IRenderableObject = new render.RenderableObject();
+	    private _pRenderableObject: IRenderableObject =  new render.RenderableObject();
 	    private _pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION),VE_FLOAT2(DeclarationUsages.TEXCOORD)];
 
-		constructor(pEngine: IEngine) {
-			super(pEngine.getScene());
-			this._pEngine = pEngine;
+		constructor(pScene: IScene3d) {
+			super(pScene);
+			this._pRenderableObject._setup(this.scene.getManager().getEngine().getRenderer());
 		}
 
 		inline get sectorX(): float {
@@ -40,6 +39,10 @@ module akra.terrain {
 		inline get sectorY(): float{
 			return this._iSectorY;
 		};
+
+		inline get renderable(): IRenderableObject {
+			return this._pRenderableObject;
+		}
 
 		inline get terrainSystem(): ITerrain{
 			return this._pTerrainSystem;
@@ -60,48 +63,49 @@ module akra.terrain {
 		inline get vertexDescription(): IVertexElementInterface[]{
 			return this._pVertexDescription;
 		};
-		create(pRootNode?: ISceneObject, pParentSystem?: ITerrain, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d): bool {
+		_internalCreate(pRootNode?: ISceneNode, pParentSystem?: ITerrain, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d): bool {
 			if(arguments.length != 9) {
 				CRITICAL_ERROR("Not all arguments where passed");
 			}
 
-			var bResult: bool = super.create();
-			if (bResult)
-			{
+			var bResult: bool = false;
+			// if (bResult)
+			// {
 				//
 				// Build a vertex buffer to
 				// hold the height and surface
 				// normal for this area of the terrain
 				//
-				this._pTerrainSystem = pParentSystem;
-				this._iXVerts = iXVerts;
-				this._iYVerts = iYVerts;
-				this._iSectorX = iSectorX;
-				this._iSectorY = iSectorY;
-				this._pWorldRect.x0 = pWorldRect.x0;
-				this._pWorldRect.x1 = pWorldRect.x1;
-				this._pWorldRect.y0 = pWorldRect.y0;
-				//??
-				this._pWorldRect.y1 = pWorldRect.y1; 
-				this._iHeightMapX = iHeightMapX;
-				this._iHeightMapY = iHeightMapY;
+			this._pTerrainSystem = pParentSystem;
+			this._iXVerts = iXVerts;
+			this._iYVerts = iYVerts;
+			this._iSectorX = iSectorX;
+			this._iSectorY = iSectorY;
+			this._pWorldRect.x0 = pWorldRect.x0;
+			this._pWorldRect.x1 = pWorldRect.x1;
+			this._pWorldRect.y0 = pWorldRect.y0;
+			//??
+			this._pWorldRect.y1 = pWorldRect.y1; 
+			this._iHeightMapX = iHeightMapX;
+			this._iHeightMapY = iHeightMapY;
 
-				bResult = this._createRenderDataForVertexAndIndex();
-				bResult = bResult && this._buildVertexBuffer();
-				bResult = bResult && this._buildIndexBuffer();
+			bResult = this._createRenderDataForVertexAndIndex();
+			bResult = bResult && this._buildVertexBuffer();
+			bResult = bResult && this._buildIndexBuffer();
 
-				// set the scene object bounds data
-				this.accessLocalBounds().set(this._pWorldRect.x0,
-											 this._pWorldRect.x1,
-											 this._pWorldRect.y0,
-											 this._pWorldRect.y1,
-											 this._pWorldRect.z0,
-											 this._pWorldRect.z1);
-				if(bResult)
-					this.attachToParent(pRootNode);
+			// set the scene object bounds data
+			this.accessLocalBounds().set(this._pWorldRect.x0,
+										 this._pWorldRect.x1,
+										 this._pWorldRect.y0,
+										 this._pWorldRect.y1,
+										 this._pWorldRect.z0,
+										 this._pWorldRect.z1);
+
+			if(bResult) {
+				this.attachToParent(pRootNode);
 			}
 
-			return bResult;
+			return true;
 		 };
 
 
