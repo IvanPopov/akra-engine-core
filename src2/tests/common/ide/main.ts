@@ -1,5 +1,6 @@
 #include "util/testutils.ts"
 #include "akra.ts"
+#include "controls/KeyMap.ts"
 #include "IDE.ts"
 
 module akra {
@@ -11,6 +12,7 @@ module akra {
 	var pCamera: ICamera = null;
 	var pViewport: IViewport = null;
 	var pIDE: IUIComponent = null;
+	var pSkyBoxTexture: ITexture = null;
 
 	function setup(): void {
 		pIDE = pUI.createComponent("IDE");
@@ -22,10 +24,25 @@ module akra {
 	
 		pCamera.addPosition(vec3(0,0, 10));
 		pCamera.attachToParent(pScene.getRootNode());
+
+		var pKeymap: IKeyMap = controls.createKeymap(pIDE.getHTMLElement());
+
+		pScene.bind(SIGNAL(beforeUpdate), () => {
+			 if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
+			 	var v2fMouseShift: IOffset = pKeymap.getMouseShift();
+
+		        var fdX = v2fMouseShift.x / pViewport.actualWidth * 10.0;
+		        var fdY = v2fMouseShift.y / pViewport.actualHeight * 10.0;
+
+		        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+		    }
+		});
 	}
 
 	function createViewports(): void {
 		pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
+		// pViewport.setClearEveryFrame(true);
+		// pViewport.backgroundColor = Color.CYAN;
 	}
 
 	function createLighting(): void {
@@ -39,6 +56,15 @@ module akra {
 		pOmniLight.params.attenuation.set(1,0,0);
 
 		pOmniLight.addPosition(0, 0, 5);
+	}
+
+	function createSkyBox(): void {
+		pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
+		pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
+
+		pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
+			(<render.DSViewport>pViewport).setSkybox(pTexture);
+		});
 	}
 
 	function loadModels(sPath, fnCallback?: Function): ISceneNode {
@@ -83,6 +109,7 @@ module akra {
 		setup();
 		createCameras();
 		createViewports();
+		createSkyBox();
 		createLighting();
 		
 		// loadModels("../../../data/models/Weldinggun.dae");
