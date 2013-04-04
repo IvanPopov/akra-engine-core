@@ -2226,7 +2226,7 @@ module akra.core.pool.resources {
                             if (!isDef(iTexture)) {
                                 continue;
                             }
-
+                            LOG(iTexture, sTextureType)
                             pSurfaceMaterial.setTexture(iTexture, pTexture, iTexCoord);
                             // LOG(pSurfaceMaterial);
                         }

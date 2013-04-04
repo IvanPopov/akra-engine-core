@@ -102,11 +102,27 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
         norm = float4(IN.norm.xyz, 0.);
     }
     else {
-        norm = float4(IN.norm.xyz, 0.);
-//        texNormal.z *= 2.;
-//        texNormal.xy = (texNormal.xy - 0.5) * 2.;
-//        norm = float4(texNormal.xyz, 0.);
-//        normal_mat = view_mat * model_mat;
+
+        float3 normal = IN.norm.xyz;
+        float3 binormal = cross(float3(1., 0., 0.), normal);
+            
+        if (binormal == float3(0.)) {
+            binormal = cross(float3(0., 1., 0.), normal);
+        }
+
+        float3 tang = cross(normal, binormal);
+
+          //формируем матрицу трансформации вектора источника света
+        float3x3 t;
+        t[0] = tang;
+        t[1] = binormal;
+        t[2] = normal;
+
+
+        //texNormal.z *= 2.;
+        //texNormal.xy = (texNormal.xy - 0.5) * 2.;
+
+        norm = (float4(texNormal.xyz * t, 0.));
     }
     Normal = norm.xyz;
 //    Normal = normalize(float3(normalize(IN.norm) + tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz));

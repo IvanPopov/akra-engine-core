@@ -209,6 +209,7 @@ module akra.fx {
 			this.setSamplerTexture("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
 			this.setSamplerTexture("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
 			this.setSamplerTexture("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
+			this.setSamplerTexture("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
 
 			// this.setUniform("MATERIAL.DIFFUSE", util.colorToVec4(pMaterial.diffuse));
 			// this.setUniform("MATERIAL.AMBIENT", util.colorToVec4(pMaterial.ambient));

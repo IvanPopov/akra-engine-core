@@ -34,8 +34,8 @@ module akra {
 		pOmniLight.attachToParent(pScene.getRootNode());
 		pOmniLight.enabled = true;
 		pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-		pOmniLight.params.diffuse.set(1);
-		pOmniLight.params.specular.set(1, 1, 1, 1);
+		pOmniLight.params.diffuse.set(1.75);
+		pOmniLight.params.specular.set(.5, .5, .5, .5);
 		pOmniLight.params.attenuation.set(1,0,0);
 
 		pOmniLight.addPosition(0, 0, 5);
@@ -87,7 +87,7 @@ module akra {
 		
 		// loadModels("../../../data/models/Weldinggun.dae");
 		// loadModels("../../../data/models/kr360.dae");
-		loadModels("../../../data/models/hero/run.dae");
+		loadModels("../../../data/models/hero/walk.dae");
 		// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 		// loadModels("../../../data/models/teapot.dae", (pModel: ISceneNode) => { pModel.scale(.01); });
 		// loadModels("../../../data/models/cube.dae").scale(0.1);

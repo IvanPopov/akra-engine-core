@@ -16,12 +16,13 @@ module akra.ui {
 			var $stage: JQuery = this.el.find("#stage");
 
 			$stage.append((<any>this.getCanvas())._pCanvas);
-			this.getCanvas().resize(800, 600);
+			this.getCanvas().resize(4/3 * 800, 800);
 
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
 
-			var pTree: IUITree = new Tree(this);
+			var pTree: IUITree = new Tree(this, {show: false});
+			pTree.render(this.el.find("#tree"));
 		}
 
 		inline getEngine(): IEngine { return this._pEngine; }
@@ -33,7 +34,7 @@ module akra.ui {
 			var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>this.ui.createComponent("RenderTargetStats");
 
 			pStats.target = pViewport.getTarget();
-			pStats.el.css({position: "relative", top: "-600px"});
+			pStats.el.css({position: "relative", top: "-800px"});
 			pStats.render($stage);			
 		}
 	}
