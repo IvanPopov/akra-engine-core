@@ -49,7 +49,7 @@ module akra {
 		pController = animation.createController();
 
 		pModelRoot.attachToParent(pScene.getRootNode());
-		pModelRoot.scale(2.);
+		pModelRoot.scale(3.);
 		pModelRoot.addPosition(0, -1., 0);
 
 		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
@@ -87,10 +87,10 @@ module akra {
 		
 		// loadModels("../../../data/models/Weldinggun.dae");
 		// loadModels("../../../data/models/kr360.dae");
-		loadModels("../../../data/models/hero/hero.DAE");
-		loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
-		loadModels("../../../data/models/teapot.dae", (pModel: ISceneNode) => { pModel.scale(.01); });
-		loadModels("../../../data/models/cube.dae").scale(0.1);
+		loadModels("../../../data/models/hero/run.dae");
+		// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+		// loadModels("../../../data/models/teapot.dae", (pModel: ISceneNode) => { pModel.scale(.01); });
+		// loadModels("../../../data/models/cube.dae").scale(0.1);
 	}
 
 	pEngine.bind(SIGNAL(depsLoaded), main);		
