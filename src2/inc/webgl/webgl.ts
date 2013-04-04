@@ -680,9 +680,43 @@ module akra.webgl {
         }	
 	}
 
-	export function checkFBOAttachmentFormat(eFormat: EPixelFormats): bool {
-		return false;
+	export function checkFBOAttachmentFormat(eFormat: EPixelFormats): bool 
+    {
+        if(eFormat==EPixelFormats.A8B8G8R8)
+        {
+            return true;
+        }
+        else if(eFormat==EPixelFormats.FLOAT32_RGBA)
+        {
+            return hasExtension(WEBGL_COLOR_BUFFER_FLOAT);
+        }
+        else if(eFormat==EPixelFormats.FLOAT16_RGBA)
+        {
+            return hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+        }
+        else
+        {
+            return false;
+        }
+		
 	}
+
+    export function checkReadPixelFormat(eFormat: EPixelFormats): bool 
+    {
+        if(eFormat==EPixelFormats.A8B8G8R8)
+        {
+            return true;
+        }
+        else if(eFormat==EPixelFormats.FLOAT32_RGBA)
+        {
+            return hasExtension(WEBGL_COLOR_BUFFER_FLOAT)||hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+        }
+        else
+        {
+            return false;
+        }
+        
+    }
 
 	export function getSupportedAlternative(eFormat: EPixelFormats): EPixelFormats {
 		if (checkFBOAttachmentFormat(eFormat)) {

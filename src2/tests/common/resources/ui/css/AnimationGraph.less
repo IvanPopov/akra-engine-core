@@ -1,0 +1,49 @@
+.component-animationgraph{
+	//.component-graph;
+	.component-animationgraphnode {
+		&.selected {
+			border-bottom: 3px solid red;
+		}
+	}
+}
+
+.component-animationdata {
+
+}
+
+.component-animationdata, .component-animationplayer {
+	.controls {
+		.component-label {
+			font-size: 12px;
+		}
+		padding: 0 2px 0 2px;
+	}
+}
+
+.component-animationplayer, .component-animationblender {
+	.component-button, .component-checkbox {
+		padding: 2px;
+		font-size: 12px;
+	}
+}
+
+.component-animationblender {
+	.component-button {
+		display: block;
+		padding-top: 0px;
+		padding-bottom: 0px;
+	}
+}
+
+.component-animationmask {
+	.controls {
+		width: 140px;
+		max-height: 145px; 
+		overflow-y: scroll; 
+		overflow-x: auto;
+
+		.component-slider {
+			width: 100% !important;
+		}
+	}
+}
