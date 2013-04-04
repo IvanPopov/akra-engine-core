@@ -51,6 +51,7 @@ module akra.render {
 
 		static releaseEntry(pEntry: IRenderEntry): void {
 			RenderQueue.pool.push(pEntry);
+			pEntry.clear();
 		}
 
 		static pool: util.ObjectArray = new util.ObjectArray;

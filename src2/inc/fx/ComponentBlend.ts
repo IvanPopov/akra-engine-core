@@ -189,7 +189,13 @@ module akra.fx {
 			}
 
 			for(var i: uint = 0; i < this._pComponentInputVarBlend.length; i++){
-				this._pComponentInputVarBlend[i].finalizeInput();
+				if(isDef(this._pComponentInputVarBlend[i])){
+					this._pComponentInputVarBlend[i].finalizeInput();
+				}
+				else {
+					this._pComponentInputVarBlend[i] = null;
+					this._pPassesDList[i] = null;
+				}
 			}
 
 			this._isReady = true;
@@ -202,7 +208,8 @@ module akra.fx {
 				return null;
 			}
 
-			if(iPass < 0 || iPass > this.getTotalPasses()){
+			if (iPass < 0 || iPass > this.getTotalPasses() ||
+				isNull(this._pComponentInputVarBlend[iPass])){
 				return null;
 			}
 

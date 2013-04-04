@@ -182,12 +182,12 @@ module akra {
     //     RENDER_BUFFER = 0x8D41
     // };
 
-    // export enum EAttachmentTypes {
-    //     COLOR_ATTACHMENT0 = 0x8CE0,
-    //     DEPTH_ATTACHMENT = 0x8D00,
-    //     STENCIL_ATTACHMENT = 0x8D20,
-    //     DEPTH_STENCIL_ATTACHMENT = 0x821A
-    // };
+    export enum EAttachmentTypes {
+         COLOR_ATTACHMENT0 = 0x8CE0,
+         DEPTH_ATTACHMENT = 0x8D00,
+         STENCIL_ATTACHMENT = 0x8D20,
+         DEPTH_STENCIL_ATTACHMENT = 0x821A
+    };
 
     // export enum ERenderStates {
     //     ZENABLE = 7,

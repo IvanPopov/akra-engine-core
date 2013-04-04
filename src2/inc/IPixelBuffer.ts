@@ -32,6 +32,10 @@ module akra {
 		lock(pLockBox: IBox, iLockFlags?: int): IPixelBox;
 
 		_clearRTT(iZOffset: uint): void;
+		
+		reset(): void;
+        reset(iSize: uint): void;
+        reset(iWidth: uint, iHeight: uint): void;
 	}
 }
 

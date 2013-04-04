@@ -100,6 +100,7 @@ module akra.webgl {
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
 
 			// console.log(pEntry);
+
 			if(!isNull(pEntry.renderTarget)){
 				this._setRenderTarget(pEntry.renderTarget);
 				this.lockRenderTarget();
@@ -184,22 +185,30 @@ module akra.webgl {
 			if(isNull(pViewport)){
 				this._pActiveViewport = null;
 				this._setRenderTarget(null);
+				return;
 			}
-			else if(pViewport !== this._pActiveViewport || pViewport.isUpdated()){
+
+			var isViewportUpdate: bool = pViewport !== this._pActiveViewport || pViewport.isUpdated();
+			var isRenderTargetUpdate: bool = pViewport.getTarget() !== this._pActiveRenderTarget;
+
+			if(isViewportUpdate || isRenderTargetUpdate) {
 				var pTarget: IRenderTarget = pViewport.getTarget();
 
 				this._setRenderTarget(pTarget);
-				this._pActiveViewport = pViewport;
+				
+				if(isViewportUpdate){
+					this._pActiveViewport = pViewport;
 
-				var x: uint = pViewport.actualLeft,
-					y: uint = pViewport.actualTop,
-					w: uint = pViewport.actualWidth,
-					h: uint = pViewport.actualHeight;
+					var x: uint = pViewport.actualLeft,
+						y: uint = pViewport.actualTop,
+						w: uint = pViewport.actualWidth,
+						h: uint = pViewport.actualHeight;
 
-				this._pWebGLContext.viewport(x, y, w, h);
-				this._pWebGLContext.scissor(x, y, w, h);
+					this._pWebGLContext.viewport(x, y, w, h);
+					this._pWebGLContext.scissor(x, y, w, h);
 
-				pViewport._clearUpdatedFlag();
+					pViewport._clearUpdatedFlag();
+				}
 			}
 		}
 
@@ -327,6 +336,10 @@ module akra.webgl {
 
 		inline bindWebGLFramebuffer(eTarget: uint, pBuffer: WebGLFramebuffer): void {
 			this._pWebGLContext.bindFramebuffer(eTarget, pBuffer);
+		}
+
+		inline bindWebGLFramebufferTexture2D(eTarget: uint, eAttachment:uint,eTexTarget:uint, pTexture: WebGLTexture, iMipLevel?:uint=0): void {
+			this._pWebGLContext.framebufferTexture2D(eTarget, eAttachment, eTexTarget, pTexture, iMipLevel)
 		}
 
 		inline deleteWebGLFramebuffer(pBuffer: WebGLFramebuffer): void {

@@ -24,7 +24,7 @@ module akra.webgl {
             super();
         }
 
-        private _getWebGLTextureTarget(): int {
+        _getWebGLTextureTarget(): int {
         	switch(this._eTextureType) {
         		case ETextureTypes.TEXTURE_2D:
         			return GL_TEXTURE_2D;
@@ -82,10 +82,19 @@ module akra.webgl {
         	}
         }
 
+        reset(): void;
+        reset(iSize: uint): void;
+        reset(iWidth: uint, iHeight: uint): void;
+        reset(iWidth?: uint = this._iWidth, iHeight?: uint = iWidth): void {
+            super.reset(iWidth, iHeight);
+
+            for(var i: uint = 0; i < this._pSurfaceList.length; i++) {
+                this._pSurfaceList[i].reset(iWidth, iHeight);
+            }
+        };
 
 
-
-        _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
+        protected _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
              if (!this.isValid()) {
                 return false;
             }
@@ -96,7 +105,7 @@ module akra.webgl {
             pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
             return true;         
         }
-        _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
+        protected _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
              if (!this.isValid()) {
                 return false;
             }
@@ -190,17 +199,12 @@ module akra.webgl {
             	this._iDepth=1;
                 WARNING("Трехмерные текстуры не поддерживаются, сброс глубины в 1");
             }
-            if(!webgl.hasExtension(EXT_TEXTURE_NPOT_2D_MIPMAP) &&(!math.isPowerOfTwo(this._iDepth)||!math.isPowerOfTwo(this._iHeight)||!math.isPowerOfTwo(this._iWidth)))
+            if(this._nMipLevels!=0 && !webgl.hasExtension(EXT_TEXTURE_NPOT_2D_MIPMAP) &&(!math.isPowerOfTwo(this._iDepth)||!math.isPowerOfTwo(this._iHeight)||!math.isPowerOfTwo(this._iWidth)))
             {
                 WARNING("Мип мапы у текстуры не стпени двойки не поддерживаются, сброс мипмапов в 0");
                 this._nMipLevels=0;
                 CLEAR_ALL(this._iFlags, ETextureFlags.AUTOMIPMAP);
             }
-            
-
-
-
-
             
             if(!webgl.isWebGLFormatSupport(this._eFormat))
             {
@@ -396,7 +400,7 @@ module akra.webgl {
 	        }
 
 	        var idx: uint = iFace * (this._nMipLevels + 1) + iMipmap;
-	        ASSERT(idx < this._pSurfaceList.length,"smth");
+	        ASSERT(idx < this._pSurfaceList.length,"smth "+this._pSurfaceList.length+" , "+ iFace+" , "+this._nMipLevels+" , "+iMipmap);
 	        
 	        return this._pSurfaceList[idx];
         }

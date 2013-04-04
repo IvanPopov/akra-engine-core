@@ -192,16 +192,21 @@ module  akra.render {
 		_setViewport(pViewport: IViewport): void {}
 
 		_setViewportForRender(pViewport: IViewport): void {
-			if(pViewport !== this._pActiveViewport || pViewport.isUpdated()){
+			var isViewportUpdate: bool = pViewport !== this._pActiveViewport || pViewport.isUpdated();
+			var isRenderTargetUpdate: bool = pViewport.getTarget() !== this._pActiveRenderTarget;
+			
+			if(isViewportUpdate || isRenderTargetUpdate){
 				this._setViewport(pViewport);
 
-				pViewport._clearForFrame();
+				if(isViewportUpdate){
+					pViewport._clearForFrame();
 
-				var pState: IViewportState = pViewport._getViewportState();
+					var pState: IViewportState = pViewport._getViewportState();
 
-				this._setCullingMode(pState.cullingMode);
-	        	this._setDepthBufferParams(pState.depthTest, pState.depthWrite, 
+					this._setCullingMode(pState.cullingMode);
+		        	this._setDepthBufferParams(pState.depthTest, pState.depthWrite, 
 	        							   pState.depthFunction, pState.clearDepth);
+	        	}
 			}
 		}
 
@@ -241,7 +246,7 @@ module  akra.render {
         }
 
         protected inline unlockRenderTarget(): void {
-        	this._bLockRenderTarget = true;
+        	this._bLockRenderTarget = false;
         }
 
         protected inline isLockRenderTarget(): bool {

@@ -12,6 +12,8 @@
 
 #include "SceneModel.ts"
 #include "Joint.ts"
+#include "terrain/TerrainSection.ts"
+#include "terrain/TerrainSectionROAM.ts"
 
 #include "light/ProjectLight.ts"
 #include "light/OmniLight.ts"
@@ -187,6 +189,28 @@ module akra.scene {
 
 		createText3d(sName: string = null): IText3d {
 			return null;
+		};
+
+		createTerrainSection(sName?: string): ITerrainSection {
+			var pNode: ISceneNode = new terrain.TerrainSection(this);
+			
+			if (!pNode.create()) {
+				ERROR("cannot create terrain section..");
+				return null;
+			}
+
+			return <ITerrainSection>this.setupNode(pNode, sName);
+		};
+
+		createTerrainSectionROAM(sName?: string): ITerrainSectionROAM {
+			var pNode: ISceneNode = new terrain.TerrainSectionROAM(this);
+			
+			if (!pNode.create()) {
+				ERROR("cannot create terrain section roam..");
+				return null;
+			}
+
+			return <ITerrainSectionROAM>this.setupNode(pNode, sName);
 		};
 
 		_createShadowCaster(pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X, sName: string = null){

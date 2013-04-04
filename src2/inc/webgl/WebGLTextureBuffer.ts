@@ -44,6 +44,29 @@ module akra.webgl {
 			this._pRTTList[iZOffset] = null;
 		}
 
+		reset(): void;
+        reset(iSize: uint): void;
+        reset(iWidth: uint, iHeight: uint): void;
+        reset(iWidth?: uint = this._iWidth, iHeight?: uint = iWidth): void {
+			iWidth = math.ceilingPowerOfTwo(iWidth);
+			iHeight = math.ceilingPowerOfTwo(iHeight);
+
+			this._iWidth = this._iLevel === 0 ? iWidth : iWidth / Math.pow(2.0, this._iLevel);
+			this._iHeight = this._iLevel === 0 ? iHeight : iHeight / Math.pow(2.0, this._iLevel);
+
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
+
+			pWebGLContext.texImage2D(this._eFaceTarget,
+                        			 this._iLevel,
+                        			 webgl.getClosestWebGLInternalFormat(webgl.getSupportedAlternative(this._eFormat)),	                            			
+                        			 this._iWidth, this._iHeight, 0,
+                        			 GL_RGBA, GL_UNSIGNED_BYTE,
+                        			 null);	
+		}
+
 		create(iFlags: int): bool;
 		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): bool;
 		create(eTarget: int, pTexture: WebGLTexture, iWidth: uint, iHeight: uint, iInternalFormat: int, iFormat: int, 
@@ -246,7 +269,56 @@ module akra.webgl {
 	        this.notifyAltered();
 		}
 
-		protected download(pData: IPixelBox): void {
+		protected download(pData: IPixelBox): void 
+		{
+
+
+			if ((pData.right > this._iWidth) || (pData.bottom > this._iHeight) || (pData.front != 0) || (pData.back != 1)) {
+				CRITICAL("Invalid box");
+			}
+
+			var pSrcBox:IPixelBox;
+			if(checkReadPixelFormat(pData.format))
+			{
+				pSrcBox=pData;
+			}
+			else
+			{
+				console.log("download. new Pixel Box подходящего формата");
+				pSrcBox = new pixelUtil.PixelBox(pData,EPixelFormats.BYTE_ABGR);
+			}			
+
+			if(!checkFBOAttachmentFormat(this.format))
+			{
+				CRITICAL("Read from texture this format not support");
+			}
+
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+			var pFrameBuffer:WebGLFramebuffer=pWebGLRenderer.createWebGLFramebuffer();
+			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER,pFrameBuffer);
+
+			var eFormat: int = getWebGLFormat(pSrcBox.format);
+			var eType: int = getWebGLDataType(pSrcBox.format);
+
+			pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, this._eFaceTarget,this._pWebGLTexture,this._iLevel);
+			
+			//console.log(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height,eFormat,eType,pSrcBox.data);
+			pWebGLContext.readPixels(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height,eFormat,eType,pSrcBox.data);
+			//console.log("data after readPixel",pSrcBox.data);
+
+			if(!checkReadPixelFormat(pData.format))
+			{
+				console.log("download. конвертация");
+				pixelUtil.bulkPixelConversion(pSrcBox,pData);
+			}
+
+			//дективировать его
+			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER,pOldFramebuffer);
+			pWebGLRenderer.deleteWebGLFramebuffer(pFrameBuffer);
+
 			// if(data.getWidth() != getWidth() ||
 	        //     data.getHeight() != getHeight() ||
 	        //     data.getDepth() != getDepth())
@@ -276,7 +348,7 @@ module akra.webgl {
 	        //     // Restore defaults
 	        //     glPixelStorei(GL_PACK_ALIGNMENT, 4);
 	        // }
-			CRITICAL("Downloading texture buffers is not supported by OpenGL ES");
+			//CRITICAL("Downloading texture buffers is not supported by OpenGL ES");
 		}
 
 		protected buildMipmaps(pData: IPixelBox): void {
@@ -711,7 +783,7 @@ module akra.webgl {
 		}
 
 		resize(iSize: uint): bool;
-		resize(iWidth: uint, iHeight?: uint): bool {
+		resize(iWidth: uint, iHeight?: uint = iWidth): bool {
 			if(arguments.length === 1){
 				CRITICAL("resize with one parametr not available for WebGLTextureBuffer");
 				return false;

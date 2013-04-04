@@ -4,7 +4,7 @@
 #include "IEffect.ts"
 
 module akra {
-	var pEngine: IEngine = createEngine();
+	export var pEngine: IEngine = createEngine();
 	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	var pScene: IScene3d = pEngine.getScene();
 	var pUI: IUI = pEngine.getSceneManager().createUI();
@@ -12,6 +12,7 @@ module akra {
 	var pMainScene: JQuery = null;
 	var pCamera: ICamera = null;
 	var pViewport: IViewport = null;
+	var pSkyBoxTexture: ITexture = null;
 
 	test("Example creation test", () => {
 		function setup(): void {
@@ -51,6 +52,15 @@ module akra {
 			pOmniLight.params.attenuation.set(1,0,0);
 
 			pOmniLight.addPosition(0, 0, 5);
+		}
+
+		function createSkyBox(): void {
+			pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
+			pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
+
+			pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
+				(<render.DSViewport>pViewport).setSkybox(pTexture);
+			});
 		}
 
 		function loadModels(sPath, fnCallback?: Function): ISceneNode {
@@ -96,14 +106,16 @@ module akra {
 			createCameras();
 			createViewports();
 			createLighting();
+			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
 			loadModels("../../../data/models/hero/hero.DAE");
-			loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
-			loadModels("../../../data/models/cube.dae").scale(0.1);
+			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			// loadModels("../../../data/models/cube.dae").scale(0.1);
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	
 		pEngine.exec();
+		// pEngine.renderFrame();
 	});
 }

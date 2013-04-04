@@ -18,6 +18,8 @@ module akra.render {
 		private _iCurrentPass: uint = 0;
 		private _pCurrentPass: IRenderPass = null;
 
+		private _iGlobalPostEffectsStart: uint = 0;
+
 		inline get modified(): uint {
 			return this.getGuid();
 		}
@@ -155,6 +157,62 @@ module akra.render {
 			return this._pComposer.hasOwnComponentInTechnique(this, pComponent, iShift, iPass);
 		}
 
+		hasGlobalPostEffect(): bool {
+			return this._iGlobalPostEffectsStart > 0;
+		}
+
+		isPostEffectPass(iPass: uint): bool {
+			return this._iGlobalPostEffectsStart <= iPass;
+		}
+
+		isLastPass(iPass: uint): bool {
+			var iMaxPass: uint = this.totalPasses - 1;
+			
+			if(iMaxPass === iPass){
+				return true;
+			}
+
+			if(!this._pPassBlackList[iMaxPass]){
+				return false;
+			}
+
+			for(var i: uint = this._pPassBlackList.length - 2; i >=0; i--){
+				if(!this._pPassBlackList[i]){
+					if(i !== iPass){
+						return false;
+					}
+					else {
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		isFirstPass(iPass: uint): bool {
+			if(iPass === 0){
+				return true;
+			}
+
+			if(!this._pPassBlackList[0]){
+				return false;
+			}
+
+			for(var i: uint = 1; i < this._pPassBlackList.length; i++){
+				if(!this._pPassBlackList[i]){
+					if(i !== iPass){
+						return false;
+					}
+					else {
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
 		isFreeze(): bool {
 			return this._isFreeze;
 		}
@@ -174,7 +232,14 @@ module akra.render {
 			for(var i: uint = 0; i < iTotalPasses; i++){
 				if(!this._pPassBlackList[i]){
 					var pInput: IAFXPassInputBlend = this._pComposer.getPassInputBlend(this, i);
-					this._pPassList[i].setPassInput(pInput, bSaveOldUniformValue);
+					if(!isNull(pInput)){
+						this._pPassList[i].setPassInput(pInput, bSaveOldUniformValue);
+						this._pPassList[i].activate();
+					}
+					else {
+						this._pPassList[i].deactivate();
+					}
+					
 				}
 			}
 
@@ -201,7 +266,7 @@ module akra.render {
 			this._isFreeze = true;
 
 			for(var i: uint = 0; i < this.totalPasses; i++){
-				if(this._pPassBlackList[i] === false){
+				if(this._pPassBlackList[i] === false && this._pPassList[i].isActive()){
 					this.activatePass(i);
 					this.render(i);
 
@@ -223,6 +288,11 @@ module akra.render {
 			// this._pPassList[iPass] = null; 
 			
 		}
+
+
+        _setGlobalPostEffectsFrom(iPass: uint): void {
+        	this._iGlobalPostEffectsStart = iPass;
+        }
 
 		private informComposer(): void {
 			if(!isNull(this._pComposer)){

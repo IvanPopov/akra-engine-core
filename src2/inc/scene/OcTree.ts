@@ -195,7 +195,7 @@ module akra.scene {
 
 		    var iComposedIndex: int;
 		    var iShift: int = iDepth - iLevel;
-		    iComposedIndex = (iX0 >> (iDepth - iLevel)) << (2*iDepth + iShift);
+		    iComposedIndex = (iX0 >> (iDepth - iLevel)) << (2 * iDepth + iShift);
 		    // console.log(iComposedIndex);
 		    iComposedIndex += (iY0 >> (iDepth - iLevel)) << (iDepth + iShift);
 		    // console.log(iComposedIndex);
@@ -205,7 +205,7 @@ module akra.scene {
 
 			var iWay: int;
 
-            var pParentNode: IOcTreeNode, pNode: IOcTreeNode
+            var pParentNode: IOcTreeNode, pNode: IOcTreeNode;
 		    pParentNode = this._pHead;
 		    pNode = null;
 

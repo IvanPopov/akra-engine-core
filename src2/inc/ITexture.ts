@@ -143,6 +143,10 @@ module akra {
         createInternalTexture(cFillColor?: IColor): bool;
         freeInternalTexture(): bool;
 
+        reset(): void;
+        reset(iSize: uint): void;
+        reset(iWidth: uint, iHeight: uint): void;
+
     }
 }
 
