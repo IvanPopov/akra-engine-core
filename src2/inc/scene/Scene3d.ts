@@ -12,6 +12,8 @@
 
 #include "SceneModel.ts"
 #include "Joint.ts"
+#include "terrain/TerrainSection.ts"
+#include "terrain/TerrainSectionROAM.ts"
 
 #include "light/ProjectLight.ts"
 #include "light/OmniLight.ts"
