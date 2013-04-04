@@ -141,6 +141,14 @@ module akra.core.pool.resources {
             return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
         }
 
+        reset(): void;
+        reset(iSize: uint): void;
+        reset(iWidth: uint, iHeight: uint): void;
+        reset(iWidth?: uint = this._iWidth, iHeight?: uint = iWidth): void {
+            this._iWidth = iWidth;
+            this._iHeight = iHeight;
+        }
+
         getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer {
             return null;
         }
@@ -166,7 +174,7 @@ module akra.core.pool.resources {
                 return false;
             }    
 
-            this.textureType=eTextureType;
+            this._eTextureType = eTextureType;
 
             this._iWidth = iWidth;
             this._iHeight = iHeight;
@@ -176,6 +184,8 @@ module akra.core.pool.resources {
             this._nMipLevels = nMipLevels;            
 
             this._eFormat = eFormat;
+
+
 
             if(isArray(pPixels)) 
             {
@@ -190,6 +200,27 @@ module akra.core.pool.resources {
             {
                 return this.createInternalTexture(pPixels);
             }
+        }
+
+        loadResource(sFilename?: string): bool {
+            if (arguments.length == 0) {
+                return;
+            }
+            
+            var pImage: IImg = this.getManager().loadImage(sFilename);
+            
+            if (pImage.isResourceLoaded()) {
+                return this.loadImage(pImage);
+            }
+            // LOG("Texture::loadResource(" + sFilename + ")", pImage);
+            this.connect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
+            return true;
+        }
+
+        _onImageLoad(pImage: IImg): void {
+            LOG("resource loaded > ", pImage.findResourceName(), this.findResourceName());
+            this.disconnect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
+            this.loadImage(pImage);
         }
 
         destroyResource(): bool {
@@ -389,10 +420,7 @@ module akra.core.pool.resources {
                 this._nMipLevels=0;
             }
 
-            // Create the texture
-            this.createInternalTexture(null);
-
-            
+                        
             // Check if we're loading one image with multiple faces
             // or a vector of images representing the faces
             var iFaces: uint = 0;
@@ -402,16 +430,19 @@ module akra.core.pool.resources {
             {
                 iFaces = 6;
                 isMultiImage = true;
+                this._eTextureType = ETextureTypes.TEXTURE_CUBE_MAP;
             }
             else if(pMainImage.numFaces==6)
             {
                 iFaces = 6;
                 isMultiImage = false;
+                this._eTextureType = ETextureTypes.TEXTURE_CUBE_MAP;
             }
             else
             {
                 iFaces = 1;
                 isMultiImage = false;
+                this._eTextureType = ETextureTypes.TEXTURE_2D;
             }
 
             // Check wether number of faces in images exceeds number of faces
@@ -420,6 +451,9 @@ module akra.core.pool.resources {
             {
                 iFaces = this.getNumFaces();
             }
+
+            // Create the texture
+            this.createInternalTexture(null);
 
             // Main loading loop
             // imageMips == 0 if the image has no custom mipmaps, otherwise contains the number of custom mips

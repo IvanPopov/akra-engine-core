@@ -6,23 +6,24 @@
 #include "../Component.ts"
 #include "Connector.ts"
 #include "Route.ts"
+#include "io/ajax.ts"
+#include "ConnectionArea.ts"
+
+
+
 
 module akra.ui.graph {
+
+	
+	export interface IGraphNodeAreaMap {
+		[name: string]: IUIGraphConnectionArea;
+	}
+
 	export class Node extends Component implements IUIGraphNode {
 		protected _eGraphNodeType: EUIGraphNodes;
-
-		protected _pRoutes: IUIGraphRoute[] = new Route[];
-		protected _pConnectors: IUIGraphConnector[] = new Connector[];
-		protected _iLastConnection: int = 0;
 		protected _isActive: bool = false;
-
-		public _pZoneOut: IUINode = null;
-		public _pZoneIn: IUINode = null;
-
-
-		inline get connectors(): IUIGraphConnector[] {
-			return this._pConnectors;
-		}
+		protected _pAreas: IGraphNodeAreaMap = <any>{};
+		protected _isSuitable: bool = true;
 
 		inline get graphNodeType(): EUIGraphNodes {
 			return this._eGraphNodeType;
@@ -30,48 +31,107 @@ module akra.ui.graph {
 
 		inline get graph(): IUIGraph { return <IUIGraph>this.parent; }
 
-		constructor (pGraph: IUIGraph, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN) {
-			super(getUI(pGraph), null, EUIComponents.GRAPH_NODE);
+		constructor (pGraph: IUIGraph, options?, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN, $el?: JQuery) {
+			super(getUI(pGraph), options, EUIComponents.GRAPH_NODE, $el);
+
+			template(this, "ui/templates/GraphNode.tpl");
+
 			this._eGraphNodeType = eType;
 
-			ASSERT(isComponent(pGraph, EUIComponents.GRAPH), "only graph may be as parent");
+			ASSERT(isComponent(pGraph, EUIComponents.GRAPH), "only graph may be as parent", pGraph);
 			
 			this.$element.css("position", "absolute");			
 
 			this.attachToParent(pGraph);
 
-			this.init();
+			if (!isDef(options) || options.init !== false) {
+				this.init();
+			}
+
 			this.setDraggable();
 
 			this.$element.offset(this.graph.$element.offset());
+
+			this.connect(pGraph, SIGNAL(connectionBegin), SLOT(onConnectionBegin));
+			this.connect(pGraph, SIGNAL(connectionEnd), SLOT(onConnectionEnd));
 		}
 
-		label(): string {
-			return "GraphNode";
+		protected onConnectionEnd(pGraph: IUIGraph): void {
+			this._isSuitable = false;
+			this.el.removeClass("open blocked");
+		}
+
+		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
+			if (!this.canAcceptConnect() || pRoute.left.node === this) {
+				return;
+			}
+
+			this._isSuitable = true;
+			this.el.addClass("open");
+		}
+
+		inline isSuitable(): bool {
+			return this._isSuitable;
+		}
+
+		findRoute(pNode: IUIGraphNode): IUIGraphRoute {
+			var pRoute: IUIGraphRoute = null;
+
+			for (var i in this._pAreas) {
+				pRoute = this._pAreas[i].findRoute(pNode)
+				if (!isNull(pRoute)) {
+					return pRoute;
+				}
+			}
+
+			return null;
+		}
+
+		inline isConnectedWith(pNode: IUIGraphNode): bool {
+			return !isNull(this.findRoute(pNode));
+		}
+
+		canAcceptConnect(): bool {
+			for (var i in this._pAreas) {
+				if (this._pAreas[i].isSupportsIncoming()) {
+					return true;
+				}
+			}
+
+			return false	;
+		}
+
+		mouseenter(e: IUIEvent): void {
+			super.mouseenter(e);
+			// this.routing();
+			this.sendEvent(Graph.event(EUIGraphEvents.SHOW_MAP));
+		}
+
+		mouseleave(e: IUIEvent): void {
+			super.mouseleave(e);
+			// this.routing();
+			this.sendEvent(Graph.event(EUIGraphEvents.HIDE_MAP));
+		}
+
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-graphnode");
 		}
 
 		move(e: IUIEvent): void {
 			this.routing();
 		}
 
-		// click(e: IUIEvent): void {
-		// 	e.stopPropagation();
-		// }
-
 		dblclick(e: IUIEvent): void {
 			this.activate(!this.isActive());
 		}
 
 		activate(bValue: bool = true): void {
-			var pConnectors: IUIGraphConnector[] = this._pConnectors;
-			
 			this._isActive = bValue;
 			this.highlight(bValue);
 
-			for (var i: int = 0; i < pConnectors.length; ++ i) {
-				if (!isNull(pConnectors[i])) {
-					pConnectors[i].activate(bValue);
-				}
+			for (var sArea in this._pAreas) {
+				this._pAreas[sArea].activate(bValue);
 			}
 		}
 
@@ -79,187 +139,53 @@ module akra.ui.graph {
 			return this._isActive;
 		}
 
-		private init(): void {
-			var pChild: IEntity = this.child;
-			var pNode: IUINode[] = [];
+		protected init(): void {
+			var pSidesLR: string[] = ["left", "right"];
+			var pSidesTB: string[] = ["top", "bottom"];
+			var pSidePanels: IUIGraphConnectionArea[] = [];
+			
+			for (var i: int = 0; i < pSidesTB.length; ++ i) {
+				var sSide: string = pSidesTB[i];
 
-			while(pChild) {
-				if (isLayout(pChild)) {
-					pNode.push(<IUINode>pChild);
-				}
-				pChild = pChild.sibling;
+				pSidePanels[i] = new ConnectionArea(this, {show: false});
+				pSidePanels[i].setLayout(EUILayouts.HORIZONTAL);
+				pSidePanels[i].render(this.el.find(".graph-node-" + sSide + ":first"));
+
+				this._pAreas[sSide] = pSidePanels[i];
 			}
 
-			this.setRouteAreas(pNode);
-		}
+			for (var i: int = 0; i < pSidesLR.length; ++ i) {
+				var sSide: string = pSidesLR[i];
 
-		protected getRouteArea(pNode: IUINode, eDirection: EUIGraphDirections = EUIGraphDirections.IN): IUINode {
-						
-			return pNode;
-		}
+				pSidePanels[i] = new ConnectionArea(this, {show: false});
+				pSidePanels[i].render(this.el.find(".graph-node-" + sSide + ":first"));
 
-		protected setupOutConnection(pNode: IUINode): void {
-		    this.graph._readyForConnect(true);
-		    this.graph._setOutputNode(this);
-		    this.addConnector(this.getRouteArea(pNode, EUIGraphDirections.OUT));
-		}
-
-		setRouteDragAreas(pNode: IUINode[]): void {
-			var pGraphNode: Node = this;
-
-			for (var i: int = 0; i < pNode.length; ++ i) {
-				pNode[i].bind(SIGNAL(mousedown), (pNode: IUINode, e: IUIEvent) => {
-	 				e.stopPropagation();
-	      			pGraphNode.setupOutConnection(pNode); 
-	 			});
+				this.addConnectionArea(sSide, pSidePanels[i]);
 			}
 		}
 
-		setRouteDropAreas(pNode: IUINode[]): void {
-			var pGraphNode: Node = this;
-			var pGraph: IUIGraph = this.graph;
-
-		 	for (var i: int = 0; i < pNode.length; ++ i) {
-	 			pNode[i].bind(SIGNAL(mouseup), (pNode: IUINode, e: IUIEvent) => {
-	 				pGraphNode._pZoneIn = pNode;
-	    			pGraph._readyForConnect(false);
-	 			});
-
-	 			pNode[i].bind(SIGNAL(mouseout), (pNode: IUINode, e: IUIEvent) => {
-	 				pGraphNode._pZoneIn = null;
-	    			pGraph._setInputNode(null);
-	 			});
-
-	 			pNode[i].bind(SIGNAL(mouseover), (pNode: IUINode, e: IUIEvent) => {
-	 				pGraph._setInputNode(pGraphNode);
-	 			});
-		 	}
+		protected inline addConnectionArea(sName: string, pArea: IUIGraphConnectionArea): void {
+			this.connect(pArea, SIGNAL(connected), SLOT(connected));
+			this._pAreas[sName] = pArea;
 		}
 
-		setRouteAreas(pIn: IUINode[], pOut?: IUINode[]) {
-			if (arguments.length < 2) {
-				pOut = pIn;
-			}
-
-			this.setRouteDragAreas(pIn);
-    		this.setRouteDropAreas(pOut);
+		protected connected(pArea: IUIGraphConnectionArea, pNode: IUIGraphNode, pRoute: IUIGraphRoute): void {
+			
 		}
 
-		grabEvent(iKeyCode: int): void {
-			if (iKeyCode === EKeyCodes.DELETE) {
-		        var pConnectors: IUIGraphConnector[] = this._pConnectors;
+		sendEvent(e: IUIGraphEvent): void {
+			for (var i in this._pAreas) {
+	        	this._pAreas[i].sendEvent(e);
+	        }
 
-		        for (var i = 0; i < pConnectors.length; i++) {
-		            if (isDefAndNotNull(pConnectors[i]) && pConnectors[i].isActive()) {
-		                this.getRoute(i).remove(true);
-		            }
-		        }
-
+			if (e.type === EUIGraphEvents.DELETE) {
 		        if (this.isActive()) {
 		            this.beforeDestroy(this);
 		            this.destroy();
 		        }
 		    }
 		}
-
-		removeRoute(pRoute: IUIGraphRoute, iConnection: int, eDir: EUIGraphDirections): void {
-		    this.routeBreaked(pRoute, iConnection, eDir);
-
-		    this._pConnectors[iConnection].destroy();
-		    this._pConnectors[iConnection] = null;
-		    this._pRoutes[iConnection] = null;
-		    this.routing();
-		}
-
-		addConnector(pNode: IUINode) {
-
-			var pConnector: IUIGraphConnector = new Connector(pNode, this);
-		    var iConnector: int = UIGRAPH_INVALID_CONNECTION;
-
-		    this.connect(pConnector, SIGNAL(mousedown), SLOT(_onConnectorMouseDown));
-		    this.connect(pConnector, SIGNAL(activated), SLOT(_onConnectorActivation));
-		    
-		    for (var i = 0; i < this._pConnectors.length; ++ i) {
-		        if (this._pConnectors[i] === null) {
-		            this._pConnectors[i] = pConnector;
-		            iConnector = i;
-		            break;
-		        }
-		    }
-
-		    if (!Connector.isValidConnection(iConnector)) {
-		        this._pConnectors.push(pConnector);
-		        iConnector = this._pConnectors.length - 1;
-		    }
-
-		    pConnector.connection = iConnector;
-		    this._iLastConnection = iConnector;
-
-		    pConnector.activate(this.isActive());
-
-		    
-		    this.routing();
-		}
-
-		hasConnections(): bool {
-			return !(this.connectors.length == 0 || isNull(this.connectors[0]));
-		}
-
-		_onConnectorMouseDown(pConnector: IUIGraphConnector, e: IUIEvent): void {
-			pConnector.activate(!pConnector.isActive());
-		}
-
-		_onConnectorActivation(pConnector: IUIGraphConnector, bState: bool): void {
-			if (pConnector.isValid()) {
-				var pRoute = this._pRoutes[pConnector.connection];
-		       
-		        if (isDefAndNotNull(pRoute)) {
-		            pRoute.activate(bState);
-		            pRoute.routing();
-		        }
-	        }
-		}
-
-		activateRoute(pRoute: IUIGraphRoute, bValue: bool, iConnection: int): void {
-			this._pConnectors[iConnection].activate(bValue);
-		}
-
-		isSuitable(pTarget: IUIGraphNode): bool {
-			return true;
-		}
-
-		uponConnection(pTarget: IUIGraphNode = null): void {
-			if (isNull(pTarget)) {
-				this._pConnectors[this._iLastConnection].destroy();
-				this._pConnectors[this._iLastConnection] = null;
-				this.routing();
-			}
-		}
-
-		prepareForConnect(): bool {
-			return true;
-			//this.graph.connectNode(this);
-		}
-
-		input(i: int): IPoint {
-		    if (isNull(this._pConnectors)) {
-		        //LOG('ooops...', this.getAnimation().name);
-		    }
-//getAbsolutePosition(this.getGraph());
-			var pGraphOffset = this.graph.$element.offset();
-		    var pPosition = this._pConnectors[i].$element.offset();
-		    var pOut: IPoint = {x: pPosition.left - pGraphOffset.left, y: pPosition.top - pGraphOffset.top};
-		    
-		    pOut.x += this._pConnectors[i].$element.width() / 2.;
-		    pOut.y += this._pConnectors[i].$element.height() / 2.;
-
-		    return pOut;
-		};
-
-		inline output(i: int): IPoint {
-			return this.input(i);
-		}
-
+		
 		highlight(bValue: bool = true): void {
 		    if (bValue) {
 		        this.$element.addClass('highlight');
@@ -269,53 +195,18 @@ module akra.ui.graph {
 		    }
 		}
 
-		route(eDirection: EUIGraphDirections, pTarget?: IUIGraphNode): int;
-		route(eDirection: EUIGraphDirections, pTarget?: IUIGraphFloatNode): int;
-		route(eDirection: EUIGraphDirections, pTarget?): int {
-
-		    if (eDirection === EUIGraphDirections.IN) {
-		        this.addConnector(this.getRouteArea(this._pZoneIn, EUIGraphDirections.IN));    
-		    }
-
-		    return this._iLastConnection;
-		}
-
 		routing(): void {
-		    for (var i: int = 0; i < this._pRoutes.length; ++ i) {
-		        if (this._pRoutes[i]) {
-		            this.graph.routing(this._pRoutes[i]);
-		        }
-		    }
+			for(var i in this._pAreas) {
+				this._pAreas[i].routing();
+			}
 		}
 
-		addRoute(pRoute: IUIGraphRoute, iConnection: int): void {
-		    this._pRoutes[iConnection] = pRoute;
-		    pRoute.activate(this.isActive());
-		}
 
-		findRoute(pTarget: IUIGraphNode): int {
-		    for (var i: int = 0; i < this._pRoutes.length; i++) {
-		        if (isNull(this._pRoutes[i])) {
-		            continue;
-		        }
-		        
-		        if (this._pRoutes[i].left === pTarget || this._pRoutes[i].right === pTarget) {
-		            return i;
-		        }
-		    };
-
-		    return UIGRAPH_INVALID_ROUTE;
-		}
-
-		getRoute(i): IUIGraphRoute {
-		    return this._pRoutes[i];
-		};
-
-		BROADCAST(routeBreaked, CALL(route, connection, dir));
+		//BROADCAST(routeBreaked, CALL(route, connection, dir));
 		BROADCAST(beforeDestroy, CALL(node));
 	}
 
-	Component.register("GraphNode", Node);
+	register("GraphNode", Node);
 }
 
 #endif

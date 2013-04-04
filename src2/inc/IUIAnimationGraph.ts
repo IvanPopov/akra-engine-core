@@ -11,7 +11,7 @@ module akra {
 	export interface IUIAnimationGraph extends IUIGraph {
 		getController(): IAnimationController;
 
-		selectNode(pNode: IUIAnimationNode, bPlay?: bool): void;
+		// selectNode(pNode: IUIAnimationNode, bPlay?: bool): void;
 		
 		addAnimation(pAnimation: IAnimationBase): void;
 		
@@ -22,7 +22,7 @@ module akra {
 		findNodeByAnimation(sName: string): IUIAnimationNode;
 		findNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 
-		createNodeByController(pController: IAnimationController): IUIAnimationNode;
+		createNodeByController(pController: IAnimationController): void;
 		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 	}
 }

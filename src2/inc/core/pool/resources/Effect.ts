@@ -15,7 +15,7 @@ module akra.core.pool.resources {
 			return this.getComposer().getTotalPassesForEffect(this);
 		}
 
-		 constructor () {
+		constructor () {
             super();
         }
 
@@ -24,9 +24,9 @@ module akra.core.pool.resources {
 		isMixid(): bool {return false;}
 		isParameterUsed(pParam: any, iPass?: uint): bool {return false;}
 
-		create(): void {
-			this.getComposer() = this.manager.getEngine().getComposer();
-			this.notifyRestored
+		createResource(): bool {
+			this.notifyLoaded();
+			return true;
 		}
 
 		replicable(bValue: bool): void {return;}
@@ -64,6 +64,7 @@ module akra.core.pool.resources {
 			}
 
 			this.notifyAltered();
+			// this.notifyLoaded();
 
 		    if (this.totalComponents === 1 && isSet) {
 		        this.notifyRestored();

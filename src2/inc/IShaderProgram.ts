@@ -3,7 +3,7 @@
 
 module akra {
     
-    IFACE(ISampler2d);
+    IFACE(IAFXSamplerState);
     IFACE(IVertexData);
     IFACE(ITexture);
     IFACE(IMat2);
@@ -66,8 +66,8 @@ module akra {
     	setMat4Array(sName: string, pValue: IMat4[]): void;
 
     	setStruct(sName: string, pData: Object): void;
-    	setSampler2D(sName: string, pData: ISampler2d): void;
-    	setSampler2DToStruct(sName: string, pData: ISampler2d): void;
+    	setSampler(sName: string, pSampler: IAFXSamplerState): void;
+        setSamplerArray(sName: string, pSamplerList: IAFXSamplerState[]): void;
 
     	setTexture(sName: string, pData: ITexture): void;
 
@@ -75,6 +75,11 @@ module akra {
     	applyVertexData(sName: string, pData: IVertexData): void;
 
         applyBufferMap(pMap: IBufferMap): void;
+
+        setVertexBuffer(sName: string, pBuffer: IVertexBuffer): void;
+
+        _getActiveUniformNames(): string[];
+        _getActiveAttributeNames(): string[];
     }
 }
 

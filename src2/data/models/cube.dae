@@ -92,8 +92,8 @@
                 </vertices>
 
                 <polygons count="6" material="WHITE">
-                    <input semantic="NORMAL" source="#box-0-Normal" offset="1"/>
                     <input semantic="VERTEX" source="#box-Vtx" offset="0"/>
+                    <input semantic="NORMAL" source="#box-0-Normal" offset="1"/>
 
                     <p>0 4 2 4 3 4 1 4</p>
                     <p>0 2 1 2 5 2 4 2</p>

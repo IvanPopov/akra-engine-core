@@ -4,6 +4,7 @@
 #include "IRenderableObject.ts"
 #include "RenderTechnique.ts"
 #include "IRenderMethod.ts"
+#include "ShadowViewport.ts"
 
 #define DEFAULT_RM DEFAULT_NAME 
 #define DEFAULT_RT DEFAULT_NAME 
@@ -20,6 +21,15 @@ module akra.render {
 		protected _pTechnique: IRenderTechnique = null;
 		protected _pTechniqueMap: IRenderTechniqueMap = {};
 		protected _bShadow: bool = false;
+		protected _eRenderableType: ERenderDataTypes;
+
+		inline get type(): ERenderDataTypes {
+			return this._eRenderableType;
+		}
+
+		constructor (eType: ERenderDataTypes = ERenderDataTypes.UNKNOWN) {
+			this._eRenderableType = eType;
+		}
 
 		inline get renderMethod(): IRenderMethod {
 			return this._pTechnique.getMethod();
@@ -180,12 +190,16 @@ module akra.render {
 		}
 
 
-		render(csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
+		render(pViewport: IViewport, csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
+			if(!this.isReadyForRender()){
+				return;
+			}
+			
 			if(!this.switchRenderMethod(csMethod)){
 				return;
 			}
 
-			this.data._draw(this.getTechnique(), pSceneObject);
+			this.data._draw(this._pTechnique, pViewport, this, pSceneObject);
 		}
 
 		inline getTechnique(sName: string = DEFAULT_RT): IRenderTechnique {
@@ -202,6 +216,14 @@ module akra.render {
 
 		CREATE_EVENT_TABLE(RenderableObject);
 		UNICAST(shadow, CALL(bValue));
+	}
+
+	export inline function isMeshSubset(pObject: IRenderableObject): bool {
+		return pObject.type === ERenderDataTypes.MESH_SUBSET;
+	}
+
+	export inline function isScreen(pObject: IRenderableObject): bool {
+		return pObject.type === ERenderDataTypes.SCREEN;
 	}
 }
 

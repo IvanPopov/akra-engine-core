@@ -40,12 +40,23 @@ module akra {
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
 
+		hasComponent(sComponent: string, iShift: int, iPass: uint): bool;
+		hasGlobalPostEffect(): bool;
+		
+		isPostEffectPass(iPass: uint): bool;
+		isLastPass(iPass: uint): bool;
+		isFirstPass(iPass: uint): bool;
+
 		isFreeze(): bool;
 
 		updatePasses(bSaveOldUniformValue: bool): void;
 
+		_blockPass(iPass: uint): void;
+
+        _setGlobalPostEffectsFrom(iPass: uint): void;
+        
 		_setComposer(pComposer: IAFXComposer): void;
-		_renderTechnique(pSceneObject: ISceneObject): void;
+		_renderTechnique(pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
 
 		signal render(iPass: uint): void;
 	}

@@ -17,11 +17,12 @@
 #include "IAFXComponent.ts"
 #include "fx/Blender.ts"
 
-#include "IAFXShaderProgram.ts"
+#include "IAFXMaker.ts"
 #include "util/ObjectArray.ts"
 
 #include "util/BufferMap.ts"
 #include "fx/SamplerBlender.ts"
+#include "IRenderer.ts"
 
 module akra.fx {
 
@@ -54,11 +55,21 @@ module akra.fx {
 
 		//Data for render
 		private _pCurrentSceneObject: ISceneObject = null;
+		private _pCurrentViewport: IViewport = null;
+		private _pCurrentRenderable: IRenderableObject = null;
+
 		private _pCurrentBufferMap: IBufferMap = null;
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
-		//private _pPreRenderState: IPreRenderState = null;
 
-		// private _pSamplerBlender: SamplerBlender = null;
+		private _pComposerState: any = { mesh : { isSkinning : false } };
+
+		/** Render targets for global-post effects */
+		private _pRenderTargetA: IRenderTarget = null;
+		private _pRenderTargetB: IRenderTarget = null;
+		private _pLastRenderTarget: IRenderTarget = null;
+
+		private _pPostEffectTextureA: ITexture = null;
+		private _pPostEffectTextureB: ITexture = null;
 
 		//Temporary objects for fast work
 		static pDefaultSamplerBlender: SamplerBlender = null;
@@ -76,22 +87,12 @@ module akra.fx {
 			this._pEffectResourceToComponentBlendMap = <IAFXComponentBlendMap>{};
 
 			this._pGlobalEffectResorceIdStack = [];
-			// this._pGlobalEffectResorceShiftStack = [];
 			this._pGlobalComponentBlendStack = [];
 			this._pGlobalComponentBlend = null;
 
-			// this._pPreRenderState = {
-			// 	isClear: true,
+			this.initPostEffectTextures();
 
-			// 	primType: 0,
-			// 	offset: 0,
-			// 	length: 0,
-			// 	index: null,
-			// 	flows: new util.ObjectArray()
-			// };
 
-			// this._pSamplerBlender = new SamplerBlender(this);
-			// this._pTempPassInstructionList = new ObjectArray();
 			if(isNull(Composer.pDefaultSamplerBlender)){
 				Composer.pDefaultSamplerBlender = new SamplerBlender();
 			}
@@ -279,6 +280,22 @@ module akra.fx {
 			return true;
 		}
 
+		hasOwnComponentInTechnique(pRenderTechnique: IRenderTechnique, 
+								   pComponent: IAFXComponent, iShift: int, iPass: uint): bool {
+			var id: uint = pRenderTechnique.getGuid();
+			var pCurrentBlend: IAFXComponentBlend = null;
+
+			if(isDef(this._pTechniqueToOwnBlendMap[id])){
+				pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
+			}
+
+			if(isNull(pCurrentBlend)){
+				return false;
+			}
+
+			return pCurrentBlend.containComponentWithShift(pComponent, iShift, iPass);
+		}
+
 		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool {
 			if(pRenderTechnique.isFreeze()){
 				return true;
@@ -319,7 +336,7 @@ module akra.fx {
 				if(!pBlend.finalizeBlend()){
 					return false;
 				}
-				
+
 				if(isNeedToUpdatePasses) {
 					pRenderTechnique.updatePasses(isTechniqueUpdate);
 				}
@@ -384,16 +401,39 @@ module akra.fx {
 			return true;
 		}
 
-		setCurrentSceneObject(pSceneObject: ISceneObject): void {
+		inline _setCurrentSceneObject(pSceneObject: ISceneObject): void {
 			this._pCurrentSceneObject = pSceneObject;
 		}
+
+		inline _setCurrentViewport(pViewport: IViewport): void {
+			this._pCurrentViewport = pViewport;
+		}
+
+		inline _setCurrentRenderableObject(pRenderable: IRenderableObject): void {
+			this._pCurrentRenderable = pRenderable;
+		}
+
+		inline _getCurrentSceneObject(): ISceneObject {
+			return this._pCurrentSceneObject;
+		}
+
+		inline _getCurrentViewport(): IViewport {
+			return this._pCurrentViewport;
+		}
+
+		inline _getCurrentRenderableObject(): IRenderableObject {
+			return this._pCurrentRenderable;
+		}
+
 
 		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void {
 			var pPass: IRenderPass = pRenderTechnique.getPass(iPass);
 			var pPassInput: IAFXPassInputBlend = pPass.getPassInput();
 
 			var pPassBlend: IAFXPassBlend = null;
-			var pShader: IAFXShaderProgram = null;
+			var pMaker: IAFXMaker = null;
+
+			this.applySystemUnifoms(pPassInput);
 			
 			if(!pPassInput._isNeedToCalcShader()){
 				//TODO: set pShader to shader program by id
@@ -407,7 +447,17 @@ module akra.fx {
 					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
 					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
 					
-					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, null, null, null);
+					if(!isNull(this._pCurrentRenderable)){
+						if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){
+							this._pComposerState.mesh.isSkinning = true;
+						}
+						else {
+							this._pComposerState.mesh.isSkinning = false;
+						}
+					}
+
+					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
+																  pPassInput.foreigns, pPassInput.uniforms);
 				}
 
 				if(isNull(pPassBlend)){
@@ -415,16 +465,63 @@ module akra.fx {
 					return;
 				}
 
-				pShader = pPassBlend.generateShaderProgram(pPassInput, 
-														   this._pCurrentSurfaceMaterial, 
-														   this._pCurrentBufferMap);
+				pMaker = pPassBlend.generateFXMaker(pPassInput, 
+													this._pCurrentSurfaceMaterial, 
+													this._pCurrentBufferMap);
+
 				//TODO: generate additional shader params and get shader program
 			}
 
 			//TODO: generate input from PassInputBlend to correct unifoms and attributes list
 			//TODO: generate RenderEntry
-			
-			this.clearPreRenderState();
+				
+			//this.clearPreRenderState();
+			var pInput: IShaderInput = pMaker._make(pPassInput, this._pCurrentBufferMap);
+			var pRenderer: IRenderer = this._pEngine.getRenderer();
+			var pEntry: IRenderEntry = pRenderer.createEntry();
+
+			pEntry.maker = pMaker;
+			pEntry.input = pInput;
+			pEntry.viewport = this._pCurrentViewport;
+			pEntry.bufferMap = this._pCurrentBufferMap;
+
+			if(pRenderTechnique.hasGlobalPostEffect()){
+				if(!pRenderTechnique.isFirstPass(iPass)){
+					pRenderer._setDepthBufferParams(false, false, 0);
+					
+					pRenderer._setRenderTarget(this._pRenderTargetA);
+					pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR, Color.ZERO, 1., 0);
+				}
+
+				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
+					pEntry.viewport.actualHeight > this._pRenderTargetA.height)
+				{
+					this.resizePostEffectTextures(pEntry.viewport.actualWidth, pEntry.viewport.actualHeight);
+				}
+
+				if(!pRenderTechnique.isPostEffectPass(iPass)){
+					this._pLastRenderTarget = this._pRenderTargetA;
+					pEntry.renderTarget = this._pRenderTargetA;
+				}
+				else {
+					if(pRenderTechnique.isLastPass(iPass)){
+						this._pLastRenderTarget = null;
+						// pEntry.renderTarget = null;
+					}
+					else {
+						if(this._pLastRenderTarget === this._pRenderTargetA){
+							pEntry.renderTarget = this._pRenderTargetB;
+							this._pLastRenderTarget = this._pRenderTargetB;
+						}
+						else {
+							pEntry.renderTarget = this._pRenderTargetA;
+							this._pLastRenderTarget = this._pRenderTargetA;
+						}
+					}
+				}
+			}
+
+			pRenderer.pushEntry(pEntry);
 		}
 
 		//-----------------------------------------------------------------------------//
@@ -487,6 +584,71 @@ module akra.fx {
 			// this._pPreRenderState.flows.clear(false);
 
 			// this._pPreRenderState.isClear = true;
+		}
+
+		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
+			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
+			var pViewport: IViewport = this._getCurrentViewport();
+			var pRenderable: IRenderableObject = this._getCurrentRenderableObject();
+
+			if(!isNull(pSceneObject)){
+				pPassInput.setUniform("MODEL_MATRIX", pSceneObject.worldMatrix);
+			}
+
+			if(!isNull(pViewport)){
+				var pCamera: ICamera = pViewport.getCamera();
+				pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
+				pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
+				pPassInput.setUniform("INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
+				pPassInput.setUniform("CAMERA_POSITION", pCamera.worldPosition);
+			}
+
+			if(!isNull(pRenderable)){
+				if(render.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()){
+					pPassInput.setUniform("BIND_SHAPE_MATRIX", (<IMeshSubset>pRenderable).skin.getBindMatrix());
+				}
+
+				pPassInput.setUniform("RENDER_OBJECT_ID", pRenderable.getGuid());
+			}
+
+			if(!isNull(this._pLastRenderTarget)){
+				var pLastTexture: ITexture = this._pLastRenderTarget === this._pRenderTargetA ? 
+												this._pPostEffectTextureA : this._pPostEffectTextureB;
+
+				pPassInput.setTexture("INPUT_TEXTURE", pLastTexture);
+				pPassInput.setSamplerTexture("INPUT_SAMPLER", pLastTexture);
+				pPassInput.setUniform("INPUT_TEXTURE_SIZE", vec2(pLastTexture.width, pLastTexture.height));
+				pPassInput.setUniform("INPUT_TEXTURE_RATIO", 
+							vec2(this._pCurrentViewport.actualWidth / pLastTexture.width,
+								 this._pCurrentViewport.actualHeight / pLastTexture.height));
+			}
+		}
+
+		private initPostEffectTextures(): void{
+			var pRmgr: IResourcePoolManager = this._pEngine.getResourceManager();
+			this._pPostEffectTextureA = pRmgr.createTexture(".global-post-effect-texture-A");
+			this._pPostEffectTextureB = pRmgr.createTexture(".global-post-effect-texture-B");
+
+			this._pPostEffectTextureA.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+								   ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+
+			this._pPostEffectTextureB.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+								   ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+
+			this._pRenderTargetA = this._pPostEffectTextureA.getBuffer().getRenderTarget();
+			this._pRenderTargetB = this._pPostEffectTextureB.getBuffer().getRenderTarget();
+
+			// this._pRenderTargetA.attachDepthBuffer();
+			// this._pRenderTargetA.attachDepthTexture(this._pPostEffectDepthTexture);
+			// this._pRenderTargetB.attachDepthTexture(pDepthTexture);
+		}
+
+		private resizePostEffectTextures(iWidth: uint, iHeight: uint): void {
+			iWidth = math.ceilingPowerOfTwo(iWidth);
+			iHeight = math.ceilingPowerOfTwo(iHeight);
+			
+			this._pPostEffectTextureA.reset(iWidth, iHeight);
+			this._pPostEffectTextureB.reset(iWidth, iHeight);		
 		}
 	}
 }

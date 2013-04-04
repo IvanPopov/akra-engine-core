@@ -9,10 +9,11 @@
 
 module akra.scene.light {
 	export class ShadowCaster extends objects.Camera implements IShadowCaster {
-		protected _pLightPoint: ILightPoint;
-		protected _iFace: uint;
-		protected _pAffectedObjects: IObjectArray;
-		protected _m4fOptimizedProj: IMat4;
+		protected _pLightPoint: ILightPoint = null;
+		protected _iFace: uint = 0;
+		protected _pAffectedObjects: IObjectArray = new util.ObjectArray();
+		protected _m4fOptimizedProj: IMat4 = new Mat4();
+		protected _isShadowCasted: bool = false;
 
 		inline get lightPoint(): ILightPoint{
 			return this._pLightPoint;
@@ -30,13 +31,18 @@ module akra.scene.light {
 			return this._m4fOptimizedProj;
 		}
 
+		inline get isShadowCasted(): bool{
+			return this._isShadowCasted;
+		}
+		inline set isShadowCasted(isShadowCasted: bool){
+			this._isShadowCasted = isShadowCasted;
+		}
+
 		constructor (pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X) {
 			super(pLightPoint.scene, EEntityTypes.SHADOW_CASTER);
 
 			this._pLightPoint = pLightPoint;
 			this._iFace = iFace;
-			this._pAffectedObjects = new util.ObjectArray();
-			this._m4fOptimizedProj = new Mat4();
 		};
 
 		_optimizeProjectionMatrix():void {

@@ -7,6 +7,7 @@
 #include "HTMLNode.ts"
 #include "DNDNode.ts"
 #include "Component.ts"
+#include "Panel.ts"
 #include "Button.ts"
 #include "Label.ts"
 #include "Layout.ts"
@@ -16,6 +17,8 @@
 #include "Checkbox.ts"
 #include "CheckboxList.ts"
 #include "Window.ts"
+#include "RenderTargetStats.ts"
+#include "Tree.ts"
 
 #define UI_GRAPH
 #define UI_ANIMATION
@@ -66,11 +69,8 @@ module akra.ui {
 				//console.log("Founded non-generic type: " + sType);
 				return new COMPONENTS[sType](this, pOptions);
 			}
-
-			pOptions = pOptions || {};
-			pOptions.generic = sType;
 			
-			return new Component(this, pOptions);
+			return new Component(this, mergeOptions(pOptions, {generic: sType}));
 		}
 
 		createLayout(eType: EUILayouts = EUILayouts.UNKNOWN, pAttrs?: IUILayoutAttributes): IUILayout;

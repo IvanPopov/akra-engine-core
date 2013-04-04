@@ -32,14 +32,21 @@ module akra.ui {
 			this._fValue = fValue;
 		}
 
-		constructor (ui, options?, eType: EUIComponents = EUIComponents.SLIDER) {
-			super(ui, options, eType);
+		constructor (parent, options?, eType: EUIComponents = EUIComponents.SLIDER) {
+			super(parent, options, eType);
 
-			this.$progress = this.$element.find(".slider-progress");
-			this.$text = this.$element.find(".slider-text");
+			this.ui.createComponent("pin", {class: "component-pin"}).attachToParent(this);
+
+			//this.$progress = this.$element.find(".slider-progress");
+			//this.$text = this.$element.find(".slider-text");
 
 			this.pin.setDraggable();
 			this.connect(this.pin, SIGNAL(move), SLOT(_updated));
+		}
+
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-slider");
 		}
 
 		_updated(pPin: IUIComponent, e: IUIEvent): void {
@@ -61,12 +68,6 @@ module akra.ui {
 			}
 		}
 
-
-		label(): string {
-			return "Slider";
-		}
-
-
 #ifdef DEBUG
 		toString(isRecursive: bool = false, iDepth: int = 0): string {
 			if (!isRecursive) {
@@ -80,7 +81,7 @@ module akra.ui {
 		BROADCAST(updated, CALL(value));
 	}
 
-	Component.register("Slider", Slider);
+	register("Slider", Slider);
 }
 
 #endif

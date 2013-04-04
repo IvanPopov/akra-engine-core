@@ -1,0 +1,13 @@
+
+> preprocessing started (6168)
+
+Debug build.
+EcmaScript 6 capability mode: ON
+C:\WebServers\home\akra\www\akra-engine-core\src2\build/mcpp -P -C -e utf8 -I inc/ -I C:\WebServers\home\akra\www\akra-engine-core\src2\build/definitions/ -j -+ -W 0 -k -D protected=/**@protected*/ -D const=/**@const*/var -D struct=class -D readonly= -D DEBUG=DEBUG inc/akra.ts
+preprocessing exited with code 0 (successful)
+preprocessed to:  bin/~tmp.ts
+
+> compilation started (6168)  
+
+node C:\WebServers\home\akra\www\akra-engine-core\src2\build/tsc.js -c --target ES5 C:\WebServers\home\akra\www\akra-engine-core\src2\build/definitions/fixes.d.ts bin/~tmp.ts --out bin/akra.js --cflowu --const
+compilation exited with code 1 (failed)

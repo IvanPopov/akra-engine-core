@@ -98,7 +98,7 @@ module akra.scene {
 		    //     this._pTestLocalRect[i] = new OcTreeRect;
 		    // }
 		    
-		    this._pHead = new OcTreeRootNode(this) ;
+		    this._pHead = new OcTreeRootNode(this);
 		    this._pHead.level = 0;
 
 		    this._pFreeNodePool = new Array();

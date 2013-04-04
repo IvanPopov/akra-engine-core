@@ -12,49 +12,40 @@ module akra.ui.animation {
 	export class Controls extends graph.Controls {
 
 		constructor (parent) {
-			super(parent);
+			super(parent, <IUIGraph>getUI(parent).createComponent("AnimationGraph"));
 
 			var pControlPanel: IUIComponent = this.controls;
 
-			var pNodeBtn: IUIButton = new Button(pControlPanel, {text: "Create graph node"});
 			var pDataBtn: IUIButton = new Button(pControlPanel, {text: "Create data"});
 			var pPlayerBtn: IUIButton = new Button(pControlPanel, {text: "Create player"});
 			var pBlenderBtn: IUIButton = new Button(pControlPanel, {text: "Create blender"});
 			var pMaskBtn: IUIButton = new Button(pControlPanel, {text: "Create mask"});
 
-			this.connect(pNodeBtn, SIGNAL(click), SLOT(createNode));
 			this.connect(pDataBtn, SIGNAL(click), SLOT(createData));
 			this.connect(pPlayerBtn, SIGNAL(click), SLOT(createPlayer));
 			this.connect(pBlenderBtn, SIGNAL(click), SLOT(createBlender));
 			this.connect(pMaskBtn, SIGNAL(click), SLOT(createMask));
 		}	
 
-		createNode(): IUIGraphNode {
-			return new graph.Node(this.graph);
-		}
 
-		createData(): IUIGraphNode {
+		createData(): IUIAnimationNode {
 			return new Data(this.graph);
 		}
 
-		createPlayer(): IUIGraphNode {
+		createPlayer(): IUIAnimationNode {
 			return new Player(this.graph);
 		}
-
-		createBlender(): IUIGraphNode {
+		
+		createBlender(): IUIAnimationNode {
 			return new Blender(this.graph);
 		}
 
-		createMask(): IUIGraphNode {
+		createMask(): IUIAnimationNode {
 			return new Mask(this.graph);
-		}
-
-		label(): string {
-			return "AnimationControls";
 		}
 	}
 
-	Component.register("AnimationControls", Controls);
+	register("AnimationControls", Controls);
 }
 
 #endif

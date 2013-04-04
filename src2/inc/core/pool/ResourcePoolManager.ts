@@ -373,6 +373,10 @@ module akra.core.pool {
             return <IIndexBuffer>this.indexBufferPool.createResource(sResourceName);
         };
 
+        inline createShaderProgram(sResourceName: string): IShaderProgram {
+            return <IShaderProgram>this.shaderProgramPool.createResource(sResourceName);
+        };
+
         inline createModel(sResourceName: string): IModel {
             return <IModel>this.colladaPool.createResource(sResourceName);   
         }
@@ -399,6 +403,19 @@ module akra.core.pool {
             return null;
         }
 
+        loadImage(sFilename: string): IImg {
+             var pImg: IImg = <IImg>this.imagePool.findResource(sFilename);
+
+            if (isNull(pImg)) {
+                pImg = <IImg>this.imagePool.createResource(sFilename);
+
+                if (!pImg.isResourceLoaded()) {
+                    pImg.loadResource(sFilename);
+                }
+            }
+
+            return pImg; 
+        }
 
 
         private createDeviceResource(): void {

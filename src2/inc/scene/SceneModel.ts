@@ -10,7 +10,7 @@
 
 module akra.scene {
 	export class SceneModel extends SceneObject implements ISceneModel {
-		private _pMesh: IMesh;
+		private _pMesh: IMesh = null;
 
 		constructor (pScene: IScene3d) {
 			super(pScene, EEntityTypes.MODEL);
@@ -29,6 +29,7 @@ module akra.scene {
 			if (!isNull(pMesh)) {
 				this.accessLocalBounds().set(pMesh.boundingBox);
 				this._pMesh = pMesh;
+				pMesh.connect(this.scene, SIGNAL(preUpdate), SLOT(update));
 			}
 		}
 
@@ -37,6 +38,9 @@ module akra.scene {
 		}
 
 		inline getRenderable(i: uint = 0): IRenderableObject {
+			if(isNull(this._pMesh)){
+				WARNING(this);
+			}
 			return this._pMesh.getSubset(i);
 		}
 
@@ -51,7 +55,7 @@ module akra.scene {
 		toString(isRecursive: bool = false, iDepth: uint = 0): string {
 #ifdef DEBUG
 		    if (!isRecursive) {
-		        var sData: string = "<model" + (this.name? " " + this.name: "") + "(" + String(isNull(this._pMesh)) + ")" +  '>';
+		        var sData: string = "<model" + (this.name? " " + this.name: "") + "(" + (isNull(this._pMesh)? 0: this._pMesh.length) + ")" +  '>';
 		        
 		        if (!isNull(this._pMesh)) {
 		            sData += "( " + this._pMesh.name + " )";
@@ -64,9 +68,11 @@ module akra.scene {
 #else
 			return null;
 #endif
-		};
+		}
+
 
 	}
+	var iUpdatedOnce: int = 0;
 
 	export inline function isModel(pEntity: IEntity): bool {
 		return pEntity.type === EEntityTypes.MODEL;

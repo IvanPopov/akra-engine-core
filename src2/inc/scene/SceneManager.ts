@@ -15,7 +15,7 @@ module akra.scene {
         private _pSceneList: IScene[] = [];
 
         private _fUpdateTimeCount: float = 0.;
-        private _fMillisecondsPerTick: float = 0.0333;
+        private _fMillisecondsPerTick: float = 0.01666; /*60 updates per frame*/
         
 
         constructor (pEngine: IEngine) {
@@ -30,14 +30,17 @@ module akra.scene {
             var isSceneUpdated: bool = false;
             // add the real time elapsed to our
             // internal delay counter
-            this._fUpdateTimeCount += this._pEngine.getTimer().elapsedTime;
+            this._fUpdateTimeCount += this._pEngine.elapsedTime;
             // is there an update ready to happen?
-            
+
+            // LOG(this._fUpdateTimeCount, this._pEngine.elapsedTime);
+
             var fUpdateTime: float = this._fUpdateTimeCount;
 
             while (this._fUpdateTimeCount > this._fMillisecondsPerTick) {
                 // update the scene
                 this.notifyUpdateScene();
+
 
                 // subtract the time interval
                 // emulated with each tick
@@ -49,8 +52,11 @@ module akra.scene {
             }
         }
 
+        // inline preUpdate(): void {
+        //     this.notifyPreUpdateScene();
+        // }
+
         notifyUpdateScene(): void {
-            
             // update the scene attached to the root node
             for (var i = 0; i < this._pSceneList.length; ++ i) {
                 var pScene: IScene = this._pSceneList[i];
@@ -84,6 +90,15 @@ module akra.scene {
 
         createScene2D(): IScene2d {
             return null;
+        }
+
+        createUI(): IUI {
+#ifdef GUI
+                var pUI: IUI = new ui.UI(this);
+                return pUI;
+#else
+                return null;
+#endif
         }
 
         getScene3D(iScene: uint = 0): IScene3d {

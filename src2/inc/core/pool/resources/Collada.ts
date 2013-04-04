@@ -191,6 +191,7 @@ module akra.core.pool.resources {
 
         // materials & meshes
         
+        private buildDefaultMaterials(pMesh: IMesh): IMesh;
         private buildMaterials(pMesh: IMesh, pGeometryInstance: IColladaInstanceGeometry): IMesh;
         private buildSkeleton(pSkeletonsList: string[]): ISkeleton;
         private buildMesh(pGeometryInstance: IColladaInstanceGeometry): IMesh;
@@ -315,17 +316,19 @@ module akra.core.pool.resources {
         private trifanToTriangles(pXML: Element, iStride: int): uint[] {
             var pFans2Tri: uint[] = [0, 0, 0];
             var pData: uint[] = [];
-            var tmp: uint[] = new Array(iStride), n;
+            var tmp: uint[] = new Array(iStride), n: uint;
             var pIndexes: uint[] = [];
 
             this.eachByTag(pXML, "p", function (pXMLData) {
                 n = string2IntArray(stringData(pXMLData), pData);
+
                 for (var i: int = 0; i < 3; i++) {
                     retrieve(pData, tmp, iStride, i, 1);
                     for (var j: int = 0; j < iStride; ++j) {
                         pIndexes.push(tmp[j]);
                     }
                 }
+
 
                 for (var i: int = 3, m = n / iStride; i < m; i++) {
                     pFans2Tri[1] = i - 1;
@@ -336,6 +339,7 @@ module akra.core.pool.resources {
                         }
                     }
                 }
+
             });
 
             return pIndexes;
@@ -1014,12 +1018,13 @@ module akra.core.pool.resources {
                 inputs    : [],                     /*потоки данных*/
                 p         : null,                   /*индексы*/
                 material  : attr(pXML, "material"), /*идентификатор материала*/
-                name      : null                    /*имя (встречается редко, не используется)*/
+                name      : null,                   /*имя (встречается редко, не используется)*/
+                count     : parseInt(attr(pXML, "count")) /*полное число индексов*/
             };
 
             var iOffset: int = 0, n: uint = 0;
             var iCount: int = parseInt(attr(pXML, "count"));
-            var iStride: int;
+            var iStride: int = 0;
 
             this.eachByTag(pXML, "input", (pXMLData: Element): void => {
                 pPolygons.inputs.push(this.COLLADAInput(pXMLData, iOffset));
@@ -1028,7 +1033,11 @@ module akra.core.pool.resources {
 
             sortArrayByProperty(pPolygons.inputs, "iOffset");
 
-            iStride = (<IColladaInput>pPolygons.inputs.last).offset + 1;
+            for(var i: uint = 0; i < pPolygons.inputs.length; ++ i) {
+                iStride = math.max((<IColladaInput>pPolygons.inputs[i]).offset + 1, iStride);
+            }
+
+            debug_assert(iStride > 0, "Invalid offset detected.");
 
             switch (sType) {
                 case "polylist":
@@ -1149,7 +1158,7 @@ module akra.core.pool.resources {
                     case "polygons":
                     case "polylist":
                         pPolygons = this.COLLADAPolygons(pXMLData, sName);
-                        
+
                         for (var i: int = 0; i < pPolygons.inputs.length; ++i) {
                             pPos = null;
 
@@ -1581,7 +1590,7 @@ module akra.core.pool.resources {
         }
         
         private COLLADABindMaterial(pXML: Element): IColladaBindMaterial {
-            if (isNull(pXML)) {
+            if (!isDefAndNotNull(pXML)) {
                 return null;
             }
 
@@ -2113,12 +2122,24 @@ module akra.core.pool.resources {
 
         // materials & meshes
         
+        private buildDefaultMaterials(pMesh: IMesh): IMesh {
+            var pDefaultMaterial: IMaterial = material.create("default");
+
+            for (var j: int = 0; j < pMesh.length; ++j) {
+                var pSubMesh: IMeshSubset = pMesh.getSubset(j);
+                pSubMesh.material.set(pDefaultMaterial);
+                pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+            }
+
+            return pMesh;
+        }
+
         private buildMaterials(pMesh: IMesh, pGeometryInstance: IColladaInstanceGeometry): IMesh {
             var pMaterials: IColladaBindMaterial = pGeometryInstance.material;
             var pEffects: IColladaEffectLibrary = <IColladaEffectLibrary>this.getLibrary("library_effects");
 
-            if (isNull(pEffects)) {
-                return pMesh;
+            if (isNull(pEffects) || isNull(pMaterials)) {
+                return this.buildDefaultMaterials(pMesh);
             }
 
             for (var sMaterial in pMaterials) {
@@ -2143,7 +2164,7 @@ module akra.core.pool.resources {
                         // pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
 
                         pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
-                        pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
+                        // pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
 
                         //setup textures
                         for (var sTextureType in pPhongMaterial.textures) {
@@ -2162,6 +2183,7 @@ module akra.core.pool.resources {
 
                             var sInputSemantics: string = pInputMap[pColladaTexture.texcoord].inputSemantic;
                             var pColladaImage: IColladaImage = pColladaTexture.image;
+
 
                             var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.surfaceMaterial;
                             var pTexture: ITexture = <ITexture>this.getManager().texturePool.loadResource(pColladaImage.path);
@@ -2234,7 +2256,7 @@ module akra.core.pool.resources {
             for (var i: int = 0; i < pPolyGroup.length; ++i) {
                 pMesh.createSubset(
                     "submesh-" + i, 
-                    this.isWireframeEnabled() ? EPrimitiveTypes.LINELIST : pPolyGroup[i].type);  /*EPrimitiveTypes.POINTLIST);*/
+                    this.isWireframeEnabled() ? EPrimitiveTypes.LINELIST : pPolyGroup[i].type);
             }
 
             //filling data
@@ -2269,7 +2291,6 @@ module akra.core.pool.resources {
 
                                 pData = pDataExt;
                                 pDecl = [VE_FLOAT3(sSemantic), VE_END(16)];
-
                                 break;
                             case DeclUsages.TEXCOORD:
                             case DeclUsages.TEXCOORD1:
@@ -2299,21 +2320,26 @@ module akra.core.pool.resources {
                 var pPolygons: IColladaPolygons = pPolyGroup[i];
                 var pSubMesh: IMeshSubset = pMesh.getSubset(i);
                 var pSubMeshData: IRenderData = pSubMesh.data;
-                var pDecl: IVertexElementInterface[] = new Array(pPolygons.inputs.length);
-                var iIndex: int = 0;
+                var pIndexDecl: IVertexDeclaration = createVertexDeclaration();
                 var pSurfaceMaterial: ISurfaceMaterial = null;
                 var pSurfacePool: IResourcePool = null;
 
                 for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
-                    pDecl[j] = VE_FLOAT(DeclUsages.INDEX + (iIndex++));
+                    var iOffset: int = pPolygons.inputs[j].offset;
+                    var sIndexSemantic: string = DeclUsages.INDEX + iOffset;
+                    //total number of offsets can be less then number of inputs
+                    if (!pIndexDecl.hasSemantics(sIndexSemantic)) {
+                        pIndexDecl.append(VE_FLOAT(sIndexSemantic));
+                    }
                 }
 
-                pSubMeshData.allocateIndex(pDecl, new Float32Array(pPolygons.p));
+                pSubMeshData.allocateIndex(pIndexDecl, new Float32Array(pPolygons.p));
 
-                for (var j: int = 0; j < pDecl.length; ++j) {
+                for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
                     var sSemantic: string = pPolygons.inputs[j].semantics;
+                    var sIndexSemantics: string = DeclUsages.INDEX + pPolygons.inputs[j].offset;
 
-                    pSubMeshData.index(sSemantic, pDecl[j].usage);
+                    pSubMeshData.index(sSemantic, sIndexSemantics);
                 }
 
                 // if (!pSubMesh.material) {
@@ -2402,7 +2428,7 @@ module akra.core.pool.resources {
             return pMeshList;
         }
 
-         private buildMeshInstance(pGeometries: IColladaInstanceGeometry[], pSceneNode: ISceneModel = null): IMesh[] {
+        private buildMeshInstance(pGeometries: IColladaInstanceGeometry[], pSceneNode: ISceneModel = null): IMesh[] {
             var pMesh: IMesh = null;
             var pMeshList: IMesh[] = [];
 
@@ -2436,7 +2462,7 @@ module akra.core.pool.resources {
                     return;
                 }
 
-                if (scene.isModel(pModelNode)) {
+                if (!scene.isModel(pModelNode) && pNode.geometry.length > 0) {
                     pModelNode = pModelNode.scene.createModel(".joint-to-model-link-" + sid());
                     pModelNode.attachToParent(pNode.constructedNode);
                 }
@@ -2708,7 +2734,7 @@ module akra.core.pool.resources {
         }
 
          private inline isAnimationNeeded(): bool {
-            return isDefAndNotNull(this._pOptions.animation);
+            return isDefAndNotNull(this._pOptions.animation) && this._pOptions.animation !== false;
         }
 
         private inline isPoseExtractionNeeded(): bool {
@@ -3143,7 +3169,7 @@ module akra.core.pool.resources {
             }
         }
 
-        return n;
+        return j;
     }
     
     inline function string2IntArray(sData: string, ppData: int[], iFrom?: uint): uint {

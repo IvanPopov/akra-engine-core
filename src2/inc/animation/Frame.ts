@@ -167,14 +167,17 @@ module akra.animation {
 		}
 
 		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void {
-			var pResultData = this.matrix.data;
-			var pStartData = pStartFrame.matrix.data;
-			var pEndData = pEndFrame.matrix.data;
-			var fBlendInv = 1. - fBlend;
+			// var pResultData = this.matrix.data;
+			// var pStartData = pStartFrame.matrix.data;
+			// var pEndData = pEndFrame.matrix.data;
+			// var fBlendInv = 1. - fBlend;
 
-			for (var i = 0; i < 16; i++) {
-				pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
-			};
+			// for (var i = 0; i < 16; i++) {
+			// 	pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
+			// };
+			pStartFrame.translation.mix(pEndFrame.translation, fBlend, this.translation);
+			pStartFrame.scale.mix(pEndFrame.scale, fBlend, this.scale);
+			pStartFrame.rotation.smix(pEndFrame.rotation, fBlend, this.rotation);
 		}
 
 		interpolateMatrix(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void {

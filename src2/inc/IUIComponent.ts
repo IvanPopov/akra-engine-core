@@ -12,7 +12,8 @@ module akra {
 		show?: bool;
 		name?: string;
 		html?: string;
-		css?: string;
+		css?: any;
+		class?: string;
 		width?: uint;
 		height?: uint;
 		draggable?: bool;
@@ -21,10 +22,10 @@ module akra {
 		//string like parent/window/document or array [x, y, w, h]
 		dragZone?: any;
 
-		//string/EUILayouts
-		layout?: any;
-
 		generic?: string;
+
+		//string/EUILayouts/Layout
+		layout?: any;
 	}
 
 	export enum EUIComponents {
@@ -33,17 +34,21 @@ module akra {
 		WINDOW,
 
 		BUTTON,
+		PANEL,
 		LABEL,
 		TREE,
+		TREE_NODE,
 		CANVAS,
 		SLIDER,
 		CHECKBOX,
 		CHECKBOX_LIST,
+		VIEWPORT_STATS,
 		
 		GRAPH,
 		GRAPH_NODE,
 		GRAPH_CONNECTOR,
-		GRAPH_CONTROLS
+		GRAPH_CONTROLS,
+		GRAPH_CONNECTIONAREA
 	}
 
 	export interface IUIComponent extends IUIDNDNode {
@@ -56,6 +61,10 @@ module akra {
 
 		setLayout(eType: EUILayouts): bool;
 		setLayout(sType: string): bool;
+
+		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent;
+
+		_createdFrom($component: JQuery): void;
 	}
 }
 

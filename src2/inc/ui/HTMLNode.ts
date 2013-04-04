@@ -2,13 +2,15 @@
 #define UIHTMLNODE_TS
 
 #include "IUIHTMLNode.ts"
-#include "Node.ts"
+#include "ui/Node.ts"
 
 module akra.ui {
 
 	export class HTMLNode extends Node implements IUIHTMLNode {
 		public $element: JQuery = null;
+		protected _fnEventRedirector: Function = null;
 
+		inline get el(): JQuery { return this.$element; }
 
 		constructor (parent, pElement?: HTMLElement, eNodeType?: EUINodeTypes);
 		constructor (parent, $element?: JQuery, eNodeType?: EUINodeTypes);
@@ -16,21 +18,26 @@ module akra.ui {
 			super(getUI(parent), eNodeType);
 
 			var pNode: HTMLNode = this;
-
-			this.$element = $(pElement || "<div />");
-			this.$element.bind(HTMLNode.EVENTS.join(' '), (e: Event) => {
+			var fnEventRedirector: Function = this._fnEventRedirector = function (e: Event) {
 				if (HTMLNode.EVENTS.indexOf(e.type) == -1) {
 					return;
 				}
 
-		     	return (<any>this)[e.type](e);
-			});
+		     	return (<any>pNode)[e.type](e);
+			}
+
+			this.$element = $(pElement || "<div />");
+			this.$element.bind(HTMLNode.EVENTS.join(' '), fnEventRedirector);
 
 			//this.$element.mousedown((e: IUIEvent) => { pNode.mousedown(e); });
 
 			if (!isUI(parent)) {
 				this.attachToParent(<Node>parent);
 			}
+		}
+
+		disableEvent(sEvent: string): void {
+			this.$element.unbind(sEvent, <(e: IUIEvent) => any>this._fnEventRedirector);
 		}
 
 		hasRenderTarget(): bool {
@@ -71,6 +78,8 @@ module akra.ui {
 				}
 			}
 
+			this.beforeRender();
+
 			//trace($to, this.self());
 			$to.append(this.self());
 
@@ -81,7 +90,7 @@ module akra.ui {
 
 		attachToParent(pParent: IUINode, bRender: bool = true): bool {
 			if (super.attachToParent(pParent)) {
-				if (bRender) {
+				if (bRender && !this.isRendered()) {
 					this.render(pParent);
 				}
 				return true;
@@ -128,6 +137,8 @@ module akra.ui {
 		BROADCAST(mousedown, CALL(e));
 		BROADCAST(mouseover, CALL(e));
 		BROADCAST(mouseout, CALL(e));
+		BROADCAST(mouseenter, CALL(e));
+		BROADCAST(mouseleave, CALL(e));
 		
 		BROADCAST(focusin, CALL(e));
 		BROADCAST(focusout, CALL(e));
@@ -140,6 +151,7 @@ module akra.ui {
 
 		BROADCAST(resize, VOID);
 		BROADCAST(rendered, VOID);
+		BROADCAST(beforeRender, VOID);
 
 
 		static EVENTS: string[] = [
@@ -150,6 +162,8 @@ module akra.ui {
 			"mousedown",
 			"mouseover",
 			"mouseout",
+			"mouseenter",
+			"mouseleave",
 			"focusin",
 			"focusout",
 			"blur",

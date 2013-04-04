@@ -1,10 +1,14 @@
 #ifndef UIANIMATIONGRAPH_TS
 #define UIANIMATIONGRAPH_TS
 
+#include "IAnimationController.ts"
 #include "IUIAnimationGraph.ts"
 #include "IUIAnimationNode.ts"
 #include "IUtilTimer.ts"
 #include "../graph/Graph.ts"
+#include "Controls.ts"
+
+#include "animation/Animation.ts"
 
 module akra.ui.animation {
 	export class Graph extends graph.Graph implements IUIAnimationGraph {
@@ -16,10 +20,6 @@ module akra.ui.animation {
 			super(parent, EUIGraphTypes.ANIMATION);
 		}
 
-		label(): string {
-			return "AnimationGraph";
-		}
-
 		setTimer(pTimer: IUtilTimer): void {
 			this._pTimer = pTimer;
 		}
@@ -28,22 +28,22 @@ module akra.ui.animation {
 			return this._pAnimationController;
 		}
 
-		selectNode(pNode: IUIAnimationNode, bPlay: bool = true): void {
-			if (this._pSelectedNode === pNode) {
-				return;
-			}
+		private selectNode(pNode: IUIAnimationNode, bPlay: bool = true): void {
+			// if (this._pSelectedNode === pNode) {
+			// 	return;
+			// }
 
-			if (!isNull(this._pSelectedNode)) {
-				this._pSelectedNode._selected(false);
-			}
+			// if (!isNull(this._pSelectedNode)) {
+			// 	this._pSelectedNode._selected(false);
+			// }
 
-			if (!isNull(pNode)) {
-				pNode._selected(true);
-			}
+			// if (!isNull(pNode)) {
+			// 	pNode._selected(true);
+			// }
 
-			if (bPlay && !isNull(this._pTimer)) {
-				this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
-			}
+			// if (bPlay && !isNull(this._pTimer)) {
+			// 	this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
+			// }
 		}
 		
 		addAnimation(pAnimation: IAnimationBase): void {
@@ -60,30 +60,73 @@ module akra.ui.animation {
 		findNodeByAnimation(sName: string): IUIAnimationNode;
 		findNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 		findNodeByAnimation(animation): IUIAnimationNode {
-			var sName: string = !isString(animation)? (<IAnimationBase>animation).name: <string>animation;
-			var pNodes: IUIAnimationNode[] = <IUIAnimationNode[]>this.nodes;
+			// var sName: string = !isString(animation)? (<IAnimationBase>animation).name: <string>animation;
+			// var pNodes: IUIAnimationNode[] = <IUIAnimationNode[]>this.nodes;
 
-			for (var i: int = 0; i < pNodes.length; i ++) {
-				var pAnim: IAnimationBase = pNodes[i].animation;
+			// for (var i: int = 0; i < pNodes.length; i ++) {
+			// 	var pAnim: IAnimationBase = pNodes[i].animation;
 
-				if (!isNull(pAnim) && pAnim.name === sName) {
-					return pNodes[i];
-				}
+			// 	if (!isNull(pAnim) && pAnim.name === sName) {
+			// 		return pNodes[i];
+			// 	}
+			// }
+
+			return null;
+		}
+
+		createNodeByController(pController: IAnimationController): void {
+			var pNode: IUIAnimationNode = null;
+			// LOG("createNodeByController(", pController ,")")
+			for (var i: int = 0; i < pController.totalAnimations; ++ i) {
+				var pAnimation: IAnimationBase = pController.getAnimation(i);
+				pNode = this.createNodeByAnimation(pAnimation);
+			}
+
+			return;
+		}
+
+		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode {
+			var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
+			var pSubNode: IUIAnimationNode;
+			// var pBlend: IUIAnimationBlender;
+			// var pPlayer: IUIAnimationPlayer;
+			var pMaskNode: IUIAnimationNode;
+			
+			var pSubAnimation: IAnimationBase;
+			var n: int = 0;
+			var pMask: FloatMap = null;
+
+			if (!isNull(pNode)) {
+				return pNode;
+			}
+
+			if (akra.animation.isAnimation(pAnimation)) {
+				pNode = (<ui.animation.Controls>this.parent).createData();
+				pNode.animation = pAnimation;
+			}
+			else {
+				CRITICAL("AHTUNG!!!");
 			}
 
 			return null;
 		}
 
-		createNodeByController(pController: IAnimationController): IUIAnimationNode {
-			return null;
+		capture(pController: IAnimationController): bool {
+			this._pAnimationController = pController;
+			
+			this.connect(pController, SIGNAL(play), SLOT(onControllerPlay));
+			this.createNodeByController(pController);
+
+			return true;
 		}
 
-		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode {
-			return null;
+		private onControllerPlay(pAnimation: IAnimationBase): void {
+			// var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
+			// this.selectNode(pNode);
 		}
 	}
 
-	Component.register("AnimationGraph", Graph);
+	register("AnimationGraph", Graph);
 }
 
 #endif

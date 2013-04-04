@@ -67,6 +67,19 @@ module akra.fx {
 		private _isShared: bool = null;
 		private _isForeign: bool = null;
 		private _iLength: uint = UNDEFINE_LENGTH;
+		private _isNeedToUpdateLength: bool = false;
+
+		// private $length = 0;
+		// inline get _iLength() {
+		// 	return this.$length;
+		// }
+
+		// inline set _iLength(n: int) {
+		// 	if (n === null) {
+		// 		LOG(__CALLSTACK__);
+		// 	}
+		// 	this.$length = n;
+		// }
 
 		private _isFromVariableDecl: bool = null;
 		private _isFromTypeDecl: bool = null;
@@ -102,8 +115,10 @@ module akra.fx {
 		toFinalCode(): string {
 			var sCode: string = "";
 			if(!isNull(this._pUsageList)){
-				for(var i: uint = 0; i < this._pUsageList.length; i++){
-					sCode += this._pUsageList[i];
+				if(!this.isShared()){
+					for(var i: uint = 0; i < this._pUsageList.length; i++){
+						sCode += this._pUsageList[i] + " ";
+					}
 				}
 			}
 
@@ -174,6 +189,14 @@ module akra.fx {
 		isSampler(): bool {
 			return this.getSubType().isSampler();
 		}
+
+		isSamplerCube(): bool {
+			return this.getSubType().isSamplerCube();
+		}
+
+        isSampler2D(): bool {
+        	return this.getSubType().isSampler2D();
+        }
 		
 		isWritable(): bool {
 			if(!isNull(this._isWritable)){
@@ -425,6 +448,10 @@ module akra.fx {
 			this._iLength = this._pArrayIndexExpr.evaluate() ? this._pArrayIndexExpr.getEvalValue() : UNDEFINE_LENGTH;
 
 			this._isArray = true;
+
+			if(this._iLength === UNDEFINE_LENGTH){
+				this._isNeedToUpdateLength = true;
+			}
 		}
 
 		addPointIndex(isStrict?: bool = true): void {
@@ -596,11 +623,12 @@ module akra.fx {
 			if(this.isNotBaseArray() && !this._isArray){
 				this._iLength = this.getSubType().getLength();
 			}
-			else if(this._iLength === UNDEFINE_LENGTH){
+			else if(this._iLength === UNDEFINE_LENGTH || this._isNeedToUpdateLength){
 				var isEval: bool = this._pArrayIndexExpr.evaluate();
 				
 				if(isEval) {
-					this._iLength = <uint>this._pArrayIndexExpr.getEvalValue();
+					var iValue: uint = <uint>this._pArrayIndexExpr.getEvalValue();
+					this._iLength = isInt(iValue) ? iValue : UNDEFINE_LENGTH;
 				}
 			}
 
@@ -702,6 +730,7 @@ module akra.fx {
 				}
 				pField.push(pFieldType, true);
 				pField.push(pSubField.getNameId(), false);
+				pField.setSemantic(pSubField.getSemantic());
 			}
 			else {
 				var pFieldName: IAFXIdInstruction = new IdInstruction();
@@ -1288,6 +1317,15 @@ module akra.fx {
 				   this.getName() === "samplerCUBE";
 		}
 
+		isSamplerCube(): bool {
+			return this.getName() === "samplerCUBE";
+		}
+		
+        isSampler2D(): bool {
+        	return this.getName() === "sampler" ||
+				   this.getName() === "sampler2D";
+        }
+
 
 		inline isWritable(): bool {
 			return this._isWritable;
@@ -1562,6 +1600,14 @@ module akra.fx {
 			return false;
 		}
 
+		isSamplerCube(): bool {
+			return false;
+		}
+
+		isSampler2D(): bool {
+			return false;
+		}
+
 		inline isWritable(): bool {
 			return true;
 		}
@@ -1592,7 +1638,7 @@ module akra.fx {
 
 		inline setName(sName: string): void {
 			this._sName = sName;
-			this._sRealName = sName + "R";
+			this._sRealName = sName;
 		}
 
 		inline setRealName(sRealName: string): void {

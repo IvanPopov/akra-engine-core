@@ -11,6 +11,9 @@ module akra {
 		bgra: uint;
 		abgr: uint;
 
+		readonly html: string;
+		readonly htmlRgba: string;
+
 		set(cColor: IColorValue): IColor;
 		set(cColor: IColor): IColor;
 		set(r?: float, g?: float, b?: float, a?: float): IColor;

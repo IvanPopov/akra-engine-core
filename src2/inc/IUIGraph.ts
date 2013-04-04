@@ -4,11 +4,13 @@
 #include "IUIComponent.ts"
 
 module akra {
+	IFACE(RaphaelPaper);
+	IFACE(IUIGraphConnector);
+	IFACE(IUIGraphRoute);
 
 	export enum EUIGraphDirections {
-		IN,
-		OUT
-		//CONNECTOR_POINTER = -1
+		IN = 0x01,
+		OUT = 0x02
 	}
 
 	export enum EUIGraphTypes {
@@ -16,17 +18,28 @@ module akra {
 		ANIMATION
 	}
 
+	export enum EUIGraphEvents {
+		UNKNOWN,
+		DELETE,
+		SHOW_MAP,
+		HIDE_MAP
+	}
+
+	export interface IUIGraphEvent {
+		type: EUIGraphEvents;
+		traversedRoutes: IUIGraphRoute[];
+	}
+
 	export interface IUIGraph extends IUIComponent {
 		readonly graphType: EUIGraphTypes;
 		readonly nodes: IUIGraphNode[];
+		readonly canvas: RaphaelPaper;
 
-		abortConnection(): void;
-		connectPair(pOut: IUIGraphNode, pIn: IUIGraphNode): void;
-		routing(pRoute: IUIGraphRoute): void;
+		createRouteFrom(pConnector: IUIGraphConnector): void;
+		removeTempRoute(): void;
+		connectTo(pConnector: IUIGraphConnector): void;
 
-		_setInputNode(pNode: IUIGraphNode): bool;
-		_setOutputNode(pNode: IUIGraphNode): bool;
-		_readyForConnect(bStatus: bool): void;
+		isReadyForConnect(): bool;
 	}
 }
 

@@ -23,9 +23,9 @@ module akra {
         TEXTURE14,
         TEXTURE15,
         DIFFUSE = TEXTURE0,
-        AMBIENT,
-        SPECULAR,
-        EMISSIVE,
+        AMBIENT = TEXTURE1,
+        SPECULAR = TEXTURE2,
+        EMISSIVE = TEXTURE3,
         EMISSION = EMISSIVE
 	};
 

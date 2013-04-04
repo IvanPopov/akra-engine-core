@@ -9,6 +9,7 @@ module akra {
 
 	export interface IUIHTMLNode extends IUINode  {
 		$element: JQuery;
+		el: JQuery;
 
 		getHTMLElement(): HTMLElement;
 
@@ -39,6 +40,7 @@ module akra {
 		signal keyup(e: IUIEvent): void;
 
 		signal rendered(): void;
+		signal beforeRender(): void;
 	}
 }
 

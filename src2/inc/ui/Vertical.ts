@@ -8,7 +8,7 @@ module akra.ui {
 		protected $table: JQuery;
 
 		constructor (parent) {
-			super(parent, $("<div><table /></div>"), EUILayouts.VERTICAL);
+			super(parent, $("<div><table style=\"margin: 0 auto;\"/></div>"), EUILayouts.VERTICAL);
 			
 			this.$table = this.$element.find("table:first");
 		}

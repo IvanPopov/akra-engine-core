@@ -1,3 +1,6 @@
+body {
+  background: white;
+}
 /*Gradient mixins*/
 /* Component */
 .component {
@@ -13,9 +16,15 @@
 .component-label {
   display: inline-block;
   position: static;
+  min-height: 10px;
+  width: 100%;
 }
 .component-label .label-input {
   display: none;
+  width: 100%;
+}
+.component-label .label-text {
+  width: 100%;
 }
 /* Button */
 .component-button {
@@ -27,6 +36,12 @@
   margin-right: 6px;
   color: #222222;
   cursor: pointer;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
+  background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
+  background-image: -moz-linear-gradient(#ffffff, #f1f1f1);
+  background-image: -ms-linear-gradient(#ffffff, #f1f1f1);
+  background-image: -o-linear-gradient(#ffffff, #f1f1f1);
+  background-image: linear-gradient(#ffffff, #f1f1f1);
   background-color: #eeeeee;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
   background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
@@ -36,6 +51,12 @@
   background-image: linear-gradient(#ffffff, #f1f1f1);
 }
 .component-button:hover {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
+  background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: -moz-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: -ms-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: -o-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: linear-gradient(#f6f6f6, #e0e0e0);
   background-color: #dfdfdf;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
   background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
@@ -45,6 +66,12 @@
   background-image: linear-gradient(#f6f6f6, #e0e0e0);
 }
 .component-button:active {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #3373a5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -58,6 +85,12 @@
   border: 1px solid #bbb;
   width: 100%;
   height: 20px;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#d0d0d0), to(#dfdfdf));
+  background-image: -webkit-linear-gradient(#d0d0d0, #dfdfdf);
+  background-image: -moz-linear-gradient(#d0d0d0, #dfdfdf);
+  background-image: -ms-linear-gradient(#d0d0d0, #dfdfdf);
+  background-image: -o-linear-gradient(#d0d0d0, #dfdfdf);
+  background-image: linear-gradient(#d0d0d0, #dfdfdf);
   background-color: #d6d6d6;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#d0d0d0), to(#dfdfdf));
   background-image: -webkit-linear-gradient(#d0d0d0, #dfdfdf);
@@ -71,6 +104,12 @@
   border-radius: 5px 0px 0px 5px;
   height: 100%;
   width: 0;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #5393c5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -94,6 +133,12 @@
   cursor: pointer;
   height: 100%;
   width: 20px;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
+  background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
+  background-image: -moz-linear-gradient(#ffffff, #f1f1f1);
+  background-image: -ms-linear-gradient(#ffffff, #f1f1f1);
+  background-image: -o-linear-gradient(#ffffff, #f1f1f1);
+  background-image: linear-gradient(#ffffff, #f1f1f1);
   background-color: #eeeeee;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
   background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
@@ -103,6 +148,12 @@
   background-image: linear-gradient(#ffffff, #f1f1f1);
 }
 .component-slider .component-pin:hover {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
+  background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: -moz-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: -ms-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: -o-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: linear-gradient(#f6f6f6, #e0e0e0);
   background-color: #dfdfdf;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
   background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
@@ -112,6 +163,12 @@
   background-image: linear-gradient(#f6f6f6, #e0e0e0);
 }
 .component-slider .component-pin.ui-draggable-dragging {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #3373a5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -129,6 +186,12 @@
   color: #222222;
   cursor: pointer;
   min-height: 10px;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
+  background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
+  background-image: -moz-linear-gradient(#ffffff, #f1f1f1);
+  background-image: -ms-linear-gradient(#ffffff, #f1f1f1);
+  background-image: -o-linear-gradient(#ffffff, #f1f1f1);
+  background-image: linear-gradient(#ffffff, #f1f1f1);
   background-color: #eeeeee;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
   background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
@@ -138,6 +201,12 @@
   background-image: linear-gradient(#ffffff, #f1f1f1);
 }
 .component-checkbox:hover {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
+  background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: -moz-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: -ms-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: -o-linear-gradient(#f6f6f6, #e0e0e0);
+  background-image: linear-gradient(#f6f6f6, #e0e0e0);
   background-color: #dfdfdf;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
   background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
@@ -150,6 +219,12 @@
   border: 1px solid #2373A5;
   color: white;
   text-shadow: 0  1px  0  #3373A5;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #3373a5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -176,6 +251,42 @@
 .component-horizontal {
   min-height: 10px;
 }
+.component-fps {
+  width: 100px;
+  height: 47px;
+  background-color: rgba(0, 0, 66, 0.65);
+  cursor: pointer;
+}
+.component-fps .info {
+  font-size: 11px;
+  font-family: 'Consolas', monospace;
+  color: white;
+  padding: 1px;
+  font-weight: bold;
+}
+.component-fps .graph {
+  /*background-color: gray;*/
+
+  min-height: 30px;
+  height: 30px;
+  padding: 0;
+  margin: 0;
+  opacity: .75;
+  overflow: hidden;
+  vertical-align: bottom;
+  text-align: left;
+  /*border-top: 1px solid yellow;*/
+
+}
+.component-fps .graph .tick {
+  float: left;
+  width: 1px;
+  height: 0px;
+  display: block;
+  margin: 0;
+  border-bottom: 1px solid yellow;
+  border-top: 1px solid yellow;
+}
 /*Graph Controls */
 .component-graph-controls .controls {
   padding: 10px 0px;
@@ -184,7 +295,7 @@
 .component-graph {
   border: 1px solid #cccccc;
   min-height: 300px;
-  background-color: #555555;
+  background-color: #888;
   min-height: 100%;
 }
 /* Graph Node */
@@ -193,6 +304,7 @@
   border: 1px solid #ffffff;
   background-color: #808080;
   box-shadow: 0px 0px 5px rgba(20, 20, 20, 0.7);
+  font-size: 12px;
 }
 .component-graphnode .component-title {
   background-color: #5393c5;
@@ -208,29 +320,17 @@
   min-width: 100px;
   height: 10px;
 }
-.component-graphnode .graph-node-top:hover {
-  background-color: #cccccc;
-}
 .component-graphnode .graph-node-left {
   width: 10px;
   height: 30px;
-}
-.component-graphnode .graph-node-left:hover {
-  background-color: #cccccc;
 }
 .component-graphnode .graph-node-right {
   width: 10px;
   height: 30px;
 }
-.component-graphnode .graph-node-right:hover {
-  background-color: #cccccc;
-}
 .component-graphnode .graph-node-bottom {
   min-width: 100px;
   height: 10px;
-}
-.component-graphnode .graph-node-bottom:hover {
-  background-color: #cccccc;
 }
 .component-graphnode .component-horizontal {
   background: rgba(255, 255, 255, 0.1);
@@ -249,12 +349,18 @@
   padding: 0;
   margin: 0;
 }
+.component-graphnode.open {
+  box-shadow: 0 0 5px #00ff00;
+}
+.component-graphnode.blocked {
+  box-shadow: 0 0 5px red;
+}
 /* Graph connector */
 .component-graphconnector {
-  border: 1px solid #000000;
-  background-color: #000000;
-  width: 4px;
-  height: 4px;
+  border: 1px solid #444;
+  background-color: #666;
+  width: 10px;
+  height: 10px;
   margin-left: 2px;
   margin-right: 2px;
   margin: 0px;
@@ -262,15 +368,22 @@
 .component-graphconnector.highlight {
   box-shadow: 0 0 5px #ff0000;
 }
+.component-graphconnector.in {
+  border: 1px solid green;
+}
+.component-graphconnector.out {
+  border: 1px solid blue;
+}
+.component-graphconnector.connected {
+  border-radius: 10px;
+}
 .component-animationgraph .component-animationgraphnode.selected {
   border-bottom: 3px solid red;
 }
-.component-animationdata .controls,
-.component-animationplayer .controls {
+.component-animationdata .controls, .component-animationplayer .controls {
   padding: 0 2px 0 2px;
 }
-.component-animationdata .controls .component-label,
-.component-animationplayer .controls .component-label {
+.component-animationdata .controls .component-label, .component-animationplayer .controls .component-label {
   font-size: 12px;
 }
 .component-animationplayer .component-button,

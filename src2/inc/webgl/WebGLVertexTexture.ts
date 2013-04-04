@@ -39,6 +39,9 @@ module akra.webgl {
 		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.TBO; }
 		inline get byteLength(): uint { return pixelUtil.getMemorySize(this._iWidth, this._iHeight, 1, this._ePixelFormat); }
 		
+		inline getWebGLTexture(): WebGLTexture {
+			return this._pWebGLTexture;
+		}
 
 		constructor (/*pManager: IResourcePoolManager*/) {
 			super(/*pManager*/);
@@ -413,6 +416,8 @@ module akra.webgl {
 		            pRealData[iLeftShift + i] = pBufferData[i];
 		        }		        
 
+		        var pOldFrameBuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+
 		        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
 		        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_update");
 
@@ -478,7 +483,7 @@ module akra.webgl {
 		        //pWebGLRenderer.deleteWebGLBuffer(pMarkupShiftBuffer);
 		        //pWebGLRenderer.deleteWebGLBuffer(pMarkupIndexBuffer);
 
-		        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
+		        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFrameBuffer);
 		        pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
 		    }
 
@@ -555,6 +560,8 @@ module akra.webgl {
 				    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_S, pWebGLContext.CLAMP_TO_EDGE);
 				    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_T, pWebGLContext.CLAMP_TO_EDGE);
 
+				    var pOldFrameBuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+
 			        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
 			        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
 			        pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
@@ -618,7 +625,7 @@ module akra.webgl {
 			        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
 			        //pWebGLRenderer.deleteWebGLBuffer(pIndexBuffer);
 
-			        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
+			        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFrameBuffer);
 			        pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
 
 			        pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);

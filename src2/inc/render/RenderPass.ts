@@ -12,11 +12,32 @@ module akra.render {
 		private _pRenderTarget: IRenderTarget = null;
 		private _iPassNumber: uint = 0;
 		private _pInput: IAFXPassInputBlend = null;
+		private _isActive: bool = true;
 
 		constructor(pTechnique: IRenderTechnique, iPass: uint){
 			this._pTechnique = pTechnique;
 			this._iPassNumber = iPass;
 		}	
+
+		inline setForeign(sName: string, fValue: float): void {
+			this._pInput.setForeign(sName, fValue);
+		}
+
+		inline setTexture(sName: string, pTexture: ITexture): void {
+			this._pInput.setTexture(sName, pTexture);
+		}
+
+		inline setUniform(sName: string, pValue: any): void {
+			this._pInput.setUniform(sName, pValue);
+		}
+
+		inline setStruct(sName: string, pValue: any): void {
+			this._pInput.setStruct(sName, pValue);
+		}
+
+		// inline setSamplerState(sName: string, pState: IAFXSamplerState): void {
+		// 	this._pInput.setSamplerState(sName, pState);
+		// }
 
 		getRenderTarget(): IRenderTarget {
 			return this._pRenderTarget;
@@ -44,6 +65,18 @@ module akra.render {
 
 		blend(sComponentName: string, iPass: uint): bool {
 			return this._pTechnique.addComponent(sComponentName, this._iPassNumber, iPass);
+		}
+
+		inline activate(): void {
+			this._isActive = true;
+		}
+
+		inline deactivate(): void {
+			this._isActive = false;
+		}
+
+		inline isActive(): bool {
+			return this._isActive;
 		}
 
 		private relocateOldInput(pNewInput: IAFXPassInputBlend): void {

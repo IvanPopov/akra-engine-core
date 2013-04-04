@@ -22,8 +22,8 @@ module akra
         NEGATIVE_X = 0x00000002,            
         POSITIVE_Y = 0x00000004,
         NEGATIVE_Y = 0x00000008,
-        POSITIVE_Z = 0x0000000c,
-        NEGATIVE_Z = 0x000000010,
+        POSITIVE_Z = 0x000000010,
+        NEGATIVE_Z = 0x000000020,
         };
 
     export interface IImg extends IResourcePoolItem {

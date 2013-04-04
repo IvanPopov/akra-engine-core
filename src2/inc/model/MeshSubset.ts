@@ -28,7 +28,7 @@ module akra.model {
 
 
 		constructor (pMesh: IMesh, pRenderData: IRenderData, sName: string = null) {
-			super(); 
+			super(ERenderDataTypes.MESH_SUBSET); 
 			this.setup(pMesh, pRenderData, sName);
 		}
 
@@ -393,6 +393,10 @@ module akra.model {
 		    this._pSkin = pSkin;
 
 		    return true;
+		}
+
+		update(): bool {
+			return this.isSkinned() ? this.skin.applyBoneMatrices() : false;
 		}
 	}
 }

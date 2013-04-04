@@ -9,8 +9,8 @@ module akra.render {
 		protected _pBuffer: IRenderDataCollection;
 
 		constructor(pRenderer: IRenderer) {
-			super();
-			
+			super(ERenderDataTypes.SCREEN);
+
 			var pCollection: IRenderDataCollection = pRenderer.getEngine().createRenderDataCollection(0);	
 			var pData: IRenderData = pCollection.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP);
 

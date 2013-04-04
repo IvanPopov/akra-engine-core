@@ -14,24 +14,27 @@ module akra.ui {
 		inline set text(x: string) { this.$text.html(x); }
 
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.LABEL) {
-			super(ui, options, eType);
+			super(ui, options, eType, 
+			 $("<div>\
+					<div class='label-text'></div>\
+					<input class='label-input' type='text' value=''/>\
+				</div>"));
 
 			this.$text = this.$element.find(".label-text");
 			this.$input = this.$element.find(".label-input");
 
-			if (isDefAndNotNull(options) && isString(options.text)) {
-				this.text = <string>options.text;
-			}
+			this.text = isObject(options)? options.text || "": "";
 		}
 
-		_applyEntry($entry: JQuery): void {
-			super._applyEntry($entry);
+		_createdFrom($comp: JQuery): void {
+			super._createdFrom($comp);
 
-			this.text = $entry.attr("text");
+			this.text = $comp.attr("text");
 		}
 
-		protected label(): string {
-			return "Label";
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-label");
 		}
 
 		click(e: IUIEvent): void {
@@ -70,7 +73,7 @@ module akra.ui {
 		BROADCAST(changed, CALL(value));
 	}
 
-	Component.register("Label", Label);
+	register("Label", Label);
 }
 
 #endif

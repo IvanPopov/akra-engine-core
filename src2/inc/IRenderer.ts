@@ -2,6 +2,8 @@
 #define IRENDERER_TS
 
 #include "IEventProvider.ts"
+#include "IRenderQueue.ts"
+#include "IViewportState.ts"
 
 module akra {
 
@@ -19,7 +21,6 @@ module akra {
     IFACE(IIndexBuffer);
     IFACE(IRenderResource);
     IFACE(IRenderEntry);
-    IFACE(IFrameBuffer);
     IFACE(IViewport);
     IFACE(IColor);
     IFACE(IEngine);
@@ -181,12 +182,12 @@ module akra {
     //     RENDER_BUFFER = 0x8D41
     // };
 
-    // export enum EAttachmentTypes {
-    //     COLOR_ATTACHMENT0 = 0x8CE0,
-    //     DEPTH_ATTACHMENT = 0x8D00,
-    //     STENCIL_ATTACHMENT = 0x8D20,
-    //     DEPTH_STENCIL_ATTACHMENT = 0x821A
-    // };
+    export enum EAttachmentTypes {
+         COLOR_ATTACHMENT0 = 0x8CE0,
+         DEPTH_ATTACHMENT = 0x8D00,
+         STENCIL_ATTACHMENT = 0x8D20,
+         DEPTH_STENCIL_ATTACHMENT = 0x821A
+    };
 
     // export enum ERenderStates {
     //     ZENABLE = 7,
@@ -251,7 +252,11 @@ module akra {
 
         getError();
 
-        clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void;
+        clearFrameBuffer(iBuffer: int, cColor: IColor, fDepth: float, iStencil: uint): void;
+
+        _beginRender(): void;
+        _renderEntry(pEntry: IRenderEntry): void;
+        _endRender(): void;
 
         _disableAllTextureUnits(): void;
         _disableTextureUnitsFrom(iUnit: uint): void;
@@ -260,7 +265,14 @@ module akra {
         _updateAllRenderTargets(): void;
 
         _setViewport(pViewport: IViewport): void;
+        _setViewportForRender(pViewport: IViewport): void;
         _getViewport(): IViewport;
+
+        _setRenderTarget(pTarget: IRenderTarget): void;
+
+        _setCullingMode(eMode: ECullingMode): void;
+        _setDepthBufferParams(bDepthTest: bool, bDepthWrite: bool, 
+                              eDepthFunction: ECompareFunction, fClearDepth?: float): void;
 
         hasCapability(eCapability: ERenderCapabilities): bool;
 
@@ -271,6 +283,11 @@ module akra {
         getActiveProgram(): IShaderProgram;
 
         getDefaultCanvas(): ICanvas3d;
+        
+        createEntry(): IRenderEntry;
+        releaseEntry(pEntry: IRenderEntry): void;
+        pushEntry(pEntry: IRenderEntry): void;
+        executeQueue(): void;
     }
 
 

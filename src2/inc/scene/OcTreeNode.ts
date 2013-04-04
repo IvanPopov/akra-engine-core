@@ -54,7 +54,7 @@ module akra.scene {
 		 */
 		addMember(pObject: ISceneObject): void {
 			this.membersList.push(pObject);
-			this.connect(pObject, SIGNAL(worldBoundsUpdated), SLOT(objectMoved), EEventTypes.UNICAST);
+			this.connect(pObject, SIGNAL(worldBoundsUpdated), SLOT(OcTreeObjectMoved), EEventTypes.UNICAST);
 			// console.log(this.membersList);
 		};
 
@@ -67,10 +67,10 @@ module akra.scene {
 			
 			// make sure this is one of ours
 			debug_assert(i>=0, "error removing member cannot find member");
-		    
+
 	    	if(i>=0){
 	    		this.membersList.takeAt(i);
-	    		this.disconnect(pObject, SIGNAL(worldBoundsUpdated), SLOT(objectMoved), EEventTypes.UNICAST);
+	    		this.disconnect(pObject, SIGNAL(worldBoundsUpdated), SLOT(OcTreeObjectMoved), EEventTypes.UNICAST);
 	    	}
 
 	    	if(this.membersList.length === 0){
@@ -80,7 +80,7 @@ module akra.scene {
 
 		CREATE_EVENT_TABLE(OcTreeNode);
 
-		objectMoved(pObject: ISceneObject){
+		OcTreeObjectMoved(pObject: ISceneObject){
 			// console.warn('object moving');
 			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
 			//console.error('-----before------>', this, pNode,'<-------arter------');
@@ -118,10 +118,10 @@ module akra.scene {
 
 			// make sure this is one of ours
 			debug_assert(i>=0, "error removing member cannot find member");
-		    
+
 	    	if(i>=0){
 	    		this.membersList.takeAt(i);
-	    		this.disconnect(pObject, SIGNAL(moved), SLOT(objectMoved), EEventTypes.UNICAST);
+	    		this.disconnect(pObject, SIGNAL(worldBoundsUpdated), SLOT(OcTreeObjectMoved), EEventTypes.UNICAST);
 	    	}
 
 			//обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно

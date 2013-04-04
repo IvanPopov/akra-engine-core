@@ -87,21 +87,20 @@ module akra.pixelUtil {
 			return rval;
 		}
 
-		getColorAt(x: uint, y: uint, z?: uint): IColor {
-			var cv: IColor = new Color;
+		getColorAt(pColor: IColor, x: uint, y: uint, z?: uint=0): IColor {
 
 	        var pixelSize: uint = pixelUtil.getNumElemBytes(this.format);
 	        var pixelOffset: uint = pixelSize * (z * this.slicePitch + y * this.rowPitch + x);
 
-	        pixelUtil.unpackColour(cv, this.format, this.data.subarray(pixelOffset));
+	        pixelUtil.unpackColour(pColor, this.format, this.data.subarray(pixelOffset,pixelOffset+pixelSize));
 
-	        return cv;
+	        return pColor;
 		}
 
-		setColorAt(pColor: IColor, x: uint, y: uint, z?: uint): void {
+		setColorAt(pColor: IColor, x: uint, y: uint, z?: uint=0): void {
 			var pixelSize: uint = pixelUtil.getNumElemBytes(this.format);
 	        var pixelOffset: uint = pixelSize * (z * this.slicePitch + y * this.rowPitch + x);
-	        pixelUtil.packColour(pColor, this.format, this.data.subarray(pixelOffset));
+	        pixelUtil.packColour(pColor, this.format, this.data.subarray(pixelOffset,pixelOffset+pixelSize));
 		}
 
 		scale(pDest: IPixelBox, eFilter: EFilters = EFilters.BILINEAR): bool {

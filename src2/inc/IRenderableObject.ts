@@ -5,11 +5,21 @@
 #include "IEventProvider.ts"
 #include "ISceneObject.ts"
 #include "IRenderData.ts"
+#include "IViewport.ts"
 
 module akra {
+	
+	export enum ERenderDataTypes {
+		UNKNOWN,
+		
+        MESH_SUBSET,
+        SCREEN
+    }
+
 	export interface IRenderableObject extends IEventProvider {
 		renderMethod: IRenderMethod;
 		
+		readonly type: ERenderDataTypes;
 		readonly effect: IEffect;
 		readonly surfaceMaterial: ISurfaceMaterial;
 		readonly data: IRenderData;
@@ -41,7 +51,7 @@ module akra {
 		isAllMethodsLoaded(): bool;
 
 
-		render(csMethod?: string, pSceneObject?: ISceneObject): void;
+		render(pViewport: IViewport, csMethod?: string, pSceneObject?: ISceneObject): void;
 
 		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
 		_draw(): void;

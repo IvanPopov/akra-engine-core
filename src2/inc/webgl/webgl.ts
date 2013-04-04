@@ -41,8 +41,10 @@ module akra.webgl {
 	export var shaderVersion: float = 0;
 	export var hasNonPowerOf2Textures: bool = false;
 
+    export var isANGLE: bool = false;
+
     var isSupported: bool = false;
-	var pSupportedExtensionList: string[] = null;
+	export var pSupportedExtensionList: string[] = null;
 	// var pLoadedExtensionList: Object = null;
 
     function makeDebugContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
@@ -101,6 +103,54 @@ module akra.webgl {
 
         WARNING("cannot load extension: ", sExtName);
         return false;
+    }
+
+
+    function checkIsAngle(pWebGLContext: WebGLRenderingContext): bool {
+        var pProgram: WebGLProgram = pWebGLContext.createProgram();
+
+        var sVertex: string = "\
+            attribute vec3 pos;\
+            struct S {\
+              vec3 b[1];\
+            };\
+            uniform S s[1];\
+            void main(void) {\
+              float t = s[0].b[0].x;\
+              gl_Position = vec4(pos, 1. + t);\
+            }";
+
+        var sFragment: string = "void main(void){}";
+
+        var pVertexShader: WebGLShader = pWebGLContext.createShader(GL_VERTEX_SHADER);
+        var pFragmentShader: WebGLShader = pWebGLContext.createShader(GL_FRAGMENT_SHADER);
+
+        pWebGLContext.shaderSource(pVertexShader, sVertex);
+        pWebGLContext.compileShader(pVertexShader);
+        pWebGLContext.shaderSource(pFragmentShader, sFragment);
+        pWebGLContext.compileShader(pFragmentShader);  
+
+        pWebGLContext.attachShader(pProgram, pVertexShader);
+        pWebGLContext.attachShader(pProgram, pFragmentShader);
+
+        pWebGLContext.linkProgram(pProgram);
+
+        if (!pWebGLContext.getProgramParameter(pProgram, GL_LINK_STATUS)) {
+            debug_error("cannot compile GLSL shader for ANGLE renderer");
+            
+            debug_print(pWebGLContext.getShaderInfoLog(pVertexShader));
+            debug_print(pWebGLContext.getShaderSource(pVertexShader) || sVertex);
+
+            debug_print(pWebGLContext.getShaderInfoLog(pFragmentShader));
+            debug_print(pWebGLContext.getShaderSource(pFragmentShader) || sFragment);
+            
+            return false;
+        }
+
+        debug_assert(pWebGLContext.getProgramParameter(pProgram, GL_ACTIVE_UNIFORMS) > 0, 
+            "no uniforms founded in angle test shader!");
+
+        return pWebGLContext.getActiveUniform(pProgram, 0).name != "s[0].b[0]";
     }
 
     function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {     
@@ -177,6 +227,8 @@ module akra.webgl {
 	    //pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
 #endif
         isSupported = true;
+
+        isANGLE = checkIsAngle(pWebGLContext);
 
 	})(createContext());
 
@@ -628,9 +680,43 @@ module akra.webgl {
         }	
 	}
 
-	export function checkFBOAttachmentFormat(eFormat: EPixelFormats): bool {
-		return false;
+	export function checkFBOAttachmentFormat(eFormat: EPixelFormats): bool 
+    {
+        if(eFormat==EPixelFormats.A8B8G8R8)
+        {
+            return true;
+        }
+        else if(eFormat==EPixelFormats.FLOAT32_RGBA)
+        {
+            return hasExtension(WEBGL_COLOR_BUFFER_FLOAT);
+        }
+        else if(eFormat==EPixelFormats.FLOAT16_RGBA)
+        {
+            return hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+        }
+        else
+        {
+            return false;
+        }
+		
 	}
+
+    export function checkReadPixelFormat(eFormat: EPixelFormats): bool 
+    {
+        if(eFormat==EPixelFormats.A8B8G8R8)
+        {
+            return true;
+        }
+        else if(eFormat==EPixelFormats.FLOAT32_RGBA)
+        {
+            return hasExtension(WEBGL_COLOR_BUFFER_FLOAT)||hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+        }
+        else
+        {
+            return false;
+        }
+        
+    }
 
 	export function getSupportedAlternative(eFormat: EPixelFormats): EPixelFormats {
 		if (checkFBOAttachmentFormat(eFormat)) {

@@ -6,6 +6,7 @@
 #include "IDepthBuffer.ts"
 #include "Viewport.ts"
 #include "DSViewport2.ts"
+#include "ShadowViewport.ts"
 #include "events/events.ts"
 #include "IFrameStats.ts"
 #include "IPixelBuffer.ts"
@@ -224,12 +225,23 @@ module akra.render {
 					because a viewport exists with this Z-Order already.", this._sName, iZIndex, "RenderTarget::addViewport");
 			}
 
-			if (isNumber(arguments[1]) && <int>arguments[1] >= 0) {
-				pViewport = new DSViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+			if(isNumber(arguments[1])){
+
+				switch(arguments[1]){
+					case EViewportTypes.DSVIEWPORT:
+						pViewport = new DSViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+						break;
+					case EViewportTypes.SHADOWVIEWPORT:
+						pViewport = new ShadowViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+						break;
+					default:
+						pViewport = new Viewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+						break;
+				}
 			}
-			else {
-				pViewport = new Viewport(pCamera, this, isNumber(arguments[1])? null: csRenderMethod, 
-					fLeft, fTop, fWidth, fHeight, iZIndex);
+			else{
+				pViewport = new Viewport(pCamera, this, csRenderMethod, 
+						fLeft, fTop, fWidth, fHeight, iZIndex);
 			}
 
 			this._pViewportList[iZIndex] = pViewport;
@@ -328,12 +340,10 @@ module akra.render {
 
 			var fFrameTime: float = fThisTime - this._fLastTime;
 
-			this._fLastTime = fThisTime;
-
 			this._pFrameStats.time.best = math.min(this._pFrameStats.time.best, fFrameTime);
 			this._pFrameStats.time.worst = math.min(this._pFrameStats.time.worst, fFrameTime);
 
-			if (fThisTime - this._fLastTime > 1) {
+			if (fThisTime - this._fLastTime > 1.) {
 				this._pFrameStats.fps.last = <float>this._iFrameCount / <float>(fThisTime - this._fLastSecond);
 
 				if (this._pFrameStats.fps.avg == 0.) {
@@ -348,6 +358,8 @@ module akra.render {
 					this._fLastSecond = fThisTime;
 					this._iFrameCount = 0;
 				}
+
+				this._fLastTime = fThisTime;
 			}
 		}
 

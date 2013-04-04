@@ -12,6 +12,9 @@ module akra.webgl {
 	export class WebGLRenderTexture extends render.RenderTexture {
 		protected _pFrameBuffer: WebGLInternalFrameBuffer = null;
 
+		inline get width(): uint { return this._iWidth = this._pFrameBuffer.width; }
+		inline get height(): uint { return this._iHeight = this._pFrameBuffer.height; }
+
 		constructor(pRenderer: IRenderer, pTarget: IPixelBuffer){
 			super(pRenderer, pTarget, 0);
 			this._pFrameBuffer = new WebGLInternalFrameBuffer(pRenderer);
@@ -35,6 +38,8 @@ module akra.webgl {
 			if(sName === "FBO") {
 				return this._pFrameBuffer;
 			}
+
+			return null;
 		}
 
 		swapBuffers(): void {
@@ -70,6 +75,12 @@ module akra.webgl {
 
 		}
 
+		attachDepthTexture(pTexture: ITexture): bool {
+			this._pFrameBuffer.attachDepthTexture(pTexture);
+			return true;
+		}
+
+
 		detachDepthPixelBuffer(): void {
 			this._pFrameBuffer.unbindSurface(GL_DEPTH_ATTACHMENT);
 			(<WebGLPixelBuffer>this._pDepthPixelBuffer).release();
@@ -79,6 +90,10 @@ module akra.webgl {
 		detachDepthBuffer(): void {
 			this._pFrameBuffer.detachDepthBuffer();
 			super.detachDepthBuffer();
+		}
+
+		detachDepthTexture(): void {
+			this._pFrameBuffer.detachDepthTexture();
 		}
 	}
 }

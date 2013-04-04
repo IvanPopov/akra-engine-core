@@ -50,6 +50,14 @@ module akra.webgl {
 			this._pCanvasCreationInfo = null;
 		}
 
+		getCustomAttribute(sName: string): any {
+			// if(sName === "FBO") {
+			// 	return null;
+			// }
+
+			return null;
+		}
+
 		setFullscreen(isFullscreen: bool = true): void  {
 			var pCanvas: HTMLCanvasElement = this._pCanvas;
 			var pScreen: IScreenInfo;

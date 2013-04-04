@@ -41,11 +41,17 @@ module akra.core.pool.resources {
     	}
 
     	inline get numFaces():uint{
-            if (this._iFlags&EImageFlags.CUBEMAP){
+            if (this._iFlags&EImageFlags.CUBEMAP)
+            {
                 var nFace:uint=0;
-                for(var i:uint=0;i<32;i++)
+                for(var i:uint=0;i<6;i++)
                 {
-                    nFace++;
+                    if(this._iCubeFlags&(1<<i))
+                    {
+                        nFace++;
+                        
+                    }
+
                 }
                 return nFace;
             }
@@ -125,7 +131,7 @@ module akra.core.pool.resources {
 		}
 
 		loadResource(sFilename?: string): bool {
-			return false;
+			return !isNull(this.load(sFilename));
 		}
 
 		saveResource(sFilename?: string): bool {
@@ -209,8 +215,8 @@ module akra.core.pool.resources {
             }
             else if (isString(pData))
             {
-
                 var sExt : string = (new Pathinfo(pData)).ext;
+
                 if(sExt=="png" || sExt=="jpg" || sExt=="jpeg" || sExt=="gif" || sExt=="bmp")
                 {
                     var pImg:HTMLImageElement=new Image();
@@ -251,10 +257,9 @@ module akra.core.pool.resources {
                 }
                 else
                 {
-
+                    
                     io.fopen(pData,"rb").onread=function(pError:Error,pDataInFile:ArrayBuffer)
                     {
-
                         pMe.load(new Uint8Array(pDataInFile),sExt,sType);
                     }
                 }
@@ -290,7 +295,9 @@ module akra.core.pool.resources {
 
                 var pImgData:IImgData=new ImgData();
 
+             
                 this._pBuffer=pCodec.decode(pData,pImgData);
+
 
                 this._iWidth=pImgData.width;
                 this._iHeight=pImgData.height;
@@ -299,8 +306,12 @@ module akra.core.pool.resources {
                 this._iFlags=pImgData.flags;
                 this._iCubeFlags=pImgData.cubeFlags;
 
+                //console.log(this._iCubeFlags.toString(16),this._iFlags.toString(16));
+
                 this._eFormat=pImgData.format;
 
+                this.notifyLoaded();
+                
                 if (fnCallBack)
                 {
                     fnCallBack(true);
@@ -361,6 +372,7 @@ module akra.core.pool.resources {
             }
 
             this._pBuffer=pData;
+            this.notifyLoaded();
             return this;
         }
 

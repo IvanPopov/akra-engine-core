@@ -366,6 +366,8 @@ module akra.scene {
 				// adjust my local matrix to be relative to this new parent
 	            var m4fInvertedParentMatrix: IMat4 = mat4();
 	            (<Node>this._pParent)._m4fWorldMatrix.inverse(m4fInvertedParentMatrix);
+	            TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewWorldMatrix);
+	            
 	            return true;
 			}
 
@@ -396,8 +398,8 @@ module akra.scene {
 		        s += ':  ';
 		    }
 
-		    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
-
+		    s += '+----[depth: ' + this.depth + ']' + this.toString() +  '\n';
+/*"[updated: " + this.isUpdated() + ", childs updated: " + this.hasUpdatedSubNodes() + ", new wm: " + this.isWorldMatrixNew() + "]" +*/
 		    if (pChild) {
 		        s += pChild.toString(true, iDepth + 1);
 		    }

@@ -13,6 +13,10 @@
 #include "SceneModel.ts"
 #include "Joint.ts"
 
+#include "light/ProjectLight.ts"
+#include "light/OmniLight.ts"
+#include "light/ShadowCaster.ts"
+
 #define DEFAULT_DLIST DEFAULT_NAME
 
 module akra.scene {
@@ -84,11 +88,14 @@ module akra.scene {
 
 		recursivePreUpdate(): void {
 			this._isUpdated = false;
+			this.preUpdate();
 			this._pRootNode.recursivePreUpdate();
 		}
 
 		recursiveUpdate(): void {
+			this.beforeUpdate();
 			this._isUpdated = this._pRootNode.recursiveUpdate();
+			this.postUpdate();
 		}
 
 		updateCamera(): bool {
@@ -145,23 +152,53 @@ module akra.scene {
 			}
 			
 			return <ICamera>this.setupNode(pCamera, sName);
-		}
+		};
 
-		createLightPoint(sName: string = null): ILightPoint {
-			return null;
-		}
+		createLightPoint(eType: ELightTypes = ELightTypes.UNKNOWN, isShadowCaster: bool = true,
+						 iMaxShadowResolution: uint = 256, sName: string = null): ILightPoint {
+
+			var pLight: ILightPoint;
+
+			switch(eType){
+				case ELightTypes.PROJECT: 
+					pLight = <ILightPoint>(new light.ProjectLight(this));
+					break;
+				case ELightTypes.OMNI: 
+					pLight = <ILightPoint>(new light.OmniLight(this));
+					break;
+				default: 
+					return null;
+			}
+			if(!pLight.create(isShadowCaster, iMaxShadowResolution)){
+				ERROR("cannot create light");
+				return null;
+			}
+
+			return <ILightPoint>this.setupNode(pLight, sName);
+		};
 
 		createSprite(sName: string = null): ISprite {
 			return null;
-		}
+		};
 
 		createJoint(sName: string = null): IJoint {
 			return <IJoint>this.setupNode(new Joint(this), sName);
-		}
+		};
 
 		createText3d(sName: string = null): IText3d {
 			return null;
-		}
+		};
+
+		_createShadowCaster(pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X, sName: string = null){
+			var pShadowCaster: IShadowCaster = new light.ShadowCaster(pLightPoint, iFace);
+			
+			if (!pShadowCaster.create()) {
+				ERROR("cannot create shadow caster..");
+				return null;
+			}
+			
+			return <IShadowCaster>this.setupNode(pShadowCaster, sName);
+		};
 
 
 		// inline getAllNodes(): ISceneNode[] {
@@ -292,6 +329,9 @@ module akra.scene {
 	
 		BROADCAST(displayListAdded, CALL(list, index));
 		BROADCAST(displayListRemoved, CALL(list, index));
+		BROADCAST(beforeUpdate, VOID);
+		BROADCAST(postUpdate, VOID);
+		BROADCAST(preUpdate, VOID);
 
 		// BROADCAST(nodeAttachment, CALL(pNode));
 		// BROADCAST(nodeDetachment, CALL(pNode));

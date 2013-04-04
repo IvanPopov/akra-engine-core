@@ -11,7 +11,7 @@ module akra {
 	export interface IMultiRenderTarget extends IRenderTarget {
 		bindSurface(iAttachment: uint, pTarget: IRenderTexture): void;
 		unbindSurface(iAttachment: uint): void;
-		copyContentsToMemory(ppDest: IPixelBox, pBuffer: IFrameBuffer);
+		// copyContentsToMemory(ppDest: IPixelBox, pBuffer: IFrameBuffer);
 		suggestPixelFormat(): EPixelFormats;
 		getBoundSurfaceList(): IRenderTarget[];
 		getBoundSurface(iIndex: uint): IRenderTarget;

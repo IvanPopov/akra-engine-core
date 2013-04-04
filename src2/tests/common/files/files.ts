@@ -64,4 +64,26 @@ module akra {
 		});
 	});
 
+	asyncTest("Remote file API Test (BIN)", () => {
+		shouldBeTrue("Threads support");
+		shouldBeTrue("File creation");
+		shouldBeTrue("Data should loaded");
+
+		check(info.api.webWorker);
+
+		var pFile: IFile = io.fopen("data/data.bin", "rb");
+		
+		check(pFile != null);
+
+		pFile.read(function(err, pData: Uint8Array) {
+			//alert(sData);
+			if (err) check(null);
+			else {
+				LOG(pData);
+				check(true);
+				run();
+			}
+		});
+	});
+
 }

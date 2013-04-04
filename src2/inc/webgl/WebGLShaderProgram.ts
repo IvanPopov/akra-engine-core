@@ -2,16 +2,11 @@
 #define WEBGLSHADERPROGRAM_TS
 
 #include "math/math.ts"
-#include "ISampler2d.ts"
+#include "IAFXSamplerState.ts"
 #include "core/pool/ResourcePoolItem.ts"
 #include "IShaderProgram.ts"
 #include "IBufferMap.ts"
 
-#define CHECK_WEBGL_LOCATION(iLoc, sName)\
-	var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; \
-	if (!isDef(iLoc)) { \
-		return false; \
-	}
 
 module akra.webgl {
 
@@ -20,11 +15,15 @@ module akra.webgl {
     }
 
 	export class WebGLShaderProgram extends core.pool.ResourcePoolItem implements IShaderProgram {
+        protected _pWebGLRenderer: WebGLRenderer;
+        protected _pWebGLContext: WebGLRenderingContext;
 		protected _pWebGLProgram: WebGLProgram;
 		protected _pWebGLUniformLocations: WebGLUniformLocationMap;
 		protected _pWebGLAttributeLocations: IntMap;
 
 		protected _pWebGLAttributesInfo: WebGLActiveInfo[];
+
+        protected _iTotalAttributes: uint = 0;
 
 		create(csVertex?: string, csPixel?: string): bool {
 			if (arguments.length > 0) {
@@ -35,9 +34,7 @@ module akra.webgl {
 		}
 
         destroy(): void {
-            var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
-
-            pWebGLRenderer.deleteWebGLProgram(this._pWebGLProgram);
+            this._pWebGLRenderer.deleteWebGLProgram(this._pWebGLProgram);
 
             this._pWebGLUniformLocations = null;
             this._pWebGLAttributeLocations = null;
@@ -48,8 +45,8 @@ module akra.webgl {
         }
 
     	compile(csVertex: string = GLSL_VS_SHADER_MIN, csPixel: string = GLSL_FS_SHADER_MIN): bool {
-    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
-			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+    		var pWebGLRenderer: WebGLRenderer = this._pWebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = this._pWebGLContext =pWebGLRenderer.getWebGLContext();
 			var pWebGLProgram: WebGLProgram = this._pWebGLProgram = pWebGLRenderer.createWebGLProgram();
 
 			var pWebGLVs: WebGLShader = this.createWebGLShader(GL_VERTEX_SHADER, csVertex);
@@ -75,11 +72,18 @@ module akra.webgl {
 
 				var sInfo: string = pWebGLContext.getProgramInfoLog(pWebGLProgram);
 
-				LOG("shader program errors: \n %s\n\nvertex code:\n %s\n\n pixel code: %s", sInfo, csVertex, csPixel);
+				LOG("shader program errors: \n" + sInfo + "\n\nvertex code:\n"  + csVertex + "\n\n pixel code: csPixel");
 #endif				
 
 				return false;
 			}
+
+           /* if (loadExtension(pWebGLContext,WEBGL_DEBUG_SHADERS)) {
+                LOG(pWebGLVs, pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLVs));
+                // LOG("translated(from GLSL) VS shader: \n %s\ntranslated(from GLSL) PS shader: \n%s",
+                //     pWebGLContext.getTranslatedShaderSource(pWebGLVs),
+                //     pWebGLContext.getTranslatedShaderSource(pWebGLFs));
+            }*/
 
 			pWebGLContext.validateProgram(pWebGLProgram);
 
@@ -98,235 +102,278 @@ module akra.webgl {
 			return true;
     	}
 
+        inline get totalAttributes(): uint {
+            return this._iTotalAttributes;
+        }
+
+        inline _getActiveUniformNames(): string[] {
+            return Object.keys(this._pWebGLUniformLocations);
+        }
+
+        inline _getActiveAttributeNames(): string[] {
+            return Object.keys(this._pWebGLAttributeLocations);
+        }
+
+        inline _getActiveAttribLocations(): IntMap {
+            return this._pWebGLAttributeLocations;
+        }
+
     	isLinked(): bool {
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
     		return isDefAndNotNull(this._pWebGLProgram) && 
-    			<bool>pWebGLContext.getProgramParameter(this._pWebGLProgram, GL_LINK_STATUS);
+    			<bool>this._pWebGLContext.getProgramParameter(this._pWebGLProgram, GL_LINK_STATUS);
     	}
     	
     	isValid(): bool {
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
     		return isDefAndNotNull(this._pWebGLProgram) && 
-    			<bool>pWebGLContext.getProgramParameter(this._pWebGLProgram, GL_VALIDATE_STATUS);
+    			<bool>this._pWebGLContext.getProgramParameter(this._pWebGLProgram, GL_VALIDATE_STATUS);
     	}
 
     	isActive(): bool {
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
     		return (isDefAndNotNull(this._pWebGLProgram) && 
-    			<WebGLProgram>pWebGLContext.getParameter(GL_CURRENT_PROGRAM) === this._pWebGLProgram);
+    			<WebGLProgram>this._pWebGLContext.getParameter(GL_CURRENT_PROGRAM) === this._pWebGLProgram);
     	}
 
-    	setFloat(sName: string, fValue: float): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-			GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-    		pWebGLContext.uniform1f(iLoc, fValue);
-    		return true;
+    	inline setFloat(sName: string, fValue: float): void {
+    		this._pWebGLContext.uniform1f(this._pWebGLUniformLocations[sName], fValue);
     	}
 
-    	setInt(sName: string, iValue: int): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-			GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-    		pWebGLContext.uniform1i(iLoc, iValue);
-
-    		return true;
+    	inline setInt(sName: string, iValue: int): void {
+    		this._pWebGLContext.uniform1i(this._pWebGLUniformLocations[sName], iValue);
     	}
+
+        // inline setBool(sName: string, bValue: bool): void {
+        //     this.setInt(sName, bValue )
+        // }
     	
-    	setVec2(sName: string, v2fValue: IVec2): bool;
-    	setVec2(sName: string, x: float, y: float): bool;
-    	inline setVec2(sName: string, x?, y?): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		if (arguments.length == 2) {
-    			pWebGLContext.uniform2f(iLoc, arguments[1].x, arguments[1].y);
-    		}
-    		else {
-    			pWebGLContext.uniform2f(iLoc, arguments[1], arguments[2]);
-    		}
-
-    		return true;
+    	setVec2(sName: string, v2fValue: IVec2): void;
+    	setVec2(sName: string, x: float, y: float): void;
+    	inline setVec2(sName: string, x?, y?): void {
+    		(arguments.length == 2)?
+    		  this._pWebGLContext.uniform2f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y):
+    		  this._pWebGLContext.uniform2f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2]);
     	}
 
     	
-    	setVec2i(sName: string, v2iValue: IVec2): bool;
-    	setVec2i(sName: string, x: int, y: int): bool;
-    	inline setVec2i(sName: string, x?, y?): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		if (arguments.length == 2) {
-    			pWebGLContext.uniform2i(iLoc, arguments[1].x, arguments[1].y);
-    		}
-    		else {
-    			pWebGLContext.uniform2i(iLoc, arguments[1], arguments[2]);
-    		}
-
-    		return true;
+    	setVec2i(sName: string, v2iValue: IVec2): void;
+    	setVec2i(sName: string, x: int, y: int): void;
+    	inline setVec2i(sName: string, x?, y?): void {
+    		(arguments.length == 2)?
+    		  this._pWebGLContext.uniform2i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y):
+    		  this._pWebGLContext.uniform2i(this._pWebGLUniformLocations[sName], arguments[1], arguments[2]);
     	}
 
-    	setVec3(sName: string, v3fValue: IVec3): bool;
-    	setVec3(sName: string, x: float, y: float, z: float): bool;
-    	inline setVec3(sName: string, x?, y?, z?): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		if (arguments.length == 2) {
-    			pWebGLContext.uniform3f(iLoc, arguments[1].x, arguments[1].y, arguments[1].z);
-    		}
-    		else {
-    			pWebGLContext.uniform3f(iLoc, arguments[1], arguments[2], arguments[3]);
-    		}
-
-    		return true;
+    	setVec3(sName: string, v3fValue: IVec3): void;
+    	setVec3(sName: string, x: float, y: float, z: float): void;
+    	inline setVec3(sName: string, x?, y?, z?): void {
+    		(arguments.length == 2)?
+    		  this._pWebGLContext.uniform3f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z):
+    		  this._pWebGLContext.uniform3f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3]);
     	}
     	
-    	setVec3i(sName: string, v3iValue: IVec3): bool;
-    	setVec3i(sName: string, x: int, y: int, z: int): bool;
-    	inline setVec3i(sName: string, x?, y?, z?): bool {
-			CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		if (arguments.length == 2) {
-    			pWebGLContext.uniform3i(iLoc, arguments[1].x, arguments[1].y, arguments[1].z);
-    		}
-    		else {
-    			pWebGLContext.uniform3i(iLoc, arguments[1], arguments[2], arguments[3]);
-    		}
-
-    		return true;
+    	setVec3i(sName: string, v3iValue: IVec3): void;
+    	setVec3i(sName: string, x: int, y: int, z: int): void;
+    	inline setVec3i(sName: string, x?, y?, z?): void {
+    		(arguments.length == 2)?
+    			this._pWebGLContext.uniform3i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z):
+    			this._pWebGLContext.uniform3i(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3]);
     	}
 
-    	setVec4(sName: string, v4fValue: IVec4): bool;
-    	setVec4(sName: string, x: float, y: float, z: float, w: float): bool;
-    	inline setVec4(sName: string, x?, y?, z?, w?): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		if (arguments.length == 2) {
-    			pWebGLContext.uniform4f(iLoc, arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
-    		}
-    		else {
-    			pWebGLContext.uniform4f(iLoc, arguments[1], arguments[2], arguments[3], arguments[3]);
-    		}
-
-    		return true;
+    	setVec4(sName: string, v4fValue: IVec4): void;
+    	setVec4(sName: string, x: float, y: float, z: float, w: float): void;
+    	inline setVec4(sName: string, x?, y?, z?, w?): void {
+    		(arguments.length == 2)?
+    		  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w):
+    		  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3], arguments[3]);
     	}
 
-    	setVec4i(sName: string, v4iValue: IVec4): bool;
-    	setVec4i(sName: string, x: int, y: int, z: int, w: int): bool;
-    	inline setVec4i(sName: string, x?, y?, z?, w?): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		if (arguments.length == 2) {
-    			pWebGLContext.uniform4i(iLoc, arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
-    		}
-    		else {
-    			pWebGLContext.uniform4i(iLoc, arguments[1], arguments[2], arguments[3], arguments[3]);
-    		}
-
-    		return true;
+    	setVec4i(sName: string, v4iValue: IVec4): void;
+    	setVec4i(sName: string, x: int, y: int, z: int, w: int): void;
+    	inline setVec4i(sName: string, x?, y?, z?, w?): void {
+    		(arguments.length == 2)?
+    			this._pWebGLContext.uniform4i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w):
+    			this._pWebGLContext.uniform4i(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3], arguments[3])
     	}
 #ifdef IMAT2_TS    	
-    	inline setMat2(sName: string, m2fValue: IMat2): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		pWebGLContext.uniformMatrix2fv(iLoc, false, m2fValue.data);
-    		
-    		return true;
+    	inline setMat2(sName: string, m2fValue: IMat2): void {
+    		this._pWebGLContext.uniformMatrix2fv(this._pWebGLUniformLocations[sName], false, m2fValue.data);
     	}
 #endif        
 
-    	inline setMat3(sName: string, m3fValue: IMat3): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		pWebGLContext.uniformMatrix3fv(iLoc, false, m3fValue.data);
-    		
-    		return true;
+    	inline setMat3(sName: string, m3fValue: IMat3): void {
+    		this._pWebGLContext.uniformMatrix3fv(this._pWebGLUniformLocations[sName], false, m3fValue.data);
     	}
 
-    	setMat4(sName: string, m4fValue: IMat4): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		pWebGLContext.uniformMatrix4fv(iLoc, false, m4fValue.data);
-    		
-    		return true;
+    	setMat4(sName: string, m4fValue: IMat4): void {
+    		this._pWebGLContext.uniformMatrix4fv(this._pWebGLUniformLocations[sName], false, m4fValue.data);
     	}
 
-    	inline setFloat32Array(sName: string, pValue: Float32Array): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		pWebGLContext.uniform1fv(iLoc, pValue);
-    		
-    		return true;
+    	inline setFloat32Array(sName: string, pValue: Float32Array): void {
+    		this._pWebGLContext.uniform1fv(this._pWebGLUniformLocations[sName], pValue);
     	}
 
-    	inline setInt32Array(sName: string, pValue: Int32Array): bool {
-    		CHECK_WEBGL_LOCATION(iLoc, sName);
-    		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
-
-    		pWebGLContext.uniform1iv(iLoc, pValue);
-    		
-    		return true;
+    	inline setInt32Array(sName: string, pValue: Int32Array): void {
+    		this._pWebGLContext.uniform1iv(this._pWebGLUniformLocations[sName], pValue);
     	}
 
-    	inline setVec2Array(sName: string, pValue: IVec2[]): bool {
-    		return false;
+        static uniformBuffer: ArrayBuffer = new ArrayBuffer(4096 * 16);
+
+    	inline setVec2Array(sName: string, pValue: IVec2[]): void {
+    		var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
+            for (var i: int = 0, j: int = 0; i < pValue.length; i += 2, ++ j) {
+                pBuffer[i    ] = pValue[j].x;
+                pBuffer[i + 1] = pValue[j].y;
+            }
+
+            this._pWebGLContext.uniform2fv(this._pWebGLUniformLocations[sName], pBuffer);
     	}
 
-    	inline setVec2iArray(sName: string, pValue: IVec2[]): bool {
-    		return false;
+    	inline setVec2iArray(sName: string, pValue: IVec2[]): void {
+    		var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
+            for (var i: int = 0, j: int = 0; i < pValue.length; i += 2, ++ j) {
+                pBuffer[i    ] = pValue[j].x;
+                pBuffer[i + 1] = pValue[j].y;
+            }
+
+            this._pWebGLContext.uniform2iv(this._pWebGLUniformLocations[sName], pBuffer);
     	}
 
-    	inline setVec3Array(sName: string, pValue: IVec3[]): bool {
-    		return false;
+    	inline setVec3Array(sName: string, pValue: IVec3[]): void {
+    		var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 3);
+            for (var i: int = 0, j: int = 0; i < pValue.length; i += 3, ++ j) {
+                pBuffer[i    ] = pValue[j].x;
+                pBuffer[i + 1] = pValue[j].y;
+                pBuffer[i + 2] = pValue[j].z;
+            }
+
+            this._pWebGLContext.uniform3fv(this._pWebGLUniformLocations[sName], pBuffer);
     	}
 
-    	inline setVec3iArray(sName: string, pValue: IVec3[]): bool {
-    		return false;
+    	inline setVec3iArray(sName: string, pValue: IVec3[]): void {
+    		var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 3);
+            for (var i: int = 0, j: int = 0; i < pValue.length; i += 3, ++ j) {
+                pBuffer[i    ] = pValue[j].x;
+                pBuffer[i + 1] = pValue[j].y;
+                pBuffer[i + 2] = pValue[j].z;
+            }
+
+            this._pWebGLContext.uniform3iv(this._pWebGLUniformLocations[sName], pBuffer);
     	}
 
-    	inline setVec4Array(sName: string, pValue: IVec4[]): bool {
-    		return false;
+    	inline setVec4Array(sName: string, pValue: IVec4[]): void {
+    		var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 4);
+            for (var i: int = 0, j: int = 0; i < pValue.length; i += 4, ++ j) {
+                pBuffer[i    ] = pValue[j].x;
+                pBuffer[i + 1] = pValue[j].y;
+                pBuffer[i + 2] = pValue[j].z;
+                pBuffer[i + 3] = pValue[j].w;
+            }
+
+            this._pWebGLContext.uniform4fv(this._pWebGLUniformLocations[sName], pBuffer);
     	}
 
-    	inline setVec4iArray(sName: string, pValue: IVec4[]): bool {
-    		return false;
+    	inline setVec4iArray(sName: string, pValue: IVec4[]): void {
+    		var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 4);
+            for (var i: int = 0, j: int = 0; i < pValue.length; i += 4, ++ j) {
+                pBuffer[i    ] = pValue[j].x;
+                pBuffer[i + 1] = pValue[j].y;
+                pBuffer[i + 2] = pValue[j].z;
+                pBuffer[i + 3] = pValue[j].w;
+            }
+
+            this._pWebGLContext.uniform4iv(this._pWebGLUniformLocations[sName], pBuffer);
     	}
 
 #ifdef IMAT2_TS
-    	inline setMat2Array(sName: string, pValue: IMat2[]): bool {
-    		return false;
+    	inline setMat2Array(sName: string, pValue: IMat2[]): void {
+
     	}
 #endif
 
-    	inline setMat3Array(sName: string, pValue: IMat3[]): bool {
-    		return false;
+    	inline setMat3Array(sName: string, pValue: IMat3[]): void {
+            var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 9);
+            for (var i: int = 0, j: int = 0; i < pValue.length; i += 9, ++ j) {
+                pBuffer[i    ] = pValue[j][0];
+                pBuffer[i + 1] = pValue[j][1];
+                pBuffer[i + 2] = pValue[j][2];
+                pBuffer[i + 3] = pValue[j][3];
+                pBuffer[i + 4] = pValue[j][4];
+                pBuffer[i + 5] = pValue[j][5];
+                pBuffer[i + 6] = pValue[j][6];
+                pBuffer[i + 7] = pValue[j][7];
+                pBuffer[i + 8] = pValue[j][8];
+            }
+    		this._pWebGLContext.uniformMatrix3fv(this._pWebGLUniformLocations[sName], false, pBuffer);
     	}
 
-    	inline setMat4Array(sName: string, pValue: IMat4[]): bool {
-    		return false;
+    	inline setMat4Array(sName: string, pValue: IMat4[]): void {
+    		var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 9);
+            for (var i: int = 0, j: int = 0; i < pValue.length; i += 9, ++ j) {
+                pBuffer[i    ] = pValue[j][0];
+                pBuffer[i + 1] = pValue[j][1];
+                pBuffer[i + 2] = pValue[j][2];
+                pBuffer[i + 3] = pValue[j][3];
+                pBuffer[i + 4] = pValue[j][4];
+                pBuffer[i + 5] = pValue[j][5];
+                pBuffer[i + 6] = pValue[j][6];
+                pBuffer[i + 7] = pValue[j][7];
+                pBuffer[i + 8] = pValue[j][8];
+                pBuffer[i + 9] = pValue[j][9];
+                pBuffer[i + 10] = pValue[j][10];
+                pBuffer[i + 11] = pValue[j][11];
+                pBuffer[i + 12] = pValue[j][12];
+                pBuffer[i + 13] = pValue[j][13];
+                pBuffer[i + 14] = pValue[j][14];
+                pBuffer[i + 15] = pValue[j][15];
+            }
+            this._pWebGLContext.uniformMatrix4fv(this._pWebGLUniformLocations[sName], false, pBuffer);
     	}
 
-    	inline setStruct(sName: string, pData: Object): bool {
-    		return false;
+    	inline setStruct(sName: string, pData: Object): void {
+    		
     	}
 
-    	inline setSampler2D(sName: string, pData: ISampler2d): bool {
-    		return false;
+    	inline setSampler(sName: string, pSampler: IAFXSamplerState): void {
+           var iSlot: int = this.applySamplerState(pSampler);
+           this.setInt(sName, iSlot);
     	}
 
-    	inline setSampler2DToStruct(sName: string, pData: ISampler2d): bool {
-    		return false;
+        inline setVertexBuffer(sName: string, pBuffer: IVertexBuffer): void {
+            var iSlot: uint = this._pWebGLRenderer.getNextTextureSlot();
+
+            this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
+            this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
+            this.setInt(sName, iSlot);
+        }
+
+        inline setSamplerArray(sName: string, pList: IAFXSamplerState[]): void {
+            var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pList.length);
+            for (var i: int = 0; i < pList.length; ++ i) {
+                pBuffer[i] = this.applySamplerState(pList[i]);                
+            }
+            this.setInt32Array(sName, pBuffer);
+        }
+
+
+    	inline setTexture(sName: string, pData: ITexture): void {
+    		
     	}
 
-    	inline setTexture(sName: string, pData: ITexture): bool {
-    		return false;
-    	}
+        private applySamplerState(pSampler: IAFXSamplerState): int {
+            var pTexture: WebGLInternalTexture = <WebGLInternalTexture>pSampler.texture;
+
+            var iSlot: int = this._pWebGLRenderer.getNextTextureSlot();
+            this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
+
+            this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pTexture.getWebGLTexture());
+
+            pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.mag_filter);
+            pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.min_filter);
+
+            pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s);
+            pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t);
+
+            return iSlot;
+        }
 
     	//applyVertexBuffer(sName: string, pBuffer: IVertexBuffer);
     	applyVertexData(sName: string, pData: IVertexData): bool {
@@ -375,6 +422,10 @@ module akra.webgl {
     	inline getWebGLAttributeLocation(sName: string): int {
     		return isDef(this._pWebGLAttributeLocations[sName]) ? this._pWebGLAttributeLocations[sName] : -1;
     	}
+
+        inline getWebGLUniformLocations(): WebGLUniformLocationMap {
+            return this._pWebGLUniformLocations;
+        }
 
     	inline getWebGLUniformLocation(sName: string): WebGLUniformLocation {
 #ifdef DEBUG
@@ -425,7 +476,7 @@ module akra.webgl {
     		var pUniformInfo: WebGLActiveInfo;
 
     		for (var i: int = 0; i < nUniforms; ++ i) {
-    			pUniformInfo = pWebGLContext. getActiveUniform(this._pWebGLProgram, i);
+    			pUniformInfo = pWebGLContext.getActiveUniform(this._pWebGLProgram, i);
 				iLoc = pWebGLContext.getUniformLocation(this._pWebGLProgram, pUniformInfo.name);
 				pUniformLocations[pUniformInfo.name] = iLoc;
     		}
@@ -457,6 +508,7 @@ module akra.webgl {
 
     		this._pWebGLAttributeLocations = pAttributeLocations;
     		this._pWebGLAttributesInfo = pAttributesInfo;
+            this._iTotalAttributes = nAttributes;
     	}
 	}
 }

@@ -17,6 +17,7 @@ module akra {
     IFACE(IModel);
     IFACE(ISurfaceMaterial);
     IFACE(IEffect);
+    IFACE(IShaderProgram);
 
 
 
@@ -123,10 +124,12 @@ module akra {
         createVertexBuffer(sResourceName: string): IVertexBuffer;
         createVideoBuffer(sResourceName: string): IVertexBuffer;
         createIndexBuffer(sResourceName: string): IIndexBuffer;
+        createShaderProgram(sResourceName: string): IShaderProgram;
         createModel(sResourceName: string): IModel;
 
         createImg(sResourceName: string): IImg;
         loadModel(sFilename: string, pOptions?: any): IModel;
+        loadImage(sFilename: string): IImg;
 
     }
 }

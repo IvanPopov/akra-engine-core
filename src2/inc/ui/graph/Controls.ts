@@ -8,22 +8,33 @@
 module akra.ui.graph {
 	export class Controls extends Component implements IUIGraphControls {
 		public controls: IUIComponent;
+		public graph: IUIGraph;
 
-		inline get graph(): IUIGraph {
-			return <IUIGraph>this.child.sibling;
-		}
-
-		constructor (parent) {
+		constructor (parent, pGraph: IUIGraph = null) {
 			super(parent, null, EUIComponents.GRAPH_CONTROLS);
-			this.controls = <IUIComponent>this.child;
+			
+			this.controls = this.ui.createComponent("Controls");
+			this.graph = pGraph || <IUIGraph>this.ui.createComponent("Graph");
+
+			this.controls.attachToParent(this);
+			this.graph.attachToParent(this);
+
+			var pControlPanel: IUIComponent = this.controls;
+			var pNodeBtn: IUIButton = new Button(pControlPanel, {text: "Create graph node"});
+			this.connect(pNodeBtn, SIGNAL(click), SLOT(createNode));
 		}
 
-		label(): string {
-			return "GraphControls";
+		createNode(): IUIGraphNode {
+			return new graph.Node(this.graph);
+		}
+
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-graphcontrols");
 		}
 	}
 
-	Component.register("GraphControls", Controls);
+	register("GraphControls", Controls);
 }
 
 #endif

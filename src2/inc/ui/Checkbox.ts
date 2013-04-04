@@ -28,7 +28,7 @@ module akra.ui {
 		constructor (parent, options?: IUICheckboxOptions, eType?: EUIComponents);
 		constructor (parent, name?: string, eType?: EUIComponents);
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.CHECKBOX) {
-			super(getUI(parent), options, eType);
+			super(getUI(parent), options, eType, $("<div><span class=\"checkbox-item-text\"></span></div>"));
 
 			this.$text = this.$element.find(".checkbox-item-text:first");
 
@@ -39,17 +39,19 @@ module akra.ui {
 			if (!isUI(parent)) {
 				this.attachToParent(parent);
 			}
+
+			this.text = isObject(options)? options.text || "": "";
 		}
 
-		_applyEntry($entry: JQuery): void {
-			super._applyEntry($entry);
-
-			this.text = $entry.attr("text");
+		_createdFrom($comp: JQuery): void {
+			this.text = $comp.attr("text");
 		}
 
-		protected label(): string {
-			return "Checkbox";
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-checkbox");
 		}
+
 
 		inline isChecked(): bool {
 			return this._bChecked;
@@ -80,7 +82,7 @@ module akra.ui {
 		return isComponent(pEntity, EUIComponents.CHECKBOX);
 	}
 
-	Component.register("Checkbox", Checkbox);
+	register("Checkbox", Checkbox);
 }
 
 #endif

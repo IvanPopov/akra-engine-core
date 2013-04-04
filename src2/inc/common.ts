@@ -13,8 +13,8 @@
 #define WEBGL 1
 #define LOGGER_API 1
 // #define CRYPTO_API 1
-// #define GUI 1
-// #define WEBGL_DEBUG 1
+#define GUI 1
+#define WEBGL_DEBUG 1
 
 #include "ILogger.ts"
 
@@ -28,14 +28,14 @@
 
 #ifdef DEBUG
 
-#define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__);
-#define TRACE(...)          logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__);
-#define INFO(...)           logger.setSourceLocation(__FILE__, __LINE__); logger.info(__VA_ARGS__);
-#define WARNING(...)        logger.setSourceLocation(__FILE__, __LINE__); logger.warning(__VA_ARGS__);
-#define ERROR(...)          logger.setSourceLocation(__FILE__, __LINE__); logger.error(__VA_ARGS__);
-#define CRITICAL(...)       logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__);
-#define CRITICAL_ERROR(...) logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__);
-#define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); logger.assert(__VA_ARGS__);
+#define LOG(...)            { logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__); }
+#define TRACE(...)          { logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__); }
+#define INFO(...)           { logger.setSourceLocation(__FILE__, __LINE__); logger.info(__VA_ARGS__); }
+#define WARNING(...)        { logger.setSourceLocation(__FILE__, __LINE__); logger.warning(__VA_ARGS__); }
+#define ERROR(...)          { logger.setSourceLocation(__FILE__, __LINE__); logger.error(__VA_ARGS__); }
+#define CRITICAL(...)       { logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__); }
+#define CRITICAL_ERROR(...) { logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__); }
+#define ASSERT(...)         { logger.setSourceLocation(__FILE__, __LINE__); logger.assert(__VA_ARGS__); }
 
 #else
 
@@ -179,6 +179,8 @@ module akra {
     export var isArrayBuffer = (x: any): bool => x instanceof ArrayBuffer;
 
     export var isTypedArray = (x: any): bool => x !== null && typeof x === "object" && typeof x.byteOffset === "number";
+
+    export var isBlob = (x: any): bool => x instanceof Blob;
 
     /** @inline */
     export var isArray = (x: any): bool => {
@@ -436,7 +438,8 @@ module akra {
 	(<any>window).requestAnimationFrame = (<any>window).requestAnimationFrame || (<any>window).webkitRequestAnimationFrame ||
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
-    (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
+    // (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitPersistentStorage ;
+    (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitTemporaryStorage ;
     (<any>navigator).gamepads = (<any>navigator).gamepads || (<any>navigator).webkitGamepads;
     (<any>navigator).getGamepads = (<any>navigator).getGamepads || (<any>navigator).webkitGetGamepads;
 

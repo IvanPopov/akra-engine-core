@@ -6,25 +6,26 @@
 
 module akra.ui {
 	export class Button extends Component implements IUIButton {
-		inline get text(): string { return this.$element.html(); }
-		inline set text(x: string) { this.$element.html(x); }
+		inline get text(): string { return this.el.html(); }
+		inline set text(x: string) { this.el.html(x); }
 
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.BUTTON) {
 			super(ui, options, eType, $("<button />"));
-
-			if (!isNull(options)) {
-				if (isString(options.text)) {
-					this.text = options.text;
-				}
-			}
 		}
 
-		protected inline label(): string {
-			return "Button";
+		protected applyOptions(pOptions: IUIButtonOptions): void {
+			super.applyOptions(pOptions);
+			this.text = pOptions.text || "push";
+		}
+
+		rendered(): void {
+			super.rendered();
+			
+			this.el.addClass("component-button");
 		}
 	}
 
-	Component.register("Button", Button);
+	register("Button", Button);
 }
 
 #endif

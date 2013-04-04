@@ -2,13 +2,16 @@
 #define DSUNIFORMS_TS
 
 #include "ILightPoint.ts"
+#include "IShaderInput.ts"
+
 
 #define uniformOmni() UniformOmni.stackCeil
 #define uniformProject() UniformProject.stackCeil
 #define uniformProjectShadow() UniformProjectShadow.stackCeil
 #define uniformOmniShadow() UniformOmniShadow.stackCeil
 
-#define IShadowSampler ISampler2d
+#define IShadowSampler IAFXSamplerState
+#define ISampler2d IAFXSamplerState
 
 
 module akra.render {
@@ -72,7 +75,7 @@ module akra.render {
 	    TO_LIGHT_SPACE: IMat4 = new Mat4();
 	    REAL_PROJECTION_MATRIX: IMat4 = new Mat4();
 	    OPTIMIZED_PROJECTION_MATRIX: IMat4 = new Mat4();
-	    SHADOW_SAMPLER: IShadowSampler = {TEXTURE: null};
+	    SHADOW_SAMPLER: IShadowSampler = {texture: null};
 
 	    setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformProjectShadow {
 	    	this.LIGHT_DATA.set(pLightParam, v3fPosition);
@@ -88,7 +91,7 @@ module akra.render {
 	    }
 
 	    setSampler(sTexture: string): UniformProjectShadow {
-	    	this.SHADOW_SAMPLER.TEXTURE = sTexture;
+	    	this.SHADOW_SAMPLER.textureName = sTexture;
 	    	return this;
 	    }
 
@@ -111,8 +114,8 @@ module akra.render {
 		
 		SHADOW_SAMPLER: IShadowSampler[] = 
 		[
-			{"TEXTURE" : null}, {"TEXTURE" : null}, {"TEXTURE" : null},
-	        {"TEXTURE" : null}, {"TEXTURE" : null}, {"TEXTURE" : null}
+			{"texture" : null}, {"texture" : null}, {"texture" : null},
+	        {"texture" : null}, {"texture" : null}, {"texture" : null}
 	    ];
 
 	    setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformOmniShadow {
@@ -127,7 +130,7 @@ module akra.render {
 		};
 
 		setSampler(sTexture: string, index: int): UniformOmniShadow {
-		    this.SHADOW_SAMPLER[index].TEXTURE = sTexture;
+		    this.SHADOW_SAMPLER[index].textureName = sTexture;
 		    return this;
 		};
 

@@ -189,7 +189,13 @@ module akra.fx {
 			}
 
 			for(var i: uint = 0; i < this._pComponentInputVarBlend.length; i++){
-				this._pComponentInputVarBlend[i].finalizeInput();
+				if(isDef(this._pComponentInputVarBlend[i])){
+					this._pComponentInputVarBlend[i].finalizeInput();
+				}
+				else {
+					this._pComponentInputVarBlend[i] = null;
+					this._pPassesDList[i] = null;
+				}
 			}
 
 			this._isReady = true;
@@ -202,7 +208,8 @@ module akra.fx {
 				return null;
 			}
 
-			if(iPass < 0 || iPass > this.getTotalPasses()){
+			if (iPass < 0 || iPass > this.getTotalPasses() ||
+				isNull(this._pComponentInputVarBlend[iPass])){
 				return null;
 			}
 
@@ -432,19 +439,22 @@ module akra.fx {
 			var sName: string = "";
 			var sRealName: string = "";
 
-			if(sPrevName !== ""){
-				sName = sPrevName + "." + pVariable.getName();
-			}
-			else {
-				sName = pVariable.getName();
-			}
+			// if(sPrevName !== ""){
+			// 	sName = sPrevName + "." + pVariable.getName();
+			// }
+			// else {
+			// 	sName = pVariable.getName();
+			// }
 
-			if(sPrevRealName !== ""){
-				sRealName = sPrevRealName + "." + pVariable.getRealName();
-			}
-			else {
-				sRealName = pVariable.getRealName();
-			}
+			// if(sPrevRealName !== ""){
+			// 	sRealName = sPrevRealName + "." + pVariable.getRealName();
+			// }
+			// else {
+			// 	sRealName = pVariable.getRealName();
+			// }
+			
+			sName = pVariable.getName();
+			sRealName = pVariable.getRealName();
 
 			var pHasVar: IAFXVariableDeclInstruction = this._pUniformByRealNameMap[sRealName];
 			
@@ -455,18 +465,22 @@ module akra.fx {
 
 			var pVariableType: IAFXVariableTypeInstruction = pVariable.getType();
 
-			if(!pVariableType.isComplex()){
-				this._pUniformNameToRealMap[sName] = sRealName;
-				this._pUniformByRealNameMap[sRealName] = pVariable;
-				this._pUniformDefaultValueMap[sRealName] = pVariable.getDefaultValue();
-			}
-			else {
-				var pFieldNameList: string[] = pVariableType.getFieldNameList();
+			// if(!pVariableType.isComplex()) {
+			// 	this._pUniformNameToRealMap[sName] = sRealName;
+			// 	this._pUniformByRealNameMap[sRealName] = pVariable;
+			// 	this._pUniformDefaultValueMap[sRealName] = pVariable.getDefaultValue();
+			// }
+			// else {
+			// 	var pFieldNameList: string[] = pVariableType.getFieldNameList();
 				
-				for(var i: uint = 0; i < pFieldNameList.length; i++){
-					this.addUniformVariable(pVariableType.getField(pFieldNameList[i]), sName, sRealName);
-				}
-			}
+			// 	for(var i: uint = 0; i < pFieldNameList.length; i++){
+			// 		this.addUniformVariable(pVariableType.getField(pFieldNameList[i]), sName, sRealName);
+			// 	}
+			// }
+			
+			this._pUniformNameToRealMap[sName] = sRealName;
+			this._pUniformByRealNameMap[sRealName] = pVariable;
+			this._pUniformDefaultValueMap[sRealName] = pVariable.getDefaultValue();
 		}
 
 		private generateNewPassInputs(nCount?: uint = 5): void {

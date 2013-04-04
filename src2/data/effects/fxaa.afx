@@ -1,8 +1,8 @@
 provide akra.system;
 
-texture tex0 : SCREEN_TEXTURE;
+texture tex0 : INPUT_TEXTURE;
 
-sampler screenSampler : SCREEN_SAMPLER = sampler_state
+sampler screenSampler : INPUT_SAMPLER = sampler_state
 {
 	Texture = <tex0>;
 };
@@ -14,7 +14,7 @@ struct VS_OUT{
 };;
 
 
-//float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
+float2 screenTextureRatio : INPUT_TEXTURE_RATIO;
 
 VS_OUT vs_fxaa_shading(float2 pos: POSITION){
 	VS_OUT Out;
@@ -22,12 +22,12 @@ VS_OUT vs_fxaa_shading(float2 pos: POSITION){
 	Out.position = float4(pos,0.,1.);
     Out.screenPosition = pos;
 	//Out.textureCoords = float2(texCoodrX,texCoordY);
-    Out.textureCoords = (pos + 1.)/2.;// * screenTextureRatio;
+    Out.textureCoords = (pos + 1.)/2. * screenTextureRatio;
 	
 	return Out;
 };
 
-float2 screenSize : SCREEN_TEXTURE_SIZE;
+float2 screenSize : INPUT_TEXTURE_SIZE;
 
 float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 
@@ -46,6 +46,8 @@ float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 	float3 rgbSW=tex2D(screenSampler,texCoords+(float2(-1.0,1.0) * invScreenSize)).xyz;
 	float3 rgbSE=tex2D(screenSampler,texCoords+(float2(1.0,1.0) * invScreenSize)).xyz;
 	float3 rgbM=tex2D(screenSampler,texCoords).xyz;
+
+	color.w = tex2D(screenSampler,texCoords).w;
 	
 	float3 luma=float3(0.299, 0.587, 0.114);
 	float lumaNW = dot(rgbNW, luma);

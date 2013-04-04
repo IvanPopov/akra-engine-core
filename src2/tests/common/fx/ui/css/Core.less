@@ -1,3 +1,7 @@
+body {
+	background: black;
+}
+
 /*Gradient mixins*/
 .gradient (@colorFrom: #ffffff, @colorTo: #f1f1f1) {
 	background-image: -webkit-gradient(linear, left top, left bottom, from( @colorFrom), to( @colorTo  ));
@@ -33,12 +37,19 @@
 
 
 /* Label */
-.component-label{
+.component-label {
 	display: inline-block;
 	position: static;
+	min-height: 10px;
+	width: 100%;
 	
-	.label-input{
+	.label-input {
 		display: none;
+		width: 100%;
+	}
+
+	.label-text {
+		width: 100%;
 	}
 }
 
@@ -152,3 +163,43 @@
 .component-horizontal{
 	min-height: 10px;
 }
+
+.component-fps {
+	width: 100px;
+	height: 47px;
+	background-color: rgba(0, 0, 66, .65);
+	cursor: pointer;
+	//box-shadow: 0 0 5px black;
+
+	.info {
+		font-size: 11px;
+		font-family: 'Consolas', monospace;
+		color: white;
+		padding: 1px;
+		font-weight: bold;
+	}
+
+	.graph {
+		/*background-color: gray;*/
+		min-height: 30px;
+		height: 30px;
+		padding: 0;
+		margin: 0;
+		opacity: .75;
+		overflow: hidden;
+		vertical-align: bottom;
+		text-align: left;
+		/*border-top: 1px solid yellow;*/
+
+		.tick {
+			float: left;
+			width: 1px;
+			height: 0px;
+			display: block;
+			margin: 0;
+			border-bottom: 1px solid yellow;
+			border-top: 1px solid yellow;
+		}
+	}
+}
+

@@ -27,7 +27,7 @@ module akra {
 
 		isShadowCaster: bool;
 
-		create(): bool;
+		create(isShadowCaster?: bool, iMaxShadowResolution?: uint): bool;
 
 		//false if lighting not active 
 		//or it's effect don't seen

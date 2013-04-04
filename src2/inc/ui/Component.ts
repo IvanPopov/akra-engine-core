@@ -5,33 +5,44 @@
 #include "DNDNode.ts"
 #include "io/ajax.ts"
 
+#include "raphael.d.ts"
+
+/// @script ui/3d-party/raphael/raphael-min.js
+
+#include "swig.d.ts"
+/// @script ui/3d-party/swig/swig.pack.min.js
+
 /// @dep ../data/ui
 /// @css ui/css/main.css
 
 module akra.ui {
-	export const TEMPLATES: StringMap = <StringMap>{};
+	export function template(pNode: IUIComponent, sUrl: string, pData: any = null): void {
+		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
+		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sUrl});
+		var sTplData: string = fnTemplate(pData);
 
-	export function loadTemplate(sData: string): void {
-		$("<div/>").html(sData).find("> component").each(function(i: int) {
-			TEMPLATES[$(this).attr("type")] = $(this).html();
+		pNode.el.html(sTplData);
+
+		pNode.el.find("component").each(function(i: int, pComponentElement: HTMLElement) {
+			var $comp: JQuery = $(this);
+			var sType: string = $comp.attr("type");
+			var sName: string = $comp.attr("name");
+
+			var pComponent: IUIComponent = pNode.createComponent(sType, {show: false, name: sName});
+				
+			$comp.before(pComponent.$element);
+			$comp.remove();
+
+			pComponent._createdFrom($comp);
 		});
 	}
 
-	io.ajax({
-		url: "ui/templates/components.html",
-		async: false,		
-		success: (sData?: string): void => {
-			loadTemplate(sData);
-		}
-	});
-
+	
 	export var COMPONENTS: { [type: string]: IUIComponentType; } = <any>{};
 
 	export class Component extends DNDNode implements IUIComponent {
 		protected _eComponentType: EUIComponents;
 		protected _sGenericType: string = null;
-
-		// protected $renderTo: JQuery = null;
 
 		inline get componentType(): EUIComponents { return this._eComponentType; }
 		inline get genericType(): string { return this._sGenericType; }
@@ -47,114 +58,26 @@ module akra.ui {
 		constructor (parent, sName?: string, eType?: EUIComponents, $el?: JQuery);
 		constructor (parent, pOptions?: IUIComponentOptions, eType?: EUIComponents, $el?: JQuery);
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.UNKNOWN, $el?: JQuery) {
-			super(parent, $el, EUINodeTypes.COMPONENT);
+			super(getUI(parent), $el, EUINodeTypes.COMPONENT);
 
-			var pOptions: IUIComponentOptions = isString(options)? { name: <string>options }: options;
-			
+			var pOptions: IUIComponentOptions = mergeOptions(options, null);
+
+			if (!isUI(parent)) {
+				this.attachToParent(<Node>parent, (!isDef(pOptions.show) || pOptions.show == true));
+			}
+
 			this._eComponentType = eType;
 			this.applyOptions(pOptions);
-			
-			this.$element.addClass(this.computeStyle());
-
-			var sTemplate: string = TEMPLATES[this.genericType || this.label()];
-
-			if (isDefAndNotNull(sTemplate)) { 
-				this.$element.html(sTemplate);
-
-				var pComponents: JQuery[] = Component.extractComponents(this.$element);
-			
-				for (var i: int = 0; i < pComponents.length; i ++) {
-					var $component: JQuery = $(pComponents[i]);
-					var sCompType: string = $component.attr("type");
-					var sTempTpl: string = TEMPLATES[sCompType] || "";
-
-					TEMPLATES[sCompType] = sTempTpl + $component.html();
-
-					var pComp: Component = <Component>this.ui.createComponent(sCompType);
-
-					if (!pComp.attachToParent(this, false)) {
-						debug_print("try to attach ", pComp, "to parent", this);
-						CRITICAL("cannot assemble template component hierarchy");
-					}
-
-					TEMPLATES[sCompType] = sTempTpl;
-
-					$component.before(pComp.$element);
-					$component.remove();
-					
-					pComp._applyEntry($component);
-					pComp.rendered();
-				}
-
-				var $layouts: JQuery = this.$element.find("layout");
-
-				for (var i: int = 0, pLayout = null; i < $layouts.length; i ++) {
-					var $layout: JQuery = $($layouts[i]);
-					var sLayoutType: string = $layout.attr("type");
-					//var sLayoutType: string = $layout.attr("type");
-					var sAlign: string= $layout.attr("align");
-					var sStyle: string = $layout.attr("style");
-
-					var pLayout: IUIComponent = this.ui.createLayout(sLayoutType/*, {type: sLayoutType}*/);
-
-					if (!pLayout.attachToParent(this, false)) {
-						debug_print("try to attach ", pLayout, "to parent", this);
-						CRITICAL("cannot assemble template layout hierarchy");
-					}
-
-					$layout.before(pLayout.$element);
-					$layout.remove();
-					pLayout.$element.addClass("layout");
-					pLayout.$element.attr("style", sStyle);
-					pLayout.rendered();
-
-					//pLayout.render();
-
-					if (isDefAndNotNull(sAlign)) {
-						pLayout.$element.attr("align", sAlign);
-					}
-				}	
-			}
-
-			// if ((pOptions && !!pOptions.show) || !isNull(this.parent)) {
-			// 	this.render();
-			// }
 		}
 
-		_applyEntry($entry: JQuery): void {
-			var sClasses: string = $entry.attr("class");
-			var sHtml: string = $entry.attr("text");
-
-			if(isDef(sHtml)) {
-				this.$element.attr("text", sHtml);
-			}
-
-			if (isDef(sClasses)) {
-				this.$element.addClass(sClasses);
-			}
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component");
 		}
-
 
 		inline isGeneric(): bool {
 			return !isNull(this._sGenericType);
 		}
-
-		renderTarget(): JQuery {
-			// if (isLayout(<IUINode>this.child) && (<IUIHTMLNode>this.child).isRendered()) {
-			// 	return (<IUINode>this.child).renderTarget();
-			// }
-
-			return this.$element;
-		}
-
-		// render(to?): bool {
-		// 	if (!isNull(to) && !isNull(this.$renderTo) && <IEntity>to === this.parent) {
-		// 		to = this.$renderTo;
-		// 		console.log("----->", to);
-		// 	}
-
-		// 	return super.render(to);
-		// }
 
 		setLayout(eType: EUILayouts): bool;
 		setLayout(sType: string): bool;
@@ -178,7 +101,9 @@ module akra.ui {
 			var pLayout: IUILayout = this.ui.createLayout(eType);
 
 			if (isLayout(<IUINode>this.child)) {
-				ERROR("//TODO: LAYOUT");
+				var pLayoutPrev: IUILayout = <IUILayout>this.child;
+				pLayoutPrev.relocateChildren(pLayout);
+				pLayoutPrev.destroy();
 			}
 
 			this.relocateChildren(pLayout);
@@ -188,31 +113,11 @@ module akra.ui {
 
 		attachToParent(pParent: IUINode, bRender: bool = true): bool {
 			if (isComponent(pParent) && isLayout(pParent.child) && !isLayout(pParent)) {
-				console.log("redirected to layout ------>", pParent.toString(true));
+				// console.log("redirected to layout ------>", pParent.toString(true));
 				pParent = <IUINode>pParent.child;
 			}
 
 			return super.attachToParent(pParent, bRender);
-		}
-
-		protected computeStyle(): string {
-			if (this.isGeneric()) {
-				return Component.className(this.label()) +  " " + Component.className(this.genericType);
-			}
-
-			var pClassReference: any = (<any>this).constructor.prototype;
-			var sStyle: string = "";
-
-			while (pClassReference !== Component.prototype["__proto__"]) {
-				sStyle = Component.className(pClassReference.label()) + " " + sStyle;
-				pClassReference = pClassReference["__proto__"];
-			}
-
-			return sStyle;
-		}
-
-		protected label(): string {
-			return "Component";
 		}
 
 		protected applyOptions(pOptions: IUIComponentOptions): void {
@@ -220,16 +125,21 @@ module akra.ui {
 				return;
 			}
 
-			var $element: JQuery = this.renderTarget();
+			var $element: JQuery = this.el;
 
-			this.name = pOptions.name || null;
+			this.name = isDef(pOptions.name)? pOptions.name: null;
 
 			if (isDefAndNotNull(pOptions.html)) {
 				$element.html(pOptions.html);
 			}
 
 			if (isDefAndNotNull(pOptions.css)) {
+				LOG(pOptions.css);
 		    	$element.css(pOptions.css);
+		    }
+
+		    if (isDefAndNotNull(pOptions.class)) {
+		    	$element.addClass(pOptions.class);
 		    }
 
 		    if (isDefAndNotNull(pOptions.width)) {
@@ -252,20 +162,26 @@ module akra.ui {
 		    	this._sGenericType = <string>pOptions.generic;
 		    }
 
-		 //    if (isDefAndNotNull(pOptions.renderTo)) {
-			// 	this.$renderTo = <JQuery>pOptions.renderTo;
-			// 	console.log("renderTo > ", this.$renderTo)
-			// }
-
 			if (isDefAndNotNull(pOptions.dragZone)) {
 				$element.draggable("option", "containment", pOptions.dragZone);
 			}
 		}
 
+		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent {
+			var pComp: IUIComponent = this.ui.createComponent(sType, pOptions);
+			pComp.attachToParent(this);
+			return pComp;
+		}
+
+		_createdFrom($comp: JQuery): void {
+			this.$element.attr("style", $comp.attr("style"));
+			this.$element.attr("class", $comp.attr("class"));
+		}
+
 #ifdef DEBUG
 		toString(isRecursive: bool = false, iDepth: int = 0): string {
 			if (!isRecursive) {
-		        return (this.isGeneric()? "<generic-" + this.genericType : "<component-" + this.label()) +
+		        return (this.isGeneric()? "<generic-" + this.genericType : "<component-" + "*") +
 		        	 (this.name? " " + this.name: "") + ">";
 		    }
 
@@ -273,39 +189,10 @@ module akra.ui {
 		}
 #endif
 
-		static extractComponents($element: JQuery, pComponents: JQuery[] = []): JQuery[] {
-			var $elements: JQuery = $element.children();
+	}
 
-			for (var i: int = 0; i < $elements.length; ++ i) {
-				$element = $($elements[i]);
-
-				if ($element.prop("tagName").toLowerCase() !== "component") {
-					Component.extractComponents($element, pComponents);
-				}
-				else {
-					pComponents.push($element);
-				}
-			}
-
-			return pComponents;
-		}
-
-		static className(sComponent: string): string {
-			if (isNull(sComponent)) {
-				return "";
-			}
-
-			if (sComponent == "Component") {
-				return "component";
-			}
-
-			return "component-" + sComponent.toLowerCase();
-		}
-
-		static register(sType: string, pComponent: IUIComponentType): void {
-			COMPONENTS[sType] = pComponent;
-		}
-
+	export inline function register(sType: string, pComponent: IUIComponentType): void {
+		COMPONENTS[sType] = pComponent;
 	}
 
 	export function isComponent(pEntity: IEntity, eComponent?: EUIComponents): bool {
@@ -322,6 +209,34 @@ module akra.ui {
 
 	export inline function isGeneric(pEntity: IEntity): bool {
 		return isComponent(pEntity) && (<IUIComponent>pEntity).isGeneric();
+	}
+
+	export function mergeOptions(sNameLeft: string, pOptionsRight: IUIComponentOptions): IUIComponentOptions;
+	export function mergeOptions(sNameLeft: string, sNameRight: string): IUIComponentOptions;
+	export function mergeOptions(pOptionsLeft: IUIComponentOptions, pOptionsRight: IUIComponentOptions): IUIComponentOptions;
+	export function mergeOptions(left, right): IUIComponentOptions {
+		var pOptionsLeft: IUIComponentOptions;
+		var pOptionsRight: IUIComponentOptions;
+		
+		if (isString(left)) {
+			pOptionsLeft = {name: <string>left};
+		}
+		else {
+			pOptionsLeft = <IUIComponentOptions>left || <IUIComponentOptions>{};
+		}
+
+		if (isString(right)) {
+			pOptionsRight = {name: <string>right};
+		}
+		else {
+			pOptionsRight = <IUIComponentOptions>right || <IUIComponentOptions>{};
+		}
+
+		for (var sOpt in pOptionsRight) {
+			pOptionsLeft[sOpt] = pOptionsRight[sOpt];
+		}
+
+		return pOptionsLeft;
 	}
 }
 

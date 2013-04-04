@@ -3,35 +3,37 @@
 
 #define UIGRAPH_INVALID_ROUTE -1
 
-#include "raphael.d.ts"
-
 module akra {
-	IFACE(IUIGraphNode);
-	//IFACE(RaphaelPath);
-
-	export interface IUIGraphFloatNode extends IPoint {
-		width: int;
-		height: int;
-	}
+	IFACE(IUIGraphConnector);
+	IFACE(IUIGraphEvent);
+	IFACE(IColor);
+	IFACE(RaphaelPath);
 
 	export interface IUIGraphRoute {
-		left: IUIGraphNode;
-		right: IUIGraphNode;
-		floatNode: IUIGraphFloatNode;
-
-		input: int;
-		output: int;
-
+		left: IUIGraphConnector;
+		right: IUIGraphConnector;
 		path: RaphaelPath;
+		color: IColor;
 
-		isFloat(): bool;
+		isConnectedWithNode(pNode: IUIGraphNode): bool;
+		isConnectedWith(pConnector: IUIGraphConnector): bool;
+		isBridge(): bool;
+
+		sendEvent(e: IUIGraphEvent): void;
+
+		//silent remove connectors
+		detach(): void;
 		isActive(): bool;
 
 		activate(bValue?: bool): void;
 		remove(bRecirsive?: bool): void;
+		destroy(): void;
 		
 		routing(): void;
-		distribute(): void;
+	}
+
+	export interface IUITempGraphRoute extends IUIGraphRoute {
+		routing(pRight?: IPoint): void;
 	}
 }
 
