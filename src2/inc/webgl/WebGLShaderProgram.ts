@@ -364,7 +364,7 @@ module akra.webgl {
             var iSlot: int = this._pWebGLRenderer.getNextTextureSlot();
             this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
 
-            this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pTexture.getWebGLTexture());
+            this._pWebGLRenderer.bindWebGLTexture(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
 
             pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.mag_filter);
             pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.min_filter);

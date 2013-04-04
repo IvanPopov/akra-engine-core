@@ -24,7 +24,7 @@ module akra.webgl {
             super();
         }
 
-        private _getWebGLTextureTarget(): int {
+        _getWebGLTextureTarget(): int {
         	switch(this._eTextureType) {
         		case ETextureTypes.TEXTURE_2D:
         			return GL_TEXTURE_2D;

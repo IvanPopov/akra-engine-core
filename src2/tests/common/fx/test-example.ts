@@ -89,7 +89,7 @@ module akra {
 
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
-					// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+					pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
 					pController.update(pEngine.time);
 				});
 
@@ -109,8 +109,8 @@ module akra {
 			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
-			// loadModels("../../../data/models/hero/hero.DAE");
-			loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			loadModels("../../../data/models/hero/hero.DAE");
+			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 			// loadModels("../../../data/models/cube.dae").scale(0.1);
 		}
 
