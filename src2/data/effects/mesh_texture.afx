@@ -104,10 +104,10 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
     else {
 
         float3 normal = IN.norm.xyz;
-        float3 binormal = cross(float3(1., 0., 0.), normal);
+        float3 binormal = normalize(cross(float3(1., 0., 0.), normal));
             
         if (binormal == float3(0.)) {
-            binormal = cross(float3(0., 1., 0.), normal);
+            binormal = normalize(cross(float3(0., 1., 0.), normal));
         }
 
         float3 tang = cross(normal, binormal);
