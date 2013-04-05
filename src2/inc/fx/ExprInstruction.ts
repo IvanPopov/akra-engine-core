@@ -595,7 +595,10 @@ module akra.fx {
 			}
 			else {
 				sCode += this.getInstructions()[0].toFinalCode();	
-				sCode += "[" + this.getInstructions()[1].toFinalCode() + "]";
+				
+				if(!(<IAFXExprInstruction>this.getInstructions()[0]).getType()._isCollapsed()){
+					sCode += "[" + this.getInstructions()[1].toFinalCode() + "]";
+				}
 			}
 
 			return sCode;

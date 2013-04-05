@@ -103,102 +103,102 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_UNKNOWN_VARNAME, 
     						 "Unknown variable name: {varName}. In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_BAD_ARITHMETIC_OPERATION, 
-    						 "Invalid arithmetic operation!. There no operator '{operator}'\
-    						  for left-type '{leftTypeName}' \
-    						 and right-type '{rightTypeName}'. In line: {line}.");
+    						 "Invalid arithmetic operation!. There no operator '{operator}'" +
+    						 " for left-type '{leftTypeName}' " +
+    						 " and right-type '{rightTypeName}'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_ARITHMETIC_ASSIGNMENT_OPERATION, 
-    						 "Invalid arithmetic-assignment operation!. \
-    						 There no operator {operator} for left-type '{leftTypeName}' \
-    						 and right-type '{rightTypeName}'. In line: {line}.");
+    						 "Invalid arithmetic-assignment operation!. " +
+    						 " There no operator {operator} for left-type '{leftTypeName}' " +
+    						 " and right-type '{rightTypeName}'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_ASSIGNMENT_OPERATION, 
-    						 "Invalid assignment operation!. It`s no possible to do assignment \
-    						 between left-type '{leftTypeName}' \
-    						 and right-type '{rightTypeName}'. In line: {line}.");
+    						 "Invalid assignment operation!. It`s no possible to do assignment " +
+    						 " between left-type '{leftTypeName}' " +
+    						 " and right-type '{rightTypeName}'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_RELATIONAL_OPERATION, 
-    						 "Invalid relational operation!. There no operator {operator} \
-    						 for left-type '{leftTypeName}' \
-    						 and right-type '{rightTypeName}'. In line: {line}.");
+    						 "Invalid relational operation!. There no operator {operator} " +
+    						 " for left-type '{leftTypeName}' " +
+    						 " and right-type '{rightTypeName}'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_LOGICAL_OPERATION, 
-    						 "Invalid logical operation!. In operator: {operator}. \
-    						 Cannot convert type '{typeName}' to 'bool'. In line: {line}.");
+    						 "Invalid logical operation!. In operator: {operator}. " +
+    						 " Cannot convert type '{typeName}' to 'bool'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_CONDITION_TYPE, 
-    						 "Invalid conditional expression!. Cannot convert type '{typeName}' to 'bool'. \
-    						 In line: {line}.");
+    						 "Invalid conditional expression!. Cannot convert type '{typeName}' to 'bool'. " +
+    						 " In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_CONDITION_VALUE_TYPES, 
-    						 "Invalid conditional expression!. Type '{leftTypeName}' and type '{rightTypeName}'\
-    						  are not equal. In line: {line}.");
+    						 "Invalid conditional expression!. Type '{leftTypeName}' and type '{rightTypeName}'" +
+    						  " are not equal. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_CAST_TYPE_USAGE, 
-    						 "Invalid type cast!. Bad type casting. Only base types without usages are supported. \
-    						 WebGL don`t support so casting. In line: {line}.");
+    						 "Invalid type cast!. Bad type casting. Only base types without usages are supported. " +
+    						 " WebGL don`t support so casting. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_CAST_TYPE_NOT_BASE, 
-    						 "Invalid type cast!. Bad type for casting '{typeName}'. \
-    						 WebGL support only base-type casting. In line: {line}.");
+    						 "Invalid type cast!. Bad type for casting '{typeName}'. " +
+    						 " WebGL support only base-type casting. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_UNARY_OPERATION, 
-    						 "Invalid unary expression!. Bad type: '{typeName}' \
-    						 for operator '{opeator}'. In line: {line}.");
+    						 "Invalid unary expression!. Bad type: '{typeName}' " +
+    						 " for operator '{opeator}'. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_ARRAY, 
-    						 "Invalid postfix-array expression!. \
-    						 Type of expression is not array: '{typeName}'. In line: {line}.");
+    						 "Invalid postfix-array expression!. " +
+    						 " Type of expression is not array: '{typeName}'. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_INT_INDEX, 
-    						 "Invalid postfix-array expression!. Bad type of index: '{typeName}'. \
-    						 Must be 'int'. In line: {line}.");
+    						 "Invalid postfix-array expression!. Bad type of index: '{typeName}'. " +
+    						 "Must be 'int'. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_FIELD, 
-    						 "Invalid postfix-point expression!. Type '{typeName}' has no field '{fieldName}'. \
-    						 In line: {line}.");
+    						 "Invalid postfix-point expression!. Type '{typeName}' has no field '{fieldName}'. " +
+    						 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_POINTER, 
-    						 "Invalid postfix-point expression!. Type '{typeName}' is not pointer. \
-    						 In line: {line}.");
+    						 "Invalid postfix-point expression!. Type '{typeName}' is not pointer. " +
+    						 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_POSTIX_ARITHMETIC, 
-    						 "Invalid postfix-arithmetic expression!. Bad type '{typeName}' \
-    						 for operator {operator}. In line: {line}.");
+    						 "Invalid postfix-arithmetic expression!. Bad type '{typeName}' " +
+    						 "for operator {operator}. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_PRIMARY_NOT_POINT, 
-    						 "Invalid primary expression!. Bad type '{typeName}'.\
-    						 It`s not pointer. In line: {line}.");
+    						 "Invalid primary expression!. Bad type '{typeName}'." +
+    						 "It`s not pointer. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_COMPLEX_NOT_FUNCTION, 
-    						 "Invalid function call expression!. Could not find function-signature \
-    						 with name {funcName} and so types. In line: {line}.");
+    						 "Invalid function call expression!. Could not find function-signature " +
+    						 "with name {funcName} and so types. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_COMPLEX_NOT_TYPE, 
     						 "Invalid constructor call!. There are not so type. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR, 
-    						 "Invalid constructor call!. Could not find constructor-signature \
-    						 with name {typeName} and so types. In line: {line}.");
+    						 "Invalid constructor call!. Could not find constructor-signature " +
+    						 "with name {typeName} and so types. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_COMPILE_NOT_FUNCTION, 
-    						 "Invalid compile expression!. Could not find function-signature \
-    						 with name {funcName} and so types. In line: {line}.");
+    						 "Invalid compile expression!. Could not find function-signature " +
+    						 "with name {funcName} and so types. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_REDEFINE_FUNCTION, 
     						 "You try to redefine function. With name {funcName}. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_WHILE_CONDITION, 
-							 "Bad type of while-condition. Must be 'bool' but it is '{typeName}'. \
-							 In line: {line}.");
+							 "Bad type of while-condition. Must be 'bool' but it is '{typeName}'. " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_DO_WHILE_CONDITION, 
-							 "Bad type of do-while-condition. Must be 'bool' but it is '{typeName}'. \
-							 In line: {line}.");
+							 "Bad type of do-while-condition. Must be 'bool' but it is '{typeName}'. " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_IF_CONDITION, 
-							 "Bad type of if-condition. Must be 'bool' but it is '{typeName}'. \
-							 In line: {line}.");
+							 "Bad type of if-condition. Must be 'bool' but it is '{typeName}'. " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_FOR_INIT_EXPR, 
-							 "Bad for-init expression. WebGL support only VariableDecl as for-init expression, \
-							 like \"int i = 0;\" or \"float i = 0.0;\". \
-							 In line: {line}.");
+							 "Bad for-init expression. WebGL support only VariableDecl as for-init expression, " +
+							 "like \"int i = 0;\" or \"float i = 0.0;\". " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_FOR_INIT_EMPTY_ITERATOR, 
-							 "Bad for-init expression. WebGL support only VariableDecl as for-init expression, \
-							 like \"int i = 0;\" or \"float i = 0.0;\". \
-							 In line: {line}.");
+							 "Bad for-init expression. WebGL support only VariableDecl as for-init expression, " +
+							 "like \"int i = 0;\" or \"float i = 0.0;\". " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_FOR_COND_EMPTY, 
-							 "Bad for-cond expression. WebGL does not support empty conditional expression in for-loop. \
-							 In line: {line}.");
+							 "Bad for-cond expression. WebGL does not support empty conditional expression in for-loop. " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_FOR_COND_RELATION, 
-							 "Bad for-cond expression. WebGL support only relational expression for condition in for-loop. \
-							 In line: {line}.");
+							 "Bad for-cond expression. WebGL support only relational expression for condition in for-loop. " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_FOR_STEP_EMPTY, 
-							 "Bad for-step expression. WebGL does not support empty step expression. \
-							 In line: {line}.");
+							 "Bad for-step expression. WebGL does not support empty step expression. " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_FOR_STEP_OPERATOR, 
-							 "Bad for-step expression. WebGL does not support operator '{operator}' in step expression. \
-							 In line: {line}.");
+							 "Bad for-step expression. WebGL does not support operator '{operator}' in step expression. " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_FOR_STEP_EXPRESSION, 
-							 "Bad for-step expression. WebGL support only unary and assignment expression in for-step. \
-							 In line: {line}.");
+							 "Bad for-step expression. WebGL support only unary and assignment expression in for-step. " +
+							 "In line: {line}.");
 	akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_VARIABLE, 
     						 "You trying to redefine system variable: {varName}. In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_REDEFINE_VARIABLE, 
@@ -208,41 +208,41 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_REDEFINE_FUNCTION, 
     	 					 "You trying to redefine function: {funcName}. In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFCCT_BAD_NEW_FIELD_FOR_STRUCT_NAME, 
-    						 "You trying to add field to struct with name '{varName}', but it`s already in it. \
-    						 In line: {line}. In column: {column}");
+    						 "You trying to add field to struct with name '{varName}', but it`s already in it. " +
+    						 "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFCCT_BAD_NEW_FIELD_FOR_STRUCT_SEMANTIC, 
-    	 					 "You trying to add field to struct with semantic '{semanticName}',\
-    	 					  but struct already has this semantic.\
-    	 					  In line: {line}. In column: {column}");
+    	 					 "You trying to add field to struct with semantic '{semanticName}'," +
+    	 					  "but struct already has this semantic." +
+    	 					  "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFCCT_BAD_NEW_ANNOTATION_VAR, 
-       					     "Bad variable name '{varName}'. Annotation already has variable with that name.\
-    	 					  In line: {line}. In column: {column}");
+       					     "Bad variable name '{varName}'. Annotation already has variable with that name." +
+    	 					  "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFCCT_BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT,
-                             "Bad parameter '{varName}' in function '{funcName}'. Need default value.\
-                              In line: {line}. In column: {column}"); 
+                             "Bad parameter '{varName}' in function '{funcName}'. Need default value." +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_CANNOT_CHOOSE_FUNCTION,
-                             "Bad function call. There are two or more call signatures for function '{funcName}'.\
-                              In line: {line}. In column: {column}"); 
+                             "Bad function call. There are two or more call signatures for function '{funcName}'." +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_FUNCTION_DEF_RETURN_TYPE,
-                             "Bad function definition. There are two or more different retturn type signatures for function '{funcName}'.\
-                              In line: {line}. In column: {column}"); 
+                             "Bad function definition. There are two or more different retturn type signatures for function '{funcName}'." +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_SYSTEM_FUNCTION_REDEFINE,
                              "Bad system function '{funcName}'. Already have this function.");
     akra.logger.registerCode(EFFECT_BAD_TYPE_NAME_NOT_TYPE,
-                             "Bad type. Could not find type with name '{typeName}'.\
-                              In line: {line}. In column: {column}"); 
+                             "Bad type. Could not find type with name '{typeName}'." +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_TYPE_VECTOR_MATRIX,
-                             "Bad type. We don`t support vector and matrix typename.\
-                              In line: {line}. In column: {column}"); 
+                             "Bad type. We don`t support vector and matrix typename." +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_TECHNIQUE_REDEFINE_NAME,
-                             "Bad technique name '{techName}'. Effect already have technique with that name.\
-                              In line: {line}. In column: {column}"); 
+                             "Bad technique name '{techName}'. Effect already have technique with that name." +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_MEMOF_ARGUMENT,
-                             "Bad 'memof'-operator argument. Literal for its argument is bad idea.\
-                              In line: {line}. In column: {column}");
+                             "Bad 'memof'-operator argument. Literal for its argument is bad idea." +
+                             "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_BAD_MEMOF_NO_BUFFER,
-                             "Bad 'memof'-operator argument. No buffer for argument.\
-                              In line: {line}. In column: {column}");
+                             "Bad 'memof'-operator argument. No buffer for argument." +
+                             "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_BAD_FUNCTION_USAGE_RECURSION,
                              "Bad function '{funcDef}'. It is recursion.");
     akra.logger.registerCode(EFFECT_BAD_FUNCTION_USAGE_BLACKLIST,
@@ -256,38 +256,38 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_BAD_FUNCTION_PIXEL_DEFENITION,
                              "Bad function with defenition '{funcDef}'. Can not be used as pixel-shader.");
     akra.logger.registerCode(EFFECT_BAD_RETURN_STMT_VOID,
-                             "Bad return stmt. You try to return something in void-function.\
-                              In line: {line}. In column: {column}");
+                             "Bad return stmt. You try to return something in void-function." +
+                             "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_BAD_RETURN_STMT_EMPTY,
-                             "Bad return stmt. You can not call empty return in non-void-function.\
-                              In line: {line}. In column: {column}");
+                             "Bad return stmt. You can not call empty return in non-void-function." +
+                             "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_BAD_RETURN_STMT_NOT_EQUAL_TYPES,
-                             "Bad return stmt. Types of return expression and return type of function are not equal.\
-                              In line: {line}. In column: {column}");
+                             "Bad return stmt. Types of return expression and return type of function are not equal." +
+                             "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_BAD_RETURN_TYPE_FOR_FUNCTION,
-                             "Bad return type for '{funcName}'. Return type for function can not contain or be sampler/pointer.\
-                              In line: {line}. In column: {column}");
+                             "Bad return type for '{funcName}'. Return type for function can not contain or be sampler/pointer." +
+                             "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_BAD_FUNCTION_PARAMETER_USAGE,
-                             "Bad parameter '{varName}' in function '{funcName}'. Bad usage.\
-                              In line: {line}. In column: {column}"); 
+                             "Bad parameter '{varName}' in function '{funcName}'. Bad usage." +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_OUT_VARIABLE_IN_FUNCTION,
-                             "Bad variable with name 'Out'. It is sytem for used like return variable in shaders.\
-                              In line: {line}. In column: {column}"); 
+                             "Bad variable with name 'Out'. It is sytem for used like return variable in shaders." +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_TYPE_FOR_WRITE,
-                             "Variable type is not writable. \
-                              In line: {line}. In column: {column}"); 
+                             "Variable type is not writable. " +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_TYPE_FOR_READ,
-                             "Variable type is not readable. \
-                              In line: {line}. In column: {column}"); 
+                             "Variable type is not readable. " +
+                             "In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_VARIABLE_INITIALIZER,
-                             "Bad init expr for variable '{varName}'. \
-                              In line: {line}. In column: {column}");
+                             "Bad init expr for variable '{varName}'. " +
+                             "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_NOT_SUPPORT_STATE_INDEX,
-                             "Don`t supported construction '[uint]' in sampler_state. \
-                              In line: {line}. In column: {column}");
+                             "Don`t supported construction '[uint]' in sampler_state. " +
+                             "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_BAD_TEXTURE_FOR_SAMLER,
-                             "Incorrect texture setup for sampler. \
-                              In line: {line}. In column: {column}");
+                             "Incorrect texture setup for sampler. " +
+                             "In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFCET_CANNOT_CALCULATE_PADDINGS,
                              "Can not calculate padding for type '{typeName}'.");
     akra.logger.registerCode(EFFECT_UNSUPPORTED_EXTRACT_BASE_TYPE,
@@ -297,8 +297,8 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_BAD_TECHNIQUE_IMPORT,
                              "Bad imports in technique '{techniqueName}'.");
     akra.logger.registerCode(EFFECT_BAD_USE_OF_ENGINE_VARIABLE, 
-                             "You try use 'engine' variable in out of pass.\
-                             In line: {line}. In column: {column}.");
+                             "You try use 'engine' variable in out of pass." +
+                             "In line: {line}. In column: {column}.");
     akra.logger.registerCode(EFFECT_BAD_IMPORTED_COMPONENT_NOT_EXIST, 
                              "You try to import not exuisted component '{componentName}'");
 

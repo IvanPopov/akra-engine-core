@@ -147,7 +147,7 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	
-		pEngine.exec();
+		// pEngine.exec();
 		// pEngine.renderFrame();
 	});
 

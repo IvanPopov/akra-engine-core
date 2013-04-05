@@ -38,6 +38,7 @@ module akra {
         readonly boundingSphere: ISphere;
 
 		skeleton: ISkeleton;
+        hasShadow: bool;
 
         
         getOptions(): int;
@@ -79,11 +80,6 @@ module akra {
         showBoundingSphere(): bool;
         hideBoundingSphere(): bool;
         createAndShowSubBoundingSphere(): void;
-
-        /** TRUE if only one mesh subset has a shadow. */
-        hasShadow(): bool;
-        /** Add shadow for all subsets. */
-        setShadow(bValue?: bool): void;
 
         isReadyForRender(): bool;
 

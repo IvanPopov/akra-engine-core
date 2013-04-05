@@ -270,7 +270,7 @@ module akra.render {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 				
 				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
-					pRenderable = pSceneObject.getRenderable(j)
+					pRenderable = pSceneObject.getRenderable(j);
 
 					if (!isNull(pRenderable)) {
 						pRenderable.render(this, csMethod, pSceneObject);

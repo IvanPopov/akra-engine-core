@@ -62,7 +62,6 @@ module akra.render {
 
 		setMatrix(m4fMatrix: IMat4): UniformProject {
 			this.SHADOW_MATRIX.set(m4fMatrix);
-
 			return this;
 		}
 
@@ -75,7 +74,7 @@ module akra.render {
 	    TO_LIGHT_SPACE: IMat4 = new Mat4();
 	    REAL_PROJECTION_MATRIX: IMat4 = new Mat4();
 	    OPTIMIZED_PROJECTION_MATRIX: IMat4 = new Mat4();
-	    SHADOW_SAMPLER: IShadowSampler = {texture: null};
+	    SHADOW_SAMPLER: IAFXSamplerState = fx.createSamplerState();
 
 	    setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformProjectShadow {
 	    	this.LIGHT_DATA.set(pLightParam, v3fPosition);
@@ -112,10 +111,10 @@ module akra.render {
 			new Mat4, new Mat4, new Mat4
 		];
 		
-		SHADOW_SAMPLER: IShadowSampler[] = 
+		SHADOW_SAMPLER: IAFXSamplerState[] = 
 		[
-			{"texture" : null}, {"texture" : null}, {"texture" : null},
-	        {"texture" : null}, {"texture" : null}, {"texture" : null}
+			fx.createSamplerState(), fx.createSamplerState(), fx.createSamplerState(),
+	        fx.createSamplerState(), fx.createSamplerState(), fx.createSamplerState()
 	    ];
 
 	    setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformOmniShadow {
@@ -143,8 +142,8 @@ module akra.render {
         omniShadows: UniformOmniShadow[];
         projectShadows: UniformProjectShadow[];
         textures: ITexture[];
-        samplersOmni: IShadowSampler[];
-        samplersProject: IShadowSampler[];
+        samplersOmni: IAFXSamplerState[];
+        samplersProject: IAFXSamplerState[];
 	}
 }
 

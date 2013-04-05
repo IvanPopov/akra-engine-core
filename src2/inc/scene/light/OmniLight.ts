@@ -140,6 +140,7 @@ module akra.scene.light {
 				pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 				//TODO: Multiple render target
 				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i], EViewportTypes.SHADOWVIEWPORT);
+				this.getRenderTarget(i).setAutoUpdated(false);
 			}
 		};
 
@@ -247,8 +248,8 @@ module akra.scene.light {
 				var pWorldBounds: IRect3d = pObject.worldBounds;
 
 				//have object shadows?
-				if(pObject.hasShadows){
-					var j:int = 0
+				if(pObject.hasShadow){
+					var j:int = 0;
 					for(j = 0; j<6; j++){
 						var pPlane: IPlane3d = pTestArray[j];
 

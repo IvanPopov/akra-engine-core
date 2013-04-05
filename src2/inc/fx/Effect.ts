@@ -415,10 +415,10 @@ module akra.fx {
 			pPointSizeType.pushType(Effect.getSystemType("float"));
 
 			pPositionId.setName("pos");
-			pPositionId.setRealName("pos");
+			pPositionId.setRealName("POSITION");
 
 			pPointSizeId.setName("psize");
-			pPointSizeId.setRealName("psize");
+			pPointSizeId.setRealName("PSIZE");
 
 			pPosition.push(pPositionType, true);
 			pPosition.push(pPositionId, true);
@@ -2559,8 +2559,8 @@ module akra.fx {
 
         	if(isNull(pExprType)){
         		this._error(EFFECT_BAD_RELATIONAL_OPERATION, { operator: sOperator,
-        													   leftTypeName: pLeftType.toString(),
-        													   rightTypeName: pRightType.toString() });
+        													   leftTypeName: pLeftType.getHash(),
+        													   rightTypeName: pRightType.getHash() });
         		return null;
         	}
 
@@ -2678,15 +2678,15 @@ module akra.fx {
         	var sName: string = pNode.value;
         	var pVariable: IAFXVariableDeclInstruction = this.getVariable(sName);
 
-        	if(pVariable.getType()._isUnverifiable() && !this.isAnalzeInPass()){
-        		this._error(EFFECT_BAD_USE_OF_ENGINE_VARIABLE);
-        		return null;
-        	}
-
         	if(isNull(pVariable)){
         		this._error(EFFECT_UNKNOWN_VARNAME, {varName: sName});
         		return null;
         	}
+
+        	if(pVariable.getType()._isUnverifiable() && !this.isAnalzeInPass()){
+        		this._error(EFFECT_BAD_USE_OF_ENGINE_VARIABLE);
+        		return null;
+        	}        	
 
         	if(!isNull(this.getCurrentAnalyzedFunction())){
         		if(!pVariable._isForPixel()){

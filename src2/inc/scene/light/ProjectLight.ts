@@ -13,7 +13,7 @@
 module akra.scene.light {
 	export class ProjectLight extends LightPoint implements IProjectLight {
 		protected _pDepthTexture: ITexture = null;
-		// protected _pColorTexture: ITexture = null;
+		protected _pColorTexture: ITexture = null;
 		protected _pShadowCaster: IShadowCaster;
 
 		constructor (pScene: IScene3d) {
@@ -42,7 +42,8 @@ module akra.scene.light {
 		};
 
 		inline getRenderTarget(): IRenderTarget {
-			return this._pDepthTexture.getBuffer().getRenderTarget();
+			// return this._pDepthTexture.getBuffer().getRenderTarget();
+			return this._pColorTexture.getBuffer().getRenderTarget();
 		};
 
 		inline getShadowCaster(): IShadowCaster {
@@ -75,8 +76,8 @@ module akra.scene.light {
 
 			var pDepthTexture: ITexture = this._pDepthTexture = 
 				pResMgr.createTexture("depth_texture_" + this.getGuid());
-			pDepthTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET,
-				0, 1, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+			pDepthTexture.create(iSize, iSize, 1, null, 0,
+				0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
 			pDepthTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
 			pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
@@ -87,12 +88,16 @@ module akra.scene.light {
 			// 	this._pColorTexture.destroy();
 			// }
 
-			// var pColorTexture: ITexture = pResMgr.createTexture("light_color_texture_" + this.getGuid());
-			// pColorTexture(iSize, iSize, 1, Color.BLACK, 0,
-			// 	0, ETextureTypes.TEXTURE_2D, EPixelFormats.LUMINANCE);
+			var pColorTexture: ITexture = pResMgr.createTexture("light_color_texture_" + this.getGuid());
+			pColorTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET, 
+						  0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+
+			this._pColorTexture = pColorTexture;
 
 			// this._pColorTexture = pColorTexture;
 			//TODO: Multiple render target
+			this.getRenderTarget().attachDepthTexture(pDepthTexture); 
+			this.getRenderTarget().setAutoUpdated(false);
 			this.getRenderTarget().addViewport(this._pShadowCaster, EViewportTypes.SHADOWVIEWPORT);
 		};
 
@@ -377,8 +382,8 @@ module akra.scene.light {
 				var pWorldBounds: IRect3d = pObject.worldBounds;
 
 				//have object shadows?
-				if(pObject.hasShadows){
-					var j:int = 0
+				if(pObject.hasShadow){
+					var j:int = 0;
 					for(j = 0; j<nAdditionalTestLength; j++){
 						var pPlane: IPlane3d = pTestArray[j];
 

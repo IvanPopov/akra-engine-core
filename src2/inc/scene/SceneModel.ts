@@ -23,6 +23,7 @@ module akra.scene {
 		inline set mesh(pMesh: IMesh) {
 			if (!isNull(this._pMesh)) {
 				this.accessLocalBounds().set(0.01, 0.01, 0.01);	
+				this._pMesh.disconnect(this.scene, SIGNAL(preUpdate), SLOT(update));
 				this._pMesh = null;
 			}
 
@@ -44,12 +45,12 @@ module akra.scene {
 			return this._pMesh.getSubset(i);
 		}
 
-		inline hasShadow(): bool {
-			return this._pMesh.hasShadow();
+		inline get hasShadow(): bool {
+			return this._pMesh.hasShadow;
 		}
 
-		inline setShadow(bValue: bool = true): void {
-			this._pMesh.setShadow(bValue);
+		inline set hasShadow(bValue) {
+			this._pMesh.hasShadow = bValue;
 		}
 
 		toString(isRecursive: bool = false, iDepth: uint = 0): string {

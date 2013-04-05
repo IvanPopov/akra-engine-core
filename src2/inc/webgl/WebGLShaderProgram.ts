@@ -7,6 +7,7 @@
 #include "IShaderProgram.ts"
 #include "IBufferMap.ts"
 
+#define ZERO_SAMPLER_SLOT
 
 module akra.webgl {
 
@@ -360,6 +361,10 @@ module akra.webgl {
 
         private applySamplerState(pSampler: IAFXSamplerState): int {
             var pTexture: WebGLInternalTexture = <WebGLInternalTexture>pSampler.texture;
+            
+            if(isNull(pTexture)){
+                return ZERO_SAMPLER_SLOT;
+            }
 
             var iSlot: int = this._pWebGLRenderer.getNextTextureSlot();
             this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);

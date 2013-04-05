@@ -10,7 +10,7 @@ module akra {
     export interface ISceneObject extends ISceneNode {
     	worldBounds: IRect3d;
     	totalRenderable: uint;
-        hasShadows: bool;
+        hasShadow: bool;
 
     	readonly localBounds: IRect3d;
     	

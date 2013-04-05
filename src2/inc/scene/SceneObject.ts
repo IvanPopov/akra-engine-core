@@ -17,7 +17,7 @@ module akra.scene {
 		protected _iObjectFlags: int = 0;
 		protected _pLocalBounds: IRect3d = new geometry.Rect3d();
 		protected _pWorldBounds: IRect3d = new geometry.Rect3d();
-		protected _hasShadows: bool = false;
+		protected _hasShadow: bool = false;
 
 		inline get totalRenderable(): uint { return 0; }
 
@@ -99,12 +99,15 @@ module akra.scene {
 		    return false;
 		}
 
-    	inline get hasShadows(): bool {
-    		return this._hasShadows;
+    	inline get hasShadow(): bool {
+    		return this._hasShadow;
     	};
 
-    	inline set hasShadows(bValue: bool){
-    		this._hasShadows = bValue;
+    	inline set hasShadow(bValue: bool){
+    		this._hasShadow = bValue;
+    		for(var i: uint = 0; i < this.totalRenderable; i++){
+    			this.getRenderable(i).hasShadow = bValue;
+    		}
     	};
 
     	getObjectFlags(): int {

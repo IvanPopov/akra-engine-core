@@ -161,6 +161,7 @@ module akra.model {
             this._pSubMeshes.push(pSubMesh);
 
             this.connect(pSubMesh, SIGNAL(shadow), SLOT(shadow), EEventTypes.UNICAST);
+            pSubMesh.hasShadow = true;
 
             return pSubMesh;
         }
@@ -575,13 +576,13 @@ module akra.model {
             //return pSubMeshs.data.setRenderable(this.data.getIndexSet(),false);
         }
 
-        inline hasShadow(): bool {
+        inline get hasShadow(): bool {
             return this._bShadow;
         }
 
-        setShadow(bValue: bool = true): void {
+        set hasShadow(bValue: bool) {
             for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-                this._pSubMeshes[i].setShadow(bValue);
+                this._pSubMeshes[i].hasShadow = bValue;
             }            
         }
 
@@ -619,7 +620,7 @@ module akra.model {
 
             if (!bShadow) {
                 for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-                    if (this._pSubMeshes[i].hasShadow()) {
+                    if (this._pSubMeshes[i].hasShadow) {
                         this._bShadow = true;
                         break;
                     }

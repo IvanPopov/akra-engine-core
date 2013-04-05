@@ -42,16 +42,27 @@ module akra {
 		}
 
 		function createLighting(): void {
-			var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni");
+			var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni-0");
 			
 			pOmniLight.attachToParent(pScene.getRootNode());
-			pOmniLight.enabled = true;
+			pOmniLight.enabled = false;
 			pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 			pOmniLight.params.diffuse.set(1);
 			pOmniLight.params.specular.set(1, 1, 1, 1);
 			pOmniLight.params.attenuation.set(1,0,0);
 
 			pOmniLight.addPosition(0, 0, 5);
+
+			var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
+			
+			pProjectShadowLight.attachToParent(pScene.getRootNode());
+			pProjectShadowLight.enabled = true;
+			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			pProjectShadowLight.params.diffuse.set(1);
+			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			pProjectShadowLight.params.attenuation.set(1,0,0);
+			pProjectShadowLight.isShadowCaster = true;
+			pProjectShadowLight.addPosition(0, 0, 5);
 		}
 
 		function createSkyBox(): void {

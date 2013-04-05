@@ -103,6 +103,7 @@ module akra.terrain {
 
 			if(bResult) {
 				this.attachToParent(pRootNode);
+				this.setInheritance(ENodeInheritance.ALL);
 			}
 
 			return true;

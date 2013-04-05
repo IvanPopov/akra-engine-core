@@ -18,7 +18,8 @@ module akra {
 
 	export interface IRenderableObject extends IEventProvider {
 		renderMethod: IRenderMethod;
-		
+		hasShadow: bool;
+
 		readonly type: ERenderDataTypes;
 		readonly effect: IEffect;
 		readonly surfaceMaterial: ISurfaceMaterial;
@@ -43,9 +44,6 @@ module akra {
 		getRenderMethod(csName?: string): IRenderMethod;
 		
 		getRenderMethodDefault(): IRenderMethod; 
-
-		hasShadow(): bool;
-		setShadow(bValue?: bool): void;
 
 		isReadyForRender(): bool;
 		isAllMethodsLoaded(): bool;

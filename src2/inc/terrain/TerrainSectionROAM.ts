@@ -308,7 +308,7 @@ module akra.terrain {
 
 		private _buildVertexBuffer(): bool {
 			this._pWorldRect.z0 = MAX_FLOAT64;
-			this._pWorldRect.z1 = MAX_FLOAT64;
+			this._pWorldRect.z1 = MIN_FLOAT64;
 
 			var pVerts: float[] = this.terrainSystem.verts;
 

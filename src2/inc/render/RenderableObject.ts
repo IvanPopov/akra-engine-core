@@ -46,6 +46,17 @@ module akra.render {
 
 		inline get data(): IRenderData { return this._pRenderData; }
 
+		inline get hasShadow(): bool {
+			return this._bShadow;
+		}
+
+		inline set hasShadow(bShadow: bool) {
+			if(this._bShadow !== bShadow){
+				this._bShadow = bShadow;
+				this.shadow(bShadow);
+			}
+		}
+
 
 		_setup(pRenderer: IRenderer, csDefaultMethod: string = null): void {
 			this._pRenderer = pRenderer;
@@ -160,17 +171,6 @@ module akra.render {
 
 		inline getRenderMethodDefault(): IRenderMethod {
 			return this.getRenderMethod(DEFAULT_RM);
-		}
-
-		inline hasShadow(): bool {
-			return this._bShadow;
-		}
-
-		setShadow(bValue: bool = true): void {
-			if (this._bShadow != bValue) {
-				this._bShadow = bValue;
-				this.shadow(bValue);
-			}
 		}
 
 		inline isReadyForRender(): bool {

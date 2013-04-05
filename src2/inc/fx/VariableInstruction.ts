@@ -22,7 +22,7 @@ module akra.fx {
         private _pValue: any = null;
 
         private _bLockInitializer: bool = false;
-
+        
         /**
 		 * Represent type var_name [= init_expr]
 		 * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
@@ -326,6 +326,14 @@ module akra.fx {
             }
 
             return this._getVideoBufferHeader().getInitializeExpr();
+        }
+
+        inline _setCollapsed(bValue: bool): void {
+            this.getType()._setCollapsed(bValue);
+        }
+
+        inline _isCollapsed(): bool {
+            return this.getType()._isCollapsed();
         }
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction {

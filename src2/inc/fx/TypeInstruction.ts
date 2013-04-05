@@ -105,6 +105,7 @@ module akra.fx {
 		private _pAttrOffset: IAFXVariableDeclInstruction = null;
 
 		private _bUnverifiable: bool = false;
+		private _bCollapsed: bool = false;
 
 		constructor() {
 			super();
@@ -136,6 +137,14 @@ module akra.fx {
 		}
 
         setBuiltIn(isBuiltIn: bool): void {
+        }
+
+        inline _setCollapsed(bValue: bool): void {
+            this._bCollapsed = bValue;
+        }
+
+        inline _isCollapsed(): bool {
+            return this._bCollapsed;
         }
 
 		//-----------------------------------------------------------------//
