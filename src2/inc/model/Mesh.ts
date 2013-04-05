@@ -315,8 +315,14 @@ module akra.model {
         createAndShowSubBoundingBox(): void {
             for(var i = 0; i < this.length; i++) {
                 var pSubMesh: IMeshSubset = this.getSubset(i);
-                pSubMesh.createBoundingBox();
-                pSubMesh.showBoundingBox();
+                if (pSubMesh.createBoundingBox()) {
+                    if (!pSubMesh.showBoundingBox()) {
+                        ERROR("could not show sub bounding box");
+                    }
+                }
+                else {
+                    ERROR("could not create sub bounding box.");
+                }
                 //console.log("SubMesh" + i);
             }
         }

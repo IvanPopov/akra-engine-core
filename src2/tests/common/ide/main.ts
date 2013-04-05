@@ -1,7 +1,7 @@
 #include "util/testutils.ts"
 #include "akra.ts"
 #include "controls/KeyMap.ts"
-#include "IDE.ts"
+#include "ui/IDE.ts"
 
 module akra {
 	export var pEngine: IEngine = createEngine();
@@ -46,7 +46,7 @@ module akra {
 	}
 
 	function createLighting(): void {
-		/*var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni");
+		var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni");
 		
 		pOmniLight.attachToParent(pScene.getRootNode());
 		pOmniLight.enabled = true;
@@ -55,9 +55,9 @@ module akra {
 		pOmniLight.params.specular.set(.5, .5, .5, .5);
 		pOmniLight.params.attenuation.set(1,0,0);
 
-		pOmniLight.addPosition(0, 0, 5);*/
+		pOmniLight.addPosition(0, 0, 5);
 
-		var pLightProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-shadow");
+	/*	var pLightProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-shadow");
 		
 		pLightProject.attachToParent(pScene.getRootNode());
 		pLightProject.enabled = true;
@@ -66,7 +66,7 @@ module akra {
 		pLightProject.params.specular.set(.5, .5, .5, .5);
 		pLightProject.params.attenuation.set(1,0,0);
 
-		pLightProject.addPosition(0, 0, 5);
+		pLightProject.addPosition(0, 0, 5);*/
 	}
 
 	function createSkyBox(): void {
@@ -125,7 +125,12 @@ module akra {
 		
 		// loadModels("../../../data/models/Weldinggun.dae");
 		// loadModels("../../../data/models/kr360.dae");
-		loadModels("../../../data/models/hero/walk.dae");
+		loadModels("../../../data/models/hero/walk.dae", (pModelRoot: ISceneNode) => {
+			var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
+			pMesh.createBoundingBox();
+			pMesh.showBoundingBox();
+			// pMesh.createAndShowSubBoundingBox();
+		});
 		// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 		// loadModels("../../../data/models/teapot.dae", (pModel: ISceneNode) => { pModel.scale(.01); });
 		// loadModels("../../../data/models/cube.dae").scale(0.1);

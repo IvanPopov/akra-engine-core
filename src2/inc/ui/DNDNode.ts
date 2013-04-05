@@ -10,54 +10,59 @@ module akra.ui {
 
 	export class DNDNode extends HTMLNode implements IUIDNDNode {
 
+		protected _bDraggableInited: bool = false;
+		protected _bDroppableInited: bool = false;
+
 		constructor (parent, element?, eNodeType: EUINodeTypes = EUINodeTypes.DND) {
 			super(getUI(parent), element, eNodeType);
-
-			var pNode: DNDNode = this;
-
-			this.$element.draggable({
-				start: (e: Event) => { return pNode.dragStart(e); },
-				stop: (e: Event) => { return pNode.dragStop(e); },
-				drag: (e: Event) => { return pNode.move(e); }
-			}).draggable("disable");
-
-			this.$element.droppable({
-		      drop: (e: Event) => { return pNode.drop(e); }
-		    });
 
 			if (!isUI(parent)) {
 				this.attachToParent(<Node>parent);
 			}
 		}
-
-		// mousedown(e: IUIEvent): void {
-		// 	//document.ondragstart        = function() { return false }
-		// 	document.body.onselectstart = function() { return false }
-		// 	super.mousedown(e);
-		// }
-
-		// mouseup(e: IUIEvent): void {
-		// 	//document.ondragstart        = function() { return false }
-		// 	document.body.onselectstart = function() { return false }
-		// 	super.mouseup(e);
-		// }
-
 		
 		inline isDraggable(): bool {
-			return !this.$element.draggable("option", "disabled");
+			return this._bDraggableInited && !this.$element.draggable("option", "disabled");
 		}
 
 
 		setDraggable(bValue: bool = true): void {
+			if (!this._bDraggableInited) {
+				var pNode: DNDNode = this;
+
+				this.$element.draggable({
+					start: (e: Event) => { return pNode.dragStart(e); },
+					stop: (e: Event) => { return pNode.dragStop(e); },
+					drag: (e: Event) => { return pNode.move(e); }
+				}).draggable("disable");
+
+				this._bDraggableInited = true;
+			}
+
+			if (!isNull(this.parent) && isDefAndNotNull(this.$element)) {
+				this.$element.draggable("option", "containment", "parent");
+			}
+
 			this.$element.draggable("option", "disabled", !bValue);
 		}
 
+		setDroppable(bValue: bool = true): void {
+			if (!this._bDroppableInited) {
+				var pNode: DNDNode = this;
+
+				this.$element.droppable({
+			      drop: (e: Event) => { return pNode.drop(e); }
+			    });
+
+			    this._bDroppableInited = true;
+			}
+		}
 
 		attachToParent(pParent: IUINode, bRender: bool = true): bool {
 			var isAttached: bool = super.attachToParent(pParent, bRender);
 
-			if (!isNull(this.parent) && isDefAndNotNull(this.$element)) {
-				this.$element.draggable("option", "containment", "parent");
+			if (this.isDraggable()) {
+				this.setDraggable(true);
 			}
 
 			return isAttached;
