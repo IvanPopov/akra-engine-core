@@ -12,7 +12,7 @@ compiled/
 # Project property files
 #*.html
 *.bak
-*.dds
+#*.dds
 *.rar
 *.back
 *.prev

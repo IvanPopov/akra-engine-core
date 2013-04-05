@@ -7,6 +7,7 @@ module akra {
 	export interface IUITree extends IUIComponent {
 		root: IUITreeNode;
 		fromTree(pEntity: IEntity): void;
+		createNode(pEntity?: IEntity): IUITreeNode;
 	}
 }
 

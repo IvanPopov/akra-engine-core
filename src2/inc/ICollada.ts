@@ -27,16 +27,18 @@ module akra {
         attachToScene(pScene: IScene3d, pController?: IAnimationController): bool;
     }
 
-	export interface IColladaAnimationLoadOptions {
-		pose?: bool;
-	}
-
     export interface IColladaCache {
         meshMap: IMeshMap;
         sharedBuffer: IRenderDataCollection;
     }
 
+	export interface IColladaAnimationLoadOptions {
+		pose?: bool;
+	}
 
+    export interface IColladaImageLoadOptions {
+        flipY?: bool;
+    }
 
 	export interface IColladaLoadOptions {
     	/** Add nodes, that visualize joints in animated models. */
@@ -53,6 +55,8 @@ module akra {
     	scene?: bool;
     	extractPoses?: bool;
     	skeletons?: ISkeleton[];
+
+        images?: IColladaImageLoadOptions;
     }
 
     // xml
@@ -373,6 +377,8 @@ module akra {
             specular: IColladaTexture;
             ambient: IColladaTexture;
             emissive: IColladaTexture;
+            //additional, from oppen collada export
+            normal: IColladaTexture;
         };
     }
 

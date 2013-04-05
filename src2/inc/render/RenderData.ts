@@ -178,6 +178,7 @@ module akra.render {
         	    this._pMap = this._pMap.clone(false);
 
         	    if (!this._pMap) {
+                    debug_warning("could not clone buffer map");
         	        return -1;
         	    }
         	}

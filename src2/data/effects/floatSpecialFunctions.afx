@@ -77,7 +77,7 @@ float3 floatToFloat3(float value){
   }
 
   float power=0.;
-
+  
   while (data >= 2. || data < 1.) {
     if(data >= 2.) {
       data = data / 2.;

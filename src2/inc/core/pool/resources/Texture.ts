@@ -480,7 +480,6 @@ module akra.core.pool.resources {
                     //console.log(pSrc);
                     //console.log(this.getBuffer(i, mip));
 
-                    
                     this.getBuffer(i, mip).blitFromMemory(pSrc);                    
                 }
             }

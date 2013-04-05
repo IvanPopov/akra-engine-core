@@ -236,6 +236,7 @@ module akra.core.pool.resources {
         private isWireframeEnabled(): bool;
         private getSkeletonsOutput(): ISkeleton[];
         private getVisualScene(): IColladaVisualScene;
+        private getImageOptions(): IColladaImageLoadOptions;
         private getAnimations(): IColladaAnimation[];
         public  getAsset(): IColladaAsset;
 
@@ -258,7 +259,8 @@ module akra.core.pool.resources {
             animation       : { pose: true },
             scene           : true,
             extractPoses    : true,
-            skeletons       : null
+            skeletons       : null,
+            images          : { flipY: false }
         };
 
         private static SCENE_TEMPLATE: IColladaLibraryTemplate[] = [
@@ -1325,6 +1327,10 @@ module akra.core.pool.resources {
         }
         
         private COLLADATexture(pXML: Element): IColladaTexture {
+            if (!isDefAndNotNull(pXML)) {
+                return null;
+            }
+
             var pTexture: IColladaTexture = {
                 texcoord : attr(pXML, "texcoord"),
                 sampler  : <IColladaNewParam>this.source(attr(pXML, "texture")),
@@ -1375,7 +1381,8 @@ module akra.core.pool.resources {
                     diffuse     : null,
                     specular    : null,
                     ambient     : null,
-                    emissive    : null
+                    emissive    : null,
+                    normal      : null
                 }
             };
 
@@ -1444,6 +1451,28 @@ module akra.core.pool.resources {
                     ERROR("unsupported technique <" + pTech.type + " /> founded");
             }
 
+            //finding normal maps like this
+            /*
+                <technique profile=​"OpenCOLLADA3dsMax">​
+                    <bump bumptype=​"HEIGHTFIELD">​
+                      <texture texture=​"Default_Material_normals2_png-sampler" texcoord=​"CHANNEL1">​</texture>​
+                    </bump>​
+                </technique>​
+            */
+ 
+            var pXMLExtra: Element = firstChild(pXML, "extra");
+
+            if (isDefAndNotNull(pXMLExtra)) {
+                var pXMLTech: Element = firstChild(pXMLExtra, "technique");
+                if (isDefAndNotNull(pXMLTech)) {
+                    var pXMLBump: Element = firstChild(pXMLTech, "bump");
+                    if (isDefAndNotNull(pXMLBump) && attr(pXMLBump, "bumptype") === "HEIGHTFIELD") {
+                        (<IColladaPhong>pTech.value).textures.normal = this.COLLADATexture(firstChild(pXMLBump, "texture"));
+                        // LOG(pTech.value);
+                    }
+                }
+            }
+
             this.link(pTech.sid, pTech);
 
             return pTech;
@@ -1476,12 +1505,8 @@ module akra.core.pool.resources {
                         pEffect.profileCommon = this.COLLADAProfileCommon(pXMLData);
                         pEffect.profileCommon.technique.value.name = pEffect.id;
                         break;
-
-                    case "extra":
-                        break;
-
                     default:
-                        ERROR("<" + sName + " /> unsupported in effect section");
+                        WARNING("<" + sName + " /> unsupported in effect section");
                 }
             });
 
@@ -2188,6 +2213,10 @@ module akra.core.pool.resources {
                             var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.surfaceMaterial;
                             var pTexture: ITexture = <ITexture>this.getManager().texturePool.loadResource(pColladaImage.path);
 
+                            if (this.getImageOptions().flipY === true) {
+                                ERROR("TODO: flipY for image unsupported!");
+                            }
+
                             var pMatches: string[] = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
                             var iTexCoord: int = (pMatches ? parseInt(pMatches[2]) : 0);
 
@@ -2197,8 +2226,9 @@ module akra.core.pool.resources {
                             if (!isDef(iTexture)) {
                                 continue;
                             }
-
+                            // LOG(iTexture, sTextureType)
                             pSurfaceMaterial.setTexture(iTexture, pTexture, iTexCoord);
+                            // LOG(pSurfaceMaterial);
                         }
                     }
                 }
@@ -2747,6 +2777,9 @@ module akra.core.pool.resources {
 
         private inline getSkeletonsOutput(): ISkeleton[] {
             return this._pOptions.skeletons || null;
+        }
+        private inline getImageOptions(): IColladaImageLoadOptions {
+            return this._pOptions.images;
         }
 
         private inline getVisualScene(): IColladaVisualScene {

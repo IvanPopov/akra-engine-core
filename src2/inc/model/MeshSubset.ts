@@ -85,11 +85,12 @@ module akra.model {
 			iCurrentIndexSet = this.data.getIndexSet();
 
 			if(!this.data.selectIndexSet(".BoundingBox")) {
-				this.data.addIndexSet(true, EPrimitiveTypes.LINELIST, ".BoundingBox");
+				if (this.data.addIndexSet(true, EPrimitiveTypes.LINELIST, ".BoundingBox") == -1) {
+					ERROR("could not add index set '.BoundingBox'");
+					return false;
+				}
 
-				iData = this.data.allocateData(
-						[VE_FLOAT3(DeclUsages.POSITION)],
-						new Float32Array(pPoints));
+				iData = this.data.allocateData([VE_FLOAT3(DeclUsages.POSITION)], new Float32Array(pPoints));
 
 				this.data.allocateIndex([VE_FLOAT(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 

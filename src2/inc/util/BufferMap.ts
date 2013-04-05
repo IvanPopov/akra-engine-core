@@ -228,14 +228,19 @@ module akra.util {
 		        pVertexData = <IVertexData>arguments[0];
 		        iFlow = (this._nUsedFlows ++);
 		    }
-		    // trace(iFlow, '<<==', pVertexData.getVertexDeclaration().toString());
-		    // console.log((new Error).stack);
+		   	else {
+		   		iFlow = arguments[0];
+		   		pVertexData = arguments[1];
+		   	}
+
 		    pFlow = this._pFlows[iFlow];
 
 		    debug_assert(iFlow < this.limit,
 		        'Invalid strem. Maximum allowable number of stream ' + this.limit + '.');
 
 		    if (!pVertexData || pFlow.data === pVertexData) {
+		    	debug_warning("BufferMap::flow(", iFlow, pVertexData, ") failed.", 
+		    		isNull(pVertexData)? "vertex data is null": "flow.data alreay has same vertex data");
 		        return -1;
 		    }
 
@@ -437,10 +442,10 @@ module akra.util {
 			return !isDef(this._pSemanticsMap[sSemantics]) ? (this._pSemanticsMap[sSemantics] = null) : this._pSemanticsMap[sSemantics];
 		}
 
-		clone(bWithMapping?: bool): IBufferMap {
-			bWithMapping = isDef(bWithMapping) ? bWithMapping : true;
+		clone(bWithMapping: bool = true): IBufferMap {
 
-		    var pMap: IBufferMap = new BufferMap(this._pEngine);
+		    var pMap: IBufferMap = this._pEngine.createBufferMap();
+
 		    for (var i = 0, pFlows = this._pFlows; i < pFlows.length; ++ i) {
 		        if (pFlows[i].data === null) {
 		            continue;
@@ -448,6 +453,7 @@ module akra.util {
 
 		        if (pMap.flow(pFlows[i].flow, pFlows[i].data) < 0) {
 		            pMap = null;
+		            debug_print("BufferMap::clone() failed on", pFlows[i].flow, pFlows[i].data);
 		            return null;
 		        }
 		        

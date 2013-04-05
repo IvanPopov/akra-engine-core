@@ -516,7 +516,7 @@ function fetchDeps(sDir, pDeps) {
 		if (fs.existsSync(sDep)) {
 			stat = fs.statSync(sDep);
 			if (stat.isDirectory()) {
-				wrench.copyDirSyncRecursive(sDep, sDir + "/" + path.basename(sDep));
+				wrench.copyDirSyncRecursive(path.resolve(sDep), path.resolve(sDir + "/" + path.basename(sDep)));
 			}
 			else {
 				fs.writeFileSync(sDir + "/" + path.basename(sDep), fs.readFileSync(sDep, "utf-8"), "utf-8");
