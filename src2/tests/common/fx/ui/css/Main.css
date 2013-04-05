@@ -1,5 +1,5 @@
 body {
-  background: black;
+  background: lightgray;
 }
 /*Gradient mixins*/
 /* Component */
@@ -287,6 +287,9 @@ body {
   border-bottom: 1px solid yellow;
   border-top: 1px solid yellow;
 }
+.component-tree li {
+  font-size: 12px;
+}
 /*Graph Controls */
 .component-graph-controls .controls {
   padding: 10px 0px;
@@ -406,4 +409,18 @@ body {
 }
 .component-animationmask .controls .component-slider {
   width: 100% !important;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+#IDE {
+  margin: 0;
+}
+#tree {
+  float: left;
+  padding: 10px;
+}
+#stage {
+  float: left;
 }

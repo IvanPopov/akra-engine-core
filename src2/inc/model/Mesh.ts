@@ -34,7 +34,7 @@ module akra.model {
         private _pBoundingBox: IRect3d = null;
         private _pBoundingSphere: ISphere = null;
         private _pSubMeshes: IMeshSubset[] = [];
-        private _bShadow: bool = false;
+        private _bShadow: bool = true;
         
         inline get length(): uint {
             return this._pSubMeshes.length;
@@ -161,7 +161,6 @@ module akra.model {
             this._pSubMeshes.push(pSubMesh);
 
             this.connect(pSubMesh, SIGNAL(shadow), SLOT(shadow), EEventTypes.UNICAST);
-            pSubMesh.hasShadow = true;
 
             return pSubMesh;
         }

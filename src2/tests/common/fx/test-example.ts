@@ -58,7 +58,7 @@ module akra {
 			pProjectShadowLight.attachToParent(pScene.getRootNode());
 			pProjectShadowLight.enabled = true;
 			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-			pProjectShadowLight.params.diffuse.set(1);
+			pProjectShadowLight.params.diffuse.set(2);
 			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
 			pProjectShadowLight.params.attenuation.set(1,0,0);
 			pProjectShadowLight.isShadowCaster = true;
@@ -120,9 +120,9 @@ module akra {
 			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
-			loadModels("../../../data/models/hero/hero.DAE");
+			loadModels("../../../data/models/hero/walk.DAE");
 			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
-			// loadModels("../../../data/models/cube.dae").scale(0.1);
+			loadModels("../../../data/models/cube.dae").addRelPosition(0., -5, 0.);
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	

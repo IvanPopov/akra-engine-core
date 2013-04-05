@@ -20,7 +20,7 @@ module akra.render {
 		protected _pRenderer: IRenderer;
 		protected _pTechnique: IRenderTechnique = null;
 		protected _pTechniqueMap: IRenderTechniqueMap = {};
-		protected _bShadow: bool = false;
+		protected _bShadow: bool = true;
 		protected _eRenderableType: ERenderDataTypes;
 
 		inline get type(): ERenderDataTypes {

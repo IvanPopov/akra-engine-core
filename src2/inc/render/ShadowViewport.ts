@@ -24,8 +24,6 @@ module akra.render {
 			var pShadowCaster: IShadowCaster = <IShadowCaster> this._pCamera;
 			var pAffectedObjects: IObjectArray = pShadowCaster.affectedObjects;
 
-			console.error("here", pAffectedObjects);
-
 			var pRenderable: IRenderableObject;
 			var pSceneObject: ISceneObject;
 

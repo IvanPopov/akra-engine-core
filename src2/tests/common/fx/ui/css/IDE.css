@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+#IDE {
+  margin: 0;
+}
+#tree {
+  float: left;
+  padding: 10px;
+}
+#stage {
+  float: left;
+}
