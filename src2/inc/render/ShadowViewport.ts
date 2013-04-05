@@ -15,6 +15,8 @@ module akra.render {
 			var pShadowCaster: IShadowCaster = <IShadowCaster> this._pCamera;
 			var pAffectedObjects: IObjectArray = pShadowCaster.affectedObjects;
 
+			console.error("here", pAffectedObjects);
+
 			var pRenderable: IRenderableObject;
 			var pSceneObject: ISceneObject;
 
@@ -25,18 +27,23 @@ module akra.render {
 				pSceneObject = pAffectedObjects.value(i);
 
 				if(pSceneObject.hasShadows){
-					pRenderable = pSceneObject.getRenderable();
-
-					if (!isNull(pRenderable)) {
-						pRenderable.render(this, "shadow-casting"/*fix me*/, pSceneObject);
-						nShadowsCasted++;
+					for (var k: int = 0; k < pSceneObject.totalRenderable; k++) {
+						var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
+						var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
 					}
+
+			// 		pRenderable = pSceneObject.getRenderable();
+
+			// 		if (!isNull(pRenderable)) {
+			// 			pRenderable.render(this, "shadow-casting"/*fix me*/, pSceneObject);
+			// 			nShadowsCasted++;
+			// 		}
 				}
 			}
 
-			pShadowCaster.isShadowCasted = (nShadowsCasted > 0) ? true : false;
+			// pShadowCaster.isShadowCasted = (nShadowsCasted > 0) ? true : false;
 
-			this.getTarget().getRenderer().executeQueue();
+			// this.getTarget().getRenderer().executeQueue();
 		}
 
 	};
