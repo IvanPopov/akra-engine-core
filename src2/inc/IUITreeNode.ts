@@ -1,13 +1,23 @@
 #ifndef IUITREENODE_TS
 #define IUITREENODE_TS
 
-#include "IUIComponent.ts"
-
 module akra {
 	IFACE(IUITree);
 
-	export interface IUITreeNode extends IUIComponent {
+	export interface IUITreeNode {
+		el: JQuery;
+
+		parent: IUITreeNode;
+		children: IObjectArray;
+
 		tree: IUITree;
+		source: IEntity;
+
+		destroy(): void;
+		attachTo(pNode: IUITreeNode): void;
+		_addChild(pNode: IUITreeNode): void;
+
+		rebuild(): void;
 	}
 }
 

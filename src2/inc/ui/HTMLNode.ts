@@ -107,8 +107,8 @@ module akra.ui {
 			return !isNull(this.$element) && this.$element.parent().length > 0;
 		}
 
-		destroy(): void {
-			super.destroy();
+		destroy(bRecursive?: bool, bPromoteChildren?: bool): void {
+			super.destroy(bRecursive, bPromoteChildren);
 			this.$element.remove();
 		}
 

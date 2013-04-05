@@ -4,106 +4,86 @@
 #include "IUITree.ts"
 #include "IUITreeNode.ts"
 #include "Component.ts"
+#include "util/ObjectArray.ts"
 
 module akra.ui {
-	export class TreeNode extends Component implements IUITreeNode {
-		protected _pTree: IUITree;
-		protected _pTargetNode: IEntity = null;
+	export class TreeNode implements IUITreeNode {
+		public el: JQuery = null;
+		public parent: IUITreeNode = null;
+		public children: IObjectArray = new util.ObjectArray;
+		public tree: IUITree = null;
+		public source: IEntity = null;
 
-		inline get targetNode(): IEntity {
-			return this._pTargetNode;
+		protected $childrenNode: JQuery = null;
+
+
+		constructor(pTree: IUITree, pSource: IEntity) {
+			this.tree = pTree;
+			this.source = pSource;
+
+			debug_assert(!isNull(pSource), "source entity can not be null");
+
+			var id: string = "guid-" + this.source.getGuid();
+
+			this.el = $("<li><label for=\""+ id + "\">" + this.source.name + "</label>\
+<input type=\"checkbox\" checked disabled id=\"" + id + "\" /></li>");
+
+			this.tree._link(this);
 		}
 
-		inline set targetNode(pEntity: IEntity) {
-			this._pTargetNode = pEntity;	
-			this.el.html(this.targetNode.name);
-			this.update();
-		}
+		protected rebuild(): void {
+			this.removeChildren();
 
-		inline get tree(): IUITree {
-			return this._pTree;
-		}
+			var pChild: IEntity = this.source.child;
 
-		constructor (pTree: IUITree, options?, pNode: IEntity = null);
-		constructor (pTree: IUITreeNode, options?, pNode: IEntity = null);
-		constructor (parent, options?, pNode: IEntity = null) {
-			super(parent, options, EUIComponents.TREE_NODE, $("<li />"));
+			while (!isNull(pChild)) {
+				var pNode: IUITreeNode = this.tree._createNode(pChild);
+				pNode.attachTo(this);
+				pNode.rebuild();
 
-			this._pTree = isComponent(parent, EUIComponents.TREE)? <IUITree>parent: (<IUITreeNode>parent).tree;
-			
-			if (!isNull(pNode)) {
-				this.targetNode = pNode;
+				pChild = pChild.sibling;
 			}
 		}
 
-		toString(bRecursive?: bool, iDepth?: int): string {
-			if (bRecursive) {
-				return super.toString(bRecursive);
+		protected removeChildren(): void {
+			for (var i = 0; i < this.children.length; ++ i) {
+				this.children.value(i).destroy();
 			}
 
-			return super.toString() + " --> { " + this.targetNode.name + " }";
+			this.children.clear();
 		}
 
-		renderTarget(): JQuery {
-			var $list: JQuery = $("<ul />");
-			this.el.append($list);
-			return $list;
+		attachTo(pNode: IUITreeNode): void {
+			this.parent = pNode;
+			this.parent._addChild(this);
 		}
 
-		update(): bool {
-			var pTarget: IEntity = this.targetNode;
-			
-			if (isNull(pTarget)) {
-				return true;
-			}
-LOG("here..");
-			if (this.childCount() == 0 && pTarget.childCount() > 0) {
-				var pEntityChild: IEntity = pTarget.child;
-				var pNodeChild: TreeNode = null;
-
-				while(pEntityChild) {
-					var pChild: TreeNode = <TreeNode>this.tree.createNode(pEntityChild);
-					pChild.parent = this;
-
-					if (!pNodeChild) {
-						pNodeChild = pChild;
-					}
-					else {
-						pNodeChild.sibling = pChild;
-					}
-
-					pEntityChild = pEntityChild.sibling;
-					pNodeChild = <TreeNode>pNodeChild.sibling;
-				}
-			}
-			else {
-				if (this.childCount() != pTarget.childCount()) {
-					this.removeAllChildren();
-					return this.update();
-				}
-
-				if (pTarget.child) {
-					var pNodeChild: TreeNode = <TreeNode>this.child;
-					var pEntityChild: IEntity = pTarget.child;
-
-					while(pNodeChild) {
-						if (pNodeChild.targetNode != pEntityChild) {
-							this.removeAllChildren();
-							return this.update();
-						}
-
-						pEntityChild = pEntityChild.sibling;
-						pNodeChild = <TreeNode>pNodeChild.sibling;
-					}
-				}
+		_addChild(pNode: IUITreeNode): void {
+			if (isNull(this.$childrenNode)) {
+				this.$childrenNode = $("<ol />");
+				this.el.append(this.$childrenNode);
 			}
 
-			return true;
+			this.$childrenNode.append(pNode.el);
+			this.children.push(pNode);
+		}
+
+		destroy(): void {
+			this.removeChildren();
+
+			this.tree._unlink(this);
+			this.tree = null;
+			this.source = null;
+			this.el.remove();
 		}
 	}
 
+	export interface IUITreeNodeMap {
+		[guid: int]: IUITreeNode;
+	}
 
 	export class Tree extends Component implements IUITree {
+		protected _pNodeMap: IUITreeNodeMap = <IUITreeNodeMap>{};
 		protected _pRootNode: IUITreeNode = null;
 
 		fromTree(pEntity: IEntity): void {
@@ -111,16 +91,17 @@ LOG("here..");
 				CRITICAL("TODO: replace node");
 			}
 
-			var pRoot: TreeNode = this._pRootNode = <TreeNode>this.createNode(pEntity);
-			pRoot.recursiveUpdate();
+			this._pRootNode = this._createNode(pEntity);
+			this._pRootNode.rebuild();
+			this.el.append(this._pRootNode.el);
 		}
 
-		inline get root(): IUITreeNode {
+		inline get rootNode(): IUITreeNode {
 			return this._pRootNode;
 		}
 
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.TREE) {
-			super(ui, options, eType, $("<ul />"));
+			super(ui, options, eType, $("<ol class='tree'/>"));
 
 		}
 
@@ -129,8 +110,17 @@ LOG("here..");
 			this.el.addClass("component-tree");
 		}
 
-		createNode(pEntity?: IEntity): IUITreeNode {
-			return new TreeNode(this, null, pEntity);
+		_createNode(pEntity: IEntity): IUITreeNode {
+			var pNode: IUITreeNode = new TreeNode(this, pEntity);
+			return pNode;
+		}
+
+		_link(pNode: IUITreeNode): void {
+			this._pNodeMap[pNode.source.getGuid()] = pNode;
+		}
+
+		_unlink(pNode: IUITreeNode): void {
+			this._pNodeMap[pNode.source.getGuid()] = null;
 		}
 	}
 

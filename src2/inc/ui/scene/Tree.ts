@@ -19,11 +19,9 @@ module akra.ui.scene {
 		}
 
 		private updateTree(): void {
-			LOG("before root >>>>>>");
-			var pNode: TreeNode = <TreeNode>this.root;
+			var pNode: TreeNode = <TreeNode>this.rootNode;
 			if (!isNull(pNode)) {
-				LOG(">>>>>>");
-				pNode.recursiveUpdate();
+				pNode.rebuild();
 			}
 		}
 	}

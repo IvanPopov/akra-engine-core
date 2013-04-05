@@ -11,11 +11,11 @@ module akra {
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pCamera: ICamera = null;
 	var pViewport: IViewport = null;
-	var pIDE: IUIComponent = null;
+	var pIDE: ui.IDE = null;
 	var pSkyBoxTexture: ITexture = null;
 
 	function setup(): void {
-		pIDE = pUI.createComponent("IDE");
+		pIDE = <ui.IDE>pUI.createComponent("IDE");
 		pIDE.render($(document.body));
 	}
 
@@ -25,7 +25,7 @@ module akra {
 		pCamera.addPosition(vec3(0,0, 10));
 		pCamera.attachToParent(pScene.getRootNode());
 
-		var pKeymap: IKeyMap = controls.createKeymap(pIDE.getHTMLElement());
+		var pKeymap: IKeyMap = controls.createKeymap(pIDE.getCanvasElement());
 
 		pScene.bind(SIGNAL(beforeUpdate), () => {
 			 if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
@@ -80,7 +80,7 @@ module akra {
 
 	function loadModels(sPath, fnCallback?: Function): ISceneNode {
 		var pController: IAnimationController = null;
-		var pModelRoot: ISceneNode = pScene.createNode();
+		var pModelRoot: ISceneNode = pScene.createNode("mode-root-" + sid());
 		var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
 		
 		pController = animation.createController();

@@ -70,11 +70,23 @@ module akra.util {
 
 
 
-		destroy(): void {
+		destroy(bRecursive: bool = false, bPromoteChildren: bool = true): void {
+			if (bRecursive) {
+				if (this._pSibling) {
+			        this._pSibling.destroy(true);
+			    }
+
+			    if (this._pChild) {
+			        this._pChild.destroy(true);
+			    }
+			}
+
 			// destroy anything attached to this node
 		    //	destroySceneObject();
 		    // promote any children up to our parent
-		    this.promoteChildren();
+		    if (bPromoteChildren && !bRecursive) {
+		    	this.promoteChildren();
+		    }
 		    // now remove ourselves from our parent
 		    this.detachFromParent();
 		    // we should now be removed from the tree, and have no dependants

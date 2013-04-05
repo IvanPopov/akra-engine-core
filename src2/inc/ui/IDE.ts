@@ -16,7 +16,7 @@ module akra.ui {
 
 			var $stage: JQuery = this.el.find("#stage");
 
-			$stage.append((<any>this.getCanvas())._pCanvas);
+			$stage.append(this.getCanvasElement());
 			this.getCanvas().resize(800, 600);
 
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
@@ -30,6 +30,7 @@ module akra.ui {
 		inline getEngine(): IEngine { return this._pEngine; }
 		inline getCanvas(): ICanvas3d { return this.getEngine().getRenderer().getDefaultCanvas(); }
 		inline getScene(): IScene3d { return this.getEngine().getScene(); }
+		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
 
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
 			var $stage: JQuery = this.el.find("#stage"); 
