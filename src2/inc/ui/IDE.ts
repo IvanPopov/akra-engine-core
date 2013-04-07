@@ -14,10 +14,10 @@ module akra.ui {
 
 			debug_assert(!isNull(this._pEngine), "Engine required!");
 
-			var $stage: JQuery = this.el.find("#stage");
+			var $preview: JQuery = this.el.find("#preview-area");
 
-			$stage.append(this.getCanvasElement());
-			this.getCanvas().resize(800, 600);
+			$preview.append(this.getCanvasElement());
+			this.getCanvas().resize(640, 480);
 
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
@@ -33,12 +33,12 @@ module akra.ui {
 		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
 
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
-			var $stage: JQuery = this.el.find("#stage"); 
+			var $preview: JQuery = this.el.find("#preview-area"); 
 			var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>this.ui.createComponent("RenderTargetStats");
 
 			pStats.target = pViewport.getTarget();
-			pStats.el.css({position: "relative", top: -$stage.height()});
-			pStats.render($stage);			
+			//pStats.el.css({position: "relative", top: -$preview.height()});
+			pStats.render($preview);			
 		}
 	}
 

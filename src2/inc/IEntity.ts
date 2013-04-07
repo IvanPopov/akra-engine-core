@@ -17,6 +17,8 @@ module akra {
 		CAMERA,
 		SHADOW_CASTER,
 
+		MODEL_ENTRY,
+
 		LIGHT = 37,
 
 		SCENE_OBJECT = 64,

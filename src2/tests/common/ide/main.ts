@@ -78,19 +78,17 @@ module akra {
 		});
 	}
 
-	function loadModels(sPath, fnCallback?: Function): ISceneNode {
+	function loadModels(sPath, fnCallback?: Function): void {
 		var pController: IAnimationController = null;
-		var pModelRoot: ISceneNode = pScene.createNode("mode-root-" + sid());
+
 		var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
 		
 		pController = animation.createController();
 
-		pModelRoot.attachToParent(pScene.getRootNode());
-		pModelRoot.scale(3.);
-		pModelRoot.addPosition(0, -1., 0);
-
 		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
-			pModel.attachToScene(pModelRoot, pController);
+			var pModelRoot: IModelEntry = pModel.attachToScene(pScene, pController);
+			pModelRoot.scale(3.);
+			pModelRoot.addPosition(0, -1., 0);
 
 			pController.attach(pModelRoot);
 
@@ -112,8 +110,6 @@ module akra {
 				fnCallback(pModelRoot);
 			}
 		});
-
-		return pModelRoot;
 	}
 
 	function main(pEngine: IEngine): void {

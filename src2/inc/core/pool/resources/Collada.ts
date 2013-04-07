@@ -78,7 +78,7 @@ module akra.core.pool.resources {
 
         constructor ();
 
-        attachToScene(pNode: ISceneNode): bool;
+        attachToScene(pNode: ISceneNode): IModelEntry;
 
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
 
@@ -2898,15 +2898,15 @@ module akra.core.pool.resources {
         }
 
 
-        attachToScene(pScene: IScene3d, pController?: IAnimationController): bool;
-        attachToScene(pNode: ISceneNode, pController?: IAnimationController): bool;
-        attachToScene(parent, pController: IAnimationController = null): bool {
+        attachToScene(pScene: IScene3d, pController?: IAnimationController): IModelEntry;
+        attachToScene(pNode: ISceneNode, pController?: IAnimationController): IModelEntry;
+        attachToScene(parent, pController: IAnimationController = null): IModelEntry {
             var pSkeletons: ISkeleton[], 
                 pSkeleton: ISkeleton;
             var pPoses: IAnimation[];
             var pScene: IScene3d;
             var pNode: ISceneNode;
-            var pRoot: ISceneNode;
+            var pRoot: IModelEntry;
 
             var pSceneOutput: ISceneNode[] = null;
             var pAnimationOutput: IAnimation[] = null;
@@ -2915,29 +2915,29 @@ module akra.core.pool.resources {
 
 
             if (isNull(parent)) {
-                return false;
+                return null;
             }
 
             if (parent instanceof scene.Node) {
                 //attach collada scene to give node
                 pNode = <ISceneNode>parent;
                 pScene = pNode.scene;
-                pRoot = pNode;
+
             }
             else {
                 //attaching collada scene to new node, that is child of scene root
                 pScene = <IScene3d>parent;
                 pNode = pScene.getRootNode();
-                pRoot = pScene.createNode();
-
-                pRoot.setInheritance(ENodeInheritance.ALL);
-
-                if (!pRoot.attachToParent(pNode)) {
-                    return false;
-                }
             }
 
-          
+            pRoot = pScene._createModelEntry(this);
+            pRoot.create();
+            pRoot.name = this.getBasename();
+            pRoot.setInheritance(ENodeInheritance.ALL);
+
+            if (!pRoot.attachToParent(pNode)) {
+                return null;
+            }
 
             if (this.isVisualSceneLoaded() && this.isSceneNeeded()) {
                 pSceneOutput = this.buildScene(pRoot);
@@ -2998,7 +2998,7 @@ module akra.core.pool.resources {
                 pController.attach(pRoot);
             }
 
-            return true;
+            return pRoot;
         }
     }
 

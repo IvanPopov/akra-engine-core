@@ -20,6 +20,7 @@ module akra {
 	IFACE(IShadowCaster);
 	IFACE(ITerrainSection);
 	IFACE(ITerrainSectionROAM);
+	IFACE(IModel);
 
 	export interface IScene3d extends IScene {
 		totalDL: uint;
@@ -47,6 +48,8 @@ module akra {
 		createText3d(sName?: string): IText3d;
 		createTerrainSection(sName?: string): ITerrainSection;
 		createTerrainSectionROAM(sName?: string): ITerrainSectionROAM;
+
+		_createModelEntry(pModel: IModel): IModelEntry;
 
 		_createShadowCaster(pLightPoint: ILightPoint, iFace?: uint, sName?: string): IShadowCaster;
 

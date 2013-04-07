@@ -10,6 +10,12 @@ module akra {
 		rootNode: IUITreeNode;
 		
 		fromTree(pEntity: IEntity): void;
+		//синхронизуем дерево с деревом из сущностей
+		sync(): void;
+
+		//уведомление дере о том, что синхронизация закончена
+		//вызывается из узлов дерева
+		//_synced(): void;
 
 		_link(pNode: IUITreeNode): void;
 		_unlink(pNode: IUITreeNode): void;

@@ -179,6 +179,10 @@ module akra.scene.light {
 			}
 		};
 	}
+
+	export function isShadowCaster(pEntity: IEntity): bool {
+		return !isNull(pEntity) && pEntity.type === EEntityTypes.SHADOW_CASTER;
+	}
 }
 
 #endif

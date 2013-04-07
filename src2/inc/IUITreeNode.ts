@@ -5,19 +5,25 @@ module akra {
 	IFACE(IUITree);
 
 	export interface IUITreeNode {
-		el: JQuery;
+		readonly el: JQuery;
 
-		parent: IUITreeNode;
-		children: IObjectArray;
+		readonly parent: IUITreeNode;
 
-		tree: IUITree;
-		source: IEntity;
+		readonly tree: IUITree;
+		readonly source: IEntity;
+
+		readonly expanded: bool;
+
+		readonly totalChildren: uint;
+
+		expand(bValue?: bool): void;
 
 		destroy(): void;
-		attachTo(pNode: IUITreeNode): void;
-		_addChild(pNode: IUITreeNode): void;
 
-		rebuild(): void;
+		sync(): void;
+
+		waitForSync(): void;
+		synced(): void;
 	}
 }
 

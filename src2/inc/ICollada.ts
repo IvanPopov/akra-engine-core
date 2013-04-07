@@ -23,8 +23,8 @@ module akra {
         isVisualSceneLoaded(): bool;
         isAnimationLoaded(): bool;
 
-        attachToScene(pNode: ISceneNode, pController?: IAnimationController): bool;
-        attachToScene(pScene: IScene3d, pController?: IAnimationController): bool;
+        attachToScene(pNode: ISceneNode, pController?: IAnimationController): IModelEntry;
+        attachToScene(pScene: IScene3d, pController?: IAnimationController): IModelEntry;
     }
 
     export interface IColladaCache {

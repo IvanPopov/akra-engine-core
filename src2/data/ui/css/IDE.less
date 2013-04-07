@@ -1,36 +1,117 @@
-body {
+body, form, ul, li, p, h1, h2, h3, h4, h5{
 	margin: 0;
 	padding: 0;
 }
 
-#IDE {
-	margin: 0;
+img { border: none; }
+
+table {
+	border: 0px;
+	border-collapse: collapse;
+
+	td {
+		padding: 0px;
+		vertical-align: top;
+	}
 }
 
+@font-size: 12px;
+@tree-font-size: @font-size;
+@border-dark-color: rgb(163, 163, 163);
+@border-light-color: rgb(223, 223, 223);
+@border-mid-color: rgb(189, 189, 189);
+@border-dark: 1px solid @border-dark-color;
+@border-light: 5px solid @border-light-color;
+@border-mid: 1px solid @border-mid-color;
+
+.grayGrad() {
+	background: #ffffff;
+	background: -moz-linear-gradient(top,  #ffffff 0%, #e5e5e5 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#e5e5e5));
+	background: -webkit-linear-gradient(top,  #ffffff 0%,#e5e5e5 100%);
+	background: -o-linear-gradient(top,  #ffffff 0%,#e5e5e5 100%);
+	background: -ms-linear-gradient(top,  #ffffff 0%,#e5e5e5 100%);
+	background: linear-gradient(to bottom,  #ffffff 0%,#e5e5e5 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 );
+}
+
+.grayDarkGrad() {
+	background: #ebebeb;
+	background: -moz-linear-gradient(top,  #ebebeb 0%, #dcdcdc 31%, #c8c8c8 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ebebeb), color-stop(31%,#dcdcdc), color-stop(100%,#c8c8c8));
+	background: -webkit-linear-gradient(top,  #ebebeb 0%,#dcdcdc 31%,#c8c8c8 100%);
+	background: -o-linear-gradient(top,  #ebebeb 0%,#dcdcdc 31%,#c8c8c8 100%);
+	background: -ms-linear-gradient(top,  #ebebeb 0%,#dcdcdc 31%,#c8c8c8 100%);
+	background: linear-gradient(to bottom,  #ebebeb 0%,#dcdcdc 31%,#c8c8c8 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ebebeb', endColorstr='#c8c8c8',GradientType=0 );
+
+}
+
+#IDE {
+	margin: 0;
+	width: 100%;
+	min-height: 100%;
+}
+
+.title {
+	border-top: @border-dark;
+	border-bottom: @border-dark;
+	padding: 5px 0px 5px 30px;
+
+	.grayGrad;
+}
+
+#work-area {
+	border-left: @border-light;
+	border-right: @border-light;
+	font-size: @font-size;
+	min-height: 760px;
+	border-bottom: @border-light;
+}
+
+#preview-area {
+	min-height: 100%;
+	border-left: @border-dark;
+	font-size: @font-size;
+	min-height: 760px;
+	border-bottom: @border-light;
+}
+
+
+
 #tree {
-	float: left;
-	padding: 10px;
+	padding: 0;
+	font-size: @tree-font-size;
+	border-right: @border-dark;
+	min-height: 760px;
+	border-bottom: @border-light;
 
 	ol.tree {
-		padding: 0 0 0 30px;
-		width: 300px;
+		padding: 0 30px 0 30px;
+		//width: 300px;
+
+		.unnamed {
+			color: @border-dark-color;
+		}
 
 		li { 
 			position: relative; 
 			margin-left: -15px;
 			list-style: none;
+			white-space: nowrap;
 
 			&.file {
 				margin-left: -1px !important;
+
+				/*a {
+						background: url(../img/document.png) 0 0 no-repeat;
+						color: #fff;
+						padding-left: 21px;
+						text-decoration: none;
+						display: block;
+				}*/
 			}
 
-			&.file a {
-				background: url(document.png) 0 0 no-repeat;
-				color: #fff;
-				padding-left: 21px;
-				text-decoration: none;
-				display: block;
-			}
 
 			input {
 				position: absolute;
@@ -39,40 +120,123 @@ body {
 				opacity: 0;
 				z-index: 2;
 				cursor: pointer;
-				height: 1em;
-				width: 1em;
+				height: @tree-font-size;
+				width: @tree-font-size;
 				top: 0;
 			}
 
 			input + ol
 			{
-				background: url(toggle-small-expand.png) 40px 0 no-repeat;
-				margin: -0.938em 0 0 -44px; /* 15px */
-				height: 1em;
+				background: url(../img/tri-right.png) 40px 0px no-repeat;
+				margin: -1.25em 0 0 -44px; 
+				height: @tree-font-size;
 			}
 
-			input + ol > li { display: none; margin-left: -14px !important; padding-left: 1px; }
+			input + ol > li { 
+				display: none; 
+				margin-left: -14px !important; 
+				padding-left: 1px; 
+			}
 
 			label {
-				background: url(folder-horizontal.png) 15px 1px no-repeat;
+				background: url(../img/node.png) 15px 1px no-repeat;
 				cursor: pointer;
 				display: block;
 				padding-left: 37px;
+
+				&.camera {
+					background: url(../img/node-camera.png) 15px 1px no-repeat;
+				}
+
+				&.shadow-caster {
+					background: url(../img/node-shadow-caster.png) 15px 1px no-repeat;	
+				}
+
+				&.joint {
+					background: url(../img/node-joint.png) 15px 1px no-repeat;	
+				}
+
+				&.scene-model {
+					background: url(../img/node-scene-model.png) 15px 1px no-repeat;
+				}
+
+				&.light-point {
+					background: url(../img/node-light-point.png) 15px 1px no-repeat;
+				}
+
+				&.model-entry {
+					background: url(../img/node-collada.png) 15px 1px no-repeat;
+				}
+
+				&.updating {
+					background: url(../img/node-updating.gif) 15px 4px no-repeat;
+				}
 			}
 
 			input:checked + ol {
-				background: url(toggle-small.png) 40px 5px no-repeat;
-				margin: -1.25em 0 0 -44px; /* 20px */
+				background: url(../img/tri-down.png) 40px 0px no-repeat;
+				margin: -1.25em 0 0 -44px; 
 				padding: 1.563em 0 0 80px;
 				height: auto;
 			}
 
-			input:checked + ol > li { display: block; margin: 0 0 0.125em;  /* 2px */}
-			input:checked + ol > li:last-child { margin: 0 0 0.063em; /* 1px */ }
+			input:checked + ol > li { 
+				display: block; 
+				margin: 0 0 0.125em;  /* 2px */
+			}
+			
+			input:checked + ol > li:last-child { 
+				margin: 0 0 0.063em; /* 1px */ 
+			}
 		}
 	}
 }
 
 #stage {
 	float: left;
+}
+
+.component-fps {
+	background-color: white;
+	cursor: pointer;
+	border-bottom: @border-mid;
+	border-top: @border-mid;
+	height: 47px;
+	width: 100%;
+	//box-shadow: 0 0 5px black;
+
+	.info {
+		font-size: 11px;
+		font-family: 'Consolas', monospace;
+		color: gray;
+		text-shadow: 0 0 2px white;
+		padding: 1px;
+		font-weight: bold;
+
+		.grayDarkGrad;
+		border-bottom: @border-mid;
+	}
+
+	.graph {
+		/*background-color: gray;*/
+		min-height: 30px;
+		height: 30px;
+		padding: 0;
+		margin: 0;
+		opacity: .75;
+		overflow: hidden;
+		vertical-align: bottom;
+		text-align: left;
+		/*border-top: 1px solid yellow;*/
+
+		.tick {
+			float: left;
+			width: 1px;
+			height: 0px;
+			display: block;
+			margin: 0;
+			border-bottom: 1px solid yellow;
+			border-top: 1px solid yellow;
+		}
+	}
 }
