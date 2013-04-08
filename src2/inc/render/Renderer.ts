@@ -199,8 +199,7 @@ module  akra.render {
 				this._setViewport(pViewport);
 
 				if(isViewportUpdate){
-					pViewport._clearForFrame();
-
+					// pViewport._clearForFrame();
 					var pState: IViewportState = pViewport._getViewportState();
 
 					this._setCullingMode(pState.cullingMode);

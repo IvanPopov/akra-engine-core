@@ -18,9 +18,7 @@ module akra.render {
 			this._csDefaultRenderMethod = DEFAULT_SHADOW_TECHNIQUE_NAME;
 		}
 
-		update(): void {
-			this.newFrame();
-
+		_updateImpl(): void {
 			var pShadowCaster: IShadowCaster = <IShadowCaster> this._pCamera;
 			var pAffectedObjects: IObjectArray = pShadowCaster.affectedObjects;
 
@@ -47,7 +45,6 @@ module akra.render {
 			}
 
 			pShadowCaster.isShadowCasted = (nShadowsCasted > 0) ? true : false;
-			this.getTarget().getRenderer().executeQueue();
 		}
 
 		private prepareRenderableForShadows(pRenderable: IRenderableObject): void {

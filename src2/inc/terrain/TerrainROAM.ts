@@ -218,7 +218,8 @@ module akra.terrain {
 
 				var pCamera: ICamera = this._pEngine.getRenderer()._getViewport().getCamera()/*getActiveCamera();*/
 		        this._pSectorArray[0].setRenderData(this._pRenderData);
-		        return TerrainSection.prototype.render.call(this._pSectorArray[0]);
+		        return false; 
+		        //TerrainSection.prototype.render.call(this._pSectorArray[0]);
 			}
 
 			return true;

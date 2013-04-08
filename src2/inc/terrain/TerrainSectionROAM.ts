@@ -120,10 +120,8 @@ module akra.terrain {
 			return bResult;
 		}
 
-		prepareForRender(): void {
-			super.prepareForRender(); /*????*/
-
-			var pCamera: ICamera = null;/*this.scene.getCamera();*//*getActiveCamera();*/
+		protected _prepareForRender(pCamera: ICamera): void {
+			super._prepareForRender(pCamera); /*????*/
 
 			var v3fViewPoint: IVec3 = pCamera.worldPosition;
 			// compute view distance to our 4 corners
@@ -380,10 +378,6 @@ module akra.terrain {
 			this._iTempTotalIndices=undefined;
 			this._iVertexID=undefined;
 			this._pTempIndexList=null;
-		}
-
-		render(): bool {
-			return this.terrainSystem.render(this.worldMatrix);
 		}
 
 		recursiveBuildTriangleList(pTri: ITriTreeNode, iPointBase: uint, iPointLeft: uint, iPointRight: uint): void {

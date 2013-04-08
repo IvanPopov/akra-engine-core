@@ -491,6 +491,15 @@ module akra.fx {
 					
 					pRenderer._setRenderTarget(this._pRenderTargetA);
 					pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR, Color.ZERO, 1., 0);
+
+					if(pEntry.viewport.getClearEveryFrame()){
+						var pViewportState: IViewportState = pEntry.viewport._getViewportState();
+						pRenderer.clearFrameBuffer(pViewportState.clearBuffers, 
+												   pViewportState.clearColor,
+												   pViewportState.clearDepth, 0);
+
+					}
+					
 				}
 
 				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||

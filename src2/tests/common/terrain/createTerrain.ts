@@ -78,6 +78,7 @@ module akra {
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
 					var pTerrainNode: ISceneNode = pScene.createNode("terrain-node");
+					pTerrainNode.scale(0.1);
 					pTerrainNode.attachToParent(pScene.getRootNode());
 
 					var isCreate: bool = pTerrain.create(pTerrainNode, pTerrainMap, new geometry.Rect3d(1024, 1024, 1024), 4, 5, 5, "main_terrain");

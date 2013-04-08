@@ -118,7 +118,7 @@ module akra.render {
 			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		}
 
-		update (): bool {
+		_updateImpl (): void {
 			this.prepareForDeferredShading();
 
 			var pLights: util.ObjectArray = <util.ObjectArray>this.getCamera().display(DL_LIGHTING);
@@ -146,8 +146,6 @@ module akra.render {
 			
 			this.newFrame();
 			this._pDeferredView.render(this);
-			this.getTarget().getRenderer().executeQueue();
-			return true;
 		}
 
 		prepareForDeferredShading(): void {
@@ -287,6 +285,8 @@ module akra.render {
 
 					this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
 
+					// LOG(pLightUniforms);
+					
 					pPass.setForeign("nOmni", pLightUniforms.omni.length);
 				    pPass.setForeign("nProject", pLightUniforms.project.length);
 				    pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);

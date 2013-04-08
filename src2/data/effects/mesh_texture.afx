@@ -102,7 +102,7 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
         norm = float4(IN.norm.xyz, 0.);
     }
     else {
-
+        /*
         float3 normal = IN.norm.xyz;
         float3 binormal = normalize(cross(float3(1., 0., 0.), normal));
             
@@ -123,6 +123,9 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
         //texNormal.xy = (texNormal.xy - 0.5) * 2.;
 
         norm = (float4(texNormal.xyz * t, 0.));
+        */
+       
+       norm = float4(IN.norm.xyz, 0.);
     }
     Normal = norm.xyz;
 //    Normal = normalize(float3(normalize(IN.norm) + tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz));

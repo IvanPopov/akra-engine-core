@@ -18,9 +18,7 @@ module akra {
 		readonly heightX: float;
 		readonly vertexDescription: IVertexElementInterface[];
 		_internalCreate(pRootNode?: ISceneNode, pParentSystem?: ITerrain, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d): bool;
-		render(): bool;
 		setRenderData(pData: IRenderData): void;
-		prepareForRender(): void;
 	}
 
 	export function createSingleStripGrid (pIndexValues, iXVerts: uint, iYVerts: uint, iXStep: uint, iYStep: uint, iSride: uint, iFlags: uint): uint{

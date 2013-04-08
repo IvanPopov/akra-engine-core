@@ -391,7 +391,7 @@ module akra.webgl {
 
         }
         
-        if(getWebGLFormat(eFormat)&&getWebGLDataType(eFormat))
+        if(getWebGLFormat(eFormat) && getWebGLDataType(eFormat))
         {
             switch(eFormat)
             {

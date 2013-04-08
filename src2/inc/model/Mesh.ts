@@ -160,6 +160,7 @@ module akra.model {
             var pSubMesh: IMeshSubset = new MeshSubset(this, pData, sName);
             this._pSubMeshes.push(pSubMesh);
 
+
             this.connect(pSubMesh, SIGNAL(shadow), SLOT(shadow), EEventTypes.UNICAST);
 
             return pSubMesh;

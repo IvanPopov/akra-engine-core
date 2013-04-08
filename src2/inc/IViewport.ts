@@ -61,12 +61,12 @@ module akra {
 
         isUpdated(): bool;
         _clearUpdatedFlag(): void;
+        _updateImpl(): void;
 
         _getNumRenderedPolygons(): uint;
         _updateDimensions(pDimensions: IRect2d): void;
 
         _getViewportState(): IViewportState;
-        _clearForFrame(): void;
 
         signal viewportDimensionsChanged(): void;
         signal viewportCameraChanged(): void;

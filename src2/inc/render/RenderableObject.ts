@@ -21,6 +21,7 @@ module akra.render {
 		protected _pTechnique: IRenderTechnique = null;
 		protected _pTechniqueMap: IRenderTechniqueMap = {};
 		protected _bShadow: bool = true;
+		protected _bVisible: bool = true;
 		protected _eRenderableType: ERenderDataTypes;
 
 		inline get type(): ERenderDataTypes {
@@ -174,7 +175,7 @@ module akra.render {
 		}
 
 		inline isReadyForRender(): bool {
-			return this._pTechnique.isReady();
+			return this._bVisible && this._pTechnique.isReady();
 		}
 
 		isAllMethodsLoaded(): bool {
@@ -191,6 +192,8 @@ module akra.render {
 
 
 		render(pViewport: IViewport, csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
+			this.beforeRender(pViewport);
+
 			if(!this.isReadyForRender()){
 				return;
 			}
@@ -198,7 +201,7 @@ module akra.render {
 			if(!this.switchRenderMethod(csMethod)){
 				return;
 			}
-
+			
 			this.data._draw(this._pTechnique, pViewport, this, pSceneObject);
 		}
 
@@ -214,8 +217,13 @@ module akra.render {
 			ERROR("RenderableObject::_draw() pure virtual method() isn't callable!!");
 		}
 
+		inline _setVisible(bVisible: bool): void {
+			this._bVisible = bVisible;
+		}
+
 		CREATE_EVENT_TABLE(RenderableObject);
 		UNICAST(shadow, CALL(bValue));
+		UNICAST(beforeRender, CALL(pViewport));
 	}
 
 	export inline function isMeshSubset(pObject: IRenderableObject): bool {

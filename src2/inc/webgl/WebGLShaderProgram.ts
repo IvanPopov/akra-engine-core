@@ -291,7 +291,7 @@ module akra.webgl {
 #endif
 
     	inline setMat3Array(sName: string, pValue: IMat3[]): void {
-            var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 9);
+            var pBuffer: Int32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 9);
             for (var i: int = 0, j: int = 0; i < pValue.length; i += 9, ++ j) {
                 pBuffer[i    ] = pValue[j][0];
                 pBuffer[i + 1] = pValue[j][1];
@@ -307,8 +307,8 @@ module akra.webgl {
     	}
 
     	inline setMat4Array(sName: string, pValue: IMat4[]): void {
-    		var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 9);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 9, ++ j) {
+    		var pBuffer: Int32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 16);
+            for (var i: int = 0, j: int = 0; i < pValue.length; i += 16, ++ j) {
                 pBuffer[i    ] = pValue[j][0];
                 pBuffer[i + 1] = pValue[j][1];
                 pBuffer[i + 2] = pValue[j][2];

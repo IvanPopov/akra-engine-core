@@ -53,9 +53,12 @@ module akra {
 
 		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
 		_draw(): void;
+		_setVisible(bVisible: bool): void;
 
 		/** Notify, when shadow added or removed. */
 		signal shadow(bValue: bool): void;
+		/** Notify, before object start rendendering */
+		signal beforeRender(pViewport: IViewport): void;
 	}
 }
 

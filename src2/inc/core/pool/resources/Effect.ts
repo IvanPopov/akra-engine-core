@@ -64,7 +64,6 @@ module akra.core.pool.resources {
 			}
 
 			this.notifyAltered();
-			// this.notifyLoaded();
 
 		    if (this.totalComponents === 1 && isSet) {
 		        this.notifyRestored();
