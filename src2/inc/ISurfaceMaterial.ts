@@ -26,8 +26,8 @@ module akra {
         AMBIENT = TEXTURE1,
         SPECULAR = TEXTURE2,
         EMISSIVE = TEXTURE3,
+        NORMAL = TEXTURE4,
         EMISSION = EMISSIVE,
-        NORMAL = TEXTURE4
 	};
 
 	

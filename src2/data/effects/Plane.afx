@@ -1,8 +1,8 @@
 provide akra.system;
 
 struct VS_OUT {
-    float3 tex:TEXCOORD0;
-    float4 pos:POSITION;
+    float3 tex : TEXCOORD0;
+    float4 pos : POSITION;
 };
 
 float4x4 model_mat:MODEL_MATRIX;
@@ -60,7 +60,7 @@ technique plane{
         VertexShader = compile vs_plain();
         PixelShader = compile fs_plain_1();
     }
-    pass p1 {
-        VertexShader = compile vs_plain();
-    }
+//    pass p1 {
+//        VertexShader = compile vs_plain();
+//    }
 }

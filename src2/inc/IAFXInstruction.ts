@@ -332,6 +332,9 @@ module akra {
     }
 
     export interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {       
+        _setCollapsed(bValue: bool): void;
+        _isCollapsed(): bool;
+        
         /**
          * Simple tests
          */
@@ -504,6 +507,9 @@ module akra {
         setName(sName: string): void;
         setRealName(sName: string): void;
         setVideoBufferRealName(sSampler: string, sHeader: string): void;
+
+        _setCollapsed(bValue: bool): void;
+        _isCollapsed(): bool;
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
         blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;

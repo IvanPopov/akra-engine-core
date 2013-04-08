@@ -41,38 +41,6 @@ module akra.scene {
 			super.destroy();
 		}
 
-		/**
-		 * @deprecated
-		 */
-		render(): void {
-
-		}
-
-		/**
-		 * @deprecated
-		 */
-		prepareForRender(): void {
-
-		}
-
-		/**
-		 * @deprecated
-		 */
-		recursiveRender(): void {
-			// render myself
-		    this.prepareForRender();
-		    this.render();
-		    // render my sibling
-		    if (this.sibling) {
-		        (<ISceneNode>(this.sibling)).recursiveRender();
-		    }
-		    // render my child
-		    if (this.child) {
-		        (<ISceneNode>(this.child)).recursiveRender();
-		    }
-		}
-
-
 		attachToParent(pParent: IEntity): bool {
 			if ((<ISceneNode>pParent).scene !== this._pScene) {
 				WARNING("transfer of the scene node between trees scene - forbidden");

@@ -552,7 +552,7 @@ module akra.fx {
         }
 
         _getAttributeVariableKeys(): uint[] {
-        	if(isNull(this._pAttributeVariableKeys)){
+        	if(isNull(this._pAttributeVariableKeys) && !isNull(this._pAttributeVariableMap)){
         		this._pAttributeVariableKeys = <uint[]><any>Object.keys(this._pAttributeVariableMap);
         	}
 
@@ -560,7 +560,7 @@ module akra.fx {
         }
 
         _getVaryingVariableKeys(): uint[] {
-        	if(isNull(this._pVaryingVariableKeys)){
+        	if(isNull(this._pVaryingVariableKeys) && !isNull(this._pVaryingVariableMap)){
         		this._pVaryingVariableKeys = <uint[]><any>Object.keys(this._pVaryingVariableMap);
         	}
         	
@@ -569,7 +569,7 @@ module akra.fx {
 
 
         _getSharedVariableKeys(): uint[] {
-        	if(isNull(this._pSharedVariableKeys)){
+        	if(isNull(this._pSharedVariableKeys) && !isNull(this._pSharedVariableMap)){
         		this._pSharedVariableKeys = <uint[]><any[]>Object.keys(this._pSharedVariableMap);
         	}
 
@@ -577,7 +577,7 @@ module akra.fx {
         }
 
         _getUniformVariableKeys(): uint[] {
-        	if(isNull(this._pUniformVariableKeys)){
+        	if(isNull(this._pUniformVariableKeys) && !isNull(this._pUniformVariableMap)){
         		this._pUniformVariableKeys = <uint[]><any[]>Object.keys(this._pUniformVariableMap);
         	}
 
@@ -585,7 +585,7 @@ module akra.fx {
         }
 
         _getForeignVariableKeys(): uint[] {
-        	if(isNull(this._pForeignVariableKeys)){
+        	if(isNull(this._pForeignVariableKeys) && !isNull(this._pForeignVariableMap)){
         		this._pForeignVariableKeys = <uint[]><any[]>Object.keys(this._pForeignVariableMap);
         	}
 
@@ -593,7 +593,7 @@ module akra.fx {
         }
 
         _getGlobalVariableKeys(): uint[] {
-        	if(isNull(this._pGlobalVariableKeys)){
+        	if(isNull(this._pGlobalVariableKeys) && !isNull(this._pGlobalVariableMap)){
         		this._pGlobalVariableKeys = <uint[]><any[]>Object.keys(this._pGlobalVariableMap);
         	}
 
@@ -601,7 +601,7 @@ module akra.fx {
         }
 
         _getTextureVariableKeys(): uint[] {
-        	if(isNull(this._pTextureVariableKeys)){
+        	if(isNull(this._pTextureVariableKeys) && !isNull(this._pTextureVariableMap)){
         		this._pTextureVariableKeys = <uint[]><any[]>Object.keys(this._pTextureVariableMap);
         	}
 

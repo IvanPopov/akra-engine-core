@@ -30,6 +30,7 @@ module akra.terrain {
 		constructor(pScene: IScene3d) {
 			super(pScene);
 			this._pRenderableObject._setup(this.scene.getManager().getEngine().getRenderer());
+			this.connect(this._pRenderableObject, SIGNAL(beforeRender), SLOT(_onBeforeRender), EEventTypes.UNICAST);
 		}
 
 		inline get sectorX(): float {
@@ -63,6 +64,7 @@ module akra.terrain {
 		inline get vertexDescription(): IVertexElementInterface[]{
 			return this._pVertexDescription;
 		};
+
 		_internalCreate(pRootNode?: ISceneNode, pParentSystem?: ITerrain, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d): bool {
 			if(arguments.length != 9) {
 				CRITICAL_ERROR("Not all arguments where passed");
@@ -103,6 +105,7 @@ module akra.terrain {
 
 			if(bResult) {
 				this.attachToParent(pRootNode);
+				this.setInheritance(ENodeInheritance.ALL);
 			}
 
 			return true;
@@ -195,44 +198,15 @@ module akra.terrain {
 			return true;
 		}
 
-		render(): bool {
-			CRITICAL_ERROR("Ваня, WTF?");
-			return false;
-			/*//	this.terrainSystem.applyForRender();
-		    var pRenderer = this._pEngine.shaderManager();
-		    var pLightManager = this._pEngine.lightManager();
-		    var pTerrain: ITerrainSystem = this.terrainSystem;
-		    var pSnapshot;
+		protected _onBeforeRender(pRenderable: IRenderableObject, pViewport: IViewport): void {
+			var pCamera: ICamera = pViewport.getCamera();
 
-		    pRenderer.activateSceneObject(this);
-		    pRenderer.setViewport(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
-
-		    this.switchRenderMethod(".default-render");
-		    this.startRender();
-
-		    pSnapshot = this._pActiveSnapshot;
-			//    console.log(this, pSnapshot);
-
-		    for (var i: uint = 0; i < this.totalPasses(); i++) {
-		        this.activatePass(i);
-
-		        pRenderer.activateFrameBuffer(pLightManager.deferredFrameBuffers[i]);
-
-		        pTerrain.applyForRender(pSnapshot);
-
-		        this.applyRenderData(this._pRenderData);
-		        var pEntry = this.renderPass();
-				//        console.log(pEntry.pTextures, pEntry.pUniforms, pEntry.pProgram);
-		        this.deactivatePass();
-		        pRenderer.activateFrameBuffer(null);
-		    }
-		    this.finishRender();
-		    pRenderer.deactivateSceneObject();
-		    return true;*/
+			this._prepareForRender(pCamera);
+			// this.terrainSystem._prepareForRender(pCamera);
 		}
 
-		prepareForRender(): void {
-			return;
+		protected _prepareForRender(pCamera: ICamera): void {
+
 		}
 	}
 }

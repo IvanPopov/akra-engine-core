@@ -20,6 +20,7 @@ module akra.webgl {
 		private _pWebGLRenderer: WebGLRenderer = null;
 		private _pWebGLFramebuffer: WebGLFramebuffer = null;
 		private _pAttachments: IWebGLAttachments = null; 
+		private _iWebglActiveAttachment: uint = 0;
 
 		constructor(pWebGLRenderer: IRenderer) {
 			this._pWebGLRenderer = <WebGLRenderer>pWebGLRenderer;
@@ -65,6 +66,7 @@ module akra.webgl {
 			if(!isDef(this._pAttachments[iWebGLAttachment])){
 				return;
 			}
+			
 			this.releaseAttachment(iWebGLAttachment);
 			this._pAttachments[iWebGLAttachment] = <WebGLPixelBuffer>pSurface;
 			if(this.checkAttachment(iWebGLAttachment)){

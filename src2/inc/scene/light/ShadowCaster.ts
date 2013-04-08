@@ -76,7 +76,7 @@ module akra.scene.light {
 		    for(var i:int = 0; i < pAffectedObjects.length; i++){
 		    	var pObject: ISceneObject = pAffectedObjects.value(i);
 
-		    	if(!pObject.hasShadows){
+		    	if(!pObject.hasShadow){
 		    		continue;
 		    	}
 

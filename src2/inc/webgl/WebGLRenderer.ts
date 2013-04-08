@@ -336,6 +336,7 @@ module akra.webgl {
 
 		inline bindWebGLFramebuffer(eTarget: uint, pBuffer: WebGLFramebuffer): void {
 			this._pWebGLContext.bindFramebuffer(eTarget, pBuffer);
+			// this._pWebGLContext.checkFramebufferStatus(eTarget);
 		}
 
 		inline bindWebGLFramebufferTexture2D(eTarget: uint, eAttachment:uint,eTexTarget:uint, pTexture: WebGLTexture, iMipLevel?:uint=0): void {

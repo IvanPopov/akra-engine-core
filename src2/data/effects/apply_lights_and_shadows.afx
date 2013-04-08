@@ -164,6 +164,7 @@ float4 apply_light_project_shadows() : COLOR{
             result_color += tmpColor * shadowMultiplier;
         }
     }
+
     return result_color;
 };
 
@@ -218,7 +219,7 @@ float unprojZ(float4x4 projMat, float screenZ){
 };
 
 float fMinShadow : MIN_SHADOW_VALUE = 0.5;
-float shadowConstant = 5.e+2;
+float shadowConstant : SHADOW_CONSTANT = 5.e+2;
 
 float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
     float lightDepth = tex2D(shadowSampler,v2fShadowTextureCoords).x*2. - 1.;
@@ -229,7 +230,7 @@ float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCo
 
     float lightRealDepth = unprojZ(projMat,lightDepth); //negative
 
-    float fShadowMultiplier = clamp(exp(shadowConstant*(1.e-2 - lightRealDepth + realDepth)),fMinShadow,1.);
+    float fShadowMultiplier = clamp(exp(shadowConstant*(1.e-2 - lightRealDepth + realDepth)), fMinShadow,1.);
     return fShadowMultiplier;
 };
 

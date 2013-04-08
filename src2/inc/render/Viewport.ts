@@ -255,24 +255,34 @@ module akra.render {
 		}
 
 		update(): void {
-			this.newFrame();
+			if(this._bClearEveryFrame){
+				this.clear(this._pViewportState.clearBuffers, 
+        				   this._pViewportState.clearColor,
+        				   this._pViewportState.clearDepth);
+			}
 
+			this._updateImpl();
+
+			this.getTarget().getRenderer().executeQueue();
+		}
+
+		_updateImpl(): void {
 			if (this._pCamera) {
 				this.renderAsNormal(this._csDefaultRenderMethod, this._pCamera);
 			}
-
-			this.getTarget().getRenderer().executeQueue();
 		}
 
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
 			var pVisibleObjects: IObjectArray = pCamera.display();
 			var pRenderable: IRenderableObject;
 
+			// LOG(pVisibleObjects.length);
+
 			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 				
 				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
-					pRenderable = pSceneObject.getRenderable(j)
+					pRenderable = pSceneObject.getRenderable(j);
 
 					if (!isNull(pRenderable)) {
 						pRenderable.render(this, csMethod, pSceneObject);
@@ -296,15 +306,6 @@ module akra.render {
 
         inline _getViewportState(): IViewportState {
         	return this._pViewportState;
-        }
-
-        _clearForFrame(): void {
-        	if(this._bClearEveryFrame && this._bNewFrame){
-        		this.clear(this._pViewportState.clearBuffers, 
-        				   this._pViewportState.clearColor,
-        				   this._pViewportState.clearDepth);
-        		this._bNewFrame = false;
-        	}
         }
 
         CREATE_EVENT_TABLE(Viewport);

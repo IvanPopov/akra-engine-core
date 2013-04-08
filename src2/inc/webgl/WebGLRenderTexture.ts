@@ -19,8 +19,24 @@ module akra.webgl {
 			super(pRenderer, pTarget, 0);
 			this._pFrameBuffer = new WebGLInternalFrameBuffer(pRenderer);
 
-			this._pFrameBuffer.bindSurface(GL_COLOR_ATTACHMENT0, pTarget);
+			// switch(pTarget.format){
+			// 	case EPixelFormats.DEPTH8:
+			// 	case EPixelFormats.DEPTH16:
+			// 	case EPixelFormats.DEPTH32:
+			// 		this._pFrameBuffer.bindSurface(GL_DEPTH_ATTACHMENT, pTarget);
+			// 		break;
 
+			// 	case EPixelFormats.DEPTH24STENCIL8:
+			// 		this._pFrameBuffer.bindSurface(GL_DEPTH_STENCIL_ATTACHMENT, pTarget);
+			// 		break;
+			
+			// 	default:
+			//		this._pFrameBuffer.bindSurface(GL_COLOR_ATTACHMENT0, pTarget);
+			// 		break;
+			// }
+			
+			this._pFrameBuffer.bindSurface(GL_COLOR_ATTACHMENT0, pTarget);
+			
 			this._iWidth = this._pFrameBuffer.width;
 			this._iHeight = this._pFrameBuffer.height;
 

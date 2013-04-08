@@ -389,7 +389,9 @@ module akra.fx {
 
 				var pVertexOut: IAFXTypeInstruction = pVertex.getReturnType().getBaseType();
 
-				this._pVertexOutType = this._pVertexOutType.blend(pVertexOut, EAFXBlendMode.k_VertexOut);
+				if(pVertexOut.isComplex()){
+					this._pVertexOutType = this._pVertexOutType.blend(pVertexOut, EAFXBlendMode.k_VertexOut);
+				}
 				this._pPassFunctionListV.push(pVertex);
 			}
 
@@ -680,21 +682,23 @@ module akra.fx {
 
 				var pSamplerStateList: IAFXSamplerState[] = pSamplerArrays[sName];
 				var isNeedToCollapse: bool = true;
-				var pTexture: ITexture = null;		
+				var pTexture: ITexture = null;	
+				var iLength: uint = pPassInput.samplerArrayLength[sName];	
 			
-				for(var j: uint = 0; j < pSamplerStateList.length; j++) {
+				for(var j: uint = 0; j < iLength; j++) {
 					if(j === 0) {
-						pTexture = pPassInput._getTextureForSamplerState(pSamplerStateList[i]);
+						pTexture = pPassInput._getTextureForSamplerState(pSamplerStateList[j]);
 					}
 					else {
-						if(pTexture !== pPassInput._getTextureForSamplerState(pSamplerStateList[i])){
+						if(pTexture !== pPassInput._getTextureForSamplerState(pSamplerStateList[j])){
 							isNeedToCollapse = false;
 						}
 					}
 				}
 
-				if(isNeedToCollapse){
-					var pSamplerArray: IAFXVariableDeclInstruction = this.getUniformByName(sName);
+				var pSamplerArray: IAFXVariableDeclInstruction = this.getUniformByName(sName);
+				if(isNeedToCollapse){					
+					pSamplerArray._setCollapsed(true);
 
 					if(isNull(pTexture)){
 						pBlender.addObjectToSlotById(pSamplerArray, ZERO_SLOT);
@@ -703,6 +707,9 @@ module akra.fx {
 						pBlender.addTextureSlot(pTexture.getGuid());
 						pBlender.addObjectToSlotById(pSamplerArray, pTexture.getGuid());
 					}
+				}
+				else {
+					pSamplerArray._setCollapsed(false);
 				}
 			}
 
@@ -812,8 +819,13 @@ module akra.fx {
 		}
 
 		private generateCodeForPixel(): string {
+			if(this._hasEmptyPixel){
+				return "void main(){}";
+			}
+
 			var sCode: string = "";
 			var eType: EFunctionType = EFunctionType.k_Pixel;
+
 
 			this.enableVaringPrefixes(eType, true);
 			sCode = this.generateSystemExtBlock(eType) + "\n" +
@@ -1225,7 +1237,7 @@ module akra.fx {
 				var pVar: IAFXVariableDeclInstruction = pVars.getVariableByName(pKeys[i]);
 				var pType: IAFXVariableTypeInstruction = pVars.getBlendType(pKeys[i]);
 				if (pType.isSampler() && 
-					(!pType.isArray() || pVar.isDefinedByZero())){
+					(!pType.isArray() || pVar.isDefinedByZero() || pVar._isCollapsed())){
 					continue;
 				}
 

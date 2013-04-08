@@ -69,7 +69,7 @@ module akra.render {
 				pDeferredTextures[i] = this._pDefereedColorTextures[i] = 
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
 
-				pDeferredTextures[i].create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0,0, 
+				pDeferredTextures[i].create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0, 
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
@@ -133,7 +133,7 @@ module akra.render {
 			}
 		}
 
-		update (): bool {
+		_updateImpl (): void {
 			this.prepareForDeferredShading();
 
 			var pLights: util.ObjectArray = <util.ObjectArray>this.getCamera().display(DL_LIGHTING);
@@ -161,8 +161,6 @@ module akra.render {
 			
 			this.newFrame();
 			this._pDeferredView.render(this);
-			this.getTarget().getRenderer().executeQueue();
-			return true;
 		}
 
 		prepareForDeferredShading(): void {
@@ -302,29 +300,27 @@ module akra.render {
 
 					this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
 
-					// pTechnique.setState("lights.omni", pLightUniforms.omni.length);
-					// pTechnique.setState("lights.project", pLightUniforms.project.length);
-					// pTechnique.setState("lights.omniShadows", pLightUniforms.omniShadows.length);
-					// pTechnique.setState("lights.projectShadows", pLightUniforms.projectShadows.length);
-
+					// LOG(pLightUniforms);
+					
 					pPass.setForeign("nOmni", pLightUniforms.omni.length);
 				    pPass.setForeign("nProject", pLightUniforms.project.length);
 				    pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
 				    pPass.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
-
-				    // LOG(pLightUniforms);
 
 				    pPass.setStruct("points_omni", pLightUniforms.omni);
 				    pPass.setStruct("points_project", pLightUniforms.project);
 				    pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
 				    pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
 
-				    // for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
-				    //     pTechnique.setTextureBySemantics("TEXTURE" + i, pLightUniforms.textures[i]);
-				    // }
+				    for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
+				        pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
+				    }
 
-				    // pTechnique.setShadowSamplerArray("project_shadow_sampler", pLightUniforms.samplersProject);
-    				// pTechnique.setShadowSamplerArray("omni_shadow_sampler", pLightUniforms.samplersOmni);
+				    pPass.setUniform("PROJECT_SHADOW_SAMPLER", pLightUniforms.samplersProject);
+    				pPass.setUniform("OMNI_SHADOW_SAMPLER", pLightUniforms.samplersOmni);
+
+    				pPass.setUniform("MIN_SHADOW_VALUE", 0.5);
+    				pPass.setUniform("SHADOW_CONSTANT", 5.e+2);
 
     				pPass.setUniform("SCREEN_TEXTURE_RATIO",
                                      vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));

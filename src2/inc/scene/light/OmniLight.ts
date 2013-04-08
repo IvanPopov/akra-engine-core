@@ -7,7 +7,8 @@
 module akra.scene.light {
 	export class OmniLight extends LightPoint implements IOmniLight {
 		protected _pDepthTextureCube: ITexture[] = null;
-		// protected _pColorTexture: ITexture = null;
+		protected _pColorTextureCube: ITexture[] = null;
+
 		protected _pShadowCasterCube: IShadowCaster[] = null;
 
 		constructor (pScene: IScene3d) {
@@ -94,7 +95,8 @@ module akra.scene.light {
 		};
 
 		inline getRenderTarget(iFace: uint): IRenderTarget {
-			return this._pDepthTextureCube[iFace].getBuffer().getRenderTarget();
+			// return this._pDepthTextureCube[iFace].getBuffer().getRenderTarget();
+			return this._pColorTextureCube[iFace].getBuffer().getRenderTarget();
 		};
 
 		inline getShadowCaster(): IShadowCaster[] {
@@ -122,6 +124,7 @@ module akra.scene.light {
 			var iSize: uint = this._iMaxShadowResolution;
 
 			this._pDepthTextureCube = new Array(6);
+			this._pColorTextureCube = new Array(6);
 
 			for (var i: int = 0; i < 6; ++ i) {
 
@@ -130,16 +133,24 @@ module akra.scene.light {
 				// }
 
 				var pDepthTexture: ITexture = this._pDepthTextureCube[i] = 
-					pResMgr.createTexture("depth_texture_" + <string><any>(i) + "_" + <string><any>this.getGuid());
-				pDepthTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET,
-				0, 1, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+					pResMgr.createTexture("depth_texture_" + i + "_" + this.getGuid());
+				pDepthTexture.create(iSize, iSize, 1, null, 0,
+									 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
 				pDepthTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
 				pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
 				pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 				pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+
+				var pColorTexture: ITexture = this._pColorTextureCube[i] = 
+					pResMgr.createTexture("light_color_texture_" + i + "_" + this.getGuid());
+				pColorTexture.create(iSize, iSize, 1, null, ETextureFlags.RENDERTARGET, 
+						  			 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
+
 				//TODO: Multiple render target
+				this.getRenderTarget(i).attachDepthTexture(pDepthTexture); 
 				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i], EViewportTypes.SHADOWVIEWPORT);
+				this.getRenderTarget(i).setAutoUpdated(false);
 			}
 		};
 
@@ -247,8 +258,8 @@ module akra.scene.light {
 				var pWorldBounds: IRect3d = pObject.worldBounds;
 
 				//have object shadows?
-				if(pObject.hasShadows){
-					var j:int = 0
+				if(pObject.hasShadow){
+					var j:int = 0;
 					for(j = 0; j<6; j++){
 						var pPlane: IPlane3d = pTestArray[j];
 

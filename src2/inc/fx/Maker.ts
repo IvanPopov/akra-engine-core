@@ -315,7 +315,6 @@ module akra.fx {
 			var pUniformKeys: string[] = pPassInput.uniformKeys;
 
 			this._pRealUnifromFromInput = [];
-			this._pRealSampleArraysFromInput = [];
 
 			for(var i: uint = 0; i < pUniformKeys.length; i++){
 				var sName: string = pUniformKeys[i];
@@ -336,18 +335,39 @@ module akra.fx {
 					this._pRealUniformTypeMap[sName] = eType;
 					this._pRealUniformLengthMap[sName] = iLength;
 
-					if (iLength > 0 && 
-						(eType === EAFXShaderVariableType.k_Sampler2D || eType === EAFXShaderVariableType.k_SamplerCUBE)){
+					this._pRealUniformTypeMap[sShaderName] = eType;
+					this._pRealUniformLengthMap[sShaderName] = iLength;
 
-						this._pRealSampleArraysFromInput.push(sName);
-					}
-					else {
-						this._pRealUnifromFromInput.push(sName);
-					}
+					this._pRealUnifromFromInput.push(sName);
 				}
 				else {
 					this._pUniformExistMap[sShaderName] = false;
 				}
+			}
+
+			var pSamplerArrayKeys: string[] = pPassInput.samplerArrayKeys;
+			this._pRealSampleArraysFromInput = [];
+
+			for(var i: uint = 0; i < pSamplerArrayKeys.length; i++) {
+				var sName: string = pSamplerArrayKeys[i];
+				var eType: EAFXShaderVariableType =  pPassInput._getUniformType(sName);
+				var iLength: uint = pPassInput._getUnifromLength(sName);
+				
+				var sShaderName: string = sName + "[0]";
+
+				if(this.isUniformExists(sShaderName)){
+					this._pRealUniformTypeMap[sName] = eType;
+					this._pRealUniformLengthMap[sName] = iLength;
+
+					this._pRealUniformTypeMap[sShaderName] = eType;
+					this._pRealUniformLengthMap[sShaderName] = iLength;
+
+					this._pRealSampleArraysFromInput.push(sName);
+				}
+				else {
+					this._pUniformExistMap[sShaderName] = false;
+				}
+
 			}
 
 			this._pRealSamplersFromInput = [];
@@ -514,8 +534,17 @@ module akra.fx {
 			for(var i: uint = 0; i < this._pRealSamplersFromInput.length; i++){
 				var sRealName: string = this._pRealSamplersNames[i];
 				var sName: string = this._pRealSamplersFromInput[i];
-				var pState: IAFXSamplerState = pPassInput._getSamplerState(sName);
-				var pTexture: ITexture = pPassInput._getTextureForSamplerState(pState);
+				var pState: IAFXSamplerState = null;
+				var pTexture: ITexture = null;
+
+				if(pPassInput._getAFXUniformVar(sName).getType().isArray()){
+					pState = pSamplerArrays[sName][0];
+				}
+				else {
+					pState = pPassInput._getSamplerState(sName);					
+				}
+
+				pTexture = pPassInput._getTextureForSamplerState(pState);
 
 				this.setSamplerState(pInput[sRealName], pTexture, pState);
 			}
@@ -524,9 +553,9 @@ module akra.fx {
 				var sName: string = this._pRealSampleArraysFromInput[i];
 				var iLength: uint = this._pRealUniformLengthMap[sName];
 				var pSamplerStates: IAFXSamplerState[] = pSamplerArrays[sName];
-				var pInputStates: IAFXSamplerState[] = pInput[sName];
+				var pInputStates: IAFXSamplerState[] = pInput[sName + "[0]"];
 
-				for(var j: uint = 0; j < iLength; j++){
+				for(var j: uint = 0; j < iLength; j++) {
 					var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerStates[j]);
 					this.setSamplerState(pInputStates[j], pTexture, pSamplerStates[j]);
 				}
@@ -658,6 +687,9 @@ module akra.fx {
 							this._pRealUniformTypeMap[sFieldRealName] = eFieldType;
 							this._pRealUniformLengthMap[sFieldRealName] = iFieldLength;
 							this._pUniformExistMap[sFieldRealName] = true;
+
+							this._pRealUniformTypeMap[sFieldShaderName] = eFieldType;
+							this._pRealUniformLengthMap[sFieldShaderName] = iFieldLength;
 
 							isAnyFieldExist = true;
 						}

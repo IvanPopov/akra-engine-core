@@ -93,10 +93,6 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
         i ++;
     }
 
-    result_mat = result_mat;
-
-    float4 v4fTmp = result_mat * bind_matrix * pos;
-
     vertex = (view_mat * result_mat * bind_matrix * pos);
 
     Out.pos = vertex_geometry.pos = proj_mat * vertex;

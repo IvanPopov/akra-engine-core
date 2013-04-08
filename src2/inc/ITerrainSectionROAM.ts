@@ -12,7 +12,6 @@ module akra {
 		readonly queueSortValue: float;
 		readonly terrainSystem: ITerrainROAM;
 		_internalCreate(pRootNode?: ISceneNode, pParentSystem?: ITerrainROAM, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d, iStartIndex?: uint): bool;
-		prepareForRender(): void;
 		reset(): void;
 		tessellate(fScale: float, fLimit: float): void;
 		/**
@@ -29,7 +28,6 @@ module akra {
 		recursiveTessellate(pTri: ITriTreeNode, fDistA: float, fDistB: float, fDistC: float, pVTree: float[], iIndex: uint, fScale: float, fLimit: float): void;
 		split(pTri: ITriTreeNode): void;
 		buildTriangleList(): void;
-		render(): bool;
 		recursiveBuildTriangleList(pTri: ITriTreeNode, iPointBase: uint, iPointLeft: uint, iPointRight: uint): void;
 		computeVariance(): void;
 		recursiveComputeVariance(iCornerA: uint, iCornerB: uint, iCornerC: uint, fHeightA: float, fHeightB: float, fHeightC: float, pVTree: float[], iIndex: uint): float;

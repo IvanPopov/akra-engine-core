@@ -491,6 +491,15 @@ module akra.fx {
 					
 					pRenderer._setRenderTarget(this._pRenderTargetA);
 					pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR, Color.ZERO, 1., 0);
+
+					if(pEntry.viewport.getClearEveryFrame()){
+						var pViewportState: IViewportState = pEntry.viewport._getViewportState();
+						pRenderer.clearFrameBuffer(pViewportState.clearBuffers, 
+												   pViewportState.clearColor,
+												   pViewportState.clearDepth, 0);
+
+					}
+					
 				}
 
 				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
@@ -601,6 +610,10 @@ module akra.fx {
 				pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
 				pPassInput.setUniform("INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
 				pPassInput.setUniform("CAMERA_POSITION", pCamera.worldPosition);
+
+				if(pCamera.type === EEntityTypes.SHADOW_CASTER){
+					pPassInput.setUniform("OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
+				}
 			}
 
 			if(!isNull(pRenderable)){

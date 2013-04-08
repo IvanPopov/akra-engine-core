@@ -34,7 +34,7 @@ module akra.model {
         private _pBoundingBox: IRect3d = null;
         private _pBoundingSphere: ISphere = null;
         private _pSubMeshes: IMeshSubset[] = [];
-        private _bShadow: bool = false;
+        private _bShadow: bool = true;
         
         inline get length(): uint {
             return this._pSubMeshes.length;
@@ -159,6 +159,7 @@ module akra.model {
 
             var pSubMesh: IMeshSubset = new MeshSubset(this, pData, sName);
             this._pSubMeshes.push(pSubMesh);
+
 
             this.connect(pSubMesh, SIGNAL(shadow), SLOT(shadow), EEventTypes.UNICAST);
 
@@ -581,13 +582,13 @@ module akra.model {
             //return pSubMeshs.data.setRenderable(this.data.getIndexSet(),false);
         }
 
-        inline hasShadow(): bool {
+        inline get hasShadow(): bool {
             return this._bShadow;
         }
 
-        setShadow(bValue: bool = true): void {
+        set hasShadow(bValue: bool) {
             for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-                this._pSubMeshes[i].setShadow(bValue);
+                this._pSubMeshes[i].hasShadow = bValue;
             }            
         }
 
@@ -625,7 +626,7 @@ module akra.model {
 
             if (!bShadow) {
                 for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-                    if (this._pSubMeshes[i].hasShadow()) {
+                    if (this._pSubMeshes[i].hasShadow) {
                         this._bShadow = true;
                         break;
                     }
