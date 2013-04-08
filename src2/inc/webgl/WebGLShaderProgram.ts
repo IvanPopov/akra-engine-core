@@ -292,39 +292,16 @@ module akra.webgl {
 
     	inline setMat3Array(sName: string, pValue: IMat3[]): void {
             var pBuffer: Int32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 9);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 9, ++ j) {
-                pBuffer[i    ] = pValue[j][0];
-                pBuffer[i + 1] = pValue[j][1];
-                pBuffer[i + 2] = pValue[j][2];
-                pBuffer[i + 3] = pValue[j][3];
-                pBuffer[i + 4] = pValue[j][4];
-                pBuffer[i + 5] = pValue[j][5];
-                pBuffer[i + 6] = pValue[j][6];
-                pBuffer[i + 7] = pValue[j][7];
-                pBuffer[i + 8] = pValue[j][8];
+            for (var i: int = 0; i < pValue.length; i ++) {
+                pBuffer.set(pValue[i].data, 9*i);
             }
     		this._pWebGLContext.uniformMatrix3fv(this._pWebGLUniformLocations[sName], false, pBuffer);
     	}
 
     	inline setMat4Array(sName: string, pValue: IMat4[]): void {
     		var pBuffer: Int32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 16);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 16, ++ j) {
-                pBuffer[i    ] = pValue[j][0];
-                pBuffer[i + 1] = pValue[j][1];
-                pBuffer[i + 2] = pValue[j][2];
-                pBuffer[i + 3] = pValue[j][3];
-                pBuffer[i + 4] = pValue[j][4];
-                pBuffer[i + 5] = pValue[j][5];
-                pBuffer[i + 6] = pValue[j][6];
-                pBuffer[i + 7] = pValue[j][7];
-                pBuffer[i + 8] = pValue[j][8];
-                pBuffer[i + 9] = pValue[j][9];
-                pBuffer[i + 10] = pValue[j][10];
-                pBuffer[i + 11] = pValue[j][11];
-                pBuffer[i + 12] = pValue[j][12];
-                pBuffer[i + 13] = pValue[j][13];
-                pBuffer[i + 14] = pValue[j][14];
-                pBuffer[i + 15] = pValue[j][15];
+            for (var i: int = 0; i < pValue.length; i ++) {
+                pBuffer.set(pValue[i].data, 16*i);
             }
             this._pWebGLContext.uniformMatrix4fv(this._pWebGLUniformLocations[sName], false, pBuffer);
     	}

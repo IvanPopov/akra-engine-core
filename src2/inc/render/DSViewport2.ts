@@ -433,7 +433,7 @@ module akra.render {
 		                    
 		                    (<UniformOmniShadow>pUniformData).setSampler(sTexture, j);
 		                    pUniforms.samplersOmni.push((<UniformOmniShadow>pUniformData).SHADOW_SAMPLER[j]);
-		                    (<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace,pShadowCasterCube[j].optimizedProjection, j);
+		                    (<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.optimizedProjection, j);
 		                }
 
 		                pUniforms.omniShadows.push(<UniformOmniShadow>pUniformData);
