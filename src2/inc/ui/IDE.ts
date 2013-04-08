@@ -31,6 +31,11 @@ module akra.ui {
 			pTree.fromScene(this.getScene());
 
 			akra.ide = this;
+
+			this.el.find("#fullscreen-btn").bind("click", () => {
+				// this.getCanvas().setFullscreen(true);
+				akra.ide.cmd(akra.ECMD.SET_PREVIEW_FULLSCREEN);
+			});
 		}
 
 		inline getEngine(): IEngine { return this._pEngine; }
