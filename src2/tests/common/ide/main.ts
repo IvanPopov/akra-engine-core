@@ -2,6 +2,7 @@
 #include "akra.ts"
 #include "controls/KeyMap.ts"
 #include "ui/IDE.ts"
+#include "util/SimpleGeometryObjects.ts"
 
 module akra {
 	export var pEngine: IEngine = createEngine();
@@ -22,7 +23,8 @@ module akra {
 	function createCameras(): void {
 		pCamera = pScene.createCamera();
 	
-		pCamera.addPosition(vec3(0,0, 10));
+		pCamera.addPosition(vec3(0, 5, 15));
+		pCamera.addRelRotationByXYZAxis(-0.2, 0., 0.);
 		pCamera.attachToParent(pScene.getRootNode());
 
 		var pKeymap: IKeyMap = controls.createKeymap(pIDE.getCanvasElement());
@@ -39,6 +41,19 @@ module akra {
 		});
 	}
 
+	function createSceneEnvironment(): void {
+		var pSceneQuad: ISceneModel = util.createQuad(pScene, 100.);
+		pSceneQuad.attachToParent(pScene.getRootNode());
+
+		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 40);
+		pSceneSurface.addPosition(0, 0.01, 0);
+		pSceneSurface.scale(5.);
+		pSceneSurface.attachToParent(pScene.getRootNode());
+
+		//pSceneQuad.addPosition(0., 0., )
+		// pSceneQuad.addRelRotationByXYZAxis(0, Math.PI/2, 0);
+	}
+
 	function createViewports(): void {
 		pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
 		// pViewport.setClearEveryFrame(true);
@@ -46,27 +61,40 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni");
-		
+		var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni-0");
+			
 		pOmniLight.attachToParent(pScene.getRootNode());
 		pOmniLight.enabled = true;
 		pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-		pOmniLight.params.diffuse.set(1.75);
-		pOmniLight.params.specular.set(.5, .5, .5, .5);
+		pOmniLight.params.diffuse.set(0.5);
+		pOmniLight.params.specular.set(1, 1, 1, 1);
 		pOmniLight.params.attenuation.set(1,0,0);
 
-		pOmniLight.addPosition(0, 0, 5);
+		pOmniLight.addPosition(0, 2, 7);
 
-	/*	var pLightProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-shadow");
+		var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 		
-		pLightProject.attachToParent(pScene.getRootNode());
-		pLightProject.enabled = true;
-		pLightProject.params.ambient.set(0.1, 0.1, 0.1, 1);
-		pLightProject.params.diffuse.set(1.75);
-		pLightProject.params.specular.set(.5, .5, .5, .5);
-		pLightProject.params.attenuation.set(1,0,0);
+		pProjectShadowLight.attachToParent(pScene.getRootNode());
+		pProjectShadowLight.enabled = true;
+		pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+		pProjectShadowLight.params.diffuse.set(0.5);
+		pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+		pProjectShadowLight.params.attenuation.set(1,0,0);
+		pProjectShadowLight.isShadowCaster = true;
+		pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
+		pProjectShadowLight.addRelPosition(0, 3, 10);
 
-		pLightProject.addPosition(0, 0, 5);*/
+		var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
+		
+		pOmniShadowLight.attachToParent(pScene.getRootNode());
+		pOmniShadowLight.enabled = true;
+		pOmniShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+		pOmniShadowLight.params.diffuse.set(1);
+		pOmniShadowLight.params.specular.set(1, 1, 1, 1);
+		pOmniShadowLight.params.attenuation.set(1,0.2,0);
+		pOmniShadowLight.isShadowCaster = false;
+
+		pOmniShadowLight.addPosition(0, 10, -10);
 	}
 
 	function createSkyBox(): void {
@@ -88,7 +116,7 @@ module akra {
 		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
 			var pModelRoot: IModelEntry = pModel.attachToScene(pScene, pController);
 			pModelRoot.scale(3.);
-			pModelRoot.addPosition(0, -1., 0);
+			//pModelRoot.addPosition(0, -1., 0);
 
 			pController.attach(pModelRoot);
 
@@ -114,6 +142,7 @@ module akra {
 
 	function main(pEngine: IEngine): void {
 		setup();
+		createSceneEnvironment();
 		createCameras();
 		createViewports();
 		createSkyBox();
