@@ -11,12 +11,9 @@
 
 module akra.scene.objects {
 	export enum ECameraFlags {
-		k_NewProjectionMatrix = 0
+		k_NewProjectionMatrix = 0,
+		k_NewProjectionParams
 	}
-
-	export interface ICameraCache {
-		[displayList: string]: ISceneObject[];
-	};
 
 	export class DLTechnique {
 		list: IDisplayList;
@@ -49,15 +46,24 @@ module akra.scene.objects {
 		/** update projection bit flag */
 		protected _iUpdateProjectionFlags: int = 0;
 		
-		/** View matrix */
+		/** 
+		 * View matrix 
+		 */
 		protected _m4fView: IMat4 = new Mat4;
 		/** internal, un-biased projection matrix */
 		protected _m4fProj: IMat4 = new Mat4;
 		/** internal, un-biased projection+view matrix */
 		protected _m4fProjView: IMat4 = new Mat4;
 
-		/** Biased for use during current render stage */
+		/** 
+		 * Biased for use during current render stage 
+		 * @deprecated
+		 */
 		protected _m4fRenderStageProj: IMat4 = new Mat4;
+
+		/**
+		 * @deprecated
+		 */
 		protected _m4fRenderStageProjView: IMat4 = new Mat4;
 
 		/** Search rect for scene culling */
@@ -96,16 +102,28 @@ module akra.scene.objects {
     	inline get targetPos(): IVec3 { return this._v3fTargetPos; }
     	
     	inline get fov(): float { return this._fFOV; }
-    	inline set fov(fFOV: float) { this._fFOV = fFOV; };
+    	inline set fov(fFOV: float) { 
+    		this._fFOV = fFOV; 
+    		TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+    	}
 
     	inline get aspect(): float { return this._fAspect; }
-    	inline set aspect(fAspect: float) { this._fAspect = fAspect; }
+    	inline set aspect(fAspect: float) { 
+    		this._fAspect = fAspect; 
+    		TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+    	}
 
     	inline get nearPlane(): float { return this._fNearPlane; }
-    	inline set nearPlane(fNearPlane: float) { this._fNearPlane = fNearPlane; }
+    	inline set nearPlane(fNearPlane: float) { 
+    		this._fNearPlane = fNearPlane; 
+    		TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+    	}
     	
     	inline get farPlane(): float { return this._fFarPlane; }
-    	inline set farPlane(fFarPlane: float) { this._fFarPlane = fFarPlane; }
+    	inline set farPlane(fFarPlane: float) { 
+    		this._fFarPlane = fFarPlane; 
+    		TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+    	}
     	
     	inline get viewDistance(): float { return this._fFarPlane - this._fNearPlane; }
     	inline get searchRect(): IRect3d { return this._pSearchRect; }
@@ -126,7 +144,7 @@ module akra.scene.objects {
 					this._m4fLocalMatrix.data[__33]);
 				this._v3fTargetPos.negate();
 
-				this.setProjParams(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane);
+				this.recalcProjMatrix();
 				this.recalcMatrices();
 
 				var pScene: IScene3d = this._pScene;
@@ -144,7 +162,17 @@ module akra.scene.objects {
 			}
 
 			return isOK;
-		};
+		}
+
+		inline isProjParamsNew(): bool {
+			return TEST_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+		}
+
+		recalcProjMatrix(): void {
+			//TODO: check proj matrix type --> this._eCameraType
+			//now, temrary, supported on perspective proj
+			this.setProjParams(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane);
+		}
 
 		prepareForUpdate(): void {
 			super.prepareForUpdate();
@@ -284,6 +312,10 @@ module akra.scene.objects {
 
     	update(): bool {
     		var isUpdated: bool = super.update();
+
+    		if (this.isProjParamsNew()) {
+    			this.recalcProjMatrix();
+    		}
 
 		    if (this.isWorldMatrixNew() || TEST_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix)) {
 		    	this._pFrustum.extractFromMatrix(this._m4fProj, this._m4fWorldMatrix, this._pSearchRect);
