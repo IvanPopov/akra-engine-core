@@ -97,6 +97,8 @@ module akra {
 		signal viewportAdded(pViewport: IViewport): void;
 		signal viewportRemoved(pViewport: IViewport): void;
 
+		signal resized(): void;
+
 		signal cameraRemoved(pCamera: ICamera): void;
 	}
 }

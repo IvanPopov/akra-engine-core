@@ -37,6 +37,23 @@ module akra.webgl {
 			
 			this.name = sName;
 
+			var pCanvas: HTMLCanvasElement = this._pCanvas;
+			var iRealWidth: uint = this._iRealWidth;
+			var iRealHeight: uint = this._iRealHeight;
+			
+			(<any>pCanvas).onfullscreenchange = (<any>pCanvas).onmozfullscreenchange = (<any>pCanvas).onwebkitfullscreenchange = function (e) {
+
+				if (!!((<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).fullscreenElement)) {
+					this.resize(info.screen.width, info.screen.height);
+				}
+				else {
+					this.resize(iRealWidth, iRealHeight);
+				}
+
+				WebGLCanvas.fullscreenLock = false;
+			}
+
+
 			this.resize(iWidth, iHeight);
 			this.setFullscreen(isFullscreen);
 
@@ -85,21 +102,10 @@ module akra.webgl {
 				WebGLCanvas.fullscreenLock = true;
 
 				((<any>pCanvas).requestFullscreen || (<any>pCanvas).mozRequestFullScreen || (<any>pCanvas).webkitRequestFullscreen)();
-				
-				(<any>pCanvas).onfullscreenchange = (<any>pCanvas).onmozfullscreenchange = (<any>pCanvas).onwebkitfullscreenchange = function (e) {
-
-					if (!!((<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).fullscreenElement)) {
-						this.resize(info.screen.width, info.screen.height);
-					}
-					else {
-						this.resize(iRealWidth, iRealHeight);
-					}
-
-					WebGLCanvas.fullscreenLock = false;
-				}
 			}
 			catch (e) {
 				ERROR("Fullscreen API not supported", e);
+				throw e;
 			}
 		}
 

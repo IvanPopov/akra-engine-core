@@ -36,6 +36,7 @@ module akra.ui {
 			}
 		}
 
+
 		disableEvent(sEvent: string): void {
 			this.$element.unbind(sEvent, <(e: IUIEvent) => any>this._fnEventRedirector);
 		}

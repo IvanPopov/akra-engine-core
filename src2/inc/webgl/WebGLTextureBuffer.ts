@@ -48,6 +48,7 @@ module akra.webgl {
         reset(iSize: uint): void;
         reset(iWidth: uint, iHeight: uint): void;
         reset(iWidth?: uint = this._iWidth, iHeight?: uint = iWidth): void {
+        	//TODO: check format
 			iWidth = math.ceilingPowerOfTwo(iWidth);
 			iHeight = math.ceilingPowerOfTwo(iHeight);
 
@@ -55,16 +56,32 @@ module akra.webgl {
 			this._iHeight = this._iLevel === 0 ? iHeight : iHeight / Math.pow(2.0, this._iLevel);
 
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
+			
+
+			//pWebGLRenderer.debug(true, true);
+
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
 
 			pWebGLContext.texImage2D(this._eFaceTarget,
                         			 this._iLevel,
-                        			 webgl.getClosestWebGLInternalFormat(webgl.getSupportedAlternative(this._eFormat)),	                            			
+                        			 getClosestWebGLInternalFormat(getSupportedAlternative(this._eFormat)),	                            			
                         			 this._iWidth, this._iHeight, 0,
-                        			 GL_RGBA, GL_UNSIGNED_BYTE,
+                        			 getWebGLFormat(this._eFormat), getWebGLDataType(this._eFormat),
                         			 null);	
+
+			this.notifyResized();
+
+			//pWebGLRenderer.debug(false, false);
+		}
+
+		private notifyResized(): void {
+			if (!isNull(this._pRTTList)) {
+				for (var i: int = 0; i < this._pRTTList.length; ++ i) {
+					this._pRTTList[i].resized();
+				}
+			}
 		}
 
 		create(iFlags: int): bool;
@@ -109,8 +126,7 @@ module akra.webgl {
 			this._iDepth = 1;
 
 			this._iWebGLInternalFormat = iInternalFormat;
-			this._eFormat = webgl.getClosestAkraFormat(iInternalFormat, iFormat);
-			
+			this._eFormat = getClosestAkraFormat(iInternalFormat, iFormat);
 
 			this._iRowPitch = this._iWidth;
 			this._iSlicePitch = this._iHeight * this._iWidth;

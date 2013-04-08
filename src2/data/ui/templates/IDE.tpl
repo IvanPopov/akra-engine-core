@@ -14,6 +14,12 @@
 			<td>
 				<div id="preview-area">
 					<div class="title">Preview</div>
+					<div class="chose-resolution">
+						<a onclick="akra.ide.cmd(akra.ECMD.SET_PREVIEW_FULLSCREEN);" href="#fullscreen">[fullscreen]</a>
+						<a href="javascript:akra.ide.cmd(akra.ECMD.SET_PREVIEW_RESOLUTION, 800, 600);">[800x600]</a>
+						<a href="javascript:akra.ide.cmd(akra.ECMD.SET_PREVIEW_RESOLUTION, 640, 480);">[640x480]</a>
+						<a href="javascript:akra.ide.cmd(akra.ECMD.SET_PREVIEW_RESOLUTION, 320, 240);">[320x240]</a>
+					</div>
 				</div>
 			</td>
 		</tr>

@@ -104,6 +104,8 @@ module akra.render {
 			this._updateDimensions();
 
 			this._setCamera(pCamera);
+
+			this.connect(pTarget, SIGNAL(resized), SLOT(_updateDimensions));
 		}
 
 		destroy(): void {

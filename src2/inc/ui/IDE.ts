@@ -1,8 +1,12 @@
 #include "ui/Component.ts"
 #include "ui/scene/Tree.ts"
 
+#include "IUIIDE.ts"
+
 module akra.ui {
-	export class IDE extends Component {
+
+
+	export class IDE extends Component implements IUIIDE {
 		protected _pEngine: IEngine = null;
 
 		constructor (parent, options?) {
@@ -25,6 +29,8 @@ module akra.ui {
 			var pTree: scene.Tree = new scene.Tree(this, {show: false});
 			pTree.render(this.el.find("#tree"));
 			pTree.fromScene(this.getScene());
+
+			akra.ide = this;
 		}
 
 		inline getEngine(): IEngine { return this._pEngine; }
@@ -39,6 +45,20 @@ module akra.ui {
 			pStats.target = pViewport.getTarget();
 			//pStats.el.css({position: "relative", top: -$preview.height()});
 			pStats.render($preview);			
+		}
+
+		cmd(eCommand: ECMD, ...argv: any[]): bool {
+			switch (eCommand) {
+				case ECMD.SET_PREVIEW_RESOLUTION: 
+					var iWidth: int = parseInt(argv[0]);
+					var iHeight: int = parseInt(argv[1]);
+					this.getCanvas().resize(iWidth, iHeight);
+					return true;
+				case ECMD.SET_PREVIEW_FULLSCREEN:
+					this.getCanvas().setFullscreen(true);
+					return true;
+			}
+			return true;
 		}
 	}
 

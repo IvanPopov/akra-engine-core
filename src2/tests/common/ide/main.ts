@@ -71,7 +71,7 @@ module akra {
 
 	function createSkyBox(): void {
 		pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
-		pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
+		pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/desert-2.dds");
 
 		pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
 			(<render.DSViewport>pViewport).setSkybox(pTexture);
