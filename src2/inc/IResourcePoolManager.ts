@@ -75,6 +75,8 @@ module akra {
     	componentPool: IResourcePool;			
         effectDataPool: IResourcePool;
 
+        renderBufferPool: IResourcePool;
+
     	/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
     	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;
     	/** Удаляет пул ресурсов опредленного типа в менеджере русурсов */

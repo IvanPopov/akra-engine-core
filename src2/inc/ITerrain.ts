@@ -5,6 +5,9 @@ module akra {
 	IFACE(ITerrainSection);
 	IFACE(ISceneObject);
 	IFACE(IRect3d);
+	IFACE(IViewport);
+	IFACE(ISceneNode);
+
 	export interface IImageMap{
 		[index: string]: IImg;
 	}
@@ -14,9 +17,10 @@ module akra {
 		fScale: float;
 	}
 
-	export interface ITerrain {
-		scale: float;
-		limit: float;
+	export interface ITerrain extends ISceneNode {
+		tessellationScale: float;
+		tessellationLimit: float;
+
 		readonly worldExtents: IRect3d;
 		readonly worldSize: IVec3;
 		readonly mapScale: IVec3;
@@ -38,7 +42,7 @@ module akra {
 		 * @param {uint} iShiftY Количество секторов в terrain по оси Y (указывается в степенях двойки).
 		 * @param {string} sSurfaceTextures Название мега текстуры.
 		 */
-		create(pRootNode: ISceneNode, pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool;
+		init(pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneNode): bool;
 		/**
 		 * Ищет секцию по координате
 		 */
@@ -61,13 +65,13 @@ module akra {
 		 */
 		calcWorldNormal(v3fNormal: IVec3, fWorldX: float, fWorldY: float): IVec3;
 		/**
-		 * Подготовка терраина к рендерингу.
-		 */
-		prepareForRender(): void;
-		/**
 		 * Применение параметров рендеринга для рендеринга текстуры.
 		 */
 		applyForRender(): void;
+		/**
+		 * Destructor
+		 */
+		destroy(): void;
 		/**
 		 * Сброс параметров.
 		 */

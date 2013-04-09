@@ -21,6 +21,8 @@ module akra {
 	IFACE(ITerrainSection);
 	IFACE(ITerrainSectionROAM);
 	IFACE(IModel);
+	IFACE(ITerrain);
+	IFACE(ITerrainROAM);
 
 	export interface IScene3d extends IScene {
 		totalDL: uint;
@@ -46,6 +48,9 @@ module akra {
 		createSprite(sName?: string): ISprite;
 		createJoint(sName?: string): IJoint;
 		createText3d(sName?: string): IText3d;
+		
+		createTerrain(sName?: string): ITerrain;
+		createTerrainROAM(sName?: string): ITerrainROAM;
 		createTerrainSection(sName?: string): ITerrainSection;
 		createTerrainSectionROAM(sName?: string): ITerrainSectionROAM;
 

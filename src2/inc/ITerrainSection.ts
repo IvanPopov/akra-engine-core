@@ -11,14 +11,18 @@ module akra {
 	export interface ITerrainSection extends ISceneObject {
 		readonly sectorX: uint;
 		readonly sectorY: uint;
-		readonly renderable: IRenderableObject;
 		readonly terrainSystem: ITerrain;
 		readonly sectionIndex: uint;
 		readonly heightY: float;
 		readonly heightX: float;
 		readonly vertexDescription: IVertexElementInterface[];
-		_internalCreate(pRootNode?: ISceneNode, pParentSystem?: ITerrain, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d): bool;
-		setRenderData(pData: IRenderData): void;
+
+		_internalCreate(pParentSystem: ITerrain, 
+						iSectorX: uint, iSectorY: uint, 
+						iHeightMapX: uint, iHeightMapY: uint, 
+						iXVerts: uint, iYVerts: uint, 
+						pWorldRect: IRect2d): bool;
+		_createRenderable(): void;
 	}
 
 	export function createSingleStripGrid (pIndexValues, iXVerts: uint, iYVerts: uint, iXStep: uint, iYStep: uint, iSride: uint, iFlags: uint): uint{

@@ -14,6 +14,9 @@
 
 #include "SceneModel.ts"
 #include "Joint.ts"
+
+#include "terrain/Terrain.ts"
+#include "terrain/TerrainROAM.ts"
 #include "terrain/TerrainSection.ts"
 #include "terrain/TerrainSectionROAM.ts"
 
@@ -196,6 +199,28 @@ module akra.scene {
 		createText3d(sName: string = null): IText3d {
 			return null;
 		};
+
+		createTerrain(sName?: string): ITerrain {
+			var pTerrain: ITerrain = new terrain.Terrain(this);
+			
+			if (!pTerrain.create()) {
+				ERROR("cannot create terrain..");
+				return null;
+			}
+			
+			return <ITerrain>this.setupNode(pTerrain, sName);
+		}
+
+		createTerrainROAM(sName?: string): ITerrainROAM {
+			var pTerrainROAM: ITerrainROAM = new terrain.TerrainROAM(this);
+			
+			if (!pTerrainROAM.create()) {
+				ERROR("cannot create terrain..");
+				return null;
+			}
+			
+			return <ITerrainROAM>this.setupNode(pTerrainROAM, sName);
+		}
 
 		createTerrainSection(sName?: string): ITerrainSection {
 			var pNode: ISceneNode = new terrain.TerrainSection(this);

@@ -90,6 +90,7 @@ module akra {
 			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
 			pProjectShadowLight.params.attenuation.set(1,0,0);
 			pProjectShadowLight.isShadowCaster = true;
+
 			pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
 			pProjectShadowLight.addRelPosition(0, 3, 10);
 
@@ -108,8 +109,8 @@ module akra {
 
 		function createSkyBox(): void {
 			pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
-			pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
-
+			//pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
+			pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/desert-2.dds");
 			pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
 				(<render.DSViewport>pViewport).setSkybox(pTexture);
 			});
@@ -162,11 +163,16 @@ module akra {
 			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
-			loadModels("../../../data/models/hero/walk.DAE").addPosition(0, 1.1, 0);
-			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
-			var pCube: ISceneNode = loadModels("../../../data/models/cube.dae");
-			pCube.setPosition(20., 8., -30.);
-			pCube.scale(0.1);
+			loadModels("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
+				var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
+				pMesh.createBoundingBox();
+				pMesh.showBoundingBox();
+			}).addPosition(0, 1.1, 0);
+
+			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE").addPosition(-3., 1.1, 0.);
+			// var pCube: ISceneNode = loadModels("../../../data/models/cube.dae");
+			// pCube.setPosition(20., 8., -30.);
+			// pCube.scale(0.1);
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	

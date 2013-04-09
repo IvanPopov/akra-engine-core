@@ -6,18 +6,16 @@
 #include "render/RenderDataCollection.ts"
 #include "geometry/Rect3d.ts"
 #include "terrain/MegaTexture.ts"
-#include "scene/SceneNode.ts"
+#include "scene/SceneObject.ts"
 #include "terrain/TerrainSection.ts"
 #include "IEffect.ts"
+#include "IViewport.ts"
 
 module akra.terrain {
 
-	export class Terrain implements ITerrain{
+	export class Terrain extends scene.SceneObject implements ITerrain {
 		protected _pEngine: IEngine = null;
 		// private _pDevice = null;
-
-		//указатель на корень графа сцены
-		protected _pRootNode: ISceneNode = null;  
 
 		protected _pWorldExtents: IRect3d = new geometry.Rect3d();
 		private _v3fWorldSize: IVec3 = new Vec3();
@@ -61,32 +59,29 @@ module akra.terrain {
 
 
 
-		constructor(pEngine: IEngine) {
-			this._pEngine = pEngine;
-			// this._pDevice = pEngine.pDevice;
-			this._pDataFactory = new render.RenderDataCollection(this._pEngine, ERenderDataBufferOptions.VB_READABLE);
-		    // this._pDataFactory.dataType = a.RenderData;
-			// this._pDataFactory.setup();
-			// this._initSystemData();
+		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN) {
+			super(pScene, eType);
+			this._pEngine = pScene.getManager().getEngine();
+			this._pDataFactory = render.createRenderDataCollection(this._pEngine, ERenderDataBufferOptions.VB_READABLE);
 		}
 
 		inline get dataFactory(): IRenderDataCollection{
 			return this._pDataFactory;
 		};
 
-		inline get scale(): float{
+		inline get tessellationScale(): float{
 			return this._fScale;
 		};
 
-		inline set scale(fScale: float){
+		inline set tessellationScale(fScale: float){
 			this._fScale = fScale;
 		};
 
-		inline get limit(): float{
+		inline get tessellationLimit(): float{
 			return this._fLimit;
 		};
 
-		inline set limit(fLimit: float){
+		inline set tessellationLimit(fLimit: float){
 			this._fLimit = fLimit;
 		};
 
@@ -128,22 +123,22 @@ module akra.terrain {
 
 		protected _initSystemData(): bool {
 			if(isNull(this._pDefaultRenderMethod)){
-				var pMethod: IRenderMethod, pEffect: IEffect;
-			    var pEngine: IEngine = this._pEngine;
+				var pMethod: IRenderMethod = null, 
+					pEffect: IEffect = null;
+			    var pEngine: IEngine = this._pEngine,
+			    	pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 			    
-			    pMethod = <IRenderMethod>pEngine.getResourceManager().renderMethodPool.findResource(".terrain_render");
+			    pMethod = <IRenderMethod>pRmgr.renderMethodPool.findResource(".terrain_render");
 			    
 			    if (!isNull(pMethod)) {
 			        this._pDefaultRenderMethod = pMethod;
 			        return true;
 			    }
 
-			    pEffect = <IEffect>pEngine.getResourceManager().effectPool.createResource(".terrain_render");
-			    // pEffect.create();
+			    pEffect = pRmgr.createEffect(".terrain_render");
 			    pEffect.addComponent("akra.system.terrain");
-			    // pEffect.use("akra.system.prepareForDeferredShading");
 
-			    pMethod = <IRenderMethod>pEngine.getResourceManager().renderMethodPool.createResource(".terrain_render");
+			    pMethod = pRmgr.createRenderMethod(".terrain_render");
 			    pMethod.effect = pEffect;
 
 			    this._pDefaultRenderMethod = pMethod;
@@ -152,14 +147,18 @@ module akra.terrain {
 		    return true;
 		}
 
-		create(pRootNode: ISceneNode, pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool {
+		init(pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneNode = null): bool {
+			if(!isNull(pRootNode)) {
+				if(!this.attachToParent(pRootNode)) {
+					return false;
+				}
+			}
+
 			this._initSystemData();
 			//Основные параметры
 			this._iSectorShift = iShift;
 			this._iSectorUnits = 1 << iShift;
 			this._iSectorVerts = this._iSectorUnits + 1;
-
-			this._pRootNode = pRootNode;
 
 			this._pWorldExtents = new geometry.Rect3d(worldExtents.x0, worldExtents.x1, worldExtents.y0, worldExtents.y1,
 			                                   worldExtents.z0, worldExtents.z1)
@@ -193,7 +192,14 @@ module akra.terrain {
 			    }
 			}
 
-			return this._allocateSectors();
+			if(!this._allocateSectors()){
+				debug_error("Can not alloacte terrain sections");
+				return false;
+			}
+
+			this.computeBoundingBox();
+
+			return true;
 		}
 
 		findSection(iX: uint, iY: uint) {
@@ -233,10 +239,9 @@ module akra.terrain {
 
 			        var iIndex: uint = (y * this._iSectorCountX) + x;
 
-			        this._pSectorArray[iIndex] = this._pRootNode.scene.createTerrainSection();
+			        this._pSectorArray[iIndex] = this.scene.createTerrainSection();
 
 			        if (!this._pSectorArray[iIndex]._internalCreate(
-			            this._pRootNode,
 			            this,
 			            x, y,
 			            iXPixel, iYPixel,
@@ -249,18 +254,24 @@ module akra.terrain {
 			}
 
 			this._setRenderMethod(this._pDefaultRenderMethod);
+
+			return true;
 		}
 
 		protected _setRenderMethod(pRenderMethod: IRenderMethod): void {
-			this._pRenderMethod = null;
 		    this._pRenderMethod = pRenderMethod;
+		    
 		    if (this._pRenderMethod) {
 		        this._pRenderMethod.addRef();
 		    }
-		    var pSection;
+
+		    var pSection: ITerrainSection = null;
+
 		    for (var i = 0; i < this._pSectorArray.length; i++) {
 		        pSection = this._pSectorArray[i];
-		        pSection.renderable.renderMethod = pRenderMethod;
+		        pSection._createRenderable();
+
+		        pSection.getRenderable().renderMethod = pRenderMethod;
 		    }
 		}
 
@@ -721,9 +732,8 @@ module akra.terrain {
 		/**
 		 * Подготовка терраина к рендерингу.
 		 */
-		prepareForRender(): void {
-			CRITICAL_ERROR("нехуй");
-			this._pMegaTexures.prepareForRender();
+		prepareForRender(pViewport: IViewport): void {
+			//this._pMegaTexures.prepareForRender(pViewport);
 		}
 		/**
 		 * Применение параметров рендеринга для рендеринга текстуры.
@@ -777,6 +787,32 @@ module akra.terrain {
 			document.getElementById('setinfo4').innerHTML = "fScale1 " + this._fScale;
 			document.getElementById('setinfo5').innerHTML = "fLimit1 " + this._fLimit;
 		}
+
+		protected computeBoundingBox(): void {
+			var fX0: float, fY0: float, fZ0: float,
+				fX1: float, fY1: float, fZ1: float;
+
+			fX0 = fY0 = fZ0 = MAX_FLOAT64;
+			fX1 = fY1 = fZ1 = MIN_FLOAT64;
+
+			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
+				var pSectionBox: IRect3d = this._pSectorArray[i].localBounds;
+
+				fX0 = math.min(fX0, pSectionBox.x0);
+				fY0 = math.min(fY0, pSectionBox.y0);
+				fZ0 = math.min(fZ0, pSectionBox.z0);
+
+				fX1 = math.max(fX1, pSectionBox.x1);
+				fY1 = math.max(fY1, pSectionBox.y1);
+				fZ1 = math.max(fZ1, pSectionBox.z1);
+			}
+
+			this.accessLocalBounds().set(fX0, fX1, fY0, fY1, fZ0, fZ1);
+		}
+
+		// _prepareForRender(pViewport: IViewport): void {
+
+		// }
 	}
 }
 

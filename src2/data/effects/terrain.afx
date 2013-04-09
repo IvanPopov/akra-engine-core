@@ -48,8 +48,8 @@ struct base_material{
     float shininess:SHININESS;
 };;
 
-global base_material Fragment_material;
-global float3 Normal;
+shared base_material Fragment_material;
+shared float3 Normal;
 
 texture tex0:TEXTURE0;
 texture tex1:TEXTURE1;
@@ -99,7 +99,7 @@ float2 cameraCoordTerrain : CAMERA_COORD;
 
 void fs_terrain(VS_OUT IN){
 //    float4x4 normal_mat = IN.normal_mat;
-
+    /*
     float4 color;
     float2 new_texcoord;
     float3 normal;
@@ -162,6 +162,11 @@ void fs_terrain(VS_OUT IN){
     }
     //Fragment_material.emissive = float4(0.);
     Fragment_material.diffuse = color;
+    Fragment_material.ambient = float4(0.);
+    Fragment_material.shininess = 0.;
+    */
+    Normal = float3(0.);
+    Fragment_material.diffuse = float4(1., 0., 0., 1.);
     Fragment_material.ambient = float4(0.);
     Fragment_material.shininess = 0.;
 }

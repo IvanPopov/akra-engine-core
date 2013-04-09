@@ -10,16 +10,13 @@ module akra {
 		readonly verts: float[];
 		readonly index: Float32Array;
 		readonly maxTriTreeNodes: uint;
-		totalIndex: uint;
 		readonly vertexId: uint;
 
-		create(pRootNode: ISceneNode, pImgMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool;
-		destroy(): void;
-		reset(): void;
+		totalIndex: uint;
+
 		requestTriNode();
+
 		addToTessellationQueue(pSection: ITerrainSectionROAM): bool;
-		prepareForRender(): void;
-		render(pWorldMatrix: IMat4): bool;
 		processTessellationQueue(): void;
 	}
 }

@@ -6,6 +6,7 @@
 module akra {
     IFACE(IRect3d);
 	IFACE(IRenderableObject);
+    IFACE(IViewport);
     
     export interface ISceneObject extends ISceneNode {
     	worldBounds: IRect3d;
@@ -19,8 +20,9 @@ module akra {
 
     	accessLocalBounds(): IRect3d;
     	isWorldBoundsNew(): bool;
-    	// recalcWorldBounds(): void;
 
+        prepareForRender(pViewport: IViewport): void;
+        
         signal worldBoundsUpdated(): void;
     }
 }

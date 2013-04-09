@@ -95,9 +95,9 @@ float4x4 model_mat:MODEL_MATRIX;
 float4x4 view_mat:VIEW_MATRIX;
 
 void fs_mesh_texture_pass_1(VS_OUT_2 IN){
-//    float4x4 normal_mat = IN.normal_mat;
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;
     float4 norm;
+
     if(texNormal == float3(0.)){
         norm = float4(IN.norm.xyz, 0.);
     }
@@ -125,8 +125,9 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
         norm = (float4(texNormal.xyz * t, 0.));
         */
        
-       norm = float4(IN.norm.xyz, 0.);
+        norm = float4(IN.norm.xyz, 0.);
     }
+
     Normal = norm.xyz;
 //    Normal = normalize(float3(normalize(IN.norm) + tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz));
     Fragment_material.emissive = defaultMaterial.emissive + tex2D(sampler_emissive, float2(IN.tc_emissive.xy));

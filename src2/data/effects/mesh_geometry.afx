@@ -37,24 +37,14 @@ VS_OUT_1 vs_mesh_geometry(VS_IN_1 IN) {
     float3 norm = float3(IN.norm);
 
 	vertex = (view_mat * model_mat * (pos));
-    // vertex = float4(0.5,0.5,0.5, 1.);
 
-    //Out.norm = vertex_geometry.norm = normalize((normal_mat * norm));
-    Out.norm = vertex_geometry.norm = normalize((view_mat * model_mat * float4(norm,0.)).xyz);
-//    Out.norm = vertex_geometry.norm = norm;
-//    Out.normal_mat = view_mat * model_mat;
+    if(norm != float3(0.)){
+        Out.norm = vertex_geometry.norm = normalize((view_mat * model_mat * float4(norm,0.)).xyz);
+    }
+
     Out.vert = vertex_geometry.vert = vertex.xyz;
 	Out.pos = vertex_geometry.pos = proj_mat * vertex;
     Out.psize = 10.0;
-
-    /*
-    if(Out.pos.x == 0. || Out.pos.y == 0. || Out.pos.z == 0.){
-        Out.pos = float4(0.,0.,0.,1.);
-    }
-    else {
-        Out.pos = float4(0.5, 0., 0., 1.);
-    }
-    */
 
     return Out;
 }

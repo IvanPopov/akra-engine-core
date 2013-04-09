@@ -459,7 +459,7 @@ module akra.fx {
 				var sSemantic: string = pSemanticList[i];
 				var pFindFlow: IDataFlow = null;
 				if(this.getType(sSemantic).isComplex()){
-					pFindFlow = pMap.findFlow(sSemantic);
+					pFindFlow = pMap.findFlow(sSemantic) || pMap.getFlow(sSemantic);
 				}
 				else {
 					pFindFlow = pMap.getFlow(sSemantic);

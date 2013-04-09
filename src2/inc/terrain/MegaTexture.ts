@@ -6,7 +6,7 @@
 #include "math/math.ts"
 #include "core/pool/resources/Texture.ts"
 #include "pixelUtil/PixelBox.ts"
-
+#include "IViewport.ts"
 
 module akra.terrain {
 	interface ISubTextureSettings {
@@ -127,9 +127,8 @@ module akra.terrain {
 	    }
 
 
-		prepareForRender(): void {
-
-		    var pCamera: ICamera = this._pEngine.getRenderer()._getViewport().getCamera();
+		prepareForRender(pViewport: IViewport): void {
+		    var pCamera: ICamera = pViewport.getCamera();
 		    var v3fCameraPosition: IVec3 = pCamera.targetPos;
 
 

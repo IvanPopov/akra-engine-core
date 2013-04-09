@@ -11,7 +11,13 @@ module akra {
 		readonly triangleB: ITriTreeNode;
 		readonly queueSortValue: float;
 		readonly terrainSystem: ITerrainROAM;
-		_internalCreate(pRootNode?: ISceneNode, pParentSystem?: ITerrainROAM, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d, iStartIndex?: uint): bool;
+
+		_internalCreate(pParentSystem: ITerrainROAM, 
+						iSectorX: uint, iSectorY: uint, 
+						iHeightMapX: uint, iHeightMapY: uint, 
+						iXVerts: uint, iYVerts: uint, 
+						pWorldRect: IRect2d, iStartIndex?: uint): bool;
+
 		reset(): void;
 		tessellate(fScale: float, fLimit: float): void;
 		/**

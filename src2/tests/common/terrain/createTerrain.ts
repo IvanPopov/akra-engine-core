@@ -64,7 +64,7 @@ module akra {
 		}
 
 		function createTerrain(): void {
-			pTerrain = new terrain.TerrainROAM(pEngine);
+			pTerrain = pScene.createTerrainROAM();
 			var pTerrainMap: IImageMap = <IImageMap>{};
 
 			shouldBeNotNull("new terrain");
@@ -77,11 +77,9 @@ module akra {
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-					var pTerrainNode: ISceneNode = pScene.createNode("terrain-node");
-					pTerrainNode.scale(0.1);
-					pTerrainNode.attachToParent(pScene.getRootNode());
-
-					var isCreate: bool = pTerrain.create(pTerrainNode, pTerrainMap, new geometry.Rect3d(1024, 1024, 1024), 4, 5, 5, "main_terrain");
+					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(1024, 1024, 1024), 4, 5, 5, "main_terrain");
+					pTerrain.attachToParent(pScene.getRootNode());
+					pTerrain.scale(0.1);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
 				});

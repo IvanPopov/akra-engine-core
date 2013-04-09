@@ -2,8 +2,10 @@
 #define IMEGATEXTURE_TS
 
 module akra {
+	IFACE(IViewport);
+	
 	export interface IMegaTexture {
-		prepareForRender(): void;
+		prepareForRender(pViewport: IViewport): void;
 		applyForRender(pSnapshot): void;
 		setBufferMapNULL(pBuffer): void;
 		setData(pBuffer, iX: uint, iY: uint, iWidth: uint, iHeight: uint, pBufferIn, iInX: uint, iInY: uint, iInWidth: uint, iInHeight: uint, iBlockWidth: uint, iBlockHeight: uint, iComponents: uint): void;
