@@ -609,6 +609,8 @@ module akra.webgl {
 	                    return EPixelFormats.A1R5G5B5;
 	                case GL_UNSIGNED_SHORT_4_4_4_4:
 	                    return EPixelFormats.A4R4G4B4;
+                    case GL_FLOAT:
+                        return EPixelFormats.FLOAT32_RGBA;
 	                default:
 	                    return EPixelFormats.A8B8G8R8;
 	            }
@@ -642,6 +644,18 @@ module akra.webgl {
                 return webgl.hasExtension(EXT_TEXTURE_RG) ? EPixelFormats.R8 : EPixelFormats.A8R8G8B8;
             case GL_RG8_EXT:
                 return webgl.hasExtension(EXT_TEXTURE_RG) ? EPixelFormats.RG8 : EPixelFormats.A8R8G8B8;
+
+            case GL_DEPTH_COMPONENT:
+                switch(iGLDataType) {
+                    case GL_FLOAT:
+                        return EPixelFormats.FLOAT32_DEPTH;
+                    case GL_UNSIGNED_INT:
+                        return EPixelFormats.DEPTH32;
+                    case GL_UNSIGNED_SHORT:
+                        return EPixelFormats.DEPTH16;
+                    case GL_UNSIGNED_BYTE:
+                        return EPixelFormats.DEPTH8;
+                }
 
             default:
                 //TODO: not supported
@@ -706,6 +720,9 @@ module akra.webgl {
         else if(eFormat==EPixelFormats.FLOAT16_RGBA)
         {
             return hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+        }
+        else if (eFormat === EPixelFormats.DEPTH32) {
+            return true;
         }
         else
         {

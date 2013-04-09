@@ -22,8 +22,6 @@ module akra {
 
 
 		resize(iWidth: uint, iHeight: uint): void;
-
-		signal resized(iWidth: uint, iHeight: uint): void;
 	}
 }
 

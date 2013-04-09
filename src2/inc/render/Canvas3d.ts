@@ -68,8 +68,6 @@ module akra.render {
 		resize(iWidth: uint, iHeight: uint): void {
 
 		}
-
-		BROADCAST(resized, VOID);
 	}
 }
 

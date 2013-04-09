@@ -24,8 +24,8 @@ module akra.render {
 
 
 	export class DSViewport extends Viewport implements IDSViewport  {
-		private _pDefferedColorTextures: ITexture[] = [];
-		private _pDeferredDepthTexture: ITexture;
+		private _pDefereedColorTextures: ITexture[] = [];
+		private _pDeferredDepthTexture: ITexture = null;
 		private _pDeferredView: IRenderableObject = null;
 		private _pDeferredSkyTexture: ITexture = null;
 		//index of lighting display list
@@ -66,7 +66,7 @@ module akra.render {
 					ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
 			for (var i = 0; i < 2; ++ i) {
-				pDeferredTextures[i] = this._pDefferedColorTextures[i] = 
+				pDeferredTextures[i] = this._pDefereedColorTextures[i] = 
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
 
 				pDeferredTextures[i].create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0, 
@@ -79,7 +79,7 @@ module akra.render {
 											this.actualHeight / pDeferredTextures[i].height);
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 
-				if(i === 1){
+				if (i === 1) {
 					pViewport.setDepthParams(true, false, ECompareFunction.EQUAL);
 					pViewport.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
 				}
@@ -118,6 +118,21 @@ module akra.render {
 			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		}
 
+		_updateDimensions(): void {
+			super._updateDimensions();
+
+			var pDeferredTextures: ITexture[] = this._pDefereedColorTextures;
+
+			if (isDefAndNotNull(this._pDeferredDepthTexture)) {
+				this._pDeferredDepthTexture.reset(math.ceilingPowerOfTwo(this.actualWidth), math.ceilingPowerOfTwo(this.actualHeight));
+				for (var i = 0; i < 2; ++ i) {
+					pDeferredTextures[i].reset(math.ceilingPowerOfTwo(this.actualWidth), math.ceilingPowerOfTwo(this.actualHeight));
+					pDeferredTextures[i].getBuffer().getRenderTarget().getViewport(0)
+						.setDimensions(0., 0., this.actualWidth / pDeferredTextures[i].width, this.actualHeight / pDeferredTextures[i].height)
+				}
+			}
+		}
+
 		_updateImpl (): void {
 			this.prepareForDeferredShading();
 
@@ -131,13 +146,13 @@ module akra.render {
 
 		    //prepare deferred textures
 // #ifndef OPTIMIZED_DEFFERED
-			this._pDefferedColorTextures[0].getBuffer().getRenderTarget().update();
-			this._pDefferedColorTextures[1].getBuffer().getRenderTarget().update();
+			this._pDefereedColorTextures[0].getBuffer().getRenderTarget().update();
+			this._pDefereedColorTextures[1].getBuffer().getRenderTarget().update();
 // #else
 // 			var pNodeList: IObjectArray = this.getCamera().display();
 // 			for (var i: int = 0; i < pNodeList.length; ++ i) {
 // 				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
-// 				pRenderable.render(this._pDefferedColorTextures[i].getBuffer().getRenderTarget().getViewport(0), null, pNodeList.value(i));
+// 				pRenderable.render(this._pDefereedColorTextures[i].getBuffer().getRenderTarget().getViewport(0), null, pNodeList.value(i));
 // 			}
 
 // 			this.getTarget().getRenderer().executeQueue();
@@ -224,8 +239,8 @@ module akra.render {
 				// 	}
 				// }
 
-				// pTechCurr.getPass(0).setRenderTarget(this._pDefferedColorTextures[0].getBuffer().getRenderTarget());
-				// pTechCurr.getPass(1).setRenderTarget(this._pDefferedColorTextures[1].getBuffer().getRenderTarget());
+				// pTechCurr.getPass(0).setRenderTarget(this._pDefereedColorTextures[0].getBuffer().getRenderTarget());
+				// pTechCurr.getPass(1).setRenderTarget(this._pDefereedColorTextures[1].getBuffer().getRenderTarget());
 			};
 #endif		
 		}
@@ -261,8 +276,8 @@ module akra.render {
 			
 			this._pDeferredDepthTexture.destroyResource();
 
-			this._pDefferedColorTextures[0].destroyResource();
-			this._pDefferedColorTextures[1].destroyResource();
+			this._pDefereedColorTextures[0].destroyResource();
+			this._pDefereedColorTextures[1].destroyResource();
 
 			this._pDeferredView.destroy();
 			this._pDeferredView = null;
@@ -275,7 +290,7 @@ module akra.render {
 		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
-			var pDeferredTextures: ITexture[] = this._pDefferedColorTextures;
+			var pDeferredTextures: ITexture[] = this._pDefereedColorTextures;
 
 			switch (iPass) {
 				case 0:
@@ -354,8 +369,8 @@ module akra.render {
 						texture: null,
 						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
 						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-						mag_filter: ETextureFilters.NEAREST,
-						min_filter: ETextureFilters.NEAREST
+						mag_filter: ETextureFilters.LINEAR,
+						min_filter: ETextureFilters.LINEAR
 					});
 
 					pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 

@@ -5,9 +5,62 @@
 #include "../Tree.ts"
 
 module akra.ui.scene {
+	export class CameraNode extends TreeNode {
+		constructor(pTree: IUITree, pSource: IEntity) {
+			super(pTree, pSource);
+
+			this.el.bind("dblclick", () => {
+				LOG("look through");
+			});
+
+			this.el.find("label:first").addClass("camera");
+		}
+	}
+
+	export class SceneModelNode extends TreeNode {
+		constructor(pTree: IUITree, pSource: IEntity) {
+			super(pTree, pSource);
+
+			this.el.find("label:first").addClass("scene-model");
+		}
+	}
+
+	export class ShadowCasterNode extends TreeNode {
+		constructor(pTree: IUITree, pSource: IEntity) {
+			super(pTree, pSource);
+
+			this.el.find("label:first").addClass("shadow-caster");
+		}
+	}
+
+	export class JointNode extends TreeNode {
+		constructor(pTree: IUITree, pSource: IEntity) {
+			super(pTree, pSource);
+
+			this.el.find("label:first").addClass("joint");
+		}
+	}
+
+	export class LightPointNode extends TreeNode {
+		constructor(pTree: IUITree, pSource: IEntity) {
+			super(pTree, pSource);
+
+			this.el.find("label:first").addClass("light-point");
+		}
+	}
+
+	export class ModelEntryNode extends TreeNode {
+		constructor(pTree: IUITree, pSource: IEntity) {
+			super(pTree, pSource);
+
+			this.el.find("label:first").addClass("model-entry");
+		}
+	}
+
 	export class Tree extends ui.Tree {
 		
 		protected _pScene: IScene3d = null;
+		protected _iUpdateTimer: int = -1;
 
 		fromScene(pScene: IScene3d): void {
 			this._pScene = pScene;
@@ -18,13 +71,44 @@ module akra.ui.scene {
 			this.fromTree(pScene.getRootNode());
 		}
 
-		private updateTree(): void {
-			LOG("before root >>>>>>");
-			var pNode: TreeNode = <TreeNode>this.root;
-			if (!isNull(pNode)) {
-				LOG(">>>>>>");
-				pNode.recursiveUpdate();
+		private updateTree(pScene: IScene3d, pSceneNode: ISceneNode): void {
+			clearTimeout(this._iUpdateTimer);
+
+			var pTree: IUITree = this;
+			pTree.rootNode.waitForSync();
+
+			this._iUpdateTimer = setTimeout(() => { 
+				pTree.sync(); 
+				pTree.rootNode.synced(); 
+			}, 1000);
+		}
+
+		_createNode(pEntity: IEntity): IUITreeNode {
+			if (akra.scene.light.isShadowCaster(pEntity)) {
+				return new ShadowCasterNode(this, pEntity);
 			}
+
+			if (akra.scene.isModel(pEntity)) {
+				return new SceneModelNode(this, pEntity);
+			}
+
+			if (akra.scene.isJoint(pEntity)) {
+				return new JointNode(this, pEntity);
+			}
+
+			if (akra.scene.light.isLightPoint(pEntity)) {
+				return new LightPointNode(this, pEntity);
+			}
+
+			if (akra.scene.objects.isModelEntry(pEntity)) {
+				return new ModelEntryNode(this, pEntity);
+			}
+
+			if (akra.scene.objects.isCamera(pEntity)) {
+				return new CameraNode(this, pEntity);
+			}
+
+			return super._createNode(pEntity);
 		}
 	}
 }

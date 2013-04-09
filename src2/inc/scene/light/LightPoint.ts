@@ -71,7 +71,7 @@ module akra.scene.light {
 			CRITICAL("NOT IMPLEMENTED!");
 		};
 	}
-	export function isLightPoint(pNode: ISceneNode){
+	export function isLightPoint(pNode: IEntity){
 		return pNode.type === EEntityTypes.LIGHT;
 	}
 }

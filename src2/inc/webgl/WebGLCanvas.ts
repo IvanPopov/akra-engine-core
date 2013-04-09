@@ -59,11 +59,12 @@ module akra.webgl {
 		}
 
 		setFullscreen(isFullscreen: bool = true): void  {
-			var pCanvas: HTMLCanvasElement = this._pCanvas;
+			var pCanvasElement: HTMLCanvasElement = this._pCanvas;
 			var pScreen: IScreenInfo;
 			var pCanvasInfo: ICanvasInfo;
 			var iRealWidth: uint = this._iRealWidth;
 			var iRealHeight: uint = this._iRealHeight;
+			var pCanvas: WebGLCanvas = this;
 			
 			if (this._isFullscreen === isFullscreen) {
 				return;
@@ -77,22 +78,36 @@ module akra.webgl {
 			this._isFullscreen = isFullscreen;
 
 			if (isFullscreen) {
-				this._iRealWidth = this._iWidth;
-				this._iRealHeight = this._iHeight;
+				iRealWidth = this._iRealWidth = this._iWidth;
+				iRealHeight = this._iRealHeight = this._iHeight;
 			}
+
+			var el: any = pCanvasElement,
+				doc: any = document, 
+				rfs =
+	               el.requestFullScreen
+	            || el.webkitRequestFullScreen
+	            || el.mozRequestFullScreen
 
 			try {
 				WebGLCanvas.fullscreenLock = true;
 
-				((<any>pCanvas).requestFullscreen || (<any>pCanvas).mozRequestFullScreen || (<any>pCanvas).webkitRequestFullscreen)();
+				if (isFullscreen) {
+					rfs.call(el);
+				}
 				
-				(<any>pCanvas).onfullscreenchange = (<any>pCanvas).onmozfullscreenchange = (<any>pCanvas).onwebkitfullscreenchange = function (e) {
+				el.onfullscreenchange = 
+				el.onmozfullscreenchange = 
+				el.onwebkitfullscreenchange = el.onfullscreenchange || (e) => {
 
-					if (!!((<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).fullscreenElement)) {
-						this.resize(info.screen.width, info.screen.height);
+					if (!!( doc.webkitFullscreenElement || 
+							doc.mozFullScreenElement || 
+							doc.fullscreenElement)) {
+						pCanvas.resize(info.screen.width, info.screen.height);
 					}
 					else {
-						this.resize(iRealWidth, iRealHeight);
+						this.setFullscreen(false);
+						pCanvas.resize(iRealWidth, iRealHeight);
 					}
 
 					WebGLCanvas.fullscreenLock = false;
@@ -100,6 +115,7 @@ module akra.webgl {
 			}
 			catch (e) {
 				ERROR("Fullscreen API not supported", e);
+				throw e;
 			}
 		}
 

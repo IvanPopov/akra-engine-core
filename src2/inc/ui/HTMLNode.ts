@@ -36,6 +36,7 @@ module akra.ui {
 			}
 		}
 
+
 		disableEvent(sEvent: string): void {
 			this.$element.unbind(sEvent, <(e: IUIEvent) => any>this._fnEventRedirector);
 		}
@@ -107,8 +108,8 @@ module akra.ui {
 			return !isNull(this.$element) && this.$element.parent().length > 0;
 		}
 
-		destroy(): void {
-			super.destroy();
+		destroy(bRecursive?: bool, bPromoteChildren?: bool): void {
+			super.destroy(bRecursive, bPromoteChildren);
 			this.$element.remove();
 		}
 

@@ -1,10 +1,12 @@
 #ifndef SCENE3D_TS
 #define SCENE3D_TS
 
+#include "IModel.ts"
 #include "IScene3d.ts"
 #include "ISceneManager.ts"
 #include "SceneNode.ts"
 #include "events/events.ts"
+#include "objects/ModelEntry.ts"
 #include "objects/Camera.ts"
 #include "IDisplayList.ts"
 #include "OcTree.ts"
@@ -185,7 +187,11 @@ module akra.scene {
 
 		createJoint(sName: string = null): IJoint {
 			return <IJoint>this.setupNode(new Joint(this), sName);
-		};
+		}
+
+		_createModelEntry(pModel: IModel): IModelEntry {
+			return <IModelEntry>this.setupNode(new objects.ModelEntry(this, pModel));
+		}
 
 		createText3d(sName: string = null): IText3d {
 			return null;

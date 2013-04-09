@@ -17,6 +17,8 @@ module akra {
 		CAMERA,
 		SHADOW_CASTER,
 
+		MODEL_ENTRY,
+
 		LIGHT = 37,
 
 		SCENE_OBJECT = 64,
@@ -54,7 +56,7 @@ module akra {
 		readonly root: IEntity;
 
 		//create(): bool;//moved to INode
-		destroy(): void;
+		destroy(bRecursive?: bool, bPromoteChildren?: bool): void;
 
 		findEntity(sName: string): IEntity;
 		explore(fn: IExplorerFunc): void;

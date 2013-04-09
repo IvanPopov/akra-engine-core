@@ -36,6 +36,7 @@ module akra.scene {
 		    return true;
 		}
 
+
 		destroy(): void {
 			super.destroy();
 		}

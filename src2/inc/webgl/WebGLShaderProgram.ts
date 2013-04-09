@@ -65,26 +65,19 @@ module akra.webgl {
 				ERROR("cannot link GLSL program(guid: %d)", this.getGuid());
 
 #ifdef DEBUG
-				if (hasExtension(WEBGL_DEBUG_SHADERS)) {
+				if (loadExtension(pWebGLContext, WEBGL_DEBUG_SHADERS)) {
 					LOG("translated(from GLSL) VS shader: \n %s\ntranslated(from GLSL) PS shader: \n%s",
-						pWebGLContext.getTranslatedShaderSource(pWebGLVs),
-						pWebGLContext.getTranslatedShaderSource(pWebGLFs));
+						pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLVs),
+						pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLFs));
 				}
 
 				var sInfo: string = pWebGLContext.getProgramInfoLog(pWebGLProgram);
 
-				LOG("shader program errors: \n" + sInfo + "\n\nvertex code:\n"  + csVertex + "\n\n pixel code: csPixel");
+				LOG("shader program errors: \n" + sInfo + "\n\nvertex code:\n"  + csVertex + "\n\n pixel code: " + csPixel);
 #endif				
 
 				return false;
 			}
-
-           /* if (loadExtension(pWebGLContext,WEBGL_DEBUG_SHADERS)) {
-                LOG(pWebGLVs, pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLVs));
-                // LOG("translated(from GLSL) VS shader: \n %s\ntranslated(from GLSL) PS shader: \n%s",
-                //     pWebGLContext.getTranslatedShaderSource(pWebGLVs),
-                //     pWebGLContext.getTranslatedShaderSource(pWebGLFs));
-            }*/
 
 			pWebGLContext.validateProgram(pWebGLProgram);
 
@@ -440,6 +433,11 @@ module akra.webgl {
 #ifdef DEBUG
 				var sInfo: string = pWebGLContext.getShaderInfoLog(pWebGLShader);
 				var sCode: string = pWebGLContext.getShaderSource(pWebGLShader) || csCode;
+
+                if (loadExtension(pWebGLContext, WEBGL_DEBUG_SHADERS)) {
+                    LOG("translated(from GLSL) " + (eType == GL_VERTEX_SHADER? "VS": "PS") + " shader: \n" + 
+                        pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLShader));
+                }
 
 				LOG("shader errors: \n %s \n----------\n %s", sInfo, sCode);
 #endif

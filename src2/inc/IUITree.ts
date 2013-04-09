@@ -4,10 +4,23 @@
 #include "IUIComponent.ts"
 
 module akra {
+	IFACE(IUITreeNode);
+	
 	export interface IUITree extends IUIComponent {
-		root: IUITreeNode;
+		rootNode: IUITreeNode;
+		
 		fromTree(pEntity: IEntity): void;
-		createNode(pEntity?: IEntity): IUITreeNode;
+		//синхронизуем дерево с деревом из сущностей
+		sync(): void;
+
+		//уведомление дере о том, что синхронизация закончена
+		//вызывается из узлов дерева
+		//_synced(): void;
+
+		_link(pNode: IUITreeNode): void;
+		_unlink(pNode: IUITreeNode): void;
+
+		_createNode(pEntity: IEntity): IUITreeNode;
 	}
 }
 

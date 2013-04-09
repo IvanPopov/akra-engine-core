@@ -14,10 +14,9 @@ module akra {
 
 
     export interface IModel extends IResourcePoolItem {
-
         loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): bool;
-        attachToScene(pNode: ISceneNode): bool;
-        attachToScene(pScene: IScene3d): bool;
+        attachToScene(pNode: ISceneNode): IModelEntry;
+        attachToScene(pScene: IScene3d): IModelEntry;
     }
 }
 

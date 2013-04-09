@@ -1,8 +1,12 @@
 #include "ui/Component.ts"
 #include "ui/scene/Tree.ts"
 
+#include "IUIIDE.ts"
+
 module akra.ui {
-	export class IDE extends Component {
+
+
+	export class IDE extends Component implements IUIIDE {
 		protected _pEngine: IEngine = null;
 
 		constructor (parent, options?) {
@@ -14,10 +18,10 @@ module akra.ui {
 
 			debug_assert(!isNull(this._pEngine), "Engine required!");
 
-			var $stage: JQuery = this.el.find("#stage");
+			var $preview: JQuery = this.el.find("#preview-area");
 
-			$stage.append((<any>this.getCanvas())._pCanvas);
-			this.getCanvas().resize(800, 600);
+			$preview.append(this.getCanvasElement());
+			this.getCanvas().resize(640, 480);
 
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
@@ -25,19 +29,41 @@ module akra.ui {
 			var pTree: scene.Tree = new scene.Tree(this, {show: false});
 			pTree.render(this.el.find("#tree"));
 			pTree.fromScene(this.getScene());
+
+			akra.ide = this;
+
+			this.el.find("#fullscreen-btn").bind("click", () => {
+				// this.getCanvas().setFullscreen(true);
+				akra.ide.cmd(akra.ECMD.SET_PREVIEW_FULLSCREEN);
+			});
 		}
 
 		inline getEngine(): IEngine { return this._pEngine; }
 		inline getCanvas(): ICanvas3d { return this.getEngine().getRenderer().getDefaultCanvas(); }
 		inline getScene(): IScene3d { return this.getEngine().getScene(); }
+		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
 
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
-			var $stage: JQuery = this.el.find("#stage"); 
+			var $preview: JQuery = this.el.find("#preview-area"); 
 			var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>this.ui.createComponent("RenderTargetStats");
 
 			pStats.target = pViewport.getTarget();
-			pStats.el.css({position: "relative", top: -$stage.height()});
-			pStats.render($stage);			
+			//pStats.el.css({position: "relative", top: -$preview.height()});
+			pStats.render($preview);			
+		}
+
+		cmd(eCommand: ECMD, ...argv: any[]): bool {
+			switch (eCommand) {
+				case ECMD.SET_PREVIEW_RESOLUTION: 
+					var iWidth: int = parseInt(argv[0]);
+					var iHeight: int = parseInt(argv[1]);
+					this.getCanvas().resize(iWidth, iHeight);
+					return true;
+				case ECMD.SET_PREVIEW_FULLSCREEN:
+					this.getCanvas().setFullscreen(true);
+					return true;
+			}
+			return true;
 		}
 	}
 

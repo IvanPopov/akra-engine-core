@@ -4,106 +4,121 @@
 #include "IUITree.ts"
 #include "IUITreeNode.ts"
 #include "Component.ts"
+#include "util/ObjectArray.ts"
 
 module akra.ui {
-	export class TreeNode extends Component implements IUITreeNode {
-		protected _pTree: IUITree;
-		protected _pTargetNode: IEntity = null;
+	export class TreeNode implements IUITreeNode {
+		public el: JQuery = null;
+		public parent: IUITreeNode = null;
+		public tree: IUITree = null;
+		public source: IEntity = null;
+		public expanded: bool = false;
 
-		inline get targetNode(): IEntity {
-			return this._pTargetNode;
+		protected _pNodeMap: IUITreeNodeMap = <IUITreeNodeMap>{};
+		protected $childrenNode: JQuery = null;
+
+		inline get totalChildren(): uint {
+			return Object.keys(this._pNodeMap).length;
 		}
 
-		inline set targetNode(pEntity: IEntity) {
-			this._pTargetNode = pEntity;	
-			this.el.html(this.targetNode.name);
-			this.update();
-		}
+		constructor(pTree: IUITree, pSource: IEntity) {
+			this.tree = pTree;
+			this.source = pSource;
 
-		inline get tree(): IUITree {
-			return this._pTree;
-		}
+			debug_assert(!isNull(pSource), "source entity can not be null");
 
-		constructor (pTree: IUITree, options?, pNode: IEntity = null);
-		constructor (pTree: IUITreeNode, options?, pNode: IEntity = null);
-		constructor (parent, options?, pNode: IEntity = null) {
-			super(parent, options, EUIComponents.TREE_NODE, $("<li />"));
-
-			this._pTree = isComponent(parent, EUIComponents.TREE)? <IUITree>parent: (<IUITreeNode>parent).tree;
 			
-			if (!isNull(pNode)) {
-				this.targetNode = pNode;
+
+			this.el = $("<li><label  for=\""+ this.getID() + "\">" + this.sourceName() + "</label></li>");
+
+			this.tree._link(this);
+
+			this.sync();
+		}
+
+		expand(bValue: bool = true): void {
+			if (this.totalChildren) {
+				this.el.find("input").attr("checked", bValue);
+			}
+
+			this.expanded = bValue;
+		}
+
+
+
+		protected getID(): string {
+			return "node-guid-" + this.source.getGuid();
+		}
+
+
+		protected sync(): void {
+			//this.waitForSync();
+
+			var pChild: IEntity = this.source.child;
+
+			while (!isNull(pChild)) {
+				if (!this.inChildren(pChild)) {
+					this.addChild(this.tree._createNode(pChild));
+				}
+
+				pChild = pChild.sibling;
+			}	
+
+			//this.synced();		
+		}
+
+		synced(): void {
+			this.el.find("label:first").removeClass("updating");
+		}
+
+		waitForSync(): void {
+			this.el.find("label:first").addClass("updating");
+		}
+
+		protected removeChildren(): void {
+			for (var i in this._pNodeMap) {
+				this._pNodeMap[i].destroy();
+				this._pNodeMap[i] = null;
 			}
 		}
 
-		toString(bRecursive?: bool, iDepth?: int): string {
-			if (bRecursive) {
-				return super.toString(bRecursive);
-			}
-
-			return super.toString() + " --> { " + this.targetNode.name + " }";
+		protected inChildren(pNode: IEntity): bool {
+			return isDefAndNotNull(this._pNodeMap[pNode.getGuid()]);
 		}
 
-		renderTarget(): JQuery {
-			var $list: JQuery = $("<ul />");
-			this.el.append($list);
-			return $list;
+		inline protected sourceName(): string {
+			return this.source.name? this.source.name: "<span class=\"unnamed\">[unnamed]</span>"
 		}
 
-		update(): bool {
-			var pTarget: IEntity = this.targetNode;
-			
-			if (isNull(pTarget)) {
-				return true;
-			}
-LOG("here..");
-			if (this.childCount() == 0 && pTarget.childCount() > 0) {
-				var pEntityChild: IEntity = pTarget.child;
-				var pNodeChild: TreeNode = null;
-
-				while(pEntityChild) {
-					var pChild: TreeNode = <TreeNode>this.tree.createNode(pEntityChild);
-					pChild.parent = this;
-
-					if (!pNodeChild) {
-						pNodeChild = pChild;
-					}
-					else {
-						pNodeChild.sibling = pChild;
-					}
-
-					pEntityChild = pEntityChild.sibling;
-					pNodeChild = <TreeNode>pNodeChild.sibling;
-				}
-			}
-			else {
-				if (this.childCount() != pTarget.childCount()) {
-					this.removeAllChildren();
-					return this.update();
-				}
-
-				if (pTarget.child) {
-					var pNodeChild: TreeNode = <TreeNode>this.child;
-					var pEntityChild: IEntity = pTarget.child;
-
-					while(pNodeChild) {
-						if (pNodeChild.targetNode != pEntityChild) {
-							this.removeAllChildren();
-							return this.update();
-						}
-
-						pEntityChild = pEntityChild.sibling;
-						pNodeChild = <TreeNode>pNodeChild.sibling;
-					}
-				}
+		protected addChild(pNode: IUITreeNode): void {
+			if (isNull(this.$childrenNode)) {
+				this.el.append("<input " + (this.expanded? "checked": "") + 
+					" type=\"checkbox\"  id=\"" + this.getID() + "\" />");
+				this.el.removeClass("file");
+				this.$childrenNode = $("<ol />");
+				this.el.append(this.$childrenNode);
 			}
 
-			return true;
+			this.$childrenNode.append(pNode.el);
+			this._pNodeMap[pNode.source.getGuid()] = pNode;
+		}
+
+		destroy(): void {
+			this.removeChildren();
+
+			this.tree._unlink(this);
+			this.tree = null;
+			this.source = null;
+			this.el.remove();
 		}
 	}
 
+	export interface IUITreeNodeMap {
+		[guid: int]: IUITreeNode;
+	}
 
 	export class Tree extends Component implements IUITree {
+		protected _pNodeMap: IUITreeNodeMap = <IUITreeNodeMap>{};
 		protected _pRootNode: IUITreeNode = null;
 
 		fromTree(pEntity: IEntity): void {
@@ -111,16 +126,18 @@ LOG("here..");
 				CRITICAL("TODO: replace node");
 			}
 
-			var pRoot: TreeNode = this._pRootNode = <TreeNode>this.createNode(pEntity);
-			pRoot.recursiveUpdate();
+			this._pRootNode = this._createNode(pEntity);
+			this._pRootNode.sync();
+			this._pRootNode.expand();
+			this.el.append(this._pRootNode.el);
 		}
 
-		inline get root(): IUITreeNode {
+		inline get rootNode(): IUITreeNode {
 			return this._pRootNode;
 		}
 
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.TREE) {
-			super(ui, options, eType, $("<ul />"));
+			super(ui, options, eType, $("<ol class='tree'/>"));
 
 		}
 
@@ -129,9 +146,25 @@ LOG("here..");
 			this.el.addClass("component-tree");
 		}
 
-		createNode(pEntity?: IEntity): IUITreeNode {
-			return new TreeNode(this, null, pEntity);
+		_createNode(pEntity: IEntity): IUITreeNode {
+			var pNode: IUITreeNode = new TreeNode(this, pEntity);
+			return pNode;
 		}
+
+		_link(pNode: IUITreeNode): void {
+			this._pNodeMap[pNode.source.getGuid()] = pNode;
+		}
+
+		_unlink(pNode: IUITreeNode): void {
+			this._pNodeMap[pNode.source.getGuid()] = null;
+		}
+
+		sync(): void {
+			// this.el.find(".updating:first").show();
+			this.rootNode.sync();
+		}
+
+
 	}
 
 	register("Tree", Tree);

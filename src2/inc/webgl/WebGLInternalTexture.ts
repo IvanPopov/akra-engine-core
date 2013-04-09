@@ -208,7 +208,7 @@ module akra.webgl {
             
             if(!webgl.isWebGLFormatSupport(this._eFormat))
             {
-                WARNING("Данный тип текстуры не поддерживается");
+                WARNING("Данный тип текстуры не поддерживается: ", this._eFormat);
                 this._eFormat=EPixelFormats.A8B8G8R8;
             }
 
@@ -363,7 +363,7 @@ module akra.webgl {
         		for(mip = 0; mip <= this._nMipLevels; mip++) {
         			var pBuf: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(sResourceName + "_" + iFace + "_" + mip);
         			
-                   
+
                     pBuf.create(this._getWebGLTextureTarget(),
         						this._pWebGLTexture,
         						iWidth, iHeight,

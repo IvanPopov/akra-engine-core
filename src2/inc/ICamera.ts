@@ -52,6 +52,10 @@ module akra {
     	// recalcMatrices(): void;
 
     	// applyRenderStageBias(iStage: int): void;
+        
+        //изменились ли параметры процекции
+        isProjParamsNew(): bool; 
+        recalcProjMatrix(): void;
 
     	lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3);
     	lookAt(v3fCenter: IVec3, v3fUp?: IVec3);
