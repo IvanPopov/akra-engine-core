@@ -15,6 +15,7 @@ table {
 	}
 }
 
+@bg: lightgray;
 @font-size: 12px;
 @tree-font-size: @font-size;
 @border-dark-color: rgb(163, 163, 163);
@@ -101,17 +102,22 @@ table {
 
 }
 
-
+#tree-node {
+	padding: 0;
+	font-size: @tree-font-size;
+	border-right: @border-dark;
+	min-width: 165px;
+}
 
 #tree {
 	padding: 0;
 	font-size: @tree-font-size;
 	border-right: @border-dark;
-	min-height: 760px;
+	min-height: 510px;
 	border-bottom: @border-light;
 
 	ol.tree {
-		padding: 0 30px 0 30px;
+		padding: 0 15px 0 30px;
 		//width: 300px;
 
 		.unnamed {
@@ -162,6 +168,13 @@ table {
 				padding-left: 1px; 
 			}
 
+			div.scene-object-show-btn {
+				background: url(../img/scene-object-show.png) 15px 1px no-repeat;
+				cursor: pointer;
+				display: block;
+				float: left;
+			}
+
 			label {
 				background: url(../img/node.png) 15px 1px no-repeat;
 				cursor: pointer;
@@ -194,6 +207,10 @@ table {
 
 				&.updating {
 					background: url(../img/node-updating.gif) 15px 4px no-repeat;
+				}
+
+				&.selected {
+					background-color: #AAA;
 				}
 			}
 
@@ -261,6 +278,54 @@ table {
 			margin: 0;
 			border-bottom: 1px solid yellow;
 			border-top: 1px solid yellow;
+		}
+	}
+}
+
+.component-scenenodeproperties {
+	background-color: white;
+
+	div.node-type {
+		//border-top: @border-dark;
+		border-bottom: @border-dark;
+		vertical-align: middle;
+		padding: 0px 5px 0px 5px;
+		color: black;
+		background-color: @bg;
+	}
+
+	.row > span:first-child {
+		color: rgb(200, 0, 0);
+	}
+
+	.row {
+		padding-left: 15px; 
+		padding-right: 15px; 
+		white-space: nowrap;
+		font-family: consolas;
+
+		.component-vector {
+			color: gray;
+
+			&.editable {
+				color: black;
+			}
+		}
+
+		.component-label {
+			display: inline-block;
+			font-size: @font-size;
+			width: auto;
+			color: gray;
+
+			&.editable {
+				color: black;
+			}
+
+			.label-input {
+				width: auto;
+				font-size: 10px;
+			}
 		}
 	}
 }

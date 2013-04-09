@@ -21,6 +21,12 @@ module akra {
 
 		attachToParent(pParent: IUINode, bRender?: bool): bool;
 
+		handleEvent(sEvent: string): bool;
+		disableEvent(sEvent: string): void;
+
+		show(): void;
+		hide(): void;
+
 		signal click(e: IUIEvent): void;
 		signal dblclick(e: IUIEvent): void;
 		

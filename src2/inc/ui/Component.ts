@@ -70,6 +70,10 @@ module akra.ui {
 			this.applyOptions(pOptions);
 		}
 
+		template(sUrl: string, pData?: any): void {
+			template(this, sUrl, pData);
+		}
+
 		rendered(): void {
 			super.rendered();
 			this.el.addClass("component");
@@ -164,6 +168,18 @@ module akra.ui {
 
 			if (isDefAndNotNull(pOptions.dragZone)) {
 				$element.draggable("option", "containment", pOptions.dragZone);
+			}
+
+			if (isDefAndNotNull(pOptions.events)) {
+				if (isArray(pOptions.events)) {
+					pOptions.events = pOptions.events.join(' ');
+				}
+
+				this.handleEvent(pOptions.events);
+			}
+
+			if (isDefAndNotNull(pOptions.parent)) {
+				this.attachToParent(pOptions.parent, isDefAndNotNull(pOptions.show)? pOptions.show: true);
 			}
 		}
 

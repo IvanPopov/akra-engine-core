@@ -2,6 +2,9 @@
 	<table style="width: 100%">
 		<tr>
 			<td>
+				<div id="tree-node">
+					<div class="title">Node properties</div>
+				</div>
 				<div id="tree">
 					<div class="title">Scene Tree</div>
 				</div>

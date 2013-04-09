@@ -16,11 +16,14 @@ module akra {
 
 		readonly totalChildren: uint;
 
+		selected: bool;
+
 		expand(bValue?: bool): void;
 
 		destroy(): void;
 
 		sync(): void;
+		select(bValue?: bool): bool;
 
 		waitForSync(): void;
 		synced(): void;

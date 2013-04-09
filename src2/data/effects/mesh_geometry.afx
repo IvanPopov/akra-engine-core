@@ -40,7 +40,12 @@ VS_OUT_1 vs_mesh_geometry(VS_IN_1 IN) {
     // vertex = float4(0.5,0.5,0.5, 1.);
 
     //Out.norm = vertex_geometry.norm = normalize((normal_mat * norm));
-    Out.norm = vertex_geometry.norm = normalize((view_mat * model_mat * float4(norm,0.)).xyz);
+    if (norm == float3(0.)) {
+        Out.norm = vertex_geometry.norm = float3(0.);
+    }
+    else {
+        Out.norm = vertex_geometry.norm = normalize((view_mat * model_mat * float4(norm,0.)).xyz);
+    }
 //    Out.norm = vertex_geometry.norm = norm;
 //    Out.normal_mat = view_mat * model_mat;
     Out.vert = vertex_geometry.vert = vertex.xyz;

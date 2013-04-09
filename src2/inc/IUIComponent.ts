@@ -26,6 +26,9 @@ module akra {
 
 		//string/EUILayouts/Layout
 		layout?: any;
+		//string, string[]
+		events?: any;
+		parent?: IUIComponent;
 	}
 
 	export enum EUIComponents {
@@ -36,6 +39,7 @@ module akra {
 		BUTTON,
 		PANEL,
 		LABEL,
+		VECTOR,
 		TREE,
 		TREE_NODE,
 		CANVAS,
@@ -65,6 +69,8 @@ module akra {
 		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent;
 
 		_createdFrom($component: JQuery): void;
+
+		template(sURL: string, pData?: any): void;
 	}
 }
 

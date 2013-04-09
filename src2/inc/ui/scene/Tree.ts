@@ -17,7 +17,15 @@ module akra.ui.scene {
 		}
 	}
 
-	export class SceneModelNode extends TreeNode {
+	export class SceneObjectNode extends TreeNode {
+		constructor(pTree: IUITree, pSource: IEntity) {
+			super(pTree, pSource);
+
+			//this.el.find("label:first").before("<div class=\"scene-object-show-btn\" />");
+		}
+	}
+
+	export class SceneModelNode extends SceneObjectNode {
 		constructor(pTree: IUITree, pSource: IEntity) {
 			super(pTree, pSource);
 
@@ -61,6 +69,13 @@ module akra.ui.scene {
 		
 		protected _pScene: IScene3d = null;
 		protected _iUpdateTimer: int = -1;
+		protected _pIDE: IUIIDE = null;
+
+		inline get ide(): IUIIDE { return <IUIIDE>this.root; }
+
+		constructor (parent, options?) {
+			super(parent, options);
+		}
 
 		fromScene(pScene: IScene3d): void {
 			this._pScene = pScene;
@@ -69,6 +84,14 @@ module akra.ui.scene {
 			this.connect(pScene, SIGNAL(nodeDetachment), SLOT(updateTree));
 
 			this.fromTree(pScene.getRootNode());
+		}
+
+		select(pNode: IUITreeNode): bool {
+			if (this.ide.cmd(ECMD.SELECT_SCENE_NODE, pNode.source)) {
+				return super.select(pNode);
+			}
+
+			return false;
 		}
 
 		private updateTree(pScene: IScene3d, pSceneNode: ISceneNode): void {
@@ -111,6 +134,8 @@ module akra.ui.scene {
 			return super._createNode(pEntity);
 		}
 	}
+
+	register("SceneTree", Tree);
 }
 
 #endif

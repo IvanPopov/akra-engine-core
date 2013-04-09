@@ -10,6 +10,7 @@
 #include "Panel.ts"
 #include "Button.ts"
 #include "Label.ts"
+#include "Vector.ts"
 #include "Layout.ts"
 #include "Horizontal.ts"
 #include "Vertical.ts"
@@ -23,7 +24,7 @@
 #define UI_GRAPH
 #define UI_ANIMATION
 
-#ifdef UI_GRAPH
+#ifdef UnI_GRAPH
 
 #include "graph/Graph.ts"	
 #include "graph/Node.ts"

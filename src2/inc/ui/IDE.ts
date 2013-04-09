@@ -1,5 +1,6 @@
 #include "ui/Component.ts"
 #include "ui/scene/Tree.ts"
+#include "ui/scene/NodeProperties.ts"
 
 #include "IUIIDE.ts"
 
@@ -8,6 +9,9 @@ module akra.ui {
 
 	export class IDE extends Component implements IUIIDE {
 		protected _pEngine: IEngine = null;
+
+		protected _pSceneTree: scene.Tree;
+		protected _pSceneNodeProperties: scene.NodeProperties;
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
@@ -26,7 +30,12 @@ module akra.ui {
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
 
-			var pTree: scene.Tree = new scene.Tree(this, {show: false});
+			var pNodeProperties: IUIComponent = this._pSceneNodeProperties = <scene.NodeProperties>this.ui.createComponent("SceneNodeProperties", {show: false});
+			pNodeProperties.attachToParent(this, false);
+			pNodeProperties.render(this.el.find("#tree-node"));
+
+			var pTree: scene.Tree = this._pSceneTree = <scene.Tree>this.ui.createComponent("SceneTree", {show: false});
+			pTree.attachToParent(this, false);
 			pTree.render(this.el.find("#tree"));
 			pTree.fromScene(this.getScene());
 
@@ -61,6 +70,10 @@ module akra.ui {
 					return true;
 				case ECMD.SET_PREVIEW_FULLSCREEN:
 					this.getCanvas().setFullscreen(true);
+					return true;
+				case ECMD.SELECT_SCENE_NODE:
+					var pNode: ISceneNode = argv[0];
+					this._pSceneNodeProperties.setNode(pNode);
 					return true;
 			}
 			return true;

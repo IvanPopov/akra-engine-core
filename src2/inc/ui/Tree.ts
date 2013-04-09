@@ -7,6 +7,10 @@
 #include "util/ObjectArray.ts"
 
 module akra.ui {
+	export interface IUITreeNodeMap {
+		[guid: int]: IUITreeNode;
+	}
+
 	export class TreeNode implements IUITreeNode {
 		public el: JQuery = null;
 		public parent: IUITreeNode = null;
@@ -21,15 +25,32 @@ module akra.ui {
 			return Object.keys(this._pNodeMap).length;
 		}
 
+		inline get selected(): bool {
+			return this.tree.isSelected(this);
+		}
+
+		set selected(bValue: bool) {
+			if (!this.selected && !bValue) {
+				this.el.find("label:first").removeClass("selected");
+			}
+			else if (this.selected && bValue) {
+				this.el.find("label:first").addClass("selected");
+			}
+		}
+
 		constructor(pTree: IUITree, pSource: IEntity) {
 			this.tree = pTree;
 			this.source = pSource;
 
 			debug_assert(!isNull(pSource), "source entity can not be null");
 
-			
+			var pNode: TreeNode = this;
 
 			this.el = $("<li><label  for=\""+ this.getID() + "\">" + this.sourceName() + "</label></li>");
+			this.el.find("label:first").click((e: IUIEvent) => {
+				e.stopPropagation();
+				pNode.select();
+			});
 
 			this.tree._link(this);
 
@@ -44,6 +65,9 @@ module akra.ui {
 			this.expanded = bValue;
 		}
 
+		select(isSelect: bool = true): bool {
+			return this.tree.select(this);
+		}
 
 
 		protected getID(): string {
@@ -52,19 +76,36 @@ module akra.ui {
 
 
 		protected sync(): void {
-			//this.waitForSync();
 
-			var pChild: IEntity = this.source.child;
+			var pChildren: IEntity[] = this.source.children();
 
-			while (!isNull(pChild)) {
+			// var pChild: IEntity = this.source.child;
+
+			// while (!isNull(pChild)) {
+			// 	if (!this.inChildren(pChild)) {
+			// 		this.addChild(this.tree._createNode(pChild));
+			// 	}
+
+			// 	pChild = pChild.sibling;
+			// }	
+			
+			var pChildMap: { [guid: int]: IEntity; } = <any>{};
+			
+			for (var i: int = 0; i < pChildren.length; ++ i) {
+				var pChild: IEntity = pChildren[i];
+				pChildMap[pChild.getGuid()] = pChild;
+				
 				if (!this.inChildren(pChild)) {
 					this.addChild(this.tree._createNode(pChild));
 				}
+			}
 
-				pChild = pChild.sibling;
-			}	
-
-			//this.synced();		
+			for (var iGuid in this._pNodeMap) {
+				if (!isDef(pChildMap[iGuid])) {
+					this._pNodeMap[iGuid].destroy();
+				}
+			}
+	
 		}
 
 		synced(): void {
@@ -113,13 +154,10 @@ module akra.ui {
 		}
 	}
 
-	export interface IUITreeNodeMap {
-		[guid: int]: IUITreeNode;
-	}
-
 	export class Tree extends Component implements IUITree {
 		protected _pNodeMap: IUITreeNodeMap = <IUITreeNodeMap>{};
 		protected _pRootNode: IUITreeNode = null;
+		protected _pSelectedNode: IUITreeNode = null;
 
 		fromTree(pEntity: IEntity): void {
 			if (!isNull(this._pRootNode)) {
@@ -130,6 +168,8 @@ module akra.ui {
 			this._pRootNode.sync();
 			this._pRootNode.expand();
 			this.el.append(this._pRootNode.el);
+
+			this._pRootNode.select();
 		}
 
 		inline get rootNode(): IUITreeNode {
@@ -139,6 +179,28 @@ module akra.ui {
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.TREE) {
 			super(ui, options, eType, $("<ol class='tree'/>"));
 
+		}
+
+		select(pNode: IUITreeNode): bool {
+			var pPrev: IUITreeNode = this._pSelectedNode;
+
+			this._pSelectedNode = null;
+
+			if (!isNull(pPrev)) {
+				pPrev.selected = false;
+			}
+
+			this._pSelectedNode = pNode;
+			
+			if (!isNull(this._pSelectedNode)) {
+				this._pSelectedNode.selected = true;
+			}
+
+			return true;
+		}
+
+		isSelected(pNode: IUITreeNode): bool {
+			return this._pSelectedNode === pNode;
 		}
 
 		rendered(): void {
