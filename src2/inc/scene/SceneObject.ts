@@ -114,6 +114,8 @@ module akra.scene {
     		return this._iObjectFlags;
     	}
 
+    	inline prepareForRender(pViewport: IViewport): void {}
+
     	toString(isRecursive: bool = false, iDepth: uint = 0): string {
 #ifdef DEBUG
 			if (!isRecursive) {

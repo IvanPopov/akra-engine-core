@@ -734,9 +734,9 @@ module akra.fx {
 
 				var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 				pFieldType.pushType(pSubField.getType());
-				if(!this.isBase()){
-					pFieldType.setPadding(pSubField.getType().getPadding());
-				}
+				// if(!this.isBase()){
+				pFieldType.setPadding(pSubField.getType().getPadding());
+				// }
 				pField.push(pFieldType, true);
 				pField.push(pSubField.getNameId(), false);
 				pField.setSemantic(pSubField.getSemantic());
@@ -776,9 +776,9 @@ module akra.fx {
 
 			var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 			pFieldType.pushType(pSubField.getType());
-			if(!this.isBase()){
-				pFieldType.setPadding(pSubField.getType().getPadding());
-			}
+			// if(!this.isBase()){
+			pFieldType.setPadding(pSubField.getType().getPadding());
+			// }
 			pField.push(pFieldType, true);
 			pField.push(pSubField.getNameId(), false);
 
@@ -884,7 +884,7 @@ module akra.fx {
 		}
 
 		getSubVarDecls(): IAFXVariableDeclInstruction[] {
-			if(!this.isComplex() && !this.isPointer()){
+			if(!this.canHaveSubDecls()){
 				return null;
 			}
 
@@ -1206,17 +1206,18 @@ module akra.fx {
 		}
 
 		private generateSubDeclList(): void {
-			if(!this.isComplex() && !this.isPointer()){
+			if(!this.canHaveSubDecls()){
 				return;
 			}
 
 			var pDeclList: IAFXVariableDeclInstruction[] = [];
 			var i: uint = 0;
 
+			if(!isNull(this._pAttrOffset)){
+				pDeclList.push(this._pAttrOffset);
+			}			
+
 			if(this.isPointer()){
-				if(!isNull(this._pAttrOffset)){
-					pDeclList.push(this._pAttrOffset);
-				}
 
 				if(isNull(this._getUpPointer())){
 					this.initializePointers();
@@ -1243,6 +1244,10 @@ module akra.fx {
 			}
 
 			this._pSubDeclList = pDeclList;
+		}
+
+		private inline canHaveSubDecls(): bool {
+			return this.isComplex() || this.isPointer() || !isNull(this._pAttrOffset);
 		}
 	}
 

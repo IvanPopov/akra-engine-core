@@ -280,17 +280,16 @@ module akra.webgl {
                 return GL_RGBA;  
 
             case EPixelFormats.R8G8B8:
-                return 0;
             case EPixelFormats.B8G8R8:         
                 return GL_RGB;       
+
             case EPixelFormats.A8R8G8B8:
-                return 0;
             case EPixelFormats.A8B8G8R8:
                 return GL_RGBA;       
+
             case EPixelFormats.B8G8R8A8:       
             case EPixelFormats.R8G8B8A8:       
-            case EPixelFormats.X8R8G8B8:   
-                return 0;     
+            case EPixelFormats.X8R8G8B8:     
             case EPixelFormats.X8B8G8R8:
                return GL_RGBA; 
 
@@ -603,6 +602,7 @@ module akra.webgl {
 	                default:
 	                    return EPixelFormats.R8G8B8;
             	}
+                
             case GL_RGBA:
                 switch(iGLDataType) {
 	                case GL_UNSIGNED_SHORT_5_5_5_1:
@@ -613,21 +613,8 @@ module akra.webgl {
                         return EPixelFormats.FLOAT32_RGBA;
 	                default:
 	                    return EPixelFormats.A8B8G8R8;
-	            }
-
-            // case GL_DEPTH_COMPONENT:
-            //     switch(iGLDataType){
-            //         case GL_UNSIGNED_BYTE:
-            //             return EPixelFormats.DEPTH8;
-            //         case GL_UNSIGNED_SHORT:
-            //             return EPixelFormats.DEPTH16;
-            //         case GL_UNSIGNED_INT:
-            //             return EPixelFormats.DEPTH32;
-            //     }
+	            }          
             
-            // case GL_DEPTH_STENCIL:
-            //     return EPixelFormats.DEPTH24STENCIL8;
-
             case GL_BGRA:
                 return EPixelFormats.A8B8G8R8;
 
@@ -656,6 +643,10 @@ module akra.webgl {
                     case GL_UNSIGNED_BYTE:
                         return EPixelFormats.DEPTH8;
                 }
+
+            case GL_DEPTH_STENCIL:
+                return EPixelFormats.DEPTH24STENCIL8;
+
 
             default:
                 //TODO: not supported

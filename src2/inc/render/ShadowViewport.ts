@@ -19,6 +19,7 @@ module akra.render {
 		}
 
 		_updateImpl(): void {
+			// LOG("SAHDOW VIEWPORT #" + this.getGuid());
 			var pShadowCaster: IShadowCaster = <IShadowCaster> this._pCamera;
 			var pAffectedObjects: IObjectArray = pShadowCaster.affectedObjects;
 

@@ -35,6 +35,12 @@ module akra.render {
 			this._pInput.setStruct(sName, pValue);
 		}
 
+		inline setSamplerTexture(sName: string, sTexture: string): void;
+		inline setSamplerTexture(sName: string, pTexture: ITexture): void;
+		inline setSamplerTexture(sName: string, pTexture: any): void {
+			this._pInput.setSamplerTexture(sName, pTexture);
+		}
+
 		// inline setSamplerState(sName: string, pState: IAFXSamplerState): void {
 		// 	this._pInput.setSamplerState(sName, pState);
 		// }

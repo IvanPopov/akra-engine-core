@@ -45,8 +45,8 @@ module akra.terrain {
 	    private _pTempIndexList: Float32Array = undefined;
 	    private _iMaxIndices: uint = undefined;
 
-		constructor(pScene: IScene3d) {
-			super(pScene);
+		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_SECTION_ROAM) {
+			super(pScene, eType);
 		}
 
 		inline get terrainSystem(): ITerrainROAM{
@@ -65,17 +65,27 @@ module akra.terrain {
 			return this._fQueueSortValue;
 		}
 
-		_internalCreate(pRootNode?: ISceneNode, pParentSystem?: ITerrainROAM, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d, iStartIndex?: uint): bool {
-			if(arguments.length != 10) {
-				CRITICAL_ERROR("Not all arguments where passed");
-			}
+		_internalCreate(pParentSystem: ITerrainROAM, 
+						iSectorX: uint, iSectorY: uint, 
+						iHeightMapX: uint, iHeightMapY: uint, 
+						iXVerts: uint, iYVerts: uint, 
+						pWorldRect: IRect2d, iStartIndex?: uint): bool {
+
+			debug_assert(arguments.length === 9, "Not valid arguments count.");
 
 			var iVerts: uint = math.max(iXVerts,iYVerts)
-			this._iStartIndex=iStartIndex;
+			this._iStartIndex = iStartIndex;
 
-			var bResult: bool = super._internalCreate(pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iVerts, iVerts, pWorldRect);
+			var bResult: bool = super._internalCreate(pParentSystem, 
+													iSectorX, iSectorY, 
+													iHeightMapX, iHeightMapY, 
+													iVerts, iVerts, 
+													pWorldRect);
+			if(!bResult){
+				return false;
+			}
 
-			this._iTotalDetailLevels=math.ceil(math.log(iVerts)/math.LN2)*2-1;
+			this._iTotalDetailLevels = math.ceil(math.log(iVerts)/math.LN2)*2-1;
 			this._iTotalVariances=1<<this._iTotalDetailLevels;
 
 
@@ -120,9 +130,10 @@ module akra.terrain {
 			return bResult;
 		}
 
-		protected _prepareForRender(pCamera: ICamera): void {
-			super._prepareForRender(pCamera); /*????*/
+		prepareForRender(pViewport: IViewport): void {
+			super.prepareForRender(pViewport);
 
+			var pCamera: ICamera = pViewport.getCamera();
 			var v3fViewPoint: IVec3 = pCamera.worldPosition;
 			// compute view distance to our 4 corners
 			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX),					math.ceil(this._iHeightMapY));
@@ -402,7 +413,7 @@ module akra.terrain {
 				this._pTempIndexList[this._iTempTotalIndices++]=((iPointLeft+this._iStartIndex)*20 + this._iVertexID)/4;
 				this._pTempIndexList[this._iTempTotalIndices++]=((iPointBase+this._iStartIndex)*20 + this._iVertexID)/4;
 			} else {
-				console.log("else",this._iTempTotalIndices, this._iMaxIndices)
+				debug_print("else", this._iTempTotalIndices, this._iMaxIndices)
 			}
 		}
 

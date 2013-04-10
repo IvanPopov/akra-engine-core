@@ -51,6 +51,7 @@ module akra {
 
 		render(pViewport: IViewport, csMethod?: string, pSceneObject?: ISceneObject): void;
 
+		_setRenderData(pData: IRenderData): void;
 		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
 		_draw(): void;
 		_setVisible(bVisible: bool): void;

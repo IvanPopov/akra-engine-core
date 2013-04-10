@@ -12,6 +12,9 @@ module akra {
 		setUniform(sName: string, pValue: any): void;
 		setStruct(sName: string, pValue: any): void;
 
+		setSamplerTexture(sName: string, sTexture: string): void;
+		setSamplerTexture(sName: string, pTexture: ITexture): void;
+
 		getRenderTarget(): IRenderTarget;
 		setRenderTarget(pTarget: IRenderTarget): void;
 

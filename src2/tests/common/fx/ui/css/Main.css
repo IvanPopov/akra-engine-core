@@ -410,17 +410,229 @@ body {
 .component-animationmask .controls .component-slider {
   width: 100% !important;
 }
-body {
+body,
+form,
+ul,
+li,
+p,
+h1,
+h2,
+h3,
+h4,
+h5 {
   margin: 0;
   padding: 0;
 }
+img {
+  border: none;
+}
+table {
+  border: 0px;
+  border-collapse: collapse;
+}
+table td {
+  padding: 0px;
+  vertical-align: top;
+}
 #IDE {
   margin: 0;
+  width: 100%;
+  min-height: 100%;
+}
+.title {
+  border-top: 1px solid #a3a3a3;
+  border-bottom: 1px solid #a3a3a3;
+  padding: 5px 0px 5px 30px;
+  background: #ffffff;
+  background: -moz-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff), color-stop(100%, #e5e5e5));
+  background: -webkit-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: -o-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: -ms-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5', GradientType=0);
+}
+#work-area {
+  border-left: 5px solid #dfdfdf;
+  border-right: 5px solid #dfdfdf;
+  font-size: 12px;
+  min-height: 760px;
+  border-bottom: 5px solid #dfdfdf;
+}
+#preview-area {
+  min-height: 100%;
+  border-left: 1px solid #a3a3a3;
+  font-size: 12px;
+  min-height: 760px;
+  border-bottom: 5px solid #dfdfdf;
+}
+#preview-area .title {
+  float: left;
+}
+#preview-area .chose-resolution {
+  height: ;
+  text-align: right;
+  padding: 5px 30px 5px 30px;
+  border-top: 1px solid #a3a3a3;
+  border-bottom: 1px solid #a3a3a3;
+  background: #ffffff;
+  background: -moz-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff), color-stop(100%, #e5e5e5));
+  background: -webkit-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: -o-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: -ms-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5', GradientType=0);
+}
+#preview-area .chose-resolution a {
+  color: gray;
+  text-shadow: 0 0 2px white;
+}
+#preview-area .chose-resolution a:hover {
+  color: black;
 }
 #tree {
-  float: left;
-  padding: 10px;
+  padding: 0;
+  font-size: 12px;
+  border-right: 1px solid #a3a3a3;
+  min-height: 760px;
+  border-bottom: 5px solid #dfdfdf;
+}
+#tree ol.tree {
+  padding: 0 30px 0 30px;
+}
+#tree ol.tree .unnamed {
+  color: #a3a3a3;
+}
+#tree ol.tree li {
+  position: relative;
+  margin-left: -15px;
+  list-style: none;
+  white-space: nowrap;
+}
+#tree ol.tree li.file {
+  margin-left: -1px !important;
+  /*a {
+						background: url(../img/document.png) 0 0 no-repeat;
+						color: #fff;
+						padding-left: 21px;
+						text-decoration: none;
+						display: block;
+				}*/
+
+}
+#tree ol.tree li input {
+  position: absolute;
+  left: 0;
+  margin-left: 0;
+  opacity: 0;
+  z-index: 2;
+  cursor: pointer;
+  height: 12px;
+  width: 12px;
+  top: 0;
+}
+#tree ol.tree li input + ol {
+  background: url(../img/tri-right.png) 40px 0px no-repeat;
+  margin: -1.25em 0 0 -44px;
+  height: 12px;
+}
+#tree ol.tree li input + ol > li {
+  display: none;
+  margin-left: -14px !important;
+  padding-left: 1px;
+}
+#tree ol.tree li label {
+  background: url(../img/node.png) 15px 1px no-repeat;
+  cursor: pointer;
+  display: block;
+  padding-left: 37px;
+}
+#tree ol.tree li label.camera {
+  background: url(../img/node-camera.png) 15px 1px no-repeat;
+}
+#tree ol.tree li label.shadow-caster {
+  background: url(../img/node-shadow-caster.png) 15px 1px no-repeat;
+}
+#tree ol.tree li label.joint {
+  background: url(../img/node-joint.png) 15px 1px no-repeat;
+}
+#tree ol.tree li label.scene-model {
+  background: url(../img/node-scene-model.png) 15px 1px no-repeat;
+}
+#tree ol.tree li label.light-point {
+  background: url(../img/node-light-point.png) 15px 1px no-repeat;
+}
+#tree ol.tree li label.model-entry {
+  background: url(../img/node-collada.png) 15px 1px no-repeat;
+}
+#tree ol.tree li label.updating {
+  background: url(../img/node-updating.gif) 15px 4px no-repeat;
+}
+#tree ol.tree li input:checked + ol {
+  background: url(../img/tri-down.png) 40px 0px no-repeat;
+  margin: -1.25em 0 0 -44px;
+  padding: 1.563em 0 0 80px;
+  height: auto;
+}
+#tree ol.tree li input:checked + ol > li {
+  display: block;
+  margin: 0 0 0.125em;
+  /* 2px */
+
+}
+#tree ol.tree li input:checked + ol > li:last-child {
+  margin: 0 0 0.063em;
+  /* 1px */
 }
 #stage {
   float: left;
+}
+.component-fps {
+  background-color: white;
+  cursor: pointer;
+  border-bottom: 1px solid #bdbdbd;
+  border-top: 1px solid #bdbdbd;
+  height: 47px;
+  width: 100%;
+}
+.component-fps .info {
+  font-size: 11px;
+  font-family: 'Consolas', monospace;
+  color: gray;
+  text-shadow: 0 0 2px white;
+  padding: 1px;
+  font-weight: bold;
+  background: #ebebeb;
+  background: -moz-linear-gradient(top, #ebebeb 0%, #dcdcdc 31%, #c8c8c8 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ebebeb), color-stop(31%, #dcdcdc), color-stop(100%, #c8c8c8));
+  background: -webkit-linear-gradient(top, #ebebeb 0%, #dcdcdc 31%, #c8c8c8 100%);
+  background: -o-linear-gradient(top, #ebebeb 0%, #dcdcdc 31%, #c8c8c8 100%);
+  background: -ms-linear-gradient(top, #ebebeb 0%, #dcdcdc 31%, #c8c8c8 100%);
+  background: linear-gradient(to bottom, #ebebeb 0%, #dcdcdc 31%, #c8c8c8 100%);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ebebeb', endColorstr='#c8c8c8', GradientType=0);
+  border-bottom: 1px solid #bdbdbd;
+}
+.component-fps .graph {
+  /*background-color: gray;*/
+
+  min-height: 30px;
+  height: 30px;
+  padding: 0;
+  margin: 0;
+  opacity: .75;
+  overflow: hidden;
+  vertical-align: bottom;
+  text-align: left;
+  /*border-top: 1px solid yellow;*/
+
+}
+.component-fps .graph .tick {
+  float: left;
+  width: 1px;
+  height: 0px;
+  display: block;
+  margin: 0;
+  border-bottom: 1px solid yellow;
+  border-top: 1px solid yellow;
 }

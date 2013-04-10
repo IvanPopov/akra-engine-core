@@ -49,7 +49,7 @@ module akra.scene.light {
 		    var m4fView: IMat4 = this.viewMatrix;
 		    var m4fProj: IMat4 = this.projectionMatrix;
 		    var m4fProjData: Float32Array = m4fProj.data;
-
+		    
 		    var pBox: IRect3d = geometry.rect3d();
 
 		    var pAffectedObjects: IObjectArray = this._pAffectedObjects;

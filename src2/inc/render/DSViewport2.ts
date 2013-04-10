@@ -181,8 +181,9 @@ module akra.render {
 							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
 								CRITICAL("cannot clone active render method");
 							}
-							
+
 							pTechnique = pRenderable.getTechnique(sMethod);
+							pTechnique._syncTable(pTechCurr);
 
 							for (var k: int = 0; k < pTechnique.totalPasses; ++ k) {
 								var pPass: IRenderPass = pTechnique.getPass(k);
@@ -215,6 +216,7 @@ module akra.render {
 							}
 
 							pTechnique = pRenderable.getTechnique(sMethod);
+							pTechnique._syncTable(pTechCurr);
 
 							if(j === 0){
 								pTechnique._blockPass(1);
@@ -448,7 +450,7 @@ module akra.render {
 		                    
 		                    (<UniformOmniShadow>pUniformData).setSampler(sTexture, j);
 		                    pUniforms.samplersOmni.push((<UniformOmniShadow>pUniformData).SHADOW_SAMPLER[j]);
-		                    (<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace,pShadowCasterCube[j].optimizedProjection, j);
+		                    (<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.optimizedProjection, j);
 		                }
 
 		                pUniforms.omniShadows.push(<UniformOmniShadow>pUniformData);

@@ -70,6 +70,7 @@ module akra.fx {
 
 		private _pPostEffectTextureA: ITexture = null;
 		private _pPostEffectTextureB: ITexture = null;
+		private _pPostEffectDepthBuffer: IPixelBuffer = null;
 
 		//Temporary objects for fast work
 		static pDefaultSamplerBlender: SamplerBlender = null;
@@ -490,7 +491,7 @@ module akra.fx {
 					pRenderer._setDepthBufferParams(false, false, 0);
 					
 					pRenderer._setRenderTarget(this._pRenderTargetA);
-					pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR, Color.ZERO, 1., 0);
+					pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH, Color.ZERO, 1., 0);
 
 					if(pEntry.viewport.getClearEveryFrame()){
 						var pViewportState: IViewportState = pEntry.viewport._getViewportState();
@@ -651,9 +652,10 @@ module akra.fx {
 			this._pRenderTargetA = this._pPostEffectTextureA.getBuffer().getRenderTarget();
 			this._pRenderTargetB = this._pPostEffectTextureB.getBuffer().getRenderTarget();
 
-			// this._pRenderTargetA.attachDepthBuffer();
-			// this._pRenderTargetA.attachDepthTexture(this._pPostEffectDepthTexture);
-			// this._pRenderTargetB.attachDepthTexture(pDepthTexture);
+			this._pPostEffectDepthBuffer = <webgl.WebGLInternalRenderBuffer>pRmgr.renderBufferPool.createResource(".global-post-effect-depth");
+			(<webgl.WebGLInternalRenderBuffer>this._pPostEffectDepthBuffer).create(GL_DEPTH_COMPONENT, 512, 512, false);
+
+			this._pRenderTargetA.attachDepthPixelBuffer(this._pPostEffectDepthBuffer);
 		}
 
 		private resizePostEffectTextures(iWidth: uint, iHeight: uint): void {

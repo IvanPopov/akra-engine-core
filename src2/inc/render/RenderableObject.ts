@@ -58,6 +58,9 @@ module akra.render {
 			}
 		}
 
+		inline _setRenderData(pData: IRenderData): void {
+			this._pRenderData = pData;
+		}
 
 		_setup(pRenderer: IRenderer, csDefaultMethod: string = null): void {
 			this._pRenderer = pRenderer;

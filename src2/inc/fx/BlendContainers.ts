@@ -383,7 +383,7 @@ module akra.fx {
 								var sOffsetName: string = pSubDecl.getRealName();
 
 								this._pOffsetVarsBySemanticMap[sSemantic].push(pSubDecl)
-								this._pOffsetDefaultMap[sOffsetName] = pSubDecl.getType().getPadding();
+								this._pOffsetDefaultMap[sOffsetName] = (<IAFXVariableDeclInstruction>pSubDecl.getParent()).getType().getPadding();
 							}
 						}
 					}
@@ -459,7 +459,7 @@ module akra.fx {
 				var sSemantic: string = pSemanticList[i];
 				var pFindFlow: IDataFlow = null;
 				if(this.getType(sSemantic).isComplex()){
-					pFindFlow = pMap.findFlow(sSemantic);
+					pFindFlow = pMap.findFlow(sSemantic) || pMap.getFlow(sSemantic);
 				}
 				else {
 					pFindFlow = pMap.getFlow(sSemantic);

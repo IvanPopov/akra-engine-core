@@ -1048,8 +1048,6 @@ module akra.fx {
  					isNeedPadding = true;
  				}
 
- 				iDepth++;
-
  				if(pFieldType.isPointer()){
  					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
  					pSingleExtract = new ExtractStmtInstruction();
@@ -1063,6 +1061,7 @@ module akra.fx {
  					this.generateExtractStmtFromPointer(pFieldPointer, pOffset, iDepth, pCollector);
  				}
  				else if(pFieldType.isComplex()) {
+ 					iDepth++;
  					this.generateExtractStmtForComplexVar(pField, pOffset, iDepth, pCollector,
  														  pPointer, pBuffer, 
  														  isNeedPadding ? (iPadding + pFieldType.getPadding()) : 0);

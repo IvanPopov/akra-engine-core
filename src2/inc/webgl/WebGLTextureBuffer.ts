@@ -184,6 +184,13 @@ module akra.webgl {
 			return true;
 		}
 
+		// destroyResource(): bool {
+		// 	super.destroyResource();
+		// 	this._pWebGLTexture = null;
+		// 	this.destroy();
+		// 	return true;
+		// }
+
 		destroy(): void {  
 			if (TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET)) {
 	            // Delete all render targets that are not yet deleted via _clearSliceRTT because the rendertarget
@@ -256,13 +263,13 @@ module akra.webgl {
 	                pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	            }
 	            if (pDestBox.left === 0 && pDestBox.top === 0) {	            	
-	            		pWebGLContext.texImage2D(this._eFaceTarget,
-	                            			this._iLevel,
-	                            			webgl.getWebGLFormat(pData.format),	                            			
-	                            			pDestBox.width, pDestBox.height,0,
-	                            			webgl.getWebGLFormat(pData.format),
-	                            			webgl.getWebGLDataType(pData.format),
-	                            			new Uint8Array(pData.data));											
+            		pWebGLContext.texImage2D(this._eFaceTarget,
+                            			this._iLevel,
+                            			webgl.getWebGLFormat(pData.format),	                            			
+                            			pDestBox.width, pDestBox.height,0,
+                            			webgl.getWebGLFormat(pData.format),
+                            			webgl.getWebGLDataType(pData.format),
+                            			new Uint8Array(pData.data));											
 	            }
 	            else
 	            {
@@ -767,8 +774,13 @@ module akra.webgl {
 
 	        var pTextureBufferPool: IResourcePool = this.getManager().textureBufferPool;
 	        var pTempTexBuffer: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(".temp");
+	        // var pTempTexBuffer: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.findResource(".temp");
+	        
+	        // if(isNull(pTextureBufferPool)){
+	        // 	pTempTexBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(".temp");
+	        // }
 
-	        pTempTexBuffer.create(eTarget, pTempWebGLTexture, iWidth, iHeight, 
+	        pTempTexBuffer.create(eTarget, pTempWebGLTexture, pSource.width || iWidth, pSource.height || iHeight, 
 								  iWebGLFormat, pSource.format, 0, 0,
 								  ETextureFlags.AUTOMIPMAP | EHardwareBufferFlags.STATIC,
 								  false);
@@ -781,6 +793,7 @@ module akra.webgl {
 	        this.blitFromTexture(pTempTexBuffer, pTempBoxTarget, pDestBox);
 	        
 	        //Delete temp data
+	        pTempTexBuffer.release();
 	        pTextureBufferPool.destroyResource(pTempTexBuffer);	        
 
 	        pWebGLRenderer.deleteWebGLTexture(pTempWebGLTexture);

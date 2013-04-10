@@ -276,7 +276,9 @@ module akra.render {
 			var pVisibleObjects: IObjectArray = pCamera.display();
 			var pRenderable: IRenderableObject;
 
-			// LOG(pVisibleObjects.length);
+			for(var i: int = 0; i < pVisibleObjects.length; ++ i){
+				pVisibleObjects.value(i).prepareForRender(this);
+			}
 
 			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
@@ -285,6 +287,7 @@ module akra.render {
 					pRenderable = pSceneObject.getRenderable(j);
 
 					if (!isNull(pRenderable)) {
+						// LOG("render object #" + pRenderable.getGuid());
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}

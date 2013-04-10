@@ -62,8 +62,10 @@ module akra {
 		setTexture(sName: string, pValue: any): void;
 
 		setSampler(sName: string, pState: IAFXSamplerState): void;
-		setSamplerTexture(sName: string, pTexture: ITexture): void;
 		setSamplerArray(sName: string, pSamplerArray: IAFXSamplerState[]): void;
+		
+		setSamplerTexture(sName: string, sTexture: string): void;
+		setSamplerTexture(sName: string, pTexture: ITexture): void;
 
 		setStruct(sName: string, pValue: any): void;
 
