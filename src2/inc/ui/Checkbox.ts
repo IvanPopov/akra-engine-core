@@ -12,6 +12,19 @@ module akra.ui {
 
 		inline get checked(): bool { return this.isChecked(); }
 		inline set checked(bValue: bool) {
+			var bPrev: bool = this.isChecked();
+			
+			this._setValue(bValue);
+
+			if (bValue != bPrev) {
+				this.changed(bValue);
+			}
+		}
+
+		inline get text(): string { return this.$text.html(); }
+		inline set text(sValue: string) { this.$text.html(sValue); }
+
+		_setValue(bValue: bool): void {
 			if (bValue) {
 				this.$element.addClass("active");
 			}
@@ -19,11 +32,8 @@ module akra.ui {
 				this.$element.removeClass("active");
 			}
 
-			this._bChecked = bValue;
+			this._bChecked = bValue; 
 		}
-
-		inline get text(): string { return this.$text.html(); }
-		inline set text(sValue: string) { this.$text.html(sValue); }
 
 		constructor (parent, options?: IUICheckboxOptions, eType?: EUIComponents);
 		constructor (parent, name?: string, eType?: EUIComponents);
@@ -41,6 +51,7 @@ module akra.ui {
 			}
 
 			this.text = isObject(options)? options.text || "": "";
+			this.handleEvent("click");
 		}
 
 		_createdFrom($comp: JQuery): void {
@@ -59,8 +70,6 @@ module akra.ui {
 
 		click(e: IUIEvent): void {
 			this.checked = !this.checked;
-
-			this.changed(this.isChecked());
 			
 			super.click(e);
 		}

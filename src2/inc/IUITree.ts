@@ -11,7 +11,8 @@ module akra {
 		
 		fromTree(pEntity: IEntity): void;
 		//синхронизуем дерево с деревом из сущностей
-		sync(): void;
+		//или синхронизуем выбранный узел
+		sync(pEntity?: IEntity): void;
 
 		select(pNode: IUITreeNode): bool;
 

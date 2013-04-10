@@ -10,9 +10,15 @@ module akra.ui {
 		protected $input: JQuery;
 
 		protected _bEditable: bool = false;
+		protected _sPostfix: string = null;
 
-		inline get text(): string { return this.$text.html(); }
-		inline set text(x: string) { this.$text.html(x); }
+		inline get text(): string { 
+			var s: string = this.$text.html(); 
+			return s.substr(0, s.length - (this._sPostfix || "").length);
+		}
+		inline set text(x: string) { this.$text.html(x + (this._sPostfix || "")); }
+		inline set postfix(s: string) { this._sPostfix = s; }
+		inline get postfix(): string { return this._sPostfix; }
 
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.LABEL) {
 			super(ui, options, eType, 
@@ -35,6 +41,7 @@ module akra.ui {
 
 			this.text = $comp.attr("text");
 			this.editable($comp.attr("editable") || false);
+			this.postfix = $comp.attr("postfix");
 		}
 
 		inline isEditable(): bool {

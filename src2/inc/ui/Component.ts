@@ -16,25 +16,51 @@
 /// @css ui/css/main.css
 
 module akra.ui {
-	export function template(pNode: IUIComponent, sUrl: string, pData: any = null): void {
-		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
-		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sUrl});
+	function _template(pNode: IUIComponent, sTemplate: string, sName: string, pData: any = null, bShow: bool = false, iDepth: int = 0): void {
+		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sName});
 		var sTplData: string = fnTemplate(pData);
 
-		pNode.el.html(sTplData);
+		pNode.el.append(sTplData);
 
-		pNode.el.find("component").each(function(i: int, pComponentElement: HTMLElement) {
+		pNode.el.find("component").each(function(i: int) {
 			var $comp: JQuery = $(this);
 			var sType: string = $comp.attr("type");
 			var sName: string = $comp.attr("name");
 
-			var pComponent: IUIComponent = pNode.createComponent(sType, {show: false, name: sName});
-				
-			$comp.before(pComponent.$element);
-			$comp.remove();
+			if ($comp.parent("component").length > 0) {
+				return;
+			}
+
+			if ($comp.parent().get()[0] === pNode.el.get()[0]) {
+				bShow = true;
+			}
+
+			// LOG(iDepth, $comp.attr("type"), $comp.attr("name"), $comp.parent().length, $comp.parent().html());
+
+			var pComponent: IUIComponent = pNode.createComponent(sType, {show: bShow, name: sName});
 
 			pComponent._createdFrom($comp);
+
+			var $subComp: JQuery = $comp.find("component:first");
+			
+			if ($subComp.length > 0) {
+				_template(pComponent, $comp.html(), sName, pData, false, iDepth + 1);
+			}
+
+			if (!bShow) {
+				var $span = $("<span/>");
+				$comp.before($span);
+
+				pComponent.render($span);
+				pComponent.el.unwrap();
+			}
+
+			$comp.remove();
 		});
+	}
+	export function template(pNode: IUIComponent, sUrl: string, pData?: any): void {
+		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
+		_template(pNode, sTemplate, sUrl, pData)
 	}
 
 	
@@ -185,7 +211,7 @@ module akra.ui {
 
 		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent {
 			var pComp: IUIComponent = this.ui.createComponent(sType, pOptions);
-			pComp.attachToParent(this);
+			pComp.attachToParent(this, pOptions.show !== false);
 			return pComp;
 		}
 

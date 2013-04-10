@@ -27,7 +27,7 @@ body {
 .component{
 	font-family: 'Trebuchet MS', Helvetica, sans-serif;
 	//font-size: 12px;
-	position: relative;
+	//position: relative;
 	.component-title{
 		font-size: 12px;
 		padding: 2px 8px;
@@ -43,6 +43,11 @@ body {
 	min-height: 10px;
 	width: auto;
 
+	&.editable {
+		.label-text {
+			cursor: text;
+		}
+	}
 
 	.label-input {
 		display: inline-block;
@@ -50,6 +55,7 @@ body {
 
 	.label-text {
 		width: auto;
+		cursor: default;
 	}
 }
 
@@ -215,5 +221,17 @@ body {
 .component-tree {
 	li {
 		font-size: 12px;
+	}
+}
+
+.component-panel {
+	div.panel-title:first-of-type {
+
+		div.controls {
+			display: inline-block;
+			position: relative;
+			left: 5px;
+			top: 5px;
+		}
 	}
 }

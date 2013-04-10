@@ -6,6 +6,14 @@
 #include "Component.ts"
 
 module akra.ui {
+	function prettifyNumber(x: float): string {
+		if (x === math.floor(x)) {
+			return "" + x + ".";
+		}
+
+		return <string><any>x.toFixed(2);
+	}
+
 	export class Vector extends Component implements IUIVector {
 		x: IUILabel;
 		y: IUILabel;
@@ -15,6 +23,7 @@ module akra.ui {
 		totalComponents: uint = 4;
 
 		protected _iFixed: uint = 2;
+		protected _bEditable: bool = false;
 
 		inline get value(): any {
 			switch(this.totalComponents) {
@@ -46,6 +55,12 @@ module akra.ui {
 
 		_createdFrom($comp: JQuery): void {
 			var bValue: bool = $comp.attr("editable") || false;
+			var sPostfix: string = $comp.attr("postfix") || null;
+
+			this.x.postfix = sPostfix;
+			this.y.postfix = sPostfix;
+			this.z.postfix = sPostfix;
+			this.w.postfix = sPostfix;
 
 			this.editable(bValue);
 		}
@@ -62,6 +77,12 @@ module akra.ui {
 			this.y.editable(bValue);
 			this.z.editable(bValue);
 			this.w.editable(bValue);
+
+			this._bEditable = bValue;
+		}
+
+		inline isEditable(): bool {
+			return this._bEditable;
 		}
 
 		changed(): void {
@@ -93,27 +114,27 @@ module akra.ui {
 
 		setVec2(v: IVec2): void {
 			var n: uint = this._iFixed;
-			this.x.text = <string>v.x.toFixed(n);
-			this.y.text = <string>v.y.toFixed(n);
+			this.x.text = prettifyNumber(v.x);
+			this.y.text = prettifyNumber(v.y);
 
 			this.useComponents(2);
 		}
 
 		setVec3(v: IVec3): void {
 			var n: uint = this._iFixed;
-			this.x.text = <string>v.x.toFixed(n);
-			this.y.text = <string>v.y.toFixed(n);
-			this.z.text = <string>v.z.toFixed(n);
+			this.x.text = prettifyNumber(v.x);
+			this.y.text = prettifyNumber(v.y);
+			this.z.text = prettifyNumber(v.z);
 
 			this.useComponents(3);
 		}
 
 		setVec4(v: IVec4): void {
 			var n: uint = this._iFixed;
-			this.x.text = <string>v.x.toFixed(n);
-			this.y.text = <string>v.y.toFixed(n);
-			this.z.text = <string>v.z.toFixed(n);
-			this.w.text = <string>v.w.toFixed(n);
+			this.x.text = prettifyNumber(v.x);
+			this.y.text = prettifyNumber(v.y);
+			this.z.text = prettifyNumber(v.z);
+			this.w.text = prettifyNumber(v.w);
 
 			this.useComponents(4);
 		}

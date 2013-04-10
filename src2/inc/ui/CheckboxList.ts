@@ -9,9 +9,13 @@ module akra.ui {
 		private _nSize: uint = 0;
 		private _pItems: IUICheckbox[] = [];
 		private _bMultiSelect: bool = false;
+		private _bLikeRadio: bool = false;
 
 		inline get length(): uint { return this._nSize; }
-
+		inline get radio(): bool { return this._bLikeRadio; }
+		inline set radio(b: bool) { this._bLikeRadio = b; }
+		inline get items(): IUICheckbox[] { return this._pItems; }
+		
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.CHECKBOX_LIST) {
 			super(parent, options, eType);
 
@@ -28,6 +32,11 @@ module akra.ui {
 
 				pChild = <IUINode>pChild.sibling;
 			}
+		}
+
+		_createdFrom($comp: JQuery): void {
+			super._createdFrom($comp);
+			this.radio = isDef($comp.attr("radio")) && $comp.attr("radio").toLowerCase() !== "false";
 		}
 
 		rendered(): void {
@@ -88,16 +97,26 @@ module akra.ui {
 				return;
 			}
 			else {
+
+				if (!bCheked && this.radio) {
+					pCheckbox.checked = true;
+					return;
+				}
+
 				var pItems: IUICheckbox[] = this._pItems;
 				for (var i: int = 0; i < pItems.length; ++ i) {
 					if (pItems[i] === pCheckbox) {
 						continue;
 					}
 
-					pItems[i].checked = false;
+					pItems[i]._setValue(false);
 				}
+
+				this.changed(pCheckbox);
 			}
 		}
+
+		BROADCAST(changed, CALL(pCheckbox));
 	}
 
 	register("CheckboxList", CheckboxList);

@@ -11,6 +11,8 @@ module akra.ui {
 
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.BUTTON) {
 			super(ui, options, eType, $("<button />"));
+
+			this.handleEvent("click");
 		}
 
 		protected applyOptions(pOptions: IUIButtonOptions): void {

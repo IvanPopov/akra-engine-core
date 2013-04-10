@@ -75,37 +75,33 @@ module akra.ui {
 		}
 
 
-		protected sync(): void {
+		protected sync(bRecursive: bool = true): void {
+			this.el.find("label:first").html(this.sourceName());
 
-			var pChildren: IEntity[] = this.source.children();
+			if (bRecursive) {
 
-			// var pChild: IEntity = this.source.child;
-
-			// while (!isNull(pChild)) {
-			// 	if (!this.inChildren(pChild)) {
-			// 		this.addChild(this.tree._createNode(pChild));
-			// 	}
-
-			// 	pChild = pChild.sibling;
-			// }	
-			
-			var pChildMap: { [guid: int]: IEntity; } = <any>{};
-			
-			for (var i: int = 0; i < pChildren.length; ++ i) {
-				var pChild: IEntity = pChildren[i];
-				pChildMap[pChild.getGuid()] = pChild;
+				var pChildren: IEntity[] = this.source.children();
 				
-				if (!this.inChildren(pChild)) {
-					this.addChild(this.tree._createNode(pChild));
+				var pChildMap: { [guid: int]: IEntity; } = <any>{};
+				
+				for (var i: int = 0; i < pChildren.length; ++ i) {
+					var pChild: IEntity = pChildren[i];
+					pChildMap[pChild.getGuid()] = pChild;
+					
+					if (!this.inChildren(pChild)) {
+						this.addChild(this.tree._createNode(pChild));
+					}
 				}
-			}
 
-			for (var iGuid in this._pNodeMap) {
-				if (!isDef(pChildMap[iGuid])) {
-					this._pNodeMap[iGuid].destroy();
+				//remove non-existance nodes
+
+				for (var iGuid in this._pNodeMap) {
+					if (!isDef(pChildMap[iGuid])) {
+						this._pNodeMap[iGuid].destroy();
+					}
 				}
+		
 			}
-	
 		}
 
 		synced(): void {
@@ -221,9 +217,13 @@ module akra.ui {
 			this._pNodeMap[pNode.source.getGuid()] = null;
 		}
 
-		sync(): void {
-			// this.el.find(".updating:first").show();
-			this.rootNode.sync();
+		sync(pEntity?: IEntity): void {
+			if (arguments.length && !isNull(pEntity)) {
+				this._pNodeMap[pEntity.getGuid()].sync(false);
+			}
+			else {
+				this.rootNode.sync();
+			}
 		}
 
 

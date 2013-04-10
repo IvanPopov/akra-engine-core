@@ -78,6 +78,7 @@ module akra {
 		addRotation(q4fRotation: IQuat4): void;
 
 		scale(fScale: float): void;
+		scale(v3fScale: IVec3): void;
 		scale(fX: float, fY: float, fZ: float): void;
 	}
 }

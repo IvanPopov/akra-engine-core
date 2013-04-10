@@ -145,12 +145,11 @@ module akra.scene {
 		    if (isOrientModified || isParentMoved || isLocalModified) {
 		        var m4fLocal: IMat4 = this._m4fLocalMatrix;
 		        var m4fWorld: IMat4 = this._m4fWorldMatrix;
-		        var m4fParent: IMat4 = (<Node>this._pParent).worldMatrix;
+		        
 		        var m4fOrient: IMat4 = Node._m4fTemp;
 		        var v3fTemp: IVec3 = Node._v3fTemp;
 		        
 		        var pWorldData: Float32Array = m4fWorld.data;
-		        var pParentData: Float32Array = m4fParent.data;
 		        var pOrientData: Float32Array = m4fOrient.data;
 
 		        this._qRotation.toMat4(m4fOrient);
@@ -162,6 +161,9 @@ module akra.scene {
 		        //console.error(m4fOrient.toString());
 
 		        if (this._pParent) {
+		        	var m4fParent: IMat4 = (<Node>this._pParent).worldMatrix;
+					var pParentData: Float32Array = m4fParent.data;
+
 		            if (this._eInheritance === ENodeInheritance.ALL) {
 		                m4fParent.multiply(m4fOrient, m4fWorld);
 		            }
@@ -349,9 +351,10 @@ module akra.scene {
 
 
 		scale(fScale: float): void;
+		scale(v3fScale: IVec3): void;
 		scale(fX: float, fY: float, fZ: float): void;
 		scale(fX: any, fY?: any, fZ?: any): void {
-			var pScale: IVec3 = arguments.length === 1? arguments[0]: vec3(fX);
+			var pScale: IVec3 = arguments.length === 1? (isNumber(arguments[0])? vec3(fX): arguments[0]): vec3(fX, fY, fZ);
 		    var v3fScale: IVec3 = this._v3fScale;
 
 		    v3fScale.scale(pScale);

@@ -130,7 +130,7 @@ module akra {
 
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
-				pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+				// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
 				pController.update(pEngine.time);
 			});
 

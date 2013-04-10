@@ -29,15 +29,19 @@ module akra.ui {
 
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
+			//setup Node properties
 
-			var pNodeProperties: IUIComponent = this._pSceneNodeProperties = <scene.NodeProperties>this.ui.createComponent("SceneNodeProperties", {show: false});
-			pNodeProperties.attachToParent(this, false);
-			pNodeProperties.render(this.el.find("#tree-node"));
+			var pNodeProperties: IUIComponent = this._pSceneNodeProperties = <scene.NodeProperties>this.findEntity("NodeProperties");
 
-			var pTree: scene.Tree = this._pSceneTree = <scene.Tree>this.ui.createComponent("SceneTree", {show: false});
-			pTree.attachToParent(this, false);
-			pTree.render(this.el.find("#tree"));
+			//setup Scene tree
+
+			var pTree: scene.Tree = this._pSceneTree = <scene.Tree>this.findEntity("SceneTree");
 			pTree.fromScene(this.getScene());
+
+			//connect node properties to scene tree
+			this.connect(pNodeProperties, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
+
+			//common setup
 
 			akra.ide = this;
 
@@ -51,6 +55,10 @@ module akra.ui {
 		inline getCanvas(): ICanvas3d { return this.getEngine().getRenderer().getDefaultCanvas(); }
 		inline getScene(): IScene3d { return this.getEngine().getScene(); }
 		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
+
+		_updateSceneNodeName(pProperties: scene.NodeProperties, pNode: ISceneNode): void {
+			this._pSceneTree.sync(pNode);
+		}
 
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
 			var $preview: JQuery = this.el.find("#preview-area"); 

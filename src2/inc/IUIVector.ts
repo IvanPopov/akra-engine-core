@@ -25,6 +25,9 @@ module akra {
 		setVec2(v: IVec2): void;
 		setVec3(v: IVec3): void;
 		setVec4(v: IVec4): void;
+
+		isEditable(): bool;
+		editable(bValue?: bool): void;
 	}
 }
 

@@ -22,7 +22,7 @@ module akra {
 
 		destroy(): void;
 
-		sync(): void;
+		sync(bRecursive?: bool): void;
 		select(bValue?: bool): bool;
 
 		waitForSync(): void;

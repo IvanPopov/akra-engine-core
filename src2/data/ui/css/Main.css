@@ -5,7 +5,6 @@ body {
 /* Component */
 .component {
   font-family: 'Trebuchet MS', Helvetica, sans-serif;
-  position: relative;
 }
 .component .component-title {
   font-size: 12px;
@@ -19,11 +18,15 @@ body {
   min-height: 10px;
   width: auto;
 }
+.component-label.editable .label-text {
+  cursor: text;
+}
 .component-label .label-input {
   display: inline-block;
 }
 .component-label .label-text {
   width: auto;
+  cursor: default;
 }
 .component-vector {
   display: inline-block;
@@ -296,6 +299,12 @@ body {
 .component-tree li {
   font-size: 12px;
 }
+.component-panel div.panel-title:first-of-type div.controls {
+  display: inline-block;
+  position: relative;
+  left: 5px;
+  top: 5px;
+}
 /*Graph Controls */
 .component-graph-controls .controls {
   padding: 10px 0px;
@@ -445,7 +454,7 @@ table td {
   width: 100%;
   min-height: 100%;
 }
-.title {
+#work-area .title, #preview-area .title {
   border-top: 1px solid #a3a3a3;
   border-bottom: 1px solid #a3a3a3;
   padding: 5px 0px 5px 30px;
@@ -498,20 +507,57 @@ table td {
   color: black;
 }
 #tree-node {
-  padding: 0;
-  font-size: 12px;
-  border-right: 1px solid #a3a3a3;
   min-width: 165px;
 }
-#tree {
+#tree-node, #tree {
   padding: 0;
   font-size: 12px;
   border-right: 1px solid #a3a3a3;
+}
+#tree-node .component-panel div.panel-title:first-of-type, #tree .component-panel div.panel-title:first-of-type {
+  border-top: 1px solid #a3a3a3;
+  border-bottom: 1px solid #a3a3a3;
+  padding: 5px 0px 5px 30px;
+  background: #ffffff;
+  background: -moz-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff), color-stop(100%, #e5e5e5));
+  background: -webkit-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: -o-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: -ms-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
+  background: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5', GradientType=0);
+}
+#tree-node .component-panel div.panel-title:first-of-type div.controls, #tree .component-panel div.panel-title:first-of-type div.controls {
+  left: -20px;
+  margin: -3px;
+}
+#tree-node .component-panel div.panel-title:first-of-type div.controls input, #tree .component-panel div.panel-title:first-of-type div.controls input {
+  background: url(../img/panel-opened.png) 0 0 no-repeat;
+  width: 16px;
+  height: 16px;
+  background-position: 0 0, 5px 0;
+  cursor: pointer;
+  padding-right: 10px;
+  position: relative;
+  -webkit-appearance: none;
+  -webkit-transition: .15s;
+  display: none;
+}
+#tree-node .component-panel div.panel-title:first-of-type div.controls input:checked, #tree .component-panel div.panel-title:first-of-type div.controls input:checked {
+  background: url(../img/panel-closed.png) 0 0 no-repeat;
+}
+#tree-node .component-panel.collapsible div.panel-title:first-of-type div.controls input, #tree .component-panel.collapsible div.panel-title:first-of-type div.controls input {
+  display: block;
+}
+#tree-node .component-panel .layout.vertical table, #tree .component-panel .layout.vertical table {
+  margin: 0;
+}
+#tree {
   min-height: 510px;
   border-bottom: 5px solid #dfdfdf;
 }
 #tree ol.tree {
-  padding: 0 15px 0 30px;
+  padding: 15px 15px 15px 30px;
 }
 #tree ol.tree .unnamed {
   color: #a3a3a3;
@@ -659,13 +705,22 @@ table td {
 }
 .component-scenenodeproperties {
   background-color: white;
+  font-size: 12px;
 }
 .component-scenenodeproperties div.node-type {
+  border-top: 1px solid #a3a3a3;
   border-bottom: 1px solid #a3a3a3;
   vertical-align: middle;
   padding: 0px 5px 0px 5px;
   color: black;
   background-color: #d3d3d3;
+}
+.component-scenenodeproperties div.readonly {
+  background-color: #d3d3d3;
+  margin-top: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-top: 1px solid #bdbdbd;
 }
 .component-scenenodeproperties .row > span:first-child {
   color: #c80000;
@@ -674,19 +729,26 @@ table td {
   padding-left: 15px;
   padding-right: 15px;
   white-space: nowrap;
-  font-family: consolas;
+  font-family: Consolas, Lucida Console, monospace;
+  font-size: 12px;
 }
 .component-scenenodeproperties .row .component-vector {
-  color: gray;
+  font-family: Consolas, Lucida Console, monospace;
 }
 .component-scenenodeproperties .row .component-vector.editable {
   color: black;
+}
+.component-scenenodeproperties .row .component-vector div.component-label {
+  margin-right: -7px;
+}
+.component-scenenodeproperties .row .component-vector span:last-of-type div.component-label {
+  margin-right: 0px;
 }
 .component-scenenodeproperties .row .component-label {
   display: inline-block;
   font-size: 12px;
   width: auto;
-  color: gray;
+  font-family: Consolas, Lucida Console, monospace;
 }
 .component-scenenodeproperties .row .component-label.editable {
   color: black;
@@ -694,4 +756,59 @@ table td {
 .component-scenenodeproperties .row .component-label .label-input {
   width: auto;
   font-size: 10px;
+}
+.component-scenenodeproperties .row .component-checkboxlist {
+  display: inline-block;
+}
+.component-scenenodeproperties .row .component-checkboxlist .layout.horizontal table {
+  margin: 0 auto;
+}
+.component-scenenodeproperties .row .component-checkboxlist .component-checkbox {
+  padding: 0 4px;
+  font-size: 11px;
+}
+.component-scenenodeproperties .row .component-checkboxlist .component-checkbox.first {
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+.component-scenenodeproperties .row .component-checkboxlist .component-checkbox.last {
+  border-top-right-radius: : 2px;
+  border-bottom-right-radius: 2px;
+}
+.component-scenenodeproperties .row .component-checkboxlist .component-checkbox.active {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
+  background-color: #3373a5;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
+}
+.component-scenenodeproperties div[name=model-entry] {
+  display: none;
+}
+.component-scenenodeproperties div[name=model-entry] .row {
+  padding: 0;
+}
+.component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type {
+  border-top: 0px !important;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  background: none !important;
+  background-color: #d3d3d3 !important;
+  height: 15px;
+  padding: 0 0 2px 40px !important;
+}
+.component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type div.controls {
+  left: -30px !important;
+  margin-top: -6px !important;
+}
+.component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type span {
+  margin-left: -30px;
 }
