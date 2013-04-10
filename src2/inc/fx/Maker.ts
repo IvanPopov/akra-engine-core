@@ -142,6 +142,7 @@ module akra.fx {
 		        case EAFXShaderVariableType.k_SamplerCUBE:
 		        	this._pShaderProgram.setSamplerArray(sName, pValue);
 		        	break;
+
 		        default:
 		        	CRITICAL("Wrong uniform array type (" + eType + ") with name " + sName);
 			}
@@ -155,9 +156,9 @@ module akra.fx {
 		        case EAFXShaderVariableType.k_Int:
 		        	this._pShaderProgram.setInt(sName, pValue || 0);
 		        	break;
-		        // case EAFXShaderVariableType.k_Bool:
-		        // 	this._pShaderProgram.setBool(sName, pValue);
-		        // 	break;
+		        case EAFXShaderVariableType.k_Bool:
+		        	this._pShaderProgram.setInt(sName, pValue ? 1 : 0);
+		        	break;
 
 		        case EAFXShaderVariableType.k_Float2:
 		        	this._pShaderProgram.setVec2(sName, pValue || vec2(0));
@@ -571,7 +572,7 @@ module akra.fx {
 				}
 
 				var isIndex: bool = this._pRealAttrIsIndexData[i];
-				var pFlow: IDataFlow = isIndex ? pBufferMap.findFlow(sSemantic) : pBufferMap.getFlow(sSemantic, true);
+				var pFlow: IDataFlow = isIndex ? (pBufferMap.findFlow(sSemantic) || pBufferMap.getFlow(sSemantic, true)) : pBufferMap.getFlow(sSemantic, true);
 
 				var sBufferFlowSemantic: string = this._pBufferSamplersFromFlows[iBufferSlot];
 

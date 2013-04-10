@@ -27,8 +27,21 @@ module akra {
 		function createCameras(): void {
 			pCamera = pScene.createCamera();
 		
-			pCamera.addPosition(vec3(0,0, 10));
+			pCamera.addPosition(vec3(0, 200, 10));
 			pCamera.attachToParent(pScene.getRootNode());
+
+			var pKeymap: IKeyMap = controls.createKeymap((<any>pCanvas)._pCanvas);
+
+			pScene.bind(SIGNAL(beforeUpdate), () => {
+				 if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
+				 	var v2fMouseShift: IOffset = pKeymap.getMouseShift();
+
+			        var fdX = v2fMouseShift.x / pViewport.actualWidth * 10.0;
+			        var fdY = v2fMouseShift.y / pViewport.actualHeight * 10.0;
+
+			        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+			    }
+			});
 		}
 
 		function createViewports(): void {
@@ -51,7 +64,7 @@ module akra {
 			pOmniLight.params.specular.set(1, 1, 1, 1);
 			pOmniLight.params.attenuation.set(1,0,0);
 
-			pOmniLight.addPosition(0, 0, 5);
+			pOmniLight.addPosition(0, 100, 5);
 		}
 
 		function createSkyBox(): void {
@@ -82,6 +95,8 @@ module akra {
 					pTerrain.scale(0.1);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
+
+					// pEngine.renderFrame();
 				});
 			});
 			
@@ -137,7 +152,7 @@ module akra {
 			createViewports();
 			createLighting();
 			createTerrain();
-			// createSkyBox();
+			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
 			// loadModels("../../../data/models/hero/hero.DAE");
@@ -146,18 +161,9 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	
-		// pEngine.exec();
+		pEngine.exec();
 		// pEngine.renderFrame();
 	});
 
-	// test("init tests", () => {
-	// 	shouldBeNotNull("terrain");
-
-	// 	var pEngine: IEngine   = createEngine();
-	// 	var pTerrain: ITerrain = new terrain.TerrainROAM(pEngine);
-	// 	pTerrain.create();
-
-	// 	ok(pTerrain);
-	// });
 }
 

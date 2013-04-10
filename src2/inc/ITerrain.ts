@@ -65,10 +65,6 @@ module akra {
 		 */
 		calcWorldNormal(v3fNormal: IVec3, fWorldX: float, fWorldY: float): IVec3;
 		/**
-		 * Применение параметров рендеринга для рендеринга текстуры.
-		 */
-		applyForRender(): void;
-		/**
 		 * Destructor
 		 */
 		destroy(): void;

@@ -181,8 +181,9 @@ module akra.render {
 							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
 								CRITICAL("cannot clone active render method");
 							}
-							
+
 							pTechnique = pRenderable.getTechnique(sMethod);
+							pTechnique._syncTable(pTechCurr);
 
 							for (var k: int = 0; k < pTechnique.totalPasses; ++ k) {
 								var pPass: IRenderPass = pTechnique.getPass(k);
@@ -215,6 +216,7 @@ module akra.render {
 							}
 
 							pTechnique = pRenderable.getTechnique(sMethod);
+							pTechnique._syncTable(pTechCurr);
 
 							if(j === 0){
 								pTechnique._blockPass(1);

@@ -280,17 +280,16 @@ module akra.webgl {
                 return GL_RGBA;  
 
             case EPixelFormats.R8G8B8:
-                return 0;
             case EPixelFormats.B8G8R8:         
                 return GL_RGB;       
+
             case EPixelFormats.A8R8G8B8:
-                return 0;
             case EPixelFormats.A8B8G8R8:
                 return GL_RGBA;       
+
             case EPixelFormats.B8G8R8A8:       
             case EPixelFormats.R8G8B8A8:       
-            case EPixelFormats.X8R8G8B8:   
-                return 0;     
+            case EPixelFormats.X8R8G8B8:     
             case EPixelFormats.X8B8G8R8:
                return GL_RGBA; 
 

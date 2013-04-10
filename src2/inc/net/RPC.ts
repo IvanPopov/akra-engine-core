@@ -200,6 +200,7 @@ module akra.net {
             if (eType === ERPCPacketTypes.RESPONSE) {
                 var pCallback: IRPCCallback = <IRPCCallback>pStack.last;
                 // WARNING("---------------->",nSerial,"<-----------------");
+                // LOG(pStack.length);
                 do {
                     // LOG("#n: ", nSerial, " result: ", pResult);
                     if (pCallback.n === nSerial) {
@@ -340,7 +341,7 @@ module akra.net {
 
         _removeExpiredCallbacks(): void {
             // LOG("remove expired callbacks routine...");
-            
+
             var pCallbacks: IObjectList = this._pCallbacks;
             var pCallback: IRPCCallback = <IRPCCallback>pCallbacks.first;
             var iNow: int = now();
@@ -410,7 +411,7 @@ module akra.net {
             DEFFERED_CALLS_LIMIT        : 1024,
             RECONNECT_TIMEOUT           : 2500,
             SYSTEM_ROUTINE_INTERVAL     : 10000,
-            CALLBACK_LIFETIME           : 5000
+            CALLBACK_LIFETIME           : 999999
         }
 
         static ERRORS = {

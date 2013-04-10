@@ -287,7 +287,7 @@ module akra.render {
 					pRenderable = pSceneObject.getRenderable(j);
 
 					if (!isNull(pRenderable)) {
-						// LOG("render", pRenderable, pSceneObject);
+						// LOG("render object #" + pRenderable.getGuid());
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}

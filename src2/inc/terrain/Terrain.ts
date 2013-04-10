@@ -10,6 +10,7 @@
 #include "terrain/TerrainSection.ts"
 #include "IEffect.ts"
 #include "IViewport.ts"
+#include "IRenderTechnique.ts"
 
 module akra.terrain {
 
@@ -272,6 +273,8 @@ module akra.terrain {
 		        pSection._createRenderable();
 
 		        pSection.getRenderable().renderMethod = pRenderMethod;
+
+		        this.connect(pSection.getRenderable().getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		    }
 		}
 
@@ -296,7 +299,6 @@ module akra.terrain {
 			        			iMaxX + "x" + iMaxY + ". Есть: " + pImageHightMap.width + "x" + pImageHightMap.height);
 			        	return;
 			        }
-
 			        for (var iY: uint = 0; iY < iMaxY; iY++) {
 			        	for(var iX: uint = 0; iX < iMaxX; iX++){
 			        		fHeight = pImageHightMap.getColorAt(this._pTempNormalColor, iX, iY).r;
@@ -315,7 +317,7 @@ module akra.terrain {
 			        this._pNormalImage = pImageNormalMap;
 			    }
 			    else {
-			        WARNING("Карта высот не загружена")
+			        WARNING("Карта нормалей не загружена")
 			    }
 		}
 
@@ -733,16 +735,7 @@ module akra.terrain {
 		 * Подготовка терраина к рендерингу.
 		 */
 		prepareForRender(pViewport: IViewport): void {
-			//this._pMegaTexures.prepareForRender(pViewport);
-		}
-		/**
-		 * Применение параметров рендеринга для рендеринга текстуры.
-		 */
-		applyForRender(): void {
-			CRITICAL_ERROR("нехуй");
-			/*var pMegaTexture = this._pMegaTexures;
-			pMegaTexture.applyForRender(pSnapshot);
-			pSnapshot.applyTextureBySemantic("TEXTURE6", this._pNormalMap);*/
+			this._pMegaTexures.prepareForRender(pViewport);
 		}
 		/**
 		 * Сброс параметров.
@@ -810,9 +803,14 @@ module akra.terrain {
 			this.accessLocalBounds().set(fX0, fX1, fY0, fY1, fZ0, fZ1);
 		}
 
-		// _prepareForRender(pViewport: IViewport): void {
+		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-		// }
+			pPass.setTexture("TEXTURE6", this._pNormalMap);
+			pPass.setSamplerTexture("S_NORMAL", "TEXTURE6");
+
+			this._pMegaTexures.applyForRender(pPass);
+		}
 	}
 }
 

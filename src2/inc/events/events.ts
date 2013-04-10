@@ -70,6 +70,9 @@
 	}																													\
 	inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool {									\
 		return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType);							\
+	}																													\
+	inline _syncTable(pFrom: IEventProvider): void {																	\
+		this.getEventTable()._sync(this, pFrom);										\
 	}
 //#define END_EVENT_TABLE()
 
@@ -177,6 +180,11 @@ module akra.events {
 
 			this.unicast[iGuid] = this.unicast[iGuid] || {};
 			return this.unicast[iGuid];
+		}
+
+		_sync(pTarget: IEventProvider, pFrom: IEventProvider): void {
+			this.broadcast[pTarget.getGuid()] = this.broadcast[pFrom.getGuid()];
+			this.unicast[pTarget.getGuid()] = this.unicast[pFrom.getGuid()];
 		}
 
 		private findBroadcastSignalMap(iGuid: int, sSignal: string): IEventSlot[] {

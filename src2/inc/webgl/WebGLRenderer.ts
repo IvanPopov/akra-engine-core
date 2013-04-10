@@ -99,7 +99,7 @@ module akra.webgl {
 			var pInput: IShaderInput = pEntry.input;
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
 
-			console.log(pEntry);
+			// console.log(pEntry);
 
 			if(!isNull(pEntry.renderTarget)){
 				this._setRenderTarget(pEntry.renderTarget);

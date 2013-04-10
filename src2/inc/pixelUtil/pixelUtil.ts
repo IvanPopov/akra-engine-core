@@ -1460,11 +1460,14 @@ module akra {
 			}
             else
             {
-                src=pSrc;
-                dst=pDest;
+                src = arguments[0];
+                dst = arguments[1];
             }
-
-        	ASSERT(src.width == dst.width && src.height == dst.height && src.depth == dst.depth,"Size dest and src pictures is different");
+            
+            if(src.width !== dst.width || src.height !== dst.height || src.depth !== dst.depth){
+                CRITICAL("Size dest and src pictures is different");
+                return;
+            }
 
 			// Check for compressed formats, we don't support decompression, compression or recoding
 			if(isCompressed(src.format) || isCompressed(dst.format)) {

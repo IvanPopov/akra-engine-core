@@ -383,7 +383,7 @@ module akra.fx {
 								var sOffsetName: string = pSubDecl.getRealName();
 
 								this._pOffsetVarsBySemanticMap[sSemantic].push(pSubDecl)
-								this._pOffsetDefaultMap[sOffsetName] = pSubDecl.getType().getPadding();
+								this._pOffsetDefaultMap[sOffsetName] = (<IAFXVariableDeclInstruction>pSubDecl.getParent()).getType().getPadding();
 							}
 						}
 					}

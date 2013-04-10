@@ -140,9 +140,16 @@ module akra.fx {
 			PassInputBlend.copySamplerState(pValue, this.samplers[sName]);
 		}
 
-		inline setSamplerTexture(sName: string, pTexture: ITexture): void {
+		setSamplerTexture(sName: string, sTexture: string): void;
+		setSamplerTexture(sName: string, pTexture: ITexture): void;
+		setSamplerTexture(sName: string, pTexture: any): void {
 			if(this.hasUniform(sName)){
-				this.samplers[sName].texture = pTexture;
+				if(isString(pTexture)){
+					this.samplers[sName].textureName = pTexture;
+				}
+				else {
+					this.samplers[sName].texture = pTexture;
+				}
 			}
 		}
 

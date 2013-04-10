@@ -3,10 +3,11 @@
 
 module akra {
 	IFACE(IViewport);
+	IFACE(IRenderPass);
 	
 	export interface IMegaTexture {
 		prepareForRender(pViewport: IViewport): void;
-		applyForRender(pSnapshot): void;
+		applyForRender(pRenderPass: IRenderPass): void;
 		setBufferMapNULL(pBuffer): void;
 		setData(pBuffer, iX: uint, iY: uint, iWidth: uint, iHeight: uint, pBufferIn, iInX: uint, iInY: uint, iInWidth: uint, iInHeight: uint, iBlockWidth: uint, iBlockHeight: uint, iComponents: uint): void;
 		setDataT(pBuffer, iX: uint, iY: uint, iWidth: uint, iHeight: uint, pBufferIn, iInX: uint, iInY: uint, iInWidth: uint, iInHeight: uint, iBlockWidth: uint, iBlockHeight: uint, iComponents: uint): void;

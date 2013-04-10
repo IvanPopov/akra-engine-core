@@ -24,7 +24,7 @@ module akra.render {
 			for (var i: int = 0; i < this._pEntryList.length; i++) {
 				var pEntry: IRenderEntry = this._pEntryList.value(i);
 				this._pRenderer._renderEntry(pEntry);
-				// this.releaseEntry(pEntry);
+				this.releaseEntry(pEntry);
 			}
 
 			this._pEntryList.clear(false);

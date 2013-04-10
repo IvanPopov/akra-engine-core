@@ -90,6 +90,7 @@ module akra.terrain {
 				this._iTotalIndicesMax=0;
 
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
+				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 
 				this.reset();
 			}

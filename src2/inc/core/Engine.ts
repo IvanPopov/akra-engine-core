@@ -353,7 +353,7 @@ module akra.core {
 						    "effects/mesh_geometry.afx",
 						    "effects/prepare_shadows.afx",						    
 						    "effects/terrain.afx",
-						    "effects/terrain_geometry.afx",
+						    // "effects/terrain_geometry.afx",
 						    "effects/prepareDeferredShading.afx"
 						],
 						deps: {
