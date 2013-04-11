@@ -32,6 +32,8 @@ module akra {
 		signal play(pAnimation: int, fRealTime: float): bool;
 		signal play(pAnimation: IAnimationBase, fRealTime: float): bool;
 
+		signal animationAdded(pAnimation: IAnimationBase): void;
+
 		update(fTime: float): void;
 
 		toString(bFullInfo?: bool);

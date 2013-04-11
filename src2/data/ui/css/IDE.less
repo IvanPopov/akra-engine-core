@@ -15,7 +15,9 @@ table {
 	}
 }
 
+
 @bg: lightgray;
+@bg-light: rgb(232, 232, 232);
 @font-size: 12px;
 @tree-font-size: @font-size;
 @border-dark-color: rgb(163, 163, 163);
@@ -48,6 +50,11 @@ table {
 
 }
 
+body {
+	background: @bg;
+}
+
+
 #IDE {
 	margin: 0;
 	width: 100%;
@@ -79,36 +86,86 @@ table {
 	min-height: 760px;
 	border-bottom: @border-light;
 
-	.title {
-		float: left;
-	}
-
-	.chose-resolution {
-		height: ;
+	div[name=resolution] {
+		margin: -1px 0 -1px 0;
 		text-align: right;
-		padding: 5px 30px 5px 30px;
-		border-top: @border-dark;
-		border-bottom: @border-dark;
 
-		a {
-			color: gray;
-			text-shadow: 0 0 2px white;
+		background-color: #CCC;
+
+		.component-button, .component-checkboxlist {
+			display: inline-block;
 		}
 
-		a:hover {
-			color: black;
-		}
+		.component-checkboxlist {
+			.layout {
+				&.horizontal table {
+					margin: 0 auto;
+				}
+			}
 
-		.grayGrad;
+			.component-checkbox {
+				padding: 1 4px;
+				font-size: 11px;
+
+				&.first {
+					border-radius: 0 !important;
+				}
+
+				&.last {
+					border-radius: 0 !important;
+				}
+
+				&.active {
+					.gradient (#5393c5, #6facd5, #3373A5);
+				}
+			}
+		}
 	}
 
+	.row > span:first-child {
+		color: rgb(200, 0, 0);
+	}
+
+	.row {
+		width: 100%;
+		padding-left: 15px; 
+		padding-right: 15px; 
+		white-space: nowrap;
+		font-family: Consolas, Lucida Console, monospace;
+		font-size: @font-size;
+		background-color: white;
+
+		&.last {
+			padding-bottom: 15px;
+			border-bottom: @border-mid;
+		}
+
+		&.first {
+			padding-top: 15px;
+			// border-top: @border-mid;
+		}
+
+		.component-switch, .component-button {
+			display: inline-block;
+		}
+
+		.component-button {
+			padding: 1px 4px;
+		}
+
+		.component-switch {
+			margin-top: 0px;
+			position: relative;
+			bottom: 7px;
+		}
+	}
 }
 
 #tree-node {
 	min-width: 165px;
 }
 
-#tree-node, #tree {
+#tree-node, #tree, #preview-area {
 	padding: 0;
 	font-size: @tree-font-size;
 	border-right: @border-dark;
@@ -123,10 +180,13 @@ table {
 
 			div.controls {
 				left: -20px;
-				margin: -3px;
+				margin: -5px 0 0 0;
 
 				input {
+					margin: 0px;
+
 					background: url(../img/panel-opened.png) 0 0 no-repeat;
+
 					width: 16px;
 					height: 16px;
 
@@ -354,7 +414,7 @@ table {
 	}
 
 	div.readonly {
-		background-color: @bg;
+		background-color: @bg-light;
 		margin-top: 5px;
 		padding-top: 5px;
 		padding-bottom: 5px;
@@ -367,6 +427,7 @@ table {
 	}
 
 	.row {
+		width: 100%;
 		padding-left: 15px; 
 		padding-right: 15px; 
 		white-space: nowrap;
@@ -462,6 +523,35 @@ table {
 					}
 				}
 			}
+		}
+
+		.component-resourceproperties {
+			.row {
+				padding: 5px 20px 5px 20px;
+			}
+		}
+
+		.component-animationcontrollerproperties {
+			.row {
+				padding: 5px 20px 5px 20px;
+			}
+
+			button[name=edit] {
+				display: block;
+				margin: 0 auto;
+				padding: 0 15px;
+				border-radius: 2px;
+				width: 100%;
+				margin-top: 10px;
+			}
+		}
+	}
+}
+
+.component-tabs {
+	& > .bookmarks {
+		& > .bookmark {
+			background-color: @bg;
 		}
 	}
 }

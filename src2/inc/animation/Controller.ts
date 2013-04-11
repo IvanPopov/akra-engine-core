@@ -39,6 +39,8 @@ module akra.animation {
 			
 			this._pAnimations.push(pAnimation);
 			this._pActiveAnimation = pAnimation;
+
+			this.animationAdded(pAnimation);
 		}
 
 		removeAnimation(pAnimation: string): bool;
@@ -154,6 +156,7 @@ module akra.animation {
 		}
 
 		CREATE_EVENT_TABLE(Controller);
+		BROADCAST(animationAdded, CALL(pAnimation));
 		//BROADCAST(play, CALL(pAnimation));
 	} 
 

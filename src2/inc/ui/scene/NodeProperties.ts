@@ -1,8 +1,12 @@
 #ifndef UISCENENODE_TS
 #define UISCENENODE_TS
 
-#include "../Component.ts"
 #include "IUILabel.ts"
+#include "IModelEntry.ts"
+
+#include "../Component.ts"
+#include "../resource/Properties.ts"
+#include "../animation/ControllerProperties.ts"
 
 module akra.ui.scene {
 	export class NodeProperties extends Component {
@@ -13,6 +17,10 @@ module akra.ui.scene {
 		protected _pRotation: IUIVector;
 		protected _pScale: IUIVector;
 		protected _pInheritance: IUICheckboxList;
+
+		//model entry properties
+		protected _pResource: resource.Properties;
+		protected _pController: animation.ControllerProperties;
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
@@ -25,6 +33,9 @@ module akra.ui.scene {
 			this._pScale = <IUIVector>this.findEntity("scale");
 			this._pRotation = <IUIVector>this.findEntity("rotation");
 			this._pInheritance = <IUICheckboxList>this.findEntity("inheritance");
+
+			this._pResource = <resource.Properties>this.findEntity("resource");
+			this._pController = <animation.ControllerProperties>this.findEntity("controller");
 
 			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_updateName));
 			this.connect(this._pPosition, SIGNAL(changed), SLOT(_updateLocalPosition));
@@ -115,7 +126,17 @@ module akra.ui.scene {
 			this.updateProperties();
 
 			if (akra.scene.objects.isModelEntry(pNode)) {
+				var pEntry: IModelEntry = (<IModelEntry>pNode);
 				this.el.find("div[name=model-entry]").show();
+				
+				this._pResource.setResource(pEntry.resource);
+				
+				if (!isNull(pEntry.controller)) {
+					this._pController.setController(pEntry.controller);
+				}
+				else {
+					this._pController.hide();
+				}
 			}
 			else {
 				this.el.find("div[name=model-entry]").hide();	

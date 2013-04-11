@@ -34,7 +34,8 @@ module akra.ui.graph {
 		constructor (pGraph: IUIGraph, options?, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN, $el?: JQuery) {
 			super(getUI(pGraph), options, EUIComponents.GRAPH_NODE, $el);
 
-			template(this, "ui/templates/GraphNode.tpl");
+			this.template("ui/templates/GraphNode.tpl");
+			this.handleEvent("mouseenter mouseleave dblclick");
 
 			this._eGraphNodeType = eType;
 

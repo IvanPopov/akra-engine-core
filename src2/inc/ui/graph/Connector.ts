@@ -34,8 +34,7 @@ module akra.ui.graph {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.GRAPH_CONNECTOR);
 
-			// this.disableEvent("mouseover");
-			// this.disableEvent("mouseout");
+			this.handleEvent("mousedown mouseup");
 			this.el.disableSelection();
 		}
 

@@ -7,7 +7,11 @@ module akra {
 	export enum ECMD {
 		SET_PREVIEW_RESOLUTION,
 		SET_PREVIEW_FULLSCREEN,
-		SELECT_SCENE_NODE
+		SELECT_SCENE_NODE,
+
+		EDIT_ANIMATION_CONTROLLER,
+
+		CHANGE_AA
 	}
 
 	export interface IUIIDE extends IUIComponent {

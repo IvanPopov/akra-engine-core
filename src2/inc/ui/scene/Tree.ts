@@ -71,8 +71,6 @@ module akra.ui.scene {
 		protected _iUpdateTimer: int = -1;
 		protected _pIDE: IUIIDE = null;
 
-		inline get ide(): IUIIDE { return <IUIIDE>this.root; }
-
 		constructor (parent, options?) {
 			super(parent, options);
 		}
@@ -87,7 +85,7 @@ module akra.ui.scene {
 		}
 
 		select(pNode: IUITreeNode): bool {
-			if (this.ide.cmd(ECMD.SELECT_SCENE_NODE, pNode.source)) {
+			if (ide.cmd(ECMD.SELECT_SCENE_NODE, pNode.source)) {
 				return super.select(pNode);
 			}
 

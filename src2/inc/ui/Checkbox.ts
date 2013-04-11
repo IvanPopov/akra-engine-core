@@ -55,7 +55,12 @@ module akra.ui {
 		}
 
 		_createdFrom($comp: JQuery): void {
+			super._createdFrom($comp);
 			this.text = $comp.attr("text");
+
+			if (isDef($comp.attr("checked"))) {
+				this.checked = true;
+			}
 		}
 
 		rendered(): void {

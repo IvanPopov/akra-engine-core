@@ -37,7 +37,9 @@ module akra {
 		WINDOW,
 
 		BUTTON,
+		SWITCH,
 		PANEL,
+		TABS,
 		LABEL,
 		VECTOR,
 		TREE,

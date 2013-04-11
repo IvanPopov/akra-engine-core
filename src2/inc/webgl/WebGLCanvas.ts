@@ -127,6 +127,7 @@ module akra.webgl {
 		}
 
 		resize(iWidth: uint = this._iWidth, iHeight: uint = this._iHeight): void {
+			// LOG(__CALLSTACK__, iWidth, iHeight);
 			var pCanvas: HTMLCanvasElement = this._pCanvas;	
 
 			this._iWidth = iWidth;

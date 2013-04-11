@@ -5,9 +5,11 @@
 
 module akra {
 	IFACE(IModel);
+	IFACE(IAnimationController);
 
 	export interface IModelEntry extends ISceneNode {
 		resource: IModel;
+		controller: IAnimationController;
 	}
 }
 

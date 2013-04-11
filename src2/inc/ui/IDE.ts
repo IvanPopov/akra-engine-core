@@ -1,33 +1,37 @@
 #include "ui/Component.ts"
 #include "ui/scene/Tree.ts"
 #include "ui/scene/NodeProperties.ts"
+#include "ui/ViewportProperties.ts"
 
 #include "IUIIDE.ts"
 
 module akra.ui {
-
-
 	export class IDE extends Component implements IUIIDE {
 		protected _pEngine: IEngine = null;
 
 		protected _pSceneTree: scene.Tree;
 		protected _pSceneNodeProperties: scene.NodeProperties;
 
+		protected _pPreview: ViewportProperties;
+
+		protected _pTabs: IUITabs;
+
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			template(this, "ui/templates/IDE.tpl");
+			//common setup
+
+			akra.ide = this;
 
 			this._pEngine = getUI(parent).getManager().getEngine();
-
 			debug_assert(!isNull(this._pEngine), "Engine required!");
-
-			var $preview: JQuery = this.el.find("#preview-area");
-
-			$preview.append(this.getCanvasElement());
-			this.getCanvas().resize(640, 480);
-
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
+
+			this.template("ui/templates/IDE.tpl");
+
+			//viewport setup
+			
+			var pViewportProperties: ViewportProperties = this._pPreview = <ViewportProperties>this.findEntity("Preview");
 
 			//setup Node properties
 
@@ -41,14 +45,8 @@ module akra.ui {
 			//connect node properties to scene tree
 			this.connect(pNodeProperties, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
 
-			//common setup
-
-			akra.ide = this;
-
-			this.el.find("#fullscreen-btn").bind("click", () => {
-				// this.getCanvas().setFullscreen(true);
-				akra.ide.cmd(akra.ECMD.SET_PREVIEW_FULLSCREEN);
-			});
+			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
+			this._pTabs.createComponent("GraphControls", {title: "Test Graph"});
 		}
 
 		inline getEngine(): IEngine { return this._pEngine; }
@@ -61,17 +59,13 @@ module akra.ui {
 		}
 
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
-			var $preview: JQuery = this.el.find("#preview-area"); 
-			var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>this.ui.createComponent("RenderTargetStats");
-
-			pStats.target = pViewport.getTarget();
-			//pStats.el.css({position: "relative", top: -$preview.height()});
-			pStats.render($preview);			
+			this._pPreview.setViewport(pViewport);		
 		}
 
 		cmd(eCommand: ECMD, ...argv: any[]): bool {
 			switch (eCommand) {
 				case ECMD.SET_PREVIEW_RESOLUTION: 
+					LOG("preview resolution is", argv[0] + "x" +  argv[1]);
 					var iWidth: int = parseInt(argv[0]);
 					var iHeight: int = parseInt(argv[1]);
 					this.getCanvas().resize(iWidth, iHeight);
@@ -82,6 +76,13 @@ module akra.ui {
 				case ECMD.SELECT_SCENE_NODE:
 					var pNode: ISceneNode = argv[0];
 					this._pSceneNodeProperties.setNode(pNode);
+					return true;
+				case ECMD.EDIT_ANIMATION_CONTROLLER: 
+					var pController: IAnimationController = argv[0];
+
+					return true;
+				case ECMD.CHANGE_AA:
+					(<render.DSViewport>this._pPreview.viewport).setFXAA(<bool>argv[0]);
 					return true;
 			}
 			return true;

@@ -1,6 +1,3 @@
-body {
-  background: lightgray;
-}
 /*Gradient mixins*/
 /* Component */
 .component {
@@ -300,10 +297,95 @@ body {
   font-size: 12px;
 }
 .component-panel div.panel-title:first-of-type div.controls {
-  display: inline-block;
+  display: none;
   position: relative;
   left: 5px;
   top: 5px;
+}
+.component-panel.collapsible div.panel-title:first-of-type div.controls {
+  display: inline-block;
+}
+div.component-switch {
+  margin: 2px 4px;
+  position: relative;
+}
+div.component-switch input {
+  -webkit-appearance: none;
+}
+div.component-switch label {
+  width: 26px;
+  height: 15px;
+  display: block;
+  cursor: pointer;
+  position: absolute;
+  top: 1;
+  left: 0;
+  z-index: 2;
+  background: #cccccc;
+  border-radius: 15px;
+  background-image: -webkit-linear-gradient(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1)), -webkit-linear-gradient(left, #ff6666 50%, #14ff00 50%);
+  background-size: 100% 100%, 200% 100%;
+  background-position: 0 0, 13px 0;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.1), 0 -1px 2px 1px rgba(0, 0, 0, 0.25), 0 2px 2px 1px rgba(255, 255, 255, 0.75), 0 -2px 10px 2px rgba(255, 255, 255, 0.75), 0 2px 10px 2px rgba(0, 0, 0, 0.25);
+}
+div.component-switch label:before {
+  width: 15px;
+  height: 15px;
+  display: block;
+  content: ' ';
+  position: absolute;
+  left: 0px;
+  background: #333333;
+  border-radius: 15px;
+  transition: all 1s ease-in-out;
+  -webkit-transition: all 0.5s ease-in-out;
+  background-color: #eeeeee;
+  background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1));
+  box-shadow: inset 0 1px 1px 1px #ffffff, inset 0 -1px 0px 0px rgba(0, 0, 0, 0.25), 0 1px 2px 1px rgba(0, 0, 0, 0.5), 0 0 1px rgba(0, 0, 0, 0.25);
+}
+div.component-switch input:checked + label:before {
+  left: 11px;
+}
+.component-tabs {
+  padding: 0;
+}
+.component-tabs  > .bookmarks {
+  background: lightgray;
+  overflow: hidden;
+  border-bottom: 1px solid #a3a3a3;
+  border-top: 1px solid #a3a3a3;
+  padding: 0 5px 0 5px;
+  min-height: 24px;
+}
+.component-tabs  > .bookmarks  > .bookmark {
+  min-width: 50px;
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  background-color: #cccccc;
+  text-align: center;
+  vertical-align: middle;
+  height: 24px;
+  line-height: 24px;
+  padding-left: 5px;
+  padding-right: 5px;
+  cursor: pointer;
+}
+.component-tabs  > .bookmarks  > .bookmark.active {
+  z-index: 2;
+  -webkit-box-shadow: inset 2px 0px 5px -2px #888888, inset -2px 0px 5px -2px #888888;
+  background: -moz-linear-gradient(top, rgba(204, 204, 204, 0) 0%, rgba(94, 94, 94, 0.35) 49%, rgba(204, 204, 204, 0) 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(204, 204, 204, 0)), color-stop(49%, rgba(94, 94, 94, 0.35)), color-stop(100%, rgba(204, 204, 204, 0)));
+  background: -webkit-linear-gradient(top, rgba(204, 204, 204, 0) 0%, rgba(94, 94, 94, 0.35) 49%, rgba(204, 204, 204, 0) 100%);
+  background: -o-linear-gradient(top, rgba(204, 204, 204, 0) 0%, rgba(94, 94, 94, 0.35) 49%, rgba(204, 204, 204, 0) 100%);
+  background: -ms-linear-gradient(top, rgba(204, 204, 204, 0) 0%, rgba(94, 94, 94, 0.35) 49%, rgba(204, 204, 204, 0) 100%);
+  background: linear-gradient(to bottom, rgba(204, 204, 204, 0) 0%, rgba(94, 94, 94, 0.35) 49%, rgba(204, 204, 204, 0) 100%);
+}
+.component-tabs .component-panel .panel-title {
+  display: none;
+}
+.component-tabs  > .component-panel .layout > table {
+  width: 100%;
 }
 /*Graph Controls */
 .component-graph-controls .controls {
@@ -449,6 +531,9 @@ table td {
   padding: 0px;
   vertical-align: top;
 }
+body {
+  background: #d3d3d3;
+}
 #IDE {
   margin: 0;
   width: 100%;
@@ -481,40 +566,81 @@ table td {
   min-height: 760px;
   border-bottom: 5px solid #dfdfdf;
 }
-#preview-area .title {
-  float: left;
-}
-#preview-area .chose-resolution {
-  height: ;
+#preview-area div[name=resolution] {
+  margin: -1px 0 -1px 0;
   text-align: right;
-  padding: 5px 30px 5px 30px;
-  border-top: 1px solid #a3a3a3;
-  border-bottom: 1px solid #a3a3a3;
-  background: #ffffff;
-  background: -moz-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff), color-stop(100%, #e5e5e5));
-  background: -webkit-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
-  background: -o-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
-  background: -ms-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
-  background: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
-  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5', GradientType=0);
+  background-color: #CCC;
 }
-#preview-area .chose-resolution a {
-  color: gray;
-  text-shadow: 0 0 2px white;
+#preview-area div[name=resolution] .component-button, #preview-area div[name=resolution] .component-checkboxlist {
+  display: inline-block;
 }
-#preview-area .chose-resolution a:hover {
-  color: black;
+#preview-area div[name=resolution] .component-checkboxlist .layout.horizontal table {
+  margin: 0 auto;
+}
+#preview-area div[name=resolution] .component-checkboxlist .component-checkbox {
+  padding: 1 4px;
+  font-size: 11px;
+}
+#preview-area div[name=resolution] .component-checkboxlist .component-checkbox.first {
+  border-radius: 0 !important;
+}
+#preview-area div[name=resolution] .component-checkboxlist .component-checkbox.last {
+  border-radius: 0 !important;
+}
+#preview-area div[name=resolution] .component-checkboxlist .component-checkbox.active {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
+  background-color: #3373a5;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
+}
+#preview-area .row > span:first-child {
+  color: #c80000;
+}
+#preview-area .row {
+  width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+  white-space: nowrap;
+  font-family: Consolas, Lucida Console, monospace;
+  font-size: 12px;
+  background-color: white;
+}
+#preview-area .row.last {
+  padding-bottom: 15px;
+  border-bottom: 1px solid #bdbdbd;
+}
+#preview-area .row.first {
+  padding-top: 15px;
+}
+#preview-area .row .component-switch, #preview-area .row .component-button {
+  display: inline-block;
+}
+#preview-area .row .component-button {
+  padding: 1px 4px;
+}
+#preview-area .row .component-switch {
+  margin-top: 0px;
+  position: relative;
+  bottom: 7px;
 }
 #tree-node {
   min-width: 165px;
 }
-#tree-node, #tree {
+#tree-node, #tree, #preview-area {
   padding: 0;
   font-size: 12px;
   border-right: 1px solid #a3a3a3;
 }
-#tree-node .component-panel div.panel-title:first-of-type, #tree .component-panel div.panel-title:first-of-type {
+#tree-node .component-panel div.panel-title:first-of-type, #tree .component-panel div.panel-title:first-of-type, #preview-area .component-panel div.panel-title:first-of-type {
   border-top: 1px solid #a3a3a3;
   border-bottom: 1px solid #a3a3a3;
   padding: 5px 0px 5px 30px;
@@ -527,11 +653,12 @@ table td {
   background: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
   filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5', GradientType=0);
 }
-#tree-node .component-panel div.panel-title:first-of-type div.controls, #tree .component-panel div.panel-title:first-of-type div.controls {
+#tree-node .component-panel div.panel-title:first-of-type div.controls, #tree .component-panel div.panel-title:first-of-type div.controls, #preview-area .component-panel div.panel-title:first-of-type div.controls {
   left: -20px;
-  margin: -3px;
+  margin: -5px 0 0 0;
 }
-#tree-node .component-panel div.panel-title:first-of-type div.controls input, #tree .component-panel div.panel-title:first-of-type div.controls input {
+#tree-node .component-panel div.panel-title:first-of-type div.controls input, #tree .component-panel div.panel-title:first-of-type div.controls input, #preview-area .component-panel div.panel-title:first-of-type div.controls input {
+  margin: 0px;
   background: url(../img/panel-opened.png) 0 0 no-repeat;
   width: 16px;
   height: 16px;
@@ -543,13 +670,13 @@ table td {
   -webkit-transition: .15s;
   display: none;
 }
-#tree-node .component-panel div.panel-title:first-of-type div.controls input:checked, #tree .component-panel div.panel-title:first-of-type div.controls input:checked {
+#tree-node .component-panel div.panel-title:first-of-type div.controls input:checked, #tree .component-panel div.panel-title:first-of-type div.controls input:checked, #preview-area .component-panel div.panel-title:first-of-type div.controls input:checked {
   background: url(../img/panel-closed.png) 0 0 no-repeat;
 }
-#tree-node .component-panel.collapsible div.panel-title:first-of-type div.controls input, #tree .component-panel.collapsible div.panel-title:first-of-type div.controls input {
+#tree-node .component-panel.collapsible div.panel-title:first-of-type div.controls input, #tree .component-panel.collapsible div.panel-title:first-of-type div.controls input, #preview-area .component-panel.collapsible div.panel-title:first-of-type div.controls input {
   display: block;
 }
-#tree-node .component-panel .layout.vertical table, #tree .component-panel .layout.vertical table {
+#tree-node .component-panel .layout.vertical table, #tree .component-panel .layout.vertical table, #preview-area .component-panel .layout.vertical table {
   margin: 0;
 }
 #tree {
@@ -716,7 +843,7 @@ table td {
   background-color: #d3d3d3;
 }
 .component-scenenodeproperties div.readonly {
-  background-color: #d3d3d3;
+  background-color: #e8e8e8;
   margin-top: 5px;
   padding-top: 5px;
   padding-bottom: 5px;
@@ -726,6 +853,7 @@ table td {
   color: #c80000;
 }
 .component-scenenodeproperties .row {
+  width: 100%;
   padding-left: 15px;
   padding-right: 15px;
   white-space: nowrap;
@@ -811,4 +939,21 @@ table td {
 }
 .component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type span {
   margin-left: -30px;
+}
+.component-scenenodeproperties div[name=model-entry] .component-resourceproperties .row {
+  padding: 5px 20px 5px 20px;
+}
+.component-scenenodeproperties div[name=model-entry] .component-animationcontrollerproperties .row {
+  padding: 5px 20px 5px 20px;
+}
+.component-scenenodeproperties div[name=model-entry] .component-animationcontrollerproperties button[name=edit] {
+  display: block;
+  margin: 0 auto;
+  padding: 0 15px;
+  border-radius: 2px;
+  width: 100%;
+  margin-top: 10px;
+}
+.component-tabs  > .bookmarks  > .bookmark {
+  background-color: #d3d3d3;
 }

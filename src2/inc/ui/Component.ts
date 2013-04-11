@@ -6,17 +6,17 @@
 #include "io/ajax.ts"
 
 #include "raphael.d.ts"
+#include "swig.d.ts"
+
 
 /// @script ui/3d-party/raphael/raphael-min.js
-
-#include "swig.d.ts"
 /// @script ui/3d-party/swig/swig.pack.min.js
 
 /// @dep ../data/ui
 /// @css ui/css/main.css
 
 module akra.ui {
-	function _template(pNode: IUIComponent, sTemplate: string, sName: string, pData: any = null, bShow: bool = false, iDepth: int = 0): void {
+	function _template(pNode: IUIComponent, sTemplate: string, sName: string, pData: any = null, bRenderAsNormal: bool = false, iDepth: int = 0): void {
 		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sName});
 		var sTplData: string = fnTemplate(pData);
 
@@ -31,13 +31,9 @@ module akra.ui {
 				return;
 			}
 
-			if ($comp.parent().get()[0] === pNode.el.get()[0]) {
-				bShow = true;
-			}
+			bRenderAsNormal = pNode.el[0] == $comp.parent()[0];
 
-			// LOG(iDepth, $comp.attr("type"), $comp.attr("name"), $comp.parent().length, $comp.parent().html());
-
-			var pComponent: IUIComponent = pNode.createComponent(sType, {show: bShow, name: sName});
+			var pComponent: IUIComponent = pNode.createComponent(sType, {show: bRenderAsNormal, name: sName});
 
 			pComponent._createdFrom($comp);
 
@@ -47,7 +43,8 @@ module akra.ui {
 				_template(pComponent, $comp.html(), sName, pData, false, iDepth + 1);
 			}
 
-			if (!bShow) {
+			if (!bRenderAsNormal) {
+				// WARNING(sTemplate);
 				var $span = $("<span/>");
 				$comp.before($span);
 
@@ -211,13 +208,18 @@ module akra.ui {
 
 		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent {
 			var pComp: IUIComponent = this.ui.createComponent(sType, pOptions);
-			pComp.attachToParent(this, pOptions.show !== false);
+			pComp.attachToParent(this, !isDefAndNotNull(pOptions) || pOptions.show !== false);
 			return pComp;
 		}
 
 		_createdFrom($comp: JQuery): void {
 			this.$element.attr("style", $comp.attr("style"));
 			this.$element.attr("class", $comp.attr("class"));
+			
+			// var sHTMLContent: string = $comp.html();
+			// if (isDefAndNotNull(sHTMLContent)) {
+			// 	this.$element.append(sHTMLContent);
+			// }
 		}
 
 #ifdef DEBUG

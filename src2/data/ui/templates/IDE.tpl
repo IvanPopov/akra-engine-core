@@ -15,18 +15,15 @@
 			</td>
 			<td style="width: 100%;">
 				<div id="work-area">
-					<div class="title">Work area</div>
+					<div class="title" style="margin-bottom: -1px;">Work area</div>
+					<component type="Tabs" name="WorkTabs" />
 				</div>
 			</td>
 			<td>
 				<div id="preview-area">
-					<div class="title">Preview</div>
-					<div class="chose-resolution">
-						<a id="fullscreen-btn" href="#fs">[FS]</a>
-						<a href="javascript:akra.ide.cmd(akra.ECMD.SET_PREVIEW_RESOLUTION, 800, 600);">[800x600]</a>
-						<a href="javascript:akra.ide.cmd(akra.ECMD.SET_PREVIEW_RESOLUTION, 640, 480);">[640x480]</a>
-						<a href="javascript:akra.ide.cmd(akra.ECMD.SET_PREVIEW_RESOLUTION, 320, 240);">[320x240]</a>
-					</div>
+					<component type="Panel" title="Preview" >
+						<component type="ViewportProperties" name="Preview" />
+					</component>
 				</div>
 			</td>
 		</tr>

@@ -2996,6 +2996,7 @@ module akra.core.pool.resources {
                 }
 
                 pController.attach(pRoot);
+                pRoot.controller = pController;
             }
 
             return pRoot;

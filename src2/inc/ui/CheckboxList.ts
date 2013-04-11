@@ -15,6 +15,16 @@ module akra.ui {
 		inline get radio(): bool { return this._bLikeRadio; }
 		inline set radio(b: bool) { this._bLikeRadio = b; }
 		inline get items(): IUICheckbox[] { return this._pItems; }
+
+		inline get checked(): IUICheckbox {
+			for (var i: int = 0; i < this.items.length; ++ i) {
+				if (this.items[i].checked) {
+					return this.items[i];
+				}
+			}
+
+			return null;
+		}
 		
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.CHECKBOX_LIST) {
 			super(parent, options, eType);

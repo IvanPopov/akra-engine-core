@@ -10,20 +10,20 @@ module akra.ui {
 		inline set text(x: string) { this.el.html(x); }
 
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.BUTTON) {
-			super(ui, options, eType, $("<button />"));
+			super(ui, options, eType, $("<button class=\"component-button\"/>"));
 
 			this.handleEvent("click");
+		}
+
+		_createdFrom($comp: JQuery): void {
+			super._createdFrom($comp);
+
+			this.text = $comp.attr("text") || "push";
 		}
 
 		protected applyOptions(pOptions: IUIButtonOptions): void {
 			super.applyOptions(pOptions);
 			this.text = pOptions.text || "push";
-		}
-
-		rendered(): void {
-			super.rendered();
-			
-			this.el.addClass("component-button");
 		}
 	}
 
