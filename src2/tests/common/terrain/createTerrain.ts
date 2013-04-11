@@ -27,7 +27,8 @@ module akra {
 		function createCameras(): void {
 			pCamera = pScene.createCamera();
 		
-			pCamera.addPosition(vec3(0, 200, 10));
+			pCamera.addPosition(vec3(0, 10, 0));
+			pCamera.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
 			pCamera.attachToParent(pScene.getRootNode());
 
 			var pKeymap: IKeyMap = controls.createKeymap((<any>pCanvas)._pCanvas);
@@ -93,10 +94,12 @@ module akra {
 					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(1024, 1024, 1024), 4, 5, 5, "main_terrain");
 					pTerrain.attachToParent(pScene.getRootNode());
 					pTerrain.scale(0.1);
+					pTerrain.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
-
+					// setTimeout(function() {pEngine.renderFrame()}, 5000);
 					// pEngine.renderFrame();
+
 				});
 			});
 			
@@ -152,7 +155,7 @@ module akra {
 			createViewports();
 			createLighting();
 			createTerrain();
-			createSkyBox();
+			// createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
 			// loadModels("../../../data/models/hero/hero.DAE");
@@ -164,6 +167,39 @@ module akra {
 		pEngine.exec();
 		// pEngine.renderFrame();
 	});
+
+	// test("pixelUtil", () => {
+	// 	//var pPixelBoxSrc: IPixelBox = new pixelUtil.PixelBox(32, 32, 1, 11, new Uint8Array(32 * 32 * 3));
+	// 	var iSize: uint = 32;
+	// 	var pPixelBoxDst: IPixelBox = new pixelUtil.PixelBox(iSize, iSize, 1, 11, new Uint8Array(iSize * iSize * 3));
+	// 	var pTempBox: IBox = new geometry.Box();
+	// 	var pTempPixelBox: IPixelBox = new pixelUtil.PixelBox();
+	// 	var iBlockW: uint = iSize/4, iBlockH: uint = iSize/4;
+
+	// 	function setData(x: uint, y: uint){
+	// 		var pData: Uint8Array = new Uint8Array(iBlockW *  iBlockH * 3);
+			
+	// 		for(var i: uint = 0; i < iBlockW *  iBlockH * 3; i++){
+	// 			pData[i] = 10;
+	// 		}
+
+	// 		pTempBox.setPosition(0, 0, iBlockW, iBlockH);
+	// 		pTempPixelBox.refresh(pTempBox, 11, pData);
+
+	// 		pTempBox.setPosition(x, y, iBlockW, iBlockH);
+	// 		var pSubBox: IPixelBox = pPixelBoxDst.getSubBox(pTempBox);
+	// 		pixelUtil.bulkPixelConversion(pTempPixelBox, pSubBox);
+	// 	}
+
+	// 	for(var i: uint = 0; i < iSize; i += iBlockW){
+	// 		for(var j: uint = 0; j < iSize; j += iBlockH){
+	// 			setData(i, j);
+	// 		}
+	// 	}
+
+	// 	LOG(pPixelBoxDst);
+
+	// });
 
 }
 

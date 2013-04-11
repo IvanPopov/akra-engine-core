@@ -39,6 +39,7 @@ module akra.geometry {
 					this.bottom = arguments[0].bottom;
 					this.back 	= arguments[0].back;
 					break;
+				case 0:
 				case 3:
 				case 6:
 					this.left 	= l;
@@ -70,16 +71,26 @@ module akra.geometry {
 	    		pDest.right <= this.right && pDest.bottom <= this.bottom && pDest.back <= this.back);
 		}
 
-		setPosition(iLeft: uint, iTop: uint, iWidth: uint, iHeight: uint): void {
+		setPosition(iLeft: uint, iTop: uint, iWidth: uint, iHeight: uint, iFront?: uint = 0, iDepth?: uint = 1): void {
 			this.left   = iLeft;
 			this.top    = iTop;
 			this.right  = iLeft + iWidth;
 			this.bottom = iTop + iHeight;
+			this.front 	= iFront;
+			this.back 	= iFront + iDepth;
 		}
 
 		isEqual(pDest: IBox): bool {
 			return (pDest.left == this.left && pDest.top == this.top && pDest.front == this.front &&
 	    		pDest.right == this.right && pDest.bottom == this.bottom && pDest.back == this.back);
+		}
+
+		toString(): string {
+			return "---------------------------\n" + 
+				   "left: " + this.left + ", right: " + this.right + "\n" +
+				   "top: " + this.top + ", bottom: " + this.bottom + "\n" +	
+				   "front: " + this.front + ", back: " + this.back + "\n" +
+				   "---------------------------";
 		}
 	}
 }

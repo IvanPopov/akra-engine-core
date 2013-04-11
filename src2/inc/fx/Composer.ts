@@ -428,6 +428,9 @@ module akra.fx {
 
 
 		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void {
+			// if(true){
+			// 	return;
+			// }
 			var pPass: IRenderPass = pRenderTechnique.getPass(iPass);
 			var pPassInput: IAFXPassInputBlend = pPass.getPassInput();
 

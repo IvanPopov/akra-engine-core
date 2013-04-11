@@ -112,7 +112,8 @@ void fs_terrain(VS_OUT IN){
     float3 normal;
 
     new_texcoord = (IN.texcoord-textureCoord5)*32.;
-
+    // color = tex2D(textureTerrain0, IN.texcoord) + float4(1., 0., 0., 1.);
+    
     if(textureTerrainIsLoaded5 &&(new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
     {
         color = tex2D(textureTerrain5, new_texcoord);
@@ -153,6 +154,7 @@ void fs_terrain(VS_OUT IN){
             }
         }
     }
+    
 
     normal = tex2D(ptNormal, IN.texcoord).rgb;
 //    normal.xy -= 0.5;

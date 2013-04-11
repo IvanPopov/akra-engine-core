@@ -94,6 +94,9 @@ module akra.webgl {
 		}
 
 		_renderEntry(pEntry: IRenderEntry): void {
+			// if(true){
+			// 	return;
+			// }
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
 			var pRenderTarget: IRenderTarget = (<render.Viewport>pViewport).getTarget();
 			var pInput: IShaderInput = pEntry.input;
@@ -182,6 +185,10 @@ module akra.webgl {
 		}
 
 		_setViewport(pViewport: IViewport): void {
+			// if(true){
+			// 	return;
+			// }
+
 			if(isNull(pViewport)){
 				this._pActiveViewport = null;
 				this._setRenderTarget(null);
@@ -213,6 +220,9 @@ module akra.webgl {
 		}
 
         _setRenderTarget(pTarget: IRenderTarget): void {
+        	// if(true){
+        	// 	return;
+        	// }
         	//May be unbind()
         	
         	if(this.isLockRenderTarget()){
@@ -233,6 +243,9 @@ module akra.webgl {
         }
 
         _setCullingMode(eMode: ECullingMode): void {
+        	// if(true){
+        	// 	return;
+        	// }
         	var iWebGLCullMode: uint = 0;
 
         	switch(eMode){
@@ -256,6 +269,9 @@ module akra.webgl {
 
         _setDepthBufferParams(bDepthTest: bool, bDepthWrite: bool, 
         					  eDepthFunction: ECompareFunction, fClearDepth?: float = 1.): void {
+        	// if(true){
+        	// 	return;
+        	// }
         	if(bDepthTest){
         		this._pWebGLContext.clearDepth(fClearDepth);
         		this._pWebGLContext.enable(GL_DEPTH_TEST);
@@ -403,6 +419,9 @@ module akra.webgl {
 
 
 		clearFrameBuffer(iBuffers: int, cColor: IColor, fDepth: float, iStencil: uint): void {
+			// if(true){
+			// 	return;
+			// }
 			var iWebGLFlag: int = 0;
 			var bOldDepthWrite: bool = this._pWebGLContext.getParameter(GL_DEPTH_WRITEMASK);
 

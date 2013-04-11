@@ -86,7 +86,7 @@ module akra.terrain {
 	    	this._iBufferHeight = this._iTextureHeight * 2;
 	    	this._iBufferWidth  = this._iTextureWidth * 2;
 
-	    	this._pDataFor     = new pixelUtil.PixelBox(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureFormat, new Uint8Array(this._iBufferWidth * this._iBufferHeight));
+	    	this._pDataFor     = new pixelUtil.PixelBox(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureFormat, new Uint8Array(pixelUtil.getMemorySize(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureFormat)));
 	    	this._pMapDataFor  = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
 	    	this._pMapDataNULL = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
 
@@ -98,12 +98,18 @@ module akra.terrain {
 
 	    	//Создаем куски мегатекстуры
 	    	var pRmgr: IResourcePoolManager = this._pEngine.getResourceManager();
+	    	var pInitData: Uint8Array = null;
+    	    
     	    for (var i: uint = 0; i < this._pTextures.length; i++) {
+    	        
     	        this._pTextures[i] = pRmgr.createTexture(".texture-for-mega-" + i + sid());
     	        this._pTextures[i].create(this._iTextureWidth, this._iTextureHeight, 1, null, ETextureFlags.DYNAMIC, 0, 1, ETextureTypes.TEXTURE_2D, this._eTextureFormat);
     			this._pTextures[i].setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
     			this._pTextures[i].setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
+    	        
     	        if (i == 0) {
+    	        	pInitData = new Uint8Array(pixelUtil.getMemorySize(this._iTextureWidth, this._iTextureHeight, 1, this._eTextureFormat));
+    	            this._pBuffer[i] = new pixelUtil.PixelBox(this._iTextureWidth, this._iTextureHeight, 1, this._eTextureFormat, pInitData);
     	            //на самом деле this._iTextureHeight*this._iTextureWidth
     	            this._pBufferMap[i] = new Uint32Array(this._iBufferHeight * this._iBufferWidth /
     	                                                  (this._iBlockSize * this._iBlockSize)); 
@@ -111,15 +117,18 @@ module akra.terrain {
     	            this.setBufferMapNULL(this._pBufferMap[i]);
     	            //Худшего качества статична поэтому размер у буфера такойже как у текстуры this._iBlockSize
 
-    	            this._pBuffer[i] = new pixelUtil.PixelBox(this._iTextureWidth, this._iTextureHeight, 1, this._eTextureFormat, new Uint8Array(this._pBufferMap[i]));
+
     	        } else {
-    	            this._pBuffer[i] = new pixelUtil.PixelBox(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureFormat);
+    	        	pInitData = new Uint8Array(pixelUtil.getMemorySize(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureFormat));
+    	            this._pBuffer[i] = new pixelUtil.PixelBox(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureFormat, pInitData);
+    	            
     	            this._pBufferMap[i] = new Uint32Array(this._iBufferHeight * this._iBufferWidth /
     	                                                  (this._iBlockSize * this._iBlockSize));
     	            this.setBufferMapNULL(this._pBufferMap[i]);
 
-    	            this._pBuffer[i] = new pixelUtil.PixelBox(this._iBufferWidth, this._iBufferHeight, 1, this._eTextureFormat, new Uint8Array(this._pBufferMap[i]));
     	        }
+    	        // this._pBuffer[i].setConsecutive();
+    	        
     	        this._pXY[i] = <ISubTextureSettings> {iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
     				iTexX:0, iTexY:0,   /*Координаты мегатекстуры в текстуре*/
     				isUpdated : true, isLoaded : false};
@@ -220,7 +229,7 @@ module akra.terrain {
 		                var pPixelBox1: IPixelBox = this._pDataFor.getSubBox(this._pTmpBox1);
 		                var pPixelBox2: IPixelBox = this._pBuffer[i].getSubBox(this._pTmpBox2);
 
-		                pixelUtil.bulkPixelConversion(pPixelBox1, pPixelBox2);
+		                // pixelUtil.bulkPixelConversion(pPixelBox1, pPixelBox2);
 
 		                /*this._setDataBetweenBuffer(this._pDataFor, iXOverlappingBlockInNewBuf, iYOverlappingBlockInNewBuf,
 		                                           this._pBuffer[i], iXOverlappingBlockInOldBuf, iYOverlappingBlockInOldBuf,
@@ -326,12 +335,14 @@ module akra.terrain {
 		        var iTexInBufY: uint = 0;
 
 		        i = (math.round(this._nCountRender / 10)) % this._pBuffer.length;
+		        // LOG("Level #" + i, this._pBuffer[i].data.length, this._pBuffer[i].width, this._pBuffer[i].height);
 
 		        if (i == 0) {
 		            if (this._pXY[i].isUpdated == true) {
 		                // this._pTextures[i].setPixelRGBA(0, 0, this._iTextureWidth, this._iTextureHeight, this._pBuffer[0]);
-		                var pPixelBox: IPixelBox = new pixelUtil.PixelBox(this._iTextureWidth, this._iTextureHeight, 1, EPixelFormats.A8B8G8R8, this._pBuffer[0].data);
-		                this._pTextures[i].getBuffer(0,0).blitFromMemory(pPixelBox);
+		                // var pPixelBox: IPixelBox = new pixelUtil.PixelBox(this._iTextureWidth, this._iTextureHeight, 1, EPixelFormats.A8B8G8R8, this._pBuffer[0].data);
+		                // LOG("Level #" + i + " write data:", this._pBuffer[0].toString());
+		                this._pTextures[i].getBuffer(0,0).blitFromMemory(this._pBuffer[0]);
 		            }
 		        }
 		        else {
@@ -352,11 +363,12 @@ module akra.terrain {
 		                this._pTextures[i].setPixelRGBA(0, 0, this._iTextureWidth, this._iTextureHeight, this._pDataFor);*/
 
 		                // this._pTmpBox1.setPosition(iTexInBufX, iTexInBufY, this._iBufferWidth, this._iBufferHeight); 
-		                this._pTmpBox1.setPosition(iTexInBufX, iTexInBufY, this._iBufferWidth - iTexInBufX, this._iBufferHeight - iTexInBufY); 
+		                this._pTmpBox1.setPosition(iTexInBufX, iTexInBufY, this._iTextureWidth, this._iTextureHeight); 
+
 
 		                var pPixelBox: IPixelBox = this._pBuffer[i].getSubBox(this._pTmpBox1);
-		                pPixelBox.setConsecutive();
-
+		                // pPixelBox.setConsecutive();
+		                // LOG("Level #" + i + " write data:\n", pPixelBox.toString());
 		                this._pTextures[i].getBuffer(0,0).blitFromMemory(pPixelBox);
 
 		                /*var c2d=document.getElementById('canvas1_'+i).getContext("2d");
@@ -377,6 +389,7 @@ module akra.terrain {
 		                 c2d.putImageData(pData, 0, 0);*/
 		            }
 		        }
+		        // LOG("Level #" + i + " updated");
 		        this._pXY[i].isUpdated = false;
 		    }
 
@@ -504,11 +517,23 @@ module akra.terrain {
 		    pRenderPass.setUniform("CAMERA_COORD", this._v2fCameraCoord);
 
 		    for (var i: uint = 0; i < this._pTextures.length; i++) {
-				pRenderPass.setUniform("textureCoord"+ i, [this._pXY[i].iTexX, this._pXY[i].iTexY])
+				pRenderPass.setUniform("textureCoord"+ i, [this._pXY[i].iTexX, this._pXY[i].iTexY]);
+				LOG("Is loaded level #" + i, this._pXY[i].isLoaded);
 		        pRenderPass.setUniform("textureTerrainIsLoaded" + i, this._pXY[i].isLoaded);
 		        pRenderPass.setTexture("TEXTURE" + i, this._pTextures[i]);
 		        pRenderPass.setSamplerTexture("S_TERRAIN" + i, "TEXTURE" + i);
 		    }
+
+		    // for(var i: uint = 0; i < this._pBuffer[0].data.length; i+=3){
+		    // 	if(this._pBuffer[0].data[i] !== 0 || this._pBuffer[0].data[i + 1] !== 255 || this._pBuffer[0].data[i + 2] !== 0){
+		    // 		LOG("WRONG!!!!!!!!!!!!!!!!!!!! In i: ", i);
+		    // 	}
+		    // 	else {
+		    // 		WARNING("CORRECT");
+		    // 	}
+
+		    // }
+
 		}
 
 		setBufferMapNULL(pBuffer): void {
@@ -748,7 +773,6 @@ module akra.terrain {
 		                                  		return;
 		                                  }
 
-		                                  var pData8: Uint8Array = new Uint8Array(pData);
 		                                  //console.log(me._pBuffer[iLevelTex].length,iX-me._pXY[iLevelTex].iX,iY-me._pXY[iLevelTex].iY);
 		                                  var iXBuf: uint;
 		                                  var iYBuf: uint;
@@ -781,14 +805,25 @@ module akra.terrain {
 		                                                           iXBuf / me._iBlockSize] = 0xFFFFFFFF;
 		                                  }
 
-		                                  me._pTmpBox1.setPosition(iXBuf, iYBuf, me._iBlockSize, me._iBlockSize);
+		                                  me._pTmpBox1.setPosition(0, 0, me._iBlockSize, me._iBlockSize);
 		                                  me._pTmpPixelBox.refresh(me._pTmpBox1, me._eTextureFormat, pData);
 
-		                                  pixelUtil.bulkPixelConversion(me._pBuffer[iLev].getSubBox(me._pTmpBox1), me._pTmpPixelBox)
-
+		                                  me._pTmpBox1.setPosition(iXBuf, iYBuf, me._iBlockSize, me._iBlockSize);
+		                                  var pSubBox: IPixelBox = me._pBuffer[iLev].getSubBox(me._pTmpBox1);
+		                                  
+		                                  pixelUtil.bulkPixelConversion(me._pTmpPixelBox, pSubBox);
 		                                  // me._setDataFromBlock(me._pBuffer[iLev], iXBuf, iYBuf, pData);
 
 		                                  me._pXY[iLev].isUpdated = true;
+		                                 //  if(iLev === 0){
+		                                  	
+		                                 //  	LOG("#" + iX + ".#" + iY, iLev, pData[0], pData[1], pData[2]);
+		                                 //  	//me._pEngine.renderFrame();
+		                                 //  	// window["aaaa"] = true;
+		                              	  // }
+		                              	  // else {
+
+		                              	  // }
 		                                  //a.fopen('filesystem://temporary/'+sPiecePath, 'wb').write(pData8);
 		                              });
 		                //	}
@@ -799,6 +834,9 @@ module akra.terrain {
 		    }
 
 		    me._pXY[iLevelTex].isLoaded = isLoaded;
+		    // if(isLoaded === true){
+	    	// LOG("Loaded mega texture level #" + iLevelTex, isLoaded);
+		    // }
 		}
 	}
 }

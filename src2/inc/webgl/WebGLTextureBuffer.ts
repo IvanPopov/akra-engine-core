@@ -71,6 +71,9 @@ module akra.webgl {
                         			 getWebGLFormat(this._eFormat), getWebGLDataType(this._eFormat),
                         			 null);	
 
+			this.byteLength = pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+			this._pBuffer.setPosition(0, 0, this._iWidth, this._iHeight, 0, this._iDepth);
+
 			this.notifyResized();
 
 			//pWebGLRenderer.debug(false, false);
@@ -780,7 +783,7 @@ module akra.webgl {
 	        // 	pTempTexBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(".temp");
 	        // }
 
-	        pTempTexBuffer.create(eTarget, pTempWebGLTexture, pSource.width || iWidth, pSource.height || iHeight, 
+	        pTempTexBuffer.create(eTarget, pTempWebGLTexture, iWidth, iHeight, 
 								  iWebGLFormat, pSource.format, 0, 0,
 								  ETextureFlags.AUTOMIPMAP | EHardwareBufferFlags.STATIC,
 								  false);
