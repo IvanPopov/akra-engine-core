@@ -112,9 +112,8 @@ void fs_terrain(VS_OUT IN){
     float3 normal;
 
     new_texcoord = (IN.texcoord-textureCoord5)*32.;
-    // color = tex2D(textureTerrain0, IN.texcoord) + float4(1., 0., 0., 1.);
     
-    if(textureTerrainIsLoaded5 &&(new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
+    if(textureTerrainIsLoaded5 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
     {
         color = tex2D(textureTerrain5, new_texcoord);
     }
@@ -157,18 +156,20 @@ void fs_terrain(VS_OUT IN){
     
 
     normal = tex2D(ptNormal, IN.texcoord).rgb;
-//    normal.xy -= 0.5;
-//    normal = normalize(normal);
-    normal = (view_mat * model_mat * float4(normal, 0.)).xyz;
-
+    
+    //normal = normalize(normal);
+    normal.xy -= 0.5;
+    normal = ((view_mat * model_mat * float4(normal, 0.)).xyz);
     Normal = normalize(normal);
 
-    //if(IN.edgeTest.x*IN.edgeTest.y*IN.edgeTest.z<0.001)
-    //{
-    //    color=float4(0.2,0.2,1.,1.);
-    //}
-
-    Fragment_material.emissive = float4(0.);
+    if(IN.edgeTest.x * IN.edgeTest.y * IN.edgeTest.z < 0.001)
+    {
+        Fragment_material.emissive = float4(0.5, 0.5, 0.5, 1.);
+    }
+    else {
+        Fragment_material.emissive = float4(0.);
+    }
+    
     Fragment_material.diffuse = color;
     Fragment_material.ambient = float4(0.);
     Fragment_material.shininess = 0.;

@@ -10,7 +10,7 @@ module akra {
 	var pUI: IUI = pEngine.getSceneManager().createUI();
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pMainScene: JQuery = null;
-	var pCamera: ICamera = null;
+	export var pCamera: ICamera = null;
 	var pViewport: IViewport = null;
 	var pSkyBoxTexture: ITexture = null;
 
@@ -27,8 +27,8 @@ module akra {
 		function createCameras(): void {
 			pCamera = pScene.createCamera();
 		
-			pCamera.addPosition(vec3(0, 10, 0));
-			pCamera.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
+			pCamera.addPosition(vec3(0, 0, 150));
+			pCamera.addRelRotationByXYZAxis(0, 0, 0);
 			pCamera.attachToParent(pScene.getRootNode());
 
 			var pKeymap: IKeyMap = controls.createKeymap((<any>pCanvas)._pCanvas);
@@ -65,7 +65,7 @@ module akra {
 			pOmniLight.params.specular.set(1, 1, 1, 1);
 			pOmniLight.params.attenuation.set(1,0,0);
 
-			pOmniLight.addPosition(0, 100, 5);
+			pOmniLight.addPosition(0, 0, 100);
 		}
 
 		function createSkyBox(): void {
@@ -94,7 +94,7 @@ module akra {
 					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(1024, 1024, 1024), 4, 5, 5, "main_terrain");
 					pTerrain.attachToParent(pScene.getRootNode());
 					pTerrain.scale(0.1);
-					pTerrain.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
+					// pTerrain.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
 					// setTimeout(function() {pEngine.renderFrame()}, 5000);
@@ -155,7 +155,7 @@ module akra {
 			createViewports();
 			createLighting();
 			createTerrain();
-			// createSkyBox();
+			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
 			// loadModels("../../../data/models/hero/hero.DAE");
@@ -164,7 +164,7 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	
-		pEngine.exec();
+		// pEngine.exec();
 		// pEngine.renderFrame();
 	});
 

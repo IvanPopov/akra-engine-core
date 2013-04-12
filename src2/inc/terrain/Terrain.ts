@@ -181,9 +181,6 @@ module akra.terrain {
 			this._v3fMapScale.y = this._v3fWorldSize.y / this._iTableHeight;
 			this._v3fMapScale.z = this._v3fWorldSize.z;
 
-
-			//Мегатекстурные параметры
-			this._pMegaTexures = new MegaTexture(this._pEngine, this, sSurfaceTextures);
 			// convert the height map to
 			// data stored in local tables
 			this._buildHeightAndNormalTables(pMap["height"], pMap["normal"]);
@@ -199,6 +196,9 @@ module akra.terrain {
 			}
 
 			this.computeBoundingBox();
+
+			//Мегатекстурные параметры
+			this._pMegaTexures = new MegaTexture(this._pEngine, this, sSurfaceTextures);
 
 			return true;
 		}

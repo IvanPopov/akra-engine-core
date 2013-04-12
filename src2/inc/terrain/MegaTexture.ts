@@ -73,7 +73,7 @@ module akra.terrain {
 	    	this._pEngine = pEngine;
 	    	// this._pDevice = pEngine.pDevice;
 	    	this._pObject = pObject;
-	    	this._pWorldExtents = pObject.worldExtents;
+	    	this._pWorldExtents = pObject.localBounds;
 	    	this._sSurfaceTextures = sSurfaceTextures;
 
 	    	var iCountTex: uint = math.log2(this._iOriginalTextureMaxSize / math.max(this._iTextureHeight, this._iTextureWidth)) + 1;
@@ -143,13 +143,16 @@ module akra.terrain {
 
 		prepareForRender(pViewport: IViewport): void {
 		    var pCamera: ICamera = pViewport.getCamera();
-		    var v3fCameraPosition: IVec3 = pCamera.targetPos;
+		    var v4fCameraCoord: IVec4 = vec4(pCamera.targetPos, 1.);
+		    var m4fTransposeInverse: IMat4 = this._pObject.inverseWorldMatrix.transpose(mat4());
+		    
+		    v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
 
 
 		    //Вычисление текстурных координат над которыми находиться камера
-		    var fTexCourdX: float = (v3fCameraPosition.x - this._pWorldExtents.x0) /
+		    var fTexCourdX: float = (v4fCameraCoord.x - this._pWorldExtents.x0) /
 		                     math.abs(this._pWorldExtents.x1 - this._pWorldExtents.x0);
-		    var fTexCourdY: float = (v3fCameraPosition.y - this._pWorldExtents.y0) /
+		    var fTexCourdY: float = (v4fCameraCoord.y - this._pWorldExtents.y0) /
 		                     math.abs(this._pWorldExtents.y1 - this._pWorldExtents.y0);
 
 		    this._v2fCameraCoord.set(fTexCourdX, fTexCourdY);
@@ -289,8 +292,8 @@ module akra.terrain {
 		            //console.log(iY2,this._pXY[i].iY+this._iBufferHeight);
 		            //Смотрим попадаем ли мы в текущий буфер
 		            if (iX >= this._pXY[i].iX
-		                    && iY >= this._pXY[i].iY
-		                    && iX + this._iTextureWidth < this._pXY[i].iX + this._iBufferWidth
+		                && iY >= this._pXY[i].iY
+		                && iX + this._iTextureWidth < this._pXY[i].iX + this._iBufferWidth
 		                && iY + this._iTextureHeight < this._pXY[i].iY + this._iBufferHeight) {
 		                //Типа попали
 		                //Значит нужно загрузить необходимые куски
@@ -352,8 +355,8 @@ module akra.terrain {
 		            	//координаты угла мегатекстуре на текстуре
 		                iTexInBufX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2); 
 		                iTexInBufY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
-						this._pXY[i].iTexX=iTexInBufX/this.getWidthOrig(i);
-						this._pXY[i].iTexY=iTexInBufY/this.getHeightOrig(i);
+						this._pXY[i].iTexX = iTexInBufX/this.getWidthOrig(i);
+						this._pXY[i].iTexY = iTexInBufY/this.getHeightOrig(i);
 		                iTexInBufX -= this._pXY[i].iX;
 		                iTexInBufY -= this._pXY[i].iY;
 
@@ -368,7 +371,7 @@ module akra.terrain {
 
 		                var pPixelBox: IPixelBox = this._pBuffer[i].getSubBox(this._pTmpBox1);
 		                // pPixelBox.setConsecutive();
-		                // LOG("Level #" + i + " write data:\n", pPixelBox.toString());
+		                LOG("Level #" + i + " write data:\n", pPixelBox.toString(), "\nOne Color: ", pPixelBox.data[0], pPixelBox.data[1], pPixelBox.data[2]);
 		                this._pTextures[i].getBuffer(0,0).blitFromMemory(pPixelBox);
 
 		                /*var c2d=document.getElementById('canvas1_'+i).getContext("2d");
@@ -517,8 +520,8 @@ module akra.terrain {
 		    pRenderPass.setUniform("CAMERA_COORD", this._v2fCameraCoord);
 
 		    for (var i: uint = 0; i < this._pTextures.length; i++) {
-				pRenderPass.setUniform("textureCoord"+ i, [this._pXY[i].iTexX, this._pXY[i].iTexY]);
-				LOG("Is loaded level #" + i, this._pXY[i].isLoaded);
+				pRenderPass.setUniform("textureCoord"+ i, vec2(this._pXY[i].iTexX, this._pXY[i].iTexY));
+				// LOG("Is loaded level #" + i, this._pXY[i].isLoaded);
 		        pRenderPass.setUniform("textureTerrainIsLoaded" + i, this._pXY[i].isLoaded);
 		        pRenderPass.setTexture("TEXTURE" + i, this._pTextures[i]);
 		        pRenderPass.setSamplerTexture("S_TERRAIN" + i, "TEXTURE" + i);
@@ -835,7 +838,7 @@ module akra.terrain {
 
 		    me._pXY[iLevelTex].isLoaded = isLoaded;
 		    // if(isLoaded === true){
-	    	// LOG("Loaded mega texture level #" + iLevelTex, isLoaded);
+	    	// 	LOG("Loaded mega texture level #" + iLevelTex, isLoaded);
 		    // }
 		}
 	}
