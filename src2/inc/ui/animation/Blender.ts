@@ -43,7 +43,7 @@ module akra.ui.animation {
 			this._pNameLabel.text = pBlender.name;
 		}
 
-		protected connected(pArea: IUIGraphConnectionArea, pNode: IUIGraphNode, pRoute: IUIGraphRoute): void {
+		protected connected(pArea: IUIGraphConnectionArea, pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void {
 			LOG("CONNECTED", arguments);
 		}
 

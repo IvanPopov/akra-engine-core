@@ -3,6 +3,7 @@
 
 #include "IAnimationBlend.ts"
 #include "Base.ts"
+#include "Frame.ts"
 
 
 module akra.animation {

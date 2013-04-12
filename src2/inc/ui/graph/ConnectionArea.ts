@@ -20,11 +20,20 @@ module akra.ui.graph {
 		inline get node(): IUIGraphNode { return <IUIGraphNode>this.parent; }
 		inline get graph(): IUIGraph { return this.node.graph; }
 
-		constructor(parent: IUIGraphNode, options?: IUIConnectionAreaOptions, eType: EUIComponents = EUIComponents.GRAPH_CONNECTIONAREA) {
-			super(parent, options, eType);
+		inline set maxInConnections(n: uint) {
+			this._iInConnectionLimit = n;
+		}
 
-			this.connect(this.node, SIGNAL(mouseenter), SLOT(_onNodeMouseover));
-			this.connect(this.node, SIGNAL(mouseleave), SLOT(_onNodeMouseout));
+		inline set maxOutConnections(n: uint) {
+			this._iOutConnectionLimit = n;
+		}
+
+		inline set maxConnections(n: uint) {
+			this._iConnectionLimit = n;
+		}
+
+		constructor(parent, options?: IUIConnectionAreaOptions, eType: EUIComponents = EUIComponents.GRAPH_CONNECTIONAREA) {
+			super(parent, options, eType);
 
 			if (!isNull(options)) {
 				this._iConnectionLimit = isInt((<IUIConnectionAreaOptions>options).maxConnections)? options.maxConnections: -1;
@@ -34,6 +43,51 @@ module akra.ui.graph {
 
 			if (this._iConnectionLimit == -1) {
 				this._iConnectionLimit = this._iInConnectionLimit + this._iOutConnectionLimit;
+			}
+
+			this.el.disableSelection();
+		}
+
+		attachToParent(pParent: IUIGraphNode): bool {
+			ASSERT(isComponent(pParent, EUIComponents.GRAPH_NODE), "only graph node can be parent!!");
+			if (super.attachToParent(pParent)) {
+				this.connect(this.node, SIGNAL(mouseenter), SLOT(_onNodeMouseover));
+				this.connect(this.node, SIGNAL(mouseleave), SLOT(_onNodeMouseout));
+			}
+
+			return false;
+		}
+
+		_createdFrom($comp: JQuery): void {
+			super._createdFrom($comp);
+
+			var sMode: string = $comp.attr("mode");
+			var sMaxConnections: string = $comp.attr("connections-limit");
+			var sMaxInConnections: string = $comp.attr("connections-in-limit");
+			var sMaxOutConnections: string = $comp.attr("connections-out-limit");
+
+			if (isString(sMode)) {
+				if (sMode === "out") {
+					this.setMode(EUIGraphDirections.OUT);
+				}
+				else if (sMode === "in") {
+					this.setMode(EUIGraphDirections.IN);	
+				}
+				else if (sMode === "inout") {
+					this.setMode(EUIGraphDirections.IN|EUIGraphDirections.OUT);
+				}
+			}
+
+			if (isString(sMaxConnections)) {
+				this.maxConnections = parseInt(sMaxConnections);
+			}
+
+			if (isString(sMaxInConnections)) {
+				this.maxConnections = parseInt(sMaxInConnections);
+			}
+
+			if (isString(sMaxOutConnections)) {
+				this.maxConnections = parseInt(sMaxOutConnections);
 			}
 		}
 
@@ -111,6 +165,10 @@ module akra.ui.graph {
 		}
 
 		_onNodeMouseover(pNode: IUIGraphNode, e: IUIEvent): void {
+			//FIXME
+			var pArea: ConnectionArea = this;
+			setTimeout(() => {pArea.routing()}, 10);
+
 			if ((!this.isSupportsIncoming() && this.graph.isReadyForConnect()) || 
 				(!this.isSupportsOutgoing() && !this.graph.isReadyForConnect())) {
 				return;
@@ -133,7 +191,7 @@ module akra.ui.graph {
 			this._pTempConnect = null;
 			this._pConnectors.push(pConnector);
 
-			this.connected(pConnector.node, pConnector.route);
+			this.connected(pConnector, pTarget);
 		}
 
 		private destroyTempConnect(): void {
@@ -142,6 +200,10 @@ module akra.ui.graph {
 		}
 
 		_onNodeMouseout(pNode: IUIGraphNode, e: IUIEvent): void {
+			//FIXME
+			var pArea: ConnectionArea = this;
+			setTimeout(() => {pArea.routing()}, 10);
+			
 			if (isNull(this._pTempConnect) || this._pTempConnect.hasRoute()) {
 				return;
 			}
@@ -156,7 +218,16 @@ module akra.ui.graph {
 			}
 		}
 
-		BROADCAST(connected, CALL(pNode, pRoute));
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-connectionarea");
+		}
+
+		BROADCAST(connected, CALL(pFrom, pTo));
+	}
+
+	export inline function isConnectionArea(pEntity: IEntity): bool {
+		return isComponent(pEntity, EUIComponents.GRAPH_CONNECTIONAREA);
 	}
 
 	register("GraphConnectionArea", ConnectionArea);

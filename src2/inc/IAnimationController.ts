@@ -12,6 +12,8 @@ module akra {
 		readonly totalAnimations: int;
 		readonly active: IAnimationBase;
 
+		getEngine(): IEngine;
+
 		setOptions(eOptions): void;
 		addAnimation(pAnimation: IAnimationBase): bool;
 

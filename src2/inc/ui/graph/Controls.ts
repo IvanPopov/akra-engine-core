@@ -20,8 +20,9 @@ module akra.ui.graph {
 			this.graph.attachToParent(this);
 
 			var pControlPanel: IUIComponent = this.controls;
-			var pNodeBtn: IUIButton = new Button(pControlPanel, {text: "Create graph node"});
-			this.connect(pNodeBtn, SIGNAL(click), SLOT(createNode));
+
+			// var pNodeBtn: IUIButton = new Button(pControlPanel, {text: "Create graph node"});
+			// this.connect(pNodeBtn, SIGNAL(click), SLOT(createNode));
 		}
 
 		createNode(): IUIGraphNode {

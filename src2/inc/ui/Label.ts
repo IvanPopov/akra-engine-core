@@ -40,7 +40,7 @@ module akra.ui {
 			super._createdFrom($comp);
 
 			this.text = $comp.attr("text");
-			this.editable($comp.attr("editable") || false);
+			this.editable(isDef($comp.attr("editable")) || false);
 			this.postfix = $comp.attr("postfix");
 		}
 

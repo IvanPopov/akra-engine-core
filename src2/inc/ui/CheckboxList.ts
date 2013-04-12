@@ -47,6 +47,8 @@ module akra.ui {
 		_createdFrom($comp: JQuery): void {
 			super._createdFrom($comp);
 			this.radio = isDef($comp.attr("radio")) && $comp.attr("radio").toLowerCase() !== "false";
+			this._bMultiSelect = isDef($comp.attr("multiselect")) && 
+				$comp.attr("multiselect").toLowerCase() !== "false";
 		}
 
 		rendered(): void {
@@ -104,6 +106,7 @@ module akra.ui {
 
 		_changed(pCheckbox: IUICheckbox, bCheked: bool): void {
 			if (this.hasMultiSelect()) {
+				this.changed(pCheckbox);
 				return;
 			}
 			else {

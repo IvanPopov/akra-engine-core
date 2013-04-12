@@ -10,6 +10,7 @@ module akra.animation {
 		private _pAnimations: IAnimationBase[] = [];
 		private _iOptions: int = 0;
 	    private _pActiveAnimation: IAnimationBase = null;
+	    private _pEngine: IEngine;
 
 	    inline get totalAnimations(): int{
 			return this._pAnimations.length;
@@ -19,9 +20,13 @@ module akra.animation {
 			return this._pActiveAnimation;
 		}
 
-		constructor(iOptions: int = 0) {
-			
+		constructor(pEngine: IEngine, iOptions: int = 0) {
+			this._pEngine = pEngine;
 			this.setOptions(iOptions);
+		}
+
+		inline getEngine(): IEngine {
+			return this._pEngine;
 		}
 
 		setOptions(iOptions: int): void {
@@ -115,7 +120,6 @@ module akra.animation {
 			var pAnimationPrev: IAnimationBase = this._pActiveAnimation;
 
 			if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
-				EMIT_BROADCAST(play, _CALL(pAnimationNext, fRealTime));
 				
 				//LOG('controller::play(', pAnimationNext.name, ')', pAnimationNext);
 				if (pAnimationPrev) {
@@ -126,7 +130,7 @@ module akra.animation {
 
 				this._pActiveAnimation = pAnimationNext;
 			
-
+				EMIT_BROADCAST(play, _CALL(pAnimationNext, fRealTime));
 				return true;
 			}
 
@@ -161,8 +165,8 @@ module akra.animation {
 	} 
 
 
-	export function createController(iOptions?: int): IAnimationController {
-		return new Controller(iOptions);
+	export function createController(pEngine: IEngine, iOptions?: int): IAnimationController {
+		return new Controller(pEngine, iOptions);
 	}
 }
 

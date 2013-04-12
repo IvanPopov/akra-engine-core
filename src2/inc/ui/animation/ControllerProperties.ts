@@ -11,6 +11,7 @@ module akra.ui.animation {
 		protected _pController: IAnimationController = null;
 		
 		protected _pTotalAnimLabel: IUILabel;
+		protected _pActiveAnimation: IUILabel;
 		protected _pEditBtn: IUIButton;
 
 		constructor (parent, options?) {
@@ -19,6 +20,8 @@ module akra.ui.animation {
 			this.template("ui/templates/AnimationControllerProperties.tpl");
 
 			this._pTotalAnimLabel = <IUILabel>this.findEntity("total");
+			this._pActiveAnimation = <IUILabel>this.findEntity("active");
+
 			this._pEditBtn = <IUIButton>this.findEntity("edit");
 
 			this.connect(this._pEditBtn, SIGNAL(click), SLOT(_editController));
@@ -34,6 +37,7 @@ module akra.ui.animation {
 			}
 
 			this.connect(pController, SIGNAL(animationAdded), SLOT(updateProperties));
+			this.connect(pController, SIGNAL(play), SLOT(updateProperties));
 
 			this._pController = pController;
 			this.updateProperties();
@@ -42,6 +46,7 @@ module akra.ui.animation {
 		private updateProperties(): void {
 			var pController: IAnimationController = this._pController;
 			this._pTotalAnimLabel.text = <string><any>pController.totalAnimations;
+			this._pActiveAnimation.text = pController.active.name;
 		}
 
 		rendered(): void {

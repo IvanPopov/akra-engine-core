@@ -10,71 +10,89 @@
 .component-graph{
 	border: 1px solid #cccccc;
 	min-height: 300px;
-	background-color: #888;
-	min-height: 100%;
+	background-color: #AAA;
+	// min-height: 100%;
 	//zoom: .5;
 }
 
 
 /* Graph Node */
 .component-graphnode {
-	width: 100px;
-	border: 1px solid #ffffff;
-	background-color: darken(white, 50%);
-	//background: rgba(0, 0, 0, .5);
-	box-shadow: 0px 0px 5px rgba(20, 20, 20, 0.7);
-	//border-radius: 5px;
 	font-size: 12px;
-	.component-title{
+
+	.component-title {
 		background-color: #5393c5;
 	}
+	
 	.graph-node-table{
 		border-collapse: collapse;
 		border-spacing: 0;
-		td{
+		
+		td {
 			padding: 0;
 		}
 	}
-	.graph-node-top{
+
+	td.graph-node-top, td.graph-node-left,
+	td.graph-node-bottom, td.graph-node-right {
+		text-align: center;
+		vertical-align: middle;
+
+		.component-connectionarea {
+			.layout {
+				td {
+					vertical-align: middle;
+					text-align: center;
+				}
+			}
+		}
+	}
+
+	
+	td.graph-node-left, td.graph-node-right {
+		width: 8px;
+		min-height: 30px;
+
+		.component-graphconnector {
+			margin-top: 2px;
+			margin-bottom: 2px;
+		}
+	}
+
+	td.graph-node-bottom, td.graph-node-top {
+		height: 8px;
 		min-width: 100px;
-		height: 10px;
-		//border-radius: 5px 5px 0px 0px;
-		//.component-graphconnector{top: -5px;}
-		//&:hover{background-color: #cccccc;}
+
+		.component-graphconnector {
+			margin-left: 2px;
+			margin-right: 2px;
+		}
 	}
-	.graph-node-left{
-		width: 10px;
-		height: 30px;
-		//.component-graphconnector{left: -5px;}
-		//&:hover{background-color: #cccccc;}
-	}
-	.graph-node-right{
-		width: 10px;
-		height: 30px;
-		//.component-graphconnector{left: 5px;}
-		//&:hover{background-color: #cccccc;}
-	}
-	.graph-node-bottom{
-		min-width: 100px;
-		height: 10px;
-		//border-radius: 0px 0px 5px 5px;
-		//.component-graphconnector{top: 5px;}
-		//&:hover{background-color: #cccccc;}
+
+	td.graph-node-center {
+		border: 1px solid fade(yellow, 50%);
+		background-color: fade(gray, 75%);
+		// box-shadow: 0px 0px 1px rgba(20, 20, 20, 0.7);
+		
+		width: 100px;
+		height: 50px; 
 	}
 
 	.component-horizontal {
 		background: rgba(255,255,255,.1);
 	}
 
-	.component {
-		//margin: 2px;
-		.component-checkbox{
-			margin: 0;
-		}
-	}
+	// .component {
+	// 	//margin: 2px;
+	// 	.component-checkbox{
+	// 		margin: 0;
+	// 	}
+	// }
 
 	&.highlight {
-		box-shadow: 0 0 10px rgba(255, 180, 0, 1.0);
+		td.graph-node-center {
+			box-shadow: 0 0 10px rgba(255, 180, 0, 1.0);
+		}
 	}
 
 	.layout {
@@ -88,37 +106,47 @@
 	}
 
 	&.open {
-		box-shadow: 0 0 5px rgba(0, 255, 0, 1.0);
+		td.graph-node-center {
+			box-shadow: 0 0 5px rgba(0, 255, 0, 1.0);
+		}
 	}
 
 	&.blocked {
-		box-shadow: 0 0 5px red;
+		td.graph-node-center {
+			box-shadow: 0 0 5px red;
+		}
 	}
 }
 
 /* Graph connector */
-.component-graphconnector{
-	border: 1px solid #444;
-	background-color: #666;
-	//border-radius: 4px;
-	width: 10px;
-	height: 10px;
-	margin-left: 2px;
-	margin-right: 2px;
-	margin: 0px;
+.component-graphconnector {
+	display: inline-block;
+
+	border: 1px solid white;
+	background-color: gray;
+
+	width: 6px;
+	height: 6px;
+
+	border-radius: 5px;
+
 	&.highlight{
 		box-shadow: 0 0 5px rgba(255, 0, 0, 1.0);
 	}
 
 	&.in {
-		border: 1px solid green;
+		//border: 1px solid green;
 	}
 
 	&.out {
-		border: 1px solid blue;
+		//border: 1px solid blue;
 	}
 
 	&.connected {
-		border-radius: 10px;
+		border: 0px;
+		border-radius: 0px;
+		width: 8px;
+		height: 8px;
+		background-color: black;
 	}
 }

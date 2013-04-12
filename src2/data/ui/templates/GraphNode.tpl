@@ -9,7 +9,9 @@
 			<td class="graph-node-left" side="left">
 				
 			</td>
-			<td class="graph-node-center"></td>
+			<td class="graph-node-center">
+				
+			</td>
 			<td class="graph-node-right" side="right">
 			
 			</td>

@@ -46,7 +46,6 @@ module akra.ui {
 			this.connect(pNodeProperties, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
 
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
-			this._pTabs.createComponent("GraphControls", {title: "Test Graph"});
 		}
 
 		inline getEngine(): IEngine { return this._pEngine; }
@@ -78,8 +77,16 @@ module akra.ui {
 					this._pSceneNodeProperties.setNode(pNode);
 					return true;
 				case ECMD.EDIT_ANIMATION_CONTROLLER: 
-					var pController: IAnimationController = argv[0];
-
+					var iTab: int = this._pTabs.findTabByTitle("Edit controller");
+					if (iTab < 0) {
+						var pController: IAnimationController = argv[0];
+						var pControls: IUIAnimationControls = 
+							<IUIAnimationControls>this._pTabs.createComponent("AnimationControls", {title: "Edit controller"});
+						pControls.graph.capture(pController);
+					}
+					else {
+						this._pTabs.select(iTab);
+					}
 					return true;
 				case ECMD.CHANGE_AA:
 					(<render.DSViewport>this._pPreview.viewport).setFXAA(<bool>argv[0]);

@@ -25,7 +25,7 @@ module akra.ui.animation {
 
 		set animation(pAnim: IAnimationBase) {
 			//ASSERT(isNull(this.animation), "animation container already setuped in player");
-
+			LOG(pAnim, "set container animation")
 			this._pAnimation.setAnimation(pAnim);
 			this.setup();
 		}
@@ -33,9 +33,8 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph, pContainer: IAnimationContainer = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_PLAYER);
 
-			template(this, "ui/templates/AnimationPlayer.tpl");
-
-			this.init();
+			this.template("ui/templates/AnimationPlayer.tpl");
+			this.linkAreas();
 
 			this._pSpeedLabel 	= <IUILabel>this.findEntity("speed");
 			this._pSlider 		= <IUISlider>this.findEntity("state");
@@ -48,6 +47,8 @@ module akra.ui.animation {
 			this.graph.addAnimation(pContainer);
 			this.connect(pContainer, SIGNAL(enterFrame), SLOT(_enterFrame));
 
+			this.connect(this._pLoopBtn, SIGNAL(changed), SLOT(_useLoop));
+			this.connect(this._pReverseBtn, SIGNAL(changed), SLOT(_reverse));
 			this.connect(this._pPlayBtn, SIGNAL(changed), SLOT(_play));
 			this.connect(this._pSpeedLabel, SIGNAL(changed), SLOT(_setSpeed));
 			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_setName));
@@ -92,28 +93,6 @@ module akra.ui.animation {
 			this._pAnimation.setSpeed(parseFloat(x));
 		}
 
-		protected init(): void {
-			var pInput: graph.ConnectionArea = new graph.ConnectionArea(this, {
-				show: false, 
-				maxInConnections: 1,
-				maxOutConnections: 1
-			});
-			
-			pInput.setMode(EUIGraphDirections.IN|EUIGraphDirections.OUT);
-			pInput.setLayout(EUILayouts.HORIZONTAL);
-			pInput.render(this.el);
-
-			this.addConnectionArea("in", pInput);
-
-			// var pOutput: graph.ConnectionArea = new graph.ConnectionArea(this, {show: false, maxConnections: 1});
-			
-			// pOutput.setMode(EUIGraphDirections.OUT);
-			// pOutput.setLayout(EUILayouts.HORIZONTAL);
-			// pOutput.render(this.el);
-
-			// this.addConnectionArea("out", pOutput);
-		}
-
 
 		_enterFrame(fTime: float): void {
 			if (this._pAnimation.isPaused()) {
@@ -129,6 +108,11 @@ module akra.ui.animation {
 			        	(math.min(fTime, this._pAnimation.duration) - this._pAnimation.getStartTime());
 			    }
 		    }
+		}
+
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-animationplayer");
 		}
 	}
 

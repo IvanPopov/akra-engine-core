@@ -6,6 +6,7 @@
 module akra {
 	IFACE(IUIGraph);
 	IFACE(IUIGraphRoute);
+	IFACE(IUIGraphConnectionArea);
 
 	export enum EUIGraphNodes {
 		UNKNOWN,
@@ -16,9 +17,16 @@ module akra {
 		ANIMATION_MASK
 	}
 
+	export interface IGraphNodeAreaMap {
+		[name: string]: IUIGraphConnectionArea;
+	}
+
+
 	export interface IUIGraphNode extends IUIComponent {
 		readonly graphNodeType: EUIGraphNodes;
 		readonly graph: IUIGraph;
+		readonly areas: IGraphNodeAreaMap;
+
 
 		findRoute(pNode: IUIGraphNode): IUIGraphRoute;
 		isConnectedWith(pNode: IUIGraphNode): bool;

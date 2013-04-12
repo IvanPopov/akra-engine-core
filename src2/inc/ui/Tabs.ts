@@ -62,6 +62,16 @@ module akra.ui {
 			return -1;
 		}
 
+		findTabByTitle(sName: string): int {
+			for (var i = 0; i < this._pTabs.length; ++ i) {
+				if (this._pTabs[i].title === sName) {
+					return i;
+				}
+			}
+
+			return -1;
+		}
+
 		select(panel): void {
 			var n: uint = 0;
 

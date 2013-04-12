@@ -16,11 +16,11 @@ module akra.ui.animation {
 		private _pAnimationController: IAnimationController = null;
 		private _pTimer: IUtilTimer = null;
 
-		constructor (parent) {
-			super(parent, EUIGraphTypes.ANIMATION);
+		constructor (parent, options) {
+			super(parent, options, EUIGraphTypes.ANIMATION);
 		}
 
-		setTimer(pTimer: IUtilTimer): void {
+		private setTimer(pTimer: IUtilTimer): void {
 			this._pTimer = pTimer;
 		}
 
@@ -28,23 +28,23 @@ module akra.ui.animation {
 			return this._pAnimationController;
 		}
 
-		private selectNode(pNode: IUIAnimationNode, bPlay: bool = true): void {
-			// if (this._pSelectedNode === pNode) {
-			// 	return;
-			// }
+		selectNode(pNode: IUIAnimationNode): void {
+			var bPlay: bool = true;
 
-			// if (!isNull(this._pSelectedNode)) {
-			// 	this._pSelectedNode._selected(false);
-			// }
+			if (this._pSelectedNode === pNode) {
+				return;
+			}
 
-			// if (!isNull(pNode)) {
-			// 	pNode._selected(true);
-			// }
+			this._pSelectedNode = pNode;
 
-			// if (bPlay && !isNull(this._pTimer)) {
-			// 	this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
-			// }
+			if (bPlay && !isNull(this._pTimer)) {
+				this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
+			}
+
+			this.nodeSelected(pNode, bPlay);
 		}
+
+		BROADCAST(nodeSelected, CALL(pNode, bPlay));
 		
 		addAnimation(pAnimation: IAnimationBase): void {
 			this._pAnimationController.addAnimation(pAnimation);
@@ -101,7 +101,7 @@ module akra.ui.animation {
 			}
 
 			if (akra.animation.isAnimation(pAnimation)) {
-				pNode = (<ui.animation.Controls>this.parent).createData();
+				pNode = <IUIAnimationNode>new Data(this);
 				pNode.animation = pAnimation;
 			}
 			else {
@@ -112,10 +112,20 @@ module akra.ui.animation {
 		}
 
 		capture(pController: IAnimationController): bool {
+			ASSERT(isNull(this._pAnimationController), SLOT("controller exists!!!"));
+
 			this._pAnimationController = pController;
 			
 			this.connect(pController, SIGNAL(play), SLOT(onControllerPlay));
 			this.createNodeByController(pController);
+
+			this.setTimer(pController.getEngine().getTimer());
+
+			var pEngine: IEngine = pController.getEngine();
+
+			pEngine.getScene().bind(SIGNAL(beforeUpdate), () => {
+				pController.update(pEngine.time);
+			});
 
 			return true;
 		}
@@ -123,6 +133,17 @@ module akra.ui.animation {
 		private onControllerPlay(pAnimation: IAnimationBase): void {
 			// var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
 			// this.selectNode(pNode);
+		}
+
+		addChild(pChild: IEntity): IEntity {
+			pChild = super.addChild(pChild);
+
+			if (isComponent(pChild, EUIComponents.GRAPH_NODE)) {
+				var pNode: IUIGraphNode = <IUIGraphNode>pChild;
+				this.connect(pNode, SIGNAL(click), SLOT(selectNode));
+			}
+
+			return pChild;
 		}
 	}
 

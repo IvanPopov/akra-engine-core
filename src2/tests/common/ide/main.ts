@@ -111,28 +111,28 @@ module akra {
 
 		var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
 		
-		pController = animation.createController();
+		//pController = animation.createController();
 
 		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
-			var pModelRoot: IModelEntry = pModel.attachToScene(pScene, pController);
+			var pModelRoot: IModelEntry = pModel.attachToScene(pScene/*, pController*/);
 			pModelRoot.scale(3.);
 			//pModelRoot.addPosition(0, -1., 0);
 
-			pController.attach(pModelRoot);
+			// pController.attach(pModelRoot);
 
-			var pContainer: IAnimationContainer = animation.createContainer();
+			// var pContainer: IAnimationContainer = animation.createContainer();
 
-			if (pController.active) {
-				pContainer.setAnimation(pController.active);
-				pContainer.useLoop(true);
-				pController.addAnimation(pContainer);		
-			}
+			// if (pController.active) {
+			// 	pContainer.setAnimation(pController.active);
+			// 	pContainer.useLoop(true);
+			// 	pController.addAnimation(pContainer);		
+			// }
 
 
-			pScene.bind(SIGNAL(beforeUpdate), () => {
-				// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
-				pController.update(pEngine.time);
-			});
+			// pScene.bind(SIGNAL(beforeUpdate), () => {
+			// 	// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+			// 	pController.update(pEngine.time);
+			// });
 
 			if (isFunction(fnCallback)) {
 				fnCallback(pModelRoot);

@@ -2948,7 +2948,11 @@ module akra.core.pool.resources {
                 pInitialPosesOutput = this.buildInitialPoses();
             }
 
-            if (!isNull(pController) && this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
+            if (this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
+                if (isNull(pController)) {
+                    pController = this.getEngine().createAnimationController();
+                }
+
                 pAnimationOutput = 
                         this.buildAnimations();
                 //дополним анимации начальными позициями костей

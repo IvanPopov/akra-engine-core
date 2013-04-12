@@ -24,10 +24,16 @@ module akra.ui.graph {
 		inline set route(pRoute: IUIGraphRoute) {
 			this._pRoute = pRoute;
 			
-			(this === pRoute.left? this.output(): this.input()); 
-
 			if (pRoute.isBridge()) {
-				this.connected(pRoute.right);
+				
+				if (this === pRoute.left) {
+					this.output();
+					this.connected(pRoute.right);
+				}
+				else {
+					this.input();
+					this.connected(pRoute.left);
+				}
 			}
 		}
 
@@ -37,6 +43,7 @@ module akra.ui.graph {
 			this.handleEvent("mousedown mouseup");
 			this.el.disableSelection();
 		}
+
 
 		mousedown(e: IUIEvent): void {
 			e.stopPropagation();
@@ -111,14 +118,13 @@ module akra.ui.graph {
 		}
 
 		
-		routing(): void {
+		inline routing(): void {
+			// LOG("routing");
 			this.route.routing();
 		}		
 
 		connected(pTarget: IUIGraphConnector): void {
 			this.el.addClass("connected");
-			this.el.css({backgroundColor: this.route.color.html});
-			// LOG(this.route.color.html);
 			EMIT_BROADCAST(connected, _CALL(pTarget));
 		}
 

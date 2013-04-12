@@ -216,6 +216,12 @@ module akra.ui {
 			this.$element.attr("style", $comp.attr("style"));
 			this.$element.attr("class", $comp.attr("class"));
 			
+			var sLayout: string = $comp.attr("layout");
+
+			if (isString(sLayout)) {
+				this.setLayout(sLayout);
+			}
+
 			// var sHTMLContent: string = $comp.html();
 			// if (isDefAndNotNull(sHTMLContent)) {
 			// 	this.$element.append(sHTMLContent);

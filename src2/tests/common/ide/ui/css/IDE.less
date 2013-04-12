@@ -77,6 +77,16 @@ body {
 	font-size: @font-size;
 	min-height: 760px;
 	border-bottom: @border-light;
+
+	.component-tabs {
+		& > .component-panel {
+			min-height: 760px;
+
+			.component-graph {
+				min-height: 550px;
+			}
+		}
+	}
 }
 
 #preview-area {
@@ -224,9 +234,8 @@ body {
 			}
 		}
 	}
-
-
 }
+
 
 #tree {
 	min-height: 510px;
@@ -527,13 +536,13 @@ body {
 
 		.component-resourceproperties {
 			.row {
-				padding: 5px 20px 5px 20px;
+				padding: 0px 20px 1px 20px;
 			}
 		}
 
 		.component-animationcontrollerproperties {
 			.row {
-				padding: 5px 20px 5px 20px;
+				padding: 0px 20px 0px 20px;
 			}
 
 			button[name=edit] {

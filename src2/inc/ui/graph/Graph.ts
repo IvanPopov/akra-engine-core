@@ -31,13 +31,15 @@ module akra.ui.graph {
 		inline get graphType(): EUIGraphTypes { return this._eGraphType; }
 		inline get canvas(): RaphaelPaper { return this._pCanvas; }
 
-		constructor (parent, eType: EUIGraphTypes = EUIGraphTypes.UNKNOWN) {
-			super(parent, null, EUIComponents.GRAPH);
+		constructor (parent, options?, eType: EUIGraphTypes = EUIGraphTypes.UNKNOWN) {
+			super(parent, options, EUIComponents.GRAPH);
 
 			this._eGraphType = eType;
 
 			//FIXME: unblock selection
-			this.getHTMLElement().onselectstart = () => { return false };
+			// this.getHTMLElement().onselectstart = () => { return false };
+			this.el.disableSelection();
+			this.handleEvent("mouseup mousemove keydown click");
 		}
 
 

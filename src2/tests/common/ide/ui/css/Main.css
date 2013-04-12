@@ -395,15 +395,10 @@ div.component-switch input:checked + label:before {
 .component-graph {
   border: 1px solid #cccccc;
   min-height: 300px;
-  background-color: #888;
-  min-height: 100%;
+  background-color: #AAA;
 }
 /* Graph Node */
 .component-graphnode {
-  width: 100px;
-  border: 1px solid #ffffff;
-  background-color: #808080;
-  box-shadow: 0px 0px 5px rgba(20, 20, 20, 0.7);
   font-size: 12px;
 }
 .component-graphnode .component-title {
@@ -416,29 +411,46 @@ div.component-switch input:checked + label:before {
 .component-graphnode .graph-node-table td {
   padding: 0;
 }
-.component-graphnode .graph-node-top {
+.component-graphnode td.graph-node-top,
+.component-graphnode td.graph-node-left,
+.component-graphnode td.graph-node-bottom,
+.component-graphnode td.graph-node-right {
+  text-align: center;
+  vertical-align: middle;
+}
+.component-graphnode td.graph-node-top .component-connectionarea .layout td,
+.component-graphnode td.graph-node-left .component-connectionarea .layout td,
+.component-graphnode td.graph-node-bottom .component-connectionarea .layout td,
+.component-graphnode td.graph-node-right .component-connectionarea .layout td {
+  vertical-align: middle;
+  text-align: center;
+}
+.component-graphnode td.graph-node-left, .component-graphnode td.graph-node-right {
+  width: 8px;
+  min-height: 30px;
+}
+.component-graphnode td.graph-node-left .component-graphconnector, .component-graphnode td.graph-node-right .component-graphconnector {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+.component-graphnode td.graph-node-bottom, .component-graphnode td.graph-node-top {
+  height: 8px;
   min-width: 100px;
-  height: 10px;
 }
-.component-graphnode .graph-node-left {
-  width: 10px;
-  height: 30px;
+.component-graphnode td.graph-node-bottom .component-graphconnector, .component-graphnode td.graph-node-top .component-graphconnector {
+  margin-left: 2px;
+  margin-right: 2px;
 }
-.component-graphnode .graph-node-right {
-  width: 10px;
-  height: 30px;
-}
-.component-graphnode .graph-node-bottom {
-  min-width: 100px;
-  height: 10px;
+.component-graphnode td.graph-node-center {
+  border: 1px solid rgba(255, 255, 0, 0.5);
+  background-color: rgba(128, 128, 128, 0.75);
+  width: 100px;
+  height: 50px;
 }
 .component-graphnode .component-horizontal {
   background: rgba(255, 255, 255, 0.1);
 }
-.component-graphnode .component .component-checkbox {
-  margin: 0;
-}
-.component-graphnode.highlight {
+.component-graphnode.highlight td.graph-node-center {
   box-shadow: 0 0 10px #ffb400;
 }
 .component-graphnode .layout {
@@ -449,63 +461,100 @@ div.component-switch input:checked + label:before {
   padding: 0;
   margin: 0;
 }
-.component-graphnode.open {
+.component-graphnode.open td.graph-node-center {
   box-shadow: 0 0 5px #00ff00;
 }
-.component-graphnode.blocked {
+.component-graphnode.blocked td.graph-node-center {
   box-shadow: 0 0 5px red;
 }
 /* Graph connector */
 .component-graphconnector {
-  border: 1px solid #444;
-  background-color: #666;
-  width: 10px;
-  height: 10px;
-  margin-left: 2px;
-  margin-right: 2px;
-  margin: 0px;
+  display: inline-block;
+  border: 1px solid white;
+  background-color: gray;
+  width: 6px;
+  height: 6px;
+  border-radius: 5px;
 }
 .component-graphconnector.highlight {
   box-shadow: 0 0 5px #ff0000;
 }
-.component-graphconnector.in {
-  border: 1px solid green;
-}
-.component-graphconnector.out {
-  border: 1px solid blue;
-}
 .component-graphconnector.connected {
-  border-radius: 10px;
+  border: 0px;
+  border-radius: 0px;
+  width: 8px;
+  height: 8px;
+  background-color: black;
 }
 .component-animationgraph .component-animationgraphnode.selected {
   border-bottom: 3px solid red;
 }
-.component-animationdata .controls, .component-animationplayer .controls {
-  padding: 0 2px 0 2px;
+.component-animationdata .component-title, .component-animationplayer .component-title {
+  background-color: rgba(100, 100, 100, 0.8);
+  color: rgba(255, 255, 0, 0.8);
+  text-shadow: 0px 1px 2px rgba(50, 50, 50, 0.95);
 }
-.component-animationdata .controls .component-label, .component-animationplayer .controls .component-label {
-  font-size: 12px;
+.component-animationdata.selected .component-title, .component-animationplayer.selected .component-title {
+  background-color: rgba(255, 200, 0, 0.65);
+  color: black;
+  text-shadow: none;
 }
-.component-animationplayer .component-button,
-.component-animationblender .component-button,
-.component-animationplayer .component-checkbox,
-.component-animationblender .component-checkbox {
-  padding: 2px;
-  font-size: 12px;
+.component-animationdata.selected div[type=node], .component-animationplayer.selected div[type=node] {
+  border: 1px solid orange;
 }
-.component-animationblender .component-button {
-  display: block;
-  padding-top: 0px;
-  padding-bottom: 0px;
+.component-animationdata div.controls, .component-animationplayer div.controls {
+  text-align: center;
 }
-.component-animationmask .controls {
-  width: 140px;
-  max-height: 145px;
-  overflow-y: scroll;
-  overflow-x: auto;
+.component-animationdata div[type=node], .component-animationplayer div[type=node] {
+  border: 1px solid rgba(255, 255, 0, 0.5);
+  background-color: rgba(128, 128, 128, 0.75);
 }
-.component-animationmask .controls .component-slider {
-  width: 100% !important;
+.component-animationdata.highlight div[type=node], .component-animationplayer.highlight div[type=node] {
+  box-shadow: 0 0 10px #ffb400;
+}
+.component-animationdata .layout, .component-animationplayer .layout {
+  text-align: center;
+  margin: 0;
+}
+.component-animationdata table, .component-animationplayer table {
+  padding: 0;
+  margin: 0;
+}
+.component-animationdata.open div[type=node], .component-animationplayer.open div[type=node] {
+  box-shadow: 0 0 5px #00ff00;
+}
+.component-animationdata.blocked div[type=node], .component-animationplayer.blocked div[type=node] {
+  box-shadow: 0 0 5px red;
+}
+.component-animationdata .component-connectionarea .layout.horizontal, .component-animationplayer .component-connectionarea .layout.horizontal {
+  height: 8px;
+}
+.component-animationdata .component-connectionarea .layout td, .component-animationplayer .component-connectionarea .layout td {
+  vertical-align: middle;
+  text-align: center;
+}
+.component-animationplayer .component-checkboxlist .layout.horizontal table {
+  margin: 0 auto;
+}
+.component-animationplayer .component-checkboxlist .component-checkbox {
+  padding: 1 4px;
+  font-size: 11px;
+}
+.component-animationplayer .component-checkboxlist .component-checkbox.first {
+  border-radius: 0 !important;
+}
+.component-animationplayer .component-checkboxlist .component-checkbox.last {
+  border-radius: 0 !important;
+}
+.component-animationplayer .component-slider {
+  height: 10px;
+}
+.component-animationplayer .component-slider .component-pin {
+  height: 10px;
+  width: 10px;
+}
+.component-animationplayer .component-slider {
+  width: auto;
 }
 body,
 form,
@@ -558,6 +607,12 @@ body {
   font-size: 12px;
   min-height: 760px;
   border-bottom: 5px solid #dfdfdf;
+}
+#work-area .component-tabs  > .component-panel {
+  min-height: 760px;
+}
+#work-area .component-tabs  > .component-panel .component-graph {
+  min-height: 550px;
 }
 #preview-area {
   min-height: 100%;
@@ -941,10 +996,10 @@ body {
   margin-left: -30px;
 }
 .component-scenenodeproperties div[name=model-entry] .component-resourceproperties .row {
-  padding: 5px 20px 5px 20px;
+  padding: 0px 20px 1px 20px;
 }
 .component-scenenodeproperties div[name=model-entry] .component-animationcontrollerproperties .row {
-  padding: 5px 20px 5px 20px;
+  padding: 0px 20px 0px 20px;
 }
 .component-scenenodeproperties div[name=model-entry] .component-animationcontrollerproperties button[name=edit] {
   display: block;
