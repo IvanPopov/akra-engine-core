@@ -11,7 +11,7 @@ module akra {
 	var pUI: IUI = pEngine.getSceneManager().createUI();
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pMainScene: JQuery = null;
-	var pCamera: ICamera = null;
+	export var pCamera: ICamera = null;
 	var pViewport: IViewport = null;
 	var pSkyBoxTexture: ITexture = null;
 
@@ -141,8 +141,8 @@ module akra {
 
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
-					pModelRoot.addRelRotationByXYZAxis(0.00, 0.001, 0);
-					pController.update(pEngine.time);
+					pModelRoot.addRelRotationByXYZAxis(0.00, 0.00, 0);
+					//pController.update(pEngine.time);
 				});
 
 				if (isFunction(fnCallback)) {

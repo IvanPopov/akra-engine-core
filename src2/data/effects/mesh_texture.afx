@@ -108,17 +108,19 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
         float3 normal = normalize(IN.norm.xyz);
         //float3 binormal = normalize(cross(float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), -length(normal.xy)), normal));
 
-        float3 binormal = -normalize(float3(dFdx(IN.tc_normal.y), dFdy(IN.tc_normal.y), -length(normal.xy)));
+        float3 binormal = float3(dFdx(IN.tc_normal.y), dFdy(IN.tc_normal.y), 0.);
+        binormal.z = -dot(binormal.xy,normal.xy)/normal.z;
+        binormal = normalize(binormal);
             
         if (binormal == float3(0.)) {
             binormal = normalize(cross(float3(0., 1., 0.), normal));
         }
 
-        float3 tang = cross(normal, binormal);
+        float3 tangent = cross(normal, binormal);
 
           //формируем матрицу трансформации вектора источника света
         float3x3 t;
-        t[0] = tang;
+        t[0] = tangent;
         t[1] = binormal;
         t[2] = normal;
 
@@ -126,13 +128,15 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
         //texNormal.z *= 2.;
         texNormal.xy = (texNormal.xy - 0.5) * 2.;
 
-        norm = (float4(texNormal.xyz * t, 0.));
+        texNormal = normalize(texNormal);
+
+        norm = float4(t * texNormal, 0.);
         
        
         //norm = float4(IN.norm.xyz, 0.);
     }
 
-    Normal = norm.xyz;
+    Normal = normalize(norm.xyz);
 //    Normal = normalize(float3(normalize(IN.norm) + tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz));
     Fragment_material.emissive = defaultMaterial.emissive + tex2D(sampler_emissive, float2(IN.tc_emissive.xy));
     Fragment_material.diffuse = defaultMaterial.diffuse + tex2D(sampler_diffuse, float2(IN.tc_diffuse.xy));
