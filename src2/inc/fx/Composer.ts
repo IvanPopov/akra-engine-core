@@ -599,6 +599,8 @@ module akra.fx {
 			// this._pPreRenderState.isClear = true;
 		}
 
+		bUseNormalMap: bool = true;
+
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
 			var pViewport: IViewport = this._getCurrentViewport();
@@ -639,6 +641,8 @@ module akra.fx {
 							vec2(this._pCurrentViewport.actualWidth / pLastTexture.width,
 								 this._pCurrentViewport.actualHeight / pLastTexture.height));
 			}
+
+			pPassInput.setUniform("useNormal", this.bUseNormalMap);
 		}
 
 		private initPostEffectTextures(): void{
