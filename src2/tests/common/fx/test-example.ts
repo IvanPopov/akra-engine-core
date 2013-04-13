@@ -41,7 +41,7 @@ module akra {
 		function createCameras(): void {
 			pCamera = pScene.createCamera();
 		
-			pCamera.addPosition(vec3(0, 5, 15));
+			pCamera.addPosition(vec3(0, 4, 5));
 			pCamera.addRelRotationByXYZAxis(-0.2, 0., 0.);
 			pCamera.attachToParent(pScene.getRootNode());
 
@@ -77,11 +77,10 @@ module akra {
 			pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 			pOmniLight.params.diffuse.set(0.5);
 			pOmniLight.params.specular.set(1, 1, 1, 1);
-			pOmniLight.params.attenuation.set(1,0,0);
+			pOmniLight.params.attenuation.set(0.5,0,0);
 
-			pOmniLight.addPosition(0, 2, 7);
-
-			var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
+			pOmniLight.addPosition(1, 5, 3);
+			/*var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 			
 			pProjectShadowLight.attachToParent(pScene.getRootNode());
 			pProjectShadowLight.enabled = true;
@@ -104,7 +103,7 @@ module akra {
 			pOmniShadowLight.params.attenuation.set(1,0.0,0);
 			pOmniShadowLight.isShadowCaster = true;
 
-			pOmniShadowLight.addPosition(5, 10, -10);
+			pOmniShadowLight.addPosition(5, 10, -10);*/
 		}
 
 		function createSkyBox(): void {
@@ -142,7 +141,7 @@ module akra {
 
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
-					pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+					pModelRoot.addRelRotationByXYZAxis(0.00, 0.001, 0);
 					pController.update(pEngine.time);
 				});
 
