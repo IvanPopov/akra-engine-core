@@ -103,8 +103,10 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
     }
     else {
         
-        float3 normal = IN.norm.xyz;
-        float3 binormal = normalize(cross(float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), 0.), normal));
+        float3 normal = normalize(IN.norm.xyz);
+        //float3 binormal = normalize(cross(float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), -length(normal.xy)), normal));
+
+        float3 binormal = -normalize(float3(dFdx(IN.tc_normal.y), dFdy(IN.tc_normal.y), -length(normal.xy)));
             
         if (binormal == float3(0.)) {
             binormal = normalize(cross(float3(0., 1., 0.), normal));
@@ -125,7 +127,7 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
         norm = (float4(texNormal.xyz * t, 0.));
         
        
-        norm = float4(IN.norm.xyz, 0.);
+        //norm = float4(IN.norm.xyz, 0.);
     }
 
     Normal = norm.xyz;
