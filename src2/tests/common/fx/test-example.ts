@@ -40,7 +40,7 @@ module akra {
 
 		function createCameras(): void {
 			pCamera = pScene.createCamera();
-		
+
 			pCamera.addPosition(vec3(0, 4, 5));
 			pCamera.addRelRotationByXYZAxis(-0.2, 0., 0.);
 			pCamera.attachToParent(pScene.getRootNode());
@@ -66,7 +66,7 @@ module akra {
 			pStats.target = pViewport.getTarget();
 			pStats.render(pMainScene);
 
-			pStats.el.css({position: "relative", top: "-600px"});
+			pStats.el.css({position: "relative", top: "-1024"});
 		}
 
 		function createLighting(): void {
@@ -141,8 +141,8 @@ module akra {
 
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
-					pModelRoot.addRelRotationByXYZAxis(0.00, 0.00, 0);
-					//pController.update(pEngine.time);
+					pModelRoot.addRelRotationByXYZAxis(0.00, 0.001, 0);
+					pController.update(pEngine.time);
 				});
 
 				if (isFunction(fnCallback)) {

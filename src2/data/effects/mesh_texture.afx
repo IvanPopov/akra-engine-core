@@ -108,21 +108,25 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
         float3 normal = normalize(IN.norm.xyz);
         //float3 binormal = normalize(cross(float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), -length(normal.xy)), normal));
 
-        float3 binormal = float3(dFdx(IN.tc_normal.y), dFdy(IN.tc_normal.y), 0.);
+        float3 tangent = float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), 0.);
+        tangent.z = -dot(tangent.xy,normal.xy)/normal.z;
+        tangent = normalize(tangent);
+
+        float3 binormal = cross(tangent, normal);
+
+        /*float3 binormal = float3(dFdx(IN.tc_normal.y), dFdy(IN.tc_normal.y), 0.);
         binormal.z = -dot(binormal.xy,normal.xy)/normal.z;
-        binormal = normalize(binormal);
+        binormal = normalize(binormal);*/
             
-        if (binormal == float3(0.)) {
+        /*if (binormal == float3(0.)) {
             binormal = normalize(cross(float3(0., 1., 0.), normal));
-        }
+        }*/
 
-        float3 tangent = cross(normal, binormal);
-
-          //формируем матрицу трансформации вектора источника света
-        float3x3 t;
-        t[0] = tangent;
-        t[1] = binormal;
-        t[2] = normal;
+        //формируем матрицу трансформации
+        float3x3 m3fTransform;
+        m3fTransform[0] = tangent;
+        m3fTransform[1] = binormal;
+        m3fTransform[2] = normal;
 
 
         //texNormal.z *= 2.;
@@ -130,10 +134,7 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
 
         texNormal = normalize(texNormal);
 
-        norm = float4(t * texNormal, 0.);
-        
-       
-        //norm = float4(IN.norm.xyz, 0.);
+        norm = float4(m3fTransform * texNormal, 0.);
     }
 
     Normal = normalize(norm.xyz);
