@@ -38,7 +38,7 @@ module akra.terrain {
 	    private _iBlockSize: uint = 32;
 
 	    //Тип хранимых тектсур
-	    private _eTextureFormat: EPixelFormats = EPixelFormats.BYTE_BGR;
+	    private _eTextureFormat: EPixelFormats = EPixelFormats.BYTE_RGB;
 	    private _iTextureHeight: uint = 1024;
 	    private _iTextureWidth: uint = 1024;
 	    
@@ -65,9 +65,8 @@ module akra.terrain {
 	    private _fTexCourdYOld: float = undefined;
 	    private _nCountRender: uint = 0;
 
-	    private _pTmpBox1: IBox = new geometry.Box();
-	    private _pTmpBox2: IBox = new geometry.Box();
-	    private _pTmpPixelBox: IPixelBox = new pixelUtil.PixelBox();
+	    // private _pTmpBox1: IBox = new geometry.Box();
+	    // private _pTmpBox2: IBox = new geometry.Box();
 
 	    constructor(pEngine: IEngine, pObject: any, sSurfaceTextures: string) {
 	    	this._pEngine = pEngine;
@@ -143,11 +142,10 @@ module akra.terrain {
 
 		prepareForRender(pViewport: IViewport): void {
 		    var pCamera: ICamera = pViewport.getCamera();
-		    var v4fCameraCoord: IVec4 = vec4(pCamera.targetPos, 1.);
-		    var m4fTransposeInverse: IMat4 = this._pObject.inverseWorldMatrix.transpose(mat4());
-		    
-		    v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
+		    var v4fCameraCoord: IVec4 = vec4(pCamera.worldPosition, 1.);
+		    var m4fTransposeInverse: IMat4 = this._pObject.inverseWorldMatrix;
 
+		    v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
 
 		    //Вычисление текстурных координат над которыми находиться камера
 		    var fTexCourdX: float = (v4fCameraCoord.x - this._pWorldExtents.x0) /
@@ -221,22 +219,26 @@ module akra.terrain {
 		                var iOverlappingBlockHeight: uint = this._iBufferHeight - math.abs(iYnew - this._pXY[i].iY);
 
 
-		                //копируем данные
+		            //     //копируем данные
 		                LOG("Копированеи совпадающей части");
 
-		                //console.log(this._pDataFor.length,iXOverlappingBlockInNewBuf,iYOverlappingBlockInNewBuf,iOverlappingBlockWidth,iOverlappingBlockHeight);
+		            //     //console.log(this._pDataFor.length,iXOverlappingBlockInNewBuf,iYOverlappingBlockInNewBuf,iOverlappingBlockWidth,iOverlappingBlockHeight);
 
-		                this._pTmpBox1.setPosition(iXOverlappingBlockInNewBuf, iYOverlappingBlockInNewBuf, iOverlappingBlockWidth, iOverlappingBlockHeight);
-		                this._pTmpBox2.setPosition(iXOverlappingBlockInOldBuf, iYOverlappingBlockInOldBuf, iOverlappingBlockWidth, iOverlappingBlockHeight);
+		                var pTmpBox1: IBox = geometry.box(iXOverlappingBlockInNewBuf, iYOverlappingBlockInNewBuf, 
+		                								  iOverlappingBlockWidth + iXOverlappingBlockInNewBuf, 
+		                								  iOverlappingBlockHeight + iYOverlappingBlockInNewBuf);
+		                var pTmpBox2: IBox = geometry.box(iXOverlappingBlockInOldBuf, iYOverlappingBlockInOldBuf,
+		                								  iOverlappingBlockWidth + iXOverlappingBlockInOldBuf, 
+		                								  iOverlappingBlockHeight + iYOverlappingBlockInOldBuf);
 
-		                var pPixelBox1: IPixelBox = this._pDataFor.getSubBox(this._pTmpBox1);
-		                var pPixelBox2: IPixelBox = this._pBuffer[i].getSubBox(this._pTmpBox2);
+		                var pPixelBox1: IPixelBox = this._pDataFor.getSubBox(pTmpBox1, pixelUtil.pixelBox());
+		                var pPixelBox2: IPixelBox = this._pBuffer[i].getSubBox(pTmpBox2, pixelUtil.pixelBox());
 
-		                // pixelUtil.bulkPixelConversion(pPixelBox1, pPixelBox2);
+		                pixelUtil.bulkPixelConversion(pPixelBox2, pPixelBox1);
 
-		                /*this._setDataBetweenBuffer(this._pDataFor, iXOverlappingBlockInNewBuf, iYOverlappingBlockInNewBuf,
-		                                           this._pBuffer[i], iXOverlappingBlockInOldBuf, iYOverlappingBlockInOldBuf,
-		                                           iOverlappingBlockWidth, iOverlappingBlockHeight);*/
+		            //     /*this._setDataBetweenBuffer(this._pDataFor, iXOverlappingBlockInNewBuf, iYOverlappingBlockInNewBuf,
+		            //                                this._pBuffer[i], iXOverlappingBlockInOldBuf, iYOverlappingBlockInOldBuf,
+		            //                                iOverlappingBlockWidth, iOverlappingBlockHeight);*/
 
 		                this.setBufferMapNULL(this._pMapDataFor);
 		                this._setDataBetweenBufferMap(this._pMapDataFor, iXOverlappingBlockInNewBuf / this._iBlockSize,
@@ -333,11 +335,11 @@ module akra.terrain {
 		    }
 
 		    /*Перекидывание данных из буфера в текстуру, которая будет отображаться*/
-		    if (((this._nCountRender++) % 10) == 0) {
+		    if (((this._nCountRender++) % 20) == 0) {
 		        var iTexInBufX: uint = 0;
 		        var iTexInBufY: uint = 0;
 
-		        i = (math.round(this._nCountRender / 10)) % this._pBuffer.length;
+		        i = (math.round(this._nCountRender / 20)) % this._pBuffer.length;
 		        // LOG("Level #" + i, this._pBuffer[i].data.length, this._pBuffer[i].width, this._pBuffer[i].height);
 
 		        if (i == 0) {
@@ -366,152 +368,21 @@ module akra.terrain {
 		                this._pTextures[i].setPixelRGBA(0, 0, this._iTextureWidth, this._iTextureHeight, this._pDataFor);*/
 
 		                // this._pTmpBox1.setPosition(iTexInBufX, iTexInBufY, this._iBufferWidth, this._iBufferHeight); 
-		                this._pTmpBox1.setPosition(iTexInBufX, iTexInBufY, this._iTextureWidth, this._iTextureHeight); 
-
-
-		                var pPixelBox: IPixelBox = this._pBuffer[i].getSubBox(this._pTmpBox1);
+		                
+		                var pTmpBox: IBox = geometry.box(iTexInBufX, iTexInBufY, 
+		                								 this._iTextureWidth + iTexInBufX,
+		                								 this._iTextureHeight + iTexInBufY);
+		                var pPixelBox: IPixelBox = this._pBuffer[i].getSubBox(pTmpBox, pixelUtil.pixelBox());
 		                // pPixelBox.setConsecutive();
 		                LOG("Level #" + i + " write data:\n", pPixelBox.toString(), "\nOne Color: ", pPixelBox.data[0], pPixelBox.data[1], pPixelBox.data[2]);
 		                this._pTextures[i].getBuffer(0,0).blitFromMemory(pPixelBox);
 
-		                /*var c2d=document.getElementById('canvas1_'+i).getContext("2d");
-		                 var pData=c2d.getImageData(0,0,128,128);
-		                 //console.log("!!!");
-		                 //console.log(pData);
-		                 //console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
-		                 for(var p=0,p1=0;p<pData.data.length;p+=4,p1+=3*8)
-		                 {
-		                 pData.data[p+0]=this._pDataFor[p1+0];
-		                 pData.data[p+1]=this._pDataFor[p1+1];
-		                 pData.data[p+2]=this._pDataFor[p1+2];
-		                 pData.data[p+3]=255;
-		                 if(p1%(1024*3)==0&&p1!=0)
-		                 p1+=3*(1024*(8-1))
-
-		                 }
-		                 c2d.putImageData(pData, 0, 0);*/
 		            }
 		        }
-		        // LOG("Level #" + i + " updated");
+
 		        this._pXY[i].isUpdated = false;
 		    }
 
-
-		    // if (((this._nCountRender++) % 11) == 0) {
-		    //     for (var i: uint = 0; i < this._pTextures.length; i++) {
-
-		    //         var c2d = (<HTMLCanvasElement>document.getElementById('canvas' + i)).getContext("2d");
-		    //         var pData = c2d.getImageData(0, 0, 128, 128);
-
-
-		    //         if (i != 0) {
-		    //             //console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
-		    //             for (var p: uint = 0, p1: uint = 0; p < pData.data.length; p += 4, p1 += 3 * 16) {
-		    //                 pData.data[p + 0] = this._pBuffer[i][p1 + 0];
-		    //                 pData.data[p + 1] = this._pBuffer[i][p1 + 1];
-		    //                 pData.data[p + 2] = this._pBuffer[i][p1 + 2];
-		    //                 pData.data[p + 3] = 255;
-		    //                 if (p1 % (2048 * 3) == 0 && p1 != 0) {
-		    //                     p1 += 3 * (2048 * (16 - 1))
-		    //                 }
-
-		    //             }
-		    //         }
-		    //         else {
-		    //             //console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
-		    //             for (var p: uint = 0, p1: uint = 0; p < pData.data.length; p += 4, p1 += 3 * 8) {
-		    //                 pData.data[p + 0] = this._pBuffer[i][p1 + 0];
-		    //                 pData.data[p + 1] = this._pBuffer[i][p1 + 1];
-		    //                 pData.data[p + 2] = this._pBuffer[i][p1 + 2];
-		    //                 pData.data[p + 3] = 255;
-		    //                 if (p1 % (1024 * 3) == 0 && p1 != 0) {
-		    //                     p1 += 3 * (1024 * (8 - 1))
-		    //                 }
-
-		    //             }
-		    //         }
-		    //         c2d.putImageData(pData, 0, 0);
-
-		    //         if (i != 0) {
-		    //             iTexInBufX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
-		    //             iTexInBufY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
-		    //             iTexInBufX -= this._pXY[i].iX;
-		    //             iTexInBufY -= this._pXY[i].iY;
-		    //             c2d.strokeStyle = '#fff';
-		    //             c2d.lineWidth = 1;
-		    //             c2d.strokeRect(math.floor(iTexInBufX / 16) - 1, math.floor(iTexInBufY / 16) - 1,
-		    //                            math.floor(this._iTextureWidth / 16) + 2, math.floor(this._iTextureHeight / 16) + 2);
-
-		    //             var c2d = (<HTMLCanvasElement>document.getElementById('canvas0_' + i)).getContext("2d");
-		    //             var pData = c2d.getImageData(0, 0, 128, 128);
-		    //             //console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
-		    //             for (var p: uint = 0, p1: uint = 0; p < pData.data.length; p += 4, p1 += 3 * 16) {
-		    //                 pData.data[p + 0] = this._pDataFor[p1 + 0];
-		    //                 pData.data[p + 1] = this._pDataFor[p1 + 1];
-		    //                 pData.data[p + 2] = this._pDataFor[p1 + 2];
-		    //                 pData.data[p + 3] = 255;
-		    //                 if (p1 % (2048 * 3) == 0 && p1 != 0) {
-		    //                     p1 += 3 * (2048 * (16 - 1))
-		    //                 }
-
-		    //             }
-		    //             c2d.putImageData(pData, 0, 0);
-		    //             iTexInBufX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
-		    //             iTexInBufY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
-		    //             iTexInBufX -= this._pXY[i].iX;
-		    //             iTexInBufY -= this._pXY[i].iY;
-		    //             c2d.strokeStyle = '#fff';
-		    //             c2d.lineWidth = 1;
-		    //             c2d.strokeRect(math.floor(iTexInBufX / 16) - 1, math.floor(iTexInBufY / 16) - 1,
-		    //                            math.floor(this._iTextureWidth / 16) + 2, math.floor(this._iTextureHeight / 16) + 2);
-		    //         }
-
-
-		    //         var c2d = (<HTMLCanvasElement>document.getElementById('canvas2_' + i)).getContext("2d");
-
-		    //         //console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
-
-		    //         var pData = c2d.getImageData(0, 0, 64, 64);
-		    //         if (i != 0) {
-
-		    //             for (var p: uint = 0, p1: uint = 0; p < pData.data.length; p += 4, p1 += 1) {
-		    //                 pData.data[p + 0] = (this._pBufferMap[i][p1] / 0xFFFFFFFF) * 255;
-		    //                 pData.data[p + 1] = (this._pBufferMap[i][p1] / 0xFFFFFFFF) * 255;
-		    //                 pData.data[p + 2] = (this._pBufferMap[i][p1] / 0xFFFFFFFF) * 255;
-		    //                 pData.data[p + 3] = 255;
-		    //             }
-
-		    //         }
-		    //         else {
-		    //             for (var p: uint = 0, p1: uint = 0; p < pData.data.length; p += 4, p1 += 0.5) {
-		    //                 pData.data[p + 0] = (this._pBufferMap[i][math.round(p1)] / 0xFFFFFFFF) * 255;
-		    //                 pData.data[p + 1] = (this._pBufferMap[i][math.round(p1)] / 0xFFFFFFFF) * 255;
-		    //                 pData.data[p + 2] = (this._pBufferMap[i][math.round(p1)] / 0xFFFFFFFF) * 255;
-		    //                 pData.data[p + 3] = 255;
-		    //                 if (p % (8 * 64) == 0 && p != 0) {
-		    //                     p1 -= (32)
-		    //                 }
-		    //             }
-
-
-		    //         }
-		    //         c2d.putImageData(pData, 0, 0);
-
-
-		    //         if (i != 0) {
-
-		    //             iTexInBufX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
-		    //             iTexInBufY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
-		    //             iTexInBufX -= this._pXY[i].iX;
-		    //             iTexInBufY -= this._pXY[i].iY;
-		    //             c2d.strokeStyle = '#f00';
-		    //             c2d.lineWidth = 1;
-		    //             c2d.strokeRect(math.floor(iTexInBufX / (32)) - 1, math.floor(iTexInBufY / (32)) - 1,
-		    //                            math.floor(this._iTextureWidth / (32)) + 2, math.floor(this._iTextureHeight / (32)) + 2);
-		    //         }
-
-		    //     }
-		    // }
 		    this._fTexCourdXOld = fTexCourdX;
 		    this._fTexCourdYOld = fTexCourdY;
 		}
@@ -752,30 +623,44 @@ module akra.terrain {
 		                                          (j - me._pXY[iLevelTex].iX) / me._iBlockSize] = tCurrentTime;
 		            }
 
+		            var iLev = iLevelTex;
+		            var iX = j, iY = i;
+
 		            (function (iLev: uint, iX: uint, iY: uint) {
 		                var sPiecePath: string = me._sSurfaceTextures;
-		                //trace("Путь",sPiecePath);
-		                /*a.fopen('filesystem://temporary/'+sPiecePath, 'rb').read(
-		                 function(pData) {
-		                 //trace('file exists in local storage:',pData);
-		                 //console.log(sPiecePath);
-		                 var pData8=new Uint8Array(pData);
-		                 me._setDataFromBlock(me._pBuffer[iLevelTex],iX-me._pXY[iLevelTex].iX,iY-me._pXY[iLevelTex].iY,pData8);
-		                 me._pXY[iLevelTex].isUpdated=true;
-		                 },
-		                 function ()
-		                 {
-		                 //trace('file not found... Load from server');*/
-		                //console.log("=>", me._sSurfaceTextures)
+
 		                me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
 		                              iY, me._iBlockSize, me._iBlockSize, me._eTextureFormat,
 		                              function (pError: Error, pData: Uint8Array) {
-		                                  //console.log("<=")
+
 		                                  if(!isNull(pError)){
 		                                  		debug_print(pError.message);
 		                                  		return;
 		                                  }
 
+		                                  // var pData = new Uint8Array(me._iBlockSize * me._iBlockSize * 3);
+		                                  // for(var k: uint = 0; k < pData.length; k+= 3){
+		                                  // 	if(iLev === 0){
+			                                 //  	pData[k] = 0;
+			                                 //  	pData[k + 1] = 255;
+			                                 //  	pData[k + 2] = 0;
+		                                  // 	}
+		                                  // 	else if(iLev === 1){
+		                                  // 		pData[k] = 255;
+			                                 //  	pData[k + 1] = 0;
+			                                 //  	pData[k + 2] = 0;
+		                                  // 	}
+		                                  // 	else if(iLev === 2) {
+		                                  // 		pData[k] = 0;
+			                                 //  	pData[k + 1] = 0;
+			                                 //  	pData[k + 2] = 255;
+		                                  // 	}
+		                                  // 	else {
+		                                  // 		pData[k] = 255;
+			                                 //  	pData[k + 1] = 0;
+			                                 //  	pData[k + 2] = 255;
+		                                  // 	}
+		                                  // }
 		                                  //console.log(me._pBuffer[iLevelTex].length,iX-me._pXY[iLevelTex].iX,iY-me._pXY[iLevelTex].iY);
 		                                  var iXBuf: uint;
 		                                  var iYBuf: uint;
@@ -808,29 +693,16 @@ module akra.terrain {
 		                                                           iXBuf / me._iBlockSize] = 0xFFFFFFFF;
 		                                  }
 
-		                                  me._pTmpBox1.setPosition(0, 0, me._iBlockSize, me._iBlockSize);
-		                                  me._pTmpPixelBox.refresh(me._pTmpBox1, me._eTextureFormat, pData);
+		                                  var pTmpBox1: IBox = geometry.box(0, 0, me._iBlockSize, me._iBlockSize);
+		                                  var pTmpBox2: IBox = geometry.box(iXBuf, iYBuf, me._iBlockSize + iXBuf, me._iBlockSize + iYBuf);
 
-		                                  me._pTmpBox1.setPosition(iXBuf, iYBuf, me._iBlockSize, me._iBlockSize);
-		                                  var pSubBox: IPixelBox = me._pBuffer[iLev].getSubBox(me._pTmpBox1);
+		                                  var pSourceBox: IPixelBox = pixelUtil.pixelBox(pTmpBox1, me._eTextureFormat, pData);
+		                                  var pSubBox: IPixelBox = me._pBuffer[iLev].getSubBox(pTmpBox2, pixelUtil.pixelBox());
 		                                  
-		                                  pixelUtil.bulkPixelConversion(me._pTmpPixelBox, pSubBox);
-		                                  // me._setDataFromBlock(me._pBuffer[iLev], iXBuf, iYBuf, pData);
+		                                  pixelUtil.bulkPixelConversion(pSourceBox, pSubBox);
 
 		                                  me._pXY[iLev].isUpdated = true;
-		                                 //  if(iLev === 0){
-		                                  	
-		                                 //  	LOG("#" + iX + ".#" + iY, iLev, pData[0], pData[1], pData[2]);
-		                                 //  	//me._pEngine.renderFrame();
-		                                 //  	// window["aaaa"] = true;
-		                              	  // }
-		                              	  // else {
-
-		                              	  // }
-		                                  //a.fopen('filesystem://temporary/'+sPiecePath, 'wb').write(pData8);
 		                              });
-		                //	}
-		                //);
 		            })(iLevelTex, j, i);
 
 		        }

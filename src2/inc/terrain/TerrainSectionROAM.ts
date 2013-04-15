@@ -134,10 +134,16 @@ module akra.terrain {
 			super.prepareForRender(pViewport);
 
 			var pCamera: ICamera = pViewport.getCamera();
-			var v3fViewPoint: IVec3 = pCamera.worldPosition;
+
+			var v4fCameraCoord: IVec4 = vec4(pCamera.worldPosition, 1.);
+		    var m4fTransposeInverse: IMat4 = this._pTerrainSystem.inverseWorldMatrix;
+
+		    v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
+
+			var v3fViewPoint: IVec3 = vec3(v4fCameraCoord.x, v4fCameraCoord.y, v4fCameraCoord.z);
 			// compute view distance to our 4 corners
-			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX),					math.ceil(this._iHeightMapY));
-			var fHeight1: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), 				math.ceil(this._iHeightMapY + this._iYVerts));
+			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY));
+			var fHeight1: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY + this._iYVerts));
 			var fHeight2: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY));
 			var fHeight3: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY + this._iYVerts));
 

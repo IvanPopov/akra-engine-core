@@ -58,7 +58,7 @@ module akra.pixelUtil {
 			return pixelUtil.getMemorySize(this.width, this.height, this.depth, this.format);
 		}
 
-		getSubBox(pDest: IBox): PixelBox {
+		getSubBox(pDest: IBox, pDestPixelBox?: IPixelBox = null): PixelBox {
 			if(pixelUtil.isCompressed(this.format)) {
 				if(pDest.left == this.left && pDest.top == this.top && pDest.front == this.front &&
 				   pDest.right == this.right && pDest.bottom == this.bottom && pDest.back == this.back) {
@@ -78,11 +78,21 @@ module akra.pixelUtil {
 			// Calculate new data origin
 			// Notice how we do not propagate left/top/front from the incoming box, since
 			// the returned pointer is already offset
-			var rval: PixelBox = new PixelBox(pDest.width, pDest.height, pDest.depth, this.format, 
-				(<Uint8Array> this.data).subarray(((pDest.left - this.left) * elemSize)
-				+ ((pDest.top - this.top) * this.rowPitch * elemSize)
-				+ ((pDest.front - this.front) * this.slicePitch * elemSize))
-			);
+			
+			var rval: PixelBox = null;
+
+			if(isNull(pDestPixelBox)){
+				rval = new PixelBox();
+			}
+			else {
+				rval = <PixelBox>pDestPixelBox;
+			}
+
+			rval.setPosition(0, 0, pDest.width, pDest.height, 0, pDest.depth);
+			rval.format = this.format;
+			rval.data =	(<Uint8Array> this.data).subarray(((pDest.left - this.left) * elemSize)
+						+ ((pDest.top - this.top) * this.rowPitch * elemSize)
+						+ ((pDest.front - this.front) * this.slicePitch * elemSize));
 
 			rval.rowPitch = this.rowPitch;
 			rval.slicePitch = this.slicePitch;
@@ -120,8 +130,8 @@ module akra.pixelUtil {
 			this.bottom = pExtents.bottom;
 			this.back 	= pExtents.back;
 
-			this.data = <Uint8Array>pPixelData;
-			this.format = <EPixelFormats>ePixelFormat;
+			this.data = pPixelData;
+			this.format = ePixelFormat;
 
 			this.setConsecutive();
 		}
@@ -132,6 +142,45 @@ module akra.pixelUtil {
 				   "length: " + (this.data ? this.data.length : 0) + "\n" +
 				   "|---------------------------|";
 		}
+
+		ALLOCATE_STORAGE(PixelBox, 20)
+	}
+
+	export function pixelBox(): IPixelBox;
+	export function pixelBox(iWidth: uint, iHeight: uint, iDepth: uint, ePixelFormat: EPixelFormats, pPixelData?: Uint8Array = null): IPixelBox;
+	export function pixelBox(pExtents: IBox, ePixelFormat: EPixelFormats, pPixelData?: Uint8Array = null): IPixelBox;
+	export function pixelBox(): IPixelBox {
+		var pPixelBox: IPixelBox = PixelBox.stack[PixelBox.stackPosition ++];
+
+        if(PixelBox.stackPosition === PixelBox.stackSize){
+            PixelBox.stackPosition = 0;
+        }
+
+        var pBox: IBox = null;
+        var pPixelData: Uint8Array = null;
+        var ePixelFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+
+        switch(arguments.length){
+        	case 2:
+        	case 3:
+        		pBox = arguments[0];
+        		ePixelFormat = arguments[1];
+        		pPixelData = arguments[2] || null;
+        		break;
+        	case 4:
+        	case 5:
+        		pBox = geometry.box(0, 0, 0, arguments[0], arguments[1], arguments[2]);
+        		ePixelFormat = arguments[3];
+        		pPixelData = arguments[4] || null;
+        		break;
+        	default:
+        		pBox = geometry.box(0, 0, 0, 1, 1, 1);
+        		break;
+        }
+
+        pPixelBox.refresh(pBox, ePixelFormat, pPixelData);
+
+        return pPixelBox;
 	}
 
 }

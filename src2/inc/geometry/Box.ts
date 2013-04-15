@@ -92,6 +92,44 @@ module akra.geometry {
 				   "front: " + this.front + ", back: " + this.back + "\n" +
 				   "---------------------------";
 		}
+
+		ALLOCATE_STORAGE(Box, 20)
+	}
+
+	export function box(): IBox;
+	export function box(pBox: IBox): IBox;
+	export function box(iLeft: uint, iTop: uint, iFront: uint): IBox;
+	export function box(iLeft: uint, iTop: uint, iRight: uint, iBottom: uint): IBox;
+	export function box(iLeft: uint, iTop: uint, iFront: uint, iRight: uint, iBottom: uint, iBack: uint): IBox;
+	export function box(l: uint = 0, t: uint = 0, ff: uint = 0, r: uint = 1, b: uint = 1, bb: uint = 1): IBox {
+		var pBox: IBox = Box.stack[Box.stackPosition ++];
+
+        if(Box.stackPosition === Box.stackSize){
+            Box.stackPosition = 0;
+        }
+
+		switch(arguments.length){
+			case 1:
+				pBox.setPosition(arguments[0].left,
+								 arguments[0].top,
+								 arguments[0].width,
+								 arguments[0].height,
+								 arguments[0].front,
+								 arguments[0].depth);
+				break;
+			case 0:
+			case 3:
+			case 6:
+				pBox.setPosition(l, t, r - l, b - t, ff, bb - ff);
+				break;
+			case 4:
+				pBox.setPosition(l, t, arguments[2] - l, arguments[3]- t, 0, 1);
+				break;
+			default:
+				ERROR("Inavlid number of arguments");
+		}
+
+		return pBox;
 	}
 }
 

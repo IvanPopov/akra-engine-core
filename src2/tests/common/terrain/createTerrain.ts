@@ -14,6 +14,8 @@ module akra {
 	var pViewport: IViewport = null;
 	var pSkyBoxTexture: ITexture = null;
 
+	export var pTestNode: ISceneNode = null;
+
 	test("init tests", () => {
 		function setup(): void {
 			var pCanvasElement: HTMLCanvasElement = (<any>pCanvas)._pCanvas;
@@ -25,13 +27,18 @@ module akra {
 		}
 
 		function createCameras(): void {
+			pTestNode = pScene.createNode();
+			pTestNode.attachToParent(pScene.getRootNode());
 			pCamera = pScene.createCamera();
 		
-			pCamera.addPosition(vec3(0, 0, 150));
-			pCamera.addRelRotationByXYZAxis(0, 0, 0);
-			pCamera.attachToParent(pScene.getRootNode());
+			//pCamera.addRelRotationByXYZAxis(1, 1, 0);
+			pCamera.setPosition(vec3(25, 25, 150));
+			pCamera.attachToParent(pTestNode);
+			pCamera.setInheritance(ENodeInheritance.ALL);
 
 			var pKeymap: IKeyMap = controls.createKeymap((<any>pCanvas)._pCanvas);
+			var iCounter: int = 0;
+			var iSign: int = 1;
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				 if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
@@ -42,6 +49,11 @@ module akra {
 
 			        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
 			    }
+
+			    if((iCounter++) % 1000 === 0){
+			    	iSign *= -1;
+			    }
+			    pCamera.addRelPosition(iSign * 0.05, iSign * 0.05, 0);
 			});
 		}
 
@@ -92,14 +104,16 @@ module akra {
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
 					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(1024, 1024, 1024), 4, 5, 5, "main_terrain");
-					pTerrain.attachToParent(pScene.getRootNode());
+					pTerrain.attachToParent(pTestNode);
+					pTerrain.setInheritance(ENodeInheritance.ALL);
+					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
 					pTerrain.scale(0.1);
 					// pTerrain.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
 					// setTimeout(function() {pEngine.renderFrame()}, 5000);
 					// pEngine.renderFrame();
-
+					pTestNode.addRelRotationByXYZAxis(1, 1, 0);
 				});
 			});
 			
@@ -164,7 +178,7 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	
-		// pEngine.exec();
+		pEngine.exec();
 		// pEngine.renderFrame();
 	});
 

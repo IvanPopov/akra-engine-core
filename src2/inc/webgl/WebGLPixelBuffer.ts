@@ -219,14 +219,16 @@ module akra.webgl {
 	        }
 	        else {
 	            this.allocateBuffer();
-	            pScaledBox = pSource;
+	            pScaledBox = this._pBuffer.getSubBox(pDestBox);
+	            pixelUtil.bulkPixelConversion(pSource, pScaledBox);
+	            // pSource;
 
-	            if (pSource.format == EPixelFormats.R8G8B8) 
-	            {
-	                pScaledBox.format = EPixelFormats.B8G8R8;
+	            // if (pSource.format == EPixelFormats.R8G8B8) 
+	            // {
+	            //     pScaledBox.format = EPixelFormats.B8G8R8;
 	                
-	                pixelUtil.bulkPixelConversion(pSource, pScaledBox);
-	            }
+	            //     pixelUtil.bulkPixelConversion(pSource, pScaledBox);
+	            // }
 	        }
 
 	        this.upload(pScaledBox, pDestBox);

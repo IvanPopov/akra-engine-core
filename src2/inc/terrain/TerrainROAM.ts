@@ -249,11 +249,13 @@ module akra.terrain {
 
 		_onBeforeRender(pRenderableObject: IRenderableObject, pViewport: IViewport): void {
 			if(this._isCreate) {
-
+				// LOG("i`m must be here");
 				if(((this._nCountRender++) % 30) === 0) {
+					// LOG("-->i`m must be here too");
 					if(this._iTessellationQueueCount !== this._iTessellationQueueCountOld) {
+						// LOG("-->-->i`m must be here too");
 						this.processTessellationQueue();
-						this._iTessellationQueueCountOld=this._iTessellationQueueCount;
+						this._iTessellationQueueCountOld = this._iTessellationQueueCount;
 					}
 				}
 
