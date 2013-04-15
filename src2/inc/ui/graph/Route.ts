@@ -238,7 +238,7 @@ module akra.ui.graph {
 
 
 	        var iLength: int = (<any>this.path).getTotalLength();
-	        var iArrowHeight: int = 4;
+	        var iArrowHeight: int = 3;
 	        var iArrowWidth: int = 10;
 
 	        var pCenter: IPoint = (<any>this.path).getPointAtLength(math.max(iLength - iArrowWidth, 0));

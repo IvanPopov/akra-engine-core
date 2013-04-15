@@ -91,7 +91,7 @@ module akra {
 		pOmniShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 		pOmniShadowLight.params.diffuse.set(1);
 		pOmniShadowLight.params.specular.set(1, 1, 1, 1);
-		pOmniShadowLight.params.attenuation.set(1,0.2,0);
+		pOmniShadowLight.params.attenuation.set(1,0.,0);
 		pOmniShadowLight.isShadowCaster = false;
 
 		pOmniShadowLight.addPosition(0, 10, -10);

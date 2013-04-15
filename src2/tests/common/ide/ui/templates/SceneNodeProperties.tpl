@@ -31,8 +31,27 @@
 		</div>
 	</div>
 </div>
+
+<div name="light-point">
+	<div class="node-type">Light point properties</div>
+	<div class="row">
+		<component type="Panel" title="Light point" collapsible >
+			<component type="LightProperties" name="light"/>
+		</component>
+	</div>
+</div>
+
+<div name="scene-model">
+	<div class="node-type">Scene model properties</div>
+	<div class="row">
+		<component type="Panel" title="Mesh" collapsible >
+			<component type="MeshProperties" name="mesh"/>
+		</component>
+	</div>
+</div>
+
 <div name="model-entry">
-	<div class="node-type" >Model entry properties</div>
+	<div class="node-type">Model entry properties</div>
 	<div class="row">
 		<component type="Panel" title="Resource" collapsible >
 			<component type="ResourceProperties" name="resource"/>
@@ -44,3 +63,4 @@
 		</component>
 	</div>
 </div>
+

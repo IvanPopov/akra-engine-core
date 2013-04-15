@@ -507,7 +507,7 @@ body {
 		}
 	}
 
-	div[name=model-entry] {
+	div[name=model-entry], div[name=scene-model], div[name=light-point] {
 		display: none;
 
 		.row {
@@ -552,6 +552,32 @@ body {
 				border-radius: 2px;
 				width: 100%;
 				margin-top: 10px;
+			}
+		}
+
+		.component-switch {
+			display: inline-block;
+			position: relative;
+			top: -5px;
+			margin-left: 0px;
+			margin-top: 0px;
+
+			label {
+				height: 12px;
+
+				&:before {
+					height: 12px;
+				}
+			}
+		}
+
+		.component-meshproperties {
+			.row {
+				padding: 0px 20px 1px 20px;
+			}
+
+			div[name=shadows] {
+				height: 12px;
 			}
 		}
 	}

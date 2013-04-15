@@ -14,7 +14,7 @@ module akra.ui {
 
 		inline set value(bValue: bool) {
 			if (bValue != this.value) {
-				this.$checkbox.attr("checked", bValue);
+				this._setValue(bValue);
 				this.changed(bValue);
 			}
 		}
@@ -35,6 +35,10 @@ module akra.ui {
 				e.stopPropagation();
 				this.changed(this.value);
 			});
+		}
+
+		inline _setValue(bValue: bool): void {
+			this.$checkbox.attr("checked", bValue);
 		}
 
 		_createdFrom($comp: JQuery): void {

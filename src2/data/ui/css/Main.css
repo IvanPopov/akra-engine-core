@@ -426,7 +426,7 @@ div.component-switch input:checked + label:before {
   text-align: center;
 }
 .component-graphnode td.graph-node-left, .component-graphnode td.graph-node-right {
-  width: 8px;
+  width: 7px;
   min-height: 30px;
 }
 .component-graphnode td.graph-node-left .component-graphconnector, .component-graphnode td.graph-node-right .component-graphconnector {
@@ -434,7 +434,7 @@ div.component-switch input:checked + label:before {
   margin-bottom: 2px;
 }
 .component-graphnode td.graph-node-bottom, .component-graphnode td.graph-node-top {
-  height: 8px;
+  height: 7px;
   min-width: 100px;
 }
 .component-graphnode td.graph-node-bottom .component-graphconnector, .component-graphnode td.graph-node-top .component-graphconnector {
@@ -472,8 +472,8 @@ div.component-switch input:checked + label:before {
   display: inline-block;
   border: 1px solid white;
   background-color: gray;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 5px;
 }
 .component-graphconnector.highlight {
@@ -482,8 +482,8 @@ div.component-switch input:checked + label:before {
 .component-graphconnector.connected {
   border: 0px;
   border-radius: 0px;
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   background-color: black;
 }
 .component-animationgraph .component-animationgraphnode.selected {
@@ -973,13 +973,13 @@ body {
   background-image: -o-linear-gradient(#5393c5, #6facd5);
   background-image: linear-gradient(#5393c5, #6facd5);
 }
-.component-scenenodeproperties div[name=model-entry] {
+.component-scenenodeproperties div[name=model-entry], .component-scenenodeproperties div[name=scene-model], .component-scenenodeproperties div[name=light-point] {
   display: none;
 }
-.component-scenenodeproperties div[name=model-entry] .row {
+.component-scenenodeproperties div[name=model-entry] .row, .component-scenenodeproperties div[name=scene-model] .row, .component-scenenodeproperties div[name=light-point] .row {
   padding: 0;
 }
-.component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type {
+.component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type, .component-scenenodeproperties div[name=scene-model] .row .component-panel div.panel-title:first-of-type, .component-scenenodeproperties div[name=light-point] .row .component-panel div.panel-title:first-of-type {
   border-top: 0px !important;
   padding-top: 1px;
   padding-bottom: 1px;
@@ -988,26 +988,45 @@ body {
   height: 15px;
   padding: 0 0 2px 40px !important;
 }
-.component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type div.controls {
+.component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type div.controls, .component-scenenodeproperties div[name=scene-model] .row .component-panel div.panel-title:first-of-type div.controls, .component-scenenodeproperties div[name=light-point] .row .component-panel div.panel-title:first-of-type div.controls {
   left: -30px !important;
   margin-top: -6px !important;
 }
-.component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type span {
+.component-scenenodeproperties div[name=model-entry] .row .component-panel div.panel-title:first-of-type span, .component-scenenodeproperties div[name=scene-model] .row .component-panel div.panel-title:first-of-type span, .component-scenenodeproperties div[name=light-point] .row .component-panel div.panel-title:first-of-type span {
   margin-left: -30px;
 }
-.component-scenenodeproperties div[name=model-entry] .component-resourceproperties .row {
+.component-scenenodeproperties div[name=model-entry] .component-resourceproperties .row, .component-scenenodeproperties div[name=scene-model] .component-resourceproperties .row, .component-scenenodeproperties div[name=light-point] .component-resourceproperties .row {
   padding: 0px 20px 1px 20px;
 }
-.component-scenenodeproperties div[name=model-entry] .component-animationcontrollerproperties .row {
+.component-scenenodeproperties div[name=model-entry] .component-animationcontrollerproperties .row, .component-scenenodeproperties div[name=scene-model] .component-animationcontrollerproperties .row, .component-scenenodeproperties div[name=light-point] .component-animationcontrollerproperties .row {
   padding: 0px 20px 0px 20px;
 }
-.component-scenenodeproperties div[name=model-entry] .component-animationcontrollerproperties button[name=edit] {
+.component-scenenodeproperties div[name=model-entry] .component-animationcontrollerproperties button[name=edit], .component-scenenodeproperties div[name=scene-model] .component-animationcontrollerproperties button[name=edit], .component-scenenodeproperties div[name=light-point] .component-animationcontrollerproperties button[name=edit] {
   display: block;
   margin: 0 auto;
   padding: 0 15px;
   border-radius: 2px;
   width: 100%;
   margin-top: 10px;
+}
+.component-scenenodeproperties div[name=model-entry] .component-switch, .component-scenenodeproperties div[name=scene-model] .component-switch, .component-scenenodeproperties div[name=light-point] .component-switch {
+  display: inline-block;
+  position: relative;
+  top: -5px;
+  margin-left: 0px;
+  margin-top: 0px;
+}
+.component-scenenodeproperties div[name=model-entry] .component-switch label, .component-scenenodeproperties div[name=scene-model] .component-switch label, .component-scenenodeproperties div[name=light-point] .component-switch label {
+  height: 12px;
+}
+.component-scenenodeproperties div[name=model-entry] .component-switch label:before, .component-scenenodeproperties div[name=scene-model] .component-switch label:before, .component-scenenodeproperties div[name=light-point] .component-switch label:before {
+  height: 12px;
+}
+.component-scenenodeproperties div[name=model-entry] .component-meshproperties .row, .component-scenenodeproperties div[name=scene-model] .component-meshproperties .row, .component-scenenodeproperties div[name=light-point] .component-meshproperties .row {
+  padding: 0px 20px 1px 20px;
+}
+.component-scenenodeproperties div[name=model-entry] .component-meshproperties div[name=shadows], .component-scenenodeproperties div[name=scene-model] .component-meshproperties div[name=shadows], .component-scenenodeproperties div[name=light-point] .component-meshproperties div[name=shadows] {
+  height: 12px;
 }
 .component-tabs  > .bookmarks  > .bookmark {
   background-color: #d3d3d3;

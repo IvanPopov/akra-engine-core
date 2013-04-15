@@ -7,6 +7,8 @@
 #include "../Component.ts"
 #include "../resource/Properties.ts"
 #include "../animation/ControllerProperties.ts"
+#include "../model/MeshProperties.ts"
+#include "../light/Properties.ts"
 
 module akra.ui.scene {
 	export class NodeProperties extends Component {
@@ -22,6 +24,12 @@ module akra.ui.scene {
 		protected _pResource: resource.Properties;
 		protected _pController: animation.ControllerProperties;
 
+		//scene model properties
+		protected _pMesh: model.MeshProperties;
+
+		//light properties
+		protected _pLight: light.Properties;
+
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
@@ -36,6 +44,11 @@ module akra.ui.scene {
 
 			this._pResource = <resource.Properties>this.findEntity("resource");
 			this._pController = <animation.ControllerProperties>this.findEntity("controller");
+
+			this._pMesh = <model.MeshProperties>this.findEntity("mesh");
+			
+
+			this._pLight = <light.Properties>this.findEntity("light");
 
 			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_updateName));
 			this.connect(this._pPosition, SIGNAL(changed), SLOT(_updateLocalPosition));
@@ -140,6 +153,27 @@ module akra.ui.scene {
 			}
 			else {
 				this.el.find("div[name=model-entry]").hide();	
+			}
+
+			if (akra.scene.isModel(pNode)) {
+				var pModel: ISceneModel = <ISceneModel>pNode;
+				this.el.find("div[name=scene-model]").show();
+
+				if (!isNull(pModel.mesh)) {
+					this._pMesh.setMesh(pModel.mesh);
+				}
+			}
+			else {
+				this.el.find("div[name=scene-model]").hide();
+			}
+
+			if (akra.scene.light.isLightPoint(pNode)) {
+				var pPoint: ILightPoint = <ILightPoint>pNode;
+				this.el.find("div[name=light-point]").show();
+				this._pLight.setLight(pPoint);	
+			}
+			else {
+				this.el.find("div[name=light-point]").hide();
 			}
 
 			this.connect(this._pNode.scene, SIGNAL(postUpdate), SLOT(_scenePostUpdated));
