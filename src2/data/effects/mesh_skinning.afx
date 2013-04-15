@@ -1,0 +1,115 @@
+provide akra.system;
+
+struct VS_IN_1{
+    float4 pos:POSITION;
+};
+
+struct VS_IN_2{
+    float4 pos:POSITION;
+    float4 norm:NORMAL;
+};
+
+struct VS_OUT_1{
+    float4 pos:POSITION;
+};
+
+struct VS_OUT_2{
+    float4 norm:NORMAL;
+};
+
+///////////////////////////
+
+float4x4 bind_matrix:BIND_SHAPE_MATRIX;
+
+VS_OUT_1 vs_mesh_vertices_skinned(VS_IN_1 IN) {
+    VS_OUT_1 Out;
+
+    float4 pos = float4(IN.pos.xyz, 1.);
+    float4 vertex;
+
+    float2 meta_data[](memof IN.pos);
+
+    float2 bone_inf[](memof IN.pos);
+    float4x4 bone_matrix[](memof IN.pos);
+    float weight;
+
+    float4x4 result_mat = float4x4(0.0);
+
+    @(meta_data) = IN.pos.w;
+
+    float number_matrix = meta_data.x;
+    float bone_inf_ptr = meta_data.y;
+
+
+    float i = 0.;
+    while(number_matrix >= i + 1.) {
+        //get data about matrix and weight
+        @bone_inf = bone_inf_ptr + i * 2.;
+
+        @bone_matrix = bone_inf.x;
+        weight = bone_inf.y;
+
+        result_mat += bone_matrix * weight;
+
+        i ++;
+    }
+
+    result_mat = result_mat * bind_matrix;
+
+    Out.pos = result_mat * pos;
+
+    return Out;
+};
+
+VS_OUT_2 vs_mesh_normal_skinned(VS_IN_2 IN) {
+    VS_OUT_2 Out;
+
+    float4 pos = float4(IN.pos.xyz, 1.);
+
+    float2 meta_data[](memof IN.pos);
+
+    float2 bone_inf[](memof IN.pos);
+    float4x4 bone_matrix[](memof IN.pos);
+    float weight;
+
+    float4x4 result_mat = float4x4(0.0);
+
+    @(meta_data) = IN.pos.w;
+
+    float number_matrix = meta_data.x;
+    float bone_inf_ptr = meta_data.y;
+
+
+    float i = 0.;
+    while(number_matrix >= i + 1.) {
+        //get data about matrix and weight
+        @bone_inf = bone_inf_ptr + i * 2.;
+
+        @bone_matrix = bone_inf.x;
+        weight = bone_inf.y;
+
+        result_mat += bone_matrix * weight;
+
+        i ++;
+    }
+
+    result_mat = result_mat * bind_matrix;
+
+    Out.norm.xyz = normalize((result_mat * float4(IN.norm.xyz,0.)).xyz);
+    Out.norm.w = IN.norm.w;
+
+    return Out;
+}
+
+
+technique mesh_skinned{
+    pass p0 {
+        if(engine.mesh.isSkinning){
+            VertexShader = compile vs_mesh_vertices_skinned();
+        }
+        else {
+            VertexShader = compile vs_mesh_normal_skinned();
+        }
+    }
+}
+

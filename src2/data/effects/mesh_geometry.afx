@@ -5,6 +5,11 @@ struct VS_IN_1{
     float4 norm:NORMAL;
 };
 
+struct VS_IN_2{
+    float4 pos:SKINNED_POSITION;
+    float4 norm:SKINNED_NORMAL;
+};
+
 struct VS_OUT_1{
     float4 pos:POSITION;
     float3 vert:VERTEX;
@@ -44,7 +49,7 @@ VS_OUT_1 vs_mesh_geometry(VS_IN_1 IN) {
 
     Out.vert = vertex_geometry.vert = vertex.xyz;
 	Out.pos = vertex_geometry.pos = proj_mat * vertex;
-    Out.psize = 10.0;
+    Out.psize = 1.0;
 
     return Out;
 }
@@ -62,7 +67,7 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
     float weight;
 
     float4x4 result_mat = float4x4(0.0);
-    float point_size = 30.;
+    float point_size = 1.;
 
     @(meta_data) = IN.pos.w;
 
@@ -83,15 +88,31 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
         i ++;
     }
 
-    vertex = (view_mat * result_mat * bind_matrix * pos);
+    result_mat = result_mat * bind_matrix;
+
+    vertex = (view_mat * result_mat * pos);
 
     Out.pos = vertex_geometry.pos = proj_mat * vertex;
 
     Out.vert = vertex_geometry.vert = vertex.xyz;
-    Out.norm = vertex_geometry.norm = normalize((view_mat*result_mat * float4(IN.norm.xyz,0.)).xyz);
+    Out.norm = vertex_geometry.norm = normalize((view_mat * result_mat * float4(IN.norm.xyz,0.)).xyz);
 //    Out.norm = vertex_geometry.norm = IN.norm.xyz;
 //    Out.normal_mat = view_mat*result_mat;
     Out.psize = point_size;
+
+    return Out;
+}
+
+VS_OUT_1 vs_mesh_optimized_skinning(VS_IN_2 IN) {
+    VS_OUT_1 Out;
+
+    float4 vertex = (view_mat * IN.pos);
+
+    Out.pos = vertex_geometry.pos = proj_mat * vertex;
+
+    Out.vert = vertex_geometry.vert = vertex.xyz;
+    Out.norm = vertex_geometry.norm = normalize((view_mat * float4(IN.norm.xyz,0.)).xyz);
+    Out.psize = 1.;
 
     return Out;
 }

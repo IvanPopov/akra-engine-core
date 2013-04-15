@@ -66,7 +66,7 @@ module akra {
 			pStats.target = pViewport.getTarget();
 			pStats.render(pMainScene);
 
-			pStats.el.css({position: "relative", top: "-1024"});
+			pStats.el.css({position: "relative", top: "-600"});
 		}
 
 		function createLighting(): void {
