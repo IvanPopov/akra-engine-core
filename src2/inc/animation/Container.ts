@@ -193,11 +193,10 @@ module akra.animation {
 		    	return null;
 		    }
 
+
 		    if (this._fRealTime !== fRealTime) {
 		    	this.calcTime(fRealTime);
-
-		    	this.enterFrame(fRealTime);
-		    	//trace('--->', this.name);
+		    	this.enterFrame(fRealTime, this._fTrueTime);
 		    }
 
 		    if (!this._bLeftInfinity && this._fRealTime < this._fStartTime) {
@@ -213,7 +212,7 @@ module akra.animation {
 
 
 		BROADCAST(durationUpdated, CALL(fDuration));
-		BROADCAST(enterFrame, CALL(fRealTime));
+		BROADCAST(enterFrame, CALL(fRealTime, fTime));
 	} 
 
 	export inline function isContainer(pAnimation: IAnimationBase): bool {

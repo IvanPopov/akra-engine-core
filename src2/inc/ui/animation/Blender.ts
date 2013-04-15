@@ -20,8 +20,6 @@ module akra.ui.animation {
 		private _pNameLabel: IUILabel;
 		private _pMaskNodes: IUIAnimationMask[] = [];
 
-		private _pAnimMap: IntMap = <IntMap>{};
-		private _iTotalAnim: int = 0;
 
 		inline get animation(): IAnimationBase {
 			return this._pBlend;
@@ -30,9 +28,9 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph, pBlender: IAnimationBlend = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_BLENDER);
 
-			template(this, "ui/templates/AnimationBlender.tpl");
+			this.template("ui/templates/AnimationBlender.tpl");
 
-			this.init();
+			this.linkAreas();
 
 			this._pNameLabel = <IUILabel>this.findEntity("name");
 			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_textChanged));
@@ -41,10 +39,6 @@ module akra.ui.animation {
 			this._pBlend = pBlender = pBlender || akra.animation.createBlend();
 			this.graph.addAnimation(pBlender);
 			this._pNameLabel.text = pBlender.name;
-		}
-
-		protected connected(pArea: IUIGraphConnectionArea, pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void {
-			LOG("CONNECTED", arguments);
 		}
 
 		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
@@ -70,24 +64,6 @@ module akra.ui.animation {
 			super.destroy();
 		}
 
-		protected init(): void {
-			var pInput: graph.ConnectionArea = new graph.ConnectionArea(this, {show: false});
-			
-			pInput.setMode(EUIGraphDirections.IN);
-			pInput.setLayout(EUILayouts.HORIZONTAL);
-			pInput.render(this.el.find("td.graph-node-left"));
-
-			this.addConnectionArea("in", pInput);
-
-			var pOutput: graph.ConnectionArea = new graph.ConnectionArea(this, {show: false, maxConnections: 1});
-			
-			pOutput.setMode(EUIGraphDirections.OUT);
-			pOutput.setLayout(EUILayouts.HORIZONTAL);
-			pOutput.render(this.el); /*.find("td.graph-node-right")*/
-
-			this.addConnectionArea("out", pOutput);
-		}
-
 		getMaskNode(iAnimation: int): IUIAnimationMask {
 			return this._pMaskNodes[iAnimation] || null;
 		}
@@ -110,53 +86,37 @@ module akra.ui.animation {
 		    this._pNameLabel.text = pBlend.name;
 		}
 
-		route(eDirection: EUIGraphDirections, pTarget: IUIAnimationNode = null): int {
-			/*if (eDirection === EUIGraphDirections.IN) {
-				ASSERT(!isNull(pTarget), "target is null!");
+		protected connected(pArea: IUIGraphConnectionArea, pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void {
+			if (pFrom.direction === EUIGraphDirections.IN) {
+				var pTarget: IUIAnimationNode = (<IUIAnimationNode>pTo.node);
 
-		        var iConn: int = super.route(eDirection, pTarget);
 		        var pAnimation: IAnimationBase = pTarget.animation;
 		        var pBlend: IAnimationBlend = null;
 		        var pSlider: IUISlider = null;
 		        
 		        var pMask: FloatMap;
-		        var iAnim: int = this._pAnimMap[iConn];
+		        var iAnim: int = this._pBlend.addAnimation(pAnimation);
 		        
-		        if (!isDef(iAnim)) {
-		            this._pAnimMap[iConn] = iAnim = this._iTotalAnim ++;
-		        }
-
-		        pSlider = new Slider(this);
-
-				this.$element.find('.graph-node-center-left').append(pSlider.$element);
-		        
+		        pSlider = <IUISlider>this.createComponent("slider", {show: false});
+		        pSlider.render(this.el.find(".controls"));
 		        pSlider.range = 100;
 		        
 		        pSlider.bind(SIGNAL(updated), (pSlider: IUISlider, iValue: int) => {
 		        	pBlend.setAnimationWeight(iAnim, iValue);
 		        });
 
-		        pBlend = this._pBlend;
-		        pBlend.setAnimation(iAnim, pAnimation);
+		        // if (pTarget instanceof ui.animation.Mask) {
+		        //     pMask = (<IUIAnimationMask>pTarget).getMask();
 
-		        if (pTarget instanceof ui.animation.Mask) {
-		            pMask = (<IUIAnimationMask>pTarget).getMask();
-
-		            if (isDefAndNotNull(pMask)) {
-		                pBlend.setAnimationMask(iAnim, pMask);
-		                this.setMaskNode(iAnim, <IUIAnimationMask>pTarget);
-		            }
-		        }
+		        //     if (isDefAndNotNull(pMask)) {
+		        //         pBlend.setAnimationMask(iAnim, pMask);
+		        //         this.setMaskNode(iAnim, <IUIAnimationMask>pTarget);
+		        //     }
+		        // }
 
 		        
-		        this._pSliders[iConn] = {slider: pSlider, animation: pAnimation};
-
-		        return iConn;
+		        this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
 		    }
-		    else {
-		        return this._iLastConnection;
-		    }*/
-		   	return 0;
 		}
 
 		rendered(): void {

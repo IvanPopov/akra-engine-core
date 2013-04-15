@@ -12,6 +12,7 @@ module akra.ui.graph {
 		protected _iConnectionLimit: int = -1;
 		protected _iInConnectionLimit: int = MAX_INT8;
 		protected _iOutConnectionLimit: uint = MAX_INT8;
+		protected _eConectorOrient: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN;
 
 		inline get connectors(): IUIGraphConnector[] {
 			return this._pConnectors;
@@ -65,6 +66,7 @@ module akra.ui.graph {
 			var sMaxConnections: string = $comp.attr("connections-limit");
 			var sMaxInConnections: string = $comp.attr("connections-in-limit");
 			var sMaxOutConnections: string = $comp.attr("connections-out-limit");
+			var sOrient: string = $comp.attr("orientation");
 
 			if (isString(sMode)) {
 				if (sMode === "out") {
@@ -88,6 +90,23 @@ module akra.ui.graph {
 
 			if (isString(sMaxOutConnections)) {
 				this.maxConnections = parseInt(sMaxOutConnections);
+			}
+
+			if (isString(sOrient)) {
+				switch (sOrient.toLowerCase()) {
+					case "up": 
+						this._eConectorOrient = EGraphConnectorOrient.UP;
+						break;
+					case "down": 
+						this._eConectorOrient = EGraphConnectorOrient.DOWN;
+						break;
+					case "left": 
+						this._eConectorOrient = EGraphConnectorOrient.LEFT;
+						break;
+					case "right": 
+						this._eConectorOrient = EGraphConnectorOrient.RIGHT;
+						break;
+				}
 			}
 		}
 
@@ -179,6 +198,7 @@ module akra.ui.graph {
 			}
 
 			var pConnector: IUIGraphConnector = this._pTempConnect = new Connector(this);
+			pConnector.orient = this._eConectorOrient;
 			//this.graph.isReadyForConnect()? pConnector.input(): pConnector.output();
 			this.connect(pConnector, SIGNAL(routeBreaked), SLOT(destroyTempConnect));
 			this.connect(pConnector, SIGNAL(connected), SLOT(onConnection));

@@ -11,15 +11,22 @@
 
 module akra.ui.graph {
 	export class Connector extends Component implements IUIGraphConnector {
+		protected _eOrient: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN;
 		protected _eDirect: EUIGraphDirections = EUIGraphDirections.IN;
 		protected _bActive: bool = false;
 		protected _pRoute: IUIGraphRoute = null;
 
+
+		inline get orient(): EGraphConnectorOrient { return this._eOrient; }
 		inline get area(): IUIGraphConnectionArea { return (<IUIGraphConnectionArea>this.parent.parent); }
 		inline get node(): IUIGraphNode { return this.area.node; }
 		inline get graph(): IUIGraph { return this.node.graph; }
 		inline get route(): IUIGraphRoute { return this._pRoute; }
 		inline get direction(): EUIGraphDirections { return this._eDirect; }
+
+		inline set orient(e: EGraphConnectorOrient) {
+			this._eOrient = e;
+		}
 
 		inline set route(pRoute: IUIGraphRoute) {
 			this._pRoute = pRoute;
@@ -46,6 +53,7 @@ module akra.ui.graph {
 
 
 		mousedown(e: IUIEvent): void {
+			e.preventDefault();
 			e.stopPropagation();
 
 			if (!isNull(this.route)) {

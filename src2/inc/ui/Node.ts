@@ -11,15 +11,6 @@
 /// @script ui/3d-party/jQuery/jquery-1.9.1.js
 /// @script ui/3d-party/jQuery/jquery-ui.js
 
-(function($){
-    $.fn.disableSelection = function() {
-        return this
-                 .attr('unselectable', 'on')
-                 .css('user-select', 'none')
-                 .on('selectstart', false);
-    };
-})(jQuery);
-
 module akra.ui {
 	//export const $ = jQuery;
 	export const $document = $(document);

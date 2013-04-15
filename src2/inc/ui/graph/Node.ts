@@ -58,10 +58,16 @@ module akra.ui.graph {
 		protected onConnectionEnd(pGraph: IUIGraph): void {
 			this._isSuitable = false;
 			this.el.removeClass("open blocked");
+			this.routing();
 		}
 
 		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
-			if (!this.canAcceptConnect() || pRoute.left.node === this) {
+			if (pRoute.left.node === this) {
+				return;
+			}
+
+			if (!this.canAcceptConnect()) {
+				this.el.addClass("blocked");
 				return;
 			}
 

@@ -47,7 +47,7 @@ module akra.animation {
 			}
 		}
 
-		addAnimation(pAnimation: IAnimationBase, fWeight: float, pMask: FloatMap): int {
+		addAnimation(pAnimation: IAnimationBase, fWeight?: float, pMask?: FloatMap): int {
 			debug_assert(isDef(pAnimation), 'animation must be setted.');
 
 			this._pAnimationList.push(null);

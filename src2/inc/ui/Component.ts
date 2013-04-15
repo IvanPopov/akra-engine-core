@@ -20,7 +20,7 @@ module akra.ui {
 		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sName});
 		var sTplData: string = fnTemplate(pData);
 
-		LOG(sTemplate);
+		// LOG(sTemplate);
 		pNode.el.append(sTplData);
 
 		pNode.el.find("component").each(function(i: int) {

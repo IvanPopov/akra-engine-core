@@ -8,9 +8,18 @@
 module akra {
 	IFACE (IUIGraphNode);
 
+	export enum EGraphConnectorOrient {
+		UNKNOWN,
+		UP,
+		DOWN,
+		LEFT,
+		RIGHT
+	}
+
 	export interface IUIGraphConnector extends IUIComponent {
 		route: IUIGraphRoute;
-
+		orient: EGraphConnectorOrient;
+		
 		readonly area: IUIGraphConnectionArea;
 		readonly node: IUIGraphNode;
 		readonly graph: IUIGraph;

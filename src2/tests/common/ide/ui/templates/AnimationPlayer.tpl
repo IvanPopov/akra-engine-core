@@ -1,5 +1,5 @@
 <div>
-	<component type="GraphConnectionArea" name="in" mode="in" connections-limit="1" layout="horizontal" />
+	<component type="GraphConnectionArea" name="in" mode="in" connections-limit="1" layout="horizontal" orientation="up"/>
 	<div type="node">
 		<div class="component-title">Animation Player</div>
 		<div class="controls">
@@ -7,16 +7,19 @@
 			
 			<div>
 				<component type="CheckboxList" multiselect >
-					<component type="Checkbox" text="Play" name="play" />
-					<component type="Checkbox" text="Loop" name="loop" />
-					<component type="Checkbox" text="Reverse" name="reverse" />
+					<component type="Checkbox" img="ui/img/infinity16.png" name="left-inf" />
+					<component type="Checkbox" img="ui/img/play16.png" name="play" />
+					<component type="Checkbox" img="ui/img/loop16.png" name="loop" />
+					<component type="Checkbox" img="ui/img/back16.png" name="reverse" />
+					<component type="Checkbox" img="ui/img/infinity16.png" name="right-inf" />
 				</component>
 			</div>
 			
-			<div>Speed: <component type="Label" text="1" name="speed" editable="true" style="width: 20px;"/>x</div>
+			<div>Speed: <component type="Label" text="1" name="speed" editable="true" style="width: 20px;" postfix="x"/></div>
 			
 			<component type="Slider" name="state" />
+			<div class="time">0.0</div>
 		</div>
 	</div>
-	<component type="GraphConnectionArea" name="out" mode="out" connections-limit="1" layout="horizontal" />
+	<component type="GraphConnectionArea" name="out" mode="out" layout="horizontal" orientation="down"/>
 </div>

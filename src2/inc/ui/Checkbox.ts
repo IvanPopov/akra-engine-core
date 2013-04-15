@@ -61,6 +61,11 @@ module akra.ui {
 			if (isDef($comp.attr("checked"))) {
 				this.checked = true;
 			}
+
+			var sImage: string = $comp.attr("img");
+			if (isString(sImage)) {
+				this.$text.before("<img src='" + sImage + "' />");
+			}
 		}
 
 		rendered(): void {

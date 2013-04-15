@@ -38,7 +38,7 @@ module akra.ui {
 		}
 
 		inline _setValue(bValue: bool): void {
-			this.$checkbox.attr("checked", bValue);
+			this.$checkbox.prop('checked', bValue);
 		}
 
 		_createdFrom($comp: JQuery): void {

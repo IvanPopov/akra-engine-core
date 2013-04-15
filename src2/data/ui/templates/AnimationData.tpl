@@ -4,4 +4,4 @@
 		<component name="name" type="Label" text="unknown data" style="text-align: center;">
 	</div>
 </div>
-<component type="GraphConnectionArea" name="out" mode="out" connections-limit="1" layout="horizontal" />
+<component type="GraphConnectionArea" name="out" mode="out" layout="horizontal" orientation="down"/>

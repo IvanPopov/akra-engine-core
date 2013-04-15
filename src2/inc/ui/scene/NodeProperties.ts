@@ -81,7 +81,7 @@ module akra.ui.scene {
 		}
 
 		_updateRotation(pVector: IUIVector, pRotation: IVec3): void {
-			pRotation.scale(math.HALF_PI / 180.);
+			pRotation.scale(math.PI / 180.);
 			this._pNode.setRotationByXYZAxis(pRotation.x, pRotation.y, pRotation.z);
 		}
 
@@ -112,7 +112,7 @@ module akra.ui.scene {
 			
 			var v3fRot: IVec3 = vec3();
 			pNode.localOrientation.toYawPitchRoll(v3fRot);
-			this._pRotation.setVec3(vec3(v3fRot.y, v3fRot.x, v3fRot.z).scale(180.0 / math.HALF_PI));
+			this._pRotation.setVec3(vec3(v3fRot.y, v3fRot.x, v3fRot.z).scale(180.0 / math.PI));
 			
 			this._pScale.setVec3(pNode.localScale);
 			this._pWorldPosition.setVec3(pNode.worldPosition);

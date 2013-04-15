@@ -15,9 +15,15 @@ module akra.ui.animation {
 		private _pPlayBtn: IUICheckbox;
 		private _pLoopBtn: IUICheckbox;
 		private _pReverseBtn: IUICheckbox;
+		
+		private _pLeftInf: IUICheckbox;
+		private _pRightInf: IUICheckbox;
+
 		private _pNameLabel: IUILabel;
 
 		private _pAnimation: IAnimationContainer = null;
+
+		protected $time: JQuery;
 
 		inline get animation(): IAnimationBase {
 			return this._pAnimation;
@@ -25,7 +31,6 @@ module akra.ui.animation {
 
 		set animation(pAnim: IAnimationBase) {
 			//ASSERT(isNull(this.animation), "animation container already setuped in player");
-			LOG(pAnim, "set container animation")
 			this._pAnimation.setAnimation(pAnim);
 			this.setup();
 		}
@@ -41,19 +46,37 @@ module akra.ui.animation {
 			this._pPlayBtn 		= <IUICheckbox>this.findEntity("play");
 			this._pLoopBtn 		= <IUICheckbox>this.findEntity("loop");
 			this._pReverseBtn 	= <IUICheckbox>this.findEntity("reverse");
+			this._pLeftInf 		= <IUICheckbox>this.findEntity("left-inf");
+			this._pRightInf 	= <IUICheckbox>this.findEntity("right-inf");
 			this._pNameLabel 	= <IUILabel>this.findEntity("name");
 
 			this._pAnimation = pContainer = pContainer || akra.animation.createContainer();
 			this.graph.addAnimation(pContainer);
+
 			this.connect(pContainer, SIGNAL(enterFrame), SLOT(_enterFrame));
+			this.connect(pContainer, SIGNAL(durationUpdated), SLOT(_durationUpdated));
 
 			this.connect(this._pLoopBtn, SIGNAL(changed), SLOT(_useLoop));
 			this.connect(this._pReverseBtn, SIGNAL(changed), SLOT(_reverse));
 			this.connect(this._pPlayBtn, SIGNAL(changed), SLOT(_play));
 			this.connect(this._pSpeedLabel, SIGNAL(changed), SLOT(_setSpeed));
 			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_setName));
+			this.connect(this._pLeftInf, SIGNAL(changed), SLOT(_setLeftInf));
+			this.connect(this._pRightInf, SIGNAL(changed), SLOT(_setRightInf));
+
+			this.$time = this.el.find(".time:first");
 
 			this.setup();
+		}
+
+		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
+
+			if (!isNull(this._pAnimation.getAnimation())) {
+				this.el.addClass("blocked");
+			}
+			else {
+				super.onConnectionBegin(pGraph, pRoute);
+			}
 		}
 
 		protected setup(): void {
@@ -67,6 +90,17 @@ module akra.ui.animation {
 
 			this._pNameLabel.text = pAnimation.name;
 			this._pSpeedLabel.text = pAnimation.speed.toString();
+
+			this._pLeftInf.checked = pAnimation.inLeftInfinity();
+			this._pRightInf.checked = pAnimation.inRightInfinity();
+		}
+
+		_setLeftInf(pCheckbox: IUICheckbox, bValue: bool): void {
+			this._pAnimation.leftInfinity(bValue);
+		}
+
+		_setRightInf(pCheckbox: IUICheckbox, bValue: bool): void {
+			this._pAnimation.rightInfinity(bValue);
 		}
 
 		_reverse(pCheckbox: IUICheckbox, bValue: bool): void {
@@ -94,19 +128,25 @@ module akra.ui.animation {
 		}
 
 
-		_enterFrame(fTime: float): void {
+		_durationUpdated(pContainer: IAnimationContainer, fDuration: float): void {
+			this._pSlider.range = fDuration;
+		}
+
+		_enterFrame(pContainer: IAnimationContainer, fRealTime: float, fTime: float): void {
 			if (this._pAnimation.isPaused()) {
 				//this._pAnimation.rewind(this._pSlider.value);
 			}
 			else {
 				if (this._pAnimation.inLoop()) {
 			        this._pSlider.value = 
-			            math.mod((fTime - this._pAnimation.getStartTime()), this._pAnimation.duration);
+			            math.mod((fRealTime - this._pAnimation.getStartTime()), this._pAnimation.duration);
 			    }
-			    else if (fTime >= this._pAnimation.getStartTime()) {
+			    else if (fRealTime >= this._pAnimation.getStartTime()) {
 			        this._pSlider.value = 
-			        	(math.min(fTime, this._pAnimation.duration) - this._pAnimation.getStartTime());
+			        	(math.min(fRealTime, this._pAnimation.duration) - this._pAnimation.getStartTime());
 			    }
+
+			    this.$time.text(fTime.toFixed(2));
 		    }
 		}
 

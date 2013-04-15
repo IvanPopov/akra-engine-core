@@ -187,10 +187,75 @@ module akra.ui.graph {
 			var pLeft: IPoint = Route.calcPosition(this.left);
 			var pRight: IPoint = Route.calcPosition(this.right);
 
-			this.drawRoute(pLeft, pRight);
+			this.drawRoute(pLeft, pRight, this.left.orient, this.right.orient);
 		}
 
-		protected drawRoute(pFrom: IPoint, pTo: IPoint): void {
+		protected drawRoute(pFrom: IPoint, pTo: IPoint, 
+				eFromOr: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN, 
+				eToOr: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN): void {
+
+			var pFromAdd: IPoint = {x: 0, y: 0};
+			var pToAdd: IPoint = {x: 0, y: 0};
+			var dY: float = pTo.y - pFrom.y;
+			var dX: float = pTo.x - pFrom.x;
+			var isVertF: bool = false;
+			var isVertT: bool = false;
+			
+			if (eFromOr == EGraphConnectorOrient.UP || eFromOr == EGraphConnectorOrient.DOWN) {
+				isVertF = true;
+			}
+
+			if (eToOr == EGraphConnectorOrient.UP || eToOr == EGraphConnectorOrient.DOWN) {
+				isVertT = true;
+			}
+
+			if (isVertT != isVertF) {
+				this.drawRoute(pFrom, pTo);
+				return;
+			}
+
+
+			if (dY > 0) {
+				if (eFromOr == EGraphConnectorOrient.UP) {
+					pFromAdd.y = dY;
+				}
+
+				if (eToOr == EGraphConnectorOrient.DOWN) {
+					pToAdd.y = -dY;
+				}
+
+			}
+
+			if (dY < 0) {
+				if (eFromOr == EGraphConnectorOrient.DOWN) {
+					pFromAdd.y = -dY;
+				}
+
+				if (eToOr == EGraphConnectorOrient.UP) {
+					pToAdd.y = dY;
+				}
+			}
+
+			if (dX > 0) {
+
+				if (eFromOr == EGraphConnectorOrient.LEFT) {
+					pFromAdd.x = dX;
+				}
+
+				if (eToOr == EGraphConnectorOrient.RIGHT) {
+					pToAdd.x = -dX;
+				}
+			}
+
+			if (dX < 0) {
+				if (eFromOr == EGraphConnectorOrient.RIGHT) {
+					pFromAdd.x = -dX;
+				}
+
+				if (eToOr == EGraphConnectorOrient.LEFT) {
+					pToAdd.x = dX;
+				}
+			}
 
 			var pPath: any = [
 	            [<any>"M", pFrom.x, pFrom.y], [<any>"C", 
@@ -198,8 +263,8 @@ module akra.ui.graph {
 	            pFrom.x,
 	            pFrom.y,
 
-	            pFrom.x, 
-	            (pFrom.y * 7 + pTo.y * 3) / 10, 
+	            isVertF? pFrom.x: ((pFrom.x + pFromAdd.x) * 7 + pTo.x * 3) / 10,  
+	            isVertF? ((pFrom.y + pFromAdd.y) * 7 + pTo.y * 3) / 10: pFrom.y, 
 
 	            (pFrom.x + pTo.x) / 2, 
 	            (pFrom.y + pTo.y) / 2, 
@@ -207,8 +272,8 @@ module akra.ui.graph {
 	            (pFrom.x + pTo.x) / 2, 
 	            (pFrom.y + pTo.y) / 2, 
 
-	            pTo.x, 
-	            (pFrom.y * 3 + pTo.y * 7) / 10, 
+	            isVertT? pTo.x: (pFrom.x * 3 + (pTo.x + pToAdd.x) * 7) / 10, 
+	            isVertT? (pFrom.y * 3 + (pTo.y + pToAdd.y) * 7) / 10: pTo.y, 
 
 	            //middle point
 	            pTo.x,

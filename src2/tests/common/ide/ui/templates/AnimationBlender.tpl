@@ -1,19 +1,18 @@
 <div>
-	<div class="component-title">Blender</div>
-	<component type="Label" text="Title" name="name"></component>
 	<table class='graph-node-table'>
 		<tr>
 			<td colspan="2" class="graph-node-left">
-				
+				<component type="GraphConnectionArea" name="in" mode="in" layout="vertical" orientation="left"/>
 			</td>
-			<td class="graph-node-center-left" style="min-width: 40px;">
-			</td>
-			<td class="graph-node-center-right" style="min-width: 40px;">
+			<td class="graph-node-center" type="node" >
+				<div class="component-title">Blender</div>
+				<div class="controls">
+					<component type="Label" text="Title" name="name" />
+				</div>
 			</td>
 			<td colspan="2" class="graph-node-right">
-				
+				<component type="GraphConnectionArea" name="out" mode="out" layout="vertical" orientation="right"/>
 			</td>
 		</tr>
 	</table>
-	
 </div>

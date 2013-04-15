@@ -86,9 +86,9 @@ module akra.ui {
 
 		focusout(e: IUIEvent): void {
 			var sText: string = this.$input.val();
-			var isChanged: bool = (this.$text.html() !== sText);
-
-			this.$text.html(sText);
+			var isChanged: bool = (this.text !== sText);
+// LOG(this.text, sText);
+			this.text = sText;
 			this.$text.css("display", "inline-block");
 			this.$input.css("display", "none");
 
