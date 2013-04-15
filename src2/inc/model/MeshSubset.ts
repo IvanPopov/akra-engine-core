@@ -391,6 +391,24 @@ module akra.model {
 
 		    pPosData.setData(pMetaData, 0, pDeclaration.stride);
 
+		    // LOG(pPosData.toString());
+		    // LOG(pPosData.length);
+		    // LOG(this.data.getIndices().toString());
+		    // LOG(this.data.toString());
+		    
+		    var pIndex0: Float32Array = <Float32Array>(<IVertexData>this.data.getIndices()).getTypedData("INDEX0")
+		    var pIndex1: Float32Array = <Float32Array>(<IVertexData>this.data.getIndices()).getTypedData("INDEX1")
+
+		    var iAddition: uint = this.data.getIndices().byteOffset;
+		    var iStride: uint = this.data.getIndices().byteOffset;
+
+		    LOG((<IVertexData>this.data.getIndices()).getVertexDeclaration().stride);
+
+	    	for(var i=0; i<pIndex0.length; i++){
+	    		pIndex0[i] = pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAddition;
+	    		pIndex1[i] = pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAddition;
+	    	}
+
 		    this._pSkin = pSkin;
 
 		    return true;
