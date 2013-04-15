@@ -119,8 +119,14 @@ VS_OUT_1 vs_mesh_optimized_skinning(VS_IN_2 IN) {
 
 technique mesh_geometry{
     pass p0 {
-        if(engine.mesh.isSkinning){
-            VertexShader = compile vs_mesh_skinning();
+        
+        if(engine.mesh.isSkinned){
+            if(engine.mesh.isOptimizedSkinned){
+                VertexShader = compile vs_mesh_optimized_skinning();
+            }
+            else{
+                VertexShader = compile vs_mesh_skinning();
+            }
         }
         else {
             VertexShader = compile vs_mesh_geometry();
