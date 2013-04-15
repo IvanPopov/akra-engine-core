@@ -21,6 +21,10 @@ module akra.pixelUtil {
 		constructor (pExtents: IBox, ePixelFormat: EPixelFormats, pPixelData: Uint8Array = null);
 		constructor (iWidth?: any, iHeight?: any, iDepth?: any, ePixelFormat?: any, pPixelData: Uint8Array = null) {
 			if (arguments.length === 0) {
+				super();
+				this.data = null;
+				this.format = EPixelFormats.UNKNOWN;
+				this.setConsecutive();
 				return;
 			}
 
@@ -118,6 +122,15 @@ module akra.pixelUtil {
 
 			this.data = <Uint8Array>pPixelData;
 			this.format = <EPixelFormats>ePixelFormat;
+
+			this.setConsecutive();
+		}
+
+		toString(): string{
+			return "|---------------------------|\n" + 
+				   super.toString() + "\n" +
+				   "length: " + (this.data ? this.data.length : 0) + "\n" +
+				   "|---------------------------|";
 		}
 	}
 

@@ -17,6 +17,9 @@ module akra.render {
 		}
 
 		execute(): void {
+			// if(true){
+			// 	return;
+			// }
 			//this.sort()
 			// ERROR("@@@@@@@@@@@@@@@@@@@@@@@@@ Start execute @@@@@@@@@@@@@@@@@@@@@@@@");
 			this._pRenderer._beginRender();

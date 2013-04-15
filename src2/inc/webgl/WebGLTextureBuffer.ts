@@ -71,6 +71,9 @@ module akra.webgl {
                         			 getWebGLFormat(this._eFormat), getWebGLDataType(this._eFormat),
                         			 null);	
 
+			this.byteLength = pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+			this._pBuffer.setPosition(0, 0, this._iWidth, this._iHeight, 0, this._iDepth);
+
 			this.notifyResized();
 
 			//pWebGLRenderer.debug(false, false);
@@ -262,7 +265,8 @@ module akra.webgl {
 	                // Standard alignment of 4 is not right
 	                pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	            }
-	            if (pDestBox.left === 0 && pDestBox.top === 0) {	            	
+	            if (pDestBox.left === 0 && pDestBox.top === 0) {
+	            	LOG("Buffer::upload --> One color:", pData.data[0],pData.data[1], pData.data[2], pData.format, webgl.getWebGLFormat(pData.format), webgl.getWebGLDataType(pData.format));	            	
             		pWebGLContext.texImage2D(this._eFaceTarget,
                             			this._iLevel,
                             			webgl.getWebGLFormat(pData.format),	                            			
@@ -780,7 +784,7 @@ module akra.webgl {
 	        // 	pTempTexBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(".temp");
 	        // }
 
-	        pTempTexBuffer.create(eTarget, pTempWebGLTexture, pSource.width || iWidth, pSource.height || iHeight, 
+	        pTempTexBuffer.create(eTarget, pTempWebGLTexture, iWidth, iHeight, 
 								  iWebGLFormat, pSource.format, 0, 0,
 								  ETextureFlags.AUTOMIPMAP | EHardwareBufferFlags.STATIC,
 								  false);

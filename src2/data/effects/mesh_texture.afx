@@ -94,41 +94,50 @@ Material defaultMaterial:MATERIAL;
 float4x4 model_mat:MODEL_MATRIX;
 float4x4 view_mat:VIEW_MATRIX;
 
+bool useNormal;
+
 void fs_mesh_texture_pass_1(VS_OUT_2 IN){
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;
     float4 norm;
 
-    if(texNormal == float3(0.)){
+    if(texNormal == float3(0.) || !useNormal){
         norm = float4(IN.norm.xyz, 0.);
     }
     else {
-        /*
-        float3 normal = IN.norm.xyz;
-        float3 binormal = normalize(cross(float3(1., 0., 0.), normal));
+        
+        float3 normal = normalize(IN.norm.xyz);
+        //float3 binormal = normalize(cross(float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), -length(normal.xy)), normal));
+
+        float3 tangent = float3(dFdx(IN.tc_normal.x), dFdy(IN.tc_normal.x), 0.);
+        tangent.z = -dot(tangent.xy,normal.xy)/normal.z;
+        tangent = normalize(tangent);
+
+        float3 binormal = cross(tangent, normal);
+
+        /*float3 binormal = float3(dFdx(IN.tc_normal.y), dFdy(IN.tc_normal.y), 0.);
+        binormal.z = -dot(binormal.xy,normal.xy)/normal.z;
+        binormal = normalize(binormal);*/
             
-        if (binormal == float3(0.)) {
+        /*if (binormal == float3(0.)) {
             binormal = normalize(cross(float3(0., 1., 0.), normal));
-        }
+        }*/
 
-        float3 tang = cross(normal, binormal);
-
-          //формируем матрицу трансформации вектора источника света
-        float3x3 t;
-        t[0] = tang;
-        t[1] = binormal;
-        t[2] = normal;
+        //формируем матрицу трансформации
+        float3x3 m3fTransform;
+        m3fTransform[0] = tangent;
+        m3fTransform[1] = binormal;
+        m3fTransform[2] = normal;
 
 
         //texNormal.z *= 2.;
-        //texNormal.xy = (texNormal.xy - 0.5) * 2.;
+        texNormal.xy = (texNormal.xy - 0.5) * 2.;
 
-        norm = (float4(texNormal.xyz * t, 0.));
-        */
-       
-        norm = float4(IN.norm.xyz, 0.);
+        texNormal = normalize(texNormal);
+
+        norm = float4(m3fTransform * texNormal, 0.);
     }
 
-    Normal = norm.xyz;
+    Normal = normalize(norm.xyz);
 //    Normal = normalize(float3(normalize(IN.norm) + tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz));
     Fragment_material.emissive = defaultMaterial.emissive + tex2D(sampler_emissive, float2(IN.tc_emissive.xy));
     Fragment_material.diffuse = defaultMaterial.diffuse + tex2D(sampler_diffuse, float2(IN.tc_diffuse.xy));

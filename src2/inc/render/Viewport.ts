@@ -122,7 +122,6 @@ module akra.render {
 
 		clear(iBuffers: uint = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH,
 			  cColor: IColor = Color.BLACK, fDepth: float = 1., iStencil: uint = 0): void {
-			
 			var pRenderer: IRenderer = this._pTarget.getRenderer();
 			
 			if (pRenderer) {

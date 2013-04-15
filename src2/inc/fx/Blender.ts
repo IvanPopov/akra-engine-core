@@ -38,9 +38,14 @@ module akra.fx {
 			var sComponentPartHash: string = pComponent.getHash(iShift, iPass);
 			var sShortHash: string = sBlendPartHash + "+" + sComponentPartHash;
 
+			if(!isNull(pComponentBlend) && pComponentBlend.containComponentHash(sComponentPartHash)){
+				debug_warning("You try to add already used component '" + sComponentPartHash + "' in blend.");
+				return pComponentBlend;
+			}
+
 			if(isDef(this._pBlendWithComponentMap[sShortHash])){
 				return this._pBlendWithComponentMap[sShortHash];
-			}
+			}			
 
 			var pNewBlend: IAFXComponentBlend = null;
 

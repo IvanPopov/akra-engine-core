@@ -16,7 +16,9 @@ module akra {
 
 		contains(pDest: IBox): bool;
 		isEqual(pDest: IBox): bool;
-		setPosition(iLeft: uint, iTop: uint, iWidth: uint, iHeight: uint): void;
+		setPosition(iLeft: uint, iTop: uint, iWidth: uint, iHeight: uint, iFront?: uint, iDepth?: uint): void;
+
+		toString(): string;
 	}
 }
 

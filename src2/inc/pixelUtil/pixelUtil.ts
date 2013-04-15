@@ -1487,7 +1487,7 @@ module akra {
 	            // Everything consecutive?
 	            if(src.isConsecutive() && dst.isConsecutive())
 	            {
-					//_memcpy(dst.data.buffer, src.data.buffer, src.getConsecutiveSize());
+                    //_memcpy(dst.data.buffer, src.data.buffer, src.getConsecutiveSize());
 					dst.data.set(src.data.subarray(0, src.getConsecutiveSize()));
 	                return;
 	            }
@@ -1498,7 +1498,7 @@ module akra {
 	            var srcptr: Uint8Array = src.data.subarray(
 	                (src.left + src.top * src.rowPitch + src.front * src.slicePitch) * srcPixelSize);
 	            var dstptr: Uint8Array = dst.data.subarray(
-					+ (dst.left + dst.top * dst.rowPitch + dst.front * dst.slicePitch) * dstPixelSize);
+					(dst.left + dst.top * dst.rowPitch + dst.front * dst.slicePitch) * dstPixelSize);
 
 	            // Calculate pitches+skips in bytes
 	            var srcRowPitchBytes: uint = src.rowPitch * srcPixelSize;
@@ -1508,14 +1508,19 @@ module akra {
 	            var dstRowPitchBytes: uint = dst.rowPitch * dstPixelSize;
 	            //var size_t dstRowSkipBytes = dst.getRowSkip()*dstPixelSize;
 	            var dstSliceSkipBytes: uint = dst.getSliceSkip() * dstPixelSize;
-
-	            // Otherwise, copy per row
+                // Otherwise, copy per row
 	            const rowSize: uint = src.width * srcPixelSize;
 
 	            for(var z: int = src.front; z < src.back; z++) {
 	                for(var y: int = src.top; y < src.bottom; y++) {
 						//_memcpy(dstptr.buffer, srcptr.buffer, rowSize);
-						dstptr.set(srcptr.subarray(0, rowSize));
+                        try{
+						  dstptr.set(srcptr.subarray(0, rowSize));
+                        }
+                        catch(e){
+                            LOG(z, y, srcptr, dstptr, src, dst);
+                            throw e;
+                        }
 
 	                    srcptr = srcptr.subarray(srcRowPitchBytes);
 	                    dstptr = dstptr.subarray(dstRowPitchBytes);

@@ -10,7 +10,7 @@ module akra {
 	var pUI: IUI = pEngine.getSceneManager().createUI();
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pMainScene: JQuery = null;
-	var pCamera: ICamera = null;
+	export var pCamera: ICamera = null;
 	var pViewport: IViewport = null;
 	var pSkyBoxTexture: ITexture = null;
 
@@ -27,7 +27,8 @@ module akra {
 		function createCameras(): void {
 			pCamera = pScene.createCamera();
 		
-			pCamera.addPosition(vec3(0, 200, 10));
+			pCamera.addPosition(vec3(0, 0, 150));
+			pCamera.addRelRotationByXYZAxis(0, 0, 0);
 			pCamera.attachToParent(pScene.getRootNode());
 
 			var pKeymap: IKeyMap = controls.createKeymap((<any>pCanvas)._pCanvas);
@@ -64,7 +65,7 @@ module akra {
 			pOmniLight.params.specular.set(1, 1, 1, 1);
 			pOmniLight.params.attenuation.set(1,0,0);
 
-			pOmniLight.addPosition(0, 100, 5);
+			pOmniLight.addPosition(0, 0, 100);
 		}
 
 		function createSkyBox(): void {
@@ -93,10 +94,12 @@ module akra {
 					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(1024, 1024, 1024), 4, 5, 5, "main_terrain");
 					pTerrain.attachToParent(pScene.getRootNode());
 					pTerrain.scale(0.1);
+					// pTerrain.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
-
+					// setTimeout(function() {pEngine.renderFrame()}, 5000);
 					// pEngine.renderFrame();
+
 				});
 			});
 			
@@ -161,9 +164,42 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	
-		pEngine.exec();
+		// pEngine.exec();
 		// pEngine.renderFrame();
 	});
+
+	// test("pixelUtil", () => {
+	// 	//var pPixelBoxSrc: IPixelBox = new pixelUtil.PixelBox(32, 32, 1, 11, new Uint8Array(32 * 32 * 3));
+	// 	var iSize: uint = 32;
+	// 	var pPixelBoxDst: IPixelBox = new pixelUtil.PixelBox(iSize, iSize, 1, 11, new Uint8Array(iSize * iSize * 3));
+	// 	var pTempBox: IBox = new geometry.Box();
+	// 	var pTempPixelBox: IPixelBox = new pixelUtil.PixelBox();
+	// 	var iBlockW: uint = iSize/4, iBlockH: uint = iSize/4;
+
+	// 	function setData(x: uint, y: uint){
+	// 		var pData: Uint8Array = new Uint8Array(iBlockW *  iBlockH * 3);
+			
+	// 		for(var i: uint = 0; i < iBlockW *  iBlockH * 3; i++){
+	// 			pData[i] = 10;
+	// 		}
+
+	// 		pTempBox.setPosition(0, 0, iBlockW, iBlockH);
+	// 		pTempPixelBox.refresh(pTempBox, 11, pData);
+
+	// 		pTempBox.setPosition(x, y, iBlockW, iBlockH);
+	// 		var pSubBox: IPixelBox = pPixelBoxDst.getSubBox(pTempBox);
+	// 		pixelUtil.bulkPixelConversion(pTempPixelBox, pSubBox);
+	// 	}
+
+	// 	for(var i: uint = 0; i < iSize; i += iBlockW){
+	// 		for(var j: uint = 0; j < iSize; j += iBlockH){
+	// 			setData(i, j);
+	// 		}
+	// 	}
+
+	// 	LOG(pPixelBoxDst);
+
+	// });
 
 }
 
