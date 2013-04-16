@@ -42,6 +42,7 @@ module akra {
 		createAnimationMask(iAnimation?: int): FloatMap;
 
 		signal durationUpdated(fDuration: float);
+		signal weightUpdated(iAnim: int, fWeight: float);
 	}
 }
 

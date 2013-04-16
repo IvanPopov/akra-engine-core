@@ -13,6 +13,7 @@ module akra {
 		select(pPanel: IUIPanel);
 
 		findTabByTitle(sName: string): int;
+		findTab(sName: string): int;
 
 		tabIndex(pPanel: IUIPanel): uint;
 	}

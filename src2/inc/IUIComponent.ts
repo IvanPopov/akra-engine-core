@@ -29,6 +29,7 @@ module akra {
 		//string, string[]
 		events?: any;
 		parent?: IUIComponent;
+		template?: string;
 	}
 
 	export enum EUIComponents {

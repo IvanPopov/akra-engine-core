@@ -7,12 +7,65 @@
 	}
 }
 
+.component-animationdata {
+	.label-text {
+		padding: 2px;
+	}
+}
 
-.component-animationdata, .component-animationplayer, .component-animationblender {
+.component-animationdata, .component-animationplayer, 
+.component-animationblender, .component-animationmask {
 	.component-title {
 		background-color: rgba(100, 100, 100, .8);
 		color: rgba(255,255,0,.8);
 		text-shadow: 0px 1px 2px rgba(50, 50, 50, 0.95);
+		text-align: center;
+
+		.component-switch {
+			margin: 0px;
+			top: -3px;
+			left: -10px;
+			margin-left: 12px;
+			display: inline-block;
+
+			label {
+				height: 10px;
+				width: 19px;
+				border-radius: 0;
+				box-shadow: 
+					inset 0 1px 1px rgba(0, 0, 0, 0.7),
+					inset 0 0 3px rgba(0, 0, 0, 0.7),
+					0 0 0 1px rgba(0, 0, 0, 0.1),
+					0 -1px 1px 1px rgba(0, 0, 0, 0.25);
+				background-image: -webkit-linear-gradient(left, #0A0 50%, #ff6666 50%);
+
+				&:before {
+					width: 10px;
+					height: 10px;
+					border-radius: 0;
+					background-color: #555;
+					box-shadow: none;
+				}
+			}
+
+			input:checked + label:before {
+				left: 9px;
+			}
+		
+		}
+	}
+
+	&.disabled {
+		opacity: 0.75;
+		.component-title {
+			background-color: gray !important;
+			color: white;
+			text-shadow: none;
+		}
+
+		*[type=node] {
+			border: 1px solid gray !important;
+		}
 	}
 
 	&.selected {
@@ -168,39 +221,85 @@
 }
 
 
-// .component-animationdata, .component-animationplayer {
-// 	.controls {
-// 		.component-label {
-// 			font-size: 12px;
-// 		}
-// 		padding: 0 2px 0 2px;
-// 	}
-// }
+.component-animationblender {
+	div[name=in] {
+		.component-graphconnector {
+			position: relative;
+			top: 21px;
+		}
+	}
 
-// .component-animationplayer, .component-animationblender {
-// 	.component-button, .component-checkbox {
-// 		padding: 2px;
-// 		font-size: 12px;
-// 	}
-// }
+	.component-slider {
+		background: #999;
+		border-left: 0px;
+		border-right: 0px;
+		border-top: 1px solid rgba(255, 255, 0, 0.8);
+		border-bottom: 0;
+		overflow: hidden;
 
-// .component-animationblender {
-// 	.component-button {
-// 		display: block;
-// 		padding-top: 0px;
-// 		padding-bottom: 0px;
-// 	}
-// }
+		.component-pin {
+			width: 10px !important;
+			background: black;
+		}
+	}
 
-// .component-animationmask {
-// 	.controls {
-// 		width: 140px;
-// 		max-height: 145px; 
-// 		overflow-y: scroll; 
-// 		overflow-x: auto;
+	.time {
+		left: -7px;
+	}
+}
 
-// 		.component-slider {
-// 			width: 100% !important;
-// 		}
-// 	}
-// }
+.component-animationmask {
+	*[type=node] {
+		border-radius: 20px;
+		overflow: hidden;
+
+		.component-button {
+			border-radius: 20px;
+			height: 30px;
+			margin: 5px;
+		}
+	}
+}
+
+.component-animationmaskproperties {
+	background-color: #CCC;
+	
+	.layout table {
+		width: 100%;
+	}
+
+	.panel-title {
+		display: block;
+	}
+	.component-slider {
+		background: #999;
+		border-left: 0px;
+		border-right: 0px;
+		border-top: 1px solid rgba(255, 255, 0, 0.8);
+		border-bottom: 0;
+		overflow: hidden;
+
+		.component-pin {
+			width: 5px !important;
+			background: black;
+		}
+	}
+
+	.component-slider {
+		height: 10px;
+
+		.component-pin {
+			height: 10px;
+			width: 10px;
+		}
+	}
+
+	.component-slider {
+		width: auto;
+	}
+
+	width: 75px;
+	z-index: 3;
+	height: 200px;
+	overflow: scroll;
+}

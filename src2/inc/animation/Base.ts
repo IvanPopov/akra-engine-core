@@ -46,7 +46,12 @@ module akra.animation {
 		};
 
 		inline set name(sName: string){
+			if (sName == this._sName) {
+				return;
+			}
+
 			this._sName = sName;
+			this.renamed(sName);
 		};
 
 
@@ -203,6 +208,7 @@ module akra.animation {
 		CREATE_EVENT_TABLE(Base);
 		BROADCAST(played, CALL(fRealTime));
 		BROADCAST(stoped, CALL(fRealTime));
+		BROADCAST(renamed, CALL(sName));
 	} 
 
 

@@ -195,6 +195,8 @@ module akra.animation {
 
 
 		    if (this._fRealTime !== fRealTime) {
+		    	//only for first bone in list
+		    	
 		    	this.calcTime(fRealTime);
 		    	this.enterFrame(fRealTime, this._fTrueTime);
 		    }
@@ -203,7 +205,8 @@ module akra.animation {
 		    	return null;
 		    }
 
-			if (!this._bRightInfinity && this._fRealTime > this.duration + this._fStartTime) {
+
+			if (!this._bRightInfinity && this._fTrueTime > this.duration) {
 		    	return null;
 		    }    
 

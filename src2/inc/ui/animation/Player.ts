@@ -15,6 +15,7 @@ module akra.ui.animation {
 		private _pPlayBtn: IUICheckbox;
 		private _pLoopBtn: IUICheckbox;
 		private _pReverseBtn: IUICheckbox;
+		private _pEnableBtn: IUISwitch;
 		
 		private _pLeftInf: IUICheckbox;
 		private _pRightInf: IUICheckbox;
@@ -49,6 +50,7 @@ module akra.ui.animation {
 			this._pLeftInf 		= <IUICheckbox>this.findEntity("left-inf");
 			this._pRightInf 	= <IUICheckbox>this.findEntity("right-inf");
 			this._pNameLabel 	= <IUILabel>this.findEntity("name");
+			this._pEnableBtn	= <IUISwitch>this.findEntity("enabled");
 
 			this._pAnimation = pContainer = pContainer || akra.animation.createContainer();
 			this.graph.addAnimation(pContainer);
@@ -56,6 +58,7 @@ module akra.ui.animation {
 			this.connect(pContainer, SIGNAL(enterFrame), SLOT(_enterFrame));
 			this.connect(pContainer, SIGNAL(durationUpdated), SLOT(_durationUpdated));
 
+			this.connect(this._pEnableBtn, SIGNAL(changed), SLOT(_enabled));
 			this.connect(this._pLoopBtn, SIGNAL(changed), SLOT(_useLoop));
 			this.connect(this._pReverseBtn, SIGNAL(changed), SLOT(_reverse));
 			this.connect(this._pPlayBtn, SIGNAL(changed), SLOT(_play));
@@ -67,6 +70,11 @@ module akra.ui.animation {
 			this.$time = this.el.find(".time:first");
 
 			this.setup();
+		}
+
+		protected connected(pArea: IUIGraphConnectionArea, pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void {
+			super.connected(pArea, pFrom, pTo);
+			this.notifyDisabled(!this._pEnableBtn.value);
 		}
 
 		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
@@ -93,6 +101,31 @@ module akra.ui.animation {
 
 			this._pLeftInf.checked = pAnimation.inLeftInfinity();
 			this._pRightInf.checked = pAnimation.inRightInfinity();
+
+			this._pEnableBtn.value = pAnimation.isEnabled();
+		}
+
+		_enabled(pSwc: IUISwitch, bValue: bool): void {
+			this.notifyDisabled(!bValue);
+		}
+
+		private notifyDisabled(bValue: bool): void {
+			!bValue? this._pAnimation.enable(): this._pAnimation.disable();
+
+			if (!bValue) {
+				this.el.removeClass("disabled");
+			}
+			else {
+				this.el.addClass("disabled");
+			}
+
+			for (var i in this._pAreas) {
+				var pConnectors: IUIGraphConnector[] = this._pAreas[i].connectors;
+				
+				for (var j = 0; j < pConnectors.length; ++ j) {
+					pConnectors[j].route.enabled = !bValue;
+				}
+			}
 		}
 
 		_setLeftInf(pCheckbox: IUICheckbox, bValue: bool): void {
@@ -108,6 +141,7 @@ module akra.ui.animation {
 		}
 
 		_useLoop(pCheckbox: IUICheckbox, bValue: bool): void {
+			LOG(this._pAnimation.isEnabled())
 			this._pAnimation.useLoop(bValue);
 		}
 
@@ -142,11 +176,10 @@ module akra.ui.animation {
 			            math.mod((fRealTime - this._pAnimation.getStartTime()), this._pAnimation.duration);
 			    }
 			    else if (fRealTime >= this._pAnimation.getStartTime()) {
-			        this._pSlider.value = 
-			        	(math.min(fRealTime, this._pAnimation.duration) - this._pAnimation.getStartTime());
+			        this._pSlider.value = math.min(fTime, this._pAnimation.duration);
 			    }
 
-			    this.$time.text(fTime.toFixed(2));
+			    this.$time.text(fTime.toFixed(1) + "/" + this._pAnimation.duration.toFixed(1) + "s");
 		    }
 		}
 

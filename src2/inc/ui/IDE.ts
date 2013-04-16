@@ -84,10 +84,22 @@ module akra.ui {
 							<IUIAnimationControls>this._pTabs.createComponent("AnimationControls", {title: "Edit controller"});
 						pControls.graph.capture(pController);
 					}
-					else {
-						this._pTabs.select(iTab);
-					}
+				
+					this._pTabs.select(iTab);
+					
 					return true;
+				case ECMD.EDIT_ANIMATION_MASK_NODE:
+					var pNode: IUIAnimationMask = argv[0];
+					var sName: string = "animation-mask-" + pNode.getGuid();
+					var iTab: int = this._pTabs.findTab(sName);
+					
+					if (iTab < 0) {
+						var pControls: IUIAnimationControls = 
+							<IUIAnimationControls>this._pTabs.createComponent("Panel", {title: "Edit mask", name: sName});
+					}
+			
+					this._pTabs.select(iTab);
+					break;
 				case ECMD.CHANGE_AA:
 					(<render.DSViewport>this._pPreview.viewport).setFXAA(<bool>argv[0]);
 					return true;

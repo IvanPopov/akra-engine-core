@@ -37,6 +37,8 @@ module akra.ui.animation {
 
 			this._pSelectedNode = pNode;
 
+			// ide.cmd(ECMD.EDIT_ANIMATION_NODE, pNode);
+
 			if (bPlay && !isNull(this._pTimer)) {
 				this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
 			}

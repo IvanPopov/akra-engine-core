@@ -1,7 +1,10 @@
 <div>
 	<component type="GraphConnectionArea" name="in" mode="in" connections-limit="1" layout="horizontal" orientation="up"/>
 	<div type="node">
-		<div class="component-title">Animation Player</div>
+		<div class="component-title">
+			Player
+			<component type="Switch" name="enabled" />
+		</div>
 		<div class="controls">
 			<component type="Label" text="Title" name="name" editable />
 			

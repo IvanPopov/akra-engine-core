@@ -16,8 +16,18 @@ module akra.ui {
 		inline get value(): float { return this._fValue * this._fRange; }
 		inline get range(): float { return this._fRange; }
 		inline set range(fValue: float) { this._fRange = fValue; }
+		inline set text(s: string) {
+			this.$text.text(s);
+		}
+		inline get text(): string {
+			return this.$text.text();
+		}
 		
 		set value(fValue: float) {
+			if (fValue == this._fValue) {
+				return;
+			}
+
 			fValue = math.clamp(fValue / this._fRange, 0., 1.);
 
 			var iElementOffset = this.$element.offset().left;
@@ -30,15 +40,18 @@ module akra.ui {
 			this.pin.$element.offset({left: iPinOffset});
 
 			this._fValue = fValue;
+
+			this.updated(fValue);
 		}
 
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.SLIDER) {
 			super(parent, options, eType);
 
 			this.ui.createComponent("pin", {class: "component-pin"}).attachToParent(this);
+			this.el.append("<div class=\"slider-text\"></div>");
 
 			//this.$progress = this.$element.find(".slider-progress");
-			//this.$text = this.$element.find(".slider-text");
+			this.$text = this.$element.find(".slider-text");
 
 			this.pin.setDraggable();
 			this.connect(this.pin, SIGNAL(move), SLOT(_updated));

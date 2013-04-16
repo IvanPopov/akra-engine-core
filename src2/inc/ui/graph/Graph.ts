@@ -121,10 +121,15 @@ module akra.ui.graph {
 		}
 
 		click(e: IUIEvent): void {
+			super.click(e);
+
 			var pNodes: IUIGraphNode[] = this.nodes;
+			
 			for (var i: int = 0; i < pNodes.length; ++ i) {
+				LOG(pNodes[i]);
 				pNodes[i].activate(false);
 			}
+
 			super.click(e);
 		}
 

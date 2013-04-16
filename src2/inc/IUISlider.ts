@@ -8,6 +8,9 @@ module akra {
 		readonly pin: IUIComponent;
 		value: float;
 		range: float;
+		text: string;
+
+		signal updated(fValue: float): void;
 	}
 }
 

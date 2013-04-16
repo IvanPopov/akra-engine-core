@@ -22,7 +22,7 @@ module akra.ui {
 		}
 
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.PANEL) {
-			super(parent, mergeOptions({layout: EUILayouts.VERTICAL}, options), eType, 
+			super(parent, mergeOptions({layout: EUILayouts.UNKNOWN}, options), eType, 
 				$("<div>\
 						<div class='panel-title'>\
 							<div class=\"controls\">\

@@ -12,11 +12,10 @@ module akra.ui.resource {
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
-
+			LOG("!!!!!!!!!")
 			this.template("ui/templates/ResourceProperties.tpl");
 
 			this._pName = <IUILabel>this.findEntity("name");
-
 		}
 
 		setResource(pItem: IResourcePoolItem): void {

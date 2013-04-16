@@ -4941,12 +4941,6 @@ var TypeScript;
             pGroupT.reverse();
             var s = "";
             emitter.writeToOutput("/*checked (origin: " + origin.name + ")>>*/");
-            // for(var i = 0; i < pGroupP.length; ++i) {
-            //     emitter.writeToOutput("/*{ " + pGroupP[i].name.text + "} */");
-            // }
-            // for(var i = 0; i < pGroupT.length; ++i) {
-            //     emitter.writeToOutput("/*[ " + pGroupT[i].name + "] */");
-            // }
             for(var i = 0; i < pGroupP.length; ++i) {
                 if (pGroupP[i].name.text != pGroupT[i].name || pGroupP.length == 1) {
                     for(var j = i; j < pGroupT.length; ++j) {
@@ -5000,28 +4994,26 @@ var TypeScript;
             if (this.emitter === null) {
                 this.grabImitterOutput(emitter);
             }
-            this.emitterLevel ++;
-            var pWriter = (emitter.outfile);///наш райтер
-            var sCurrentData = pWriter.buffer;///то, что было в нем до этого!
+            this.emitterLevel++;
+            var pWriter = (emitter.outfile);
+            var sCurrentData = pWriter.buffer;
             var sResult;
             pWriter.Clear();
             emitter.emitJavascript(pExpr, 56 /* OpenParen */ , false);
-            sResult = pWriter.buffer;//записанный аргумент!
-            pWriter.buffer = sCurrentData;//возвращаем в райтер данные
-            this.emitterLevel --;
+            sResult = pWriter.buffer;
+            pWriter.buffer = sCurrentData;
+            this.emitterLevel--;
             if (this.emitter !== null && this.emitterLevel == 0) {
                 this.restoreImitterOutput();
             }
             return new TypeScript.StringLiteral(sResult);
         };
-
         InlineEngine.prototype.inlineInitArg = function (emitter, pExpr, pContext) {
             this.replaceContext(pContext);
             var pSubst = this.replaceArgumentByText(emitter, pExpr);
             this.rollbackContext();
             return pSubst;
-        }
-
+        };
         InlineEngine.prototype.findArgIndex = function (pArg) {
             var argv = this.argv();
             for(var i = 0; i < argv.length; ++i) {
@@ -5249,21 +5241,16 @@ var TypeScript;
             for(var i = 0; i < argv.length; ++i) {
                 var argDecl = argv[i];
                 var defArg = null;
-
                 if (!args[i]) {
                     var initArg = null;
-
                     if (argDecl.init) {
-                        //initArg = argDecl.init;
                         initArg = this.inlineInitArg(emitter, argDecl.init, realTarget);
                     }
-
                     defArg = initArg || new TypeScript.Identifier("undefined");
                 }
-
                 this.replaceArgument(emitter, argDecl, args[i] || defArg);
             }
-            if (!TypeScript.isNull(type)) { 
+            if (!TypeScript.isNull(type)) {
                 if (type.isClassInstance()) {
                     this.replaceContext(realTarget);
                 }
@@ -5273,7 +5260,6 @@ var TypeScript;
             emitter.writeToOutput("(");
             emitter.emitJavascript(res, 56 /* OpenParen */ , true);
             emitter.writeToOutput(")");
-
             for(var i = 0; i < argv.length; ++i) {
                 this.rollbackArgument(argv[i]);
             }

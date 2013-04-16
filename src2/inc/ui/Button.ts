@@ -15,10 +15,22 @@ module akra.ui {
 			this.handleEvent("click");
 		}
 
+		click(e: IUIEvent): void {
+			e.stopPropagation();
+			super.click(e);
+		}
+
 		_createdFrom($comp: JQuery): void {
 			super._createdFrom($comp);
 
-			this.text = $comp.attr("text") || "push";
+			var sImage: string = $comp.attr("img");
+
+			if (isString(sImage)) {
+				this.text = ("<img src='" + sImage + "' />");
+			}
+			else {
+				this.text = $comp.attr("text") || (sImage? "": "push");
+			}
 		}
 
 		protected applyOptions(pOptions: IUIButtonOptions): void {

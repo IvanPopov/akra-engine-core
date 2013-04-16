@@ -6,13 +6,15 @@
 #include "IUIAnimationMask.ts"
 #include "IUIGraphRoute.ts"
 #include "Node.ts"
+#include "IUIIDE.ts"
 
 module akra.ui.animation {
 	export class Mask extends Node implements IUIAnimationMask {
 		private _pAnimation: IAnimationBase = null;
 		private _pMask: FloatMap = null;
 		private _pSliders: IUISlider[] = [];
-		private _pViewBtn: IUIButton = null;
+		private _pEditBtn: IUIButton = null;
+		private _pEditPanel: IUIPanel = null;
 
 		inline get animation(): IAnimationBase {
 			return this._pAnimation;
@@ -20,26 +22,29 @@ module akra.ui.animation {
 
 		inline set animation(pAnim: IAnimationBase) {
 			this._pAnimation = pAnim;
+			// this.create();
 		}
 
 		constructor (pGraph: IUIGraph) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_MASK);
 
-			template(this, "ui/templates/AnimationMask.tpl");
-			this.init();
+			this.template("ui/templates/AnimationMask.tpl");
+			this.linkAreas();
+
+			this._pEditBtn = <IUIButton>this.findEntity("edit");
+			//this._pEditPanel = <IUIPanel>this.ui.createComponent("Panel", { draggable: true });
+			// // this._pEditPanel.attachToParent(<IUIComponent>this.root);
+			//this._pEditPanel.hide();
+			//this._pEditPanel.render($(document.body));
+			//this._pEditPanel.el.addClass("component-animationmaskproperties");
+
+			this.connect(this._pEditBtn, SIGNAL(click), SLOT(_edit))
 		}
 
-		protected init(): void {
-			var pArea: graph.ConnectionArea = new graph.ConnectionArea(this, {
-				show: false,
-				maxInConnections: 1
-			});
-			
-			pArea.setMode(EUIGraphDirections.OUT|EUIGraphDirections.IN);
-			pArea.setLayout(EUILayouts.HORIZONTAL);
-			pArea.render(this.el);
-
-			this.addConnectionArea("out", pArea);
+		_edit(pBtn: IUIButton, e: IUIEvent): void {
+			//this._pEditPanel.show();
+			//this._pEditPanel.el.offset({top: e.pageY, left: e.pageX});
+			ide.cmd(ECMD.EDIT_ANIMATION_MASK_NODE, this);
 		}
 
 		rendered(): void {
@@ -47,10 +52,7 @@ module akra.ui.animation {
 			this.el.addClass("component-animationmask");
 		}
 
-		private create(pMask: FloatMap = null, pAnimation: IAnimationBase = null): void {
-			if (isNull(pAnimation)) {
-				pAnimation = this._pAnimation;
-			}
+		private create(pMask: FloatMap = null, pAnimation: IAnimationBase = this._pAnimation): void {
 
 			if (isNull(pMask)) {
 				pMask = pAnimation.createAnimationMask();
@@ -59,33 +61,22 @@ module akra.ui.animation {
 			var $location = this.$element.find(".controls:first");
 
 			var pSliders: IUISlider[] = this._pSliders;
-			var pViewBtn: IUIButton = new Button(this, {text: "view mask"});
 			var pParent: IUIAnimationNode = this;
+			var pPanel: IUIPanel = this._pEditPanel;
+			var pViewBtn: IUIButton = this._pEditBtn;
 
-			$location.append(pViewBtn.$element);
+			// var fnViewHide = (pBtn: IUIButton, e: IUIEvent) => {
+			// 	for (var i = 0; i < pSliders.length; ++ i) {
+			// 		var $el = pSliders[i].$element;
+			// 		$el.is(":visible")? $el.hide(): $el.show();
+			// 	}
+			// }
 
-			var fnViewHide = (pBtn: IUIButton, e: IUIEvent) => {
-				for (var i = 0; i < pSliders.length; ++ i) {
-					var $el = pSliders[i].$element;
-					$el.is(":visible")? $el.hide(): $el.show();
-				}
+			
+			for (var sTarget in pMask) {
+				pSliders.push(Mask.createSlider(pPanel, pMask, sTarget));
 			}
 
-			var fnCreate = (pBtn: IUIButton, e: IUIEvent) => {
-				for (var sTarget in pMask) {
-					pSliders.push(Mask.createSlider(pParent, $location, pMask, sTarget));
-				}
-
-				//pViewBtn.destroy();
-				pViewBtn.unbind(SIGNAL(click), fnCreate);
-				pViewBtn.bind(SIGNAL(click), fnViewHide);
-
-				pViewBtn.text = "hide/view";
-			}
-
-			pViewBtn.bind(SIGNAL(click), fnCreate);
-
-			this._pViewBtn = pViewBtn;
 			this._pMask = pMask;
 		}
 
@@ -94,18 +85,17 @@ module akra.ui.animation {
 				return null;
 			}
 
-			if (isNull(this._pMask)) {
-				this.create();
-			}
+			// if (isNull(this._pMask)) {
+			// 	this.create();
+			// }
 
 			return this._pMask;
 		}
 
-		static private createSlider(pParent: IUIAnimationNode, $location: JQuery, pMask: FloatMap, sName: string): IUISlider {
+		static private createSlider(pPanel: IUIPanel, pMask: FloatMap, sName: string): IUISlider {
 			var pSlider: IUISlider;
 
-			pSlider = new Slider(pParent, {show: false});
-			pSlider.render($location);
+			pSlider = new Slider(pPanel);
 			pSlider.range = 10;
 			pSlider.value = pMask[sName];
 

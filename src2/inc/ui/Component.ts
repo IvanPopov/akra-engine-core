@@ -20,27 +20,33 @@ module akra.ui {
 		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sName});
 		var sTplData: string = fnTemplate(pData);
 
+
 		// LOG(sTemplate);
 		pNode.el.append(sTplData);
-
 		pNode.el.find("component").each(function(i: int) {
 			var $comp: JQuery = $(this);
 			var sType: string = $comp.attr("type");
 			var sName: string = $comp.attr("name");
 
-			if ($comp.parent("component").length > 0) {
+			if ($comp.parents("component").length > 0) {
 				return;
 			}
 
 			bRenderAsNormal = pNode.el[0] == $comp.parent()[0];
 
+			if (sType === "ModelEntryProperties") {
+
+				pNode.el.find("component").each(function(i: int) {
+					if ($(this).parents("component").length > 0) {
+						return;
+					}
+				});
+			}
+
 			var pComponent: IUIComponent = pNode.createComponent(sType, {show: bRenderAsNormal, name: sName});
-
 			pComponent._createdFrom($comp);
-
-			var $subComp: JQuery = $comp.find("component:first");
 			
-			if ($subComp.length > 0) {
+			if ($comp.text().length > 0 && !$comp.attr("template")) {
 				_template(pComponent, $comp.html(), sName, pData, false, iDepth + 1);
 			}
 
@@ -205,6 +211,10 @@ module akra.ui {
 			if (isDefAndNotNull(pOptions.parent)) {
 				this.attachToParent(pOptions.parent, isDefAndNotNull(pOptions.show)? pOptions.show: true);
 			}
+
+			if (isDefAndNotNull(pOptions.template)) {
+				this.template(pOptions.template);
+			}
 		}
 
 		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent {
@@ -218,15 +228,17 @@ module akra.ui {
 			this.$element.attr("class", $comp.attr("class"));
 			
 			var sLayout: string = $comp.attr("layout");
+			var sTemplate: string = $comp.attr("template");
+
+			if (isString(sTemplate)) {
+				this.template(sTemplate);
+			}
 
 			if (isString(sLayout)) {
 				this.setLayout(sLayout);
 			}
 
-			// var sHTMLContent: string = $comp.html();
-			// if (isDefAndNotNull(sHTMLContent)) {
-			// 	this.$element.append(sHTMLContent);
-			// }
+			this.el.attr("id", "cuid-" + this.getGuid());
 		}
 
 #ifdef DEBUG

@@ -53,6 +53,7 @@ module akra {
 
 		signal played(fTime: float): void;
 		signal stoped(fTime: float): void;
+		signal renamed(sName: string): void;
 	}
 }
 

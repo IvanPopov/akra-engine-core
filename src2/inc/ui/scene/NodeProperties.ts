@@ -46,7 +46,6 @@ module akra.ui.scene {
 			this._pController = <animation.ControllerProperties>this.findEntity("controller");
 
 			this._pMesh = <model.MeshProperties>this.findEntity("mesh");
-			
 
 			this._pLight = <light.Properties>this.findEntity("light");
 

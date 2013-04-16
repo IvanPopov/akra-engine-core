@@ -125,20 +125,23 @@
   background-image: linear-gradient(#5393c5, #6facd5);
 }
 .component-slider .slider-text {
+  font-size: 11px;
   position: relative;
+  z-index: 0;
+  top: -12px;
+  padding-right: 3px;
+  text-align: right;
+  color: #333;
+  font-weight: bold;
+  font-family: consolas;
   white-space: nowrap;
   overflow: hidden;
-  font-size: 10px;
-  width: 100%;
-  top: -12px;
-  opacity: 0.75;
-  font-family: monospace;
-  font-weight: bold;
 }
 .component-slider .component-pin {
   cursor: pointer;
   height: 100%;
   width: 20px;
+  z-index: 2;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
   background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
   background-image: -moz-linear-gradient(#ffffff, #f1f1f1);
@@ -489,56 +492,158 @@ div.component-switch input:checked + label:before {
 .component-animationgraph .component-animationgraphnode.selected {
   border-bottom: 3px solid red;
 }
-.component-animationdata .component-title, .component-animationplayer .component-title, .component-animationblender .component-title {
+.component-animationdata .label-text {
+  padding: 2px;
+}
+.component-animationdata .component-title,
+.component-animationplayer .component-title,
+.component-animationblender .component-title,
+.component-animationmask .component-title {
   background-color: rgba(100, 100, 100, 0.8);
   color: rgba(255, 255, 0, 0.8);
   text-shadow: 0px 1px 2px rgba(50, 50, 50, 0.95);
+  text-align: center;
 }
-.component-animationdata.selected .component-title, .component-animationplayer.selected .component-title, .component-animationblender.selected .component-title {
+.component-animationdata .component-title .component-switch,
+.component-animationplayer .component-title .component-switch,
+.component-animationblender .component-title .component-switch,
+.component-animationmask .component-title .component-switch {
+  margin: 0px;
+  top: -3px;
+  left: -10px;
+  margin-left: 12px;
+  display: inline-block;
+}
+.component-animationdata .component-title .component-switch label,
+.component-animationplayer .component-title .component-switch label,
+.component-animationblender .component-title .component-switch label,
+.component-animationmask .component-title .component-switch label {
+  height: 10px;
+  width: 19px;
+  border-radius: 0;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.7), inset 0 0 3px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.1), 0 -1px 1px 1px rgba(0, 0, 0, 0.25);
+  background-image: -webkit-linear-gradient(left, #00aa00 50%, #ff6666 50%);
+}
+.component-animationdata .component-title .component-switch label:before,
+.component-animationplayer .component-title .component-switch label:before,
+.component-animationblender .component-title .component-switch label:before,
+.component-animationmask .component-title .component-switch label:before {
+  width: 10px;
+  height: 10px;
+  border-radius: 0;
+  background-color: #555;
+  box-shadow: none;
+}
+.component-animationdata .component-title .component-switch input:checked + label:before,
+.component-animationplayer .component-title .component-switch input:checked + label:before,
+.component-animationblender .component-title .component-switch input:checked + label:before,
+.component-animationmask .component-title .component-switch input:checked + label:before {
+  left: 9px;
+}
+.component-animationdata.disabled,
+.component-animationplayer.disabled,
+.component-animationblender.disabled,
+.component-animationmask.disabled {
+  opacity: 0.75;
+}
+.component-animationdata.disabled .component-title,
+.component-animationplayer.disabled .component-title,
+.component-animationblender.disabled .component-title,
+.component-animationmask.disabled .component-title {
+  background-color: gray !important;
+  color: white;
+  text-shadow: none;
+}
+.component-animationdata.disabled *[type=node],
+.component-animationplayer.disabled *[type=node],
+.component-animationblender.disabled *[type=node],
+.component-animationmask.disabled *[type=node] {
+  border: 1px solid gray !important;
+}
+.component-animationdata.selected .component-title,
+.component-animationplayer.selected .component-title,
+.component-animationblender.selected .component-title,
+.component-animationmask.selected .component-title {
   background-color: rgba(255, 200, 0, 0.65);
   color: black;
   text-shadow: none;
 }
-.component-animationdata.selected *[type=node], .component-animationplayer.selected *[type=node], .component-animationblender.selected *[type=node] {
+.component-animationdata.selected *[type=node],
+.component-animationplayer.selected *[type=node],
+.component-animationblender.selected *[type=node],
+.component-animationmask.selected *[type=node] {
   border: 1px solid orange;
 }
-.component-animationdata div.controls, .component-animationplayer div.controls, .component-animationblender div.controls {
+.component-animationdata div.controls,
+.component-animationplayer div.controls,
+.component-animationblender div.controls,
+.component-animationmask div.controls {
   text-align: center;
   font-size: 12px;
 }
-.component-animationdata *[type=node], .component-animationplayer *[type=node], .component-animationblender *[type=node] {
+.component-animationdata *[type=node],
+.component-animationplayer *[type=node],
+.component-animationblender *[type=node],
+.component-animationmask *[type=node] {
   border: 1px solid rgba(255, 255, 0, 0.5);
   background-color: rgba(128, 128, 128, 0.75);
 }
-.component-animationdata.highlight *[type=node], .component-animationplayer.highlight *[type=node], .component-animationblender.highlight *[type=node] {
+.component-animationdata.highlight *[type=node],
+.component-animationplayer.highlight *[type=node],
+.component-animationblender.highlight *[type=node],
+.component-animationmask.highlight *[type=node] {
   box-shadow: 0 0 10px #ffb400;
 }
-.component-animationdata .layout, .component-animationplayer .layout, .component-animationblender .layout {
+.component-animationdata .layout,
+.component-animationplayer .layout,
+.component-animationblender .layout,
+.component-animationmask .layout {
   text-align: center;
   margin: 0;
 }
-.component-animationdata table, .component-animationplayer table, .component-animationblender table {
+.component-animationdata table,
+.component-animationplayer table,
+.component-animationblender table,
+.component-animationmask table {
   padding: 0;
   margin: 0;
 }
-.component-animationdata.open *[type=node], .component-animationplayer.open *[type=node], .component-animationblender.open *[type=node] {
+.component-animationdata.open *[type=node],
+.component-animationplayer.open *[type=node],
+.component-animationblender.open *[type=node],
+.component-animationmask.open *[type=node] {
   box-shadow: 0 0 5px #00ff00;
 }
-.component-animationdata.blocked *[type=node], .component-animationplayer.blocked *[type=node], .component-animationblender.blocked *[type=node] {
+.component-animationdata.blocked *[type=node],
+.component-animationplayer.blocked *[type=node],
+.component-animationblender.blocked *[type=node],
+.component-animationmask.blocked *[type=node] {
   box-shadow: 0 0 5px red;
 }
-.component-animationdata .component-connectionarea, .component-animationplayer .component-connectionarea, .component-animationblender .component-connectionarea {
+.component-animationdata .component-connectionarea,
+.component-animationplayer .component-connectionarea,
+.component-animationblender .component-connectionarea,
+.component-animationmask .component-connectionarea {
   position: relative;
   z-index: 2;
 }
-.component-animationdata .component-connectionarea .layout.horizontal, .component-animationplayer .component-connectionarea .layout.horizontal, .component-animationblender .component-connectionarea .layout.horizontal {
+.component-animationdata .component-connectionarea .layout.horizontal,
+.component-animationplayer .component-connectionarea .layout.horizontal,
+.component-animationblender .component-connectionarea .layout.horizontal,
+.component-animationmask .component-connectionarea .layout.horizontal {
   height: 8px;
 }
-.component-animationdata .component-connectionarea .layout td, .component-animationplayer .component-connectionarea .layout td, .component-animationblender .component-connectionarea .layout td {
+.component-animationdata .component-connectionarea .layout td,
+.component-animationplayer .component-connectionarea .layout td,
+.component-animationblender .component-connectionarea .layout td,
+.component-animationmask .component-connectionarea .layout td {
   vertical-align: middle;
   text-align: center;
 }
-.component-animationdata .component-slider, .component-animationplayer .component-slider, .component-animationblender .component-slider {
+.component-animationdata .component-slider,
+.component-animationplayer .component-slider,
+.component-animationblender .component-slider,
+.component-animationmask .component-slider {
   background: #999;
   border-left: 0px;
   border-right: 0px;
@@ -546,14 +651,23 @@ div.component-switch input:checked + label:before {
   border-bottom: 0;
   overflow: hidden;
 }
-.component-animationdata .component-slider .component-pin, .component-animationplayer .component-slider .component-pin, .component-animationblender .component-slider .component-pin {
+.component-animationdata .component-slider .component-pin,
+.component-animationplayer .component-slider .component-pin,
+.component-animationblender .component-slider .component-pin,
+.component-animationmask .component-slider .component-pin {
   width: 5px !important;
   background: black;
 }
-.component-animationdata.selected .component-slider, .component-animationplayer.selected .component-slider, .component-animationblender.selected .component-slider {
+.component-animationdata.selected .component-slider,
+.component-animationplayer.selected .component-slider,
+.component-animationblender.selected .component-slider,
+.component-animationmask.selected .component-slider {
   border-top: 1px solid orange;
 }
-.component-animationdata .time, .component-animationplayer .time, .component-animationblender .time {
+.component-animationdata .time,
+.component-animationplayer .time,
+.component-animationblender .time,
+.component-animationmask .time {
   position: relative;
   z-index: 0;
   text-align: right;
@@ -590,6 +704,69 @@ div.component-switch input:checked + label:before {
   width: 10px;
 }
 .component-animationplayer .component-slider, .component-animationblender .component-slider {
+  width: auto;
+}
+.component-animationblender div[name=in] .component-graphconnector {
+  position: relative;
+  top: 21px;
+}
+.component-animationblender .component-slider {
+  background: #999;
+  border-left: 0px;
+  border-right: 0px;
+  border-top: 1px solid rgba(255, 255, 0, 0.8);
+  border-bottom: 0;
+  overflow: hidden;
+}
+.component-animationblender .component-slider .component-pin {
+  width: 10px !important;
+  background: black;
+}
+.component-animationblender .time {
+  left: -7px;
+}
+.component-animationmask *[type=node] {
+  border-radius: 20px;
+  overflow: hidden;
+}
+.component-animationmask *[type=node] .component-button {
+  border-radius: 20px;
+  height: 30px;
+  margin: 5px;
+}
+.component-animationmaskproperties {
+  background-color: #CCC;
+  width: 75px;
+  z-index: 3;
+  height: 200px;
+  overflow: scroll;
+}
+.component-animationmaskproperties .layout table {
+  width: 100%;
+}
+.component-animationmaskproperties .panel-title {
+  display: block;
+}
+.component-animationmaskproperties .component-slider {
+  background: #999;
+  border-left: 0px;
+  border-right: 0px;
+  border-top: 1px solid rgba(255, 255, 0, 0.8);
+  border-bottom: 0;
+  overflow: hidden;
+}
+.component-animationmaskproperties .component-slider .component-pin {
+  width: 5px !important;
+  background: black;
+}
+.component-animationmaskproperties .component-slider {
+  height: 10px;
+}
+.component-animationmaskproperties .component-slider .component-pin {
+  height: 10px;
+  width: 10px;
+}
+.component-animationmaskproperties .component-slider {
   width: auto;
 }
 body,
@@ -1050,7 +1227,6 @@ body {
   margin: 0 auto;
   padding: 0 15px;
   border-radius: 2px;
-  width: 100%;
   margin-top: 10px;
 }
 .component-scenenodeproperties div[name=model-entry] .component-switch, .component-scenenodeproperties div[name=scene-model] .component-switch, .component-scenenodeproperties div[name=light-point] .component-switch {

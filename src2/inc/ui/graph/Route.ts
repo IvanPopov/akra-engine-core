@@ -18,6 +18,8 @@ module akra.ui.graph {
 		/** Route status. */
 		protected _bActive: bool = false;
 		protected _bHighlighted: bool = false;
+		protected _bEnabled: bool = true;
+
 		/** Route domain */
 		protected _pPath: RaphaelPath = null;
 		protected _pArrow: RaphaelPath = null;
@@ -78,6 +80,17 @@ module akra.ui.graph {
 		    this._pPath = pPath;
 		}
 
+		inline get enabled(): bool { return this._bEnabled; }
+		inline set enabled(b: bool) { 
+			if (b === this._bEnabled) {
+				return;
+			}
+
+			this._bEnabled = b; 
+
+			this.routing();
+		}
+
 		constructor (pLeft: IUIGraphConnector, pRight: IUIGraphConnector) {
 			this._pLeft = pLeft;
 			this._pRight = pRight;
@@ -132,6 +145,10 @@ module akra.ui.graph {
 		}
 
 		sendEvent(e: IUIGraphEvent): void {
+			if (!this.enabled) {
+				return;
+			}
+
 			for (var i: int = 0; i < e.traversedRoutes.length; ++ i) {
 				if (e.traversedRoutes[i] === this) {
 					return;
@@ -284,6 +301,11 @@ module akra.ui.graph {
 	        var fWeight: float = this._bHighlighted? 2. * this._fMaxWeight * this._fWeight: this._fMaxWeight * this._fWeight;
 
 	        sColor = this.isBridge()? sColor : "rgba(255, 255, 255, 1.)";
+
+	        if (!this.enabled) {
+	        	sColor = "rgba(55, 55, 55, .5)";
+	        	fWeight = this._fMaxWeight * this._fWeight;
+	        }
 	        
 	        if (!isNull(this.path)) {
 	        	(<RaphaelElement>this.path).attr({
