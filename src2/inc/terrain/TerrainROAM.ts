@@ -74,7 +74,7 @@ module akra.terrain {
 		}
 
 
-		private _iTessellationQueueCountOld: int = undefined;
+		private _iTessellationQueueCountOld: int = 0;
 		private _nCountRender: uint = 0;
 
 		init(pImgMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneObject = null)
@@ -92,6 +92,7 @@ module akra.terrain {
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 
+				this._setTessellationParameters(0.0001, 0.001);
 				this.reset();
 			}
 			return bResult;
@@ -188,7 +189,7 @@ module akra.terrain {
 			}
 		}
 
-		requestTriNode() {
+		requestTriNode(): ITriTreeNode {
 			return this._pNodePool.request();
 		}
 
@@ -210,7 +211,7 @@ module akra.terrain {
 		}
 
 		processTessellationQueue(): void {
-			this._pThistessellationQueue.length=this._iTessellationQueueCount;
+			this._pThistessellationQueue.length = this._iTessellationQueueCount;
 
 			function fnSortSection(a, b) {
 				return a.queueSortValue - b.queueSortValue;
@@ -242,8 +243,10 @@ module akra.terrain {
 
 			this._pRenderData._setIndexLength(this._iTotalIndices);
 			this._pDataIndex.setData(this._pIndexList, 0, getTypeSize(EDataTypes.FLOAT), 0, this._iTotalIndices);
-			this._iTotalIndicesOld=this._iTotalIndices;
-			this._iTotalIndicesMax=math.max(this._iTotalIndicesMax,this._iTotalIndices);
+			this._iTotalIndicesOld = this._iTotalIndices;
+			this._iTotalIndicesMax = math.max(this._iTotalIndicesMax,this._iTotalIndices);
+
+			this._pRenderableObject._setRenderData(this._pRenderData);
 		}
 
 
@@ -252,11 +255,59 @@ module akra.terrain {
 				// LOG("i`m must be here");
 				if(((this._nCountRender++) % 30) === 0) {
 					// LOG("-->i`m must be here too");
+					
+					// var pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvasLOD');
+					// var p2D = pCanvas.getContext("2d");
+					// p2D.clearRect(0, 0, pCanvas.width, pCanvas.height);
+
+
 					if(this._iTessellationQueueCount !== this._iTessellationQueueCountOld) {
-						// LOG("-->-->i`m must be here too");
+						LOG("-->-->i`m must be here too", this._iTessellationQueueCount, this._iTessellationQueueCountOld);						
+
 						this.processTessellationQueue();
 						this._iTessellationQueueCountOld = this._iTessellationQueueCount;
 					}
+
+
+
+					// var pCamera: ICamera = pViewport.getCamera();
+					// var v3fCameraPosition: IVec3 = pCamera.worldPosition;
+					// var pData: Float32Array = pCamera.worldMatrix.data;
+					// var pDir: IVec2 = new Vec2(-pData[__13], -pData[__23]);
+					// var fRad: float = pCamera.fov;
+					// var fFar: float = pCamera.farPlane;
+					// //var fNear = pCamera.nearPlane();
+					// pDir.normalize();
+					// pDir.scale(fFar / Math.abs(this.worldExtents.x1 - this.worldExtents.x0));
+
+					// var pDir1: IVec2 = new Vec2(pDir.x * Math.cos( fRad / 2) - pDir.y * Math.sin( fRad / 2), pDir.x * Math.sin( fRad / 2) + pDir.y * Math.cos( fRad / 2));
+					// var pDir2: IVec2 = new Vec2(pDir.x * Math.cos(-fRad / 2) - pDir.y * Math.sin(-fRad / 2), pDir.x * Math.sin(-fRad / 2) + pDir.y * Math.cos(-fRad / 2));
+
+					// //document.getElementById('setinfo0').innerHTML="fNear " + fNear;
+					// // document.getElementById('setinfo1').innerHTML="fFar "  + fFar;
+					// //Вычисление текстурных координат над которыми находиться камера
+					// var fX: float = (v3fCameraPosition.x - this.worldExtents.x0) / Math.abs(this.worldExtents.x1 - this.worldExtents.x0);
+					// var fY: float = (v3fCameraPosition.y - this.worldExtents.y0) / Math.abs(this.worldExtents.y1 - this.worldExtents.y0);
+
+					// //камера
+					// p2D.beginPath();
+					// p2D.strokeStyle = "#0f0"; //цвет линий
+					// p2D.lineWidth = 3;
+					// p2D.moveTo(fX * pCanvas.width, fY * pCanvas.height);
+					// p2D.lineTo((fX + pDir1.x) * pCanvas.width, (fY+pDir1.y) * pCanvas.height);
+					// p2D.lineTo((fX + pDir2.x) * pCanvas.width, (fY+pDir2.y) * pCanvas.height);
+					// p2D.lineTo(fX * pCanvas.width, fY * pCanvas.height);
+					// p2D.stroke();
+					// p2D.beginPath();
+					// p2D.arc(fX * pCanvas.width, fY * pCanvas.height, 5, 0, 2 * Math.PI, false);
+					// // p2D.fillStyle = "#00f";
+					// // p2D.fill();
+					// p2D.lineWidth = 1;
+					// p2D.strokeStyle = "#f0f";
+					// p2D.stroke();
+
+
+
 				}
 
 				this.reset();

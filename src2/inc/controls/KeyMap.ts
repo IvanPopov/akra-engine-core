@@ -75,7 +75,6 @@ module akra.controls {
 		    var iCode: int = (<KeyboardEvent><any>e).keyCode;
 
 		    if (e.type == "keydown") {
-
 		        this._pMap[iCode] = true;
 
 		        if (e.altKey) {

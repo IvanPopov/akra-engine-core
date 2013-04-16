@@ -133,9 +133,9 @@ module akra.terrain {
     				isUpdated : true, isLoaded : false};
     	    }
 
-    	    this._pRPC = net.createRpc();
+    	    // this._pRPC = net.createRpc();
     	    // this._pRPC.join('ws://192.168.194.132');
-    	    this._pRPC.join("ws://localhost:6112");
+    	    // this._pRPC.join("ws://localhost:6112");
 	    	this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 	    }
 
@@ -181,11 +181,11 @@ module akra.terrain {
 		    	math.floor((iY - this._pXY[this._pTextures.length - 1].iY) / this._iBlockSize) < 8 || 
 		    	math.floor((this._pXY[this._pTextures.length - 1].iX + this._iBufferWidth - (iX + iWidth)) / this._iBlockSize) < 8 || 
 		    	math.floor((this._pXY[this._pTextures.length - 1].iY + this._iBufferHeight - (iY + iHeight)) / this._iBlockSize) < 8) {
-		        LOG("Да")
+		        // LOG("Да")
 		        //Перемещаем
 		        // Для всех уровней текстур
 		        for (i = 1; i < this._pTextures.length; i++) {
-		            LOG("Уровень", i)
+		            // LOG("Уровень", i)
 		            //Вычисляем новые координаты буфера в текстуре
 		            var iXnew: uint = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
 		            var iYnew: uint = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
@@ -220,7 +220,7 @@ module akra.terrain {
 
 
 		            //     //копируем данные
-		                LOG("Копированеи совпадающей части");
+		                // LOG("Копированеи совпадающей части");
 
 		            //     //console.log(this._pDataFor.length,iXOverlappingBlockInNewBuf,iYOverlappingBlockInNewBuf,iOverlappingBlockWidth,iOverlappingBlockHeight);
 
@@ -260,11 +260,11 @@ module akra.terrain {
 		                this.setBufferMapNULL(this._pBufferMap[i]);
 		            }
 
-		            console.log(this._pXY[i].iX, this._pXY[i].iY, "==>", iXnew, iYnew);
+		            // console.log(this._pXY[i].iX, this._pXY[i].iY, "==>", iXnew, iYnew);
 		            this._pXY[i].iX = iXnew;
 		            this._pXY[i].iY = iYnew;
 		            this._pXY[i].isUpdated = true;
-		            console.log(this._pXY[i].iX, this._pXY[i].iY);
+		            // console.log(this._pXY[i].iX, this._pXY[i].iY);
 
 		        }
 		    }
@@ -374,7 +374,7 @@ module akra.terrain {
 		                								 this._iTextureHeight + iTexInBufY);
 		                var pPixelBox: IPixelBox = this._pBuffer[i].getSubBox(pTmpBox, pixelUtil.pixelBox());
 		                // pPixelBox.setConsecutive();
-		                LOG("Level #" + i + " write data:\n", pPixelBox.toString(), "\nOne Color: ", pPixelBox.data[0], pPixelBox.data[1], pPixelBox.data[2]);
+		                // LOG("Level #" + i + " write data:\n", pPixelBox.toString(), "\nOne Color: ", pPixelBox.data[0], pPixelBox.data[1], pPixelBox.data[2]);
 		                this._pTextures[i].getBuffer(0,0).blitFromMemory(pPixelBox);
 
 		            }
@@ -626,41 +626,45 @@ module akra.terrain {
 		            var iLev = iLevelTex;
 		            var iX = j, iY = i;
 
-		            (function (iLev: uint, iX: uint, iY: uint) {
-		                var sPiecePath: string = me._sSurfaceTextures;
+		            // (function (iLev: uint, iX: uint, iY: uint) {
+		            //     var sPiecePath: string = me._sSurfaceTextures;
 
-		                me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
-		                              iY, me._iBlockSize, me._iBlockSize, me._eTextureFormat,
-		                              function (pError: Error, pData: Uint8Array) {
+		            //     me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
+		            //                   iY, me._iBlockSize, me._iBlockSize, me._eTextureFormat,
+		            //                   function (pError: Error, pData: Uint8Array) {
 
-		                                  if(!isNull(pError)){
-		                                  		debug_print(pError.message);
-		                                  		return;
+		            //                       if(!isNull(pError)){
+		            //                       		debug_print(pError.message);
+		            //                       		return;
+		            //                       }
+
+		                                  var pData = new Uint8Array(me._iBlockSize * me._iBlockSize * 3);
+		                                  for(var k: uint = 0; k < pData.length; k+= 3){
+		                                  	if(iLev === 0){
+			                                  	pData[k] = 0;
+			                                  	pData[k + 1] = 255;
+			                                  	pData[k + 2] = 0;
+		                                  	}
+		                                  	else if(iLev === 1){
+		                                  		pData[k] = 255;
+			                                  	pData[k + 1] = 0;
+			                                  	pData[k + 2] = 0;
+		                                  	}
+		                                  	else if(iLev === 2) {
+		                                  		pData[k] = 0;
+			                                  	pData[k + 1] = 0;
+			                                  	pData[k + 2] = 255;
+		                                  	}
+		                                  	else {
+		                                  		pData[k] = 255;
+			                                  	pData[k + 1] = 0;
+			                                  	pData[k + 2] = 255;
+		                                  	}
+
+		                                  	pData[k] = 170;
+			                                pData[k + 1] = 50;
+			                                pData[k + 2] = 170;
 		                                  }
-
-		                                  // var pData = new Uint8Array(me._iBlockSize * me._iBlockSize * 3);
-		                                  // for(var k: uint = 0; k < pData.length; k+= 3){
-		                                  // 	if(iLev === 0){
-			                                 //  	pData[k] = 0;
-			                                 //  	pData[k + 1] = 255;
-			                                 //  	pData[k + 2] = 0;
-		                                  // 	}
-		                                  // 	else if(iLev === 1){
-		                                  // 		pData[k] = 255;
-			                                 //  	pData[k + 1] = 0;
-			                                 //  	pData[k + 2] = 0;
-		                                  // 	}
-		                                  // 	else if(iLev === 2) {
-		                                  // 		pData[k] = 0;
-			                                 //  	pData[k + 1] = 0;
-			                                 //  	pData[k + 2] = 255;
-		                                  // 	}
-		                                  // 	else {
-		                                  // 		pData[k] = 255;
-			                                 //  	pData[k + 1] = 0;
-			                                 //  	pData[k + 2] = 255;
-		                                  // 	}
-		                                  // }
 		                                  //console.log(me._pBuffer[iLevelTex].length,iX-me._pXY[iLevelTex].iX,iY-me._pXY[iLevelTex].iY);
 		                                  var iXBuf: uint;
 		                                  var iYBuf: uint;
@@ -702,8 +706,8 @@ module akra.terrain {
 		                                  pixelUtil.bulkPixelConversion(pSourceBox, pSubBox);
 
 		                                  me._pXY[iLev].isUpdated = true;
-		                              });
-		            })(iLevelTex, j, i);
+		            //                   });
+		            // })(iLevelTex, j, i);
 
 		        }
 		    }

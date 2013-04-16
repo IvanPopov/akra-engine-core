@@ -8,10 +8,11 @@ module akra {
 		rightNeighbor: ITriTreeNode;
 		leftChild:     ITriTreeNode;
 		rightChild:    ITriTreeNode;
+		id: uint;
 	}
 
 	export interface ITriangleNodePool {
-		request();
+		request(): ITriTreeNode;
 		reset(): void;
 	}
 }

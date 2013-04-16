@@ -6,6 +6,8 @@ module akra {
 	IFACE(ITerrainSectionROAM);
 	IFACE(IRect3d);
 	IFACE(ISceneNode);
+	IFACE(ITriTreeNode);
+	
 	export interface ITerrainROAM extends ITerrain {
 		readonly verts: float[];
 		readonly index: Float32Array;
@@ -14,7 +16,7 @@ module akra {
 
 		totalIndex: uint;
 
-		requestTriNode();
+		requestTriNode(): ITriTreeNode;
 
 		addToTessellationQueue(pSection: ITerrainSectionROAM): bool;
 		processTessellationQueue(): void;

@@ -24,6 +24,9 @@ module akra {
 			pMainScene.append(pCanvasElement);
 
 			pCanvas.resize(800, 600);
+
+			var pCanvasLOD = $("<canvas id='canvasLOD' width=600 height=600 style='float: right'>");
+			pMainScene.append(pCanvasLOD);
 		}
 
 		function createCameras(): void {
@@ -32,11 +35,13 @@ module akra {
 			pCamera = pScene.createCamera();
 		
 			//pCamera.addRelRotationByXYZAxis(1, 1, 0);
-			pCamera.setPosition(vec3(25, 25, 150));
+			pCamera.setPosition(vec3(0, 0, 1000));
 			pCamera.attachToParent(pTestNode);
 			pCamera.setInheritance(ENodeInheritance.ALL);
 
-			var pKeymap: IKeyMap = controls.createKeymap((<any>pCanvas)._pCanvas);
+			var pKeymap: IKeyMap = controls.createKeymap();
+			pKeymap.captureMouse((<any>pCanvas)._pCanvas);
+			pKeymap.captureKeyboard(document);
 			var iCounter: int = 0;
 			var iSign: int = 1;
 
@@ -50,10 +55,25 @@ module akra {
 			        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
 			    }
 
-			    if((iCounter++) % 1000 === 0){
-			    	iSign *= -1;
+			    var fSpeed: float = 0.1 * 10;
+			    if(pKeymap.isKeyPress(EKeyCodes.W)){
+			    	pCamera.addRelPosition(0, 0, -fSpeed);
 			    }
-			    pCamera.addRelPosition(iSign * 0.05, iSign * 0.05, 0);
+			    if(pKeymap.isKeyPress(EKeyCodes.S)){
+			    	pCamera.addRelPosition(0, 0, fSpeed);
+			    }
+			    if(pKeymap.isKeyPress(EKeyCodes.A)){
+			    	pCamera.addRelPosition(-fSpeed, 0, 0);
+			    }
+			    if(pKeymap.isKeyPress(EKeyCodes.D)){
+			    	pCamera.addRelPosition(fSpeed, 0, 0);
+			    }
+
+			    // if(pKeymap.isKeyPress())
+			    // if((iCounter++) % 1000 === 0){
+			    // 	iSign *= -1;
+			    // }
+			    // pCamera.addRelPosition(iSign * 0.05, iSign * 0.05, 0);
 			});
 		}
 
@@ -77,7 +97,7 @@ module akra {
 			pOmniLight.params.specular.set(1, 1, 1, 1);
 			pOmniLight.params.attenuation.set(1,0,0);
 
-			pOmniLight.addPosition(0, 0, 100);
+			pOmniLight.addPosition(0, 750, 1000);
 		}
 
 		function createSkyBox(): void {
@@ -107,13 +127,13 @@ module akra {
 					pTerrain.attachToParent(pTestNode);
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
-					pTerrain.scale(0.1);
+					// pTerrain.scale(0.1);
 					// pTerrain.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
 					// setTimeout(function() {pEngine.renderFrame()}, 5000);
 					// pEngine.renderFrame();
-					pTestNode.addRelRotationByXYZAxis(1, 1, 0);
+					// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
 				});
 			});
 			

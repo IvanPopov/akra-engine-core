@@ -33,8 +33,11 @@ VS_OUT vs_terrain(VS_IN IN) {
     else if(mod(float(@(IN.data)),3.) == 1.){
         Out.edgeTest = float3(0.,1.,0.);
     }
-    else{
+    else if(mod(float(@(IN.data)),3.) == 2.){
         Out.edgeTest = float3(0.,0.,1.);
+    }
+    else {
+        Out.edgeTest = float3(0.,0.,0.);
     }
 
     return Out;
@@ -164,10 +167,10 @@ void fs_terrain(VS_OUT IN){
 
     if(IN.edgeTest.x * IN.edgeTest.y * IN.edgeTest.z < 0.001)
     {
-        Fragment_material.emissive = float4(0.5, 0.5, 0.5, 1.);
+        Fragment_material.emissive = float4(0.5, 0.5, 0.5, 0.3);
     }
     else {
-        Fragment_material.emissive = float4(0.);
+       Fragment_material.emissive = float4(0.);
     }
     
     Fragment_material.diffuse = color;

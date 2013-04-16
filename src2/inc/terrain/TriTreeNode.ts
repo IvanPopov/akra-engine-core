@@ -4,12 +4,14 @@
 #include "ITriTreeNode.ts"
 
 module akra.terrain {
+	export var iCountTri: uint = 0;
 	export class TriTreeNode implements ITriTreeNode{
 		private _pBaseNeighbor:  ITriTreeNode = null;
 		private _pLeftNeighbor:  ITriTreeNode = null;
 		private _pRightNeighbor: ITriTreeNode = null;
 		private _pLeftChild:     ITriTreeNode = null;
 		private _pRightChild:    ITriTreeNode = null;
+		id: uint = iCountTri++;
 
 		inline get baseNeighbor(): ITriTreeNode {
 			return this._pBaseNeighbor;
@@ -88,7 +90,7 @@ module akra.terrain {
 			}
 		}
 
-		request() {
+		request(): ITriTreeNode {
 			var pNode: ITriTreeNode = null;
 
 			if(this.nextTriNode < this.maxCount) {

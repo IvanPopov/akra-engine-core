@@ -47,6 +47,8 @@ module akra.terrain {
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_SECTION_ROAM) {
 			super(pScene, eType);
+			this._pRootTriangleA["fromSection"] = true;
+			this._pRootTriangleB["fromSection"] = true;
 		}
 
 		inline get terrainSystem(): ITerrainROAM{
@@ -58,7 +60,7 @@ module akra.terrain {
 		}
 
 		inline get triangleB(): ITriTreeNode {
-			return this._pRootTriangleA;
+			return this._pRootTriangleB;
 		}
 
 		inline get queueSortValue(): float {
@@ -100,10 +102,10 @@ module akra.terrain {
 			}
 
 			var pRoamTerrain: ITerrainROAM = this.terrainSystem;
-			var pNorthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY-1);
-			var pSouthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY+1);
-			var pEastSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX+1, iSectorY);
-			var pWestSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX-1, iSectorY);
+			var pNorthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY - 1);
+			var pSouthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY + 1);
+			var pEastSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX + 1, iSectorY);
+			var pWestSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX - 1, iSectorY);
 
 			if (pNorthSection) {
 				this._leftNeighborOfA = pNorthSection.triangleB;
@@ -141,6 +143,12 @@ module akra.terrain {
 		    v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
 
 			var v3fViewPoint: IVec3 = vec3(v4fCameraCoord.x, v4fCameraCoord.y, v4fCameraCoord.z);
+			// if (v3fViewPoint.x !== pCamera.worldPosition.x || 
+			// 	v3fViewPoint.y !== pCamera.worldPosition.y ||
+			// 	v3fViewPoint.z !== pCamera.worldPosition.z){
+			// 	ERROR("impossible");
+			// }
+
 			// compute view distance to our 4 corners
 			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY));
 			var fHeight1: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY + this._iYVerts));
@@ -211,7 +219,7 @@ module akra.terrain {
 					var fRatio: float = (pVTree[iIndex]*fScale)/(fMidDist+0.0001);
 					if (fRatio > 1) {
 						// subdivide this triangle
-						//console.log("split");
+						// console.log("split");
 						this.split(pTri);
 					}
 				}
@@ -241,15 +249,15 @@ module akra.terrain {
 			}
 
 			// If this triangle is not in a proper diamond, force split our base neighbor
-			if (pTri.baseNeighbor && (pTri.baseNeighbor.baseNeighbor!=pTri)){
+			if (pTri.baseNeighbor && (pTri.baseNeighbor.baseNeighbor !== pTri)){
 				this.split(pTri.baseNeighbor);
 			}
 			// Create children and link into mesh
 			pTri.leftChild  = this.terrainSystem.requestTriNode();
 			pTri.rightChild = this.terrainSystem.requestTriNode();
 
-			//debug_assert(pTri.leftChild != pTri, "recursive link");
-			//debug_assert(pTri.rightChild != pTri, "recursive link");
+			debug_assert(pTri.leftChild != pTri, "recursive link");
+			debug_assert(pTri.rightChild != pTri, "recursive link");
 
 			// Если не удалось выделить треугольник, то не разбиваем
 			if ( (!pTri.leftChild) || (!pTri.rightChild)) {
@@ -276,7 +284,8 @@ module akra.terrain {
 				} else {
 					console.log(pTri);
 					WARNING("Invalid Left Neighbor!");
-					debugger;
+					CRITICAL("stop");
+					// debugger;
 				}
 			}
 
@@ -302,7 +311,7 @@ module akra.terrain {
 					pTri.rightChild.leftNeighbor = pTri.baseNeighbor.leftChild;
 				} else {
 					// Base Neighbor (in a diamond with us) was not split yet, so do that now.
-					this.split( pTri.baseNeighbor);  
+					this.split(pTri.baseNeighbor);  
 				}
 			} else {
 				// An edge triangle, trivial case.
@@ -338,7 +347,7 @@ module akra.terrain {
 			var v2fVert: IVec2 = new Vec2(); 
 			v2fVert.set(0.0, 0.0);
 
-			//console.log("-->",this._iSectorX,this._iSectorY,"--",this._pWorldRect.x0,this._pWorldRect.fY0,"--",this._iXVerts,this._iYVerts)
+			//console.log("-->",this._iSectorX,this._iSectorY,"--",this._pWorldRect.x0,this._pWorldRect.y0,"--",this._iXVerts,this._iYVerts)
 			//console.log("--",v2fCellSize.X,v2fCellSize.Y,this.getHeightX(),this.getHeightY() )
 
 
@@ -373,10 +382,10 @@ module akra.terrain {
 		}
 
 		buildTriangleList(): void {
-			this._iTempTotalIndices=this.terrainSystem.totalIndex;
+			this._iTempTotalIndices = this.terrainSystem.totalIndex;
 
-			this._pTempIndexList=this.terrainSystem.index;
-			this._iVertexID=this.terrainSystem.vertexId;
+			this._pTempIndexList = this.terrainSystem.index;
+			this._iVertexID = this.terrainSystem.vertexId;
 			// add all the triangles to the roamTerrain
 			// in root triangle A
 
@@ -392,9 +401,59 @@ module akra.terrain {
 				(this._iYVerts*this._iXVerts)-1, (this._iYVerts-1)*this._iXVerts, this._iXVerts-1);
 
 			this.terrainSystem.totalIndex = this._iTempTotalIndices;
-			this._iTempTotalIndices=undefined;
-			this._iVertexID=undefined;
-			this._pTempIndexList=null;
+
+
+
+			// var pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvasLOD');
+			// var p2D = pCanvas.getContext("2d");
+			// p2D.strokeStyle = "#f00"; //цвет линий
+			// p2D.lineWidth = 1;
+			// p2D.beginPath();
+			// //console.log("Total ",pSec._iTotalIndices);
+
+			// //console.log(this);
+			// var pVerts: float[] = this.terrainSystem.verts;
+			// var rect: IRect3d = this.terrainSystem.worldExtents;
+			// var size: IVec3 = this.terrainSystem.worldSize;
+			
+			// for(var i=0;i < this._iTempTotalIndices; i += 3) {
+
+
+			// 	p2D.moveTo(	((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
+			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
+			// 		((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
+			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
+			// 	p2D.lineTo(	((pVerts[(this._pTempIndexList[i+1]*4-this._iVertexID)/32
+			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
+			// 		((pVerts[(this._pTempIndexList[i+1]*4-this._iVertexID)/32
+			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
+			// 	p2D.lineTo(	((pVerts[(this._pTempIndexList[i+2]*4-this._iVertexID)/32
+			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
+			// 		((pVerts[(this._pTempIndexList[i+2]*4-this._iVertexID)/32
+			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
+			// 	p2D.lineTo(	((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
+			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
+			// 		((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
+			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
+			// }
+
+			// p2D.stroke();
+
+			// p2D.strokeStyle = "#f00"; //цвет линий
+			// p2D.lineWidth = 1;
+			// p2D.beginPath();
+			// p2D.lineTo(((this._pWorldRect.x0-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y0-rect.y0)/size.y)*pCanvas.height);
+			// p2D.lineTo(((this._pWorldRect.x1-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y0-rect.y0)/size.y)*pCanvas.height);
+			// p2D.lineTo(((this._pWorldRect.x1-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y1-rect.y0)/size.y)*pCanvas.height);
+			// p2D.lineTo(((this._pWorldRect.x0-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y1-rect.y0)/size.y)*pCanvas.height);
+			// p2D.lineTo(((this._pWorldRect.x0-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y0-rect.y0)/size.y)*pCanvas.height);
+			// p2D.stroke();
+
+
+			this._iTempTotalIndices = undefined;
+			this._iVertexID = undefined;
+			this._pTempIndexList = null;
+
 		}
 
 		recursiveBuildTriangleList(pTri: ITriTreeNode, iPointBase: uint, iPointLeft: uint, iPointRight: uint): void {

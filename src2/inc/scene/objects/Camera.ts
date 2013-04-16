@@ -75,7 +75,7 @@ module akra.scene.objects {
 		protected _fFOV: float = math.PI / 5.;
 		protected _fAspect: float = 4. / 3.;
 		protected _fNearPlane: float = 0.1;
-		protected _fFarPlane: float = 500.;
+		protected _fFarPlane: float = 1500.;
 		protected _fWidth: float = 0.;
 		protected _fHeight: float = 0.;
 		protected _fMinX: float = 0.;
