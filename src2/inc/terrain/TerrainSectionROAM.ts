@@ -47,8 +47,6 @@ module akra.terrain {
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_SECTION_ROAM) {
 			super(pScene, eType);
-			this._pRootTriangleA["fromSection"] = true;
-			this._pRootTriangleB["fromSection"] = true;
 		}
 
 		inline get terrainSystem(): ITerrainROAM{
@@ -215,8 +213,7 @@ module akra.terrain {
 				// Если треугольник не поделен
 				if (!pTri.leftChild) {
 
-					// math.pow(fMidDist+0.0001,fLimit);
-					var fRatio: float = (pVTree[iIndex]*fScale)/(fMidDist+0.0001);
+					var fRatio: float = (pVTree[iIndex]*fScale)/math.pow(fMidDist+0.0001, fLimit);
 					if (fRatio > 1) {
 						// subdivide this triangle
 						// console.log("split");

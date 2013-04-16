@@ -133,9 +133,9 @@ module akra.terrain {
     				isUpdated : true, isLoaded : false};
     	    }
 
-    	    // this._pRPC = net.createRpc();
+    	    this._pRPC = net.createRpc();
     	    // this._pRPC.join('ws://192.168.194.132');
-    	    // this._pRPC.join("ws://localhost:6112");
+    	    this._pRPC.join("ws://localhost:6112");
 	    	this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 	    }
 
@@ -626,45 +626,45 @@ module akra.terrain {
 		            var iLev = iLevelTex;
 		            var iX = j, iY = i;
 
-		            // (function (iLev: uint, iX: uint, iY: uint) {
-		            //     var sPiecePath: string = me._sSurfaceTextures;
+		            (function (iLev: uint, iX: uint, iY: uint) {
+		                var sPiecePath: string = me._sSurfaceTextures;
 
-		            //     me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
-		            //                   iY, me._iBlockSize, me._iBlockSize, me._eTextureFormat,
-		            //                   function (pError: Error, pData: Uint8Array) {
+		                me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
+		                              iY, me._iBlockSize, me._iBlockSize, me._eTextureFormat,
+		                              function (pError: Error, pData: Uint8Array) {
 
-		            //                       if(!isNull(pError)){
-		            //                       		debug_print(pError.message);
-		            //                       		return;
-		            //                       }
-
-		                                  var pData = new Uint8Array(me._iBlockSize * me._iBlockSize * 3);
-		                                  for(var k: uint = 0; k < pData.length; k+= 3){
-		                                  	if(iLev === 0){
-			                                  	pData[k] = 0;
-			                                  	pData[k + 1] = 255;
-			                                  	pData[k + 2] = 0;
-		                                  	}
-		                                  	else if(iLev === 1){
-		                                  		pData[k] = 255;
-			                                  	pData[k + 1] = 0;
-			                                  	pData[k + 2] = 0;
-		                                  	}
-		                                  	else if(iLev === 2) {
-		                                  		pData[k] = 0;
-			                                  	pData[k + 1] = 0;
-			                                  	pData[k + 2] = 255;
-		                                  	}
-		                                  	else {
-		                                  		pData[k] = 255;
-			                                  	pData[k + 1] = 0;
-			                                  	pData[k + 2] = 255;
-		                                  	}
-
-		                                  	pData[k] = 170;
-			                                pData[k + 1] = 50;
-			                                pData[k + 2] = 170;
+		                                  if(!isNull(pError)){
+		                                  		debug_print(pError.message);
+		                                  		return;
 		                                  }
+
+		                                 //  var pData = new Uint8Array(me._iBlockSize * me._iBlockSize * 3);
+		                                 //  for(var k: uint = 0; k < pData.length; k+= 3){
+		                                 //  	if(iLev === 0){
+			                                //   	pData[k] = 0;
+			                                //   	pData[k + 1] = 255;
+			                                //   	pData[k + 2] = 0;
+		                                 //  	}
+		                                 //  	else if(iLev === 1){
+		                                 //  		pData[k] = 255;
+			                                //   	pData[k + 1] = 0;
+			                                //   	pData[k + 2] = 0;
+		                                 //  	}
+		                                 //  	else if(iLev === 2) {
+		                                 //  		pData[k] = 0;
+			                                //   	pData[k + 1] = 0;
+			                                //   	pData[k + 2] = 255;
+		                                 //  	}
+		                                 //  	else {
+		                                 //  		pData[k] = 255;
+			                                //   	pData[k + 1] = 0;
+			                                //   	pData[k + 2] = 255;
+		                                 //  	}
+
+		                                 //  	pData[k] = 170;
+			                                // pData[k + 1] = 50;
+			                                // pData[k + 2] = 170;
+		                                 //  }
 		                                  //console.log(me._pBuffer[iLevelTex].length,iX-me._pXY[iLevelTex].iX,iY-me._pXY[iLevelTex].iY);
 		                                  var iXBuf: uint;
 		                                  var iYBuf: uint;
@@ -706,8 +706,8 @@ module akra.terrain {
 		                                  pixelUtil.bulkPixelConversion(pSourceBox, pSubBox);
 
 		                                  me._pXY[iLev].isUpdated = true;
-		            //                   });
-		            // })(iLevelTex, j, i);
+		                              });
+		            })(iLevelTex, j, i);
 
 		        }
 		    }
