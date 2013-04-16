@@ -47,10 +47,20 @@ float4 vs_skin_geometry(float4 position[] : POSITION) : POSITION {
     return proj_mat * view_mat * result_mat * bind_matrix * pos;
 }
 
+float4 vs_optimized_skin_geometry(float4 position : SKINNED_POSITION) : POSITION {
+    float4 pos = float4(position.xyz, 1.0);
+    return proj_mat * view_mat * pos;
+}
+
 technique prepareShadows{
     pass pass1{
-        if(engine.mesh.isSkinning) {
-            VertexShader = compile vs_skin_geometry();
+        if(engine.mesh.isSkinned){
+            if(engine.mesh.isOptimizedSkinned){
+                VertexShader = compile vs_optimized_skin_geometry();
+            }
+            else{
+                VertexShader = compile vs_skin_geometry();
+            }
         }
 //        else if(engine.isAdvancedIndex) {
 //            VertexShader = compile vs_advanced_index_geometry();

@@ -91,9 +91,9 @@ module akra {
 			pProjectShadowLight.isShadowCaster = true;
 
 			pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
-			pProjectShadowLight.addRelPosition(0, 3, 10);
+			pProjectShadowLight.addRelPosition(0, 3, 10);*/
 
-			var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
+			/*var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
 			
 			pOmniShadowLight.attachToParent(pScene.getRootNode());
 			pOmniShadowLight.enabled = true;

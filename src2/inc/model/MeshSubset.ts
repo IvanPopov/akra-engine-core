@@ -510,7 +510,7 @@ module akra.model {
 		};
 
 		_calculateSkin(): bool{
-			var isOk: bool = util.calculateSkin(this._pRenderData);
+			var isOk: bool = util.calculateSkin(this);
 			this._isOptimizedSkinned = isOk;
 			return isOk;
 		};
