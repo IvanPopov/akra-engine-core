@@ -48,7 +48,8 @@ function usage() {
 		'\n\t--list		[-l] List all available tests.' + 
 		'\n\t--webgl-debug	[-w] Add webgl debug utils.' + 
 		'\n\t--do-magic	[-m] It\'s wonderfull magic!(Спросите у Игоря!).' + 
-		'\n\t--declaration		Generates corresponding .d.ts file.'
+		'\n\t--declaration		Generates corresponding .d.ts file.' +
+		'\n\t--preprocess		Preprocessing only.'
 	);
 	
 	process.exit(1);
@@ -70,6 +71,7 @@ var pOptions = {
 	debug: true,
 	pathToTemp: null,
 	declaration: false,
+	preprocess: false,
 	clean: false, //clean tests data instead build
 	listOnly: false, //list available tests
 	webglDebug: false,
@@ -169,6 +171,9 @@ function parseArguments() {
 			case '--declaration':
 				pOptions.declaration = true;
 				break;
+			case '--preprocess':
+				pOptions.preprocess = true;
+				break;
 			case '--tests':
 			case '-s':
 				readKey("pathToTests", ++ i);
@@ -240,7 +245,17 @@ function verifyOptions() {
 	// }
 
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
-		pOptions.outputFile = pOptions.files[0] + (pOptions.declaration? ".d.ts" : ".out.js");
+		var pOutExt = ".out.js";
+		
+		if (pOptions.declaration) {
+			pOutExt = ".d.ts";
+		}
+
+		if (pOptions.preprocess) {
+			pOutExt = ".ts";
+		}
+
+		pOptions.outputFile = pOptions.files[0] + pOutExt;
 	}
 }
 
@@ -255,7 +270,7 @@ function preprocess() {
 	console.log("\n> preprocessing started (" + this.process.pid + ")\n");
 
 	var capabilityOptions = [
-		//"-D inline=/**@inline*/",
+		"-D inline=/**@inline*/",
 		"-D protected=/**@protected*/",
 		"-D const=/**@const*/var",
 		"-D struct=class",
@@ -310,11 +325,16 @@ function preprocess() {
 	
 	  if (code == 0) {
 	  	pOptions.pathToTemp = pOptions.outputFolder + "/" + pOptions.tempFile;
-
-		console.log("preprocessed to: ", pOptions.pathToTemp);
-		fs.writeFileSync(pOptions.pathToTemp, stdout.slice(0, iTotalChars), "utf8");
-
-		compile();
+		
+		if (pOptions.preprocess) {
+			fs.writeFileSync(pOptions.outputFolder + "/" + pOptions.outputFile, stdout.slice(0, iTotalChars), "utf8");
+			console.log("preprocessed to: ", pOptions.outputFolder + "/" + pOptions.outputFile);
+		}
+		else {
+			console.log("preprocessed to: ", pOptions.pathToTemp);
+			fs.writeFileSync(pOptions.pathToTemp, stdout.slice(0, iTotalChars), "utf8");
+			compile();
+		}
 	  }
 	});
 }
