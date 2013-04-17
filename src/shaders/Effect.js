@@ -180,6 +180,7 @@ var GLOBAL_VARS = {
     T_KW_IF               : "if",
     T_KW_ELSE             : "else",
     T_KW_BREAK            : "break",
+	T_KW_CONTINUE         : "continue",
 
     FROMEXPR     : "FromExpr",
     MEMEXPR      : "MemExpr",
@@ -6979,6 +6980,15 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this.pushCode("break");
         this.pushCode(";");
     }
+	else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_CONTINUE) {
+		//SimpleStmt : T_KW_BREAK ';'
+		if (this._isInLoop === false) {
+			error("Break statement can be used only in loop(or in switch in pass)");
+			return;
+		}
+		this.pushCode("continue");
+		this.pushCode(";");
+	}
     else if (pChildren[pChildren.length - 1].sName === a.fx.GLOBAL_VARS.TYPEDECL) {
         //SimpleStmt : TypeDecl
         this.analyzeTypeDecl(pChildren[0]);
