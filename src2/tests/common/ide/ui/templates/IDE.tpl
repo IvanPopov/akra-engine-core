@@ -1,6 +1,23 @@
 <div id="IDE">
 	<table style="width: 100%">
 		<tr>
+			<td colspan="3">
+				<div id="menu">
+					<component type="Menu" text="Create">
+						<component type="Menu" text="light point" >
+							<component type="Button" text="Project light" name="create-projectlight"/>
+							<component type="Button" text="Omni light" name="create-omnilight"/>
+						</component>
+						<component type="Button" text="camera" name="create-camera"/>
+					</component>
+					<component type="Menu" text="Load" >
+						<component type="Button" text="Collada Model" name="load-collada" 
+							onclick="akra.ide.cmd(akra.ECMD.LOAD_COLLADA)"/>
+					</component>
+				</div>
+			</td>
+		</tr>
+		<tr>
 			<td>
 				<div id="tree-node">
 					<component type="Panel" title="Inspector" collapsible >

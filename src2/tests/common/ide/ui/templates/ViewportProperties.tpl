@@ -10,7 +10,7 @@
 		</component>
 	</div>
 	<component type="RenderTargetStats" name="stats"/>
-	<div name="controls" >
+	<div name="controls" style="overflow: hidden;">
 		<div class="row first">
 			<span>fullscreen:</span>
 			<component type="Button" name="fullscreen" text="enable" />

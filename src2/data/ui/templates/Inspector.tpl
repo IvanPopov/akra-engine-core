@@ -58,7 +58,7 @@
 			<component type="resource.Properties" name="resource"/>
 		</component>
 	</div>
-	<div class="row" style="padding-bottom: 5px;">
+	<div class="row">
 		<component type="Panel" title="Controller" collapsible >
 			<component type="AnimationControllerProperties" name="controller"/>
 		</component>
@@ -66,7 +66,7 @@
 </component>
 
 
-<component name="animation-node">
+<component name="animation-node" style="margin-top: -1px; margin-bottom: -1px;">
 	<div class="node-type">Animation node properties</div>
 	<div class="row">
 		<component type="Panel" title="Common" collapsible >

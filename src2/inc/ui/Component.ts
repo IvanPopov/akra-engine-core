@@ -222,7 +222,7 @@ module akra.ui {
 			
 			var sLayout: string = $comp.attr("layout");
 			var sTemplate: string = $comp.attr("template");
-
+			
 			if (isString(sTemplate)) {
 				this.template(sTemplate);
 			}

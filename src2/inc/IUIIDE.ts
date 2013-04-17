@@ -13,7 +13,10 @@ module akra {
 
 		EDIT_ANIMATION_CONTROLLER,
 
-		CHANGE_AA
+		CHANGE_AA,
+
+
+		LOAD_COLLADA
 	}
 
 	export interface IUIIDE extends IUIComponent {

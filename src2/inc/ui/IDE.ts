@@ -16,6 +16,8 @@ module akra.ui {
 
 		protected _pTabs: IUITabs;
 
+		protected _pColladaDialog: IUIComponent = null;
+
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
@@ -95,6 +97,11 @@ module akra.ui {
 				case ECMD.CHANGE_AA:
 					(<render.DSViewport>this._pPreview.viewport).setFXAA(<bool>argv[0]);
 					return true;
+
+				case ECMD.LOAD_COLLADA:
+					this._pColladaDialog = this.createComponent("Popup", {title: "Load collada"});
+					// this._pColladaDialog.el.offset({top: 500, left: 500});
+					return false;
 			}
 			return true;
 		}

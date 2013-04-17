@@ -8,8 +8,10 @@
 #include "DNDNode.ts"
 #include "Component.ts"
 #include "Panel.ts"
+#include "Popup.ts"
 #include "Tabs.ts"
 #include "Button.ts"
+#include "Menu.ts"
 #include "Switch.ts"
 #include "Label.ts"
 #include "Vector.ts"
@@ -26,7 +28,7 @@
 #define UI_GRAPH
 #define UI_ANIMATION
 
-#ifdef UnI_GRAPH
+#ifdef UI_GRAPH
 
 #include "graph/Graph.ts"	
 #include "graph/Node.ts"

@@ -390,6 +390,80 @@ div.component-switch input:checked + label:before {
 .component-tabs  > .component-panel .layout > table {
   width: 100%;
 }
+.component-menu {
+  color: #555;
+  margin: 3px 0 0 10px;
+  min-width: 100px;
+  position: relative;
+  height: 17px;
+  text-align: left;
+  display: inline-block;
+}
+.component-menu  > .menu-title {
+  font-size: 12px;
+  line-height: 16px;
+  color: #555;
+  position: absolute;
+  z-index: 110;
+  display: block;
+  padding: 11px 0 0 20px;
+  height: 28px;
+  margin: -11px 0 0 -10px;
+  text-decoration: none;
+  background: url(../img/arrow.png) 7px 17px no-repeat;
+  cursor: pointer;
+}
+.component-menu  > .layout {
+  background: #fff;
+  position: absolute;
+  top: -12px;
+  left: -20px;
+  z-index: 100;
+  display: none;
+  margin-left: 10px;
+  padding: 40px 0 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  font-size: 11px;
+}
+.component-menu  > .layout  > table {
+  border-top: 1px solid #dedede;
+  width: 100%;
+}
+.component-menu  > .layout td > .component-button {
+  color: black;
+  display: block;
+  padding: 6px 15px;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  text-shadow: none;
+  margin: 0;
+  font-size: 12px;
+}
+.component-menu  > .layout td > .component-button:hover {
+  background-color: #dedede;
+}
+.component-popup {
+  height: 120px;
+  width: 200px;
+  z-index: 50;
+  box-shadow: 0 0 5px black;
+}
+.component-popup  > .title {
+  background: black;
+  color: white;
+  height: 20px;
+  width: 200px;
+}
+.component-popup  > .layout {
+  background-color: gray;
+  border: 1px solid gray;
+  height: 100px;
+  width: 200px;
+}
 /*Graph Controls */
 .component-graph-controls .controls {
   padding: 10px 0px;
@@ -625,7 +699,7 @@ div.component-switch input:checked + label:before {
 .component-animationblender .component-connectionarea,
 .component-animationmask .component-connectionarea {
   position: relative;
-  z-index: 2;
+  z-index: 1;
 }
 .component-animationdata .component-connectionarea .layout.horizontal,
 .component-animationplayer .component-connectionarea .layout.horizontal,
@@ -1294,4 +1368,7 @@ body {
 }
 .component-animationmaskproperties .row.last {
   padding-bottom: 5px !important;
+}
+#menu .component-menu {
+  display: inline-block;
 }
