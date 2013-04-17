@@ -41,7 +41,7 @@ module akra.ui {
 
 			this._fValue = fValue;
 
-			this.updated(fValue);
+			this.updated(this.value);
 		}
 
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.SLIDER) {
@@ -78,6 +78,22 @@ module akra.ui {
 			if (fValue != fValuePrev) {
 				this.updated(this.value);
 				// console.log("updated", this.value);
+			}
+		}
+
+		_createdFrom($comp: JQuery): void {
+			super._createdFrom($comp);
+			
+			var sRange: string = $comp.attr("range");
+
+			if (isString(sRange)) {
+				this.range = parseFloat(sRange);
+			}
+
+			var sValue: string = $comp.attr("value");
+
+			if (isString(sValue)) {
+				this.value = parseFloat(sValue);
 			}
 		}
 

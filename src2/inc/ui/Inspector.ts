@@ -1,17 +1,19 @@
-#ifndef UISCENENODE_TS
-#define UISCENENODE_TS
+#ifndef UIINSPECTOR_TS
+#define UIINSPECTOR_TS
 
 #include "IUILabel.ts"
 #include "IModelEntry.ts"
 
-#include "../Component.ts"
-#include "../resource/Properties.ts"
-#include "../animation/ControllerProperties.ts"
-#include "../model/MeshProperties.ts"
-#include "../light/Properties.ts"
+#include "Component.ts"
+#include "resource/Properties.ts"
+#include "animation/ControllerProperties.ts"
+#include "model/MeshProperties.ts"
+#include "light/Properties.ts"
+#include "animation/NodeProperties.ts"
+#include "animation/MaskProperties.ts"
 
-module akra.ui.scene {
-	export class NodeProperties extends Component {
+module akra.ui {
+	export class Inspector extends Component {
 		protected _pNode: ISceneNode = null;
 		protected _pNameLabel: IUILabel;
 		protected _pPosition: IUIVector;
@@ -30,12 +32,19 @@ module akra.ui.scene {
 		//light properties
 		protected _pLight: light.Properties;
 
+		//inspect animation node
+		//----------------------------------------------------
+		protected _pAnimationNodeProperties: animation.NodeProperties;
+		protected _pAnimationMaskProperties: animation.MaskProperties;
+
+
+
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template("ui/templates/SceneNodeProperties.tpl");
+			this.template("ui/templates/Inspector.tpl");
 
-			this._pNameLabel = <IUILabel>this.findEntity("name");
+			this._pNameLabel = <IUILabel>this.findEntity("node-name");
 			this._pPosition = <IUIVector>this.findEntity("position");
 			this._pWorldPosition = <IUIVector>this.findEntity("worldPosition");
 			this._pScale = <IUIVector>this.findEntity("scale");
@@ -54,6 +63,12 @@ module akra.ui.scene {
 			this.connect(this._pRotation, SIGNAL(changed), SLOT(_updateRotation));
 			this.connect(this._pScale, SIGNAL(changed), SLOT(_updateScale));
 			this.connect(this._pInheritance, SIGNAL(changed), SLOT(_updateInheritance));
+
+			//---------------
+			this._pAnimationNodeProperties = <animation.NodeProperties>this.findEntity("animation-node-properties");
+			this._pAnimationMaskProperties = <animation.MaskProperties>this.findEntity("animation-mask-properties");
+
+			this.inspectAnimationNode(null);
 		}
 
 		_updateName(pLabel: IUILabel, sName: string): void {
@@ -94,7 +109,7 @@ module akra.ui.scene {
 
 		rendered(): void {
 			super.rendered();
-			this.el.addClass("component-scenenodeproperties");
+			this.el.addClass("component-inspector");
 		}
 
 		_scenePostUpdated(pScene: IScene3d): void {
@@ -129,7 +144,25 @@ module akra.ui.scene {
 			}
 		}
 
-		setNode(pNode: ISceneNode): void {
+		inspectAnimationNode(pNode: IUIAnimationNode): void {
+			if (isNull(pNode) || isNull(pNode.animation)) {
+				this.el.find("div[name=animation-node]").hide();
+				return;
+			}
+
+			this.el.find("div[name=animation-node]").show();
+			this._pAnimationNodeProperties.setNode(pNode);
+
+			if (animation.isMaskNode(pNode)) {
+				this.el.find(".animation-mask-properties-row:first").show();
+				this._pAnimationMaskProperties.setMask(<IUIAnimationMask>pNode);
+			}
+			else {
+				this.el.find(".animation-mask-properties-row:first").hide();
+			}
+		}
+
+		inspectNode(pNode: ISceneNode): void {
 			if (this._pNode) {
 				this.disconnect(this._pNode.scene, SIGNAL(postUpdate), SLOT(_scenePostUpdated));
 			}
@@ -181,7 +214,7 @@ module akra.ui.scene {
 		BROADCAST(nodeNameChanged, CALL(node));
 	}
 
-	register("SceneNodeProperties", NodeProperties);
+	register("Inspector", Inspector);
 }
 
 #endif

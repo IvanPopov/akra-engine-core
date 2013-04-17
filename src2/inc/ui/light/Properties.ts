@@ -15,7 +15,7 @@ module akra.ui.light {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template("ui/templates/LightProperties.tpl");
+			this.template("ui/templates/light.Properties.tpl");
 
 			this._pEnabled = <IUISwitch>this.findEntity("enabled");
 			this._pShadows = <IUISwitch>this.findEntity("shadows");
@@ -50,7 +50,7 @@ module akra.ui.light {
 		}
 	}
 
-	register("LightProperties", Properties);
+	register("light.Properties", Properties);
 }
 
 #endif

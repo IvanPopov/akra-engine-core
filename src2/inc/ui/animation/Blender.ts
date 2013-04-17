@@ -29,7 +29,7 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph, pBlender: IAnimationBlend = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_BLENDER);
 
-			this.template("ui/templates/AnimationBlender.tpl");
+			this.template("ui/templates/animation.Blender.tpl");
 
 			this.linkAreas();
 
@@ -146,7 +146,7 @@ module akra.ui.animation {
 	}
 
 
-	register("AnimationBlender", Blender);
+	register("animation.Blender", Blender);
 }
 
 #endif

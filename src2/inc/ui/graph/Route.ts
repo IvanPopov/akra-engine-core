@@ -55,6 +55,10 @@ module akra.ui.graph {
 		}
 
 		inline set arrow(pPath: RaphaelPath) {
+			var pRoute: Route = this;
+
+		    (<RaphaelElement>pPath).click((e: IUIEvent) => { e.stopPropagation(); pRoute.activate(!pRoute.isActive()); });
+
 			this._pArrow = pPath;
 		}
 
@@ -75,7 +79,7 @@ module akra.ui.graph {
 
 		    var pRoute: Route = this;
 
-		    (<RaphaelElement>pPath).click(() => { pRoute.activate(!pRoute.isActive()); });
+		    (<RaphaelElement>pPath).click((e: IUIEvent) => { e.stopPropagation(); pRoute.activate(!pRoute.isActive()); });
 
 		    this._pPath = pPath;
 		}
@@ -193,7 +197,7 @@ module akra.ui.graph {
 			this._bActive = bValue;
 
 			if (!isNull(this.path)) {
-				(<RaphaelElement>this.path).attr({"stroke-width": bValue? 3 : 2});
+				(<RaphaelElement>this.path).attr({"stroke-width": bValue? 3 : 1});
 			}
 
 			this.left && this.left.activate(bValue);

@@ -12,8 +12,8 @@ module akra.ui.resource {
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
-			LOG("!!!!!!!!!")
-			this.template("ui/templates/ResourceProperties.tpl");
+
+			this.template("ui/templates/resource.Properties.tpl");
 
 			this._pName = <IUILabel>this.findEntity("name");
 		}
@@ -40,7 +40,7 @@ module akra.ui.resource {
 		}
 	}
 
-	register("ResourceProperties", Properties);
+	register("resource.Properties", Properties);
 }
 
 #endif

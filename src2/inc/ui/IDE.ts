@@ -1,6 +1,6 @@
 #include "ui/Component.ts"
 #include "ui/scene/Tree.ts"
-#include "ui/scene/NodeProperties.ts"
+#include "ui/Inspector.ts"
 #include "ui/ViewportProperties.ts"
 
 #include "IUIIDE.ts"
@@ -10,7 +10,7 @@ module akra.ui {
 		protected _pEngine: IEngine = null;
 
 		protected _pSceneTree: scene.Tree;
-		protected _pSceneNodeProperties: scene.NodeProperties;
+		protected _pInspector: Inspector;
 
 		protected _pPreview: ViewportProperties;
 
@@ -35,7 +35,7 @@ module akra.ui {
 
 			//setup Node properties
 
-			var pNodeProperties: IUIComponent = this._pSceneNodeProperties = <scene.NodeProperties>this.findEntity("NodeProperties");
+			var pNodeProperties: IUIComponent = this._pInspector = <Inspector>this.findEntity("Inspector");
 
 			//setup Scene tree
 
@@ -53,7 +53,7 @@ module akra.ui {
 		inline getScene(): IScene3d { return this.getEngine().getScene(); }
 		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
 
-		_updateSceneNodeName(pProperties: scene.NodeProperties, pNode: ISceneNode): void {
+		_updateSceneNodeName(pInspector: Inspector, pNode: ISceneNode): void {
 			this._pSceneTree.sync(pNode);
 		}
 
@@ -72,12 +72,13 @@ module akra.ui {
 				case ECMD.SET_PREVIEW_FULLSCREEN:
 					this.getCanvas().setFullscreen(true);
 					return true;
-				case ECMD.SELECT_SCENE_NODE:
+				case ECMD.INSPECT_SCENE_NODE:
 					var pNode: ISceneNode = argv[0];
-					this._pSceneNodeProperties.setNode(pNode);
+					this._pInspector.inspectNode(pNode);
 					return true;
 				case ECMD.EDIT_ANIMATION_CONTROLLER: 
 					var iTab: int = this._pTabs.findTabByTitle("Edit controller");
+					
 					if (iTab < 0) {
 						var pController: IAnimationController = argv[0];
 						var pControls: IUIAnimationControls = 
@@ -88,17 +89,8 @@ module akra.ui {
 					this._pTabs.select(iTab);
 					
 					return true;
-				case ECMD.EDIT_ANIMATION_MASK_NODE:
-					var pNode: IUIAnimationMask = argv[0];
-					var sName: string = "animation-mask-" + pNode.getGuid();
-					var iTab: int = this._pTabs.findTab(sName);
-					
-					if (iTab < 0) {
-						var pControls: IUIAnimationControls = 
-							<IUIAnimationControls>this._pTabs.createComponent("Panel", {title: "Edit mask", name: sName});
-					}
-			
-					this._pTabs.select(iTab);
+				case ECMD.INSPECT_ANIMATION_NODE:
+					this._pInspector.inspectAnimationNode(argv[0]);
 					break;
 				case ECMD.CHANGE_AA:
 					(<render.DSViewport>this._pPreview.viewport).setFXAA(<bool>argv[0]);

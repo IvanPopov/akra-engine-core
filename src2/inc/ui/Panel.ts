@@ -11,6 +11,9 @@ module akra.ui {
 		protected $title: JQuery;
 		protected $controls: JQuery = null;
 
+		inline get collapsed(): bool {
+			return this.el.hasClass("collapsed");
+		}
 
 		inline get title(): string {
 			return this.$title.find("span:first").html();
@@ -45,9 +48,31 @@ module akra.ui {
 		_createdFrom($comp: JQuery): void {
 			super._createdFrom($comp);
 			this.title = $comp.attr('title');
+			
 			if (isDef($comp.attr("collapsible"))) {
 				this.setCollapsible($comp.attr("collapsible").toLowerCase() !== "false");
 			}
+
+			var sCollapsed: string = $comp.attr("collapsed");
+
+			if (isString(sCollapsed) && sCollapsed.toLowerCase() !== "false") {
+				this.el.addClass("collapsed");
+				this.layout.hide();
+			}
+		}
+
+		collapse(bValue: bool = true): void {
+			if (bValue === this.collapsed) {
+				return;
+			}
+
+			this.collapsed? this.el.removeClass("collapsed"): this.el.addClass("collapsed");
+
+			var $element = this.layout.el;
+			
+			$element.animate({
+				height: 'toggle'
+			}, 500);
 		}
 
 
@@ -66,12 +91,10 @@ module akra.ui {
 			}
 
 			this.el.addClass("collapsible");
-
-			var $element = this.layout.el;
+			var pPanel = this;
+			
 			this.$controls.click((e: IUIEvent) => {
-				$element.animate({
-					height: 'toggle'
-				}, 500);
+				pPanel.collapse(!this.collapsed);
 			});
 		}
 

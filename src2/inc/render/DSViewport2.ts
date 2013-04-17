@@ -3,7 +3,6 @@
 				
 #include "IDSViewport.ts"
 #include "Viewport.ts"
-#include "DSUniforms.ts"
 #include "IRenderTechnique.ts"
 #include "IRenderPass.ts"
 #include "ILightPoint.ts"
@@ -16,6 +15,7 @@
 #include "IScene3d.ts"
 #include "util/ObjectArray.ts"
 #include "Screen.ts"
+#include "DSUniforms.ts"
 
 #define OPTIMIZED_DEFFERED 1
 

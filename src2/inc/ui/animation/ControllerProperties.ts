@@ -17,7 +17,7 @@ module akra.ui.animation {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template("ui/templates/AnimationControllerProperties.tpl");
+			this.template("ui/templates/animation.ControllerProperties.tpl");
 
 			this._pTotalAnimLabel = <IUILabel>this.findEntity("total");
 			this._pActiveAnimation = <IUILabel>this.findEntity("active");

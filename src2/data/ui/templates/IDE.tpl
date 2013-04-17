@@ -3,8 +3,8 @@
 		<tr>
 			<td>
 				<div id="tree-node">
-					<component type="Panel" title="Node properties" collapsible >
-						<component type="SceneNodeProperties" name="NodeProperties" />
+					<component type="Panel" title="Inspector" collapsible >
+						<component type="Inspector" name="Inspector" />
 					</component>
 				</div>
 				<div id="tree">

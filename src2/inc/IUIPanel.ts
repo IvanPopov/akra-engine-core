@@ -12,7 +12,10 @@ module akra {
 	export interface IUIPanel extends IUIComponent {
 		title: string;
 		index: int;
+		collapsed: bool;
 
+
+		collapse(bValue?: bool): void;
 		isCollapsible(): bool;
 		setCollapsible(bValue?: bool): void;
 

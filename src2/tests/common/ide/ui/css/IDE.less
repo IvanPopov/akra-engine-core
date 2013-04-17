@@ -213,16 +213,22 @@ body {
 
 					display: none;
 				}
-
-				input:checked {
-					background: url(../img/panel-closed.png) 0 0 no-repeat;
-				}
 			}
 		}
 
 		&.collapsible {
 			div.panel-title:first-of-type div.controls input {
 				display: block;
+			}
+		}
+
+		&.collapsed {
+			div.panel-title:first-of-type {
+				div.controls {
+					input {
+						background: url(../img/panel-closed.png) 0 0 no-repeat;
+					}
+				}	
 			}
 		}
 	}
@@ -407,7 +413,7 @@ body {
 	}
 }
 
-.component-scenenodeproperties {
+.component-inspector {
 	background-color: white;
 	font-size: @font-size;
 
@@ -507,7 +513,7 @@ body {
 		}
 	}
 
-	div[name=model-entry], div[name=scene-model], div[name=light-point] {
+	div[name=model-entry], div[name=scene-model], div[name=light-point], div[name=animation-node] {
 		display: none;
 
 		.row {
@@ -535,7 +541,8 @@ body {
 		}
 
 		.component-resourceproperties, .component-animationcontrollerproperties,
-		.component-meshproperties, .component-lightproperties {
+		.component-meshproperties, .component-lightproperties, .component-animationnodeproperties,
+		.component-animationmaskproperties {
 			.row {
 				padding: 0px 20px 1px 20px;
 			}
@@ -582,6 +589,57 @@ body {
 	& > .bookmarks {
 		& > .bookmark {
 			background-color: @bg;
+		}
+	}
+}
+
+
+.component-animationmaskproperties {
+	background-color: white;
+	
+	.panel-title {
+		display: block;
+	}
+
+	.component-slider {
+		display: inline-block;
+		background: #999;
+		overflow: hidden;
+
+		.component-pin {
+			width: 10px !important;
+			background: black;
+		}
+	}
+
+	.component-slider {
+		height: 10px;
+
+		.component-pin {
+			height: 10px;
+			width: 10px;
+		}
+	}
+
+	.component-slider {
+		width: auto;
+		min-width: 100px;
+	}
+
+	.row {
+		text-align: right;
+		padding: 0px !important;
+
+		& > span {
+			white-space: pre;
+		}
+
+		&.first {
+			padding-top: 5px !important;
+		}
+
+		&.last {
+			padding-bottom: 5px !important;
 		}
 	}
 }

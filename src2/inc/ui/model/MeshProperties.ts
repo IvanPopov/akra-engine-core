@@ -15,7 +15,7 @@ module akra.ui.model {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template("ui/templates/MeshProperties.tpl");
+			this.template("ui/templates/model.MeshProperties.tpl");
 
 			this._pName = <IUILabel>this.findEntity("name");
 			this._pShadows = <IUISwitch>this.findEntity("shadows");
@@ -45,7 +45,7 @@ module akra.ui.model {
 		}
 	}
 
-	register("MeshProperties", MeshProperties);
+	register("model.MeshProperties", MeshProperties);
 }
 
 #endif

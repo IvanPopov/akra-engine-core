@@ -42,6 +42,9 @@ module akra {
 
 		
 		routing(): void;
+
+		signal selected(bModified: bool): void;
+		signal beforeDestroy(): void;
 	}
 }
 

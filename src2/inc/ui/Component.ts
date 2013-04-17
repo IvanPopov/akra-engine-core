@@ -20,8 +20,6 @@ module akra.ui {
 		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sName});
 		var sTplData: string = fnTemplate(pData);
 
-
-		// LOG(sTemplate);
 		pNode.el.append(sTplData);
 		pNode.el.find("component").each(function(i: int) {
 			var $comp: JQuery = $(this);
@@ -33,15 +31,6 @@ module akra.ui {
 			}
 
 			bRenderAsNormal = pNode.el[0] == $comp.parent()[0];
-
-			if (sType === "ModelEntryProperties") {
-
-				pNode.el.find("component").each(function(i: int) {
-					if ($(this).parents("component").length > 0) {
-						return;
-					}
-				});
-			}
 
 			var pComponent: IUIComponent = pNode.createComponent(sType, {show: bRenderAsNormal, name: sName});
 			pComponent._createdFrom($comp);
@@ -102,6 +91,10 @@ module akra.ui {
 
 		template(sUrl: string, pData?: any): void {
 			template(this, sUrl, pData);
+		}
+
+		fromStringTemplate(sTemplate: string, pData?: any): void {
+			_template(this, sTemplate, sTemplate, pData);
 		}
 
 		rendered(): void {

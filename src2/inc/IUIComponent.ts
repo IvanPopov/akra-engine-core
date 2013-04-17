@@ -74,6 +74,7 @@ module akra {
 		_createdFrom($component: JQuery): void;
 
 		template(sURL: string, pData?: any): void;
+		fromStringTemplate(sTpl: string, pData?: any): void;
 	}
 }
 

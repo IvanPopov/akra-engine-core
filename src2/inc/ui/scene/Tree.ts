@@ -85,7 +85,7 @@ module akra.ui.scene {
 		}
 
 		select(pNode: IUITreeNode): bool {
-			if (ide.cmd(ECMD.SELECT_SCENE_NODE, pNode.source)) {
+			if (ide.cmd(ECMD.INSPECT_SCENE_NODE, pNode.source)) {
 				return super.select(pNode);
 			}
 

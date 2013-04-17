@@ -14,7 +14,7 @@ module akra.ui.animation {
 		public graph: IUIAnimationGraph;
 
 		constructor (parent, options?) {
-			super(parent, options, <IUIGraph>getUI(parent).createComponent("AnimationGraph"));
+			super(parent, options, <IUIGraph>getUI(parent).createComponent("animation.Graph"));
 
 			var pControlPanel: IUIComponent = this.controls;
 

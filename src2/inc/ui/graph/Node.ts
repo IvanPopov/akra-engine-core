@@ -39,7 +39,7 @@ module akra.ui.graph {
 			this.attachToParent(pGraph);
 
 			if (!isDef(options) || options.init !== false) {
-				this.template("ui/templates/GraphNode.tpl");
+				this.template("ui/templates/graph.Node.tpl");
 				this.init();
 			}
 
@@ -151,6 +151,12 @@ module akra.ui.graph {
 			}
 		}
 
+		click(e: IUIEvent): void {
+			e.stopPropagation();
+			super.click(e);
+			this.selected(false);
+		}
+
 		inline isActive(): bool {
 			return this._isActive;
 		}
@@ -196,7 +202,7 @@ module akra.ui.graph {
 
 			if (e.type === EUIGraphEvents.DELETE) {
 		        if (this.isActive()) {
-		            this.beforeDestroy(this);
+		            this.beforeDestroy();
 		            this.destroy();
 		        }
 		    }
@@ -219,10 +225,11 @@ module akra.ui.graph {
 
 
 		//BROADCAST(routeBreaked, CALL(route, connection, dir));
-		BROADCAST(beforeDestroy, CALL(node));
+		BROADCAST(beforeDestroy, VOID);
+		BROADCAST(selected, CALL(bModified));
 	}
 
-	register("GraphNode", Node);
+	register("graph.Node", Node);
 }
 
 #endif

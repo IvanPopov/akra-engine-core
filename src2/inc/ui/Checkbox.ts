@@ -80,7 +80,7 @@ module akra.ui {
 
 		click(e: IUIEvent): void {
 			this.checked = !this.checked;
-			
+			e.stopPropagation();
 			super.click(e);
 		}
 

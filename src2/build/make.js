@@ -270,7 +270,7 @@ function preprocess() {
 	console.log("\n> preprocessing started (" + this.process.pid + ")\n");
 
 	var capabilityOptions = [
-		"-D inline=/**@inline*/",
+		// "-D inline=/**@inline*/",
 		"-D protected=/**@protected*/",
 		"-D const=/**@const*/var",
 		"-D struct=class",

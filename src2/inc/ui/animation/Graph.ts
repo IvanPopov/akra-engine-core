@@ -28,16 +28,22 @@ module akra.ui.animation {
 			return this._pAnimationController;
 		}
 
-		selectNode(pNode: IUIAnimationNode): void {
+		selectNode(pNode: IUIAnimationNode, bModified: bool): void {
 			var bPlay: bool = true;
 
 			if (this._pSelectedNode === pNode) {
+				
+				if (bModified) {
+					ide.cmd(ECMD.INSPECT_ANIMATION_NODE, pNode);
+				}
+
 				return;
 			}
 
+			ide.cmd(ECMD.INSPECT_ANIMATION_NODE, pNode);
+
 			this._pSelectedNode = pNode;
 
-			// ide.cmd(ECMD.EDIT_ANIMATION_NODE, pNode);
 
 			if (bPlay && !isNull(this._pTimer)) {
 				this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
@@ -142,14 +148,14 @@ module akra.ui.animation {
 
 			if (isComponent(pChild, EUIComponents.GRAPH_NODE)) {
 				var pNode: IUIGraphNode = <IUIGraphNode>pChild;
-				this.connect(pNode, SIGNAL(click), SLOT(selectNode));
+				this.connect(pNode, SIGNAL(selected), SLOT(selectNode));
 			}
 
 			return pChild;
 		}
 	}
 
-	register("AnimationGraph", Graph);
+	register("animation.Graph", Graph);
 }
 
 #endif
