@@ -95,7 +95,7 @@ module akra.data {
 }
 
 module akra {
-	export var VertexElement = VertexElement;
+	export var VertexElement = data.VertexElement;
 }
 
 #endif

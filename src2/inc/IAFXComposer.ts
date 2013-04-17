@@ -62,6 +62,8 @@ module akra {
 		_getCurrentViewport(): IViewport;
 		_getCurrentRenderableObject(): IRenderableObject;
 
+		_setDefaultCurrentState(): void;
+
 		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void;
 
 		//API for load components/AFXEffects

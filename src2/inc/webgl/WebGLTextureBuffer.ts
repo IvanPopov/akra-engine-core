@@ -266,8 +266,7 @@ module akra.webgl {
 	                pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	            }
 	            if (pDestBox.left === 0 && pDestBox.top === 0) {
-	            	LOG("Buffer::upload --> One color:", pData.data[0],pData.data[1], pData.data[2], pData.format, webgl.getWebGLFormat(pData.format), webgl.getWebGLDataType(pData.format));	            	
-            		pWebGLContext.texImage2D(this._eFaceTarget,
+	            	pWebGLContext.texImage2D(this._eFaceTarget,
                             			this._iLevel,
                             			webgl.getWebGLFormat(pData.format),	                            			
                             			pDestBox.width, pDestBox.height,0,

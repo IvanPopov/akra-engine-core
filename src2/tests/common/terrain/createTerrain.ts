@@ -5,12 +5,13 @@ module akra {
 
 	export var pEngine: IEngine = createEngine();
 	export var pTerrain: ITerrain = null;
+	export var pCamera: ICamera = null;
+
 	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	var pScene: IScene3d = pEngine.getScene();
 	var pUI: IUI = pEngine.getSceneManager().createUI();
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pMainScene: JQuery = null;
-	export var pCamera: ICamera = null;
 	var pViewport: IViewport = null;
 	var pSkyBoxTexture: ITexture = null;
 
@@ -35,6 +36,7 @@ module akra {
 			pCamera = pScene.createCamera();
 		
 			//pCamera.addRelRotationByXYZAxis(1, 1, 0);
+			pCamera.farPlane = 1500;
 			pCamera.setPosition(vec3(0, 0, 1000));
 			pCamera.attachToParent(pTestNode);
 			pCamera.setInheritance(ENodeInheritance.ALL);
@@ -123,7 +125,7 @@ module akra {
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(1024, 1024, 300), 4, 5, 5, "main_terrain");
+					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-512, 512, -512, 512, -128, 128), 4, 5, 5, "main_terrain");
 					pTerrain.attachToParent(pTestNode);
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
@@ -131,8 +133,7 @@ module akra {
 					// pTerrain.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
-					// setTimeout(function() {pEngine.renderFrame()}, 5000);
-					// pEngine.renderFrame();
+					pEngine.renderFrame();
 					// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
 				});
 			});
@@ -201,39 +202,5 @@ module akra {
 		pEngine.exec();
 		// pEngine.renderFrame();
 	});
-
-	// test("pixelUtil", () => {
-	// 	//var pPixelBoxSrc: IPixelBox = new pixelUtil.PixelBox(32, 32, 1, 11, new Uint8Array(32 * 32 * 3));
-	// 	var iSize: uint = 32;
-	// 	var pPixelBoxDst: IPixelBox = new pixelUtil.PixelBox(iSize, iSize, 1, 11, new Uint8Array(iSize * iSize * 3));
-	// 	var pTempBox: IBox = new geometry.Box();
-	// 	var pTempPixelBox: IPixelBox = new pixelUtil.PixelBox();
-	// 	var iBlockW: uint = iSize/4, iBlockH: uint = iSize/4;
-
-	// 	function setData(x: uint, y: uint){
-	// 		var pData: Uint8Array = new Uint8Array(iBlockW *  iBlockH * 3);
-			
-	// 		for(var i: uint = 0; i < iBlockW *  iBlockH * 3; i++){
-	// 			pData[i] = 10;
-	// 		}
-
-	// 		pTempBox.setPosition(0, 0, iBlockW, iBlockH);
-	// 		pTempPixelBox.refresh(pTempBox, 11, pData);
-
-	// 		pTempBox.setPosition(x, y, iBlockW, iBlockH);
-	// 		var pSubBox: IPixelBox = pPixelBoxDst.getSubBox(pTempBox);
-	// 		pixelUtil.bulkPixelConversion(pTempPixelBox, pSubBox);
-	// 	}
-
-	// 	for(var i: uint = 0; i < iSize; i += iBlockW){
-	// 		for(var j: uint = 0; j < iSize; j += iBlockH){
-	// 			setData(i, j);
-	// 		}
-	// 	}
-
-	// 	LOG(pPixelBoxDst);
-
-	// });
-
 }
 

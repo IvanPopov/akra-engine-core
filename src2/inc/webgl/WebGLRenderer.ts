@@ -94,9 +94,6 @@ module akra.webgl {
 		}
 
 		_renderEntry(pEntry: IRenderEntry): void {
-			// if(true){
-			// 	return;
-			// }
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
 			var pRenderTarget: IRenderTarget = (<render.Viewport>pViewport).getTarget();
 			var pInput: IShaderInput = pEntry.input;
@@ -116,10 +113,6 @@ module akra.webgl {
 				this._setViewportForRender(pViewport);
 			}	
 
-
-
-			//WARNING(this._pWebGLContext.getFramebufferAttachmentParameter(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME));
-			
 			var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>(pMaker).shaderProgram;
 
 			this.useWebGLProgram(pWebGLProgram.getWebGLProgram());

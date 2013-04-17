@@ -349,7 +349,9 @@ module akra.terrain {
 
 
 			for (var y: uint = 0; y < this._iYVerts; ++y) {
+				
 				v2fVert.set(this._pWorldRect.x0, y * v2fCellSize.y+this._pWorldRect.y0);
+
 				for (var x: uint = 0; x < this._iXVerts; ++x) {
 
 					var fHeight: float = this.terrainSystem.readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
@@ -362,7 +364,7 @@ module akra.terrain {
 					//	pVerts[((y * this._iXVerts) + x) * 10 + 2],pVerts[((y * this._iXVerts) + x) * 10 + 1]);
 
 					pVerts[((y * this._iXVerts) + x) * 5 + 3+this._iStartIndex*5] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
-					pVerts[((y * this._iXVerts) + x) * 5 + 4+this._iStartIndex*5] = (this._iSectorY+ y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
+					pVerts[((y * this._iXVerts) + x) * 5 + 4+this._iStartIndex*5] = (this._iSectorY + y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
 
 
 					//console.log(this._iSectorX,this.terrainSystem.getSectorCountX(), x,this._iXVerts);

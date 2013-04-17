@@ -32,7 +32,7 @@ module akra.terrain {
 	    private _sSurfaceTextures: string = "";
 
 	    //Маскимальный размер стороны текстуры
-	    private _iOriginalTextureMaxSize: uint = 8192;
+	    private _iOriginalTextureMaxSize: uint = 8192 * 1;
 
 	    //Размер блока текстуры(минимальный размер выгружаемого куска текстуры)
 	    private _iBlockSize: uint = 32;
@@ -64,9 +64,6 @@ module akra.terrain {
 	    private _fTexCourdXOld: float = undefined;
 	    private _fTexCourdYOld: float = undefined;
 	    private _nCountRender: uint = 0;
-
-	    // private _pTmpBox1: IBox = new geometry.Box();
-	    // private _pTmpBox2: IBox = new geometry.Box();
 
 	    constructor(pEngine: IEngine, pObject: any, sSurfaceTextures: string) {
 	    	this._pEngine = pEngine;
@@ -134,7 +131,7 @@ module akra.terrain {
     	    }
 
     	    this._pRPC = net.createRpc();
-    	    // this._pRPC.join('ws://192.168.194.132');
+    	    // // this._pRPC.join('ws://192.168.194.132');
     	    this._pRPC.join("ws://localhost:6112");
 	    	this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 	    }
@@ -391,23 +388,12 @@ module akra.terrain {
 		    pRenderPass.setUniform("CAMERA_COORD", this._v2fCameraCoord);
 
 		    for (var i: uint = 0; i < this._pTextures.length; i++) {
+		    	//FIX: Not good to use vec2(). It`s tmp vector 
 				pRenderPass.setUniform("textureCoord"+ i, vec2(this._pXY[i].iTexX, this._pXY[i].iTexY));
-				// LOG("Is loaded level #" + i, this._pXY[i].isLoaded);
 		        pRenderPass.setUniform("textureTerrainIsLoaded" + i, this._pXY[i].isLoaded);
 		        pRenderPass.setTexture("TEXTURE" + i, this._pTextures[i]);
 		        pRenderPass.setSamplerTexture("S_TERRAIN" + i, "TEXTURE" + i);
 		    }
-
-		    // for(var i: uint = 0; i < this._pBuffer[0].data.length; i+=3){
-		    // 	if(this._pBuffer[0].data[i] !== 0 || this._pBuffer[0].data[i + 1] !== 255 || this._pBuffer[0].data[i + 2] !== 0){
-		    // 		LOG("WRONG!!!!!!!!!!!!!!!!!!!! In i: ", i);
-		    // 	}
-		    // 	else {
-		    // 		WARNING("CORRECT");
-		    // 	}
-
-		    // }
-
 		}
 
 		setBufferMapNULL(pBuffer): void {
@@ -640,26 +626,26 @@ module akra.terrain {
 
 		                                 //  var pData = new Uint8Array(me._iBlockSize * me._iBlockSize * 3);
 		                                 //  for(var k: uint = 0; k < pData.length; k+= 3){
-		                                 //  	if(iLev === 0){
-			                                //   	pData[k] = 0;
-			                                //   	pData[k + 1] = 255;
-			                                //   	pData[k + 2] = 0;
-		                                 //  	}
-		                                 //  	else if(iLev === 1){
-		                                 //  		pData[k] = 255;
-			                                //   	pData[k + 1] = 0;
-			                                //   	pData[k + 2] = 0;
-		                                 //  	}
-		                                 //  	else if(iLev === 2) {
-		                                 //  		pData[k] = 0;
-			                                //   	pData[k + 1] = 0;
-			                                //   	pData[k + 2] = 255;
-		                                 //  	}
-		                                 //  	else {
-		                                 //  		pData[k] = 255;
-			                                //   	pData[k + 1] = 0;
-			                                //   	pData[k + 2] = 255;
-		                                 //  	}
+		                                 // //  	if(iLev === 0){
+			                                // //   	pData[k] = 0;
+			                                // //   	pData[k + 1] = 255;
+			                                // //   	pData[k + 2] = 0;
+		                                 // //  	}
+		                                 // //  	else if(iLev === 1){
+		                                 // //  		pData[k] = 255;
+			                                // //   	pData[k + 1] = 0;
+			                                // //   	pData[k + 2] = 0;
+		                                 // //  	}
+		                                 // //  	else if(iLev === 2) {
+		                                 // //  		pData[k] = 0;
+			                                // //   	pData[k + 1] = 0;
+			                                // //   	pData[k + 2] = 255;
+		                                 // //  	}
+		                                 // //  	else {
+		                                 // //  		pData[k] = 255;
+			                                // //   	pData[k + 1] = 0;
+			                                // //   	pData[k + 2] = 255;
+		                                 // //  	}
 
 		                                 //  	pData[k] = 170;
 			                                // pData[k + 1] = 50;

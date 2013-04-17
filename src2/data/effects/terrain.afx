@@ -6,6 +6,10 @@ struct pos_tex{
 };
 
 struct VS_IN{
+    pos_tex data[]:INDEX0;
+};
+
+struct VS_IN_ROAM{
     pos_tex data[][]:INDEX0;
 };
 
@@ -25,7 +29,8 @@ VS_OUT vs_terrain(VS_IN IN) {
     float4 pos = float4(IN.data.pos, 1.);
 
     Out.pos = proj_mat * view_mat * model_mat * pos;
-    Out.texcoord = IN.data.texcoord;
+
+    Out.texcoord = float2(IN.data.texcoord.x,IN.data.texcoord.y);
 
     if(mod(float(@(IN.data)),3.) == 0.){
         Out.edgeTest = float3(1.,0.,0.);
@@ -33,11 +38,29 @@ VS_OUT vs_terrain(VS_IN IN) {
     else if(mod(float(@(IN.data)),3.) == 1.){
         Out.edgeTest = float3(0.,1.,0.);
     }
-    else if(mod(float(@(IN.data)),3.) == 2.){
+    else {
         Out.edgeTest = float3(0.,0.,1.);
     }
+
+    return Out;
+}
+
+VS_OUT vs_terrain_roam(VS_IN_ROAM IN) {
+    VS_OUT Out;
+
+    float4 pos = float4(IN.data.pos, 1.);
+
+    Out.pos = proj_mat * view_mat * model_mat * pos;
+    Out.texcoord = IN.data.texcoord;
+
+    if(mod(float(@@(IN.data)),3.) == 0.){
+        Out.edgeTest = float3(1.,0.,0.);
+    }
+    else if(mod(float(@@(IN.data)),3.) == 1.){
+        Out.edgeTest = float3(0.,1.,0.);
+    }
     else {
-        Out.edgeTest = float3(0.,0.,0.);
+        Out.edgeTest = float3(0.,0.,1.);
     }
 
     return Out;
@@ -159,7 +182,7 @@ void fs_terrain(VS_OUT IN){
     
 
     normal = tex2D(ptNormal, IN.texcoord).rgb;
-    
+    //normal = float3(0.5, 0.5, 0.5);
     //normal = normalize(normal);
     normal.xy -= 0.5;
     normal = ((view_mat * model_mat * float4(normal, 0.)).xyz);
@@ -167,7 +190,7 @@ void fs_terrain(VS_OUT IN){
 
     if(IN.edgeTest.x * IN.edgeTest.y * IN.edgeTest.z < 0.001)
     {
-        Fragment_material.emissive = float4(0.5, 0.5, 0.5, 0.3);
+        Fragment_material.emissive = float4(0.5, 0.5, 0.5, 1.);
     }
     else {
        Fragment_material.emissive = float4(0.);
@@ -180,7 +203,13 @@ void fs_terrain(VS_OUT IN){
 
 technique terrain{
     pass p0 {
-        VertexShader = compile vs_terrain();
+        if(engine.terrain.isROAM){
+            VertexShader = compile vs_terrain_roam();
+        }
+        else {
+            VertexShader = compile vs_terrain();
+        }
+        
         PixelShader = compile fs_terrain();
     }
 }

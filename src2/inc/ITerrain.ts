@@ -18,9 +18,6 @@ module akra {
 	}
 
 	export interface ITerrain extends ISceneNode {
-		tessellationScale: float;
-		tessellationLimit: float;
-
 		readonly worldExtents: IRect3d;
 		readonly worldSize: IVec3;
 		readonly mapScale: IVec3;
@@ -72,10 +69,6 @@ module akra {
 		 * Сброс параметров.
 		 */
 		reset(): void;
-		/**
-		 * Обработка пользовательского ввода.
-		 */
-		readUserInput(): void;
 
 		_tableIndex(iMapX: uint, iMapY: uint): uint;
 	}

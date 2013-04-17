@@ -61,7 +61,10 @@ module akra.fx {
 		private _pCurrentBufferMap: IBufferMap = null;
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 
-		private _pComposerState: any = { mesh : { isSkinning : false } };
+		private _pComposerState: any = { 
+										 mesh : { isSkinning : false },
+										 terrain : { isROAM : false }
+									   };
 
 		/** Render targets for global-post effects */
 		private _pRenderTargetA: IRenderTarget = null;
@@ -426,6 +429,12 @@ module akra.fx {
 			return this._pCurrentRenderable;
 		}
 
+		_setDefaultCurrentState(): void {
+			this._setCurrentViewport(null);
+			this._setCurrentRenderableObject(null);
+			this._setCurrentSceneObject(null);
+		}
+
 
 		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void {
 			// if(true){
@@ -451,14 +460,7 @@ module akra.fx {
 					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
 					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
 					
-					if(!isNull(this._pCurrentRenderable)){
-						if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){
-							this._pComposerState.mesh.isSkinning = true;
-						}
-						else {
-							this._pComposerState.mesh.isSkinning = false;
-						}
-					}
+					this.prepareComposerState();
 
 					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
 																  pPassInput.foreigns, pPassInput.uniforms);
@@ -643,6 +645,26 @@ module akra.fx {
 			}
 
 			pPassInput.setUniform("useNormal", this.bUseNormalMap);
+		}
+
+		private prepareComposerState(): void {
+			if(!isNull(this._pCurrentRenderable)){
+				if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){
+					this._pComposerState.mesh.isSkinning = true;
+				}
+				else {
+					this._pComposerState.mesh.isSkinning = false;
+				}
+			}
+
+			if(!isNull(this._pCurrentSceneObject)){
+				if(this._pCurrentSceneObject.type === EEntityTypes.TERRAIN_ROAM){
+					this._pComposerState.terrain.isROAM = true;
+				}
+				else {
+					this._pComposerState.terrain.isROAM = false;
+				}
+			}
 		}
 
 		private initPostEffectTextures(): void{

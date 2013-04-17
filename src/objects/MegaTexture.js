@@ -71,7 +71,7 @@ function MegaTexture(pEngine, pObject, sSurfaceTextures) {
 			isUpdated : true, isLoaded : false};
     }
 	//console.log("!!!!!!!!!!!!!!!!!!!!===>>>>>");
-    this._pRPC = new a.NET.RPC('ws://192.168.194.132');
+    // this._pRPC = new a.NET.RPC('ws://192.168.194.132');
     this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 }
 
@@ -749,8 +749,9 @@ MegaTexture.prototype.getDataFromServer = function (iLevelTex, iOrigTexX, iOrigT
                                           (j - me._pXY[iLevelTex].iX) / me._iBlockSize] = tCurrentTime;
             }
 
-            (function (iLev, iX, iY) {
-                var sPiecePath = me._sSurfaceTextures;
+            var iLev = iLevelTex, iX = j, iY = i;
+            // (function (iLev, iX, iY) {
+            //     var sPiecePath = me._sSurfaceTextures;
                 //trace("Путь",sPiecePath);
                 /*a.fopen('filesystem://temporary/'+sPiecePath, 'rb').read(
                  function(pData) {
@@ -764,11 +765,17 @@ MegaTexture.prototype.getDataFromServer = function (iLevelTex, iOrigTexX, iOrigT
                  {
                  //trace('file not found... Load from server');*/
                 //console.log("=>", me._sSurfaceTextures)
-                me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
-                              iY, me._iBlockSize, me._iBlockSize, me._eTextureType,
-                              function (pData) {
+                // me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
+                //               iY, me._iBlockSize, me._iBlockSize, me._eTextureType,
+                //               function (pData) {
                                   //console.log("<=")
                                   //console.log(pData);
+                                  var pData = new Uint8Array(me._iBlockSize * me._iBlockSize * 3);
+                                  for(var k = 0; k < pData.length; k++){
+                                    pData[k] = 170;
+                                    pData[k + 1] = 50;
+                                    pData[k + 2] = 170;
+                                  }
                                   var pData8 = new Uint8Array(pData);
                                   //console.log(me._pBuffer[iLevelTex].length,iX-me._pXY[iLevelTex].iX,iY-me._pXY[iLevelTex].iY);
                                   var iXBuf;
@@ -807,10 +814,10 @@ MegaTexture.prototype.getDataFromServer = function (iLevelTex, iOrigTexX, iOrigT
 
                                   me._pXY[iLev].isUpdated = true;
                                   //a.fopen('filesystem://temporary/'+sPiecePath, 'wb').write(pData8);
-                              });
-                //	}
-                //);
-            })(iLevelTex, j, i);
+            //                   });
+            //     //	}
+            //     //);
+            // })(iLevelTex, j, i);
 
         }
     }

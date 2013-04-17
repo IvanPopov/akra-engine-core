@@ -25,11 +25,16 @@ module akra.terrain {
 		private _isCreat: bool = false;
 		private _isRenderInThisFrame: bool = false;
 		private _iMaxTriTreeNodes: uint = (1024*64); /*64k triangle nodes*/
-		private _iTessellationQueueSize: uint = undefined;
+		private _iTessellationQueueSize: uint = 0;
 		private _isCreate: bool = false;
 		//массив подчиненный секций 
 		protected _pSectorArray: ITerrainSectionROAM[] = null; 
 
+		protected _fScale: float = 0.0;
+		protected _fLimit: float = 0.0;
+
+		private _iTessellationQueueCountOld: int = 0;
+		private _nCountRender: uint = 0;
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
 			super(pScene, eType);
@@ -40,6 +45,22 @@ module akra.terrain {
 
 			this.connect(this._pRenderableObject, SIGNAL(beforeRender), SLOT(_onBeforeRender), EEventTypes.UNICAST);
 		}
+
+		inline get tessellationScale(): float{
+			return this._fScale;
+		};
+
+		inline set tessellationScale(fScale: float){
+			this._fScale = fScale;
+		};
+
+		inline get tessellationLimit(): float{
+			return this._fLimit;
+		};
+
+		inline set tessellationLimit(fLimit: float){
+			this._fLimit = fLimit;
+		};
 
 		inline get maxTriTreeNodes(): uint {
 			return this._iMaxTriTreeNodes;
@@ -73,9 +94,6 @@ module akra.terrain {
 			return this._pRenderableObject;
 		}
 
-
-		private _iTessellationQueueCountOld: int = 0;
-		private _nCountRender: uint = 0;
 
 		init(pImgMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneObject = null)
 		{
@@ -161,7 +179,7 @@ module akra.terrain {
 
 
 			//Индексны буфер для всех
-			this._iTotalIndices=0;
+			this._iTotalIndices = 0;
 			//Максимальное количество треугольников помноженное на 3 вершины на каждый треугольник
 			this._pIndexList = new Float32Array(this._iMaxTriTreeNodes*3); 
 			this._pRenderData.allocateIndex([VE_FLOAT(DeclarationUsages.INDEX0)],this._pIndexList);
@@ -196,8 +214,7 @@ module akra.terrain {
 		addToTessellationQueue(pSection: ITerrainSectionROAM): bool {
 			if (this._iTessellationQueueCount < this._iTessellationQueueSize)
 			{
-				this._pThistessellationQueue[this._iTessellationQueueCount] =
-					pSection;
+				this._pThistessellationQueue[this._iTessellationQueueCount] = pSection;
 				this._iTessellationQueueCount++;
 				return true;
 			}
@@ -210,7 +227,7 @@ module akra.terrain {
 			return false;
 		}
 
-		processTessellationQueue(): void {
+		protected processTessellationQueue(): void {
 			this._pThistessellationQueue.length = this._iTessellationQueueCount;
 
 			function fnSortSection(a, b) {
@@ -250,64 +267,22 @@ module akra.terrain {
 		}
 
 
+		protected _setTessellationParameters(fScale: float, fLimit: float): void {
+		    this._fScale = fScale;
+		    this._fLimit = fLimit;
+		}
+
+
 		_onBeforeRender(pRenderableObject: IRenderableObject, pViewport: IViewport): void {
-			if(this._isCreate) {
-				// LOG("i`m must be here");
-				if(((this._nCountRender++) % 30) === 0) {
-					// LOG("-->i`m must be here too");
-					
-					// var pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvasLOD');
-					// var p2D = pCanvas.getContext("2d");
-					// p2D.clearRect(0, 0, pCanvas.width, pCanvas.height);
-
-
-					if(this._iTessellationQueueCount !== this._iTessellationQueueCountOld) {
-						LOG("-->-->i`m must be here too", this._iTessellationQueueCount, this._iTessellationQueueCountOld);						
-
+			if(this._isCreate)
+			{
+				if(((this._nCountRender++) % 30) === 0)
+				{
+					if(this._iTessellationQueueCount !== this._iTessellationQueueCountOld) 
+					{
 						this.processTessellationQueue();
 						this._iTessellationQueueCountOld = this._iTessellationQueueCount;
 					}
-
-
-
-					// var pCamera: ICamera = pViewport.getCamera();
-					// var v3fCameraPosition: IVec3 = pCamera.worldPosition;
-					// var pData: Float32Array = pCamera.worldMatrix.data;
-					// var pDir: IVec2 = new Vec2(-pData[__13], -pData[__23]);
-					// var fRad: float = pCamera.fov;
-					// var fFar: float = pCamera.farPlane;
-					// //var fNear = pCamera.nearPlane();
-					// pDir.normalize();
-					// pDir.scale(fFar / Math.abs(this.worldExtents.x1 - this.worldExtents.x0));
-
-					// var pDir1: IVec2 = new Vec2(pDir.x * Math.cos( fRad / 2) - pDir.y * Math.sin( fRad / 2), pDir.x * Math.sin( fRad / 2) + pDir.y * Math.cos( fRad / 2));
-					// var pDir2: IVec2 = new Vec2(pDir.x * Math.cos(-fRad / 2) - pDir.y * Math.sin(-fRad / 2), pDir.x * Math.sin(-fRad / 2) + pDir.y * Math.cos(-fRad / 2));
-
-					// //document.getElementById('setinfo0').innerHTML="fNear " + fNear;
-					// // document.getElementById('setinfo1').innerHTML="fFar "  + fFar;
-					// //Вычисление текстурных координат над которыми находиться камера
-					// var fX: float = (v3fCameraPosition.x - this.worldExtents.x0) / Math.abs(this.worldExtents.x1 - this.worldExtents.x0);
-					// var fY: float = (v3fCameraPosition.y - this.worldExtents.y0) / Math.abs(this.worldExtents.y1 - this.worldExtents.y0);
-
-					// //камера
-					// p2D.beginPath();
-					// p2D.strokeStyle = "#0f0"; //цвет линий
-					// p2D.lineWidth = 3;
-					// p2D.moveTo(fX * pCanvas.width, fY * pCanvas.height);
-					// p2D.lineTo((fX + pDir1.x) * pCanvas.width, (fY+pDir1.y) * pCanvas.height);
-					// p2D.lineTo((fX + pDir2.x) * pCanvas.width, (fY+pDir2.y) * pCanvas.height);
-					// p2D.lineTo(fX * pCanvas.width, fY * pCanvas.height);
-					// p2D.stroke();
-					// p2D.beginPath();
-					// p2D.arc(fX * pCanvas.width, fY * pCanvas.height, 5, 0, 2 * Math.PI, false);
-					// // p2D.fillStyle = "#00f";
-					// // p2D.fill();
-					// p2D.lineWidth = 1;
-					// p2D.strokeStyle = "#f0f";
-					// p2D.stroke();
-
-
-
 				}
 
 				this.reset();

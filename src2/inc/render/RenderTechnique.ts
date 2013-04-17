@@ -275,7 +275,7 @@ module akra.render {
 			}
 
 			this._isFreeze = false;
-			pComposer._setCurrentSceneObject(null);
+			pComposer._setDefaultCurrentState();
 		}
 
 		_updateMethod(pMethod: IRenderMethod): void {

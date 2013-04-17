@@ -52,9 +52,6 @@ module akra.terrain {
 		//отоброжаемые куски текстуры
 		private _pMegaTexures: IMegaTexture = null; 
 
-		protected _fScale: float = 0.0;
-		protected _fLimit: float = 0.0;
-
 		protected _pDefaultRenderMethod: IRenderMethod = null;
 		protected _pRenderMethod: IRenderMethod = null;
 
@@ -68,22 +65,6 @@ module akra.terrain {
 
 		inline get dataFactory(): IRenderDataCollection{
 			return this._pDataFactory;
-		};
-
-		inline get tessellationScale(): float{
-			return this._fScale;
-		};
-
-		inline set tessellationScale(fScale: float){
-			this._fScale = fScale;
-		};
-
-		inline get tessellationLimit(): float{
-			return this._fLimit;
-		};
-
-		inline set tessellationLimit(fLimit: float){
-			this._fLimit = fLimit;
 		};
 
 		inline get worldExtents(): IRect3d{
@@ -219,14 +200,14 @@ module akra.terrain {
 		}
 
 		protected _allocateSectors(): bool {
-			var v2fSectorPos: IVec2 = new Vec2();
-			var r2fSectorRect: IRect2d = new geometry.Rect2d();
-
 			this._pSectorArray = new Array(this._iSectorCountX * this._iSectorCountY);
 
 			// create the sector objects themselves
 			for (var y: uint = 0; y < this._iSectorCountY; ++y) {
 			    for (var x: uint = 0; x < this._iSectorCountX; ++x) {
+			    	var v2fSectorPos: IVec2 = new Vec2();
+					var r2fSectorRect: IRect2d = new geometry.Rect2d();
+
 			        v2fSectorPos.set(
 			            this._pWorldExtents.x0 + (x * this._v2fSectorSize.x),
 			            this._pWorldExtents.y0 + (y * this._v2fSectorSize.y));
@@ -237,10 +218,10 @@ module akra.terrain {
 
 			        var iXPixel: uint = x << this._iSectorShift;
 			        var iYPixel: uint = y << this._iSectorShift;
-
 			        var iIndex: uint = (y * this._iSectorCountX) + x;
 
 			        this._pSectorArray[iIndex] = this.scene.createTerrainSection();
+			        this._pSectorArray[iIndex]._createRenderable();
 
 			        if (!this._pSectorArray[iIndex]._internalCreate(
 			            this,
@@ -270,9 +251,8 @@ module akra.terrain {
 
 		    for (var i = 0; i < this._pSectorArray.length; i++) {
 		        pSection = this._pSectorArray[i];
-		        pSection._createRenderable();
 
-		        pSection.getRenderable().renderMethod = pRenderMethod;
+		        pSection.getRenderable().getTechnique().setMethod(this._pDefaultRenderMethod);
 
 		        this.connect(pSection.getRenderable().getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		    }
@@ -720,15 +700,6 @@ module akra.terrain {
 		    }
 		}
 
-
-
-
-		
-		protected _setTessellationParameters(fScale: float, fLimit: float) {
-		    this._fScale = fScale;
-		    this._fLimit = fLimit;
-		}
-
 		/**
 		 * Подготовка терраина к рендерингу.
 		 */
@@ -739,44 +710,6 @@ module akra.terrain {
 		 * Сброс параметров.
 		 */
 		reset(): void {
-
-		}
-		/**
-		 * Обработка пользовательского ввода.
-		 */
-		readUserInput(): void {
-			/*//+
-			if (this._pEngine.pKeymap.isKeyPress(a.KEY.ADD)) 
-			{
-			    this._fLimit += 0.0001;
-			}
-			//-
-			else if (this._pEngine.pKeymap.isKeyPress(a.KEY.SUBTRACT)) 
-			{
-			    this._fLimit -= 0.0001;
-			}
-
-			//*
-			if (this._pEngine.pKeymap.isKeyPress(a.KEY.MULTIPLY)) 
-			{
-			    this._fScale += 0.0001;
-			}
-			// /
-			else if (this._pEngine.pKeymap.isKeyPress(a.KEY.DIVIDE))  
-			{
-			    this._fScale -= 0.0001;
-			}*/
-
-
-			if (this._fLimit < 0.001) {
-			    this._fLimit = 0.001;
-			}
-			if (this._fScale < 0.001) {
-			    this._fScale = 0.001;
-			}
-
-			document.getElementById('setinfo4').innerHTML = "fScale1 " + this._fScale;
-			document.getElementById('setinfo5').innerHTML = "fLimit1 " + this._fLimit;
 		}
 
 		protected computeBoundingBox(): void {
@@ -801,7 +734,12 @@ module akra.terrain {
 			this.accessLocalBounds().set(fX0, fX1, fY0, fY1, fZ0, fZ1);
 		}
 
+		// _bPrint: bool = false;
+		// _iCounter: uint = 0;
 		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
+			// if(this._bPrint){
+			// 	LOG(this._iCounter++);
+			// }
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setTexture("TEXTURE6", this._pNormalMap);

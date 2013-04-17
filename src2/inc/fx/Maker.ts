@@ -601,7 +601,7 @@ module akra.fx {
 								pInput[sOffsetName] = this._pAttrContainer.getOffsetDefault(sOffsetName);
 							}
 							else {
-								pInput[sOffsetName] = pElement.offset;
+								pInput[sOffsetName] = pElement.offset / 4;
 							}
 
 							//TODO: 
