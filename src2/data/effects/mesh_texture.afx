@@ -100,7 +100,7 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;
     float4 norm;
 
-    if(texNormal == float3(0.) || !useNormal || true){
+    if(texNormal == float3(0.) || !useNormal){
         norm = float4(IN.norm.xyz, 0.);
     }
     else {

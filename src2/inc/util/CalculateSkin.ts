@@ -44,9 +44,9 @@ module akra.util{
 																																				\n\
 				struct A_TextureHeader { float width; float height; float stepX; float stepY; };												\n\
 																																				\n\
-				void A_extractTextureHeader(const sampler2D src, A_TextureHeader texture){														\n\
+				void A_extractTextureHeader(const sampler2D src, out A_TextureHeader header){													\n\
 					vec4 v = texture2D(src, vec2(0.00001));																						\n\
-					texture = A_TextureHeader(v.r, v.g, v.b, v.a);																				\n\
+					header = A_TextureHeader(v.r, v.g, v.b, v.a);																				\n\
 				}																																\n\
 																																				\n\
 				vec2 A_findPixel(const A_TextureHeader header, const float offset){																\n\
@@ -149,7 +149,7 @@ module akra.util{
 					float number_matrix = meta_data.x;																							\n\
 					float bone_inf_ptr = meta_data.y;																							\n\
 																																				\n\
-					mat4 bone_matrix;																											\n\
+					mat4 bone_matrix = mat4(0.);																								\n\
 					float weight;																												\n\
 																																				\n\
 					mat4 result_mat = mat4(0.);																									\n\
@@ -177,10 +177,11 @@ module akra.util{
 						data = vec4((result_mat * vec4(normal.xyz, 0.)).xyz, normal.w);															\n\
 					}																															\n\
 																																				\n\
-					vec2 outPixelPosition = vec2((mod(destinationIndex, frameBufferSize.x) + 0.5)/frameBufferSize.x,							\n\
-												 (floor(destinationIndex/frameBufferSize.x) + 0.5)/frameBufferSize.y);							\n\
+					vec2 outPixelPosition = vec2((mod(destinationIndex/4., frameBufferSize.x) + 0.5)/frameBufferSize.x,							\n\
+												 (floor(destinationIndex/4./frameBufferSize.x) + 0.5)/frameBufferSize.y);						\n\
 																																				\n\
 					gl_Position = vec4(outPixelPosition*2. - 1., 0. ,1.);																		\n\
+					gl_PointSize = 1.;																											\n\																		\n\
 				}																																\n\
 																																				\n\
         		",
@@ -228,9 +229,12 @@ module akra.util{
 		var pBuffer: webgl.WebGLVertexBuffer = <webgl.WebGLVertexBuffer>pIndexData.buffer;
 		var pDeclaration: IVertexDeclaration = pIndexData.getVertexDeclaration();
 
+		//LOG(pIndexData.toString());
+
 		var iStride: uint = pDeclaration.stride;
 		var iPositionOffset: uint = pDeclaration.findElement("UPP_INDEX").offset;
-		var iDestinationOffset: uint = pDeclaration.findElement("DESTINATION_SP").offset
+		var iDestinationOffset: uint = pDeclaration.findElement("DESTINATION_SP").offset;
+		var iNormalOffset: uint = 0.;
 
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pBuffer.getWebGLBuffer());
         pWebGLContext.vertexAttribPointer(iPositionAttribLocation, 1, GL_FLOAT, false, iStride, iPositionOffset);
@@ -254,7 +258,36 @@ module akra.util{
         pWebGLProgram.setMat4("bind_matrix", pMeshSubset.skin.getBindMatrix());
 
         pWebGLContext.viewport(0, 0, iWidth, iHeight);
-        pWebGLContext.drawArrays(GL_POINTS, 0, pIndexData.length);
+        //PASS 1
+        ///////////////////////////////////////////////
+        pWebGLContext.drawArrays(GL_POINTS, pIndexData.byteOffset/iStride, pIndexData.length);
+        ///////////////////////////////////////////////
+        
+        //get data from renderData for normal update
+		pRenderData.selectIndexSet(".update_skinned_normal");
+		pIndexData = <IVertexData>pRenderData.getIndices();
+		pBuffer = <webgl.WebGLVertexBuffer>pIndexData.buffer;
+		pDeclaration = pIndexData.getVertexDeclaration();
+
+		//LOG(pIndexData.toString());
+
+		iStride = pDeclaration.stride;
+		iPositionOffset = pDeclaration.findElement("UNP_INDEX").offset;
+		iNormalOffset = pDeclaration.findElement("UNN_INDEX").offset;
+		iDestinationOffset = pDeclaration.findElement("DESTINATION_SN").offset;
+
+        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pBuffer.getWebGLBuffer());
+        pWebGLContext.vertexAttribPointer(iPositionAttribLocation, 1, GL_FLOAT, false, iStride, iPositionOffset);
+        pWebGLContext.vertexAttribPointer(iNormalAttribLocation, 1, GL_FLOAT, false, iStride, iNormalOffset);
+        pWebGLContext.vertexAttribPointer(iDestinationAttribLocation, 1, GL_FLOAT, false, iStride, iDestinationOffset);
+
+        pWebGLProgram.setInt("type", 1);
+
+        //PASS 2
+        ///////////////////////////////////////////////
+        pWebGLContext.drawArrays(GL_POINTS, pIndexData.byteOffset/iStride, pIndexData.length);
+        ///////////////////////////////////////////////
+
         pWebGLContext.flush();
 
         pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFrameBuffer);
@@ -265,7 +298,6 @@ module akra.util{
         pWebGLContext.disableVertexAttribArray(iDestinationAttribLocation);
 
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
-
 		return true;
 	};
 	#else

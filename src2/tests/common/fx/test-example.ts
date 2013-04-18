@@ -80,7 +80,8 @@ module akra {
 			pOmniLight.params.attenuation.set(0.5,0,0);
 
 			pOmniLight.addPosition(1, 5, 3);
-			/*var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
+
+			var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 			
 			pProjectShadowLight.attachToParent(pScene.getRootNode());
 			pProjectShadowLight.enabled = true;
@@ -91,7 +92,7 @@ module akra {
 			pProjectShadowLight.isShadowCaster = true;
 
 			pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
-			pProjectShadowLight.addRelPosition(0, 3, 10);*/
+			pProjectShadowLight.addRelPosition(0, 3, 10);
 
 			/*var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
 			
@@ -173,7 +174,6 @@ module akra {
 			// pCube.setPosition(20., 8., -30.);
 			// pCube.scale(0.1);
 		}
-
 		pEngine.bind(SIGNAL(depsLoaded), main);	
 		pEngine.exec();
 	});

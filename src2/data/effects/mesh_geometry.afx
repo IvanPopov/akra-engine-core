@@ -106,13 +106,13 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
 VS_OUT_1 vs_mesh_optimized_skinning(VS_IN_2 IN) {
     VS_OUT_1 Out;
 
-    float4 vertex = (view_mat * IN.pos);
+    float4 vertex = (view_mat * float4(IN.pos.xyz,1.));
 
     Out.pos = vertex_geometry.pos = proj_mat * vertex;
 
     Out.vert = vertex_geometry.vert = vertex.xyz;
     Out.norm = vertex_geometry.norm = normalize((view_mat * float4(IN.norm.xyz,0.)).xyz);
-    Out.psize = 10.;
+    Out.psize = 1.;
 
     return Out;
 }

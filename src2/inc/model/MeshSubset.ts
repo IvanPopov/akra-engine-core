@@ -407,8 +407,8 @@ module akra.model {
 
 		    var pIndexData: IVertexData = <IVertexData>pRenderData.getIndices();
 
-		    var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData("INDEX0")
-		    var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData("INDEX1")
+		    var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData("INDEX0");
+		    var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData("INDEX1");
 
 		    var iAdditionPosition: uint = pPosData.byteOffset;
 		    var iAdditionNormal: uint = pRenderData._getFlow(DeclUsages.NORMAL).data.byteOffset;
@@ -447,13 +447,8 @@ module akra.model {
 	    			iCounter++;
 	    		}
 	    		else{
-	    			pSkinnedNormalIndex.push(pSkinnedNormalIndex[pTmp[sKey]]);
+	    			pSkinnedNormalIndex.push(pDestinationSkinnedNormalIndex[pTmp[sKey]]);
 	    		}
-	    	}
-
-	    	var pSkinnedNormalUpdateIndex = new Float32Array(pUNPositionIndex.length);
-	    	for(var i=0; i<pUNPositionIndex.length; i++){
-	    		pSkinnedNormalUpdateIndex[i] = i;
 	    	}
 
 	    	var iSkinnedPos: uint = pRenderData.allocateData([VE_FLOAT3("SKINNED_POSITION"), VE_END(16)], new Float32Array(pPosData.length * 4));
