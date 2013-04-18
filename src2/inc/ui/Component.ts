@@ -19,9 +19,14 @@ module akra.ui {
 	function _template(pNode: IUIComponent, sTemplate: string, sName: string, pData: any = null, bRenderAsNormal: bool = false, iDepth: int = 0): void {
 		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sName});
 		var sTplData: string = fnTemplate(pData);
+		var $target: JQuery = pNode.el;
 
-		pNode.el.append(sTplData);
-		pNode.el.find("component").each(function(i: int) {
+		if (!isNull(pNode.layout)) {
+			$target = pNode.layout.renderTarget();
+		}
+
+		$target.append(sTplData);
+		$target.find("component").each(function(i: int) {
 			var $comp: JQuery = $(this);
 			var sType: string = $comp.attr("type");
 			var sName: string = $comp.attr("name");
@@ -30,7 +35,7 @@ module akra.ui {
 				return;
 			}
 
-			bRenderAsNormal = pNode.el[0] == $comp.parent()[0];
+			bRenderAsNormal = $target[0] == $comp.parent()[0];
 
 			var pComponent: IUIComponent = pNode.createComponent(sType, {show: bRenderAsNormal, name: sName});
 			pComponent._createdFrom($comp);

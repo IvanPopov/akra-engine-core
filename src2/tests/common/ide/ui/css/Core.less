@@ -412,7 +412,7 @@ div.component-switch {
 		line-height: 16px;
 		color: #555;
 		position: absolute;
-		z-index: 110;
+		z-index: 99;
 		display: block;
 		padding: 11px 0 0 20px;
 		height: 28px;
@@ -428,7 +428,7 @@ div.component-switch {
 		position: absolute;
 		top: -12px;
 		left: -20px;
-		z-index: 100;
+		z-index: 98;
 		//width: 135px;
 		display: none;
 
@@ -469,21 +469,66 @@ div.component-switch {
 }
 
 .component-popup {
-	height: 120px;
 	width: 200px;
+	height: 100px;
+	
+	z-index: 100;
+	box-shadow: 0 0 3px #777;
+	position: fixed !important;
 
-	box-shadow: 0 0 5px black;
-	& > .title {
-		background: black;
-		color: white;
-		height: 20px;
-		width: 200px;
+	& > .header {
+		//border-radius: 3px 3px 0 0;
+		height: 32px;
+		line-height: 32px;
+		font-size: 13px;
+		background-color: #202020;
+		color: #fff;
+
+		.title, .controls {
+			display: inline-block;
+		}
+
+		.controls {
+			float: right;
+			position: relative;
+			overflow: hidden;
+			top: 5px;
+			right: 5px;
+
+			.close-btn {
+				background: url(../img/close20.png) 0 0 no-repeat;
+				height: 20px;
+				width: 20px;
+				-webkit-filter: invert(100%);
+				cursor: pointer;
+			}
+		}
+
+		.title {
+			cursor: default;
+			overflow: hidden;
+			padding-left: 5px;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			font-weight: bold;
+		}
+	}
+
+	& > .footer {
+		background-color: #eee;
+		padding-bottom: 3px;
+		text-align: center;
+		border-left: 1px solid #ccc;
+		border-right: 1px solid #ccc;
+		border-bottom: 1px solid #ccc;
+		height: 10px;
 	}
 
 	& > .layout {
-		background-color: gray;
-		border: 1px solid gray;
-		height: 100px;
-		width: 200px;
+		background-color: #fff;
+		border-left: 1px solid #ccc;
+		border-right: 1px solid #ccc;
+		height: 100%;
+		padding: 5px;
 	}
 }

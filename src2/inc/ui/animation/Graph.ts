@@ -18,6 +18,81 @@ module akra.ui.animation {
 
 		constructor (parent, options) {
 			super(parent, options, EUIGraphTypes.ANIMATION);
+
+			this.setupFileDropping();
+			// this.handleEvent("dragenter dragleave dragover drop");
+		}
+
+		private setupFileDropping(): void {
+
+			var dropZone: HTMLDivElement = <HTMLDivElement>this.getHTMLElement();
+			var pGraph = this;
+
+			// dropZone.addEventListener('dragenter', (e) => {pGraph.dragenter(e);}, false);
+			dropZone.addEventListener('dragleave', (e) => {pGraph.dragleave(e);}, false);
+			dropZone.addEventListener('dragover', (e) => {pGraph.dragover(e);}, false);
+			dropZone.addEventListener('drop', (e) => {pGraph.drop(e);}, false);
+		}
+
+		//dragenter(e): void {
+			// e.stopPropagation();
+			// e.preventDefault();
+			// this.el.addClass("file-drag-over");
+		//}
+
+		dragleave(e): void {
+			e.stopPropagation();
+			e.preventDefault();
+			this.el.removeClass("file-drag-over");
+		}
+
+		dragover(e): void {
+			e.stopPropagation();
+			e.preventDefault();
+			e.dataTransfer.dropEffect = 'copy';
+			this.el.addClass("file-drag-over");
+		}
+
+		drop(e) {
+			e.stopPropagation();
+			e.preventDefault();
+
+			this.el.removeClass("file-drag-over");
+
+			var files = e.dataTransfer.files; /* FileList object.*/
+	
+			var pGraph = this;
+			var pRmgr: IResourcePoolManager = ide.getResourceManager();
+
+			for (var i = 0, f; f = files[i]; i++) {
+			    var pName: IPathinfo = pathinfo(f.name);
+
+			    if (pName.ext.toUpperCase() !== "DAE") {
+			    	alert("unsupported format used: " + f.name);
+			    	continue;
+			    }
+
+			    var reader = new FileReader();
+
+				reader.onload = ((theFile) => {
+					return (e) => {
+						var sFileContent = e.target.result;
+
+					   	var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
+			    		pModelResource.parse(sFileContent, {scene: false, name: pName.toString()});
+
+			    		var pAnimations: IAnimation[] = pModelResource.extractAnimations();
+
+			    		for (var j = 0; j < pAnimations.length; ++ j) {
+			    			pGraph.addAnimation(pAnimations[j]);
+			    			pGraph.createNodeByAnimation(pAnimations[j]);
+			    		}
+					};
+				})(f);
+
+				reader.readAsText(f);
+		    }
+
 		}
 
 		private setTimer(pTimer: IUtilTimer): void {
@@ -125,6 +200,8 @@ module akra.ui.animation {
 			this._pAnimationController = pController;
 			
 			this.connect(pController, SIGNAL(play), SLOT(onControllerPlay));
+			this.connect(pController, SIGNAL(animationAdded), SLOT(animationAdded));
+
 			this.createNodeByController(pController);
 
 			this.setTimer(pController.getEngine().getTimer());
@@ -138,7 +215,11 @@ module akra.ui.animation {
 			return true;
 		}
 
-		private onControllerPlay(pAnimation: IAnimationBase): void {
+		private animationAdded(pController: IAnimationController, pAnimation: IAnimationBase): void {
+
+		}
+
+		private onControllerPlay(pController: IAnimationController, pAnimation: IAnimationBase): void {
 			// var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
 			// this.selectNode(pNode);
 		}
@@ -152,6 +233,11 @@ module akra.ui.animation {
 			}
 
 			return pChild;
+		}
+
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-animationgraph");
 		}
 	}
 

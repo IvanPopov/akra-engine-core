@@ -404,7 +404,7 @@ div.component-switch input:checked + label:before {
   line-height: 16px;
   color: #555;
   position: absolute;
-  z-index: 110;
+  z-index: 99;
   display: block;
   padding: 11px 0 0 20px;
   height: 28px;
@@ -418,7 +418,7 @@ div.component-switch input:checked + label:before {
   position: absolute;
   top: -12px;
   left: -20px;
-  z-index: 100;
+  z-index: 98;
   display: none;
   margin-left: 10px;
   padding: 40px 0 5px;
@@ -447,21 +447,59 @@ div.component-switch input:checked + label:before {
   background-color: #dedede;
 }
 .component-popup {
-  height: 120px;
   width: 200px;
-  box-shadow: 0 0 5px black;
+  height: 100px;
+  z-index: 100;
+  box-shadow: 0 0 3px #777;
+  position: fixed !important;
 }
-.component-popup  > .title {
-  background: black;
-  color: white;
+.component-popup  > .header {
+  height: 32px;
+  line-height: 32px;
+  font-size: 13px;
+  background-color: #202020;
+  color: #fff;
+}
+.component-popup  > .header .title, .component-popup  > .header .controls {
+  display: inline-block;
+}
+.component-popup  > .header .controls {
+  float: right;
+  position: relative;
+  overflow: hidden;
+  top: 5px;
+  right: 5px;
+}
+.component-popup  > .header .controls .close-btn {
+  background: url(../img/close20.png) 0 0 no-repeat;
   height: 20px;
-  width: 200px;
+  width: 20px;
+  -webkit-filter: invert(100%);
+  cursor: pointer;
+}
+.component-popup  > .header .title {
+  cursor: default;
+  overflow: hidden;
+  padding-left: 5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: bold;
+}
+.component-popup  > .footer {
+  background-color: #eee;
+  padding-bottom: 3px;
+  text-align: center;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  height: 10px;
 }
 .component-popup  > .layout {
-  background-color: gray;
-  border: 1px solid gray;
-  height: 100px;
-  width: 200px;
+  background-color: #fff;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  height: 100%;
+  padding: 5px;
 }
 /*Graph Controls */
 .component-graph-controls .controls {
@@ -562,8 +600,8 @@ div.component-switch input:checked + label:before {
   height: 7px;
   background-color: black;
 }
-.component-animationgraph .component-animationgraphnode.selected {
-  border-bottom: 3px solid red;
+.component-animationgraph.file-drag-over {
+  background: rgba(255, 255, 0, 0.5) !important;
 }
 .component-animationdata .label-text {
   padding: 2px;
@@ -1370,4 +1408,65 @@ body {
 }
 #menu .component-menu {
   display: inline-block;
+}
+div[name=load-collada-dlg] {
+  width: 350px;
+  height: 200px;
+}
+div[name=load-collada-dlg] .row > span:first-child {
+  color: #c80000;
+}
+div[name=load-collada-dlg] .row {
+  width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+  white-space: nowrap;
+  font-family: Consolas, Lucida Console, monospace;
+  font-size: 12px;
+}
+div[name=load-collada-dlg] .row .component-label {
+  display: inline-block;
+  font-size: 12px;
+  width: auto;
+  font-family: Consolas, Lucida Console, monospace;
+}
+div[name=load-collada-dlg] .row .component-label.editable {
+  color: black;
+}
+div[name=load-collada-dlg] .row .component-label .label-input {
+  width: auto;
+  font-size: 10px;
+}
+div[name=load-collada-dlg] .component-checkboxlist {
+  display: inline-block;
+}
+div[name=load-collada-dlg] .component-checkboxlist .layout.horizontal table {
+  margin: 0 auto;
+}
+div[name=load-collada-dlg] .component-checkboxlist .component-checkbox {
+  padding: 0 4px;
+  font-size: 11px;
+}
+div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.first {
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.last {
+  border-top-right-radius: : 2px;
+  border-bottom-right-radius: 2px;
+}
+div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.active {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
+  background-color: #3373a5;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
+  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
+  background-image: -moz-linear-gradient(#5393c5, #6facd5);
+  background-image: -ms-linear-gradient(#5393c5, #6facd5);
+  background-image: -o-linear-gradient(#5393c5, #6facd5);
+  background-image: linear-gradient(#5393c5, #6facd5);
 }

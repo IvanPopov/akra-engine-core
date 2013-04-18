@@ -26,7 +26,7 @@ module akra.ui {
 		}
 
 
-		setDraggable(bValue: bool = true): void {
+		setDraggable(bValue: bool = true, pOptions: IUIDraggableOptions = {}): void {
 			if (!this._bDraggableInited) {
 				var pNode: DNDNode = this;
 
@@ -40,10 +40,17 @@ module akra.ui {
 			}
 
 			if (!isNull(this.parent) && isDefAndNotNull(this.$element)) {
-				this.$element.draggable("option", "containment", "parent");
+				pOptions.containment = pOptions.containment || "parent";
+				// this.$element.draggable("option", "containment", "parent");
 			}
 
-			this.$element.draggable("option", "disabled", !bValue);
+			pOptions.disabled = !bValue;
+			// this.$element.draggable("option", "disabled", !bValue);
+			this.setDraggableOptions(pOptions);
+		}
+
+		inline setDraggableOptions(pOptions: IUIDraggableOptions): void {
+			this.el.draggable(pOptions);
 		}
 
 		setDroppable(bValue: bool = true): void {

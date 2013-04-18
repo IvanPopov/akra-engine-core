@@ -4,6 +4,10 @@
 #include "IUIComponent.ts"
 
 module akra {
+	IFACE(IEngine);
+	IFACE(IResourcePoolManager);
+	IFACE(IScene3d);
+
 	export enum ECMD {
 		SET_PREVIEW_RESOLUTION,
 		SET_PREVIEW_FULLSCREEN,
@@ -20,6 +24,10 @@ module akra {
 	}
 
 	export interface IUIIDE extends IUIComponent {
+		getEngine(): IEngine;
+		getResourceManager(): IResourcePoolManager;
+		getScene(): IScene3d;
+
 		cmd(eCommand: ECMD, ...argv: any[]): bool;
 	}
 

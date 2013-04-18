@@ -30,6 +30,7 @@ module akra {
 		play(fRealTime: float): void;
 		stop(fRealTime: float): void;
 
+		isAttached(): bool;
 		attach(pTarget: ISceneNode): void;
 		
 		frame(sName: string, fRealTime: float): IAnimationFrame;

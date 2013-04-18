@@ -65,8 +65,10 @@ module akra.animation {
 		}
 
 		attach(pTarget: ISceneNode): void {
-			this._pAnimation.attach(pTarget);
-			this.grab(this._pAnimation, true);
+			if (!isNull(this._pAnimation)) {
+				this._pAnimation.attach(pTarget);
+				this.grab(this._pAnimation, true);
+			}
 		}
 
 		setAnimation(pAnimation: IAnimationBase): void {

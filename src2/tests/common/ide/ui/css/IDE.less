@@ -650,3 +650,65 @@ body {
 	}
 }
 
+div[name=load-collada-dlg] {
+	width: 350px;
+	height: 200px;
+
+	.row > span:first-child {
+		color: rgb(200, 0, 0);
+	}
+
+	.row {
+		width: 100%;
+		padding-left: 15px; 
+		padding-right: 15px; 
+		white-space: nowrap;
+		font-family: Consolas, Lucida Console, monospace;
+		font-size: @font-size;
+		
+		.component-label {
+			display: inline-block;
+			font-size: @font-size;
+			width: auto;
+			font-family: Consolas, Lucida Console, monospace;
+
+			&.editable {
+				color: black;
+			}
+
+			.label-input {
+				width: auto;
+				font-size: 10px;
+			}
+		}
+	}
+
+	.component-checkboxlist {
+		display: inline-block;
+
+		.layout {
+			&.horizontal table {
+				margin: 0 auto;
+			}
+		}
+
+		.component-checkbox {
+			padding: 0 4px;
+			font-size: 11px;
+
+			&.first {
+				border-top-left-radius: 2px;
+				border-bottom-left-radius: 2px;
+			}
+
+			&.last {
+				border-top-right-radius: : 2px;
+				border-bottom-right-radius: 2px;
+			}
+
+			&.active {
+				.gradient (#5393c5, #6facd5, #3373A5);
+			}
+		}
+	}
+}

@@ -2807,7 +2807,7 @@ module akra.core.pool.resources {
         }
 
         public inline getBasename(): string {
-            return util.pathinfo(this._sFilename).basename || "unknown";
+            return util.pathinfo(this._pOptions.name || this._sFilename || "unknown").basename;
         }
 
         public inline getFilename(): string {
@@ -2901,9 +2901,6 @@ module akra.core.pool.resources {
         attachToScene(pScene: IScene3d, pController?: IAnimationController): IModelEntry;
         attachToScene(pNode: ISceneNode, pController?: IAnimationController): IModelEntry;
         attachToScene(parent, pController: IAnimationController = null): IModelEntry {
-            var pSkeletons: ISkeleton[], 
-                pSkeleton: ISkeleton;
-            var pPoses: IAnimation[];
             var pScene: IScene3d;
             var pNode: ISceneNode;
             var pRoot: IModelEntry;
@@ -2911,7 +2908,7 @@ module akra.core.pool.resources {
             var pSceneOutput: ISceneNode[] = null;
             var pAnimationOutput: IAnimation[] = null;
             var pMeshOutput: IMesh[] = null;
-            var pInitialPosesOutput: IAnimation[] = null;
+            // var pInitialPosesOutput: IAnimation[] = null;
 
 
             if (isNull(parent)) {
@@ -2944,17 +2941,40 @@ module akra.core.pool.resources {
                 pMeshOutput = this.buildMeshes();
             }
 
-            if (this.isPoseExtractionNeeded()) {
-                pInitialPosesOutput = this.buildInitialPoses();
+            // if (this.isPoseExtractionNeeded()) {
+            //     pInitialPosesOutput = this.buildInitialPoses();
+            // }
+
+            pAnimationOutput = this.extractAnimations();
+
+            if (isNull(pController)) {
+                pController = this.getEngine().createAnimationController();
             }
 
-            if (this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
-                if (isNull(pController)) {
-                    pController = this.getEngine().createAnimationController();
+            if (!isNull(pController) && !isNull(pAnimationOutput)) {
+                for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
+                    pController.addAnimation(pAnimationOutput[i]);
                 }
 
-                pAnimationOutput = 
-                        this.buildAnimations();
+                pController.attach(pRoot);
+                pRoot.controller = pController;
+            }
+
+            //clear all links from collada nodes to scene nodes
+            this.buildComplete();
+
+            return pRoot;
+        }
+
+        extractAnimations(): IAnimation[] {
+            var pPoses: IAnimation[];
+            var pSkeletons: ISkeleton[], 
+                pSkeleton: ISkeleton;
+            var pAnimationOutput: IAnimation[] = null;
+
+            if (this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
+
+                pAnimationOutput = this.buildAnimations();
                 //дополним анимации начальными позициями костей
                 if (this.isPoseExtractionNeeded()) {
                     pSkeletons = this.getSkeletonsOutput() || [];
@@ -2991,19 +3011,7 @@ module akra.core.pool.resources {
                 }
             }
 
-            //clear all links from collada nodes to scene nodes
-            this.buildComplete();
-
-            if (!isNull(pController) && !isNull(pAnimationOutput)) {
-                for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
-                    pController.addAnimation(pAnimationOutput[i]);
-                }
-
-                pController.attach(pRoot);
-                pRoot.controller = pController;
-            }
-
-            return pRoot;
+            return pAnimationOutput;
         }
     }
 

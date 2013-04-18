@@ -11,6 +11,7 @@ module akra.animation {
 		private _iOptions: int = 0;
 	    private _pActiveAnimation: IAnimationBase = null;
 	    private _pEngine: IEngine;
+	    private _pLastTarget: ISceneNode = null;
 
 	    inline get totalAnimations(): int{
 			return this._pAnimations.length;
@@ -44,6 +45,10 @@ module akra.animation {
 			
 			this._pAnimations.push(pAnimation);
 			this._pActiveAnimation = pAnimation;
+
+			if (!pAnimation.isAttached() && !isNull(this._pLastTarget)) {
+				pAnimation.attach(this._pLastTarget);
+			}
 
 			this.animationAdded(pAnimation);
 		}
@@ -110,6 +115,8 @@ module akra.animation {
 		    for (var i: int = 0; i < pAnimations.length; ++ i) {
 		        pAnimations[i].attach(pTarget);
 		    }
+
+		    this._pLastTarget = pTarget;
 		}
 
 		play(pAnimation: string, fRealTime: float): bool;

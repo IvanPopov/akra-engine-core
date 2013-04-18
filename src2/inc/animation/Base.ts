@@ -62,6 +62,14 @@ module akra.animation {
 		inline stop(fRealTime: float): void {
 			this.stoped(fRealTime);
 		}
+
+		inline isAttached(): bool {
+			if (this._pTargetList.length) {
+				return isDefAndNotNull(this._pTargetList[0].target);
+			}
+
+			return false;
+		}
 		
 		attach(pTarget: ISceneNode): void {
 			debug_error("method AnimationBase::attach() must be overwritten.");

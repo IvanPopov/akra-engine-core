@@ -150,12 +150,12 @@ module akra {
 		
 		// loadModels("../../../data/models/Weldinggun.dae");
 		// loadModels("../../../data/models/kr360.dae");
-		loadModels("../../../data/models/hero/walk.dae", (pModelRoot: ISceneNode) => {
+		/*loadModels("../../../data/models/hero/walk.dae", (pModelRoot: ISceneNode) => {
 			var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
 			pMesh.createBoundingBox();
 			pMesh.showBoundingBox();
 			// pMesh.createAndShowSubBoundingBox();
-		});
+		});*/
 		// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 		// loadModels("../../../data/models/teapot.dae", (pModel: ISceneNode) => { pModel.scale(.01); });
 		// loadModels("../../../data/models/cube.dae").scale(0.1);

@@ -27,7 +27,7 @@ module akra.animation {
 		}
 
 		attach(pTarget: ISceneNode): void {
-			var pPointer;
+			var pPointer: IAnimationTarget;
 		    var pTracks: IAnimationTrack[] = this._pTracks;
 
 			for (var i = 0; i < pTracks.length; ++ i) {

@@ -66,6 +66,8 @@ module akra.ui.animation {
 			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_setName));
 			this.connect(this._pLeftInf, SIGNAL(changed), SLOT(_setLeftInf));
 			this.connect(this._pRightInf, SIGNAL(changed), SLOT(_setRightInf));
+			
+
 
 			this.$time = this.el.find(".time:first");
 
@@ -151,6 +153,22 @@ module akra.ui.animation {
 
 		_play(pCheckbox: IUICheckbox, bValue: bool): void {
 			this._pAnimation.pause(!bValue);
+
+			if (!bValue) {
+				this.connect(this._pSlider, SIGNAL(updated), SLOT(_setTime));
+				this.disconnect(this._pAnimation, SIGNAL(enterFrame), SLOT(_enterFrame));
+			}
+			else {
+				this.disconnect(this._pSlider, SIGNAL(updated), SLOT(_setTime));
+				this.connect(this._pAnimation, SIGNAL(enterFrame), SLOT(_enterFrame));
+			}
+		}
+
+		_setTime(pSlider: IUISlider, fValue: float): void {
+			this._pAnimation.pause(false);
+			this._pAnimation.play(0);	
+			this._pAnimation.apply(fValue);
+			this._pAnimation.pause(true);
 		}
 
 		_setName(pLabel: IUILabel, sName): void {

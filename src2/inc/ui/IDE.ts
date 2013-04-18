@@ -6,6 +6,7 @@
 #include "IUIIDE.ts"
 
 module akra.ui {
+
 	export class IDE extends Component implements IUIIDE {
 		protected _pEngine: IEngine = null;
 
@@ -16,7 +17,7 @@ module akra.ui {
 
 		protected _pTabs: IUITabs;
 
-		protected _pColladaDialog: IUIComponent = null;
+		protected _pColladaDialog: IUIPopup = null;
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
@@ -54,6 +55,7 @@ module akra.ui {
 		inline getCanvas(): ICanvas3d { return this.getEngine().getRenderer().getDefaultCanvas(); }
 		inline getScene(): IScene3d { return this.getEngine().getScene(); }
 		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
+		inline getResourceManager(): IResourcePoolManager { return this.getEngine().getResourceManager(); }
 
 		_updateSceneNodeName(pInspector: Inspector, pNode: ISceneNode): void {
 			this._pSceneTree.sync(pNode);
@@ -79,13 +81,19 @@ module akra.ui {
 					this._pInspector.inspectNode(pNode);
 					return true;
 				case ECMD.EDIT_ANIMATION_CONTROLLER: 
-					var iTab: int = this._pTabs.findTabByTitle("Edit controller");
+					var pController: IAnimationController = argv[0];
+					var sName: string = "controller-" + pController.getGuid();
+					var iTab: int = this._pTabs.findTab(sName);
 					
 					if (iTab < 0) {
-						var pController: IAnimationController = argv[0];
 						var pControls: IUIAnimationControls = 
-							<IUIAnimationControls>this._pTabs.createComponent("AnimationControls", {title: "Edit controller"});
+							<IUIAnimationControls>this._pTabs.createComponent("AnimationControls", {
+								title: "Edit controller: " + pController.getGuid(), 
+								name: sName
+							});
+
 						pControls.graph.capture(pController);
+						iTab = this._pTabs.findTab(sName);
 					}
 				
 					this._pTabs.select(iTab);
@@ -99,9 +107,48 @@ module akra.ui {
 					return true;
 
 				case ECMD.LOAD_COLLADA:
-					this._pColladaDialog = this.createComponent("Popup", {title: "Load collada"});
-					// this._pColladaDialog.el.offset({top: 500, left: 500});
-					return false;
+					var pDlg: IUIPopup = this._pColladaDialog;
+
+					if (isNull(this._pColladaDialog)) {
+						pDlg = this._pColladaDialog = <IUIPopup>this.createComponent("Popup", {
+							name: "load-collada-dlg",
+							title: "Load collada",
+							controls: "close",
+							template: "ui/templates/custom.LoadColladaDlg.tpl"
+						});
+
+						pDlg.bind(SIGNAL(closed), () => {
+							if (parseInt(pDlg.el.css("bottom")) == 0) {
+								pDlg.el.animate({bottom: -pDlg.el.height()}, 350, "easeInCirc", () => { pDlg.hide() });
+							}
+							else {
+								pDlg.hide();
+							}
+						});
+
+						var pLoadBtn: IUIButton = <IUIButton>pDlg.findEntity("load");
+						var $input: JQuery = pDlg.el.find("input[name=url]");
+						var pRmgr: IResourcePoolManager = this.getResourceManager();
+						var pScene: IScene3d = this.getScene();
+
+						pLoadBtn.bind(SIGNAL(click), () => {
+							var pModel: ICollada = <ICollada>pRmgr.loadModel($input.val());
+		
+							pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+								var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
+							});
+
+							pDlg.close();
+						});
+					}
+
+					var iHeight: int = pDlg.el.height();
+
+					pDlg.el.css('top', 'auto').css('left', 'auto').css({bottom: -iHeight, right: 10});
+					pDlg.show();
+					pDlg.el.animate({bottom: 0}, 350, "easeOutCirc");
+					
+					return true;
 			}
 			return true;
 		}
