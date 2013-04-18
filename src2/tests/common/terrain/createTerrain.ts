@@ -95,11 +95,13 @@ module akra {
 			pOmniLight.attachToParent(pScene.getRootNode());
 			pOmniLight.enabled = true;
 			pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			pOmniLight.params.ambient.set(0., 0., 0., 0);
 			pOmniLight.params.diffuse.set(1);
-			pOmniLight.params.specular.set(1, 1, 1, 1);
+			//pOmniLight.params.specular.set(1, 1, 1, 1);
+			pOmniLight.params.specular.set(0, 0, 0, 0);
 			pOmniLight.params.attenuation.set(1,0,0);
 
-			pOmniLight.addPosition(0, 750, 1000);
+			pOmniLight.addPosition(0, 0, 1000);
 		}
 
 		function createSkyBox(): void {
@@ -112,20 +114,20 @@ module akra {
 		}
 
 		function createTerrain(): void {
-			pTerrain = pScene.createTerrain();
+			pTerrain = pScene.createTerrainROAM();
 			var pTerrainMap: IImageMap = <IImageMap>{};
 
 			shouldBeNotNull("new terrain");
 			ok(pTerrain);
 			
-			pTerrainMap["height"] = pRmgr.loadImage("../../../data/textures/terrain/main_height_map_2049.dds");
+			pTerrainMap["height"] = pRmgr.loadImage("../../../data/textures/terrain/main_height_map_513.dds");
 
 			pTerrainMap["height"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
 				
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-500, 500, -500, 500, -0, 300), 10, 1, 1, "main_terrain");
+					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-512, 512, -512, 512, -128, 128), 4, 5, 5, "main_terrain");
 					pTerrain.attachToParent(pTestNode);
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);

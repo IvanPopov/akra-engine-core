@@ -428,7 +428,7 @@ module akra.render {
 		        // }
 		        
 		        v4fLightPosition.set(pLight.worldPosition, 1.);
-		        pCameraView.multiplyVec4(v4fLightPosition, v4fTemp)
+		        pCameraView.multiplyVec4(v4fLightPosition, v4fTemp);
 		        v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
 
 		        if (pLight.lightType === ELightTypes.OMNI) {

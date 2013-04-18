@@ -257,7 +257,7 @@ module akra.terrain {
 			this._pDataIndex.setData(this._pIndexList, 0, getTypeSize(EDataTypes.FLOAT), 0, this._iTotalIndices);
 			this._iTotalIndicesOld = this._iTotalIndices;
 			this._iTotalIndicesMax = math.max(this._iTotalIndicesMax,this._iTotalIndices);
-			LOG("number of indecies: " + this._iTotalIndices);
+			// LOG("number of indecies: " + this._iTotalIndices);
 			this._pRenderableObject._setRenderData(this._pRenderData);
 		}
 

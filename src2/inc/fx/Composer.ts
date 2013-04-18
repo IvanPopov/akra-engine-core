@@ -600,6 +600,8 @@ module akra.fx {
 		}
 
 		bUseNormalMap: bool = true;
+		bIsDebug: bool = false;
+		bIsRealNormal: bool = false;
 
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
@@ -646,6 +648,8 @@ module akra.fx {
 			}
 
 			pPassInput.setUniform("useNormal", this.bUseNormalMap);
+			pPassInput.setUniform("isDebug", this.bIsDebug);
+			pPassInput.setUniform("isRealNormal", this.bIsRealNormal);
 		}
 
 		private prepareComposerState(): void {
