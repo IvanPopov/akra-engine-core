@@ -190,7 +190,7 @@ void fs_terrain(VS_OUT IN){
 
     if(IN.edgeTest.x * IN.edgeTest.y * IN.edgeTest.z < 0.001)
     {
-        Fragment_material.emissive = float4(0.5, 0.5, 0.5, 1.);
+       Fragment_material.emissive = float4(0.5, 0.5, 0.5, 1.);
     }
     else {
        Fragment_material.emissive = float4(0.);

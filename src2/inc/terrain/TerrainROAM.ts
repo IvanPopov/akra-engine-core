@@ -127,11 +127,7 @@ module akra.terrain {
 		}
 
 		protected _allocateSectors(): bool {
-			/*this._pSectorArray =
-			 new cTerrainSection[
-			 this._iSectorCountX*this._iSectorCountY];*/
 			this._pSectorArray = new Array(this._iSectorCountX * this._iSectorCountY);
-
 
 			//Вершинный буфер для всех
 			this._pVerts = new Array((this._iSectorCountX*this._iSectorCountY/*количество секции*/)*(this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/) * (3/*кординаты вершин*/+2/*текстурные координаты*/));
@@ -139,8 +135,6 @@ module akra.terrain {
 			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
 				this._pSectorArray[i] = this.scene.createTerrainSectionROAM();
 			}
-
-			// this._setRenderMethod(this._pDefaultRenderMethod);
 
 			// create the sector objects themselves
 			for (var y: uint = 0; y < this._iSectorCountY; ++y) {
@@ -173,11 +167,11 @@ module akra.terrain {
 					}
 				}
 			}
-
+			
 			var pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
 			this._iVertexID = this._pRenderData.allocateData(pVertexDescription, new Float32Array(this._pVerts));
 
-
+			
 			//Индексны буфер для всех
 			this._iTotalIndices = 0;
 			//Максимальное количество треугольников помноженное на 3 вершины на каждый треугольник
@@ -186,6 +180,7 @@ module akra.terrain {
 			this._pRenderData.index(this._iVertexID, DeclarationUsages.INDEX0);
 			this._pDataIndex = this._pRenderData.getAdvancedIndexData(DeclarationUsages.INDEX0);
 
+			LOG(this._pVerts.length, this._pIndexList.length);
 			return true;
 		}
 
@@ -262,7 +257,7 @@ module akra.terrain {
 			this._pDataIndex.setData(this._pIndexList, 0, getTypeSize(EDataTypes.FLOAT), 0, this._iTotalIndices);
 			this._iTotalIndicesOld = this._iTotalIndices;
 			this._iTotalIndicesMax = math.max(this._iTotalIndicesMax,this._iTotalIndices);
-
+			LOG("number of indecies: " + this._iTotalIndices);
 			this._pRenderableObject._setRenderData(this._pRenderData);
 		}
 

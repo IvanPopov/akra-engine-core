@@ -112,20 +112,20 @@ module akra {
 		}
 
 		function createTerrain(): void {
-			pTerrain = pScene.createTerrainROAM();
+			pTerrain = pScene.createTerrain();
 			var pTerrainMap: IImageMap = <IImageMap>{};
 
 			shouldBeNotNull("new terrain");
 			ok(pTerrain);
 			
-			pTerrainMap["height"] = pRmgr.loadImage("../../../data/textures/terrain/main_height_map_513.dds");
+			pTerrainMap["height"] = pRmgr.loadImage("../../../data/textures/terrain/main_height_map_2049.dds");
 
 			pTerrainMap["height"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
 				
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-512, 512, -512, 512, -128, 128), 4, 5, 5, "main_terrain");
+					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-500, 500, -500, 500, -0, 300), 10, 1, 1, "main_terrain");
 					pTerrain.attachToParent(pTestNode);
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
