@@ -34,6 +34,7 @@ module akra {
 		computeBinormals(): void;
 
 		isSkinned(): bool;
+		isOptimizedSkinned(): bool;
 		getSkin(): ISkin;
 		setSkin(pSkin: ISkin): bool;
 
@@ -54,6 +55,7 @@ module akra {
 		destroy(): void;
 
 		update(): bool;
+		_calculateSkin(): bool;
 	}
 }
 

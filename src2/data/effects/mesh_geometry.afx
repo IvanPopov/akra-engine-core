@@ -106,7 +106,7 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
 VS_OUT_1 vs_mesh_optimized_skinning(VS_IN_2 IN) {
     VS_OUT_1 Out;
 
-    float4 vertex = (view_mat * IN.pos);
+    float4 vertex = (view_mat * float4(IN.pos.xyz,1.));
 
     Out.pos = vertex_geometry.pos = proj_mat * vertex;
 
@@ -119,8 +119,14 @@ VS_OUT_1 vs_mesh_optimized_skinning(VS_IN_2 IN) {
 
 technique mesh_geometry{
     pass p0 {
-        if(engine.mesh.isSkinning){
-            VertexShader = compile vs_mesh_skinning();
+        
+        if(engine.mesh.isSkinned){
+            if(engine.mesh.isOptimizedSkinned){
+                VertexShader = compile vs_mesh_optimized_skinning();
+            }
+            else{
+                VertexShader = compile vs_mesh_skinning();
+            }
         }
         else {
             VertexShader = compile vs_mesh_geometry();

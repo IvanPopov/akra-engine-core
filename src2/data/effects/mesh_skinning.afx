@@ -2,13 +2,13 @@ provide akra.system;
 
 struct VS_IN_1{
     float4 pos:POSITION;
-    float skinnedPositionIndex:SKINNED_POSITION_INDEX;
+    float4 skinnedPosition:SKINNED_POSITION;
 };
 
 struct VS_IN_2{
     float4 pos:POSITION;
     float4 norm:NORMAL;
-    float skinnedNormalIndex:SKINNED_NORMAL_INDEX;
+    float4 skinnedNormal:SKINNED_NORMAL;
 };
 
 struct VS_OUT{
@@ -17,6 +17,8 @@ struct VS_OUT{
 };
 
 ///////////////////////////
+
+float2 framebufferSize: FRAMEBUFFER_SIZE;
 
 float4x4 bind_matrix:BIND_SHAPE_MATRIX;
 
@@ -57,7 +59,12 @@ VS_OUT vs_mesh_vertices_skinned(VS_IN_1 IN) {
 
     Out.data = result_mat * pos;
 
-    Out.pos = float4(IN.skinnedPositionIndex, IN.skinnedPositionIndex, 0., 1.);//texture position by 
+    float fSPIndex = @IN.skinnedPosition;
+
+    float2 position = float2((mod(fSPIndex,framebufferSize.x) + 0.5)/framebufferSize.x, 
+                             (floor(fSPIndex/framebufferSize.x) + 0.5)/framebufferSize.y)
+
+    Out.pos = float4(position * 2. - 1., 0., 1.);
 
     return Out;
 
@@ -100,7 +107,12 @@ VS_OUT vs_mesh_normal_skinned(VS_IN_2 IN) {
     Out.data = result_mat * float4(IN.norm.xyz, 0.);
     Out.data.w = IN.norm.w;
 
-    Out.pos = float4(IN.skinnedNormalIndex, IN.skinnedNormalIndex, 0., 1.);//texture position by     
+    float fSNIndex = @IN.skinnedNormal;
+
+    float2 position = float2((mod(fSNIndex,framebufferSize.x) + 0.5)/framebufferSize.x, 
+                             (floor(fSNIndex/framebufferSize.x) + 0.5)/framebufferSize.y)
+
+    Out.pos = float4(position * 2. - 1., 0., 1.);
 
     return Out;
 }
@@ -110,15 +122,16 @@ float4 fs_write_skinned_data(VS_OUT IN) : COLOR{
 }
 
 
-technique mesh_skinned{
+technique mesh_skinning_position{
     pass p0 {
-        if(engine.mesh.isSkinning){
-            VertexShader = compile vs_mesh_vertices_skinned();
-        }
-        else {
-            VertexShader = compile vs_mesh_normal_skinned();
-        }
+        VertexShader = compile vs_mesh_vertices_skinned();
         PixelShader = compile fs_write_skinned_data();
     }
 }
 
+technique mesh_skinning_normal{
+    pass p0 {
+        VertexShader = compile vs_mesh_normal_skinned();
+        PixelShader = compile fs_write_skinned_data();
+    }
+}

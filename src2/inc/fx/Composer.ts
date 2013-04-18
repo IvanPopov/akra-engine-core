@@ -61,10 +61,8 @@ module akra.fx {
 		private _pCurrentBufferMap: IBufferMap = null;
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 
-		private _pComposerState: any = { 
-										 mesh : { isSkinning : false },
-										 terrain : { isROAM : false }
-									   };
+		private _pComposerState: any = { mesh : { isSkinned : false, isOptimizedSkinned : false },
+										 terrain : { isROAM : false } };
 
 		/** Render targets for global-post effects */
 		private _pRenderTargetA: IRenderTarget = null;
@@ -459,7 +457,7 @@ module akra.fx {
 					var id: uint = pRenderTechnique.getGuid();
 					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
 					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
-					
+
 					this.prepareComposerState();
 
 					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
@@ -613,6 +611,9 @@ module akra.fx {
 			}
 
 			if(!isNull(pViewport)){
+
+				pPassInput.setUniform("FRAMEBUFFER_SIZE", vec2(pViewport.width, pViewport.height));
+
 				var pCamera: ICamera = pViewport.getCamera();
 				pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
 				pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
@@ -650,10 +651,17 @@ module akra.fx {
 		private prepareComposerState(): void {
 			if(!isNull(this._pCurrentRenderable)){
 				if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){
-					this._pComposerState.mesh.isSkinning = true;
+					this._pComposerState.mesh.isSkinned = true;
+					if((<IMeshSubset>this._pCurrentRenderable).isOptimizedSkinned()){
+						this._pComposerState.mesh.isOptimizedSkinned = true;
+					}
+					else{
+						this._pComposerState.mesh.isOptimizedSkinned = false;	
+					}
 				}
 				else {
-					this._pComposerState.mesh.isSkinning = false;
+					this._pComposerState.mesh.isSkinned = false;
+					this._pComposerState.mesh.isOptimizedSkinned = false;
 				}
 			}
 
