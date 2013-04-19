@@ -112,6 +112,8 @@ module akra.controls {
 		        this._bMouseDown = false;
 		    }
 		    else if (e.type == "mousedown") {
+		    	this._v2iMousePrevPosition.x = (<MouseEvent>e).pageX;
+		        this._v2iMousePrevPosition.y = (<MouseEvent>e).pageY;
 		        this._bMouseDown = true;
 		    }
 		}

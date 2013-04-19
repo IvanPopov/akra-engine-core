@@ -160,7 +160,8 @@ module akra.scene {
 		    //iY1 = math.clamp(iY1, iY0 + 1, iMax2);
 		    //iZ1 = math.clamp(iZ1, iZ0 + 1, iMax2);
 
-		    // console.error('zzzzzz', iX0, iX1, iY0, iY1, iZ0, iZ1);
+		    // LOG(pRect.toString());
+		    // LOG(iX0, iX1, iY0, iY1, iZ0, iZ1);
 
 		    var pNode: IOcTreeNode = this.findTreeNodeByRect(iX0, iX1, iY0, iY1, iZ0, iZ1);
 
@@ -511,13 +512,13 @@ module akra.scene {
 			var pNodeRect: IRect3d = pNode.worldBounds;
 			//var pChildRect: IRect3d;
 
-			if(geometry.intersectRect3dRect3d(pSearchRect, pNodeRect)){
+			if(true || geometry.intersectRect3dRect3d(pSearchRect, pNodeRect)){
 				var kTestResult: int = geometry.classifyFrustumRect3d(pFrustum, pNodeRect);
-				if(kTestResult == EVolumeClassifications.A_CONTAINS_B){
+				if(false && kTestResult == EVolumeClassifications.A_CONTAINS_B){
 					//объект полностью попал	
 					this._includeAllTreeSubbranch(pNode, pResultList);
 				}
-				else if(kTestResult == EVolumeClassifications.INTERSECTING){
+				else if(true || kTestResult == EVolumeClassifications.INTERSECTING){
 					//объект попал частично
 					var pMemberList: IObjectList = pNode.membersList;
 					var pObject: ISceneObject = pMemberList.first;
@@ -538,6 +539,10 @@ module akra.scene {
 						}
 					}
 				}
+				// else{
+				// 	console.log(pNodeRect.toString())
+				// 	console.log(this._toSimpleObject(pNode));
+				// }
 			}
 		};
 

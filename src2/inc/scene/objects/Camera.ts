@@ -131,7 +131,6 @@ module akra.scene.objects {
 
 		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.CAMERA) {
 			super(pScene, eType);
-
 		};
 
 		create(): bool {
@@ -172,6 +171,7 @@ module akra.scene.objects {
 			//TODO: check proj matrix type --> this._eCameraType
 			//now, temrary, supported on perspective proj
 			this.setProjParams(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane);
+			CLEAR_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
 		prepareForUpdate(): void {
