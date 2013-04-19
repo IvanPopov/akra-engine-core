@@ -331,12 +331,7 @@ module akra.core {
 			}
 		}
 
-		static DEPS_ROOT: string = 
-#ifdef DEBUG
-			"/akra-engine-core/src2/data/";
-#else
-			"";
-#endif
+		static DEPS_ROOT: string = DATA_FOLDER;
 		static DEPS: IDependens = 
 			{
 				files: [ 

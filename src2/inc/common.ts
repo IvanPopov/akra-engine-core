@@ -7,8 +7,8 @@
 #define double number
 #define long number
 
-
-//#define trace(...) console.log(__VA_ARGS__)
+/// @data: data
+/// @DATA_FOLDER: {data}|location()
 
 #define WEBGL 1
 #define LOGGER_API 1
@@ -80,6 +80,8 @@
 #define IFACE(IF) export interface IF {}
 
 module akra {
+
+    export const DATA_FOLDER = "@DATA_FOLDER";
 
 #ifdef DEBUG
     export var DEBUG: bool = true;

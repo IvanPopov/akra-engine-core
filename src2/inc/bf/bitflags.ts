@@ -97,7 +97,7 @@ module akra.bf {
 	 * Выставляет бит под номером @a bit у числа @a value равным нулю
 	 * @inline
 	 */
-	export var setAll = (value: int, set: int, setting: bool = true) => (setting ? setAll(value, set) : clearAll(value, set));
+	export var setAll = (value: int, set: int, setting: bool = true) => (setting ? SET_ALL(value, set) : CLEAR_ALL(value, set));
 	/**
 	 * Выставляет все биты у числа @a value равными единице,
  	 * которые равны единице у числа @a set

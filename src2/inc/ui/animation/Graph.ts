@@ -26,13 +26,13 @@ module akra.ui.animation {
 		private setupFileDropping(): void {
 			var pGraph = this;
 			var pRmgr: IResourcePoolManager = ide.getResourceManager();
-			var $svg = this.$svg;
+			
 
 			io.createFileDropArea(null, {
 				drop: (file: File, content, format, e: DragEvent): void => {
 					pGraph.el.removeClass("file-drag-over");
 					
-					if (e.target !== $svg[0]) {
+					if (e.target !== (<any>pGraph).$svg[0]) {
 						return;
 					}
 

@@ -9,11 +9,9 @@
 #include "swig.d.ts"
 #include "io/filedrop.ts"
 
-/// @script ui/3d-party/raphael/raphael-min.js
-/// @script ui/3d-party/swig/swig.pack.min.js
-
-/// @dep ../data/ui
-/// @css ui/css/main.css
+/// @: {data}/ui/3d-party/raphael/raphael-min.js|location()|script()
+/// @: {data}/ui/3d-party/swig/swig.pack.min.js|location()|script()
+/// @: {data}/ui/css/main.css|location()|css()
 
 module akra.ui {
 	function _template(pNode: IUIComponent, sTemplate: string, sName: string, pData: any = null, bRenderAsNormal: bool = false, iDepth: int = 0): void {

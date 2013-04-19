@@ -8,20 +8,16 @@
 #include "math/math.ts"
 #include "util/ThreadManager.ts"
 
-/// @dep io/FileInterface.t.js
-/// @dep io/LocalFile.t.js
-/// @dep io/RemoteFile.t.js 
+//переносим все зависисмости в папку js паки с данными
+//обычно, это data/js
 
-#ifndef FTM_DEFAULT_LOCAL_THREAD
-#define FTM_DEFAULT_LOCAL_THREAD "LocalFile.t.js"
-#endif
+/// @: {data}/js/FileInterface.t.js|src(inc/io/FileInterface.t.js)|location()
+/// @FILE_LOCAL_THREAD: {data}/js/LocalFile.t.js|src(inc/io/LocalFile.t.js)|location()
+/// @FILE_REMOTE_THREAD: {data}/js/RemoteFile.t.js|src(inc/io/RemoteFile.t.js)|location()
 
-#ifndef FTM_DEFAULT_REMOTE_THREAD
-#define FTM_DEFAULT_REMOTE_THREAD "RemoteFile.t.js"
-#endif
 
-#define LocalFileThreadManager() util.ThreadManager(FTM_DEFAULT_LOCAL_THREAD)
-#define RemoteFileThreadManager() util.ThreadManager(FTM_DEFAULT_REMOTE_THREAD)
+#define LocalFileThreadManager() util.ThreadManager("@FILE_LOCAL_THREAD")
+#define RemoteFileThreadManager() util.ThreadManager("@FILE_REMOTE_THREAD")
 
 #define CHECK_IFNOT_OPEN(method, callback) \
 		if (!this.isOpened()) {						\

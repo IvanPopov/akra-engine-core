@@ -52,6 +52,8 @@ module akra {
 		CHECKBOX,
 		CHECKBOX_LIST,
 		VIEWPORT_STATS,
+
+		CODE_EDITOR,
 		
 		GRAPH,
 		GRAPH_NODE,

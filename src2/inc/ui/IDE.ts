@@ -5,6 +5,7 @@
 
 #include "IUIIDE.ts"
 
+
 module akra.ui {
 
 	export class IDE extends Component implements IUIIDE {
@@ -30,7 +31,7 @@ module akra.ui {
 			debug_assert(!isNull(this._pEngine), "Engine required!");
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
-			this.template("ui/templates/IDE.tpl");
+			this.template(DATA_FOLDER + "/ui/templates/IDE.tpl");
 
 			//viewport setup
 			

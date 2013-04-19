@@ -10,7 +10,6 @@
 #include "IUIRenderTargetStats.ts"
 #include "render/DSViewport.ts"
 
-
 module akra.ui {
 	export class ViewportProperties extends Component {
 		protected _pViewport: IViewport = null;
@@ -27,7 +26,7 @@ module akra.ui {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template("ui/templates/ViewportProperties.tpl");
+			this.template(DATA_FOLDER + "/ui/templates/ViewportProperties.tpl");
 
 			this._pStats = <IUIRenderTargetStats>this.findEntity("stats");
 			this._pFullscreenBtn = <IUIButton>this.findEntity("fullscreen");
