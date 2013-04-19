@@ -1,158 +1,32 @@
 #ifndef DSVIEWPORT_TS
 #define DSVIEWPORT_TS
+				
+#include "IDSViewport.ts"
+#include "Viewport.ts"
+#include "DSUniforms.ts"
+#include "IRenderTechnique.ts"
+#include "IRenderPass.ts"
+#include "ILightPoint.ts"
+#include "IOmniLight.ts"
+#include "IProjectLight.ts"
+#include "IShadowCaster.ts"
+#include "RenderableObject.ts"
+#include "info/info.ts"
+#include "IEffect.ts"
+#include "IScene3d.ts"
+#include "util/ObjectArray.ts"
+#include "Screen.ts"
 
-
-#define PREPARE_DEFERRED_SHADING_AFX 			"prepare_deferred_shading.afx"
-#define BASIC_DEFERRED_SHADING_AFX 				"base_deferred_shading.afx"
-#define LIGHTS_AND_SHADOWS_DEFERRED_SHADING_AFX "lights_and_shadows_deferred_shading.afx"
-#define SKYBOX_DEFERRED_SHADING_AFX 			"skybox_deferred_shading.afx"
-#define FXAA_DEFERRED_SHADING_AFX 				"fxaa_deferred_shading.afx"
-
-#define uniformOmni() UniformOmni.stackCeil
-#define uniformProject() UniformProject.stackCeil
-#define uniformProjectShadow() UniformProjectShadow.stackCeil
-#define uniformOmniShadow() UniformOmniShadow.stackCeil
-
-#define IShadowSampler ISampler2d
+#define OPTIMIZED_DEFFERED 1
 
 module akra.render {
-
-	interface IUniform {
-
-	}
-
-	struct LightData {
-		DIFFUSE: IVec4 = new Vec4();
-		AMBIENT: IVec4 = new Vec4();
-		SPECULAR: IVec4 = new Vec4();
-		POSITION: IVec4 = new Vec4();
-
-		set(pLightParam: ILightParameters, v3fPosition: IVec3): LightData {
-		    
-		    this.DIFFUSE.set(pLightParam.diffuse);
-		    this.AMBIENT.set(pLightParam.ambient);
-		    this.SPECULAR.set(pLightParam.specular);
-		    this.ATTENUATION.set(pLightParam.attenuation);
-		    this.POSITION.set(v3fPosition);
-
-		    return this;
-		}
-	};
-
-	struct UniformOmni implements IUniform {
-		LIGHT_DATA: LightData = new LightData();
-
-		setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformOmni {
-			this.LIGHT_DATA.set(pLightParam, v3fPosition);
-			
-			return this;
-		}
-
-		ALLOCATE_STORAGE(UniformOmni, 200);
-	};
-
-	struct UniformProject implements IUniform {
-		LIGHT_DATA: LightData = new LightData();
-    	SHADOW_MATRIX: IMat4 = new Mat4();
-
-    	setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformProject {
-			this.LIGHT_DATA.set(pLightParam, v3fPosition);
-			
-			return this;
-		}
-
-		setMatrix(m4fMatrix: IMat4): UniformProject {
-			this.SHADOW_MATRIX.set(m4fMatrix);
-
-			return this;
-		}
-
-    	ALLOCATE_STORAGE(UniformProject, 200);	
-	};
-
-
-	struct UniformProjectShadow implements IUniform {
-		LIGHT_DATA: LightData = new a.LightData();
-	    TO_LIGHT_SPACE: IMat4 = new Mat4();
-	    REAL_PROJECTION_MATRIX: IMat4 = new Mat4();
-	    OPTIMIZED_PROJECTION_MATRIX: IMat4 = new Mat4();
-	    SHADOW_SAMPLER: IShadowSampler = {TEXTURE: null};
-
-	    setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformProjectShadow {
-	    	this.LIGHT_DATA.set(pLightParam, v3fPosition);
-	    	return this;
-	    }
-
-	    setMatrix(m4fToLightSpace: IMat4, m4fRealProj: IMat4, m4fOptimizedProj: IMat4): UniformProjectShadow {
-	    	this.TO_LIGHT_SPACE.set(m4fToLightSpace);
-		    this.REAL_PROJECTION_MATRIX.set(m4fRealProj);
-		    this.OPTIMIZED_PROJECTION_MATRIX.set(m4fOptimizedProj);
-
-	    	return this;
-	    }
-
-	    setSampler(sTexture: string): UniformProjectShadow {
-	    	this.SHADOW_SAMPLER.TEXTURE = sTexture;
-	    	return this;
-	    }
-
-	    ALLOCATE_STORAGE(UniformProjectShadow, 20);
-	}
-
-	struct UniformOmniShadow implements IUniform {
-		LIGHT_DATA: LightData = new LightData();
-		TO_LIGHT_SPACE: IMat4[] = 
-		[
-			new Mat4, new Mat4, new Mat4, 
-			new Mat4, new Mat4, new Mat4
-		];
-
-		OPTIMIZED_PROJECTION_MATRIX: IMat4[] = 
-		[
-			new Mat4, new Mat4, new Mat4, 
-			new Mat4, new Mat4, new Mat4
-		];
-		
-		SHADOW_SAMPLER: IShadowSampler[] = 
-		[
-			{"TEXTURE" : null}, {"TEXTURE" : null}, {"TEXTURE" : null},
-	        {"TEXTURE" : null}, {"TEXTURE" : null}, {"TEXTURE" : null}
-	    ];
-
-	    setLightData(pLightParam: LightData, v3fPosition: IVec3): UniformOmniShadow {
-		    this.LIGHT_DATA.set(pLightParam, v3fPosition);
-		    return this;
-		};
-
-		setMatrix(m4fToLightSpace: IMat4, m4fOptimizedProj: IMat4, index: int): UniformOmniShadow {
-		    this.TO_LIGHT_SPACE[index].set(m4fToLightSpace);
-		    this.OPTIMIZED_PROJECTION_MATRIX[index].set(m4fOptimizedProj);
-		    return this;
-		};
-
-		setSampler(sTexture: string, index: int): UniformOmniShadow {
-		    this.SHADOW_SAMPLER[index].TEXTURE = sTexture;
-		    return this;
-		};
-
-	    ALLOCATE_STORAGE(UniformOmniShadow, 3);
-	}
-
-	interface UniformMap {
-		omni: UniformOmni[];
-        project: UniformProject[];
-        omniShadows: UniformOmniShadow[];
-        projectShadows: UniformProjectShadow[];
-        textures: ITexture[][],
-        samplersOmni: IShadowSampler[],
-        samplersProject: IShadowSampler[]
-	}
-
 	export class DSViewport extends Viewport implements IDSViewport  {
-		private _pDefferedColorTextures: ITexture[];
-		private _pDeferredDepthTexture: ITexture;
+		private _pDefereedColorTextures: ITexture[] = [];
+		private _pDeferredDepthTexture: ITexture = null;
 		private _pDeferredView: IRenderableObject = null;
 		private _pDeferredSkyTexture: ITexture = null;
+		//index of lighting display list
+		private _pLightDL: int; 
 
 		private _pLightingUnifoms: UniformMap = {
 	        omni           	: [],
@@ -164,71 +38,197 @@ module akra.render {
 	        samplersProject : []
 	    };
 
-	    private _pLightPoints: ILightPoint[] = null;
+	    private _pLightPoints: util.ObjectArray = null;
 
-		constructor() {
-			super();
+		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
+			super(pCamera, pTarget, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 
 			var pEngine: IEngine = this.getTarget().getRenderer().getEngine();
-			var pResMgr: IResourcePoolManager = this.getEngine().getResourceManager();
-			var pDeferredData: IRenderTarget = new Array(2);
-			var pDeferredTextures: ITexture[] = new Array(2);
+			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
+			var pDeferredData: IRenderTarget[] = <IRenderTarget[]>new Array(2);
+			var pDeferredTextures: ITexture[] = <ITexture[]>new Array(2);
 			var pDepthTexture: ITexture;
-			var pDefferedView: IRenderableObject = this._pDeferredView = new render.RenderableObject();
+			var pDefferedView: IRenderableObject = this._pDeferredView = new Screen(pEngine.getRenderer());
 			var iGuid: int = sid();
 			var iWidth: uint = math.ceilingPowerOfTwo(this.actualWidth);
     		var iHeight: uint = math.ceilingPowerOfTwo(this.actualHeight);
 
-    		if (info.browser.name === 'Firefox') {
-		        iWidth = math.min(iWidth, 1024);
+    		if (info.browser.name === "Firefox") {
+		        iWidth 	= math.min(iWidth, 1024);
 		        iHeight = math.min(iHeight, 1024);
 		    }
 
 			pDepthTexture = this._pDeferredDepthTexture = pResMgr.createTexture("deferred-depth-texture-" + iGuid);
-			pDepthTexture.create(iWidth, iHeight, 1, 0, 0, 
-					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_DEPTH);
+			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0,
+					ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
 			for (var i = 0; i < 2; ++ i) {
-				pDeferredTextures[i] = this._pDefferedColorTextures[i] = 
+				pDeferredTextures[i] = this._pDefereedColorTextures[i] = 
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
-				pDeferredTextures[i].create(iWidth, iHeight, 1, 0, 0, 
+
+				pDeferredTextures[i].create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0, 
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
-				pDeferredData[i].addViewport(this.getCamera(), "deferred_shading_pass_" + i);
-
+				pDeferredData[i].setAutoUpdated(false);
+				var pViewport:  IViewport = pDeferredData[i].addViewport(this.getCamera(), "deferred_shading_pass_" + i, 0, 
+											0, 0, this.actualWidth / pDeferredTextures[i].width, 
+											this.actualHeight / pDeferredTextures[i].height);
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
-			}
 
-			pResMgr.loadAFXEffect(PREPARE_DEFERRED_SHADING_AFX);
-			pResMgr.loadAFXEffect(BASIC_DEFERRED_SHADING_AFX);
-			pResMgr.loadAFXEffect(LIGHTS_AND_SHADOWS_DEFERRED_SHADING_AFX);
-			pResMgr.loadAFXEffect(SKYBOX_DEFERRED_SHADING_AFX);
-			pResMgr.loadAFXEffect(FXAA_DEFERRED_SHADING_AFX);
+				if (i === 1) {
+					pViewport.setDepthParams(true, false, ECompareFunction.EQUAL);
+					pViewport.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
+				}
+			}
 
 			var pDSMethod: IRenderMethod  	= pResMgr.createRenderMethod(".deferred_shading");
 			var pDSEffect: IEffect 			= pResMgr.createEffect(".deferred_shading");
 
-			// pDSEffect.addCompoennt("akra.system.prepareForDeferredShading");
-			pDSEffect.addCompoennt("akra.system.deferredShading");
-			pDSEffect.addCompoennt("akra.system.omniLighting");
-			pDSEffect.addCompoennt("akra.system.projectLighting");
-			pDSEffect.addCompoennt("akra.system.omniShadowsLighting");
-			pDSEffect.addCompoennt("akra.system.projectShadowsLighting");
-			pDSEffect.addCompoennt("akra.system.skybox", 1);
+			pDSEffect.addComponent("akra.system.deferredShading");
+			pDSEffect.addComponent("akra.system.omniLighting");
+			pDSEffect.addComponent("akra.system.projectLighting");
+			pDSEffect.addComponent("akra.system.omniShadowsLighting");
+			pDSEffect.addComponent("akra.system.projectShadowsLighting");
+			pDSEffect.addComponent("akra.system.skybox", 1, 0);
 
 			pDSMethod.effect = pDSEffect;
-			pDefferedView.renderMethod = pDSMethod;
+			pDefferedView.getTechnique().setMethod(pDSMethod);
+			pDefferedView.getTechnique()._setGlobalPostEffectsFrom(1);
 
-			this.connect(pDefferedView, SIGNAL(passActivated), SLOT(_onPassActivation));
+			this.setClearEveryFrame(false);
+			this.setDepthParams(false, false, 0);			
+
+			this.setFXAA(true);
+			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		}
 
-		update (): bool {
+		_updateDimensions(): void {
+			super._updateDimensions();
 
-			this.prepareShadows();
-			this.prepareLighting();
+			var pDeferredTextures: ITexture[] = this._pDefereedColorTextures;
 
-			this._pDeferredView.render();	
+			if (isDefAndNotNull(this._pDeferredDepthTexture)) {
+				this._pDeferredDepthTexture.reset(math.ceilingPowerOfTwo(this.actualWidth), math.ceilingPowerOfTwo(this.actualHeight));
+				for (var i = 0; i < 2; ++ i) {
+					pDeferredTextures[i].reset(math.ceilingPowerOfTwo(this.actualWidth), math.ceilingPowerOfTwo(this.actualHeight));
+					pDeferredTextures[i].getBuffer().getRenderTarget().getViewport(0)
+						.setDimensions(0., 0., this.actualWidth / pDeferredTextures[i].width, this.actualHeight / pDeferredTextures[i].height)
+				}
+			}
+		}
+
+		_updateImpl (): void {
+			this.prepareForDeferredShading();
+
+			var pLights: util.ObjectArray = <util.ObjectArray>this.getCamera().display(DL_LIGHTING);
+		    
+		    for (var i: int = 0; i < pLights.length; i++) {
+		        pLights.value(i)._calculateShadows();
+		    }
+
+		    this._pLightPoints = pLights;
+
+		    //prepare deferred textures
+// #ifndef OPTIMIZED_DEFFERED
+			this._pDefereedColorTextures[0].getBuffer().getRenderTarget().update();
+			this._pDefereedColorTextures[1].getBuffer().getRenderTarget().update();
+// #else
+// 			var pNodeList: IObjectArray = this.getCamera().display();
+// 			for (var i: int = 0; i < pNodeList.length; ++ i) {
+// 				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
+// 				pRenderable.render(this._pDefereedColorTextures[i].getBuffer().getRenderTarget().getViewport(0), null, pNodeList.value(i));
+// 			}
+
+// 			this.getTarget().getRenderer().executeQueue();
+// #endif
+			//render deferred
+			
+			this._pDeferredView.render(this);
+		}
+
+		prepareForDeferredShading(): void {
+#ifndef OPTIMIZED_DEFFERED
+			var pNodeList: IObjectArray = this.getCamera().display();
+
+			for (var i: int = 0; i < pNodeList.length; ++ i) {
+				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
+
+				if (pRenderable) {
+					for (var j: int = 0; j < 2; ++ j) {
+						var sMethod: string = "deferred_shading_pass_" + j;
+						var pMethod: IRenderMethod = pRenderable.getRenderMethod(sMethod);
+						var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
+
+						if (isNull(pTechnique) || pTechCurr.modified > pTechnique.modified) {
+							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
+								CRITICAL("cannot clone active render method");
+							}
+
+							pTechnique = pRenderable.getTechnique(sMethod);
+							pTechnique._syncTable(pTechCurr);
+
+							for (var k: int = 0; k < pTechnique.totalPasses; ++ k) {
+								var pPass: IRenderPass = pTechnique.getPass(k);
+								
+								if (isNull(pPass.getRenderTarget())) {
+									pPass.blend("akra.system.prepareForDeferredShading", j);
+								}
+							}
+						}
+					}
+				}
+			};
+#else
+			var pNodeList: IObjectArray = this.getCamera().display();
+
+			for (var i: int = 0; i < pNodeList.length; ++ i) {
+				var pSceneObject: ISceneObject = pNodeList.value(i);
+
+				for (var k: int = 0; k < pSceneObject.totalRenderable; k++) {
+					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
+					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+
+					for (var j: int = 0; j < 2; j++) {
+						var sMethod: string = "deferred_shading_pass_" + j;
+						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
+
+						if (isNull(pTechnique) || pTechCurr.modified > pTechnique.modified) {
+							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
+								CRITICAL("cannot clone active render method");
+							}
+
+							pTechnique = pRenderable.getTechnique(sMethod);
+							pTechnique._syncTable(pTechCurr);
+
+							if(j === 0){
+								pTechnique._blockPass(1);
+							}
+							else {
+								pTechnique._blockPass(0);
+							}
+
+							if(pTechnique.totalPasses > j){
+								var pPass: IRenderPass = pTechnique.getPass(j);
+								pPass.blend("akra.system.prepareForDeferredShading", j);
+							}
+
+						}
+					}
+				}
+
+
+				// for(var j: uint = 0; j < pTechCurr.totalPasses; j++){
+				// 	if(!pTechCurr.hasComponent("akra.system.prepareForDeferredShading", j, j)){
+				// 		pTechCurr.getPass(j).blend("akra.system.prepareForDeferredShading", j);
+				// 	}
+				// }
+
+				// pTechCurr.getPass(0).setRenderTarget(this._pDefereedColorTextures[0].getBuffer().getRenderTarget());
+				// pTechCurr.getPass(1).setRenderTarget(this._pDefereedColorTextures[1].getBuffer().getRenderTarget());
+			};
+#endif		
 		}
 
 		setSkybox(pSkyTexture: ITexture): bool {
@@ -242,39 +242,28 @@ module akra.render {
 		}
 
 		setFXAA(bValue: bool = true): void {
-			var pEffect: IEffect = this._pDeferredView.renderMethod.effect;
+			var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
 			
 			if (bValue) {
-				pEffect.addComponent("akra.system.fxaa", 2);
+				pEffect.addComponent("akra.system.fxaa", 2, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(2);
 			}
 			else {
-				pEffect.delComponent("akra.system.fxaa", 2);
+				pEffect.delComponent("akra.system.fxaa", 2, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
 			}
 		}
 
-		protected prepareShadows(): void {
-		    var pLights: ILightPoint[] = this.findLightSources();
-		    
-		    for (var i: int = 0; i < pLights.length; i++) {
-		        pLights[i].calculateShadows();
-		    }
 
-		    this._pLightPoints = pLights;
-		}
 
-		protected prepareLighting(): void {
-			for (var i: int = 0; i < 2; ++ i) {
-				this._pDefferedColorTextures[i].getBuffer().getRenderTarget().update();
-			};
-		}
 
 		destroy(): void {
 			super.destroy();
 			
-			this._pDeferredDepthTexture.destroy();
+			this._pDeferredDepthTexture.destroyResource();
 
-			this._pDefferedColorTextures[0].destroy();
-			this._pDefferedColorTextures[1].destroy();
+			this._pDefereedColorTextures[0].destroyResource();
+			this._pDefereedColorTextures[1].destroyResource();
 
 			this._pDeferredView.destroy();
 			this._pDeferredView = null;
@@ -284,50 +273,107 @@ module akra.render {
 
 
 
-		_onPassActivation(pRenderable: IRenderableObject, iPass: int): void {
+		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
+			var pDeferredTextures: ITexture[] = this._pDefereedColorTextures;
+
 			switch (iPass) {
-				case 2:
+				case 0:
 					var pLightUniforms: UniformMap = this._pLightingUnifoms;
-					var pLightPoints: ILightPoint[] = this._pLightPoints;
-					var pCamera: ICamera = this.getCamer();
+					var pLightPoints: util.ObjectArray = this._pLightPoints;
+					var pCamera: ICamera = this.getCamera();
 
 					this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
 
-					pRenderable.setState("lights.omni", pLightUniforms.omni.length);
-					pRenderable.setState("lights.project", pLightUniforms.project.length);
-					pRenderable.setState("lights.omniShadows", pLightUniforms.omniShadows.length);
-					pRenderable.setState("lights.projectShadows", pLightUniforms.projectShadows.length);
+					// LOG(pLightUniforms);
+					
+					pPass.setForeign("nOmni", pLightUniforms.omni.length);
+				    pPass.setForeign("nProject", pLightUniforms.project.length);
+				    pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
+				    pPass.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
 
-					pRenderable.setForeign("nOmni", pLightUniforms.omni.length);
-				    pRenderable.setForeign("nProject", pLightUniforms.project.length);
-				    pRenderable.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
-				    pRenderable.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
+				    pPass.setStruct("points_omni", pLightUniforms.omni);
+				    pPass.setStruct("points_project", pLightUniforms.project);
+				    pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
+				    pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
 
-				    pRenderable.setStruct("points_omni", pLightUniforms.omni);
-				    pRenderable.setStruct("points_project", pLightUniforms.project);
-				    pRenderable.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
-				    pRenderable.setStruct("points_project_shadows", pLightUniforms.projectShadows);
-
-				    for (i = 0; i < pLightUniforms.textures.length; i++) {
-				        pRenderable.setTextureBySemantics("TEXTURE" + i, pLightUniforms.textures[i]);
+				    for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
+				        pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
 				    }
 
-				    pRenderable.setShadowSamplerArray("project_shadow_sampler", pLightUniforms.samplersProject);
-    				pRenderable.setShadowSamplerArray("omni_shadow_sampler", pLightUniforms.samplersOmni);
+				    pPass.setUniform("PROJECT_SHADOW_SAMPLER", pLightUniforms.samplersProject);
+    				pPass.setUniform("OMNI_SHADOW_SAMPLER", pLightUniforms.samplersOmni);
 
-    				pRenderable.setVec2BySemantic("SCREEN_TEXTURE_RATIO",
-                                     vec2(pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height));
+    				pPass.setUniform("MIN_SHADOW_VALUE", 0.5);
+    				pPass.setUniform("SHADOW_CONSTANT", 5.e+2);
+
+    				pPass.setUniform("SCREEN_TEXTURE_RATIO",
+                                     vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
 				    
-				    pRenderable.setTextureBySemantics("DEFERRED_TEXTURE0", pDeferredTextures[0]);
-				    pRenderable.setTextureBySemantics("DEFERRED_TEXTURE1", pDeferredTextures[1]);
-				    pRenderable.setTextureBySemantics("SCENE_DEPTH_TEXTURE", pDepthTexture);
+				    pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
+				    pPass.setTexture("DEFERRED_TEXTURE1", pDeferredTextures[1]);
+				    pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTexture);
+
+				    pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 
+						textureName: "DEFERRED_TEXTURE0",
+						texture: null,
+						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+						mag_filter: ETextureFilters.NEAREST,
+						min_filter: ETextureFilters.NEAREST
+					});
+
+					pPass.setUniform("SAMPLER_TEXTURE1", <IAFXSamplerState>{ 
+						textureName: "DEFERRED_TEXTURE1",
+						texture: null,
+						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+						mag_filter: ETextureFilters.NEAREST,
+						min_filter: ETextureFilters.NEAREST
+					});
+
+					pPass.setUniform("SAMPLER_SCENE_DEPTH", <IAFXSamplerState>{ 
+						textureName: "SCENE_DEPTH_TEXTURE",
+						texture: null,
+						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+						mag_filter: ETextureFilters.LINEAR,
+						min_filter: ETextureFilters.LINEAR
+					});
 
 					break;
-				case 1;
+				case 1:
+					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
+				    pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);
+				    
+				    pPass.setUniform("SCREEN_TEXTURE_RATIO",
+                                     vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+
+				    pPass.setUniform("SAMPLER_SKYBOX", <IAFXSamplerState>{ 
+						textureName: "SKYBOX_TEXTURE",
+						texture: null,
+						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+						mag_filter: ETextureFilters.LINEAR,
+						min_filter: ETextureFilters.LINEAR
+					});
+
+					pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 
+						textureName: "DEFERRED_TEXTURE0",
+						texture: null,
+						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+						mag_filter: ETextureFilters.NEAREST,
+						min_filter: ETextureFilters.NEAREST
+					});
+
+					break;
 			}
 		}
 
 		private inline resetUniforms(): void {
+			var pUniforms = this._pLightingUnifoms;
 			pUniforms.omni.clear();
 		    pUniforms.project.clear();
 		    pUniforms.omniShadows.clear();
@@ -337,7 +383,7 @@ module akra.render {
 		    pUniforms.samplersOmni.clear();
 		}
 
-		private createLightingUniforms(pCamera: ICamera, pLightPoints: ILightPoint[], pUniforms: UniformMap): void {
+		private createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray, pUniforms: UniformMap): void {
 			var pLight: ILightPoint;
 			var pOmniLight: IOmniLight;
 			var pProjectLight: IProjectLight;
@@ -358,70 +404,70 @@ module akra.render {
 		    this.resetUniforms();
 
 		    for (i = 0; i < pLightPoints.length; i++) {
-		        pLight = pLightPoints[i];
+		        pLight = pLightPoints.value(i);
 
-		        if (!pLight.isEnabled()) {
-		            continue;
-		        }
+		        //all cameras in list already enabled
+		        // if (!pLight.enabled) {
+		        //     continue;
+		        // }
 		        
 		        v4fLightPosition.set(pLight.worldPosition, 1.);
-		        v3fLightTransformPosition.set(pCameraView.multiply(v4fLightPosition, v4fTemp));
+		        pCameraView.multiplyVec4(v4fLightPosition, v4fTemp);
+		        v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
 
-		        if (pLight.type === ELightPointTypes.OMNI_DIRECTIONAL) {
+		        if (pLight.lightType === ELightTypes.OMNI) {
 		        	
 		        	pOmniLight = <IOmniLight>pLight;
 
-		            if (pLight.isShadowCaster()) {
+		            if (pLight.isShadowCaster) {
 		                pUniformData = uniformOmniShadow();
-		                pUniformData.setLightData(pLight.params, v3fLightTransformPosition);
+		                (<UniformOmniShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                
 		                var pDepthCube: ITexture[] 					= pOmniLight.getDepthTextureCube();
-		                var pShadowCasterCube: IShadowCasterCube 	= pOmniLight.getShadowCaster();
-		                var pOptimizedProjCube: IMat4[] 			= pOmniLight.optimizedProjectionCube;
+		                var pShadowCasterCube: IShadowCaster[] 	= pOmniLight.getShadowCaster();
 		                
 		                for (j = 0; j < 6; ++ j) {
 		                    pShadowCaster = pShadowCasterCube[j];
-		                    m4fToLightSpace = pShadowCaster.viewMatrix().multiply(pCamera.worldMatrix, mat4());
+		                    m4fToLightSpace = pShadowCaster.viewMatrix.multiply(pCamera.worldMatrix, mat4());
 		                    pUniforms.textures.push(pDepthCube[j]);
 		                    sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
 		                    
-		                    pUniformData.setSampler(sTexture, j);
-		                    pUniforms.samplersOmni.push(pUniformData.SHADOW_SAMPLER[j]);
-		                    pUniformData.setMatrix(m4fToLightSpace,pOptimizedProjCube[j], j);
+		                    (<UniformOmniShadow>pUniformData).setSampler(sTexture, j);
+		                    pUniforms.samplersOmni.push((<UniformOmniShadow>pUniformData).SHADOW_SAMPLER[j]);
+		                    (<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.optimizedProjection, j);
 		                }
 
-		                pUniforms.omniShadows.push(pUniformData);
+		                pUniforms.omniShadows.push(<UniformOmniShadow>pUniformData);
 		            }
 		            else {
 		                pUniformData = uniformOmni();
-		                pUniformData.setLightData(pLight.params, v3fLightTransformPosition);
-		                pUniforms.omni.push(pUniformData);
+		                (<UniformOmni>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
+		                pUniforms.omni.push(<UniformOmni>pUniformData);
 		            }
 		        }
-		        else if (pLight.type === ELightPointTypes.PROJECT) {
+		        else if (pLight.lightType === ELightTypes.PROJECT) {
 		        	pProjectLight = <IProjectLight>pLight;
+		        	pShadowCaster = pProjectLight.getShadowCaster();
 
-		            if (pLight.isShadowCaster()) {
+		            if (pLight.isShadowCaster && pShadowCaster.isShadowCasted) {
 		                pUniformData = uniformProjectShadow();
-		                pUniformData.setLightData(pLight.params, v3fLightTransformPosition);
+		                (<UniformProjectShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                
-		                pShadowCaster = pLight.camera;
-		                m4fToLightSpace = pShadowCaster.viewMatrix().multiply(pCamera.worldMatrix, mat4());
-		                pUniforms.textures.push(pLight.depthTexture);
+		                m4fToLightSpace = pShadowCaster.viewMatrix.multiply(pCamera.worldMatrix, mat4());
+		                pUniforms.textures.push(pProjectLight.getDepthTexture());
 		                sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
 
-		                pUniformData.setSampler(sTexture);
-		                pUniforms.samplersProject.push(pUniformData.SHADOW_SAMPLER);
-		                pUniformData.setMatrix(m4fToLightSpace, pShadowCaster.projectionMatrix(), pLight.optimizedProjection);
-		                pUniforms.projectShadows.push(pUniformData);
+		                (<UniformProjectShadow>pUniformData).setSampler(sTexture);
+		                pUniforms.samplersProject.push((<UniformProjectShadow>pUniformData).SHADOW_SAMPLER);
+		                (<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.projectionMatrix, pShadowCaster.optimizedProjection);
+		                pUniforms.projectShadows.push(<UniformProjectShadow>pUniformData);
 		            }
 		            else {
 		                pUniformData = uniformProject();
-		                pUniformData.setLightData(pLight.params, v3fLightTransformPosition);
-		                pShadowCaster = pLight.getShadowCaster();
+		                (<UniformProject>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                m4fShadow = pShadowCaster.projViewMatrix.multiply(pCamera.worldMatrix, mat4());
-		                pUniformData.setMatrix(m4fShadow);
-		                pUniforms.project.push(pUniformData);
+		                (<UniformProject>pUniformData).setMatrix(m4fShadow);
+		                pUniforms.project.push(<UniformProject>pUniformData);
 		            }
 
 		        }

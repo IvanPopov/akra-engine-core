@@ -187,27 +187,14 @@ void fs_terrain(VS_OUT IN){
             }
         }
     }
+
+    normal = tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb;
+    //normal = float3(0., 0., 1.);
     
-    float3 someNormal = float3(dFdx(IN.vert.z), dFdy(IN.vert.z), 1.);
-    Normal = normalize(someNormal);
-
-    /*
-    normal = tex2D(ptNormal, IN.texcoord).rgb;
-    //normal = float3(0.5, 0.5, 0.5);
-    //normal = normalize(normal);
     normal.xy = normal.xy * 2. - 1.;
-
-    normal = ((view_mat * model_mat * float4(normalize(normal), 0.)).xyz);
+    normal = normalize(normal);
+    normal = (view_mat * model_mat * float4(normal, 0.)).xyz;//float4(normalize(normal), 0.)).xyz);
     Normal = normalize(normal);
-    */
-   
-    if(IN.edgeTest.x * IN.edgeTest.y * IN.edgeTest.z < 0.001)
-    {
-       Fragment_material.emissive = float4(0.5, 0.5, 0.5, 1.);
-    }
-    else {
-       Fragment_material.emissive = float4(0.);
-    }
 
     if(isDebug){
         if(isRealNormal){
@@ -215,12 +202,21 @@ void fs_terrain(VS_OUT IN){
             Fragment_material.diffuse = float4(0.);
         }
         else {
-            Fragment_material.emissive = float4((normal.xy+1.)/2., normal.z, 0.);
+            Fragment_material.emissive = float4((normal.xy + 1.)/2., normal.z, 0.);
             Fragment_material.diffuse = float4(0.);
         }        
     }
     else {
-        Fragment_material.emissive = float4(0.);
+
+        if(IN.edgeTest.x * IN.edgeTest.y * IN.edgeTest.z < 0.001)
+        {
+           Fragment_material.emissive = float4(0.5, 0.5, 0.5, 1.);
+        }
+        else {
+           Fragment_material.emissive = float4(0.);
+        }
+        
+        //Fragment_material.emissive = float4(0.);
         Fragment_material.diffuse = color;
     }
     

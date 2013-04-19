@@ -44,7 +44,6 @@ module akra.render {
 		// protected _fDepthClearValue: float = 1.;
 
 		protected _bClearEveryFrame: bool = true;
-		protected _bNewFrame: bool = false;
 
 		// protected _iClearBuffers: int = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH;
 
@@ -113,10 +112,6 @@ module akra.render {
 			if (pRenderer && pRenderer._getViewport() === this) {
 				pRenderer._setViewport(null);
 			}
-		}
-
-		inline newFrame(): void {
-			this._bNewFrame = true;
 		}
 
 
@@ -270,6 +265,23 @@ module akra.render {
 				this.renderAsNormal(this._csDefaultRenderMethod, this._pCamera);
 			}
 		}
+
+		startFrame(): void {
+			if(this._bClearEveryFrame){
+				this.clear(this._pViewportState.clearBuffers, 
+        				   this._pViewportState.clearColor,
+        				   this._pViewportState.clearDepth);
+			}
+		}
+
+        inline renderObject(pRenderable: IRenderableObject, csMethod?: string = this._csDefaultRenderMethod): void {
+        	pRenderable.render(this, csMethod, null);
+        }
+
+        endFrame(): void {
+        	this.getTarget().getRenderer().executeQueue();
+        }
+
 
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
 			var pVisibleObjects: IObjectArray = pCamera.display();

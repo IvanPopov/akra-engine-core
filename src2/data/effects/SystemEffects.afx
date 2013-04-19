@@ -14,16 +14,6 @@ struct VS_OUT{
 texture tex0:TEXTURE0;
 texture tex1:TEXTURE1;
 
-//sampler sourceSampler0[3]:SOURCE0  = {
-//sampler_state {
-//    Texture = <tex0>;
-//},
-//sampler_state {
-//    Texture = <tex1>;
-//},
-//sampler_state {
-//    Texture = <tex0>;
-//},};
 sampler sourceSampler0:SOURCE0 = sampler_state {
     Texture = <tex0>;
 };

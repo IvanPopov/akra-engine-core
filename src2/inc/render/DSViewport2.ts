@@ -159,7 +159,6 @@ module akra.render {
 // #endif
 			//render deferred
 			
-			this.newFrame();
 			this._pDeferredView.render(this);
 		}
 

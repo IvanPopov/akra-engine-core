@@ -391,12 +391,12 @@ module akra.webgl {
         
         if(getWebGLFormat(eFormat) && getWebGLDataType(eFormat))
         {
-            switch(eFormat)
-            {
-                case EPixelFormats.FLOAT32_DEPTH:
-                case EPixelFormats.L16:
-                    return false;
-            }
+            // switch(eFormat)
+            // {
+            //     case EPixelFormats.FLOAT32_DEPTH:
+            //     case EPixelFormats.L16:
+            //         return false;
+            // }
             return true;
         }
 
@@ -410,7 +410,8 @@ module akra.webgl {
             case EPixelFormats.L8:
                 return GL_UNSIGNED_BYTE;           
             case EPixelFormats.L16:     
-                return GL_UNSIGNED_SHORT;
+                //return GL_UNSIGNED_SHORT;
+                return GL_UNSIGNED_BYTE;
 
             case EPixelFormats.A8:
                 return GL_UNSIGNED_BYTE;           

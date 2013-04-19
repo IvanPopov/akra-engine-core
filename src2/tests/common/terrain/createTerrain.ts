@@ -6,6 +6,7 @@ module akra {
 	export var pEngine: IEngine = createEngine();
 	export var pTerrain: ITerrain = null;
 	export var pCamera: ICamera = null;
+	export var pMainLightPoint: ILightPoint = null;
 
 	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 	var pScene: IScene3d = pEngine.getScene();
@@ -102,6 +103,8 @@ module akra {
 			pOmniLight.params.attenuation.set(1,0,0);
 
 			pOmniLight.addPosition(0, 0, 1000);
+
+			pMainLightPoint = pOmniLight;
 		}
 
 		function createSkyBox(): void {
@@ -127,7 +130,7 @@ module akra {
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-512, 512, -512, 512, -128, 128), 4, 5, 5, "main_terrain");
+					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-500, 500, -500, 500, -0, 300), 4, 5, 5, "main_terrain");
 					pTerrain.attachToParent(pTestNode);
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
@@ -135,7 +138,6 @@ module akra {
 					// pTerrain.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
-					pEngine.renderFrame();
 					// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
 				});
 			});

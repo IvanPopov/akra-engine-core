@@ -179,8 +179,7 @@ module akra.terrain {
 			this._pRenderData.allocateIndex([VE_FLOAT(DeclarationUsages.INDEX0)],this._pIndexList);
 			this._pRenderData.index(this._iVertexID, DeclarationUsages.INDEX0);
 			this._pDataIndex = this._pRenderData.getAdvancedIndexData(DeclarationUsages.INDEX0);
-
-			LOG(this._pVerts.length, this._pIndexList.length);
+			
 			return true;
 		}
 

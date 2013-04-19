@@ -15,7 +15,7 @@ module akra.render {
 			var pData: IRenderData = pCollection.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP);
 
 			pData.allocateAttribute(createVertexDeclaration([VE_FLOAT2(DeclUsages.POSITION)]), 
-				new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]))
+				new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]));
 
 			this._pRenderData = pData;
 			this._setup(pRenderer);

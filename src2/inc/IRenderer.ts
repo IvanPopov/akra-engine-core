@@ -288,6 +288,7 @@ module akra {
         releaseEntry(pEntry: IRenderEntry): void;
         pushEntry(pEntry: IRenderEntry): void;
         executeQueue(): void;
+
     }
 
 

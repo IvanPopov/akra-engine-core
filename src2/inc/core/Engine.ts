@@ -348,13 +348,12 @@ module akra.core {
 						    "effects/Plane.afx",
 						    "effects/fxaa.afx",
 						    "effects/skybox.afx",
-						    "effects/mesh.afx", 
 						    "effects/TextureToScreen.afx",
 						    "effects/mesh_geometry.afx",
 						    "effects/prepare_shadows.afx",						    
 						    "effects/terrain.afx",
-						    // "effects/terrain_geometry.afx",
-						    "effects/prepareDeferredShading.afx"
+						    "effects/prepareDeferredShading.afx",
+						    "effects/generate_normal_map.afx"
 						],
 						deps: {
 							files: [

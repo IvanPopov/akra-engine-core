@@ -617,13 +617,15 @@ module akra.fx {
 				pPassInput.setUniform("FRAMEBUFFER_SIZE", vec2(pViewport.width, pViewport.height));
 
 				var pCamera: ICamera = pViewport.getCamera();
-				pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
-				pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
-				pPassInput.setUniform("INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
-				pPassInput.setUniform("CAMERA_POSITION", pCamera.worldPosition);
+				if(!isNull(pCamera)) { 
+					pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
+					pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
+					pPassInput.setUniform("INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
+					pPassInput.setUniform("CAMERA_POSITION", pCamera.worldPosition);
 
-				if(pCamera.type === EEntityTypes.SHADOW_CASTER){
-					pPassInput.setUniform("OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
+					if(pCamera.type === EEntityTypes.SHADOW_CASTER){
+						pPassInput.setUniform("OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
+					}
 				}
 			}
 
