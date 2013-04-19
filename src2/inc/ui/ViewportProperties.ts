@@ -18,6 +18,7 @@ module akra.ui {
 		protected _pFullscreenBtn: IUIButton;
 		protected _pResolutionCbl: IUICheckboxList;
 		protected _pFXAASwh: IUISwitch;
+		protected _pSkyboxLb: IUILabel;
 
 		inline get viewport(): IViewport {
 			return this._pViewport;
@@ -32,6 +33,7 @@ module akra.ui {
 			this._pFullscreenBtn = <IUIButton>this.findEntity("fullscreen");
 			this._pFXAASwh = <IUISwitch>this.findEntity("FXAA");
 			this._pResolutionCbl = <IUICheckboxList>this.findEntity("resolution-list");
+			this._pSkyboxLb = <IUILabel>this.findEntity("skybox");
 
 			this._pFullscreenBtn.bind(SIGNAL(click), () => {
 				akra.ide.cmd(akra.ECMD.SET_PREVIEW_FULLSCREEN);
@@ -41,6 +43,63 @@ module akra.ui {
 			this.connect(this._pFXAASwh, SIGNAL(changed), SLOT(_fxaaChanged));
 
 			this._previewResChanged(this._pResolutionCbl, this._pResolutionCbl.checked);
+
+			this.setupFileDropping();
+		}
+
+		private setupFileDropping(): void {
+			var pViewportProperties = this;
+			var pRmgr: IResourcePoolManager = ide.getResourceManager();
+			var pSkyboxLb: IUILabel = this._pSkyboxLb;
+			var $el = pSkyboxLb.el.find(".label-text:first");
+
+			io.createFileDropArea(null, {
+				drop: (file: File, content, format, e: DragEvent): void => {
+					pSkyboxLb.el.removeClass("file-drag-over");
+
+					if (e.target !== $el[0] && e.target !== pViewportProperties.getCanvasElement()) {
+						return;
+					}
+
+					var pName: IPathinfo = pathinfo(file.name);
+
+				    if (pName.ext.toUpperCase() !== "DDS") {
+				    	alert("unsupported format used: " + file.name);
+				    	return;
+				    }
+
+				    pSkyboxLb.text = pName.toString();
+ 					
+ 					var sName: string = ".skybox - " + pName.toString();
+ 					var pSkyBoxTexture: ITexture = <ITexture>pRmgr.texturePool.findResource(sName);
+
+				    if (!pSkyBoxTexture) {
+
+					    var pSkyboxImage = pRmgr.createImg(sName);
+				    	var pSkyBoxTexture = pRmgr.createTexture(sName);
+
+
+						pSkyboxImage.load(new Uint8Array(content));
+			    		pSkyBoxTexture.loadImage(pSkyboxImage);
+		    		}
+
+					(<render.DSViewport>(pViewportProperties.getViewport())).setSkybox(pSkyBoxTexture);
+		    	},
+
+		    	// dragenter: (e) => {
+		    	// 	pSkyboxLb.el.addClass("file-drag-over");
+		    	// },
+
+		    	dragover: (e) => {
+		    		pSkyboxLb.el.addClass("file-drag-over");
+		    	},
+
+		    	dragleave: (e) => {
+		    		pSkyboxLb.el.removeClass("file-drag-over");
+		    	},
+
+		    	format: EFileDataTypes.ARRAY_BUFFER
+			});
 		}
 
 		_fxaaChanged(pSw: IUISwitch, bValue: bool): void {
@@ -79,6 +138,7 @@ module akra.ui {
 
 		inline getCanvas(): ICanvas3d { return this._pViewport.getTarget().getRenderer().getDefaultCanvas(); }
 		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
+		inline getViewport(): IViewport { return this._pViewport; }
 
 		rendered(): void {
 			super.rendered();

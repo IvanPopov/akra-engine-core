@@ -1470,3 +1470,9 @@ div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.active {
   background-image: -o-linear-gradient(#5393c5, #6facd5);
   background-image: linear-gradient(#5393c5, #6facd5);
 }
+.component-viewportproperties .row .component-label {
+  font-family: Consolas;
+}
+.component-viewportproperties .row .component-label.file-drag-over {
+  background: rgba(255, 255, 0, 0.5) !important;
+}

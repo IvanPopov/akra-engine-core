@@ -15,6 +15,7 @@ module akra.ui.graph {
 		protected _eGraphType: EUIGraphTypes;
 		protected _pCanvas: RaphaelPaper = null;
 		protected _pTempRoute: IUITempGraphRoute = null;
+		protected $svg: JQuery = null;
 
 		inline get nodes(): IUIGraphNode[] {
 			var pNodes: IUIGraphNode[] = [];
@@ -83,7 +84,7 @@ module akra.ui.graph {
 
 			this._pCanvas = Raphael(this.getHTMLElement(), 0, 0);
 
-			var $svg = this.$element.children(":first");
+			var $svg = this.$svg = this.$element.children(":first");
 
 			$svg.css({
 				width: "100%",

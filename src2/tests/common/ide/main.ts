@@ -97,14 +97,14 @@ module akra {
 		pOmniShadowLight.addPosition(0, 10, -10);
 	}
 
-	function createSkyBox(): void {
-		pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
-		pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/desert-2.dds");
+	// function createSkyBox(): void {
+	// 	pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
+	// 	pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/desert-2.dds");
 
-		pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
-			(<render.DSViewport>pViewport).setSkybox(pTexture);
-		});
-	}
+	// 	pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
+	// 		(<render.DSViewport>pViewport).setSkybox(pTexture);
+	// 	});
+	// }
 
 	function loadModels(sPath, fnCallback?: Function): void {
 		var pController: IAnimationController = null;
@@ -145,7 +145,7 @@ module akra {
 		createSceneEnvironment();
 		createCameras();
 		createViewports();
-		createSkyBox();
+		// createSkyBox();
 		createLighting();
 		
 		// loadModels("../../../data/models/Weldinggun.dae");

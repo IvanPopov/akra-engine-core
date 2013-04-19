@@ -7,7 +7,7 @@
 
 #include "raphael.d.ts"
 #include "swig.d.ts"
-
+#include "io/filedrop.ts"
 
 /// @script ui/3d-party/raphael/raphael-min.js
 /// @script ui/3d-party/swig/swig.pack.min.js
@@ -56,10 +56,41 @@ module akra.ui {
 			$comp.remove();
 		});
 	}
+
 	export function template(pNode: IUIComponent, sUrl: string, pData?: any): void {
 		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
 		_template(pNode, sTemplate, sUrl, pData)
 	}
+
+	// var pFileEventListeners: any[] = [];
+
+	// io.createFileDropArea(null, {
+	// 	dragenter: (e: DragEvent): void => {
+	// 		for (var i: int = 0; i < pFileEventListeners.length; ++ i) {
+	// 			pFileEventListeners[i].fileDragStarted(e);
+	// 		}
+	// 	},
+		
+	// 	dragleave: (e: DragEvent): void => {
+	// 		for (var i: int = 0; i < pFileEventListeners.length; ++ i) {
+	// 			pFileEventListeners[i].fileDragEnded(e);
+	// 		}
+	// 	},
+
+	// 	dragover: (e: DragEvent): void => {
+	// 		for (var i: int = 0; i < pFileEventListeners.length; ++ i) {
+	// 			pFileEventListeners[i].fileDragOver(e);
+	// 		}
+	// 	},
+
+	// 	drop: (file: File, content, format?: EFileDataTypes, e?: DragEvent): void => {
+	// 		for (var i: int = 0; i < pFileEventListeners.length; ++ i) {
+	// 			pFileEventListeners[i].fileDroped(file, content, format, e);
+	// 		}
+	// 	},
+
+	// 	format: EFileDataTypes.ARRAY_BUFFER
+	// });
 
 	
 	export var COMPONENTS: { [type: string]: IUIComponentType; } = <any>{};
@@ -109,6 +140,57 @@ module akra.ui {
 
 		inline isGeneric(): bool {
 			return !isNull(this._sGenericType);
+		}
+
+		// handleEvent(sEvent: string): bool {
+		// 	var pEvents: string[] = sEvent.split(' ');
+
+		// 	for (var i = 0; i < pEvents.length; ++ i) {
+		// 		sEvent = pEvents[i].toLowerCase();
+
+		// 		if (HTMLNode.EVENTS.indexOf(sEvent) == -1) {
+		// 			// switch (sEvent) {
+		// 			// 	case "dragenter":
+		// 			// 	case "dragover":
+		// 			// 	case "dragleave":
+		// 			// 	case "drop":
+		// 			// 		var pOptions = {};
+		// 			// 		var pComponent: any = this;
+		// 			// 		pOptions[sEvent] = () => {pComponent[sEvent].apply(pComponent, arguments);};
+		// 			// 		io.fileDropArea(this.getHTMLElement(), pOptions);
+		// 			// }
+		// 			switch (sEvent) {
+		// 				case "fileevent": 
+		// 					if (pFileEventListeners.indexOf(this) == -1) {
+		// 						pFileEventListeners.push(this);
+		// 					}
+		// 			}
+		// 		}
+		// 		else {
+		// 			super.handleEvent(sEvent);
+		// 		}
+		// 	}
+		// 	return true;
+		// }
+
+		// inline disableEvent(sEvent: string): void {
+		// 	super.disableEvent(sEvent);
+		// }
+
+		fileDragStarted(e: DragEvent): void {
+			// LOG("fileDragStarted(", e, ")");
+		}
+
+		fileDragEnded(e: DragEvent): void {
+			// LOG("fileDragEnded(", e, ")");
+		}
+
+		fileDragOver(e: DragEvent): void {
+			// LOG("fileDragOver(", e, ")");
+		}
+
+		fileDroped(file: File, content: any, format?: EFileDataTypes, e?: DragEvent): void {
+			// LOG(arguments);
 		}
 
 		setLayout(eType: EUILayouts): bool;

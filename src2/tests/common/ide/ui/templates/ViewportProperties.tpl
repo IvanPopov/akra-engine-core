@@ -15,9 +15,13 @@
 			<span>fullscreen:</span>
 			<component type="Button" name="fullscreen" text="enable" />
 		</div>
-		<div class="row last">
+		<div class="row">
 			<span>FXAA:</span>
 			<component type="Switch" name="FXAA" text="FXAA" />
+		</div>
+		<div class="row last">
+			<span>Skybox:</span>
+			<component type="Label" name="skybox" text="[not specified]" />
 		</div>
 	</div>
 </div>

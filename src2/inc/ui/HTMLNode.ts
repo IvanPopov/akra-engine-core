@@ -35,10 +35,6 @@ module akra.ui {
 		}
 
 		handleEvent(sEvent: string): bool {
-			// if (HTMLNode.EVENTS.indexOf(sEvent) == -1) {
-			// 	return false;
-			// }
-
 			this.$element.bind(sEvent, this._fnEventRedirector);
 			return true;
 		}

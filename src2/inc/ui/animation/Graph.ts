@@ -9,6 +9,7 @@
 #include "Controls.ts"
 
 #include "animation/Animation.ts"
+#include "io/filedrop.ts"
 
 module akra.ui.animation {
 	export class Graph extends graph.Graph implements IUIAnimationGraph {
@@ -20,80 +21,56 @@ module akra.ui.animation {
 			super(parent, options, EUIGraphTypes.ANIMATION);
 
 			this.setupFileDropping();
-			// this.handleEvent("dragenter dragleave dragover drop");
 		}
 
 		private setupFileDropping(): void {
-
-			var dropZone: HTMLDivElement = <HTMLDivElement>this.getHTMLElement();
-			var pGraph = this;
-
-			// dropZone.addEventListener('dragenter', (e) => {pGraph.dragenter(e);}, false);
-			dropZone.addEventListener('dragleave', (e) => {pGraph.dragleave(e);}, false);
-			dropZone.addEventListener('dragover', (e) => {pGraph.dragover(e);}, false);
-			dropZone.addEventListener('drop', (e) => {pGraph.drop(e);}, false);
-		}
-
-		//dragenter(e): void {
-			// e.stopPropagation();
-			// e.preventDefault();
-			// this.el.addClass("file-drag-over");
-		//}
-
-		dragleave(e): void {
-			e.stopPropagation();
-			e.preventDefault();
-			this.el.removeClass("file-drag-over");
-		}
-
-		dragover(e): void {
-			e.stopPropagation();
-			e.preventDefault();
-			e.dataTransfer.dropEffect = 'copy';
-			this.el.addClass("file-drag-over");
-		}
-
-		drop(e) {
-			e.stopPropagation();
-			e.preventDefault();
-
-			this.el.removeClass("file-drag-over");
-
-			var files = e.dataTransfer.files; /* FileList object.*/
-	
 			var pGraph = this;
 			var pRmgr: IResourcePoolManager = ide.getResourceManager();
+			var $svg = this.$svg;
 
-			for (var i = 0, f; f = files[i]; i++) {
-			    var pName: IPathinfo = pathinfo(f.name);
+			io.createFileDropArea(null, {
+				drop: (file: File, content, format, e: DragEvent): void => {
+					pGraph.el.removeClass("file-drag-over");
+					
+					if (e.target !== $svg[0]) {
+						return;
+					}
 
-			    if (pName.ext.toUpperCase() !== "DAE") {
-			    	alert("unsupported format used: " + f.name);
-			    	continue;
-			    }
+					var pName: IPathinfo = pathinfo(file.name);
 
-			    var reader = new FileReader();
+				    if (pName.ext.toUpperCase() !== "DAE") {
+				    	alert("unsupported format used: " + file.name);
+				    	return;
+				    }
 
-				reader.onload = ((theFile) => {
-					return (e) => {
-						var sFileContent = e.target.result;
+			    	var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
+		    		pModelResource.parse(<string>content, {scene: false, name: pName.toString()});
 
-					   	var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
-			    		pModelResource.parse(sFileContent, {scene: false, name: pName.toString()});
+		    		var pAnimations: IAnimation[] = pModelResource.extractAnimations();
 
-			    		var pAnimations: IAnimation[] = pModelResource.extractAnimations();
+		    		for (var j = 0; j < pAnimations.length; ++ j) {
+		    			pGraph.addAnimation(pAnimations[j]);
+		    			pGraph.createNodeByAnimation(pAnimations[j]);
+		    		}
+		    	},
 
-			    		for (var j = 0; j < pAnimations.length; ++ j) {
-			    			pGraph.addAnimation(pAnimations[j]);
-			    			pGraph.createNodeByAnimation(pAnimations[j]);
-			    		}
-					};
-				})(f);
+		    	// dragenter: (e) => {
+		    	// 	pGraph.el.addClass("file-drag-over");
+		    	// },
 
-				reader.readAsText(f);
-		    }
+		    	dragover: (e) => {
+		    		pGraph.el.addClass("file-drag-over");
+		    	},
 
+		    	dragleave: (e) => {
+		    		pGraph.el.removeClass("file-drag-over");
+		    	},
+
+		    	format: EFileDataTypes.TEXT
+			});
 		}
+
+
 
 		private setTimer(pTimer: IUtilTimer): void {
 			this._pTimer = pTimer;
