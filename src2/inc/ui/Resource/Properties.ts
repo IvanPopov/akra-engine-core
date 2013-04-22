@@ -13,7 +13,7 @@ module akra.ui.resource {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template("ui/templates/resource.Properties.tpl");
+			this.template("resource.Properties.tpl");
 
 			this._pName = <IUILabel>this.findEntity("name");
 		}

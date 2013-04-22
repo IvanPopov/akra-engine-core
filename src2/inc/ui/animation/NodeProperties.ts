@@ -10,7 +10,7 @@ module akra.ui.animation {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template("ui/templates/animation.NodeProperties.tpl");
+			this.template("animation.NodeProperties.tpl");
 
 			this._pNameLb = <IUILabel>this.findEntity("animation-name");
 		}

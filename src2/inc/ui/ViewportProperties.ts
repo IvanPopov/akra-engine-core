@@ -26,7 +26,7 @@ module akra.ui {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template(DATA_FOLDER + "/ui/templates/ViewportProperties.tpl");
+			this.template("ViewportProperties.tpl");
 
 			this._pStats = <IUIRenderTargetStats>this.findEntity("stats");
 			this._pFullscreenBtn = <IUIButton>this.findEntity("fullscreen");

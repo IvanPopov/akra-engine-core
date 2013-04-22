@@ -22,7 +22,7 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph, pAnim: IAnimation = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_DATA);
 
-			this.template("ui/templates/animation.Data.tpl");
+			this.template("animation.Data.tpl");
 
 			if (!isNull(pAnim)) {
 				this.animation = pAnim;

@@ -60,19 +60,7 @@ module akra.util {
 		}
 
 		private normalizeIncludePath(sFile: string): string {
-			var pCurrentPath: IURI = null;
-			var pFile: IURI = util.uri(sFile);
-
-
-			if (!isNull(pFile.host) || util.pathinfo(pFile.path).isAbsolute()) {
-				//another server or absolute path
-				return sFile;
-			}
-
-			pCurrentPath = util.uri(this.getParseFileName());
-			pCurrentPath.path = util.pathinfo(pCurrentPath.path).dirname + "/" + sFile;
-			
-			return pCurrentPath.toString();
+			return util.URI.resolve(sFile, this.getParseFileName());
 		}
 
 		private _includeCode(): EOperationType {

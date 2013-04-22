@@ -177,7 +177,7 @@ module akra.util {
 		 $
 		 */
 		
-		static resolve(sFile): string {
+		static resolve(sFile, sAbsolutePath: string = document.location.pathname): string {
 
 			var pCurrentPath: IURI = null;
 			var pFile: IURI = util.uri(sFile);
@@ -188,7 +188,7 @@ module akra.util {
 				return sFile;
 			}
 
-			pCurrentPath = util.uri(document.location.pathname);
+			pCurrentPath = util.uri(sAbsolutePath);
 			pCurrentPath.path = util.pathinfo(pCurrentPath.path).dirname + "/" + sFile;
 			
 			return pCurrentPath.toString();

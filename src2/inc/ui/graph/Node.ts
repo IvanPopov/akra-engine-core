@@ -39,7 +39,7 @@ module akra.ui.graph {
 			this.attachToParent(pGraph);
 
 			if (!isDef(options) || options.init !== false) {
-				this.template("ui/templates/graph.Node.tpl");
+				this.template("graph.Node.tpl");
 				this.init();
 			}
 

@@ -15,7 +15,7 @@ module akra.ui.model {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template("ui/templates/model.MeshProperties.tpl");
+			this.template("model.MeshProperties.tpl");
 
 			this._pName = <IUILabel>this.findEntity("name");
 			this._pShadows = <IUISwitch>this.findEntity("shadows");

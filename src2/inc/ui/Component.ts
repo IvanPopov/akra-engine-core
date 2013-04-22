@@ -14,6 +14,12 @@
 /// @: {data}/ui/css/main.css|location()|css()
 
 module akra.ui {
+	swig.init({
+		filters: {data: (path) => DATA(path)}
+	});
+
+	// LOG(swig.compile("{% filter data %}ui/img/switch16.png{% endfilter %}", {filename: "*"})(null));
+
 	function _template(pNode: IUIComponent, sTemplate: string, sName: string, pData: any = null, bRenderAsNormal: bool = false, iDepth: int = 0): void {
 		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sName});
 		var sTplData: string = fnTemplate(pData);
@@ -123,8 +129,8 @@ module akra.ui {
 			this.applyOptions(pOptions);
 		}
 
-		template(sUrl: string, pData?: any): void {
-			template(this, sUrl, pData);
+		template(sTplName: string, pData?: any): void {
+			template(this, DATA("ui/templates/" + sTplName), pData);
 		}
 
 		fromStringTemplate(sTemplate: string, pData?: any): void {

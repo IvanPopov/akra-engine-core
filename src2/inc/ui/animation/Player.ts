@@ -39,7 +39,7 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph, pContainer: IAnimationContainer = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_PLAYER);
 
-			this.template("ui/templates/animation.Player.tpl");
+			this.template("animation.Player.tpl");
 			this.linkAreas();
 
 			this._pSpeedLabel 	= <IUILabel>this.findEntity("speed");

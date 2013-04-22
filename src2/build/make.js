@@ -650,7 +650,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 
 
     if (pOptions.webglDebug) {
-    	sTestData += "\n\n/// @WEBGL_DEBUG: {data}/js/webgl-debug.js|src(build/webgl-debug.js)|script() \n"
+    	sTestData += "\n\n/// @WEBGL_DEBUG: {data}/js/webgl-debug.js|script() \n"
     }
 
     var pFetchResult = {
@@ -665,9 +665,16 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 
     sTestData = pFetchResult.data;
 
+    var delimeter = "\n# -- GENERATED AUTOMATICALLY --\n";
+    var gitignore_data = s = fs.readFileSync(".gitignore", "utf8");
+
+    if (s.indexOf(delimeter) !== -1) {
+    	gitignore_data = s.substr(0, s.indexOf(delimeter)) + s.substr(s.lastIndexOf(delimeter) + delimeter.length, s.length);
+    }
+
     fs.writeFileSync(
     	".gitignore", 
-    	"# -- GENERATED AUTOMATICALLY -- \n" + gitignore + "\n# -- GENERATED AUTOMATICALLY -- \n", 
+    	gitignore_data + delimeter + gitignore + "\n" + delimeter, 
     	"utf8");
 
 	for (var i in pAdditionalScripts) {

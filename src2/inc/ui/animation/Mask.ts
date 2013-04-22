@@ -29,7 +29,7 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_MASK);
 
-			this.template("ui/templates/animation.Mask.tpl");
+			this.template("animation.Mask.tpl");
 			this.linkAreas();
 
 			this._pEditBtn = <IUIButton>this.findEntity("edit");

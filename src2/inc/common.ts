@@ -78,7 +78,7 @@
                                     return pStack})();
 
 #define IFACE(IF) export interface IF {}
-
+#define DATA(path) DATA_FOLDER + "/" + path
 module akra {
 
     export const DATA_FOLDER = "@DATA_FOLDER";

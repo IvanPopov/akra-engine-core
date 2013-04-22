@@ -10,11 +10,11 @@
 			
 			<div>
 				<component type="CheckboxList" multiselect >
-					<component type="Checkbox" img="ui/img/infinity16.png" name="left-inf" />
-					<component type="Checkbox" img="ui/img/play16.png" name="play" />
-					<component type="Checkbox" img="ui/img/loop16.png" name="loop" />
-					<component type="Checkbox" img="ui/img/back16.png" name="reverse" />
-					<component type="Checkbox" img="ui/img/infinity16.png" name="right-inf" />
+					<component type="Checkbox" img="{% filter data %}ui/img/infinity16.png{% endfilter %}" name="left-inf" />
+					<component type="Checkbox" img="{% filter data %}ui/img/play16.png{% endfilter %}" name="play" />
+					<component type="Checkbox" img="{% filter data %}ui/img/loop16.png{% endfilter %}" name="loop" />
+					<component type="Checkbox" img="{% filter data %}ui/img/back16.png{% endfilter %}" name="reverse" />
+					<component type="Checkbox" img="{% filter data %}ui/img/infinity16.png{% endfilter %}" name="right-inf" />
 				</component>
 			</div>
 			

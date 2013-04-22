@@ -31,7 +31,7 @@ module akra.ui {
 			debug_assert(!isNull(this._pEngine), "Engine required!");
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
-			this.template(DATA_FOLDER + "/ui/templates/IDE.tpl");
+			this.template("IDE.tpl");
 
 			//viewport setup
 			
@@ -115,7 +115,7 @@ module akra.ui {
 							name: "load-collada-dlg",
 							title: "Load collada",
 							controls: "close",
-							template: "ui/templates/custom.LoadColladaDlg.tpl"
+							template: "custom.LoadColladaDlg.tpl"
 						});
 
 						pDlg.bind(SIGNAL(closed), () => {

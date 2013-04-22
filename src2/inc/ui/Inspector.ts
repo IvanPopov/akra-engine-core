@@ -42,7 +42,7 @@ module akra.ui {
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
-			this.template(DATA_FOLDER + "/ui/templates/Inspector.tpl");
+			this.template("Inspector.tpl");
 
 			this._pNameLabel = <IUILabel>this.findEntity("node-name");
 			this._pPosition = <IUIVector>this.findEntity("position");

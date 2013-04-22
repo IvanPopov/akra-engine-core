@@ -38,7 +38,7 @@ module akra.ui {
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.VECTOR) {
 			super(ui, options, eType);
 
-			this.template("ui/templates/Vector.tpl");
+			this.template("Vector.tpl");
 
 			this.x = <IUILabel>this.findEntity('x');
 			this.y = <IUILabel>this.findEntity('y');

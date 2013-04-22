@@ -11,8 +11,6 @@ module akra.ui.animation {
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
-
-			//this.template("ui/templates/animation.MaskProperties.tpl");
 		}
 
 		setMask(pNode: IUIAnimationMask): void {
