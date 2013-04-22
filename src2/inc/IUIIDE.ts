@@ -7,6 +7,9 @@ module akra {
 	IFACE(IEngine);
 	IFACE(IResourcePoolManager);
 	IFACE(IScene3d);
+	IFACE(IViewport);
+	IFACE(ICamera);
+	IFACE(ICanvas3d);
 
 	export enum ECMD {
 		SET_PREVIEW_RESOLUTION,
@@ -15,9 +18,14 @@ module akra {
 		INSPECT_SCENE_NODE,
 		INSPECT_ANIMATION_NODE,
 
+		
 		EDIT_ANIMATION_CONTROLLER,
 
+		//меняем антиалисинг
 		CHANGE_AA,
+
+		//редактируем код происходящие на событие eventprovider'a
+		EDIT_EVENT,
 
 
 		LOAD_COLLADA
@@ -27,6 +35,9 @@ module akra {
 		getEngine(): IEngine;
 		getResourceManager(): IResourcePoolManager;
 		getScene(): IScene3d;
+		getViewport(): IViewport;
+		getCamera(): ICamera;
+		getCanvas(): ICanvas3d;
 
 		cmd(eCommand: ECMD, ...argv: any[]): bool;
 	}

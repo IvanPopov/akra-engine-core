@@ -513,7 +513,12 @@ body {
 		}
 	}
 
-	div[name=model-entry], div[name=scene-model], div[name=light-point], div[name=animation-node] {
+	div[name=model-entry], 
+	div[name=scene-model], 
+	div[name=light-point], 
+	div[name=animation-node], 
+	div[name=camera],
+	div[name=scene] {
 		display: none;
 
 		.row {
@@ -542,7 +547,7 @@ body {
 
 		.component-resourceproperties, .component-animationcontrollerproperties,
 		.component-meshproperties, .component-lightproperties, .component-animationnodeproperties,
-		.component-animationmaskproperties {
+		.component-animationmaskproperties, .component-cameraevents, .component-sceneevents {
 			.row {
 				padding: 0px 20px 1px 20px;
 			}
@@ -723,4 +728,10 @@ div[name=load-collada-dlg] {
 			}
 		}
 	}
+}
+
+.CodeMirror {border: 1px solid #eee;} .CodeMirror-scroll { height: 100% }
+
+div[name=scene] {
+	display: block !important;
 }

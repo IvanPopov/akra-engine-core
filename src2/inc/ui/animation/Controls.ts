@@ -47,7 +47,7 @@ module akra.ui.animation {
 		}
 	}
 
-	register("AnimationControls", Controls);
+	register("animation.Controls", Controls);
 }
 
 #endif

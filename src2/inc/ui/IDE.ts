@@ -2,6 +2,7 @@
 #include "ui/scene/Tree.ts"
 #include "ui/Inspector.ts"
 #include "ui/ViewportProperties.ts"
+#include "ui/ListenerEditor.ts"
 
 #include "IUIIDE.ts"
 
@@ -39,7 +40,7 @@ module akra.ui {
 
 			//setup Node properties
 
-			var pNodeProperties: IUIComponent = this._pInspector = <Inspector>this.findEntity("Inspector");
+			var pInspector: IUIComponent = this._pInspector = <Inspector>this.findEntity("Inspector");
 
 			//setup Scene tree
 
@@ -47,7 +48,7 @@ module akra.ui {
 			pTree.fromScene(this.getScene());
 
 			//connect node properties to scene tree
-			this.connect(pNodeProperties, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
+			this.connect(pInspector, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
 
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
 		}
@@ -57,6 +58,8 @@ module akra.ui {
 		inline getScene(): IScene3d { return this.getEngine().getScene(); }
 		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
 		inline getResourceManager(): IResourcePoolManager { return this.getEngine().getResourceManager(); }
+		inline getViewport(): IViewport { return this._pPreview.viewport; }
+		inline getCamera(): ICamera { return this.getViewport().getCamera(); }
 
 		_updateSceneNodeName(pInspector: Inspector, pNode: ISceneNode): void {
 			this._pSceneTree.sync(pNode);
@@ -88,7 +91,7 @@ module akra.ui {
 					
 					if (iTab < 0) {
 						var pControls: IUIAnimationControls = 
-							<IUIAnimationControls>this._pTabs.createComponent("AnimationControls", {
+							<IUIAnimationControls>this._pTabs.createComponent("animation.Controls", {
 								title: "Edit controller: " + pController.getGuid(), 
 								name: sName
 							});
@@ -149,6 +152,25 @@ module akra.ui {
 					pDlg.show();
 					pDlg.el.animate({bottom: 0}, 350, "easeOutCirc");
 					
+					return true;
+				case ECMD.EDIT_EVENT:
+					var pTarget: IEventProvider = argv[0];
+					var sEvent: string = argv[1];
+					var sName: string = "event-" + sEvent + pTarget.getGuid();
+					var iTab: int = this._pTabs.findTab(sName);
+					
+					if (iTab < 0) {
+						var pEvent: IUIPanel = 
+							<IUIAnimationControls>this._pTabs.createComponent("ListenerEditor", {
+								title: "Edit event: " + sEvent + "(obj.: " + pTarget.getGuid() + ")", 
+								name: sName
+							});
+
+						iTab = pEvent.index;
+					}
+				
+					this._pTabs.select(iTab);
+
 					return true;
 			}
 			return true;

@@ -46,8 +46,15 @@ module akra.ui.graph {
 			this.handleEvent("mouseenter mouseleave dblclick click");
 			this.setDraggable();
 
-			this.$element.css("position", "absolute");	
-			this.$element.offset(this.graph.$element.offset());
+			var node = this;
+			//FIXME: without timeout must be all OK!
+			setTimeout(() => {
+
+				node.el.css("position", "absolute");	
+				node.el.offset(node.graph.el.offset());
+
+			}, 30);
+		
 
 			this.connect(pGraph, SIGNAL(connectionBegin), SLOT(onConnectionBegin));
 			this.connect(pGraph, SIGNAL(connectionEnd), SLOT(onConnectionEnd));

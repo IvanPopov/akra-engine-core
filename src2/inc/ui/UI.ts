@@ -27,6 +27,11 @@
 
 #define UI_GRAPH
 #define UI_ANIMATION
+#define UI_CODEEDITOR
+
+#ifdef UI_CODEEDITOR
+#include "CodeEditor.ts"
+#endif
 
 #ifdef UI_GRAPH
 

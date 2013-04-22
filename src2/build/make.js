@@ -650,7 +650,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 
 
     if (pOptions.webglDebug) {
-    	sTestData += "\n\n/// @WEBGL_DEBUG: {data}/js/webgl-debug.js|script() \n"
+    	sTestData += "\n\n/// @WEBGL_DEBUG: {data}/js/webgl-debug.js|location()|script() \n"
     }
 
     var pFetchResult = {
@@ -679,12 +679,12 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 
 	for (var i in pAdditionalScripts) {
 		sAdditionalCode += "<script type=\"text/javascript\" src=\"" + pAdditionalScripts[i] + "\">" + 
-							"</script>";
+							"</script>\n";
 	}
 
 
 	for (var i in pAdditionalCSS) {
-		sAdditionalCSS += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + pAdditionalCSS[i] + "\">";
+		sAdditionalCSS += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + pAdditionalCSS[i] + "\">\n";
 	}
 
     sIndexHTML = "\n\

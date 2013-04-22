@@ -1,3 +1,12 @@
+<component name="scene">
+	<div class="node-type">Scene properties</div>
+	<div class="row">
+		<component type="Panel" title="Events" collapsible collapsed>
+			<component type="scene.Events" name="scene-events"/>
+		</component>
+	</div>
+</component>
+
 <component name="scene-node">
 	<div class="node-type" style="margin-bottom: 5px; margin-top: -1px;">Scene node properties</div>
 	<div class="row">
@@ -65,6 +74,15 @@
 	</div>
 </component>
 
+
+<component name="camera">
+	<div class="node-type">Camera properties</div>
+	<div class="row">
+		<component type="Panel" title="Events" collapsible >
+			<component type="camera.Events" name="camera-events"/>
+		</component>
+	</div>
+</component>
 
 <component name="animation-node" style="margin-top: -1px; margin-bottom: -1px;">
 	<div class="node-type">Animation node properties</div>

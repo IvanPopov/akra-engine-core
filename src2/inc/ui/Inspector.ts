@@ -11,9 +11,13 @@
 #include "light/Properties.ts"
 #include "animation/NodeProperties.ts"
 #include "animation/MaskProperties.ts"
+#include "camera/Events.ts"
+#include "scene/Events.ts"
 
 module akra.ui {
 	export class Inspector extends Component {
+		protected _pSceneEvents: scene.Events;
+
 		protected _pNode: ISceneNode = null;
 		protected _pNameLabel: IUILabel;
 		protected _pPosition: IUIVector;
@@ -32,6 +36,9 @@ module akra.ui {
 		//light properties
 		protected _pLight: light.Properties;
 
+		//camera properties
+		protected _pCameraEvents: camera.Events;
+
 		//inspect animation node
 		//----------------------------------------------------
 		protected _pAnimationNodeProperties: animation.NodeProperties;
@@ -43,6 +50,8 @@ module akra.ui {
 			super(parent, options, EUIComponents.UNKNOWN);
 
 			this.template("Inspector.tpl");
+
+			this._pSceneEvents = <scene.Events>this.findEntity("scene-events");
 
 			this._pNameLabel = <IUILabel>this.findEntity("node-name");
 			this._pPosition = <IUIVector>this.findEntity("position");
@@ -58,6 +67,8 @@ module akra.ui {
 
 			this._pLight = <light.Properties>this.findEntity("light");
 
+			this._pCameraEvents = <camera.Events>this.findEntity("camera-events");
+
 			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_updateName));
 			this.connect(this._pPosition, SIGNAL(changed), SLOT(_updateLocalPosition));
 			this.connect(this._pRotation, SIGNAL(changed), SLOT(_updateRotation));
@@ -69,6 +80,9 @@ module akra.ui {
 			this._pAnimationMaskProperties = <animation.MaskProperties>this.findEntity("animation-mask-properties");
 
 			this.inspectAnimationNode(null);
+
+			this._pSceneEvents.setScene(ide.getScene());
+			this._pSceneEvents.show();
 		}
 
 		_updateName(pLabel: IUILabel, sName: string): void {
@@ -206,6 +220,15 @@ module akra.ui {
 			}
 			else {
 				this.el.find("div[name=light-point]").hide();
+			}
+
+			if (akra.scene.objects.isCamera(pNode)) {
+				var pCamera: ICamera = <ICamera>pNode;
+				this.el.find("div[name=camera]").show();
+				this._pCameraEvents.setCamera(pCamera);
+			}
+			else {
+				this.el.find("div[name=camera]").hide();
 			}
 
 			this.connect(this._pNode.scene, SIGNAL(postUpdate), SLOT(_scenePostUpdated));

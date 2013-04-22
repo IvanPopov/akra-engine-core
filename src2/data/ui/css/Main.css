@@ -1266,19 +1266,25 @@ body {
 .component-inspector div[name=model-entry],
 .component-inspector div[name=scene-model],
 .component-inspector div[name=light-point],
-.component-inspector div[name=animation-node] {
+.component-inspector div[name=animation-node],
+.component-inspector div[name=camera],
+.component-inspector div[name=scene] {
   display: none;
 }
 .component-inspector div[name=model-entry] .row,
 .component-inspector div[name=scene-model] .row,
 .component-inspector div[name=light-point] .row,
-.component-inspector div[name=animation-node] .row {
+.component-inspector div[name=animation-node] .row,
+.component-inspector div[name=camera] .row,
+.component-inspector div[name=scene] .row {
   padding: 0;
 }
 .component-inspector div[name=model-entry] .row .component-panel div.panel-title:first-of-type,
 .component-inspector div[name=scene-model] .row .component-panel div.panel-title:first-of-type,
 .component-inspector div[name=light-point] .row .component-panel div.panel-title:first-of-type,
-.component-inspector div[name=animation-node] .row .component-panel div.panel-title:first-of-type {
+.component-inspector div[name=animation-node] .row .component-panel div.panel-title:first-of-type,
+.component-inspector div[name=camera] .row .component-panel div.panel-title:first-of-type,
+.component-inspector div[name=scene] .row .component-panel div.panel-title:first-of-type {
   border-top: 0px !important;
   padding-top: 1px;
   padding-bottom: 1px;
@@ -1290,46 +1296,76 @@ body {
 .component-inspector div[name=model-entry] .row .component-panel div.panel-title:first-of-type div.controls,
 .component-inspector div[name=scene-model] .row .component-panel div.panel-title:first-of-type div.controls,
 .component-inspector div[name=light-point] .row .component-panel div.panel-title:first-of-type div.controls,
-.component-inspector div[name=animation-node] .row .component-panel div.panel-title:first-of-type div.controls {
+.component-inspector div[name=animation-node] .row .component-panel div.panel-title:first-of-type div.controls,
+.component-inspector div[name=camera] .row .component-panel div.panel-title:first-of-type div.controls,
+.component-inspector div[name=scene] .row .component-panel div.panel-title:first-of-type div.controls {
   left: -30px !important;
   margin-top: -6px !important;
 }
 .component-inspector div[name=model-entry] .row .component-panel div.panel-title:first-of-type span,
 .component-inspector div[name=scene-model] .row .component-panel div.panel-title:first-of-type span,
 .component-inspector div[name=light-point] .row .component-panel div.panel-title:first-of-type span,
-.component-inspector div[name=animation-node] .row .component-panel div.panel-title:first-of-type span {
+.component-inspector div[name=animation-node] .row .component-panel div.panel-title:first-of-type span,
+.component-inspector div[name=camera] .row .component-panel div.panel-title:first-of-type span,
+.component-inspector div[name=scene] .row .component-panel div.panel-title:first-of-type span {
   margin-left: -30px;
 }
 .component-inspector div[name=model-entry] .component-resourceproperties .row,
 .component-inspector div[name=scene-model] .component-resourceproperties .row,
 .component-inspector div[name=light-point] .component-resourceproperties .row,
 .component-inspector div[name=animation-node] .component-resourceproperties .row,
+.component-inspector div[name=camera] .component-resourceproperties .row,
+.component-inspector div[name=scene] .component-resourceproperties .row,
 .component-inspector div[name=model-entry] .component-animationcontrollerproperties .row,
 .component-inspector div[name=scene-model] .component-animationcontrollerproperties .row,
 .component-inspector div[name=light-point] .component-animationcontrollerproperties .row,
 .component-inspector div[name=animation-node] .component-animationcontrollerproperties .row,
+.component-inspector div[name=camera] .component-animationcontrollerproperties .row,
+.component-inspector div[name=scene] .component-animationcontrollerproperties .row,
 .component-inspector div[name=model-entry] .component-meshproperties .row,
 .component-inspector div[name=scene-model] .component-meshproperties .row,
 .component-inspector div[name=light-point] .component-meshproperties .row,
 .component-inspector div[name=animation-node] .component-meshproperties .row,
+.component-inspector div[name=camera] .component-meshproperties .row,
+.component-inspector div[name=scene] .component-meshproperties .row,
 .component-inspector div[name=model-entry] .component-lightproperties .row,
 .component-inspector div[name=scene-model] .component-lightproperties .row,
 .component-inspector div[name=light-point] .component-lightproperties .row,
 .component-inspector div[name=animation-node] .component-lightproperties .row,
+.component-inspector div[name=camera] .component-lightproperties .row,
+.component-inspector div[name=scene] .component-lightproperties .row,
 .component-inspector div[name=model-entry] .component-animationnodeproperties .row,
 .component-inspector div[name=scene-model] .component-animationnodeproperties .row,
 .component-inspector div[name=light-point] .component-animationnodeproperties .row,
 .component-inspector div[name=animation-node] .component-animationnodeproperties .row,
+.component-inspector div[name=camera] .component-animationnodeproperties .row,
+.component-inspector div[name=scene] .component-animationnodeproperties .row,
 .component-inspector div[name=model-entry] .component-animationmaskproperties .row,
 .component-inspector div[name=scene-model] .component-animationmaskproperties .row,
 .component-inspector div[name=light-point] .component-animationmaskproperties .row,
-.component-inspector div[name=animation-node] .component-animationmaskproperties .row {
+.component-inspector div[name=animation-node] .component-animationmaskproperties .row,
+.component-inspector div[name=camera] .component-animationmaskproperties .row,
+.component-inspector div[name=scene] .component-animationmaskproperties .row,
+.component-inspector div[name=model-entry] .component-cameraevents .row,
+.component-inspector div[name=scene-model] .component-cameraevents .row,
+.component-inspector div[name=light-point] .component-cameraevents .row,
+.component-inspector div[name=animation-node] .component-cameraevents .row,
+.component-inspector div[name=camera] .component-cameraevents .row,
+.component-inspector div[name=scene] .component-cameraevents .row,
+.component-inspector div[name=model-entry] .component-sceneevents .row,
+.component-inspector div[name=scene-model] .component-sceneevents .row,
+.component-inspector div[name=light-point] .component-sceneevents .row,
+.component-inspector div[name=animation-node] .component-sceneevents .row,
+.component-inspector div[name=camera] .component-sceneevents .row,
+.component-inspector div[name=scene] .component-sceneevents .row {
   padding: 0px 20px 1px 20px;
 }
 .component-inspector div[name=model-entry] .component-animationcontrollerproperties button[name=edit],
 .component-inspector div[name=scene-model] .component-animationcontrollerproperties button[name=edit],
 .component-inspector div[name=light-point] .component-animationcontrollerproperties button[name=edit],
-.component-inspector div[name=animation-node] .component-animationcontrollerproperties button[name=edit] {
+.component-inspector div[name=animation-node] .component-animationcontrollerproperties button[name=edit],
+.component-inspector div[name=camera] .component-animationcontrollerproperties button[name=edit],
+.component-inspector div[name=scene] .component-animationcontrollerproperties button[name=edit] {
   display: block;
   margin: 0 auto;
   padding: 0 15px;
@@ -1339,7 +1375,9 @@ body {
 .component-inspector div[name=model-entry] .component-switch,
 .component-inspector div[name=scene-model] .component-switch,
 .component-inspector div[name=light-point] .component-switch,
-.component-inspector div[name=animation-node] .component-switch {
+.component-inspector div[name=animation-node] .component-switch,
+.component-inspector div[name=camera] .component-switch,
+.component-inspector div[name=scene] .component-switch {
   display: inline-block;
   position: relative;
   top: -5px;
@@ -1349,19 +1387,25 @@ body {
 .component-inspector div[name=model-entry] .component-switch label,
 .component-inspector div[name=scene-model] .component-switch label,
 .component-inspector div[name=light-point] .component-switch label,
-.component-inspector div[name=animation-node] .component-switch label {
+.component-inspector div[name=animation-node] .component-switch label,
+.component-inspector div[name=camera] .component-switch label,
+.component-inspector div[name=scene] .component-switch label {
   height: 12px;
 }
 .component-inspector div[name=model-entry] .component-switch label:before,
 .component-inspector div[name=scene-model] .component-switch label:before,
 .component-inspector div[name=light-point] .component-switch label:before,
-.component-inspector div[name=animation-node] .component-switch label:before {
+.component-inspector div[name=animation-node] .component-switch label:before,
+.component-inspector div[name=camera] .component-switch label:before,
+.component-inspector div[name=scene] .component-switch label:before {
   height: 12px;
 }
 .component-inspector div[name=model-entry] .component-meshproperties div[name=shadows],
 .component-inspector div[name=scene-model] .component-meshproperties div[name=shadows],
 .component-inspector div[name=light-point] .component-meshproperties div[name=shadows],
-.component-inspector div[name=animation-node] .component-meshproperties div[name=shadows] {
+.component-inspector div[name=animation-node] .component-meshproperties div[name=shadows],
+.component-inspector div[name=camera] .component-meshproperties div[name=shadows],
+.component-inspector div[name=scene] .component-meshproperties div[name=shadows] {
   height: 12px;
 }
 .component-tabs  > .bookmarks  > .bookmark {
@@ -1475,4 +1519,13 @@ div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.active {
 }
 .component-viewportproperties .row .component-label.file-drag-over {
   background: rgba(255, 255, 0, 0.5) !important;
+}
+.CodeMirror {
+  border: 1px solid #eee;
+}
+.CodeMirror-scroll {
+  height: 100%;
+}
+div[name=scene] {
+  display: block !important;
 }

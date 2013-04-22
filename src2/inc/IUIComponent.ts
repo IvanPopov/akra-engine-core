@@ -54,6 +54,7 @@ module akra {
 		VIEWPORT_STATS,
 
 		CODE_EDITOR,
+		// LISTENER_EDITOR,
 		
 		GRAPH,
 		GRAPH_NODE,
