@@ -41,6 +41,7 @@
 	</div>
 </component>
 
+
 <component name="light-point">
 	<div class="node-type">Light point properties</div>
 	<div class="row">
@@ -67,11 +68,6 @@
 			<component type="resource.Properties" name="resource"/>
 		</component>
 	</div>
-	<div class="row">
-		<component type="Panel" title="Controller" collapsible >
-			<component type="AnimationControllerProperties" name="controller"/>
-		</component>
-	</div>
 </component>
 
 
@@ -80,6 +76,14 @@
 	<div class="row">
 		<component type="Panel" title="Events" collapsible >
 			<component type="camera.Events" name="camera-events"/>
+		</component>
+	</div>
+</component>
+
+<component name="animation-controller" style="margin-top: -1px;">
+	<div class="row">
+		<component type="Panel" title="Controller" collapsible >
+			<component type="AnimationControllerProperties" name="controller"/>
 		</component>
 	</div>
 </component>

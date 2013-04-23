@@ -4,12 +4,19 @@
 #include "INode.ts"
 
 module akra {
+	IFACE(IAnimationController);
+
     export interface ISceneNodeMap {
         [index: string]: ISceneNode;
     }
 
     export interface ISceneNode extends INode {
-    	scene: IScene3d;
+    	readonly scene: IScene3d;
+
+    	readonly totalControllers: uint;
+    	getController(i: uint): IAnimationController;
+    	addController(pController: IAnimationController): void;
+
     }
 }
 

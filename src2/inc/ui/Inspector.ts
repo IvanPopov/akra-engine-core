@@ -80,6 +80,7 @@ module akra.ui {
 			this._pAnimationMaskProperties = <animation.MaskProperties>this.findEntity("animation-mask-properties");
 
 			this.inspectAnimationNode(null);
+			this.inspectAnimationController(null);
 
 			this._pSceneEvents.setScene(ide.getScene());
 			this._pSceneEvents.show();
@@ -176,6 +177,16 @@ module akra.ui {
 			}
 		}
 
+		inspectAnimationController(pController: IAnimationController): void {
+			if (isNull(pController)) {
+				this.el.find("div[name=animation-controller]").hide();
+				return;
+			}
+
+			this.el.find("div[name=animation-controller]").show();
+			this._pController.setController(pController);
+		}
+
 		inspectNode(pNode: ISceneNode): void {
 			if (this._pNode) {
 				this.disconnect(this._pNode.scene, SIGNAL(postUpdate), SLOT(_scenePostUpdated));
@@ -189,13 +200,6 @@ module akra.ui {
 				this.el.find("div[name=model-entry]").show();
 				
 				this._pResource.setResource(pEntry.resource);
-				
-				if (!isNull(pEntry.controller)) {
-					this._pController.setController(pEntry.controller);
-				}
-				else {
-					this._pController.hide();
-				}
 			}
 			else {
 				this.el.find("div[name=model-entry]").hide();	

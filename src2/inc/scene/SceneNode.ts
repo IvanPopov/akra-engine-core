@@ -6,17 +6,36 @@
 #include "ISceneNode.ts"
 #include "scene/Node.ts"
 
+#include "IAnimationController.ts"
+
 module akra.scene {
 	export class SceneNode extends Node implements ISceneNode {
 		protected _pScene: IScene3d = null;
+		protected _pAnimationControllers: IAnimationController[] = null;
 
 		inline get scene(): IScene3d { return this._pScene; }
 		inline set scene(pScene: IScene3d) { this._pScene = pScene; }
+
+		inline get totalControllers(): uint { return this._pAnimationControllers.length; }
 		
 		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_NODE) {
 			super(eType);
 
 			this.scene = pScene;
+		}
+
+		inline getController(i: uint): IAnimationController {
+			return isNull(this._pAnimationControllers) || this._pAnimationControllers.length <= i? 
+				null: this._pAnimationControllers[i];
+		}
+
+		inline addController(pController: IAnimationController): void {
+			if (this._pAnimationControllers.indexOf(pController) != -1) {
+				return;
+			}
+
+			pController.attach(this);
+			this._pAnimationControllers.push(pController);
 		}
 
 		create(): bool {
@@ -36,6 +55,18 @@ module akra.scene {
 		    return true;
 		}
 
+
+		update(): bool {
+			var isOk = super.update();
+
+			if (!isNull(this._pAnimationControllers)) {
+				for (var i: int = 0; i < this._pAnimationControllers.length; ++ i) {
+					this._pAnimationControllers[i].update();
+				}
+			}
+
+			return isOk;
+		}
 
 		destroy(): void {
 			super.destroy();

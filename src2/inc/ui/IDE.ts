@@ -226,16 +226,19 @@ module akra.ui {
 			var pEventSlot: IEventSlot = pEvtTable.findBroadcastSignalMap(pTarget.getGuid(), sEvent)[iListener];
 			var sCode: string = "";
 			var self = this._apiEntry;
-			var sDel: string = "/*** [user code] ***/";
+			// var sDel: string = "/*** [user code] ***/";
 
 			if (!isDefAndNotNull(pEventSlot)) {
 				pTarget.bind(sEvent, () => {});
 				pEventSlot = pEvtTable.findBroadcastSignalMap(pTarget.getGuid(), sEvent)[iListener];
 			}
 
+			if (!isNull(pEventSlot.target)) {
+				ERROR("modifications of target's connectics not allowed!");
+			}
+
 			if (!isNull(pEventSlot.listener)) {
 				sCode = getFuncBody(pEventSlot.listener);
-				
 				// var i: int = sCode.indexOf(sDel);
 				// var j: int = sCode.lastIndexOf(sDel);
 
@@ -265,9 +268,9 @@ module akra.ui {
 				pListenerEditor = <IUIListenerEditor>this._pTabs.tab(iTab);
 			}
 
-			pListenerEditor.editor.codemirror.setValue(sCode);
-		
 			this._pTabs.select(iTab);
+			
+			pListenerEditor.editor.value = sCode;
 
 			return true;
 		}

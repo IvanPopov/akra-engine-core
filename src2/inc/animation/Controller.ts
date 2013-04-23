@@ -119,16 +119,16 @@ module akra.animation {
 		    this._pLastTarget = pTarget;
 		}
 
-		play(pAnimation: string, fRealTime: float): bool;
-		play(pAnimation: int, fRealTime: float): bool;
-		play(pAnimation: IAnimationBase, fRealTime: float): bool;
-		play(pAnimation: any, fRealTime: float): bool {
+		play(pAnimation: string): bool;
+		play(pAnimation: int): bool;
+		play(pAnimation: IAnimationBase): bool;
+		play(pAnimation: any): bool {
 			var pAnimationNext: IAnimationBase = this.findAnimation(arguments[0]);
 			var pAnimationPrev: IAnimationBase = this._pActiveAnimation;
+			var fRealTime: float = this._pEngine.time;
 
 			if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
 				
-				//LOG('controller::play(', pAnimationNext.name, ')', pAnimationNext);
 				if (pAnimationPrev) {
 					pAnimationPrev.stop(fRealTime);
 				}
@@ -144,9 +144,9 @@ module akra.animation {
 			return false;
 		}
 
-		update(fTime: float): void {
+		update(): void {
 			if (this._pActiveAnimation) {
-				this._pActiveAnimation.apply(fTime);
+				this._pActiveAnimation.apply(this._pEngine.time);
 			}
 		}
 

@@ -15,7 +15,6 @@ module akra.ui.animation {
 	export class Graph extends graph.Graph implements IUIAnimationGraph {
 		private _pSelectedNode: IUIAnimationNode = null;
 		private _pAnimationController: IAnimationController = null;
-		private _pTimer: IUtilTimer = null;
 
 		constructor (parent, options) {
 			super(parent, options, EUIGraphTypes.ANIMATION);
@@ -71,11 +70,6 @@ module akra.ui.animation {
 		}
 
 
-
-		private setTimer(pTimer: IUtilTimer): void {
-			this._pTimer = pTimer;
-		}
-
 		getController(): IAnimationController {
 			return this._pAnimationController;
 		}
@@ -97,8 +91,8 @@ module akra.ui.animation {
 			this._pSelectedNode = pNode;
 
 
-			if (bPlay && !isNull(this._pTimer)) {
-				this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
+			if (bPlay) {
+				this._pAnimationController.play(pNode.animation);
 			}
 
 			this.nodeSelected(pNode, bPlay);
@@ -180,14 +174,6 @@ module akra.ui.animation {
 			this.connect(pController, SIGNAL(animationAdded), SLOT(animationAdded));
 
 			this.createNodeByController(pController);
-
-			this.setTimer(pController.getEngine().getTimer());
-
-			var pEngine: IEngine = pController.getEngine();
-
-			pEngine.getScene().bind(SIGNAL(beforeUpdate), () => {
-				pController.update(pEngine.time);
-			});
 
 			return true;
 		}

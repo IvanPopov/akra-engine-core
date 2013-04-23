@@ -23,14 +23,14 @@ module akra.scene {
 		inline set mesh(pMesh: IMesh) {
 			if (!isNull(this._pMesh)) {
 				this.accessLocalBounds().set(0.01, 0.01, 0.01);	
-				this._pMesh.disconnect(this.scene, SIGNAL(preUpdate), SLOT(update));
+				this._pMesh.disconnect(this.scene, SIGNAL(postUpdate), SLOT(update));
 				this._pMesh = null;
 			}
 
 			if (!isNull(pMesh)) {
 				this.accessLocalBounds().set(pMesh.boundingBox);
 				this._pMesh = pMesh;
-				pMesh.connect(this.scene, SIGNAL(preUpdate), SLOT(update));
+				pMesh.connect(this.scene, SIGNAL(postUpdate), SLOT(update));
 			}
 		}
 

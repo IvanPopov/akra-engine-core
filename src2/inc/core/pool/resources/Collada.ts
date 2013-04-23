@@ -75,10 +75,7 @@ module akra.core.pool.resources {
     var pConvFormats: IColladaConvertionTable;
 
     export class Collada extends ResourcePoolItem implements ICollada {
-
         constructor ();
-
-        attachToScene(pNode: ISceneNode): IModelEntry;
 
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
 
@@ -2898,15 +2895,15 @@ module akra.core.pool.resources {
         }
 
 
-        attachToScene(pScene: IScene3d, pController?: IAnimationController): IModelEntry;
-        attachToScene(pNode: ISceneNode, pController?: IAnimationController): IModelEntry;
-        attachToScene(parent, pController: IAnimationController = null): IModelEntry {
+        attachToScene(pScene: IScene3d): IModelEntry;
+        attachToScene(pNode: ISceneNode): IModelEntry;
+        attachToScene(parent): IModelEntry {
             var pScene: IScene3d;
             var pNode: ISceneNode;
             var pRoot: IModelEntry;
 
             var pSceneOutput: ISceneNode[] = null;
-            var pAnimationOutput: IAnimation[] = null;
+            // var pAnimationOutput: IAnimation[] = null;
             var pMeshOutput: IMesh[] = null;
             // var pInitialPosesOutput: IAnimation[] = null;
 
@@ -2945,20 +2942,19 @@ module akra.core.pool.resources {
             //     pInitialPosesOutput = this.buildInitialPoses();
             // }
 
-            pAnimationOutput = this.extractAnimations();
+            //pAnimationOutput = this.extractAnimations();
 
-            if (isNull(pController)) {
-                pController = this.getEngine().createAnimationController();
-            }
+            // if (isNull(pController)) {
+            //     pController = this.getEngine().createAnimationController();
+            // }
 
-            if (!isNull(pController) && !isNull(pAnimationOutput)) {
-                for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
-                    pController.addAnimation(pAnimationOutput[i]);
-                }
+            // if (!isNull(pController) && !isNull(pAnimationOutput)) {
+            //     for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
+            //         pController.addAnimation(pAnimationOutput[i]);
+            //     }
 
-                pController.attach(pRoot);
-                pRoot.controller = pController;
-            }
+            //     pController.attach(pRoot);
+            // }
 
             //clear all links from collada nodes to scene nodes
             this.buildComplete();

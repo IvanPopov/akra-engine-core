@@ -1,5 +1,5 @@
 #ifndef SKIN_TS
-#define SKEIN_TS
+#define SKIN_TS
 
 #include "ISkeleton.ts"
 #include "INode.ts"

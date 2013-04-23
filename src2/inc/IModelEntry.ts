@@ -9,7 +9,6 @@ module akra {
 
 	export interface IModelEntry extends ISceneNode {
 		resource: IModel;
-		controller: IAnimationController;
 	}
 }
 

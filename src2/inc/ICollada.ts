@@ -24,8 +24,8 @@ module akra {
         isVisualSceneLoaded(): bool;
         isAnimationLoaded(): bool;
 
-        attachToScene(pNode: ISceneNode, pController?: IAnimationController): IModelEntry;
-        attachToScene(pScene: IScene3d, pController?: IAnimationController): IModelEntry;
+        attachToScene(pNode: ISceneNode): IModelEntry;
+        attachToScene(pScene: IScene3d): IModelEntry;
 
         extractAnimations(): IAnimation[];
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;

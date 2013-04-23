@@ -99,6 +99,7 @@ module akra.ui {
 		}
 
 		BROADCAST(titleUpdated, CALL(sTitle));
+		BROADCAST(selected, VOID);
 	}
 
 	register("Panel", Panel);

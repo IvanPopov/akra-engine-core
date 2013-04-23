@@ -45,6 +45,11 @@ module akra.ui.animation {
 		createMask(): IUIAnimationNode {
 			return new Mask(this.graph);
 		}
+
+		selected(): void {
+			super.selected();
+			ide.cmd(ECMD.INSPECT_ANIMATION_CONTROLLER, this.graph.getController());
+		}
 	}
 
 	register("animation.Controls", Controls);
