@@ -59,12 +59,12 @@ module akra.scene.objects {
 		 * Biased for use during current render stage 
 		 * @deprecated
 		 */
-		protected _m4fRenderStageProj: IMat4 = new Mat4;
+		//protected _m4fRenderStageProj: IMat4 = new Mat4;
 
 		/**
 		 * @deprecated
 		 */
-		protected _m4fRenderStageProjView: IMat4 = new Mat4;
+		//protected _m4fRenderStageProjView: IMat4 = new Mat4;
 
 		/** Search rect for scene culling */
 		protected _pSearchRect: IRect3d = new geometry.Rect3d();

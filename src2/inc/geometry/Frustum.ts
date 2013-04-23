@@ -421,6 +421,18 @@ module akra.geometry{
 			return true;
 		};
 
+		toString(): string{
+			var sStr = "";
+
+			for(var i: uint = 0; i < 6; i++){
+				var sKey: string = Frustum.frustumPlanesKeys[i];
+				sStr += sKey + ":\n";
+				sStr += this[sKey].toString() + "\n";
+			}
+
+			return sStr;
+		};
+
 		static frustumPlanesKeys: string[] = ["leftPlane", "rightPlane", "topPlane",
 											  "bottomPlane", "nearPlane", "farPlane"];
 	};

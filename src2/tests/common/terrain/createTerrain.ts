@@ -37,7 +37,7 @@ module akra {
 		
 			//pCamera.addRelRotationByXYZAxis(1, 1, 0);
 			pCamera.farPlane = 2000;
-			pCamera.setPosition(vec3(0, 0, 1000));
+			pCamera.setPosition(vec3(0, 0, 1800));
 			pCamera.attachToParent(pTestNode);
 			pCamera.setInheritance(ENodeInheritance.ALL);
 
@@ -71,7 +71,7 @@ module akra {
 			    	pCamera.addRelPosition(fSpeed, 0, 0);
 			    }
 			    if(pKeymap.isKeyPress(EKeyCodes.SPACE)){
-			    	(<akra.core.Engine>pEngine).pause(true);
+			    	(<akra.core.Engine>pEngine).pause(pEngine.isActive());
 			    }
 
 			    // if(pKeymap.isKeyPress())
