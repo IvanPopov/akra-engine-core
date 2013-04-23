@@ -80,7 +80,11 @@ module akra.ui {
 			}
 
 			return -1;
-		}		
+		}	
+
+		inline tab(iTab: int): IUIPanel {
+			return this._pTabs[iTab];
+		}
 
 		select(panel): void {
 			var n: uint = 0;

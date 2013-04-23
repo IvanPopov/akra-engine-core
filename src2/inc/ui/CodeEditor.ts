@@ -16,8 +16,15 @@
 
 module akra.ui {
 	export class CodeEditor extends Component implements IUICodeEditor {
+		public codemirror: CodeMirrorEditor = null;
+
+		inline get value(): string { return this.codemirror.getValue(); }
+		inline set value(sValue: string) { this.codemirror.setValue(sValue); }
+
 		constructor (parent, options) {
 			super(parent, options, EUIComponents.CODE_EDITOR, $("<textarea />"));
+
+
 		}
 
 		rendered(): void {
@@ -25,20 +32,14 @@ module akra.ui {
 
 			CodeMirror.commands.autocomplete = function(cm) {
 				(<any>CodeMirror).showHint(cm, (<any>CodeMirror).javascriptHint, {
-					additionalContext: {
-						engine: ide.getEngine(),
-						camera: ide.getCamera(),
-						viewport: ide.getViewport(),
-						canvas: ide.getCanvas(),
-						scene: ide.getScene(),
-						rsmgr: ide.getResourceManager(),
-						renderer: ide.getEngine().getRenderer()
-					}
+					additionalContext: {self: ide._apiEntry}
 				});
 			}
-			var editor = CodeMirror.fromTextArea(<HTMLTextAreaElement>this.getHTMLElement(), {
+
+			this.codemirror = CodeMirror.fromTextArea(<HTMLTextAreaElement>this.getHTMLElement(), {
 				lineNumbers: true,
-				extraKeys: {"Ctrl-Space": "autocomplete"}
+				extraKeys: {"Ctrl-Space": "autocomplete"},
+				value: (<IUICodeEditorOptions>this.options).code || ""
 			});
 		}
 	}

@@ -7,6 +7,8 @@
 module akra {
 	export interface IUIListenerEditor extends IUIPanel {
 		editor: IUICodeEditor;
+
+		signal bindEvent(sCode: string): void;
 	}
 }
 

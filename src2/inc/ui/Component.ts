@@ -102,6 +102,7 @@ module akra.ui {
 	export class Component extends DNDNode implements IUIComponent {
 		protected _eComponentType: EUIComponents;
 		protected _sGenericType: string = null;
+		protected _pComponentOptions: IUIComponentOptions = null;
 
 		inline get componentType(): EUIComponents { return this._eComponentType; }
 		inline get genericType(): string { return this._sGenericType; }
@@ -110,6 +111,10 @@ module akra.ui {
 		inline set name(sName: string) {
 			this.$element.attr("name", sName);
 			this._sName = sName;
+		}
+
+		inline get options(): IUIComponentOptions {
+			return this._pComponentOptions;
 		}
 
 		get layout(): IUILayout { return isLayout(<IUINode>this.child)? <IUILayout>this.child: null; }
@@ -299,6 +304,8 @@ module akra.ui {
 			if (isDefAndNotNull(pOptions.template)) {
 				this.template(pOptions.template);
 			}
+
+			this._pComponentOptions = pOptions;
 		}
 
 		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent {

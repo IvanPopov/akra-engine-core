@@ -10,6 +10,7 @@ module akra {
 	IFACE(IViewport);
 	IFACE(ICamera);
 	IFACE(ICanvas3d);
+	IFACE(IKeyMap);
 
 	export enum ECMD {
 		SET_PREVIEW_RESOLUTION,
@@ -31,13 +32,18 @@ module akra {
 		LOAD_COLLADA
 	}
 
+
 	export interface IUIIDE extends IUIComponent {
+		//системные объект для быстрого доступа к основным функциям API
+		_apiEntry: any;
+
 		getEngine(): IEngine;
 		getResourceManager(): IResourcePoolManager;
 		getScene(): IScene3d;
 		getViewport(): IViewport;
 		getCamera(): ICamera;
 		getCanvas(): ICanvas3d;
+		getKeymap(): IKeyMap;
 
 		cmd(eCommand: ECMD, ...argv: any[]): bool;
 	}

@@ -27,18 +27,18 @@ module akra {
 		pCamera.addRelRotationByXYZAxis(-0.2, 0., 0.);
 		pCamera.attachToParent(pScene.getRootNode());
 
-		var pKeymap: IKeyMap = controls.createKeymap(pIDE.getCanvasElement());
+		// var pKeymap: IKeyMap = controls.createKeymap(pIDE.getCanvasElement());
 
-		pScene.bind(SIGNAL(beforeUpdate), () => {
-			 if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
-			 	var v2fMouseShift: IOffset = pKeymap.getMouseShift();
+		// pScene.bind(SIGNAL(beforeUpdate), () => {
+		// 	 if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
+		// 	 	var v2fMouseShift: IOffset = pKeymap.getMouseShift();
 
-		        var fdX = v2fMouseShift.x / pViewport.actualWidth * 10.0;
-		        var fdY = v2fMouseShift.y / pViewport.actualHeight * 10.0;
+		//         var fdX = v2fMouseShift.x / pViewport.actualWidth * 10.0;
+		//         var fdY = v2fMouseShift.y / pViewport.actualHeight * 10.0;
 
-		        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
-		    }
-		});
+		//         pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+		//     }
+		// });
 	}
 
 	function createSceneEnvironment(): void {

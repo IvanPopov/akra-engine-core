@@ -37,6 +37,8 @@ module akra {
 		findUnicastList(iGuid: int): IEventSlotMap;
 		findBroadcastList(iGuid: int): IEventSlotListMap;
 
+		findBroadcastSignalMap(iGuid: int, sSignal: string): IEventSlot[];
+
 		_sync(pTarget: IEventProvider, pFrom: IEventProvider): void;
 	}
 }

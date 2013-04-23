@@ -183,11 +183,12 @@ module akra.events {
 		}
 
 		_sync(pTarget: IEventProvider, pFrom: IEventProvider): void {
+			//FIXME: release events of target...
 			this.broadcast[pTarget.getGuid()] = this.broadcast[pFrom.getGuid()];
 			this.unicast[pTarget.getGuid()] = this.unicast[pFrom.getGuid()];
 		}
 
-		private findBroadcastSignalMap(iGuid: int, sSignal: string): IEventSlot[] {
+		findBroadcastSignalMap(iGuid: int, sSignal: string): IEventSlot[] {
 			this.broadcast[iGuid] = this.broadcast[iGuid] || {};
 			this.broadcast[iGuid][sSignal] = this.broadcast[iGuid][sSignal] || [];
 			return this.broadcast[iGuid][sSignal];

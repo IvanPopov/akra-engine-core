@@ -9,8 +9,10 @@ module akra {
 	export interface IUITabs extends IUIComponent {
 		active: IUIPanel;
 
-		select(i: uint);
-		select(pPanel: IUIPanel);
+		tab(iTab: int): IUIPanel;
+
+		select(i: uint): void;
+		select(pPanel: IUIPanel): void;
 
 		findTabByTitle(sName: string): int;
 		findTab(sName: string): int;
