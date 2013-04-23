@@ -12,6 +12,8 @@ module akra {
 		readonly totalAnimations: int;
 		readonly active: IAnimationBase;
 
+		getEngine(): IEngine;
+
 		setOptions(eOptions): void;
 		addAnimation(pAnimation: IAnimationBase): bool;
 
@@ -31,6 +33,8 @@ module akra {
 		signal play(pAnimation: string, fRealTime: float): bool;
 		signal play(pAnimation: int, fRealTime: float): bool;
 		signal play(pAnimation: IAnimationBase, fRealTime: float): bool;
+
+		signal animationAdded(pAnimation: IAnimationBase): void;
 
 		update(fTime: float): void;
 

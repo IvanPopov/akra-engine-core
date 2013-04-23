@@ -9,6 +9,7 @@
 #include "Controls.ts"
 
 #include "animation/Animation.ts"
+#include "io/filedrop.ts"
 
 module akra.ui.animation {
 	export class Graph extends graph.Graph implements IUIAnimationGraph {
@@ -16,11 +17,62 @@ module akra.ui.animation {
 		private _pAnimationController: IAnimationController = null;
 		private _pTimer: IUtilTimer = null;
 
-		constructor (parent) {
-			super(parent, EUIGraphTypes.ANIMATION);
+		constructor (parent, options) {
+			super(parent, options, EUIGraphTypes.ANIMATION);
+
+			this.setupFileDropping();
 		}
 
-		setTimer(pTimer: IUtilTimer): void {
+		private setupFileDropping(): void {
+			var pGraph = this;
+			var pRmgr: IResourcePoolManager = ide.getResourceManager();
+			
+
+			io.createFileDropArea(null, {
+				drop: (file: File, content, format, e: DragEvent): void => {
+					pGraph.el.removeClass("file-drag-over");
+					
+					if (e.target !== (<any>pGraph).$svg[0]) {
+						return;
+					}
+
+					var pName: IPathinfo = pathinfo(file.name);
+
+				    if (pName.ext.toUpperCase() !== "DAE") {
+				    	alert("unsupported format used: " + file.name);
+				    	return;
+				    }
+
+			    	var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
+		    		pModelResource.parse(<string>content, {scene: false, name: pName.toString()});
+
+		    		var pAnimations: IAnimation[] = pModelResource.extractAnimations();
+
+		    		for (var j = 0; j < pAnimations.length; ++ j) {
+		    			pGraph.addAnimation(pAnimations[j]);
+		    			pGraph.createNodeByAnimation(pAnimations[j]);
+		    		}
+		    	},
+
+		    	// dragenter: (e) => {
+		    	// 	pGraph.el.addClass("file-drag-over");
+		    	// },
+
+		    	dragover: (e) => {
+		    		pGraph.el.addClass("file-drag-over");
+		    	},
+
+		    	dragleave: (e) => {
+		    		pGraph.el.removeClass("file-drag-over");
+		    	},
+
+		    	format: EFileDataTypes.TEXT
+			});
+		}
+
+
+
+		private setTimer(pTimer: IUtilTimer): void {
 			this._pTimer = pTimer;
 		}
 
@@ -28,23 +80,31 @@ module akra.ui.animation {
 			return this._pAnimationController;
 		}
 
-		private selectNode(pNode: IUIAnimationNode, bPlay: bool = true): void {
-			// if (this._pSelectedNode === pNode) {
-			// 	return;
-			// }
+		selectNode(pNode: IUIAnimationNode, bModified: bool): void {
+			var bPlay: bool = true;
 
-			// if (!isNull(this._pSelectedNode)) {
-			// 	this._pSelectedNode._selected(false);
-			// }
+			if (this._pSelectedNode === pNode) {
+				
+				if (bModified) {
+					ide.cmd(ECMD.INSPECT_ANIMATION_NODE, pNode);
+				}
 
-			// if (!isNull(pNode)) {
-			// 	pNode._selected(true);
-			// }
+				return;
+			}
 
-			// if (bPlay && !isNull(this._pTimer)) {
-			// 	this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
-			// }
+			ide.cmd(ECMD.INSPECT_ANIMATION_NODE, pNode);
+
+			this._pSelectedNode = pNode;
+
+
+			if (bPlay && !isNull(this._pTimer)) {
+				this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
+			}
+
+			this.nodeSelected(pNode, bPlay);
 		}
+
+		BROADCAST(nodeSelected, CALL(pNode, bPlay));
 		
 		addAnimation(pAnimation: IAnimationBase): void {
 			this._pAnimationController.addAnimation(pAnimation);
@@ -101,7 +161,7 @@ module akra.ui.animation {
 			}
 
 			if (akra.animation.isAnimation(pAnimation)) {
-				pNode = (<ui.animation.Controls>this.parent).createData();
+				pNode = <IUIAnimationNode>new Data(this);
 				pNode.animation = pAnimation;
 			}
 			else {
@@ -112,21 +172,53 @@ module akra.ui.animation {
 		}
 
 		capture(pController: IAnimationController): bool {
+			ASSERT(isNull(this._pAnimationController), SLOT("controller exists!!!"));
+
 			this._pAnimationController = pController;
 			
 			this.connect(pController, SIGNAL(play), SLOT(onControllerPlay));
+			this.connect(pController, SIGNAL(animationAdded), SLOT(animationAdded));
+
 			this.createNodeByController(pController);
+
+			this.setTimer(pController.getEngine().getTimer());
+
+			var pEngine: IEngine = pController.getEngine();
+
+			pEngine.getScene().bind(SIGNAL(beforeUpdate), () => {
+				pController.update(pEngine.time);
+			});
 
 			return true;
 		}
 
-		private onControllerPlay(pAnimation: IAnimationBase): void {
+		private animationAdded(pController: IAnimationController, pAnimation: IAnimationBase): void {
+
+		}
+
+		private onControllerPlay(pController: IAnimationController, pAnimation: IAnimationBase): void {
 			// var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
 			// this.selectNode(pNode);
 		}
+
+		addChild(pChild: IEntity): IEntity {
+			pChild = super.addChild(pChild);
+
+			if (isComponent(pChild, EUIComponents.GRAPH_NODE)) {
+				var pNode: IUIGraphNode = <IUIGraphNode>pChild;
+				this.connect(pNode, SIGNAL(selected), SLOT(selectNode));
+			}
+
+			return pChild;
+		}
+
+		rendered(): void {
+			super.rendered();
+			this.el.addClass("component-animationgraph");
+		}
 	}
 
-	register("AnimationGraph", Graph);
+	register("animation.Graph", Graph);
 }
 
 #endif

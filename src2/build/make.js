@@ -48,7 +48,8 @@ function usage() {
 		'\n\t--list		[-l] List all available tests.' + 
 		'\n\t--webgl-debug	[-w] Add webgl debug utils.' + 
 		'\n\t--do-magic	[-m] It\'s wonderfull magic!(Спросите у Игоря!).' + 
-		'\n\t--declaration		Generates corresponding .d.ts file.'
+		'\n\t--declaration		Generates corresponding .d.ts file.' +
+		'\n\t--preprocess		Preprocessing only.'
 	);
 	
 	process.exit(1);
@@ -70,9 +71,11 @@ var pOptions = {
 	debug: true,
 	pathToTemp: null,
 	declaration: false,
+	preprocess: false,
 	clean: false, //clean tests data instead build
 	listOnly: false, //list available tests
 	webglDebug: false,
+	dataDir: "./data/",
 	/**
 	 * Поиск всех файлов с комеентариями вида // стоящими не на отдельной строке
 	 */
@@ -169,6 +172,9 @@ function parseArguments() {
 			case '--declaration':
 				pOptions.declaration = true;
 				break;
+			case '--preprocess':
+				pOptions.preprocess = true;
+				break;
 			case '--tests':
 			case '-s':
 				readKey("pathToTests", ++ i);
@@ -240,7 +246,17 @@ function verifyOptions() {
 	// }
 
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
-		pOptions.outputFile = pOptions.files[0] + (pOptions.declaration? ".d.ts" : ".out.js");
+		var pOutExt = ".out.js";
+		
+		if (pOptions.declaration) {
+			pOutExt = ".d.ts";
+		}
+
+		if (pOptions.preprocess) {
+			pOutExt = ".ts";
+		}
+
+		pOptions.outputFile = pOptions.files[0] + pOutExt;
 	}
 }
 
@@ -255,7 +271,7 @@ function preprocess() {
 	console.log("\n> preprocessing started (" + this.process.pid + ")\n");
 
 	var capabilityOptions = [
-		//"-D inline=/**@inline*/",
+		// "-D inline=/**@inline*/",
 		"-D protected=/**@protected*/",
 		"-D const=/**@const*/var",
 		"-D struct=class",
@@ -310,11 +326,16 @@ function preprocess() {
 	
 	  if (code == 0) {
 	  	pOptions.pathToTemp = pOptions.outputFolder + "/" + pOptions.tempFile;
-
-		console.log("preprocessed to: ", pOptions.pathToTemp);
-		fs.writeFileSync(pOptions.pathToTemp, stdout.slice(0, iTotalChars), "utf8");
-
-		compile();
+		
+		if (pOptions.preprocess) {
+			fs.writeFileSync(pOptions.outputFolder + "/" + pOptions.outputFile, stdout.slice(0, iTotalChars), "utf8");
+			console.log("preprocessed to: ", pOptions.outputFolder + "/" + pOptions.outputFile);
+		}
+		else {
+			console.log("preprocessed to: ", pOptions.pathToTemp);
+			fs.writeFileSync(pOptions.pathToTemp, stdout.slice(0, iTotalChars), "utf8");
+			compile();
+		}
 	  }
 	});
 }
@@ -500,29 +521,103 @@ function findDepends(sData, pDepExp) {
 	var pDeps = [];
 
 	while (pMatches = pDepExp.exec(sData)) {
-		pDeps.push(pMatches[1]);
+		pDeps.push([pMatches[1], pMatches[2]]);
 	}
 
 	return pDeps;
 }
 
-function fetchDeps(sDir, pDeps) {
-	for (var i in pDeps) {
 
-		var sDep = path.normalize( pOptions.includeDir + pDeps[i]);
-		var sDepContent;
-		var stat;
+function srcModifier(name, value, argv) {
+	if (argv.length != 1) {
+		throw Error("copy modifier must have a path param");
+	}
 
-		if (fs.existsSync(sDep)) {
-			stat = fs.statSync(sDep);
-			if (stat.isDirectory()) {
-				wrench.copyDirSyncRecursive(path.resolve(sDep), path.resolve(sDir + "/" + path.basename(sDep)));
-			}
-			else {
-				fs.writeFileSync(sDir + "/" + path.basename(sDep), fs.readFileSync(sDep, "utf-8"), "utf-8");
-			}
+	var gitignore = [];
+
+	if (fs.existsSync(argv[0])) {
+		stat = fs.statSync(argv[0]);
+		if (stat.isDirectory()) {
+			console.log("copy dir from ", argv[0], "to", value);
+			wrench.copyDirSyncRecursive(path.resolve(argv[0]), path.resolve(value));
+			gitignore.push(value + "/");
+		}
+		else {
+			var sFile = fs.readFileSync(argv[0], "utf-8");
+			console.log("copy file from ", argv[0], "to", value);
+			fs.writeFileSync(value, sFile, "utf-8");
+			gitignore.push(value);
 		}
 	}
+	else {
+		console.log("[WARNING] could not find file for copy:", argv[0])
+	}
+
+	return gitignore.join("\n");
+}
+
+function fetchDeps(sDir, sTestData, pResult) {
+	var pDeps = findDepends(sTestData, /\/\/\/\s*@([\w\d]*)\s*\:\s*([\w\d\.\-\/\:\-\{\}\|\(\)\ ]+)\s*/ig);
+
+	var variables = {};
+	var gitignore = [];
+
+	for (var i in pDeps) {
+		var pDep = pDeps[i];
+		var name = pDep[0];
+		var cmd = pDep[1];
+		var value = null;
+
+		for (var vname in variables) {
+			var vvalue = variables[vname];
+			cmd = cmd.replace(new RegExp("\\{\\s*" + vname + "\\s*\\}", "ig"), vvalue);
+		}
+
+		var pmods = cmd.split("|");
+		value = pmods.splice(0, 1)[0];
+
+		//console.log("@" + name, cmd);
+
+		for (var m = 0; m < pmods.length; ++ m) {
+			var mod = pmods[m];
+			var matches = null;
+			
+			if (matches = (/\s*([\w]+)\(([\/\.\-\w\d\ \t\,]*)\)\s*/ig).exec(mod)) {
+				var modifier = matches[1];
+				var args = matches[2];
+				var argv = args.split(',');
+
+				switch (modifier.toLowerCase()) {
+					case "src":
+						gitignore.push(srcModifier(name, value, argv));
+						break;
+					case "css":
+						pResult['css'].push(value);
+						console.log("additional css file: ", value);
+						break;
+					case "script":
+						pResult['script'].push(value);
+						console.log("additional script file: ", value);
+						break;
+					case "location":
+						value = path.relative(sDir, value).replace(/\\/ig, "/");
+						break;
+					default:
+						console.log("[WARNING] unknown modifier founded in deps: ", modifier, "(" + cmd + ")");
+				}
+			}
+		}
+
+		if (name && name.length > 0) {
+			variables[name] = value;
+			sTestData = sTestData.replace("\"@" + name + "\"", "\"" + value + "\"");
+			// console.log("[REPLACE] ", "\"@" + name + "\"" , " --> ", value)
+		}
+	}
+
+	pResult.data = sTestData;
+
+	return gitignore.join("\n");
 }
 
 
@@ -541,12 +636,13 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		" *--------------------------------------------*/\n\n\n" + 
 		sTestData;
 
-	var pAdditionalScripts = findDepends(sTestData, /\/\/\/\s*@script\s+([^\s]+)\s*/ig);
+	var pAdditionalScripts = [];//findDepends(sTestData, /\/\/\/\s*@script\s+([^\s]+)\s*/ig);
 	var sAdditionalCode = "";
 
 
-	var pAdditionalCSS = findDepends(sTestData, /\/\/\/\s*@css\s+([^\s]+)\s*/ig);
+	var pAdditionalCSS = [];//findDepends(sTestData, /\/\/\/\s*@css\s+([^\s]+)\s*/ig);
 	var sAdditionalCSS = "";
+
 
 
 	var pArchive;
@@ -554,19 +650,41 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 
 
     if (pOptions.webglDebug) {
-    	pAdditionalScripts.push("webgl-debug.js");
-    	sTestData += "\n\n/// @dep ../build/webgl-debug.js \n"
+    	sTestData += "\n\n/// @WEBGL_DEBUG: {data}/js/webgl-debug.js|location()|script() \n"
     }
 
+    var pFetchResult = {
+		css: pAdditionalCSS, 
+		script: pAdditionalScripts,
+		data: null
+	};
+    var gitignore = fetchDeps(
+    	sDir,
+    	sTestData, 
+    	pFetchResult);
+
+    sTestData = pFetchResult.data;
+
+    var delimeter = "\n# -- GENERATED AUTOMATICALLY --\n";
+    var gitignore_data = s = fs.readFileSync(".gitignore", "utf8");
+
+    if (s.indexOf(delimeter) !== -1) {
+    	gitignore_data = s.substr(0, s.indexOf(delimeter)) + s.substr(s.lastIndexOf(delimeter) + delimeter.length, s.length);
+    }
+
+    fs.writeFileSync(
+    	".gitignore", 
+    	gitignore_data + delimeter + gitignore + "\n" + delimeter, 
+    	"utf8");
 
 	for (var i in pAdditionalScripts) {
 		sAdditionalCode += "<script type=\"text/javascript\" src=\"" + pAdditionalScripts[i] + "\">" + 
-							"</script>";
+							"</script>\n";
 	}
 
 
 	for (var i in pAdditionalCSS) {
-		sAdditionalCSS += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + pAdditionalCSS[i] + "\">";
+		sAdditionalCSS += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + pAdditionalCSS[i] + "\">\n";
 	}
 
     sIndexHTML = "\n\
@@ -583,7 +701,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
     
 
 
-    fetchDeps(sDir, findDepends(sTestData, /\/\/\/\s*@dep\s+([\w\d\.\-\/]+)\s*/ig));
+    //fetchDeps(sDir, findDepends(sTestData, /\/\/\/\s*@dep\s+([\w\d\.\-\/\:\-\>]+)\s*/ig));
 
 
     function writeOutput(sOutputFile, pData) {

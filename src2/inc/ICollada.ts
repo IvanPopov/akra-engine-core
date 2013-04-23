@@ -9,6 +9,7 @@ module akra {
 	IFACE(IEngine);
     IFACE(IColladaAsset);
     IFACE(IMesh);
+    IFACE(IAnimation);
     IFACE(IAnimationController);
 
     //=============================================
@@ -25,6 +26,9 @@ module akra {
 
         attachToScene(pNode: ISceneNode, pController?: IAnimationController): IModelEntry;
         attachToScene(pScene: IScene3d, pController?: IAnimationController): IModelEntry;
+
+        extractAnimations(): IAnimation[];
+        parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
     }
 
     export interface IColladaCache {
@@ -57,6 +61,8 @@ module akra {
     	skeletons?: ISkeleton[];
 
         images?: IColladaImageLoadOptions;
+
+        name?: string;
     }
 
     // xml

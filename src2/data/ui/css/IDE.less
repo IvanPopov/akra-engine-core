@@ -15,6 +15,9 @@ table {
 	}
 }
 
+
+@bg: lightgray;
+@bg-light: rgb(232, 232, 232);
 @font-size: 12px;
 @tree-font-size: @font-size;
 @border-dark-color: rgb(163, 163, 163);
@@ -47,18 +50,25 @@ table {
 
 }
 
+body {
+	background: @bg;
+}
+
+
 #IDE {
 	margin: 0;
 	width: 100%;
 	min-height: 100%;
 }
 
-.title {
-	border-top: @border-dark;
-	border-bottom: @border-dark;
-	padding: 5px 0px 5px 30px;
+#work-area, #preview-area {
+	.title {
+		border-top: @border-dark;
+		border-bottom: @border-dark;
+		padding: 5px 0px 5px 30px;
 
-	.grayGrad;
+		.grayGrad;
+	}	
 }
 
 #work-area {
@@ -67,6 +77,16 @@ table {
 	font-size: @font-size;
 	min-height: 760px;
 	border-bottom: @border-light;
+
+	.component-tabs {
+		& > .component-panel {
+			min-height: 760px;
+
+			.component-graph {
+				min-height: 550px;
+			}
+		}
+	}
 }
 
 #preview-area {
@@ -76,42 +96,159 @@ table {
 	min-height: 760px;
 	border-bottom: @border-light;
 
-	.title {
-		float: left;
-	}
-
-	.chose-resolution {
-		height: ;
+	div[name=resolution] {
+		margin: -1px 0 -1px 0;
 		text-align: right;
-		padding: 5px 30px 5px 30px;
-		border-top: @border-dark;
-		border-bottom: @border-dark;
 
-		a {
-			color: gray;
-			text-shadow: 0 0 2px white;
+		background-color: #CCC;
+
+		.component-button, .component-checkboxlist {
+			display: inline-block;
 		}
 
-		a:hover {
-			color: black;
-		}
+		.component-checkboxlist {
+			.layout {
+				&.horizontal table {
+					margin: 0 auto;
+				}
+			}
 
-		.grayGrad;
+			.component-checkbox {
+				padding: 1 4px;
+				font-size: 11px;
+
+				&.first {
+					border-radius: 0 !important;
+				}
+
+				&.last {
+					border-radius: 0 !important;
+				}
+
+				&.active {
+					.gradient (#5393c5, #6facd5, #3373A5);
+				}
+			}
+		}
 	}
 
+	.row > span:first-child {
+		color: rgb(200, 0, 0);
+	}
+
+	.row {
+		width: 100%;
+		padding-left: 15px; 
+		padding-right: 15px; 
+		white-space: nowrap;
+		font-family: Consolas, Lucida Console, monospace;
+		font-size: @font-size;
+		background-color: white;
+
+		&.last {
+			padding-bottom: 15px;
+			border-bottom: @border-mid;
+		}
+
+		&.first {
+			padding-top: 15px;
+			// border-top: @border-mid;
+		}
+
+		.component-switch, .component-button {
+			display: inline-block;
+		}
+
+		.component-button {
+			padding: 1px 4px;
+		}
+
+		.component-switch {
+			margin-top: 0px;
+			position: relative;
+			bottom: 7px;
+		}
+	}
 }
 
+#tree-node {
+	min-width: 165px;
+}
 
-
-#tree {
+#tree-node, #tree, #preview-area {
 	padding: 0;
 	font-size: @tree-font-size;
 	border-right: @border-dark;
-	min-height: 760px;
+
+	.component-panel {
+		div.panel-title:first-of-type {
+			border-top: @border-dark;
+			border-bottom: @border-dark;
+			padding: 5px 0px 5px 30px;
+
+			.grayGrad;
+
+			div.controls {
+				left: -20px;
+				margin: -5px 0 0 0;
+
+				input {
+					margin: 0px;
+
+					background: url(../img/panel-opened.png) 0 0 no-repeat;
+
+					width: 16px;
+					height: 16px;
+
+					background-position: 0 0, 5px 0;
+
+					//box-shadow: inset 0 1px 4px rgba(0, 0, 0, .5), inset 0 0 10px rgba(0, 0, 0, .5), 0 0 0 1px rgba(0, 0, 0, .1), 0 -1px 2px 1px rgba(0, 0, 0, .25), 0 2px 2px 1px rgba(255, 255, 255, .5), 0 -2px 10px 2px rgba(255, 255, 255, .75), 0 2px 10px 2px rgba(0, 0, 0, .25);
+					cursor: pointer;
+
+					padding-right: 10px;
+					position: relative;
+
+					-webkit-appearance: none;
+					-webkit-transition: .15s;
+
+					display: none;
+				}
+			}
+		}
+
+		&.collapsible {
+			div.panel-title:first-of-type div.controls input {
+				display: block;
+			}
+		}
+
+		&.collapsed {
+			div.panel-title:first-of-type {
+				div.controls {
+					input {
+						background: url(../img/panel-closed.png) 0 0 no-repeat;
+					}
+				}	
+			}
+		}
+	}
+
+	.component-panel {
+		.layout {
+			&.vertical table {
+				margin: 0;
+			}
+		}
+	}
+}
+
+
+#tree {
+	min-height: 510px;
 	border-bottom: @border-light;
 
 	ol.tree {
-		padding: 0 30px 0 30px;
+		padding: 15px 15px 15px 30px;
 		//width: 300px;
 
 		.unnamed {
@@ -162,6 +299,13 @@ table {
 				padding-left: 1px; 
 			}
 
+			div.scene-object-show-btn {
+				background: url(../img/scene-object-show.png) 15px 1px no-repeat;
+				cursor: pointer;
+				display: block;
+				float: left;
+			}
+
 			label {
 				background: url(../img/node.png) 15px 1px no-repeat;
 				cursor: pointer;
@@ -194,6 +338,10 @@ table {
 
 				&.updating {
 					background: url(../img/node-updating.gif) 15px 4px no-repeat;
+				}
+
+				&.selected {
+					background-color: #AAA;
 				}
 			}
 
@@ -263,4 +411,327 @@ table {
 			border-top: 1px solid yellow;
 		}
 	}
+}
+
+.component-inspector {
+	background-color: white;
+	font-size: @font-size;
+
+
+	div.node-type {
+		border-top: @border-dark;
+		border-bottom: @border-dark;
+		vertical-align: middle;
+		padding: 0px 5px 0px 5px;
+		color: black;
+		background-color: @bg;
+		// margin-bottom: 5px;
+	}
+
+	div.readonly {
+		background-color: @bg-light;
+		margin-top: 5px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+		border-top: @border-mid;
+		//border-bottom: @border-mid;
+	}
+
+	.row > span:first-child {
+		color: rgb(200, 0, 0);
+	}
+
+	.row {
+		width: 100%;
+		padding-left: 15px; 
+		padding-right: 15px; 
+		white-space: nowrap;
+		font-family: Consolas, Lucida Console, monospace;
+		font-size: @font-size;
+
+		.component-vector {
+			//color: gray;
+			font-family: Consolas, Lucida Console, monospace;
+
+			&.editable {
+				color: black;
+			}
+
+			div.component-label {
+				margin-right: -7px;
+			}
+
+			span:last-of-type div.component-label {
+				margin-right: 0px;
+			}
+		}
+
+		.component-label {
+			display: inline-block;
+			font-size: @font-size;
+			width: auto;
+			//color: gray;
+			font-family: Consolas, Lucida Console, monospace;
+
+			&.editable {
+				color: black;
+			}
+
+			.label-input {
+				width: auto;
+				font-size: 10px;
+			}
+		}
+
+		.component-checkboxlist {
+			display: inline-block;
+
+			.layout {
+				&.horizontal table {
+					margin: 0 auto;
+				}
+			}
+
+			.component-checkbox {
+				padding: 0 4px;
+				font-size: 11px;
+
+				&.first {
+					border-top-left-radius: 2px;
+					border-bottom-left-radius: 2px;
+				}
+
+				&.last {
+					border-top-right-radius: : 2px;
+					border-bottom-right-radius: 2px;
+				}
+
+				&.active {
+					.gradient (#5393c5, #6facd5, #3373A5);
+				}
+			}
+		}
+	}
+
+	div[name=model-entry], 
+	div[name=scene-model], 
+	div[name=light-point], 
+	div[name=animation-node], 
+	div[name=camera],
+	div[name=scene] {
+		display: none;
+
+		.row {
+			padding: 0;
+			.component-panel {
+				div.panel-title:first-of-type {
+					border-top: 0px !important;
+					padding-top: 1px;
+					padding-bottom: 1px;
+					background: none !important;
+					background-color: @bg !important;
+					height: 15px;
+					padding: 0 0 2px 40px !important;
+
+					div.controls {
+						left: -30px !important;
+						margin-top: -6px !important;
+					}
+
+					span {
+						margin-left: -30px
+					}
+				}
+			}
+		}
+
+		.component-resourceproperties, .component-animationcontrollerproperties,
+		.component-meshproperties, .component-lightproperties, .component-animationnodeproperties,
+		.component-animationmaskproperties, .component-cameraevents, .component-sceneevents {
+			.row {
+				padding: 0px 20px 1px 20px;
+			}
+		}
+
+		.component-animationcontrollerproperties {
+
+			button[name=edit] {
+				display: block;
+				margin: 0 auto;
+				padding: 0 15px;
+				border-radius: 2px;
+				//width: 100%;
+				margin-top: 10px;
+			}
+		}
+
+		.component-switch {
+			display: inline-block;
+			position: relative;
+			top: -5px;
+			margin-left: 0px;
+			margin-top: 0px;
+
+			label {
+				height: 12px;
+
+				&:before {
+					height: 12px;
+				}
+			}
+		}
+
+		.component-meshproperties {
+
+			div[name=shadows] {
+				height: 12px;
+			}
+		}
+	}
+}
+
+.component-tabs {
+	& > .bookmarks {
+		& > .bookmark {
+			background-color: @bg;
+		}
+	}
+}
+
+
+.component-animationmaskproperties {
+	background-color: white;
+	
+	.panel-title {
+		display: block;
+	}
+
+	.component-slider {
+		display: inline-block;
+		background: #999;
+		overflow: hidden;
+
+		.component-pin {
+			width: 10px !important;
+			background: black;
+		}
+	}
+
+	.component-slider {
+		height: 10px;
+
+		.component-pin {
+			height: 10px;
+			width: 10px;
+		}
+	}
+
+	.component-slider {
+		width: auto;
+		min-width: 100px;
+	}
+
+	.row {
+		text-align: right;
+		padding: 0px !important;
+
+		& > span {
+			white-space: pre;
+		}
+
+		&.first {
+			padding-top: 5px !important;
+		}
+
+		&.last {
+			padding-bottom: 5px !important;
+		}
+	}
+}
+
+#menu {
+	.component-menu {
+		display: inline-block;
+	}
+}
+
+div[name=load-collada-dlg] {
+	width: 350px;
+	height: 200px;
+
+	.row > span:first-child {
+		color: rgb(200, 0, 0);
+	}
+
+	.row {
+		width: 100%;
+		padding-left: 15px; 
+		padding-right: 15px; 
+		white-space: nowrap;
+		font-family: Consolas, Lucida Console, monospace;
+		font-size: @font-size;
+		
+		.component-label {
+			display: inline-block;
+			font-size: @font-size;
+			width: auto;
+			font-family: Consolas, Lucida Console, monospace;
+
+			&.editable {
+				color: black;
+			}
+
+			.label-input {
+				width: auto;
+				font-size: 10px;
+			}
+		}
+	}
+
+	.component-checkboxlist {
+		display: inline-block;
+
+		.layout {
+			&.horizontal table {
+				margin: 0 auto;
+			}
+		}
+
+		.component-checkbox {
+			padding: 0 4px;
+			font-size: 11px;
+
+			&.first {
+				border-top-left-radius: 2px;
+				border-bottom-left-radius: 2px;
+			}
+
+			&.last {
+				border-top-right-radius: : 2px;
+				border-bottom-right-radius: 2px;
+			}
+
+			&.active {
+				.gradient (#5393c5, #6facd5, #3373A5);
+			}
+		}
+	}
+}
+
+.component-viewportproperties {
+	.row {
+		.component-label {
+			font-family: Consolas;
+
+			&.file-drag-over {
+				background: rgba(255, 255, 0, .5) !important;
+			}
+		}
+	}
+}
+
+.CodeMirror {border: 1px solid #eee;} .CodeMirror-scroll { height: 100% }
+
+div[name=scene] {
+	display: block !important;
 }

@@ -7,11 +7,19 @@
 module akra.scene.objects {
 	export class ModelEntry extends SceneNode implements IModelEntry {
 		protected _pModelResource: IModel = null;
+		protected _pController: IAnimationController = null;
 
 		inline get resource(): IModel {
 			return this._pModelResource;
 		}
 
+		inline get controller(): IAnimationController {
+			return this._pController;
+		}
+
+		inline set controller(pController: IAnimationController) {
+			this._pController = pController;
+		}
 
 		constructor (pScene: IScene3d, pModel: IModel)  {
 			super(pScene, EEntityTypes.MODEL_ENTRY);

@@ -7,6 +7,9 @@
 #include "IPixelBuffer.ts"
 
 module akra {
+	IFACE(ITexture);
+	IFACE(IPixelBox);
+
 	export enum EFramebuffer {
 		FRONT, 	
 		BACK, 	

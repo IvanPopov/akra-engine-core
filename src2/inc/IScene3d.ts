@@ -2,6 +2,7 @@
 #define ISCENE3D_TS
 
 #include "IScene.ts"
+#include "ILightPoint.ts"
 
 #define DL_DEFAULT 0
 #define DL_LIGHTING 1
@@ -10,7 +11,6 @@ module akra {
 	IFACE(ISceneNode);
 	IFACE(ISceneModel);
 	IFACE(ISceneObject);
-	IFACE(ILightPoint);
 	IFACE(ICamera);
 	IFACE(ISprite);
 	IFACE(IJoint);
@@ -23,6 +23,7 @@ module akra {
 	IFACE(IModel);
 	IFACE(ITerrain);
 	IFACE(ITerrainROAM);
+	IFACE(IModelEntry);
 
 	export interface IScene3d extends IScene {
 		totalDL: uint;

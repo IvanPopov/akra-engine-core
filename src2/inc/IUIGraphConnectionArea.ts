@@ -18,6 +18,10 @@ module akra {
 		readonly connectors: IUIGraphConnector[];
 		readonly node: IUIGraphNode;
 
+		maxInConnections: uint;
+		maxOutConnections: uint;
+		maxConnections: uint;
+
 		connectorsCount(eDir?: EUIGraphDirections): uint;
 
 		findRoute(pNode: IUIGraphNode): IUIGraphRoute;
@@ -34,7 +38,7 @@ module akra {
 
 		sendEvent(e: IUIGraphEvent): void;
 
-		signal connected(pNode: IUIGraphNode, pRoute: IUIGraphRoute): void;
+		signal connected(pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void;
 	}
 }
 

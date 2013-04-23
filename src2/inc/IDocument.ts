@@ -121,6 +121,7 @@ module akra {
 		options: int;
 	}
 
+
 	export interface IDocument {
 		asset?: IAsset;
 		library: IDataEntry[];

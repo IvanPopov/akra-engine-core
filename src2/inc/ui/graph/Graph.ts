@@ -15,6 +15,7 @@ module akra.ui.graph {
 		protected _eGraphType: EUIGraphTypes;
 		protected _pCanvas: RaphaelPaper = null;
 		protected _pTempRoute: IUITempGraphRoute = null;
+		protected $svg: JQuery = null;
 
 		inline get nodes(): IUIGraphNode[] {
 			var pNodes: IUIGraphNode[] = [];
@@ -31,13 +32,15 @@ module akra.ui.graph {
 		inline get graphType(): EUIGraphTypes { return this._eGraphType; }
 		inline get canvas(): RaphaelPaper { return this._pCanvas; }
 
-		constructor (parent, eType: EUIGraphTypes = EUIGraphTypes.UNKNOWN) {
-			super(parent, null, EUIComponents.GRAPH);
+		constructor (parent, options?, eType: EUIGraphTypes = EUIGraphTypes.UNKNOWN) {
+			super(parent, options, EUIComponents.GRAPH);
 
 			this._eGraphType = eType;
 
 			//FIXME: unblock selection
-			this.getHTMLElement().onselectstart = () => { return false };
+			// this.getHTMLElement().onselectstart = () => { return false };
+			this.el.disableSelection();
+			this.handleEvent("mouseup mousemove keydown click");
 		}
 
 
@@ -81,7 +84,7 @@ module akra.ui.graph {
 
 			this._pCanvas = Raphael(this.getHTMLElement(), 0, 0);
 
-			var $svg = this.$element.children(":first");
+			var $svg = this.$svg = this.$element.children(":first");
 
 			$svg.css({
 				width: "100%",
@@ -119,10 +122,15 @@ module akra.ui.graph {
 		}
 
 		click(e: IUIEvent): void {
+			super.click(e);
+
 			var pNodes: IUIGraphNode[] = this.nodes;
+			
 			for (var i: int = 0; i < pNodes.length; ++ i) {
+				LOG("deactivate node > ", pNodes[i]);
 				pNodes[i].activate(false);
 			}
+
 			super.click(e);
 		}
 

@@ -14,6 +14,7 @@ module akra {
 		right: IUIGraphConnector;
 		path: RaphaelPath;
 		color: IColor;
+		enabled: bool;
 
 		isConnectedWithNode(pNode: IUIGraphNode): bool;
 		isConnectedWith(pConnector: IUIGraphConnector): bool;

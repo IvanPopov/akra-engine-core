@@ -27,15 +27,17 @@ module akra.ui {
 			}
 
 			this.$element = $(pElement || "<div />");
-			this.$element.bind(HTMLNode.EVENTS.join(' '), fnEventRedirector);
-
-			//this.$element.mousedown((e: IUIEvent) => { pNode.mousedown(e); });
+			// this.$element.bind(HTMLNode.EVENTS.join(' '), fnEventRedirector);
 
 			if (!isUI(parent)) {
 				this.attachToParent(<Node>parent);
 			}
 		}
 
+		handleEvent(sEvent: string): bool {
+			this.$element.bind(sEvent, this._fnEventRedirector);
+			return true;
+		}
 
 		disableEvent(sEvent: string): void {
 			this.$element.unbind(sEvent, <(e: IUIEvent) => any>this._fnEventRedirector);
@@ -125,6 +127,13 @@ module akra.ui {
 			return this.$element;
 		}
 
+		hide(): void {
+			this.el.hide();
+		}
+
+		show(): void {
+			this.el.show();
+		}
 
 		protected self(): JQuery {
 			return this.$element;

@@ -46,7 +46,12 @@ module akra.animation {
 		};
 
 		inline set name(sName: string){
+			if (sName == this._sName) {
+				return;
+			}
+
 			this._sName = sName;
+			this.renamed(sName);
 		};
 
 
@@ -56,6 +61,14 @@ module akra.animation {
 
 		inline stop(fRealTime: float): void {
 			this.stoped(fRealTime);
+		}
+
+		inline isAttached(): bool {
+			if (this._pTargetList.length) {
+				return isDefAndNotNull(this._pTargetList[0].target);
+			}
+
+			return false;
 		}
 		
 		attach(pTarget: ISceneNode): void {
@@ -203,6 +216,7 @@ module akra.animation {
 		CREATE_EVENT_TABLE(Base);
 		BROADCAST(played, CALL(fRealTime));
 		BROADCAST(stoped, CALL(fRealTime));
+		BROADCAST(renamed, CALL(sName));
 	} 
 
 

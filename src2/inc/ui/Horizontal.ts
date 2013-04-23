@@ -9,7 +9,8 @@ module akra.ui {
 		protected $table: JQuery;
 
 		constructor (parent) {
-			super(parent, $("<div><table style=\"margin: 0 auto;\"/></div>"), EUILayouts.HORIZONTAL);
+			//style=\"margin: 0 auto;\"
+			super(parent, $("<div class='layout horizontal'><table/></div>"), EUILayouts.HORIZONTAL);
 
 			this.$table = this.$element.find("table:first");
 			this.$row = $("<tr />");

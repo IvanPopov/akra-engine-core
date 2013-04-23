@@ -13,12 +13,6 @@
 
 
 module akra.ui.graph {
-
-	
-	export interface IGraphNodeAreaMap {
-		[name: string]: IUIGraphConnectionArea;
-	}
-
 	export class Node extends Component implements IUIGraphNode {
 		protected _eGraphNodeType: EUIGraphNodes;
 		protected _isActive: bool = false;
@@ -31,43 +25,72 @@ module akra.ui.graph {
 
 		inline get graph(): IUIGraph { return <IUIGraph>this.parent; }
 
+		inline get areas(): IGraphNodeAreaMap {
+			return this._pAreas;
+		}
+
 		constructor (pGraph: IUIGraph, options?, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN, $el?: JQuery) {
 			super(getUI(pGraph), options, EUIComponents.GRAPH_NODE, $el);
-
-			template(this, "ui/templates/GraphNode.tpl");
 
 			this._eGraphNodeType = eType;
 
 			ASSERT(isComponent(pGraph, EUIComponents.GRAPH), "only graph may be as parent", pGraph);
 			
-			this.$element.css("position", "absolute");			
-
 			this.attachToParent(pGraph);
 
 			if (!isDef(options) || options.init !== false) {
+				this.template("graph.Node.tpl");
 				this.init();
 			}
 
+			this.handleEvent("mouseenter mouseleave dblclick click");
 			this.setDraggable();
 
-			this.$element.offset(this.graph.$element.offset());
+			var node = this;
+			//FIXME: without timeout must be all OK!
+			setTimeout(() => {
+
+				node.el.css("position", "absolute");	
+				node.el.offset(node.graph.el.offset());
+
+			}, 30);
+		
 
 			this.connect(pGraph, SIGNAL(connectionBegin), SLOT(onConnectionBegin));
 			this.connect(pGraph, SIGNAL(connectionEnd), SLOT(onConnectionEnd));
-		}
 
+			this.el.disableSelection();
+		}
+		
 		protected onConnectionEnd(pGraph: IUIGraph): void {
 			this._isSuitable = false;
 			this.el.removeClass("open blocked");
+			this.routing();
 		}
 
 		protected onConnectionBegin(pGraph: IUIGraph, pRoute: IUIGraphRoute): void {
-			if (!this.canAcceptConnect() || pRoute.left.node === this) {
+			if (pRoute.left.node === this) {
+				return;
+			}
+
+			if (!this.canAcceptConnect()) {
+				this.el.addClass("blocked");
 				return;
 			}
 
 			this._isSuitable = true;
 			this.el.addClass("open");
+		}
+
+		//finding areas in direct childrens
+		protected linkAreas(): void {
+			var pChildren: IEntity[] = this.children();
+
+			for (var i = 0; i < pChildren.length; ++ i) {
+				if (isConnectionArea(pChildren[i])) {
+					this.addConnectionArea(pChildren[i].name, <IUIGraphConnectionArea>pChildren[i]);
+				}
+			}
 		}
 
 		inline isSuitable(): bool {
@@ -135,6 +158,12 @@ module akra.ui.graph {
 			}
 		}
 
+		click(e: IUIEvent): void {
+			e.stopPropagation();
+			super.click(e);
+			this.selected(false);
+		}
+
 		inline isActive(): bool {
 			return this._isActive;
 		}
@@ -169,7 +198,7 @@ module akra.ui.graph {
 			this._pAreas[sName] = pArea;
 		}
 
-		protected connected(pArea: IUIGraphConnectionArea, pNode: IUIGraphNode, pRoute: IUIGraphRoute): void {
+		protected connected(pArea: IUIGraphConnectionArea, pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void {
 			
 		}
 
@@ -180,7 +209,7 @@ module akra.ui.graph {
 
 			if (e.type === EUIGraphEvents.DELETE) {
 		        if (this.isActive()) {
-		            this.beforeDestroy(this);
+		            this.beforeDestroy();
 		            this.destroy();
 		        }
 		    }
@@ -203,10 +232,11 @@ module akra.ui.graph {
 
 
 		//BROADCAST(routeBreaked, CALL(route, connection, dir));
-		BROADCAST(beforeDestroy, CALL(node));
+		BROADCAST(beforeDestroy, VOID);
+		BROADCAST(selected, CALL(bModified));
 	}
 
-	register("GraphNode", Node);
+	register("graph.Node", Node);
 }
 
 #endif

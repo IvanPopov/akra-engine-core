@@ -4,8 +4,20 @@
 #include "IUIComponent.ts"
 
 module akra {
+	IFACE(IUICheckbox);
+
 	export interface IUICheckboxList extends IUIComponent {
-		
+		readonly length: uint;
+		readonly items: IUICheckbox[];
+
+		readonly checked: IUICheckbox;
+
+		//режим, в котором хотябы 1 чекбокс должен оставаться выбранным
+		radio: bool;
+
+		hasMultiSelect(): bool;
+
+		signal changed(pCheckbox: IUICheckbox);
 	}
 }
 

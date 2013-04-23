@@ -16,7 +16,7 @@ module akra {
 	export interface IAnimationBlend extends IAnimationBase {
 		readonly totalAnimations: int;
 
-		addAnimation(pAnimation: IAnimationBase, fWeight: float, pMask: FloatMap): int;
+		addAnimation(pAnimation: IAnimationBase, fWeight?: float, pMask?: FloatMap): int;
 		setAnimation(iAnimation: int, pAnimation: IAnimationBase, fWeight?: float, pMask?: FloatMap): int;
 		
 		getAnimationIndex(sName: string): int;
@@ -42,6 +42,7 @@ module akra {
 		createAnimationMask(iAnimation?: int): FloatMap;
 
 		signal durationUpdated(fDuration: float);
+		signal weightUpdated(iAnim: int, fWeight: float);
 	}
 }
 

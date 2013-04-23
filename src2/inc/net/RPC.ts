@@ -8,7 +8,7 @@
 #include "util/util.ts"
 #include "util/ObjectList.ts"
 
-/// @dep net/server/
+/// @: {data}/server|src(inc/net/server)|location()
 
 
 module akra.net {

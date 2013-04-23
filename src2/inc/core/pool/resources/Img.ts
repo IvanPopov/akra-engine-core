@@ -275,10 +275,12 @@ module akra.core.pool.resources {
                     pCodec=Codec.getCodec(sType);
                 }
 
+
+
                 if(!pCodec)
                 {
                     var iMagicLen:uint=Math.min(32,pData.buffer.byteLength);
-                    pCodec=Codec.getCodec(pData.buffer.slice(0,iMagicLen));
+                    pCodec=Codec.getCodec(pData.subarray(0, iMagicLen));
                 }
 
                 if(!pCodec)

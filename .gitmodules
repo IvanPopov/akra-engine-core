@@ -1,0 +1,3 @@
+[submodule "src2/data/ui/3d-party/codemirror"]
+	path = src2/data/ui/3d-party/codemirror
+	url = https://github.com/marijnh/CodeMirror.git

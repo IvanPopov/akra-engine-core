@@ -90,6 +90,7 @@ module akra.util {
 
 module akra {
 	export var Pathinfo = util.Pathinfo;
+	export var pathinfo = util.pathinfo;
 }
 
 #endif

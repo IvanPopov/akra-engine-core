@@ -43,7 +43,7 @@ module akra {
 		isPaused(): bool;
 
 		signal durationUpdated(fDuration: float): void;
-		signal enterFrame(fRealTime: float): void;
+		signal enterFrame(fRealTime: float, fTime: float): void;
 	}
 }
 

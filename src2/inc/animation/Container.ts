@@ -65,8 +65,10 @@ module akra.animation {
 		}
 
 		attach(pTarget: ISceneNode): void {
-			this._pAnimation.attach(pTarget);
-			this.grab(this._pAnimation, true);
+			if (!isNull(this._pAnimation)) {
+				this._pAnimation.attach(pTarget);
+				this.grab(this._pAnimation, true);
+			}
 		}
 
 		setAnimation(pAnimation: IAnimationBase): void {
@@ -193,18 +195,20 @@ module akra.animation {
 		    	return null;
 		    }
 
-		    if (this._fRealTime !== fRealTime) {
-		    	this.calcTime(fRealTime);
 
-		    	this.enterFrame(fRealTime);
-		    	//trace('--->', this.name);
+		    if (this._fRealTime !== fRealTime) {
+		    	//only for first bone in list
+		    	
+		    	this.calcTime(fRealTime);
+		    	this.enterFrame(fRealTime, this._fTrueTime);
 		    }
 
 		    if (!this._bLeftInfinity && this._fRealTime < this._fStartTime) {
 		    	return null;
 		    }
 
-			if (!this._bRightInfinity && this._fRealTime > this.duration + this._fStartTime) {
+
+			if (!this._bRightInfinity && this._fTrueTime > this.duration) {
 		    	return null;
 		    }    
 
@@ -213,7 +217,7 @@ module akra.animation {
 
 
 		BROADCAST(durationUpdated, CALL(fDuration));
-		BROADCAST(enterFrame, CALL(fRealTime));
+		BROADCAST(enterFrame, CALL(fRealTime, fTime));
 	} 
 
 	export inline function isContainer(pAnimation: IAnimationBase): bool {

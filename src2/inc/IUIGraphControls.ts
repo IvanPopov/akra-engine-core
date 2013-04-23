@@ -1,10 +1,10 @@
 #ifndef IUIGRAPHCONTROLS_TS
 #define IUIGRAPHCONTROLS_TS
 
-#include "IUIComponent.ts"
+#include "IUIPanel.ts"
 
 module akra {
-	export interface IUIGraphControls extends IUIComponent {
+	export interface IUIGraphControls extends IUIPanel {
 		readonly graph: IUIGraph;
 	}
 }

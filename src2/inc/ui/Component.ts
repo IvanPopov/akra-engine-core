@@ -6,36 +6,95 @@
 #include "io/ajax.ts"
 
 #include "raphael.d.ts"
-
-/// @script ui/3d-party/raphael/raphael-min.js
-
 #include "swig.d.ts"
-/// @script ui/3d-party/swig/swig.pack.min.js
+#include "io/filedrop.ts"
 
-/// @dep ../data/ui
-/// @css ui/css/main.css
+/// @: {data}/ui/3d-party/raphael/raphael-min.js|location()|script()
+/// @: {data}/ui/3d-party/swig/swig.pack.min.js|location()|script()
+/// @: {data}/ui/css/main.css|location()|css()
 
 module akra.ui {
-	export function template(pNode: IUIComponent, sUrl: string, pData: any = null): void {
-		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
-		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sUrl});
+	swig.init({
+		filters: {data: (path) => DATA(path)}
+	});
+
+	// LOG(swig.compile("{% filter data %}ui/img/switch16.png{% endfilter %}", {filename: "*"})(null));
+
+	function _template(pNode: IUIComponent, sTemplate: string, sName: string, pData: any = null, bRenderAsNormal: bool = false, iDepth: int = 0): void {
+		var fnTemplate: SwigTemplate = swig.compile(sTemplate, {filename: sName});
 		var sTplData: string = fnTemplate(pData);
+		var $target: JQuery = pNode.el;
 
-		pNode.el.html(sTplData);
+		if (!isNull(pNode.layout)) {
+			$target = pNode.layout.renderTarget();
+		}
 
-		pNode.el.find("component").each(function(i: int, pComponentElement: HTMLElement) {
+		$target.append(sTplData);
+		$target.find("component").each(function(i: int) {
 			var $comp: JQuery = $(this);
 			var sType: string = $comp.attr("type");
 			var sName: string = $comp.attr("name");
 
-			var pComponent: IUIComponent = pNode.createComponent(sType, {show: false, name: sName});
-				
-			$comp.before(pComponent.$element);
-			$comp.remove();
+			if ($comp.parents("component").length > 0) {
+				return;
+			}
 
+			bRenderAsNormal = $target[0] == $comp.parent()[0];
+
+			var pComponent: IUIComponent = pNode.createComponent(sType, {show: bRenderAsNormal, name: sName});
 			pComponent._createdFrom($comp);
+			
+			if ($comp.text().length > 0 && !$comp.attr("template")) {
+				_template(pComponent, $comp.html(), sName, pData, false, iDepth + 1);
+			}
+
+			if (!bRenderAsNormal) {
+				// WARNING(sTemplate);
+				var $span = $("<span/>");
+				$comp.before($span);
+
+				pComponent.render($span);
+				pComponent.el.unwrap();
+			}
+
+			$comp.remove();
 		});
 	}
+
+	export function template(pNode: IUIComponent, sUrl: string, pData?: any): void {
+		var sTemplate: string = io.ajax(sUrl, {async: false}).data;
+		_template(pNode, sTemplate, sUrl, pData)
+	}
+
+	// var pFileEventListeners: any[] = [];
+
+	// io.createFileDropArea(null, {
+	// 	dragenter: (e: DragEvent): void => {
+	// 		for (var i: int = 0; i < pFileEventListeners.length; ++ i) {
+	// 			pFileEventListeners[i].fileDragStarted(e);
+	// 		}
+	// 	},
+		
+	// 	dragleave: (e: DragEvent): void => {
+	// 		for (var i: int = 0; i < pFileEventListeners.length; ++ i) {
+	// 			pFileEventListeners[i].fileDragEnded(e);
+	// 		}
+	// 	},
+
+	// 	dragover: (e: DragEvent): void => {
+	// 		for (var i: int = 0; i < pFileEventListeners.length; ++ i) {
+	// 			pFileEventListeners[i].fileDragOver(e);
+	// 		}
+	// 	},
+
+	// 	drop: (file: File, content, format?: EFileDataTypes, e?: DragEvent): void => {
+	// 		for (var i: int = 0; i < pFileEventListeners.length; ++ i) {
+	// 			pFileEventListeners[i].fileDroped(file, content, format, e);
+	// 		}
+	// 	},
+
+	// 	format: EFileDataTypes.ARRAY_BUFFER
+	// });
 
 	
 	export var COMPONENTS: { [type: string]: IUIComponentType; } = <any>{};
@@ -43,6 +102,7 @@ module akra.ui {
 	export class Component extends DNDNode implements IUIComponent {
 		protected _eComponentType: EUIComponents;
 		protected _sGenericType: string = null;
+		protected _pComponentOptions: IUIComponentOptions = null;
 
 		inline get componentType(): EUIComponents { return this._eComponentType; }
 		inline get genericType(): string { return this._sGenericType; }
@@ -51,6 +111,10 @@ module akra.ui {
 		inline set name(sName: string) {
 			this.$element.attr("name", sName);
 			this._sName = sName;
+		}
+
+		inline get options(): IUIComponentOptions {
+			return this._pComponentOptions;
 		}
 
 		get layout(): IUILayout { return isLayout(<IUINode>this.child)? <IUILayout>this.child: null; }
@@ -70,6 +134,14 @@ module akra.ui {
 			this.applyOptions(pOptions);
 		}
 
+		template(sTplName: string, pData?: any): void {
+			template(this, DATA("ui/templates/" + sTplName), pData);
+		}
+
+		fromStringTemplate(sTemplate: string, pData?: any): void {
+			_template(this, sTemplate, sTemplate, pData);
+		}
+
 		rendered(): void {
 			super.rendered();
 			this.el.addClass("component");
@@ -77,6 +149,57 @@ module akra.ui {
 
 		inline isGeneric(): bool {
 			return !isNull(this._sGenericType);
+		}
+
+		// handleEvent(sEvent: string): bool {
+		// 	var pEvents: string[] = sEvent.split(' ');
+
+		// 	for (var i = 0; i < pEvents.length; ++ i) {
+		// 		sEvent = pEvents[i].toLowerCase();
+
+		// 		if (HTMLNode.EVENTS.indexOf(sEvent) == -1) {
+		// 			// switch (sEvent) {
+		// 			// 	case "dragenter":
+		// 			// 	case "dragover":
+		// 			// 	case "dragleave":
+		// 			// 	case "drop":
+		// 			// 		var pOptions = {};
+		// 			// 		var pComponent: any = this;
+		// 			// 		pOptions[sEvent] = () => {pComponent[sEvent].apply(pComponent, arguments);};
+		// 			// 		io.fileDropArea(this.getHTMLElement(), pOptions);
+		// 			// }
+		// 			switch (sEvent) {
+		// 				case "fileevent": 
+		// 					if (pFileEventListeners.indexOf(this) == -1) {
+		// 						pFileEventListeners.push(this);
+		// 					}
+		// 			}
+		// 		}
+		// 		else {
+		// 			super.handleEvent(sEvent);
+		// 		}
+		// 	}
+		// 	return true;
+		// }
+
+		// inline disableEvent(sEvent: string): void {
+		// 	super.disableEvent(sEvent);
+		// }
+
+		fileDragStarted(e: DragEvent): void {
+			// LOG("fileDragStarted(", e, ")");
+		}
+
+		fileDragEnded(e: DragEvent): void {
+			// LOG("fileDragEnded(", e, ")");
+		}
+
+		fileDragOver(e: DragEvent): void {
+			// LOG("fileDragOver(", e, ")");
+		}
+
+		fileDroped(file: File, content: any, format?: EFileDataTypes, e?: DragEvent): void {
+			// LOG(arguments);
 		}
 
 		setLayout(eType: EUILayouts): bool;
@@ -165,17 +288,48 @@ module akra.ui {
 			if (isDefAndNotNull(pOptions.dragZone)) {
 				$element.draggable("option", "containment", pOptions.dragZone);
 			}
+
+			if (isDefAndNotNull(pOptions.events)) {
+				if (isArray(pOptions.events)) {
+					pOptions.events = pOptions.events.join(' ');
+				}
+
+				this.handleEvent(pOptions.events);
+			}
+
+			if (isDefAndNotNull(pOptions.parent)) {
+				this.attachToParent(pOptions.parent, isDefAndNotNull(pOptions.show)? pOptions.show: true);
+			}
+
+			if (isDefAndNotNull(pOptions.template)) {
+				this.template(pOptions.template);
+			}
+
+			this._pComponentOptions = pOptions;
 		}
 
 		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent {
 			var pComp: IUIComponent = this.ui.createComponent(sType, pOptions);
-			pComp.attachToParent(this);
+			pComp.attachToParent(this, !isDefAndNotNull(pOptions) || pOptions.show !== false);
 			return pComp;
 		}
 
 		_createdFrom($comp: JQuery): void {
 			this.$element.attr("style", $comp.attr("style"));
 			this.$element.attr("class", $comp.attr("class"));
+			
+			var sLayout: string = $comp.attr("layout");
+			var sTemplate: string = $comp.attr("template");
+			
+			if (isString(sTemplate)) {
+				this.template(sTemplate);
+			}
+
+			if (isString(sLayout)) {
+				this.setLayout(sLayout);
+			}
+
+			this.el.attr("id", "cuid-" + this.getGuid());
 		}
 
 #ifdef DEBUG

@@ -8,17 +8,8 @@
 #include "jquery.d.ts"
 #include "jqueryui.d.ts"
 
-/// @script ui/3d-party/jQuery/jquery-1.9.1.js
-/// @script ui/3d-party/jQuery/jquery-ui.js
-
-(function($){
-    $.fn.disableSelection = function() {
-        return this
-                 .attr('unselectable', 'on')
-                 .css('user-select', 'none')
-                 .on('selectstart', false);
-    };
-})(jQuery);
+/// @: data/ui/3d-party/jQuery/jquery-1.9.1.js|location()|script()
+/// @: data/ui/3d-party/jQuery/jquery-ui.js|location()|script()
 
 module akra.ui {
 	//export const $ = jQuery;

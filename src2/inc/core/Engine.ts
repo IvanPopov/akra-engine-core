@@ -304,7 +304,7 @@ module akra.core {
 		}
 
 		inline createAnimationController(iOptions: int = 0): IAnimationController {
-			return animation.createController(iOptions);
+			return animation.createController(this, iOptions);
 		}
 
 		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {
@@ -331,12 +331,7 @@ module akra.core {
 			}
 		}
 
-		static DEPS_ROOT: string = 
-#ifdef DEBUG
-			"/akra-engine-core/src2/data/";
-#else
-			"";
-#endif
+		static DEPS_ROOT: string = DATA_FOLDER;
 		static DEPS: IDependens = 
 			{
 				files: [ 

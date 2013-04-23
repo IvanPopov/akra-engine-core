@@ -11,35 +11,49 @@
 
 module akra.ui.graph {
 	export class Connector extends Component implements IUIGraphConnector {
+		protected _eOrient: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN;
 		protected _eDirect: EUIGraphDirections = EUIGraphDirections.IN;
 		protected _bActive: bool = false;
 		protected _pRoute: IUIGraphRoute = null;
 
+
+		inline get orient(): EGraphConnectorOrient { return this._eOrient; }
 		inline get area(): IUIGraphConnectionArea { return (<IUIGraphConnectionArea>this.parent.parent); }
 		inline get node(): IUIGraphNode { return this.area.node; }
 		inline get graph(): IUIGraph { return this.node.graph; }
 		inline get route(): IUIGraphRoute { return this._pRoute; }
 		inline get direction(): EUIGraphDirections { return this._eDirect; }
 
+		inline set orient(e: EGraphConnectorOrient) {
+			this._eOrient = e;
+		}
+
 		inline set route(pRoute: IUIGraphRoute) {
 			this._pRoute = pRoute;
 			
-			(this === pRoute.left? this.output(): this.input()); 
-
 			if (pRoute.isBridge()) {
-				this.connected(pRoute.right);
+				
+				if (this === pRoute.left) {
+					this.output();
+					this.connected(pRoute.right);
+				}
+				else {
+					this.input();
+					this.connected(pRoute.left);
+				}
 			}
 		}
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.GRAPH_CONNECTOR);
 
-			// this.disableEvent("mouseover");
-			// this.disableEvent("mouseout");
+			this.handleEvent("mousedown mouseup");
 			this.el.disableSelection();
 		}
 
+
 		mousedown(e: IUIEvent): void {
+			e.preventDefault();
 			e.stopPropagation();
 
 			if (!isNull(this.route)) {
@@ -112,14 +126,13 @@ module akra.ui.graph {
 		}
 
 		
-		routing(): void {
+		inline routing(): void {
+			// LOG("routing");
 			this.route.routing();
 		}		
 
 		connected(pTarget: IUIGraphConnector): void {
 			this.el.addClass("connected");
-			this.el.css({backgroundColor: this.route.color.html});
-			// LOG(this.route.color.html);
 			EMIT_BROADCAST(connected, _CALL(pTarget));
 		}
 

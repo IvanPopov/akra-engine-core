@@ -26,6 +26,10 @@ module akra {
 
 		//string/EUILayouts/Layout
 		layout?: any;
+		//string, string[]
+		events?: any;
+		parent?: IUIComponent;
+		template?: string;
 	}
 
 	export enum EUIComponents {
@@ -34,8 +38,13 @@ module akra {
 		WINDOW,
 
 		BUTTON,
+		SWITCH,
 		PANEL,
+		POPUP,
+		TABS,
 		LABEL,
+		VECTOR,
+		MENU,
 		TREE,
 		TREE_NODE,
 		CANVAS,
@@ -43,6 +52,9 @@ module akra {
 		CHECKBOX,
 		CHECKBOX_LIST,
 		VIEWPORT_STATS,
+
+		CODE_EDITOR,
+		// LISTENER_EDITOR,
 		
 		GRAPH,
 		GRAPH_NODE,
@@ -65,6 +77,9 @@ module akra {
 		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent;
 
 		_createdFrom($component: JQuery): void;
+
+		template(sURL: string, pData?: any): void;
+		fromStringTemplate(sTpl: string, pData?: any): void;
 	}
 }
 

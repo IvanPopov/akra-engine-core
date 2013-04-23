@@ -3,6 +3,7 @@
 
 #include "IAnimationBlend.ts"
 #include "Base.ts"
+#include "Frame.ts"
 
 
 module akra.animation {
@@ -46,7 +47,7 @@ module akra.animation {
 			}
 		}
 
-		addAnimation(pAnimation: IAnimationBase, fWeight: float, pMask: FloatMap): int {
+		addAnimation(pAnimation: IAnimationBase, fWeight?: float, pMask?: FloatMap): int {
 			debug_assert(isDef(pAnimation), 'animation must be setted.');
 
 			this._pAnimationList.push(null);
@@ -217,15 +218,16 @@ module akra.animation {
 		setAnimationWeight(sName: string, fWeight: float): bool;
 		setAnimationWeight(animation, fWeight?: float): bool {
 			var pAnimationList = this._pAnimationList;
-		    var isModified = false;
+
 		    if (arguments.length === 1) {
 		    	fWeight = arguments[0];
 		    	
 		    	for (var i = 0; i < pAnimationList.length; i++) {
 		    		pAnimationList[i].weight = fWeight;
-		    	};
+		    		this.weightUpdated(i, fWeight);
+		    	}
 
-		    	isModified = true;
+		    	this.updateDuration(); 
 		    }
 		    else {
 			    var iAnimation: int = isString(animation)? this.getAnimationIndex(animation): <int>animation;
@@ -233,12 +235,9 @@ module akra.animation {
 			    //trace('set weight for animation: ', iAnimation, 'to ', fWeight);
 			    if (pAnimationList[iAnimation].weight !== fWeight) {
 					pAnimationList[iAnimation].weight = fWeight;
-					isModified = true;
+					this.updateDuration(); 
+					this.weightUpdated(iAnimation, fWeight);
 				}
-			}
-
-			if (isModified) { 
-				this.updateDuration(); 
 			}
 
 			return true;
@@ -334,7 +333,7 @@ module akra.animation {
 			return pResultFrame.normilize();
 		}
 
-
+		BROADCAST(weightUpdated, CALL(iAnim, fWeight));
 		BROADCAST(durationUpdated, CALL(fDuration));
 	} 
 

@@ -176,9 +176,30 @@ module akra.util {
 		 )?
 		 $
 		 */
+		
+		static resolve(sFile, sAbsolutePath: string = document.location.pathname): string {
+
+			var pCurrentPath: IURI = null;
+			var pFile: IURI = util.uri(sFile);
+
+
+			if (!isNull(pFile.host) || util.pathinfo(pFile.path).isAbsolute()) {
+				//another server or absolute path
+				return sFile;
+			}
+
+			pCurrentPath = util.uri(sAbsolutePath);
+			pCurrentPath.path = util.pathinfo(pCurrentPath.path).dirname + "/" + sFile;
+			
+			return pCurrentPath.toString();
+		}
 	}
 
 	export var uri = (sUri:string): IURI => new util.URI(sUri);
+}
+
+module akra {
+	export var uri = util.uri;
 }
 
 #endif

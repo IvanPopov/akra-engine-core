@@ -15,6 +15,8 @@ module akra {
 		isChecked(): bool;
 
 		signal changed(bValue: bool): void;
+
+		_setValue(bValue: bool): void;
 	}
 }
 

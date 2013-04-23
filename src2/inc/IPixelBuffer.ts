@@ -5,6 +5,8 @@
 
 module akra {
 	IFACE(IRenderTarget);
+	IFACE(EPixelFormats);
+	IFACE(IBox);
 	
 	export interface IPixelBuffer extends IHardwareBuffer {
 		readonly width: uint;

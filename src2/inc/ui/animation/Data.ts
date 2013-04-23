@@ -22,13 +22,13 @@ module akra.ui.animation {
 		constructor (pGraph: IUIGraph, pAnim: IAnimation = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_DATA);
 
-			template(this, "ui/templates/AnimationData.tpl");
+			this.template("animation.Data.tpl");
 
 			if (!isNull(pAnim)) {
 				this.animation = pAnim;
 			}
 
-			this.init();
+			this.linkAreas();
 		}
 
 		rendered(): void {
@@ -36,18 +36,9 @@ module akra.ui.animation {
 			this.el.addClass("component-animationdata");
 		}
 
-		protected init(): void {
-			var pArea: graph.ConnectionArea = new graph.ConnectionArea(this, {show: false, maxConnections: 1});
-			
-			pArea.setMode(EUIGraphDirections.OUT);
-			pArea.setLayout(EUILayouts.HORIZONTAL);
-			pArea.render(this.el);
-
-			this.addConnectionArea("out", pArea);
-		}
 	}
 
-	register("AnimationData", Data);
+	register("animation.Data", Data);
 }
 
 #endif

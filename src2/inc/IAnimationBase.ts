@@ -30,6 +30,7 @@ module akra {
 		play(fRealTime: float): void;
 		stop(fRealTime: float): void;
 
+		isAttached(): bool;
 		attach(pTarget: ISceneNode): void;
 		
 		frame(sName: string, fRealTime: float): IAnimationFrame;
@@ -53,6 +54,7 @@ module akra {
 
 		signal played(fTime: float): void;
 		signal stoped(fTime: float): void;
+		signal renamed(sName: string): void;
 	}
 }
 
