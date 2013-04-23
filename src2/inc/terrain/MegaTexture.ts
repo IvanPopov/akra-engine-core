@@ -130,9 +130,9 @@ module akra.terrain {
     				isUpdated : true, isLoaded : false};
     	    }
 
-    	    // this._pRPC = net.createRpc();
+    	    this._pRPC = net.createRpc();
     	    // // // this._pRPC.join('ws://192.168.194.132');
-    	    // this._pRPC.join("ws://localhost:6112");
+    	    this._pRPC.join("ws://localhost:6112");
 	    	this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 	    }
 

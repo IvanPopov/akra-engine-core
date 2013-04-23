@@ -126,7 +126,6 @@ module akra {
 			pTerrainMap["height"] = pRmgr.loadImage("../../../data/textures/terrain/main_height_map_513.dds");
 
 			pTerrainMap["height"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-				
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {

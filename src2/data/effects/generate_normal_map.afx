@@ -27,7 +27,7 @@ float4 fs_main(VS_OUT IN): COLOR {
         fHeight0 = (tex2D(heightTexture,IN.texPos)).r;
         fHeight1 = (tex2D(heightTexture,IN.texPos + float2(fSteps.x,0.))).r;
         fHeight2 = (tex2D(heightTexture,IN.texPos + float2(fSteps.x,fSteps.y))).r;
-        fHeight3 = (tex2D(heightTexture,IN.texPos + float2(0.,fSteps.x))).r;
+        fHeight3 = (tex2D(heightTexture,IN.texPos + float2(0.,fSteps.y))).r;
         fHeight4 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,fSteps.y))).r;
         fHeight5 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,0.))).r;
         fHeight6 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,-fSteps.y))).r;
@@ -38,7 +38,7 @@ float4 fs_main(VS_OUT IN): COLOR {
         fHeight0 = (tex2D(heightTexture,IN.texPos)).g;
         fHeight1 = (tex2D(heightTexture,IN.texPos + float2(fSteps.x,0.))).g;
         fHeight2 = (tex2D(heightTexture,IN.texPos + float2(fSteps.x,fSteps.y))).g;
-        fHeight3 = (tex2D(heightTexture,IN.texPos + float2(0.,fSteps.x))).g;
+        fHeight3 = (tex2D(heightTexture,IN.texPos + float2(0.,fSteps.y))).g;
         fHeight4 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,fSteps.y))).g;
         fHeight5 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,0.))).g;
         fHeight6 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,-fSteps.y))).g;
@@ -49,7 +49,7 @@ float4 fs_main(VS_OUT IN): COLOR {
         fHeight0 = (tex2D(heightTexture,IN.texPos)).b;
         fHeight1 = (tex2D(heightTexture,IN.texPos + float2(fSteps.x,0.))).b;
         fHeight2 = (tex2D(heightTexture,IN.texPos + float2(fSteps.x,fSteps.y))).b;
-        fHeight3 = (tex2D(heightTexture,IN.texPos + float2(0.,fSteps.x))).b;
+        fHeight3 = (tex2D(heightTexture,IN.texPos + float2(0.,fSteps.y))).b;
         fHeight4 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,fSteps.y))).b;
         fHeight5 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,0.))).b;
         fHeight6 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,-fSteps.y))).b;
@@ -60,7 +60,7 @@ float4 fs_main(VS_OUT IN): COLOR {
         fHeight0 = (tex2D(heightTexture,IN.texPos)).a;
         fHeight1 = (tex2D(heightTexture,IN.texPos + float2(fSteps.x,0.))).a;
         fHeight2 = (tex2D(heightTexture,IN.texPos + float2(fSteps.x,fSteps.y))).a;
-        fHeight3 = (tex2D(heightTexture,IN.texPos + float2(0.,fSteps.x))).a;
+        fHeight3 = (tex2D(heightTexture,IN.texPos + float2(0.,fSteps.y))).a;
         fHeight4 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,fSteps.y))).a;
         fHeight5 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,0.))).a;
         fHeight6 = (tex2D(heightTexture,IN.texPos + float2(-fSteps.x,-fSteps.y))).a;
@@ -101,7 +101,7 @@ float4 fs_main(VS_OUT IN): COLOR {
     float3 normal = normalize(normal1 + normal2 + normal3 + normal4 + 
                               normal5 + normal6 + normal7 + normal8);
 
-    return float4(normal/2. + float3(0.5), 1.);
+    return float4(normal.x/2. + 0.5, -normal.y/2. + 0.5, normal.z/2. + 0.5, 1.);
 }
 
 provide akra.system;

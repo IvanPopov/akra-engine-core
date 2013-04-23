@@ -49,6 +49,8 @@ module akra {
 		 */
 		readWorldHeight(iIndex: uint): float;
 		readWorldHeight(iMapX: uint, iMapY: uint): float;
+
+		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3;
 		// /**
 		//  * Возвращает нормаль terrain в заданной точке.
 		//  */

@@ -303,21 +303,21 @@ module akra.webgl {
 				CRITICAL("Invalid box");
 			}
 
-			var pSrcBox:IPixelBox;
+			var pSrcBox:IPixelBox = null;
+			if(!checkFBOAttachmentFormat(this.format))
+			{
+				CRITICAL("Read from texture this format not support(" + this.format + ")");
+			}
+
 			if(checkReadPixelFormat(pData.format))
 			{
-				pSrcBox=pData;
+				pSrcBox = pData;
 			}
 			else
 			{
-				console.log("download. new Pixel Box подходящего формата");
-				pSrcBox = new pixelUtil.PixelBox(pData,EPixelFormats.BYTE_ABGR);
+				pSrcBox = new pixelUtil.PixelBox(pData, EPixelFormats.BYTE_RGBA, 
+												 new Uint8Array(pixelUtil.getMemorySize(pData.width, pData.height, pData.depth, EPixelFormats.BYTE_RGBA)));
 			}			
-
-			if(!checkFBOAttachmentFormat(this.format))
-			{
-				CRITICAL("Read from texture this format not support");
-			}
 
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
@@ -332,17 +332,17 @@ module akra.webgl {
 			pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, this._eFaceTarget,this._pWebGLTexture,this._iLevel);
 			
 			//console.log(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height,eFormat,eType,pSrcBox.data);
-			pWebGLContext.readPixels(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height,eFormat,eType,pSrcBox.data);
+			pWebGLContext.readPixels(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height, eFormat, eType, pSrcBox.data);
 			//console.log("data after readPixel",pSrcBox.data);
 
 			if(!checkReadPixelFormat(pData.format))
 			{
 				console.log("download. конвертация");
-				pixelUtil.bulkPixelConversion(pSrcBox,pData);
+				pixelUtil.bulkPixelConversion(pSrcBox, pData);
 			}
 
 			//дективировать его
-			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER,pOldFramebuffer);
+			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
 			pWebGLRenderer.deleteWebGLFramebuffer(pFrameBuffer);
 
 			// if(data.getWidth() != getWidth() ||

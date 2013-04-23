@@ -194,22 +194,14 @@ float4 calculateLight(pixel_data pixelData, light_data lightData){
 
     float4 color = float4(0.);
     //add ambient
-//    if(lightData.attenuation.x == 0.1){
-//        color += float4(0.,1.,0.,1.);
-//    }
     color += pixelData.ambient * lightData.ambient * attenuation;//float4(float3(attenuation/40.), 1.);//pixelData.ambient * lightData.ambient * attenuation;
+    
     //add diffuse
-    //if(pixelData.diffuse.xyz != float3(0.)){
-//        color += float4(0.5,0.,0.,0.);
-    //    float tempdot = max(dot(pixelData.normal, light_dir), .0);
-    //    float4 tempColor = pixelData.diffuse * lightData.diffuse * tempdot;
-    //    color += float4(0.5, tempColor.y, 0.0, 0.);
-//        color += tempColor;//pixelData.diffuse * lightData.diffuse;//max(dot(pixelData.normal, light_dir), .0); //* attenuation;
-    //}
-
     color += pixelData.diffuse * lightData.diffuse * max(dot(pixelData.normal, light_dir), .0) * attenuation;
+    
     // add reflect lighting
     color += pixelData.specular * lightData.specular * light_distancedotVpow * attenuation;
+    
     //color = float4(pixelData.normal.xy/2. + 0.5, pixelData.normal.z, 1.);
     return color;
 };

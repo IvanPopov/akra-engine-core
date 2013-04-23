@@ -599,9 +599,10 @@ module akra.fx {
 			// this._pPreRenderState.isClear = true;
 		}
 
-		bUseNormalMap: bool = true;
-		bIsDebug: bool = false;
-		bIsRealNormal: bool = false;
+		protected bNormalFix: bool = true;
+		protected bUseNormalMap: bool = true;
+		protected bIsDebug: bool = false;
+		protected bIsRealNormal: bool = false;
 
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
@@ -652,6 +653,7 @@ module akra.fx {
 			pPassInput.setUniform("useNormal", this.bUseNormalMap);
 			pPassInput.setUniform("isDebug", this.bIsDebug);
 			pPassInput.setUniform("isRealNormal", this.bIsRealNormal);
+			pPassInput.setUniform("normalFix", this.bNormalFix);
 		}
 
 		private prepareComposerState(): void {

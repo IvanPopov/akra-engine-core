@@ -24,7 +24,7 @@ module akra.terrain {
 	    //Положение сетора в мире
 	    protected _pWorldRect: IRect3d = new geometry.Rect3d(); 
 	    private _pRenderableObject: IRenderableObject = null;
-	    private _pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION),VE_FLOAT2(DeclarationUsages.TEXCOORD)];
+	    private _pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT3(DeclarationUsages.NORMAL), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_SECTION) {
 			super(pScene, eType);
@@ -141,7 +141,8 @@ module akra.terrain {
 			this._pWorldRect.z1 = MIN_FLOAT64;
 
 			if(!isNull(this.getRenderable())){
-				var pVerts: float[] = new Array(this._iXVerts * this._iYVerts * (3/*кординаты вершин*/+2/*текстурные координаты*/));
+				var pVerts: float[] = new Array(this._iXVerts * this._iYVerts * 
+												(3/*кординаты вершин*/+ 3 /*нормаль*/+ 2/*текстурные координаты*/));
 				var v3fNormal: IVec3 = new Vec3();
 
 				//размер ячейки сектора
@@ -161,13 +162,18 @@ module akra.terrain {
 					for (var x: uint = 0; x < this._iXVerts; ++x) {
 
 						var fHeight: float = this.terrainSystem.readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
+						this.terrainSystem.readWorldNormal(v3fNormal, this._iHeightMapX + x, this._iHeightMapY + y);
 
-						pVerts[((y * this._iXVerts) + x) * 5 + 0] = v2fVert.x;
-						pVerts[((y * this._iXVerts) + x) * 5 + 1] = v2fVert.y;
-						pVerts[((y * this._iXVerts) + x) * 5 + 2] = fHeight;
+						pVerts[((y * this._iXVerts) + x) * 8 + 0] = v2fVert.x;
+						pVerts[((y * this._iXVerts) + x) * 8 + 1] = v2fVert.y;
+						pVerts[((y * this._iXVerts) + x) * 8 + 2] = fHeight;
 
-						pVerts[((y * this._iXVerts) + x) * 5 + 3] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
-						pVerts[((y * this._iXVerts) + x) * 5 + 4] = (this._iSectorY + y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
+						pVerts[((y * this._iXVerts) + x) * 8 + 3] = v3fNormal.x;
+						pVerts[((y * this._iXVerts) + x) * 8 + 4] = v3fNormal.y;
+						pVerts[((y * this._iXVerts) + x) * 8 + 5] = v3fNormal.z;
+
+						pVerts[((y * this._iXVerts) + x) * 8 + 6] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
+						pVerts[((y * this._iXVerts) + x) * 8 + 7] = (this._iSectorY + y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
 
 						this._pWorldRect.z0 = math.min(this._pWorldRect.z0, fHeight);
 						this._pWorldRect.z1 = math.max(this._pWorldRect.z1, fHeight);

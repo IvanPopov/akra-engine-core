@@ -130,7 +130,9 @@ module akra.terrain {
 			this._pSectorArray = new Array(this._iSectorCountX * this._iSectorCountY);
 
 			//Вершинный буфер для всех
-			this._pVerts = new Array((this._iSectorCountX*this._iSectorCountY/*количество секции*/)*(this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/) * (3/*кординаты вершин*/+2/*текстурные координаты*/));
+			this._pVerts = new Array((this._iSectorCountX*this._iSectorCountY/*количество секции*/) *
+									 (this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/) * 
+									 (3/*кординаты вершин*/+ 3/*нормали*/ + 2/*текстурные координаты*/));
 
 			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
 				this._pSectorArray[i] = this.scene.createTerrainSectionROAM();
@@ -168,7 +170,7 @@ module akra.terrain {
 				}
 			}
 			
-			var pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
+			var pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT3(DeclarationUsages.NORMAL), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
 			this._iVertexID = this._pRenderData.allocateData(pVertexDescription, new Float32Array(this._pVerts));
 
 			

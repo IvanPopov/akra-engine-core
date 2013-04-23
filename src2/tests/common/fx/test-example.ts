@@ -45,7 +45,9 @@ module akra {
 			pCamera.addRelRotationByXYZAxis(-0.2, 0., 0.);
 			pCamera.attachToParent(pScene.getRootNode());
 
-			var pKeymap: IKeyMap = controls.createKeymap((<any>pCanvas)._pCanvas);
+			var pKeymap: IKeyMap = controls.createKeymap();
+			pKeymap.captureMouse((<any>pCanvas)._pCanvas);
+			pKeymap.captureKeyboard(document);
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				 if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
@@ -55,6 +57,20 @@ module akra {
 			        var fdY = v2fMouseShift.y / pViewport.actualHeight * 10.0;
 
 			        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+
+			        var fSpeed: float = 0.1 * 1/5;
+				    if(pKeymap.isKeyPress(EKeyCodes.W)){
+				    	pCamera.addRelPosition(0, 0, -fSpeed);
+				    }
+				    if(pKeymap.isKeyPress(EKeyCodes.S)){
+				    	pCamera.addRelPosition(0, 0, fSpeed);
+				    }
+				    if(pKeymap.isKeyPress(EKeyCodes.A)){
+				    	pCamera.addRelPosition(-fSpeed, 0, 0);
+				    }
+				    if(pKeymap.isKeyPress(EKeyCodes.D)){
+				    	pCamera.addRelPosition(fSpeed, 0, 0);
+				    }
 			    }
 			});
 		}
@@ -84,7 +100,7 @@ module akra {
 			var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 			
 			pProjectShadowLight.attachToParent(pScene.getRootNode());
-			pProjectShadowLight.enabled = true;
+			pProjectShadowLight.enabled = false;
 			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 			pProjectShadowLight.params.diffuse.set(0.5);
 			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
@@ -139,7 +155,6 @@ module akra {
 					pContainer.useLoop(true);
 					pController.addAnimation(pContainer);		
 				}
-
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
 					pModelRoot.addRelRotationByXYZAxis(0.00, 0.001, 0);

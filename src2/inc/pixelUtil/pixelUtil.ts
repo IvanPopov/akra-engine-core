@@ -1593,7 +1593,7 @@ module akra {
             var iSize: uint = 0;
             var mip: uint = 0;
             
-            for(mip = 0; mip <= nMipLevels; ++mip){
+            for(mip = 0; mip < nMipLevels; ++mip){
                 iSize += getMemorySize(iWidth, iHeight, iDepth, eFormat) * nFaces;
                 if(iWidth !== 1) iWidth /= 2;
                 if(iHeight !== 1) iHeight /= 2;

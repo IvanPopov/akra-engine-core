@@ -338,7 +338,7 @@ module akra.terrain {
 		readWorldHeight(iIndex: uint): float;
 		readWorldHeight(iMapX: uint, iMapY: uint): float;
 		readWorldHeight(iMapX: any, iMapY?: uint): float {
-			if (arguments.length == 2) {
+			if (arguments.length === 2) {
 			    if (iMapX >= this._iTableWidth) {
 			        iMapX = this._iTableWidth - 1;
 			    }
@@ -355,17 +355,15 @@ module akra.terrain {
 			}
 		}
 
-		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3{
-			if (iMapX >= this._pNormalMapImage.width) {
-			    iMapX = this._pNormalMapImage.width - 1;
+		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3 {
+			if (iMapX >= this._pBaseNormalImage.width) {
+			    iMapX = this._pBaseNormalImage.width - 1;
 			}
-			if (iMapY >= this._pNormalMapImage.height) {
-			    iMapY = this._pNormalMapImage.height - 1;
+			if (iMapY >= this._pBaseNormalImage.height) {
+			    iMapY = this._pBaseNormalImage.height - 1;
 			}
 
-
-			// var iOffset: uint = this._pNormalMapImage.getPixelRGBA(iMapX, iMapY, 1, 1, this._pTempNormalColor)
-			this._pNormalMapImage.getColorAt(this._pTempNormalColor, iMapX, iMapY);
+			this._pBaseNormalImage.getColorAt(this._pTempNormalColor, iMapX, iMapY);
 			v3fNormal.set(this._pTempNormalColor.r,
 			              this._pTempNormalColor.g,
 			              this._pTempNormalColor.b);
@@ -394,7 +392,7 @@ module akra.terrain {
 
 			this._pBaseNormalTexture = pRmgr.createTexture(".terrain-base-normal-texture" + this.getGuid());
 			this._pBaseNormalTexture.create(pImageHightMap.width, pImageHightMap.height, 1, null, 
-											ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8);
+											ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
 
 			var pTarget: IRenderTarget = this._pBaseNormalTexture.getBuffer().getRenderTarget();
 			pTarget.setAutoUpdated(false);
@@ -406,6 +404,9 @@ module akra.terrain {
 			pViewport.startFrame();
 			pViewport.renderObject(this._pDefaultScreen);
 			pViewport.endFrame();
+
+			this._pBaseNormalImage = pRmgr.createImg(".terrain-base-normal-img" + this.getGuid());
+			this._pBaseNormalTexture.convertToImage(this._pBaseNormalImage, false);
 		}
 
 		protected _tableIndex(iMapX: uint, iMapY: uint): uint {
@@ -451,7 +452,8 @@ module akra.terrain {
 			// }
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			pPass.setTexture("TEXTURE6", this._pBaseNormalTexture);
+			//pPass.setTexture("TEXTURE6", this._pBaseNormalTexture);
+			pPass.setTexture("TEXTURE6", this._pNormalMapTexture);
 			pPass.setSamplerTexture("S_NORMAL", "TEXTURE6");
 
 			this._pMegaTexures.applyForRender(pPass);

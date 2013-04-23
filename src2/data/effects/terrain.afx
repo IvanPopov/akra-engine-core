@@ -2,6 +2,7 @@ provide akra.system;
 
 struct pos_tex{
     float3 pos:POSITION;
+    float3 norm: NORMAL;
     float2 texcoord:TEXCOORD;
 };
 
@@ -15,6 +16,7 @@ struct VS_IN_ROAM{
 
 struct VS_OUT{
     float4 pos:POSITION;
+    float3 norm: NORMAL;
     float3 vert:VERTEX;
     float2 texcoord : TEXCOORD;
     float3 edgeTest : EDGE_TEST;
@@ -33,7 +35,7 @@ VS_OUT vs_terrain(VS_IN IN) {
 
     Out.vert = vertex.xyz;
     Out.pos = proj_mat * vertex;
-
+    Out.norm = normalize((view_mat * model_mat * float4(IN.data.norm.xyz, 0.)).xyz);
     Out.texcoord = float2(IN.data.texcoord.x,IN.data.texcoord.y);
 
     if(mod(float(@(IN.data)),3.) == 0.){
@@ -58,7 +60,7 @@ VS_OUT vs_terrain_roam(VS_IN_ROAM IN) {
 
     Out.vert = vertex.xyz;
     Out.pos = proj_mat * vertex;
-
+    Out.norm = normalize((view_mat * model_mat * float4(IN.data.norm.xyz, 0.)).xyz);
     Out.texcoord = IN.data.texcoord;
 
     if(mod(float(@@(IN.data)),3.) == 0.){
@@ -189,22 +191,23 @@ void fs_terrain(VS_OUT IN){
     }
 
     normal = tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb;
-    //normal = float3(0., 0., 1.);
-    
+    //normal = float3(0.5, 0.5, 1.);
+
     normal.xy = normal.xy * 2. - 1.;
-    normal = normalize(normal);
     normal = (view_mat * model_mat * float4(normal, 0.)).xyz;//float4(normalize(normal), 0.)).xyz);
     Normal = normalize(normal);
 
+    // Normal = IN.norm;
+
     if(isDebug){
         if(isRealNormal){
-            Fragment_material.emissive = float4(tex2D(ptNormal, IN.texcoord).rgb, 0.);
+            Fragment_material.emissive = float4(tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb, 0.);
             Fragment_material.diffuse = float4(0.);
         }
         else {
-            Fragment_material.emissive = float4((normal.xy + 1.)/2., normal.z, 0.);
+            Fragment_material.emissive = float4((Normal.xyz + 1.)/2., 0.);
             Fragment_material.diffuse = float4(0.);
-        }        
+        }
     }
     else {
 

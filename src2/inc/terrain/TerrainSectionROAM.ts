@@ -355,16 +355,21 @@ module akra.terrain {
 				for (var x: uint = 0; x < this._iXVerts; ++x) {
 
 					var fHeight: float = this.terrainSystem.readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
+					this.terrainSystem.readWorldNormal(v3fNormal, this._iHeightMapX + x, this._iHeightMapY + y);
 
-					pVerts[((y * this._iXVerts) + x) * 5 + 0+this._iStartIndex*5] = v2fVert.x;
-					pVerts[((y * this._iXVerts) + x) * 5 + 1+this._iStartIndex*5] = v2fVert.y;
-					pVerts[((y * this._iXVerts) + x) * 5 + 2+this._iStartIndex*5] = fHeight;
+					pVerts[((y * this._iXVerts) + x) * 8 + 0 + this._iStartIndex*8] = v2fVert.x;
+					pVerts[((y * this._iXVerts) + x) * 8 + 1 + this._iStartIndex*8] = v2fVert.y;
+					pVerts[((y * this._iXVerts) + x) * 8 + 2 + this._iStartIndex*8] = fHeight;
+
+					pVerts[((y * this._iXVerts) + x) * 8 + 3 + this._iStartIndex*8] = v3fNormal.x;
+					pVerts[((y * this._iXVerts) + x) * 8 + 4 + this._iStartIndex*8] = v3fNormal.y;
+					pVerts[((y * this._iXVerts) + x) * 8 + 5 + this._iStartIndex*8] = v3fNormal.z;
 
 					//console.log(y*this._iXVerts + x,x,y,v2fVert.X,v2fVert.Y,fHeight);
 					//	pVerts[((y * this._iXVerts) + x) * 10 + 2],pVerts[((y * this._iXVerts) + x) * 10 + 1]);
 
-					pVerts[((y * this._iXVerts) + x) * 5 + 3+this._iStartIndex*5] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
-					pVerts[((y * this._iXVerts) + x) * 5 + 4+this._iStartIndex*5] = (this._iSectorY + y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
+					pVerts[((y * this._iXVerts) + x) * 8 + 6 + this._iStartIndex*8] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
+					pVerts[((y * this._iXVerts) + x) * 8 + 7 + this._iStartIndex*8] = (this._iSectorY + y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
 
 
 					//console.log(this._iSectorX,this.terrainSystem.getSectorCountX(), x,this._iXVerts);
@@ -473,9 +478,9 @@ module akra.terrain {
 			} else if (this._iTempTotalIndices + 3 < this._iMaxIndices) {
 				// add the local triangle to the index list
 				//20 = 5(элементов) * 4(бита)
-				this._pTempIndexList[this._iTempTotalIndices++]=((iPointRight+this._iStartIndex)*20+ this._iVertexID)/4;
-				this._pTempIndexList[this._iTempTotalIndices++]=((iPointLeft+this._iStartIndex)*20 + this._iVertexID)/4;
-				this._pTempIndexList[this._iTempTotalIndices++]=((iPointBase+this._iStartIndex)*20 + this._iVertexID)/4;
+				this._pTempIndexList[this._iTempTotalIndices++]=((iPointRight+this._iStartIndex)*32+ this._iVertexID)/4;
+				this._pTempIndexList[this._iTempTotalIndices++]=((iPointLeft+this._iStartIndex)*32 + this._iVertexID)/4;
+				this._pTempIndexList[this._iTempTotalIndices++]=((iPointBase+this._iStartIndex)*32 + this._iVertexID)/4;
 			} else {
 				debug_print("else", this._iTempTotalIndices, this._iMaxIndices)
 			}
