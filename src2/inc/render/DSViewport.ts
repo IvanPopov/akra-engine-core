@@ -423,7 +423,7 @@ module akra.render {
 		                pUniformData = uniformOmniShadow();
 		                (<UniformOmniShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                
-		                var pDepthCube: ITexture[] 					= pOmniLight.getDepthTextureCube();
+		                var pDepthCube: ITexture[]				= pOmniLight.getDepthTextureCube();
 		                var pShadowCasterCube: IShadowCaster[] 	= pOmniLight.getShadowCaster();
 		                
 		                for (j = 0; j < 6; ++ j) {

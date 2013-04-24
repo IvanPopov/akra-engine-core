@@ -2622,7 +2622,7 @@ module akra.fx {
         	}
 
         	pExpr.setOperator(sOperator);
-        	pExpr.setType(pBoolType);
+        	pExpr.setType((<SystemTypeInstruction>pBoolType).getVariableType());
         	pExpr.push(pLeftExpr, true);
         	pExpr.push(pRightExpr, true);
 
@@ -4228,6 +4228,9 @@ module akra.fx {
         private checkOneOperandExprType(sOperator: string, 
         								pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
 
+ 			if(pType._isUnverifiable === undefined){
+ 				LOG(pType);
+ 			}
         	if(pType._isUnverifiable()){
         		return pType;
         	}

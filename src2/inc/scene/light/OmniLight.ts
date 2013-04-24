@@ -149,8 +149,8 @@ module akra.scene.light {
 
 				//TODO: Multiple render target
 				this.getRenderTarget(i).attachDepthTexture(pDepthTexture); 
-				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i], EViewportTypes.SHADOWVIEWPORT);
 				this.getRenderTarget(i).setAutoUpdated(false);
+				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i], EViewportTypes.SHADOWVIEWPORT);
 			}
 		};
 
@@ -225,6 +225,7 @@ module akra.scene.light {
 			//fast test on frustum intersection
 			if(!pCameraFrustum.testFrustum(pShadowCaster.frustum)){
 				//frustums don't intersecting
+				pShadowCaster._optimizeProjectionMatrix();
 				return pResult;
 			}
 

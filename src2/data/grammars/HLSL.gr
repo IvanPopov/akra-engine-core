@@ -257,6 +257,7 @@ SimpleStmt : TypeDecl
 SimpleStmt : VariableDecl
 SimpleStmt : VarStructDecl
 SimpleStmt : T_KW_BREAK ';'
+SimpleStmt : T_KW_CONTINUE ';'
 
 NonIfStmt : SimpleStmt --AN
 NonIfStmt : T_KW_WHILE '(' Expr ')' NonIfStmt
@@ -488,6 +489,7 @@ T_KW_SWITCH : "switch"
 T_KW_CASE : "case"
 T_KW_DEFAULT : "default"
 T_KW_BREAK : "break"
+T_KW_CONTINUE : "continue"
 T_KW_AS : "as"
 T_KW_PTR : "ptr"
 T_KW_SHIFT : "shift"

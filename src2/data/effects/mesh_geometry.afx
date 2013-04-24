@@ -76,6 +76,7 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
 
 
     float i = 0.;
+
     while(number_matrix >= i + 1.) {
         //get data about matrix and weight
         @bone_inf = bone_inf_ptr + i * 2.;
@@ -85,7 +86,7 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
 
         result_mat += bone_matrix * weight;
 
-        i ++;
+        i++;
     }
 
     result_mat = result_mat * bind_matrix;

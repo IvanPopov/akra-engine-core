@@ -15,19 +15,28 @@ float4 floatToFloat4(float value){
     data = -data;
   }
 
-  float power=0.;
+  float power = 0.;
+  float counter = 0.;
 
-  while (data >= 2. || data < 1.) {
+  while (counter < 128.) {
+    counter += 1.;
+
     if(data >= 2.) {
       data = data / 2.;
-      power ++;
+      power++;
+      if (power == 127.) {
+        counter = 129.;
+      }
     }
     else if(data < 1.) {
       data = data * 2.;
       power--;
       if (power == -126.) {
-        break;
+        counter = 129.;
       }
+    }
+    else {
+      counter = 129.;
     }
   }
 
@@ -76,18 +85,29 @@ float3 floatToFloat3(float value){
     data = -data;
   }
 
-  float power=0.;
-  
-  while (data >= 2. || data < 1.) {
-    if(data >= 2.) {
-      data = data / 2.;
-      power ++;
+  float power = 0.;
+  float counter = 0.;
+
+  while (counter < 64.) {
+    counter += 1.;
+
+    if(data >= 2.) {    
+      data = data * 0.5;
+      power += 1.;
+      if (power == 63.) {
+        counter = 65.;
+      }
     }
-    else if(data < 1.) {
-      data = data * 2.;
-      power--;
-      if (power == -62.) {
-        break;
+    else{
+      if(data < 1.) {
+        data = data * 2.;
+        power -= 1.;
+        if (power == -62.) {
+          counter = 65.;
+        }
+      }
+      else {
+        counter = 65.;
       }
     }
   }
@@ -96,7 +116,7 @@ float3 floatToFloat3(float value){
     power = 0.;
   }
   else{
-    power = power+63.;
+    power = power + 63.;
     data = data - 1.;
   }
 

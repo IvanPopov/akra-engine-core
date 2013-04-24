@@ -444,6 +444,11 @@ module akra.webgl {
 				return null;
 			}
 
+            // if (loadExtension(pWebGLContext, WEBGL_DEBUG_SHADERS)) {
+            //     LOG("\ntranslated(from GLSL) " + (eType == GL_VERTEX_SHADER? "VS": "PS") + " shader: \n" + 
+            //         pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLShader));
+            // }
+
 			return pWebGLShader;
     	}
 
