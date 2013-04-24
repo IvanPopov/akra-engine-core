@@ -161,7 +161,9 @@ module akra.scene {
 		    //iZ1 = math.clamp(iZ1, iZ0 + 1, iMax2);
 
 		    // LOG(pRect.toString());
-		    // LOG(iX0, iX1, iY0, iY1, iZ0, iZ1);
+		    // if(pRect.x0 == 128 && pRect.x1 == 160 && pRect.y0 == 480 && pRect.y1 == 512){
+    		//     console.error(iX0, iX1, iY0, iY1, iZ0, iZ1);
+    		// }
 
 		    var pNode: IOcTreeNode = this.findTreeNodeByRect(iX0, iX1, iY0, iY1, iZ0, iZ1);
 		    
@@ -180,8 +182,6 @@ module akra.scene {
 
 				return this._pHead;
 			}
-
-			var bTest: bool = false && (iX0 == 24 && iX1 == 28 && iY0 == 28 && iY1 == 32 && iZ0 == 12 && iZ1 == 16);
 
 			var iDepth: int = this._iDepth;
 		    var iLevel: int;
@@ -204,6 +204,8 @@ module akra.scene {
 		    // console.log(iComposedIndex);
 		    iComposedIndex += (iZ0 >> (iDepth - iLevel)) << (iShift);
 
+			var bTest: bool = (iComposedIndex == 21388);/* (iX0 == 20 && iX1 == 21 && iY0 == 31 && iY1 == 32 && iZ0 == 12 && iZ1 == 15);*/
+
 		    // console.log(iComposedIndex, iX0, iY0, iZ0);
 
 			var iWay: int;
@@ -212,17 +214,14 @@ module akra.scene {
 		    pParentNode = this._pHead;
 		    pNode = null;
 
-		    var iTmpX: int, iTmpY: int, iTmpZ: int;
 		    var iX: int, iY: int, iZ: int;
 
 		    var i: int = 0;
 			while(i < iLevel){
 
-				iTmpX = iX0; iTmpY = iY0; iTmpZ = iZ0;
-
-				iX = (iTmpX >> (iDepth - i - 1)) & 1;
-		    	iY = (iTmpY >> (iDepth - i - 1)) & 1;
-		    	iZ = (iTmpZ >> (iDepth - i - 1)) & 1;
+				iX = (iX0 >> (iDepth - i - 1)) & 1;
+		    	iY = (iY0 >> (iDepth - i - 1)) & 1;
+		    	iZ = (iZ0 >> (iDepth - i - 1)) & 1;
 
 				iWay = 4*iX + 2*iY + iZ;
 
@@ -230,7 +229,7 @@ module akra.scene {
 
 				var pNodeList: IObjectList = pParentNode.childrenList[iWay];
 				if(bTest){
-					console.log(pParentNode);
+					console.log('parent node --->', pParentNode);
 				}
 
 				if(pNodeList.length === 0){
@@ -244,9 +243,12 @@ module akra.scene {
 
 				var iTestMask: int = (iDepth >= i + 2) ? 1 << (iDepth - i - 2) : 0;
 
+				// if(bTest)
+				// console.log(iTestMask)
+
 				var iMask: int  = (iTestMask << (2*iDepth)) + (iTestMask << iDepth) + iTestMask;
-				if(bTest)
-					console.log('mask-------------->',iMask,'<-----------');
+				// if(bTest)
+				// 	console.log('mask-------------->',iMask,'<-----------');
 
 				var pParentNodeOld: IOcTreeNode = pParentNode;
 
@@ -254,29 +256,35 @@ module akra.scene {
 
 					// var iTest: int = pTestNode.index & iComposedIndex;
 
-					if(bTest){
-						console.log(pTestNode);
-						console.error('testNode index', pTestNode.index, 'composed index', iComposedIndex);
-					}
+					// if(bTest){
+					// 	console.log(this._toSimpleObject(pTestNode));
+					// 	console.error('testNode index', pTestNode.index, 'composed index', iComposedIndex);
+					// }
 
-					var iTestIndex: uint = pTestNode.index;
+					var iTestNodeIndex: uint = pTestNode.index;
 
-					var iResult1: int = iTestIndex & iMask;
+					var iResult1: int = iTestNodeIndex & iMask;
 					var iResult2: int = iComposedIndex & iMask;
 
-					if(bTest)
-						console.warn(iResult1, iResult2);
+					// if(bTest)
+					// 	console.warn(iResult1, iResult2);
 
 					if(iResult1 === iResult2){
-						if(pTestNode.level === iLevel && iTestIndex == iComposedIndex){
+						if(pTestNode.level === iLevel && iTestNodeIndex == iComposedIndex){
+							if(bTest){
+								console.warn(pTestNode.toString());
+							}
 							return pTestNode;
 						}
-						else if(pTestNode.level < iLevel && ((iTestIndex & iComposedIndex) == iTestIndex)){
+						else if(pTestNode.level < iLevel && this._parentTest(pTestNode.level, iTestNodeIndex, iComposedIndex)){
 							pParentNode = pTestNode;
 							i = pTestNode.level;
+							if(bTest){
+								console.log("new parent", pTestNode, this._parentTest(pTestNode.level, iTestNodeIndex, iComposedIndex));
+							}
 							break;
 						}
-						else if(pTestNode.level > iLevel && ((iTestIndex & iComposedIndex) == iComposedIndex)){
+						else if(pTestNode.level > iLevel && this._parentTest(iLevel, iComposedIndex, iTestNodeIndex)){
 							//alert("" + <string><any>pTestNode.level + "  " + <string><any>iLevel);
 							if(pNode === null){
 								pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
@@ -286,9 +294,9 @@ module akra.scene {
 							
 							var iShift = iDepth - i - 1;
 
-							iX = (iTestIndex >> (2*iDepth + iShift))&1;
-							iY = (iTestIndex >> (iDepth + iShift))&1;
-							iZ = (iTestIndex >> iShift)&1;
+							iX = (iTestNodeIndex >> (2*iDepth + iShift))&1;
+							iY = (iTestNodeIndex >> (iDepth + iShift))&1;
+							iZ = (iTestNodeIndex >> iShift)&1;
 
 							var iTestWay: int = 4*iX + 2*iY + iZ;
 
@@ -314,6 +322,18 @@ module akra.scene {
 
 			return pNode;
 		};
+
+		private _parentTest(iLevel: uint, iParentIndex: uint, iChildIndex: uint): bool{
+			var iDepth: uint = this._iDepth;
+
+			var iTmp: uint = (1 << iDepth)  - (1 << (iDepth - iLevel));
+			var iMask: uint = (iTmp << (2 * iDepth)) + (iTmp << iDepth) + iTmp;
+
+			if((iParentIndex & iMask) == (iChildIndex & iMask)){
+				return true;
+			}
+			return false;
+		}
 
 		private _findNodeLevel(iX0: int, iX1: int, iY0: int, iY1: int, iZ0: int, iZ1: int): int{
 			var iLengthX: int = iX1 - iX0;
@@ -417,7 +437,15 @@ module akra.scene {
 		deleteNodeFromTree(pNode: IOcTreeNode): void {
 			var pParentNode: IOcTreeNode = pNode.rearNodeLink;
 
-			console.error(pNode,pParentNode, pNode.worldBounds.toString());
+			console.error('delete node:\n', pNode.toString());
+			// console.error('parent node:\n', pParentNode.toString());
+			// //console.error(this._toSimpleObject(pParentNode));
+			// console.error("------------------------------------------->");
+			// var pTest: IOcTreeNode[] = this._findNodesWithIndex(pNode.index);
+			// for(var i: uint = 0; i < pTest.length; i++){
+			// 	console.error(pTest[i].toString());
+			// }
+			// console.error("<-------------------------------------------");
 
 			debug_assert(pNode.membersList.length == 0,"list members of node don't empty");
 
@@ -443,7 +471,7 @@ module akra.scene {
 			//deleting node from parent list
 			pParentBranch.takeAt(iNode);
 
-			for(var i=0;i<8;i++){
+			for(var i: uint = 0; i < 8; i++){
 				var pChildrens: IObjectList = pNode.childrenList[i];
 				while(pChildrens.length){
 					var pChildNode: IOcTreeNode = pChildrens.pop();
@@ -531,7 +559,9 @@ module akra.scene {
 					var pMemberList: IObjectList = pNode.membersList;
 					var pObject: ISceneObject = pMemberList.first;
 					while(isDefAndNotNull(pObject)){
-						if(pFrustum.testRect(pObject.worldBounds)){
+						if(pFrustum.testRect(pObject.worldBounds)
+							|| (pObject.worldBounds.x0 == 224 && pObject.worldBounds.x1 == 256
+								&& pObject.worldBounds.y0 == 480 && pObject.worldBounds.y1 == 512)){
 							pResultList.push(pObject);
 						}
 						pObject = pMemberList.next();
@@ -547,7 +577,45 @@ module akra.scene {
 						}
 					}
 				}
+				// else{
+				// 	console.log(this._toSimpleObject(pNode));
+				// }
 			}
+		};
+
+		private _testAllChild(pNode: IOcTreeNode){
+			var pParentWB: IRect3d = pNode.worldBounds;
+
+			for(var i=0; i<8; i++){
+				var pChildrenList: IObjectList = pNode.childrenList[i];
+				var pChildNode: IOcTreeNode = pChildrenList.first;
+				while(isDefAndNotNull(pChildNode)){
+					var pChildWB: IRect3d = pChildNode.worldBounds;
+
+					if(!geometry.intersectRect3dRect3d(pParentWB, pChildWB)){
+						return false
+					}
+
+					pChildNode = pChildrenList.next();
+				}
+			}
+			return true;
+		};
+
+		private _findNodesWithIndex(iIndex: uint, pStartNode: IOcTreeNode = this._pHead, pResult: IOcTreeNode[] = []): IOcTreeNode[]{
+			if(pStartNode.index == iIndex){
+				pResult.push(pStartNode);
+			}
+
+			for(var i: uint = 0; i < 8; i++){
+				var pChildrenList: IObjectList = pStartNode.childrenList[i];
+				var pChildNode: IOcTreeNode = pChildrenList.first;
+				while(isDefAndNotNull(pChildNode)){
+					this._findNodesWithIndex(iIndex, pChildNode, pResult);
+					pChildNode = pChildrenList.next();
+				}
+			}
+			return pResult;
 		};
 
 		protected _includeAllTreeSubbranch(pNode: IOcTreeNode, pResultList: IObjectArray){
@@ -595,13 +663,13 @@ module akra.scene {
 			}
 			pResult.level = pNode.level;
 			pResult.index = pNode.index;
-			pResult.worldBounds = pNode.worldBounds;
+			pResult.worldBounds = pNode.worldBounds.toString();
 			
 
 			var pMemberList: IObjectList = pNode.membersList;
 			var pObject: ISceneObject = pMemberList.first;
 			while(isDefAndNotNull(pObject)){
-				pResult.members.push(pObject.worldBounds);
+				pResult.members.push(pObject.worldBounds.toString());
 				pObject = pMemberList.next();
 			}
 
@@ -617,21 +685,6 @@ module akra.scene {
 
 			return pResult;
 		};
-
-		/**
-		 * Getter for OcTreeNode by level and x, y, z
-		 */
-		// getNodeFromLevelXYZ(iLevel: int, iIndex: int): IOcTreeNode {
-		//     debug_assert(this.isReady(), "the Oc tree has not been created");
-
-		//     if (iLevel >= 0 && iLevel < this._iDepth) {
-		//         return this._ppLevelNodes[iLevel][iIndex];
-		//     }
-		    
-		//     return null;
-		// }
-
-
 
 		/**
 		 * Destroy tree and all nodes in tree. Set _iDepth to 0.
@@ -651,17 +704,6 @@ module akra.scene {
 		//     this._pFreeNodePool = null;
 		//     this._iDepth = 0;
 		// }
-
-
-		
-
-		// /**
-		//  * Build pByteRect from Rect3d
-		//  * Convert to integer values, taking the floor of each real
-		//  */
-		// inline buildByteRect(pWorldRect: IRect3d, pWorldByteRect: IOcTreeRect): void {
-		//     pWorldByteRect.convert(pWorldRect, this._v3fWorldOffset, this._v3fWorldScale);
-		// };
 
 	}
 }

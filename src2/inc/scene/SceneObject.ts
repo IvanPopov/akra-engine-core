@@ -75,8 +75,8 @@ module akra.scene {
 		private recalcWorldBounds(): bool {
 			// nodes only get their bounds updated
 		    // as nessesary
-		    if (TEST_BIT(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds)
-		        || this.isWorldMatrixNew()) {
+		    if ((TEST_BIT(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds)
+		    		        || this.isWorldMatrixNew())) {
 		        // transform our local rectangle 
 		        // by the current world matrix
 		        this._pWorldBounds.set(this._pLocalBounds);
