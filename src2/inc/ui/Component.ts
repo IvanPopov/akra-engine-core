@@ -145,6 +145,7 @@ module akra.ui {
 		rendered(): void {
 			super.rendered();
 			this.el.addClass("component");
+			this.getHTMLElement()["component"] = this;
 		}
 
 		inline isGeneric(): bool {

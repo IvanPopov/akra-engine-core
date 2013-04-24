@@ -16,7 +16,7 @@ module akra.scene {
 		inline get scene(): IScene3d { return this._pScene; }
 		inline set scene(pScene: IScene3d) { this._pScene = pScene; }
 
-		inline get totalControllers(): uint { return this._pAnimationControllers.length; }
+		inline get totalControllers(): uint { return this._pAnimationControllers? this._pAnimationControllers.length: 0; }
 		
 		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_NODE) {
 			super(eType);
@@ -30,6 +30,10 @@ module akra.scene {
 		}
 
 		inline addController(pController: IAnimationController): void {
+			if (isNull(this._pAnimationControllers)) {
+				this._pAnimationControllers = [];
+			}
+
 			if (this._pAnimationControllers.indexOf(pController) != -1) {
 				return;
 			}

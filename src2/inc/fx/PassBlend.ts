@@ -159,7 +159,7 @@ module akra.fx {
 			var pMaker: IAFXMaker = this.getMakerByHash(sTotalHash);
 
 			if(isNull(pMaker)) {
-				LOG("generateShaderProgram. HASH: ", sTotalHash, "---NEW---", now() - iTime);
+				// LOG("generateShaderProgram. HASH: ", sTotalHash, "---NEW---", now() - iTime);
 
 				this.applyForeigns(pPassInput);
 				this.swapTexcoords(pSurfaceMaterial);

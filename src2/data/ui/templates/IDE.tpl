@@ -14,6 +14,10 @@
 						<component type="Button" text="Collada Model" name="load-collada" 
 							onclick="akra.ide.cmd(akra.ECMD.LOAD_COLLADA)"/>
 					</component>
+					<component type="Menu" text="Settings" >
+						<component type="Button" text="Edit demo" name="edit-demo" 
+								onclick="akra.ide.cmd(akra.ECMD.EDIT_MAIN_SCRIPT)"/>
+					</component>
 				</div>
 			</td>
 		</tr>

@@ -9,6 +9,8 @@
 #include "Blender.ts"
 #include "Mask.ts"
 
+#include "io/Exporter.ts"
+
 module akra.ui.animation {
 	export class Controls extends graph.Controls implements IUIAnimationControls {
 		public graph: IUIAnimationGraph;
@@ -23,10 +25,15 @@ module akra.ui.animation {
 			var pBlenderBtn: IUIButton = new Button(pControlPanel, {text: "Create blender"});
 			var pMaskBtn: IUIButton = new Button(pControlPanel, {text: "Create mask"});
 
+
+			var pExportBtn: IUIButton = new Button(pControlPanel, {text: "{ save controller }"})
+
 			//this.connect(pDataBtn, SIGNAL(click), SLOT(createData));
 			this.connect(pPlayerBtn, SIGNAL(click), SLOT(createPlayer));
 			this.connect(pBlenderBtn, SIGNAL(click), SLOT(createBlender));
 			this.connect(pMaskBtn, SIGNAL(click), SLOT(createMask));
+
+			this.connect(pExportBtn, SIGNAL(click), SLOT(exportController));
 		}	
 
 
@@ -46,9 +53,17 @@ module akra.ui.animation {
 			return new Mask(this.graph);
 		}
 
+		exportController(): void {
+			var pExporter = new io.Exporter;
+			var pController = this.graph.getController();
+
+			pExporter.writeController(pController);
+			pExporter.saveAs((pController.name || "untitled") + ".json");
+		}
+
 		selected(): void {
 			super.selected();
-			ide.cmd(ECMD.INSPECT_ANIMATION_CONTROLLER, this.graph.getController());
+			// ide.cmd(ECMD.INSPECT_ANIMATION_CONTROLLER, this.graph.getController());
 		}
 	}
 

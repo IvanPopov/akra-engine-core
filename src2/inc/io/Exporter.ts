@@ -229,7 +229,8 @@ module akra.io {
 				type: EDocumentEntry.k_Controller,
 
 				animations: [],
-				options: 0
+				options: 0,
+				name: pController.name
 			};
 
 			for (var i = 0, n: int = pController.totalAnimations; i < n; ++ i) {
@@ -310,13 +311,12 @@ module akra.io {
 			return null;
 		}
 
-		saveAs(sName: string, eFormat: EDocumentFormat): void {
+		saveAs(sName: string, eFormat?: EDocumentFormat): void {
 			saveAs(this.export(eFormat), sName);
 		}
 
 		exportAsJSON(pDocument: IDocument): Blob {
-			LOG(pDocument);
-			return new Blob([JSON.stringify(pDocument/*, null, "\t"*/)], {type: "text/plain;charset=utf-8"});
+			return new Blob([JSON.stringify(pDocument/*, null, "\t"*/)], {type: "application/json;charset=utf-8"});
 		}
 
 		exportAsJSONBinary(pDocument: IDocument): Blob {

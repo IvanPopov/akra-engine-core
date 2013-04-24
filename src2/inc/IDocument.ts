@@ -119,6 +119,7 @@ module akra {
 	export interface IControllerEntry extends IDataEntry {
 		animations: IAnimationBaseInstance[];
 		options: int;
+		name: string;
 	}
 
 

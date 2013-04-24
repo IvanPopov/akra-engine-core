@@ -11,6 +11,8 @@
 #include "animation/Animation.ts"
 #include "io/filedrop.ts"
 
+#include "io/Importer.ts"
+
 module akra.ui.animation {
 	export class Graph extends graph.Graph implements IUIAnimationGraph {
 		private _pSelectedNode: IUIAnimationNode = null;
@@ -20,6 +22,18 @@ module akra.ui.animation {
 			super(parent, options, EUIGraphTypes.ANIMATION);
 
 			this.setupFileDropping();
+			this.setDroppable();
+		}
+
+		drop(e, comp, info): void {
+			super.drop(e, comp, info);
+				
+			if (isComponent(comp, EUIComponents.COLLADA_ANIMATION)) {
+				var pColladaAnimation: any = comp;
+				var pAnimation = pColladaAnimation.collada.extractAnimation(pColladaAnimation.index);
+				this.addAnimation(pAnimation);
+				this.createNodeByAnimation(pAnimation);
+			}
 		}
 
 		private setupFileDropping(): void {
@@ -36,20 +50,23 @@ module akra.ui.animation {
 					}
 
 					var pName: IPathinfo = pathinfo(file.name);
+					var sExt: string = pName.ext.toUpperCase();
 
-				    if (pName.ext.toUpperCase() !== "DAE") {
-				    	alert("unsupported format used: " + file.name);
-				    	return;
-				    }
+				    if (sExt == "DAE" ) {
+				    	var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
+			    		pModelResource.parse(<string>content, {scene: false, name: pName.toString()});
 
-			    	var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
-		    		pModelResource.parse(<string>content, {scene: false, name: pName.toString()});
+			    		var pAnimations: IAnimation[] = pModelResource.extractAnimations();
 
-		    		var pAnimations: IAnimation[] = pModelResource.extractAnimations();
+			    		for (var j = 0; j < pAnimations.length; ++ j) {
+			    			pGraph.addAnimation(pAnimations[j]);
+			    			pGraph.createNodeByAnimation(pAnimations[j]);
+			    		}
+		    		}
 
-		    		for (var j = 0; j < pAnimations.length; ++ j) {
-		    			pGraph.addAnimation(pAnimations[j]);
-		    			pGraph.createNodeByAnimation(pAnimations[j]);
+		    		if (sExt == "JSON") {
+		    			var pImporter = new io.Importer(pEngine);
+		    			pImporter.loadDocument(pDocument);
 		    		}
 		    	},
 

@@ -276,6 +276,7 @@ module akra.io {
 
 		protected decodeControllerEntry(pEntry: IControllerEntry): IAnimationController {
 			var pController: IAnimationController = animation.createController(pEntry.options);
+			pController.name = pEntry.name;
 			
 			this.decodeInstanceList(pEntry.animations, (pAnimation: IAnimationBase) => {
 				pController.addAnimation(pAnimation);

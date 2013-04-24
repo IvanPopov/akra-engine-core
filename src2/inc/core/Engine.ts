@@ -303,8 +303,8 @@ module akra.core {
 			return util.createBufferMap(this);
 		}
 
-		inline createAnimationController(iOptions: int = 0): IAnimationController {
-			return animation.createController(this, iOptions);
+		inline createAnimationController(sName?: string, iOptions?: int): IAnimationController {
+			return animation.createController(this, sName, iOptions);
 		}
 
 		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {

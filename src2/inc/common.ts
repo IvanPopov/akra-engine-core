@@ -419,8 +419,8 @@ module akra {
     sid._iTotal = 0;
 
 
-    export function now(): uint {
-        return (new Date).getTime();
+    export inline function now(): uint {
+        return Date.now();
     }
 
     

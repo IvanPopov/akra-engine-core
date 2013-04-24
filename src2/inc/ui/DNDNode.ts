@@ -40,7 +40,7 @@ module akra.ui {
 			}
 
 			if (!isNull(this.parent) && isDefAndNotNull(this.$element)) {
-				pOptions.containment = pOptions.containment || "parent";
+				pOptions.containment = isDef(pOptions.containment)? pOptions.containment: "parent";
 				// this.$element.draggable("option", "containment", "parent");
 			}
 
@@ -58,7 +58,7 @@ module akra.ui {
 				var pNode: DNDNode = this;
 
 				this.$element.droppable({
-			      drop: (e: Event) => { return pNode.drop(e); }
+			      drop: (e: Event, info) => { return pNode.drop(e, info.draggable[0].component || null, info); }
 			    });
 
 			    this._bDroppableInited = true;
@@ -78,7 +78,7 @@ module akra.ui {
 		BROADCAST(dragStart, CALL(e));
 		BROADCAST(dragStop, CALL(e));
 		BROADCAST(move, CALL(e));
-		BROADCAST(drop, CALL(e));
+		BROADCAST(drop, CALL(e, comp, info));
 	}
 }
 

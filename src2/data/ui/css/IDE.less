@@ -511,6 +511,25 @@ body {
 				}
 			}
 		}
+
+		.component-animationcontroller {
+			display: inline-block;
+			border-radius: 5px;
+			border: 1px dotted #CCC;
+			padding-left: 8px;
+			padding-right: 8px;
+			background-color: #EEE;
+			cursor: pointer;
+
+			&:hover {
+				border-color: gray;
+				border-style: solid;
+			}
+		}
+
+		button[name=add-controller] {
+			padding: 1px !important;
+		}
 	}
 
 	div[name=model-entry], 
@@ -518,7 +537,8 @@ body {
 	div[name=light-point], 
 	div[name=animation-node], 
 	div[name=camera],
-	div[name=scene] {
+	div[name=scene],
+	div[name=animation-controller] {
 		display: none;
 
 		.row {
@@ -734,4 +754,38 @@ div[name=load-collada-dlg] {
 
 div[name=scene] {
 	display: block !important;
+}
+
+.component-sceneevents {
+	text-align: right;
+	& > .row {
+		padding: 0 10px 0 0 !important;
+
+		.component-button {
+			padding: 0 20px 0 20px;
+			margin-right: 0;
+			font-size: 11px;
+		}
+	}
+}
+
+.component-resourceproperties {
+	& > div .component-panel {
+		.row {
+			.component-colladaanimation {
+				display: inline-block;
+				border-radius: 5px;
+				border: 1px dotted #CCC;
+				padding-left: 8px;
+				padding-right: 8px;
+				background-color: #EEE;
+				cursor: pointer;
+
+				&:hover {
+					border-color: gray;
+					border-style: solid;
+				}
+			}
+		}
+	}
 }

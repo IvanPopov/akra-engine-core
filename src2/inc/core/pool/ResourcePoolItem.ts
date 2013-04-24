@@ -396,6 +396,11 @@ module akra.core.pool {
 		BROADCAST(saved 	, VOID);
 	}
 
+
+	export inline function isVideoResource(pItem: IResourcePoolItem): bool {
+		return !isNull(pItem) && pItem.resourceCode.family === EResourceFamilies.VIDEO_RESOURCE;
+	}
+
 }
 
 #endif

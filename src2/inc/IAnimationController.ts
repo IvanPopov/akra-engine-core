@@ -9,8 +9,11 @@ module akra {
 	IFACE(ISceneNode);
 
 	export interface IAnimationController extends IEventProvider {
+		name: string;
+
 		readonly totalAnimations: int;
 		readonly active: IAnimationBase;
+		readonly target: ISceneNode;
 
 		getEngine(): IEngine;
 

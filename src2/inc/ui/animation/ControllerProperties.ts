@@ -46,7 +46,7 @@ module akra.ui.animation {
 		private updateProperties(): void {
 			var pController: IAnimationController = this._pController;
 			this._pTotalAnimLabel.text = <string><any>pController.totalAnimations;
-			this._pActiveAnimation.text = pController.active.name;
+			this._pActiveAnimation.text = pController.active? pController.active.name: "[not selected]";
 		}
 
 		rendered(): void {
