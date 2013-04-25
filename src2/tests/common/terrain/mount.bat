@@ -1,1 +1,1 @@
-mklink /J %1 ./data/%2
+mklink /J .\data\%2 %1

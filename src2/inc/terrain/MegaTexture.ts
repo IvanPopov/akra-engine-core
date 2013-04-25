@@ -560,7 +560,7 @@ module akra.terrain {
 		                                         me._pBufferMap[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
 		                                                                   (me._iTextureWidth / me._iBlockSize) +
 		                                                                   (j - me._pXY[iLevelTex].iX) / me._iBlockSize] <
-		                                         5000) {
+		                                         10000) {
 		                    continue;
 		                }
 		                if (me._pBufferMap[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
@@ -595,7 +595,7 @@ module akra.terrain {
 
 		                if (tCurrentTime - me._pBufferMap[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
 		                                                             (me._iBufferWidth / me._iBlockSize) +
-		                                                             (j - me._pXY[iLevelTex].iX) / me._iBlockSize] < 5000) {
+		                                                             (j - me._pXY[iLevelTex].iX) / me._iBlockSize] < 10000) {
 		                    continue;
 		                }
 		                if (me._pBufferMap[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
