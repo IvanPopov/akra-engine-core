@@ -66,6 +66,18 @@ module akra.io {
 			this._pLibrary = <ILibrary><any>{};
 		}
 
+		inline findLibraryEntry(iGuid: int): ILibraryEntry {
+			return this._pLibrary[iGuid];
+		}
+
+		inline findEntry(iGuid: int): IDataEntry {
+			return this.findLibraryEntry(iGuid).entry;
+		}
+
+		inline findEntryData(iGuid: int): any {
+			return this.findLibraryEntry(iGuid).data;
+		}
+
 		protected inline isSceneWrited(): bool {
 			return this._bScenesWrited;
 		}
@@ -115,7 +127,8 @@ module akra.io {
 			var pEntry: IAnimationBaseEntry = {
 				name: pAnimation.name,
 				targets: [],
-				type: EDocumentEntry.k_Unknown
+				type: EDocumentEntry.k_Unknown,
+				extra: null
 			}
 
 			var pTargets: IAnimationTarget[] = pAnimation.getTargetList();
@@ -302,10 +315,10 @@ module akra.io {
 			var pDocument: IDocument = this.createDocument();
 			
 			if (eFormat === EDocumentFormat.JSON) {
-				return this.exportAsJSON(pDocument);
+				return Exporter.exportAsJSON(pDocument);
 			}
 			else if (eFormat === EDocumentFormat.BINARY_JSON) {
-				return this.exportAsJSONBinary(pDocument);
+				return Exporter.exportAsJSONBinary(pDocument);
 			}
 
 			return null;
@@ -315,11 +328,11 @@ module akra.io {
 			saveAs(this.export(eFormat), sName);
 		}
 
-		exportAsJSON(pDocument: IDocument): Blob {
+		static exportAsJSON(pDocument: IDocument): Blob {
 			return new Blob([JSON.stringify(pDocument/*, null, "\t"*/)], {type: "application/json;charset=utf-8"});
 		}
 
-		exportAsJSONBinary(pDocument: IDocument): Blob {
+		static exportAsJSONBinary(pDocument: IDocument): Blob {
 			return new Blob([io.dump(pDocument)], {type: "application/octet-stream"});
 		}
 

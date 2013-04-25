@@ -56,8 +56,25 @@ module akra.ui.animation {
 		exportController(): void {
 			var pExporter = new io.Exporter;
 			var pController = this.graph.getController();
+			var pGraphOffset = this.graph.el.offset();
 
 			pExporter.writeController(pController);
+			
+			for (var i = 0; i < pController.totalAnimations; ++ i) {
+				var pAnimation: IAnimationBase = pController.getAnimation(i);
+				var pEntry: IAnimationBaseEntry = <IAnimationBaseEntry>pExporter.findEntry(pAnimation.getGuid());
+				var pGraphNode: IUIAnimationNode = this.graph.findNodeByAnimation(pAnimation);
+
+				var pOffset = pGraphNode.el.offset();
+
+				if (!pEntry.extra) {
+					pEntry.extra = {}
+				}
+
+				pEntry.extra.graph = {x: pOffset.left - pGraphOffset.left, y: pOffset.top - pGraphOffset.top};
+			}
+
+
 			pExporter.saveAs((pController.name || "untitled") + ".json");
 		}
 

@@ -31,7 +31,7 @@ module akra.ui.animation {
 			if (isComponent(comp, EUIComponents.COLLADA_ANIMATION)) {
 				var pColladaAnimation: any = comp;
 				var pAnimation = pColladaAnimation.collada.extractAnimation(pColladaAnimation.index);
-				this.addAnimation(pAnimation);
+				// this.addAnimation(pAnimation);
 				this.createNodeByAnimation(pAnimation);
 			}
 		}
@@ -66,7 +66,9 @@ module akra.ui.animation {
 
 		    		if (sExt == "JSON") {
 		    			var pImporter = new io.Importer(pEngine);
-		    			pImporter.loadDocument(pDocument);
+		    			pImporter.import(content);
+		    			this.createNodeByController(pImporter.getController());
+
 		    		}
 		    	},
 
@@ -91,7 +93,7 @@ module akra.ui.animation {
 			return this._pAnimationController;
 		}
 
-		selectNode(pNode: IUIAnimationNode, bModified: bool): void {
+		selectNode(pNode: IUIAnimationNode, bModified: bool = false): void {
 			var bPlay: bool = true;
 
 			if (this._pSelectedNode === pNode) {
@@ -115,6 +117,8 @@ module akra.ui.animation {
 			this.nodeSelected(pNode, bPlay);
 		}
 
+
+
 		BROADCAST(nodeSelected, CALL(pNode, bPlay));
 		
 		addAnimation(pAnimation: IAnimationBase): void {
@@ -131,16 +135,16 @@ module akra.ui.animation {
 		findNodeByAnimation(sName: string): IUIAnimationNode;
 		findNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 		findNodeByAnimation(animation): IUIAnimationNode {
-			// var sName: string = !isString(animation)? (<IAnimationBase>animation).name: <string>animation;
-			// var pNodes: IUIAnimationNode[] = <IUIAnimationNode[]>this.nodes;
+			var sName: string = !isString(animation)? (<IAnimationBase>animation).name: <string>animation;
+			var pNodes: IUIAnimationNode[] = <IUIAnimationNode[]>this.nodes;
 
-			// for (var i: int = 0; i < pNodes.length; i ++) {
-			// 	var pAnim: IAnimationBase = pNodes[i].animation;
+			for (var i: int = 0; i < pNodes.length; i ++) {
+				var pAnim: IAnimationBase = pNodes[i].animation;
 
-			// 	if (!isNull(pAnim) && pAnim.name === sName) {
-			// 		return pNodes[i];
-			// 	}
-			// }
+				if (!isNull(pAnim) && pAnim.name === sName) {
+					return pNodes[i];
+				}
+			}
 
 			return null;
 		}
@@ -158,14 +162,21 @@ module akra.ui.animation {
 
 		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode {
 			var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
-			var pSubNode: IUIAnimationNode;
-			// var pBlend: IUIAnimationBlender;
-			// var pPlayer: IUIAnimationPlayer;
-			var pMaskNode: IUIAnimationNode;
+			var pSubAnim: IAnimationBase = null;
+			var pSubNode: IUIAnimationNode 	= null;
+			var pBlend: IAnimationBlend = null;
+			var pBlender: IUIAnimationBlender = null;
+			var pPlayer: IUIAnimationPlayer = null;
+			var pMaskNode: IUIAnimationNode = null;
 			
 			var pSubAnimation: IAnimationBase;
 			var n: int = 0;
 			var pMask: FloatMap = null;
+
+			function connect(pGraph: IUIGraph, pFrom: IUIGraphNode, pTo: IUIGraphNode): void {
+				pGraph.createRouteFrom(pFrom.getOutputConnector());
+				pGraph.connectTo(pTo.getInputConnector());
+			}
 
 			if (!isNull(pNode)) {
 				return pNode;
@@ -174,9 +185,70 @@ module akra.ui.animation {
 			if (akra.animation.isAnimation(pAnimation)) {
 				pNode = <IUIAnimationNode>new Data(this);
 				pNode.animation = pAnimation;
+				this.addAnimation(pAnimation);
+			}
+			else if (akra.animation.isBlend(pAnimation)) {
+				pBlender = pNode = new Blender(this);
+		        pBlend = <IAnimationBlend>pAnimation;
+		        // pBlender.animation = pBlend;
+
+		        for (var i = 0; i < pBlend.totalAnimations; i++) {
+		            pSubAnim = pBlend.getAnimation(i);
+		            pSubNode = this.createNodeByAnimation(pSubAnim);
+		            pMask = pBlend.getAnimationMask(i);
+
+		            if (isDefAndNotNull(pMask)) {
+		                pMaskNode = pBlender.getMaskNode(i);
+		                
+		                if (!pMaskNode) {
+		                    pMaskNode = new Mask(this);
+		                    // pMaskNode.animation = pSubAnim;
+		                }
+
+
+		    			connect(this, pSubNode, pMaskNode);
+		    			connect(this, pMaskNode, pBlender);
+		                
+		                // if (pSubAnim.extra && pSubAnim.extra.mask) {
+		                //     if (pSubAnim.extra.mask.position) {
+		                //         pMaskNode.position(pSubAnim.extra.mask.position.x, pSubAnim.extra.mask.position.y);
+		                //     }
+		                // }
+
+		                pMaskNode.routing();
+		            }
+		            else {
+		            	connect(this, pSubNode, pBlender);
+		            }
+
+		            pSubNode.routing();
+		        }; 
+
+		        pBlender.setup();
+			}
+			else if (akra.animation.isContainer(pAnimation)) {
+				pPlayer = pNode = new Player(this);
+		        // pPlayer.animation = pAnimation;
+
+		        pSubAnim = (<IAnimationContainer>pAnimation).getAnimation();
+		        pSubNode = this.createNodeByAnimation(pSubAnim);
+		    
+		    	connect(this, pSubNode, pPlayer);
 			}
 			else {
-				CRITICAL("AHTUNG!!!");
+				ERROR("unsupported type of animation detected >> ", pAnimation);
+			}
+
+			// if (pAnimation.extra) {
+		 //        if (pAnimation.extra.position) {
+		 //            pNode.position(pAnimation.extra.position.x, pAnimation.extra.position.y);
+		 //        }
+		 //    }
+
+			pNode.routing();
+
+			if (pAnimation === this.getController().active) {
+				this.selectNode(pNode);
 			}
 
 			return null;

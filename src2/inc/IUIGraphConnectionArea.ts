@@ -31,6 +31,8 @@ module akra {
 		isSupportsOutgoing(): bool;
 		hasConnections(): bool;
 
+		prepareForConnect(): IUIGraphConnector;
+
 		routing(): void;
 
 		activate(bValue?: bool): void;

@@ -44,8 +44,8 @@ module akra.ui.graph {
 		}
 
 
-		createRouteFrom(pConnector: IUIGraphConnector): void {
-			this._pTempRoute = new TempRoute(pConnector);
+		createRouteFrom(pFrom: IUIGraphConnector): void {
+			this._pTempRoute = new TempRoute(pFrom);
 			this.connectionBegin(this._pTempRoute);
 		}
 

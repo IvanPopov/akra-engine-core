@@ -183,6 +183,15 @@ module akra.ui.graph {
 		    }
 		}
 
+		prepareForConnect(): IUIGraphConnector {
+			var pConnector: IUIGraphConnector = this._pTempConnect = new Connector(this);
+			pConnector.orient = this._eConectorOrient;
+			//this.graph.isReadyForConnect()? pConnector.input(): pConnector.output();
+			this.connect(pConnector, SIGNAL(routeBreaked), SLOT(destroyTempConnect));
+			this.connect(pConnector, SIGNAL(connected), SLOT(onConnection));
+			return pConnector;
+		}
+
 		_onNodeMouseover(pNode: IUIGraphNode, e: IUIEvent): void {
 			//FIXME
 			var pArea: ConnectionArea = this;
@@ -197,11 +206,7 @@ module akra.ui.graph {
 				return;
 			}
 
-			var pConnector: IUIGraphConnector = this._pTempConnect = new Connector(this);
-			pConnector.orient = this._eConectorOrient;
-			//this.graph.isReadyForConnect()? pConnector.input(): pConnector.output();
-			this.connect(pConnector, SIGNAL(routeBreaked), SLOT(destroyTempConnect));
-			this.connect(pConnector, SIGNAL(connected), SLOT(onConnection));
+			this.prepareForConnect();
 		}
 
 		private onConnection(pConnector: IUIGraphConnector, pTarget: IUIGraphConnector): void {

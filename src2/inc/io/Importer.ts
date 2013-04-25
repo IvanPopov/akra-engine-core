@@ -61,7 +61,7 @@ module akra.io {
 			if (isArrayBuffer(pData)) {
 				sData = util.abtos(<ArrayBuffer>pData);
 			}
-			else if (isString(sData)) {
+			else if (isString(pData)) {
 				sData = <string>pData;
 			}
 			else if(isBlob(pData)) {
@@ -275,7 +275,7 @@ module akra.io {
 		}
 
 		protected decodeControllerEntry(pEntry: IControllerEntry): IAnimationController {
-			var pController: IAnimationController = animation.createController(pEntry.options);
+			var pController: IAnimationController = this.getEngine().createAnimationController(pEntry.name, pEntry.options);
 			pController.name = pEntry.name;
 			
 			this.decodeInstanceList(pEntry.animations, (pAnimation: IAnimationBase) => {
