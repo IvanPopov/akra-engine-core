@@ -121,11 +121,10 @@ float4 apply_light_omni_shadow() : COLOR{
             //так как здесь происходит считывание из текстуру другой тест не корректен
             if(all(lessThanEqual(v3fTest.xy, float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
                 float2 v2fShadowTextureCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
-                //shadowMultiplier = clamp(tex2D(omni_shadow_sampler[((i*6) + j)], float2(0.5, 0.5)).a*2. - 1., 0.99, 1.);
                 int samplerNumber = i * 6 + j;
-                shadowMultiplier = calculateShadowMultiplier(omni_shadow_sampler[samplerNumber],v2fShadowTextureCoords,
-                                                            points_omni_shadows[i].optimized_projection_matrix[j], v4fLightSpace.z);
-                //shadowMultiplier = 0.2;
+
+                shadowMultiplier = calculateShadowMultiplier(omni_shadow_sampler[samplerNumber], v2fShadowTextureCoords,
+                                                             points_omni_shadows[i].optimized_projection_matrix[j], v4fLightSpace.z);
                 isOk = false;
             }
 
@@ -169,7 +168,7 @@ float4 apply_light_project_shadows() : COLOR{
 
             if(all(lessThanEqual(float2(v3fTest.xy),float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
                 float2 v2fShadowTextureCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
-                shadowMultiplier = calculateShadowMultiplier(project_shadow_sampler[i],v2fShadowTextureCoords,
+                shadowMultiplier = calculateShadowMultiplier(project_shadow_sampler[i], v2fShadowTextureCoords,
                                                                 points_project_shadows[i].optimized_projection_matrix, v4fLightSpace.z);
             }
             

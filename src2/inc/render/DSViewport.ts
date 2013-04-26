@@ -303,7 +303,7 @@ module akra.render {
 				    }
 
 				    pPass.setUniform("PROJECT_SHADOW_SAMPLER", pLightUniforms.samplersProject);
-    				pPass.setUniform("OMNI_SHADOW_SAMPLER", pLightUniforms.samplersOmni);
+	    			pPass.setUniform("OMNI_SHADOW_SAMPLER", pLightUniforms.samplersOmni);
 
     				pPass.setUniform("MIN_SHADOW_VALUE", 0.5);
     				pPass.setUniform("SHADOW_CONSTANT", 5.e+2);

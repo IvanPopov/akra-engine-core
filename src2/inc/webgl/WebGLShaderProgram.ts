@@ -318,9 +318,11 @@ module akra.webgl {
 
         inline setSamplerArray(sName: string, pList: IAFXSamplerState[]): void {
             var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pList.length);
+            
             for (var i: int = 0; i < pList.length; ++ i) {
                 pBuffer[i] = this.applySamplerState(pList[i]);                
             }
+            
             this.setInt32Array(sName, pBuffer);
         }
 

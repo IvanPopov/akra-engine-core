@@ -110,18 +110,18 @@ module akra {
 			pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
 			pProjectShadowLight.addRelPosition(0, 3, 10);
 
-			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-1");
+			pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-1");
 			
-			// pProjectShadowLight.attachToParent(pScene.getRootNode());
-			// pProjectShadowLight.enabled = true;
-			// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-			// pProjectShadowLight.params.diffuse.set(0.5);
-			// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
-			// pProjectShadowLight.params.attenuation.set(1,0,0);
-			// pProjectShadowLight.isShadowCaster = true;
+			pProjectShadowLight.attachToParent(pScene.getRootNode());
+			pProjectShadowLight.enabled = true;
+			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			pProjectShadowLight.params.diffuse.set(0.5);
+			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			pProjectShadowLight.params.attenuation.set(1,0,0);
+			pProjectShadowLight.isShadowCaster = true;
 
-			// pProjectShadowLight.addRelRotationByXYZAxis(0, 0.5, 0);
-			// pProjectShadowLight.addRelPosition(0, 3, 10);
+			pProjectShadowLight.addRelRotationByXYZAxis(0, 0.5, 0);
+			pProjectShadowLight.addRelPosition(0, 3, 10);
 
 			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-2");
 			
