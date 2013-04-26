@@ -196,7 +196,7 @@ module akra {
 			createLighting();
 			createTerrain();
 			createSkyBox();
-			
+
 			// loadModels("../../../data/models/kr360.dae");
 			// loadModels("../../../data/models/hero/hero.DAE");
 			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");
