@@ -135,7 +135,7 @@ module akra.geometry{
 		if(fMinDistance*fMaxDistance <= 0.){
 			return EPlaneClassifications.PLANE_INTERSECT;
 		}
-		else if (fMaxDistance < 0.){
+		else if (fMaxDistance <= 0.){
 			return EPlaneClassifications.PLANE_BACK;
 		}
 		else{

@@ -36,6 +36,8 @@ module akra{
 		testRect(pRect: IRect3): bool;
 		testSphere(pSphere: ISphere): bool;
 		testFrustum(pFrustum: IFrustum): bool;
+
+		toString(): string;
 	};
 };
 

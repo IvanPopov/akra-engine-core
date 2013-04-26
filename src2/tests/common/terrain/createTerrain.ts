@@ -37,8 +37,8 @@ module akra {
 			pCamera = pScene.createCamera();
 		
 			//pCamera.addRelRotationByXYZAxis(1, 1, 0);
-			pCamera.farPlane = 1500;
-			pCamera.setPosition(vec3(0, 0, 1000));
+			pCamera.farPlane = 2000;
+			pCamera.setPosition(vec3(0, 0, 1800));
 			pCamera.attachToParent(pTestNode);
 			pCamera.setInheritance(ENodeInheritance.ALL);
 
@@ -70,6 +70,9 @@ module akra {
 			    }
 			    if(pKeymap.isKeyPress(EKeyCodes.D)){
 			    	pCamera.addRelPosition(fSpeed, 0, 0);
+			    }
+			    if(pKeymap.isKeyPress(EKeyCodes.SPACE)){
+			    	(<akra.core.Engine>pEngine).pause(pEngine.isActive());
 			    }
 
 			    // if(pKeymap.isKeyPress())
@@ -194,7 +197,7 @@ module akra {
 			createLighting();
 			createTerrain();
 			createSkyBox();
-			
+
 			// loadModels("../../../data/models/kr360.dae");
 			// loadModels("../../../data/models/hero/hero.DAE");
 			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE");

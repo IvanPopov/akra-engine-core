@@ -35,7 +35,8 @@ module akra {
 
 		addMember(pMember: ISceneObject): void;
 		removeMember(pMember: ISceneObject): void;
-		//nodeCoords(): void;
+
+		toString(): string;
 	}
 }
 

@@ -60,7 +60,7 @@ module akra.util {
 			}
 		}
 
-		indexOf(pData: any, iFrom: uint = 0.): int{
+		indexOf(pData: any, iFrom: uint = 0): int{
 			var pItem: IObjectListItem = this.find(iFrom);
 
 			for(var i: uint = iFrom; i<this._iLength; i++){

@@ -29,6 +29,8 @@ module akra{
 		solveForZ(fX: float, fY: float): float;
 
 		signedDistance(v3fPoint: IVec3): float;
+
+		toString(): string;
 	};
 }
 

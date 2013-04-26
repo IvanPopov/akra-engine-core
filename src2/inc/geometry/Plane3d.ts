@@ -174,6 +174,10 @@ module akra.geometry{
 		signedDistance(v3fPoint: IVec3): float{
 			return this.distance + this.normal.dot(v3fPoint);
 		};
+
+		toString(): string{
+			return "normal: " + this.normal.toString() + "; distance: " + this.distance;
+		};
 	};
 };
 
