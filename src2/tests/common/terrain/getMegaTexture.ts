@@ -67,7 +67,7 @@ module akra {
 	}
 
 	export function getTextureFrom(x: uint, y: uint): void {
-		pRpc.proc("getMegaTexture", "main", 
+		pRpc.proc("getMegaTextureNative", "main", 
 			IMG_WIDTH * iRes, IMG_HEIGHT * iRes, 	/* width, height */
 			x, y, 									/* x, y */
 			BLOCK_WIDTH, BLOCK_HEIGHT,				/* block size X, Y */ 
@@ -97,8 +97,8 @@ module akra {
 		else {
 			getTextureFrom(x, y);
 			x += BLOCK_WIDTH;
-			// setTimeout(exploreWholeTexture, 1);
-			exploreWholeTexture();
+			setTimeout(exploreWholeTexture, 2500);
+			// exploreWholeTexture();
 		}
 	}
 

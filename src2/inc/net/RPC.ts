@@ -67,7 +67,7 @@ module akra.net {
             
                 pPipe.bind(SIGNAL(message), 
                     function (pPipe: IPipe, pMessage: any, eType: EPipeDataTypes): void {
-                        // LOG(pMessage);
+                        LOG(pMessage);
                         if (eType !== EPipeDataTypes.BINARY) {
                             pRPC.parse(JSON.parse(<string>pMessage));
                         }
@@ -177,7 +177,7 @@ module akra.net {
                 debug_print(pRes);
                 WARNING("message droped, because seriial not recognized.");
             };
-
+            
             this.response(pRes.n, pRes.type, pRes.res);
         }
 
@@ -189,7 +189,7 @@ module akra.net {
             var eType: ERPCPacketTypes = <ERPCPacketTypes>pHeader[1];
 
             var pResult: Uint8Array = new Uint8Array(pBuffer, 8);
-
+            LOG(pHeader, "<< header")
             this.response(nMsg, eType, pResult);
         }
 
