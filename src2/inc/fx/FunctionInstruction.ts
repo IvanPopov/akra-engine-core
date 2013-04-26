@@ -841,6 +841,10 @@ module akra.fx {
 
         	this._pUniformVariableMap[iMainVar] = pMainVariable;
         	this.addUsedComplexType(pMainVariable.getType().getBaseType());
+
+        	if(pMainVariable.getType().isBase() && pMainVariable.hasConstantInitializer()){
+        		pMainVariable.prepareDefaultValue();
+        	}
         }
 
         private addUsedComplexType(pType: IAFXTypeInstruction): void {

@@ -41,6 +41,10 @@ module akra.fx {
 			return <IAFXInitExprInstruction>this.getInstructions()[2];
 		}
 
+        inline hasConstantInitializer(): bool {
+            return this.hasInitializer() && true;
+        }
+
         inline lockInitializer(): void {
             this._bLockInitializer = true;
         }
@@ -51,6 +55,10 @@ module akra.fx {
 
         getDefaultValue(): any {
             return null;
+        }
+
+        prepareDefaultValue(): void {
+            
         }
 
         getValue(): any {

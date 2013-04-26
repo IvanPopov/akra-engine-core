@@ -996,6 +996,7 @@ module akra.fx {
 
 	export class InitExprInstruction extends ExprInstruction implements IAFXInitExprInstruction {
 		private _pConstructorType: IAFXTypeInstruction = null;
+		private _isConst: bool = undefined;
 
 		constructor(){
 			super();
@@ -1022,6 +1023,23 @@ module akra.fx {
 			sCode += ")";
 
 			return sCode;
+		}
+
+		isConst(): bool {
+			if(!isDef(this._isConst)){
+				var pInstructionList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
+				
+				for(var i: uint = 0; i < pInstructionList.length; i++){
+					if(!pInstructionList[i].isConst()){
+						this._isConst = false;
+						break;
+					}
+				}
+
+				this._isConst = !isDef(this._isConst) ? true : false;
+			}
+			
+			return this._isConst;
 		}
 
 		optimizeForVariableType(pType: IAFXVariableTypeInstruction): bool {
@@ -1091,7 +1109,9 @@ module akra.fx {
 
 				for(var i: uint = 0 ; i < pInstructionList.length; i++){
 					var pFieldType: IAFXVariableTypeInstruction = pType.getFieldType(pFieldNameList[i]);
-					if(pInstructionList[i].optimizeForVariableType(pFieldType));
+					if(!pInstructionList[i].optimizeForVariableType(pFieldType)) {
+						return false;
+					}
 				}
 
 				this._pConstructorType = pType.getBaseType();
@@ -1127,6 +1147,10 @@ module akra.fx {
 
 		inline getTexture(): IAFXVariableDeclInstruction {
 			return this._pTexture;
+		}
+
+		inline isConst(): bool {
+			return true;
 		}
 	}
 
