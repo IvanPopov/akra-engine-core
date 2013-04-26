@@ -1527,6 +1527,8 @@ module akra {
 	            return;
 	        }
 
+            LOG("In mega texture i must not be here");
+
 			// Converting to PF_X8R8G8B8 is exactly the same as converting to
 			// PF_A8R8G8B8. (same with PF_X8B8G8R8 and PF_A8B8G8R8)
 			if(dst.format == EPixelFormats.X8R8G8B8 || dst.format == EPixelFormats.X8B8G8R8)

@@ -408,10 +408,10 @@ module akra.net {
         private static callbackPool: IObjectArray = new ObjectArray;
 
         static OPTIONS = {
-            DEFFERED_CALLS_LIMIT        : 1024 * 10,
+            DEFFERED_CALLS_LIMIT        : 1024 * 100,
             RECONNECT_TIMEOUT           : 2500,
             SYSTEM_ROUTINE_INTERVAL     : 10000,
-            CALLBACK_LIFETIME           : 999999
+            CALLBACK_LIFETIME           : 10000
         }
 
         static ERRORS = {

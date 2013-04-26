@@ -803,6 +803,10 @@ module akra.fx {
         	else {
         		if(!isDef(this._pGlobalVariableMap[iMainVar])){
         			this._pUniformVariableMap[iMainVar] = pMainVariable;
+
+        			if(pMainVariable.getType().isBase() && pMainVariable.hasConstantInitializer()){
+		        		pMainVariable.prepareDefaultValue();
+		        	}
         		}
         	}
 

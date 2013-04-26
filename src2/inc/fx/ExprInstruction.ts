@@ -996,7 +996,7 @@ module akra.fx {
 
 	export class InitExprInstruction extends ExprInstruction implements IAFXInitExprInstruction {
 		private _pConstructorType: IAFXTypeInstruction = null;
-		private _isConst: bool = undefined;
+		private _isConst: bool = null;
 
 		constructor(){
 			super();
@@ -1026,7 +1026,7 @@ module akra.fx {
 		}
 
 		isConst(): bool {
-			if(!isDef(this._isConst)){
+			if(isNull(this._isConst)){
 				var pInstructionList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
 				
 				for(var i: uint = 0; i < pInstructionList.length; i++){
@@ -1036,7 +1036,7 @@ module akra.fx {
 					}
 				}
 
-				this._isConst = !isDef(this._isConst) ? true : false;
+				this._isConst = isNull(this._isConst) ? true : false;
 			}
 			
 			return this._isConst;
@@ -1045,6 +1045,7 @@ module akra.fx {
 		optimizeForVariableType(pType: IAFXVariableTypeInstruction): bool {
 			if ((pType.isNotBaseArray() && pType._getScope() === 0) || 
 				(pType.isArray() && this._nInstructions > 1)){
+
 				if (pType.getLength() === UNDEFINE_LENGTH ||
 					this._nInstructions !== pType.getLength()){
 					return false;

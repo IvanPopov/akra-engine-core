@@ -42,7 +42,7 @@ module akra.fx {
 		}
 
         inline hasConstantInitializer(): bool {
-            return this.hasInitializer() && true;
+            return this.hasInitializer() && this.getInitializeExpr().isConst();
         }
 
         inline lockInitializer(): void {
@@ -58,7 +58,7 @@ module akra.fx {
         }
 
         prepareDefaultValue(): void {
-            
+            LOG(this.getName());
         }
 
         getValue(): any {

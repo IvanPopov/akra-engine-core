@@ -151,39 +151,39 @@ void fs_terrain(VS_OUT IN){
     
     if(textureTerrainIsLoaded5 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
     {
-        color = tex2D(textureTerrain5, new_texcoord);// + float4(0., 0.1, 0.1, 1.);
+        color = tex2D(textureTerrain5, new_texcoord);//; + float4(0., 0.1, 0.1, 1.);
     }
     else
     {
         new_texcoord =(IN.texcoord-textureCoord4)*16.;
         if(textureTerrainIsLoaded4 && (new_texcoord.x>=0. && new_texcoord.x<1.&&new_texcoord.y>=0. && new_texcoord.y<1.0))
         {
-            color = tex2D(textureTerrain4, new_texcoord);// + float4(0.1, 0.1, 0., 1.);
+            color = tex2D(textureTerrain4, new_texcoord);//; + float4(0.1, 0.1, 0., 1.);
         }
         else
         {
             new_texcoord = (IN.texcoord-textureCoord3)*8.;
             if(textureTerrainIsLoaded3 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
             {
-                color = tex2D(textureTerrain3, new_texcoord);// + float4(0.1, 0., 0.1, 1.);
+                color = tex2D(textureTerrain3, new_texcoord);//; + float4(0.1, 0., 0.1, 1.);
             }
             else
             {
                 new_texcoord = (IN.texcoord-textureCoord2)*4.;
                 if(textureTerrainIsLoaded2 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
                 {
-                    color = tex2D(textureTerrain2, new_texcoord);// + float4(0., 0., 0.1, 1.);
+                    color = tex2D(textureTerrain2, new_texcoord);//; + float4(0., 0., 0.1, 1.);
                 }
                 else
                 {
                     new_texcoord = (IN.texcoord-textureCoord1)*2.;
                     if(textureTerrainIsLoaded1 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
                     {
-                        color = tex2D(textureTerrain1, new_texcoord);// + float4(0.1, 0., 0., 1.);
+                        color = tex2D(textureTerrain1, new_texcoord);//; + float4(0.1, 0., 0., 1.);
                     }
                     else
                     {
-                        color = tex2D(textureTerrain0, IN.texcoord);// + float4(0., 0.1, 0., 1.);
+                        color = tex2D(textureTerrain0, IN.texcoord);//; + float4(0., 0.1, 0., 1.);
                     }
                 }
             }

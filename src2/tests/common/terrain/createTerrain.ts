@@ -37,9 +37,10 @@ module akra {
 			pCamera = pScene.createCamera();
 		
 			//pCamera.addRelRotationByXYZAxis(1, 1, 0);
-			pCamera.farPlane = 2000;
-			pCamera.setPosition(vec3(0, 0, 1800));
-			pCamera.attachToParent(pTestNode);
+			pCamera.farPlane = 500;
+			pCamera.setPosition(vec3(0, 100, 0));
+			pCamera.attachToParent(pScene.getRootNode());
+			pCamera.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
 			pCamera.setInheritance(ENodeInheritance.ALL);
 
 			var pKeymap: IKeyMap = controls.createKeymap();
@@ -58,7 +59,7 @@ module akra {
 			        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
 			    }
 
-			    var fSpeed: float = 0.1 * 10;
+			    var fSpeed: float = 0.1 * 1;
 			    if(pKeymap.isKeyPress(EKeyCodes.W)){
 			    	pCamera.addRelPosition(0, 0, -fSpeed);
 			    }
@@ -105,7 +106,7 @@ module akra {
 			pOmniLight.params.specular.set(0, 0, 0, 0);
 			pOmniLight.params.attenuation.set(1,0,0);
 
-			pOmniLight.addPosition(0, 0, 1000);
+			pOmniLight.addPosition(0, 100, 0);
 
 			pMainLightPoint = pOmniLight;
 		}
@@ -132,12 +133,12 @@ module akra {
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-500, 500, -500, 500, -0, 300), 4, 5, 5, "main");
-					pTerrain.attachToParent(pTestNode);
+					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-512, 512, -512, 512, -128, 128), 4, 5, 5, "main");
+					pTerrain.attachToParent(pScene.getRootNode());
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
-					// pTerrain.scale(0.1);
-					// pTerrain.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
+					pTerrain.scale(0.1);
+					pTerrain.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
 					// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
