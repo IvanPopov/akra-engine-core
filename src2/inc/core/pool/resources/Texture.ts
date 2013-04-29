@@ -522,7 +522,6 @@ module akra.core.pool.resources {
         }
 
         copyToTexture(pTarget: ITexture): void {
-            CRITICAL("!!!нехуй")
             if(pTarget.getNumFaces() !== this.getNumFaces()){
                 CRITICAL("Texture types must match");
             }   

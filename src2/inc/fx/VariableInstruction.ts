@@ -58,7 +58,7 @@ module akra.fx {
         }
 
         prepareDefaultValue(): void {
-            LOG(this.getName());
+            //LOG(this.getName());
         }
 
         getValue(): any {

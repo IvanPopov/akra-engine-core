@@ -200,35 +200,29 @@ module akra.webgl {
 	            // This also does pixel format conversion if needed
 	            this.allocateBuffer();
 	            pScaledBox = this._pBuffer.getSubBox(pDestBox);
+	            pScaledBox.setConsecutive();
+
 	            pSource.scale(pScaledBox, EFilters.BILINEAR);
 	        }
-	        else if ((pSource.format != this._eFormat) ||
-	                 ((getWebGLFormat(pSource.format) == 0) && (pSource.format != EPixelFormats.R8G8B8))) {
+	        else if ((pSource.format !== this._eFormat) ||
+	                 (getWebGLFormat(pSource.format) === 0)) {
 	            // Extents match, but format is not accepted as valid source format for GL
 	            // do conversion in temporary buffer
 	            this.allocateBuffer();
 	            pScaledBox = this._pBuffer.getSubBox(pDestBox);
+	         	pScaledBox.setConsecutive();
 
 	            pixelUtil.bulkPixelConversion(pSource, pScaledBox);
 	            
-	            if(this._eFormat === EPixelFormats.A4R4G4B4)
-	            {
-	                // ARGB->BGRA
-	                convertToWebGLformat(pScaledBox, pScaledBox);
-	            }
+	            // if(this._eFormat === EPixelFormats.A4R4G4B4)
+	            // {
+	            //     // ARGB->BGRA
+	            //     convertToWebGLformat(pScaledBox, pScaledBox);
+	            // }
 	        }
 	        else {
 	            this.allocateBuffer();
-	            pScaledBox = this._pBuffer.getSubBox(pDestBox);
-	            pixelUtil.bulkPixelConversion(pSource, pScaledBox);
-	            // pSource;
-
-	            // if (pSource.format == EPixelFormats.R8G8B8) 
-	            // {
-	            //     pScaledBox.format = EPixelFormats.B8G8R8;
-	                
-	            //     pixelUtil.bulkPixelConversion(pSource, pScaledBox);
-	            // }
+	            pScaledBox = pSource;
 	        }
 
 	        this.upload(pScaledBox, pDestBox);
