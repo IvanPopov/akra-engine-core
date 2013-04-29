@@ -32,6 +32,10 @@ module akra.ui.animation {
 
 		set animation(pAnim: IAnimationBase) {
 			//ASSERT(isNull(this.animation), "animation container already setuped in player");
+			if (this._pAnimation.getAnimation() === pAnim) {
+				return;
+			}
+			
 			this._pAnimation.setAnimation(pAnim);
 			this.setup();
 		}

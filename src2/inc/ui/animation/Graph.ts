@@ -65,7 +65,7 @@ module akra.ui.animation {
 		    		}
 
 		    		if (sExt == "JSON") {
-		    			var pImporter = new io.Importer(pEngine);
+		    			var pImporter = new io.Importer(ide.getEngine());
 		    			pImporter.import(content);
 		    			this.createNodeByController(pImporter.getController());
 
@@ -174,6 +174,9 @@ module akra.ui.animation {
 			var pMask: FloatMap = null;
 
 			function connect(pGraph: IUIGraph, pFrom: IUIGraphNode, pTo: IUIGraphNode): void {
+				if (isNull(pFrom) || isNull(pTo)) {
+					LOG(__CALLSTACK__);
+				}
 				pGraph.createRouteFrom(pFrom.getOutputConnector());
 				pGraph.connectTo(pTo.getInputConnector());
 			}
@@ -183,12 +186,11 @@ module akra.ui.animation {
 			}
 
 			if (akra.animation.isAnimation(pAnimation)) {
-				pNode = <IUIAnimationNode>new Data(this);
-				pNode.animation = pAnimation;
+				pNode = <IUIAnimationNode>new Data(this, <IAnimation>pAnimation);
 				this.addAnimation(pAnimation);
 			}
 			else if (akra.animation.isBlend(pAnimation)) {
-				pBlender = pNode = new Blender(this);
+				pBlender = pNode = new Blender(this, <IAnimationBlend>pAnimation);
 		        pBlend = <IAnimationBlend>pAnimation;
 		        // pBlender.animation = pBlend;
 
@@ -201,7 +203,7 @@ module akra.ui.animation {
 		                pMaskNode = pBlender.getMaskNode(i);
 		                
 		                if (!pMaskNode) {
-		                    pMaskNode = new Mask(this);
+		                    pMaskNode = new Mask(this, pMask);
 		                    // pMaskNode.animation = pSubAnim;
 		                }
 
@@ -227,7 +229,7 @@ module akra.ui.animation {
 		        pBlender.setup();
 			}
 			else if (akra.animation.isContainer(pAnimation)) {
-				pPlayer = pNode = new Player(this);
+				pPlayer = pNode = new Player(this, <IAnimationContainer>pAnimation);
 		        // pPlayer.animation = pAnimation;
 
 		        pSubAnim = (<IAnimationContainer>pAnimation).getAnimation();

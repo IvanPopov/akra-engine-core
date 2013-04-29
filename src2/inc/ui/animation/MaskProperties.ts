@@ -61,6 +61,8 @@ module akra.ui.animation {
 				pSliders[i].name = pBones[i];
 				pSliders[i].value = pMask[pBones[i]];
 
+				this._changed(pSliders[i], pMask[pBones[i]]);
+
 				$(el).html(pBones[i] + ":");
 			})
 

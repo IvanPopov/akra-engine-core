@@ -16,11 +16,15 @@ var RPC_TYPE_CALL = 1;
 var RPC_TYPE_RESPONSE = 2;
 
 var server = http.createServer();
+var VIEW_CONNECTIONS_LIST = true;
+
 
 server.listen(webSocketsServerPort, function() { 
-    console.clear();
-    process.stdout.cursorTo(0, 0);
-	console.log(((new Date()) + " Server is listening on port " + webSocketsServerPort).gray().bold()); 
+    if (VIEW_CONNECTIONS_LIST) {
+        console.clear();
+        process.stdout.cursorTo(0, 0);
+    	console.log(((new Date()) + " Server is listening on port " + webSocketsServerPort).gray().bold()); 
+    }
 });
 
 // create the server
@@ -58,8 +62,8 @@ global["echo"] = echo;
 global["proc_list"] = procList;
 
 var pBuffer = null;
-var pHeader = null;
-var pData = null;
+// var pHeader = null;
+// var pData = null;
 var pJsonResponse = {n: 0, res: null, type: 0};
 
 function jsonResponse(n, res, type) {
@@ -86,24 +90,18 @@ function proc(connection, req) {
                     connection.sendUTF(JSON.stringify(jsonFailure(req.n, err)));
                 }
 
-			    if (result && result.BYTES_PER_ELEMENT === 1) {
+			    if (result && result instanceof Buffer) {
                     //result must be Uint8Array
 
-                    var iResponseSize = result.byteLength + 8;
+                    var iResponseSize = result.length + 8;
 
                     if (pBuffer === null || (pBuffer && pBuffer.length < iResponseSize)) {
                         pBuffer = new Buffer(iResponseSize);
-                        pHeader = new Uint32Array(pBuffer, 0, 2);
-                        pData = new Uint8Array(pBuffer, 8);
-
-                        //console.log("allocated response buffer with size " + pBuffer.length + " bytes");
                     }
 
-
-                    pHeader[0] = req.n;
-                    pHeader[1] = RPC_TYPE_RESPONSE;
-
-    				pData.set(result);
+                    pBuffer.writeUInt32LE(req.n, 0);
+                    pBuffer.writeUInt32LE(RPC_TYPE_RESPONSE, 4);
+                    result.copy(pBuffer, 8);
 
                     //slice() returns a new buffer which references the same memory as the old.
     				connection.sendBytes(pBuffer.slice(0, iResponseSize)); 
@@ -355,13 +353,15 @@ function getMemoryUsage() {
     return s;
 }
 
-setInterval(function () {
-    process.stdout.cursorTo(0, 1);
+if (VIEW_CONNECTIONS_LIST) {
+    setInterval(function () {
+        process.stdout.cursorTo(0, 1);
 
 
-    process.stdout.write(getMemoryUsage() + "\n" + ConnectionWrapper.printStatUnits() + "\n" + ConnectionWrapper.connections.join("\n"));
+        process.stdout.write(getMemoryUsage() + "\n" + ConnectionWrapper.printStatUnits() + "\n" + ConnectionWrapper.connections.join("\n"));
 
-}, 1000);
+    }, 1000);
+}
 
 // WebSocket server
 wsServer.on("request", function(request) {
@@ -373,6 +373,7 @@ wsServer.on("request", function(request) {
     // all messages from users here.
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
+            // console.log(JSON.parse(message.utf8Data));
 	        proc(connection, JSON.parse(message.utf8Data));
         }
     });

@@ -106,7 +106,6 @@ module akra.ui.animation {
 
 		protected connected(pArea: IUIGraphConnectionArea, pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void {
 			if (pFrom.direction === EUIGraphDirections.IN) {
-
 				var pTarget: IUIAnimationNode = (<IUIAnimationNode>pTo.node);
 
 		        var pAnimation: IAnimationBase = pTarget.animation;
@@ -114,11 +113,18 @@ module akra.ui.animation {
 		        var pSlider: IUISlider = null;
 		        
 		        var pMask: FloatMap;
-		        var iAnim: int = pBlend.addAnimation(pAnimation);
+		        var iAnim: int = pBlend.getAnimationIndex(pAnimation.name);
 
 		        pSlider = <IUISlider>this.createComponent("Slider", {show: false});
 		        pSlider.render(this.el.find("td.graph-node-center > div.controls:first"));
 		        pSlider.range = 100;
+
+		        if (iAnim == -1) {
+		        	iAnim = pBlend.addAnimation(pAnimation);
+		        }
+		        else {
+		        	pSlider.value = pBlend.getAnimationWeight(iAnim);
+		        }
 
 				this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
 
@@ -128,14 +134,12 @@ module akra.ui.animation {
 
 		        pSlider.updated(pSlider.value);
 
-		        // if (pTarget instanceof ui.animation.Mask) {
-		        //     pMask = (<IUIAnimationMask>pTarget).getMask();
+		        if (pTarget.graphNodeType === EUIGraphNodes.ANIMATION_MASK) {
+		            pMask = (<IUIAnimationMask>pTarget).getMask();
 
-		        //     if (isDefAndNotNull(pMask)) {
-		        //         pBlend.setAnimationMask(iAnim, pMask);
-		        //         this.setMaskNode(iAnim, <IUIAnimationMask>pTarget);
-		        //     }
-		        // }
+		            pBlend.setAnimationMask(iAnim, pMask);
+		            this.setMaskNode(iAnim, <IUIAnimationMask>pTarget);
+		        }
 		    }
 		}
 

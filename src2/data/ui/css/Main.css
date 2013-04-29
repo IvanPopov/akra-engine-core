@@ -870,6 +870,9 @@ table td {
   padding: 0px;
   vertical-align: top;
 }
+*:focus {
+  outline: none;
+}
 body {
   background: #d3d3d3;
 }
