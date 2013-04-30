@@ -11,6 +11,11 @@
 #define WEBGL_MAX_FRAMEBUFFER_NUM 32
 
 module akra.webgl {
+	export interface IWebGLContextState {
+		depthMask: bool;
+		framebuffer: WebGLFramebuffer;
+	}
+
 	export class WebGLRenderer extends render.Renderer {
 		private _pCanvas: HTMLCanvasElement;
 
@@ -24,6 +29,13 @@ module akra.webgl {
 
 		private _nActiveAttributes: uint = 0;
 		private _iSlot: int = 0;
+		/**
+		 * Need to impove speed
+		 */
+		private _pContextState: IWebGLContextState = {
+			depthMask: false,
+			framebuffer: null
+		}
 
 		constructor (pEngine: IEngine);
 		constructor (pEngine: IEngine, sCanvas: string);
@@ -86,6 +98,15 @@ module akra.webgl {
 	        }
 
 			return false;
+		}
+
+		getParameter(iWebGLParam: uint): any {
+			switch(iWebGLParam){
+				case GL_FRAMEBUFFER_BINDING:
+					return this._pWebGLContext.getParameter(iWebGLParam);
+				case GL_DEPTH_WRITEMASK:
+					return this._pContextState.depthMask;
+			}
 		}
 
 		_beginRender(): void {
@@ -274,6 +295,7 @@ module akra.webgl {
         	}
 
         	this._pWebGLContext.depthMask(bDepthWrite); 
+        	this._pContextState.depthMask = bDepthWrite;
 
         	this._pWebGLContext.depthFunc(this.convertCompareFunction(eDepthFunction));
         }
@@ -345,7 +367,7 @@ module akra.webgl {
 
 		inline bindWebGLFramebuffer(eTarget: uint, pBuffer: WebGLFramebuffer): void {
 			this._pWebGLContext.bindFramebuffer(eTarget, pBuffer);
-			// this._pWebGLContext.checkFramebufferStatus(eTarget);
+			//this._pContextState.framebuffer = pBuffer;
 		}
 
 		inline bindWebGLFramebufferTexture2D(eTarget: uint, eAttachment:uint,eTexTarget:uint, pTexture: WebGLTexture, iMipLevel?:uint=0): void {
@@ -416,7 +438,7 @@ module akra.webgl {
 			// 	return;
 			// }
 			var iWebGLFlag: int = 0;
-			var bOldDepthWrite: bool = this._pWebGLContext.getParameter(GL_DEPTH_WRITEMASK);
+			var bOldDepthWrite: bool = this.getParameter(GL_DEPTH_WRITEMASK);
 
 			if(iBuffers & EFrameBufferTypes.COLOR){
 				iWebGLFlag |= GL_COLOR_BUFFER_BIT;

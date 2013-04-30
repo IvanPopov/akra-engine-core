@@ -744,6 +744,20 @@ module akra.webgl {
         
     }
 
+    export function checkCopyTexImage(eFormat: EPixelFormats): bool {
+        switch(eFormat){
+            case EPixelFormats.R8G8B8A8:
+            case EPixelFormats.R8G8B8:
+            case EPixelFormats.L8:
+            case EPixelFormats.L16:
+            case EPixelFormats.A8:
+                return true;
+
+            default:
+                return false;
+        }
+    } 
+
 	export function getSupportedAlternative(eFormat: EPixelFormats): EPixelFormats {
 		if (checkFBOAttachmentFormat(eFormat)) {
             return eFormat;

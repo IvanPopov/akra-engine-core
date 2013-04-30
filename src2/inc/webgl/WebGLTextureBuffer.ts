@@ -281,7 +281,7 @@ module akra.webgl {
                             			pDestBox.width, pDestBox.height, 0,
                             			webgl.getWebGLFormat(pData.format),
                             			webgl.getWebGLDataType(pData.format),
-                            			new Uint8Array(pDataBox.data));											
+                            			pDataBox.data);											
 	            }
 	            else
 	            {
@@ -331,7 +331,7 @@ module akra.webgl {
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
-			var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+			var pOldFramebuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
 			var pFrameBuffer:WebGLFramebuffer=pWebGLRenderer.createWebGLFramebuffer();
 			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER,pFrameBuffer);
 
@@ -509,6 +509,44 @@ module akra.webgl {
 	    	var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
+			if (this.format === pSource.format && 
+				checkCopyTexImage(this.format) &&
+				this._pBuffer.contains(pDestBox) &&
+				pSrcBox.width === pDestBox.width &&
+	        	pSrcBox.height === pDestBox.height &&
+	        	pSrcBox.depth === pDestBox.depth) 
+			{
+				var pOldFramebuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
+	        	var pFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
+	        	
+	        	pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pFramebuffer);
+
+	        	pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                      			   pSource._getTarget(), pSource._getWebGLTexture(), 0);
+
+	        	pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
+
+	        	if(pDestBox.width === this.width && pDestBox.height === this.height){
+	        		pWebGLContext.copyTexImage2D(this._eFaceTarget, this._iLevel, 
+	        									 getWebGLFormat(this._eFormat),
+	        									 pSrcBox.left, pSrcBox.top,
+	        									 pSrcBox.width, pSrcBox.height, 0);
+	        	}
+	        	else {
+	        		pWebGLContext.copyTexSubImage2D(this._eFaceTarget, this._iLevel, 
+	        									 	pDestBox.left, pDestBox.top,
+	        										pSrcBox.left, pSrcBox.top,
+	        										pSrcBox.width, pSrcBox.height);
+	        	}
+
+	        	pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
+	        	pWebGLRenderer.bindWebGLTexture(this._eTarget, null);
+				pWebGLRenderer.deleteWebGLFramebuffer(pFramebuffer);
+
+				this.notifyAltered();
+
+				return true;
+			}
 			pWebGLRenderer._disableTextureUnitsFrom(0);
 			pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
 
@@ -551,7 +589,7 @@ module akra.webgl {
 	        pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	        //Store old binding so it can be restored later
-	        var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+	        var pOldFramebuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
 	        
 	        var pFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
 
