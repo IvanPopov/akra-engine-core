@@ -343,7 +343,7 @@ module akra.core {
 						    "effects/Plane.afx",
 						    "effects/fxaa.afx",
 						    "effects/skybox.afx",
-						    "effects/mesh.afx", 
+						    // "effects/mesh.afx", 
 						    "effects/TextureToScreen.afx",
 						    "effects/mesh_geometry.afx",
 						    "effects/prepare_shadows.afx",						    

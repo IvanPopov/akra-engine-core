@@ -231,12 +231,16 @@ module akra.render {
 #endif		
 		}
 
+		inline getSkybox(): ITexture { return this._pDeferredSkyTexture; }
+
 		setSkybox(pSkyTexture: ITexture): bool {
 			if (pSkyTexture.textureType !== ETextureTypes.TEXTURE_CUBE_MAP) {
 				return null;
 			}
 
 			this._pDeferredSkyTexture = pSkyTexture;
+
+			this.addedSkybox(pSkyTexture);
 
 			return true;
 		}
@@ -476,6 +480,8 @@ module akra.render {
 		        }
 		    }
 		}
+
+		BROADCAST(addedSkybox, CALL(pSkyTexture));
 	}
 }
 

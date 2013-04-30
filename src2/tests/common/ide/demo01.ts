@@ -57,10 +57,10 @@ module akra {
 	}
 
 	function createSceneEnvironment(): void {
-		var pSceneQuad: ISceneModel = util.createQuad(pScene, 100.);
+		var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
 		pSceneQuad.attachToParent(pScene.getRootNode());
 
-		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 200);
+		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 500);
 		pSceneSurface.addPosition(0, 0.01, 0);
 		// pSceneSurface.scale(5.);
 		pSceneSurface.attachToParent(pScene.getRootNode());
@@ -80,7 +80,7 @@ module akra {
 		pOmniLight.params.specular.set(1, 1, 1, 1);
 		pOmniLight.params.attenuation.set(1, 0, 0);
 
-		pOmniLight.addPosition(0, 100, 0);
+		pOmniLight.addPosition(0, 10, 5);
 
 		// var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 		

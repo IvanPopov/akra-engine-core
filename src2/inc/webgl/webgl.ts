@@ -612,7 +612,8 @@ module akra.webgl {
                     case GL_FLOAT:
                         return EPixelFormats.FLOAT32_RGBA;
 	                default:
-	                    return EPixelFormats.R8G8B8A8;
+                        // return EPixelFormats.R8G8B8A8;
+	                    return EPixelFormats.A8B8G8R8;
 	            }          
             
             case GL_BGRA:
