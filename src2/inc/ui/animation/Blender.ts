@@ -26,6 +26,8 @@ module akra.ui.animation {
 			return this._pBlend;
 		}
 
+		inline get totalMasks(): int { return this._pMaskNodes.length; }
+
 		constructor (pGraph: IUIGraph, pBlender: IAnimationBlend = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_BLENDER);
 
@@ -35,7 +37,6 @@ module akra.ui.animation {
 
 			this._pNameLabel = <IUILabel>this.findEntity("name");
 			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_textChanged));
-
 
 			this._pBlend = pBlender = pBlender || akra.animation.createBlend();
 
@@ -119,14 +120,17 @@ module akra.ui.animation {
 		        pSlider.render(this.el.find("td.graph-node-center > div.controls:first"));
 		        pSlider.range = 100;
 
+		        this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
+
 		        if (iAnim == -1) {
 		        	iAnim = pBlend.addAnimation(pAnimation);
 		        }
 		        else {
+		        	//animation already exists, and all parameters already setuped right
 		        	pSlider.value = pBlend.getAnimationWeight(iAnim);
+		        	this._weightUpdated(pBlend, iAnim, pBlend.getAnimationWeight(iAnim));
 		        }
 
-				this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
 
 		        pSlider.bind(SIGNAL(updated), (pSlider: IUISlider, fWeight: int) => {
 		        	pBlend.setAnimationWeight(iAnim, fWeight);

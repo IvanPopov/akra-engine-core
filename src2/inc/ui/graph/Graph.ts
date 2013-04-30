@@ -127,7 +127,7 @@ module akra.ui.graph {
 			var pNodes: IUIGraphNode[] = this.nodes;
 			
 			for (var i: int = 0; i < pNodes.length; ++ i) {
-				LOG("deactivate node > ", pNodes[i]);
+				// LOG("deactivate node > ", pNodes[i]);
 				pNodes[i].activate(false);
 			}
 

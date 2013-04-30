@@ -23,6 +23,8 @@ module akra.animation {
 
 		protected _eType: EAnimationTypes;
 
+		public extra: any = null;
+
 		constructor (eType: EAnimationTypes, sName: string = null) {
 			this._sName = sName || ("animation-" + "-" + this.getGuid());
 			this._eType = eType;
@@ -37,7 +39,7 @@ module akra.animation {
 		}
 
 		inline set duration(fValue: float){
-			LOG("new duration(", this.name, ") > " + fValue);
+			// LOG("new duration(", this.name, ") > " + fValue);
 			this._fDuration = fValue;
 		}
 

@@ -4,6 +4,9 @@
 #include "ui/IDE.ts"
 #include "util/SimpleGeometryObjects.ts"
 
+/// @HERO_MODEL: {data}/models/hero/walk.dae|location()
+/// @HERO_CONTROLLER: {data}/models/hero/movement.json|location()
+
 module akra {
 	var pEngine: IEngine = createEngine();
 
@@ -68,40 +71,40 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni-0");
+		var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 0, "sun");
 			
 		pOmniLight.attachToParent(pScene.getRootNode());
 		pOmniLight.enabled = true;
 		pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 		pOmniLight.params.diffuse.set(0.5);
 		pOmniLight.params.specular.set(1, 1, 1, 1);
-		pOmniLight.params.attenuation.set(1,0,0);
+		pOmniLight.params.attenuation.set(1, 0, 0);
 
-		pOmniLight.addPosition(0, 2, 7);
+		pOmniLight.addPosition(0, 100, 0);
 
-		var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
+		// var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 		
-		pProjectShadowLight.attachToParent(pScene.getRootNode());
-		pProjectShadowLight.enabled = true;
-		pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-		pProjectShadowLight.params.diffuse.set(0.5);
-		pProjectShadowLight.params.specular.set(1, 1, 1, 1);
-		pProjectShadowLight.params.attenuation.set(1,0,0);
-		pProjectShadowLight.isShadowCaster = true;
-		pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
-		pProjectShadowLight.addRelPosition(0, 3, 10);
+		// pProjectShadowLight.attachToParent(pScene.getRootNode());
+		// pProjectShadowLight.enabled = true;
+		// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+		// pProjectShadowLight.params.diffuse.set(0.5);
+		// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+		// pProjectShadowLight.params.attenuation.set(1,0,0);
+		// pProjectShadowLight.isShadowCaster = true;
+		// pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
+		// pProjectShadowLight.addRelPosition(0, 3, 10);
 
-		var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
+		// var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
 		
-		pOmniShadowLight.attachToParent(pScene.getRootNode());
-		pOmniShadowLight.enabled = true;
-		pOmniShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-		pOmniShadowLight.params.diffuse.set(1);
-		pOmniShadowLight.params.specular.set(1, 1, 1, 1);
-		pOmniShadowLight.params.attenuation.set(1,0.,0);
-		pOmniShadowLight.isShadowCaster = false;
+		// pOmniShadowLight.attachToParent(pScene.getRootNode());
+		// pOmniShadowLight.enabled = true;
+		// pOmniShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+		// pOmniShadowLight.params.diffuse.set(1);
+		// pOmniShadowLight.params.specular.set(1, 1, 1, 1);
+		// pOmniShadowLight.params.attenuation.set(1,0.,0);
+		// pOmniShadowLight.isShadowCaster = false;
 
-		pOmniShadowLight.addPosition(0, 10, -10);
+		// pOmniShadowLight.addPosition(0, 10, -10);
 	}
 
 	function createSkyBox(): void {
@@ -135,8 +138,14 @@ module akra {
 		
 		// loadModels("../../../data/models/Weldinggun.dae");
 		// loadModels("../../../data/models/kr360.dae");
-		loadModels("../../../data/models/hero/walk.dae", (pNode: ISceneNode) => {
-
+		loadModels("@HERO_MODEL", (pNode: ISceneNode) => {
+			fopen("@HERO_CONTROLLER", "r").read((err: Error, content: string) => {
+				if (!isNull(err)) {
+					throw err;
+				}
+	
+				pNode.addController((new io.Importer(pEngine)).import(content).getController());
+			});
 		});
 		/*loadModels("../../../data/models/hero/walk.dae", (pModelRoot: ISceneNode) => {
 			var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;

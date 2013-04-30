@@ -98,4 +98,8 @@ module akra.io {
 	export var fopen = _fopen;
 }
 
+module akra {
+	export var fopen = io.fopen;
+}
+
 #endif

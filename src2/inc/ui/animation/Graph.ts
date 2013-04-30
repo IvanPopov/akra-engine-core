@@ -169,14 +169,10 @@ module akra.ui.animation {
 			var pPlayer: IUIAnimationPlayer = null;
 			var pMaskNode: IUIAnimationNode = null;
 			
-			var pSubAnimation: IAnimationBase;
-			var n: int = 0;
 			var pMask: FloatMap = null;
+			var pGraph: IUIAnimationGraph = this;
 
 			function connect(pGraph: IUIGraph, pFrom: IUIGraphNode, pTo: IUIGraphNode): void {
-				if (isNull(pFrom) || isNull(pTo)) {
-					LOG(__CALLSTACK__);
-				}
 				pGraph.createRouteFrom(pFrom.getOutputConnector());
 				pGraph.connectTo(pTo.getInputConnector());
 			}
@@ -241,11 +237,25 @@ module akra.ui.animation {
 				ERROR("unsupported type of animation detected >> ", pAnimation);
 			}
 
-			// if (pAnimation.extra) {
-		 //        if (pAnimation.extra.position) {
-		 //            pNode.position(pAnimation.extra.position.x, pAnimation.extra.position.y);
-		 //        }
-		 //    }
+			if (pAnimation.extra) {
+		        if (pAnimation.extra.graph) {
+		        	setTimeout(() => {
+		        		var o = pGraph.el.offset();
+		            	pNode.el.offset({left: o.left + pAnimation.extra.graph.x, top: o.top + pAnimation.extra.graph.y});
+
+		            	if (pBlender) {
+		            		var o = pBlender.el.offset();
+		            		for (var i = 0; i < pBlender.totalMasks; ++ i) {
+		            			var pMaskNode = pBlender.getMaskNode(i);
+		            			pMaskNode.el.offset({left: o.left - 60 - pMaskNode.el.width() + i * 30, top: o.top - 30 + i * 30});
+		            			pMaskNode.routing();
+		            		}
+		            	}
+		            	
+		            	pNode.routing();
+		        	}, 15);
+		        }
+		    }
 
 			pNode.routing();
 

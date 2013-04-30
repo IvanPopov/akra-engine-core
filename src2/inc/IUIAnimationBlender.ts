@@ -5,6 +5,8 @@
 
 module akra {
 	export interface IUIAnimationBlender extends IUIAnimationNode {
+		totalMasks: int;
+		
 		getMaskNode(iAnim: int): IUIAnimationMask;
 		setMaskNode(iAnim: int, pNode: IUIAnimationMask): void;
 

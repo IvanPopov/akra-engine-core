@@ -53,7 +53,7 @@ module akra.ui.graph {
 				node.el.css("position", "absolute");	
 				node.el.offset(node.graph.el.offset());
 
-			}, 30);
+			}, 5);
 		
 
 			this.connect(pGraph, SIGNAL(connectionBegin), SLOT(onConnectionBegin));

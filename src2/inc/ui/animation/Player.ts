@@ -147,7 +147,7 @@ module akra.ui.animation {
 		}
 
 		_useLoop(pCheckbox: IUICheckbox, bValue: bool): void {
-			LOG(this._pAnimation.isEnabled())
+			// LOG(this._pAnimation.isEnabled())
 			this._pAnimation.useLoop(bValue);
 		}
 

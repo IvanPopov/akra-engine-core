@@ -26,6 +26,8 @@ module akra {
 		duration: float;
 		name: string;
 		type: EAnimationTypes;
+		
+		extra: any;
 
 		play(fRealTime: float): void;
 		stop(fRealTime: float): void;
