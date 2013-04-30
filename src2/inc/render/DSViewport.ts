@@ -258,7 +258,9 @@ module akra.render {
 			}
 		}
 
-
+		isFXAA(): bool {
+			return false;
+		}
 
 
 		destroy(): void {

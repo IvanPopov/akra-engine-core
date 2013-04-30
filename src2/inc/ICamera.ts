@@ -60,6 +60,8 @@ module akra {
     	lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3);
     	lookAt(v3fCenter: IVec3, v3fUp?: IVec3);
 
+        isActive(): bool;
+
         //display via display list with name <csList>
         display(iList?: int): IObjectArray;
 

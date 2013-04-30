@@ -414,6 +414,10 @@ module akra.scene.objects {
     	_getNumRenderedFaces(): int { return 0; }
     	_notifyRenderedFaces(nFaces: uint): void {}
 
+    	inline isActive(): bool {
+    		return this._pLastViewport && this._pLastViewport.getCamera() === this;
+    	}
+
     	toString(isRecursive: bool = false, iDepth: int = 0): string {
 		    if (!isRecursive) {
 		        return "<camera" + (this._sName? " " + this._sName: "") + ">";

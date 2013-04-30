@@ -239,6 +239,18 @@ module akra.scene {
 		    TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
+		setRelPosition(v3fPosition: IVec3): void;
+		setRelPosition(fX: float, fY: float, fZ: float): void;
+		setRelPosition(fX?: any, fY?: any, fZ?: any): void {
+			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
+		    var v3fTranslation: IVec3 = this._v3fTranslation;
+		    
+		    this._qRotation.multiplyVec3(pPos);
+    		v3fTranslation.set(pPos);
+
+		    TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+		}
+
 		addPosition(v3fPosition: IVec3): void;
 		addPosition(fX: float, fY: float, fZ: float): void;
 		addPosition(fX?: any, fY?: any, fZ?: any): void {

@@ -6,6 +6,7 @@ module akra {
 		getSkybox(): ITexture;
 		setSkybox(pSkyTexture: ITexture): void;
 		setFXAA(bValue?: bool): void;
+		isFXAA(): bool;
 
 		signal addedSkybox(pSkyTexture: ITexture): void;
 	}
