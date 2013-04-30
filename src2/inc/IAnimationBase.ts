@@ -58,6 +58,10 @@ module akra {
 		signal stoped(fTime: float): void;
 		signal renamed(sName: string): void;
 	}
+
+	export interface IAnimationMap {
+		[name: string]: IAnimationBase;
+	}
 }
 
 #endif

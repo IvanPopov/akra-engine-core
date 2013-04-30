@@ -73,7 +73,7 @@ module akra.webgl {
         if (pWebGLExtension = pWebGLContext.getExtension(sExtName)) {
             
             if (isDefAndNotNull(pWebGLExtentionList[sExtName])) {
-                debug_print("Extension " + sExtName + " already loaded for this context.");
+                // debug_print("Extension " + sExtName + " already loaded for this context.");
                 return true;
             }
 
@@ -612,8 +612,8 @@ module akra.webgl {
                     case GL_FLOAT:
                         return EPixelFormats.FLOAT32_RGBA;
 	                default:
-                        // return EPixelFormats.R8G8B8A8;
-	                    return EPixelFormats.A8B8G8R8;
+                        return EPixelFormats.R8G8B8A8;
+	                    // return EPixelFormats.A8B8G8R8;
 	            }          
             
             case GL_BGRA:

@@ -16,7 +16,9 @@ module akra.controls {
 		private _v2iMousePrevPosition: IVec2 = new Vec2;
 		private _v2iMouseShift: IVec2 = new Vec2;
 
-		constructor(pTarget?: HTMLElement) {
+		constructor(pTarget?: HTMLElement);
+		constructor(pTarget?: Document);
+		constructor(pTarget?: any) {
 			for (var i = EKeyCodes.TOTAL; i--;) {
 		        this._pMap[i] = false;
 		    }
@@ -26,12 +28,16 @@ module akra.controls {
 		    }
 		}
 
-		capture(pTarget: HTMLElement): void {
+		capture(pTarget: Document): void;
+		capture(pTarget: HTMLElement): void;
+		capture(pTarget: any): void {
 			this.captureMouse(pTarget);
 			this.captureKeyboard(pTarget);
 		}
 
-		captureMouse(pTarget: HTMLElement): void {
+		captureMouse(pTarget: HTMLElement): void;
+		captureMouse(pTarget: Document): void;
+		captureMouse(pTarget: any): void {
 			var pKeys: KeyMap = this;
 		    var fn: EventListener = function (e: Event) {
 		        pKeys.dispatch(<MouseEvent>e);
@@ -52,7 +58,9 @@ module akra.controls {
 		    }
 		}
 
-		captureKeyboard(pTarget: HTMLElement): void {
+		captureKeyboard(pTarget: Document): void;
+		captureKeyboard(pTarget: HTMLElement): void;
+		captureKeyboard(pTarget: any): void {
 			var pKeys: KeyMap = this;
 		    var fn: EventListener = function (e: Event) {
 		        pKeys.dispatch(<MouseEvent>e);
@@ -149,7 +157,9 @@ module akra.controls {
 		}
 	}
 
-	export function createKeymap(target?: HTMLElement): IKeyMap {
+	export function createKeymap(target?: Document): IKeyMap;
+	export function createKeymap(target?: HTMLElement): IKeyMap;
+	export function createKeymap(target?: any): IKeyMap {
 		return new KeyMap(target);
 	}
 }

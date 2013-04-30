@@ -24,7 +24,7 @@ module akra.scene {
 			this.scene = pScene;
 		}
 
-		inline getController(i: uint): IAnimationController {
+		inline getController(i: uint = 0): IAnimationController {
 			return isNull(this._pAnimationControllers) || this._pAnimationControllers.length <= i? 
 				null: this._pAnimationControllers[i];
 		}

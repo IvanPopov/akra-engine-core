@@ -14,7 +14,7 @@ module akra {
     	readonly scene: IScene3d;
 
     	readonly totalControllers: uint;
-    	getController(i: uint): IAnimationController;
+    	getController(i?: uint): IAnimationController;
     	addController(pController: IAnimationController): void;
 
     }
