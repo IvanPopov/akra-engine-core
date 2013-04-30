@@ -100,7 +100,7 @@ module akra {
 			var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 			
 			pProjectShadowLight.attachToParent(pScene.getRootNode());
-			pProjectShadowLight.enabled = true;
+			pProjectShadowLight.enabled = false;
 			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 			pProjectShadowLight.params.diffuse.set(0.5);
 			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
@@ -113,7 +113,7 @@ module akra {
 			pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-1");
 			
 			pProjectShadowLight.attachToParent(pScene.getRootNode());
-			pProjectShadowLight.enabled = true;
+			pProjectShadowLight.enabled = false;
 			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 			pProjectShadowLight.params.diffuse.set(0.5);
 			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
