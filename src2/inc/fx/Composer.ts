@@ -168,6 +168,22 @@ module akra.fx {
 			return true;
 		}
 
+		hasComponentForEffect(pEffectResource:IEffect, 
+							  pComponent: IAFXComponent, iShift: int, iPass: uint): bool {
+			var id: uint = pEffectResource.resourceHandle;
+			var pCurrentBlend: IAFXComponentBlend = null;
+
+			if(isDef(this._pEffectResourceToComponentBlendMap[id])){
+				pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
+			}
+
+			if(isNull(pCurrentBlend)){
+				return false;
+			}
+
+			return pCurrentBlend.containComponent(pComponent, iShift, iPass);
+		}
+
 		activateEffectResource(pEffectResource: IEffect, iShift: int): bool {
 			var id: uint = pEffectResource.resourceHandle;
 			var pComponentBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
@@ -295,7 +311,7 @@ module akra.fx {
 				return false;
 			}
 
-			return pCurrentBlend.containComponentWithShift(pComponent, iShift, iPass);
+			return pCurrentBlend.containComponent(pComponent, iShift, iPass);
 		}
 
 		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool {

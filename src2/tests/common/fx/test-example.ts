@@ -12,7 +12,7 @@ module akra {
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pMainScene: JQuery = null;
 	export var pCamera: ICamera = null;
-	var pViewport: IViewport = null;
+	export var pViewport: IViewport = null;
 	var pSkyBoxTexture: ITexture = null;
 
 	test("Example creation test", () => {

@@ -139,7 +139,7 @@ module akra.core.pool.resources {
 		}
 
 
-		create(iWidth: uint, iHeight: uint, iDepth?: uint = 1, eFormat?: EPixelFormats = EPixelFormats.BYTE_ABGR, 
+		create(iWidth: uint, iHeight: uint, iDepth?: uint = 1, eFormat?: EPixelFormats = EPixelFormats.BYTE_RGBA, 
                          nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
         {
             var iSize : uint= Img.calculateSize(nMipMaps, nFaces, iWidth, iHeight, iDepth, eFormat);            
@@ -230,7 +230,7 @@ module akra.core.pool.resources {
                         pTempContext.drawImage(pImg,0,0);
                         var pImageData : ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);               
                 
-                        pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pImg.width, pImg.height,1,EPixelFormats.BYTE_ABGR);
+                        pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pImg.width, pImg.height,1,EPixelFormats.BYTE_RGBA);
 
                         if (isDefAndNotNull(sType)) 
                         {
@@ -325,7 +325,7 @@ module akra.core.pool.resources {
     		
     	}
 
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_BGR,
+    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_RGB,
                          nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
     	{
             var iSize : uint= Img.calculateSize(nMipMaps, nFaces, iWidth, iHeight, iDepth, eFormat);
@@ -343,7 +343,7 @@ module akra.core.pool.resources {
      	}
 
         loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth?: uint = 1,
-                         eFormat?: EPixelFormats = EPixelFormats.BYTE_BGR, nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
+                         eFormat?: EPixelFormats = EPixelFormats.BYTE_RGB, nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
         {
             //size
             this._iWidth=iWidth;

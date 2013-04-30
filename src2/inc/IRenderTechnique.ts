@@ -40,7 +40,9 @@ module akra {
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
 
-		hasComponent(sComponent: string, iShift: int, iPass: uint): bool;
+		hasComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
+		hasOwnComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
+		
 		hasGlobalPostEffect(): bool;
 		
 		isPostEffectPass(iPass: uint): bool;

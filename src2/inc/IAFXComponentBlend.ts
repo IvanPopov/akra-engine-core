@@ -48,7 +48,7 @@ module akra {
 		getTotalPasses(): uint;
 		getHash(): string;
 
-		containComponentWithShift(pComponent: IAFXComponent, iShift: int, iPass: uint);
+		containComponent(pComponent: IAFXComponent, iShift: int, iPass: uint);
 		containComponentHash(sComponentHash: string): bool;
 
 		addComponent(pComponent: IAFXComponent, iShift: int, iPass: int): void;

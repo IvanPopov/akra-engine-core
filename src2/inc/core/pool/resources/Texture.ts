@@ -386,7 +386,7 @@ module akra.core.pool.resources {
             }
             else
             {
-                WARNING("Format not support("+pixelUtil.getFormatName(pMainImage.format)+")");
+                WARNING("Format not support("  +pixelUtil.getFormatName(pMainImage.format) + ")");
                 if(pMainImage.convert(EPixelFormats.B8G8R8A8))
                 {
                     this._eFormat = pMainImage.format;

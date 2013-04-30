@@ -144,7 +144,11 @@ module akra.render {
 			return this.addComponent(pComponent, iShift, iPass, false);
 		}
 
-		hasComponent(sComponent: string, iShift: int, iPass: uint): bool {
+		hasComponent(sComponent: string, iShift?: int = ANY_SHIFT, iPass: uint = ANY_PASS): bool {
+			return this._pMethod.effect.hasComponent(sComponent, iShift, iPass) || this.hasOwnComponent(sComponent, iShift, iPass);
+		}
+
+		hasOwnComponent(sComponent: string, iShift?: int = ANY_SHIFT, iPass: uint = ANY_PASS): bool {
 			if(isNull(this._pComposer)){
 				return false;
 			}
@@ -153,6 +157,10 @@ module akra.render {
 			var pComponent: IAFXComponent = null;
 
 			pComponent = <IAFXComponent>pComponentPool.findResource(sComponent);
+			
+			if(isNull(pComponent)){
+				return false;
+			}
 
 			return this._pComposer.hasOwnComponentInTechnique(this, pComponent, iShift, iPass);
 		}

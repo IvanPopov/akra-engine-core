@@ -63,8 +63,27 @@ module akra.fx {
 			return this._sHash;
 		}
 
-		inline containComponentWithShift(pComponent: IAFXComponent, iShift: int, iPass: uint): bool {
-			return this.containComponentHash(pComponent.getHash(iShift, iPass));
+		containComponent(pComponent: IAFXComponent, iShift: int, iPass: uint): bool {
+			if(iShift !== ANY_SHIFT && iPass !== ANY_PASS){
+				return this.containComponentHash(pComponent.getHash(iShift, iPass));
+			}
+			else {
+				for(var i: uint = 0; i < this._pComponentList.length; i++) {
+					if(this._pComponentList[i] === pComponent){
+						if (iShift === ANY_SHIFT && iPass === ANY_PASS) {
+							return true;
+						}
+						else if(iShift === ANY_SHIFT && this._pComponentPassIdList[i] === iPass){
+							return true;
+						}
+						else if(iPass === ANY_PASS && this._pComponentShiftList[i] === iShift){
+							return true;
+						}
+					}
+				}
+
+				return false;
+			}
 		}
 
 		inline containComponentHash(sComponentHash: string): bool {
