@@ -82,6 +82,19 @@ module akra.core.pool.resources {
 			return this.addComponent(pComponent, iShift, iPass, false);
 		}
 
+		hasComponent(sComponent: string, iShift?: int = ANY_SHIFT, iPass?: int = ANY_PASS): bool {
+			var pComponentPool: IResourcePool = this.manager.componentPool;
+			var pComponent: IAFXComponent = null;
+
+			pComponent = <IAFXComponent>pComponentPool.findResource(sComponent);
+			
+			if(isNull(pComponent)){
+				return false;
+			}
+
+			return this.getComposer().hasComponentForEffect(this, pComponent, iShift, iPass);
+		}
+
 		activate(iShift?: int = 0): bool {
  			return this.getComposer().activateEffectResource(this, iShift);
 		}

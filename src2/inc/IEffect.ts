@@ -25,6 +25,8 @@ module akra {
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
 
+		hasComponent(sComponent: string, iShift?: int, iPass?: int): bool;
+
 		activate(iShift?: int): bool;
 		deactivate(): bool;
 

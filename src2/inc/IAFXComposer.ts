@@ -6,6 +6,8 @@
 #endif
 
 #define ALL_PASSES 0xffffff
+#define ANY_PASS 0xfffffe
+#define ANY_SHIFT 0xfffffe
 
 #include "IEngine.ts"
 #include "IAFXComponent.ts"
@@ -28,6 +30,8 @@ module akra {
 							 pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
 		removeComponentFromEffect(pEffectResource: IEffect, 
 								  pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+		hasComponentForEffect(pEffectResource:IEffect, 
+							  pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
 
 		activateEffectResource(pEffectResource: IEffect, iShift: int): bool;
 		deactivateEffectResource(pEffectResource: IEffect): bool; 
