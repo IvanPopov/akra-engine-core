@@ -601,7 +601,7 @@ module akra.fx {
 								pInput[sOffsetName] = this._pAttrContainer.getOffsetDefault(sOffsetName);
 							}
 							else {
-								pInput[sOffsetName] = pElement.offset;
+								pInput[sOffsetName] = pElement.offset / 4;
 							}
 
 							//TODO: 
@@ -731,7 +731,11 @@ module akra.fx {
 
 				for(var i: uint = 0; i < iLength; i++){
 					var sFieldPrevName: string = sName + "[" + i + "]";
-					for(var j in pValue[i]){
+
+					for(var j in pValue[i]) {
+						if(!pValue[i].hasOwnProperty(j)){
+							continue;
+						}
 						var sFieldName: string = sFieldPrevName + "." + j;
 
 						if(this.isUniformExists(sFieldName)){
@@ -741,8 +745,9 @@ module akra.fx {
 								this.applyStructUniform(sFieldName, pValue[i][j], pInput);		
 							}
 							else {
-								var iLength: uint = this._pRealUniformLengthMap[sFieldName];
-								if(iLength > 0){
+								var iFieldLength: uint = this._pRealUniformLengthMap[sFieldName];
+
+								if(iFieldLength > 0){
 									pInput[sFieldName + "[0]"] = pValue[i][j];
 								}
 								else {
@@ -756,6 +761,9 @@ module akra.fx {
 			}
 			else {
 				for(var j in pValue) {
+					if(!pValue.hasOwnProperty(j)){
+						continue;
+					}
 					var sFieldName: string = sName + "." + j;
 
 					if(this.isUniformExists(sFieldName)){
@@ -765,9 +773,9 @@ module akra.fx {
 							this.applyStructUniform(sFieldName, pValue[j], pInput);		
 						}
 						else {
-							var iLength: uint = this._pRealUniformLengthMap[sFieldName];
+							var iFieldLength: uint = this._pRealUniformLengthMap[sFieldName];
 						
-							if(iLength > 0){
+							if(iFieldLength > 0){
 								pInput[sFieldName + "[0]"] = pValue[j];
 							}
 							else {

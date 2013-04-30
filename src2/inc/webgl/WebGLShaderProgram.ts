@@ -318,9 +318,11 @@ module akra.webgl {
 
         inline setSamplerArray(sName: string, pList: IAFXSamplerState[]): void {
             var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pList.length);
+            
             for (var i: int = 0; i < pList.length; ++ i) {
                 pBuffer[i] = this.applySamplerState(pList[i]);                
             }
+            
             this.setInt32Array(sName, pBuffer);
         }
 
@@ -419,6 +421,42 @@ module akra.webgl {
     	inline getWebGLProgram(): WebGLProgram {
     		return this._pWebGLProgram;
     	}
+
+#ifdef DEBUG
+        getTranslatedShaderCode(eWebGLType: int): string {
+            var sReturn: string = "";
+            var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+            if(!loadExtension(pWebGLContext, WEBGL_DEBUG_SHADERS)) {
+                return null;
+            }
+
+            var pWebGLShaderList: WebGLShader[] = pWebGLContext.getAttachedShaders(this._pWebGLProgram);
+
+            for(var i: uint = 0; i < pWebGLShaderList.length; i++){
+                var eShaderType: int = <int>pWebGLContext.getShaderParameter(pWebGLShaderList[i], GL_SHADER_TYPE);
+                
+                if(eShaderType === eWebGLType) {
+                    sReturn = pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLShaderList[i]);
+                    break;
+                }
+            }
+
+            return sReturn;
+        }
+
+        printTranslatedShaderCode(eWebGLType?: int = -1): void {
+            if(eWebGLType === -1){
+                LOG("translated(from GLSL) VS shader: \n" + this.getTranslatedShaderCode(GL_VERTEX_SHADER));
+                LOG("translated(from GLSL) PS shader: \n" + this.getTranslatedShaderCode(GL_FRAGMENT_SHADER));
+            }
+            else {
+                LOG("translated(from GLSL) " + (eWebGLType === GL_VERTEX_SHADER? "VS": "PS") + " shader: \n" + 
+                    this.getTranslatedShaderCode(eWebGLType));
+            }
+        }
+#endif
 
     	protected createWebGLShader(eType: int, csCode: string): WebGLShader {
     		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();

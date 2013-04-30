@@ -996,6 +996,7 @@ module akra.fx {
 
 	export class InitExprInstruction extends ExprInstruction implements IAFXInitExprInstruction {
 		private _pConstructorType: IAFXTypeInstruction = null;
+		private _isConst: bool = null;
 
 		constructor(){
 			super();
@@ -1024,9 +1025,27 @@ module akra.fx {
 			return sCode;
 		}
 
+		isConst(): bool {
+			if(isNull(this._isConst)){
+				var pInstructionList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
+				
+				for(var i: uint = 0; i < pInstructionList.length; i++){
+					if(!pInstructionList[i].isConst()){
+						this._isConst = false;
+						break;
+					}
+				}
+
+				this._isConst = isNull(this._isConst) ? true : false;
+			}
+			
+			return this._isConst;
+		}
+
 		optimizeForVariableType(pType: IAFXVariableTypeInstruction): bool {
 			if ((pType.isNotBaseArray() && pType._getScope() === 0) || 
 				(pType.isArray() && this._nInstructions > 1)){
+
 				if (pType.getLength() === UNDEFINE_LENGTH ||
 					this._nInstructions !== pType.getLength()){
 					return false;
@@ -1091,7 +1110,9 @@ module akra.fx {
 
 				for(var i: uint = 0 ; i < pInstructionList.length; i++){
 					var pFieldType: IAFXVariableTypeInstruction = pType.getFieldType(pFieldNameList[i]);
-					if(pInstructionList[i].optimizeForVariableType(pFieldType));
+					if(!pInstructionList[i].optimizeForVariableType(pFieldType)) {
+						return false;
+					}
 				}
 
 				this._pConstructorType = pType.getBaseType();
@@ -1127,6 +1148,10 @@ module akra.fx {
 
 		inline getTexture(): IAFXVariableDeclInstruction {
 			return this._pTexture;
+		}
+
+		inline isConst(): bool {
+			return true;
 		}
 	}
 

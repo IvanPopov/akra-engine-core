@@ -58,7 +58,7 @@ module akra.terrain {
 		}
 
 		inline get triangleB(): ITriTreeNode {
-			return this._pRootTriangleA;
+			return this._pRootTriangleB;
 		}
 
 		inline get queueSortValue(): float {
@@ -100,10 +100,10 @@ module akra.terrain {
 			}
 
 			var pRoamTerrain: ITerrainROAM = this.terrainSystem;
-			var pNorthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY-1);
-			var pSouthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY+1);
-			var pEastSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX+1, iSectorY);
-			var pWestSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX-1, iSectorY);
+			var pNorthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY - 1);
+			var pSouthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY + 1);
+			var pEastSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX + 1, iSectorY);
+			var pWestSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX - 1, iSectorY);
 
 			if (pNorthSection) {
 				this._leftNeighborOfA = pNorthSection.triangleB;
@@ -134,10 +134,22 @@ module akra.terrain {
 			super.prepareForRender(pViewport);
 
 			var pCamera: ICamera = pViewport.getCamera();
-			var v3fViewPoint: IVec3 = pCamera.worldPosition;
+
+			var v4fCameraCoord: IVec4 = vec4(pCamera.worldPosition, 1.);
+		    var m4fTransposeInverse: IMat4 = this._pTerrainSystem.inverseWorldMatrix;
+
+		    v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
+
+			var v3fViewPoint: IVec3 = vec3(v4fCameraCoord.x, v4fCameraCoord.y, v4fCameraCoord.z);
+			// if (v3fViewPoint.x !== pCamera.worldPosition.x || 
+			// 	v3fViewPoint.y !== pCamera.worldPosition.y ||
+			// 	v3fViewPoint.z !== pCamera.worldPosition.z){
+			// 	ERROR("impossible");
+			// }
+
 			// compute view distance to our 4 corners
-			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX),					math.ceil(this._iHeightMapY));
-			var fHeight1: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), 				math.ceil(this._iHeightMapY + this._iYVerts));
+			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY));
+			var fHeight1: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY + this._iYVerts));
 			var fHeight2: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY));
 			var fHeight3: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY + this._iYVerts));
 
@@ -201,11 +213,10 @@ module akra.terrain {
 				// Если треугольник не поделен
 				if (!pTri.leftChild) {
 
-					// math.pow(fMidDist+0.0001,fLimit);
-					var fRatio: float = (pVTree[iIndex]*fScale)/(fMidDist+0.0001);
+					var fRatio: float = (pVTree[iIndex]*fScale)/math.pow(fMidDist+0.0001, fLimit);
 					if (fRatio > 1) {
 						// subdivide this triangle
-						//console.log("split");
+						// console.log("split");
 						this.split(pTri);
 					}
 				}
@@ -235,15 +246,15 @@ module akra.terrain {
 			}
 
 			// If this triangle is not in a proper diamond, force split our base neighbor
-			if (pTri.baseNeighbor && (pTri.baseNeighbor.baseNeighbor!=pTri)){
+			if (pTri.baseNeighbor && (pTri.baseNeighbor.baseNeighbor !== pTri)){
 				this.split(pTri.baseNeighbor);
 			}
 			// Create children and link into mesh
 			pTri.leftChild  = this.terrainSystem.requestTriNode();
 			pTri.rightChild = this.terrainSystem.requestTriNode();
 
-			//debug_assert(pTri.leftChild != pTri, "recursive link");
-			//debug_assert(pTri.rightChild != pTri, "recursive link");
+			debug_assert(pTri.leftChild != pTri, "recursive link");
+			debug_assert(pTri.rightChild != pTri, "recursive link");
 
 			// Если не удалось выделить треугольник, то не разбиваем
 			if ( (!pTri.leftChild) || (!pTri.rightChild)) {
@@ -270,7 +281,8 @@ module akra.terrain {
 				} else {
 					console.log(pTri);
 					WARNING("Invalid Left Neighbor!");
-					debugger;
+					CRITICAL("stop");
+					// debugger;
 				}
 			}
 
@@ -296,7 +308,7 @@ module akra.terrain {
 					pTri.rightChild.leftNeighbor = pTri.baseNeighbor.leftChild;
 				} else {
 					// Base Neighbor (in a diamond with us) was not split yet, so do that now.
-					this.split( pTri.baseNeighbor);  
+					this.split(pTri.baseNeighbor);  
 				}
 			} else {
 				// An edge triangle, trivial case.
@@ -332,25 +344,32 @@ module akra.terrain {
 			var v2fVert: IVec2 = new Vec2(); 
 			v2fVert.set(0.0, 0.0);
 
-			//console.log("-->",this._iSectorX,this._iSectorY,"--",this._pWorldRect.x0,this._pWorldRect.fY0,"--",this._iXVerts,this._iYVerts)
+			//console.log("-->",this._iSectorX,this._iSectorY,"--",this._pWorldRect.x0,this._pWorldRect.y0,"--",this._iXVerts,this._iYVerts)
 			//console.log("--",v2fCellSize.X,v2fCellSize.Y,this.getHeightX(),this.getHeightY() )
 
 
 			for (var y: uint = 0; y < this._iYVerts; ++y) {
+				
 				v2fVert.set(this._pWorldRect.x0, y * v2fCellSize.y+this._pWorldRect.y0);
+
 				for (var x: uint = 0; x < this._iXVerts; ++x) {
 
 					var fHeight: float = this.terrainSystem.readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
+					this.terrainSystem.readWorldNormal(v3fNormal, this._iHeightMapX + x, this._iHeightMapY + y);
 
-					pVerts[((y * this._iXVerts) + x) * 5 + 0+this._iStartIndex*5] = v2fVert.x;
-					pVerts[((y * this._iXVerts) + x) * 5 + 1+this._iStartIndex*5] = v2fVert.y;
-					pVerts[((y * this._iXVerts) + x) * 5 + 2+this._iStartIndex*5] = fHeight;
+					pVerts[((y * this._iXVerts) + x) * 8 + 0 + this._iStartIndex*8] = v2fVert.x;
+					pVerts[((y * this._iXVerts) + x) * 8 + 1 + this._iStartIndex*8] = v2fVert.y;
+					pVerts[((y * this._iXVerts) + x) * 8 + 2 + this._iStartIndex*8] = fHeight;
+
+					pVerts[((y * this._iXVerts) + x) * 8 + 3 + this._iStartIndex*8] = v3fNormal.x;
+					pVerts[((y * this._iXVerts) + x) * 8 + 4 + this._iStartIndex*8] = v3fNormal.y;
+					pVerts[((y * this._iXVerts) + x) * 8 + 5 + this._iStartIndex*8] = v3fNormal.z;
 
 					//console.log(y*this._iXVerts + x,x,y,v2fVert.X,v2fVert.Y,fHeight);
 					//	pVerts[((y * this._iXVerts) + x) * 10 + 2],pVerts[((y * this._iXVerts) + x) * 10 + 1]);
 
-					pVerts[((y * this._iXVerts) + x) * 5 + 3+this._iStartIndex*5] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
-					pVerts[((y * this._iXVerts) + x) * 5 + 4+this._iStartIndex*5] = (this._iSectorY+ y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
+					pVerts[((y * this._iXVerts) + x) * 8 + 6 + this._iStartIndex*8] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
+					pVerts[((y * this._iXVerts) + x) * 8 + 7 + this._iStartIndex*8] = (this._iSectorY + y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
 
 
 					//console.log(this._iSectorX,this.terrainSystem.getSectorCountX(), x,this._iXVerts);
@@ -367,10 +386,10 @@ module akra.terrain {
 		}
 
 		buildTriangleList(): void {
-			this._iTempTotalIndices=this.terrainSystem.totalIndex;
+			this._iTempTotalIndices = this.terrainSystem.totalIndex;
 
-			this._pTempIndexList=this.terrainSystem.index;
-			this._iVertexID=this.terrainSystem.vertexId;
+			this._pTempIndexList = this.terrainSystem.index;
+			this._iVertexID = this.terrainSystem.vertexId;
 			// add all the triangles to the roamTerrain
 			// in root triangle A
 
@@ -386,9 +405,59 @@ module akra.terrain {
 				(this._iYVerts*this._iXVerts)-1, (this._iYVerts-1)*this._iXVerts, this._iXVerts-1);
 
 			this.terrainSystem.totalIndex = this._iTempTotalIndices;
-			this._iTempTotalIndices=undefined;
-			this._iVertexID=undefined;
-			this._pTempIndexList=null;
+
+
+
+			// var pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvasLOD');
+			// var p2D = pCanvas.getContext("2d");
+			// p2D.strokeStyle = "#f00"; //цвет линий
+			// p2D.lineWidth = 1;
+			// p2D.beginPath();
+			// //console.log("Total ",pSec._iTotalIndices);
+
+			// //console.log(this);
+			// var pVerts: float[] = this.terrainSystem.verts;
+			// var rect: IRect3d = this.terrainSystem.worldExtents;
+			// var size: IVec3 = this.terrainSystem.worldSize;
+			
+			// for(var i=0;i < this._iTempTotalIndices; i += 3) {
+
+
+			// 	p2D.moveTo(	((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
+			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
+			// 		((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
+			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
+			// 	p2D.lineTo(	((pVerts[(this._pTempIndexList[i+1]*4-this._iVertexID)/32
+			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
+			// 		((pVerts[(this._pTempIndexList[i+1]*4-this._iVertexID)/32
+			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
+			// 	p2D.lineTo(	((pVerts[(this._pTempIndexList[i+2]*4-this._iVertexID)/32
+			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
+			// 		((pVerts[(this._pTempIndexList[i+2]*4-this._iVertexID)/32
+			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
+			// 	p2D.lineTo(	((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
+			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
+			// 		((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
+			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
+			// }
+
+			// p2D.stroke();
+
+			// p2D.strokeStyle = "#f00"; //цвет линий
+			// p2D.lineWidth = 1;
+			// p2D.beginPath();
+			// p2D.lineTo(((this._pWorldRect.x0-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y0-rect.y0)/size.y)*pCanvas.height);
+			// p2D.lineTo(((this._pWorldRect.x1-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y0-rect.y0)/size.y)*pCanvas.height);
+			// p2D.lineTo(((this._pWorldRect.x1-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y1-rect.y0)/size.y)*pCanvas.height);
+			// p2D.lineTo(((this._pWorldRect.x0-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y1-rect.y0)/size.y)*pCanvas.height);
+			// p2D.lineTo(((this._pWorldRect.x0-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y0-rect.y0)/size.y)*pCanvas.height);
+			// p2D.stroke();
+
+
+			this._iTempTotalIndices = undefined;
+			this._iVertexID = undefined;
+			this._pTempIndexList = null;
+
 		}
 
 		recursiveBuildTriangleList(pTri: ITriTreeNode, iPointBase: uint, iPointLeft: uint, iPointRight: uint): void {
@@ -409,9 +478,9 @@ module akra.terrain {
 			} else if (this._iTempTotalIndices + 3 < this._iMaxIndices) {
 				// add the local triangle to the index list
 				//20 = 5(элементов) * 4(бита)
-				this._pTempIndexList[this._iTempTotalIndices++]=((iPointRight+this._iStartIndex)*20+ this._iVertexID)/4;
-				this._pTempIndexList[this._iTempTotalIndices++]=((iPointLeft+this._iStartIndex)*20 + this._iVertexID)/4;
-				this._pTempIndexList[this._iTempTotalIndices++]=((iPointBase+this._iStartIndex)*20 + this._iVertexID)/4;
+				this._pTempIndexList[this._iTempTotalIndices++]=((iPointRight+this._iStartIndex)*32+ this._iVertexID)/4;
+				this._pTempIndexList[this._iTempTotalIndices++]=((iPointLeft+this._iStartIndex)*32 + this._iVertexID)/4;
+				this._pTempIndexList[this._iTempTotalIndices++]=((iPointBase+this._iStartIndex)*32 + this._iVertexID)/4;
 			} else {
 				debug_print("else", this._iTempTotalIndices, this._iMaxIndices)
 			}

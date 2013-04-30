@@ -467,11 +467,13 @@ module akra {
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
         hasInitializer(): bool;
         getInitializeExpr(): IAFXInitExprInstruction;
+        hasConstantInitializer(): bool;
         
         lockInitializer(): void;
         unlockInitializer(): void;
         
         getDefaultValue(): any;
+        prepareDefaultValue(): void;
         
         getValue(): any;
         setValue(pValue: any): any;

@@ -12,6 +12,8 @@
 #include "geometry/geometry.ts"
 #include "material/Material.ts"
 
+#include "util/CalculateSkin.ts"
+
 module akra.model {
 	export class MeshSubset extends render.RenderableObject implements IMeshSubset {
 		protected _sName: string = null;
@@ -19,6 +21,7 @@ module akra.model {
 		protected _pSkin: ISkin = null;
 		protected _pBoundingBox: IRect3d = null;
 		protected _pBoundingSphere: ISphere = null;
+		protected _isOptimizedSkinned: bool = false;
 
 		inline get boundingBox(): IRect3d { return this._pBoundingBox; }
 		inline get boundingSphere(): ISphere { return this._pBoundingSphere; }
@@ -220,11 +223,15 @@ module akra.model {
 		    //TODO: calc binormals
 		}
 
-		isSkinned() {
+		inline isSkinned(): bool {
 		    return this._pSkin !== null;
 		}
 
-		getSkin() {
+		inline isOptimizedSkinned(): bool{
+			return this.isSkinned() && this._isOptimizedSkinned;
+		}
+
+		getSkin(): ISkin{
 		    return this._pSkin;
 		}
 
@@ -315,7 +322,7 @@ module akra.model {
 		    var iInfMetaDataStride: int; 
 
 		    /*
-		     Получаем данные вершин, чтобы проложить в {W} компоненту адерсс мета информации,
+		     Получаем данные вершин, чтобы проложить в {W} компоненту адерес мета информации,
 		     о влиянии на данную вершины.
 		     */
 
@@ -391,6 +398,103 @@ module akra.model {
 
 		    pPosData.setData(pMetaData, 0, pDeclaration.stride);
 
+		    // LOG(pPosData.toString());
+		    // LOG(pPosData.length);
+		    // LOG(this.data.getIndices().toString());
+		    // LOG(this.data.toString());
+		    
+		    var pRenderData: IRenderData = this.data;
+
+		    var pIndexData: IVertexData = <IVertexData>pRenderData.getIndices();
+
+		    var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData("INDEX0");
+		    var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData("INDEX1");
+
+		    var iAdditionPosition: uint = pPosData.byteOffset;
+		    var iAdditionNormal: uint = pRenderData._getFlow(DeclUsages.NORMAL).data.byteOffset;
+		    var iStride: uint = pIndexData.getVertexDeclaration().stride;
+
+	    	for(var i=0; i<pIndex0.length; i++){
+	    		pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition)/iStride;
+	    		pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal)/iStride;
+	    	}
+
+	    	//update position index
+	    	var pUPPositionIndex: Float32Array = new Float32Array(pPosData.length);
+	    	for(var i: uint=0; i<pPosData.length; i++){
+	    		pUPPositionIndex[i] = i;
+	    	}
+
+	    	//update normal index
+
+	    	var pTmp: any = {};
+
+	    	var pSkinnedNormalIndex: uint[] = [];
+	    	var pUNPositionIndex: uint[] = []; /*update normal position index*/
+	    	var pUNNormalIndex: uint[] = []; /*update normal normal index*/
+	    	var pDestinationSkinnedNormalIndex: uint[] = [];
+
+	    	var iCounter: uint = 0;
+
+	    	for(var i=0; i<pIndex0.length; i++){
+	    		var sKey: string = pIndex0[i].toString() + "_" + pIndex1[i];
+	    		if(!isDef(pTmp[sKey])){
+	    			pTmp[sKey] = iCounter;
+	    			pUNPositionIndex.push(pIndex0[i]);
+	    			pUNNormalIndex.push(pIndex1[i]);
+	    			pSkinnedNormalIndex.push(iCounter);
+	    			pDestinationSkinnedNormalIndex.push(iCounter);
+	    			iCounter++;
+	    		}
+	    		else{
+	    			pSkinnedNormalIndex.push(pDestinationSkinnedNormalIndex[pTmp[sKey]]);
+	    		}
+	    	}
+
+	    	var iSkinnedPos: uint = pRenderData.allocateData([VE_FLOAT3("SKINNED_POSITION"), VE_END(16)], new Float32Array(pPosData.length * 4));
+	    	/*skinned vertices uses same index as vertices*/
+	    	pRenderData.allocateIndex([VE_FLOAT("SP_INDEX")], pIndex0); 
+	    	pRenderData.index(iSkinnedPos, "SP_INDEX");
+
+	    	var iSkinnedNorm: uint = pRenderData.allocateData([VE_FLOAT3("SKINNED_NORMAL"), VE_END(16)], new Float32Array(pUNNormalIndex.length * 4));
+	    	/*skinned normals uses new index*/
+	    	pRenderData.allocateIndex([VE_FLOAT("SN_INDEX")], new Float32Array(pSkinnedNormalIndex));
+	    	pRenderData.index(iSkinnedNorm, "SN_INDEX");
+
+	    	var iPreviousSet: uint = pRenderData.getIndexSet();
+
+	    	var iUPIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_position");
+	    	pRenderData.allocateIndex([VE_FLOAT("UPP_INDEX")], pUPPositionIndex);
+	    	pRenderData.index(pPosData.byteOffset, "UPP_INDEX");
+	    	pRenderData.allocateIndex([VE_FLOAT("DESTINATION_SP")], pUPPositionIndex);
+	    	pRenderData.index(iSkinnedPos, "DESTINATION_SP");
+
+	    	var iUNIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_normal");
+	    	pRenderData.allocateIndex([VE_FLOAT("UNP_INDEX")], new Float32Array(pUNPositionIndex));
+	    	pRenderData.index(pPosData.byteOffset, "UNP_INDEX");
+	    	pRenderData.allocateIndex([VE_FLOAT("UNN_INDEX")], new Float32Array(pUNNormalIndex));
+	    	pRenderData.index(pRenderData._getFlow(DeclUsages.NORMAL, false).data.byteOffset, "UNN_INDEX");
+	    	pRenderData.allocateIndex([VE_FLOAT("DESTINATION_SN")], new Float32Array(pDestinationSkinnedNormalIndex));
+	    	pRenderData.index(iSkinnedNorm, "DESTINATION_SN");
+
+	    	pRenderData.selectIndexSet(iPreviousSet);
+	    	// LOG(pRenderData.toString());
+	    	
+	    	// pRenderData.selectIndexSet(iUPIndexSet);
+	    	// LOG(pRenderData.toString());
+
+	    	// pRenderData.selectIndexSet(iUNIndexSet);
+	    	// LOG(pRenderData.toString());
+
+	    	pRenderData.setRenderable(iUPIndexSet, false);
+	    	pRenderData.setRenderable(iUNIndexSet, false);
+
+	    	// LOG(iPreviousSet, iUPIndexSet);
+
+	    	// LOG(pSkinnedNormalIndex);
+	    	// LOG(pUNPositionIndex);
+	    	// LOG(pUNNormalIndex);
+
 		    this._pSkin = pSkin;
 
 		    return true;
@@ -398,7 +502,13 @@ module akra.model {
 
 		update(): bool {
 			return this.isSkinned() ? this.skin.applyBoneMatrices() : false;
-		}
+		};
+
+		_calculateSkin(): bool{
+			var isOk: bool = util.calculateSkin(this);
+			this._isOptimizedSkinned = isOk;
+			return isOk;
+		};
 	}
 }
 

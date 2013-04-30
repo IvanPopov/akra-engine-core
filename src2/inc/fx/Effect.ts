@@ -585,7 +585,7 @@ module akra.fx {
 												 "else if(shift == 2) return A_tex2D(sampler, header, x, y).ba; " +
 												 "else if(shift == 3) { " +
 												 "if(int(x) == int(header.width - 1.)) " +
-												 "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0.5, (y + 1.)).r); " +
 												 "else " +
 												 "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).r); " +
 												 "} " +
@@ -604,22 +604,22 @@ module akra.fx {
 												 "if(shift == 0) return A_tex2D(sampler, header, x, y).rgb; " +
 												 "else if(shift == 1) return A_tex2D(sampler, header, x, y).gba; " +
 												 "else if(shift == 2){ " +
-												 "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0.5, (y + 1.)).r); " +
 												 "else return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).r);} " +
 												 "else if(shift == 3){ " +
-												 "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+												 "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0.5, (y + 1.)).rg); " +
 												 "else return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rg);} " +
 												 "\n#endif\n" +
 												 "\n#ifdef A_VB_COMPONENT3\n" +
 												 "if(shift == 0) return A_tex2D(sampler, header,vec2(x,header.stepY*y)).rgb; " +
 												 "else if(shift == 1){ " +
-												 "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, 0.5, (y + 1.)).r); " +
 												 "else return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, (x + 1.), y).r);} " +
 												 "else if(shift == 3){ " +
-												 "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+												 "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, 0.5, (y + 1.)).rg); " +
 												 "else return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, (x + 1)., y).rg);} " +
 												 "\n#endif\n" +
-												 "return vec3(0);}",
+												 "return vec3(0.);}",
 												 "float3",
 												 ["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 
@@ -633,22 +633,22 @@ module akra.fx {
 												 "if(shift == 0) return A_tex2D(sampler, header, x, y); " +
 												 "else if(shift == 1){ " +
 												 "if(int(x) == int(header.width - 1.)) " +
-												 "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+												 "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, 0.5, (y + 1.)).r); " +
 												 "else " +
 												 "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, (x + 1.), y).r);} " +
 												 "else if(shift == 2){ " +
 												 "if(int(x) == int(header.width - 1.)) " +
-												 "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+												 "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0.5, (y + 1.)).rg); " +
 												 "else " +
 												 "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).rg);} " +
 												 "else if(shift == 3){ " +
 												 "if(int(x) == int(header.width - 1.)) " +
-												 "return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rgb); " +
+												 "return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0.5, (y + 1.)).rgb); " +
 												 "else return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rgb);} " +
 												 "\n#endif\n" +
 												 "\n#ifdef A_VB_COMPONENT3\n" +
 												 "\n#endif\n" +
-												 "return vec4(0);}",
+												 "return vec4(0.);}",
 												 "float4",
 												 ["video_buffer_header"], ["extractHeader"], ["ExtractMacros"]);
 			
@@ -2622,7 +2622,7 @@ module akra.fx {
         	}
 
         	pExpr.setOperator(sOperator);
-        	pExpr.setType(pBoolType);
+        	pExpr.setType((<SystemTypeInstruction>pBoolType).getVariableType());
         	pExpr.push(pLeftExpr, true);
         	pExpr.push(pRightExpr, true);
 
@@ -4228,6 +4228,9 @@ module akra.fx {
         private checkOneOperandExprType(sOperator: string, 
         								pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
 
+ 			if(pType._isUnverifiable === undefined){
+ 				LOG(pType);
+ 			}
         	if(pType._isUnverifiable()){
         		return pType;
         	}

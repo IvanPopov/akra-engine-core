@@ -88,7 +88,7 @@ module akra.terrain {
 			}
 		}
 
-		request() {
+		request(): ITriTreeNode {
 			var pNode: ITriTreeNode = null;
 
 			if(this.nextTriNode < this.maxCount) {

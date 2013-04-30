@@ -230,6 +230,9 @@ module akra.render {
         			return false;
         		}
         	}
+            else{
+                iSet = arguments[0];
+            }
 
         	var pIndexSet = this._pIndicesArray[iSet];
 

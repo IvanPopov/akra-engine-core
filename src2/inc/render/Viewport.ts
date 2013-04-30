@@ -44,7 +44,6 @@ module akra.render {
 		// protected _fDepthClearValue: float = 1.;
 
 		protected _bClearEveryFrame: bool = true;
-		protected _bNewFrame: bool = false;
 
 		// protected _iClearBuffers: int = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH;
 
@@ -115,15 +114,11 @@ module akra.render {
 			}
 		}
 
-		inline newFrame(): void {
-			this._bNewFrame = true;
-		}
-
 
 		clear(iBuffers: uint = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH,
 			  cColor: IColor = Color.BLACK, fDepth: float = 1., iStencil: uint = 0): void {
 			var pRenderer: IRenderer = this._pTarget.getRenderer();
-			
+
 			if (pRenderer) {
 				var pCurrentViewport: IViewport = pRenderer._getViewport();
 				
@@ -271,10 +266,27 @@ module akra.render {
 			}
 		}
 
+		startFrame(): void {
+			if(this._bClearEveryFrame){
+				this.clear(this._pViewportState.clearBuffers, 
+        				   this._pViewportState.clearColor,
+        				   this._pViewportState.clearDepth);
+			}
+		}
+
+        inline renderObject(pRenderable: IRenderableObject, csMethod?: string = this._csDefaultRenderMethod): void {
+        	pRenderable.render(this, csMethod, null);
+        }
+
+        endFrame(): void {
+        	this.getTarget().getRenderer().executeQueue();
+        }
+
+
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
 			var pVisibleObjects: IObjectArray = pCamera.display();
 			var pRenderable: IRenderableObject;
-
+			
 			for(var i: int = 0; i < pVisibleObjects.length; ++ i){
 				pVisibleObjects.value(i).prepareForRender(this);
 			}
@@ -286,7 +298,6 @@ module akra.render {
 					pRenderable = pSceneObject.getRenderable(j);
 
 					if (!isNull(pRenderable)) {
-						// LOG("render object #" + pRenderable.getGuid());
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
 				}

@@ -1,1 +1,8 @@
-akra-engine-core
+{
+	"folders":
+	[
+		{
+			"path": "src2"
+		}
+	]
+}

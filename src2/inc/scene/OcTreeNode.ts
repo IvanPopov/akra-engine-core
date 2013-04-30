@@ -78,12 +78,19 @@ module akra.scene {
 	    	}
 		};
 
+		toString(): string{
+			var sStr = "guid: " + this._iGuid.toString() + "\n";
+			sStr += "level: " + this.level.toString() + "\n";
+			sStr += "index: " + this.index.toString() + "\n";
+			sStr += "world bounds: " + this.worldBounds.toString() + "\n"
+			return sStr;
+		};
+
 		CREATE_EVENT_TABLE(OcTreeNode);
 
 		OcTreeObjectMoved(pObject: ISceneObject){
 			// console.warn('object moving');
 			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
-			//console.error('-----before------>', this, pNode,'<-------arter------');
 			if(pNode !== this){
 				this.removeMember(pObject);
 				pNode.addMember(pObject);

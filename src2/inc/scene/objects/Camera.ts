@@ -59,12 +59,12 @@ module akra.scene.objects {
 		 * Biased for use during current render stage 
 		 * @deprecated
 		 */
-		protected _m4fRenderStageProj: IMat4 = new Mat4;
+		//protected _m4fRenderStageProj: IMat4 = new Mat4;
 
 		/**
 		 * @deprecated
 		 */
-		protected _m4fRenderStageProjView: IMat4 = new Mat4;
+		//protected _m4fRenderStageProjView: IMat4 = new Mat4;
 
 		/** Search rect for scene culling */
 		protected _pSearchRect: IRect3d = new geometry.Rect3d();
@@ -131,7 +131,6 @@ module akra.scene.objects {
 
 		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.CAMERA) {
 			super(pScene, eType);
-
 		};
 
 		create(): bool {
@@ -172,6 +171,7 @@ module akra.scene.objects {
 			//TODO: check proj matrix type --> this._eCameraType
 			//now, temrary, supported on perspective proj
 			this.setProjParams(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane);
+			CLEAR_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
 		prepareForUpdate(): void {

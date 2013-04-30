@@ -14,6 +14,7 @@ shared float3 Normal;
 shared base_material Fragment_material;
 
 int objectId : RENDER_OBJECT_ID;
+bool normalFix;
 
 float4 prepareForDeferredShadingPass1() : COLOR {
 	float4 data;
@@ -22,7 +23,15 @@ float4 prepareForDeferredShadingPass1() : COLOR {
     Fragment_material.diffuse *= 254./255.;
     Fragment_material.ambient *= 254./255.;
 
-    float3 tmp = float3((Normal.xy+1.)/2.,Fragment_material.shininess/255.);
+    float3 tmp;
+
+    if(normalFix){
+    	tmp = float3((Normal.xyz + 1.)/2.);
+    }
+    else {
+    	tmp = float3((Normal.xy + 1.)/2., Fragment_material.shininess / 255.);
+    }
+     
     tmp *= 254./255.;
 
 	data.x = float3ToFloat(Fragment_material.emissive.xyz);
@@ -42,7 +51,11 @@ float4 prepareForDeferredShadingPass2() : COLOR {
 
 	data.x = float3ToFloat(Fragment_material.ambient.xyz);
 	data.y = float3ToFloat(Fragment_material.specular.xyz);
-
+	
+	if(normalFix){
+		data.z = Fragment_material.shininess / 255.;
+	}
+	
 	return data;
 };
 

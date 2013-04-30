@@ -25,11 +25,16 @@ module akra.terrain {
 		private _isCreat: bool = false;
 		private _isRenderInThisFrame: bool = false;
 		private _iMaxTriTreeNodes: uint = (1024*64); /*64k triangle nodes*/
-		private _iTessellationQueueSize: uint = undefined;
+		private _iTessellationQueueSize: uint = 0;
 		private _isCreate: bool = false;
 		//массив подчиненный секций 
 		protected _pSectorArray: ITerrainSectionROAM[] = null; 
 
+		protected _fScale: float = 0.0;
+		protected _fLimit: float = 0.0;
+
+		private _iTessellationQueueCountOld: int = 0;
+		private _nCountRender: uint = 0;
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
 			super(pScene, eType);
@@ -40,6 +45,22 @@ module akra.terrain {
 
 			this.connect(this._pRenderableObject, SIGNAL(beforeRender), SLOT(_onBeforeRender), EEventTypes.UNICAST);
 		}
+
+		inline get tessellationScale(): float{
+			return this._fScale;
+		};
+
+		inline set tessellationScale(fScale: float){
+			this._fScale = fScale;
+		};
+
+		inline get tessellationLimit(): float{
+			return this._fLimit;
+		};
+
+		inline set tessellationLimit(fLimit: float){
+			this._fLimit = fLimit;
+		};
 
 		inline get maxTriTreeNodes(): uint {
 			return this._iMaxTriTreeNodes;
@@ -74,9 +95,6 @@ module akra.terrain {
 		}
 
 
-		private _iTessellationQueueCountOld: int = undefined;
-		private _nCountRender: uint = 0;
-
 		init(pImgMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneObject = null)
 		{
 			var bResult: bool = super.init(pImgMap,worldExtents, iShift, iShiftX, iShiftY, sSurfaceTextures, pRootNode);
@@ -92,6 +110,7 @@ module akra.terrain {
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 
+				this._setTessellationParameters(0.5, 1.);
 				this.reset();
 			}
 			return bResult;
@@ -108,20 +127,16 @@ module akra.terrain {
 		}
 
 		protected _allocateSectors(): bool {
-			/*this._pSectorArray =
-			 new cTerrainSection[
-			 this._iSectorCountX*this._iSectorCountY];*/
 			this._pSectorArray = new Array(this._iSectorCountX * this._iSectorCountY);
 
-
 			//Вершинный буфер для всех
-			this._pVerts = new Array((this._iSectorCountX*this._iSectorCountY/*количество секции*/)*(this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/) * (3/*кординаты вершин*/+2/*текстурные координаты*/));
+			this._pVerts = new Array((this._iSectorCountX*this._iSectorCountY/*количество секции*/) *
+									 (this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/) * 
+									 (3/*кординаты вершин*/+ 3/*нормали*/ + 2/*текстурные координаты*/));
 
 			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
 				this._pSectorArray[i] = this.scene.createTerrainSectionROAM();
 			}
-
-			// this._setRenderMethod(this._pDefaultRenderMethod);
 
 			// create the sector objects themselves
 			for (var y: uint = 0; y < this._iSectorCountY; ++y) {
@@ -154,19 +169,19 @@ module akra.terrain {
 					}
 				}
 			}
-
-			var pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
+			
+			var pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT3(DeclarationUsages.NORMAL), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
 			this._iVertexID = this._pRenderData.allocateData(pVertexDescription, new Float32Array(this._pVerts));
 
-
+			
 			//Индексны буфер для всех
-			this._iTotalIndices=0;
+			this._iTotalIndices = 0;
 			//Максимальное количество треугольников помноженное на 3 вершины на каждый треугольник
 			this._pIndexList = new Float32Array(this._iMaxTriTreeNodes*3); 
 			this._pRenderData.allocateIndex([VE_FLOAT(DeclarationUsages.INDEX0)],this._pIndexList);
 			this._pRenderData.index(this._iVertexID, DeclarationUsages.INDEX0);
 			this._pDataIndex = this._pRenderData.getAdvancedIndexData(DeclarationUsages.INDEX0);
-
+			
 			return true;
 		}
 
@@ -188,15 +203,14 @@ module akra.terrain {
 			}
 		}
 
-		requestTriNode() {
+		requestTriNode(): ITriTreeNode {
 			return this._pNodePool.request();
 		}
 
 		addToTessellationQueue(pSection: ITerrainSectionROAM): bool {
 			if (this._iTessellationQueueCount < this._iTessellationQueueSize)
 			{
-				this._pThistessellationQueue[this._iTessellationQueueCount] =
-					pSection;
+				this._pThistessellationQueue[this._iTessellationQueueCount] = pSection;
 				this._iTessellationQueueCount++;
 				return true;
 			}
@@ -209,8 +223,8 @@ module akra.terrain {
 			return false;
 		}
 
-		processTessellationQueue(): void {
-			this._pThistessellationQueue.length=this._iTessellationQueueCount;
+		protected processTessellationQueue(): void {
+			this._pThistessellationQueue.length = this._iTessellationQueueCount;
 
 			function fnSortSection(a, b) {
 				return a.queueSortValue - b.queueSortValue;
@@ -242,18 +256,28 @@ module akra.terrain {
 
 			this._pRenderData._setIndexLength(this._iTotalIndices);
 			this._pDataIndex.setData(this._pIndexList, 0, getTypeSize(EDataTypes.FLOAT), 0, this._iTotalIndices);
-			this._iTotalIndicesOld=this._iTotalIndices;
-			this._iTotalIndicesMax=math.max(this._iTotalIndicesMax,this._iTotalIndices);
+			this._iTotalIndicesOld = this._iTotalIndices;
+			this._iTotalIndicesMax = math.max(this._iTotalIndicesMax,this._iTotalIndices);
+			// LOG("number of indecies: " + this._iTotalIndices);
+			this._pRenderableObject._setRenderData(this._pRenderData);
+		}
+
+
+		protected _setTessellationParameters(fScale: float, fLimit: float): void {
+		    this._fScale = fScale;
+		    this._fLimit = fLimit;
 		}
 
 
 		_onBeforeRender(pRenderableObject: IRenderableObject, pViewport: IViewport): void {
-			if(this._isCreate) {
-
-				if(((this._nCountRender++) % 30) === 0) {
-					if(this._iTessellationQueueCount !== this._iTessellationQueueCountOld) {
+			if(this._isCreate)
+			{
+				if(((this._nCountRender++) % 30) === 0)
+				{
+					if(this._iTessellationQueueCount !== this._iTessellationQueueCountOld) 
+					{
 						this.processTessellationQueue();
-						this._iTessellationQueueCountOld=this._iTessellationQueueCount;
+						this._iTessellationQueueCountOld = this._iTessellationQueueCount;
 					}
 				}
 

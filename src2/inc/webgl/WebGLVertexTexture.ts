@@ -47,6 +47,14 @@ module akra.webgl {
 			super(/*pManager*/);
 		}
 
+		inline _getWidth(): uint{
+			return this._iWidth;
+		}
+
+		inline _getHeight(): uint{
+			return this._iHeight;
+		}
+
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): bool;
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {

@@ -77,7 +77,7 @@ module akra.scene.light {
 			var pDepthTexture: ITexture = this._pDepthTexture = 
 				pResMgr.createTexture("depth_texture_" + this.getGuid());
 			pDepthTexture.create(iSize, iSize, 1, null, 0,
-				0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+								 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
 			pDepthTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
 			pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
@@ -159,6 +159,7 @@ module akra.scene.light {
 			//fast test on frustum intersection
 			if(!pCameraFrustum.testFrustum(pShadowCaster.frustum)){
 				//frustums don't intersecting
+				pShadowCaster._optimizeProjectionMatrix();
 				return pResult;
 			}
 

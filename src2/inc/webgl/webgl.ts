@@ -391,12 +391,12 @@ module akra.webgl {
         
         if(getWebGLFormat(eFormat) && getWebGLDataType(eFormat))
         {
-            switch(eFormat)
-            {
-                case EPixelFormats.FLOAT32_DEPTH:
-                case EPixelFormats.L16:
-                    return false;
-            }
+            // switch(eFormat)
+            // {
+            //     case EPixelFormats.FLOAT32_DEPTH:
+            //     case EPixelFormats.L16:
+            //         return false;
+            // }
             return true;
         }
 
@@ -410,7 +410,8 @@ module akra.webgl {
             case EPixelFormats.L8:
                 return GL_UNSIGNED_BYTE;           
             case EPixelFormats.L16:     
-                return GL_UNSIGNED_SHORT;
+                //return GL_UNSIGNED_SHORT;
+                return GL_UNSIGNED_BYTE;
 
             case EPixelFormats.A8:
                 return GL_UNSIGNED_BYTE;           
@@ -611,7 +612,7 @@ module akra.webgl {
                     case GL_FLOAT:
                         return EPixelFormats.FLOAT32_RGBA;
 	                default:
-	                    return EPixelFormats.A8B8G8R8;
+	                    return EPixelFormats.R8G8B8A8;
 	            }          
             
             case GL_BGRA:
@@ -699,15 +700,18 @@ module akra.webgl {
 
 	export function checkFBOAttachmentFormat(eFormat: EPixelFormats): bool 
     {
-        if(eFormat==EPixelFormats.A8B8G8R8)
+        if(eFormat === EPixelFormats.R8G8B8A8)
         {
             return true;
         }
-        else if(eFormat==EPixelFormats.FLOAT32_RGBA)
+        else if(eFormat === EPixelFormats.A8B8G8R8){
+            return true;
+        }
+        else if(eFormat === EPixelFormats.FLOAT32_RGBA)
         {
             return hasExtension(WEBGL_COLOR_BUFFER_FLOAT);
         }
-        else if(eFormat==EPixelFormats.FLOAT16_RGBA)
+        else if(eFormat === EPixelFormats.FLOAT16_RGBA)
         {
             return hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
         }
@@ -723,13 +727,15 @@ module akra.webgl {
 
     export function checkReadPixelFormat(eFormat: EPixelFormats): bool 
     {
-        if(eFormat==EPixelFormats.A8B8G8R8)
-        {
+        if(eFormat === EPixelFormats.R8G8B8A8){
             return true;
         }
-        else if(eFormat==EPixelFormats.FLOAT32_RGBA)
+        else if(eFormat === EPixelFormats.A8B8G8R8){
+            return true;
+        }
+        else if(eFormat === EPixelFormats.FLOAT32_RGBA)
         {
-            return hasExtension(WEBGL_COLOR_BUFFER_FLOAT)||hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+            return hasExtension(WEBGL_COLOR_BUFFER_FLOAT) || hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
         }
         else
         {

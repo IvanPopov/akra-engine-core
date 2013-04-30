@@ -6,6 +6,7 @@ module akra {
 	IFACE(ITriTreeNode);
 	IFACE(IRect3d);
 	IFACE(ITerrainSection);
+	
 	export interface ITerrainSectionROAM extends ITerrainSection{
 		readonly triangleA: ITriTreeNode;
 		readonly triangleB: ITriTreeNode;

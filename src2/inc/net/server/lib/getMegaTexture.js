@@ -213,6 +213,3 @@ module.exports = function (fnCallback, sName, iSizeX, iSizeY, x, y, width, heigh
 
     pStack[iLod].push(pParam);
 };
-
-
-

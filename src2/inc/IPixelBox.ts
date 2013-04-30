@@ -21,7 +21,7 @@ module akra {
 		isConsecutive(): bool;
 		getConsecutiveSize(): uint;
 
-		getSubBox(pDest: IBox): IPixelBox;
+		getSubBox(pDest: IBox, pDestPixelBox?: IPixelBox): IPixelBox;
 		getColorAt(pColor: IColor, x: uint, y: uint, z?: uint): IColor;
 		setColorAt(pColor: IColor, x: uint, y: uint, z?: uint): void;
 

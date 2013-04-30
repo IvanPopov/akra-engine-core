@@ -1514,13 +1514,7 @@ module akra {
 	            for(var z: int = src.front; z < src.back; z++) {
 	                for(var y: int = src.top; y < src.bottom; y++) {
 						//_memcpy(dstptr.buffer, srcptr.buffer, rowSize);
-                        try{
-						  dstptr.set(srcptr.subarray(0, rowSize));
-                        }
-                        catch(e){
-                            LOG(z, y, srcptr, dstptr, src, dst);
-                            throw e;
-                        }
+                        dstptr.set(srcptr.subarray(0, rowSize));
 
 	                    srcptr = srcptr.subarray(srcRowPitchBytes);
 	                    dstptr = dstptr.subarray(dstRowPitchBytes);
@@ -1532,8 +1526,6 @@ module akra {
 
 	            return;
 	        }
-
-
 
 			// Converting to PF_X8R8G8B8 is exactly the same as converting to
 			// PF_A8R8G8B8. (same with PF_X8B8G8R8 and PF_A8B8G8R8)
@@ -1601,7 +1593,7 @@ module akra {
             var iSize: uint = 0;
             var mip: uint = 0;
             
-            for(mip = 0; mip <= nMipLevels; ++mip){
+            for(mip = 0; mip < nMipLevels; ++mip){
                 iSize += getMemorySize(iWidth, iHeight, iDepth, eFormat) * nFaces;
                 if(iWidth !== 1) iWidth /= 2;
                 if(iHeight !== 1) iHeight /= 2;

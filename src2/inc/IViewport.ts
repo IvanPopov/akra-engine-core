@@ -9,6 +9,7 @@ module akra {
     IFACE(IColor);
     IFACE(IRenderTarget);
     IFACE(ICamera);
+    IFACE(IRenderableObject);
 
     export enum EViewportTypes {
         DEFAULT = -1,
@@ -35,7 +36,10 @@ module akra {
 
         update(): void;
         destroy(): void;
-        newFrame(): void;
+
+        startFrame(): void;
+        renderObject(pRenderable: IRenderableObject): void;
+        endFrame(): void;
 
         clear(iBuffers?: uint, cColor?: IColor, fDepth?: float, iStencil?: uint): void;
 
@@ -60,6 +64,7 @@ module akra {
         isAutoUpdated(): bool;
 
         isUpdated(): bool;
+
         _clearUpdatedFlag(): void;
         _updateImpl(): void;
 

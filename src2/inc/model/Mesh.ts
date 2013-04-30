@@ -144,7 +144,7 @@ module akra.model {
         createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int = 0): IMeshSubset {
             var pData: IRenderData;
             //TODO: modify options and create options for data dactory.
-            pData = this._pBuffer.getEmptyRenderData(ePrimType, eOptions);
+            pData = this._pBuffer.getEmptyRenderData(ePrimType/*EPrimitiveTypes.POINTLIST*/, eOptions);
             pData.addRef();
 
             if (isNull(pData)) {
@@ -614,6 +614,13 @@ module akra.model {
 
             for (var i: uint = 0; i < this.length; ++ i) {
                 isOk = this._pSubMeshes[i].update() ? true : isOk;
+            }
+            if(isOk){
+                for (var i: uint = 0; i < this.length; ++ i) {
+                	if(this._pSubMeshes[i].isSkinned){
+                    	this._pSubMeshes[i]._calculateSkin();
+                	}
+                }
             }
 
             return isOk;

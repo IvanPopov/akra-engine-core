@@ -211,6 +211,8 @@ module akra.webgl {
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
+			
+			var pDataBox: IPixelBox = null;
 
 			if(pixelUtil.isCompressed(pData.format)) {
 				if(pData.format !== this._eFormat || !pData.isConsecutive()){
@@ -237,43 +239,49 @@ module akra.webgl {
 	            }
 			}
 			else if(this._bSoftwareMipmap) {
-				if (pData.width !== pData.rowPitch) {
-	                // TODO
-	                CRITICAL("Unsupported texture format");
-	            }
 
-	            if (pData.height * pData.width !== pData.slicePitch) {
-	                // TODO
-	                CRITICAL("Unsupported texture format");
+				if (pData.width !== pData.rowPitch ||
+					pData.height * pData.width !== pData.slicePitch)
+				{
+	                pDataBox = this._pBuffer.getSubBox(pDestBox, pixelUtil.pixelBox());
+					pDataBox.setConsecutive();
+					pixelUtil.bulkPixelConversion(pData, pDataBox);
+
+	            }
+	            else
+	            {
+	            	pDataBox = pData;
 	            }
 
 	            pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	            this.buildMipmaps(pData); 
+	            this.buildMipmaps(pDataBox); 
 			}
 			else {
-				if(pData.width !== pData.rowPitch) {
-	                // TODO
-	                CRITICAL("Unsupported texture format");
+				if (pData.width !== pData.rowPitch ||
+					pData.height * pData.width !== pData.slicePitch)
+				{
+	                pDataBox = this._pBuffer.getSubBox(pDestBox, pixelUtil.pixelBox());
+					pDataBox.setConsecutive();
+					pixelUtil.bulkPixelConversion(pData, pDataBox);
 	            }
-
-	            if(pData.height * pData.width !== pData.slicePitch) {
-	                // TODO
-	                CRITICAL("Unsupported texture format");
+	            else {
+	            	pDataBox = pData;
 	            }
 
 	            if ((pData.width * pixelUtil.getNumElemBytes(pData.format)) & 3) {
 	                // Standard alignment of 4 is not right
 	                pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	            }
-	            if (pDestBox.left === 0 && pDestBox.top === 0) {
-	            	LOG("Buffer::upload --> One color:", pData.data[0],pData.data[1], pData.data[2], pData.format, webgl.getWebGLFormat(pData.format), webgl.getWebGLDataType(pData.format));	            	
-            		pWebGLContext.texImage2D(this._eFaceTarget,
+	            if (pDestBox.left === 0 && pDestBox.top === 0 && 
+	            	pDestBox.width >= this.width && pDestBox.height >= this.height) 
+	            {
+	            	pWebGLContext.texImage2D(this._eFaceTarget,
                             			this._iLevel,
                             			webgl.getWebGLFormat(pData.format),	                            			
-                            			pDestBox.width, pDestBox.height,0,
+                            			pDestBox.width, pDestBox.height, 0,
                             			webgl.getWebGLFormat(pData.format),
                             			webgl.getWebGLDataType(pData.format),
-                            			new Uint8Array(pData.data));											
+                            			new Uint8Array(pDataBox.data));											
 	            }
 	            else
 	            {
@@ -283,7 +291,7 @@ module akra.webgl {
                             			pDestBox.width, pDestBox.height,
                             			webgl.getWebGLFormat(pData.format),
                             			webgl.getWebGLDataType(pData.format),
-                            			pData.data);
+                            			pDataBox.data);
 	            }
 	        }
 	        
@@ -304,21 +312,21 @@ module akra.webgl {
 				CRITICAL("Invalid box");
 			}
 
-			var pSrcBox:IPixelBox;
+			var pSrcBox:IPixelBox = null;
+			if(!checkFBOAttachmentFormat(this.format))
+			{
+				CRITICAL("Read from texture this format not support(" + this.format + ")");
+			}
+
 			if(checkReadPixelFormat(pData.format))
 			{
-				pSrcBox=pData;
+				pSrcBox = pData;
 			}
 			else
 			{
-				console.log("download. new Pixel Box подходящего формата");
-				pSrcBox = new pixelUtil.PixelBox(pData,EPixelFormats.BYTE_ABGR);
+				pSrcBox = new pixelUtil.PixelBox(pData, EPixelFormats.BYTE_RGBA, 
+												 new Uint8Array(pixelUtil.getMemorySize(pData.width, pData.height, pData.depth, EPixelFormats.BYTE_RGBA)));
 			}			
-
-			if(!checkFBOAttachmentFormat(this.format))
-			{
-				CRITICAL("Read from texture this format not support");
-			}
 
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
@@ -333,17 +341,17 @@ module akra.webgl {
 			pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, this._eFaceTarget,this._pWebGLTexture,this._iLevel);
 			
 			//console.log(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height,eFormat,eType,pSrcBox.data);
-			pWebGLContext.readPixels(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height,eFormat,eType,pSrcBox.data);
+			pWebGLContext.readPixels(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height, eFormat, eType, pSrcBox.data);
 			//console.log("data after readPixel",pSrcBox.data);
 
 			if(!checkReadPixelFormat(pData.format))
 			{
 				console.log("download. конвертация");
-				pixelUtil.bulkPixelConversion(pSrcBox,pData);
+				pixelUtil.bulkPixelConversion(pSrcBox, pData);
 			}
 
 			//дективировать его
-			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER,pOldFramebuffer);
+			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
 			pWebGLRenderer.deleteWebGLFramebuffer(pFrameBuffer);
 
 			// if(data.getWidth() != getWidth() ||
@@ -469,7 +477,7 @@ module akra.webgl {
 		blit(pSource: IPixelBuffer): bool;
 		blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): bool;
 		blit(pSource: IPixelBuffer, pSrcBox?: IBox, pDestBox?: IBox): bool {
-			if (arguments.length == 1) {
+			if (arguments.length === 1) {
 				return this.blit(pSource, 
 		            new geometry.Box(0, 0, 0, pSource.width, pSource.height, pSource.depth), 
 		            new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth)

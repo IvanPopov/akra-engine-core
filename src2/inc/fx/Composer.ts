@@ -61,7 +61,8 @@ module akra.fx {
 		private _pCurrentBufferMap: IBufferMap = null;
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 
-		private _pComposerState: any = { mesh : { isSkinning : false } };
+		private _pComposerState: any = { mesh : { isSkinned : false, isOptimizedSkinned : false },
+										 terrain : { isROAM : false } };
 
 		/** Render targets for global-post effects */
 		private _pRenderTargetA: IRenderTarget = null;
@@ -426,6 +427,12 @@ module akra.fx {
 			return this._pCurrentRenderable;
 		}
 
+		_setDefaultCurrentState(): void {
+			this._setCurrentViewport(null);
+			this._setCurrentRenderableObject(null);
+			this._setCurrentSceneObject(null);
+		}
+
 
 		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void {
 			// if(true){
@@ -450,15 +457,8 @@ module akra.fx {
 					var id: uint = pRenderTechnique.getGuid();
 					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
 					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
-					
-					if(!isNull(this._pCurrentRenderable)){
-						if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){
-							this._pComposerState.mesh.isSkinning = true;
-						}
-						else {
-							this._pComposerState.mesh.isSkinning = false;
-						}
-					}
+
+					this.prepareComposerState();
 
 					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
 																  pPassInput.foreigns, pPassInput.uniforms);
@@ -599,7 +599,10 @@ module akra.fx {
 			// this._pPreRenderState.isClear = true;
 		}
 
-		bUseNormalMap: bool = true;
+		protected bNormalFix: bool = true;
+		protected bUseNormalMap: bool = true;
+		protected bIsDebug: bool = false;
+		protected bIsRealNormal: bool = false;
 
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
@@ -611,14 +614,19 @@ module akra.fx {
 			}
 
 			if(!isNull(pViewport)){
-				var pCamera: ICamera = pViewport.getCamera();
-				pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
-				pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
-				pPassInput.setUniform("INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
-				pPassInput.setUniform("CAMERA_POSITION", pCamera.worldPosition);
 
-				if(pCamera.type === EEntityTypes.SHADOW_CASTER){
-					pPassInput.setUniform("OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
+				pPassInput.setUniform("FRAMEBUFFER_SIZE", vec2(pViewport.width, pViewport.height));
+
+				var pCamera: ICamera = pViewport.getCamera();
+				if(!isNull(pCamera)) { 
+					pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
+					pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
+					pPassInput.setUniform("INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
+					pPassInput.setUniform("CAMERA_POSITION", pCamera.worldPosition);
+
+					if(pCamera.type === EEntityTypes.SHADOW_CASTER){
+						pPassInput.setUniform("OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
+					}
 				}
 			}
 
@@ -643,6 +651,36 @@ module akra.fx {
 			}
 
 			pPassInput.setUniform("useNormal", this.bUseNormalMap);
+			pPassInput.setUniform("isDebug", this.bIsDebug);
+			pPassInput.setUniform("isRealNormal", this.bIsRealNormal);
+			pPassInput.setUniform("normalFix", this.bNormalFix);
+		}
+
+		private prepareComposerState(): void {
+			if(!isNull(this._pCurrentRenderable)){
+				if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){
+					this._pComposerState.mesh.isSkinned = true;
+					if((<IMeshSubset>this._pCurrentRenderable).isOptimizedSkinned()){
+						this._pComposerState.mesh.isOptimizedSkinned = true;
+					}
+					else{
+						this._pComposerState.mesh.isOptimizedSkinned = false;	
+					}
+				}
+				else {
+					this._pComposerState.mesh.isSkinned = false;
+					this._pComposerState.mesh.isOptimizedSkinned = false;
+				}
+			}
+
+			if(!isNull(this._pCurrentSceneObject)){
+				if(this._pCurrentSceneObject.type === EEntityTypes.TERRAIN_ROAM){
+					this._pComposerState.terrain.isROAM = true;
+				}
+				else {
+					this._pComposerState.terrain.isROAM = false;
+				}
+			}
 		}
 
 		private initPostEffectTextures(): void{

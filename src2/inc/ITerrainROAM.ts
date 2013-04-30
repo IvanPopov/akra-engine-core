@@ -6,7 +6,12 @@ module akra {
 	IFACE(ITerrainSectionROAM);
 	IFACE(IRect3d);
 	IFACE(ISceneNode);
+	IFACE(ITriTreeNode);
+	
 	export interface ITerrainROAM extends ITerrain {
+		tessellationScale: float;
+		tessellationLimit: float;
+
 		readonly verts: float[];
 		readonly index: Float32Array;
 		readonly maxTriTreeNodes: uint;
@@ -14,10 +19,9 @@ module akra {
 
 		totalIndex: uint;
 
-		requestTriNode();
+		requestTriNode(): ITriTreeNode;
 
 		addToTessellationQueue(pSection: ITerrainSectionROAM): bool;
-		processTessellationQueue(): void;
 	}
 }
 

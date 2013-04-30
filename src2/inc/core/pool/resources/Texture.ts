@@ -489,9 +489,9 @@ module akra.core.pool.resources {
 
         convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void 
         {
-            CRITICAL("!!!нехуй")
+            // CRITICAL("!!!нехуй")
             var iNumMips: uint = bIncludeMipMaps ? this._nMipLevels + 1 : 1;
-            var iDataSize: uint = pixelUtil.calculateSizeForImage(iNumMips, this._nMipLevels,
+            var iDataSize: uint = pixelUtil.calculateSizeForImage(iNumMips, this.getNumFaces(),
                                                                   this._iWidth, this._iHeight, this._iDepth,
                                                                   this._eFormat);
 
@@ -522,7 +522,6 @@ module akra.core.pool.resources {
         }
 
         copyToTexture(pTarget: ITexture): void {
-            CRITICAL("!!!нехуй")
             if(pTarget.getNumFaces() !== this.getNumFaces()){
                 CRITICAL("Texture types must match");
             }   

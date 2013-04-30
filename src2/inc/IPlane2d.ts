@@ -29,6 +29,8 @@ module akra{
 		solveForY(fX: float): float;
 
 		signedDistance(v2fPoint): float;
+
+		toString(): string;
 	}
 }
 

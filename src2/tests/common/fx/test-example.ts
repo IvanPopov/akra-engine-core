@@ -45,7 +45,9 @@ module akra {
 			pCamera.addRelRotationByXYZAxis(-0.2, 0., 0.);
 			pCamera.attachToParent(pScene.getRootNode());
 
-			var pKeymap: IKeyMap = controls.createKeymap((<any>pCanvas)._pCanvas);
+			var pKeymap: IKeyMap = controls.createKeymap();
+			pKeymap.captureMouse((<any>pCanvas)._pCanvas);
+			pKeymap.captureKeyboard(document);
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				 if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
@@ -55,6 +57,20 @@ module akra {
 			        var fdY = v2fMouseShift.y / pViewport.actualHeight * 10.0;
 
 			        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
+
+			        var fSpeed: float = 0.1 * 1/5;
+				    if(pKeymap.isKeyPress(EKeyCodes.W)){
+				    	pCamera.addRelPosition(0, 0, -fSpeed);
+				    }
+				    if(pKeymap.isKeyPress(EKeyCodes.S)){
+				    	pCamera.addRelPosition(0, 0, fSpeed);
+				    }
+				    if(pKeymap.isKeyPress(EKeyCodes.A)){
+				    	pCamera.addRelPosition(-fSpeed, 0, 0);
+				    }
+				    if(pKeymap.isKeyPress(EKeyCodes.D)){
+				    	pCamera.addRelPosition(fSpeed, 0, 0);
+				    }
 			    }
 			});
 		}
@@ -73,14 +89,15 @@ module akra {
 			var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni-0");
 			
 			pOmniLight.attachToParent(pScene.getRootNode());
-			pOmniLight.enabled = true;
+			pOmniLight.enabled = false;
 			pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 			pOmniLight.params.diffuse.set(0.5);
 			pOmniLight.params.specular.set(1, 1, 1, 1);
 			pOmniLight.params.attenuation.set(0.5,0,0);
 
 			pOmniLight.addPosition(1, 5, 3);
-			/*var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
+
+			var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 			
 			pProjectShadowLight.attachToParent(pScene.getRootNode());
 			pProjectShadowLight.enabled = true;
@@ -93,6 +110,85 @@ module akra {
 			pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
 			pProjectShadowLight.addRelPosition(0, 3, 10);
 
+			pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-1");
+			
+			pProjectShadowLight.attachToParent(pScene.getRootNode());
+			pProjectShadowLight.enabled = true;
+			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			pProjectShadowLight.params.diffuse.set(0.5);
+			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			pProjectShadowLight.params.attenuation.set(1,0,0);
+			pProjectShadowLight.isShadowCaster = true;
+
+			pProjectShadowLight.addRelRotationByXYZAxis(0, 0.5, 0);
+			pProjectShadowLight.addRelPosition(0, 3, 10);
+
+			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-2");
+			
+			// pProjectShadowLight.attachToParent(pScene.getRootNode());
+			// pProjectShadowLight.enabled = true;
+			// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			// pProjectShadowLight.params.diffuse.set(0.5);
+			// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			// pProjectShadowLight.params.attenuation.set(1,0,0);
+			// pProjectShadowLight.isShadowCaster = true;
+
+			// pProjectShadowLight.addRelRotationByXYZAxis(0, 0, 0);
+			// pProjectShadowLight.addRelPosition(0, 3, 10);
+
+			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-3");
+
+			// pProjectShadowLight.attachToParent(pScene.getRootNode());
+			// pProjectShadowLight.enabled = true;
+			// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			// pProjectShadowLight.params.diffuse.set(0.5);
+			// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			// pProjectShadowLight.params.attenuation.set(1,0,0);
+			// pProjectShadowLight.isShadowCaster = true;
+
+			// pProjectShadowLight.addRelRotationByXYZAxis(0, -0.25, 0);
+			// pProjectShadowLight.addRelPosition(0, 3, 10);
+
+			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-4");
+			
+			// pProjectShadowLight.attachToParent(pScene.getRootNode());
+			// pProjectShadowLight.enabled = true;
+			// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			// pProjectShadowLight.params.diffuse.set(0.5);
+			// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			// pProjectShadowLight.params.attenuation.set(1,0,0);
+			// pProjectShadowLight.isShadowCaster = true;
+
+			// pProjectShadowLight.addRelRotationByXYZAxis(0, 0.25, 0);
+			// pProjectShadowLight.addRelPosition(0, 3, 10);
+
+			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-5");
+			
+			// pProjectShadowLight.attachToParent(pScene.getRootNode());
+			// pProjectShadowLight.enabled = true;
+			// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			// pProjectShadowLight.params.diffuse.set(0.5);
+			// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			// pProjectShadowLight.params.attenuation.set(1,0,0);
+			// pProjectShadowLight.isShadowCaster = true;
+
+			// pProjectShadowLight.addRelRotationByXYZAxis(0, 0.1, 0);
+			// pProjectShadowLight.addRelPosition(0, 3, 10);
+
+			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-6");
+			
+			// pProjectShadowLight.attachToParent(pScene.getRootNode());
+			// pProjectShadowLight.enabled = true;
+			// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			// pProjectShadowLight.params.diffuse.set(0.5);
+			// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			// pProjectShadowLight.params.attenuation.set(1,0,0);
+			// pProjectShadowLight.isShadowCaster = true;
+
+			// pProjectShadowLight.addRelRotationByXYZAxis(0, -0.1, 0);
+			// pProjectShadowLight.addRelPosition(0, 3, 10);
+
+
 			var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
 			
 			pOmniShadowLight.attachToParent(pScene.getRootNode());
@@ -103,7 +199,7 @@ module akra {
 			pOmniShadowLight.params.attenuation.set(1,0.0,0);
 			pOmniShadowLight.isShadowCaster = true;
 
-			pOmniShadowLight.addPosition(5, 10, -10);*/
+			pOmniShadowLight.setPosition(1, 5, 5);
 		}
 
 		function createSkyBox(): void {
@@ -120,7 +216,7 @@ module akra {
 			var pModelRoot: ISceneNode = pScene.createNode();
 			var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
 			
-			pController = animation.createController();
+			pController = pEngine.createAnimationController();
 
 			pModelRoot.attachToParent(pScene.getRootNode());
 			pModelRoot.scale(2.);
@@ -138,7 +234,6 @@ module akra {
 					pContainer.useLoop(true);
 					pController.addAnimation(pContainer);		
 				}
-
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
 					pModelRoot.addRelRotationByXYZAxis(0.00, 0.001, 0);
@@ -173,7 +268,6 @@ module akra {
 			// pCube.setPosition(20., 8., -30.);
 			// pCube.scale(0.1);
 		}
-
 		pEngine.bind(SIGNAL(depsLoaded), main);	
 		pEngine.exec();
 	});

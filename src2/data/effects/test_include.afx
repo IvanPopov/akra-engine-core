@@ -1,1 +1,0 @@
-float3 test_include_var = {1.0,1.0,1.0};

@@ -11,7 +11,7 @@ module akra {
 	}
 
 	export interface ITriangleNodePool {
-		request();
+		request(): ITriTreeNode;
 		reset(): void;
 	}
 }
