@@ -619,6 +619,7 @@ module akra.fx {
 		protected bUseNormalMap: bool = true;
 		protected bIsDebug: bool = false;
 		protected bIsRealNormal: bool = false;
+		protected bTerrainBlackSectors: bool = false;
 
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
@@ -670,6 +671,7 @@ module akra.fx {
 			pPassInput.setUniform("isDebug", this.bIsDebug);
 			pPassInput.setUniform("isRealNormal", this.bIsRealNormal);
 			pPassInput.setUniform("normalFix", this.bNormalFix);
+			pPassInput.setUniform("isWithBalckSectors", this.bTerrainBlackSectors);
 		}
 
 		private prepareComposerState(): void {

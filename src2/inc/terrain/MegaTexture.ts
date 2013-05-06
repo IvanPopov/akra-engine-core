@@ -32,7 +32,7 @@ module akra.terrain {
 	    private _sSurfaceTextures: string = "";
 
 	    //Маскимальный размер стороны текстуры
-	    private _iOriginalTextureMaxSize: uint = 8192 * 4;
+	    private _iOriginalTextureMaxSize: uint = 8192 * 0.250;
 
 	    //Размер блока текстуры(минимальный размер выгружаемого куска текстуры)
 	    private _iBlockSize: uint = 32;
@@ -62,6 +62,8 @@ module akra.terrain {
 	    private _fTexCourdXOld: float = undefined;
 	    private _fTexCourdYOld: float = undefined;
 	    private _nCountRender: uint = 0;
+
+	    private _iSectorLifeTime: uint = 10000; 
 
 	    constructor(pEngine: IEngine, pObject: any, sSurfaceTextures: string) {
 	    	this._pEngine = pEngine;
@@ -117,8 +119,8 @@ module akra.terrain {
     	    this.testDataInit();
     	    this._pRPC = net.createRpc();
     	    // // // this._pRPC.join('ws://192.168.194.132');
-    	    // this._pRPC.join("ws://localhost:6112");
-    	    this._pRPC.join("ws://192.168.88.53:6112");
+    	    this._pRPC.join("ws://localhost:6112");
+    	    // this._pRPC.join("ws://192.168.88.53:6112");
 	    	this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 	    }
 
@@ -250,12 +252,12 @@ module akra.terrain {
 		        if (i !== 0) {
 		            iX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
 		            iY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
-		            
-		            this._pXY[i].iTexX = iX / this.getWidthOrig(i);
-					this._pXY[i].iTexY = iY / this.getHeightOrig(i);
 
 					iX = math.round((iX / this._iBlockSize)) * this._iBlockSize;
 		            iY = math.round((iY / this._iBlockSize)) * this._iBlockSize;
+
+		            this._pXY[i].iTexX = iX / this.getWidthOrig(i);
+					this._pXY[i].iTexY = iY / this.getHeightOrig(i);
 
 		            iWidth = this._iTextureWidth;
 		            iHeight = this._iTextureHeight;
@@ -331,8 +333,8 @@ module akra.terrain {
 		    var iOrigTexEndY: uint = math.ceil((iOrigTexY + iHeight) / this._iBlockSize) * this._iBlockSize;
 		    iOrigTexX = math.max(0, iOrigTexX);
 		    iOrigTexY = math.max(0, iOrigTexY);
-		    iOrigTexX = math.floor(iOrigTexX / this._iBlockSize) * this._iBlockSize;
-		    iOrigTexY = math.floor(iOrigTexY / this._iBlockSize) * this._iBlockSize;
+		    // iOrigTexX = math.floor(iOrigTexX / this._iBlockSize) * this._iBlockSize;
+		    // iOrigTexY = math.floor(iOrigTexY / this._iBlockSize) * this._iBlockSize;
 		    iOrigTexEndX = math.min(iOrigTexEndX, this.getWidthOrig(iLevelTex));
 		    iOrigTexEndY = math.min(iOrigTexEndY, this.getHeightOrig(iLevelTex));
 
@@ -360,7 +362,7 @@ module akra.terrain {
 
 		                if (tCurrentTime - me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
                                                                    		  (me._iTextureWidth / me._iBlockSize) +
-                                                                   		  (j - me._pXY[iLevelTex].iX) / me._iBlockSize] < 10000) {
+                                                                   		  (j - me._pXY[iLevelTex].iX) / me._iBlockSize] < this._iSectorLifeTime) {
 		                    continue;
 		                }
 		                if (me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *

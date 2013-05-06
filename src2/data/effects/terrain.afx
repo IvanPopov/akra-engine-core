@@ -140,54 +140,119 @@ float2 textureCoord5;
 
 
 float2 cameraCoordTerrain : CAMERA_COORD;
-bool isDebug, isRealNormal;
+bool isDebug, isRealNormal, isWithBalckSectors;
 
 void fs_terrain(VS_OUT IN){
     float4 color;
     float2 new_texcoord;
     float3 normal;
 
-    new_texcoord = (IN.texcoord-textureCoord5)*32.;
     
+
+    float4 mainColor = tex2D(textureTerrain0, IN.texcoord);
+    bool isMainColored = (mainColor.xyz != float3(0.));
+    bool isNeedColored = true;
+   
+    new_texcoord = (IN.texcoord-textureCoord5)*32.;
+    //All(lessThanEqual((mainColor - color).xyz, float3(0.1)))
     if(textureTerrainIsLoaded5 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
     {
         color = tex2D(textureTerrain5, new_texcoord);//; + float4(0., 0.1, 0.1, 1.);
-    }
-    else
-    {
-        new_texcoord =(IN.texcoord-textureCoord4)*16.;
-        if(textureTerrainIsLoaded4 && (new_texcoord.x>=0. && new_texcoord.x<1.&&new_texcoord.y>=0. && new_texcoord.y<1.0))
+        
+        if(color.xyz == float3(0.) && isMainColored)
         {
-            color = tex2D(textureTerrain4, new_texcoord);//; + float4(0.1, 0.1, 0., 1.);
+            isNeedColored = true;
         }
         else
         {
-            new_texcoord = (IN.texcoord-textureCoord3)*8.;
-            if(textureTerrainIsLoaded3 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
+            isNeedColored = false;
+        }
+    }
+    
+    if(isNeedColored)
+    {
+        new_texcoord =(IN.texcoord-textureCoord4)*16.;
+
+        if(textureTerrainIsLoaded4 && (new_texcoord.x>=0. && new_texcoord.x<1.&& new_texcoord.y>=0. && new_texcoord.y<1.0))
+        {
+            color = tex2D(textureTerrain4, new_texcoord);//; + float4(0.1, 0.1, 0., 1.);
+            
+            if(color.xyz == float3(0.) && isMainColored)
             {
-                color = tex2D(textureTerrain3, new_texcoord);//; + float4(0.1, 0., 0.1, 1.);
+                isNeedColored = true;
             }
             else
             {
-                new_texcoord = (IN.texcoord-textureCoord2)*4.;
-                if(textureTerrainIsLoaded2 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
-                {
-                    color = tex2D(textureTerrain2, new_texcoord);//; + float4(0., 0., 0.1, 1.);
-                }
-                else
-                {
-                    new_texcoord = (IN.texcoord-textureCoord1)*2.;
-                    if(textureTerrainIsLoaded1 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
-                    {
-                        color = tex2D(textureTerrain1, new_texcoord);//; + float4(0.1, 0., 0., 1.);
-                    }
-                    else
-                    {
-                        color = tex2D(textureTerrain0, IN.texcoord);//; + float4(0., 0.1, 0., 1.);
-                    }
-                }
+                isNeedColored = false;
             }
         }
+    }
+
+    if(isNeedColored)
+    {
+        new_texcoord = (IN.texcoord-textureCoord3)*8.;
+
+        if(textureTerrainIsLoaded3 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
+        {
+            color = tex2D(textureTerrain3, new_texcoord);//; + float4(0.1, 0., 0.1, 1.);
+
+           if(color.xyz == float3(0.) && isMainColored)
+            {
+                isNeedColored = true;
+            }
+            else
+            {
+                isNeedColored = false;
+            }
+        }
+    }
+
+    if(isNeedColored)
+    {
+        new_texcoord = (IN.texcoord-textureCoord2)*4.;
+
+        if(textureTerrainIsLoaded2 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
+        {
+            color = tex2D(textureTerrain2, new_texcoord);//; + float4(0., 0., 0.1, 1.);
+
+            if(color.xyz == float3(0.) && isMainColored)
+            {
+                isNeedColored = true;
+            }
+            else
+            {
+                isNeedColored = false;
+            }
+        }
+    }
+    
+    if(isNeedColored)
+    {
+        new_texcoord = (IN.texcoord-textureCoord1)*2.;
+
+        if(textureTerrainIsLoaded1 && (new_texcoord.x >= 0. && new_texcoord.x < 1. && new_texcoord.y >= 0. && new_texcoord.y < 1.))
+        {
+            color = tex2D(textureTerrain1, new_texcoord);// + float4(0.1, 0., 0., 1.);
+
+            if(color.xyz == float3(0.) && isMainColored)
+            {
+                isNeedColored = true;
+            }
+            else
+            {
+                isNeedColored = false;
+                //color = float4(1., 0., 0., 1.);
+//                if(all(lessThan(color.xyz, float3(0.1))) ){
+//                    color = mainColor;
+//                }
+            }
+        }
+    }
+
+    if(isNeedColored)
+    {
+        color = mainColor;
+        //color = float4(0., 1., 0., 1.);
     }
 
     normal = tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb;
