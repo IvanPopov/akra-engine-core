@@ -36,6 +36,10 @@ module akra.terrain {
 		private _iTessellationQueueCountOld: int = 0;
 		private _nCountRender: uint = 0;
 
+		private _m4fLastCameraMatrix: IMat4 = new Mat4();		
+		private _m4fLastTesselationMatrix: IMat4 = new Mat4();
+		private _isNeedReset: bool = true;
+
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
 			super(pScene, eType);
 			this._pRenderData = this._pDataFactory.getEmptyRenderData(EPrimitiveTypes.TRIANGLELIST,ERenderDataBufferOptions.RD_ADVANCED_INDEX);
@@ -110,7 +114,7 @@ module akra.terrain {
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 
-				this._setTessellationParameters(0.5, 1.);
+				this._setTessellationParameters(1.2, 0.9);
 				this.reset();
 			}
 			return bResult;
@@ -187,6 +191,7 @@ module akra.terrain {
 
 		reset(): void {
 			this._isRenderInThisFrame = false;
+
 			if(this._isCreate) {
 				super.reset();
 				// reset internal counters
@@ -200,6 +205,20 @@ module akra.terrain {
 				{
 					this._pSectorArray[i].reset();
 				}
+			}
+		}
+
+		resetWithCamera(pCamera: ICamera): bool {
+			if(!this._isOldCamera(pCamera)){
+				if(this._isNeedReset){
+					this.reset();
+					this._isNeedReset = false;
+				}
+
+				return true;
+			}
+			else {
+				return false;
 			}
 		}
 
@@ -268,21 +287,30 @@ module akra.terrain {
 		    this._fLimit = fLimit;
 		}
 
+		inline _isOldCamera(pCamera: ICamera): bool {
+			return this._m4fLastCameraMatrix.isEqual(pCamera.worldMatrix);
+		} 
+
 
 		_onBeforeRender(pRenderableObject: IRenderableObject, pViewport: IViewport): void {
 			if(this._isCreate)
 			{
-				if(((this._nCountRender++) % 30) === 0)
+				var pCamera: ICamera = pViewport.getCamera();
+			
+				this._m4fLastCameraMatrix.set(pCamera.worldMatrix);
+
+				if (((this._nCountRender++) % 30) === 0)
 				{
-					if(this._iTessellationQueueCount !== this._iTessellationQueueCountOld) 
+					if(!this._m4fLastCameraMatrix.isEqual(this._m4fLastTesselationMatrix)) 
 					{
 						this.processTessellationQueue();
-						this._iTessellationQueueCountOld = this._iTessellationQueueCount;
+						this._m4fLastTesselationMatrix.set(this._m4fLastCameraMatrix);
+						//this._iTessellationQueueCountOld = this._iTessellationQueueCount;
 					}
-				}
-
-				this.reset();
+				}				
 			}
+
+			this._isNeedReset = true;
 		}
 	}
 }

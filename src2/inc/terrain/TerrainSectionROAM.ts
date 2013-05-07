@@ -130,22 +130,22 @@ module akra.terrain {
 			return bResult;
 		}
 
+		//private _v3fOldPosition: 
 		prepareForRender(pViewport: IViewport): void {
 			super.prepareForRender(pViewport);
 
 			var pCamera: ICamera = pViewport.getCamera();
 
+			if(!this.terrainSystem.resetWithCamera(pCamera)){
+				return;
+			}
+			
 			var v4fCameraCoord: IVec4 = vec4(pCamera.worldPosition, 1.);
 		    var m4fTransposeInverse: IMat4 = this._pTerrainSystem.inverseWorldMatrix;
 
 		    v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
 
 			var v3fViewPoint: IVec3 = vec3(v4fCameraCoord.x, v4fCameraCoord.y, v4fCameraCoord.z);
-			// if (v3fViewPoint.x !== pCamera.worldPosition.x || 
-			// 	v3fViewPoint.y !== pCamera.worldPosition.y ||
-			// 	v3fViewPoint.z !== pCamera.worldPosition.z){
-			// 	ERROR("impossible");
-			// }
 
 			// compute view distance to our 4 corners
 			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY));

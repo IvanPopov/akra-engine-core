@@ -417,11 +417,11 @@ module akra.scene {
 #endif
 		};
 
-		private static _v3fTemp: IVec3 = vec3();
-		private static _v4fTemp: IVec4 = vec4();
-		private static _m3fTemp: IMat3 = mat3();
-		private static _m4fTemp: IMat4 = mat4();
-		private static _q4fTemp: IQuat4 = quat4();
+		private static _v3fTemp: IVec3 = new Vec3();
+		private static _v4fTemp: IVec4 = new Vec4();
+		private static _m3fTemp: IMat3 = new Mat3();
+		private static _m4fTemp: IMat4 = new Mat4();
+		private static _q4fTemp: IQuat4 = new Quat4();
 	}
 }
 

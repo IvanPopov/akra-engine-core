@@ -154,6 +154,9 @@ void fs_terrain(VS_OUT IN){
     bool isNeedColored = true;
    
     new_texcoord = (IN.texcoord-textureCoord5)*32.;
+
+    float threshold = 0.2;
+
     //All(lessThanEqual((mainColor - color).xyz, float3(0.1)))
     if(textureTerrainIsLoaded5 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
     {
@@ -166,6 +169,23 @@ void fs_terrain(VS_OUT IN){
         else
         {
             isNeedColored = false;
+
+            float modX = mod(1024. * new_texcoord.x, 32.);
+            float modY = mod(1024. * new_texcoord.y, 32.);
+
+            if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
+                if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
+                    //color = float4(0., 1., 0., 1.);
+                    isNeedColored = true;
+                }
+                else {
+                    //color = float4(1., 0., 0., 1.);
+                }
+                
+            }
+            else {
+                //color = float4(1., 0., 0., 1.);
+            }
         }
     }
     
@@ -184,6 +204,23 @@ void fs_terrain(VS_OUT IN){
             else
             {
                 isNeedColored = false;
+
+                float modX = mod(1024. * new_texcoord.x, 32.);
+                float modY = mod(1024. * new_texcoord.y, 32.);
+
+                if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
+                    if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
+                        //color = float4(0., 1., 0., 1.);
+                        isNeedColored = true;
+                    }
+                    else {
+                        //color = float4(1., 0., 0., 1.);
+                    }
+                    
+                }
+                else {
+                    //color = float4(1., 0., 0., 1.);
+                }
             }
         }
     }
@@ -203,6 +240,24 @@ void fs_terrain(VS_OUT IN){
             else
             {
                 isNeedColored = false;
+
+                float modX = mod(1024. * new_texcoord.x, 32.);
+                float modY = mod(1024. * new_texcoord.y, 32.);
+
+                if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
+                    if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
+                        //color = float4(0., 1., 0., 1.);
+                        isNeedColored = true;
+                    }
+                    else {
+                        //color = float4(1., 0., 0., 1.);
+                    }
+                    
+                }
+                else {
+                    //color = float4(1., 0., 0., 1.);
+                }
+
             }
         }
     }
@@ -222,6 +277,23 @@ void fs_terrain(VS_OUT IN){
             else
             {
                 isNeedColored = false;
+
+                float modX = mod(1024. * new_texcoord.x, 32.);
+                float modY = mod(1024. * new_texcoord.y, 32.);
+
+                if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
+                    if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
+                        //color = float4(0., 1., 0., 1.);
+                        isNeedColored = true;
+                    }
+                    else {
+                        //color = float4(1., 0., 0., 1.);
+                    }
+                    
+                }
+                else {
+                    //color = float4(1., 0., 0., 1.);
+                }
             }
         }
     }
@@ -241,10 +313,23 @@ void fs_terrain(VS_OUT IN){
             else
             {
                 isNeedColored = false;
-                //color = float4(1., 0., 0., 1.);
-//                if(all(lessThan(color.xyz, float3(0.1))) ){
-//                    color = mainColor;
-//                }
+                
+                float modX = mod(1024. * new_texcoord.x, 32.);
+                float modY = mod(1024. * new_texcoord.y, 32.);
+
+                if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
+                    if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
+                        //color = float4(0., 1., 0., 1.);
+                        isNeedColored = true;
+                    }
+                    else {
+                        //color = float4(1., 0., 0., 1.);
+                    }
+                    
+                }
+                else {
+                    //color = float4(1., 0., 0., 1.);
+                }
             }
         }
     }
