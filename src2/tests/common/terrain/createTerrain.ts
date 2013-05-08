@@ -38,7 +38,7 @@ module akra {
 		
 			//pCamera.addRelRotationByXYZAxis(1, 1, 0);
 			pCamera.farPlane = 500;
-			pCamera.setPosition(vec3(0, 100, 0));
+			pCamera.setPosition(vec3(0, 75, 0));
 			pCamera.attachToParent(pScene.getRootNode());
 			pCamera.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
 			pCamera.setInheritance(ENodeInheritance.ALL);
@@ -127,13 +127,13 @@ module akra {
 			shouldBeNotNull("new terrain");
 			ok(pTerrain);
 			
-			pTerrainMap["height"] = pRmgr.loadImage("../../../data/textures/terrain/main_height_map_1025.dds");
+			pTerrainMap["height"] = pRmgr.loadImage("../../../data/textures/terrain/main_height_map_513.dds");
 
 			pTerrainMap["height"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-512, 512, -512, 512, -128, 128), 5, 5, 5, "main");
+					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-256, 256, -256, 256, 0, 256), 8, 1, 1, "main");
 					pTerrain.attachToParent(pScene.getRootNode());
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);

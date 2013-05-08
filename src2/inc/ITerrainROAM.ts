@@ -17,6 +17,7 @@ module akra {
 		readonly index: Float32Array;
 		readonly maxTriTreeNodes: uint;
 		readonly vertexId: uint;
+		readonly localCameraCoord: IVec3;
 
 		totalIndex: uint;
 

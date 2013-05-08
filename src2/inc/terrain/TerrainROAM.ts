@@ -38,6 +38,7 @@ module akra.terrain {
 
 		private _m4fLastCameraMatrix: IMat4 = new Mat4();		
 		private _m4fLastTesselationMatrix: IMat4 = new Mat4();
+		private _v3fLocalCameraCoord: IVec3 = new Vec3();
 		private _isNeedReset: bool = true;
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
@@ -98,6 +99,10 @@ module akra.terrain {
 			return this._pRenderableObject;
 		}
 
+		inline get localCameraCoord(): IVec3 {
+			return this._v3fLocalCameraCoord;
+		}
+
 
 		init(pImgMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneObject = null)
 		{
@@ -114,7 +119,7 @@ module akra.terrain {
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 
-				this._setTessellationParameters(1.2, 0.9);
+				this._setTessellationParameters(1.0, 1.0);
 				this.reset();
 			}
 			return bResult;
@@ -213,6 +218,12 @@ module akra.terrain {
 				if(this._isNeedReset){
 					this.reset();
 					this._isNeedReset = false;
+
+					var v4fCameraCoord: IVec4 = vec4(pCamera.worldPosition, 1.);
+
+		    		v4fCameraCoord = this.inverseWorldMatrix.multiplyVec4(v4fCameraCoord);
+
+		    		this._v3fLocalCameraCoord.set(v4fCameraCoord.x, v4fCameraCoord.y, v4fCameraCoord.z);
 				}
 
 				return true;

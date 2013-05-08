@@ -139,13 +139,8 @@ module akra.terrain {
 			if(!this.terrainSystem.resetWithCamera(pCamera)){
 				return;
 			}
-			
-			var v4fCameraCoord: IVec4 = vec4(pCamera.worldPosition, 1.);
-		    var m4fTransposeInverse: IMat4 = this._pTerrainSystem.inverseWorldMatrix;
 
-		    v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
-
-			var v3fViewPoint: IVec3 = vec3(v4fCameraCoord.x, v4fCameraCoord.y, v4fCameraCoord.z);
+			var v3fViewPoint: IVec3 = this.terrainSystem.localCameraCoord;
 
 			// compute view distance to our 4 corners
 			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY));
@@ -154,20 +149,20 @@ module akra.terrain {
 			var fHeight3: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY + this._iYVerts));
 
 
-			this._v3fDistance0.set(v3fViewPoint.x-this._pWorldRect.x0,v3fViewPoint.y-this._pWorldRect.y0,v3fViewPoint.z-fHeight0);
-			this._v3fDistance1.set(v3fViewPoint.x-this._pWorldRect.x0,v3fViewPoint.y-this._pWorldRect.y1,v3fViewPoint.z-fHeight1);
-			this._v3fDistance2.set(v3fViewPoint.x-this._pWorldRect.x1,v3fViewPoint.y-this._pWorldRect.y1,v3fViewPoint.z-fHeight2);
-			this._v3fDistance3.set(v3fViewPoint.x-this._pWorldRect.x1,v3fViewPoint.y-this._pWorldRect.y0,v3fViewPoint.z-fHeight3);
+			this._v3fDistance0.set(v3fViewPoint.x-this._pWorldRect.x0, v3fViewPoint.y-this._pWorldRect.y0,v3fViewPoint.z-fHeight0);
+			this._v3fDistance1.set(v3fViewPoint.x-this._pWorldRect.x0, v3fViewPoint.y-this._pWorldRect.y1,v3fViewPoint.z-fHeight1);
+			this._v3fDistance2.set(v3fViewPoint.x-this._pWorldRect.x1, v3fViewPoint.y-this._pWorldRect.y1,v3fViewPoint.z-fHeight2);
+			this._v3fDistance3.set(v3fViewPoint.x-this._pWorldRect.x1, v3fViewPoint.y-this._pWorldRect.y0,v3fViewPoint.z-fHeight3);
 
-			this._fDistance0=this._v3fDistance0.length();
-			this._fDistance1=this._v3fDistance1.length();
-			this._fDistance2=this._v3fDistance2.length();
-			this._fDistance3=this._v3fDistance3.length();
+			this._fDistance0 = this._v3fDistance0.length();
+			this._fDistance1 = this._v3fDistance1.length();
+			this._fDistance2 = this._v3fDistance2.length();
+			this._fDistance3 = this._v3fDistance3.length();
 
 			// compute min distance as our sort value
-			this._fQueueSortValue = math.min(this._v3fDistance0.length() , this._v3fDistance1.length());
-			this._fQueueSortValue = math.min(this._fQueueSortValue, this._v3fDistance2.length());
-			this._fQueueSortValue = math.min(this._fQueueSortValue, this._v3fDistance3.length());
+			this._fQueueSortValue = math.min(this._fDistance0 , this._fDistance1);
+			this._fQueueSortValue = math.min(this._fQueueSortValue, this._fDistance2);
+			this._fQueueSortValue = math.min(this._fQueueSortValue, this._fDistance3);
 
 
 			// submit to the tessellation queue of our parent
@@ -213,8 +208,10 @@ module akra.terrain {
 				// Если треугольник не поделен
 				if (!pTri.leftChild) {
 
-					var fRatio: float = (pVTree[iIndex]*fScale)/math.pow(fMidDist+0.0001, fLimit);
-					if (fRatio > 1) {
+					//var fRatio: float = (pVTree[iIndex]*fScale)/math.pow(fMidDist+0.0001, fLimit);
+					var fRatio: float = (pVTree[iIndex]);/* * fScale)/(fMidDist+0.0001);*/
+
+					if (fRatio > fLimit) {
 						// subdivide this triangle
 						// console.log("split");
 						this.split(pTri);
@@ -227,12 +224,12 @@ module akra.terrain {
 					//debug_assert(tri->rightChild, "invalid triangle node");
 
 					this.recursiveTessellate(pTri.leftChild,
-						fMidDist, fDistA,fDistB,
+						fMidDist, fDistA, fDistB,
 						pVTree, iIndex<<1,
 						fScale, fLimit);
 
 					this.recursiveTessellate(pTri.rightChild,
-						fMidDist,fDistC,fDistA,
+						fMidDist,fDistC, fDistA,
 						pVTree, (iIndex<<1)+1,
 						fScale, fLimit);
 				}
@@ -490,10 +487,10 @@ module akra.terrain {
 			var iTableWidth: uint = this.terrainSystem.tableWidth;
 			var iTableHeight: uint = this.terrainSystem.tableHeight;
 
-			var iIndex0: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,					this._iHeightMapY);
-			var iIndex1: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,					this._iHeightMapY+this._iYVerts-1);
-			var iIndex2: uint =  this.terrainSystem._tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY+this._iYVerts-1);
-			var iIndex3: uint =  this.terrainSystem._tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY);
+			var iIndex0: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY);
+			var iIndex1: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY + this._iYVerts-1);
+			var iIndex2: uint =  this.terrainSystem._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY + this._iYVerts-1);
+			var iIndex3: uint =  this.terrainSystem._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY);
 
 			var fHeight0: float = this.terrainSystem.readWorldHeight(iIndex0);
 			var fHeight1: float = this.terrainSystem.readWorldHeight(iIndex1);
@@ -511,33 +508,38 @@ module akra.terrain {
 				iIndex3, iIndex0, iIndex2,
 				fHeight3, fHeight0, fHeight2,
 				this._pVarianceTreeB, 1);
+
+			LOG("Good variance for sections: " + this._nCountOfGoodVariance);
 		}
+
+		protected _nCountOfGoodVariance: uint = 0;
 
 		recursiveComputeVariance(iCornerA: uint, iCornerB: uint, iCornerC: uint, fHeightA: float, fHeightB: float, fHeightC: float, pVTree: float[], iIndex: uint): float {
 			if (iIndex < pVTree.length) {
 				var iMidpoint: uint = (iCornerB+iCornerC)>>1;
 				//console.log(iCornerA, iCornerB, iCornerC,'mid point --->', iMidpoint);
 				var fMidHeight: float = this.terrainSystem.readWorldHeight(iMidpoint);
-
-
-				var iTW: uint = this.terrainSystem.tableWidth;
-				var iTH: uint = this.terrainSystem.tableHeight;
-				var iXB: uint = iCornerB%iTW;
-				var iYB: uint = math.floor(iCornerB/iTW);
-				var iXC: uint = iCornerC%iTW;
-				var iYC: uint = math.floor(iCornerC/iTW);
-				var pWorldSize: IVec3 = this.terrainSystem.worldSize;
-				var fLX: float = math.abs(iXB-iXC)/iTW*pWorldSize.x;
-				var fLY: float = math.abs(iYB-iYC)/iTH*pWorldSize.y;
-				var fX: float = math.sqrt(fLY*fLY+fLX*fLX);
-				var fY: float = math.abs(fHeightB-fHeightC);
-
 				var fInterpolatedHeight: float = (fHeightB+fHeightC)*0.5;
 				var fVariance: float = math.abs(fMidHeight - fInterpolatedHeight);
+					
+				// var iTW: uint = this.terrainSystem.tableWidth;
+				// var iTH: uint = this.terrainSystem.tableHeight;
+				// var iXB: uint = iCornerB%iTW;
+				// var iYB: uint = math.floor(iCornerB/iTW);
+				// var iXC: uint = iCornerC%iTW;
+				// var iYC: uint = math.floor(iCornerC/iTW);
+				// var pWorldSize: IVec3 = this.terrainSystem.worldSize;
+				// var fLX: float = math.abs(iXB-iXC)/iTW*pWorldSize.x;
+				// var fLY: float = math.abs(iYB-iYC)/iTH*pWorldSize.y;
+				// var fX: float = math.sqrt(fLY*fLY+fLX*fLX);
+				// var fY: float = math.abs(fHeightB-fHeightC);
 
-				if(fX < fY) {
-					fVariance = fInterpolatedHeight*fX/fY
-				}
+				// var fInterpolatedHeight: float = (fHeightB+fHeightC)*0.5;
+				// var fVariance: float = math.abs(fMidHeight - fInterpolatedHeight);
+
+				// if(fX < fY) {
+				// 	fVariance = fInterpolatedHeight*fX/fY
+				// }
 
 				// find the variance of our children
 				var fLeft: float = this.recursiveComputeVariance(
@@ -551,19 +553,24 @@ module akra.terrain {
 					pVTree, 1+(iIndex<<1));
 
 				// local variance is the minimum of all three
-				fVariance = math.max(fVariance, fLeft);
-				fVariance = math.max(fVariance, fRight);
+				// fVariance = math.max(fVariance, fLeft);
+				// fVariance = math.max(fVariance, fRight);
 
 				// store the variance as 1/(variance+1)
 				pVTree[iIndex] = fVariance;
 
+				if(fVariance < 3 && fVariance !== 0){
+					this._nCountOfGoodVariance++;
+				}
 
-				//this.drawVariance(iIndex,iCornerA, iCornerB, iCornerC,pVTree);
+
+				// //this.drawVariance(iIndex,iCornerA, iCornerB, iCornerC,pVTree);
 
 				return fVariance;
 			}
 			// return a value which will be ignored by the parent
 			// (because the minimum function is used with this result)
+			// LOG("i`m must not be here");
 			return 0;
 		}
 		
