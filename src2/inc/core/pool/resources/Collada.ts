@@ -112,7 +112,7 @@ module akra.core.pool.resources {
         
         private COLLADATransform(pXML: Element, id?: string): IColladaTransform;
         private COLLADANewParam(pXML: Element): IColladaNewParam;
-        private COLLADAAsset(pXML: Element): IColladaAsset;
+        private COLLADAAsset(pXML?: Element): IColladaAsset;
         private COLLADALibrary(pXML: Element, pTemplate: IColladaLibraryTemplate): IColladaLibrary;
 
         // geometry
@@ -158,7 +158,7 @@ module akra.core.pool.resources {
         private COLLADAInstanceGeometry(pXML: Element): IColladaInstanceGeometry;
 
         // directly load <visual_scene> from <instance_visual_scene> from <scene>.
-        private COLLADAScene(pXML: Element): IColladaVisualScene;
+        private COLLADAScene(pXML?: Element): IColladaVisualScene;
 
         // animation
          
@@ -257,7 +257,7 @@ module akra.core.pool.resources {
             animation       : { pose: true },
             scene           : true,
             extractPoses    : true,
-            skeletons       : null,
+            skeletons       : [],
             images          : { flipY: false }
         };
 
@@ -764,7 +764,7 @@ module akra.core.pool.resources {
             return pParam;
         }
         
-        private COLLADAAsset(pXML: Element): IColladaAsset {
+        private COLLADAAsset(pXML: Element = firstChild(this.getXMLRoot(), "asset")): IColladaAsset {
             var pAsset: IColladaAsset = {
                 unit : {
                     meter : 1.0,
@@ -1719,7 +1719,7 @@ module akra.core.pool.resources {
         }
 
         // directly load <visual_scene> from <instance_visual_scene> from <scene>.
-        private COLLADAScene(pXML: Element): IColladaVisualScene {
+        private COLLADAScene(pXML: Element = firstChild(this.getXMLRoot(), "scene")): IColladaVisualScene {
             var pXMLData: Element = firstChild(pXML, "instance_visual_scene");
             var pScene: IColladaVisualScene = <IColladaVisualScene>this.source(attr(pXMLData, "url"));
 
@@ -2252,6 +2252,8 @@ module akra.core.pool.resources {
                 pSkeleton.addRootJoint(pJoint);
             }
 
+            this.addSkeleton(pSkeleton);
+
             return pSkeleton;
         }
 
@@ -2653,8 +2655,12 @@ module akra.core.pool.resources {
         }
 
         private buildInitialPoses(pPoseSkeletons: ISkeleton[] = null): IAnimation[] {
-            pPoseSkeletons = pPoseSkeletons || this.getSkeletonsOutput();
+            if (!this.isVisualSceneLoaded()) {
+                this.COLLADAScene();
+            }
 
+            pPoseSkeletons = pPoseSkeletons || this.getSkeletonsOutput();
+            LOG(">>>>> buildInitialPoses() <<<<<<");
             if (isNull(pPoseSkeletons)) {
                 return null;
             }
@@ -2674,7 +2680,7 @@ module akra.core.pool.resources {
                 // }
                 pPoses.push(this.buildInititalPose(pScene.nodes, pSkeleton));
             }
-
+            LOG(pPoses);
             return pPoses;
         }
 
@@ -2778,6 +2784,11 @@ module akra.core.pool.resources {
         private inline getSkeletonsOutput(): ISkeleton[] {
             return this._pOptions.skeletons || null;
         }
+
+        private inline addSkeleton(pSkeleton: ISkeleton): void {
+            this._pOptions.skeletons.push(pSkeleton);
+        }
+
         private inline getImageOptions(): IColladaImageLoadOptions {
             return this._pOptions.images;
         }
@@ -2861,8 +2872,8 @@ module akra.core.pool.resources {
 
             this.readLibraries(pXMLRoot, Collada.SCENE_TEMPLATE);
 
-            this.COLLADAAsset(firstChild(pXMLRoot, "asset"));
-            this.COLLADAScene(firstChild(pXMLRoot, "scene"));
+            this.COLLADAAsset();
+            this.COLLADAScene();
 
             if (this.isAnimationNeeded()) {
                 this.readLibraries(pXMLRoot, Collada.ANIMATION_TEMPLATE);
@@ -2984,7 +2995,7 @@ module akra.core.pool.resources {
                     pSkeletons = this.getSkeletonsOutput() || [];
 
                     pPoses = this.buildInitialPoses(pSkeletons);
-    
+                    
                     for (var j: int = 0; j < pPoses.length; ++ j) {
                         pAnimation.extend(pPoses[j]);
                     }

@@ -253,9 +253,8 @@ module akra.math {
             return v3fDestination;
         };
 
-        inline length(): float{
-            var x: float = this.x, y: float = this.y, z: float = this.z;
-            return sqrt(x*x + y*y + z*z);
+        inline length(): float {
+            return sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
         };
 
         inline lengthSquare(): float{
@@ -353,7 +352,7 @@ module akra.math {
             return v3fDestination;
         };
 
-        ALLOCATE_STORAGE(Vec3,100)
+        ALLOCATE_STORAGE(Vec3, 256)
     }
 }
 

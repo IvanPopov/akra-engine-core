@@ -312,19 +312,19 @@ module akra.scene {
 			this.addRelRotation(arguments[0].toQuat4(Node._q4fTemp));
 		}
 
-		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
+		inline addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
 			this.addRelRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));	
 		}
 
-		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+		inline addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
 			this.addRelRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
 		}
 
-		addRelRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
+		inline addRelRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
 			this.addRelRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
 		}
 
-		addRelRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
+		inline addRelRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
 			this.addRelRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
 		}
 
@@ -333,25 +333,25 @@ module akra.scene {
 			TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
-		addRotationByMatrix(m3fRotation: IMat3): void;
-		addRotationByMatrix(m4fRotation: IMat4): void;
-		addRotationByMatrix(matrix: any): void {
+		inline addRotationByMatrix(m3fRotation: IMat3): void;
+		inline addRotationByMatrix(m4fRotation: IMat4): void;
+		inline addRotationByMatrix(matrix: any): void {
 			this.addRotation(arguments[0].toQuat4(Node._q4fTemp));
 		}
 
-		addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
+		inline addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
 			this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));	
 		}
 
-		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+		inline addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
 			this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
 		}
 
-		addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
+		inline addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
 			this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
 		}
 
-		addRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
+		inline addRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
 			this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
 		}
 
@@ -429,11 +429,11 @@ module akra.scene {
 #endif
 		};
 
-		private static _v3fTemp: IVec3 = vec3();
-		private static _v4fTemp: IVec4 = vec4();
-		private static _m3fTemp: IMat3 = mat3();
-		private static _m4fTemp: IMat4 = mat4();
-		private static _q4fTemp: IQuat4 = quat4();
+		private static _v3fTemp: IVec3 = new Vec3();
+		private static _v4fTemp: IVec4 = new Vec4();
+		private static _m3fTemp: IMat3 = new Mat3();
+		private static _m4fTemp: IMat4 = new Mat4();
+		private static _q4fTemp: IQuat4 = new Quat4();
 	}
 }
 

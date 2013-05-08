@@ -300,14 +300,17 @@ module akra.model {
 			CRITICAL("Need to do.");
 		}
 
-		show(): void {
+		inline show(): void {
 		    this.data.setRenderable(true);
 		}
 
-		hide(): void {
+		inline hide(): void {
 		    this.data.setRenderable(false);
 		}
 
+		inline isRenderable(): bool {
+			return this.data.isRenderable();
+		}
 
 		//исходим из того, что данные скина 1:1 соотносятся с вершинами.
 		setSkin(pSkin: ISkin): bool {

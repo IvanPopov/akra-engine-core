@@ -290,8 +290,8 @@ module akra.render {
         	SET_BIT(this._iRenderable, <int>iIndexSet, bValue);
         }
 
-        isRenderable(iIndexSet?: int): bool;
         isRenderable(): bool;
+        isRenderable(iIndexSet: int): bool;
         isRenderable(iIndexSet?: int): bool {
         	if (arguments.length > 0) {
         		//is this index set renderable ?

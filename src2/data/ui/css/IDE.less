@@ -506,7 +506,7 @@ body {
 				}
 
 				&.last {
-					border-top-right-radius: : 2px;
+					border-top-right-radius: 2px;
 					border-bottom-right-radius: 2px;
 				}
 
@@ -607,9 +607,9 @@ body {
 
 		.component-meshproperties {
 
-			div[name=shadows] {
-				height: 12px;
-			}
+			// div[name=shadows] {
+			// 	height: 12px;
+			// }
 		}
 	}
 }
@@ -731,7 +731,7 @@ div[name=load-collada-dlg] {
 			}
 
 			&.last {
-				border-top-right-radius: : 2px;
+				border-top-right-radius: 2px;
 				border-bottom-right-radius: 2px;
 			}
 
@@ -791,5 +791,21 @@ div[name=scene] {
 				}
 			}
 		}
+	}
+}
+
+.component-material {
+	.material {
+		font-weight: bold;
+
+		img {
+			position: relative;
+			top: 4px;
+			left: -10px;
+		}
+	}
+
+	.value {
+		margin-left: 10px;
 	}
 }

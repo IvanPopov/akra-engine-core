@@ -73,12 +73,14 @@ module akra {
         deleteBoundingBox(): bool;
         showBoundingBox(): bool;
         hideBoundingBox(): bool;
+        isBoundingBoxVisible(): bool;
         createAndShowSubBoundingBox(): void;
 
         createBoundingSphere(): bool;
         deleteBoundingSphere(): bool;
         showBoundingSphere(): bool;
         hideBoundingSphere(): bool;
+        isBoundingSphereVisible(): bool;
         createAndShowSubBoundingSphere(): void;
 
         isReadyForRender(): bool;

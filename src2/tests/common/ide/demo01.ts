@@ -182,7 +182,7 @@ module akra {
 		        blocked     	: true,
 		        lastTriggers 	: 1,
 
-		        position: vec3(0.),
+		        position: new Vec3(0.),
 		        cameraCharacterDistanceBase       : 5.0, /*метров [расстояние на которое можно убежать от центра камеры]*/
 		        cameraCharacterDistanceMax        : 15.0,
 		        cameraCharacterChaseSpeed         : 25, /* m/sec*/
@@ -278,6 +278,9 @@ module akra {
 	        pStat.anim[sPseudo || sName] = self.hero.root.getController().findAnimation(sName);
 	    }
 
+	    pStat.time = self.engine.time;
+	    pStat.position.set(self.hero.root.worldPosition);
+
 	    findAnimation("MOVEMENT.player");
 	    findAnimation("MOVEMENT.blend");
 
@@ -317,15 +320,15 @@ module akra {
 
 	    //hero displacmnet
 	    var v3fDisplacement: IVec3 = pHero.worldPosition.subtract(pStat.position, vec3());
-	    // pCamera.addPosition(v3fDisplacement.negate(vec3()));
+
+	    pCamera.addPosition(v3fDisplacement.negate(vec3()));
 	    pStat.position.set(pHero.worldPosition);
 
 	    //camera orientation
 	    var v3fCameraHeroDist: IVec3 = pCamera.worldPosition.subtract(self.hero.pelvis.worldPosition, vec3());
 	    var v3fCameraHeroDir: IVec3 = v3fCameraHeroDist.normalize(vec3());
 	    var fCameraHeroDist: float = v3fCameraHeroDist.length();
-
-
+ 
 	    var qCamera: IQuat4 = pCamera.localOrientation;
 	    var qHeroView: IQuat4 = Mat4.lookAt(pCamera.localPosition, pStat.cameraCharacterFocusPoint, vec3(0., 1., 0.),
 	                                mat4()).toQuat4(quat4());
@@ -336,7 +339,8 @@ module akra {
 
 	    //camera position
 	    var fDist: float = (fCameraHeroDist - pStat.cameraCharacterDistanceBase) / pStat.cameraCharacterDistanceMax *
-	                -pStat.cameraCharacterChaseSpeed * fTimeDelta;
+	                (-pStat.cameraCharacterChaseSpeed * fTimeDelta);
+
 	    var v3fCameraZX: IVec3 = vec3(pCamera.worldPosition);
 	    v3fCameraZX.y = 0;
 
@@ -344,7 +348,6 @@ module akra {
 	    v3fHeroZX.y = 0;
 
 	    var v3fDir: IVec3 = v3fHeroZX.subtract(v3fCameraZX).normalize();
-
 	    pCamera.addPosition(v3fDir.scale(-fDist));
 
 	    //====================
@@ -365,11 +368,15 @@ module akra {
 	        qTemp = Quat4.fromAxisAngle(v3fCameraOrtho, -fY * pStat.cameraPitchSpeed * fTimeDelta, quat4());
 	        qTemp.toYawPitchRoll(v3fYPR);
 
-	        pCamera.localPosition.scale(1. - fY / 25);
+	        // pCamera.localPosition.scale(1. - fY / 25);
 	    }
 
-	    if (fX / 10 + v3fYPR.x || v3fYPR.y || v3fYPR.z) {
-	        pCamera.addRotationByEulerAngles(fX / 10 + v3fYPR.x, v3fYPR.y, v3fYPR.z);
+	    var fX_ = fX / 10 + v3fYPR.x;
+	    var fY_ = v3fYPR.y;
+	    var fZ_ = v3fYPR.z;
+
+	    if (fX_ || fY_ || fZ_) {
+	        pCamera.addRotationByEulerAngles(fX_, fY_, fZ_);
 	    }
 	}
 
@@ -865,6 +872,8 @@ module akra {
 		
 
 		loadModels("@HERO_MODEL", (pNode: ISceneNode) => {
+			pNode.setRelPosition(-5., 0., 0.);
+
 			fopen("@HERO_CONTROLLER", "r").read((err: Error, content: string) => {
 				if (!isNull(err)) {
 					throw err;
@@ -878,11 +887,37 @@ module akra {
 				initState();
 
 				pScene.bind(SIGNAL(beforeUpdate), update);
+
+				/*pNode.child.explore((pEntity: IEntity): bool => {
+					if (!scene.isModel(pEntity)) {
+						return true;
+					}
+
+					var pModel: ISceneModel = <ISceneModel>pEntity;
+					pModel.mesh.createBoundingBox();
+					pModel.mesh.showBoundingBox();
+
+					LOG(pModel.name, pModel.mesh.boundingBox.size(vec3()).toString());
+				});*/
 			});
 		});
 
 		loadModels("@MINER_MODEL", (pNode: ISceneNode) => {
-			pNode.setRelPosition(-5., 0., 0.);
+			// pNode.scale(.8);
+			// pNode.setRelPosition(-5., 0., 0.);
+			
+			/*pNode.child.explore((pEntity: IEntity): bool => {
+				if (!scene.isModel(pEntity)) {
+					return true;
+				}
+
+				var pModel: ISceneModel = <ISceneModel>pEntity;
+				pModel.mesh.createBoundingBox();
+				pModel.mesh.showBoundingBox();
+
+				LOG(pModel.name, pModel.mesh.boundingBox.size(vec3()).toString());
+			});*/
+
 		});
 	}
 

@@ -841,13 +841,13 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		toString(): string{
+		toString(iFixed: uint = 2): string{
 			var pData: Float32Array = this.data;
 
-		    return '['  + pData[__11] + ", " + pData[__12] + ', ' + pData[__13] + ', ' + pData[__14] + ',\n' 
-		                + pData[__21] + ", " + pData[__22] + ', ' + pData[__23] + ', ' + pData[__24] + ',\n'
-		                + pData[__31] + ", " + pData[__32] + ', ' + pData[__33] + ', ' + pData[__34] + ',\n'
-		                + pData[__41] + ", " + pData[__42] + ', ' + pData[__43] + ', ' + pData[__44]+ ']';
+		    return '['  + pData[__11].toFixed(iFixed) + ", " + pData[__12].toFixed(iFixed) + ', ' + pData[__13].toFixed(iFixed) + ', ' + pData[__14].toFixed(iFixed) + ',\n' 
+		                + pData[__21].toFixed(iFixed) + ", " + pData[__22].toFixed(iFixed) + ', ' + pData[__23].toFixed(iFixed) + ', ' + pData[__24].toFixed(iFixed) + ',\n'
+		                + pData[__31].toFixed(iFixed) + ", " + pData[__32].toFixed(iFixed) + ', ' + pData[__33].toFixed(iFixed) + ', ' + pData[__34].toFixed(iFixed) + ',\n'
+		                + pData[__41].toFixed(iFixed) + ", " + pData[__42].toFixed(iFixed) + ', ' + pData[__43].toFixed(iFixed) + ', ' + pData[__44].toFixed(iFixed)+ ']';
 		};
 
 		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4{

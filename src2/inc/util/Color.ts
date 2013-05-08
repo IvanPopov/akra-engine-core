@@ -2,6 +2,7 @@
 #define COLOR_TS
 
 #include "IColor.ts"
+#include "math/math.ts"
 
 module akra.util {
 

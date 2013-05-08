@@ -1248,7 +1248,7 @@ body {
   border-bottom-left-radius: 2px;
 }
 .component-inspector .row .component-checkboxlist .component-checkbox.last {
-  border-top-right-radius: : 2px;
+  border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
 .component-inspector .row .component-checkboxlist .component-checkbox.active {
@@ -1436,15 +1436,6 @@ body {
 .component-inspector div[name=animation-controller] .component-switch label:before {
   height: 12px;
 }
-.component-inspector div[name=model-entry] .component-meshproperties div[name=shadows],
-.component-inspector div[name=scene-model] .component-meshproperties div[name=shadows],
-.component-inspector div[name=light-point] .component-meshproperties div[name=shadows],
-.component-inspector div[name=animation-node] .component-meshproperties div[name=shadows],
-.component-inspector div[name=camera] .component-meshproperties div[name=shadows],
-.component-inspector div[name=scene] .component-meshproperties div[name=shadows],
-.component-inspector div[name=animation-controller] .component-meshproperties div[name=shadows] {
-  height: 12px;
-}
 .component-tabs  > .bookmarks  > .bookmark {
   background-color: #d3d3d3;
 }
@@ -1533,7 +1524,7 @@ div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.first {
   border-bottom-left-radius: 2px;
 }
 div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.last {
-  border-top-right-radius: : 2px;
+  border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
 div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.active {
@@ -1589,4 +1580,15 @@ div[name=scene] {
 .component-resourceproperties  > div .component-panel .row .component-colladaanimation:hover {
   border-color: gray;
   border-style: solid;
+}
+.component-material .material {
+  font-weight: bold;
+}
+.component-material .material img {
+  position: relative;
+  top: 4px;
+  left: -10px;
+}
+.component-material .value {
+  margin-left: 10px;
 }

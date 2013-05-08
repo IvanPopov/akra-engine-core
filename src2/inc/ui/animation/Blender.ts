@@ -120,12 +120,13 @@ module akra.ui.animation {
 		        pSlider.render(this.el.find("td.graph-node-center > div.controls:first"));
 		        pSlider.range = 100;
 
-		        this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
-
+		        
 		        if (iAnim == -1) {
 		        	iAnim = pBlend.addAnimation(pAnimation);
+		        	this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
 		        }
 		        else {
+		        	this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
 		        	//animation already exists, and all parameters already setuped right
 		        	pSlider.value = pBlend.getAnimationWeight(iAnim);
 		        	this._weightUpdated(pBlend, iAnim, pBlend.getAnimationWeight(iAnim));

@@ -51,6 +51,7 @@ module akra {
 
 		show(): void;
 		hide(): void;
+		isRenderable(): bool;
 
 		destroy(): void;
 
