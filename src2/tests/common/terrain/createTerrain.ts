@@ -27,8 +27,12 @@ module akra {
 
 			pCanvas.resize(800, 600);
 
-			var pCanvasLOD = $("<canvas id='canvasLOD' width=600 height=600 style='float: right'>");
-			pMainScene.append(pCanvasLOD);
+			// var pCanvasLOD = $("<canvas id='canvasLOD' width=600 height=600 style='float: right'>");
+			// pMainScene.append(pCanvasLOD);
+			// 
+			// for(var i: uint = 0; i < 4; i++){
+			// 	pMainScene.append($("<canvas id='canvasVariance" + i + "' width=512 height=512 style='float: bottom'>"));
+			// }
 		}
 
 		function createCameras(): void {
@@ -133,7 +137,7 @@ module akra {
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-256, 256, -256, 256, 0, 256), 8, 1, 1, "main");
+					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-256, 256, -256, 256, 0, 256), 4, 5, 5, "main");
 					pTerrain.attachToParent(pScene.getRootNode());
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);

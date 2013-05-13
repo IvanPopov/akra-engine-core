@@ -73,7 +73,7 @@ module akra.terrain {
 
 			debug_assert(arguments.length === 9, "Not valid arguments count.");
 
-			var iVerts: uint = math.max(iXVerts,iYVerts)
+			var iVerts: uint = math.max(iXVerts, iYVerts)
 			this._iStartIndex = iStartIndex;
 
 			var bResult: bool = super._internalCreate(pParentSystem, 
@@ -85,9 +85,8 @@ module akra.terrain {
 				return false;
 			}
 
-			this._iTotalDetailLevels = math.ceil(math.log(iVerts)/math.LN2)*2-1;
-			this._iTotalVariances=1<<this._iTotalDetailLevels;
-
+			this._iTotalDetailLevels = 1<<(math.round(math.log(iVerts - 1)/math.LN2)- 1);
+			this._iTotalVariances = 1<<this._iTotalDetailLevels;
 
 			this._pVarianceTreeA = new Array( this._iTotalVariances);
 			// this._pVarianceTreeA.set(0);
@@ -199,7 +198,7 @@ module akra.terrain {
 			    fScale, fLimit);
 		}
 
-		recursiveTessellate(pTri: ITriTreeNode, fDistA: float, fDistB: float, fDistC: float, pVTree: float[], iIndex: uint, fScale: float, fLimit: float): void {
+		protected recursiveTessellate(pTri: ITriTreeNode, fDistA: float, fDistB: float, fDistC: float, pVTree: float[], iIndex: uint, fScale: float, fLimit: float): void {
 			if ((iIndex<<1)+1 < this._iTotalVariances) {
 				//console.log("vIndex",vIndex,"totalVariances",this._totalVariances)
 				var fMidDist: float = (fDistB+fDistC)* 0.5;
@@ -208,8 +207,8 @@ module akra.terrain {
 				// Если треугольник не поделен
 				if (!pTri.leftChild) {
 
-					//var fRatio: float = (pVTree[iIndex]*fScale)/math.pow(fMidDist+0.0001, fLimit);
-					var fRatio: float = (pVTree[iIndex]);/* * fScale)/(fMidDist+0.0001);*/
+					var fRatio: float = (pVTree[iIndex] * pVTree[iIndex] *fScale)/math.sqrt(fMidDist+0.0001);
+					//var fRatio: float = (pVTree[iIndex]);/* * fScale)/(fMidDist+0.0001);*/
 
 					if (fRatio > fLimit) {
 						// subdivide this triangle
@@ -236,7 +235,7 @@ module akra.terrain {
 			}
 		}
 
-		split(pTri: ITriTreeNode): void {
+		protected split(pTri: ITriTreeNode): void {
 			// Если разбит то смысла разбивать еще нет
 			if (pTri.leftChild){
 				return;
@@ -404,60 +403,13 @@ module akra.terrain {
 			this.terrainSystem.totalIndex = this._iTempTotalIndices;
 
 
-
-			// var pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvasLOD');
-			// var p2D = pCanvas.getContext("2d");
-			// p2D.strokeStyle = "#f00"; //цвет линий
-			// p2D.lineWidth = 1;
-			// p2D.beginPath();
-			// //console.log("Total ",pSec._iTotalIndices);
-
-			// //console.log(this);
-			// var pVerts: float[] = this.terrainSystem.verts;
-			// var rect: IRect3d = this.terrainSystem.worldExtents;
-			// var size: IVec3 = this.terrainSystem.worldSize;
-			
-			// for(var i=0;i < this._iTempTotalIndices; i += 3) {
-
-
-			// 	p2D.moveTo(	((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
-			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
-			// 		((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
-			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
-			// 	p2D.lineTo(	((pVerts[(this._pTempIndexList[i+1]*4-this._iVertexID)/32
-			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
-			// 		((pVerts[(this._pTempIndexList[i+1]*4-this._iVertexID)/32
-			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
-			// 	p2D.lineTo(	((pVerts[(this._pTempIndexList[i+2]*4-this._iVertexID)/32
-			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
-			// 		((pVerts[(this._pTempIndexList[i+2]*4-this._iVertexID)/32
-			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
-			// 	p2D.lineTo(	((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
-			// 		*8+0]-rect.x0)/size.x)*pCanvas.width,
-			// 		((pVerts[(this._pTempIndexList[i+0]*4-this._iVertexID)/32
-			// 			*8+1]-rect.y0)/size.y)*pCanvas.height);
-			// }
-
-			// p2D.stroke();
-
-			// p2D.strokeStyle = "#f00"; //цвет линий
-			// p2D.lineWidth = 1;
-			// p2D.beginPath();
-			// p2D.lineTo(((this._pWorldRect.x0-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y0-rect.y0)/size.y)*pCanvas.height);
-			// p2D.lineTo(((this._pWorldRect.x1-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y0-rect.y0)/size.y)*pCanvas.height);
-			// p2D.lineTo(((this._pWorldRect.x1-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y1-rect.y0)/size.y)*pCanvas.height);
-			// p2D.lineTo(((this._pWorldRect.x0-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y1-rect.y0)/size.y)*pCanvas.height);
-			// p2D.lineTo(((this._pWorldRect.x0-rect.x0)/size.x)*pCanvas.width,((this._pWorldRect.y0-rect.y0)/size.y)*pCanvas.height);
-			// p2D.stroke();
-
-
 			this._iTempTotalIndices = undefined;
 			this._iVertexID = undefined;
 			this._pTempIndexList = null;
 
 		}
 
-		recursiveBuildTriangleList(pTri: ITriTreeNode, iPointBase: uint, iPointLeft: uint, iPointRight: uint): void {
+		protected recursiveBuildTriangleList(pTri: ITriTreeNode, iPointBase: uint, iPointLeft: uint, iPointRight: uint): void {
 			if (pTri.leftChild) {
 
 				if(!pTri.rightChild) {
@@ -483,7 +435,7 @@ module akra.terrain {
 			}
 		}
 
-		computeVariance(): void {
+		protected computeVariance(): void {
 			var iTableWidth: uint = this.terrainSystem.tableWidth;
 			var iTableHeight: uint = this.terrainSystem.tableHeight;
 
@@ -497,96 +449,120 @@ module akra.terrain {
 			var fHeight2: float = this.terrainSystem.readWorldHeight(iIndex2);
 			var fHeight3: float = this.terrainSystem.readWorldHeight(iIndex3);
 
-			//console.error(iIndex0, iIndex1, iIndex2, iIndex3);
-
 			this.recursiveComputeVariance(
-				iIndex1, iIndex2, iIndex0,
+				this._iHeightMapX, 					 this._iHeightMapY + this._iYVerts-1,
+				this._iHeightMapX + this._iXVerts-1, this._iHeightMapY + this._iYVerts-1,
+				this._iHeightMapX,					 this._iHeightMapY,
 				fHeight1, fHeight2, fHeight0,
 				this._pVarianceTreeA, 1);
 
 			this.recursiveComputeVariance(
-				iIndex3, iIndex0, iIndex2,
+				this._iHeightMapX + this._iXVerts-1, this._iHeightMapY,
+				this._iHeightMapX,					 this._iHeightMapY,
+				this._iHeightMapX + this._iXVerts-1, this._iHeightMapY + this._iYVerts-1,
 				fHeight3, fHeight0, fHeight2,
 				this._pVarianceTreeB, 1);
-
-			LOG("Good variance for sections: " + this._nCountOfGoodVariance);
 		}
 
-		protected _nCountOfGoodVariance: uint = 0;
-
-		recursiveComputeVariance(iCornerA: uint, iCornerB: uint, iCornerC: uint, fHeightA: float, fHeightB: float, fHeightC: float, pVTree: float[], iIndex: uint): float {
+		protected recursiveComputeVariance(iCornerAX: uint, iCornerAY: uint,
+										   iCornerBX: uint, iCornerBY: uint,
+										   iCornerCX: uint, iCornerCY: uint,
+										   fHeightA: float, fHeightB: float, fHeightC: float, pVTree: float[], iIndex: uint): float {
 			if (iIndex < pVTree.length) {
-				var iMidpoint: uint = (iCornerB+iCornerC)>>1;
-				//console.log(iCornerA, iCornerB, iCornerC,'mid point --->', iMidpoint);
-				var fMidHeight: float = this.terrainSystem.readWorldHeight(iMidpoint);
-				var fInterpolatedHeight: float = (fHeightB+fHeightC)*0.5;
+
+				var iMidpointX: uint = (iCornerBX + iCornerCX) >> 1;
+				var iMidpointY: uint = (iCornerBY + iCornerCY) >> 1;
+
+				if ((iMidpointX === iCornerBX || iMidpointX === iCornerCX) &&
+					(iMidpointY === iCornerBY || iMidpointY === iCornerCY)){
+					return 0;
+				}
+
+				var fMidHeight: float = this.terrainSystem.readWorldHeight(iMidpointX, iMidpointY);
+				var fInterpolatedHeight: float = (fHeightB + fHeightC)*0.5;
 				var fVariance: float = math.abs(fMidHeight - fInterpolatedHeight);
-					
-				// var iTW: uint = this.terrainSystem.tableWidth;
-				// var iTH: uint = this.terrainSystem.tableHeight;
-				// var iXB: uint = iCornerB%iTW;
-				// var iYB: uint = math.floor(iCornerB/iTW);
-				// var iXC: uint = iCornerC%iTW;
-				// var iYC: uint = math.floor(iCornerC/iTW);
-				// var pWorldSize: IVec3 = this.terrainSystem.worldSize;
-				// var fLX: float = math.abs(iXB-iXC)/iTW*pWorldSize.x;
-				// var fLY: float = math.abs(iYB-iYC)/iTH*pWorldSize.y;
-				// var fX: float = math.sqrt(fLY*fLY+fLX*fLX);
-				// var fY: float = math.abs(fHeightB-fHeightC);
-
-				// var fInterpolatedHeight: float = (fHeightB+fHeightC)*0.5;
-				// var fVariance: float = math.abs(fMidHeight - fInterpolatedHeight);
-
-				// if(fX < fY) {
-				// 	fVariance = fInterpolatedHeight*fX/fY
-				// }
 
 				// find the variance of our children
 				var fLeft: float = this.recursiveComputeVariance(
-					iMidpoint, iCornerA, iCornerB,
+					iMidpointX, iMidpointY,
+					iCornerAX,  iCornerAY,
+					iCornerBX,  iCornerBY,
 					fMidHeight, fHeightA, fHeightB,
 					pVTree, iIndex<<1);
 
 				var fRight: float = this.recursiveComputeVariance(
-					iMidpoint, iCornerC, iCornerA,
+					iMidpointX, iMidpointY,
+					iCornerCX,  iCornerCY,
+					iCornerAX,  iCornerAY,
 					fMidHeight, fHeightC, fHeightA,
 					pVTree, 1+(iIndex<<1));
 
 				// local variance is the minimum of all three
-				// fVariance = math.max(fVariance, fLeft);
-				// fVariance = math.max(fVariance, fRight);
+				fVariance = math.max(fVariance, fLeft);
+				fVariance = math.max(fVariance, fRight);
 
 				// store the variance as 1/(variance+1)
 				pVTree[iIndex] = fVariance;
 
-				if(fVariance < 3 && fVariance !== 0){
-					this._nCountOfGoodVariance++;
-				}
 
-
-				// //this.drawVariance(iIndex,iCornerA, iCornerB, iCornerC,pVTree);
+				// this.drawVariance(iIndex,
+				// 	this.terrainSystem._tableIndex(iCornerAX, iCornerAY),
+				// 	this.terrainSystem._tableIndex(iCornerBX, iCornerBY), 
+				// 	this.terrainSystem._tableIndex(iCornerCX, iCornerCY), pVTree);
 
 				return fVariance;
 			}
 			// return a value which will be ignored by the parent
 			// (because the minimum function is used with this result)
-			// LOG("i`m must not be here");
+
 			return 0;
 		}
+
+		protected maxVariance(): void {
+			var fVarianceMaxA: uint = 0;
+			var fVarianceMaxB: uint = 0;
+			for(var i: uint = 0; i < this._pVarianceTreeA.length; i++){
+				if(fVarianceMaxA < this._pVarianceTreeA[i]){
+					fVarianceMaxA = this._pVarianceTreeA[i];
+				}
+
+				if(fVarianceMaxB < this._pVarianceTreeB[i]){
+					fVarianceMaxB = this._pVarianceTreeB[i];
+				}
+			}
+
+			LOG("MAX ---> In A: " + fVarianceMaxA + ". In B: " + fVarianceMaxB);
+		}
+
+		protected minVariance(): void {
+			var fVarianceMaxA: uint = 0xffffff;
+			var fVarianceMaxB: uint = 0xffffff;
+
+			for(var i: uint = 0; i < this._pVarianceTreeA.length; i++){
+				if(fVarianceMaxA > this._pVarianceTreeA[i]  && this._pVarianceTreeA[i] !== 0){
+					fVarianceMaxA = this._pVarianceTreeA[i];
+				}
+
+				if(fVarianceMaxB > this._pVarianceTreeB[i] && this._pVarianceTreeB[i] !== 0){
+					fVarianceMaxB = this._pVarianceTreeB[i];
+				}
+			}
+
+			LOG("MIN ---> In A: " + fVarianceMaxA + ". In B: " + fVarianceMaxB);
+		}
 		
-		drawVariance(iIndex: uint, iCornerA: uint, iCornerB: uint, iCornerC: uint, pVTree: float[]): void {
-			var iLevel: uint = math.floor(math.log(iIndex)/math.LN2)
-			var iStart: uint = 0
+		protected drawVariance(iIndex: uint, iCornerA: uint, iCornerB: uint, iCornerC: uint, pVTree: float[]): void {
+
+			var iLevel: uint = math.floor(math.log(iIndex)/math.LN2);
+			var iStart: uint = 3;
 			if(iLevel >= iStart && iLevel < iStart + 4) {
 				//#####################################################################################
 				//Получение канваса
-				var pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("variance"+(iLevel-iStart));
+				var pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("canvasVariance"+(iLevel-iStart));
 				var p2D = pCanvas.getContext("2d");
 				// цвет фона
+
 				p2D.fillStyle = "rgb(0,"+math.floor(pVTree[iIndex])+",0)"; 
-
-				//p2D.fillRect(0, 0, pCanvas.width, pCanvas.height);
-
 
 				//#####################################################################################
 				//Рисование треугольников
@@ -608,12 +584,8 @@ module akra.terrain {
 				var iXMid: uint = math.floor((iXA+iXB+iXC)/3);
 				var iYMid: uint = math.floor((iYA+iYB+iYC)/3);
 
-				//console.log(iXMid/iTW*pCanvas.width,iYMid/iTH*pCanvas.height, math.floor(iXMid/iTW*pCanvas.width),math.floor(iYMid/iTH*pCanvas.height));
-				//console.warn(iXMid,iYMid)
-				p2D.arc(math.floor(iXMid/iTW*pCanvas.width),math.floor(iYMid/iTH*pCanvas.height),5, 0, math.PI*2, false);
+				p2D.arc(math.floor(iXMid/iTW*pCanvas.width), math.floor(iYMid/iTH*pCanvas.height), 1, 0, math.PI*2, false);
 				p2D.fill();
-				//console.log("Total ",pSec._iTotalIndices);
-				//console.log(this);
 			}
 		}
 	}
