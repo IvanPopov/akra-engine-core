@@ -2193,7 +2193,6 @@ module akra.core.pool.resources {
 
                         //setup textures
                         for (var sTextureType in pPhongMaterial.textures) {
-
                             var pColladaTexture: IColladaTexture = pPhongMaterial.textures[sTextureType];
 
                             if (isNull(pColladaTexture)) {
@@ -2217,6 +2216,10 @@ module akra.core.pool.resources {
                                 ERROR("TODO: flipY for image unsupported!");
                             }
 
+                            // LOG("is texture valid?? - ", pTexture.isValid());
+                            // pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR/*_MIPMAP_LINEAR*/);
+                            // pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR/*_MIPMAP_LINEAR*/);
+
                             var pMatches: string[] = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
                             var iTexCoord: int = (pMatches ? parseInt(pMatches[2]) : 0);
 
@@ -2234,6 +2237,7 @@ module akra.core.pool.resources {
                 }
                 //trace('try to apply mat:', pMaterial);
             }
+
 
             return pMesh;
         }

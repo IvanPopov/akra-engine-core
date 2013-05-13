@@ -229,6 +229,10 @@ module akra.webgl {
 
         isANGLE = checkIsAngle(pWebGLContext);
 
+#ifdef DEBUG
+        LOG("WebGL running under " + (isANGLE? "ANGLE/DirectX": "Native GL"));
+#endif
+
 	})(createContext());
 
 	export function hasExtension(sExtName: string): bool {

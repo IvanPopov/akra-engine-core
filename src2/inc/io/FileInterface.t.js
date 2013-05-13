@@ -99,8 +99,13 @@ onmessage = function (pEvent) {
                 }
             }
             else {
-
-                postMessage(pData);
+                // if (pCommand.transfer == TRANSFER.FAST && pData.length > 25 * 1024 * 1024) { //25mb
+                //     pData = str2buf(pData);
+                //     postMessage(pData, [pData]);
+                // }
+                // else {
+                    postMessage(pData);
+                // }
             }
             break;
         case File.WRITE:

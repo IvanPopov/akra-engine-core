@@ -126,7 +126,7 @@ module akra.core.pool.resources {
         }
 
         inline isValid(): bool {
-            return isDefAndNotNull(this._isInternalResourceCreated);
+            return this._isInternalResourceCreated;
         }
         
         inline calculateSize(): uint {
@@ -231,10 +231,11 @@ module akra.core.pool.resources {
         
         setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool
         {
+            LOG("try to set texture  filter", eParam, eValue);
             if (!this.isValid()) {
                 return false;
             }
-
+            LOG("texture parameter used!", __CALLSTACK__);
             this._pParams[eParam] = eValue;
             return this._setFilterInternalTexture(eParam,eValue);
         }

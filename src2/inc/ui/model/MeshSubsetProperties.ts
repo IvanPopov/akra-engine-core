@@ -30,6 +30,8 @@ module akra.ui.model {
 
 		private updateProperties(): void {
 			this._pName.text = this._pSubset.name;
+			this._pSubset.switchRenderMethod(null);
+			this._pMaterial.set(this._pSubset.material);
 			this.title = this._pSubset.name;
 		}
 

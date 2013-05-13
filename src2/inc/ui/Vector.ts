@@ -139,6 +139,14 @@ module akra.ui {
 			this.useComponents(4);
 		}
 
+		setColor(c: IColorValue): void {
+			this.x.text = prettifyNumber(c.r);
+			this.y.text = prettifyNumber(c.g);
+			this.z.text = prettifyNumber(c.b);
+			this.w.text = prettifyNumber(c.a);
+			this.useComponents(4);
+		}
+
 		toVec2(): IVec2 {
 			return vec2(
 					parseFloat(this.x.text), 

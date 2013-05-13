@@ -7,6 +7,7 @@
 #include "bf/bitflags.ts"
 #include "math/math.ts"
 #include "util/ThreadManager.ts"
+#include "util/util.ts"
 
 //переносим все зависисмости в папку js паки с данными
 //обычно, это data/js
@@ -244,6 +245,12 @@ module akra.io {
 		        }
 
 		        pFile.atEnd();
+
+		        //large file can be sended as transferrable
+		        // if (isArrayBuffer(pData) && !IS_BINARY(this._iMode)) {
+		        // 	debug_print("file(byte length: " + (pData.byteLength / (1024 * 1024)) + "mb) ", this.name, " sended as trunsferable, but file is not binary");
+		        // 	pData = util.abtos(pData);
+		        // }
 
 		        fnCallback.call(pFile, null, pData);
 		    };

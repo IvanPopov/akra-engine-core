@@ -6,7 +6,7 @@
 
 /// @HERO_MODEL: {data}/models/hero/walk.dae|location()
 /// @HERO_CONTROLLER: {data}/models/hero/movement.json|location()
-//
+/// @WINDSPOT_MODEL: {data}/models/windspot/WINDSPOT.DAE|location()
 /// @MINER_MODEL: {data}/models/miner/miner.dae|location()
 
 module akra {
@@ -902,22 +902,9 @@ module akra {
 			});
 		});
 
-		loadModels("@MINER_MODEL", (pNode: ISceneNode) => {
-			// pNode.scale(.8);
-			// pNode.setRelPosition(-5., 0., 0.);
-			
-			/*pNode.child.explore((pEntity: IEntity): bool => {
-				if (!scene.isModel(pEntity)) {
-					return true;
-				}
-
-				var pModel: ISceneModel = <ISceneModel>pEntity;
-				pModel.mesh.createBoundingBox();
-				pModel.mesh.showBoundingBox();
-
-				LOG(pModel.name, pModel.mesh.boundingBox.size(vec3()).toString());
-			});*/
-
+		loadModels("@MINER_MODEL");
+		loadModels("@WINDSPOT_MODEL", (pNode: ISceneNode) => {
+			pNode.setRelPosition(7.5, 0., 0.);
 		});
 	}
 
