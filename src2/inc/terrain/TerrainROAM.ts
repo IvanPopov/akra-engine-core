@@ -119,7 +119,7 @@ module akra.terrain {
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 
-				this._setTessellationParameters(1.0, 1.0);
+				this._setTessellationParameters(10.0, 0.5);
 				this.reset();
 			}
 			return bResult;
@@ -136,12 +136,20 @@ module akra.terrain {
 		}
 
 		protected _allocateSectors(): bool {
+			var nElementSize: uint = 0;
+			if(this._useVertexNormal()){
+				nElementSize = (3/*кординаты вершин*/ + 3/*нормаль*/ + 2/*текстурные координаты*/);
+			}
+			else {
+				nElementSize =  (3/*кординаты вершин*/ + 2/*текстурные координаты*/);
+			}
+
 			this._pSectorArray = new Array(this._iSectorCountX * this._iSectorCountY);
 
 			//Вершинный буфер для всех
 			this._pVerts = new Array((this._iSectorCountX*this._iSectorCountY/*количество секции*/) *
 									 (this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/) * 
-									 (3/*кординаты вершин*/+ 3/*нормали*/ + 2/*текстурные координаты*/));
+									 (nElementSize));
 
 			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
 				this._pSectorArray[i] = this.scene.createTerrainSectionROAM();
@@ -178,8 +186,15 @@ module akra.terrain {
 					}
 				}
 			}
-			
-			var pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT3(DeclarationUsages.NORMAL), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
+
+			var pVertexDescription: IVertexElementInterface[] = null;
+			if(this._useVertexNormal()){
+				pVertexDescription = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT3(DeclarationUsages.NORMAL), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
+			}
+			else {
+				pVertexDescription = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
+			}
+
 			this._iVertexID = this._pRenderData.allocateData(pVertexDescription, new Float32Array(this._pVerts));
 
 			

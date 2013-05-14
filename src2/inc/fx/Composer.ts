@@ -620,7 +620,7 @@ module akra.fx {
 		protected bIsDebug: bool = false;
 		protected bIsRealNormal: bool = false;
 		protected bTerrainBlackSectors: bool = false;
-		protected bShowTriangles: bool = true;
+		protected bShowTriangles: bool = false;
 
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();

@@ -74,6 +74,8 @@ module akra.webgl {
 			this.byteLength = pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
 			this._pBuffer.setPosition(0, 0, this._iWidth, this._iHeight, 0, this._iDepth);
 
+			pWebGLRenderer.bindWebGLTexture(this._eTarget, null);
+
 			this.notifyResized();
 
 			//pWebGLRenderer.debug(false, false);
@@ -183,6 +185,8 @@ module akra.webgl {
 				}                                   				\n\
 				");
 	        }
+
+	        pWebGLRenderer.bindWebGLTexture(eTarget, null);
 
 			return true;
 		}
@@ -300,6 +304,8 @@ module akra.webgl {
 	        }
 
 	        pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	        
+	        pWebGLRenderer.bindWebGLTexture(this._eTarget, null);
 
 	        this.notifyAltered();
 		}
@@ -464,6 +470,7 @@ module akra.webgl {
 			
 			pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
 			pWebGLContext.copyTexSubImage2D(this._eFaceTarget, this._iLevel, 0, 0, 0, 0, this._iWidth, this._iHeight);
+			pWebGLRenderer.bindWebGLTexture(this._eTarget, null);
 		}
 
 		inline _getTarget(): int {
@@ -738,7 +745,7 @@ module akra.webgl {
 	        }
 	        
 	        // Reset source texture to sane state
-	        pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
+	        pWebGLRenderer.bindWebGLTexture(this._eTarget, null);
 	        
 	        // Detach texture from temporary framebuffer
 	        pWebGLContext.framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -821,7 +828,8 @@ module akra.webgl {
 
 	        pWebGLRenderer.bindWebGLTexture(eTarget, pTempWebGLTexture);
 	        pWebGLContext.texImage2D(eTarget, 0, iWebGLFormat, iWidth, iHeight, 0, iWebGLFormat, iWebGLDataType, null);
-
+			pWebGLRenderer.bindWebGLTexture(eTarget, null);
+	        
 	        var pTextureBufferPool: IResourcePool = this.getManager().textureBufferPool;
 	        var pTempTexBuffer: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(".temp");
 	        // var pTempTexBuffer: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.findResource(".temp");

@@ -312,6 +312,7 @@ module akra.webgl {
             var iSlot: uint = this._pWebGLRenderer.getNextTextureSlot();
 
             this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
+            // this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
             this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
             this.setInt(sName, iSlot);
         }
