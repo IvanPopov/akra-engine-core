@@ -140,8 +140,8 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
 
     Normal = normalize(norm.xyz);
 //    Normal = normalize(float3(normalize(IN.norm) + tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz));
-    Fragment_material.emissive = defaultMaterial.emissive + tex2D(sampler_emissive, float2(IN.tc_emissive.xy));
-    Fragment_material.diffuse = defaultMaterial.diffuse + tex2D(sampler_diffuse, float2(IN.tc_diffuse.xy));
+    Fragment_material.emissive = clamp(defaultMaterial.emissive + tex2D(sampler_emissive, float2(IN.tc_emissive.xy)), 0., 1.);
+    Fragment_material.diffuse = clamp(defaultMaterial.diffuse + tex2D(sampler_diffuse, float2(IN.tc_diffuse.xy)), 0., 1.);
     
     if(!normalFix){
         Fragment_material.shininess = defaultMaterial.shininess;
@@ -149,8 +149,8 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
 }
 
 void fs_mesh_texture_pass_2(VS_OUT_2 IN){
-    Fragment_material.specular = defaultMaterial.specular + tex2D(sampler_specular, float2(IN.tc_specular.xy));
-    Fragment_material.ambient = defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy));
+    Fragment_material.specular = clamp(defaultMaterial.specular + tex2D(sampler_specular, float2(IN.tc_specular.xy)), 0., 1.);
+    Fragment_material.ambient = clamp(defaultMaterial.ambient + tex2D(sampler_ambient, float2(IN.tc_ambient.xy)), 0., 1.);
 
     if(normalFix){
         Fragment_material.shininess = defaultMaterial.shininess;

@@ -241,7 +241,7 @@ module akra {
 		pOmniLight.params.specular.set(1, 1, 1, 1);
 		pOmniLight.params.attenuation.set(1, 0, 0);
 
-		pOmniLight.addPosition(0, 100, 100);
+		pOmniLight.addPosition(0, 100, 125);
 
 		// var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 		
