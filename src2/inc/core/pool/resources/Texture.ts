@@ -218,9 +218,9 @@ module akra.core.pool.resources {
         }
 
         _onImageLoad(pImage: IImg): void {
-            LOG("resource loaded > ", pImage.findResourceName(), this.findResourceName());
             this.disconnect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
             this.loadImage(pImage);
+            debug_print("texture/image loaded: ", pImage.findResourceName());
         }
 
         destroyResource(): bool {
@@ -231,11 +231,13 @@ module akra.core.pool.resources {
         
         setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool
         {
-            LOG("try to set texture  filter", eParam, eValue);
+
             if (!this.isValid()) {
                 return false;
             }
-            LOG("texture parameter used!", __CALLSTACK__);
+
+            LOG("texture parameter used!", eParam, " = ", eValue);
+            
             this._pParams[eParam] = eValue;
             return this._setFilterInternalTexture(eParam,eValue);
         }

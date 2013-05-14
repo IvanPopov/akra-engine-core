@@ -8,6 +8,7 @@
 /// @HERO_CONTROLLER: {data}/models/hero/movement.json|location()
 /// @WINDSPOT_MODEL: {data}/models/windspot/WINDSPOT.DAE|location()
 /// @MINER_MODEL: {data}/models/miner/miner.dae|location()
+/// @ROCK_MODEL: {data}/models/rock/rock-1-low-p.DAE|location()
 
 module akra {
 	export interface IGameTrigger {
@@ -906,6 +907,10 @@ module akra {
 		loadModels("@WINDSPOT_MODEL", (pNode: ISceneNode) => {
 			pNode.setRelPosition(7.5, 0., 0.);
 		});
+		loadModels("@ROCK_MODEL", (pNode: ISceneNode) => {
+			pNode.setRelPosition(0., 1., 5.);
+		});
+		
 	}
 
 	pEngine.bind(SIGNAL(depsLoaded), main);		

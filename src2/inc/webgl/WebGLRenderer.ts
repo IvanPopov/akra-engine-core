@@ -311,6 +311,7 @@ module akra.webgl {
 
 		inline activateWebGLTexture(iWebGLSlot: int): void {
 			this._pWebGLContext.activeTexture(iWebGLSlot);
+			// LOG(__CALLSTACK__)
 		}
 
 		// inline getFreeWebGLTextureSlot(): int {

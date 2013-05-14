@@ -98,11 +98,13 @@ module akra.webgl {
              if (!this.isValid()) {
                 return false;
             }
+
             var iWebGLTarget: int = this._getWebGLTextureTarget();
             var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
             pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
             pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
+
             return true;         
         }
         protected _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{

@@ -247,11 +247,33 @@ module akra.io {
 		        pFile.atEnd();
 
 		        //large file can be sended as transferrable
-		        // if (isArrayBuffer(pData) && !IS_BINARY(this._iMode)) {
-		        // 	debug_print("file(byte length: " + (pData.byteLength / (1024 * 1024)) + "mb) ", this.name, " sended as trunsferable, but file is not binary");
-		        // 	pData = util.abtos(pData);
-		        // }
+		        if (isArrayBuffer(pData) && !IS_BINARY(this._iMode)) {
+		        	debug_print("file <", this.name, "> (" + (pData.byteLength / (1024 * 1024)).toFixed(2) + " mb) sended as trunsferable, but file is not binary");
+		        	
+		        	// var i = 0;
+		        	// var s = "";
+		        	// var block_size = 1024 * 64;
 
+		        	// while(true) {
+		        	// 	var n = math.min(pData.byteLength - i, block_size);
+		        		
+		        	// 	var pBuf = new Uint8Array(pData, i, n);
+
+		        	// 	s += String.fromCharCode.apply(null, Array.prototype.slice.call(pBuf, 0));
+
+		        	// 	i += block_size;
+
+		        	// 	if (i > pData.byteLength) {
+		        	// 		fnCallback.call(pFile, null, s);
+		        	// 		return;
+		        	// 	}
+
+		        	// 	debug_print(this.name + " decoded ", (i / pData.byteLength * 100).toFixed(2) + "%");
+		        	// }
+		        	
+		        	pData = util.abtos(pData);
+		        }
+		        
 		        fnCallback.call(pFile, null, pData);
 		    };
 
@@ -450,7 +472,7 @@ module akra.io {
 		}
 
 		private execCommand(pCommand: IFileCommand, fnCallback: Function, pTransferables?: any[]): void {
-			TFile.execCommand(this.isLocal(), pCommand, fnCallback);
+			TFile.execCommand(this, this.isLocal(), pCommand, fnCallback);
 		}
 
 		static defaultCallback: Function = function (err) {
@@ -459,9 +481,9 @@ module akra.io {
 			}
 		}
 
-		private static execCommand(isLocal: bool, pCommand: IFileCommand, fnCallback: Function, pTransferables?: any[]): void {
+		private static execCommand(pFile: IFile, isLocal: bool, pCommand: IFileCommand, fnCallback: Function, pTransferables?: any[]): void {
 
-			var pFile: IFile = this;
+			// var pFile: IFile = this;
 			var pManager: IThreadManager = isLocal? getLocalFileThreadManager(): getRemoteFileThreadManager();
 			var pThread: IThread = pManager.occupyThread();
  
