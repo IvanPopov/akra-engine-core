@@ -126,7 +126,7 @@ module akra.core.pool.resources {
         }
 
         inline isValid(): bool {
-            return this._isInternalResourceCreated;
+            return true;/*this._isInternalResourceCreated;*/
         }
         
         inline calculateSize(): uint {
