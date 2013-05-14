@@ -73,6 +73,7 @@ module akra {
 		reset(): void;
 
 		_tableIndex(iMapX: uint, iMapY: uint): uint;
+		_useVertexNormal(): bool;
 	}
 }
 

@@ -36,6 +36,11 @@ module akra.terrain {
 		private _iTessellationQueueCountOld: int = 0;
 		private _nCountRender: uint = 0;
 
+		private _m4fLastCameraMatrix: IMat4 = new Mat4();		
+		private _m4fLastTesselationMatrix: IMat4 = new Mat4();
+		private _v3fLocalCameraCoord: IVec3 = new Vec3();
+		private _isNeedReset: bool = true;
+
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
 			super(pScene, eType);
 			this._pRenderData = this._pDataFactory.getEmptyRenderData(EPrimitiveTypes.TRIANGLELIST,ERenderDataBufferOptions.RD_ADVANCED_INDEX);
@@ -94,6 +99,10 @@ module akra.terrain {
 			return this._pRenderableObject;
 		}
 
+		inline get localCameraCoord(): IVec3 {
+			return this._v3fLocalCameraCoord;
+		}
+
 
 		init(pImgMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneObject = null)
 		{
@@ -110,7 +119,7 @@ module akra.terrain {
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 
-				this._setTessellationParameters(0.5, 1.);
+				this._setTessellationParameters(10.0, 0.5);
 				this.reset();
 			}
 			return bResult;
@@ -127,12 +136,20 @@ module akra.terrain {
 		}
 
 		protected _allocateSectors(): bool {
+			var nElementSize: uint = 0;
+			if(this._useVertexNormal()){
+				nElementSize = (3/*кординаты вершин*/ + 3/*нормаль*/ + 2/*текстурные координаты*/);
+			}
+			else {
+				nElementSize =  (3/*кординаты вершин*/ + 2/*текстурные координаты*/);
+			}
+
 			this._pSectorArray = new Array(this._iSectorCountX * this._iSectorCountY);
 
 			//Вершинный буфер для всех
 			this._pVerts = new Array((this._iSectorCountX*this._iSectorCountY/*количество секции*/) *
 									 (this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/) * 
-									 (3/*кординаты вершин*/+ 3/*нормали*/ + 2/*текстурные координаты*/));
+									 (nElementSize));
 
 			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
 				this._pSectorArray[i] = this.scene.createTerrainSectionROAM();
@@ -169,8 +186,15 @@ module akra.terrain {
 					}
 				}
 			}
-			
-			var pVertexDescription: IVertexElementInterface[] = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT3(DeclarationUsages.NORMAL), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
+
+			var pVertexDescription: IVertexElementInterface[] = null;
+			if(this._useVertexNormal()){
+				pVertexDescription = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT3(DeclarationUsages.NORMAL), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
+			}
+			else {
+				pVertexDescription = [VE_FLOAT3(DeclarationUsages.POSITION), VE_FLOAT2(DeclarationUsages.TEXCOORD)];
+			}
+
 			this._iVertexID = this._pRenderData.allocateData(pVertexDescription, new Float32Array(this._pVerts));
 
 			
@@ -187,6 +211,7 @@ module akra.terrain {
 
 		reset(): void {
 			this._isRenderInThisFrame = false;
+
 			if(this._isCreate) {
 				super.reset();
 				// reset internal counters
@@ -200,6 +225,26 @@ module akra.terrain {
 				{
 					this._pSectorArray[i].reset();
 				}
+			}
+		}
+
+		resetWithCamera(pCamera: ICamera): bool {
+			if(!this._isOldCamera(pCamera)){
+				if(this._isNeedReset){
+					this.reset();
+					this._isNeedReset = false;
+
+					var v4fCameraCoord: IVec4 = vec4(pCamera.worldPosition, 1.);
+
+		    		v4fCameraCoord = this.inverseWorldMatrix.multiplyVec4(v4fCameraCoord);
+
+		    		this._v3fLocalCameraCoord.set(v4fCameraCoord.x, v4fCameraCoord.y, v4fCameraCoord.z);
+				}
+
+				return true;
+			}
+			else {
+				return false;
 			}
 		}
 
@@ -268,21 +313,30 @@ module akra.terrain {
 		    this._fLimit = fLimit;
 		}
 
+		inline _isOldCamera(pCamera: ICamera): bool {
+			return this._m4fLastCameraMatrix.isEqual(pCamera.worldMatrix);
+		} 
+
 
 		_onBeforeRender(pRenderableObject: IRenderableObject, pViewport: IViewport): void {
 			if(this._isCreate)
 			{
-				if(((this._nCountRender++) % 30) === 0)
+				var pCamera: ICamera = pViewport.getCamera();
+			
+				this._m4fLastCameraMatrix.set(pCamera.worldMatrix);
+
+				if (((this._nCountRender++) % 30) === 0)
 				{
-					if(this._iTessellationQueueCount !== this._iTessellationQueueCountOld) 
+					if(!this._m4fLastCameraMatrix.isEqual(this._m4fLastTesselationMatrix)) 
 					{
 						this.processTessellationQueue();
-						this._iTessellationQueueCountOld = this._iTessellationQueueCount;
+						this._m4fLastTesselationMatrix.set(this._m4fLastCameraMatrix);
+						//this._iTessellationQueueCountOld = this._iTessellationQueueCount;
 					}
-				}
-
-				this.reset();
+				}				
 			}
+
+			this._isNeedReset = true;
 		}
 	}
 }

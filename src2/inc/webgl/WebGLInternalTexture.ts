@@ -82,6 +82,33 @@ module akra.webgl {
         	}
         }
 
+        private _getAkraTextureParameterValue(iWebGLValue: uint): uint {
+            switch(iWebGLValue){
+                case GL_NEAREST:
+                    return ETextureFilters.NEAREST;
+                case GL_LINEAR:
+                    return ETextureFilters.LINEAR;
+                case GL_NEAREST_MIPMAP_NEAREST:
+                    return ETextureFilters.NEAREST_MIPMAP_NEAREST;
+                case GL_LINEAR_MIPMAP_NEAREST:
+                    return ETextureFilters.LINEAR_MIPMAP_NEAREST;
+                case GL_NEAREST_MIPMAP_LINEAR:
+                    return ETextureFilters.NEAREST_MIPMAP_LINEAR;
+                case GL_LINEAR_MIPMAP_LINEAR:
+                    return ETextureFilters.LINEAR_MIPMAP_LINEAR;
+
+
+                case GL_REPEAT:
+                    return ETextureWrapModes.REPEAT;
+                case GL_CLAMP_TO_EDGE:
+                    return ETextureWrapModes.CLAMP_TO_EDGE;
+                case GL_MIRRORED_REPEAT:
+                    return ETextureWrapModes.MIRRORED_REPEAT;
+                default:
+                    return 0;
+            }
+        }
+
         reset(): void;
         reset(iSize: uint): void;
         reset(iWidth: uint, iHeight: uint): void;
@@ -98,19 +125,19 @@ module akra.webgl {
              if (!this.isValid()) {
                 return false;
             }
-
+            
             var iWebGLTarget: int = this._getWebGLTextureTarget();
             var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
             pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
             pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
-
             return true;         
         }
         protected _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
-             if (!this.isValid()) {
+            if (!this.isValid()) {
                 return false;
             }
+
             var iWebGLTarget: int = this._getWebGLTextureTarget();
             var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
@@ -127,7 +154,7 @@ module akra.webgl {
             var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
             pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
-            return pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam));           
+            return this._getAkraTextureParameterValue(pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam)));           
         }
 
         protected _getWrapModeInternalTexture(eParam: ETextureParameters): ETextureWrapModes{
@@ -138,7 +165,7 @@ module akra.webgl {
             var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
             pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
-            return pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam));         
+            return this._getAkraTextureParameterValue(pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam)));         
         }
       
 
@@ -320,7 +347,9 @@ module akra.webgl {
 	                if(iDepth > 1) iDepth = iDepth >>> 1;
 	            }
 	        }
+
 	        this._createSurfaceList();
+            pWebGLRenderer.bindWebGLTexture(iWebGLTarget, null);
 
             return true;
         }
