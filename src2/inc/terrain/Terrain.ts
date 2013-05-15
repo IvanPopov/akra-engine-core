@@ -372,6 +372,29 @@ module akra.terrain {
 			return v3fNormal;
 		}
 
+		projectPointOnTerrain(v3fCoord: IVec3, v3fDestenation: IVec3): bool {
+			var v4fTerrainCoord: IVec4 = vec4(v3fCoord, 1.);
+
+		    v4fTerrainCoord = this.inverseWorldMatrix.multiplyVec4(v4fTerrainCoord);
+
+		    if (v4fTerrainCoord.x < this.worldExtents.x0 || v4fTerrainCoord.x > this.worldExtents.x1 ||
+		    	v4fTerrainCoord.y < this.worldExtents.y0 || v4fTerrainCoord.y > this.worldExtents.y1){
+
+		    	return false;
+		    }
+
+		    var iMapX: uint = math.floor((v4fTerrainCoord.x - this.worldExtents.x0) / this.worldExtents.sizeX() * this.tableWidth);
+		    var iMapY: uint = math.floor((v4fTerrainCoord.y - this.worldExtents.y0) / this.worldExtents.sizeY() * this.tableHeight);
+		    var fHeight: float = this.readWorldHeight(iMapX, iMapY);
+
+		    var v4fTempDestenation: IVec4 = vec4(v4fTerrainCoord.x, v4fTerrainCoord.y, fHeight, 1.);
+
+		    v4fTempDestenation = this.worldMatrix.multiplyVec4(v4fTempDestenation);
+		    v3fDestenation.set(v4fTempDestenation.x, v4fTempDestenation.y, v4fTempDestenation.z);
+
+		    return true;
+		}
+
 		/**
 		 * Подготовка терраина к рендерингу.
 		 */

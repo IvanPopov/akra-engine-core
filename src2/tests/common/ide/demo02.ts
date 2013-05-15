@@ -90,7 +90,7 @@ module akra {
 		pOmniLight.params.specular.set(1, 1, 1, 1);
 		pOmniLight.params.attenuation.set(1, 0, 0);
 
-		pOmniLight.addPosition(0, 1000, 100);
+		pOmniLight.addPosition(0, 750, 100);
 
 		// var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 		
@@ -229,13 +229,13 @@ module akra {
 			pTerrainMap["normal"] = pRmgr.loadImage("@TERRAIN_NORMAL_MAP");
 			
 			pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, -200, 0), 4, 5, 5, "main");
+				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 200), 4, 5, 5, "main");
 				pTerrain.attachToParent(pScene.getRootNode());
 				pTerrain.setInheritance(ENodeInheritance.ALL);
 
 				// pTerrain.scale(0.1);
 				pTerrain.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
-
+				pTerrain.setPosition(0., -pTerrain.localBounds.sizeZ(), 0.);
 				// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
 			});
 		});
