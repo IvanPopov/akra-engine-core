@@ -59,6 +59,7 @@ module akra.terrain {
 
 		//отоброжаемые куски текстуры
 		private _pMegaTexures: IMegaTexture = null; 
+		private _bUseVertexNormal: bool = false;
 
 		protected _pDefaultRenderMethod: IRenderMethod = null;
 		protected _pRenderMethod: IRenderMethod = null;
@@ -298,8 +299,6 @@ module akra.terrain {
 			    var iMaxY: uint = this._iTableHeight;
 			    var iMaxX: uint = this._iTableWidth;
 
-			    //trace("Terraim Map Size ", iMaxX, iMaxY);
-
 			    var pColorData: Uint8Array = new Uint8Array(4 * iMaxY * iMaxX);
 			    this._pHeightTable = new Array(iMaxX * iMaxY); /*float*/
 
@@ -319,7 +318,9 @@ module akra.terrain {
 			        	}
 			        }
 
-			        this.computeBaseNormal(pImageHightMap);
+			        if(this._useVertexNormal()){
+			        	this.computeBaseNormal(pImageHightMap);
+			        }
 			    }
 			    else {
 			        WARNING("Карта высот не загружена")
@@ -409,7 +410,7 @@ module akra.terrain {
 			this._pBaseNormalTexture.convertToImage(this._pBaseNormalImage, false);
 		}
 
-		protected _tableIndex(iMapX: uint, iMapY: uint): uint {
+		_tableIndex(iMapX: uint, iMapY: uint): uint {
 			// clamp to the table dimensions
 			if (iMapX >= this._iTableWidth) {
 			    iMapX = this._iTableWidth - 1;
@@ -420,6 +421,10 @@ module akra.terrain {
 			}
 
 			return (iMapY * this._iTableWidth) + iMapX;
+		}
+
+		_useVertexNormal(): bool {
+			return this._bUseVertexNormal;
 		}
 
 		protected computeBoundingBox(): void {

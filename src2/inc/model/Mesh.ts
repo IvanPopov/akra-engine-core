@@ -274,7 +274,7 @@ module akra.model {
         setSkin(pSkin: ISkin): void {
             for (var i = 0; i < this.length; ++ i) {
                 this._pSubMeshes[i].setSkin(pSkin);
-            };
+            }
         }
 
         createSkin(): ISkin {
@@ -445,6 +445,7 @@ module akra.model {
                 pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
 
                 pSubMesh.effect.addComponent("akra.system.mesh_texture");
+                pSubMesh.hasShadow = false;
             }
             else {
                 pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
@@ -576,6 +577,7 @@ module akra.model {
                 pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
 
                 pSubMesh.effect.addComponent("akra.system.mesh_texture");
+                pSubMesh.hasShadow = false;
             }
             else {
                 pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);

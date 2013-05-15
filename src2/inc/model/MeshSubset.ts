@@ -116,6 +116,10 @@ module akra.model {
 			return true;
 		}
 
+		inline isBoundingBoxVisible(): bool {
+			return this.data.isRenderable(this.data.findIndexSet(".BoundingBox"));
+		}
+
 		hideBoundingBox(): bool {
 			var iCurrentIndexSet: int;
 			iCurrentIndexSet = this.data.getIndexSet();
@@ -195,6 +199,10 @@ module akra.model {
 			this.data.selectIndexSet(iCurrentIndexSet);
 
 			return true;
+		}
+
+		inline isBoundingSphereVisible(): bool {
+			return this.data.isRenderable(this.data.findIndexSet(".BoundingSphere"));
 		}
 
 		hideBoundingSphere(): bool{

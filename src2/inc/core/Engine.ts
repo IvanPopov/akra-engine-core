@@ -349,7 +349,8 @@ module akra.core {
 						    "effects/prepare_shadows.afx",						    
 						    "effects/terrain.afx",
 						    // "effects/terrain_geometry.afx",
-						    "effects/prepareDeferredShading.afx"
+						    "effects/prepareDeferredShading.afx",
+						    "effects/generate_normal_map.afx"
 						],
 						deps: {
 							files: [

@@ -97,7 +97,7 @@ module akra.webgl {
 
 		attachDepthBuffer(pDepthBuffer: IDepthBuffer): void {
 			var pWebGLContext: WebGLRenderingContext = this._pWebGLRenderer.getWebGLContext();
-			var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+			var pOldFramebuffer: WebGLFramebuffer = this._pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
 
 			this._pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, this._pWebGLFramebuffer);
 
@@ -156,7 +156,7 @@ module akra.webgl {
 		
 		detachDepthBuffer(): void {
 			var pWebGLContext: WebGLRenderingContext = this._pWebGLRenderer.getWebGLContext();
-			var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+			var pOldFramebuffer: WebGLFramebuffer = this._pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
 
 			this._pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, this._pWebGLFramebuffer);
 

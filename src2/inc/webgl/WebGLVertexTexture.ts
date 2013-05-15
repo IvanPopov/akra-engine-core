@@ -134,6 +134,8 @@ module akra.webgl {
 		    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_S, pWebGLContext.CLAMP_TO_EDGE);
 		    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_T, pWebGLContext.CLAMP_TO_EDGE);
 		    
+		    pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
+
 		    //create header
 		    this._pHeader = this.allocateData([VE_VEC2(DeclarationUsages.TEXTURE_HEADER)], this._header());
 
@@ -374,6 +376,8 @@ module akra.webgl {
 
 		            pWebGLContext.texSubImage2D(GL_TEXTURE_2D, 0, iX, iY, iW, iH, 
 		            	me._eWebGLFormat, me._eWebGLType, pBufferData.subarray(iBeginElement, iEndElement));
+
+		            pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
 		        };
 
 		        if (iHeight === 1) {
@@ -424,7 +428,7 @@ module akra.webgl {
 		            pRealData[iLeftShift + i] = pBufferData[i];
 		        }		        
 
-		        var pOldFrameBuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+		        var pOldFrameBuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
 
 		        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
 		        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_update");
@@ -482,6 +486,7 @@ module akra.webgl {
 		        pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, null, 0);
 
 		        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
+		        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
 
 		        pWebGLContext.disableVertexAttribArray(iValueAttribLocation);
 		        pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
@@ -534,6 +539,7 @@ module akra.webgl {
 				    pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, this._eWebGLFormat, 
 				    	this._iWidth, this._iHeight, 0,  this._eWebGLFormat, this._eWebGLType, null);
 
+				    pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
 
 				    var iByteLength: uint = this.byteLength;
 
@@ -568,7 +574,7 @@ module akra.webgl {
 				    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_S, pWebGLContext.CLAMP_TO_EDGE);
 				    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_T, pWebGLContext.CLAMP_TO_EDGE);
 
-				    var pOldFrameBuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+				    var pOldFrameBuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
 
 			        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
 			        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
@@ -631,6 +637,7 @@ module akra.webgl {
 
 			        pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
 			        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
+			    	pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
 			        //pWebGLRenderer.deleteWebGLBuffer(pIndexBuffer);
 
 			        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFrameBuffer);

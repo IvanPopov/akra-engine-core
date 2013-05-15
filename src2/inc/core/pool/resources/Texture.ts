@@ -126,7 +126,7 @@ module akra.core.pool.resources {
         }
 
         inline isValid(): bool {
-            return true;/*this._isInternalResourceCreated;*/
+            return this._isInternalResourceCreated;
         }
         
         inline calculateSize(): uint {
@@ -218,9 +218,9 @@ module akra.core.pool.resources {
         }
 
         _onImageLoad(pImage: IImg): void {
-            LOG("resource loaded > ", pImage.findResourceName(), this.findResourceName());
             this.disconnect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
             this.loadImage(pImage);
+            debug_print("texture/image loaded: ", pImage.findResourceName());
         }
 
         destroyResource(): bool {
@@ -229,53 +229,30 @@ module akra.core.pool.resources {
             return true;
         }
         
-        setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool
-        {
-            LOG("try to set texture  filter", eParam, eValue);
-            if (!this.isValid()) {
-                return false;
-            }
-            LOG("texture parameter used!", __CALLSTACK__);
+        setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool {
             this._pParams[eParam] = eValue;
             return this._setFilterInternalTexture(eParam,eValue);
         }
         
-        setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): bool
-        {
-            if (!this.isValid()) {
-                return false;
-            }
-
+        setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): bool {
             this._pParams[eParam] = eValue;
-            return this._setWrapModeInternalTexture(eParam,eValue);
+            return this._setWrapModeInternalTexture(eParam, eValue);
         }
 
-        getFilter(eParam: ETextureParameters): ETextureFilters
-        {
-            if (!this.isValid()) {
-                return 0;
-            }
-            var iValue:any=this._pParams[eParam];
-            if(!isDefAndNotNull(iValue))
-            {
-                iValue=this._getFilterInternalTexture(eParam);
-                this._pParams[eParam]=iValue;
-            }
-            return iValue;
+        getFilter(eParam: ETextureParameters): ETextureFilters { 
+            // if(!isDefAndNotNull(this._pParams[eParam])) {
+            //     this._pParams[eParam] = this._getFilterInternalTexture(eParam);
+            // }
+
+            return this._pParams[eParam];
         }
 
-        getWrapMode(eParam: ETextureParameters): ETextureWrapModes
-        {
-            if (!this.isValid()) {
-                return 0;
-            }
-            var iValue:any=this._pParams[eParam];
-            if(!isDefAndNotNull(iValue))
-            {
-                iValue=this._getWrapModeInternalTexture(eParam);
-                this._pParams[eParam]=iValue;
-            }
-            return iValue;
+        getWrapMode(eParam: ETextureParameters): ETextureWrapModes {
+            // if(!isDefAndNotNull(this._pParams[eParam])) {
+            //     this._pParams[eParam] = this._getWrapModeInternalTexture(eParam);
+            // }
+
+            return this._pParams[eParam];
         }
 
         protected _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
@@ -546,10 +523,9 @@ module akra.core.pool.resources {
             
             if(!this._isInternalResourceCreated) 
             {
-                
                 this._createInternalTextureImpl(cFillColor);
                 this._isInternalResourceCreated = true;
-                this.notifyCreated();
+                this.notifyCreated(); 
                 return true;
             }
 
