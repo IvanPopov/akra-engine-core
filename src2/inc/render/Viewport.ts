@@ -304,6 +304,28 @@ module akra.render {
 			}
 		}
 
+		projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3{
+			var pCamera: ICamera = this.getCamera();
+			var v3fResult: IVec3 = pCamera.projectPoint(v3fPoint, v3fDestination);
+
+			if(isNull(v3fResult)){
+				return null;
+			}
+
+			var fX: float = v3fResult.x;
+			var fY: float = v3fResult.y;
+			var fZ: float = v3fResult.z;
+
+			fX = fX*0.5 + 0.5;
+			fY = fY*0.5 + 0.5;
+			fZ = fZ*0.5 + 0.5;
+
+			fX = this.actualLeft + this.width * fX;
+			fY = this.actualTop + this.height * fY;
+
+			return v3fResult.set(fX, fY, fZ);
+		};
+
 
         inline isUpdated(): bool {
         	return this._bUpdated;
