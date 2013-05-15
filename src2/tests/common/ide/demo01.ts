@@ -232,16 +232,36 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "sun");
+		var pSunLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "sun");
 			
-		pOmniLight.attachToParent(pScene.getRootNode());
-		pOmniLight.enabled = true;
-		pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-		pOmniLight.params.diffuse.set(1.);
-		pOmniLight.params.specular.set(1, 1, 1, 1);
-		pOmniLight.params.attenuation.set(1, 0, 0);
+		pSunLight.attachToParent(pScene.getRootNode());
+		pSunLight.enabled = true;
+		pSunLight.params.ambient.set(0.0, 0.0, 0.0, 1);
+		pSunLight.params.diffuse.set(1.);
+		pSunLight.params.specular.set(1.);
+		pSunLight.params.attenuation.set(1, 0, 0);
 
-		pOmniLight.addPosition(0, 100, 125);
+		pSunLight.addPosition(0, 500, 0);
+
+		
+
+		function createAmbient(sName: string, v3fPos: IVec3): void {
+			var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 512, sName);
+			
+			pOmniLight.attachToParent(pScene.getRootNode());
+			pOmniLight.enabled = true;
+			pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			pOmniLight.params.diffuse.set(0.25);
+			pOmniLight.params.specular.set(0.);
+			pOmniLight.params.attenuation.set(4., 0, 0);
+
+			pOmniLight.addPosition(v3fPos);
+		}
+
+		createAmbient("Ambient LB", vec3(-500, 500, -500));
+		createAmbient("Ambient RB", vec3(500, 500, -500));
+		createAmbient("Ambient LF", vec3(-500, 500, 500));
+		createAmbient("Ambient RF", vec3(500, 500, 500));
 
 		// var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 		
@@ -254,18 +274,6 @@ module akra {
 		// pProjectShadowLight.isShadowCaster = true;
 		// pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
 		// pProjectShadowLight.addRelPosition(0, 3, 10);
-
-		// var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
-		
-		// pOmniShadowLight.attachToParent(pScene.getRootNode());
-		// pOmniShadowLight.enabled = true;
-		// pOmniShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-		// pOmniShadowLight.params.diffuse.set(1);
-		// pOmniShadowLight.params.specular.set(1, 1, 1, 1);
-		// pOmniShadowLight.params.attenuation.set(1,0.,0);
-		// pOmniShadowLight.isShadowCaster = false;
-
-		// pOmniShadowLight.addPosition(0, 10, -10);
 	}
 
 	function setupAnimation(): void {

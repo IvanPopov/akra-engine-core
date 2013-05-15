@@ -274,7 +274,7 @@ module akra.model {
         setSkin(pSkin: ISkin): void {
             for (var i = 0; i < this.length; ++ i) {
                 this._pSubMeshes[i].setSkin(pSkin);
-            };
+            }
         }
 
         createSkin(): ISkin {

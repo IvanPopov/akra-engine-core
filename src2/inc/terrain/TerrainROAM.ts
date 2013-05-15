@@ -325,7 +325,7 @@ module akra.terrain {
 			
 				this._m4fLastCameraMatrix.set(pCamera.worldMatrix);
 
-				if (((this._nCountRender++) % 30) === 0)
+				if (((this._nCountRender++) % 10) === 0)
 				{
 					if(!this._m4fLastCameraMatrix.isEqual(this._m4fLastTesselationMatrix)) 
 					{

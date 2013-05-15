@@ -11,6 +11,8 @@ module akra.ui.model {
 		protected _pSubset: IMeshSubset = null;
 		protected _pName: IUILabel;
 		protected _pMaterial: ui.Material;
+		protected _pBoundingBox: IUISwitch;
+		protected _pBoundingSphere: IUISwitch;
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
@@ -19,8 +21,30 @@ module akra.ui.model {
 			this._pName = <IUILabel>this.findEntity("name");
 			this._pMaterial = <ui.Material>this.findEntity("material");
 
+			this._pBoundingBox = <IUISwitch>this.findEntity("sub-bounding-box");
+			this._pBoundingSphere = <IUISwitch>this.findEntity("sub-bounding-sphere");
+
+			this.connect(this._pBoundingBox, SIGNAL(changed), SLOT(_useBoundingBox));
+			this.connect(this._pBoundingSphere, SIGNAL(changed), SLOT(_useBoundingSphere));
+
 			this.setCollapsible();
 			this.collapse(true);
+		}
+
+		_useBoundingBox(pSwc: IUISwitch, bValue: bool): void {
+			if (bValue) {
+				this._pSubset.showBoundingBox();
+			}
+			else {
+				this._pSubset.hideBoundingBox();
+			}
+
+			this.updateProperties();
+		}
+
+		_useBoundingSphere(pSwc: IUISwitch, bValue: bool): void {
+			bValue? this._pSubset.showBoundingSphere(): this._pSubset.hideBoundingSphere();
+			this.updateProperties();
 		}
 
 		setSubset(pSubset: IMeshSubset): void {

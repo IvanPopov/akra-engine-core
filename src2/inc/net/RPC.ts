@@ -329,8 +329,8 @@ module akra.net {
             pCallback.timestamp = now();
 
             if (isNull(pPipe) || !pPipe.isOpened()) {
-                if (/*HAS_LIMITED_DEFERRED_CALLS(this) && 
-                    */this._pDefferedRequests.length <= this.options.deferredCallsLimit) {
+                if (!HAS_LIMITED_DEFERRED_CALLS(this) ||
+                    this._pDefferedRequests.length <= this.options.deferredCallsLimit) {
 
                     this._pDefferedRequests.push(pProc);
                     this._pCallbacks.push(pCallback);
