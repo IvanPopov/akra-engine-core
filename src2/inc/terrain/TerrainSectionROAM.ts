@@ -184,51 +184,94 @@ module akra.terrain {
 		}
 
 		tessellate(fScale: float, fLimit: float): void {
+			var iIndex0: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY);
+			var iIndex1: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY + this._iYVerts-1);
+			var iIndex2: uint =  this.terrainSystem._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY + this._iYVerts-1);
+			var iIndex3: uint =  this.terrainSystem._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY);
+
+			var fHeight0: float = this.terrainSystem.readWorldHeight(iIndex0);
+			var fHeight1: float = this.terrainSystem.readWorldHeight(iIndex1);
+			var fHeight2: float = this.terrainSystem.readWorldHeight(iIndex2);
+			var fHeight3: float = this.terrainSystem.readWorldHeight(iIndex3);
+
 			this.recursiveTessellate(
 				this._pRootTriangleA,
-				this._fDistance1, this._fDistance2, this._fDistance0, 
-				this._pVarianceTreeA, 1,
-				fScale, fLimit);
+				this._iHeightMapX, 					 this._iHeightMapY + this._iYVerts-1, fHeight1,
+				this._iHeightMapX + this._iXVerts-1, this._iHeightMapY + this._iYVerts-1, fHeight2,
+				this._iHeightMapX,					 this._iHeightMapY, 				  fHeight0,
+				this._pVarianceTreeA, 1);
 
 			this.recursiveTessellate(
-			    this._pRootTriangleB,
-				this._fDistance3, this._fDistance0, this._fDistance2,
-			    this._pVarianceTreeB, 1,
-			    fScale, fLimit);
+				this._pRootTriangleA,
+				this._iHeightMapX + this._iXVerts-1, this._iHeightMapY,					  fHeight3,
+				this._iHeightMapX,					 this._iHeightMapY,					  fHeight0,
+				this._iHeightMapX + this._iXVerts-1, this._iHeightMapY + this._iYVerts-1, fHeight2,
+				this._pVarianceTreeB, 1);
 		}
 
-		protected recursiveTessellate(pTri: ITriTreeNode, fDistA: float, fDistB: float, fDistC: float, pVTree: float[], iIndex: uint, fScale: float, fLimit: float): void {
-			if ((iIndex<<1)+1 < this._iTotalVariances) {
-				//console.log("vIndex",vIndex,"totalVariances",this._totalVariances)
-				var fMidDist: float = (fDistA+fDistB+fDistC)/3;
+		protected recursiveTessellate(pTri: ITriTreeNode,
+									  iCornerAX: float, iCornerAY: float, fCornerAZ: float,
+									  iCornerBX: float, iCornerBY: float, fCornerBZ: float,
+									  iCornerCX: float, iCornerCY: float, fCornerCZ: float,
+									  pVTree: float[], iIndex: uint): void {
+			if((iIndex<<1)+1 > this._iTotalVariances){
+				return;
+			}
 
+			var iMidpointX: uint = (iCornerBX + iCornerCX) >> 1;
+			var iMidpointY: uint = (iCornerBY + iCornerCY) >> 1;
 
-				// Если треугольник не поделен
-				if (!pTri.leftChild) {
+			if ((iMidpointX === iCornerBX || iMidpointX === iCornerCX) &&
+				(iMidpointY === iCornerBY || iMidpointY === iCornerCY)){
+				return;
+			}
+			
+			var fMidPointZ: float = (fCornerBZ + fCornerCZ)/2;
+			var fRealMidPointZ: float = this.terrainSystem.readWorldHeight(iMidpointX, iMidpointY);
 
-					var fRatio: float = (pVTree[iIndex] * pVTree[iIndex] *fScale)/math.sqrt(fMidDist+0.0001);
-					// var fRatio: float = (pVTree[iIndex]);/* * fScale)/(fMidDist+0.0001);*/
+			var v3fLoaclCameraCoord: IVec3 = this.terrainSystem.localCameraCoord;
+			var pTerrainExtents: IRect3d = this.terrainSystem.worldExtents;
+			var iHeightMapWidth: uint = this.terrainSystem.tableWidth;
+			var iHeightMapHeight: uint = this.terrainSystem.tableHeight;
+			var fTerrainSizeZ: float = this.terrainSystem.maxHeight;
+			var fTerrainDiagonal: float = this.terrainSystem.terrain2DLength;
+			
+			var fLocalMidX: float = pTerrainExtents.x0 + iMidpointX * pTerrainExtents.sizeX() / iHeightMapWidth;
+			var fLocalMidY: float = pTerrainExtents.y0 + iMidpointY * pTerrainExtents.sizeY() / iHeightMapHeight;
 
-					if (fRatio > fLimit) {
-						// subdivide this triangle
-						this.split(pTri);
-					}
+			var fDistanceSquare: float = (v3fLoaclCameraCoord.x - fLocalMidX) * (v3fLoaclCameraCoord.x - fLocalMidX) +
+										 (v3fLoaclCameraCoord.y - fLocalMidY) * (v3fLoaclCameraCoord.y - fLocalMidY) +
+										 (v3fLoaclCameraCoord.z - fMidPointZ) * (v3fLoaclCameraCoord.z - fMidPointZ);
+
+			// Если треугольник не поделен
+			if (!pTri.leftChild) {
+				var fScale: float = this.terrainSystem.tessellationScale;
+				var fLimit: float = this.terrainSystem.tessellationLimit;
+
+				var fDistance: float = math.sqrt(fDistanceSquare+0.0001);
+				var fRatio: float = 0.;
+				
+				fRatio = (pVTree[iIndex] / fTerrainSizeZ * fScale) /((1 + fDistance/fTerrainDiagonal) * fLimit);
+
+				if (fRatio > 1.) {
+					// subdivide this triangle
+					this.split(pTri);
 				}
+			}
 
-				// Если треугольник поделен, продолжаем
-				if (pTri.leftChild) {
-					
+			// Если треугольник поделен, продолжаем
+			if (pTri.leftChild) {
+				this.recursiveTessellate(pTri.leftChild,
+					iMidpointX, iMidpointY, fRealMidPointZ,
+					iCornerAX, iCornerAY, fCornerAZ,
+					iCornerBX, iCornerBY, fCornerBZ,
+					pVTree, iIndex<<1);
 
-					this.recursiveTessellate(pTri.leftChild,
-						fMidDist, fDistA, fDistB,
-						pVTree, iIndex<<1,
-						fScale, fLimit);
-
-					this.recursiveTessellate(pTri.rightChild,
-						fMidDist,fDistC, fDistA,
-						pVTree, (iIndex<<1)+1,
-						fScale, fLimit);
-				}
+				this.recursiveTessellate(pTri.rightChild,
+					iMidpointX, iMidpointY, fRealMidPointZ,
+					iCornerCX, iCornerCY, fCornerCZ,
+					iCornerAX, iCornerAY, fCornerAZ,
+					pVTree, (iIndex<<1)+1);
 			}
 		}
 
@@ -344,10 +387,6 @@ module akra.terrain {
 			//Координаты вершина в секторе
 			var v2fVert: IVec2 = new Vec2(); 
 			v2fVert.set(0.0, 0.0);
-
-			//console.log("-->",this._iSectorX,this._iSectorY,"--",this._pWorldRect.x0,this._pWorldRect.y0,"--",this._iXVerts,this._iYVerts)
-			//console.log("--",v2fCellSize.X,v2fCellSize.Y,this.getHeightX(),this.getHeightY() )
-
 
 			for (var y: uint = 0; y < this._iYVerts; ++y) {
 				

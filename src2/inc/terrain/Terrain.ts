@@ -65,6 +65,8 @@ module akra.terrain {
 		protected _pRenderMethod: IRenderMethod = null;
 		protected _pDefaultScreen: IRenderableObject = null;
 
+		private _fMaxHeight: float = 0.;
+		private _f2DDiagonal: float = 0.;
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN) {
 			super(pScene, eType);
@@ -110,6 +112,14 @@ module akra.terrain {
 
 		inline get sectorShift(): uint{
 			return this._iSectorShift;
+		};
+
+		inline get maxHeight(): float{
+			return this._fMaxHeight;
+		};
+
+		inline get terrain2DLength(): float{
+			return this._f2DDiagonal;
 		};
 
 		protected _initSystemData(): bool {
@@ -314,6 +324,7 @@ module akra.terrain {
 			        	for(var iX: uint = 0; iX < iMaxX; iX++){
 			        		fHeight = pImageHightMap.getColorAt(this._pTempNormalColor, iX, iY).r;
 			        		fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.z0;
+
 			        		this._pHeightTable[iY*iMaxX + iX] = fHeight;
 			        	}
 			        }
@@ -447,6 +458,9 @@ module akra.terrain {
 			}
 
 			this.accessLocalBounds().set(fX0, fX1, fY0, fY1, fZ0, fZ1);
+
+			this._fMaxHeight = fZ1 - fZ0;
+			this._f2DDiagonal = math.sqrt((fX1 - fX0) * (fX1 - fX0) + (fY1 - fY0) * (fY1 - fY0));
 		}
 
 		// _bPrint: bool = false;

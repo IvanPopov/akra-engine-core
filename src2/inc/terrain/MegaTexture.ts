@@ -32,7 +32,7 @@ module akra.terrain {
 	    private _sSurfaceTextures: string = "";
 
 	    //Маскимальный размер стороны текстуры
-	    private _iOriginalTextureMaxSize: uint = 8192 * 1;
+	    private _iOriginalTextureMaxSize: uint = 8192 * 2;
 
 	    //Размер блока текстуры(минимальный размер выгружаемого куска текстуры)
 	    private _iBlockSize: uint = 32;
@@ -422,7 +422,7 @@ module akra.terrain {
 		                              function (pError: Error, pData: Uint8Array) {
 
 		                                  if(!isNull(pError)){
-		                                  		debug_print(pError.message);
+		                                  		// debug_print(pError.message);
 		                                  		return;
 		                                  }
 

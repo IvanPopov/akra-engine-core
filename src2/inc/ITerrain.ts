@@ -17,7 +17,7 @@ module akra {
 		fScale: float;
 	}
 
-	export interface ITerrain extends ISceneNode {
+	export interface ITerrain extends ISceneObject {
 		readonly worldExtents: IRect3d;
 		readonly worldSize: IVec3;
 		readonly mapScale: IVec3;
@@ -28,6 +28,9 @@ module akra {
 		readonly tableHeight: uint;
 		readonly sectorShift: uint;
 		readonly dataFactory: IRenderDataCollection;
+		
+		readonly maxHeight: float;
+		readonly terrain2DLength: float;
 
 		/**
 		 * Создаем terrain

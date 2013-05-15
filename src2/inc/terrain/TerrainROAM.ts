@@ -119,7 +119,7 @@ module akra.terrain {
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 
-				this._setTessellationParameters(10.0, 0.5);
+				this._setTessellationParameters(10.0, 0.05);
 				this.reset();
 			}
 			return bResult;
@@ -293,8 +293,7 @@ module akra.terrain {
 				this._pThistessellationQueue[i].buildTriangleList();
 			}
 
-			if(this._iTotalIndicesOld==this._iTotalIndices && this._iTotalIndices!= this._iTotalIndicesMax) {
-				//console.log("!!!!_iTotalIndices",this._iTotalIndices);
+			if(this._iTotalIndicesOld === this._iTotalIndices && this._iTotalIndices !== this._iTotalIndicesMax) {
 				return;
 			}
 
@@ -303,7 +302,7 @@ module akra.terrain {
 			this._pDataIndex.setData(this._pIndexList, 0, getTypeSize(EDataTypes.FLOAT), 0, this._iTotalIndices);
 			this._iTotalIndicesOld = this._iTotalIndices;
 			this._iTotalIndicesMax = math.max(this._iTotalIndicesMax,this._iTotalIndices);
-			// LOG("number of indecies: " + this._iTotalIndices);
+
 			this._pRenderableObject._setRenderData(this._pRenderData);
 		}
 
