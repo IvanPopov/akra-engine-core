@@ -387,8 +387,21 @@ module akra.render {
             pFlow = this._getFlow(iData);
 
         	if (pFlow === null) {
-                debug_warning("Could not find data flow <" + iData + "> int buffer map: " + this._pMap.toString(true));
-        	    return false;
+                //поищем эти данные в общем буфере
+                pData = this.buffer.getData(iData);
+
+                if (isNull(pData)) {
+                    debug_warning("Could not find data flow <" + iData + "> int buffer map: " + this._pMap.toString(true));
+                    return false;
+                }
+                //все ок, данные найдены, зарегистрируем их у себя в мапе
+                if (this._addData(pData) !== -1) {
+                    pFlow = this._getFlow(iData);
+                    LOG(pFlow);
+                }
+                else {
+                    ERROR("something going wrong...");
+                }
         	}
 
         	iFlow = pFlow.flow;

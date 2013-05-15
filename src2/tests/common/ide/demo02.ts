@@ -40,13 +40,25 @@ module akra {
 		gamepads 			: pGamepads,
 		cameraTerrainProj 	: <ISceneModel>null,
 		terrain 			: <ITerrain>null,
+		terrainLoaded		: false,
 
 		hero: {
 			root: 	<ISceneNode>null,
 			head: 	<ISceneNode>null,
 			pelvis: <ISceneNode>null
 		}
-	};
+	}
+
+	var $div = $("<div>x, y, z</div>").css({
+		position: "absolute", 
+		background: "rgba(0,0,0,.75)", 
+		border: "1px solid white", 
+		color: "white",
+		zIndex: "1000"
+	});
+
+	$(document).append($div);
+
 
 	function setup(): void {
 		pIDE = <ui.IDE>pUI.createComponent("IDE");
@@ -78,9 +90,9 @@ module akra {
 		pSceneSurface.attachToParent(pScene.getRootNode());
 
 		var pCameraTerrainProj: ISceneModel = util.basis(pScene);
-		LOG(">>>>>>>>>");
+
 		pCameraTerrainProj.attachToParent(pScene.getRootNode());
-		pCameraTerrainProj.scale(.5);
+		// pCameraTerrainProj.scale(.5);
 
 		self.cameraTerrainProj = pCameraTerrainProj;
 	}
@@ -242,6 +254,7 @@ module akra {
 				pTerrain.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
 				pTerrain.setPosition(0., -pTerrain.localBounds.sizeZ(), 0.);
 				// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
+				self.terrainLoaded = true;
 			});
 		});
 
@@ -274,8 +287,10 @@ module akra {
 		self.keymap.update();
 
 		var pProj: IVec3 = vec3();
-		if (self.terrain.projectPoint(self.camera.worldPosition, pProj)) {
+		if (self.terrainLoaded && self.terrain.projectPoint(self.camera.worldPosition, pProj)) {
 			self.cameraTerrainProj.setPosition(pProj);
+			// $div.offset();
+			console.log(self.viewport.projectPoint(pProj).toString());
 		}
 	}
 
