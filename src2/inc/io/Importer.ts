@@ -38,21 +38,23 @@ module akra.io {
 
 		//inline getLibrary(): I
 
-		import(pData: string, eFormat?: EDocumentFormat): void;
-		import(pData: Object, eFormat?: EDocumentFormat): void;
-		import(pData: ArrayBuffer, eFormat?: EDocumentFormat): void;
-		import(pData: Blob, eFormat?: EDocumentFormat): void;
-		import(pData: any, eFormat: EDocumentFormat = EDocumentFormat.JSON): void {
+		import(pData: string, eFormat?: EDocumentFormat): Importer;
+		import(pData: Object, eFormat?: EDocumentFormat): Importer;
+		import(pData: ArrayBuffer, eFormat?: EDocumentFormat): Importer;
+		import(pData: Blob, eFormat?: EDocumentFormat): Importer;
+		import(pData: any, eFormat: EDocumentFormat = EDocumentFormat.JSON): Importer {
 			if (eFormat !== EDocumentFormat.JSON) {
 				CRITICAL("TODO: Add support for all formats");
 			}
 
 			this.loadDocument(this.importFromJSON(pData));
+			return this;
 		}
 
-		loadDocument(pDocument: IDocument): void {
+		loadDocument(pDocument: IDocument): Importer {
 			this._pDocument = pDocument;
 			this.updateLibrary();
+			return this;
 		}
 
 		protected importFromJSON(pData): IDocument {
@@ -61,7 +63,7 @@ module akra.io {
 			if (isArrayBuffer(pData)) {
 				sData = util.abtos(<ArrayBuffer>pData);
 			}
-			else if (isString(sData)) {
+			else if (isString(pData)) {
 				sData = <string>pData;
 			}
 			else if(isBlob(pData)) {
@@ -156,7 +158,7 @@ module akra.io {
 					pData = this.decodeAnimationBlendEntry(<IAnimationBlendEntry>pEntry);
 					break;
 				case EDocumentEntry.k_AnimationContainer:
-					pData = this.decodeAnimationContanerEntry(<IAnimationContainerEntry>pEntry);
+					pData = this.decodeAnimationContainerEntry(<IAnimationContainerEntry>pEntry);
 					break;
 			}
 
@@ -221,6 +223,9 @@ module akra.io {
 
 		protected decodeAnimationEntry(pEntry: IAnimationEntry): IAnimation {
 			var pAnimation: IAnimation = animation.createAnimation(pEntry.name);
+
+			pAnimation.extra = pEntry.extra;
+
 			//TODO: load read targets!!
 
 			for (var i: int = 0; i < pEntry.tracks.length; ++ i) {
@@ -232,6 +237,8 @@ module akra.io {
 
 		protected decodeAnimationBlendEntry(pEntry: IAnimationBlendEntry): IAnimationBlend {
 			var pBlend: IAnimationBlend = animation.createBlend(pEntry.name);
+			
+			pBlend.extra = pEntry.extra;
 
 			//TODO: decode base entry!
 			//TODO: set targets
@@ -252,9 +259,11 @@ module akra.io {
 			return pBlend;
 		}
 
-		protected decodeAnimationContanerEntry(pEntry: IAnimationContainerEntry): IAnimationContainer {
+		protected decodeAnimationContainerEntry(pEntry: IAnimationContainerEntry): IAnimationContainer {
 			var pAnimation: IAnimationBase = this.decodeInstance(pEntry.animation);
 			var pContainer: IAnimationContainer = animation.createContainer(pAnimation, pEntry.name);
+
+			pContainer.extra = pEntry.extra;
 
 			//TODO: decode base entry!
 			//TODO: set targets
@@ -275,7 +284,8 @@ module akra.io {
 		}
 
 		protected decodeControllerEntry(pEntry: IControllerEntry): IAnimationController {
-			var pController: IAnimationController = animation.createController(pEntry.options);
+			var pController: IAnimationController = this.getEngine().createAnimationController(pEntry.name, pEntry.options);
+			pController.name = pEntry.name;
 			
 			this.decodeInstanceList(pEntry.animations, (pAnimation: IAnimationBase) => {
 				pController.addAnimation(pAnimation);

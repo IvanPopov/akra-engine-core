@@ -32,6 +32,10 @@ module akra.ui.animation {
 
 		set animation(pAnim: IAnimationBase) {
 			//ASSERT(isNull(this.animation), "animation container already setuped in player");
+			if (this._pAnimation.getAnimation() === pAnim) {
+				return;
+			}
+			
 			this._pAnimation.setAnimation(pAnim);
 			this.setup();
 		}
@@ -143,7 +147,7 @@ module akra.ui.animation {
 		}
 
 		_useLoop(pCheckbox: IUICheckbox, bValue: bool): void {
-			LOG(this._pAnimation.isEnabled())
+			// LOG(this._pAnimation.isEnabled())
 			this._pAnimation.useLoop(bValue);
 		}
 

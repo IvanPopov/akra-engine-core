@@ -44,8 +44,8 @@ module akra.ui.graph {
 		}
 
 
-		createRouteFrom(pConnector: IUIGraphConnector): void {
-			this._pTempRoute = new TempRoute(pConnector);
+		createRouteFrom(pFrom: IUIGraphConnector): void {
+			this._pTempRoute = new TempRoute(pFrom);
 			this.connectionBegin(this._pTempRoute);
 		}
 
@@ -127,7 +127,7 @@ module akra.ui.graph {
 			var pNodes: IUIGraphNode[] = this.nodes;
 			
 			for (var i: int = 0; i < pNodes.length; ++ i) {
-				LOG("deactivate node > ", pNodes[i]);
+				// LOG("deactivate node > ", pNodes[i]);
 				pNodes[i].activate(false);
 			}
 

@@ -68,6 +68,8 @@ module akra.terrain {
 		private _fMaxHeight: float = 0.;
 		private _f2DDiagonal: float = 0.;
 
+		protected _isCreate: bool = false;
+
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN) {
 			super(pScene, eType);
 			this._pEngine = pScene.getManager().getEngine();
@@ -121,6 +123,10 @@ module akra.terrain {
 		inline get terrain2DLength(): float{
 			return this._f2DDiagonal;
 		};
+
+		inline isCreate(): bool {
+			return this._isCreate;
+		}
 
 		protected _initSystemData(): bool {
 			var pEngine: IEngine = this._pEngine,
@@ -222,6 +228,8 @@ module akra.terrain {
 
 			//Мегатекстурные параметры
 			this._pMegaTexures = new MegaTexture(this._pEngine, this, sSurfaceTextures);
+
+			this._isCreate = true;
 
 			return true;
 		}
@@ -381,6 +389,29 @@ module akra.terrain {
 			              this._pTempNormalColor.b);
 
 			return v3fNormal;
+		}
+
+		projectPoint(v3fCoord: IVec3, v3fDestenation: IVec3): bool {
+			var v4fTerrainCoord: IVec4 = vec4(v3fCoord, 1.);
+
+		    v4fTerrainCoord = this.inverseWorldMatrix.multiplyVec4(v4fTerrainCoord);
+
+		    if (v4fTerrainCoord.x < this.worldExtents.x0 || v4fTerrainCoord.x > this.worldExtents.x1 ||
+		    	v4fTerrainCoord.y < this.worldExtents.y0 || v4fTerrainCoord.y > this.worldExtents.y1){
+
+		    	return false;
+		    }
+
+		    var iMapX: uint = math.floor((v4fTerrainCoord.x - this.worldExtents.x0) / this.worldExtents.sizeX() * this.tableWidth);
+		    var iMapY: uint = math.floor((v4fTerrainCoord.y - this.worldExtents.y0) / this.worldExtents.sizeY() * this.tableHeight);
+		    var fHeight: float = this.readWorldHeight(iMapX, iMapY);
+
+		    var v4fTempDestenation: IVec4 = vec4(v4fTerrainCoord.x, v4fTerrainCoord.y, fHeight, 1.);
+
+		    v4fTempDestenation = this.worldMatrix.multiplyVec4(v4fTempDestenation);
+		    v3fDestenation.set(v4fTempDestenation.x, v4fTempDestenation.y, v4fTempDestenation.z);
+
+		    return true;
 		}
 
 		/**

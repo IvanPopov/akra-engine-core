@@ -103,6 +103,13 @@ module akra.render {
 			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		}
 
+		setCamera(pCamera: ICamera): bool {
+			var isOk = super.setCamera(pCamera);
+			this._pDefereedColorTextures[0].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			this._pDefereedColorTextures[1].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			return isOk;
+		}
+
 		_updateDimensions(): void {
 			super._updateDimensions();
 
@@ -231,12 +238,16 @@ module akra.render {
 #endif		
 		}
 
+		inline getSkybox(): ITexture { return this._pDeferredSkyTexture; }
+
 		setSkybox(pSkyTexture: ITexture): bool {
 			if (pSkyTexture.textureType !== ETextureTypes.TEXTURE_CUBE_MAP) {
 				return null;
 			}
 
 			this._pDeferredSkyTexture = pSkyTexture;
+
+			this.addedSkybox(pSkyTexture);
 
 			return true;
 		}
@@ -254,7 +265,9 @@ module akra.render {
 			}
 		}
 
-
+		isFXAA(): bool {
+			return false;
+		}
 
 
 		destroy(): void {
@@ -476,6 +489,8 @@ module akra.render {
 		        }
 		    }
 		}
+
+		BROADCAST(addedSkybox, CALL(pSkyTexture));
 	}
 }
 

@@ -62,6 +62,8 @@ module akra.ui {
 			this.el.addClass("component-slider");
 		}
 
+		
+
 		_updated(pPin: IUIComponent, e: IUIEvent): void {
 			var fValuePrev: float = this._fValue;
 			var fValue: float;

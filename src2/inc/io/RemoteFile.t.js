@@ -133,12 +133,13 @@ function buf2str (pBuffer) {
 }
 
 function str2buf (s) {
-    var pArr = new Array(len);
-    for (var i = 0, len = s.length; i < len; ++i) {
+    var len = s.length;
+    var pArr = new Uint8Array(len);
+    for (var i = 0; i < len; ++i) {
         pArr[ i ] = s.charCodeAt(i) & 0xFF;
     }
 
-    return (new Uint8Array(pArr)).buffer;
+    return pArr.buffer;
 }
 
 function write (pFile, pData, sContentType) {

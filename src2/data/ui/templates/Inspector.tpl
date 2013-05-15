@@ -1,5 +1,5 @@
 <component name="scene">
-	<div class="node-type">Scene properties</div>
+	<div class="node-type" style="margin-top: -1px;">Scene properties</div>
 	<div class="row">
 		<component type="Panel" title="Events" collapsible collapsed>
 			<component type="scene.Events" name="scene-events"/>
@@ -39,7 +39,12 @@
 			<component type="Vector" name="worldPosition" />;
 		</div>
 	</div>
+	<div class="row"  style="padding-bottom: 5px;">
+		<span>controllers:</span>
+		<component type="Button" img="{% filter data %}ui/img/add16.png{% endfilter %}" name="add-controller"/>
+	</div>
 </component>
+
 
 <component name="light-point">
 	<div class="node-type">Light point properties</div>
@@ -67,11 +72,6 @@
 			<component type="resource.Properties" name="resource"/>
 		</component>
 	</div>
-	<div class="row">
-		<component type="Panel" title="Controller" collapsible >
-			<component type="AnimationControllerProperties" name="controller"/>
-		</component>
-	</div>
 </component>
 
 
@@ -80,6 +80,14 @@
 	<div class="row">
 		<component type="Panel" title="Events" collapsible >
 			<component type="camera.Events" name="camera-events"/>
+		</component>
+	</div>
+</component>
+
+<component name="animation-controller" style="margin-top: -1px;">
+	<div class="row">
+		<component type="Panel" title="Controller" collapsible >
+			<component type="AnimationControllerProperties" name="controller"/>
 		</component>
 	</div>
 </component>

@@ -20,6 +20,7 @@ module akra {
 		setCollapsible(bValue?: bool): void;
 
 		signal titleUpdated(sTitle: string): void;
+		signal selected(): void;
 	}
 }
 

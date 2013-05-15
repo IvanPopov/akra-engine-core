@@ -119,6 +119,7 @@ module akra.math {
 	 */
 	export var clampUnitSize = (value: number): number => clamp(value, -1, 1);
 	
+	export var sign = (value: number): number => value >= 0? 1: -1;
 	
 	/**
 	 * Номер с права начиная от нуля, самого левого установленного бита

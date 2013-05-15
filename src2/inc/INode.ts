@@ -48,6 +48,9 @@ module akra {
 		setPosition(v3fPosition: IVec3): void;
 		setPosition(fX: float, fY: float, fZ: float): void;
 
+		setRelPosition(v3fPosition: IVec3): void;
+		setRelPosition(fX: float, fY: float, fZ: float): void;
+
 		addPosition(v3fPosition: IVec3): void;
 		addPosition(fX: float, fY: float, fZ: float): void;
 		addRelPosition(v3fPosition: IVec3): void;

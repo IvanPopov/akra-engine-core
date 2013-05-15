@@ -127,7 +127,7 @@ module akra.ui {
 	}
 
 	export inline function isUINode(pEntity: IEntity): bool {
-		return !isNull(pEntity) && pEntity.type === EEntityTypes.UI_NODE;
+		return isDefAndNotNull(pEntity) && pEntity.type === EEntityTypes.UI_NODE;
 	}
 
 	export inline function isLayout(pEntity: IEntity): bool {

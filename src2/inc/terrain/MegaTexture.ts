@@ -32,7 +32,7 @@ module akra.terrain {
 	    private _sSurfaceTextures: string = "";
 
 	    //Маскимальный размер стороны текстуры
-	    private _iOriginalTextureMaxSize: uint = 8192 * 2;
+	    private _iOriginalTextureMaxSize: uint = 8192 * 4;
 
 	    //Размер блока текстуры(минимальный размер выгружаемого куска текстуры)
 	    private _iBlockSize: uint = 32;
@@ -119,8 +119,8 @@ module akra.terrain {
     	    this.testDataInit();
     	    this._pRPC = net.createRpc();
     	    // // // this._pRPC.join('ws://192.168.194.132');
-    	    this._pRPC.join("ws://localhost:6112");
-    	    // this._pRPC.join("ws://192.168.88.53:6112");
+    	    // this._pRPC.join("ws://localhost:6112");
+    	    this._pRPC.join("ws://192.168.88.53:6112");
 	    	this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 	    }
 
@@ -422,7 +422,7 @@ module akra.terrain {
 		                              function (pError: Error, pData: Uint8Array) {
 
 		                                  if(!isNull(pError)){
-		                                  		// debug_print(pError.message);
+		                                  		debug_print(pError.message);
 		                                  		return;
 		                                  }
 
@@ -430,6 +430,7 @@ module akra.terrain {
 		                                  
 		                                  var iXBuf: uint;
 		                                  var iYBuf: uint;
+
 		                                  if (iLev == 0) {
 		                                      iXBuf = iX - me._pXY[iLev].iX;
 		                                      iYBuf = iY - me._pXY[iLev].iY;

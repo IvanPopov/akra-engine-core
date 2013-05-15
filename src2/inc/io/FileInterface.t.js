@@ -92,15 +92,24 @@ onmessage = function (pEvent) {
                 else {
                     var pBuf = new Uint8Array(pData);
                     var pArr = new Array(pBuf.length);
+                    
                     for (var i = 0; i < pBuf.length; ++i) {
                         pArr[i] = pBuf[i];
                     }
+
                     postMessage(pArr);
                 }
             }
             else {
-
-                postMessage(pData);
+                if (pCommand.transfer == TRANSFER.FAST && pData.length > 50 * 1024 * 1024) { //10mb
+                    // var n = pData.length;
+                    pData = str2buf(pData);
+                    // throw new Error(pCommand.name + " byte length: " + (pData.byteLength / (1024 * 1024)) + " mb (" + n/(1024*1024) + ")");
+                    postMessage(pData, [pData]);
+                }
+                else {
+                    postMessage(pData);
+                }
             }
             break;
         case File.WRITE:

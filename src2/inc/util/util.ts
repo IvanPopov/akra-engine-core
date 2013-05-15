@@ -22,13 +22,13 @@ module akra.util {
 	//string to array buffer
 	export var stoab = function (s: string): ArrayBuffer {
 		var len: uint = s.length;
-		var pCodeList: int[] = new Array(len);
+		var pCodeList: Uint8Array = new Uint8Array(len);
 
 	    for (var i: int = 0; i < len; ++i) {
 	        pCodeList[ i ] = s.charCodeAt(i); /*& 0xFF;*/
 	    }
 	    
-	    return (new Uint8Array(pCodeList)).buffer;
+	    return pCodeList.buffer;
 	}
 
 	export var abtos = function (pBuf: ArrayBuffer): string {
@@ -40,6 +40,7 @@ module akra.util {
 	    }
 
 	    return s;
+        // return String.fromCharCode.apply(null, Array.prototype.slice.call(new Uint8Array(pBuf), 0));
 	}
 
 

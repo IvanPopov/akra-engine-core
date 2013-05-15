@@ -12,8 +12,13 @@ module akra {
     IFACE(ISkeleton);
     IFACE(IMesh);
 
+    export enum EModelFormats {
+        COLLADA
+    }
 
     export interface IModel extends IResourcePoolItem {
+        modelFormat: EModelFormats;
+
         loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): bool;
         attachToScene(pNode: ISceneNode): IModelEntry;
         attachToScene(pScene: IScene3d): IModelEntry;

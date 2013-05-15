@@ -18,6 +18,7 @@ module akra {
 		
 		INSPECT_SCENE_NODE,
 		INSPECT_ANIMATION_NODE,
+		INSPECT_ANIMATION_CONTROLLER,
 
 		
 		EDIT_ANIMATION_CONTROLLER,
@@ -27,6 +28,8 @@ module akra {
 
 		//редактируем код происходящие на событие eventprovider'a
 		EDIT_EVENT,
+		//редактируем основной код демо 
+		EDIT_MAIN_SCRIPT,
 
 
 		LOAD_COLLADA

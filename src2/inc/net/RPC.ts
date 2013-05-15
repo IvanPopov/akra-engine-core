@@ -11,6 +11,12 @@
 /// @: {data}/server|src(inc/net/server)|location()
 
 
+#define HAS_LIMITED_DEFERRED_CALLS(rpc) (rpc.options.deferredCallsLimit >= 0)
+#define HAS_RECONNECT(rpc) (rpc.options.reconnectTimeout > 0)
+#define HAS_SYSTEM_ROUTINE(rpc) (rpc.options.systemRoutineInterval > 0)
+#define HAS_CALLBACK_LIFETIME(rpc) (rpc.options.callbackLifetime > 0)
+#define HAS_GROUP_CALLS(rpc) (rpc.options.callsFrequency > 0)
+
 module akra.net {
 
 
@@ -24,8 +30,12 @@ module akra.net {
     }
 
     class RPC implements IRPC {
+        protected _pOption: IRPCOptions;
 
         protected _pPipe: IPipe = null;
+
+        protected _iGroupID: int = -1;
+        protected _pGroupCalls: IRPCRequest = null;
 
         //стек вызововы, которые были отложены
         protected _pDefferedRequests: IObjectList = new ObjectList;
@@ -34,25 +44,34 @@ module akra.net {
         protected _pCallbacks: IObjectList = new ObjectList;
         //число совершенных вызовов
         protected _nCalls: uint = 0;
-        //rejoin timer
-        protected _iReconnect: int = -1;
 
         protected _pRemoteAPI: Object = {};
-
-        //контекст, у которого будут вызываться методы
-        //при получении REQUEST запросов со стороны сервера
-        protected _pContext: any = null;
-
         protected _eState: ERpcStates = ERpcStates.k_Deteached;
 
+        //rejoin timer
+        protected _iReconnect: int = -1;
         //timer for system routine
         protected _iSystemRoutine: int = -1;
+        protected _iGroupCallRoutine: int = -1;
+
 
         inline get remote(): any { return this._pRemoteAPI; }
+        inline get options(): IRPCOptions { return this._pOption; };
+        inline get group(): int { return !isNull(this._pGroupCalls)? this._iGroupID: -1; }
 
-        constructor (sAddr?: string, pContext?: Object);
-        constructor (pAddr: any = null, pContext: Object = null) {
-            if (!isNull(pAddr)) {
+        constructor (sAddr?: string, pOption?: IRPCOptions);
+        constructor (pAddr: any = null, pOption: IRPCOptions = {}) {
+            for (var i in RPC.OPTIONS) {
+                if (!isDef(pOption[i])) {
+                    pOption[i] = RPC.OPTIONS[i];
+                }
+            }
+
+            this._pOption = pOption;
+
+            pAddr = pAddr || pOption.addr;
+
+            if (isDefAndNotNull(pAddr)) {
                 this.join(<string>pAddr);
             }
         }
@@ -72,7 +91,7 @@ module akra.net {
                             pRPC.parse(JSON.parse(<string>pMessage));
                         }
                         else {
-                            pRPC.parseBinary(<ArrayBuffer>pMessage);
+                            pRPC.parseBinary(new Uint8Array(pMessage));
                         }
                     }
                 );
@@ -80,7 +99,7 @@ module akra.net {
                 pPipe.bind(SIGNAL(opened), 
                     function (pPipe: IPipe, pEvent: Event): void {
                         
-                        pRPC._startSystemRoutine();
+                        pRPC._startRoutines();
 
                         //if we have unhandled call in deffered...
                         if (pDeffered.length) {
@@ -94,7 +113,7 @@ module akra.net {
                             debug_assert(pDeffered.length === 0, "something going wrong. length is: " + pDeffered.length);
                         }
 
-                        pRPC.proc(RPC.PROC_LIST, 
+                        pRPC.proc(pRPC.options.procListName, 
                             function (pError: Error, pList: string[]) {
                                 if (!akra.isNull(pError)) {
                                     CRITICAL("could not get proc. list");
@@ -133,7 +152,7 @@ module akra.net {
 
                 pPipe.bind(SIGNAL(closed),
                     function (pPipe: IPipe, pEvent: CloseEvent): void {
-                        pRPC._stopSystemRoutine();
+                        pRPC._stopRoutines();
                         pRPC.rejoin();
                     }
                 );
@@ -166,9 +185,11 @@ module akra.net {
                 //callbacks that will not be called, because connection was lost 
                 this.freeCallbacks();
             
-                this._iReconnect = setTimeout(() => { 
-                    pRPC.join(); 
-                }, RPC.OPTIONS.RECONNECT_TIMEOUT);
+                if (HAS_RECONNECT(this)) {
+                    this._iReconnect = setTimeout(() => { 
+                        pRPC.join(); 
+                    }, this.options.reconnectTimeout);
+                }
             }
         }
 
@@ -177,20 +198,30 @@ module akra.net {
                 debug_print(pRes);
                 WARNING("message droped, because seriial not recognized.");
             };
-
+            
             this.response(pRes.n, pRes.type, pRes.res);
         }
 
 
-        parseBinary(pBuffer: ArrayBuffer): void {
+        parseBinary(pBuffer: Uint8Array): void {
 
-            var pHeader: Uint32Array = new Uint32Array(pBuffer, 0, 2);
+            var iHeaderByteLength: uint = 12;
+            var pHeader: Uint32Array = new Uint32Array(pBuffer.buffer, pBuffer.byteOffset, iHeaderByteLength / 4);
+
             var nMsg: uint = pHeader[0];
             var eType: ERPCPacketTypes = <ERPCPacketTypes>pHeader[1];
+            var iByteLength: int = pHeader[2];
 
-            var pResult: Uint8Array = new Uint8Array(pBuffer, 8);
-
+            var pResult: Uint8Array = pBuffer.subarray(iHeaderByteLength, iHeaderByteLength + iByteLength);
+            
             this.response(nMsg, eType, pResult);
+
+            var iPacketByteLength: int = iHeaderByteLength + iByteLength;
+
+            if (pBuffer.byteLength > iPacketByteLength) {
+                // console.log("group message detected >> ");
+                this.parseBinary(pBuffer.subarray(iPacketByteLength));
+            }
         }
 
         private response(nSerial: uint, eType: ERPCPacketTypes, pResult: any): void {
@@ -279,7 +310,6 @@ module akra.net {
             var pArgv: any[] = new Array(nArg);
             var pPipe: IPipe = this._pPipe;
             var pCallback: IRPCCallback = null;
-            var bResult: bool;
 
             for (var i = 0; i < nArg; ++ i) {
                 pArgv[i] = arguments[i + 1];
@@ -291,6 +321,7 @@ module akra.net {
             pProc.type  = ERPCPacketTypes.REQUEST;
             pProc.proc  = String(arguments[0]);
             pProc.argv  = pArgv;
+            pProc.next  = null;
 
             pCallback = <IRPCCallback>this._createCallback();
             pCallback.n = pProc.n;
@@ -298,7 +329,9 @@ module akra.net {
             pCallback.timestamp = now();
 
             if (isNull(pPipe) || !pPipe.isOpened()) {
-                if (this._pDefferedRequests.length <= RPC.OPTIONS.DEFFERED_CALLS_LIMIT) {
+                if (!HAS_LIMITED_DEFERRED_CALLS(this) ||
+                    this._pDefferedRequests.length <= this.options.deferredCallsLimit) {
+
                     this._pDefferedRequests.push(pProc);
                     this._pCallbacks.push(pCallback);
                 }
@@ -315,9 +348,29 @@ module akra.net {
 
             this._pCallbacks.push(pCallback);
 
-            bResult = pPipe.write(pProc);
+            return this.callProc(pProc);
+        }
 
-            this._releaseRequest(pProc);
+        private callProc(pProc: IRPCRequest): bool {
+            var pPipe: IPipe = this._pPipe;
+            var bResult: bool = false;
+
+            if (HAS_GROUP_CALLS(this)) {
+                if (isNull(this._pGroupCalls)) {
+                    this._pGroupCalls = pProc;
+                    this._iGroupID ++;
+                }
+                else {
+                    pProc.next = this._pGroupCalls;
+                    this._pGroupCalls = pProc;
+                }
+
+                return true;
+            }
+            else {
+                bResult = pPipe.write(pProc);
+                this._releaseRequest(pProc);
+            }
 
             return bResult;
         }
@@ -326,32 +379,69 @@ module akra.net {
             this._removeExpiredCallbacks();
         }
 
-        _startSystemRoutine(): void {
+        _startRoutines(): void {
             var pRPC: RPC = this;
 
-            this._iSystemRoutine = setInterval(() => {
-                pRPC._systemRoutine();
-            }, RPC.OPTIONS.SYSTEM_ROUTINE_INTERVAL);
+            if (HAS_SYSTEM_ROUTINE(this)) {
+                this._iSystemRoutine = setInterval(() => {
+                    pRPC._systemRoutine();
+                }, this.options.systemRoutineInterval);
+            }
+
+            if (HAS_GROUP_CALLS(this)) {
+                this._iGroupCallRoutine = setInterval(() => {
+                    pRPC.groupCall();
+                }, this.options.callsFrequency);
+            }
         }
 
-        _stopSystemRoutine(): void {
+        _stopRoutines(): void {
             clearInterval(this._iSystemRoutine);
             this._systemRoutine();
+
+            clearInterval(this._iGroupCallRoutine);
+            //TODO: remove calls from group call, if RPC finally detached!
+        }
+
+        groupCall(): int {
+            var pReq: IRPCRequest = this._pGroupCalls;
+            
+            if (isNull(pReq)) {
+                return;
+            }
+
+            this._pPipe.write(pReq);
+
+           return this.dropGroupCall();
+        }
+
+        dropGroupCall(): int {
+            var pReq: IRPCRequest = this._pGroupCalls;
+
+            for (;;) {
+                var pNext = pReq.next;
+                this._releaseRequest(pReq);
+                
+                if (!pNext) {
+                    break;
+                }
+
+                pReq = <IRPCRequest>pNext;
+            }
+
+            this._pGroupCalls = null;
+            return this._iGroupID;
         }
 
         _removeExpiredCallbacks(): void {
-            // LOG("remove expired callbacks routine...");
-
             var pCallbacks: IObjectList = this._pCallbacks;
             var pCallback: IRPCCallback = <IRPCCallback>pCallbacks.first;
             var iNow: int = now();
             var fn: Function = null;
 
             while(!isNull(pCallback)) {
-                
-                //LOG(isDefAndNotNull((<any>pCallbacks)._pCurrent), pCallback.n, "(" + (iNow - pCallback.timestamp) + " ms )");
-                
-                if ((iNow - pCallback.timestamp) >= RPC.OPTIONS.CALLBACK_LIFETIME) {
+
+                if (HAS_CALLBACK_LIFETIME(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
                     fn = pCallback.fn;
                     this._releaseCallback(<IRPCCallback>pCallbacks.takeCurrent());
 
@@ -371,6 +461,7 @@ module akra.net {
             pReq.n = 0;
             pReq.proc = null;
             pReq.argv = null;
+            pReq.next = null;
 
             RPC.requestPool.push(pReq);
         };
@@ -378,7 +469,7 @@ module akra.net {
         _createRequest(): IRPCRequest {
             if (RPC.requestPool.length == 0) {
                 // LOG("allocated rpc request");
-                return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null };
+                return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null, next: null };
             }
 
             return <IRPCRequest>RPC.requestPool.pop();
@@ -407,11 +498,13 @@ module akra.net {
         private static requestPool: IObjectArray = new ObjectArray;
         private static callbackPool: IObjectArray = new ObjectArray;
 
-        static OPTIONS = {
-            DEFFERED_CALLS_LIMIT        : 1024 * 100,
-            RECONNECT_TIMEOUT           : 2500,
-            SYSTEM_ROUTINE_INTERVAL     : 10000,
-            CALLBACK_LIFETIME           : 10000
+        static OPTIONS: IRPCOptions = {
+            deferredCallsLimit        : -1,
+            reconnectTimeout          : 2500,
+            systemRoutineInterval     : 10000,
+            callbackLifetime          : -1,
+            procListName              : "proc_list",
+            callsFrequency            : -1
         }
 
         static ERRORS = {
@@ -419,13 +512,20 @@ module akra.net {
             CALLBACK_LIFETIME_EXPIRED: new Error("procedure life time expired")
         }
 
-        //имя процедуры, для получения все поддерживаемых процедур
-        static PROC_LIST: string = "proc_list";
-
     }
 
-    export function createRpc(): IRPC {
-        return new RPC;
+    export function createRpc(opt?: IRPCOptions): IRPC;
+    export function createRpc(addr?: string, opt?: IRPCOptions): IRPC;
+    export function createRpc(addr?: any, opt?: any): IRPC {
+        if (arguments.length == 1) {
+            if (isString(addr)) {
+                return new RPC(addr);
+            }
+
+            return new RPC(null, arguments[0]);
+        }
+
+        return new RPC(addr, opt);
     }
 }
 

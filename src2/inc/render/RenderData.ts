@@ -219,12 +219,7 @@ module akra.render {
         	var iSet: int = -1;
 
         	if (isString(arguments[0])) {
-        		for (var i: int = 0; i < this._pIndicesArray.length; ++ i) {
-        			if (this._pIndicesArray[i].sName === <string>arguments[0]) {
-        				iSet = i;
-        				break;
-        			}
-        		};
+        		iSet = this.findIndexSet(arguments[0]);
 
         		if (iSet < 0) {
         			return false;
@@ -245,6 +240,16 @@ module akra.render {
         	}
 
         	return false;
+        }
+
+        findIndexSet(sName: string): int {
+            for (var i: int = 0; i < this._pIndicesArray.length; ++ i) {
+                if (this._pIndicesArray[i].sName === <string>sName) {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /**
@@ -290,8 +295,8 @@ module akra.render {
         	SET_BIT(this._iRenderable, <int>iIndexSet, bValue);
         }
 
-        isRenderable(iIndexSet?: int): bool;
         isRenderable(): bool;
+        isRenderable(iIndexSet: int): bool;
         isRenderable(iIndexSet?: int): bool {
         	if (arguments.length > 0) {
         		//is this index set renderable ?

@@ -107,6 +107,7 @@ module akra.ui {
 
 			this.bookmarkFor(this._pTabs[n]).addClass("active");
 			this._pTabs[n].show();
+			this._pTabs[n].selected();
 
 			this._iActiveTab = n;
 		}

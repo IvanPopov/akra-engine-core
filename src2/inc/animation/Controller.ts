@@ -7,11 +7,14 @@
 
 module akra.animation {
 	export class Controller implements IAnimationController {
+		public name: string = null;
+
 		private _pAnimations: IAnimationBase[] = [];
 		private _iOptions: int = 0;
 	    private _pActiveAnimation: IAnimationBase = null;
 	    private _pEngine: IEngine;
-	    private _pLastTarget: ISceneNode = null;
+	    private _pTarget: ISceneNode = null;
+
 
 	    inline get totalAnimations(): int{
 			return this._pAnimations.length;
@@ -21,9 +24,14 @@ module akra.animation {
 			return this._pActiveAnimation;
 		}
 
-		constructor(pEngine: IEngine, iOptions: int = 0) {
+		inline get target(): ISceneNode { 
+			return this._pTarget;
+		}
+
+		constructor(pEngine: IEngine, sName: string = null, iOptions: int = 0) {
 			this._pEngine = pEngine;
 			this.setOptions(iOptions);
+			this.name = sName;
 		}
 
 		inline getEngine(): IEngine {
@@ -45,9 +53,11 @@ module akra.animation {
 			
 			this._pAnimations.push(pAnimation);
 			this._pActiveAnimation = pAnimation;
-
-			if (!pAnimation.isAttached() && !isNull(this._pLastTarget)) {
-				pAnimation.attach(this._pLastTarget);
+			if (/*!pAnimation.isAttached() && */!isNull(this.target)) {
+				pAnimation.attach(this.target);
+			}
+			else {
+				//TODO: detach animation
 			}
 
 			this.animationAdded(pAnimation);
@@ -113,22 +123,30 @@ module akra.animation {
 			var pAnimations: IAnimationBase[] = this._pAnimations;
 
 		    for (var i: int = 0; i < pAnimations.length; ++ i) {
-		        pAnimations[i].attach(pTarget);
+		        if (!pAnimations[i].isAttached() || this.target !== pTarget) {
+		        	pAnimations[i].attach(pTarget);
+		        }
 		    }
 
-		    this._pLastTarget = pTarget;
+		    if (this.target) {
+		    	this.disconnect(this.target.scene, SIGNAL(postUpdate), SLOT(update));
+		    }
+
+		    this._pTarget = pTarget;
+		    this.connect(this.target.scene, SIGNAL(postUpdate), SLOT(update));
+
 		}
 
-		play(pAnimation: string, fRealTime: float): bool;
-		play(pAnimation: int, fRealTime: float): bool;
-		play(pAnimation: IAnimationBase, fRealTime: float): bool;
-		play(pAnimation: any, fRealTime: float): bool {
+		play(pAnimation: string): bool;
+		play(pAnimation: int): bool;
+		play(pAnimation: IAnimationBase): bool;
+		play(pAnimation: any): bool {
 			var pAnimationNext: IAnimationBase = this.findAnimation(arguments[0]);
 			var pAnimationPrev: IAnimationBase = this._pActiveAnimation;
+			var fRealTime: float = this._pEngine.time;
 
 			if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
 				
-				//LOG('controller::play(', pAnimationNext.name, ')', pAnimationNext);
 				if (pAnimationPrev) {
 					pAnimationPrev.stop(fRealTime);
 				}
@@ -144,9 +162,9 @@ module akra.animation {
 			return false;
 		}
 
-		update(fTime: float): void {
+		update(): void {
 			if (this._pActiveAnimation) {
-				this._pActiveAnimation.apply(fTime);
+				this._pActiveAnimation.apply(this._pEngine.time);
 			}
 		}
 
@@ -172,8 +190,8 @@ module akra.animation {
 	} 
 
 
-	export function createController(pEngine: IEngine, iOptions?: int): IAnimationController {
-		return new Controller(pEngine, iOptions);
+	export function createController(pEngine: IEngine, sName?: string, iOptions?: int): IAnimationController {
+		return new Controller(pEngine, sName, iOptions);
 	}
 }
 

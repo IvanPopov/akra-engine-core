@@ -57,13 +57,7 @@ setInterval(processingStack, 1);
 
 function fetchCanvasData(pCt, pParam, nBytePerCount) {
 	var data = pCt.getImageData(pParam.x, pParam.y, pParam.width, pParam.height).data;
-	//var cache = pCt.cache[pParam.x + "_" + pParam.y + "_" + pParam.width + "_" + pParam.height] || null;
-    
-    // if (cache) {
-    // 	return cache;
-    // }
-   
-	pBufMG = pCt.buffer = new Uint8Array(pParam.width * pParam.height * nBytePerCount);
+	var pBufMG = pCt.buffer = new Buffer(pParam.width * pParam.height * nBytePerCount);
 
     if (nBytePerCount == 3) {
         for (var i = 0, k = 0; i < data.length; i += 3, k += 4) {
@@ -102,7 +96,6 @@ function processingStack() {
         nBytePerCount = 4;
     }
 
-    var pBufMG = null;
     var pCa, pCt;
 
     iImageNumberX = Math.floor(pParam.x / 1024);
@@ -134,7 +127,7 @@ function processingStack() {
         pCa = pCanvasMG[sCanvasName];
         pCtx[sCanvasName] = pCa.getContext('2d');
         pCt = pCtx[sCanvasName];
-        //pCt.cache = {};
+
         pDateCanvas[sCanvasName] = new Date();
     } 
     else {
@@ -223,106 +216,3 @@ module.exports = function (fnCallback, sName, iSizeX, iSizeY, x, y, width, heigh
 
 
 
-// module.exports=function(fnCallback, sName, iSizeX, iSizeY, x, y, width, height, eType)
-// {
-// 	var pBuf=new Uint8Array(width*height*3);
-// 	var iLevel = 0;
-// 	//console.log(sName,iSizeX,iSizeY,x,y,width,height,eType);
-	
-// 	if(iSizeX==65536)
-// 	{
-// 		for(var i=0;i<width*height;i++)
-// 		{
-// 			pBuf[i*3+0]=255;
-// 			pBuf[i*3+1]=255;
-// 			pBuf[i*3+2]=255;
-			
-// 		}
-
-// 		iLevel = 7;
-		
-// 	}
-// 	else if(iSizeX==32768)
-// 	{
-// 		for(var i=0;i<width*height;i++)
-// 		{
-// 			pBuf[i*3+0]=255;
-// 			pBuf[i*3+1]=255;
-// 			pBuf[i*3+2]=0;
-			
-// 		}
-
-// 		iLevel = 6;
-		
-// 	}
-// 	else if(iSizeX==16384)
-// 	{
-// 		for(var i=0;i<width*height;i++)
-// 		{
-// 			pBuf[i*3+0]=255;
-// 			pBuf[i*3+1]=0;
-// 			pBuf[i*3+2]=255;
-			
-// 		}
-// 		iLevel = 5;
-// 	}
-// 	else if(iSizeX==8192)
-// 	{
-// 		for(var i=0;i<width*height;i++)
-// 		{
-// 			pBuf[i*3+0]=0;
-// 			pBuf[i*3+1]=255;
-// 			pBuf[i*3+2]=255;
-			
-// 		}
-
-// 		iLevel = 4;
-		
-// 	}
-// 	else if(iSizeX==4096)
-// 	{
-// 		for(var i=0;i<width*height;i++)
-// 		{
-// 			pBuf[i*3+0]=0;
-// 			pBuf[i*3+1]=0;
-// 			pBuf[i*3+2]=255;
-			
-// 		}
-// 		iLevel = 3;
-// 	}
-// 	else if(iSizeX==2048)
-// 	{
-// 		for(var i=0;i<width*height;i++)
-// 		{
-// 			pBuf[i*3+0]=190;
-// 			pBuf[i*3+1]=0;
-// 			pBuf[i*3+2]=0;
-			
-// 		}
-// 		iLevel = 2;
-// 	}
-// 	// else if(iSizeX == 1024){
-// 	// 	for(var i=0;i<width*height;i++)
-// 	// 	{
-// 	// 		pBuf[i*3+0]=127;
-// 	// 		pBuf[i*3+1]=127;
-// 	// 		pBuf[i*3+2]=0;
-			
-// 	// 	}
-// 	// 	iLevel = 1;
-// 	// }
-// 	else
-// 	{
-// 		for(var i=0;i<width*height;i++)
-// 		{
-// 			pBuf[i*3+0]=0;
-// 			pBuf[i*3+1]=255;
-// 			pBuf[i*3+2]=0;
-			
-// 		}
-// 		// console.log("i never must be here");
-// 		iLevel = 1;
-// 	}	
-// 	// console.log(iLevel);
-// 	fnCallback(null, pBuf);
-// };

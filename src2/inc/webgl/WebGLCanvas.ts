@@ -26,6 +26,8 @@ module akra.webgl {
 			return ly;
 		}
 
+		inline get el(): HTMLCanvasElement { return this._pCanvas; }
+
 		constructor (pRenderer: IRenderer) {
 			super(pRenderer);
 			this._pCanvas = (<any>pRenderer).getHTMLCanvas();

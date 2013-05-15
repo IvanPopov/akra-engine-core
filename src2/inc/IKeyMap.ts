@@ -41,8 +41,11 @@ module akra {
 		isMousePress(): bool;
 
 		captureMouse(pMouseTarget: Node): void;
+		captureMouse(pMouseTarget: Document): void;
 		captureKeyboard(pKeyboardTarget: Node): void;
+		captureKeyboard(pKeyboardTarget: Document): void;
 		capture(pTarget: Node): void;
+		capture(pTarget: Document): void;
 
 		update(): void;
 	}

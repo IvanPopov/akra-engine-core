@@ -27,6 +27,8 @@ module akra {
 		readonly graph: IUIGraph;
 		readonly areas: IGraphNodeAreaMap;
 
+		getOutputConnector(): IUIGraphConnector;
+		getInputConnector(): IUIGraphConnector;
 
 		findRoute(pNode: IUIGraphNode): IUIGraphRoute;
 		isConnectedWith(pNode: IUIGraphNode): bool;

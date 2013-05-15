@@ -66,6 +66,18 @@ module akra.io {
 			this._pLibrary = <ILibrary><any>{};
 		}
 
+		inline findLibraryEntry(iGuid: int): ILibraryEntry {
+			return this._pLibrary[iGuid];
+		}
+
+		inline findEntry(iGuid: int): IDataEntry {
+			return this.findLibraryEntry(iGuid).entry;
+		}
+
+		inline findEntryData(iGuid: int): any {
+			return this.findLibraryEntry(iGuid).data;
+		}
+
 		protected inline isSceneWrited(): bool {
 			return this._bScenesWrited;
 		}
@@ -115,7 +127,8 @@ module akra.io {
 			var pEntry: IAnimationBaseEntry = {
 				name: pAnimation.name,
 				targets: [],
-				type: EDocumentEntry.k_Unknown
+				type: EDocumentEntry.k_Unknown,
+				extra: null
 			}
 
 			var pTargets: IAnimationTarget[] = pAnimation.getTargetList();
@@ -229,7 +242,8 @@ module akra.io {
 				type: EDocumentEntry.k_Controller,
 
 				animations: [],
-				options: 0
+				options: 0,
+				name: pController.name
 			};
 
 			for (var i = 0, n: int = pController.totalAnimations; i < n; ++ i) {
@@ -301,25 +315,24 @@ module akra.io {
 			var pDocument: IDocument = this.createDocument();
 			
 			if (eFormat === EDocumentFormat.JSON) {
-				return this.exportAsJSON(pDocument);
+				return Exporter.exportAsJSON(pDocument);
 			}
 			else if (eFormat === EDocumentFormat.BINARY_JSON) {
-				return this.exportAsJSONBinary(pDocument);
+				return Exporter.exportAsJSONBinary(pDocument);
 			}
 
 			return null;
 		}
 
-		saveAs(sName: string, eFormat: EDocumentFormat): void {
+		saveAs(sName: string, eFormat?: EDocumentFormat): void {
 			saveAs(this.export(eFormat), sName);
 		}
 
-		exportAsJSON(pDocument: IDocument): Blob {
-			LOG(pDocument);
-			return new Blob([JSON.stringify(pDocument/*, null, "\t"*/)], {type: "text/plain;charset=utf-8"});
+		static exportAsJSON(pDocument: IDocument): Blob {
+			return new Blob([JSON.stringify(pDocument/*, null, "\t"*/)], {type: "application/json;charset=utf-8"});
 		}
 
-		exportAsJSONBinary(pDocument: IDocument): Blob {
+		static exportAsJSONBinary(pDocument: IDocument): Blob {
 			return new Blob([io.dump(pDocument)], {type: "application/octet-stream"});
 		}
 

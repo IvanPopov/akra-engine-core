@@ -8,6 +8,16 @@ module akra.core.pool.resources {
 	export class RenderMethod extends ResourcePoolItem implements IRenderMethod {
 		protected _pEffect: IEffect = null;
 		protected _pSurfaceMaterial: ISurfaceMaterial = null;
+		// protected $pSurfaceMaterial: ISurfaceMaterial = null;
+		
+		// get _pSurfaceMaterial(): ISurfaceMaterial {
+		// 	return this.$pSurfaceMaterial;
+		// }
+
+		// set _pSurfaceMaterial(pMat: ISurfaceMaterial) {
+		// 	LOG("prev: ", this.$pSurfaceMaterial, "next: ", pMat);
+		// 	this.$pSurfaceMaterial = pMat;
+		// }
 		
 		// createResource(): bool {
 		// 	this.notifyLoaded();

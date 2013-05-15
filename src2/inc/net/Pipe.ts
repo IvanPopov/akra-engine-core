@@ -177,7 +177,9 @@ module akra.net {
 						if (isObject(pValue)) {
 							pValue = JSON.stringify(pValue);
 						}
+
 						pSocket.send(pValue);
+						
 						return true;
 
 					case EPipeTypes.WEBWORKER:

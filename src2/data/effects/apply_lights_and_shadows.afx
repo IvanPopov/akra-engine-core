@@ -227,23 +227,23 @@ float fMinShadow : MIN_SHADOW_VALUE = 0.5;
 float shadowConstant : SHADOW_CONSTANT = 5.e+2;
 
 float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
-    float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
-    //float lightDepth = blur(shadowSampler,v2fShadowTextureCoords,float2(1./512.)).x*2. - 1.;
+    //float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
+    float lightDepth = blur(shadowSampler,v2fShadowTextureCoords,float2(1./512.)).x*2. - 1.;
     if(lightDepth == 1.){
         return 1.;
     }
 
     float lightRealDepth = unprojZ(projMat,lightDepth); //negative
 
-    float fShadowMultiplier = clamp(exp(shadowConstant*(1.e-2 - lightRealDepth + realDepth)), fMinShadow,1.);
+    float fShadowMultiplier = clamp(exp(shadowConstant*(1.e-2 - lightRealDepth + realDepth)), fMinShadow, 1.);
     return fShadowMultiplier;
 };
 
-float alpha = 1.;
+float alpha = 3.;
 
 float4 blur(sampler Sampler,float2 texCoords, float2 invTexSize){
-    const int blurX = 3;
-    const int blurY = 3;
+    const int blurX = 2;
+    const int blurY = 2;
 
     float4 value = float4(0.);
     float totalWeight = 0.;

@@ -22,17 +22,18 @@ module akra.ui.animation {
 
 		inline set animation(pAnim: IAnimationBase) {
 			this._pAnimation = pAnim;
-			this._pMask = pAnim.createAnimationMask();
+			this._pMask = this._pMask || pAnim.createAnimationMask();
 			this.selected(true);
 		}
 
-		constructor (pGraph: IUIGraph) {
+		constructor (pGraph: IUIGraph, pMask: FloatMap = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_MASK);
 
 			this.template("animation.Mask.tpl");
 			this.linkAreas();
 
 			this._pEditBtn = <IUIButton>this.findEntity("edit");
+			this._pMask = pMask;
 		}
 
 

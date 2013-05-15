@@ -18,16 +18,21 @@ module akra {
 
     export interface ICollada extends IModel {
         getAsset(): IColladaAsset;
+        getAnimations(): IColladaAnimation[];
+        getAnimation(i: int): IColladaAnimation;
+
         getFilename(): string;
         getBasename(): string;
         
         isVisualSceneLoaded(): bool;
         isAnimationLoaded(): bool;
 
-        attachToScene(pNode: ISceneNode, pController?: IAnimationController): IModelEntry;
-        attachToScene(pScene: IScene3d, pController?: IAnimationController): IModelEntry;
+        attachToScene(pNode: ISceneNode): IModelEntry;
+        attachToScene(pScene: IScene3d): IModelEntry;
 
         extractAnimations(): IAnimation[];
+        extractAnimation(i: int): IAnimation;
+        
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
     }
 

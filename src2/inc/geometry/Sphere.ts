@@ -130,10 +130,36 @@ module akra.geometry{
 		};
 
 		transform(m4fMatrix: IMat4): ISphere {
-			CRITICAL("TODO: transform() for Sphere similar to Rect3d::transform();");
+			var v4fTmp: IVec4 = vec4(this.center, 1.);
+			v4fTmp = m4fMatrix.multiplyVec4(v4fTmp);
+
+			this.center.set(v4fTmp.xyz);
+
+			var m3fTmp: IMat3 = m4fMatrix.toMat3(mat3());
+			var v3fScale: IVec3 = vec3();
+
+			m3fTmp.decompose(quat4(), v3fScale);
+
+			var fScaleX: float = math.abs(v3fScale.x);
+			var fScaleY: float = math.abs(v3fScale.y);
+			var fScaleZ: float = math.abs(v3fScale.z);
+
+		    var fMaxScale: float;
+
+		    if(fScaleX >= fScaleY && fScaleX >= fScaleZ){
+		    	fMaxScale = fScaleX;
+		    }
+		    else if(fScaleY >= fScaleX && fScaleY >= fScaleZ){
+		    	fMaxScale = fScaleY;
+		    }
+		    else{
+		    	fMaxScale = fScaleZ;
+		    }
+
+		    this.radius *= fMaxScale;
 
 			return this;
-		}
+		};
 	};
 }
 

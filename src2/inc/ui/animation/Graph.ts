@@ -11,16 +11,29 @@
 #include "animation/Animation.ts"
 #include "io/filedrop.ts"
 
+#include "io/Importer.ts"
+
 module akra.ui.animation {
 	export class Graph extends graph.Graph implements IUIAnimationGraph {
 		private _pSelectedNode: IUIAnimationNode = null;
 		private _pAnimationController: IAnimationController = null;
-		private _pTimer: IUtilTimer = null;
 
 		constructor (parent, options) {
 			super(parent, options, EUIGraphTypes.ANIMATION);
 
 			this.setupFileDropping();
+			this.setDroppable();
+		}
+
+		drop(e, comp, info): void {
+			super.drop(e, comp, info);
+				
+			if (isComponent(comp, EUIComponents.COLLADA_ANIMATION)) {
+				var pColladaAnimation: any = comp;
+				var pAnimation = pColladaAnimation.collada.extractAnimation(pColladaAnimation.index);
+				// this.addAnimation(pAnimation);
+				this.createNodeByAnimation(pAnimation);
+			}
 		}
 
 		private setupFileDropping(): void {
@@ -37,20 +50,25 @@ module akra.ui.animation {
 					}
 
 					var pName: IPathinfo = pathinfo(file.name);
+					var sExt: string = pName.ext.toUpperCase();
 
-				    if (pName.ext.toUpperCase() !== "DAE") {
-				    	alert("unsupported format used: " + file.name);
-				    	return;
-				    }
+				    if (sExt == "DAE" ) {
+				    	var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
+			    		pModelResource.parse(<string>content, {scene: false, name: pName.toString()});
 
-			    	var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
-		    		pModelResource.parse(<string>content, {scene: false, name: pName.toString()});
+			    		var pAnimations: IAnimation[] = pModelResource.extractAnimations();
 
-		    		var pAnimations: IAnimation[] = pModelResource.extractAnimations();
+			    		for (var j = 0; j < pAnimations.length; ++ j) {
+			    			pGraph.addAnimation(pAnimations[j]);
+			    			pGraph.createNodeByAnimation(pAnimations[j]);
+			    		}
+		    		}
 
-		    		for (var j = 0; j < pAnimations.length; ++ j) {
-		    			pGraph.addAnimation(pAnimations[j]);
-		    			pGraph.createNodeByAnimation(pAnimations[j]);
+		    		if (sExt == "JSON") {
+		    			var pImporter = new io.Importer(ide.getEngine());
+		    			pImporter.import(content);
+		    			this.createNodeByController(pImporter.getController());
+
 		    		}
 		    	},
 
@@ -71,16 +89,11 @@ module akra.ui.animation {
 		}
 
 
-
-		private setTimer(pTimer: IUtilTimer): void {
-			this._pTimer = pTimer;
-		}
-
 		getController(): IAnimationController {
 			return this._pAnimationController;
 		}
 
-		selectNode(pNode: IUIAnimationNode, bModified: bool): void {
+		selectNode(pNode: IUIAnimationNode, bModified: bool = false): void {
 			var bPlay: bool = true;
 
 			if (this._pSelectedNode === pNode) {
@@ -97,12 +110,14 @@ module akra.ui.animation {
 			this._pSelectedNode = pNode;
 
 
-			if (bPlay && !isNull(this._pTimer)) {
-				this._pAnimationController.play(pNode.animation, this._pTimer.appTime);
+			if (bPlay) {
+				this._pAnimationController.play(pNode.animation);
 			}
 
 			this.nodeSelected(pNode, bPlay);
 		}
+
+
 
 		BROADCAST(nodeSelected, CALL(pNode, bPlay));
 		
@@ -120,16 +135,16 @@ module akra.ui.animation {
 		findNodeByAnimation(sName: string): IUIAnimationNode;
 		findNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode;
 		findNodeByAnimation(animation): IUIAnimationNode {
-			// var sName: string = !isString(animation)? (<IAnimationBase>animation).name: <string>animation;
-			// var pNodes: IUIAnimationNode[] = <IUIAnimationNode[]>this.nodes;
+			var sName: string = !isString(animation)? (<IAnimationBase>animation).name: <string>animation;
+			var pNodes: IUIAnimationNode[] = <IUIAnimationNode[]>this.nodes;
 
-			// for (var i: int = 0; i < pNodes.length; i ++) {
-			// 	var pAnim: IAnimationBase = pNodes[i].animation;
+			for (var i: int = 0; i < pNodes.length; i ++) {
+				var pAnim: IAnimationBase = pNodes[i].animation;
 
-			// 	if (!isNull(pAnim) && pAnim.name === sName) {
-			// 		return pNodes[i];
-			// 	}
-			// }
+				if (!isNull(pAnim) && pAnim.name === sName) {
+					return pNodes[i];
+				}
+			}
 
 			return null;
 		}
@@ -147,25 +162,105 @@ module akra.ui.animation {
 
 		createNodeByAnimation(pAnimation: IAnimationBase): IUIAnimationNode {
 			var pNode: IUIAnimationNode = this.findNodeByAnimation(pAnimation.name);
-			var pSubNode: IUIAnimationNode;
-			// var pBlend: IUIAnimationBlender;
-			// var pPlayer: IUIAnimationPlayer;
-			var pMaskNode: IUIAnimationNode;
+			var pSubAnim: IAnimationBase = null;
+			var pSubNode: IUIAnimationNode 	= null;
+			var pBlend: IAnimationBlend = null;
+			var pBlender: IUIAnimationBlender = null;
+			var pPlayer: IUIAnimationPlayer = null;
+			var pMaskNode: IUIAnimationNode = null;
 			
-			var pSubAnimation: IAnimationBase;
-			var n: int = 0;
 			var pMask: FloatMap = null;
+			var pGraph: IUIAnimationGraph = this;
+
+			function connect(pGraph: IUIGraph, pFrom: IUIGraphNode, pTo: IUIGraphNode): void {
+				pGraph.createRouteFrom(pFrom.getOutputConnector());
+				pGraph.connectTo(pTo.getInputConnector());
+			}
 
 			if (!isNull(pNode)) {
 				return pNode;
 			}
 
 			if (akra.animation.isAnimation(pAnimation)) {
-				pNode = <IUIAnimationNode>new Data(this);
-				pNode.animation = pAnimation;
+				pNode = <IUIAnimationNode>new Data(this, <IAnimation>pAnimation);
+				this.addAnimation(pAnimation);
+			}
+			else if (akra.animation.isBlend(pAnimation)) {
+				pBlender = pNode = new Blender(this, <IAnimationBlend>pAnimation);
+		        pBlend = <IAnimationBlend>pAnimation;
+		        // pBlender.animation = pBlend;
+
+		        for (var i = 0; i < pBlend.totalAnimations; i++) {
+		            pSubAnim = pBlend.getAnimation(i);
+		            pSubNode = this.createNodeByAnimation(pSubAnim);
+		            pMask = pBlend.getAnimationMask(i);
+
+		            if (isDefAndNotNull(pMask)) {
+		                pMaskNode = pBlender.getMaskNode(i);
+		                
+		                if (!pMaskNode) {
+		                    pMaskNode = new Mask(this, pMask);
+		                    // pMaskNode.animation = pSubAnim;
+		                }
+
+
+		    			connect(this, pSubNode, pMaskNode);
+		    			connect(this, pMaskNode, pBlender);
+		                
+		                // if (pSubAnim.extra && pSubAnim.extra.mask) {
+		                //     if (pSubAnim.extra.mask.position) {
+		                //         pMaskNode.position(pSubAnim.extra.mask.position.x, pSubAnim.extra.mask.position.y);
+		                //     }
+		                // }
+
+		                pMaskNode.routing();
+		            }
+		            else {
+		            	connect(this, pSubNode, pBlender);
+		            }
+
+		            pSubNode.routing();
+		        }; 
+
+		        pBlender.setup();
+			}
+			else if (akra.animation.isContainer(pAnimation)) {
+				pPlayer = pNode = new Player(this, <IAnimationContainer>pAnimation);
+		        // pPlayer.animation = pAnimation;
+
+		        pSubAnim = (<IAnimationContainer>pAnimation).getAnimation();
+		        pSubNode = this.createNodeByAnimation(pSubAnim);
+		    
+		    	connect(this, pSubNode, pPlayer);
 			}
 			else {
-				CRITICAL("AHTUNG!!!");
+				ERROR("unsupported type of animation detected >> ", pAnimation);
+			}
+
+			if (pAnimation.extra) {
+		        if (pAnimation.extra.graph) {
+		        	setTimeout(() => {
+		        		var o = pGraph.el.offset();
+		            	pNode.el.offset({left: o.left + pAnimation.extra.graph.x, top: o.top + pAnimation.extra.graph.y});
+
+		            	if (pBlender) {
+		            		var o = pBlender.el.offset();
+		            		for (var i = 0; i < pBlender.totalMasks; ++ i) {
+		            			var pMaskNode = pBlender.getMaskNode(i);
+		            			pMaskNode.el.offset({left: o.left - 60 - pMaskNode.el.width() + i * 30, top: o.top - 30 + i * 30});
+		            			pMaskNode.routing();
+		            		}
+		            	}
+		            	
+		            	pNode.routing();
+		        	}, 15);
+		        }
+		    }
+
+			pNode.routing();
+
+			if (pAnimation === this.getController().active) {
+				this.selectNode(pNode);
 			}
 
 			return null;
@@ -180,14 +275,6 @@ module akra.ui.animation {
 			this.connect(pController, SIGNAL(animationAdded), SLOT(animationAdded));
 
 			this.createNodeByController(pController);
-
-			this.setTimer(pController.getEngine().getTimer());
-
-			var pEngine: IEngine = pController.getEngine();
-
-			pEngine.getScene().bind(SIGNAL(beforeUpdate), () => {
-				pController.update(pEngine.time);
-			});
 
 			return true;
 		}

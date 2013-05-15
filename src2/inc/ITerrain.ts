@@ -32,6 +32,8 @@ module akra {
 		readonly maxHeight: float;
 		readonly terrain2DLength: float;
 
+		isCreate(): bool;
+
 		/**
 		 * Создаем terrain
 		 * @param {ISceneNode} pRootNode Узел на сцене к которому цепляется terrain.
@@ -54,18 +56,8 @@ module akra {
 		readWorldHeight(iMapX: uint, iMapY: uint): float;
 
 		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3;
-		// /**
-		//  * Возвращает нормаль terrain в заданной точке.
-		//  */
-		// readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3;
-		// /**
-		//  * Возвращает высоту terrain в заданной точке мира.
-		//  */
-		// calcWorldHeight(fWorldX: float, fWorldY: float): float;
-		// /**
-		//  * Возвращает нормаль terrain в заданной точке мира.
-		//  */
-		// calcWorldNormal(v3fNormal: IVec3, fWorldX: float, fWorldY: float): IVec3;
+
+		projectPoint(v3fCoord: IVec3, v3fDestenation: IVec3): bool;
 		/**
 		 * Destructor
 		 */

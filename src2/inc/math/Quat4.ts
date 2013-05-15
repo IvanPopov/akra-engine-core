@@ -124,10 +124,9 @@ module akra.math {
 		        v3fDestination = v3fVec;
 		    }
 
-		    var q4fVec: IQuat4 = quat4(v3fVec,0);
+		    var q4fVec: IQuat4 = quat4(v3fVec, 0.);
 		    var qInverse: IQuat4 = this.inverse(quat4());
-
-		    var qResult: IQuat4 = this.multiply(q4fVec.multiply(qInverse),quat4());
+		    var qResult: IQuat4 = this.multiply(q4fVec.multiply(qInverse), quat4());
 
 		    v3fDestination.x = qResult.x;
 		    v3fDestination.y = qResult.y;
@@ -674,7 +673,7 @@ module akra.math {
 			}
 		};
 
-		ALLOCATE_STORAGE(Quat4,100)
+		ALLOCATE_STORAGE(Quat4, 256)
     }
 }
 

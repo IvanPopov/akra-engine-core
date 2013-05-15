@@ -30,6 +30,7 @@ module akra {
 
 	export interface IDataEntry extends IEntry {
 		type: EDocumentEntry;
+		extra?: any;
 	}
 
 	export interface ILibraryEntry extends IEntry {
@@ -87,6 +88,10 @@ module akra {
 	export interface IAnimationBaseEntry extends IDataEntry {
 		name: string;
 		targets: IAnimationTargetEntry[];
+		//additional information abtout position on animation graph
+		extra: {
+			graph?: { x: int; y: int; };
+		};
 	}
 
 	export interface IAnimationEntry extends IAnimationBaseEntry {
@@ -119,6 +124,7 @@ module akra {
 	export interface IControllerEntry extends IDataEntry {
 		animations: IAnimationBaseInstance[];
 		options: int;
+		name: string;
 	}
 
 

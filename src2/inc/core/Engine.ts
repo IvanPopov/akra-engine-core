@@ -303,8 +303,8 @@ module akra.core {
 			return util.createBufferMap(this);
 		}
 
-		inline createAnimationController(iOptions: int = 0): IAnimationController {
-			return animation.createController(this, iOptions);
+		inline createAnimationController(sName?: string, iOptions?: int): IAnimationController {
+			return animation.createController(this, sName, iOptions);
 		}
 
 		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {
@@ -343,10 +343,12 @@ module akra.core {
 						    "effects/Plane.afx",
 						    "effects/fxaa.afx",
 						    "effects/skybox.afx",
+						    // "effects/mesh.afx", 
 						    "effects/TextureToScreen.afx",
 						    "effects/mesh_geometry.afx",
 						    "effects/prepare_shadows.afx",						    
 						    "effects/terrain.afx",
+						    // "effects/terrain_geometry.afx",
 						    "effects/prepareDeferredShading.afx",
 						    "effects/generate_normal_map.afx"
 						],

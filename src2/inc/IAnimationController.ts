@@ -9,8 +9,11 @@ module akra {
 	IFACE(ISceneNode);
 
 	export interface IAnimationController extends IEventProvider {
+		name: string;
+
 		readonly totalAnimations: int;
 		readonly active: IAnimationBase;
+		readonly target: ISceneNode;
 
 		getEngine(): IEngine;
 
@@ -30,13 +33,13 @@ module akra {
 		setAnimation(iAnimation: int, pAnimation: IAnimationBase): void;
 		attach(pTarget: ISceneNode): void;
 
-		signal play(pAnimation: string, fRealTime: float): bool;
-		signal play(pAnimation: int, fRealTime: float): bool;
-		signal play(pAnimation: IAnimationBase, fRealTime: float): bool;
+		signal play(pAnimation: string): bool;
+		signal play(pAnimation: int): bool;
+		signal play(pAnimation: IAnimationBase): bool;
 
 		signal animationAdded(pAnimation: IAnimationBase): void;
 
-		update(fTime: float): void;
+		update(): void;
 
 		toString(bFullInfo?: bool);
 	}

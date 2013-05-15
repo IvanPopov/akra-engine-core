@@ -52,6 +52,8 @@ module akra {
 
         getActualDimensions(): IRect2d;
 
+        projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
+
         //iBuffers=FBT_COLOUR|FBT_DEPTH
         setClearEveryFrame(isClear: bool, iBuffers?: uint): void;
         getClearEveryFrame(): bool;

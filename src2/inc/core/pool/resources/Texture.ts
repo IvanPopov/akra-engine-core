@@ -218,9 +218,9 @@ module akra.core.pool.resources {
         }
 
         _onImageLoad(pImage: IImg): void {
-            LOG("resource loaded > ", pImage.findResourceName(), this.findResourceName());
             this.disconnect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
             this.loadImage(pImage);
+            debug_print("texture/image loaded: ", pImage.findResourceName());
         }
 
         destroyResource(): bool {

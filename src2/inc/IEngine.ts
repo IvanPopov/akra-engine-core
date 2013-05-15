@@ -58,7 +58,7 @@ module akra {
         createMesh(sName?: string, eOptions?: int, pDataBuffer?: IRenderDataCollection): IMesh;
         createRenderDataCollection(iOptions?: int): IRenderDataCollection;
         createBufferMap(): IBufferMap;
-        createAnimationController(iOptions?: int): IAnimationController;
+        createAnimationController(sName?: string, iOptions?: int): IAnimationController;
     };
 
     export var createEngine: () => IEngine;

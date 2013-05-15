@@ -16,7 +16,16 @@ module akra.ui {
 		return sCode;
 	}
 
+	function buildFuncByCodeWithSelfContext(sCode, self): Function {
+		var f = new Function("self", sCode);
+		var fnCallback = () => f(self);
+		fnCallback.toString = (): string => "function (self) {" + sCode + "}";
+		return fnCallback;
+	}
+
 	export class IDE extends Component implements IUIIDE {
+		protected _fnMainScript: Function = () => {};
+
 		protected _pEngine: IEngine = null;
 
 		protected _pSceneTree: scene.Tree;
@@ -36,6 +45,13 @@ module akra.ui {
 		
 		_apiEntry: any;
 
+		inline get script(): Function {
+			return this._fnMainScript;
+		}
+
+		inline set script(fn: Function) {
+			this._fnMainScript = fn;
+		}
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
@@ -114,13 +130,17 @@ module akra.ui {
 				case ECMD.EDIT_ANIMATION_CONTROLLER: 
 					return this.editAnimationController(argv[0]);
 				case ECMD.INSPECT_ANIMATION_NODE:
-					return this.inspectAnimationNode(argv[0])
+					return this.inspectAnimationNode(argv[0]);
+				case ECMD.INSPECT_ANIMATION_CONTROLLER:
+					return this.inspectAnimationController(argv[0]);
 				case ECMD.CHANGE_AA:
 					return this.changeAntiAliasing(<bool>argv[0]);
 				case ECMD.LOAD_COLLADA:
 					return this.loadColladaModel();
 				case ECMD.EDIT_EVENT:
 					return this.editEvent(<IEventProvider>argv[0], <string>argv[1]);
+				case ECMD.EDIT_MAIN_SCRIPT:
+					return this.editMainScript();
 			}
 
 			return false;
@@ -138,6 +158,11 @@ module akra.ui {
 
 		protected inspectNode(pNode: ISceneNode): bool {
 			this._pInspector.inspectNode(pNode);
+			return true;
+		}
+
+		protected inspectAnimationController(pController: IAnimationController): bool {
+			this._pInspector.inspectAnimationController(pController);
 			return true;
 		}
 
@@ -216,6 +241,39 @@ module akra.ui {
 			return true;
 		}
 
+		protected editMainScript(): bool {
+
+			var sName: string = "main-script";
+			var pListenerEditor: IUIListenerEditor;
+			var iTab: int = this._pTabs.findTab(sName);
+			var sCode: string = getFuncBody(this._fnMainScript);
+			var self = this._apiEntry;
+			var pIDE = this;
+
+			if (iTab < 0) {
+				pListenerEditor = <IUIListenerEditor>this._pTabs.createComponent("ListenerEditor", {
+					title: "Project code", 
+					name: sName,
+				});
+
+				pListenerEditor.bind(SIGNAL(bindEvent), (pEditor: IUIListenerEditor, sCode: string) => {
+					pIDE.script = buildFuncByCodeWithSelfContext(sCode, self);
+					(pIDE.script)();
+				});
+
+				iTab = pListenerEditor.index;
+			}
+			else {
+				pListenerEditor = <IUIListenerEditor>this._pTabs.tab(iTab);
+			}
+
+			this._pTabs.select(iTab);
+			
+			pListenerEditor.editor.value = sCode;
+
+			return true;
+		}
+
 		//предпологается, что мы редактируем любово листенера, и что, исполнитель команды сам укажет нам, 
 		//какой номер у листенера, созданного им.
 		protected editEvent(pTarget: IEventProvider, sEvent: string, iListener: int = 0, eType: EEventTypes = EEventTypes.BROADCAST): bool {
@@ -223,25 +281,29 @@ module akra.ui {
 			var pListenerEditor: IUIListenerEditor;
 			var iTab: int = this._pTabs.findTab(sName);
 			var pEvtTable: IEventTable = pTarget.getEventTable();
-			var pEventSlot: IEventSlot = pEvtTable.findBroadcastSignalMap(pTarget.getGuid(), sEvent)[iListener];
+			var pEventSlots: IEventSlot[] = pEvtTable.findBroadcastSignalMap(pTarget.getGuid(), sEvent);
+			var pEventSlot: IEventSlot = null;
 			var sCode: string = "";
 			var self = this._apiEntry;
-			var sDel: string = "/*** [user code] ***/";
+
+			for (var i = 0; i < pEventSlots.length; ++ i) {
+				if (isDefAndNotNull(pEventSlots[i].listener)) {
+					pEventSlot = pEventSlots[i];
+					break;
+				}	
+			}
 
 			if (!isDefAndNotNull(pEventSlot)) {
 				pTarget.bind(sEvent, () => {});
-				pEventSlot = pEvtTable.findBroadcastSignalMap(pTarget.getGuid(), sEvent)[iListener];
+				return this.editEvent(pTarget, sEvent);
+			}
+			// LOG(pEventSlots, pEventSlot);
+			if (!isNull(pEventSlot.target)) {
+				ERROR("modifications of target's connectics not allowed!");
 			}
 
 			if (!isNull(pEventSlot.listener)) {
 				sCode = getFuncBody(pEventSlot.listener);
-				
-				// var i: int = sCode.indexOf(sDel);
-				// var j: int = sCode.lastIndexOf(sDel);
-
-				// if (i != -1) {
-				// 	sCode = sCode.substr(i + sDel.length, j - i - sDel.length);
-				// }
 			}
 
 			if (iTab < 0) {
@@ -251,12 +313,7 @@ module akra.ui {
 					});
 
 				pListenerEditor.bind(SIGNAL(bindEvent), (pEditor: IUIListenerEditor, sCode: string) => {
-					// var sBody: string = "var self = this;" + sDel + sCode + sDel;
-					var sBody: string = sCode;
-					var f = new Function("self", sBody);
-					var fnCallback = () => f(self);
-					fnCallback.toString = (): string => "function (self) {" + sCode + "}";
-					pEventSlot.listener = fnCallback;
+					pEventSlot.listener = buildFuncByCodeWithSelfContext(sCode, self);
 				});
 
 				iTab = pListenerEditor.index;
@@ -265,9 +322,9 @@ module akra.ui {
 				pListenerEditor = <IUIListenerEditor>this._pTabs.tab(iTab);
 			}
 
-			pListenerEditor.editor.codemirror.setValue(sCode);
-		
 			this._pTabs.select(iTab);
+			
+			pListenerEditor.editor.value = sCode;
 
 			return true;
 		}

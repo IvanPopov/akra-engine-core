@@ -455,7 +455,7 @@ module akra {
 			if (pHeader.dwFlags & DDSD_MIPMAPCOUNT) {
                 pImgData.numMipMaps = pHeader.dwMipMapCount-1;
                 if (pImgData.numMipMaps!=core.pool.resources.Img.getMaxMipmaps(pImgData.width,pImgData.height,pImgData.depth,pImgData.format)) {
-                WARNING("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1 "
+                WARNING("Number of mipmaps are not to degrease image size to 1x1 "
                             + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");              	 
 
             	}

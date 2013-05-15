@@ -26,6 +26,8 @@ module akra {
 		duration: float;
 		name: string;
 		type: EAnimationTypes;
+		
+		extra: any;
 
 		play(fRealTime: float): void;
 		stop(fRealTime: float): void;
@@ -55,6 +57,10 @@ module akra {
 		signal played(fTime: float): void;
 		signal stoped(fTime: float): void;
 		signal renamed(sName: string): void;
+	}
+
+	export interface IAnimationMap {
+		[name: string]: IAnimationBase;
 	}
 }
 

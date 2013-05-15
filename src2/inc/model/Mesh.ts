@@ -255,25 +255,26 @@ module akra.model {
         }
 
         getSubset(sName: string): IMeshSubset;
-        getSubset(i: uint): IMeshSubset;
-        getSubset(i: any): IMeshSubset {
+        getSubset(n: uint): IMeshSubset;
+        getSubset(n: any): IMeshSubset {
             if (isInt(arguments[0])) {
-                return this._pSubMeshes[arguments[0]];
+                return this._pSubMeshes[arguments[0]] || null;
             }
             else {
                 for (var i = 0; i < this.length; ++ i) {
-                    if (this._pSubMeshes[i].name === <string>arguments[0]) {
+                    if (this._pSubMeshes[i].name == <string>arguments[0]) {
                         return this._pSubMeshes[i];
                     }
                 }
             }
+
             return null;
         }
 
         setSkin(pSkin: ISkin): void {
             for (var i = 0; i < this.length; ++ i) {
                 this._pSubMeshes[i].setSkin(pSkin);
-            };
+            }
         }
 
         createSkin(): ISkin {
@@ -352,7 +353,6 @@ module akra.model {
             
             if(isNull(pVertexData)) {
                 return false;
-
             }
 
             if(geometry.computeBoundingBox(pVertexData, pNewBoundingBox)== false)
@@ -410,13 +410,15 @@ module akra.model {
             var pPoints: float[], pIndexes: uint[];
 
             if(isNull(this._pBoundingBox)) {
-                return false;
+                if (!this.createBoundingBox()) {
+                    return false;
+                }
             }
 
             pPoints = new Array();
             pIndexes = new Array();
 
-            geometry.computeDataForCascadeBoundingBox(this._pBoundingBox,pPoints,pIndexes,0.1);
+            geometry.computeDataForCascadeBoundingBox(this._pBoundingBox, pPoints, pIndexes, 0.1);
 
             pSubMesh = this.getSubset(".BoundingBox");
             
@@ -424,6 +426,7 @@ module akra.model {
                 pSubMesh = this.createSubset(".BoundingBox", EPrimitiveTypes.LINELIST, EHardwareBufferFlags.STATIC);
                 
                 if(isNull(pSubMesh)) {
+                    debug_error("could not create bounding box subset...");
                     return false;
                 }
 
@@ -441,7 +444,7 @@ module akra.model {
                 pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
 
                 pSubMesh.effect.addComponent("akra.system.mesh_texture");
-                pSubMesh.effect.addComponent("akra.system.prepareForDeferredShading");
+                pSubMesh.hasShadow = false;
             }
             else {
                 pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
@@ -459,8 +462,18 @@ module akra.model {
             }
 
             //TODO: hide bounding box!!
-            return false;
-            //return pSubMesh.data.setRenderable(this.data.getIndexSet(), false);
+            pSubMesh.data.setRenderable(pSubMesh.data.getIndexSet(), false);
+            return true;
+        }
+
+        isBoundingBoxVisible(): bool {
+            var pSubMesh: IMeshSubset = this.getSubset(".BoundingBox");
+            
+            if(!pSubMesh) {
+                return false;
+            }
+
+            return pSubMesh.data.isRenderable(pSubMesh.data.getIndexSet());
         }
 
         createBoundingSphere(): bool {
@@ -482,7 +495,7 @@ module akra.model {
             }
 
 
-            if(geometry.computeBoundingSphere(pVertexData,pNewBoundingSphere) == false) {
+            if(geometry.computeBoundingSphere(pVertexData, pNewBoundingSphere) == false) {
                 return false;
             }
 
@@ -499,7 +512,7 @@ module akra.model {
                 if(isNull(pVertexData))
                     return false;
 
-                if(geometry.computeBoundingSphere(pVertexData, pTempBoundingSphere)== false)
+                if(geometry.computeBoundingSphere(pVertexData, pTempBoundingSphere) == false)
                     return false;
 
 
@@ -512,7 +525,7 @@ module akra.model {
 
                 geometry.computeGeneralizingSphere(pNewBoundingSphere, pTempBoundingSphere)
             }
-            // trace(pNewBoundingSphere, '<<<<<<<<<<<<<<<<<<<<<<<<<')
+
             this._pBoundingSphere = pNewBoundingSphere;
             
             return true;
@@ -529,13 +542,15 @@ module akra.model {
             var pPoints: float[], pIndexes: uint[];
 
             if(!this._pBoundingSphere) {
-                return false;
+                if (!this.createBoundingSphere()) {
+                    return false;
+                }
             }
 
             pPoints = new Array();
             pIndexes = new Array();
 
-            geometry.computeDataForCascadeBoundingSphere(this._pBoundingSphere,pPoints,pIndexes);
+            geometry.computeDataForCascadeBoundingSphere(this._pBoundingSphere, pPoints, pIndexes);
 
             pSubMesh = this.getSubset(".BoundingSphere");
             
@@ -555,16 +570,20 @@ module akra.model {
                 // pSubMesh.applyFlexMaterial(".MaterialBoundingSphere");
                 // //pSubMesh.getFlexMaterial(".MaterialBoundingSphere");
                 pMaterial = pSubMesh.material;
-                pMaterial.emissive = new Color(1.0, 0.0, 0.0, 1.0);
-                pMaterial.diffuse  = new Color(1.0, 0.0, 0.0, 1.0);
-                pMaterial.ambient  = new Color(1.0, 0.0, 0.0, 1.0);
-                pMaterial.specular = new Color(1.0, 0.0, 0.0, 1.0);
+                pMaterial.emissive = new Color(1.0, 1.0, 1.0, 1.0);
+                pMaterial.diffuse  = new Color(1.0, 1.0, 1.0, 1.0);
+                pMaterial.ambient  = new Color(1.0, 1.0, 1.0, 1.0);
+                pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
+
+                pSubMesh.effect.addComponent("akra.system.mesh_texture");
+                pSubMesh.hasShadow = false;
             }
             else {
-                pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints),DeclUsages.POSITION);
+                pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
             }
 
             pSubMesh.data.setRenderable(pSubMesh.data.getIndexSet(), true);
+
             return true;
         }
 
@@ -577,9 +596,18 @@ module akra.model {
                 return false;
             }
 
-            //TODO: hide bounding sphere
-            return false;
-            //return pSubMeshs.data.setRenderable(this.data.getIndexSet(),false);
+            pSubMesh.data.setRenderable(pSubMesh.data.getIndexSet(), false);
+            return true;
+        }
+
+        isBoundingSphereVisible(): bool {
+            var pSubMesh: IMeshSubset = this.getSubset(".BoundingSphere");
+            
+            if(!pSubMesh) {
+                return false;
+            }
+
+            return pSubMesh.data.isRenderable(pSubMesh.data.getIndexSet());
         }
 
         inline get hasShadow(): bool {

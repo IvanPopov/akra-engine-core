@@ -53,13 +53,31 @@ module akra.ui.graph {
 				node.el.css("position", "absolute");	
 				node.el.offset(node.graph.el.offset());
 
-			}, 30);
+			}, 5);
 		
 
 			this.connect(pGraph, SIGNAL(connectionBegin), SLOT(onConnectionBegin));
 			this.connect(pGraph, SIGNAL(connectionEnd), SLOT(onConnectionEnd));
 
 			this.el.disableSelection();
+		}
+
+		getOutputConnector(): IUIGraphConnector {
+			for (var i in this.areas) {
+				if (this.areas[i].isSupportsOutgoing()) {
+					return this.areas[i].prepareForConnect();
+				}
+			}
+
+			return null;
+		}
+
+		getInputConnector(): IUIGraphConnector {
+			for (var i in this.areas) {
+				if (this.areas[i].isSupportsIncoming()) {
+					return this.areas[i].prepareForConnect();
+				}
+			}
 		}
 		
 		protected onConnectionEnd(pGraph: IUIGraph): void {
@@ -100,8 +118,8 @@ module akra.ui.graph {
 		findRoute(pNode: IUIGraphNode): IUIGraphRoute {
 			var pRoute: IUIGraphRoute = null;
 
-			for (var i in this._pAreas) {
-				pRoute = this._pAreas[i].findRoute(pNode)
+			for (var i in this.areas) {
+				pRoute = this.areas[i].findRoute(pNode)
 				if (!isNull(pRoute)) {
 					return pRoute;
 				}
@@ -115,8 +133,8 @@ module akra.ui.graph {
 		}
 
 		canAcceptConnect(): bool {
-			for (var i in this._pAreas) {
-				if (this._pAreas[i].isSupportsIncoming()) {
+			for (var i in this.areas) {
+				if (this.areas[i].isSupportsIncoming()) {
 					return true;
 				}
 			}

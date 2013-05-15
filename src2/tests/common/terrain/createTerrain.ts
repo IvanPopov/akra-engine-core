@@ -157,43 +157,43 @@ module akra {
 			// ok(pTerrain);
 		}
 
-		function loadModels(sPath, fnCallback?: Function): ISceneNode {
-			var pController: IAnimationController = null;
-			var pModelRoot: ISceneNode = pScene.createNode();
-			var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
+		// function loadModels(sPath, fnCallback?: Function): ISceneNode {
+		// 	var pController: IAnimationController = null;
+		// 	var pModelRoot: ISceneNode = pScene.createNode();
+		// 	var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
 			
-			pController = pEngine.createAnimationController();
+		// 	pController = pEngine.createAnimationController();
 
-			pModelRoot.attachToParent(pScene.getRootNode());
-			pModelRoot.scale(2.);
-			pModelRoot.addPosition(0, -1., 0);
+		// 	pModelRoot.attachToParent(pScene.getRootNode());
+		// 	pModelRoot.scale(2.);
+		// 	pModelRoot.addPosition(0, -1., 0);
 
-			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
-				pModel.attachToScene(pModelRoot, pController);
+		// 	pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+		// 		pModel.attachToScene(pModelRoot, pController);
 
-				pController.attach(pModelRoot);
+		// 		pController.attach(pModelRoot);
 
-				var pContainer: IAnimationContainer = animation.createContainer();
+		// 		var pContainer: IAnimationContainer = animation.createContainer();
 
-				if (pController.active) {
-					pContainer.setAnimation(pController.active);
-					pContainer.useLoop(true);
-					pController.addAnimation(pContainer);		
-				}
+		// 		if (pController.active) {
+		// 			pContainer.setAnimation(pController.active);
+		// 			pContainer.useLoop(true);
+		// 			pController.addAnimation(pContainer);		
+		// 		}
 
 
-				pScene.bind(SIGNAL(beforeUpdate), () => {
-					// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
-					pController.update(pEngine.time);
-				});
+		// 		pScene.bind(SIGNAL(beforeUpdate), () => {
+		// 			// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+		// 			pController.update(pEngine.time);
+		// 		});
 
-				if (isFunction(fnCallback)) {
-					fnCallback(pModelRoot);
-				}
-			});
+		// 		if (isFunction(fnCallback)) {
+		// 			fnCallback(pModelRoot);
+		// 		}
+		// 	});
 
-			return pModelRoot;
-		}
+		// 	return pModelRoot;
+		// }
 
 		function main(pEngine: IEngine): void {
 			setup();

@@ -155,6 +155,52 @@ module akra.util {
 
 	    return pSceneModel;
 	}
+
+	export function basis(pScene, eOptions?: int): ISceneModel {
+	    var pMesh: IMesh, pSubMesh: IMeshSubset, pMaterial: IMaterial;
+	    var iPos: int, iNorm: int;
+	    var pEngine: IEngine = pScene.getManager().getEngine();
+
+	    pMesh = model.createMesh(pEngine, "basis", eOptions || EMeshOptions.HB_READABLE);
+	    iNorm = pMesh.data.allocateData([VE_VEC3("NORMAL")], new Float32Array([1,0,0]));
+
+	    function createAxis(sName: string, pCoords: Float32Array, pColor: IColor): void {
+	        pSubMesh = pMesh.createSubset(sName, EPrimitiveTypes.LINELIST);
+	        
+	        iPos = pSubMesh.data.allocateData([VE_VEC3("POSITION")], pCoords);
+	        pSubMesh.data.allocateIndex([VE_FLOAT("INDEX0")],   new Float32Array([0,1]));
+	        pSubMesh.data.allocateIndex([VE_FLOAT("INDEX1")],   new Float32Array([0,0]));
+	        pSubMesh.data.index(iPos, "INDEX0");
+	        pSubMesh.data.index(iNorm, "INDEX1");
+
+	        //pSubMesh.applyFlexMaterial(sName + '-color');
+	        pMaterial = pSubMesh.material;//pSubMesh.getFlexMaterial(sName + '-color');
+	        pMaterial.emissive = pColor;
+	        pMaterial.ambient = pColor;
+	        pMaterial.diffuse = pColor;
+	        pMaterial.shininess = 100.;
+
+	        pSubMesh.hasShadow = false;
+
+	        if((<core.Engine>pEngine).isDepsLoaded()){
+		    	pSubMesh.effect.addComponent("akra.system.mesh_texture");
+		    }
+		    else {
+		    	pScene.getManager().getEngine().bind(SIGNAL(depsLoaded), () => {
+		    		pSubMesh.effect.addComponent("akra.system.mesh_texture");
+		    	});
+		    }
+	    }
+
+	    createAxis('basis::X-axis', new Float32Array([0,0,0, 1,0,0]), Color.RED);
+	    createAxis('basis::Y-axis', new Float32Array([0,0,0, 0,1,0]), Color.GREEN);
+	    createAxis('basis::Z-axis', new Float32Array([0,0,0, 0,0,1]), Color.BLUE);
+
+	    var pSceneModel: ISceneModel = pScene.createModel("basis");
+	    pSceneModel.mesh = pMesh;
+
+	    return pSceneModel;
+	}
 }
 
 #endif

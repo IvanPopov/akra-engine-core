@@ -310,7 +310,6 @@ module akra.webgl {
 
         inline setVertexBuffer(sName: string, pBuffer: IVertexBuffer): void {
             var iSlot: uint = this._pWebGLRenderer.getNextTextureSlot();
-
             this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
             // this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
             this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());

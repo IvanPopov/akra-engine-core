@@ -75,10 +75,7 @@ module akra.core.pool.resources {
     var pConvFormats: IColladaConvertionTable;
 
     export class Collada extends ResourcePoolItem implements ICollada {
-
         constructor ();
-
-        attachToScene(pNode: ISceneNode): IModelEntry;
 
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
 
@@ -115,7 +112,7 @@ module akra.core.pool.resources {
         
         private COLLADATransform(pXML: Element, id?: string): IColladaTransform;
         private COLLADANewParam(pXML: Element): IColladaNewParam;
-        private COLLADAAsset(pXML: Element): IColladaAsset;
+        private COLLADAAsset(pXML?: Element): IColladaAsset;
         private COLLADALibrary(pXML: Element, pTemplate: IColladaLibraryTemplate): IColladaLibrary;
 
         // geometry
@@ -161,7 +158,7 @@ module akra.core.pool.resources {
         private COLLADAInstanceGeometry(pXML: Element): IColladaInstanceGeometry;
 
         // directly load <visual_scene> from <instance_visual_scene> from <scene>.
-        private COLLADAScene(pXML: Element): IColladaVisualScene;
+        private COLLADAScene(pXML?: Element): IColladaVisualScene;
 
         // animation
          
@@ -237,7 +234,8 @@ module akra.core.pool.resources {
         private getSkeletonsOutput(): ISkeleton[];
         private getVisualScene(): IColladaVisualScene;
         private getImageOptions(): IColladaImageLoadOptions;
-        private getAnimations(): IColladaAnimation[];
+        public  getAnimations(): IColladaAnimation[];
+        public  getAnimation(i: uint): IColladaAnimation;
         public  getAsset(): IColladaAsset;
 
 
@@ -259,7 +257,7 @@ module akra.core.pool.resources {
             animation       : { pose: true },
             scene           : true,
             extractPoses    : true,
-            skeletons       : null,
+            skeletons       : [],
             images          : { flipY: false }
         };
 
@@ -287,6 +285,8 @@ module akra.core.pool.resources {
             "transparency",
             "specular"
         ];
+
+        public modelFormat: EModelFormats = EModelFormats.COLLADA;
 
         //=======================================================================================
         
@@ -764,7 +764,7 @@ module akra.core.pool.resources {
             return pParam;
         }
         
-        private COLLADAAsset(pXML: Element): IColladaAsset {
+        private COLLADAAsset(pXML: Element = firstChild(this.getXMLRoot(), "asset")): IColladaAsset {
             var pAsset: IColladaAsset = {
                 unit : {
                     meter : 1.0,
@@ -1719,7 +1719,7 @@ module akra.core.pool.resources {
         }
 
         // directly load <visual_scene> from <instance_visual_scene> from <scene>.
-        private COLLADAScene(pXML: Element): IColladaVisualScene {
+        private COLLADAScene(pXML: Element = firstChild(this.getXMLRoot(), "scene")): IColladaVisualScene {
             var pXMLData: Element = firstChild(pXML, "instance_visual_scene");
             var pScene: IColladaVisualScene = <IColladaVisualScene>this.source(attr(pXMLData, "url"));
 
@@ -2079,7 +2079,7 @@ module akra.core.pool.resources {
         private buildAnimation(pAnimationData: IColladaAnimation): IAnimation {
 
             var pTracks: IAnimationTrack[] = this.buildAnimationTrackList(pAnimationData);
-            var sAnimation: string = /*pAnimationData.length ? pAnimationData[0].name :*/ null;
+            var sAnimation: string = pAnimationData.name || pAnimationData.id || null;
             var pAnimation: IAnimation = animation.createAnimation(sAnimation || this.getBasename());
 
             for (var i: int = 0; i < pTracks.length; i++) {
@@ -2193,7 +2193,6 @@ module akra.core.pool.resources {
 
                         //setup textures
                         for (var sTextureType in pPhongMaterial.textures) {
-
                             var pColladaTexture: IColladaTexture = pPhongMaterial.textures[sTextureType];
 
                             if (isNull(pColladaTexture)) {
@@ -2217,6 +2216,10 @@ module akra.core.pool.resources {
                                 ERROR("TODO: flipY for image unsupported!");
                             }
 
+                            // LOG("is texture valid?? - ", pTexture.isValid());
+                            // pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR/*_MIPMAP_LINEAR*/);
+                            // pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR/*_MIPMAP_LINEAR*/);
+
                             var pMatches: string[] = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
                             var iTexCoord: int = (pMatches ? parseInt(pMatches[2]) : 0);
 
@@ -2235,6 +2238,7 @@ module akra.core.pool.resources {
                 //trace('try to apply mat:', pMaterial);
             }
 
+
             return pMesh;
         }
         
@@ -2251,6 +2255,8 @@ module akra.core.pool.resources {
 
                 pSkeleton.addRootJoint(pJoint);
             }
+
+            this.addSkeleton(pSkeleton);
 
             return pSkeleton;
         }
@@ -2653,8 +2659,12 @@ module akra.core.pool.resources {
         }
 
         private buildInitialPoses(pPoseSkeletons: ISkeleton[] = null): IAnimation[] {
-            pPoseSkeletons = pPoseSkeletons || this.getSkeletonsOutput();
+            if (!this.isVisualSceneLoaded()) {
+                this.COLLADAScene();
+            }
 
+            pPoseSkeletons = pPoseSkeletons || this.getSkeletonsOutput();
+            LOG(">>>>> buildInitialPoses() <<<<<<");
             if (isNull(pPoseSkeletons)) {
                 return null;
             }
@@ -2674,7 +2684,7 @@ module akra.core.pool.resources {
                 // }
                 pPoses.push(this.buildInititalPose(pScene.nodes, pSkeleton));
             }
-
+            LOG(pPoses);
             return pPoses;
         }
 
@@ -2778,6 +2788,11 @@ module akra.core.pool.resources {
         private inline getSkeletonsOutput(): ISkeleton[] {
             return this._pOptions.skeletons || null;
         }
+
+        private inline addSkeleton(pSkeleton: ISkeleton): void {
+            this._pOptions.skeletons.push(pSkeleton);
+        }
+
         private inline getImageOptions(): IColladaImageLoadOptions {
             return this._pOptions.images;
         }
@@ -2786,8 +2801,12 @@ module akra.core.pool.resources {
             return this._pVisualScene;
         }
 
-        private inline getAnimations(): IColladaAnimation[] {
+        public inline getAnimations(): IColladaAnimation[] {
             return this._pAnimations;
+        }
+
+        public inline getAnimation(i: int): IColladaAnimation {
+            return this._pAnimations[i] || null;
         }
 
         public inline getAsset(): IColladaAsset {
@@ -2857,8 +2876,8 @@ module akra.core.pool.resources {
 
             this.readLibraries(pXMLRoot, Collada.SCENE_TEMPLATE);
 
-            this.COLLADAAsset(firstChild(pXMLRoot, "asset"));
-            this.COLLADAScene(firstChild(pXMLRoot, "scene"));
+            this.COLLADAAsset();
+            this.COLLADAScene();
 
             if (this.isAnimationNeeded()) {
                 this.readLibraries(pXMLRoot, Collada.ANIMATION_TEMPLATE);
@@ -2898,15 +2917,15 @@ module akra.core.pool.resources {
         }
 
 
-        attachToScene(pScene: IScene3d, pController?: IAnimationController): IModelEntry;
-        attachToScene(pNode: ISceneNode, pController?: IAnimationController): IModelEntry;
-        attachToScene(parent, pController: IAnimationController = null): IModelEntry {
+        attachToScene(pScene: IScene3d): IModelEntry;
+        attachToScene(pNode: ISceneNode): IModelEntry;
+        attachToScene(parent): IModelEntry {
             var pScene: IScene3d;
             var pNode: ISceneNode;
             var pRoot: IModelEntry;
 
             var pSceneOutput: ISceneNode[] = null;
-            var pAnimationOutput: IAnimation[] = null;
+            // var pAnimationOutput: IAnimation[] = null;
             var pMeshOutput: IMesh[] = null;
             // var pInitialPosesOutput: IAnimation[] = null;
 
@@ -2945,25 +2964,49 @@ module akra.core.pool.resources {
             //     pInitialPosesOutput = this.buildInitialPoses();
             // }
 
-            pAnimationOutput = this.extractAnimations();
+            //pAnimationOutput = this.extractAnimations();
 
-            if (isNull(pController)) {
-                pController = this.getEngine().createAnimationController();
-            }
+            // if (isNull(pController)) {
+            //     pController = this.getEngine().createAnimationController();
+            // }
 
-            if (!isNull(pController) && !isNull(pAnimationOutput)) {
-                for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
-                    pController.addAnimation(pAnimationOutput[i]);
-                }
+            // if (!isNull(pController) && !isNull(pAnimationOutput)) {
+            //     for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
+            //         pController.addAnimation(pAnimationOutput[i]);
+            //     }
 
-                pController.attach(pRoot);
-                pRoot.controller = pController;
-            }
+            //     pController.attach(pRoot);
+            // }
 
             //clear all links from collada nodes to scene nodes
             this.buildComplete();
 
             return pRoot;
+        }
+
+        extractAnimation(i: int): IAnimation {
+            var pPoses: IAnimation[];
+            var pSkeletons: ISkeleton[], 
+                pSkeleton: ISkeleton;
+            var pAnimation: IAnimation = null;
+            var pData: IColladaAnimation = this.getAnimation(i);
+
+            if (!isNull(pData) && this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
+
+                pAnimation = this.buildAnimation(pData);
+                //дополним анимации начальными позициями костей
+                if (this.isPoseExtractionNeeded()) {
+                    pSkeletons = this.getSkeletonsOutput() || [];
+
+                    pPoses = this.buildInitialPoses(pSkeletons);
+                    
+                    for (var j: int = 0; j < pPoses.length; ++ j) {
+                        pAnimation.extend(pPoses[j]);
+                    }
+                }
+            }
+
+            return pAnimation;
         }
 
         extractAnimations(): IAnimation[] {
@@ -3308,7 +3351,13 @@ module akra.core.pool.resources {
     }
 
 
+    export inline function isModelResource(pItem: IResourcePoolItem): bool {
+        return isVideoResource(pItem) && pItem.resourceCode.type === EVideoResources.MODEL_RESOURCE;
+    }
 
+    export inline function isColladaResource(pItem: IResourcePoolItem): bool {
+        return isModelResource(pItem) && (<IModel>pItem).modelFormat === EModelFormats.COLLADA;
+    }
 }
 
 #endif

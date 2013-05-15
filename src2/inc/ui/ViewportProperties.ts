@@ -123,7 +123,7 @@ module akra.ui {
 
 		setViewport(pViewport: IViewport): void {
 			debug_assert(isNull(this._pViewport), "viewport cannot be changed");
-			// LOG(pViewport);
+
 			this._pViewport = pViewport;
 
 			this.el.find("div[name=preview]").append(this.getCanvasElement());
@@ -133,6 +133,16 @@ module akra.ui {
 			pStats.target = pViewport.getTarget();
 
 			ide.cmd(akra.ECMD.CHANGE_AA, this._pFXAASwh.value);
+
+			if ((<IDSViewport>pViewport).getSkybox()) {
+				this._pSkyboxLb.text = (<IDSViewport>pViewport).getSkybox().findResourceName();
+			}
+
+			this.connect(pViewport, SIGNAL(addedSkybox), SLOT(_addedSkybox));
+		}
+
+		_addedSkybox(pViewport: IViewport, pSkyTexture: ITexture): void {
+			this._pSkyboxLb.text = pSkyTexture.findResourceName();
 		}
 
 		inline getCanvas(): ICanvas3d { return this._pViewport.getTarget().getRenderer().getDefaultCanvas(); }

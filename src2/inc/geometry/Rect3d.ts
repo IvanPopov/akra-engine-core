@@ -7,7 +7,7 @@
 #include "Rect2d.ts"
 #include "IRect3d.ts"
 
-#define rect3d() Rect3d.stackCeil
+#define rect3d(...) Rect3d.stackCeil.set(__VA_ARGS__)
 
 module akra.geometry {
     export class Rect3d implements IRect3d{

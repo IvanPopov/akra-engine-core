@@ -24,6 +24,8 @@
 #include "IVertexData.ts"
 #include "IVertexElement.ts"
 
+#include "math/math.ts"
+
 module akra.geometry {
 	export function computeBoundingBox(pVertexData: IVertexData, pBoundingBox: IRect3d): bool;
 	export function computeDataForCascadeBoundingBox(pBoundingBox: IRect3d, ppVertexes: float[], ppIndexes: uint[], fMinSize?: float): bool;
@@ -209,17 +211,18 @@ module akra.geometry {
 
 		var fTheta: float, fDelta: float, fAlpha: float;
 		var nCount: uint = 10;
-		var i: int, j: int, k: int, a;
+		var i: int, j: int, k: int;
 		
-		fDelta = 2 * Math.PI / nCount;
+		fDelta = math.TWO_PI / nCount;
 
 		for(i = 0; i <= nCount / 2; i ++) {
-			fTheta=-Math.PI+(i*fDelta);
-			for(j = 0; j <= nCount; j++) {
+			fTheta =- math.PI + (i * fDelta);
+
+			for (j = 0; j <= nCount; j++) {
 				fAlpha = j * fDelta;
-				ppVertexes[(i*(nCount+1)+j)*3+0] = pBoundingSphere.center.x + pBoundingSphere.radius * Math.sin(fTheta) * Math.cos(fAlpha);
-				ppVertexes[(i*(nCount+1)+j)*3+1] = pBoundingSphere.center.y + pBoundingSphere.radius * Math.sin(fTheta) * Math.sin(fAlpha);
-				ppVertexes[(i*(nCount+1)+j)*3+2] = pBoundingSphere.center.z + pBoundingSphere.radius * Math.cos(fTheta);
+				ppVertexes[(i*(nCount+1)+j)*3+0] = pBoundingSphere.center.x + pBoundingSphere.radius * math.sin(fTheta) * math.cos(fAlpha);
+				ppVertexes[(i*(nCount+1)+j)*3+1] = pBoundingSphere.center.y + pBoundingSphere.radius * math.sin(fTheta) * math.sin(fAlpha);
+				ppVertexes[(i*(nCount+1)+j)*3+2] = pBoundingSphere.center.z + pBoundingSphere.radius * math.cos(fTheta);
 			}
 		}
 
@@ -317,7 +320,7 @@ module akra.geometry {
 	        fRadius = fDistance > fRadius ? fDistance : fRadius;
 	    }
 
-		pSphere.set(fCenterX, fCenterY, fCenterZ ,Math.sqrt(fRadius));
+		pSphere.set(fCenterX, fCenterY, fCenterZ ,math.sqrt(fRadius));
 	    
 	    return true;
 	}
@@ -431,7 +434,7 @@ module akra.geometry {
 	    var y: float = pSphere.center.y = fY / points.length * 3;
 	    var z: float = pSphere.center.z = fZ / points.length * 3;
 	    
-	    pSphere.radius = Math.sqrt((points[0] - x) * (points[0] - x) +
+	    pSphere.radius = math.sqrt((points[0] - x) * (points[0] - x) +
 	                                    (points[1] - y) * (points[1] - y) +
 	                                    (points[2] - z) * (points[2] - z));
 	    return true;
