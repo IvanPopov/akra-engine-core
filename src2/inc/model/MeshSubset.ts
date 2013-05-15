@@ -77,7 +77,9 @@ module akra.model {
 				pIndexes: uint [];
 
 			if (isNull(this._pBoundingBox)) {
-				return false;
+				if(!this.createBoundingBox()){
+					return false;
+				}
 			}
 
 			pPoints = new Array();
@@ -88,7 +90,7 @@ module akra.model {
 			iCurrentIndexSet = this.data.getIndexSet();
 
 			if(!this.data.selectIndexSet(".BoundingBox")) {
-				if (this.data.addIndexSet(true, EPrimitiveTypes.LINELIST, ".BoundingBox") == -1) {
+				if (this.data.addIndexSet(false, EPrimitiveTypes.LINELIST, ".BoundingBox") == -1) {
 					ERROR("could not add index set '.BoundingBox'");
 					return false;
 				}
@@ -99,15 +101,15 @@ module akra.model {
 
 				this.data.index(iData,DeclUsages.INDEX0);
 
-				this.applyFlexMaterial(".MaterialBoundingBox");
+				// this.applyFlexMaterial(".MaterialBoundingBox");
 
-		        //TODO: некорректно задавать так boundingBox, т.к. надо рендерится со своим рендер методом, а его никто не выбирает. 
-				pMaterial = this.getFlexMaterial(".MaterialBoundingBox");
-				pMaterial.emissive = new Color(0.0, 0.0, 1.0, 1.0);
-				pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
+		  //       //TODO: некорректно задавать так boundingBox, т.к. надо рендерится со своим рендер методом, а его никто не выбирает. 
+				// pMaterial = this.getFlexMaterial(".MaterialBoundingBox");
+				// pMaterial.emissive = new Color(0.0, 0.0, 1.0, 1.0);
+				// pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
 			}
 			else {
-				this.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints),DeclUsages.POSITION);
+				this.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
 			}
 
 			this.data.setRenderable(this.data.getIndexSet(), true);
@@ -169,7 +171,9 @@ module akra.model {
 			var pPoints: float[], pIndexes: uint[];
 
 			if(isNull(this._pBoundingSphere)) {
-				return false;
+				if(!this.createBoundingSphere()){
+					return false;
+				}
 			}
 
 			pPoints = new Array();
@@ -185,11 +189,11 @@ module akra.model {
 				this.data.allocateIndex([VE_FLOAT(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 				this.data.index(iData,DeclUsages.INDEX0);
 
-				this.applyFlexMaterial(".MaterialBoundingSphere");
+				// this.applyFlexMaterial(".MaterialBoundingSphere");
 
-				pMaterial = this.getFlexMaterial(".MaterialBoundingSphere");
-				pMaterial.emissive = new Color(0.0, 0.0, 1.0, 1.0);
-				pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
+				// pMaterial = this.getFlexMaterial(".MaterialBoundingSphere");
+				// pMaterial.emissive = new Color(0.0, 0.0, 1.0, 1.0);
+				// pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
 			}
 			else {
 				this.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);

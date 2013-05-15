@@ -353,7 +353,6 @@ module akra.model {
             
             if(isNull(pVertexData)) {
                 return false;
-
             }
 
             if(geometry.computeBoundingBox(pVertexData, pNewBoundingBox)== false)
