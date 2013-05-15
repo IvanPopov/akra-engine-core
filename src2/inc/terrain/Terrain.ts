@@ -372,7 +372,7 @@ module akra.terrain {
 			return v3fNormal;
 		}
 
-		projectPointOnTerrain(v3fCoord: IVec3, v3fDestenation: IVec3): bool {
+		projectPoint(v3fCoord: IVec3, v3fDestenation: IVec3): bool {
 			var v4fTerrainCoord: IVec4 = vec4(v3fCoord, 1.);
 
 		    v4fTerrainCoord = this.inverseWorldMatrix.multiplyVec4(v4fTerrainCoord);

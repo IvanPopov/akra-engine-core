@@ -426,7 +426,7 @@ module akra.scene.objects {
 		    return super.toString(isRecursive, iDepth);
     	};
 
-    	projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3{
+    	projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3 {
 			if(!isDef(v3fDestination)){
 				v3fDestination = v3fPoint;
 			}

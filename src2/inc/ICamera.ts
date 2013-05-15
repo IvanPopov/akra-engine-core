@@ -48,6 +48,8 @@ module akra {
     	setOrthoParams(fWidth: float, fHeight: float, fNearPlane: float, fFarPlane: float): void;
     	setOffsetOrthoParams(fMinX: float, fMaxX: float, fMinY: float, fMaxY: float, fNearPlane: float, fFarPlane: float): void;
 
+        projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
+
         //moved to private.
     	// recalcMatrices(): void;
 

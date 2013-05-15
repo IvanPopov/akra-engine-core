@@ -52,7 +52,7 @@ module akra {
 
 		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3;
 
-		projectPointOnTerrain(v3fCoord: IVec3, v3fDestenation: IVec3): bool;
+		projectPoint(v3fCoord: IVec3, v3fDestenation: IVec3): bool;
 		/**
 		 * Destructor
 		 */
