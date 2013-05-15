@@ -426,6 +426,35 @@ module akra.scene.objects {
 		    return super.toString(isRecursive, iDepth);
     	};
 
+    	projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = v3fPoint;
+			}
+
+			var m4fView: IMat4 = this.viewMatrix;
+			var m4fProj: IMat4 = this.projectionMatrix;
+
+			var v4fTmp: IVec4 = vec4(v3fPoint, 1.);
+
+			v4fTmp = m4fProj.multiplyVec4(m4fView.multiplyVec4(v4fTmp));
+
+			if(v4fTmp.w <= 0.){
+				return null;
+			}
+
+			v3fDestination.set((v4fTmp.scale(1./v4fTmp.w)).xyz);
+
+			var fX: float = math.abs(v3fDestination.x);
+			var fY: float = math.abs(v3fDestination.y);
+			var fZ: float = math.abs(v3fDestination.z);
+
+			if(fX > 1 || fY > 1 || fZ > 1){
+				return null;
+			}
+
+			return v3fDestination;
+		};
+
     	_addDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
     		this._pDLTechniques[index] = new DLTechnique(pList, this);
     		this._pDLResultStorage[index] = new util.ObjectArray();
