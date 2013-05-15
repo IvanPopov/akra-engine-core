@@ -58,6 +58,7 @@ module akra {
         selectIndexSet(iSet: int): bool;
         selectIndexSet(sName: string): bool;
         getIndexSet(): int;
+        findIndexSet(sName: string): int;
 
         /**
          * Specifies uses advanced index.

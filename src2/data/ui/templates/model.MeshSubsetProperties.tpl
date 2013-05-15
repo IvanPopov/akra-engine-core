@@ -5,6 +5,9 @@
 	<component type="Material" name="material" />
 </div>
 <div class="row">
+	<span>shadow:</span> <component type="Switch" name="sub-shadows"/>;
+</div>
+<div class="row">
 	<span>bounding box:</span> <component type="Switch" name="sub-bounding-box"/>;
 </div>
 <div class="row">

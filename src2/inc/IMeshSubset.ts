@@ -23,11 +23,13 @@ module akra {
 		deleteBoundingBox(): bool;
 		showBoundingBox(): bool;
 		hideBoundingBox(): bool;
+		isBoundingBoxVisible(): bool;
 
 		createBoundingSphere(): bool;
 		deleteBoundingSphere(): bool;
 		showBoundingSphere(): bool;
 		hideBoundingSphere(): bool;
+		isBoundingSphereVisible(): bool;
 
 		computeNormals(): void;
 		computeTangents(): void;
