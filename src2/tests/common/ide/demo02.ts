@@ -265,7 +265,7 @@ module akra {
 				pTerrain.setInheritance(ENodeInheritance.ALL);
 
 				pTerrain.setRotationByXYZAxis(-Math.PI/2, 0., 0.);
-				pTerrain.setPosition(11, -109, -103.85);
+				pTerrain.setPosition(11, -109, -108.85);
 				// pTerrain.setPosition(0., -pTerrain.localBounds.sizeZ() / 2., 0.);
 				// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
 				self.terrainLoaded = true;
@@ -320,6 +320,7 @@ module akra {
 			var v3fsp: IVec3 = vec3();
 			if (self.terrain.projectPoint(pNode.worldPosition, v3fsp)) {
 				pNode.setPosition(v3fsp);
+				pNode.setRotationByXYZAxis(0, math.PI, 0);
 				pCamera.addPosition(v3fsp);
 				pCamera.lookAt(v3fsp);
 			}

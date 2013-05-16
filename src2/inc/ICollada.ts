@@ -215,6 +215,7 @@ module akra {
 
     export interface IColladaTechniqueCommon extends IColladaEntry {
         accessor: IColladaAccessor;
+        perspective: IColladaPerspective;
     }
 
 
@@ -440,6 +441,14 @@ module akra {
         material: IColladaMaterial;
     }
 
+    export interface IColladaInstanceCamera extends IColladaInstance {
+        camera: IColladaCamera;
+    }
+
+    export interface IColladaInstanceLight extends IColladaInstance {
+        light: IColladaLight;
+    }
+
     export interface IColladaBindMaterial extends IColladaEntry {
         [symbol: string]: IColladaInstanceMaterial;
     }
@@ -456,6 +465,27 @@ module akra {
         skeletons: string[];
     }
 
+    export interface IColladaPerspective extends IColladaEntry {
+        xfov: float;
+        yfov: float;
+        znear: float;
+        zfar: float;
+        aspect: float;
+    }
+
+    export interface IColladaOptics extends IColladaEntry {
+        techniqueCommon: IColladaTechniqueCommon;
+    }
+
+
+    export interface IColladaCamera extends IColladaEntry {
+        optics: IColladaOptics;
+    }
+
+    export interface IColladaLight extends IColladaEntry {
+
+    }
+
     export interface IColladaNode extends IColladaEntry {
         sid: string;
         name: string;
@@ -465,6 +495,7 @@ module akra {
         transform: IMat4;
         geometry: IColladaInstanceGeometry[];
         controller: IColladaInstanceController[];
+        camera: IColladaInstanceCamera[];
 
         childNodes: IColladaNode[];
         depth: int;
@@ -472,6 +503,7 @@ module akra {
 
         constructedNode: ISceneNode;
     }
+
 
     export interface IColladaVisualScene extends IColladaEntry {
         name: string;
