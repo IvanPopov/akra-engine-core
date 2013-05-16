@@ -28,6 +28,11 @@ module akra {
 		readonly tableHeight: uint;
 		readonly sectorShift: uint;
 		readonly dataFactory: IRenderDataCollection;
+		
+		readonly maxHeight: float;
+		readonly terrain2DLength: float;
+
+		isCreate(): bool;
 
 		/**
 		 * Создаем terrain

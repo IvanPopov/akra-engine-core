@@ -131,13 +131,13 @@ module akra {
 			shouldBeNotNull("new terrain");
 			ok(pTerrain);
 			
-			pTerrainMap["height"] = pRmgr.loadImage("../../../data/textures/terrain/main_height_map_513.dds");
+			pTerrainMap["height"] = pRmgr.loadImage("../../../data/textures/terrain/main_height_map_1025.dds");
 
 			pTerrainMap["height"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
 				pTerrainMap["normal"] = pRmgr.loadImage("../../../data/textures/terrain/main_terrain_normal_map.dds");
 				
 				pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 200), 4, 5, 5, "main");
+					var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 200), 5, 5, 5, "main");
 					pTerrain.attachToParent(pScene.getRootNode());
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
@@ -157,43 +157,43 @@ module akra {
 			// ok(pTerrain);
 		}
 
-		function loadModels(sPath, fnCallback?: Function): ISceneNode {
-			var pController: IAnimationController = null;
-			var pModelRoot: ISceneNode = pScene.createNode();
-			var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
+		// function loadModels(sPath, fnCallback?: Function): ISceneNode {
+		// 	var pController: IAnimationController = null;
+		// 	var pModelRoot: ISceneNode = pScene.createNode();
+		// 	var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
 			
-			pController = pEngine.createAnimationController();
+		// 	pController = pEngine.createAnimationController();
 
-			pModelRoot.attachToParent(pScene.getRootNode());
-			pModelRoot.scale(2.);
-			pModelRoot.addPosition(0, -1., 0);
+		// 	pModelRoot.attachToParent(pScene.getRootNode());
+		// 	pModelRoot.scale(2.);
+		// 	pModelRoot.addPosition(0, -1., 0);
 
-			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
-				pModel.attachToScene(pModelRoot, pController);
+		// 	pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+		// 		pModel.attachToScene(pModelRoot, pController);
 
-				pController.attach(pModelRoot);
+		// 		pController.attach(pModelRoot);
 
-				var pContainer: IAnimationContainer = animation.createContainer();
+		// 		var pContainer: IAnimationContainer = animation.createContainer();
 
-				if (pController.active) {
-					pContainer.setAnimation(pController.active);
-					pContainer.useLoop(true);
-					pController.addAnimation(pContainer);		
-				}
+		// 		if (pController.active) {
+		// 			pContainer.setAnimation(pController.active);
+		// 			pContainer.useLoop(true);
+		// 			pController.addAnimation(pContainer);		
+		// 		}
 
 
-				pScene.bind(SIGNAL(beforeUpdate), () => {
-					// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
-					pController.update(pEngine.time);
-				});
+		// 		pScene.bind(SIGNAL(beforeUpdate), () => {
+		// 			// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+		// 			pController.update(pEngine.time);
+		// 		});
 
-				if (isFunction(fnCallback)) {
-					fnCallback(pModelRoot);
-				}
-			});
+		// 		if (isFunction(fnCallback)) {
+		// 			fnCallback(pModelRoot);
+		// 		}
+		// 	});
 
-			return pModelRoot;
-		}
+		// 	return pModelRoot;
+		// }
 
 		function main(pEngine: IEngine): void {
 			setup();

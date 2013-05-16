@@ -22,11 +22,9 @@ module akra.terrain {
 	    private _pNodePool: ITriangleNodePool = null;
 	    private _pThistessellationQueue: ITerrainSectionROAM[] = null;
 		private _iTessellationQueueCount: uint = 0;
-		private _isCreat: bool = false;
 		private _isRenderInThisFrame: bool = false;
 		private _iMaxTriTreeNodes: uint = (1024*64); /*64k triangle nodes*/
 		private _iTessellationQueueSize: uint = 0;
-		private _isCreate: bool = false;
 		//массив подчиненный секций 
 		protected _pSectorArray: ITerrainSectionROAM[] = null; 
 
@@ -40,6 +38,9 @@ module akra.terrain {
 		private _m4fLastTesselationMatrix: IMat4 = new Mat4();
 		private _v3fLocalCameraCoord: IVec3 = new Vec3();
 		private _isNeedReset: bool = true;
+
+		private _fLastTessealationTime: float = 0.;
+		private _fTessealationInterval: float = 1000./30.;
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
 			super(pScene, eType);
@@ -113,15 +114,17 @@ module akra.terrain {
 				this._pNodePool= new TriangleNodePool(this._iMaxTriTreeNodes);
 				this._pThistessellationQueue = new Array(this._iTessellationQueueSize);
 				this._iTessellationQueueCount = 0;
-				this._isCreate=true;
+				this._isCreate = true;
 				this._iTotalIndicesMax=0;
 
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 
-				this._setTessellationParameters(10.0, 0.5);
+				this._setTessellationParameters(10.0, 0.05);
 				this.reset();
 			}
+
+			this._isCreate = bResult;
 			return bResult;
 		}
 
@@ -293,8 +296,7 @@ module akra.terrain {
 				this._pThistessellationQueue[i].buildTriangleList();
 			}
 
-			if(this._iTotalIndicesOld==this._iTotalIndices && this._iTotalIndices!= this._iTotalIndicesMax) {
-				//console.log("!!!!_iTotalIndices",this._iTotalIndices);
+			if(this._iTotalIndicesOld === this._iTotalIndices && this._iTotalIndices !== this._iTotalIndicesMax) {
 				return;
 			}
 
@@ -303,7 +305,7 @@ module akra.terrain {
 			this._pDataIndex.setData(this._pIndexList, 0, getTypeSize(EDataTypes.FLOAT), 0, this._iTotalIndices);
 			this._iTotalIndicesOld = this._iTotalIndices;
 			this._iTotalIndicesMax = math.max(this._iTotalIndicesMax,this._iTotalIndices);
-			// LOG("number of indecies: " + this._iTotalIndices);
+
 			this._pRenderableObject._setRenderData(this._pRenderData);
 		}
 
@@ -322,10 +324,11 @@ module akra.terrain {
 			if(this._isCreate)
 			{
 				var pCamera: ICamera = pViewport.getCamera();
-			
+				var pCurrentTime: float = this.scene.getManager().getEngine().time;
+
 				this._m4fLastCameraMatrix.set(pCamera.worldMatrix);
 
-				if (((this._nCountRender++) % 10) === 0)
+				if (pCurrentTime - this._fLastTessealationTime > this._fTessealationInterval)
 				{
 					if(!this._m4fLastCameraMatrix.isEqual(this._m4fLastTesselationMatrix)) 
 					{
@@ -333,6 +336,8 @@ module akra.terrain {
 						this._m4fLastTesselationMatrix.set(this._m4fLastCameraMatrix);
 						//this._iTessellationQueueCountOld = this._iTessellationQueueCount;
 					}
+
+					this._fLastTessealationTime = pCurrentTime;
 				}				
 			}
 
