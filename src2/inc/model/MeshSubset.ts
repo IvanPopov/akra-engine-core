@@ -351,7 +351,6 @@ module akra.model {
 		    if (pPosData.hasSemantics(DeclUsages.BLENDMETA)) {
 		        //тоже самый skin?
 		        if (pSkin.isAffect(pPosData)) {
-		            this._pSkin = pSkin;
 		            return true;
 		        }
 
@@ -387,8 +386,7 @@ module akra.model {
 		    //обновляем адреса мета данных вершин
 		    pPosData.setData(pMetaData, DeclUsages.BLENDMETA);
 
-		    //trace(this.data.toString());
-		    this._pSkin = pSkin;*/
+		    */
 
 		    var pDeclaration: IVertexDeclaration = pPosData.getVertexDeclaration();
 		    var pVEMeta: IVertexElement = pDeclaration.findElement(DeclUsages.BLENDMETA);
@@ -511,19 +509,18 @@ module akra.model {
 	    	// LOG(pUNNormalIndex);
 
 		    this._pSkin = pSkin;
+		    this.skinAdded(pSkin);
 
 		    return true;
 		}
-
-		update(): bool {
-			return this.isSkinned() ? this.skin.applyBoneMatrices() : false;
-		};
 
 		_calculateSkin(): bool{
 			var isOk: bool = util.calculateSkin(this);
 			this._isOptimizedSkinned = isOk;
 			return isOk;
-		};
+		}
+
+		BROADCAST(skinAdded, CALL(pSkin));
 	}
 }
 

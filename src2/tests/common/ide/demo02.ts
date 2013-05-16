@@ -28,6 +28,9 @@ module akra {
 	var pKeymap: IKeyMap				= controls.createKeymap();
 	var pTerrain: ITerrain 				= null;
 
+	var $canvasContainer: JQuery 		= null;
+	var $div: JQuery 					= null;
+
 	export var self = {
 		engine 				: pEngine,
 		scene 				: pScene,
@@ -49,17 +52,6 @@ module akra {
 		}
 	}
 
-	var $div = $("<div>x, y, z</div>").css({
-		position: "absolute", 
-		background: "rgba(0,0,0,.75)", 
-		border: "1px solid white", 
-		color: "white",
-		zIndex: "1000"
-	});
-
-	$(document).append($div);
-
-
 	function setup(): void {
 		pIDE = <ui.IDE>pUI.createComponent("IDE");
 		pIDE.render($(document.body));
@@ -70,6 +62,27 @@ module akra {
 		pCanvas.bind(SIGNAL(viewportAdded), (pCanvas: ICanvas3d, pVp: IViewport) => {
 			pViewport = self.viewport = pVp;
 		});
+
+
+		pIDE.bind(SIGNAL(created), (): void => {
+			$canvasContainer = $((<webgl.WebGLCanvas>pCanvas).el).parent();
+
+			$div = $("<div>[ Fred ]</div>").css({
+				position 	: "absolute", 
+				background 	: "rgba(0,0,0,.75)", 
+				color 		: "white",
+				zIndex 		: "1000",
+				fontFamily 	: "Consolas",
+				fontSize 	: "10px",
+				padding 	: "2px",
+				width 		: "40px",
+				textAlign 	: "center",
+				whiteSpace 	: "nowrap"
+			});
+
+			$canvasContainer.append($div);
+			$canvasContainer.css({overflow: "hidden"});
+		});
 	}
 
 	function createCameras(): void {
@@ -78,21 +91,22 @@ module akra {
 	
 		pCamera.addRelRotationByEulerAngles(-math.PI / 5., 0., 0.);
     	pCamera.addRelPosition(-8.0, 5.0, 11.0);
+    	pCamera.update();
 	}
 
 	function createSceneEnvironment(): void {
 		// var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
 		// pSceneQuad.attachToParent(pScene.getRootNode());
 
-		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 40);
-		pSceneSurface.scale(5.);
+		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
+		// pSceneSurface.scale(5.);
 		pSceneSurface.addPosition(0, 0.01, 0);
 		pSceneSurface.attachToParent(pScene.getRootNode());
 
 		var pCameraTerrainProj: ISceneModel = util.basis(pScene);
 
 		pCameraTerrainProj.attachToParent(pScene.getRootNode());
-		// pCameraTerrainProj.scale(.5);
+		pCameraTerrainProj.scale(.25);
 
 		self.cameraTerrainProj = pCameraTerrainProj;
 	}
@@ -246,15 +260,17 @@ module akra {
 			pTerrainMap["normal"] = pRmgr.loadImage("@TERRAIN_NORMAL_MAP");
 			
 			pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 200), 5, 5, 5, "main");
+				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 150), 5, 5, 5, "main");
 				pTerrain.attachToParent(pScene.getRootNode());
 				pTerrain.setInheritance(ENodeInheritance.ALL);
 
-				// pTerrain.scale(0.1);
-				pTerrain.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
-				pTerrain.setPosition(0., -pTerrain.localBounds.sizeZ(), 0.);
+				pTerrain.setRotationByXYZAxis(-Math.PI/2, 0., 0.);
+				pTerrain.setPosition(11, -109, -103.85);
+				// pTerrain.setPosition(0., -pTerrain.localBounds.sizeZ() / 2., 0.);
 				// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
 				self.terrainLoaded = true;
+
+				createHero();
 			});
 		});
 
@@ -287,11 +303,30 @@ module akra {
 		self.keymap.update();
 
 		var pProj: IVec3 = vec3();
-		if (self.terrainLoaded && self.terrain.projectPoint(self.camera.worldPosition, pProj)) {
+		if (self.terrainLoaded && self.terrain.projectPoint(self.hero.root.worldPosition, pProj)) {
 			self.cameraTerrainProj.setPosition(pProj);
-			// $div.offset();
-			console.log(self.viewport.projectPoint(pProj).toString());
+
+			if (self.viewport.projectPoint(pProj)) {
+				var pOffset = $canvasContainer.offset();
+				$div.offset({left: pOffset.left + pProj.x, top: pOffset.top + pProj.y});
+			}
 		}
+	}
+
+	function createHero(): void {
+		loadModels("@HERO_MODEL", (pNode: ISceneNode) => {
+			self.hero.root = <ISceneNode>pNode.findEntity("node-Bip001");
+			
+			var v3fsp: IVec3 = vec3();
+			if (self.terrain.projectPoint(pNode.worldPosition, v3fsp)) {
+				pNode.setPosition(v3fsp);
+				pCamera.addPosition(v3fsp);
+				pCamera.lookAt(v3fsp);
+			}
+
+
+			pScene.bind(SIGNAL(beforeUpdate), update);
+		});
 	}
 
 	function main(pEngine: IEngine): void {
@@ -304,9 +339,6 @@ module akra {
 		createLighting();
 		
 
-		pScene.bind(SIGNAL(beforeUpdate), update);
-		loadModels("@HERO_MODEL", (pNode: ISceneNode) => {
-		});
 /*
 		loadModels("@MINER_MODEL");
 		loadModels("@WINDSPOT_MODEL", (pNode: ISceneNode) => {

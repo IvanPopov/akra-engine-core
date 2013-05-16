@@ -32,7 +32,9 @@ module akra {
 		EDIT_MAIN_SCRIPT,
 
 
-		LOAD_COLLADA
+		LOAD_COLLADA,
+
+		CHANGE_CAMERA,
 	}
 
 
@@ -49,6 +51,8 @@ module akra {
 		getKeymap(): IKeyMap;
 
 		cmd(eCommand: ECMD, ...argv: any[]): bool;
+
+		signal created(): void;
 	}
 
 	export var ide: IUIIDE = null;

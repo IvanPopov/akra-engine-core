@@ -155,7 +155,7 @@ module akra.scene {
 		        this._qRotation.toMat4(m4fOrient);
 
 		        m4fOrient.setTranslation(this._v3fTranslation);
-		        m4fOrient.scaleLeft(this._v3fScale);
+		        m4fOrient.scaleRight(this._v3fScale);
 		        m4fOrient.multiply(m4fLocal); 
 
 		        //console.error(m4fOrient.toString());

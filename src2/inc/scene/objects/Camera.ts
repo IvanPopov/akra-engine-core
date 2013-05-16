@@ -351,6 +351,8 @@ module akra.scene.objects {
     	lookAt(v3f?): void {
     		var v3fFrom: IVec3, v3fCenter: IVec3, v3fUp: IVec3;
 
+    		this.update();
+
 		    if (arguments.length < 3) {
 		        v3fFrom = this.worldPosition;
 		        v3fCenter = <IVec3>arguments[0];
@@ -387,6 +389,8 @@ module akra.scene.objects {
 		            	pData[__24] - v3fParentPos.y,
 		                pData[__34] - v3fParentPos.z);
 		    }
+
+		    this.update();
     	}
 
     	_renderScene(pViewport: IViewport): void {

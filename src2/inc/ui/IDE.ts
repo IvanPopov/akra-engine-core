@@ -117,6 +117,8 @@ module akra.ui {
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
 			this._pPreview.setViewport(pViewport);	
 			this.setupApiEntry();	
+
+			this.created();
 		}
 
 		cmd(eCommand: ECMD, ...argv: any[]): bool {
@@ -141,9 +143,16 @@ module akra.ui {
 					return this.editEvent(<IEventProvider>argv[0], <string>argv[1]);
 				case ECMD.EDIT_MAIN_SCRIPT:
 					return this.editMainScript();
+				case ECMD.CHANGE_CAMERA:
+					return this.changeCamera(<ICamera>argv[0]);
 			}
 
 			return false;
+		}
+
+		protected changeCamera(pCamera: ICamera): bool {
+			this.getViewport().setCamera(pCamera);
+			return true;
 		}
 
 		protected setPreviewResolution(iWidth: uint, iHeight: uint): bool {
@@ -224,6 +233,10 @@ module akra.ui {
 				pLoadBtn.bind(SIGNAL(click), () => {
 					var pModel: ICollada = <ICollada>pRmgr.loadModel($input.val());
 
+					if (pModel.isResourceLoaded()) {
+						var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
+					}
+					
 					pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
 						var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 					});
@@ -328,6 +341,8 @@ module akra.ui {
 
 			return true;
 		}
+
+		BROADCAST(created, VOID);
 	}
 
 	register("IDE", IDE);

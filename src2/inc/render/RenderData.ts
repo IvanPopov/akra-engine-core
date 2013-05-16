@@ -395,13 +395,8 @@ module akra.render {
                     return false;
                 }
                 //все ок, данные найдены, зарегистрируем их у себя в мапе
-                if (this._addData(pData) !== -1) {
-                    pFlow = this._getFlow(iData);
-                    LOG(pFlow);
-                }
-                else {
-                    ERROR("something going wrong...");
-                }
+                ASSERT(this._addData(pData) !== -1, "could not add automatcly add data to map");
+                pFlow = this._getFlow(iData);
         	}
 
         	iFlow = pFlow.flow;

@@ -35,6 +35,7 @@ module akra.model {
         private _pBoundingSphere: ISphere = null;
         private _pSubMeshes: IMeshSubset[] = [];
         private _bShadow: bool = true;
+        private _pSkinList: ISkin[] = [];
         
         inline get length(): uint {
             return this._pSubMeshes.length;
@@ -160,10 +161,18 @@ module akra.model {
             var pSubMesh: IMeshSubset = new MeshSubset(this, pData, sName);
             this._pSubMeshes.push(pSubMesh);
 
-
+            this.connect(pSubMesh, SIGNAL(skinAdded), SLOT(_skinAdded));
             this.connect(pSubMesh, SIGNAL(shadow), SLOT(shadow), EEventTypes.UNICAST);
 
             return pSubMesh;
+        }
+
+        _skinAdded(pSubMesh: IMeshSubset, pSkin: ISkin): void {
+            if (this._pSkinList.indexOf(pSkin) != -1) {
+                return;
+            }
+
+            this._pSkinList.push(pSkin);
         }
 
         replaceFlexMaterials(pFlexMaterials: IMaterial[]): void {
@@ -640,12 +649,13 @@ module akra.model {
         update(): bool {
             var isOk: bool = false;
 
-            for (var i: uint = 0; i < this.length; ++ i) {
-                isOk = this._pSubMeshes[i].update() ? true : isOk;
+            for (var i: uint = 0; i < this._pSkinList.length; ++ i) {
+                isOk = this._pSkinList[i].applyBoneMatrices() ? true : isOk;
             }
+
             if(isOk){
                 for (var i: uint = 0; i < this.length; ++ i) {
-                	if(this._pSubMeshes[i].isSkinned){
+                	if(this._pSubMeshes[i].isSkinned()){
                     	this._pSubMeshes[i]._calculateSkin();
                 	}
                 }

@@ -320,8 +320,9 @@ module akra.render {
 			fY = fY*0.5 + 0.5;
 			fZ = fZ*0.5 + 0.5;
 
-			fX = this.actualLeft + this.width * fX;
-			fY = this.actualTop + this.height * fY;
+			//from top left angle of element
+			fX = this.actualLeft + this.actualWidth * fX;
+			fY = this.actualTop + this.actualHeight * (1. - fY);
 
 			return v3fResult.set(fX, fY, fZ);
 		};

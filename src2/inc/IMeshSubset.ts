@@ -57,8 +57,9 @@ module akra {
 
 		destroy(): void;
 
-		update(): bool;
 		_calculateSkin(): bool;
+
+		signal skinAdded(pSkin: ISkin): void;
 	}
 }
 
