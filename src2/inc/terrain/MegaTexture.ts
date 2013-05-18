@@ -159,7 +159,6 @@ module akra.terrain {
 		    // Перемещаем данные из одного пиксель буффера в другой
 
 		    if ((this._fTexCourdXOld !== fTexCourdX || this._fTexCourdYOld !== fTexCourdY)) {
-		    
 		        //Перемещаем
 		        //Для всех уровней текстур
 		    

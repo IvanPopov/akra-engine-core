@@ -296,7 +296,7 @@ module akra.render {
 				
 				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
 					pRenderable = pSceneObject.getRenderable(j);
-
+					
 					if (!isNull(pRenderable)) {
 						pRenderable.render(this, csMethod, pSceneObject);
 					}

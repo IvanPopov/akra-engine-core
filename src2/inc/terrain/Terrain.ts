@@ -494,12 +494,7 @@ module akra.terrain {
 			this._f2DDiagonal = math.sqrt((fX1 - fX0) * (fX1 - fX0) + (fY1 - fY0) * (fY1 - fY0));
 		}
 
-		// _bPrint: bool = false;
-		// _iCounter: uint = 0;
 		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
-			// if(this._bPrint){
-			// 	LOG(this._iCounter++);
-			// }
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			//pPass.setTexture("TEXTURE6", this._pBaseNormalTexture);
@@ -510,6 +505,7 @@ module akra.terrain {
 		}
 
 		_onGenerateNormalRender(pTechnique: IRenderTechnique, iPass: uint): void {
+			
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setSamplerTexture("HEIGHT_SAMPLER", this._pHeightMapTexture);

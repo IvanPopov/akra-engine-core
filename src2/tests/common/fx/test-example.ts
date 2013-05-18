@@ -211,39 +211,43 @@ module akra {
 			});
 		}
 
-		function loadModels(sPath, fnCallback?: Function): ISceneNode {
-			var pController: IAnimationController = null;
+		function loadModel(sPath, fnCallback?: Function): ISceneNode {
 			var pModelRoot: ISceneNode = pScene.createNode();
 			var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
-			
-			pController = pEngine.createAnimationController();
 
 			pModelRoot.attachToParent(pScene.getRootNode());
-			pModelRoot.scale(2.);
-			pModelRoot.addPosition(0, -1., 0);
 
-			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
-				pModel.attachToScene(pModelRoot, pController);
+			function fnLoadModel(pModel: ICollada): void {
+				pModel.attachToScene(pModelRoot);
 
-				pController.attach(pModelRoot);
+				if(pModel.isAnimationLoaded()) {
+					var pController: IAnimationController = pEngine.createAnimationController();
+					var pContainer: IAnimationContainer = animation.createContainer();
+					var pAnimation: IAnimation = pModel.extractAnimation(0);
 
-				var pContainer: IAnimationContainer = animation.createContainer();
+					pController.attach(pModelRoot);
 
-				if (pController.active) {
-					pContainer.setAnimation(pController.active);
+					pContainer.setAnimation(pAnimation);
 					pContainer.useLoop(true);
-					pController.addAnimation(pContainer);		
+					pController.addAnimation(pContainer);	
 				}
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
 					pModelRoot.addRelRotationByXYZAxis(0.00, 0.001, 0);
-					pController.update(pEngine.time);
+					// pController.update();
 				});
 
 				if (isFunction(fnCallback)) {
 					fnCallback(pModelRoot);
 				}
-			});
+			}
+
+			if(pModel.isResourceLoaded()){
+				fnLoadModel(pModel);
+			}
+			else {
+				pModel.bind(SIGNAL(loaded), fnLoadModel);
+			}			
 
 			return pModelRoot;
 		}
@@ -257,17 +261,24 @@ module akra {
 			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
-			loadModels("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
-				var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
-				pMesh.createBoundingBox();
-				pMesh.showBoundingBox();
-			}).addPosition(0, 1.1, 0);
+			// loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
+			// 	var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
+			// 	pMesh.createBoundingBox();
+			// 	pMesh.showBoundingBox();
+			// }).scale(2.);
+
+			
 
 			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE").addPosition(-3., 1.1, 0.);
-			// var pCube: ISceneNode = loadModels("../../../data/models/cube.dae");
-			// pCube.setPosition(20., 8., -30.);
-			// pCube.scale(0.1);
+			var pCube: ISceneNode = loadModel("../../../data/models/cube.dae");
+			pCube.setPosition(2., 0.8, -3.);
+			pCube.scale(0.1);
+
+			var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
+			pCube2.setPosition(2., 0.8, -5.);
+			pCube2.scale(0.1);
 		}
+
 		pEngine.bind(SIGNAL(depsLoaded), main);	
 		pEngine.exec();
 	});

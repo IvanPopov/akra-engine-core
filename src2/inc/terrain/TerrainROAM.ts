@@ -40,7 +40,7 @@ module akra.terrain {
 		private _isNeedReset: bool = true;
 
 		private _fLastTessealationTime: float = 0.;
-		private _fTessealationInterval: float = 1000./30.;
+		private _fTessealationInterval: float = 1./30.;
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
 			super(pScene, eType);
