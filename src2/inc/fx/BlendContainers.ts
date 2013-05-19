@@ -3,6 +3,10 @@
 
 #include "IAFXInstruction.ts"
 
+#ifdef WEBGL
+#include "webgl/webgl.ts"
+#endif
+
 module akra.fx {
 	export class VariableBlendContainer {
 		protected _pVarListMap: IAFXVariableDeclListMap = null;
@@ -245,8 +249,7 @@ module akra.fx {
 		private _pVBByBufferSlots: Int32Array = null;
 		private _pBufferSlotBySlots: Int8Array = null;
 
-		// private _pHashBySlots: string[] = null;
-		// private _pHashByBufferSlots: string[] = null;
+		private _pHashPartList: uint[] = null;
 
 		private _pOffsetVarsBySemanticMap: IAFXVaribaleListMap = null; 
 		private _pOffsetDefaultMap: IntMap = null;
@@ -275,15 +278,17 @@ module akra.fx {
 			this._pSlotBySemanticIndex = null;
 			this._pFlowBySemanticIndex = null;
 
-			this._pFlowBySlots = new Array(16);
-			this._pTypesBySlots = new Array(16);
-			this._pVBByBufferSlots = new Int32Array(16);
-			this._pBufferSlotBySlots = new Int8Array(16);	
-
-
-			// this._pHashBySlots = new Array(16);
-			// this._pHashByBufferSlots = new Array(16);
-					
+			var iMaxSlots: uint = 16;
+			var iMaxVertexSamplers: uint = 4;
+#ifdef WEBGL
+			iMaxSlots = webgl.maxVertexAttributes;
+			iMaxVertexSamplers = webgl.maxVertexTextureImageUnits;
+#endif
+			this._pFlowBySlots = new Array(iMaxSlots);
+			this._pTypesBySlots = new Array(iMaxSlots);
+			this._pVBByBufferSlots = new Int32Array(iMaxVertexSamplers);
+			this._pBufferSlotBySlots = new Int8Array(iMaxSlots);	
+			this._pHashPartList = null;			
 		}
 
 		inline getOffsetVarsBySemantic(sName: string): IAFXVariableDeclInstruction[] {
@@ -347,22 +352,25 @@ module akra.fx {
 
 			this._pSlotBySemanticIndex = new Int8Array(this._nSemantics);
 			this._pFlowBySemanticIndex = new Array(this._nSemantics);
+			this._pHashPartList = new Array(2 * this._nSemantics);
 
 			for(var i: uint = 0; i < this._nSemantics; i++){
-				var sSemantic: string = this.semantics[i];
 				this._pSlotBySemanticIndex[i] = -1;
 				this._pFlowBySemanticIndex[i] = null;
 			}
 
-			for(var i: uint = 0; i < 16; i++){
-				this._pFlowBySlots[i] = null;
-				// this._pHashBySlots[i] = "";
+			for(var i: uint = 0; i < 2*this._nSemantics; i++){
+				this._pHashPartList[i] = 0;
+			}
 
-				this._pTypesBySlots[i] = null;
-			
-				this._pVBByBufferSlots[i] = 0;
-				// this._pHashByBufferSlots[i] = "";
+			for(var i: uint = 0; i < this._pFlowBySlots.length; i++){
+				this._pFlowBySlots[i] = null;
+				this._pTypesBySlots[i] = null;			
 				this._pBufferSlotBySlots[i] = -1;	
+			}
+
+			for(var i: uint = 0; i < this._pVBByBufferSlots.length; i++){
+				this._pVBByBufferSlots[i] = 0;
 			}
 		}
 
@@ -461,21 +469,23 @@ module akra.fx {
 		}
 
 
-		initFromBufferMap(pMap: util.BufferMap): bool {
+		initFromBufferMap(pMap: util.BufferMap): void {
 			this.clear();
 
 			if(isNull(pMap)){
-				WARNING("Yoy don`t set any buffermap for render");
-				return false;
+				CRITICAL("Yoy don`t set any buffermap for render");
+				return;
 			}
 
 			var pFlows: IDataFlow[] = pMap.flows;
 			var pSemanticList: string[] = this.semantics;
 
+			main:
 			for(var i: uint = 0; i < pSemanticList.length; i++) {
 				var sSemantic: string = pSemanticList[i];
 				var iSemanticIndex: uint = this.getKeyIndex(sSemantic);
 				var pFindFlow: IDataFlow = null;
+
 				if(this.getType(sSemantic).isComplex()){
 					pFindFlow = pMap.findFlow(sSemantic) || pMap.getFlow(sSemantic);
 				}
@@ -486,30 +496,26 @@ module akra.fx {
 				this._pFlowBySemanticIndex[iSemanticIndex] = pFindFlow;
 
 				if(!isNull(pFindFlow)){
-
+					var iSlot: uint = this._nSlots;
 					var iBufferSlot: int = -1;
+					var pType: IAFXVariableTypeInstruction = this.getType(sSemantic);
 
 					if (pFindFlow.type === EDataFlowTypes.MAPPABLE) {
-						if(!this.getType(sSemantic).isPointer()) {
-							WARNING("You try to put pointer data into non-pointer attribute with semantic '" + sSemantic + "'");
-							return false;
+						if(!pType.isPointer()) {
+							CRITICAL("You try to put pointer data into non-pointer attribute with semantic '" + sSemantic + "'");
+							return;
 						}
 
-						var iSlot: int = -1;
-						for(var j: uint = 0; j < this._nSlots; j++){
-							if(this._pFlowBySlots[j] === pFindFlow){
-								iSlot = j;
-								break;
+						for(var j: uint = 0; j < this._nSlots; j++) {
+							if(this._pFlowBySlots[j] === pFindFlow) {
+
+								this._pSlotBySemanticIndex[iSemanticIndex] = j;
+								this._sHash += j.toString() + "$" + this._pBufferSlotBySlots[j].toString() + "$";
+								// this._pHashPartList[2 * i] = j;
+								// this._pHashPartList[2 * i + 1] = this._pBufferSlotBySlots[j]; 
+								
+								continue main;
 							}
-						}
-
-						if (iSlot !== -1) {
-							this._pHashBySlots[iSlot] += this.getType(sSemantic).getGuid().toString() + "*";
-							this._pSlotBySemanticIndex[iSemanticIndex] = iSlot;
-
-							iBufferSlot = this._pBufferSlotBySlots[iSlot];
-							this._pHashByBufferSlots[iBufferSlot] += iSlot.toString() + "$";
-							continue;
 						}
 
 						var iBuffer: uint = (<any>pFindFlow.data.buffer).getGuid();
@@ -521,52 +527,46 @@ module akra.fx {
 							}
 						}
 
-						iSlot = this._nSlots;
-
-						if(iBufferSlot !== -1){
-							this._pHashByBufferSlots[iBufferSlot] += iSlot.toString() + "$";
-						}
-						else {
+						if(iBufferSlot === -1){
 							iBufferSlot = this._nBufferSlots;
-							this._pVBByBufferSlots[this._nBufferSlots] = iBuffer;
-							this._pHashByBufferSlots[this._nBufferSlots] = iSlot.toString() + "$";
+							this._pVBByBufferSlots[iBufferSlot] = iBuffer;
 							this._nBufferSlots++;
 						}
-					}
-					else if(this.getType(sSemantic).isStrictPointer()) {
-						WARNING("You try to put non-pointer data into pointer attribute with semantic '" + sSemantic + "'");
-						return false;
-					}
-					
-					//new slot
-					if(pFindFlow.type === EDataFlowTypes.MAPPABLE){
-						this._pTypesBySlots[this._nSlots] = Effect.getSystemType("ptr");
+
+						this._pTypesBySlots[iSlot] = Effect.getSystemType("ptr");
 					}
 					else {
-						this._pTypesBySlots[this._nSlots] = this.getType(sSemantic).getBaseType();
+						if(pType.isStrictPointer()) {
+							CRITICAL("You try to put non-pointer data into pointer attribute with semantic '" + sSemantic + "'");
+							return;
+						}
+
+						this._pTypesBySlots[iSlot] = pType.getBaseType();
 					}
+					//new slot
 
 					this._pSlotBySemanticIndex[iSemanticIndex] = this._nSlots;
-					this._pFlowBySlots[this._nSlots] = pFindFlow;
-					this._pHashBySlots[this._nSlots] = this.getType(sSemantic).getGuid().toString() + "*";
+					this._pFlowBySlots[iSlot] = pFindFlow;
 
-					this._pBufferSlotBySlots[this._nSlots] = iBufferSlot;
+					this._pBufferSlotBySlots[iSlot] = iBufferSlot;
+
+					// this._pHashPartList[2*i] = iSlot;
+					// this._pHashPartList[2*i+1] = iBufferSlot;
+					this._sHash += iSlot.toString() + "$" + iBufferSlot.toString() + "$";
 					this._nSlots++;
 				}
 				else {
 					this._pSlotBySemanticIndex[iSemanticIndex] = -1;
+					this._sHash += "*";
+					// this._pHashPartList[2*i] = -2;
+					// this._pHashPartList[2*i+1] = -2;
 				}
 			}
 
-			for(var i: uint = 0; i < this._nSlots; i++) {
-				this._sHash += this._pHashBySlots[i];
-			}
-
-			for(var i: uint = 0; i < this._nBufferSlots; i++) {
-				this._sHash += this._pHashByBufferSlots[i] + "$";
-			}
-
-			return true;
+			// for(var i: uint = 0; i < this._pHashPartList.length; i++){
+			// 	this._sHash += this._pHashPartList[i].toString() + "$";
+			// }
+			// this._sHash = "*";
 		}
 
 		inline getHash(): string {
