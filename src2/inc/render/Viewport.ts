@@ -282,7 +282,6 @@ module akra.render {
         	this.getTarget().getRenderer().executeQueue();
         }
 
-
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
 			var pVisibleObjects: IObjectArray = pCamera.display();
 			var pRenderable: IRenderableObject;

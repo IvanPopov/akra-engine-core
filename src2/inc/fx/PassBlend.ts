@@ -538,6 +538,7 @@ module akra.fx {
 				return false;
 			}
 
+			this._pAttributeContainerV.finalize();
 			this._pAttributeContainerV.generateOffsetMap();
 
 			return true;

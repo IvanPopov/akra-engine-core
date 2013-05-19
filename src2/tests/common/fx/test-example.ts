@@ -197,7 +197,7 @@ module akra {
 			pOmniShadowLight.params.diffuse.set(1);
 			pOmniShadowLight.params.specular.set(1, 1, 1, 1);
 			pOmniShadowLight.params.attenuation.set(1,0.0,0);
-			pOmniShadowLight.isShadowCaster = true;
+			pOmniShadowLight.isShadowCaster = false;
 
 			pOmniShadowLight.setPosition(1, 5, 5);
 		}
@@ -252,9 +252,39 @@ module akra {
 			return pModelRoot;
 		}
 
+		function loadManyCubes(nCount: uint = 20): void {
+			var iRow: uint = 0;
+			var iCountInRow: uint = 0;
+
+			var fDX: float = 2.;
+			var fDZ: float = 2.;
+
+			var fShiftX: float = 0.;
+			var fShiftZ: float = 0.;
+
+			var pCube: ISceneNode = pCube = loadModel("../../../data/models/cube.dae", (pModelRoot: ISceneNode) => {
+				for(var i: uint = 0; i < nCount; i++) {
+					if(iCountInRow > iRow){
+						iCountInRow = 0;
+						iRow++;
+
+						fShiftX = -iRow * fDX/2;
+						fShiftZ = -iRow * fDZ;
+					}
+
+					pCube = i === 0 ? pCube : loadModel("../../../data/models/cube.dae");
+					pCube.setPosition(fShiftX, 0.8, fShiftZ);
+					pCube.scale(0.1);
+
+					fShiftX += fDX;
+					iCountInRow++;
+				}
+			});			
+		}
+
 		function main(pEngine: IEngine): void {
 			setup();
-			createSceneEnvironment();
+			// createSceneEnvironment();
 			createCameras();
 			createViewports();
 			createLighting();
@@ -270,13 +300,14 @@ module akra {
 			
 
 			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE").addPosition(-3., 1.1, 0.);
-			var pCube: ISceneNode = loadModel("../../../data/models/cube.dae");
-			pCube.setPosition(2., 0.8, -3.);
-			pCube.scale(0.1);
+			// var pCube: ISceneNode = loadModel("../../../data/models/cube.dae");
+			// pCube.setPosition(2., 0.8, -3.);
+			// pCube.scale(0.1);
 
-			var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
-			pCube2.setPosition(2., 0.8, -5.);
-			pCube2.scale(0.1);
+			// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
+			// pCube2.setPosition(2., 0.8, -5.);
+			// pCube2.scale(0.1);
+			loadManyCubes(300);
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	

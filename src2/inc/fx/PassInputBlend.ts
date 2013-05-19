@@ -42,10 +42,10 @@ module akra.fx {
 		private _iLastShaderId: uint = 0;
 
 		private _pMaterialContainer: any = {
-			"DIFFUSE" 	: null,
-			"AMBIENT" 	: null,
-			"SPECULAR" 	: null,
-			"EMISSIVE" 	: null,
+			"DIFFUSE" 	: new Vec4(),
+			"AMBIENT" 	: new Vec4(),
+			"SPECULAR" 	: new Vec4(),
+			"EMISSIVE" 	: new Vec4(),
 			"SHININESS" : 1.
 		};
 
@@ -212,10 +212,10 @@ module akra.fx {
 			var pMaterial: IMaterial = pSurfaceMaterial.material;
 			var pMatContainer: any = this._pMaterialContainer;
 
-			pMatContainer.DIFFUSE = util.colorToVec4(pMaterial.diffuse);
-			pMatContainer.AMBIENT = util.colorToVec4(pMaterial.ambient);
-			pMatContainer.SPECULAR = util.colorToVec4(pMaterial.specular);
-			pMatContainer.EMISSIVE = util.colorToVec4(pMaterial.emissive);
+			pMatContainer.DIFFUSE.set(pMaterial.diffuse.r,pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
+			pMatContainer.AMBIENT.set(pMaterial.ambient.r,pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
+			pMatContainer.SPECULAR.set(pMaterial.specular.r,pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
+			pMatContainer.EMISSIVE.set(pMaterial.emissive.r,pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
 			pMatContainer.SHININESS = pMaterial.shininess;
 
 			this.setStruct("MATERIAL", pMatContainer);
