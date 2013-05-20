@@ -40,6 +40,8 @@ module akra {
 		isMouseMoved(): bool;
 		isMousePress(): bool;
 
+		bind(sCombination: string, fn: Function): bool;
+
 		captureMouse(pMouseTarget: Node): void;
 		captureMouse(pMouseTarget: Document): void;
 		captureKeyboard(pKeyboardTarget: Node): void;

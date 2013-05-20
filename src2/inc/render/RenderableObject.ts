@@ -220,7 +220,10 @@ module akra.render {
 			ERROR("RenderableObject::_draw() pure virtual method() isn't callable!!");
 		}
 
-		inline _setVisible(bVisible: bool): void {
+		inline isVisible(): bool {
+			return this._bVisible;
+		}
+		inline setVisible(bVisible: bool = true): void {
 			this._bVisible = bVisible;
 		}
 

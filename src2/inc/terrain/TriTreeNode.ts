@@ -81,7 +81,7 @@ module akra.terrain {
 			this._iMaxCount = iCount;
 			this.pool = <ITriTreeNode[]>Array(iCount);
 
-			console.log("TriangleNodePool",this.maxCount);
+			// console.log("TriangleNodePool",this.maxCount);
 
 			for(var i: uint = 0; i < this.maxCount; i++) {
 				this.pool[i] = new TriTreeNode();

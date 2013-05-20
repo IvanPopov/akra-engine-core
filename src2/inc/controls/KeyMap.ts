@@ -4,12 +4,9 @@
 #include "IKeyMap.ts"
 
 module akra.controls {
-	class KeyMap implements IKeyMap {
-		private _pMap: bool[] = new Array(256);
-		
-		private _bAlt: bool = false;
-		private _bCtrl: bool = false;
-		private _bShift: bool = false;
+	export class KeyMap implements IKeyMap {
+		private _pMap: bool[] = new Array(EKeyCodes.TOTAL);
+		private _pCallbackMap: {[combo: string]: Function[];} = <any>{};
 
 		private _bMouseDown: bool = false;
 		private _v2iMousePosition: IVec2 = new Vec2;
@@ -26,6 +23,34 @@ module akra.controls {
 		    if (isDefAndNotNull(pTarget)) {
 		    	this.capture(pTarget);
 		    }
+		}
+
+		bind(sCombination: string, fn: Function): bool {
+			var pKeys: string[] = sCombination.replace(/[\s]+/g, "").split("+");
+			var pCodes: uint[] = [];
+
+			for (var i: int = 0; i < pKeys.length; ++ i) {
+				var iCode: uint = EKeyCodes[pKeys[i].toUpperCase()];
+				
+				if (!isDef(iCode)) {
+					return false;
+				}
+
+				pCodes.push(iCode);
+			}
+
+			var sHash: string = " " + pCodes.sort().join(' ');
+			var pFuncList: Function[] = this._pCallbackMap[sHash];
+
+			if (!isDefAndNotNull(pFuncList)) {
+				pFuncList = this._pCallbackMap[sHash] = [];
+			}
+
+			if (pFuncList.indexOf(fn) === -1) {
+				pFuncList.push(fn);
+			}
+
+			return true;
 		}
 
 		capture(pTarget: Document): void;
@@ -86,29 +111,31 @@ module akra.controls {
 		        this._pMap[iCode] = true;
 
 		        if (e.altKey) {
-		            this._bAlt = true;
+		            this._pMap[EKeyCodes.ALT] = true;
 		        }
 		        if (e.ctrlKey) {
-		            this._bCtrl = true;
+		            this._pMap[EKeyCodes.CTRL] = true;
 		        }
 		        if (e.shiftKey) {
-		            this._bShift = true;
+		            this._pMap[EKeyCodes.SHIFT] = true;
 		        }
 		        // if (e.altKey || e.ctrlKey || e.shiftKey) {
 		        //     this._pMap.splice(0);
 		        // }
 		    }
 		    else if (e.type == "keyup") {
+		    	this.callListeners();
+
 		        this._pMap[iCode] = false;
 
 		        if(iCode == EKeyCodes.ALT){
-		            this._bAlt = false;
+		            this._pMap[EKeyCodes.ALT] = false;
 		        }
 		        if(iCode == EKeyCodes.CTRL){
-		            this._bCtrl = false;
+		            this._pMap[EKeyCodes.CTRL] = false;
 		        }
 		        if(iCode == EKeyCodes.SHIFT){
-		            this._bShift = false;
+		            this._pMap[EKeyCodes.SHIFT] = false;
 		        }
 		    }
 
@@ -124,6 +151,24 @@ module akra.controls {
 		        this._v2iMousePrevPosition.y = (<MouseEvent>e).pageY;
 		        this._bMouseDown = true;
 		    }
+		}
+
+		private callListeners(): void {
+			var sHash: string = "";
+		        
+	        for (var i = 0; i < this._pMap.length; ++ i) {
+	        	if (this._pMap[i]) {
+	        		sHash += " " + i;
+	        	}
+	        }
+
+	        var pFuncList: Function[] = this._pCallbackMap[sHash];
+	        
+	        if (isDefAndNotNull(pFuncList)) {
+	        	for (var i: int = 0; i < pFuncList.length; ++ i) {
+	        		pFuncList[i]();
+	        	}
+	        }
 		}
 
 	    isKeyPress(iCode: int);

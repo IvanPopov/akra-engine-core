@@ -5,6 +5,9 @@
 	<component type="Material" name="material" />
 </div>
 <div class="row">
+	<span>visible:</span> <component type="Switch" name="sub-visible"/>;
+</div>
+<div class="row">
 	<span>shadow:</span> <component type="Switch" name="sub-shadows"/>;
 </div>
 <div class="row">

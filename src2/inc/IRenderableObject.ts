@@ -32,6 +32,8 @@ module akra {
 		getTechniqueDefault(): IRenderTechnique;
 
 		destroy(): void;
+		setVisible(bVisible?: bool): void;
+		isVisible(): bool;
 
 		addRenderMethod(pMethod: IRenderMethod, csName?: string): bool;
 		addRenderMethod(csMethod: string, csName?: string): bool;
@@ -54,7 +56,6 @@ module akra {
 		_setRenderData(pData: IRenderData): void;
 		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
 		_draw(): void;
-		_setVisible(bVisible: bool): void;
 
 		/** Notify, when shadow added or removed. */
 		signal shadow(bValue: bool): void;

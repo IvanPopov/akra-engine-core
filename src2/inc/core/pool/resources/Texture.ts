@@ -36,6 +36,11 @@ module akra.core.pool.resources {
 
         constructor () {
             super();
+
+            this._pParams[ETextureParameters.MIN_FILTER] = ETextureFilters.NEAREST;
+            this._pParams[ETextureParameters.MAG_FILTER] = ETextureFilters.NEAREST;
+            this._pParams[ETextureParameters.WRAP_S] = ETextureWrapModes.CLAMP_TO_EDGE;
+            this._pParams[ETextureParameters.WRAP_T] = ETextureWrapModes.CLAMP_TO_EDGE;
         }
 
 		inline get width(): uint {
@@ -239,7 +244,7 @@ module akra.core.pool.resources {
             return this._setWrapModeInternalTexture(eParam, eValue);
         }
 
-        getFilter(eParam: ETextureParameters): ETextureFilters { 
+        inline getFilter(eParam: ETextureParameters): ETextureFilters { 
             // if(!isDefAndNotNull(this._pParams[eParam])) {
             //     this._pParams[eParam] = this._getFilterInternalTexture(eParam);
             // }
@@ -247,7 +252,7 @@ module akra.core.pool.resources {
             return this._pParams[eParam];
         }
 
-        getWrapMode(eParam: ETextureParameters): ETextureWrapModes {
+        inline getWrapMode(eParam: ETextureParameters): ETextureWrapModes {
             // if(!isDefAndNotNull(this._pParams[eParam])) {
             //     this._pParams[eParam] = this._getWrapModeInternalTexture(eParam);
             // }

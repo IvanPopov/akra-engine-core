@@ -151,12 +151,13 @@ module akra.fx {
 					var pState: IAFXSamplerState = this.samplers[sName];
 					pState.texture = pTexture;
 					
-					// if (!isNull(pTexture)) {
-					// 	pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
-					// 	pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
-					// 	pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
-					// 	pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
-					// }
+					if (!isNull(pTexture)) {
+						pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
+						pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
+						pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
+						pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
+						// LOG(pState.min_filter, pState.mag_filter);
+					}
 				}
 			}
 		}

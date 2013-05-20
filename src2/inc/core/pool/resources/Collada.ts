@@ -2296,8 +2296,11 @@ module akra.core.pool.resources {
                             }
 
                             // LOG("is texture valid?? - ", pTexture.isValid());
-                            // pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR/*_MIPMAP_LINEAR*/);
-                            // pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR/*_MIPMAP_LINEAR*/);
+                            pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR/*_MIPMAP_NEAREST*/);
+                            pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR/*_MIPMAP_NEAREST*/);
+
+                            pTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
+                            pTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
 
                             var pMatches: string[] = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
                             var iTexCoord: int = (pMatches ? parseInt(pMatches[2]) : 0);
@@ -2662,8 +2665,12 @@ module akra.core.pool.resources {
 
             var pPerspective: IColladaPerspective = pColladaCamera.optics.techniqueCommon.perspective;
             
+            
+            
             if (!isNull(pPerspective)) {
-                pCamera.setProjParams(pPerspective.xfov, pPerspective.aspect, pPerspective.znear, pPerspective.zfar);
+                pCamera.setProjParams(pPerspective.xfov, pPerspective.aspect, pPerspective.znear, 
+                    //FIX far plane distance
+                    pPerspective.zfar * (1 / this.getAsset().unit.meter));
             }
 
             return pCamera;
@@ -2786,7 +2793,7 @@ module akra.core.pool.resources {
                 // }
                 pPoses.push(this.buildInititalPose(pScene.nodes, pSkeleton));
             }
-            LOG(pPoses);
+            // LOG(pPoses);
             return pPoses;
         }
 
