@@ -262,7 +262,7 @@ module akra {
 			var fShiftX: float = 0.;
 			var fShiftZ: float = 0.;
 
-			var pCube: ISceneNode = pCube = loadModel("../../../data/models/cube.dae", (pModelRoot: ISceneNode) => {
+			var pCube: ISceneNode = pCube = loadModel("../../../data/models/box/opened_box.dae", (pModelRoot: ISceneNode) => {
 				for(var i: uint = 0; i < nCount; i++) {
 					if(iCountInRow > iRow){
 						iCountInRow = 0;
@@ -272,8 +272,8 @@ module akra {
 						fShiftZ = -iRow * fDZ;
 					}
 
-					pCube = i === 0 ? pCube : loadModel("../../../data/models/cube.dae");
-					pCube.setPosition(fShiftX, 0.8, fShiftZ);
+					pCube = i === 0 ? pCube : loadModel("../../../data/models/box/opened_box.dae");
+					pCube.setPosition(fShiftX, 0.8, fShiftZ - 2.);
 					pCube.scale(0.1);
 
 					fShiftX += fDX;
@@ -307,10 +307,10 @@ module akra {
 			// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
 			// pCube2.setPosition(2., 0.8, -5.);
 			// pCube2.scale(0.1);
-			loadManyCubes(300);
+			//loadManyCubes(1);
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	
-		pEngine.exec();
+		// pEngine.exec();
 	});
 }

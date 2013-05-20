@@ -202,20 +202,19 @@ module akra.fx {
 				return ;
 			}
 			// var pSurfaceMaterial: core.pool.resources.SurfaceMaterial = pSurfaceMaterial;
-			// LOG(pSurfaceMaterial, pSurfaceMaterial.totalTextures);
+			
 			for (var i: int = 0; i < pSurfaceMaterial.totalTextures; i++) {
-				var pTexture: ITexture = pSurfaceMaterial.texture(i);
 				// var iTexcord: int = pSurfaceMaterial[i].texcoord(i);
-				this.setTexture("TEXTURE" + i, pTexture);
+				this.setTexture("TEXTURE" + i.toString(), pSurfaceMaterial.texture(i));
 			}
 
 			var pMaterial: IMaterial = pSurfaceMaterial.material;
 			var pMatContainer: any = this._pMaterialContainer;
 
-			pMatContainer.DIFFUSE.set(pMaterial.diffuse.r,pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
-			pMatContainer.AMBIENT.set(pMaterial.ambient.r,pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
-			pMatContainer.SPECULAR.set(pMaterial.specular.r,pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
-			pMatContainer.EMISSIVE.set(pMaterial.emissive.r,pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
+			pMatContainer.DIFFUSE.set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
+			pMatContainer.AMBIENT.set(pMaterial.ambient.r, pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
+			pMatContainer.SPECULAR.set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
+			pMatContainer.EMISSIVE.set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
 			pMatContainer.SHININESS = pMaterial.shininess;
 
 			this.setStruct("MATERIAL", pMatContainer);
@@ -339,6 +338,7 @@ module akra.fx {
 			this.uniforms = <any>{};
 			this.foreigns = <any>{};
 			this.textures = <any>{};
+
 
 			var pUniformKeys: string[] = this._pCreator.uniformRealNameList;
 			var pForeignKeys: string[] = this._pCreator.foreignNameList;

@@ -28,7 +28,11 @@ module akra.webgl {
 		private _pWebGLInternalContext: WebGLRenderingContext = null;
 
 		private _nActiveAttributes: uint = 0;
-		private _iSlot: int = 0;
+
+		private _iSlot: uint = 0;
+		private _iCurrentTextureSlot: uint = 0;
+		private _iNextTextureSlot: uint = 0;
+		private _pTextureSlotList: WebGLTexture[] = null;
 		/**
 		 * Need to impove speed
 		 */
@@ -68,6 +72,13 @@ module akra.webgl {
 
 			this._pDefaultCanvas = new WebGLCanvas(this);
 			this.attachRenderTarget(this._pDefaultCanvas);
+
+			this._pTextureSlotList = new Array(maxTextureImageUnits);
+
+			for(var i: uint = 0; i < this._pTextureSlotList.length; i++){
+				this._pTextureSlotList[i] = null;
+			}
+
 		}
 
 		debug(bValue: bool = true, useApiTrace: bool = false): bool {
@@ -328,12 +339,39 @@ module akra.webgl {
 		
 		/** Texture Objects. */
 		inline bindWebGLTexture(eTarget: uint, pTexture: WebGLTexture): void {
-			this._pWebGLContext.bindTexture(eTarget, pTexture);
+			// if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
+				this._pWebGLContext.bindTexture(eTarget, pTexture);
+				// this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
+			// }
 		}
 
 		inline activateWebGLTexture(iWebGLSlot: int): void {
 			this._pWebGLContext.activeTexture(iWebGLSlot);
-			// LOG(__CALLSTACK__)
+			// this._iCurrentTextureSlot = iWebGLSlot - GL_TEXTURE0;
+		}
+
+		activateWebGLTextureInAutoSlot(eTarget: uint, pTexture: WebGLTexture): uint {
+
+			var iSlot: uint = 0;
+			//this._pTextureSlotList.indexOf(pTexture);
+
+			// if(iSlot === -1) {
+				iSlot = this._iNextTextureSlot;
+
+				this._iNextTextureSlot++;
+
+				if(this._iNextTextureSlot === maxTextureImageUnits){
+					this._iNextTextureSlot = 0;
+				}
+				
+				this.activateWebGLTexture(GL_TEXTURE0 + iSlot);
+				this.bindWebGLTexture(eTarget, pTexture);
+			// }
+			// else {
+			// 	this.activateWebGLTexture(GL_TEXTURE0 + iSlot);
+			// }
+
+			return iSlot;			
 		}
 
 		// inline getFreeWebGLTextureSlot(): int {
@@ -468,6 +506,12 @@ module akra.webgl {
 			if (!bOldDepthWrite && (iBuffers & EFrameBufferTypes.DEPTH)) {
 	            this._pWebGLContext.depthMask(false);
         	}
+		}
+
+		inline _disableTextureUnitsFrom(iUnit: uint): void {
+			for(var i: int = iUnit; i < this._pTextureSlotList.length; i++) {
+				this._pTextureSlotList[i] = null;				
+			}
 		}
 
 		private convertCompareFunction(eFunc: ECompareFunction): uint {

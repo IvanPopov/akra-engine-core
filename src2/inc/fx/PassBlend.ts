@@ -86,6 +86,13 @@ module akra.fx {
 		private _pDefaultSamplerBlender: SamplerBlender = null;
 		private _pTexcoordSwapper: TexcoordSwapper = null;
 
+		//For speed-up
+		private _pSamplerByIdMap: IAFXVariableDeclMap = null;
+		private _pSamplerIdList: uint[] = null;
+
+		private _pSamplerArrayByIdMap: IAFXVariableDeclMap = null;
+		private _pSamplerArrayIdList: uint[] = null;
+
 		static private texcoordSwapper: TexcoordSwapper = null;
 
 		constructor(pComposer: IAFXComposer){
@@ -144,11 +151,7 @@ module akra.fx {
 					    pSurfaceMaterial: ISurfaceMaterial,
 					    pBuffer: IBufferMap, isFirst?: bool = true): IAFXMaker {
 
-			// var pSamplerBlender: SamplerBlender = this._pDefaultSamplerBlender;
-
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
-
-			var iTime: uint = now();
 
 			var sSamplerPartHash: string = this.prepareSamplers(pPassInput);
 			var sMaterialPartHash: string = this.prepareSurfaceMaterial(pSurfaceMaterial);
@@ -159,7 +162,6 @@ module akra.fx {
 			var pMaker: IAFXMaker = this.getMakerByHash(sTotalHash);
 
 			if(isNull(pMaker)) {
-				// LOG("generateShaderProgram. HASH: ", sTotalHash, "---NEW---", now() - iTime);
 
 				this.applyForeigns(pPassInput);
 				this.swapTexcoords(pSurfaceMaterial);
@@ -175,15 +177,6 @@ module akra.fx {
 
 				this._pFXMakerByHashMap[sTotalHash] = pMaker;
 				
-			}
-			else {
-				// if(isFirst){
-				// 	iTime = now();
-				// 	for (var i: int = 0; i < 100; i++) {
-				// 		this.generateFXMaker(pPassInput, pSurfaceMaterial, pBuffer, false);
-				// 	}
-				// 	LOG("generateShaderProgram. HASH: ", sTotalHash, "---OLD---", now() - iTime, (now()-iTime)/100);
-				// }
 			}
 
 			this._pDefaultSamplerBlender.clear();
@@ -203,6 +196,8 @@ module akra.fx {
 			if(!this.finalizeBlendForPixel()) {
 				return false;
 			}
+
+			this.prepareFastObjects();
 
 			return true;
 		}
@@ -644,20 +639,16 @@ module akra.fx {
 
 		private prepareSamplers(pPassInput: IAFXPassInputBlend): string {
 			var pBlender: SamplerBlender = this._pDefaultSamplerBlender;
-			// pBlender.clear();
 
 			//Gum samplers
+			
 			var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
-			var pSamplerKeys: string[] = pPassInput.samplerKeys;
+			var pSamplersId: uint[] = this._pSamplerIdList;
 
-			for(var i: uint = 0; i < pSamplerKeys.length; i++){
-				var sName: string = pSamplerKeys[i];
+			for(var i: uint = 0; i < pSamplersId.length; i++){
+				var pSampler: IAFXVariableDeclInstruction = this._pSamplerByIdMap[pSamplersId[i]];
+				var sName: string = pSampler.getRealName();
 
-				if(!this.hasUniformWithName(sName)){
-					continue;
-				}
-
-				var pSampler: IAFXVariableDeclInstruction = this.getUniformByName(sName);
 				var pSamplerState: IAFXSamplerState = pSamplers[sName];
 				var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerState);
 
@@ -672,14 +663,11 @@ module akra.fx {
 
 			//Gum sampler arrays
 			var pSamplerArrays: IAFXSamplerStateListMap = pPassInput.samplerArrays;
-			var pSamplerArrayKeys: string[] = pPassInput.samplerArrayKeys;
+			var pSamplerArraysId: uint[] = this._pSamplerArrayIdList;
 
-			for(var i: uint = 0; i < pSamplerArrayKeys.length; i++){
-				var sName: string = pSamplerArrayKeys[i];
-
-				if(!this.hasUniformWithName(sName)){
-					continue;
-				}
+			for(var i: uint = 0; i < pSamplerArraysId.length; i++){
+				var pSamplerArray: IAFXVariableDeclInstruction = this._pSamplerArrayByIdMap[pSamplerArraysId[i]];
+				var sName: string = pSamplerArray.getRealName();
 
 				var pSamplerStateList: IAFXSamplerState[] = pSamplerArrays[sName];
 				var isNeedToCollapse: bool = true;
@@ -696,8 +684,7 @@ module akra.fx {
 						}
 					}
 				}
-
-				var pSamplerArray: IAFXVariableDeclInstruction = this.getUniformByName(sName);
+				
 				if(isNeedToCollapse){					
 					pSamplerArray._setCollapsed(true);
 
@@ -718,7 +705,7 @@ module akra.fx {
 		}
 
 		private inline prepareSurfaceMaterial(pMaterial: ISurfaceMaterial): string{
-			return isNull(pMaterial) ? "" :pMaterial._getHash();
+			return isNull(pMaterial) ? "" : pMaterial._getHash();
 		}
 
 		private prepareBufferMap(pMap: IBufferMap): string {
@@ -771,6 +758,8 @@ module akra.fx {
 
 			this._sVertexCode = this.generateCodeForVertex();
 			this._sPixelCode = this.generateCodeForPixel();
+
+			this._pDefaultSamplerBlender.clearSamplerNames();
 		}
 
 		private generateCodeForVertex(): string {
@@ -1385,6 +1374,44 @@ module akra.fx {
 
 			this._sVertexOutToVaryingCode = sCode;
 			return this._sVertexOutToVaryingCode;
+		}
+
+
+		private prepareFastObjects(): void {
+			this.prepareFastSamplers(EFunctionType.k_Vertex);
+			this.prepareFastSamplers(EFunctionType.k_Pixel);
+		}
+
+		private prepareFastSamplers(eType: EFunctionType): void {
+			if(isNull(this._pSamplerByIdMap)){
+				this._pSamplerByIdMap = <IAFXVariableDeclMap>{};
+				this._pSamplerIdList = [];
+
+				this._pSamplerArrayByIdMap = <IAFXVariableDeclMap>{};
+				this._pSamplerArrayIdList = [];
+			}
+
+			var pContainer: VariableBlendContainer = eType === EFunctionType.k_Vertex ? 
+														this._pUniformContainerV : this._pUniformContainerP;
+			var pKeys: string[] = pContainer.keys;
+
+			for(var i: uint = 0; i < pKeys.length; i++) {
+				var pVar: IAFXVariableDeclInstruction = pContainer.getVariableByName(pKeys[i]);
+
+				if(pVar.getType().isSampler()) {
+					var id: uint = pVar._getInstructionID();
+
+					if(!pVar.getType().isArray() && !isDef(this._pSamplerByIdMap[id])){							
+						this._pSamplerByIdMap[id] = pVar;
+						this._pSamplerIdList.push(id);
+					}
+					else if(pVar.getType().isArray() && !isDef(this._pSamplerArrayByIdMap[id])) {
+						this._pSamplerArrayByIdMap[id] = pVar;
+						this._pSamplerArrayIdList.push(id);
+					}
+				}
+			}
+
 		}
 	}
 }

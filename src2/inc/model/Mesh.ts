@@ -646,7 +646,7 @@ module akra.model {
             }
             if(isOk){
                 for (var i: uint = 0; i < this.length; ++ i) {
-                	if(this._pSubMeshes[i].isSkinned){
+                	if(this._pSubMeshes[i].isSkinned()){
                     	this._pSubMeshes[i]._calculateSkin();
                 	}
                 }

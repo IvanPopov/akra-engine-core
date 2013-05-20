@@ -311,8 +311,9 @@ module akra.webgl {
         inline setVertexBuffer(sName: string, pBuffer: IVertexBuffer): void {
             var iSlot: uint = this._pWebGLRenderer.getNextTextureSlot();
             this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
-            // this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
+            WARNING(iSlot);
             this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
+            // var iSlot: uint = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
             this.setInt(sName, iSlot);
         }
 
@@ -337,6 +338,8 @@ module akra.webgl {
             if(isNull(pTexture)){
                 return ZERO_SAMPLER_SLOT;
             }
+
+            //var iSlot: int = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
 
             var iSlot: int = this._pWebGLRenderer.getNextTextureSlot();
             this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);

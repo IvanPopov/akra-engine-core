@@ -4,13 +4,20 @@ module akra {
 
 	test("array.indexOf() vs Object[]", () => {
 
-		var arr = [], obj = {}, objSave = {};
+		var arr = null, obj = null, objSave = null;
+		var nativeArr = null;
 
 		function initTestObjects(nElements): void {
+			arr = new Array(nElements);
+			nativeArr = new Uint32Array(nElements);
+			obj = {};
+			objSave = {};
+
 			for(var i: uint = 0; i < nElements; i++){
-				arr[i] = "elem" + i;
-				obj["elem"+i] = i;
-				objSave["elem"+i] = i;
+				arr[i] = nElements - i;
+				obj[i] = nElements - i;
+				objSave[i] = nElements - i;
+				nativeArr[i] = nElements - i;
 			}
 		}
 
@@ -31,7 +38,7 @@ module akra {
 			sample = new Array(iMax - iMin);
 
 			for(var i: uint = 0; i < sample.length; i++){
-				sample[i] = "elem" + (i + iMin);
+				sample[i] = (i + iMin);
 			}
 		}
 
@@ -40,6 +47,19 @@ module akra {
 
 			for(var i: uint = 0; i < sample.length; i++){
 				(arr.indexOf(sample[i]) < 0) ? 0 : nMatches++;
+			}
+
+			return nMatches;
+		}
+
+		function testNativeArray(): int {
+			var nMatches: uint = 0;
+			for(var i: uint = 0; i < sample.length; i++){
+				for(var j: uint = 0; j < nativeArr.length; j++){
+					if(nativeArr[j] === sample[i]){
+						nMatches++;
+					}
+				}
 			}
 
 			return nMatches;
@@ -70,10 +90,11 @@ module akra {
 			return nMatches;
 		}
 
-		initTestObjects(50);
+		initTestObjects(20);
 		generateSample(0, 200);
 		
 		wrapper(testArray, 10000);
+		wrapper(testNativeArray, 10000);
 		wrapper(testObject, 10000);
 		wrapper(testObjectSave, 10000);
 
