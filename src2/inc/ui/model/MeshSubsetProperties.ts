@@ -15,6 +15,7 @@ module akra.ui.model {
 		protected _pShadows: IUISwitch;
 		protected _pBoundingBox: IUISwitch;
 		protected _pBoundingSphere: IUISwitch;
+		protected _pGuid: IUILabel;
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
@@ -27,6 +28,7 @@ module akra.ui.model {
 			this._pShadows = <IUISwitch>this.findEntity("sub-shadows");
 			this._pBoundingBox = <IUISwitch>this.findEntity("sub-bounding-box");
 			this._pBoundingSphere = <IUISwitch>this.findEntity("sub-bounding-sphere");
+			this._pGuid = <IUILabel>this.findEntity("sub-guid");
 
 			this.connect(this._pVisible, SIGNAL(changed), SLOT(_setVisible));
 			this.connect(this._pShadows, SIGNAL(changed), SLOT(_useShadows));
@@ -70,6 +72,7 @@ module akra.ui.model {
 			this._pBoundingBox._setValue(this._pSubset.isBoundingBoxVisible());
 			this._pBoundingSphere._setValue(this._pSubset.isBoundingSphereVisible());
 			this._pVisible._setValue(this._pSubset.isVisible());
+			this._pGuid.text = <any>this._pSubset.getGuid();
 		}
 
 		rendered(): void {

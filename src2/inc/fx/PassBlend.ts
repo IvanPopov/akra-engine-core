@@ -888,37 +888,81 @@ module akra.fx {
 				var sSamplerName: string = "as" + i.toString();
 
 				for (var j: int = 0; j < pSamplers.length; j++) {
-					if(i === ZERO_SLOT){
-						pSamplers.value(j).defineByZero(true);
+					var pRealSamplerVars: IAFXVariableDeclInstruction[] = this._pUniformContainerV.getVarList(pSamplers.value(j).getRealName());
+					
+					for(var k: uint = 0; isDefAndNotNull(pRealSamplerVars) && k < pRealSamplerVars.length; k++){
 
-						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Vertex)){
-							if(pSamplers.value(j).getType().isSampler2D()) {
-								isZeroSampler2DV = true;
+						var pRealSampler: IAFXVariableDeclInstruction = pRealSamplerVars[k];
+						if(i === ZERO_SLOT){
+							pRealSampler.defineByZero(true);
+
+							if(this.isSamplerUsedInShader(pRealSampler, EFunctionType.k_Vertex)){
+								if(pRealSampler.getType().isSampler2D()) {
+									isZeroSampler2DV = true;
+								}
+								else {
+									isZeroSamplerCubeV = true;
+								}
 							}
-							else {
-								isZeroSamplerCubeV = true;
+
+							if(this.isSamplerUsedInShader(pRealSampler, EFunctionType.k_Pixel)){
+								if(pRealSampler.getType().isSampler2D()) {
+									isZeroSampler2DP = true;
+								}
+								else {
+									isZeroSamplerCubeP = true;
+								}
+							}
+						}
+						else{
+							if(this.isSamplerUsedInShader(pRealSampler, EFunctionType.k_Vertex)){
+								isInVertex = true;
+							}
+							if(this.isSamplerUsedInShader(pRealSampler, EFunctionType.k_Pixel)){
+								isInPixel = true;
 							}
 						}
 
-						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Pixel)){
-							if(pSamplers.value(j).getType().isSampler2D()) {
-								isZeroSampler2DP = true;
-							}
-							else {
-								isZeroSamplerCubeP = true;
-							}
-						}
+						pRealSampler.setRealName(sSamplerName);
 					}
-					else{
-						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Vertex)){
-							isInVertex = true;
-						}
-						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Pixel)){
-							isInPixel = true;
-						}
-					}
 
-					pSamplers.value(j).setRealName(sSamplerName);
+					pRealSamplerVars = this._pUniformContainerP.getVarList(pSamplers.value(j).getRealName());
+
+					for(var k: uint = 0; isDefAndNotNull(pRealSamplerVars) && k < pRealSamplerVars.length; k++){
+
+						var pRealSampler: IAFXVariableDeclInstruction = pRealSamplerVars[k];
+						if(i === ZERO_SLOT){
+							pRealSampler.defineByZero(true);
+
+							if(this.isSamplerUsedInShader(pRealSampler, EFunctionType.k_Vertex)){
+								if(pRealSampler.getType().isSampler2D()) {
+									isZeroSampler2DV = true;
+								}
+								else {
+									isZeroSamplerCubeV = true;
+								}
+							}
+
+							if(this.isSamplerUsedInShader(pRealSampler, EFunctionType.k_Pixel)){
+								if(pRealSampler.getType().isSampler2D()) {
+									isZeroSampler2DP = true;
+								}
+								else {
+									isZeroSamplerCubeP = true;
+								}
+							}
+						}
+						else{
+							if(this.isSamplerUsedInShader(pRealSampler, EFunctionType.k_Vertex)){
+								isInVertex = true;
+							}
+							if(this.isSamplerUsedInShader(pRealSampler, EFunctionType.k_Pixel)){
+								isInPixel = true;
+							}
+						}
+
+						pRealSampler.setRealName(sSamplerName);
+					}
 				}
 
 

@@ -1355,6 +1355,7 @@ module akra {
 	        } 
             else {
 	            switch(ePf) {
+                case EPixelFormats.FLOAT32_DEPTH:
 	            case EPixelFormats.FLOAT32_R:
 	                r = g = b = dynamic_cast_f32_ptr(pSrc, 1)[0];
 	                a = 1.0;

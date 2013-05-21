@@ -429,22 +429,22 @@ module akra {
 
 			pScene.bind(SIGNAL(beforeUpdate), update);
 
-			var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_CONTROLLER");
+			// var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_CONTROLLER");
 			
-			pMovie.bind(SIGNAL(loaded), () => {
+			// pMovie.bind(SIGNAL(loaded), () => {
 
-				var pAnim: IAnimation = pMovie.extractAnimation(0);
-				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-				var pController: IAnimationController = pEngine.createAnimationController("movie");
+			// 	var pAnim: IAnimation = pMovie.extractAnimation(0);
+			// 	var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+			// 	var pController: IAnimationController = pEngine.createAnimationController("movie");
 				
-				pController.addAnimation(pContainer);
-				pController.stop();
+			// 	pController.addAnimation(pContainer);
+			// 	pController.stop();
 
-				pNode.addController(pController);
+			// 	pNode.addController(pController);
 
-				self.hero.movie = pController;
+			// 	self.hero.movie = pController;
 				
-			});
+			// });
 
 
 			fetchAllCameras();

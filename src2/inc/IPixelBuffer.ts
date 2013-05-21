@@ -33,6 +33,8 @@ module akra {
 		lock(iOffset: uint, iSize: uint, iLockFlags?: int): any;
 		lock(pLockBox: IBox, iLockFlags?: int): IPixelBox;
 
+		readPixels(pDestBox: IPixelBox): bool;
+
 		_clearRTT(iZOffset: uint): void;
 		
 		reset(): void;

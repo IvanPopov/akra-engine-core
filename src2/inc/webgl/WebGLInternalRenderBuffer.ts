@@ -12,6 +12,7 @@ module akra.webgl {
 		constructor() {
 			super();
 		}
+		
 		create(iFlags: int): bool;
 		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): bool;
 		create(iWebGLFormat: int, iWidth: uint, iHeight: uint, bCreateStorage: bool): bool;
