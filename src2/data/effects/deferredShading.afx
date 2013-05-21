@@ -129,7 +129,7 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 
     result_color = emissive;
 
-    return result_color;
+    return float4(result_color.xyz, 1.);
 };	
 
 technique deferredShading{

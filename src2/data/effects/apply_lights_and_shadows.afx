@@ -79,7 +79,7 @@ float4 apply_light_omni() : COLOR{
         i++;
     }
 
-    return result_color;
+    return float4(result_color.xyz, 1.);
 };
 
 float4 apply_light_project() : COLOR{
@@ -98,7 +98,7 @@ float4 apply_light_project() : COLOR{
         i++;
     }
 
-    return result_color;
+    return float4(result_color.xyz, 1.);
 };
 
 float4 apply_light_omni_shadow() : COLOR{
@@ -138,7 +138,7 @@ float4 apply_light_omni_shadow() : COLOR{
         result_color += tmpColor * shadowMultiplier;
         i++;
     }
-    return result_color;
+    return float4(result_color.xyz, 1.);
 };
 
 float4 apply_light_project_shadows() : COLOR{
@@ -178,7 +178,7 @@ float4 apply_light_project_shadows() : COLOR{
         i++;
     }
 
-    return result_color;
+    return float4(result_color.xyz, 1.);
 };
 
 float4 calculateLight(pixel_data pixelData, light_data lightData){

@@ -429,7 +429,7 @@ module akra {
 
 			pScene.bind(SIGNAL(beforeUpdate), update);
 
-			var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_CONTROLLER");
+			/*var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_CONTROLLER");
 			
 			pMovie.bind(SIGNAL(loaded), () => {
 
@@ -444,7 +444,7 @@ module akra {
 
 				self.hero.movie = pController;
 				
-			});
+			});*/
 
 
 			fetchAllCameras();
