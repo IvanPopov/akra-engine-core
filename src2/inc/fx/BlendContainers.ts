@@ -105,6 +105,26 @@ module akra.fx {
 
 			return sCode;
 		}
+
+		forEach(sKey: string, fnModifier: {(pVar: IAFXVariableDeclInstruction): void;}): void {
+			if(this.hasVariableWithName(sKey)) {
+				var pVarList: IAFXVariableDeclInstruction[] = this.getVarList(sKey);
+
+				for(var i: uint = 0; i < pVarList.length; i++) {
+					fnModifier.call(null, pVarList[i]);
+				}
+			}
+		}
+
+		setNameForEach(sKey: string, sNewRealName: string): void {
+			if(this.hasVariableWithName(sKey)) {
+				var pVarList: IAFXVariableDeclInstruction[] = this.getVarList(sKey);
+
+				for(var i: uint = 0; i < pVarList.length; i++) {
+					pVarList[i].setRealName(sNewRealName);
+				}
+			}
+		}
 	}
 
 
@@ -352,16 +372,16 @@ module akra.fx {
 
 			this._pSlotBySemanticIndex = new Int8Array(this._nSemantics);
 			this._pFlowBySemanticIndex = new Array(this._nSemantics);
-			this._pHashPartList = new Array(2 * this._nSemantics);
+			// this._pHashPartList = new Array(2 * this._nSemantics);
 
 			for(var i: uint = 0; i < this._nSemantics; i++){
 				this._pSlotBySemanticIndex[i] = -1;
 				this._pFlowBySemanticIndex[i] = null;
 			}
 
-			for(var i: uint = 0; i < 2*this._nSemantics; i++){
-				this._pHashPartList[i] = 0;
-			}
+			// for(var i: uint = 0; i < 2*this._nSemantics; i++){
+			// 	this._pHashPartList[i] = 0;
+			// }
 
 			for(var i: uint = 0; i < this._pFlowBySlots.length; i++){
 				this._pFlowBySlots[i] = null;
@@ -479,6 +499,7 @@ module akra.fx {
 
 			var pFlows: IDataFlow[] = pMap.flows;
 			var pSemanticList: string[] = this.semantics;
+			var iHash: uint = 0;
 
 			main:
 			for(var i: uint = 0; i < pSemanticList.length; i++) {
@@ -495,7 +516,7 @@ module akra.fx {
 
 				this._pFlowBySemanticIndex[iSemanticIndex] = pFindFlow;
 
-				if(!isNull(pFindFlow)){
+				if(!isNull(pFindFlow)) {
 					var iSlot: uint = this._nSlots;
 					var iBufferSlot: int = -1;
 					var pType: IAFXVariableTypeInstruction = this.getType(sSemantic);
@@ -508,12 +529,11 @@ module akra.fx {
 
 						for(var j: uint = 0; j < this._nSlots; j++) {
 							if(this._pFlowBySlots[j] === pFindFlow) {
-
 								this._pSlotBySemanticIndex[iSemanticIndex] = j;
-								this._sHash += j.toString() + "$" + this._pBufferSlotBySlots[j].toString() + "$";
+								iHash += (j << 5 + this._pBufferSlotBySlots[j]) << j;
+								//this._sHash += (j << 5 + this._pBufferSlotBySlots[j]).toString() + "$";
 								// this._pHashPartList[2 * i] = j;
 								// this._pHashPartList[2 * i + 1] = this._pBufferSlotBySlots[j]; 
-								
 								continue main;
 							}
 						}
@@ -552,17 +572,19 @@ module akra.fx {
 
 					// this._pHashPartList[2*i] = iSlot;
 					// this._pHashPartList[2*i+1] = iBufferSlot;
-					this._sHash += iSlot.toString() + "$" + iBufferSlot.toString() + "$";
+					//this._sHash += (iSlot << 5 + iBufferSlot).toString() + "$";
+					iHash += (iSlot << 5 + iBufferSlot) << iSlot;
 					this._nSlots++;
 				}
 				else {
 					this._pSlotBySemanticIndex[iSemanticIndex] = -1;
-					this._sHash += "*";
+					//this._sHash += "*";
 					// this._pHashPartList[2*i] = -2;
 					// this._pHashPartList[2*i+1] = -2;
 				}
 			}
 
+			this._sHash = iHash.toString();
 			// for(var i: uint = 0; i < this._pHashPartList.length; i++){
 			// 	this._sHash += this._pHashPartList[i].toString() + "$";
 			// }

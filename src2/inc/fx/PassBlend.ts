@@ -149,7 +149,7 @@ module akra.fx {
 
 		generateFXMaker(pPassInput: IAFXPassInputBlend,
 					    pSurfaceMaterial: ISurfaceMaterial,
-					    pBuffer: IBufferMap, isFirst?: bool = true): IAFXMaker {
+					    pBuffer: IBufferMap): IAFXMaker {
 
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
 
@@ -161,7 +161,7 @@ module akra.fx {
 
 			var pMaker: IAFXMaker = this.getMakerByHash(sTotalHash);
 
-			if(isNull(pMaker)) {
+			if(!isDef(pMaker)) {
 
 				this.applyForeigns(pPassInput);
 				this.swapTexcoords(pSurfaceMaterial);
@@ -185,7 +185,7 @@ module akra.fx {
 		}
 
 		private inline getMakerByHash(sHash: string): IAFXMaker {
-			return this._pFXMakerByHashMap[sHash] || null;
+			return this._pFXMakerByHashMap[sHash];
 		}
 
 		private finalizeBlend(): bool {
@@ -759,7 +759,7 @@ module akra.fx {
 			this._sVertexCode = this.generateCodeForVertex();
 			this._sPixelCode = this.generateCodeForPixel();
 
-			this._pDefaultSamplerBlender.clearSamplerNames();
+			this.resetSamplerVarsToDefault();
 		}
 
 		private generateCodeForVertex(): string {
@@ -869,20 +869,28 @@ module akra.fx {
 			var isZeroSampler2DP: bool = false;
 			var isZeroSamplerCubeP: bool = false;
 
+			var isInVertex: bool = false;
+			var isInPixel: bool = false;
+
+			var sSamplerName: string = "";
+
 			for(var i: uint = 0; i < iTotalSlots; i++){
-				var pSamplers = pSamplerBlender.getSamplersBySlot(i);
+				var pSamplers: util.ObjectArray = pSamplerBlender.getSamplersBySlot(i);
 
-				var isInVertex: bool = false;
-				var isInPixel: bool = false;
+				isInVertex = false;
+				isInPixel = false;
 
-				var sSamplerName: string = "as" + i.toString();
+				sSamplerName = "as" + i.toString();
 
 				for (var j: int = 0; j < pSamplers.length; j++) {
-					if(i === ZERO_SLOT){
-						pSamplers.value(j).defineByZero(true);
+					var pSampler: IAFXVariableDeclInstruction = pSamplers.value(j);
+					var sRealSamplerName: string = pSampler.getRealName();
 
-						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Vertex)){
-							if(pSamplers.value(j).getType().isSampler2D()) {
+					if(i === ZERO_SLOT){
+						if(this.isSamplerUsedInShader(pSampler, EFunctionType.k_Vertex)){
+							this._pUniformContainerV.forEach(sRealSamplerName, PassBlend.fnSamplerReducer);
+
+							if(pSampler.getType().isSampler2D()) {
 								isZeroSampler2DV = true;
 							}
 							else {
@@ -890,8 +898,10 @@ module akra.fx {
 							}
 						}
 
-						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Pixel)){
-							if(pSamplers.value(j).getType().isSampler2D()) {
+						if(this.isSamplerUsedInShader(pSampler, EFunctionType.k_Pixel)){
+							this._pUniformContainerP.forEach(sRealSamplerName, PassBlend.fnSamplerReducer);
+
+							if(pSampler.getType().isSampler2D()) {
 								isZeroSampler2DP = true;
 							}
 							else {
@@ -900,15 +910,16 @@ module akra.fx {
 						}
 					}
 					else{
-						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Vertex)){
+						if(this.isSamplerUsedInShader(pSampler, EFunctionType.k_Vertex)){
 							isInVertex = true;
 						}
-						if(this.isSamplerUsedInShader(pSamplers.value(j), EFunctionType.k_Pixel)){
+						if(this.isSamplerUsedInShader(pSampler, EFunctionType.k_Pixel)){
 							isInPixel = true;
 						}
 					}
 
-					pSamplers.value(j).setRealName(sSamplerName);
+					this._pUniformContainerV.setNameForEach(sRealSamplerName, sSamplerName);
+					this._pUniformContainerP.setNameForEach(sRealSamplerName, sSamplerName);
 				}
 
 
@@ -940,6 +951,32 @@ module akra.fx {
 
 			this._sUniformSamplerCodeV = sUniformSamplerCodeV;
 			this._sUniformSamplerCodeP = sUniformSamplerCodeP;
+		}
+
+		private resetSamplerVarsToDefault(): void {
+			var pSamplerBlender: SamplerBlender = this._pDefaultSamplerBlender;
+			var iTotalSlots: uint = pSamplerBlender.totalActiveSlots;
+
+			pSamplerBlender.clearSamplerNames();
+
+			for(var i: uint = 0; i < iTotalSlots; i++){
+				var pSamplers: util.ObjectArray = pSamplerBlender.getSamplersBySlot(i);
+				for (var j: int = 0; j < pSamplers.length; j++) {
+					var pSampler: IAFXVariableDeclInstruction = pSamplers.value(j);
+					var sRealSamplerName: string = pSampler.getRealName();
+
+					this._pUniformContainerV.forEach(sRealSamplerName, PassBlend.fnResetDefaultSamplerParams);
+				}
+			}
+		}
+
+		static private fnSamplerReducer(pSamplerVar: IAFXVariableDeclInstruction): void {
+			pSamplerVar.defineByZero(true);
+		}
+
+		static private fnResetDefaultSamplerParams(pSamplerVar: IAFXVariableDeclInstruction): void {
+			pSamplerVar.defineByZero(false);
+			pSamplerVar.setRealName(pSamplerVar.getSemantic() || pSamplerVar.getName());
 		}
 
 		private reduceAttributes(): void {

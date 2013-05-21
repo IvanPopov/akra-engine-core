@@ -339,23 +339,22 @@ module akra.webgl {
 		
 		/** Texture Objects. */
 		inline bindWebGLTexture(eTarget: uint, pTexture: WebGLTexture): void {
-			// if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
+			if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
 				this._pWebGLContext.bindTexture(eTarget, pTexture);
-				// this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
-			// }
+				this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
+			}
 		}
 
 		inline activateWebGLTexture(iWebGLSlot: int): void {
 			this._pWebGLContext.activeTexture(iWebGLSlot);
-			// this._iCurrentTextureSlot = iWebGLSlot - GL_TEXTURE0;
+			this._iCurrentTextureSlot = iWebGLSlot - GL_TEXTURE0;
 		}
 
 		activateWebGLTextureInAutoSlot(eTarget: uint, pTexture: WebGLTexture): uint {
 
-			var iSlot: uint = 0;
-			//this._pTextureSlotList.indexOf(pTexture);
+			var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
 
-			// if(iSlot === -1) {
+			if(iSlot === -1) {
 				iSlot = this._iNextTextureSlot;
 
 				this._iNextTextureSlot++;
@@ -366,10 +365,10 @@ module akra.webgl {
 				
 				this.activateWebGLTexture(GL_TEXTURE0 + iSlot);
 				this.bindWebGLTexture(eTarget, pTexture);
-			// }
-			// else {
-			// 	this.activateWebGLTexture(GL_TEXTURE0 + iSlot);
-			// }
+			}
+			else {
+				this.activateWebGLTexture(GL_TEXTURE0 + iSlot);
+			}
 
 			return iSlot;			
 		}
@@ -378,13 +377,13 @@ module akra.webgl {
 		// 	return this._getNextTextureSlot() + GL_TEXTURE0;
 		// }
 
-		inline getNextTextureSlot(): int {
-			return this._iSlot === (maxTextureImageUnits - 1) ? (this._iSlot = 0) : (++this._iSlot);
-		}
+		// inline getNextTextureSlot(): int {
+		// 	return this._iSlot === (maxTextureImageUnits - 1) ? (this._iSlot = 0) : (++this._iSlot);
+		// }
 
-		inline getTextureSlot(): int {
-			return this._iSlot - 1;
-		}
+		// inline getTextureSlot(): int {
+		// 	return this._iSlot - 1;
+		// }
 
 		inline createWebGLTexture(): WebGLTexture {
 			return this._pWebGLContext.createTexture();

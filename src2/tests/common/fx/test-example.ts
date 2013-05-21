@@ -252,7 +252,7 @@ module akra {
 			return pModelRoot;
 		}
 
-		function loadManyCubes(nCount: uint = 20): void {
+		function loadManyModels(nCount: uint, sPath: string): void {
 			var iRow: uint = 0;
 			var iCountInRow: uint = 0;
 
@@ -262,7 +262,7 @@ module akra {
 			var fShiftX: float = 0.;
 			var fShiftZ: float = 0.;
 
-			var pCube: ISceneNode = pCube = loadModel("../../../data/models/box/opened_box.dae", (pModelRoot: ISceneNode) => {
+			var pCube: ISceneNode = pCube = loadModel(sPath, (pModelRoot: ISceneNode) => {
 				for(var i: uint = 0; i < nCount; i++) {
 					if(iCountInRow > iRow){
 						iCountInRow = 0;
@@ -272,7 +272,7 @@ module akra {
 						fShiftZ = -iRow * fDZ;
 					}
 
-					pCube = i === 0 ? pCube : loadModel("../../../data/models/box/opened_box.dae");
+					pCube = i === 0 ? pCube : loadModel(sPath);
 					pCube.setPosition(fShiftX, 0.8, fShiftZ - 2.);
 					pCube.scale(0.1);
 
@@ -307,10 +307,11 @@ module akra {
 			// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
 			// pCube2.setPosition(2., 0.8, -5.);
 			// pCube2.scale(0.1);
-			//loadManyCubes(1);
+			// loadManyModels(300, "../../../data/models/cube.dae");
+			loadManyModels(100, "../../../data/models/box/opened_box.dae");
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	
-		// pEngine.exec();
+		pEngine.exec();
 	});
 }
