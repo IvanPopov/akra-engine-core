@@ -343,8 +343,8 @@ module akra.webgl {
 
             this._pWebGLRenderer.bindWebGLTexture(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
 
-            pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.mag_filter);
-            pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.min_filter);
+            pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
+            pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.min_filter);
 
             pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s);
             pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t);

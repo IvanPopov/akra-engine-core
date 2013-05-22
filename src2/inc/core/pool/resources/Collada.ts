@@ -2296,8 +2296,9 @@ module akra.core.pool.resources {
                             }
 
                             // LOG("is texture valid?? - ", pTexture.isValid());
-                            pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR/*_MIPMAP_NEAREST*/);
-                            pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR/*_MIPMAP_NEAREST*/);
+                            
+                            pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+                            pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
 
                             pTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
                             pTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);

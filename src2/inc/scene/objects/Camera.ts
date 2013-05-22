@@ -185,9 +185,6 @@ module akra.scene.objects {
 			// }
 		}
 
-
-
-
 		display(iList: uint = /*DL_DEFAULT*/0): IObjectArray {
 			var pObjects: IObjectArray = this._pDLTechniques[iList].
 								findObjects(this._pDLResultStorage[iList], !this.isUpdated());
@@ -227,9 +224,6 @@ module akra.scene.objects {
     	}
 
     	setOrthoParams(fWidth: float, fHeight: float, fNearPlane: float, fFarPlane: float): void {
-		    CRITICAL("TODO: setOrthoParams();");
-		    /*
-		    
 		    this._fWidth = fWidth;
 		    this._fHeight = fHeight;
 		    this._fNearPlane = fNearPlane;
@@ -237,18 +231,16 @@ module akra.scene.objects {
 		    this._eCameraType = ECameraTypes.ORTHO;
 
 		    // create the regular projection matrix
-		    Mat4.matrixOrthoRH(fWidth, fHeight, fNearPlane, fFarPlane, this._m4fProj);
+		    Mat4.orthogonalProjection(fWidth, fHeight, fNearPlane, fFarPlane, this._m4fProj);
 
 		    // create a unit-space matrix 
 		    // for sky box geometry.
 		    // this ensures that the 
 		    // near and far plane enclose 
 		    // the unit space around the camera
-		    Mat4.matrixOrthoRH(fWidth, fHeight, 0.01, 2.0, this._m4fUnitProj);
-
+		    // Mat4.matrixOrthoRH(fWidth, fHeight, 0.01, 2.0, this._m4fUnitProj);
+		    
 		    TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
-
-		    */
     	}
 
     	setOffsetOrthoParams(fMinX: float, fMaxX: float, fMinY: float, fMaxY: float, fNearPlane: float, fFarPlane: float): void {
