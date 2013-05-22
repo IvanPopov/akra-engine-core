@@ -22,21 +22,23 @@ float4 floatToFloat4(float value){
     counter += 1.;
 
     if(data >= 2.) {
-      data = data / 2.;
-      power++;
+      data = data * 0.5;
+      power += 1.;
       if (power == 127.) {
         counter = 129.;
       }
     }
-    else if(data < 1.) {
-      data = data * 2.;
-      power--;
-      if (power == -126.) {
+    else{
+      if(data < 1.) {
+        data = data * 2.;
+        power -= 1.;
+        if (power == -126.) {
+          counter = 129.;
+        }
+      }
+      else {
         counter = 129.;
       }
-    }
-    else {
-      counter = 129.;
     }
   }
 
@@ -44,7 +46,7 @@ float4 floatToFloat4(float value){
     power = 0.;
   }
   else{
-    power = power+127.;
+    power = power + 127.;
     data = data - 1.;
   }
 
