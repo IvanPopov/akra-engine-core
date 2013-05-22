@@ -11,6 +11,12 @@
 
 module akra.webgl {
 
+	var SQUARE_VERTICES: Float32Array = new Float32Array([ -1.0, -1.0,
+									                		1.0, -1.0,
+									               		   -1.0,  1.0,
+									                		1.0,  1.0 ]);
+	var TEXCOORDS: Float32Array = new Float32Array(12);
+
 	export function computeLog(iValue: int): int {
 	    var i: int = 0;
 	    /* Error! */
@@ -186,6 +192,118 @@ module akra.webgl {
 				");
 	        }
 
+	        pProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_decode_depth32_texture");
+
+	        if (isNull(pProgram)) {
+	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_decode_depth32_texture");
+	        	pProgram.create("																									\n\
+	        	attribute vec2 POSITION;																			\n\
+				attribute vec3 TEXCOORD;																			\n\
+				                      																				\n\
+				varying vec3 texcoord;																				\n\
+				                   																					\n\
+				void main(void){																					\n\
+				    texcoord = TEXCOORD;																			\n\
+				    gl_Position = vec4(POSITION, 0., 1.);															\n\
+				}																									\n\
+				",
+				"													\n\
+				#ifdef GL_ES                        				\n\
+				    precision highp float;          				\n\
+				#endif												\n\
+				varying vec3 texcoord;              				\n\
+				uniform sampler2D uSampler;        					\n\
+																	\n\
+				vec4 floatToVec4(float value){						\n\
+					float data = value;								\n\
+					vec4 result = vec4(0.);							\n\
+																	\n\
+					if(data == 0.){									\n\
+						float signedZeroTest = 1./value;			\n\
+						if(signedZeroTest < 0.){					\n\
+							result.x = 128.;						\n\
+						}											\n\
+						return result/255.;							\n\
+					}												\n\
+																	\n\
+					if(data < 0.){									\n\
+						result.x=128.;								\n\
+						data = -data;								\n\
+					}												\n\
+																	\n\
+					float power = 0.;								\n\
+					float counter = 0.;								\n\
+																	\n\
+					while (counter < 128.) {						\n\
+						counter += 1.;								\n\
+																	\n\
+						if(data >= 2.) {							\n\
+							data = data / 2.;						\n\
+							power++;								\n\
+							if (power == 127.) {					\n\
+								counter = 129.;						\n\
+							}										\n\
+						}											\n\
+						else if(data < 1.) {						\n\
+							data = data * 2.;						\n\
+							power--;								\n\
+							if (power == -126.) {					\n\
+								counter = 129.;						\n\
+							}										\n\
+						}											\n\
+						else {										\n\
+							counter = 129.;							\n\
+						}											\n\
+					}												\n\
+																	\n\
+					if(power == -126. && data < 1.){				\n\
+						power = 0.;									\n\
+					}												\n\
+					else{											\n\
+						power = power+127.;							\n\
+						data = data - 1.;							\n\
+					}												\n\
+																	\n\
+					result.x+=floor(power/2.);						\n\
+					result.y = mod(power,2.)*128.;					\n\
+																	\n\
+					data *= 128.;									\n\
+																	\n\
+					result.y += floor(data);						\n\
+																	\n\
+					data -= floor(data);							\n\
+					data *= 256.;									\n\
+																	\n\
+					result.z += floor(data);						\n\
+																	\n\
+					data -= floor(data);							\n\
+					data *= 256.;									\n\
+																	\n\
+					result.w += floor(data);						\n\
+																	\n\
+					return result/255.;								\n\
+				}													\n\
+																	\n\
+				void main(void) {  									\n\
+					vec4 color;										\n\
+					color = texture2D(uSampler, vec2(texcoord.x, 1. - texcoord.y));      	\n\
+					vec4 t = floatToVec4(color.r);					\n\
+// 					float tmp = color.r; \n\
+// 					t.r = floor(tmp*255.);\n\
+// 					tmp = tmp*255. - t.r;\n\
+// \n\
+// 					t.g = floor(tmp*255.);\n\
+// 					tmp = tmp*255. - t.g;\n\
+// \n\
+// 					t.b = floor(tmp*255.);\n\
+// 					tmp = tmp*255. - t.b;\n\
+// \n\
+// 					t.a = floor(tmp*255.);\n\
+				    gl_FragColor = /*t/255.;//*/vec4(t.a, t.b, t.g, t.r);		\n\
+				}                                   				\n\
+				");
+	        }
+
 	        pWebGLRenderer.bindWebGLTexture(eTarget, null);
 
 			return true;
@@ -310,6 +428,8 @@ module akra.webgl {
 	        this.notifyAltered();
 		}
 
+
+
 		protected download(pData: IPixelBox): void 
 		{
 
@@ -319,10 +439,50 @@ module akra.webgl {
 			}
 
 			var pSrcBox:IPixelBox = null;
-			if(!checkFBOAttachmentFormat(this.format))
-			{
+			var pWebGLTexture: WebGLTexture = this._pWebGLTexture;
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			if(!checkFBOAttachmentFormat(this.format)) {
 				CRITICAL("Read from texture this format not support(" + this.format + ")");
 			}
+
+			if (!checkReadPixelFormat(this.format)) {
+				ASSERT (this.format === EPixelFormats.DEPTH32, "TODO: downloading for all formats");
+				var pDestBox: IBox = geometry.box(0, 0, 0, pData.width, pData.height, pData.depth);
+
+				// мы не можем читать из данного формата напрямую, поэтому необходимо перерендерить эту текстура в RGB/RGBA 8.
+				var pProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_decode_depth32_texture");
+
+				pWebGLTexture = WebGLTextureBuffer.copyTex2DImageByProgram(pProgram, pDestBox, EPixelFormats.R8G8B8A8, this, pData);
+
+				if (pData.format === EPixelFormats.FLOAT32_DEPTH) {
+					pSrcBox = pData;
+				}
+				else {
+					pSrcBox = new pixelUtil.PixelBox(pData, EPixelFormats.FLOAT32_DEPTH, new Uint8Array(pixelUtil.getMemorySize(pData.width, pData.height, pData.depth, EPixelFormats.R8G8B8A8)));
+				}
+
+				var pOldFramebuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
+				var pFrameBuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
+				
+				pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pFrameBuffer);
+				pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pWebGLTexture, 0);
+				pWebGLContext.readPixels(0, 0, pDestBox.width, pDestBox.height, GL_RGBA, GL_UNSIGNED_BYTE, pSrcBox.data);
+				pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
+				pWebGLRenderer.deleteWebGLFramebuffer(pFrameBuffer);
+
+				// var fRes: float = pSrcBox.data[0]/255. + pSrcBox.data[1]/255./255. 
+				// 					+ pSrcBox.data[2]/255./255./255. + pSrcBox.data[3]/255/255/255/255;
+				// (new Float32Array(pSrcBox.data.buffer))[0] = fRes;
+				if (pSrcBox != pData) {
+					console.log("download. convertion....");
+					pixelUtil.bulkPixelConversion(pSrcBox, pData);
+				}
+
+				return;
+			}
+		
 
 			if(checkReadPixelFormat(pData.format))
 			{
@@ -334,25 +494,23 @@ module akra.webgl {
 												 new Uint8Array(pixelUtil.getMemorySize(pData.width, pData.height, pData.depth, EPixelFormats.BYTE_RGBA)));
 			}			
 
-			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
-			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+			
 
 			var pOldFramebuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
-			var pFrameBuffer:WebGLFramebuffer=pWebGLRenderer.createWebGLFramebuffer();
-			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER,pFrameBuffer);
+			var pFrameBuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
+			
+			pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pFrameBuffer);
 
 			var eFormat: int = getWebGLFormat(pSrcBox.format);
 			var eType: int = getWebGLDataType(pSrcBox.format);
 
-			pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, this._eFaceTarget,this._pWebGLTexture,this._iLevel);
-			
-			//console.log(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height,eFormat,eType,pSrcBox.data);
+			pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, this._eFaceTarget, pWebGLTexture, this._iLevel);
 			pWebGLContext.readPixels(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height, eFormat, eType, pSrcBox.data);
-			//console.log("data after readPixel",pSrcBox.data);
+			
 
 			if(!checkReadPixelFormat(pData.format))
 			{
-				console.log("download. конвертация");
+				console.log("download. convertion....");
 				pixelUtil.bulkPixelConversion(pSrcBox, pData);
 			}
 
@@ -481,6 +639,10 @@ module akra.webgl {
 			return this._pWebGLTexture;
 		}
 
+		inline _getFaceTarget(): int {
+			return this._eFaceTarget;
+		}
+
 		blit(pSource: IPixelBuffer): bool;
 		blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): bool;
 		blit(pSource: IPixelBuffer, pSrcBox?: IBox, pDestBox?: IBox): bool {
@@ -504,6 +666,154 @@ module akra.webgl {
 					return super.blit(pSource, pSrcBox, pDestBox);
 				}				
 			}
+		}
+
+		private static copyTex2DImageByProgram(pProgram: WebGLShaderProgram, pDestBox: IBox, eFormat: int, pSource: WebGLTextureBuffer, pSrcBox: IBox = null): WebGLTexture {
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>pSource.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			pWebGLRenderer._disableTextureUnitsFrom(0);
+			pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
+
+			// Disable alpha, depth and scissor testing, disable blending, 
+        	// and disable culling
+        	pWebGLContext.disable(GL_DEPTH_TEST);
+	        pWebGLContext.disable(GL_SCISSOR_TEST);
+	        pWebGLContext.disable(GL_BLEND);
+	        pWebGLContext.disable(GL_CULL_FACE);
+
+	        // Set up source texture
+        	pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), pSource._getWebGLTexture());
+
+        	if (isNull(pSrcBox)) {
+        		pSrcBox = pDestBox;
+        	}
+
+        	// Set filtering modes depending on the dimensions and source
+	        if(pSrcBox.width === pDestBox.width &&
+	           pSrcBox.height === pDestBox.height &&
+	           pSrcBox.depth === pDestBox.depth) {
+	            // Dimensions match -- use nearest filtering (fastest and pixel correct)
+	            pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	            pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	        }
+	        else {
+                pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	        }
+	        // Clamp to edge (fastest)
+	        pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	        pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	        //Store old binding so it can be restored later
+	        var pOldFramebuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
+	        var pFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
+
+	        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pFramebuffer);
+
+	        var pTempWebGLTexture: WebGLTexture = null;
+
+
+        	// If target format not directly supported, create intermediate texture
+        	var iGLTempFormat: int = webgl.getClosestWebGLInternalFormat(webgl.getSupportedAlternative(eFormat));
+        	
+        	pTempWebGLTexture = pWebGLRenderer.createWebGLTexture();
+        	pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pTempWebGLTexture);
+        	// Allocate temporary texture of the size of the destination area
+        	pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, iGLTempFormat, 
+                     				 math.ceilingPowerOfTwo(pDestBox.width), 
+                     				 math.ceilingPowerOfTwo(pDestBox.height), 
+         				             0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+
+        	pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                  			   GL_TEXTURE_2D, pTempWebGLTexture, 0);
+        	// Set viewport to size of destination slice
+        	pWebGLContext.viewport(0, 0, pDestBox.width, pDestBox.height);
+	
+
+	        //Get WebGL program
+	        var pWebGLShaderProgram: WebGLShaderProgram = <WebGLShaderProgram>pProgram; 
+	        pWebGLRenderer.disableAllWebGLVertexAttribs();
+	        pWebGLRenderer.useWebGLProgram(pWebGLShaderProgram.getWebGLProgram());
+
+	        var iPosAttrIndex: int = 0;
+	        var iTexAttrIndex: int = 0;
+
+	        iPosAttrIndex = pWebGLShaderProgram.getWebGLAttributeLocation("POSITION");
+	        iTexAttrIndex = pWebGLShaderProgram.getWebGLAttributeLocation("TEXCOORD");
+
+	        pWebGLContext.enableVertexAttribArray(iPosAttrIndex);
+	        pWebGLContext.enableVertexAttribArray(iTexAttrIndex);
+
+	        var pSquareVertices: Float32Array = SQUARE_VERTICES;
+	        var pTexCoords: Float32Array = TEXCOORDS;
+
+	        var pPositionBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+	        var pTexCoordsBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer(); 
+
+	        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pPositionBuffer);
+	        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pSquareVertices, GL_STREAM_DRAW);
+            pWebGLContext.vertexAttribPointer(iPosAttrIndex, 2, GL_FLOAT, false, 0, 0);
+
+            pWebGLShaderProgram.setInt("uSampler", 0);
+	        // Process each destination slice
+	        var iSlice: int = 0;
+	        for(iSlice = pDestBox.front; iSlice < pDestBox.back; ++iSlice) {
+	            /// Calculate source texture coordinates
+	            var u1: float = <float>pSrcBox.left / <float>pSource.width;
+	            var v1: float = <float>pSrcBox.top / <float>pSource.height;
+	            var u2: float = <float>pSrcBox.right / <float>pSource.width;
+	            var v2: float = <float>pSrcBox.bottom / <float>pSource.height;
+	            /// Calculate source slice for this destination slice
+	            var w: float = <float>(iSlice - pDestBox.front) / <float>pDestBox.depth;
+	            /// Get slice # in source
+	            w = w * <float>pSrcBox.depth + pSrcBox.front;
+	            /// Normalise to texture coordinate in 0.0 .. 1.0
+	            w = (w + 0.5) / <float>pSource.depth;
+	            
+	            pTexCoords[0] = u1;
+	            pTexCoords[1] = v1;
+	            pTexCoords[2] = w;
+	            
+	            pTexCoords[3] = u2;
+	            pTexCoords[4] = v1;
+	            pTexCoords[5] = w;
+	            
+	            pTexCoords[6] = u2;
+	            pTexCoords[7] = v2;
+	            pTexCoords[8] = w;
+
+  	            pTexCoords[9]  = u1;
+	            pTexCoords[10] = v2;
+	            pTexCoords[11] = w;
+	            
+	            /// Finally we're ready to rumble	
+	            pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), pSource._getWebGLTexture());
+	            
+	            pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pTexCoordsBuffer);
+		        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pTexCoords, GL_STREAM_DRAW);
+	            pWebGLContext.vertexAttribPointer(iTexAttrIndex, 3, GL_FLOAT, false, 0, 0);
+
+	            pWebGLContext.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	        }
+
+	        pWebGLContext.disableVertexAttribArray(iPosAttrIndex);
+	        pWebGLContext.disableVertexAttribArray(iTexAttrIndex);
+
+	        pWebGLRenderer.deleteWebGLBuffer(pPositionBuffer);
+	        pWebGLRenderer.deleteWebGLBuffer(pTexCoordsBuffer);
+
+	        // Reset source texture to sane state
+	        pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), null);
+	        
+	        // Detach texture from temporary framebuffer
+	        pWebGLContext.framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+	                                  			  GL_RENDERBUFFER, null);
+	        // Restore old framebuffer
+	        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
+	        pWebGLRenderer.deleteWebGLFramebuffer(pFramebuffer);
+
+	    	return pTempWebGLTexture;
 		}
 
 		//-----------------------------------------------------------------------------  
@@ -604,7 +914,7 @@ module akra.webgl {
 
 	        var pTempWebGLTexture: WebGLTexture = null;
 
-	        if(!webgl.checkFBOAttachmentFormat(this._eFormat) || pSource === this){
+	        if(!webgl.checkFBOAttachmentFormat(this._eFormat) || pSource._getWebGLTexture() === this._getWebGLTexture()){
 	        	// If target format not directly supported, create intermediate texture
 	        	var iGLTempFormat: int = webgl.getClosestWebGLInternalFormat(webgl.getSupportedAlternative(this._eFormat));
 	        	
@@ -640,11 +950,8 @@ module akra.webgl {
 	        pWebGLContext.enableVertexAttribArray(iPosAttrIndex);
 	        pWebGLContext.enableVertexAttribArray(iTexAttrIndex);
 
-	        var pSquareVertices: Float32Array = new Float32Array([ -1.0, -1.0,
-											                		1.0, -1.0,
-											               		   -1.0,  1.0,
-											                		1.0,  1.0 ]);
-	        var pTexCoords: Float32Array = new Float32Array(12);
+	        var pSquareVertices: Float32Array = SQUARE_VERTICES;
+	        var pTexCoords: Float32Array = TEXCOORDS;
 
 	        var pPositionBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 	        var pTexCoordsBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer(); 
@@ -694,14 +1001,14 @@ module akra.webgl {
 	            /// Finally we're ready to rumble	
 	            pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), pSource._getWebGLTexture());
 	         	
-	            pWebGLContext.enable(pSource._getTarget());
+	            // pWebGLContext.enable(pSource._getTarget());
 	            
 	            pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pTexCoordsBuffer);
 		        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pTexCoords, GL_STREAM_DRAW);
 	            pWebGLContext.vertexAttribPointer(iTexAttrIndex, 3, GL_FLOAT, false, 0, 0);
 
 	            pWebGLContext.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	            pWebGLContext.disable(pSource._getTarget());
+	            // pWebGLContext.disable(pSource._getTarget());
 
 
 	            if(!isNull(pTempWebGLTexture)) {
@@ -875,8 +1182,8 @@ module akra.webgl {
 				CRITICAL("resize with one parametr not available for WebGLTextureBuffer");
 				return false;
 			}
-			var pSrcBox: IBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
-			var pDestBox: IBox = new geometry.Box(0, 0, 0, iWidth, iHeight, this._iDepth);
+			var pSrcBox: IBox = geometry.box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
+			var pDestBox: IBox = geometry.box(0, 0, 0, iWidth, iHeight, this._iDepth);
 			
 			return this.blitFromTexture(this, pSrcBox, pDestBox);
 		}

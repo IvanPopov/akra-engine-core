@@ -151,8 +151,9 @@ module akra {
 	}
 
 	function createSceneEnvironment(): void {
-		// var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
-		// pSceneQuad.attachToParent(pScene.getRootNode());
+		var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
+		pSceneQuad.attachToParent(pScene.getRootNode());
+		pSceneQuad.mesh.getSubset(0).setVisible(false);
 
 		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
 		// pSceneSurface.scale(5.);
@@ -173,7 +174,7 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pSunLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "sun");
+		var pSunLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "sun");
 			
 		pSunLight.attachToParent(pScene.getRootNode());
 		pSunLight.enabled = true;
@@ -429,22 +430,22 @@ module akra {
 
 			pScene.bind(SIGNAL(beforeUpdate), update);
 
-			/*var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_CONTROLLER");
+			// var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_CONTROLLER");
 			
-			pMovie.bind(SIGNAL(loaded), () => {
+			// pMovie.bind(SIGNAL(loaded), () => {
 
-				var pAnim: IAnimation = pMovie.extractAnimation(0);
-				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-				var pController: IAnimationController = pEngine.createAnimationController("movie");
+			// 	var pAnim: IAnimation = pMovie.extractAnimation(0);
+			// 	var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+			// 	var pController: IAnimationController = pEngine.createAnimationController("movie");
 				
-				pController.addAnimation(pContainer);
-				pController.stop();
+			// 	pController.addAnimation(pContainer);
+			// 	pController.stop();
 
-				pNode.addController(pController);
+			// 	pNode.addController(pController);
 
-				self.hero.movie = pController;
+			// 	self.hero.movie = pController;
 				
-			});*/
+			// });
 
 
 			fetchAllCameras();

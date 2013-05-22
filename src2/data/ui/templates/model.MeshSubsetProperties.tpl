@@ -1,6 +1,9 @@
 <div class="row" style="padding-top: 5px;">
 	<span>name:</span> <component type="Label" name="name" editable="true"/>;
 </div>
+<div class="row" >
+	<span>guid:</span> <component type="Label" name="sub-guid" editable="false"/>;
+</div>
 <div class="row">
 	<component type="Material" name="material" />
 </div>

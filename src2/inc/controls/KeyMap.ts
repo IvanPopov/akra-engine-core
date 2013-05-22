@@ -140,15 +140,17 @@ module akra.controls {
 		    }
 
 		    if (e.type == "mousemove") {
-		        this._v2iMousePosition.x = (<MouseEvent>e).pageX;
-		        this._v2iMousePosition.y = (<MouseEvent>e).pageY;
+		        this._v2iMousePosition.x = (<MouseEvent>e).offsetX;
+		        this._v2iMousePosition.y = (<MouseEvent>e).offsetY;
 		    }
 		    else if (e.type == "mouseup") {
+		    	// LOG(e);
 		        this._bMouseDown = false;
 		    }
 		    else if (e.type == "mousedown") {
-		    	this._v2iMousePrevPosition.x = (<MouseEvent>e).pageX;
-		        this._v2iMousePrevPosition.y = (<MouseEvent>e).pageY;
+		    	e.preventDefault();
+		    	this._v2iMousePrevPosition.x = (<MouseEvent>e).offsetX;
+		        this._v2iMousePrevPosition.y = (<MouseEvent>e).offsetY;
 		        this._bMouseDown = true;
 		    }
 		}

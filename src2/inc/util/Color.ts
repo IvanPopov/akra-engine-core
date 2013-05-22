@@ -1,8 +1,11 @@
 #ifndef COLOR_TS
 #define COLOR_TS
 
+// #define color(...) Color.stackCeil.set(__VA_ARGS__)
+
 #include "IColor.ts"
 #include "math/math.ts"
+
 
 module akra.util {
 
@@ -428,6 +431,8 @@ module akra.util {
 		}
 
 		#include "colors.ts"
+
+		ALLOCATE_STORAGE(Color, 20);
 	}
 
 	var pVariousColors: string[] = ["BLUE", "BLUE_VIOLET", "BROWN", "CADET_BLUE", "CHARTREUSE", "CRIMSON", "CYAN", 
@@ -451,6 +456,11 @@ module akra.util {
 
 	export inline function colorToVec4(pValue: IColorValue): IVec4 {
 		return vec4(pValue.r, pValue.g, pValue.b, pValue.a);
+	}
+
+	export function color(...argv: any[]): IColor {
+		var pColor: IColor = Color.stackCeil;
+		return pColor.set.apply(pColor, arguments);
 	}
 }
 
