@@ -113,12 +113,12 @@ module akra.model {
 
         isReadyForRender(): bool {
             for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-                if (!this._pSubMeshes[i].isReadyForRender()) {
-                    return false;
+                if (this._pSubMeshes[i].isReadyForRender()) {
+                    return true;
                 }
             }
             
-            return true;
+            return false;
         }
 
         private setup(sName: string, eOptions: int, pDataCollection?: IRenderDataCollection): bool {

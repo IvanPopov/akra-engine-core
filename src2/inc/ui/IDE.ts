@@ -92,10 +92,12 @@ module akra.ui {
 
 			var pSearchCam: ICamera;
 			
-			pSearchCam = this.getScene().createCamera("search-cam");
+			pSearchCam = this.getScene().createCamera(".search-cam");
 			pSearchCam.nearPlane = 0.01;
 			pSearchCam.farPlane = 0.15;
 			pSearchCam.update();
+
+			pSearchCam.attachToParent(this.getScene().getRootNode());
 
 			this._pSearchCam = pSearchCam;
 

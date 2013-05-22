@@ -232,28 +232,26 @@ module akra.webgl {
 					}												\n\
 																	\n\
 					float power = 0.;								\n\
-					float counter = 0.;								\n\
-																	\n\
-					while (counter < 128.) {						\n\
-						counter += 1.;								\n\
+					bool ok = true;									\n\
+					while (ok) {									\n\
 																	\n\
 						if(data >= 2.) {							\n\
-							data = data / 2.;						\n\
-							power++;								\n\
+							data = data * 0.5;						\n\
+							power += 1.;							\n\
 							if (power == 127.) {					\n\
-								counter = 129.;						\n\
+								ok = false;							\n\
 							}										\n\
 						}											\n\
-						else if(data < 1.) {						\n\
-							data = data * 2.;						\n\
-							power--;								\n\
-							if (power == -126.) {					\n\
-								counter = 129.;						\n\
-							}										\n\
-						}											\n\
-						else {										\n\
-							counter = 129.;							\n\
-						}											\n\
+						else if(data < 1.) {					\n\
+							data = data * 2.;					\n\
+							power -= 1.;						\n\
+							if (power == -126.) {				\n\
+								ok = false;						\n\
+							}									\n\
+						}										\n\
+						else {									\n\
+							ok = false;							\n\
+						}										\n\
 					}												\n\
 																	\n\
 					if(power == -126. && data < 1.){				\n\
@@ -274,12 +272,12 @@ module akra.webgl {
 					data -= floor(data);							\n\
 					data *= 256.;									\n\
 																	\n\
-					result.z += floor(data);						\n\
+					result.z = floor(data);							\n\
 																	\n\
 					data -= floor(data);							\n\
 					data *= 256.;									\n\
 																	\n\
-					result.w += floor(data);						\n\
+					result.w = floor(data);							\n\
 																	\n\
 					return result/255.;								\n\
 				}													\n\
@@ -288,18 +286,7 @@ module akra.webgl {
 					vec4 color;										\n\
 					color = texture2D(uSampler, vec2(texcoord.x, 1. - texcoord.y));      	\n\
 					vec4 t = floatToVec4(color.r);					\n\
-					float tmp = color.r; \n\
-					t.r = floor(tmp*255.);\n\
-					tmp = tmp*255. - t.r;\n\
-\n\
-					t.g = floor(tmp*255.);\n\
-					tmp = tmp*255. - t.g;\n\
-\n\
-					t.b = floor(tmp*255.);\n\
-					tmp = tmp*255. - t.b;\n\
-\n\
-					t.a = floor(tmp*255.);\n\
-				    gl_FragColor = t/255.;//vec4(t.a, t.b, t.g, t.r);		\n\
+				    gl_FragColor = vec4(t.a, t.b, t.g, t.r);		\n\
 				}                                   				\n\
 				");
 	        }
@@ -472,9 +459,6 @@ module akra.webgl {
 				pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
 				pWebGLRenderer.deleteWebGLFramebuffer(pFrameBuffer);
 
-				var fRes: float = pSrcBox.data[0]/255. + pSrcBox.data[1]/255./255. 
-									+ pSrcBox.data[2]/255./255./255. + pSrcBox.data[3]/255/255/255/255;
-				(new Float32Array(pSrcBox.data.buffer))[0] = fRes;
 				if (pSrcBox != pData) {
 					console.log("download. convertion....");
 					pixelUtil.bulkPixelConversion(pSrcBox, pData);
