@@ -235,6 +235,11 @@ module akra.fx {
 			this._setSamplerTextureObject("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
 			this._setSamplerTextureObject("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
 
+			// if(this.hasUniform("MATERIAL.DIFFUSE")) this.uniforms["MATERIAL.DIFFUSE"] = pMatContainer.DIFFUSE;
+			// if(this.hasUniform("MATERIAL.AMBIENT")) this.uniforms["MATERIAL.AMBIENT"] = pMatContainer.AMBIENT;
+			// if(this.hasUniform("MATERIAL.SPECULAR")) this.uniforms["MATERIAL.SPECULAR"] = pMatContainer.SPECULAR;
+			// if(this.hasUniform("MATERIAL.EMISSIVE")) this.uniforms["MATERIAL.EMISSIVE"] = pMatContainer.EMISSIVE;
+			// if(this.hasUniform("MATERIAL.SHININESS")) this.uniforms["MATERIAL.SHININESS"] = pMatContainer.SHININESS;
 			// this.setUniform("MATERIAL.DIFFUSE", util.colorToVec4(pMaterial.diffuse));
 			// this.setUniform("MATERIAL.AMBIENT", util.colorToVec4(pMaterial.ambient));
 			// this.setUniform("MATERIAL.SPECULAR", util.colorToVec4(pMaterial.specular));

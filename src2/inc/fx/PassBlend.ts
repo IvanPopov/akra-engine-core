@@ -152,7 +152,7 @@ module akra.fx {
 					    pBuffer: IBufferMap): IAFXMaker {
 
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
-
+			
 			var sSamplerPartHash: string = this.prepareSamplers(pPassInput);
 			var sMaterialPartHash: string = this.prepareSurfaceMaterial(pSurfaceMaterial);
 			var sBufferPartHash: string = this.prepareBufferMap(pBuffer);

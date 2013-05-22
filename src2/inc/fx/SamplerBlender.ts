@@ -68,9 +68,9 @@ module akra.fx {
 				return;
 			}
 
-			if(this._pSlotList.length === this._nActiveSlots){
-				this._pSlotList.push(new util.ObjectArray());
-			}
+			// if(this._pSlotList.length === this._nActiveSlots){
+			// 	this._pSlotList.push(new util.ObjectArray());
+			// }
 
 			this._pIdToSlotMap[id] = this._nActiveSlots;
 			this._pIdList[this._nActiveSlots - 1] = id;

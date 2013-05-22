@@ -508,10 +508,10 @@ module akra.fx {
 				var pFindFlow: IDataFlow = null;
 
 				if(this.getType(sSemantic).isComplex()){
-					pFindFlow = pMap.findFlow(sSemantic) || pMap.getFlow(sSemantic);
+					pFindFlow = pMap.findFlow(sSemantic) || pMap.getFlow(sSemantic, true);
 				}
 				else {
-					pFindFlow = pMap.getFlow(sSemantic);
+					pFindFlow = pMap.getFlow(sSemantic, true);
 				}
 
 				this._pFlowBySemanticIndex[iSemanticIndex] = pFindFlow;

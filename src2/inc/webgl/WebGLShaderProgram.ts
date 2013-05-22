@@ -175,7 +175,7 @@ module akra.webgl {
     	setVec4(sName: string, v4fValue: IVec4): void;
     	setVec4(sName: string, x: float, y: float, z: float, w: float): void;
     	inline setVec4(sName: string, x?, y?, z?, w?): void {
-    		(arguments.length == 2)?
+    		(arguments.length == 2) ?
     		  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w):
     		  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3], arguments[3]);
     	}

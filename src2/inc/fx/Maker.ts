@@ -15,6 +15,27 @@ module akra.fx {
 		[name: string]: EAFXShaderVariableType;
 	}
 
+	export interface IUniformVarInfo {
+		name: string;
+		shaderName: string;
+		type: EAFXShaderVariableType;
+		length: uint;
+	}
+
+	// export class UniformVarInfo implements IUniformVarInfo {
+	// 	name: string;
+	// 	shaderName: string;
+	// 	type: EAFXShaderVariableType;
+	// 	length: uint;
+
+	// 	constructor(sName: string, sShaderName: string, eType: EAFXShaderVariableType, iLength: uint){
+	// 		this.name = sName;
+	// 		this.shaderName = sShaderName;
+	// 		this.type = eType;
+	// 		this.length = iLength;
+	// 	}
+	// }
+
 	export class Maker implements IAFXMaker {
 		UNIQUE();
 
@@ -71,10 +92,13 @@ module akra.fx {
 			var eType: EAFXShaderVariableType = this.getType(sName);
 			var iLength: int = this.getLength(sName);
 
-			if(webgl.isANGLE && (!isDef(eType) || eType === EAFXShaderVariableType.k_NotVar)){
-				this._pRealUniformTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
+			if(eType === EAFXShaderVariableType.k_NotVar) {
 				return;
 			}
+			// else {
+			// 	this._pUniformApplyFunctionMap[sName].call(this._pShaderProgram, sName, pValue || this._pUniformUndefValues[sName]);
+			// }
+			// this._pUniformApplyFunctionMap[sName].call(this._pShaderProgram, sName, pValue || this._pUniformUndefValues[sName]);
 
 			if (iLength > 0) {
 				this.applyUnifromArray(sName, eType, pValue);
@@ -82,6 +106,7 @@ module akra.fx {
 			else {
 				this.applyUniform(sName, eType, pValue);
 			}
+			
 		}
 
 		private applyUnifromArray(sName: string, eType: EAFXShaderVariableType, pValue: any): void {
@@ -312,10 +337,177 @@ module akra.fx {
 			return pInput;
 		}
 
+		private _pRealUniformLengthFromInput: uint[] = null;
+		private _pRealUniformInfoFromInput: IUniformVarInfo[] = null;
+
+		private createUniformInfo(sName: string, sShaderName: string, eType: EAFXShaderVariableType, iLength: uint): IUniformVarInfo {
+			return {
+				name: sName,
+				shaderName: sShaderName,
+				type: eType,
+				length: iLength
+			}
+		}
+
+		private _pUniformApplyFunctionMap: any = {};
+		private _pUniformUndefValues: any = {};
+
+		private _fnEmpty(): void {
+		}
+		private setUniformApplyFunction(sName: string, eType: EAFXShaderVariableType, isArray: bool): void {
+			if(sName){
+				return;
+			}
+			this._pUniformUndefValues[sName] = null;
+
+			if(isArray){
+				switch (eType) {
+			        case EAFXShaderVariableType.k_Float:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setFloat32Array;
+			        	break;
+			        case EAFXShaderVariableType.k_Int:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setInt32Array;
+			        	break;
+			        // case EAFXShaderVariableType.k_Bool:
+			        // 	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setBoolArray;
+			        // 	break;
+
+			        case EAFXShaderVariableType.k_Float2:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec2Array;
+			        	break;
+			        case EAFXShaderVariableType.k_Int2:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec2iArray;
+			        	break;
+			        // case EAFXShaderVariableType.k_Bool2:
+			        // 	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setBool2Array;
+			        // 	break;
+
+			        case EAFXShaderVariableType.k_Float3:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec3Array;
+			        	break;
+			        case EAFXShaderVariableType.k_Int3:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec3iArray;
+			        	break;
+			        // case EAFXShaderVariableType.k_Bool3:
+			        // 	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setBool3Array;
+			        // 	break;
+
+			        case EAFXShaderVariableType.k_Float4:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec4Array;
+			        	break;
+			        case EAFXShaderVariableType.k_Int4:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec4iArray;
+			        	break;
+			        // case EAFXShaderVariableType.k_Bool4:
+			        // 	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setBool4Array;
+			        // 	break;
+
+			        // case EAFXShaderVariableType.k_Float2x2:
+			        // 	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setMat2Array;
+			        // 	break;
+			        case EAFXShaderVariableType.k_Float3x3:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setMat3Array;
+			        	break;
+			        case EAFXShaderVariableType.k_Float4x4:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setMat4Array;
+			        	break;
+
+			        case EAFXShaderVariableType.k_Sampler2D:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setSamplerArray;
+			        	break;
+			        case EAFXShaderVariableType.k_SamplerCUBE:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setSamplerArray;
+			        	break;
+			        default:
+			        	this._pUniformApplyFunctionMap[sName] = this._fnEmpty;
+			        	// CRITICAL("Wrong uniform array type (" + eType + ") with name " + sName);
+		        }
+			}
+			else {
+				switch (eType) {
+			        case EAFXShaderVariableType.k_Float:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setFloat;
+			        	this._pUniformUndefValues[sName] = 0.;
+			        	break;
+			        case EAFXShaderVariableType.k_Int:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setInt;
+			        	this._pUniformUndefValues[sName] = 0;
+			        	break;
+			        case EAFXShaderVariableType.k_Bool:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setInt;
+			        	this._pUniformUndefValues[sName] = 0;
+			        	break;
+
+			        case EAFXShaderVariableType.k_Float2:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec2;
+			        	this._pUniformUndefValues[sName] = new Vec2(0);
+			        	break;
+			        case EAFXShaderVariableType.k_Int2:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec2i;
+			        	this._pUniformUndefValues[sName] = new Vec2(0);
+			        	break;
+			        // case EAFXShaderVariableType.k_Bool2:
+			        // 	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setBool2
+			        // 	break;
+
+			        case EAFXShaderVariableType.k_Float3:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec3;
+			        	this._pUniformUndefValues[sName] = new Vec3(0);
+			        	break;
+			        case EAFXShaderVariableType.k_Int3:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec3i;
+			        	this._pUniformUndefValues[sName] = new Vec3(0);
+			        	break;
+			        // case EAFXShaderVariableType.k_Bool3:
+			        // 	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setBool3
+			        // 	break;
+
+			        case EAFXShaderVariableType.k_Float4:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec4;
+			        	this._pUniformUndefValues[sName] = new Vec4(0);
+			        	break;
+			        case EAFXShaderVariableType.k_Int4:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVec4i;
+			        	this._pUniformUndefValues[sName] = new Vec4(0);
+			        	break;
+			        // case EAFXShaderVariableType.k_Bool4:
+			        // 	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setBool4
+			        // 	break;
+
+			        // case EAFXShaderVariableType.k_Float2x2:
+			        // 	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setMat2
+			        // 	break;
+			        case EAFXShaderVariableType.k_Float3x3:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setMat3;
+			        	this._pUniformUndefValues[sName] = new Mat3(0);
+			        	break;
+			        case EAFXShaderVariableType.k_Float4x4:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setMat4;
+			        	this._pUniformUndefValues[sName] = new Mat4(0);
+			        	break;
+
+			        case EAFXShaderVariableType.k_Sampler2D:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setSampler;
+			        	break;
+			        case EAFXShaderVariableType.k_SamplerCUBE:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setSampler;
+			        	break;
+			        case EAFXShaderVariableType.k_SamplerVertexTexture:
+			        	this._pUniformApplyFunctionMap[sName] = this._pShaderProgram.setVertexBuffer;
+			        	break;
+			        default:
+			        	this._pUniformApplyFunctionMap[sName] = this._fnEmpty;
+			        	// CRITICAL("Wrong uniform type (" + eType + ") with name " + sName);
+		        }
+			}
+		}
+
 		_initInput(pPassInput: IAFXPassInputBlend, pBlend: SamplerBlender, pAttrs: AttributeBlendContainer): bool {
 			var pUniformKeys: string[] = pPassInput.uniformKeys;
 
 			this._pRealUnifromFromInput = [];
+			// this._pRealUniformLengthFromInput = [];
+			// this._pRealUniformInfoFromInput = [];
 
 			for(var i: uint = 0; i < pUniformKeys.length; i++){
 				var sName: string = pUniformKeys[i];
@@ -325,6 +517,8 @@ module akra.fx {
 				if(eType === EAFXShaderVariableType.k_Complex){
 					if(this.expandStructUniforms(pPassInput._getAFXUniformVar(sName))) {
 						this._pRealUnifromFromInput.push(sName);
+						// this._pRealUniformLengthFromInput.push(iLength);
+						// this._pRealUniformInfoFromInput.push(this.createUniformInfo(sName, sName, eType, iLength));
 					}
 					continue;
 				}
@@ -340,6 +534,10 @@ module akra.fx {
 					this._pRealUniformLengthMap[sShaderName] = iLength;
 
 					this._pRealUnifromFromInput.push(sName);
+
+					this.setUniformApplyFunction(sShaderName, eType, (iLength > 0));
+					// this._pRealUniformLengthFromInput.push(iLength);
+					// this._pRealUniformInfoFromInput.push(this.createUniformInfo(sName, sShaderName, eType, iLength));
 				}
 				else {
 					this._pUniformExistMap[sShaderName] = false;
@@ -364,6 +562,8 @@ module akra.fx {
 					this._pRealUniformLengthMap[sShaderName] = iLength;
 
 					this._pRealSampleArraysFromInput.push(sName);
+
+					this.setUniformApplyFunction(sShaderName, eType, true);
 				}
 				else {
 					this._pUniformExistMap[sShaderName] = false;
@@ -383,11 +583,15 @@ module akra.fx {
 					if(this._isUsedZero2D){
 						this._pRealUniformTypeMap["as0"] = EAFXShaderVariableType.k_Int;
 						this._pRealUniformLengthMap["as0"] = 0;
+
+						this.setUniformApplyFunction("as0",  EAFXShaderVariableType.k_Int, false);
 					}
 
 					if(this._isUsedZeroCube){
 						this._pRealUniformTypeMap["asc0"] = EAFXShaderVariableType.k_Int;
 						this._pRealUniformLengthMap["asc0"] = 0;
+
+						this.setUniformApplyFunction("asc0",  EAFXShaderVariableType.k_Int, false);
 					}
 					continue;
 				}
@@ -411,7 +615,7 @@ module akra.fx {
 																 		EAFXShaderVariableType.k_SamplerCUBE;
 					this._pRealUniformLengthMap[sRealSamplerName] = 0;
 
-
+					this.setUniformApplyFunction(sRealSamplerName, this._pRealUniformTypeMap[sRealSamplerName], false);
 				}
 				else {
 					this._pUniformExistMap[sRealSamplerName] = false;
@@ -470,6 +674,8 @@ module akra.fx {
 					if(this.isUniformExists(sBufferName)){
 						this._pBufferSamplersFromFlows.push(sSemantic);
 						this._pRealUniformTypeMap[sBufferName] = EAFXShaderVariableType.k_SamplerVertexTexture;
+
+						this.setUniformApplyFunction(sBufferName, EAFXShaderVariableType.k_SamplerVertexTexture, false);
 					}
 					else {
 						this._pUniformExistMap[sBufferName] = false;
@@ -482,6 +688,26 @@ module akra.fx {
 
 			}
 
+			this._pAttrContainer = pAttrs;
+			for(var i: uint = 0; i < this._pRealAttrSlotFromFlows.length; i++) {
+				var sSemantic: string = this._pRealAttrSlotFromFlows[i];
+				var pOffsetVars: IAFXVariableDeclInstruction[] = this._pAttrContainer.getOffsetVarsBySemantic(sSemantic);
+
+				if(!isNull(pOffsetVars)){
+					for(var j: uint = 0; j < pOffsetVars.length; j++){
+						var sOffsetName: string = pOffsetVars[j].getRealName();
+
+						if(this.isUniformExists(sOffsetName)){
+							this._pRealUniformTypeMap[sOffsetName] = EAFXShaderVariableType.k_Float;
+
+							this.setUniformApplyFunction(sOffsetName, EAFXShaderVariableType.k_Float, false);
+						}
+						else {
+							this._pUniformExistMap[sOffsetName] = false;
+						}
+					}
+				}
+			}
 			// this._pRealOffsetsFromFlows = [];
 			// this._pDefaultOffsets = [];
 			// this._pRealOffsetKeys = [];
@@ -501,7 +727,7 @@ module akra.fx {
 			// 	this._pRealOffsetKeys.push(sName);
 			// 	this._pDefaultOffsets.push(pAttrs.getOffsetDefault(sName));
 			// }
-			this._pAttrContainer = pAttrs;
+			
 
 			return true;
 		}
@@ -531,6 +757,17 @@ module akra.fx {
 					this.applyStructUniform(sName, pUniforms[sName], pInput);
 				}				
 			}
+			
+			// for(var i: uint = 0; i < this._pRealUniformInfoFromInput.length; i++){
+			// 	var pInfo: IUniformVarInfo = this._pRealUniformInfoFromInput[i];
+				
+			// 	if(pInfo.type !== EAFXShaderVariableType.k_Complex) {
+			// 		pInput[pInfo.shaderName] = pUniforms[pInfo.name];
+			// 	}
+			// 	// else {
+			// 	// 	this.applyStructUniform(pInfo.name, pUniforms[pInfo.name], pInput);
+			// 	// }				
+			// }
 
 			for(var i: uint = 0; i < this._pRealSamplersFromInput.length; i++){
 				var sRealName: string = this._pRealSamplersNames[i];
@@ -604,11 +841,6 @@ module akra.fx {
 								pInput[sOffsetName] = pElement.offset / 4;
 							}
 
-							//TODO: 
-							this._pRealUniformTypeMap[sOffsetName] = EAFXShaderVariableType.k_Float;
-						}
-						else {
-							this._pUniformExistMap[sOffsetName] = null;
 						}
 					}
 				}
@@ -655,6 +887,13 @@ module akra.fx {
 				return;
 			}
 
+#ifdef WEBGL
+			var isFakeLength: bool = false;
+			if(webgl.isANGLE && isArray && iLength === 1){
+				iLength = 2;
+				isFakeLength = true;
+			}
+#endif
 			var isAnyFieldExist: bool = false;
 			var sFieldPrevName: string = "";
 
@@ -675,8 +914,22 @@ module akra.fx {
 					else {
 						var sFieldRealName: string = sFieldPrevName + "." + pField.getRealName();
 
+#ifdef WEBGL
+						var eFieldType: EAFXShaderVariableType = 0;
+						var iFieldLength: uint = 0;
+
+						if(isFakeLength && i === 1) {
+							eFieldType = EAFXShaderVariableType.k_NotVar;
+							iFieldLength = pField.getType().getLength();
+						}
+						else {
+							eFieldType = PassInputBlend.getVariableType(pField);
+							iFieldLength = pField.getType().getLength();
+						}
+#else
 						var eFieldType: EAFXShaderVariableType = PassInputBlend.getVariableType(pField);
 						var iFieldLength: uint = pField.getType().getLength();
+#endif
 
 						var sFieldShaderName: string = sFieldRealName;
 
@@ -692,6 +945,10 @@ module akra.fx {
 							this._pRealUniformTypeMap[sFieldShaderName] = eFieldType;
 							this._pRealUniformLengthMap[sFieldShaderName] = iFieldLength;
 
+							// if(eFieldType !== EAFXShaderVariableType.k_NotVar){
+								this.setUniformApplyFunction(sFieldShaderName, eFieldType, pField.getType().isNotBaseArray());
+							// }
+
 							isAnyFieldExist = true;
 						}
 						else {
@@ -703,6 +960,11 @@ module akra.fx {
 				}
 			}
 
+#ifdef WEBGL
+			if(isFakeLength){
+				iLength = 1;
+			}
+#endif
 			if(isAnyFieldExist){
 				this._pRealUniformTypeMap[sPrevName] = EAFXShaderVariableType.k_Complex;
 				this._pRealUniformLengthMap[sPrevName] = isArray ? iLength : 0;
