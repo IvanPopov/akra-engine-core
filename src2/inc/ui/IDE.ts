@@ -89,13 +89,28 @@ module akra.ui {
 
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
 
+
+			var pSearchCam: ICamera;
 			
+			pSearchCam = this.getScene().createCamera("search-cam");
+			pSearchCam.nearPlane = 0.01;
+			pSearchCam.farPlane = 0.15;
+			pSearchCam.update();
+
+			this._pSearchCam = pSearchCam;
+
 		}
 
 		_sceneUpdate(pScene: IScene3d): void {
 			var pKeymap: IKeyMap = this.getKeymap();
 			if (pKeymap.isMousePress()) {
-				LOG(this.getViewport().unprojectPoint(pKeymap.getMouse()).toString());
+				var v3fPoint: IVec3 = this.getViewport().unprojectPoint(pKeymap.getMouse(), vec3());
+				
+				v3fPoint.z -= 0.075;
+				this._pSearchCam.setPosition(v3fPoint);
+				this._pSearchCam.update();
+				
+				LOG(this.getScene().getDisplayList(DL_DEFAULT)._findObjects(this._pSearchCam));
 			}
 		}
 
