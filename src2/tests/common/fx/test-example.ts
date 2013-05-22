@@ -211,41 +211,75 @@ module akra {
 			});
 		}
 
-		function loadModels(sPath, fnCallback?: Function): ISceneNode {
-			var pController: IAnimationController = null;
+		function loadModel(sPath, fnCallback?: Function): ISceneNode {
 			var pModelRoot: ISceneNode = pScene.createNode();
 			var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
-			
-			pController = pEngine.createAnimationController();
 
 			pModelRoot.attachToParent(pScene.getRootNode());
-			pModelRoot.scale(2.);
-			pModelRoot.addPosition(0, -1., 0);
 
-			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
-				pModel.attachToScene(pModelRoot, pController);
+			function fnLoadModel(pModel: ICollada): void {
+				pModel.attachToScene(pModelRoot);
 
-				pController.attach(pModelRoot);
+				if(pModel.isAnimationLoaded()) {
+					var pController: IAnimationController = pEngine.createAnimationController();
+					var pContainer: IAnimationContainer = animation.createContainer();
+					var pAnimation: IAnimation = pModel.extractAnimation(0);
 
-				var pContainer: IAnimationContainer = animation.createContainer();
+					pController.attach(pModelRoot);
 
-				if (pController.active) {
-					pContainer.setAnimation(pController.active);
+					pContainer.setAnimation(pAnimation);
 					pContainer.useLoop(true);
-					pController.addAnimation(pContainer);		
+					pController.addAnimation(pContainer);	
 				}
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
 					pModelRoot.addRelRotationByXYZAxis(0.00, 0.001, 0);
-					pController.update(pEngine.time);
+					// pController.update();
 				});
 
 				if (isFunction(fnCallback)) {
 					fnCallback(pModelRoot);
 				}
-			});
+			}
+
+			if(pModel.isResourceLoaded()){
+				fnLoadModel(pModel);
+			}
+			else {
+				pModel.bind(SIGNAL(loaded), fnLoadModel);
+			}			
 
 			return pModelRoot;
+		}
+
+		function loadManyModels(nCount: uint, sPath: string): void {
+			var iRow: uint = 0;
+			var iCountInRow: uint = 0;
+
+			var fDX: float = 2.;
+			var fDZ: float = 2.;
+
+			var fShiftX: float = 0.;
+			var fShiftZ: float = 0.;
+
+			var pCube: ISceneNode = pCube = loadModel(sPath, (pModelRoot: ISceneNode) => {
+				for(var i: uint = 0; i < nCount; i++) {
+					if(iCountInRow > iRow){
+						iCountInRow = 0;
+						iRow++;
+
+						fShiftX = -iRow * fDX/2;
+						fShiftZ = -iRow * fDZ;
+					}
+
+					pCube = i === 0 ? pCube : loadModel(sPath);
+					pCube.setPosition(fShiftX, 0.8, fShiftZ - 2.);
+					pCube.scale(0.1);
+
+					fShiftX += fDX;
+					iCountInRow++;
+				}
+			});			
 		}
 
 		function main(pEngine: IEngine): void {
@@ -257,17 +291,26 @@ module akra {
 			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
-			loadModels("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
+			loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
 				var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
 				pMesh.createBoundingBox();
 				pMesh.showBoundingBox();
-			}).addPosition(0, 1.1, 0);
+			}).scale(2.);
+
+			
 
 			// loadModels("../../../data/models/WoodSoldier/WoodSoldier.DAE").addPosition(-3., 1.1, 0.);
-			// var pCube: ISceneNode = loadModels("../../../data/models/cube.dae");
-			// pCube.setPosition(20., 8., -30.);
+			// var pCube: ISceneNode = loadModel("../../../data/models/cube.dae");
+			// pCube.setPosition(2., 0.8, -3.);
 			// pCube.scale(0.1);
+
+			// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
+			// pCube2.setPosition(2., 0.8, -5.);
+			// pCube2.scale(0.1);
+			// loadManyModels(300, "../../../data/models/cube.dae");
+			loadManyModels(3, "../../../data/models/box/opened_box.dae");
 		}
+
 		pEngine.bind(SIGNAL(depsLoaded), main);	
 		pEngine.exec();
 	});

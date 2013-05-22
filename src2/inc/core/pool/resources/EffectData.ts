@@ -26,6 +26,8 @@ module akra.core.pool.resources {
 
     		var isBinary: bool = pRes[pRes.length - 1] === ".abf";
     		var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
+    		var me: EffectData = this;
+    		
 #ifndef DEBUG
     		if(!isBinary){
     			ERROR("You can load text effect-files only in debug-mode");
@@ -38,10 +40,11 @@ module akra.core.pool.resources {
 					if (err){ ERROR("Can not read file"); }
 					else me._initFromBinaryData(pData, sFileName);
 				});
+
+				return true;
 			}
 
 #ifdef DEBUG
-			var me: EffectData = this;
 
 			io.fopen(sFileName, "r+t").read(function(pErr: Error, sData: string){
 				if(!isNull(pErr)){

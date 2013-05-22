@@ -286,7 +286,6 @@ module akra.render {
         	this.getTarget().getRenderer().executeQueue();
         }
 
-
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
 			var pVisibleObjects: IObjectArray = pCamera.display();
 			var pRenderable: IRenderableObject;
@@ -300,7 +299,7 @@ module akra.render {
 				
 				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
 					pRenderable = pSceneObject.getRenderable(j);
-
+					
 					if (!isNull(pRenderable)) {
 						pRenderable.render(this, csMethod, pSceneObject);
 					}

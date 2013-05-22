@@ -175,7 +175,7 @@ module akra.webgl {
     	setVec4(sName: string, v4fValue: IVec4): void;
     	setVec4(sName: string, x: float, y: float, z: float, w: float): void;
     	inline setVec4(sName: string, x?, y?, z?, w?): void {
-    		(arguments.length == 2)?
+    		(arguments.length == 2) ?
     		  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w):
     		  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3], arguments[3]);
     	}
@@ -309,10 +309,12 @@ module akra.webgl {
     	}
 
         inline setVertexBuffer(sName: string, pBuffer: IVertexBuffer): void {
-            var iSlot: uint = this._pWebGLRenderer.getNextTextureSlot();
-            this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
+            // var iSlot: uint = this._pWebGLRenderer.getNextTextureSlot();
+            // this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
+            // WARNING(iSlot);
             // this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
-            this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
+            // this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
+            var iSlot: uint = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
             this.setInt(sName, iSlot);
         }
 
@@ -338,10 +340,13 @@ module akra.webgl {
                 return ZERO_SAMPLER_SLOT;
             }
 
-            var iSlot: int = this._pWebGLRenderer.getNextTextureSlot();
-            this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
+            var iSlot: int = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
 
-            this._pWebGLRenderer.bindWebGLTexture(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
+            // var iSlot: int = this._pWebGLRenderer.getNextTextureSlot();
+            // this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
+
+            // this._pWebGLRenderer.bindWebGLTexture(pTexture._getWebGLTextureTarget(), null);
+            // this._pWebGLRenderer.bindWebGLTexture(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
 
             pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
             pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.min_filter);

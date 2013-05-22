@@ -227,8 +227,8 @@ float fMinShadow : MIN_SHADOW_VALUE = 0.5;
 float shadowConstant : SHADOW_CONSTANT = 5.e+2;
 
 float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
-    //float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
-    float lightDepth = blur(shadowSampler,v2fShadowTextureCoords,float2(1./512.)).x*2. - 1.;
+    float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
+    //float lightDepth = blur(shadowSampler,v2fShadowTextureCoords,float2(1./512.)).x*2. - 1.;
     if(lightDepth == 1.){
         return 1.;
     }

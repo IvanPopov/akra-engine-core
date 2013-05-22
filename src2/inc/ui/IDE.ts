@@ -112,7 +112,7 @@ module akra.ui {
 				this._pSearchCam.setPosition(v3fPoint);
 				this._pSearchCam.update();
 				
-				LOG(this.getScene().getDisplayList(DL_DEFAULT)._findObjects(this._pSearchCam));
+				// LOG(this.getScene().getDisplayList(DL_DEFAULT)._findObjects(this._pSearchCam));
 			}
 		}
 

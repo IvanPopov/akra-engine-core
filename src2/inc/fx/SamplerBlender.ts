@@ -34,7 +34,7 @@ module akra.fx {
 			this._nActiveSlots = 1;
 
 			this._pIdToSlotMap = <IntMap><any>{0 : 0};
-			this._pIdList = [];
+			this._pIdList = new Array(INIT_SLOT_SIZE);
 		}
 
 		inline getSamplersBySlot(iSlot: uint): util.ObjectArray {
@@ -43,35 +43,37 @@ module akra.fx {
 
 		clear(): void {
 			for(var i: uint = 0; i < this._nActiveSlots; i++){
+				this._pSlotList[i].clear(false);
+			}
+
+			for(var i: uint = 0; i < this._nActiveSlots - 1; i++){
+				this._pIdToSlotMap[this._pIdList[i]] = -1;
+			}
+
+			this._nActiveSlots = 1;
+		}
+
+		clearSamplerNames(): void {
+			for(var i: uint = 0; i < this._nActiveSlots; i++){
 				for(var j: uint = 0; j < this._pSlotList[i].length; j++){
 					var pSampler: IAFXVariableDeclInstruction = this._pSlotList[i].value(j);
 					pSampler.setRealName(pSampler.getSemantic() || pSampler.getName());
 					pSampler.defineByZero(false);
 				}
-
-				this._pSlotList[i].clear(false);
-			}
-
-			this._nActiveSlots = 1;
-
-			for(var i: uint = 0; i < this._pIdList.length; i++){
-				this._pIdToSlotMap[this._pIdList[i]] = -1;
 			}
 		}
 
 		addTextureSlot(id: uint): void {
-			if(!isDef(this._pIdToSlotMap[id])){
-				this._pIdList.push(id);
-			}
-			else if(this._pIdToSlotMap[id] > 0){
+			if(this._pIdToSlotMap[id] > 0){
 				return;
 			}
 
-			if(this._pSlotList.length === this._nActiveSlots){
-				this._pSlotList.push(new util.ObjectArray());
-			}
+			// if(this._pSlotList.length === this._nActiveSlots){
+			// 	this._pSlotList.push(new util.ObjectArray());
+			// }
 
 			this._pIdToSlotMap[id] = this._nActiveSlots;
+			this._pIdList[this._nActiveSlots - 1] = id;
 			this._nActiveSlots++;
 		}
 

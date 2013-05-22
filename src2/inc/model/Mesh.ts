@@ -303,6 +303,7 @@ module akra.model {
                     pRenderData = this._pSubMeshes[i].data;
                     pRenderData.addRef();
                     pClone.appendSubset(this._pSubMeshes[i].name, pRenderData);
+                    pClone.getSubset(i).material.name = this._pSubMeshes[i].material.name;
                 }
 
                 pClone.replaceFlexMaterials(this.flexMaterials);

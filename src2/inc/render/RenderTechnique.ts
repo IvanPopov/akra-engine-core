@@ -277,7 +277,7 @@ module akra.render {
 				if(this._pPassBlackList[i] === false && this._pPassList[i].isActive()){
 					this.activatePass(i);
 					this.render(i);
-
+					
 					pComposer.renderTechniquePass(this, i);
 				}
 			}

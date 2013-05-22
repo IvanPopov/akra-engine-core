@@ -488,8 +488,6 @@ module akra.fx {
 				pMaker = pPassBlend.generateFXMaker(pPassInput, 
 													this._pCurrentSurfaceMaterial, 
 													this._pCurrentBufferMap);
-
-				//TODO: generate additional shader params and get shader program
 			}
 
 			//TODO: generate input from PassInputBlend to correct unifoms and attributes list
@@ -622,38 +620,40 @@ module akra.fx {
 		protected bTerrainBlackSectors: bool = false;
 		protected bShowTriangles: bool = false;
 
+#define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[sName] = pValue;
+
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
 			var pViewport: IViewport = this._getCurrentViewport();
 			var pRenderable: IRenderableObject = this._getCurrentRenderableObject();
 
 			if(!isNull(pSceneObject)){
-				pPassInput.setUniform("MODEL_MATRIX", pSceneObject.worldMatrix);
+				FAST_SET_UNIFORM(pPassInput, "MODEL_MATRIX", pSceneObject.worldMatrix);
 			}
 
 			if(!isNull(pViewport)){
-
-				pPassInput.setUniform("FRAMEBUFFER_SIZE", vec2(pViewport.width, pViewport.height));
+				FAST_SET_UNIFORM(pPassInput, "FRAMEBUFFER_SIZE", vec2(pViewport.width, pViewport.height));
 
 				var pCamera: ICamera = pViewport.getCamera();
 				if(!isNull(pCamera)) { 
-					pPassInput.setUniform("VIEW_MATRIX", pCamera.viewMatrix);
-					pPassInput.setUniform("PROJ_MATRIX", pCamera.projectionMatrix);
-					pPassInput.setUniform("INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
-					pPassInput.setUniform("CAMERA_POSITION", pCamera.worldPosition);
+					FAST_SET_UNIFORM(pPassInput, "VIEW_MATRIX", pCamera.viewMatrix);
+					FAST_SET_UNIFORM(pPassInput, "PROJ_MATRIX", pCamera.projectionMatrix);
+					FAST_SET_UNIFORM(pPassInput, "INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
+					FAST_SET_UNIFORM(pPassInput, "CAMERA_POSITION", pCamera.worldPosition);
+
 
 					if(pCamera.type === EEntityTypes.SHADOW_CASTER){
-						pPassInput.setUniform("OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
+						FAST_SET_UNIFORM(pPassInput, "OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
 					}
 				}
 			}
 
 			if(!isNull(pRenderable)){
 				if(render.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()){
-					pPassInput.setUniform("BIND_SHAPE_MATRIX", (<IMeshSubset>pRenderable).skin.getBindMatrix());
+					FAST_SET_UNIFORM(pPassInput, "BIND_SHAPE_MATRIX", (<IMeshSubset>pRenderable).skin.getBindMatrix());
 				}
 
-				pPassInput.setUniform("RENDER_OBJECT_ID", pRenderable.getGuid());
+				FAST_SET_UNIFORM(pPassInput, "RENDER_OBJECT_ID", pRenderable.getGuid());
 			}
 
 			if(!isNull(this._pLastRenderTarget)){
@@ -662,18 +662,17 @@ module akra.fx {
 
 				pPassInput.setTexture("INPUT_TEXTURE", pLastTexture);
 				pPassInput.setSamplerTexture("INPUT_SAMPLER", pLastTexture);
-				pPassInput.setUniform("INPUT_TEXTURE_SIZE", vec2(pLastTexture.width, pLastTexture.height));
-				pPassInput.setUniform("INPUT_TEXTURE_RATIO", 
-							vec2(this._pCurrentViewport.actualWidth / pLastTexture.width,
-								 this._pCurrentViewport.actualHeight / pLastTexture.height));
+				FAST_SET_UNIFORM(pPassInput, "INPUT_TEXTURE_SIZE", vec2(pLastTexture.width, pLastTexture.height));
+				FAST_SET_UNIFORM(pPassInput, "INPUT_TEXTURE_RATIO", vec2(this._pCurrentViewport.actualWidth / pLastTexture.width,
+											 				 	    this._pCurrentViewport.actualHeight / pLastTexture.height));
 			}
 
-			pPassInput.setUniform("useNormal", this.bUseNormalMap);
-			pPassInput.setUniform("isDebug", this.bIsDebug);
-			pPassInput.setUniform("isRealNormal", this.bIsRealNormal);
-			pPassInput.setUniform("normalFix", this.bNormalFix);
-			pPassInput.setUniform("isWithBalckSectors", this.bTerrainBlackSectors);
-			pPassInput.setUniform("showTriangles", this.bShowTriangles);
+			FAST_SET_UNIFORM(pPassInput, "useNormal", this.bUseNormalMap);
+			FAST_SET_UNIFORM(pPassInput, "isDebug", this.bIsDebug);
+			FAST_SET_UNIFORM(pPassInput, "isRealNormal", this.bIsRealNormal);
+			FAST_SET_UNIFORM(pPassInput, "normalFix", this.bNormalFix);
+			FAST_SET_UNIFORM(pPassInput, "isWithBalckSectors", this.bTerrainBlackSectors);
+			FAST_SET_UNIFORM(pPassInput, "showTriangles", this.bShowTriangles);
 		}
 
 		private prepareComposerState(): void {
