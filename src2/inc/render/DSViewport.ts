@@ -248,7 +248,7 @@ module akra.render {
 		
 
 		getDepth(x: int, y: int): float {
-			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel");
+			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
 			
 			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
 

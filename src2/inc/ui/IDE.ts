@@ -40,6 +40,8 @@ module akra.ui {
 		//---------
 		protected _pKeymap: IKeyMap;
 
+		protected _pSearchCam: ICamera;
+
 
 		//=======================================
 		
@@ -86,6 +88,15 @@ module akra.ui {
 			this.connect(pInspector, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
 
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
+
+			
+		}
+
+		_sceneUpdate(pScene: IScene3d): void {
+			var pKeymap: IKeyMap = this.getKeymap();
+			if (pKeymap.isMousePress()) {
+				LOG(this.getViewport().unprojectPoint(pKeymap.getMouse()).toString());
+			}
 		}
 
 		protected setupApiEntry(): void {
@@ -117,6 +128,8 @@ module akra.ui {
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
 			this._pPreview.setViewport(pViewport);	
 			this.setupApiEntry();	
+
+			this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_sceneUpdate));
 
 			this.created();
 		}

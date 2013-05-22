@@ -288,7 +288,18 @@ module akra.webgl {
 					vec4 color;										\n\
 					color = texture2D(uSampler, vec2(texcoord.x, 1. - texcoord.y));      	\n\
 					vec4 t = floatToVec4(color.r);					\n\
-				    gl_FragColor = vec4(t.a, t.b, t.g, t.r);		\n\
+// 					float tmp = color.r; \n\
+// 					t.r = floor(tmp*255.);\n\
+// 					tmp = tmp*255. - t.r;\n\
+// \n\
+// 					t.g = floor(tmp*255.);\n\
+// 					tmp = tmp*255. - t.g;\n\
+// \n\
+// 					t.b = floor(tmp*255.);\n\
+// 					tmp = tmp*255. - t.b;\n\
+// \n\
+// 					t.a = floor(tmp*255.);\n\
+				    gl_FragColor = /*t/255.;//*/vec4(t.a, t.b, t.g, t.r);		\n\
 				}                                   				\n\
 				");
 	        }
@@ -461,6 +472,9 @@ module akra.webgl {
 				pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
 				pWebGLRenderer.deleteWebGLFramebuffer(pFrameBuffer);
 
+				// var fRes: float = pSrcBox.data[0]/255. + pSrcBox.data[1]/255./255. 
+				// 					+ pSrcBox.data[2]/255./255./255. + pSrcBox.data[3]/255/255/255/255;
+				// (new Float32Array(pSrcBox.data.buffer))[0] = fRes;
 				if (pSrcBox != pData) {
 					console.log("download. convertion....");
 					pixelUtil.bulkPixelConversion(pSrcBox, pData);

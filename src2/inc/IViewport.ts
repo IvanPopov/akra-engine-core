@@ -55,6 +55,7 @@ module akra {
 
         projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
         unprojectPoint(x: uint, y: uint, v3fDestination?: IVec3): IVec3;
+        unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
 
         //iBuffers=FBT_COLOUR|FBT_DEPTH
         setClearEveryFrame(isClear: bool, iBuffers?: uint): void;
