@@ -19,7 +19,6 @@ float4 floatToFloat4(float value){
   bool ok = true;
 
   while (ok) {
-    counter += 1.;
 
     if(data >= 2.) {
       data = data * 0.5;
