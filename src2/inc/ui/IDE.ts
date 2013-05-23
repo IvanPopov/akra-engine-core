@@ -30,16 +30,15 @@ module akra.ui {
 
 		protected _pSceneTree: scene.Tree;
 		protected _pInspector: Inspector;
-
 		protected _pPreview: ViewportProperties;
-
 		protected _pTabs: IUITabs;
-
 		protected _pColladaDialog: IUIPopup = null;
 
-		//---------
 		protected _pKeymap: IKeyMap;
 
+		//picking
+		protected _pColorTexture: ITexture;
+		protected _pColorViewport: IViewport;
 		protected _pSearchCam: ICamera;
 
 
@@ -90,21 +89,35 @@ module akra.ui {
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
 
 
+			this.setupObjectPicking();
+		}
+
+		private setupObjectPicking(): void {
 			var pSearchCam: ICamera;
 			
 			pSearchCam = this.getScene().createCamera(".search-cam");
-			pSearchCam.nearPlane = 0.01;
-			pSearchCam.farPlane = 0.15;
+			pSearchCam.setOrthoParams(0.1, 0.1, 0.01, 0.1);
 			pSearchCam.update();
 
 			pSearchCam.attachToParent(this.getScene().getRootNode());
 
-			this._pSearchCam = pSearchCam;
+			var pColorTex: ITexture = <ITexture>this.getResourceManager().texturePool.createResource(".texture_for_color_picking");
+			var pColorTarget: IRenderTarget;
 
+			pColorTex.create(1, 1, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.BYTE_RGB);
+
+			pColorTarget = pColorTex.getBuffer().getRenderTarget();
+			pColorTarget.setAutoUpdated(false);
+
+			var pViewport:  IViewport = pColorTarget.addViewport(pSearchCam, EViewportTypes.COLORVIEWPORT);
+
+			this._pColorViewport = pViewport;
+			this._pSearchCam = pSearchCam;
 		}
 
 		_sceneUpdate(pScene: IScene3d): void {
 			var pKeymap: IKeyMap = this.getKeymap();
+			
 			if (pKeymap.isMousePress()) {
 				var v3fPoint: IVec3 = this.getViewport().unprojectPoint(pKeymap.getMouse(), vec3());
 				
@@ -112,7 +125,10 @@ module akra.ui {
 				this._pSearchCam.setPosition(v3fPoint);
 				this._pSearchCam.update();
 				
-				// LOG(this.getScene().getDisplayList(DL_DEFAULT)._findObjects(this._pSearchCam));
+				this._pColorViewport.update();
+
+				LOG(this._pSearchCam._getLastResults());
+				LOG((<any>this._pColorViewport).getObject())
 			}
 		}
 
@@ -231,7 +247,10 @@ module akra.ui {
 		}
 
 		protected changeAntiAliasing(bValue: bool): bool {
-			(<render.DSViewport>this._pPreview.viewport).setFXAA(bValue);
+			var pViewport: IViewport = this.getViewport();
+			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
+				(<render.DSViewport>this._pPreview.viewport).setFXAA(bValue);
+			}
 			return true;
 		}
 

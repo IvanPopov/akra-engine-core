@@ -23,6 +23,10 @@ module akra.render {
 			this._iColorDepth = pixelUtil.getNumElemBits(pBuffer.format);
 		}
 
+		inline getPixelBuffer(): IPixelBuffer {
+			return this._pBuffer;
+		}
+
 		destroy(): void {
 			this._pBuffer._clearRTT(this._iZOffset);
 			this._pBuffer = null;

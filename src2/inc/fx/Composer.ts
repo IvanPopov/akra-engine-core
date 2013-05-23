@@ -61,8 +61,9 @@ module akra.fx {
 		private _pCurrentBufferMap: IBufferMap = null;
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 
-		private _pComposerState: any = { mesh : { isSkinned : false, isOptimizedSkinned : false },
-										 terrain : { isROAM : false } };
+		private _pComposerState: any = { mesh : { isSkinned : false, isOptimizedSkinned : false},
+										 terrain : { isROAM : false },
+										 renderable: { isAdvancedIndex: false } };
 
 		/** Render targets for global-post effects */
 		private _pRenderTargetA: IRenderTarget = null;
@@ -677,6 +678,8 @@ module akra.fx {
 
 		private prepareComposerState(): void {
 			if(!isNull(this._pCurrentRenderable)){
+				this._pComposerState.renderable.isAdvancedIndex = this._pCurrentRenderable.data.useAdvancedIndex();
+
 				if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){
 					this._pComposerState.mesh.isSkinned = true;
 					if((<IMeshSubset>this._pCurrentRenderable).isOptimizedSkinned()){

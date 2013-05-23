@@ -70,3 +70,33 @@ technique prepareShadows{
         }
     };
 };
+
+
+int scene_object_id: SCENE_OBJECT_ID;
+int renderable_id: RENDERABLE_ID;
+float4 color;
+
+float4 fs_color_picker() : COLOR{
+    return float4(float(scene_object_id) / 255., float(renderable_id) / 255., 0., 1.);//color;//
+}
+
+technique colorPicker {
+    pass color_maps {
+         if(engine.mesh.isSkinned){
+            if(engine.mesh.isOptimizedSkinned){
+                VertexShader = compile vs_optimized_skin_geometry();
+            }
+            else{
+                VertexShader = compile vs_skin_geometry();
+            }
+        }
+        else if(engine.renderable.isAdvancedIndex) {
+            VertexShader = compile vs_advanced_index_geometry();
+        }
+        else {
+            VertexShader = compile vs_simple_geometry();
+        }
+
+        PixelShader = compile fs_color_picker();
+    };
+};

@@ -276,8 +276,8 @@ module akra.render {
 			for(var i: uint = 0; i < this.totalPasses; i++){
 				if(this._pPassBlackList[i] === false && this._pPassList[i].isActive()){
 					this.activatePass(i);
-					this.render(i);
-					
+					this.render(i, pRenderable, pSceneObject, pViewport);
+					pViewport.render(this, i, pRenderable, pSceneObject);
 					pComposer.renderTechniquePass(this, i);
 				}
 			}
@@ -315,7 +315,7 @@ module akra.render {
 
 
 		CREATE_EVENT_TABLE(RenderTechnique);
-		UNICAST(render, CALL(iPass));
+		BROADCAST(render, CALL(iPass, pRenderable, pSceneObject, pViewport));
 	}
 }
 

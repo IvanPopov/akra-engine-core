@@ -466,6 +466,7 @@ module akra.util {
 
 module akra {
 	export var Color = util.Color;
+	export var color = util.color;
 }
 
 

@@ -192,6 +192,10 @@ module akra.scene.objects {
 			return pObjects;
 		}
 
+		inline _getLastResults(iList: uint = 0): IObjectArray {
+			return this._pDLResultStorage[iList] || null;
+		}
+
 		setParameter(eParam: ECameraParameters, pValue: any): void {
 			if (eParam === ECameraParameters.CONST_ASPECT && <bool>pValue) {
 				SET_ALL(this._iCameraOptions, <int>eParam);

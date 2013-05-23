@@ -61,6 +61,10 @@ module akra.webgl {
 			
 			pWebGLContext.linkProgram(pWebGLProgram);
 
+            // LOG("================================", this.findResourceName());
+            // LOG(pWebGLContext.getShaderSource(pWebGLVs));
+            // LOG(pWebGLContext.getShaderSource(pWebGLFs));
+
 			if (!this.isLinked()) {
 				ERROR("cannot link GLSL program(guid: %d)", this.getGuid());
 

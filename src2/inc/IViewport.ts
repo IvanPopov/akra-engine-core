@@ -14,7 +14,8 @@ module akra {
     export enum EViewportTypes {
         DEFAULT = -1,
         DSVIEWPORT = 1,
-        SHADOWVIEWPORT = 2
+        SHADOWVIEWPORT = 2,
+        COLORVIEWPORT
     }
 
     export interface IViewport extends IEventProvider {
@@ -33,6 +34,8 @@ module akra {
 
         backgroundColor: IColor;
         depthClear: float;
+
+        readonly type: EViewportTypes;
 
         update(): void;
         destroy(): void;
@@ -80,6 +83,7 @@ module akra {
 
         signal viewportDimensionsChanged(): void;
         signal viewportCameraChanged(): void;
+        signal render(pTechnique: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject);
     }
 }
 

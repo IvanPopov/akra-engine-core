@@ -44,6 +44,8 @@ module akra.render {
 
 	    private _pLightPoints: util.ObjectArray = null;
 
+	    inline get type(): EViewportTypes { return EViewportTypes.DSVIEWPORT; }
+
 		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, pTarget, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 
@@ -105,7 +107,6 @@ module akra.render {
 			this.setDepthParams(false, false, 0);			
 
 			this.setFXAA(true);
-			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		}
 
 		setCamera(pCamera: ICamera): bool {
@@ -313,7 +314,12 @@ module akra.render {
 
 
 
-		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
+		render(
+			pTechnique: IRenderTechnique, 
+			iPass: uint, 
+			pRenderable: IRenderableObject, 
+			pSceneObject: ISceneObject): void {
+			
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
 			var pDeferredTextures: ITexture[] = this._pDefereedColorTextures;
@@ -410,6 +416,8 @@ module akra.render {
 
 					break;
 			}
+
+			super.render(pTechnique, iPass, pRenderable, pSceneObject);
 		}
 
 		private inline resetUniforms(): void {

@@ -222,8 +222,7 @@ module akra.core {
 		            }
 	            }
 
-	            // requestAnimationFrame(render/*, pCanvas*/); 
-	            setInterval(render, 10);
+	            requestAnimationFrame(render/*, pCanvas*/); 
 	        } 
 
 	        render(0);

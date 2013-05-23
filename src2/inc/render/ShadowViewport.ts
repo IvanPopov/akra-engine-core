@@ -7,15 +7,16 @@
 #define DEFAULT_SHADOW_TECHNIQUE_NAME ".prepare-shadows"
 
 module akra.render {
-	export class ShadowViewport extends Viewport implements IViewport{
-		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = DEFAULT_SHADOW_TECHNIQUE_NAME, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
-			super(pCamera, pTarget, csRenderMethod, fLeft, fTop, fWidth, fHeight, iZIndex);
+	export class ShadowViewport extends Viewport implements IViewport {
+		
+		inline get type(): EViewportTypes { return EViewportTypes.SHADOWVIEWPORT; }
+
+		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
+			super(pCamera, pTarget, DEFAULT_SHADOW_TECHNIQUE_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
 
 			this.setClearEveryFrame(true, EFrameBufferTypes.DEPTH);
 			this.setDepthParams(true, true, ECompareFunction.LESS);
 			this.depthClear = 1.;
-
-			this._csDefaultRenderMethod = DEFAULT_SHADOW_TECHNIQUE_NAME;
 		}
 
 		_updateImpl(): void {
