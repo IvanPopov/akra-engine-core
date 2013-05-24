@@ -5,7 +5,7 @@
 #include "ui/ListenerEditor.ts"
 
 #include "IUIIDE.ts"
-
+#include "IRID.ts"
 
 module akra.ui {
 
@@ -40,6 +40,7 @@ module akra.ui {
 		protected _pColorTexture: ITexture;
 		protected _pColorViewport: IViewport;
 		protected _pSearchCam: ICamera;
+		protected _pSelectedObject: IRIDPair = null;
 
 
 		//=======================================
@@ -87,9 +88,6 @@ module akra.ui {
 			this.connect(pInspector, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
 
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
-
-
-			this.setupObjectPicking();
 		}
 
 		private setupObjectPicking(): void {
@@ -101,34 +99,81 @@ module akra.ui {
 
 			pSearchCam.attachToParent(this.getScene().getRootNode());
 
-			var pColorTex: ITexture = <ITexture>this.getResourceManager().texturePool.createResource(".texture_for_color_picking");
+			var pResMgr: IResourcePoolManager = this.getResourceManager();
+			var pColorTex: ITexture = <ITexture>pResMgr.texturePool.createResource(".texture_for_color_picking");
 			var pColorTarget: IRenderTarget;
+			var pDepthTex: ITexture;
 
-			pColorTex.create(1, 1, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.BYTE_RGB);
+			pColorTex.create(640, 480, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.BYTE_RGB);
 
 			pColorTarget = pColorTex.getBuffer().getRenderTarget();
 			pColorTarget.setAutoUpdated(false);
 
-			var pViewport:  IViewport = pColorTarget.addViewport(pSearchCam, EViewportTypes.COLORVIEWPORT);
+			pDepthTex = pResMgr.createTexture(".texture_for_color_picking_depth");
+			pDepthTex.create(640, 480, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
+
+			pColorTarget.attachDepthTexture(pDepthTex);
+
+			var pViewport: IViewport = pColorTarget.addViewport(this.getCamera()/*pSearchCam*/, EViewportTypes.COLORVIEWPORT);
+			pViewport.setAutoUpdated(false);
 
 			this._pColorViewport = pViewport;
 			this._pSearchCam = pSearchCam;
+			this._pColorTexture = pColorTex;
 		}
 
 		_sceneUpdate(pScene: IScene3d): void {
 			var pKeymap: IKeyMap = this.getKeymap();
 			
 			if (pKeymap.isMousePress()) {
-				var v3fPoint: IVec3 = this.getViewport().unprojectPoint(pKeymap.getMouse(), vec3());
+				// var v3fPoint: IVec3 = this.getViewport().unprojectPoint(pKeymap.getMouse(), vec3());
 				
-				v3fPoint.z -= 0.075;
-				this._pSearchCam.setPosition(v3fPoint);
-				this._pSearchCam.update();
+				// v3fPoint.z -= 0.075;
+				// this._pSearchCam.setPosition(v3fPoint);
+				// this._pSearchCam.update();
 				
+				var pMouse: IPoint = pKeymap.getMouse();
+				var pViewport: IViewport = this.getViewport();
+				this.getCamera().update();
 				this._pColorViewport.update();
 
-				LOG(this._pSearchCam._getLastResults());
-				LOG((<any>this._pColorViewport).getObject())
+				// // LOG(this._pSearchCam._getLastResults());
+				var x: uint = math.floor(pMouse.x / pViewport.actualWidth * this._pColorViewport.actualWidth);
+				var y: uint = math.floor((1. - pMouse.y / pViewport.actualHeight) * this._pColorViewport.actualHeight);
+
+				x = math.clamp(x, 0, this._pColorViewport.actualWidth - 1);
+				y = math.clamp(y, 0, this._pColorViewport.actualHeight - 1);
+
+				this.connect(pViewport, SIGNAL(render), SLOT(_onDSViewportRender));
+				this._pSelectedObject = (<any>this._pColorViewport).getObject(x, y);
+
+				if (isNull(this._pSelectedObject.renderable)) {
+					this._pSelectedObject = null;
+				}
+				else {
+					LOG(this._pSelectedObject)
+				}
+			}
+		}
+
+		_onDSViewportRender(
+			pViewport: IViewport, 
+			pTechnique: IRenderTechnique, 
+			iPass: uint, 
+			pRenderable: IRenderableObject, 
+			pSceneObject: ISceneObject): void {
+
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			switch (iPass) {
+				case 1:	
+					var iRid: int = isNull(this._pSelectedObject)? 0: pTechnique._getComposer()._calcRenderID(this._pSelectedObject.object, this._pSelectedObject.renderable);
+					var iSoid: int = (iRid - 1) >>> 10;
+					var iReid: int = (iRid - 1) & 1023;
+					setTimeout(() => {console.log("rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);}, 1000);
+					pPass.setUniform("OUTLINE_REID", iReid);
+					pPass.setUniform("OUTLINE_SOID", iSoid);
+					pPass.setUniform("OUTLINE_TARGET", iRid);
 			}
 		}
 
@@ -163,7 +208,7 @@ module akra.ui {
 			this.setupApiEntry();	
 
 			this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_sceneUpdate));
-
+			this.setupObjectPicking();
 			this.created();
 		}
 

@@ -346,6 +346,7 @@ module akra.fx {
 			this.generateSystemVariable("fragCoord", "gl_FragCoord", "float4", false, true, true);
 			this.generateSystemVariable("frontFacing", "gl_FrontFacing", "bool", false, true, true);
 			this.generateSystemVariable("pointCoord", "gl_PointCoord", "float2", false, true, true);
+			this.generateSystemVariable("resultAFXColor", "resultAFXColor", "float4", false, true, true);
 
 			//Engine variable for passes
 			this.generatePassEngineVariable();

@@ -819,6 +819,8 @@ module akra.fx {
 
 			this.enableVaringPrefixes(eType, true);
 			sCode = this.generateSystemExtBlock(eType) + "\n" +
+
+					"vec4 resultAFXColor;" + "\n" +
 					
 					this.generateTypeDels(eType) + "\n" +
 					this.generateFunctionDefenitions(eType) + "\n" +
@@ -839,6 +841,7 @@ module akra.fx {
 
 					this.generatePassFunctionCall(eType) + "\n" +
 
+					"gl_FragColor = resultAFXColor;" + "\n" + 
 					"}";
 			this.enableVaringPrefixes(eType, false);
 

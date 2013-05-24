@@ -459,6 +459,24 @@ module akra.webgl {
 				pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
 				pWebGLRenderer.deleteWebGLFramebuffer(pFrameBuffer);
 
+				//vertical flip
+				// {
+				// 	size_t rowSpan = dst.getWidth() * PixelUtil::getNumElemBytes(dst.format);
+				// 	size_t height = dst.getHeight();
+				// 	uchar *tmpData = new uchar[rowSpan * height];
+				// 	uchar *srcRow = (uchar *)dst.data, *tmpRow = tmpData + (height - 1) * rowSpan;
+					 
+				// 	while (tmpRow >= tmpData)
+				// 	{
+				// 		memcpy(tmpRow, srcRow, rowSpan);
+				// 		srcRow += rowSpan;
+				// 		tmpRow -= rowSpan;
+				// 	}
+				// 	memcpy(dst.data, tmpData, rowSpan * height);
+					
+				// 	delete [] tmpData;
+				// }
+
 				if (pSrcBox != pData) {
 					console.log("download. convertion....");
 					pixelUtil.bulkPixelConversion(pSrcBox, pData);

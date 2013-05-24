@@ -10,8 +10,7 @@ module akra.render {
 	var pPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.BYTE_RGBA, new Uint8Array(4));
 
 	export class ColorViewport extends Viewport implements IViewport {
-		protected _pSceneObjectToColorMap: IntMap = <any>{};
-		protected _pRenderableToColorMap: IntMap = <any>{};
+		protected _pGuidToColorMap: IntMap = <any>{};
 		protected _pColorToSceneObjectMap: ISceneObject[] = new Array(256);
 		protected _pColorToRenderableMap: IRenderableObject[] = new Array(256);
 
@@ -19,9 +18,6 @@ module akra.render {
 
 		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
 			super(pCamera, pTarget, DEFAULT_COLORPICKER_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
-
-			this.setClearEveryFrame(false);
-			// this.backgroundColor = Color.GREEN;
 		}
 
 		_updateImpl(): void {
@@ -32,24 +28,37 @@ module akra.render {
 				pVisibleObjects.value(i).prepareForRender(this);
 			}
 
-			var iSColor: uint = 0;
-			var iRColor: uint = 0;
 
-			var pOldCamera = this._pCamera;
-			this._pCamera = ide.getCamera();
+			for (var i = 0; i < 256; ++ i) {
+				this._pColorToSceneObjectMap[i] = null;
+				this._pColorToRenderableMap[i] = null;
+			}
+
+			for (var g in this._pGuidToColorMap) {
+				this._pGuidToColorMap[g] = 0;	
+			}
+
+			// var pOldCamera = this._pCamera;
+			// this._pCamera = ide.getCamera();
+
+			var r = 1;
+			var s = 1;
+
 			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 				
-				this._pSceneObjectToColorMap[pSceneObject.getGuid()] = ++ iSColor;
-				this._pColorToSceneObjectMap[iSColor] = pSceneObject;
+				this._pGuidToColorMap[pSceneObject.getGuid()] = s;
+				this._pColorToSceneObjectMap[s] = pSceneObject;
+				s ++;
 				
 				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
 					pRenderable = pSceneObject.getRenderable(j);
 					
 					if (!isNull(pRenderable) && !pRenderable.isFrozen()) {
 
-						this._pRenderableToColorMap[pRenderable.getGuid()] = ++ iRColor;
-						this._pColorToRenderableMap[iRColor] = pRenderable;
+						this._pGuidToColorMap[pRenderable.getGuid()] = r;
+						this._pColorToRenderableMap[r] = pRenderable;
+						r ++;
 
 						this.prepareRenderableForPicking(pRenderable);
 						pRenderable.render(this, this._csDefaultRenderMethod, pSceneObject);
@@ -57,17 +66,24 @@ module akra.render {
 				}
 			}
 
-			this._pCamera = pOldCamera;
+			// this._pCamera = pOldCamera;
 		}
 
-		getObject(): any {
+		getObject(x: uint = 0, y: uint = 0): IRIDPair {
 			var pTarget: IRenderTarget = this.getTarget();
 
 			if (pTarget instanceof RenderTexture) {
 				var pPixelBuffer: IPixelBuffer = (<IRenderTexture>pTarget).getPixelBuffer();
+				x = math.round(x);
+				y = math.round(y);
+
+				pPixel.left = x;
+				pPixel.right = x + 1;
+				pPixel.top = y;
+				pPixel.bottom = y + 1;
 
 				if (pPixelBuffer.readPixels(pPixel)) {
-					console.log(pPixel.data);
+					console.log(pPixel.data[0], pPixel.data[1], pPixel.data[2], pPixel.data[3]);
 					return {
 						object: this._pColorToSceneObjectMap[pPixel.data[0]] || null,
 						renderable: this._pColorToRenderableMap[pPixel.data[1]] || null
@@ -86,12 +102,12 @@ module akra.render {
 
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			pPass.setUniform("RENDERABLE_ID", this._pRenderableToColorMap[pRenderable.getGuid()]);
+			pPass.setUniform("RENDERABLE_ID", this._pGuidToColorMap[pRenderable.getGuid()]);
 			pPass.setUniform("OPTIMIZED_PROJ_MATRIX", this.getCamera().projectionMatrix);
 			pPass.setUniform("color", util.colorToVec4(util.randomColor(true)));
 			
 			if (!isNull(pSceneObject)) {
-				pPass.setUniform("SCENE_OBJECT_ID", this._pSceneObjectToColorMap[pSceneObject.getGuid()]);
+				pPass.setUniform("SCENE_OBJECT_ID", this._pGuidToColorMap[pSceneObject.getGuid()]);
 			}
 
 			super.render(pTechnique, iPass, pRenderable, pSceneObject);

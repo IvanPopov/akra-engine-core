@@ -24,6 +24,8 @@
 #include "fx/SamplerBlender.ts"
 #include "IRenderer.ts"
 
+#define RID_TOTAL 1024
+
 module akra.fx {
 
 	export interface IPreRenderState {
@@ -76,6 +78,12 @@ module akra.fx {
 
 		//Temporary objects for fast work
 		static pDefaultSamplerBlender: SamplerBlender = null;
+
+		//render id data
+		private _pRidTable: IRIDTable = <any>{};
+		private _pRidMap: IRIDMap = <any>{};
+		private _nRidSO: int = 0;
+		private _nRidRE: int = 0;
 
 		constructor(pEngine: IEngine){
 			this._pEngine = pEngine;
@@ -623,10 +631,78 @@ module akra.fx {
 
 #define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[sName] = pValue;
 
+
+		_calcRenderID(pSceneObject: ISceneObject, pRenderable: IRenderableObject, bCreateIfNotExists: bool = false): int {
+			//assume, that less than 1024 draw calls may be & less than 1024 scene object will be rendered.
+			//beacause only 1024
+			
+			var iSceneObjectGuid: int = isNull(pSceneObject)? 0: pSceneObject.getGuid();
+			var iRenderableObjectGuid: int = pRenderable.getGuid();
+
+			if (this._nRidSO === RID_TOTAL || this._nRidRE === RID_TOTAL) {
+				this._pRidTable = <any>{};
+				this._nRidRE = 0;
+				this._nRidSO = 0;
+			}
+
+			var pRidTable: IRIDTable = this._pRidTable;
+			var pRidMap: IRIDMap = this._pRidMap;
+			var pRidByRenderable: IntMap = pRidTable[iSceneObjectGuid];
+			var pRidPair: IRIDPair;
+
+			var iRid: int = 0;
+
+			if (!isDefAndNotNull(pRidByRenderable)) {
+				if (!bCreateIfNotExists) {
+					return 0;
+				}
+
+				pRidByRenderable = pRidTable[iSceneObjectGuid] = <any>{};
+				this._nRidSO ++;
+			}
+			
+			
+			iRid = pRidByRenderable[iRenderableObjectGuid];
+
+			if (!isDefAndNotNull(iRid)) {
+				if (!bCreateIfNotExists) {
+					return 0;
+				}
+
+				pRidByRenderable[iRenderableObjectGuid] = iRid = 1 + this._nRidSO * 1024 + this._nRidRE;
+				pRidPair = pRidMap[iRid];
+
+				if (!isDefAndNotNull(pRidPair)) {
+					pRidPair = pRidMap[iRid] = {renderable: null, object: null};
+				}
+
+				LOG("render pair created with id: ", iRid, "roid(", iRenderableObjectGuid, "): ", this._nRidRE, "soid(", iSceneObjectGuid,"): ", this._nRidSO);
+
+				pRidPair.renderable = pRenderable;
+				pRidPair.object = pSceneObject;
+
+				this._nRidRE ++;
+			}
+
+			return iRid;
+		}
+
+		inline _getRenderableByRid(iRid: int): IRenderableObject {
+			var pRidPair: IRIDPair = this._pRidMap[iRid];
+			return isDefAndNotNull(pRidPair)? pRidPair.renderable: null;
+		}
+
+		inline _getObjectByRid(iRid: int): ISceneObject {
+			var pRidPair: IRIDPair = this._pRidMap[iRid];
+			return isDefAndNotNull(pRidPair)? pRidPair.object: null;
+		}
+
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
 			var pViewport: IViewport = this._getCurrentViewport();
 			var pRenderable: IRenderableObject = this._getCurrentRenderableObject();
+
+			var iRenderableID: int = this._calcRenderID(pSceneObject, pRenderable, true);
 
 			if(!isNull(pSceneObject)){
 				FAST_SET_UNIFORM(pPassInput, "MODEL_MATRIX", pSceneObject.worldMatrix);
@@ -654,7 +730,7 @@ module akra.fx {
 					FAST_SET_UNIFORM(pPassInput, "BIND_SHAPE_MATRIX", (<IMeshSubset>pRenderable).skin.getBindMatrix());
 				}
 
-				FAST_SET_UNIFORM(pPassInput, "RENDER_OBJECT_ID", pRenderable.getGuid());
+				FAST_SET_UNIFORM(pPassInput, "RENDER_OBJECT_ID", iRenderableID);
 			}
 
 			if(!isNull(this._pLastRenderTarget)){

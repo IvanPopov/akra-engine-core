@@ -98,6 +98,7 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.projectShadowsLighting");
 			// pDSEffect.addComponent("akra.system.color_maps");
 			pDSEffect.addComponent("akra.system.skybox", 1, 0);
+			pDSEffect.addComponent("akra.system.outline", 1, 0);
 
 			pDSMethod.effect = pDSEffect;
 			pDefferedView.getTechnique().setMethod(pDSMethod);

@@ -254,8 +254,12 @@ module akra.render {
 			this._isFreeze = false;
 		}
 
-		_setComposer(pComposer: IAFXComposer): void {
+		inline _setComposer(pComposer: IAFXComposer): void {
 			this._pComposer = pComposer;
+		}
+
+		inline _getComposer(): IAFXComposer {
+			return this._pComposer;
 		}
 
 		_renderTechnique(pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
