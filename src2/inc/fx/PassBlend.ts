@@ -180,7 +180,6 @@ module akra.fx {
 			}
 
 			this._pDefaultSamplerBlender.clear();
-
 			return pMaker;
 		}
 

@@ -195,11 +195,10 @@ module akra.webgl {
                                     pVertexElement.offset);
 			}
 
-			var pUniforms: WebGLUniformLocationMap = pWebGLProgram.getWebGLUniformLocations();
+			var pUniformNames: string[] = pMaker.uniformNames;
 
-			for (var sUniformName in pUniforms) {
-				var pValue: any = pInput[sUniformName];
-				pMaker.setUniform(sUniformName, pValue);
+			for (var i: uint = 0; i < pUniformNames.length; i++) {
+				pMaker.setUniform(pUniformNames[i],  pInput[pUniformNames[i]]);
 			}
 			
 			pEntry.bufferMap._draw();

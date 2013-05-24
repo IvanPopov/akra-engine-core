@@ -22,7 +22,7 @@ module akra {
 		readonly shaderProgram: IShaderProgram;
 		readonly attributeSemantics: string[];
 		readonly attributeNames: string[];
-
+		readonly uniformNames: string[];
 
 		_create(sVertex: string, sPixel: string): bool;
 		

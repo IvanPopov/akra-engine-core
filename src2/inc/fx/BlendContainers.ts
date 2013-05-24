@@ -531,7 +531,8 @@ module akra.fx {
 							if(this._pFlowBySlots[j] === pFindFlow) {
 								this._pSlotBySemanticIndex[iSemanticIndex] = j;
 								iHash += (j << 5 + this._pBufferSlotBySlots[j]) << j;
-								//this._sHash += (j << 5 + this._pBufferSlotBySlots[j]).toString() + "$";
+								// this._sHash += (j << 5 + this._pBufferSlotBySlots[j]).toString() + "$";
+								// this._sHash += j.toString() + "$" + this._pBufferSlotBySlots[j].toString() + "$";
 								// this._pHashPartList[2 * i] = j;
 								// this._pHashPartList[2 * i + 1] = this._pBufferSlotBySlots[j]; 
 								continue main;
@@ -572,13 +573,13 @@ module akra.fx {
 
 					// this._pHashPartList[2*i] = iSlot;
 					// this._pHashPartList[2*i+1] = iBufferSlot;
-					//this._sHash += (iSlot << 5 + iBufferSlot).toString() + "$";
+					// this._sHash += iSlot.toString() + "$" + iBufferSlot.toString() + "$";
 					iHash += (iSlot << 5 + iBufferSlot) << iSlot;
 					this._nSlots++;
 				}
 				else {
 					this._pSlotBySemanticIndex[iSemanticIndex] = -1;
-					//this._sHash += "*";
+					// this._sHash += "*";
 					// this._pHashPartList[2*i] = -2;
 					// this._pHashPartList[2*i+1] = -2;
 				}
