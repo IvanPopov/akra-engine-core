@@ -162,59 +162,8 @@ module akra.webgl {
 	        }
 	        
 	        var pProgram: IShaderProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_blit_texture_buffer"); 
-	        
-	        if(isNull(pProgram)){
-	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_blit_texture_buffer");
-	        	pProgram.create(
-	        	"																									\n\
-	        	attribute vec2 POSITION;																			\n\
-				attribute vec3 TEXCOORD;																			\n\
-				                      																				\n\
-				varying vec3 texcoord;																				\n\
-				                   																					\n\
-				void main(void){																					\n\
-				    texcoord = TEXCOORD;																			\n\
-				    gl_Position = vec4(POSITION, 0., 1.);															\n\
-				}																									\n\
-				",
-				"													\n\
-				#ifdef GL_ES                        				\n\
-				    precision highp float;          				\n\
-				#endif												\n\
-				varying vec3 texcoord;              				\n\
-				uniform sampler2D uSampler;        					\n\
-																	\n\
-				void main(void) {  									\n\
-					vec4 color;										\n\
-					color = texture2D(uSampler, texcoord.xy);      	\n\
-				    gl_FragColor = color;           				\n\
-				}                                   				\n\
-				");
-	        }
-
-	        pProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_decode_depth32_texture");
-
-	        if (isNull(pProgram)) {
-	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_decode_depth32_texture");
-	        	pProgram.create("																									\n\
-	        	attribute vec2 POSITION;																			\n\
-				attribute vec3 TEXCOORD;																			\n\
-				                      																				\n\
-				varying vec3 texcoord;																				\n\
-				                   																					\n\
-				void main(void){																					\n\
-				    texcoord = TEXCOORD;																			\n\
-				    gl_Position = vec4(POSITION, 0., 1.);															\n\
-				}																									\n\
-				",
-				"													\n\
-				#ifdef GL_ES                        				\n\
-				    precision highp float;          				\n\
-				#endif												\n\
-				varying vec3 texcoord;              				\n\
-				uniform sampler2D uSampler;        					\n\
-																	\n\
-				vec4 floatToVec4(float value){						\n\
+	        var sFloatToVec4Func: string = "\
+	        	vec4 floatToVec4(float value){						\n\
 					float data = value;								\n\
 					vec4 result = vec4(0.);							\n\
 																	\n\
@@ -280,7 +229,60 @@ module akra.webgl {
 					result.w = floor(data);							\n\
 																	\n\
 					return result/255.;								\n\
-				}													\n\
+				}													\n";
+
+	        if(isNull(pProgram)){
+	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_blit_texture_buffer");
+	        	pProgram.create(
+	        	"																									\n\
+	        	attribute vec2 POSITION;																			\n\
+				attribute vec3 TEXCOORD;																			\n\
+				                      																				\n\
+				varying vec3 texcoord;																				\n\
+				                   																					\n\
+				void main(void){																					\n\
+				    texcoord = TEXCOORD;																			\n\
+				    gl_Position = vec4(POSITION, 0., 1.);															\n\
+				}																									\n\
+				",
+				"													\n\
+				#ifdef GL_ES                        				\n\
+				    precision highp float;          				\n\
+				#endif												\n\
+				varying vec3 texcoord;              				\n\
+				uniform sampler2D uSampler;        					\n\
+																	\n\
+				void main(void) {  									\n\
+					vec4 color;										\n\
+					color = texture2D(uSampler, texcoord.xy);      	\n\
+				    gl_FragColor = color;           				\n\
+				}                                   				\n\
+				");
+	        }
+
+	        pProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_decode_depth32_texture");
+
+	        if (isNull(pProgram)) {
+	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_decode_depth32_texture");
+	        	pProgram.create("																									\n\
+	        	attribute vec2 POSITION;																			\n\
+				attribute vec3 TEXCOORD;																			\n\
+				                      																				\n\
+				varying vec3 texcoord;																				\n\
+				                   																					\n\
+				void main(void){																					\n\
+				    texcoord = TEXCOORD;																			\n\
+				    gl_Position = vec4(POSITION, 0., 1.);															\n\
+				}																									\n\
+				",
+				"													\n\
+				#ifdef GL_ES                        				\n\
+				    precision highp float;          				\n\
+				#endif												\n\
+				varying vec3 texcoord;              				\n\
+				uniform sampler2D uSampler;        					\n\
+																	\n\
+				" + sFloatToVec4Func + "\
 																	\n\
 				void main(void) {  									\n\
 					vec4 color;										\n\
@@ -288,6 +290,54 @@ module akra.webgl {
 					vec4 t = floatToVec4(color.r);					\n\
 				    gl_FragColor = vec4(t.a, t.b, t.g, t.r);		\n\
 				}                                   				\n\
+				");
+	        }
+
+	        if (isNull(pProgram)) {
+	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_decode_float32_texture");
+	        	pProgram.create("																									\n\
+	        	attribute vec2 POSITION;																			\n\
+				attribute vec3 TEXCOORD;																			\n\
+				                      																				\n\
+				varying vec3 texcoord;																				\n\
+				                   																					\n\
+				void main(void){																					\n\
+				    texcoord = TEXCOORD;																			\n\
+				    gl_Position = vec4(POSITION, 0., 1.);															\n\
+				}																									\n\
+				",
+				"											\n\
+				#ifdef GL_ES                        		\n\
+				    precision highp float;          		\n\
+				#endif										\n\
+															\n\
+				varying vec3 texcoord;              		\n\
+				uniform sampler2D uSampler;					\n\
+				uniform int width;        					\n\
+				uniform int components_num;					\n\
+				" + sFloatToVec4Func + "\
+															\n\
+				void main(void) {  							\n\
+															\n\
+					float pixel = texcoord.x * float(width);\n\
+					float value;							\n\
+															\n\
+					switch (int(mod(pixel, components_num))) {\n\
+						case 0: 							\n\
+							value = color.r; break;			\n\
+						case 1: 							\n\
+							value = color.g; break;			\n\
+						case 2: 							\n\
+							value = color.b; break;			\n\
+						case 3: 							\n\
+							value = color.a; break; 		\n\
+					}										\n\
+															\n\
+					vec4 color = texture2D(uSampler, vec2(texcoord.x, 1. - texcoord.y));\n\
+					vec4 t = floatToVec4(value);			\n\
+															\n\
+				    gl_FragColor = vec4(t.a, t.b, t.g, t.r);\n\
+				}\
 				");
 	        }
 
@@ -436,7 +486,7 @@ module akra.webgl {
 
 			if (!checkReadPixelFormat(this.format)) {
 				ASSERT (this.format === EPixelFormats.DEPTH32, "TODO: downloading for all formats");
-				var pDestBox: IBox = geometry.box(0, 0, 0, pData.width, pData.height, pData.depth);
+				var pDestBox: IBox = geometry.box(0, 0, 0, pData.width * pixelUtil.getComponentCount(this.format), pData.height, pData.depth);
 
 				// мы не можем читать из данного формата напрямую, поэтому необходимо перерендерить эту текстура в RGB/RGBA 8.
 				var pProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_decode_depth32_texture");
@@ -723,8 +773,8 @@ module akra.webgl {
         	pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pTempWebGLTexture);
         	// Allocate temporary texture of the size of the destination area
         	pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, iGLTempFormat, 
-                     				 math.ceilingPowerOfTwo(pDestBox.width), 
-                     				 math.ceilingPowerOfTwo(pDestBox.height), 
+                     				 /*math.ceilingPowerOfTwo*/(pDestBox.width), 
+                     				 /*math.ceilingPowerOfTwo*/(pDestBox.height), 
          				             0, GL_RGBA, GL_UNSIGNED_BYTE, null);
 
         	pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -758,6 +808,10 @@ module akra.webgl {
             pWebGLContext.vertexAttribPointer(iPosAttrIndex, 2, GL_FLOAT, false, 0, 0);
 
             pWebGLShaderProgram.setInt("uSampler", 0);
+            pWebGLShaderProgram.setInt("components_num", pixelUtil.getComponentCount(eFormat));
+            pWebGLShaderProgram.setInt("width", pDestBox.width);
+            pWebGLShaderProgram.setInt("height", pDestBox.height);
+
 	        // Process each destination slice
 	        var iSlice: int = 0;
 	        for(iSlice = pDestBox.front; iSlice < pDestBox.back; ++iSlice) {

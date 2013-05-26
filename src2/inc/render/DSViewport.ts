@@ -22,6 +22,7 @@
 module akra.render {
 
 	var pDepthPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_DEPTH, new Uint8Array(4 * 1));
+	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
 	var pColor: IColor = new Color(0);
 
 	export class DSViewport extends Viewport implements IDSViewport  {
@@ -267,7 +268,23 @@ module akra.render {
 			return pDepthPixel.getColorAt(pColor, 0, 0).r;
 		}
 
-		
+		getRenderId(x: int, y: int): int {
+			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
+			
+			var pColorTexture: ITexture = this._pDefereedColorTextures[0];
+
+			//depth texture has POT sized, but viewport not;
+			//depth texture attached to left bottom angle of viewport
+			y = y + (pColorTexture.height - this.actualHeight);
+			pFloatColorPixel.left = x;
+			pFloatColorPixel.top = y;
+			pFloatColorPixel.right = x + 1;
+			pFloatColorPixel.bottom = y + 1;
+
+			pColorTexture.getBuffer(0, 0).readPixels(pFloatColorPixel);
+
+			return pFloatColorPixel.getColorAt(pColor, 0, 0).r;
+		}
 
 		setSkybox(pSkyTexture: ITexture): bool {
 			if (pSkyTexture.textureType !== ETextureTypes.TEXTURE_CUBE_MAP) {

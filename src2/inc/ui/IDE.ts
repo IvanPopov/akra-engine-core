@@ -170,7 +170,7 @@ module akra.ui {
 					var iRid: int = isNull(this._pSelectedObject)? 0: pTechnique._getComposer()._calcRenderID(this._pSelectedObject.object, this._pSelectedObject.renderable);
 					var iSoid: int = (iRid - 1) >>> 10;
 					var iReid: int = (iRid - 1) & 1023;
-					setTimeout(() => {console.log("rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);}, 1000);
+					console.log("rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);
 					pPass.setUniform("OUTLINE_REID", iReid);
 					pPass.setUniform("OUTLINE_SOID", iSoid);
 					pPass.setUniform("OUTLINE_TARGET", iRid);
