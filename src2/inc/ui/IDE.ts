@@ -147,6 +147,11 @@ module akra.ui {
 				this.connect(pViewport, SIGNAL(render), SLOT(_onDSViewportRender));
 				this._pSelectedObject = (<any>this._pColorViewport).getObject(x, y);
 
+				var iRid: int = (<render.DSViewport>this.getViewport()).getRenderId(x, math.floor((pMouse.y / pViewport.actualHeight) * this._pColorViewport.actualHeight));
+				var iSoid: int = (iRid - 1) >>> 10;
+				var iReid: int = (iRid - 1) & 1023;
+				console.log("(getRenderId()) >> rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);
+
 				if (isNull(this._pSelectedObject.renderable)) {
 					this._pSelectedObject = null;
 				}

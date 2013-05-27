@@ -322,7 +322,7 @@ module akra.webgl {
 																	\n\
 				void main(void) {  									\n\
 																	\n\
-					float pixel = texcoord.x * float(dst_width);	\n\
+					float pixel = gl_PointCoord.x * float(dst_width);	\n\
 					float value;									\n\
 					int comp = int(mod(pixel, float(src_components_num)));	\n\
 					vec4 color = texture2D(uSampler, vec2(texcoord.x, 1. - texcoord.y));\n\
