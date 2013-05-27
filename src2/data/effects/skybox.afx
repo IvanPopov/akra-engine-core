@@ -115,6 +115,8 @@ VS_OUT vs_outline(VS_IN IN)
 	return Out;
 };
 
+float4 outline_color = float4(1.);
+
 float4 fs_outline(VS_OUT IN) : COLOR 
 {
 	float2 textureCoords = IN.texCoords;
@@ -140,7 +142,7 @@ float4 fs_outline(VS_OUT IN) : COLOR
 		rid = int(tex2D(deferredTexture0, float2(IN.texCoordsDeferred.x, fy)).w);
 		if (rid < soid_begin || rid >= soid_end)
 	    {
-	    	return float4(1.);
+	    	return outline_color;
 	    }
 	}
 
@@ -150,7 +152,7 @@ float4 fs_outline(VS_OUT IN) : COLOR
 		rid = int(tex2D(deferredTexture0, float2(fx, IN.texCoordsDeferred.y)).w);
 		if (rid < soid_begin || rid >= soid_end) 
 	    {
-	    	return float4(1.);
+	    	return outline_color;
 	    }
 	}
 
