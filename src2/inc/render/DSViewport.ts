@@ -283,7 +283,7 @@ module akra.render {
 
 			pColorTexture.getBuffer(0, 0).readPixels(pFloatColorPixel);
 
-			return pFloatColorPixel.getColorAt(pColor, 0, 0).r;
+			return pFloatColorPixel.getColorAt(pColor, 0, 0).a;
 		}
 
 		setSkybox(pSkyTexture: ITexture): bool {
