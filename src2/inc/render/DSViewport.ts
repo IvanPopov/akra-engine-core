@@ -15,6 +15,7 @@
 #include "IEffect.ts"
 #include "IScene3d.ts"
 #include "util/ObjectArray.ts"
+#include "util/DepthRange.ts"
 #include "Screen.ts"
 
 #define OPTIMIZED_DEFFERED 1
@@ -26,7 +27,7 @@ module akra.render {
 	var pColor: IColor = new Color(0);
 
 	export class DSViewport extends Viewport implements IDSViewport  {
-		private _pDefereedColorTextures: ITexture[] = [];
+		private _pDeferredColorTextures: ITexture[] = [];
 		private _pDeferredDepthTexture: ITexture = null;
 		private _pDeferredView: IRenderableObject = null;
 		private _pDeferredSkyTexture: ITexture = null;
@@ -70,7 +71,7 @@ module akra.render {
 					ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
 			for (var i = 0; i < 2; ++ i) {
-				pDeferredTextures[i] = this._pDefereedColorTextures[i] = 
+				pDeferredTextures[i] = this._pDeferredColorTextures[i] = 
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
 
 				pDeferredTextures[i].create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0, 
@@ -113,15 +114,15 @@ module akra.render {
 
 		setCamera(pCamera: ICamera): bool {
 			var isOk = super.setCamera(pCamera);
-			this._pDefereedColorTextures[0].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
-			this._pDefereedColorTextures[1].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			this._pDeferredColorTextures[0].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
+			this._pDeferredColorTextures[1].getBuffer().getRenderTarget().getViewport(0).setCamera(pCamera);
 			return isOk;
 		}
 
 		_updateDimensions(): void {
 			super._updateDimensions();
 
-			var pDeferredTextures: ITexture[] = this._pDefereedColorTextures;
+			var pDeferredTextures: ITexture[] = this._pDeferredColorTextures;
 
 			if (isDefAndNotNull(this._pDeferredDepthTexture)) {
 				this._pDeferredDepthTexture.reset(math.ceilingPowerOfTwo(this.actualWidth), math.ceilingPowerOfTwo(this.actualHeight));
@@ -136,6 +137,11 @@ module akra.render {
 		_updateImpl (): void {
 			this.prepareForDeferredShading();
 
+		    //prepare deferred textures
+// #ifndef OPTIMIZED_DEFFERED
+			this._pDeferredColorTextures[0].getBuffer().getRenderTarget().update();
+			this._pDeferredColorTextures[1].getBuffer().getRenderTarget().update();
+
 			var pLights: util.ObjectArray = <util.ObjectArray>this.getCamera().display(DL_LIGHTING);
 		    
 		    for (var i: int = 0; i < pLights.length; i++) {
@@ -143,16 +149,11 @@ module akra.render {
 		    }
 
 		    this._pLightPoints = pLights;
-
-		    //prepare deferred textures
-// #ifndef OPTIMIZED_DEFFERED
-			this._pDefereedColorTextures[0].getBuffer().getRenderTarget().update();
-			this._pDefereedColorTextures[1].getBuffer().getRenderTarget().update();
 // #else
 // 			var pNodeList: IObjectArray = this.getCamera().display();
 // 			for (var i: int = 0; i < pNodeList.length; ++ i) {
 // 				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
-// 				pRenderable.render(this._pDefereedColorTextures[i].getBuffer().getRenderTarget().getViewport(0), null, pNodeList.value(i));
+// 				pRenderable.render(this._pDeferredColorTextures[i].getBuffer().getRenderTarget().getViewport(0), null, pNodeList.value(i));
 // 			}
 
 // 			this.getTarget().getRenderer().executeQueue();
@@ -240,8 +241,8 @@ module akra.render {
 				// 	}
 				// }
 
-				// pTechCurr.getPass(0).setRenderTarget(this._pDefereedColorTextures[0].getBuffer().getRenderTarget());
-				// pTechCurr.getPass(1).setRenderTarget(this._pDefereedColorTextures[1].getBuffer().getRenderTarget());
+				// pTechCurr.getPass(0).setRenderTarget(this._pDeferredColorTextures[0].getBuffer().getRenderTarget());
+				// pTechCurr.getPass(1).setRenderTarget(this._pDeferredColorTextures[1].getBuffer().getRenderTarget());
 			};
 #endif		
 		}
@@ -268,10 +269,15 @@ module akra.render {
 			return pDepthPixel.getColorAt(pColor, 0, 0).r;
 		}
 
+		getDepthRange(): IDepthRange{
+			var pRange: IDepthRange = util.getDepthRange(this._pDeferredDepthTexture);
+			return pRange;
+		}
+
 		getRenderId(x: int, y: int): int {
 			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
 			
-			var pColorTexture: ITexture = this._pDefereedColorTextures[0];
+			var pColorTexture: ITexture = this._pDeferredColorTextures[0];
 
 			//depth texture has POT sized, but viewport not;
 			//depth texture attached to left bottom angle of viewport
@@ -321,8 +327,8 @@ module akra.render {
 			
 			this._pDeferredDepthTexture.destroyResource();
 
-			this._pDefereedColorTextures[0].destroyResource();
-			this._pDefereedColorTextures[1].destroyResource();
+			this._pDeferredColorTextures[0].destroyResource();
+			this._pDeferredColorTextures[1].destroyResource();
 
 			this._pDeferredView.destroy();
 			this._pDeferredView = null;
@@ -340,7 +346,7 @@ module akra.render {
 			
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
-			var pDeferredTextures: ITexture[] = this._pDefereedColorTextures;
+			var pDeferredTextures: ITexture[] = this._pDeferredColorTextures;
 
 			switch (iPass) {
 				case 0:

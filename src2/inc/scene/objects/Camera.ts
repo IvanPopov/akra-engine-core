@@ -455,6 +455,10 @@ module akra.scene.objects {
 			return v3fDestination;
 		};
 
+		getDepthRange(): IDepthRange{
+			return this._pLastViewport.getDepthRange();
+		};
+
     	_addDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
     		this._pDLTechniques[index] = new DLTechnique(pList, this);
     		this._pDLResultStorage[index] = new util.ObjectArray();

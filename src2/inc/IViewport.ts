@@ -11,6 +11,11 @@ module akra {
     IFACE(ICamera);
     IFACE(IRenderableObject);
 
+    export interface IDepthRange{
+        min: float;
+        max: float;
+    };
+
     export enum EViewportTypes {
         DEFAULT = -1,
         DSVIEWPORT = 1,
@@ -50,6 +55,7 @@ module akra {
         getCamera(): ICamera;
         setCamera(pCamera: ICamera): bool;
         getDepth(x: uint, y: uint): float;
+        getDepthRange(): IDepthRange;
 
         setDimensions(fLeft: float, fTop: float, fWidth: float, fHeight: float): bool;
         setDimensions(pRect: IRect2d): bool;

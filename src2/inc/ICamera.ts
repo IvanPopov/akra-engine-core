@@ -11,6 +11,7 @@ module akra {
 	IFACE(IFrustum);
     IFACE(ISceneBuilder);
     IFACE(IObjectArray);
+    IFACE(IDepthRange);
 
 	export enum ECameraParameters {
         CONST_ASPECT = 1
@@ -73,6 +74,8 @@ module akra {
     	_getNumRenderedFaces(): uint;
         _notifyRenderedFaces(nFaces: uint): void;
         _getLastResults(iList?: int): IObjectArray;
+
+        getDepthRange(): IDepthRange;
     }
 }
 

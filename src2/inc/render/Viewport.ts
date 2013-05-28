@@ -147,6 +147,10 @@ module akra.render {
         	return 1.0;
         }
 
+        getDepthRange(): IDepthRange{
+        	return <IDepthRange>{min: -1, max: 1};
+        }
+
         setCamera(pCamera: ICamera): bool {
         	if(this._pCamera) {
 				if(this._pCamera._getLastViewport() == this) {

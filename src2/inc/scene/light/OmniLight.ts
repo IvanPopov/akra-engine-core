@@ -222,13 +222,27 @@ module akra.scene.light {
 			var pShadowCaster: IShadowCaster = this._pShadowCasterCube[iFace];
 			var pCameraFrustum: IFrustum = pCamera.frustum;
 
+			if(iFace == 3 && window["debug"]){
+				var pDepthRange: IDepthRange = (<any>akra).self.viewport.getDepthRange();
+				
+				var fNearPlane: float = pCamera.projectionMatrix.unprojZ(pDepthRange.min);
+				var fFarPlane: float = pCamera.projectionMatrix.unprojZ(pDepthRange.max);
+
+				var fFov: float = pCamera.fov;
+				var fAspect: float = pCamera.aspect;
+
+				var m4fTmp: IMat4 = Mat4.perspective(fFov, fAspect, -fNearPlane, -fFarPlane, new Mat4());
+
+				pCameraFrustum = (new geometry.Frustum()).extractFromMatrix(m4fTmp, pCamera.worldMatrix);
+			}
+
 			var pResult: IObjectArray = pShadowCaster.affectedObjects;
 			pResult.clear();
 
 			//fast test on frustum intersection
 			if(!pCameraFrustum.testFrustum(pShadowCaster.frustum)){
 				//frustums don't intersecting
-				pShadowCaster._optimizeProjectionMatrix();
+				pShadowCaster._optimizeProjectionMatrix(pCameraFrustum);
 				return pResult;
 			}
 
@@ -353,7 +367,7 @@ module akra.scene.light {
 				
 			}
 
-			pShadowCaster._optimizeProjectionMatrix();
+			pShadowCaster._optimizeProjectionMatrix(pCameraFrustum);
 
 			return pResult;
 		};

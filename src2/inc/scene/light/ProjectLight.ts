@@ -159,7 +159,7 @@ module akra.scene.light {
 			//fast test on frustum intersection
 			if(!pCameraFrustum.testFrustum(pShadowCaster.frustum)){
 				//frustums don't intersecting
-				pShadowCaster._optimizeProjectionMatrix();
+				pShadowCaster._optimizeProjectionMatrix(pCameraFrustum);
 				return pResult;
 			}
 
@@ -404,7 +404,7 @@ module akra.scene.light {
 				}
 			}
 
-			pShadowCaster._optimizeProjectionMatrix();
+			pShadowCaster._optimizeProjectionMatrix(pCameraFrustum);
 
 			return pResult;
 		};

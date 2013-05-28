@@ -174,7 +174,7 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pSunLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "sun");
+		var pSunLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "sun");
 			
 		pSunLight.attachToParent(pScene.getRootNode());
 		pSunLight.enabled = true;
@@ -361,7 +361,6 @@ module akra {
 	function update(): void {
 		updateCameras();
 		self.keymap.update();
-
 		// var pProj: IVec3 = vec3();
 		// if (self.terrainLoaded && self.terrain.projectPoint(self.hero.root.worldPosition, pProj)) {
 		// 	self.cameraTerrainProj.setPosition(pProj);

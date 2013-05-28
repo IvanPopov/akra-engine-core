@@ -22,6 +22,7 @@ module akra{
 		set(pRect: IRect2d): IRect2d;
 		set(v2fVec: IVec2): IRect2d;
 		set(fSizeX: float, fSizeY: float): IRect2d;
+		set(v2fMinPoint: IVec2, v2fMaxPoint: IVec2): IRect2d;
 		set(fX0: float, fX1: float, fY0: float, fY1: float): IRect2d;
 
 		setFloor(pRect: IRect2d): IRect2d;
