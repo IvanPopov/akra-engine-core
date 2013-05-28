@@ -637,7 +637,7 @@ module akra.fx {
 			//beacause only 1024
 			
 			var iSceneObjectGuid: int = isNull(pSceneObject)? 0: pSceneObject.getGuid();
-			var iRenderableObjectGuid: int = pRenderable.getGuid();
+			var iRenderableObjectGuid: int = isNull(pRenderable)? MAX_UINT32: pRenderable.getGuid();
 
 			if (this._nRidSO === RID_TOTAL || this._nRidRE === RID_TOTAL) {
 				this._pRidTable = <any>{};
@@ -658,7 +658,7 @@ module akra.fx {
 				}
 
 				pRidByRenderable = pRidTable[iSceneObjectGuid] = <any>{};
-				this._nRidSO ++;
+				pRidByRenderable[0] = this._nRidSO ++;
 			}
 			
 			
@@ -666,17 +666,18 @@ module akra.fx {
 
 			if (!isDefAndNotNull(iRid)) {
 				if (!bCreateIfNotExists) {
-					return 0;
+					LOG("here...")
+					return 1 + pRidByRenderable[0] * 1024;
 				}
 
-				pRidByRenderable[iRenderableObjectGuid] = iRid = 1 + this._nRidSO * 1024 + this._nRidRE;
+				pRidByRenderable[iRenderableObjectGuid] = iRid = 1 + pRidByRenderable[0] * 1024 + this._nRidRE;
 				pRidPair = pRidMap[iRid];
 
 				if (!isDefAndNotNull(pRidPair)) {
 					pRidPair = pRidMap[iRid] = {renderable: null, object: null};
 				}
 
-				LOG("render pair created with id: ", iRid, "roid(", iRenderableObjectGuid, "): ", this._nRidRE, "soid(", iSceneObjectGuid,"): ", this._nRidSO);
+				LOG("render pair created with id: ", iRid, "roid(", iRenderableObjectGuid, "): ", this._nRidRE, "soid(", iSceneObjectGuid,"): ", pRidByRenderable[0]);
 
 				pRidPair.renderable = pRenderable;
 				pRidPair.object = pSceneObject;

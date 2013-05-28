@@ -172,12 +172,16 @@ module akra.ui {
 			return this._pRootNode;
 		}
 
+		inline get selectedNode(): IEntity {
+			return !isNull(this._pSelectedNode)? this._pSelectedNode.source: null;
+		}
+
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.TREE) {
 			super(ui, options, eType, $("<ol class='tree'/>"));
 
 		}
 
-		select(pNode: IUITreeNode): bool {
+		private _select(pNode: IUITreeNode): bool {
 			var pPrev: IUITreeNode = this._pSelectedNode;
 
 			this._pSelectedNode = null;
@@ -193,6 +197,22 @@ module akra.ui {
 			}
 
 			return true;
+		}
+
+		select(pNode: IUITreeNode): bool {
+			return this._select(pNode);
+		}
+
+		selectByGuid(iGuid: int): void {
+			if (this._pSelectedNode && this._pSelectedNode.source.getGuid() === iGuid) {
+				return;
+			}
+
+			var pNode: IUITreeNode = this._pNodeMap[iGuid];
+
+			if (pNode) {
+				this._select(pNode);
+			}
 		}
 
 		isSelected(pNode: IUITreeNode): bool {

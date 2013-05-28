@@ -268,7 +268,11 @@ module akra.render {
 			return pDepthPixel.getColorAt(pColor, 0, 0).r;
 		}
 
-		getRenderId(x: int, y: int): int {
+		inline getRenderId(x: int, y: int): int {
+			return this._getDeferredTex1Value(x, y).a;
+		}
+
+		_getDeferredTex1Value(x: int, y: int): IColor {
 			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
 			
 			var pColorTexture: ITexture = this._pDefereedColorTextures[0];
@@ -282,8 +286,8 @@ module akra.render {
 			pFloatColorPixel.bottom = y + 1;
 
 			pColorTexture.getBuffer(0, 0).readPixels(pFloatColorPixel);
-
-			return pFloatColorPixel.getColorAt(pColor, 0, 0).a;
+			// LOG(pFloatColorPixel.data);
+			return pFloatColorPixel.getColorAt(pColor, 0, 0);
 		}
 
 		setSkybox(pSkyTexture: ITexture): bool {
