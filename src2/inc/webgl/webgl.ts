@@ -705,7 +705,7 @@ module akra.webgl {
 
 	export function checkFBOAttachmentFormat(eFormat: EPixelFormats): bool 
     {
-        if(eFormat === EPixelFormats.R8G8B8A8)
+        if(eFormat === EPixelFormats.R8G8B8A8 || eFormat === EPixelFormats.R8G8B8)
         {
             return true;
         }

@@ -170,7 +170,7 @@ module akra.terrain {
 
 				this._pDefaultScreen.addRenderMethod(pMethod, ".terrain_generate_normal");
 
-				this.connect(this._pDefaultScreen.getTechnique(".terrain_generate_normal"), SIGNAL(render), SLOT(_onGenerateNormalRender), EEventTypes.UNICAST);
+				this.connect(this._pDefaultScreen.getTechnique(".terrain_generate_normal"), SIGNAL(render), SLOT(_onGenerateNormalRender));
 			}
 
 		    return true;
@@ -304,7 +304,7 @@ module akra.terrain {
 
 		        pSection.getRenderable().getTechnique().setMethod(this._pDefaultRenderMethod);
 
-		        this.connect(pSection.getRenderable().getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
+		        this.connect(pSection.getRenderable().getTechnique(), SIGNAL(render), SLOT(_onRender));
 		    }
 		}
 
@@ -494,12 +494,7 @@ module akra.terrain {
 			this._f2DDiagonal = math.sqrt((fX1 - fX0) * (fX1 - fX0) + (fY1 - fY0) * (fY1 - fY0));
 		}
 
-		// _bPrint: bool = false;
-		// _iCounter: uint = 0;
 		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
-			// if(this._bPrint){
-			// 	LOG(this._iCounter++);
-			// }
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			//pPass.setTexture("TEXTURE6", this._pBaseNormalTexture);
@@ -510,6 +505,7 @@ module akra.terrain {
 		}
 
 		_onGenerateNormalRender(pTechnique: IRenderTechnique, iPass: uint): void {
+			
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setSamplerTexture("HEIGHT_SAMPLER", this._pHeightMapTexture);

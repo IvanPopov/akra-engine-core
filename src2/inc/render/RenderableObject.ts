@@ -20,9 +20,10 @@ module akra.render {
 		protected _pRenderer: IRenderer;
 		protected _pTechnique: IRenderTechnique = null;
 		protected _pTechniqueMap: IRenderTechniqueMap = {};
+		protected _eRenderableType: ERenderDataTypes;
 		protected _bShadow: bool = true;
 		protected _bVisible: bool = true;
-		protected _eRenderableType: ERenderDataTypes;
+		protected _bFrozen: bool = false;
 
 		inline get type(): ERenderDataTypes {
 			return this._eRenderableType;
@@ -193,15 +194,20 @@ module akra.render {
 			return true;
 		}
 
+		inline isFrozen(): bool {
+			return this._bFrozen;
+		}
+
 
 		render(pViewport: IViewport, csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
 			this.beforeRender(pViewport);
 
-			if(!this.isReadyForRender()){
+			if (!this.isReadyForRender()) {
 				return;
 			}
 			
-			if(!this.switchRenderMethod(csMethod)){
+			if (!this.switchRenderMethod(csMethod)) {
+				debug_error("could not switch render method <" + csMethod + ">");
 				return;
 			}
 			

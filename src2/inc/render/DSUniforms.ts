@@ -3,6 +3,7 @@
 
 #include "ILightPoint.ts"
 #include "IShaderInput.ts"
+#include "fx/PassInputBlend.ts"
 
 
 #define uniformOmni() UniformOmni.stackCeil

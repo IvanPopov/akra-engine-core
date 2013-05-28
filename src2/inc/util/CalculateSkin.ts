@@ -10,6 +10,7 @@ module akra.util{
 		var pRenderData: IRenderData = pMeshSubset.data;
 
 		var isOk: bool = pRenderData.selectIndexSet(".update_skinned_position");
+
 		if(!isOk){
 			return false;
 		}
@@ -298,6 +299,8 @@ module akra.util{
         pWebGLContext.disableVertexAttribArray(iDestinationAttribLocation);
 
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
+        pWebGLRenderer._setViewport(null);
+
 		return true;
 	};
 	#else

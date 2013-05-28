@@ -42,10 +42,10 @@ module akra.fx {
 		private _iLastShaderId: uint = 0;
 
 		private _pMaterialContainer: any = {
-			"DIFFUSE" 	: null,
-			"AMBIENT" 	: null,
-			"SPECULAR" 	: null,
-			"EMISSIVE" 	: null,
+			"DIFFUSE" 	: new Vec4(),
+			"AMBIENT" 	: new Vec4(),
+			"SPECULAR" 	: new Vec4(),
+			"EMISSIVE" 	: new Vec4(),
 			"SHININESS" : 1.
 		};
 
@@ -87,8 +87,9 @@ module akra.fx {
 				this._pUniformTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
 				return false;
 			}
-
-			return true;
+			else {
+				return true;
+			}
 		}
 
 		setUniform(sName: string, pValue: any): void {
@@ -117,7 +118,7 @@ module akra.fx {
 
 			this.uniforms[sName] = pValue;
 		}
-	
+
 		setForeign(sName: string, pValue: any): void {		
 			if(!this._pForeignTypeMap[sName]){
 				this._pForeignTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
@@ -127,7 +128,7 @@ module akra.fx {
 			//Check type
 
 			var pOldValue: any = this.foreigns[sName];
-			
+
 			if(pOldValue !== pValue) {
 				this._bNeedToCalcBlend = true;
 				this._bNeedToCalcShader = true;
@@ -150,14 +151,28 @@ module akra.fx {
 				else {
 					var pState: IAFXSamplerState = this.samplers[sName];
 					pState.texture = pTexture;
-					
+
 					if (!isNull(pTexture)) {
 						pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
 						pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
 						pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
 						pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
-						// LOG(pState.min_filter, pState.mag_filter);
 					}
+				}
+			}
+		}
+
+		_setSamplerTextureObject(sName: string, pTexture: ITexture):void {
+			if(this.hasUniform(sName)){
+				var pState: IAFXSamplerState = this.samplers[sName];
+				pState.texture = pTexture;
+
+				
+				if (!isNull(pTexture)) {
+					pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
+					pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
+					pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
+					pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
 				}
 			}
 		}
@@ -193,7 +208,7 @@ module akra.fx {
 			}
 
 			//Check type
-			
+
 			this.textures[sName] = pValue;
 		}
 
@@ -202,31 +217,37 @@ module akra.fx {
 			if(isNull(pSurfaceMaterial)){
 				return ;
 			}
+
 			// var pSurfaceMaterial: core.pool.resources.SurfaceMaterial = pSurfaceMaterial;
-			// LOG(pSurfaceMaterial, pSurfaceMaterial.totalTextures);
-			for (var i: int = 0; i < pSurfaceMaterial.totalTextures; i++) {
-				var pTexture: ITexture = pSurfaceMaterial.texture(i);
-				// var iTexcord: int = pSurfaceMaterial[i].texcoord(i);
-				this.setTexture("TEXTURE" + i, pTexture);
+
+			var iTotalTextures: uint = pSurfaceMaterial.totalTextures;
+			for (var i: int = 0; i < iTotalTextures; i++) {
+			 	// var iTexcord: int = pSurfaceMaterial[i].texcoord(i);
+			 	this.setTexture("TEXTURE" + i.toString(), pSurfaceMaterial.texture(i));
 			}
 
 			var pMaterial: IMaterial = pSurfaceMaterial.material;
 			var pMatContainer: any = this._pMaterialContainer;
 
-			pMatContainer.DIFFUSE = util.colorToVec4(pMaterial.diffuse);
-			pMatContainer.AMBIENT = util.colorToVec4(pMaterial.ambient);
-			pMatContainer.SPECULAR = util.colorToVec4(pMaterial.specular);
-			pMatContainer.EMISSIVE = util.colorToVec4(pMaterial.emissive);
+			pMatContainer.DIFFUSE.set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
+			pMatContainer.AMBIENT.set(pMaterial.ambient.r, pMaterial.ambient.g, pMaterial.ambient.b, pMaterial.ambient.a);
+			pMatContainer.SPECULAR.set(pMaterial.specular.r, pMaterial.specular.g, pMaterial.specular.b, pMaterial.specular.a);
+			pMatContainer.EMISSIVE.set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
 			pMatContainer.SHININESS = pMaterial.shininess;
 
-			this.setStruct("MATERIAL", pMatContainer);
+			if(this.hasUniform("MATERIAL")) this.uniforms["MATERIAL"] = pMatContainer;
 
-			this.setSamplerTexture("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
-			this.setSamplerTexture("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
-			this.setSamplerTexture("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
-			this.setSamplerTexture("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
-			this.setSamplerTexture("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
+			this._setSamplerTextureObject("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
+			this._setSamplerTextureObject("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
+			this._setSamplerTextureObject("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
+			this._setSamplerTextureObject("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
+			this._setSamplerTextureObject("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
 
+			// if(this.hasUniform("MATERIAL.DIFFUSE")) this.uniforms["MATERIAL.DIFFUSE"] = pMatContainer.DIFFUSE;
+			// if(this.hasUniform("MATERIAL.AMBIENT")) this.uniforms["MATERIAL.AMBIENT"] = pMatContainer.AMBIENT;
+			// if(this.hasUniform("MATERIAL.SPECULAR")) this.uniforms["MATERIAL.SPECULAR"] = pMatContainer.SPECULAR;
+			// if(this.hasUniform("MATERIAL.EMISSIVE")) this.uniforms["MATERIAL.EMISSIVE"] = pMatContainer.EMISSIVE;
+			// if(this.hasUniform("MATERIAL.SHININESS")) this.uniforms["MATERIAL.SHININESS"] = pMatContainer.SHININESS;
 			// this.setUniform("MATERIAL.DIFFUSE", util.colorToVec4(pMaterial.diffuse));
 			// this.setUniform("MATERIAL.AMBIENT", util.colorToVec4(pMaterial.ambient));
 			// this.setUniform("MATERIAL.SPECULAR", util.colorToVec4(pMaterial.specular));
@@ -284,7 +305,7 @@ module akra.fx {
 
 			for(var i: uint = 0; i < this.samplerArrayKeys.length; i++){
 				var pStateList: IAFXSamplerState[] = this.samplerArrays[this.samplerArrayKeys[i]];
-				
+
 				for(var j: uint = 0; j < pStateList.length; j++){
 					this.clearSamplerState(pStateList[j]);
 				}
@@ -340,6 +361,7 @@ module akra.fx {
 			this.uniforms = <any>{};
 			this.foreigns = <any>{};
 			this.textures = <any>{};
+
 
 			var pUniformKeys: string[] = this._pCreator.uniformRealNameList;
 			var pForeignKeys: string[] = this._pCreator.foreignNameList;

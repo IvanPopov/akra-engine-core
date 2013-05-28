@@ -118,7 +118,7 @@ module akra.terrain {
 				this._iTotalIndicesMax=0;
 
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
-				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
+				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender));
 
 				this._setTessellationParameters(10.0, 0.5);
 				this.reset();
@@ -205,7 +205,7 @@ module akra.terrain {
 			this._iTotalIndices = 0;
 			//Максимальное количество треугольников помноженное на 3 вершины на каждый треугольник
 			this._pIndexList = new Float32Array(this._iMaxTriTreeNodes*3); 
-			this._pRenderData.allocateIndex([VE_FLOAT(DeclarationUsages.INDEX0)],this._pIndexList);
+			this._pRenderData.allocateIndex([VE_FLOAT(DeclarationUsages.INDEX0), VE_FLOAT(DeclarationUsages.POSITION, 0)],this._pIndexList);
 			this._pRenderData.index(this._iVertexID, DeclarationUsages.INDEX0);
 			this._pDataIndex = this._pRenderData.getAdvancedIndexData(DeclarationUsages.INDEX0);
 			

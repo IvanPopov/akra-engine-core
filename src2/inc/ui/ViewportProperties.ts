@@ -82,7 +82,9 @@ module akra.ui {
 			    		pSkyBoxTexture.loadImage(pSkyboxImage);
 		    		}
 
-					(<render.DSViewport>(pViewportProperties.getViewport())).setSkybox(pSkyBoxTexture);
+		    		if (pViewportProperties.getViewport().type === EViewportTypes.DSVIEWPORT) {
+						(<render.DSViewport>(pViewportProperties.getViewport())).setSkybox(pSkyBoxTexture);
+					}	
 		    	},
 
 		    	// dragenter: (e) => {
@@ -134,8 +136,10 @@ module akra.ui {
 
 			ide.cmd(akra.ECMD.CHANGE_AA, this._pFXAASwh.value);
 
-			if ((<IDSViewport>pViewport).getSkybox()) {
-				this._pSkyboxLb.text = (<IDSViewport>pViewport).getSkybox().findResourceName();
+			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
+				if ((<IDSViewport>pViewport).getSkybox()) {
+					this._pSkyboxLb.text = (<IDSViewport>pViewport).getSkybox().findResourceName();
+				}
 			}
 
 			this.connect(pViewport, SIGNAL(addedSkybox), SLOT(_addedSkybox));

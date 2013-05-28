@@ -113,12 +113,12 @@ module akra.model {
 
         isReadyForRender(): bool {
             for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-                if (!this._pSubMeshes[i].isReadyForRender()) {
-                    return false;
+                if (this._pSubMeshes[i].isReadyForRender()) {
+                    return true;
                 }
             }
             
-            return true;
+            return false;
         }
 
         private setup(sName: string, eOptions: int, pDataCollection?: IRenderDataCollection): bool {
@@ -303,6 +303,7 @@ module akra.model {
                     pRenderData = this._pSubMeshes[i].data;
                     pRenderData.addRef();
                     pClone.appendSubset(this._pSubMeshes[i].name, pRenderData);
+                    pClone.getSubset(i).material.name = this._pSubMeshes[i].material.name;
                 }
 
                 pClone.replaceFlexMaterials(this.flexMaterials);

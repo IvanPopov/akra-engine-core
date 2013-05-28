@@ -49,6 +49,7 @@ module akra {
 
 		isReadyForRender(): bool;
 		isAllMethodsLoaded(): bool;
+		isFrozen(): bool;
 
 
 		render(pViewport: IViewport, csMethod?: string, pSceneObject?: ISceneObject): void;

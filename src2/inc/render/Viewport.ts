@@ -88,6 +88,8 @@ module akra.render {
         inline set depthClear(fDepthClearValue: float) { this._pViewportState.clearDepth = fDepthClearValue; }
 
 
+        inline get type(): EViewportTypes { return EViewportTypes.DEFAULT; }
+
 		constructor (pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			this._pTarget = pTarget;
 
@@ -286,7 +288,6 @@ module akra.render {
         	this.getTarget().getRenderer().executeQueue();
         }
 
-
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
 			var pVisibleObjects: IObjectArray = pCamera.display();
 			var pRenderable: IRenderableObject;
@@ -300,7 +301,7 @@ module akra.render {
 				
 				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
 					pRenderable = pSceneObject.getRenderable(j);
-
+					
 					if (!isNull(pRenderable)) {
 						pRenderable.render(this, csMethod, pSceneObject);
 					}
@@ -389,6 +390,7 @@ module akra.render {
         CREATE_EVENT_TABLE(Viewport);
     	BROADCAST(viewportDimensionsChanged, VOID);
     	BROADCAST(viewportCameraChanged, VOID);
+    	BROADCAST(render, CALL(pTechnique, iPass, pRenderable, pSceneObject));
 	}
 }
 

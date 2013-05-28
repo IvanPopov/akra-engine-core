@@ -6,6 +6,7 @@
 #include "IDepthBuffer.ts"
 #include "Viewport.ts"
 #include "DSViewport.ts"
+#include "ColorViewport.ts"
 #include "ShadowViewport.ts"
 #include "events/events.ts"
 #include "IFrameStats.ts"
@@ -226,13 +227,15 @@ module akra.render {
 			}
 
 			if(isNumber(arguments[1])){
-
 				switch(arguments[1]){
 					case EViewportTypes.DSVIEWPORT:
 						pViewport = new DSViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 						break;
 					case EViewportTypes.SHADOWVIEWPORT:
 						pViewport = new ShadowViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+						break;
+					case EViewportTypes.COLORVIEWPORT:
+						pViewport = new ColorViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 						break;
 					default:
 						pViewport = new Viewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);

@@ -16,8 +16,10 @@
 #include "IAFXPassInputBlend.ts"
 #include "IBufferMap.ts"
 #include "ISurfaceMaterial.ts"
+#include "IRID.ts"
 
 module akra {
+
 	export interface IAFXComposer {
 		getComponentByName(sComponentName: string): IAFXComponent;
 		getEngine(): IEngine;
@@ -57,6 +59,11 @@ module akra {
 		
 		applyBufferMap(pBufferMap: IBufferMap): bool;
 		applySurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): bool;
+
+		_calcRenderID(pSceneObject: ISceneObject, pRenderable: IRenderableObject, bCreateIfNotExists?: bool): int;
+
+		_getRenderableByRid(iRid: int): IRenderableObject;
+		_getObjectByRid(iRid: int): ISceneObject;
 
 		_setCurrentSceneObject(pSceneObject: ISceneObject): void;
 		_setCurrentViewport(pViewport: IViewport): void;

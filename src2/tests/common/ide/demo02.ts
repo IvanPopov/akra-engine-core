@@ -31,8 +31,8 @@ module akra {
 	var pKeymap: controls.KeyMap		= <controls.KeyMap>controls.createKeymap();
 	var pTerrain: ITerrain 				= null;
 
-	var $canvasContainer: JQuery 		= null;
-	var $div: JQuery 					= null;
+	// var $canvasContainer: JQuery 		= null;
+	// var $div: JQuery 					= null;
 
 	
 
@@ -46,7 +46,7 @@ module akra {
 		renderer 			: pEngine.getRenderer(),
 		keymap 				: pKeymap,
 		gamepads 			: pGamepads,
-		cameraTerrainProj 	: <ISceneModel>null,
+		// cameraTerrainProj 	: <ISceneModel>null,
 		terrain 			: <ITerrain>null,
 		terrainLoaded		: false,
 		cameras 			: <ICamera[]>[],
@@ -72,25 +72,25 @@ module akra {
 		});
 
 
-		pIDE.bind(SIGNAL(created), (): void => {
-			$canvasContainer = $((<webgl.WebGLCanvas>pCanvas).el).parent();
+		// pIDE.bind(SIGNAL(created), (): void => {
+		// 	$canvasContainer = $((<webgl.WebGLCanvas>pCanvas).el).parent();
 
-			$div = $("<div>[ Fred ]</div>").css({
-				position 	: "absolute", 
-				background 	: "rgba(0,0,0,.75)", 
-				color 		: "white",
-				zIndex 		: "1000",
-				fontFamily 	: "Consolas",
-				fontSize 	: "10px",
-				padding 	: "2px",
-				width 		: "40px",
-				textAlign 	: "center",
-				whiteSpace 	: "nowrap"
-			});
+		// 	$div = $("<div>[ Fred ]</div>").css({
+		// 		position 	: "absolute", 
+		// 		background 	: "rgba(0,0,0,.75)", 
+		// 		color 		: "white",
+		// 		zIndex 		: "1000",
+		// 		fontFamily 	: "Consolas",
+		// 		fontSize 	: "10px",
+		// 		padding 	: "2px",
+		// 		width 		: "40px",
+		// 		textAlign 	: "center",
+		// 		whiteSpace 	: "nowrap"
+		// 	});
 
-			$canvasContainer.append($div);
-			$canvasContainer.css({overflow: "hidden"});
-		});
+		// 	$canvasContainer.append($div);
+		// 	$canvasContainer.css({overflow: "hidden"});
+		// });
 
 		pKeymap.bind("equalsign", () => {
 			self.activeCamera ++;
@@ -161,12 +161,12 @@ module akra {
 		pSceneSurface.attachToParent(pScene.getRootNode());
 		pSceneSurface.mesh.getSubset(0).setVisible(false);
 
-		var pCameraTerrainProj: ISceneModel = util.basis(pScene);
+		// var pCameraTerrainProj: ISceneModel = util.basis(pScene);
 
-		pCameraTerrainProj.attachToParent(pScene.getRootNode());
-		pCameraTerrainProj.scale(.25);
+		// pCameraTerrainProj.attachToParent(pScene.getRootNode());
+		// pCameraTerrainProj.scale(.25);
 
-		self.cameraTerrainProj = pCameraTerrainProj;
+		// self.cameraTerrainProj = pCameraTerrainProj;
 	}
 
 	function createViewports(): void {
@@ -318,7 +318,7 @@ module akra {
 			pTerrainMap["normal"] = pRmgr.loadImage("@TERRAIN_NORMAL_MAP");
 			
 			pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 150), 5, 5, 5, "main");
+				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
 				pTerrain.attachToParent(pScene.getRootNode());
 				pTerrain.setInheritance(ENodeInheritance.ALL);
 
@@ -340,7 +340,9 @@ module akra {
 		pSkyBoxTexture.loadResource("@SKYBOX");
 
 		pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
-			(<render.DSViewport>pViewport).setSkybox(pTexture);
+			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
+				(<render.DSViewport>pViewport).setSkybox(pTexture);
+			}
 		});
 	}
 
@@ -360,15 +362,15 @@ module akra {
 		updateCameras();
 		self.keymap.update();
 
-		var pProj: IVec3 = vec3();
-		if (self.terrainLoaded && self.terrain.projectPoint(self.hero.root.worldPosition, pProj)) {
-			self.cameraTerrainProj.setPosition(pProj);
+		// var pProj: IVec3 = vec3();
+		// if (self.terrainLoaded && self.terrain.projectPoint(self.hero.root.worldPosition, pProj)) {
+		// 	self.cameraTerrainProj.setPosition(pProj);
 
-			if (self.viewport.projectPoint(pProj)) {
-				var pOffset = $canvasContainer.offset();
-				$div.offset({left: pOffset.left + pProj.x, top: pOffset.top + pProj.y});
-			}
-		}
+		// 	if (self.viewport.projectPoint(pProj)) {
+		// 		var pOffset = $canvasContainer.offset();
+		// 		$div.offset({left: pOffset.left + pProj.x, top: pOffset.top + pProj.y});
+		// 	}
+		// }
 	}
 
 	function fetchAllCameras(): void {

@@ -72,6 +72,7 @@ module akra {
     	_getLastViewport(): IViewport;
     	_getNumRenderedFaces(): uint;
         _notifyRenderedFaces(nFaces: uint): void;
+        _getLastResults(iList?: int): IObjectArray;
     }
 }
 
