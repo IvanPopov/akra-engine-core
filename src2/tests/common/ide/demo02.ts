@@ -4,6 +4,7 @@
 #include "ui/IDE.ts"
 #include "util/SimpleGeometryObjects.ts"
 
+/// @BARREL: 				{data}/models/barrel/barrel_and_support.dae|location()
 /// @CLOSED_BOX: 			{data}/models/box/closed_box.dae|location()
 /// @TUBE: 					{data}/models/tube/tube.dae|location()
 /// @TUBE_BETWEEN_ROCKS:	{data}/models/tubing/tube_beeween_rocks.DAE|location()
@@ -418,16 +419,22 @@ module akra {
 				pBox.addPosition(vec3(0., 1., 0.));
 			});
 
+			loadModels("@BARREL", (pBarrel: ISceneNode) => {
+				pBarrel.scale(.75);
+				pBarrel.setPosition(vec3(-30., -40.23, -15.00));
+				pBarrel.setRotationByXYZAxis(-17. * math.RADIAN_RATIO, -8. * math.RADIAN_RATIO, -15. * math.RADIAN_RATIO);
+			});
+
 			loadModels("@TUBE", (pTube: ISceneNode) => {
-				pTube.scale(5.);
-				putOnTerrain(pTube, vec3(2., -3.85, 5.));
-				pTube.addPosition(vec3(0., 2., 0.));
+				pTube.scale(19.);
+				pTube.setRotationByXYZAxis(0. * math.RADIAN_RATIO, -55. * math.RADIAN_RATIO, 0.);
+				pTube.setPosition(vec3(-16.  , -52.17  ,-66.));
 			});
 
 			loadModels("@TUBE_BETWEEN_ROCKS", (pTube: ISceneNode) => {
-				pTube.scale(5.);
-				putOnTerrain(pTube, vec3(5., -3.85, 2.));
-				pTube.addPosition(vec3(0., 2., 0.));
+				pTube.scale(2.);
+				pTube.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
+				pTube.setPosition(vec3(-55., -12.15, -82.00));
 			});
 
 			pScene.bind(SIGNAL(beforeUpdate), update);

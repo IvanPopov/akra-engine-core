@@ -24,6 +24,7 @@ module akra.ui {
 
 		protected _iFixed: uint = 2;
 		protected _bEditable: bool = false;
+		protected $lock: JQuery;
 
 		inline get value(): any {
 			switch(this.totalComponents) {
@@ -50,6 +51,9 @@ module akra.ui {
 			this.connect(this.z, SIGNAL(changed), SLOT(changed));
 			this.connect(this.w, SIGNAL(changed), SLOT(changed));
 
+			this.$lock = this.el.find("input[type=checkbox]:first");
+
+
 			this.setVec4(vec4(0.));
 		}
 
@@ -68,9 +72,11 @@ module akra.ui {
 		editable(bValue: bool = true): void {
 			if (bValue) {
 				this.el.addClass("editable");
+				this.$lock.show();
 			}
 			else {
 				this.el.removeClass("editable");
+				this.$lock.hide();
 			}
 			
 			this.x.editable(bValue);
@@ -85,7 +91,11 @@ module akra.ui {
 			return this._bEditable;
 		}
 
-		changed(): void {
+		changed(pLbl: IUILabel, sValue: string): void {
+			if (this.$lock.prop("checked")) {
+				this.x.text = this.y.text = this.z.text = this.w.text = sValue;
+			}
+
 			EMIT_BROADCAST(changed, _CALL(this.value));
 		}
 

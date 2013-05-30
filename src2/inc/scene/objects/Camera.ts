@@ -342,52 +342,6 @@ module akra.scene.objects {
 		//     this._m4fRenderStageProjView[__34] -= fZ_bias;
 	 //    }
 
-    	lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3): void;
-    	lookAt(v3fCenter: IVec3, v3fUp?: IVec3): void;
-    	lookAt(v3f?): void {
-    		var v3fFrom: IVec3, v3fCenter: IVec3, v3fUp: IVec3;
-
-    		this.update();
-
-		    if (arguments.length < 3) {
-		        v3fFrom = this.worldPosition;
-		        v3fCenter = <IVec3>arguments[0];
-		        v3fUp = <IVec3>arguments[1];
-		    }
-		    else {
-		        v3fFrom = <IVec3>arguments[0];
-		        v3fCenter = <IVec3>arguments[1];
-		        v3fUp = <IVec3>arguments[2];
-		    }
-
-		    v3fUp = v3fUp || vec3(0., 1., 0.);
-
-		    var v3fParentPos: IVec3 = (<Node>this.parent).worldPosition;
-		    var m4fTemp: IMat4 = Mat4.lookAt(v3fFrom, v3fCenter, v3fUp, mat4()).inverse();
-		    var pData: Float32Array = m4fTemp.data;
-
-		    switch (this._eInheritance) {
-		        case ENodeInheritance.ALL : 
-		            (<Node>this._pParent).inverseWorldMatrix.multiply(m4fTemp, m4fTemp);
-		            m4fTemp.toQuat4(this._qRotation);
-		            this.setPosition(pData[__14], pData[__24], pData[__34]);    
-		            break;
-		        case ENodeInheritance.ROTSCALE : 
-		            var m3fTemp = m4fTemp.toMat3();
-		            m3fTemp = (<Node>this._pParent).inverseWorldMatrix.toMat3().multiply(m3fTemp, mat3());
-		            m3fTemp.toQuat4(this._qRotation);
-		            this.setPosition(pData[__14], pData[__24], pData[__34]);
-		            break;
-		        default :
-		            m4fTemp.toQuat4(this._qRotation);
-		            this.setPosition(
-		            	pData[__14] - v3fParentPos.x, 
-		            	pData[__24] - v3fParentPos.y,
-		                pData[__34] - v3fParentPos.z);
-		    }
-
-		    this.update();
-    	}
 
     	_renderScene(pViewport: IViewport): void {
     		//update the pixel display ratio

@@ -106,7 +106,7 @@ module akra.controls {
 
 		dispatch(e: MouseEvent = <MouseEvent><any>window.event): void {
 		    var iCode: int = (<KeyboardEvent><any>e).keyCode;
-
+		    
 		    if (e.type == "keydown") {
 		        this._pMap[iCode] = true;
 

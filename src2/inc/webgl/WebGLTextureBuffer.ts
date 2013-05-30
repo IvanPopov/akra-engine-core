@@ -302,10 +302,12 @@ module akra.webgl {
 				attribute vec3 TEXCOORD;																			\n\
 				                      																				\n\
 				varying vec3 texcoord;																				\n\
+				varying vec2 dest_texcoord;																			\n\
 				                   																					\n\
 				void main(void){																					\n\
 				    texcoord = TEXCOORD;																			\n\
 				    gl_Position = vec4(POSITION, 0., 1.);															\n\
+				    dest_texcoord.xy = (POSITION.xy + 1.  ) /2.;													\n\
 				}																									\n\
 				",
 				"													\n\
@@ -318,11 +320,12 @@ module akra.webgl {
 				uniform int dst_width;        						\n\
 				uniform int dst_height;        						\n\
 				uniform int src_components_num;						\n\
+				varying vec2 dest_texcoord;							\n\
 				" + sFloatToVec4Func + "\
 																	\n\
 				void main(void) {  									\n\
 																	\n\
-					float pixel = gl_PointCoord.x * float(dst_width);	\n\
+					float pixel = dest_texcoord.x * float(dst_width);	\n\
 					float value;									\n\
 					int comp = int(mod(pixel, float(src_components_num)));	\n\
 					vec4 color = texture2D(uSampler, vec2(texcoord.x, 1. - texcoord.y));\n\

@@ -268,6 +268,74 @@ module akra.math {
 
 	// 	return m4fMat;
 	// };
+	 
+	export function floatToFloat3(value: float): IVec3 {
+		var data: float = value;
+		var result: IVec3 = vec3(0.);
+
+		if (data == 0.) {
+			var signedZeroTest: float = 1. / value;
+
+			if(signedZeroTest < 0.) {
+				result.x = 128.;
+			} 
+
+			return result;
+		}
+
+		if(data < 0.) {
+			result.x = 128.;
+			data = -data;
+		}
+
+		var power: float = 0.;
+		var counter: float = 0.;
+
+		while (counter < 64.) {
+			counter += 1.;
+
+			if(data >= 2.) {    
+				data = data * 0.5;
+				power += 1.;
+				if (power == 63.) {
+					counter = 65.;
+				}
+			}
+			else{
+				if(data < 1.) {
+					data = data * 2.;
+					power -= 1.;
+					if (power == -62.) {
+						counter = 65.;
+					}
+				}
+				else {
+					counter = 65.;
+				}
+			}
+		}
+
+		if (power == -62. && data < 1.) {
+			power = 0.;
+		}
+		else {
+			power = power + 63.;
+			data = data - 1.;
+		}
+
+		result.x += power;
+
+		data *= 256.;
+
+		result.y = floor(data);
+
+		data -= floor(data);
+		data *= 256.;
+
+		result.z = floor(data);
+
+		return result;
+	}
 
 }
 

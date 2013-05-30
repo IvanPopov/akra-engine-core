@@ -42,12 +42,6 @@
   margin-right: 6px;
   color: #222222;
   cursor: pointer;
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
-  background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
-  background-image: -moz-linear-gradient(#ffffff, #f1f1f1);
-  background-image: -ms-linear-gradient(#ffffff, #f1f1f1);
-  background-image: -o-linear-gradient(#ffffff, #f1f1f1);
-  background-image: linear-gradient(#ffffff, #f1f1f1);
   background-color: #eeeeee;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
   background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
@@ -57,12 +51,6 @@
   background-image: linear-gradient(#ffffff, #f1f1f1);
 }
 .component-button:hover {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
-  background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: -moz-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: -ms-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: -o-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: linear-gradient(#f6f6f6, #e0e0e0);
   background-color: #dfdfdf;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
   background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
@@ -72,12 +60,6 @@
   background-image: linear-gradient(#f6f6f6, #e0e0e0);
 }
 .component-button:active {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
-  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
-  background-image: -moz-linear-gradient(#5393c5, #6facd5);
-  background-image: -ms-linear-gradient(#5393c5, #6facd5);
-  background-image: -o-linear-gradient(#5393c5, #6facd5);
-  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #3373a5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -91,12 +73,6 @@
   border: 1px solid #bbb;
   width: 100%;
   height: 20px;
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#d0d0d0), to(#dfdfdf));
-  background-image: -webkit-linear-gradient(#d0d0d0, #dfdfdf);
-  background-image: -moz-linear-gradient(#d0d0d0, #dfdfdf);
-  background-image: -ms-linear-gradient(#d0d0d0, #dfdfdf);
-  background-image: -o-linear-gradient(#d0d0d0, #dfdfdf);
-  background-image: linear-gradient(#d0d0d0, #dfdfdf);
   background-color: #d6d6d6;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#d0d0d0), to(#dfdfdf));
   background-image: -webkit-linear-gradient(#d0d0d0, #dfdfdf);
@@ -110,12 +86,6 @@
   border-radius: 5px 0px 0px 5px;
   height: 100%;
   width: 0;
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
-  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
-  background-image: -moz-linear-gradient(#5393c5, #6facd5);
-  background-image: -ms-linear-gradient(#5393c5, #6facd5);
-  background-image: -o-linear-gradient(#5393c5, #6facd5);
-  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #5393c5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -142,12 +112,6 @@
   height: 100%;
   width: 20px;
   z-index: 2;
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
-  background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
-  background-image: -moz-linear-gradient(#ffffff, #f1f1f1);
-  background-image: -ms-linear-gradient(#ffffff, #f1f1f1);
-  background-image: -o-linear-gradient(#ffffff, #f1f1f1);
-  background-image: linear-gradient(#ffffff, #f1f1f1);
   background-color: #eeeeee;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
   background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
@@ -157,12 +121,6 @@
   background-image: linear-gradient(#ffffff, #f1f1f1);
 }
 .component-slider .component-pin:hover {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
-  background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: -moz-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: -ms-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: -o-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: linear-gradient(#f6f6f6, #e0e0e0);
   background-color: #dfdfdf;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
   background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
@@ -172,12 +130,6 @@
   background-image: linear-gradient(#f6f6f6, #e0e0e0);
 }
 .component-slider .component-pin.ui-draggable-dragging {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
-  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
-  background-image: -moz-linear-gradient(#5393c5, #6facd5);
-  background-image: -ms-linear-gradient(#5393c5, #6facd5);
-  background-image: -o-linear-gradient(#5393c5, #6facd5);
-  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #3373a5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -195,12 +147,6 @@
   color: #222222;
   cursor: pointer;
   min-height: 10px;
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
-  background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
-  background-image: -moz-linear-gradient(#ffffff, #f1f1f1);
-  background-image: -ms-linear-gradient(#ffffff, #f1f1f1);
-  background-image: -o-linear-gradient(#ffffff, #f1f1f1);
-  background-image: linear-gradient(#ffffff, #f1f1f1);
   background-color: #eeeeee;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f1f1f1));
   background-image: -webkit-linear-gradient(#ffffff, #f1f1f1);
@@ -210,12 +156,6 @@
   background-image: linear-gradient(#ffffff, #f1f1f1);
 }
 .component-checkbox:hover {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
-  background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: -moz-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: -ms-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: -o-linear-gradient(#f6f6f6, #e0e0e0);
-  background-image: linear-gradient(#f6f6f6, #e0e0e0);
   background-color: #dfdfdf;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e0e0e0));
   background-image: -webkit-linear-gradient(#f6f6f6, #e0e0e0);
@@ -228,12 +168,6 @@
   border: 1px solid #2373A5;
   color: white;
   text-shadow: 0  1px  0  #3373A5;
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
-  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
-  background-image: -moz-linear-gradient(#5393c5, #6facd5);
-  background-image: -ms-linear-gradient(#5393c5, #6facd5);
-  background-image: -o-linear-gradient(#5393c5, #6facd5);
-  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #3373a5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -352,7 +286,7 @@ div.component-switch input:checked + label:before {
 .component-tabs {
   padding: 0;
 }
-.component-tabs  > .bookmarks {
+.component-tabs > .bookmarks {
   background: lightgray;
   overflow: hidden;
   border-bottom: 1px solid #a3a3a3;
@@ -360,7 +294,7 @@ div.component-switch input:checked + label:before {
   padding: 0 5px 0 5px;
   min-height: 24px;
 }
-.component-tabs  > .bookmarks  > .bookmark {
+.component-tabs > .bookmarks > .bookmark {
   min-width: 50px;
   display: inline-block;
   position: relative;
@@ -374,7 +308,7 @@ div.component-switch input:checked + label:before {
   padding-right: 5px;
   cursor: pointer;
 }
-.component-tabs  > .bookmarks  > .bookmark.active {
+.component-tabs > .bookmarks > .bookmark.active {
   z-index: 2;
   -webkit-box-shadow: inset 2px 0px 5px -2px #888888, inset -2px 0px 5px -2px #888888;
   background: -moz-linear-gradient(top, rgba(204, 204, 204, 0) 0%, rgba(94, 94, 94, 0.35) 49%, rgba(204, 204, 204, 0) 100%);
@@ -387,7 +321,7 @@ div.component-switch input:checked + label:before {
 .component-tabs .component-panel .panel-title {
   display: none;
 }
-.component-tabs  > .component-panel .layout > table {
+.component-tabs > .component-panel .layout > table {
   width: 100%;
 }
 .component-menu {
@@ -399,7 +333,7 @@ div.component-switch input:checked + label:before {
   text-align: left;
   display: inline-block;
 }
-.component-menu  > .menu-title {
+.component-menu > .menu-title {
   font-size: 12px;
   line-height: 16px;
   color: #555;
@@ -413,7 +347,7 @@ div.component-switch input:checked + label:before {
   background: url(../img/arrow.png) 7px 17px no-repeat;
   cursor: pointer;
 }
-.component-menu  > .layout {
+.component-menu > .layout {
   background: #fff;
   position: absolute;
   top: -12px;
@@ -425,11 +359,11 @@ div.component-switch input:checked + label:before {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
   font-size: 11px;
 }
-.component-menu  > .layout  > table {
+.component-menu > .layout > table {
   border-top: 1px solid #dedede;
   width: 100%;
 }
-.component-menu  > .layout td > .component-button {
+.component-menu > .layout td > .component-button {
   color: black;
   display: block;
   padding: 6px 15px;
@@ -443,7 +377,7 @@ div.component-switch input:checked + label:before {
   margin: 0;
   font-size: 12px;
 }
-.component-menu  > .layout td > .component-button:hover {
+.component-menu > .layout td > .component-button:hover {
   background-color: #dedede;
 }
 .component-popup {
@@ -453,31 +387,32 @@ div.component-switch input:checked + label:before {
   box-shadow: 0 0 3px #777;
   position: fixed !important;
 }
-.component-popup  > .header {
+.component-popup > .header {
   height: 32px;
   line-height: 32px;
   font-size: 13px;
   background-color: #202020;
   color: #fff;
 }
-.component-popup  > .header .title, .component-popup  > .header .controls {
+.component-popup > .header .title,
+.component-popup > .header .controls {
   display: inline-block;
 }
-.component-popup  > .header .controls {
+.component-popup > .header .controls {
   float: right;
   position: relative;
   overflow: hidden;
   top: 5px;
   right: 5px;
 }
-.component-popup  > .header .controls .close-btn {
+.component-popup > .header .controls .close-btn {
   background: url(../img/close20.png) 0 0 no-repeat;
   height: 20px;
   width: 20px;
   -webkit-filter: invert(100%);
   cursor: pointer;
 }
-.component-popup  > .header .title {
+.component-popup > .header .title {
   cursor: default;
   overflow: hidden;
   padding-left: 5px;
@@ -485,7 +420,7 @@ div.component-switch input:checked + label:before {
   white-space: nowrap;
   font-weight: bold;
 }
-.component-popup  > .footer {
+.component-popup > .footer {
   background-color: #eee;
   padding-bottom: 3px;
   text-align: center;
@@ -494,7 +429,7 @@ div.component-switch input:checked + label:before {
   border-bottom: 1px solid #ccc;
   height: 10px;
 }
-.component-popup  > .layout {
+.component-popup > .layout {
   background-color: #fff;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
@@ -539,19 +474,23 @@ div.component-switch input:checked + label:before {
   vertical-align: middle;
   text-align: center;
 }
-.component-graphnode td.graph-node-left, .component-graphnode td.graph-node-right {
+.component-graphnode td.graph-node-left,
+.component-graphnode td.graph-node-right {
   width: 7px;
   min-height: 30px;
 }
-.component-graphnode td.graph-node-left .component-graphconnector, .component-graphnode td.graph-node-right .component-graphconnector {
+.component-graphnode td.graph-node-left .component-graphconnector,
+.component-graphnode td.graph-node-right .component-graphconnector {
   margin-top: 2px;
   margin-bottom: 2px;
 }
-.component-graphnode td.graph-node-bottom, .component-graphnode td.graph-node-top {
+.component-graphnode td.graph-node-bottom,
+.component-graphnode td.graph-node-top {
   height: 7px;
   min-width: 100px;
 }
-.component-graphnode td.graph-node-bottom .component-graphconnector, .component-graphnode td.graph-node-top .component-graphconnector {
+.component-graphnode td.graph-node-bottom .component-graphconnector,
+.component-graphnode td.graph-node-top .component-graphconnector {
   margin-left: 2px;
   margin-right: 2px;
 }
@@ -787,34 +726,43 @@ div.component-switch input:checked + label:before {
   margin: 0;
   margin-top: -18px;
 }
-.component-animationplayer .component-checkboxlist .layout.horizontal table, .component-animationblender .component-checkboxlist .layout.horizontal table {
+.component-animationplayer .component-checkboxlist .layout.horizontal table,
+.component-animationblender .component-checkboxlist .layout.horizontal table {
   margin: 0 auto;
 }
-.component-animationplayer .component-checkboxlist .component-checkbox, .component-animationblender .component-checkboxlist .component-checkbox {
+.component-animationplayer .component-checkboxlist .component-checkbox,
+.component-animationblender .component-checkboxlist .component-checkbox {
   padding: 1 4px;
   font-size: 11px;
 }
-.component-animationplayer .component-checkboxlist .component-checkbox.first, .component-animationblender .component-checkboxlist .component-checkbox.first {
+.component-animationplayer .component-checkboxlist .component-checkbox.first,
+.component-animationblender .component-checkboxlist .component-checkbox.first {
   border-radius: 0 !important;
 }
-.component-animationplayer .component-checkboxlist .component-checkbox.last, .component-animationblender .component-checkboxlist .component-checkbox.last {
+.component-animationplayer .component-checkboxlist .component-checkbox.last,
+.component-animationblender .component-checkboxlist .component-checkbox.last {
   border-radius: 0 !important;
 }
-.component-animationplayer .component-checkboxlist .component-checkbox.active img, .component-animationblender .component-checkboxlist .component-checkbox.active img {
+.component-animationplayer .component-checkboxlist .component-checkbox.active img,
+.component-animationblender .component-checkboxlist .component-checkbox.active img {
   -webkit-filter: invert(100%);
 }
-.component-animationplayer .component-checkboxlist .component-checkbox, .component-animationblender .component-checkboxlist .component-checkbox {
+.component-animationplayer .component-checkboxlist .component-checkbox,
+.component-animationblender .component-checkboxlist .component-checkbox {
   min-width: 16px;
   min-height: 16px;
 }
-.component-animationplayer .component-slider, .component-animationblender .component-slider {
+.component-animationplayer .component-slider,
+.component-animationblender .component-slider {
   height: 10px;
 }
-.component-animationplayer .component-slider .component-pin, .component-animationblender .component-slider .component-pin {
+.component-animationplayer .component-slider .component-pin,
+.component-animationblender .component-slider .component-pin {
   height: 10px;
   width: 10px;
 }
-.component-animationplayer .component-slider, .component-animationblender .component-slider {
+.component-animationplayer .component-slider,
+.component-animationblender .component-slider {
   width: auto;
 }
 .component-animationblender div[name=in] .component-graphconnector {
@@ -873,6 +821,7 @@ table td {
 *:focus {
   outline: none;
 }
+/*Gradient mixins*/
 body {
   background: #d3d3d3;
 }
@@ -881,7 +830,8 @@ body {
   width: 100%;
   min-height: 100%;
 }
-#work-area .title, #preview-area .title {
+#work-area .title,
+#preview-area .title {
   border-top: 1px solid #a3a3a3;
   border-bottom: 1px solid #a3a3a3;
   padding: 5px 0px 5px 30px;
@@ -892,7 +842,7 @@ body {
   background: -o-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
   background: -ms-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
   background: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
-  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5', GradientType=0);
 }
 #work-area {
   border-left: 5px solid #dfdfdf;
@@ -901,10 +851,10 @@ body {
   min-height: 760px;
   border-bottom: 5px solid #dfdfdf;
 }
-#work-area .component-tabs  > .component-panel {
+#work-area .component-tabs > .component-panel {
   min-height: 760px;
 }
-#work-area .component-tabs  > .component-panel .component-graph {
+#work-area .component-tabs > .component-panel .component-graph {
   min-height: 550px;
 }
 #preview-area {
@@ -919,7 +869,8 @@ body {
   text-align: right;
   background-color: #CCC;
 }
-#preview-area div[name=resolution] .component-button, #preview-area div[name=resolution] .component-checkboxlist {
+#preview-area div[name=resolution] .component-button,
+#preview-area div[name=resolution] .component-checkboxlist {
   display: inline-block;
 }
 #preview-area div[name=resolution] .component-checkboxlist .layout.horizontal table {
@@ -936,12 +887,6 @@ body {
   border-radius: 0 !important;
 }
 #preview-area div[name=resolution] .component-checkboxlist .component-checkbox.active {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
-  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
-  background-image: -moz-linear-gradient(#5393c5, #6facd5);
-  background-image: -ms-linear-gradient(#5393c5, #6facd5);
-  background-image: -o-linear-gradient(#5393c5, #6facd5);
-  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #3373a5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -969,7 +914,8 @@ body {
 #preview-area .row.first {
   padding-top: 15px;
 }
-#preview-area .row .component-switch, #preview-area .row .component-button {
+#preview-area .row .component-switch,
+#preview-area .row .component-button {
   display: inline-block;
 }
 #preview-area .row .component-button {
@@ -983,12 +929,16 @@ body {
 #tree-node {
   min-width: 165px;
 }
-#tree-node, #tree, #preview-area {
+#tree-node,
+#tree,
+#preview-area {
   padding: 0;
   font-size: 12px;
   border-right: 1px solid #a3a3a3;
 }
-#tree-node .component-panel div.panel-title:first-of-type, #tree .component-panel div.panel-title:first-of-type, #preview-area .component-panel div.panel-title:first-of-type {
+#tree-node .component-panel div.panel-title:first-of-type,
+#tree .component-panel div.panel-title:first-of-type,
+#preview-area .component-panel div.panel-title:first-of-type {
   border-top: 1px solid #a3a3a3;
   border-bottom: 1px solid #a3a3a3;
   padding: 5px 0px 5px 30px;
@@ -999,13 +949,17 @@ body {
   background: -o-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
   background: -ms-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
   background: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
-  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5', GradientType=0);
 }
-#tree-node .component-panel div.panel-title:first-of-type div.controls, #tree .component-panel div.panel-title:first-of-type div.controls, #preview-area .component-panel div.panel-title:first-of-type div.controls {
+#tree-node .component-panel div.panel-title:first-of-type div.controls,
+#tree .component-panel div.panel-title:first-of-type div.controls,
+#preview-area .component-panel div.panel-title:first-of-type div.controls {
   left: -20px;
   margin: -5px 0 0 0;
 }
-#tree-node .component-panel div.panel-title:first-of-type div.controls input, #tree .component-panel div.panel-title:first-of-type div.controls input, #preview-area .component-panel div.panel-title:first-of-type div.controls input {
+#tree-node .component-panel div.panel-title:first-of-type div.controls input,
+#tree .component-panel div.panel-title:first-of-type div.controls input,
+#preview-area .component-panel div.panel-title:first-of-type div.controls input {
   margin: 0px;
   background: url(../img/panel-opened.png) 0 0 no-repeat;
   width: 16px;
@@ -1018,13 +972,19 @@ body {
   -webkit-transition: .15s;
   display: none;
 }
-#tree-node .component-panel.collapsible div.panel-title:first-of-type div.controls input, #tree .component-panel.collapsible div.panel-title:first-of-type div.controls input, #preview-area .component-panel.collapsible div.panel-title:first-of-type div.controls input {
+#tree-node .component-panel.collapsible div.panel-title:first-of-type div.controls input,
+#tree .component-panel.collapsible div.panel-title:first-of-type div.controls input,
+#preview-area .component-panel.collapsible div.panel-title:first-of-type div.controls input {
   display: block;
 }
-#tree-node .component-panel.collapsed div.panel-title:first-of-type div.controls input, #tree .component-panel.collapsed div.panel-title:first-of-type div.controls input, #preview-area .component-panel.collapsed div.panel-title:first-of-type div.controls input {
+#tree-node .component-panel.collapsed div.panel-title:first-of-type div.controls input,
+#tree .component-panel.collapsed div.panel-title:first-of-type div.controls input,
+#preview-area .component-panel.collapsed div.panel-title:first-of-type div.controls input {
   background: url(../img/panel-closed.png) 0 0 no-repeat;
 }
-#tree-node .component-panel .layout.vertical table, #tree .component-panel .layout.vertical table, #preview-area .component-panel .layout.vertical table {
+#tree-node .component-panel .layout.vertical table,
+#tree .component-panel .layout.vertical table,
+#preview-area .component-panel .layout.vertical table {
   margin: 0;
 }
 #tree {
@@ -1152,7 +1112,7 @@ body {
   background: -o-linear-gradient(top, #ebebeb 0%, #dcdcdc 31%, #c8c8c8 100%);
   background: -ms-linear-gradient(top, #ebebeb 0%, #dcdcdc 31%, #c8c8c8 100%);
   background: linear-gradient(to bottom, #ebebeb 0%, #dcdcdc 31%, #c8c8c8 100%);
-  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ebebeb', endColorstr='#c8c8c8', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ebebeb', endColorstr='#c8c8c8', GradientType=0);
   border-bottom: 1px solid #bdbdbd;
 }
 .component-fps .graph {
@@ -1220,6 +1180,12 @@ body {
 .component-inspector .row .component-vector span:last-of-type div.component-label {
   margin-right: 0px;
 }
+.component-inspector .row .component-vector > input[type=checkbox] {
+  width: 10px;
+  position: relative;
+  top: 4px;
+  left: -7px;
+}
 .component-inspector .row .component-label {
   display: inline-block;
   font-size: 12px;
@@ -1252,12 +1218,6 @@ body {
   border-bottom-right-radius: 2px;
 }
 .component-inspector .row .component-checkboxlist .component-checkbox.active {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
-  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
-  background-image: -moz-linear-gradient(#5393c5, #6facd5);
-  background-image: -ms-linear-gradient(#5393c5, #6facd5);
-  background-image: -o-linear-gradient(#5393c5, #6facd5);
-  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #3373a5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -1436,7 +1396,7 @@ body {
 .component-inspector div[name=animation-controller] .component-switch label:before {
   height: 12px;
 }
-.component-tabs  > .bookmarks  > .bookmark {
+.component-tabs > .bookmarks > .bookmark {
   background-color: #d3d3d3;
 }
 .component-animationmaskproperties {
@@ -1469,7 +1429,7 @@ body {
   text-align: right;
   padding: 0px !important;
 }
-.component-animationmaskproperties .row  > span {
+.component-animationmaskproperties .row > span {
   white-space: pre;
 }
 .component-animationmaskproperties .row.first {
@@ -1528,12 +1488,6 @@ div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.last {
   border-bottom-right-radius: 2px;
 }
 div[name=load-collada-dlg] .component-checkboxlist .component-checkbox.active {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
-  background-image: -webkit-linear-gradient(#5393c5, #6facd5);
-  background-image: -moz-linear-gradient(#5393c5, #6facd5);
-  background-image: -ms-linear-gradient(#5393c5, #6facd5);
-  background-image: -o-linear-gradient(#5393c5, #6facd5);
-  background-image: linear-gradient(#5393c5, #6facd5);
   background-color: #3373a5;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#5393c5), to(#6facd5));
   background-image: -webkit-linear-gradient(#5393c5, #6facd5);
@@ -1560,15 +1514,15 @@ div[name=scene] {
 .component-sceneevents {
   text-align: right;
 }
-.component-sceneevents  > .row {
+.component-sceneevents > .row {
   padding: 0 10px 0 0 !important;
 }
-.component-sceneevents  > .row .component-button {
+.component-sceneevents > .row .component-button {
   padding: 0 20px 0 20px;
   margin-right: 0;
   font-size: 11px;
 }
-.component-resourceproperties  > div .component-panel .row .component-colladaanimation {
+.component-resourceproperties > div .component-panel .row .component-colladaanimation {
   display: inline-block;
   border-radius: 5px;
   border: 1px dotted #CCC;
@@ -1577,7 +1531,7 @@ div[name=scene] {
   background-color: #EEE;
   cursor: pointer;
 }
-.component-resourceproperties  > div .component-panel .row .component-colladaanimation:hover {
+.component-resourceproperties > div .component-panel .row .component-colladaanimation:hover {
   border-color: gray;
   border-style: solid;
 }
