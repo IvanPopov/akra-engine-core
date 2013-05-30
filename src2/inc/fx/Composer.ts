@@ -677,7 +677,7 @@ module akra.fx {
 					pRidPair = pRidMap[iRid] = {renderable: null, object: null};
 				}
 
-				LOG("render pair created with id: ", iRid, "roid(", iRenderableObjectGuid, "): ", this._nRidRE, "soid(", iSceneObjectGuid,"): ", pRidByRenderable[0]);
+				// LOG("render pair created with id: ", iRid, "roid(", iRenderableObjectGuid, "): ", this._nRidRE, "soid(", iSceneObjectGuid,"): ", pRidByRenderable[0]);
 
 				pRidPair.renderable = pRenderable;
 				pRidPair.object = pSceneObject;

@@ -143,9 +143,9 @@ module akra.util {
 	    }
 
 	    var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
-	    pMatrial.diffuse = Color.ORANGE;
-	    pMatrial.ambient = new Color(0.7, 0., 0., 1.);
-		pMatrial.specular = new Color(1., 0.7, 0. ,1);
+	    pMatrial.diffuse = Color.LIGHT_GRAY;
+	    pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
+		pMatrial.specular = new Color(0.7, 0.7, 0.7 ,1);
 		pMatrial.emissive = new Color(0., 0., 0., 1.);
 	    pMatrial.shininess = 30.;
 
