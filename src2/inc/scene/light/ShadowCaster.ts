@@ -194,8 +194,6 @@ module akra.scene.light {
 		    fZRes_Near = (fZRes_Near < -1 || fZRes_Near == 1) ? -1 : fZRes_Near;
 		    fZRes_Far = (fZRes_Far > 1 || fZRes_Far == -1) ? 1 : fZRes_Far;
 
-		    fXRes_Left = math.max(fXRes_Left, fCameraMinX);
-
 		    //optimized parameters
 
 		    var v4fTmp1: IVec4 = m4fProj.unproj(vec3(fXRes_Left, fYRes_Bottom, fZRes_Near), vec4());

@@ -339,23 +339,23 @@ module akra.webgl {
 		
 		/** Texture Objects. */
 		inline bindWebGLTexture(eTarget: uint, pTexture: WebGLTexture): void {
-			if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
+			// if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
 				this._pWebGLContext.bindTexture(eTarget, pTexture);
-				this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
-			}
+				// this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
+			// }
 		}
 
 		inline activateWebGLTexture(iWebGLSlot: int): void {
 			this._pWebGLContext.activeTexture(iWebGLSlot);
-			this._iCurrentTextureSlot = iWebGLSlot - GL_TEXTURE0;
+			// this._iCurrentTextureSlot = iWebGLSlot - GL_TEXTURE0;
 		}
 
 		activateWebGLTextureInAutoSlot(eTarget: uint, pTexture: WebGLTexture): uint {
 
-			var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
+			// var iSlot: uint = this._pTextureSlotList.indexOf(pTexture);
 
-			if(iSlot === -1) {
-				iSlot = this._iNextTextureSlot;
+			// if(iSlot === -1) {
+				var iSlot = this._iNextTextureSlot;
 
 				this._iNextTextureSlot++;
 
@@ -365,10 +365,10 @@ module akra.webgl {
 				
 				this.activateWebGLTexture(GL_TEXTURE0 + iSlot);
 				this.bindWebGLTexture(eTarget, pTexture);
-			}
-			else {
-				this.activateWebGLTexture(GL_TEXTURE0 + iSlot);
-			}
+			// }
+			// else {
+			// 	this.activateWebGLTexture(GL_TEXTURE0 + iSlot);
+			// }
 
 			return iSlot;			
 		}
