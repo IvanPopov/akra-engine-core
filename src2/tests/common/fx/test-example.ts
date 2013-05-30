@@ -308,8 +308,8 @@ module akra {
 			// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
 			// pCube2.setPosition(2., 0.8, -5.);
 			// pCube2.scale(0.1);
-			// loadManyModels(300, "../../../data/models/cube.dae");
-			loadManyModels(100, "../../../data/models/box/opened_box.dae");
+			loadManyModels(300, "../../../data/models/cube.dae");
+			// loadManyModels(100, "../../../data/models/box/opened_box.dae");
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	

@@ -170,7 +170,7 @@ module akra.webgl {
 				}
 
 				var iLoc: int = pAttribLocations[sAttrName];
-				var pFlow: IDataFlow = pInput[sAttrName];
+				var pFlow: IDataFlow = pInput.attrs[i];
 				var pData: data.VertexData = null;
 				var sSemantics: string = null;
 				
@@ -198,7 +198,7 @@ module akra.webgl {
 			var pUniformNames: string[] = pMaker.uniformNames;
 
 			for (var i: uint = 0; i < pUniformNames.length; i++) {
-				pMaker.setUniform(pUniformNames[i],  pInput[pUniformNames[i]]);
+				pMaker.setUniform(pUniformNames[i],  pInput.uniforms[i]);
 			}
 			
 			pEntry.bufferMap._draw();

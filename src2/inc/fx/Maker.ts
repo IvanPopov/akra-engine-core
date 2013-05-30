@@ -16,6 +16,7 @@ module akra.fx {
 	}
 
 	export interface IUniformVarInfo {
+		location: uint;
 		name: string;
 		shaderName: string;
 		type: EAFXShaderVariableType;
@@ -23,12 +24,14 @@ module akra.fx {
 	}
 
 	export class UniformVarInfo implements IUniformVarInfo {
+		location: uint;
 		name: string;
 		shaderName: string;
 		type: EAFXShaderVariableType;
 		length: uint;
 
-		constructor(sName: string, sShaderName: string, eType: EAFXShaderVariableType, iLength: uint){
+		constructor(sName: string, sShaderName: string, eType: EAFXShaderVariableType, iLength: uint, iLocation: uint){
+			this.location = iLocation;
 			this.name = sName;
 			this.shaderName = sShaderName;
 			this.type = eType;
@@ -75,6 +78,9 @@ module akra.fx {
 
 		//стек объектов храняих все юниформы и аттрибуты
 		private _pDataPoolArray: util.ObjectArray = new util.ObjectArray();
+
+		private _pRealUniformLocationMap: IntMap = <IntMap>{};
+		private _pRealAttrLocationMap: IntMap = <IntMap>{};
 
 		inline isArray(sName: string) {
 			return this.getLength(sName) > 0;
@@ -124,10 +130,12 @@ module akra.fx {
 
 			for (var i: int = 0; i < this._pRealUniformNameList.length; i++) {
 				this._pUniformExistMap[this._pRealUniformNameList[i]] = true;
+				this._pRealUniformLocationMap[this._pRealUniformNameList[i]] = i;
 			}
 
 			for (var i: int = 0; i < this._pRealAttrNameList.length; i++) {
 				this._pAttrExistMap[this._pRealAttrNameList[i]] = true;
+				this._pRealAttrLocationMap[this._pRealAttrNameList[i]] = i;
 			}
 
 			// this["sTmpVertex"] = sVertex;
@@ -154,13 +162,16 @@ module akra.fx {
 
 
 		_createDataPool(): IShaderInput {
-			var pInput: IShaderInput = {};
+			var pInput: IShaderInput = {
+				uniforms: <{[index: uint]: any;}>{},
+				attrs: <{[index: uint]: any;}>{}
+			};
 
 			//assume, that attr & uniform never have same names!!!
 
 			for (var i: int = 0; i < this._pRealUniformNameList.length; i++) {
 				var sName: string = this._pRealUniformNameList[i];
-				pInput[sName] = null;
+				pInput.uniforms[i] = null;
 
 				var eType: EAFXShaderVariableType = this._pRealUniformTypeMap[sName];
 				var iLength: uint = this._pRealUniformLengthMap[sName];
@@ -169,14 +180,14 @@ module akra.fx {
 					 eType === EAFXShaderVariableType.k_SamplerCUBE)){
 
 					if(iLength > 0){
-						pInput[sName] = new Array(iLength);
+						pInput.uniforms[i] = new Array(iLength);
 
 						for(var j: uint = 0; j < iLength; j++){
-							pInput[sName][j] = createSamplerState();
+							pInput.uniforms[i][j] = createSamplerState();
 						}
 					}
 					else {
-						pInput[sName] = createSamplerState();
+						pInput.uniforms[i] = createSamplerState();
 					}
 					
 				}
@@ -184,7 +195,7 @@ module akra.fx {
 
 			for (var i: int = 0; i < this._pRealAttrNameList.length; i++) {
 				var sName: string = this._pRealAttrNameList[i];
-				pInput[sName] = null;
+				pInput.attrs[i] = null;
 			}
 
 			return pInput;
@@ -368,14 +379,15 @@ module akra.fx {
 		private _pRealSamplerInfoFromInput: IUniformVarInfo[] = null;
 		private _pRealSamplerArrayInfoFromInput: IUniformVarInfo[] = null;
 
-		private inline createUniformInfo(sName: string, sShaderName: string, eType: EAFXShaderVariableType, iLength: uint): IUniformVarInfo {
-			// return {
-			// 	name: sName,
-			// 	shaderName: sShaderName,
-			// 	type: eType,
-			// 	length: iLength
-			// }
-			return new UniformVarInfo(sName, sShaderName, eType, iLength);
+		private inline createUniformInfo(sName: string, sShaderName: string, eType: EAFXShaderVariableType, iLength: uint, iLocation: uint): IUniformVarInfo {
+			return {
+				location: iLocation,
+				name: sName,
+				shaderName: sShaderName,
+				type: eType,
+				length: iLength
+			};
+			// return new UniformVarInfo(sName, sShaderName, eType, iLength);
 		}
 
 		_initInput(pPassInput: IAFXPassInputBlend, pBlend: SamplerBlender, pAttrs: AttributeBlendContainer): bool {
@@ -396,7 +408,7 @@ module akra.fx {
 						this._pRealUnifromFromInput.push(sName);
 						// this._pRealUniformLengthFromInput.push(iLength);
 						// this._pRealUniformInfoFromInput.push(this.createUniformInfo(sName, sName, eType, iLength));
-						pUniformInfoTmp.push(this.createUniformInfo(sName, sName, eType, iLength));
+						pUniformInfoTmp.push(this.createUniformInfo(sName, sName, eType, iLength, -1));
 					}
 					continue;
 				}
@@ -416,7 +428,7 @@ module akra.fx {
 					this.setUniformApplyFunction(sShaderName, eType, (iLength > 0));
 					// this._pRealUniformLengthFromInput.push(iLength);
 					// this._pRealUniformInfoFromInput.push(this.createUniformInfo(sName, sShaderName, eType, iLength));
-					pUniformInfoTmp.push(this.createUniformInfo(sName, sShaderName, eType, iLength));
+					pUniformInfoTmp.push(this.createUniformInfo(sName, sShaderName, eType, iLength, this._pRealUniformLocationMap[sShaderName]));
 				}
 				else {
 					this._pUniformExistMap[sShaderName] = false;
@@ -442,7 +454,7 @@ module akra.fx {
 					this._pRealUniformLengthMap[sShaderName] = iLength;
 
 					this._pRealSampleArraysFromInput.push(sName);
-					pSamplerArrayInfoTmp.push(this.createUniformInfo(sName, sShaderName, eType, iLength));
+					pSamplerArrayInfoTmp.push(this.createUniformInfo(sName, sShaderName, eType, iLength, this._pRealUniformLocationMap[sShaderName]));
 
 					this.setUniformApplyFunction(sShaderName, eType, true);
 				}
@@ -498,7 +510,7 @@ module akra.fx {
 																 		EAFXShaderVariableType.k_Sampler2D :
 																 		EAFXShaderVariableType.k_SamplerCUBE;
 
-					pSamplerInfoTmp.push(this.createUniformInfo(sSampler, sRealSamplerName, this._pRealUniformTypeMap[sRealSamplerName], pSampler.getType().getLength()));
+					pSamplerInfoTmp.push(this.createUniformInfo(sSampler, sRealSamplerName, this._pRealUniformTypeMap[sRealSamplerName], pSampler.getType().getLength(), this._pRealUniformLocationMap[sRealSamplerName]));
 
 					this._pRealUniformLengthMap[sRealSamplerName] = 0;
 
@@ -690,7 +702,7 @@ module akra.fx {
 				var pInfo: IUniformVarInfo = this._pRealUniformInfoFromInput[i];
 				
 				if(pInfo.type !== EAFXShaderVariableType.k_Complex) {
-					pInput[pInfo.shaderName] = pUniforms[pInfo.name];
+					pInput.uniforms[pInfo.location] = pUniforms[pInfo.name];
 				}
 				else {
 					this.applyStructUniform(pInfo.name, pUniforms[pInfo.name], pInput);
@@ -723,14 +735,14 @@ module akra.fx {
 
 				pTexture = pPassInput._getTextureForSamplerState(pState);
 
-				this.setSamplerState(pInput[pInfo.shaderName], pTexture, pState);
+				this.setSamplerState(pInput.uniforms[pInfo.location], pTexture, pState);
 			}
 
 			for(var i: uint = 0; i < this._pRealSamplerArrayInfoFromInput.length; i++){
 				var pInfo: IUniformVarInfo = this._pRealSamplerArrayInfoFromInput[i];
 
 				var pSamplerStates: IAFXSamplerState[] = pSamplerArrays[pInfo.name];
-				var pInputStates: IAFXSamplerState[] = pInput[pInfo.shaderName];
+				var pInputStates: IAFXSamplerState[] = pInput.uniforms[pInfo.location];
 
 				for(var j: uint = 0; j < pInfo.length; j++) {
 					var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerStates[j]);
@@ -754,12 +766,12 @@ module akra.fx {
 
 				if(sBufferFlowSemantic === sSemantic){
 					var sBufferName: string = "abs" + iBufferSlot.toString();
-					pInput[sBufferName] = pFlow.data.buffer;
+					pInput.uniforms[this._pRealUniformLocationMap[sBufferName]] = pFlow.data.buffer;
 					iBufferSlot++;
 				}
 
 				var sAttrName: string = "aa" + i.toString();
-				pInput[sAttrName] = pFlow;
+				pInput.attrs[this._pRealAttrLocationMap[sAttrName]] = pFlow;
 
 
 				var pOffsetVars: IAFXVariableDeclInstruction[] = this._pAttrContainer.getOffsetVarsBySemantic(sSemantic);
@@ -774,10 +786,10 @@ module akra.fx {
 							var pElement: IVertexElement = pVertexDecl.findElement(sOffsetSemantic);
 						
 							if(isNull(pElement)){
-								pInput[sOffsetName] = this._pAttrContainer.getOffsetDefault(sOffsetName);
+								pInput.uniforms[this._pRealUniformLocationMap[sOffsetName]] = this._pAttrContainer.getOffsetDefault(sOffsetName);
 							}
 							else {
-								pInput[sOffsetName] = pElement.offset / 4;
+								pInput.uniforms[this._pRealUniformLocationMap[sOffsetName]] = pElement.offset / 4;
 							}
 
 						}
@@ -786,11 +798,11 @@ module akra.fx {
 			}
 
 			if(this._isUsedZero2D){
-				pInput["as0"] = 19;
+				pInput[this._pRealUniformLocationMap["as0"]] = 19;
 			}
 
 			if(this._isUsedZeroCube){
-				pInput["asc0"] = 19;
+				pInput[this._pRealUniformLocationMap["asc0"]] = 19;
 			}
 
 
@@ -949,10 +961,10 @@ module akra.fx {
 								var iFieldLength: uint = this._pRealUniformLengthMap[sFieldName];
 
 								if(iFieldLength > 0){
-									pInput[sFieldName + "[0]"] = pValue[i][j];
+									pInput.uniforms[this._pRealUniformLocationMap[sFieldName + "[0]"]] = pValue[i][j];
 								}
 								else {
-									pInput[sFieldName] = pValue[i][j];
+									pInput.uniforms[this._pRealUniformLocationMap[sFieldName]] = pValue[i][j];
 								}
 								
 							}

@@ -170,6 +170,7 @@ module akra.fx {
 				pMaker = new Maker(this._pComposer);
 				var isCreate: bool = pMaker._create(this._sVertexCode, this._sPixelCode);
 				if(!isCreate){
+					CRITICAL("Can not create fx.Maker");
 					return null;
 				}
 
