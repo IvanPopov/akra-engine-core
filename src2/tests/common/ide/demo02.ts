@@ -174,7 +174,7 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pSunLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "sun");
+		var pSunLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "sun");
 			
 		pSunLight.attachToParent(pScene.getRootNode());
 		pSunLight.enabled = true;
@@ -329,6 +329,7 @@ module akra {
 				self.terrainLoaded = true;
 
 				createHero();
+				// pEngine.renderFrame();
 			});
 		});
 

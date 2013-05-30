@@ -12,7 +12,7 @@
 
 module akra.render {
 	export class Viewport implements IViewport {
-		protected _pCamera: ICamera;
+		protected _pCamera: ICamera = null;
 		protected _pTarget: IRenderTarget;
 
 		protected _fRelLeft: float;
@@ -26,6 +26,8 @@ module akra.render {
 		protected _iActHeight: int;
 
 		protected _iZIndex: int;
+
+		protected _pDepthRange: IDepthRange = {min: -1., max: 1.};
 
 		protected _pViewportState: IViewportState = {
 			cullingMode: ECullingMode.NONE,
@@ -66,6 +68,8 @@ module akra.render {
 		protected _isAutoUpdated: bool = true;
 
 		protected _csDefaultRenderMethod: string = null;
+
+		protected _isDepthRangeUpdated = false;
 
 		inline get zIndex(): int {
 			return this._iZIndex;
@@ -124,10 +128,10 @@ module akra.render {
 			if (pRenderer) {
 				var pCurrentViewport: IViewport = pRenderer._getViewport();
 				
-				if (pCurrentViewport && pCurrentViewport === this) {
+				if (pCurrentViewport === this) {
 					pRenderer.clearFrameBuffer(iBuffers, cColor, fDepth, iStencil);
 				}
-				else if (pCurrentViewport) {
+				else{
 					pRenderer._setViewport(this);
 					pRenderer.clearFrameBuffer(iBuffers, cColor, fDepth, iStencil);
 					pRenderer._setViewport(pCurrentViewport);
@@ -148,17 +152,30 @@ module akra.render {
         }
 
         getDepthRange(): IDepthRange{
+
+        	if(!this._isDepthRangeUpdated){
+	        	this._isDepthRangeUpdated = true;
+	        	var pDepthRange: IDepthRange = this._getDepthRangeImpl();
+
+	        	this._pDepthRange.min = pDepthRange.min;
+	        	this._pDepthRange.max = pDepthRange.max;
+        	}
+
+        	return this._pDepthRange;
+        }
+
+        protected _getDepthRangeImpl(): IDepthRange{
         	return <IDepthRange>{min: -1, max: 1};
         }
 
         setCamera(pCamera: ICamera): bool {
-        	if(this._pCamera) {
+        	if(isDefAndNotNull(pCamera)) {
 				if(this._pCamera._getLastViewport() == this) {
 					this._pCamera._keepLastViewport(null);
 				}
 			}
 
-			if (this._pCamera) {
+			if (isDefAndNotNull(pCamera)) {
 				// update aspect ratio of new camera if needed.
 				if (!pCamera.isConstantAspect()) {
 					pCamera.aspect = (<float> this._iActWidth / <float> this._iActHeight);
@@ -174,7 +191,7 @@ module akra.render {
         protected _setCamera(pCamera: ICamera): void {
 			this._pCamera = pCamera;
 
-			if (pCamera) {
+			if (isDefAndNotNull(pCamera)) {
 				pCamera._keepLastViewport(this);
 			}
         }
@@ -259,11 +276,17 @@ module akra.render {
 		}
 
 		update(): void {
+			if (isDefAndNotNull(this._pCamera)) {
+				this._pCamera._keepLastViewport(this);
+			}
+
 			if(this._bClearEveryFrame){
 				this.clear(this._pViewportState.clearBuffers, 
         				   this._pViewportState.clearColor,
         				   this._pViewportState.clearDepth);
 			}
+
+			this._isDepthRangeUpdated = false;
 
 			this._updateImpl();
 

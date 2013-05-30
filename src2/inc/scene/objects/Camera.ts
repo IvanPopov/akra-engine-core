@@ -456,7 +456,12 @@ module akra.scene.objects {
 		};
 
 		getDepthRange(): IDepthRange{
-			return this._pLastViewport.getDepthRange();
+			var pDepthRange: IDepthRange = this._pLastViewport.getDepthRange();
+
+			var zNear: float = this._m4fProj.unprojZ(pDepthRange.min);
+			var zFar: float = this._m4fProj.unprojZ(pDepthRange.max);
+
+			return <IDepthRange>{min: zNear, max: zFar};
 		};
 
     	_addDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {

@@ -112,6 +112,18 @@ module akra.scene.light {
 				return false;
 			}
 			else{
+				/*************************************************************/
+				//optimize camera frustum
+				var pDepthRange: IDepthRange = pCamera.getDepthRange();
+
+				var fFov: float = pCamera.fov;
+				var fAspect: float = pCamera.aspect;
+
+				var m4fTmp: IMat4 = Mat4.perspective(fFov, fAspect, -pDepthRange.min, -pDepthRange.max, mat4());
+
+				this.optimizedCameraFrustum.extractFromMatrix(m4fTmp, pCamera.worldMatrix);
+				/*************************************************************/
+
 				if(!this.isShadowCaster){
 					var pResult: IObjectArray = this._defineLightingInfluence(pCamera);
 					return (pResult.length == 0) ? false : true;
@@ -125,7 +137,7 @@ module akra.scene.light {
 
 		protected _defineLightingInfluence(pCamera: ICamera): IObjectArray{
 			var pShadowCaster: IShadowCaster = this._pShadowCaster;
-			var pCameraFrustum: IFrustum = pCamera.frustum;
+			var pCameraFrustum: IFrustum = this.optimizedCameraFrustum;
 
 			var pResult: IObjectArray = pShadowCaster.affectedObjects;
 			pResult.clear();
@@ -151,7 +163,7 @@ module akra.scene.light {
 
 		protected _defineShadowInfluence(pCamera: ICamera): IObjectArray{
 			var pShadowCaster: IShadowCaster = this._pShadowCaster;
-			var pCameraFrustum: IFrustum = pCamera.frustum;
+			var pCameraFrustum: IFrustum = this.optimizedCameraFrustum;
 
 			var pResult: IObjectArray = pShadowCaster.affectedObjects;
 			pResult.clear();

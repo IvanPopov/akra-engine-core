@@ -47,7 +47,7 @@ module akra.render {
 			}
 
 			pShadowCaster.isShadowCasted = (nShadowsCasted > 0) ? true : false;
-		}
+		};
 
 		private prepareRenderableForShadows(pRenderable: IRenderableObject): void {
 			var pRenderTechnique: IRenderTechnique = pRenderable.getTechnique(this._csDefaultRenderMethod);
@@ -68,6 +68,35 @@ module akra.render {
 			}
 
 			pRenderable.addRenderMethod(pMethod, this._csDefaultRenderMethod);
+		};
+
+		protected _getDepthRangeImpl(): IDepthRange{
+			var pDepthTexture: ITexture;
+			var pShadowCaster: IShadowCaster = <IShadowCaster>this._pCamera;
+
+			var pLightPoint: ILightPoint = pShadowCaster.lightPoint;
+
+			switch(pLightPoint.type){
+				case ELightTypes.PROJECT:
+					pDepthTexture = (<IProjectLight>pLightPoint).getDepthTexture();
+					break;
+				case ELightTypes.OMNI:
+					pDepthTexture = (<IOmniLight>pLightPoint).getDepthTextureCube()[pShadowCaster.face];
+					break;
+				default:
+					pDepthTexture = null;
+					break;	
+			}
+
+			if(isDefAndNotNull(pDepthTexture)){
+				var pRange: IDepthRange = util.getDepthRange(pDepthTexture);
+				//[0,1] -> [-1, 1]
+				pRange.min = pRange.min * 2. - 1.
+				pRange.max = pRange.max * 2. - 1.
+
+				return pRange;
+			}
+			return null;
 		}
 
 	};

@@ -70,6 +70,9 @@ module akra.render {
 			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0,
 					ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
+			pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+
 			for (var i = 0; i < 2; ++ i) {
 				pDeferredTextures[i] = this._pDeferredColorTextures[i] = 
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
@@ -141,6 +144,8 @@ module akra.render {
 // #ifndef OPTIMIZED_DEFFERED
 			this._pDeferredColorTextures[0].getBuffer().getRenderTarget().update();
 			this._pDeferredColorTextures[1].getBuffer().getRenderTarget().update();
+
+			this._pCamera._keepLastViewport(this);
 
 			var pLights: util.ObjectArray = <util.ObjectArray>this.getCamera().display(DL_LIGHTING);
 		    
@@ -269,8 +274,12 @@ module akra.render {
 			return pDepthPixel.getColorAt(pColor, 0, 0).r;
 		}
 
-		getDepthRange(): IDepthRange{
+		protected _getDepthRangeImpl(): IDepthRange{
 			var pRange: IDepthRange = util.getDepthRange(this._pDeferredDepthTexture);
+			//[0,1] -> [-1, 1]
+			pRange.min = pRange.min * 2. - 1.;
+			pRange.max = pRange.max * 2. - 1.;
+
 			return pRange;
 		}
 

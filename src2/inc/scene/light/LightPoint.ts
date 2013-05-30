@@ -20,6 +20,9 @@ module akra.scene.light {
 		protected _pLightParameters: ILightParameters = new LightParameters;
 		protected _eLightType: ELightTypes;
 
+		//optimized camera frustum for better shadow casting
+		protected _pOptimizedCameraFrustum: IFrustum = new geometry.Frustum();
+
 		inline get lightType(): ELightTypes {
 			return this._eLightType;
 		}
@@ -38,7 +41,6 @@ module akra.scene.light {
 			this._isEnabled = bValue;
 		};
 
-
 		inline get params(): ILightParameters {
 			return this._pLightParameters;
 		};
@@ -49,6 +51,10 @@ module akra.scene.light {
 
 		inline set isShadowCaster(bValue: bool) {
 			this._isShadowCaster = bValue;
+		};
+
+		inline get optimizedCameraFrustum(): IFrustum{
+			return this._pOptimizedCameraFrustum;
 		};
 
 		create(isShadowCaster: bool = true, iMaxShadowResolution: int = 256): bool {

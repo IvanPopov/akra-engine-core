@@ -133,7 +133,6 @@ module akra.render {
 
 			pRenderable.addRenderMethod(pMethod, this._csDefaultRenderMethod);
 		}
-
 	}
 }
 

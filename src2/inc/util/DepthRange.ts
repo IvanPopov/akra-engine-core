@@ -351,9 +351,9 @@ module akra.util{
         // pWebGLContext.disable(GL_CULL_FACE);
 
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
-        //pWebGLRenderer._setViewport(null);
+        pWebGLRenderer._setViewport(null);
 
-		return <IDepthRange>{min: pF32Destination[1]*2 - 1, max: pF32Destination[0]*2 - 1};
+		return <IDepthRange>{min: pF32Destination[1], max: pF32Destination[0]};
 	}
 
 	#else
