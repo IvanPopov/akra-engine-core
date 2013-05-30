@@ -330,6 +330,7 @@ module akra {
 				self.terrainLoaded = true;
 
 				createHero();
+				// pEngine.renderFrame();
 			});
 		});
 
@@ -362,7 +363,6 @@ module akra {
 	function update(): void {
 		updateCameras();
 		self.keymap.update();
-
 		// var pProj: IVec3 = vec3();
 		// if (self.terrainLoaded && self.terrain.projectPoint(self.hero.root.worldPosition, pProj)) {
 		// 	self.cameraTerrainProj.setPosition(pProj);

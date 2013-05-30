@@ -6,6 +6,7 @@ module akra {
 	IFACE(ILightPoint);
 	IFACE(IObjectArray);
 	IFACE(IMat4);
+	IFACE(IFrustum);
 
 	export interface IShadowCaster extends ICamera {
 		readonly lightPoint: ILightPoint;
@@ -15,7 +16,7 @@ module akra {
 		//casted shadows in the last frame
 		isShadowCasted: bool;
 
-		_optimizeProjectionMatrix(): void;
+		_optimizeProjectionMatrix(pEffectiveCameraFrustum: IFrustum): void;
 	}
 }
 

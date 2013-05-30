@@ -45,6 +45,7 @@ module akra.geometry{
 		set(pRect: IRect2d): IRect2d;
 		set(v2fVec: IVec2): IRect2d;
 		set(fSizeX: float, fSizeY: float): IRect2d;
+		set(v2fMinPoint: IVec2, v2fMaxPoint: IVec2): IRect2d;
 		set(fX0: float, fX1: float, fY0: float, fY1: float): IRect2d;
 		set(fX0?, fX1?, fY0?, fY1?): IRect2d{
 			var nArgumentsLength: uint = arguments.length;
@@ -70,14 +71,23 @@ module akra.geometry{
 					}
 					break;
 				case 2:
-					var fSizeX: float = arguments[0];
-					var fSizeY: float = arguments[1];
+					if(isNumber(arguments[0])){
+						var fSizeX: float = arguments[0];
+						var fSizeY: float = arguments[1];
 
-					this.x1 = fSizeX*0.5;
-					this.x0 = -this.x1;
+						this.x1 = fSizeX*0.5;
+						this.x0 = -this.x1;
 
-					this.y1 = fSizeY*0.5;
-					this.y0 = -this.y1;
+						this.y1 = fSizeY*0.5;
+						this.y0 = -this.y1;
+					}
+					else{
+						this.x0 = arguments[0].x;
+						this.y0 = arguments[0].y;
+
+						this.x1 = arguments[1].x;
+						this.y1 = arguments[1].y;
+					}
 					break;
 				case 4:
 					this.x0 = arguments[0];

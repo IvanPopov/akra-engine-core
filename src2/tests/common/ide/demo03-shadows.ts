@@ -230,7 +230,7 @@ module akra {
 		pScene.bind(SIGNAL(beforeUpdate), update);
 		
 		loadModels("@OIL", (pNode: ISceneNode) => {
-			pNode.addPosition(vec3(-.45, .75, 0.));
+			pNode.addPosition(vec3(-5.45, .75, 0.));
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				pNode.addRelRotationByXYZAxis(0.00, 0.003, 0);
@@ -238,7 +238,7 @@ module akra {
 		});
 
 		loadModels("@CAN", (pNode: ISceneNode) => {
-			pNode.addPosition(vec3(.45, .75, 0.));
+			pNode.addPosition(vec3(5.45, .75, 0.));
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				pNode.addRelRotationByXYZAxis(0.00, -0.003, 0);
@@ -246,7 +246,7 @@ module akra {
 		});
 
 		loadModels("@VEHABAR", (pNode: ISceneNode) => {
-			pNode.addPosition(vec3(0., .75, .45));
+			pNode.addPosition(vec3(0., .75, 5.45));
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				pNode.addRelRotationByXYZAxis(0.00, -0.003, 0);
