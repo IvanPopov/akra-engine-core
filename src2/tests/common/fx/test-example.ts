@@ -279,7 +279,6 @@ module akra {
 					fShiftX += fDX;
 					iCountInRow++;
 				}
-
 				pEngine.exec();
 			});			
 		}

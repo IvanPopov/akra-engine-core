@@ -88,7 +88,6 @@ module akra.fx {
 			return this._pRealUniformLengthMap[sName];
 		}
 
-
 		inline get shaderProgram(): IShaderProgram {
 			return this._pShaderProgram;
 		}
@@ -209,7 +208,6 @@ module akra.fx {
 			else {
 				this.applyUniform(sName, eType, pValue);
 			}
-			
 		}
 
 		private _pUniformApplyFunctionMap: any = {};
@@ -379,7 +377,6 @@ module akra.fx {
 			// }
 			return new UniformVarInfo(sName, sShaderName, eType, iLength);
 		}
-
 
 		_initInput(pPassInput: IAFXPassInputBlend, pBlend: SamplerBlender, pAttrs: AttributeBlendContainer): bool {
 			var pUniformKeys: string[] = pPassInput.uniformKeys;
@@ -699,6 +696,17 @@ module akra.fx {
 					this.applyStructUniform(pInfo.name, pUniforms[pInfo.name], pInput);
 				}				
 			}
+			
+			// for(var i: uint = 0; i < this._pRealUniformInfoFromInput.length; i++){
+			// 	var pInfo: IUniformVarInfo = this._pRealUniformInfoFromInput[i];
+				
+			// 	if(pInfo.type !== EAFXShaderVariableType.k_Complex) {
+			// 		pInput[pInfo.shaderName] = pUniforms[pInfo.name];
+			// 	}
+			// 	// else {
+			// 	// 	this.applyStructUniform(pInfo.name, pUniforms[pInfo.name], pInput);
+			// 	// }				
+			// }
 
 			for(var i: uint = 0; i < this._pRealSamplerInfoFromInput.length; i++){
 				var pInfo: IUniformVarInfo = this._pRealSamplerInfoFromInput[i];

@@ -102,6 +102,9 @@ module akra.pixelUtil {
 		}
 
 		getColorAt(pColor: IColor, x: uint, y: uint, z?: uint=0): IColor {
+			if (isNull(pColor)) {
+				pColor = new Color(0.);
+			}
 
 	        var pixelSize: uint = pixelUtil.getNumElemBytes(this.format);
 	        var pixelOffset: uint = pixelSize * (z * this.slicePitch + y * this.rowPitch + x);

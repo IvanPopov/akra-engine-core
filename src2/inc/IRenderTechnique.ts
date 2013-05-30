@@ -58,9 +58,10 @@ module akra {
         _setGlobalPostEffectsFrom(iPass: uint): void;
         
 		_setComposer(pComposer: IAFXComposer): void;
+		_getComposer(): IAFXComposer;
 		_renderTechnique(pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
 
-		signal render(iPass: uint): void;
+		signal render(iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport): void;
 	}
 }
 

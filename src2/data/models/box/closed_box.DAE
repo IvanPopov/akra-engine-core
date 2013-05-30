@@ -59,7 +59,7 @@
               <texture texture="specular_dds-sampler" texcoord="CHANNEL1"/>
             </specular>
             <shininess>
-              <float>0.3</float>
+              <float>0.2</float>
             </shininess>
             <reflective>
               <color>0 0 0 1</color>

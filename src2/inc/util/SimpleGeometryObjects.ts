@@ -170,11 +170,13 @@ module akra.util {
 	        iPos = pSubMesh.data.allocateData([VE_VEC3("POSITION")], pCoords);
 	        pSubMesh.data.allocateIndex([VE_FLOAT("INDEX0")],   new Float32Array([0,1]));
 	        pSubMesh.data.allocateIndex([VE_FLOAT("INDEX1")],   new Float32Array([0,0]));
+
 	        pSubMesh.data.index(iPos, "INDEX0");
 	        pSubMesh.data.index(iNorm, "INDEX1");
 
 	        //pSubMesh.applyFlexMaterial(sName + '-color');
-	        pMaterial = pSubMesh.material;//pSubMesh.getFlexMaterial(sName + '-color');
+	        //pSubMesh.getFlexMaterial(sName + '-color');
+	        pMaterial = pSubMesh.material;
 	        pMaterial.emissive = pColor;
 	        pMaterial.ambient = pColor;
 	        pMaterial.diffuse = pColor;

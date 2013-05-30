@@ -131,6 +131,7 @@ module akra.webgl {
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
             pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
             pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
+            // var e = pWebGLContext.getError();if (e){LOG(this.findResourceName(), "filter: ", eParam, "value: ", eValue, "error: ", e)};
             return true;         
         }
         protected _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
@@ -264,10 +265,27 @@ module akra.webgl {
 	        this._isMipmapsHardwareGenerated = pWebGLRenderer.hasCapability(ERenderCapabilities.AUTOMIPMAP);
 
 	        // Set some misc default parameters, these can of course be changed later
-	        this.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.NEAREST);
-	        this.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.NEAREST);
-	        this.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
-	        this.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
+             
+            var eMinFiler: int = this.getFilter(ETextureParameters.MIN_FILTER);
+            var eMagFiler: int = this.getFilter(ETextureParameters.MAG_FILTER);
+
+            if ((eMinFiler >= ETextureFilters.NEAREST_MIPMAP_NEAREST && eMinFiler <= ETextureFilters.LINEAR_MIPMAP_LINEAR) && 
+                this._nMipLevels < 2) {
+                eMinFiler = ETextureFilters.LINEAR;
+            }
+
+            if ((eMagFiler >= ETextureFilters.NEAREST_MIPMAP_NEAREST || eMagFiler <= ETextureFilters.LINEAR_MIPMAP_LINEAR) && 
+                this._nMipLevels < 2) {
+                eMagFiler = ETextureFilters.LINEAR;
+            }
+            // LOG("e: ", pWebGLContext.getError(), this.findResourceName(), "n mipmaps: ", this._nMipLevels, "size (x, y):", this._iWidth, this._iHeight, "min filer > ", "(0x", eMinFiler.toString(16), ")");
+
+            
+            this.setFilter(ETextureParameters.MIN_FILTER, eMinFiler);
+            this.setFilter(ETextureParameters.MAG_FILTER, eMagFiler);
+            this.setWrapMode(ETextureParameters.WRAP_S, this.getWrapMode(ETextureParameters.WRAP_S));
+            this.setWrapMode(ETextureParameters.WRAP_T, this.getWrapMode(ETextureParameters.WRAP_T));
+
 
 	        var iWebGLFormat: int = webgl.getWebGLFormat(this._eFormat);
 	        var iWebGLDataType: int = webgl.getWebGLDataType(this._eFormat);

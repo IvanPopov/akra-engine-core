@@ -85,6 +85,7 @@ module akra {
 
         isReadyForRender(): bool;
 
+
         toSceneModel(pParent: ISceneNode, sName?: string): ISceneModel;
 
         /** Updtae all submeshes(apply bone matricie for skinned submeshes) */

@@ -333,7 +333,8 @@ module akra.fx {
                 return "Out.POSITION=" + this._pInstructionList[0].toFinalCode() + "; return;";
             }
             if(this._isColorReturn){
-                return "gl_FragColor=" + this._pInstructionList[0].toFinalCode() + "; return;";
+                //return "gl_FragColor=" + this._pInstructionList[0].toFinalCode() + "; return;";
+                return "resultAFXColor=" + this._pInstructionList[0].toFinalCode() + "; return;";
             }
             if(this._isOnlyReturn){
                 return "return;"

@@ -98,3 +98,76 @@ technique skybox{
 		PixelShader = compile fs_skybox();
 	};
 };
+
+
+int outline_target: OUTLINE_TARGET;
+int outline_soid: OUTLINE_SOID;
+int outline_reid: OUTLINE_REID;
+
+VS_OUT vs_outline(VS_IN IN) 
+{
+	VS_OUT Out;
+
+	Out.position = float4(IN.position, 0., 1.);
+	Out.texCoords = (IN.position+1.) / 2. * inputTextureRatio;
+    Out.texCoordsDeferred = (IN.position + 1.) / 2. * screenTextureRatio;
+	
+	return Out;
+};
+
+float4 outline_color = float4(1.);
+
+float4 fs_outline(VS_OUT IN) : COLOR 
+{
+	float2 textureCoords = IN.texCoords;
+
+    float4 deferredData = tex2D(deferredTexture0, IN.texCoordsDeferred);
+    
+   
+    
+    float rid = deferredData.w;
+    float soid_begin  = 1024. * float(outline_soid) + 1.;
+    float soid_end 	= soid_begin + 1024.;
+
+    float soid = floor((rid - 1.) / 1024. + .5);
+    float reid = (rid - 1.) - (1024. * soid);
+
+
+    if (outline_target == 0 || (rid < soid_begin || rid >= soid_end)) 
+    {
+    	return resultAFXColor;
+    }
+
+
+    for (int y = -3; y < 3; y ++)
+	{
+		float fy = IN.texCoordsDeferred.y + float(y) / 1024.;
+		rid = tex2D(deferredTexture0, float2(IN.texCoordsDeferred.x, fy)).w;
+		if (rid < soid_begin || rid >= soid_end)
+	    {
+	    	return outline_color;
+	    }
+	}
+
+	for (int x = -3; x < 3; x ++)
+	{
+		float fx = IN.texCoordsDeferred.x + float(x) / 1024.;
+		rid = tex2D(deferredTexture0, float2(fx, IN.texCoordsDeferred.y)).w;
+		if (rid < soid_begin || rid >= soid_end) 
+	    {
+	    	return outline_color;
+	    }
+	}
+
+    return int(outline_reid) == int(reid)? resultAFXColor / float4(.75, .75, 3., 1.): resultAFXColor / 2.;
+};	
+
+technique outline 
+{
+	pass outline 
+	{
+		VertexShader = compile vs_outline();
+		PixelShader = compile fs_outline();
+	};
+};
+

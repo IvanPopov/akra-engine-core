@@ -488,7 +488,6 @@ module akra.fx {
 			// this._pOffsetKeys = Object.keys(this._pSlotByOffsetsMap);
 		}
 
-
 		initFromBufferMap(pMap: util.BufferMap): void {
 			this.clear();
 
@@ -530,8 +529,7 @@ module akra.fx {
 						for(var j: uint = 0; j < this._nSlots; j++) {
 							if(this._pFlowBySlots[j] === pFindFlow) {
 								this._pSlotBySemanticIndex[iSemanticIndex] = j;
-								iHash += (j << 5 + this._pBufferSlotBySlots[j]) << j;
-								// this._sHash += (j << 5 + this._pBufferSlotBySlots[j]).toString() + "$";
+								iHash += ((j + 1) << 5 + (this._pBufferSlotBySlots[j] + 1)) << j;
 								// this._sHash += j.toString() + "$" + this._pBufferSlotBySlots[j].toString() + "$";
 								// this._pHashPartList[2 * i] = j;
 								// this._pHashPartList[2 * i + 1] = this._pBufferSlotBySlots[j]; 
@@ -565,16 +563,14 @@ module akra.fx {
 						this._pTypesBySlots[iSlot] = pType.getBaseType();
 					}
 					//new slot
-
 					this._pSlotBySemanticIndex[iSemanticIndex] = this._nSlots;
 					this._pFlowBySlots[iSlot] = pFindFlow;
-
 					this._pBufferSlotBySlots[iSlot] = iBufferSlot;
 
 					// this._pHashPartList[2*i] = iSlot;
 					// this._pHashPartList[2*i+1] = iBufferSlot;
 					// this._sHash += iSlot.toString() + "$" + iBufferSlot.toString() + "$";
-					iHash += (iSlot << 5 + iBufferSlot) << iSlot;
+					iHash += ((iSlot + 1) << 5 + (iBufferSlot + 1)) << iSlot;
 					this._nSlots++;
 				}
 				else {

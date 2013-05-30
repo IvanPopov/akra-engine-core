@@ -61,6 +61,10 @@ module akra.webgl {
 			
 			pWebGLContext.linkProgram(pWebGLProgram);
 
+            // LOG("================================", this.findResourceName());
+            // LOG(pWebGLContext.getShaderSource(pWebGLVs));
+            // LOG(pWebGLContext.getShaderSource(pWebGLFs));
+
 			if (!this.isLinked()) {
 				ERROR("cannot link GLSL program(guid: %d)", this.getGuid());
 
@@ -348,8 +352,8 @@ module akra.webgl {
             // this._pWebGLRenderer.bindWebGLTexture(pTexture._getWebGLTextureTarget(), null);
             // this._pWebGLRenderer.bindWebGLTexture(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
 
-            pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.mag_filter);
-            pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.min_filter);
+            pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
+            pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.min_filter);
 
             pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s);
             pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t);

@@ -121,7 +121,7 @@ module akra.fx {
 
 			this.uniforms[sName] = pValue;
 		}
-	
+
 		setForeign(sName: string, pValue: any): void {		
 			if(!this._pForeignTypeMap[sName]){
 				this._pForeignTypeMap[sName] = EAFXShaderVariableType.k_NotVar;
@@ -131,7 +131,7 @@ module akra.fx {
 			//Check type
 
 			var pOldValue: any = this.foreigns[sName];
-			
+
 			if(pOldValue !== pValue) {
 				this._bNeedToCalcBlend = true;
 				this._bNeedToCalcShader = true;
@@ -154,20 +154,29 @@ module akra.fx {
 				else {
 					var pState: IAFXSamplerState = this.samplers[sName];
 					pState.texture = pTexture;
-					
-					// if (!isNull(pTexture)) {
-					// 	pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
-					// 	pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
-					// 	pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
-					// 	pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
-					// }
+
+					if (!isNull(pTexture)) {
+						pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
+						pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
+						pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
+						pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
+					}
 				}
 			}
 		}
 
 		_setSamplerTextureObject(sName: string, pTexture: ITexture):void {
 			if(this.hasUniform(sName)){
-				this.samplers[sName].texture = pTexture;
+				var pState: IAFXSamplerState = this.samplers[sName];
+				pState.texture = pTexture;
+
+				
+				if (!isNull(pTexture)) {
+					pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
+					pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
+					pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
+					pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
+				}
 			}
 		}
 
@@ -202,7 +211,7 @@ module akra.fx {
 			}
 
 			//Check type
-			
+
 			this.textures[sName] = pValue;
 		}
 
@@ -211,9 +220,7 @@ module akra.fx {
 			if(isNull(pSurfaceMaterial)){
 				return ;
 			}
-			
 			// var pSurfaceMaterial: core.pool.resources.SurfaceMaterial = pSurfaceMaterial;
-			
 			var iTotalTextures: uint = pSurfaceMaterial.totalTextures;
 			for (var i: int = 0; i < iTotalTextures; i++) {
 			 	// var iTexcord: int = pSurfaceMaterial[i].texcoord(i);
@@ -231,18 +238,18 @@ module akra.fx {
 
 			FAST_SET_INPUT_UNIFORM("MATERIAL", pMatContainer);
 
-			FAST_SET_SAMPLER_TEXTURE("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
-			FAST_SET_SAMPLER_TEXTURE("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
-			FAST_SET_SAMPLER_TEXTURE("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
-			FAST_SET_SAMPLER_TEXTURE("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
-			FAST_SET_SAMPLER_TEXTURE("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
+			// FAST_SET_SAMPLER_TEXTURE("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
+			// FAST_SET_SAMPLER_TEXTURE("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
+			// FAST_SET_SAMPLER_TEXTURE("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
+			// FAST_SET_SAMPLER_TEXTURE("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
+			// FAST_SET_SAMPLER_TEXTURE("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
 			
-			// this._setSamplerTextureObject("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
-			// this._setSamplerTextureObject("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
-			// this._setSamplerTextureObject("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
-			// this._setSamplerTextureObject("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
-			// this._setSamplerTextureObject("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
-
+			this._setSamplerTextureObject("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
+			this._setSamplerTextureObject("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
+			this._setSamplerTextureObject("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
+			this._setSamplerTextureObject("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
+			this._setSamplerTextureObject("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
+			
 			// if(this.hasUniform("MATERIAL.DIFFUSE")) this.uniforms["MATERIAL.DIFFUSE"] = pMatContainer.DIFFUSE;
 			// if(this.hasUniform("MATERIAL.AMBIENT")) this.uniforms["MATERIAL.AMBIENT"] = pMatContainer.AMBIENT;
 			// if(this.hasUniform("MATERIAL.SPECULAR")) this.uniforms["MATERIAL.SPECULAR"] = pMatContainer.SPECULAR;
@@ -305,7 +312,7 @@ module akra.fx {
 
 			for(var i: uint = 0; i < this.samplerArrayKeys.length; i++){
 				var pStateList: IAFXSamplerState[] = this.samplerArrays[this.samplerArrayKeys[i]];
-				
+
 				for(var j: uint = 0; j < pStateList.length; j++){
 					this.clearSamplerState(pStateList[j]);
 				}

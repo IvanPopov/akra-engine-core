@@ -8,6 +8,7 @@ module akra {
 	
 	export interface IUITree extends IUIComponent {
 		rootNode: IUITreeNode;
+		selectedNode: IEntity;
 		
 		fromTree(pEntity: IEntity): void;
 		//синхронизуем дерево с деревом из сущностей
@@ -15,6 +16,7 @@ module akra {
 		sync(pEntity?: IEntity): void;
 
 		select(pNode: IUITreeNode): bool;
+		selectByGuid(iGuid: int): void;
 
 		isSelected(pNode: IUITreeNode): bool;
 

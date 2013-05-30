@@ -49,7 +49,9 @@ struct pixel_data{
     float4 specular : SPECULAR;
     float3 position : POSITION; //in camera space
     float3 normal   : NORMAL;
-    float shininess : SHININESS;
+    float  shininess: SHININESS;
+    float  depth 	: DEPTH;
+    int    id 		: RENDER_OBJECT_ID;
 };
 
 float2 screenTextureRatio : SCREEN_TEXTURE_RATIO;
@@ -101,11 +103,15 @@ bool normalFix;
 float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 	float2 textureCoords = IN.textureCoords;
 
-    float depth = tex2D(sceneDepthTexture,textureCoords).x*2.-1.;
+	float sceneDepth = tex2D(sceneDepthTexture,textureCoords).x;
+    float depth = sceneDepth*2.-1.;
     float4 data0 = tex2D(deferredTexture0,textureCoords);
     float4 data1 = tex2D(deferredTexture1,textureCoords);
 
     pixelData.position = unproj(projMat, float3(IN.screenPosition.xy,depth));
+    pixelData.id = int(data0.w);
+    pixelData.depth = sceneDepth;
+
     if(data0.w==0.){
         discard;
     }

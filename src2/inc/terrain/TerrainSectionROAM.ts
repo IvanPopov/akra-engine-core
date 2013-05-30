@@ -251,7 +251,7 @@ module akra.terrain {
 				var fDistance: float = math.sqrt(fDistanceSquare+0.0001);
 				var fRatio: float = 0.;
 				
-				fRatio = (pVTree[iIndex] / fTerrainSizeZ * fScale) /((1 + fDistance/fTerrainDiagonal) * fLimit);
+				fRatio = (pVTree[iIndex] / fTerrainSizeZ * fScale) /((/*1 +*/ fDistance/fTerrainDiagonal) * fLimit);
 
 				if (fRatio > 1.) {
 					// subdivide this triangle

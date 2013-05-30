@@ -16,27 +16,28 @@ float4 floatToFloat4(float value){
   }
 
   float power = 0.;
-  float counter = 0.;
+  bool ok = true;
 
-  while (counter < 128.) {
-    counter += 1.;
+  while (ok) {
 
     if(data >= 2.) {
-      data = data / 2.;
-      power++;
+      data = data * 0.5;
+      power += 1.;
       if (power == 127.) {
-        counter = 129.;
+        ok = false;
       }
     }
-    else if(data < 1.) {
-      data = data * 2.;
-      power--;
-      if (power == -126.) {
-        counter = 129.;
+    else{
+      if(data < 1.) {
+        data = data * 2.;
+        power -= 1.;
+        if (power == -126.) {
+          ok = false;
+        }
       }
-    }
-    else {
-      counter = 129.;
+      else {
+        ok = false;
+      }
     }
   }
 
@@ -44,7 +45,7 @@ float4 floatToFloat4(float value){
     power = 0.;
   }
   else{
-    power = power+127.;
+    power = power + 127.;
     data = data - 1.;
   }
 
@@ -58,12 +59,12 @@ float4 floatToFloat4(float value){
   data -= floor(data);
   data *= 256.;
 
-  result.z += floor(data);
+  result.z = floor(data);
 
   data -= floor(data);
   data *= 256.;
 
-  result.w += floor(data);
+  result.w = floor(data);
 
   return result/255.;
 }

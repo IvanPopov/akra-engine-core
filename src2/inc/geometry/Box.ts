@@ -2,6 +2,7 @@
 #define BOX_TS
 
 #include "IBox.ts"
+// #define box(...) Box.stackCeil.setPosition(__VA_ARGS__)
 
 module akra.geometry {
 	export class Box implements IBox {

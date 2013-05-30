@@ -162,6 +162,14 @@ module akra.animation {
 			return false;
 		}
 
+		stop(): void {
+			if (this._pActiveAnimation) {
+				this._pActiveAnimation.stop(this._pEngine.time);
+			}
+
+			this._pActiveAnimation = null;
+		}
+
 		update(): void {
 			if (this._pActiveAnimation) {
 				this._pActiveAnimation.apply(this._pEngine.time);

@@ -207,5 +207,4 @@ module akra {
 
 		LOG(pSampleInt, pSampleStr, pSampleAny)
 	});
-
 }

@@ -39,6 +39,8 @@ module akra {
 
 		signal animationAdded(pAnimation: IAnimationBase): void;
 
+		stop(): void;
+
 		update(): void;
 
 		toString(bFullInfo?: bool);

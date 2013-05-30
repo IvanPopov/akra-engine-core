@@ -10,6 +10,7 @@ module akra {
 	export interface IRenderTexture extends IRenderTarget {
 		copyContentsToMemory(pDest: IPixelBox, pBuffer: EFramebuffer): void;
 		suggestPixelFormat(): EPixelFormats;
+		getPixelBuffer(): IPixelBuffer;
 	}
 }
 

@@ -11,9 +11,11 @@ module akra.ui.model {
 		protected _pSubset: IMeshSubset = null;
 		protected _pName: IUILabel;
 		protected _pMaterial: ui.Material;
+		protected _pVisible: IUISwitch;
 		protected _pShadows: IUISwitch;
 		protected _pBoundingBox: IUISwitch;
 		protected _pBoundingSphere: IUISwitch;
+		protected _pGuid: IUILabel;
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
@@ -22,10 +24,13 @@ module akra.ui.model {
 			this._pName = <IUILabel>this.findEntity("name");
 			this._pMaterial = <ui.Material>this.findEntity("material");
 
+			this._pVisible = <IUISwitch>this.findEntity("sub-visible");
 			this._pShadows = <IUISwitch>this.findEntity("sub-shadows");
 			this._pBoundingBox = <IUISwitch>this.findEntity("sub-bounding-box");
 			this._pBoundingSphere = <IUISwitch>this.findEntity("sub-bounding-sphere");
+			this._pGuid = <IUILabel>this.findEntity("sub-guid");
 
+			this.connect(this._pVisible, SIGNAL(changed), SLOT(_setVisible));
 			this.connect(this._pShadows, SIGNAL(changed), SLOT(_useShadows));
 			this.connect(this._pBoundingBox, SIGNAL(changed), SLOT(_useBoundingBox));
 			this.connect(this._pBoundingSphere, SIGNAL(changed), SLOT(_useBoundingSphere));
@@ -34,18 +39,16 @@ module akra.ui.model {
 			this.collapse(true);
 		}
 
+		_setVisible(pSwc: IUISwitch, bValue: bool): void {
+			this._pSubset.setVisible(bValue);
+		}
+
 		_useShadows(pSwc: IUISwitch, bValue: bool): void {
 			this._pSubset.hasShadow = bValue;
 		}
 
 		_useBoundingBox(pSwc: IUISwitch, bValue: bool): void {
-			if (bValue) {
-				LOG("show bounding box");
-				this._pSubset.showBoundingBox();
-			}
-			else {
-				this._pSubset.hideBoundingBox();
-			}
+			bValue? this._pSubset.showBoundingBox(): this._pSubset.hideBoundingBox();
 
 			this.updateProperties();
 		}
@@ -68,6 +71,8 @@ module akra.ui.model {
 			this._pShadows._setValue(this._pSubset.hasShadow);
 			this._pBoundingBox._setValue(this._pSubset.isBoundingBoxVisible());
 			this._pBoundingSphere._setValue(this._pSubset.isBoundingSphereVisible());
+			this._pVisible._setValue(this._pSubset.isVisible());
+			this._pGuid.text = <any>this._pSubset.getGuid();
 		}
 
 		rendered(): void {

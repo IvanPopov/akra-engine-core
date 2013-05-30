@@ -88,6 +88,8 @@ module akra.render {
         inline set depthClear(fDepthClearValue: float) { this._pViewportState.clearDepth = fDepthClearValue; }
 
 
+        inline get type(): EViewportTypes { return EViewportTypes.DEFAULT; }
+
 		constructor (pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			this._pTarget = pTarget;
 
@@ -139,6 +141,10 @@ module akra.render {
 
         inline getCamera(): ICamera {
         	return this._pCamera;
+        }
+
+        getDepth(x: uint, y: uint): float {
+        	return 1.0;
         }
 
         setCamera(pCamera: ICamera): bool {
@@ -303,7 +309,7 @@ module akra.render {
 			}
 		}
 
-		projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3{
+		projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3 {
 			var pCamera: ICamera = this.getCamera();
 			var v3fResult: IVec3 = pCamera.projectPoint(v3fPoint, v3fDestination);
 
@@ -319,11 +325,50 @@ module akra.render {
 			fY = fY*0.5 + 0.5;
 			fZ = fZ*0.5 + 0.5;
 
-			fX = this.actualLeft + this.width * fX;
-			fY = this.actualTop + this.height * fY;
+			//from top left angle of element
+			fX = this.actualLeft + this.actualWidth * fX;
+			fY = this.actualTop + this.actualHeight * (1. - fY);
 
 			return v3fResult.set(fX, fY, fZ);
 		};
+
+		unprojectPoint(x: uint, y: uint, v3fDestination?: IVec3): IVec3;
+		unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
+		unprojectPoint(a0, a1?, a2?): IVec3 {
+			var x: uint, y: uint;
+			var v3fDestination: IVec3;
+
+			if (isInt(arguments[0])) {
+				x = arguments[0];
+				y = arguments[1];
+				v3fDestination = arguments[2];
+			}
+			else {
+				x = arguments[0].x;
+				y = arguments[0].y;
+				v3fDestination = arguments[1];
+			}
+			
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3;
+			}
+
+			var pCamera: ICamera = this.getCamera();
+			var m4fProjection: IMat4 = pCamera.projectionMatrix;
+			var m4fWorld: IMat4 = pCamera.worldMatrix;
+			
+			var v4fIn: IVec4 = vec4(), v4fOut: IVec4 = vec4();
+
+			//Transformation of normalized coordinates between -1 and 1
+			v4fIn.x = (x - this.actualLeft) / this.actualWidth * 2.0 - 1.0;
+			//Y-axis look down for viewport, but look UP in GL
+			v4fIn.y = 1.0 - (y - this.actualTop) / this.actualHeight * 2.0;
+			v4fIn.z = 2.0 * this.getDepth(x, y) - 1.0;
+			v4fIn.w = 1.0;
+
+            v3fDestination.set(m4fWorld.multiplyVec4(m4fProjection.unproj(v4fIn, v4fOut)).xyz);
+			return v3fDestination;
+		}
 
 
         inline isUpdated(): bool {
@@ -345,6 +390,7 @@ module akra.render {
         CREATE_EVENT_TABLE(Viewport);
     	BROADCAST(viewportDimensionsChanged, VOID);
     	BROADCAST(viewportCameraChanged, VOID);
+    	BROADCAST(render, CALL(pTechnique, iPass, pRenderable, pSceneObject));
 	}
 }
 

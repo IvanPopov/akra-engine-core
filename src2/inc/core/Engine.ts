@@ -363,8 +363,13 @@ module akra.core {
 							files: [
 								"effects/mesh_texture.afx",
 								"effects/deferredShading.afx",
-								"effects/apply_lights_and_shadows.afx"
-							]
+								"effects/apply_lights_and_shadows.afx",
+							],
+							deps: {
+								files: [
+									"effects/color_maps.afx"
+								]
+							}
 						}
 					}
 			};			

@@ -705,7 +705,7 @@ module akra.webgl {
 
 	export function checkFBOAttachmentFormat(eFormat: EPixelFormats): bool 
     {
-        if(eFormat === EPixelFormats.R8G8B8A8)
+        if(eFormat === EPixelFormats.R8G8B8A8 || eFormat === EPixelFormats.R8G8B8)
         {
             return true;
         }
@@ -714,11 +714,13 @@ module akra.webgl {
         }
         else if(eFormat === EPixelFormats.FLOAT32_RGBA)
         {
-            return hasExtension(WEBGL_COLOR_BUFFER_FLOAT);
+            // return hasExtension(WEBGL_COLOR_BUFFER_FLOAT);
+            return hasExtension(OES_TEXTURE_FLOAT);
         }
         else if(eFormat === EPixelFormats.FLOAT16_RGBA)
         {
-            return hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+            // return hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+            return hasExtension(OES_TEXTURE_HALF_FLOAT);
         }
         else if (eFormat === EPixelFormats.DEPTH32) {
             return true;
@@ -732,15 +734,16 @@ module akra.webgl {
 
     export function checkReadPixelFormat(eFormat: EPixelFormats): bool 
     {
-        if(eFormat === EPixelFormats.R8G8B8A8){
+        if(eFormat === EPixelFormats.R8G8B8A8 || eFormat === EPixelFormats.R8G8B8) {
             return true;
         }
-        else if(eFormat === EPixelFormats.A8B8G8R8){
-            return true;
-        }
+        // else if(eFormat === EPixelFormats.A8B8G8R8){
+        //     return true;
+        // }
         else if(eFormat === EPixelFormats.FLOAT32_RGBA)
         {
-            return hasExtension(WEBGL_COLOR_BUFFER_FLOAT) || hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+            //hasExtension(WEBGL_COLOR_BUFFER_FLOAT) || hasExtension(EXT_COLOR_BUFFER_HALF_FLOAT);
+            return false;
         }
         else
         {
@@ -748,6 +751,8 @@ module akra.webgl {
         }
         
     }
+
+
 
     export function checkCopyTexImage(eFormat: EPixelFormats): bool {
         switch(eFormat){

@@ -156,9 +156,19 @@ module akra.core.pool.resources {
         private COLLADAInstanceEffect(pXML: Element): IColladaInstanceEffect;
         private COLLADAInstanceController(pXML: Element): IColladaInstanceController;
         private COLLADAInstanceGeometry(pXML: Element): IColladaInstanceGeometry;
+        private COLLADAInstanceCamera(pXML: Element): IColladaInstanceCamera;
+        private COLLADAInstanceLight(pXML: Element): IColladaInstanceLight;
 
         // directly load <visual_scene> from <instance_visual_scene> from <scene>.
         private COLLADAScene(pXML?: Element): IColladaVisualScene;
+
+        //lighting
+        private COLLADALight(pXML: Element): IColladaLight;
+
+        //camera
+        private COLLADAPerspective(pXML: Element): IColladaPerspective;
+        private COLLADAOptics(pXML: Element): IColladaOptics;
+        private COLLADACamera(pXML: Element): IColladaCamera;
 
         // animation
          
@@ -202,6 +212,7 @@ module akra.core.pool.resources {
         
         private buildSceneNode(pNode: IColladaNode, pParentNode: ISceneNode): ISceneNode;
         private buildJointNode(pNode: IColladaNode, pParentNode: ISceneNode): IJoint;
+        private buildCamera(pColladaInstanceCamera: IColladaInstanceCamera, pParent: ISceneNode): ICamera;
         private buildNodes(pNodes: IColladaNode[], pParentNode?: ISceneNode): ISceneNode;
         private buildScene(pRootNode: ISceneNode): ISceneNode[];
 
@@ -267,6 +278,8 @@ module akra.core.pool.resources {
             {lib : 'library_materials',     element : 'material',       loader : "COLLADAMaterial"      },
             {lib : 'library_geometries',    element : 'geometry',       loader : "COLLADAGeometrie"     },
             {lib : 'library_controllers',   element : 'controller',     loader : "COLLADAController"    },
+            {lib : 'library_cameras',       element : 'camera',         loader : "COLLADACamera"        },
+            {lib : 'library_lights',        element : 'light',          loader : "COLLADALight"         },
             {lib : 'library_visual_scenes', element : 'visual_scene',   loader : "COLLADAVisualScene"   }
         ];
 
@@ -525,7 +538,7 @@ module akra.core.pool.resources {
 
             string2FloatArray(stringData(pXML), pData);
             
-            return (new Mat4(1)).rotateLeft(pData[3] * Math.PI / 180.0, vec3(pData[0], pData[1], pData[2]));
+            return (new Mat4(1)).rotateLeft(pData[3] * math.RADIAN_RATIO, vec3(pData[0], pData[1], pData[2]));
         }
 
         private COLLADAScaleMatrix(pXML: Element): IMat4 {
@@ -688,7 +701,7 @@ module akra.core.pool.resources {
                     pData = new Array(4);
                     string2FloatArray(stringData(pXML), pData);
                     v4f = new Vec4(pData);
-                    v4f.w *= Math.PI / 180.0; /* to radians. */
+                    v4f.w *= math.RADIAN_RATIO; /* to radians. */
                     pTransform.value = v4f;
 
                     break;
@@ -895,13 +908,17 @@ module akra.core.pool.resources {
         
         private COLLADATechniqueCommon(pXML: Element): IColladaTechniqueCommon {
             var pTechniqueCommon: IColladaTechniqueCommon = {
-                accessor : null
+                accessor : null,
+                perspective: null
             };
 
             this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 switch (sName) {
                     case "accessor":
                         pTechniqueCommon.accessor = this.COLLADAAccessor(pXMLData);
+                        break;
+                    case "perspective":
+                        pTechniqueCommon.perspective = this.COLLADAPerspective(pXMLData);
                         break;
                 }
             });
@@ -1543,6 +1560,7 @@ module akra.core.pool.resources {
                 geometry        : [],
                 controller      : [],
                 childNodes      : [],
+                camera          : [],
                 depth           : iDepth,
                 transforms      : [],
                 constructedNode : null /*<! узел, в котором будет хранится ссылка на реальный игровой нод, построенный по нему*/
@@ -1570,6 +1588,10 @@ module akra.core.pool.resources {
 
                     case "instance_controller":
                         pNode.controller.push(this.COLLADAInstanceController(pXMLData));
+                        break;
+
+                    case "instance_camera":
+                        pNode.camera.push(this.COLLADAInstanceCamera(pXMLData));
                         break;
 
                     case "node":
@@ -1718,6 +1740,22 @@ module akra.core.pool.resources {
             return pInst;
         }
 
+        private COLLADAInstanceCamera(pXML: Element): IColladaInstanceCamera {
+            var pInst: IColladaInstanceCamera = {
+                camera: <IColladaCamera>this.source(attr(pXML, "url"))
+            };
+
+            return pInst;
+        }
+
+        private COLLADAInstanceLight(pXML: Element): IColladaInstanceLight {
+            var pInst: IColladaInstanceLight = {
+                light: <IColladaLight>this.source(attr(pXML, "url"))
+            };
+
+            return pInst;   
+        }
+
         // directly load <visual_scene> from <instance_visual_scene> from <scene>.
         private COLLADAScene(pXML: Element = firstChild(this.getXMLRoot(), "scene")): IColladaVisualScene {
             var pXMLData: Element = firstChild(pXML, "instance_visual_scene");
@@ -1728,6 +1766,47 @@ module akra.core.pool.resources {
             }
 
             return this._pVisualScene = pScene;
+        }
+
+        //camera
+        
+        private COLLADAPerspective(pXML: Element): IColladaPerspective {
+            var pPerspective: IColladaPerspective = {
+                xfov: parseFloat(stringData(firstChild(pXML, "xfov")) || 60.) * math.RADIAN_RATIO,
+                yfov: parseFloat(stringData(firstChild(pXML, "yfov")) || 60.) * math.RADIAN_RATIO,
+                aspect: parseFloat(stringData(firstChild(pXML, "aspect")) || 4./3.),
+                znear: parseFloat(stringData(firstChild(pXML, "znear")) || .1),
+                zfar: parseFloat(stringData(firstChild(pXML, "zfar")) || 500.),
+            }
+
+            return pPerspective;
+        }
+
+        private COLLADAOptics(pXML: Element): IColladaOptics {
+            var pOptics: IColladaOptics = {
+                techniqueCommon: this.COLLADATechniqueCommon(firstChild(pXML, "technique_common"))
+            }
+
+            return pOptics;
+        }
+
+        private COLLADACamera(pXML: Element): IColladaCamera {
+            var pCamera: IColladaCamera = {
+                optics: null,
+                id    : attr(pXML, "id")
+            };
+
+            pCamera.optics = this.COLLADAOptics(firstChild(pXML, "optics"));
+
+            this.link(pCamera);
+
+            return pCamera;
+        }
+
+        //light
+        
+        private COLLADALight(pXML: Element): IColladaLight {
+            return null;
         }
 
         // animation
@@ -2008,7 +2087,7 @@ module akra.core.pool.resources {
                     //     "matrix modification supported only for one parameter modification");
 
                     // for (var i = 0; i < pTimeMarks.length; ++ i) {
-                    //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
+                    //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * math.PI);
                     // };
                     CRITICAL("TODO: implement animation rotation");
                     //TODO: implement animation rotation
@@ -2117,7 +2196,7 @@ module akra.core.pool.resources {
                 pNode.localScale = vec3(fUnit);
 
                 if (sUPaxis.toUpperCase() == "Z_UP") {
-                    //pNode.addRelRotation([1, 0, 0], -.5 * Math.PI);
+                    //pNode.addRelRotation([1, 0, 0], -.5 * math.PI);
                     pNode.addRelRotationByEulerAngles(0, -.5 * math.PI, 0);
                 }
             }
@@ -2217,8 +2296,12 @@ module akra.core.pool.resources {
                             }
 
                             // LOG("is texture valid?? - ", pTexture.isValid());
-                            // pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR/*_MIPMAP_LINEAR*/);
-                            // pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR/*_MIPMAP_LINEAR*/);
+                            
+                            pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+                            pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+
+                            pTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
+                            pTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
 
                             var pMatches: string[] = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
                             var iTexCoord: int = (pMatches ? parseInt(pMatches[2]) : 0);
@@ -2574,6 +2657,26 @@ module akra.core.pool.resources {
             return pJointNode;
         }
         
+        private buildCamera(pColladaInstanceCamera: IColladaInstanceCamera, pParent: ISceneNode): ICamera {
+            var pColladaCamera: IColladaCamera = pColladaInstanceCamera.camera;
+            var pCamera: ICamera = pParent.scene.createCamera(pColladaCamera.name || pColladaCamera.id || null);
+
+            pCamera.setInheritance(ENodeInheritance.ALL);
+            pCamera.attachToParent(pParent);
+
+            var pPerspective: IColladaPerspective = pColladaCamera.optics.techniqueCommon.perspective;
+            
+            
+            
+            if (!isNull(pPerspective)) {
+                pCamera.setProjParams(pPerspective.xfov, pPerspective.aspect, pPerspective.znear, 
+                    //FIX far plane distance
+                    pPerspective.zfar * (1 / this.getAsset().unit.meter));
+            }
+
+            return pCamera;
+        }
+
         private buildNodes(pNodes: IColladaNode[], pParentNode: ISceneNode = null): ISceneNode {
             if (isNull(pNodes)) {
                 return null;
@@ -2605,6 +2708,13 @@ module akra.core.pool.resources {
                 pHierarchyNode.localMatrix = pNode.transform;
 
                 this.buildNodes(pNode.childNodes, pHierarchyNode);
+
+                if (pNode.camera.length > 0) {
+                    for (var c = 0; c < pNode.camera.length; ++ c) {
+                        var pColladaCamera: IColladaInstanceCamera = pNode.camera[c];
+                        var pCamera: ICamera = this.buildCamera(pColladaCamera, pHierarchyNode);
+                    }
+                }
             }
 
             return pHierarchyNode;
@@ -2664,7 +2774,7 @@ module akra.core.pool.resources {
             }
 
             pPoseSkeletons = pPoseSkeletons || this.getSkeletonsOutput();
-            LOG(">>>>> buildInitialPoses() <<<<<<");
+
             if (isNull(pPoseSkeletons)) {
                 return null;
             }
@@ -2684,7 +2794,7 @@ module akra.core.pool.resources {
                 // }
                 pPoses.push(this.buildInititalPose(pScene.nodes, pSkeleton));
             }
-            LOG(pPoses);
+            // LOG(pPoses);
             return pPoses;
         }
 

@@ -14,7 +14,8 @@ module akra {
     export enum EViewportTypes {
         DEFAULT = -1,
         DSVIEWPORT = 1,
-        SHADOWVIEWPORT = 2
+        SHADOWVIEWPORT = 2,
+        COLORVIEWPORT
     }
 
     export interface IViewport extends IEventProvider {
@@ -34,6 +35,8 @@ module akra {
         backgroundColor: IColor;
         depthClear: float;
 
+        readonly type: EViewportTypes;
+
         update(): void;
         destroy(): void;
 
@@ -46,6 +49,7 @@ module akra {
         getTarget(): IRenderTarget;
         getCamera(): ICamera;
         setCamera(pCamera: ICamera): bool;
+        getDepth(x: uint, y: uint): float;
 
         setDimensions(fLeft: float, fTop: float, fWidth: float, fHeight: float): bool;
         setDimensions(pRect: IRect2d): bool;
@@ -53,6 +57,8 @@ module akra {
         getActualDimensions(): IRect2d;
 
         projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
+        unprojectPoint(x: uint, y: uint, v3fDestination?: IVec3): IVec3;
+        unprojectPoint(pPos: IPoint, v3fDestination?: IVec3): IVec3;
 
         //iBuffers=FBT_COLOUR|FBT_DEPTH
         setClearEveryFrame(isClear: bool, iBuffers?: uint): void;
@@ -77,6 +83,7 @@ module akra {
 
         signal viewportDimensionsChanged(): void;
         signal viewportCameraChanged(): void;
+        signal render(pTechnique: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject);
     }
 }
 

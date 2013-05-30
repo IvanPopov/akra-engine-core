@@ -124,6 +124,10 @@ module akra.webgl {
 			return false;
 		}
 
+		readPixels(pDestBox: IPixelBox): bool {
+			this.download(pDestBox);
+			return true;
+		}
 
 		//=====
 

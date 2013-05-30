@@ -166,6 +166,7 @@ module akra.webgl {
 			}
 
 			debug_print("WebGLVertexBuffer resized from " + this.byteLength + " to " + iSize + "(" + this.getGuid() + ")");
+			// debug_print(__CALLSTACK__);
 
 
 			if(iSize < this.byteLength) {

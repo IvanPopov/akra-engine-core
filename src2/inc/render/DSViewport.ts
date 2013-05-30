@@ -20,6 +20,11 @@
 #define OPTIMIZED_DEFFERED 1
 
 module akra.render {
+
+	var pDepthPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_DEPTH, new Uint8Array(4 * 1));
+	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
+	var pColor: IColor = new Color(0);
+
 	export class DSViewport extends Viewport implements IDSViewport  {
 		private _pDefereedColorTextures: ITexture[] = [];
 		private _pDeferredDepthTexture: ITexture = null;
@@ -39,6 +44,8 @@ module akra.render {
 	    };
 
 	    private _pLightPoints: util.ObjectArray = null;
+
+	    inline get type(): EViewportTypes { return EViewportTypes.DSVIEWPORT; }
 
 		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, pTarget, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -90,7 +97,9 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.projectLighting");
 			pDSEffect.addComponent("akra.system.omniShadowsLighting");
 			pDSEffect.addComponent("akra.system.projectShadowsLighting");
+			// pDSEffect.addComponent("akra.system.color_maps");
 			pDSEffect.addComponent("akra.system.skybox", 1, 0);
+			pDSEffect.addComponent("akra.system.outline", 1, 0);
 
 			pDSMethod.effect = pDSEffect;
 			pDefferedView.getTechnique().setMethod(pDSMethod);
@@ -100,7 +109,6 @@ module akra.render {
 			this.setDepthParams(false, false, 0);			
 
 			this.setFXAA(true);
-			this.connect(pDefferedView.getTechnique(), SIGNAL(render), SLOT(_onRender), EEventTypes.UNICAST);
 		}
 
 		setCamera(pCamera: ICamera): bool {
@@ -240,6 +248,48 @@ module akra.render {
 
 		inline getSkybox(): ITexture { return this._pDeferredSkyTexture; }
 
+		
+
+		getDepth(x: int, y: int): float {
+			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
+			
+			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
+
+			//depth texture has POT sized, but viewport not;
+			//depth texture attached to left bottom angle of viewport
+			y = y + (pDepthTexture.height - this.actualHeight);
+			pDepthPixel.left = x;
+			pDepthPixel.top = y;
+			pDepthPixel.right = x + 1;
+			pDepthPixel.bottom = y + 1;
+
+			pDepthTexture.getBuffer(0, 0).readPixels(pDepthPixel);
+
+			return pDepthPixel.getColorAt(pColor, 0, 0).r;
+		}
+
+		inline getRenderId(x: int, y: int): int {
+			return this._getDeferredTex1Value(x, y).a;
+		}
+
+		_getDeferredTex1Value(x: int, y: int): IColor {
+			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
+			
+			var pColorTexture: ITexture = this._pDefereedColorTextures[0];
+
+			//depth texture has POT sized, but viewport not;
+			//depth texture attached to left bottom angle of viewport
+			y = y + (pColorTexture.height - this.actualHeight);
+			pFloatColorPixel.left = x;
+			pFloatColorPixel.top = y;
+			pFloatColorPixel.right = x + 1;
+			pFloatColorPixel.bottom = y + 1;
+
+			pColorTexture.getBuffer(0, 0).readPixels(pFloatColorPixel);
+			// LOG(pFloatColorPixel.data);
+			return pFloatColorPixel.getColorAt(pColor, 0, 0);
+		}
+
 		setSkybox(pSkyTexture: ITexture): bool {
 			if (pSkyTexture.textureType !== ETextureTypes.TEXTURE_CUBE_MAP) {
 				return null;
@@ -286,7 +336,12 @@ module akra.render {
 
 
 
-		_onRender(pTechnique: IRenderTechnique, iPass: uint): void {
+		render(
+			pTechnique: IRenderTechnique, 
+			iPass: uint, 
+			pRenderable: IRenderableObject, 
+			pSceneObject: ISceneObject): void {
+			
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
 			var pDeferredTextures: ITexture[] = this._pDefereedColorTextures;
@@ -383,6 +438,8 @@ module akra.render {
 
 					break;
 			}
+
+			super.render(pTechnique, iPass, pRenderable, pSceneObject);
 		}
 
 		private inline resetUniforms(): void {

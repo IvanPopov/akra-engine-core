@@ -8,6 +8,8 @@ module akra {
 		setFXAA(bValue?: bool): void;
 		isFXAA(): bool;
 
+		getRenderId(x: int, y: int): int;
+
 		signal addedSkybox(pSkyTexture: ITexture): void;
 	}
 }
