@@ -254,7 +254,7 @@ module akra.util{
         var iHeight: uint = pWebGLVertexTexture._getHeight();
 
         pWebGLProgram.setInt("videoBuffer", 0);
-        pWebGLProgram.setVec2("frameBufferSize", iWidth, iHeight);
+        pWebGLProgram.setVec2("frameBufferSize", vec2(iWidth, iHeight));
         pWebGLProgram.setInt("type", 0);
         pWebGLProgram.setMat4("bind_matrix", pMeshSubset.skin.getBindMatrix());
 

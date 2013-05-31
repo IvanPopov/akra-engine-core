@@ -477,7 +477,7 @@ module akra.webgl {
 		        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
 
 		        pWebGLProgram.setInt("sourceTexture", 0);
-		        pWebGLProgram.setVec2("size", this._iWidth, this._iHeight);
+		        pWebGLProgram.setVec2("size", vec2(this._iWidth, this._iHeight));
 
 		        pWebGLContext.viewport(0, 0, this._iWidth, this._iHeight);
 		        pWebGLContext.drawArrays(GL_POINTS, 0, nPixels);
@@ -626,8 +626,8 @@ module akra.webgl {
 			        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
 
 			        pWebGLProgram.setInt("sourceTexture", 0);
-		        	pWebGLProgram.setVec2("v2fSrcTexSize", this._iWidth, this._iHeight);
-		        	pWebGLProgram.setVec2("v2fDstTexSize", pPOTSize[0], pPOTSize[1]);
+		        	pWebGLProgram.setVec2("v2fSrcTexSize", vec2(this._iWidth, this._iHeight));
+		        	pWebGLProgram.setVec2("v2fDstTexSize", vec2(pPOTSize[0], pPOTSize[1]));
 
 			        pWebGLContext.viewport(0, 0, pPOTSize[0], pPOTSize[1]);
 			        pWebGLContext.drawArrays(GL_POINTS, 0, nPixels);

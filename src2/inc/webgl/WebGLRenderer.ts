@@ -198,7 +198,7 @@ module akra.webgl {
 			var pUniformNames: string[] = pMaker.uniformNames;
 
 			for (var i: uint = 0; i < pUniformNames.length; i++) {
-				pMaker.setUniform(pUniformNames[i],  pInput.uniforms[i]);
+				pMaker.setUniform(i, pInput.uniforms[i]);
 			}
 			
 			pEntry.bufferMap._draw();

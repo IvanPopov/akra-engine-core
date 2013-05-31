@@ -142,55 +142,82 @@ module akra.webgl {
         // inline setBool(sName: string, bValue: bool): void {
         //     this.setInt(sName, bValue )
         // }
-    	
-    	setVec2(sName: string, v2fValue: IVec2): void;
-    	setVec2(sName: string, x: float, y: float): void;
-    	inline setVec2(sName: string, x?, y?): void {
-    		(arguments.length == 2)?
-    		  this._pWebGLContext.uniform2f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y):
-    		  this._pWebGLContext.uniform2f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2]);
-    	}
+        
+        setVec2(sName: string, v2fValue: IVec2): void {
+            this._pWebGLContext.uniform2f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y);
+        }
+
+        
+        setVec2i(sName: string, v2iValue: IVec2): void {
+            this._pWebGLContext.uniform2i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y);
+        }
+
+        setVec3(sName: string, v3fValue: IVec3): void {
+            this._pWebGLContext.uniform3f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z);
+        }
+        
+        setVec3i(sName: string, v3iValue: IVec3): void {
+            this._pWebGLContext.uniform3i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z);
+        }
+
+        setVec4(sName: string, v4fValue: IVec4): void {
+            this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
+        }
+
+        setVec4i(sName: string, v4iValue: IVec4): void {
+            this._pWebGLContext.uniform4i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
+        }
 
     	
-    	setVec2i(sName: string, v2iValue: IVec2): void;
-    	setVec2i(sName: string, x: int, y: int): void;
-    	inline setVec2i(sName: string, x?, y?): void {
-    		(arguments.length == 2)?
-    		  this._pWebGLContext.uniform2i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y):
-    		  this._pWebGLContext.uniform2i(this._pWebGLUniformLocations[sName], arguments[1], arguments[2]);
-    	}
+    	// setVec2(sName: string, v2fValue: IVec2): void;
+    	// setVec2(sName: string, x: float, y: float): void;
+    	// inline setVec2(sName: string, x?, y?): void {
+    	// 	(arguments.length == 2)?
+    	// 	  this._pWebGLContext.uniform2f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y):
+    	// 	  this._pWebGLContext.uniform2f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2]);
+    	// }
 
-    	setVec3(sName: string, v3fValue: IVec3): void;
-    	setVec3(sName: string, x: float, y: float, z: float): void;
-    	inline setVec3(sName: string, x?, y?, z?): void {
-    		(arguments.length == 2)?
-    		  this._pWebGLContext.uniform3f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z):
-    		  this._pWebGLContext.uniform3f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3]);
-    	}
     	
-    	setVec3i(sName: string, v3iValue: IVec3): void;
-    	setVec3i(sName: string, x: int, y: int, z: int): void;
-    	inline setVec3i(sName: string, x?, y?, z?): void {
-    		(arguments.length == 2)?
-    			this._pWebGLContext.uniform3i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z):
-    			this._pWebGLContext.uniform3i(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3]);
-    	}
+    	// setVec2i(sName: string, v2iValue: IVec2): void;
+    	// setVec2i(sName: string, x: int, y: int): void;
+    	// inline setVec2i(sName: string, x?, y?): void {
+    	// 	(arguments.length == 2)?
+    	// 	  this._pWebGLContext.uniform2i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y):
+    	// 	  this._pWebGLContext.uniform2i(this._pWebGLUniformLocations[sName], arguments[1], arguments[2]);
+    	// }
 
-    	setVec4(sName: string, v4fValue: IVec4): void;
-    	setVec4(sName: string, x: float, y: float, z: float, w: float): void;
-    	inline setVec4(sName: string, x?, y?, z?, w?): void {
-    		(arguments.length == 2) ?
-    		  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w):
-    		  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3], arguments[3]);
-    	}
+    	// setVec3(sName: string, v3fValue: IVec3): void;
+    	// setVec3(sName: string, x: float, y: float, z: float): void;
+    	// inline setVec3(sName: string, x?, y?, z?): void {
+    	// 	(arguments.length == 2)?
+    	// 	  this._pWebGLContext.uniform3f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z):
+    	// 	  this._pWebGLContext.uniform3f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3]);
+    	// }
+    	
+    	// setVec3i(sName: string, v3iValue: IVec3): void;
+    	// setVec3i(sName: string, x: int, y: int, z: int): void;
+    	// inline setVec3i(sName: string, x?, y?, z?): void {
+    	// 	(arguments.length == 2)?
+    	// 		this._pWebGLContext.uniform3i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z):
+    	// 		this._pWebGLContext.uniform3i(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3]);
+    	// }
 
-    	setVec4i(sName: string, v4iValue: IVec4): void;
-    	setVec4i(sName: string, x: int, y: int, z: int, w: int): void;
-    	inline setVec4i(sName: string, x?, y?, z?, w?): void {
-    		(arguments.length == 2)?
-    			this._pWebGLContext.uniform4i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w):
-    			this._pWebGLContext.uniform4i(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3], arguments[3])
-    	}
+    	// setVec4(sName: string, v4fValue: IVec4): void;
+    	// setVec4(sName: string, x: float, y: float, z: float, w: float): void;
+    	// inline setVec4(sName: string, x?, y?, z?, w?): void {
+    	// 	(arguments.length == 2) ?
+    	// 	  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w):
+    	// 	  this._pWebGLContext.uniform4f(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3], arguments[3]);
+    	// }
+
+    	// setVec4i(sName: string, v4iValue: IVec4): void;
+    	// setVec4i(sName: string, x: int, y: int, z: int, w: int): void;
+    	// inline setVec4i(sName: string, x?, y?, z?, w?): void {
+    	// 	(arguments.length == 2)?
+    	// 		this._pWebGLContext.uniform4i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w):
+    	// 		this._pWebGLContext.uniform4i(this._pWebGLUniformLocations[sName], arguments[1], arguments[2], arguments[3], arguments[3])
+    	// }
+ 
 #ifdef IMAT2_TS    	
     	inline setMat2(sName: string, m2fValue: IMat2): void {
     		this._pWebGLContext.uniformMatrix2fv(this._pWebGLUniformLocations[sName], false, m2fValue.data);
@@ -316,7 +343,7 @@ module akra.webgl {
             // var iSlot: uint = this._pWebGLRenderer.getNextTextureSlot();
             // this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
             // WARNING(iSlot);
-            // this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
+            // var iSlot: uint = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(GL_TEXTURE_2D, null);
             // this._pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
             var iSlot: uint = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(GL_TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
             this.setInt(sName, iSlot);

@@ -126,18 +126,24 @@ module akra {
 		var pSampleNativeInt: Uint32Array = null;
 		var pSampleStr: string[] = null;
 		var pSampleAny: any[] = null;
+		var pSampleObjectMap: any = null;
+		var pSampleIntMap: any = null;
 
 		function generateSample(iMin: int, iMax: int): void {
 			pSampleInt = new Array(iMax - iMin);
 			pSampleNativeInt = new Uint32Array(iMax - iMin);
 			pSampleStr = new Array(iMax - iMin);
 			pSampleAny = new Array(iMax - iMin);
+			pSampleObjectMap = {};
+			pSampleIntMap = {};
 
 			for(var i: uint = 0; i < (iMax - iMin); i++){ 
 				pSampleInt[i] = (i + iMin);
 				pSampleNativeInt[i] = (i + iMin);
 				pSampleStr[i] = (i + iMin).toString();
 				pSampleAny[i] = {0: (i + iMin).toString()};
+				pSampleObjectMap[i] = {0: (i + iMin).toString()};
+				pSampleIntMap[i] = (i + iMin);
 			}
 		}
 
@@ -189,6 +195,30 @@ module akra {
 			return nMatches;
 		}
 
+		function testObjectMap(): uint {
+			var nMatches: uint = 0;
+
+			for(var i: uint = 0; i <  pSampleInt.length; i++){
+				// nMatches += length(pSampleAny[i][0]);
+				pSampleObjectMap[i] = pSampleObjectMap[pSampleInt.length - i - 1];
+				// (pArrInt.indexOf(pSampleInt[i]) < 0) ? 0 : nMatches++;
+			}
+
+			return nMatches;
+		}
+
+		function testIntMap(): uint {
+			var nMatches: uint = 0;
+
+			for(var i: uint = 0; i <  pSampleInt.length; i++){
+				// nMatches += length(pSampleAny[i][0]);
+				pSampleIntMap[i] = pSampleIntMap[pSampleInt.length - i - 1];
+				// (pArrInt.indexOf(pSampleInt[i]) < 0) ? 0 : nMatches++;
+			}
+
+			return nMatches;
+		}
+
 		// function lengthInt(value: uint): uint {
 		// 	return value;
 		// }
@@ -198,12 +228,14 @@ module akra {
 		// }
 
 		initTestObjects(10);
-		generateSample(0, 200);
+		generateSample(0, 2000);
 
 		wrapper(testIntArray, 100000); /*fastest*/
-		wrapper(testNativeIntArray, 100000); /*slowest*/
+		// wrapper(testNativeIntArray, 100000); /*slowest*/
 		wrapper(testStrArray, 100000); /*10-15% slower than int[]*/
 		wrapper(testAnyArray, 100000); /*10-15% slower than int[]*/
+		wrapper(testObjectMap, 100000); /*10-15% slower than int[]*/
+		wrapper(testIntMap, 100000); /*stable 10% slowest than int[]*/
 
 		LOG(pSampleInt, pSampleStr, pSampleAny)
 	});

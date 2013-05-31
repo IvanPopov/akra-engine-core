@@ -32,7 +32,7 @@ module akra {
 		isArray(sName: string): bool;
 		getType(sName: string): EAFXShaderVariableType;
 		getLength(sName: string): uint;
-		setUniform(sName: string, pValue: any): void;
+		setUniform(iLocation: uint, pValue: any): void;
 
 		_make(pPassInput: IAFXPassInputBlend, pBufferMap: IBufferMap): IShaderInput;
 		_initInput(pPassInput: IAFXPassInputBlend, pBlend: fx.SamplerBlender, 
