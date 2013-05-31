@@ -97,7 +97,7 @@ module  akra.render {
 		}
 
 		isValid(): bool {
-			return false;
+			return true;
 		}
 
 		inline getError(): string {

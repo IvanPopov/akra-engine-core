@@ -53,6 +53,8 @@ module akra.webgl {
 			var pWebGLVs: WebGLShader = this.createWebGLShader(GL_VERTEX_SHADER, csVertex);
 			var pWebGLFs: WebGLShader = this.createWebGLShader(GL_FRAGMENT_SHADER, csPixel);
 
+            // (<any>this)._debuginfo = {vs: csVertex, ps: csPixel};
+
 			/** because, if not all units correctly activated, can obtained wronf link status */
 			pWebGLRenderer._disableAllTextureUnits();
 

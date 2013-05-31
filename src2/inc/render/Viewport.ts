@@ -280,17 +280,13 @@ module akra.render {
 				this._pCamera._keepLastViewport(this);
 			}
 
-			if(this._bClearEveryFrame){
-				this.clear(this._pViewportState.clearBuffers, 
-        				   this._pViewportState.clearColor,
-        				   this._pViewportState.clearDepth);
-			}
+			this.startFrame();
 
 			this._isDepthRangeUpdated = false;
 
 			this._updateImpl();
 
-			this.getTarget().getRenderer().executeQueue();
+			this.endFrame();
 		}
 
 		_updateImpl(): void {

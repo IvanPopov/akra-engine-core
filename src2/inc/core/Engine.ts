@@ -211,7 +211,7 @@ module akra.core {
 
 	        function render(iTime: uint): void { 
 #ifdef DEBUG
-				if (pRenderer.isValid()) {
+				if (!pRenderer.isValid()) {
 					ERROR(pRenderer.getError());
 				}
 #endif

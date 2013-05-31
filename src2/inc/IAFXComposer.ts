@@ -1,7 +1,7 @@
 #ifndef IAFXCOMPOSER_TS
 #define IAFXCOMPOSER_TS
 
-#ifdef DEBUG
+#ifdef AFX_ENABLE_TEXT_EFFECTS
 #include "IParser.ts"
 #endif
 
@@ -79,9 +79,9 @@ module akra {
 
 		//API for load components/AFXEffects
 		
-		#ifdef DEBUG
+#ifdef AFX_ENABLE_TEXT_EFFECTS
 		_loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): bool;
-		#endif
+#endif
 		_loadEffectFromBinary(pData: Uint8Array, sFileName: string): bool;
 	}
 }

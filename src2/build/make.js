@@ -299,7 +299,7 @@ function preprocess() {
 	// pwd();
 
 	var cmd = (isWin? pOptions.baseDir + "/": "") + "mcpp";
-	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -I " + 
+	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -I ./"/* + pOptions.buildDir*/ + " -I " + 
 		pOptions.baseDir + "/definitions/ -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).split(" ");
 
@@ -376,12 +376,18 @@ function compile() {
 	console.log("\n> compilation started (" + this.process.pid + ")  \n");
 
 	var cmd = "node";
+	var sOutputFolder = pOptions.outputFolder + "/" + (pOptions.debug? "DEBUG": "RELEASE");	
+	var sOutputFile = sOutputFolder + "/" + pOptions.outputFile;
+	
+	wrench.mkdirSyncRecursive(sOutputFolder, 0777);
+
 	var argv = (  
 		pOptions.baseDir + "/tsc.js -c --target ES5  " + 
 		pOptions.baseDir + "/definitions/fixes.d.ts " +
+		// pOptions.buildDir + "/bin/RELEASE/akra.d.ts " +
 		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " +
-		pOptions.outputFolder + "/" + pOptions.outputFile +
+		sOutputFile +
 		// (pOptions.compress? " --comments --jsdoc ": "") + 
 		(pOptions.declaration? " --declaration ": "") +
 		" --cflowu --const").replace(/\s+/ig, " ").split(" ");
@@ -394,8 +400,6 @@ function compile() {
 	  console.log('compilation exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 
 	  if (code == 0) {
-	  	var sOutputFile = pOptions.outputFolder + "/" + pOptions.outputFile;
-
 	  	console.log("compiled to: ", sOutputFile);
 
 		fs.unlink(pOptions.pathToTemp, function (err) {
@@ -762,10 +766,10 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		});
 	}
 	else if (sFormat == "html") {
-		writeOutput(sDir + "/" + sName + ".ts.html", sIndexHTML);
+		writeOutput(sDir + "/" + sName /*+ "." + (pOptions.debug? "DEBUG": "RELEASE")*/ + ".html", sIndexHTML);
 	}
 	else if (sFormat == "js") {
-		writeOutput(sDir + "/" + sName + ".ts.js", sTestData);	
+		writeOutput(sDir + "/" + sName /*+ "." + (pOptions.debug? "DEBUG": "RELEASE")*/ + ".js", sTestData);	
 	}
 }
 
@@ -785,16 +789,16 @@ function packTest(sDir, sFile, sName, pData) {
 	
 	console.log("\nWebGL debug: " + (pOptions.webglDebug? "ON": "OFF"));
 	
-
-	var sTempFile = sFile + ".temp.js";
-
+	sDir += "/" + (pOptions.debug? "DEBUG": "RELEASE") + "/";
+	var sTempFile =sFile + ".temp.js";
+	var sTempFileModded = path.dirname(sTempFile) + "/" + (pOptions.debug? "DEBUG": "RELEASE") + "/" + path.basename(sTempFile);
 	var cmd = "node";
 
 	var argv = (pOptions.baseDir + "/make.js -o " + sTempFile +" -t CORE " + 
 		(pOptions.capability? " --ES6 ": "") + 
 		(pOptions.compress? " --compress ": "") + 
 		(pOptions.declaration? " --declaration ": "") + 
-		(pOptions.debug? " --debug ": "") + 
+		(pOptions.debug? " --debug ": " --no-debug ") + 
 		sFile).split(" ");
 
 	console.log(cmd + " " + argv.join(" "));
@@ -811,7 +815,7 @@ function packTest(sDir, sFile, sName, pData) {
 					sFile, 
 					sName, 
 					pData, 
-					fs.readFileSync(sTempFile + (pOptions.compress? ".min": ""), "utf8"), 
+					fs.readFileSync(sTempFileModded + (pOptions.compress? ".min": ""), "utf8"), 
 					sFormat);
 			}
 			if (pOptions.testsFormat.nw) {
@@ -828,10 +832,10 @@ function packTest(sDir, sFile, sName, pData) {
 			}
 
 
-			fs.unlinkSync(sTempFile)
+			fs.unlinkSync(sTempFileModded)
 
 			if (pOptions.compress) {
-				fs.unlinkSync(sTempFile + ".min");
+				fs.unlinkSync(sTempFileModded + ".min");
 			}
 		}
 		else {

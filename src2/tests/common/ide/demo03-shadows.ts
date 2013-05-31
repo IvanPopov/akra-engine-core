@@ -1,8 +1,7 @@
 #include "akra.ts"
-#include "controls/KeyMap.ts"
 #include "util/SimpleGeometryObjects.ts"
 
-/// @: demo.css|css()
+/// @: ../demo.css|css()
 
 /// @VEHABAR: 			{data}/models/vehabar/vehabar.dae|location()
 /// @OIL: 				{data}/models/oil/oil.dae|location()
@@ -62,25 +61,21 @@ module akra {
 	function createSceneEnvironment(): void {
 		var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
 		pSceneQuad.attachToParent(pScene.getRootNode());
-		// pSceneQuad.mesh.getSubset(0).setVisible(false);
 
 		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
 		// pSceneSurface.scale(5.);
 		pSceneSurface.addPosition(0, 0.01, 0);
 		pSceneSurface.attachToParent(pScene.getRootNode());
+
+
+		// pSceneQuad.mesh.getSubset(0).setVisible(false);
 		// pSceneSurface.mesh.getSubset(0).setVisible(false);
-
-		// var pCameraTerrainProj: ISceneModel = util.basis(pScene);
-
-		// pCameraTerrainProj.attachToParent(pScene.getRootNode());
-		// pCameraTerrainProj.scale(.25);
-
-		// self.cameraTerrainProj = pCameraTerrainProj;
 	}
 
 	function createViewports(): void {
 		pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
 		pViewport.backgroundColor = Color.BLACK;
+		// pViewport.setClearEveryFrame(true);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 	}
 
@@ -207,16 +202,6 @@ module akra {
 	function update(): void {
 		updateCameras();
 		self.keymap.update();
-
-		// var pProj: IVec3 = vec3();
-		// if (self.terrainLoaded && self.terrain.projectPoint(self.hero.root.worldPosition, pProj)) {
-		// 	self.cameraTerrainProj.setPosition(pProj);
-
-		// 	if (self.viewport.projectPoint(pProj)) {
-		// 		var pOffset = $canvasContainer.offset();
-		// 		$div.offset({left: pOffset.left + pProj.x, top: pOffset.top + pProj.y});
-		// 	}
-		// }
 	}
 
 
@@ -230,7 +215,7 @@ module akra {
 		pScene.bind(SIGNAL(beforeUpdate), update);
 		
 		loadModels("@OIL", (pNode: ISceneNode) => {
-			pNode.addPosition(vec3(-5.45, .75, 0.));
+			pNode.addPosition(vec3(-2.45, .75, 0.));
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				pNode.addRelRotationByXYZAxis(0.00, 0.003, 0);
@@ -238,7 +223,7 @@ module akra {
 		});
 
 		loadModels("@CAN", (pNode: ISceneNode) => {
-			pNode.addPosition(vec3(5.45, .75, 0.));
+			pNode.addPosition(vec3(2.45, .75, 0.));
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				pNode.addRelRotationByXYZAxis(0.00, -0.003, 0);
@@ -246,7 +231,7 @@ module akra {
 		});
 
 		loadModels("@VEHABAR", (pNode: ISceneNode) => {
-			pNode.addPosition(vec3(0., .75, 5.45));
+			pNode.addPosition(vec3(0., .75, 2.45));
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
 				pNode.addRelRotationByXYZAxis(0.00, -0.003, 0);

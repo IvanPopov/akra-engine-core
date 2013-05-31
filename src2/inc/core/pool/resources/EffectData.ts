@@ -4,16 +4,16 @@
 #include "../ResourcePoolItem.ts"
 #include "io/files.ts"
 #include "IAFXComposer.ts"
-#ifdef DEBUG
+#ifdef AFX_ENABLE_TEXT_EFFECTS
 #include "IParser.ts"
 #include "util/EffectParser.ts"
 #endif
 
 module akra.core.pool.resources {
 	export class EffectData extends ResourcePoolItem {
-		#ifdef DEBUG
+#ifdef AFX_ENABLE_TEXT_EFFECTS
 		private _pSyntaxTree: IParseTree = null;
-		#endif
+#endif
 
 		loadResource(sFileName?: string): bool {
 			var reExt: RegExp  = /^(.+)(\.afx|\.abf|\.fx)$/;
@@ -28,7 +28,7 @@ module akra.core.pool.resources {
     		var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
     		var me: EffectData = this;
     		
-#ifndef DEBUG
+#ifndef AFX_ENABLE_TEXT_EFFECTS
     		if(!isBinary){
     			ERROR("You can load text effect-files only in debug-mode");
     			return;
@@ -44,7 +44,7 @@ module akra.core.pool.resources {
 				return true;
 			}
 
-#ifdef DEBUG
+#ifdef AFX_ENABLE_TEXT_EFFECTS
 
 			io.fopen(sFileName, "r+t").read(function(pErr: Error, sData: string){
 				if(!isNull(pErr)){
@@ -60,7 +60,7 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-#ifdef DEBUG
+#ifdef AFX_ENABLE_TEXT_EFFECTS
 		_initFromParsedEffect(eCode: EParserCode, sFileName: string): void {
 			if(eCode === EParserCode.k_Error) {
 				return;
