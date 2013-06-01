@@ -18,11 +18,15 @@ module akra {
 		[index: uint]: IAFXMaker;
 	}
 
+	export interface IAFXBaseAttrInfo {
+		name: string;
+		semantic: string;
+	}
+
 	export interface IAFXMaker extends IUnique {
 		readonly shaderProgram: IShaderProgram;
-		readonly attributeSemantics: string[];
-		readonly attributeNames: string[];
 		readonly uniformNames: string[];
+		readonly attributeInfo: IAFXBaseAttrInfo[];
 
 		_create(sVertex: string, sPixel: string): bool;
 		

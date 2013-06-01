@@ -152,22 +152,21 @@ module akra.webgl {
 			this.enableWebGLVertexAttribs(pWebGLProgram.totalAttributes);
 
 			var pAttribLocations: IntMap = pWebGLProgram._getActiveAttribLocations();
-			var pAttributeSemantics: string[] = pMaker.attributeSemantics;
-			var pAttributeNames: string[] = pMaker.attributeNames;
+			var pAttributeInfo: IAFXBaseAttrInfo[] = pMaker.attributeInfo;
 
 			var pBufferMap: IBufferMap = pEntry.bufferMap;
 
 			if(!isNull(pBufferMap.index)){
 				this.bindWebGLBuffer(GL_ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.index.buffer).getWebGLBuffer());
 			}
-			var nPreparedBuffers: uint = 0;
-			for(var i: uint = 0; i < pAttributeNames.length; i++){
-				var sAttrName: string = pAttributeNames[i];
-				var sAttrSemantic: string = pAttributeSemantics[i];
+			
+			for(var i: uint = 0; i < pAttributeInfo.length; i++){
+				var sAttrName: string = pAttributeInfo[i].name;
+				var sAttrSemantic: string = pAttributeInfo[i].semantic;
 
-				if(isNull(sAttrSemantic)){
-					continue;
-				}
+				// if(isNull(sAttrSemantic)){
+				// 	continue;
+				// }
 
 				var iLoc: int = pAttribLocations[sAttrName];
 				var pFlow: IDataFlow = pInput.attrs[i];

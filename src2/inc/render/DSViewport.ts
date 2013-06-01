@@ -147,7 +147,7 @@ module akra.render {
 		    //prepare deferred textures
 // #ifndef OPTIMIZED_DEFFERED
 			this._pDefereedColorTextures[0].getBuffer().getRenderTarget().update();
-			// this._pDefereedColorTextures[1].getBuffer().getRenderTarget().update();
+			this._pDefereedColorTextures[1].getBuffer().getRenderTarget().update();
 // #else
 // 			var pNodeList: IObjectArray = this.getCamera().display();
 // 			for (var i: int = 0; i < pNodeList.length; ++ i) {

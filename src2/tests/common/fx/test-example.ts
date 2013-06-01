@@ -192,7 +192,7 @@ module akra {
 			var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
 			
 			pOmniShadowLight.attachToParent(pScene.getRootNode());
-			pOmniShadowLight.enabled = false;
+			pOmniShadowLight.enabled = true;
 			pOmniShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 			pOmniShadowLight.params.diffuse.set(1);
 			pOmniShadowLight.params.specular.set(1, 1, 1, 1);
