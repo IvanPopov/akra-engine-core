@@ -21,11 +21,21 @@ module akra.fx {
 		[name: string]: EAFXShaderVariableType;
 	}
 
-	export interface IUniformStructFieldInfo {
+	// export interface IUniformStructInfo {
+	// 	name: string;
+	// 	shaderName: string;
+	// 	type: EAFXShaderVariableType;
+	// 	length: uint;
+	// }
+	
+	export interface IUniformStructInfo {
 		name: string;
-		shaderName: string;
-		type: EAFXShaderVariableType;
-		length: uint;
+		isComplex: bool;
+		isArray: bool;
+		index: int;
+
+		fields: IUniformStructInfo[];
+		shaderVarInfo: IShaderUniformInfo;
 	}
 
 	export interface IShaderUniformInfo {
@@ -64,8 +74,8 @@ module akra.fx {
 		[name: string]: IShaderAttrInfo;
 	}
 
-	export interface IUniformStructFieldInfoMap {
-		[name: string]: IUniformStructFieldInfo;
+	export interface IUniformStructInfoMap {
+		[name: string]: IUniformStructInfo;
 	}
 
 
@@ -73,6 +83,7 @@ module akra.fx {
 		name: string;
 		isComplex: bool;
 		shaderVarInfo: IShaderUniformInfo;
+		structVarInfo: IUniformStructInfo;
 	}
 
 #ifdef WEBGL
@@ -126,35 +137,33 @@ module akra.fx {
 		return <IInputUniformInfo>{
 			name: sName,
 			isComplex: isComplex,
-			shaderVarInfo: pShaderUniformInfo
+			shaderVarInfo: pShaderUniformInfo,
+			structVarInfo: null
 		};
 	}
 
-	function createUniformStructFieldInfo(sName: string, sShaderName: string, 
-								  eType: EAFXShaderVariableType, iLength: uint): IUniformStructFieldInfo {
-		return <IUniformStructFieldInfo>{
-			name: sName,
-			shaderName: sShaderName,
-			type: eType,
-			length: iLength
-		};
-	}
-
-	// export class UniformVarInfo implements IInputUniformInfo {
-	// 	location: uint;
-	// 	name: string;
-	// 	shaderName: string;
-	// 	type: EAFXShaderVariableType;
-	// 	length: uint;
-
-	// 	constructor(sName: string, sShaderName: string, eType: EAFXShaderVariableType, iLength: uint, iLocation: uint){
-	// 		this.location = iLocation;
-	// 		this.name = sName;
-	// 		this.shaderName = sShaderName;
-	// 		this.type = eType;
-	// 		this.length = iLength;
-	// 	}
+	// function createUniformStructFieldInfo(sName: string, sShaderName: string, 
+	// 							  eType: EAFXShaderVariableType, iLength: uint): IUniformStructInfo {
+	// 	return <IUniformStructInfo>{
+	// 		name: sName,
+	// 		shaderName: sShaderName,
+	// 		type: eType,
+	// 		length: iLength
+	// 	};
 	// }
+
+	function createUniformStructFieldInfo(sName: string, isComplex: bool, isArray: bool): IUniformStructInfo {
+		return <IUniformStructInfo>{
+			name: sName,
+			isComplex: isComplex,
+			isArray: isArray,
+			index: -1,
+
+			fields: null,
+			shaderVarInfo: null
+		};
+	}
+
 
 	export class Maker implements IAFXMaker {
 		UNIQUE();
@@ -190,7 +199,7 @@ module akra.fx {
 		private _pInputSamplerInfoList: IInputUniformInfo[] = null;
 		private _pInputSamplerArrayInfoList: IInputUniformInfo[] = null;
 
-		private _pUnifromInfoForStructFieldMap: IUniformStructFieldInfoMap = null;
+		private _pUnifromInfoForStructFieldMap: IUniformStructInfoMap = null;
 
 		inline isArray(sName: string) {
 			return this.getLength(sName) > 0;
@@ -266,7 +275,7 @@ module akra.fx {
 				this._pShaderAttrInfoMap[sAttrName] = pAttrInfo;
 			}
 
-			this._pUnifromInfoForStructFieldMap = <IUniformStructFieldInfoMap>{};
+			this._pUnifromInfoForStructFieldMap = <IUniformStructInfoMap>{};
 
 			return true;
 		}
@@ -353,8 +362,10 @@ module akra.fx {
 				var pInputUniformInfo: IInputUniformInfo = null;
 
 				if(eType === EAFXShaderVariableType.k_Complex){
-					if(this.expandStructUniforms(pPassInput._getAFXUniformVar(sName))) {
+					var pStructInfo: IUniformStructInfo = this.expandStructUniforms(pPassInput._getAFXUniformVar(sName));
+					if(!isNull(pStructInfo)){
 						pInputUniformInfo = createInputUniformInfo(sName, null, true);
+						pInputUniformInfo.structVarInfo = pStructInfo;
 						this._pInputUniformInfoList.push(pInputUniformInfo);
 					}
 				}
@@ -547,7 +558,7 @@ module akra.fx {
 				var pInfo: IInputUniformInfo = this._pInputUniformInfoList[i];
 				
 				if(pInfo.isComplex) {
-					this.applyStructUniform(pInfo.name, pUniforms[pInfo.name], pInput);
+					this.applyStructUniform(pInfo.structVarInfo, pUniforms[pInfo.name], pInput);
 				}
 				else {
 					pInput.uniforms[pInfo.shaderVarInfo.location] = pUniforms[pInfo.name];
@@ -882,7 +893,7 @@ module akra.fx {
 			pOut.min_filter = pFrom.min_filter;
 		}
 
-		private expandStructUniforms(pVariable: IAFXVariableDeclInstruction, sPrevName?: string = ""): bool {
+		private expandStructUniforms(pVariable: IAFXVariableDeclInstruction, sPrevName?: string = ""): IUniformStructInfo {
 			var sRealName: string = pVariable.getRealName();
 
 			if(sPrevName !== ""){
@@ -898,56 +909,42 @@ module akra.fx {
 			var iLength: uint = isArray ? pVarType.getLength() : 1;
 
 			if(isArray && (iLength === UNDEFINE_LENGTH || iLength === 0)){
-				this._pUniformExistMap[sPrevName] = false;
-				return;
+				WARNING("Length of struct can not be undefined");
+				return null;
 			}
 
-#ifdef WEBGL
-			var isFakeLength: bool = false;
-			if(webgl.isANGLE && isArray && iLength === 1){
-				iLength = 2;
-				isFakeLength = true;
-			}
-#endif
-			var isAnyFieldExist: bool = false;
+			var pStructInfo: IUniformStructInfo = createUniformStructFieldInfo(sRealName, true, isArray);
+			pStructInfo.fields = new Array();
+
 			var sFieldPrevName: string = "";
+			var pFieldInfoList: IUniformStructInfo[] = null;
 
 			for(var i: uint = 0; i < iLength; i++){
-				sFieldPrevName = sPrevName;
-
-				if(isArray) {
-					sFieldPrevName += "[" + i + "]";
+				if(isArray){
+					pFieldInfoList =  new Array();
+					sFieldPrevName = sPrevName + "[" + i + "]";
+				}
+				else {
+					pFieldInfoList = pStructInfo.fields;
+					sFieldPrevName = sPrevName;
 				}
 
 				for(var j: uint = 0; j < pFieldNameList.length; j++){
 					var sFieldName: string = pFieldNameList[j];
 					var pField: IAFXVariableDeclInstruction = pVarType.getField(sFieldName);
+					var pFieldInfo: IUniformStructInfo = null;
 
 					if(pField.getType().isComplex()){
-						isAnyFieldExist = this.expandStructUniforms(pField, sFieldPrevName) || isAnyFieldExist;
+						pFieldInfo = this.expandStructUniforms(pField, sFieldPrevName);
 					}
 					else {
 						var sFieldRealName: string = sFieldPrevName + "." + pField.getRealName();
-						var iFieldLength: uint = 0;
-
-#ifdef WEBGL
-						var eFieldType: EAFXShaderVariableType = 0;
-
-						if(isFakeLength && i === 1) {
-							eFieldType = EAFXShaderVariableType.k_NotVar;
-						}
-						else {
-							eFieldType = PassInputBlend.getVariableType(pField);
-						}
-#else
 						var eFieldType: EAFXShaderVariableType = PassInputBlend.getVariableType(pField);
-#endif
-
 						var iFieldLength: uint = pField.getType().getLength();
-
+						var isFieldArray: bool = pField.getType().isNotBaseArray();
 						var sFieldShaderName: string = sFieldRealName;
 
-						if(pField.getType().isNotBaseArray()){
+						if(isFieldArray){
 							sFieldShaderName += "[0]";
 						}
 
@@ -959,92 +956,60 @@ module akra.fx {
 						pShaderUniformInfo.type = eFieldType;
 						pShaderUniformInfo.length = iFieldLength;
 
-						this._pUnifromInfoForStructFieldMap[sFieldRealName]	= createUniformStructFieldInfo(sFieldRealName, sFieldShaderName, 
-																										 eFieldType, iFieldLength);
-
-						isAnyFieldExist = true;
+						pFieldInfo = createUniformStructFieldInfo(pField.getRealName(), false, isFieldArray);
+						pFieldInfo.shaderVarInfo = pShaderUniformInfo;
 					}
 
+					if(!isNull(pFieldInfo)){
+						pFieldInfoList.push(pFieldInfo);
+					}
+				}
+
+				if(isArray && pFieldInfoList.length > 0){
+					var pArrayElementInfo: IUniformStructInfo = createUniformStructFieldInfo(sRealName, true, false);
+					pArrayElementInfo.index = i;
+					pArrayElementInfo.fields = pFieldInfoList;
+
+					pStructInfo.fields.push(pArrayElementInfo);
 				}
 			}
 
-#ifdef WEBGL
-			if(isFakeLength){
-				iLength = 1;
-			}
-#endif
-			if(isAnyFieldExist){
-				this._pUnifromInfoForStructFieldMap[sPrevName] = createUniformStructFieldInfo(sPrevName, sPrevName,
-																							 EAFXShaderVariableType.k_Complex, 
-																							 isArray ? iLength : 0);				
+			if(pStructInfo.fields.length > 0){
+				return pStructInfo;
 			}
 			else {
-				this._pUnifromInfoForStructFieldMap[sPrevName] = null;
+				return null;
 			}
-
-			return isAnyFieldExist;
 		}
 
-		private applyStructUniform(sName: string, pValue: any, pInput: IShaderInput): void {
+		private applyStructUniform(pStructInfo: IUniformStructInfo, pValue: any, pInput: IShaderInput): void {
 			if(!isDefAndNotNull(pValue)){
 				return;
 			}
 
-			var pVarInfo: IUniformStructFieldInfo = this._pUnifromInfoForStructFieldMap[sName];
-
-			if(pVarInfo.length > 0){
-				if(!isDef(pValue.length)){
-					return;
-				}
-
-				var iLength: uint = math.min(pVarInfo.length, pValue.length);
-
-				for(var i: uint = 0; i < iLength; i++){
-					var sFieldPrevName: string = sName + "[" + i + "]";
-
-					for(var j in pValue[i]) {
-						if(!pValue[i].hasOwnProperty(j)){
-							continue;
-						}
-						var sFieldName: string = sFieldPrevName + "." + j;
-						var pFieldInfo: IUniformStructFieldInfo = this._pUnifromInfoForStructFieldMap[sFieldName];
-
-						if(isDefAndNotNull(pFieldInfo)){
-							if(pFieldInfo.type === EAFXShaderVariableType.k_Complex){
-								this.applyStructUniform(sFieldName, pValue[i][j], pInput);		
-							}
-							else {
-								pInput.uniforms[this._pShaderUniformInfoMap[pFieldInfo.shaderName].location] = pValue[i][j];
-							}
-						}
-						else {
-							this._pUnifromInfoForStructFieldMap[sFieldName] = null;
-						}
+			if(pStructInfo.isArray){
+				for(var i: uint = 0; i < pStructInfo.fields.length; i++){
+					var pFieldInfo: IUniformStructInfo = pStructInfo.fields[i];
+					if(isDef(pValue[pFieldInfo.index])){
+						this.applyStructUniform(pFieldInfo, pValue[pFieldInfo.index], pInput);
 					}
 				}
 			}
 			else {
-				for(var j in pValue) {
-					if(!pValue.hasOwnProperty(j)){
-						continue;
-					}
-					var sFieldName: string = sName + "." + j;
-					var pFieldInfo: IUniformStructFieldInfo = this._pUnifromInfoForStructFieldMap[sFieldName];
+				for(var i: uint = 0; i < pStructInfo.fields.length; i++){
+					var pFieldInfo: IUniformStructInfo = pStructInfo.fields[i];
+					var pFieldValue: any = pValue[pFieldInfo.name];
 
-					if(isDefAndNotNull(pFieldInfo)){
-						if(pFieldInfo.type === EAFXShaderVariableType.k_Complex){
-							this.applyStructUniform(sFieldName, pValue[j], pInput);		
+					if(isDef(pFieldValue)){
+						if(pFieldInfo.isComplex){
+							this.applyStructUniform(pFieldInfo, pFieldValue, pInput);
 						}
 						else {
-							pInput.uniforms[this._pShaderUniformInfoMap[pFieldInfo.shaderName].location] = pValue[j];					
+							pInput.uniforms[pFieldInfo.shaderVarInfo.location] = pFieldValue;
 						}
-					}
-					else {
-						this._pUnifromInfoForStructFieldMap[sFieldName] = null;
 					}
 				}
 			}
-
 		}
 
 		private applyUnifromArray(sName: string, eType: EAFXShaderVariableType, pValue: any): void {
