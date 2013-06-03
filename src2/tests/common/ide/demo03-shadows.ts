@@ -1,5 +1,5 @@
-#include "akra.ts"
-#include "util/SimpleGeometryObjects.ts"
+///<reference path="../../../bin/RELEASE/akra.ts"/>
+
 
 /// @: ../demo.css|css()
 
@@ -29,7 +29,7 @@ module akra {
 		renderer 			: pEngine.getRenderer(),
 		keymap 				: pKeymap,
 		cameras 			: <ICamera[]>[],
-		activeCamera  		: <int>null,
+		activeCamera  		: 0,
 	}
 
 	function setup(): void {
@@ -44,7 +44,7 @@ module akra {
 		pKeymap.captureMouse(pCanvasElement);
 		pKeymap.captureKeyboard(document);
 
-		pCanvas.bind(SIGNAL(viewportAdded), (pCanvas: ICanvas3d, pVp: IViewport) => {
+		pCanvas.bind("viewportAdded", (pCanvas: ICanvas3d, pVp: IViewport) => {
 			pViewport = self.viewport = pVp;
 		});
 	}
@@ -54,20 +54,21 @@ module akra {
 		pCamera.attachToParent(pScene.getRootNode());
 	
     	pCamera.addRelPosition(0, 2.0, -2.0);
-    	pCamera.lookAt(vec3(0., .75, 0.));
+    	pCamera.lookAt(new Vec3(0., .75, 0.));
 
 	}
 
 	function createSceneEnvironment(): void {
-		var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
-		pSceneQuad.attachToParent(pScene.getRootNode());
+		// var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
+		// pSceneQuad.attachToParent(pScene.getRootNode());
 
-		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
+		// var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
+		// pSceneSurface.addPosition(0, 0.01, 0);
+		// pSceneSurface.attachToParent(pScene.getRootNode());
+
+		//----
+
 		// pSceneSurface.scale(5.);
-		pSceneSurface.addPosition(0, 0.01, 0);
-		pSceneSurface.attachToParent(pScene.getRootNode());
-
-
 		// pSceneQuad.mesh.getSubset(0).setVisible(false);
 		// pSceneSurface.mesh.getSubset(0).setVisible(false);
 	}
@@ -103,14 +104,15 @@ module akra {
 		pProject.params.attenuation.set(1, 0, 0);
 
 
-		pProject.setPosition(vec3(-5, 5, -5));
-		pProject.lookAt(vec3(0., .75, 0.));	
+		pProject.setPosition(new Vec3(-5, 5, -5));
+		pProject.lookAt(new Vec3(0., .75, 0.));	
 	}
 
 
 
+	var v3fOffset: IVec3 = new Vec3;
 
-	function updateKeyboardControls(fLateralSpeed: float, fRotationSpeed: float): void {
+	function updateKeyboardControls(fLateralSpeed: number, fRotationSpeed: number): void {
 		var pKeymap: IKeyMap = self.keymap;
 		// var pGamepad: Gamepad = self.gamepads.find(0);
 
@@ -131,7 +133,8 @@ module akra {
 	        pCamera.addRelRotationByEulerAngles(0, -fRotationSpeed, 0);
 	    }
 
-	    var v3fOffset: IVec3 = vec3(0, 0, 0);
+	    v3fOffset.set(0.);
+	    
 	    var isCameraMoved: bool = false;
 
 	    if (pKeymap.isKeyPress(EKeyCodes.D)) {
@@ -190,7 +193,7 @@ module akra {
 	function loadModels(sPath, fnCallback?: Function): void {
 		var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
 
-		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+		pModel.bind("loaded", (pModel: ICollada) => {
 			var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 
 			if (isFunction(fnCallback)) {
@@ -212,28 +215,28 @@ module akra {
 		createViewports();
 		createLighting();
 
-		pScene.bind(SIGNAL(beforeUpdate), update);
+		pScene.bind("beforeUpdate", update);
 		
 		loadModels("@OIL", (pNode: ISceneNode) => {
-			pNode.addPosition(vec3(-2.45, .75, 0.));
+			pNode.addPosition(new Vec3(-2.45, .75, 0.));
 
-			pScene.bind(SIGNAL(beforeUpdate), () => {
+			pScene.bind("beforeUpdate", () => {
 				pNode.addRelRotationByXYZAxis(0.00, 0.003, 0);
 			});
 		});
 
 		loadModels("@CAN", (pNode: ISceneNode) => {
-			pNode.addPosition(vec3(2.45, .75, 0.));
+			pNode.addPosition(new Vec3(2.45, .75, 0.));
 
-			pScene.bind(SIGNAL(beforeUpdate), () => {
+			pScene.bind("beforeUpdate", () => {
 				pNode.addRelRotationByXYZAxis(0.00, -0.003, 0);
 			});
 		});
 
 		loadModels("@VEHABAR", (pNode: ISceneNode) => {
-			pNode.addPosition(vec3(0., .75, 2.45));
+			pNode.addPosition(new Vec3(0., .75, 2.45));
 
-			pScene.bind(SIGNAL(beforeUpdate), () => {
+			pScene.bind("beforeUpdate", () => {
 				pNode.addRelRotationByXYZAxis(0.00, -0.003, 0);
 			});
 		});
@@ -249,6 +252,6 @@ module akra {
 
 */	}
 
-	pEngine.bind(SIGNAL(depsLoaded), main);		
+	pEngine.bind("depsLoaded", main);		
 	pEngine.exec();
 }

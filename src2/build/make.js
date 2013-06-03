@@ -311,7 +311,7 @@ function preprocess() {
 	var iTotalChars = 0;
 
 	mcpp.stdout.on('data', function (data) {
-	  //console.log('stdout: \n' + data);
+	  // console.log('stdout: \n' + data);
 	  data.copy(stdout, iTotalChars);
 	  
 	  iTotalChars  += data.length;
@@ -322,13 +322,14 @@ function preprocess() {
 	});
 
 	mcpp.on('exit', function (code) {
+		//console.log(stdout.slice(0, iTotalChars).toString());
 	  console.log('preprocessing exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 	
 	  if (code == 0) {
 	  	pOptions.pathToTemp = pOptions.outputFolder + "/" + pOptions.tempFile;
 		
 		if (pOptions.preprocess) {
-			fs.writeFileSync(pOptions.outputFolder + "/" + pOptions.outputFile, stdout.slice(0, iTotalChars), "utf8");
+			fs.writeFileSync(pOptions.outputFolder + "/" + pOptions.outputFile, stdout.slice(0, iTotalChars).toString(), "utf8");
 			console.log("preprocessed to: ", pOptions.outputFolder + "/" + pOptions.outputFile);
 		}
 		else {
@@ -341,7 +342,7 @@ function preprocess() {
 }
 
 function compress(sFile) {
-
+	console.log(">>>>>>>>>>>>>>>>>>>>>>>");
 	var cmd = "java";
 	var argv = (
 		"-jar " + 
@@ -408,6 +409,15 @@ function compile() {
 			}
 
 			console.log("temp file: " + pOptions.pathToTemp + " removed.\n\n");
+			
+			var pFetchResult = {css: [], script: [], data: null};
+		    var gitignore = fetchDeps(
+		    	sOutputFolder,
+		    	fs.readFileSync(sOutputFile, "utf-8"), 
+		    	pFetchResult);
+
+
+		    fs.writeFileSync(sOutputFile, pFetchResult.data, "utf-8");
 			
 			if (pOptions.compress) {
 				compress(sOutputFile);
@@ -662,6 +672,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		script: pAdditionalScripts,
 		data: null
 	};
+
     var gitignore = fetchDeps(
     	sDir,
     	sTestData, 
@@ -799,6 +810,7 @@ function packTest(sDir, sFile, sName, pData) {
 		(pOptions.compress? " --compress ": "") + 
 		(pOptions.declaration? " --declaration ": "") + 
 		(pOptions.debug? " --debug ": " --no-debug ") + 
+		(pOptions.preprocess? " --preprocess ": " ") + 
 		sFile).split(" ");
 
 	console.log(cmd + " " + argv.join(" "));
@@ -808,7 +820,11 @@ function packTest(sDir, sFile, sName, pData) {
 	node.on('exit', function (code) {
 	    console.log("test " + sFile + " packed with code " + code);
 		if (code == 0) {
-        
+        	
+			if (pOptions.preprocess) {
+				return;
+			}
+
 			var compileTestMacro = function (sFormat) {
 				compileTest(
 					sDir, 
