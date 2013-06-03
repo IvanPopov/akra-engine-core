@@ -57,8 +57,7 @@ module akra.webgl {
 
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): bool;
-		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {
-
+		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {			
 			var iMinWidth: uint = WEBGL_VERTEX_TEXTURE_MIN_SIZE;
 			var iWidth: uint, iHeight: uint;
 			var pTextureData: Uint8Array = null;
@@ -97,7 +96,7 @@ module akra.webgl {
 		    if (this.isBackupPresent()) {
 		        SET_ALL(this._iFlags, EHardwareBufferFlags.READABLE);
 		    }
-			
+						
 			debug_assert(!pData || pData.byteLength <= iByteSize, 
 				"Размер переданного массива больше переданного размера буфера");
 			
@@ -138,7 +137,7 @@ module akra.webgl {
 
 		    //create header
 		    this._pHeader = this.allocateData([VE_VEC2(DeclarationUsages.TEXTURE_HEADER)], this._header());
-
+		    console.log("HEADER >> ", this._pHeader);
 
 		    /**
 		    * update program
@@ -651,7 +650,9 @@ module akra.webgl {
 				}
 			}		
 			
-			this._pHeader.setData(this._header());
+			if (this._pHeader) {
+				this._pHeader.setData(this._header());
+			}
 
 			this.notifyAltered();
 

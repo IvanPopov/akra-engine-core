@@ -38,7 +38,7 @@ module akra.scene {
 			super(pScene, eType);
 		}
 
-		inline getRenderable(i?: uint): IRenderableObject {
+		getRenderable(i?: uint): IRenderableObject {
 			return null;
 		}
 
@@ -106,7 +106,7 @@ module akra.scene {
     	inline set hasShadow(bValue: bool){
     		this._hasShadow = bValue;
     		for(var i: uint = 0; i < this.totalRenderable; i++){
-    			this.getRenderable(i).hasShadow = bValue;
+    			(<IRenderableObject>this.getRenderable(i)).hasShadow = bValue;
     		}
     	};
 

@@ -49,6 +49,7 @@ function usage() {
 		'\n\t--webgl-debug	[-w] Add webgl debug utils.' + 
 		'\n\t--do-magic	[-m] It\'s wonderfull magic!(Спросите у Игоря!).' + 
 		'\n\t--declaration		Generates corresponding .d.ts file.' +
+		'\n\t--no-const			Do not replace constant from enum values.' +
 		'\n\t--preprocess		Preprocessing only.'
 	);
 	
@@ -76,6 +77,7 @@ var pOptions = {
 	listOnly: false, //list available tests
 	webglDebug: false,
 	dataDir: "./data/",
+	noConst: false,
 	/**
 	 * Поиск всех файлов с комеентариями вида // стоящими не на отдельной строке
 	 */
@@ -171,6 +173,9 @@ function parseArguments() {
 				break;
 			case '--declaration':
 				pOptions.declaration = true;
+				break;
+			case '--no-const':
+				pOptions.noConst = true;
 				break;
 			case '--preprocess':
 				pOptions.preprocess = true;
@@ -391,7 +396,7 @@ function compile() {
 		sOutputFile +
 		// (pOptions.compress? " --comments --jsdoc ": "") + 
 		(pOptions.declaration? " --declaration ": "") +
-		" --cflowu --const").replace(/\s+/ig, " ").split(" ");
+		" --cflowu " + (!pOptions.noConst? " --const ": "")).replace(/\s+/ig, " ").split(" ");
 
 	console.log((cmd + " " + argv.join(" ")));//.split(" ")
     
@@ -811,6 +816,7 @@ function packTest(sDir, sFile, sName, pData) {
 		(pOptions.declaration? " --declaration ": "") + 
 		(pOptions.debug? " --debug ": " --no-debug ") + 
 		(pOptions.preprocess? " --preprocess ": " ") + 
+		(pOptions.noConst? " --no-const ": " ") + 
 		sFile).split(" ");
 
 	console.log(cmd + " " + argv.join(" "));

@@ -29,11 +29,17 @@ module akra.webgl {
 		protected _pBuffer: IPixelBox = null;
 		protected _iWebGLInternalFormat: int = 0;
 
+		protected _iByteLength: uint = 0;
+
+		inline get byteLength(): uint { return this._iByteLength; }
+		inline set byteLength(x: uint) { this._iByteLength = x; }
+
 		inline get width(): uint { return this._iWidth; }
 		inline get height(): uint { return this._iHeight; }
 		inline get depth(): uint { return this._iDepth; }
 
 		inline get format(): uint { return this._eFormat; }
+
 
 
 		constructor () {
@@ -304,7 +310,7 @@ module akra.webgl {
 				var iSize: uint;
 				
 				if(arguments.length === 1){
-					iLockFlags === arguments[0];
+					iLockFlags = arguments[0];
 					iOffset = 0;
 					iSize = this.byteLength;
 				}

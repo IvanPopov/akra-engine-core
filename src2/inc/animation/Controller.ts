@@ -5,6 +5,10 @@
 #include "IAnimationController.ts"
 #include "util/unique.ts"
 
+#include "Base.ts"
+#include "Container.ts"
+#include "Blend.ts"
+
 module akra.animation {
 	export class Controller implements IAnimationController {
 		public name: string = null;

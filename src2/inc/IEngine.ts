@@ -48,6 +48,7 @@ module akra {
         exec(): void;
         /** Определяет, находитсяли Engine в цикле рендеринга */
         isActive(): bool;
+        isDepsLoaded(): bool;
 
 
         getTimer(): IUtilTimer;

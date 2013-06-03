@@ -30,6 +30,8 @@
 #include "controls/GamepadMap.ts"
 #include "controls/KeyMap.ts"
 
+#include "util/SimpleGeometryObjects.ts"
+
 
 
 #ifdef WEBGL

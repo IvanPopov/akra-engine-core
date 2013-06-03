@@ -1,6 +1,6 @@
 ///<reference path="../../../bin/RELEASE/akra.ts"/>
 
-
+/// @data: data
 /// @: ../demo.css|css()
 
 /// @VEHABAR: 			{data}/models/vehabar/vehabar.dae|location()
@@ -39,7 +39,7 @@ module akra {
 
 		document.body.appendChild(pDiv);
 		pDiv.appendChild(pCanvasElement);
-
+		pDiv.style.position = "fixed";
 
 		pKeymap.captureMouse(pCanvasElement);
 		pKeymap.captureKeyboard(document);
@@ -59,12 +59,12 @@ module akra {
 	}
 
 	function createSceneEnvironment(): void {
-		// var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
-		// pSceneQuad.attachToParent(pScene.getRootNode());
+		var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
+		pSceneQuad.attachToParent(pScene.getRootNode());
 
-		// var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
-		// pSceneSurface.addPosition(0, 0.01, 0);
-		// pSceneSurface.attachToParent(pScene.getRootNode());
+		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
+		pSceneSurface.addPosition(0, 0.01, 0);
+		pSceneSurface.attachToParent(pScene.getRootNode());
 
 		//----
 
@@ -78,6 +78,9 @@ module akra {
 		pViewport.backgroundColor = Color.BLACK;
 		// pViewport.setClearEveryFrame(true);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
+		window.onresize = function(event) {
+			pCanvas.resize(window.innerWidth, window.innerHeight);
+		}
 	}
 
 	function createLighting(): void {
@@ -115,7 +118,6 @@ module akra {
 	function updateKeyboardControls(fLateralSpeed: number, fRotationSpeed: number): void {
 		var pKeymap: IKeyMap = self.keymap;
 		// var pGamepad: Gamepad = self.gamepads.find(0);
-
 
 		if (pKeymap.isKeyPress(EKeyCodes.RIGHT)) {
 	        pCamera.addRelRotationByEulerAngles(0.0, 0.0, -fRotationSpeed);
@@ -251,7 +253,7 @@ module akra {
 		});
 
 */	}
-
+	
 	pEngine.bind("depsLoaded", main);		
 	pEngine.exec();
 }
