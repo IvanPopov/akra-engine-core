@@ -25,11 +25,11 @@ module akra.core.pool.resources {
 		protected _pBackupUpdated: bool = false;
 		protected _bIgnoreHardwareUpdate: bool = false;
 
-		inline get byteLength(): uint { return 0; }
-		inline get length(): uint { return 0; }
+		// inline get byteLength(): uint { return 0; }
+		// inline get length(): uint { return 0; }
 		 
-		// byteLength: uint = 0;
-		// length: uint = 0;
+		byteLength: uint = 0;
+		length: uint = 0;
 
 		constructor() {
 			super();

@@ -1105,7 +1105,7 @@ module akra.fx {
 			else {
 				sCode = "#define AKRA_FRAGMENT 1\n" + 
 						"#ifdef GL_ES\nprecision highp float;\n#endif\n" +
-						"#extension GL_OES_standard_derivatives : enable\n" + 
+						"#extension GL_OES_standard_derivatives : enable\n"
 						sCode;
 				this._sSystemExtBlockCodeP = sCode;
 			}

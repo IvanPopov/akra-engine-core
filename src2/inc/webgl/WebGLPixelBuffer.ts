@@ -29,10 +29,10 @@ module akra.webgl {
 		protected _pBuffer: IPixelBox = null;
 		protected _iWebGLInternalFormat: int = 0;
 
-		protected _iByteLength: uint = 0;
+		// protected _iByteLength: uint = 0;
 
-		inline get byteLength(): uint { return this._iByteLength; }
-		inline set byteLength(x: uint) { this._iByteLength = x; }
+		// inline get byteLength(): uint { return this._iByteLength; }
+		// inline set byteLength(x: uint) { this._iByteLength = x; }
 
 		inline get width(): uint { return this._iWidth; }
 		inline get height(): uint { return this._iHeight; }
