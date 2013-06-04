@@ -184,7 +184,7 @@ module akra.fx {
 		private _isUsedZero2D: bool = false;
 		private _isUsedZeroCube: bool = false;
 
-		private _pAttrContainer: AttributeBlendContainer = null;
+		// private _pAttrContainer: AttributeBlendContainer = null;
 		//стек объектов храняих все юниформы и аттрибуты
 		private _pDataPoolArray: util.ObjectArray = new util.ObjectArray();
 
@@ -597,7 +597,11 @@ module akra.fx {
 
 			for(var i: uint = 0; i < this._pShaderAttrInfoList.length; i++) {
 				var pAttrInfo: IShaderAttrInfo = this._pShaderAttrInfoList[i];
-				var pFlow: IDataFlow = pAttrInfo.isComplex ? (pBufferMap.findFlow(pAttrInfo.semantic) || pBufferMap.getFlow(pAttrInfo.semantic, true)) : pBufferMap.getFlow(pAttrInfo.semantic, true);
+				var pFlow: IDataFlow = pAttrInfo.isComplex ? 
+										pBufferMap.findFlow(pAttrInfo.semantic) || pBufferMap.getFlowBySemantic(pAttrInfo.semantic): 
+										pBufferMap.getFlowBySemantic(pAttrInfo.semantic);
+										// pBufferMap.findFlow(pAttrInfo.semantic) || pBufferMap.getFlow(pAttrInfo.semantic, true): 
+										// pBufferMap.getFlow(pAttrInfo.semantic, true);
 
 				pInput.attrs[pAttrInfo.location] = pFlow;
 

@@ -261,13 +261,14 @@ module akra.fx {
 
 	export class AttributeBlendContainer extends VariableBlendContainer {
 		
-		private _pSlotBySemanticIndex: Int8Array = null;
+		private _pSlotBySemanticIndex: int[] = null;
 		private _pFlowBySemanticIndex: IDataFlow[] = null;
 
-		private _pFlowBySlots: IDataFlow[] = null;
+		private _pFlowBySlots: int[] = null;
+		private _pSlotByFlows: int[] = null;
 		private _pTypesBySlots: IAFXTypeInstruction[] = null;
-		private _pVBByBufferSlots: Int32Array = null;
-		private _pBufferSlotBySlots: Int8Array = null;
+		private _pVBByBufferSlots: int[] = null;
+		private _pBufferSlotBySlots: int[] = null;
 
 		private _pHashPartList: uint[] = null;
 
@@ -303,11 +304,15 @@ module akra.fx {
 #ifdef WEBGL
 			iMaxSlots = webgl.maxVertexAttributes;
 			iMaxVertexSamplers = webgl.maxVertexTextureImageUnits;
+#else
+			iMaxSlots = 16;
+			iMaxVertexSamplers = 4;
 #endif
 			this._pFlowBySlots = new Array(iMaxSlots);
+			this._pSlotByFlows = new Array(iMaxSlots);
 			this._pTypesBySlots = new Array(iMaxSlots);
-			this._pVBByBufferSlots = new Int32Array(iMaxVertexSamplers);
-			this._pBufferSlotBySlots = new Int8Array(iMaxSlots);	
+			this._pVBByBufferSlots = new Array(iMaxVertexSamplers);
+			this._pBufferSlotBySlots = new Array(iMaxSlots);	
 			this._pHashPartList = null;			
 		}
 
@@ -335,9 +340,9 @@ module akra.fx {
 			return this._pFlowBySemanticIndex[this.getKeyIndex(sSemantic)];
 		}
 
-		inline getFlowBySlot(iSlot: uint): IDataFlow {
-			return this._pFlowBySlots[iSlot];
-		}
+		// inline getFlowBySlot(iSlot: uint): IDataFlow {
+		// 	return this._pFlowBySlots[iSlot];
+		// }
 
 		inline getTypeBySlot(iSlot: int): IAFXTypeInstruction {
 			return this._pTypesBySlots[iSlot];
@@ -370,7 +375,7 @@ module akra.fx {
 		finalize(): void {
 			this._nSemantics = this.semantics.length;
 
-			this._pSlotBySemanticIndex = new Int8Array(this._nSemantics);
+			this._pSlotBySemanticIndex = new Array(this._nSemantics);
 			this._pFlowBySemanticIndex = new Array(this._nSemantics);
 			// this._pHashPartList = new Array(2 * this._nSemantics);
 
@@ -384,7 +389,8 @@ module akra.fx {
 			// }
 
 			for(var i: uint = 0; i < this._pFlowBySlots.length; i++){
-				this._pFlowBySlots[i] = null;
+				this._pFlowBySlots[i] = -1;
+				this._pSlotByFlows[i] = -1;
 				this._pTypesBySlots[i] = null;			
 				this._pBufferSlotBySlots[i] = -1;	
 			}
@@ -395,10 +401,14 @@ module akra.fx {
 		}
 
 		clear(): void {
-			for(var i: uint = 0; i < this._nSemantics; i++){
-				this._pSlotBySemanticIndex[i] = -1;
-				this._pFlowBySemanticIndex[i] = null;
-			}
+			// for(var i: uint = 0; i < this._nSemantics; i++){
+			// 	this._pSlotBySemanticIndex[i] = -1;
+			// 	this._pFlowBySemanticIndex[i] = null;
+			// }
+
+			// for(var i: uint = 0; i < this._pFlowBySlots.length; i++){
+			// 	this._pFlowBySlots[i] = -1;
+			// }
 
 			this._nSlots = 0;
 			this._nBufferSlots = 0;
@@ -503,14 +513,20 @@ module akra.fx {
 			main:
 			for(var i: uint = 0; i < pSemanticList.length; i++) {
 				var sSemantic: string = pSemanticList[i];
-				var iSemanticIndex: uint = this.getKeyIndex(sSemantic);
+				var iSemanticIndex: uint = i;
 				var pFindFlow: IDataFlow = null;
+				var pType: IAFXVariableTypeInstruction = this.getType(sSemantic);
 
-				if(this.getType(sSemantic).isComplex()){
-					pFindFlow = pMap.findFlow(sSemantic) || pMap.getFlow(sSemantic, true);
+				// this._pSlotBySemanticIndex[i] = -1;
+				// this._pFlowBySemanticIndex[i] = null;
+
+				if(pType.isComplex()){
+					// pFindFlow = pMap.findFlow(sSemantic) || pMap.getFlow(sSemantic, true);
+					pFindFlow = pMap.findFlow(sSemantic) || pMap.getFlowBySemantic(sSemantic);
 				}
 				else {
-					pFindFlow = pMap.getFlow(sSemantic, true);
+					// pFindFlow = pMap.getFlow(sSemantic, true);
+					pFindFlow = pMap.getFlowBySemantic(sSemantic);
 				}
 
 				this._pFlowBySemanticIndex[iSemanticIndex] = pFindFlow;
@@ -518,24 +534,22 @@ module akra.fx {
 				if(!isNull(pFindFlow)) {
 					var iSlot: uint = this._nSlots;
 					var iBufferSlot: int = -1;
-					var pType: IAFXVariableTypeInstruction = this.getType(sSemantic);
+					var iFlow: uint = pFindFlow.flow;
 
 					if (pFindFlow.type === EDataFlowTypes.MAPPABLE) {
 						if(!pType.isPointer()) {
 							CRITICAL("You try to put pointer data into non-pointer attribute with semantic '" + sSemantic + "'");
 							return;
 						}
+						iSlot = this._pSlotByFlows[iFlow];
 
-						for(var j: uint = 0; j < this._nSlots; j++) {
-							if(this._pFlowBySlots[j] === pFindFlow) {
-								this._pSlotBySemanticIndex[iSemanticIndex] = j;
-								iHash += ((j + 1) << 5 + (this._pBufferSlotBySlots[j] + 1)) << j;
-								// this._sHash += j.toString() + "$" + this._pBufferSlotBySlots[j].toString() + "$";
-								// this._pHashPartList[2 * i] = j;
-								// this._pHashPartList[2 * i + 1] = this._pBufferSlotBySlots[j]; 
-								continue main;
-							}
+						if(iSlot >= 0 && this._pFlowBySlots[iSlot] === iFlow){
+							this._pSlotBySemanticIndex[iSemanticIndex] = iSlot;
+							iHash += ((iSlot + 1) << 5 + (this._pBufferSlotBySlots[iSlot] + 1)) << iSlot;
+							continue;
 						}
+
+						iSlot = this._nSlots;
 
 						var iBuffer: uint = (<any>pFindFlow.data.buffer).getGuid();
 
@@ -564,7 +578,8 @@ module akra.fx {
 					}
 					//new slot
 					this._pSlotBySemanticIndex[iSemanticIndex] = this._nSlots;
-					this._pFlowBySlots[iSlot] = pFindFlow;
+					this._pFlowBySlots[iSlot] = iFlow;
+					this._pSlotByFlows[iFlow] = iSlot;
 					this._pBufferSlotBySlots[iSlot] = iBufferSlot;
 
 					// this._pHashPartList[2*i] = iSlot;
