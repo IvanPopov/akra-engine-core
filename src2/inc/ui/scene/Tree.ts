@@ -65,7 +65,7 @@ module akra.ui.scene {
 		}
 	}
 
-	export class Tree extends ui.Tree {
+	export class SceneTree extends akra.ui.Tree {
 		
 		protected _pScene: IScene3d = null;
 		protected _iUpdateTimer: int = -1;
@@ -133,7 +133,9 @@ module akra.ui.scene {
 		}
 	}
 
-	register("SceneTree", Tree);
+	export var Tree = SceneTree;
+
+	register("SceneTree", SceneTree);
 }
 
 #endif

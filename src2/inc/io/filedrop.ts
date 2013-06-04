@@ -24,6 +24,7 @@ module akra {
 		dragenter?: Function;
 		//cls?: string;
 		format?: EFileDataTypes;
+		verify?: (file: File, e: DragEvent) => bool;
 	}
 }
 
@@ -61,6 +62,7 @@ module akra.io {
 	export function createFileDropArea(element: HTMLElement, ondrop: IDropFunc): bool;
 	
 	export function createFileDropArea(el, options): bool {
+		// console.log("create file drop area !!!", __CALLSTACK__);
 		if (!info.api.file) {
 			WARNING("File drop area has not been created, because File API unsupported.");
 			return false;
@@ -112,12 +114,17 @@ module akra.io {
 			e.preventDefault();
 
 			var files: FileList = e.dataTransfer.files;
-	
+			
 			for (var i = 0, f; f = files[i]; i++) {
+				if (isFunction(pOptions.verify) && !pOptions.verify(files[i], e)) {
+					continue;
+				}
+
 			    var reader = new FileReader();
 
 				reader.onload = ((pFile: File) => {
 					return (evt) => {
+						// console.log("content loaded for", pFile.name);
 					  	pOptions.drop && pOptions.drop(pFile, evt.target.result, pOptions.format, e);
 					};
 				})(f);

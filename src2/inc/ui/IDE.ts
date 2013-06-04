@@ -28,7 +28,7 @@ module akra.ui {
 
 		protected _pEngine: IEngine = null;
 
-		protected _pSceneTree: scene.Tree;
+		protected _pSceneTree: scene.SceneTree;
 		protected _pInspector: Inspector;
 		protected _pPreview: ViewportProperties;
 		protected _pTabs: IUITabs;
@@ -84,7 +84,7 @@ module akra.ui {
 
 			//setup Scene tree
 
-			var pTree: scene.Tree = this._pSceneTree = <scene.Tree>this.findEntity("SceneTree");
+			var pTree: scene.SceneTree = this._pSceneTree = <scene.SceneTree>this.findEntity("SceneTree");
 			pTree.fromScene(this.getScene());
 
 			//connect node properties to scene tree

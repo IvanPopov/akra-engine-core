@@ -77,7 +77,7 @@ module akra.webgl {
                         			 getWebGLFormat(this._eFormat), getWebGLDataType(this._eFormat),
                         			 null);	
 
-			this.byteLength = pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+			this._iByteSize = pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
 			this._pBuffer.setPosition(0, 0, this._iWidth, this._iHeight, 0, this._iDepth);
 
 			pWebGLRenderer.bindWebGLTexture(this._eTarget, null);
@@ -141,7 +141,7 @@ module akra.webgl {
 
 			this._iRowPitch = this._iWidth;
 			this._iSlicePitch = this._iHeight * this._iWidth;
-			this.byteLength = pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+			this._iByteSize = pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
 
 			this._pBuffer = new pixelUtil.PixelBox(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
 			

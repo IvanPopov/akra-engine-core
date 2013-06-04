@@ -40,6 +40,7 @@
 
 #ifdef GUI
 #include "ui/UI.ts"
+#include "ui/IDE.ts"
 #endif
 
 module akra.core {

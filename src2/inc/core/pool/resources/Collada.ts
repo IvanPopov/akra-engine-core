@@ -2973,9 +2973,12 @@ module akra.core.pool.resources {
                 debug_error("must be specified collada content.");
                 return false;
             }
+            console.log("before dom parser creation...");
 
             var pParser: DOMParser = new DOMParser();
+            console.log("<<<<<<");
             var pXMLDocument: Document = pParser.parseFromString(sXMLData, "application/xml");
+            console.log(">>>>>");
             var pXMLRoot: Element = <Element>pXMLDocument.getElementsByTagName("COLLADA")[0];
 
             this.setOptions(pOptions);

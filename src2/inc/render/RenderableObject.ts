@@ -92,12 +92,12 @@ module akra.render {
 			var pTechnique: IRenderTechnique = new RenderTechnique;
 			var pRmgr: IResourcePoolManager = this.getRenderer().getEngine().getResourceManager();
 			var pMethod: IRenderMethod = null;
-
+			
 			if (isNull(csMethod)) {
 				csMethod = DEFAULT_RM;
 			}
 
-		    if (isString(arguments[0]) || arguments.length === 0) {
+		    if (isString(csMethod) || arguments.length === 0) {
 		        pMethod = pRmgr.createRenderMethod((csMethod) + this.getGuid());
 
 		        if (!isDefAndNotNull(pMethod)) {

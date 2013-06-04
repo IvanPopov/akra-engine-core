@@ -612,11 +612,11 @@ function fetchDeps(sDir, sTestData, pResult) {
 						break;
 					case "css":
 						pResult['css'].push(value);
-						console.log("additional css file: ", value);
+						console.log('<link rel="stylesheet" type="text/css" href="' + value + '">');
 						break;
 					case "script":
 						pResult['script'].push(value);
-						console.log("additional script file: ", value);
+						console.log('<script type="text/javascript" src="' + value + '"></script>');
 						break;
 					case "location":
 						value = path.relative(sDir, value).replace(/\\/ig, "/");

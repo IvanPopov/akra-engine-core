@@ -266,7 +266,7 @@ module akra.io {
 		        	// 	if (i > pData.byteLength) {
 		        	// 		fnCallback.call(pFile, null, s);
 		        	// 		return;
-		        	// 	}
+		        	// 	}f
 
 		        	// 	debug_print(this.name + " decoded ", (i / pData.byteLength * 100).toFixed(2) + "%");
 		        	// }

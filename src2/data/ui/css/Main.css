@@ -255,8 +255,8 @@ div.component-switch label {
   display: block;
   cursor: pointer;
   position: absolute;
-  top: 1;
-  left: 0;
+  top: 1px;
+  left: 0px;
   z-index: 2;
   background: #cccccc;
   border-radius: 15px;
@@ -732,7 +732,7 @@ div.component-switch input:checked + label:before {
 }
 .component-animationplayer .component-checkboxlist .component-checkbox,
 .component-animationblender .component-checkboxlist .component-checkbox {
-  padding: 1 4px;
+  padding: 1px 4px;
   font-size: 11px;
 }
 .component-animationplayer .component-checkboxlist .component-checkbox.first,
@@ -877,7 +877,7 @@ body {
   margin: 0 auto;
 }
 #preview-area div[name=resolution] .component-checkboxlist .component-checkbox {
-  padding: 1 4px;
+  padding: 1px 4px;
   font-size: 11px;
 }
 #preview-area div[name=resolution] .component-checkboxlist .component-checkbox.first {

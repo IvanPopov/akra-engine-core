@@ -56,16 +56,7 @@ module akra.ui {
 				drop: (file: File, content, format, e: DragEvent): void => {
 					pSkyboxLb.el.removeClass("file-drag-over");
 
-					if (e.target !== $el[0] && e.target !== pViewportProperties.getCanvasElement()) {
-						return;
-					}
-
 					var pName: IPathinfo = pathinfo(file.name);
-
-				    if (pName.ext.toUpperCase() !== "DDS") {
-				    	alert("unsupported format used: " + file.name);
-				    	return;
-				    }
 
 				    pSkyboxLb.text = pName.toString();
  					
@@ -87,6 +78,20 @@ module akra.ui {
 					}	
 		    	},
 
+		    	verify: (file: File, e: DragEvent): bool => {
+		    		if (e.target !== $el[0] && e.target !== pViewportProperties.getCanvasElement()) {
+						return false;
+					}
+
+					var pName: IPathinfo = pathinfo(file.name);
+
+				    if (pName.ext.toUpperCase() !== "DDS") {
+				    	alert("unsupported format used: " + file.name);
+				    	return false;
+				    }
+
+					return true;
+		    	},
 		    	// dragenter: (e) => {
 		    	// 	pSkyboxLb.el.addClass("file-drag-over");
 		    	// },

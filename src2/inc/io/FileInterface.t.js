@@ -101,7 +101,9 @@ onmessage = function (pEvent) {
                 }
             }
             else {
-                if (pCommand.transfer == TRANSFER.FAST && pData.length > 50 * 1024 * 1024) { //10mb
+                // if (pData.length > 20 * 1024 * 1024)
+                //     throw new Error(pCommand.name, pData.length / (1024 * 1024));
+                if (pCommand.transfer == TRANSFER.FAST && pData.length > 25 * 1024 * 1024) { //30mb
                     // var n = pData.length;
                     pData = str2buf(pData);
                     // throw new Error(pCommand.name + " byte length: " + (pData.byteLength / (1024 * 1024)) + " mb (" + n/(1024*1024) + ")");

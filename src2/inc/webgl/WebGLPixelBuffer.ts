@@ -29,10 +29,9 @@ module akra.webgl {
 		protected _pBuffer: IPixelBox = null;
 		protected _iWebGLInternalFormat: int = 0;
 
-		// protected _iByteLength: uint = 0;
+		protected _iByteSize: uint;
 
-		// inline get byteLength(): uint { return this._iByteLength; }
-		// inline set byteLength(x: uint) { this._iByteLength = x; }
+		inline get byteLength(): uint { return this._iByteSize; }
 
 		inline get width(): uint { return this._iWidth; }
 		inline get height(): uint { return this._iHeight; }
@@ -96,7 +95,7 @@ module akra.webgl {
 
 			this._iRowPitch = iWidth;
 			this._iSlicePitch = iHeight * iWidth;
-			this.byteLength = iHeight * iWidth * akra.pixelUtil.getNumElemBytes(eFormat);
+			this._iByteSize = iHeight * iWidth * akra.pixelUtil.getNumElemBytes(eFormat);
 
 			this._pBuffer = new pixelUtil.PixelBox(iWidth, iHeight, iDepth, eFormat);
 			this._iWebGLInternalFormat = GL_NONE;
