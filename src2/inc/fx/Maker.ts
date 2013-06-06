@@ -280,6 +280,9 @@ module akra.fx {
 
 			this._pUnifromInfoForStructFieldMap = <IUniformStructInfoMap>{};
 
+			this["sVertex"] = sVertex;
+			this["sPixel"] = sPixel;
+
 			return true;
 		}
 
@@ -656,8 +659,8 @@ module akra.fx {
 			        	return this._pShaderProgram._setFloat32Array;
 			        case EAFXShaderVariableType.k_Int:
 			        	return this._pShaderProgram._setInt32Array;
-			        // case EAFXShaderVariableType.k_Bool:
-			        // 	return this._pShaderProgram._setBoolArray;
+			        case EAFXShaderVariableType.k_Bool:
+			        	return this._pShaderProgram._setInt32Array;
 
 			        case EAFXShaderVariableType.k_Float2:
 			        	return this._pShaderProgram._setVec2Array;

@@ -227,7 +227,8 @@ module akra.terrain {
 			this.computeBoundingBox();
 
 			//Мегатекстурные параметры
-			this._pMegaTexures = new MegaTexture(this._pEngine, this, sSurfaceTextures);
+			this._pMegaTexures = new MegaTexture(this._pEngine);
+			this._pMegaTexures.init(this, sSurfaceTextures);
 
 			this._isCreate = true;
 

@@ -244,7 +244,7 @@ module akra.webgl {
 
     	inline setVec2Array(sName: string, pValue: IVec2[]): void {
     		var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 2, ++ j) {
+            for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++ j) {
                 pBuffer[i    ] = pValue[j].x;
                 pBuffer[i + 1] = pValue[j].y;
             }
@@ -254,7 +254,7 @@ module akra.webgl {
 
     	inline setVec2iArray(sName: string, pValue: IVec2[]): void {
     		var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 2, ++ j) {
+            for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++ j) {
                 pBuffer[i    ] = pValue[j].x;
                 pBuffer[i + 1] = pValue[j].y;
             }
@@ -264,7 +264,7 @@ module akra.webgl {
 
     	inline setVec3Array(sName: string, pValue: IVec3[]): void {
     		var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 3);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 3, ++ j) {
+            for (var i: int = 0, j: int = 0; j < pValue.length; i += 3, ++ j) {
                 pBuffer[i    ] = pValue[j].x;
                 pBuffer[i + 1] = pValue[j].y;
                 pBuffer[i + 2] = pValue[j].z;
@@ -275,7 +275,7 @@ module akra.webgl {
 
     	inline setVec3iArray(sName: string, pValue: IVec3[]): void {
     		var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 3);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 3, ++ j) {
+            for (var i: int = 0, j: int = 0; j < pValue.length; i += 3, ++ j) {
                 pBuffer[i    ] = pValue[j].x;
                 pBuffer[i + 1] = pValue[j].y;
                 pBuffer[i + 2] = pValue[j].z;
@@ -286,7 +286,7 @@ module akra.webgl {
 
     	inline setVec4Array(sName: string, pValue: IVec4[]): void {
     		var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 4);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 4, ++ j) {
+            for (var i: int = 0, j: int = 0; j < pValue.length; i += 4, ++ j) {
                 pBuffer[i    ] = pValue[j].x;
                 pBuffer[i + 1] = pValue[j].y;
                 pBuffer[i + 2] = pValue[j].z;
@@ -298,7 +298,7 @@ module akra.webgl {
 
     	inline setVec4iArray(sName: string, pValue: IVec4[]): void {
     		var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 4);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 4, ++ j) {
+            for (var i: int = 0, j: int = 0; j < pValue.length; i += 4, ++ j) {
                 pBuffer[i    ] = pValue[j].x;
                 pBuffer[i + 1] = pValue[j].y;
                 pBuffer[i + 2] = pValue[j].z;

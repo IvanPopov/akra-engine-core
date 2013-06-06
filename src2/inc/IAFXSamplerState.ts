@@ -15,14 +15,14 @@ module akra {
 	}
 
 	export interface IAFXSamplerState {
-		textureName?: string;
+		textureName: string;
 		texture: ITexture;
 
-		wrap_s?: ETextureWrapModes;
-		wrap_t?: ETextureWrapModes;
+		wrap_s: ETextureWrapModes;
+		wrap_t: ETextureWrapModes;
 
-		mag_filter?: ETextureFilters;
-		min_filter?: ETextureFilters;
+		mag_filter: ETextureFilters;
+		min_filter: ETextureFilters;
 	}
 }
 

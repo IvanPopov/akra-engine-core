@@ -56,3 +56,5 @@ obj/
 bin/
 properties/
 app.js
+
+src2/tests/common/data
