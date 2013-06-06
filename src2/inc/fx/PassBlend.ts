@@ -167,7 +167,7 @@ module akra.fx {
 				this.swapTexcoords(pSurfaceMaterial);
 				this.generateShaderCode();
 
-				pMaker = new Maker(this._pComposer);
+				pMaker = new Maker(this._pComposer, this);
 				var isCreate: bool = pMaker._create(this._sVertexCode, this._sPixelCode);
 				if(!isCreate){
 					CRITICAL("Can not create fx.Maker");
@@ -182,6 +182,10 @@ module akra.fx {
 
 			this._pDefaultSamplerBlender.clear();
 			return pMaker;
+		}
+
+		inline _hasUniformWithName(sName: string): bool {
+			return this.hasUniformWithName(sName);
 		}
 
 		private inline getMakerByHash(sHash: string): IAFXMaker {
@@ -991,13 +995,14 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pSemantics.length; i++) {
 				var sSemantic: string = pSemantics[i];
-				var pFlow: IDataFlow = pAttributeContainer.getFlowBySemantic(sSemantic);
+				// var pFlow: IDataFlow = pAttributeContainer.getFlowBySemantic(sSemantic);
 				var pAttributes: IAFXVariableDeclInstruction[] = pAttributeContainer.getAttributeList(sSemantic);
 				var iBufferSlot: uint = -1;
-				var iSlot: uint = -1;
+				var iSlot: uint = pAttributeContainer.getSlotBySemantic(sSemantic);
 				var sAttrName: string = "";
+
 				//1) set buffer maps for shader attribures
-				if(isNull(pFlow)) {
+				if(iSlot === -1) {
 					for(var j: uint = 0; j < pAttributes.length; j++){
 						if(pAttributes[j].getType().isStrictPointer()){
 							pAttributes[j].getType().getVideoBuffer().defineByZero(true);
@@ -1005,7 +1010,7 @@ module akra.fx {
 					}
 				}
 				else {
-					iSlot = pAttributeContainer.getSlotBySemantic(sSemantic);
+					//iSlot = pAttributeContainer.getSlotBySemantic(sSemantic);
 					iBufferSlot = pAttributeContainer.getBufferSlotBySemantic(sSemantic);
 
 					sAttrName = "aa" + iSlot.toString();
@@ -1031,7 +1036,7 @@ module akra.fx {
 
 					//2) gnerate real attrs
 					if(iSlot > nPreparedAttributeSlots){
-						this._sAttrDeclCode += "attribute " + pAttributeContainer.getTypeBySlot(i).toFinalCode() + " " + sAttrName + ";\n"; 
+						this._sAttrDeclCode += "attribute " + pAttributeContainer.getTypeForShaderAttribute(sSemantic).toFinalCode() + " " + sAttrName + ";\n"; 
 						nPreparedAttributeSlots++;
 					}
 				}

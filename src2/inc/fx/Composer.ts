@@ -678,7 +678,6 @@ module akra.fx {
 					FAST_SET_UNIFORM(pPassInput, "INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
 					FAST_SET_UNIFORM(pPassInput, "CAMERA_POSITION", pCamera.worldPosition);
 
-
 					if(pCamera.type === EEntityTypes.SHADOW_CASTER){
 						FAST_SET_UNIFORM(pPassInput, "OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
 					}

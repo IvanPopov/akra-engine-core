@@ -279,7 +279,7 @@ module akra {
 					fShiftX += fDX;
 					iCountInRow++;
 				}
-				pEngine.exec();
+				// pEngine.exec();
 			});			
 		}
 
@@ -313,6 +313,6 @@ module akra {
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	
-		// pEngine.exec();
+		pEngine.exec();
 	});
 }

@@ -20,6 +20,7 @@ module akra {
 		generateFXMaker(pPassInput: IAFXPassInputBlend,
 						pSurfaceMaterial: ISurfaceMaterial,
 						pBuffer: IBufferMap): IAFXMaker;
+		_hasUniformWithName(sName: string): bool;
 	}
 }
 

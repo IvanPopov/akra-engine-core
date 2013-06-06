@@ -169,6 +169,8 @@ module akra.fx {
 		UNIQUE();
 
 		private _pComposer: IAFXComposer = null;
+		private _pPassBlend: IAFXPassBlend = null;
+
 #ifdef WEBGL
 		private _pShaderProgram: webgl.WebGLShaderProgram = null;
 #else
@@ -226,8 +228,9 @@ module akra.fx {
 		}
 
 
-		constructor(pComposer: IAFXComposer){
+		constructor(pComposer: IAFXComposer, pPassBlend: IAFXPassBlend){
 			this._pComposer = pComposer;
+			this._pPassBlend = pPassBlend;
 		}
 
 		_create(sVertex: string, sPixel: string): bool {
@@ -904,6 +907,10 @@ module akra.fx {
 				sPrevName += "." + sRealName;
 			}
 			else {
+				if(!this._pPassBlend._hasUniformWithName(sRealName)){
+					return null;
+				}
+				
 				sPrevName = sRealName;
 			}
 
@@ -913,7 +920,7 @@ module akra.fx {
 			var iLength: uint = isArray ? pVarType.getLength() : 1;
 
 			if(isArray && (iLength === UNDEFINE_LENGTH || iLength === 0)){
-				WARNING("Length of struct can not be undefined");
+				WARNING("Length of struct '" + sRealName + "' can not be undefined");
 				return null;
 			}
 
