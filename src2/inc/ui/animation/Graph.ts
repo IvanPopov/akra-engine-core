@@ -237,8 +237,9 @@ module akra.ui.animation {
 		        // pPlayer.animation = pAnimation;
 
 		        pSubAnim = (<IAnimationContainer>pAnimation).getAnimation();
+		        // console.log(pSubAnim);
 		        pSubNode = this.createNodeByAnimation(pSubAnim);
-		    
+		    	// console.log(this, pSubNode, pPlayer);
 		    	connect(this, pSubNode, pPlayer);
 			}
 			else {
@@ -271,7 +272,7 @@ module akra.ui.animation {
 				this.selectNode(pNode);
 			}
 
-			return null;
+			return pNode;
 		}
 
 		capture(pController: IAnimationController): bool {

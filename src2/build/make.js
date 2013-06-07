@@ -50,6 +50,7 @@ function usage() {
 		'\n\t--do-magic	[-m] It\'s wonderfull magic!(Спросите у Игоря!).' + 
 		'\n\t--declaration		Generates corresponding .d.ts file.' +
 		'\n\t--no-const			Do not replace constant from enum values.' +
+		'\n\t--gui				Define GUI macro.' +
 		'\n\t--preprocess		Preprocessing only.'
 	);
 	
@@ -72,6 +73,7 @@ var pOptions = {
 	debug: true,
 	pathToTemp: null,
 	declaration: false,
+	gui: false,
 	preprocess: false,
 	clean: false, //clean tests data instead build
 	listOnly: false, //list available tests
@@ -155,6 +157,9 @@ function parseArguments() {
 				break;
 			case '--html':
 				pOptions.testsFormat.html = true;
+				break;
+			case '--gui':
+				pOptions.gui = true;
 				break;
 			case '--nw':
 				pOptions.testsFormat.nw = true;
@@ -282,6 +287,11 @@ function preprocess() {
 		"-D struct=class",
 		"-D readonly="
 		];
+
+	if (pOptions.gui) {
+		capabilityOptions.push("-D GUI=1");
+		console.log("Build with GUI.");
+	}
 
 	if (pOptions.debug) {
 		capabilityOptions.push("-D DEBUG=DEBUG");

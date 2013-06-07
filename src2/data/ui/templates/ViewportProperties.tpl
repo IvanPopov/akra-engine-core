@@ -17,7 +17,7 @@
 		</div>
 		<div class="row">
 			<span>FXAA:</span>
-			<component type="Switch" name="FXAA" text="FXAA" />
+			<component type="Switch" name="FXAA" text="FXAA" on/>
 		</div>
 		<div class="row last">
 			<span>Skybox:</span>

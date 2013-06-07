@@ -54,6 +54,8 @@ module akra {
 		terrainLoaded		: false,
 		cameras 			: <ICamera[]>[],
 		activeCamera  		: 0,
+		cameraLight 		: <ILightPoint>null,
+		voice  				: <any>null,
 
 		hero: {
 			root: 	<ISceneNode>null,
@@ -62,6 +64,25 @@ module akra {
 			movie:  <IAnimationController>null
 		}
 	}
+
+	
+	function loadAssets(): void {
+		var context = new ((<any>window).AudioContext || (<any>window).mozAudioContext || (<any>window).webkitAudioContext)();
+		var analyser = context.createAnalyser();
+		var source; 
+		var audio0 = new Audio();   
+
+		audio0.src = 'assets/voice.wav';
+		audio0.controls = true;
+		audio0.autoplay = false;
+		audio0.loop = false;
+		source = context.createMediaElementSource(audio0);
+		source.connect(analyser);
+		analyser.connect(context.destination);
+		self.voice = audio0;
+	}
+
+	loadAssets();
 
 	function setup(): void {
 		if (!isNull(pUI)) {
@@ -128,6 +149,29 @@ module akra {
 
 			pMovie.stop();
 			pMovie.play("movie");
+
+			self.cameraLight.enabled = false;
+			
+			setTimeout(() => {
+				self.voice.currentTime = 0;
+				self.voice.play();
+			}, 2500);
+
+			setTimeout(() => {
+				self.cameraLight.enabled = true;
+				setTimeout(() => {
+					self.cameraLight.enabled = false;
+					setTimeout(() => {
+						self.cameraLight.enabled = true;
+						setTimeout(() => {
+							self.cameraLight.enabled = false;
+							setTimeout(() => {
+								self.cameraLight.enabled = true;
+							}, 30);
+						}, 30);
+					}, 100);
+				}, 50);
+			}, 7000);
 			// pCont.rewind(33.33);
 		});
 
@@ -431,6 +475,22 @@ module akra {
 				pCamera.addPosition(v3fsp);
 				pCamera.lookAt(v3fsp);
 			}
+			
+			var pCamLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, false, 0, "camera-light");
+
+			console.log(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
+			pCamLight.attachToParent(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
+
+			pCamLight.setInheritance(ENodeInheritance.ALL);
+			pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
+			pCamLight.params.diffuse.set(1.);
+			pCamLight.params.specular.set(1.);
+			pCamLight.params.attenuation.set(.35, 0, 0);
+			pCamLight.enabled = false;
+
+			self.cameraLight = pCamLight;
+
+
 
 			loadModels("@CLOSED_BOX", (pBox: ISceneNode) => {
 				pBox.scale(.25);
