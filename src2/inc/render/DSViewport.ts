@@ -103,7 +103,6 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.projectShadowsLighting");
 			// pDSEffect.addComponent("akra.system.color_maps");
 			pDSEffect.addComponent("akra.system.skybox", 1, 0);
-			pDSEffect.addComponent("akra.system.outline", 1, 0);
 
 			pDSMethod.effect = pDSEffect;
 			pDefferedView.getTechnique().setMethod(pDSMethod);
@@ -327,6 +326,17 @@ module akra.render {
 			else {
 				pEffect.delComponent("akra.system.fxaa", 2, 0);
 				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
+			}
+		}
+
+		setOutlining(bValue: bool = true): void {
+			var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
+			
+			if (bValue) {
+				pEffect.addComponent("akra.system.outline", 1, 0);
+			}
+			else {
+				pEffect.delComponent("akra.system.outline", 1, 0);
 			}
 		}
 

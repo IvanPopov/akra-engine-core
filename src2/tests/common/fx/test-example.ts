@@ -197,7 +197,7 @@ module akra {
 			pOmniShadowLight.params.diffuse.set(1);
 			pOmniShadowLight.params.specular.set(1, 1, 1, 1);
 			pOmniShadowLight.params.attenuation.set(1,0.0,0);
-			pOmniShadowLight.isShadowCaster = true;
+			pOmniShadowLight.isShadowCaster = false;
 
 			pOmniShadowLight.setPosition(1, 5, 5);
 		}
@@ -279,23 +279,24 @@ module akra {
 					fShiftX += fDX;
 					iCountInRow++;
 				}
+				// pEngine.exec();
 			});			
 		}
 
 		function main(pEngine: IEngine): void {
 			setup();
-			createSceneEnvironment();
+			// createSceneEnvironment();
 			createCameras();
 			createViewports();
 			createLighting();
 			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
-			loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
-				var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
-				pMesh.createBoundingBox();
-				pMesh.showBoundingBox();
-			}).scale(2.);
+			// loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
+			// 	var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
+			// 	pMesh.createBoundingBox();
+			// 	pMesh.showBoundingBox();
+			// }).scale(2.);
 
 			
 
@@ -307,8 +308,8 @@ module akra {
 			// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
 			// pCube2.setPosition(2., 0.8, -5.);
 			// pCube2.scale(0.1);
-			// loadManyModels(300, "../../../data/models/cube.dae");
-			loadManyModels(3, "../../../data/models/box/opened_box.dae");
+			loadManyModels(1, "../../../data/models/cube.dae");
+			// loadManyModels(100, "../../../data/models/box/opened_box.dae");
 		}
 
 		pEngine.bind(SIGNAL(depsLoaded), main);	

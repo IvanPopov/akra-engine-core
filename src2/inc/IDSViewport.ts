@@ -7,6 +7,7 @@ module akra {
 		setSkybox(pSkyTexture: ITexture): void;
 		setFXAA(bValue?: bool): void;
 		isFXAA(): bool;
+		setOutlining(bValue?: bool): void;
 
 		getRenderId(x: int, y: int): int;
 

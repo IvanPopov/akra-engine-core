@@ -164,6 +164,12 @@ module akra.ui {
 			// this._pColorViewport = pViewport;
 			// this._pSearchCam = pSearchCam;
 			// this._pColorTexture = pColorTex;
+			var pViewport: IViewport = this.getViewport();
+			
+			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
+				(<IDSViewport>pViewport).setOutlining(true);
+				LOG("USE OUTLINING!!!!");
+			}
 		}
 
 		_sceneUpdate(pScene: IScene3d): void {

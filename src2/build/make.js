@@ -326,10 +326,11 @@ function preprocess() {
 	var iTotalChars = 0;
 
 	mcpp.stdout.on('data', function (data) {
-	  // console.log('stdout: \n' + data);
+	  // console.log('stdout: \n' + data.toString().length, data.length);
 	  data.copy(stdout, iTotalChars);
 	  
 	  iTotalChars  += data.length;
+	  // console.log(stdout.slice(0, iTotalChars).toString());
 	});
 
 	mcpp.stderr.on('data', function (data) {
@@ -337,14 +338,15 @@ function preprocess() {
 	});
 
 	mcpp.on('exit', function (code) {
-		//console.log(stdout.slice(0, iTotalChars).toString());
+		// console.log(">>>");
+		// console.log(iTotalChars, 0/*stdout.slice(0, iTotalChars).toString('utf8')*/);
 	  console.log('preprocessing exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 	
 	  if (code == 0) {
 	  	pOptions.pathToTemp = pOptions.outputFolder + "/" + pOptions.tempFile;
 		
 		if (pOptions.preprocess) {
-			fs.writeFileSync(pOptions.outputFolder + "/" + pOptions.outputFile, stdout.slice(0, iTotalChars).toString(), "utf8");
+			fs.writeFileSync(pOptions.outputFolder + "/" + pOptions.outputFile, stdout.slice(0, iTotalChars).toString('utf8'), "utf8");
 			console.log("preprocessed to: ", pOptions.outputFolder + "/" + pOptions.outputFile);
 		}
 		else {
@@ -827,6 +829,7 @@ function packTest(sDir, sFile, sName, pData) {
 		(pOptions.debug? " --debug ": " --no-debug ") + 
 		(pOptions.preprocess? " --preprocess ": " ") + 
 		(pOptions.noConst? " --no-const ": " ") + 
+		(pOptions.gui? " --gui ": " ") + 
 		sFile).split(" ");
 
 	console.log(cmd + " " + argv.join(" "));

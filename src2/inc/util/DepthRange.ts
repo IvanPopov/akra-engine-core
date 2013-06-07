@@ -7,19 +7,13 @@
 
 module akra.util{
 
-	#ifdef WEBGL
+// #ifdef WEBGL
+// #define WEBGL_DEPTH_RANGE 1
+// #endif
 
-	export function getDepthRange(pDepthTexture: ITexture): IDepthRange{
-		var pEngine: IEngine = pDepthTexture.getEngine();
-		var pResourceManager: IResourcePoolManager = pEngine.getResourceManager();
-		var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>pEngine.getRenderer();
-		var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+#ifdef WEBGL_DEPTH_RANGE
 
-		var pWebGLDepthTexture: WebGLTexture = (<webgl.WebGLInternalTexture>pDepthTexture).getWebGLTexture();
-
-		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.
-														shaderProgramPool.findResource(".WEBGL_depth_range");
-		var sFloatToVec4Func: string = "\
+	var sFloatToVec4Func: string = "\
         	vec4 floatToVec4(float value){						\n\
 				float data = value;								\n\
 				vec4 result = vec4(0.);							\n\
@@ -88,21 +82,7 @@ module akra.util{
 				return result/255.;								\n\
 			}													\n";
 
-		if(isNull(pWebGLProgram)){
-			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.
-														shaderProgramPool.createResource(".WEBGL_depth_range");
-
-			pWebGLProgram.create("																					\n\
-	        	attribute vec2 POSITION;																			\n\
-				                      																				\n\
-				varying vec2 texPosition;																			\n\
-				                   																					\n\
-				void main(void){																					\n\
-				    texPosition = (POSITION + 1.)/2.;																\n\
-				    gl_Position = vec4(POSITION, 0., 1.);															\n\
-				}																									\n\
-				",
-				"													\n\
+	var sPixelCode: string = "													\n\
 				#ifdef GL_ES                        				\n\
 				    precision highp float;          				\n\
 				#endif												\n\
@@ -189,7 +169,40 @@ module akra.util{
 						}																											\n\
 					}																												\n\
 				}                                   																				\n\
-				");
+				";
+
+	var sVertexCode: string = "																					\n\
+	        	attribute vec2 POSITION;																			\n\
+				                      																				\n\
+				varying vec2 texPosition;																			\n\
+				                   																					\n\
+				void main(void){																					\n\
+				    texPosition = (POSITION + 1.)/2.;																\n\
+				    gl_Position = vec4(POSITION, 0., 1.);															\n\
+				}																									\n\
+				";
+
+	var pF32ScreenCoords: Float32Array = new Float32Array([-1,-1, -1,1, 1,-1, 1,1]);
+	var pU8Destination: Uint8Array = new Uint8Array(8);
+	var pF32Destination: Float32Array = new Float32Array(pU8Destination.buffer);
+
+	export function getDepthRange(pDepthTexture: ITexture): IDepthRange{
+		var pEngine: IEngine = pDepthTexture.getEngine();
+		var pResourceManager: IResourcePoolManager = pEngine.getResourceManager();
+		var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>pEngine.getRenderer();
+		var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+		var pWebGLDepthTexture: WebGLTexture = (<webgl.WebGLInternalTexture>pDepthTexture).getWebGLTexture();
+
+		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.
+														shaderProgramPool.findResource(".WEBGL_depth_range");
+		
+
+		if(isNull(pWebGLProgram)){
+			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.
+														shaderProgramPool.createResource(".WEBGL_depth_range");
+
+			pWebGLProgram.create(sVertexCode, sPixelCode);
 		}
 
 		var pOldFrameBuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
@@ -212,7 +225,7 @@ module akra.util{
 
         var pPositionBuffer: WebGLBuffer = pWebGLContext.createBuffer();
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pPositionBuffer);
-        pWebGLContext.bufferData(GL_ARRAY_BUFFER, new Float32Array([-1,-1, -1,1, 1,-1, 1,1]), GL_STATIC_DRAW);
+        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pF32ScreenCoords, GL_STATIC_DRAW);
         pWebGLContext.vertexAttribPointer(iPositionAttribLocation, 2, GL_FLOAT, false, 0, 0);
 
         var iSrcTextureSizeX: uint = pDepthTexture.width;
@@ -268,7 +281,7 @@ module akra.util{
 				    	iRenderTextureSizeX, iRenderTextureSizeY, 0,  GL_RGBA, GL_FLOAT, null);
         }
 
-        do{
+        do {
 
         	pWebGLRenderer.activateWebGLTexture(GL_TEXTURE1);
         	pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pWebGLRenderTexture);
@@ -329,13 +342,13 @@ module akra.util{
 				    	iRenderTextureSizeX, iRenderTextureSizeY, 0,  GL_RGBA, GL_FLOAT, null);
     		}
 
-    	}while(1)
+    	} while(1);
 
-    	var pU8Destination: Uint8Array = new Uint8Array(8);
+    	
 
     	pWebGLContext.readPixels(0, 0, 2, 1, GL_RGBA, GL_UNSIGNED_BYTE, pU8Destination);
 
-    	var pF32Destination: Float32Array = new Float32Array(pU8Destination.buffer);
+    	
 
     	pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFrameBuffer);
         pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
@@ -352,13 +365,13 @@ module akra.util{
 
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
         pWebGLRenderer._setViewport(null);
-
+        // console.log("depth range:", pF32Destination[1], pF32Destination[0]);
 		return <IDepthRange>{min: pF32Destination[1], max: pF32Destination[0]};
 	}
 
 	#else
 	export function getDepthRange(pDepthTexture: ITexture): IDepthRange{
-		return <IDepthRange>{min: -1, max: 1};
+		return <IDepthRange>{min: 0., max: 1.};
 	};
 	#endif
 	

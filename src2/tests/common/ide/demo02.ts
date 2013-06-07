@@ -467,6 +467,8 @@ module akra {
 
 			(<ISceneModel>pNode.findEntity("node-Sphere001")).mesh.getSubset(0).setVisible(false);
 			
+			pEngine.renderFrame();
+
 			var v3fsp: IVec3 = new Vec3();
 			
 			if (self.terrain.projectPoint(pNode.worldPosition, v3fsp)) {
@@ -478,7 +480,7 @@ module akra {
 			
 			var pCamLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, false, 0, "camera-light");
 
-			console.log(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
+			// console.log(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
 			pCamLight.attachToParent(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
 
 			pCamLight.setInheritance(ENodeInheritance.ALL);

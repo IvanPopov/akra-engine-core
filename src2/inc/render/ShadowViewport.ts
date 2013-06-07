@@ -90,6 +90,7 @@ module akra.render {
 
 			if(isDefAndNotNull(pDepthTexture)){
 				var pRange: IDepthRange = util.getDepthRange(pDepthTexture);
+				console.log("shadow viewport min & max depth range > ", pRange.min, pRange.max);
 				//[0,1] -> [-1, 1]
 				pRange.min = pRange.min * 2. - 1.
 				pRange.max = pRange.max * 2. - 1.

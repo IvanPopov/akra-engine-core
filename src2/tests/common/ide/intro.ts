@@ -91,6 +91,7 @@ module akra {
 		nextCamera();
 		setTimeout(() => {
 			document.getElementById("loader").style.display = "none";
+			pEngine.exec();
 			playIntro();
 
 		}, 2000);
@@ -499,7 +500,9 @@ module akra {
 			(<ISceneModel>pNode.findEntity("node-Sphere001")).mesh.getSubset(0).setVisible(false);
 			
 			var v3fsp: IVec3 = new Vec3();
-			
+				
+			pEngine.renderFrame();
+
 			if (self.terrain.projectPoint(pNode.worldPosition, v3fsp)) {
 				pNode.setPosition(v3fsp);
 				pNode.setRotationByXYZAxis(0, math.PI, 0);
@@ -509,7 +512,7 @@ module akra {
 
 			var pCamLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, false, 0, "camera-light");
 
-			console.log(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
+			// console.log(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
 			pCamLight.attachToParent(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
 
 			pCamLight.setInheritance(ENodeInheritance.ALL);
@@ -593,5 +596,5 @@ module akra {
 */	}
 
 	pEngine.bind("depsLoaded", main);		
-	pEngine.exec();
+	
 }
