@@ -237,6 +237,6 @@ module akra {
 		wrapper(testObjectMap, 100000); /*10-15% slower than int[]*/
 		wrapper(testIntMap, 100000); /*stable 10% slowest than int[]*/
 
-		LOG(pSampleInt, pSampleStr, pSampleAny)
+		LOG(pSampleInt, pSampleStr, pSampleAny);
 	});
 }

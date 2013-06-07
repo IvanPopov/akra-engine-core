@@ -69,15 +69,17 @@ module akra.webgl {
 				ERROR("cannot link GLSL program(guid: %d)", this.getGuid());
 
 #ifdef DEBUG
+                var sInfo: string = pWebGLContext.getProgramInfoLog(pWebGLProgram);
+
+                LOG("shader program errors: \n" + sInfo );
+                //+ "\n\nvertex code:\n"  + csVertex + "\n\n pixel code: " + csPixel);
+
 				if (loadExtension(pWebGLContext, WEBGL_DEBUG_SHADERS)) {
-					LOG("translated(from GLSL) VS shader: \n %s\ntranslated(from GLSL) PS shader: \n%s",
-						pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLVs),
+					LOG("translated(from GLSL) VS shader: \n" + 
+                        pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLVs) +
+                        "\ntranslated(from GLSL) PS shader: \n" +
 						pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLFs));
 				}
-
-				var sInfo: string = pWebGLContext.getProgramInfoLog(pWebGLProgram);
-
-				LOG("shader program errors: \n" + sInfo + "\n\nvertex code:\n"  + csVertex + "\n\n pixel code: " + csPixel);
 #endif				
 
 				return false;
@@ -677,12 +679,12 @@ module akra.webgl {
 				var sInfo: string = pWebGLContext.getShaderInfoLog(pWebGLShader);
 				var sCode: string = pWebGLContext.getShaderSource(pWebGLShader) || csCode;
 
+                LOG("shader errors: \n %s \n----------\n %s", sInfo, sCode);
+
                 if (loadExtension(pWebGLContext, WEBGL_DEBUG_SHADERS)) {
                     LOG("translated(from GLSL) " + (eType == GL_VERTEX_SHADER? "VS": "PS") + " shader: \n" + 
                         pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLShader));
-                }
-
-				LOG("shader errors: \n %s \n----------\n %s", sInfo, sCode);
+                }				
 #endif
 				return null;
 			}

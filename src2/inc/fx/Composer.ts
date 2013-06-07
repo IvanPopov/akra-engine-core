@@ -709,6 +709,7 @@ module akra.fx {
 			FAST_SET_UNIFORM(pPassInput, "normalFix", this.bNormalFix);
 			FAST_SET_UNIFORM(pPassInput, "isWithBalckSectors", this.bTerrainBlackSectors);
 			FAST_SET_UNIFORM(pPassInput, "showTriangles", this.bShowTriangles);
+			FAST_SET_UNIFORM(pPassInput, "u1", 64);
 		}
 
 		private prepareComposerState(): void {

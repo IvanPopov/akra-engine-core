@@ -771,6 +771,7 @@ module akra.fx {
 			var eType: EFunctionType = EFunctionType.k_Vertex;
 
 			sCode = /*"precision lowp float;" + "\n" + */
+					/*"#define while(expr) for(int _i = 0; _i < 1; _i--) if(!(expr)) break; else" + "\n" +*/
 					this.generateSystemExtBlock(eType) + "\n" +
 					
 					this.generateTypeDels(eType) + "\n" +
@@ -822,7 +823,8 @@ module akra.fx {
 
 
 			this.enableVaringPrefixes(eType, true);
-			sCode = this.generateSystemExtBlock(eType) + "\n" +
+			sCode = /*"#define while(expr) for(int _i = 0; _i < 1; _i--) if(!(expr)) break; else" + "\n" +*/
+					this.generateSystemExtBlock(eType) + "\n" +
 
 					"vec4 resultAFXColor;" + "\n" +
 					

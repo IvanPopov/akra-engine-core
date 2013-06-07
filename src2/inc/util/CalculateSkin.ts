@@ -8,7 +8,10 @@ module akra.util{
 	#ifdef WEBGL
 	export function calculateSkin(pMeshSubset: IMeshSubset): bool{
 		var pRenderData: IRenderData = pMeshSubset.data;
-
+		if(true){
+			return false;
+		}
+		
 		var isOk: bool = pRenderData.selectIndexSet(".update_skinned_position");
 
 		if(!isOk){

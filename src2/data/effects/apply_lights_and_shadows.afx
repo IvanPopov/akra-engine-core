@@ -73,10 +73,11 @@ shared float4 result_color;
 shared pixel_data pixelData;
 
 float4 apply_light_omni() : COLOR{
-    int i = 0;
-    while(i < nOmni){
+    //int i = 0;
+    for(int i = 0; i < nOmni; i++){
+   // while(i < nOmni){
         result_color += calculateLight(pixelData,points_omni[i].lightData);
-        i++;
+        //i++;
     }
 
     return float4(result_color.xyz, 1.);

@@ -181,26 +181,33 @@ module akra.webgl {
 					}												\n\
 																	\n\
 					float power = 0.;								\n\
-					bool ok = true;									\n\
-					while (ok) {									\n\
+					bool isFinish = false;							\n\
+					for(int i=0;i<128;i++){							\n\
+						if(isFinish){								\n\
+							break;									\n\
+						}											\n\
 																	\n\
 						if(data >= 2.) {							\n\
-							data = data * 0.5;						\n\
-							power += 1.;							\n\
-							if (power == 127.) {					\n\
-								ok = false;							\n\
+							if(!isFinish){							\n\
+								data = data * 0.5;					\n\
+								power += 1.;						\n\
+								if (power == 127.) {				\n\
+									isFinish = true;				\n\
+								}									\n\
 							}										\n\
 						}											\n\
-						else if(data < 1.) {					\n\
-							data = data * 2.;					\n\
-							power -= 1.;						\n\
-							if (power == -126.) {				\n\
-								ok = false;						\n\
-							}									\n\
-						}										\n\
-						else {									\n\
-							ok = false;							\n\
-						}										\n\
+						else if(data < 1.) {						\n\
+							if(!isFinish){							\n\
+								data = data * 2.;					\n\
+								power -= 1.;						\n\
+								if (power == -126.) {				\n\
+									isFinish = true;				\n\
+								}									\n\
+							}										\n\
+						}											\n\
+						else {										\n\
+							isFinish = true;						\n\
+						}											\n\
 					}												\n\
 																	\n\
 					if(power == -126. && data < 1.){				\n\
