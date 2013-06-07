@@ -171,7 +171,7 @@ module akra.webgl {
 
     export function createContext(
             pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 
-            pOptions?: { antialias?: bool; }): WebGLRenderingContext {
+            pOptions?: WebGLContextAttributes): WebGLRenderingContext {
 
     	var pWebGLContext: WebGLRenderingContext = null;
 		
