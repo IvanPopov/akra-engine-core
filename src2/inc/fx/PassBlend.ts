@@ -904,6 +904,7 @@ module akra.fx {
 							}
 							else {
 								isZeroSamplerCubeV = true;
+								sSamplerName = "asc0";
 							}
 						}
 
@@ -915,6 +916,7 @@ module akra.fx {
 							}
 							else {
 								isZeroSamplerCubeP = true;
+								sSamplerName = "asc0";
 							}
 						}
 					}

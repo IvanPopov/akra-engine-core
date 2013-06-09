@@ -31,17 +31,18 @@ float4 vs_skin_geometry(float4 position[] : POSITION) : POSITION {
     float number_matrix = meta_data.x;
     float bone_inf_ptr = meta_data.y;
 
-    float i = 0.;
-    while(number_matrix >= i + 1.) {
-        //get data about matrix and weight
-        @bone_inf = bone_inf_ptr + i * 2.;
+    for(float i = 0.; i < 16.; i++){
+        if(i < number_matrix){
+            @bone_inf = bone_inf_ptr + i * 2.;
+       
+            @bone_matrix = bone_inf.x;
+            weight = bone_inf.y;
 
-        @bone_matrix = bone_inf.x;
-        weight = bone_inf.y;
-
-        result_mat += bone_matrix * weight;
-
-        i ++;
+            result_mat += bone_matrix * weight;
+        }
+        else {
+           break;            
+        }
     }
 
     return proj_mat * view_mat * result_mat * bind_matrix * pos;

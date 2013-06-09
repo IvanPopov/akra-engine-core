@@ -89,29 +89,19 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
         i++;
     }
 */
-    
-    bool isFinish = false;
-    float count = 0.;
-    for(float i = 0.; i >=0.; i++){
-        if(isFinish){
-            break;
-        }       
-        else{
-            @bone_inf = bone_inf_ptr + count * 2.;
-
+        
+    for(float i = 0.; i < 16.; i++){
+        if(i < number_matrix){
+            @bone_inf = bone_inf_ptr + i * 2.;
+       
             @bone_matrix = bone_inf.x;
             weight = bone_inf.y;
 
             result_mat += bone_matrix * weight;
-
-            count++;
-
-             if(count >= number_matrix){
-                isFinish = true;
-            }
         }
-            
-   //     }
+        else {
+           break;            
+        }
     }
 
     result_mat = result_mat * bind_matrix;
