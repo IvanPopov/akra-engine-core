@@ -82,6 +82,7 @@ module akra.fx {
 	export interface IInputUniformInfo {
 		name: string;
 		isComplex: bool;
+		isCollapsedArray: bool;
 		shaderVarInfo: IShaderUniformInfo;
 		structVarInfo: IUniformStructInfo;
 	}
@@ -137,6 +138,7 @@ module akra.fx {
 		return <IInputUniformInfo>{
 			name: sName,
 			isComplex: isComplex,
+			isCollapsedArray: false,
 			shaderVarInfo: pShaderUniformInfo,
 			structVarInfo: null
 		};
@@ -280,8 +282,10 @@ module akra.fx {
 
 			this._pUnifromInfoForStructFieldMap = <IUniformStructInfoMap>{};
 
-			this["sVertex"] = sVertex;
-			this["sPixel"] = sPixel;
+			// this["sVertex"] = sVertex;
+			// this["sPixel"] = sPixel;
+
+			// LOG(sVertex, sPixel);
 
 			return true;
 		}
@@ -439,6 +443,7 @@ module akra.fx {
 				pShaderUniformInfo.length = 0;
 				
 				pInputUniformInfo = createInputUniformInfo(sSampler, pShaderUniformInfo, false);
+				pInputUniformInfo.isCollapsedArray = (pSampler.getType().getLength() > 0);
 
 				this._pInputSamplerInfoList.push(pInputUniformInfo);
 			}
@@ -577,12 +582,16 @@ module akra.fx {
 				var pState: IAFXSamplerState = null;
 				var pTexture: ITexture = null;
 
-				if(pInfo.shaderVarInfo.length > 0){
+				if(pInfo.isCollapsedArray){
 					pState = pSamplerArrays[pInfo.name][0];
 				}
 				else {
 					pState = pPassInput._getSamplerState(pInfo.name);					
 				}
+
+				// if(!isDef(pState)){
+				// 	LOG("Bad");
+				// }
 
 				pTexture = pPassInput._getTextureForSamplerState(pState);
 

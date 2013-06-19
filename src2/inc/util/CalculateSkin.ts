@@ -301,6 +301,7 @@ module akra.util{
         pWebGLContext.disableVertexAttribArray(iDestinationAttribLocation);
 
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
+        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
         pWebGLRenderer._setViewport(null);
 
 		return true;

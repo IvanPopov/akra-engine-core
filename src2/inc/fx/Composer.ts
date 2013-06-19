@@ -724,6 +724,8 @@ module akra.fx {
 					else{
 						this._pComposerState.mesh.isOptimizedSkinned = false;	
 					}
+
+					// this._pComposerState.mesh.isOptimizedSkinned = false;	
 				}
 				else {
 					this._pComposerState.mesh.isSkinned = false;

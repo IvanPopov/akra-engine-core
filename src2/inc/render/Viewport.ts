@@ -124,10 +124,10 @@ module akra.render {
 			if (pRenderer) {
 				var pCurrentViewport: IViewport = pRenderer._getViewport();
 				
-				if (pCurrentViewport && pCurrentViewport === this) {
+				if (pCurrentViewport === this) {
 					pRenderer.clearFrameBuffer(iBuffers, cColor, fDepth, iStencil);
 				}
-				else if (pCurrentViewport) {
+				else {
 					pRenderer._setViewport(this);
 					pRenderer.clearFrameBuffer(iBuffers, cColor, fDepth, iStencil);
 					pRenderer._setViewport(pCurrentViewport);
