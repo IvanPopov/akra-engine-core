@@ -84,35 +84,28 @@ onmessage = function (pEvent) {
                     pData = pData.substr(nPos);
                 }
             }
-          
-            if (isBinary(pFile.mode) && pCommand.transfer != TRANSFER.NORMAL) {
-                if (pCommand.transfer == TRANSFER.FAST) {
-                    postMessage(pData, [pData]);
-                }
-                else {
-                    var pBuf = new Uint8Array(pData);
-                    var pArr = new Array(pBuf.length);
+            var blob = new Blob([pData], {type: isBinary(pFile.mode)? 'application/octet-stream': 'text/plain'});
+            // if (isBinary(pFile.mode) && pCommand.transfer != TRANSFER.NORMAL) {
+            //     if (pCommand.transfer == TRANSFER.FAST) {
+            //         postMessage(pData, [pData]);
+            //     }
+            //     else {
+            //         var pBuf = new Uint8Array(pData);
+            //         var pArr = new Array(pBuf.length);
                     
-                    for (var i = 0; i < pBuf.length; ++i) {
-                        pArr[i] = pBuf[i];
-                    }
+            //         for (var i = 0; i < pBuf.length; ++i) {
+            //             pArr[i] = pBuf[i];
+            //         }
 
-                    postMessage(pArr);
-                }
-            }
-            else {
-                // if (pData.length > 20 * 1024 * 1024)
-                //     throw new Error(pCommand.name, pData.length / (1024 * 1024));
-                if (pCommand.transfer == TRANSFER.FAST && pData.length > 25 * 1024 * 1024) { //30mb
-                    // var n = pData.length;
-                    pData = str2buf(pData);
-                    // throw new Error(pCommand.name + " byte length: " + (pData.byteLength / (1024 * 1024)) + " mb (" + n/(1024*1024) + ")");
-                    postMessage(pData, [pData]);
-                }
-                else {
-                    postMessage(pData);
-                }
-            }
+            //         postMessage(pArr);
+            //     }
+            // }
+            // else {
+               
+            //     postMessage(pData);
+                
+            // }
+            postMessage(URL.createObjectURL(blob));
             break;
         case File.WRITE:
             write(pFile, pCommand.data, pCommand.contentType);

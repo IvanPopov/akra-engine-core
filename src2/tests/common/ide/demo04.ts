@@ -4,16 +4,16 @@
 /// @: ../demo.css|css()
 /// @: ../../../../bin/DEBUG/akra.js|script()
 
-/// @WOODESOLDIER: 			{data}/models/hero/movie.DAE|location()
-/// @HERO_WALK: 		{data}/models/hero/intro.part1.DAE|location()
-/// @HERO_RUN: 			{data}/models/hero/movie_anim.dae|location()
+/// @HERO_MODEL: 		{data}/models/hero/movie.DAE|location()
+/// @HERO_INTRO: 		{data}/models/hero/intro.part1.DAE|location()
+/// @HERO_MOVIE: 			{data}/models/hero/movie_anim.dae|location()
 
 module akra {
 	var pEngine: IEngine = createEngine();
 
 	var pRmgr: IResourcePoolManager 	= pEngine.getResourceManager();
 	var pScene: IScene3d 				= pEngine.getScene();
-		var pUI: IUI 						= pEngine.getSceneManager().createUI();
+	var pUI: IUI 						= pEngine.getSceneManager().createUI();
 	var pCanvas: ICanvas3d 				= pEngine.getRenderer().getDefaultCanvas();
 	var pCamera: ICamera 				= null;
 	var pViewport: IViewport 			= null;
@@ -27,7 +27,8 @@ module akra {
 		canvas 				: pCanvas,
 		rsmgr 				: pRmgr,
 		renderer 			: pEngine.getRenderer(),
-		keymap 				: pKeymap
+		keymap 				: pKeymap,
+		blend 				: <IAnimationBlend>null
 	}
 
 	function setup(): void {
@@ -217,33 +218,39 @@ module akra {
 
 		pScene.bind("beforeUpdate", update);
 		
-		loadModels("@WOODESOLDIER", (pNode: ISceneNode) => {
+		loadModels("@HERO_MODEL", (pNode: ISceneNode) => {
 			pNode.addPosition(new Vec3(-2.45, .75, 0.));
 
-			var pWalkData: ICollada = <ICollada>pRmgr.loadModel("@HERO_WALK");
+			var pIntroData: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
 			
-			pWalkData.bind("loaded", () => {
+			pIntroData.bind("loaded", () => {
 
-				var pAnim: IAnimation = pWalkData.extractAnimation(0);
-				var pWalk: IAnimationContainer = animation.createContainer(pAnim, "walk");
-				pWalk.useLoop(true);
+				var pAnim: IAnimation = pIntroData.extractAnimation(0);
+				var pIntro: IAnimationContainer = animation.createContainer(pAnim, "walk");
+				
+				pIntro.useLoop(true);
+				pIntro.rightInfinity(false);
 
-				var pRunData: ICollada = <ICollada>pRmgr.loadModel("@HERO_RUN");
-				pRunData.bind("loaded", () => {
+				var pMovieData: ICollada = <ICollada>pRmgr.loadModel("@HERO_MOVIE");
+				pMovieData.bind("loaded", () => {
+					var pAnim: IAnimation = pMovieData.extractAnimation(0);
+					var pMovie: IAnimationContainer = animation.createContainer(pAnim, "run");
 
-					var pAnim: IAnimation = pRunData.extractAnimation(0);
-					var pRun: IAnimationContainer = animation.createContainer(pAnim, "run");
-					
-					pRun.useLoop(true);
+					pMovie.useLoop(true);
+					pMovie.leftInfinity(false);
+
 					var pMovement: IAnimationBlend = animation.createBlend("movement");
-					pMovement.addAnimation(pWalk, 3.0);
-					pMovement.addAnimation(pRun, 1.0);
+
+
+					pMovement.addAnimation(pIntro, 1.0);
+					pMovement.addAnimation(pMovie, 1.0);
 					
 					var pController: IAnimationController = pEngine.createAnimationController("movement");
 					pController.addAnimation(pMovement);
 					// pController.stop();
 
 					pNode.addController(pController);
+					self.blend = pMovement;
 				});
 			});
 

@@ -35,7 +35,7 @@ function base64_encode (data) {
 function read (pFile) {
     try {
         var pXhr = new XMLHttpRequest();
-        //throw new Error(typeof pXhr.response);
+
         //detect level 1 xhr
         var isLevel1 = (pXhr['responseType'] === undefined),
             pData;
@@ -62,7 +62,7 @@ function read (pFile) {
             throw pXhr.status;
         }
         
-        //если не поддерживается XMLHTTPRequest Level 2
+        //if not supported XMLHTTPRequest Level 2
         if (isLevel1) {
             pData = pXhr.responseText;
             if (isBinary(pFile.mode)) {
@@ -81,7 +81,7 @@ function read (pFile) {
             //некоторые браузеры, такие как Opera 12, возвращают arraybuffer
             //неверной длины, если данные были получены с mime-type'ом не application/octet-stream
             if (nRealLength != nExpectedLength) {
-                throw new Error('Ожидались данные длины ' + nExpectedLength + ', а получены данные длины '
+                throw new Error('Expected data length is ' + nExpectedLength + ', but getted data length is '
                                     + nRealLength);
             }
         }

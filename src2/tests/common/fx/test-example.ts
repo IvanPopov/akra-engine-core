@@ -89,7 +89,7 @@ module akra {
 			var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni-0");
 			
 			pOmniLight.attachToParent(pScene.getRootNode());
-			pOmniLight.enabled = false;
+			pOmniLight.enabled = true;
 			pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 			pOmniLight.params.diffuse.set(0.5);
 			pOmniLight.params.specular.set(1, 1, 1, 1);
@@ -192,7 +192,7 @@ module akra {
 			var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
 			
 			pOmniShadowLight.attachToParent(pScene.getRootNode());
-			pOmniShadowLight.enabled = true;
+			pOmniShadowLight.enabled = false;
 			pOmniShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
 			pOmniShadowLight.params.diffuse.set(1);
 			pOmniShadowLight.params.specular.set(1, 1, 1, 1);
@@ -233,7 +233,7 @@ module akra {
 				}
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
-					pModelRoot.addRelRotationByXYZAxis(0.00, 0.001, 0);
+					pModelRoot.addRelRotationByXYZAxis(0.00, 0.00, 0);
 					// pController.update();
 				});
 
@@ -285,18 +285,18 @@ module akra {
 
 		function main(pEngine: IEngine): void {
 			setup();
-			// createSceneEnvironment();
+			createSceneEnvironment();
 			createCameras();
 			createViewports();
 			createLighting();
 			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
-			// loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
-			// 	var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
-			// 	pMesh.createBoundingBox();
-			// 	pMesh.showBoundingBox();
-			// }).scale(2.);
+			loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
+				var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
+				// pMesh.createBoundingBox();
+				// pMesh.showBoundingBox();
+			}).scale(2.);
 
 			
 
@@ -308,7 +308,7 @@ module akra {
 			// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
 			// pCube2.setPosition(2., 0.8, -5.);
 			// pCube2.scale(0.1);
-			loadManyModels(1, "../../../data/models/cube.dae");
+			// loadManyModels(1, "../../../data/models/cube.dae");
 			// loadManyModels(100, "../../../data/models/box/opened_box.dae");
 		}
 

@@ -10,7 +10,7 @@ declare var $: JQueryStatic;
 /// @TUBE: 					{data}/models/tube/tube.dae|location()
 /// @TUBE_BETWEEN_ROCKS:	{data}/models/tubing/tube_beeween_rocks.DAE|location()
 /// @HERO_MODEL: 			{data}/models/hero/movie.dae|location()
-/// @HERO_CONTROLLER: 		{data}/models/hero/movie_anim.DAE|location()
+/// @HERO_MOVIE: 		{data}/models/hero/movie_anim.DAE|location()
 /// @HERO_INTRO: 			{data}/models/hero/intro.part1.DAE|location()
 /// @WINDSPOT_MODEL: 		{data}/models/windspot/WINDSPOT.DAE|location()
 /// @MINER_MODEL: 			{data}/models/miner/miner.dae|location()
@@ -36,6 +36,15 @@ module akra {
 
 	// var $canvasContainer: JQuery 		= null;
 	// var $div: JQuery 					= null;
+
+
+	// class TimeLine {
+	// 	private _pControllers: IAnimationController[] = [];
+
+	// 	addController(pController: IAnimationController, fTime: float): void {
+
+	// 	}
+	// }
 
 	
 
@@ -145,10 +154,8 @@ module akra {
 				return;
 			}
 
-			var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
-
 			pMovie.stop();
-			pMovie.play("movie");
+			pMovie.play("intro");
 
 			self.cameraLight.enabled = false;
 			
@@ -172,7 +179,7 @@ module akra {
 					}, 100);
 				}, 50);
 			}, 7000);
-			// pCont.rewind(33.33);
+
 		});
 
 		pKeymap.bind("add", () => {
@@ -182,8 +189,8 @@ module akra {
 				return;
 			}
 
-			var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
-			pCont.setSpeed(pCont.speed * 2.0);
+			// var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
+			// pCont.setSpeed(pCont.speed * 2.0);
 		});
 
 		pKeymap.bind("SUBTRACT", () => {
@@ -193,8 +200,8 @@ module akra {
 				return;
 			}
 
-			var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
-			pCont.setSpeed(pCont.speed / 2.0);
+			// var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
+			// pCont.setSpeed(pCont.speed / 2.0);
 		});
 	}
 
@@ -520,23 +527,58 @@ module akra {
 
 			pScene.bind("beforeUpdate", update);
 
-			var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
+			// var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
 			
-			pMovie.bind("loaded", () => {
+			// pMovie.bind("loaded", () => {
 
-				var pAnim: IAnimation = pMovie.extractAnimation(0);
-				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-				var pController: IAnimationController = pEngine.createAnimationController("movie");
+			// 	var pAnim: IAnimation = pMovie.extractAnimation(0);
+			// 	var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+			// 	var pController: IAnimationController = pEngine.createAnimationController("movie");
 				
-				pController.addAnimation(pContainer);
-				pController.stop();
+			// 	pController.addAnimation(pContainer);
+			// 	pController.stop();
 
-				pNode.addController(pController);
+			// 	pNode.addController(pController);
 
-				self.hero.movie = pController;
+			// 	self.hero.movie = pController;
 				
-			});
+			// });
+			
+			var pController: IAnimationController = pEngine.createAnimationController("movie");
+			var pIntroData: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
+			
+			pIntroData.bind("loaded", () => {
 
+				var pAnim: IAnimation = pIntroData.extractAnimation(0);
+				var pIntro: IAnimationContainer = animation.createContainer(pAnim, "intro");
+				
+				// pIntro.useLoop(true);
+				pIntro.rightInfinity(false);
+				pController.addAnimation(pIntro);
+				// pController.stop();
+				
+				var pMovieData: ICollada = <ICollada>pRmgr.loadModel("@HERO_MOVIE");
+
+				pMovieData.bind("loaded", () => {
+					var pAnim: IAnimation = pMovieData.extractAnimation(0);
+					var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
+
+					// pMovie.useLoop(true);
+					pMovie.leftInfinity(false);
+
+					
+					pController.addAnimation(pMovie);
+					pController.stop();
+
+					pIntro.bind("stoped", () => {
+						pController.play("movie");
+					});
+
+				});
+			}); 
+			
+			pNode.addController(pController);
+			self.hero.movie = pController;
 
 			fetchAllCameras();
 		});

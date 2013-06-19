@@ -326,7 +326,8 @@ function preprocess() {
 	var iTotalChars = 0;
 
 	mcpp.stdout.on('data', function (data) {
-	  // console.log('stdout: \n' + data.toString().length, data.length);
+ 	  // console.log("##############################################################################################");
+	  // console.log('stdout: \n' + data.toString());
 	  data.copy(stdout, iTotalChars);
 	  
 	  iTotalChars  += data.length;
@@ -337,9 +338,8 @@ function preprocess() {
 	  console.log('stderr: \n' + data);
 	});
 
-	mcpp.on('exit', function (code) {
-		// console.log(">>>");
-		// console.log(iTotalChars, 0/*stdout.slice(0, iTotalChars).toString('utf8')*/);
+	mcpp.on('close', function (code) {
+	  // console.log(stdout.slice(0, iTotalChars).toString('utf8'));
 	  console.log('preprocessing exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 	
 	  if (code == 0) {

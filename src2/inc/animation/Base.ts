@@ -19,6 +19,8 @@ module akra.animation {
     	protected _pTargetList: IAnimationTarget[] = [];
 
     	protected _fDuration: float = 0.0;
+    	//first ever frame time of all targets
+    	protected _fFirst: float = MAX_UINT32;
 		protected _sName: string;
 
 		protected _eType: EAnimationTypes;
@@ -38,9 +40,13 @@ module akra.animation {
 			return this._fDuration;
 		}
 
-		inline set duration(fValue: float){
+		inline set duration(fValue: float) {
 			// LOG("new duration(", this.name, ") > " + fValue);
 			this._fDuration = fValue;
+		}
+
+		inline get first(): float {
+			return this._fFirst;
 		}
 
 		inline get name(): string{
@@ -81,11 +87,12 @@ module akra.animation {
 			return null;
 		}
 
-		apply(fRealTime: float): void {
+		apply(fRealTime: float): bool {
 			var pTargetList: IAnimationTarget[] = this._pTargetList;
 		    var pTarget: ISceneNode = null;
 		    var pFrame: IAnimationFrame = null;
 		    var pTransform: IMat4 = null;
+		    var bAffected: bool = false;
 
 			for (var i = 0; i < pTargetList.length; ++ i) {
 				pFrame = this.frame(pTargetList[i].name, fRealTime);
@@ -97,8 +104,10 @@ module akra.animation {
 
 				pTransform = pFrame.toMatrix();
 				pTarget.localMatrix = pTransform;
-			};
-
+				bAffected = true;
+			}
+			// console.log(bAffected);
+			return bAffected;
 		}
 
 		addTarget(sName: string, pTarget: ISceneNode = null): IAnimationTarget {
@@ -191,7 +200,9 @@ module akra.animation {
 				if (bRewrite || !this.getTarget(pAdoptTargets[i].name)) {
 					this.addTarget(pAdoptTargets[i].name, pAdoptTargets[i].target);
 				}
-			};
+			}
+
+			this._fFirst = math.min(this.first, pAnimationBase.first);
 		}
 		
 		createAnimationMask(): FloatMap {
