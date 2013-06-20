@@ -49,9 +49,11 @@ function usage() {
 		'\n\t--webgl-debug	[-w] Add webgl debug utils.' + 
 		'\n\t--do-magic	[-m] It\'s wonderfull magic!(Спросите у Игоря!).' + 
 		'\n\t--declaration		Generates corresponding .d.ts file.' +
+		'\n\t--no-const			Do not replace constant from enum values.' +
+		'\n\t--gui				Define GUI macro.' +
 		'\n\t--preprocess		Preprocessing only.'
 	);
-	
+
 	process.exit(1);
 }
 //" + md5((new Date).getTime() + "." + Math.random()) + "
@@ -71,11 +73,13 @@ var pOptions = {
 	debug: true,
 	pathToTemp: null,
 	declaration: false,
+	gui: false,
 	preprocess: false,
 	clean: false, //clean tests data instead build
 	listOnly: false, //list available tests
 	webglDebug: false,
 	dataDir: "./data/",
+	noConst: false,
 	/**
 	 * Поиск всех файлов с комеентариями вида // стоящими не на отдельной строке
 	 */
@@ -140,7 +144,7 @@ function parseArguments() {
 			case '--target':
 			case '-t':
 				sTarget = process.argv[++i].toUpperCase();
-				
+
 				if (sTarget === "TESTS") {
 					pOptions.target.tests = true;
 					pOptions.target.core = false;
@@ -149,10 +153,13 @@ function parseArguments() {
 					pOptions.target.tests = true;
 					pOptions.target.core = true;
 				}
-				
+
 				break;
 			case '--html':
 				pOptions.testsFormat.html = true;
+				break;
+			case '--gui':
+				pOptions.gui = true;
 				break;
 			case '--nw':
 				pOptions.testsFormat.nw = true;
@@ -171,6 +178,9 @@ function parseArguments() {
 				break;
 			case '--declaration':
 				pOptions.declaration = true;
+				break;
+			case '--no-const':
+				pOptions.noConst = true;
 				break;
 			case '--preprocess':
 				pOptions.preprocess = true;
@@ -222,7 +232,7 @@ function verifyOptions() {
 	if (pOptions.outputFile) {
 		pOptions.outputFile = path.normalize(pOptions.outputFile);
 	}
-	
+
 	pOptions.outputFolder = path.normalize(pOptions.outputFolder);
 	pOptions.buildDir = path.normalize(pOptions.buildDir);
 
@@ -231,7 +241,7 @@ function verifyOptions() {
 
 	if (!pOptions.includeDir) {
 		pOptions.includeDir = "inc/";//pOptions.buildDir + 
-		
+
 	}
 
 	if (pOptions.testsFormat.html 	== false && 
@@ -247,7 +257,7 @@ function verifyOptions() {
 
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
 		var pOutExt = ".out.js";
-		
+
 		if (pOptions.declaration) {
 			pOutExt = ".d.ts";
 		}
@@ -278,6 +288,11 @@ function preprocess() {
 		"-D readonly="
 		];
 
+	if (pOptions.gui) {
+		capabilityOptions.push("-D GUI=1");
+		console.log("Build with GUI.");
+	}
+
 	if (pOptions.debug) {
 		capabilityOptions.push("-D DEBUG=DEBUG");
 		console.log("Debug build.");
@@ -299,36 +314,39 @@ function preprocess() {
 	// pwd();
 
 	var cmd = (isWin? pOptions.baseDir + "/": "") + "mcpp";
-	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -I " + 
+	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -I ./"/* + pOptions.buildDir*/ + " -I " + 
 		pOptions.baseDir + "/definitions/ -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).split(" ");
 
 	//console.log(pOptions.files);
 	console.log(cmd + " " + argv.join(" "));
-	
+
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
 	var stdout = new Buffer(BUFFER_SIZE);
 	var iTotalChars = 0;
 
 	mcpp.stdout.on('data', function (data) {
-	  //console.log('stdout: \n' + data);
+ 	  // console.log("##############################################################################################");
+	  // console.log('stdout: \n' + data.toString());
 	  data.copy(stdout, iTotalChars);
-	  
+
 	  iTotalChars  += data.length;
+	  // console.log(stdout.slice(0, iTotalChars).toString());
 	});
 
 	mcpp.stderr.on('data', function (data) {
 	  console.log('stderr: \n' + data);
 	});
 
-	mcpp.on('exit', function (code) {
+	mcpp.on('close', function (code) {
+	  // console.log(stdout.slice(0, iTotalChars).toString('utf8'));
 	  console.log('preprocessing exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
-	
+
 	  if (code == 0) {
 	  	pOptions.pathToTemp = pOptions.outputFolder + "/" + pOptions.tempFile;
-		
+
 		if (pOptions.preprocess) {
-			fs.writeFileSync(pOptions.outputFolder + "/" + pOptions.outputFile, stdout.slice(0, iTotalChars), "utf8");
+			fs.writeFileSync(pOptions.outputFolder + "/" + pOptions.outputFile, stdout.slice(0, iTotalChars).toString('utf8'), "utf8");
 			console.log("preprocessed to: ", pOptions.outputFolder + "/" + pOptions.outputFile);
 		}
 		else {
@@ -341,7 +359,7 @@ function preprocess() {
 }
 
 function compress(sFile) {
-
+	console.log(">>>>>>>>>>>>>>>>>>>>>>>");
 	var cmd = "java";
 	var argv = (
 		"-jar " + 
@@ -353,15 +371,15 @@ function compress(sFile) {
 		// " --compilation_level=ADVANCED_OPTIMIZATIONS" + 
 		""
 		).split(" ");
-	
-	
+
+
 	var closure = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE,  stdio: 'inherit' });
 
 	closure.on('exit', function (code) {
 		console.log('compression exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 
 		if (code == 0) {
-		  	
+
 		  	console.log("compressed to: ", sFile);
 		}
 		else {
@@ -376,15 +394,21 @@ function compile() {
 	console.log("\n> compilation started (" + this.process.pid + ")  \n");
 
 	var cmd = "node";
+	var sOutputFolder = pOptions.outputFolder + "/" + (pOptions.debug? "DEBUG": "RELEASE");	
+	var sOutputFile = sOutputFolder + "/" + pOptions.outputFile;
+
+	wrench.mkdirSyncRecursive(sOutputFolder, 0777);
+
 	var argv = (  
 		pOptions.baseDir + "/tsc.js -c --target ES5  " + 
 		pOptions.baseDir + "/definitions/fixes.d.ts " +
+		// pOptions.buildDir + "/bin/RELEASE/akra.d.ts " +
 		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " +
-		pOptions.outputFolder + "/" + pOptions.outputFile +
+		sOutputFile +
 		// (pOptions.compress? " --comments --jsdoc ": "") + 
 		(pOptions.declaration? " --declaration ": "") +
-		" --cflowu --const").replace(/\s+/ig, " ").split(" ");
+		" --cflowu " + (!pOptions.noConst? " --const ": "")).replace(/\s+/ig, " ").split(" ");
 
 	console.log((cmd + " " + argv.join(" ")));//.split(" ")
     
@@ -394,8 +418,6 @@ function compile() {
 	  console.log('compilation exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 
 	  if (code == 0) {
-	  	var sOutputFile = pOptions.outputFolder + "/" + pOptions.outputFile;
-
 	  	console.log("compiled to: ", sOutputFile);
 
 		fs.unlink(pOptions.pathToTemp, function (err) {
@@ -404,11 +426,20 @@ function compile() {
 			}
 
 			console.log("temp file: " + pOptions.pathToTemp + " removed.\n\n");
-			
+
+			var pFetchResult = {css: [], script: [], data: null};
+		    var gitignore = fetchDeps(
+		    	sOutputFolder,
+		    	fs.readFileSync(sOutputFile, "utf-8"), 
+		    	pFetchResult);
+
+
+		    fs.writeFileSync(sOutputFile, pFetchResult.data, "utf-8");
+
 			if (pOptions.compress) {
 				compress(sOutputFile);
 			}
-			
+
 		});
 	  }
 	  else {
@@ -581,7 +612,7 @@ function fetchDeps(sDir, sTestData, pResult) {
 		for (var m = 0; m < pmods.length; ++ m) {
 			var mod = pmods[m];
 			var matches = null;
-			
+
 			if (matches = (/\s*([\w]+)\(([\/\.\-\w\d\ \t\,]*)\)\s*/ig).exec(mod)) {
 				var modifier = matches[1];
 				var args = matches[2];
@@ -593,11 +624,11 @@ function fetchDeps(sDir, sTestData, pResult) {
 						break;
 					case "css":
 						pResult['css'].push(value);
-						console.log("additional css file: ", value);
+						console.log('<link rel="stylesheet" type="text/css" href="' + value + '">');
 						break;
 					case "script":
 						pResult['script'].push(value);
-						console.log("additional script file: ", value);
+						console.log('<script type="text/javascript" src="' + value + '"></script>');
 						break;
 					case "location":
 						value = path.relative(sDir, value).replace(/\\/ig, "/");
@@ -622,7 +653,7 @@ function fetchDeps(sDir, sTestData, pResult) {
 
 
 function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
-	
+
 	//FIXME: hack for events support
 	//sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
 
@@ -658,6 +689,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		script: pAdditionalScripts,
 		data: null
 	};
+
     var gitignore = fetchDeps(
     	sDir,
     	sTestData, 
@@ -714,10 +746,10 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	        console.log("test created: " + sFile + " (" + sName +") ");
 	        pTestResults.push({file: sFile, name: sName, results: true});
 
-	        
+
 	        if (iTestQuitMutex >= 0) {
 		        var argv = pTestQueue.pop();
-		        
+
 		        if (argv) {
 			        packTest(argv.dir, argv.main, argv.name, argv.data);
 			        iTestQuitMutex --;
@@ -746,7 +778,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	                              "max_height": 600
 	                            }
 	                          }), "utf8"));
-	    
+
 		var pArchiveFiles = [];
 		pData.forEach(function(pFile) {
 			if (pFile.folder) return;
@@ -762,10 +794,10 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		});
 	}
 	else if (sFormat == "html") {
-		writeOutput(sDir + "/" + sName + ".ts.html", sIndexHTML);
+		writeOutput(sDir + "/" + sName /*+ "." + (pOptions.debug? "DEBUG": "RELEASE")*/ + ".html", sIndexHTML);
 	}
 	else if (sFormat == "js") {
-		writeOutput(sDir + "/" + sName + ".ts.js", sTestData);	
+		writeOutput(sDir + "/" + sName /*+ "." + (pOptions.debug? "DEBUG": "RELEASE")*/ + ".js", sTestData);	
 	}
 }
 
@@ -782,36 +814,43 @@ function packTest(sDir, sFile, sName, pData) {
 	console.log("#########################################################");
 	console.log("\n");
 
-	
+
 	console.log("\nWebGL debug: " + (pOptions.webglDebug? "ON": "OFF"));
-	
 
-	var sTempFile = sFile + ".temp.js";
-
+	sDir += "/" + (pOptions.debug? "DEBUG": "RELEASE") + "/";
+	var sTempFile =sFile + ".temp.js";
+	var sTempFileModded = path.dirname(sTempFile) + "/" + (pOptions.debug? "DEBUG": "RELEASE") + "/" + path.basename(sTempFile);
 	var cmd = "node";
 
 	var argv = (pOptions.baseDir + "/make.js -o " + sTempFile +" -t CORE " + 
 		(pOptions.capability? " --ES6 ": "") + 
 		(pOptions.compress? " --compress ": "") + 
 		(pOptions.declaration? " --declaration ": "") + 
-		(pOptions.debug? " --debug ": "") + 
+		(pOptions.debug? " --debug ": " --no-debug ") + 
+		(pOptions.preprocess? " --preprocess ": " ") + 
+		(pOptions.noConst? " --no-const ": " ") + 
+		(pOptions.gui? " --gui ": " ") + 
 		sFile).split(" ");
 
 	console.log(cmd + " " + argv.join(" "));
-	
+
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE, stdio: 'inherit' });
 
 	node.on('exit', function (code) {
 	    console.log("test " + sFile + " packed with code " + code);
 		if (code == 0) {
-        
+        	
+			if (pOptions.preprocess) {
+				return;
+			}
+
 			var compileTestMacro = function (sFormat) {
 				compileTest(
 					sDir, 
 					sFile, 
 					sName, 
 					pData, 
-					fs.readFileSync(sTempFile + (pOptions.compress? ".min": ""), "utf8"), 
+					fs.readFileSync(sTempFileModded + (pOptions.compress? ".min": ""), "utf8"), 
 					sFormat);
 			}
 			if (pOptions.testsFormat.nw) {
@@ -828,10 +867,10 @@ function packTest(sDir, sFile, sName, pData) {
 			}
 
 
-			fs.unlinkSync(sTempFile)
+			fs.unlinkSync(sTempFileModded)
 
 			if (pOptions.compress) {
-				fs.unlinkSync(sTempFile + ".min");
+				fs.unlinkSync(sTempFileModded + ".min");
 			}
 		}
 		else {
@@ -896,7 +935,7 @@ function createTestData(sDir, sFile) {
 				clearTimeout(iTimeout);
 				iTimeout = setTimeout(function () {
 					console.log("\n\nFile to be cleaned (" + pCleanFiles.length + "): ");
-				
+
 					for (var i in pCleanFiles) {
 						console.log("\t" + i + ". \"" + pCleanFiles[i] + "\"", "will be removed.");
 					}
@@ -908,7 +947,7 @@ function createTestData(sDir, sFile) {
 				        warning: 'Must respond yes or no',
 				        default: 'no'
 				    }, function (err, result) {   
-				     
+
 						if (result.yesno.toLowerCase().substr(0, 1) === 'y') {
 							for (var i in pCleanFiles) {
 								try {
@@ -938,7 +977,7 @@ function createTestData(sDir, sFile) {
 	    			iDepth --;
 
 	    			if (iDepth === 0) {
-	    
+
 	    				if (iTestQuitMutex == 0) {
 	    					iTestQuitMutex ++;
 	    					//console.log(sDir, sTestMain, sTest, pTestFiles);
@@ -1031,7 +1070,7 @@ if (pOptions.target.core) {
 }
 
 if (pOptions.target.tests) {
-	
+
 	if (pOptions.testDir) {
 		console.log("single test used: " + pOptions.testDir);
 		//process.exit(1);
@@ -1042,7 +1081,7 @@ if (pOptions.target.tests) {
 
 
 	// });
-	
+
 	console.log("\n> founded test dirs\n");
 
 	buildTests(pOptions.testDir);
