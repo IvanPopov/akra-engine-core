@@ -271,7 +271,7 @@ module akra.webgl {
 			pEntry.bufferMap._draw();
 			// deltaTime = Date.now() - deltaTime;
 			// this._time[7] += deltaTime;
-			LOG(pEntry.bufferMap.toString())
+			// LOG(pEntry.bufferMap.toString())
 		}
 
 		_endRender(): void {

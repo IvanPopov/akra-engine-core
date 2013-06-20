@@ -1040,9 +1040,6 @@ module akra.fx {
 
 					//2) gnerate real attrs
 					if(iSlot > nPreparedAttributeSlots){
-						if(nPreparedAttributeSlots === -1 && iSlot === 1){
-							LOG("Must not be here");
-						}
 						this._sAttrDeclCode += "attribute " + pAttributeContainer.getTypeForShaderAttribute(sSemantic).toFinalCode() + " " + sAttrName + ";\n"; 
 						nPreparedAttributeSlots++;
 					}

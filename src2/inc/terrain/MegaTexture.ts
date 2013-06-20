@@ -34,8 +34,8 @@ module akra.terrain {
 	    private _sSurfaceTextures: string = "";
 
 	    //Маскимальный размер стороны текстуры
-	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(8192 * 0.5);
-	    private _v2iOriginalTextreMinSize: IVec2 = new Vec2(1024 * 1);
+	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(8192 * 4.);
+	    private _v2iOriginalTextreMinSize: IVec2 = new Vec2(1024 * 4);
 	    private _v2iTextureLevelSize: IVec2 = new Vec2(1024);
 
 	    private _iMinLevel: uint = 0;

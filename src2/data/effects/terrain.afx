@@ -125,40 +125,41 @@ void fs_terrain(VS_OUT IN){
     bool isNeedColored = true;
 
     float texcoordMultiplier = exp2(float(nTotalLevels + minTextureLevel - 1));
-    int i = nTotalLevels - 1;
+    //int i = nTotalLevels - 1;
+    for(int i = nTotalLevels - 1; i>0; i--){
+        if(isNeedColored){
+            new_texcoord = (IN.texcoord-textureCoordOffset[i]) * texcoordMultiplier;
 
-   while(isNeedColored){
-        new_texcoord = (IN.texcoord-textureCoordOffset[i]) * texcoordMultiplier;
-
-        if(testureLoadStatus[i] && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0)){
-            color = tex2D(textureTerrain[i], new_texcoord);
-            isNeedColored = false;
-/*
-            if(color.xyz == float3(0.) && isMainColored) {
-                isNeedColored = true;
-            }
-            else {
+            if(testureLoadStatus[i] && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0)){
+                color = tex2D(textureTerrain[i], new_texcoord);
                 isNeedColored = false;
 
-                float modX = mod(1024. * new_texcoord.x, 32.);
-                float modY = mod(1024. * new_texcoord.y, 32.);
+                if(color.xyz == float3(0.) && isMainColored) {
+                    isNeedColored = true;
+                }
+                else {
+                    isNeedColored = false;
 
-                if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
-                    if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
-                        isNeedColored = true;
+                    float modX = mod(1024. * new_texcoord.x, 32.);
+                    float modY = mod(1024. * new_texcoord.y, 32.);
+
+                    if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
+                        if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
+                            isNeedColored = true;
+                        }
                     }
                 }
             }
-*/
-        }
 
-        i--;
-        texcoordMultiplier /= 2.;
-        
-        if(i == 0){
-            isNeedColored = false;
-            color = mainColor;
+            texcoordMultiplier /= 2.;
         }
+//        else {
+//            break;
+//        }
+    }
+
+    if(isNeedColored){
+        color = mainColor;
     }
 
     normal = tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb;

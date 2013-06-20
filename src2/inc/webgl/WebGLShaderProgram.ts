@@ -250,7 +250,7 @@ module akra.webgl {
                 pBuffer[i    ] = pValue[j].x;
                 pBuffer[i + 1] = pValue[j].y;
             }
-
+            
             this._pWebGLContext.uniform2fv(this._pWebGLUniformLocations[sName], pBuffer);
     	}
 
@@ -486,7 +486,8 @@ module akra.webgl {
 
         inline _setVec2Array(pWebGLUniformLocation: WebGLUniformLocation, pValue: IVec2[]): void {
             var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 2, ++ j) {
+
+            for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++ j) {
                 pBuffer[i    ] = pValue[j].x;
                 pBuffer[i + 1] = pValue[j].y;
             }
@@ -496,7 +497,7 @@ module akra.webgl {
 
         inline _setVec2iArray(pWebGLUniformLocation: WebGLUniformLocation, pValue: IVec2[]): void {
             var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
-            for (var i: int = 0, j: int = 0; i < pValue.length; i += 2, ++ j) {
+            for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++ j) {
                 pBuffer[i    ] = pValue[j].x;
                 pBuffer[i + 1] = pValue[j].y;
             }
