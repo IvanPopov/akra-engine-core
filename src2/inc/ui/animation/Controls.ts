@@ -74,7 +74,7 @@ module akra.ui.animation {
 				pEntry.extra.graph = {x: pOffset.left - pGraphOffset.left, y: pOffset.top - pGraphOffset.top};
 			}
 
-
+			
 			pExporter.saveAs((pController.name || "untitled") + ".json");
 		}
 

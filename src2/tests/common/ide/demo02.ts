@@ -12,6 +12,7 @@ declare var $: JQueryStatic;
 /// @HERO_MODEL: 			{data}/models/hero/movie.dae|location()
 /// @HERO_MOVIE: 		{data}/models/hero/movie_anim.DAE|location()
 /// @HERO_INTRO: 			{data}/models/hero/intro.part1.DAE|location()
+/// @HERO_FILM: 			{data}/models/hero/film.DAE|location()
 /// @WINDSPOT_MODEL: 		{data}/models/windspot/WINDSPOT.DAE|location()
 /// @MINER_MODEL: 			{data}/models/miner/miner.dae|location()
 /// @ROCK_MODEL: 			{data}/models/rock/rock-1-low-p.DAE|location()
@@ -155,7 +156,7 @@ module akra {
 			}
 
 			pMovie.stop();
-			pMovie.play("intro");
+			pMovie.play("movie");
 
 			self.cameraLight.enabled = false;
 			
@@ -527,24 +528,24 @@ module akra {
 
 			pScene.bind("beforeUpdate", update);
 
-			// var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
+			var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_FILM");
 			
-			// pMovie.bind("loaded", () => {
+			pMovie.bind("loaded", () => {
 
-			// 	var pAnim: IAnimation = pMovie.extractAnimation(0);
-			// 	var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-			// 	var pController: IAnimationController = pEngine.createAnimationController("movie");
+				var pAnim: IAnimation = pMovie.extractAnimation(0);
+				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+				var pController: IAnimationController = pEngine.createAnimationController("movie");
 				
-			// 	pController.addAnimation(pContainer);
-			// 	pController.stop();
+				pController.addAnimation(pContainer);
+				pController.stop();
 
-			// 	pNode.addController(pController);
+				pNode.addController(pController);
 
-			// 	self.hero.movie = pController;
+				self.hero.movie = pController;
 				
-			// });
+			});
 			
-			var pController: IAnimationController = pEngine.createAnimationController("movie");
+			/*var pController: IAnimationController = pEngine.createAnimationController("movie");
 			var pIntroData: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
 			
 			pIntroData.bind("loaded", () => {
@@ -578,7 +579,7 @@ module akra {
 			}); 
 			
 			pNode.addController(pController);
-			self.hero.movie = pController;
+			self.hero.movie = pController;*/
 
 			fetchAllCameras();
 		});
@@ -606,5 +607,5 @@ module akra {
 */	}
 
 	pEngine.bind("depsLoaded", main);		
-	pEngine.exec();
+	// pEngine.exec();
 }
