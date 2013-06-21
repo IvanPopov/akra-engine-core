@@ -25,7 +25,7 @@ module akra {
 			$(document.body).append(pMainScene);
 			pMainScene.append(pCanvasElement);
 
-			pCanvas.resize(800, 600);
+			pCanvas.resize(960, 720);
 
 			// var pCanvasLOD = $("<canvas id='canvasLOD' width=600 height=600 style='float: right'>");
 			// pMainScene.append(pCanvasLOD);
@@ -95,7 +95,7 @@ module akra {
 			pStats.target = pViewport.getTarget();
 			pStats.render(pMainScene);
 
-			pStats.el.css({position: "relative", top: "-600px"});
+			pStats.el.css({position: "relative", top: "-720px"});
 		}
 
 		function createLighting(): void {
@@ -156,44 +156,6 @@ module akra {
 
 			// ok(pTerrain);
 		}
-
-		// function loadModels(sPath, fnCallback?: Function): ISceneNode {
-		// 	var pController: IAnimationController = null;
-		// 	var pModelRoot: ISceneNode = pScene.createNode();
-		// 	var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
-			
-		// 	pController = pEngine.createAnimationController();
-
-		// 	pModelRoot.attachToParent(pScene.getRootNode());
-		// 	pModelRoot.scale(2.);
-		// 	pModelRoot.addPosition(0, -1., 0);
-
-		// 	pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
-		// 		pModel.attachToScene(pModelRoot, pController);
-
-		// 		pController.attach(pModelRoot);
-
-		// 		var pContainer: IAnimationContainer = animation.createContainer();
-
-		// 		if (pController.active) {
-		// 			pContainer.setAnimation(pController.active);
-		// 			pContainer.useLoop(true);
-		// 			pController.addAnimation(pContainer);		
-		// 		}
-
-
-		// 		pScene.bind(SIGNAL(beforeUpdate), () => {
-		// 			// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
-		// 			pController.update(pEngine.time);
-		// 		});
-
-		// 		if (isFunction(fnCallback)) {
-		// 			fnCallback(pModelRoot);
-		// 		}
-		// 	});
-
-		// 	return pModelRoot;
-		// }
 
 		function main(pEngine: IEngine): void {
 			setup();
