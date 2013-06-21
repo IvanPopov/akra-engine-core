@@ -35,7 +35,7 @@ module akra.terrain {
 
 	    //Маскимальный размер стороны текстуры
 	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(8192 * 4.);
-	    private _v2iOriginalTextreMinSize: IVec2 = new Vec2(1024 * 4);
+	    private _v2iOriginalTextreMinSize: IVec2 = new Vec2(1024 * 4.);
 	    private _v2iTextureLevelSize: IVec2 = new Vec2(1024);
 
 	    private _iMinLevel: uint = 0;
@@ -67,7 +67,7 @@ module akra.terrain {
 	    private _fTexCourdYOld: float = 0xFFFFFFFF;
 	    private _nCountRender: uint = 0;
 
-	    private _iSectorLifeTime: uint = 10000; 
+	    private _iSectorLifeTime: uint = 30000; 
 
 	    private _pSamplerUniforms: IAFXSamplerState[] = null;
 		private _pLoadStatusUniforms: uint[] = null;
@@ -99,7 +99,7 @@ module akra.terrain {
 	    	this._pDefaultSectorLoadInfo = new Uint32Array(this._v2iTextureLevelSize.y * this._v2iTextureLevelSize.x / (this._iBlockSize * this._iBlockSize));
 
 	    	for (var i: uint = 0; i < this._pDefaultSectorLoadInfo.length; i++) {
-	    	    this._pDefaultSectorLoadInfo[i] = 20000;
+	    	    this._pDefaultSectorLoadInfo[i] = 0;
 	    	}
 
 	    	this.setSectorLoadInfoToDefault(this._pLoadInfoForSwap);
@@ -119,7 +119,7 @@ module akra.terrain {
     	        if(i === 0){
     	        	this._pTextures[i].create(this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y, 1, null, ETextureFlags.DYNAMIC, 0, 1, ETextureTypes.TEXTURE_2D, this._eTextureFormat);
     	        	
-    	        	this._pSectorLoadInfo[i] = new Uint32Array(this._v2iOriginalTextreMinSize.y * this._v2iOriginalTextreMinSize.x /
+    	        	this._pSectorLoadInfo[i] = new Uint32Array(this._v2iTextureLevelSize.y * this._v2iTextureLevelSize.x /
 	                                                  	   	   (this._iBlockSize * this._iBlockSize));
     	        }
     	        else {
@@ -147,15 +147,21 @@ module akra.terrain {
 
     	    this.testDataInit();
 
-    	    // this._pRPC = net.createRpc();
-    	    // this._pRPC.join("ws://192.168.88.53:6112");
-	    	this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
-
-	    	LOG(this);
+    	    this._pRPC = net.createRpc();
+    	    this._pRPC.join("ws://192.168.88.53:6112");
+    	    this.loadMinTextureLevel();
 	    }
 
-
+	    private _bFirstTime: bool = true;
 		prepareForRender(pViewport: IViewport): void {
+			if(!this._pXY[0].isLoaded){
+				this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
+				return;
+			}
+			else if(this._bFirstTime){
+				this._bFirstTime = false;
+			}
+
 		    var pCamera: ICamera = pViewport.getCamera();
 		    var v4fCameraCoord: IVec4 = vec4(pCamera.worldPosition, 1.);
 		    var m4fTransposeInverse: IMat4 = this._pObject.inverseWorldMatrix;
@@ -275,68 +281,60 @@ module akra.terrain {
 
 		    //Подгрузка части буфера которую ложиться в текстуру + 8 блоков
 		    //Нулевая статична, поэтому ее не меняем
-		   	for (var i: uint = 0; i < this._pTextures.length; i++) {
+		   	for (var i: uint = 1; i < this._pTextures.length; i++) {
+	            iX = math.round(fTexCourdX * this.getWidthOrig(i) - this._v2iTextureLevelSize.x / 2);
+	            iY = math.round(fTexCourdY * this.getHeightOrig(i) - this._v2iTextureLevelSize.y / 2);
 
+				iX = math.round((iX / this._iBlockSize)) * this._iBlockSize;
+	            iY = math.round((iY / this._iBlockSize)) * this._iBlockSize;
 
-		        if (i !== 0) {
-		            iX = math.round(fTexCourdX * this.getWidthOrig(i) - this._v2iTextureLevelSize.x / 2);
-		            iY = math.round(fTexCourdY * this.getHeightOrig(i) - this._v2iTextureLevelSize.y / 2);
+	            this._pXY[i].iTexX = iX / this.getWidthOrig(i);
+				this._pXY[i].iTexY = iY / this.getHeightOrig(i);
 
-					iX = math.round((iX / this._iBlockSize)) * this._iBlockSize;
-		            iY = math.round((iY / this._iBlockSize)) * this._iBlockSize;
+	            iWidth = this._v2iTextureLevelSize.x;
+	            iHeight = this._v2iTextureLevelSize.y;
+	            //На данный момент нужен кусок текстуры таких размеров iX1,iY1,iWidth,iHeight,
 
-		            this._pXY[i].iTexX = iX / this.getWidthOrig(i);
-					this._pXY[i].iTexY = iY / this.getHeightOrig(i);
+	            var iAreaX1: uint = iX;
+	            var iAreaY1: uint = iY;
+	            var iAreaX2: uint = iX + iWidth;
+	            var iAreaY2: uint = iY + iHeight;
 
-		            iWidth = this._v2iTextureLevelSize.x;
-		            iHeight = this._v2iTextureLevelSize.y;
-		            //На данный момент нужен кусок текстуры таких размеров iX1,iY1,iWidth,iHeight,
+	            //Смотрим попадаем ли мы в текущий буфер
 
-		            var iAreaX1: uint = iX;
-		            var iAreaY1: uint = iY;
-		            var iAreaX2: uint = iX + iWidth;
-		            var iAreaY2: uint = iY + iHeight;
+                //Типа попали
+                //Значит нужно загрузить необходимые куски
+                //Обрезаемся чтобы не вылезти за пределы
 
-		            //Смотрим попадаем ли мы в текущий буфер
+                // iX -= this._iBlockSize * 8;
+                // iY -= this._iBlockSize * 8;
+                // iWidth += this._iBlockSize * 16;
+                // iHeight += this._iBlockSize * 16;
+                iX1 = math.clamp(iX, 0, this.getWidthOrig(i));
+                iY1 = math.clamp(iY, 0, this.getHeightOrig(i));
+                iX2 = math.clamp(iX + iWidth, 0, this.getWidthOrig(i));
+                iY2 = math.clamp(iY + iHeight, 0, this.getHeightOrig(i));
 
-	                //Типа попали
-	                //Значит нужно загрузить необходимые куски
-	                //Обрезаемся чтобы не вылезти за пределы
+                var iAreaX1: uint = math.clamp(iAreaX1, 0, this.getWidthOrig(i));
+                var iAreaY1: uint = math.clamp(iAreaY1, 0, this.getHeightOrig(i));
+                var iAreaX2: uint = math.clamp(iAreaX2, 0, this.getWidthOrig(i));
+                var iAreaY2: uint = math.clamp(iAreaY2, 0, this.getHeightOrig(i));
 
-	                // iX -= this._iBlockSize * 8;
-	                // iY -= this._iBlockSize * 8;
-	                // iWidth += this._iBlockSize * 16;
-	                // iHeight += this._iBlockSize * 16;
-	                iX1 = math.clamp(iX, 0, this.getWidthOrig(i));
-	                iY1 = math.clamp(iY, 0, this.getHeightOrig(i));
-	                iX2 = math.clamp(iX + iWidth, 0, this.getWidthOrig(i));
-	                iY2 = math.clamp(iY + iHeight, 0, this.getHeightOrig(i));
-
-	                var iAreaX1: uint = math.clamp(iAreaX1, 0, this.getWidthOrig(i));
-	                var iAreaY1: uint = math.clamp(iAreaY1, 0, this.getHeightOrig(i));
-	                var iAreaX2: uint = math.clamp(iAreaX2, 0, this.getWidthOrig(i));
-	                var iAreaY2: uint = math.clamp(iAreaY2, 0, this.getHeightOrig(i));
-
-	                this.getDataFromServer(i, iX1, iY1, iX2 - iX1, iY2 - iY1, /*Остальные область проверки*/iAreaX1,
-	                                       iAreaY1, iAreaX2 - iAreaX1, iAreaY2 - iAreaY1);
-		        }
-		        else {
-		            if (!this._pXY[0].isLoaded) {
-		                this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
-		            }
-		        }
-
+                this.getDataFromServer(i, iX1, iY1, iX2 - iX1, iY2 - iY1, /*Остальные область проверки*/iAreaX1,
+                                       iAreaY1, iAreaX2 - iAreaX1, iAreaY2 - iAreaY1);
 		    }
 
 		    this._fTexCourdXOld = fTexCourdX;
 		    this._fTexCourdYOld = fTexCourdY;
 		}
 
-
+		private _fThresHold: float = 0.1;
+		private _bColored: bool = false;
 		applyForRender(pRenderPass: IRenderPass): void {
 			pRenderPass.setForeign("nTotalLevels", this._iMaxLevel - this._iMinLevel + 1);
 			pRenderPass.setUniform("MIN_MEGATEXTURE_LEVEL", this._iMinLevel);
-			pRenderPass.setUniform("threshold", 0.3);
+			pRenderPass.setUniform("threshold", this._fThresHold);
+			pRenderPass.setUniform("bColored", this._bColored);
 			
 
 		    for (var i: uint = 0; i < this._pTextures.length; i++) {
@@ -404,18 +402,25 @@ module akra.terrain {
 				this._pTexcoordOffsetUniforms[i] = new Vec2();
 			}
 		}
+
+		protected loadMinTextureLevel(): void {
+			this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
+		}
+
 		protected getDataFromServer(iLevelTex: uint, 
 						  iOrigTexX: uint, iOrigTexY: uint, 
 						  iWidth: uint, iHeight: uint, 
 						  iAreaX?: uint, iAreaY?: uint, 
 						  iAreaWidth?: uint, iAreaHeight?: uint): void 
 		{
-		    var iOrigTexEndX: uint = math.ceil((iOrigTexX + iWidth) / this._iBlockSize) * this._iBlockSize;
-		    var iOrigTexEndY: uint = math.ceil((iOrigTexY + iHeight) / this._iBlockSize) * this._iBlockSize;
+		    var iBlockSize: uint = this._iBlockSize * this._pXY[iLevelTex].width / this._v2iTextureLevelSize.x;
+
+		    var iOrigTexEndX: uint = math.ceil((iOrigTexX + iWidth) / iBlockSize) * iBlockSize;
+		    var iOrigTexEndY: uint = math.ceil((iOrigTexY + iHeight) / iBlockSize) * iBlockSize;
 		    iOrigTexX = math.max(0, iOrigTexX);
 		    iOrigTexY = math.max(0, iOrigTexY);
-		    // iOrigTexX = math.floor(iOrigTexX / this._iBlockSize) * this._iBlockSize;
-		    // iOrigTexY = math.floor(iOrigTexY / this._iBlockSize) * this._iBlockSize;
+		    // iOrigTexX = math.floor(iOrigTexX / iBlockSize) * iBlockSize;
+		    // iOrigTexY = math.floor(iOrigTexY / iBlockSize) * iBlockSize;
 		    iOrigTexEndX = math.min(iOrigTexEndX, this.getWidthOrig(iLevelTex));
 		    iOrigTexEndY = math.min(iOrigTexEndY, this.getHeightOrig(iLevelTex));
 
@@ -426,131 +431,99 @@ module akra.terrain {
 		    iAreaEndX = math.min(iAreaEndX, this.getWidthOrig(iLevelTex));
 		    iAreaEndY = math.min(iAreaEndY, this.getHeightOrig(iLevelTex));
 
-		    var me: MegaTexture = this;
 		    var isLoaded: bool = true;
-		    var tCurrentTime: uint = (me._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+		    var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
 
+		    for (var i: uint = iOrigTexY; i < iOrigTexEndY; i += iBlockSize) {
+		        for (var j: uint = iOrigTexX; j < iOrigTexEndX; j += iBlockSize) {
+		        	var iSectorInfoCoord: uint = (i - this._pXY[iLevelTex].iY) / iBlockSize *
+	                                             (this._pXY[iLevelTex].width / iBlockSize) +
+	                                             (j - this._pXY[iLevelTex].iX) / iBlockSize;
 
-		    for (var i: uint = iOrigTexY; i < iOrigTexEndY; i += this._iBlockSize) {
-		        for (var j: uint = iOrigTexX; j < iOrigTexEndX; j += this._iBlockSize) {
+	                if (this._pSectorLoadInfo[iLevelTex][iSectorInfoCoord] !== 0xFFFFFFFF) {
+	                    isLoaded = false;
+	                }
 
-		            // if (iLevelTex == 0) {
-		                // if (me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
-		                //                               	   (me._v2iTextureLevelSize.x / me._iBlockSize) +
-		                //                               	   (j - me._pXY[iLevelTex].iX) / me._iBlockSize] !== 0xFFFFFFFF) {
-		                //     isLoaded = false;
-		                // }
+	                if (tCurrentTime - this._pSectorLoadInfo[iLevelTex][iSectorInfoCoord] < this._iSectorLifeTime) {
+	                    continue;
+	                }
+	                if (this._pSectorLoadInfo[iLevelTex][iSectorInfoCoord] === 0xFFFFFFFF) {
+	                    continue;
+	                }
 
-		                if (tCurrentTime - me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
-                                                                   		  (me._pXY[iLevelTex].width / me._iBlockSize) +
-                                                                   		  (j - me._pXY[iLevelTex].iX) / me._iBlockSize] < this._iSectorLifeTime) {
-		                    continue;
-		                }
-		                if (me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
-		                                              (me._pXY[iLevelTex].width / me._iBlockSize) +
-		                                              (j - me._pXY[iLevelTex].iX) / me._iBlockSize] === 0xFFFFFFFF) {
-		                    continue;
-		                }
-
-		                me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
-		                                        	   (me._pXY[iLevelTex].width / me._iBlockSize) +
-		                                        	   (j - me._pXY[iLevelTex].iX) / me._iBlockSize] = tCurrentTime;
-		            // } 
-		            // else
-		            // {
-		            //     //Проверка на выставление флага о полной загруженности вилимой области
-		            //     // if (j >= iAreaX && j < iAreaEndX && i >= iAreaY && i < iAreaEndY &&
-		            //     //     me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
-		            //     //                               (me._iBufferWidth / me._iBlockSize) +
-		            //     //                               (j - me._pXY[iLevelTex].iX) / me._iBlockSize] !== 0xFFFFFFFF) {
-		            //     //     isLoaded = false;
-		            //     // }
-
-		            //     if (tCurrentTime - me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
-		            //                                                  (me._iBufferWidth / me._iBlockSize) +
-		            //                                                  (j - me._pXY[iLevelTex].iX) / me._iBlockSize] < 10000) {
-		            //         continue;
-		            //     }
-		            //     if (me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
-		            //                                   (me._iBufferWidth / me._iBlockSize) +
-		            //                                   (j - me._pXY[iLevelTex].iX) / me._iBlockSize] === 0xFFFFFFFF) {
-		            //         continue;
-		            //     }
-
-		            //     me._pSectorLoadInfo[iLevelTex][(i - me._pXY[iLevelTex].iY) / me._iBlockSize *
-		            //                               (me._iBufferWidth / me._iBlockSize) +
-		            //                               (j - me._pXY[iLevelTex].iX) / me._iBlockSize] = tCurrentTime;
-		            // }
+	                this._pSectorLoadInfo[iLevelTex][iSectorInfoCoord] = tCurrentTime;
 
 		            var iLev: uint = iLevelTex;
 		            var iX: uint = j, iY: uint = i;
 
-		            var iXBuf: uint = j - me._pXY[iLevelTex].iX;
-		            var iYBuf: uint = i - me._pXY[iLevelTex].iY;
+		            var iXBuf: uint = j - this._pXY[iLevelTex].iX;
+		            var iYBuf: uint = i - this._pXY[iLevelTex].iY;
 
-		            if (iXBuf < 0 || iXBuf > me._pXY[iLevelTex].width - me._iBlockSize || 
-	                  	iYBuf < 0 || iYBuf > me._pXY[iLevelTex].height - me._iBlockSize)
+		            if (iXBuf < 0 || iXBuf > this._pXY[iLevelTex].width - iBlockSize || 
+	                  	iYBuf < 0 || iYBuf > this._pXY[iLevelTex].height - iBlockSize)
 		            {
-	                	// LOG("must not be here", iXBuf, iYBuf);
 	                	return;
 	                }
 
-		            // (function (iLev: uint, iX: uint, iY: uint) {
-		            //     var sPiecePath: string = me._sSurfaceTextures;
-
-		            //     me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
-		            //                   iY, me._iBlockSize, me._iBlockSize, me._eTextureFormat,
-		            //                   function (pError: Error, pData: Uint8Array) {
-
-		                                  // if(!isNull(pError)){
-		                                  // 		debug_print(pError.message);
-		                                  // 		return;
-		                                  // }
-		                                  var pData = this.pDataList[this._iMinLevel + iLev];
-		                                  
-		                                  var iXBuf: uint;
-		                                  var iYBuf: uint;
-
-		                                  if (iLev == 0) {
-		                                      iXBuf = iX - me._pXY[iLev].iX;
-		                                      iYBuf = iY - me._pXY[iLev].iY;
-		                                      if (iXBuf < 0 || iXBuf > me._pXY[iLevelTex].width - me._iBlockSize || 
-	                  							  iYBuf < 0 || iYBuf > me._pXY[iLevelTex].height - me._iBlockSize) {
-		                                          return;
-		                                      }
-
-		                                      me._pSectorLoadInfo[iLev][iYBuf / me._iBlockSize *
-		                                                           (me._v2iTextureLevelSize.x / me._iBlockSize) +
-		                                                           iXBuf / me._iBlockSize] = 0xFFFFFFFF;
-		                                  }
-		                                  else {
-		                                      iXBuf = iX - me._pXY[iLev].iX;
-		                                      iYBuf = iY - me._pXY[iLev].iY;
-
-		                                      if (iXBuf < 0 || iXBuf > me._pXY[iLevelTex].width - me._iBlockSize || 
-	                  							  iYBuf < 0 || iYBuf > me._pXY[iLevelTex].height - me._iBlockSize) {
-		                                          return;
-		                                      }
-
-		                                      me._pSectorLoadInfo[iLev][iYBuf / me._iBlockSize *
-		                                                           (me._iBufferWidth / me._iBlockSize) +
-		                                                           iXBuf / me._iBlockSize] = 0xFFFFFFFF;
-		                                  }
-
-		                                  var pTmpBox1: IBox = geometry.box(0, 0, me._iBlockSize, me._iBlockSize);
-		                                  var pTmpBox2: IBox = geometry.box(iXBuf, iYBuf, me._iBlockSize + iXBuf, me._iBlockSize + iYBuf);
-
-		                                  var pSourceBox: IPixelBox = pixelUtil.pixelBox(pTmpBox1, me._eTextureFormat, pData);
-		                                  // LOG("load data in texture");
-		                                  me._pTextures[iLev].getBuffer(0, 0).blitFromMemory(pSourceBox, pTmpBox2);
-		            //                   });
-		            // })(iLevelTex, j, i);
-
+	                this._iQueryCount ++;
+	                
+		            this.getDataByRPC(iLevelTex, j, i, iBlockSize);
 		        }
 		    }
+		   this._pXY[iLevelTex].isLoaded = isLoaded;
+		}
 
-		    me._pXY[iLevelTex].isLoaded = true;
-		    //isLoaded;
+		private _iTrafficCounter: uint = 0;
+		private _iResponseCount: uint = 0;
+		private _iQueryCount: uint = 0;
+
+		private _printTraffic(): void {
+			LOG(this._iTrafficCounter/1000000 + "Mb", this._iQueryCount + "/" + this._iResponseCount);
+		}
+
+		private getDataByRPC(iLev: uint, iX: uint, iY: uint, iBlockSize: uint): void {
+			var me: MegaTexture = this;
+			var sPiecePath: string = me._sSurfaceTextures;
+
+            this._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
+                iY, iBlockSize, iBlockSize, me._eTextureFormat,
+				function (pError: Error, pData: Uint8Array) {
+
+					if(!isNull(pError)){
+						debug_print(pError.message);
+						return;
+					}
+
+					//var pData = this.pDataList[this._iMinLevel + iLev];
+					me._iTrafficCounter += pData.length;
+
+					var iXBuf: uint = iX - me._pXY[iLev].iX;
+					var iYBuf: uint = iY - me._pXY[iLev].iY;
+
+					if (iXBuf < 0 || iXBuf > me._pXY[iLev].width - iBlockSize || 
+						iYBuf < 0 || iYBuf > me._pXY[iLev].height - iBlockSize) {
+						return;
+					}
+
+					var iSectorInfoCoord: uint = iYBuf / iBlockSize *
+												 (me._pXY[iLev].width / iBlockSize) +
+												 iXBuf / iBlockSize;
+
+					if(me._pSectorLoadInfo[iLev][iSectorInfoCoord] === 0xFFFFFFFF){
+						return;
+					}
+
+					me._iResponseCount++;
+					me._pSectorLoadInfo[iLev][iSectorInfoCoord] = 0xFFFFFFFF;
+
+					var pTmpBox1: IBox = geometry.box(0, 0, iBlockSize, iBlockSize);
+					var pTmpBox2: IBox = geometry.box(iXBuf, iYBuf, iBlockSize + iXBuf, iBlockSize + iYBuf);
+
+					var pSourceBox: IPixelBox = pixelUtil.pixelBox(pTmpBox1, me._eTextureFormat, pData);
+
+					me._pTextures[iLev].getBuffer(0, 0).blitFromMemory(pSourceBox, pTmpBox2);
+					pSourceBox.data = null;
+				});
 		}
 
 		protected setDataT(pBuffer, iX: uint, iY: uint, iWidth: uint, iHeight: uint, pBufferIn, iInX: uint, iInY: uint, iInWidth: uint, iInHeight: uint, iBlockWidth: uint, iBlockHeight: uint, iComponents: uint): void {
@@ -560,8 +533,6 @@ module akra.terrain {
 			iBlockWidth = math.min(iBlockWidth, iWidth - iX, iInWidth - iInX);
 
 			if (pBuffer.length < ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents) {
-			    /*trace(pBuffer.length, iX, iY, iBlockWidth, iBlockHeight, iWidth, iHeight, iComponents);
-			    trace(pBuffer.length, ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents);*/
 			    debug_error("Выход за предел массива 1");
 			}
 			if (pBufferIn.length < ((iInY + iBlockHeight - 1) * iInWidth + iInX + iBlockWidth) * iComponents) {

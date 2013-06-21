@@ -41,8 +41,8 @@ module akra {
 			pCamera = pScene.createCamera();
 		
 			//pCamera.addRelRotationByXYZAxis(1, 1, 0);
-			pCamera.farPlane = 500;
-			pCamera.setPosition(vec3(0, 75, 0));
+			pCamera.farPlane = 700;
+			pCamera.setPosition(vec3(0, 500, 0));
 			pCamera.attachToParent(pScene.getRootNode());
 			pCamera.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
 			pCamera.setInheritance(ENodeInheritance.ALL);
@@ -63,7 +63,7 @@ module akra {
 			        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
 			    }
 
-			    var fSpeed: float = 0.1 * 1;
+			    var fSpeed: float = 0.1 * 10;
 			    if(pKeymap.isKeyPress(EKeyCodes.W)){
 			    	pCamera.addRelPosition(0, 0, -fSpeed);
 			    }
@@ -110,14 +110,14 @@ module akra {
 			pOmniLight.params.specular.set(0, 0, 0, 0);
 			pOmniLight.params.attenuation.set(1,0,0);
 
-			pOmniLight.addPosition(0, 100, 0);
+			pOmniLight.addPosition(0, 1000, 0);
 
 			pMainLightPoint = pOmniLight;
 		}
 
 		function createSkyBox(): void {
 			pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
-			pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
+			pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/desert-3.dds");
 
 			pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
 				(<render.DSViewport>pViewport).setSkybox(pTexture);
@@ -141,7 +141,7 @@ module akra {
 					pTerrain.attachToParent(pScene.getRootNode());
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
-					pTerrain.scale(0.1);
+					// pTerrain.scale(0.1);
 					pTerrain.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
