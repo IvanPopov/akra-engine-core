@@ -32,20 +32,6 @@
 
 module akra.io {
 
-	function blobFromURL(sBlobURL: string, fn: (b: Blob) => void): void {
-		var xhr = new XMLHttpRequest();
-		xhr.open("GET", sBlobURL, true);
-		xhr.responseType = "blob";
-		
-		xhr.onload = function(e) {
-			if (this.status == 200) {
-				fn(<Blob>this.response);
-			}
-		};
-
-		xhr.send();
-	}
-
 	export enum EFileActions {
 		k_Open = 1,
 		k_Read = 2,
@@ -260,7 +246,7 @@ module akra.io {
 
 		        pFile.atEnd();
 
-		        blobFromURL(sBlobURL, (b: Blob): void => {
+		        util.blobFromDataURL(sBlobURL, (b: Blob): void => {
 					var pReader: FileReader = new FileReader();
 
 					pReader.onload = function() {

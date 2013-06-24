@@ -542,7 +542,7 @@ module akra {
 				pNode.addController(pController);
 
 				self.hero.movie = pController;
-				
+				pEngine.exec();
 			});
 			
 			/*var pController: IAnimationController = pEngine.createAnimationController("movie");
@@ -608,4 +608,16 @@ module akra {
 
 	pEngine.bind("depsLoaded", main);		
 	// pEngine.exec();
+	// 
+	export function test(): bool {
+		var pb = self.canvas.readPixels();
+		for (var i = 0; i < pb.data.length; ++ i) {
+			if (pb.data[i] != 0) {
+				console.log("is oK");
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

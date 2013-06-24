@@ -7,7 +7,7 @@ module akra.util {
 		var pRpc: IRPC = net.createRpc();
 		var i: int = 0;
 		
-		pRpc.join("ws://localhost");
+		pRpc.join("ws://192.168.88.53:6112");
 
 		pRpc.bind(SIGNAL(joined), 
 			function (pRpc: IRPC): void {
@@ -29,7 +29,7 @@ module akra.util {
 							
 						})
 					})(i ++);
-				}, 10);
+				}, 1000);
 			}
 		);
 	});

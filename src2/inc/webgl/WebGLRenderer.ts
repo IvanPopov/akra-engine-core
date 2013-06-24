@@ -61,7 +61,7 @@ module akra.webgl {
 				this._pCanvas = <HTMLCanvasElement>document.createElement('canvas');
 			}
 
-			this._pWebGLContext = createContext(this._pCanvas, {depth: false, stencil: false, antialias: false});
+			this._pWebGLContext = createContext(this._pCanvas, {depth: false, stencil: false, antialias: false, preserveDrawingBuffer: true});
 
 			this._pWebGLFramebufferList = new Array(WEBGL_MAX_FRAMEBUFFER_NUM);
 

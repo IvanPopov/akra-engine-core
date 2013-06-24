@@ -203,7 +203,7 @@ module akra.webgl {
 			pWebGLContext.pixelStorei(GL_PACK_ALIGNMENT, 1);
 			
 			//glReadBuffer((buffer == FB_FRONT)? GL_FRONT : GL_BACK);
-			LOG("readPixels(", ppDest.left, ppDest.top, ppDest.width, ppDest.height, eFormat, eType, ppDest.data, ")");
+			LOG("readPixels(", ppDest.left, ppDest.top, ppDest.width, ppDest.height, eFormat, eType, /*ppDest.data,*/ ")");
 			pWebGLContext.readPixels(ppDest.left, ppDest.top, ppDest.width, ppDest.height, eFormat, eType, ppDest.data);
 			
 			// restore default alignment

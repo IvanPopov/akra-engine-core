@@ -305,9 +305,16 @@ module akra.ui {
 					return this.editMainScript();
 				case ECMD.CHANGE_CAMERA:
 					return this.changeCamera(<ICamera>argv[0]);
+				case ECMD.SCREENSHOT:
+					return this.saveScreenshot();
 			}
 
 			return false;
+		}
+
+		protected saveScreenshot(): bool {
+			saveAs(util.dataURItoBlob(this.getCanvasElement().toDataURL("image/png")), "screen.png");
+			return true;
 		}
 
 		protected changeCamera(pCamera: ICamera): bool {

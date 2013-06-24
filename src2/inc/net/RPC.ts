@@ -303,7 +303,7 @@ module akra.net {
 
         proc(...argv: any[]): bool {
        
-            var IRPCCallback: int = arguments.length -1;
+            var IRPCCallback: int = arguments.length - 1;
             var fnCallback: Function = 
                 isFunction(arguments[IRPCCallback])? <Function>arguments[IRPCCallback]: null;
             var nArg: uint = arguments.length - (fnCallback? 2: 1);
