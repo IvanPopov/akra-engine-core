@@ -279,8 +279,8 @@ module akra.core.pool.resources {
         }
 
 
-        loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_BGR,
-                         nFaces?: uint = 1, nMipMaps?: uint = 0)
+        loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_RGB,
+                    nFaces?: uint = 1, nMipMaps?: uint = 0)
         {
             var pTempImg: IImg = <IImg>this.getManager().imagePool.findResource(".texture.temp_image");
 
@@ -288,7 +288,7 @@ module akra.core.pool.resources {
                 pTempImg = <IImg>this.getManager().imagePool.createResource(".texture.temp_image");
             }
 
-            pTempImg.loadRawData(pData, iWidth, iHeight,iDepth,eFormat,nFaces,nMipMaps);
+            pTempImg.loadRawData(pData, iWidth, iHeight, iDepth, eFormat, nFaces, nMipMaps);
             var isLoaded: bool = this.loadImage(pTempImg);
             this.getManager().imagePool.destroyResource(pTempImg);
 

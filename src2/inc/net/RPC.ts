@@ -499,10 +499,10 @@ module akra.net {
         private static callbackPool: IObjectArray = new ObjectArray;
 
         static OPTIONS: IRPCOptions = {
-            deferredCallsLimit        : -1,
+            deferredCallsLimit        : 10000,
             reconnectTimeout          : 2500,
             systemRoutineInterval     : 10000,
-            callbackLifetime          : -1,
+            callbackLifetime          : 60000,
             procListName              : "proc_list",
             callsFrequency            : -1
         }

@@ -117,10 +117,17 @@ module akra.terrain {
     	    {    	        
     	        this._pTextures[i] = pRmgr.createTexture(".texture-for-mega-" + i + "_" + sid());
     	        if(i === 0){
-    	        	this._pTextures[i].create(this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y, 1, null, ETextureFlags.DYNAMIC, 0, 1, ETextureTypes.TEXTURE_2D, this._eTextureFormat);
+    	        	this._pTextures[i].create(this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y, 1, null, ETextureFlags.DYNAMIC, 0, 1, ETextureTypes.TEXTURE_2D, EPixelFormats.BYTE_RGB);
     	        	
     	        	this._pSectorLoadInfo[i] = new Uint32Array(this._v2iTextureLevelSize.y * this._v2iTextureLevelSize.x /
 	                                                  	   	   (this._iBlockSize * this._iBlockSize));
+    	        	this._pXY[i] = <ISubTextureSettings> {
+			    	        				iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
+			    							iTexX:0, iTexY:0,   /*Координаты мегатекстуры в текстуре*/
+			    							width: this._v2iOriginalTextreMinSize.x,
+			    							height: this._v2iOriginalTextreMinSize.y,
+			    							isUpdated : true, isLoaded : false
+			    						};
     	        }
     	        else {
     	        	this._pTextures[i].create(this._v2iTextureLevelSize.x, this._v2iTextureLevelSize.y, 1, null, ETextureFlags.DYNAMIC, 0, 1, ETextureTypes.TEXTURE_2D, this._eTextureFormat);
@@ -129,18 +136,20 @@ module akra.terrain {
 	                                                  	   (this._iBlockSize * this._iBlockSize));
 
 	            	this.setSectorLoadInfoToDefault(this._pSectorLoadInfo[i]);
-    			}
 
-    			this._pTextures[i].setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
-    			this._pTextures[i].setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);	        	
-    	        
-    	        this._pXY[i] = <ISubTextureSettings> {
+	    			this._pTextures[i].setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
+    				this._pTextures[i].setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);	        	
+    			
+    	        	this._pXY[i] = <ISubTextureSettings> {
 			    	        				iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
 			    							iTexX:0, iTexY:0,   /*Координаты мегатекстуры в текстуре*/
 			    							width: this._pTextures[i].width,
 			    							height: this._pTextures[i].height,
 			    							isUpdated : true, isLoaded : false
 			    						};
+    			}
+
+
     	    }
 
     	    this.createUniforms();
@@ -152,14 +161,15 @@ module akra.terrain {
     	    this.loadMinTextureLevel();
 	    }
 
-	    private _bFirstTime: bool = true;
+	    private _bError: bool = false;
 		prepareForRender(pViewport: IViewport): void {
-			if(!this._pXY[0].isLoaded){
-				this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
-				return;
+			if(this._bError){
+				CRITICAL("ERROR");
 			}
-			else if(this._bFirstTime){
-				this._bFirstTime = false;
+
+			if(!this._pXY[0].isLoaded){
+				this.loadMinTextureLevel();
+				return;
 			}
 
 		    var pCamera: ICamera = pViewport.getCamera();
@@ -404,7 +414,56 @@ module akra.terrain {
 		}
 
 		protected loadMinTextureLevel(): void {
-			this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
+			var me: MegaTexture = this;
+			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+
+			if(tCurrentTime - this._pSectorLoadInfo[0][0] > this._iSectorLifeTime){
+				this._pSectorLoadInfo[0][0] = tCurrentTime;
+
+				// var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
+
+	   //          if(isNull(pTempImg)){
+	   //              pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
+	   //          }
+
+	   //          pTempImg.load("../../../data/textures/terrain/diffuse.dds");
+
+	   //          pTempImg.bind(SIGNAL(loaded), (pImg: IImg) => {
+	   //          	me._pTextures[0].destroyResource();
+	   //          	me._pTextures[0].loadImage(pTempImg);
+				// 	me._pXY[0].isLoaded = true;
+	   //          });
+				this._pRPC.proc('loadMegaTexture', me._sSurfaceTextures, me._v2iOriginalTextreMinSize.x, me._v2iOriginalTextreMinSize.x,
+					function (pError: Error, pData: Uint8Array) {
+						if(me._pXY[0].isLoaded){
+							return;
+						}
+						try {
+							LOG("load");
+							if(!isNull(pError)){
+								debug_print(pError.message);
+								return;
+							}
+
+							var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
+
+				            if(isNull(pTempImg)){
+				                pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
+				            }
+
+				            pTempImg.load(pData);
+				            me._pTextures[0].destroyResource();
+							me._pTextures[0].loadImage(pTempImg);
+							me._pXY[0].isLoaded = true;
+						}
+						catch(e){
+							me._bError = true;
+							ERROR(e);
+						}
+					});
+			}
+			// this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
+			
 		}
 
 		protected getDataFromServer(iLevelTex: uint, 
@@ -494,7 +553,7 @@ module akra.terrain {
 						return;
 					}
 
-					//var pData = this.pDataList[this._iMinLevel + iLev];
+					// var pData = this.pDataList[this._iMinLevel + iLev];
 					me._iTrafficCounter += pData.length;
 
 					var iXBuf: uint = iX - me._pXY[iLev].iX;

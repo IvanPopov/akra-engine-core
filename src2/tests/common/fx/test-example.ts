@@ -97,44 +97,44 @@ module akra {
 
 			pOmniLight.addPosition(1, 5, 3);
 
-			var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
+			// var pProjectShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-0");
 			
-			pProjectShadowLight.attachToParent(pScene.getRootNode());
-			pProjectShadowLight.enabled = true;
-			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-			pProjectShadowLight.params.diffuse.set(0.5);
-			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
-			pProjectShadowLight.params.attenuation.set(1,0,0);
-			pProjectShadowLight.isShadowCaster = true;
+			// pProjectShadowLight.attachToParent(pScene.getRootNode());
+			// pProjectShadowLight.enabled = true;
+			// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			// pProjectShadowLight.params.diffuse.set(0.5);
+			// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			// pProjectShadowLight.params.attenuation.set(1,0,0);
+			// pProjectShadowLight.isShadowCaster = true;
 
-			pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
-			pProjectShadowLight.addRelPosition(0, 3, 10);
+			// pProjectShadowLight.addRelRotationByXYZAxis(0, -0.5, 0);
+			// pProjectShadowLight.addRelPosition(0, 3, 10);
 
-			pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-1");
+			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-1");
 			
-			pProjectShadowLight.attachToParent(pScene.getRootNode());
-			pProjectShadowLight.enabled = true;
-			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-			pProjectShadowLight.params.diffuse.set(0.2);
-			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
-			pProjectShadowLight.params.attenuation.set(1,0,0);
-			pProjectShadowLight.isShadowCaster = true;
+			// pProjectShadowLight.attachToParent(pScene.getRootNode());
+			// pProjectShadowLight.enabled = true;
+			// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			// pProjectShadowLight.params.diffuse.set(0.2);
+			// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			// pProjectShadowLight.params.attenuation.set(1,0,0);
+			// pProjectShadowLight.isShadowCaster = true;
 
-			pProjectShadowLight.addRelRotationByXYZAxis(0, 0.5, 0);
-			pProjectShadowLight.addRelPosition(0, 3, 10);
+			// pProjectShadowLight.addRelRotationByXYZAxis(0, 0.5, 0);
+			// pProjectShadowLight.addRelPosition(0, 3, 10);
 
-			pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-2");
+			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-2");
 			
-			pProjectShadowLight.attachToParent(pScene.getRootNode());
-			pProjectShadowLight.enabled = false;
-			pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-			pProjectShadowLight.params.diffuse.set(0.5);
-			pProjectShadowLight.params.specular.set(1, 1, 1, 1);
-			pProjectShadowLight.params.attenuation.set(1,0,0);
-			pProjectShadowLight.isShadowCaster = true;
+			// pProjectShadowLight.attachToParent(pScene.getRootNode());
+			// pProjectShadowLight.enabled = false;
+			// pProjectShadowLight.params.ambient.set(0.1, 0.1, 0.1, 1);
+			// pProjectShadowLight.params.diffuse.set(0.5);
+			// pProjectShadowLight.params.specular.set(1, 1, 1, 1);
+			// pProjectShadowLight.params.attenuation.set(1,0,0);
+			// pProjectShadowLight.isShadowCaster = true;
 
-			pProjectShadowLight.addRelRotationByXYZAxis(0, 0, 0);
-			pProjectShadowLight.addRelPosition(0, 3, 10);
+			// pProjectShadowLight.addRelRotationByXYZAxis(0, 0, 0);
+			// pProjectShadowLight.addRelPosition(0, 3, 10);
 
 			// pProjectShadowLight = pScene.createLightPoint(ELightTypes.PROJECT, true, 512, "test-project-3");
 
@@ -283,20 +283,68 @@ module akra {
 			});			
 		}
 
+		function loadHero(){
+			var pModelRoot: ISceneNode = pScene.createNode();
+			var pController: IAnimationController = pEngine.createAnimationController("movie");
+			var pIntroData: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/walk.DAE");
+
+			pModelRoot.attachToParent(pScene.getRootNode());
+
+			pIntroData.bind("loaded", () => {
+				pIntroData.attachToScene(pModelRoot);
+
+				var pAnim: IAnimation = pIntroData.extractAnimation(0);
+				var pIntro: IAnimationContainer = animation.createContainer(pAnim, "intro");
+
+				pIntro.useLoop(true);
+				// pController.addAnimation(pIntro);
+				// pIntro.rightInfinity(false);
+				// pController.stop();
+
+				var pMovieData: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/run.DAE");
+
+				pMovieData.bind("loaded", () => {
+					var pAnim: IAnimation = pMovieData.extractAnimation(0);
+					var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
+
+					pMovie.useLoop(true);
+					// pMovie.leftInfinity(false);
+
+
+					// pController.addAnimation(pMovie);
+					// pController.play("movie");
+					// pController.stop();
+
+					// pIntro.bind("stoped", () => {
+					// 	pController.play("movie");
+				 // 	});
+				 	var pBlender: IAnimationBlend = animation.createBlend();
+				 	pBlender.addAnimation(pIntro, 0.5);
+				 	pBlender.addAnimation(pMovie, 1);
+
+				 	pController.addAnimation(pBlender);
+					pModelRoot.addController(pController);
+				});
+			}); 
+
+		}
+
 		function main(pEngine: IEngine): void {
 			setup();
-			createSceneEnvironment();
+			// createSceneEnvironment();
 			createCameras();
 			createViewports();
 			createLighting();
 			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
-			loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
-				// var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
-				// pMesh.createBoundingBox();
-				// pMesh.showBoundingBox();
-			}).scale(2.);
+			// loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
+			// 	// var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
+			// 	// pMesh.createBoundingBox();
+			// 	// pMesh.showBoundingBox();
+			// }).scale(2.);
+			
+			loadHero();
 
 			
 

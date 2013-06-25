@@ -52,11 +52,20 @@ module akra.core.pool.resources {
 
 		readData(ppDest: ArrayBufferView): bool;
 		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): bool;
-		readData(iOffset: any, iSize?: any, ppDest?: any): bool { 
+		readData(): bool {
+			var ppDest: ArrayBufferView;
+			var iOffset: uint;
+			var iSize: uint;
+
 			if (arguments.length < 3) {
 				ppDest = arguments[0];
 				iOffset = 0;
 				iSize = ppDest.byteLength;
+			}
+			else {
+				iOffset = arguments[0];
+				iSize = arguments[1];
+				ppDest = arguments[2];
 			}
 
 			ASSERT((iOffset + iSize) <= this.byteLength);
@@ -66,16 +75,8 @@ module akra.core.pool.resources {
 		}
 
 		// writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
-		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool{
+		writeData(pData: ArrayBufferView, iOffset?: uint = 0, iSize?: uint = pData.byteLength, bDiscardWholeBuffer: bool = false): bool{
 		// writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
-			
-			if(arguments.length < 3){
-				iSize = pData.byteLength;
-			}
-
-			if (arguments.length < 2) {
-				iOffset = 0;
-			}
 
 			ASSERT((iOffset + iSize) <= this.byteLength);
 
