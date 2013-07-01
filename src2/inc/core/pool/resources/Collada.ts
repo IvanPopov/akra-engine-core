@@ -3031,6 +3031,8 @@ module akra.core.pool.resources {
                     pModel.notifyLoaded();
                 }
             });
+
+            return true;
         }
 
 
