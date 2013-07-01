@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ///<reference path="../../../bin/DEBUG/akra.ts"/>
 
 /// @data: data

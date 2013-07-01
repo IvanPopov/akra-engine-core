@@ -3,7 +3,9 @@
 
 module akra {
 	export interface IShaderInput {
-		[index: string]: any;
+		uniforms: {[index: uint]: any;};
+		attrs: {[index: uint]: any;};
+		// [index: string]: any;
 	}
 }
 

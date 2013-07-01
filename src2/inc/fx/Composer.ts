@@ -497,6 +497,9 @@ module akra.fx {
 				pMaker = pPassBlend.generateFXMaker(pPassInput, 
 													this._pCurrentSurfaceMaterial, 
 													this._pCurrentBufferMap);
+				if(isNull(pMaker)){
+					return;
+				}
 			}
 
 			//TODO: generate input from PassInputBlend to correct unifoms and attributes list
@@ -512,50 +515,7 @@ module akra.fx {
 			pEntry.viewport = this._pCurrentViewport;
 			pEntry.bufferMap = this._pCurrentBufferMap;
 
-			if(pRenderTechnique.hasGlobalPostEffect()){
-				if(!pRenderTechnique.isFirstPass(iPass)){
-					pRenderer._setDepthBufferParams(false, false, 0);
-					
-					pRenderer._setRenderTarget(this._pRenderTargetA);
-					pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH, Color.ZERO, 1., 0);
-
-					if(pEntry.viewport.getClearEveryFrame()){
-						var pViewportState: IViewportState = pEntry.viewport._getViewportState();
-						pRenderer.clearFrameBuffer(pViewportState.clearBuffers, 
-												   pViewportState.clearColor,
-												   pViewportState.clearDepth, 0);
-
-					}
-					
-				}
-
-				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
-					pEntry.viewport.actualHeight > this._pRenderTargetA.height)
-				{
-					this.resizePostEffectTextures(pEntry.viewport.actualWidth, pEntry.viewport.actualHeight);
-				}
-
-				if(!pRenderTechnique.isPostEffectPass(iPass)){
-					this._pLastRenderTarget = this._pRenderTargetA;
-					pEntry.renderTarget = this._pRenderTargetA;
-				}
-				else {
-					if(pRenderTechnique.isLastPass(iPass)){
-						this._pLastRenderTarget = null;
-						// pEntry.renderTarget = null;
-					}
-					else {
-						if(this._pLastRenderTarget === this._pRenderTargetA){
-							pEntry.renderTarget = this._pRenderTargetB;
-							this._pLastRenderTarget = this._pRenderTargetB;
-						}
-						else {
-							pEntry.renderTarget = this._pRenderTargetA;
-							this._pLastRenderTarget = this._pRenderTargetA;
-						}
-					}
-				}
-			}
+			this.prepareRenderTarget(pEntry, pRenderTechnique, iPass);			
 
 			pRenderer.pushEntry(pEntry);
 		}
@@ -631,7 +591,6 @@ module akra.fx {
 
 #define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[sName] = pValue;
 
-
 		_calcRenderID(pSceneObject: ISceneObject, pRenderable: IRenderableObject, bCreateIfNotExists: bool = false): int {
 			//assume, that less than 1024 draw calls may be & less than 1024 scene object will be rendered.
 			//beacause only 1024
@@ -666,7 +625,7 @@ module akra.fx {
 
 			if (!isDefAndNotNull(iRid)) {
 				if (!bCreateIfNotExists) {
-					LOG("here...")
+					// LOG("here...")
 					return 1 + pRidByRenderable[0] * 1024;
 				}
 
@@ -719,7 +678,6 @@ module akra.fx {
 					FAST_SET_UNIFORM(pPassInput, "INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
 					FAST_SET_UNIFORM(pPassInput, "CAMERA_POSITION", pCamera.worldPosition);
 
-
 					if(pCamera.type === EEntityTypes.SHADOW_CASTER){
 						FAST_SET_UNIFORM(pPassInput, "OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
 					}
@@ -751,6 +709,7 @@ module akra.fx {
 			FAST_SET_UNIFORM(pPassInput, "normalFix", this.bNormalFix);
 			FAST_SET_UNIFORM(pPassInput, "isWithBalckSectors", this.bTerrainBlackSectors);
 			FAST_SET_UNIFORM(pPassInput, "showTriangles", this.bShowTriangles);
+			FAST_SET_UNIFORM(pPassInput, "u1", 64);
 		}
 
 		private prepareComposerState(): void {
@@ -765,6 +724,8 @@ module akra.fx {
 					else{
 						this._pComposerState.mesh.isOptimizedSkinned = false;	
 					}
+
+					// this._pComposerState.mesh.isOptimizedSkinned = false;	
 				}
 				else {
 					this._pComposerState.mesh.isSkinned = false;
@@ -808,6 +769,55 @@ module akra.fx {
 			
 			this._pPostEffectTextureA.reset(iWidth, iHeight);
 			this._pPostEffectTextureB.reset(iWidth, iHeight);		
+		}
+
+		private prepareRenderTarget(pEntry: IRenderEntry, pRenderTechnique: IRenderTechnique, iPass: uint): void {
+			var pRenderer: IRenderer = this._pEngine.getRenderer();
+			
+			if(pRenderTechnique.hasGlobalPostEffect()){
+				if(!pRenderTechnique.isFirstPass(iPass)){
+					pRenderer._setDepthBufferParams(false, false, 0);
+					
+					pRenderer._setRenderTarget(this._pRenderTargetA);
+					pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH, Color.ZERO, 1., 0);
+
+					if(pEntry.viewport.getClearEveryFrame()){
+						var pViewportState: IViewportState = pEntry.viewport._getViewportState();
+						pRenderer.clearFrameBuffer(pViewportState.clearBuffers, 
+												   pViewportState.clearColor,
+												   pViewportState.clearDepth, 0);
+
+					}
+					
+				}
+
+				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
+					pEntry.viewport.actualHeight > this._pRenderTargetA.height)
+				{
+					this.resizePostEffectTextures(pEntry.viewport.actualWidth, pEntry.viewport.actualHeight);
+				}
+
+				if(!pRenderTechnique.isPostEffectPass(iPass)){
+					this._pLastRenderTarget = this._pRenderTargetA;
+					pEntry.renderTarget = this._pRenderTargetA;
+				}
+				else {
+					if(pRenderTechnique.isLastPass(iPass)){
+						this._pLastRenderTarget = null;
+						// pEntry.renderTarget = null;
+					}
+					else {
+						if(this._pLastRenderTarget === this._pRenderTargetA){
+							pEntry.renderTarget = this._pRenderTargetB;
+							this._pLastRenderTarget = this._pRenderTargetB;
+						}
+						else {
+							pEntry.renderTarget = this._pRenderTargetA;
+							this._pLastRenderTarget = this._pRenderTargetA;
+						}
+					}
+				}
+			}
 		}
 	}
 }

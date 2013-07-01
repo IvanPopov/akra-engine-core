@@ -345,7 +345,7 @@ module akra.render {
         index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
         index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
         index(data: any, sSemantics: string, useSame: bool = false, iBeginWith: int = 0): bool {
-            var iData: int = <int>arguments[0];
+            var iData: int = isNumber(arguments[0]) ? arguments[0] : 0;
         	var iFlow: int = -1;
         	var iAddition: int, iRealAddition: int, iPrevAddition: int;
         	var pFlow: IDataFlow;

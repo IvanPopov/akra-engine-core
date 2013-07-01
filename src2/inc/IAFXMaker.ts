@@ -18,11 +18,15 @@ module akra {
 		[index: uint]: IAFXMaker;
 	}
 
+	export interface IAFXBaseAttrInfo {
+		name: string;
+		semantic: string;
+	}
+
 	export interface IAFXMaker extends IUnique {
 		readonly shaderProgram: IShaderProgram;
-		readonly attributeSemantics: string[];
-		readonly attributeNames: string[];
-
+		readonly uniformNames: string[];
+		readonly attributeInfo: IAFXBaseAttrInfo[];
 
 		_create(sVertex: string, sPixel: string): bool;
 		
@@ -32,7 +36,7 @@ module akra {
 		isArray(sName: string): bool;
 		getType(sName: string): EAFXShaderVariableType;
 		getLength(sName: string): uint;
-		setUniform(sName: string, pValue: any): void;
+		setUniform(iLocation: uint, pValue: any): void;
 
 		_make(pPassInput: IAFXPassInputBlend, pBufferMap: IBufferMap): IShaderInput;
 		_initInput(pPassInput: IAFXPassInputBlend, pBlend: fx.SamplerBlender, 

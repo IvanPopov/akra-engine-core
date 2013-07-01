@@ -18,11 +18,11 @@ bool normalFix;
 
 float4 prepareForDeferredShadingPass1() : COLOR {
 	float4 data;
-
+	
     Fragment_material.emissive *= 254./255.;
     Fragment_material.diffuse *= 254./255.;
     Fragment_material.ambient *= 254./255.;
-
+    
     float3 tmp;
 
     if(normalFix){
@@ -37,7 +37,8 @@ float4 prepareForDeferredShadingPass1() : COLOR {
 	data.x = float3ToFloat(Fragment_material.emissive.xyz);
 	data.y = float3ToFloat(tmp);
 	data.z = float3ToFloat(Fragment_material.diffuse.xyz);
-    data.w = float(objectId);
+	
+	data.w = float(objectId);
 
 	return data;
 };
@@ -46,7 +47,7 @@ float4 prepareForDeferredShadingPass1() : COLOR {
 
 float4 prepareForDeferredShadingPass2() : COLOR {
 	float4 data;
-
+	
     Fragment_material.specular *= 254./255.;
 
 	data.x = float3ToFloat(Fragment_material.ambient.xyz);

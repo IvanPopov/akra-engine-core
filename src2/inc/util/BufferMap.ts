@@ -184,6 +184,17 @@ module akra.util {
 		    return this._pFlows[iFlow];
 		}
 
+		//TODO: It is temp method for test deoptimozation of code
+		getFlowBySemantic(sSemantics: string): IDataFlow {
+			for (var i: int = 0; i < this._nCompleteFlows; ++ i) {
+				if (this._pCompleteFlows[i].data.hasSemantics(sSemantics)) {
+		            return  this._pCompleteFlows[i];
+		        }
+			}
+			
+			return null;
+		}
+
 		reset(): void {
 			this._pIndex = null
 		    this._ePrimitiveType = EPrimitiveTypes.TRIANGLELIST;

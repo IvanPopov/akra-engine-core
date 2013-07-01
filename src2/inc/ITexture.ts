@@ -132,7 +132,7 @@ module akra {
         getFilter(eParam: ETextureParameters): ETextureFilters;
         getWrapMode(eParam: ETextureParameters): ETextureWrapModes;
         
-        loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
+        loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, iDepth?: uint, eFormat?: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
         loadImage(pImage: IImg): bool;
         loadImages(pImages: IImg[]): bool;
 

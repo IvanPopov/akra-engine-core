@@ -95,249 +95,98 @@ texture tex4:TEXTURE4;
 texture tex5:TEXTURE5;
 texture tex6:TEXTURE6;
 
-sampler textureTerrain0:S_TERRAIN0 = sampler_state
-{
-    Texture = <tex0>;
-};
-sampler textureTerrain1:S_TERRAIN1 = sampler_state
-{
-    Texture = <tex1>;
-};
-sampler textureTerrain2:S_TERRAIN2 = sampler_state
-{
-    Texture = <tex2>;
-};
-sampler textureTerrain3:S_TERRAIN3 = sampler_state
-{
-    Texture = <tex3>;
-};
-sampler textureTerrain4:S_TERRAIN4 = sampler_state
-{
-    Texture = <tex4>;
-};
-sampler textureTerrain5:S_TERRAIN5 = sampler_state
-{
-    Texture = <tex5>;
-};
+
 sampler ptNormal:S_NORMAL = sampler_state
 {
     Texture = <tex6>;
 };
 
-bool textureTerrainIsLoaded0;
-bool textureTerrainIsLoaded1;
-bool textureTerrainIsLoaded2;
-bool textureTerrainIsLoaded3;
-bool textureTerrainIsLoaded4;
-bool textureTerrainIsLoaded5;
 
-float2 textureCoord0;
-float2 textureCoord1;
-float2 textureCoord2;
-float2 textureCoord3;
-float2 textureCoord4;
-float2 textureCoord5;
-
-
-float2 cameraCoordTerrain : CAMERA_COORD;
 bool isDebug, isRealNormal, isWithBalckSectors, showTriangles;
+
+foreign int nTotalLevels;
+
+sampler textureTerrain[nTotalLevels]: S_TERRAIN;
+float2 textureCoordOffset[nTotalLevels]: TEXTURE_LEVEL_OFFSET;
+bool testureLoadStatus[nTotalLevels]: TEXTURE_LOAD_STATUS;
+
+int minTextureLevel: MIN_MEGATEXTURE_LEVEL;
+
+float threshold;
+bool bColored;
 
 void fs_terrain(VS_OUT IN){
     float4 color;
     float2 new_texcoord;
     float3 normal;
 
-    
+    float4 mainColor = tex2D(textureTerrain[0], IN.texcoord);
 
-    float4 mainColor = tex2D(textureTerrain0, IN.texcoord);
     bool isMainColored = (mainColor.xyz != float3(0.));
     bool isNeedColored = true;
-   
-    new_texcoord = (IN.texcoord-textureCoord5)*32.;
 
-    float threshold = 0.3;
+    float texcoordMultiplier = exp2(float(nTotalLevels + minTextureLevel - 1));
+    //int i = nTotalLevels - 1;
+    for(int i = nTotalLevels - 1; i>0; i--){
+        if(isNeedColored){
+            new_texcoord = (IN.texcoord-textureCoordOffset[i]) * texcoordMultiplier;
 
-    //All(lessThanEqual((mainColor - color).xyz, float3(0.1)))
-    if(textureTerrainIsLoaded5 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
-    {
-        color = tex2D(textureTerrain5, new_texcoord);//; + float4(0., 0.1, 0.1, 1.);
-        
-        if(color.xyz == float3(0.) && isMainColored)
-        {
-            isNeedColored = true;
-        }
-        else
-        {
-            isNeedColored = false;
-
-            float modX = mod(1024. * new_texcoord.x, 32.);
-            float modY = mod(1024. * new_texcoord.y, 32.);
-
-            if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
-                if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
-                    //color = float4(0., 1., 0., 1.);
+            if((new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0)){
+                color = tex2D(textureTerrain[i], new_texcoord);
+                
+                if(testureLoadStatus[i]){
+                    isNeedColored = false;
+                }
+                else if (color.xyz == float3(0.) && isMainColored) {
                     isNeedColored = true;
                 }
                 else {
-                    //color = float4(1., 0., 0., 1.);
+                    isNeedColored = false;
+
+                    float modX = mod(1024. * new_texcoord.x, 32.);
+                    float modY = mod(1024. * new_texcoord.y, 32.);
+
+                    if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
+                        if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
+                            isNeedColored = true;
+                        }
+                    }
                 }
                 
-            }
-            else {
-                //color = float4(1., 0., 0., 1.);
-            }
-        }
-    }
-    
-    if(isNeedColored)
-    {
-        new_texcoord =(IN.texcoord-textureCoord4)*16.;
-
-        if(textureTerrainIsLoaded4 && (new_texcoord.x>=0. && new_texcoord.x<1.&& new_texcoord.y>=0. && new_texcoord.y<1.0))
-        {
-            color = tex2D(textureTerrain4, new_texcoord);//; + float4(0.1, 0.1, 0., 1.);
-            
-            if(color.xyz == float3(0.) && isMainColored)
-            {
-                isNeedColored = true;
-            }
-            else
-            {
-                isNeedColored = false;
-
-                float modX = mod(1024. * new_texcoord.x, 32.);
-                float modY = mod(1024. * new_texcoord.y, 32.);
-
-                if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
-                    if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
-                        //color = float4(0., 1., 0., 1.);
-                        isNeedColored = true;
+                if(bColored){
+                    if(i == 5){
+                        color = float4(1., 1., 0., 1.);
+                    }
+                    else if(i == 4){
+                        color = float4(0., 1., 1., 1.);
+                    }
+                    else if(i == 3){
+                        color = float4(1., 0., 1., 1.);
+                    }
+                    else if(i == 2){
+                        color = float4(1., 0., 0., 1.);
+                    }
+                    else if(i == 1){
+                        color = float4(0., 1., 0., 1.);
                     }
                     else {
-                        //color = float4(1., 0., 0., 1.);
+                        color = float4(0., 0., 0., 1.);
                     }
-                    
-                }
-                else {
-                    //color = float4(1., 0., 0., 1.);
                 }
             }
+
+            texcoordMultiplier /= 2.;
         }
+//        else {
+//            break;
+//        }
     }
 
-    if(isNeedColored)
-    {
-        new_texcoord = (IN.texcoord-textureCoord3)*8.;
-
-        if(textureTerrainIsLoaded3 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
-        {
-            color = tex2D(textureTerrain3, new_texcoord);//; + float4(0.1, 0., 0.1, 1.);
-
-           if(color.xyz == float3(0.) && isMainColored)
-            {
-                isNeedColored = true;
-            }
-            else
-            {
-                isNeedColored = false;
-
-                float modX = mod(1024. * new_texcoord.x, 32.);
-                float modY = mod(1024. * new_texcoord.y, 32.);
-
-                if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
-                    if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
-                        //color = float4(0., 1., 0., 1.);
-                        isNeedColored = true;
-                    }
-                    else {
-                        //color = float4(1., 0., 0., 1.);
-                    }
-                    
-                }
-                else {
-                    //color = float4(1., 0., 0., 1.);
-                }
-
-            }
-        }
-    }
-
-    if(isNeedColored)
-    {
-        new_texcoord = (IN.texcoord-textureCoord2)*4.;
-
-        if(textureTerrainIsLoaded2 && (new_texcoord.x>=0. && new_texcoord.x<1. && new_texcoord.y>=0. && new_texcoord.y<1.0))
-        {
-            color = tex2D(textureTerrain2, new_texcoord);//; + float4(0., 0., 0.1, 1.);
-
-            if(color.xyz == float3(0.) && isMainColored)
-            {
-                isNeedColored = true;
-            }
-            else
-            {
-                isNeedColored = false;
-
-                float modX = mod(1024. * new_texcoord.x, 32.);
-                float modY = mod(1024. * new_texcoord.y, 32.);
-
-                if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
-                    if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
-                        //color = float4(0., 1., 0., 1.);
-                        isNeedColored = true;
-                    }
-                    else {
-                        //color = float4(1., 0., 0., 1.);
-                    }
-                    
-                }
-                else {
-                    //color = float4(1., 0., 0., 1.);
-                }
-            }
-        }
-    }
-    
-    if(isNeedColored)
-    {
-        new_texcoord = (IN.texcoord-textureCoord1)*2.;
-
-        if(textureTerrainIsLoaded1 && (new_texcoord.x >= 0. && new_texcoord.x < 1. && new_texcoord.y >= 0. && new_texcoord.y < 1.))
-        {
-            color = tex2D(textureTerrain1, new_texcoord);// + float4(0.1, 0., 0., 1.);
-
-            if(color.xyz == float3(0.) && isMainColored)
-            {
-                isNeedColored = true;
-            }
-            else
-            {
-                isNeedColored = false;
-                
-                float modX = mod(1024. * new_texcoord.x, 32.);
-                float modY = mod(1024. * new_texcoord.y, 32.);
-
-                if(modX < 1.|| modX > 31. || modY < 1. || modY > 31.){
-                    if(!all(lessThan((mainColor - color).xyz, float3(threshold)))){
-                        //color = float4(0., 1., 0., 1.);
-                        isNeedColored = true;
-                    }
-                    else {
-                        //color = float4(1., 0., 0., 1.);
-                    }
-                    
-                }
-                else {
-                    //color = float4(1., 0., 0., 1.);
-                }
-            }
-        }
-    }
-
-    if(isNeedColored)
-    {
+    if(isNeedColored){
         color = mainColor;
-        //color = float4(0., 1., 0., 1.);
+        if(bColored){
+            color = float4(0., 0., 1., 1.);
+        }
     }
 
     normal = tex2D(ptNormal, float2(IN.texcoord.x, IN.texcoord.y)).rgb;

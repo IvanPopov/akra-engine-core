@@ -2232,6 +2232,8 @@ module akra.core.pool.resources {
             for (var j: int = 0; j < pMesh.length; ++j) {
                 var pSubMesh: IMeshSubset = pMesh.getSubset(j);
                 pSubMesh.material.set(pDefaultMaterial);
+                // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 0);
+                // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 1);
                 pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
             }
 
@@ -2267,6 +2269,8 @@ module akra.core.pool.resources {
                         //FIXME: remove flex material setup(needs only demo with flexmats..)
                         // pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
 
+                        // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 0);
+                        // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 1);
                         pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
                         // pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
 

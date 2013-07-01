@@ -8,7 +8,7 @@ module akra.util{
 	#ifdef WEBGL
 	export function calculateSkin(pMeshSubset: IMeshSubset): bool{
 		var pRenderData: IRenderData = pMeshSubset.data;
-
+		
 		var isOk: bool = pRenderData.selectIndexSet(".update_skinned_position");
 
 		if(!isOk){
@@ -155,17 +155,19 @@ module akra.util{
 																																				\n\
 					mat4 result_mat = mat4(0.);																									\n\
 																																				\n\
-					float i = 0.;																												\n\
-					while(number_matrix >= i + 1.) {																							\n\
-						//get data about matrix and weight																						\n\
-						vec2 bone_inf = A_extractVec2(videoBuffer, header, bone_inf_ptr + i * 2.);												\n\
+					for(float i = 0.; i < 16.; i++) {																							\n\
+						if(i < number_matrix){																									\n\
+							//get data about matrix and weight																					\n\
+							vec2 bone_inf = A_extractVec2(videoBuffer, header, bone_inf_ptr + i * 2.);											\n\
 																																				\n\
-						bone_matrix = A_extractMat4(videoBuffer, header, bone_inf.x);															\n\
-						weight = bone_inf.y;																									\n\
+							bone_matrix = A_extractMat4(videoBuffer, header, bone_inf.x);														\n\
+							weight = bone_inf.y;																								\n\
 																																				\n\
-						result_mat += bone_matrix * weight;																						\n\
-																																				\n\
-						i ++;																													\n\
+							result_mat += bone_matrix * weight;																					\n\
+						}																														\n\
+						else {																													\n\
+							break;																												\n\
+						}																														\n\
 					}																															\n\
 																																				\n\
 					result_mat = result_mat * bind_matrix;																						\n\
@@ -182,7 +184,7 @@ module akra.util{
 												 (floor(destinationIndex/4./frameBufferSize.x) + 0.5)/frameBufferSize.y);						\n\
 																																				\n\
 					gl_Position = vec4(outPixelPosition*2. - 1., 0. ,1.);																		\n\
-					gl_PointSize = 1.;																											\n\																		\n\
+					gl_PointSize = 1.;																											\n\
 				}																																\n\
 																																				\n\
         		",
@@ -254,7 +256,7 @@ module akra.util{
         var iHeight: uint = pWebGLVertexTexture._getHeight();
 
         pWebGLProgram.setInt("videoBuffer", 0);
-        pWebGLProgram.setVec2("frameBufferSize", iWidth, iHeight);
+        pWebGLProgram.setVec2("frameBufferSize", vec2(iWidth, iHeight));
         pWebGLProgram.setInt("type", 0);
         pWebGLProgram.setMat4("bind_matrix", pMeshSubset.skin.getBindMatrix());
 
@@ -299,6 +301,7 @@ module akra.util{
         pWebGLContext.disableVertexAttribArray(iDestinationAttribLocation);
 
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
+        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, null);
         pWebGLRenderer._setViewport(null);
 
 		return true;

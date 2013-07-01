@@ -231,7 +231,12 @@ module akra.data {
 		//если известно sUsage, зачем нужет iSize?
 		setData(pData: ArrayBufferView, iOffset: int, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
 		setData(pData: ArrayBufferView, sUsage?: string, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
-		setData(pData: ArrayBufferView, iOffset?: any, iSize?: uint, nCountStart?: uint, nCount?: uint): bool {
+		setData(pData: ArrayBufferView): bool {
+			var iOffset: uint;
+			var iSize: uint;
+			var nCountStart: uint;
+			var nCount: uint;
+
 			var iStride: uint;
 			var pVertexBuffer: IVertexBuffer = this._pVertexBuffer;
 			var pBackupBuf: Uint8Array;
@@ -246,6 +251,13 @@ module akra.data {
 		        	if(isString(arguments[1])){
 		        		iOffset = this._pVertexDeclaration.findElement(arguments[1]).offset;
 		        	}
+		        	else {
+		        		iOffset = arguments[1];
+		        	}
+
+		        	iSize = arguments[2];
+		        	nCountStart = arguments[3];
+		        	nCount = arguments[4];
 
 		            iStride = this.stride;
 		            pDataU8 = new Uint8Array(pData.buffer);
@@ -307,12 +319,11 @@ module akra.data {
 
 		                return false;
 		            }
-		       
-		            nCountStart = nCountStart || 0;
-		            
-		            if (!nCount) {
-		                nCount = pData.byteLength / iSize;
-		            }
+
+		       		iOffset = arguments[1];
+		       		iSize = arguments[2];
+		            nCountStart = arguments[3] || 0;
+		            nCount = pData.byteLength / iSize;
 
 		            return this.setData(pData, iOffset, iSize, nCountStart, nCount);
 		            
@@ -326,28 +337,24 @@ module akra.data {
 		                pElement = pDeclaration.findElement(arguments[1]);
 
 		                if (pElement) {
-		                    arguments[2] = arguments[2] || 0;
-		                    
-		                    if (!arguments[3]) {
-		                        arguments[3] = pData.buffer.byteLength / pElement.size;
-		                    }
+		                	//nCountStart = arguments[2] || 0
+		                    nCountStart = 0;
+			                nCount = pData.buffer.byteLength / pElement.size;
 
 		                    return this.setData(
 		                    	pData,
 		                        pElement.offset,
 		                        pElement.size, 
-		                        arguments[2], 
-		                        arguments[3]);
+		                       	nCountStart, 
+		                        nCount);
 		                }
 		                return false
 		            }
 		            else if (arguments.length === 3) {
-
-		                nCountStart = nCountStart || 0;
-
-		                if (!nCount) {
-		                    nCount = pData.byteLength / iSize;
-		                }
+		            	iOffset = arguments[1];
+		            	iSize = arguments[2];
+		                nCountStart = 0;
+		                nCount = pData.byteLength / iSize;
 
 		                return this.setData(pData, iOffset, iSize, nCountStart, nCount);
 		            }
@@ -365,7 +372,7 @@ module akra.data {
 		getData(iOffset: int, iSize: uint, iFrom?: uint, iCount?: uint): ArrayBuffer;
 		getData(sUsage: string): ArrayBuffer;
 		getData(sUsage: string, iFrom: uint, iCount: uint): ArrayBuffer;
-		getData(iOffset?: any, iSize?: any, iFrom?: any, iCount?: any): ArrayBuffer {
+		getData(): ArrayBuffer {
 			switch (arguments.length) {
 		        case 4:
 		        case 2:
@@ -373,8 +380,16 @@ module akra.data {
 						return null;
 		            }
 
-		            iFrom = iFrom || 0;
-		            iCount = iCount || this._iLength;
+		            var iOffset: int = arguments[0];
+		            var iSize: uint = arguments[1];
+		            var iFrom: uint = 0;
+		            var iCount: uint = this._iLength;
+
+		            if(arguments.length === 4){
+		            	iFrom = arguments[2] || 0;
+		            	iCount = arguments[3] || this._iLength;
+		            }
+
 		            iCount = math.min(iCount, this._iLength);
 
 		            var iStride: uint = this.stride;
@@ -388,6 +403,7 @@ module akra.data {
 		                //pBufferData.set(new Uint8Array(), i * iSize);
 		            }
 		            return pBufferData.buffer;
+
 		        case 3:
 		        case 1:
 		            var pDeclaration: IVertexDeclaration = this._pVertexDeclaration,
@@ -401,8 +417,8 @@ module akra.data {
 		                    return this.getData(
 		                        pElement.offset,
 		                        pElement.size, 
-		                        arguments[1], 
-		                        arguments[2]
+		                        arguments.length === 3 ? arguments[1] : 0, 
+		                        arguments.length === 3 ? arguments[2] : this._iLength
 		                        );
 		                }
 		                return null;

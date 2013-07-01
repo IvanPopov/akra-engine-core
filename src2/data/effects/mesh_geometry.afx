@@ -74,7 +74,7 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
     float number_matrix = meta_data.x;
     float bone_inf_ptr = meta_data.y;
 
-
+/*
     float i = 0.;
 
     while(number_matrix >= i + 1.) {
@@ -87,6 +87,21 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
         result_mat += bone_matrix * weight;
 
         i++;
+    }
+*/
+        
+    for(float i = 0.; i < 16.; i++){
+        if(i < number_matrix){
+            @bone_inf = bone_inf_ptr + i * 2.;
+       
+            @bone_matrix = bone_inf.x;
+            weight = bone_inf.y;
+
+            result_mat += bone_matrix * weight;
+        }
+        else {
+           break;            
+        }
     }
 
     result_mat = result_mat * bind_matrix;

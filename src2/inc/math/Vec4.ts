@@ -68,7 +68,7 @@ module akra.math {
         set(fValue1: float, v2fVec: IVec2, fValue2: float): IVec4;
         set(v2fVec: IVec2, fValue1: float, fValue2: float): IVec4;
         set(fValue1: float, fValue2: float, fValue3: float, fValue4: float): IVec4;
-        set(fValue1?, fValue2?, fValue3?, fValue4?): IVec4{
+        set(): IVec4{
             var nArgumentsLength: uint = arguments.length;
 
             switch(nArgumentsLength){

@@ -160,14 +160,41 @@ module akra.webgl {
 			this._pWebGLContext.disable(GL_BLEND);
 		}
 
+		private _time: uint[] = [0, 0, 0, 0, 0, 0, 0, 0];
+
+		_printTime(): void {
+			var _iTotalTime: uint = 0;
+			for(var i: uint = 0; i < this._time.length; i++){
+				_iTotalTime += this._time[i];
+			}
+
+			var _pPrinted: string[] = new Array(this._time.length);
+
+			for(var i: uint = 0; i < this._time.length; i++){
+				_pPrinted[i] = (this._time[i]/ _iTotalTime).toFixed(2);
+			}
+
+			LOG(_pPrinted.join("% "));
+			LOG(this._time.join("ms "))			
+		}
+
 		_renderEntry(pEntry: IRenderEntry): void {
+			var deltaTime: uint = 0;
+
+			// deltaTime = Date.now();
+
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
 			var pRenderTarget: IRenderTarget = (<render.Viewport>pViewport).getTarget();
 			var pInput: IShaderInput = pEntry.input;
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
 
+			// deltaTime = Date.now() - deltaTime;
+			// this._time[0] += deltaTime;
 			// console.log(pEntry);
+			
+			//--------------------------
 
+			// deltaTime = Date.now();
 			if(!isNull(pEntry.renderTarget)){
 				this._setRenderTarget(pEntry.renderTarget);
 				this.lockRenderTarget();
@@ -178,7 +205,14 @@ module akra.webgl {
 			}
 			else {
 				this._setViewportForRender(pViewport);
-			}	
+			}
+
+			// deltaTime = Date.now() - deltaTime;
+			// this._time[1] += deltaTime;
+
+			//-----------------------
+
+			// deltaTime = Date.now();
 
 			var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>(pMaker).shaderProgram;
 
@@ -186,26 +220,47 @@ module akra.webgl {
 
 			this.enableWebGLVertexAttribs(pWebGLProgram.totalAttributes);
 
+			// deltaTime = Date.now() - deltaTime;
+			// this._time[2] += deltaTime;
+
+			//-----------------
+
+			// deltaTime = Date.now();
+
 			var pAttribLocations: IntMap = pWebGLProgram._getActiveAttribLocations();
-			var pAttributeSemantics: string[] = pMaker.attributeSemantics;
-			var pAttributeNames: string[] = pMaker.attributeNames;
+			var pAttributeInfo: IAFXBaseAttrInfo[] = pMaker.attributeInfo;
 
 			var pBufferMap: IBufferMap = pEntry.bufferMap;
+
+			// deltaTime = Date.now() - deltaTime;
+			// this._time[3] += deltaTime;
+
+			//-----------------
+
+			// deltaTime = Date.now();
 
 			if(!isNull(pBufferMap.index)){
 				this.bindWebGLBuffer(GL_ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.index.buffer).getWebGLBuffer());
 			}
-			var nPreparedBuffers: uint = 0;
-			for(var i: uint = 0; i < pAttributeNames.length; i++){
-				var sAttrName: string = pAttributeNames[i];
-				var sAttrSemantic: string = pAttributeSemantics[i];
 
-				if(isNull(sAttrSemantic)){
-					continue;
-				}
+			// deltaTime = Date.now() - deltaTime;
+			// this._time[4] += deltaTime;
+
+			//---------
+			
+			
+			// deltaTime = Date.now();
+			
+			for(var i: uint = 0; i < pAttributeInfo.length; i++){
+				var sAttrName: string = pAttributeInfo[i].name;
+				var sAttrSemantic: string = pAttributeInfo[i].semantic;
+
+				// if(isNull(sAttrSemantic)){
+				// 	continue;
+				// }
 
 				var iLoc: int = pAttribLocations[sAttrName];
-				var pFlow: IDataFlow = pInput[sAttrName];
+				var pFlow: IDataFlow = pInput.attrs[i];
 				var pData: data.VertexData = null;
 				var sSemantics: string = null;
 				
@@ -230,14 +285,28 @@ module akra.webgl {
                                     pVertexElement.offset);
 			}
 
-			var pUniforms: WebGLUniformLocationMap = pWebGLProgram.getWebGLUniformLocations();
+			// deltaTime = Date.now() - deltaTime;
+			// this._time[5] += deltaTime;
 
-			for (var sUniformName in pUniforms) {
-				var pValue: any = pInput[sUniformName];
-				pMaker.setUniform(sUniformName, pValue);
+			//------------
+
+			// deltaTime = Date.now();
+
+			var pUniformNames: string[] = pMaker.uniformNames;
+
+			for (var i: uint = 0; i < pUniformNames.length; i++) {
+				pMaker.setUniform(i, pInput.uniforms[i]);
 			}
+			// deltaTime = Date.now() - deltaTime;
+			// this._time[6] += deltaTime;
+
+			//---------
 			
+			// deltaTime = Date.now();
 			pEntry.bufferMap._draw();
+			// deltaTime = Date.now() - deltaTime;
+			// this._time[7] += deltaTime;
+			// LOG(pEntry.bufferMap.toString())
 		}
 
 		_endRender(): void {
@@ -374,10 +443,10 @@ module akra.webgl {
 		
 		/** Texture Objects. */
 		inline bindWebGLTexture(eTarget: uint, pTexture: WebGLTexture): void {
-			// if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
+			//if(this._pTextureSlotList[this._iCurrentTextureSlot] !== pTexture){
 				this._pWebGLContext.bindTexture(eTarget, pTexture);
-				// this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
-			// }
+				this._pTextureSlotList[this._iCurrentTextureSlot] = pTexture;
+			//}
 		}
 
 		inline activateWebGLTexture(iWebGLSlot: int): void {

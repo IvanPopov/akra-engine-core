@@ -4,6 +4,9 @@
 #include "IAFXPassInputBlend.ts"
 #include "util/Color.ts"
 
+#define FAST_SET_INPUT_UNIFORM(sName, pValue) if(this.hasUniform(sName)) this.uniforms[sName] = pValue;
+#define FAST_SET_SAMPLER_TEXTURE(sName, pTexture) if(this.hasUniform(sName)) this.samplers[sName].texture = pTexture;
+
 module akra.fx {
 
 	export inline function createSamplerState(): IAFXSamplerState {
@@ -217,9 +220,7 @@ module akra.fx {
 			if(isNull(pSurfaceMaterial)){
 				return ;
 			}
-
 			// var pSurfaceMaterial: core.pool.resources.SurfaceMaterial = pSurfaceMaterial;
-
 			var iTotalTextures: uint = pSurfaceMaterial.totalTextures;
 			for (var i: int = 0; i < iTotalTextures; i++) {
 			 	// var iTexcord: int = pSurfaceMaterial[i].texcoord(i);
@@ -235,14 +236,20 @@ module akra.fx {
 			pMatContainer.EMISSIVE.set(pMaterial.emissive.r, pMaterial.emissive.g, pMaterial.emissive.b, pMaterial.emissive.a);
 			pMatContainer.SHININESS = pMaterial.shininess;
 
-			if(this.hasUniform("MATERIAL")) this.uniforms["MATERIAL"] = pMatContainer;
+			FAST_SET_INPUT_UNIFORM("MATERIAL", pMatContainer);
 
+			// FAST_SET_SAMPLER_TEXTURE("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
+			// FAST_SET_SAMPLER_TEXTURE("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
+			// FAST_SET_SAMPLER_TEXTURE("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
+			// FAST_SET_SAMPLER_TEXTURE("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
+			// FAST_SET_SAMPLER_TEXTURE("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
+			
 			this._setSamplerTextureObject("S_DIFFUSE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
 			this._setSamplerTextureObject("S_AMBIENT", pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
 			this._setSamplerTextureObject("S_SPECULAR", pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
 			this._setSamplerTextureObject("S_EMISSIVE", pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
 			this._setSamplerTextureObject("S_NORMAL", pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
-
+			
 			// if(this.hasUniform("MATERIAL.DIFFUSE")) this.uniforms["MATERIAL.DIFFUSE"] = pMatContainer.DIFFUSE;
 			// if(this.hasUniform("MATERIAL.AMBIENT")) this.uniforms["MATERIAL.AMBIENT"] = pMatContainer.AMBIENT;
 			// if(this.hasUniform("MATERIAL.SPECULAR")) this.uniforms["MATERIAL.SPECULAR"] = pMatContainer.SPECULAR;

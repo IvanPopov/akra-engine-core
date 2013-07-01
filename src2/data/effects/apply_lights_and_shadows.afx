@@ -73,18 +73,15 @@ shared float4 result_color;
 shared pixel_data pixelData;
 
 float4 apply_light_omni() : COLOR{
-    int i = 0;
-    while(i < nOmni){
+    for(int i = 0; i < nOmni; i++){
         result_color += calculateLight(pixelData,points_omni[i].lightData);
-        i++;
     }
 
     return float4(result_color.xyz, 1.);
 };
 
 float4 apply_light_project() : COLOR{
-    int i = 0;
-    while(i < nProject){
+    for(int i = 0; i < nProject; i++){
         float4 v4fTmp = points_project[i].shadow_matrix*float4(pixelData.position, 1.);
         float3 v3fTest = abs(v4fTmp.xyz/v4fTmp.w);
         //тест на попадание в область действия источника
@@ -94,56 +91,50 @@ float4 apply_light_project() : COLOR{
             float lightAttenuation = (exp(-alpha*dot(v3fTest,v3fTest)) - exp(-alpha*3.))/(1. - exp(-alpha*3.));
             result_color += calculateLight(pixelData,points_project[i].lightData) * lightAttenuation;
         }
-
-        i++;
     }
 
     return float4(result_color.xyz, 1.);
 };
 
 float4 apply_light_omni_shadow() : COLOR{
-    int i = 0;
-    while(i < nOmniShadows) {
+    for(int i = 0; i < nOmniShadows; i++){
         float4 tmpColor = calculateLight(pixelData, points_omni_shadows[i].lightData);
         float shadowMultiplier = 1.;
 
-        int j = 0;
         bool isOk = true;
-        while(isOk) {
-            float4 v4fLightSpace = points_omni_shadows[i].toLightSpace[j]*float4(pixelData.position, 1.);
+        for(int j = 0; j < 6; j++){
+            if(isOk){
+                float4 v4fLightSpace = points_omni_shadows[i].toLightSpace[j]*float4(pixelData.position, 1.);
 
-            float4 v4fTmp = points_omni_shadows[i].optimized_projection_matrix[j] * v4fLightSpace;
-            float3 v3fOptimizedLightSpacePosition = v4fTmp.xyz/v4fTmp.w;
+                float4 v4fTmp = points_omni_shadows[i].optimized_projection_matrix[j] * v4fLightSpace;
+                float3 v3fOptimizedLightSpacePosition = v4fTmp.xyz/v4fTmp.w;
 
-            float3 v3fTest = abs(v3fOptimizedLightSpacePosition.xyz);
+                float3 v3fTest = abs(v3fOptimizedLightSpacePosition.xyz);
 
-            //тест на попадание в область действия источника
-            //так как здесь происходит считывание из текстуру другой тест не корректен
-            if(all(lessThanEqual(v3fTest.xy, float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
-                float2 v2fShadowTextureCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
-                int samplerNumber = i * 6 + j;
+                //тест на попадание в область действия источника
+                //так как здесь происходит считывание из текстуру другой тест не корректен
+                if(all(lessThanEqual(v3fTest.xy, float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
+                    float2 v2fShadowTextureCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
+                    //int samplerNumber = i * 6 + j;
 
-                shadowMultiplier = calculateShadowMultiplier(omni_shadow_sampler[samplerNumber], v2fShadowTextureCoords,
-                                                             points_omni_shadows[i].optimized_projection_matrix[j], v4fLightSpace.z);
-                isOk = false;
+                    shadowMultiplier = calculateShadowMultiplier(omni_shadow_sampler[i * 6 + j], v2fShadowTextureCoords,
+                                                                 points_omni_shadows[i].optimized_projection_matrix[j], v4fLightSpace.z);
+                    isOk = false;
+                }
             }
-
-            j++;
-            
-            if(j >= 6){
-                isOk = false;
+            else{
+                break;
             }
         }
 
         result_color += tmpColor * shadowMultiplier;
-        i++;
     }
+
     return float4(result_color.xyz, 1.);
 };
 
 float4 apply_light_project_shadows() : COLOR{
-    int i = 0;
-    while(i < nProjectShadows){
+    for(int i = 0; i < nProjectShadows; i++){
         float4 v4fLightSpace = points_project_shadows[i].toLightSpace*float4(pixelData.position, 1.);
 
         float4 v4fTmp = points_project_shadows[i].real_projection_matrix * v4fLightSpace;
@@ -174,8 +165,6 @@ float4 apply_light_project_shadows() : COLOR{
             
             result_color += tmpColor * shadowMultiplier;
         }
-
-        i++;
     }
 
     return float4(result_color.xyz, 1.);

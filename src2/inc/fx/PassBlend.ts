@@ -152,12 +152,12 @@ module akra.fx {
 					    pBuffer: IBufferMap): IAFXMaker {
 
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
-			
+			var sForeignPartHash: string = this.prepareForeigns(pPassInput);
 			var sSamplerPartHash: string = this.prepareSamplers(pPassInput);
 			var sMaterialPartHash: string = this.prepareSurfaceMaterial(pSurfaceMaterial);
 			var sBufferPartHash: string = this.prepareBufferMap(pBuffer);
 
-			var sTotalHash: string = sSamplerPartHash + "|" + sMaterialPartHash + "|" + sBufferPartHash;
+			var sTotalHash: string = sForeignPartHash + "|" + sSamplerPartHash + "|" + sMaterialPartHash + "|" + sBufferPartHash;
 
 			var pMaker: IAFXMaker = this.getMakerByHash(sTotalHash);
 
@@ -166,10 +166,12 @@ module akra.fx {
 				this.applyForeigns(pPassInput);
 				this.swapTexcoords(pSurfaceMaterial);
 				this.generateShaderCode();
+				this.resetForeigns();
 
-				pMaker = new Maker(this._pComposer);
+				pMaker = new Maker(this._pComposer, this);
 				var isCreate: bool = pMaker._create(this._sVertexCode, this._sPixelCode);
 				if(!isCreate){
+					CRITICAL("Can not create fx.Maker");
 					return null;
 				}
 
@@ -180,8 +182,11 @@ module akra.fx {
 			}
 
 			this._pDefaultSamplerBlender.clear();
-
 			return pMaker;
+		}
+
+		inline _hasUniformWithName(sName: string): bool {
+			return this.hasUniformWithName(sName);
 		}
 
 		private inline getMakerByHash(sHash: string): IAFXMaker {
@@ -637,6 +642,32 @@ module akra.fx {
 				   this._pUniformContainerP.getVariableByName(sName);
 		}
 
+		private prepareForeigns(pPassInput: IAFXPassInputBlend): string {
+			var pForeignValues: any = pPassInput.foreigns;
+			var sHash: string = "";
+			var pKeys: string[] = this._pForeignContainerV.keys;
+
+			for(var i: uint = 0; i < pKeys.length; i++){
+				var sName: string = pKeys[i];
+				if(!isDef(pForeignValues[sName])){
+					LOG("V",sName, pForeignValues, pKeys, this);
+				}
+				sHash += pForeignValues[sName].toString() + "%";
+			}
+
+			pKeys = this._pForeignContainerP.keys;
+
+			for(var i: uint = 0; i < pKeys.length; i++){
+				var sName: string = pKeys[i];
+				if(!isDef(pForeignValues[sName])){
+					LOG("P",sName, pForeignValues, pKeys, this);
+				}
+				sHash += pForeignValues[sName].toString() + "%";
+			}
+
+			return sHash;
+		}
+
 		private prepareSamplers(pPassInput: IAFXPassInputBlend): string {
 			var pBlender: SamplerBlender = this._pDefaultSamplerBlender;
 
@@ -751,6 +782,35 @@ module akra.fx {
 			}
 		}
 
+		private resetForeigns(): void {
+			var pForeignsV = this._pForeignContainerV;
+			var pForeignsP = this._pForeignContainerP;
+
+			var pKeys: string[] = pForeignsV.keys;
+
+			for(var i: uint = 0; i < pKeys.length; i++){
+				var sName: string = pKeys[i];
+				var pVarList: IAFXVariableDeclInstruction[] = null;
+				
+				pVarList = pForeignsV.getVarList(sName);					
+				for(var j: uint = 0; j < pVarList.length; j++){
+					pVarList[j].setRealName(sName);
+				}
+			}
+
+			var pKeys: string[] = pForeignsP.keys;
+
+			for(var i: uint = 0; i < pKeys.length; i++){
+				var sName: string = pKeys[i];
+				var pVarList: IAFXVariableDeclInstruction[] = null;
+				
+				pVarList = pForeignsP.getVarList(sName);					
+				for(var j: uint = 0; j < pVarList.length; j++){
+					pVarList[j].setRealName(sName);
+				}
+			}
+		}
+
 		private inline generateShaderCode(): void {
 			this.clearCodeFragments();
 			this.reduceSamplers();
@@ -766,8 +826,8 @@ module akra.fx {
 			var sCode: string = "";
 			var eType: EFunctionType = EFunctionType.k_Vertex;
 
-			sCode = /*"#define while(cond) for(;cond;)" + "\n" + */
-					this.generateSystemExtBlock(eType) + "\n" +
+
+			sCode = this.generateSystemExtBlock(eType) + "\n" +
 					
 					this.generateTypeDels(eType) + "\n" +
 					this.generateFunctionDefenitions(eType) + "\n" +
@@ -818,7 +878,8 @@ module akra.fx {
 
 
 			this.enableVaringPrefixes(eType, true);
-			sCode = /*"#define while(cond) for(;cond;)" + "\n" + */
+
+			sCode = /*"#define while(expr) for(int _i = 0; _i < 1; _i--) if(!(expr)) break; else" + "\n" +*/
 					this.generateSystemExtBlock(eType) + "\n" +
 
 					"vec4 resultAFXColor;" + "\n" +
@@ -899,6 +960,7 @@ module akra.fx {
 							}
 							else {
 								isZeroSamplerCubeV = true;
+								sSamplerName = "asc0";
 							}
 						}
 
@@ -910,6 +972,7 @@ module akra.fx {
 							}
 							else {
 								isZeroSamplerCubeP = true;
+								sSamplerName = "asc0";
 							}
 						}
 					}
@@ -992,13 +1055,14 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pSemantics.length; i++) {
 				var sSemantic: string = pSemantics[i];
-				var pFlow: IDataFlow = pAttributeContainer.getFlowBySemantic(sSemantic);
+				// var pFlow: IDataFlow = pAttributeContainer.getFlowBySemantic(sSemantic);
 				var pAttributes: IAFXVariableDeclInstruction[] = pAttributeContainer.getAttributeList(sSemantic);
 				var iBufferSlot: uint = -1;
-				var iSlot: uint = -1;
+				var iSlot: uint = pAttributeContainer.getSlotBySemantic(sSemantic);
 				var sAttrName: string = "";
+
 				//1) set buffer maps for shader attribures
-				if(isNull(pFlow)) {
+				if(iSlot === -1) {
 					for(var j: uint = 0; j < pAttributes.length; j++){
 						if(pAttributes[j].getType().isStrictPointer()){
 							pAttributes[j].getType().getVideoBuffer().defineByZero(true);
@@ -1006,7 +1070,7 @@ module akra.fx {
 					}
 				}
 				else {
-					iSlot = pAttributeContainer.getSlotBySemantic(sSemantic);
+					//iSlot = pAttributeContainer.getSlotBySemantic(sSemantic);
 					iBufferSlot = pAttributeContainer.getBufferSlotBySemantic(sSemantic);
 
 					sAttrName = "aa" + iSlot.toString();
@@ -1032,7 +1096,7 @@ module akra.fx {
 
 					//2) gnerate real attrs
 					if(iSlot > nPreparedAttributeSlots){
-						this._sAttrDeclCode += "attribute " + pAttributeContainer.getTypeBySlot(i).toFinalCode() + " " + sAttrName + ";\n"; 
+						this._sAttrDeclCode += "attribute " + pAttributeContainer.getTypeForShaderAttribute(sSemantic).toFinalCode() + " " + sAttrName + ";\n"; 
 						nPreparedAttributeSlots++;
 					}
 				}

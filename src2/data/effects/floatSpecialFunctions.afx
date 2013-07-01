@@ -16,28 +16,33 @@ float4 floatToFloat4(float value){
   }
 
   float power = 0.;
-  bool ok = true;
+  bool isFinish = false;
 
-  while (ok) {
+  for(int i = 0; i < 128; i++) {
+    if(isFinish){
+      break;
+    }
 
     if(data >= 2.) {
-      data = data * 0.5;
-      power += 1.;
-      if (power == 127.) {
-        ok = false;
+      if(!isFinish){
+        data = data * 0.5;
+        power += 1.;
+        if (power == 127.) {
+          isFinish = true;
+        }
       }
     }
-    else{
-      if(data < 1.) {
+    else if(data < 1.) {
+      if(!isFinish){
         data = data * 2.;
         power -= 1.;
         if (power == -126.) {
-          ok = false;
+          isFinish = true;
         }
       }
-      else {
-        ok = false;
-      }
+    }
+    else {
+      isFinish = true;
     }
   }
 
@@ -87,32 +92,36 @@ float3 floatToFloat3(float value){
   }
 
   float power = 0.;
-  float counter = 0.;
+  bool isFinish = false;
 
-  while (counter < 64.) {
-    counter += 1.;
+  for(int i=0;i<64;i++){
+    if(isFinish){
+      break;
+    }
 
-    if(data >= 2.) {    
-      data = data * 0.5;
-      power += 1.;
-      if (power == 63.) {
-        counter = 65.;
+    if(data >= 2.) {   
+      if(!isFinish){ 
+        data = data * 0.5;
+        power += 1.;
+        if (power == 63.) {
+          isFinish = true;
+        }
       }
     }
-    else{
-      if(data < 1.) {
+    else if(data < 1.) {
+      if(!isFinish){
         data = data * 2.;
         power -= 1.;
         if (power == -62.) {
-          counter = 65.;
+          isFinish = true;
         }
       }
-      else {
-        counter = 65.;
-      }
+    }
+    else {
+      isFinish = true;
     }
   }
-
+  
   if(power == -62. && data < 1.){
     power = 0.;
   }
@@ -131,7 +140,7 @@ float3 floatToFloat3(float value){
   data *= 256.;
 
   result.z = floor(data);
-  //return result;
+  
   return result/255.;
 }
 

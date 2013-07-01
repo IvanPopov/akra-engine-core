@@ -230,7 +230,7 @@ module akra.core.pool.resources {
                         pTempContext.drawImage(pImg,0,0);
                         var pImageData : ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);               
                 
-                        pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pImg.width, pImg.height,1,EPixelFormats.BYTE_RGBA);
+                        pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pImg.width, pImg.height,1, EPixelFormats.BYTE_RGBA);
 
                         if (isDefAndNotNull(sType)) 
                         {
@@ -298,7 +298,7 @@ module akra.core.pool.resources {
                 var pImgData:IImgData=new ImgData();
 
              
-                this._pBuffer=pCodec.decode(pData,pImgData);
+                this._pBuffer=pCodec.decode(pData, pImgData);
 
 
                 this._iWidth=pImgData.width;

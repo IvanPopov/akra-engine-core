@@ -25,7 +25,7 @@ module akra {
 			$(document.body).append(pMainScene);
 			pMainScene.append(pCanvasElement);
 
-			pCanvas.resize(800, 600);
+			pCanvas.resize(960, 720);
 
 			// var pCanvasLOD = $("<canvas id='canvasLOD' width=600 height=600 style='float: right'>");
 			// pMainScene.append(pCanvasLOD);
@@ -41,8 +41,8 @@ module akra {
 			pCamera = pScene.createCamera();
 		
 			//pCamera.addRelRotationByXYZAxis(1, 1, 0);
-			pCamera.farPlane = 500;
-			pCamera.setPosition(vec3(0, 75, 0));
+			pCamera.farPlane = 700;
+			pCamera.setPosition(vec3(0, 500, 0));
 			pCamera.attachToParent(pScene.getRootNode());
 			pCamera.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
 			pCamera.setInheritance(ENodeInheritance.ALL);
@@ -63,7 +63,7 @@ module akra {
 			        pCamera.setRotationByXYZAxis(-fdY, -fdX, 0);
 			    }
 
-			    var fSpeed: float = 0.1 * 1;
+			    var fSpeed: float = 0.1 * 10;
 			    if(pKeymap.isKeyPress(EKeyCodes.W)){
 			    	pCamera.addRelPosition(0, 0, -fSpeed);
 			    }
@@ -95,7 +95,7 @@ module akra {
 			pStats.target = pViewport.getTarget();
 			pStats.render(pMainScene);
 
-			pStats.el.css({position: "relative", top: "-600px"});
+			pStats.el.css({position: "relative", top: "-720px"});
 		}
 
 		function createLighting(): void {
@@ -110,14 +110,14 @@ module akra {
 			pOmniLight.params.specular.set(0, 0, 0, 0);
 			pOmniLight.params.attenuation.set(1,0,0);
 
-			pOmniLight.addPosition(0, 100, 0);
+			pOmniLight.addPosition(0, 1000, 0);
 
 			pMainLightPoint = pOmniLight;
 		}
 
 		function createSkyBox(): void {
 			pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
-			pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/sky_box1-1.dds");
+			pSkyBoxTexture.loadResource("../../../data/textures/skyboxes/desert-3.dds");
 
 			pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
 				(<render.DSViewport>pViewport).setSkybox(pTexture);
@@ -141,7 +141,7 @@ module akra {
 					pTerrain.attachToParent(pScene.getRootNode());
 					pTerrain.setInheritance(ENodeInheritance.ALL);
 					// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
-					pTerrain.scale(0.1);
+					// pTerrain.scale(0.1);
 					pTerrain.addRelRotationByXYZAxis(-Math.PI/2, 0, 0);
 					shouldBeTrue("terrain create");
 					ok(isCreate);
@@ -156,44 +156,6 @@ module akra {
 
 			// ok(pTerrain);
 		}
-
-		// function loadModels(sPath, fnCallback?: Function): ISceneNode {
-		// 	var pController: IAnimationController = null;
-		// 	var pModelRoot: ISceneNode = pScene.createNode();
-		// 	var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
-			
-		// 	pController = pEngine.createAnimationController();
-
-		// 	pModelRoot.attachToParent(pScene.getRootNode());
-		// 	pModelRoot.scale(2.);
-		// 	pModelRoot.addPosition(0, -1., 0);
-
-		// 	pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
-		// 		pModel.attachToScene(pModelRoot, pController);
-
-		// 		pController.attach(pModelRoot);
-
-		// 		var pContainer: IAnimationContainer = animation.createContainer();
-
-		// 		if (pController.active) {
-		// 			pContainer.setAnimation(pController.active);
-		// 			pContainer.useLoop(true);
-		// 			pController.addAnimation(pContainer);		
-		// 		}
-
-
-		// 		pScene.bind(SIGNAL(beforeUpdate), () => {
-		// 			// pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
-		// 			pController.update(pEngine.time);
-		// 		});
-
-		// 		if (isFunction(fnCallback)) {
-		// 			fnCallback(pModelRoot);
-		// 		}
-		// 	});
-
-		// 	return pModelRoot;
-		// }
 
 		function main(pEngine: IEngine): void {
 			setup();

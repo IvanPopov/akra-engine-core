@@ -39,7 +39,7 @@ module akra.geometry{
 		set(pPlane: IPlane3d): IPlane3d;
 		set(v3fNormal: IVec3, fDistance: float): IPlane3d;
 		set(v3fPoint1: IVec3, v3fPoint2: IVec3, v3fPoint3: IVec3): IPlane3d;
-		set(v3fPoint1?, v3fPoint2?, v3fPoint3?): IPlane3d{
+		set(): IPlane3d{
 			var nArgumentsLength: uint = arguments.length;
 
 			switch(nArgumentsLength){

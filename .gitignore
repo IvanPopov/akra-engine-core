@@ -58,3 +58,7 @@ obj/
 bin/
 properties/
 app.js
+
+src2/tests/common/data/
+src2/tests/data/
+src2/tests/common/*/DEBUG/

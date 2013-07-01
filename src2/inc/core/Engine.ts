@@ -194,6 +194,7 @@ module akra.core {
 			return this._isDepsLoaded;
 		}
 
+		// _nCountFrame: uint = 0;
 		exec(bValue: bool = true): void {
 			var pRenderer: IRenderer = this._pRenderer;
 			var pEngine: Engine = this;
@@ -223,6 +224,12 @@ module akra.core {
 		                debug_error("Engine::exec() error.");
 		                return;
 		            }
+
+		            // pEngine._nCountFrame++;
+
+		            // if(pEngine._nCountFrame === 1000){
+		            // 	pEngine.pause();
+		            // }
 	            }
 
 	            requestAnimationFrame(render/*, pCanvas*/); 
