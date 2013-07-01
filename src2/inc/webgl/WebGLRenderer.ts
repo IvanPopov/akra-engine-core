@@ -57,7 +57,7 @@ module akra.webgl {
 
 			var pOptions: IRendererOptions = null;
 
-			if (isDef(arguments[1])) {
+			if (isDefAndNotNull(arguments[1])) {
 				
 				//get HTMLCanvasElement by id
 				if (isString(arguments[1])) {

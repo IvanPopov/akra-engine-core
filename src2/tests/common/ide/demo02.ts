@@ -82,7 +82,7 @@ module akra {
 		var source; 
 		var audio0 = new Audio();   
 
-		audio0.src = 'assets/voice.wav';
+		audio0.src = "assets/voice.wav";
 		audio0.controls = true;
 		audio0.autoplay = false;
 		audio0.loop = false;

@@ -84,6 +84,7 @@ module akra.core {
 			}
 
 			this._pSceneManager = new scene.SceneManager(this);
+
 			if (!this._pSceneManager.initialize()) {
 				debug_error("cannot initialize SceneManager");
 			}
@@ -92,7 +93,8 @@ module akra.core {
 			this._pTimer = util.UtilTimer.start(); 
 
 #ifdef WEBGL
-			this._pRenderer = new webgl.WebGLRenderer(this, pOptions.renderer || null);
+			var pRendererOptions: IRendererOptions = pOptions? pOptions.renderer: null;
+			this._pRenderer = new webgl.WebGLRenderer(this, pRendererOptions);
 #else
 			CRITICAL("render system not specified");
 #endif

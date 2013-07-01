@@ -2980,9 +2980,9 @@ module akra.core.pool.resources {
             // console.log("before dom parser creation...");
 
             var pParser: DOMParser = new DOMParser();
-            LOG(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            // LOG(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             var pXMLDocument: Document = pParser.parseFromString(sXMLData, "application/xml");
-            LOG("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            // LOG("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             var pXMLRoot: Element = <Element>pXMLDocument.getElementsByTagName("COLLADA")[0];
 
             this.setOptions(pOptions);

@@ -414,7 +414,7 @@ module akra.terrain {
 		}
 
 		protected loadMinTextureLevel(): void {
-			var me: MegaTexture = this;
+			/*var me: MegaTexture = this;
 			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
 
 			if(tCurrentTime - this._pSectorLoadInfo[0][0] > this._iSectorLifeTime){
@@ -461,8 +461,8 @@ module akra.terrain {
 							ERROR(e);
 						}
 					});
-			}
-			// this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
+			}*/
+			this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
 			
 		}
 
