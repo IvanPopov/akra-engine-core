@@ -32,35 +32,35 @@ module akra.util{
 				}												\n\
 																\n\
 				float power = 0.;								\n\
-				  bool isFinish = false;								\n\
-												\n\
-				  for(int i = 0; i < 128; i++) {								\n\
-				    if(isFinish){								\n\
-				      break;								\n\
-				    }								\n\
-												\n\
-				    if(data >= 2.) {								\n\
-				      if(!isFinish){								\n\
-				        data = data * 0.5;								\n\
-				        power += 1.;								\n\
-				        if (power == 127.) {								\n\
-				          isFinish = true;								\n\
-				        }								\n\
-				      }								\n\
-				    }								\n\
-				    else if(data < 1.) {								\n\
-				      if(!isFinish){								\n\
-				        data = data * 2.;								\n\
-				        power -= 1.;								\n\
-				        if (power == -126.) {								\n\
-				          isFinish = true;								\n\
-				        }								\n\
-				      }								\n\
-				    }								\n\
-				    else {								\n\
-				      isFinish = true;								\n\
-				    }								\n\
+				bool isFinish = false;							\n\
+																\n\
+				for(int i = 0; i < 128; i++) {					\n\
+				  if(isFinish){									\n\
+				    break;										\n\
 				  }												\n\
+																\n\
+				  if(data >= 2.) {								\n\
+				    if(!isFinish){								\n\
+				      data = data * 0.5;						\n\
+				      power += 1.;								\n\
+				      if (power == 127.) {						\n\
+				        isFinish = true;						\n\
+				      }											\n\
+				    }											\n\
+				  }												\n\
+				  else if(data < 1.) {							\n\
+				    if(!isFinish){								\n\
+				      data = data * 2.;							\n\
+				      power -= 1.;								\n\
+				      if (power == -126.) {						\n\
+				        isFinish = true;						\n\
+				      }											\n\
+				    }											\n\
+				  }												\n\
+				  else {										\n\
+				    isFinish = true;							\n\
+				  }												\n\
+				}												\n\
 																\n\
 				if(power == -126. && data < 1.){				\n\
 					power = 0.;									\n\
@@ -90,7 +90,7 @@ module akra.util{
 				return result/255.;								\n\
 			}													\n";
 
-	var sPixelCode: string = "													\n\
+	var sPixelCode: string = "										\n\
 				#ifdef GL_ES                        				\n\
 				    precision highp float;          				\n\
 				#endif												\n\
@@ -179,7 +179,7 @@ module akra.util{
 				}                                   																				\n\
 				";
 
-	var sVertexCode: string = "																					\n\
+	var sVertexCode: string = "																						\n\
 	        	attribute vec2 POSITION;																			\n\
 				                      																				\n\
 				varying vec2 texPosition;																			\n\
