@@ -343,7 +343,7 @@ module akra.terrain {
 			        }
 			    }
 			    else {
-			        WARNING("Карта высот не загружена")
+			        WARNING("Height map not loaded")
 			    }
 
 			    if (pImageNormalMap.isResourceLoaded()) {
@@ -352,7 +352,7 @@ module akra.terrain {
 			        this._pNormalMapImage = pImageNormalMap;
 			    }
 			    else {
-			        WARNING("Карта нормалей не загружена")
+			        WARNING("Normal map not loaded")
 			    }
 		}
 

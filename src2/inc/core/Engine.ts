@@ -332,14 +332,21 @@ module akra.core {
 			var pDeps: IDependens = Engine.DEPS;
 
 			while (isDefAndNotNull(pDeps.files)) {
+				if (!isDefAndNotNull(pDeps.deps)) {
+					pDeps.deps = {
+						files: null,
+						deps: null
+					};
+				}
+
 				pDeps = pDeps.deps;
 			}
 
 			if (isString(pData)) {
-				pDeps.files = [pData];
+				pDeps.files = [{path: pData}];
 			}
 			else {
-				pDeps.files = pData;
+				pDeps.deps = pData;
 			}
 		}
 
@@ -347,32 +354,30 @@ module akra.core {
 		static DEPS: IDependens = 
 			{
 				files: [ 
-					"grammars/HLSL.gr" 
+					{path: "grammars/HLSL.gr"}
 				],
 				deps: {
 						files: [
-							"effects/SystemEffects.afx",
-						    "effects/Plane.afx",
-						    "effects/fxaa.afx",
-						    "effects/skybox.afx",
-						    // "effects/mesh.afx", 
-						    "effects/TextureToScreen.afx",
-						    "effects/mesh_geometry.afx",
-						    "effects/prepare_shadows.afx",						    
-						    "effects/terrain.afx",
-						    // "effects/terrain_geometry.afx",
-						    "effects/prepareDeferredShading.afx",
-						    "effects/generate_normal_map.afx"
+							{path: "effects/SystemEffects.afx"},
+						    {path: "effects/Plane.afx"},
+						    {path: "effects/fxaa.afx"},
+						    {path: "effects/skybox.afx"}, 
+						    {path: "effects/TextureToScreen.afx"},
+						    {path: "effects/mesh_geometry.afx"},
+						    {path: "effects/prepare_shadows.afx"},						    
+						    {path: "effects/terrain.afx"},
+						    {path: "effects/prepareDeferredShading.afx"},
+						    {path: "effects/generate_normal_map.afx"}
 						],
 						deps: {
 							files: [
-								"effects/mesh_texture.afx",
-								"effects/deferredShading.afx",
-								"effects/apply_lights_and_shadows.afx",
+								{path: "effects/mesh_texture.afx"},
+								{path: "effects/deferredShading.afx"},
+								{path: "effects/apply_lights_and_shadows.afx"},
 							],
 							deps: {
 								files: [
-									"effects/color_maps.afx"
+									{path: "effects/color_maps.afx"}
 								]
 							}
 						}

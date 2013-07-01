@@ -581,7 +581,7 @@ function srcModifier(name, value, argv) {
 		}
 	}
 	else {
-		console.log("[WARNING] could not find file for copy:", argv[0])
+		console.log("[WARNING] could not find file for copy:", argv[0]);
 	}
 
 	return gitignore.join("\n");
@@ -594,7 +594,7 @@ function dataLocModifier(name, value, argv) {
 }
 
 function fetchDeps(sDir, sTestData, pResult) {
-	var pDeps = findDepends(sTestData, /\/\/\/\s*@([\w\d]*)\s*\:\s*([\w\d\.\-\/\:\-\{\}\|\(\)\ \,]+)\s*/ig);
+	var pDeps = findDepends(sTestData, /\/\/\/\s*@([\w\d]*)\s*\:\s*([\w\d\.\-\/\:\-\{\}\|\(\)\ \"\,]+)\s*/ig);//"
 
 	var variables = {};
 	var gitignore = [];
@@ -612,7 +612,6 @@ function fetchDeps(sDir, sTestData, pResult) {
 
 		var pmods = cmd.split("|");
 		value = pmods.splice(0, 1)[0];
-
 		// console.log("@" + name, cmd);
 
 		for (var m = 0; m < pmods.length; ++ m) {
@@ -650,7 +649,7 @@ function fetchDeps(sDir, sTestData, pResult) {
 
 		if (name && name.length > 0) {
 			variables[name] = value;
-			sTestData = sTestData.replace("\"@" + name + "\"", value);
+			sTestData = sTestData.replace(new RegExp("\"@" + name + "\"", "ig"), value);
 			// console.log("[REPLACE] ", "\"@" + name + "\"" , " --> ", value)
 		}
 	}

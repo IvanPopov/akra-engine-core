@@ -102,7 +102,13 @@ module akra {
     	findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
         findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
 
+        /**
+         * @deprecated
+         */
     	monitorInitResources(fnMonitor: IResourceWatcherFunc): void;
+        /**
+         * @deprecated
+         */
     	setLoadedAllRoutine(fnCallback: Function): void;
 
     	/** Удаление всех ресурсов */

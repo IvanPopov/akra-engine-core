@@ -2,30 +2,64 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 01 2013 15:56:51 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Jul 01 2013 19:47:08 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
  *--------------------------------------------*/
 
 
-/// @data: data
-/// @BARREL: 				{data}/models/barrel/barrel_and_support.dae|location()
-/// @CLOSED_BOX: 			{data}/models/box/closed_box.dae|location()
-/// @TUBE: 					{data}/models/tube/tube.dae|location()
-/// @TUBE_BETWEEN_ROCKS:	{data}/models/tubing/tube_beeween_rocks.DAE|location()
-/// @HERO_MODEL: 			{data}/models/hero/movie.dae|location()
-/// @HERO_MOVIE: 		{data}/models/hero/movie_anim.DAE|location()
-/// @HERO_INTRO: 			{data}/models/hero/intro.part1.DAE|location()
-/// @HERO_FILM: 			{data}/models/hero/film.DAE|location()
-/// @WINDSPOT_MODEL: 		{data}/models/windspot/WINDSPOT.DAE|location()
-/// @MINER_MODEL: 			{data}/models/miner/miner.dae|location()
-/// @ROCK_MODEL: 			{data}/models/rock/rock-1-low-p.DAE|location()
-/// @TERRAIN_HEIGHT_MAP: 	{data}/textures/terrain/main_height_map_1025.dds|location()
-/// @TERRAIN_NORMAL_MAP: 	{data}/textures/terrain/main_terrain_normal_map.dds|location()
-/// @SKYBOX: 				{data}/textures/skyboxes/desert-3.dds|location()
+/// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
+/// @MINER_MODEL: 			"/models/miner/miner.dae"
+/// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 var akra;
 (function (akra) {
+    akra.core.Engine.depends({
+        files: [
+            {
+                path: "/textures/terrain/main_height_map_1025.dds",
+                name: "TERRAIN_HEIGHT_MAP"
+            }, 
+            {
+                path: "/textures/terrain/main_terrain_normal_map.dds",
+                name: "TERRAIN_NORMAL_MAP"
+            }, 
+            {
+                path: "/textures/skyboxes/desert-3.dds",
+                name: "SKYBOX"
+            }
+        ],
+        deps: {
+            files: [
+                {
+                    path: "/models/barrel/barrel_and_support.dae",
+                    name: "BARREL"
+                }, 
+                {
+                    path: "/models/box/closed_box.dae",
+                    name: "CLOSED_BOX"
+                }, 
+                {
+                    path: "/models/tube/tube.dae",
+                    name: "TUBE"
+                }, 
+                {
+                    path: "/models/tubing/tube_beeween_rocks.DAE",
+                    name: "TUBE_BETWEEN_ROCKS"
+                }, 
+                {
+                    path: "/models/hero/movie.dae",
+                    name: "HERO_MODEL"
+                }, 
+                {
+                    path: "/models/hero/film.DAE",
+                    name: "HERO_FILM"
+                }
+            ]
+        }
+    });
+    // console.log(core.Engine.DEPS);
+    // throw null;
     var pEngine = akra.createEngine({
         renderer: {
             preserveDrawingBuffer: true
@@ -307,42 +341,42 @@ var akra;
     function createTerrain() {
         pTerrain = pScene.createTerrainROAM();
         var pTerrainMap = {};
-        pTerrainMap["height"] = pRmgr.loadImage("../../../../data/textures/terrain/main_height_map_1025.dds");
-        pTerrainMap["height"].bind("loaded", function (pTexture) {
-            pTerrainMap["normal"] = pRmgr.loadImage("../../../../data/textures/terrain/main_terrain_normal_map.dds");
-            pTerrainMap["normal"].bind("loaded", function (pTexture) {
-                var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
-                pTerrain.attachToParent(pScene.getRootNode());
-                pTerrain.setInheritance(akra.ENodeInheritance.ALL);
-                pTerrain.setRotationByXYZAxis(-Math.PI / 2, 0., 0.);
-                pTerrain.setPosition(11, -109, -109.85);
-                // pTerrain.setPosition(0., -pTerrain.localBounds.sizeZ() / 2., 0.);
-                // pTestNode.addRelRotationByXYZAxis(1, 1, 0);
-                akra.self.terrainLoaded = true;
-                createHero();
-                // pEngine.renderFrame();
-                            });
-        });
+        pTerrainMap["height"] = pRmgr.loadImage("TERRAIN_HEIGHT_MAP");
+        // pTerrainMap["height"].bind("loaded", (pTexture: ITexture) => {
+        pTerrainMap["normal"] = pRmgr.loadImage("TERRAIN_NORMAL_MAP");
+        // pTerrainMap["normal"].bind("loaded", (pTexture: ITexture) => {
+        var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
+        pTerrain.attachToParent(pScene.getRootNode());
+        pTerrain.setInheritance(akra.ENodeInheritance.ALL);
+        pTerrain.setRotationByXYZAxis(-Math.PI / 2, 0., 0.);
+        pTerrain.setPosition(11, -109, -109.85);
+        // pTerrain.setPosition(0., -pTerrain.localBounds.sizeZ() / 2., 0.);
+        // pTestNode.addRelRotationByXYZAxis(1, 1, 0);
+        akra.self.terrainLoaded = true;
+        createHero();
+        // pEngine.renderFrame();
+        // 	});
+        // });
         akra.self.terrain = pTerrain;
     }
     function createSkyBox() {
         pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
-        pSkyBoxTexture.loadResource("../../../../data/textures/skyboxes/desert-3.dds");
-        pSkyBoxTexture.bind("loaded", function (pTexture) {
-            if (pViewport.type === akra.EViewportTypes.DSVIEWPORT) {
-                (pViewport).setSkybox(pTexture);
+        pSkyBoxTexture.loadResource("SKYBOX");
+        // pSkyBoxTexture.bind("loaded", (pTexture: ITexture) => {
+        if (pViewport.type === akra.EViewportTypes.DSVIEWPORT) {
+            (pViewport).setSkybox(pSkyBoxTexture);
+        }
+        // });
             }
-        });
-    }
     function loadModels(sPath, fnCallback) {
-        var pModel = pRmgr.loadModel(sPath);
-        pModel.bind("loaded", function (pModel) {
-            var pModelRoot = pModel.attachToScene(pScene);
-            if (akra.isFunction(fnCallback)) {
-                fnCallback(pModelRoot);
+        var pModel = pRmgr.colladaPool.findResource(sPath);
+        // pModel.bind("loaded", (pModel: ICollada) => {
+        var pModelRoot = pModel.attachToScene(pScene);
+        if (akra.isFunction(fnCallback)) {
+            fnCallback(pModelRoot);
+        }
+        // });
             }
-        });
-    }
     function update() {
         updateCameras();
         akra.self.keymap.update();
@@ -374,7 +408,7 @@ var akra;
         }
     }
     function createHero() {
-        loadModels("../../../../data/models/hero/movie.dae", function (pNode) {
+        loadModels("HERO_MODEL", function (pNode) {
             akra.self.hero.root = pNode.findEntity("node-Bip001");
             (pNode.findEntity("node-Sphere001")).mesh.getSubset(0).setVisible(false);
             pEngine.renderFrame();
@@ -395,40 +429,40 @@ var akra;
             pCamLight.params.attenuation.set(.35, 0, 0);
             pCamLight.enabled = false;
             akra.self.cameraLight = pCamLight;
-            loadModels("../../../../data/models/box/closed_box.dae", function (pBox) {
+            loadModels("CLOSED_BOX", function (pBox) {
                 pBox.scale(.25);
                 putOnTerrain(pBox, new akra.Vec3(-2., -3.85, -5.));
                 pBox.addPosition(new akra.Vec3(0., 1., 0.));
             });
-            loadModels("../../../../data/models/barrel/barrel_and_support.dae", function (pBarrel) {
+            loadModels("BARREL", function (pBarrel) {
                 pBarrel.scale(.75);
                 pBarrel.setPosition(new akra.Vec3(-30., -40.23, -15.00));
                 pBarrel.setRotationByXYZAxis(-17. * akra.math.RADIAN_RATIO, -8. * akra.math.RADIAN_RATIO, -15. * akra.math.RADIAN_RATIO);
             });
-            loadModels("../../../../data/models/tube/tube.dae", function (pTube) {
+            loadModels("TUBE", function (pTube) {
                 pTube.scale(19.);
                 pTube.setRotationByXYZAxis(0. * akra.math.RADIAN_RATIO, -55. * akra.math.RADIAN_RATIO, 0.);
                 pTube.setPosition(new akra.Vec3(-16., -52.17, -66.));
             });
-            loadModels("../../../../data/models/tubing/tube_beeween_rocks.DAE", function (pTube) {
+            loadModels("TUBE_BETWEEN_ROCKS", function (pTube) {
                 pTube.scale(2.);
                 pTube.setRotationByXYZAxis(5. * akra.math.RADIAN_RATIO, 100. * akra.math.RADIAN_RATIO, 0.);
                 pTube.setPosition(new akra.Vec3(-55., -12.15, -82.00));
             });
             pScene.bind("beforeUpdate", update);
-            var pMovie = pRmgr.loadModel("../../../../data/models/hero/film.DAE");
-            pMovie.bind("loaded", /** @inline */function () {
-                var pAnim = pMovie.extractAnimation(0);
-                var pContainer = akra.animation.createContainer(pAnim, "movie");
-                var pController = pEngine.createAnimationController("movie");
-                pController.addAnimation(pContainer);
-                pController.stop();
-                pNode.addController(pController);
-                akra.self.hero.movie = pController;
-                pEngine.exec();
-            });
+            var pMovie = pRmgr.loadModel("HERO_FILM");
+            // pMovie.bind("loaded", () => {
+            var pAnim = pMovie.extractAnimation(0);
+            var pContainer = akra.animation.createContainer(pAnim, "movie");
+            var pController = pEngine.createAnimationController("movie");
+            pController.addAnimation(pContainer);
+            pController.stop();
+            pNode.addController(pController);
+            akra.self.hero.movie = pController;
+            pEngine.exec();
+            // });
             /*var pController: IAnimationController = pEngine.createAnimationController("movie");
-            var pIntroData: ICollada = <ICollada>pRmgr.loadModel("../../../../data/models/hero/intro.part1.DAE");
+            var pIntroData: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
             
             pIntroData.bind("loaded", () => {
             
@@ -440,7 +474,7 @@ var akra;
             pController.addAnimation(pIntro);
             // pController.stop();
             
-            var pMovieData: ICollada = <ICollada>pRmgr.loadModel("../../../../data/models/hero/movie_anim.DAE");
+            var pMovieData: ICollada = <ICollada>pRmgr.loadModel("@HERO_MOVIE");
             
             pMovieData.bind("loaded", () => {
             var pAnim: IAnimation = pMovieData.extractAnimation(0);
@@ -474,20 +508,20 @@ var akra;
         createSkyBox();
         createLighting();
         /*
-        loadModels("../../../../data/models/miner/miner.dae");
-        loadModels("../../../../data/models/windspot/WINDSPOT.DAE", (pNode: ISceneNode) => {
+        loadModels("/models/miner/miner.dae");
+        loadModels("/models/windspot/WINDSPOT.DAE", (pNode: ISceneNode) => {
         pNode.setRelPosition(7.5, 0., 0.);
         });
-        loadModels("../../../../data/models/rock/rock-1-low-p.DAE", (pNode: ISceneNode) => {
+        loadModels("/models/rock/rock-1-low-p.DAE", (pNode: ISceneNode) => {
         pNode.setRelPosition(0., 1., 5.);
         });
         
         */
             }
     pEngine.bind("depsLoaded", main);
-    pEngine.getResourceManager().setLoadedAllRoutine(/** @inline */function () {
-        console.log("all loaded!!!");
-    });
+    // pEngine.getResourceManager().setLoadedAllRoutine(() => {
+    // 	console.log("all loaded!!!");
+    // });
     // pEngine.getResourceManager().monitorInitResources(function (nLoaded?: number, nTotal?: number, pTarget?: IResourcePoolItem): void {
     //        console.log('loaded:', nLoaded / nTotal * 100, '%', "(", nLoaded , "/",  nTotal, ")", pTarget.findResourceName());
     //    });
