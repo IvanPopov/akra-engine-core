@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 01 2013 13:27:41 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Jul 01 2013 15:56:51 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
@@ -78,7 +78,7 @@ var akra;
         var analyser = context.createAnalyser();
         var source;
         var audio0 = new Audio();
-        audio0.src = 'assets/voice.wav';
+        audio0.src = "assets/voice.wav";
         audio0.controls = true;
         audio0.autoplay = false;
         audio0.loop = false;
@@ -138,7 +138,7 @@ var akra;
             pMovie.play("movie");
             akra.self.cameraLight.enabled = false;
             setTimeout(/** @inline */function () {
-                akra.self.voice.currentTime = 0;
+                // self.voice.currentTime = 0;
                 akra.self.voice.play();
             }, 2500);
             setTimeout(/** @inline */function () {
@@ -485,8 +485,11 @@ var akra;
         */
             }
     pEngine.bind("depsLoaded", main);
-    pEngine.getResourceManager().monitorInitResources(function (nLoaded, nTotal, pTarget) {
-        console.log('loaded:', nLoaded / nTotal * 100, '%', "(", nLoaded, "/", nTotal, ")", pTarget.findResourceName());
+    pEngine.getResourceManager().setLoadedAllRoutine(/** @inline */function () {
+        console.log("all loaded!!!");
     });
+    // pEngine.getResourceManager().monitorInitResources(function (nLoaded?: number, nTotal?: number, pTarget?: IResourcePoolItem): void {
+    //        console.log('loaded:', nLoaded / nTotal * 100, '%', "(", nLoaded , "/",  nTotal, ")", pTarget.findResourceName());
+    //    });
     // pEngine.exec();
     })(akra || (akra = {}));

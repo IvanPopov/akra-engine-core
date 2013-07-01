@@ -161,7 +161,7 @@ module akra {
 			self.cameraLight.enabled = false;
 			
 			setTimeout(() => {
-				self.voice.currentTime = 0;
+				// self.voice.currentTime = 0;
 				self.voice.play();
 			}, 2500);
 
@@ -607,6 +607,9 @@ module akra {
 */	}
 
 	pEngine.bind("depsLoaded", main);	
+	pEngine.getResourceManager().setLoadedAllRoutine(() => {
+		console.log("all loaded!!!");
+	});
 	pEngine.getResourceManager().monitorInitResources(function (nLoaded?: number, nTotal?: number, pTarget?: IResourcePoolItem): void {
         console.log('loaded:', nLoaded / nTotal * 100, '%', "(", nLoaded , "/",  nTotal, ")", pTarget.findResourceName());
     });	

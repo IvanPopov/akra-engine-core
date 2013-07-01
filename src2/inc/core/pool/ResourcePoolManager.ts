@@ -248,6 +248,7 @@ module akra.core.pool {
             var me: IResourcePoolManager = this;
             
             this.pWaiterResource.setStateWatcher(EResourceItemEvents.LOADED, function () {
+                console.log("++++++++++++++++++++");
                 fnMonitor.apply(me, arguments);
             });
         }
@@ -267,16 +268,20 @@ module akra.core.pool {
             pWaiterResouse.notifyLoaded();
 
             for (var n: uint = 0; n < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES; n ++) {
-                for (var i: int = 0; i < ResourcePoolManager.pTypedResourseTotal[n]; i ++) {
+                var nTotal: uint = parseInt(<any>ResourcePoolManager.pTypedResourseTotal[n]);
+
+                for (var i: int = 0; i < nTotal; i ++) {
                     pPool = this.findResourcePool(new ResourceCode(n, i));
                     
                     if (pPool) {
+
                         var pResources: IResourcePoolItem[] = pPool.getResources();
                         var pResource: IResourcePoolItem;
 
-                        for (var i: int = 0; i < pResources.length; ++ i) {
-                            pResource = pResources[i];
+                        for (var h: int = 0; h < pResources.length; ++ h) {
+                            pResource = pResources[h];
                             pWaiterResouse.sync(pResource, EResourceItemEvents.LOADED);
+                            LOG(pResource.findResourceName(), "<<< WAIT RESOURCE");
                         }
                     }
 

@@ -285,9 +285,9 @@ module akra.ui {
 				case ECMD.SET_PREVIEW_FULLSCREEN:
 					return this.setFullscreen();
 				case ECMD.INSPECT_SCENE_NODE:
-					console.log("b", this._iSelectedRid);
+					// console.log("b", this._iSelectedRid);
 					this._iSelectedRid = akra.scene.isSceneObject(argv[0])? this.getEngine().getComposer()._calcRenderID(<ISceneObject>argv[0], null): 0;
-					console.log("a", this._iSelectedRid);
+					// console.log("a", this._iSelectedRid);
 					return this.inspectNode(argv[0]);
 				case ECMD.EDIT_ANIMATION_CONTROLLER: 
 					return this.editAnimationController(argv[0]);
