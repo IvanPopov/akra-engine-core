@@ -67,7 +67,7 @@ module akra.terrain {
 	    private _fTexCourdYOld: float = 0xFFFFFFFF;
 	    private _nCountRender: uint = 0;
 
-	    private _iSectorLifeTime: uint = 30000; 
+	    private _iSectorLifeTime: uint = 10000; 
 
 	    private _pSamplerUniforms: IAFXSamplerState[] = null;
 		private _pLoadStatusUniforms: uint[] = null;
@@ -162,6 +162,7 @@ module akra.terrain {
 	    }
 
 	    private _bError: bool = false;
+	    private _tLastTime: float = 0;
 		prepareForRender(pViewport: IViewport): void {
 			if(this._bError){
 				CRITICAL("ERROR");
@@ -171,6 +172,13 @@ module akra.terrain {
 				this.loadMinTextureLevel();
 				return;
 			}
+
+			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+
+			if(tCurrentTime - this._tLastTime < 3000){
+				return;
+			}
+			this._tLastTime = tCurrentTime;
 
 		    var pCamera: ICamera = pViewport.getCamera();
 		    var v4fCameraCoord: IVec4 = vec4(pCamera.worldPosition, 1.);
@@ -281,6 +289,14 @@ module akra.terrain {
 		                this._pLoadInfoForSwap = s;
 		            }
 		            else {
+		                // var pTextureBuffer: IPixelBuffer = this._pTextures[i].getBuffer(0, 0);
+		                // var pTmpBox3: IBox = geometry.box(0, 0, this._v2iTextureLevelSize.x, this._v2iTextureLevelSize.y);
+
+		                // var pTempPixelBox: IPixelBox = pixelUtil.pixelBox(pTmpBox3, this._eTextureFormat);
+		                // pTempPixelBox.data = null;
+
+		                // pTextureBuffer.blitFromMemory(pTempPixelBox, pTmpBox3);
+
 		                this.setSectorLoadInfoToDefault(this._pSectorLoadInfo[i]);
 		            }
 
@@ -339,7 +355,7 @@ module akra.terrain {
 		}
 
 		private _fThresHold: float = 0.1;
-		private _bColored: bool = false;
+		private _bColored: bool = true;
 		applyForRender(pRenderPass: IRenderPass): void {
 			pRenderPass.setForeign("nTotalLevels", this._iMaxLevel - this._iMinLevel + 1);
 			pRenderPass.setUniform("MIN_MEGATEXTURE_LEVEL", this._iMinLevel);
@@ -414,55 +430,55 @@ module akra.terrain {
 		}
 
 		protected loadMinTextureLevel(): void {
-			var me: MegaTexture = this;
-			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+			// var me: MegaTexture = this;
+			// var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
 
-			if(tCurrentTime - this._pSectorLoadInfo[0][0] > this._iSectorLifeTime){
-				this._pSectorLoadInfo[0][0] = tCurrentTime;
+			// if(tCurrentTime - this._pSectorLoadInfo[0][0] > this._iSectorLifeTime){
+			// 	this._pSectorLoadInfo[0][0] = tCurrentTime;
 
-				// var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
+			// 	// var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
 
-	   //          if(isNull(pTempImg)){
-	   //              pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
-	   //          }
+	  //  //          if(isNull(pTempImg)){
+	  //  //              pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
+	  //  //          }
 
-	   //          pTempImg.load("../../../data/textures/terrain/diffuse.dds");
+	  //  //          pTempImg.load("../../../data/textures/terrain/diffuse.dds");
 
-	   //          pTempImg.bind(SIGNAL(loaded), (pImg: IImg) => {
-	   //          	me._pTextures[0].destroyResource();
-	   //          	me._pTextures[0].loadImage(pTempImg);
-				// 	me._pXY[0].isLoaded = true;
-	   //          });
-				this._pRPC.proc('loadMegaTexture', me._sSurfaceTextures, me._v2iOriginalTextreMinSize.x, me._v2iOriginalTextreMinSize.x,
-					function (pError: Error, pData: Uint8Array) {
-						if(me._pXY[0].isLoaded){
-							return;
-						}
-						try {
-							LOG("load");
-							if(!isNull(pError)){
-								debug_print(pError.message);
-								return;
-							}
+	  //  //          pTempImg.bind(SIGNAL(loaded), (pImg: IImg) => {
+	  //  //          	me._pTextures[0].destroyResource();
+	  //  //          	me._pTextures[0].loadImage(pTempImg);
+			// 	// 	me._pXY[0].isLoaded = true;
+	  //  //          });
+			// 	this._pRPC.proc('loadMegaTexture', me._sSurfaceTextures, me._v2iOriginalTextreMinSize.x, me._v2iOriginalTextreMinSize.x,
+			// 		function (pError: Error, pData: Uint8Array) {
+			// 			if(me._pXY[0].isLoaded){
+			// 				return;
+			// 			}
+			// 			try {
+			// 				LOG("load");
+			// 				if(!isNull(pError)){
+			// 					debug_print(pError.message);
+			// 					return;
+			// 				}
 
-							var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
+			// 				var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
 
-				            if(isNull(pTempImg)){
-				                pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
-				            }
+			// 	            if(isNull(pTempImg)){
+			// 	                pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
+			// 	            }
 
-				            pTempImg.load(pData);
-				            me._pTextures[0].destroyResource();
-							me._pTextures[0].loadImage(pTempImg);
-							me._pXY[0].isLoaded = true;
-						}
-						catch(e){
-							me._bError = true;
-							ERROR(e);
-						}
-					});
-			}
-			// this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
+			// 	            pTempImg.load(pData);
+			// 	            me._pTextures[0].destroyResource();
+			// 				me._pTextures[0].loadImage(pTempImg);
+			// 				me._pXY[0].isLoaded = true;
+			// 			}
+			// 			catch(e){
+			// 				me._bError = true;
+			// 				ERROR(e);
+			// 			}
+			// 		});
+			// }
+			this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
 			
 		}
 
