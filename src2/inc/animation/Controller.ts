@@ -5,6 +5,10 @@
 #include "IAnimationController.ts"
 #include "util/unique.ts"
 
+#include "Base.ts"
+#include "Container.ts"
+#include "Blend.ts"
+
 module akra.animation {
 	export class Controller implements IAnimationController {
 		public name: string = null;
@@ -171,8 +175,13 @@ module akra.animation {
 		}
 
 		update(): void {
-			if (this._pActiveAnimation) {
-				this._pActiveAnimation.apply(this._pEngine.time);
+			var pAnim: IAnimationBase = this._pActiveAnimation;
+			if (!isNull(pAnim)) {
+				if (!pAnim.apply(this._pEngine.time)) {
+
+					this._pActiveAnimation = null;
+					pAnim.stop(this._pEngine.time);
+				}
 			}
 		}
 

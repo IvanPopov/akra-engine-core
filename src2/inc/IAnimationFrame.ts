@@ -22,6 +22,7 @@ module akra {
 		readonly scale: IVec3;
 		readonly translation: IVec3;
 
+
 		toMatrix(): IMat4;
 		toMatrixFromMatrix(): IMat4;
 

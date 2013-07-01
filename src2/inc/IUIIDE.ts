@@ -35,6 +35,8 @@ module akra {
 		LOAD_COLLADA,
 
 		CHANGE_CAMERA,
+
+		SCREENSHOT
 	}
 
 

@@ -45,15 +45,15 @@ module akra.ui.animation {
 				drop: (file: File, content, format, e: DragEvent): void => {
 					pGraph.el.removeClass("file-drag-over");
 					
-					if (e.target !== (<any>pGraph).$svg[0]) {
-						return;
-					}
+					
 
 					var pName: IPathinfo = pathinfo(file.name);
 					var sExt: string = pName.ext.toUpperCase();
 
 				    if (sExt == "DAE" ) {
+				    	console.log("before resource creation...");
 				    	var pModelResource: ICollada = <ICollada>pRmgr.colladaPool.createResource(pName.toString());
+				    	console.log("before model parsing...");
 			    		pModelResource.parse(<string>content, {scene: false, name: pName.toString()});
 
 			    		var pAnimations: IAnimation[] = pModelResource.extractAnimations();
@@ -70,6 +70,14 @@ module akra.ui.animation {
 		    			this.createNodeByController(pImporter.getController());
 
 		    		}
+		    	},
+
+		    	verify: (file: File, e: DragEvent): bool => {
+		    		if (e.target !== (<any>pGraph).$svg[0]) {
+						return false;
+					}
+
+					return true;
 		    	},
 
 		    	// dragenter: (e) => {
@@ -229,8 +237,9 @@ module akra.ui.animation {
 		        // pPlayer.animation = pAnimation;
 
 		        pSubAnim = (<IAnimationContainer>pAnimation).getAnimation();
+		        // console.log(pSubAnim);
 		        pSubNode = this.createNodeByAnimation(pSubAnim);
-		    
+		    	// console.log(this, pSubNode, pPlayer);
 		    	connect(this, pSubNode, pPlayer);
 			}
 			else {
@@ -263,7 +272,7 @@ module akra.ui.animation {
 				this.selectNode(pNode);
 			}
 
-			return null;
+			return pNode;
 		}
 
 		capture(pController: IAnimationController): bool {

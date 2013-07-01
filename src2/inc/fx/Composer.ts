@@ -754,6 +754,9 @@ module akra.fx {
 			this._pPostEffectTextureB.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
 								   ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
 
+			// this._pPostEffectTextureA.notifyLoaded();
+			// this._pPostEffectTextureB.notifyLoaded();
+
 			this._pRenderTargetA = this._pPostEffectTextureA.getBuffer().getRenderTarget();
 			this._pRenderTargetB = this._pPostEffectTextureB.getBuffer().getRenderTarget();
 

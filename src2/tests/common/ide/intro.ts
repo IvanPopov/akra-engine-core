@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ///<reference path="../../../bin/DEBUG/akra.ts"/>
 
 declare var jQuery: JQueryStatic;
@@ -596,5 +597,4 @@ module akra {
 */	}
 
 	pEngine.bind("depsLoaded", main);		
-	
 }

@@ -176,6 +176,7 @@ module akra.core.pool.resources {
 				}		
 
 				iNewSize = math.max(this.byteLength * 2, this.byteLength + iCount * iStride);
+				
 				if (this.resize(iNewSize) == false) {
 					debug_warning("cannot resize buffer from " + 
 						this.byteLength + " bytes to " + iNewSize + " bytes ");

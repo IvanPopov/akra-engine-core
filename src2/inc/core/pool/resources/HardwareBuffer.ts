@@ -1,15 +1,6 @@
 #ifndef HARDWAREBUFFER
 #define HARDWAREBUFFER
 
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
-
-Copyright (c) 2000-2012 Torus Knot Software Ltd
------------------------------------------------------------------------------
-*/
 
 module akra.core.pool.resources {
 	export class HardwareBuffer extends ResourcePoolItem implements IHardwareBuffer {
@@ -25,8 +16,11 @@ module akra.core.pool.resources {
 		protected _pBackupUpdated: bool = false;
 		protected _bIgnoreHardwareUpdate: bool = false;
 
-		byteLength: uint = 0;
-		length: uint = 0;
+		get byteLength(): uint { return 0; }
+		get length(): uint { return 0; }
+		 
+		// byteLength: uint = 0;
+		// length: uint = 0;
 
 		constructor() {
 			super();

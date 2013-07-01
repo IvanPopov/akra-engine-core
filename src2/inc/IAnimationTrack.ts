@@ -13,6 +13,7 @@ module akra {
 		readonly totalFrames: uint;
 		readonly target: ISceneNode;
 		readonly duration: float;
+		readonly first: float;
 
 		/** Get keyframe by number */
 		getKeyFrame(iFrame: int): IAnimationFrame;

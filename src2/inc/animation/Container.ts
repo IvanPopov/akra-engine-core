@@ -203,7 +203,7 @@ module akra.animation {
 		    	this.enterFrame(fRealTime, this._fTrueTime);
 		    }
 
-		    if (!this._bLeftInfinity && this._fRealTime < this._fStartTime) {
+		    if (!this._bLeftInfinity  && this._fTrueTime < this.first) {
 		    	return null;
 		    }
 

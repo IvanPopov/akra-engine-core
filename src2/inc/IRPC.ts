@@ -14,6 +14,7 @@ module akra {
         n: uint;
         fn: Function;
         timestamp: uint;
+        procInfo?: string;
     }
 
 	export interface IRPCPacket {
@@ -25,11 +26,22 @@ module akra {
     export interface IRPCRequest extends IRPCPacket {
         proc: string;
         argv: any[];
+        //ms - life time
+        lt: uint;
     }
 
     export interface IRPCResponse extends IRPCPacket  {
         //procedure result
         res: any;
+    }
+
+    export interface IRPCProcOptions {
+        //-1 - unknown, 0 - immortal
+        lifeTime?: int;
+    }
+
+    export interface IRPCProcOptionsMap {
+        [proc: string]: IRPCProcOptions;
     }
 
     export interface IRPCOptions {
@@ -41,6 +53,7 @@ module akra {
         procListName?: string;          /* имя процедуры, для получения все поддерживаемых процедур */
         callsFrequency?: int;           /* 0 or -1 - disable group calls */
         context?: any;                  /* контекст, у которого будут вызываться методы, при получении REQUEST запросов со стороны сервера */
+        procMap?: IRPCProcOptionsMap;
     }
 
 	export interface IRPC extends IEventProvider {
@@ -59,6 +72,8 @@ module akra {
 
         groupCall(): int;
         dropGroupCall(): int;
+
+        setProcedureOption(sProc: string, sOpt: string, pValue: any): void;
 
 		signal joined(): void;
 

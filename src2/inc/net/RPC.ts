@@ -8,7 +8,7 @@
 #include "util/util.ts"
 #include "util/ObjectList.ts"
 
-/// @: {data}/server|src(inc/net/server)|location()
+/// @: {data}/server|src(inc/net/server)|location()|data_location({data},DATA)
 
 
 #define HAS_LIMITED_DEFERRED_CALLS(rpc) (rpc.options.deferredCallsLimit >= 0)
@@ -69,6 +69,14 @@ module akra.net {
 
             this._pOption = pOption;
 
+            if (!isDefAndNotNull(pOption.procMap)) {
+                pOption.procMap = {};
+            }
+
+            pOption.procMap[pOption.procListName] = {
+                lifeTime: -1
+            };
+
             pAddr = pAddr || pOption.addr;
 
             if (isDefAndNotNull(pAddr)) {
@@ -124,6 +132,10 @@ module akra.net {
                                     for (var i: int = 0; i < pList.length; ++ i) {
                                         (function (sMethod) {
 
+                                            pRPC.options.procMap[sMethod] = pRPC.options.procMap[sMethod] || {
+                                                lifeTime: -1
+                                            };
+
                                             pRPC.remote[sMethod] = function () {
                                                 var pArguments: string[] = [sMethod];
 
@@ -135,6 +147,8 @@ module akra.net {
                                             }
                                         })(String(pList[i]));
                                     }
+
+                                    debug_print("rpc options: ", pRPC.options);
                                 }
 
                                 pRPC.joined();
@@ -301,9 +315,34 @@ module akra.net {
             this.free();
         }
 
+        private inline findLifeTimeFor(sProc: string): uint {
+            var pProcOpt: IRPCProcOptions = this._pOption.procMap[sProc];
+            
+            if (pProcOpt) {
+                var iProcLt: int = pProcOpt.lifeTime;
+
+                if (iProcLt >= 0)
+                    return iProcLt;
+            }
+            
+            return this._pOption.callbackLifetime;
+        }
+
+        setProcedureOption(sProc: string, sOpt: string, pValue: any): void {
+            var pOptions: IRPCProcOptions = this.options.procMap[sProc];
+
+            if (!pOptions) {
+                pOptions = this.options.procMap[sProc] = {
+                    lifeTime: -1
+                };
+            }
+
+            pOptions[sOpt] = pValue;
+        }
+
         proc(...argv: any[]): bool {
        
-            var IRPCCallback: int = arguments.length -1;
+            var IRPCCallback: int = arguments.length - 1;
             var fnCallback: Function = 
                 isFunction(arguments[IRPCCallback])? <Function>arguments[IRPCCallback]: null;
             var nArg: uint = arguments.length - (fnCallback? 2: 1);
@@ -322,11 +361,15 @@ module akra.net {
             pProc.proc  = String(arguments[0]);
             pProc.argv  = pArgv;
             pProc.next  = null;
+            pProc.lt    = this.findLifeTimeFor(pProc.proc);
 
             pCallback = <IRPCCallback>this._createCallback();
             pCallback.n = pProc.n;
             pCallback.fn = fnCallback;
             pCallback.timestamp = now();
+#ifdef DEBUG            
+            pCallback.procInfo = pProc.proc + "(" + pArgv.join(',') + ")";
+#endif
 
             if (isNull(pPipe) || !pPipe.isOpened()) {
                 if (!HAS_LIMITED_DEFERRED_CALLS(this) ||
@@ -438,16 +481,21 @@ module akra.net {
             var pCallback: IRPCCallback = <IRPCCallback>pCallbacks.first;
             var iNow: int = now();
             var fn: Function = null;
+            var sInfo: string = null;
 
             while(!isNull(pCallback)) {
 
                 if (HAS_CALLBACK_LIFETIME(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
                     fn = pCallback.fn;
+#ifdef DEBUG                    
+                    sInfo = pCallback.procInfo;
+#endif
                     this._releaseCallback(<IRPCCallback>pCallbacks.takeCurrent());
 
                     pCallback = pCallbacks.current;
 
                     if (!isNull(fn)) {
+                        debug_print("procedure info: ", sInfo);
                         fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
                     }
                 }
@@ -462,6 +510,7 @@ module akra.net {
             pReq.proc = null;
             pReq.argv = null;
             pReq.next = null;
+            pReq.lt = 0;
 
             RPC.requestPool.push(pReq);
         };
@@ -469,7 +518,7 @@ module akra.net {
         _createRequest(): IRPCRequest {
             if (RPC.requestPool.length == 0) {
                 // LOG("allocated rpc request");
-                return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null, next: null };
+                return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null, next: null, lt: 0 };
             }
 
             return <IRPCRequest>RPC.requestPool.pop();
@@ -479,6 +528,7 @@ module akra.net {
             pCallback.n = 0;
             pCallback.fn = null;
             pCallback.timestamp = 0;
+            pCallback.procInfo = null;
 
             RPC.callbackPool.push(pCallback);
         };
@@ -486,7 +536,7 @@ module akra.net {
         _createCallback(): IRPCCallback {
             if (RPC.callbackPool.length == 0) {
                 // LOG("allocated callback");
-                return { n: 0, fn: null, timestamp: 0 };
+                return { n: 0, fn: null, timestamp: 0, procInfo: <string>null };
             }
 
             return <IRPCCallback>RPC.callbackPool.pop();

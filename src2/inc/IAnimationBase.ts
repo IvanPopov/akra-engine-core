@@ -27,6 +27,8 @@ module akra {
 		name: string;
 		type: EAnimationTypes;
 		
+		readonly first: float;
+
 		extra: any;
 
 		play(fRealTime: float): void;
@@ -36,7 +38,7 @@ module akra {
 		attach(pTarget: ISceneNode): void;
 		
 		frame(sName: string, fRealTime: float): IAnimationFrame;
-		apply(fRealTime: float): void;
+		apply(fRealTime: float): bool;
 
 		addTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
 		setTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;

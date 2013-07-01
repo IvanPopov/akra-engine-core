@@ -17,7 +17,7 @@ module akra.webgl {
 	}
 
 	export class WebGLRenderer extends render.Renderer {
-		private _pCanvas: HTMLCanvasElement;
+		private _pCanvas: HTMLCanvasElement = null;
 
 		private _pWebGLContext: WebGLRenderingContext;
 		private _pWebGLFramebufferList: WebGLFramebuffer[];
@@ -41,27 +41,62 @@ module akra.webgl {
 			framebuffer: null
 		}
 
+		static DEFAULT_OPTIONS: IRendererOptions = {
+			depth: false,
+			stencil: false,
+			antialias: false,
+			preserveDrawingBuffer: false
+		};
+
 		constructor (pEngine: IEngine);
 		constructor (pEngine: IEngine, sCanvas: string);
+		constructor (pEngine: IEngine, pOptions: IRendererOptions);
 		constructor (pEngine: IEngine, pCanvas: HTMLCanvasElement);
-		constructor (pEngine: IEngine, pCanvas?: any) {
+		constructor (pEngine: IEngine, options?: any) {
 			super(pEngine);
 
-			if (isDef(pCanvas)) {
+			var pOptions: IRendererOptions = null;
+
+			if (isDefAndNotNull(arguments[1])) {
 				
 				//get HTMLCanvasElement by id
-				if (isString(pCanvas)) {
-					this._pCanvas = <HTMLCanvasElement>document.getElementById(pCanvas);
+				if (isString(arguments[1])) {
+					this._pCanvas = <HTMLCanvasElement>document.getElementById(arguments[1]);
+				}
+				else if (arguments[1] instanceof HTMLCanvasElement) {
+					this._pCanvas = <HTMLCanvasElement>arguments[1];
 				}
 				else {
-					this._pCanvas = <HTMLCanvasElement>pCanvas;
+					pOptions = <IRendererOptions>arguments[1];
+
+					if (pOptions.canvas instanceof HTMLCanvasElement) {
+						this._pCanvas = pOptions.canvas;
+					}
 				}
 			}
-			else {
+			
+			if (isNull(this._pCanvas)) {
 				this._pCanvas = <HTMLCanvasElement>document.createElement('canvas');
 			}
 
-			this._pWebGLContext = createContext(this._pCanvas);
+			if (isNull(pOptions)) {
+				pOptions = WebGLRenderer.DEFAULT_OPTIONS;
+			}
+			else {
+				for (var i: int = 0, pOptList: string[] = Object.keys(WebGLRenderer.DEFAULT_OPTIONS); i < pOptList.length; ++ i) {
+					var sOpt: string = pOptList[i];
+
+					if (!isDef(pOptions[sOpt])) {
+						pOptions[sOpt] = WebGLRenderer.DEFAULT_OPTIONS[sOpt];
+					}
+				}
+			}
+			
+			debug_print("webgl context attributes:", pOptions);
+
+			this._pWebGLContext = createContext(this._pCanvas, pOptions);
+
+			debug_assert(!isNull(this._pWebGLContext), "webgl context is NULL");
 
 			this._pWebGLFramebufferList = new Array(WEBGL_MAX_FRAMEBUFFER_NUM);
 

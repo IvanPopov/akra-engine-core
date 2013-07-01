@@ -161,6 +161,8 @@ module akra.scene.light {
 			if (this.enabled && this.isShadowCaster) {
 				for(var i: uint = 0; i<6; i++){
 					this.getRenderTarget(i).update();
+					// this.getRenderTarget(i).getRenderer()._setViewport(this.getRenderTarget(i).getViewport(0));
+					// console.log("GL_DEPTH_RANLE", (<webgl.WebGLRenderer>this.getRenderTarget(i).getRenderer()).getWebGLContext().getParameter(0x0B70));
 				}
 			}
 		};

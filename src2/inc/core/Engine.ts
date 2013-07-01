@@ -30,6 +30,8 @@
 #include "controls/GamepadMap.ts"
 #include "controls/KeyMap.ts"
 
+#include "util/SimpleGeometryObjects.ts"
+
 
 
 #ifdef WEBGL
@@ -38,6 +40,7 @@
 
 #ifdef GUI
 #include "ui/UI.ts"
+#include "ui/IDE.ts"
 #endif
 
 module akra.core {
@@ -81,6 +84,7 @@ module akra.core {
 			}
 
 			this._pSceneManager = new scene.SceneManager(this);
+
 			if (!this._pSceneManager.initialize()) {
 				debug_error("cannot initialize SceneManager");
 			}
@@ -89,7 +93,8 @@ module akra.core {
 			this._pTimer = util.UtilTimer.start(); 
 
 #ifdef WEBGL
-			this._pRenderer = new webgl.WebGLRenderer(this);
+			var pRendererOptions: IRendererOptions = pOptions? pOptions.renderer: null;
+			this._pRenderer = new webgl.WebGLRenderer(this, pRendererOptions);
 #else
 			CRITICAL("render system not specified");
 #endif
@@ -338,7 +343,7 @@ module akra.core {
 			}
 		}
 
-		static DEPS_ROOT: string = DATA_FOLDER;
+		static DEPS_ROOT: string = DATA;
 		static DEPS: IDependens = 
 			{
 				files: [ 

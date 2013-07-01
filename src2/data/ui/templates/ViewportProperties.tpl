@@ -17,11 +17,14 @@
 		</div>
 		<div class="row">
 			<span>FXAA:</span>
-			<component type="Switch" name="FXAA" text="FXAA" />
+			<component type="Switch" name="FXAA" text="FXAA" on/>
 		</div>
-		<div class="row last">
+		<div class="row">
 			<span>Skybox:</span>
 			<component type="Label" name="skybox" text="[not specified]" />
+		</div>
+		<div class="row last">
+			<component type="Button" name="screenshot" text="Save Screenshot" />
 		</div>
 	</div>
 </div>

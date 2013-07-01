@@ -29,11 +29,16 @@ module akra.webgl {
 		protected _pBuffer: IPixelBox = null;
 		protected _iWebGLInternalFormat: int = 0;
 
+		protected _iByteSize: uint;
+
+		inline get byteLength(): uint { return this._iByteSize; }
+
 		inline get width(): uint { return this._iWidth; }
 		inline get height(): uint { return this._iHeight; }
 		inline get depth(): uint { return this._iDepth; }
 
 		inline get format(): uint { return this._eFormat; }
+
 
 
 		constructor () {
@@ -90,7 +95,7 @@ module akra.webgl {
 
 			this._iRowPitch = iWidth;
 			this._iSlicePitch = iHeight * iWidth;
-			this.byteLength = iHeight * iWidth * akra.pixelUtil.getNumElemBytes(eFormat);
+			this._iByteSize = iHeight * iWidth * akra.pixelUtil.getNumElemBytes(eFormat);
 
 			this._pBuffer = new pixelUtil.PixelBox(iWidth, iHeight, iDepth, eFormat);
 			this._iWebGLInternalFormat = GL_NONE;
@@ -304,7 +309,7 @@ module akra.webgl {
 				var iSize: uint;
 				
 				if(arguments.length === 1){
-					iLockFlags === arguments[0];
+					iLockFlags = arguments[0];
 					iOffset = 0;
 					iSize = this.byteLength;
 				}

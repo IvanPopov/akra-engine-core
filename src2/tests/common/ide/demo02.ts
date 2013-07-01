@@ -1,15 +1,18 @@
-#include "util/testutils.ts"
-#include "akra.ts"
-#include "controls/KeyMap.ts"
-#include "ui/IDE.ts"
-#include "util/SimpleGeometryObjects.ts"
+///<reference path="../../../bin/DEBUG/akra.ts"/>
+
+declare var jQuery: JQueryStatic;
+declare var $: JQueryStatic;
+
+/// @data: data
 
 /// @BARREL: 				{data}/models/barrel/barrel_and_support.dae|location()
 /// @CLOSED_BOX: 			{data}/models/box/closed_box.dae|location()
 /// @TUBE: 					{data}/models/tube/tube.dae|location()
 /// @TUBE_BETWEEN_ROCKS:	{data}/models/tubing/tube_beeween_rocks.DAE|location()
 /// @HERO_MODEL: 			{data}/models/hero/movie.dae|location()
-/// @HERO_CONTROLLER: 		{data}/models/hero/movie_anim.DAE|location()
+/// @HERO_MOVIE: 		{data}/models/hero/movie_anim.DAE|location()
+/// @HERO_INTRO: 			{data}/models/hero/intro.part1.DAE|location()
+/// @HERO_FILM: 			{data}/models/hero/film.DAE|location()
 /// @WINDSPOT_MODEL: 		{data}/models/windspot/WINDSPOT.DAE|location()
 /// @MINER_MODEL: 			{data}/models/miner/miner.dae|location()
 /// @ROCK_MODEL: 			{data}/models/rock/rock-1-low-p.DAE|location()
@@ -18,7 +21,7 @@
 /// @SKYBOX: 				{data}/textures/skyboxes/desert-3.dds|location()
 
 module akra {
-	var pEngine: IEngine = createEngine();
+	var pEngine: IEngine = createEngine({renderer: {preserveDrawingBuffer: true}});
 
 	var pRmgr: IResourcePoolManager 	= pEngine.getResourceManager();
 	var pScene: IScene3d 				= pEngine.getScene();
@@ -34,6 +37,15 @@ module akra {
 
 	// var $canvasContainer: JQuery 		= null;
 	// var $div: JQuery 					= null;
+
+
+	// class TimeLine {
+	// 	private _pControllers: IAnimationController[] = [];
+
+	// 	addController(pController: IAnimationController, fTime: float): void {
+
+	// 	}
+	// }
 
 	
 
@@ -51,7 +63,9 @@ module akra {
 		terrain 			: <ITerrain>null,
 		terrainLoaded		: false,
 		cameras 			: <ICamera[]>[],
-		activeCamera  		: <int>null,
+		activeCamera  		: 0,
+		cameraLight 		: <ILightPoint>null,
+		voice  				: <any>null,
 
 		hero: {
 			root: 	<ISceneNode>null,
@@ -61,19 +75,48 @@ module akra {
 		}
 	}
 
+	
+	function loadAssets(): void {
+		var context = new ((<any>window).AudioContext || (<any>window).mozAudioContext || (<any>window).webkitAudioContext)();
+		var analyser = context.createAnalyser();
+		var source; 
+		var audio0 = new Audio();   
+
+		audio0.src = "assets/voice.wav";
+		audio0.controls = true;
+		audio0.autoplay = false;
+		audio0.loop = false;
+		source = context.createMediaElementSource(audio0);
+		source.connect(analyser);
+		analyser.connect(context.destination);
+		self.voice = audio0;
+	}
+
+	loadAssets();
+
 	function setup(): void {
-		pIDE = <ui.IDE>pUI.createComponent("IDE");
-		pIDE.render($(document.body));
+		if (!isNull(pUI)) {
+			pIDE = <ui.IDE>pUI.createComponent("IDE");
+			pIDE.render($(document.body));
+		}
+		else {
+			var pCanvasElement: HTMLCanvasElement = (<any>pCanvas)._pCanvas;
+			var pDiv: HTMLDivElement = <HTMLDivElement>document.createElement("div");
+
+			document.body.appendChild(pDiv);
+			pDiv.appendChild(pCanvasElement);
+			pDiv.style.position = "fixed";
+		}
 
 		pKeymap.captureMouse((<webgl.WebGLCanvas>pCanvas).el);
 		pKeymap.captureKeyboard(document);
 
-		pCanvas.bind(SIGNAL(viewportAdded), (pCanvas: ICanvas3d, pVp: IViewport) => {
+		pCanvas.bind("viewportAdded", (pCanvas: ICanvas3d, pVp: IViewport) => {
 			pViewport = self.viewport = pVp;
 		});
 
 
-		// pIDE.bind(SIGNAL(created), (): void => {
+		// pIDE.bind("created", (): void => {
 		// 	$canvasContainer = $((<webgl.WebGLCanvas>pCanvas).el).parent();
 
 		// 	$div = $("<div>[ Fred ]</div>").css({
@@ -112,11 +155,32 @@ module akra {
 				return;
 			}
 
-			var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
-
 			pMovie.stop();
 			pMovie.play("movie");
-			pCont.rewind(33.33);
+
+			self.cameraLight.enabled = false;
+			
+			setTimeout(() => {
+				// self.voice.currentTime = 0;
+				self.voice.play();
+			}, 2500);
+
+			setTimeout(() => {
+				self.cameraLight.enabled = true;
+				setTimeout(() => {
+					self.cameraLight.enabled = false;
+					setTimeout(() => {
+						self.cameraLight.enabled = true;
+						setTimeout(() => {
+							self.cameraLight.enabled = false;
+							setTimeout(() => {
+								self.cameraLight.enabled = true;
+							}, 30);
+						}, 30);
+					}, 100);
+				}, 50);
+			}, 7000);
+
 		});
 
 		pKeymap.bind("add", () => {
@@ -126,8 +190,8 @@ module akra {
 				return;
 			}
 
-			var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
-			pCont.setSpeed(pCont.speed * 2.0);
+			// var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
+			// pCont.setSpeed(pCont.speed * 2.0);
 		});
 
 		pKeymap.bind("SUBTRACT", () => {
@@ -137,8 +201,8 @@ module akra {
 				return;
 			}
 
-			var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
-			pCont.setSpeed(pCont.speed / 2.0);
+			// var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
+			// pCont.setSpeed(pCont.speed / 2.0);
 		});
 	}
 
@@ -172,6 +236,13 @@ module akra {
 
 	function createViewports(): void {
 		pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
+
+		if (isNull(pUI)) {
+			pCanvas.resize(window.innerWidth, window.innerHeight);
+			window.onresize = function(event) {
+				pCanvas.resize(window.innerWidth, window.innerHeight);
+			}
+		}
 	}
 
 	function createLighting(): void {
@@ -201,16 +272,16 @@ module akra {
 			pOmniLight.addPosition(v3fPos);
 		}
 
-		createAmbient("Ambient LB", vec3(-500, 500, -500));
-		createAmbient("Ambient RB", vec3(500, 500, -500));
-		createAmbient("Ambient LF", vec3(-500, 500, 500));
-		createAmbient("Ambient RF", vec3(500, 500, 500));
+		createAmbient("Ambient LB", new Vec3(-500, 500, -500));
+		createAmbient("Ambient RB", new Vec3(500, 500, -500));
+		createAmbient("Ambient LF", new Vec3(-500, 500, 500));
+		createAmbient("Ambient RF", new Vec3(500, 500, 500));
 	}
 
 
 
-
-	function updateKeyboardControls(fLateralSpeed: float, fRotationSpeed: float): void {
+	var v3fOffset: IVec3 = new Vec3;
+	function updateKeyboardControls(fLateralSpeed: number, fRotationSpeed: number): void {
 		var pKeymap: IKeyMap = self.keymap;
 		var pGamepad: Gamepad = self.gamepads.find(0);
 
@@ -231,7 +302,7 @@ module akra {
 	        pCamera.addRelRotationByEulerAngles(0, -fRotationSpeed, 0);
 	    }
 
-	    var v3fOffset: IVec3 = vec3(0, 0, 0);
+	    v3fOffset.set(0.);
 	    var isCameraMoved: bool = false;
 
 	    if (pKeymap.isKeyPress(EKeyCodes.D) || (pGamepad && pGamepad.buttons[EGamepadCodes.PAD_RIGHT])) {
@@ -315,10 +386,10 @@ module akra {
 
 		pTerrainMap["height"] = pRmgr.loadImage("@TERRAIN_HEIGHT_MAP");
 
-		pTerrainMap["height"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
+		pTerrainMap["height"].bind("loaded", (pTexture: ITexture) => {
 			pTerrainMap["normal"] = pRmgr.loadImage("@TERRAIN_NORMAL_MAP");
 			
-			pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
+			pTerrainMap["normal"].bind("loaded", (pTexture: ITexture) => {
 				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
 				pTerrain.attachToParent(pScene.getRootNode());
 				pTerrain.setInheritance(ENodeInheritance.ALL);
@@ -341,7 +412,7 @@ module akra {
 		pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
 		pSkyBoxTexture.loadResource("@SKYBOX");
 
-		pSkyBoxTexture.bind(SIGNAL(loaded), (pTexture: ITexture) => {
+		pSkyBoxTexture.bind("loaded", (pTexture: ITexture) => {
 			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
 				(<render.DSViewport>pViewport).setSkybox(pTexture);
 			}
@@ -351,7 +422,7 @@ module akra {
 	function loadModels(sPath, fnCallback?: Function): void {
 		var pModel: ICollada = <ICollada>pRmgr.loadModel(sPath);
 
-		pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+		pModel.bind("loaded", (pModel: ICollada) => {
 			var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 
 			if (isFunction(fnCallback)) {
@@ -391,7 +462,7 @@ module akra {
 			v3fPlace = pNode.worldPosition;
 		}
 
-		var v3fsp: IVec3 = vec3();
+		var v3fsp: IVec3 = new Vec3;
 
 		if (self.terrain.projectPoint(v3fPlace, v3fsp)) {
 			pNode.setPosition(v3fsp);
@@ -404,7 +475,9 @@ module akra {
 
 			(<ISceneModel>pNode.findEntity("node-Sphere001")).mesh.getSubset(0).setVisible(false);
 			
-			var v3fsp: IVec3 = vec3();
+			pEngine.renderFrame();
+
+			var v3fsp: IVec3 = new Vec3();
 			
 			if (self.terrain.projectPoint(pNode.worldPosition, v3fsp)) {
 				pNode.setPosition(v3fsp);
@@ -412,50 +485,101 @@ module akra {
 				pCamera.addPosition(v3fsp);
 				pCamera.lookAt(v3fsp);
 			}
+			
+			var pCamLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, false, 0, "camera-light");
+
+			// console.log(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
+			pCamLight.attachToParent(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
+
+			pCamLight.setInheritance(ENodeInheritance.ALL);
+			pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
+			pCamLight.params.diffuse.set(1.);
+			pCamLight.params.specular.set(1.);
+			pCamLight.params.attenuation.set(.35, 0, 0);
+			pCamLight.enabled = false;
+
+			self.cameraLight = pCamLight;
+
+
 
 			loadModels("@CLOSED_BOX", (pBox: ISceneNode) => {
 				pBox.scale(.25);
-				putOnTerrain(pBox, vec3(-2., -3.85, -5.));
-				pBox.addPosition(vec3(0., 1., 0.));
+				putOnTerrain(pBox, new Vec3(-2., -3.85, -5.));
+				pBox.addPosition(new Vec3(0., 1., 0.));
 			});
 
 			loadModels("@BARREL", (pBarrel: ISceneNode) => {
 				pBarrel.scale(.75);
-				pBarrel.setPosition(vec3(-30., -40.23, -15.00));
+				pBarrel.setPosition(new Vec3(-30., -40.23, -15.00));
 				pBarrel.setRotationByXYZAxis(-17. * math.RADIAN_RATIO, -8. * math.RADIAN_RATIO, -15. * math.RADIAN_RATIO);
 			});
 
 			loadModels("@TUBE", (pTube: ISceneNode) => {
 				pTube.scale(19.);
 				pTube.setRotationByXYZAxis(0. * math.RADIAN_RATIO, -55. * math.RADIAN_RATIO, 0.);
-				pTube.setPosition(vec3(-16.  , -52.17  ,-66.));
+				pTube.setPosition(new Vec3(-16.  , -52.17  ,-66.));
 			});
 
 			loadModels("@TUBE_BETWEEN_ROCKS", (pTube: ISceneNode) => {
 				pTube.scale(2.);
 				pTube.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
-				pTube.setPosition(vec3(-55., -12.15, -82.00));
+				pTube.setPosition(new Vec3(-55., -12.15, -82.00));
 			});
 
-			pScene.bind(SIGNAL(beforeUpdate), update);
+			pScene.bind("beforeUpdate", update);
 
-			// var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_CONTROLLER");
+			var pMovie: ICollada = <ICollada>pRmgr.loadModel("@HERO_FILM");
 			
-			// pMovie.bind(SIGNAL(loaded), () => {
+			pMovie.bind("loaded", () => {
 
-			// 	var pAnim: IAnimation = pMovie.extractAnimation(0);
-			// 	var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-			// 	var pController: IAnimationController = pEngine.createAnimationController("movie");
+				var pAnim: IAnimation = pMovie.extractAnimation(0);
+				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+				var pController: IAnimationController = pEngine.createAnimationController("movie");
 				
-			// 	pController.addAnimation(pContainer);
-			// 	pController.stop();
+				pController.addAnimation(pContainer);
+				pController.stop();
 
-			// 	pNode.addController(pController);
+				pNode.addController(pController);
 
-			// 	self.hero.movie = pController;
+				self.hero.movie = pController;
+				pEngine.exec();
+			});
+			
+			/*var pController: IAnimationController = pEngine.createAnimationController("movie");
+			var pIntroData: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
+			
+			pIntroData.bind("loaded", () => {
+
+				var pAnim: IAnimation = pIntroData.extractAnimation(0);
+				var pIntro: IAnimationContainer = animation.createContainer(pAnim, "intro");
 				
-			// });
+				// pIntro.useLoop(true);
+				pIntro.rightInfinity(false);
+				pController.addAnimation(pIntro);
+				// pController.stop();
+				
+				var pMovieData: ICollada = <ICollada>pRmgr.loadModel("@HERO_MOVIE");
 
+				pMovieData.bind("loaded", () => {
+					var pAnim: IAnimation = pMovieData.extractAnimation(0);
+					var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
+
+					// pMovie.useLoop(true);
+					pMovie.leftInfinity(false);
+
+					
+					pController.addAnimation(pMovie);
+					pController.stop();
+
+					pIntro.bind("stoped", () => {
+						pController.play("movie");
+					});
+
+				});
+			}); 
+			
+			pNode.addController(pController);
+			self.hero.movie = pController;*/
 
 			fetchAllCameras();
 		});
@@ -482,6 +606,12 @@ module akra {
 
 */	}
 
-	pEngine.bind(SIGNAL(depsLoaded), main);		
-	pEngine.exec();
+	pEngine.bind("depsLoaded", main);	
+	pEngine.getResourceManager().setLoadedAllRoutine(() => {
+		console.log("all loaded!!!");
+	});
+	pEngine.getResourceManager().monitorInitResources(function (nLoaded?: number, nTotal?: number, pTarget?: IResourcePoolItem): void {
+        console.log('loaded:', nLoaded / nTotal * 100, '%', "(", nLoaded , "/",  nTotal, ")", pTarget.findResourceName());
+    });	
+	// pEngine.exec();
 }

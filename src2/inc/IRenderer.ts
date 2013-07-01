@@ -29,6 +29,9 @@ module akra {
 
     #define CAPABILITYVALUE(category, value) ((category << (32 - 4)) | (1 << value))
 
+    export interface IRendererOptions extends WebGLContextAttributes {
+        canvas?: HTMLCanvasElement;
+    }
 
     //API SPECIFIFC CONSTANTS
 

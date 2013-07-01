@@ -37,6 +37,10 @@ module akra.animation {
 			return (<IAnimationFrame>(this._pKeyFrames.last)).time;
 		}
 
+		inline get first(): float {
+			return (<IAnimationFrame>(this._pKeyFrames.first)).time;
+		}
+
 
 		constructor (sTarget: string = null) {
 			this._sTarget = sTarget;
@@ -177,8 +181,8 @@ module akra.animation {
 
 #ifdef DEBUG
 		toString(): string {
-			var s = "target: " + this.targetName + ", duration: " + this.duration + 
-				", frames: " + this.totalFrames; 
+			var s = "target: " + this.targetName + ", from: " + this._pKeyFrames[0].time + "sec. , duration: " + this.duration + 
+				" sec. , frames: " + this.totalFrames; 
 			return s;
 		}
 #endif

@@ -826,6 +826,7 @@ module akra.fx {
 			var sCode: string = "";
 			var eType: EFunctionType = EFunctionType.k_Vertex;
 
+
 			sCode = this.generateSystemExtBlock(eType) + "\n" +
 					
 					this.generateTypeDels(eType) + "\n" +
@@ -877,6 +878,7 @@ module akra.fx {
 
 
 			this.enableVaringPrefixes(eType, true);
+
 			sCode = /*"#define while(expr) for(int _i = 0; _i < 1; _i--) if(!(expr)) break; else" + "\n" +*/
 					this.generateSystemExtBlock(eType) + "\n" +
 

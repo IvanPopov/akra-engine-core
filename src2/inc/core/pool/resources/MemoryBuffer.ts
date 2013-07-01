@@ -12,6 +12,10 @@ module akra.core.pool.resources {
 			return this._pData.byteLength;
 		}
 
+		inline get length(): uint {
+			return this.byteLength;
+		}
+
 		create(iByteSize: uint, iFlags: int = EHardwareBufferFlags.DYNAMIC): bool {
 			
 			CLEAR_ALL(iFlags, 

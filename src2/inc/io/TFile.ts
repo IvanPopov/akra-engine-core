@@ -12,9 +12,9 @@
 //переносим все зависисмости в папку js паки с данными
 //обычно, это data/js
 
-/// @: {data}/js/FileInterface.t.js|src(inc/io/FileInterface.t.js)|location()
-/// @FILE_LOCAL_THREAD: {data}/js/LocalFile.t.js|src(inc/io/LocalFile.t.js)|location()
-/// @FILE_REMOTE_THREAD: {data}/js/RemoteFile.t.js|src(inc/io/RemoteFile.t.js)|location()
+/// @: {data}/js/FileInterface.t.js|src(inc/io/FileInterface.t.js)|data_location({data},DATA)
+/// @FILE_LOCAL_THREAD: {data}/js/LocalFile.t.js|src(inc/io/LocalFile.t.js)|data_location({data},DATA)
+/// @FILE_REMOTE_THREAD: {data}/js/RemoteFile.t.js|src(inc/io/RemoteFile.t.js)|data_location({data},DATA)
 
 
 #define LocalFileThreadManager() util.ThreadManager("@FILE_LOCAL_THREAD")
@@ -234,47 +234,32 @@ module akra.io {
 		                     transfer: this._eTransferMode
 		                 };
 
-		    var fnCallbackSystem: Function = function (err, pData) {
+		    var fnCallbackSystem: Function = function (err, sBlobURL: string) {
 				if (err) {
 					fnCallback.call(pFile, err);
 					return;
 				}
-				
-		        if (eTransferMode == EFileTransferModes.k_Slow && IS_BINARY(this._iMode)) {
-		            pData = new Uint8Array(pData).buffer;
-		        }
+				debug_print("readed blob url: ", sBlobURL);
+		        // if (eTransferMode == EFileTransferModes.k_Slow && IS_BINARY(this._iMode)) {
+		        //     pData = new Uint8Array(pData).buffer;
+		        // }
 
 		        pFile.atEnd();
 
-		        //large file can be sended as transferrable
-		        if (isArrayBuffer(pData) && !IS_BINARY(this._iMode)) {
-		        	debug_print("file <", this.name, "> (" + (pData.byteLength / (1024 * 1024)).toFixed(2) + " mb) sended as trunsferable, but file is not binary");
-		        	
-		        	// var i = 0;
-		        	// var s = "";
-		        	// var block_size = 1024 * 64;
+		        util.blobFromDataURL(sBlobURL, (b: Blob): void => {
+					var pReader: FileReader = new FileReader();
 
-		        	// while(true) {
-		        	// 	var n = math.min(pData.byteLength - i, block_size);
-		        		
-		        	// 	var pBuf = new Uint8Array(pData, i, n);
-
-		        	// 	s += String.fromCharCode.apply(null, Array.prototype.slice.call(pBuf, 0));
-
-		        	// 	i += block_size;
-
-		        	// 	if (i > pData.byteLength) {
-		        	// 		fnCallback.call(pFile, null, s);
-		        	// 		return;
-		        	// 	}
-
-		        	// 	debug_print(this.name + " decoded ", (i / pData.byteLength * 100).toFixed(2) + "%");
-		        	// }
-		        	
-		        	pData = util.abtos(pData);
-		        }
-		        
-		        fnCallback.call(pFile, null, pData);
+					pReader.onload = function() {
+					    fnCallback.call(pFile, null, this.result);
+					};
+					
+					if (IS_BINARY(this._iMode)) {
+						pReader.readAsArrayBuffer(b);
+					}
+		        	else {
+		        		pReader.readAsText(b);
+		        	}
+		        })
 		    };
 
 		    this.execCommand(pCommand, fnCallbackSystem);

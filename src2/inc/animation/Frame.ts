@@ -192,6 +192,7 @@ module akra.animation {
 		}
 
 		ALLOCATE_STORAGE(Frame, AF_NUM);
+	
 	} 
 
 	export inline function animationFrame(): Frame {

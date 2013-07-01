@@ -171,7 +171,7 @@ module akra.webgl {
 
     export function createContext(
             pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 
-            pOptions?: { antialias?: bool; }): WebGLRenderingContext {
+            pOptions?: WebGLContextAttributes): WebGLRenderingContext {
 
     	var pWebGLContext: WebGLRenderingContext = null;
 		
@@ -179,7 +179,11 @@ module akra.webgl {
 			pWebGLContext = pCanvas.getContext("webgl", pOptions) || 
 				pCanvas.getContext("experimental-webgl", pOptions);
     	}
-		catch (e) {}
+		catch (e) {
+#ifdef DEBUG
+            throw e;
+#endif
+        }
 
 		if (isDefAndNotNull(pWebGLContext)) {
 #ifdef WEBGL_DEBUG

@@ -28,7 +28,7 @@ module akra.ui {
 
 		protected _pEngine: IEngine = null;
 
-		protected _pSceneTree: scene.Tree;
+		protected _pSceneTree: scene.SceneTree;
 		protected _pInspector: Inspector;
 		protected _pPreview: ViewportProperties;
 		protected _pTabs: IUITabs;
@@ -84,7 +84,7 @@ module akra.ui {
 
 			//setup Scene tree
 
-			var pTree: scene.Tree = this._pSceneTree = <scene.Tree>this.findEntity("SceneTree");
+			var pTree: scene.SceneTree = this._pSceneTree = <scene.SceneTree>this.findEntity("SceneTree");
 			pTree.fromScene(this.getScene());
 
 			//connect node properties to scene tree
@@ -164,6 +164,12 @@ module akra.ui {
 			// this._pColorViewport = pViewport;
 			// this._pSearchCam = pSearchCam;
 			// this._pColorTexture = pColorTex;
+			var pViewport: IViewport = this.getViewport();
+			
+			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
+				(<IDSViewport>pViewport).setOutlining(true);
+				LOG("USE OUTLINING!!!!");
+			}
 		}
 
 		_sceneUpdate(pScene: IScene3d): void {
@@ -279,9 +285,9 @@ module akra.ui {
 				case ECMD.SET_PREVIEW_FULLSCREEN:
 					return this.setFullscreen();
 				case ECMD.INSPECT_SCENE_NODE:
-					console.log("b", this._iSelectedRid);
+					// console.log("b", this._iSelectedRid);
 					this._iSelectedRid = akra.scene.isSceneObject(argv[0])? this.getEngine().getComposer()._calcRenderID(<ISceneObject>argv[0], null): 0;
-					console.log("a", this._iSelectedRid);
+					// console.log("a", this._iSelectedRid);
 					return this.inspectNode(argv[0]);
 				case ECMD.EDIT_ANIMATION_CONTROLLER: 
 					return this.editAnimationController(argv[0]);
@@ -299,9 +305,16 @@ module akra.ui {
 					return this.editMainScript();
 				case ECMD.CHANGE_CAMERA:
 					return this.changeCamera(<ICamera>argv[0]);
+				case ECMD.SCREENSHOT:
+					return this.saveScreenshot();
 			}
 
 			return false;
+		}
+
+		protected saveScreenshot(): bool {
+			saveAs(util.dataURItoBlob(this.getCanvasElement().toDataURL("image/png")), "screen.png");
+			return true;
 		}
 
 		protected changeCamera(pCamera: ICamera): bool {

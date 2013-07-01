@@ -18,6 +18,7 @@ module akra.ui {
 		protected _pResolutionCbl: IUICheckboxList;
 		protected _pFXAASwh: IUISwitch;
 		protected _pSkyboxLb: IUILabel;
+		protected _pScreenshotBtn: IUIButton;
 
 		inline get viewport(): IViewport {
 			return this._pViewport;
@@ -33,6 +34,7 @@ module akra.ui {
 			this._pFXAASwh = <IUISwitch>this.findEntity("FXAA");
 			this._pResolutionCbl = <IUICheckboxList>this.findEntity("resolution-list");
 			this._pSkyboxLb = <IUILabel>this.findEntity("skybox");
+			this._pScreenshotBtn = <IUIButton>this.findEntity("screenshot");
 
 			this._pFullscreenBtn.bind(SIGNAL(click), () => {
 				akra.ide.cmd(akra.ECMD.SET_PREVIEW_FULLSCREEN);
@@ -40,10 +42,15 @@ module akra.ui {
 
 			this.connect(this._pResolutionCbl, SIGNAL(changed), SLOT(_previewResChanged));
 			this.connect(this._pFXAASwh, SIGNAL(changed), SLOT(_fxaaChanged));
+			this.connect(this._pScreenshotBtn, SIGNAL(click), SLOT(_doScreenshot));
 
 			this._previewResChanged(this._pResolutionCbl, this._pResolutionCbl.checked);
 
 			this.setupFileDropping();
+		}
+
+		_doScreenshot(): void {
+			ide.cmd(akra.ECMD.SCREENSHOT);
 		}
 
 		private setupFileDropping(): void {
@@ -56,16 +63,7 @@ module akra.ui {
 				drop: (file: File, content, format, e: DragEvent): void => {
 					pSkyboxLb.el.removeClass("file-drag-over");
 
-					if (e.target !== $el[0] && e.target !== pViewportProperties.getCanvasElement()) {
-						return;
-					}
-
 					var pName: IPathinfo = pathinfo(file.name);
-
-				    if (pName.ext.toUpperCase() !== "DDS") {
-				    	alert("unsupported format used: " + file.name);
-				    	return;
-				    }
 
 				    pSkyboxLb.text = pName.toString();
  					
@@ -87,6 +85,20 @@ module akra.ui {
 					}	
 		    	},
 
+		    	verify: (file: File, e: DragEvent): bool => {
+		    		if (e.target !== $el[0] && e.target !== pViewportProperties.getCanvasElement()) {
+						return false;
+					}
+
+					var pName: IPathinfo = pathinfo(file.name);
+
+				    if (pName.ext.toUpperCase() !== "DDS") {
+				    	alert("unsupported format used: " + file.name);
+				    	return false;
+				    }
+
+					return true;
+		    	},
 		    	// dragenter: (e) => {
 		    	// 	pSkyboxLb.el.addClass("file-drag-over");
 		    	// },

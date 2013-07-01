@@ -113,7 +113,7 @@ module akra {
 		var pEngine: IEngine = pModel.getManager().getEngine();
 		var pScene: IScene3d = pEngine.getScene();
 		var pRoot: ISceneNode = pScene.getRootNode();
-		var pController: IAnimationController = animation.createController();
+		var pController: IAnimationController = animation.createController(pEngine);
 
 
 		pModel.attachToScene(pRoot, pController);

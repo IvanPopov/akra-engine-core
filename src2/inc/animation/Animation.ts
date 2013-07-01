@@ -22,7 +22,8 @@ module akra.animation {
 
 		push(pTrack: IAnimationTrack): void {
 			this._pTracks.push(pTrack);
-			this._fDuration = Math.max(this._fDuration, pTrack.duration);
+			this._fDuration = math.max(this._fDuration, pTrack.duration);
+			this._fFirst = math.min(this.first, pTrack.first); 
 			this.addTarget(pTrack.targetName);
 		}
 

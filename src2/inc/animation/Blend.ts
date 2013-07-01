@@ -322,6 +322,9 @@ module akra.animation {
 						iAnim ++;
 						//first, if 1
 						pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);
+						// if (iAnim === 1) {
+						// 	console.log((<any>pPointer.animation).name);
+						// }
 					}
 				}
 			}

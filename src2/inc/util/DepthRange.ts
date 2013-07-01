@@ -352,26 +352,7 @@ module akra.util{
 
     	} while(1);
 
-    	
-
     	pWebGLContext.readPixels(0, 0, 2, 1, GL_RGBA, GL_UNSIGNED_BYTE, pU8Destination);
-
-    	// pWebGLRenderer.activateWebGLTexture(GL_TEXTURE2);
-    	// pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pWebGLTexture1);
-    	// pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    	// pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    	// pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    	// pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    	// pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-			  //   				 pDepthTexture.width, pDepthTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
-
-
-    	// pWebGLRenderer.bindWebGLFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pWebGLTexture1, 0);
-    	// pWebGLRenderer.bindWebGLFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, (<any>pDepthTexture).getWebGLTexture(), 0);
-
-    	// var pDepthRange = pWebGLContext.getParameter(GL_DEPTH_RANGE);
-    	// pWebGLRenderer.bindWebGLFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, null, 0);
-
 
     	pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFrameBuffer);
         pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);

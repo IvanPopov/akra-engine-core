@@ -110,6 +110,40 @@ module akra.util {
 	    return pDocFrag;
 	};
 
+	export function blobFromDataURL(sBlobURL: string, fn: (b: Blob) => void): void {
+		var xhr = new XMLHttpRequest();
+		xhr.open("GET", sBlobURL, true);
+		xhr.responseType = "blob";
+		
+		xhr.onload = function(e) {
+			if (this.status == 200) {
+				fn(<Blob>this.response);
+			}
+		};
+
+		xhr.send();
+	}
+
+	export function dataURItoBlob(dataURI) {
+	    // convert base64 to raw binary data held in a string
+	    // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+	    var byteString = atob(dataURI.split(',')[1]);
+
+	    // separate out the mime component
+	    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+	    // write the bytes of the string to an ArrayBuffer
+	    var ab = new ArrayBuffer(byteString.length);
+	    var ia = new Uint8Array(ab);
+	    for (var i = 0; i < byteString.length; i++) {
+	        ia[i] = byteString.charCodeAt(i);
+	    }
+
+	    // write the ArrayBuffer to a blob, and you're done
+	    var bb = new Blob([ab], {type: mimeString});
+	    return bb;
+	}
+
 }
 
 #endif

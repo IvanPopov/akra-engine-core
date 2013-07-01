@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Jun 06 2013 13:35:44 GMT+0400 (Московское время (лето))
+ * assembled at: Mon Jul 01 2013 15:56:51 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
@@ -15,8 +15,9 @@
 /// @TUBE: 					{data}/models/tube/tube.dae|location()
 /// @TUBE_BETWEEN_ROCKS:	{data}/models/tubing/tube_beeween_rocks.DAE|location()
 /// @HERO_MODEL: 			{data}/models/hero/movie.dae|location()
-/// @HERO_CONTROLLER: 		{data}/models/hero/movie_anim.DAE|location()
+/// @HERO_MOVIE: 		{data}/models/hero/movie_anim.DAE|location()
 /// @HERO_INTRO: 			{data}/models/hero/intro.part1.DAE|location()
+/// @HERO_FILM: 			{data}/models/hero/film.DAE|location()
 /// @WINDSPOT_MODEL: 		{data}/models/windspot/WINDSPOT.DAE|location()
 /// @MINER_MODEL: 			{data}/models/miner/miner.dae|location()
 /// @ROCK_MODEL: 			{data}/models/rock/rock-1-low-p.DAE|location()
@@ -25,7 +26,11 @@
 /// @SKYBOX: 				{data}/textures/skyboxes/desert-3.dds|location()
 var akra;
 (function (akra) {
-    var pEngine = akra.createEngine();
+    var pEngine = akra.createEngine({
+        renderer: {
+            preserveDrawingBuffer: true
+        }
+    });
     var pRmgr = pEngine.getResourceManager();
     var pScene = pEngine.getScene();
     var pUI = pEngine.getSceneManager().createUI();
@@ -39,6 +44,11 @@ var akra;
     var pTerrain = null;
     // var $canvasContainer: JQuery 		= null;
     // var $div: JQuery 					= null;
+    // class TimeLine {
+    // 	private _pControllers: IAnimationController[] = [];
+    // 	addController(pController: IAnimationController, fTime: float): void {
+    // 	}
+    // }
     akra.self = {
         engine: pEngine,
         scene: pScene,
@@ -54,6 +64,8 @@ var akra;
         terrainLoaded: false,
         cameras: [],
         activeCamera: 0,
+        cameraLight: null,
+        voice: null,
         hero: {
             root: null,
             head: null,
@@ -61,6 +73,21 @@ var akra;
             movie: null
         }
     };
+    function loadAssets() {
+        var context = new ((window).AudioContext || (window).mozAudioContext || (window).webkitAudioContext)();
+        var analyser = context.createAnalyser();
+        var source;
+        var audio0 = new Audio();
+        audio0.src = "assets/voice.wav";
+        audio0.controls = true;
+        audio0.autoplay = false;
+        audio0.loop = false;
+        source = context.createMediaElementSource(audio0);
+        source.connect(analyser);
+        analyser.connect(context.destination);
+        akra.self.voice = audio0;
+    }
+    loadAssets();
     function setup() {
         if (!akra.isNull(pUI)) {
             pIDE = pUI.createComponent("IDE");
@@ -107,27 +134,45 @@ var akra;
             if (akra.isNull(pMovie)) {
                 return;
             }
-            var pCont = pMovie.findAnimation("movie");
             pMovie.stop();
             pMovie.play("movie");
-            // pCont.rewind(33.33);
-                    });
+            akra.self.cameraLight.enabled = false;
+            setTimeout(/** @inline */function () {
+                // self.voice.currentTime = 0;
+                akra.self.voice.play();
+            }, 2500);
+            setTimeout(/** @inline */function () {
+                akra.self.cameraLight.enabled = true;
+                setTimeout(/** @inline */function () {
+                    akra.self.cameraLight.enabled = false;
+                    setTimeout(/** @inline */function () {
+                        akra.self.cameraLight.enabled = true;
+                        setTimeout(/** @inline */function () {
+                            akra.self.cameraLight.enabled = false;
+                            setTimeout(/** @inline */function () {
+                                akra.self.cameraLight.enabled = true;
+                            }, 30);
+                        }, 30);
+                    }, 100);
+                }, 50);
+            }, 7000);
+        });
         pKeymap.bind("add", /** @inline */function () {
             var pMovie = akra.self.hero.movie;
             if (akra.isNull(pMovie)) {
                 return;
             }
-            var pCont = pMovie.findAnimation("movie");
-            pCont.setSpeed(pCont.speed * 2.0);
-        });
+            // var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
+            // pCont.setSpeed(pCont.speed * 2.0);
+                    });
         pKeymap.bind("SUBTRACT", /** @inline */function () {
             var pMovie = akra.self.hero.movie;
             if (akra.isNull(pMovie)) {
                 return;
             }
-            var pCont = pMovie.findAnimation("movie");
-            pCont.setSpeed(pCont.speed / 2.0);
-        });
+            // var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
+            // pCont.setSpeed(pCont.speed / 2.0);
+                    });
     }
     function createCameras() {
         pCamera = akra.self.camera = pScene.createCamera();
@@ -332,6 +377,7 @@ var akra;
         loadModels("../../../../data/models/hero/movie.dae", function (pNode) {
             akra.self.hero.root = pNode.findEntity("node-Bip001");
             (pNode.findEntity("node-Sphere001")).mesh.getSubset(0).setVisible(false);
+            pEngine.renderFrame();
             var v3fsp = new akra.Vec3();
             if (akra.self.terrain.projectPoint(pNode.worldPosition, v3fsp)) {
                 pNode.setPosition(v3fsp);
@@ -339,6 +385,16 @@ var akra;
                 pCamera.addPosition(v3fsp);
                 pCamera.lookAt(v3fsp);
             }
+            var pCamLight = pScene.createLightPoint(akra.ELightTypes.PROJECT, false, 0, "camera-light");
+            // console.log(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
+            pCamLight.attachToParent(pScene.getRootNode().findEntity("Camera001-camera"));
+            pCamLight.setInheritance(akra.ENodeInheritance.ALL);
+            pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
+            pCamLight.params.diffuse.set(1.);
+            pCamLight.params.specular.set(1.);
+            pCamLight.params.attenuation.set(.35, 0, 0);
+            pCamLight.enabled = false;
+            akra.self.cameraLight = pCamLight;
             loadModels("../../../../data/models/box/closed_box.dae", function (pBox) {
                 pBox.scale(.25);
                 putOnTerrain(pBox, new akra.Vec3(-2., -3.85, -5.));
@@ -360,7 +416,7 @@ var akra;
                 pTube.setPosition(new akra.Vec3(-55., -12.15, -82.00));
             });
             pScene.bind("beforeUpdate", update);
-            var pMovie = pRmgr.loadModel("../../../../data/models/hero/intro.part1.DAE");
+            var pMovie = pRmgr.loadModel("../../../../data/models/hero/film.DAE");
             pMovie.bind("loaded", /** @inline */function () {
                 var pAnim = pMovie.extractAnimation(0);
                 var pContainer = akra.animation.createContainer(pAnim, "movie");
@@ -369,7 +425,43 @@ var akra;
                 pController.stop();
                 pNode.addController(pController);
                 akra.self.hero.movie = pController;
+                pEngine.exec();
             });
+            /*var pController: IAnimationController = pEngine.createAnimationController("movie");
+            var pIntroData: ICollada = <ICollada>pRmgr.loadModel("../../../../data/models/hero/intro.part1.DAE");
+            
+            pIntroData.bind("loaded", () => {
+            
+            var pAnim: IAnimation = pIntroData.extractAnimation(0);
+            var pIntro: IAnimationContainer = animation.createContainer(pAnim, "intro");
+            
+            // pIntro.useLoop(true);
+            pIntro.rightInfinity(false);
+            pController.addAnimation(pIntro);
+            // pController.stop();
+            
+            var pMovieData: ICollada = <ICollada>pRmgr.loadModel("../../../../data/models/hero/movie_anim.DAE");
+            
+            pMovieData.bind("loaded", () => {
+            var pAnim: IAnimation = pMovieData.extractAnimation(0);
+            var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
+            
+            // pMovie.useLoop(true);
+            pMovie.leftInfinity(false);
+            
+            
+            pController.addAnimation(pMovie);
+            pController.stop();
+            
+            pIntro.bind("stoped", () => {
+            pController.play("movie");
+            });
+            
+            });
+            });
+            
+            pNode.addController(pController);
+            self.hero.movie = pController;*/
             fetchAllCameras();
         });
     }
@@ -393,5 +485,11 @@ var akra;
         */
             }
     pEngine.bind("depsLoaded", main);
-    pEngine.exec();
-})(akra || (akra = {}));
+    pEngine.getResourceManager().setLoadedAllRoutine(/** @inline */function () {
+        console.log("all loaded!!!");
+    });
+    // pEngine.getResourceManager().monitorInitResources(function (nLoaded?: number, nTotal?: number, pTarget?: IResourcePoolItem): void {
+    //        console.log('loaded:', nLoaded / nTotal * 100, '%', "(", nLoaded , "/",  nTotal, ")", pTarget.findResourceName());
+    //    });
+    // pEngine.exec();
+    })(akra || (akra = {}));
