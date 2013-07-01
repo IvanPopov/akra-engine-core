@@ -158,6 +158,7 @@ module akra.terrain {
 
     	    this._pRPC = net.createRpc();
     	    this._pRPC.join("ws://192.168.88.53:6112");
+    	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 10000);
     	    this.loadMinTextureLevel();
 	    }
 
@@ -289,13 +290,13 @@ module akra.terrain {
 		                this._pLoadInfoForSwap = s;
 		            }
 		            else {
-		                // var pTextureBuffer: IPixelBuffer = this._pTextures[i].getBuffer(0, 0);
-		                // var pTmpBox3: IBox = geometry.box(0, 0, this._v2iTextureLevelSize.x, this._v2iTextureLevelSize.y);
+		                var pTextureBuffer: IPixelBuffer = this._pTextures[i].getBuffer(0, 0);
+		                var pTmpBox3: IBox = geometry.box(0, 0, this._v2iTextureLevelSize.x, this._v2iTextureLevelSize.y);
 
-		                // var pTempPixelBox: IPixelBox = pixelUtil.pixelBox(pTmpBox3, this._eTextureFormat);
-		                // pTempPixelBox.data = null;
+		                var pTempPixelBox: IPixelBox = pixelUtil.pixelBox(pTmpBox3, this._eTextureFormat);
+		                pTempPixelBox.data = null;
 
-		                // pTextureBuffer.blitFromMemory(pTempPixelBox, pTmpBox3);
+		                pTextureBuffer.blitFromMemory(pTempPixelBox, pTmpBox3);
 
 		                this.setSectorLoadInfoToDefault(this._pSectorLoadInfo[i]);
 		            }
@@ -355,7 +356,7 @@ module akra.terrain {
 		}
 
 		private _fThresHold: float = 0.1;
-		private _bColored: bool = true;
+		private _bColored: bool = false;
 		applyForRender(pRenderPass: IRenderPass): void {
 			pRenderPass.setForeign("nTotalLevels", this._iMaxLevel - this._iMinLevel + 1);
 			pRenderPass.setUniform("MIN_MEGATEXTURE_LEVEL", this._iMinLevel);
