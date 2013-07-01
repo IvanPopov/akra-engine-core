@@ -21,7 +21,7 @@ declare var $: JQueryStatic;
 /// @SKYBOX: 				{data}/textures/skyboxes/desert-3.dds|location()
 
 module akra {
-	var pEngine: IEngine = createEngine();
+	var pEngine: IEngine = createEngine({renderer: {preserveDrawingBuffer: true}});
 
 	var pRmgr: IResourcePoolManager 	= pEngine.getResourceManager();
 	var pScene: IScene3d 				= pEngine.getScene();
@@ -606,18 +606,9 @@ module akra {
 
 */	}
 
-	pEngine.bind("depsLoaded", main);		
+	pEngine.bind("depsLoaded", main);	
+	pEngine.getResourceManager().monitorInitResources(function (nLoaded?: number, nTotal?: number, pTarget?: IResourcePoolItem): void {
+        console.log('loaded:', nLoaded / nTotal * 100, '%', "(", nLoaded , "/",  nTotal, ")", pTarget.findResourceName());
+    });	
 	// pEngine.exec();
-	// 
-	export function test(): bool {
-		var pb = self.canvas.readPixels();
-		for (var i = 0; i < pb.data.length; ++ i) {
-			if (pb.data[i] != 0) {
-				console.log("is oK");
-				return true;
-			}
-		}
-
-		return false;
-	}
 }

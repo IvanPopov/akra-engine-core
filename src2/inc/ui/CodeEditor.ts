@@ -5,14 +5,13 @@
 #include "Component.ts"
 #include "codemirror.d.ts"
 
-/// @: {data}/ui/3d-party/codemirror/lib/codemirror.css|location()|css()
-/// @: {data}/ui/3d-party/codemirror/lib/codemirror.js|location()|script()
-/// @: {data}/ui/3d-party/codemirror/addon/hint/show-hint.js|location()|script()
-/// @: {data}/ui/3d-party/codemirror/addon/hint/show-hint.css|location()|css()
-/// @: {data}/ui/3d-party/codemirror/addon/hint/javascript-hint.js|location()|script()
-/// @: {data}/ui/3d-party/codemirror/mode/javascript/javascript.js|location()|script()
+/// @: {data}/ui/3d-party/codemirror/lib/codemirror.css|location()|css()|data_location({data},DATA)
+/// @: {data}/ui/3d-party/codemirror/lib/codemirror.js|location()|script()|data_location({data},DATA)
+/// @: {data}/ui/3d-party/codemirror/addon/hint/show-hint.js|location()|script()|data_location({data},DATA)
+/// @: {data}/ui/3d-party/codemirror/addon/hint/show-hint.css|location()|css()|data_location({data},DATA)
+/// @: {data}/ui/3d-party/codemirror/addon/hint/javascript-hint.js|location()|script()|data_location({data},DATA)
+/// @: {data}/ui/3d-party/codemirror/mode/javascript/javascript.js|location()|script()|data_location({data},DATA)
 
-/* @: {data}/ui/3d-party/codemirror/doc/docs.css|location()|css()*/
 
 module akra.ui {
 	export class CodeEditor extends Component implements IUICodeEditor {

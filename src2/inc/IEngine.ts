@@ -7,6 +7,7 @@ module akra {
 	IFACE(IParticleManager);
 	IFACE(IResourcePoolManager);
     IFACE(IRenderer);
+    IFACE(IRendererOptions);
 	IFACE(IUtilTimer);
     IFACE(IMesh);
     IFACE(IRenderDataCollection);
@@ -22,6 +23,7 @@ module akra {
         depsRoot?: string;
         deps?: IDependens;
         gamepads?: bool;
+        renderer?: IRendererOptions;
     }
 
     export interface IEngine extends IEventProvider {
@@ -62,7 +64,7 @@ module akra {
         createAnimationController(sName?: string, iOptions?: int): IAnimationController;
     };
 
-    export var createEngine: () => IEngine;
+    export var createEngine: (options?: IEngineOptions) => IEngine;
 }
 
 

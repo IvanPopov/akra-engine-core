@@ -587,12 +587,18 @@ function srcModifier(name, value, argv) {
 	return gitignore.join("\n");
 }
 
+function dataLocModifier(name, value, argv) {
+	var result = (/*argv[1] || */"akra.DATA") + " + \"/" + path.relative(argv[0], value).replace(/\\/ig, "/") + "\"";
+	// console.log("-------------------->",result);
+	return result;
+}
+
 function fetchDeps(sDir, sTestData, pResult) {
-	var pDeps = findDepends(sTestData, /\/\/\/\s*@([\w\d]*)\s*\:\s*([\w\d\.\-\/\:\-\{\}\|\(\)\ ]+)\s*/ig);
+	var pDeps = findDepends(sTestData, /\/\/\/\s*@([\w\d]*)\s*\:\s*([\w\d\.\-\/\:\-\{\}\|\(\)\ \,]+)\s*/ig);
 
 	var variables = {};
 	var gitignore = [];
-
+	
 	for (var i in pDeps) {
 		var pDep = pDeps[i];
 		var name = pDep[0];
@@ -607,12 +613,12 @@ function fetchDeps(sDir, sTestData, pResult) {
 		var pmods = cmd.split("|");
 		value = pmods.splice(0, 1)[0];
 
-		//console.log("@" + name, cmd);
+		// console.log("@" + name, cmd);
 
 		for (var m = 0; m < pmods.length; ++ m) {
 			var mod = pmods[m];
 			var matches = null;
-			
+		
 			if (matches = (/\s*([\w]+)\(([\/\.\-\w\d\ \t\,]*)\)\s*/ig).exec(mod)) {
 				var modifier = matches[1];
 				var args = matches[2];
@@ -631,7 +637,10 @@ function fetchDeps(sDir, sTestData, pResult) {
 						console.log('<script type="text/javascript" src="' + value + '"></script>');
 						break;
 					case "location":
-						value = path.relative(sDir, value).replace(/\\/ig, "/");
+						value = "\"" + path.relative(sDir, value).replace(/\\/ig, "/") + "\"";
+						break;
+					case "data_location":
+						value = dataLocModifier(name, value, argv);
 						break;
 					default:
 						console.log("[WARNING] unknown modifier founded in deps: ", modifier, "(" + cmd + ")");
@@ -641,7 +650,7 @@ function fetchDeps(sDir, sTestData, pResult) {
 
 		if (name && name.length > 0) {
 			variables[name] = value;
-			sTestData = sTestData.replace("\"@" + name + "\"", "\"" + value + "\"");
+			sTestData = sTestData.replace("\"@" + name + "\"", value);
 			// console.log("[REPLACE] ", "\"@" + name + "\"" , " --> ", value)
 		}
 	}

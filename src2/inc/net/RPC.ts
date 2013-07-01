@@ -8,7 +8,7 @@
 #include "util/util.ts"
 #include "util/ObjectList.ts"
 
-/// @: {data}/server|src(inc/net/server)|location()
+/// @: {data}/server|src(inc/net/server)|location()|data_location({data},DATA)
 
 
 #define HAS_LIMITED_DEFERRED_CALLS(rpc) (rpc.options.deferredCallsLimit >= 0)

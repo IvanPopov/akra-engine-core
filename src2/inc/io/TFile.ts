@@ -12,9 +12,9 @@
 //переносим все зависисмости в папку js паки с данными
 //обычно, это data/js
 
-/// @: {data}/js/FileInterface.t.js|src(inc/io/FileInterface.t.js)|location()
-/// @FILE_LOCAL_THREAD: {data}/js/LocalFile.t.js|src(inc/io/LocalFile.t.js)|location()
-/// @FILE_REMOTE_THREAD: {data}/js/RemoteFile.t.js|src(inc/io/RemoteFile.t.js)|location()
+/// @: {data}/js/FileInterface.t.js|src(inc/io/FileInterface.t.js)|data_location({data},DATA)
+/// @FILE_LOCAL_THREAD: {data}/js/LocalFile.t.js|src(inc/io/LocalFile.t.js)|data_location({data},DATA)
+/// @FILE_REMOTE_THREAD: {data}/js/RemoteFile.t.js|src(inc/io/RemoteFile.t.js)|data_location({data},DATA)
 
 
 #define LocalFileThreadManager() util.ThreadManager("@FILE_LOCAL_THREAD")

@@ -8,8 +8,8 @@
 #include "jquery.d.ts"
 #include "jqueryui.d.ts"
 
-/// @: data/ui/3d-party/jQuery/jquery-1.9.1.js|location()|script()
-/// @: data/ui/3d-party/jQuery/jquery-ui.js|location()|script()
+/// @: data/ui/3d-party/jQuery/jquery-1.9.1.js|location()|script()|data_location({data},DATA)
+/// @: data/ui/3d-party/jQuery/jquery-ui.js|location()|script()|data_location({data},DATA)
 
 module akra.ui {
 	//export const $ = jQuery;

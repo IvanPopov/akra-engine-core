@@ -92,7 +92,7 @@ module akra.core {
 			this._pTimer = util.UtilTimer.start(); 
 
 #ifdef WEBGL
-			this._pRenderer = new webgl.WebGLRenderer(this);
+			this._pRenderer = new webgl.WebGLRenderer(this, pOptions.renderer || null);
 #else
 			CRITICAL("render system not specified");
 #endif
@@ -334,7 +334,7 @@ module akra.core {
 			}
 		}
 
-		static DEPS_ROOT: string = DATA_FOLDER;
+		static DEPS_ROOT: string = DATA;
 		static DEPS: IDependens = 
 			{
 				files: [ 

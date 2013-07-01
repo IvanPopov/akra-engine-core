@@ -8,7 +8,7 @@
 #define long number
 
 /// @data: data
-/// @DATA_FOLDER: {data}|location()
+/// @DATA: {data}|location()
 
 #define WEBGL 1
 #define LOGGER_API 1
@@ -85,10 +85,10 @@
                                     return pStack})();
 
 #define IFACE(IF) export interface IF {}
-#define DATA(path) DATA_FOLDER + "/" + path
+#define DATA(path) DATA + "/" + path
 module akra {
-
-    export const DATA_FOLDER = "@DATA_FOLDER";
+    var p = document.getElementsByTagName("script");
+    export const DATA = akra.DATA || ((<Element>p[p.length - 1]).getAttribute("data")) || "@DATA";
 
 #ifdef DEBUG
     export var DEBUG: bool = true;
