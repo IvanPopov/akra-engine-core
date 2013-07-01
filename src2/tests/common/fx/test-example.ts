@@ -78,11 +78,11 @@ module akra {
 		function createViewports(): void {
 			pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
 			
-			var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>pUI.createComponent("RenderTargetStats");
-			pStats.target = pViewport.getTarget();
-			pStats.render(pMainScene);
+			// var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>pUI.createComponent("RenderTargetStats");
+			// pStats.target = pViewport.getTarget();
+			// pStats.render(pMainScene);
 
-			pStats.el.css({position: "relative", top: "-600"});
+			// pStats.el.css({position: "relative", top: "-600"});
 		}
 
 		function createLighting(): void {
@@ -197,7 +197,7 @@ module akra {
 			pOmniShadowLight.params.diffuse.set(0.5);
 			pOmniShadowLight.params.specular.set(1, 1, 1, 1);
 			pOmniShadowLight.params.attenuation.set(1,0.0,0);
-			pOmniShadowLight.isShadowCaster = false;
+			pOmniShadowLight.isShadowCaster = true;
 
 			pOmniShadowLight.setPosition(1, 5, 5);
 		}
@@ -233,7 +233,7 @@ module akra {
 				}
 
 				pScene.bind(SIGNAL(beforeUpdate), () => {
-					pModelRoot.addRelRotationByXYZAxis(0.00, 0.001, 0);
+					pModelRoot.addRelRotationByXYZAxis(0.00, 0.00, 0);
 					// pController.update();
 				});
 
@@ -286,44 +286,43 @@ module akra {
 		function loadHero(){
 			var pModelRoot: ISceneNode = pScene.createNode();
 			var pController: IAnimationController = pEngine.createAnimationController("movie");
-			var pIntroData: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/walk.DAE");
+			var pHeroData: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/movie.DAE");
 
 			pModelRoot.attachToParent(pScene.getRootNode());
 
-			pIntroData.bind("loaded", () => {
-				pIntroData.attachToScene(pModelRoot);
+			pHeroData.bind("loaded", () => {
+				pHeroData.attachToScene(pModelRoot);
 
-				var pAnim: IAnimation = pIntroData.extractAnimation(0);
-				var pIntro: IAnimationContainer = animation.createContainer(pAnim, "intro");
-
-				pIntro.useLoop(true);
-				// pController.addAnimation(pIntro);
-				// pIntro.rightInfinity(false);
-				// pController.stop();
-
-				var pMovieData: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/run.DAE");
+				var pMovieData: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/movie_anim.DAE");
 
 				pMovieData.bind("loaded", () => {
 					var pAnim: IAnimation = pMovieData.extractAnimation(0);
 					var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
 
 					pMovie.useLoop(true);
-					// pMovie.leftInfinity(false);
-
-
+					
+					LOG(pMovieData);
+					window["movieData"] = pMovieData;
+					
 					// pController.addAnimation(pMovie);
-					// pController.play("movie");
+					// pMovie.rightInfinity(false);
 					// pController.stop();
 
-					// pIntro.bind("stoped", () => {
-					// 	pController.play("movie");
-				 // 	});
-				 	var pBlender: IAnimationBlend = animation.createBlend();
-				 	pBlender.addAnimation(pIntro, 0.5);
-				 	pBlender.addAnimation(pMovie, 1);
+					var pWalkData: ICollada = <ICollada>pRmgr.loadModel("../../../data/models/hero/walk.DAE");
+					pWalkData.bind("loaded", () => {
+						var pAnim: IAnimation = pWalkData.extractAnimation(0);
+						var pWalk: IAnimationContainer = animation.createContainer(pAnim, "walk");
 
-				 	pController.addAnimation(pBlender);
-					pModelRoot.addController(pController);
+						pWalk.useLoop(true);
+
+						var pBlender: IAnimationBlend = animation.createBlend();
+					 	// pBlender.addAnimation(pMovie, 1);
+					 	pBlender.addAnimation(pWalk, 1);
+
+					 	pController.addAnimation(pBlender);
+						pModelRoot.addController(pController);
+
+					});
 				});
 			}); 
 
@@ -331,20 +330,20 @@ module akra {
 
 		function main(pEngine: IEngine): void {
 			setup();
-			// createSceneEnvironment();
+			createSceneEnvironment();
 			createCameras();
 			createViewports();
 			createLighting();
 			createSkyBox();
 			
 			// loadModels("../../../data/models/kr360.dae");
-			// loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
-			// 	// var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
-			// 	// pMesh.createBoundingBox();
-			// 	// pMesh.showBoundingBox();
-			// }).scale(2.);
+			loadModel("../../../data/models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
+				// var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
+				// pMesh.createBoundingBox();h
+				// pMesh.showBoundingBox();
+			}).scale(2.);
 			
-			loadHero();
+			// loadHero();
 
 			
 
