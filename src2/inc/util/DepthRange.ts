@@ -32,27 +32,35 @@ module akra.util{
 				}												\n\
 																\n\
 				float power = 0.;								\n\
-				bool ok = true;									\n\
-				while (ok) {									\n\
-																\n\
-					if(data >= 2.) {							\n\
-						data = data * 0.5;						\n\
-						power += 1.;							\n\
-						if (power == 127.) {					\n\
-							ok = false;							\n\
-						}										\n\
-					}											\n\
-					else if(data < 1.) {					\n\
-						data = data * 2.;					\n\
-						power -= 1.;						\n\
-						if (power == -126.) {				\n\
-							ok = false;						\n\
-						}									\n\
-					}										\n\
-					else {									\n\
-						ok = false;							\n\
-					}										\n\
-				}												\n\
+				  bool isFinish = false;								\n\
+												\n\
+				  for(int i = 0; i < 128; i++) {								\n\
+				    if(isFinish){								\n\
+				      break;								\n\
+				    }								\n\
+												\n\
+				    if(data >= 2.) {								\n\
+				      if(!isFinish){								\n\
+				        data = data * 0.5;								\n\
+				        power += 1.;								\n\
+				        if (power == 127.) {								\n\
+				          isFinish = true;								\n\
+				        }								\n\
+				      }								\n\
+				    }								\n\
+				    else if(data < 1.) {								\n\
+				      if(!isFinish){								\n\
+				        data = data * 2.;								\n\
+				        power -= 1.;								\n\
+				        if (power == -126.) {								\n\
+				          isFinish = true;								\n\
+				        }								\n\
+				      }								\n\
+				    }								\n\
+				    else {								\n\
+				      isFinish = true;								\n\
+				    }								\n\
+				  }												\n\
 																\n\
 				if(power == -126. && data < 1.){				\n\
 					power = 0.;									\n\
@@ -298,7 +306,7 @@ module akra.util{
 
         	pWebGLProgram.setInt("selector", iSelector);
         	pWebGLProgram.setInt("srcTexture", 0);
-        	pWebGLProgram.setVec2("halfSrcTexureStep", 0.5/iSrcTextureSizeX, 0.5/iSrcTextureSizeY);
+        	pWebGLProgram.setVec2("halfSrcTexureStep", vec2(0.5/iSrcTextureSizeX, 0.5/iSrcTextureSizeY));
 
         	pWebGLContext.viewport(0, 0, iRenderTextureSizeX, iRenderTextureSizeY);
 
@@ -348,7 +356,22 @@ module akra.util{
 
     	pWebGLContext.readPixels(0, 0, 2, 1, GL_RGBA, GL_UNSIGNED_BYTE, pU8Destination);
 
-    	
+    	// pWebGLRenderer.activateWebGLTexture(GL_TEXTURE2);
+    	// pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pWebGLTexture1);
+    	// pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    	// pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    	// pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    	// pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    	// pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
+			  //   				 pDepthTexture.width, pDepthTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+
+
+    	// pWebGLRenderer.bindWebGLFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pWebGLTexture1, 0);
+    	// pWebGLRenderer.bindWebGLFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, (<any>pDepthTexture).getWebGLTexture(), 0);
+
+    	// var pDepthRange = pWebGLContext.getParameter(GL_DEPTH_RANGE);
+    	// pWebGLRenderer.bindWebGLFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, null, 0);
+
 
     	pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFrameBuffer);
         pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
@@ -366,6 +389,7 @@ module akra.util{
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
         pWebGLRenderer._setViewport(null);
         // console.log("depth range:", pF32Destination[1], pF32Destination[0]);
+
 		return <IDepthRange>{min: pF32Destination[1], max: pF32Destination[0]};
 	}
 

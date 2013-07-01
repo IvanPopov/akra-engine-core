@@ -83,6 +83,9 @@ module akra {
 		scale(fScale: float): void;
 		scale(v3fScale: IVec3): void;
 		scale(fX: float, fY: float, fZ: float): void;
+
+		lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3);
+    	lookAt(v3fCenter: IVec3, v3fUp?: IVec3);
 	}
 }
 

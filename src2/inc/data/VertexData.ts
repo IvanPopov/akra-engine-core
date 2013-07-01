@@ -396,8 +396,9 @@ module akra.data {
 		            var pBufferData: Uint8Array = new Uint8Array(iSize * iCount);
 	            	for (var i: int = 0; i < iCount; i++) {
 	            		var iCurrent: uint = iFrom + i;
-		            	debug_assert(this._pVertexBuffer.readData(iStride * iCurrent + iOffset + this.byteOffset, iSize, 
-		            		pBufferData.subarray(i * iSize, (i + 1) * iSize)),"cannot read buffer");
+	            		var isOk: bool = this._pVertexBuffer.readData(iStride * iCurrent + iOffset + this.byteOffset, 
+	            			iSize, pBufferData.subarray(i * iSize, (i + 1) * iSize));
+		            	debug_assert(isOk,"cannot read buffer");
 
 		                //pBufferData.set(new Uint8Array(), i * iSize);
 		            }

@@ -149,11 +149,11 @@ module akra.fx {
 				this.endScope();
 			}
 			catch(e){
-#ifdef DEBUG
+// #ifdef DEBUG
 				throw e;
-#else
-				return false;
-#endif
+// #else
+				// return false;
+// #endif
 			}
 
 			//Stats

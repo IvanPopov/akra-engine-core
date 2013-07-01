@@ -41,7 +41,9 @@ node_modules/
 #*.csproj
 *.user
 *.nw
-*.ts.html
+#*.ts.html
+RELEASE/
+DEBUG/
 #*.css
 tmp.ts
 src/*.htm

@@ -7,7 +7,7 @@
 #include "fx/Effect.ts"
 #include "IEngine.ts"
 
-#ifdef DEBUG
+#ifdef AFX_ENABLE_TEXT_EFFECTS
 
 #include "util/EffectParser.ts"
 #include "IResourcePool.ts"
@@ -524,7 +524,7 @@ module akra.fx {
 		//-----------------------API for load components/AFXEffects--------------------//
 		//-----------------------------------------------------------------------------//
 
-#ifdef DEBUG
+#ifdef AFX_ENABLE_TEXT_EFFECTS
 		_loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): bool {
 			var pEffect: IAFXEffect = new fx.Effect(this);
 			// LOG(sFileName, pTree);

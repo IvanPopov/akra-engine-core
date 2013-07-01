@@ -66,7 +66,9 @@ module akra.ui {
 			this._pEngine = getUI(parent).getManager().getEngine();
 			debug_assert(!isNull(this._pEngine), "Engine required!");
 			
-			this._pKeymap = controls.createKeymap(this.getCanvasElement());
+			this._pKeymap = controls.createKeymap();
+			this._pKeymap.captureMouse(this.getCanvasElement());
+			this._pKeymap.captureKeyboard(<any>document);
 
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
@@ -93,16 +95,43 @@ module akra.ui {
 		}
 
 		private setupKeyControls(): void {
-			var pKeymap: IKeyMap = this.getKeymap();
-			var pTree: IUITree = this._pSceneTree;
-			
-			pKeymap.bind("numpad4", ()=> {
-				var pNode: ISceneNode = <ISceneNode>pTree.selectedNode;
+			this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_beforeSceneUpdate));
+		}
+
+		_beforeSceneUpdate(pScene: IScene3d): void {
+
+			var pNode: ISceneNode = <ISceneNode>this._pSceneTree.selectedNode;
+			var pKeymap: IKeyMap = this.getKeymap()
+
+			if (pKeymap.isKeyPress(EKeyCodes.NUMPAD8)) {
 				
-				if (!isNull(pNode)) {
-					pNode.addPosition(vec3(0.1, 0., 0.));
-				}
-			});
+		     	pNode.addPosition(vec3(1., 0., 0.));   
+		    }
+
+		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD2)) {
+		    	
+		     	pNode.addPosition(vec3(-1., 0., 0.));   
+		    }
+
+		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD9)) {
+				
+		     	pNode.addPosition(vec3(0., 1., 0.));   
+		    }
+
+		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD7)) {
+		    	
+		     	pNode.addPosition(vec3(0., -1., 0.));   
+		    }
+
+		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD4)) {
+				
+		     	pNode.addPosition(vec3(0., 0., -1.));   
+		    }
+
+		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD6)) {
+		    	
+		     	pNode.addPosition(vec3(0., 0., 1.));   
+		    }
 		}
 
 		private setupObjectPicking(): void {

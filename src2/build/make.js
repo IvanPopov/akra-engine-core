@@ -814,7 +814,6 @@ function packTest(sDir, sFile, sName, pData) {
 	console.log("#########################################################");
 	console.log("\n");
 
-
 	console.log("\nWebGL debug: " + (pOptions.webglDebug? "ON": "OFF"));
 
 	sDir += "/" + (pOptions.debug? "DEBUG": "RELEASE") + "/";

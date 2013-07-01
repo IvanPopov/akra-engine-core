@@ -37,9 +37,9 @@ module akra {
 
 		isUpdated(): bool;
 
-		#ifdef DEBUG
+#ifdef DEBUG
 		createObject(sName?: string): ISceneObject;
-		#endif
+#endif
 
 		createNode(sName?: string): ISceneNode;
 		createModel(sName?: string): ISceneModel;

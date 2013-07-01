@@ -45,7 +45,7 @@ module akra.scene.light {
 			this._iFace = iFace;
 		};
 
-		_optimizeProjectionMatrix():void {
+		_optimizeProjectionMatrix(pEffectiveCameraFrustum: IFrustum):void {
 			if (this._pAffectedObjects.length == 0) {
 		        this._m4fOptimizedProj.set(this.projectionMatrix);
 		        return;
@@ -175,11 +175,21 @@ module akra.scene.light {
 		        fZRes_Far = (fZ_Far > fZRes_Far) ? fZ_Far : fZRes_Far;
 		    }
 
-		    fXRes_Left = (fXRes_Left < -1 || fXRes_Left == 1) ? -1 : fXRes_Left;
-		    fXRes_Right = (fXRes_Right > 1 || fXRes_Right == -1) ? 1 : fXRes_Right;
+		    //test with camera frustum
 
-		    fYRes_Bottom = (fYRes_Bottom < -1 || fYRes_Bottom == 1) ? -1 : fYRes_Bottom;
-		    fYRes_Top = (fYRes_Top > 1 || fYRes_Top == -1) ? 1 : fYRes_Top;
+		    var pCameraBox: IRect2d = this._getBoxForCameraFrustum(pEffectiveCameraFrustum, new geometry.Rect2d());
+
+		    var fCameraMinX: float = math.max(pCameraBox.x0, -1);
+		    var fCameraMaxX: float = math.min(pCameraBox.x1, 1);
+
+		    var fCameraMinY: float = math.max(pCameraBox.y0, -1);
+		    var fCameraMaxY: float = math.min(pCameraBox.y1, 1);
+
+		    fXRes_Left = math.max((fXRes_Left < -1 || fXRes_Left == 1) ? -1 : fXRes_Left, fCameraMinX);
+		    fXRes_Right = math.min((fXRes_Right > 1 || fXRes_Right == -1) ? 1 : fXRes_Right, fCameraMaxX);
+
+		    fYRes_Bottom = math.max((fYRes_Bottom < -1 || fYRes_Bottom == 1) ? -1 : fYRes_Bottom, fCameraMinY);
+		    fYRes_Top = math.min((fYRes_Top > 1 || fYRes_Top == -1) ? 1 : fYRes_Top, fCameraMaxY);
 
 		    fZRes_Near = (fZRes_Near < -1 || fZRes_Near == 1) ? -1 : fZRes_Near;
 		    fZRes_Far = (fZRes_Far > 1 || fZRes_Far == -1) ? 1 : fZRes_Far;
@@ -188,6 +198,9 @@ module akra.scene.light {
 
 		    var v4fTmp1: IVec4 = m4fProj.unproj(vec3(fXRes_Left, fYRes_Bottom, fZRes_Near), vec4());
 		    var v4fTmp2: IVec4 = m4fProj.unproj(vec3(fXRes_Right, fYRes_Top, fZRes_Near), vec4());
+
+		    //////////////////////////
+
 
 		    fX_Left = v4fTmp1.x;
 		    fX_Right = v4fTmp2.x;
@@ -204,6 +217,34 @@ module akra.scene.light {
 		    	//frustum
 		    	Mat4.frustum(fX_Left, fX_Right, fY_Bottom, fY_Top, -fZ_Near, -fZ_Far, this._m4fOptimizedProj);
 			}
+		};
+
+		protected _getBoxForCameraFrustum(pEffectiveCameraFrustum: IFrustum, pDestination?: IRect2d): IRect2d{
+			if(!isDef(pDestination)){
+				pDestination = new geometry.Rect2d();
+			}
+			var m4fProjView: IMat4 = this.projViewMatrix;
+			var pFrusutumVertices: IVec3[] = pEffectiveCameraFrustum.frustumVertices;
+
+			var v4fTmp: IVec4 = vec4();
+			var v2fTmp: IVec2 = vec2();
+
+			for(var i: uint = 0; i<8; i++){
+				v4fTmp.set(pFrusutumVertices[i], 1.);
+
+				m4fProjView.multiplyVec4(v4fTmp);
+
+				v2fTmp.set(v4fTmp.x, v4fTmp.y).scale(math.abs(1./v4fTmp.w));
+
+				if(i == 0){
+					pDestination.set(v2fTmp,v2fTmp);
+				}
+				else{
+					pDestination.unionPoint(v2fTmp);
+				}
+			}
+
+		    return pDestination;
 		};
 	}
 

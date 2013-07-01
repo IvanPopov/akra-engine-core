@@ -5,6 +5,7 @@ module akra {
 
 	IFACE(ISceneNode);
 	IFACE(ICamera);
+	IFACE(IFrustum);
 
 	export interface ILightParameters {
 		 //default parameters
@@ -26,6 +27,9 @@ module akra {
 		lightType: ELightTypes;
 
 		isShadowCaster: bool;
+
+		//optimized camera frustum for better shadow casting
+		readonly optimizedCameraFrustum: IFrustum;
 
 		create(isShadowCaster?: bool, iMaxShadowResolution?: uint): bool;
 

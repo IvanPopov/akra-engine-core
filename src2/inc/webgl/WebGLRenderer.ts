@@ -416,7 +416,7 @@ module akra.webgl {
 
 		inline activateWebGLTexture(iWebGLSlot: int): void {
 			this._pWebGLContext.activeTexture(iWebGLSlot);
-			this._iCurrentTextureSlot = iWebGLSlot - GL_TEXTURE0;
+			// this._iCurrentTextureSlot = iWebGLSlot - GL_TEXTURE0;
 		}
 
 		activateWebGLTextureInAutoSlot(eTarget: uint, pTexture: WebGLTexture): uint {

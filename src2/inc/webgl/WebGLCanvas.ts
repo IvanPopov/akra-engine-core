@@ -26,6 +26,14 @@ module akra.webgl {
 			return ly;
 		}
 
+		set left(x: int) {
+
+		}
+
+		set top(x: int) {
+			
+		}
+
 		inline get el(): HTMLCanvasElement { return this._pCanvas; }
 
 		constructor (pRenderer: IRenderer) {

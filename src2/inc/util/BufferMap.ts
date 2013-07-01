@@ -234,6 +234,7 @@ module akra.util {
 		flow(iFlow, pData?): int {
 			var pFlow: IDataFlow = null;
 			var pVertexData: IVertexData = null;
+			var isOk: bool;
 
 		    if (arguments.length < 2) {
 		        pVertexData = <IVertexData>arguments[0];
@@ -259,8 +260,8 @@ module akra.util {
 		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
 		        this.length = pVertexData.length;
 		        //this.startIndex = pVertexData.getStartIndex();
-		        debug_assert(this.checkData(pVertexData),
-		            'You can use several unmappable data flows from one buffer.');
+		        isOk = this.checkData(pVertexData);
+		        debug_assert(isOk, 'You can use several unmappable data flows from one buffer.');
 
 		        this.pushEtalon(pVertexData);
 		    }
@@ -321,7 +322,9 @@ module akra.util {
 		}
 
 		protected findMapping(pMap, eSemantics, iAddition): IDataMapper {
-		    debug_assert(this.checkData(pMap), 'You can use several different maps from one buffer.');
+			var isOk: bool = this.checkData(pMap);
+		    debug_assert(isOk, 'You can use several different maps from one buffer.');
+		    
 		    for (var i: int = 0, pMappers: IDataMapper[] = this._pMappers, pExistsMap; i < pMappers.length; i++) {
 		        pExistsMap = pMappers[i].data;
 		        if (pExistsMap === pMap) {

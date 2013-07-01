@@ -15,6 +15,8 @@
 // #define CRYPTO_API 1
 #define GUI 1
 #define WEBGL_DEBUG 1
+#define AFX_ENABLE_TEXT_EFFECTS 1
+// #define DETAILED_LOG 1
 
 #include "ILogger.ts"
 
@@ -27,6 +29,10 @@
 #ifdef LOGGER_API
 
 #ifdef DEBUG
+#define DETAILED_LOG 1
+#endif
+
+#ifdef DETAILED_LOG
 
 #define LOG(...)            { logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__); }
 #define TRACE(...)          { logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__); }
@@ -235,8 +241,8 @@ module akra {
 
 #else
 
-#define debug_print(...)
-#define debug_assert(...)
+#define debug_print(...) 
+#define debug_assert(...) 
 #define debug_warning(...)
 #define debug_error(...)
 

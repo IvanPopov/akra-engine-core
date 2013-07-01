@@ -113,7 +113,7 @@ module akra.scene {
 			return false;
 		}
 
-		#ifdef DEBUG
+#ifdef DEBUG
 
 		createObject(sName: string = null): ISceneObject {
 			var pNode: ISceneNode = new SceneObject(this);
@@ -125,8 +125,8 @@ module akra.scene {
 
 			return <ISceneObject>this.setupNode(pNode, sName);
 		}
-
-		#endif
+		
+#endif
 
 		createNode(sName: string = null): ISceneNode {
 			var pNode: ISceneNode = new SceneNode(this);
