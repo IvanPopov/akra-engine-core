@@ -307,7 +307,7 @@ module akra.util{
 		return true;
 	};
 	#else
-	export function calculateSkin(pRenderData: IRenderData): bool{
+	export function calculateSkin(pMeshSubset: IMeshSubset): bool{
 		return false;
 	};
 	#endif

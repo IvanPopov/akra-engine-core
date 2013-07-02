@@ -326,8 +326,10 @@ module akra.model {
 
 		//исходим из того, что данные скина 1:1 соотносятся с вершинами.
 		setSkin(pSkin: ISkin): bool {
+			var pRenderData: IRenderData = this.data;
 		    var pPosData: IVertexData;
 		    var pPositionFlow: IDataFlow;
+		    var pNormalFlow: IDataFlow;
 		    var pMetaData: Float32Array;
 		    //мета данные разметки
 		    var pInfMetaData: IVertexData;       
@@ -335,14 +337,13 @@ module akra.model {
 		    var iInfMetaDataLoc: int;    
 		    //шаг мета данных во флотах
 		    var iInfMetaDataStride: int; 
-
 		    /*
 		     Получаем данные вершин, чтобы проложить в {W} компоненту адерес мета информации,
 		     о влиянии на данную вершины.
 		     */
 
 		    //получаем поток данных с вершиными
-		    pPositionFlow = this.data._getFlow(DeclUsages.POSITION);
+		    pPositionFlow = pRenderData._getFlow(DeclUsages.POSITION);
 		    debug_assert(isDefAndNotNull(pPositionFlow), "skin require position with indices in mesh subset");
 		    
 		    pPosData = pPositionFlow.data;
@@ -411,25 +412,19 @@ module akra.model {
 
 		    pPosData.setData(pMetaData, 0, pDeclaration.stride);
 
-		    // LOG(pPosData.toString());
-		    // LOG(pPosData.length);
-		    // LOG(this.data.getIndices().toString());
-		    // LOG(this.data.toString());
-		    
-		    var pRenderData: IRenderData = this.data;
-
 		    var pIndexData: IVertexData = <IVertexData>pRenderData.getIndices();
 
-		    var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData("INDEX0");
-		    var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData("INDEX1");
+		    pNormalFlow = pRenderData._getFlow(DeclUsages.NORMAL);
+
+		    var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData(pPositionFlow.mapper.semantics);
+		    var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData(pNormalFlow.mapper.semantics);
 
 		    var iAdditionPosition: uint = pPosData.byteOffset;
-		    var iAdditionNormal: uint = pRenderData._getFlow(DeclUsages.NORMAL).data.byteOffset;
-		    var iStride: uint = pIndexData.getVertexDeclaration().stride;
+		    var iAdditionNormal: uint = pNormalFlow.data.byteOffset;
 
 	    	for(var i=0; i<pIndex0.length; i++){
-	    		pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition)/iStride;
-	    		pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal)/iStride;
+	    		pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition)/pPositionFlow.data.stride;
+	    		pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal)/pNormalFlow.data.stride;
 	    	}
 
 	    	//update position index
