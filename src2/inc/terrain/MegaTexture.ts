@@ -34,7 +34,7 @@ module akra.terrain {
 	    private _sSurfaceTextures: string = "";
 
 	    //Маскимальный размер стороны текстуры
-	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(8192 * 0.5);
+	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(8192 * 1.);
 	    private _v2iOriginalTextreMinSize: IVec2 = new Vec2(1024 * 4.);
 	    private _v2iTextureLevelSize: IVec2 = new Vec2(1024);
 
@@ -119,7 +119,7 @@ module akra.terrain {
     	        if(i === 0){
     	        	this._pTextures[i].create(this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y, 1, null, ETextureFlags.DYNAMIC, 0, 1, ETextureTypes.TEXTURE_2D, EPixelFormats.BYTE_RGB);
     	        	
-    	        	this._pSectorLoadInfo[i] = new Uint32Array(this._v2iTextureLevelSize.y * this._v2iTextureLevelSize.x /
+    	        	this._pSectorLoadInfo[i] = new Uint32Array(this._v2iOriginalTextreMinSize.y * this._v2iOriginalTextreMinSize.x/*this._v2iTextureLevelSize.y * this._v2iTextureLevelSize.x*/ /
 	                                                  	   	   (this._iBlockSize * this._iBlockSize));
     	        	this._pXY[i] = <ISubTextureSettings> {
 			    	        				iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
@@ -490,7 +490,7 @@ module akra.terrain {
 						  iAreaX?: uint, iAreaY?: uint, 
 						  iAreaWidth?: uint, iAreaHeight?: uint): void 
 		{
-		    var iBlockSize: uint = this._iBlockSize * this._pXY[iLevelTex].width / this._v2iTextureLevelSize.x;
+		    var iBlockSize: uint = this._iBlockSize /** this._pXY[iLevelTex].width / this._v2iTextureLevelSize.x*/;
 
 		    var iOrigTexEndX: uint = math.ceil((iOrigTexX + iWidth) / iBlockSize) * iBlockSize;
 		    var iOrigTexEndY: uint = math.ceil((iOrigTexY + iHeight) / iBlockSize) * iBlockSize;

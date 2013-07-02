@@ -74,7 +74,8 @@ module akra.net {
             }
 
             pOption.procMap[pOption.procListName] = {
-                lifeTime: -1
+                lifeTime: -1,
+                priority: 10
             };
 
             pAddr = pAddr || pOption.addr;
@@ -564,7 +565,7 @@ module akra.net {
         private static callbackPool: IObjectArray = new ObjectArray;
 
         static OPTIONS: IRPCOptions = {
-            deferredCallsLimit        : 10000,
+            deferredCallsLimit        : 20000,
             reconnectTimeout          : 2500,
             systemRoutineInterval     : 10000,
             callbackLifetime          : 60000,
