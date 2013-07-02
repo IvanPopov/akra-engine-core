@@ -34,7 +34,7 @@ module akra.terrain {
 	    private _sSurfaceTextures: string = "";
 
 	    //Маскимальный размер стороны текстуры
-	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(8192 * 4.);
+	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(8192 * 0.5);
 	    private _v2iOriginalTextreMinSize: IVec2 = new Vec2(1024 * 4.);
 	    private _v2iTextureLevelSize: IVec2 = new Vec2(1024);
 
@@ -67,7 +67,7 @@ module akra.terrain {
 	    private _fTexCourdYOld: float = 0xFFFFFFFF;
 	    private _nCountRender: uint = 0;
 
-	    private _iSectorLifeTime: uint = 10000; 
+	    private _iSectorLifeTime: uint = 60000; 
 
 	    private _pSamplerUniforms: IAFXSamplerState[] = null;
 		private _pLoadStatusUniforms: uint[] = null;
@@ -158,7 +158,8 @@ module akra.terrain {
 
     	    this._pRPC = net.createRpc();
     	    this._pRPC.join("ws://192.168.88.53:6112");
-    	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 10000);
+    	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 0);
+    	    this._pRPC.setProcedureOption("getMegaTexture", "priority", 1);
     	    this.loadMinTextureLevel();
 	    }
 
@@ -176,9 +177,9 @@ module akra.terrain {
 
 			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
 
-			if(tCurrentTime - this._tLastTime < 3000){
-				return;
-			}
+			// if(tCurrentTime - this._tLastTime < 3000){
+			// 	return;
+			// }
 			this._tLastTime = tCurrentTime;
 
 		    var pCamera: ICamera = pViewport.getCamera();
@@ -356,7 +357,7 @@ module akra.terrain {
 		}
 
 		private _fThresHold: float = 0.1;
-		private _bColored: bool = false;
+		private _bColored: bool = true;
 		applyForRender(pRenderPass: IRenderPass): void {
 			pRenderPass.setForeign("nTotalLevels", this._iMaxLevel - this._iMinLevel + 1);
 			pRenderPass.setUniform("MIN_MEGATEXTURE_LEVEL", this._iMinLevel);

@@ -133,7 +133,8 @@ module akra.net {
                                         (function (sMethod) {
 
                                             pRPC.options.procMap[sMethod] = pRPC.options.procMap[sMethod] || {
-                                                lifeTime: -1
+                                                lifeTime: -1,
+                                                priority: 0
                                             };
 
                                             pRPC.remote[sMethod] = function () {
@@ -328,6 +329,18 @@ module akra.net {
             return this._pOption.callbackLifetime;
         }
 
+        private findPriorityFor(sProc: string): uint {
+            var pProcOpt: IRPCProcOptions = this._pOption.procMap[sProc];
+            
+            if (pProcOpt) {
+                var iProcPr: int = pProcOpt.priority || 0;
+
+                return iProcPr;
+            }
+            
+            return 0;
+        }
+
         setProcedureOption(sProc: string, sOpt: string, pValue: any): void {
             var pOptions: IRPCProcOptions = this.options.procMap[sProc];
 
@@ -362,6 +375,7 @@ module akra.net {
             pProc.argv  = pArgv;
             pProc.next  = null;
             pProc.lt    = this.findLifeTimeFor(pProc.proc);
+            pProc.pr    = this.findPriorityFor(pProc.proc);
 
             pCallback = <IRPCCallback>this._createCallback();
             pCallback.n = pProc.n;
@@ -511,6 +525,7 @@ module akra.net {
             pReq.argv = null;
             pReq.next = null;
             pReq.lt = 0;
+            pReq.pr = 0;
 
             RPC.requestPool.push(pReq);
         };
@@ -518,7 +533,7 @@ module akra.net {
         _createRequest(): IRPCRequest {
             if (RPC.requestPool.length == 0) {
                 // LOG("allocated rpc request");
-                return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null, next: null, lt: 0 };
+                return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null, next: null, lt: 0, pr: 0};
             }
 
             return <IRPCRequest>RPC.requestPool.pop();

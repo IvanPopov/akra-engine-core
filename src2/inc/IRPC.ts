@@ -28,6 +28,7 @@ module akra {
         argv: any[];
         //ms - life time
         lt: uint;
+        pr: uint;
     }
 
     export interface IRPCResponse extends IRPCPacket  {
@@ -38,6 +39,7 @@ module akra {
     export interface IRPCProcOptions {
         //-1 - unknown, 0 - immortal
         lifeTime?: int;
+        priority?: uint;
     }
 
     export interface IRPCProcOptionsMap {
