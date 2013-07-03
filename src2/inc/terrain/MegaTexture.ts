@@ -34,7 +34,7 @@ module akra.terrain {
 	    private _sSurfaceTextures: string = "";
 
 	    //Маскимальный размер стороны текстуры
-	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(8192 * 1.);
+	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(8192 * 4.);
 	    private _v2iOriginalTextreMinSize: IVec2 = new Vec2(1024 * 4.);
 	    private _v2iTextureLevelSize: IVec2 = new Vec2(1024);
 
@@ -157,8 +157,8 @@ module akra.terrain {
     	    this.testDataInit();
 
     	    this._pRPC = net.createRpc();
-    	    this._pRPC.join("ws://192.168.88.53:6112");
-    	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 0);
+    	    this._pRPC.join("ws://192.168.88.55:6112");
+    	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 60000);
     	    this._pRPC.setProcedureOption("getMegaTexture", "priority", 1);
     	    this.loadMinTextureLevel();
 	    }
@@ -177,9 +177,9 @@ module akra.terrain {
 
 			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
 
-			// if(tCurrentTime - this._tLastTime < 3000){
-			// 	return;
-			// }
+			if(tCurrentTime - this._tLastTime < 30){
+				return;
+			}
 			this._tLastTime = tCurrentTime;
 
 		    var pCamera: ICamera = pViewport.getCamera();
@@ -309,7 +309,8 @@ module akra.terrain {
 
 		    //Подгрузка части буфера которую ложиться в текстуру + 8 блоков
 		    //Нулевая статична, поэтому ее не меняем
-		   	for (var i: uint = 1; i < this._pTextures.length; i++) {
+		   	// for (var i: uint = 1; i < this._pTextures.length; i++) {
+		   	for (var i: uint = this._pTextures.length - 1; i >= 1; i--) {
 	            iX = math.round(fTexCourdX * this.getWidthOrig(i) - this._v2iTextureLevelSize.x / 2);
 	            iY = math.round(fTexCourdY * this.getHeightOrig(i) - this._v2iTextureLevelSize.y / 2);
 
@@ -364,7 +365,6 @@ module akra.terrain {
 			pRenderPass.setUniform("threshold", this._fThresHold);
 			pRenderPass.setUniform("bColored", this._bColored);
 			
-
 		    for (var i: uint = 0; i < this._pTextures.length; i++) {
 		    	this._pLoadStatusUniforms[i] = this._pXY[i].isLoaded ? 1 : 0;
 		    	this._pTexcoordOffsetUniforms[i].set(this._pXY[i].iTexX, this._pXY[i].iTexY);
@@ -558,21 +558,29 @@ module akra.terrain {
 			LOG(this._iTrafficCounter/1000000 + "Mb", this._iQueryCount + "/" + this._iResponseCount);
 		}
 
+		private _fnPRCCallBack: Function = null;
+
 		private getDataByRPC(iLev: uint, iX: uint, iY: uint, iBlockSize: uint): void {
 			var me: MegaTexture = this;
-			var sPiecePath: string = me._sSurfaceTextures;
 
-            this._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
-                iY, iBlockSize, iBlockSize, me._eTextureFormat,
-				function (pError: Error, pData: Uint8Array) {
+			if(isNull(this._fnPRCCallBack)){
+				this._fnPRCCallBack = function (pError: Error, pData: Uint8Array) {
 
 					if(!isNull(pError)){
-						debug_print(pError.message);
+						// debug_print(pError.message);
 						return;
 					}
 
-					// var pData = this.pDataList[this._iMinLevel + iLev];
 					me._iTrafficCounter += pData.length;
+					var pHeaderData: Uint16Array = new Uint16Array(pData.buffer, pData.byteOffset, 4);
+					var pTextureData: Uint8Array = pData.subarray(8);
+					var iLev: uint = math.log2(pHeaderData[0]/me._v2iTextureLevelSize.x) - me._iMinLevel;
+					var iBlockSize: uint = pHeaderData[1];
+					var iX: uint = pHeaderData[2];
+					var iY: uint = pHeaderData[3];
+
+					// var pTextureData = this.pDataList[this._iMinLevel + iLev];
+					// pHeaderData.set(pData.subarray(0, 8));
 
 					var iXBuf: uint = iX - me._pXY[iLev].iX;
 					var iYBuf: uint = iY - me._pXY[iLev].iY;
@@ -596,11 +604,15 @@ module akra.terrain {
 					var pTmpBox1: IBox = geometry.box(0, 0, iBlockSize, iBlockSize);
 					var pTmpBox2: IBox = geometry.box(iXBuf, iYBuf, iBlockSize + iXBuf, iBlockSize + iYBuf);
 
-					var pSourceBox: IPixelBox = pixelUtil.pixelBox(pTmpBox1, me._eTextureFormat, pData);
+					var pSourceBox: IPixelBox = pixelUtil.pixelBox(pTmpBox1, me._eTextureFormat, pTextureData);
 
 					me._pTextures[iLev].getBuffer(0, 0).blitFromMemory(pSourceBox, pTmpBox2);
 					pSourceBox.data = null;
-				});
+				};
+			}
+			
+			this._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
+                iY, iBlockSize, iBlockSize, me._eTextureFormat, this._fnPRCCallBack);
 		}
 
 		protected setDataT(pBuffer, iX: uint, iY: uint, iWidth: uint, iHeight: uint, pBufferIn, iInX: uint, iInY: uint, iInWidth: uint, iInHeight: uint, iBlockWidth: uint, iBlockHeight: uint, iComponents: uint): void {

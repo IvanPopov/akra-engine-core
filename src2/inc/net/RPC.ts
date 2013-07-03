@@ -262,7 +262,7 @@ module akra.net {
                 } while (pCallback = pStack.prev());
 
 
-                WARNING("package droped, invalid serial: " + nSerial);
+                // WARNING("package droped, invalid serial: " + nSerial);
             }
             else if (eType === ERPCPacketTypes.REQUEST) {
                 ERROR("TODO: REQUEST package type temprary unsupported.");
@@ -510,7 +510,7 @@ module akra.net {
                     pCallback = pCallbacks.current;
 
                     if (!isNull(fn)) {
-                        debug_print("procedure info: ", sInfo);
+                        // debug_print("procedure info: ", sInfo);
                         fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
                     }
                 }
