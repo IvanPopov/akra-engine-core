@@ -51,6 +51,7 @@ module akra.core {
 		private _pParticleManager: IParticleManager;
 		private _pRenderer: IRenderer;
 		private _pComposer: IAFXComposer;
+		private _pDepsManager: IDepsManager;
 
 		/** stop render loop?*/
 		private _pTimer: util.UtilTimer;
@@ -137,7 +138,7 @@ module akra.core {
 			
 			var pDeps: IDependens = Engine.DEPS;
 			var sDepsRoot: string = Engine.DEPS_ROOT;
-			var pDepsManager: IDepsManager = util.createDepsManager(this);
+			var pDepsManager: IDepsManager = this._pDepsManager = util.createDepsManager(this);
 
 			//read options 
 			if (!isNull(pOptions)) {
@@ -155,12 +156,34 @@ module akra.core {
 			//get loaded signal
 			this.connect(pDepsManager, SIGNAL(loaded), SLOT(_depsLoaded));
 
+			if (isDefAndNotNull(pOptions.loader)) {
+				var fnBefore = pOptions.loader.before;
+				var fnOnload = pOptions.loader.onload;
+				var fnLoaded = pOptions.loader.loaded;
+
+				if (isFunction(fnBefore)) {
+					pDepsManager.bind(SIGNAL(beforeLoad), fnBefore);
+				}
+
+				if (isFunction(fnOnload)) {
+					pDepsManager.bind(SIGNAL(loadedDep), fnOnload);	
+				}
+
+				if (isFunction(fnLoaded)) {
+					pDepsManager.bind(SIGNAL(loaded), fnLoaded);	
+				}
+			}
+
 			//load depends!
 			if (!pDepsManager.load(pDeps, sDepsRoot)) {
 				CRITICAL("load dependencies are not started.");
 			}
 
 			//===========================================================
+		}
+
+		inline getDepsManager(): IDepsManager {
+			return this._pDepsManager;
 		}
 
 		inline getScene(): IScene3d {

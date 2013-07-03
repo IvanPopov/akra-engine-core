@@ -86,6 +86,8 @@ function read (pFile) {
             }
         }
 
+        pXhr = null;
+
         return pData;
     }
     catch (e) {
@@ -174,6 +176,15 @@ function clear (pFile) {
 }
 
 function meta (pFile) {
+    var pXhr = new XMLHttpRequest();
+
+    pXhr.open('HEAD', pFile.name, false);
+    pXhr.send(null);
+    
+    if (pXhr.status == 200) {
+        return {size: parseInt(pXhr.getResponseHeader('Content-Length'))};
+    }
+
     return {};
 }
 

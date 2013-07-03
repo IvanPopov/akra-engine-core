@@ -318,8 +318,10 @@ module akra.core.pool.resources {
 
         private _pXMLRoot: Element = null;
 
+        private _iByteLength: uint = 0;
 
     
+
         constructor () {
             super();
 
@@ -2295,12 +2297,15 @@ module akra.core.pool.resources {
                             var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.surfaceMaterial;
                             var pTexture: ITexture = <ITexture>this.getManager().texturePool.loadResource(pColladaImage.path);
 
+                            //FIXME: may be stuped ??
+                            this.sync(pTexture, EResourceItemEvents.LOADED);
+
                             if (this.getImageOptions().flipY === true) {
                                 ERROR("TODO: flipY for image unsupported!");
                             }
 
                             // LOG("is texture valid?? - ", pTexture.isValid());
-                            
+                            //FIX THIS
                             pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
                             pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
 
@@ -2972,6 +2977,10 @@ module akra.core.pool.resources {
             }
         }
 
+        inline get byteLength(): uint {
+            return this._iByteLength;
+        }
+
         parse(sXMLData: string, pOptions: IColladaLoadOptions = null): bool {
             if (isNull(sXMLData)) {
                 debug_error("must be specified collada content.");
@@ -3020,7 +3029,13 @@ module akra.core.pool.resources {
             this.notifyDisabled();
             this.notifyUnloaded();
 
-            io.fopen(sFilename).read(function (pErr: Error, sXML: string) {
+            var pFile: IFile = io.fopen(sFilename);
+
+            pFile.open(function (err, meta): void {
+                (<any>pModel)["_iByteLength"] = meta.size || 0;
+            });
+
+            pFile.read(function (pErr: Error, sXML: string) {
                 if (!isNull(pErr)) {
                     ERROR(pErr);
                 }
@@ -3029,6 +3044,7 @@ module akra.core.pool.resources {
            
                 if (pModel.parse(sXML, pOptions)) {
                     pModel.notifyLoaded();
+                    // LOG(pModel.findResourceName(), pModel.isResourceLoaded());
                 }
             });
 
@@ -3175,6 +3191,7 @@ module akra.core.pool.resources {
 
             return pAnimationOutput;
         }
+
     }
 
     pSupportedVertexFormat = [

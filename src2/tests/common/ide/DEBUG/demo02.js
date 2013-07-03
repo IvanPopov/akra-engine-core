@@ -2,67 +2,225 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 01 2013 19:47:08 GMT+0400 (Московское время (зима))
+ * assembled at: Wed Jul 03 2013 19:29:43 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
  *--------------------------------------------*/
 
 
-/// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
-/// @MINER_MODEL: 			"/models/miner/miner.dae"
-/// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 var akra;
 (function (akra) {
-    akra.core.Engine.depends({
-        files: [
-            {
-                path: "/textures/terrain/main_height_map_1025.dds",
-                name: "TERRAIN_HEIGHT_MAP"
-            }, 
-            {
-                path: "/textures/terrain/main_terrain_normal_map.dds",
-                name: "TERRAIN_NORMAL_MAP"
-            }, 
-            {
-                path: "/textures/skyboxes/desert-3.dds",
-                name: "SKYBOX"
+    /// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
+    /// @MINER_MODEL: 			"/models/miner/miner.dae"
+    /// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
+    (function (util) {
+        var Progress = (function () {
+            function Progress(iSize, iFontSize) {
+                if (typeof iSize === "undefined") { iSize = 200; }
+                if (typeof iFontSize === "undefined") { iFontSize = 30; }
+                this.step = 5.;
+                this.counterclockwise = false;
+                this.radius = 0;
+                this.thickness = 20;
+                this.total = [
+                    10, 
+                    5, 
+                    3
+                ];
+                this.border = 2;
+                this.lineWidth = 8;
+                this.indent = 3;
+                this.color = "#000000";
+                this.depth = 0;
+                this.element = 0;
+                this.fontColor = "black";
+                this.fontSize = 30;
+                this.size = 0;
+                var pCanvas = document.createElement("canvas");
+                this.fontSize = iFontSize;
+                this.size = iSize;
+                pCanvas.width = iSize + 120;
+                pCanvas.height = iSize;
+                this.canvas = pCanvas;
+                this.context = pCanvas.getContext("2d");
+                this.radius = iSize / 2. - this.thickness;
             }
-        ],
-        deps: {
-            files: [
-                {
-                    path: "/models/barrel/barrel_and_support.dae",
-                    name: "BARREL"
-                }, 
-                {
-                    path: "/models/box/closed_box.dae",
-                    name: "CLOSED_BOX"
-                }, 
-                {
-                    path: "/models/tube/tube.dae",
-                    name: "TUBE"
-                }, 
-                {
-                    path: "/models/tubing/tube_beeween_rocks.DAE",
-                    name: "TUBE_BETWEEN_ROCKS"
-                }, 
-                {
-                    path: "/models/hero/movie.dae",
-                    name: "HERO_MODEL"
-                }, 
-                {
-                    path: "/models/hero/film.DAE",
-                    name: "HERO_FILM"
+            Object.defineProperty(Progress.prototype, "width", {
+                get: function () {
+                    return this.canvas.width;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Progress.prototype, "height", {
+                get: function () {
+                    return this.canvas.height;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Progress.prototype.loaded = function () {
+                if (this.element < this.total[this.depth]) {
+                    this.draw();
+                    this.element++;
                 }
-            ]
-        }
+            };
+            Progress.prototype.next = function () {
+                if (this.depth < this.total.length) {
+                    this.element = 0;
+                    this.depth++;
+                }
+            };
+            Progress.prototype.reset = function () {
+                this.depth = 0;
+                this.element = 0;
+                this.context.clearRect(0, 0, this.width, this.height);
+            };
+            Progress.prototype.draw = function () {
+                this.loadLevel();
+                this.updateInfo();
+            };
+            Progress.prototype.updateInfo = function () {
+                var pCtx = this.context;
+                var x = this.size;
+                var y = this.size - this.fontSize - 2;
+                var n = 0;
+                var m = 0;
+                for(var i = 0; i < this.total.length; ++i) {
+                    if (i < this.depth) {
+                        m += this.total[i];
+                    }
+                    n += this.total[i];
+                }
+                m += this.element;
+                pCtx.clearRect(x, 0, this.width, this.height);
+                pCtx.fillStyle = this.fontColor;
+                pCtx.font = "bold " + this.fontSize + "px Consolas";
+                /*this.depth / this.total.length*/
+                pCtx.fillText(((m / n) * 100).toFixed(1) + "%", x, y);
+            };
+            Progress.prototype.loadLevel = function (i, iDepth) {
+                if (typeof i === "undefined") { i = this.element; }
+                if (typeof iDepth === "undefined") { iDepth = this.depth; }
+                var fFrom = 360 / this.total[iDepth] * i + this.border / 2.;
+                var fTo = 360 / this.total[iDepth] * (i + 1) - this.border / 2.;
+                this.animate(fFrom, fTo, iDepth);
+            };
+            Progress.prototype.animate = function (fFrom, fTo, iDepth) {
+                if (typeof fFrom === "undefined") { fFrom = 0; }
+                if (typeof fTo === "undefined") { fTo = 360; }
+                if (typeof iDepth === "undefined") { iDepth = 0; }
+                var _this = this;
+                var x = this.height / 2., y = this.height / 2.;
+                var pCtx = this.context;
+                var fCurrent = fFrom;
+                var fRatio = Progress.RADIAN_RATIO;
+                var iTimer = setInterval(/** @inline */function () {
+                    var fNext = fCurrent + _this.step;
+                    pCtx.beginPath();
+                    pCtx.arc(x, y, Math.max(0, _this.radius - iDepth * (_this.lineWidth + _this.indent)), fCurrent * fRatio, fNext * fRatio, _this.counterclockwise);
+                    pCtx.lineWidth = _this.lineWidth;
+                    pCtx.lineCap = "butt";
+                    pCtx.strokeStyle = _this.color;
+                    pCtx.stroke();
+                    fCurrent = fNext;
+                    if (fCurrent >= fTo) {
+                        clearInterval(iTimer);
+                    }
+                }, 5);
+            };
+            Progress.RADIAN_RATIO = Math.PI / 180.0;
+            Progress.prototype.valueOf = function () {
+                return this.canvas;
+            };
+            return Progress;
+        })();
+        util.Progress = Progress;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+// module akra {
+// 	export var bar = new util.Progress();
+// 	document.body.appendChild(bar.canvas);
+// }
+var akra;
+(function (akra) {
+    var pProgress = new akra.util.Progress();
+    var $cv = $(pProgress.canvas);
+    $cv.css({
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        zIndex: "100",
+        display: "none",
+        marginTop: (-pProgress.height / 2) + "px",
+        marginLeft: (-pProgress.width / 2) + "px"
     });
-    // console.log(core.Engine.DEPS);
-    // throw null;
+    document.body.appendChild($cv[0]);
     var pEngine = akra.createEngine({
         renderer: {
             preserveDrawingBuffer: true
+        },
+        deps: {
+            files: [
+                {
+                    path: "textures/terrain/main_height_map_1025.dds",
+                    name: "TERRAIN_HEIGHT_MAP"
+                }, 
+                {
+                    path: "textures/terrain/main_terrain_normal_map.dds",
+                    name: "TERRAIN_NORMAL_MAP"
+                }, 
+                {
+                    path: "textures/skyboxes/desert-3.dds",
+                    name: "SKYBOX"
+                }
+            ],
+            deps: {
+                files: [
+                    {
+                        path: "models/barrel/barrel_and_support.dae",
+                        name: "BARREL"
+                    }, 
+                    {
+                        path: "models/box/closed_box.dae",
+                        name: "CLOSED_BOX"
+                    }, 
+                    {
+                        path: "models/tube/tube.dae",
+                        name: "TUBE"
+                    }, 
+                    {
+                        path: "models/tubing/tube_beeween_rocks.DAE",
+                        name: "TUBE_BETWEEN_ROCKS"
+                    }, 
+                    {
+                        path: "models/hero/movie.dae",
+                        name: "HERO_MODEL"
+                    }, 
+                    {
+                        path: "models/hero/film.DAE",
+                        name: "HERO_FILM"
+                    }
+                ]
+            }
+        },
+        loader: {
+            before: function (pManager, pInfo) {
+                pProgress.total = pInfo;
+                $cv.fadeIn(400);
+            },
+            onload: function (pManager, iDepth, nLoaded, nTotal) {
+                pProgress.element = nLoaded;
+                pProgress.depth = iDepth;
+                pProgress.draw();
+            },
+            loaded: function (pManager) {
+                $cv.fadeOut(1000, /** @inline */function () {
+                    document.body.removeChild($cv[0]);
+                });
+            }
         }
     });
     var pRmgr = pEngine.getResourceManager();
@@ -76,13 +234,7 @@ var akra;
     var pGamepads = pEngine.getGamepads();
     var pKeymap = akra.controls.createKeymap();
     var pTerrain = null;
-    // var $canvasContainer: JQuery 		= null;
-    // var $div: JQuery 					= null;
-    // class TimeLine {
-    // 	private _pControllers: IAnimationController[] = [];
-    // 	addController(pController: IAnimationController, fTime: float): void {
-    // 	}
-    // }
+    // var pDepsManager: IDepsManager 		= pEngine.getDepsManager()
     akra.self = {
         engine: pEngine,
         scene: pScene,
@@ -95,7 +247,6 @@ var akra;
         gamepads: pGamepads,
         terrain: // cameraTerrainProj 	: <ISceneModel>null,
         null,
-        terrainLoaded: false,
         cameras: [],
         activeCamera: 0,
         cameraLight: null,
@@ -138,23 +289,6 @@ var akra;
         pCanvas.bind("viewportAdded", function (pCanvas, pVp) {
             pViewport = akra.self.viewport = pVp;
         });
-        // pIDE.bind("created", (): void => {
-        // 	$canvasContainer = $((<webgl.WebGLCanvas>pCanvas).el).parent();
-        // 	$div = $("<div>[ Fred ]</div>").css({
-        // 		position 	: "absolute",
-        // 		background 	: "rgba(0,0,0,.75)",
-        // 		color 		: "white",
-        // 		zIndex 		: "1000",
-        // 		fontFamily 	: "Consolas",
-        // 		fontSize 	: "10px",
-        // 		padding 	: "2px",
-        // 		width 		: "40px",
-        // 		textAlign 	: "center",
-        // 		whiteSpace 	: "nowrap"
-        // 	});
-        // 	$canvasContainer.append($div);
-        // 	$canvasContainer.css({overflow: "hidden"});
-        // });
         pKeymap.bind("equalsign", /** @inline */function () {
             akra.self.activeCamera++;
             if (akra.self.activeCamera === akra.self.cameras.length) {
@@ -341,54 +475,31 @@ var akra;
     function createTerrain() {
         pTerrain = pScene.createTerrainROAM();
         var pTerrainMap = {};
-        pTerrainMap["height"] = pRmgr.loadImage("TERRAIN_HEIGHT_MAP");
-        // pTerrainMap["height"].bind("loaded", (pTexture: ITexture) => {
-        pTerrainMap["normal"] = pRmgr.loadImage("TERRAIN_NORMAL_MAP");
-        // pTerrainMap["normal"].bind("loaded", (pTexture: ITexture) => {
+        pTerrainMap["height"] = pRmgr.imagePool.findResource("TERRAIN_HEIGHT_MAP");
+        pTerrainMap["normal"] = pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");
         var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
         pTerrain.attachToParent(pScene.getRootNode());
         pTerrain.setInheritance(akra.ENodeInheritance.ALL);
         pTerrain.setRotationByXYZAxis(-Math.PI / 2, 0., 0.);
         pTerrain.setPosition(11, -109, -109.85);
-        // pTerrain.setPosition(0., -pTerrain.localBounds.sizeZ() / 2., 0.);
-        // pTestNode.addRelRotationByXYZAxis(1, 1, 0);
-        akra.self.terrainLoaded = true;
-        createHero();
-        // pEngine.renderFrame();
-        // 	});
-        // });
         akra.self.terrain = pTerrain;
     }
     function createSkyBox() {
         pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
         pSkyBoxTexture.loadResource("SKYBOX");
-        // pSkyBoxTexture.bind("loaded", (pTexture: ITexture) => {
         if (pViewport.type === akra.EViewportTypes.DSVIEWPORT) {
             (pViewport).setSkybox(pSkyBoxTexture);
         }
-        // });
-            }
-    function loadModels(sPath, fnCallback) {
-        var pModel = pRmgr.colladaPool.findResource(sPath);
-        // pModel.bind("loaded", (pModel: ICollada) => {
+    }
+    function createModelEntry(sResource) {
+        var pModel = pRmgr.colladaPool.findResource(sResource);
         var pModelRoot = pModel.attachToScene(pScene);
-        if (akra.isFunction(fnCallback)) {
-            fnCallback(pModelRoot);
-        }
-        // });
-            }
+        return pModelRoot;
+    }
     function update() {
         updateCameras();
         akra.self.keymap.update();
-        // var pProj: IVec3 = vec3();
-        // if (self.terrainLoaded && self.terrain.projectPoint(self.hero.root.worldPosition, pProj)) {
-        // 	self.cameraTerrainProj.setPosition(pProj);
-        // 	if (self.viewport.projectPoint(pProj)) {
-        // 		var pOffset = $canvasContainer.offset();
-        // 		$div.offset({left: pOffset.left + pProj.x, top: pOffset.top + pProj.y});
-        // 	}
-        // }
-            }
+    }
     function fetchAllCameras() {
         akra.self.scene.getRootNode().explore(function (pEntity) {
             if (akra.scene.objects.isCamera(pEntity) && !akra.scene.light.isShadowCaster(pEntity)) {
@@ -407,97 +518,53 @@ var akra;
             pNode.setPosition(v3fsp);
         }
     }
-    function createHero() {
-        loadModels("HERO_MODEL", function (pNode) {
-            akra.self.hero.root = pNode.findEntity("node-Bip001");
-            (pNode.findEntity("node-Sphere001")).mesh.getSubset(0).setVisible(false);
-            pEngine.renderFrame();
-            var v3fsp = new akra.Vec3();
-            if (akra.self.terrain.projectPoint(pNode.worldPosition, v3fsp)) {
-                pNode.setPosition(v3fsp);
-                pNode.setRotationByXYZAxis(0, akra.math.PI, 0);
-                pCamera.addPosition(v3fsp);
-                pCamera.lookAt(v3fsp);
-            }
-            var pCamLight = pScene.createLightPoint(akra.ELightTypes.PROJECT, false, 0, "camera-light");
-            // console.log(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
-            pCamLight.attachToParent(pScene.getRootNode().findEntity("Camera001-camera"));
-            pCamLight.setInheritance(akra.ENodeInheritance.ALL);
-            pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
-            pCamLight.params.diffuse.set(1.);
-            pCamLight.params.specular.set(1.);
-            pCamLight.params.attenuation.set(.35, 0, 0);
-            pCamLight.enabled = false;
-            akra.self.cameraLight = pCamLight;
-            loadModels("CLOSED_BOX", function (pBox) {
-                pBox.scale(.25);
-                putOnTerrain(pBox, new akra.Vec3(-2., -3.85, -5.));
-                pBox.addPosition(new akra.Vec3(0., 1., 0.));
-            });
-            loadModels("BARREL", function (pBarrel) {
-                pBarrel.scale(.75);
-                pBarrel.setPosition(new akra.Vec3(-30., -40.23, -15.00));
-                pBarrel.setRotationByXYZAxis(-17. * akra.math.RADIAN_RATIO, -8. * akra.math.RADIAN_RATIO, -15. * akra.math.RADIAN_RATIO);
-            });
-            loadModels("TUBE", function (pTube) {
-                pTube.scale(19.);
-                pTube.setRotationByXYZAxis(0. * akra.math.RADIAN_RATIO, -55. * akra.math.RADIAN_RATIO, 0.);
-                pTube.setPosition(new akra.Vec3(-16., -52.17, -66.));
-            });
-            loadModels("TUBE_BETWEEN_ROCKS", function (pTube) {
-                pTube.scale(2.);
-                pTube.setRotationByXYZAxis(5. * akra.math.RADIAN_RATIO, 100. * akra.math.RADIAN_RATIO, 0.);
-                pTube.setPosition(new akra.Vec3(-55., -12.15, -82.00));
-            });
-            pScene.bind("beforeUpdate", update);
-            var pMovie = pRmgr.loadModel("HERO_FILM");
-            // pMovie.bind("loaded", () => {
-            var pAnim = pMovie.extractAnimation(0);
-            var pContainer = akra.animation.createContainer(pAnim, "movie");
-            var pController = pEngine.createAnimationController("movie");
-            pController.addAnimation(pContainer);
-            pController.stop();
-            pNode.addController(pController);
-            akra.self.hero.movie = pController;
-            pEngine.exec();
-            // });
-            /*var pController: IAnimationController = pEngine.createAnimationController("movie");
-            var pIntroData: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
-            
-            pIntroData.bind("loaded", () => {
-            
-            var pAnim: IAnimation = pIntroData.extractAnimation(0);
-            var pIntro: IAnimationContainer = animation.createContainer(pAnim, "intro");
-            
-            // pIntro.useLoop(true);
-            pIntro.rightInfinity(false);
-            pController.addAnimation(pIntro);
-            // pController.stop();
-            
-            var pMovieData: ICollada = <ICollada>pRmgr.loadModel("@HERO_MOVIE");
-            
-            pMovieData.bind("loaded", () => {
-            var pAnim: IAnimation = pMovieData.extractAnimation(0);
-            var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
-            
-            // pMovie.useLoop(true);
-            pMovie.leftInfinity(false);
-            
-            
-            pController.addAnimation(pMovie);
-            pController.stop();
-            
-            pIntro.bind("stoped", () => {
-            pController.play("movie");
-            });
-            
-            });
-            });
-            
-            pNode.addController(pController);
-            self.hero.movie = pController;*/
-            fetchAllCameras();
-        });
+    function createModels() {
+        var pHeroModel = createModelEntry("HERO_MODEL");
+        akra.self.hero.root = pHeroModel.findEntity("node-Bip001");
+        (pHeroModel.findEntity("node-Sphere001")).mesh.getSubset(0).setVisible(false);
+        pEngine.renderFrame();
+        var v3fsp = new akra.Vec3();
+        if (akra.self.terrain.projectPoint(pHeroModel.worldPosition, v3fsp)) {
+            pHeroModel.setPosition(v3fsp);
+            pHeroModel.setRotationByXYZAxis(0, akra.math.PI, 0);
+            pCamera.addPosition(v3fsp);
+            pCamera.lookAt(v3fsp);
+        }
+        var pCamLight = pScene.createLightPoint(akra.ELightTypes.PROJECT, false, 0, "camera-light");
+        pCamLight.attachToParent(pScene.getRootNode().findEntity("Camera001-camera"));
+        pCamLight.setInheritance(akra.ENodeInheritance.ALL);
+        pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
+        pCamLight.params.diffuse.set(1.);
+        pCamLight.params.specular.set(1.);
+        pCamLight.params.attenuation.set(.35, 0, 0);
+        pCamLight.enabled = false;
+        akra.self.cameraLight = pCamLight;
+        var pBox = createModelEntry("CLOSED_BOX");
+        pBox.scale(.25);
+        putOnTerrain(pBox, new akra.Vec3(-2., -3.85, -5.));
+        pBox.addPosition(new akra.Vec3(0., 1., 0.));
+        var pBarrel = createModelEntry("BARREL");
+        pBarrel.scale(.75);
+        pBarrel.setPosition(new akra.Vec3(-30., -40.23, -15.00));
+        pBarrel.setRotationByXYZAxis(-17. * akra.math.RADIAN_RATIO, -8. * akra.math.RADIAN_RATIO, -15. * akra.math.RADIAN_RATIO);
+        var pTube = createModelEntry("TUBE");
+        pTube.scale(19.);
+        pTube.setRotationByXYZAxis(0. * akra.math.RADIAN_RATIO, -55. * akra.math.RADIAN_RATIO, 0.);
+        pTube.setPosition(new akra.Vec3(-16., -52.17, -66.));
+        var pTubeBetweenRocks = createModelEntry("TUBE_BETWEEN_ROCKS");
+        pTubeBetweenRocks.scale(2.);
+        pTubeBetweenRocks.setRotationByXYZAxis(5. * akra.math.RADIAN_RATIO, 100. * akra.math.RADIAN_RATIO, 0.);
+        pTubeBetweenRocks.setPosition(new akra.Vec3(-55., -12.15, -82.00));
+        pScene.bind("beforeUpdate", update);
+        var pMovie = pRmgr.colladaPool.findResource("HERO_FILM");
+        var pAnim = pMovie.extractAnimation(0);
+        var pContainer = akra.animation.createContainer(pAnim, "movie");
+        var pController = pEngine.createAnimationController("movie");
+        pController.addAnimation(pContainer);
+        pController.stop();
+        pHeroModel.addController(pController);
+        akra.self.hero.movie = pController;
+        fetchAllCameras();
     }
     function main(pEngine) {
         setup();
@@ -505,25 +572,10 @@ var akra;
         createCameras();
         createViewports();
         createTerrain();
+        createModels();
         createSkyBox();
         createLighting();
-        /*
-        loadModels("/models/miner/miner.dae");
-        loadModels("/models/windspot/WINDSPOT.DAE", (pNode: ISceneNode) => {
-        pNode.setRelPosition(7.5, 0., 0.);
-        });
-        loadModels("/models/rock/rock-1-low-p.DAE", (pNode: ISceneNode) => {
-        pNode.setRelPosition(0., 1., 5.);
-        });
-        
-        */
-            }
+        pEngine.exec();
+    }
     pEngine.bind("depsLoaded", main);
-    // pEngine.getResourceManager().setLoadedAllRoutine(() => {
-    // 	console.log("all loaded!!!");
-    // });
-    // pEngine.getResourceManager().monitorInitResources(function (nLoaded?: number, nTotal?: number, pTarget?: IResourcePoolItem): void {
-    //        console.log('loaded:', nLoaded / nTotal * 100, '%', "(", nLoaded , "/",  nTotal, ")", pTarget.findResourceName());
-    //    });
-    // pEngine.exec();
-    })(akra || (akra = {}));
+})(akra || (akra = {}));

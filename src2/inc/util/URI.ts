@@ -190,7 +190,7 @@ module akra.util {
 
 			pCurrentPath = util.uri(sAbsolutePath);
 			pCurrentPath.path = util.pathinfo(pCurrentPath.path).dirname + "/" + sFile;
-			
+			// console.log(sFile, sAbsolutePath, pCurrentPath.toString());
 			return pCurrentPath.toString();
 		}
 	}

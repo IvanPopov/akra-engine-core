@@ -170,10 +170,10 @@ module akra.io {
 
 		    fnCallback = arguments[hasMode ? 2 : 1];
 		    fnCallback = fnCallback || TFile.defaultCallback;
-
+		    
 		    if (this.isOpened()) {
 		        WARNING("file already opened: " + this.name);
-		        (<Function>fnCallback)(null, this._pFileMeta);
+		        (<Function>fnCallback).call(pFile, null, this._pFileMeta);
 		    }
 
 		    this.setAndValidateUri(util.uri(arguments[0]));
@@ -193,7 +193,7 @@ module akra.io {
 		            this.position = this.size;
 		        }
 
-		        fnCallback.call(pFile, null, pFile);
+		        fnCallback.call(pFile, null, this._pFileMeta);
 		    });
 		}
 
@@ -450,6 +450,7 @@ module akra.io {
                  };
 			var fnCallbackSystem: Function = function (err, pMeta) {
 				(<any>pFile)._pFileMeta = <IFileMeta>pMeta;
+				// console.log(pMeta);
 				fnCallback.call(pFile, err, pFile);
 			};
 

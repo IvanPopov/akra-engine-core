@@ -84,7 +84,12 @@ onmessage = function (pEvent) {
                     pData = pData.substr(nPos);
                 }
             }
+
+
             var blob = new Blob([pData], {type: isBinary(pFile.mode)? 'application/octet-stream': 'text/plain'});
+
+            pData = null;
+            
             // if (isBinary(pFile.mode) && pCommand.transfer != TRANSFER.NORMAL) {
             //     if (pCommand.transfer == TRANSFER.FAST) {
             //         postMessage(pData, [pData]);

@@ -8,31 +8,68 @@ declare var $: JQueryStatic;
 /// @MINER_MODEL: 			"/models/miner/miner.dae"
 /// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 
+#include "util/Progress.ts"
 
 module akra {
 
-	core.Engine.depends({
-		files: [
-			{path: "/textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
-			{path: "/textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
-			{path: "/textures/skyboxes/desert-3.dds", name: "SKYBOX"}
-		],
-		deps: {
-			files: [
-				{path: "/models/barrel/barrel_and_support.dae", name: "BARREL"},
-				{path: "/models/box/closed_box.dae", name: "CLOSED_BOX"},
-				{path: "/models/tube/tube.dae", name: "TUBE"},
-				{path: "/models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
-				{path: "/models/hero/movie.dae", name: "HERO_MODEL"},
-				{path: "/models/hero/film.DAE", name: "HERO_FILM"}
-			]
-		}
+	var pProgress = new util.Progress();
+
+	var $cv = $(pProgress.canvas);
+
+
+	$cv.css({
+	    position: "absolute",
+	    left: "50%",
+	    top: "50%",
+	    zIndex: "100",
+	    display: "none",
+
+	    marginTop: (-pProgress.height / 2) + "px",
+	    marginLeft: (-pProgress.width / 2) + "px",
 	});
-	// console.log(core.Engine.DEPS);
-	// throw null;
+
+	document.body.appendChild($cv[0]);
+
 	var pEngine: IEngine = createEngine({
 		renderer: {preserveDrawingBuffer: true},
+		deps: {
+			files: [
+				{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
+				{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
+				{path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
+			],
+			deps: {
+				files: [
+					{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
+					{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
+					{path: "models/tube/tube.dae", name: "TUBE"},
+					{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
+					{path: "models/hero/movie.dae", name: "HERO_MODEL"},
+					{path: "models/hero/film.DAE", name: "HERO_FILM"}
+				]
+			}
+		},
+		loader: {
+			before: (pManager: IDepsManager, pInfo: number[]): void => {
+				pProgress.total = pInfo;
+
+				$cv.fadeIn(400);
+			},
+			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number): void => {
+				pProgress.element = nLoaded;
+				pProgress.depth = iDepth;
+				pProgress.draw();
+			},
+			loaded: (pManager: IDepsManager): void => {
+				$cv.fadeOut(1000, () => {
+					document.body.removeChild($cv[0]);
+				});
+			}
+		}
 	});
+
+	
+
 
 	var pRmgr: IResourcePoolManager 	= pEngine.getResourceManager();
 	var pScene: IScene3d 				= pEngine.getScene();
@@ -45,18 +82,8 @@ module akra {
 	var pGamepads: IGamepadMap 			= pEngine.getGamepads();
 	var pKeymap: controls.KeyMap		= <controls.KeyMap>controls.createKeymap();
 	var pTerrain: ITerrain 				= null;
+	// var pDepsManager: IDepsManager 		= pEngine.getDepsManager()
 
-	// var $canvasContainer: JQuery 		= null;
-	// var $div: JQuery 					= null;
-
-
-	// class TimeLine {
-	// 	private _pControllers: IAnimationController[] = [];
-
-	// 	addController(pController: IAnimationController, fTime: float): void {
-
-	// 	}
-	// }
 
 	
 
@@ -72,7 +99,6 @@ module akra {
 		gamepads 			: pGamepads,
 		// cameraTerrainProj 	: <ISceneModel>null,
 		terrain 			: <ITerrain>null,
-		terrainLoaded		: false,
 		cameras 			: <ICamera[]>[],
 		activeCamera  		: 0,
 		cameraLight 		: <ILightPoint>null,
@@ -125,27 +151,6 @@ module akra {
 		pCanvas.bind("viewportAdded", (pCanvas: ICanvas3d, pVp: IViewport) => {
 			pViewport = self.viewport = pVp;
 		});
-
-
-		// pIDE.bind("created", (): void => {
-		// 	$canvasContainer = $((<webgl.WebGLCanvas>pCanvas).el).parent();
-
-		// 	$div = $("<div>[ Fred ]</div>").css({
-		// 		position 	: "absolute", 
-		// 		background 	: "rgba(0,0,0,.75)", 
-		// 		color 		: "white",
-		// 		zIndex 		: "1000",
-		// 		fontFamily 	: "Consolas",
-		// 		fontSize 	: "10px",
-		// 		padding 	: "2px",
-		// 		width 		: "40px",
-		// 		textAlign 	: "center",
-		// 		whiteSpace 	: "nowrap"
-		// 	});
-
-		// 	$canvasContainer.append($div);
-		// 	$canvasContainer.css({overflow: "hidden"});
-		// });
 
 		pKeymap.bind("equalsign", () => {
 			self.activeCamera ++;
@@ -395,26 +400,15 @@ module akra {
 
 		var pTerrainMap: IImageMap = <IImageMap>{};
 
-		pTerrainMap["height"] = pRmgr.loadImage("TERRAIN_HEIGHT_MAP");
-
-		// pTerrainMap["height"].bind("loaded", (pTexture: ITexture) => {
-			pTerrainMap["normal"] = pRmgr.loadImage("TERRAIN_NORMAL_MAP");
+		pTerrainMap["height"] = <IImg>pRmgr.imagePool.findResource("TERRAIN_HEIGHT_MAP");
+		pTerrainMap["normal"] = <IImg>pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");
 			
-			// pTerrainMap["normal"].bind("loaded", (pTexture: ITexture) => {
-				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
-				pTerrain.attachToParent(pScene.getRootNode());
-				pTerrain.setInheritance(ENodeInheritance.ALL);
+		var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
+		pTerrain.attachToParent(pScene.getRootNode());
+		pTerrain.setInheritance(ENodeInheritance.ALL);
 
-				pTerrain.setRotationByXYZAxis(-Math.PI/2, 0., 0.);
-				pTerrain.setPosition(11, -109, -109.85);
-				// pTerrain.setPosition(0., -pTerrain.localBounds.sizeZ() / 2., 0.);
-				// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
-				self.terrainLoaded = true;
-
-				createHero();
-				// pEngine.renderFrame();
-		// 	});
-		// });
+		pTerrain.setRotationByXYZAxis(-Math.PI/2, 0., 0.);
+		pTerrain.setPosition(11, -109, -109.85);
 
 		self.terrain = pTerrain;
 	}
@@ -423,37 +417,21 @@ module akra {
 		pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
 		pSkyBoxTexture.loadResource("SKYBOX");
 
-		// pSkyBoxTexture.bind("loaded", (pTexture: ITexture) => {
-			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
-				(<render.DSViewport>pViewport).setSkybox(pSkyBoxTexture);
-			}
-		// });
+		if (pViewport.type === EViewportTypes.DSVIEWPORT) {
+			(<render.DSViewport>pViewport).setSkybox(pSkyBoxTexture);
+		}
 	}
 
-	function loadModels(sPath, fnCallback?: Function): void {
-		var pModel: ICollada = <ICollada>pRmgr.colladaPool.findResource(sPath);
+	function createModelEntry(sResource: string): IModelEntry {
+		var pModel: ICollada = <ICollada>pRmgr.colladaPool.findResource(sResource);
+		var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 
-		// pModel.bind("loaded", (pModel: ICollada) => {
-			var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
-
-			if (isFunction(fnCallback)) {
-				fnCallback(pModelRoot);
-			}
-		// });
+		return pModelRoot;
 	}
 
 	function update(): void {
 		updateCameras();
 		self.keymap.update();
-		// var pProj: IVec3 = vec3();
-		// if (self.terrainLoaded && self.terrain.projectPoint(self.hero.root.worldPosition, pProj)) {
-		// 	self.cameraTerrainProj.setPosition(pProj);
-
-		// 	if (self.viewport.projectPoint(pProj)) {
-		// 		var pOffset = $canvasContainer.offset();
-		// 		$div.offset({left: pOffset.left + pProj.x, top: pOffset.top + pProj.y});
-		// 	}
-		// }
 	}
 
 	function fetchAllCameras(): void {
@@ -480,120 +458,80 @@ module akra {
 		}
 	}
 
-	function createHero(): void {
-		loadModels("HERO_MODEL", (pNode: ISceneNode) => {
-			self.hero.root = <ISceneNode>pNode.findEntity("node-Bip001");
+	function createModels(): void {
+		var pHeroModel: ISceneNode = createModelEntry("HERO_MODEL");
 
-			(<ISceneModel>pNode.findEntity("node-Sphere001")).mesh.getSubset(0).setVisible(false);
-			
-			pEngine.renderFrame();
+		self.hero.root = <ISceneNode>pHeroModel.findEntity("node-Bip001");
 
-			var v3fsp: IVec3 = new Vec3();
-			
-			if (self.terrain.projectPoint(pNode.worldPosition, v3fsp)) {
-				pNode.setPosition(v3fsp);
-				pNode.setRotationByXYZAxis(0, math.PI, 0);
-				pCamera.addPosition(v3fsp);
-				pCamera.lookAt(v3fsp);
-			}
-			
-			var pCamLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, false, 0, "camera-light");
+		(<ISceneModel>pHeroModel.findEntity("node-Sphere001")).mesh.getSubset(0).setVisible(false);
+		
+		pEngine.renderFrame();
 
-			// console.log(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
-			pCamLight.attachToParent(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
+		var v3fsp: IVec3 = new Vec3();
+		
+		if (self.terrain.projectPoint(pHeroModel.worldPosition, v3fsp)) {
+			pHeroModel.setPosition(v3fsp);
+			pHeroModel.setRotationByXYZAxis(0, math.PI, 0);
 
-			pCamLight.setInheritance(ENodeInheritance.ALL);
-			pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
-			pCamLight.params.diffuse.set(1.);
-			pCamLight.params.specular.set(1.);
-			pCamLight.params.attenuation.set(.35, 0, 0);
-			pCamLight.enabled = false;
+			pCamera.addPosition(v3fsp);
+			pCamera.lookAt(v3fsp);
+		}
+		
+		var pCamLight: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, false, 0, "camera-light");
 
-			self.cameraLight = pCamLight;
+		pCamLight.attachToParent(<ISceneNode>pScene.getRootNode().findEntity("Camera001-camera"));
 
+		pCamLight.setInheritance(ENodeInheritance.ALL);
+		pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
+		pCamLight.params.diffuse.set(1.);
+		pCamLight.params.specular.set(1.);
+		pCamLight.params.attenuation.set(.35, 0, 0);
+		pCamLight.enabled = false;
 
+		self.cameraLight = pCamLight;
 
-			loadModels("CLOSED_BOX", (pBox: ISceneNode) => {
-				pBox.scale(.25);
-				putOnTerrain(pBox, new Vec3(-2., -3.85, -5.));
-				pBox.addPosition(new Vec3(0., 1., 0.));
-			});
+		var pBox: ISceneNode = createModelEntry("CLOSED_BOX");
 
-			loadModels("BARREL", (pBarrel: ISceneNode) => {
-				pBarrel.scale(.75);
-				pBarrel.setPosition(new Vec3(-30., -40.23, -15.00));
-				pBarrel.setRotationByXYZAxis(-17. * math.RADIAN_RATIO, -8. * math.RADIAN_RATIO, -15. * math.RADIAN_RATIO);
-			});
+		pBox.scale(.25);
+		putOnTerrain(pBox, new Vec3(-2., -3.85, -5.));
+		pBox.addPosition(new Vec3(0., 1., 0.));
 
-			loadModels("TUBE", (pTube: ISceneNode) => {
-				pTube.scale(19.);
-				pTube.setRotationByXYZAxis(0. * math.RADIAN_RATIO, -55. * math.RADIAN_RATIO, 0.);
-				pTube.setPosition(new Vec3(-16.  , -52.17  ,-66.));
-			});
+		var pBarrel: ISceneNode = createModelEntry("BARREL");
 
-			loadModels("TUBE_BETWEEN_ROCKS", (pTube: ISceneNode) => {
-				pTube.scale(2.);
-				pTube.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
-				pTube.setPosition(new Vec3(-55., -12.15, -82.00));
-			});
+		pBarrel.scale(.75);
+		pBarrel.setPosition(new Vec3(-30., -40.23, -15.00));
+		pBarrel.setRotationByXYZAxis(-17. * math.RADIAN_RATIO, -8. * math.RADIAN_RATIO, -15. * math.RADIAN_RATIO);
+		
 
-			pScene.bind("beforeUpdate", update);
+		var pTube: ISceneNode = createModelEntry("TUBE");
 
-			var pMovie: ICollada = <ICollada>pRmgr.loadModel("HERO_FILM");
-			
-			// pMovie.bind("loaded", () => {
+		pTube.scale(19.);
+		pTube.setRotationByXYZAxis(0. * math.RADIAN_RATIO, -55. * math.RADIAN_RATIO, 0.);
+		pTube.setPosition(new Vec3(-16.  , -52.17  ,-66.));
+		
 
-				var pAnim: IAnimation = pMovie.extractAnimation(0);
-				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-				var pController: IAnimationController = pEngine.createAnimationController("movie");
-				
-				pController.addAnimation(pContainer);
-				pController.stop();
+		var pTubeBetweenRocks: ISceneNode = createModelEntry("TUBE_BETWEEN_ROCKS");
+	
+		pTubeBetweenRocks.scale(2.);
+		pTubeBetweenRocks.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
+		pTubeBetweenRocks.setPosition(new Vec3(-55., -12.15, -82.00));
+		
 
-				pNode.addController(pController);
+		pScene.bind("beforeUpdate", update);
 
-				self.hero.movie = pController;
-				pEngine.exec();
-			// });
-			
-			/*var pController: IAnimationController = pEngine.createAnimationController("movie");
-			var pIntroData: ICollada = <ICollada>pRmgr.loadModel("@HERO_INTRO");
-			
-			pIntroData.bind("loaded", () => {
+		var pMovie: ICollada = <ICollada>pRmgr.colladaPool.findResource("HERO_FILM");
+		var pAnim: IAnimation = pMovie.extractAnimation(0);
+		var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+		var pController: IAnimationController = pEngine.createAnimationController("movie");
+		
+		pController.addAnimation(pContainer);
+		pController.stop();
 
-				var pAnim: IAnimation = pIntroData.extractAnimation(0);
-				var pIntro: IAnimationContainer = animation.createContainer(pAnim, "intro");
-				
-				// pIntro.useLoop(true);
-				pIntro.rightInfinity(false);
-				pController.addAnimation(pIntro);
-				// pController.stop();
-				
-				var pMovieData: ICollada = <ICollada>pRmgr.loadModel("@HERO_MOVIE");
+		pHeroModel.addController(pController);
 
-				pMovieData.bind("loaded", () => {
-					var pAnim: IAnimation = pMovieData.extractAnimation(0);
-					var pMovie: IAnimationContainer = animation.createContainer(pAnim, "movie");
-
-					// pMovie.useLoop(true);
-					pMovie.leftInfinity(false);
-
-					
-					pController.addAnimation(pMovie);
-					pController.stop();
-
-					pIntro.bind("stoped", () => {
-						pController.play("movie");
-					});
-
-				});
-			}); 
-			
-			pNode.addController(pController);
-			self.hero.movie = pController;*/
-
-			fetchAllCameras();
-		});
+		self.hero.movie = pController;
+		
+		fetchAllCameras();
 	}
 
 	function main(pEngine: IEngine): void {
@@ -602,27 +540,12 @@ module akra {
 		createCameras();
 		createViewports();
 		createTerrain();
+		createModels();
 		createSkyBox();
 		createLighting();
 		
-		
-/*
-		loadModels("@MINER_MODEL");
-		loadModels("@WINDSPOT_MODEL", (pNode: ISceneNode) => {
-			pNode.setRelPosition(7.5, 0., 0.);
-		});
-		loadModels("@ROCK_MODEL", (pNode: ISceneNode) => {
-			pNode.setRelPosition(0., 1., 5.);
-		});
-
-*/	}
+		pEngine.exec();
+	}
 
 	pEngine.bind("depsLoaded", main);	
-	// pEngine.getResourceManager().setLoadedAllRoutine(() => {
-	// 	console.log("all loaded!!!");
-	// });
-	// pEngine.getResourceManager().monitorInitResources(function (nLoaded?: number, nTotal?: number, pTarget?: IResourcePoolItem): void {
- //        console.log('loaded:', nLoaded / nTotal * 100, '%', "(", nLoaded , "/",  nTotal, ")", pTarget.findResourceName());
- //    });	
-	// pEngine.exec();
 }

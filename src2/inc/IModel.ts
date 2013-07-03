@@ -17,6 +17,8 @@ module akra {
     }
 
     export interface IModel extends IResourcePoolItem {
+        byteLength: uint;
+
         modelFormat: EModelFormats;
 
         loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): bool;

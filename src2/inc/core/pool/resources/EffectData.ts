@@ -11,9 +11,14 @@
 
 module akra.core.pool.resources {
 	export class EffectData extends ResourcePoolItem {
+		private _pFile: IFile = null;
+
 #ifdef AFX_ENABLE_TEXT_EFFECTS
 		private _pSyntaxTree: IParseTree = null;
 #endif
+		inline get byteLength(): uint {
+			return this._pFile? this._pFile.byteLength: 0;
+		}
 
 		loadResource(sFileName?: string): bool {
 			var reExt: RegExp  = /^(.+)(\.afx|\.abf|\.fx)$/;
@@ -35,7 +40,8 @@ module akra.core.pool.resources {
     		}
 #endif
 			if(isBinary){
-    			var pFile: IFile = io.fopen(sFileName, "r+b");
+    			var pFile: IFile = this._pFile = io.fopen(sFileName, "r+b");
+	    		
 	    		pFile.read(function(err, pData: Uint8Array) {
 					if (err){ ERROR("Can not read file"); }
 					else me._initFromBinaryData(pData, sFileName);
@@ -46,7 +52,9 @@ module akra.core.pool.resources {
 
 #ifdef AFX_ENABLE_TEXT_EFFECTS
 
-			io.fopen(sFileName, "r+t").read(function(pErr: Error, sData: string){
+			var pFile: IFile = this._pFile = io.fopen(sFileName, "r+t");
+
+			pFile.read(function(pErr: Error, sData: string){
 				if(!isNull(pErr)){
 					ERROR("Can not load .afx file: '" + sFileName + "'");
 				}
