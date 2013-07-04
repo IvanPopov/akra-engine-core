@@ -187,107 +187,134 @@ module akra.core.pool.resources {
         load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
 
 
-    	load(pData: any, sType?: any, fnCallBack?: Function): IImg 
+    	load(/*pData: any, sType?: any, fnCallBack?: Function*/): IImg 
         {
-            var pMe:IImg=this;
+            var pMe: IImg=this;
 
-            if (pData instanceof HTMLCanvasElement) 
-            {
-                var pTempContext : CanvasRenderingContext2D = pData.getContext('2d');
-                if (!pTempContext) 
-                {
-                    if (isDefAndNotNull(sType)) 
-                    {
-                        sType(false);
+            if (arguments[0] instanceof HTMLCanvasElement) {
+                var pCanvas: HTMLCanvasElement = arguments[0];
+                var fnCallBack: Function = arguments[1];
+
+                var pTempContext : CanvasRenderingContext2D = pCanvas.getContext('2d');
+                if (!pTempContext) {
+                    if (isDefAndNotNull(fnCallBack)) {
+                        fnCallBack(false);
                     }
                     return this;
                 }
 
-                var pImageData : ImageData = pTempContext.getImageData(0, 0, pData.width, pData.height);               
+                var pImageData : ImageData = pTempContext.getImageData(0, 0, pCanvas.width, pCanvas.height);               
                 
-                this.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pData.width,pData.height);
+                this.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)), pCanvas.width, pCanvas.height);
             
-                if (isDefAndNotNull(sType)) 
-                {
-                    sType(true);
+                if (isDefAndNotNull(fnCallBack)) {
+                    fnCallBack(true);
                 }
                 return this;
             }
-            else if (isString(pData))
-            {
-                var sExt : string = (new Pathinfo(pData)).ext;
+            else if (isString(arguments[0])) {
+                var sFilename: string = arguments[0];
+                var fnCallBack: Function = arguments[1];
+                var sExt : string = (new Pathinfo(sFilename)).ext;
 
-                if(sExt=="png" || sExt=="jpg" || sExt=="jpeg" || sExt=="gif" || sExt=="bmp")
-                {
-                    var pImg:HTMLImageElement=new Image();
+                if(sExt === "png" || sExt === "jpg" || sExt === "jpeg" || sExt === "gif" || sExt === "bmp") {
+                    var pImg:HTMLImageElement = new Image();
 
-                    pImg.onload = function()
-                    {
+                    pImg.onload = function() {
                         var pTempCanvas: HTMLCanvasElement=<HTMLCanvasElement>document.createElement("canvas");
-                        pTempCanvas.width=pImg.width;
-                        pTempCanvas.height=pImg.height;
-                        var pTempContext : CanvasRenderingContext2D=<CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));                        
+                        pTempCanvas.width = pImg.width;
+                        pTempCanvas.height = pImg.height;
+                        
+                        var pTempContext: CanvasRenderingContext2D=<CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));                        
                         pTempContext.drawImage(pImg,0,0);
-                        var pImageData : ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);               
+                        
+                        var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);               
                 
                         pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pImg.width, pImg.height,1, EPixelFormats.BYTE_RGBA);
 
-                        if (isDefAndNotNull(sType)) 
-                        {
-                            sType(true);
+                        if (isDefAndNotNull(fnCallBack)) {
+                            fnCallBack(true);
                         }
 
                     }
-                    pImg.onerror=function()
-                    {
-                        if (isDefAndNotNull(sType)) 
-                        {
-                            sType(false);
+                    pImg.onerror = function() {
+                        if (isDefAndNotNull(fnCallBack)) {
+                            fnCallBack(false);
                         }
                     }
-                    pImg.onabort=function()
-                    {
-                        if (isDefAndNotNull(sType)) 
-                        {
-                            sType(false);
+                    pImg.onabort = function() {
+                        if (isDefAndNotNull(fnCallBack)) {
+                            fnCallBack(false);
                         }
                     }
-                    pImg.src = pData; 
 
+                    pImg.src = sFilename; 
                 }
-                else
-                {
-                    
-                    io.fopen(pData,"rb").onread=function(pError:Error,pDataInFile:ArrayBuffer)
-                    {
-                        pMe.load(new Uint8Array(pDataInFile),sExt,sType);
+                else {                    
+                    io.fopen(sFilename,"rb").onread = function(pError:Error,pDataInFile:ArrayBuffer) {
+                        pMe.load(new Uint8Array(pDataInFile), sExt, fnCallBack);
                     }
                 }
 
                 return this;
             }
-            else
-            {
-                var pCodec:ICodec=undefined;
+            else {
+                var pData: Uint8Array = arguments[0];
+                var sType: string = arguments[1];
+                var fnCallBack: Function = arguments[2];
+                var pCodec:ICodec = null;
 
-                if(sType)
-                {
-                    pCodec=Codec.getCodec(sType);
+                if(sType === "png" || sType === "jpg" || sType === "jpeg" || sType === "gif" || sType === "bmp") {
+
+                    var pBlob = new Blob([pData], {'type': 'image\/' + sType});
+                    var pObjectURL = (<any>window).URL.createObjectURL(pBlob);
+
+                    var pImg:HTMLImageElement = new Image();
+
+                    pImg.onload = function() {
+                        var pTempCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
+                        pTempCanvas.width = pImg.width;
+                        pTempCanvas.height = pImg.height;
+                        var pTempContext: CanvasRenderingContext2D = <CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));                        
+                        pTempContext.drawImage(pImg,0,0);
+                        var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);               
+                
+                        pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pImg.width, pImg.height,1, EPixelFormats.BYTE_RGBA);
+
+                        if (isDefAndNotNull(fnCallBack)) {
+                            fnCallBack(true);
+                        }
+
+                    }
+                    pImg.onerror = function() {
+                        if (isDefAndNotNull(fnCallBack)) {
+                            fnCallBack(false);
+                        }
+                    }
+                    pImg.onabort = function() {
+                        if (isDefAndNotNull(fnCallBack)) {
+                            fnCallBack(false);
+                        }
+                    }
+
+                    pImg.src = pObjectURL; 
+                    return this;
+                }
+                
+                if(sType) {
+                    pCodec = Codec.getCodec(sType);
                 }
 
 
 
-                if(!pCodec)
-                {
-                    var iMagicLen:uint=Math.min(32,pData.buffer.byteLength);
+                if(!pCodec) {
+                    var iMagicLen:uint=Math.min(32, pData.buffer.byteLength);
                     pCodec=Codec.getCodec(pData.subarray(0, iMagicLen));
                 }
 
-                if(!pCodec)
-                {
+                if(!pCodec) {
                     CRITICAL_ERROR("Unable to load image: Image format is unknown. Unable to identify codec. Check it or specify format explicitly.\n"+"Img.load");
-                    if (fnCallBack)
-                    {
+                    if (fnCallBack) {
                         fnCallBack(false);
                     }
                     return this;
@@ -298,24 +325,23 @@ module akra.core.pool.resources {
                 var pImgData:IImgData=new ImgData();
 
              
-                this._pBuffer=pCodec.decode(pData, pImgData);
+                this._pBuffer = pCodec.decode(pData, pImgData);
 
 
-                this._iWidth=pImgData.width;
-                this._iHeight=pImgData.height;
-                this._iDepth=pImgData.depth;
-                this._nMipMaps=pImgData.numMipMaps;
-                this._iFlags=pImgData.flags;
-                this._iCubeFlags=pImgData.cubeFlags;
+                this._iWidth = pImgData.width;
+                this._iHeight = pImgData.height;
+                this._iDepth = pImgData.depth;
+                this._nMipMaps = pImgData.numMipMaps;
+                this._iFlags = pImgData.flags;
+                this._iCubeFlags = pImgData.cubeFlags;
 
                 //console.log(this._iCubeFlags.toString(16),this._iFlags.toString(16));
 
-                this._eFormat=pImgData.format;
+                this._eFormat = pImgData.format;
 
                 this.notifyLoaded();
                 
-                if (fnCallBack)
-                {
+                if (fnCallBack) {
                     fnCallBack(true);
                 }
 

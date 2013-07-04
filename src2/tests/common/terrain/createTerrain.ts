@@ -145,7 +145,7 @@ module akra {
 			pTerrainMap["normal"] = pRmgr.loadImage(DATA + "textures/terrain/main_terrain_normal_map.dds");
 			
 			pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
-				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 200), 5, 5, 5, "main");
+				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250*2, 250*2, -250*2, 250*2, 0, 200), 5, 5, 5, "main");
 				pTerrain.attachToParent(pScene.getRootNode());
 				pTerrain.setInheritance(ENodeInheritance.ALL);
 				// pTerrain.addRelRotationByXYZAxis(1, 1, 0);
