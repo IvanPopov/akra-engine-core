@@ -251,7 +251,7 @@ module akra.core.pool.resources {
                     pImg.src = sFilename; 
                 }
                 else {                    
-                    io.fopen(sFilename,"rb").onread = function(pError:Error,pDataInFile:ArrayBuffer) {
+                    io.fopen(sFilename,"rb").onread = function(pError:Error, pDataInFile:ArrayBuffer) {
                         pMe.load(new Uint8Array(pDataInFile), sExt, fnCallBack);
                     }
                 }
@@ -308,8 +308,8 @@ module akra.core.pool.resources {
 
 
                 if(!pCodec) {
-                    var iMagicLen:uint=Math.min(32, pData.buffer.byteLength);
-                    pCodec=Codec.getCodec(pData.subarray(0, iMagicLen));
+                    var iMagicLen: uint = Math.min(32, pData./*buffer.*/byteLength);
+                    pCodec = Codec.getCodec(pData.subarray(pData.byteOffset, iMagicLen));
                 }
 
                 if(!pCodec) {
@@ -322,7 +322,7 @@ module akra.core.pool.resources {
 
                 
 
-                var pImgData:IImgData=new ImgData();
+                var pImgData: IImgData = new ImgData();
 
              
                 this._pBuffer = pCodec.decode(pData, pImgData);
