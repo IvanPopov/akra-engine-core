@@ -120,6 +120,8 @@ module akra.terrain {
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender));
 
+				
+
 				this._setTessellationParameters(10.0, 0.5);
 				this.reset();
 			}

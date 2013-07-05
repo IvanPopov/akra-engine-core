@@ -266,10 +266,10 @@ module akra {
 			
 		pSunLight.attachToParent(pScene.getRootNode());
 		pSunLight.enabled = true;
-		pSunLight.params.ambient.set(0.0, 0.0, 0.0, 1);
-		pSunLight.params.diffuse.set(1.);
+		pSunLight.params.ambient.set(.1, .1, .1, 1);
+		pSunLight.params.diffuse.set(0.75);
 		pSunLight.params.specular.set(1.);
-		pSunLight.params.attenuation.set(1, 0, 0);
+		pSunLight.params.attenuation.set(1.25, 0, 0);
 
 		pSunLight.addPosition(0, 500, 0);
 
@@ -280,18 +280,26 @@ module akra {
 			
 			pOmniLight.attachToParent(pScene.getRootNode());
 			pOmniLight.enabled = true;
-			pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-			pOmniLight.params.diffuse.set(0.25);
+			pOmniLight.params.ambient.set(0., 0., 0., 1);
+			pOmniLight.params.diffuse.set(1.);
 			pOmniLight.params.specular.set(0.);
-			pOmniLight.params.attenuation.set(4., 0, 0);
+			pOmniLight.params.attenuation.set(1.5, 0, 0);
 
 			pOmniLight.addPosition(v3fPos);
 		}
 
-		createAmbient("Ambient LB", new Vec3(-500, 500, -500));
-		createAmbient("Ambient RB", new Vec3(500, 500, -500));
-		createAmbient("Ambient LF", new Vec3(-500, 500, 500));
-		createAmbient("Ambient RF", new Vec3(500, 500, 500));
+		// createAmbient("Ambient LB", new Vec3(-500, 500, -500));
+		// createAmbient("Ambient RB", new Vec3(500, 500, -500));
+		// createAmbient("Ambient LF", new Vec3(-500, 500, 500));
+		// createAmbient("Ambient RF", new Vec3(500, 500, 500));
+		var fD: number = 700;
+		createAmbient("Ambient 1", new Vec3(0, 0, fD));
+		createAmbient("Ambient 2", new Vec3(0, fD, 0));
+		createAmbient("Ambient 3", new Vec3(fD, 0, 0));
+		createAmbient("Ambient 4", new Vec3(0, 0, -fD));
+		createAmbient("Ambient 5", new Vec3(0, -fD, 0));
+		createAmbient("Ambient 6", new Vec3(-fD, 0, 0));
+		
 	}
 
 
@@ -396,7 +404,7 @@ module akra {
 	}
 
 	function createTerrain(): void {
-		pTerrain = pScene.createTerrainROAM();
+		pTerrain = pScene.createTerrainROAM("Terrain");
 
 		var pTerrainMap: IImageMap = <IImageMap>{};
 

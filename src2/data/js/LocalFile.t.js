@@ -11,16 +11,17 @@ catch (e) {
 }
 
 function read (pFile) {
-    var pData = null;
+    // var pData = null;
 
     if (isBinary(pFile.mode)) {
-        pData = pFile.reader.readAsArrayBuffer(pFile.entry.file());
-        return pData;
+        // pData = pFile.reader.readAsArrayBuffer(pFile.entry.file());
+        // return pData;
     }
 
-    pData = pFile.reader.readAsText(pFile.entry.file());
+    // pData = pFile.reader.readAsText(pFile.entry.file());
     
-    return pData;
+    // return pData;
+    return pFile.entry.file();
 }
 
 function remove (pFile) {

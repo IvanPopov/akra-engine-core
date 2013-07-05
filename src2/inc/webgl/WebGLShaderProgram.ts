@@ -483,10 +483,14 @@ module akra.webgl {
         }
 
         inline _setInt32Array(pWebGLUniformLocation: WebGLUniformLocation, pValue: Int32Array): void {
-            this._pWebGLContext.uniform1iv(pWebGLUniformLocation, pValue);
+            !isNull(pValue) && this._pWebGLContext.uniform1iv(pWebGLUniformLocation, pValue);
         }
 
         inline _setVec2Array(pWebGLUniformLocation: WebGLUniformLocation, pValue: IVec2[]): void {
+            if (isNull(pValue)) {
+                return;
+            }
+
             var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
 
             for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++ j) {

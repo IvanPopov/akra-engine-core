@@ -72,46 +72,26 @@ onmessage = function (pEvent) {
             postMessage(meta(pFile));
             break;
         case File.READ:
+            
+            //var pData: ArrayBuffer; function read(): ArrayBuffer;
             var pData = read(pFile);
-
             var nPos = pFile.pos;
 
-            if (nPos) {
-                if (isBinary(pFile.mode)) {
-                    pData = (new Uint8Array((new Uint8Array(pData)).subarray(nPos))).buffer;
-                }
-                else {
-                    pData = pData.substr(nPos);
-                }
+            if (nPos > 0) {
+                pData = pData.slice(nPos);
             }
-
-
-            var blob = new Blob([pData], {type: isBinary(pFile.mode)? 'application/octet-stream': 'text/plain'});
+            
+            if (pCommand.transfer === TRANSFER.FAST) {
+                postMessage(pData, [pData]);
+            }
+            else {
+                postMessage(pData)
+            }
 
             pData = null;
             
-            // if (isBinary(pFile.mode) && pCommand.transfer != TRANSFER.NORMAL) {
-            //     if (pCommand.transfer == TRANSFER.FAST) {
-            //         postMessage(pData, [pData]);
-            //     }
-            //     else {
-            //         var pBuf = new Uint8Array(pData);
-            //         var pArr = new Array(pBuf.length);
-                    
-            //         for (var i = 0; i < pBuf.length; ++i) {
-            //             pArr[i] = pBuf[i];
-            //         }
-
-            //         postMessage(pArr);
-            //     }
-            // }
-            // else {
-               
-            //     postMessage(pData);
-                
-            // }
-            postMessage(URL.createObjectURL(blob));
             break;
+
         case File.WRITE:
             write(pFile, pCommand.data, pCommand.contentType);
             postMessage(meta(pFile));

@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Wed Jul 03 2013 19:29:43 GMT+0400 (Московское время (зима))
+ * assembled at: Fri Jul 05 2013 20:12:08 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
@@ -376,25 +376,32 @@ var akra;
         var pSunLight = pScene.createLightPoint(akra.ELightTypes.OMNI, true, 2048, "sun");
         pSunLight.attachToParent(pScene.getRootNode());
         pSunLight.enabled = true;
-        pSunLight.params.ambient.set(0.0, 0.0, 0.0, 1);
-        pSunLight.params.diffuse.set(1.);
+        pSunLight.params.ambient.set(.1, .1, .1, 1);
+        pSunLight.params.diffuse.set(0.75);
         pSunLight.params.specular.set(1.);
-        pSunLight.params.attenuation.set(1, 0, 0);
+        pSunLight.params.attenuation.set(1.25, 0, 0);
         pSunLight.addPosition(0, 500, 0);
         function createAmbient(sName, v3fPos) {
             var pOmniLight = pScene.createLightPoint(akra.ELightTypes.OMNI, false, 512, sName);
             pOmniLight.attachToParent(pScene.getRootNode());
             pOmniLight.enabled = true;
-            pOmniLight.params.ambient.set(0.1, 0.1, 0.1, 1);
-            pOmniLight.params.diffuse.set(0.25);
+            pOmniLight.params.ambient.set(0., 0., 0., 1);
+            pOmniLight.params.diffuse.set(1.);
             pOmniLight.params.specular.set(0.);
-            pOmniLight.params.attenuation.set(4., 0, 0);
+            pOmniLight.params.attenuation.set(1.5, 0, 0);
             pOmniLight.addPosition(v3fPos);
         }
-        createAmbient("Ambient LB", new akra.Vec3(-500, 500, -500));
-        createAmbient("Ambient RB", new akra.Vec3(500, 500, -500));
-        createAmbient("Ambient LF", new akra.Vec3(-500, 500, 500));
-        createAmbient("Ambient RF", new akra.Vec3(500, 500, 500));
+        // createAmbient("Ambient LB", new Vec3(-500, 500, -500));
+        // createAmbient("Ambient RB", new Vec3(500, 500, -500));
+        // createAmbient("Ambient LF", new Vec3(-500, 500, 500));
+        // createAmbient("Ambient RF", new Vec3(500, 500, 500));
+        var fD = 700;
+        createAmbient("Ambient 1", new akra.Vec3(0, 0, fD));
+        createAmbient("Ambient 2", new akra.Vec3(0, fD, 0));
+        createAmbient("Ambient 3", new akra.Vec3(fD, 0, 0));
+        createAmbient("Ambient 4", new akra.Vec3(0, 0, -fD));
+        createAmbient("Ambient 5", new akra.Vec3(0, -fD, 0));
+        createAmbient("Ambient 6", new akra.Vec3(-fD, 0, 0));
     }
     var v3fOffset = new akra.Vec3();
     function updateKeyboardControls(fLateralSpeed, fRotationSpeed) {
@@ -473,7 +480,7 @@ var akra;
         }
     }
     function createTerrain() {
-        pTerrain = pScene.createTerrainROAM();
+        pTerrain = pScene.createTerrainROAM("Terrain");
         var pTerrainMap = {};
         pTerrainMap["height"] = pRmgr.imagePool.findResource("TERRAIN_HEIGHT_MAP");
         pTerrainMap["normal"] = pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");

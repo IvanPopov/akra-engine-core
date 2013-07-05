@@ -29,7 +29,7 @@ module akra.scene {
 
 			var pLightPoint: ILightPoint = pList.first;
 
-			while(isDefAndNotNull(pLightPoint)){
+			while (isDefAndNotNull(pLightPoint)) {
 				
 				if(pLightPoint._prepareForLighting(pCamera)){
 					// LOG("light point added");

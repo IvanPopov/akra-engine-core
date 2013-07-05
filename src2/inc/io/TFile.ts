@@ -65,6 +65,11 @@ module akra.io {
 	export var getRemoteFileThreadManager = (): IThreadManager => pRemoteFileThreadManager;
 
 
+#ifdef DEBUG
+	var TOTAL_BYTES_READED: uint = 0;
+#endif
+
+
 	export class TFile implements IFile {
 		protected _iMode: int;
 		protected _pUri: IURI = null;
@@ -234,32 +239,24 @@ module akra.io {
 		                     transfer: this._eTransferMode
 		                 };
 
-		    var fnCallbackSystem: Function = function (err, sBlobURL: string) {
+		    var fnCallbackSystem: Function = function (err, pBuffer: ArrayBuffer) {
 				if (err) {
 					fnCallback.call(pFile, err);
 					return;
 				}
-				debug_print("readed blob url: ", sBlobURL);
+				
 		        // if (eTransferMode == EFileTransferModes.k_Slow && IS_BINARY(this._iMode)) {
 		        //     pData = new Uint8Array(pData).buffer;
 		        // }
 
 		        pFile.atEnd();
 
-		        util.blobFromDataURL(sBlobURL, (b: Blob): void => {
-					var pReader: FileReader = new FileReader();
-
-					pReader.onload = function() {
-					    fnCallback.call(pFile, null, this.result);
-					};
-					
-					if (IS_BINARY(this._iMode)) {
-						pReader.readAsArrayBuffer(b);
-					}
-		        	else {
-		        		pReader.readAsText(b);
-		        	}
-		        })
+		        if (IS_BINARY(pFile.mode)) {
+		        	fnCallback.call(pFile, null, pBuffer);
+		        }
+		        else {
+		        	fnCallback.call(pFile, null, util.abtos(pBuffer));	
+		        }
 		    };
 
 		    this.execCommand(pCommand, fnCallbackSystem);
@@ -467,6 +464,7 @@ module akra.io {
 			}
 		}
 
+
 		private static execCommand(pFile: IFile, isLocal: bool, pCommand: IFileCommand, fnCallback: Function, pTransferables?: any[]): void {
 
 			// var pFile: IFile = this;
@@ -476,7 +474,14 @@ module akra.io {
 			pThread.onmessage = function (e) {
 				pManager.releaseThread(pThread);
 				pThread.onmessage = null;
+#ifdef DEBUG
+				if (pCommand.act === EFileActions.k_Read) {
+					TOTAL_BYTES_READED += e.data.byteLength;
+					LOG("TOTAL BYTES READED: ", (TOTAL_BYTES_READED / (1024 * 1024)).toFixed(2), "mb");
+				}
+#endif
 				fnCallback.call(pFile, null, e.data);
+				// (<any>window["gc"])();
 			}
 
 			pThread.onerror = function (e) {

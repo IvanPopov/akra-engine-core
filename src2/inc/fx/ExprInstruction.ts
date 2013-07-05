@@ -590,6 +590,10 @@ module akra.fx {
 		toFinalCode(): string {
 			var sCode: string = "";
 
+			// if((<ExprInstruction>this.getInstructions()[0]).getType().getLength() === 0){
+			// 	return "";
+			// }
+
 			if(!isNull(this._pSamplerArrayDecl) && this._pSamplerArrayDecl.isDefinedByZero()){
 				sCode += this.getInstructions()[0].toFinalCode();	
 			}

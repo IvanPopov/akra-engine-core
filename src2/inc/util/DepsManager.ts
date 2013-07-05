@@ -231,6 +231,7 @@ module akra.util {
 			if (isArray(pDeps.files)) {
 				for (var i: int = 0; i < pDeps.files.length; ++ i) {
 					if (!isNull(pDeps.files[i])) {
+						// console.log("wait for: ", pDeps.files[i].path);
 						nRestDepsInLevel ++;
 					}
 				};

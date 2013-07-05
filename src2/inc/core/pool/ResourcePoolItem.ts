@@ -126,6 +126,10 @@ module akra.core.pool {
 			this.pStateWatcher[eEvent] = fnWatcher;
 		}
 
+		isSyncedTo(eSlot: EResourceItemEvents): bool {
+			return !isNull(this.pCallbackSlots[eSlot]) && this.pCallbackSlots[eSlot].length > 0;
+		}
+
 		sync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool {
 			eSlot = isDef(eSlot)? eSlot: eSignal;
 

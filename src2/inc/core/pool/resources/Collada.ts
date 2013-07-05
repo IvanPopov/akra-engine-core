@@ -1362,7 +1362,19 @@ module akra.core.pool.resources {
             }
 
             if (!isNull(pTexture.surface)) {
-                pTexture.image = <IColladaImage>this.source((<IColladaSurface>pTexture.surface.value).initFrom);
+                var pImage: IColladaImage = <IColladaImage>this.source((<IColladaSurface>pTexture.surface.value).initFrom);
+                pTexture.image = pImage;
+
+                var pTex: ITexture = <ITexture>this.getManager().texturePool.loadResource(pImage.path);
+                this.sync(pTex, EResourceItemEvents.LOADED);
+
+                // LOG("is texture valid?? - ", pTex.isValid());
+                //FIX THIS
+                pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+                pTex.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
+
+                pTex.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
+                pTex.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
             }
 
             return pTexture;
@@ -2295,22 +2307,11 @@ module akra.core.pool.resources {
 
 
                             var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.surfaceMaterial;
-                            var pTexture: ITexture = <ITexture>this.getManager().texturePool.loadResource(pColladaImage.path);
-
-                            //FIXME: may be stuped ??
-                            this.sync(pTexture, EResourceItemEvents.LOADED);
+                            var pTexture: ITexture = <ITexture>this.getManager().texturePool.findResource(pColladaImage.path);
 
                             if (this.getImageOptions().flipY === true) {
                                 ERROR("TODO: flipY for image unsupported!");
                             }
-
-                            // LOG("is texture valid?? - ", pTexture.isValid());
-                            //FIX THIS
-                            pTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-                            pTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
-
-                            pTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.REPEAT);
-                            pTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.REPEAT);
 
                             var pMatches: string[] = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
                             var iTexCoord: int = (pMatches ? parseInt(pMatches[2]) : 0);
@@ -3043,8 +3044,24 @@ module akra.core.pool.resources {
                 pModel.notifyRestored();
            
                 if (pModel.parse(sXML, pOptions)) {
-                    pModel.notifyLoaded();
+                    // pModel.notifyLoaded();
+                    pModel.setResourceFlag(EResourceItemEvents.LOADED, true)
                     // LOG(pModel.findResourceName(), pModel.isResourceLoaded());
+                    
+                    LOG(pModel.findResourceName(), "[snced to: ", pModel.isSyncedTo(EResourceItemEvents.LOADED), "]");
+
+                    if (pModel.isSyncedTo(EResourceItemEvents.LOADED)) {
+                        pModel.setChangesNotifyRoutine((eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: bool) => {
+                            if (eFlag === EResourceItemEvents.LOADED && isSet) {
+                                // LOG("!!!!!!!!!!!!!!!!!!", pModel.findResourceName(), "LOADED!!!");
+                                pModel.loaded();
+                            }
+                        });
+                    }
+                    else {
+                         // LOG("!!!!!!!!!!!!!!!!!!", pModel.findResourceName(), "LOADED!!!");
+                        pModel.loaded();
+                    }
                 }
             });
 
