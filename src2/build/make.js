@@ -428,6 +428,7 @@ function compile() {
 			console.log("temp file: " + pOptions.pathToTemp + " removed.\n\n");
 
 			var pFetchResult = {css: [], script: [], data: null};
+			
 		    var gitignore = fetchDeps(
 		    	sOutputFolder,
 		    	fs.readFileSync(sOutputFile, "utf-8"), 

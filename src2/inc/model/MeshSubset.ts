@@ -205,6 +205,10 @@ module akra.model {
 			return true;
 		}
 
+		wireframe(): void {
+			
+		}
+
 		inline isBoundingSphereVisible(): bool {
 			return this.data.isRenderable(this.data.findIndexSet(".BoundingSphere"));
 		}

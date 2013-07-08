@@ -43,6 +43,10 @@
 #include "ui/IDE.ts"
 #endif
 
+#ifdef SKY
+#include "model/Sky.ts"
+#endif
+
 module akra.core {
 	export class Engine implements IEngine {
 

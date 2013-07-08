@@ -1,4 +1,6 @@
 ///<reference path="../../../bin/DEBUG/akra.ts"/>
+///<reference path="../../../bin/DEBUG/Progress.ts"/>
+
 
 declare var jQuery: JQueryStatic;
 declare var $: JQueryStatic;
@@ -8,7 +10,6 @@ declare var $: JQueryStatic;
 /// @MINER_MODEL: 			"/models/miner/miner.dae"
 /// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 
-#include "util/Progress.ts"
 
 module akra {
 

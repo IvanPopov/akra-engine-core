@@ -1,8 +1,45 @@
-#ifndef UTILPROGRESS_TS
-#define UTILPROGRESS_TS
 
 
-#include "IProgress.ts"
+
+
+
+
+
+
+
+module akra {
+	export interface IProgress {
+		canvas: HTMLCanvasElement;
+        context: CanvasRenderingContext2D;
+        step: number;
+        counterclockwise: bool;
+        radius: number;
+        thickness: number;
+        total: number[];
+        border: number;
+        lineWidth: number;
+        indent: number;
+        color: string;
+
+        depth: number;
+        element: number;
+
+
+        fontColor: string;
+        fontSize: number;
+        size: number;
+
+        width: uint;
+        height: uint;
+
+        loaded(): void;
+        next(): void;
+        reset(): void;
+        draw(): void;
+	}
+}
+
+
 
 module akra.util {
     export class Progress implements IProgress {
@@ -92,7 +129,8 @@ module akra.util {
             pCtx.fillStyle = this.fontColor;
             pCtx.font = "bold " + this.fontSize + "px Consolas";
 
-            pCtx.fillText((/*this.depth / this.total.length*/(m/n) * 100).toFixed(1) + "%", x, y);
+/*this.depth / this.total.length*/
+            pCtx.fillText((                                  (m/n) * 100).toFixed(1) + "%", x, y);
         }
 
         private loadLevel(i: number = this.element, iDepth: number = this.depth): void {
@@ -105,7 +143,7 @@ module akra.util {
 
 
         private animate(fFrom: number = 0, fTo: number = 360, iDepth: number = 0): void {
-            var x: number = this.height / 2., 
+            var x: number = this.height / 2.,
                 y: number = this.height / 2.;
 
             var pCtx: CanvasRenderingContext2D = this.context;
@@ -152,4 +190,4 @@ module akra.util {
 //  document.body.appendChild(bar.canvas);
 // }
 
-#endif
+
