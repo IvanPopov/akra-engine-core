@@ -63,11 +63,11 @@ module akra.scene {
 		update(): bool {
 			var isOk = super.update();
 
-			if (!isNull(this._pAnimationControllers)) {
-				for (var i: int = 0; i < this._pAnimationControllers.length; ++ i) {
-					this._pAnimationControllers[i].update();
-				}
-			}
+			// if (!isNull(this._pAnimationControllers)) {
+			// 	for (var i: int = 0; i < this._pAnimationControllers.length; ++ i) {
+			// 		this._pAnimationControllers[i].update();
+			// 	}
+			// }
 
 			return isOk;
 		}

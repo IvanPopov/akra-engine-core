@@ -183,8 +183,9 @@ module akra {
     	decode(pData: Uint8Array, pImgData: IImgData):Uint8Array
     	{
     		var iOffset:uint=0;
-    		var dwMagic4:uint = (new Uint32Array(pData.buffer, 0, 1))[0];
-    		if(dwMagic4!=DDS_MAGIC)
+    		var dwMagic4:uint = (new Uint32Array(pData.buffer, pData.byteOffset, 1))[0];
+    		
+    		if(dwMagic4 !== DDS_MAGIC)
     		{
     			CRITICAL_ERROR("This is not a DDS file! DDSCodec.decode");
     		}
@@ -206,9 +207,9 @@ module akra {
              DWORD           dwReserved2;
              } DDS_HEADER;*/
 
-    		var pDDSHeader:Uint32Array = new Uint32Array(pData.buffer, 4, 31);
+    		var pDDSHeader: Uint32Array = new Uint32Array(pData.buffer, pData.byteOffset + 4, 31);
 
-    		var pHeader:IDDSHeader=<IDDSHeader>{};
+    		var pHeader: IDDSHeader=<IDDSHeader>{};
 
     		pHeader.dwSize = pDDSHeader[0];
             pHeader.dwFlags = pDDSHeader[1];
@@ -273,10 +274,10 @@ module akra {
                 ERROR("Флаг DDSD_PIXELFORMAT в заголовке DDS всегда должен быть");
             }
 
-            pImgData.width=pHeader.dwWidth;
-            pImgData.height=pHeader.dwHeight;
-            pImgData.depth=1;
-            var nFace:uint=1;
+            pImgData.width = pHeader.dwWidth;
+            pImgData.height = pHeader.dwHeight;
+            pImgData.depth = 1;
+            var nFace: uint = 1;
 
             pImgData.flags=0;
 
@@ -339,7 +340,7 @@ module akra {
 				    eSourceFormat = EPixelFormats.DXT5;
 				}
 				else if (pHeader.ddspf.dwFourCC == D3DFMT_DX10) {
-				    var pDDS10Header:Uint32Array = new Uint32Array(pData.buffer, 128, 5);
+				    var pDDS10Header: Uint32Array = new Uint32Array(pData.buffer, pData.byteOffset + 128, 5);
 				    var header10:IDDSHeaderDXT10 = <IDDSHeaderDXT10>{};
 				    header10.dxgiFormat = pDDS10Header[0];
 				    header10.resourceDimension = pDDS10Header[1];

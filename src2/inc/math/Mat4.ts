@@ -92,10 +92,7 @@ module akra.math {
 			fValue5: float, fValue6: float, fValue7: float, fValue8: float,
 			fValue9: float, fValue10: float, fValue11: float, fValue12: float,
 			fValue13: float, fValue14: float, fValue15: float, fValue16: float): IMat4;
-		set(fValue1?, fValue2?, fValue3?, fValue4?,
-			fValue5?, fValue6?, fValue7?, fValue8?,
-			fValue9?, fValue10?, fValue11?, fValue12?,
-			fValue13?, fValue14?, fValue15?, fValue16?): IMat4{
+		set(): IMat4{
 
 			var nArgumentsLength: uint = arguments.length;
 			var pData: Float32Array = this.data;

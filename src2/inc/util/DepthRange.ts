@@ -32,26 +32,34 @@ module akra.util{
 				}												\n\
 																\n\
 				float power = 0.;								\n\
-				bool ok = true;									\n\
-				while (ok) {									\n\
+				bool isFinish = false;							\n\
 																\n\
-					if(data >= 2.) {							\n\
-						data = data * 0.5;						\n\
-						power += 1.;							\n\
-						if (power == 127.) {					\n\
-							ok = false;							\n\
-						}										\n\
-					}											\n\
-					else if(data < 1.) {					\n\
-						data = data * 2.;					\n\
-						power -= 1.;						\n\
-						if (power == -126.) {				\n\
-							ok = false;						\n\
-						}									\n\
-					}										\n\
-					else {									\n\
-						ok = false;							\n\
-					}										\n\
+				for(int i = 0; i < 128; i++) {					\n\
+				  if(isFinish){									\n\
+				    break;										\n\
+				  }												\n\
+																\n\
+				  if(data >= 2.) {								\n\
+				    if(!isFinish){								\n\
+				      data = data * 0.5;						\n\
+				      power += 1.;								\n\
+				      if (power == 127.) {						\n\
+				        isFinish = true;						\n\
+				      }											\n\
+				    }											\n\
+				  }												\n\
+				  else if(data < 1.) {							\n\
+				    if(!isFinish){								\n\
+				      data = data * 2.;							\n\
+				      power -= 1.;								\n\
+				      if (power == -126.) {						\n\
+				        isFinish = true;						\n\
+				      }											\n\
+				    }											\n\
+				  }												\n\
+				  else {										\n\
+				    isFinish = true;							\n\
+				  }												\n\
 				}												\n\
 																\n\
 				if(power == -126. && data < 1.){				\n\
@@ -82,7 +90,7 @@ module akra.util{
 				return result/255.;								\n\
 			}													\n";
 
-	var sPixelCode: string = "													\n\
+	var sPixelCode: string = "										\n\
 				#ifdef GL_ES                        				\n\
 				    precision highp float;          				\n\
 				#endif												\n\
@@ -171,7 +179,7 @@ module akra.util{
 				}                                   																				\n\
 				";
 
-	var sVertexCode: string = "																					\n\
+	var sVertexCode: string = "																						\n\
 	        	attribute vec2 POSITION;																			\n\
 				                      																				\n\
 				varying vec2 texPosition;																			\n\
@@ -298,7 +306,7 @@ module akra.util{
 
         	pWebGLProgram.setInt("selector", iSelector);
         	pWebGLProgram.setInt("srcTexture", 0);
-        	pWebGLProgram.setVec2("halfSrcTexureStep", 0.5/iSrcTextureSizeX, 0.5/iSrcTextureSizeY);
+        	pWebGLProgram.setVec2("halfSrcTexureStep", vec2(0.5/iSrcTextureSizeX, 0.5/iSrcTextureSizeY));
 
         	pWebGLContext.viewport(0, 0, iRenderTextureSizeX, iRenderTextureSizeY);
 
@@ -344,11 +352,7 @@ module akra.util{
 
     	} while(1);
 
-    	
-
     	pWebGLContext.readPixels(0, 0, 2, 1, GL_RGBA, GL_UNSIGNED_BYTE, pU8Destination);
-
-    	
 
     	pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFrameBuffer);
         pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
@@ -366,6 +370,7 @@ module akra.util{
         pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
         pWebGLRenderer._setViewport(null);
         // console.log("depth range:", pF32Destination[1], pF32Destination[0]);
+
 		return <IDepthRange>{min: pF32Destination[1], max: pF32Destination[0]};
 	}
 

@@ -74,7 +74,8 @@ module akra.net {
             }
 
             pOption.procMap[pOption.procListName] = {
-                lifeTime: -1
+                lifeTime: -1,
+                priority: 10
             };
 
             pAddr = pAddr || pOption.addr;
@@ -133,7 +134,8 @@ module akra.net {
                                         (function (sMethod) {
 
                                             pRPC.options.procMap[sMethod] = pRPC.options.procMap[sMethod] || {
-                                                lifeTime: -1
+                                                lifeTime: -1,
+                                                priority: 0
                                             };
 
                                             pRPC.remote[sMethod] = function () {
@@ -260,7 +262,7 @@ module akra.net {
                 } while (pCallback = pStack.prev());
 
 
-                WARNING("package droped, invalid serial: " + nSerial);
+                // WARNING("package droped, invalid serial: " + nSerial);
             }
             else if (eType === ERPCPacketTypes.REQUEST) {
                 ERROR("TODO: REQUEST package type temprary unsupported.");
@@ -328,6 +330,18 @@ module akra.net {
             return this._pOption.callbackLifetime;
         }
 
+        private findPriorityFor(sProc: string): uint {
+            var pProcOpt: IRPCProcOptions = this._pOption.procMap[sProc];
+            
+            if (pProcOpt) {
+                var iProcPr: int = pProcOpt.priority || 0;
+
+                return iProcPr;
+            }
+            
+            return 0;
+        }
+
         setProcedureOption(sProc: string, sOpt: string, pValue: any): void {
             var pOptions: IRPCProcOptions = this.options.procMap[sProc];
 
@@ -362,6 +376,7 @@ module akra.net {
             pProc.argv  = pArgv;
             pProc.next  = null;
             pProc.lt    = this.findLifeTimeFor(pProc.proc);
+            pProc.pr    = this.findPriorityFor(pProc.proc);
 
             pCallback = <IRPCCallback>this._createCallback();
             pCallback.n = pProc.n;
@@ -495,7 +510,7 @@ module akra.net {
                     pCallback = pCallbacks.current;
 
                     if (!isNull(fn)) {
-                        debug_print("procedure info: ", sInfo);
+                        // debug_print("procedure info: ", sInfo);
                         fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
                     }
                 }
@@ -511,6 +526,7 @@ module akra.net {
             pReq.argv = null;
             pReq.next = null;
             pReq.lt = 0;
+            pReq.pr = 0;
 
             RPC.requestPool.push(pReq);
         };
@@ -518,7 +534,7 @@ module akra.net {
         _createRequest(): IRPCRequest {
             if (RPC.requestPool.length == 0) {
                 // LOG("allocated rpc request");
-                return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null, next: null, lt: 0 };
+                return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null, next: null, lt: 0, pr: 0};
             }
 
             return <IRPCRequest>RPC.requestPool.pop();
@@ -549,7 +565,7 @@ module akra.net {
         private static callbackPool: IObjectArray = new ObjectArray;
 
         static OPTIONS: IRPCOptions = {
-            deferredCallsLimit        : 10000,
+            deferredCallsLimit        : 20000,
             reconnectTimeout          : 2500,
             systemRoutineInterval     : 10000,
             callbackLifetime          : 60000,

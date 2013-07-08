@@ -135,6 +135,7 @@ module akra.net {
 
 			pConnect.onclose = function (pEvent: CloseEvent): void {
 				LOG("connection to " + pAddr.toString() + " closed");
+				LOG("Close event:", pEvent);
 				pPipe.closed(pEvent);
 			}
 
