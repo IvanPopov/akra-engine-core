@@ -191,8 +191,8 @@ module akra.core.pool.resources {
 
     	load(/*pData: any, sType?: any, fnCallBack?: Function*/): IImg 
         {
-
             var pMe: IImg=this;
+
 
             if (arguments[0] instanceof HTMLCanvasElement) {
                 var pCanvas: HTMLCanvasElement = arguments[0];
@@ -327,7 +327,6 @@ module akra.core.pool.resources {
 
                 var pImgData: IImgData = new ImgData();
 
-            
                 this._pBuffer = pCodec.decode(pData, pImgData);
 
                 this._iWidth = pImgData.width;
