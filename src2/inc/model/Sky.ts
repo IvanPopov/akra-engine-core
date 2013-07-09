@@ -3,11 +3,15 @@
 
 #include "common.ts"
 #include "util/unique.ts"
+#include "core/Engine.ts"
 
 //#define SKY_GPU
 
 module akra.model {
-	export class Sky implements IUnique  {
+
+	core.Engine.depends("effects/sky.fx");
+
+	export class Sky implements IEventProvider  {
 		skyDome: IMesh = null;
 
 		private _fSunTheta: float;				/* Theta angle from zenith to sun*/
@@ -60,13 +64,15 @@ module akra.model {
 			ASSERT( nRows > 1 );
 			ASSERT( nCols * nRows < 65535 );
 
-			var pRsmgr: IResourcePoolManager = this.getEngine().getResourceManager();
-
-			// pRsmgr.effectDataPool.loadResource(DATA + "effects/sky.fx");
 			this._fInnerRadius = fR;
 			this.init();
 
-			// this.createDome(nCols, nRows);
+			var pDomeMesh: IMesh = this.createDome(nCols, nRows);
+			// var pDome: ISceneModel = this.getEngine().getScene().createModel("dome");
+
+	  //   	pDome.mesh = pDomeMesh; 
+
+	    	this.skyDome = pDomeMesh;
 		}	
 
 		inline getEngine(): IEngine {
@@ -348,6 +354,8 @@ module akra.model {
 		}
 #endif
 
+
+
 		createDome(Cols: uint, Rows: uint): IMesh {
 			var DVSize: uint = Cols * Rows;
 			var DISize: uint = ( Cols - 1 ) * (Rows - 1) * 2;
@@ -406,18 +414,98 @@ module akra.model {
 		    pMatrial.shininess = 30.;
 
 		    if((<core.Engine>this.getEngine()).isDepsLoaded()){
-	    		pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+	    		pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
 		    }
 		    else {
 		    	this.getEngine().bind(SIGNAL(depsLoaded), () => {
-		    		pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+		    		pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
 		    	});
 		    }
+
+		    this.connect(pSubMesh.getTechnique(), SIGNAL(render), SLOT(_onDomeRender));
 
 		    return pDome;
 		}
 
-		UNIQUE();
+		update(pModelView: IMat4, pProjection: IMat4, pPass: IRenderPass): void {
+			pModelView.data[__41] = 0.0;
+			pModelView.data[__42] = 0.0;
+			pModelView.data[__43] = 0.0;
+
+			var m4fTranslation: IMat4 = mat4(1.).setTranslation(vec3(0.0, -this._fInnerRadius - 1.0e-6, 0.0));
+			pModelView.multiply(m4fTranslation);
+
+			var MP: IMat4 = pProjection.multiply(pModelView, mat4());
+
+			pPass.setUniform("worldViewProj", MP);
+			pPass.setUniform("fKrESun", this._fKrESun);
+			pPass.setUniform("fKmESun", this._fKmESun);
+			var v2fTemp: IVec2 = vec2(<float>this._nSize, 1.0 / this._nSize);
+			pPass.setUniform("Tex", v2fTemp);
+			pPass.setUniform( "vSunPos", this._v3fSunDir);
+			pPass.setUniform("vHG", this._v3fHG);
+			pPass.setUniform("vInvWavelength", this._v3fInvWavelength4);
+			pPass.setUniform( "vEye", this._v3fEye);
+
+			pPass.setTexture("tSkyBuffer", this.getRead());
+		}
+
+		setTime(T: float): void {
+			var time: float = T ;
+			var meridian: float = 1.3788101;
+			var longitude: float = 1.3852096;
+			var latitude: float = 0.762127107;
+			var day: int = 172;
+
+			var t: float, delta: float;
+			var A: float, B: float, C: float, D: float, E: float, F: float;
+
+			A = 4 * math.PI * (day - 80) / 373;
+			B = 2 * math.PI * (day - 8)  / 355;
+			C = 2 * math.PI * (day - 81) / 368;
+
+			t = time +
+				0.170 * math.sin(A) -
+				0.129 * math.sin(B) +
+				12 * (meridian - longitude) / math.PI;
+
+			delta = 0.4093 * math.sin(C);
+
+			D = math.PI * t / 12;
+
+			E = math.sin(latitude) * math.sin(delta) -
+				math.cos(latitude) * math.cos(delta)*math.cos(D);
+
+			F = (-math.cos(delta) * math.sin(D)) / (math.cos(latitude) * math.sin(delta) -
+				math.sin(latitude) * math.cos(delta) * math.cos(D));
+
+			this._fSunTheta = math.PI * 0.5 - <float>math.asin(E);
+			this._fSunPhi = <float>math.atan(F);
+	/*		
+			vSunDir.x = math.cos(this._fSunPhi) * math.sin(this._fSunTheta);
+			vSunDir.y = math.sin(this._fSunPhi) * math.sin(this._fSunTheta);
+			vSunDir.z = math.cos(this._fSunTheta);
+	*/		
+			this._v3fSunDir.x = 0.0;
+			this._v3fSunDir.y = <float>math.cos(T * 0.1);
+			this._v3fSunDir.z = <float>math.sin(T * 0.1);
+
+			var Zenith: IVec3 = vec3(0,1,0);
+			this._fSunTheta = math.acos(this._v3fSunDir.dot(Zenith));
+
+			this._v3fSunDir.normalize();
+
+			this.updateSkyBuffer();
+		}
+
+		_onDomeRender(pTechnique: IRenderTechnique, iPass: uint, 
+			pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			var pCamera: ICamera = pViewport.getCamera();
+			this.update(pCamera.viewMatrix.multiply(pSceneObject.worldMatrix, mat4()), pCamera.projectionMatrix, pPass);
+		}
+
+		CREATE_EVENT_TABLE(Sky);
 	}
 }
 

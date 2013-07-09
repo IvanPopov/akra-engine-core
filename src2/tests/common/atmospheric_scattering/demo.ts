@@ -77,8 +77,8 @@ module akra {
 		pCamera = pScene.createCamera();
 		pCamera.attachToParent(pScene.getRootNode());
 	
-    	pCamera.addRelPosition(0, 0, -50.0);
-    	pCamera.lookAt(vec3(0.));
+    	// pCamera.addRelPosition(0, 0, -50.0);
+    	// pCamera.lookAt(vec3(0.));
 	}
 
 	function createViewports(): void {
@@ -181,8 +181,10 @@ module akra {
 		createViewports();
 		createLighting();
 
-		var pSky = new model.Sky(pEngine, 32, 32, 100.0);
+		var pSky = new model.Sky(pEngine, 32, 32, 500.0);
 		var pMesh: IMesh = pSky.createDome(32, 32);
+
+		pMesh.getSubset(0).wireframe();
 
 		var pSceneModel: ISceneModel = pScene.createModel("dome");
 	    pSceneModel.mesh = pMesh; 

@@ -205,8 +205,62 @@ module akra.model {
 			return true;
 		}
 
-		wireframe(): void {
+		wireframe(): bool {
+			if(this.data.findIndexSet(".wireframe") != -1) {
+				return true;
+			}
+
+			var ePrimType: EPrimitiveTypes = this.data.getPrimitiveType();
+
+			if (ePrimType !== EPrimitiveTypes.TRIANGLELIST) {
+				WARNING("wireframe supported only for TRIANGLELIST");
+				return false;
+			}
+
+			var pIndices: Float32Array = <Float32Array>this.data.getIndexFor("POSITION");
+
+			var pWFindices: int[] = [];
+			var pWFCache: BoolMap = <any>{};
+			var pPairs: int[][] = [[0, 1], [1, 2], [2, 0]];
+
+			for (var n = 0; n < pIndices.length / 3; ++ n) {
+				var t: int = n * 3;
+				for (var i: int = 0; i < pPairs.length; ++ i) {
+					
+					var i1: int = pPairs[i][0];
+					var i2: int = pPairs[i][1];
+
+					var v1: int = pIndices[t + i1];
+					var v2: int = pIndices[t + i2];
+
+					if (v2 < v1) {
+						var y: int = v2; v1 = v2; v2 = y;
+					}
+
+					var k: string = v1 + "_" + v2;
+
+					if (pWFCache[k]) {
+						continue;
+					}
+
+					pWFCache[k] = true;
+					pWFindices.push(v1, v2);
+				}
+			}
+
+			var iData: int = this.data.getDataLocation("POSITION");
+			var iCurrentIndexSet: int = this.data.getIndexSet();
+			var iWireframeSet: int = this.data.addIndexSet(false, EPrimitiveTypes.LINELIST, ".wireframe");
+
+			this.data.allocateIndex([VE_FLOAT("WF_INDEX")], new Float32Array(pWFindices));
+			this.data.index(iData, "WF_INDEX", false, 0, true);
 			
+			this.data.setRenderable(iWireframeSet, true);
+			this.data.setRenderable(iCurrentIndexSet, false);
+
+			this.data.selectIndexSet(iCurrentIndexSet);
+
+			return true;
 		}
 
 		inline isBoundingSphereVisible(): bool {

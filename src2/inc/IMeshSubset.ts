@@ -31,6 +31,8 @@ module akra {
 		hideBoundingSphere(): bool;
 		isBoundingSphereVisible(): bool;
 
+		wireframe(): bool;
+
 		computeNormals(): void;
 		computeTangents(): void;
 		computeBinormals(): void;
