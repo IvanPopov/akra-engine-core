@@ -61,7 +61,6 @@ module akra.fx {
 		foreigns: any = null;
 		textures: any = null;
 
-
 		samplerKeys: string[] = null;
 		samplerArrayKeys: string[] = null;
 
@@ -369,7 +368,6 @@ module akra.fx {
 			this.foreigns = <any>{};
 			this.textures = <any>{};
 
-
 			var pUniformKeys: string[] = this._pCreator.uniformRealNameList;
 			var pForeignKeys: string[] = this._pCreator.foreignNameList;
 			var pTextureKeys: string[] = this._pCreator.textureRealNameList;
@@ -377,6 +375,7 @@ module akra.fx {
 			var pUniformMap: IAFXVariableDeclMap = this._pCreator.uniformByRealName;
 			var pForeignMap: IAFXVariableDeclMap = this._pCreator.foreignByName;
 			var pTextureMap: IAFXVariableDeclMap = this._pCreator.textureByRealName;
+			var pUniformDafaultValues: any = this._pCreator.uniformDefaultValue;
 
 			var eType: EAFXShaderVariableType = 0;
 			var sName: string = "";
@@ -392,20 +391,52 @@ module akra.fx {
 				this._isUniformArrayMap[sName] = isArray;
 
 				if(eType === EAFXShaderVariableType.k_Sampler2D || eType === EAFXShaderVariableType.k_SamplerCUBE){
+					var hasDefaultValue: bool = !isNull(pUniformDafaultValues[sName]);
+
 					if(isArray){
-						this.samplerArrays[sName] = new Array(16);
-						this.samplerArrayLength[sName] = 0;
+						if(hasDefaultValue){
+							this.samplerArrays[sName] = new Array(pUniformDafaultValues[sName].length);
+							this.samplerArrayLength[sName] = this.samplerArrays[sName].length;
+						}
+						else {
+							this.samplerArrays[sName] = new Array(16);
+							this.samplerArrayLength[sName] = 0;
+						}
+						
 
 						for(var j: uint = 0; j < this.samplerArrays[sName].length; j++) {
-							this.samplerArrays[sName][j] = createSamplerState();
+							var pNewState: IAFXSamplerState = createSamplerState();
+
+							if(hasDefaultValue){
+								var pDefaultState: IAFXSamplerState = pUniformDafaultValues[sName][j];
+								pNewState.textureName = pDefaultState.textureName;
+								pNewState.wrap_s = pDefaultState.wrap_s || pNewState.wrap_s;
+								pNewState.wrap_t = pDefaultState.wrap_t || pNewState.wrap_t;
+								pNewState.mag_filter = pDefaultState.mag_filter || pNewState.mag_filter;
+								pNewState.min_filter = pDefaultState.min_filter || pNewState.min_filter;
+							}
+
+							this.samplerArrays[sName][j] = pNewState;
 						}
+
 					}
 					else {
-						this.samplers[sName] = createSamplerState();
+						var pNewState: IAFXSamplerState = createSamplerState();
+
+						if(hasDefaultValue){
+							var pDefaultState: IAFXSamplerState = pUniformDafaultValues[sName];
+							pNewState.textureName = pDefaultState.textureName;
+							pNewState.wrap_s = pDefaultState.wrap_s || pNewState.wrap_s;
+							pNewState.wrap_t = pDefaultState.wrap_t || pNewState.wrap_t;
+							pNewState.mag_filter = pDefaultState.mag_filter || pNewState.mag_filter;
+							pNewState.min_filter = pDefaultState.min_filter || pNewState.min_filter;
+						}
+
+						this.samplers[sName] = pNewState;
 					}
 				}
 				else {
-					this.uniforms[sName] = null;
+					this.uniforms[sName] = pUniformDafaultValues[sName];
 				}
 			}
 

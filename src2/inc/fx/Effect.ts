@@ -250,6 +250,118 @@ module akra.fx {
 			return pBuffer;
 		}
 
+		static getExternalType(pType: IAFXTypeInstruction): any {
+			if (pType.isEqual(Effect.getSystemType("int")) ||
+    			pType.isEqual(Effect.getSystemType("float"))) {
+    		   	return Number;
+    		}
+    		else if(pType.isEqual(Effect.getSystemType("bool"))){
+    			return Boolean;
+    		}
+    		else if(pType.isEqual(Effect.getSystemType("float2")) ||
+					pType.isEqual(Effect.getSystemType("bool2")) ||
+					pType.isEqual(Effect.getSystemType("int2"))){
+    			return Vec2;
+    		}
+    		else if(pType.isEqual(Effect.getSystemType("float3")) ||
+					pType.isEqual(Effect.getSystemType("bool3")) ||
+					pType.isEqual(Effect.getSystemType("int3"))){
+    			return Vec3;
+    		}
+    		else if(pType.isEqual(Effect.getSystemType("float4")) ||
+					pType.isEqual(Effect.getSystemType("bool4")) ||
+					pType.isEqual(Effect.getSystemType("int4"))){
+    			return Vec4;
+    		}
+    	// 	else if(pType.isEqual(Effect.getSystemType("float2x2")) ||
+					// pType.isEqual(Effect.getSystemType("bool2x2")) ||
+					// pType.isEqual(Effect.getSystemType("int2x2"))){
+    	// 		return Vec2;
+    	// 	}
+    		else if(pType.isEqual(Effect.getSystemType("float3x3")) ||
+					pType.isEqual(Effect.getSystemType("bool3x3")) ||
+					pType.isEqual(Effect.getSystemType("int3x3"))){
+    			return Mat3;
+    		}
+    		else if(pType.isEqual(Effect.getSystemType("float4x4")) ||
+					pType.isEqual(Effect.getSystemType("bool4x4")) ||
+					pType.isEqual(Effect.getSystemType("int4x4"))){
+    			return Mat4;
+    		}
+    		else {
+    			return null;
+    		}
+		} 
+
+		static isMatrixType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(Effect.getSystemType("float2x2")) ||
+        		   pType.isEqual(Effect.getSystemType("float3x3")) ||
+        		   pType.isEqual(Effect.getSystemType("float4x4")) ||
+        		   pType.isEqual(Effect.getSystemType("int2x2")) ||
+        		   pType.isEqual(Effect.getSystemType("int3x3")) ||
+        		   pType.isEqual(Effect.getSystemType("int4x4")) ||
+        		   pType.isEqual(Effect.getSystemType("bool2x2")) ||
+        		   pType.isEqual(Effect.getSystemType("bool3x3")) ||
+        		   pType.isEqual(Effect.getSystemType("bool4x4"));
+        }
+
+        static isVectorType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(Effect.getSystemType("float2")) ||
+        		   pType.isEqual(Effect.getSystemType("float3")) ||
+        		   pType.isEqual(Effect.getSystemType("float4")) ||
+        		   pType.isEqual(Effect.getSystemType("bool2")) ||
+        		   pType.isEqual(Effect.getSystemType("bool3")) ||
+        		   pType.isEqual(Effect.getSystemType("bool4")) ||
+        		   pType.isEqual(Effect.getSystemType("int2")) ||
+        		   pType.isEqual(Effect.getSystemType("int3")) ||
+        		   pType.isEqual(Effect.getSystemType("int4"));
+        }
+
+        static isScalarType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(Effect.getSystemType("bool")) ||
+        		   pType.isEqual(Effect.getSystemType("int")) ||
+        		   pType.isEqual(Effect.getSystemType("ptr")) ||
+        		   pType.isEqual(Effect.getSystemType("float"));
+        }
+
+        static isFloatBasedType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(Effect.getSystemType("float")) || 
+        		   pType.isEqual(Effect.getSystemType("float2")) || 
+        		   pType.isEqual(Effect.getSystemType("float3")) || 
+        		   pType.isEqual(Effect.getSystemType("float4")) ||
+        		   pType.isEqual(Effect.getSystemType("float2x2")) || 
+        		   pType.isEqual(Effect.getSystemType("float3x3")) || 
+        		   pType.isEqual(Effect.getSystemType("float4x4")) ||
+        		   pType.isEqual(Effect.getSystemType("ptr")); 
+        }
+
+        static isIntBasedType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(Effect.getSystemType("int")) || 
+        		   pType.isEqual(Effect.getSystemType("int2")) || 
+        		   pType.isEqual(Effect.getSystemType("int3")) || 
+        		   pType.isEqual(Effect.getSystemType("int4")) ||
+        		   pType.isEqual(Effect.getSystemType("int2x2")) || 
+        		   pType.isEqual(Effect.getSystemType("int3x3")) || 
+        		   pType.isEqual(Effect.getSystemType("int4x4"));
+        }
+
+        static isBoolBasedType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(Effect.getSystemType("bool")) || 
+        		   pType.isEqual(Effect.getSystemType("bool2")) || 
+        		   pType.isEqual(Effect.getSystemType("bool3")) || 
+        		   pType.isEqual(Effect.getSystemType("bool4")) ||
+        		   pType.isEqual(Effect.getSystemType("bool2x2")) || 
+        		   pType.isEqual(Effect.getSystemType("bool3x3")) || 
+        		   pType.isEqual(Effect.getSystemType("bool4x4"));
+        }
+
+        static isSamplerType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(Effect.getSystemType("sampler")) ||
+    		   	   pType.isEqual(Effect.getSystemType("sampler2D")) ||
+    		       pType.isEqual(Effect.getSystemType("samplerCUBE")) ||
+    		       pType.isEqual(Effect.getSystemType("video_buffer"));
+        }
+
 		private generateSuffixLiterals(pLiterals: string[], pOutput: BoolMap, iDepth?: uint = 0): void {
 			if(iDepth >= pLiterals.length){
 				return;
@@ -1645,7 +1757,8 @@ module akra.fx {
 			
         	pVarDecl.push(pVariableType, true);       	
         	pVariableType.pushType(pGeneralType);
-
+        	pVarDecl._setScope(this.getScope());
+        	
         	this.analyzeVariableDim(pChildren[pChildren.length - 1], pVarDecl);
         	
         	var i: uint = 0;
@@ -4094,7 +4207,7 @@ module akra.fx {
 
         	var isComplex: bool = pLeftType.isComplex() || pRightType.isComplex();
 			var isArray: bool = pLeftType.isNotBaseArray() || pRightType.isNotBaseArray();
-			var isSampler: bool = this.isSamplerType(pLeftType) || this.isSamplerType(pRightType);
+			var isSampler: bool = Effect.isSamplerType(pLeftType) || Effect.isSamplerType(pRightType);
         	var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("bool").getVariableType();
 
         	if(isArray || isSampler) {
@@ -4159,7 +4272,7 @@ module akra.fx {
 
         	if(pLeftType.isEqual(pRightType)){
         		if(this.isArithmeticalOperator(sOperator)){
-        			if(!this.isMatrixType(pLeftType) || (sOperator !== "/" && sOperator !== "/=")){
+        			if(!Effect.isMatrixType(pLeftType) || (sOperator !== "/" && sOperator !== "/=")){
         				return pLeftBaseType;
         			}
         			else {
@@ -4167,7 +4280,7 @@ module akra.fx {
         			}
         		}
         		else if(this.isRelationalOperator(sOperator)){
-        			if(this.isScalarType(pLeftType)){
+        			if(Effect.isScalarType(pLeftType)){
         				return pBoolType;
         			}
         			else {
@@ -4187,26 +4300,26 @@ module akra.fx {
         	}
 
         	if(this.isArithmeticalOperator(sOperator)){
-        		if (this.isBoolBasedType(pLeftType) || this.isBoolBasedType(pRightType) ||
-        		    this.isFloatBasedType(pLeftType) !== this.isFloatBasedType(pRightType) ||
-        		    this.isIntBasedType(pLeftType) !== this.isIntBasedType(pRightType)) {
+        		if (Effect.isBoolBasedType(pLeftType) || Effect.isBoolBasedType(pRightType) ||
+        		    Effect.isFloatBasedType(pLeftType) !== Effect.isFloatBasedType(pRightType) ||
+        		    Effect.isIntBasedType(pLeftType) !== Effect.isIntBasedType(pRightType)) {
         			return null;
         		}
 
-        		if(this.isScalarType(pLeftType)){
+        		if(Effect.isScalarType(pLeftType)){
         			return pRightBaseType;
         		}
 
-        		if(this.isScalarType(pRightType)){
+        		if(Effect.isScalarType(pRightType)){
         			return pLeftBaseType;
         		}
 
         		if(sOperator === "*" || sOperator === "*="){
-        			if(this.isMatrixType(pLeftType) && this.isVectorType(pRightType) &&
+        			if(Effect.isMatrixType(pLeftType) && Effect.isVectorType(pRightType) &&
         			   pLeftType.getLength() === pRightType.getLength()){
         				return pRightBaseType;
         			}
-        			else if(this.isMatrixType(pRightType) && this.isVectorType(pLeftType) &&
+        			else if(Effect.isMatrixType(pRightType) && Effect.isVectorType(pLeftType) &&
         			   pLeftType.getLength() === pRightType.getLength()){
         				return pLeftBaseType;
         			}
@@ -4238,7 +4351,7 @@ module akra.fx {
 
         	var isComplex: bool = pType.isComplex();
 			var isArray: bool = pType.isNotBaseArray();
-			var isSampler: bool = this.isSamplerType(pType);
+			var isSampler: bool = Effect.isSamplerType(pType);
 
 			if(isComplex || isArray || isSampler){
 				return null;
@@ -4274,7 +4387,7 @@ module akra.fx {
         		}
         	}
         	else {
-        		if(this.isBoolBasedType(pType)){
+        		if(Effect.isBoolBasedType(pType)){
         			return null;
         		}
         		else{
@@ -4305,75 +4418,6 @@ module akra.fx {
 
         private isEqualOperator(sOperator: string): bool {
         	return sOperator === "==" || sOperator === "!=";
-        }
-
-        private isMatrixType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(Effect.getSystemType("float2x2")) ||
-        		   pType.isEqual(Effect.getSystemType("float3x3")) ||
-        		   pType.isEqual(Effect.getSystemType("float4x4")) ||
-        		   pType.isEqual(Effect.getSystemType("int2x2")) ||
-        		   pType.isEqual(Effect.getSystemType("int3x3")) ||
-        		   pType.isEqual(Effect.getSystemType("int4x4")) ||
-        		   pType.isEqual(Effect.getSystemType("bool2x2")) ||
-        		   pType.isEqual(Effect.getSystemType("bool3x3")) ||
-        		   pType.isEqual(Effect.getSystemType("bool4x4"));
-        }
-
-        private isVectorType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(Effect.getSystemType("float2")) ||
-        		   pType.isEqual(Effect.getSystemType("float3")) ||
-        		   pType.isEqual(Effect.getSystemType("float4")) ||
-        		   pType.isEqual(Effect.getSystemType("bool2")) ||
-        		   pType.isEqual(Effect.getSystemType("bool3")) ||
-        		   pType.isEqual(Effect.getSystemType("bool4")) ||
-        		   pType.isEqual(Effect.getSystemType("int2")) ||
-        		   pType.isEqual(Effect.getSystemType("int3")) ||
-        		   pType.isEqual(Effect.getSystemType("int4"));
-        }
-
-        private isScalarType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(Effect.getSystemType("bool")) ||
-        		   pType.isEqual(Effect.getSystemType("int")) ||
-        		   pType.isEqual(Effect.getSystemType("ptr")) ||
-        		   pType.isEqual(Effect.getSystemType("float"));
-        }
-
-        private isFloatBasedType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(Effect.getSystemType("float")) || 
-        		   pType.isEqual(Effect.getSystemType("float2")) || 
-        		   pType.isEqual(Effect.getSystemType("float3")) || 
-        		   pType.isEqual(Effect.getSystemType("float4")) ||
-        		   pType.isEqual(Effect.getSystemType("float2x2")) || 
-        		   pType.isEqual(Effect.getSystemType("float3x3")) || 
-        		   pType.isEqual(Effect.getSystemType("float4x4")) ||
-        		   pType.isEqual(Effect.getSystemType("ptr")); 
-        }
-
-        private isIntBasedType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(Effect.getSystemType("int")) || 
-        		   pType.isEqual(Effect.getSystemType("int2")) || 
-        		   pType.isEqual(Effect.getSystemType("int3")) || 
-        		   pType.isEqual(Effect.getSystemType("int4")) ||
-        		   pType.isEqual(Effect.getSystemType("int2x2")) || 
-        		   pType.isEqual(Effect.getSystemType("int3x3")) || 
-        		   pType.isEqual(Effect.getSystemType("int4x4"));
-        }
-
-        private isBoolBasedType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(Effect.getSystemType("bool")) || 
-        		   pType.isEqual(Effect.getSystemType("bool2")) || 
-        		   pType.isEqual(Effect.getSystemType("bool3")) || 
-        		   pType.isEqual(Effect.getSystemType("bool4")) ||
-        		   pType.isEqual(Effect.getSystemType("bool2x2")) || 
-        		   pType.isEqual(Effect.getSystemType("bool3x3")) || 
-        		   pType.isEqual(Effect.getSystemType("bool4x4"));
-        }
-
-        private isSamplerType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(Effect.getSystemType("sampler")) ||
-    		   	   pType.isEqual(Effect.getSystemType("sampler2D")) ||
-    		       pType.isEqual(Effect.getSystemType("samplerCUBE")) ||
-    		       pType.isEqual(Effect.getSystemType("video_buffer"));
         }
 
         private addExtactionStmts(pStmt: IAFXStmtInstruction): void {

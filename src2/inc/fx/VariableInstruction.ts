@@ -20,6 +20,7 @@ module akra.fx {
         private _pAttrExtractionBlock: IAFXInstruction = null;
 
         private _pValue: any = null;
+        private _pDefaultValue: any = null;
 
         private _bLockInitializer: bool = false;
         
@@ -54,11 +55,12 @@ module akra.fx {
         }
 
         getDefaultValue(): any {
-            return null;
+            return this._pDefaultValue;
         }
 
         prepareDefaultValue(): void {
-            //LOG(this.getName());
+            this.getInitializeExpr().evaluate();
+            this._pDefaultValue = this.getInitializeExpr().getEvalValue();
         }
 
         getValue(): any {
@@ -148,7 +150,7 @@ module akra.fx {
 
         isVideoBuffer(): bool{
             if(isNull(this._isVideoBuffer)){
-                this._isVideoBuffer = this.getType().isStrongEqual(getEffectBaseType("video_buffer"));
+                this._isVideoBuffer = this.getType().isStrongEqual(Effect.getSystemType("video_buffer"));
             }
 
             return this._isVideoBuffer;
@@ -293,7 +295,7 @@ module akra.fx {
                 var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
                 var pId: IAFXIdInstruction = new IdInstruction();
 
-                pType.pushType(getEffectBaseType("sampler2D"));
+                pType.pushType(Effect.getSystemType("sampler2D"));
                 pType.addUsage("uniform");
                 pId.setName(this.getName() + "_sampler");
 
@@ -315,7 +317,7 @@ module akra.fx {
                 var pId: IAFXIdInstruction = new IdInstruction();
                 var pExtarctExpr: ExtractExprInstruction = new ExtractExprInstruction();
 
-                pType.pushType(getEffectBaseType("video_buffer_header"));
+                pType.pushType(Effect.getSystemType("video_buffer_header"));
                 pId.setName(this.getName() + "_header");
 
                 this._pVideoBufferHeader.push(pType, true);

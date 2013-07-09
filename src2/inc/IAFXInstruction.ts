@@ -645,6 +645,7 @@ module akra {
 
     export interface IAFXInitExprInstruction extends IAFXExprInstruction {
         optimizeForVariableType(pType: IAFXVariableTypeInstruction): bool;
+        // getExternalValue(pType: IAFXVariableTypeInstruction): any;
     }
 
     export interface IAFXIdExprInstruction extends IAFXExprInstruction {

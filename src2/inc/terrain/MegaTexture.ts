@@ -157,7 +157,7 @@ module akra.terrain {
     	    this.testDataInit();
 
     	    this._pRPC = net.createRpc();
-    	    this._pRPC.join("ws://192.168.88.55:6112");
+    	    this._pRPC.join("ws://192.168.88.53:6112");
     	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 60000);
     	    this._pRPC.setProcedureOption("getMegaTexture", "priority", 1);
     	    this.loadMinTextureLevel();
@@ -365,7 +365,7 @@ module akra.terrain {
 		}
 
 		private _fThresHold: float = 0.1;
-		private _bColored: bool = true;
+		private _bColored: bool = false;
 		applyForRender(pRenderPass: IRenderPass): void {
 			pRenderPass.setForeign("nTotalLevels", this._iMaxLevel - this._iMinLevel + 1);
 			pRenderPass.setUniform("MIN_MEGATEXTURE_LEVEL", this._iMinLevel);

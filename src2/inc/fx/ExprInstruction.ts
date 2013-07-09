@@ -4,6 +4,8 @@
 #include "IAFXInstruction.ts"
 #include "fx/Instruction.ts"
 #include "fx/TypeInstruction.ts"
+#include "ITexture.ts"
+#include "IAFXSamplerState.ts"
 
 module akra.fx {
 	export class ExprInstruction extends TypedInstruction implements IAFXExprInstruction {
@@ -63,7 +65,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._iValue = 0;
-			this._pType = getEffectBaseType("int").getVariableType();
+			this._pType = Effect.getSystemType("int").getVariableType();
 			this._eInstructionType = EAFXInstructionTypes.k_IntInstruction;
 		}
 
@@ -105,7 +107,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._fValue = 0.0;
-			this._pType = getEffectBaseType("float").getVariableType();
+			this._pType = Effect.getSystemType("float").getVariableType();
 			this._eInstructionType = EAFXInstructionTypes.k_FloatInstruction;
 		}
 
@@ -151,7 +153,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._bValue = true;
-			this._pType = getEffectBaseType("bool").getVariableType();
+			this._pType = Effect.getSystemType("bool").getVariableType();
 			this._eInstructionType = EAFXInstructionTypes.k_BoolInstruction;
 		}
 
@@ -198,7 +200,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._sValue = "";
-			this._pType = getEffectBaseType("string").getVariableType();
+			this._pType = Effect.getSystemType("string").getVariableType();
 			this._eInstructionType = EAFXInstructionTypes.k_StringInstruction;
 		}
 
@@ -406,6 +408,11 @@ module akra.fx {
 			sCode += this.getInstructions()[1].toFinalCode();
 			return sCode;			
 		}
+
+		isConst(): bool {
+			var pOperands: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
+			return pOperands[0].isConst() && pOperands[1].isConst();
+		}
 	}
 	/**
  	 * Represent someExpr = += -= /= *= %= someExpr
@@ -465,6 +472,11 @@ module akra.fx {
                     eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
 			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 		}
+
+		isConst(): bool {
+			return  (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
+					(<IAFXExprInstruction>this.getInstructions()[1]).isConst();
+		}
 	}
 	/**
  	 * Represent boolExpr && || boolExpr
@@ -488,6 +500,12 @@ module akra.fx {
 		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
                     eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
 			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
+
+		isConst(): bool {
+			return  (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
+					(<IAFXExprInstruction>this.getInstructions()[1]).isConst() && 
+					(<IAFXExprInstruction>this.getInstructions()[2]).isConst();
 		}
 	}
 	/**
@@ -514,6 +532,11 @@ module akra.fx {
 		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
                     eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
 			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
+
+		isConst(): bool {
+			return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
+					(<IAFXExprInstruction>this.getInstructions()[1]).isConst();
 		}
 	}
 	/**
@@ -542,7 +565,11 @@ module akra.fx {
 			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 
 			// pUsedDataCollector[this.getType()._getInstructionID()] = this.getType();
-		}	
+		}
+
+		isConst(): bool {
+			return (<IAFXExprInstruction>this.getInstructions()[1]).isConst();
+		}
 	}
 
 	/**
@@ -571,6 +598,10 @@ module akra.fx {
 			else {
 				(<IAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 			}
+        }
+
+        isConst(): bool {
+        	return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
         }	
 	}
 
@@ -615,6 +646,11 @@ module akra.fx {
 			if(pSubExpr.getType().isFromVariableDecl() && pSubExpr.getType().isSampler()){
 				this._pSamplerArrayDecl = pSubExpr.getType()._getParentVarDecl();
 			}
+        }
+
+        isConst(): bool {
+        	return  (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
+        			(<IAFXExprInstruction>this.getInstructions()[1]).isConst();
         }
 	}
 
@@ -662,7 +698,11 @@ module akra.fx {
 			
 			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Undefined);
 			pPoint.addUsedData(pUsedDataCollector, eUsedMode);
-        }	
+        }
+
+        isConst(): bool {
+        	return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
+        }
 	}
 
 	/**
@@ -689,6 +729,10 @@ module akra.fx {
                     eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
 			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
 			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+		}
+
+		isConst(): bool {
+			return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
 		}
 	}
 
@@ -765,6 +809,20 @@ module akra.fx {
 			sCode += "(" + this.getInstructions()[0].toFinalCode() + ")";
 
 			return sCode;
+		}
+
+		isConst(): bool {
+			return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
+		}
+
+		evaluate(): bool {
+			if((<IAFXExprInstruction>this.getInstructions()[0]).evaluate()){
+				this._pLastEvalResult = (<IAFXExprInstruction>this.getInstructions()[0]).getEvalValue();
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 
 		// addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
@@ -906,6 +964,7 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_ConstructorCallInstruction;
 		}
 
+		// isConst
 		toFinalCode(): string {
 			var sCode: string = "";
 
@@ -931,6 +990,62 @@ module akra.fx {
 			for(var i: uint = 1; i < this._nInstructions; i++){
 				pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 			}
+		}
+
+		isConst(): bool {
+			for(var i: uint = 1; i < this._nInstructions; i++){
+				if(!(<IAFXExprInstruction>this.getInstructions()[i]).isConst()){
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		evaluate(): bool {
+			if(!this.isConst()){
+				return false;
+			}
+
+			var pRes: any = null;
+			var pJSTypeCtor: any = Effect.getExternalType(this.getType());
+			var pArguments: any[] = new Array(this._nInstructions - 1);
+
+			if(isNull(pJSTypeCtor)){
+				return false;
+			}
+
+			try{
+				if(Effect.isScalarType(this.getType())){
+					var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+					if(this._nInstructions > 2 || !pTestedInstruction.evaluate()){
+						return false;
+					}
+
+					pRes = pJSTypeCtor(pTestedInstruction.getEvalValue());
+				}
+				else {
+					for(var i: uint = 1; i < this._nInstructions; i++){
+						var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[i];
+					
+						if(pTestedInstruction.evaluate()){
+							pArguments[i-1] = pTestedInstruction.getEvalValue();
+						}
+						else {
+							return false;
+						}
+					}
+
+					pRes = new pJSTypeCtor;
+					pRes.set.apply(pRes, pArguments);
+				}
+			}
+			catch(e){
+				return false;
+			}
+			
+			this._pLastEvalResult = pRes;
+			return true;
 		}
 	}	
 
@@ -997,6 +1112,7 @@ module akra.fx {
 	export class InitExprInstruction extends ExprInstruction implements IAFXInitExprInstruction {
 		private _pConstructorType: IAFXTypeInstruction = null;
 		private _isConst: bool = null;
+		private _isArray: bool = false;
 
 		constructor(){
 			super();
@@ -1046,9 +1162,16 @@ module akra.fx {
 			if ((pType.isNotBaseArray() && pType._getScope() === 0) || 
 				(pType.isArray() && this._nInstructions > 1)){
 
+
 				if (pType.getLength() === UNDEFINE_LENGTH ||
-					this._nInstructions !== pType.getLength()){
+					(pType.isNotBaseArray() && this._nInstructions !== pType.getLength()) ||
+					(!pType.isNotBaseArray() && this._nInstructions !== pType.getBaseType().getLength())){
+
 					return false;
+				}
+
+				if(pType.isNotBaseArray()){
+					this._isArray = true;
 				}
 
 				var pArrayElementType: IAFXVariableTypeInstruction = pType.getArrayElementType();
@@ -1057,6 +1180,7 @@ module akra.fx {
 
 				for(var i: uint = 0; i < this._nInstructions; i++){
 					pTestedInstruction = (<IAFXExprInstruction>this.getInstructions()[i]);
+
 					if(pTestedInstruction._getInstructionType() === EAFXInstructionTypes.k_InitExprInstruction){
 						isOk = (<IAFXInitExprInstruction>pTestedInstruction).optimizeForVariableType(pArrayElementType);
 						if(!isOk){
@@ -1064,7 +1188,7 @@ module akra.fx {
 						}
 					}
 					else {
-						if(isSamplerType(pArrayElementType)){
+						if(Effect.isSamplerType(pArrayElementType)){
 							if(pTestedInstruction._getInstructionType() !== EAFXInstructionTypes.k_SamplerStateBlockInstruction){
 								return false;
 							}
@@ -1082,13 +1206,12 @@ module akra.fx {
 				return true;
 			}
 			else {
-
 				var pFirstInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
 				
 				if (this._nInstructions === 1 && 
 					pFirstInstruction._getInstructionType() !== EAFXInstructionTypes.k_InitExprInstruction){
 					
-					if(isSamplerType(pType)){
+					if(Effect.isSamplerType(pType)){
 						if(pFirstInstruction._getInstructionType() === EAFXInstructionTypes.k_SamplerStateBlockInstruction){
 							return true;
 						}
@@ -1104,6 +1227,9 @@ module akra.fx {
 						return false;
 					}
 				}
+				else if(this._nInstructions === 1){
+					return false;
+				}
 				
 				var pInstructionList: IAFXInitExprInstruction[] = <IAFXInitExprInstruction[]>this.getInstructions();
 				var pFieldNameList: string[] = pType.getFieldNameList();
@@ -1118,6 +1244,73 @@ module akra.fx {
 				this._pConstructorType = pType.getBaseType();
 				return true;
 			}
+		}
+
+		evaluate(): bool {
+			if(!this.isConst()){
+				this._pLastEvalResult = null;
+				return false;
+			}
+
+			var pRes: any = null;
+
+			if(this._isArray){
+				pRes = new Array(this._nInstructions);
+
+				for(var i: uint = 0; i < this._nInstructions; i++){
+					var pEvalInstruction = (<IAFXExprInstruction>this.getInstructions()[i]);
+					
+					if(pEvalInstruction.evaluate()){
+						pRes[i] = pEvalInstruction.getEvalValue();
+					}
+				}
+			}
+			else if(this._nInstructions === 1){
+				var pEvalInstruction = (<IAFXExprInstruction>this.getInstructions()[0]);
+				pEvalInstruction.evaluate();
+				pRes = pEvalInstruction.getEvalValue();
+			}
+			else {
+				var pJSTypeCtor: any = Effect.getExternalType(this._pConstructorType);
+				var pArguments: any[] = new Array(this._nInstructions);
+
+				if(isNull(pJSTypeCtor)){
+					return false;
+				}
+
+				try{
+					if(Effect.isScalarType(this._pConstructorType)){
+						var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+						if(this._nInstructions > 2 || !pTestedInstruction.evaluate()){
+							return false;
+						}
+
+						pRes = pJSTypeCtor(pTestedInstruction.getEvalValue());
+					}
+					else {
+						for(var i: uint = 0; i < this._nInstructions; i++){
+							var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[i];
+						
+							if(pTestedInstruction.evaluate()){
+								pArguments[i] = pTestedInstruction.getEvalValue();
+							}
+							else {
+								return false;
+							}
+						}
+
+						pRes = new pJSTypeCtor;
+						pRes.set.apply(pRes, pArguments);
+					}
+				}
+				catch(e){
+					return false;
+				}
+			}
+
+			this._pLastEvalResult = pRes;
+
+			return true;
 		}
 	}
 	/**
@@ -1152,6 +1345,80 @@ module akra.fx {
 
 		inline isConst(): bool {
 			return true;
+		}
+
+		evaluate(): bool {
+			var pSamplerState: IAFXSamplerState = {
+				texture: null,
+				textureName: "",
+
+				wrap_s: 0,
+				wrap_t: 0,
+
+				mag_filter: 0,
+				min_filter: 0
+			};
+
+			if(!isNull(this._pTexture)){
+				pSamplerState.textureName = this._pTexture.getRealName();
+			}
+
+			if(!isNull(this._pSamplerParams)){
+				if(isDef(this._pSamplerParams["ADDRESSU"])){
+					pSamplerState.wrap_s = SamplerStateBlockInstruction.convertWrapMode(this._pSamplerParams["ADDRESSU"]);
+				}
+
+				if(isDef(this._pSamplerParams["ADDRESSV"])){
+					pSamplerState.wrap_t = SamplerStateBlockInstruction.convertWrapMode(this._pSamplerParams["ADDRESSV"]);
+				}
+
+				if(isDef(this._pSamplerParams["MAGFILTER"])){
+					pSamplerState.mag_filter = SamplerStateBlockInstruction.convertFilters(this._pSamplerParams["MAGFILTER"]);
+				}
+
+				if(isDef(this._pSamplerParams["MINFILTER"])){
+					pSamplerState.min_filter = SamplerStateBlockInstruction.convertFilters(this._pSamplerParams["MINFILTER"]);
+				}
+			}
+
+
+			this._pLastEvalResult = pSamplerState;
+
+			return true;
+		}
+
+		static convertWrapMode(sState: string): ETextureWrapModes {
+			switch (sState) {
+	            case "WRAP":
+	            	return ETextureWrapModes.REPEAT;
+	            case "CLAMP":
+	            	return ETextureWrapModes.CLAMP_TO_EDGE;
+	            case "MIRROR":
+	            	return ETextureWrapModes.MIRRORED_REPEAT;
+
+	            default:
+	            	return 0;
+			}
+		}
+
+		static convertFilters(sState: string): ETextureFilters {
+			switch (sState) {
+	            case "NEAREST":
+	            	return ETextureFilters.NEAREST;
+                case "LINEAR":
+                	return ETextureFilters.LINEAR;
+                case "NEAREST_MIPMAP_NEAREST":
+                	return ETextureFilters.NEAREST_MIPMAP_NEAREST;
+                case "LINEAR_MIPMAP_NEAREST":
+                	return ETextureFilters.LINEAR_MIPMAP_NEAREST;
+                case "NEAREST_MIPMAP_LINEAR":
+                	return ETextureFilters.NEAREST_MIPMAP_LINEAR;
+                case "LINEAR_MIPMAP_LINEAR":
+                	return ETextureFilters.LINEAR_MIPMAP_LINEAR;
+
+	            default:
+	            	return 0;
+			}
 		}
 	}
 

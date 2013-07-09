@@ -794,7 +794,7 @@ module akra.fx {
         	else if(pMainVariable.getType().isForeign()){
         		this._pForeignVariableMap[iMainVar] = pMainVariable;
         	}
-        	else if(isWrite){
+        	else if(isWrite || pMainVariable.getType().isConst()){
         		this._pGlobalVariableMap[iMainVar] = pMainVariable;
         		if(isDefAndNotNull(this._pUniformVariableMap[iMainVar])){
         			this._pUniformVariableMap[iMainVar] = null;
@@ -804,7 +804,7 @@ module akra.fx {
         		if(!isDef(this._pGlobalVariableMap[iMainVar])){
         			this._pUniformVariableMap[iMainVar] = pMainVariable;
 
-        			if(pMainVariable.getType().isBase() && pMainVariable.hasConstantInitializer()){
+        			if(!pMainVariable.getType().isComplex() && pMainVariable.hasConstantInitializer()){
 		        		pMainVariable.prepareDefaultValue();
 		        	}
         		}
@@ -846,7 +846,7 @@ module akra.fx {
         	this._pUniformVariableMap[iMainVar] = pMainVariable;
         	this.addUsedComplexType(pMainVariable.getType().getBaseType());
 
-        	if(pMainVariable.getType().isBase() && pMainVariable.hasConstantInitializer()){
+        	if(!pMainVariable.getType().isComplex() && pMainVariable.hasConstantInitializer()){
         		pMainVariable.prepareDefaultValue();
         	}
         }
@@ -1736,7 +1736,7 @@ module akra.fx {
 			var pReturnType: IAFXVariableTypeInstruction = this._pReturnType;
 			var isGood: bool = true;
 
-			if(pReturnType.isEqual(getEffectBaseType("void"))){
+			if(pReturnType.isEqual(Effect.getSystemType("void"))){
 				return true;
 			}
 
@@ -1774,7 +1774,7 @@ module akra.fx {
 				return true;
 			}
 			else {
-				isGood = pReturnType.isEqual(getEffectBaseType("float4"));
+				isGood = pReturnType.isEqual(Effect.getSystemType("float4"));
 				if(!isGood){
 					return false;
 				}
@@ -1792,7 +1792,7 @@ module akra.fx {
 			var pReturnType: IAFXVariableTypeInstruction = this._pReturnType;
 			var isGood: bool = true;
 
-			if(pReturnType.isEqual(getEffectBaseType("void"))){
+			if(pReturnType.isEqual(Effect.getSystemType("void"))){
 				return true;
 			}				
 
@@ -1801,7 +1801,7 @@ module akra.fx {
 				return false;
 			}
 
-			isGood = pReturnType.isEqual(getEffectBaseType("float4"));
+			isGood = pReturnType.isEqual(Effect.getSystemType("float4"));
 			if(!isGood){
 				return false;
 			}
@@ -1912,7 +1912,7 @@ module akra.fx {
 						if (pParam.getType().isPointer() ||
 						    pParam.getType()._containPointer() ||
 						    pParam.getType()._containSampler() ||
-						    isSamplerType(pParam.getType())){
+						    Effect.isSamplerType(pParam.getType())){
 							return false;
 						}
 
@@ -1938,7 +1938,7 @@ module akra.fx {
 					if (pParam.getType().isPointer() ||
 					    pParam.getType()._containPointer() ||
 					    pParam.getType()._containSampler() ||
-					    isSamplerType(pParam.getType())){
+					    Effect.isSamplerType(pParam.getType())){
 						return false;
 					}
 

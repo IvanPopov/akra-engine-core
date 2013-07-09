@@ -1,6 +1,7 @@
 provide akra.system;
 
 texture tex0 : INPUT_TEXTURE;
+texture tex1 : DEFERRED_TEXTURE0;
 texture skyBox : SKYBOX_TEXTURE;
 
 sampler sceneTexture : INPUT_SAMPLER = sampler_state
@@ -10,7 +11,7 @@ sampler sceneTexture : INPUT_SAMPLER = sampler_state
 //	MagFilter = LINEAR;
 };
 
-texture tex1 : DEFERRED_TEXTURE0;
+
 
 sampler deferredTexture0 : SAMPLER_TEXTURE0 = sampler_state
 {
