@@ -408,32 +408,32 @@ module akra.render {
 				    pPass.setTexture("DEFERRED_TEXTURE1", pDeferredTextures[1]);
 				    pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTexture);
 
-				    pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 
-						textureName: "DEFERRED_TEXTURE0",
-						texture: null,
-						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-						mag_filter: ETextureFilters.NEAREST,
-						min_filter: ETextureFilters.NEAREST
-					});
+				 //    pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 
+					// 	textureName: "DEFERRED_TEXTURE0",
+					// 	texture: null,
+					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	mag_filter: ETextureFilters.NEAREST,
+					// 	min_filter: ETextureFilters.NEAREST
+					// });
 
-					pPass.setUniform("SAMPLER_TEXTURE1", <IAFXSamplerState>{ 
-						textureName: "DEFERRED_TEXTURE1",
-						texture: null,
-						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-						mag_filter: ETextureFilters.NEAREST,
-						min_filter: ETextureFilters.NEAREST
-					});
+					// pPass.setUniform("SAMPLER_TEXTURE1", <IAFXSamplerState>{ 
+					// 	textureName: "DEFERRED_TEXTURE1",
+					// 	texture: null,
+					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	mag_filter: ETextureFilters.NEAREST,
+					// 	min_filter: ETextureFilters.NEAREST
+					// });
 
-					pPass.setUniform("SAMPLER_SCENE_DEPTH", <IAFXSamplerState>{ 
-						textureName: "SCENE_DEPTH_TEXTURE",
-						texture: null,
-						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-						mag_filter: ETextureFilters.LINEAR,
-						min_filter: ETextureFilters.LINEAR
-					});
+					// pPass.setUniform("SAMPLER_SCENE_DEPTH", <IAFXSamplerState>{ 
+					// 	textureName: "SCENE_DEPTH_TEXTURE",
+					// 	texture: null,
+					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	mag_filter: ETextureFilters.LINEAR,
+					// 	min_filter: ETextureFilters.LINEAR
+					// });
 
 					break;
 				case 1:
@@ -443,23 +443,23 @@ module akra.render {
 				    pPass.setUniform("SCREEN_TEXTURE_RATIO",
                                      vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
 
-				    pPass.setUniform("SAMPLER_SKYBOX", <IAFXSamplerState>{ 
-						textureName: "SKYBOX_TEXTURE",
-						texture: null,
-						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-						mag_filter: ETextureFilters.LINEAR,
-						min_filter: ETextureFilters.LINEAR
-					});
+				 //    pPass.setUniform("SAMPLER_SKYBOX", <IAFXSamplerState>{ 
+					// 	textureName: "SKYBOX_TEXTURE",
+					// 	texture: null,
+					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	mag_filter: ETextureFilters.LINEAR,
+					// 	min_filter: ETextureFilters.LINEAR
+					// });
 
-					pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 
-						textureName: "DEFERRED_TEXTURE0",
-						texture: null,
-						wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-						wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-						mag_filter: ETextureFilters.NEAREST,
-						min_filter: ETextureFilters.NEAREST
-					});
+					// pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 
+					// 	textureName: "DEFERRED_TEXTURE0",
+					// 	texture: null,
+					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
+					// 	mag_filter: ETextureFilters.NEAREST,
+					// 	min_filter: ETextureFilters.NEAREST
+					// });
 
 					break;
 			}

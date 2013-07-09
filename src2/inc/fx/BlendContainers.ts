@@ -86,7 +86,7 @@ module akra.fx {
 			return this.hasVariableWithName(sName) ? this._pVarListMap[sName][0] : null;
 		}
 
-		inline getDeclCodeForVar(sName: string): string {
+		inline getDeclCodeForVar(sName: string, bWithInitializer: bool): string {
 			var pType: IAFXVariableTypeInstruction = this.getBlendType(sName);
 			var sCode: string = pType.toFinalCode() + " ";
 			var pVar: IAFXVariableDeclInstruction = this.getVariableByName(sName);
@@ -101,6 +101,10 @@ module akra.fx {
 				else {
 					sCode += "[" + iLength + "]";
 				}
+			}
+
+			if(bWithInitializer && pVar.hasInitializer()){
+				sCode += "=" + pVar.getInitializeExpr().toFinalCode();
 			}
 
 			return sCode;

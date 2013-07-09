@@ -15,17 +15,7 @@
 #include "util/unique.ts"
 
 module akra.fx {
-    export function getEffectBaseType(sTypeName: string): SystemTypeInstruction {
-    	return !isNull(Effect.pSystemTypes[sTypeName]) ? (Effect.pSystemTypes[sTypeName] || null) : null;
-    }
-
-    export function isSamplerType(pType: IAFXVariableTypeInstruction): bool {
-    	return pType.isEqual(getEffectBaseType("sampler")) ||
-    		   pType.isEqual(getEffectBaseType("sampler2D")) ||
-    		   pType.isEqual(getEffectBaseType("samplerCUBE")) ||
-    		   pType.isEqual(getEffectBaseType("video_buffer"));
-    }
-
+	
 	export class Instruction implements IAFXInstruction{
 		protected _pParentInstruction: IAFXInstruction = null;
 		protected _sOperatorName: string = null;

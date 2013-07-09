@@ -268,7 +268,7 @@ module akra.fx {
 
 		isPointIndex(): bool{
 			if(isNull(this._isPointIndex)){
-				this._isPointIndex = this.isStrongEqual(getEffectBaseType("ptr"));
+				this._isPointIndex = this.isStrongEqual(Effect.getSystemType("ptr"));
 			}
 
 			return this._isPointIndex;
@@ -506,7 +506,7 @@ module akra.fx {
 				pPointer.push(pPointerType, true);
 				pPointer.push(pPointerId, true);
 
-				pPointerType.pushType(getEffectBaseType("ptr"));
+				pPointerType.pushType(Effect.getSystemType("ptr"));
 				pPointerId.setName(UNDEFINE_NAME);
 				pPointerId.setName(this._getParentVarDecl().getName() + "_pointer_" + i.toString());
 
@@ -1709,7 +1709,7 @@ module akra.fx {
 				this._isContainArray = true;
 			}
 
-			if(isSamplerType(pType) || pType._containSampler()){
+			if(Effect.isSamplerType(pType) || pType._containSampler()){
 				this._isContainSampler = true;
 			}
 

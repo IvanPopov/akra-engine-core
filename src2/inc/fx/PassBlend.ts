@@ -1254,7 +1254,7 @@ module akra.fx {
 			var pKeys = pVars.keys;
 
 			for(var i: uint = 0; i < pKeys.length; i++){
-				sCode += pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+				sCode += pVars.getDeclCodeForVar(pKeys[i], true) + ";\n";
 			}
 
 			if(eType === EFunctionType.k_Vertex){
@@ -1296,7 +1296,7 @@ module akra.fx {
 			var pKeys = pVars.keys;
 
 			for (var i: int = 0; i < pKeys.length; i++) {
-				sCode += "varying " + pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+				sCode += "varying " + pVars.getDeclCodeForVar(pKeys[i], false) + ";\n";
 			}
 
 			if(eType === EFunctionType.k_Vertex){
@@ -1339,7 +1339,7 @@ module akra.fx {
 					continue;
 				}
 
-				sCode += "uniform " + pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+				sCode += "uniform " + pVars.getDeclCodeForVar(pKeys[i], false) + ";\n";
 			}
 
 			return sCode;
@@ -1363,7 +1363,7 @@ module akra.fx {
 			var pKeys = pVars.keys;
 
 			for(var i: uint = 0; i < pKeys.length; i++){
-				sCode += pVars.getDeclCodeForVar(pKeys[i]) + ";\n";
+				sCode += pVars.getDeclCodeForVar(pKeys[i], true) + ";\n";
 			}
 
 			return sCode;

@@ -113,7 +113,7 @@ bool testureLoadStatus[nTotalLevels]: TEXTURE_LOAD_STATUS;
 int minTextureLevel: MIN_MEGATEXTURE_LEVEL;
 
 float threshold;
-bool bColored;
+bool bColored = false;
 
 void fs_terrain(VS_OUT IN){
     float4 color;
