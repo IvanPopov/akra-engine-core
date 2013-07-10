@@ -190,7 +190,10 @@ module akra.webgl {
 
 			// deltaTime = Date.now() - deltaTime;
 			// this._time[0] += deltaTime;
-			// console.log(pEntry);
+#ifdef __VIEW_INTERNALS__
+			console.log(pEntry);
+			// console.log(pEntry.bufferMap.toString());
+#endif
 			
 			//--------------------------
 

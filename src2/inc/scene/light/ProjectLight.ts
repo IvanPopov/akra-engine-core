@@ -11,10 +11,23 @@
 #include "geometry/classifications.ts"
 
 module akra.scene.light {
+
+	export struct ProjectParameters implements IProjectParameters {
+		ambient: IColor = new Color;
+	    diffuse: IColor = new Color;
+	    specular: IColor = new Color;
+	    attenuation: IVec3 = new Vec3;
+	}
+
 	export class ProjectLight extends LightPoint implements IProjectLight {
 		protected _pDepthTexture: ITexture = null;
 		protected _pColorTexture: ITexture = null;
+		protected _pLightParameters: IProjectParameters = new ProjectParameters;
 		protected _pShadowCaster: IShadowCaster;
+
+		inline get params(): IProjectParameters {
+			return this._pLightParameters;
+		};
 
 		constructor (pScene: IScene3d) {
 			super(pScene, ELightTypes.PROJECT);

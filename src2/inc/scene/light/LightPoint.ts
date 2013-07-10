@@ -6,18 +6,12 @@
 #include "math/math.ts"
 
 module akra.scene.light {
-	export struct LightParameters implements ILightParameters {
-		ambient: IColor = new Color;
-	    diffuse: IColor = new Color;
-	    specular: IColor = new Color;
-	    attenuation: IVec3 = new Vec3;
-	}
 
 	export class LightPoint extends SceneNode implements ILightPoint {
 		protected _isShadowCaster: bool = false;
 		protected _isEnabled: bool = true;
 		protected _iMaxShadowResolution: uint = 256;
-		protected _pLightParameters: ILightParameters = new LightParameters;
+		// protected _pLightParameters: ILightParameters = new LightParameters;
 		protected _eLightType: ELightTypes;
 
 		//optimized camera frustum for better shadow casting
@@ -42,7 +36,8 @@ module akra.scene.light {
 		};
 
 		inline get params(): ILightParameters {
-			return this._pLightParameters;
+			// return this._pLightParameters;
+			return null;
 		};
 
 		inline get isShadowCaster(): bool {
@@ -74,6 +69,7 @@ module akra.scene.light {
 		};
 
 		_calculateShadows(): void {
+			debug_print(__CALLSTACK__);
 			CRITICAL("NOT IMPLEMENTED!");
 		};
 	}

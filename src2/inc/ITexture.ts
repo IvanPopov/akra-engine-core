@@ -95,6 +95,8 @@ module akra {
 
         textureType: ETextureTypes;
 
+        readonly byteLength: uint;
+
         //desiredIntegerBitDepth: uint;
         //desiredFloatBitDepth: uint;     
 
@@ -107,7 +109,7 @@ module akra {
         setFlags(iTextureFlag: int): void;
         getFlags(): int;   
 
-        calculateSize(): uint;
+        // calculateSize(): uint;
         getNumFaces(): uint;
         getSize(): uint; 
 

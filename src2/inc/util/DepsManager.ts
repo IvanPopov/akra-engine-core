@@ -87,6 +87,7 @@ module akra.util {
 				var sResource: string = pFiles[i].name || pFiles[i].path;
 
 				switch (pathinfo(pFiles[i].path).ext.toLowerCase()) {
+					case "fx":
 					case "afx":
 						if (!pRmgr.effectDataPool.findResource(sResource)) {
 							pRmgr.effectDataPool.createResource(sResource);
@@ -155,6 +156,7 @@ module akra.util {
 						});	
 						break;
 
+					case "fx":
 					case "afx":
 							pRes = pRmgr.effectDataPool.findResource(sResource);
 							

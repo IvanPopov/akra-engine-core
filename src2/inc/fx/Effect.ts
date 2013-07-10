@@ -664,6 +664,10 @@ module akra.fx {
 		    this.generateSystemFunction("dFdy", "dFdy($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("width", "width($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 
+		    this.generateSystemFunction("frac", "fract($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("lerp", "mix($1,$2,$3)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("lerp", "mix($1,$2,$3)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE, "float"], ["float2", "float3", "float4"]);
+
 		    //Extracts
 
 		    this.generateNotBuiltInSystemFuction("extractHeader", 
@@ -2082,6 +2086,19 @@ module akra.fx {
 		        case "MINFILTER":
 		        	sStateValue = pSubStateExprNode.value.toUpperCase();
 		        	switch (sStateValue) {
+		        		case "POINT":
+		        			sStateValue = "NEAREST";
+		        			break;
+		        		case "POINT_MIPMAP_POINT":
+		        			sStateValue = "NEAREST_MIPMAP_NEAREST";
+		        			break;
+		                case "LINEAR_MIPMAP_POINT":
+		                	sStateValue = "LINEAR_MIPMAP_NEAREST";
+		                	break;
+		                case "POINT_MIPMAP_LINEAR":
+		                	sStateValue = "NEAREST_MIPMAP_LINEAR";
+		                	break;
+		                	
 		                case "NEAREST":
 		                case "LINEAR":
 		                case "NEAREST_MIPMAP_NEAREST":

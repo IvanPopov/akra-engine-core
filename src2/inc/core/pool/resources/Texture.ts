@@ -109,6 +109,10 @@ module akra.core.pool.resources {
             this._iDesiredFloatBitDepth = iDesiredFloatBitDepth;
         }*/
 
+        inline get byteLength(): uint {
+            return this.getSize();
+        }
+
         inline getFlags(): int {
             return this._iFlags;
         }
@@ -134,15 +138,16 @@ module akra.core.pool.resources {
             return this._isInternalResourceCreated;
         }
         
-        inline calculateSize(): uint {
-            return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
-        }
+        // inline calculateSize(): uint {
+        //     return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+        // }
 
         inline getNumFaces(): uint {
             return this._eTextureType === ETextureTypes.TEXTURE_CUBE_MAP ? 6 : 1;
         }
 
         inline getSize(): uint {
+            //FIXME: necessary consider the number of texture MIP levels
             return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
         }
 

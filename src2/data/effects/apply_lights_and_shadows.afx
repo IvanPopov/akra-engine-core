@@ -4,6 +4,7 @@ foreign int nOmniShadows;
 foreign int nOmni;
 foreign int nProjectShadows;
 foreign int nProject;
+foreign int nSun;
 
 texture tex0 : TEXTURE0;
 texture tex1 : TEXTURE1;
@@ -61,6 +62,14 @@ struct light_project_shadows{
     float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
 };
 
+struct light_sun{
+    float3 sunDir: SUN_DIRECTION;
+    float3 eyePos: EYE_POSITION;
+    float3 ground0: GROUNDC0;
+    float3 ground1: GROUNDC1;
+    float3 hg: HG;
+};
+
 sampler project_shadow_sampler[nProjectShadows] : PROJECT_SHADOW_SAMPLER;
 sampler omni_shadow_sampler[nOmniShadows * 6] : OMNI_SHADOW_SAMPLER;
 
@@ -68,6 +77,7 @@ light_omni_shadows points_omni_shadows[nOmniShadows];
 light_omni points_omni[nOmni];
 light_project_shadows points_project_shadows[nProjectShadows];
 light_project points_project[nProject];
+light_sun points_sun[nSun];
 
 shared float4 result_color;
 shared pixel_data pixelData;
@@ -248,6 +258,129 @@ float4 blur(sampler Sampler,float2 texCoords, float2 invTexSize){
     return value/totalWeight;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+float Exposure = -2.0;
+float c = 0.002f; // height falloff
+float b = 0.002f; // global density
+float3 vHG;
+
+float3 HDR( float3 LDR){
+    return 1.0f - exp( Exposure * LDR );
+}
+
+float getMiePhase(float fCos, float fCos2){
+    //return 1.5 * ((1.0 - g2) / (2.0 + g2)) * (1.0 + fCos2) / pow(1.0 + g2 - 2.0*g*fCos, 1.5);
+    return vHG.x * (1.0 + fCos2) / pow(abs(vHG.y - vHG.z * fCos), 1.5);
+}
+
+// Calculates the Rayleigh phase function
+float getRayleighPhase(float fCos2){
+    return 0.75 + 0.75 * fCos2;
+}
+/*
+float ComputeVolumetricFog( float3 cameraToWorldPos ){ 
+    float f = b * exp( -c * vEye.y );
+    float l = length( cameraToWorldPos );
+
+    float fogInt = exp( -(f * l) );
+
+    const float cSlopeThreshold = 0.01;
+    if( abs( cameraToWorldPos.y ) > cSlopeThreshold )
+    {
+      float t = c * cameraToWorldPos.y;
+      fogInt *= ( 1.0 - exp( -t ) ) / t;
+    }
+
+    return fogInt;
+}*/
+
+
+
+/*
+float4 SkyFromGround(light_sun sunParams) {
+    float4 color = float4(0);
+
+    float2 interp = frac( In.t0 * Tex.x );
+
+    float4 S00 = tex2D( SkyBuffer, In.t0 ).rgba;
+    float4 S10 = tex2D( SkyBuffer, In.t0 + float2(Tex.y, 0.0f) ).rgba;
+    float4 S01 = tex2D( SkyBuffer, In.t0 + float2(0.0f, Tex.y) ).rgba;
+    float4 S11 = tex2D( SkyBuffer, In.t0 + float2(Tex.y, Tex.y) ).rgba;
+
+    float4 Dx1 = lerp(S00, S10, interp.x);
+    float4 Dx2 = lerp(S01, S11, interp.x);
+
+    float4 vSamples = lerp(Dx1, Dx2, interp.y);
+    //float4 vSamples = tex2D( SkyBuffer, In.t0 ).rgba;
+
+    float3 c0 = vSamples.rgb * (vInvWavelength * fKrESun);
+    float3 c1 = vSamples.rgb * fKmESun;
+
+    //float fCos = vSamples.a;
+    float fCos = dot(vSunPos, In.t1) /length(In.t1);
+    float fCos2 = fCos * fCos;
+
+    float3 Mie = getMiePhase(fCos, fCos2) * c1;
+    color.a = 1.0;//log2( length( Mie ) * 2500.0f);
+    //Out.color.a = length( Mie ) ;
+    color.rgb = getRayleighPhase(fCos2) * c0 + Mie;
+    //Out.color.rgb = HDR(Out.color.rgb);
+
+    //Out.color.rgba = vSamples;
+    //Out.color.rgba =0;
+    //Out.color.rgba = In.t0.x;
+    // Fragment_material.emissive = color;//float4(min(color.r, 0.98), min(color.g, 0.98), min(color.b, 0.98), 1.);
+    //Fragment_material.emissive = S00;
+    
+    return color;
+}
+
+float4 GroundFromGround(light_sun sunParams){
+    float3 v3Pos = sunParams.eyePos - pixelData.position.xyz;
+    float fCos = dot(sunParams.sunDir, v3Pos)/length(v3Pos);
+    float fCos2 = fCos * fCos;
+
+    float3 Mie = getMiePhase(fCos, fCos2) * sunParams.ground1;
+    float4 color = float4(0.);
+
+    color.rgb = getRayleighPhase(fCos2) * sunParams.ground0 + Mie;
+    color.rgb = HDR(color.rgb);
+
+    return color;
+}
+
+*/
+float4 apply_sun_light() : COLOR {
+    for(int i = 0; i < nSun; i++){
+        float3 v3Pos = points_sun[i].eyePos - pixelData.position.xyz;
+        float fCos = dot(points_sun[i].sunDir, v3Pos)/length(v3Pos);
+        float fCos2 = fCos * fCos;
+
+        float3 Mie = getMiePhase(fCos, fCos2) * points_sun[i].ground1;
+        float4 color = float4(0.);
+
+        color.rgb = getRayleighPhase(fCos2) * points_sun[i].ground0 + Mie;
+        color.rgb = HDR(color.rgb);
+
+        result_color += float4(1., 0., 0., 1.);
+    }
+
+    return float4(result_color.xyz, 1.);
+};
+
 technique omniLighting{
     pass applyOmniLighting{
         if(nOmni > 0){
@@ -278,4 +411,12 @@ technique projectShadowsLighting{
             PixelShader = compile apply_light_project_shadows();
         }
     };   
+};
+
+technique sunLighting{
+    pass applySunLigting{
+        if(nSun > 0){
+            PixelShader = compile apply_sun_light();
+        }
+    }
 };

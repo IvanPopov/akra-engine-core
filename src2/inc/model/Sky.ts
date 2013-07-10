@@ -2,38 +2,40 @@
 #define MODELSKY_TS
 
 #include "common.ts"
+#include "ISunLight.ts"
 #include "util/unique.ts"
 #include "core/Engine.ts"
-
+#include "scene/light/SunLight.ts"
 //#define SKY_GPU
 
 module akra.model {
 
-	core.Engine.depends("effects/sky.fx");
+	// core.Engine.depends("effects/sky.fx");
 
 	export class Sky implements IEventProvider  {
-		skyDome: IMesh = null;
+		skyDome: ISceneModel = null;
+		sun: ISunLight = null;
 
-		private _fSunTheta: float;				/* Theta angle from zenith to sun*/
-		private _fSunPhi: float;				/* Phi angle */
-		private _fKr: float;					/* Rayleigh scattering constant*/
-		private _fKr4PI: float;					/* Same * 4 * PI*/
-		private _fKm: float;					/* Mie scattering constant*/
-		private _fKm4PI: float;					/* Same * 4 * PI*/
-		private _fESun: float;					/* Sun brightness constant*/
-		private _fKrESun: float;				/**/
-		private _fKmESun: float;				/**/
-		private _fg: float;						/* The Mie phase asymmetry factor*/
-		private _fg2: float;
-		private _fExposure: float;				/* Exposure constant*/
-		private _fInnerRadius: float;			/* Inner planetary radius */
-		private _fInnerRadius2: float;			/**/
-		private _fOuterRadius: float;			/* Outer atmosphere radius*/
-		private _fOuterRadius2: float;			/**/
-		private _fScale: float;					/* */
-		private _fScaleOverScaleDepth: float;	/**/
-		private _fRayleighScaleDepth: float;	/**/
-		private _fMieScaleDepth: float;			/**/
+		/*private*/ _fSunTheta: float;				/* Theta angle from zenith to sun*/
+		/*private*/ _fSunPhi: float;				/* Phi angle */
+		/*private*/ _fKr: float;					/* Rayleigh scattering constant*/
+		/*private*/ _fKr4PI: float;					/* Same * 4 * PI*/
+		/*private*/ _fKm: float;					/* Mie scattering constant*/
+		/*private*/ _fKm4PI: float;					/* Same * 4 * PI*/
+		/*private*/ _fESun: float;					/* Sun brightness constant*/
+		/*private*/ _fKrESun: float;				/**/
+		/*private*/ _fKmESun: float;				/**/
+		/*private*/ _fg: float;						/* The Mie phase asymmetry factor*/
+		/*private*/ _fg2: float;
+		/*private*/ _fExposure: float;				/* Exposure constant*/
+		/*private*/ _fInnerRadius: float;			/* Inner planetary radius */
+		/*private*/ _fInnerRadius2: float;			/**/
+		/*private*/ _fOuterRadius: float;			/* Outer atmosphere radius*/
+		/*private*/ _fOuterRadius2: float;			/**/
+		/*private*/ _fScale: float;					/* */
+		/*private*/ _fScaleOverScaleDepth: float;	/**/
+		/*private*/ _fRayleighScaleDepth: float;	/**/
+		/*private*/ _fMieScaleDepth: float;			/**/
 
 		private _v3fSunDir: IVec3 = new Vec3;
 		private _v3fInvWavelength4: IVec3 = new Vec3;
@@ -46,7 +48,7 @@ module akra.model {
 		private _nSize: uint;
 		private _nSamples: uint;
 
-		private _bSkyBuffer: bool;
+		// private _bSkyBuffer: bool;
 
 		// private _v2fRttQuad: IVec2[] = [new Vec2, new Vec2, new Vec2, new Vec2];
 		
@@ -56,7 +58,7 @@ module akra.model {
 		private _pSkyBuffer: ITexture; 
 		private _pSkyBackBuffer: ITexture;	 
 
-
+		private _pSkyBlitBox: IPixelBox = null;
 
 
 		constructor (private _pEngine: IEngine, nCols: uint, nRows: uint, fR: float) {
@@ -65,14 +67,23 @@ module akra.model {
 			ASSERT( nCols * nRows < 65535 );
 
 			this._fInnerRadius = fR;
+			this._init();
 			this.init();
+			this.createBuffers();
 
 			var pDomeMesh: IMesh = this.createDome(nCols, nRows);
-			// var pDome: ISceneModel = this.getEngine().getScene().createModel("dome");
 
-	  //   	pDome.mesh = pDomeMesh; 
+			var pSceneModel: ISceneModel = _pEngine.getScene().createModel("dome" + this.getGuid());
 
-	    	this.skyDome = pDomeMesh;
+	    	pSceneModel.mesh = pDomeMesh; 
+		    pSceneModel.accessLocalBounds().set(MAX_UINT32, MAX_UINT32, MAX_UINT32);
+		    // pSceneModel.scale(this._fOuterRadius);
+
+	    	this.skyDome = pSceneModel;
+
+	    	// this.sun = <ISunLight>_pEngine.getScene().createLightPoint(ELightTypes.SUN, false, 0);
+
+	    	// this.sun.attachToParent(this.skyDome);
 		}	
 
 		inline getEngine(): IEngine {
@@ -89,26 +100,39 @@ module akra.model {
 		}
 
 
-		init(): void {
+		private _init(): void {
 			this._nSize = 32; 		/*Higher, Better, More CPU/GPU*/
-			this._nSamples = 5;		/*Higher, Better, More CPU/GPU*/
+			this._nSamples = 5;	/*Higher, Better, More CPU/GPU*/
 			this._fKr = 0.0025;
-			this._fKr4PI = this._fKr * 4.0 * math.PI;
 			this._fKm = 0.0010;
-			this._fKm4PI = this._fKm * 4.0 * math.PI;
 			this._fESun = 20.0;
+			this._fg = -0.990;
+			this._fExposure = -2.0;
+
+			this._fRayleighScaleDepth = 0.25;
+			this._fMieScaleDepth = 0.1;
+		}
+
+		init(): void {
+			// this._nSize = 32; 		
+			// this._nSamples = 5;		
+			// this._fKr = 0.0025;
+			this._fKr4PI = this._fKr * 4.0 * math.PI;
+			// this._fKm = 0.0010;
+			this._fKm4PI = this._fKm * 4.0 * math.PI;
+			// this._fESun = 20.0;
 			this._fKrESun = this._fESun * this._fKr;
 			this._fKmESun = this._fESun * this._fKm;
-			this._fg = -0.990;
+			// this._fg = -0.990;
 			this._fg2 = this._fg * this._fg;
-			this._fExposure = -2.0;
+			// this._fExposure = -2.0;
 			this._fInnerRadius2 = this._fInnerRadius * this._fInnerRadius;
 			this._fOuterRadius = this._fInnerRadius * 1.025;
 			this._fOuterRadius2 = this._fOuterRadius * this._fOuterRadius;
 			this._fScale = 1.0 / (this._fOuterRadius - this._fInnerRadius);
 
-			this._fRayleighScaleDepth = 0.25;
-			this._fMieScaleDepth = 0.1;
+			// this._fRayleighScaleDepth = 0.25;
+			// this._fMieScaleDepth = 0.1;
 			this._fScaleOverScaleDepth = this._fScale / this._fRayleighScaleDepth;
 			this._v3fInvWavelength4.x = 1.0 / math.pow(0.650, 4.0);
 			this._v3fInvWavelength4.y = 1.0 / math.pow(0.570, 4.0);
@@ -121,17 +145,23 @@ module akra.model {
 			this._v3fEye.z = 0.0;
 
 
-			this._bSkyBuffer = false;
-			
+			// this._bSkyBuffer = false;
+
+		}
+
+		private createBuffers(): void {
+
 
 			var pEngine: IEngine = this.getEngine();
 			var pRsmgr: IResourcePoolManager = pEngine.getResourceManager();
 
 			this._pSkyBuffer = pRsmgr.createTexture("sky_buffer" + this.getGuid());
-			this._pSkyBackBuffer = pRsmgr.createTexture("sky_back_buffer" + this.getGuid());
+			// this._pSkyBackBuffer = pRsmgr.createTexture("sky_back_buffer" + this.getGuid());
 
 			this._pSkyBuffer.create(this._nSize, this._nSize, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
-			this._pSkyBackBuffer.create(this._nSize, this._nSize, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
+			// this._pSkyBackBuffer.create(this._nSize, this._nSize, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
+			 
+			this._pSkyBlitBox = new pixelUtil.PixelBox(this._nSize, this._nSize, 1, EPixelFormats.FLOAT32_RGBA, new Uint8Array(this._pSkyBuffer.byteLength));
 
 #ifdef SKY_GPU
 			var pScreen: IRenderableObject = this._pScreen = new Screen(pEngine.getRenderer());
@@ -185,23 +215,26 @@ module akra.model {
 #endif
 
 		private getWrite(): ITexture {
-			if (this._bSkyBuffer) return this._pSkyBuffer;
-			return this._pSkyBackBuffer;
+			/*if (this._bSkyBuffer)*/ return this._pSkyBuffer;
+			/*return this._pSkyBackBuffer;*/
 		}
 
 		private getRead(): ITexture {
-			if (!this._bSkyBuffer) return this._pSkyBuffer;
-			return this._pSkyBackBuffer;
+			/*if (!this._bSkyBuffer) */return this._pSkyBuffer;
+			/*return this._pSkyBackBuffer;*/
 		}
 
 #ifndef SKY_GPU
 		updateSkyBuffer(): void {
 			var pPixelBuffer: IPixelBuffer = this.getWrite().getBuffer();
-			var pRect: IPixelBox = pPixelBuffer.lock(geometry.box(0, 0, 0, this._nSize, this._nSize, 1));
+			// var pBox: IBox = geometry.box(0, 0, 0, this._nSize, this._nSize, 1);
+			
+			// var pRect: IPixelBox = pPixelBuffer.lock(pBox, ELockFlags.WRITE);
 
-			debug_assert(!isNull(pRect), "cannot lock texture");
+			// debug_assert(!isNull(pRect), "cannot lock texture");
 
-			var pBuffer: Float32Array = new Float32Array(pRect.data.buffer);
+			// var pBuffer: Float32Array = new Float32Array(pRect.data.buffer);
+			var pBuffer: Float32Array = new Float32Array(this._pSkyBlitBox.data.buffer);
 			var nIndex: uint = 0;
 
 			for(var x: uint = 0; x < this._nSize; x++ ) {
@@ -218,14 +251,14 @@ module akra.model {
 					vVecPos.y = math.cos( fCosxz ) * this._fOuterRadius;
 					vVecPos.z = math.sin( fCosxz ) * math.sin( fCosy  ) * this._fOuterRadius;
 
-					var v3Pos: IVec3 = vec3().set(vVecPos);
+					var v3Pos: IVec3 = vec3(vVecPos);
 					var v3Ray: IVec3 = v3Pos.subtract(vEye, vec3());
 					var fFar: float = v3Ray.length();
 					
 					v3Ray.scale(1. / fFar);
 
 					// Calculate the ray's starting position, then calculate its scattering offset
-					var v3Start: IVec3 = vec3().set(vEye);
+					var v3Start: IVec3 = vec3(vEye);
 					var fHeight: float = v3Start.length();
 					var fDepth: float = math.exp(this._fScaleOverScaleDepth * (this._fInnerRadius - vEye.y));
 					var fStartAngle: float = v3Ray.dot(v3Start) / fHeight;
@@ -234,8 +267,8 @@ module akra.model {
 					// Initialize the scattering loop variables
 					var fSampleLength: float = fFar / this._nSamples;
 					var fScaledLength: float = fSampleLength * this._fScale;
-					var v3SampleRay: IVec3 = vec3().set(v3Ray.scale(fSampleLength));
-					var v3SamplePoint: IVec3 = vec3().set(v3Start.add(v3SampleRay, vec3()).scale(0.5));
+					var v3SampleRay: IVec3 = v3Ray.scale(fSampleLength, vec3());
+					var v3SamplePoint: IVec3 = v3SampleRay.scale(0.5, vec3()).add(v3Start);
 
 					// Now loop through the sample rays
 					var v3FrontColor: IVec3 = vec3(0.0);
@@ -247,17 +280,17 @@ module akra.model {
 						var fCameraAngle: float = v3Ray.dot(v3SamplePoint) / fHeight;
 						var fScatter: float = (fStartOffset + fDepth * (this.scale(fLightAngle) - this.scale(fCameraAngle)));
 						
-						var v3Attenuate: IVec3 = this.expv((this._v3fInvWavelength4.scale(this._fKr4PI, vec3()).add(vec3(this._fKm4PI, this._fKm4PI, this._fKm4PI))).scale(-fScatter));
+						var v3Attenuate: IVec3 = this.expv((this._v3fInvWavelength4.scale(this._fKr4PI, vec3()).add(vec3(this._fKm4PI))).scale(-fScatter));
 						
 
-						v3FrontColor.add(v3Attenuate.scale(fDepth * fScaledLength));
+						v3FrontColor.add(v3Attenuate.scale(fDepth * fScaledLength, vec3()));
 						v3SamplePoint.add(v3SampleRay);
 					}
 
 					//D3DXVECTOR3 V = vEye - vVecPos;
 					//D3DXVec3Normalize( &V, &V );
 
-					pBuffer[nIndex * 4] = math.min( v3FrontColor.x, 6.5519996e4);
+					pBuffer[nIndex * 4 + 0] = math.min( v3FrontColor.x, 6.5519996e4);
 					pBuffer[nIndex * 4 + 1] = math.min( v3FrontColor.y, 6.5519996e4);
 					pBuffer[nIndex * 4 + 2] = math.min( v3FrontColor.z, 6.5519996e4);
 					pBuffer[nIndex * 4 + 3] = 0.0;
@@ -266,24 +299,37 @@ module akra.model {
 				}
 			}
 
+			
 			var HorizonSamples: IVec3 = vec3(0.);
 
-			for (var x: uint = 0; x < this._nSize; x++)
+			for (var x: uint = 0; x < this._nSize; x++) {
 				HorizonSamples.add(vec3( 
 					pBuffer[((this._nSize - 1) * this._nSize + x) * 4 + 0], 
 					pBuffer[((this._nSize - 1) * this._nSize + x) * 4 + 1], 
 					pBuffer[((this._nSize - 1) * this._nSize + x) * 4 + 2]));
+			}
 
 			HorizonSamples.scale(1. / <float>this._nSize);
 
-			this._v3fGroundc0 = this._v3fGroundc1 = HorizonSamples;
+			this._v3fGroundc0.set(HorizonSamples);
+			this._v3fGroundc1.set(HorizonSamples);
+
 			this._v3fGroundc0.x *= this._v3fInvWavelength4.x * this._fKrESun;
 			this._v3fGroundc0.y *= this._v3fInvWavelength4.y * this._fKrESun;
 			this._v3fGroundc0.z *= this._v3fInvWavelength4.z * this._fKrESun;
 			this._v3fGroundc1.scale(this._fKmESun);
 
-			pPixelBuffer.unlock();
-			this._bSkyBuffer = !this._bSkyBuffer;
+			pPixelBuffer.blitFromMemory(this._pSkyBlitBox);
+
+			// pPixelBuffer.unlock();
+			// this._bSkyBuffer = !this._bSkyBuffer;
+			if (this.sun) {
+				this.sun.params.groundC0.set(this._v3fGroundc0);
+				this.sun.params.groundC1.set(this._v3fGroundc1);
+				this.sun.params.eyePosition.set(this._v3fEye);
+				this.sun.params.sunDir.set(this._v3fSunDir);
+				this.sun.params.hg.set(this._v3fHG);
+			}
 		}
 
 #endif
@@ -372,9 +418,9 @@ module akra.model {
 				for(var j: int = 0; j < Rows; j++ ) {	
 					var MoveY: float = (math.PI * 2.0) * j / (Rows - 1);
 
-					pVertices[DomeIndex * 5 + 0] = math.sin(MoveXZ) * math.cos(MoveY) * this._fOuterRadius;;
-					pVertices[DomeIndex * 5 + 1] = math.cos(MoveXZ) * this._fOuterRadius;;
-					pVertices[DomeIndex * 5 + 2] = math.sin(MoveXZ) * math.sin(MoveY) * this._fOuterRadius;;
+					pVertices[DomeIndex * 5 + 0] = math.sin(MoveXZ) * math.cos(MoveY);
+					pVertices[DomeIndex * 5 + 1] = math.cos(MoveXZ);
+					pVertices[DomeIndex * 5 + 2] = math.sin(MoveXZ) * math.sin(MoveY);
 
 					pVertices[DomeIndex * 5 + 3] = j / (Rows - 1.0);
 					pVertices[DomeIndex * 5 + 4] = i / (Cols - 1.0);
@@ -382,6 +428,8 @@ module akra.model {
 					DomeIndex++;
 				}
 			}
+
+			// console.log(pVertices);
 
 			// Fill the Indices Buffer
 			var pIndices: Float32Array = new Float32Array(DISize * 3);
@@ -427,17 +475,26 @@ module akra.model {
 		    return pDome;
 		}
 
-		update(pModelView: IMat4, pProjection: IMat4, pPass: IRenderPass): void {
-			pModelView.data[__41] = 0.0;
-			pModelView.data[__42] = 0.0;
-			pModelView.data[__43] = 0.0;
+		// update(pModelView: IMat4, pProjection: IMat4, pPass: IRenderPass): void {
+		update(pSceneObject: ISceneObject, pCamera: ICamera, pPass: IRenderPass): void {
+			var pProjection: IMat4 = pCamera.projectionMatrix;
+			var m4fModel: IMat4 = mat4(pSceneObject.worldMatrix);
 
-			var m4fTranslation: IMat4 = mat4(1.).setTranslation(vec3(0.0, -this._fInnerRadius - 1.0e-6, 0.0));
-			pModelView.multiply(m4fTranslation);
+			// pModelView.data[__41] = 0.0;
+			// pModelView.data[__42] = 0.0;
+			// pModelView.data[__43] = 0.0;
+			
+			m4fModel.setTranslation(vec3(0.0, -this._fInnerRadius - 1.0e-6, 0.0).add(pCamera.worldPosition));
+			m4fModel.scaleRight(vec3(this._fOuterRadius));
+
+			var pModelView: IMat4 = pCamera.viewMatrix.multiply(m4fModel, mat4());
+
+			// var m4fTranslation: IMat4 = mat4(1.).setTranslation(vec3(0.0, -this._fInnerRadius - 1.0e-6, 0.0));
+			// pModelView.multiply(m4fTranslation);
 
 			var MP: IMat4 = pProjection.multiply(pModelView, mat4());
 
-			pPass.setUniform("worldViewProj", MP);
+			pPass.setUniform("WorldViewProjection", MP);
 			pPass.setUniform("fKrESun", this._fKrESun);
 			pPass.setUniform("fKmESun", this._fKmESun);
 			var v2fTemp: IVec2 = vec2(<float>this._nSize, 1.0 / this._nSize);
@@ -446,6 +503,7 @@ module akra.model {
 			pPass.setUniform("vHG", this._v3fHG);
 			pPass.setUniform("vInvWavelength", this._v3fInvWavelength4);
 			pPass.setUniform( "vEye", this._v3fEye);
+			pPass.setUniform( "fOuterRadius", this._fOuterRadius);
 
 			pPass.setTexture("tSkyBuffer", this.getRead());
 		}
@@ -474,7 +532,7 @@ module akra.model {
 			D = math.PI * t / 12;
 
 			E = math.sin(latitude) * math.sin(delta) -
-				math.cos(latitude) * math.cos(delta)*math.cos(D);
+				math.cos(latitude) * math.cos(delta) * math.cos(D);
 
 			F = (-math.cos(delta) * math.sin(D)) / (math.cos(latitude) * math.sin(delta) -
 				math.sin(latitude) * math.cos(delta) * math.cos(D));
@@ -490,7 +548,7 @@ module akra.model {
 			this._v3fSunDir.y = <float>math.cos(T * 0.1);
 			this._v3fSunDir.z = <float>math.sin(T * 0.1);
 
-			var Zenith: IVec3 = vec3(0,1,0);
+			var Zenith: IVec3 = vec3(0, 1, 0);
 			this._fSunTheta = math.acos(this._v3fSunDir.dot(Zenith));
 
 			this._v3fSunDir.normalize();
@@ -502,7 +560,7 @@ module akra.model {
 			pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pCamera: ICamera = pViewport.getCamera();
-			this.update(pCamera.viewMatrix.multiply(pSceneObject.worldMatrix, mat4()), pCamera.projectionMatrix, pPass);
+			this.update(pSceneObject, pCamera, pPass);
 		}
 
 		CREATE_EVENT_TABLE(Sky);

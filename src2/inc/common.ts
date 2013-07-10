@@ -19,6 +19,9 @@
 #define AFX_ENABLE_TEXT_EFFECTS 1
 // #define DETAILED_LOG 1
 
+//trace all render entry
+// #define __VIEW_INTERNALS__ 1
+
 #include "ILogger.ts"
 
 #define UNKNOWN_CODE 0

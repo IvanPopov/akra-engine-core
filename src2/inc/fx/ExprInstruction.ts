@@ -602,6 +602,44 @@ module akra.fx {
 
         isConst(): bool {
         	return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
+        }
+
+        evaluate(): bool {
+        	var sOperator: string = this.getOperator();
+        	var pExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+
+        	if(!pExpr.evaluate()){
+        		return;
+        	}
+
+        	var pRes: any = null;
+
+        	try {
+        		pRes = pExpr.getEvalValue();
+        		switch(sOperator){
+        			case "+":
+        				pRes = +pRes;
+        				break;
+        			case "-":
+        				pRes = -pRes;
+        				break;
+        			case "!":
+        				pRes = !pRes;
+        				break;
+        			case "++":
+        				pRes = ++pRes;
+        				break;
+        			case "--":
+        				pRes = --pRes;
+        				break;
+        		}
+        	}
+        	catch(e){
+        		return false;
+        	}
+
+        	this._pLastEvalResult = pRes;
+        	return true;
         }	
 	}
 

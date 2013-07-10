@@ -8,11 +8,23 @@
 #include "geometry/classifications.ts"
 
 module akra.scene.light {
+	export struct OmniParameters implements IOmniParameters {
+		ambient: IColor = new Color;
+	    diffuse: IColor = new Color;
+	    specular: IColor = new Color;
+	    attenuation: IVec3 = new Vec3;
+	}
+
+
 	export class OmniLight extends LightPoint implements IOmniLight {
 		protected _pDepthTextureCube: ITexture[] = null;
 		protected _pColorTextureCube: ITexture[] = null;
-
+		protected _pLightParameters: IOmniParameters = new OmniParameters;
 		protected _pShadowCasterCube: IShadowCaster[] = null;
+
+		inline get params(): IOmniParameters {
+			return this._pLightParameters;
+		};
 
 		constructor (pScene: IScene3d) {
 			super(pScene, ELightTypes.OMNI);

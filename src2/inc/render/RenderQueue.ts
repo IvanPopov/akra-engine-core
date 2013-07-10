@@ -22,7 +22,9 @@ module akra.render {
 			for (var i: int = 0; i < this._pEntryList.length; i++) {
 				var pEntry: IRenderEntry = this._pEntryList.value(i);
 				this._pRenderer._renderEntry(pEntry);
+#ifndef __VIEW_INTERNALS__
 				this.releaseEntry(pEntry);
+#endif
 			}
 
 			this._pEntryList.clear(false);

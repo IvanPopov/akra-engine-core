@@ -16,6 +16,7 @@ float fScaleOverScaleDepth;
 float fCameraHeight;
 float fCameraHeight2;
 
+
 float3 vHG;
 float2 Tex;
 float fKrESun;
@@ -30,7 +31,7 @@ float b = 0.002f; // global density
 float3 Groundc0;
 float3 Groundc1;
 
-Texture tSkyBuffer;
+texture tSkyBuffer;
 
 sampler SkyBuffer = sampler_state 
 {
@@ -58,9 +59,9 @@ vertexOutput SkyFromGround_VS(vertexInput In )
 {
 	vertexOutput Out;
 	Out.t0 = In.t0;
-	Out.t1 = vEye - In.pos; // vEye - In.pos
+	Out.t1 = vEye - In.pos * fOuterRadius; // vEye - In.pos
 	//Out.t1 = - ( In.pos.xyz ); // vEye - In.pos
-	Out.pos = mul( float4(In.pos.xyz, 1.0), worldViewProj);
+	Out.pos = worldViewProj * float4(In.pos.xyz, 1.0);
 	return Out;
 } 
 
@@ -88,45 +89,51 @@ float getRayleighPhase(float fCos2)
 }
 
 //Pixel Shader
-struct pixelOutput {
-    float4 color  : COLOR0;
-};  
+  
 
-pixelOutput SkyFromGround_PS( vertexOutput In)
+struct base_material{
+    float4 emissive:EMISSIVE;
+};
+
+shared base_material Fragment_material;
+
+float4 SkyFromGround_PS( vertexOutput In): COLOR
 {
-pixelOutput  Out;
+	float4 color;
 
-float2 interp = frac( In.t0 * Tex.x );
+	float2 interp = frac( In.t0 * Tex.x );
 
-float4 S00 = tex2D( SkyBuffer, In.t0 ).rgba;
-float4 S10 = tex2D( SkyBuffer, In.t0 + float2(Tex.y, 0.0f) ).rgba;
-float4 S01 = tex2D( SkyBuffer, In.t0 + float2(0.0f, Tex.y) ).rgba;
-float4 S11 = tex2D( SkyBuffer, In.t0 + float2(Tex.y, Tex.y) ).rgba;
+	float4 S00 = tex2D( SkyBuffer, In.t0 ).rgba;
+	float4 S10 = tex2D( SkyBuffer, In.t0 + float2(Tex.y, 0.0f) ).rgba;
+	float4 S01 = tex2D( SkyBuffer, In.t0 + float2(0.0f, Tex.y) ).rgba;
+	float4 S11 = tex2D( SkyBuffer, In.t0 + float2(Tex.y, Tex.y) ).rgba;
 
-float4 Dx1 = lerp(S00, S10, interp.x);
-float4 Dx2 = lerp(S01, S11, interp.x);
+	float4 Dx1 = lerp(S00, S10, interp.x);
+	float4 Dx2 = lerp(S01, S11, interp.x);
 
-float4 vSamples = lerp(Dx1, Dx2, interp.y);
-//float4 vSamples = tex2D( SkyBuffer, In.t0 ).rgba;
+	float4 vSamples = lerp(Dx1, Dx2, interp.y);
+	//float4 vSamples = tex2D( SkyBuffer, In.t0 ).rgba;
 
-float3 c0 = vSamples.rgb * (vInvWavelength * fKrESun);
-float3 c1 = vSamples.rgb * fKmESun;
+	float3 c0 = vSamples.rgb * (vInvWavelength * fKrESun);
+	float3 c1 = vSamples.rgb * fKmESun;
 
-//float fCos = vSamples.a;
-float fCos = dot(vSunPos, In.t1) /length(In.t1);
-float fCos2 = fCos * fCos;
+	//float fCos = vSamples.a;
+	float fCos = dot(vSunPos, In.t1) /length(In.t1);
+	float fCos2 = fCos * fCos;
 
-float3 Mie = getMiePhase(fCos, fCos2) * c1;
-Out.color.a = log2( length( Mie ) * 2500.0f);
-//Out.color.a = length( Mie ) ;
-Out.color.rgb = getRayleighPhase(fCos2) * c0 + Mie;
-//Out.color.rgb = HDR(Out.color.rgb);
+	float3 Mie = getMiePhase(fCos, fCos2) * c1;
+	color.a = 1.0;//log2( length( Mie ) * 2500.0f);
+	//Out.color.a = length( Mie ) ;
+	color.rgb = getRayleighPhase(fCos2) * c0 + Mie;
+	//Out.color.rgb = HDR(Out.color.rgb);
 
-//Out.color.rgba = vSamples;
-//Out.color.rgba =0;
-//Out.color.rgba = In.t0.x;
-
-return Out;
+	//Out.color.rgba = vSamples;
+	//Out.color.rgba =0;
+	//Out.color.rgba = In.t0.x;
+	Fragment_material.emissive = color;//float4(min(color.r, 0.98), min(color.g, 0.98), min(color.b, 0.98), 1.);
+	//Fragment_material.emissive = S00;
+	
+	return color;
 }
 
 float ComputeVolumetricFog( float3 cameraToWorldPos )
@@ -146,22 +153,22 @@ if( abs( cameraToWorldPos.y ) > cSlopeThreshold )
 return fogInt;
 }
 
-pixelOutput GroundFromGround_PS( vertexOutput In )
+float4 GroundFromGround_PS( vertexOutput In ): COLOR
 {
-pixelOutput  Out;
+float4  color;
 
 float fCos = dot(vSunPos, In.t1) / length(In.t1);
 float fCos2 = fCos * fCos;
 
 float3 Mie = getMiePhase(fCos, fCos2) * Groundc1;
 //Out.color.a = log2( length( Mie ) * 2500.0f );
-Out.color.a = 0;
+color.a = 0.;
 
-Out.color.rgb = getRayleighPhase(fCos2) * Groundc0 + Mie;
-Out.color.rgb = HDR(Out.color.rgb);
+color.rgb = getRayleighPhase(fCos2) * Groundc0 + Mie;
+color.rgb = HDR(color.rgb);
 
 //Out.color.rgb = lerp( Out.color.rgb, In.c0, ComputeVolumetricFog( In.t1 ) );
-return Out;
+return color;
 }
 
 //***********************************************************************
@@ -178,7 +185,7 @@ float scale(float fCos)
 	return fScaleDepth * exp(-0.00287 + x*(0.459 + x*(3.83 + x*(-6.80 + x*5.25))));
 }
 
-half4 UpdateTexture_PS( pixel_IN In ) : COLOR
+float4 UpdateTexture_PS( pixel_IN In ) : COLOR
 {
     const float2 MPI = float2( cos( 1.0f ), 3.141592 * 2.0);
     float2 fxzy = MPI * In.t0;
