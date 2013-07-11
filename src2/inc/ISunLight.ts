@@ -5,7 +5,8 @@ module akra {
 
 	IFACE(ILightPoint);
 	IFACE(ICamera);
-
+	IFACE(ISceneModel);
+	
 	export interface ISunParameters extends ILightParameters {
 		eyePosition: IVec3;
 		sunDir: IVec3;
@@ -16,7 +17,7 @@ module akra {
 
 	export interface ISunLight extends ILightPoint {
 		params: ISunParameters;
-		
+		skyDome: ISceneModel;
 	}
 }
 

@@ -19,11 +19,19 @@ module akra.scene.light {
 
 	export class SunLight extends LightPoint implements ISunLight {
 		protected _pLightParameters: ISunParameters = new SunParameters;
+		protected _pSkyDome: ISceneModel = null;
 
 		inline get params(): ISunParameters {
 			return this._pLightParameters;
 		};
 
+		inline get skyDome(): ISceneModel {
+			return this._pSkyDome;
+		}
+
+		inline set skyDome(pSkyDome: ISceneModel) {
+			this._pSkyDome = pSkyDome;
+		}
 
 		constructor (pScene: IScene3d) {
 			super(pScene, ELightTypes.SUN);

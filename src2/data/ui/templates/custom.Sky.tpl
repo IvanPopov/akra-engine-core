@@ -1,7 +1,25 @@
 <div>
+	<div style="border-bottom: 1px solid #CCC; padding-bottom: 5px;">
+		<div class="row">
+			<span>normal mult.:</span>
+			<component type="Slider" name="nm" value="0" range="1000" />
+		</div>
+		<div class="row">
+			<span>sun specular level:</span>
+			<component type="Slider" name="spec" value="0" range="1000" />
+		</div>
+		<div class="row">
+			<span>sun ambient level:</span>
+			<component type="Slider" name="ambient" value="0" range="1000" />
+		</div>
+	</div>
 	<div class="row first">
 		<span>time:</span>
 		<component type="Slider" name="time" value="0" range="60.00" />
+	</div>
+	<div class="row">
+		<span>horizon level:</span>
+		<component type="Slider" name="_nHorinLevel" value="0" range="31" />
 	</div>
 	<div class="row">
 		<span>Rayleigh scattering constant:</span>

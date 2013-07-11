@@ -147,16 +147,19 @@ module akra.render {
 	    GROUNDC0: IVec3 = new Vec3();
 	    GROUNDC1: IVec3 = new Vec3();
 	    HG: IVec3 = new Vec3;
+	    SKY_DOME_ID: int = 0;
 
-	    setLightData(pSunParam: ISunParameters): UniformSun {
+	    setLightData(pSunParam: ISunParameters, iSunDomeId: int): UniformSun {
 	    	this.SUN_DIRECTION.set(pSunParam.sunDir);
 	    	this.EYE_POSITION.set(pSunParam.eyePosition);
 	    	this.GROUNDC0.set(pSunParam.groundC0);
 	    	this.GROUNDC1.set(pSunParam.groundC1);
 	    	this.HG.set(pSunParam.hg);
+	    	this.SKY_DOME_ID = iSunDomeId;
 
 	    	return this;
 	    }
+
 
 	    ALLOCATE_STORAGE(UniformSun, 3);
 	}

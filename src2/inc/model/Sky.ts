@@ -37,6 +37,8 @@ module akra.model {
 		/*private*/ _fRayleighScaleDepth: float;	/**/
 		/*private*/ _fMieScaleDepth: float;			/**/
 
+		/*private*/ _nHorinLevel: uint = 12;			/**/
+
 		private _v3fSunDir: IVec3 = new Vec3;
 		private _v3fInvWavelength4: IVec3 = new Vec3;
 		private _v3fHG: IVec3 = new Vec3;
@@ -81,9 +83,10 @@ module akra.model {
 
 	    	this.skyDome = pSceneModel;
 
-	    	// this.sun = <ISunLight>_pEngine.getScene().createLightPoint(ELightTypes.SUN, false, 0);
+	    	this.sun = <ISunLight>_pEngine.getScene().createLightPoint(ELightTypes.SUN, false, 0);
 
-	    	// this.sun.attachToParent(this.skyDome);
+	    	this.sun.attachToParent(this.skyDome);
+	    	this.sun.skyDome = this.skyDome;
 		}	
 
 		inline getEngine(): IEngine {
@@ -304,9 +307,9 @@ module akra.model {
 
 			for (var x: uint = 0; x < this._nSize; x++) {
 				HorizonSamples.add(vec3( 
-					pBuffer[((this._nSize - 1) * this._nSize + x) * 4 + 0], 
-					pBuffer[((this._nSize - 1) * this._nSize + x) * 4 + 1], 
-					pBuffer[((this._nSize - 1) * this._nSize + x) * 4 + 2]));
+					pBuffer[((this._nSize - this._nHorinLevel) * this._nSize + x) * 4 + 0], 
+					pBuffer[((this._nSize - this._nHorinLevel) * this._nSize + x) * 4 + 1], 
+					pBuffer[((this._nSize - this._nHorinLevel) * this._nSize + x) * 4 + 2]));
 			}
 
 			HorizonSamples.scale(1. / <float>this._nSize);
@@ -329,6 +332,8 @@ module akra.model {
 				this.sun.params.eyePosition.set(this._v3fEye);
 				this.sun.params.sunDir.set(this._v3fSunDir);
 				this.sun.params.hg.set(this._v3fHG);
+
+				// LOG(this._v3fGroundc0.toString(), this._v3fGroundc1.toString())
 			}
 		}
 
@@ -475,6 +480,7 @@ module akra.model {
 		    return pDome;
 		}
 
+		k: uint = 1;
 		// update(pModelView: IMat4, pProjection: IMat4, pPass: IRenderPass): void {
 		update(pSceneObject: ISceneObject, pCamera: ICamera, pPass: IRenderPass): void {
 			var pProjection: IMat4 = pCamera.projectionMatrix;
@@ -485,7 +491,7 @@ module akra.model {
 			// pModelView.data[__43] = 0.0;
 			
 			m4fModel.setTranslation(vec3(0.0, -this._fInnerRadius - 1.0e-6, 0.0).add(pCamera.worldPosition));
-			m4fModel.scaleRight(vec3(this._fOuterRadius));
+			m4fModel.scaleRight(vec3(this._fOuterRadius* this.k));
 
 			var pModelView: IMat4 = pCamera.viewMatrix.multiply(m4fModel, mat4());
 

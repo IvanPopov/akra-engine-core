@@ -500,6 +500,7 @@ module akra.render {
 
 		    var iLastTextureIndex: int = 0;
 		    var sTexture: string = "TEXTURE";
+		    var pEngine: IEngine = this.getTarget().getRenderer().getEngine();
 
 		    this.resetUniforms();
 
@@ -573,7 +574,9 @@ module akra.render {
 		        }
 		        else if (pLight.lightType === ELightTypes.SUN) {
 		        	pUniformData = uniformSun();
-		        	(<UniformSun>pUniformData).setLightData(<ISunParameters>pLight.params);
+		        	var pSkyDome: ISceneModel = (<ISunLight>pLight).skyDome;
+		        	var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);
+		        	(<UniformSun>pUniformData).setLightData(<ISunParameters>pLight.params, iSkyDomeId);
 		        	pUniforms.sun.push(<UniformSun>pUniformData);
 		        }
 		        else {

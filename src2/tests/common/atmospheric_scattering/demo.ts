@@ -36,6 +36,11 @@ module akra {
 	var pProgress: IProgress = createProgress();
 
 	var pOptions: IEngineOptions = {
+		deps: {
+			files: [
+				{path: "models/hero/movie.dae", name: "HERO_MODEL"},
+			]
+		},
 		loader: {
 			before: (pManager: IDepsManager, pInfo: number[]): void => {
 				pProgress.total = pInfo;
@@ -63,7 +68,7 @@ module akra {
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pKeymap: controls.KeyMap = <controls.KeyMap>controls.createKeymap();
 	var pUI: IUI = pEngine.getSceneManager().createUI();
-
+	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 
 	var pEditDlg: IUIPopup = <IUIPopup>pUI.createComponent("Popup", {
 					name: "edit-atmospheric-scattering-dlg",
@@ -89,6 +94,13 @@ module akra {
 		
 		pEditDlg.show();
 		pEditDlg.el.animate({bottom: 0}, 350, "easeOutCirc");		
+	}
+
+	function createModelEntry(sResource: string): IModelEntry {
+		var pModel: ICollada = <ICollada>pRmgr.colladaPool.findResource(sResource);
+		var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
+
+		return pModelRoot;
 	}
 
 	function setup(): void {
@@ -203,19 +215,19 @@ module akra {
 	}
 
 	function createSceneEnvironment(): void {
-		// var pSceneQuad: ISceneModel = util.createQuad(pScene, 1000.);
-		// pSceneQuad.attachToParent(pScene.getRootNode());
+		var pSceneQuad: ISceneModel = util.createQuad(pScene, 40000.);
+		pSceneQuad.attachToParent(pScene.getRootNode());
 		
 
-		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
-		pSceneSurface.scale(10.);
-		pSceneSurface.addPosition(0, 0.01, 0);
-		pSceneSurface.attachToParent(pScene.getRootNode());
+		// var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
+		// pSceneSurface.scale(10.);
+		// pSceneSurface.addPosition(0, 0.01, 0);
+		// pSceneSurface.attachToParent(pScene.getRootNode());
 		// pSceneSurface.mesh.getSubset(0).setVisible(true);
 	}
 
 	// var T = 0.0;
-	var pSky: model.Sky = null;
+	export var pSky: model.Sky = null;
 
 	function update(): void {
 		updateCameras();
@@ -242,6 +254,7 @@ module akra {
 		createCameras();
 		createViewports();
 		createSceneEnvironment();
+		createModelEntry("HERO_MODEL");
 		// createLighting();
 
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
@@ -288,10 +301,36 @@ module akra {
 			})(pParams[i]);
 		}
 		
-
+		var _fLastTime: float = 0;
 		(<IUISlider>pEditDlg.findEntity("time")).bind("updated", (pSlider: IUISlider, fValue: float) => {
 			console.log("time is: ", fValue);
+			_fLastTime = fValue;
 			pSky.setTime(fValue);
+		});
+
+		(<IUISlider>pEditDlg.findEntity("nm")).value = (<any>pEngine.getComposer()).kFixNormal * 1000;
+		(<IUISlider>pEditDlg.findEntity("nm")).bind("updated", (pSlider: IUISlider, fValue: float) => {
+			console.log("fix normal kof.", fValue / 1000.);
+			(<any>pEngine.getComposer()).kFixNormal = fValue / 1000.;
+		});
+
+		(<IUISlider>pEditDlg.findEntity("spec")).value = (<any>pEngine.getComposer()).fSunSpecular * 1000;
+		(<IUISlider>pEditDlg.findEntity("spec")).bind("updated", (pSlider: IUISlider, fValue: float) => {
+			console.log("fSunSpecular kof.", fValue / 1000.);
+			(<any>pEngine.getComposer()).fSunSpecular = fValue / 1000.;
+		});
+
+		(<IUISlider>pEditDlg.findEntity("ambient")).value = (<any>pEngine.getComposer()).fSunAmbient * 1000;
+		(<IUISlider>pEditDlg.findEntity("ambient")).bind("updated", (pSlider: IUISlider, fValue: float) => {
+			console.log("fSunAmbient kof.", fValue / 1000.);
+			(<any>pEngine.getComposer()).fSunAmbient = fValue / 1000.;
+		});
+
+		(<IUISlider>pEditDlg.findEntity("_nHorinLevel")).value = pSky["_nHorinLevel"];
+		(<IUISlider>pEditDlg.findEntity("_nHorinLevel")).bind("updated", (pSlider: IUISlider, fValue: float) => {
+			console.log("_nHorinLevel: ", math.round(fValue));
+			pSky["_nHorinLevel"] = (math.round(fValue));
+			pSky.setTime(_fLastTime);
 		});
 	    
 	    pScene.bind("beforeUpdate", update);

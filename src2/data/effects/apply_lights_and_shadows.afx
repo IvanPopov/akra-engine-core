@@ -38,6 +38,8 @@ struct pixel_data{
     float3 position : POSITION; //in camera space
     float3 normal   : NORMAL;
     float shininess : SHININESS;
+    float  depth    : DEPTH;
+    int    id       : RENDER_OBJECT_ID;
 };
 
 struct light_omni{
@@ -68,6 +70,7 @@ struct light_sun{
     float3 ground0: GROUNDC0;
     float3 ground1: GROUNDC1;
     float3 hg: HG;
+    int skyDomeId: SKY_DOME_ID; 
 };
 
 sampler project_shadow_sampler[nProjectShadows] : PROJECT_SHADOW_SAMPLER;
@@ -275,13 +278,12 @@ float4 blur(sampler Sampler,float2 texCoords, float2 invTexSize){
 float Exposure = -2.0;
 float c = 0.002f; // height falloff
 float b = 0.002f; // global density
-float3 vHG;
 
 float3 HDR( float3 LDR){
     return 1.0f - exp( Exposure * LDR );
 }
 
-float getMiePhase(float fCos, float fCos2){
+float getMiePhase(float fCos, float fCos2, float3 vHG){
     //return 1.5 * ((1.0 - g2) / (2.0 + g2)) * (1.0 + fCos2) / pow(1.0 + g2 - 2.0*g*fCos, 1.5);
     return vHG.x * (1.0 + fCos2) / pow(abs(vHG.y - vHG.z * fCos), 1.5);
 }
@@ -290,8 +292,8 @@ float getMiePhase(float fCos, float fCos2){
 float getRayleighPhase(float fCos2){
     return 0.75 + 0.75 * fCos2;
 }
-/*
-float ComputeVolumetricFog( float3 cameraToWorldPos ){ 
+
+float ComputeVolumetricFog( float3 cameraToWorldPos, float3 vEye ){ 
     float f = b * exp( -c * vEye.y );
     float l = length( cameraToWorldPos );
 
@@ -305,77 +307,73 @@ float ComputeVolumetricFog( float3 cameraToWorldPos ){
     }
 
     return fogInt;
-}*/
+}
 
+float kFixNormal = 0.5;
+float fSunSpecular = 0.;
+float fSunAmbient = 0.;
 
-
-/*
-float4 SkyFromGround(light_sun sunParams) {
-    float4 color = float4(0);
-
-    float2 interp = frac( In.t0 * Tex.x );
-
-    float4 S00 = tex2D( SkyBuffer, In.t0 ).rgba;
-    float4 S10 = tex2D( SkyBuffer, In.t0 + float2(Tex.y, 0.0f) ).rgba;
-    float4 S01 = tex2D( SkyBuffer, In.t0 + float2(0.0f, Tex.y) ).rgba;
-    float4 S11 = tex2D( SkyBuffer, In.t0 + float2(Tex.y, Tex.y) ).rgba;
-
-    float4 Dx1 = lerp(S00, S10, interp.x);
-    float4 Dx2 = lerp(S01, S11, interp.x);
-
-    float4 vSamples = lerp(Dx1, Dx2, interp.y);
-    //float4 vSamples = tex2D( SkyBuffer, In.t0 ).rgba;
-
-    float3 c0 = vSamples.rgb * (vInvWavelength * fKrESun);
-    float3 c1 = vSamples.rgb * fKmESun;
-
-    //float fCos = vSamples.a;
-    float fCos = dot(vSunPos, In.t1) /length(In.t1);
-    float fCos2 = fCos * fCos;
-
-    float3 Mie = getMiePhase(fCos, fCos2) * c1;
-    color.a = 1.0;//log2( length( Mie ) * 2500.0f);
-    //Out.color.a = length( Mie ) ;
-    color.rgb = getRayleighPhase(fCos2) * c0 + Mie;
-    //Out.color.rgb = HDR(Out.color.rgb);
-
-    //Out.color.rgba = vSamples;
-    //Out.color.rgba =0;
-    //Out.color.rgba = In.t0.x;
-    // Fragment_material.emissive = color;//float4(min(color.r, 0.98), min(color.g, 0.98), min(color.b, 0.98), 1.);
-    //Fragment_material.emissive = S00;
+float4 calculateSunLight(pixel_data pixelData, float3 light_dir, float4 diffuse, float4 ambient, float4 specular){
+    // direction from vert to observer (ViewDir) 
+    //observer is (0,0,0) in camera space
+    float3 view_dir = normalize(-pixelData.position);
+    float3 fixNormal = lerp(light_dir, pixelData.normal, kFixNormal);
     
-    return color;
-}
+      // reflect direction
+    float3 reflect_dir = normalize(reflect(-light_dir, fixNormal));
 
-float4 GroundFromGround(light_sun sunParams){
-    float3 v3Pos = sunParams.eyePos - pixelData.position.xyz;
-    float fCos = dot(sunParams.sunDir, v3Pos)/length(v3Pos);
-    float fCos2 = fCos * fCos;
+    float light_distancedotVpow = 0.;
 
-    float3 Mie = getMiePhase(fCos, fCos2) * sunParams.ground1;
+    if(pixelData.shininess != 0.){
+        light_distancedotVpow = pow(max(dot(reflect_dir, view_dir), 0.0), pixelData.shininess);
+    }
+
+    
     float4 color = float4(0.);
+    //add ambient
+    color += pixelData.ambient * ambient;
+    
+    
+    //add diffuse
+    color += pixelData.diffuse * diffuse * max(dot(fixNormal, light_dir), .0);
 
-    color.rgb = getRayleighPhase(fCos2) * sunParams.ground0 + Mie;
-    color.rgb = HDR(color.rgb);
+     // add reflect lighting
+    color += pixelData.specular * specular * light_distancedotVpow;
+
 
     return color;
-}
+};
 
-*/
+
+float4x4 view: VIEW_MATRIX;
+
 float4 apply_sun_light() : COLOR {
     for(int i = 0; i < nSun; i++){
-        float3 v3Pos = points_sun[i].eyePos - pixelData.position.xyz;
-        float fCos = dot(points_sun[i].sunDir, v3Pos)/length(v3Pos);
-        float fCos2 = fCos * fCos;
+        bool isNeedLight = true;
 
-        float3 Mie = getMiePhase(fCos, fCos2) * points_sun[i].ground1;
-        float4 color = float4(0.);
+        for(int j = 0; j < nSun; j++){
+            if(pixelData.id == points_sun[j].skyDomeId){
+                isNeedLight = false;
+                break;
+            }
+        }
 
-        color.rgb = getRayleighPhase(fCos2) * points_sun[i].ground0 + Mie;
-        color.rgb = HDR(color.rgb);
+        if(isNeedLight){
+            float3 v3Pos = points_sun[i].eyePos - pixelData.position.xyz;
+            float fCos = dot(points_sun[i].sunDir, v3Pos)/length(v3Pos);
+            float fCos2 = fCos * fCos;
 
-        result_color += float4(1., 0., 0., 1.);
+            float3 Mie = getMiePhase(fCos, fCos2, points_sun[i].hg) * points_sun[i].ground1;
+            float4 color = float4(0.);
+
+            color.rgb = getRayleighPhase(fCos2) * points_sun[i].ground0 + Mie;
+            color.rgb = HDR(color.rgb);
+            color.rgb = lerp(color.rgb, points_sun[i].ground0, ComputeVolumetricFog(v3Pos, points_sun[i].eyePos) );
+            
+            //result_color += float4(color.rgb, 0.);
+            result_color += calculateSunLight(pixelData, float4(view * float4(points_sun[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));//float4(pixelData.diffuse.rgb*color.rgb, 0.);//float4(1., 0., 0., 1.);
+            //result_color += float4(float3(fCos), 0.);
+        }
     }
 
     return float4(result_color.xyz, 1.);
