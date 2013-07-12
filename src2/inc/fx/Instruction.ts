@@ -660,8 +660,6 @@ module akra.fx {
         	else {
         		this._pPassStateMap[sType] = sValue;
         	}
-
-        	LOG(this);
         }
 
         finalizePass(): void {

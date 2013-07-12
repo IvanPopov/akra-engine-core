@@ -83,7 +83,7 @@ module akra.model {
 
 	    	this.skyDome = pSceneModel;
 
-	    	this.sun = <ISunLight>_pEngine.getScene().createLightPoint(ELightTypes.SUN, false, 0);
+	    	this.sun = <ISunLight>_pEngine.getScene().createLightPoint(ELightTypes.SUN, true, 1024);
 
 	    	this.sun.attachToParent(this.skyDome);
 	    	this.sun.skyDome = this.skyDome;
@@ -150,6 +150,10 @@ module akra.model {
 
 			// this._bSkyBuffer = false;
 
+		}
+
+		private inline updateSunLight(): void {
+			this.sun.updateSunDirection(this._v3fSunDir);
 		}
 
 		private createBuffers(): void {
@@ -560,6 +564,7 @@ module akra.model {
 			this._v3fSunDir.normalize();
 
 			this.updateSkyBuffer();
+			this.updateSunLight();
 		}
 
 		_onDomeRender(pTechnique: IRenderTechnique, iPass: uint, 
