@@ -655,7 +655,7 @@ module akra.fx {
         	}
 
         	if(this.isComplexPass()){
-        		this._addCodeFragment("this._pPassStateMap[" + sType + "]=" + sValue+ ";");
+        		this._addCodeFragment("this._pPassStateMap[\"" + sType + "\"]=\"" + sValue+ "\";");
         	}
         	else {
         		this._pPassStateMap[sType] = sValue;

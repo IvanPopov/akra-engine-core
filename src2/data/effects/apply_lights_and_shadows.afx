@@ -5,6 +5,7 @@ foreign int nOmni;
 foreign int nProjectShadows;
 foreign int nProject;
 foreign int nSun;
+foreign int nSunShadows;
 
 texture tex0 : TEXTURE0;
 texture tex1 : TEXTURE1;
@@ -73,14 +74,28 @@ struct light_sun{
     int skyDomeId: SKY_DOME_ID; 
 };
 
+struct light_sun_shadows{
+    float3 sunDir: SUN_DIRECTION;
+    float3 eyePos: EYE_POSITION;
+    float3 ground0: GROUNDC0;
+    float3 ground1: GROUNDC1;
+    float3 hg: HG;
+    int skyDomeId: SKY_DOME_ID; 
+
+    float4x4 toLightSpace : TO_LIGHT_SPACE;
+    float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
+};
+
 sampler project_shadow_sampler[nProjectShadows] : PROJECT_SHADOW_SAMPLER;
 sampler omni_shadow_sampler[nOmniShadows * 6] : OMNI_SHADOW_SAMPLER;
+sampler sun_shadow_sampler[nSunShadows] : SUN_SHADOW_SAMPLER;
 
 light_omni_shadows points_omni_shadows[nOmniShadows];
 light_omni points_omni[nOmni];
 light_project_shadows points_project_shadows[nProjectShadows];
 light_project points_project[nProject];
 light_sun points_sun[nSun];
+light_sun_shadows points_sun_shadows[nSunShadows];
 
 shared float4 result_color;
 shared pixel_data pixelData;
@@ -225,6 +240,11 @@ float unprojZ(float4x4 projMat, float screenZ){
     return -projMat[3][2]/(projMat[2][2] + screenZ);
 };
 
+float unprojOrthoZ(float4x4 projMat, float screenZ){
+    return (screenZ - projMat[3][2])/projMat[2][2];
+    //return -projMat[3][2]/(projMat[2][2] + screenZ);
+};
+
 float fMinShadow : MIN_SHADOW_VALUE = 0.5;
 float shadowConstant : SHADOW_CONSTANT = 5.e+2;
 
@@ -235,7 +255,7 @@ float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCo
         return 1.;
     }
 
-    float lightRealDepth = unprojZ(projMat,lightDepth); //negative
+    float lightRealDepth = unprojZ(projMat, lightDepth); //negative
 
     float fShadowMultiplier = clamp(exp(shadowConstant*(1.e-2 - lightRealDepth + realDepth)), fMinShadow, 1.);
     return fShadowMultiplier;
@@ -405,6 +425,76 @@ float4 apply_sun_light() : COLOR {
     return float4(result_color.xyz, 1.);
 };
 
+
+float calculateSunShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
+    float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
+    //float lightDepth = blur(shadowSampler,v2fShadowTextureCoords,float2(1./512.)).x*2. - 1.;
+    if(lightDepth == 1.){
+        return 1.;
+    }
+
+    float lightRealDepth = unprojOrthoZ(projMat, lightDepth); //negative
+
+    float fShadowMultiplier = clamp(exp(shadowConstant*(0.08 - lightRealDepth + realDepth)), fMinShadow, 1.);
+    return fShadowMultiplier;
+};
+
+float4 apply_sun_light_shadows() : COLOR {
+    float3 worldPos = float4(invView * float4(pixelData.position.xyz, 1.)).xyz;
+
+    for(int i = 0; i < nSunShadows; i++){
+        bool isNeedLight = true;
+
+        for(int j = 0; j < nSunShadows; j++){
+            if(pixelData.id == points_sun_shadows[j].skyDomeId){
+                isNeedLight = false;
+                break;
+            }
+        }
+
+        if(isNeedLight){
+            float4 v4fLightSpace = points_sun_shadows[i].toLightSpace*float4(pixelData.position, 1.);
+
+            float3 v3Pos = points_sun_shadows[i].eyePos - pixelData.position.xyz;
+            float fCos = dot(points_sun_shadows[i].sunDir, v3Pos)/length(v3Pos);
+            float fCos2 = fCos * fCos;
+
+            float3 Mie = getMiePhase(fCos, fCos2, points_sun_shadows[i].hg) * points_sun_shadows[i].ground1;
+            float4 color = float4(0.);
+
+            color.rgb = getRayleighPhase(fCos2) * points_sun_shadows[i].ground0 + Mie;
+            color.rgb = HDR(color.rgb);
+            float fFogValue = ComputeVolumetricFog(worldPos - camPos);
+            color.rgb = lerp(color.rgb, points_sun_shadows[i].ground0, fFogValue );
+            
+            
+            float4 colorWithLight = calculateSunLight(pixelData, float4(view * float4(points_sun_shadows[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));
+            
+            color = float4(lerp(points_sun_shadows[i].ground0, colorWithLight.rgb, fFogValue), 1.);
+            
+            //float4(pixelData.diffuse.rgb*color.rgb, 0.);//float4(1., 0., 0., 1.);;
+            //result_color += float4(float3(fCos), 0.);
+
+            float shadowMultiplier = 1.;
+            float4 v4fTmp = points_sun_shadows[i].optimized_projection_matrix * v4fLightSpace;
+            float3 v3fOptimizedLightSpacePosition = v4fTmp.xyz/v4fTmp.w;
+            float3 v3fTest = abs(v3fOptimizedLightSpacePosition.xyz);
+
+            if(all(lessThanEqual(float2(v3fTest.xy),float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
+                float2 v2fShadowTextureCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
+
+                shadowMultiplier = calculateSunShadowMultiplier(sun_shadow_sampler[i], v2fShadowTextureCoords,
+                                                                points_sun_shadows[i].optimized_projection_matrix, v4fLightSpace.z);
+            }
+
+            result_color += color * shadowMultiplier;
+        }
+    }
+
+    return float4(result_color.xyz, 1.);
+};
+
+
 technique omniLighting{
     pass applyOmniLighting{
         if(nOmni > 0){
@@ -438,9 +528,17 @@ technique projectShadowsLighting{
 };
 
 technique sunLighting{
-    pass applySunLigting{
+    pass applySunLighting{
         if(nSun > 0){
             PixelShader = compile apply_sun_light();
+        }
+    }
+};
+
+technique sunShadowsLighting{
+    pass applySunShadowsLighting{
+        if(nSunShadows > 0){
+            PixelShader = compile apply_sun_light_shadows();
         }
     }
 };

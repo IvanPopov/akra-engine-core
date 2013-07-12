@@ -63,7 +63,7 @@ module akra {
 
 	export var pEngine: IEngine = createEngine(pOptions);
 	var pCamera: ICamera = null;
-	var pViewport: IViewport = null;
+	export var pViewport: IViewport = null;
 	var pScene: IScene3d = pEngine.getScene();
 	var pCanvas: ICanvas3d = pEngine.getRenderer().getDefaultCanvas();
 	var pKeymap: controls.KeyMap = <controls.KeyMap>controls.createKeymap();

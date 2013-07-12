@@ -37,12 +37,14 @@ module akra.render {
 		private _pLightingUnifoms: UniformMap = {
 	        omni           	: [],
 	        project        	: [],
+	        sun				: [],
 	        omniShadows    	: [],
 	        projectShadows 	: [],
-	        sun				: [],
+	        sunShadows 		: [],
 	        textures       	: [],
 	        samplersOmni  	: [],
-	        samplersProject : []
+	        samplersProject : [],
+	        samplersSun		: []
 	    };
 
 	    private _pLightPoints: util.ObjectArray = null;
@@ -103,17 +105,26 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.omniShadowsLighting");
 			pDSEffect.addComponent("akra.system.projectShadowsLighting");
 			pDSEffect.addComponent("akra.system.sunLighting");
+			pDSEffect.addComponent("akra.system.sunShadowsLighting");
 			// pDSEffect.addComponent("akra.system.color_maps");
 			pDSEffect.addComponent("akra.system.skybox", 1, 0);
 
 			pDSMethod.effect = pDSEffect;
 			pDefferedView.getTechnique().setMethod(pDSMethod);
-			pDefferedView.getTechnique()._setGlobalPostEffectsFrom(1);
+			pDefferedView.getTechnique()._setGlobalPostEffectsFrom(1);			
 
 			this.setClearEveryFrame(false);
 			this.setDepthParams(false, false, 0);			
 
 			this.setFXAA(true);
+
+			var pSeeTextureMethod: IRenderMethod  	= pResMgr.createRenderMethod(".see_texture");
+			var pSeeTextureEffect: IEffect 			= pResMgr.createEffect(".see_texture");
+			pSeeTextureEffect.addComponent("akra.system.texture_to_screen");
+			pSeeTextureMethod.effect = pSeeTextureEffect;
+			pDefferedView.addRenderMethod(pSeeTextureMethod, ".see_texture");
+
+			// this._pDeferredView.switchRenderMethod(null);
 		}
 
 		setCamera(pCamera: ICamera): bool {
@@ -166,7 +177,7 @@ module akra.render {
 // #endif
 			//render deferred
 			
-			this._pDeferredView.render(this);
+			this._pDeferredView.render(this, this._bSeeDepth ? ".see_texture": null);
 		}
 
 		prepareForDeferredShading(): void {
@@ -361,6 +372,17 @@ module akra.render {
 			this._pDeferredSkyTexture = null;
 		}
 
+		private _bSeeDepth: bool = false;
+		seeDepthTexture(): void {
+			this._bSeeDepth = !this._bSeeDepth;
+
+			if(this._bSeeDepth){
+				this._pDeferredView.switchRenderMethod(".see_texture");
+			}
+			else {
+				this._pDeferredView.switchRenderMethod(null);
+			}
+		}
 
 
 		render(
@@ -372,6 +394,16 @@ module akra.render {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
 			var pDeferredTextures: ITexture[] = this._pDeferredColorTextures;
+
+			if(this._bSeeDepth){
+				var pSun: ISunLight = this._pLightPoints.value(0);
+
+				pPass.setTexture("TEXTURE0", pSun.getDepthTexture());
+				super.render(pTechnique, iPass, pRenderable, pSceneObject);
+				return;
+			}
+
+
 
 			switch (iPass) {
 				case 0:
@@ -388,12 +420,14 @@ module akra.render {
 				    pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
 				    pPass.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
 				    pPass.setForeign("nSun", pLightUniforms.sun.length);
+				    pPass.setForeign("nSunShadows", pLightUniforms.sunShadows.length);
 
 				    pPass.setStruct("points_omni", pLightUniforms.omni);
 				    pPass.setStruct("points_project", pLightUniforms.project);
 				    pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
 				    pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
 				    pPass.setStruct("points_sun", pLightUniforms.sun);
+				    pPass.setStruct("points_sun_shadows", pLightUniforms.sunShadows);
 
 				    for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
 				        pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
@@ -401,6 +435,7 @@ module akra.render {
 
 				    pPass.setUniform("PROJECT_SHADOW_SAMPLER", pLightUniforms.samplersProject);
 	    			pPass.setUniform("OMNI_SHADOW_SAMPLER", pLightUniforms.samplersOmni);
+	    			pPass.setUniform("SUN_SHADOW_SAMPLER", pLightUniforms.samplersSun);
 
     				pPass.setUniform("MIN_SHADOW_VALUE", 0.5);
     				pPass.setUniform("SHADOW_CONSTANT", 5.e+2);
@@ -475,18 +510,21 @@ module akra.render {
 			var pUniforms = this._pLightingUnifoms;
 			pUniforms.omni.clear();
 		    pUniforms.project.clear();
+		    pUniforms.sun.clear();
 		    pUniforms.omniShadows.clear();
 		    pUniforms.projectShadows.clear();
+		    pUniforms.sunShadows.clear();
 		    pUniforms.textures.clear();
 		    pUniforms.samplersProject.clear();
 		    pUniforms.samplersOmni.clear();
-		    pUniforms.sun.clear();
+		    pUniforms.samplersSun.clear();
 		}
 
 		private createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray, pUniforms: UniformMap): void {
 			var pLight: ILightPoint;
 			var pOmniLight: IOmniLight;
 			var pProjectLight: IProjectLight;
+			var pSunLight: ISunLight;
 		    var i: int, j: int;
 		    var pUniformData: IUniform;
 		    var pCameraView: IMat4 = pCamera.viewMatrix;
@@ -573,11 +611,33 @@ module akra.render {
 
 		        }
 		        else if (pLight.lightType === ELightTypes.SUN) {
-		        	pUniformData = uniformSun();
-		        	var pSkyDome: ISceneModel = (<ISunLight>pLight).skyDome;
-		        	var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);
-		        	(<UniformSun>pUniformData).setLightData(<ISunParameters>pLight.params, iSkyDomeId);
-		        	pUniforms.sun.push(<UniformSun>pUniformData);
+		        	pSunLight = <ISunLight>pLight;
+		        	pShadowCaster = pSunLight.getShadowCaster();
+
+		        	if (pLight.isShadowCaster) {
+		        		pUniformData = uniformSunShadow();
+			        	var pSkyDome: ISceneModel = pSunLight.skyDome;
+			        	var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);
+			        	(<UniformSunShadow>pUniformData).setLightData(<ISunParameters>pLight.params, iSkyDomeId);
+			        	pUniforms.sunShadows.push(<UniformSunShadow>pUniformData);
+
+			        	pUniforms.textures.push(pSunLight.getDepthTexture());
+		            	sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
+
+		            	(<UniformSunShadow>pUniformData).setSampler(sTexture);
+		            	pUniforms.samplersSun.push((<UniformSunShadow>pUniformData).SHADOW_SAMPLER);
+
+		            	m4fToLightSpace = pShadowCaster.viewMatrix.multiply(pCamera.worldMatrix, mat4());
+		            	(<UniformSunShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.optimizedProjection);
+
+		        	}
+		        	else {
+			        	pUniformData = uniformSun();
+			        	var pSkyDome: ISceneModel = pSunLight.skyDome;
+			        	var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);
+			        	(<UniformSun>pUniformData).setLightData(<ISunParameters>pLight.params, iSkyDomeId);
+			        	pUniforms.sun.push(<UniformSun>pUniformData);
+		        	}
 		        }
 		        else {
 		        	CRITICAL("Invalid light point type detected.");

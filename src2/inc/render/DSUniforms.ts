@@ -8,9 +8,10 @@
 
 #define uniformOmni() UniformOmni.stackCeil
 #define uniformProject() UniformProject.stackCeil
+#define uniformSun() UniformSun.stackCeil
 #define uniformProjectShadow() UniformProjectShadow.stackCeil
 #define uniformOmniShadow() UniformOmniShadow.stackCeil
-#define uniformSun() UniformSun.stackCeil
+#define uniformSunShadow() UniformSunShadow.stackCeil
 
 #define IShadowSampler IAFXSamplerState
 #define ISampler2d IAFXSamplerState
@@ -164,15 +165,55 @@ module akra.render {
 	    ALLOCATE_STORAGE(UniformSun, 3);
 	}
 
+	export struct UniformSunShadow implements IUniform {
+		SUN_DIRECTION: IVec3 = new Vec3();
+	    EYE_POSITION: IVec3 = new Vec3();
+	    GROUNDC0: IVec3 = new Vec3();
+	    GROUNDC1: IVec3 = new Vec3();
+	    HG: IVec3 = new Vec3;
+	    SKY_DOME_ID: int = 0;
+	    SHADOW_SAMPLER: IAFXSamplerState = fx.createSamplerState();
+	    TO_LIGHT_SPACE: IMat4 = new Mat4();
+	    OPTIMIZED_PROJECTION_MATRIX: IMat4 = new Mat4();
+
+	    setLightData(pSunParam: ISunParameters, iSunDomeId: int): UniformSunShadow {
+	    	this.SUN_DIRECTION.set(pSunParam.sunDir);
+	    	this.EYE_POSITION.set(pSunParam.eyePosition);
+	    	this.GROUNDC0.set(pSunParam.groundC0);
+	    	this.GROUNDC1.set(pSunParam.groundC1);
+	    	this.HG.set(pSunParam.hg);
+	    	this.SKY_DOME_ID = iSunDomeId;
+
+	    	return this;
+	    }
+
+	    setSampler(sTexture: string): UniformSunShadow {
+	    	this.SHADOW_SAMPLER.textureName = sTexture;
+	    	return this;
+	    }
+
+	    setMatrix(m4fToLightSpace: IMat4, m4fOptimizedProj: IMat4): UniformSunShadow {
+	    	this.TO_LIGHT_SPACE.set(m4fToLightSpace);
+		    this.OPTIMIZED_PROJECTION_MATRIX.set(m4fOptimizedProj);
+
+	    	return this;
+	    }
+
+	    ALLOCATE_STORAGE(UniformSunShadow, 3);
+	}
+
+
 	export interface UniformMap {
 		omni: UniformOmni[];
         project: UniformProject[];
+        sun: UniformSun[];
         omniShadows: UniformOmniShadow[];
         projectShadows: UniformProjectShadow[];
-        sun: UniformSun[];
+        sunShadows: UniformSunShadow[];
         textures: ITexture[];
         samplersOmni: IAFXSamplerState[];
         samplersProject: IAFXSamplerState[];
+        samplersSun: IAFXSamplerState[];
 	}
 }
 
