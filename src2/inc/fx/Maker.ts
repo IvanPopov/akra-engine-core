@@ -237,6 +237,7 @@ module akra.fx {
 
 		_create(sVertex: string, sPixel: string): bool {
 			var pRmgr: IResourcePoolManager = this._pComposer.getEngine().getResourceManager();
+			// LOG(this, sVertex, sPixel);
 #ifdef WEBGL
 			var pProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram>pRmgr.createShaderProgram(".shader-prorgam-" + this.getGuid().toString());
 #else
@@ -282,8 +283,8 @@ module akra.fx {
 
 			this._pUnifromInfoForStructFieldMap = <IUniformStructInfoMap>{};
 
-			// this["sVertex"] = sVertex;
-			// this["sPixel"] = sPixel;
+			this["sVertex"] = sVertex;
+			this["sPixel"] = sPixel;
 
 			// LOG(sVertex, sPixel);
 
@@ -513,40 +514,40 @@ module akra.fx {
 						pVertexTextureInfo.type = EAFXShaderVariableType.k_SamplerVertexTexture;
 						pVertexTextureInfo.length = 0;
 					}
-
-					//add offset uniforms
-					var pOffsetInfoList: IShaderAttrOffsetInfo[] = null;
-					var pOffsetVars: IAFXVariableDeclInstruction[] = pAttrs.getOffsetVarsBySemantic(sSemantic);
-
-					if(!isNull(pOffsetVars)){
-						pOffsetInfoList = new Array();
-
-						for(var j: uint = 0; j < pOffsetVars.length; j++){
-							var sOffsetSemantic: string = pOffsetVars[j].getSemantic();
-							var sOffsetName: string = pOffsetVars[j].getRealName();
-
-							if(this.isUniformExists(sOffsetName)){
-								var pOffsetUniformInfo: IShaderUniformInfo = this._pShaderUniformInfoMap[sOffsetName];
-								var fDefaultValue: float = pAttrs.getOffsetDefault(sOffsetName);
-
-								pOffsetUniformInfo.type = EAFXShaderVariableType.k_Float;
-								pOffsetUniformInfo.length = 0;
-
-								pOffsetInfoList.push(createShaderAttrOffsetInfo(sOffsetSemantic, pOffsetUniformInfo, fDefaultValue));
-							}
-						}
-
-
-					}
-
+					
 					pShaderAttrInfo.semantic = sSemantic;
 					pShaderAttrInfo.isMappable = isMappable;
 					pShaderAttrInfo.isComplex = isComplex;
 					pShaderAttrInfo.vertexTextureInfo = pVertexTextureInfo;
-					pShaderAttrInfo.offsets = pOffsetInfoList;
 					
 					nPreparedAttrs++;
 				}
+
+				//add offset uniforms
+				var pOffsetVars: IAFXVariableDeclInstruction[] = pAttrs.getOffsetVarsBySemantic(sSemantic);
+
+				if(!isNull(pOffsetVars)) {
+					var pShaderAttrInfo: IShaderAttrInfo = this._pShaderAttrInfoList[iSlot];
+					var pOffsetInfoList: IShaderAttrOffsetInfo[] = pShaderAttrInfo.offsets || new Array();
+
+					for(var j: uint = 0; j < pOffsetVars.length; j++){
+						var sOffsetSemantic: string = pOffsetVars[j].getSemantic();
+						var sOffsetName: string = pOffsetVars[j].getRealName();
+
+						if(this.isUniformExists(sOffsetName)){
+							var pOffsetUniformInfo: IShaderUniformInfo = this._pShaderUniformInfoMap[sOffsetName];
+							var fDefaultValue: float = pAttrs.getOffsetDefault(sOffsetName);
+
+							pOffsetUniformInfo.type = EAFXShaderVariableType.k_Float;
+							pOffsetUniformInfo.length = 0;
+
+							pOffsetInfoList.push(createShaderAttrOffsetInfo(sOffsetSemantic, pOffsetUniformInfo, fDefaultValue));
+						}
+					}
+
+					pShaderAttrInfo.offsets = pOffsetInfoList;
+				}
+
 			}
 
 			/* Prepare funtions to set uniform value in real shader progrham */
@@ -634,7 +635,7 @@ module akra.fx {
 								pInput.uniforms[pOffsetInfo.shaderVarInfo.location] = pOffsetInfo.defaultValue;
 							}
 							else {
-								pInput.uniforms[pOffsetInfo.shaderVarInfo.location] = pElement.offset / 4.;
+								pInput.uniforms[pOffsetInfo.shaderVarInfo.location] = pElement.offset / 4.; /* offset in float */
 							}
 						}
 					}

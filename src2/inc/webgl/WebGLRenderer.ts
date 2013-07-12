@@ -190,7 +190,10 @@ module akra.webgl {
 
 			// deltaTime = Date.now() - deltaTime;
 			// this._time[0] += deltaTime;
-			// console.log(pEntry);
+#ifdef __VIEW_INTERNALS__
+			console.log(pEntry);
+			// console.log(pEntry.bufferMap.toString());
+#endif
 			
 			//--------------------------
 
@@ -207,6 +210,10 @@ module akra.webgl {
 				this._setViewportForRender(pViewport);
 			}
 
+			if(isDef(pMaker["_pShaderUniformInfoMap"]["fKrESun"])){
+				// LOG("1");
+				this._pWebGLContext.depthMask(false);
+			}
 			// deltaTime = Date.now() - deltaTime;
 			// this._time[1] += deltaTime;
 
@@ -307,6 +314,9 @@ module akra.webgl {
 			// deltaTime = Date.now() - deltaTime;
 			// this._time[7] += deltaTime;
 			// LOG(pEntry.bufferMap.toString())
+			if(isDef(pMaker["_pShaderUniformInfoMap"]["fKrESun"])){
+				this._pWebGLContext.depthMask(true);
+			}
 		}
 
 		_endRender(): void {

@@ -70,6 +70,7 @@ module akra {
 		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
 
 		/** sinchronize events with other resourse */
+		isSyncedTo(eSlot: EResourceItemEvents): bool;
 		//sync(pResourceItem: IResourcePoolItem, sSignal: string, sSlot?: string): bool;
 		sync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
 

@@ -80,12 +80,15 @@ module akra {
         
         getDataLocation(iDataLocation: int): int;
         getDataLocation(sSemantics: string): int;
+        getIndexFor(sSemantics: string): ArrayBufferView;
+        getIndexFor(iDataLocation: int): ArrayBufferView;
         getIndices(): IBufferData;
         getPrimitiveCount(): uint;
+        getPrimitiveType(): EPrimitiveTypes;
         getAdvancedIndexData(sSemantics: string): IVertexData;
         
-        index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
-        index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
+        index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?: int, bForceUsage?: bool): bool;
+        index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int, bForceUsage?: bool): bool;
 
         
         toString(): string;

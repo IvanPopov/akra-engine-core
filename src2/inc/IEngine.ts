@@ -18,12 +18,18 @@ module akra {
     IFACE(IDependens);
     IFACE(IAFXComposer);
     IFACE(IGamepadMap);
+    IFACE(IDepsManager);
    
     export interface IEngineOptions {
         depsRoot?: string;
         deps?: IDependens;
         gamepads?: bool;
         renderer?: IRendererOptions;
+        loader?: {
+            before?: (manager: IDepsManager, info: any) => void;
+            onload?: (manager: IDepsManager, depth: uint, loaded: uint, total: uint) => void;
+            loaded?: (manager: IDepsManager) => void;
+        };
     }
 
     export interface IEngine extends IEventProvider {
@@ -39,6 +45,7 @@ module akra {
         getRenderer(): IRenderer;
 
         getComposer(): IAFXComposer;
+        getDepsManager(): IDepsManager;
 
         pause(): bool;
         play(): bool;

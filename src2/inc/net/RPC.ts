@@ -150,7 +150,7 @@ module akra.net {
                                         })(String(pList[i]));
                                     }
 
-                                    debug_print("rpc options: ", pRPC.options);
+                                    // debug_print("rpc options: ", pRPC.options);
                                 }
 
                                 pRPC.joined();

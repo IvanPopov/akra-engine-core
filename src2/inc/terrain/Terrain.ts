@@ -14,6 +14,8 @@
 #include "render/Screen.ts"
 #include "IViewport.ts"
 
+#define USE_MEGA_TEXTURE 1
+
 module akra.terrain {
 
 	export class Terrain extends scene.SceneObject implements ITerrain {
@@ -148,6 +150,7 @@ module akra.terrain {
 
 			    pMethod = pRmgr.createRenderMethod(".terrain_render");
 			    pMethod.effect = pEffect;
+			    pMethod.surfaceMaterial = pRmgr.createSurfaceMaterial(".terrain_render");
 
 			    this._pDefaultRenderMethod = pMethod;
 			}
@@ -226,9 +229,11 @@ module akra.terrain {
 
 			this.computeBoundingBox();
 
+#ifdef USE_MEGA_TEXTURE
 			//Мегатекстурные параметры
 			this._pMegaTexures = new MegaTexture(this._pEngine);
 			this._pMegaTexures.init(this, sSurfaceTextures);
+#endif
 
 			this._isCreate = true;
 
@@ -343,7 +348,7 @@ module akra.terrain {
 			        }
 			    }
 			    else {
-			        WARNING("Карта высот не загружена")
+			        WARNING("Height map not loaded")
 			    }
 
 			    if (pImageNormalMap.isResourceLoaded()) {
@@ -352,7 +357,7 @@ module akra.terrain {
 			        this._pNormalMapImage = pImageNormalMap;
 			    }
 			    else {
-			        WARNING("Карта нормалей не загружена")
+			        WARNING("Normal map not loaded")
 			    }
 		}
 
@@ -419,7 +424,9 @@ module akra.terrain {
 		 * Подготовка терраина к рендерингу.
 		 */
 		prepareForRender(pViewport: IViewport): void {
+#ifdef USE_MEGA_TEXTURE
 			this._pMegaTexures.prepareForRender(pViewport);
+#endif
 		}
 
 		/**
@@ -502,7 +509,14 @@ module akra.terrain {
 			pPass.setTexture("TEXTURE6", this._pNormalMapTexture);
 			pPass.setSamplerTexture("S_NORMAL", "TEXTURE6");
 
+#ifdef USE_MEGA_TEXTURE
 			this._pMegaTexures.applyForRender(pPass);
+#else
+			// pPass.setUniform("S_TERRAIN", []);
+			// pPass.setUniform("TEXTURE_LEVEL_OFFSET", []);
+			// pPass.setUniform("TEXTURE_LOAD_STATUS", []);
+			pPass.setForeign("nTotalLevels", 0);
+#endif
 		}
 
 		_onGenerateNormalRender(pTechnique: IRenderTechnique, iPass: uint): void {

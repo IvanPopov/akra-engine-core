@@ -106,6 +106,7 @@ module akra {
 		cameraLight 		: <ILightPoint>null,
 		voice  				: <any>null,
 		sky   				: null,
+		go 					: <Function>null,
 
 		hero: {
 			root: 	<ISceneNode>null,
@@ -134,45 +135,38 @@ module akra {
 
 	loadAssets();
 
-	function setup(): void {
-		if (!isNull(pUI)) {
-			pIDE = <ui.IDE>pUI.createComponent("IDE");
-			pIDE.render($(document.body));
-		}
-		else {
-			var pCanvasElement: HTMLCanvasElement = (<any>pCanvas)._pCanvas;
-			var pDiv: HTMLDivElement = <HTMLDivElement>document.createElement("div");
+	function loaded(): void {
+		nextCamera();
+		nextCamera();
+		setTimeout(() => {
+			document.getElementById("loader").style.display = "none";
+			pEngine.exec();
+			playIntro();
 
-			document.body.appendChild(pDiv);
-			pDiv.appendChild(pCanvasElement);
-			pDiv.style.position = "fixed";
-		}
+		}, 2000);
+	}
 
-		pKeymap.captureMouse((<webgl.WebGLCanvas>pCanvas).el);
-		pKeymap.captureKeyboard(document);
+	function nextCamera(): void {
+		self.activeCamera ++;
+    	
+    	if (self.activeCamera === self.cameras.length) {
+    		self.activeCamera = 0;
+    	}
 
-		pCanvas.bind("viewportAdded", (pCanvas: ICanvas3d, pVp: IViewport) => {
-			pViewport = self.viewport = pVp;
-		});
+    	var pCam: ICamera = self.cameras[self.activeCamera];
+    	
+    	pViewport.setCamera(pCam);
+	}
 
-		pKeymap.bind("equalsign", () => {
-			self.activeCamera ++;
-	    	
-	    	if (self.activeCamera === self.cameras.length) {
-	    		self.activeCamera = 0;
-	    	}
-
-	    	var pCam: ICamera = self.cameras[self.activeCamera];
-	    	
-	    	pViewport.setCamera(pCam);
-		});
-
-		pKeymap.bind("delete", () => {
+	function playIntro(): void {
+		function _playIntro(): void {
 			var pMovie: IAnimationController = self.hero.movie;
 
 			if (isNull(pMovie)) {
 				return;
 			}
+
+			var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
 
 			pMovie.stop();
 			pMovie.play("movie");
@@ -180,7 +174,7 @@ module akra {
 			self.cameraLight.enabled = false;
 			
 			setTimeout(() => {
-				// self.voice.currentTime = 0;
+				self.voice.currentTime = 0;
 				self.voice.play();
 			}, 2500);
 
@@ -199,30 +193,32 @@ module akra {
 					}, 100);
 				}, 50);
 			}, 7000);
+			// pCont.rewind(33.33);
+		}
 
+
+		self.go? self.go(_playIntro): _playIntro();
+	}
+
+	function setup(): void {
+
+		var pCanvasElement: HTMLCanvasElement = (<any>pCanvas)._pCanvas;
+		var pDiv: HTMLDivElement = <HTMLDivElement>document.createElement("div");
+
+		document.body.appendChild(pDiv);
+		pDiv.appendChild(pCanvasElement);
+		pDiv.style.position = "fixed";
+		
+
+		pKeymap.captureMouse((<webgl.WebGLCanvas>pCanvas).el);
+		pKeymap.captureKeyboard(document);
+
+		pCanvas.bind("viewportAdded", (pCanvas: ICanvas3d, pVp: IViewport) => {
+			pViewport = self.viewport = pVp;
 		});
 
-		pKeymap.bind("add", () => {
-			var pMovie: IAnimationController = self.hero.movie;
-
-			if (isNull(pMovie)) {
-				return;
-			}
-
-			// var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
-			// pCont.setSpeed(pCont.speed * 2.0);
-		});
-
-		pKeymap.bind("SUBTRACT", () => {
-			var pMovie: IAnimationController = self.hero.movie;
-
-			if (isNull(pMovie)) {
-				return;
-			}
-
-			// var pCont: IAnimationContainer = <IAnimationContainer>pMovie.findAnimation("movie");
-			// pCont.setSpeed(pCont.speed / 2.0);
-		});
+		pKeymap.bind("equalsign", nextCamera);
+		pKeymap.bind("delete", playIntro);
 	}
 
 	function createCameras(): void {
@@ -232,25 +228,6 @@ module akra {
 		pCamera.addRelRotationByEulerAngles(-math.PI / 5., 0., 0.);
     	pCamera.addRelPosition(-8.0, 5.0, 11.0);
     	pCamera.update();
-	}
-
-	function createSceneEnvironment(): void {
-		var pSceneQuad: ISceneModel = util.createQuad(pScene, 500.);
-		pSceneQuad.attachToParent(pScene.getRootNode());
-		pSceneQuad.mesh.getSubset(0).setVisible(false);
-
-		var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
-		// pSceneSurface.scale(5.);
-		pSceneSurface.addPosition(0, 0.01, 0);
-		pSceneSurface.attachToParent(pScene.getRootNode());
-		pSceneSurface.mesh.getSubset(0).setVisible(false);
-
-		// var pCameraTerrainProj: ISceneModel = util.basis(pScene);
-
-		// pCameraTerrainProj.attachToParent(pScene.getRootNode());
-		// pCameraTerrainProj.scale(.25);
-
-		// self.cameraTerrainProj = pCameraTerrainProj;
 	}
 
 	function createViewports(): void {
@@ -263,49 +240,6 @@ module akra {
 			}
 		}
 	}
-
-	function createLighting(): void {
-		var pSunLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 2048, "sun");
-			
-		pSunLight.attachToParent(pScene.getRootNode());
-		pSunLight.enabled = true;
-		pSunLight.params.ambient.set(.1, .1, .1, 1);
-		pSunLight.params.diffuse.set(0.75);
-		pSunLight.params.specular.set(1.);
-		pSunLight.params.attenuation.set(1.25, 0, 0);
-
-		pSunLight.addPosition(0, 500, 0);
-
-		
-
-		function createAmbient(sName: string, v3fPos: IVec3): void {
-			var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 512, sName);
-			
-			pOmniLight.attachToParent(pScene.getRootNode());
-			pOmniLight.enabled = true;
-			pOmniLight.params.ambient.set(0., 0., 0., 1);
-			pOmniLight.params.diffuse.set(1.);
-			pOmniLight.params.specular.set(0.);
-			pOmniLight.params.attenuation.set(1.5, 0, 0);
-
-			pOmniLight.addPosition(v3fPos);
-		}
-
-		// createAmbient("Ambient LB", new Vec3(-500, 500, -500));
-		// createAmbient("Ambient RB", new Vec3(500, 500, -500));
-		// createAmbient("Ambient LF", new Vec3(-500, 500, 500));
-		// createAmbient("Ambient RF", new Vec3(500, 500, 500));
-		var fD: number = 700;
-		createAmbient("Ambient 1", new Vec3(0, 0, fD));
-		createAmbient("Ambient 2", new Vec3(0, fD, 0));
-		createAmbient("Ambient 3", new Vec3(fD, 0, 0));
-		createAmbient("Ambient 4", new Vec3(0, 0, -fD));
-		createAmbient("Ambient 5", new Vec3(0, -fD, 0));
-		createAmbient("Ambient 6", new Vec3(-fD, 0, 0));
-		
-	}
-
-
 
 	var v3fOffset: IVec3 = new Vec3;
 	function updateKeyboardControls(fLateralSpeed: number, fRotationSpeed: number): void {
@@ -424,14 +358,6 @@ module akra {
 		self.terrain = pTerrain;
 	}
 
-	function createSkyBox(): void {
-		pSkyBoxTexture = pRmgr.createTexture(".sky-box-texture");
-		pSkyBoxTexture.loadResource("SKYBOX");
-
-		if (pViewport.type === EViewportTypes.DSVIEWPORT) {
-			(<render.DSViewport>pViewport).setSkybox(pSkyBoxTexture);
-		}
-	}
 
 	function createSky(): void {
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
@@ -550,18 +476,16 @@ module akra {
 		self.hero.movie = pController;
 		
 		fetchAllCameras();
+		loaded();
 	}
 
 	function main(pEngine: IEngine): void {
 		setup();
-		createSceneEnvironment();
 		createCameras();
 		createViewports();
 		createTerrain();
 		createModels();
-		// createSkyBox();
 		createSky();
-		// createLighting();
 		
 		pEngine.exec();
 	}

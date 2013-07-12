@@ -39,6 +39,7 @@ module akra.render {
 	        project        	: [],
 	        omniShadows    	: [],
 	        projectShadows 	: [],
+	        sun				: [],
 	        textures       	: [],
 	        samplersOmni  	: [],
 	        samplersProject : []
@@ -101,6 +102,7 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.projectLighting");
 			pDSEffect.addComponent("akra.system.omniShadowsLighting");
 			pDSEffect.addComponent("akra.system.projectShadowsLighting");
+			pDSEffect.addComponent("akra.system.sunLighting");
 			// pDSEffect.addComponent("akra.system.color_maps");
 			pDSEffect.addComponent("akra.system.skybox", 1, 0);
 
@@ -385,11 +387,13 @@ module akra.render {
 				    pPass.setForeign("nProject", pLightUniforms.project.length);
 				    pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
 				    pPass.setForeign("nProjectShadows", pLightUniforms.projectShadows.length);
+				    pPass.setForeign("nSun", pLightUniforms.sun.length);
 
 				    pPass.setStruct("points_omni", pLightUniforms.omni);
 				    pPass.setStruct("points_project", pLightUniforms.project);
 				    pPass.setStruct("points_omni_shadows", pLightUniforms.omniShadows);
 				    pPass.setStruct("points_project_shadows", pLightUniforms.projectShadows);
+				    pPass.setStruct("points_sun", pLightUniforms.sun);
 
 				    for (var i: int = 0; i < pLightUniforms.textures.length; i++) {
 				        pPass.setTexture("TEXTURE" + i, pLightUniforms.textures[i]);
@@ -476,6 +480,7 @@ module akra.render {
 		    pUniforms.textures.clear();
 		    pUniforms.samplersProject.clear();
 		    pUniforms.samplersOmni.clear();
+		    pUniforms.sun.clear();
 		}
 
 		private createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray, pUniforms: UniformMap): void {
@@ -495,6 +500,7 @@ module akra.render {
 
 		    var iLastTextureIndex: int = 0;
 		    var sTexture: string = "TEXTURE";
+		    var pEngine: IEngine = this.getTarget().getRenderer().getEngine();
 
 		    this.resetUniforms();
 
@@ -516,7 +522,7 @@ module akra.render {
 
 		            if (pLight.isShadowCaster) {
 		                pUniformData = uniformOmniShadow();
-		                (<UniformOmniShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
+		                (<UniformOmniShadow>pUniformData).setLightData(<IOmniParameters>pLight.params, v3fLightTransformPosition);
 		                
 		                var pDepthCube: ITexture[]				= pOmniLight.getDepthTextureCube();
 		                var pShadowCasterCube: IShadowCaster[] 	= pOmniLight.getShadowCaster();
@@ -536,7 +542,7 @@ module akra.render {
 		            }
 		            else {
 		                pUniformData = uniformOmni();
-		                (<UniformOmni>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
+		                (<UniformOmni>pUniformData).setLightData(<IOmniParameters>pLight.params, v3fLightTransformPosition);
 		                pUniforms.omni.push(<UniformOmni>pUniformData);
 		            }
 		        }
@@ -546,7 +552,7 @@ module akra.render {
 
 		            if (pLight.isShadowCaster && pShadowCaster.isShadowCasted) {
 		                pUniformData = uniformProjectShadow();
-		                (<UniformProjectShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
+		                (<UniformProjectShadow>pUniformData).setLightData(<IProjectParameters>pLight.params, v3fLightTransformPosition);
 		                
 		                m4fToLightSpace = pShadowCaster.viewMatrix.multiply(pCamera.worldMatrix, mat4());
 		                pUniforms.textures.push(pProjectLight.getDepthTexture());
@@ -559,12 +565,19 @@ module akra.render {
 		            }
 		            else {
 		                pUniformData = uniformProject();
-		                (<UniformProject>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
+		                (<UniformProject>pUniformData).setLightData(<IProjectParameters>pLight.params, v3fLightTransformPosition);
 		                m4fShadow = pShadowCaster.projViewMatrix.multiply(pCamera.worldMatrix, mat4());
 		                (<UniformProject>pUniformData).setMatrix(m4fShadow);
 		                pUniforms.project.push(<UniformProject>pUniformData);
 		            }
 
+		        }
+		        else if (pLight.lightType === ELightTypes.SUN) {
+		        	pUniformData = uniformSun();
+		        	var pSkyDome: ISceneModel = (<ISunLight>pLight).skyDome;
+		        	var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);
+		        	(<UniformSun>pUniformData).setLightData(<ISunParameters>pLight.params, iSkyDomeId);
+		        	pUniforms.sun.push(<UniformSun>pUniformData);
 		        }
 		        else {
 		        	CRITICAL("Invalid light point type detected.");

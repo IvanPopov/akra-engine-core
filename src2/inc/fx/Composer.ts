@@ -589,6 +589,15 @@ module akra.fx {
 		protected bTerrainBlackSectors: bool = false;
 		protected bShowTriangles: bool = false;
 
+		//sun parameters
+		protected kFixNormal: float = 0.43;
+		protected fSunSpecular: float = 0.5;
+		protected fSunAmbient: float = 0.22;
+
+		//fog
+		protected cHeightFalloff: float = 0.009;
+		protected cGlobalDensity: float = 0.009;
+
 #define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[sName] = pValue;
 
 		_calcRenderID(pSceneObject: ISceneObject, pRenderable: IRenderableObject, bCreateIfNotExists: bool = false): int {
@@ -710,6 +719,11 @@ module akra.fx {
 			FAST_SET_UNIFORM(pPassInput, "isWithBalckSectors", this.bTerrainBlackSectors);
 			FAST_SET_UNIFORM(pPassInput, "showTriangles", this.bShowTriangles);
 			FAST_SET_UNIFORM(pPassInput, "u1", 64);
+			FAST_SET_UNIFORM(pPassInput, "kFixNormal", this.kFixNormal);
+			FAST_SET_UNIFORM(pPassInput, "fSunAmbient", this.fSunAmbient);
+			FAST_SET_UNIFORM(pPassInput, "fSunSpecular", this.fSunSpecular);
+			FAST_SET_UNIFORM(pPassInput, "cHeightFalloff", this.cHeightFalloff);
+			FAST_SET_UNIFORM(pPassInput, "cGlobalDensity", this.cGlobalDensity);
 		}
 
 		private prepareComposerState(): void {

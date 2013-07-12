@@ -452,7 +452,9 @@ module akra.webgl {
                             			pDestBox.width, pDestBox.height, 0,
                             			webgl.getWebGLFormat(pData.format),
                             			webgl.getWebGLDataType(pData.format),
-                            			pDataBox.data);											
+                            			!pixelUtil.isFloatingPoint(pData.format)? 
+                            			pDataBox.data: 
+                            			new Float32Array(pDataBox.data.buffer, pDataBox.data.byteOffset, pDataBox.data.byteLength / Float32Array.BYTES_PER_ELEMENT));
 	            }
 	            else
 	            {

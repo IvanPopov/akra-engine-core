@@ -4,6 +4,7 @@ foreign int nOmniShadows;
 foreign int nOmni;
 foreign int nProjectShadows;
 foreign int nProject;
+foreign int nSun;
 
 texture tex0 : TEXTURE0;
 texture tex1 : TEXTURE1;
@@ -37,6 +38,8 @@ struct pixel_data{
     float3 position : POSITION; //in camera space
     float3 normal   : NORMAL;
     float shininess : SHININESS;
+    float  depth    : DEPTH;
+    int    id       : RENDER_OBJECT_ID;
 };
 
 struct light_omni{
@@ -61,6 +64,15 @@ struct light_project_shadows{
     float4x4 optimized_projection_matrix : OPTIMIZED_PROJECTION_MATRIX;
 };
 
+struct light_sun{
+    float3 sunDir: SUN_DIRECTION;
+    float3 eyePos: EYE_POSITION;
+    float3 ground0: GROUNDC0;
+    float3 ground1: GROUNDC1;
+    float3 hg: HG;
+    int skyDomeId: SKY_DOME_ID; 
+};
+
 sampler project_shadow_sampler[nProjectShadows] : PROJECT_SHADOW_SAMPLER;
 sampler omni_shadow_sampler[nOmniShadows * 6] : OMNI_SHADOW_SAMPLER;
 
@@ -68,6 +80,7 @@ light_omni_shadows points_omni_shadows[nOmniShadows];
 light_omni points_omni[nOmni];
 light_project_shadows points_project_shadows[nProjectShadows];
 light_project points_project[nProject];
+light_sun points_sun[nSun];
 
 shared float4 result_color;
 shared pixel_data pixelData;
@@ -248,6 +261,148 @@ float4 blur(sampler Sampler,float2 texCoords, float2 invTexSize){
     return value/totalWeight;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+float Exposure = -2.0;
+float c = 0.002f; // height falloff
+float b = 0.002f; // global density
+
+float3 HDR( float3 LDR){
+    return 1.0f - exp( Exposure * LDR );
+}
+
+float getMiePhase(float fCos, float fCos2, float3 vHG){
+    //return 1.5 * ((1.0 - g2) / (2.0 + g2)) * (1.0 + fCos2) / pow(1.0 + g2 - 2.0*g*fCos, 1.5);
+    return vHG.x * (1.0 + fCos2) / pow(abs(vHG.y - vHG.z * fCos), 1.5);
+}
+
+// Calculates the Rayleigh phase function
+float getRayleighPhase(float fCos2){
+    return 0.75 + 0.75 * fCos2;
+}
+
+float cHeightFalloff = 0.002f; 
+float cGlobalDensity  = 0.002f;
+
+float3 camPos: CAMERA_POSITION;
+float4x4 invView: INV_VIEW_CAMERA_MAT;
+float4x4 view: VIEW_MATRIX;
+
+float ComputeVolumetricFog(float3 cameraToWorldPos) 
+{  
+  //float3 cameraToWorldPos = v3Pos - camPos;
+  float cVolFogHeightDensityAtViewer = exp(-cHeightFalloff * camPos.y); 
+  float fogInt = length( cameraToWorldPos ) * cVolFogHeightDensityAtViewer; 
+  const float cSlopeThreshold = 0.01; 
+  if(abs(cameraToWorldPos.y) > cSlopeThreshold) 
+  { 
+    float t = cHeightFalloff * cameraToWorldPos.y; 
+    fogInt *= (1.0 - exp(-t)) / t; 
+  } 
+  return exp(-cGlobalDensity * fogInt); 
+} 
+
+//float ComputeVolumetricFog( float3 cameraToWorldPos, float3 vEye ){ 
+//    float f = b * exp( -c * vEye.y );
+//    float l = length( cameraToWorldPos );
+//
+//    float fogInt = exp( -(f * l) );
+//
+//    const float cSlopeThreshold = 0.01;
+//    if( abs( cameraToWorldPos.y ) > cSlopeThreshold )
+//    {
+//      float t = c * cameraToWorldPos.y;
+//      fogInt *= ( 1.0 - exp( -t ) ) / t;
+//    }
+//
+//    return fogInt;
+//}
+
+float kFixNormal = 0.5;
+float fSunSpecular = 0.;
+float fSunAmbient = 0.;
+
+float4 calculateSunLight(pixel_data pixelData, float3 light_dir, float4 diffuse, float4 ambient, float4 specular){
+    // direction from vert to observer (ViewDir) 
+    //observer is (0,0,0) in camera space
+    float3 view_dir = normalize(-pixelData.position);
+    float3 fixNormal = lerp(light_dir, pixelData.normal, kFixNormal);
+
+      // reflect direction
+    float3 reflect_dir = normalize(reflect(-light_dir, fixNormal));
+
+    float light_distancedotVpow = 0.;
+
+    if(pixelData.shininess != 0.){
+        light_distancedotVpow = pow(max(dot(reflect_dir, view_dir), 0.0), pixelData.shininess);
+    }
+
+    
+    float4 color = float4(0.);
+    //add ambient
+    color += pixelData.ambient * ambient;
+    
+    
+    //add diffuse
+    color += pixelData.diffuse * diffuse * max(dot(fixNormal, light_dir), .0);
+
+     // add reflect lighting
+    color += pixelData.specular * specular * light_distancedotVpow;
+
+
+    return color;
+};
+
+
+
+float4 apply_sun_light() : COLOR {
+    float3 worldPos = float4(invView * float4(pixelData.position.xyz, 1.)).xyz;
+
+    for(int i = 0; i < nSun; i++){
+        bool isNeedLight = true;
+
+        for(int j = 0; j < nSun; j++){
+            if(pixelData.id == points_sun[j].skyDomeId){
+                isNeedLight = false;
+                break;
+            }
+        }
+
+        if(isNeedLight){
+            float3 v3Pos = points_sun[i].eyePos - pixelData.position.xyz;
+            float fCos = dot(points_sun[i].sunDir, v3Pos)/length(v3Pos);
+            float fCos2 = fCos * fCos;
+
+            float3 Mie = getMiePhase(fCos, fCos2, points_sun[i].hg) * points_sun[i].ground1;
+            float4 color = float4(0.);
+
+            color.rgb = getRayleighPhase(fCos2) * points_sun[i].ground0 + Mie;
+            color.rgb = HDR(color.rgb);
+            float fFogValue = ComputeVolumetricFog(worldPos - camPos);
+            color.rgb = lerp(color.rgb, points_sun[i].ground0, fFogValue );
+            
+            float4 colorWithLight = calculateSunLight(pixelData, float4(view * float4(points_sun[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));
+            result_color += float4(lerp(points_sun[i].ground0, colorWithLight.rgb, fFogValue), 1.);
+            //float4(pixelData.diffuse.rgb*color.rgb, 0.);//float4(1., 0., 0., 1.);;
+            //result_color += float4(float3(fCos), 0.);
+        }
+    }
+
+    return float4(result_color.xyz, 1.);
+};
+
 technique omniLighting{
     pass applyOmniLighting{
         if(nOmni > 0){
@@ -278,4 +433,12 @@ technique projectShadowsLighting{
             PixelShader = compile apply_light_project_shadows();
         }
     };   
+};
+
+technique sunLighting{
+    pass applySunLigting{
+        if(nSun > 0){
+            PixelShader = compile apply_sun_light();
+        }
+    }
 };

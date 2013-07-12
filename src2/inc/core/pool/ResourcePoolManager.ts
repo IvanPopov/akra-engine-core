@@ -248,7 +248,6 @@ module akra.core.pool {
             var me: IResourcePoolManager = this;
             
             this.pWaiterResource.setStateWatcher(EResourceItemEvents.LOADED, function () {
-                console.log("++++++++++++++++++++");
                 fnMonitor.apply(me, arguments);
             });
         }
@@ -281,7 +280,6 @@ module akra.core.pool {
                         for (var h: int = 0; h < pResources.length; ++ h) {
                             pResource = pResources[h];
                             pWaiterResouse.sync(pResource, EResourceItemEvents.LOADED);
-                            LOG(pResource.findResourceName(), "<<< WAIT RESOURCE");
                         }
                     }
 

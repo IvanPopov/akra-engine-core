@@ -19,9 +19,13 @@ bool normalFix;
 float4 prepareForDeferredShadingPass1() : COLOR {
 	float4 data;
 	
-    Fragment_material.emissive *= 254./255.;
-    Fragment_material.diffuse *= 254./255.;
-    Fragment_material.ambient *= 254./255.;
+    //Fragment_material.emissive *= 254./255.;
+    //Fragment_material.diffuse *= 254./255.;
+    //Fragment_material.ambient *= 254./255.;
+
+    Fragment_material.emissive = min(Fragment_material.emissive, 0.99);
+    Fragment_material.diffuse = min(Fragment_material.diffuse, 0.99);
+    
     
     float3 tmp;
 
@@ -48,7 +52,9 @@ float4 prepareForDeferredShadingPass1() : COLOR {
 float4 prepareForDeferredShadingPass2() : COLOR {
 	float4 data;
 	
-    Fragment_material.specular *= 254./255.;
+    //Fragment_material.specular *= 254./255.;
+    Fragment_material.specular = min(Fragment_material.specular, 0.99);
+    Fragment_material.ambient = min(Fragment_material.ambient, 0.99);
 
 	data.x = float3ToFloat(Fragment_material.ambient.xyz);
 	data.y = float3ToFloat(Fragment_material.specular.xyz);

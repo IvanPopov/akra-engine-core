@@ -332,19 +332,35 @@ module akra.render {
         	return this._pIndexData;
         }
 
+        getIndexFor(sSemantics: string): ArrayBufferView;
+        getIndexFor(iDataLocation: int): ArrayBufferView;
+        getIndexFor(sSemantics?): ArrayBufferView {
+            var pFlow: IDataFlow = this._getFlow(<string>sSemantics);
+
+            if (!isNull(pFlow.mapper)) {
+                return pFlow.mapper.data.getTypedData(pFlow.mapper.semantics);
+            }
+
+            return null;
+        }
+
         /**
          * Get number of primitives for rendering.
          */
-        getPrimitiveCount(): uint {
+        inline getPrimitiveCount(): uint {
         	return this._pMap.primCount;
+        }
+
+        inline getPrimitiveType(): EPrimitiveTypes {
+            return this._pMap.primType;
         }
 
         /**
          * Setup index.
          */
-        index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
-        index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
-        index(data: any, sSemantics: string, useSame: bool = false, iBeginWith: int = 0): bool {
+        index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?: int, bForceUsage?: bool): bool;
+        index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int, bForceUsage?: bool): bool;
+        index(data: any, sSemantics: string, useSame: bool = false, iBeginWith: int = 0, bForceUsage?: bool = false): bool {
             var iData: int = isNumber(arguments[0]) ? arguments[0] : 0;
         	var iFlow: int = -1;
         	var iAddition: int, iRealAddition: int, iPrevAddition: int;
@@ -411,7 +427,7 @@ module akra.render {
 
         	iStride = pFlow.data.stride;
 
-        	if (this.indexSet.pAdditionCache[iIndexOffset] !== iAddition) {
+        	if (this.indexSet.pAdditionCache[iIndexOffset] !== iAddition && !bForceUsage) {
         	    if (!useSame) {
         	        iPrevAddition = this.indexSet.pAdditionCache[iIndexOffset] || 0;
         	        iRealAddition = iAddition - iPrevAddition;
@@ -419,14 +435,14 @@ module akra.render {
         	        for (var i = 0; i < pFloat32Array.length; i++) {
         	            pFloat32Array[i] = (pFloat32Array[i] * iStride + iRealAddition) / iTypeSize;
         	        }
-        	        ;
+        	        
         	    }
         	    else {
         	        iRealAddition = iAddition;
         	        for (var i = 0; i < pFloat32Array.length; i++) {
         	            pFloat32Array[i] = (iBeginWith + iRealAddition) / iTypeSize;
         	        }
-        	        ;
+        	        
         	    }
 
         	    //remeber addition, that we added to index.

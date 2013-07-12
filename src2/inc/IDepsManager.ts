@@ -4,8 +4,13 @@
 #include "IEventProvider.ts"
 
 module akra {
-	 export interface IDependens {
-        files?: string[];
+    export interface IDep {
+        path: string;
+        name?: string;
+    }
+
+	export interface IDependens {
+        files?: IDep[];
         deps?: IDependens;
         root?: string;
         type?: string;

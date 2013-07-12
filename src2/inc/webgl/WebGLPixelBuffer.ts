@@ -326,6 +326,9 @@ module akra.webgl {
 
 				pLockBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
 			}
+			else {
+				pLockBox = <IBox>arguments[0];
+			}
 
 			if(this.isBackupPresent()){
 				if (!TEST_ANY(iLockFlags, ELockFlags.WRITE)) {

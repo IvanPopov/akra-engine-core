@@ -14,9 +14,13 @@
 #define LOGGER_API 1
 // #define CRYPTO_API 1
 // #define GUI 1
+#define SKY 1
 // #define WEBGL_DEBUG 1
 #define AFX_ENABLE_TEXT_EFFECTS 1
 // #define DETAILED_LOG 1
+
+//trace all render entry
+// #define __VIEW_INTERNALS__ 1
 
 #include "ILogger.ts"
 
@@ -87,7 +91,9 @@
 #define DATA(path) DATA + "/" + path
 module akra {
     var p = document.getElementsByTagName("script");
-    export const DATA = akra.DATA || ((<Element>p[p.length - 1]).getAttribute("data")) || "@DATA";
+    export const DATA = (akra.DATA || ((<Element>p[p.length - 1]).getAttribute("data")) || "@DATA") + "/";
+
+
 
 #ifdef DEBUG
     export var DEBUG: bool = true;

@@ -35,56 +35,36 @@ function base64_encode (data) {
 function read (pFile) {
     try {
         var pXhr = new XMLHttpRequest();
+        var pData = null;
 
-        //detect level 1 xhr
-        var isLevel1 = (pXhr['responseType'] === undefined),
-            pData;
-
-        // Note: synchronous
         pXhr.open('GET', pFile.name, false);
 
         if (isBinary(pFile.mode)) {
-            if (isLevel1) {
-                pXhr.overrideMimeType('text/plain; charset=x-user-defined');
-            }
-            else {
-                pXhr.overrideMimeType('application/octet-stream');
-                pXhr.responseType = 'arraybuffer';
-            }
-        }
-        else {
-            pXhr.responseType = 'text';
+            pXhr.overrideMimeType('application/octet-stream');
         }
 
+        pXhr.responseType = 'arraybuffer';
         pXhr.send();
 
         if (parseInt(pXhr.status) != 200 && parseInt(pXhr.status) != 0) {
             throw pXhr.status;
         }
-        
-        //if not supported XMLHTTPRequest Level 2
-        if (isLevel1) {
-            pData = pXhr.responseText;
-            if (isBinary(pFile.mode)) {
-                pData = str2buf(pXhr.responseText);
-            }
-            
-        }
-        else {
-            pData = pXhr.response;
-        }
-        
-        if (isBinary(pFile.mode)) {
-            var nExpectedLength = Number(pXhr.getResponseHeader('Content-Length'));
-            var nRealLength = pData.byteLength;
 
-            //некоторые браузеры, такие как Opera 12, возвращают arraybuffer
-            //неверной длины, если данные были получены с mime-type'ом не application/octet-stream
-            if (nRealLength != nExpectedLength) {
-                throw new Error('Expected data length is ' + nExpectedLength + ', but getted data length is '
-                                    + nRealLength);
-            }
-        }
+        pData = pXhr.response;
+        
+        // if (isBinary(pFile.mode)) {
+        //     var nExpectedLength = Number(pXhr.getResponseHeader('Content-Length'));
+        //     var nRealLength = pData.byteLength;
+
+        //     //некоторые браузеры, такие как Opera 12, возвращают arraybuffer
+        //     //неверной длины, если данные были получены с mime-type'ом не application/octet-stream
+        //     if (nRealLength != nExpectedLength) {
+        //         throw new Error('Expected data length is ' + nExpectedLength + ', but getted data length is '
+        //                             + nRealLength);
+        //     }
+        // }
+
+        pXhr = null;
 
         return pData;
     }
@@ -174,6 +154,15 @@ function clear (pFile) {
 }
 
 function meta (pFile) {
+    var pXhr = new XMLHttpRequest();
+
+    pXhr.open('HEAD', pFile.name, false);
+    pXhr.send(null);
+    
+    if (pXhr.status == 200) {
+        return {size: parseInt(pXhr.getResponseHeader('Content-Length'))};
+    }
+
     return {};
 }
 

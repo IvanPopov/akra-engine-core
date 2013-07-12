@@ -43,6 +43,10 @@
 #include "ui/IDE.ts"
 #endif
 
+#ifdef SKY
+#include "model/Sky.ts"
+#endif
+
 module akra.core {
 	export class Engine implements IEngine {
 
@@ -51,6 +55,7 @@ module akra.core {
 		private _pParticleManager: IParticleManager;
 		private _pRenderer: IRenderer;
 		private _pComposer: IAFXComposer;
+		private _pDepsManager: IDepsManager;
 
 		/** stop render loop?*/
 		private _pTimer: util.UtilTimer;
@@ -137,7 +142,7 @@ module akra.core {
 			
 			var pDeps: IDependens = Engine.DEPS;
 			var sDepsRoot: string = Engine.DEPS_ROOT;
-			var pDepsManager: IDepsManager = util.createDepsManager(this);
+			var pDepsManager: IDepsManager = this._pDepsManager = util.createDepsManager(this);
 
 			//read options 
 			if (!isNull(pOptions)) {
@@ -155,12 +160,34 @@ module akra.core {
 			//get loaded signal
 			this.connect(pDepsManager, SIGNAL(loaded), SLOT(_depsLoaded));
 
+			if (isDefAndNotNull(pOptions.loader)) {
+				var fnBefore = pOptions.loader.before;
+				var fnOnload = pOptions.loader.onload;
+				var fnLoaded = pOptions.loader.loaded;
+
+				if (isFunction(fnBefore)) {
+					pDepsManager.bind(SIGNAL(beforeLoad), fnBefore);
+				}
+
+				if (isFunction(fnOnload)) {
+					pDepsManager.bind(SIGNAL(loadedDep), fnOnload);	
+				}
+
+				if (isFunction(fnLoaded)) {
+					pDepsManager.bind(SIGNAL(loaded), fnLoaded);	
+				}
+			}
+
 			//load depends!
 			if (!pDepsManager.load(pDeps, sDepsRoot)) {
 				CRITICAL("load dependencies are not started.");
 			}
 
 			//===========================================================
+		}
+
+		inline getDepsManager(): IDepsManager {
+			return this._pDepsManager;
 		}
 
 		inline getScene(): IScene3d {
@@ -332,14 +359,21 @@ module akra.core {
 			var pDeps: IDependens = Engine.DEPS;
 
 			while (isDefAndNotNull(pDeps.files)) {
+				if (!isDefAndNotNull(pDeps.deps)) {
+					pDeps.deps = {
+						files: null,
+						deps: null
+					};
+				}
+
 				pDeps = pDeps.deps;
 			}
 
 			if (isString(pData)) {
-				pDeps.files = [pData];
+				pDeps.files = [{path: pData}];
 			}
 			else {
-				pDeps.files = pData;
+				pDeps.deps = pData;
 			}
 		}
 
@@ -347,32 +381,32 @@ module akra.core {
 		static DEPS: IDependens = 
 			{
 				files: [ 
-					"grammars/HLSL.gr" 
+					{path: "grammars/HLSL.gr"}
 				],
 				deps: {
 						files: [
-							"effects/SystemEffects.afx",
-						    "effects/Plane.afx",
-						    "effects/fxaa.afx",
-						    "effects/skybox.afx",
-						    // "effects/mesh.afx", 
-						    "effects/TextureToScreen.afx",
-						    "effects/mesh_geometry.afx",
-						    "effects/prepare_shadows.afx",						    
-						    "effects/terrain.afx",
-						    // "effects/terrain_geometry.afx",
-						    "effects/prepareDeferredShading.afx",
-						    "effects/generate_normal_map.afx"
+							{path: "effects/SystemEffects.afx"},
+						    {path: "effects/Plane.afx"},
+						    {path: "effects/fxaa.afx"},
+						    {path: "effects/skybox.afx"}, 
+						    {path: "effects/TextureToScreen.afx"},
+						    {path: "effects/mesh_geometry.afx"},
+						    {path: "effects/prepare_shadows.afx"},						    
+						    {path: "effects/terrain.afx"},
+						    {path: "effects/prepareDeferredShading.afx"},
+						    {path: "effects/generate_normal_map.afx"},
+
+						    {path: "effects/sky.afx"}
 						],
 						deps: {
 							files: [
-								"effects/mesh_texture.afx",
-								"effects/deferredShading.afx",
-								"effects/apply_lights_and_shadows.afx",
+								{path: "effects/mesh_texture.afx"},
+								{path: "effects/deferredShading.afx"},
+								{path: "effects/apply_lights_and_shadows.afx"},
 							],
 							deps: {
 								files: [
-									"effects/color_maps.afx"
+									{path: "effects/color_maps.afx"}
 								]
 							}
 						}

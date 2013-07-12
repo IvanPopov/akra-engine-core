@@ -9,7 +9,17 @@ module akra {
 	IFACE(IRenderTarget);
 	IFACE(ICamera);
 
+	export interface IOmniParameters extends ILightParameters {
+		 //default parameters
+	    ambient: IColor;
+	    diffuse: IColor;
+	    specular: IColor;
+	    attenuation: IVec3;	
+	}
+
 	export interface IOmniLight extends ILightPoint {
+		params: IOmniParameters;
+
 		getShadowCaster(): IShadowCaster[];
 		getDepthTextureCube(): ITexture[];
 		getRenderTarget(iFace: uint): IRenderTarget;

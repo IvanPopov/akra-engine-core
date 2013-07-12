@@ -9,16 +9,17 @@ module akra {
 
 	export interface ILightParameters {
 		 //default parameters
-	    ambient: IColor;
-	    diffuse: IColor;
-	    specular: IColor;
-	    attenuation: IVec3;
+	    // ambient: IColor;
+	    // diffuse: IColor;
+	    // specular: IColor;
+	    // attenuation: IVec3;
 	}
 
 	export enum ELightTypes {
 		UNKNOWN,
 		PROJECT,
-		OMNI
+		OMNI,
+		SUN
 	}
 
 	export interface ILightPoint extends ISceneNode {

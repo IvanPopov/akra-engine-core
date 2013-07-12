@@ -10,6 +10,7 @@
 #define uniformProject() UniformProject.stackCeil
 #define uniformProjectShadow() UniformProjectShadow.stackCeil
 #define uniformOmniShadow() UniformOmniShadow.stackCeil
+#define uniformSun() UniformSun.stackCeil
 
 #define IShadowSampler IAFXSamplerState
 #define ISampler2d IAFXSamplerState
@@ -27,7 +28,10 @@ module akra.render {
 		POSITION: IVec3 = new Vec3();
 		ATTENUATION: IVec3 = new Vec3();
 
-		set(pLightParam: ILightParameters, v3fPosition: IVec3): LightData {
+		// set(pLightParam: IOmniParameters, v3fPosition: IVec3): LightData;
+		// set(pLightParam: IProjectParameters, v3fPosition: IVec3): LightData;
+		set(pLightParam: ILightParameters, v3fPosition: IVec3): LightData;
+		set(pLightParam: any, v3fPosition: IVec3): LightData {
 		    
 		    this.DIFFUSE.set(pLightParam.diffuse);
 		    this.AMBIENT.set(pLightParam.ambient);
@@ -42,7 +46,7 @@ module akra.render {
 	export struct UniformOmni implements IUniform {
 		LIGHT_DATA: LightData = new LightData();
 
-		setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformOmni {
+		setLightData(pLightParam: IOmniParameters, v3fPosition: IVec3): UniformOmni {
 			this.LIGHT_DATA.set(pLightParam, v3fPosition);
 			
 			return this;
@@ -55,7 +59,7 @@ module akra.render {
 		LIGHT_DATA: LightData = new LightData();
     	SHADOW_MATRIX: IMat4 = new Mat4();
 
-    	setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformProject {
+    	setLightData(pLightParam: IProjectParameters, v3fPosition: IVec3): UniformProject {
 			this.LIGHT_DATA.set(pLightParam, v3fPosition);
 			
 			return this;
@@ -77,7 +81,7 @@ module akra.render {
 	    OPTIMIZED_PROJECTION_MATRIX: IMat4 = new Mat4();
 	    SHADOW_SAMPLER: IAFXSamplerState = fx.createSamplerState();
 
-	    setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformProjectShadow {
+	    setLightData(pLightParam: IProjectParameters, v3fPosition: IVec3): UniformProjectShadow {
 	    	this.LIGHT_DATA.set(pLightParam, v3fPosition);
 	    	return this;
 	    }
@@ -118,7 +122,7 @@ module akra.render {
 	        fx.createSamplerState(), fx.createSamplerState(), fx.createSamplerState()
 	    ];
 
-	    setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformOmniShadow {
+	    setLightData(pLightParam: IOmniParameters, v3fPosition: IVec3): UniformOmniShadow {
 		    this.LIGHT_DATA.set(pLightParam, v3fPosition);
 		    return this;
 		};
@@ -137,11 +141,35 @@ module akra.render {
 	    ALLOCATE_STORAGE(UniformOmniShadow, 3);
 	}
 
+	export struct UniformSun implements IUniform {
+		SUN_DIRECTION: IVec3 = new Vec3();
+	    EYE_POSITION: IVec3 = new Vec3();
+	    GROUNDC0: IVec3 = new Vec3();
+	    GROUNDC1: IVec3 = new Vec3();
+	    HG: IVec3 = new Vec3;
+	    SKY_DOME_ID: int = 0;
+
+	    setLightData(pSunParam: ISunParameters, iSunDomeId: int): UniformSun {
+	    	this.SUN_DIRECTION.set(pSunParam.sunDir);
+	    	this.EYE_POSITION.set(pSunParam.eyePosition);
+	    	this.GROUNDC0.set(pSunParam.groundC0);
+	    	this.GROUNDC1.set(pSunParam.groundC1);
+	    	this.HG.set(pSunParam.hg);
+	    	this.SKY_DOME_ID = iSunDomeId;
+
+	    	return this;
+	    }
+
+
+	    ALLOCATE_STORAGE(UniformSun, 3);
+	}
+
 	export interface UniformMap {
 		omni: UniformOmni[];
         project: UniformProject[];
         omniShadows: UniformOmniShadow[];
         projectShadows: UniformProjectShadow[];
+        sun: UniformSun[];
         textures: ITexture[];
         samplersOmni: IAFXSamplerState[];
         samplersProject: IAFXSamplerState[];

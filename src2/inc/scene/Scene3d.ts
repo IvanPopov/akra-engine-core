@@ -22,6 +22,7 @@
 
 #include "light/ProjectLight.ts"
 #include "light/OmniLight.ts"
+#include "light/SunLight.ts"
 #include "light/ShadowCaster.ts"
 
 #define DEFAULT_DLIST DEFAULT_NAME
@@ -173,9 +174,13 @@ module akra.scene {
 				case ELightTypes.OMNI: 
 					pLight = <ILightPoint>(new light.OmniLight(this));
 					break;
+				case ELightTypes.SUN:
+					pLight = <ILightPoint>(new light.SunLight(this));
+					break;
 				default: 
 					return null;
 			}
+			
 			if(!pLight.create(isShadowCaster, iMaxShadowResolution)){
 				ERROR("cannot create light");
 				return null;
@@ -183,6 +188,7 @@ module akra.scene {
 
 			return <ILightPoint>this.setupNode(pLight, sName);
 		};
+
 
 		createSprite(sName: string = null): ISprite {
 			return null;

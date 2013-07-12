@@ -25,6 +25,8 @@ module akra.core.pool.resources {
 		protected _pBuffer:       Uint8Array    = null;
 
         inline get byteLength(): uint {
+            // console.log(__CALLSTACK__);
+            // console.log(this, this._pBuffer, this.isResourceLoaded(), "[", this.findResourceName(), "]");
 			return this._pBuffer.buffer.byteLength;
 		}
     	
@@ -191,6 +193,7 @@ module akra.core.pool.resources {
         {
             var pMe: IImg=this;
 
+
             if (arguments[0] instanceof HTMLCanvasElement) {
                 var pCanvas: HTMLCanvasElement = arguments[0];
                 var fnCallBack: Function = arguments[1];
@@ -324,9 +327,7 @@ module akra.core.pool.resources {
 
                 var pImgData: IImgData = new ImgData();
 
-             
                 this._pBuffer = pCodec.decode(pData, pImgData);
-
 
                 this._iWidth = pImgData.width;
                 this._iHeight = pImgData.height;
@@ -340,6 +341,7 @@ module akra.core.pool.resources {
                 this._eFormat = pImgData.format;
 
                 this.notifyLoaded();
+
                 
                 if (fnCallBack) {
                     fnCallBack(true);
