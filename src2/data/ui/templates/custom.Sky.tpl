@@ -13,6 +13,18 @@
 			<component type="Slider" name="ambient" value="0" range="1000" />
 		</div>
 	</div>
+
+	<div style="border-bottom: 1px solid #CCC; padding-bottom: 5px;  padding-top: 5px;">
+		<div class="row">
+			<span>cHeightFalloff:</span>
+			<component type="Slider" name="cHeightFalloff" value="0.00000001" range="1000" />
+		</div>
+		<div class="row">
+			<span>cGlobalDensity:</span>
+			<component type="Slider" name="cGlobalDensity" value="0" range="1000" />
+		</div>
+	</div>
+
 	<div class="row first">
 		<span>time:</span>
 		<component type="Slider" name="time" value="0" range="60.00" />

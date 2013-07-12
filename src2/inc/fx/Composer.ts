@@ -591,8 +591,12 @@ module akra.fx {
 
 		//sun parameters
 		protected kFixNormal: float = 0.43;
-		protected fSunSpecular: float = 0.;
-		protected fSunAmbient: float = 0.;
+		protected fSunSpecular: float = 0.5;
+		protected fSunAmbient: float = 0.22;
+
+		//fog
+		protected cHeightFalloff: float = 0.009;
+		protected cGlobalDensity: float = 0.009;
 
 #define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[sName] = pValue;
 
@@ -718,6 +722,8 @@ module akra.fx {
 			FAST_SET_UNIFORM(pPassInput, "kFixNormal", this.kFixNormal);
 			FAST_SET_UNIFORM(pPassInput, "fSunAmbient", this.fSunAmbient);
 			FAST_SET_UNIFORM(pPassInput, "fSunSpecular", this.fSunSpecular);
+			FAST_SET_UNIFORM(pPassInput, "cHeightFalloff", this.cHeightFalloff);
+			FAST_SET_UNIFORM(pPassInput, "cGlobalDensity", this.cGlobalDensity);
 		}
 
 		private prepareComposerState(): void {

@@ -326,6 +326,25 @@ module akra {
 			(<any>pEngine.getComposer()).fSunAmbient = fValue / 1000.;
 		});
 
+		//==
+		
+		(<IUISlider>pEditDlg.findEntity("cHeightFalloff")).value = (<any>pEngine.getComposer()).cHeightFalloff * 1000;
+		(<IUISlider>pEditDlg.findEntity("cHeightFalloff")).bind("updated", (pSlider: IUISlider, fValue: float) => {
+			console.log("cHeightFalloff kof.", fValue / 1000.);
+			(<any>pEngine.getComposer()).cHeightFalloff = fValue / 1000.;
+		});
+
+		(<IUISlider>pEditDlg.findEntity("cGlobalDensity")).value = (<any>pEngine.getComposer()).cGlobalDensity * 1000;
+		(<IUISlider>pEditDlg.findEntity("cGlobalDensity")).bind("updated", (pSlider: IUISlider, fValue: float) => {
+			console.log("cGlobalDensity kof.", fValue / 1000.);
+			(<any>pEngine.getComposer()).cGlobalDensity = fValue / 1000.;
+		});
+
+		//==
+
+		
+
+
 		(<IUISlider>pEditDlg.findEntity("_nHorinLevel")).value = pSky["_nHorinLevel"];
 		(<IUISlider>pEditDlg.findEntity("_nHorinLevel")).bind("updated", (pSlider: IUISlider, fValue: float) => {
 			console.log("_nHorinLevel: ", math.round(fValue));

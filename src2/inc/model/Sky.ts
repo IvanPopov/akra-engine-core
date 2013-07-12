@@ -37,7 +37,7 @@ module akra.model {
 		/*private*/ _fRayleighScaleDepth: float;	/**/
 		/*private*/ _fMieScaleDepth: float;			/**/
 
-		/*private*/ _nHorinLevel: uint = 12;			/**/
+		/*private*/ _nHorinLevel: uint = 13;			/**/
 
 		private _v3fSunDir: IVec3 = new Vec3;
 		private _v3fInvWavelength4: IVec3 = new Vec3;

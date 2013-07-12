@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 08 2013 21:14:32 GMT+0400 (Московское время (зима))
+ * assembled at: Fri Jul 12 2013 13:12:27 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
@@ -40,12 +40,10 @@ var akra;
                     path: "textures/terrain/main_terrain_normal_map.dds",
                     name: "TERRAIN_NORMAL_MAP"
                 }, 
-                {
-                    path: "textures/skyboxes/desert-3.dds",
-                    name: "SKYBOX"
-                }
+                
             ],
-            deps: {
+            deps: // {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
+            {
                 files: [
                     {
                         path: "models/barrel/barrel_and_support.dae",
@@ -102,6 +100,7 @@ var akra;
     var pGamepads = pEngine.getGamepads();
     var pKeymap = akra.controls.createKeymap();
     var pTerrain = null;
+    var pSky = null;
     // var pDepsManager: IDepsManager 		= pEngine.getDepsManager()
     akra.self = {
         engine: pEngine,
@@ -119,6 +118,7 @@ var akra;
         activeCamera: 0,
         cameraLight: null,
         voice: null,
+        sky: null,
         hero: {
             root: null,
             head: null,
@@ -366,6 +366,12 @@ var akra;
             (pViewport).setSkybox(pSkyBoxTexture);
         }
     }
+    function createSky() {
+        pSky = new akra.model.Sky(pEngine, 32, 32, 1000.0);
+        pSky.setTime(47.0);
+        pSky.skyDome.attachToParent(pScene.getRootNode());
+        akra.self.sky = pSky;
+    }
     function createModelEntry(sResource) {
         var pModel = pRmgr.colladaPool.findResource(sResource);
         var pModelRoot = pModel.attachToScene(pScene);
@@ -448,8 +454,9 @@ var akra;
         createViewports();
         createTerrain();
         createModels();
-        createSkyBox();
-        createLighting();
+        // createSkyBox();
+        createSky();
+        // createLighting();
         pEngine.exec();
     }
     pEngine.bind("depsLoaded", main);

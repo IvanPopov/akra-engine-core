@@ -293,21 +293,42 @@ float getRayleighPhase(float fCos2){
     return 0.75 + 0.75 * fCos2;
 }
 
-float ComputeVolumetricFog( float3 cameraToWorldPos, float3 vEye ){ 
-    float f = b * exp( -c * vEye.y );
-    float l = length( cameraToWorldPos );
+float cHeightFalloff = 0.002f; 
+float cGlobalDensity  = 0.002f;
 
-    float fogInt = exp( -(f * l) );
+float3 camPos: CAMERA_POSITION;
+float4x4 invView: INV_VIEW_CAMERA_MAT;
+float4x4 view: VIEW_MATRIX;
 
-    const float cSlopeThreshold = 0.01;
-    if( abs( cameraToWorldPos.y ) > cSlopeThreshold )
-    {
-      float t = c * cameraToWorldPos.y;
-      fogInt *= ( 1.0 - exp( -t ) ) / t;
-    }
+float ComputeVolumetricFog(float3 cameraToWorldPos) 
+{  
+  //float3 cameraToWorldPos = v3Pos - camPos;
+  float cVolFogHeightDensityAtViewer = exp(-cHeightFalloff * camPos.y); 
+  float fogInt = length( cameraToWorldPos ) * cVolFogHeightDensityAtViewer; 
+  const float cSlopeThreshold = 0.01; 
+  if(abs(cameraToWorldPos.y) > cSlopeThreshold) 
+  { 
+    float t = cHeightFalloff * cameraToWorldPos.y; 
+    fogInt *= (1.0 - exp(-t)) / t; 
+  } 
+  return exp(-cGlobalDensity * fogInt); 
+} 
 
-    return fogInt;
-}
+//float ComputeVolumetricFog( float3 cameraToWorldPos, float3 vEye ){ 
+//    float f = b * exp( -c * vEye.y );
+//    float l = length( cameraToWorldPos );
+//
+//    float fogInt = exp( -(f * l) );
+//
+//    const float cSlopeThreshold = 0.01;
+//    if( abs( cameraToWorldPos.y ) > cSlopeThreshold )
+//    {
+//      float t = c * cameraToWorldPos.y;
+//      fogInt *= ( 1.0 - exp( -t ) ) / t;
+//    }
+//
+//    return fogInt;
+//}
 
 float kFixNormal = 0.5;
 float fSunSpecular = 0.;
@@ -318,7 +339,7 @@ float4 calculateSunLight(pixel_data pixelData, float3 light_dir, float4 diffuse,
     //observer is (0,0,0) in camera space
     float3 view_dir = normalize(-pixelData.position);
     float3 fixNormal = lerp(light_dir, pixelData.normal, kFixNormal);
-    
+
       // reflect direction
     float3 reflect_dir = normalize(reflect(-light_dir, fixNormal));
 
@@ -345,9 +366,10 @@ float4 calculateSunLight(pixel_data pixelData, float3 light_dir, float4 diffuse,
 };
 
 
-float4x4 view: VIEW_MATRIX;
 
 float4 apply_sun_light() : COLOR {
+    float3 worldPos = float4(invView * float4(pixelData.position.xyz, 1.)).xyz;
+
     for(int i = 0; i < nSun; i++){
         bool isNeedLight = true;
 
@@ -368,10 +390,12 @@ float4 apply_sun_light() : COLOR {
 
             color.rgb = getRayleighPhase(fCos2) * points_sun[i].ground0 + Mie;
             color.rgb = HDR(color.rgb);
-            color.rgb = lerp(color.rgb, points_sun[i].ground0, ComputeVolumetricFog(v3Pos, points_sun[i].eyePos) );
+            float fFogValue = ComputeVolumetricFog(worldPos - camPos);
+            color.rgb = lerp(color.rgb, points_sun[i].ground0, fFogValue );
             
-            //result_color += float4(color.rgb, 0.);
-            result_color += calculateSunLight(pixelData, float4(view * float4(points_sun[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));//float4(pixelData.diffuse.rgb*color.rgb, 0.);//float4(1., 0., 0., 1.);
+            float4 colorWithLight = calculateSunLight(pixelData, float4(view * float4(points_sun[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));
+            result_color += float4(lerp(points_sun[i].ground0, colorWithLight.rgb, fFogValue), 1.);
+            //float4(pixelData.diffuse.rgb*color.rgb, 0.);//float4(1., 0., 0., 1.);;
             //result_color += float4(float3(fCos), 0.);
         }
     }
