@@ -34,6 +34,10 @@
 		<component type="Slider" name="_nHorinLevel" value="0" range="31" />
 	</div>
 	<div class="row">
+		<span>inv wave length:</span>
+		<component type="Vector" name="_v3fInvWavelength4" editable="true" />
+	</div>
+	<div class="row">
 		<span>Rayleigh scattering constant:</span>
 		<component type="Label" name="_fKr" editable />
 	</div>

@@ -631,13 +631,13 @@
   </library_lights>
   <library_images>
     <image id="diffuse_fin_fixes_3_tga">
-      <init_from>./images/diffuse.png</init_from>
+      <init_from>./images/diffuse.jpg</init_from>
     </image>
     <image id="normals_tga">
-      <init_from>./images/normal.png</init_from>
+      <init_from>./images/normal.jpg</init_from>
     </image>
     <image id="specular_tga">
-      <init_from>./images/specular.png</init_from>
+      <init_from>./images/specular.jpg</init_from>
     </image>
   </library_images>
   <library_visual_scenes>

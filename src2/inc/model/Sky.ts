@@ -39,6 +39,8 @@ module akra.model {
 
 		/*private*/ _nHorinLevel: uint = 13;			/**/
 
+		time: float = 0.0;
+
 		private _v3fSunDir: IVec3 = new Vec3;
 		private _v3fInvWavelength4: IVec3 = new Vec3;
 		private _v3fHG: IVec3 = new Vec3;
@@ -114,6 +116,9 @@ module akra.model {
 
 			this._fRayleighScaleDepth = 0.25;
 			this._fMieScaleDepth = 0.1;
+			this._v3fInvWavelength4.x = 1.0 / math.pow(0.650, 4.0);
+			this._v3fInvWavelength4.y = 1.0 / math.pow(0.570, 4.0);
+			this._v3fInvWavelength4.z = 1.0 / math.pow(0.475, 4.0);
 		}
 
 		init(): void {
@@ -137,9 +142,7 @@ module akra.model {
 			// this._fRayleighScaleDepth = 0.25;
 			// this._fMieScaleDepth = 0.1;
 			this._fScaleOverScaleDepth = this._fScale / this._fRayleighScaleDepth;
-			this._v3fInvWavelength4.x = 1.0 / math.pow(0.650, 4.0);
-			this._v3fInvWavelength4.y = 1.0 / math.pow(0.570, 4.0);
-			this._v3fInvWavelength4.z = 1.0 / math.pow(0.475, 4.0);
+			
 			this._v3fHG.x = 1.5 * ( (1.0 - this._fg2) / (2.0 + this._fg2) );
 			this._v3fHG.y = 1.0 + this._fg2;
 			this._v3fHG.z = 2.0 * this._fg;
@@ -519,7 +522,7 @@ module akra.model {
 		}
 
 		setTime(T: float): void {
-			var time: float = T ;
+			var time: float = this.time = T;
 			var meridian: float = 1.3788101;
 			var longitude: float = 1.3852096;
 			var latitude: float = 0.762127107;

@@ -8,6 +8,7 @@
 #include "pixelUtil/PixelBox.ts"
 #include "IViewport.ts"
 #include "IRenderPass.ts"
+#include "events/events.ts"
 
 module akra.terrain {
 	interface ISubTextureSettings {
@@ -21,7 +22,7 @@ module akra.terrain {
     	isLoaded : bool;
 	}
 
-	export class MegaTexture implements IMegaTexture{
+	export class MegaTexture implements IMegaTexture {
 	    private _pEngine: IEngine = null;
 	    // private _pDevice = null;
 
@@ -468,6 +469,8 @@ module akra.terrain {
 							me._pTextures[0].loadImage(pTempImg);
 							me._pXY[0].isLoaded = true;
 							pTempImg.destroyResource();
+
+							me.minLevelLoaded();
 			            });
 					});
 			}
@@ -701,9 +704,10 @@ module akra.terrain {
 			}
 		}
 
-	}
+		CREATE_EVENT_TABLE(MegaTexture);
+		BROADCAST(minLevelLoaded, VOID);
 
-	
+	}
 }
 
 #endif

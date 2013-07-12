@@ -2,8 +2,8 @@
 ///<reference path="../../../bin/DEBUG/Progress.ts"/>
 
 
-declare var jQuery: JQueryStatic;
-declare var $: JQueryStatic;
+// declare var jQuery: JQueryStatic;
+// declare var $: JQueryStatic;
 
 
 /// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
@@ -13,26 +13,29 @@ declare var $: JQueryStatic;
 
 module akra {
 
-	var pProgress = new util.Progress();
+	function createProgress(): IProgress {
+		var pProgress: IProgress = new util.Progress();
+		var pCanvas: HTMLCanvasElement = pProgress.canvas;
 
-	var $cv = $(pProgress.canvas);
+		pProgress.color = "white";
+		pProgress.fontColor = "white";
 
+		pCanvas.style.position = "absolute";
+	    pCanvas.style.left = "50%";
+	    pCanvas.style.top = "50%";
+	    pCanvas.style.zIndex = "100000";
+	    // pCanvas.style.display = "none";
 
-	$cv.css({
-	    position: "absolute",
-	    left: "50%",
-	    top: "50%",
-	    zIndex: "100",
-	    display: "none",
+	    pCanvas.style.marginTop = (-pProgress.height / 2) + "px";
+	    pCanvas.style.marginLeft = (-pProgress.width / 2) + "px";
 
-	    marginTop: (-pProgress.height / 2) + "px",
-	    marginLeft: (-pProgress.width / 2) + "px",
-	});
+	    return pProgress;
+	}
 
-	document.body.appendChild($cv[0]);
+	var pProgress: IProgress = createProgress();
 
 	var pEngine: IEngine = createEngine({
-		renderer: {preserveDrawingBuffer: true},
+		renderer: {preserveDrawingBuffer: true, alpha: false},
 		deps: {
 			files: [
 				{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
@@ -54,7 +57,7 @@ module akra {
 			before: (pManager: IDepsManager, pInfo: number[]): void => {
 				pProgress.total = pInfo;
 
-				$cv.fadeIn(400);
+				document.body.appendChild(pProgress.canvas);
 			},
 			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number): void => {
 				pProgress.element = nLoaded;
@@ -62,9 +65,9 @@ module akra {
 				pProgress.draw();
 			},
 			loaded: (pManager: IDepsManager): void => {
-				$cv.fadeOut(1000, () => {
-					document.body.removeChild($cv[0]);
-				});
+				setTimeout(() => {
+					document.body.removeChild(pProgress.canvas);
+				}, 500);
 			}
 		}
 	});
@@ -84,7 +87,9 @@ module akra {
 	var pKeymap: controls.KeyMap		= <controls.KeyMap>controls.createKeymap();
 	var pTerrain: ITerrain 				= null;
 	var pSky 							= null;
+	var pParentElement: HTMLElement 	= null;
 	// var pDepsManager: IDepsManager 		= pEngine.getDepsManager()
+	
 
 
 	
@@ -123,7 +128,9 @@ module akra {
 		var source; 
 		var audio0 = new Audio();   
 
-		audio0.src = "assets/voice.wav";
+		audio0.src = akra.DATA + "/sounds/voice.wav";
+		// audio0.load();
+
 		audio0.controls = true;
 		audio0.autoplay = false;
 		audio0.loop = false;
@@ -139,7 +146,7 @@ module akra {
 		nextCamera();
 		nextCamera();
 		setTimeout(() => {
-			document.getElementById("loader").style.display = "none";
+
 			pEngine.exec();
 			playIntro();
 
@@ -203,11 +210,14 @@ module akra {
 	function setup(): void {
 
 		var pCanvasElement: HTMLCanvasElement = (<any>pCanvas)._pCanvas;
-		var pDiv: HTMLDivElement = <HTMLDivElement>document.createElement("div");
+		
+		pParentElement = document.getElementById("viewport") || document.body;
 
-		document.body.appendChild(pDiv);
-		pDiv.appendChild(pCanvasElement);
-		pDiv.style.position = "fixed";
+		pParentElement.innerHTML = "";
+		pParentElement.appendChild(pCanvasElement);
+		// pParentElement.style.position = "fixed";
+		// pCanvasElement.style.position = "absolute";
+		// pCanvasElement.style.top = "14px";
 		
 
 		pKeymap.captureMouse((<webgl.WebGLCanvas>pCanvas).el);
@@ -230,16 +240,29 @@ module akra {
     	pCamera.update();
 	}
 
+	// function createViewports(): void {
+	// 	pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
+
+	// 	if (isNull(pUI)) {
+	// 		pCanvas.resize(window.innerWidth, window.innerHeight);
+	// 		window.onresize = function(event) {
+	// 			pCanvas.resize(window.innerWidth, window.innerHeight);
+	// 		}
+	// 	}
+	// }
+	
 	function createViewports(): void {
 		pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
 
 		if (isNull(pUI)) {
-			pCanvas.resize(window.innerWidth, window.innerHeight);
+			pCanvas.resize(pParentElement.offsetWidth, pParentElement.offsetHeight);
+
 			window.onresize = function(event) {
-				pCanvas.resize(window.innerWidth, window.innerHeight);
+				pCanvas.resize(pParentElement.offsetWidth, pParentElement.offsetHeight);
 			}
 		}
 	}
+
 
 	var v3fOffset: IVec3 = new Vec3;
 	function updateKeyboardControls(fLateralSpeed: number, fRotationSpeed: number): void {
@@ -356,6 +379,10 @@ module akra {
 		pTerrain.setPosition(11, -109, -109.85);
 
 		self.terrain = pTerrain;
+
+		pTerrain.megaTexture.bind("minLevelLoaded", () => {
+			loaded();
+		});
 	}
 
 
@@ -364,6 +391,11 @@ module akra {
 		pSky.setTime(47.0);
 	    pSky.skyDome.attachToParent(pScene.getRootNode());
 	    self.sky = pSky;
+
+	    var i = setInterval(() => {
+	    	pSky.setTime(pSky.time + 0.001); 
+	    	// if (math.abs(pSky.time) == 30.0) clearInterval(i);
+	    }, 100);
 	}
 
 	function createModelEntry(sResource: string): IModelEntry {
@@ -476,7 +508,7 @@ module akra {
 		self.hero.movie = pController;
 		
 		fetchAllCameras();
-		loaded();
+		
 	}
 
 	function main(pEngine: IEngine): void {
@@ -487,7 +519,7 @@ module akra {
 		createModels();
 		createSky();
 		
-		pEngine.exec();
+		// pEngine.exec();
 	}
 
 	pEngine.bind("depsLoaded", main);	
