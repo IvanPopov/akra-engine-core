@@ -223,7 +223,7 @@ module akra.fx {
 			var iTotalTextures: uint = pSurfaceMaterial.totalTextures;
 			for (var i: int = 0; i < iTotalTextures; i++) {
 			 	// var iTexcord: int = pSurfaceMaterial[i].texcoord(i);
-			 	this.setTexture("TEXTURE" + i.toString(), pSurfaceMaterial.texture(i));
+			 	this.setTexture("TEXTURE" + i.toString(), pSurfaceMaterial.texture(i) || null);
 			}
 
 			var pMaterial: IMaterial = pSurfaceMaterial.material;
