@@ -130,6 +130,10 @@ module akra.terrain {
 			return this._isCreate;
 		}
 
+		inline get megaTexture(): IMegaTexture {
+			return this._pMegaTexures;
+		}
+
 		protected _initSystemData(): bool {
 			var pEngine: IEngine = this._pEngine,
 			    pRmgr: IResourcePoolManager = pEngine.getResourceManager();
@@ -151,6 +155,14 @@ module akra.terrain {
 			    pMethod = pRmgr.createRenderMethod(".terrain_render");
 			    pMethod.effect = pEffect;
 			    pMethod.surfaceMaterial = pRmgr.createSurfaceMaterial(".terrain_render");
+			    var pMat: IMaterial = pMethod.surfaceMaterial.material;
+			    pMat.name = "terrain";
+
+			    pMat.shininess = 30;
+			    (<IColor>pMat.emissive).set(0);
+			    (<IColor>pMat.specular).set(1);
+
+
 
 			    this._pDefaultRenderMethod = pMethod;
 			}

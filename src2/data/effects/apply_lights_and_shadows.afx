@@ -335,9 +335,11 @@ float fSunSpecular = 0.;
 float fSunAmbient = 0.;
 
 float4 calculateSunLight(pixel_data pixelData, float3 light_dir, float4 diffuse, float4 ambient, float4 specular){
+
     // direction from vert to observer (ViewDir) 
     //observer is (0,0,0) in camera space
     float3 view_dir = normalize(-pixelData.position);
+    light_dir = normalize(light_dir);
     float3 fixNormal = lerp(light_dir, pixelData.normal, kFixNormal);
 
       // reflect direction
@@ -361,7 +363,7 @@ float4 calculateSunLight(pixel_data pixelData, float3 light_dir, float4 diffuse,
      // add reflect lighting
     color += pixelData.specular * specular * light_distancedotVpow;
 
-
+    //color.rgb = HDR(color.rgb);
     return color;
 };
 
@@ -391,7 +393,7 @@ float4 apply_sun_light() : COLOR {
             color.rgb = getRayleighPhase(fCos2) * points_sun[i].ground0 + Mie;
             color.rgb = HDR(color.rgb);
             float fFogValue = ComputeVolumetricFog(worldPos - camPos);
-            color.rgb = lerp(color.rgb, points_sun[i].ground0, fFogValue );
+            //color.rgb = lerp(color.rgb, points_sun[i].ground0, fFogValue );
             
             float4 colorWithLight = calculateSunLight(pixelData, float4(view * float4(points_sun[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));
             result_color += float4(lerp(points_sun[i].ground0, colorWithLight.rgb, fFogValue), 1.);

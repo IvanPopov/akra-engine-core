@@ -121,7 +121,7 @@ module akra {
 	
     	pCamera.setRotationByXYZAxis(0., Math.PI, 0.);
     	pCamera.setPosition(vec3(0.0, 10.0, 0.0));
-    	pCamera.farPlane = MAX_UINT16;
+    	// pCamera.farPlane = MAX_UINT16;
     	// pCamera.lookAt(vec3(0.));
 	}
 
@@ -306,6 +306,13 @@ module akra {
 			console.log("time is: ", fValue);
 			_fLastTime = fValue;
 			pSky.setTime(fValue);
+		});
+
+		(<IUIVector>pEditDlg.findEntity("_v3fInvWavelength4")).setVec3(pSky["_v3fInvWavelength4"]);
+		(<IUIVector>pEditDlg.findEntity("_v3fInvWavelength4")).bind("changed", (pVec: IUIVector, v3fValue: IVec3) => {
+			console.log("_v3fInvWavelength4: ", v3fValue.toString());
+			pSky["_v3fInvWavelength4"].set(v3fValue);
+			pSky.setTime(_fLastTime);
 		});
 
 		(<IUISlider>pEditDlg.findEntity("nm")).value = (<any>pEngine.getComposer()).kFixNormal * 1000;

@@ -125,7 +125,7 @@ float4 SkyFromGround_PS( vertexOutput In): COLOR
 	color.a = 1.0;//log2( length( Mie ) * 2500.0f);
 	//Out.color.a = length( Mie ) ;
 	color.rgb = getRayleighPhase(fCos2) * c0 + Mie;
-	//Out.color.rgb = HDR(Out.color.rgb);
+	color.rgb = HDR(color.rgb);
 
 	//Out.color.rgba = vSamples;
 	//Out.color.rgba =0;

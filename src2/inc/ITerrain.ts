@@ -31,6 +31,7 @@ module akra {
 		
 		readonly maxHeight: float;
 		readonly terrain2DLength: float;
+		readonly megaTexture: IMegaTexture;
 
 		isCreate(): bool;
 
