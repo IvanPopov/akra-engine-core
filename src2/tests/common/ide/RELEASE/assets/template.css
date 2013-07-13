@@ -1,0 +1,149 @@
+html, body {
+	margin: 0px;
+	padding: 0px;
+	overflow: hidden;
+	height: 100%;
+}
+
+/* Design */
+
+#logo {
+	position: absolute;
+	width: 713px;
+	height: 150px;
+	background: url(img/logo.png);
+	left: 50%;
+	margin-left: -361px;
+	top: 11px;
+	z-index: 1000;
+}
+
+#top {
+	width: 100%;
+	position: fixed;
+	top: 0px;
+	background: url(img/net-top.jpg) repeat-x left top;
+	height: 95px;
+}
+
+#top #planka-top {
+	width: 100%;
+	position: absolute;
+	top: 24px;
+	background: url(img/planka-top.png) repeat-x top center;
+	height: 128px;
+}
+
+#bottom {
+	width: 100%;
+	position: fixed;
+	bottom: 0px;
+	background: url(img/net-bottom.jpg) repeat-x left top;
+	height: 41px;
+}
+
+#bottom #planka-bottom {
+	width: 100%;
+	position: absolute;
+	top: -27px;
+	background: url(img/planka-bottom.png) repeat-x top center;
+	height: 36px;
+}
+
+#main-wrapper {
+	height: 100%;
+	background-image: url(img/bg.jpg);
+	background-position: center center;
+	background-repeat: no-repeat;;
+	background-size: cover;
+}
+
+#requirements {
+	background-color: black;
+	color: white;
+	font-family: Helvetica;
+	font-size: 20px;
+	margin: 0;
+	height: 100%;
+	overflow: hidden;
+	/*text-shadow: rgba(255, 255, 255, .75) 0px 0px 2px;*/
+	margin-top: -5px;
+	padding-left: 15px;
+}
+
+.notice {
+	background-color: orange;
+}
+
+/* Slides */
+
+.slide {
+	position: absolute;
+	display: none;
+}
+
+.slide.active {
+	display: block;
+}
+
+.slide.sliding {
+	display: block;
+}
+
+#slide-0 {
+	
+}
+
+#slide-0 #video{
+	background: #00ff11;
+}
+
+#slide-0 #border-0,
+#slide-2 #border-2  {
+	background-image: url(img/slide-0-border.png);
+	background-size: cover;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+}
+
+#slide-1 {
+
+}
+
+#slide-1 #demo{
+	background: #ddff11;
+}
+
+#slide-1 #border-1 {
+	background-image: url(img/slide-1-border.png);
+	background-size: cover;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+}
+
+.slidelist {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.slidelist .slideitem{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	display: none;
+	background-size: cover;
+	width: 100%;
+	height: 100%;
+}
+
+.slidelist .slideitem.visible{ 
+	display: block;
+}

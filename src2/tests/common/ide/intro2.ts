@@ -33,6 +33,7 @@ module akra {
 	}
 
 	var pProgress: IProgress = createProgress();
+	var bMegaTextureLoaded: bool = false;
 
 	var pEngine: IEngine = createEngine({
 		renderer: {preserveDrawingBuffer: true, alpha: false},
@@ -44,13 +45,21 @@ module akra {
 			],
 			deps: {
 				files: [
-					{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
-					{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
-					{path: "models/tube/tube.dae", name: "TUBE"},
-					{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
 					{path: "models/hero/movie.dae", name: "HERO_MODEL"},
-					{path: "models/hero/film.DAE", name: "HERO_FILM"}
-				]
+				],
+				deps: {
+					files: [
+						{path: "models/hero/film.DAE", name: "HERO_FILM"}
+					],
+					deps: {
+						files: [
+							{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
+							{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
+							{path: "models/tube/tube.dae", name: "TUBE"},
+							{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"}
+						]
+					}
+				}
 			}
 		},
 		loader: {
@@ -65,8 +74,23 @@ module akra {
 				pProgress.draw();
 			},
 			loaded: (pManager: IDepsManager): void => {
-				setTimeout(() => {
-					document.body.removeChild(pProgress.canvas);
+				var iCounter = 0
+				var iIntervalId = setInterval(() => {
+					if(bMegaTextureLoaded){
+						document.body.removeChild(pProgress.canvas);
+						clearInterval(iIntervalId);
+					}
+					else {
+						var sSuffix: string = "";
+
+						if(iCounter % 2 === 0) sSuffix = ".";
+						else if(iCounter % 2 === 1) sSuffix = "";
+						//else sSuffix = ".";
+
+						iCounter++;
+
+						pProgress.printText("Prepare" + sSuffix);
+					}
 				}, 500);
 			}
 		}
@@ -381,6 +405,7 @@ module akra {
 		self.terrain = pTerrain;
 
 		pTerrain.megaTexture.bind("minLevelLoaded", () => {
+			bMegaTextureLoaded = true;
 			loaded();
 		});
 	}

@@ -69,6 +69,19 @@ module akra.util {
             this.updateInfo();
         }
 
+        printText(sText: string): void {
+            var pCtx: CanvasRenderingContext2D = this.context;
+            var x: number = this.size-2;
+            var y: number = this.size - this.fontSize - 2;
+
+            pCtx.clearRect(x, 0, this.width, this.height);
+
+            pCtx.fillStyle = this.fontColor;
+            pCtx.font = "bold " + this.fontSize + "px Consolas";
+
+            pCtx.fillText(sText, x, y);
+        }
+
         private updateInfo(): void {
             var pCtx: CanvasRenderingContext2D = this.context;
             var x: number = this.size;
