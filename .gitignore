@@ -42,8 +42,8 @@ node_modules/
 *.user
 *.nw
 #*.ts.html
-RELEASE/
-DEBUG/
+#RELEASE/
+#DEBUG/
 #*.css
 tmp.ts
 src/*.htm
