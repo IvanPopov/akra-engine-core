@@ -2495,8 +2495,8 @@ module akra.core.pool.resources {
                 pSubMesh.material.name = pPolygons.material;
             }
 
-            ASSERT(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
-            ASSERT(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
+            // ASSERT(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
+            // ASSERT(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
 
             pMesh.hasShadow = this.isShadowsEnabled();
 

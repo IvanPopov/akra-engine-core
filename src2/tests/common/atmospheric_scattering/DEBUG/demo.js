@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Jul 16 2013 18:36:40 GMT+0400 (Московское время (лето))
+ * assembled at: Tue Jul 16 2013 18:41:08 GMT+0400 (Московское время (лето))
  * directory: tests/common/atmospheric_scattering/DEBUG/
  * file: tests/common/atmospheric_scattering/demo.ts
  * name: demo

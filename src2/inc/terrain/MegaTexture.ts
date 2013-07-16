@@ -456,16 +456,17 @@ module akra.terrain {
 	    		}
 
 				this._pRPC.proc('loadMegaTexture', me._sSurfaceTextures, sExt, me._v2iOriginalTextreMinSize.x, me._v2iOriginalTextreMinSize.x,
-					function (pError: Error, pData: Uint8Array) {
+					function (pError: IRPCError, pData: Uint8Array) {
 						if(me._pXY[0].isLoaded){
 							return;
 						}
 
 						if(!isNull(pError)){
-							// if(pError.message === "procedure life time expired"){
-							me.loadMinTextureLevel();
-							// }
-							debug_print(pError.message);
+							if(pError.code === RPC_CALLBACK_LIFETIME_EXPIRED_CODE){
+								me.loadMinTextureLevel();
+							}
+
+							CRITICAL("Server for MegaTexture not response correctly. Report us please.");
 							return;
 						}
 
