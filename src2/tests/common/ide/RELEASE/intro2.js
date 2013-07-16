@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 15 2013 18:46:44 GMT+0400 (Московское время (лето))
+ * assembled at: Tue Jul 16 2013 18:36:19 GMT+0400 (Московское время (лето))
  * directory: tests/common/ide/RELEASE/
  * file: tests/common/ide/intro2.ts
  * name: intro2
@@ -169,7 +169,6 @@ var akra;
         var source;
         var audio0 = new Audio();
         audio0.src = akra.DATA + "/sounds/voice.wav";
-        console.log(audio0.src, akra.DATA + "/sounds/voice.wav");
         // audio0.load();
         audio0.controls = true;
         audio0.autoplay = false;

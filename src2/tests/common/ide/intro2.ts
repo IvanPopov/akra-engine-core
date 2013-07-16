@@ -154,7 +154,6 @@ module akra {
 		var audio0 = new Audio();   
 
 		audio0.src = akra.DATA + "/sounds/voice.wav";
-		console.log(audio0.src, akra.DATA + "/sounds/voice.wav");
 		// audio0.load();
 
 		audio0.controls = true;
