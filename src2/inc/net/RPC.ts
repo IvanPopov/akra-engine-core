@@ -20,6 +20,7 @@
 module akra.net {
 
 
+
     enum ERpcStates {
         //not connected
         k_Deteached, 
@@ -574,8 +575,16 @@ module akra.net {
         }
 
         static ERRORS = {
-            STACK_SIZE_EXCEEDED: new Error("stack size exceeded"),
-            CALLBACK_LIFETIME_EXPIRED: new Error("procedure life time expired")
+            STACK_SIZE_EXCEEDED: <IRPCError>{
+                name: "RPC err.", 
+                message: "stack size exceeded", 
+                code: RPC_STACK_SIZE_EXCEEDED_CODE
+            },
+            CALLBACK_LIFETIME_EXPIRED: <IRPCError>{
+                name: "RPC err.", 
+                message: "procedure life time expired", 
+                code: RPC_CALLBACK_LIFETIME_EXPIRED_CODE
+            }
         }
 
     }

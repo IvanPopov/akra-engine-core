@@ -3,6 +3,9 @@
 
 #include "IEventProvider.ts"
 
+#define RPC_STACK_SIZE_EXCEEDED_CODE 1
+#define RPC_CALLBACK_LIFETIME_EXPIRED_CODE 2
+
 module akra {
 	export enum ERPCPacketTypes {
         FAILURE,
@@ -44,6 +47,10 @@ module akra {
 
     export interface IRPCProcOptionsMap {
         [proc: string]: IRPCProcOptions;
+    }
+
+    interface IRPCError extends Error {
+        code: uint;
     }
 
     export interface IRPCOptions {
