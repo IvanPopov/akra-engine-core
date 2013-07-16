@@ -192,6 +192,52 @@ module akra {
          DEPTH_STENCIL_ATTACHMENT = 0x821A
     };
 
+    export enum ERenderStates {
+        ZENABLE,
+        ZWRITEENABLE,
+        SRCBLEND,
+        DESTBLEND,
+        CULLMODE,
+        ZFUNC,
+        DITHERENABLE,
+        ALPHABLENDENABLE,
+        ALPHATESTENABLE
+    };
+
+    export enum ERenderStateValues {
+        UNDEF = 0,
+
+        TRUE,
+        FALSE,
+        ZERO,
+        ONE,
+        SRCCOLOR,
+        INVSRCCOLOR,
+        SRCALPHA,
+        INVSRCALPHA,
+        DESTALPHA,
+        INVDESTALPHA,
+        DESTCOLOR,
+        INVDESTCOLOR,
+        SRCALPHASAT,
+        NONE,
+        CW,
+        CCW,
+        FRONT_AND_BACK,
+        NEVER,
+        LESS,
+        EQUAL,
+        LESSEQUAL,
+        GREATER,
+        NOTEQUAL,
+        GREATEREQUAL,
+        ALWAYS
+    };
+
+    export interface IRenderStateMap {
+        [index: uint]: ERenderStateValues;
+    }
+
     // export enum ERenderStates {
     //     ZENABLE = 7,
     //     ZWRITEENABLE = 14,

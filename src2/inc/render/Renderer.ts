@@ -31,6 +31,21 @@
 
 module  akra.render {
 
+	export function createRenderStateMap(): IRenderStateMap {
+		var pMap: IRenderStateMap = <IRenderStateMap>{};
+		
+		pMap[EPassState.ZENABLE] = EPassStateValue.UNDEF;
+	    pMap[EPassState.ZWRITEENABLE] = EPassStateValue.UNDEF;
+	    pMap[EPassState.SRCBLEND] = EPassStateValue.UNDEF;
+	    pMap[EPassState.DESTBLEND] = EPassStateValue.UNDEF;
+	    pMap[EPassState.CULLMODE] = EPassStateValue.UNDEF;
+	    pMap[EPassState.ZFUNC] = EPassStateValue.UNDEF;
+	    pMap[EPassState.DITHERENABLE] = EPassStateValue.UNDEF;
+	    pMap[EPassState.ALPHABLENDENABLE] = EPassStateValue.UNDEF;
+	    pMap[EPassState.ALPHATESTENABLE] = EPassStateValue.UNDEF;
+
+		return pMap;
+	}
 
 	export var SShaderPrefixes = {
 		k_Sampler    : "A_s_",

@@ -119,7 +119,7 @@ module akra.scene {
     	toString(isRecursive: bool = false, iDepth: uint = 0): string {
 #ifdef DEBUG
 			if (!isRecursive) {
-		        return "<scene_object" + (this._sName ? " " + this._sName : "") + ">";
+		        return "<scene_object" + (this._sName ? " " + this._sName : "") + ">" + " height: " + this.worldPosition.y;
 		    }
 
 		    return super.toString(isRecursive, iDepth);

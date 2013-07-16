@@ -9,7 +9,8 @@
 #include "IBufferMap.ts"
 
 module akra {
-
+	IFACE(IRenderStateMap)
+	
 	export interface IAFXPassBlendMap {
 		[index: uint]: IAFXPassBlend;
 		[index: string]: IAFXPassBlend;
@@ -21,6 +22,7 @@ module akra {
 						pSurfaceMaterial: ISurfaceMaterial,
 						pBuffer: IBufferMap): IAFXMaker;
 		_hasUniformWithName(sName: string): bool;
+		_getRenderStates(): IRenderStateMap;
 	}
 }
 

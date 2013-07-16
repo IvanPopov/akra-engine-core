@@ -35,6 +35,10 @@ module akra.render {
 			this._pInput.setStruct(sName, pValue);
 		}
 
+		inline setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
+			this._pInput.setRenderState(eState, eValue);
+		}
+
 		inline setSamplerTexture(sName: string, sTexture: string): void;
 		inline setSamplerTexture(sName: string, pTexture: ITexture): void;
 		inline setSamplerTexture(sName: string, pTexture: any): void {

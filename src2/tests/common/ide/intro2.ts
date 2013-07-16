@@ -7,7 +7,7 @@
 
 
 /// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
-/// @MINER_MODEL: 			"/models/miner/miner.dae"
+/// @MINER_MODEL: 			"/models/miner/miner.DAE"
 /// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 
 
@@ -19,6 +19,7 @@ module akra {
 
 		pProgress.color = "white";
 		pProgress.fontColor = "white";
+		pProgress.fontSize = 22;
 
 		pCanvas.style.position = "absolute";
 	    pCanvas.style.left = "50%";
@@ -41,11 +42,11 @@ module akra {
 			files: [
 				{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
 				{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
-				// {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
+				{path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
 			],
 			deps: {
 				files: [
-					{path: "models/hero/movie.dae", name: "HERO_MODEL"},
+					{path: "models/hero/movie.DAE", name: "HERO_MODEL"},
 				],
 				deps: {
 					files: [
@@ -53,9 +54,9 @@ module akra {
 					],
 					deps: {
 						files: [
-							{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
-							{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
-							{path: "models/tube/tube.dae", name: "TUBE"},
+							{path: "models/barrel/barrel_and_support.DAE", name: "BARREL"},
+							{path: "models/box/closed_box.DAE", name: "CLOSED_BOX"},
+							{path: "models/tube/tube.DAE", name: "TUBE"},
 							{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"}
 						]
 					}
@@ -105,7 +106,7 @@ module akra {
 	var pCanvas: ICanvas3d 				= pEngine.getRenderer().getDefaultCanvas();
 	var pCamera: ICamera 				= null;
 	var pViewport: IViewport 			= null;
-	var pIDE: ui.IDE 					= null;
+	// var pIDE: ui.IDE 					= null;
 	var pSkyBoxTexture: ITexture 		= null;
 	var pGamepads: IGamepadMap 			= pEngine.getGamepads();
 	var pKeymap: controls.KeyMap		= <controls.KeyMap>controls.createKeymap();
@@ -153,6 +154,7 @@ module akra {
 		var audio0 = new Audio();   
 
 		audio0.src = akra.DATA + "/sounds/voice.wav";
+		console.log(audio0.src, akra.DATA + "/sounds/voice.wav");
 		// audio0.load();
 
 		audio0.controls = true;
@@ -413,7 +415,7 @@ module akra {
 
 	function createSky(): void {
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
-		pSky.setTime(47.0);
+		pSky.setTime(13.0);
 	    pSky.skyDome.attachToParent(pScene.getRootNode());
 	    self.sky = pSky;
 
@@ -423,8 +425,15 @@ module akra {
 	    }, 100);
 	}
 
-	function createModelEntry(sResource: string): IModelEntry {
+	function createSkyBox(): void {
+		var pSkyBoxTexture: ITexture = <ITexture>pRmgr.createTexture("SKYBOX");
+		pSkyBoxTexture.loadImage(<IImg>pRmgr.imagePool.findResource("SKYBOX"));
+		(<render.DSViewport>pViewport).setSkybox(pSkyBoxTexture);
+	}
+
+	function createModelEntry(sResource: string, bShadows: bool = true): IModelEntry {
 		var pModel: ICollada = <ICollada>pRmgr.colladaPool.findResource(sResource);
+		pModel.options.shadows = bShadows;
 		var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 
 		return pModelRoot;
@@ -484,7 +493,7 @@ module akra {
 
 		pCamLight.setInheritance(ENodeInheritance.ALL);
 		pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
-		pCamLight.params.diffuse.set(1.);
+		pCamLight.params.diffuse.set(0.35);
 		pCamLight.params.specular.set(1.);
 		pCamLight.params.attenuation.set(.35, 0, 0);
 		pCamLight.enabled = false;
@@ -511,7 +520,7 @@ module akra {
 		pTube.setPosition(new Vec3(-16.  , -52.17  ,-66.));
 		
 
-		var pTubeBetweenRocks: ISceneNode = createModelEntry("TUBE_BETWEEN_ROCKS");
+		var pTubeBetweenRocks: ISceneNode = createModelEntry("TUBE_BETWEEN_ROCKS", false);
 	
 		pTubeBetweenRocks.scale(2.);
 		pTubeBetweenRocks.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
@@ -543,6 +552,7 @@ module akra {
 		createTerrain();
 		createModels();
 		createSky();
+		createSkyBox();
 		
 		// pEngine.exec();
 	}

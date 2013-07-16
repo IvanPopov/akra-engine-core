@@ -158,7 +158,7 @@ module akra.terrain {
     	    this.testDataInit();
 
     	    this._pRPC = net.createRpc();
-    	    this._pRPC.join("ws://192.168.88.53:6112");
+    	    this._pRPC.join("ws://23.21.68.208:6112");
     	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 60000);
     	    this._pRPC.setProcedureOption("getMegaTexture", "priority", 1);
     	    this.loadMinTextureLevel();
@@ -439,13 +439,21 @@ module akra.terrain {
 			}
 		}
 
+		private _iTryCount: uint = 0;
+
 		protected loadMinTextureLevel(): void {
 			var me: MegaTexture = this;
 			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
 
-			if(tCurrentTime - this._pSectorLoadInfo[0][0] > 120000){
+			if(tCurrentTime - this._pSectorLoadInfo[0][0] > 90000){
 				this._pSectorLoadInfo[0][0] = tCurrentTime;
 	    		var sExt: string = "jpg";
+
+	    		this._iTryCount++;
+
+	    		if(this._iTryCount > 2){
+	    			CRITICAL("Server for MegaTexture not response. Report us please.");
+	    		}
 
 				this._pRPC.proc('loadMegaTexture', me._sSurfaceTextures, sExt, me._v2iOriginalTextreMinSize.x, me._v2iOriginalTextreMinSize.x,
 					function (pError: Error, pData: Uint8Array) {
@@ -454,6 +462,9 @@ module akra.terrain {
 						}
 
 						if(!isNull(pError)){
+							// if(pError.message === "procedure life time expired"){
+							me.loadMinTextureLevel();
+							// }
 							debug_print(pError.message);
 							return;
 						}

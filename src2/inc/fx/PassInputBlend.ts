@@ -68,6 +68,8 @@ module akra.fx {
 		foreignKeys: string[] = null;
 		textureKeys: string[] = null;
 
+		renderStates: IRenderStateMap = null;
+
 
 		constructor(pCreator: IAFXComponentPassInputBlend){
 			this._pCreator = pCreator;
@@ -261,6 +263,10 @@ module akra.fx {
 			// this.setUniform("MATERIAL.SHININESS", pMaterial.shininess);
 		}
 
+		inline setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
+			this.renderStates[eState] = eValue;
+		}
+
 		inline _getUnifromLength(sName: string): uint {
 			return this._pCreator.uniformByRealName[sName].getType().getLength();
 		}
@@ -367,6 +373,8 @@ module akra.fx {
 			this.uniforms = <any>{};
 			this.foreigns = <any>{};
 			this.textures = <any>{};
+
+			this.renderStates = fx.createPassStateMap();
 
 			var pUniformKeys: string[] = this._pCreator.uniformRealNameList;
 			var pForeignKeys: string[] = this._pCreator.foreignNameList;

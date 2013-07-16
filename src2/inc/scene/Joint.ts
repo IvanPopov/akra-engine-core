@@ -46,7 +46,7 @@ module akra.scene {
 			isRecursive = isRecursive || false;
 
 			if (!isRecursive) {
-			    return "<joint" + (this._sName ? (' ' + this._sName) : "") + ">";
+			    return "<joint" + (this._sName ? (' ' + this._sName) : "") + ">" + " height: " + this.worldPosition.y;
 			}
 
 			return Node.prototype.toString.call(this, isRecursive, iDepth);

@@ -371,7 +371,7 @@ module akra.math {
                         + ", z: " + this.z + ", w: " + this.w + "]";
         };
 
-        ALLOCATE_STORAGE(Vec4,100)
+        ALLOCATE_STORAGE(Vec4, MATH_STACK_SIZE)
 
     }
 }

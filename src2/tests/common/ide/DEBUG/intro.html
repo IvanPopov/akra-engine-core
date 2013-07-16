@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>                           					
+    <head>                               			
+        <title>Akra Engine Project</title>   				
+        <link rel="stylesheet" type="text/css" href="assets/template.css">
+        <link rel="stylesheet" type="text/css" href="assets/typedtext.css">
+
+        <script src="assets/jquery-1.9.1.min.js" type="text/javascript"></script>
+        <script src="assets/page.js" type="text/javascript"></script>
+
+        <script type="text/javascript" src="../../../../bin/DEBUG/akra.js" data="../../../../data" ></script>
+        <script type="text/javascript" src="../../../../bin/DEBUG/Progress.js" ></script>
+        <!-- <style type="text/css">
+            body {
+                padding: 0;
+                margin: 0;
+                height: 100%;
+                width: 100%;
+            }
+        </style>-->
+    </head>                              			
+    <body>
+        <div id="top">
+            <div id="planka-top"></div>
+        </div>
+
+        <div id="main-wrapper">
+            <div id="slide-0" class="slide active"  data-num="0">
+                <div class="inner" id="viewport">
+                    <div id="requirements">
+                        <h2>Minimum System Requirements</h2>
+                        <ul>
+                            <li >
+                                <span id="req-webgl">WebGL Support</span>
+                                <ul style="font-size: 80%">
+                                    <li><span id="req-webgl-tex-float">OES_texture_float extensions</span></li>
+                                    <li><span id="req-webgl-vao">OES_vertex_array_object extensions</span></li>
+                                    <li><span id="req-webgl-tex-depth">WEBGL_depth_texture extensions</span></li>
+                                    <li><span id="req-webgl-tex-s3tc">WEBGL_compressed_texture_s3tc extensions</span></li>
+                                    <li><span id="req-webgl-derv">OES_standard_derivatives extensions</span></li>
+                                </ul>
+                            </li>
+                            <li> <span >1GB RAM</span></li>
+                            <li> <span >512MB video memory</span></li>
+                            <li> <span >Connection speed &gt; 4 Mbit</span></li>
+                        </ul>
+                        <div style="display: inline-block; background-color: rgba(255, 180, 0, .75); padding: 5px;">Notice: Demo downloads ~50MB of resources</div><!-- <br />
+                         <div style="display: inline-block; background-color: rgba(255, 180, 0, .75); padding: 5px;">Notice: Demo downloads ~50MB of resources</div> -->
+                    </div>
+                </div>
+                <div id="border-0" class="border"></div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var canView = true;
+
+            function markRequirement(id, ok) {
+                canView = canView && ok;
+                document.getElementById(id).style.color = ok? "green": "red";
+            }
+
+            markRequirement("req-webgl", akra.webgl.isEnabled());
+            markRequirement("req-webgl-tex-float", akra.webgl.hasExtension("OES_texture_float"));
+            markRequirement("req-webgl-vao", akra.webgl.hasExtension("OES_vertex_array_object"));
+            markRequirement("req-webgl-tex-depth", akra.webgl.hasExtension("WEBGL_depth_texture"));
+            markRequirement("req-webgl-tex-s3tc", akra.webgl.hasExtension("WEBGL_compressed_texture_s3tc"));
+            markRequirement("req-webgl-derv", akra.webgl.hasExtension("OES_standard_derivatives"));
+        </script>
+        <div id="bottom">
+            <div id="planka-bottom"></div>
+        </div>
+
+        <pre id="source-text-eng" style="display: none;">  <b>location:</b>#10 Ust-Kut, west Siberia #10 
+  <b>time:</b>#10 year 2198,#3 27 #3 november #10 
+  <b>after crash:</b>#10 106 years #35 $
+  <b>performer:</b>#10 object 2347 #10 
+  <b>age:</b>#10 35 years #10 
+  <b>qualification:</b>#10 expert #10
+  <b>biological:</b>#10 possible mutant#35 $
+        </pre>
+    	<script type="text/javascript" src="intro2.js"></script>
+    </body>
+</html>

@@ -465,13 +465,10 @@ float4 apply_sun_light_shadows() : COLOR {
             color.rgb = getRayleighPhase(fCos2) * points_sun_shadows[i].ground0 + Mie;
             color.rgb = HDR(color.rgb);
             float fFogValue = ComputeVolumetricFog(worldPos - camPos);
-            color.rgb = lerp(color.rgb, points_sun_shadows[i].ground0, fFogValue );
-            
+            //color.rgb = lerp(color.rgb, points_sun[i].ground0, fFogValue );
             
             float4 colorWithLight = calculateSunLight(pixelData, float4(view * float4(points_sun_shadows[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));
-            
             color = float4(lerp(points_sun_shadows[i].ground0, colorWithLight.rgb, fFogValue), 1.);
-            
             //float4(pixelData.diffuse.rgb*color.rgb, 0.);//float4(1., 0., 0., 1.);;
             //result_color += float4(float3(fCos), 0.);
 

@@ -5,6 +5,8 @@
 #include "ISurfaceMaterial.ts"
 
 module akra {
+	IFACE(IRenderStateMap)
+	
 	export enum EAFXShaderVariableType {
         k_NotVar = 0,
         
@@ -54,6 +56,8 @@ module akra {
 		foreignKeys: string[];
 		textureKeys: string[];
 
+		renderStates: IRenderStateMap;
+
 		hasTexture(sName: string): bool;
 		hasUniform(sName: string): bool;
 		
@@ -70,6 +74,8 @@ module akra {
 		setStruct(sName: string, pValue: any): void;
 
 		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void;
+
+		setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void;
 
 		_getSamplerState(sName: string): IAFXSamplerState;
 		_getSamplerTexture(sName: string): ITexture;

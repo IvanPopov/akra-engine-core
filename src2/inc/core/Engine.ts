@@ -160,7 +160,7 @@ module akra.core {
 			//get loaded signal
 			this.connect(pDepsManager, SIGNAL(loaded), SLOT(_depsLoaded));
 
-			if (isDefAndNotNull(pOptions.loader)) {
+			if (!isNull(pOptions) && isDefAndNotNull(pOptions.loader)) {
 				var fnBefore = pOptions.loader.before;
 				var fnOnload = pOptions.loader.onload;
 				var fnLoaded = pOptions.loader.loaded;

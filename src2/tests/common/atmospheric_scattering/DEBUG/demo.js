@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Jul 12 2013 18:47:55 GMT+0400 (Московское время (зима))
+ * assembled at: Tue Jul 16 2013 16:53:56 GMT+0400 (Московское время (лето))
  * directory: tests/common/atmospheric_scattering/DEBUG/
  * file: tests/common/atmospheric_scattering/demo.ts
  * name: demo
@@ -53,7 +53,7 @@ var akra;
     };
     akra.pEngine = akra.createEngine(pOptions);
     var pCamera = null;
-    var pViewport = null;
+    akra.pViewport = null;
     var pScene = akra.pEngine.getScene();
     var pCanvas = akra.pEngine.getRenderer().getDefaultCanvas();
     var pKeymap = akra.controls.createKeymap();
@@ -83,7 +83,7 @@ var akra;
     }
     function createModelEntry(sResource) {
         var pModel = pRmgr.colladaPool.findResource(sResource);
-        var pModelRoot = pModel.attachToScene(pScene);
+        var pModelRoot = pModel.attachToScene(pScene.getRootNode());
         return pModelRoot;
     }
     function setup() {
@@ -104,7 +104,7 @@ var akra;
         // pCamera.lookAt(vec3(0.));
             }
     function createViewports() {
-        pViewport = pCanvas.addViewport(pCamera, akra.EViewportTypes.DSVIEWPORT);
+        akra.pViewport = pCanvas.addViewport(pCamera, akra.EViewportTypes.DSVIEWPORT);
         pCanvas.resize(window.innerWidth, window.innerHeight);
         window.onresize = function (event) {
             pCanvas.resize(window.innerWidth, window.innerHeight);
@@ -118,7 +118,7 @@ var akra;
         pSunLight.params.diffuse.set(0.75);
         pSunLight.params.specular.set(1.);
         pSunLight.params.attenuation.set(1.25, 0, 0);
-        pSunLight.addPosition(0, 500, 0);
+        pSunLight.addPosition(10, 10, 0);
     }
     var v3fOffset = new akra.Vec3();
     function updateKeyboardControls(fLateralSpeed, fRotationSpeed) {
@@ -172,9 +172,10 @@ var akra;
             pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
         }
     }
-    function createSceneEnvironment() {
-        var pSceneQuad = akra.util.createQuad(pScene, 40000.);
-        pSceneQuad.attachToParent(pScene.getRootNode());
+    function createSceneEnvironment(pRoot) {
+        if (typeof pRoot === "undefined") { pRoot = pScene.getRootNode(); }
+        var pSceneQuad = akra.util.createQuad(pScene, 600.);
+        pSceneQuad.attachToParent(pRoot);
         // var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
         // pSceneSurface.scale(10.);
         // pSceneSurface.addPosition(0, 0.01, 0);
@@ -206,9 +207,9 @@ var akra;
         createDialog();
         createCameras();
         createViewports();
-        createSceneEnvironment();
-        createModelEntry("HERO_MODEL");
-        // createLighting();
+        // createModelEntry("HERO_MODEL");
+        createSceneEnvironment(createModelEntry("HERO_MODEL"));
+        createLighting();
         akra.pSky = new akra.model.Sky(pEngine, 32, 32, 1000.0);
         akra.pSky.setTime(0);
         var pSceneModel = akra.pSky.skyDome;

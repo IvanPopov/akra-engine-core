@@ -374,7 +374,7 @@ module akra.scene.objects {
 
     	toString(isRecursive: bool = false, iDepth: int = 0): string {
 		    if (!isRecursive) {
-		        return "<camera" + (this._sName? " " + this._sName: "") + ">";
+		        return "<camera" + (this._sName? " " + this._sName: "") + ">" + " height: " + this.worldPosition.y;
 		    }
 
 		    return super.toString(isRecursive, iDepth);

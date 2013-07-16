@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Sat Jul 13 2013 21:25:14 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Jul 15 2013 18:46:44 GMT+0400 (Московское время (лето))
  * directory: tests/common/ide/RELEASE/
  * file: tests/common/ide/intro2.ts
  * name: intro2
@@ -14,7 +14,7 @@
 // declare var jQuery: JQueryStatic;
 // declare var $: JQueryStatic;
 /// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
-/// @MINER_MODEL: 			"/models/miner/miner.dae"
+/// @MINER_MODEL: 			"/models/miner/miner.DAE"
 /// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 var akra;
 (function (akra) {
@@ -23,6 +23,7 @@ var akra;
         var pCanvas = pProgress.canvas;
         pProgress.color = "white";
         pProgress.fontColor = "white";
+        pProgress.fontSize = 22;
         pCanvas.style.position = "absolute";
         pCanvas.style.left = "50%";
         pCanvas.style.top = "50%";
@@ -49,13 +50,15 @@ var akra;
                     path: "textures/terrain/main_terrain_normal_map.dds",
                     name: "TERRAIN_NORMAL_MAP"
                 }, 
-                
+                {
+                    path: "textures/skyboxes/desert-3.dds",
+                    name: "SKYBOX"
+                }
             ],
-            deps: // {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
-            {
+            deps: {
                 files: [
                     {
-                        path: "models/hero/movie.dae",
+                        path: "models/hero/movie.DAE",
                         name: "HERO_MODEL"
                     }, 
                     
@@ -70,15 +73,15 @@ var akra;
                     deps: {
                         files: [
                             {
-                                path: "models/barrel/barrel_and_support.dae",
+                                path: "models/barrel/barrel_and_support.DAE",
                                 name: "BARREL"
                             }, 
                             {
-                                path: "models/box/closed_box.dae",
+                                path: "models/box/closed_box.DAE",
                                 name: "CLOSED_BOX"
                             }, 
                             {
-                                path: "models/tube/tube.dae",
+                                path: "models/tube/tube.DAE",
                                 name: "TUBE"
                             }, 
                             {
@@ -127,7 +130,7 @@ var akra;
     var pCanvas = pEngine.getRenderer().getDefaultCanvas();
     var pCamera = null;
     var pViewport = null;
-    var pIDE = null;
+    // var pIDE: ui.IDE 					= null;
     var pSkyBoxTexture = null;
     var pGamepads = pEngine.getGamepads();
     var pKeymap = akra.controls.createKeymap();
@@ -166,6 +169,7 @@ var akra;
         var source;
         var audio0 = new Audio();
         audio0.src = akra.DATA + "/sounds/voice.wav";
+        console.log(audio0.src, akra.DATA + "/sounds/voice.wav");
         // audio0.load();
         audio0.controls = true;
         audio0.autoplay = false;
@@ -360,7 +364,7 @@ var akra;
     }
     function createSky() {
         pSky = new akra.model.Sky(pEngine, 32, 32, 1000.0);
-        pSky.setTime(47.0);
+        pSky.setTime(13.0);
         pSky.skyDome.attachToParent(pScene.getRootNode());
         akra.self.sky = pSky;
         var i = setInterval(/** @inline */function () {
@@ -368,8 +372,15 @@ var akra;
             // if (math.abs(pSky.time) == 30.0) clearInterval(i);
                     }, 100);
     }
-    function createModelEntry(sResource) {
+    function createSkyBox() {
+        var pSkyBoxTexture = pRmgr.createTexture("SKYBOX");
+        pSkyBoxTexture.loadImage(pRmgr.imagePool.findResource("SKYBOX"));
+        (pViewport).setSkybox(pSkyBoxTexture);
+    }
+    function createModelEntry(sResource, bShadows) {
+        if (typeof bShadows === "undefined") { bShadows = true; }
         var pModel = pRmgr.colladaPool.findResource(sResource);
+        pModel.options.shadows = bShadows;
         var pModelRoot = pModel.attachToScene(pScene);
         return pModelRoot;
     }
@@ -411,7 +422,7 @@ var akra;
         pCamLight.attachToParent(pScene.getRootNode().findEntity("Camera001-camera"));
         pCamLight.setInheritance(akra.ENodeInheritance.ALL);
         pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
-        pCamLight.params.diffuse.set(1.);
+        pCamLight.params.diffuse.set(0.35);
         pCamLight.params.specular.set(1.);
         pCamLight.params.attenuation.set(.35, 0, 0);
         pCamLight.enabled = false;
@@ -428,7 +439,7 @@ var akra;
         pTube.scale(19.);
         pTube.setRotationByXYZAxis(0. * akra.math.RADIAN_RATIO, -55. * akra.math.RADIAN_RATIO, 0.);
         pTube.setPosition(new akra.Vec3(-16., -52.17, -66.));
-        var pTubeBetweenRocks = createModelEntry("TUBE_BETWEEN_ROCKS");
+        var pTubeBetweenRocks = createModelEntry("TUBE_BETWEEN_ROCKS", false);
         pTubeBetweenRocks.scale(2.);
         pTubeBetweenRocks.setRotationByXYZAxis(5. * akra.math.RADIAN_RATIO, 100. * akra.math.RADIAN_RATIO, 0.);
         pTubeBetweenRocks.setPosition(new akra.Vec3(-55., -12.15, -82.00));
@@ -450,6 +461,7 @@ var akra;
         createTerrain();
         createModels();
         createSky();
+        createSkyBox();
         // pEngine.exec();
             }
     pEngine.bind("depsLoaded", main);

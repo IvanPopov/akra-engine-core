@@ -1600,7 +1600,7 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		ALLOCATE_STORAGE(Mat4,100)
+		ALLOCATE_STORAGE(Mat4, MATH_STACK_SIZE)
     }
 }
 

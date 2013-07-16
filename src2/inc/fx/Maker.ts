@@ -15,6 +15,8 @@
 
 #endif
 
+#define SET_RENDER_STATE_TO_INPUT(eState) pInput.renderStates[eState] = pRenderStates[eState] || pPassBlendRenderStates[eState];
+
 module akra.fx {
 
 	export interface IUniformTypeMap {
@@ -311,7 +313,8 @@ module akra.fx {
 		_createDataPool(): IShaderInput {
 			var pInput: IShaderInput = {
 				uniforms: <{[index: uint]: any;}>{},
-				attrs: <{[index: uint]: any;}>{}
+				attrs: <{[index: uint]: any;}>{},
+				renderStates: fx.createPassStateMap()
 			};
 
 			//assume, that attr & uniform never have same names!!!
@@ -562,6 +565,7 @@ module akra.fx {
 			var pUniforms: Object = pPassInput.uniforms;
 			var pTextures: Object = pPassInput.textures
 			var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
+			var pRenderStates: IRenderStateMap = pPassInput.renderStates;
 			var pSamplerArrays: IAFXSamplerStateListMap = pPassInput.samplerArrays;
 
 			var pInput: IShaderInput = this._getShaderInput();
@@ -650,6 +654,18 @@ module akra.fx {
 			if(this._isUsedZeroCube){
 				pInput.uniforms[this._pShaderUniformInfoMap["asc0"].location] = 19;
 			}
+
+			var pPassBlendRenderStates: IRenderStateMap = this._pPassBlend._getRenderStates();
+
+			SET_RENDER_STATE_TO_INPUT(EPassState.ZENABLE);
+	        SET_RENDER_STATE_TO_INPUT(EPassState.ZWRITEENABLE);
+	        SET_RENDER_STATE_TO_INPUT(EPassState.SRCBLEND);
+	        SET_RENDER_STATE_TO_INPUT(EPassState.DESTBLEND);
+	        SET_RENDER_STATE_TO_INPUT(EPassState.CULLMODE);
+	        SET_RENDER_STATE_TO_INPUT(EPassState.ZFUNC);
+	        SET_RENDER_STATE_TO_INPUT(EPassState.DITHERENABLE);
+	        SET_RENDER_STATE_TO_INPUT(EPassState.ALPHABLENDENABLE);
+	        SET_RENDER_STATE_TO_INPUT(EPassState.ALPHATESTENABLE);
 
 			return pInput;
 		}

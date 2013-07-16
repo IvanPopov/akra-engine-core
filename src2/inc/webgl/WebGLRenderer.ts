@@ -649,6 +649,16 @@ module akra.webgl {
 
 	        return GL_ALWAYS;
     	}
+
+    	protected setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
+    		if(eValue === ERenderStateValues.UNDEF){
+    			return;
+    		}
+
+    		switch(eState){
+
+    		}
+    	}
 	}
 }
 

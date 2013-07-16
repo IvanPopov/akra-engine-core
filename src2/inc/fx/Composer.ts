@@ -595,8 +595,8 @@ module akra.fx {
 		protected fSunAmbient: float = 0.22;
 
 		//fog
-		protected cHeightFalloff: float = 0.03;
-		protected cGlobalDensity: float = 0.009;
+		protected cHeightFalloff: float = 0.04;
+		protected cGlobalDensity: float = 0.003;
 
 #define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[sName] = pValue;
 

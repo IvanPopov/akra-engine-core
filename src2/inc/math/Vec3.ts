@@ -352,7 +352,7 @@ module akra.math {
             return v3fDestination;
         };
 
-        ALLOCATE_STORAGE(Vec3, 256)
+        ALLOCATE_STORAGE(Vec3, MATH_STACK_SIZE)
     }
 }
 
