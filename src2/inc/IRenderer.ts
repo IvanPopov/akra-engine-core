@@ -193,15 +193,27 @@ module akra {
     };
 
     export enum ERenderStates {
+        BLENDENABLE,
+        CULLFACEENABLE,
         ZENABLE,
         ZWRITEENABLE,
+        DITHERENABLE,
+        SCISSORTESTENABLE,
+        STENCILTESTENABLE,
+        POLYGONOFFSETFILLENABLE,
+
+        CULLFACE,
+        FRONTFACE,
+
         SRCBLEND,
         DESTBLEND,
-        CULLMODE,
+
         ZFUNC,
-        DITHERENABLE,
+
         ALPHABLENDENABLE,
-        ALPHATESTENABLE
+        ALPHATESTENABLE,
+
+        //CULLMODE = FRONTFACE,
     };
 
     export enum ERenderStateValues {
@@ -223,6 +235,8 @@ module akra {
         NONE,
         CW,
         CCW,
+        FRONT,
+        BACK,
         FRONT_AND_BACK,
         NEVER,
         LESS,

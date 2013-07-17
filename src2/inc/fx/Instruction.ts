@@ -19,15 +19,21 @@ module akra.fx {
 	export function createPassStateMap(): IRenderStateMap {
 		var pMap: IRenderStateMap = <IRenderStateMap>{};
 		
+		pMap[EPassState.BLENDENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.CULLFACEENABLE] = EPassStateValue.UNDEF;
 		pMap[EPassState.ZENABLE] = EPassStateValue.UNDEF;
-	    pMap[EPassState.ZWRITEENABLE] = EPassStateValue.UNDEF;
-	    pMap[EPassState.SRCBLEND] = EPassStateValue.UNDEF;
-	    pMap[EPassState.DESTBLEND] = EPassStateValue.UNDEF;
-	    pMap[EPassState.CULLMODE] = EPassStateValue.UNDEF;
-	    pMap[EPassState.ZFUNC] = EPassStateValue.UNDEF;
-	    pMap[EPassState.DITHERENABLE] = EPassStateValue.UNDEF;
-	    pMap[EPassState.ALPHABLENDENABLE] = EPassStateValue.UNDEF;
-	    pMap[EPassState.ALPHATESTENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.ZWRITEENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.DITHERENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.SCISSORTESTENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.STENCILTESTENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.POLYGONOFFSETFILLENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.CULLFACE] = EPassStateValue.UNDEF;
+		pMap[EPassState.FRONTFACE] = EPassStateValue.UNDEF;
+		pMap[EPassState.SRCBLEND] = EPassStateValue.UNDEF;
+		pMap[EPassState.DESTBLEND] = EPassStateValue.UNDEF;
+		pMap[EPassState.ZFUNC] = EPassStateValue.UNDEF;
+		pMap[EPassState.ALPHABLENDENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.ALPHATESTENABLE] = EPassStateValue.UNDEF;
 
 		return pMap;
 	}
@@ -710,15 +716,21 @@ module akra.fx {
 
         private clearPassStates(): void {
         	if(!isNull(this._pPassStateMap)){
-        		this._pPassStateMap[EPassState.ZENABLE] = EPassStateValue.UNDEF;
-			    this._pPassStateMap[EPassState.ZWRITEENABLE] = EPassStateValue.UNDEF;
-			    this._pPassStateMap[EPassState.SRCBLEND] = EPassStateValue.UNDEF;
-			    this._pPassStateMap[EPassState.DESTBLEND] = EPassStateValue.UNDEF;
-			    this._pPassStateMap[EPassState.CULLMODE] = EPassStateValue.UNDEF;
-			    this._pPassStateMap[EPassState.ZFUNC] = EPassStateValue.UNDEF;
-			    this._pPassStateMap[EPassState.DITHERENABLE] = EPassStateValue.UNDEF;
-			    this._pPassStateMap[EPassState.ALPHABLENDENABLE] = EPassStateValue.UNDEF;
-			    this._pPassStateMap[EPassState.ALPHATESTENABLE] = EPassStateValue.UNDEF;
+        		this._pPassStateMap[EPassState.BLENDENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.CULLFACEENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ZENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ZWRITEENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.DITHERENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.SCISSORTESTENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.STENCILTESTENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.POLYGONOFFSETFILLENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.CULLFACE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.FRONTFACE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.SRCBLEND] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.DESTBLEND] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ZFUNC] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ALPHABLENDENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ALPHATESTENABLE] = EPassStateValue.UNDEF;
         	}
 		}
 

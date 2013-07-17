@@ -9,7 +9,7 @@
 
 #define EPassState ERenderStates
 #define EPassStateValue ERenderStateValues
-#define IPassStateMap IRenderStateMap 
+#define IPassStateMap IRenderStateMap
 
 module akra {
     export enum EAFXInstructionTypes {

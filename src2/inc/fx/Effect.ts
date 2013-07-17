@@ -3900,33 +3900,51 @@ module akra.fx {
         		var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
 
         		switch (sType) {
-			        case "ZENABLE":
-			        	eType = EPassState.ZENABLE;
-			        	break; 
-			        case "ZWRITEENABLE":
-			       		eType = EPassState.ZWRITEENABLE;
-			        	break; 
-			        case "SRCBLEND":
-			        	eType = EPassState.SRCBLEND;
-			        	break; 
-			        case "DESTBLEND":
-			        	eType = EPassState.DESTBLEND;
-			        	break; 
-			        case "CULLMODE":
-			        	eType = EPassState.CULLMODE;
-			        	break; 
-			        case "ZFUNC":
-			        	eType = EPassState.ZFUNC;
-			        	break; 
-			        case "DITHERENABLE":
-			        	eType = EPassState.DITHERENABLE;
-			        	break; 
-			        case "ALPHABLENDENABLE":
-			        	eType = EPassState.ALPHABLENDENABLE;
-			        	break; 
-			        case "ALPHATESTENABLE":
-			        	eType = EPassState.ALPHATESTENABLE;
-			        	break;
+        			case "BLENDENABLE":
+        				eType = EPassState.BLENDENABLE;
+        				break;
+        			case "CULLFACEENABLE":
+        				eType = EPassState.CULLFACEENABLE;
+        				break;
+        			case "ZENABLE":
+        				eType = EPassState.ZENABLE;
+        				break;
+        			case "ZWRITEENABLE":
+        				eType = EPassState.ZWRITEENABLE;
+        				break;
+        			case "DITHERENABLE":
+        				eType = EPassState.DITHERENABLE;
+        				break;
+        			case "SCISSORTESTENABLE":
+        				eType = EPassState.SCISSORTESTENABLE;
+        				break;
+        			case "STENCILTESTENABLE":
+        				eType = EPassState.STENCILTESTENABLE;
+        				break;
+        			case "POLYGONOFFSETFILLENABLE":
+        				eType = EPassState.POLYGONOFFSETFILLENABLE;
+        				break;
+        			case "CULLFACE":
+        				eType = EPassState.CULLFACE;
+        				break;
+        			case "FRONTFACE":
+        				eType = EPassState.FRONTFACE;
+        				break;
+        			case "SRCBLEND":
+        				eType = EPassState.SRCBLEND;
+        				break;
+        			case "DESTBLEND":
+        				eType = EPassState.DESTBLEND;
+        				break;
+        			case "ZFUNC":
+        				eType = EPassState.ZFUNC;
+        				break;
+        			case "ALPHABLENDENABLE":
+        				eType = EPassState.ALPHABLENDENABLE;
+        				break;
+        			case "ALPHATESTENABLE":
+        				eType = EPassState.ALPHATESTENABLE;
+        				break;
 
 			        default:
 			            WARNING("Unsupported render state type used: " + sType + ". WebGl...");
@@ -3948,9 +3966,14 @@ module akra.fx {
 			            WARNING("ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.");
 			            return;
 
-			        case EPassState.DITHERENABLE:
+			        case EPassState.BLENDENABLE:
+			        case EPassState.CULLFACEENABLE:
 			        case EPassState.ZENABLE:
 			        case EPassState.ZWRITEENABLE:
+			        case EPassState.DITHERENABLE:
+			        case EPassState.SCISSORTESTENABLE:
+			        case EPassState.STENCILTESTENABLE:
+			        case EPassState.POLYGONOFFSETFILLENABLE:
 			            switch (sValue) {
 			                case "TRUE":
 			                	eValue = EPassStateValue.TRUE;
@@ -3963,6 +3986,39 @@ module akra.fx {
 			                    WARNING("Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: "
 			                              + sValue + ".");
 								return;
+			            }
+			            break;
+
+			        case EPassState.CULLFACE:
+			        	switch(sValue){
+			        		case "FRONT":
+			                	eValue = EPassStateValue.FRONT;
+			                	break;
+			                case "BACK":
+			                	eValue = EPassStateValue.BACK;
+			                	break
+			        		case "FRONT_AND_BACK":
+			                	eValue = EPassStateValue.FRONT_AND_BACK;
+			                	break;
+
+			               	default:
+			                    WARNING("Unsupported render state CULLFACE value used: " + sValue + ".");
+			                    return;
+			        	}
+			        	break;
+
+			       	case EPassState.FRONTFACE:
+			            switch (sValue) {
+			                case "CW":
+			                	eValue = EPassStateValue.CW;
+			                	break;
+			                case "CCW":
+			                	eValue = EPassStateValue.CCW;
+			                	break;
+
+			                default:
+			                    WARNING("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
+			                    return;
 			            }
 			            break;
 
@@ -4009,26 +4065,7 @@ module akra.fx {
 			            }
 			            break;
 
-			        case EPassState.CULLMODE:
-			            switch (sValue) {
-			                case "NONE":
-			                	eValue = EPassStateValue.NONE;
-			                	break;
-			                case "CW":
-			                	eValue = EPassStateValue.CW;
-			                	break;
-			                case "CCW":
-			                	eValue = EPassStateValue.CCW;
-			                	break;
-			                case "FRONT_AND_BACK":
-			                	eValue = EPassStateValue.FRONT_AND_BACK;
-			                	break;
-
-			                default:
-			                    WARNING("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
-			                    return;
-			            }
-			            break;
+			        
 
 			        case EPassState.ZFUNC:
 			            switch (sValue) {

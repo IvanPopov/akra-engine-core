@@ -11,9 +11,58 @@
 #define WEBGL_MAX_FRAMEBUFFER_NUM 32
 
 module akra.webgl {
-	export interface IWebGLContextState {
-		depthMask: bool;
-		framebuffer: WebGLFramebuffer;
+	export interface IWebGLContextStates {
+		BLEND: bool;
+		BLEND_DST_ALPHA: uint;
+		BLEND_DST_RGB: uint;
+		BLEND_EQUATION_ALPHA: uint;
+		BLEND_EQUATION_RGB: uint;
+		BLEND_SRC_ALPHA: uint;
+		BLEND_SRC_RGB: uint;
+
+		COLOR_CLEAR_VALUE: Float32Array;
+		COLOR_WRITEMASK: bool[];
+
+		CULL_FACE: bool;
+		CULL_FACE_MODE: uint;
+
+		DEPTH_CLEAR_VALUE: float;
+		DEPTH_FUNC: uint;
+		DEPTH_RANGE: Float32Array;
+		DEPTH_TEST: bool;
+		DEPTH_WRITEMASK: bool;
+		DITHER: bool;
+
+		FRONT_FACE: uint;
+		LINE_WIDTH: float;
+
+		POLYGON_OFFSET_FACTOR: float;
+		POLYGON_OFFSET_FILL: bool;
+		POLYGON_OFFSET_UNITS: float;
+
+		SAMPLE_BUFFERS: int;
+		SAMPLE_COVERAGE_INVERT: bool;
+		SAMPLE_COVERAGE_VALUE: float;
+		SAMPLES: int;
+
+		SCISSOR_TEST: bool;
+
+		STENCIL_BACK_FAIL: uint;
+		STENCIL_BACK_FUNC: uint;
+		STENCIL_BACK_PASS_DEPTH_FAIL: uint;
+		STENCIL_BACK_PASS_DEPTH_PASS: uint;
+		STENCIL_BACK_REF: int;
+		STENCIL_BACK_VALUE_MASK: uint;
+		STENCIL_BACK_WRITEMASK: uint;
+		STENCIL_CLEAR_VALUE: int;
+		STENCIL_FAIL: uint;
+		STENCIL_FUNC: uint;
+		STENCIL_PASS_DEPTH_FAIL: uint;
+		STENCIL_PASS_DEPTH_PASS: uint;
+		STENCIL_REF: int;
+		STENCIL_TEST: bool;
+		STENCIL_VALUE_MASK: uint;
+		STENCIL_WRITEMASK: uint;
 	}
 
 	export class WebGLRenderer extends render.Renderer {
@@ -36,10 +85,9 @@ module akra.webgl {
 		/**
 		 * Need to impove speed
 		 */
-		private _pContextState: IWebGLContextState = {
-			depthMask: false,
-			framebuffer: null
-		}
+		private _pCurrentContextStates: IWebGLContextStates = WebGLRenderer.createWebGLContextStates();
+		private _pRenderStatesPool: IObjectArray = new util.ObjectArray();
+		private _pFreeRenderStatesPool: IObjectArray = new util.ObjectArray();
 
 		static DEFAULT_OPTIONS: IRendererOptions = {
 			depth: false,
@@ -114,6 +162,11 @@ module akra.webgl {
 				this._pTextureSlotList[i] = null;
 			}
 
+			for(var i: uint = 0; i < 4; i++){
+				this._pFreeRenderStatesPool.push(WebGLRenderer.createWebGLContextStates());
+			}
+
+			this.forceUpdateContextRenderStates();
 		}
 
 		debug(bValue: bool = true, useApiTrace: bool = false): bool {
@@ -151,8 +204,9 @@ module akra.webgl {
 				case GL_FRAMEBUFFER_BINDING:
 					return this._pWebGLContext.getParameter(iWebGLParam);
 				case GL_DEPTH_WRITEMASK:
-					return this._pContextState.depthMask;
+					return this._pCurrentContextStates.DEPTH_WRITEMASK;
 			}
+			// this._pWebGLContext.getParameter(iWebGLParam);
 		}
 
 		_beginRender(): void {
@@ -420,7 +474,7 @@ module akra.webgl {
         	}
 
         	this._pWebGLContext.depthMask(bDepthWrite); 
-        	this._pContextState.depthMask = bDepthWrite;
+        	this._pCurrentContextStates.DEPTH_WRITEMASK = bDepthWrite;
 
         	this._pWebGLContext.depthFunc(this.convertCompareFunction(eDepthFunction));
         }
@@ -519,7 +573,7 @@ module akra.webgl {
 
 		inline bindWebGLFramebuffer(eTarget: uint, pBuffer: WebGLFramebuffer): void {
 			this._pWebGLContext.bindFramebuffer(eTarget, pBuffer);
-			//this._pContextState.framebuffer = pBuffer;
+			//this._pCurrentContextStates.framebuffer = pBuffer;
 		}
 
 		inline bindWebGLFramebufferTexture2D(eTarget: uint, eAttachment:uint,eTexTarget:uint, pTexture: WebGLTexture, iMipLevel?:uint=0): void {
@@ -627,6 +681,144 @@ module akra.webgl {
 			}
 		}
 
+		_pushRenderStates(): void {
+			this._pRenderStatesPool.push(this._pCurrentContextStates);
+
+			this._pCurrentContextStates = WebGLRenderer.copyWebGLContextStates(this.getFreeRenderStates(), this._pCurrentContextStates);
+		}
+
+		_popRenderStates(): void {
+			if(this._pRenderStatesPool.length === 0) {
+				debug_warning("Can not pop context render states. Pool of context is empty.");
+			}
+
+			this._pFreeRenderStatesPool.push(this._pCurrentContextStates);
+
+			var pCurreentStates: IWebGLContextStates = this._pCurrentContextStates;
+			this._pCurrentContextStates = this._pRenderStatesPool.pop();
+
+			this.restoreWebGLContextRenderStates(pCurreentStates);
+		}
+
+		private restoreWebGLContextRenderStates(pStatesFrom: IWebGLContextStates): void {
+			this.restoreBlendStates(pStatesFrom);
+			this.restoreCullStates(pStatesFrom);
+			this.restoreColorStates(pStatesFrom);
+			this.restoreDepthStates(pStatesFrom);
+			this.restorePolygonStates(pStatesFrom);
+			this.restoreStencilStates(pStatesFrom);
+			this.restoreSampleStates(pStatesFrom);
+		}
+
+		private restoreBlendStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if (pRestoreStates.BLEND !== pStatesFrom.BLEND){
+				if(pRestoreStates.BLEND) {
+					this._pWebGLContext.enable(GL_BLEND)
+				}
+				else {
+					this._pWebGLContext.disable(GL_BLEND);
+				}
+			}
+
+			if (pRestoreStates.BLEND_EQUATION_RGB !== pStatesFrom.BLEND_EQUATION_RGB ||
+				pRestoreStates.BLEND_EQUATION_ALPHA !== pStatesFrom.BLEND_EQUATION_ALPHA) {
+
+				if(pRestoreStates.BLEND_EQUATION_RGB === pRestoreStates.BLEND_EQUATION_ALPHA) {
+					this._pWebGLContext.blendEquation(pRestoreStates.BLEND_EQUATION_RGB);
+				}
+				else {
+					this._pWebGLContext.blendEquationSeparate(pRestoreStates.BLEND_EQUATION_RGB, 
+															  pRestoreStates.BLEND_EQUATION_ALPHA);
+				}
+			}
+
+			if (pRestoreStates.BLEND_DST_RGB !== pStatesFrom.BLEND_DST_RGB ||
+				pRestoreStates.BLEND_DST_ALPHA !== pStatesFrom.BLEND_DST_ALPHA ||
+				pRestoreStates.BLEND_SRC_RGB !== pStatesFrom.BLEND_SRC_RGB ||
+				pRestoreStates.BLEND_SRC_ALPHA !== pStatesFrom.BLEND_SRC_ALPHA) {
+
+				if (pRestoreStates.BLEND_DST_RGB === pRestoreStates.BLEND_DST_ALPHA &&
+					pRestoreStates.BLEND_SRC_RGB === pRestoreStates.BLEND_SRC_ALPHA) {
+
+					this._pWebGLContext.blendFunc(pRestoreStates.BLEND_SRC_RGB, pRestoreStates.BLEND_DST_RGB);
+				}
+				else {
+					this._pWebGLContext.blendFuncSeparate(pRestoreStates.BLEND_SRC_RGB, pRestoreStates.BLEND_DST_RGB,
+														  pRestoreStates.BLEND_SRC_ALPHA, pRestoreStates.BLEND_DST_ALPHA);
+				}
+			}
+		}
+
+		private restoreCullStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if (pRestoreStates.CULL_FACE !== pStatesFrom.CULL_FACE){
+				if(pRestoreStates.CULL_FACE) {
+					this._pWebGLContext.enable(GL_CULL_FACE)
+				}
+				else {
+					this._pWebGLContext.disable(GL_CULL_FACE);
+				}
+			}
+
+			if (pRestoreStates.CULL_FACE_MODE !== pStatesFrom.CULL_FACE_MODE){
+				this._pWebGLContext.cullFace(pRestoreStates.CULL_FACE_MODE);
+			}
+		}
+
+		private restoreColorStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if (pRestoreStates.COLOR_CLEAR_VALUE[0] !== pStatesFrom.COLOR_CLEAR_VALUE[0] ||
+				pRestoreStates.COLOR_CLEAR_VALUE[1] !== pStatesFrom.COLOR_CLEAR_VALUE[1] ||
+				pRestoreStates.COLOR_CLEAR_VALUE[2] !== pStatesFrom.COLOR_CLEAR_VALUE[2] ||
+				pRestoreStates.COLOR_CLEAR_VALUE[3] !== pStatesFrom.COLOR_CLEAR_VALUE[3]){
+
+				this._pWebGLContext.clearColor(pRestoreStates.COLOR_CLEAR_VALUE[0],
+											   pRestoreStates.COLOR_CLEAR_VALUE[1],
+											   pRestoreStates.COLOR_CLEAR_VALUE[2],
+											   pRestoreStates.COLOR_CLEAR_VALUE[3]);
+			}
+
+			if (pRestoreStates.COLOR_WRITEMASK[0] !== pStatesFrom.COLOR_CLEAR_VALUE[0] ||
+				pRestoreStates.COLOR_WRITEMASK[1] !== pStatesFrom.COLOR_CLEAR_VALUE[1] ||
+				pRestoreStates.COLOR_WRITEMASK[2] !== pStatesFrom.COLOR_CLEAR_VALUE[2] ||
+				pRestoreStates.COLOR_WRITEMASK[3] !== pStatesFrom.COLOR_CLEAR_VALUE[3]){
+				
+				this._pWebGLContext.colorMask(pRestoreStates.COLOR_WRITEMASK[0],
+											  pRestoreStates.COLOR_WRITEMASK[1],
+											  pRestoreStates.COLOR_WRITEMASK[2],
+											  pRestoreStates.COLOR_WRITEMASK[3]);
+			}
+		}
+
+		private restoreDepthStates(pStatesFrom: IWebGLContextStates): void {
+		}
+
+		private restorePolygonStates(pStatesFrom: IWebGLContextStates): void {
+		}
+
+		private restoreStencilStates(pStatesFrom: IWebGLContextStates): void {
+		}
+
+		private restoreSampleStates(pStatesFrom: IWebGLContextStates): void {
+		}
+
+		private inline forceUpdateContextRenderStates(): void {
+			WebGLRenderer.initStatesFromWebGLContext(this._pCurrentContextStates, this._pWebGLContext);
+		}
+
+		private getFreeRenderStates(): IWebGLContextStates {
+			if(this._pFreeRenderStatesPool.length > 0){
+				return this._pFreeRenderStatesPool.pop();
+			}
+			else {
+				return WebGLRenderer.createWebGLContextStates();
+			}
+		}
+
 		private convertCompareFunction(eFunc: ECompareFunction): uint {
 	        switch(eFunc) {
 	            case ECompareFunction.ALWAYS_FAIL:
@@ -650,15 +842,174 @@ module akra.webgl {
 	        return GL_ALWAYS;
     	}
 
-    	protected setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
-    		if(eValue === ERenderStateValues.UNDEF){
-    			return;
-    		}
 
-    		switch(eState){
+    	static createWebGLContextStates(pStates?: IWebGLContextStates = null): IWebGLContextStates {
+			return {
+				BLEND: isNull(pStates) ? false : pStates.BLEND,
+				BLEND_DST_ALPHA: isNull(pStates) ? 0 : pStates.BLEND_DST_ALPHA,
+				BLEND_DST_RGB: isNull(pStates) ? 0 : pStates.BLEND_DST_RGB,
+				BLEND_EQUATION_ALPHA: isNull(pStates) ? 0 : pStates.BLEND_EQUATION_ALPHA,
+				BLEND_EQUATION_RGB: isNull(pStates) ? 0 : pStates.BLEND_EQUATION_RGB,
+				BLEND_SRC_ALPHA: isNull(pStates) ? 0 : pStates.BLEND_SRC_ALPHA,
+				BLEND_SRC_RGB: isNull(pStates) ? 0 : pStates.BLEND_SRC_RGB,
 
-    		}
-    	}
+				COLOR_CLEAR_VALUE: isNull(pStates) ? new Float32Array(4) : new Float32Array(pStates.COLOR_CLEAR_VALUE),
+				COLOR_WRITEMASK: isNull(pStates) ? [false, false, false, false] : pStates.COLOR_WRITEMASK.slice(0),
+
+				CULL_FACE: isNull(pStates) ? false : pStates.CULL_FACE,
+				CULL_FACE_MODE: isNull(pStates) ? 0 : pStates.CULL_FACE_MODE,
+
+				DEPTH_CLEAR_VALUE: isNull(pStates) ? 0. : pStates.DEPTH_CLEAR_VALUE,
+				DEPTH_FUNC: isNull(pStates) ? 0 : pStates.DEPTH_FUNC,
+				DEPTH_RANGE: isNull(pStates) ? new Float32Array(2) : new Float32Array(pStates.DEPTH_RANGE),
+				DEPTH_TEST: isNull(pStates) ? false : pStates.DEPTH_TEST,
+				DEPTH_WRITEMASK: isNull(pStates) ? false : pStates.DEPTH_WRITEMASK,
+				DITHER: isNull(pStates) ? false : pStates.DITHER,
+
+				FRONT_FACE: isNull(pStates) ? 0 : pStates.FRONT_FACE,
+				LINE_WIDTH: isNull(pStates) ? 0. : pStates.LINE_WIDTH,
+
+				POLYGON_OFFSET_FACTOR: isNull(pStates) ? 0. : pStates.POLYGON_OFFSET_FACTOR,
+				POLYGON_OFFSET_FILL: isNull(pStates) ? false : pStates.POLYGON_OFFSET_FILL,
+				POLYGON_OFFSET_UNITS: isNull(pStates) ? 0. : pStates.POLYGON_OFFSET_UNITS,
+
+				SAMPLE_BUFFERS: isNull(pStates) ? 0 : pStates.SAMPLE_BUFFERS,
+				SAMPLE_COVERAGE_INVERT: isNull(pStates) ? false : pStates.SAMPLE_COVERAGE_INVERT,
+				SAMPLE_COVERAGE_VALUE: isNull(pStates) ? 0. : pStates.SAMPLE_COVERAGE_VALUE,
+				SAMPLES: isNull(pStates) ? 0 : pStates.SAMPLES,
+
+				SCISSOR_TEST: isNull(pStates) ? false : pStates.SCISSOR_TEST,
+
+				STENCIL_BACK_FAIL: isNull(pStates) ? 0 : pStates.STENCIL_BACK_FAIL,
+				STENCIL_BACK_FUNC: isNull(pStates) ? 0 : pStates.STENCIL_BACK_FUNC,
+				STENCIL_BACK_PASS_DEPTH_FAIL: isNull(pStates) ? 0 : pStates.STENCIL_BACK_PASS_DEPTH_FAIL,
+				STENCIL_BACK_PASS_DEPTH_PASS: isNull(pStates) ? 0 : pStates.STENCIL_BACK_PASS_DEPTH_PASS,
+				STENCIL_BACK_REF: isNull(pStates) ? 0 : pStates.STENCIL_BACK_REF,
+				STENCIL_BACK_VALUE_MASK: isNull(pStates) ? 0 : pStates.STENCIL_BACK_VALUE_MASK,
+				STENCIL_BACK_WRITEMASK: isNull(pStates) ? 0 : pStates.STENCIL_BACK_WRITEMASK,
+				STENCIL_CLEAR_VALUE: isNull(pStates) ? 0 : pStates.STENCIL_CLEAR_VALUE,
+				STENCIL_FAIL: isNull(pStates) ? 0 : pStates.STENCIL_FAIL,
+				STENCIL_FUNC: isNull(pStates) ? 0 : pStates.STENCIL_FUNC,
+				STENCIL_PASS_DEPTH_FAIL: isNull(pStates) ? 0 : pStates.STENCIL_PASS_DEPTH_FAIL,
+				STENCIL_PASS_DEPTH_PASS: isNull(pStates) ? 0 : pStates.STENCIL_PASS_DEPTH_PASS,
+				STENCIL_REF: isNull(pStates) ? 0 : pStates.STENCIL_REF,
+				STENCIL_TEST: isNull(pStates) ? false : pStates.STENCIL_TEST,
+				STENCIL_VALUE_MASK: isNull(pStates) ? 0 : pStates.STENCIL_VALUE_MASK,
+				STENCIL_WRITEMASK: isNull(pStates) ? 0 : pStates.STENCIL_WRITEMASK
+			};
+		}
+
+		static copyWebGLContextStates(pStatesTo: IWebGLContextStates, pStatesFrom: IWebGLContextStates): IWebGLContextStates {
+			pStatesTo.BLEND = pStatesFrom.BLEND;
+			pStatesTo.BLEND_DST_ALPHA = pStatesFrom.BLEND_DST_ALPHA;
+			pStatesTo.BLEND_DST_RGB = pStatesFrom.BLEND_DST_RGB;
+			pStatesTo.BLEND_EQUATION_ALPHA = pStatesFrom.BLEND_EQUATION_ALPHA;
+			pStatesTo.BLEND_EQUATION_RGB = pStatesFrom.BLEND_EQUATION_RGB;
+			pStatesTo.BLEND_SRC_ALPHA = pStatesFrom.BLEND_SRC_ALPHA;
+			pStatesTo.BLEND_SRC_RGB = pStatesFrom.BLEND_SRC_RGB;
+
+			pStatesTo.COLOR_CLEAR_VALUE = pStatesFrom.COLOR_CLEAR_VALUE;
+			pStatesTo.COLOR_WRITEMASK = pStatesFrom.COLOR_WRITEMASK;
+
+			pStatesTo.CULL_FACE = pStatesFrom.CULL_FACE;
+			pStatesTo.CULL_FACE_MODE = pStatesFrom.CULL_FACE_MODE;
+
+			pStatesTo.DEPTH_CLEAR_VALUE = pStatesFrom.DEPTH_CLEAR_VALUE;
+			pStatesTo.DEPTH_FUNC = pStatesFrom.DEPTH_FUNC;
+			pStatesTo.DEPTH_RANGE = pStatesFrom.DEPTH_RANGE;
+			pStatesTo.DEPTH_TEST = pStatesFrom.DEPTH_TEST;
+			pStatesTo.DEPTH_WRITEMASK = pStatesFrom.DEPTH_WRITEMASK;
+			pStatesTo.DITHER = pStatesFrom.DITHER;
+
+			pStatesTo.FRONT_FACE = pStatesFrom.FRONT_FACE;
+			pStatesTo.LINE_WIDTH = pStatesFrom.LINE_WIDTH;
+
+			pStatesTo.POLYGON_OFFSET_FACTOR = pStatesFrom.POLYGON_OFFSET_FACTOR;
+			pStatesTo.POLYGON_OFFSET_FILL = pStatesFrom.POLYGON_OFFSET_FILL;
+			pStatesTo.POLYGON_OFFSET_UNITS = pStatesFrom.POLYGON_OFFSET_UNITS;
+
+			pStatesTo.SAMPLE_BUFFERS = pStatesFrom.SAMPLE_BUFFERS;
+			pStatesTo.SAMPLE_COVERAGE_INVERT = pStatesFrom.SAMPLE_COVERAGE_INVERT;
+			pStatesTo.SAMPLE_COVERAGE_VALUE = pStatesFrom.SAMPLE_COVERAGE_VALUE;
+			pStatesTo.SAMPLES = pStatesFrom.SAMPLES;
+
+			pStatesTo.SCISSOR_TEST = pStatesFrom.SCISSOR_TEST;
+
+			pStatesTo.STENCIL_BACK_FAIL = pStatesFrom.STENCIL_BACK_FAIL;
+			pStatesTo.STENCIL_BACK_FUNC = pStatesFrom.STENCIL_BACK_FUNC;
+			pStatesTo.STENCIL_BACK_PASS_DEPTH_FAIL = pStatesFrom.STENCIL_BACK_PASS_DEPTH_FAIL;
+			pStatesTo.STENCIL_BACK_PASS_DEPTH_PASS = pStatesFrom.STENCIL_BACK_PASS_DEPTH_PASS;
+			pStatesTo.STENCIL_BACK_REF = pStatesFrom.STENCIL_BACK_REF;
+			pStatesTo.STENCIL_BACK_VALUE_MASK = pStatesFrom.STENCIL_BACK_VALUE_MASK;
+			pStatesTo.STENCIL_BACK_WRITEMASK = pStatesFrom.STENCIL_BACK_WRITEMASK;
+			pStatesTo.STENCIL_CLEAR_VALUE = pStatesFrom.STENCIL_CLEAR_VALUE;
+			pStatesTo.STENCIL_FAIL = pStatesFrom.STENCIL_FAIL;
+			pStatesTo.STENCIL_FUNC = pStatesFrom.STENCIL_FUNC;
+			pStatesTo.STENCIL_PASS_DEPTH_FAIL = pStatesFrom.STENCIL_PASS_DEPTH_FAIL;
+			pStatesTo.STENCIL_PASS_DEPTH_PASS = pStatesFrom.STENCIL_PASS_DEPTH_PASS;
+			pStatesTo.STENCIL_REF = pStatesFrom.STENCIL_REF;
+			pStatesTo.STENCIL_TEST = pStatesFrom.STENCIL_TEST;
+			pStatesTo.STENCIL_VALUE_MASK = pStatesFrom.STENCIL_VALUE_MASK;
+			pStatesTo.STENCIL_WRITEMASK = pStatesFrom.STENCIL_WRITEMASK;
+
+			return pStatesTo;
+		}
+
+		static initStatesFromWebGLContext(pStatesTo: IWebGLContextStates, pWebGLContext: WebGLRenderingContext): IWebGLContextStates {
+			pStatesTo.BLEND = pWebGLContext.getParameter(GL_BLEND);
+			pStatesTo.BLEND_DST_ALPHA = pWebGLContext.getParameter(GL_BLEND_DST_ALPHA);
+			pStatesTo.BLEND_DST_RGB = pWebGLContext.getParameter(GL_BLEND_DST_RGB);
+			pStatesTo.BLEND_EQUATION_ALPHA = pWebGLContext.getParameter(GL_BLEND_EQUATION_ALPHA);
+			pStatesTo.BLEND_EQUATION_RGB = pWebGLContext.getParameter(GL_BLEND_EQUATION_RGB);
+			pStatesTo.BLEND_SRC_ALPHA = pWebGLContext.getParameter(GL_BLEND_SRC_ALPHA);
+			pStatesTo.BLEND_SRC_RGB = pWebGLContext.getParameter(GL_BLEND_SRC_RGB);
+
+			pStatesTo.COLOR_CLEAR_VALUE = pWebGLContext.getParameter(GL_COLOR_CLEAR_VALUE);
+			pStatesTo.COLOR_WRITEMASK = pWebGLContext.getParameter(GL_COLOR_WRITEMASK);
+
+			pStatesTo.CULL_FACE = pWebGLContext.getParameter(GL_CULL_FACE);
+			pStatesTo.CULL_FACE_MODE = pWebGLContext.getParameter(GL_CULL_FACE_MODE);
+
+			pStatesTo.DEPTH_CLEAR_VALUE = pWebGLContext.getParameter(GL_DEPTH_CLEAR_VALUE);
+			pStatesTo.DEPTH_FUNC = pWebGLContext.getParameter(GL_DEPTH_FUNC);
+			pStatesTo.DEPTH_RANGE = pWebGLContext.getParameter(GL_DEPTH_RANGE);
+			pStatesTo.DEPTH_TEST = pWebGLContext.getParameter(GL_DEPTH_TEST);
+			pStatesTo.DEPTH_WRITEMASK = pWebGLContext.getParameter(GL_DEPTH_WRITEMASK);
+			pStatesTo.DITHER = pWebGLContext.getParameter(GL_DITHER);
+
+			pStatesTo.FRONT_FACE = pWebGLContext.getParameter(GL_FRONT_FACE);
+			pStatesTo.LINE_WIDTH = pWebGLContext.getParameter(GL_LINE_WIDTH);
+
+			pStatesTo.POLYGON_OFFSET_FACTOR = pWebGLContext.getParameter(GL_POLYGON_OFFSET_FACTOR);
+			pStatesTo.POLYGON_OFFSET_FILL = pWebGLContext.getParameter(GL_POLYGON_OFFSET_FILL);
+			pStatesTo.POLYGON_OFFSET_UNITS = pWebGLContext.getParameter(GL_POLYGON_OFFSET_UNITS);
+
+			pStatesTo.SAMPLE_BUFFERS = pWebGLContext.getParameter(GL_SAMPLE_BUFFERS);
+			pStatesTo.SAMPLE_COVERAGE_INVERT = pWebGLContext.getParameter(GL_SAMPLE_COVERAGE_INVERT);
+			pStatesTo.SAMPLE_COVERAGE_VALUE = pWebGLContext.getParameter(GL_SAMPLE_COVERAGE_VALUE);
+			pStatesTo.SAMPLES = pWebGLContext.getParameter(GL_SAMPLES);
+
+			pStatesTo.SCISSOR_TEST = pWebGLContext.getParameter(GL_SCISSOR_TEST);
+
+			pStatesTo.STENCIL_BACK_FAIL = pWebGLContext.getParameter(GL_STENCIL_BACK_FAIL);
+			pStatesTo.STENCIL_BACK_FUNC = pWebGLContext.getParameter(GL_STENCIL_BACK_FUNC);
+			pStatesTo.STENCIL_BACK_PASS_DEPTH_FAIL = pWebGLContext.getParameter(GL_STENCIL_BACK_PASS_DEPTH_FAIL);
+			pStatesTo.STENCIL_BACK_PASS_DEPTH_PASS = pWebGLContext.getParameter(GL_STENCIL_BACK_PASS_DEPTH_PASS);
+			pStatesTo.STENCIL_BACK_REF = pWebGLContext.getParameter(GL_STENCIL_BACK_REF);
+			pStatesTo.STENCIL_BACK_VALUE_MASK = pWebGLContext.getParameter(GL_STENCIL_BACK_VALUE_MASK);
+			pStatesTo.STENCIL_BACK_WRITEMASK = pWebGLContext.getParameter(GL_STENCIL_BACK_WRITEMASK);
+			pStatesTo.STENCIL_CLEAR_VALUE = pWebGLContext.getParameter(GL_STENCIL_CLEAR_VALUE);
+			pStatesTo.STENCIL_FAIL = pWebGLContext.getParameter(GL_STENCIL_FAIL);
+			pStatesTo.STENCIL_FUNC = pWebGLContext.getParameter(GL_STENCIL_FUNC);
+			pStatesTo.STENCIL_PASS_DEPTH_FAIL = pWebGLContext.getParameter(GL_STENCIL_PASS_DEPTH_FAIL);
+			pStatesTo.STENCIL_PASS_DEPTH_PASS = pWebGLContext.getParameter(GL_STENCIL_PASS_DEPTH_PASS);
+			pStatesTo.STENCIL_REF = pWebGLContext.getParameter(GL_STENCIL_REF);
+			pStatesTo.STENCIL_TEST = pWebGLContext.getParameter(GL_STENCIL_TEST);
+			pStatesTo.STENCIL_VALUE_MASK = pWebGLContext.getParameter(GL_STENCIL_VALUE_MASK);
+			pStatesTo.STENCIL_WRITEMASK = pWebGLContext.getParameter(GL_STENCIL_WRITEMASK);
+
+			return pStatesTo;
+		}
 	}
 }
 

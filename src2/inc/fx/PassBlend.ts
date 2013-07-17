@@ -1532,13 +1532,23 @@ module akra.fx {
 		}
 
 		private addPassStates(pPass: IAFXPassInstruction): void {
-			ADD_PASS_STATE(EPassState.ZENABLE);
+			ADD_PASS_STATE(EPassState.BLENDENABLE);
+	        ADD_PASS_STATE(EPassState.CULLFACEENABLE);
+	        ADD_PASS_STATE(EPassState.ZENABLE);
 	        ADD_PASS_STATE(EPassState.ZWRITEENABLE);
+	        ADD_PASS_STATE(EPassState.DITHERENABLE);
+	        ADD_PASS_STATE(EPassState.SCISSORTESTENABLE);
+	        ADD_PASS_STATE(EPassState.STENCILTESTENABLE);
+	        ADD_PASS_STATE(EPassState.POLYGONOFFSETFILLENABLE);
+
+	        ADD_PASS_STATE(EPassState.CULLFACE);
+	        ADD_PASS_STATE(EPassState.FRONTFACE);
+
 	        ADD_PASS_STATE(EPassState.SRCBLEND);
 	        ADD_PASS_STATE(EPassState.DESTBLEND);
-	        ADD_PASS_STATE(EPassState.CULLMODE);
+
 	        ADD_PASS_STATE(EPassState.ZFUNC);
-	        ADD_PASS_STATE(EPassState.DITHERENABLE);
+
 	        ADD_PASS_STATE(EPassState.ALPHABLENDENABLE);
 	        ADD_PASS_STATE(EPassState.ALPHATESTENABLE);
 		}
