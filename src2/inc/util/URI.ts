@@ -3,7 +3,7 @@
 
 #include "IURI.ts"
 
-module akra.util {
+module akra.path {
 	export class URI implements IURI {
 		private sScheme: string = null;
 		private sUserinfo: string = null;
@@ -176,30 +176,55 @@ module akra.util {
 		 )?
 		 $
 		 */
-		
-		static resolve(sFile, sAbsolutePath: string = document.location.pathname): string {
-
-			var pCurrentPath: IURI = null;
-			var pFile: IURI = util.uri(sFile);
-
-
-			if (!isNull(pFile.host) || util.pathinfo(pFile.path).isAbsolute()) {
-				//another server or absolute path
-				return sFile;
-			}
-
-			pCurrentPath = util.uri(sAbsolutePath);
-			pCurrentPath.path = util.pathinfo(pCurrentPath.path).dirname + "/" + sFile;
-			// console.log(sFile, sAbsolutePath, pCurrentPath.toString());
-			return pCurrentPath.toString();
-		}
 	}
 
-	export var uri = (sUri:string): IURI => new util.URI(sUri);
+	
+	function normalizeURIPath(pFile: IURI): IURI {
+		if (!isNull(pFile.path)) {
+			if (pFile.scheme === "filesystem:") {
+				var pUri: IURI = path.uri(pFile.path);
+				
+				pUri.path = path.normalize(pUri.path);
+				pFile.path = pUri.toString();
+			}
+			else {
+				pFile.path = path.normalize(pFile.path);
+			}
+		}
+
+		return pFile;
+	}
+
+	export function resolve(sFile, sAbsolutePath: string = document.location.pathname): string {
+
+		var pCurrentPath: IURI = uri(sAbsolutePath);
+		var pFile: IURI = uri(sFile);
+		var sDirname: string;
+
+		// if (!isNull(pFile.path)) 
+		// 	pFile.path = path.normalize(pFile.path);
+
+		// if (!isNull(pCurrentPath.path))
+		// 	pCurrentPath.path = path.normalize(pCurrentPath.path);
+		normalizeURIPath(pFile);
+		normalizeURIPath(pCurrentPath);
+
+		if (!isNull(pFile.scheme) || !isNull(pFile.host) || path.info(pFile.path).isAbsolute()) {
+			//another server or absolute path
+			return sFile;
+		}
+
+		sDirname = path.info(pCurrentPath.path).dirname;
+		pCurrentPath.path = sDirname? sDirname + "/" + sFile: sFile;
+
+		return normalizeURIPath(pCurrentPath).toString();
+	}
+
+	export var uri = (sUri:string): IURI => new URI(sUri);
 }
 
 module akra {
-	export var uri = util.uri;
+	export var uri = path.uri;
 }
 
 #endif

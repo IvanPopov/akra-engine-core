@@ -54,8 +54,7 @@ onmessage = function (pEvent) {
             return;
         }
         else {
-            throw new Error('cannot get file: ' + pCommand.name +
-                                ' (' + pCommand.act + ')');
+            throw new Error('cannot get file: ' + pCommand.name + ' (' + pCommand.act + ')');
         }
     }
 
@@ -82,7 +81,12 @@ onmessage = function (pEvent) {
             }
             
             if (pCommand.transfer === TRANSFER.FAST) {
-                postMessage(pData, [pData]);
+                try {
+                    postMessage(pData, [pData]);
+                }
+                catch (e) {
+                    throw pData;
+                }
             }
             else {
                 postMessage(pData)

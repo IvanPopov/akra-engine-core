@@ -27,6 +27,9 @@
 module akra.io {
 
 	class LocalFileSystem {
+		// binaryType: EFileBinaryType = EFileBinaryType.ARRAY_BUFFER;
+
+
 		private _pFileSystem: FileSystem = null;
 		private _pCallbackQueue: Function[] = [];
 
@@ -128,7 +131,7 @@ module akra.io {
 		}
 
 		inline get name(): string {
-			return util.pathinfo(this._pUri.path).basename;
+			return path.info(this._pUri.path).basename;
 		}
 
 		inline get mode(): int {
@@ -171,7 +174,7 @@ module akra.io {
 				this._iMode = isString(sMode)? filemode(sMode): sMode;
 			}
 
-			this.setAndValidateUri(util.uri(sFilename));
+			this.setAndValidateUri(path.uri(sFilename));
 
 			if (arguments.length > 2) {
 				this.open(sFilename, sMode, fnCallback);
@@ -190,7 +193,7 @@ module akra.io {
 
 			 if (arguments.length < 3) {
 		        if (isString(arguments[0])) {
-		            this.setAndValidateUri(util.uri(sFilename));
+		            this.setAndValidateUri(path.uri(sFilename));
 		            fnCallback = arguments[1];
 		        }
 		        else if (isInt(arguments[0])) {
@@ -217,7 +220,7 @@ module akra.io {
 		        (<Function>fnCallback)(null, this._pFile);
 		    }
 
-		    this.setAndValidateUri(util.uri(arguments[0]));
+		    this.setAndValidateUri(path.uri(arguments[0]));
 
 		    if (hasMode) {
 		    	this._iMode = (isString(arguments[1]) ? filemode(<string>arguments[1]) : arguments[1]);
@@ -231,7 +234,7 @@ module akra.io {
 		        if (e.code == FileError.NOT_FOUND_ERR && CAN_CREATE(pFile.mode)) {
 					LocalFile.createDir(
 						pFileSystem.root, 
-						util.pathinfo(pFile.path).dirname.split('/'),
+						path.info(pFile.path).dirname.split('/'),
 		                function (e) { 
 		                	if (!isNull(e)) { 
 		                		fnCallback.call(pFile, e); 
@@ -436,11 +439,11 @@ module akra.io {
 		}
 
 		rename(sFilename: string, fnCallback: Function = LocalFile.defaultCallback): void {
-			var pName: IPathinfo = util.pathinfo(sFilename);
+			var pName: IPathinfo = path.info(sFilename);
 
 		    ASSERT(!pName.dirname, 'only filename can be specified.');
 		    
-		    this.move(util.pathinfo(this._pUri.path).dirname + "/" + pName.basename, fnCallback);
+		    this.move(path.info(this._pUri.path).dirname + "/" + pName.basename, fnCallback);
 		}
 
 		remove(fnCallback: Function = LocalFile.defaultCallback): void {
@@ -518,11 +521,11 @@ module akra.io {
 		private setAndValidateUri(sFilename: IURI);
 		private setAndValidateUri(sFilename: string);
 		private setAndValidateUri(sFilename: any) {
-			var pUri: IURI = util.uri(sFilename);
+			var pUri: IURI = path.uri(sFilename);
 			var pUriLocal: IURI;
 
 			if (pUri.protocol === "filesystem") {
-		        pUriLocal = util.uri(pUri.path);
+		        pUriLocal = path.uri(pUri.path);
 
 		        ASSERT(!(pUriLocal.protocol && pUriLocal.host != info.uri.host),
 		               "Поддерживаются только локальные файлы в пределах текущего домена.");
@@ -536,7 +539,7 @@ module akra.io {
 		        ASSERT(pUri.host === "temporary",
 		               "Поддерживаются только файловые системы типа \"temporary\".");
 		        
-		        this._pUri = util.uri(pFolders.join("/"));
+		        this._pUri = path.uri(pFolders.join("/"));
 		    }
 		    else {
 		    	ERROR("used non local uri");

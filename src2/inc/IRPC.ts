@@ -49,7 +49,7 @@ module akra {
         [proc: string]: IRPCProcOptions;
     }
 
-    interface IRPCError extends Error {
+    export interface IRPCError extends Error {
         code: uint;
     }
 

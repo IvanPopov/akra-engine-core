@@ -33,22 +33,27 @@ module akra {
 
 	var pEngine: IEngine = createEngine({
 		renderer: {preserveDrawingBuffer: true},
+		// deps: {
+		// 	files: [
+		// 		{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
+		// 		{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
+		// 		// {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
+		// 	],
+		// 	deps: {
+		// 		files: [
+		// 			{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
+		// 			{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
+		// 			{path: "models/tube/tube.dae", name: "TUBE"},
+		// 			{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
+		// 			{path: "models/hero/movie.dae", name: "HERO_MODEL"},
+		// 			{path: "models/hero/film.DAE", name: "HERO_FILM"},
+		// 			{path: "models/hero/film.json", name: "HERO_FILM"}
+		// 		]
+		// 	}
+		// },
 		deps: {
-			files: [
-				{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
-				{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
-				// {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
-			],
-			deps: {
-				files: [
-					{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
-					{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
-					{path: "models/tube/tube.dae", name: "TUBE"},
-					{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
-					{path: "models/hero/movie.dae", name: "HERO_MODEL"},
-					{path: "models/hero/film.DAE", name: "HERO_FILM"}
-				]
-			}
+			root: "./",
+			files: [{path: "demo02.ara"}]
 		},
 		loader: {
 			before: (pManager: IDepsManager, pInfo: number[]): void => {
@@ -435,7 +440,7 @@ module akra {
 
 	function createSky(): void {
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
-		pSky.setTime(47.0);
+		pSky.setTime(14.0);
 	    pSky.skyDome.attachToParent(pScene.getRootNode());
 	    self.sky = pSky;
 	}

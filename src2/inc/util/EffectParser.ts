@@ -60,7 +60,8 @@ module akra.util {
 		}
 
 		private normalizeIncludePath(sFile: string): string {
-			return util.URI.resolve(sFile, this.getParseFileName());
+			// console.log(sFile, this.getParseFileName(), path.resolve(sFile, this.getParseFileName()));
+			return path.resolve(sFile, this.getParseFileName());
 		}
 
 		private _includeCode(): EOperationType {
@@ -70,7 +71,7 @@ module akra.util {
 		    
 		    //cuttin qoutes
 		    sFile = this.normalizeIncludePath(sFile.substr(1, sFile.length - 2));
-
+		    
 		    if (this._pIncludedFilesMap[sFile]) {
 		    	return EOperationType.k_Ok;
 		    }

@@ -82,8 +82,8 @@ module akra.io {
 	// function _fopen (pUri: IURI, sMode: string): IFile;
 
 	function _fopen(sUri: any, pMode: any = EIO.IN): IFile {
-		sUri = util.URI.resolve(sUri);
-
+		sUri = path.resolve(sUri);
+		
 		if (info.api.webWorker) {
 			return new TFile(<string>sUri, pMode);
 		}

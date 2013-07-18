@@ -379,6 +379,7 @@ module akra.core {
 
 		static DEPS_ROOT: string = DATA;
 		static DEPS: IDependens = 
+#ifdef DEBUG1		
 			{
 				files: [ 
 					{path: "grammars/HLSL.gr"}
@@ -411,7 +412,11 @@ module akra.core {
 							}
 						}
 					}
-			};			
+			}
+#else
+			{files: [{path: "core.ara"}]}
+#endif
+			;			
 
 
 		CREATE_EVENT_TABLE(Engine);

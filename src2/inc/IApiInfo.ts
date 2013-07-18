@@ -12,6 +12,7 @@ module akra {
 		transferableObjects: bool;
 		localStorage: bool;
 		webSocket: bool;
+		zip: bool;
 	}
 }
 

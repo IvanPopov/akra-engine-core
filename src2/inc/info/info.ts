@@ -25,7 +25,7 @@ module akra.info {
 	export var api: IApiInfo = new util.ApiInfo;
 	export var screen: IScreenInfo = new util.ScreenInfo;
 
-	export var uri: IURI = util.uri(document.location.href);
+	export var uri: IURI = path.uri(document.location.href);
 
 	module is {
 		/**

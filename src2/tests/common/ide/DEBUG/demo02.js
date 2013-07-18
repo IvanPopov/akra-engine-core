@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Jul 12 2013 13:12:27 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Jul 18 2013 11:18:01 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
@@ -30,47 +30,30 @@ var akra;
         renderer: {
             preserveDrawingBuffer: true
         },
-        deps: {
+        deps: // deps: {
+        // 	files: [
+        // 		{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
+        // 		{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
+        // 		// {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
+        // 	],
+        // 	deps: {
+        // 		files: [
+        // 			{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
+        // 			{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
+        // 			{path: "models/tube/tube.dae", name: "TUBE"},
+        // 			{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
+        // 			{path: "models/hero/movie.dae", name: "HERO_MODEL"},
+        // 			{path: "models/hero/film.DAE", name: "HERO_FILM"}
+        // 		]
+        // 	}
+        // },
+        {
+            root: "./",
             files: [
                 {
-                    path: "textures/terrain/main_height_map_1025.dds",
-                    name: "TERRAIN_HEIGHT_MAP"
-                }, 
-                {
-                    path: "textures/terrain/main_terrain_normal_map.dds",
-                    name: "TERRAIN_NORMAL_MAP"
-                }, 
-                
-            ],
-            deps: // {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
-            {
-                files: [
-                    {
-                        path: "models/barrel/barrel_and_support.dae",
-                        name: "BARREL"
-                    }, 
-                    {
-                        path: "models/box/closed_box.dae",
-                        name: "CLOSED_BOX"
-                    }, 
-                    {
-                        path: "models/tube/tube.dae",
-                        name: "TUBE"
-                    }, 
-                    {
-                        path: "models/tubing/tube_beeween_rocks.DAE",
-                        name: "TUBE_BETWEEN_ROCKS"
-                    }, 
-                    {
-                        path: "models/hero/movie.dae",
-                        name: "HERO_MODEL"
-                    }, 
-                    {
-                        path: "models/hero/film.DAE",
-                        name: "HERO_FILM"
-                    }
-                ]
-            }
+                    path: "demo02.ara"
+                }
+            ]
         },
         loader: {
             before: function (pManager, pInfo) {
@@ -368,7 +351,7 @@ var akra;
     }
     function createSky() {
         pSky = new akra.model.Sky(pEngine, 32, 32, 1000.0);
-        pSky.setTime(47.0);
+        pSky.setTime(14.0);
         pSky.skyDome.attachToParent(pScene.getRootNode());
         akra.self.sky = pSky;
     }

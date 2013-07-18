@@ -13,15 +13,15 @@ catch (e) {
 function read (pFile) {
     // var pData = null;
 
-    if (isBinary(pFile.mode)) {
-        // pData = pFile.reader.readAsArrayBuffer(pFile.entry.file());
-        // return pData;
-    }
+    // if (isBinary(pFile.mode)) {
+        pData = pFile.reader.readAsArrayBuffer(pFile.entry.file());
+        return pData;
+    // }
 
     // pData = pFile.reader.readAsText(pFile.entry.file());
     
     // return pData;
-    return pFile.entry.file();
+    // return pFile.entry.file();
 }
 
 function remove (pFile) {
@@ -84,7 +84,6 @@ function file (pCmd) {
     var sName = pCmd.name;
 
     if (!pFiles[sName]) {
-
         try {
             pFiles[sName] = {
                 entry:  pFileSystem.root.getFile(pCmd.name,
@@ -94,10 +93,10 @@ function file (pCmd) {
                                                  }),
                 reader: new FileReaderSync
             };
-
         }
         catch (e) {
-            if (e.code == FileError.NOT_FOUND_ERR && canWrite(pCmd.mode)
+            var NotFoundError = 8;
+            if ((e.code == FileError.NOT_FOUND_ERR || e.code == NotFoundError) && canWrite(pCmd.mode)
                 && pCmd.act != File.EXISTS) {
 
                 try {

@@ -32,6 +32,12 @@ function base64_encode (data) {
     return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
 }
 
+// var EFileBinaryType = {
+//     ARRAY_BUFFER: 0x01,
+//     BLOB        : 0x02,
+//     OBJECT_URL  : 0x03  
+// }
+
 function read (pFile) {
     try {
         var pXhr = new XMLHttpRequest();
@@ -42,6 +48,15 @@ function read (pFile) {
         if (isBinary(pFile.mode)) {
             pXhr.overrideMimeType('application/octet-stream');
         }
+
+        // switch (pFile.bm) {
+        //     case EFileBinaryType.BLOB:
+        //         pXhr.responseType = 'blob'; 
+        //         break;
+        //     case EFileBinaryType.ARRAY_BUFFER:
+        //     default:
+        //         pXhr.responseType = 'arraybuffer';
+        // }
 
         pXhr.responseType = 'arraybuffer';
         pXhr.send();

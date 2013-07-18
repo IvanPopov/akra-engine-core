@@ -6,7 +6,7 @@
 #endif
 
 #ifndef TM_MAX_THREAD_NUMBER
-#define TM_MAX_THREAD_NUMBER 32
+#define TM_MAX_THREAD_NUMBER 64
 #endif
 
 #ifndef THREADMANAGER_ERRORS

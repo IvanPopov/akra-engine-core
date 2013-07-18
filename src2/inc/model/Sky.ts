@@ -523,8 +523,8 @@ module akra.model {
 
 		setTime(T: float): void {
 			var time: float = this.time = T;
-			var meridian: float = 1.3788101;
-			var longitude: float = 1.3852096;
+			var meridian: float = 56.48 * math.RADIAN_RATIO;/*1.3788101;*/
+			var longitude: float = 105.5 * math.RADIAN_RATIO;/*1.3852096;*/
 			var latitude: float = 0.762127107;
 			var day: int = 172;
 

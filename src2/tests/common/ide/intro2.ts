@@ -417,6 +417,8 @@ module akra {
 	    pSky.skyDome.attachToParent(pScene.getRootNode());
 	    self.sky = pSky;
 
+	    pSky._nHorinLevel = 15;
+
 	    var i = setInterval(() => {
 	    	pSky.setTime(pSky.time + 0.001); 
 	    	// if (math.abs(pSky.time) == 30.0) clearInterval(i);
