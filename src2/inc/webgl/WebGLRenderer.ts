@@ -13,6 +13,7 @@
 module akra.webgl {
 	export interface IWebGLContextStates {
 		BLEND: bool;
+		BLEND_COLOR: Float32Array;
 		BLEND_DST_ALPHA: uint;
 		BLEND_DST_RGB: uint;
 		BLEND_EQUATION_ALPHA: uint;
@@ -31,6 +32,7 @@ module akra.webgl {
 		DEPTH_RANGE: Float32Array;
 		DEPTH_TEST: bool;
 		DEPTH_WRITEMASK: bool;
+
 		DITHER: bool;
 
 		FRONT_FACE: uint;
@@ -63,6 +65,9 @@ module akra.webgl {
 		STENCIL_TEST: bool;
 		STENCIL_VALUE_MASK: uint;
 		STENCIL_WRITEMASK: uint;
+
+		PACK_ALIGNMENT: uint;
+		UNPACK_ALIGNMENT: uint;
 	}
 
 	export class WebGLRenderer extends render.Renderer {
@@ -199,19 +204,380 @@ module akra.webgl {
 			return false;
 		}
 
-		getParameter(iWebGLParam: uint): any {
-			switch(iWebGLParam){
-				case GL_FRAMEBUFFER_BINDING:
-					return this._pWebGLContext.getParameter(iWebGLParam);
+		blendColor(fRed: float, fGreen: float, fBlue: float, fAlpha: float): void {
+			this._pWebGLContext.blendColor(fRed, fGreen, fBlue, fAlpha);
+			this._pCurrentContextStates.BLEND_COLOR[0] = fRed;
+			this._pCurrentContextStates.BLEND_COLOR[1] = fGreen;
+			this._pCurrentContextStates.BLEND_COLOR[2] = fBlue;
+			this._pCurrentContextStates.BLEND_COLOR[3] = fAlpha;
+		}
+
+		blendEquation(iWebGLMode: uint): void {
+			this._pWebGLContext.blendEquation(iWebGLMode);
+			this._pCurrentContextStates.BLEND_EQUATION_RGB = iWebGLMode;
+			this._pCurrentContextStates.BLEND_EQUATION_ALPHA = iWebGLMode;
+		}
+
+		blendEquationSeparate(iWebGLModeRGB: uint, iWebGLModeAlpha: uint): void {
+			this._pWebGLContext.blendEquationSeparate(iWebGLModeRGB, iWebGLModeAlpha);
+			this._pCurrentContextStates.BLEND_EQUATION_RGB = iWebGLModeRGB;
+			this._pCurrentContextStates.BLEND_EQUATION_ALPHA = iWebGLModeAlpha;
+		}
+
+		blendFunc(iWebGLSFactor: uint, iWebGLDFactor: uint): void {
+			this._pWebGLContext.blendFunc(iWebGLSFactor, iWebGLDFactor);
+			this._pCurrentContextStates.BLEND_SRC_RGB = iWebGLSFactor;
+			this._pCurrentContextStates.BLEND_SRC_ALPHA = iWebGLSFactor;
+			this._pCurrentContextStates.BLEND_DST_RGB = iWebGLDFactor;
+			this._pCurrentContextStates.BLEND_DST_ALPHA = iWebGLDFactor;
+		}
+
+		blendFuncSeparate(iWebGLSFactorRGB: uint, iWebGLDFactorRGB: uint, iWebGLSFactorAlpha: uint, iWebGLDFactorAlpha: uint): void {
+			this._pWebGLContext.blendFuncSeparate(iWebGLSFactorRGB, iWebGLDFactorRGB, iWebGLSFactorAlpha, iWebGLDFactorAlpha);
+			this._pCurrentContextStates.BLEND_SRC_RGB = iWebGLSFactorRGB;
+			this._pCurrentContextStates.BLEND_SRC_ALPHA = iWebGLSFactorAlpha;
+			this._pCurrentContextStates.BLEND_DST_RGB = iWebGLDFactorRGB;
+			this._pCurrentContextStates.BLEND_DST_ALPHA = iWebGLDFactorAlpha;
+		}
+
+		clearColor(fRed: float, fGreen: float, fBlue: float, fAlpha: float): void {
+			this._pWebGLContext.clearColor(fRed, fGreen, fBlue, fAlpha);
+			this._pCurrentContextStates.COLOR_CLEAR_VALUE[0] = fRed;
+			this._pCurrentContextStates.COLOR_CLEAR_VALUE[1] = fGreen;
+			this._pCurrentContextStates.COLOR_CLEAR_VALUE[2] = fBlue;
+			this._pCurrentContextStates.COLOR_CLEAR_VALUE[3] = fAlpha;
+		}
+
+		clearDepth(fDepth: float): void {
+			this._pWebGLContext.clearDepth(fDepth);
+			this._pCurrentContextStates.DEPTH_CLEAR_VALUE = fDepth;
+		}
+
+		clearStencil(iS: int): void {
+			this._pWebGLContext.clearStencil(iS);
+			this._pCurrentContextStates.STENCIL_CLEAR_VALUE = iS;
+		}
+
+		colorMask(bRed: bool, bGreen: bool, bBlue: bool, bAlpha: bool): void {
+			this._pWebGLContext.colorMask(bRed, bGreen, bBlue, bAlpha);
+			this._pCurrentContextStates.COLOR_WRITEMASK[0] = bRed;
+			this._pCurrentContextStates.COLOR_WRITEMASK[1] = bGreen;
+			this._pCurrentContextStates.COLOR_WRITEMASK[2] = bBlue;
+			this._pCurrentContextStates.COLOR_WRITEMASK[3] = bAlpha;
+		}
+
+		cullFace(iWebGLMode: uint): void {
+			this._pWebGLContext.cullFace(iWebGLMode);
+			this._pCurrentContextStates.CULL_FACE_MODE = iWebGLMode;
+		}
+
+		depthFunc(iWebGLMode: uint): void {
+			this._pWebGLContext.depthFunc(iWebGLMode);
+			this._pCurrentContextStates.DEPTH_FUNC = iWebGLMode;
+		}
+
+		depthMask(bWrite: bool): void {
+			this._pWebGLContext.depthMask(bWrite);
+			this._pCurrentContextStates.DEPTH_WRITEMASK = bWrite;
+		}
+
+		depthRange(fZNear: float, fZFar: float): void {
+			this._pWebGLContext.depthRange(fZNear, fZFar);
+			this._pCurrentContextStates.DEPTH_RANGE[0] = fZNear;
+			this._pCurrentContextStates.DEPTH_RANGE[1] = fZFar;
+		}
+
+		disable(iWebGLCap: uint): void {
+			this._pWebGLContext.disable(iWebGLCap);
+
+			switch(iWebGLCap){
+				case GL_CULL_FACE:
+					this._pCurrentContextStates.CULL_FACE = false;
+					return;
+				case GL_BLEND:
+					this._pCurrentContextStates.BLEND = false;
+					return;
+				case GL_DITHER:
+					this._pCurrentContextStates.DITHER = false;
+					return;
+				case GL_STENCIL_TEST:
+					this._pCurrentContextStates.STENCIL_TEST = false;
+					return;
+				case GL_DEPTH_TEST:
+					this._pCurrentContextStates.DEPTH_TEST = false;
+					return;
+				case GL_SCISSOR_TEST:
+					this._pCurrentContextStates.SCISSOR_TEST = false;
+					return;
+				case GL_POLYGON_OFFSET_FILL:
+					this._pCurrentContextStates.POLYGON_OFFSET_FILL = false;
+					return;
+				// case GL_SAMPLE_ALPHA_TO_COVERAGE:
+				// 	this._pCurrentContextStates.SAMPLE_ALPHA_TO_COVERAGE = false;
+				// 	return;
+				// case GL_SAMPLE_COVERAGE:
+				// 	this._pCurrentContextStates.SAMPLE_COVERAGE = false;
+				// 	return;
+			}
+		}
+
+		enable(iWebGLCap: uint): void {
+			this._pWebGLContext.enable(iWebGLCap);
+			
+			switch(iWebGLCap){
+				case GL_CULL_FACE:
+					this._pCurrentContextStates.CULL_FACE = true;
+					return;
+				case GL_BLEND:
+					this._pCurrentContextStates.BLEND = true;
+					return;
+				case GL_DITHER:
+					this._pCurrentContextStates.DITHER = true;
+					return;
+				case GL_STENCIL_TEST:
+					this._pCurrentContextStates.STENCIL_TEST = true;
+					return;
+				case GL_DEPTH_TEST:
+					this._pCurrentContextStates.DEPTH_TEST = true;
+					return;
+				case GL_SCISSOR_TEST:
+					this._pCurrentContextStates.SCISSOR_TEST = true;
+					return;
+				case GL_POLYGON_OFFSET_FILL:
+					this._pCurrentContextStates.POLYGON_OFFSET_FILL = true;
+					return;
+				// case GL_SAMPLE_ALPHA_TO_COVERAGE:
+				// 	this._pCurrentContextStates.SAMPLE_ALPHA_TO_COVERAGE = false;
+				// 	return;
+				// case GL_SAMPLE_COVERAGE:
+				// 	this._pCurrentContextStates.SAMPLE_COVERAGE = false;
+				// 	return;
+			}
+		}
+
+		frontFace(iWebGLMode: uint): void {
+			this._pWebGLContext.frontFace(iWebGLMode);
+			this._pCurrentContextStates.FRONT_FACE = iWebGLMode;
+		}
+
+		getParameter(iWebGLName: uint): any {
+			switch(iWebGLName){
+				case GL_BLEND:
+					return this._pCurrentContextStates.BLEND;
+				case GL_BLEND_COLOR:
+					return this._pCurrentContextStates.BLEND_COLOR;
+				case GL_BLEND_DST_ALPHA:
+					return this._pCurrentContextStates.BLEND_DST_ALPHA;
+				case GL_BLEND_DST_RGB:
+					return this._pCurrentContextStates.BLEND_DST_RGB;
+				case GL_BLEND_EQUATION_ALPHA:
+					return this._pCurrentContextStates.BLEND_EQUATION_ALPHA;
+				case GL_BLEND_EQUATION_RGB:
+					return this._pCurrentContextStates.BLEND_EQUATION_RGB;
+				case GL_BLEND_SRC_ALPHA:
+					return this._pCurrentContextStates.BLEND_SRC_ALPHA;
+				case GL_BLEND_SRC_RGB:
+					return this._pCurrentContextStates.BLEND_SRC_RGB;
+				case GL_COLOR_CLEAR_VALUE:
+					return this._pCurrentContextStates.COLOR_CLEAR_VALUE;
+				case GL_COLOR_WRITEMASK:
+					return this._pCurrentContextStates.COLOR_WRITEMASK;
+				case GL_CULL_FACE:
+					return this._pCurrentContextStates.CULL_FACE;
+				case GL_CULL_FACE_MODE:
+					return this._pCurrentContextStates.CULL_FACE_MODE;
+				case GL_DEPTH_CLEAR_VALUE:
+					return this._pCurrentContextStates.DEPTH_CLEAR_VALUE;
+				case GL_DEPTH_FUNC:
+					return this._pCurrentContextStates.DEPTH_FUNC;
+				case GL_DEPTH_RANGE:
+					return this._pCurrentContextStates.DEPTH_RANGE;
+				case GL_DEPTH_TEST:
+					return this._pCurrentContextStates.DEPTH_TEST;
 				case GL_DEPTH_WRITEMASK:
 					return this._pCurrentContextStates.DEPTH_WRITEMASK;
+				case GL_DITHER:
+					return this._pCurrentContextStates.DITHER;
+				case GL_FRONT_FACE:
+					return this._pCurrentContextStates.FRONT_FACE;
+				case GL_LINE_WIDTH:
+					return this._pCurrentContextStates.LINE_WIDTH;
+				case GL_POLYGON_OFFSET_FACTOR:
+					return this._pCurrentContextStates.POLYGON_OFFSET_FACTOR;
+				case GL_POLYGON_OFFSET_FILL:
+					return this._pCurrentContextStates.POLYGON_OFFSET_FILL;
+				case GL_POLYGON_OFFSET_UNITS:
+					return this._pCurrentContextStates.POLYGON_OFFSET_UNITS;
+				case GL_SAMPLE_BUFFERS:
+					return this._pCurrentContextStates.SAMPLE_BUFFERS;
+				case GL_SAMPLE_COVERAGE_INVERT:
+					return this._pCurrentContextStates.SAMPLE_COVERAGE_INVERT;
+				case GL_SAMPLE_COVERAGE_VALUE:
+					return this._pCurrentContextStates.SAMPLE_COVERAGE_VALUE;
+				case GL_SAMPLES:
+					return this._pCurrentContextStates.SAMPLES;
+				case GL_SCISSOR_TEST:
+					return this._pCurrentContextStates.SCISSOR_TEST;
+				case GL_STENCIL_BACK_FAIL:
+					return this._pCurrentContextStates.STENCIL_BACK_FAIL;
+				case GL_STENCIL_BACK_FUNC:
+					return this._pCurrentContextStates.STENCIL_BACK_FUNC;
+				case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
+					return this._pCurrentContextStates.STENCIL_BACK_PASS_DEPTH_FAIL;
+				case GL_STENCIL_BACK_PASS_DEPTH_PASS:
+					return this._pCurrentContextStates.STENCIL_BACK_PASS_DEPTH_PASS;
+				case GL_STENCIL_BACK_REF:
+					return this._pCurrentContextStates.STENCIL_BACK_REF;
+				case GL_STENCIL_BACK_VALUE_MASK:
+					return this._pCurrentContextStates.STENCIL_BACK_VALUE_MASK;
+				case GL_STENCIL_BACK_WRITEMASK:
+					return this._pCurrentContextStates.STENCIL_BACK_WRITEMASK;
+				case GL_STENCIL_CLEAR_VALUE:
+					return this._pCurrentContextStates.STENCIL_CLEAR_VALUE;
+				case GL_STENCIL_FAIL:
+					return this._pCurrentContextStates.STENCIL_FAIL;
+				case GL_STENCIL_FUNC:
+					return this._pCurrentContextStates.STENCIL_FUNC;
+				case GL_STENCIL_PASS_DEPTH_FAIL:
+					return this._pCurrentContextStates.STENCIL_PASS_DEPTH_FAIL;
+				case GL_STENCIL_PASS_DEPTH_PASS:
+					return this._pCurrentContextStates.STENCIL_PASS_DEPTH_PASS;
+				case GL_STENCIL_REF:
+					return this._pCurrentContextStates.STENCIL_REF;
+				case GL_STENCIL_TEST:
+					return this._pCurrentContextStates.STENCIL_TEST;
+				case GL_STENCIL_VALUE_MASK:
+					return this._pCurrentContextStates.STENCIL_VALUE_MASK;
+				case GL_STENCIL_WRITEMASK:
+					return this._pCurrentContextStates.STENCIL_WRITEMASK;
+				case GL_UNPACK_ALIGNMENT:
+					return this._pCurrentContextStates.UNPACK_ALIGNMENT;
+				case GL_PACK_ALIGNMENT:
+					return this._pCurrentContextStates.PACK_ALIGNMENT;
+				default:
+					return this._pWebGLContext.getParameter(iWebGLName);
 			}
-			// this._pWebGLContext.getParameter(iWebGLParam);
+		}
+
+		lineWidth(fWidth: float): void {
+			this._pWebGLContext.lineWidth(fWidth);
+			this._pCurrentContextStates.LINE_WIDTH = fWidth;
+		}
+
+		pixelStorei(iWebGLName: uint, iParam: int): void {
+			this._pWebGLContext.pixelStorei(iWebGLName, iParam);
+
+			if(iWebGLName === GL_UNPACK_ALIGNMENT){
+				this._pCurrentContextStates.UNPACK_ALIGNMENT = iParam;
+			}
+			else {
+				this._pCurrentContextStates.PACK_ALIGNMENT = iParam;
+			}
+		}
+
+		polygonOffset(fFactor: float, fUnints: float): void {
+			this._pWebGLContext.polygonOffset(fFactor, fUnints);
+			this._pCurrentContextStates.POLYGON_OFFSET_FACTOR = fFactor;
+			this._pCurrentContextStates.POLYGON_OFFSET_UNITS = fUnints;
+		}
+
+		sampleCoverage(fValue: float, bInvert: bool): void {
+			this._pWebGLContext.sampleCoverage(fValue, bInvert);
+			this._pCurrentContextStates.SAMPLE_COVERAGE_VALUE = fValue;
+			this._pCurrentContextStates.SAMPLE_COVERAGE_INVERT = bInvert;
+		}
+
+		stencilFunc(iWebGLFunc: uint, iRef: int, iMask: uint): void {
+			this._pWebGLContext.stencilFunc(iWebGLFunc, iRef, iMask);
+			this._pCurrentContextStates.STENCIL_FUNC = iWebGLFunc;
+			this._pCurrentContextStates.STENCIL_REF = iRef;
+			this._pCurrentContextStates.STENCIL_VALUE_MASK = iMask;
+			this._pCurrentContextStates.STENCIL_BACK_FUNC = iWebGLFunc;
+			this._pCurrentContextStates.STENCIL_BACK_REF = iRef;
+			this._pCurrentContextStates.STENCIL_BACK_VALUE_MASK = iMask;
+		}
+
+		stencilFuncSeparate(iWebGLFace: uint, iWebGLFunc: uint, iRef: int, iMask: uint): void {
+			this._pWebGLContext.stencilFuncSeparate(iWebGLFace, iWebGLFunc, iRef, iMask);
+
+			if(iWebGLFace === GL_FRONT_AND_BACK){
+				this._pCurrentContextStates.STENCIL_FUNC = iWebGLFunc;
+				this._pCurrentContextStates.STENCIL_REF = iRef;
+				this._pCurrentContextStates.STENCIL_VALUE_MASK = iMask;
+				this._pCurrentContextStates.STENCIL_BACK_FUNC = iWebGLFunc;
+				this._pCurrentContextStates.STENCIL_BACK_REF = iRef;
+				this._pCurrentContextStates.STENCIL_BACK_VALUE_MASK = iMask;
+			}
+			else if(iWebGLFace === GL_FRONT){
+				this._pCurrentContextStates.STENCIL_FUNC = iWebGLFunc;
+				this._pCurrentContextStates.STENCIL_REF = iRef;
+				this._pCurrentContextStates.STENCIL_VALUE_MASK = iMask;
+			}
+			else {
+				this._pCurrentContextStates.STENCIL_BACK_FUNC = iWebGLFunc;
+				this._pCurrentContextStates.STENCIL_BACK_REF = iRef;
+				this._pCurrentContextStates.STENCIL_BACK_VALUE_MASK = iMask;
+			}
+		}
+
+		stencilMask(iMask: uint): void {
+			this._pWebGLContext.stencilMask(iMask);
+			this._pCurrentContextStates.STENCIL_WRITEMASK = iMask;
+			this._pCurrentContextStates.STENCIL_BACK_WRITEMASK = iMask;
+		}
+
+		stencilMaskSeparate(iWebGLFace: uint, iMask: uint): void {
+			this._pWebGLContext.stencilMaskSeparate(iWebGLFace, iMask);
+
+			if(iWebGLFace === GL_FRONT_AND_BACK){
+				this._pCurrentContextStates.STENCIL_WRITEMASK = iMask;
+				this._pCurrentContextStates.STENCIL_BACK_WRITEMASK = iMask;
+			}
+			else if(iWebGLFace === GL_FRONT){
+				this._pCurrentContextStates.STENCIL_WRITEMASK = iMask;
+			}
+			else {
+				this._pCurrentContextStates.STENCIL_BACK_WRITEMASK = iMask;
+			}
+		}
+
+		stencilOp(iFail: uint, iZFail: uint, iZPass: uint): void {
+			this._pWebGLContext.stencilOp(iFail, iZFail, iZPass);
+
+			this._pCurrentContextStates.STENCIL_FAIL = iFail;
+			this._pCurrentContextStates.STENCIL_PASS_DEPTH_FAIL = iZFail;
+			this._pCurrentContextStates.STENCIL_PASS_DEPTH_PASS = iZPass;
+			this._pCurrentContextStates.STENCIL_BACK_FAIL = iFail;
+			this._pCurrentContextStates.STENCIL_BACK_PASS_DEPTH_FAIL = iZFail;
+			this._pCurrentContextStates.STENCIL_BACK_PASS_DEPTH_PASS = iZPass;
+		}
+
+		stencilOpSeparate(iWebGLFace: uint, iFail: uint, iZFail: uint, iZPass: uint): void {
+			this._pWebGLContext.stencilOpSeparate(iWebGLFace, iFail, iZFail, iZPass);
+
+			if(iWebGLFace === GL_FRONT_AND_BACK){
+				this._pCurrentContextStates.STENCIL_FAIL = iFail;
+				this._pCurrentContextStates.STENCIL_PASS_DEPTH_FAIL = iZFail;
+				this._pCurrentContextStates.STENCIL_PASS_DEPTH_PASS = iZPass;
+				this._pCurrentContextStates.STENCIL_BACK_FAIL = iFail;
+				this._pCurrentContextStates.STENCIL_BACK_PASS_DEPTH_FAIL = iZFail;
+				this._pCurrentContextStates.STENCIL_BACK_PASS_DEPTH_PASS = iZPass;
+			}
+			else if(iWebGLFace === GL_FRONT){
+				this._pCurrentContextStates.STENCIL_FAIL = iFail;
+				this._pCurrentContextStates.STENCIL_PASS_DEPTH_FAIL = iZFail;
+				this._pCurrentContextStates.STENCIL_PASS_DEPTH_PASS = iZPass;
+			}
+			else {
+				this._pCurrentContextStates.STENCIL_BACK_FAIL = iFail;
+				this._pCurrentContextStates.STENCIL_BACK_PASS_DEPTH_FAIL = iZFail;
+				this._pCurrentContextStates.STENCIL_BACK_PASS_DEPTH_PASS = iZPass;
+			}
 		}
 
 		_beginRender(): void {
-			this._pWebGLContext.enable(GL_SCISSOR_TEST);
-			this._pWebGLContext.disable(GL_BLEND);
+			this.enable(GL_SCISSOR_TEST);
+			this.disable(GL_BLEND);
 		}
 
 		private _time: uint[] = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -264,10 +630,13 @@ module akra.webgl {
 				this._setViewportForRender(pViewport);
 			}
 
-			if(isDef(pMaker["_pShaderUniformInfoMap"]["fKrESun"])){
-				// LOG("1");
-				this._pWebGLContext.depthMask(false);
-			}
+			// this.forceUpdateContextRenderStates();
+			var isNeedPopRenderStates: bool = this.applyInputRenderStates(pInput.renderStates);
+
+			// if(isDef(pMaker["_pShaderUniformInfoMap"]["fKrESun"])){
+			// 	// LOG("1");
+			// 	this._pWebGLContext.depthMask(false);
+			// }
 			// deltaTime = Date.now() - deltaTime;
 			// this._time[1] += deltaTime;
 
@@ -368,13 +737,18 @@ module akra.webgl {
 			// deltaTime = Date.now() - deltaTime;
 			// this._time[7] += deltaTime;
 			// LOG(pEntry.bufferMap.toString())
-			if(isDef(pMaker["_pShaderUniformInfoMap"]["fKrESun"])){
-				this._pWebGLContext.depthMask(true);
+			
+			// if(isDef(pMaker["_pShaderUniformInfoMap"]["fKrESun"])){
+			// 	this._pWebGLContext.depthMask(true);
+			// }
+			
+			if(isNeedPopRenderStates){
+				this._popRenderStates(false);
 			}
 		}
 
 		_endRender(): void {
-			this._pWebGLContext.disable(GL_SCISSOR_TEST);
+			this.disable(GL_SCISSOR_TEST);
 		}
 
 		_setViewport(pViewport: IViewport): void {
@@ -443,7 +817,7 @@ module akra.webgl {
 
         	switch(eMode){
         		case ECullingMode.NONE:
-        			this._pWebGLContext.disable(GL_CULL_FACE);
+        			this.disable(GL_CULL_FACE);
         			return;
 
         		default:
@@ -456,8 +830,8 @@ module akra.webgl {
         			break;
         	}
 
-        	this._pWebGLContext.enable(GL_CULL_FACE);
-        	this._pWebGLContext.cullFace(iWebGLCullMode);
+        	this.enable(GL_CULL_FACE);
+        	this.cullFace(iWebGLCullMode);
         }
 
         _setDepthBufferParams(bDepthTest: bool, bDepthWrite: bool, 
@@ -466,17 +840,17 @@ module akra.webgl {
         	// 	return;
         	// }
         	if(bDepthTest){
-        		this._pWebGLContext.clearDepth(fClearDepth);
-        		this._pWebGLContext.enable(GL_DEPTH_TEST);
+        		this.clearDepth(fClearDepth);
+        		this.enable(GL_DEPTH_TEST);
         	}
         	else {
-        		this._pWebGLContext.disable(GL_DEPTH_TEST);
+        		this.disable(GL_DEPTH_TEST);
         	}
 
-        	this._pWebGLContext.depthMask(bDepthWrite); 
-        	this._pCurrentContextStates.DEPTH_WRITEMASK = bDepthWrite;
+        	var iWebGLDepthFunc: uint = this.convertCompareFunction(eDepthFunction);
 
-        	this._pWebGLContext.depthFunc(this.convertCompareFunction(eDepthFunction));
+        	this.depthMask(bDepthWrite); 
+        	this.depthFunc(iWebGLDepthFunc);
         }
 		
 		isDebug(): bool {
@@ -687,12 +1061,16 @@ module akra.webgl {
 			this._pCurrentContextStates = WebGLRenderer.copyWebGLContextStates(this.getFreeRenderStates(), this._pCurrentContextStates);
 		}
 
-		_popRenderStates(): void {
+		_popRenderStates(isForce: bool): void {
 			if(this._pRenderStatesPool.length === 0) {
 				debug_warning("Can not pop context render states. Pool of context is empty.");
 			}
 
 			this._pFreeRenderStatesPool.push(this._pCurrentContextStates);
+
+			if(isForce){
+				this.forceUpdateContextRenderStates();
+			}
 
 			var pCurreentStates: IWebGLContextStates = this._pCurrentContextStates;
 			this._pCurrentContextStates = this._pRenderStatesPool.pop();
@@ -705,9 +1083,13 @@ module akra.webgl {
 			this.restoreCullStates(pStatesFrom);
 			this.restoreColorStates(pStatesFrom);
 			this.restoreDepthStates(pStatesFrom);
+			this.restoreDitherStates(pStatesFrom);
+			this.restoreFrontFaceStates(pStatesFrom);
 			this.restorePolygonStates(pStatesFrom);
-			this.restoreStencilStates(pStatesFrom);
 			this.restoreSampleStates(pStatesFrom);
+			this.restoreScissorStates(pStatesFrom);
+			this.restoreStencilStates(pStatesFrom);
+			this.restorePackStates(pStatesFrom);
 		}
 
 		private restoreBlendStates(pStatesFrom: IWebGLContextStates): void {
@@ -715,7 +1097,7 @@ module akra.webgl {
 
 			if (pRestoreStates.BLEND !== pStatesFrom.BLEND){
 				if(pRestoreStates.BLEND) {
-					this._pWebGLContext.enable(GL_BLEND)
+					this._pWebGLContext.enable(GL_BLEND);
 				}
 				else {
 					this._pWebGLContext.disable(GL_BLEND);
@@ -756,7 +1138,7 @@ module akra.webgl {
 
 			if (pRestoreStates.CULL_FACE !== pStatesFrom.CULL_FACE){
 				if(pRestoreStates.CULL_FACE) {
-					this._pWebGLContext.enable(GL_CULL_FACE)
+					this._pWebGLContext.enable(GL_CULL_FACE);
 				}
 				else {
 					this._pWebGLContext.disable(GL_CULL_FACE);
@@ -782,10 +1164,10 @@ module akra.webgl {
 											   pRestoreStates.COLOR_CLEAR_VALUE[3]);
 			}
 
-			if (pRestoreStates.COLOR_WRITEMASK[0] !== pStatesFrom.COLOR_CLEAR_VALUE[0] ||
-				pRestoreStates.COLOR_WRITEMASK[1] !== pStatesFrom.COLOR_CLEAR_VALUE[1] ||
-				pRestoreStates.COLOR_WRITEMASK[2] !== pStatesFrom.COLOR_CLEAR_VALUE[2] ||
-				pRestoreStates.COLOR_WRITEMASK[3] !== pStatesFrom.COLOR_CLEAR_VALUE[3]){
+			if (pRestoreStates.COLOR_WRITEMASK[0] !== pStatesFrom.COLOR_WRITEMASK[0] ||
+				pRestoreStates.COLOR_WRITEMASK[1] !== pStatesFrom.COLOR_WRITEMASK[1] ||
+				pRestoreStates.COLOR_WRITEMASK[2] !== pStatesFrom.COLOR_WRITEMASK[2] ||
+				pRestoreStates.COLOR_WRITEMASK[3] !== pStatesFrom.COLOR_WRITEMASK[3]){
 				
 				this._pWebGLContext.colorMask(pRestoreStates.COLOR_WRITEMASK[0],
 											  pRestoreStates.COLOR_WRITEMASK[1],
@@ -795,15 +1177,183 @@ module akra.webgl {
 		}
 
 		private restoreDepthStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if (pRestoreStates.DEPTH_TEST !== pStatesFrom.DEPTH_TEST){
+				if(pRestoreStates.DEPTH_TEST) {
+					this._pWebGLContext.enable(GL_DEPTH_TEST);
+				}
+				else {
+					this._pWebGLContext.disable(GL_DEPTH_TEST);
+				}
+			}
+
+			if (pRestoreStates.DEPTH_CLEAR_VALUE !== pStatesFrom.DEPTH_CLEAR_VALUE){
+				this._pWebGLContext.clearDepth(pRestoreStates.DEPTH_CLEAR_VALUE);
+			}
+
+			if (pRestoreStates.DEPTH_FUNC !== pStatesFrom.DEPTH_FUNC){
+				this._pWebGLContext.depthFunc(pRestoreStates.DEPTH_FUNC);
+			}
+
+			if (pRestoreStates.DEPTH_WRITEMASK !== pStatesFrom.DEPTH_WRITEMASK){
+				this._pWebGLContext.depthMask(pRestoreStates.DEPTH_WRITEMASK);
+			}
+
+			if (pRestoreStates.DEPTH_RANGE[0] !== pStatesFrom.DEPTH_RANGE[0] ||
+				pRestoreStates.DEPTH_RANGE[1] !== pStatesFrom.DEPTH_RANGE[1]){
+				this._pWebGLContext.depthRange(pRestoreStates.DEPTH_RANGE[0], pRestoreStates.DEPTH_RANGE[1]);
+			}
+		}
+
+		private restoreDitherStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if (pRestoreStates.DITHER !== pStatesFrom.DITHER){
+				if(pRestoreStates.DITHER) {
+					this._pWebGLContext.enable(GL_DITHER);
+				}
+				else {
+					this._pWebGLContext.disable(GL_DITHER);
+				}
+			}
+		}
+
+		private restoreFrontFaceStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if (pRestoreStates.FRONT_FACE !== pStatesFrom.FRONT_FACE){
+				this._pWebGLContext.frontFace(pRestoreStates.FRONT_FACE);
+			}
 		}
 
 		private restorePolygonStates(pStatesFrom: IWebGLContextStates): void {
-		}
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
 
-		private restoreStencilStates(pStatesFrom: IWebGLContextStates): void {
+			if (pRestoreStates.POLYGON_OFFSET_FILL !== pStatesFrom.POLYGON_OFFSET_FILL){
+				if(pRestoreStates.POLYGON_OFFSET_FILL) {
+					this._pWebGLContext.enable(GL_POLYGON_OFFSET_FILL);
+				}
+				else {
+					this._pWebGLContext.disable(GL_POLYGON_OFFSET_FILL);
+				}
+			}
+
+			if (pRestoreStates.POLYGON_OFFSET_FACTOR !== pStatesFrom.POLYGON_OFFSET_FACTOR ||
+				pRestoreStates.POLYGON_OFFSET_UNITS !== pStatesFrom.POLYGON_OFFSET_UNITS){
+
+				this._pWebGLContext.polygonOffset(pRestoreStates.POLYGON_OFFSET_FACTOR, pRestoreStates.POLYGON_OFFSET_UNITS);
+			}
+
 		}
 
 		private restoreSampleStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if (pRestoreStates.SAMPLE_COVERAGE_VALUE !== pStatesFrom.SAMPLE_COVERAGE_VALUE ||
+				pRestoreStates.SAMPLE_COVERAGE_INVERT !== pStatesFrom.SAMPLE_COVERAGE_INVERT){
+
+				this._pWebGLContext.sampleCoverage(pRestoreStates.SAMPLE_COVERAGE_VALUE, pRestoreStates.SAMPLE_COVERAGE_INVERT);
+			}
+		}
+
+		private restoreScissorStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if (pRestoreStates.SCISSOR_TEST !== pStatesFrom.SCISSOR_TEST){
+				if(pRestoreStates.SCISSOR_TEST) {
+					this._pWebGLContext.enable(GL_SCISSOR_TEST);
+				}
+				else {
+					this._pWebGLContext.disable(GL_SCISSOR_TEST);
+				}
+			}
+		}
+
+		private restoreStencilStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if (pRestoreStates.STENCIL_TEST !== pStatesFrom.STENCIL_TEST){
+				if(pRestoreStates.STENCIL_TEST) {
+					this._pWebGLContext.enable(GL_STENCIL_TEST);
+				}
+				else {
+					this._pWebGLContext.disable(GL_STENCIL_TEST);
+				}
+			}
+
+			if(pRestoreStates.STENCIL_CLEAR_VALUE !== pStatesFrom.STENCIL_CLEAR_VALUE){
+				this._pWebGLContext.clearStencil(pRestoreStates.STENCIL_CLEAR_VALUE)
+			}
+
+			if (pRestoreStates.STENCIL_FUNC !== pStatesFrom.STENCIL_FUNC ||
+				pRestoreStates.STENCIL_REF !== pStatesFrom.STENCIL_REF ||
+				pRestoreStates.STENCIL_VALUE_MASK !== pStatesFrom.STENCIL_VALUE_MASK ||
+				pRestoreStates.STENCIL_BACK_FUNC !== pStatesFrom.STENCIL_BACK_FUNC ||
+				pRestoreStates.STENCIL_BACK_REF !== pStatesFrom.STENCIL_BACK_REF ||
+				pRestoreStates.STENCIL_BACK_VALUE_MASK !== pStatesFrom.STENCIL_BACK_VALUE_MASK) {
+
+				if (pRestoreStates.STENCIL_FUNC === pRestoreStates.STENCIL_BACK_FUNC ||
+					pRestoreStates.STENCIL_REF === pRestoreStates.STENCIL_BACK_REF ||
+					pRestoreStates.STENCIL_VALUE_MASK === pRestoreStates.STENCIL_BACK_VALUE_MASK) {
+
+					this._pWebGLContext.stencilFunc(pRestoreStates.STENCIL_FUNC, pRestoreStates.STENCIL_REF, pRestoreStates.STENCIL_VALUE_MASK);
+				}
+				else {
+					this._pWebGLContext.stencilFuncSeparate(GL_FRONT, 
+							pRestoreStates.STENCIL_FUNC, pRestoreStates.STENCIL_REF, pRestoreStates.STENCIL_VALUE_MASK);
+
+					this._pWebGLContext.stencilFuncSeparate(GL_BACK, 
+							pRestoreStates.STENCIL_BACK_FUNC, pRestoreStates.STENCIL_BACK_REF, pRestoreStates.STENCIL_BACK_VALUE_MASK);
+				}
+			}
+
+			if (pRestoreStates.STENCIL_WRITEMASK !== pStatesFrom.STENCIL_WRITEMASK ||
+				pRestoreStates.STENCIL_BACK_WRITEMASK !== pStatesFrom.STENCIL_BACK_WRITEMASK){
+
+				if(pRestoreStates.STENCIL_WRITEMASK === pRestoreStates.STENCIL_BACK_WRITEMASK){
+					this._pWebGLContext.stencilMask(pRestoreStates.STENCIL_WRITEMASK);
+				}
+				else {
+					this._pWebGLContext.stencilMaskSeparate(GL_FRONT, pRestoreStates.STENCIL_WRITEMASK);
+					this._pWebGLContext.stencilMaskSeparate(GL_BACK, pRestoreStates.STENCIL_WRITEMASK);
+				}
+			}
+
+			if (pRestoreStates.STENCIL_FAIL !== pStatesFrom.STENCIL_FAIL ||
+				pRestoreStates.STENCIL_PASS_DEPTH_FAIL !== pStatesFrom.STENCIL_PASS_DEPTH_FAIL ||
+				pRestoreStates.STENCIL_PASS_DEPTH_PASS !== pStatesFrom.STENCIL_PASS_DEPTH_PASS ||
+				pRestoreStates.STENCIL_BACK_FAIL !== pStatesFrom.STENCIL_BACK_FAIL ||
+				pRestoreStates.STENCIL_BACK_PASS_DEPTH_FAIL !== pStatesFrom.STENCIL_BACK_PASS_DEPTH_FAIL ||
+				pRestoreStates.STENCIL_BACK_PASS_DEPTH_PASS !== pStatesFrom.STENCIL_BACK_PASS_DEPTH_PASS) {
+
+				if (pRestoreStates.STENCIL_FAIL === pRestoreStates.STENCIL_BACK_FAIL ||
+					pRestoreStates.STENCIL_PASS_DEPTH_FAIL === pRestoreStates.STENCIL_BACK_PASS_DEPTH_FAIL ||
+					pRestoreStates.STENCIL_PASS_DEPTH_PASS === pRestoreStates.STENCIL_BACK_PASS_DEPTH_PASS) {
+
+					this._pWebGLContext.stencilOp(pRestoreStates.STENCIL_FAIL, pRestoreStates.STENCIL_PASS_DEPTH_FAIL, pRestoreStates.STENCIL_PASS_DEPTH_PASS);
+				}
+				else {
+					this._pWebGLContext.stencilOpSeparate(GL_FRONT,
+							pRestoreStates.STENCIL_FAIL, pRestoreStates.STENCIL_PASS_DEPTH_FAIL, pRestoreStates.STENCIL_PASS_DEPTH_PASS);
+
+					this._pWebGLContext.stencilOpSeparate(GL_BACK,
+							pRestoreStates.STENCIL_BACK_FAIL, pRestoreStates.STENCIL_BACK_PASS_DEPTH_FAIL, pRestoreStates.STENCIL_BACK_PASS_DEPTH_PASS);
+				}
+			}
+
+		}
+
+		private restorePackStates(pStatesFrom: IWebGLContextStates): void {
+			var pRestoreStates: IWebGLContextStates = this._pCurrentContextStates;
+
+			if(pRestoreStates.UNPACK_ALIGNMENT !== pStatesFrom.UNPACK_ALIGNMENT){
+				this._pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, pRestoreStates.UNPACK_ALIGNMENT);
+			}
+
+			if(pRestoreStates.PACK_ALIGNMENT !== pStatesFrom.PACK_ALIGNMENT){
+				this._pWebGLContext.pixelStorei(GL_PACK_ALIGNMENT, pRestoreStates.PACK_ALIGNMENT);
+			}
 		}
 
 		private inline forceUpdateContextRenderStates(): void {
@@ -816,6 +1366,264 @@ module akra.webgl {
 			}
 			else {
 				return WebGLRenderer.createWebGLContextStates();
+			}
+		}
+
+		private applyInputRenderStates(pStates: IRenderStateMap): bool {
+			var isStatesChanged: bool = false;
+			var iWebGLValue: uint = 0;
+
+			if (pStates[ERenderStates.BLENDENABLE] !== ERenderStateValues.UNDEF){
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.BLENDENABLE]);
+				if(this._pCurrentContextStates.BLEND !== !!iWebGLValue){
+					
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.BLEND = !!iWebGLValue;
+
+					if(this._pCurrentContextStates.BLEND){
+						this._pWebGLContext.enable(GL_BLEND);
+					}
+					else {
+						this._pWebGLContext.disable(GL_BLEND);
+					}
+				}
+
+			}
+
+			if (pStates[ERenderStates.CULLFACEENABLE] !== ERenderStateValues.UNDEF){
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.CULLFACEENABLE]);
+				if(this._pCurrentContextStates.CULL_FACE !== !!iWebGLValue){
+					
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.CULL_FACE = !!iWebGLValue;
+
+					if(this._pCurrentContextStates.CULL_FACE){
+						this._pWebGLContext.enable(GL_CULL_FACE);
+					}
+					else {
+						this._pWebGLContext.disable(GL_CULL_FACE);
+					}
+				}
+			}
+
+			if (pStates[ERenderStates.ZENABLE] !== ERenderStateValues.UNDEF){
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.ZENABLE]);
+				if(this._pCurrentContextStates.DEPTH_TEST !== !!iWebGLValue){
+					
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.DEPTH_TEST = !!iWebGLValue;
+
+					if(this._pCurrentContextStates.DEPTH_TEST){
+						this._pWebGLContext.enable(GL_DEPTH_TEST);
+					}
+					else {
+						this._pWebGLContext.disable(GL_DEPTH_TEST);
+					}
+				}
+			}
+
+			if (pStates[ERenderStates.DITHERENABLE] !== ERenderStateValues.UNDEF){
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.DITHERENABLE]);
+				if(this._pCurrentContextStates.DITHER !== !!iWebGLValue){
+					
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.DITHER = !!iWebGLValue;
+
+					if(this._pCurrentContextStates.DITHER){
+						this._pWebGLContext.enable(GL_DITHER);
+					}
+					else {
+						this._pWebGLContext.disable(GL_DITHER);
+					}
+				}
+			}
+
+			if (pStates[ERenderStates.ZWRITEENABLE] !== ERenderStateValues.UNDEF){
+
+				!isStatesChanged && this._pushRenderStates();				
+				isStatesChanged = true;
+				this._pCurrentContextStates.DEPTH_WRITEMASK = this.convertRenderStateValue(pStates[ERenderStates.ZWRITEENABLE]);
+
+				this._pWebGLContext.depthMask(this._pCurrentContextStates.DEPTH_WRITEMASK);
+			}
+
+			if (pStates[ERenderStates.SCISSORTESTENABLE] !== ERenderStateValues.UNDEF){
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.SCISSORTESTENABLE]);
+				if(this._pCurrentContextStates.SCISSOR_TEST !== !!iWebGLValue){
+					
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.SCISSOR_TEST = !!iWebGLValue;
+
+					if(this._pCurrentContextStates.SCISSOR_TEST){
+						this._pWebGLContext.enable(GL_SCISSOR_TEST);
+					}
+					else {
+						this._pWebGLContext.disable(GL_SCISSOR_TEST);
+					}
+				}
+			}
+
+			if (pStates[ERenderStates.STENCILTESTENABLE] !== ERenderStateValues.UNDEF){
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.STENCILTESTENABLE]);
+				if(this._pCurrentContextStates.STENCIL_TEST !== !!iWebGLValue){
+					
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.STENCIL_TEST = !!iWebGLValue;
+
+					if(this._pCurrentContextStates.STENCIL_TEST){
+						this._pWebGLContext.enable(GL_STENCIL_TEST);
+					}
+					else {
+						this._pWebGLContext.disable(GL_STENCIL_TEST);
+					}
+				}
+			}
+
+			if (pStates[ERenderStates.POLYGONOFFSETFILLENABLE] !== ERenderStateValues.UNDEF){
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.POLYGONOFFSETFILLENABLE]);
+				if(this._pCurrentContextStates.POLYGON_OFFSET_FILL !== !!iWebGLValue){
+					
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.POLYGON_OFFSET_FILL = !!iWebGLValue;
+
+					if(this._pCurrentContextStates.POLYGON_OFFSET_FILL){
+						this._pWebGLContext.enable(GL_POLYGON_OFFSET_FILL);
+					}
+					else {
+						this._pWebGLContext.disable(GL_POLYGON_OFFSET_FILL);
+					}
+				}
+			}
+
+			if(pStates[ERenderStates.CULLFACE] !== ERenderStateValues.UNDEF) {
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.CULLFACE]);
+				if(this._pCurrentContextStates.CULL_FACE_MODE !== iWebGLValue){
+
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.CULL_FACE_MODE = iWebGLValue;
+
+					this._pWebGLContext.cullFace(this._pCurrentContextStates.CULL_FACE_MODE);
+				}
+			}
+
+			if(pStates[ERenderStates.FRONTFACE] !== ERenderStateValues.UNDEF) {
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.FRONTFACE]);
+				if(this._pCurrentContextStates.FRONT_FACE !== iWebGLValue){
+
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.FRONT_FACE = iWebGLValue;
+
+					this._pWebGLContext.frontFace(this._pCurrentContextStates.FRONT_FACE);
+				}
+			}
+
+			if(pStates[ERenderStates.ZFUNC] !== ERenderStateValues.UNDEF) {
+				
+				iWebGLValue = this.convertRenderStateValue(pStates[ERenderStates.ZFUNC]);
+				if(this._pCurrentContextStates.DEPTH_FUNC !== iWebGLValue){
+
+					!isStatesChanged && this._pushRenderStates();				
+					isStatesChanged = true;
+					this._pCurrentContextStates.DEPTH_FUNC = iWebGLValue;
+
+					this._pWebGLContext.depthFunc(this._pCurrentContextStates.DEPTH_FUNC);
+				}
+			}
+
+			if (pStates[ERenderStates.SRCBLEND] !== ERenderStateValues.UNDEF || 
+				pStates[ERenderStates.DESTBLEND] !== ERenderStateValues.UNDEF) {
+				
+				var iWebGLValue1: uint = this.convertRenderStateValue(pStates[ERenderStates.SRCBLEND]);
+				var iWebGLValue2: uint = this.convertRenderStateValue(pStates[ERenderStates.DESTBLEND]);
+
+				!isStatesChanged && this._pushRenderStates();				
+				isStatesChanged = true;
+
+				this._pCurrentContextStates.BLEND_SRC_RGB = iWebGLValue1;
+				this._pCurrentContextStates.BLEND_SRC_ALPHA = iWebGLValue1;
+				this._pCurrentContextStates.BLEND_DST_RGB = iWebGLValue2;
+				this._pCurrentContextStates.BLEND_DST_ALPHA = iWebGLValue2;
+
+				this._pWebGLContext.blendFunc(iWebGLValue1, iWebGLValue2);
+			}
+
+			return isStatesChanged;
+		}
+
+		private convertRenderStateValue(eStateValue: ERenderStateValues): any {
+			switch(eStateValue){
+        		case ERenderStateValues.TRUE:
+        			return 1;
+        		case ERenderStateValues.FALSE:
+        			return 0;
+        		case ERenderStateValues.ZERO:
+        			return GL_ZERO;
+        		case ERenderStateValues.ONE:
+        			return GL_ONE;
+        		case ERenderStateValues.SRCCOLOR:
+        			return GL_SRC_COLOR;
+        		case ERenderStateValues.INVSRCCOLOR:
+        			return GL_ONE_MINUS_SRC_COLOR;
+        		case ERenderStateValues.SRCALPHA:
+        			return GL_SRC_ALPHA;
+        		case ERenderStateValues.INVSRCALPHA:
+        			return GL_ONE_MINUS_SRC_ALPHA;
+        		case ERenderStateValues.DESTALPHA:
+        			return GL_DST_ALPHA;
+        		case ERenderStateValues.INVDESTALPHA:
+        			return GL_ONE_MINUS_DST_ALPHA;
+        		case ERenderStateValues.DESTCOLOR:
+        			return GL_DST_COLOR;
+        		case ERenderStateValues.INVDESTCOLOR:
+        			return GL_ONE_MINUS_DST_COLOR;
+        		case ERenderStateValues.SRCALPHASAT:
+        			return GL_SRC_ALPHA_SATURATE;
+        		case ERenderStateValues.NONE:
+        			return GL_NONE;
+        		case ERenderStateValues.CW:
+        			return GL_CW;
+        		case ERenderStateValues.CCW:
+        			return GL_CCW;
+        		case ERenderStateValues.FRONT:
+        			return GL_FRONT;
+        		case ERenderStateValues.BACK:
+        			return GL_BACK;
+        		case ERenderStateValues.FRONT_AND_BACK:
+        			return GL_FRONT_AND_BACK;
+        		case ERenderStateValues.NEVER:
+        			return GL_NEVER;
+        		case ERenderStateValues.LESS:
+        			return GL_LESS;
+        		case ERenderStateValues.EQUAL:
+        			return GL_EQUAL;
+        		case ERenderStateValues.LESSEQUAL:
+        			return GL_LEQUAL;
+        		case ERenderStateValues.GREATER:
+        			return GL_GREATER;
+        		case ERenderStateValues.NOTEQUAL:
+        			return GL_NOTEQUAL;
+        		case ERenderStateValues.GREATEREQUAL:
+        			return GL_GEQUAL;
+        		case ERenderStateValues.ALWAYS:
+        			return GL_ALWAYS;			
 			}
 		}
 
@@ -846,6 +1654,7 @@ module akra.webgl {
     	static createWebGLContextStates(pStates?: IWebGLContextStates = null): IWebGLContextStates {
 			return {
 				BLEND: isNull(pStates) ? false : pStates.BLEND,
+				BLEND_COLOR: isNull(pStates) ? new Float32Array(4) : new Float32Array(pStates.BLEND_COLOR),
 				BLEND_DST_ALPHA: isNull(pStates) ? 0 : pStates.BLEND_DST_ALPHA,
 				BLEND_DST_RGB: isNull(pStates) ? 0 : pStates.BLEND_DST_RGB,
 				BLEND_EQUATION_ALPHA: isNull(pStates) ? 0 : pStates.BLEND_EQUATION_ALPHA,
@@ -895,12 +1704,15 @@ module akra.webgl {
 				STENCIL_REF: isNull(pStates) ? 0 : pStates.STENCIL_REF,
 				STENCIL_TEST: isNull(pStates) ? false : pStates.STENCIL_TEST,
 				STENCIL_VALUE_MASK: isNull(pStates) ? 0 : pStates.STENCIL_VALUE_MASK,
-				STENCIL_WRITEMASK: isNull(pStates) ? 0 : pStates.STENCIL_WRITEMASK
+				STENCIL_WRITEMASK: isNull(pStates) ? 0 : pStates.STENCIL_WRITEMASK,
+				PACK_ALIGNMENT: isNull(pStates) ? 0 : pStates.PACK_ALIGNMENT,
+				UNPACK_ALIGNMENT: isNull(pStates) ? 0 : pStates.UNPACK_ALIGNMENT
 			};
 		}
 
 		static copyWebGLContextStates(pStatesTo: IWebGLContextStates, pStatesFrom: IWebGLContextStates): IWebGLContextStates {
 			pStatesTo.BLEND = pStatesFrom.BLEND;
+			pStatesTo.BLEND_COLOR.set(pStatesFrom.BLEND_COLOR);
 			pStatesTo.BLEND_DST_ALPHA = pStatesFrom.BLEND_DST_ALPHA;
 			pStatesTo.BLEND_DST_RGB = pStatesFrom.BLEND_DST_RGB;
 			pStatesTo.BLEND_EQUATION_ALPHA = pStatesFrom.BLEND_EQUATION_ALPHA;
@@ -908,15 +1720,18 @@ module akra.webgl {
 			pStatesTo.BLEND_SRC_ALPHA = pStatesFrom.BLEND_SRC_ALPHA;
 			pStatesTo.BLEND_SRC_RGB = pStatesFrom.BLEND_SRC_RGB;
 
-			pStatesTo.COLOR_CLEAR_VALUE = pStatesFrom.COLOR_CLEAR_VALUE;
-			pStatesTo.COLOR_WRITEMASK = pStatesFrom.COLOR_WRITEMASK;
+			pStatesTo.COLOR_CLEAR_VALUE.set(pStatesFrom.COLOR_CLEAR_VALUE);
+			pStatesTo.COLOR_WRITEMASK[0] = pStatesFrom.COLOR_WRITEMASK[0];
+			pStatesTo.COLOR_WRITEMASK[1] = pStatesFrom.COLOR_WRITEMASK[1];
+			pStatesTo.COLOR_WRITEMASK[2] = pStatesFrom.COLOR_WRITEMASK[2];
+			pStatesTo.COLOR_WRITEMASK[3] = pStatesFrom.COLOR_WRITEMASK[3];
 
 			pStatesTo.CULL_FACE = pStatesFrom.CULL_FACE;
 			pStatesTo.CULL_FACE_MODE = pStatesFrom.CULL_FACE_MODE;
 
 			pStatesTo.DEPTH_CLEAR_VALUE = pStatesFrom.DEPTH_CLEAR_VALUE;
 			pStatesTo.DEPTH_FUNC = pStatesFrom.DEPTH_FUNC;
-			pStatesTo.DEPTH_RANGE = pStatesFrom.DEPTH_RANGE;
+			pStatesTo.DEPTH_RANGE.set(pStatesFrom.DEPTH_RANGE);
 			pStatesTo.DEPTH_TEST = pStatesFrom.DEPTH_TEST;
 			pStatesTo.DEPTH_WRITEMASK = pStatesFrom.DEPTH_WRITEMASK;
 			pStatesTo.DITHER = pStatesFrom.DITHER;
@@ -952,11 +1767,16 @@ module akra.webgl {
 			pStatesTo.STENCIL_VALUE_MASK = pStatesFrom.STENCIL_VALUE_MASK;
 			pStatesTo.STENCIL_WRITEMASK = pStatesFrom.STENCIL_WRITEMASK;
 
+
+			pStatesTo.PACK_ALIGNMENT = pStatesFrom.PACK_ALIGNMENT;
+			pStatesTo.UNPACK_ALIGNMENT = pStatesFrom.UNPACK_ALIGNMENT;
+
 			return pStatesTo;
 		}
 
 		static initStatesFromWebGLContext(pStatesTo: IWebGLContextStates, pWebGLContext: WebGLRenderingContext): IWebGLContextStates {
 			pStatesTo.BLEND = pWebGLContext.getParameter(GL_BLEND);
+			pStatesTo.BLEND_COLOR = pWebGLContext.getParameter(GL_BLEND_COLOR);
 			pStatesTo.BLEND_DST_ALPHA = pWebGLContext.getParameter(GL_BLEND_DST_ALPHA);
 			pStatesTo.BLEND_DST_RGB = pWebGLContext.getParameter(GL_BLEND_DST_RGB);
 			pStatesTo.BLEND_EQUATION_ALPHA = pWebGLContext.getParameter(GL_BLEND_EQUATION_ALPHA);
@@ -1007,6 +1827,9 @@ module akra.webgl {
 			pStatesTo.STENCIL_TEST = pWebGLContext.getParameter(GL_STENCIL_TEST);
 			pStatesTo.STENCIL_VALUE_MASK = pWebGLContext.getParameter(GL_STENCIL_VALUE_MASK);
 			pStatesTo.STENCIL_WRITEMASK = pWebGLContext.getParameter(GL_STENCIL_WRITEMASK);
+
+			pStatesTo.PACK_ALIGNMENT = pWebGLContext.getParameter(GL_PACK_ALIGNMENT);
+			pStatesTo.UNPACK_ALIGNMENT = pWebGLContext.getParameter(GL_UNPACK_ALIGNMENT);
 
 			return pStatesTo;
 		}

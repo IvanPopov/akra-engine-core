@@ -210,10 +210,10 @@ module akra.util{
         pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
         pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
-        pWebGLContext.disable(GL_DEPTH_TEST);
-        pWebGLContext.disable(GL_SCISSOR_TEST);
-        pWebGLContext.disable(GL_BLEND);
-        pWebGLContext.disable(GL_CULL_FACE);
+        pWebGLRenderer.disable(GL_DEPTH_TEST);
+        pWebGLRenderer.disable(GL_SCISSOR_TEST);
+        pWebGLRenderer.disable(GL_BLEND);
+        pWebGLRenderer.disable(GL_CULL_FACE);
 
         var iPositionAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("positionIndex");
         var iNormalAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("normalIndex");

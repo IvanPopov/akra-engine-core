@@ -98,7 +98,7 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni-0");
+		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni-0");
 		
 		pOmniLight.attachToParent(pScene.getRootNode());
 		pOmniLight.enabled = false;
@@ -201,7 +201,7 @@ module akra {
 		// pProjectShadowLight.addRelPosition(0, 3, 10);
 
 
-		var pOmniShadowLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
+		var pOmniShadowLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, true, 512, "test-omni-1");
 		
 		pOmniShadowLight.attachToParent(pScene.getRootNode());
 		pOmniShadowLight.enabled = true;
@@ -209,7 +209,7 @@ module akra {
 		pOmniShadowLight.params.diffuse.set(0.5);
 		pOmniShadowLight.params.specular.set(1, 1, 1, 1);
 		pOmniShadowLight.params.attenuation.set(1,0.0,0);
-		pOmniShadowLight.isShadowCaster = true;
+		pOmniShadowLight.isShadowCaster = false;
 
 		pOmniShadowLight.setPosition(1, 5, 5);
 	}
@@ -245,7 +245,7 @@ module akra {
 			}
 
 			pScene.bind(SIGNAL(beforeUpdate), () => {
-				pModelRoot.addRelRotationByXYZAxis(0.00, 0.00, 0);
+				pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
 				// pController.update();
 			});
 
@@ -342,20 +342,20 @@ module akra {
 
 	function main(pEngine: IEngine): void {
 		setup();
-		createSceneEnvironment();
+		// createSceneEnvironment();
 		createCameras();
 		createViewports();
 		createLighting();
 		createSkyBox();
 		
 		// loadModels("../../../data/models/kr360.dae");
-		loadModel(DATA + "models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
-			// var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
-			// pMesh.createBoundingBox();h
-			// pMesh.showBoundingBox();
-		}).scale(2.);
+		// loadModel(DATA + "models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
+		// 	// var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
+		// 	// pMesh.createBoundingBox();h
+		// 	// pMesh.showBoundingBox();
+		// }).scale(2.);
 		
-		// loadHero();
+		// // loadHero();
 
 		
 
@@ -367,8 +367,8 @@ module akra {
 		// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
 		// pCube2.setPosition(2., 0.8, -5.);
 		// pCube2.scale(0.1);
-		// loadManyModels(300, "../../../data/models/cube.dae");
-		// loadManyModels(1, "../../../data/models/box/opened_box.dae");
+		loadManyModels(300, DATA + "models/cube.dae");
+		// loadManyModels(100, DATA + "models/box/opened_box.dae");
 	}
 
 	pEngine.bind(SIGNAL(depsLoaded), main);	

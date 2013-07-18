@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Jul 02 2013 16:05:42 GMT+0400 (Московское время (лето))
+ * assembled at: Thu Jul 18 2013 18:34:53 GMT+0400 (Московское время (лето))
  * directory: tests/common/fx/DEBUG/
  * file: tests/common/fx/test-example.ts
  * name: test-example
@@ -163,7 +163,7 @@ var akra;
         pOmniShadowLight.params.diffuse.set(0.5);
         pOmniShadowLight.params.specular.set(1, 1, 1, 1);
         pOmniShadowLight.params.attenuation.set(1, 0.0, 0);
-        pOmniShadowLight.isShadowCaster = true;
+        pOmniShadowLight.isShadowCaster = false;
         pOmniShadowLight.setPosition(1, 5, 5);
     }
     function createSkyBox() {
@@ -190,7 +190,7 @@ var akra;
                 pController.addAnimation(pContainer);
             }
             pScene.bind("beforeUpdate", /** @inline */function () {
-                pModelRoot.addRelRotationByXYZAxis(0.00, 0.00, 0);
+                pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
                 // pController.update();
                             });
             if (akra.isFunction(fnCallback)) {
@@ -261,18 +261,18 @@ var akra;
     }
     function main(pEngine) {
         setup();
-        createSceneEnvironment();
+        // createSceneEnvironment();
         createCameras();
         createViewports();
         createLighting();
         createSkyBox();
         // loadModels("../../../data/models/kr360.dae");
-        loadModel(akra.DATA + "models/hero/walk.DAE", function (pModelRoot) {
-            // var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
-            // pMesh.createBoundingBox();h
-            // pMesh.showBoundingBox();
-                    }).scale(2.);
-        // loadHero();
+        // loadModel(DATA + "models/hero/walk.DAE", (pModelRoot: ISceneNode) => {
+        // 	// var pMesh: IMesh = (<ISceneModel>pModelRoot.findEntity("node-Bip001_Pelvis[mesh-container]")).mesh;
+        // 	// pMesh.createBoundingBox();h
+        // 	// pMesh.showBoundingBox();
+        // }).scale(2.);
+        // // loadHero();
         loadModel(akra.DATA + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         // var pCube: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube.setPosition(2., 0.8, -3.);
@@ -280,8 +280,8 @@ var akra;
         // var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube2.setPosition(2., 0.8, -5.);
         // pCube2.scale(0.1);
-        // loadManyModels(300, "../../../data/models/cube.dae");
-        // loadManyModels(1, "../../../data/models/box/opened_box.dae");
+        loadManyModels(300, akra.DATA + "models/cube.dae");
+        // loadManyModels(100, DATA + "models/box/opened_box.dae");
             }
     akra.pEngine.bind("depsLoaded", main);
     akra.pEngine.exec();
