@@ -66,11 +66,13 @@ module akra {
 				pProgress.depth = iDepth;
 				pProgress.draw();
 
+				if (!isNull(pFile)) {
+					console.log(pFile.name || null);
+				}
 				if (!isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
 					var pImporter = new io.Importer(pEngine);
 	    			pImporter.import(<string>pData);
 	    			pFilmController = pImporter.getController();
-	    			console.log(pFilmController);
 				}
 			},
 			loaded: (pManager: IDepsManager): void => {
@@ -554,13 +556,16 @@ module akra {
 
 		if (isNull(pFilmController)) {
 			var pMovie: ICollada = <ICollada>pRmgr.colladaPool.findResource("HERO_FILM");
-			var pAnim: IAnimation = pMovie.extractAnimation(0);
-			var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-			
-			pController = pEngine.createAnimationController("movie");
-			
-			pController.addAnimation(pContainer);
-			pController.stop();
+
+			if (pMovie) {
+				var pAnim: IAnimation = pMovie.extractAnimation(0);
+				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+				
+				pController = pEngine.createAnimationController("movie");
+				
+				pController.addAnimation(pContainer);
+				pController.stop();
+			}
 
 		}
 		else {
@@ -568,7 +573,8 @@ module akra {
 			pController.stop();
 		}
 
-		pHeroModel.addController(pController);
+		if (pController)
+			pHeroModel.addController(pController);
 
 		self.hero.movie = pController;
 		

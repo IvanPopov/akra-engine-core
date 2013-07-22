@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ///<reference path="../../../bin/DEBUG/akra.ts"/>
 
 declare var jQuery: JQueryStatic;

@@ -10,7 +10,8 @@
 #include "fx/TexcoordSwapper.ts"
 #include "fx/Maker.ts"
 
-
+#define ADD_PASS_STATE(eType) this._pPassStateMap[eType] = pPass.getState(eType) !== EPassStateValue.UNDEF ? \
+															pPass.getState(eType) : this._pPassStateMap[eType];
 
 module akra.fx {
 	export class PassBlend implements IAFXPassBlend {
@@ -48,6 +49,7 @@ module akra.fx {
 		private _hasEmptyVertex: bool = true;
 		private _hasEmptyPixel: bool = true;
 
+		private _pPassStateMap: IPassStateMap = null;
 
 		//Code fragments
 		// private _isZeroSampler2dV: bool = false;
@@ -131,6 +133,8 @@ module akra.fx {
 			}
 
 			this._pTexcoordSwapper = PassBlend.texcoordSwapper;
+
+			this._pPassStateMap = fx.createPassStateMap();
 		}
 
 		initFromPassList(pPassList: IAFXPassInstruction[]): bool {
@@ -191,6 +195,10 @@ module akra.fx {
 			return this.hasUniformWithName(sName);
 		}
 
+		inline _getRenderStates(): IRenderStateMap {
+			return this._pPassStateMap;
+		}
+		
 		private inline getMakerByHash(sHash: string): IAFXMaker {
 			return this._pFXMakerByHashMap[sHash];
 		}
@@ -527,6 +535,8 @@ module akra.fx {
 
 				this._pPassFunctionListP.push(pPixel);
 			}
+
+			this.addPassStates(pPass);
 
 			return true;
 		}
@@ -1519,6 +1529,28 @@ module akra.fx {
 				}
 			}
 
+		}
+
+		private addPassStates(pPass: IAFXPassInstruction): void {
+			ADD_PASS_STATE(EPassState.BLENDENABLE);
+	        ADD_PASS_STATE(EPassState.CULLFACEENABLE);
+	        ADD_PASS_STATE(EPassState.ZENABLE);
+	        ADD_PASS_STATE(EPassState.ZWRITEENABLE);
+	        ADD_PASS_STATE(EPassState.DITHERENABLE);
+	        ADD_PASS_STATE(EPassState.SCISSORTESTENABLE);
+	        ADD_PASS_STATE(EPassState.STENCILTESTENABLE);
+	        ADD_PASS_STATE(EPassState.POLYGONOFFSETFILLENABLE);
+
+	        ADD_PASS_STATE(EPassState.CULLFACE);
+	        ADD_PASS_STATE(EPassState.FRONTFACE);
+
+	        ADD_PASS_STATE(EPassState.SRCBLEND);
+	        ADD_PASS_STATE(EPassState.DESTBLEND);
+
+	        ADD_PASS_STATE(EPassState.ZFUNC);
+
+	        ADD_PASS_STATE(EPassState.ALPHABLENDENABLE);
+	        ADD_PASS_STATE(EPassState.ALPHATESTENABLE);
 		}
 	}
 }

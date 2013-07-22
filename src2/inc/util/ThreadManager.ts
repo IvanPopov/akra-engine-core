@@ -4,6 +4,7 @@
 #include "common.ts"
 #include "IThreadManager.ts"
 #include "IThread.ts"
+#include "events/events.ts"
 
 
 module akra.util {
@@ -19,10 +20,11 @@ module akra.util {
 		releaseTime: uint;
 	}
 
-	export class ThreadManager implements IThreadManager {
+	export class ThreadManager implements IThreadManager, IEventProvider {
 		private _sDefaultScript: string;
 		private _pWorkerList: IThread[] = [];
 		private _pStatsList: IThreadStats[] = [];
+		private _pWaiters: Function[] = [];
 
 		constructor (sScript: string = null) {
 			
@@ -58,7 +60,7 @@ module akra.util {
 		createThread(): bool {
 			//console.log((new Error).stack)
 			if (this._pWorkerList.length === TM_MAX_THREAD_NUMBER) {
-				ERROR("Reached limit the number of threads");
+				WARNING("Reached limit the number of threads");
 				return false;
 			}
 
@@ -96,9 +98,8 @@ module akra.util {
 		    if (this.createThread()) {
 		    	return this.occupyThread();
 		    }
-
 		    else {
-		    	ERROR("cannot occupy thread");
+		    	WARNING("cannot occupy thread");
 		    	return null;
 		    }
 		}
@@ -119,6 +120,50 @@ module akra.util {
 			return true;
 		}
 
+		private checkWaiters(pThread: IThread = null): void {
+			if (this._pWaiters.length == 0) {
+				return;
+			}
+
+			if (isNull(pThread)) {
+				pThread = this.occupyThread();
+			}
+
+			if (!isNull(pThread)) {	
+				(this._pWaiters.shift())(pThread);
+				return;
+			}
+			
+		    // console.log("unreleased threads: ", this.countUnreleasedThreds());
+			
+			return;
+		}
+
+		// private countUnreleasedThreds(): uint {
+		// 	var t = 0;
+		// 	var pStats: IThreadStats;
+		// 	for (var i: int = 0, n: int = this._pWorkerList.length; i < n; ++i) {
+		// 		pStats = this._pStatsList[i];
+		//         if (pStats.status != EThreadStatuses.k_WorkerFree) {
+		//         	t ++;
+		//         }
+		//     }
+
+		//     return t;
+		// }
+
+		waitForThread(fnWaiter: Function): int {
+			if (!isFunction(fnWaiter)) {
+				return -1;
+			}
+
+
+			this._pWaiters.push(fnWaiter);
+			this.checkWaiters();
+
+			return this._pWaiters.length;
+		}
+
 		releaseThread(pThread: IThread): bool;
 		releaseThread(iThread: int): bool;
 		releaseThread(pThread: any): bool {
@@ -131,12 +176,15 @@ module akra.util {
 			else {
 				iThread = pThread;
 			}
-			
+
 			if (isDef(this._pStatsList[iThread])) {
 				pStats = this._pStatsList[iThread];
 				
 				pStats.status = EThreadStatuses.k_WorkerFree;
 				pStats.releaseTime = now();
+
+				this.checkWaiters();
+				return true;
 			}
 
 			return false;
@@ -144,6 +192,9 @@ module akra.util {
 
 		initialize(): bool { return true; }
         destroy(): void {}
+
+        CREATE_EVENT_TABLE(ThreadManager)
+        // BROADCAST(threadReleased, VOID);
 	}
 }
 

@@ -424,7 +424,7 @@ module akra.webgl {
 	            	pDataBox = pData;
 	            }
 
-	            pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	            pWebGLRenderer.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	            this.buildMipmaps(pDataBox); 
 			}
 			else {
@@ -441,7 +441,7 @@ module akra.webgl {
 
 	            if ((pData.width * pixelUtil.getNumElemBytes(pData.format)) & 3) {
 	                // Standard alignment of 4 is not right
-	                pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	                pWebGLRenderer.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	            }
 	            if (pDestBox.left === 0 && pDestBox.top === 0 && 
 	            	pDestBox.width >= this.width && pDestBox.height >= this.height) 
@@ -472,7 +472,7 @@ module akra.webgl {
 	            pWebGLContext.generateMipmap(this._eFaceTarget);
 	        }
 
-	        pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	        pWebGLRenderer.pixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	        
 	        pWebGLRenderer.bindWebGLTexture(this._eTarget, null);
 
@@ -738,10 +738,10 @@ module akra.webgl {
 
 			// Disable alpha, depth and scissor testing, disable blending, 
         	// and disable culling
-        	pWebGLContext.disable(GL_DEPTH_TEST);
-	        pWebGLContext.disable(GL_SCISSOR_TEST);
-	        pWebGLContext.disable(GL_BLEND);
-	        pWebGLContext.disable(GL_CULL_FACE);
+        	pWebGLRenderer.disable(GL_DEPTH_TEST);
+	        pWebGLRenderer.disable(GL_SCISSOR_TEST);
+	        pWebGLRenderer.disable(GL_BLEND);
+	        pWebGLRenderer.disable(GL_CULL_FACE);
 
 	        // Set up source texture
         	pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), pSource._getWebGLTexture());
@@ -934,10 +934,10 @@ module akra.webgl {
 
 			// Disable alpha, depth and scissor testing, disable blending, 
         	// and disable culling
-        	pWebGLContext.disable(GL_DEPTH_TEST);
-	        pWebGLContext.disable(GL_SCISSOR_TEST);
-	        pWebGLContext.disable(GL_BLEND);
-	        pWebGLContext.disable(GL_CULL_FACE);
+        	pWebGLRenderer.disable(GL_DEPTH_TEST);
+	        pWebGLRenderer.disable(GL_SCISSOR_TEST);
+	        pWebGLRenderer.disable(GL_BLEND);
+	        pWebGLRenderer.disable(GL_CULL_FACE);
 
 	        // Set up source texture
         	pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), pSource._getWebGLTexture());

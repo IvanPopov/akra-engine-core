@@ -7,6 +7,7 @@
 #define double number
 #define long number
 
+#define MATH_STACK_SIZE 256
 /// @data: data
 /// @DATA: {data}|location()
 

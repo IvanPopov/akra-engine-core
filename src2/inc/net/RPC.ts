@@ -153,7 +153,7 @@ module akra.net {
 
                                     // debug_print("rpc options: ", pRPC.options);
                                 }
-
+                                
                                 pRPC.joined();
                             }
                         );
@@ -162,7 +162,8 @@ module akra.net {
 
                 pPipe.bind(SIGNAL(error), 
                     function(pPipe: IPipe, pError: Error): void {
-                        ERROR("pipe error occured...");
+                        ERROR("pipe e rror occured...");
+                        pRPC.error(pError);
                         //pRPC.rejoin();
                     }
                 );
@@ -561,6 +562,7 @@ module akra.net {
 
         CREATE_EVENT_TABLE(RPC);
         BROADCAST(joined, VOID);
+        BROADCAST(error, CALL(pError));
 
         private static requestPool: IObjectArray = new ObjectArray;
         private static callbackPool: IObjectArray = new ObjectArray;

@@ -1,4 +1,4 @@
-///<reference path="../../../bin/DEBUG/akra.ts"/>
+///<reference path="../../../bin/RELEASE/akra.ts"/>
 ///<reference path="../../../bin/DEBUG/Progress.ts"/>
 
 
@@ -7,7 +7,7 @@
 
 
 /// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
-/// @MINER_MODEL: 			"/models/miner/miner.dae"
+/// @MINER_MODEL: 			"/models/miner/miner.DAE"
 /// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 
 
@@ -19,6 +19,7 @@ module akra {
 
 		pProgress.color = "white";
 		pProgress.fontColor = "white";
+		pProgress.fontSize = 22;
 
 		pCanvas.style.position = "absolute";
 	    pCanvas.style.left = "50%";
@@ -56,7 +57,7 @@ module akra {
 					var pImporter = new io.Importer(pEngine);
 	    			pImporter.import(<string>pData);
 	    			pFilmController = pImporter.getController();
-	    			console.log(pFilmController);
+	    			// console.log(pFilmController);
 				}
 			},
 			loaded: (pManager: IDepsManager): void => {
@@ -91,7 +92,7 @@ module akra {
 	var pCanvas: ICanvas3d 				= pEngine.getRenderer().getDefaultCanvas();
 	var pCamera: ICamera 				= null;
 	var pViewport: IViewport 			= null;
-	var pIDE: ui.IDE 					= null;
+	// var pIDE: ui.IDE 					= null;
 	var pSkyBoxTexture: ITexture 		= null;
 	var pGamepads: IGamepadMap 			= pEngine.getGamepads();
 	var pKeymap: controls.KeyMap		= <controls.KeyMap>controls.createKeymap();
@@ -154,6 +155,7 @@ module akra {
 	loadAssets();
 
 	function loaded(): void {
+		console.log("loaded!!");
 		nextCamera();
 		nextCamera();
 		setTimeout(() => {
@@ -170,7 +172,7 @@ module akra {
     	if (self.activeCamera === self.cameras.length) {
     		self.activeCamera = 0;
     	}
-
+    	console.log("switched to camera", self.activeCamera);
     	var pCam: ICamera = self.cameras[self.activeCamera];
     	
     	pViewport.setCamera(pCam);
@@ -192,8 +194,10 @@ module akra {
 			self.cameraLight.enabled = false;
 			
 			setTimeout(() => {
-				self.voice.currentTime = 0;
-				self.voice.play();
+				if (self.voice) {
+					self.voice.currentTime = 0;
+					self.voice.play();
+				}
 			}, 2500);
 
 			setTimeout(() => {
@@ -392,15 +396,17 @@ module akra {
 		self.terrain = pTerrain;
 
 		pTerrain.megaTexture.bind("minLevelLoaded", () => {
-			bMegaTextureLoaded = true;
-			loaded();
+			if (!bMegaTextureLoaded) {
+				bMegaTextureLoaded = true;
+				loaded();
+			}
 		});
 	}
 
 
 	function createSky(): void {
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
-		pSky.setTime(47.0);
+		pSky.setTime(14.0);
 	    pSky.skyDome.attachToParent(pScene.getRootNode());
 	    self.sky = pSky;
 
@@ -412,8 +418,15 @@ module akra {
 	    }, 100);
 	}
 
-	function createModelEntry(sResource: string): IModelEntry {
+	function createSkyBox(): void {
+		var pSkyBoxTexture: ITexture = <ITexture>pRmgr.createTexture("SKYBOX");
+		pSkyBoxTexture.loadImage(<IImg>pRmgr.imagePool.findResource("SKYBOX"));
+		(<render.DSViewport>pViewport).setSkybox(pSkyBoxTexture);
+	}
+
+	function createModelEntry(sResource: string, bShadows: bool = true): IModelEntry {
 		var pModel: ICollada = <ICollada>pRmgr.colladaPool.findResource(sResource);
+		pModel.options.shadows = bShadows;
 		var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 
 		return pModelRoot;
@@ -473,7 +486,7 @@ module akra {
 
 		pCamLight.setInheritance(ENodeInheritance.ALL);
 		pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
-		pCamLight.params.diffuse.set(1.);
+		pCamLight.params.diffuse.set(0.35);
 		pCamLight.params.specular.set(1.);
 		pCamLight.params.attenuation.set(.35, 0, 0);
 		pCamLight.enabled = false;
@@ -500,7 +513,7 @@ module akra {
 		pTube.setPosition(new Vec3(-16.  , -52.17  ,-66.));
 		
 
-		var pTubeBetweenRocks: ISceneNode = createModelEntry("TUBE_BETWEEN_ROCKS");
+		var pTubeBetweenRocks: ISceneNode = createModelEntry("TUBE_BETWEEN_ROCKS", false);
 	
 		pTubeBetweenRocks.scale(2.);
 		pTubeBetweenRocks.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
@@ -513,13 +526,16 @@ module akra {
 
 		if (isNull(pFilmController)) {
 			var pMovie: ICollada = <ICollada>pRmgr.colladaPool.findResource("HERO_FILM");
-			var pAnim: IAnimation = pMovie.extractAnimation(0);
-			var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-			
-			pController = pEngine.createAnimationController("movie");
-			
-			pController.addAnimation(pContainer);
-			pController.stop();
+
+			if (pMovie) {
+				var pAnim: IAnimation = pMovie.extractAnimation(0);
+				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+				
+				pController = pEngine.createAnimationController("movie");
+				
+				pController.addAnimation(pContainer);
+				pController.stop();
+			}
 
 		}
 		else {
@@ -527,8 +543,9 @@ module akra {
 			pController.stop();
 		}
 
+		if (pController)
+			pHeroModel.addController(pController);
 
-		pHeroModel.addController(pController);
 
 		self.hero.movie = pController;
 		
@@ -543,6 +560,7 @@ module akra {
 		createTerrain();
 		createModels();
 		createSky();
+		createSkyBox();
 		
 		// pEngine.exec();
 	}

@@ -165,6 +165,7 @@ module akra.util {
 					if (e) throw e;
 
 					LOG("unpacked to local filesystem: ", pEntry.filename);
+					// alert("unpacked to local filesystem: " + pEntry.filename);
 
 					var pCrc32: IFile = fopen(sPath + ".crc32", "w+");
 					pCrc32.write(String(pEntry.crc32), (e: Error) => {
@@ -219,6 +220,7 @@ module akra.util {
 				zip.createReader(new zip.ArrayBufferReader(pData), 
 					(pZipReader: ZipReader): void => {
 						pZipReader.getEntries((pEntries: ZipEntry[]): void => {
+
 							var pEntryMap: {[path: string]: ZipEntry;} = {};
 							var nTotal: uint = -1;
 
@@ -234,13 +236,15 @@ module akra.util {
 							ASSERT(isDefAndNotNull(pMapEntry), "ARA dependences found, but headers corrupted.");
 
 							pMapEntry.getData(new zip.TextWriter(), (data: string): void => {
-								var pARADeps: IDependens = <IDependens>util.parseJSON(data);
+								var pARADeps: IDependens = <IDependens>JSON.parse(data);
+
 								var fnSuccesss: Function = (sLocalPath: string): void => {
 									nTotal --;
 
 									if (nTotal > 0) return;
 									
 									console.log("ARA dependences successfully loaded: ", sArchivePath);
+									// alert("ARA dependences successfully loaded: " + sArchivePath);
 
 									pZipReader.close();
 									pLLDep.deps = pARADeps;
@@ -363,7 +367,7 @@ module akra.util {
 			this.walk({files: pDeps.files}, (pDep: IDependens, i: int, iDepth?: uint): void => {
 				// console.log(pDeps);
 				var sPath: string = pDeps.files[i].path;
-				
+				console.log("before loading > ", sPath);
 				if (isDefAndNotNull(pDeps.type)) {
 					if (pDeps.type == "text") {
 						this.loadCustom(pDeps, i, iDepth);
@@ -436,7 +440,7 @@ module akra.util {
 				nLoadedDepsInLevel = nTotalDepsInLevel - nRestDepsInLevel;
 			}
 
-			// LOG("lvl: ", iDepth, "loaded", nLoadedDepsInLevel, "/", nTotalDepsInLevel, "total mb - ", (this._iTotalBytesLoaded / (1024 * 1024)).toFixed(2));
+			// LOG(pDeps, "lvl: ", iDepth, "loaded", nLoadedDepsInLevel, "/", nTotalDepsInLevel);
 			this.loadedDep(iDepth, nLoadedDepsInLevel, nTotalDepsInLevel, pDeps, pFile, pData);
 			
 			if (nRestDepsInLevel > 0) {

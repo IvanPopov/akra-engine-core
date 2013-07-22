@@ -17,6 +17,8 @@ module akra {
     //=============================================
 
     export interface ICollada extends IModel {
+        options: IColladaLoadOptions;
+
         getAsset(): IColladaAsset;
         getAnimations(): IColladaAnimation[];
         getAnimation(i: int): IColladaAnimation;
@@ -54,6 +56,7 @@ module akra {
     	drawJoints?: bool;
     	/** Convert all meshed to wireframe. */
     	wireframe?: bool;
+        shadows?: bool;
     	/** 
     	 * Use common buffer for all data 
     	 * @deprecated

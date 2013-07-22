@@ -468,7 +468,7 @@ module akra.io {
 		}
 
 		private execCommand(pCommand: IFileCommand, fnCallback: Function, pTransferables?: any[]): void {
-			TFile.execCommand(this, this.isLocal(), pCommand, fnCallback);
+			TFile.execCommand(this, this.isLocal(), pCommand, fnCallback, pTransferables);
 		}
 
 		static defaultCallback: Function = function (err) {
@@ -482,33 +482,32 @@ module akra.io {
 
 			// var pFile: IFile = this;
 			var pManager: IThreadManager = isLocal? getLocalFileThreadManager(): getRemoteFileThreadManager();
-			var pThread: IThread = pManager.occupyThread();
- 
-			pThread.onmessage = function (e) {
-				pManager.releaseThread(pThread);
-				pThread.onmessage = null;
+			pManager.waitForThread((pThread: IThread) => {
+				pThread.onmessage = function (e) {
+					pThread.onmessage = null;
 #ifdef DEBUG
-				if (pCommand.act === EFileActions.k_Read) {
-					TOTAL_BYTES_READED += e.data.byteLength;
-					// LOG("TOTAL BYTES READED: ", (TOTAL_BYTES_READED / (1024 * 1024)).toFixed(2), "mb");
-				}
+					if (pCommand.act === EFileActions.k_Read) {
+						TOTAL_BYTES_READED += e.data.byteLength;
+						// LOG("TOTAL BYTES READED: ", (TOTAL_BYTES_READED / (1024 * 1024)).toFixed(2), "mb");
+					}
 #endif
-				fnCallback.call(pFile, null, e.data);
-				// (<any>window["gc"])();
-			}
+					fnCallback.call(pFile, null, e.data);
+					pManager.releaseThread(pThread);
+				}
 
-			pThread.onerror = function (e) {
-				pManager.releaseThread(pThread);
-				pThread.onmessage = null;
-				fnCallback.call(pFile, e);
-			}
+				pThread.onerror = function (e) {
+					pThread.onmessage = null;
+					fnCallback.call(pFile, e);
+					pManager.releaseThread(pThread);
+				}
 
-			if (isDef(pTransferables)) {
-				pThread.send(pCommand, pTransferables);
-			}
-			else {
-				pThread.send(pCommand);
-			}
+				if (isDef(pTransferables)) {
+					pThread.send(pCommand, pTransferables);
+				}
+				else {
+					pThread.send(pCommand);
+				}
+			});
 		}
 
 	}

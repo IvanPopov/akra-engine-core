@@ -162,7 +162,7 @@ module akra.core {
 			//get loaded signal
 			this.connect(pDepsManager, SIGNAL(loaded), SLOT(_depsLoaded));
 
-			if (isDefAndNotNull(pOptions.loader)) {
+			if (!isNull(pOptions) && isDefAndNotNull(pOptions.loader)) {
 				var fnBefore = pOptions.loader.before;
 				var fnOnload = pOptions.loader.onload;
 				var fnLoaded = pOptions.loader.loaded;
@@ -381,7 +381,7 @@ module akra.core {
 
 		static DEPS_ROOT: string = DATA;
 		static DEPS: IDependens = 
-#ifdef DEBUG
+#ifdef DEBUG1
 			{
 				files: [ 
 					{path: "grammars/HLSL.gr"}

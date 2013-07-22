@@ -793,7 +793,7 @@ module akra.math {
 			}
 		};
 
-		ALLOCATE_STORAGE(Mat3,100);
+		ALLOCATE_STORAGE(Mat3, MATH_STACK_SIZE);
     };
 };
 

@@ -98,7 +98,7 @@ module akra {
 
 	function createModelEntry(sResource: string): IModelEntry {
 		var pModel: ICollada = <ICollada>pRmgr.colladaPool.findResource(sResource);
-		var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
+		var pModelRoot: IModelEntry = pModel.attachToScene(pScene.getRootNode());
 
 		return pModelRoot;
 	}
@@ -143,7 +143,7 @@ module akra {
 		pSunLight.params.specular.set(1.);
 		pSunLight.params.attenuation.set(1.25, 0, 0);
 
-		pSunLight.addPosition(0, 500, 0);
+		pSunLight.addPosition(10, 10, 0);
 	}
 
 	var v3fOffset: IVec3 = new Vec3;
@@ -214,9 +214,9 @@ module akra {
 	    }
 	}
 
-	function createSceneEnvironment(): void {
-		var pSceneQuad: ISceneModel = util.createQuad(pScene, 40000.);
-		pSceneQuad.attachToParent(pScene.getRootNode());
+	function createSceneEnvironment(pRoot: ISceneNode = pScene.getRootNode()): void {
+		var pSceneQuad: ISceneModel = util.createQuad(pScene, 600.);
+		pSceneQuad.attachToParent(pRoot);
 		
 
 		// var pSceneSurface: ISceneModel = util.createSceneSurface(pScene, 100);
@@ -253,9 +253,9 @@ module akra {
 		createDialog();
 		createCameras();
 		createViewports();
-		createSceneEnvironment();
-		createModelEntry("HERO_MODEL");
-		// createLighting();
+		// createModelEntry("HERO_MODEL");
+		createSceneEnvironment(createModelEntry("HERO_MODEL"));
+		createLighting();
 
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
 		pSky.setTime(0);

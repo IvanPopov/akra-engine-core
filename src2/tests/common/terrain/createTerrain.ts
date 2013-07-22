@@ -107,7 +107,7 @@ module akra {
 	}
 
 	function createLighting(): void {
-		var pOmniLight: ILightPoint = pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni");
+		var pOmniLight: IOmniLight = <IOmniLight>pScene.createLightPoint(ELightTypes.OMNI, false, 0, "test-omni");
 		
 		pOmniLight.attachToParent(pScene.getRootNode());
 		pOmniLight.enabled = true;
@@ -154,6 +154,10 @@ module akra {
 				// shouldBeTrue("terrain create");
 				// ok(isCreate);
 				// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
+				
+				pTerrain.megaTexture.bind("minLevelLoaded", () => {
+					pEngine.exec();
+				});
 			});
 		});
 		
@@ -180,7 +184,7 @@ module akra {
 	}
 
 	pEngine.bind(SIGNAL(depsLoaded), main);	
-	pEngine.exec();
+	// pEngine.exec();
 	// pEngine.renderFrame();
 }
 

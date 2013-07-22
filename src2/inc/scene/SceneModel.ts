@@ -56,7 +56,7 @@ module akra.scene {
 		toString(isRecursive: bool = false, iDepth: uint = 0): string {
 #ifdef DEBUG
 		    if (!isRecursive) {
-		        var sData: string = "<model" + (this.name? " " + this.name: "") + "(" + (isNull(this._pMesh)? 0: this._pMesh.length) + ")" +  '>';
+		        var sData: string = "<model" + (this.name? " " + this.name: "") + "(" + (isNull(this._pMesh)? 0: this._pMesh.length) + ")" +  '>' + " height: " + this.worldPosition.y;
 		        
 		        if (!isNull(this._pMesh)) {
 		            sData += "( " + this._pMesh.name + " )";

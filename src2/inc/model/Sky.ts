@@ -85,7 +85,7 @@ module akra.model {
 
 	    	this.skyDome = pSceneModel;
 
-	    	this.sun = <ISunLight>_pEngine.getScene().createLightPoint(ELightTypes.SUN, true, 1024);
+	    	this.sun = <ISunLight>_pEngine.getScene().createLightPoint(ELightTypes.SUN, true, 2048);
 
 	    	this.sun.attachToParent(this.skyDome);
 	    	this.sun.skyDome = this.skyDome;

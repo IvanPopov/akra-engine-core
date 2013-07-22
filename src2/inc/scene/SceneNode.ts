@@ -87,7 +87,7 @@ module akra.scene {
 
 		toString(isRecursive: bool = false, iDepth: uint = 0): string {
 			if (!isRecursive) {
-		        return "<scene_node" + (this.name? " " + this.name: "") + ">";
+		        return "<scene_node" + (this.name? " " + this.name: "") + ">" + " height: " + this.worldPosition.y;
 		    }
 
 		    return super.toString(isRecursive, iDepth);

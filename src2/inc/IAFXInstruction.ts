@@ -5,6 +5,11 @@
 #include "IParser.ts"
 #include "IAFXComponent.ts"
 #include "IUnique.ts"
+#include "IRenderer.ts"
+
+#define EPassState ERenderStates
+#define EPassStateValue ERenderStateValues
+#define IPassStateMap IRenderStateMap
 
 module akra {
     export enum EAFXInstructionTypes {
@@ -70,6 +75,7 @@ module akra {
         k_PassInstruction,
         k_TechniqueInstruction
     }
+
 
     export enum EFunctionType{
         k_Vertex = 0,
@@ -696,11 +702,13 @@ module akra {
         getPixelShader(): IAFXFunctionDeclInstruction;
 
         addShader(pShader: IAFXFunctionDeclInstruction): void;
-        setState(sType: string, sValue: string): void;
+        setState(eType: EPassState, eValue: EPassStateValue): void;
         finalizePass(): void;
 
         isComplexPass(): bool;
         evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): bool;
+
+        getState(eType: EPassState): EPassStateValue;
     }
 
     export interface IAFXTechniqueInstruction extends IAFXDeclInstruction{

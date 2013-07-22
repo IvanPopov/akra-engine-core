@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 22 2013 15:26:58 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Jul 22 2013 18:44:28 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
@@ -49,7 +49,7 @@ var akra;
         // 	}
         // },
         {
-            root: "./",
+            root: "../",
             files: [
                 {
                     path: "demo02.ara"
@@ -65,11 +65,13 @@ var akra;
                 pProgress.element = nLoaded;
                 pProgress.depth = iDepth;
                 pProgress.draw();
+                if (!akra.isNull(pFile)) {
+                    console.log(pFile.name || null);
+                }
                 if (!akra.isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
                     var pImporter = new akra.io.Importer(pEngine);
                     pImporter.import(pData);
                     pFilmController = pImporter.getController();
-                    console.log(pFilmController);
                 }
             },
             loaded: function (pManager) {
@@ -431,16 +433,20 @@ var akra;
         var pController = null;
         if (akra.isNull(pFilmController)) {
             var pMovie = pRmgr.colladaPool.findResource("HERO_FILM");
-            var pAnim = pMovie.extractAnimation(0);
-            var pContainer = akra.animation.createContainer(pAnim, "movie");
-            pController = pEngine.createAnimationController("movie");
-            pController.addAnimation(pContainer);
-            pController.stop();
+            if (pMovie) {
+                var pAnim = pMovie.extractAnimation(0);
+                var pContainer = akra.animation.createContainer(pAnim, "movie");
+                pController = pEngine.createAnimationController("movie");
+                pController.addAnimation(pContainer);
+                pController.stop();
+            }
         } else {
             pController = pFilmController;
             pController.stop();
         }
-        pHeroModel.addController(pController);
+        if (pController) {
+            pHeroModel.addController(pController);
+        }
         akra.self.hero.movie = pController;
         fetchAllCameras();
     }

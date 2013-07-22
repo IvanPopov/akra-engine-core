@@ -1,9 +1,9 @@
-///<reference path="../../../bin/DEBUG/akra.ts"/>
-///<reference path="../../../bin/DEBUG/Progress.ts"/>
+///<reference path="../../../bin/RELEASE/akra.ts"/>
+///<reference path="../../../bin/RELEASE/Progress.ts"/>
 // declare var jQuery: JQueryStatic;
 // declare var $: JQueryStatic;
 /// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
-/// @MINER_MODEL: 			"/models/miner/miner.dae"
+/// @MINER_MODEL: 			"/models/miner/miner.DAE"
 /// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 var akra;
 (function (akra) {
@@ -12,6 +12,7 @@ var akra;
         var pCanvas = pProgress.canvas;
         pProgress.color = "white";
         pProgress.fontColor = "white";
+        pProgress.fontSize = 22;
         pCanvas.style.position = "absolute";
         pCanvas.style.left = "50%";
         pCanvas.style.top = "50%";
@@ -41,7 +42,7 @@ var akra;
                 pProgress.total = pInfo;
                 document.body.appendChild(pProgress.canvas);
             },
-            onload: function (pManager, iDepth, nLoaded, nTotal) {
+            onload: function (pManager, iDepth, nLoaded, nTotal, pDep, pFile, pData) {
                 pProgress.element = nLoaded;
                 pProgress.depth = iDepth;
                 pProgress.draw();
@@ -79,7 +80,7 @@ var akra;
     var pCanvas = pEngine.getRenderer().getDefaultCanvas();
     var pCamera = null;
     var pViewport = null;
-    var pIDE = null;
+    // var pIDE: ui.IDE 					= null;
     var pSkyBoxTexture = null;
     var pGamepads = pEngine.getGamepads();
     var pKeymap = akra.controls.createKeymap();
@@ -313,7 +314,7 @@ var akra;
     }
     function createSky() {
         pSky = new akra.model.Sky(pEngine, 32, 32, 1000.0);
-        pSky.setTime(47.0);
+        pSky.setTime(13.0);
         pSky.skyDome.attachToParent(pScene.getRootNode());
         akra.self.sky = pSky;
         pSky._nHorinLevel = 15;
@@ -322,8 +323,15 @@ var akra;
             // if (math.abs(pSky.time) == 30.0) clearInterval(i);
                     }, 100);
     }
-    function createModelEntry(sResource) {
+    function createSkyBox() {
+        var pSkyBoxTexture = pRmgr.createTexture("SKYBOX");
+        pSkyBoxTexture.loadImage(pRmgr.imagePool.findResource("SKYBOX"));
+        (pViewport).setSkybox(pSkyBoxTexture);
+    }
+    function createModelEntry(sResource, bShadows) {
+        if (typeof bShadows === "undefined") { bShadows = true; }
         var pModel = pRmgr.colladaPool.findResource(sResource);
+        pModel.options.shadows = bShadows;
         var pModelRoot = pModel.attachToScene(pScene);
         return pModelRoot;
     }
@@ -365,7 +373,7 @@ var akra;
         pCamLight.attachToParent(pScene.getRootNode().findEntity("Camera001-camera"));
         pCamLight.setInheritance(akra.ENodeInheritance.ALL);
         pCamLight.params.ambient.set(0.05, 0.05, 0.05, 1);
-        pCamLight.params.diffuse.set(1.);
+        pCamLight.params.diffuse.set(0.35);
         pCamLight.params.specular.set(1.);
         pCamLight.params.attenuation.set(.35, 0, 0);
         pCamLight.enabled = false;
@@ -382,7 +390,7 @@ var akra;
         pTube.scale(19.);
         pTube.setRotationByXYZAxis(0. * akra.math.RADIAN_RATIO, -55. * akra.math.RADIAN_RATIO, 0.);
         pTube.setPosition(new akra.Vec3(-16., -52.17, -66.));
-        var pTubeBetweenRocks = createModelEntry("TUBE_BETWEEN_ROCKS");
+        var pTubeBetweenRocks = createModelEntry("TUBE_BETWEEN_ROCKS", false);
         pTubeBetweenRocks.scale(2.);
         pTubeBetweenRocks.setRotationByXYZAxis(5. * akra.math.RADIAN_RATIO, 100. * akra.math.RADIAN_RATIO, 0.);
         pTubeBetweenRocks.setPosition(new akra.Vec3(-55., -12.15, -82.00));
@@ -410,6 +418,7 @@ var akra;
         createTerrain();
         createModels();
         createSky();
+        createSkyBox();
         // pEngine.exec();
             }
     pEngine.bind("depsLoaded", main);

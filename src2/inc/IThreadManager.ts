@@ -6,7 +6,7 @@
 #endif
 
 #ifndef TM_MAX_THREAD_NUMBER
-#define TM_MAX_THREAD_NUMBER 64
+#define TM_MAX_THREAD_NUMBER 4
 #endif
 
 #ifndef THREADMANAGER_ERRORS
@@ -25,6 +25,7 @@ module akra {
 	IFACE(IThread);
 	
 	export interface IThreadManager extends IManager {
+		waitForThread(fn: Function): int;
 		createThread(): bool;
 		occupyThread(): IThread;
 		releaseThread(iThread: int): bool;

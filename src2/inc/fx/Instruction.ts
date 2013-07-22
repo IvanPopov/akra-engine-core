@@ -15,7 +15,29 @@
 #include "util/unique.ts"
 
 module akra.fx {
-	
+
+	export function createPassStateMap(): IRenderStateMap {
+		var pMap: IRenderStateMap = <IRenderStateMap>{};
+		
+		pMap[EPassState.BLENDENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.CULLFACEENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.ZENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.ZWRITEENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.DITHERENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.SCISSORTESTENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.STENCILTESTENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.POLYGONOFFSETFILLENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.CULLFACE] = EPassStateValue.UNDEF;
+		pMap[EPassState.FRONTFACE] = EPassStateValue.UNDEF;
+		pMap[EPassState.SRCBLEND] = EPassStateValue.UNDEF;
+		pMap[EPassState.DESTBLEND] = EPassStateValue.UNDEF;
+		pMap[EPassState.ZFUNC] = EPassStateValue.UNDEF;
+		pMap[EPassState.ALPHABLENDENABLE] = EPassStateValue.UNDEF;
+		pMap[EPassState.ALPHATESTENABLE] = EPassStateValue.UNDEF;
+
+		return pMap;
+	}
+
 	export class Instruction implements IAFXInstruction{
 		protected _pParentInstruction: IAFXInstruction = null;
 		protected _sOperatorName: string = null;
@@ -466,7 +488,7 @@ module akra.fx {
 
 		private _pVertexShader: IAFXFunctionDeclInstruction = null;
 		private _pPixelShader: IAFXFunctionDeclInstruction = null;
-		private _pPassStateMap: StringMap = null;
+		private _pPassStateMap: IPassStateMap = null;
 
 
 		private _pSharedVariableMapV: IAFXVariableDeclMap = null;
@@ -649,16 +671,16 @@ module akra.fx {
         	}
         }
 
-        setState(sType: string, sValue: string): void {
+        setState(eType: EPassState, eValue: EPassStateValue): void {
         	if(isNull(this._pPassStateMap)){
-        		this._pPassStateMap = <StringMap>{};
+        		this._pPassStateMap = createPassStateMap();
         	}
 
         	if(this.isComplexPass()){
-        		this._addCodeFragment("this._pPassStateMap[\"" + sType + "\"]=\"" + sValue+ "\";");
+        		this._addCodeFragment("this._pPassStateMap[" + eType + "]=" + eValue+ ";");
         	}
         	else {
-        		this._pPassStateMap[sType] = sValue;
+        		this._pPassStateMap[eType] = eValue;
         	}
         }
 
@@ -680,12 +702,37 @@ module akra.fx {
         	if(this.isComplexPass()){
         		this._pVertexShader = null;
         		this._pPixelShader = null;
+        		this.clearPassStates();        		
 
         		this._fnPassFunction.call(this, pEngineStates, pForeigns, pUniforms);
         	}
 
         	return true;
         }
+
+        inline getState(eType: EPassState): EPassStateValue {
+        	return !isNull(this._pPassStateMap) ? this._pPassStateMap[eType] : EPassStateValue.UNDEF;
+        }
+
+        private clearPassStates(): void {
+        	if(!isNull(this._pPassStateMap)){
+        		this._pPassStateMap[EPassState.BLENDENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.CULLFACEENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ZENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ZWRITEENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.DITHERENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.SCISSORTESTENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.STENCILTESTENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.POLYGONOFFSETFILLENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.CULLFACE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.FRONTFACE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.SRCBLEND] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.DESTBLEND] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ZFUNC] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ALPHABLENDENABLE] = EPassStateValue.UNDEF;
+				this._pPassStateMap[EPassState.ALPHATESTENABLE] = EPassStateValue.UNDEF;
+        	}
+		}
 
         private generateInfoAboutUsedVaraibles(): void {
         	if(isNull(this._pSharedVariableMapV)){

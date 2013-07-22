@@ -237,6 +237,7 @@ module akra.core.pool.resources {
 
         private isJointsVisualizationNeeded(): bool;
         public  isVisualSceneLoaded(): bool;
+        public  isShadowsEnabled(): bool;
         public  isAnimationLoaded(): bool;
         private isSceneNeeded(): bool;
         private isAnimationNeeded(): bool;
@@ -264,6 +265,7 @@ module akra.core.pool.resources {
         static DEFAULT_OPTIONS: IColladaLoadOptions = {
             drawJoints      : false,
             wireframe       : false,
+            shadows         : true,
             sharedBuffer    : false,
             animation       : { pose: true },
             scene           : true,
@@ -329,6 +331,14 @@ module akra.core.pool.resources {
 
         // polygon index convertion
     
+        get options(): IColladaLoadOptions {
+            return this._pOptions;
+        }
+
+
+        isShadowsEnabled(): bool {
+            return this._pOptions.shadows;
+        }
 
         private trifanToTriangles(pXML: Element, iStride: int): uint[] {
             var pFans2Tri: uint[] = [0, 0, 0];
@@ -2489,6 +2499,8 @@ module akra.core.pool.resources {
 
             // ASSERT(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
             // ASSERT(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
+
+            pMesh.hasShadow = this.isShadowsEnabled();
 
             //adding all data to cahce data
             this.addMesh(pMesh);
