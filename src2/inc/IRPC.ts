@@ -85,6 +85,7 @@ module akra {
         setProcedureOption(sProc: string, sOpt: string, pValue: any): void;
 
 		signal joined(): void;
+        signal error(pError: Error): void;
 
         _createRequest(): IRPCRequest;
         _releaseRequest(pReq: IRPCRequest): void;

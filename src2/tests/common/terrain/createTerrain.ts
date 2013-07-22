@@ -154,6 +154,10 @@ module akra {
 				// shouldBeTrue("terrain create");
 				// ok(isCreate);
 				// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
+				
+				pTerrain.megaTexture.bind("minLevelLoaded", () => {
+					pEngine.exec();
+				});
 			});
 		});
 		
@@ -180,7 +184,7 @@ module akra {
 	}
 
 	pEngine.bind(SIGNAL(depsLoaded), main);	
-	pEngine.exec();
+	// pEngine.exec();
 	// pEngine.renderFrame();
 }
 

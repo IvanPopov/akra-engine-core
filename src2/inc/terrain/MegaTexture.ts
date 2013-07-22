@@ -158,10 +158,19 @@ module akra.terrain {
     	    this.testDataInit();
 
     	    this._pRPC = net.createRpc();
+
+    	    this.connect(this._pRPC, SIGNAL(joined), SLOT(loadMinTextureLevel), EEventTypes.BROADCAST);
+    	    this.connect(this._pRPC, SIGNAL(error), SLOT(rpcErrorOccured), EEventTypes.BROADCAST);
+
     	    this._pRPC.join("ws://23.21.68.208:6112");
+    	    
     	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 60000);
     	    this._pRPC.setProcedureOption("getMegaTexture", "priority", 1);
-    	    this.loadMinTextureLevel();
+
+    	    this._pRPC.setProcedureOption("loadMegaTexture", "lifeTime", 60000);
+    	    this._pRPC.setProcedureOption("loadMegaTexture", "priority", 1);
+
+    	    
 	    }
 
 	    private _bError: bool = false;
@@ -172,7 +181,12 @@ module akra.terrain {
 			}
 
 			if(!this._pXY[0].isLoaded){
-				this.loadMinTextureLevel();
+				var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+
+				if(tCurrentTime - this._pSectorLoadInfo[0][0] > 90000){
+					this.loadMinTextureLevel();
+				}
+
 				return;
 			}
 
@@ -439,53 +453,62 @@ module akra.terrain {
 			}
 		}
 
+
+		protected rpcErrorOccured(pRPC: IRPC, pError: Error): void {
+			this.disconnect(this._pRPC, SIGNAL(error), SLOT(rpcErrorOccured), EEventTypes.BROADCAST);
+
+			CRITICAL("Server for MeagTexture not response. Connection can not be established. Report us please.");
+		}
+
+
 		private _iTryCount: uint = 0;
 
 		protected loadMinTextureLevel(): void {
+
 			var me: MegaTexture = this;
-			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+    		var sExt: string = "jpg";
 
-			if(tCurrentTime - this._pSectorLoadInfo[0][0] > 90000){
-				this._pSectorLoadInfo[0][0] = tCurrentTime;
-	    		var sExt: string = "jpg";
+			this._pSectorLoadInfo[0][0] = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+    		this._iTryCount++;
 
-	    		this._iTryCount++;
+    		if(this._iTryCount > 3){
+    			CRITICAL("Server for MegaTexture not response. Wait time out exceeded. Report us please.");
+    		}
 
-	    		if(this._iTryCount > 2){
-	    			CRITICAL("Server for MegaTexture not response. Report us please.");
-	    		}
+			this._pRPC.proc('loadMegaTexture', me._sSurfaceTextures, sExt, me._v2iOriginalTextreMinSize.x, me._v2iOriginalTextreMinSize.x,
+				function (pError: IRPCError, pData: Uint8Array) {
+					if(me._pXY[0].isLoaded){
+						return;
+					}
 
-				this._pRPC.proc('loadMegaTexture', me._sSurfaceTextures, sExt, me._v2iOriginalTextreMinSize.x, me._v2iOriginalTextreMinSize.x,
-					function (pError: IRPCError, pData: Uint8Array) {
-						if(me._pXY[0].isLoaded){
-							return;
+					if(!isNull(pError)){
+						if(pError.code === RPC_CALLBACK_LIFETIME_EXPIRED_CODE){
+							me.loadMinTextureLevel();
 						}
-
-						if(!isNull(pError)){
-							if(pError.code === RPC_CALLBACK_LIFETIME_EXPIRED_CODE){
-								me.loadMinTextureLevel();
-							}
-
+						else {
 							CRITICAL("Server for MegaTexture not response correctly. Report us please.");
-							return;
 						}
+						return;
+					}
 
-						var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
+					var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
 
-			            if(isNull(pTempImg)){
-			                pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
-			            }
-			            
-			            pTempImg.load(pData, sExt, function(isLoaded){
-			            	me._pTextures[0].destroyResource();
-							me._pTextures[0].loadImage(pTempImg);
-							me._pXY[0].isLoaded = true;
-							pTempImg.destroyResource();
+		            if(isNull(pTempImg)){
+		                pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
+		            }
+		            
+		            pTempImg.load(pData, sExt, function(isLoaded){
+		            	me._pTextures[0].destroyResource();
+						me._pTextures[0].loadImage(pTempImg);
+						me._pXY[0].isLoaded = true;
+						pTempImg.destroyResource();
 
-							me.minLevelLoaded();
-			            });
-					});
-			}
+						me.disconnect(me._pRPC, SIGNAL(joined), SLOT(loadMinTextureLevel), EEventTypes.BROADCAST);
+
+						me.minLevelLoaded();
+		            });
+				});
+
 			// this.getDataFromServer(0, 0, 0, this._v2iOriginalTextreMinSize.x, this._v2iOriginalTextreMinSize.y);
 			
 		}

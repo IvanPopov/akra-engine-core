@@ -359,7 +359,7 @@ module akra {
 
 		
 
-		loadModel(DATA + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+		// loadModel(DATA + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
 		// var pCube: ISceneNode = loadModel("../../../data/models/cube.dae");
 		// pCube.setPosition(2., 0.8, -3.);
 		// pCube.scale(0.1);
@@ -367,8 +367,8 @@ module akra {
 		// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
 		// pCube2.setPosition(2., 0.8, -5.);
 		// pCube2.scale(0.1);
-		loadManyModels(300, DATA + "models/cube.dae");
-		// loadManyModels(100, DATA + "models/box/opened_box.dae");
+		// loadManyModels(100, DATA + "models/cube.dae");
+		loadManyModels(30, DATA + "models/box/opened_box.dae");
 	}
 
 	pEngine.bind(SIGNAL(depsLoaded), main);	

@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Jul 18 2013 18:34:53 GMT+0400 (Московское время (лето))
+ * assembled at: Mon Jul 22 2013 13:39:55 GMT+0400 (Московское время (лето))
  * directory: tests/common/fx/DEBUG/
  * file: tests/common/fx/test-example.ts
  * name: test-example
@@ -273,16 +273,16 @@ var akra;
         // 	// pMesh.showBoundingBox();
         // }).scale(2.);
         // // loadHero();
-        loadModel(akra.DATA + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
+        // loadModel(DATA + "models/WoodSoldier/WoodSoldier.DAE").addPosition(0., 1.1, 0.);
         // var pCube: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube.setPosition(2., 0.8, -3.);
         // pCube.scale(0.1);
         // var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube2.setPosition(2., 0.8, -5.);
         // pCube2.scale(0.1);
-        loadManyModels(300, akra.DATA + "models/cube.dae");
-        // loadManyModels(100, DATA + "models/box/opened_box.dae");
-            }
+        // loadManyModels(100, DATA + "models/cube.dae");
+        loadManyModels(30, akra.DATA + "models/box/opened_box.dae");
+    }
     akra.pEngine.bind("depsLoaded", main);
     akra.pEngine.exec();
 })(akra || (akra = {}));
