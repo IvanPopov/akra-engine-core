@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Jul 18 2013 11:18:01 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Jul 22 2013 15:26:58 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
@@ -43,7 +43,8 @@ var akra;
         // 			{path: "models/tube/tube.dae", name: "TUBE"},
         // 			{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
         // 			{path: "models/hero/movie.dae", name: "HERO_MODEL"},
-        // 			{path: "models/hero/film.DAE", name: "HERO_FILM"}
+        // 			{path: "models/hero/film.DAE", name: "HERO_FILM"},
+        // 			{path: "models/hero/film.json", name: "HERO_FILM"}
         // 		]
         // 	}
         // },
@@ -60,10 +61,16 @@ var akra;
                 pProgress.total = pInfo;
                 $cv.fadeIn(400);
             },
-            onload: function (pManager, iDepth, nLoaded, nTotal) {
+            onload: function (pManager, iDepth, nLoaded, nTotal, pDep, pFile, pData) {
                 pProgress.element = nLoaded;
                 pProgress.depth = iDepth;
                 pProgress.draw();
+                if (!akra.isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
+                    var pImporter = new akra.io.Importer(pEngine);
+                    pImporter.import(pData);
+                    pFilmController = pImporter.getController();
+                    console.log(pFilmController);
+                }
             },
             loaded: function (pManager) {
                 $cv.fadeOut(1000, /** @inline */function () {
@@ -84,6 +91,7 @@ var akra;
     var pKeymap = akra.controls.createKeymap();
     var pTerrain = null;
     var pSky = null;
+    var pFilmController = null;
     // var pDepsManager: IDepsManager 		= pEngine.getDepsManager()
     akra.self = {
         engine: pEngine,
@@ -420,12 +428,18 @@ var akra;
         pTubeBetweenRocks.setRotationByXYZAxis(5. * akra.math.RADIAN_RATIO, 100. * akra.math.RADIAN_RATIO, 0.);
         pTubeBetweenRocks.setPosition(new akra.Vec3(-55., -12.15, -82.00));
         pScene.bind("beforeUpdate", update);
-        var pMovie = pRmgr.colladaPool.findResource("HERO_FILM");
-        var pAnim = pMovie.extractAnimation(0);
-        var pContainer = akra.animation.createContainer(pAnim, "movie");
-        var pController = pEngine.createAnimationController("movie");
-        pController.addAnimation(pContainer);
-        pController.stop();
+        var pController = null;
+        if (akra.isNull(pFilmController)) {
+            var pMovie = pRmgr.colladaPool.findResource("HERO_FILM");
+            var pAnim = pMovie.extractAnimation(0);
+            var pContainer = akra.animation.createContainer(pAnim, "movie");
+            pController = pEngine.createAnimationController("movie");
+            pController.addAnimation(pContainer);
+            pController.stop();
+        } else {
+            pController = pFilmController;
+            pController.stop();
+        }
         pHeroModel.addController(pController);
         akra.self.hero.movie = pController;
         fetchAllCameras();
@@ -444,3 +458,5 @@ var akra;
     }
     pEngine.bind("depsLoaded", main);
 })(akra || (akra = {}));
+// var pImporter = new io.Importer(this.getEngine());
+// pImporter.import(content);

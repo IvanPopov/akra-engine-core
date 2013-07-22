@@ -19,6 +19,8 @@ module akra {
     IFACE(IAFXComposer);
     IFACE(IGamepadMap);
     IFACE(IDepsManager);
+    IFACE(IDep);
+    IFACE(IDependens);
    
     export interface IEngineOptions {
         depsRoot?: string;
@@ -27,7 +29,7 @@ module akra {
         renderer?: IRendererOptions;
         loader?: {
             before?: (manager: IDepsManager, info: any) => void;
-            onload?: (manager: IDepsManager, depth: uint, loaded: uint, total: uint) => void;
+            onload?: (manager: IDepsManager, depth: uint, loaded: uint, total: uint, pDep: IDependens, pFile: IDep, pData: any) => void;
             loaded?: (manager: IDepsManager) => void;
         };
     }

@@ -43,6 +43,17 @@ module akra.util {
         // return String.fromCharCode.apply(null, Array.prototype.slice.call(new Uint8Array(pBuf), 0));
 	}
 
+	export var abtos_blobreader = function(buf: ArrayBuffer, callback: Function) {
+        var bb = new Blob([buf]);
+        var f = new FileReader();
+        
+        f.onload = function(e) {
+          callback(e.target.result);
+        }
+
+        f.readAsText(bb);
+    }
+
 
 	export function abtota(pBuffer: ArrayBuffer, eType: EDataTypes): ArrayBufferView {
         switch (eType) {

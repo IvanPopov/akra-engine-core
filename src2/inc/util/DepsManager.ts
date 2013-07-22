@@ -144,7 +144,8 @@ module akra.util {
 
 				//WARNING: only for HLSL grammar files.
 				util.initAFXParser(sData);
-				pManager._onDependencyLoad(pDep, iDepth, i/*, pGrammar.byteLength*/);
+				pManager._onDependencyLoad(pDep, iDepth, i, sData);
+				pGrammar.close();
 			});	
 		}
 
@@ -165,10 +166,14 @@ module akra.util {
 
 					LOG("unpacked to local filesystem: ", pEntry.filename);
 
-					fopen(sPath + ".crc32", "w+").write(String(pEntry.crc32), (e: Error) => {
+					var pCrc32: IFile = fopen(sPath + ".crc32", "w+");
+					pCrc32.write(String(pEntry.crc32), (e: Error) => {
 						if (e) throw e;
 						fnCallback(sPath);
+						pCrc32.close();
 					});
+
+					pCopy.close();
 				});
 
 
@@ -189,6 +194,8 @@ module akra.util {
 						else {
 							this.forceExtractARADependence(pEntry, sPath, fnCallback);
 						}
+
+						pCRC32File.close();
 					});
 
 					return;
@@ -239,7 +246,9 @@ module akra.util {
 									pLLDep.deps = pARADeps;
 
 									pManager.createDepsResources(pARADeps);
-									pManager._onDependencyLoad(pPrimaryDep, iPrimaryDepth, n);
+									pManager._onDependencyLoad(pPrimaryDep, iPrimaryDepth, n, pArchive);
+
+									pArchive.close();
 								};
 
 								pManager.normalizeDepsPaths(pARADeps, "");
@@ -281,7 +290,7 @@ module akra.util {
 			if (pRes.loadResource(pFiles[i].path)) {
 				pManager._handleResourceEventOnce(pRes, SIGNAL(loaded),
 					(pItem: IResourcePoolItem): void => {
-						pManager._onDependencyLoad(pDep, iDepth, i/*, (<core.pool.resources.EffectData>pItem).byteLength*/);
+						pManager._onDependencyLoad(pDep, iDepth, i, pRes);
 					}
 				);
 			}
@@ -298,7 +307,7 @@ module akra.util {
 
 			if (pRes.loadResource(pFiles[i].path)) {
 				pManager._handleResourceEventOnce(pRes, SIGNAL(loaded), (pItem: IResourcePoolItem): void => {
-					pManager._onDependencyLoad(pDep, iDepth, i/*, (<IImg>pItem).byteLength*/);
+					pManager._onDependencyLoad(pDep, iDepth, i, pRes);
 				});
 			}
 			else {
@@ -314,7 +323,7 @@ module akra.util {
 
 			if (pRes.loadResource(pFiles[i].path)) {
 				pManager._handleResourceEventOnce(pRes, SIGNAL(loaded), 
-					(pItem: IResourcePoolItem): void => {pManager._onDependencyLoad(pDep, iDepth, i/*, (<IModel>pItem).byteLength*/);
+					(pItem: IResourcePoolItem): void => {pManager._onDependencyLoad(pDep, iDepth, i, pRes);
 				});
 			}
 			else {
@@ -326,26 +335,28 @@ module akra.util {
 			var pFiles: IDep[] = pDep.files;
 			var pManager: DepsManager = this;
 			var pFile: IFile = io.fopen(pFiles[i].path, "r");
-			
 			pFile.read((pErr: Error, sData: string): void => {
 				if (!isNull(pErr)) {
 					pManager.error(pErr);
 				}
-
-				pDep.loader(pDep, sData);
-				pManager._onDependencyLoad(pDep, iDepth, i/*, pFile.byteLength*/);
+ 				
+ 				if (isFunction(pDep.loader)) {
+					pDep.loader(pDep, sData);
+				}
+				
+				pManager._onDependencyLoad(pDep, iDepth, i, sData);
+				pFile.close();
 			});	
 		}
 
 		private loadJSON(pDep: IDependens, i: int, iDepth?: uint): void {
-			// var pImporter = new io.Importer(this.getEngine());
-	    	// pImporter.import(content);
+	    	this.loadCustom(pDep, i, iDepth);
 		}
 
 		private loadDeps(pDeps: IDependens, iDepth: uint = 0): void {
 			//if got empty dependency.
 			if (!isArray(pDeps.files) || pDeps.files.length === 0) {
-				this._onDependencyLoad(pDeps, iDepth, -1/*, 0*/);
+				this._onDependencyLoad(pDeps, iDepth, -1);
 			}
 
 			//walk single deps level
@@ -354,7 +365,7 @@ module akra.util {
 				var sPath: string = pDeps.files[i].path;
 				
 				if (isDefAndNotNull(pDeps.type)) {
-					if (pDeps.type == "text" && isFunction(pDeps.loader)) {
+					if (pDeps.type == "text") {
 						this.loadCustom(pDeps, i, iDepth);
 					}
 				}
@@ -384,6 +395,7 @@ module akra.util {
 						break;
 					case "json":
 						this.loadJSON(pDeps, i, iDepth);
+						break;
 					default:
 						WARNING("dependence " + sPath + " unknown, and will be skipped.");
 				}	
@@ -402,13 +414,10 @@ module akra.util {
 			pRsc.bind(sSignal, fn);
 		}
 
-		_onDependencyLoad(pDeps: IDependens, iDepth: uint, n: int/*, iByteLength: uint*/): void {
-			// debug_assert(isDefAndNotNull(pDeps.files) && isString(pDeps.files[i]), "something going wrong...");
-
+		_onDependencyLoad(pDeps: IDependens, iDepth: uint, n: int, pData: any = null): void {
+			var pFile: IDep = null;
 			if (n != -1) {
-				// console.log(pDeps.files[n].path, iByteLength);
-
-				// this._iTotalBytesLoaded += (iByteLength);
+				pFile = pDeps.files[n];
 				pDeps.files[n] = null;
 			}
 
@@ -419,7 +428,6 @@ module akra.util {
 			if (isArray(pDeps.files)) {
 				for (var i: int = 0; i < pDeps.files.length; ++ i) {
 					if (!isNull(pDeps.files[i])) {
-						// console.log("wait for: ", pDeps.files[i].path);
 						nRestDepsInLevel ++;
 					}
 				};
@@ -429,7 +437,7 @@ module akra.util {
 			}
 
 			// LOG("lvl: ", iDepth, "loaded", nLoadedDepsInLevel, "/", nTotalDepsInLevel, "total mb - ", (this._iTotalBytesLoaded / (1024 * 1024)).toFixed(2));
-			this.loadedDep(iDepth, nLoadedDepsInLevel, nTotalDepsInLevel);
+			this.loadedDep(iDepth, nLoadedDepsInLevel, nTotalDepsInLevel, pDeps, pFile, pData);
 			
 			if (nRestDepsInLevel > 0) {
 				return;
@@ -473,7 +481,7 @@ module akra.util {
 		CREATE_EVENT_TABLE(DepsManager);
 		BROADCAST(loaded, CALL(deps));
 		BROADCAST(beforeLoad, CALL(info));
-		BROADCAST(loadedDep, CALL(depth, loaded, total));
+		BROADCAST(loadedDep, CALL(depth, loaded, total, dep, file, data));
 		// BROADCAST(error, CALL(pErr));
 		
 		error(pErr: Error): void {

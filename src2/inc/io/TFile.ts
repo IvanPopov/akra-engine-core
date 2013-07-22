@@ -253,7 +253,6 @@ module akra.io {
 				// 	case EFileBinaryType.BLOB:
 				// 	case EFileBinaryType.OBJECT_URL:
 				// }
-
 		        
 		        pFile.atEnd();
 
@@ -261,10 +260,13 @@ module akra.io {
 		        	fnCallback.call(pFile, null, pBuffer);
 		        }
 		        else {
-		        	fnCallback.call(pFile, null, util.abtos(pBuffer));	
+		        	util.abtos_blobreader(pBuffer, (s: string): void => {
+		        		fnCallback.call(pFile, null, s);	
+		        	});
+		        	// fnCallback.call(pFile, null, util.abtos(pBuffer));	
 		        }
 		    };
-
+		    // console.log("read local file > ", pCommand.name, pCommand.mode, pCommand.pos);
 		    this.execCommand(pCommand, fnCallbackSystem);
 		}
 

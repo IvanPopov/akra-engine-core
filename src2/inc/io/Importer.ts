@@ -73,7 +73,7 @@ module akra.io {
 				return <IDocument>pData;
 			}
 
-			return <IDocument>util.parseJSON(sData);
+			return JSON.parse(sData);/*<IDocument>util.parseJSON(sData);*/
 		}
 
 		protected updateLibrary(): void {

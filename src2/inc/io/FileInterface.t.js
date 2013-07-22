@@ -85,7 +85,7 @@ onmessage = function (pEvent) {
                     postMessage(pData, [pData]);
                 }
                 catch (e) {
-                    throw pData;
+                    throw e;
                 }
             }
             else {

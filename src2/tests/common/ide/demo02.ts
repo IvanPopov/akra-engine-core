@@ -52,7 +52,7 @@ module akra {
 		// 	}
 		// },
 		deps: {
-			root: "./",
+			root: "../",
 			files: [{path: "demo02.ara"}]
 		},
 		loader: {
@@ -61,10 +61,17 @@ module akra {
 
 				$cv.fadeIn(400);
 			},
-			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number): void => {
+			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number, pDep: IDependens, pFile: IDep, pData: any): void => {
 				pProgress.element = nLoaded;
 				pProgress.depth = iDepth;
 				pProgress.draw();
+
+				if (!isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
+					var pImporter = new io.Importer(pEngine);
+	    			pImporter.import(<string>pData);
+	    			pFilmController = pImporter.getController();
+	    			console.log(pFilmController);
+				}
 			},
 			loaded: (pManager: IDepsManager): void => {
 				$cv.fadeOut(1000, () => {
@@ -89,6 +96,7 @@ module akra {
 	var pKeymap: controls.KeyMap		= <controls.KeyMap>controls.createKeymap();
 	var pTerrain: ITerrain 				= null;
 	var pSky 							= null;
+	var pFilmController: IAnimationController = null;
 	// var pDepsManager: IDepsManager 		= pEngine.getDepsManager()
 
 
@@ -542,13 +550,23 @@ module akra {
 
 		pScene.bind("beforeUpdate", update);
 
-		var pMovie: ICollada = <ICollada>pRmgr.colladaPool.findResource("HERO_FILM");
-		var pAnim: IAnimation = pMovie.extractAnimation(0);
-		var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-		var pController: IAnimationController = pEngine.createAnimationController("movie");
-		
-		pController.addAnimation(pContainer);
-		pController.stop();
+		var pController: IAnimationController = null;
+
+		if (isNull(pFilmController)) {
+			var pMovie: ICollada = <ICollada>pRmgr.colladaPool.findResource("HERO_FILM");
+			var pAnim: IAnimation = pMovie.extractAnimation(0);
+			var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+			
+			pController = pEngine.createAnimationController("movie");
+			
+			pController.addAnimation(pContainer);
+			pController.stop();
+
+		}
+		else {
+			pController = pFilmController;
+			pController.stop();
+		}
 
 		pHeroModel.addController(pController);
 
@@ -573,3 +591,6 @@ module akra {
 
 	pEngine.bind("depsLoaded", main);	
 }
+
+// var pImporter = new io.Importer(this.getEngine());
+	    	// pImporter.import(content);

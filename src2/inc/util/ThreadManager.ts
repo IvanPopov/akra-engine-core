@@ -37,17 +37,18 @@ module akra.util {
 				var pStats: IThreadStats;
 				var iNow: uint = now();
 				
-				console.log("checking threads...");
-
+				// console.log("checking threads...", this._pStatsList.length, this._sDefaultScript);
+				// console.log(this._pStatsList);
 				for (var i: int = 0, n: int = this._pStatsList.length; i < n; ++ i) {
 					pStats = this._pStatsList[i];
-					console.log("trying to terminate thread", i, this._sDefaultScript, iNow - pStats.releaseTime);
+					
 					if (pStats.releaseTime > 0 && iNow - pStats.releaseTime > TM_THREAD_MAX_IDLE_TIME * 1000) {
 						if (this.terminateThread(i)) {
-							LOG("thread with id - " + i + " terminated. (" + i + "/" +  n + ")");
-							return;
+							debug_print("thread with id - " + i + " terminated. (" + i + "/" +  n + ")");
+							i --, n --;
+							continue;
 						}
-
+						
 						debug_warning("thread must be removed: " + i);
 					}
 				};
@@ -112,8 +113,8 @@ module akra.util {
 
 			(<Worker><any>pWorker).terminate();
 
-			this._pStatsList.splice(iThread);
-			this._pWorkerList.splice(iThread);
+			this._pStatsList.splice(iThread, 1);
+			this._pWorkerList.splice(iThread, 1);
 
 			return true;
 		}

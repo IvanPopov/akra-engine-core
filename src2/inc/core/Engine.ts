@@ -47,6 +47,8 @@
 #include "model/Sky.ts"
 #endif
 
+#include "io/Importer.ts"
+
 module akra.core {
 	export class Engine implements IEngine {
 
@@ -379,7 +381,7 @@ module akra.core {
 
 		static DEPS_ROOT: string = DATA;
 		static DEPS: IDependens = 
-#ifdef DEBUG1		
+#ifdef DEBUG
 			{
 				files: [ 
 					{path: "grammars/HLSL.gr"}
