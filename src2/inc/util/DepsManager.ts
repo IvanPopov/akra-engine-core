@@ -10,6 +10,7 @@
 #include "util/URI.ts"
 
 #define ARA_INDEX ".map"
+#define ETAG_FILE ".etag"
 
 declare function unescape(s: string): string;
 
@@ -151,8 +152,8 @@ module akra.util {
 			});	
 		}
 
-		private createARADLocalName(pEntry: ZipEntry, sHash: string): string {
-			return "filesystem:" + info.uri.scheme + "//" + info.uri.host + "/temporary/" + sHash + "/" + pEntry.filename;
+		private createARADLocalName(sFilename: string, sEntry: string): string {
+			return "filesystem:" + info.uri.scheme + "//" + info.uri.host + "/temporary/" + sEntry + "/" + sFilename;
 		}
 
 
@@ -184,7 +185,7 @@ module akra.util {
 		}
 
 		private extractARADependence(pEntry: ZipEntry, sHash: string, fnCallback: Function): void {
-			var sPath: string = this.createARADLocalName(pEntry, sHash);
+			var sPath: string = this.createARADLocalName(pEntry.filename, sHash);
 			var pCRC32File: IFile = fopen(sPath + ".crc32", "r");
 			
 			pCRC32File.isExists((e: Error, bExists: bool) => {
@@ -218,72 +219,98 @@ module akra.util {
 			var pArchive: IFile = io.fopen(sArchivePath, "rb");
 			var pLLDep: IDependens = DepsManager.findLastLevel(pPrimaryDep);
 
-			pArchive.read((err: Error, pData: ArrayBuffer): void => {
-				zip.createReader(new zip.ArrayBufferReader(pData), 
-					(pZipReader: ZipReader): void => {
-						pZipReader.getEntries((pEntries: ZipEntry[]): void => {
+			var fnArchiveLoaded = (pARADeps: IDependens): void => {
+				pLLDep.deps = pARADeps;
 
-							var pEntryMap: {[path: string]: ZipEntry;} = {};
-							var nTotal: uint = -1;
+				this.generateDepInfo(this.target);
 
-							for (var i: int = 0; i < pEntries.length; ++ i) {
-								if (pEntries[i].directory) continue;
-								pEntryMap[pEntries[i].filename] = pEntries[i];
-								nTotal ++;
-							}
+				this.createDepsResources(pARADeps);
+				this._onDependencyLoad(pPrimaryDep, iPrimaryDepth, n, pArchive);
+			}
 
-							var pMapEntry: ZipEntry = pEntryMap[ARA_INDEX];
+			pArchive.open((err: Error, pMeta: IFileMeta): void => {
+					var pETag: IFile = fopen(this.createARADLocalName(ETAG_FILE, sArchiveHash), "r+");
+					pETag.read((e: Error, sETag: string) => {
+						if (!isNull(e) || !isString(pMeta.eTag) || sETag !== pMeta.eTag) {
+							LOG(sArchivePath, "ETAG not verified.", pMeta.eTag);
+							pETag.write(pMeta.eTag);
 
-							delete pEntryMap[ARA_INDEX];
-							ASSERT(isDefAndNotNull(pMapEntry), "ARA dependences found, but headers corrupted.");
+							pArchive.read((err: Error, pData: ArrayBuffer): void => {
+								zip.createReader(new zip.ArrayBufferReader(pData), 
+									(pZipReader: ZipReader): void => {
+										pZipReader.getEntries((pEntries: ZipEntry[]): void => {
 
-							pMapEntry.getData(new zip.TextWriter(), (data: string): void => {
-								var pARADeps: IDependens = <IDependens>JSON.parse(data);
+											var pEntryMap: {[path: string]: ZipEntry;} = {};
+											var nTotal: uint = 0;
 
-								var fnSuccesss: Function = (sLocalPath: string): void => {
-									nTotal --;
+											for (var i: int = 0; i < pEntries.length; ++ i) {
+												if (pEntries[i].directory) continue;
+												pEntryMap[pEntries[i].filename] = pEntries[i];
+												nTotal ++;
+											}
 
-									if (nTotal > 0) return;
-									
-									console.log("ARA dependences successfully loaded: ", sArchivePath);
-									// alert("ARA dependences successfully loaded: " + sArchivePath);
+											var pMapEntry: ZipEntry = pEntryMap[ARA_INDEX];
 
-									pZipReader.close();
-									pLLDep.deps = pARADeps;
+											ASSERT(isDefAndNotNull(pMapEntry), "ARA dependences found, but headers corrupted.");
 
-									this.generateDepInfo(this.target);
+											pMapEntry.getData(new zip.TextWriter(), (data: string): void => {
+												var pARADeps: IDependens = <IDependens>JSON.parse(data);
 
-									pManager.createDepsResources(pARADeps);
-									pManager._onDependencyLoad(pPrimaryDep, iPrimaryDepth, n, pArchive);
+												var fnSuccesss: Function = (sLocalPath: string): void => {
+													nTotal --;
 
-									pArchive.close();
-								};
+													if (nTotal > 0) return;
+													
+													console.log("ARA dependences successfully loaded: ", sArchivePath);
+													// alert("ARA dependences successfully loaded: " + sArchivePath);
 
-								pManager.normalizeDepsPaths(pARADeps, "");
-								pManager.walk(pARADeps, (pDep: IDependens, i: int, iDepth?: uint): void => {
-									var sPath: string = pDep.files[i].path;
-									var pEntry: ZipEntry = pEntryMap[sPath];
+													pZipReader.close();
+													pArchive.close();
+													
+													fnArchiveLoaded(pARADeps);
+												};
 
-									ASSERT(isDefAndNotNull(pEntry), "Cannot resolve ARA dependence: " + sPath);
-									delete pEntryMap[sPath];
-									
-									this.extractARADependence(pEntry, sArchiveHash, (sLocalPath: string): void => {
-										pDep.files[i].path = sLocalPath;
-										fnSuccesss(sLocalPath);
-									});
-								});
+												this.normalizeDepsPaths(pARADeps, "");
+												this.walk(pARADeps, (pDep: IDependens, i: int, iDepth?: uint): void => {
+													var sPath: string = pDep.files[i].path;
+													var pEntry: ZipEntry = pEntryMap[sPath];
 
-								for (var sPath in pEntryMap) {
-									// console.log("unmapped deps: ", sPath);
-									this.extractARADependence(pEntryMap[sPath], sArchiveHash, fnSuccesss);
-								}
+													ASSERT(isDefAndNotNull(pEntry), "Cannot resolve ARA dependence: " + sPath);
+													delete pEntryMap[sPath];
+													
+													this.extractARADependence(pEntry, sArchiveHash, (sLocalPath: string): void => {
+														pDep.files[i].path = sLocalPath;
+														fnSuccesss(sLocalPath);
+													});
+												});
+
+												for (var sPath in pEntryMap) {
+													// console.log("unmapped deps: ", sPath);
+													this.extractARADependence(pEntryMap[sPath], sArchiveHash, fnSuccesss);
+												}
+											});
+										});
+									}, 
+									(err: Error): void => {
+										console.log(err);
+									}
+								);
 							});
+
+							return;
+						}
+
+						LOG(sArchivePath, "ETAG verified successfully!", sETag);
+						
+						fopen(this.createARADLocalName(ARA_INDEX, sArchiveHash), "rj").read((e: Error, pMap: IDependens): void => {
+							this.normalizeDepsPaths(pMap, "");
+							this.walk(pMap, (pDep: IDependens, i: int, iDepth?: uint): void => {
+								pDep.files[i].path = this.createARADLocalName(pDep.files[i].path, sArchiveHash);
+							});
+
+							fnArchiveLoaded(pMap);
 						});
-					}, 
-					(err: Error): void => {
-						console.log(err);
-					}
-				);
+					});
 			});
 		}
 
@@ -395,7 +422,6 @@ module akra.util {
 
 			//walk single deps level
 			this.walk({files: pDeps.files}, (pDep: IDependens, i: int, iDepth?: uint): void => {
-				// console.log(pDeps);
 				var sPath: string = pDeps.files[i].path;
 				
 				this.preload(pDeps, pDeps.files[i]);

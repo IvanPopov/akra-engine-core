@@ -94,6 +94,11 @@ module akra.io {
 			return this._iMode;
 		}
 
+		inline get meta(): IFileMeta {
+			ASSERT(isDefAndNotNull(this._pFileMeta), 'There is no file handle open.');
+			return this._pFileMeta;
+		}
+
 		//set mode(sMode: string);
 		//set mode(iMode: int);
 		set mode(sMode: any) {

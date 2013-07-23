@@ -6,7 +6,9 @@ module akra {
 	export interface IFileMeta {
 		lastModifiedDate: string;
 		size: uint;
+		eTag?: string;
 	}
+
 
 	// export enum EFileBinaryType {
 	// 	ARRAY_BUFFER 	= 0x01,
@@ -24,6 +26,8 @@ module akra {
 
 		position: uint;
 		byteLength: uint;
+
+		readonly meta: IFileMeta;
 
 		// binarayType: EFileBinaryType;
 

@@ -138,6 +138,10 @@ module akra.io {
 			return this._iMode;
 		}
 
+		inline get meta(): IFileMeta {
+			return null;
+		}
+
 		//set mode(sMode: string);
 		//set mode(iMode: int);
 		set mode(sMode: any) {

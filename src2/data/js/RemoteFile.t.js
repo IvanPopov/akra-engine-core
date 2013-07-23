@@ -44,6 +44,7 @@ function read (pFile) {
         var pData = null;
 
         pXhr.open('GET', pFile.name, false);
+        // pXhr.onprogress = 
 
         if (isBinary(pFile.mode)) {
             pXhr.overrideMimeType('application/octet-stream');
@@ -142,6 +143,7 @@ function str2buf (s) {
 function write (pFile, pData, sContentType) {
     var pQuery = {}
     pQuery['action'] = 'write';
+    
     if (typeof pData == 'object') {
         pData = buf2str(pData);
     }
@@ -177,7 +179,12 @@ function meta (pFile) {
     pXhr.send(null);
     
     if (pXhr.status == 200) {
-        return {size: parseInt(pXhr.getResponseHeader('Content-Length'))};
+        return {
+            size: parseInt(pXhr.getResponseHeader('Content-Length')),
+            lastModifiedDate: pXhr.getResponseHeader('Last-Modified') || null,
+
+            eTag: pXhr.getResponseHeader('ETag') || null,
+        };
     }
 
     return {};
