@@ -19,16 +19,19 @@ module akra {
 
 		pProgress.color = "white";
 		pProgress.fontColor = "white";
-		pProgress.fontSize = 22;
 
 		pCanvas.style.position = "absolute";
 	    pCanvas.style.left = "50%";
-	    pCanvas.style.top = "50%";
+	    pCanvas.style.top = "70%";
 	    pCanvas.style.zIndex = "100000";
+	    // pCanvas.style.backgroundColor = "rgba(70, 94, 118, .8)";
 	    // pCanvas.style.display = "none";
 
 	    pCanvas.style.marginTop = (-pProgress.height / 2) + "px";
 	    pCanvas.style.marginLeft = (-pProgress.width / 2) + "px";
+
+	    document.body.appendChild(pProgress.canvas);
+		pProgress.drawText("Initializing demo");
 
 	    return pProgress;
 	}
@@ -36,26 +39,48 @@ module akra {
 	var pProgress: IProgress = createProgress();
 	var bMegaTextureLoaded: bool = false;
 
+
 	var pEngine: IEngine = createEngine({
 		renderer: {preserveDrawingBuffer: true, alpha: false},
 		deps: {
 			root: "../",
-			files: [{path: "demo02.ara"}]
+			files: [{path: "demo02.ara", name: "DEMO_DATA_ARCHIVE"}]
 		},
 		loader: {
-			before: (pManager: IDepsManager, pInfo: number[]): void => {
+			info: (pManager: IDepsManager, pInfo: number[]): void => {
 				pProgress.total = pInfo;
+			},
+			preload: (pManager: IDepsManager, pDep: IDependens, pFile: IDep): void => {
 
-				document.body.appendChild(pProgress.canvas);
+				if(pFile.name === "DEMO_DATA_ARCHIVE"){
+					pProgress.drawText("Loading demo data");
+				}
+				else if(pFile.name === ".ENGINE_DATA"){
+					pProgress.drawText("Loading engine data");
+				}
+				else {
+					pProgress.drawText("Loading resource " + path.info(path.uri(pFile.path).path).basename);
+				}
+				
 			},
 			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number, pDep: IDependens, pFile: IDep, pData: any): void => {
 				pProgress.element = nLoaded;
 				pProgress.depth = iDepth;
+				
 				pProgress.draw();
+				if (!isNull(pFile)) {
+					if(pFile.name === "DEMO_DATA_ARCHIVE"){
+						pProgress.drawText("Unpacking demo data");
+					}
+					else if(pFile.name === ".ENGINE_DATA"){
+						pProgress.drawText("Unpacking engine data");
+					}
+				}
 
 				if (!isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
+					// console.log(pData);
 					var pImporter = new io.Importer(pEngine);
-	    			pImporter.import(<string>pData);
+	    			pImporter.loadDocument(<IDocument>pData);
 	    			pFilmController = pImporter.getController();
 	    			// console.log(pFilmController);
 				}
@@ -380,6 +405,7 @@ module akra {
 
 	function createTerrain(): void {
 		pTerrain = pScene.createTerrainROAM("Terrain");
+		pTerrain.megaTexture.manualMinLevelLoad = true;
 
 		var pTerrainMap: IImageMap = <IImageMap>{};
 
@@ -395,12 +421,15 @@ module akra {
 
 		self.terrain = pTerrain;
 
-		pTerrain.megaTexture.bind("minLevelLoaded", () => {
-			if (!bMegaTextureLoaded) {
-				bMegaTextureLoaded = true;
-				loaded();
-			}
-		});
+		// pTerrain.megaTexture.bind("minLevelLoaded", () => {
+		// 	if (!bMegaTextureLoaded) {
+		// 		bMegaTextureLoaded = true;
+		// 		loaded()
+		// 	}
+		// });
+		
+		bMegaTextureLoaded = true;
+		pTerrain.megaTexture.setMinLevelTexture(<IImg>pRmgr.imagePool.findResource("MEGATEXTURE_MIN_LEVEL"));
 	}
 
 
@@ -413,9 +442,9 @@ module akra {
 	    pSky._nHorinLevel = 15;
 
 	    var i = setInterval(() => {
-	    	pSky.setTime(pSky.time + 0.001); 
+	    	pSky.setTime(pSky.time + 0.003); 
 	    	// if (math.abs(pSky.time) == 30.0) clearInterval(i);
-	    }, 100);
+	    }, 500);
 	}
 
 	function createSkyBox(): void {
@@ -543,8 +572,13 @@ module akra {
 			pController.stop();
 		}
 
-		if (pController)
+		if (pController) {
+			// (<IAnimationContainer>pController.findAnimation("movie")).rightInfinity(false);
+			// pController.findAnimation("movie").bind("stoped", () => {
+			// 	alert("STOP!");
+			// });
 			pHeroModel.addController(pController);
+		}
 
 
 		self.hero.movie = pController;
@@ -562,6 +596,7 @@ module akra {
 		createSky();
 		createSkyBox();
 		
+		loaded();
 		// pEngine.exec();
 	}
 

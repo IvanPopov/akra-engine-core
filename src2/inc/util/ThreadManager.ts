@@ -60,7 +60,7 @@ module akra.util {
 		createThread(): bool {
 			//console.log((new Error).stack)
 			if (this._pWorkerList.length === TM_MAX_THREAD_NUMBER) {
-				WARNING("Reached limit the number of threads");
+				debug_warning("Reached limit the number of threads");
 				return false;
 			}
 
@@ -99,7 +99,7 @@ module akra.util {
 		    	return this.occupyThread();
 		    }
 		    else {
-		    	WARNING("cannot occupy thread");
+		    	debug_warning("cannot occupy thread");
 		    	return null;
 		    }
 		}

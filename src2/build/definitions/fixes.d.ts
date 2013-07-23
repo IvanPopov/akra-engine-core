@@ -6,6 +6,10 @@ interface DOMString extends String {
 
 }
 
+interface XMLHttpRequest extends EventTarget, MSXMLHttpRequestExtensions {
+    overrideMimeType(type: string): void;
+}
+
 /****************************************************************
  * File System API
  ****************************************************************/

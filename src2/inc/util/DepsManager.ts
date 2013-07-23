@@ -9,7 +9,7 @@
 #include "util/EffectParser.ts"
 #include "util/URI.ts"
 
-#define ARA_INDEX "map.json"
+#define ARA_INDEX ".map"
 
 declare function unescape(s: string): string;
 
@@ -26,14 +26,14 @@ module akra.util {
 	class DepsManager implements IDepsManager {
 		protected _eState: EDepsManagerStates = EDepsManagerStates.IDLE;
 		protected _pEngine: IEngine;
-		// protected _iTotalBytesLoaded: uint = 0;
-		// protected _iTotalDepth: uint = 0;
+		protected _pDeps: IDependens = null;
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
 		}
 
 		inline getEngine(): IEngine { return this._pEngine; }
+		inline get target(): IDependens { return this._pDeps; }
  
 		load(pDeps: IDependens, sRoot: string = null): bool {
 			if (!isDefAndNotNull(pDeps)) {
@@ -48,6 +48,8 @@ module akra.util {
 			if (info.api.zip) {
 				zip.workerScriptsPath = sRoot + "/3d-party/zip.js/";
 			}
+
+			this._pDeps = pDeps;
 
 			this.generateDepInfo(pDeps);
 			this.normalizeDepsPaths(pDeps, pDeps.root || sRoot);
@@ -85,7 +87,7 @@ module akra.util {
 				pCurr = pCurr.deps;
 			}
 
-			this.beforeLoad(pInfo);
+			this.depInfo(pInfo);
 		}
 
 		normalizeDepsPaths(pDeps: IDependens, sRoot: string): void {
@@ -249,6 +251,8 @@ module akra.util {
 									pZipReader.close();
 									pLLDep.deps = pARADeps;
 
+									this.generateDepInfo(this.target);
+
 									pManager.createDepsResources(pARADeps);
 									pManager._onDependencyLoad(pPrimaryDep, iPrimaryDepth, n, pArchive);
 
@@ -354,7 +358,33 @@ module akra.util {
 		}
 
 		private loadJSON(pDep: IDependens, i: int, iDepth?: uint): void {
-	    	this.loadCustom(pDep, i, iDepth);
+	    	var pFiles: IDep[] = pDep.files;
+			var pManager: DepsManager = this;
+			var pFile: IFile = io.fopen(pFiles[i].path, "rj");
+
+			pFile.read((pErr: Error, pData: Object): void => {
+				if (!isNull(pErr)) {
+					pManager.error(pErr);
+				}
+				
+				pManager._onDependencyLoad(pDep, iDepth, i, pData);
+				pFile.close();
+			});	
+		}
+
+		private loadBSON(pDep: IDependens, i: int, iDepth?: uint): void {
+	    	var pFiles: IDep[] = pDep.files;
+			var pManager: DepsManager = this;
+			var pFile: IFile = io.fopen(pFiles[i].path, "rb");
+
+			pFile.read((pErr: Error, pBuffer: ArrayBuffer): void => {
+				if (!isNull(pErr)) {
+					pManager.error(pErr);
+				}
+				
+				pManager._onDependencyLoad(pDep, iDepth, i, akra.io.undump(pBuffer));
+				pFile.close();
+			});	
 		}
 
 		private loadDeps(pDeps: IDependens, iDepth: uint = 0): void {
@@ -367,7 +397,9 @@ module akra.util {
 			this.walk({files: pDeps.files}, (pDep: IDependens, i: int, iDepth?: uint): void => {
 				// console.log(pDeps);
 				var sPath: string = pDeps.files[i].path;
-				console.log("before loading > ", sPath);
+				
+				this.preload(pDeps, pDeps.files[i]);
+				
 				if (isDefAndNotNull(pDeps.type)) {
 					if (pDeps.type == "text") {
 						this.loadCustom(pDeps, i, iDepth);
@@ -399,6 +431,9 @@ module akra.util {
 						break;
 					case "json":
 						this.loadJSON(pDeps, i, iDepth);
+						break;
+					case "bson":
+						this.loadBSON(pDeps, i, iDepth);
 						break;
 					default:
 						WARNING("dependence " + sPath + " unknown, and will be skipped.");
@@ -484,7 +519,8 @@ module akra.util {
 
 		CREATE_EVENT_TABLE(DepsManager);
 		BROADCAST(loaded, CALL(deps));
-		BROADCAST(beforeLoad, CALL(info));
+		BROADCAST(preload, CALL(dep, file));
+		BROADCAST(depInfo, CALL(info));
 		BROADCAST(loadedDep, CALL(depth, loaded, total, dep, file, data));
 		// BROADCAST(error, CALL(pErr));
 		

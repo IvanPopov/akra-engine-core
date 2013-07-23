@@ -30,6 +30,7 @@ module akra {
 	});
 
 	document.body.appendChild($cv[0]);
+	$cv.fadeIn(400);
 
 	var pEngine: IEngine = createEngine({
 		renderer: {preserveDrawingBuffer: true},
@@ -56,10 +57,8 @@ module akra {
 			files: [{path: "demo02.ara"}]
 		},
 		loader: {
-			before: (pManager: IDepsManager, pInfo: number[]): void => {
+			info: (pManager: IDepsManager, pInfo: number[]): void => {
 				pProgress.total = pInfo;
-
-				$cv.fadeIn(400);
 			},
 			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number, pDep: IDependens, pFile: IDep, pData: any): void => {
 				pProgress.element = nLoaded;

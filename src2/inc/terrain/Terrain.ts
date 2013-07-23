@@ -76,6 +76,10 @@ module akra.terrain {
 			super(pScene, eType);
 			this._pEngine = pScene.getManager().getEngine();
 			this._pDataFactory = render.createRenderDataCollection(this._pEngine, ERenderDataBufferOptions.VB_READABLE);
+
+#ifdef USE_MEGA_TEXTURE
+			this._pMegaTexures = new MegaTexture(this._pEngine);
+#endif
 		}
 
 		inline get dataFactory(): IRenderDataCollection{
@@ -243,7 +247,6 @@ module akra.terrain {
 
 #ifdef USE_MEGA_TEXTURE
 			//Мегатекстурные параметры
-			this._pMegaTexures = new MegaTexture(this._pEngine);
 			this._pMegaTexures.init(this, sSurfaceTextures);
 #endif
 

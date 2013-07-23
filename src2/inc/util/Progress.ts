@@ -11,11 +11,11 @@ module akra.util {
         step: number = 5.;
         counterclockwise: bool = false;
         radius: number = 0;
-        thickness: number = 20;
+        thickness: number = 12;
         total: number[] = [10, 5, 3];
         border: number = 2;
-        lineWidth: number = 8;
-        indent: number = 3;
+        lineWidth: number = 4;
+        indent: number = 2;
         color: string = "#000000";
 
         depth: number = 0;
@@ -26,22 +26,24 @@ module akra.util {
         fontSize: number = 30;
         size: number = 0;
 
+        private _iLastIntervalId: number = null;
+
 
         get width(): number { return this.canvas.width; }
         get height(): number { return this.canvas.height; }
 
-        constructor (iSize: number = 200, iFontSize: number = 30) {
+        constructor (iWidth: number = 400, iHeight: number = 150, iFontSize: number = 18) {
             var pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
 
             this.fontSize = iFontSize;
-            this.size = iSize;
+            this.size = Math.min(iWidth, iHeight);
 
-            pCanvas.width = iSize + 120;
-            pCanvas.height = iSize;
+            pCanvas.width = iWidth;
+            pCanvas.height = iHeight;
 
             this.canvas = pCanvas;
             this.context = pCanvas.getContext("2d");
-            this.radius = iSize / 2. - this.thickness;
+            this.radius = this.size / 2. - this.fontSize;
         }
 
         loaded(): void {
@@ -66,18 +68,41 @@ module akra.util {
 
         draw(): void {
             this.loadLevel();
-            this.updateInfo();
+            //this.updateInfo();
+        }
+
+
+        drawText(sText: string): void {
+            if(this._iLastIntervalId !== null){
+                clearInterval(this._iLastIntervalId);
+            }
+
+            var iCounter: number = 0;
+            var me = this;
+            this._iLastIntervalId = setInterval(() => {
+                var sSuffix: string = "";
+
+                if(iCounter % 3 === 0)      sSuffix = ".  ";
+                else if(iCounter % 3 === 1) sSuffix = ".. ";
+                else if(iCounter % 3 === 2) sSuffix = "...";
+                //else sSuffix = ".";
+
+                iCounter++;
+
+                me.printText(sText + sSuffix);
+            }, 200);
         }
 
         printText(sText: string): void {
             var pCtx: CanvasRenderingContext2D = this.context;
-            var x: number = this.size-2;
-            var y: number = this.size - this.fontSize - 2;
+            var x: number = this.width / 2.;
+            var y: number = this.height - 2;
 
-            pCtx.clearRect(x, 0, this.width, this.height);
-
+            pCtx.clearRect(0, y - this.fontSize, this.width, this.height);
+            pCtx.textBaseline = "bottom";
             pCtx.fillStyle = this.fontColor;
-            pCtx.font = "bold " + this.fontSize + "px Consolas";
+            pCtx.textAlign = "center";
+            pCtx.font = " " + this.fontSize + "px Tahoma";
 
             pCtx.fillText(sText, x, y);
         }
@@ -118,8 +143,8 @@ module akra.util {
 
 
         private animate(fFrom: number = 0, fTo: number = 360, iDepth: number = 0): void {
-            var x: number = this.height / 2., 
-                y: number = this.height / 2.;
+            var x: number = this.width / 2., 
+                y: number = this.radius + this.lineWidth;
 
             var pCtx: CanvasRenderingContext2D = this.context;
 

@@ -135,6 +135,23 @@ module akra.util {
 		xhr.send();
 	}
 
+
+	export function jsonFromDataURL(sBlobURL: string, fn: (json: Object) => void): void {
+		var xhr = new XMLHttpRequest();
+
+		xhr.open("GET", sBlobURL, true);
+		xhr.overrideMimeType('application/json');
+		xhr.responseType = "json";
+		
+		xhr.onload = function(e) {
+			if (this.status == 200) {
+				fn(<Object>this.response);
+			}
+		};
+
+		xhr.send();
+	}
+
 	export function dataURItoBlob(dataURI) {
 	    // convert base64 to raw binary data held in a string
 	    // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this

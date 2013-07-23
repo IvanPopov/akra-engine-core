@@ -17,6 +17,18 @@ function isTrunc (iMode) {
     return ((iMode & (1 << 4)) != 0);
 }
 
+function isText (iMode) {
+    return ((iMode & (1 << 6)) != 0);
+}
+
+function isJSON (iMode) {
+    return ((iMode & (1 << 7)) != 0);
+}
+
+function isURL (iMode) {
+    return ((iMode & (1 << 8)) != 0);
+}
+
 function directories (sFilename) {
     var pParts = sFilename.replace('\\', '/').split('/');
     pParts.pop();
@@ -72,15 +84,9 @@ onmessage = function (pEvent) {
             break;
         case File.READ:
             
-            //var pData: ArrayBuffer; function read(): ArrayBuffer;
             var pData = read(pFile);
-            var nPos = pFile.pos;
 
-            if (nPos > 0) {
-                pData = pData.slice(nPos);
-            }
-            
-            if (pCommand.transfer === TRANSFER.FAST) {
+            if (pCommand.transfer === TRANSFER.FAST && pData instanceof ArrayBuffer) {
                 try {
                     postMessage(pData, [pData]);
                 }

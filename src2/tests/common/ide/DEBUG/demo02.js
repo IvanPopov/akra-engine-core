@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 22 2013 18:44:28 GMT+0400 (Московское время (зима))
+ * assembled at: Tue Jul 23 2013 17:40:08 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02
@@ -26,6 +26,7 @@ var akra;
         marginLeft: (-pProgress.width / 2) + "px"
     });
     document.body.appendChild($cv[0]);
+    $cv.fadeIn(400);
     var pEngine = akra.createEngine({
         renderer: {
             preserveDrawingBuffer: true
@@ -57,9 +58,8 @@ var akra;
             ]
         },
         loader: {
-            before: function (pManager, pInfo) {
+            info: function (pManager, pInfo) {
                 pProgress.total = pInfo;
-                $cv.fadeIn(400);
             },
             onload: function (pManager, iDepth, nLoaded, nTotal, pDep, pFile, pData) {
                 pProgress.element = nLoaded;

@@ -47,6 +47,7 @@
 #include "model/Sky.ts"
 #endif
 
+#include "io/Exporter.ts"
 #include "io/Importer.ts"
 
 module akra.core {
@@ -163,12 +164,13 @@ module akra.core {
 			this.connect(pDepsManager, SIGNAL(loaded), SLOT(_depsLoaded));
 
 			if (!isNull(pOptions) && isDefAndNotNull(pOptions.loader)) {
-				var fnBefore = pOptions.loader.before;
+				var fnInfo = pOptions.loader.info;
 				var fnOnload = pOptions.loader.onload;
 				var fnLoaded = pOptions.loader.loaded;
+				var fnPreload = pOptions.loader.preload;
 
-				if (isFunction(fnBefore)) {
-					pDepsManager.bind(SIGNAL(beforeLoad), fnBefore);
+				if (isFunction(fnInfo)) {
+					pDepsManager.bind(SIGNAL(depInfo), fnInfo);
 				}
 
 				if (isFunction(fnOnload)) {
@@ -177,6 +179,10 @@ module akra.core {
 
 				if (isFunction(fnLoaded)) {
 					pDepsManager.bind(SIGNAL(loaded), fnLoaded);	
+				}
+
+				if (isFunction(fnPreload)) {
+					pDepsManager.bind(SIGNAL(preload), fnPreload);	
 				}
 			}
 
@@ -416,7 +422,7 @@ module akra.core {
 					}
 			}
 #else
-			{files: [{path: "core.ara"}]}
+			{files: [{path: "core.ara", name: ".ENGINE_DATA"}]}
 #endif
 			;			
 

@@ -231,40 +231,34 @@ module akra.io {
 
 		    ASSERT(CAN_READ(this._iMode), "The file is not readable.");
 
-
 		    var pCommand: IFileCommand = {
-		                     act:      EFileActions.k_Read,
-		                     name:     this.path,
-		                     mode:     this._iMode,
-		                     pos:      this._nCursorPosition,
-		                     transfer: this._eTransferMode,
-		                     // bm:       this.binaryType
+		                    act:      		EFileActions.k_Read,
+		                    name:     		this.path,
+		                    mode:    		this._iMode,
+		                    pos:      		this._nCursorPosition,
+		                    transfer: 		this._eTransferMode
 		                 };
 
-		    var fnCallbackSystem: Function = function (err, pBuffer: ArrayBuffer) {
+		    var fnCallbackSystem: Function = function (err, pData: any) {
 				if (err) {
 					fnCallback.call(pFile, err);
 					return;
 				}
 				
-				//TODO
-				// switch (pCommand.bm) {
-				// 	case EFileBinaryType.ARRAY_BUFFER:
-				// 	case EFileBinaryType.BLOB:
-				// 	case EFileBinaryType.OBJECT_URL:
-				// }
-		        
 		        pFile.atEnd();
-
-		        if (IS_BINARY(pFile.mode)) {
-		        	fnCallback.call(pFile, null, pBuffer);
-		        }
-		        else {
-		        	util.abtos_blobreader(pBuffer, (s: string): void => {
-		        		fnCallback.call(pFile, null, s);	
-		        	});
-		        	// fnCallback.call(pFile, null, util.abtos(pBuffer));	
-		        }
+		        fnCallback.call(pFile, null, pData);
+		        // if (IS_BINARY(pFile.mode)) {
+		        // 	fnCallback.call(pFile, null, <ArrayBuffer>pData);
+		        // }
+		        // else {
+		        // 	// if (IS_TEXT(pFile.mode)) {
+		        // 	// 	util.abtos_blobreader(pBuffer, (s: string): void => {
+			       //  // 		fnCallback.call(pFile, null, s);	
+			       //  // 	});
+		        // 	// }	
+		        	
+		        // 	fnCallback.call(pFile, null, );	
+		        // }
 		    };
 		    // console.log("read local file > ", pCommand.name, pCommand.mode, pCommand.pos);
 		    this.execCommand(pCommand, fnCallbackSystem);

@@ -11,17 +11,32 @@ catch (e) {
 }
 
 function read (pFile) {
-    // var pData = null;
-
-    // if (isBinary(pFile.mode)) {
-        pData = pFile.reader.readAsArrayBuffer(pFile.entry.file());
-        return pData;
-    // }
-
-    // pData = pFile.reader.readAsText(pFile.entry.file());
     
-    // return pData;
-    // return pFile.entry.file();
+    var pData = null;
+
+    if (isBinary(pFile.mode)) {
+        pData = pFile.reader.readAsArrayBuffer(pFile.entry.file());
+    }
+    else if (isURL(pFile.mode)) {
+        pData = pFile.entry.file();
+    }
+    else {
+        pData = pFile.reader.readAsText(pFile.entry.file());
+    }
+    
+
+    if (pFile.pos > 0) {
+        pData = pData.slice(pFile.pos);
+    }
+
+    if (isJSON(pFile.mode)) {
+        pData = JSON.parse(pData);
+    }
+    else if (isURL(pFile.mode)) {
+        pData = URL.createObjectURL(pData);
+    }
+    
+    return pData;
 }
 
 function remove (pFile) {

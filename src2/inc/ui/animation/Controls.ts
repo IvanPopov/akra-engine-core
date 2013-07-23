@@ -53,6 +53,7 @@ module akra.ui.animation {
 			return new Mask(this.graph);
 		}
 
+
 		exportController(): void {
 			var pExporter = new io.Exporter;
 			var pController = this.graph.getController();
@@ -75,7 +76,7 @@ module akra.ui.animation {
 			}
 
 			
-			pExporter.saveAs((pController.name || "untitled") + ".json");
+			pExporter.saveAs((pController.name || "untitled") + ".bson", EDocumentFormat.BINARY_JSON);
 		}
 
 		selected(): void {

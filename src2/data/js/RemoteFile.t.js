@@ -47,18 +47,20 @@ function read (pFile) {
 
         if (isBinary(pFile.mode)) {
             pXhr.overrideMimeType('application/octet-stream');
+            pXhr.responseType = 'arraybuffer';
+        }
+        else if (isJSON(pFile.mode) && pFile.pos === 0) {
+            pXhr.overrideMimeType('application/json');
+            pXhr.responseType = 'json';
+        }
+        else if (isURL(pFile.mode)) {
+            pXhr.responseType = 'blob';
+        }
+        else {
+            pXhr.responseType = 'text';
         }
 
-        // switch (pFile.bm) {
-        //     case EFileBinaryType.BLOB:
-        //         pXhr.responseType = 'blob'; 
-        //         break;
-        //     case EFileBinaryType.ARRAY_BUFFER:
-        //     default:
-        //         pXhr.responseType = 'arraybuffer';
-        // }
-
-        pXhr.responseType = 'arraybuffer';
+        
         pXhr.send();
 
         if (parseInt(pXhr.status) != 200 && parseInt(pXhr.status) != 0) {
@@ -67,17 +69,17 @@ function read (pFile) {
 
         pData = pXhr.response;
         
-        // if (isBinary(pFile.mode)) {
-        //     var nExpectedLength = Number(pXhr.getResponseHeader('Content-Length'));
-        //     var nRealLength = pData.byteLength;
+        if (pFile.pos > 0) {
+            pData = pData.slice(pFile.pos);
 
-        //     //некоторые браузеры, такие как Opera 12, возвращают arraybuffer
-        //     //неверной длины, если данные были получены с mime-type'ом не application/octet-stream
-        //     if (nRealLength != nExpectedLength) {
-        //         throw new Error('Expected data length is ' + nExpectedLength + ', but getted data length is '
-        //                             + nRealLength);
-        //     }
-        // }
+            if (isJSON(pFile.mode)) {
+                pData = JSON.parse(pData);
+            }
+        }
+
+        if (isURL(pFile.mode)) {
+            pData = URL.createObjectURL(pData);
+        }
 
         pXhr = null;
 
