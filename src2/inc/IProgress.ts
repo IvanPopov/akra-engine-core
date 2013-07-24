@@ -33,6 +33,7 @@ module akra {
                 draw(): void;
                 drawText(sText: string): void;
                 printText(sText: string): void;
+                cancel(): void;
 	}
 }
 

@@ -92,6 +92,10 @@ function createDir (pRootDirEntry, pFolders) {
 ;
 
 function open (pFile) {
+    if (isTrunc(pFile.mode) && pFile.entry.file().size) {
+        clear(pFile);
+    }
+
     return;
 }
 
@@ -111,9 +115,11 @@ function file (pCmd) {
         }
         catch (e) {
             var NotFoundError = 8;
-            if ((e.code == FileError.NOT_FOUND_ERR || e.code == NotFoundError) && canWrite(pCmd.mode)
-                && pCmd.act != File.EXISTS) {
 
+            if ((e.code == FileError.NOT_FOUND_ERR || e.code == NotFoundError) 
+                && canWrite(pCmd.mode)
+                && pCmd.act != File.EXISTS) {
+                
                 try {
                     if (createDir(pFileSystem.root, directories(sName))) {
                         return file(pCmd);

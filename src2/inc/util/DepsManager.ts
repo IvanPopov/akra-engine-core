@@ -53,7 +53,7 @@ module akra.util {
 			this._pDeps = pDeps;
 
 			this.generateDepInfo(pDeps);
-			this.normalizeDepsPaths(pDeps, pDeps.root || sRoot);
+			this.normalizeDeps(pDeps, pDeps.root || sRoot);
 			this.createDepsResources(pDeps);
 			this.loadDeps(pDeps);
 
@@ -91,10 +91,11 @@ module akra.util {
 			this.depInfo(pInfo);
 		}
 
-		normalizeDepsPaths(pDeps: IDependens, sRoot: string): void {
+		normalizeDeps(pDeps: IDependens, sRoot: string): void {
 			sRoot = isString(sRoot)? sRoot: document.location.pathname;
 
 			this.walk(pDeps, (pDeps: IDependens, i: int): void => {
+				pDeps.files[i].status = EDependenceStatuses.NOT_LOADED;
 				pDeps.files[i].path = path.resolve(pDeps.files[i].path, pDeps.root || sRoot);
 			});
 		}
@@ -209,15 +210,22 @@ module akra.util {
 			});
 		}
 
+		// private loadMap(pMap: IDependens, n: int, iDepth: uint): void {
+
+		// }
+
 		private loadARA(pPrimaryDep: IDependens, n: int, iPrimaryDepth?: uint): void {
 			ASSERT(info.api.zip, "Zip loader must be specified");
 
 			var pManager: DepsManager = this;
 			var pFiles: IDep[] = pPrimaryDep.files;
+			var pArchiveDep: IDep = pFiles[n];
 			var sArchivePath: string = pFiles[n].path;
 			var sArchiveHash: string = utf8_to_b64(sArchivePath);
 			var pArchive: IFile = io.fopen(sArchivePath, "rb");
 			var pLLDep: IDependens = DepsManager.findLastLevel(pPrimaryDep);
+
+			pArchiveDep.status = EDependenceStatuses.CHECKING;
 
 			var fnArchiveLoaded = (pARADeps: IDependens): void => {
 				pLLDep.deps = pARADeps;
@@ -230,12 +238,18 @@ module akra.util {
 
 			pArchive.open((err: Error, pMeta: IFileMeta): void => {
 					var pETag: IFile = fopen(this.createARADLocalName(ETAG_FILE, sArchiveHash), "r+");
+
 					pETag.read((e: Error, sETag: string) => {
 						if (!isNull(e) || !isString(pMeta.eTag) || sETag !== pMeta.eTag) {
 							LOG(sArchivePath, "ETAG not verified.", pMeta.eTag);
 							pETag.write(pMeta.eTag);
 
+							pArchiveDep.status = EDependenceStatuses.LOADING;
+
 							pArchive.read((err: Error, pData: ArrayBuffer): void => {
+
+								pArchiveDep.status = EDependenceStatuses.UNPACKING;
+
 								zip.createReader(new zip.ArrayBufferReader(pData), 
 									(pZipReader: ZipReader): void => {
 										pZipReader.getEntries((pEntries: ZipEntry[]): void => {
@@ -270,7 +284,7 @@ module akra.util {
 													fnArchiveLoaded(pARADeps);
 												};
 
-												this.normalizeDepsPaths(pARADeps, "");
+												this.normalizeDeps(pARADeps, "");
 												this.walk(pARADeps, (pDep: IDependens, i: int, iDepth?: uint): void => {
 													var sPath: string = pDep.files[i].path;
 													var pEntry: ZipEntry = pEntryMap[sPath];
@@ -303,7 +317,7 @@ module akra.util {
 						LOG(sArchivePath, "ETAG verified successfully!", sETag);
 						
 						fopen(this.createARADLocalName(ARA_INDEX, sArchiveHash), "rj").read((e: Error, pMap: IDependens): void => {
-							this.normalizeDepsPaths(pMap, "");
+							this.normalizeDeps(pMap, "");
 							this.walk(pMap, (pDep: IDependens, i: int, iDepth?: uint): void => {
 								pDep.files[i].path = this.createARADLocalName(pDep.files[i].path, sArchiveHash);
 							});
@@ -422,8 +436,11 @@ module akra.util {
 
 			//walk single deps level
 			this.walk({files: pDeps.files}, (pDep: IDependens, i: int, iDepth?: uint): void => {
-				var sPath: string = pDeps.files[i].path;
+				var pDep: IDep = pDeps.files[i];
+				var sPath: string = pDep.path;
 				
+				pDep.status = EDependenceStatuses.LOADING;
+
 				this.preload(pDeps, pDeps.files[i]);
 				
 				if (isDefAndNotNull(pDeps.type)) {
@@ -481,9 +498,12 @@ module akra.util {
 
 		_onDependencyLoad(pDeps: IDependens, iDepth: uint, n: int, pData: any = null): void {
 			var pFile: IDep = null;
+			
 			if (n != -1) {
 				pFile = pDeps.files[n];
-				pDeps.files[n] = null;
+				pFile.status = EDependenceStatuses.LOADED;
+
+				// pDeps.files[n] = null;
 			}
 
 			var nRestDepsInLevel: uint = 0;
@@ -492,7 +512,7 @@ module akra.util {
 			
 			if (isArray(pDeps.files)) {
 				for (var i: int = 0; i < pDeps.files.length; ++ i) {
-					if (!isNull(pDeps.files[i])) {
+					if (pDeps.files[i].status !== EDependenceStatuses.LOADED) {
 						nRestDepsInLevel ++;
 					}
 				};

@@ -25,6 +25,7 @@ module akra.util {
 		private _pWorkerList: IThread[] = [];
 		private _pStatsList: IThreadStats[] = [];
 		private _pWaiters: Function[] = [];
+		private _iSysRoutine: int = -1;
 
 		constructor (sScript: string = null) {
 			
@@ -35,18 +36,25 @@ module akra.util {
 				this.createThread();
 			};
 #endif
-			setInterval((): void => {
+		}
+
+		private startSystemRoutine(): void {
+			if (this._iSysRoutine > 0) {
+				return;
+			}
+			
+			debug_print("start routine", this._sDefaultScript);
+
+			this._iSysRoutine = setInterval((): void => {
 				var pStats: IThreadStats;
 				var iNow: uint = now();
 				
-				// console.log("checking threads...", this._pStatsList.length, this._sDefaultScript);
-				// console.log(this._pStatsList);
 				for (var i: int = 0, n: int = this._pStatsList.length; i < n; ++ i) {
 					pStats = this._pStatsList[i];
 					
 					if (pStats.releaseTime > 0 && iNow - pStats.releaseTime > TM_THREAD_MAX_IDLE_TIME * 1000) {
 						if (this.terminateThread(i)) {
-							debug_print("thread with id - " + i + " terminated. (" + i + "/" +  n + ")");
+							LOG("thread with id - " + i + " terminated. (" + i + "/" +  n + ")");
 							i --, n --;
 							continue;
 						}
@@ -55,6 +63,11 @@ module akra.util {
 					}
 				};
 			}, 5000);
+		}
+
+		private stopSystemRoutine(): void {
+			debug_print("stop routine", this._sDefaultScript);
+			clearInterval(this._iSysRoutine);
 		}
 
 		createThread(): bool {
@@ -80,7 +93,11 @@ module akra.util {
 				creationTime: now(), 
 				releaseTime: now()
 				});
-			// console.log(this._pWorkerList.length, "workers created in ", this._sDefaultScript);
+			
+			if (this._pWorkerList.length == 1) {
+				this.startSystemRoutine();
+			}
+
 			return true;
 		}
 
@@ -116,6 +133,10 @@ module akra.util {
 
 			this._pStatsList.splice(iThread, 1);
 			this._pWorkerList.splice(iThread, 1);
+
+			if (this._pWorkerList.length == 0) {
+				this.stopSystemRoutine();
+			}
 
 			return true;
 		}

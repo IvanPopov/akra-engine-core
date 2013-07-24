@@ -38,13 +38,21 @@ function base64_encode (data) {
 //     OBJECT_URL  : 0x03  
 // }
 
+
 function read (pFile) {
     try {
         var pXhr = new XMLHttpRequest();
         var pData = null;
 
         pXhr.open('GET', pFile.name, false);
-        // pXhr.onprogress = 
+        pXhr.onprogress = function (e) {
+            postMessage({
+                data: null, 
+                progress: true,
+                loaded: e.loaded,
+                total: e.total
+            });
+        }
 
         if (isBinary(pFile.mode)) {
             pXhr.overrideMimeType('application/octet-stream');
@@ -102,6 +110,9 @@ function remove (pFile) {
      return false;*/
 }
 function open (pFile) {
+    // if (isTrunc(pFile.mode) && pFile.entry.file().size) {
+    //             clear(pFile);
+    //         }
 }
 
 function queryString (pObj, sPrefix) {

@@ -71,6 +71,10 @@ module akra.util {
             //this.updateInfo();
         }
 
+        cancel(): void {
+            clearInterval(this._iLastIntervalId);
+        }
+
 
         drawText(sText: string): void {
             if(this._iLastIntervalId !== null){

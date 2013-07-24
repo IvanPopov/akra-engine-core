@@ -63,9 +63,7 @@ module akra.io {
 	export var getLocalFileThreadManager = (): IThreadManager => pLocalFileThreadManager;
 	export var getRemoteFileThreadManager = (): IThreadManager => pRemoteFileThreadManager;
 
-#ifdef DEBUG
-	var TOTAL_BYTES_READED: uint = 0;
-#endif
+
 
 
 	export class TFile implements IFile {
@@ -124,7 +122,7 @@ module akra.io {
 		}
 
 		inline get byteLength(): uint {
-       	 return this._pFileMeta? this._pFileMeta.size: 0;
+       		return this._pFileMeta? this._pFileMeta.size: 0;
 		}
 
 		constructor (sFilename?: string, sMode?: string, fnCallback: Function = TFile.defaultCallback);
@@ -244,28 +242,22 @@ module akra.io {
 		                    transfer: 		this._eTransferMode
 		                 };
 
-		    var fnCallbackSystem: Function = function (err, pData: any) {
+		    var fnCallbackSystem: Function = (err, pData: any): any => {
 				if (err) {
 					fnCallback.call(pFile, err);
 					return;
 				}
+
+				if (pData.progress) {
+					console.log(pData);
+					return false;
+				}
+
 				
 		        pFile.atEnd();
-		        fnCallback.call(pFile, null, pData);
-		        // if (IS_BINARY(pFile.mode)) {
-		        // 	fnCallback.call(pFile, null, <ArrayBuffer>pData);
-		        // }
-		        // else {
-		        // 	// if (IS_TEXT(pFile.mode)) {
-		        // 	// 	util.abtos_blobreader(pBuffer, (s: string): void => {
-			       //  // 		fnCallback.call(pFile, null, s);	
-			       //  // 	});
-		        // 	// }	
-		        	
-		        // 	fnCallback.call(pFile, null, );	
-		        // }
+		        fnCallback.call(pFile, null, pData.data);
 		    };
-		    // console.log("read local file > ", pCommand.name, pCommand.mode, pCommand.pos);
+
 		    this.execCommand(pCommand, fnCallbackSystem);
 		}
 
@@ -483,14 +475,11 @@ module akra.io {
 			var pManager: IThreadManager = isLocal? getLocalFileThreadManager(): getRemoteFileThreadManager();
 			pManager.waitForThread((pThread: IThread) => {
 				pThread.onmessage = function (e) {
-					pThread.onmessage = null;
-#ifdef DEBUG
-					if (pCommand.act === EFileActions.k_Read) {
-						TOTAL_BYTES_READED += e.data.byteLength;
-						// LOG("TOTAL BYTES READED: ", (TOTAL_BYTES_READED / (1024 * 1024)).toFixed(2), "mb");
+					if (fnCallback.call(pFile, null, e.data) === false) {
+						return;
 					}
-#endif
-					fnCallback.call(pFile, null, e.data);
+
+					pThread.onmessage = null;
 					pManager.releaseThread(pThread);
 				}
 

@@ -89,6 +89,7 @@ module akra {
 				var iCounter = 0
 				var iIntervalId = setInterval(() => {
 					if(bMegaTextureLoaded){
+						pProgress.cancel();
 						document.body.removeChild(pProgress.canvas);
 						clearInterval(iIntervalId);
 					}

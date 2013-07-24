@@ -76,30 +76,26 @@ onmessage = function (pEvent) {
 
     switch (pCommand.act) {
         case File.OPEN:
-            if (isTrunc(pFile.mode) && pFile.entry.file().size) {
-                clear(pFile);
-            }
             open(pFile);
             postMessage(meta(pFile));
             break;
+
         case File.READ:
-            
             var pData = read(pFile);
 
             if (pCommand.transfer === TRANSFER.FAST && pData instanceof ArrayBuffer) {
                 try {
-                    postMessage(pData, [pData]);
+                    postMessage({data: pData, progress: false}, [pData]);
                 }
                 catch (e) {
                     throw e;
                 }
             }
             else {
-                postMessage(pData)
+                postMessage({data: pData, progress: false})
             }
 
             pData = null;
-            
             break;
 
         case File.WRITE:

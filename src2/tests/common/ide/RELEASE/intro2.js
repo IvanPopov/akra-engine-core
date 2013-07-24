@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Wed Jul 24 2013 00:14:03 GMT+0400 (Московское время (зима))
+ * assembled at: Wed Jul 24 2013 16:54:27 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/RELEASE/
  * file: tests/common/ide/intro2.ts
  * name: intro2
@@ -87,6 +87,7 @@ var akra;
                 var iCounter = 0;
                 var iIntervalId = setInterval(/** @inline */function () {
                     if (bMegaTextureLoaded) {
+                        pProgress.cancel();
                         document.body.removeChild(pProgress.canvas);
                         clearInterval(iIntervalId);
                     } else {
