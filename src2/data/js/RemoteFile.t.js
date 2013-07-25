@@ -39,45 +39,17 @@ function base64_encode (data) {
 // }
 
 
-function read (pFile) {
-    try {
-        var pXhr = new XMLHttpRequest();
-        var pData = null;
+function read (pFile, fnReaded, fnProgress) {
+    var pXhr = new XMLHttpRequest();
+    pXhr.open('GET', pFile.name, true);
 
-        pXhr.open('GET', pFile.name, false);
-        pXhr.onprogress = function (e) {
-            postMessage({
-                data: null, 
-                progress: true,
-                loaded: e.loaded,
-                total: e.total
-            });
-        }
-
-        if (isBinary(pFile.mode)) {
-            pXhr.overrideMimeType('application/octet-stream');
-            pXhr.responseType = 'arraybuffer';
-        }
-        else if (isJSON(pFile.mode) && pFile.pos === 0) {
-            pXhr.overrideMimeType('application/json');
-            pXhr.responseType = 'json';
-        }
-        else if (isURL(pFile.mode)) {
-            pXhr.responseType = 'blob';
-        }
-        else {
-            pXhr.responseType = 'text';
-        }
-
-        
-        pXhr.send();
-
+    pXhr.onload = function (e) {
         if (parseInt(pXhr.status) != 200 && parseInt(pXhr.status) != 0) {
             throw pXhr.status;
         }
 
-        pData = pXhr.response;
-        
+        var pData = pXhr.response;
+    
         if (pFile.pos > 0) {
             pData = pData.slice(pFile.pos);
 
@@ -90,13 +62,38 @@ function read (pFile) {
             pData = URL.createObjectURL(pData);
         }
 
-        pXhr = null;
+        if (isJSON(pFile.mode)) {
+            if (typeof pData === "string") {
+                pData = JSON.parse(pData);
+            }
+        }
 
-        return pData;
+        fnReaded(pData);
     }
-    catch (e) {
-        throw e;
+
+    if (fnProgress) {
+        pXhr.onprogress = function (e) {
+            fnProgress(e.loaded, e.total);
+        }
     }
+    
+
+    if (isBinary(pFile.mode)) {
+        pXhr.overrideMimeType('application/octet-stream');
+        pXhr.responseType = 'arraybuffer';
+    }
+    else if (isJSON(pFile.mode) && pFile.pos === 0) {
+        pXhr.overrideMimeType('application/json');
+        pXhr.responseType = 'json';
+    }
+    else if (isURL(pFile.mode)) {
+        pXhr.responseType = 'blob';
+    }
+    else {
+        pXhr.responseType = 'text';
+    }
+
+    pXhr.send();
 }
 
 function todo () {

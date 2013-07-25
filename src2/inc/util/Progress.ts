@@ -83,7 +83,7 @@ module akra.util {
 
             var iCounter: number = 0;
             var me = this;
-            this._iLastIntervalId = setInterval(() => {
+            var fnDraw = () => {
                 var sSuffix: string = "";
 
                 if(iCounter % 3 === 0)      sSuffix = ".  ";
@@ -94,7 +94,12 @@ module akra.util {
                 iCounter++;
 
                 me.printText(sText + sSuffix);
-            }, 200);
+            }
+            this._iLastIntervalId = setInterval(() => {
+                fnDraw();
+            }, 333);
+
+            fnDraw();
         }
 
         printText(sText: string): void {

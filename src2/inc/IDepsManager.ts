@@ -13,17 +13,32 @@ module akra {
     }
 
     export interface IDep {
+        //system
+        index?: int;
+        deps?: IDependens;
+
+        //additional
+        status?: EDependenceStatuses;
+        content?: any;
+
+        //user
         path: string;
         name?: string;
-        status?: EDependenceStatuses;
+        comment?: string;
+        type?: string;
     }
 
 	export interface IDependens {
+        parent?: IDependens;
+        depth?: uint;
+        
+        loaded?: uint;
+        total?: uint;
+
+        //user
         files?: IDep[];
         deps?: IDependens;
         root?: string;
-        type?: string;
-        loader?: (dep: IDependens, ...data: any[]) => void;
     }
 
     export interface IDepsManager extends IEventProvider {
