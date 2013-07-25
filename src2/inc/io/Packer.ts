@@ -9,12 +9,12 @@
 module akra.io {
 
 
-	interface IHash {
+	export interface IHash {
 		[type: string]: any[];
 	}
 	
 
-	class Packer extends BinWriter implements IPacker {
+	export class Packer extends BinWriter implements IPacker {
 		protected _pHashTable: IHash = {};
 		protected _pTemplate: IPackerTemplate = getPackerTemplate();
 
@@ -32,6 +32,10 @@ module akra.io {
 		write(pObject: any, sType?: string): bool;
 
 		private memof(pObject: any, iAddr: int, sType: string): void {
+			if (sType === "Number") {
+				return;
+			}
+
 			var pTable: IHash = this._pHashTable;
 		    var pCell: any[] = pTable[sType];
 
@@ -43,6 +47,10 @@ module akra.io {
 		}
 
 		private addr(pObject: any, sType: string): int {
+			if (sType === "Number") {
+				return -1;
+			}
+
 			var pTable: IHash = this._pHashTable;
 		    var iAddr: int;
 		    var pCell: any[] = pTable[sType];
@@ -99,7 +107,7 @@ module akra.io {
 		        this._iCountData += (<Uint8Array>pData).byteLength;
 		    }
 		}
-
+		private x: int = 0;
 		private writeData(pObject: any, sType: string): bool {
 			var pTemplate: IPackerTemplate = this.template;
 		    var pProperties: IPackerCodec = pTemplate.properties(sType);
@@ -107,6 +115,12 @@ module akra.io {
 
 		    fnWriter = pProperties.write;
 		    
+
+		    this.x ++;
+		    if (this.x % 1000 == 0)
+		    	console.log((this.byteLength / (1024 * 1024)).toFixed(2), "mb");
+
+
 		    if (!isNull(fnWriter)) {
 		         if (fnWriter.call(this, pObject) === false) {
 		            ERROR("cannot write type: " + sType);
@@ -124,6 +138,11 @@ module akra.io {
 		    var iAddr: int, iType: int;
 		    var pTemplate: IPackerTemplate = this.template;
 
+		    if (isNull(pObject)) {
+		    	this.nullPtr();
+		    	return false;
+		    }
+
 		    if (isNull(sType)) {
 		        sType = pTemplate.detectType(pObject);
 		    }
@@ -133,12 +152,13 @@ module akra.io {
 	        iType = pTemplate.getTypeId(sType);
 	
 
-		    if (isNull(pObject) || !isDef(pObject) || !isDef(iType)) {
+		    if (!isDef(pObject) || !isDef(iType)) {
 		        this.nullPtr();
 		        return false;
 		    }
-		   
-		    iAddr = this.addr(pObject, sType);
+		   	
+		   	iAddr = this.addr(pObject, sType);
+		    
 
 		    if (iAddr < 0) {
 		        iAddr = this.byteLength + 4 + 4;

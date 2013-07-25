@@ -11,17 +11,32 @@ catch (e) {
 }
 
 function read (pFile) {
-    // var pData = null;
+    
+    var pData = null;
 
     if (isBinary(pFile.mode)) {
-        // pData = pFile.reader.readAsArrayBuffer(pFile.entry.file());
-        // return pData;
+        pData = pFile.reader.readAsArrayBuffer(pFile.entry.file());
+    }
+    else if (isURL(pFile.mode)) {
+        pData = pFile.entry.file();
+    }
+    else {
+        pData = pFile.reader.readAsText(pFile.entry.file());
+    }
+    
+
+    if (pFile.pos > 0) {
+        pData = pData.slice(pFile.pos);
     }
 
-    // pData = pFile.reader.readAsText(pFile.entry.file());
+    if (isJSON(pFile.mode)) {
+        pData = JSON.parse(pData);
+    }
+    else if (isURL(pFile.mode)) {
+        pData = URL.createObjectURL(pData);
+    }
     
-    // return pData;
-    return pFile.entry.file();
+    return pData;
 }
 
 function remove (pFile) {
@@ -77,6 +92,10 @@ function createDir (pRootDirEntry, pFolders) {
 ;
 
 function open (pFile) {
+    if (isTrunc(pFile.mode) && pFile.entry.file().size) {
+        clear(pFile);
+    }
+
     return;
 }
 
@@ -84,7 +103,6 @@ function file (pCmd) {
     var sName = pCmd.name;
 
     if (!pFiles[sName]) {
-
         try {
             pFiles[sName] = {
                 entry:  pFileSystem.root.getFile(pCmd.name,
@@ -94,12 +112,14 @@ function file (pCmd) {
                                                  }),
                 reader: new FileReaderSync
             };
-
         }
         catch (e) {
-            if (e.code == FileError.NOT_FOUND_ERR && canWrite(pCmd.mode)
-                && pCmd.act != File.EXISTS) {
+            var NotFoundError = 8;
 
+            if ((e.code == FileError.NOT_FOUND_ERR || e.code == NotFoundError) 
+                && canWrite(pCmd.mode)
+                && pCmd.act != File.EXISTS) {
+                
                 try {
                     if (createDir(pFileSystem.root, directories(sName))) {
                         return file(pCmd);

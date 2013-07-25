@@ -16,7 +16,6 @@
 /// @FILE_LOCAL_THREAD: {data}/js/LocalFile.t.js|src(inc/io/LocalFile.t.js)|data_location({data},DATA)
 /// @FILE_REMOTE_THREAD: {data}/js/RemoteFile.t.js|src(inc/io/RemoteFile.t.js)|data_location({data},DATA)
 
-
 #define LocalFileThreadManager() util.ThreadManager("@FILE_LOCAL_THREAD")
 #define RemoteFileThreadManager() util.ThreadManager("@FILE_REMOTE_THREAD")
 
@@ -65,12 +64,11 @@ module akra.io {
 	export var getRemoteFileThreadManager = (): IThreadManager => pRemoteFileThreadManager;
 
 
-#ifdef DEBUG
-	var TOTAL_BYTES_READED: uint = 0;
-#endif
 
 
 	export class TFile implements IFile {
+		// binaryType: EFileBinaryType = EFileBinaryType.ARRAY_BUFFER;
+
 		protected _iMode: int;
 		protected _pUri: IURI = null;
 		protected _nCursorPosition: uint = 0;
@@ -80,17 +78,23 @@ module akra.io {
 		protected _isLocal: bool = false;
 
 
+
 		inline get path(): string {
-			ASSERT(isDefAndNotNull(this._pFileMeta), "There is no file handle open.");
+			//ASSERT(isDefAndNotNull(this._pFileMeta), "There is no file handle open.");
         	return this._pUri.toString();
 		}
 
 		inline get name(): string {
-			return util.pathinfo(this._pUri.path).basename;
+			return path.info(this._pUri.path).basename;
 		}
 
 		inline get mode(): int {
 			return this._iMode;
+		}
+
+		inline get meta(): IFileMeta {
+			ASSERT(isDefAndNotNull(this._pFileMeta), 'There is no file handle open.');
+			return this._pFileMeta;
 		}
 
 		//set mode(sMode: string);
@@ -118,7 +122,7 @@ module akra.io {
 		}
 
 		inline get byteLength(): uint {
-       	 return this._pFileMeta? this._pFileMeta.size: 0;
+       		return this._pFileMeta? this._pFileMeta.size: 0;
 		}
 
 		constructor (sFilename?: string, sMode?: string, fnCallback: Function = TFile.defaultCallback);
@@ -128,7 +132,7 @@ module akra.io {
 				this._iMode = isString(sMode)? filemode(sMode): sMode;
 			}
 
-			this.setAndValidateUri(util.uri(sFilename));
+			this.setAndValidateUri(path.uri(sFilename));
 
 			if (info.api.transferableObjects) {
 				this._eTransferMode = EFileTransferModes.k_Fast;
@@ -154,7 +158,7 @@ module akra.io {
 
 			 if (arguments.length < 3) {
 		        if (isString(arguments[0])) {
-		            this.setAndValidateUri(util.uri(sFilename));
+		            this.setAndValidateUri(path.uri(sFilename));
 		            fnCallback = arguments[1];
 		        }
 		        else if (isInt(arguments[0])) {
@@ -181,7 +185,7 @@ module akra.io {
 		        (<Function>fnCallback).call(pFile, null, this._pFileMeta);
 		    }
 
-		    this.setAndValidateUri(util.uri(arguments[0]));
+		    this.setAndValidateUri(path.uri(arguments[0]));
 
 		    if (hasMode) {
 		    	this._iMode = (isString(arguments[1]) ? filemode(<string>arguments[1]) : arguments[1]);
@@ -213,10 +217,10 @@ module akra.io {
 			CHECK_IFNOT_OPEN(clear, fnCallback);
 
 			var pCommand: IFileCommand = {
-	                                          act:  EFileActions.k_Clear,
-	                                          name: this.path,
-	                                          mode: this._iMode
-	                                      };
+                act:  EFileActions.k_Clear,
+                name: this.path,
+                mode: this._iMode
+            };
 
 			this.execCommand(pCommand, fnCallback);
 		}
@@ -230,33 +234,28 @@ module akra.io {
 
 		    ASSERT(CAN_READ(this._iMode), "The file is not readable.");
 
-
 		    var pCommand: IFileCommand = {
-		                     act:      EFileActions.k_Read,
-		                     name:     this.path,
-		                     mode:     this._iMode,
-		                     pos:      this._nCursorPosition,
-		                     transfer: this._eTransferMode
+		                    act:      		EFileActions.k_Read,
+		                    name:     		this.path,
+		                    mode:    		this._iMode,
+		                    pos:      		this._nCursorPosition,
+		                    transfer: 		this._eTransferMode
 		                 };
 
-		    var fnCallbackSystem: Function = function (err, pBuffer: ArrayBuffer) {
+		    var fnCallbackSystem: Function = (err, pData: any): any => {
 				if (err) {
 					fnCallback.call(pFile, err);
 					return;
 				}
+
+				if (pData.progress) {
+					console.log(pData);
+					return false;
+				}
+
 				
-		        // if (eTransferMode == EFileTransferModes.k_Slow && IS_BINARY(this._iMode)) {
-		        //     pData = new Uint8Array(pData).buffer;
-		        // }
-
 		        pFile.atEnd();
-
-		        if (IS_BINARY(pFile.mode)) {
-		        	fnCallback.call(pFile, null, pBuffer);
-		        }
-		        else {
-		        	fnCallback.call(pFile, null, util.abtos(pBuffer));	
-		        }
+		        fnCallback.call(pFile, null, pData.data);
 		    };
 
 		    this.execCommand(pCommand, fnCallbackSystem);
@@ -338,11 +337,11 @@ module akra.io {
 		}
 
 		rename(sFilename: string, fnCallback: Function = TFile.defaultCallback): void {
-			var pName: IPathinfo = util.pathinfo(sFilename);
+			var pName: IPathinfo = path.info(sFilename);
 
 		    ASSERT(!pName.dirname, 'only filename can be specified.');
 		    
-		    this.move(util.pathinfo(this._pUri.path).dirname + "/" + pName.basename, fnCallback);
+		    this.move(path.info(this._pUri.path).dirname + "/" + pName.basename, fnCallback);
 		}
 
 		remove(fnCallback: Function = TFile.defaultCallback): void {
@@ -412,25 +411,30 @@ module akra.io {
 		private setAndValidateUri(sFilename: IURI);
 		private setAndValidateUri(sFilename: string);
 		private setAndValidateUri(sFilename: any) {
-			var pUri: IURI = util.uri(sFilename);
+			var pUri: IURI = path.uri(sFilename);
 			var pUriLocal: IURI;
 
-			if (pUri.protocol === "filesystem") {
-		        pUriLocal = util.uri(pUri.path);
-
+			if (pUri.scheme === "filesystem:") {
+		        pUriLocal = path.uri(pUri.path);
+		        // console.log(pUriLocal.toString());
 		        ASSERT(!(pUriLocal.protocol && pUriLocal.host != info.uri.host),
-		               "Поддерживаются только локальные файлы в пределах текущего домена.");
+		               "It supports only local files within the current domain.");
 
 		        var pFolders: string[] = pUriLocal.path.split('/');
+
 
 		        if (pFolders[0] == "" || pFolders[0] == ".") {
 		            pFolders = pFolders.slice(1);
 		        }
 		 
-		        ASSERT(pUri.host === "temporary",
-		               "Поддерживаются только файловые системы типа \"temporary\".");
+		        ASSERT(pFolders[0] === "temporary",
+		               "Supported only \"temporary\" filesystems. " + pUri.toString());
 		        
-		        this._pUri = util.uri(pFolders.join("/"));
+		        //removing "temporary" from path...
+		        pFolders = pFolders.slice(1);
+
+		        this._pUri = path.uri(pFolders.join("/"));
+		        // console.log(sFilename.toString(), "===>", this._pUri.toString());
 		        this._isLocal = true;
 		    }
 		    else {
@@ -455,7 +459,7 @@ module akra.io {
 		}
 
 		private execCommand(pCommand: IFileCommand, fnCallback: Function, pTransferables?: any[]): void {
-			TFile.execCommand(this, this.isLocal(), pCommand, fnCallback);
+			TFile.execCommand(this, this.isLocal(), pCommand, fnCallback, pTransferables);
 		}
 
 		static defaultCallback: Function = function (err) {
@@ -469,33 +473,29 @@ module akra.io {
 
 			// var pFile: IFile = this;
 			var pManager: IThreadManager = isLocal? getLocalFileThreadManager(): getRemoteFileThreadManager();
-			var pThread: IThread = pManager.occupyThread();
- 
-			pThread.onmessage = function (e) {
-				pManager.releaseThread(pThread);
-				pThread.onmessage = null;
-#ifdef DEBUG
-				if (pCommand.act === EFileActions.k_Read) {
-					TOTAL_BYTES_READED += e.data.byteLength;
-					LOG("TOTAL BYTES READED: ", (TOTAL_BYTES_READED / (1024 * 1024)).toFixed(2), "mb");
+			pManager.waitForThread((pThread: IThread) => {
+				pThread.onmessage = function (e) {
+					if (fnCallback.call(pFile, null, e.data) === false) {
+						return;
+					}
+
+					pThread.onmessage = null;
+					pManager.releaseThread(pThread);
 				}
-#endif
-				fnCallback.call(pFile, null, e.data);
-				// (<any>window["gc"])();
-			}
 
-			pThread.onerror = function (e) {
-				pManager.releaseThread(pThread);
-				pThread.onmessage = null;
-				fnCallback.call(pFile, e);
-			}
+				pThread.onerror = function (e) {
+					pThread.onmessage = null;
+					fnCallback.call(pFile, e);
+					pManager.releaseThread(pThread);
+				}
 
-			if (isDef(pTransferables)) {
-				pThread.send(pCommand, pTransferables);
-			}
-			else {
-				pThread.send(pCommand);
-			}
+				if (isDef(pTransferables)) {
+					pThread.send(pCommand, pTransferables);
+				}
+				else {
+					pThread.send(pCommand);
+				}
+			});
 		}
 
 	}

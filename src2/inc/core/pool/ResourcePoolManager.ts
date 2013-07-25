@@ -389,7 +389,7 @@ module akra.core.pool {
         }
 
         inline loadModel(sFilename: string, pOptions: any = null): IModel {
-            if (util.pathinfo(sFilename).ext.toLowerCase() === "dae") {
+            if (path.info(sFilename).ext.toLowerCase() === "dae") {
                 var pCollada: ICollada = <ICollada>this.colladaPool.findResource(sFilename);
 
                 if (isNull(pCollada)) {

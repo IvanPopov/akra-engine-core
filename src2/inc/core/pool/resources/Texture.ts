@@ -218,6 +218,7 @@ module akra.core.pool.resources {
             }
             
             var pImage: IImg = this.getManager().loadImage(sFilename);
+            // console.log("Texture::loadResource(" + sFilename + ")", pImage.isResourceLoaded());
             
             if (pImage.isResourceLoaded()) {
                 return this.loadImage(pImage);
@@ -229,6 +230,7 @@ module akra.core.pool.resources {
 
         _onImageLoad(pImage: IImg): void {
             this.disconnect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
+            // console.log("image loaded > ", pImage.findResourceName());
             this.loadImage(pImage);
             // debug_print("texture/image loaded: ", pImage.findResourceName());
         }

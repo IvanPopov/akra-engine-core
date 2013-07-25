@@ -151,6 +151,8 @@ module akra.io {
 				matrix: []
 			};
 
+			pEntry.matrix['$type'] = "Float32Array";
+
 			for (var i = 0; i < pFrame.matrix.data.length; ++ i) {
 				pEntry.matrix.push(pFrame.matrix.data[i]);
 			}

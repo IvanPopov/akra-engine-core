@@ -4,9 +4,18 @@
 #include "IEventProvider.ts"
 
 module akra {
+    export enum EDependenceStatuses {
+        NOT_LOADED,
+        LOADING,
+        CHECKING,
+        UNPACKING,
+        LOADED
+    }
+
     export interface IDep {
         path: string;
         name?: string;
+        status?: EDependenceStatuses;
     }
 
 	export interface IDependens {

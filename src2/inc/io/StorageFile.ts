@@ -15,6 +15,8 @@
 module akra.io {
 	export class StorageFile extends TFile implements IFile {
 		
+		// binaryType: EFileBinaryType = EFileBinaryType.ARRAY_BUFFER;
+
 		constructor (sFilename?: string, sMode?: string, fnCallback: Function = TFile.defaultCallback);
 		constructor (sFilename?: string, iMode?: int, fnCallback: Function = TFile.defaultCallback);
 		constructor (sFilename?: string, sMode?: any, fnCallback: Function = TFile.defaultCallback) {

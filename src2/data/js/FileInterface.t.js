@@ -17,6 +17,18 @@ function isTrunc (iMode) {
     return ((iMode & (1 << 4)) != 0);
 }
 
+function isText (iMode) {
+    return ((iMode & (1 << 6)) != 0);
+}
+
+function isJSON (iMode) {
+    return ((iMode & (1 << 7)) != 0);
+}
+
+function isURL (iMode) {
+    return ((iMode & (1 << 8)) != 0);
+}
+
 function directories (sFilename) {
     var pParts = sFilename.replace('\\', '/').split('/');
     pParts.pop();
@@ -54,8 +66,7 @@ onmessage = function (pEvent) {
             return;
         }
         else {
-            throw new Error('cannot get file: ' + pCommand.name +
-                                ' (' + pCommand.act + ')');
+            throw new Error('cannot get file: ' + pCommand.name + ' (' + pCommand.act + ')');
         }
     }
 
@@ -65,31 +76,26 @@ onmessage = function (pEvent) {
 
     switch (pCommand.act) {
         case File.OPEN:
-            if (isTrunc(pFile.mode) && pFile.entry.file().size) {
-                clear(pFile);
-            }
             open(pFile);
             postMessage(meta(pFile));
             break;
-        case File.READ:
-            
-            //var pData: ArrayBuffer; function read(): ArrayBuffer;
-            var pData = read(pFile);
-            var nPos = pFile.pos;
 
-            if (nPos > 0) {
-                pData = pData.slice(nPos);
-            }
-            
-            if (pCommand.transfer === TRANSFER.FAST) {
-                postMessage(pData, [pData]);
+        case File.READ:
+            var pData = read(pFile);
+
+            if (pCommand.transfer === TRANSFER.FAST && pData instanceof ArrayBuffer) {
+                try {
+                    postMessage({data: pData, progress: false}, [pData]);
+                }
+                catch (e) {
+                    throw e;
+                }
             }
             else {
-                postMessage(pData)
+                postMessage({data: pData, progress: false})
             }
 
             pData = null;
-            
             break;
 
         case File.WRITE:

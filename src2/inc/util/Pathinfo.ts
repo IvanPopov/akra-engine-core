@@ -3,8 +3,34 @@
 
 #include "IPathinfo.ts"
 
-module akra.util {
-	export class Pathinfo implements IPathinfo {
+module akra.path {
+	function normalizeArray(parts, allowAboveRoot) {
+		// if the path tries to go above the root, `up` ends up > 0
+		var up = 0;
+		for (var i = parts.length - 1; i >= 0; i--) {
+			var last = parts[i];
+			if (last === '.') {
+				parts.splice(i, 1);
+			} else if (last === "..") {
+				parts.splice(i, 1);
+				up++;
+			} else if (up) {
+				parts.splice(i, 1);
+				up--;
+			}
+		}
+
+		// if the path is allowed to go above the root, restore leading ..s
+		if (allowAboveRoot) {
+			for (; up--; up) {
+				parts.unshift("..");
+			}
+		}
+
+		return parts;
+	}
+
+	export class Info implements IPathinfo {
 		private _sDirname: string = null;
 		private _sExtension: string = null;
 		private _sFilename: string = null;
@@ -58,14 +84,17 @@ module akra.util {
 
 		        this._sDirname = pParts.join('/');
 		    }
-		    else if (sPath instanceof Pathinfo) {
+		    else if (sPath instanceof path.Info) {
 		        this._sDirname = sPath.dirname;
 		        this._sFilename = sPath.filename;
 		        this._sExtension = sPath.ext;
 		    }
+		    else if (isNull(sPath)) {
+		    	return null;
+		    }
 		    else {
 		        //critical_error
-		        ERROR("Unexpected data type was used.");
+		        ERROR("Unexpected data type was used.", sPath);
 		    }
 		}
 
@@ -75,22 +104,36 @@ module akra.util {
 		toString(): string {
 			return (this._sDirname ? this._sDirname + "/" : "") + (this.basename);
 		}
+	}
 
+	export var info: (info?) => IPathinfo;
+
+	export function normalize(sPath: string): string {
+		var info: IPathinfo = path.info(sPath);
+		var isAbsolute: bool = info.isAbsolute();
+		var tail: string = info.dirname;
+		var trailingSlash: bool = /[\\\/]$/.test(tail);
+
+		tail = normalizeArray(tail.split(/[\\\/]+/).filter(function(p) {
+	      return !!p;
+	    }), !isAbsolute).join("/");
+
+	    if (tail && trailingSlash) {
+	      tail += "/";
+	    }
+
+	    info.dirname = (isAbsolute ? "/" : "") + tail;
+
+	    return info.toString();
 	}
 
 	// export var pathinfo: (sPath: string) => IPathinfo;
-	// export var pathinfo: (pPath: IPathinfo) => IPathinfo;
-	export var pathinfo: (pPath?) => IPathinfo;
+	// export var pathinfo: (info: IPathinfo) => IPathinfo;
 
-	pathinfo = function (pPath?): IPathinfo {
-		return new Pathinfo(pPath);
+	info = function (info?): IPathinfo {
+		return new Info(info);
 	}
-	
 }
 
-module akra {
-	export var Pathinfo = util.Pathinfo;
-	export var pathinfo = util.pathinfo;
-}
 
 #endif

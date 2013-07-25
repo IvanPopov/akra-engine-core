@@ -32,18 +32,44 @@ function base64_encode (data) {
     return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
 }
 
+// var EFileBinaryType = {
+//     ARRAY_BUFFER: 0x01,
+//     BLOB        : 0x02,
+//     OBJECT_URL  : 0x03  
+// }
+
+
 function read (pFile) {
     try {
         var pXhr = new XMLHttpRequest();
         var pData = null;
 
         pXhr.open('GET', pFile.name, false);
+        pXhr.onprogress = function (e) {
+            postMessage({
+                data: null, 
+                progress: true,
+                loaded: e.loaded,
+                total: e.total
+            });
+        }
 
         if (isBinary(pFile.mode)) {
             pXhr.overrideMimeType('application/octet-stream');
+            pXhr.responseType = 'arraybuffer';
+        }
+        else if (isJSON(pFile.mode) && pFile.pos === 0) {
+            pXhr.overrideMimeType('application/json');
+            pXhr.responseType = 'json';
+        }
+        else if (isURL(pFile.mode)) {
+            pXhr.responseType = 'blob';
+        }
+        else {
+            pXhr.responseType = 'text';
         }
 
-        pXhr.responseType = 'arraybuffer';
+        
         pXhr.send();
 
         if (parseInt(pXhr.status) != 200 && parseInt(pXhr.status) != 0) {
@@ -52,17 +78,17 @@ function read (pFile) {
 
         pData = pXhr.response;
         
-        // if (isBinary(pFile.mode)) {
-        //     var nExpectedLength = Number(pXhr.getResponseHeader('Content-Length'));
-        //     var nRealLength = pData.byteLength;
+        if (pFile.pos > 0) {
+            pData = pData.slice(pFile.pos);
 
-        //     //некоторые браузеры, такие как Opera 12, возвращают arraybuffer
-        //     //неверной длины, если данные были получены с mime-type'ом не application/octet-stream
-        //     if (nRealLength != nExpectedLength) {
-        //         throw new Error('Expected data length is ' + nExpectedLength + ', but getted data length is '
-        //                             + nRealLength);
-        //     }
-        // }
+            if (isJSON(pFile.mode)) {
+                pData = JSON.parse(pData);
+            }
+        }
+
+        if (isURL(pFile.mode)) {
+            pData = URL.createObjectURL(pData);
+        }
 
         pXhr = null;
 
@@ -84,6 +110,9 @@ function remove (pFile) {
      return false;*/
 }
 function open (pFile) {
+    // if (isTrunc(pFile.mode) && pFile.entry.file().size) {
+    //             clear(pFile);
+    //         }
 }
 
 function queryString (pObj, sPrefix) {
@@ -125,6 +154,7 @@ function str2buf (s) {
 function write (pFile, pData, sContentType) {
     var pQuery = {}
     pQuery['action'] = 'write';
+    
     if (typeof pData == 'object') {
         pData = buf2str(pData);
     }
@@ -160,7 +190,12 @@ function meta (pFile) {
     pXhr.send(null);
     
     if (pXhr.status == 200) {
-        return {size: parseInt(pXhr.getResponseHeader('Content-Length'))};
+        return {
+            size: parseInt(pXhr.getResponseHeader('Content-Length')),
+            lastModifiedDate: pXhr.getResponseHeader('Last-Modified') || null,
+
+            eTag: pXhr.getResponseHeader('ETag') || null,
+        };
     }
 
     return {};

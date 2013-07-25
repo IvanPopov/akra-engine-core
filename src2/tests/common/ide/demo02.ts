@@ -30,36 +30,49 @@ module akra {
 	});
 
 	document.body.appendChild($cv[0]);
+	$cv.fadeIn(400);
 
 	var pEngine: IEngine = createEngine({
 		renderer: {preserveDrawingBuffer: true},
+		// deps: {
+		// 	files: [
+		// 		{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
+		// 		{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
+		// 		// {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
+		// 	],
+		// 	deps: {
+		// 		files: [
+		// 			{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
+		// 			{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
+		// 			{path: "models/tube/tube.dae", name: "TUBE"},
+		// 			{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
+		// 			{path: "models/hero/movie.dae", name: "HERO_MODEL"},
+		// 			{path: "models/hero/film.DAE", name: "HERO_FILM"},
+		// 			{path: "models/hero/film.json", name: "HERO_FILM"}
+		// 		]
+		// 	}
+		// },
 		deps: {
-			files: [
-				{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
-				{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
-				// {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
-			],
-			deps: {
-				files: [
-					{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
-					{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
-					{path: "models/tube/tube.dae", name: "TUBE"},
-					{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
-					{path: "models/hero/movie.dae", name: "HERO_MODEL"},
-					{path: "models/hero/film.DAE", name: "HERO_FILM"}
-				]
-			}
+			root: "../",
+			files: [{path: "demo02.ara"}]
 		},
 		loader: {
-			before: (pManager: IDepsManager, pInfo: number[]): void => {
+			info: (pManager: IDepsManager, pInfo: number[]): void => {
 				pProgress.total = pInfo;
-
-				$cv.fadeIn(400);
 			},
-			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number): void => {
+			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number, pDep: IDependens, pFile: IDep, pData: any): void => {
 				pProgress.element = nLoaded;
 				pProgress.depth = iDepth;
 				pProgress.draw();
+
+				if (!isNull(pFile)) {
+					console.log(pFile.name || null);
+				}
+				if (!isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
+					var pImporter = new io.Importer(pEngine);
+	    			pImporter.import(<string>pData);
+	    			pFilmController = pImporter.getController();
+				}
 			},
 			loaded: (pManager: IDepsManager): void => {
 				$cv.fadeOut(1000, () => {
@@ -84,6 +97,7 @@ module akra {
 	var pKeymap: controls.KeyMap		= <controls.KeyMap>controls.createKeymap();
 	var pTerrain: ITerrain 				= null;
 	var pSky 							= null;
+	var pFilmController: IAnimationController = null;
 	// var pDepsManager: IDepsManager 		= pEngine.getDepsManager()
 
 
@@ -435,7 +449,7 @@ module akra {
 
 	function createSky(): void {
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
-		pSky.setTime(47.0);
+		pSky.setTime(14.0);
 	    pSky.skyDome.attachToParent(pScene.getRootNode());
 	    self.sky = pSky;
 	}
@@ -537,15 +551,29 @@ module akra {
 
 		pScene.bind("beforeUpdate", update);
 
-		var pMovie: ICollada = <ICollada>pRmgr.colladaPool.findResource("HERO_FILM");
-		var pAnim: IAnimation = pMovie.extractAnimation(0);
-		var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-		var pController: IAnimationController = pEngine.createAnimationController("movie");
-		
-		pController.addAnimation(pContainer);
-		pController.stop();
+		var pController: IAnimationController = null;
 
-		pHeroModel.addController(pController);
+		if (isNull(pFilmController)) {
+			var pMovie: ICollada = <ICollada>pRmgr.colladaPool.findResource("HERO_FILM");
+
+			if (pMovie) {
+				var pAnim: IAnimation = pMovie.extractAnimation(0);
+				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+				
+				pController = pEngine.createAnimationController("movie");
+				
+				pController.addAnimation(pContainer);
+				pController.stop();
+			}
+
+		}
+		else {
+			pController = pFilmController;
+			pController.stop();
+		}
+
+		if (pController)
+			pHeroModel.addController(pController);
 
 		self.hero.movie = pController;
 		
@@ -568,3 +596,6 @@ module akra {
 
 	pEngine.bind("depsLoaded", main);	
 }
+
+// var pImporter = new io.Importer(this.getEngine());
+	    	// pImporter.import(content);

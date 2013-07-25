@@ -91,7 +91,11 @@ module akra.io {
 		        }
 		    }
 
-		    var sType: string = typeof pObj;
+		    var sType: string = typeOf(pObj);
+
+		    if (sType === "array" && isDef(pObj.$type)) {
+		    	sType = pObj.$type;
+		    }
 
 		    return sType[0].toUpperCase() + sType.substr(1);
 		}

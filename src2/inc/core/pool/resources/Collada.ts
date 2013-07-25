@@ -1324,13 +1324,15 @@ module akra.core.pool.resources {
                 sPath = stringData(pXMLInitData);
 
                 //modify path to the textures relative to a given file
-                if (!isNull(sFilename)) {
-                    if (!util.pathinfo(sPath).isAbsolute()) {
-                        sPath = util.pathinfo(sFilename).dirname + "/" + sPath;
-                    }
-                }
-
-                pImage.path = sPath;
+                // if (!isNull(sFilename)) {
+                //     if (!path.info(sPath).isAbsolute()) {
+                //         sPath = path.info(sFilename).dirname + "/" + sPath;
+                //     }
+                // }
+                // console.log("collada deps image: ", path.normalize(sPath));
+                // pImage.path = path.normalize(sPath);
+                pImage.path = path.resolve(sPath, sFilename);
+                // console.log("collada deps image >>> ", pImage.path);
             }
             else if (isDefAndNotNull(pXMLData = firstChild(pXML, "data"))) {
                 ERROR("image loading from <data /> tag unsupported yet.");
@@ -2958,7 +2960,7 @@ module akra.core.pool.resources {
         }
 
         public inline getBasename(): string {
-            return util.pathinfo(this._pOptions.name || this._sFilename || "unknown").basename;
+            return path.info(this._pOptions.name || this._sFilename || "unknown").basename;
         }
 
         public inline getFilename(): string {
@@ -3060,7 +3062,7 @@ module akra.core.pool.resources {
                     pModel.setResourceFlag(EResourceItemEvents.LOADED, true)
                     // LOG(pModel.findResourceName(), pModel.isResourceLoaded());
                     
-                    LOG(pModel.findResourceName(), "[snced to: ", pModel.isSyncedTo(EResourceItemEvents.LOADED), "]");
+                    // LOG(pModel.findResourceName(), "[synced to: ", pModel.isSyncedTo(EResourceItemEvents.LOADED), "]");
 
                     if (pModel.isSyncedTo(EResourceItemEvents.LOADED)) {
                         pModel.setChangesNotifyRoutine((eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: bool) => {

@@ -63,7 +63,7 @@ module akra.ui {
 				drop: (file: File, content, format, e: DragEvent): void => {
 					pSkyboxLb.el.removeClass("file-drag-over");
 
-					var pName: IPathinfo = pathinfo(file.name);
+					var pName: IPathinfo = path.info(file.name);
 
 				    pSkyboxLb.text = pName.toString();
  					
@@ -90,7 +90,7 @@ module akra.ui {
 						return false;
 					}
 
-					var pName: IPathinfo = pathinfo(file.name);
+					var pName: IPathinfo = path.info(file.name);
 
 				    if (pName.ext.toUpperCase() !== "DDS") {
 				    	alert("unsupported format used: " + file.name);

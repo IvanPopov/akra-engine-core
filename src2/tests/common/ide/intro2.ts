@@ -1,4 +1,4 @@
-///<reference path="../../../bin/DEBUG/akra.ts"/>
+///<reference path="../../../bin/RELEASE/akra.ts"/>
 ///<reference path="../../../bin/DEBUG/Progress.ts"/>
 
 
@@ -23,12 +23,16 @@ module akra {
 
 		pCanvas.style.position = "absolute";
 	    pCanvas.style.left = "50%";
-	    pCanvas.style.top = "50%";
+	    pCanvas.style.top = "70%";
 	    pCanvas.style.zIndex = "100000";
+	    // pCanvas.style.backgroundColor = "rgba(70, 94, 118, .8)";
 	    // pCanvas.style.display = "none";
 
 	    pCanvas.style.marginTop = (-pProgress.height / 2) + "px";
 	    pCanvas.style.marginLeft = (-pProgress.width / 2) + "px";
+
+	    document.body.appendChild(pProgress.canvas);
+		pProgress.drawText("Initializing demo");
 
 	    return pProgress;
 	}
@@ -36,48 +40,57 @@ module akra {
 	var pProgress: IProgress = createProgress();
 	var bMegaTextureLoaded: bool = false;
 
+
 	var pEngine: IEngine = createEngine({
 		renderer: {preserveDrawingBuffer: true, alpha: false},
 		deps: {
-			files: [
-				{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
-				{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
-				{path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
-			],
-			deps: {
-				files: [
-					{path: "models/hero/movie.DAE", name: "HERO_MODEL"},
-				],
-				deps: {
-					files: [
-						{path: "models/hero/film.DAE", name: "HERO_FILM"}
-					],
-					deps: {
-						files: [
-							{path: "models/barrel/barrel_and_support.DAE", name: "BARREL"},
-							{path: "models/box/closed_box.DAE", name: "CLOSED_BOX"},
-							{path: "models/tube/tube.DAE", name: "TUBE"},
-							{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"}
-						]
-					}
-				}
-			}
+			root: "../",
+			files: [{path: "demo02.ara", name: "DEMO_DATA_ARCHIVE"}]
 		},
 		loader: {
-			before: (pManager: IDepsManager, pInfo: number[]): void => {
+			info: (pManager: IDepsManager, pInfo: number[]): void => {
 				pProgress.total = pInfo;
-
-				document.body.appendChild(pProgress.canvas);
 			},
-			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number): void => {
+			preload: (pManager: IDepsManager, pDep: IDependens, pFile: IDep): void => {
+
+				if(pFile.name === "DEMO_DATA_ARCHIVE"){
+					pProgress.drawText("Loading demo data");
+				}
+				else if(pFile.name === ".ENGINE_DATA"){
+					pProgress.drawText("Loading engine data");
+				}
+				else {
+					pProgress.drawText("Loading resource " + path.info(path.uri(pFile.path).path).basename);
+				}
+				
+			},
+			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number, pDep: IDependens, pFile: IDep, pData: any): void => {
 				pProgress.element = nLoaded;
 				pProgress.depth = iDepth;
+				
 				pProgress.draw();
+				if (!isNull(pFile)) {
+					if(pFile.name === "DEMO_DATA_ARCHIVE"){
+						pProgress.drawText("Unpacking demo data");
+					}
+					else if(pFile.name === ".ENGINE_DATA"){
+						pProgress.drawText("Unpacking engine data");
+					}
+				}
+
+				if (!isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
+					// console.log(pData);
+					var pImporter = new io.Importer(pEngine);
+	    			pImporter.loadDocument(<IDocument>pData);
+	    			pFilmController = pImporter.getController();
+	    			// console.log(pFilmController);
+				}
 			},
 			loaded: (pManager: IDepsManager): void => {
 				var iCounter = 0
 				var iIntervalId = setInterval(() => {
 					if(bMegaTextureLoaded){
+						pProgress.cancel();
 						document.body.removeChild(pProgress.canvas);
 						clearInterval(iIntervalId);
 					}
@@ -113,6 +126,7 @@ module akra {
 	var pTerrain: ITerrain 				= null;
 	var pSky 							= null;
 	var pParentElement: HTMLElement 	= null;
+	var pFilmController: IAnimationController = null;
 	// var pDepsManager: IDepsManager 		= pEngine.getDepsManager()
 	
 
@@ -168,6 +182,7 @@ module akra {
 	loadAssets();
 
 	function loaded(): void {
+		console.log("loaded!!");
 		nextCamera();
 		nextCamera();
 		setTimeout(() => {
@@ -184,7 +199,7 @@ module akra {
     	if (self.activeCamera === self.cameras.length) {
     		self.activeCamera = 0;
     	}
-
+    	console.log("switched to camera", self.activeCamera);
     	var pCam: ICamera = self.cameras[self.activeCamera];
     	
     	pViewport.setCamera(pCam);
@@ -206,8 +221,10 @@ module akra {
 			self.cameraLight.enabled = false;
 			
 			setTimeout(() => {
-				self.voice.currentTime = 0;
-				self.voice.play();
+				if (self.voice) {
+					self.voice.currentTime = 0;
+					self.voice.play();
+				}
 			}, 2500);
 
 			setTimeout(() => {
@@ -390,6 +407,7 @@ module akra {
 
 	function createTerrain(): void {
 		pTerrain = pScene.createTerrainROAM("Terrain");
+		pTerrain.megaTexture.manualMinLevelLoad = true;
 
 		var pTerrainMap: IImageMap = <IImageMap>{};
 
@@ -405,23 +423,30 @@ module akra {
 
 		self.terrain = pTerrain;
 
-		pTerrain.megaTexture.bind("minLevelLoaded", () => {
-			bMegaTextureLoaded = true;
-			loaded();
-		});
+		// pTerrain.megaTexture.bind("minLevelLoaded", () => {
+		// 	if (!bMegaTextureLoaded) {
+		// 		bMegaTextureLoaded = true;
+		// 		loaded()
+		// 	}
+		// });
+		
+		bMegaTextureLoaded = true;
+		pTerrain.megaTexture.setMinLevelTexture(<IImg>pRmgr.imagePool.findResource("MEGATEXTURE_MIN_LEVEL"));
 	}
 
 
 	function createSky(): void {
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);
-		pSky.setTime(13.0);
+		pSky.setTime(14.0);
 	    pSky.skyDome.attachToParent(pScene.getRootNode());
 	    self.sky = pSky;
 
+	    pSky._nHorinLevel = 15;
+
 	    var i = setInterval(() => {
-	    	pSky.setTime(pSky.time + 0.001); 
+	    	pSky.setTime(pSky.time + 0.003); 
 	    	// if (math.abs(pSky.time) == 30.0) clearInterval(i);
-	    }, 100);
+	    }, 500);
 	}
 
 	function createSkyBox(): void {
@@ -528,15 +553,35 @@ module akra {
 
 		pScene.bind("beforeUpdate", update);
 
-		var pMovie: ICollada = <ICollada>pRmgr.colladaPool.findResource("HERO_FILM");
-		var pAnim: IAnimation = pMovie.extractAnimation(0);
-		var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
-		var pController: IAnimationController = pEngine.createAnimationController("movie");
-		
-		pController.addAnimation(pContainer);
-		pController.stop();
+		var pController: IAnimationController = null;
 
-		pHeroModel.addController(pController);
+		if (isNull(pFilmController)) {
+			var pMovie: ICollada = <ICollada>pRmgr.colladaPool.findResource("HERO_FILM");
+
+			if (pMovie) {
+				var pAnim: IAnimation = pMovie.extractAnimation(0);
+				var pContainer: IAnimationContainer = animation.createContainer(pAnim, "movie");
+				
+				pController = pEngine.createAnimationController("movie");
+				
+				pController.addAnimation(pContainer);
+				pController.stop();
+			}
+
+		}
+		else {
+			pController = pFilmController;
+			pController.stop();
+		}
+
+		if (pController) {
+			// (<IAnimationContainer>pController.findAnimation("movie")).rightInfinity(false);
+			// pController.findAnimation("movie").bind("stoped", () => {
+			// 	alert("STOP!");
+			// });
+			pHeroModel.addController(pController);
+		}
+
 
 		self.hero.movie = pController;
 		
@@ -553,6 +598,7 @@ module akra {
 		createSky();
 		createSkyBox();
 		
+		loaded();
 		// pEngine.exec();
 	}
 

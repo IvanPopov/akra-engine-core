@@ -9,6 +9,7 @@
 #include "animation/Blend.ts"
 
 #include "io/Packer.ts"
+#include "io/UnPacker.ts"
 #include "io/save.ts"
 
 #include "util/util.ts"
@@ -43,11 +44,17 @@ module akra.io {
 		import(pData: ArrayBuffer, eFormat?: EDocumentFormat): Importer;
 		import(pData: Blob, eFormat?: EDocumentFormat): Importer;
 		import(pData: any, eFormat: EDocumentFormat = EDocumentFormat.JSON): Importer {
-			if (eFormat !== EDocumentFormat.JSON) {
+			if (eFormat !== EDocumentFormat.JSON && eFormat !== EDocumentFormat.BINARY_JSON) {
 				CRITICAL("TODO: Add support for all formats");
 			}
+			
+			if (eFormat === EDocumentFormat.JSON) {
+				this.loadDocument(this.importFromJSON(pData));
+			}
+			else if (eFormat === EDocumentFormat.BINARY_JSON) {
+				this.loadDocument(this.importFromBinaryJSON(<ArrayBuffer>pData));
+			}
 
-			this.loadDocument(this.importFromJSON(pData));
 			return this;
 		}
 
@@ -55,6 +62,11 @@ module akra.io {
 			this._pDocument = pDocument;
 			this.updateLibrary();
 			return this;
+		}
+
+
+		protected importFromBinaryJSON(pData: ArrayBuffer): IDocument {
+			return io.undump(pData);
 		}
 
 		protected importFromJSON(pData): IDocument {
@@ -73,7 +85,7 @@ module akra.io {
 				return <IDocument>pData;
 			}
 
-			return <IDocument>util.parseJSON(sData);
+			return JSON.parse(sData);/*<IDocument>util.parseJSON(sData);*/
 		}
 
 		protected updateLibrary(): void {

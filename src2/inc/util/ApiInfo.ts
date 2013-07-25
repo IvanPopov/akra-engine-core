@@ -4,6 +4,7 @@
 #include "IApiInfo.ts"
 #include "Singleton.ts"
 #include "webgl/WebGL.ts"
+#include "zip.d.ts"
 
 module akra.util {
 	export class ApiInfo extends Singleton implements IApiInfo {
@@ -16,6 +17,7 @@ module akra.util {
 		private bLocalStorage: bool = false;
 		private bWebSocket: bool = false;
 		private bGamepad: bool = false;
+		private bZip: bool = false;
 
 		inline get webGL(): bool {
 			return webgl.isEnabled();
@@ -57,6 +59,10 @@ module akra.util {
 			return this.bGamepad;
 		}
 
+		inline get zip(): bool {
+			return this.bZip;
+		}
+
 		constructor () {
 			super();
 
@@ -69,6 +75,7 @@ module akra.util {
 			this.bLocalStorage = isDef((<any>window).localStorage);
 			this.bWebSocket = isDef((<any>window).WebSocket);
 			this.bGamepad = !! (<any>navigator).webkitGetGamepads || !! (<any>navigator).webkitGamepads || (navigator.userAgent.indexOf('Firefox/') != -1);
+			this.bZip = isDefAndNotNull(zip);
 		}	
 
 		private chechTransferableObjects(): bool {

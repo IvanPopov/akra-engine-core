@@ -28,7 +28,7 @@ module akra.ui.animation {
 		drop(e, comp, info): void {
 			super.drop(e, comp, info);
 				
-			if (isComponent(comp, EUIComponents.COLLADA_ANIMATION)) {
+		if (isComponent(comp, EUIComponents.COLLADA_ANIMATION)) {
 				var pColladaAnimation: any = comp;
 				var pAnimation = pColladaAnimation.collada.extractAnimation(pColladaAnimation.index);
 				// this.addAnimation(pAnimation);
@@ -47,7 +47,7 @@ module akra.ui.animation {
 					
 					
 
-					var pName: IPathinfo = pathinfo(file.name);
+					var pName: IPathinfo = path.info(file.name);
 					var sExt: string = pName.ext.toUpperCase();
 
 				    if (sExt == "DAE" ) {

@@ -160,7 +160,7 @@ module akra {
 		{
 			if(!isDefAndNotNull(this._pInstance))
 			{
-				LOG("DDS codec registering ...");
+				debug_print("DDS codec registering ...");
 				this._pInstance=new DDSCodec();
 				Codec.registerCodec(this._pInstance);
 			}

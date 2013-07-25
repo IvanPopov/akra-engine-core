@@ -74,6 +74,8 @@ module akra.terrain {
 		private _pLoadStatusUniforms: uint[] = null;
 		private _pTexcoordOffsetUniforms: IVec2[] = null;
 
+		private _bManualMinLevelLoad: bool = false;
+
 	    constructor(pEngine: IEngine) {
 	    	this._pEngine = pEngine;
 	    }
@@ -159,19 +161,28 @@ module akra.terrain {
 
     	    this._pRPC = net.createRpc();
 
-    	    this.connect(this._pRPC, SIGNAL(joined), SLOT(loadMinTextureLevel), EEventTypes.BROADCAST);
-    	    this.connect(this._pRPC, SIGNAL(error), SLOT(rpcErrorOccured), EEventTypes.BROADCAST);
+    	    if(!this._bManualMinLevelLoad){
+    	    	this.connect(this._pRPC, SIGNAL(joined), SLOT(loadMinTextureLevel), EEventTypes.BROADCAST);
+    	    	this.connect(this._pRPC, SIGNAL(error), SLOT(rpcErrorOccured), EEventTypes.BROADCAST);
+    		}
 
     	    this._pRPC.join("ws://23.21.68.208:6112");
+    	    // this._pRPC.join("ws://localhost:6112");
     	    
     	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 60000);
     	    this._pRPC.setProcedureOption("getMegaTexture", "priority", 1);
 
     	    this._pRPC.setProcedureOption("loadMegaTexture", "lifeTime", 60000);
     	    this._pRPC.setProcedureOption("loadMegaTexture", "priority", 1);
-
-    	    
 	    }
+
+		inline set manualMinLevelLoad(bManual: bool) {
+			this._bManualMinLevelLoad = bManual;
+		}
+
+		inline get manualMinLevelLoad(): bool {
+			return this._bManualMinLevelLoad;
+		}
 
 	    private _bError: bool = false;
 	    private _tLastTime: float = 0;
@@ -181,11 +192,11 @@ module akra.terrain {
 			}
 
 			if(!this._pXY[0].isLoaded){
-				var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+				// var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
 
-				if(tCurrentTime - this._pSectorLoadInfo[0][0] > 90000){
-					this.loadMinTextureLevel();
-				}
+				// if(tCurrentTime - this._pSectorLoadInfo[0][0] > 90000){
+				// 	this.loadMinTextureLevel();
+				// }
 
 				return;
 			}
@@ -406,6 +417,14 @@ module akra.terrain {
 			return this._v2iTextureLevelSize.y << (this._iMinLevel + iLevel);
 		}
 
+		setMinLevelTexture(pImg: IImg): void {
+			this._pTextures[0].destroyResource();
+			this._pTextures[0].loadImage(pImg);
+			this._pXY[0].isLoaded = true;
+
+			this.minLevelLoaded();
+		}
+
 		protected checkTextureSizeSettings(): bool {
 			var v2iCountTexMin: IVec2 = vec2();
 			var v2iCountTexMax: IVec2 = vec2();
@@ -462,16 +481,15 @@ module akra.terrain {
 
 
 		private _iTryCount: uint = 0;
-
 		protected loadMinTextureLevel(): void {
 
 			var me: MegaTexture = this;
-    		var sExt: string = "jpg";
+    		var sExt: string = "dds";
 
 			this._pSectorLoadInfo[0][0] = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
     		this._iTryCount++;
 
-    		if(this._iTryCount > 3){
+    		if(this._iTryCount > 5){
     			CRITICAL("Server for MegaTexture not response. Wait time out exceeded. Report us please.");
     		}
 
@@ -504,6 +522,7 @@ module akra.terrain {
 						pTempImg.destroyResource();
 
 						me.disconnect(me._pRPC, SIGNAL(joined), SLOT(loadMinTextureLevel), EEventTypes.BROADCAST);
+						me.disconnect(me._pRPC, SIGNAL(error), SLOT(rpcErrorOccured), EEventTypes.BROADCAST);
 
 						me.minLevelLoaded();
 		            });
