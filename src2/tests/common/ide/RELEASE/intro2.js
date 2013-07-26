@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Jul 26 2013 13:51:17 GMT+0400 (Московское время (лето))
+ * assembled at: Fri Jul 26 2013 14:49:50 GMT+0400 (Московское время (лето))
  * directory: tests/common/ide/RELEASE/
  * file: tests/common/ide/intro2.ts
  * name: intro2
