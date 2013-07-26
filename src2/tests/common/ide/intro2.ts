@@ -1,4 +1,4 @@
-///<reference path="../../../bin/RELEASE/akra.ts"/>
+///<reference path="../../../bin/DEBUG/akra.ts"/>
 ///<reference path="../../../bin/DEBUG/Progress.ts"/>
 
 
@@ -44,47 +44,54 @@ module akra {
 	var pEngine: IEngine = createEngine({
 		renderer: {preserveDrawingBuffer: true, alpha: false},
 		deps: {
-			root: "../",
+			root: /*"http://odserve.org/demo/preview/",*/"../",
 			files: [{path: "demo02.ara", name: "DEMO_DATA_ARCHIVE"}]
 		},
 		loader: {
-			info: (pManager: IDepsManager, pInfo: number[]): void => {
-				pProgress.total = pInfo;
-			},
-			preload: (pManager: IDepsManager, pDep: IDependens, pFile: IDep): void => {
+			// info: (pManager: IDepsManager, pInfo: number[]): void => {
+			// 	pProgress.total = pInfo;
+			// },
+			changed: (pManager: IDepsManager, pFile: IDep, pInfo: any): void => {
+				var sText: string = "";
 
-				if(pFile.name === "DEMO_DATA_ARCHIVE"){
-					pProgress.drawText("Loading demo data");
+				if (pFile.status === EDependenceStatuses.LOADING) {
+					sText += "Loading ";
 				}
-				else if(pFile.name === ".ENGINE_DATA"){
-					pProgress.drawText("Loading engine data");
+				else if (pFile.status === EDependenceStatuses.UNPACKING) {
+					sText += "Unpacking ";
 				}
-				else {
-					pProgress.drawText("Loading resource " + path.info(path.uri(pFile.path).path).basename);
-				}
-				
-			},
-			onload: (pManager: IDepsManager, iDepth: number, nLoaded: number, nTotal: number, pDep: IDependens, pFile: IDep, pData: any): void => {
-				pProgress.element = nLoaded;
-				pProgress.depth = iDepth;
-				
-				pProgress.draw();
-				if (!isNull(pFile)) {
+
+				if (pFile.status === EDependenceStatuses.LOADING || pFile.status === EDependenceStatuses.UNPACKING) {
 					if(pFile.name === "DEMO_DATA_ARCHIVE"){
-						pProgress.drawText("Unpacking demo data");
+						sText += ("demo data");
 					}
 					else if(pFile.name === ".ENGINE_DATA"){
-						pProgress.drawText("Unpacking engine data");
+						sText += ("engine data");
+					}
+					else {
+						sText += ("resource " + path.info(path.uri(pFile.path).path).basename);
+					}
+
+					if (!isNull(pInfo)) {
+						sText += " (" + (pInfo.loaded / pInfo.total * 100).toFixed(2) + "%)";
+					}
+
+					pProgress.drawText(sText);
+				}
+				else if (pFile.status === EDependenceStatuses.LOADED) {
+					pProgress.total[pFile.deps.depth] = pFile.deps.total;
+					pProgress.element = pFile.deps.loaded;
+					pProgress.depth = pFile.deps.depth;
+					
+					pProgress.draw();
+
+					if (pFile.name === "HERO_FILM_JSON") {
+						var pImporter = new io.Importer(pEngine);
+		    			pImporter.loadDocument(<IDocument>pFile.content);
+		    			pFilmController = pImporter.getController();
 					}
 				}
-
-				if (!isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
-					// console.log(pData);
-					var pImporter = new io.Importer(pEngine);
-	    			pImporter.loadDocument(<IDocument>pData);
-	    			pFilmController = pImporter.getController();
-	    			// console.log(pFilmController);
-				}
+				
 			},
 			loaded: (pManager: IDepsManager): void => {
 				var iCounter = 0
@@ -182,7 +189,6 @@ module akra {
 	loadAssets();
 
 	function loaded(): void {
-		console.log("loaded!!");
 		nextCamera();
 		nextCamera();
 		setTimeout(() => {
@@ -199,7 +205,7 @@ module akra {
     	if (self.activeCamera === self.cameras.length) {
     		self.activeCamera = 0;
     	}
-    	console.log("switched to camera", self.activeCamera);
+    	// console.log("switched to camera", self.activeCamera);
     	var pCam: ICamera = self.cameras[self.activeCamera];
     	
     	pViewport.setCamera(pCam);
@@ -599,7 +605,6 @@ module akra {
 		createSkyBox();
 		
 		loaded();
-		// pEngine.exec();
 	}
 
 	pEngine.bind("depsLoaded", main);	

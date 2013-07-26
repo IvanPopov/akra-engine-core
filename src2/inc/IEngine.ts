@@ -29,9 +29,8 @@ module akra {
         renderer?: IRendererOptions;
         loader?: {
             info?: (manager: IDepsManager, info: any) => void;
-            onload?: (manager: IDepsManager, depth: uint, loaded: uint, total: uint, pDep: IDependens, pFile: IDep, pData: any) => void;
-            loaded?: (manager: IDepsManager) => void;
-            preload?: (manager: IDepsManager, pDep: IDependens, pFile: IDep) => void;
+            loaded?: (manager: IDepsManager, pDeps: IDependens) => void;
+            changed?: (manager: IDepsManager, pFile: IDep, pInfo: any) => void;
         };
     }
 

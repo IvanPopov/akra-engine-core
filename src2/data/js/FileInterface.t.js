@@ -81,21 +81,30 @@ onmessage = function (pEvent) {
             break;
 
         case File.READ:
-            var pData = read(pFile);
-
-            if (pCommand.transfer === TRANSFER.FAST && pData instanceof ArrayBuffer) {
-                try {
-                    postMessage({data: pData, progress: false}, [pData]);
+            read(pFile, function (pData) {
+                 if (pCommand.transfer === TRANSFER.FAST && pData instanceof ArrayBuffer) {
+                    try {
+                        postMessage({data: pData, progress: false}, [pData]);
+                    }
+                    catch (e) {
+                        throw e;
+                    }
                 }
-                catch (e) {
-                    throw e;
+                else {
+                    postMessage({data: pData, progress: false})
                 }
-            }
-            else {
-                postMessage({data: pData, progress: false})
-            }
+            }, 
+            pCommand.progress? 
+            function (nLoaded, nTotal) {
+                postMessage({
+                    data: null, 
+                    progress: true,
+                    loaded: nLoaded,
+                    total: nTotal
+                });
+            }: null);
 
-            pData = null;
+           
             break;
 
         case File.WRITE:

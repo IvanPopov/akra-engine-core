@@ -9,19 +9,14 @@ module akra {
 		eTag?: string;
 	}
 
-
-	// export enum EFileBinaryType {
-	// 	ARRAY_BUFFER 	= 0x01,
-	// 	BLOB 			= 0x02,
-	// 	OBJECT_URL 		= 0x03
-	// }
-
 	export interface IFile {
 		readonly path: string;
 		readonly name: string;
 		mode: int;
 
-		onread: Function;
+		/** @deprecated */
+		onread: (e: Error, data: any) => void;
+		/** @deprecated */
 		onopen: Function;
 
 		position: uint;
@@ -39,7 +34,7 @@ module akra {
 
 		close(): void;
 		clear(fnCallback?: Function): void;
-		read(fnCallback?: Function): void;
+		read(fnCallback?: (e: Error, data: any) => void, fnProgress?: (bytesLoaded: uint, bytesTotal: uint) => void): void;
 		write(sData: string, fnCallback?: Function, sContentType?: string): void;
 		write(pData: ArrayBuffer, fnCallback?: Function, sContentType?: string): void;
 		move(sFilename: string, fnCallback?: Function): void;

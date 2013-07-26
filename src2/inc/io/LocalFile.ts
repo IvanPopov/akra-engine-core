@@ -18,7 +18,7 @@
 		if (!this.isOpened()) {						\
 			var _pArgv: IArguments = arguments;		\
 			this.open(function(err) {				\
-				if (err) callback(err);				\
+				if (err) (<Function>callback)(err);				\
 				this.method.apply(this, _pArgv);	\
 			});										\
 			return;									\
@@ -148,7 +148,7 @@ module akra.io {
 			this._iMode = isString(sMode)? filemode(sMode): sMode;
 		}
 
-		inline set onread(fnCallback: Function) {
+		inline set onread(fnCallback: (e: Error, data: any) => void) {
 			this.read(fnCallback);
 		}
 
@@ -328,7 +328,7 @@ module akra.io {
 			    });
 		}
 
-		read(fnCallback: Function = LocalFile.defaultCallback): void {
+		read(fnCallback: (e: Error, data: any) => void = <any>LocalFile.defaultCallback): void {
 			CHECK_IFNOT_OPEN(read, fnCallback);
 
 		    var pFile: IFile = this;
@@ -430,13 +430,9 @@ module akra.io {
 		        iMode |= EIO.BIN;
 		    }
 
-		    pFileCopy = new LocalFile(sFilename, iMode,
-		                                     function (err) {
-		                                     	if (err) {
-		                                     		fnCallback(err);
-		                                     	}
-
-		                                        pFile.read(function (pData: ArrayBuffer) {
+		    pFileCopy = new LocalFile(sFilename, iMode, (e: Error): void => {
+		                                     	if (e) fnCallback(e);
+		                                        pFile.read((e: Error, pData: ArrayBuffer): void => {
 		                                            pFile.write(pData, fnCallback);
 		                                        });
 		                                     });

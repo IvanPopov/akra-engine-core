@@ -10,7 +10,7 @@ catch (e) {
     throw e.code;
 }
 
-function read (pFile) {
+function read (pFile, fnReaded, fnProgress) {
     
     var pData = null;
 
@@ -36,7 +36,7 @@ function read (pFile) {
         pData = URL.createObjectURL(pData);
     }
     
-    return pData;
+    fnReaded(pData);
 }
 
 function remove (pFile) {

@@ -26,7 +26,7 @@
 #include "util/BufferMap.ts"
 #include "animation/Controller.ts"
 #include "model/Skeleton.ts"
-#include "util/DepsManager.ts"
+#include "util/deps/Manager.ts"
 #include "controls/GamepadMap.ts"
 #include "controls/KeyMap.ts"
 
@@ -145,7 +145,7 @@ module akra.core {
 			
 			var pDeps: IDependens = Engine.DEPS;
 			var sDepsRoot: string = Engine.DEPS_ROOT;
-			var pDepsManager: IDepsManager = this._pDepsManager = util.createDepsManager(this);
+			var pDepsManager: IDepsManager = this._pDepsManager = util.deps.createManager(this);
 
 			//read options 
 			if (!isNull(pOptions)) {
@@ -165,24 +165,19 @@ module akra.core {
 
 			if (!isNull(pOptions) && isDefAndNotNull(pOptions.loader)) {
 				var fnInfo = pOptions.loader.info;
-				var fnOnload = pOptions.loader.onload;
 				var fnLoaded = pOptions.loader.loaded;
-				var fnPreload = pOptions.loader.preload;
+				var fnChanged = pOptions.loader.changed;
 
 				if (isFunction(fnInfo)) {
 					pDepsManager.bind(SIGNAL(depInfo), fnInfo);
-				}
-
-				if (isFunction(fnOnload)) {
-					pDepsManager.bind(SIGNAL(loadedDep), fnOnload);	
 				}
 
 				if (isFunction(fnLoaded)) {
 					pDepsManager.bind(SIGNAL(loaded), fnLoaded);	
 				}
 
-				if (isFunction(fnPreload)) {
-					pDepsManager.bind(SIGNAL(preload), fnPreload);	
+				if (isFunction(fnChanged)) {
+					pDepsManager.bind(SIGNAL(statusChanged), fnChanged);	
 				}
 			}
 
@@ -387,42 +382,24 @@ module akra.core {
 
 		static DEPS_ROOT: string = DATA;
 		static DEPS: IDependens = 
-#ifdef DEBUG1
+#ifdef DEBUG
 			{
-				files: [ 
-					{path: "grammars/HLSL.gr"}
-				],
-				deps: {
-						files: [
-							{path: "effects/SystemEffects.afx"},
-						    {path: "effects/Plane.afx"},
-						    {path: "effects/fxaa.afx"},
-						    {path: "effects/skybox.afx"}, 
-						    {path: "effects/TextureToScreen.afx"},
-						    {path: "effects/mesh_geometry.afx"},
-						    {path: "effects/prepare_shadows.afx"},						    
-						    {path: "effects/terrain.afx"},
-						    {path: "effects/prepareDeferredShading.afx"},
-						    {path: "effects/generate_normal_map.afx"},
-
-						    {path: "effects/sky.afx"}
-						],
-						deps: {
-							files: [
-								{path: "effects/mesh_texture.afx"},
-								{path: "effects/deferredShading.afx"},
-								{path: "effects/apply_lights_and_shadows.afx"},
-							],
-							deps: {
-								files: [
-									{path: "effects/color_maps.afx"}
-								]
-							}
-						}
+				files: [
+					{
+						path: "core.map", 
 					}
+				]
 			}
 #else
-			{files: [{path: "core.ara", name: ".ENGINE_DATA"}]}
+			{
+				files: [
+					{
+						path: "core.ara", 
+						name: ".ENGINE_DATA", 
+						comment: "engine core dependences"
+					}
+				]
+			}
 #endif
 			;			
 

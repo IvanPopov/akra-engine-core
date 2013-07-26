@@ -23,7 +23,7 @@
 		if (!this.isOpened()) {						\
 			var _pArgv: IArguments = arguments;		\
 			this.open(function(err) {				\
-				if (err) callback(err);				\
+				if (err) (<Function>callback)(err);				\
 				this.method.apply(this, _pArgv);	\
 			});										\
 			return;									\
@@ -54,6 +54,7 @@ module akra.io {
 		transfer?: EFileTransferModes;
 		data?: any;
 		contentType?: string;
+		progress?: bool;
 	}
 
 
@@ -103,7 +104,7 @@ module akra.io {
 			this._iMode = isString(sMode)? filemode(sMode): sMode;
 		}
 
-		inline set onread(fnCallback: Function) {
+		inline set onread(fnCallback: (e: Error, data: any) => void) {
 			this.read(fnCallback);
 		}
 
@@ -226,7 +227,10 @@ module akra.io {
 		}
 
 
-		read(fnCallback: Function = TFile.defaultCallback): void {
+		read(
+			fnCallback?: (e: Error, data: any) => void = <any>TFile.defaultCallback, 
+			fnProgress?: (bytesLoaded: uint, bytesTotal: uint) => void): void {
+
 			CHECK_IFNOT_OPEN(read, fnCallback);
 
 		    var pFile: IFile = this;
@@ -239,7 +243,8 @@ module akra.io {
 		                    name:     		this.path,
 		                    mode:    		this._iMode,
 		                    pos:      		this._nCursorPosition,
-		                    transfer: 		this._eTransferMode
+		                    transfer: 		this._eTransferMode,
+		                    progress: 		isDefAndNotNull(fnProgress)
 		                 };
 
 		    var fnCallbackSystem: Function = (err, pData: any): any => {
@@ -249,7 +254,7 @@ module akra.io {
 				}
 
 				if (pData.progress) {
-					console.log(pData);
+					fnProgress(pData.loaded, pData.total);
 					return false;
 				}
 
@@ -330,7 +335,7 @@ module akra.io {
 		                                     		fnCallback(err);
 		                                     	}
 
-		                                        pFile.read(function (pData: ArrayBuffer) {
+		                                        pFile.read((e: Error, pData: ArrayBuffer): void => {
 		                                            pFile.write(pData, fnCallback);
 		                                        });
 		                                     });

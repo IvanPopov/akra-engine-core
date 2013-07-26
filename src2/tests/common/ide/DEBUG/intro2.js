@@ -2,14 +2,14 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Jul 25 2013 13:30:47 GMT+0400 (Московское время (лето))
+ * assembled at: Fri Jul 26 2013 13:51:05 GMT+0400 (Московское время (лето))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/intro2.ts
  * name: intro2
  *--------------------------------------------*/
 
 
-///<reference path="../../../bin/RELEASE/akra.ts"/>
+///<reference path="../../../bin/DEBUG/akra.ts"/>
 ///<reference path="../../../bin/DEBUG/Progress.ts"/>
 // declare var jQuery: JQueryStatic;
 // declare var $: JQueryStatic;
@@ -44,7 +44,8 @@ var akra;
             alpha: false
         },
         deps: {
-            root: "../",
+            root: /*"http://odserve.org/demo/preview/",*/
+            "../",
             files: [
                 {
                     path: "demo02.ara",
@@ -53,36 +54,39 @@ var akra;
             ]
         },
         loader: {
-            info: function (pManager, pInfo) {
-                pProgress.total = pInfo;
-            },
-            preload: function (pManager, pDep, pFile) {
-                if (pFile.name === "DEMO_DATA_ARCHIVE") {
-                    pProgress.drawText("Loading demo data");
-                } else if (pFile.name === ".ENGINE_DATA") {
-                    pProgress.drawText("Loading engine data");
-                } else {
-                    pProgress.drawText("Loading resource " + akra.path.info(akra.path.uri(pFile.path).path).basename);
+            changed: // info: (pManager: IDepsManager, pInfo: number[]): void => {
+            // 	pProgress.total = pInfo;
+            // },
+            function (pManager, pFile, pInfo) {
+                var sText = "";
+                if (pFile.status === akra.EDependenceStatuses.LOADING) {
+                    sText += "Loading ";
+                } else if (pFile.status === akra.EDependenceStatuses.UNPACKING) {
+                    sText += "Unpacking ";
                 }
-            },
-            onload: function (pManager, iDepth, nLoaded, nTotal, pDep, pFile, pData) {
-                pProgress.element = nLoaded;
-                pProgress.depth = iDepth;
-                pProgress.draw();
-                if (!akra.isNull(pFile)) {
+                if (pFile.status === akra.EDependenceStatuses.LOADING || pFile.status === akra.EDependenceStatuses.UNPACKING) {
                     if (pFile.name === "DEMO_DATA_ARCHIVE") {
-                        pProgress.drawText("Unpacking demo data");
+                        sText += ("demo data");
                     } else if (pFile.name === ".ENGINE_DATA") {
-                        pProgress.drawText("Unpacking engine data");
+                        sText += ("engine data");
+                    } else {
+                        sText += ("resource " + akra.path.info(akra.path.uri(pFile.path).path).basename);
+                    }
+                    if (!akra.isNull(pInfo)) {
+                        sText += " (" + (pInfo.loaded / pInfo.total * 100).toFixed(2) + "%)";
+                    }
+                    pProgress.drawText(sText);
+                } else if (pFile.status === akra.EDependenceStatuses.LOADED) {
+                    pProgress.total[pFile.deps.depth] = pFile.deps.total;
+                    pProgress.element = pFile.deps.loaded;
+                    pProgress.depth = pFile.deps.depth;
+                    pProgress.draw();
+                    if (pFile.name === "HERO_FILM_JSON") {
+                        var pImporter = new akra.io.Importer(pEngine);
+                        pImporter.loadDocument(pFile.content);
+                        pFilmController = pImporter.getController();
                     }
                 }
-                if (!akra.isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
-                    // console.log(pData);
-                    var pImporter = new akra.io.Importer(pEngine);
-                    pImporter.loadDocument(pData);
-                    pFilmController = pImporter.getController();
-                    // console.log(pFilmController);
-                                    }
             },
             loaded: function (pManager) {
                 var iCounter = 0;
@@ -163,7 +167,6 @@ var akra;
     }
     loadAssets();
     function loaded() {
-        console.log("loaded!!");
         nextCamera();
         nextCamera();
         setTimeout(/** @inline */function () {
@@ -176,7 +179,7 @@ var akra;
         if (akra.self.activeCamera === akra.self.cameras.length) {
             akra.self.activeCamera = 0;
         }
-        console.log("switched to camera", akra.self.activeCamera);
+        // console.log("switched to camera", self.activeCamera);
         var pCam = akra.self.cameras[akra.self.activeCamera];
         pViewport.setCamera(pCam);
     }
@@ -469,7 +472,6 @@ var akra;
         createSky();
         createSkyBox();
         loaded();
-        // pEngine.exec();
-            }
+    }
     pEngine.bind("depsLoaded", main);
 })(akra || (akra = {}));

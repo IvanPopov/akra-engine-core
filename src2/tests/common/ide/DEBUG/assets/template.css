@@ -30,7 +30,7 @@ html, body {
 	width: 100%;
 	position: absolute;
 	top: 24px;
-	background: url(img/planka-top.png) repeat-x top center;
+	background: url(img/planka-top2.png) repeat-x top center;
 	height: 128px;
 }
 
@@ -45,9 +45,9 @@ html, body {
 #bottom #planka-bottom {
 	width: 100%;
 	position: absolute;
-	top: -27px;
-	background: url(img/planka-bottom.png) repeat-x top center;
-	height: 36px;
+	top: -35px;
+	background: url(img/planka-bottom2.png) repeat-x top center;
+	height: 45px;
 }
 
 #main-wrapper {
