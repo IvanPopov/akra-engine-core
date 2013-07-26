@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Jul 26 2013 13:51:05 GMT+0400 (Московское время (лето))
+ * assembled at: Fri Jul 26 2013 19:32:01 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/intro2.ts
  * name: intro2
@@ -39,11 +39,8 @@ var akra;
     var pProgress = createProgress();
     var bMegaTextureLoaded = false;
     var pEngine = akra.createEngine({
-        renderer: {
-            preserveDrawingBuffer: true,
-            alpha: false
-        },
-        deps: {
+        deps: //renderer: {preserveDrawingBuffer: true, alpha: false},
+        {
             root: /*"http://odserve.org/demo/preview/",*/
             "../",
             files: [
