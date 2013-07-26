@@ -209,10 +209,8 @@ module akra.math {
 
         scale(v3fScale: IVec3, v3fDestination?: IVec3): IVec3;
         scale(fScale: float, v3fDestination?: IVec3): IVec3;
-        scale(fScale?, v3fDestination?): IVec3{
-            if(!isDef(v3fDestination)){
-                v3fDestination = this;
-            }
+        scale(): IVec3{
+            var v3fDestination: IVec3 = (arguments.length === 2 && isDef(arguments[1])) ? arguments[1]: this;
 
             if(isNumber(arguments[0])){
                 var fScale: float = arguments[0];

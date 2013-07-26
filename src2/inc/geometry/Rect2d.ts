@@ -400,8 +400,8 @@ module akra.geometry{
 
 		unionPoint(v2fPoint: IVec2): IRect2d;
 		unionPoint(fX: float, fY: float): IRect2d;
-		unionPoint(fX?, fY?): IRect2d{
-			if(arguments.length == 1){
+		unionPoint(): IRect2d{
+			if(arguments.length === 1){
 				var v2fPoint: IVec2 = arguments[0];
 
 				this.x0 = math.min(this.x0, v2fPoint.x);

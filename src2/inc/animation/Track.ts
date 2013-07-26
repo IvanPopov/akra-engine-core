@@ -141,7 +141,7 @@ module akra.animation {
 			var fScalar: float;
 			var fTimeDiff: float;
 			
-			var pKeys:  IAnimationFrame[] = this._pKeyFrames
+			var pKeys:  IAnimationFrame[] = this._pKeyFrames;
 			var nKeys:  int = pKeys.length;
 			var pFrame: IAnimationFrame = animationFrame();
 
@@ -151,19 +151,40 @@ module akra.animation {
 				pFrame.set(pKeys[0]);
 			}
 			else {
-				//TODO: реализовать существенно более эффективный поиск кадра.
-				for (var i: int = 0; i < nKeys; i ++) {
-			    	if (fTime >= this._pKeyFrames[i].time) {
-			            iKey1 = i;
-			        }
-			    }
+				//TODO: реализовать эвристики для бинарного поиска
+				
+				if(fTime >= this._pKeyFrames[nKeys - 1].time){
+					iKey1 = nKeys - 1;
+				}
+				else {
+					var p: uint = 0;
+					var q: uint = nKeys - 1;
+
+					while(p < q){
+						var s:uint = (p + q) >> 1;
+						var fKeyTime: float = this._pKeyFrames[s].time;
+
+						if(fTime >= fKeyTime){
+							if(fTime === fKeyTime || fTime < this._pKeyFrames[s+1].time){
+								iKey1 = s;
+								break;
+							}
+
+							p = s + 1;
+						}
+						else {
+							q = s;
+						}
+					}
+				}
 
 			    iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
 			
 			    fTimeDiff = pKeys[iKey2].time - pKeys[iKey1].time;
 			    
-			    if (!fTimeDiff)
+			    if (!fTimeDiff){
 			        fTimeDiff = 1;
+			    }
 				
 				fScalar = (fTime - pKeys[iKey1].time) / fTimeDiff;
 

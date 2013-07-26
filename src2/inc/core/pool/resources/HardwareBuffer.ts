@@ -119,13 +119,22 @@ module akra.core.pool.resources {
 
 		lock(iLockFlags: int): any;
 		lock(iOffset: uint, iSize: uint, iLockFlags: int = EHardwareBufferFlags.READABLE): any;
-		lock(iOffset: uint, iSize?: any, iLockFlags: int = EHardwareBufferFlags.READABLE): any {
+		lock(): any {
 			ASSERT(!this.isLocked(), "Cannot lock this buffer, it is already locked!");
+
+			var iOffset: uint = 0, 
+				iSize: uint = 0, 
+				iLockFlags: int = 0;
 
 			if (arguments.length == 1) {
 				iLockFlags = <int>arguments[0];
 				iOffset = 0;
 				iSize = this.byteLength;
+			}
+			else {
+				iOffset = arguments[0];
+				iSize = arguments[1];
+				iLockFlags = (arguments.length === 3) ? arguments[2] : EHardwareBufferFlags.READABLE;
 			}
 
 			var pResult: any = null;

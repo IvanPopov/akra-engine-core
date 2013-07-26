@@ -2,19 +2,19 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 15 2013 17:19:24 GMT+0400 (Московское время (лето))
+ * assembled at: Thu Jul 25 2013 13:30:47 GMT+0400 (Московское время (лето))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/intro2.ts
  * name: intro2
  *--------------------------------------------*/
 
 
-///<reference path="../../../bin/DEBUG/akra.ts"/>
+///<reference path="../../../bin/RELEASE/akra.ts"/>
 ///<reference path="../../../bin/DEBUG/Progress.ts"/>
 // declare var jQuery: JQueryStatic;
 // declare var $: JQueryStatic;
 /// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
-/// @MINER_MODEL: 			"/models/miner/miner.dae"
+/// @MINER_MODEL: 			"/models/miner/miner.DAE"
 /// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 var akra;
 (function (akra) {
@@ -23,13 +23,17 @@ var akra;
         var pCanvas = pProgress.canvas;
         pProgress.color = "white";
         pProgress.fontColor = "white";
+        pProgress.fontSize = 22;
         pCanvas.style.position = "absolute";
         pCanvas.style.left = "50%";
-        pCanvas.style.top = "50%";
+        pCanvas.style.top = "70%";
         pCanvas.style.zIndex = "100000";
+        // pCanvas.style.backgroundColor = "rgba(70, 94, 118, .8)";
         // pCanvas.style.display = "none";
         pCanvas.style.marginTop = (-pProgress.height / 2) + "px";
         pCanvas.style.marginLeft = (-pProgress.width / 2) + "px";
+        document.body.appendChild(pProgress.canvas);
+        pProgress.drawText("Initializing demo");
         return pProgress;
     }
     var pProgress = createProgress();
@@ -40,70 +44,51 @@ var akra;
             alpha: false
         },
         deps: {
+            root: "../",
             files: [
                 {
-                    path: "textures/terrain/main_height_map_1025.dds",
-                    name: "TERRAIN_HEIGHT_MAP"
-                }, 
-                {
-                    path: "textures/terrain/main_terrain_normal_map.dds",
-                    name: "TERRAIN_NORMAL_MAP"
-                }, 
-                
-            ],
-            deps: // {path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
-            {
-                files: [
-                    {
-                        path: "models/hero/movie.dae",
-                        name: "HERO_MODEL"
-                    }, 
-                    
-                ],
-                deps: {
-                    files: [
-                        {
-                            path: "models/hero/film.DAE",
-                            name: "HERO_FILM"
-                        }
-                    ],
-                    deps: {
-                        files: [
-                            {
-                                path: "models/barrel/barrel_and_support.dae",
-                                name: "BARREL"
-                            }, 
-                            {
-                                path: "models/box/closed_box.dae",
-                                name: "CLOSED_BOX"
-                            }, 
-                            {
-                                path: "models/tube/tube.dae",
-                                name: "TUBE"
-                            }, 
-                            {
-                                path: "models/tubing/tube_beeween_rocks.DAE",
-                                name: "TUBE_BETWEEN_ROCKS"
-                            }
-                        ]
-                    }
+                    path: "demo02.ara",
+                    name: "DEMO_DATA_ARCHIVE"
                 }
-            }
+            ]
         },
         loader: {
-            before: function (pManager, pInfo) {
+            info: function (pManager, pInfo) {
                 pProgress.total = pInfo;
-                document.body.appendChild(pProgress.canvas);
             },
-            onload: function (pManager, iDepth, nLoaded, nTotal) {
+            preload: function (pManager, pDep, pFile) {
+                if (pFile.name === "DEMO_DATA_ARCHIVE") {
+                    pProgress.drawText("Loading demo data");
+                } else if (pFile.name === ".ENGINE_DATA") {
+                    pProgress.drawText("Loading engine data");
+                } else {
+                    pProgress.drawText("Loading resource " + akra.path.info(akra.path.uri(pFile.path).path).basename);
+                }
+            },
+            onload: function (pManager, iDepth, nLoaded, nTotal, pDep, pFile, pData) {
                 pProgress.element = nLoaded;
                 pProgress.depth = iDepth;
                 pProgress.draw();
+                if (!akra.isNull(pFile)) {
+                    if (pFile.name === "DEMO_DATA_ARCHIVE") {
+                        pProgress.drawText("Unpacking demo data");
+                    } else if (pFile.name === ".ENGINE_DATA") {
+                        pProgress.drawText("Unpacking engine data");
+                    }
+                }
+                if (!akra.isNull(pFile) && pFile.name === "HERO_FILM_JSON") {
+                    // console.log(pData);
+                    var pImporter = new akra.io.Importer(pEngine);
+                    pImporter.loadDocument(pData);
+                    pFilmController = pImporter.getController();
+                    // console.log(pFilmController);
+                                    }
             },
             loaded: function (pManager) {
                 var iCounter = 0;
                 var iIntervalId = setInterval(/** @inline */function () {
                     if (bMegaTextureLoaded) {
+                        pProgress.cancel();
                         document.body.removeChild(pProgress.canvas);
                         clearInterval(iIntervalId);
                     } else {
@@ -134,6 +119,7 @@ var akra;
     var pTerrain = null;
     var pSky = null;
     var pParentElement = null;
+    var pFilmController = null;
     // var pDepsManager: IDepsManager 		= pEngine.getDepsManager()
     akra.self = {
         engine: pEngine,
@@ -177,6 +163,7 @@ var akra;
     }
     loadAssets();
     function loaded() {
+        console.log("loaded!!");
         nextCamera();
         nextCamera();
         setTimeout(/** @inline */function () {
@@ -189,6 +176,7 @@ var akra;
         if (akra.self.activeCamera === akra.self.cameras.length) {
             akra.self.activeCamera = 0;
         }
+        console.log("switched to camera", akra.self.activeCamera);
         var pCam = akra.self.cameras[akra.self.activeCamera];
         pViewport.setCamera(pCam);
     }
@@ -203,8 +191,10 @@ var akra;
             pMovie.play("movie");
             akra.self.cameraLight.enabled = false;
             setTimeout(/** @inline */function () {
-                akra.self.voice.currentTime = 0;
-                akra.self.voice.play();
+                if (akra.self.voice) {
+                    akra.self.voice.currentTime = 0;
+                    akra.self.voice.play();
+                }
             }, 2500);
             setTimeout(/** @inline */function () {
                 akra.self.cameraLight.enabled = true;
@@ -344,6 +334,7 @@ var akra;
     }
     function createTerrain() {
         pTerrain = pScene.createTerrainROAM("Terrain");
+        pTerrain.megaTexture.manualMinLevelLoad = true;
         var pTerrainMap = {};
         pTerrainMap["height"] = pRmgr.imagePool.findResource("TERRAIN_HEIGHT_MAP");
         pTerrainMap["normal"] = pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");
@@ -353,20 +344,30 @@ var akra;
         pTerrain.setRotationByXYZAxis(-Math.PI / 2, 0., 0.);
         pTerrain.setPosition(11, -109, -109.85);
         akra.self.terrain = pTerrain;
-        pTerrain.megaTexture.bind("minLevelLoaded", /** @inline */function () {
-            bMegaTextureLoaded = true;
-            loaded();
-        });
+        // pTerrain.megaTexture.bind("minLevelLoaded", () => {
+        // 	if (!bMegaTextureLoaded) {
+        // 		bMegaTextureLoaded = true;
+        // 		loaded()
+        // 	}
+        // });
+        bMegaTextureLoaded = true;
+        pTerrain.megaTexture.setMinLevelTexture(pRmgr.imagePool.findResource("MEGATEXTURE_MIN_LEVEL"));
     }
     function createSky() {
         pSky = new akra.model.Sky(pEngine, 32, 32, 1000.0);
-        pSky.setTime(13.0);
+        pSky.setTime(14.0);
         pSky.skyDome.attachToParent(pScene.getRootNode());
         akra.self.sky = pSky;
+        pSky._nHorinLevel = 15;
         var i = setInterval(/** @inline */function () {
-            pSky.setTime(pSky.time + 0.001);
+            pSky.setTime(pSky.time + 0.003);
             // if (math.abs(pSky.time) == 30.0) clearInterval(i);
-                    }, 100);
+                    }, 500);
+    }
+    function createSkyBox() {
+        var pSkyBoxTexture = pRmgr.createTexture("SKYBOX");
+        pSkyBoxTexture.loadImage(pRmgr.imagePool.findResource("SKYBOX"));
+        (pViewport).setSkybox(pSkyBoxTexture);
     }
     function createModelEntry(sResource, bShadows) {
         if (typeof bShadows === "undefined") { bShadows = true; }
@@ -435,13 +436,27 @@ var akra;
         pTubeBetweenRocks.setRotationByXYZAxis(5. * akra.math.RADIAN_RATIO, 100. * akra.math.RADIAN_RATIO, 0.);
         pTubeBetweenRocks.setPosition(new akra.Vec3(-55., -12.15, -82.00));
         pScene.bind("beforeUpdate", update);
-        var pMovie = pRmgr.colladaPool.findResource("HERO_FILM");
-        var pAnim = pMovie.extractAnimation(0);
-        var pContainer = akra.animation.createContainer(pAnim, "movie");
-        var pController = pEngine.createAnimationController("movie");
-        pController.addAnimation(pContainer);
-        pController.stop();
-        pHeroModel.addController(pController);
+        var pController = null;
+        if (akra.isNull(pFilmController)) {
+            var pMovie = pRmgr.colladaPool.findResource("HERO_FILM");
+            if (pMovie) {
+                var pAnim = pMovie.extractAnimation(0);
+                var pContainer = akra.animation.createContainer(pAnim, "movie");
+                pController = pEngine.createAnimationController("movie");
+                pController.addAnimation(pContainer);
+                pController.stop();
+            }
+        } else {
+            pController = pFilmController;
+            pController.stop();
+        }
+        if (pController) {
+            // (<IAnimationContainer>pController.findAnimation("movie")).rightInfinity(false);
+            // pController.findAnimation("movie").bind("stoped", () => {
+            // 	alert("STOP!");
+            // });
+            pHeroModel.addController(pController);
+        }
         akra.self.hero.movie = pController;
         fetchAllCameras();
     }
@@ -452,6 +467,8 @@ var akra;
         createTerrain();
         createModels();
         createSky();
+        createSkyBox();
+        loaded();
         // pEngine.exec();
             }
     pEngine.bind("depsLoaded", main);

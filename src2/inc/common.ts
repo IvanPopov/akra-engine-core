@@ -202,6 +202,14 @@ module akra {
         return typeOf(x) == "array";
     };    
 
+    export function fnSortMinMax(a: number, b: number): number {
+        return a - b;
+    }
+
+    export function fnSortMaxMin(a: number, b: number): number {
+        return b - a;
+    }
+
     export interface Pair {
         first: any;
         second: any;

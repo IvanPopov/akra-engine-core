@@ -211,38 +211,32 @@ module akra.scene.light {
 					nAdditionalTestLength++;
 				}
 				else{
-					var pPlanePoints = [new Vec3(), new Vec3(), new Vec3(), new Vec3()];
+					var pPlanePoints: IVec3[] = SunLight._pTmpPlanePoints;
 					pCameraFrustum.getPlanePoints(sKey, pPlanePoints);
 
 					//find far points;
-					var pDirections = new Array(4);
+					var pDirLengthList: float[] = SunLight._pTmpDirLengthList;
+					
+					for(var j: int = 0; j < 4; j++){
+						var pDir: IVec3 = pPlanePoints[j].subtract(this.worldPosition, vec3());
+						pDirLengthList[j] = pDir.length();
+					}				
 
-					for(var j: int = 0; j<4; j++){
-						pDirections[j] = new Vec3();
-						pPlanePoints[j].subtract(this.worldPosition,pDirections[j]);
-					}
+					var pIndex: uint[] = SunLight._pTmpIndexList;
+					pIndex[0] = pIndex[1] = pIndex[2] = pIndex[3] = -1;
 
-					var fLength1: float = pDirections[0].length();
-					var fLength2: float = pDirections[1].length();
-					var fLength3: float = pDirections[2].length();
-					var fLength4: float = pDirections[3].length();
-
-					var pTmp1: float[] = [fLength1, fLength2, fLength3, fLength4];
-
-					var pIndex: uint[] = [-1,-1,-1,-1];
-
-					for(var j: uint = 0; j<4;j++){
+					for(var j: uint = 0; j < 4;j++){
 						var iTest = 3;
-						for(var k: uint = 0; k<4;k++){
-							if(k == j){
+						for(var k: uint = 0; k < 4;k++){
+							if(k === j){
 								continue;
 							}
-							if(pTmp1[j] >= pTmp1[k]){
+							if(pDirLengthList[j] >= pDirLengthList[k]){
 								iTest--;
 							}
 						}
-						for(var k: uint = 0 ; k<4; k++){
-							if(pIndex[iTest] == -1){
+						for(var k: uint = 0 ; k < 4; k++){
+							if(pIndex[iTest] === -1){
 								pIndex[iTest] = j;
 								break;
 							}
@@ -383,6 +377,9 @@ module akra.scene.light {
 		//list of frustum planes with which additional testing must be done.
 		//created just for prevent reallocation
 		static _pFrustumPlanes: IPlane3d[] = new Array(6);/*new geometry.Plane3d[];*/
+		static _pTmpPlanePoints: IVec3[] = [new Vec3(), new Vec3(), new Vec3(), new Vec3()];
+		static _pTmpIndexList: uint[] = [0, 0, 0, 0];
+		static _pTmpDirLengthList: float[] = [0.0, 0.0, 0.0, 0.0];
 	}
 
 	for(var i:int = 0; i<6; i++){
