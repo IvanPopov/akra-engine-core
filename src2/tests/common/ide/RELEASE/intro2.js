@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Jul 25 2013 15:57:58 GMT+0400 (Московское время (зима))
+ * assembled at: Fri Jul 26 2013 14:49:50 GMT+0400 (Московское время (лето))
  * directory: tests/common/ide/RELEASE/
  * file: tests/common/ide/intro2.ts
  * name: intro2
@@ -23,6 +23,7 @@ var akra;
         var pCanvas = pProgress.canvas;
         pProgress.color = "white";
         pProgress.fontColor = "white";
+        pProgress.fontSize = 22;
         pCanvas.style.position = "absolute";
         pCanvas.style.left = "50%";
         pCanvas.style.top = "70%";
@@ -53,10 +54,10 @@ var akra;
             ]
         },
         loader: {
-            info: function (pManager, pInfo) {
-                pProgress.total = pInfo;
-            },
-            changed: function (pManager, pFile, pInfo) {
+            changed: // info: (pManager: IDepsManager, pInfo: number[]): void => {
+            // 	pProgress.total = pInfo;
+            // },
+            function (pManager, pFile, pInfo) {
                 var sText = "";
                 if (pFile.status === akra.EDependenceStatuses.LOADING) {
                     sText += "Loading ";
@@ -76,6 +77,7 @@ var akra;
                     }
                     pProgress.drawText(sText);
                 } else if (pFile.status === akra.EDependenceStatuses.LOADED) {
+                    pProgress.total[pFile.deps.depth] = pFile.deps.total;
                     pProgress.element = pFile.deps.loaded;
                     pProgress.depth = pFile.deps.depth;
                     pProgress.draw();
@@ -165,7 +167,6 @@ var akra;
     }
     loadAssets();
     function loaded() {
-        console.log("loaded!!");
         nextCamera();
         nextCamera();
         setTimeout(/** @inline */function () {
@@ -178,7 +179,7 @@ var akra;
         if (akra.self.activeCamera === akra.self.cameras.length) {
             akra.self.activeCamera = 0;
         }
-        console.log("switched to camera", akra.self.activeCamera);
+        // console.log("switched to camera", self.activeCamera);
         var pCam = akra.self.cameras[akra.self.activeCamera];
         pViewport.setCamera(pCam);
     }
@@ -471,7 +472,6 @@ var akra;
         createSky();
         createSkyBox();
         loaded();
-        // pEngine.exec();
-            }
+    }
     pEngine.bind("depsLoaded", main);
 })(akra || (akra = {}));

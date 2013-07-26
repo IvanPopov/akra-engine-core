@@ -274,9 +274,7 @@ module akra.geometry{
 		//output - array of vertices in counterclockwise order (around plane normal as axis)
 		//if destination don't submitted returned array from temp vectors
 		getPlanePoints(sPlaneKey: string, pDestination?: IVec3[]): IVec3[]{
-			if(arguments.length == 1){
-				pDestination = [vec3(), vec3(), vec3(), vec3()];
-			}
+			var pPoints: IVec3[] = (arguments.length === 2) ? pDestination : [vec3(), vec3(), vec3(), vec3()];
 
 			var pFrustumVertices: IVec3[] = this.frustumVertices;
 			if(pFrustumVertices === null){
@@ -285,46 +283,46 @@ module akra.geometry{
 
 			switch(sPlaneKey){
 				case "leftPlane":
-					pDestination[0].set(pFrustumVertices[6]);
-					pDestination[1].set(pFrustumVertices[4]);
-					pDestination[2].set(pFrustumVertices[0]);
-					pDestination[3].set(pFrustumVertices[2]);
+					pPoints[0].set(pFrustumVertices[6]);
+					pPoints[1].set(pFrustumVertices[4]);
+					pPoints[2].set(pFrustumVertices[0]);
+					pPoints[3].set(pFrustumVertices[2]);
 					break;
 				case "rightPlane":
-					pDestination[0].set(pFrustumVertices[7]);
-					pDestination[1].set(pFrustumVertices[3]);
-					pDestination[2].set(pFrustumVertices[1]);
-					pDestination[3].set(pFrustumVertices[5]);
+					pPoints[0].set(pFrustumVertices[7]);
+					pPoints[1].set(pFrustumVertices[3]);
+					pPoints[2].set(pFrustumVertices[1]);
+					pPoints[3].set(pFrustumVertices[5]);
 					break;
 				case "topPlane":
-					pDestination[0].set(pFrustumVertices[7]);
-					pDestination[1].set(pFrustumVertices[6]);
-					pDestination[2].set(pFrustumVertices[2]);
-					pDestination[3].set(pFrustumVertices[3]);
+					pPoints[0].set(pFrustumVertices[7]);
+					pPoints[1].set(pFrustumVertices[6]);
+					pPoints[2].set(pFrustumVertices[2]);
+					pPoints[3].set(pFrustumVertices[3]);
 					break;
 				case "bottomPlane":
-					pDestination[0].set(pFrustumVertices[5]);
-					pDestination[1].set(pFrustumVertices[1]);
-					pDestination[2].set(pFrustumVertices[0]);
-					pDestination[3].set(pFrustumVertices[4]);
+					pPoints[0].set(pFrustumVertices[5]);
+					pPoints[1].set(pFrustumVertices[1]);
+					pPoints[2].set(pFrustumVertices[0]);
+					pPoints[3].set(pFrustumVertices[4]);
 					break;
 				case "nearPlane":
-					pDestination[0].set(pFrustumVertices[3]);
-					pDestination[1].set(pFrustumVertices[2]);
-					pDestination[2].set(pFrustumVertices[0]);
-					pDestination[3].set(pFrustumVertices[1]);
+					pPoints[0].set(pFrustumVertices[3]);
+					pPoints[1].set(pFrustumVertices[2]);
+					pPoints[2].set(pFrustumVertices[0]);
+					pPoints[3].set(pFrustumVertices[1]);
 					break;
 				case "farPlane":
-					pDestination[0].set(pFrustumVertices[7]);
-					pDestination[1].set(pFrustumVertices[5]);
-					pDestination[2].set(pFrustumVertices[4]);
-					pDestination[3].set(pFrustumVertices[6]);
+					pPoints[0].set(pFrustumVertices[7]);
+					pPoints[1].set(pFrustumVertices[5]);
+					pPoints[2].set(pFrustumVertices[4]);
+					pPoints[3].set(pFrustumVertices[6]);
 					break;
 				default:
 					debug_assert(false, "invalid plane key");
 					break;
 			}
-			return pDestination;
+			return pPoints;
 		};
 
 		testPoint(v3fPoint: IVec3): bool{

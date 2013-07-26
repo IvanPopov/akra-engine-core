@@ -173,7 +173,7 @@ module akra.terrain {
     	    this._pRPC.setProcedureOption("getMegaTexture", "priority", 1);
 
     	    this._pRPC.setProcedureOption("loadMegaTexture", "lifeTime", 60000);
-    	    this._pRPC.setProcedureOption("loadMegaTexture", "priority", 1);    	    
+    	    this._pRPC.setProcedureOption("loadMegaTexture", "priority", 1);
 	    }
 
 		inline set manualMinLevelLoad(bManual: bool) {
@@ -482,6 +482,7 @@ module akra.terrain {
 
 		private _iTryCount: uint = 0;
 		protected loadMinTextureLevel(): void {
+
 			var me: MegaTexture = this;
     		var sExt: string = "dds";
 

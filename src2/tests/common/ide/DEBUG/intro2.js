@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Jul 25 2013 18:26:48 GMT+0400 (Московское время (зима))
+ * assembled at: Fri Jul 26 2013 13:51:05 GMT+0400 (Московское время (лето))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/intro2.ts
  * name: intro2
@@ -23,6 +23,7 @@ var akra;
         var pCanvas = pProgress.canvas;
         pProgress.color = "white";
         pProgress.fontColor = "white";
+        pProgress.fontSize = 22;
         pCanvas.style.position = "absolute";
         pCanvas.style.left = "50%";
         pCanvas.style.top = "70%";

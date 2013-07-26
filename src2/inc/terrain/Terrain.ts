@@ -380,14 +380,16 @@ module akra.terrain {
 		readWorldHeight(iMapX: uint, iMapY: uint): float;
 		readWorldHeight(iMapX: any, iMapY?: uint): float {
 			if (arguments.length === 2) {
-			    if (iMapX >= this._iTableWidth) {
-			        iMapX = this._iTableWidth - 1;
+				var iFixedMapX: uint = iMapX, iFixedMapY: uint = iMapY;
+				
+			    if (iFixedMapX >= this._iTableWidth) {
+			        iFixedMapX = this._iTableWidth - 1;
 			    }
-			    if (iMapY >= this._iTableHeight) {
-			        iMapY = this._iTableHeight - 1;
+			    if (iFixedMapY >= this._iTableHeight) {
+			        iFixedMapY = this._iTableHeight - 1;
 			    }
 
-			    return this._pHeightTable[(iMapY * this._iTableWidth) + iMapX];
+			    return this._pHeightTable[(iFixedMapY * this._iTableWidth) + iFixedMapX];
 			}
 			else {
 			    var iMapIndex: uint = iMapX;

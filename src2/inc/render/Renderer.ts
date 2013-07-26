@@ -85,6 +85,7 @@ module  akra.render {
 		protected _pEngine: IEngine;
 		protected _pRenderTargets: IRenderTarget[] = [];
 		protected _pPrioritisedRenderTargets: IRenderTargetPriorityMap = <IRenderTargetPriorityMap>{};
+		protected _pPriorityList: int[] = [];
 		protected _pRenderQueue: RenderQueue = null;
 		protected _pActiveViewport: IViewport = null;
 		protected _pActiveRenderTarget: IRenderTarget = null;
@@ -142,6 +143,8 @@ module  akra.render {
  			
  			if (!isDef(pList)) {
  				pList = this._pPrioritisedRenderTargets[pTarget.priority] = [];
+ 				this._pPriorityList.push(pTarget.priority);
+ 				this._pPriorityList.sort(fnSortMinMax);
  			}
  			
  			pList.push(pTarget);
@@ -196,7 +199,8 @@ module  akra.render {
 
 		_updateAllRenderTargets(): void {
 			var pTarget: IRenderTarget;
-			for (var iPriority in this._pPrioritisedRenderTargets) {
+			for (var i: int = 0; i < this._pPriorityList.length; i++) {
+				var iPriority: int = this._pPriorityList[i];
 				var pTargetList: IRenderTarget[] = this._pPrioritisedRenderTargets[iPriority];
 
 				for (var j = 0; j < pTargetList.length; ++ j) {

@@ -40,22 +40,40 @@ module akra.geometry {
 					this.bottom = arguments[0].bottom;
 					this.back 	= arguments[0].back;
 					break;
+				
 				case 0:
-				case 3:
-				case 6:
-					this.left 	= l;
-					this.top 	= t;
-					this.front 	= ff;
+					this.left 	= 0;
+					this.top 	= 0;
+					this.front 	= 0;
 
-					this.right 	= r;
-					this.bottom = b;
-					this.back 	= bb;
+					this.right 	= 1;
+					this.bottom = 1;
+					this.back 	= 1;
+					break;
+
+				case 3:
+					this.left 	= arguments[0];
+					this.top 	= arguments[1];
+					this.front 	= arguments[2];
+
+					this.right 	= arguments[0] + 1;
+					this.bottom = arguments[1] + 1;
+					this.back 	= arguments[2] + 1;
+
+				case 6:
+					this.left 	= arguments[0];
+					this.top 	= arguments[1];
+					this.front 	= arguments[2];
+
+					this.right 	= arguments[3];
+					this.bottom = arguments[4];
+					this.back 	= arguments[5];
 					break;
 				case 4:
-					this.left 	= l;
-					this.top 	= t;
-					this.right 	= ff;
-					this.bottom = r;
+					this.left 	= arguments[0];
+					this.top 	= arguments[1];
+					this.right 	= arguments[2];
+					this.bottom = arguments[3];
 
 					this.back 	= 1;
 					this.front 	= 0;
@@ -102,7 +120,7 @@ module akra.geometry {
 	export function box(iLeft: uint, iTop: uint, iFront: uint): IBox;
 	export function box(iLeft: uint, iTop: uint, iRight: uint, iBottom: uint): IBox;
 	export function box(iLeft: uint, iTop: uint, iFront: uint, iRight: uint, iBottom: uint, iBack: uint): IBox;
-	export function box(l: uint = 0, t: uint = 0, ff: uint = 0, r: uint = 1, b: uint = 1, bb: uint = 1): IBox {
+	export function box(): IBox {
 		var pBox: IBox = Box.stack[Box.stackPosition ++];
 
         if(Box.stackPosition === Box.stackSize){
@@ -119,12 +137,16 @@ module akra.geometry {
 								 arguments[0].depth);
 				break;
 			case 0:
+				pBox.setPosition (0, 0, 1, 1, 0, 1);
+				break;
 			case 3:
+				pBox.setPosition(arguments[0], arguments[1], 1, 1, arguments[2], 1);
+				break;
 			case 6:
-				pBox.setPosition(l, t, r - l, b - t, ff, bb - ff);
+				pBox.setPosition(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
 				break;
 			case 4:
-				pBox.setPosition(l, t, arguments[2] - l, arguments[3]- t, 0, 1);
+				pBox.setPosition(arguments[0], arguments[1], arguments[2] - arguments[0], arguments[3] - arguments[1], 0, 1);
 				break;
 			default:
 				ERROR("Inavlid number of arguments");

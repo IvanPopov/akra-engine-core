@@ -40,7 +40,7 @@ module akra.terrain {
 		private _isNeedReset: bool = true;
 
 		private _fLastTessealationTime: float = 0.;
-		private _fTessealationInterval: float = 1./30.;
+		private _fTessealationInterval: float = 1./25.;
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
 			super(pScene, eType);
@@ -226,8 +226,7 @@ module akra.terrain {
 				this._pNodePool.reset();
 
 				// reset each section
-				for (var i in this._pSectorArray)
-				{
+				for (var i: uint = 0; i < this._pSectorArray.length; i++) {
 					this._pSectorArray[i].reset();
 				}
 			}
@@ -275,12 +274,7 @@ module akra.terrain {
 
 		protected processTessellationQueue(): void {
 			this._pThistessellationQueue.length = this._iTessellationQueueCount;
-
-			function fnSortSection(a, b) {
-				return a.queueSortValue - b.queueSortValue;
-			}
-
-			this._pThistessellationQueue.sort(fnSortSection);
+			this._pThistessellationQueue.sort(TerrainROAM.fnSortSection);
 
 			for (var i: uint = 0; i < this._iTessellationQueueCount; ++i) {
 				// split triangles based on the
@@ -342,6 +336,10 @@ module akra.terrain {
 			}
 
 			this._isNeedReset = true;
+		}
+
+		static private fnSortSection(pSectionA: ITerrainSectionROAM, pSectionB: ITerrainSectionROAM): uint {
+			return pSectionA.queueSortValue - pSectionB.queueSortValue;
 		}
 	}
 }

@@ -19,6 +19,7 @@ module akra {
 
 		pProgress.color = "white";
 		pProgress.fontColor = "white";
+		pProgress.fontSize = 22;
 
 		pCanvas.style.position = "absolute";
 	    pCanvas.style.left = "50%";

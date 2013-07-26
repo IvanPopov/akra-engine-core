@@ -658,22 +658,22 @@ module akra.math {
 		    var pData2: Float32Array = m4fMat.data;
 
 		    if(fEps === 0.){
-		        if(    pData1[__11] != pData2[__11] 
-		            || pData1[__12] != pData2[__12]
-		            || pData1[__13] != pData2[__13]
-		            || pData1[__14] != pData2[__14]
-		            || pData1[__21] != pData2[__21]
-		            || pData1[__22] != pData2[__22]
-		            || pData1[__23] != pData2[__23]
-		            || pData1[__24] != pData2[__24]
-		            || pData1[__31] != pData2[__31]
-		            || pData1[__32] != pData2[__32]
-		            || pData1[__33] != pData2[__33]
-		            || pData1[__34] != pData2[__34]
-		            || pData1[__41] != pData2[__41]
-		            || pData1[__42] != pData2[__42]
-		            || pData1[__43] != pData2[__43]
-		            || pData1[__44] != pData2[__44]){
+		        if(    pData1[__11] !== pData2[__11] 
+		            || pData1[__12] !== pData2[__12]
+		            || pData1[__13] !== pData2[__13]
+		            || pData1[__14] !== pData2[__14]
+		            || pData1[__21] !== pData2[__21]
+		            || pData1[__22] !== pData2[__22]
+		            || pData1[__23] !== pData2[__23]
+		            || pData1[__24] !== pData2[__24]
+		            || pData1[__31] !== pData2[__31]
+		            || pData1[__32] !== pData2[__32]
+		            || pData1[__33] !== pData2[__33]
+		            || pData1[__34] !== pData2[__34]
+		            || pData1[__41] !== pData2[__41]
+		            || pData1[__42] !== pData2[__42]
+		            || pData1[__43] !== pData2[__43]
+		            || pData1[__44] !== pData2[__44]){
 
 		            return false;
 		        }
@@ -1358,7 +1358,12 @@ module akra.math {
 
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m4fDestination?: IMat4): IMat4;
 		static fromYawPitchRoll(v3fAngles: IVec3, m4fDestination?: IMat4): IMat4;
-		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m4fDestination?): IMat4{
+		static fromYawPitchRoll(): IMat4{
+			var fYaw: float = 0.0, 
+				fPitch: float = 0.0, 
+				fRoll: float = 0.0, 
+				m4fDestination: IMat4 = null;
+
 			if(arguments.length <= 2){
 		        //Vec3 + m4fDestination
 		        var v3fVec: IVec3 = arguments[0];
@@ -1368,6 +1373,12 @@ module akra.math {
 		        fRoll  = v3fVec.z;
 
 		        m4fDestination = arguments[1];
+		    }
+		    else {
+		    	fYaw = arguments[0];
+		    	fPitch = arguments[1];
+		    	fRoll = arguments[2];
+		    	m4fDestination = arguments[3];
 		    }
 
 		    if(!isDef(m4fDestination)){
