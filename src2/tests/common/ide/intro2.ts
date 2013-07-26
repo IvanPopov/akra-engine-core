@@ -41,7 +41,7 @@ module akra {
 
 
 	var pEngine: IEngine = createEngine({
-		renderer: {preserveDrawingBuffer: true, alpha: false},
+		//renderer: {preserveDrawingBuffer: true, alpha: false},
 		deps: {
 			root: /*"http://odserve.org/demo/preview/",*/"../",
 			files: [{path: "demo02.ara", name: "DEMO_DATA_ARCHIVE"}]

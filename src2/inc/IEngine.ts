@@ -28,7 +28,6 @@ module akra {
         gamepads?: bool;
         renderer?: IRendererOptions;
         loader?: {
-            info?: (manager: IDepsManager, info: any) => void;
             loaded?: (manager: IDepsManager, pDeps: IDependens) => void;
             changed?: (manager: IDepsManager, pFile: IDep, pInfo: any) => void;
         };

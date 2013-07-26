@@ -9,6 +9,8 @@
 #include "util/EffectParser.ts"
 #include "util/URI.ts"
 
+#include "include.ts"
+
 #define ARA_INDEX ".map"
 #define ETAG_FILE ".etag"
 
@@ -19,6 +21,8 @@ module akra.util.deps {
 		IDLE,
 		LOADING
 	}
+
+	export var FORCE_ETAG_CHECKING: bool = false;
 
 	function utf8_to_b64( str: string ): string {
 	    return window.btoa(unescape(encodeURIComponent( str )));
@@ -68,32 +72,35 @@ module akra.util.deps {
 		return d;
 	}
 
-	export var FORCE_ETAG_CHECKING: bool = true;
 
 	class Manager implements IDepsManager {
 		protected _eState: EStates = EStates.IDLE;
 		protected _pEngine: IEngine;
 		protected _pDeps: IDependens = null;
+		protected _sRoot: string = null;
+
+		inline get root(): string { return this._sRoot; }
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
 		}
 
+
+
 		inline getEngine(): IEngine { return this._pEngine; }
 
-		load(pDeps: IDependens, sRoot: string = null): bool {
+		load(pDeps: IDependens, sRoot: string = akra.DATA): bool {
 			if (!isDefAndNotNull(pDeps)) {
 				return false;
 			}
 
-			if (this._eState === EStates.LOADING) {
+			if (this._eState !== EStates.IDLE) {
 				WARNING("deps manager in loading state");
 				return false;
 			}
 
-			if (info.api.zip) {
-				zip.workerScriptsPath = sRoot + "/3d-party/zip.js/";
-			}
+			this._eState = EStates.LOADING;
+			this._sRoot = sRoot;
 
 			this.normalizeDeps(pDeps, pDeps.root || sRoot);
 			this.createResources(pDeps);
@@ -322,7 +329,12 @@ module akra.util.deps {
 		}
 
 		private loadARA(pArchiveDep: IDep): void {
-			ASSERT(info.api.zip, "Zip loader must be specified");
+			if (!info.api.zip) {
+				js({path: this.root + "/3d-party/zip.js/", scripts: ["zip.js", "zip-ext.js"]}, (e: Event): void => {
+					ASSERT(isNull(e), "Zip loader must be specified");
+					zip.workerScriptsPath = this.root + "/3d-party/zip.js/";
+				});
+			}
 
 			var sArchivePath: string = pArchiveDep.path;
 			var sArchiveHash: string = utf8_to_b64(sArchivePath);
@@ -351,6 +363,7 @@ module akra.util.deps {
 
 								var pEntryMap: {[path: string]: ZipEntry;} = {};
 								var nTotal: uint = 0;
+								var nUnpacked: uint = 0;
 
 								for (var i: int = 0; i < pEntries.length; ++ i) {
 									if (pEntries[i].directory) continue;
@@ -366,9 +379,11 @@ module akra.util.deps {
 									var pARADeps: IDependens = <IDependens>JSON.parse(data);
 
 									var fnSuccesss: Function = (sLocalPath: string): void => {
-										nTotal --;
+										nUnpacked ++;
 
-										if (nTotal > 0) return;
+										this.changeDepStatus(pArchiveDep, EDependenceStatuses.UNPACKING, {loaded: nUnpacked, total: nTotal});
+
+										if (nUnpacked < nTotal) return;
 										
 										console.log("ARA dependences successfully loaded: ", sArchivePath);
 										// alert("ARA dependences successfully loaded: " + sArchivePath);
@@ -613,10 +628,13 @@ module akra.util.deps {
 		}
 
 		CREATE_EVENT_TABLE(Manager);
-		BROADCAST(loaded, CALL(deps));
 		BROADCAST(statusChanged, CALL(file, info));
-		// BROADCAST(depInfo, CALL(info));
 		
+		loaded(pDeps: IDependens): void {
+			this._eState = EStates.IDLE;
+			EMIT_BROADCAST(loaded, _CALL(pDeps));
+		}
+
 		error(pErr: Error): void {
 			if (true) throw pErr;
 			EMIT_BROADCAST(error, _CALL(pErr));

@@ -164,13 +164,8 @@ module akra.core {
 			this.connect(pDepsManager, SIGNAL(loaded), SLOT(_depsLoaded));
 
 			if (!isNull(pOptions) && isDefAndNotNull(pOptions.loader)) {
-				var fnInfo = pOptions.loader.info;
 				var fnLoaded = pOptions.loader.loaded;
 				var fnChanged = pOptions.loader.changed;
-
-				if (isFunction(fnInfo)) {
-					pDepsManager.bind(SIGNAL(depInfo), fnInfo);
-				}
 
 				if (isFunction(fnLoaded)) {
 					pDepsManager.bind(SIGNAL(loaded), fnLoaded);	
