@@ -12,6 +12,26 @@ interface ICommand{
 	info: any;
 }
 
+onmessage = function(event: any){
+	if(event.data instanceof ArrayBuffer){
+		processTesselate(event.data);
+	}
+	else {
+		var pCommand: ICommand = <ICommand>event.data;
+		switch(pCommand.type){
+			case ECommandTypes.INITTERRAIN:
+				processInitTerrain(<ITerrainInitInfo>pCommand.info);
+				return;
+			case ECommandTypes.UPDATEPARAMS:
+				processUpdateParams(pCommand.info);
+				return;
+
+		}
+	}
+}
+
+
+
 interface IRect3d{
 	x0: number;
 	y0: number;
@@ -22,8 +42,32 @@ interface IRect3d{
 	z1: number;
 }
 
-interface ITerrainSectionInfo{
+interface ITriTreeNode {
+	baseNeighbor: ITriTreeNode;
+	leftNeighbor: ITriTreeNode;
+	rightNeighbor: ITriTreeNode;
+	leftChild: ITriTreeNode;
+	rightChild: ITriTreeNode;
+}
 
+interface ITerrainSectionInfo{
+	x: number;
+	y: number;
+	pixelX: number;
+	pixelY: number;
+				
+	varianceTreeA: number[];
+	varianceTreeB: number[];
+
+	rootTriangleA: ITriTreeNode;
+	rootTriangleB: ITriTreeNode;
+
+	leftNeighborOfA: ITriTreeNode;
+	rightNeighborOfA: ITriTreeNode;
+	leftNeighborOfB: ITriTreeNode;
+	rightNeighborOfB: ITriTreeNode;
+
+	startIndex: number
 }
 
 interface ITerrainInitInfo{
@@ -57,7 +101,7 @@ interface ITerrainInfo{
 
 	maxTriTreeNodeCount: number;
 
-	sectors: ITerrainSectionInfo[];
+	sections: ITerrainSectionInfo[];
 
 	tesselationScale: number;
 	tesselationLimit: number;
@@ -66,80 +110,92 @@ interface ITerrainInfo{
 	tesselationQueue: UInt32Array;
 }
 
+createTriTreeNode(): ITriTreeNode {
+	return <ITriTreeNode>{
+		baseNeighbor: null,
+		leftNeighbor: null,
+		rightNeighbor: null,
+		leftChild: null,
+		rightChild: null
+	};
+}
 
-onmessage = function(event: any){
-	if(event.data instanceof ArrayBuffer){
-		processTesselate(event.data);
-	}
-	else {
-		var pCommand: ICommand = <ICommand>event.data;
-		switch(pCommand.type){
-			case ECommandTypes.INITTERRAIN:
-				processInitTerrain(<ITerrainInitInfo>pCommand.info);
-				return;
-			case ECommandTypes.UPDATEPARAMS:
-				processUpdateParams(pCommand.info);
-				return;
+class TriangleNodePool {
+	private _iNextTriNode: number = 0;
+	private _iMaxCount: number = 0;
+	private _pPool: ITriTreeNode[] = null;
 
+	constructor(iCount: number){
+		this._iMaxCount = iCount;
+		this._pPool = new Array(iCount);
+
+		for(var i: uint = 0; i < this._iMaxCount; i++){
+			this._pPool[i] = createTriTreeNode(); 
 		}
 	}
 
-	// var pHeader: IHeader = readHeader(event.data);
-	// var pData: Uint8Array = readData(event.data, pHeader);
+	request(): ITriTreeNode {
+		if(this._iNextTriNode >= this._iMaxCount){
+			return null;
+		}
+		else {
+			var pNode: ITriTreeNode = this._pPool[this._iNextTriNode];
+			pNode.baseNeighbor  = null;
+			pNode.leftNeighbor  = null;
+			pNode.rightNeighbor = null;
+			pNode.leftChild     = null;
+			pNode.rightChild    = null;
+			this._iNextTriNode++;
+			return pNode;
+		}
+	}
 
-	// switch(pHeader.command){
-	// 	case ECommandTypes.HEIGHTMAP:
-	// 		processUpdateHeightMap(pData);
-	// 		break;
-	// 	case ECommandTypes.TESSELATE:
-	// 		processTesselate(pData);
-	// 		break;
-	// }
+	reset(): void {
+		this._iNextTriNode = 0;
+	}
 }
 
-// var pTmpHeader: IHeader = {command: 0};
-// readHeader(pData: ArrayBuffer): IHeader {
-// 	pTmpHeader.command = (new Uint8Array(pData, 0, 1))[0];
-// 	return pTmpHeader;
-// }
 
-// readData(pData: ArrayBuffer, pHeader: IHeader): Uint8Array {
-// 	return new Uint8Array(pData, 1);
-// }
+
 
 var pTerrain: ITerrainInfo = null;
 processInitTerrain(pInitInfo: ITerrainInitInfo): void {
 	pTerrain = {
-		heightMapTable: pInitInfo.heightMapTable;
+		heightMapTable: pInitInfo.heightMapTable,
 
-		tableWidth: pInitInfo.tableWidth;
-		tableHeight: pInitInfo.tableHeight;
+		tableWidth: pInitInfo.tableWidth,
+		tableHeight: pInitInfo.tableHeight,
 
-		sectorUnits: pInitInfo.sectorUnits;
-		sectorCountX: pInitInfo.sectorCountX;
-		sectorCountY: pInitInfo.sectorCountY;
+		sectorUnits: pInitInfo.sectorUnits,
+		sectorTotalDetailLevels: 0,
+		sectorTotalVariances: 0,
+		sectorCountX: pInitInfo.sectorCountX,
+		sectorCountY: pInitInfo.sectorCountY,
 
-		worldExtets: pInitInfo.worldExtets;
-		maxHeight: pInitInfo.maxHeight;
-		terrain2DLength: 0;
+		worldExtets: pInitInfo.worldExtets,
+		maxHeight: pInitInfo.maxHeight,
+		terrain2DLength: 0,
 
-		maxTriTreeNodeCount: pInitInfo.maxTriTreeNodeCount;
+		maxTriTreeNodeCount: pInitInfo.maxTriTreeNodeCount,
+		triNodePool: new TriangleNodePool(pInitInfo.maxTriTreeNodeCount),
 
-		sectors: null;
+		sections: null,
 
-		tesselationScale: pInitInfo.tesselationScale;
-		tesselationLimit: pInitInfo.tesselationLimit;
+		tesselationScale: pInitInfo.tesselationScale,
+		tesselationLimit: pInitInfo.tesselationLimit,
 
-		cameraCoord: null;
-		tesselationQueue: null;
+		cameraCoord: null,
+		tesselationQueue: null
 	};
 
-
+	pTerrain.sectorTotalDetailLevels = 2 * (Math.round(Math.log(pTerrain.sectorUnits)/Math.LN2));
+	pTerrain.sectorTotalVariances = 1 << pTerrain.sectorTotalDetailLevels;
 	pTerrain.terrain2DLength = Math.sqrt((worldExtets.x1 - worldExtets.x0) * (worldExtets.x1 - worldExtets.x0) +
 										 (worldExtets.y1 - worldExtets.y0) * (worldExtets.y1 - worldExtets.y0));
-	pTerrain.sectors = new Array(pTerrain.sectorCountX * sectorCountY);
+	pTerrain.sections = new Array(pTerrain.sectorCountX * sectorCountY);
 
 	var iShift: number = (Math.log(pTerrain.sectorUnits)/Math.LN2) | 0;
+	var iSectorVerts: number = pTerrain.sectorUnits + 1;
 
 	for(var y: number = 0; y < pTerrain.sectorCountY; y++) {
 		for(var x: number = 0; x < pTerrain.sectorCountX; x++) {
@@ -147,14 +203,203 @@ processInitTerrain(pInitInfo: ITerrainInitInfo): void {
 			var iYPixel: number = y << iShift;
 			var iIndex: number = (y * pTerrain.sectorCountX) + x;
 
-			// pTerrain.sectors[iIndex] = {
+			pTerrain.sections[iIndex] = <ITerrainSectionInfo>{
+				x: x,
+				y: y,
+				pixelX: iXPixel,
+				pixelY: iYPixel,
 				
-			// }
+				varianceTreeA: new Array(pTerrain.sectorTotalVariances),
+				varianceTreeB: new Array(pTerrain.sectorTotalVariances),
 
+				rootTriangleA: createTriTreeNode(),
+				rootTriangleB: createTriTreeNode(),
+				leftNeighborOfA: null,
+				rightNeighborOfA: null,
+				leftNeighborOfB: null,
+				rightNeighborOfB: null,
+
+				startIndex: iIndex * (iSectorVerts * iSectorVerts)
+			};
 		}
 	}
 
+	//set neighbors for sections
+	for(var y: number = 0; y < pTerrain.sectorCountY; y++) {
+		for(var x: number = 0; x < pTerrain.sectorCountX; x++) {
+			var pSection: ITerrainSectionInfo = pTerrain.findSection(x, y);
+			var pNorthSection: ITerrainSectionInfo = pTerrain.findSection(x, y - 1);
+			var pSouthSection: ITerrainSectionInfo = pTerrain.findSection(x, y + 1);
+			var pEastSection: ITerrainSectionInfo  = pTerrain.findSection(x + 1, y);
+			var pWestSection: ITerrainSectionInfo  = pTerrain.findSection(x - 1, y);
+
+			if (pNorthSection !== null) {
+				pSection.leftNeighborOfA = pNorthSection.rootTriangleB;
+			}
+
+			if (pSouthSection !== null) {
+				pSection.leftNeighborOfB = pSouthSection.rootTriangleA;
+			}
+
+			if (pEastSection !== null) {
+				pSection.rightNeighborOfB = pEastSection.rootTriangleA;
+			}
+
+			if (pWestSection !== null) {
+				pSection.rightNeighborOfA = pWestSection.rootTriangleB;
+			}
+
+			reset(pSection);
+		}
+	}
+
+	computeVariance(pSection);
 }
+
+findTerrainScetion(iX: number, iY: number): ITerrainSectionInfo {
+	var pSection: ITerrainSectionInfo = null;
+
+	if (iX >= 0 && iX < pTerrain.sectorCountX
+	    && iY >= 0 && iY < pTerrain.sectorCountY) {
+	    pSection = pTerrain.sections[(iY * pTerrain.sectorCountX) + iX];
+	}
+
+	return pSection;
+}
+
+resetSection(pSection: ITerrainSectionInfo): void {
+	pSection.rootTriangleA.leftChild  = null;
+	pSection.rootTriangleA.rightChild = null;
+	pSection.rootTriangleB.leftChild  = null;
+	pSection.rootTriangleB.rightChild = null;
+
+	pSection.rootTriangleA.baseNeighbor = pSection.rootTriangleB;
+	pSection.rootTriangleB.baseNeighbor = pSection.rootTriangleA;
+
+	// link to our neighbors
+	pSection.rootTriangleA.leftNeighbor  = pSection.leftNeighborOfA;
+	pSection.rootTriangleA.rightNeighbor = pSection.rightNeighborOfA;
+	pSection.rootTriangleB.leftNeighbor  = pSection.leftNeighborOfB;
+	pSection.rootTriangleB.rightNeighbor = pSection.rightNeighborOfB;
+}
+
+tableIndex(iMapX: number, iMapY: number): number {
+	// clamp to the table dimensions
+	if (iMapX >= pTerrain.tableWidth) {
+	    iMapX = pTerrain.tableWidth - 1;
+	}
+	
+	if (iMapY >= pTerrain.tableHeight) {
+	    iMapY = pTerrain.tableHeight - 1;
+	}
+
+	return (iMapY * pTerrain.tableWidth) + iMapX;
+}
+
+readWorldHeight(iIndex: number): number;
+readWorldHeight(iMapX: number, iMapY: number): number;
+readWorldHeight(iMapX: any, iMapY?: number): number {
+	if (arguments.length === 2) {
+		var iFixedMapX: number = iMapX, iFixedMapY: number = iMapY;
+		
+	    if (iFixedMapX >= pTerrain.tableWidth) {
+	        iFixedMapX = pTerrain.tableWidth - 1;
+	    }
+	    if (iFixedMapY >= pTerrain.tableHeight) {
+	        iFixedMapY = pTerrain.tableHeight - 1;
+	    }
+
+	    return pTerrain.heightTable[(iFixedMapY * pTerrain.tableWidth) + iFixedMapX];
+	}
+	else {
+	    var iMapIndex: number = iMapX;
+	    return pTerrain.heightTable[iMapIndex];
+	}
+}
+
+computeVariance(pSection: ITerrainSectionInfo): void {
+	var iTableWidth: number = pTerrain.tableWidth;
+	var iTableHeight: number = pTerrain.tableHeight;
+
+	var iIndex0: number =  tableIndex(pSection.pixelX,							pSection.pixelY);
+	var iIndex1: number =  tableIndex(pSection.pixelX,							pSection.pixelY + pTerrain.sectorUnits);
+	var iIndex2: number =  tableIndex(pSection.pixelX + pTerrain.sectorUnits,	pSection.pixelY + pTerrain.sectorUnits);
+	var iIndex3: number =  tableIndex(pSection.pixelX + pTerrain.sectorUnits,	pSection.pixelY);
+
+	var fHeight0: number = pTerrain.heightMapTable[iIndex0];
+	var fHeight1: number = pTerrain.heightMapTable[iIndex1];
+	var fHeight2: number = pTerrain.heightMapTable[iIndex2];
+	var fHeight3: number = pTerrain.heightMapTable[iIndex3];
+
+	recursiveComputeVariance(
+		pSection.pixelX, 					 	pSection.pixelY + pTerrain.sectorUnits,
+		pSection.pixelX + pTerrain.sectorUnits, pSection.pixelY + pTerrain.sectorUnits,
+		pSection.pixelX,					 	pSection.pixelY,
+		fHeight1, fHeight2, fHeight0,
+		pSection.varianceTreeA, 1);
+
+	recursiveComputeVariance(
+		pSection.pixelX + pTerrain.sectorUnits, pSection.pixelY,
+		pSection.pixelX,					 	pSection.pixelY,
+		pSection.pixelX + pTerrain.sectorUnits, pSection.pixelY + pTerrain.sectorUnits,
+		fHeight3, fHeight0, fHeight2,
+		pSection.varianceTreeB, 1);
+}
+
+recursiveComputeVariance(iCornerAX: number, iCornerAY: number,
+						 iCornerBX: number, iCornerBY: number,
+						 iCornerCX: number, iCornerCY: number,
+						 fHeightA: number, fHeightB: number, fHeightC: number, pVTree: number[], iIndex: number): number {
+	if (iIndex < pVTree.length) {
+
+		var iMidpointX: number = (iCornerBX + iCornerCX) >> 1;
+		var iMidpointY: number = (iCornerBY + iCornerCY) >> 1;
+
+		if ((iMidpointX === iCornerBX || iMidpointX === iCornerCX) &&
+			(iMidpointY === iCornerBY || iMidpointY === iCornerCY)){
+			return 0;
+		}
+
+		var fMidHeight: number = readWorldHeight(iMidpointX, iMidpointY);
+		var fInterpolatedHeight: number = (fHeightB + fHeightC)*0.5;
+		var fVariance: number = Math.abs(fMidHeight - fInterpolatedHeight);
+
+		// find the variance of our children
+		var fLeft: number = recursiveComputeVariance(
+			iMidpointX, iMidpointY,
+			iCornerAX,  iCornerAY,
+			iCornerBX,  iCornerBY,
+			fMidHeight, fHeightA, fHeightB,
+			pVTree, iIndex<<1);
+
+		var fRight: number = recursiveComputeVariance(
+			iMidpointX, iMidpointY,
+			iCornerCX,  iCornerCY,
+			iCornerAX,  iCornerAY,
+			fMidHeight, fHeightC, fHeightA,
+			pVTree, 1+(iIndex<<1));
+
+		// local variance is the minimum of all three
+		fVariance = Math.max(fVariance, fLeft);
+		fVariance = Math.max(fVariance, fRight);
+
+		// store the variance as 1/(variance+1)
+		pVTree[iIndex] = fVariance;
+
+
+		// this.drawVariance(iIndex,
+		// 	this.terrainSystem._tableIndex(iCornerAX, iCornerAY),
+		// 	this.terrainSystem._tableIndex(iCornerBX, iCornerBY), 
+		// 	this.terrainSystem._tableIndex(iCornerCX, iCornerCY), pVTree);
+
+		return fVariance;
+	}
+	// return a value which will be ignored by the parent
+	// (because the minimum function is used with this result)
+
+	return 0;
+}
+
 
 processUpdateParams(pUpdateInfo: any): void{
 
