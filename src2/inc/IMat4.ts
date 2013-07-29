@@ -49,6 +49,7 @@ module akra {
 	IFACE(IMat3);
 	IFACE(IQuat4);
 
+
 	export interface IMat4Constructor {
 		();
 		(fValue: float);

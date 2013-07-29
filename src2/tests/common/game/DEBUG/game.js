@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Jul 26 2013 18:57:00 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Jul 29 2013 20:18:57 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -11,6 +11,30 @@
 
 var akra;
 (function (akra) {
+    (function (EGameHeroStates) {
+        EGameHeroStates._map = [];
+        EGameHeroStates._map[0] = "GUN_NOT_DRAWED";
+        EGameHeroStates.GUN_NOT_DRAWED = 0;
+        EGameHeroStates._map[1] = "GUN_BEFORE_DRAW";
+        EGameHeroStates.GUN_BEFORE_DRAW = 1;
+        EGameHeroStates._map[2] = "GUN_DRAWING";
+        EGameHeroStates.GUN_DRAWING = 2;
+        EGameHeroStates._map[3] = "GUN_DRAWED";
+        EGameHeroStates.GUN_DRAWED = 3;
+        EGameHeroStates._map[4] = "GUN_BEFORE_IDLE";
+        EGameHeroStates.GUN_BEFORE_IDLE = 4;
+        EGameHeroStates._map[5] = "GUN_IDLE";
+        EGameHeroStates.GUN_IDLE = 5;
+        EGameHeroStates._map[6] = "GUN_BEFORE_UNDRAW";
+        EGameHeroStates.GUN_BEFORE_UNDRAW = 6;
+        EGameHeroStates._map[7] = "GUN_UNDRAWING";
+        EGameHeroStates.GUN_UNDRAWING = 7;
+        EGameHeroStates._map[8] = "GUN_UNDRAWED";
+        EGameHeroStates.GUN_UNDRAWED = 8;
+        EGameHeroStates._map[9] = "GUN_END";
+        EGameHeroStates.GUN_END = 9;
+    })(akra.EGameHeroStates || (akra.EGameHeroStates = {}));
+    var EGameHeroStates = akra.EGameHeroStates;
     function setup(pCanvas, pUI) {
         if (typeof pUI === "undefined") { pUI = null; }
         var pIDE = null;
@@ -157,6 +181,78 @@ var akra;
         });
         return pCameras;
     }
+    var v3fOffset = new akra.Vec3();
+    function updateKeyboardControls(pCamera, fLateralSpeed, fRotationSpeed, pKeymap, pGamepad) {
+        if (typeof pGamepad === "undefined") { pGamepad = null; }
+        if (pKeymap.isKeyPress(akra.EKeyCodes.RIGHT)) {
+            pCamera.addRelRotationByEulerAngles(0.0, 0.0, -fRotationSpeed);
+            //v3fCameraUp.Z >0.0 ? fRotationSpeed: -fRotationSpeed);
+                    } else if (pKeymap.isKeyPress(akra.EKeyCodes.LEFT)) {
+            pCamera.addRelRotationByEulerAngles(0.0, 0.0, fRotationSpeed);
+            //v3fCameraUp.Z >0.0 ? -fRotationSpeed: fRotationSpeed);
+                    }
+        if (pKeymap.isKeyPress(akra.EKeyCodes.UP)) {
+            pCamera.addRelRotationByEulerAngles(0, fRotationSpeed, 0);
+        } else if (pKeymap.isKeyPress(akra.EKeyCodes.DOWN)) {
+            pCamera.addRelRotationByEulerAngles(0, -fRotationSpeed, 0);
+        }
+        v3fOffset.set(0.);
+        var isCameraMoved = false;
+        if (pKeymap.isKeyPress(akra.EKeyCodes.D) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.PAD_RIGHT])) {
+            v3fOffset.x = fLateralSpeed;
+            isCameraMoved = true;
+        } else if (pKeymap.isKeyPress(akra.EKeyCodes.A) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.PAD_LEFT])) {
+            v3fOffset.x = -fLateralSpeed;
+            isCameraMoved = true;
+        }
+        if (pKeymap.isKeyPress(akra.EKeyCodes.R)) {
+            v3fOffset.y = fLateralSpeed;
+            isCameraMoved = true;
+        } else if (pKeymap.isKeyPress(akra.EKeyCodes.F)) {
+            v3fOffset.y = -fLateralSpeed;
+            isCameraMoved = true;
+        }
+        if (pKeymap.isKeyPress(akra.EKeyCodes.W) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.PAD_TOP])) {
+            v3fOffset.z = -fLateralSpeed;
+            isCameraMoved = true;
+        } else if (pKeymap.isKeyPress(akra.EKeyCodes.S) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.PAD_BOTTOM])) {
+            v3fOffset.z = fLateralSpeed;
+            isCameraMoved = true;
+        }
+        // else if (pKeymap.isKeyPress(EKeyCodes.SPACE)) {
+        //     pEngine.isActive()? pEngine.pause(): pEngine.play();
+        // }
+        if (isCameraMoved) {
+            pCamera.addRelPosition(v3fOffset);
+        }
+    }
+    function updateCamera(pCamera, pKeymap, pGamepad) {
+        if (typeof pGamepad === "undefined") { pGamepad = null; }
+        updateKeyboardControls(pCamera, 0.25, 0.05, pKeymap, pGamepad);
+        //default camera.
+        var pCanvas = pCamera._getLastViewport().getTarget().getRenderer().getDefaultCanvas();
+        if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
+            var v2fD = pKeymap.getMouseShift();
+            var fdX = v2fD.x, fdY = v2fD.y;
+            fdX /= pCanvas.width / 10.0;
+            fdY /= pCanvas.height / 10.0;
+            pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
+        }
+        if (!pGamepad) {
+            return;
+        }
+        var fX = pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_HOR];
+        var fY = pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_VERT];
+        if (akra.math.abs(fX) < 0.25) {
+            fX = 0;
+        }
+        if (akra.math.abs(fY) < 0.25) {
+            fY = 0;
+        }
+        if (fX || fY) {
+            pCamera.addRelRotationByEulerAngles(-fX / 10, -fY / 10, 0);
+        }
+    }
     var pProgress = createProgress();
     var pGameDeps = {
         files: [
@@ -285,91 +381,476 @@ var akra;
             root: null,
             head: null,
             pelvis: null,
-            movie: null
+            camera: null,
+            triggers: [],
+            controls: {
+                direct: {
+                    x: 0,
+                    y: 0
+                },
+                forward: false,
+                back: false,
+                right: false,
+                left: false,
+                dodge: false,
+                gun: false
+            },
+            parameters: {
+                analogueButtonThreshold: 0.25,
+                time: /*this.fTime*/
+                0,
+                timeDelta: 0.,
+                movementRate: 0,
+                movementRateThreshold: 0.0001,
+                movementSpeedMax: /* sec */
+                9.0,
+                rotationSpeedMax: /* rad/sec*/
+                10,
+                rotationRate: /* current speed*/
+                0,
+                runSpeed: /* m/sec*/
+                9.0,
+                walkToRunSpeed: /* m/sec*/
+                2.5,
+                walkSpeed: /* m/sec*/
+                1.5,
+                walWithWeaponSpeed: /* m/sec */
+                1.0,
+                walWithoutWeaponSpeed: /* m/sec */
+                1.5,
+                movementDerivativeMax: 1.0,
+                movementDerivativeMin: 0.5,
+                movementDerivativeConst: (2 * (Math.E + 1) / (Math.E - 1) * /*(fSpeedDerivativeMax - fSpeedDerivativeMin)*/
+                (1.0 - 0.5)),
+                walkBackAngleRange: /*rad*/
+                -0.85,
+                cameraPitchChaseSpeed: /*rad/sec*/
+                10.0,
+                cameraPitchSpeed: 3.0,
+                cameraPitchMax: Math.PI / 5,
+                cameraPitchMin: /*-Math.PI/6,*/
+                0.,
+                cameraPitchBase: Math.PI / 10,
+                blocked: true,
+                lastTriggers: 1,
+                position: new akra.Vec3(0.),
+                cameraCharacterDistanceBase: /*метров [расстояние на которое можно убежать от центра камеры]*/
+                5.0,
+                cameraCharacterDistanceMax: 15.0,
+                cameraCharacterChaseSpeed: /* m/sec*/
+                25,
+                cameraCharacterChaseRotationSpeed: /* rad/sec*/
+                5.,
+                cameraCharacterFocusPoint: /*meter*/
+                new akra.Vec3(0.0, 0.5, 0.0),
+                state: EGameHeroStates.GUN_NOT_DRAWED,
+                anim: {}
+            }
         }
     };
     pKeymap.captureMouse((pCanvas).el);
     pKeymap.captureKeyboard(document);
-    var v3fOffset = new akra.Vec3();
-    function updateKeyboardControls(fLateralSpeed, fRotationSpeed) {
-        var pGamepad = pGamepads.find(0);
-        if (pKeymap.isKeyPress(akra.EKeyCodes.RIGHT)) {
-            pCamera.addRelRotationByEulerAngles(0.0, 0.0, -fRotationSpeed);
-            //v3fCameraUp.Z >0.0 ? fRotationSpeed: -fRotationSpeed);
-                    } else if (pKeymap.isKeyPress(akra.EKeyCodes.LEFT)) {
-            pCamera.addRelRotationByEulerAngles(0.0, 0.0, fRotationSpeed);
-            //v3fCameraUp.Z >0.0 ? -fRotationSpeed: fRotationSpeed);
-                    }
-        if (pKeymap.isKeyPress(akra.EKeyCodes.UP)) {
-            pCamera.addRelRotationByEulerAngles(0, fRotationSpeed, 0);
-        } else if (pKeymap.isKeyPress(akra.EKeyCodes.DOWN)) {
-            pCamera.addRelRotationByEulerAngles(0, -fRotationSpeed, 0);
+    //>>>>>>>>>>>>>>>>>>>>>
+    function initState(pHeroNode) {
+        var pStat = akra.self.hero.parameters;
+        function findAnimation(sName, sPseudo) {
+            pStat.anim[sPseudo || sName] = pHeroNode.getController().findAnimation(sName);
         }
-        v3fOffset.set(0.);
-        var isCameraMoved = false;
-        if (pKeymap.isKeyPress(akra.EKeyCodes.D) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.PAD_RIGHT])) {
-            v3fOffset.x = fLateralSpeed;
-            isCameraMoved = true;
-        } else if (pKeymap.isKeyPress(akra.EKeyCodes.A) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.PAD_LEFT])) {
-            v3fOffset.x = -fLateralSpeed;
-            isCameraMoved = true;
-        }
-        if (pKeymap.isKeyPress(akra.EKeyCodes.R)) {
-            v3fOffset.y = fLateralSpeed;
-            isCameraMoved = true;
-        } else if (pKeymap.isKeyPress(akra.EKeyCodes.F)) {
-            v3fOffset.y = -fLateralSpeed;
-            isCameraMoved = true;
-        }
-        if (pKeymap.isKeyPress(akra.EKeyCodes.W) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.PAD_TOP])) {
-            v3fOffset.z = -fLateralSpeed;
-            isCameraMoved = true;
-        } else if (pKeymap.isKeyPress(akra.EKeyCodes.S) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.PAD_BOTTOM])) {
-            v3fOffset.z = fLateralSpeed;
-            isCameraMoved = true;
-        }
-        // else if (pKeymap.isKeyPress(EKeyCodes.SPACE)) {
-        //     pEngine.isActive()? pEngine.pause(): pEngine.play();
-        // }
-        if (isCameraMoved) {
-            pCamera.addRelPosition(v3fOffset);
-        }
+        pStat.time = akra.self.engine.time;
+        pStat.position.set(akra.self.hero.root.worldPosition);
+        findAnimation("MOVEMENT.player");
+        findAnimation("MOVEMENT.blend");
+        findAnimation("RUN.player");
+        findAnimation("WALK.player");
+        activateTrigger([
+            moveHero, 
+            movementHero, 
+            checkHeroState
+        ]);
     }
-    function updateCameras() {
-        updateKeyboardControls(0.25, 0.05);
-        var pGamepad = pGamepads.find(0);
-        //default camera.
-        if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
-            var v2fD = pKeymap.getMouseShift();
-            var fdX = v2fD.x, fdY = v2fD.y;
-            fdX /= pCanvas.width / 10.0;
-            fdY /= pCanvas.height / 10.0;
-            pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
+    function updateCharacterCamera(pControls, pHero, pStat, pController) {
+        var pCamera = akra.self.hero.camera;
+        var fTimeDelta = pStat.timeDelta;
+        var pGamepad = akra.self.gamepads.find(0);
+        if (!pGamepad || !pCamera.isActive()) {
+            return;
         }
+        var fX = -pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_HOR];
+        var fY = -pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_VERT];
+        if (akra.math.abs(fX) < pStat.analogueButtonThreshold) {
+            fX = 0;
+        }
+        if (akra.math.abs(fY) < pStat.analogueButtonThreshold) {
+            fY = 0;
+        }
+        var pCameraWorldData = pCamera.worldMatrix.data;
+        var v3fHeroFocusPoint = pStat.cameraCharacterFocusPoint.add(akra.self.hero.pelvis.worldPosition, akra.Vec3.stackCeil.set());
+        var v3fCameraYPR = pCamera.localOrientation.toYawPitchRoll(akra.Vec3.stackCeil.set());
+        var v3fYPR = akra.Vec3.stackCeil.set(0.);
+        var qTemp;
+        var v3fCameraDir = akra.Vec3.stackCeil.set(-pCameraWorldData[akra.__13], 0, -pCameraWorldData[akra.__33]).normalize();
+        var v3fCameraOrtho;
+        //hero displacmnet
+        // var v3fDisplacement: IVec3 = pHero.worldPosition.subtract(pStat.position, vec3());
+        // v3fDisplacement.y = 0;
+        // pCamera.addPosition(v3fDisplacement.negate(vec3()));
+        // pStat.position.set(pHero.worldPosition);
+        var v3fCameraHeroDist = pCamera.worldPosition.subtract(v3fHeroFocusPoint, akra.Vec3.stackCeil.set());
+        var v3fCameraHeroDir = v3fCameraHeroDist.normalize(akra.Vec3.stackCeil.set());
+        var fCameraHeroDist = v3fCameraHeroDist.length();
+        //camera position
+        var fCharChaseSpeedDelta = (pStat.cameraCharacterChaseSpeed * fTimeDelta);
+        /*if (math.abs(fCameraHeroDist - pStat.cameraCharacterDistanceBase) > 0.05)*/
+         {
+            var fDist = akra.math.clamp((fCameraHeroDist - pStat.cameraCharacterDistanceBase) / pStat.cameraCharacterDistanceMax * fCharChaseSpeedDelta, -2, 2);
+            var v3fHeroZX = akra.Vec3.stackCeil.set(v3fHeroFocusPoint);
+            v3fHeroZX.y = 0.0;
+            var v3fCameraZX = akra.Vec3.stackCeil.set(pCamera.worldPosition);
+            v3fCameraZX.y = 0.0;
+            var v3fDir = v3fHeroZX.subtract(v3fCameraZX).normalize();
+            pCamera.addPosition(v3fDir.scale(fDist));
+            pCamera.addPosition(akra.Vec3.stackCeil.set(0., ((v3fHeroFocusPoint.y + 1.0 - pCamera.worldPosition.y) * fCharChaseSpeedDelta / 100), 0.));
+            pCamera.update();
+            var v3fDt = akra.Vec3.stackCeil.set(0.);
+            if (!akra.isNull(pTerrain)) {
+                pTerrain.projectPoint(pCamera.worldPosition, v3fDt);
+                v3fDt.x = pCamera.worldPosition.x;
+                v3fDt.y = akra.math.max(v3fDt.y + 1.0, pCamera.worldPosition.y);
+                v3fDt.z = pCamera.worldPosition.z;
+                pCamera.setPosition(v3fDt);
+            }
+        }
+        //camera orientation
+        var qCamera = pCamera.localOrientation;
+        var qHeroView = akra.Mat4.lookAt(pCamera.worldPosition, v3fHeroFocusPoint, akra.Vec3.stackCeil.set(0., 1., 0.), akra.Mat4.stackCeil.set()).toQuat4(akra.Quat4.stackCeil.set());
+        qCamera.smix(qHeroView.conjugate(), pStat.cameraCharacterChaseRotationSpeed * fTimeDelta);
+        pCamera.localOrientation = qCamera;
+        //====================
+        /*if (fY == 0.) {
+        fY = -(v3fCameraYPR.y - (-pStat.cameraPitchBase)) * pStat.cameraPitchChaseSpeed * fTimeDelta;
+        
+        if (math.abs(fY) < 0.001) {
+        fY = 0.;
+        }
+        }
+        
+        if (!(v3fCameraYPR.y > -pStat.cameraPitchMin && -fY < 0) &&
+        !(v3fCameraYPR.y < -pStat.cameraPitchMax && -fY > 0)) {
+        
+        v3fCameraOrtho = vec3(v3fCameraDir.z, 0, -v3fCameraDir.x);
+        
+        qTemp = Quat4.fromAxisAngle(v3fCameraOrtho, -fY * pStat.cameraPitchSpeed * fTimeDelta, quat4());
+        qTemp.toYawPitchRoll(v3fYPR);
+        
+        // pCamera.localPosition.scale(1. - fY / 25);
+        }
+        
+        var fX_ = fX / 10 + v3fYPR.x;
+        var fY_ = v3fYPR.y;
+        var fZ_ = v3fYPR.z;
+        
+        if (fX_ || fY_ || fZ_) {
+        pCamera.addRotationByEulerAngles(fX_, fY_, fZ_);
+        }*/
+            }
+    function movementHero(pControls, pHero, pStat, pController) {
+        var pAnim = pStat.anim;
+        var fMovementRate = pStat.movementRate;
+        var fMovementRateAbs = akra.math.abs(fMovementRate);
+        var fRunSpeed = pStat.runSpeed;
+        var fWalkSpeed = pStat.walkSpeed;
+        var fWalkToRunSpeed = pStat.walkToRunSpeed;
+        var fSpeed;
+        var fRunWeight;
+        var fWalkWeight;
+        //pStat.movementSpeedMax = pStat.state? pStat.walkToRunSpeed: pStat.runSpeed;
+        pStat.walkSpeed = pStat.walWithoutWeaponSpeed;
+        pStat.movementSpeedMax = pStat.runSpeed;
+        fSpeed = fMovementRateAbs * pStat.movementSpeedMax;
+        if (pController.active) {
+            if (pController.active.name !== "STATE.player") {
+                // pController.play('STATE.player', this.fTime);
+                            }
+        } else {
+            console.warn("controller::active is null ;(");
+        }
+        //character move
+        if (fSpeed > fWalkSpeed) {
+            if ((pAnim["MOVEMENT.player"]).isPaused()) {
+                (pAnim["MOVEMENT.player"]).pause(false);
+            }
+            if (fMovementRate > 0.0) {
+                //run forward
+                if (fSpeed < pStat.walkToRunSpeed) {
+                    if (pStat.state) {
+                        /*only walk*/
+                        (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 0., 1.);
+                    } else {
+                        /* only walk */
+                        (pAnim["MOVEMENT.blend"]).setWeights(0., 1., 0.);
+                    }
+                    (pAnim["WALK.player"]).setSpeed(fSpeed / fWalkSpeed);
+                } else {
+                    fRunWeight = (fSpeed - fWalkToRunSpeed) / (fRunSpeed - fWalkToRunSpeed);
+                    fWalkWeight = 1. - fRunWeight;
+                    //run //walk frw //walk back
+                    if (pStat.state) {
+                        (pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, 0., 0., fWalkWeight);
+                    } else {
+                        (pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, fWalkWeight, 0.);
+                    }
+                    (pAnim["MOVEMENT.player"]).setSpeed(1.);
+                }
+            } else {
+                //run //walk frw //walk back
+                (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 1.);
+                (pAnim["MOVEMENT.player"]).setSpeed(fMovementRateAbs);
+                pStat.movementSpeedMax = fWalkSpeed;
+            }
+            //дабы быть уверенными что IDLE не считается
+            // pAnim["STATE.blend"].setAnimationWeight(0, 0.); /* idle */
+            // pAnim["STATE.blend"].setAnimationWeight(2, 0.); /* gun */
+                    } else//character IDLE
+         {
+            var iIDLE = pStat.state ? 2 : 0.;
+            var iMOVEMENT = 1;
+            // (<IAnimationContainer>pAnim["MOVEMENT.player"]).pause(true);
+            if (pStat.state == EGameHeroStates.GUN_NOT_DRAWED || pStat.state >= EGameHeroStates.GUN_IDLE) {
+                // pAnim["STATE.blend"].setWeightSwitching(fSpeed / fWalkSpeed, iIDLE, iMOVEMENT); /* idle ---> run */
+                            }
+            // trace(pAnim["STATE.blend"].getAnimationWeight(0), pAnim["STATE.blend"].getAnimationWeight(1), pAnim["STATE.blend"].getAnimationWeight(2))
+            if (fMovementRate > 0.0) {
+                //walk forward --> idle
+                if (pStat.state) {
+                    (pAnim["MOVEMENT.blend"]).setWeights(null, 0., 0., fSpeed / fWalkSpeed);
+                } else {
+                    (pAnim["MOVEMENT.blend"]).setWeights(null, fSpeed / fWalkSpeed, 0.);
+                }
+            } else if (fMovementRate < 0.0) {
+                //walk back --> idle
+                (pAnim["MOVEMENT.blend"]).setWeights(null, 0, fSpeed / fWalkSpeed);
+            }
+            (pAnim["MOVEMENT.player"]).setSpeed(1);
+        }
+        // if (pController.dodge) {
+        //     this.activateTrigger([this.dodgeHero, this.moveHero]);
+        // }
+            }
+    function checkHeroState(pControls, pHero, pStat, pController) {
+        // if (pControls.gun) {
+        //     this.activateTrigger([this.gunWeaponHero, this.moveHero]);
+        // }
+            }
+    /** @inline */function isFirstFrameOfTrigger() {
+        return akra.self.hero.parameters.lastTriggers !== akra.self.hero.triggers.length;
+    }
+    ;
+    function moveHero(pControls, pHero, pStat, pController) {
+        var fMovementRate;
+        var fMovementSpeedMax;
+        var fTimeDelta;
+        var fDirectX, fDirectY;
+        var fMovementDerivative;
+        var fMovementDerivativeMax;
+        var fRotationRate = 0;
+        var fMovementRateAbs;
+        var fWalkRate;
+        var f;
+        var pCamera, pCameraWorldData;
+        var v3fCameraDir, v3fCameraOrtho;
+        var fCameraYaw;
+        var pHeroWorldData;
+        var v3fHeroDir;
+        var v2fStick;
+        var fScalar;
+        var fPower;
+        var v2fStickDir;
+        var v3fRealDir;
+        var fMovementDot;
+        var fMovementTest;
+        var fMovementDir;
+        //analogue stick values
+        fDirectY = pControls.direct.y;
+        fDirectX = -pControls.direct.x;
+        //camera data
+        pCamera = akra.self.hero.camera;
+        pCameraWorldData = pCamera.worldMatrix.data;
+        //camera view direction projection to XZ axis
+        v3fCameraDir = akra.Vec3.stackCeil.set(-pCameraWorldData[akra.__13], 0., -pCameraWorldData[akra.__33]).normalize();
+        //v3fCameraOrtho  = Vec3(v3fCameraDir.z, 0., -v3fCameraDir.x);
+        //hero directiob proj to XZ axis
+        pHeroWorldData = pHero.worldMatrix.data;
+        v3fHeroDir = akra.Vec3.stackCeil.set(pHeroWorldData[akra.__13], 0., pHeroWorldData[akra.__33]).normalize();
+        //stick data
+        v2fStick = akra.Vec2.stackCeil.set(fDirectX, fDirectY);
+        //calculating stick power
+        if (v2fStick.x == v2fStick.y && v2fStick.x == 0.) {
+            fScalar = 0.;
+        } else if (akra.math.abs(v2fStick.x) > akra.math.abs(v2fStick.y)) {
+            fScalar = akra.math.sqrt(1. + akra.math.pow(v2fStick.y / v2fStick.x, 2.));
+        } else {
+            fScalar = akra.math.sqrt(akra.math.pow(v2fStick.x / v2fStick.y, 2.) + 1.);
+        }
+        //stick power value
+        fPower = fScalar ? v2fStick.length() / fScalar : 0.;
+        //stick dir
+        v2fStickDir = v2fStick.normalize(akra.Vec2.stackCeil.set());
+        //camera yaw
+        fCameraYaw = -akra.math.atan2(v3fCameraDir.z, v3fCameraDir.x);
+        //real direction in hero-space
+        v3fRealDir = akra.Vec3.stackCeil.set(v2fStickDir.y, 0., v2fStickDir.x);
+        akra.Quat4.fromYawPitchRoll(fCameraYaw, 0., 0., akra.Quat4.stackCeil.set()).multiplyVec3(v3fRealDir);
+        //movement parameters
+        fMovementDot = v3fRealDir.dot(v3fHeroDir);
+        fMovementTest = akra.math.abs(fMovementDot - 1.) / 2.;
+        fMovementDir = 1.;
+        fMovementRate = fPower * akra.math.sign(fMovementDot);
+        if (fMovementDot > pStat.walkBackAngleRange) {
+            fMovementDir = v3fRealDir.x * v3fHeroDir.z - v3fRealDir.z * v3fHeroDir.x;
+            fRotationRate = fPower * akra.math.sign(fMovementDir) * fMovementTest;
+        } else {
+            fRotationRate = 0.0;
+        }
+        fTimeDelta = pEngine.time - pStat.time;
+        fMovementSpeedMax = pStat.movementSpeedMax;
+        fWalkRate = pStat.walkSpeed / pStat.movementSpeedMax;
+        if (fTimeDelta != 0.0) {
+            fMovementDerivative = (fMovementRate - pStat.movementRate) / fTimeDelta;
+            f = akra.math.exp(akra.math.abs(pStat.movementRate));
+            fMovementDerivativeMax = pStat.movementDerivativeMin + ((f - 1.) / (f + 1.)) * pStat.movementDerivativeConst;
+            fMovementRate = pStat.movementRate + fTimeDelta * akra.math.clamp(fMovementDerivative, -fMovementDerivativeMax, fMovementDerivativeMax);
+        }
+        fMovementRateAbs = akra.math.abs(fMovementRate);
+        if (fMovementRateAbs < pStat.movementRateThreshold) {
+            fMovementRate = 0.;
+            // this.pCurrentSpeedField.edit("0.00 m/sec");
+                    }
+        if (fRotationRate != 0.) {
+            pHero.addRelRotationByEulerAngles(fRotationRate * pStat.rotationSpeedMax * fTimeDelta, 0.0, 0.0);
+        }
+        if (fMovementRateAbs >= fWalkRate || (fMovementRate < 0. && fMovementRateAbs > pStat.walkSpeed / pStat.runSpeed)) {
+            var v3fDt = akra.Vec3.stackCeil.set(0.);
+            pHero.addRelPosition(akra.Vec3.stackCeil.set(0.0, 0.0, fMovementRate * fMovementSpeedMax * fTimeDelta));
+            pHero.update();
+            if (!akra.isNull(pTerrain)) {
+                pTerrain.projectPoint(pHero.worldPosition, v3fDt);
+                pHero.setPosition(v3fDt);
+            }
+            // this.pCurrentSpeedField.edit((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
+                    }
+        pStat.rotationRate = fRotationRate;
+        pStat.movementRate = fMovementRate;
+        pStat.time = pEngine.time;
+        pStat.timeDelta = fTimeDelta;
+    }
+    ;
+    function activateTrigger(pTriggersList) {
+        pTriggersList.push(updateCharacterCamera);
+        akra.self.hero.triggers.push({
+            triggers: pTriggersList,
+            time: pEngine.time
+        });
+    }
+    ;
+    function deactivateTrigger() {
+        return akra.self.hero.triggers.pop();
+    }
+    ;
+    function updateHero() {
+        var pGamepad = akra.self.gamepads.find(0);
+        var pHero = akra.self.hero.root;
+        var pStat = akra.self.hero.parameters;
+        var pController = akra.self.hero.root.getController();
+        var pTriggers = akra.self.hero.triggers.last;
+        var pControls = akra.self.hero.controls;
+        var pTriggersData = pTriggers.triggers;
         if (!pGamepad) {
             return;
         }
-        var fX = pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_HOR];
-        var fY = pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_VERT];
-        if (Math.abs(fX) < 0.25) {
-            fX = 0;
+        if (pGamepad.buttons[akra.EGamepadCodes.SELECT]) {
+            pStat.blocked = true;
         }
-        if (Math.abs(fY) < 0.25) {
-            fY = 0;
+        if (pGamepad.buttons[akra.EGamepadCodes.START]) {
+            pStat.blocked = false;
         }
-        if (fX || fY) {
-            pCamera.addRelRotationByEulerAngles(-fX / 10, -fY / 10, 0);
+        if (pStat.blocked) {
+            return;
         }
+        var fDirectY = -pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_VERT];
+        var fDirectX = -pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_HOR];
+        var fAnalogueButtonThresholdInv = 1. - pStat.analogueButtonThreshold;
+        if (akra.math.abs(fDirectX) < pStat.analogueButtonThreshold) {
+            fDirectX = 0.;
+        } else {
+            fDirectX = akra.math.sign(fDirectX) * (akra.math.abs(fDirectX) - pStat.analogueButtonThreshold) / fAnalogueButtonThresholdInv;
+        }
+        if (akra.math.abs(fDirectY) < pStat.analogueButtonThreshold) {
+            fDirectY = 0.;
+        } else {
+            fDirectY = akra.math.sign(fDirectY) * (akra.math.abs(fDirectY) - pStat.analogueButtonThreshold) / fAnalogueButtonThresholdInv;
+        }
+        pControls.direct.y = fDirectY;
+        pControls.direct.x = fDirectX;
+        pControls.forward = !!pGamepad.buttons[akra.EGamepadCodes.PAD_TOP];
+        pControls.back = !!pGamepad.buttons[akra.EGamepadCodes.PAD_BOTTOM];
+        pControls.left = !!pGamepad.buttons[akra.EGamepadCodes.PAD_LEFT];
+        pControls.right = !!pGamepad.buttons[akra.EGamepadCodes.PAD_RIGHT];
+        pControls.dodge = !!pGamepad.buttons[akra.EGamepadCodes.FACE_1];
+        pControls.gun = !!pGamepad.buttons[akra.EGamepadCodes.FACE_4];
+        var iTrigger = akra.self.hero.triggers.length;
+        for(var i = 0; i < pTriggersData.length; ++i) {
+            pTriggersData[i](pControls, pHero, pStat, pController, pTriggers.time);
+        }
+        pStat.lastTriggers = iTrigger;
+    }
+    function updateCameraAxes() {
+        // var pCameraWorldData = this.getActiveCamera().worldMatrix().pData;
+        // var v3fCameraDir = Vec3(-pCameraWorldData._13, 0, -pCameraWorldData._33).normalize();
+        // this.pCameraBasis.setRotation(Vec3(0, 1, 0), -Math.atan2(v3fCameraDir.z, v3fCameraDir.x));
+            }
+    function setupCameras(pHeroNode) {
+        akra.self.hero.root = pHeroNode;
+        var pCharacterCamera = pScene.createCamera("character-camera");
+        var pCharacterRoot = akra.self.hero.root;
+        var pCharacterPelvis = pCharacterRoot.findEntity("node-Bip001");
+        var pCharacterHead = pCharacterRoot.findEntity("node-Bip001_Head");
+        pCharacterCamera.setInheritance(akra.ENodeInheritance.NONE);
+        pCharacterCamera.attachToParent(pCharacterRoot);
+        pCharacterCamera.setProjParams(Math.PI / 4.0, pCanvas.width / pCanvas.height, 0.1, 3000.0);
+        pCharacterCamera.setRelPosition(akra.Vec3.stackCeil.set(0, 2.5, -5));
+        akra.self.hero.camera = pCharacterCamera;
+        akra.self.hero.head = pCharacterHead;
+        akra.self.hero.pelvis = pCharacterPelvis;
+    }
+    //>>>>>>>>>>>>>>>>>>>>>
+    function isDefaultCamera(pViewport, pKeymap, pCamera, pCharacterCamera, pGamepad) {
+        if (pKeymap.isKeyPress(akra.EKeyCodes.N1) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.RIGHT_SHOULDER])) {
+            pCharacterCamera.lookAt(akra.self.hero.head.worldPosition);
+            pViewport.setCamera(pCharacterCamera);
+        } else if (pKeymap.isKeyPress(akra.EKeyCodes.N2) || (pGamepad && pGamepad.buttons[akra.EGamepadCodes.LEFT_SHOULDER])) {
+            pViewport.setCamera(pCamera);
+        }
+        if (pCharacterCamera.isActive()) {
+            return false;
+        }
+        return true;
     }
     function update() {
-        updateCameras();
+        var pCharacterCamera = akra.self.hero.camera;
+        var pGamepad = pGamepads.find(0);
+        if (isDefaultCamera(pViewport, pKeymap, pCamera, pCharacterCamera, pGamepad)) {
+            updateCamera(pCamera, pKeymap, pGamepad);
+        }
+        updateHero();
         akra.self.keymap.update();
     }
     function createModels() {
         var pImporter = new akra.io.Importer(pEngine);
         pImporter.loadDocument(pControllerData);
         pMovementController = pImporter.getController();
-        akra.self.hero.root = createModelEx("HERO_MODEL", pScene, pTerrain, pCamera, pMovementController).findEntity("node-Bip001");
+        var pHeroNode = createModelEx("HERO_MODEL", pScene, pTerrain, pCamera, pMovementController);
+        setupCameras(pHeroNode);
+        initState(pHeroNode);
         var pBox = createModelEntry(pScene, "CLOSED_BOX");
         pBox.scale(.25);
         putOnTerrain(pBox, pTerrain, new akra.Vec3(-2., -3.85, -5.));

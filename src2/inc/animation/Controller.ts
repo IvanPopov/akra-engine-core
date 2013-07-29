@@ -156,7 +156,6 @@ module akra.animation {
 				}
 
 				pAnimationNext.play(fRealTime);
-
 				this._pActiveAnimation = pAnimationNext;
 			
 				EMIT_BROADCAST(play, _CALL(pAnimationNext, fRealTime));

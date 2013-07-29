@@ -5,6 +5,7 @@ export interface IGameCameraParameters {
         cameraPitchMin        : float;
         cameraPitchBase       : float;
 
+        // cameraCharacterBasePosition             : IVec3;
         cameraCharacterDistanceBase       	: float;
         cameraCharacterDistanceMax        	: float;
         cameraCharacterChaseSpeed         	: float;

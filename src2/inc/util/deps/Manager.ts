@@ -22,7 +22,7 @@ module akra.util.deps {
 		LOADING
 	}
 
-	export var FORCE_ETAG_CHECKING: bool = false;
+	export var FORCE_ETAG_CHECKING: bool = true;
 
 	function utf8_to_b64( str: string ): string {
 	    return window.btoa(unescape(encodeURIComponent( str )));

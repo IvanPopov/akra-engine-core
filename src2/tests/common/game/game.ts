@@ -10,6 +10,13 @@ declare var $: JQueryStatic;
 #define double number
 #define long number
 
+#define vec2(...) Vec2.stackCeil.set(__VA_ARGS__)
+#define vec3(...) Vec3.stackCeil.set(__VA_ARGS__)
+#define vec4(...) Vec4.stackCeil.set(__VA_ARGS__)
+#define quat4(...) Quat4.stackCeil.set(__VA_ARGS__)
+#define mat3(...) Mat3.stackCeil.set(__VA_ARGS__)
+#define mat4(...) Mat4.stackCeil.set(__VA_ARGS__)
+
 module akra {
 
 	#include "IGameTrigger.ts"
@@ -41,6 +48,7 @@ module akra {
 	#include "putOnTerrain.ts"
 	#include "fetchAllCameras.ts"
 
+	#include "updateKeyboardControls.ts"
 	#include "updateCamera.ts"
 
 	var pProgress: IProgress = createProgress();
@@ -212,7 +220,7 @@ module akra {
 		        cameraCharacterDistanceMax        : 15.0,
 		        cameraCharacterChaseSpeed         : 25, /* m/sec*/
 		        cameraCharacterChaseRotationSpeed : 5., /* rad/sec*/
-		        cameraCharacterFocusPoint       : new Vec3(0.0, 1.5, 0.0), /*meter*/
+		        cameraCharacterFocusPoint       : new Vec3(0.0, 0.5, 0.0), /*meter*/
 
 		        state : EGameHeroStates.GUN_NOT_DRAWED,
 
@@ -225,11 +233,11 @@ module akra {
 	pKeymap.captureKeyboard(document);
 
 	//>>>>>>>>>>>>>>>>>>>>>
-	function initState() {
+	function initState(pHeroNode: ISceneNode) {
 		var pStat = self.hero.parameters;
 
 	    function findAnimation(sName: string, sPseudo?: string) {
-	        pStat.anim[sPseudo || sName] = self.hero.root.getController().findAnimation(sName);
+	        pStat.anim[sPseudo || sName] = pHeroNode.getController().findAnimation(sName);
 	    }
 
 	    pStat.time = self.engine.time;
@@ -267,6 +275,8 @@ module akra {
 
 	    var pCameraWorldData: Float32Array = pCamera.worldMatrix.data;
 
+	    var v3fHeroFocusPoint: IVec3 = pStat.cameraCharacterFocusPoint.add(self.hero.pelvis.worldPosition, vec3());
+
 	    var v3fCameraYPR: IVec3 = pCamera.localOrientation.toYawPitchRoll(vec3());
 	    var v3fYPR: IVec3 = vec3(0.);
 	    var qTemp: IQuat4;
@@ -274,40 +284,64 @@ module akra {
 	    var v3fCameraOrtho: IVec3;
 
 	    //hero displacmnet
-	    var v3fDisplacement: IVec3 = pHero.worldPosition.subtract(pStat.position, vec3());
+	    // var v3fDisplacement: IVec3 = pHero.worldPosition.subtract(pStat.position, vec3());
+	    // v3fDisplacement.y = 0;
+	    // pCamera.addPosition(v3fDisplacement.negate(vec3()));
+	    
+	    // pStat.position.set(pHero.worldPosition);
 
-	    pCamera.addPosition(v3fDisplacement.negate(vec3()));
-	    pStat.position.set(pHero.worldPosition);
 
-	    //camera orientation
-	    var v3fCameraHeroDist: IVec3 = pCamera.worldPosition.subtract(self.hero.pelvis.worldPosition, vec3());
+	   	var v3fCameraHeroDist: IVec3 = pCamera.worldPosition.subtract(v3fHeroFocusPoint, vec3());
 	    var v3fCameraHeroDir: IVec3 = v3fCameraHeroDist.normalize(vec3());
 	    var fCameraHeroDist: float = v3fCameraHeroDist.length();
+
+	     //camera position
+	    var fCharChaseSpeedDelta: float = (pStat.cameraCharacterChaseSpeed * fTimeDelta);
+	    /*if (math.abs(fCameraHeroDist - pStat.cameraCharacterDistanceBase) > 0.05)*/ {
+		    var fDist: float = math.clamp((fCameraHeroDist - pStat.cameraCharacterDistanceBase) / pStat.cameraCharacterDistanceMax *
+		                fCharChaseSpeedDelta, -2, 2);
+
+		    var v3fHeroZX: IVec3 = vec3(v3fHeroFocusPoint);
+		    v3fHeroZX.y = 0.0;
+		    
+		    var v3fCameraZX: IVec3 = vec3(pCamera.worldPosition);
+		    v3fCameraZX.y = 0.0;
+
+
+		    var v3fDir: IVec3 = v3fHeroZX.subtract(v3fCameraZX).normalize();
+		    pCamera.addPosition(v3fDir.scale(fDist));
+		    pCamera.addPosition(vec3(0., ((v3fHeroFocusPoint.y + 1.0 - pCamera.worldPosition.y) * fCharChaseSpeedDelta / 100), 0.));
+		    
+ 			pCamera.update();
+
+		    var v3fDt: IVec3 = vec3(0.);
+		    if (!isNull(pTerrain)) {
+	    		pTerrain.projectPoint(pCamera.worldPosition, v3fDt);
+	    		
+	    		v3fDt.x = pCamera.worldPosition.x;
+	    		v3fDt.y = math.max(v3fDt.y + 1.0, pCamera.worldPosition.y);
+	    		v3fDt.z = pCamera.worldPosition.z;
+
+	    		pCamera.setPosition(v3fDt);
+	    	}
+		}
+
+
+	    //camera orientation
  
 	    var qCamera: IQuat4 = pCamera.localOrientation;
-	    var qHeroView: IQuat4 = Mat4.lookAt(pCamera.localPosition, pStat.cameraCharacterFocusPoint, vec3(0., 1., 0.),
+	    var qHeroView: IQuat4 = Mat4.lookAt(pCamera.worldPosition, 
+	    							v3fHeroFocusPoint, 
+	    							vec3(0., 1., 0.),
 	                                mat4()).toQuat4(quat4());
 
 	    qCamera.smix(qHeroView.conjugate(), pStat.cameraCharacterChaseRotationSpeed * fTimeDelta);
 
 	    pCamera.localOrientation = qCamera;
 
-	    //camera position
-	    var fDist: float = (fCameraHeroDist - pStat.cameraCharacterDistanceBase) / pStat.cameraCharacterDistanceMax *
-	                (-pStat.cameraCharacterChaseSpeed * fTimeDelta);
-
-	    var v3fCameraZX: IVec3 = vec3(pCamera.worldPosition);
-	    v3fCameraZX.y = 0;
-
-	    var v3fHeroZX: IVec3 = vec3(pHero.worldPosition);
-	    v3fHeroZX.y = 0;
-
-	    var v3fDir: IVec3 = v3fHeroZX.subtract(v3fCameraZX).normalize();
-	    pCamera.addPosition(v3fDir.scale(-fDist));
-
 	    //====================
 
-	    if (fY == 0.) {
+	    /*if (fY == 0.) {
 	        fY = -(v3fCameraYPR.y - (-pStat.cameraPitchBase)) * pStat.cameraPitchChaseSpeed * fTimeDelta;
 
 	        if (math.abs(fY) < 0.001) {
@@ -332,7 +366,7 @@ module akra {
 
 	    if (fX_ || fY_ || fZ_) {
 	        pCamera.addRotationByEulerAngles(fX_, fY_, fZ_);
-	    }
+	    }*/
 	}
 
 	function movementHero(pControls: IGameParameters, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController) {
@@ -359,8 +393,14 @@ module akra {
 
 	    fSpeed = fMovementRateAbs * pStat.movementSpeedMax;
 
-	    if (pController.active.name !== "STATE.player") {
-	        // pController.play('STATE.player', this.fTime);
+	    if (pController.active) {
+
+		    if (pController.active.name !== "STATE.player") {
+		        // pController.play('STATE.player', this.fTime);
+		    }
+	    }
+	    else {
+	    	console.warn("controller::active is null ;(");
 	    }
 
 	    //character move
@@ -414,7 +454,7 @@ module akra {
 	        var iIDLE: int = pStat.state ? 2 : 0.;
 	        var iMOVEMENT: int = 1;
 
-	        (<IAnimationContainer>pAnim["MOVEMENT.player"]).pause(true);
+	        // (<IAnimationContainer>pAnim["MOVEMENT.player"]).pause(true);
 
 	        if (pStat.state == EGameHeroStates.GUN_NOT_DRAWED || pStat.state >= EGameHeroStates.GUN_IDLE) {
 	            // pAnim["STATE.blend"].setWeightSwitching(fSpeed / fWalkSpeed, iIDLE, iMOVEMENT); /* idle ---> run */
@@ -571,7 +611,18 @@ module akra {
 
 	    if (fMovementRateAbs >= fWalkRate ||
 	        (fMovementRate < 0. && fMovementRateAbs > pStat.walkSpeed / pStat.runSpeed)) {
-	        pHero.addRelPosition(vec3(0.0, 0.0, fMovementRate * fMovementSpeedMax * fTimeDelta));
+
+	    	var v3fDt: IVec3 = Vec3.stackCeil.set(0.);
+
+	    	pHero.addRelPosition(vec3(0.0, 0.0, fMovementRate * fMovementSpeedMax * fTimeDelta));
+	    	pHero.update();
+
+	    	if (!isNull(pTerrain)) {
+	    		pTerrain.projectPoint(pHero.worldPosition, v3fDt);
+	    		pHero.setPosition(v3fDt);
+	    	}
+
+	        
 
 	        // this.pCurrentSpeedField.edit((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
 	    }
@@ -595,7 +646,7 @@ module akra {
 	    var pGamepad: Gamepad = self.gamepads.find(0);
 	    var pHero: ISceneNode = self.hero.root;
 	    var pStat: IGameParameters = self.hero.parameters;
-	    var pController: IAnimationController = self.hero.root.getController()
+	    var pController: IAnimationController = self.hero.root.getController();
 	    
 	    var pTriggers: IGameTrigger	  = self.hero.triggers.last;
 	    var pControls: IGameControls  = self.hero.controls;
@@ -661,13 +712,15 @@ module akra {
 	    // this.pCameraBasis.setRotation(Vec3(0, 1, 0), -Math.atan2(v3fCameraDir.z, v3fCameraDir.x));
 	}
 
-	function setupCameras(): void {
+	function setupCameras(pHeroNode: ISceneNode): void {
+		self.hero.root = pHeroNode;
+
 		var pCharacterCamera: ICamera = pScene.createCamera("character-camera");
 	    var pCharacterRoot: ISceneNode = self.hero.root;
 	    var pCharacterPelvis: ISceneNode = <ISceneNode>pCharacterRoot.findEntity("node-Bip001");
 	    var pCharacterHead: ISceneNode = <ISceneNode>pCharacterRoot.findEntity("node-Bip001_Head");
 
-	    pCharacterCamera.setInheritance(ENodeInheritance.POSITION);
+	    pCharacterCamera.setInheritance(ENodeInheritance.NONE);
 	    pCharacterCamera.attachToParent(pCharacterRoot);
 	    pCharacterCamera.setProjParams(Math.PI / 4.0, pCanvas.width / pCanvas.height, 0.1, 3000.0);
 	    pCharacterCamera.setRelPosition(vec3(0, 2.5, -5));
@@ -679,8 +732,7 @@ module akra {
 
 	//>>>>>>>>>>>>>>>>>>>>>
 
-	function isDefaultCamera(pKeymap: IKeyMap, pCamera: ICamera, pCharacterCamera: ICamera, pGamepad: Gamepad): bool {
-		var pViewport: IViewport = pCamera._getLastViewport();
+	function isDefaultCamera(pViewport: IViewport, pKeymap: IKeyMap, pCamera: ICamera, pCharacterCamera: ICamera, pGamepad: Gamepad): bool {
 
 		if (pKeymap.isKeyPress(EKeyCodes.N1) ||
 	        (pGamepad && pGamepad.buttons[EGamepadCodes.RIGHT_SHOULDER])) {
@@ -701,7 +753,10 @@ module akra {
 
 
 	function update(): void {
-		if (isDefaultCamera(pKeymap, pCamera, pCharacterCamera, pGamepad)) {
+		var pCharacterCamera: ICamera = self.hero.camera;
+		var pGamepad: Gamepad = pGamepads.find(0);
+
+		if (isDefaultCamera(pViewport, pKeymap, pCamera, pCharacterCamera, pGamepad)) {
 			updateCamera(pCamera, pKeymap, pGamepad);
 		}
 
@@ -714,9 +769,9 @@ module akra {
 		pImporter.loadDocument(pControllerData);
 		pMovementController = pImporter.getController();
 
-		self.hero.root = <ISceneNode>createModelEx("HERO_MODEL", pScene, pTerrain, pCamera, pMovementController).findEntity("node-Bip001");
-		setupCameras();
-		initState();
+		var pHeroNode: ISceneNode = <ISceneNode>createModelEx("HERO_MODEL", pScene, pTerrain, pCamera, pMovementController);
+		setupCameras(pHeroNode);
+		initState(pHeroNode);
 
 
 		var pBox: ISceneNode = createModelEntry(pScene, "CLOSED_BOX");

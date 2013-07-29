@@ -11,8 +11,9 @@ module akra {
 	IFACE(IQuat4);
 
 	export enum ENodeInheritance {
+		NONE,
 		//inheritance only position
-		POSITION = 0,
+		POSITION,
 		//inheritance rotation and scale only
         ROTSCALE,
         //inheritance all

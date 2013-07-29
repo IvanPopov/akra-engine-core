@@ -2,7 +2,7 @@ function updateCamera(pCamera: ICamera, pKeymap: IKeyMap, pGamepad: Gamepad = nu
 	updateKeyboardControls(pCamera, 0.25, 0.05, pKeymap, pGamepad);
 
     //default camera.
-
+    var pCanvas: ICanvas3d = pCamera._getLastViewport().getTarget().getRenderer().getDefaultCanvas();
     if (pKeymap.isMousePress() && pKeymap.isMouseMoved()) {
     	var v2fD: IOffset = pKeymap.getMouseShift();
         var fdX = v2fD.x, fdY = v2fD.y;
@@ -20,11 +20,11 @@ function updateCamera(pCamera: ICamera, pKeymap: IKeyMap, pGamepad: Gamepad = nu
     var fX = pGamepad.axes[EGamepadAxis.RIGHT_ANALOGUE_HOR];
     var fY = pGamepad.axes[EGamepadAxis.RIGHT_ANALOGUE_VERT];
 
-    if (Math.abs(fX) < 0.25) {
+    if (math.abs(fX) < 0.25) {
         fX = 0;
     }
 
-    if (Math.abs(fY) < 0.25) {
+    if (math.abs(fY) < 0.25) {
         fY = 0;
     }
 

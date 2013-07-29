@@ -160,11 +160,11 @@ module akra.scene {
 
 		        //console.error(m4fOrient.toString());
 
-		        if (this._pParent) {
+		        if (this._pParent && this._eInheritance !== ENodeInheritance.NONE) {
 		        	var m4fParent: IMat4 = (<Node>this._pParent).worldMatrix;
 					var pParentData: Float32Array = m4fParent.data;
 
-		            if (this._eInheritance === ENodeInheritance.ALL) {
+					if (this._eInheritance === ENodeInheritance.ALL) {
 		                m4fParent.multiply(m4fOrient, m4fWorld);
 		            }
 		            else if (this._eInheritance === ENodeInheritance.POSITION) {
