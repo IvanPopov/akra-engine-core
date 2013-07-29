@@ -39,7 +39,7 @@ module akra.terrain {
 
 		protected _iSectorShift: uint;
 		//Количество секторов по осям
-		private _iSectorUnits: uint; 
+		protected _iSectorUnits: uint; 
 		protected _iSectorVerts: uint;
 
 		//размер карты высот
@@ -47,7 +47,7 @@ module akra.terrain {
 		//размер карты высот
 		protected _iTableHeight: uint; 
 		//Таблица(карта высот)
-		private _pHeightTable: float[] = null;  
+		protected _pHeightTable: Float32Array = null;  
 
 		private _pNormalMapTexture: ITexture = null;
 		private _pNormalMapImage: IImg = null;
@@ -61,7 +61,7 @@ module akra.terrain {
 
 		//отоброжаемые куски текстуры
 		private _pMegaTexures: IMegaTexture = null; 
-		private _bUseVertexNormal: bool = false;
+		protected _bUseVertexNormal: bool = false;
 
 		protected _pDefaultRenderMethod: IRenderMethod = null;
 		protected _pRenderMethod: IRenderMethod = null;
@@ -338,8 +338,8 @@ module akra.terrain {
 			    var iMaxY: uint = this._iTableHeight;
 			    var iMaxX: uint = this._iTableWidth;
 
-			    var pColorData: Uint8Array = new Uint8Array(4 * iMaxY * iMaxX);
-			    this._pHeightTable = new Array(iMaxX * iMaxY); /*float*/
+			    //var pColorData: Uint8Array = new Uint8Array(4 * iMaxY * iMaxX);
+			    this._pHeightTable = new Float32Array(iMaxX * iMaxY); /*float*/
 
 			    // first, build a table of heights
 			    if (pImageHightMap.isResourceLoaded()) {

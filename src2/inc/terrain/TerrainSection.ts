@@ -18,6 +18,7 @@ module akra.terrain {
 	    //номер сектора по иксу и по игрику
 	    protected _iSectorX: uint = 0;   
 	    protected _iSectorY: uint = 0;
+	    protected _iSectorIndex: uint = 0;
 	    //Ращмеры сетки вершин
 	    protected _iXVerts: uint = 0; 
 	    protected _iYVerts: uint = 0;
@@ -43,7 +44,7 @@ module akra.terrain {
 		};
 
 		inline get sectionIndex(): uint {
-			return (this._iSectorY * this._pTerrainSystem.sectorCountX +  this._iSectorX);
+			return this._iSectorIndex;
 		}
 
 		inline get heightX(): float {
@@ -80,6 +81,7 @@ module akra.terrain {
 			this._iYVerts = iYVerts;
 			this._iSectorX = iSectorX;
 			this._iSectorY = iSectorY;
+			this._iSectorIndex = (this._iSectorY * this._pTerrainSystem.sectorCountX +  this._iSectorX);
 			this._pWorldRect.x0 = pWorldRect.x0;
 			this._pWorldRect.x1 = pWorldRect.x1;
 			this._pWorldRect.y0 = pWorldRect.y0;
