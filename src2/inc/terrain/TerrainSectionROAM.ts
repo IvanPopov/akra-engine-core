@@ -202,7 +202,7 @@ module akra.terrain {
 				this._pVarianceTreeA, 1);
 
 			this.recursiveTessellate(
-				this._pRootTriangleA,
+				this._pRootTriangleB,
 				this._iHeightMapX + this._iXVerts-1, this._iHeightMapY,					  fHeight3,
 				this._iHeightMapX,					 this._iHeightMapY,					  fHeight0,
 				this._iHeightMapX + this._iXVerts-1, this._iHeightMapY + this._iYVerts-1, fHeight2,

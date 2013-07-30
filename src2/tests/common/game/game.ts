@@ -273,63 +273,91 @@ module akra {
 	        fY = 0;
 	    }
 
-	    var pCameraWorldData: Float32Array = pCamera.worldMatrix.data;
+	    // var pCameraWorldData: Float32Array = pCamera.worldMatrix.data;
 
 	    var v3fHeroFocusPoint: IVec3 = pStat.cameraCharacterFocusPoint.add(self.hero.pelvis.worldPosition, vec3());
-
-	    var v3fCameraYPR: IVec3 = pCamera.localOrientation.toYawPitchRoll(vec3());
-	    var v3fYPR: IVec3 = vec3(0.);
-	    var qTemp: IQuat4;
-	    var v3fCameraDir: IVec3 = vec3(-pCameraWorldData[__13], 0, -pCameraWorldData[__33]).normalize();
-	    var v3fCameraOrtho: IVec3;
-
-	    //hero displacmnet
-	    // var v3fDisplacement: IVec3 = pHero.worldPosition.subtract(pStat.position, vec3());
-	    // v3fDisplacement.y = 0;
-	    // pCamera.addPosition(v3fDisplacement.negate(vec3()));
+	   	var v3fCameraHeroDist: IVec3;
 	    
-	    // pStat.position.set(pHero.worldPosition);
 
+	    // camera orientation
+	    
+	   	var v3fCameraYPR: IVec3 = pCamera.localOrientation.toYawPitchRoll(vec3());
+	    var fPitchRotation: float = 0;
+	    var qPitchRot: IQuat4;
+	    var fYawRotation: float = 0;
+	    var qYawRot: IQuat4 
 
-	   	var v3fCameraHeroDist: IVec3 = pCamera.worldPosition.subtract(v3fHeroFocusPoint, vec3());
-	    var v3fCameraHeroDir: IVec3 = v3fCameraHeroDist.normalize(vec3());
-	    var fCameraHeroDist: float = v3fCameraHeroDist.length();
+		if (!(v3fCameraYPR.y > -pStat.cameraPitchMin && -fY < 0) &&
+	        !(v3fCameraYPR.y < -pStat.cameraPitchMax && -fY > 0)) 
+	 	{
+
+			fPitchRotation = fY * pStat.cameraPitchSpeed * fTimeDelta;
+	 		
+		    var pCameraWorldData: Float32Array = pCamera.worldMatrix.data;
+		    var v3fCameraDir: IVec3 = vec3(-pCameraWorldData[__13], 0, -pCameraWorldData[__33]).normalize();
+		    var v3fCameraOrtho: IVec3 = vec3(v3fCameraDir.z, 0, -v3fCameraDir.x);
+		    qPitchRot = Quat4.fromAxisAngle(v3fCameraOrtho, fPitchRotation, quat4());
+	    
+	        v3fCameraHeroDist = pCamera.worldPosition.subtract(v3fHeroFocusPoint, vec3());
+		    pCamera.localPosition = qPitchRot.multiplyVec3(v3fCameraHeroDist, vec3()).add(v3fHeroFocusPoint);
+		    pCamera.update();
+
+	        // pCamera.localPosition.scale(1. - fY / 25);
+	    }
+	    
+	   	fYawRotation = fX * pStat.cameraPitchChaseSpeed * fTimeDelta;
+	    qYawRot = Quat4.fromYawPitchRoll(fYawRotation, 0, 0., quat4());
+	   
+
+	    v3fCameraHeroDist = pCamera.worldPosition.subtract(v3fHeroFocusPoint, vec3());
+	    pCamera.localPosition = qYawRot.multiplyVec3(v3fCameraHeroDist, vec3()).add(v3fHeroFocusPoint);
+	    pCamera.update();
 
 	     //camera position
 	    var fCharChaseSpeedDelta: float = (pStat.cameraCharacterChaseSpeed * fTimeDelta);
-	    /*if (math.abs(fCameraHeroDist - pStat.cameraCharacterDistanceBase) > 0.05)*/ {
-		    var fDist: float = math.clamp((fCameraHeroDist - pStat.cameraCharacterDistanceBase) / pStat.cameraCharacterDistanceMax *
-		                fCharChaseSpeedDelta, -2, 2);
+	    
+	    var fCameraHeroDist: float = v3fCameraHeroDist.length();
+	    var fDist: float = 
+	    (fCameraHeroDist - pStat.cameraCharacterDistanceBase) / pStat.cameraCharacterDistanceMax * fCharChaseSpeedDelta;
 
-		    var v3fHeroZX: IVec3 = vec3(v3fHeroFocusPoint);
-		    v3fHeroZX.y = 0.0;
-		    
-		    var v3fCameraZX: IVec3 = vec3(pCamera.worldPosition);
-		    v3fCameraZX.y = 0.0;
+	    var v3fHeroZX: IVec3 = vec3(v3fHeroFocusPoint);
+	    v3fHeroZX.y = 0.0;
+	    
+	    var v3fCameraZX: IVec3 = vec3(pCamera.worldPosition);
+	    v3fCameraZX.y = 0.0;
 
-
-		    var v3fDir: IVec3 = v3fHeroZX.subtract(v3fCameraZX).normalize();
-		    pCamera.addPosition(v3fDir.scale(fDist));
-		    pCamera.addPosition(vec3(0., ((v3fHeroFocusPoint.y + 1.0 - pCamera.worldPosition.y) * fCharChaseSpeedDelta / 100), 0.));
-		    
- 			pCamera.update();
-
-		    var v3fDt: IVec3 = vec3(0.);
-		    if (!isNull(pTerrain)) {
-	    		pTerrain.projectPoint(pCamera.worldPosition, v3fDt);
-	    		
-	    		v3fDt.x = pCamera.worldPosition.x;
-	    		v3fDt.y = math.max(v3fDt.y + 1.0, pCamera.worldPosition.y);
-	    		v3fDt.z = pCamera.worldPosition.z;
-
-	    		pCamera.setPosition(v3fDt);
-	    	}
+	    //направление в плоскости XZ от камеры к персонажу(фокус поинту)
+	    var v3fHorDist: IVec3 = v3fHeroZX.subtract(v3fCameraZX, vec3());
+	    var v3fDir: IVec3 = v3fHorDist.normalize(vec3());
+	    
+	    if (v3fHorDist.length() > 2.0 || fDist <= 0) {
+			pCamera.addPosition(v3fDir.scale(fDist));
 		}
 
+		//настигаем нужную высоту
+		var fDeltaHeight: float = (v3fHeroFocusPoint.y + math.sin(pStat.cameraPitchBase) * fCameraHeroDist - pCamera.worldPosition.y);
+		pCamera.addPosition(vec3(0., (fDeltaHeight * fCharChaseSpeedDelta * math.abs(fDeltaHeight / 100)), 0.));
+		    
+		pCamera.update();
+
+
+	    if (!isNull(pTerrain)) {
+	    	var v3fDt: IVec3 = vec3(0.);
+
+    		pTerrain.projectPoint(pCamera.worldPosition, v3fDt);
+    		
+    		v3fDt.x = pCamera.worldPosition.x;
+    		v3fDt.y = math.max(v3fDt.y + 1.0, pCamera.worldPosition.y);
+    		v3fDt.z = pCamera.worldPosition.z;
+
+    		pCamera.setPosition(v3fDt);
+    	}
+
+		// pCamera.update();
 
 	    //camera orientation
  
-	    var qCamera: IQuat4 = pCamera.localOrientation;
+	    var qCamera: IQuat4 = Quat4.fromYawPitchRoll(v3fCameraYPR.x + fYawRotation, v3fCameraYPR.y/* + fPitchRotation*/, v3fCameraYPR.z);
 	    var qHeroView: IQuat4 = Mat4.lookAt(pCamera.worldPosition, 
 	    							v3fHeroFocusPoint, 
 	    							vec3(0., 1., 0.),
@@ -338,35 +366,17 @@ module akra {
 	    qCamera.smix(qHeroView.conjugate(), pStat.cameraCharacterChaseRotationSpeed * fTimeDelta);
 
 	    pCamera.localOrientation = qCamera;
-
+	    pCamera.update();
 	    //====================
+	    
 
-	    /*if (fY == 0.) {
-	        fY = -(v3fCameraYPR.y - (-pStat.cameraPitchBase)) * pStat.cameraPitchChaseSpeed * fTimeDelta;
+	    //pStat.cameraPitchChaseSpeed
+	    //-pStat.cameraPitchBase
+	    //-pStat.cameraPitchMin
+	    //-pStat.cameraPitchMax
+	    //pStat.cameraPitchSpeed
 
-	        if (math.abs(fY) < 0.001) {
-	            fY = 0.;
-	        }
-	    }
-
-	    if (!(v3fCameraYPR.y > -pStat.cameraPitchMin && -fY < 0) &&
-	        !(v3fCameraYPR.y < -pStat.cameraPitchMax && -fY > 0)) {
-
-	        v3fCameraOrtho = vec3(v3fCameraDir.z, 0, -v3fCameraDir.x);
-
-	        qTemp = Quat4.fromAxisAngle(v3fCameraOrtho, -fY * pStat.cameraPitchSpeed * fTimeDelta, quat4());
-	        qTemp.toYawPitchRoll(v3fYPR);
-
-	        // pCamera.localPosition.scale(1. - fY / 25);
-	    }
-
-	    var fX_ = fX / 10 + v3fYPR.x;
-	    var fY_ = v3fYPR.y;
-	    var fZ_ = v3fYPR.z;
-
-	    if (fX_ || fY_ || fZ_) {
-	        pCamera.addRotationByEulerAngles(fX_, fY_, fZ_);
-	    }*/
+	    
 	}
 
 	function movementHero(pControls: IGameParameters, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController) {
@@ -622,10 +632,10 @@ module akra {
 	    		pHero.setPosition(v3fDt);
 	    	}
 
-	        
-
 	        // this.pCurrentSpeedField.edit((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
 	    }
+
+
 
 	    pStat.rotationRate = fRotationRate;
 	    pStat.movementRate = fMovementRate;
