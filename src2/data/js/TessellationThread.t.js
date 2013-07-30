@@ -25,7 +25,7 @@ var ECommandTypes;
     }
 };
 
-function createTriTreeNode() {
+/*export*/ function createTriTreeNode() {
     return {
         baseNeighbor: null,
         leftNeighbor: null,
@@ -35,7 +35,7 @@ function createTriTreeNode() {
     };
 }
 
-var TriangleNodePool = (function () {
+/*export*/ var TriangleNodePool = (function () {
     function TriangleNodePool(iCount) {
         this._iNextTriNode = 0;
         this._iMaxCount = 0;
@@ -68,7 +68,7 @@ var TriangleNodePool = (function () {
     return TriangleNodePool;
 })();
 
-var TerrainInfo = (function () {
+/*export*/ var TerrainInfo = (function () {
     function TerrainInfo(pInitInfo) {
         this.heightMapTable = new Float32Array(pInitInfo.heightMapTable);
 
@@ -95,7 +95,7 @@ var TerrainInfo = (function () {
         this.tessellationScale = pInitInfo.tessellationScale;
         this.tessellationLimit = pInitInfo.tessellationLimit;
 
-        this.cameraCoord = null;
+        this.cameraCoord = new Float32Array(3);
         this.tessellationQueue = new Uint32Array(this.sectorCountX * this.sectorCountY);
         this.tessellationQueueSize = 0;
 
@@ -119,9 +119,11 @@ var TerrainInfo = (function () {
         }
 
         for (var i = 0; i < this.tessellationQueueSize; i++) {
-            var pSection = this.sections[this.tessellationQueue[i]];
-            this.buildTriangleList(pSection);
-            this.resetSection(pSection);
+            this.buildTriangleList(this.sections[this.tessellationQueue[i]]);
+        }
+
+        for (var i = 0; i < this.sections.length; i++) {
+            this.resetSection(this.sections[i]);
         }
     };
 
@@ -150,6 +152,11 @@ var TerrainInfo = (function () {
                     rightNeighborOfB: null,
                     startIndex: iIndex * (iSectorVerts * iSectorVerts)
                 };
+
+                for (var i = 0; i < this.sectorTotalVariances; i++) {
+                    this.sections[iIndex].varianceTreeA[i] = 0;
+                    this.sections[iIndex].varianceTreeB[i] = 0;
+                }
             }
         }
 
@@ -178,10 +185,9 @@ var TerrainInfo = (function () {
                 }
 
                 this.resetSection(pSection);
+                this.computeVariance(pSection);
             }
         }
-
-        this.computeVariance(pSection);
     };
 
     TerrainInfo.prototype.resetSection = function (pSection) {
@@ -309,7 +315,7 @@ var TerrainInfo = (function () {
 
         this.recursiveTessellate(pSection.rootTriangleA, pSection.pixelX, pSection.pixelY + this.sectorUnits, fHeight1, pSection.pixelX + this.sectorUnits, pSection.pixelY + this.sectorUnits, fHeight2, pSection.pixelX, pSection.pixelY, fHeight0, pSection.varianceTreeA, 1);
 
-        this.recursiveTessellate(pSection.rootTriangleA, pSection.pixelX + this.sectorUnits, pSection.pixelY, fHeight3, pSection.pixelX, pSection.pixelY, fHeight0, pSection.pixelX + this.sectorUnits, pSection.pixelY + this.sectorUnits, fHeight2, pSection.varianceTreeB, 1);
+        this.recursiveTessellate(pSection.rootTriangleB, pSection.pixelX + this.sectorUnits, pSection.pixelY, fHeight3, pSection.pixelX, pSection.pixelY, fHeight0, pSection.pixelX + this.sectorUnits, pSection.pixelY + this.sectorUnits, fHeight2, pSection.varianceTreeB, 1);
     };
 
     TerrainInfo.prototype.recursiveTessellate = function (pTri, iCornerAX, iCornerAY, fCornerAZ, iCornerBX, iCornerBY, fCornerBZ, iCornerCX, iCornerCY, fCornerCZ, pVTree, iIndex) {
@@ -474,7 +480,7 @@ function processTesselate(pData) {
     var pDataView = new DataView(pData, 0, 16);
     var iTesselationQueueSize = pDataView.getUint32(12, true);
 
-    pTerrain.cameraCoord = new Float32Array(pData, 0, 3);
+    pTerrain.cameraCoord.set(new Float32Array(pData, 0, 3));
     pTerrain.tessellationQueueSize = iTesselationQueueSize;
     pTerrain.tessellationQueue.set(new Uint32Array(pData, 4 * 4, iTesselationQueueSize));
     pTerrain.tessellationIndices = new Float32Array(pData, 4);
@@ -482,8 +488,9 @@ function processTesselate(pData) {
     pTerrain.processTessellationQueue();
 
     pDataView.setUint32(0, pTerrain.totalIndices, true);
+    pTmpTransferableArray[0] = pData;
 
-    (self).postMessage(pData, [pData]);
+    (self).postMessage(pData, pTmpTransferableArray);
 }
 
 function processUpdateParams(pUpdateInfo) {

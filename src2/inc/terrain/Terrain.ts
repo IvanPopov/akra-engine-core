@@ -258,8 +258,8 @@ module akra.terrain {
 		findSection(iX: uint, iY: uint) {
 			var pSection: ITerrainSection = null;
 
-			if (iX >= 0 && iX < this._iSectorCountX
-			        && iY >= 0 && iY < this._iSectorCountY) {
+			if (iX >= 0 && iX < this._iSectorCountX && 
+				iY >= 0 && iY < this._iSectorCountY) {
 			    pSection = this._pSectorArray[(iY * this._iSectorCountX) + iX];
 			}
 			else {

@@ -30,7 +30,8 @@ interface ICommand{
 	}
 }
 
-interface IRect3d{
+// module akra.util{
+/*export*/ interface IRect3d{
 	x0: number;
 	y0: number;
 	z0: number;
@@ -40,7 +41,7 @@ interface IRect3d{
 	z1: number;
 }
 
-interface ITriTreeNode {
+/*export*/ interface ITriTreeNode {
 	baseNeighbor: ITriTreeNode;
 	leftNeighbor: ITriTreeNode;
 	rightNeighbor: ITriTreeNode;
@@ -48,7 +49,7 @@ interface ITriTreeNode {
 	rightChild: ITriTreeNode;
 }
 
-interface ITerrainSectionInfo{
+/*export*/ interface ITerrainSectionInfo{
 	x: number;
 	y: number;
 	pixelX: number;
@@ -65,10 +66,10 @@ interface ITerrainSectionInfo{
 	leftNeighborOfB: ITriTreeNode;
 	rightNeighborOfB: ITriTreeNode;
 
-	startIndex: number
+	startIndex: number;
 }
 
-interface ITerrainInitInfo{
+/*export*/ interface ITerrainInitInfo{
 	heightMapTable: ArrayBuffer;
 	tableWidth: number;
 	tableHeight: number;
@@ -86,7 +87,7 @@ interface ITerrainInitInfo{
 	vertexID: number;
 }
 
-function createTriTreeNode(): ITriTreeNode {
+/*export*/ function createTriTreeNode(): ITriTreeNode {
 	return <ITriTreeNode>{
 		baseNeighbor: null,
 		leftNeighbor: null,
@@ -96,7 +97,7 @@ function createTriTreeNode(): ITriTreeNode {
 	};
 }
 
-class TriangleNodePool {
+/*export*/ class TriangleNodePool {
 	private _iNextTriNode: number = 0;
 	private _iMaxCount: number = 0;
 	private _pPool: ITriTreeNode[] = null;
@@ -132,7 +133,7 @@ class TriangleNodePool {
 }
 
 
-interface ITerrainInfo{
+/*export*/ interface ITerrainInfo{
 	heightMapTable: Float32Array;
 
 	tableWidth: number;
@@ -170,7 +171,7 @@ interface ITerrainInfo{
 	processTessellationQueue(): void;
 }
 
-class TerrainInfo implements ITerrainInfo {
+/*export*/ class TerrainInfo implements ITerrainInfo {
 	heightMapTable: Float32Array;
 
 	tableWidth: number;
@@ -233,7 +234,7 @@ class TerrainInfo implements ITerrainInfo {
 		this.tessellationScale = pInitInfo.tessellationScale;
 		this.tessellationLimit = pInitInfo.tessellationLimit;
 
-		this.cameraCoord = null;
+		this.cameraCoord = new Float32Array(3);
 		this.tessellationQueue = new Uint32Array(this.sectorCountX * this.sectorCountY);
 		this.tessellationQueueSize = 0;
 
@@ -260,9 +261,11 @@ class TerrainInfo implements ITerrainInfo {
 		}
 
 		for(var i: number = 0; i < this.tessellationQueueSize; i++){
-			var pSection = this.sections[this.tessellationQueue[i]];
-			this.buildTriangleList(pSection);
-			this.resetSection(pSection);
+			this.buildTriangleList(this.sections[this.tessellationQueue[i]]);
+		}
+
+		for(var i: number = 0; i < this.sections.length; i++){
+			this.resetSection(this.sections[i]);
 		}
 	}
 
@@ -294,6 +297,11 @@ class TerrainInfo implements ITerrainInfo {
 
 					startIndex: iIndex * (iSectorVerts * iSectorVerts)
 				};
+
+				for(var i: number = 0; i < this.sectorTotalVariances; i++){
+                    this.sections[iIndex].varianceTreeA[i] = 0;
+                    this.sections[iIndex].varianceTreeB[i] = 0;
+                }
 			}
 		}
 
@@ -323,10 +331,9 @@ class TerrainInfo implements ITerrainInfo {
 				}
 
 				this.resetSection(pSection);
+				this.computeVariance(pSection);
 			}
 		}
-
-		this.computeVariance(pSection);
 	}
 
 	private resetSection(pSection: ITerrainSectionInfo): void {
@@ -348,8 +355,8 @@ class TerrainInfo implements ITerrainInfo {
 	private findSection(iX: number, iY: number): ITerrainSectionInfo {
 		var pSection: ITerrainSectionInfo = null;
 
-		if (iX >= 0 && iX < this.sectorCountX
-		    && iY >= 0 && iY < this.sectorCountY) {
+		if (iX >= 0 && iX < this.sectorCountX && 
+			iY >= 0 && iY < this.sectorCountY) {
 		    pSection = this.sections[(iY * this.sectorCountX) + iX];
 		}
 
@@ -493,7 +500,7 @@ class TerrainInfo implements ITerrainInfo {
 			pSection.varianceTreeA, 1);
 
 		this.recursiveTessellate(
-			pSection.rootTriangleA,
+			pSection.rootTriangleB,
 			pSection.pixelX + this.sectorUnits, pSection.pixelY,					fHeight3,
 			pSection.pixelX,					pSection.pixelY,					fHeight0,
 			pSection.pixelX + this.sectorUnits, pSection.pixelY + this.sectorUnits, fHeight2,
@@ -708,7 +715,7 @@ function processTesselate(pData: ArrayBuffer): void {
 	var pDataView: DataView = new DataView(pData, 0, 16);
 	var iTesselationQueueSize: number = pDataView.getUint32(12, true);
 	
-	pTerrain.cameraCoord = new Float32Array(pData, 0, 3);
+	pTerrain.cameraCoord.set(new Float32Array(pData, 0, 3));
 	pTerrain.tessellationQueueSize = iTesselationQueueSize;
 	pTerrain.tessellationQueue.set(new Uint32Array(pData, 4*4, iTesselationQueueSize));
 	pTerrain.tessellationIndices = new Float32Array(pData, 4);
@@ -716,8 +723,9 @@ function processTesselate(pData: ArrayBuffer): void {
 	pTerrain.processTessellationQueue();
 
 	pDataView.setUint32(0, pTerrain.totalIndices, true);
-
-	(<any>self).postMessage(pData, [pData]);
+	pTmpTransferableArray[0] = pData;
+	
+	(<any>self).postMessage(pData, pTmpTransferableArray);
 }
 
 

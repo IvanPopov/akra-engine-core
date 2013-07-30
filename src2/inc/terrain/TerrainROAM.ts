@@ -7,6 +7,7 @@
 #include "terrain/TriTreeNode.ts"
 #include "scene/objects/Camera.ts"
 
+// #include "util/TessellationThread.ts"
 //#define USE_TESSELATION_TREAD 1
 
 /// @TESSELLATION_THREAD: {data}/js/TessellationThread.t.js|src(inc/util/TessellationThread.t.js)|data_location({data},DATA)
@@ -23,7 +24,7 @@ module akra.terrain {
 	    private _pIndexList: Float32Array = null; 
 	    private _pVerts: float[];
 	    private _iVertexID: uint;
-	    private _pThistessellationQueue: ITerrainSectionROAM[] = null;
+	    private _pTessellationQueue: ITerrainSectionROAM[] = null;
 		private _iTessellationQueueCount: uint = 0;
 		private _isRenderInThisFrame: bool = false;
 		private _iMaxTriTreeNodes: uint = (1024*64); /*64k triangle nodes*/
@@ -51,10 +52,13 @@ module akra.terrain {
 
 		private _pTessellationThread: Worker = null;
 		private _pTessellationTransferableData: ArrayBuffer = null;
+		private _pTmpTransferableArray: any[] = null;
 
 		private _bIsReadyForTessealtion: bool = false;
 
 		private _pNodePool: ITriangleNodePool = null;
+
+		// private _pTestTerrainInfo: util.TerrainInfo = null;
 
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
@@ -143,10 +147,14 @@ module akra.terrain {
 			if (bResult)
 			{
 				this._iTessellationQueueSize = this.sectorCountX * this.sectorCountY;
-				this._pThistessellationQueue = new Array(this._iTessellationQueueSize);
+				this._pTessellationQueue = new Array(this._iTessellationQueueSize);
 				this._iTessellationQueueCount = 0;
 				this._isCreate = true;
 				this._iTotalIndicesMax=0;
+
+				for(var i: uint = 0; i < this._pTessellationQueue.length; i++){
+					this._pTessellationQueue[i] = null;
+				}
 
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender));
@@ -178,7 +186,7 @@ module akra.terrain {
 
 		destroy(): void {
 			delete this._pNodePool;
-			delete this._pThistessellationQueue;
+			delete this._pTessellationQueue;
 
 			this._iTessellationQueueCount = 0;
 			this._fScale = 0;
@@ -272,7 +280,8 @@ module akra.terrain {
 
 		inline successThreadInit(): void {
 			var me: TerrainROAM = this;
-			this._pTessellationTransferableData = new ArrayBuffer(4 * this._iMaxTriTreeNodes * 3 + 4)
+			this._pTessellationTransferableData = new ArrayBuffer(4 * this._iMaxTriTreeNodes * 3 + 4);
+			this._pTmpTransferableArray = [null];
 			this._bIsReadyForTessealtion = true;
 
 			this._pTessellationThread.onmessage = function(event: any){
@@ -360,8 +369,12 @@ module akra.terrain {
 			if(this._isCreate) {
 				super.reset();
 				// reset internal counters
+				for(var i: uint = 0; i < this._iTessellationQueueCount; i++){
+					this._pTessellationQueue[i] = null;
+				}
+
 				this._iTessellationQueueCount = 0;
-				// this._pThistessellationQueue.length = this._iTessellationQueueSize;
+				// this._pTessellationQueue.length = this._iTessellationQueueSize;
 
 				if(!this._bUseTesselationThread && this._bIsInitTessellationSelfData){
 					this._pNodePool.reset();
@@ -402,9 +415,8 @@ module akra.terrain {
 		}
 
 		addToTessellationQueue(pSection: ITerrainSectionROAM): bool {
-			if (this._iTessellationQueueCount < this._iTessellationQueueSize)
-			{
-				this._pThistessellationQueue[this._iTessellationQueueCount] = pSection;
+			if (this._iTessellationQueueCount < this._iTessellationQueueSize) {
+				this._pTessellationQueue[this._iTessellationQueueCount] = pSection;
 				this._iTessellationQueueCount++;
 				return true;
 			}
@@ -418,8 +430,8 @@ module akra.terrain {
 		}
 
 		protected processTessellationQueue(): void {
-			// this._pThistessellationQueue.length = this._iTessellationQueueCount;
-			this._pThistessellationQueue.sort(TerrainROAM.fnSortSection);
+			// this._pTessellationQueue.length = this._iTessellationQueueCount;
+			this._pTessellationQueue.sort(TerrainROAM.fnSortSection);
 
 			if(this._bUseTesselationThread){
 				var pDataView: DataView = new DataView(this._pTessellationTransferableData);
@@ -430,20 +442,19 @@ module akra.terrain {
 
 				pDataView.setUint32(12, this._iTessellationQueueCount, true);
 
-				//ERROR("TerrainROAM :: ", this._iTessellationQueueCount, this._pThistessellationQueue[0]);
-
 				for (var i: uint = 0; i < this._iTessellationQueueCount; ++i) {
-					pDataView.setUint32(16 + i * 4, this._pThistessellationQueue[i].sectionIndex, true);
+					pDataView.setUint32(16 + i * 4, this._pTessellationQueue[i].sectionIndex, true);
 				}
 
-				this._pTessellationThread.postMessage(this._pTessellationTransferableData, [this._pTessellationTransferableData]);
+				this._pTmpTransferableArray[0] = this._pTessellationTransferableData;
+				this._pTessellationThread.postMessage(this._pTessellationTransferableData, this._pTmpTransferableArray);
 				this._bIsReadyForTessealtion = false;
 			}
 			else {
 				for (var i: uint = 0; i < this._iTessellationQueueCount; ++i) {
 					// split triangles based on the
 					// scale and limit values
-					this._pThistessellationQueue[i].tessellate(
+					this._pTessellationQueue[i].tessellate(
 						this._fScale, this._fLimit);
 				}
 
@@ -453,7 +464,7 @@ module akra.terrain {
 				// a final index buffer per section
 
 				for (var i: uint = 0; i < this._iTessellationQueueCount; ++i) {
-					this._pThistessellationQueue[i].buildTriangleList();
+					this._pTessellationQueue[i].buildTriangleList();
 				}
 
 				if(this._iTotalIndicesOld === this._iTotalIndices && this._iTotalIndices !== this._iTotalIndicesMax) {
@@ -506,7 +517,9 @@ module akra.terrain {
 
 				this._m4fLastCameraMatrix.set(pCamera.worldMatrix);
 
-				if (fCurrentTime - this._fLastTessealationTime > this._fTessealationInterval) {
+				if (this._bUseTesselationThread || 
+					fCurrentTime - this._fLastTessealationTime > this._fTessealationInterval) {
+
 					if(!this._m4fLastCameraMatrix.isEqual(this._m4fLastTessellationMatrix)) {
 						this.processTessellationQueue();
 						this._m4fLastTessellationMatrix.set(this._m4fLastCameraMatrix);
@@ -521,7 +534,15 @@ module akra.terrain {
 		}
 
 		static private fnSortSection(pSectionA: ITerrainSectionROAM, pSectionB: ITerrainSectionROAM): uint {
-			return pSectionA.queueSortValue - pSectionB.queueSortValue;
+			if(isNull(pSectionA)){
+				return 1;
+			} 
+			else if(isNull(pSectionB)){
+				return -1;
+			}
+			else {
+				return pSectionA.queueSortValue - pSectionB.queueSortValue;	
+			}
 		}
 	}
 }
