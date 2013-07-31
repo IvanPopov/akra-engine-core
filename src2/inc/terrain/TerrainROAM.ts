@@ -46,7 +46,7 @@ module akra.terrain {
 		private _fLastTessealationTime: float = 0.;
 		private _fTessealationInterval: float = 1./25.;
 
-		private _bUseTesselationThread: bool = true;
+		private _bUseTesselationThread: bool = false;
 		private _bIsInitTessellationSelfData: bool = false;
 		private _bIsInitTessellationThreadData: bool = false;
 
