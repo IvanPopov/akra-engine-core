@@ -27,6 +27,7 @@ module akra.ui.animation {
 
 
 			var pExportBtn: IUIButton = new Button(pControlPanel, {text: "{ save controller }"})
+			var pExportBinBtn: IUIButton = new Button(pControlPanel, {text: "{ save controller (binary) }"})
 
 			//this.connect(pDataBtn, SIGNAL(click), SLOT(createData));
 			this.connect(pPlayerBtn, SIGNAL(click), SLOT(createPlayer));
@@ -34,6 +35,7 @@ module akra.ui.animation {
 			this.connect(pMaskBtn, SIGNAL(click), SLOT(createMask));
 
 			this.connect(pExportBtn, SIGNAL(click), SLOT(exportController));
+			this.connect(pExportBinBtn, SIGNAL(click), SLOT(exportBinController));
 		}	
 
 
@@ -53,8 +55,7 @@ module akra.ui.animation {
 			return new Mask(this.graph);
 		}
 
-
-		exportController(): void {
+		protected createExporter(): io.Exporter {
 			var pExporter = new io.Exporter;
 			var pController = this.graph.getController();
 			var pGraphOffset = this.graph.el.offset();
@@ -75,8 +76,19 @@ module akra.ui.animation {
 				pEntry.extra.graph = {x: pOffset.left - pGraphOffset.left, y: pOffset.top - pGraphOffset.top};
 			}
 
-			
+			return pExporter;
+		}
+
+		exportBinController(): void {
+			var pExporter = this.createExporter();
+			var pController = this.graph.getController();
 			pExporter.saveAs((pController.name || "untitled") + ".bson", EDocumentFormat.BINARY_JSON);
+		}
+
+		exportController(): void {
+			var pExporter = this.createExporter();
+			var pController = this.graph.getController();
+			pExporter.saveAs((pController.name || "untitled") + ".json");
 		}
 
 		selected(): void {

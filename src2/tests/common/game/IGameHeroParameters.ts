@@ -36,4 +36,10 @@ export interface IGameHeroParameters {
         anim: IAnimationMap;
 
         position: IVec3;
+
+        fallDown: bool;
+        //поступательная скорость движения
+        fallTransSpeed: float;
+        //время начала падения
+        fallStartTime: float;
 }

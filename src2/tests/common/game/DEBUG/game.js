@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Jul 30 2013 20:07:12 GMT+0400 (Московское время (зима))
+ * assembled at: Wed Jul 31 2013 20:12:20 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -287,20 +287,17 @@ var akra;
                     path: "models/tubing/tube_beeween_rocks.DAE",
                     name: "TUBE_BETWEEN_ROCKS"
                 }, 
+                // {path: "models/hero/movie.dae", name: "HERO_MODEL"},
                 {
-                    path: "models/hero/movie.dae",
-                    name: "HERO_MODEL"
-                }, 
-                {
-                    path: "models/hero/movie.dae",
-                    name: "HERO_MODEL"
+                    path: "models/character/character.dae",
+                    name: "CHARACTER_MODEL"
                 }, 
                 
             ],
             deps: {
                 files: [
                     {
-                        path: "models/hero/movement.json",
+                        path: "models/character/movement.json",
                         name: "HERO_CONTROLLER"
                     }
                 ]
@@ -309,7 +306,8 @@ var akra;
     };
     var pRenderOpts = {
         preserveDrawingBuffer: //for screenshoting
-        true
+        true,
+        alpha: false
     };
     var pControllerData = null;
     var pLoader = {
@@ -427,9 +425,8 @@ var akra;
                 cameraPitchChaseSpeed: /*rad/sec*/
                 10.0,
                 cameraPitchSpeed: 3.0,
-                cameraPitchMax: Math.PI / 5,
-                cameraPitchMin: /*-Math.PI/6,*/
-                0.,
+                cameraPitchMax: -60.0 * akra.math.RADIAN_RATIO,
+                cameraPitchMin: +30.0 * akra.math.RADIAN_RATIO,
                 cameraPitchBase: Math.PI / 10,
                 blocked: true,
                 lastTriggers: 1,
@@ -444,6 +441,9 @@ var akra;
                 cameraCharacterFocusPoint: /*meter*/
                 new akra.Vec3(0.0, 0.5, 0.0),
                 state: EGameHeroStates.GUN_NOT_DRAWED,
+                fallDown: false,
+                fallTransSpeed: 0,
+                fallStartTime: 0,
                 anim: {}
             }
         }
@@ -455,11 +455,35 @@ var akra;
         var pStat = akra.self.hero.parameters;
         function findAnimation(sName, sPseudo) {
             pStat.anim[sPseudo || sName] = pHeroNode.getController().findAnimation(sName);
+            return pStat.anim[sPseudo || sName];
         }
         pStat.time = akra.self.engine.time;
         pStat.position.set(akra.self.hero.root.worldPosition);
+        //    ((a) => {
+        // 	a["_fTime"] = 0;
+        // 	a["_fRealTime"] = 0;
+        // 	a["_fTrueTime"] = 0;
+        // })(findAnimation("RUN.player"));
+        // ((a) => {
+        // 	a["_fTime"] = 0;
+        // 	a["_fRealTime"] = 0;
+        // 	a["_fTrueTime"] = 0;
+        // })(findAnimation("WALK.player"));
+        // ((a) => {
+        // 	a["_fTime"] = 0;
+        // 	a["_fRealTime"] = 0;
+        // 	a["_fTrueTime"] = 0;
+        // })(findAnimation("WALKBACK.player"));
         findAnimation("MOVEMENT.player");
+        /*.setWeights(0., 0., 0.);*/
         findAnimation("MOVEMENT.blend");
+        // findAnimation("RUN.player").stop();
+        // findAnimation("WALK.player").stop();
+        // findAnimation("WALKBACK.player").stop();
+        // findAnimation("MOVEMENT.player");
+        // findAnimation("MOVEMENT.blend");
+        findAnimation('STATE.player');
+        findAnimation('STATE.blend');
         findAnimation("RUN.player");
         findAnimation("WALK.player");
         activateTrigger([
@@ -492,7 +516,16 @@ var akra;
         var qPitchRot;
         var fYawRotation = 0;
         var qYawRot;
-        if (!(v3fCameraYPR.y > -pStat.cameraPitchMin && -fY < 0) && !(v3fCameraYPR.y < -pStat.cameraPitchMax && -fY > 0)) {
+        /*
+        Pitch
+        | -90(-PI/2)
+        0   |
+        --|-- +
+        / \  |
+        | +90(+PI/2)
+        */
+        // console.log(pStat.cameraPitchMax * math.DEGREE_RATIO, "<", v3fCameraYPR.y * math.DEGREE_RATIO, "<", pStat.cameraPitchMin * math.DEGREE_RATIO, fY, (v3fCameraYPR.y > pStat.cameraPitchMax && fY > 0));
+        if ((v3fCameraYPR.y > pStat.cameraPitchMax && fY > 0) || (v3fCameraYPR.y < pStat.cameraPitchMin && fY < 0)) {
             fPitchRotation = fY * pStat.cameraPitchSpeed * fTimeDelta;
             var pCameraWorldData = pCamera.worldMatrix.data;
             var v3fCameraDir = akra.Vec3.stackCeil.set(-pCameraWorldData[akra.__13], 0, -pCameraWorldData[akra.__33]).normalize();
@@ -501,8 +534,9 @@ var akra;
             v3fCameraHeroDist = pCamera.worldPosition.subtract(v3fHeroFocusPoint, akra.Vec3.stackCeil.set());
             pCamera.localPosition = qPitchRot.multiplyVec3(v3fCameraHeroDist, akra.Vec3.stackCeil.set()).add(v3fHeroFocusPoint);
             pCamera.update();
-            // pCamera.localPosition.scale(1. - fY / 25);
-                    }
+            // pCamera.localPosition.scale(1. + fY / 25);
+            pCamera.update();
+        }
         fYawRotation = fX * pStat.cameraPitchChaseSpeed * fTimeDelta;
         qYawRot = akra.Quat4.fromYawPitchRoll(fYawRotation, 0, 0., akra.Quat4.stackCeil.set());
         v3fCameraHeroDist = pCamera.worldPosition.subtract(v3fHeroFocusPoint, akra.Vec3.stackCeil.set());
@@ -572,13 +606,14 @@ var akra;
         }
         //character move
         if (fSpeed > fWalkSpeed) {
-            if ((pAnim["MOVEMENT.player"]).isPaused()) {
-                (pAnim["MOVEMENT.player"]).pause(false);
-            }
+            // if ((<IAnimationContainer>pAnim["MOVEMENT.player"]).isPaused()) {
+            //     (<IAnimationContainer>pAnim["MOVEMENT.player"]).pause(false);
+            // }
             if (fMovementRate > 0.0) {
                 //run forward
                 if (fSpeed < pStat.walkToRunSpeed) {
                     if (pStat.state) {
+                        //walk with gun
                         /*only walk*/
                         (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 0., 1.);
                     } else {
@@ -591,6 +626,7 @@ var akra;
                     fWalkWeight = 1. - fRunWeight;
                     //run //walk frw //walk back
                     if (pStat.state) {
+                        //with gun
                         (pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, 0., 0., fWalkWeight);
                     } else {
                         (pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, fWalkWeight, 0.);
@@ -609,15 +645,17 @@ var akra;
                     } else//character IDLE
          {
             var iIDLE = pStat.state ? 2 : 0.;
-            var iMOVEMENT = 1;
+            var iMOVEMENT = 2;
             // (<IAnimationContainer>pAnim["MOVEMENT.player"]).pause(true);
             if (pStat.state == EGameHeroStates.GUN_NOT_DRAWED || pStat.state >= EGameHeroStates.GUN_IDLE) {
-                // pAnim["STATE.blend"].setWeightSwitching(fSpeed / fWalkSpeed, iIDLE, iMOVEMENT); /* idle ---> run */
-                            }
+                /* idle ---> run */
+                (pAnim["STATE.blend"]).setWeightSwitching(fSpeed / fWalkSpeed, iIDLE, iMOVEMENT);
+            }
             // trace(pAnim["STATE.blend"].getAnimationWeight(0), pAnim["STATE.blend"].getAnimationWeight(1), pAnim["STATE.blend"].getAnimationWeight(2))
             if (fMovementRate > 0.0) {
                 //walk forward --> idle
                 if (pStat.state) {
+                    //with gun
                     (pAnim["MOVEMENT.blend"]).setWeights(null, 0., 0., fSpeed / fWalkSpeed);
                 } else {
                     (pAnim["MOVEMENT.blend"]).setWeights(null, fSpeed / fWalkSpeed, 0.);
@@ -724,16 +762,37 @@ var akra;
         if (fRotationRate != 0.) {
             pHero.addRelRotationByEulerAngles(fRotationRate * pStat.rotationSpeedMax * fTimeDelta, 0.0, 0.0);
         }
-        if (fMovementRateAbs >= fWalkRate || (fMovementRate < 0. && fMovementRateAbs > pStat.walkSpeed / pStat.runSpeed)) {
-            var v3fDt = akra.Vec3.stackCeil.set(0.);
-            pHero.addRelPosition(akra.Vec3.stackCeil.set(0.0, 0.0, fMovementRate * fMovementSpeedMax * fTimeDelta));
+        // var _p = vec3(pHero.worldPosition);
+        if (pStat.fallDown || fMovementRateAbs >= fWalkRate || (fMovementRate < 0. && fMovementRateAbs > pStat.walkSpeed / pStat.runSpeed)) {
+            //projection of the hero on the terrin
+            var v3fHeroTerrainProjPoint = akra.Vec3.stackCeil.set(0.);
+            //prev. hero position
+            var v3fHeroPos = akra.Vec3.stackCeil.set(pHero.worldPosition);
+            var fMovementSpeed = fMovementRate * fMovementSpeedMax;
+            if (pStat.fallDown) {
+                fMovementSpeed = pStat.fallTransSpeed;
+            }
+            //hero orinted along Z-axis
+            pHero.addRelPosition(akra.Vec3.stackCeil.set(0.0, 0.0, fMovementSpeed * fTimeDelta));
             pHero.update();
             if (!akra.isNull(pTerrain)) {
-                pTerrain.projectPoint(pHero.worldPosition, v3fDt);
-                pHero.setPosition(v3fDt);
+                pTerrain.projectPoint(pHero.worldPosition, v3fHeroTerrainProjPoint);
+                if (v3fHeroPos.y - v3fHeroTerrainProjPoint.y > 0.1) {
+                    if (pStat.fallDown == false) {
+                        pStat.fallDown = true;
+                        pStat.fallTransSpeed = fMovementSpeed;
+                        pStat.fallStartTime = akra.now();
+                    }
+                    var fFallSpeed = ((akra.now() - pStat.fallStartTime) / 1000) * akra.math.GRAVITY_CONSTANT;
+                    pHero.setPosition(pHero.worldPosition.x, pHero.worldPosition.y - fFallSpeed * fTimeDelta, pHero.worldPosition.z);
+                } else {
+                    pStat.fallDown = false;
+                    pHero.setPosition(v3fHeroTerrainProjPoint);
+                }
             }
             // this.pCurrentSpeedField.edit((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
                     }
+        // pHero.setPosition(_p);
         pStat.rotationRate = fRotationRate;
         pStat.movementRate = fMovementRate;
         pStat.time = pEngine.time;
@@ -844,7 +903,7 @@ var akra;
         var pImporter = new akra.io.Importer(pEngine);
         pImporter.loadDocument(pControllerData);
         pMovementController = pImporter.getController();
-        var pHeroNode = createModelEx("HERO_MODEL", pScene, pTerrain, pCamera, pMovementController);
+        var pHeroNode = createModelEx("CHARACTER_MODEL", pScene, pTerrain, pCamera, pMovementController);
         setupCameras(pHeroNode);
         initState(pHeroNode);
         var pBox = createModelEntry(pScene, "CLOSED_BOX");
@@ -884,6 +943,10 @@ var akra;
             pViewport.setCamera(pCam);
         });
         createSceneEnvironment(pScene, true, true);
+        pEngine.getComposer()["bShowTriangles"] = true;
+        if (pTerrain.megaTexture) {
+            pTerrain.megaTexture["_bColored"] = true;
+        }
         pEngine.exec();
     }
     pEngine.bind("depsLoaded", main);

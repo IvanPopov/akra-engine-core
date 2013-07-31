@@ -178,8 +178,8 @@ module akra.animation {
 			if (!isNull(pAnim)) {
 				if (!pAnim.apply(this._pEngine.time)) {
 
-					this._pActiveAnimation = null;
-					pAnim.stop(this._pEngine.time);
+					// this._pActiveAnimation = null;
+					// pAnim.stop(this._pEngine.time);
 				}
 			}
 		}

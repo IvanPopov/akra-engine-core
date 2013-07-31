@@ -222,13 +222,20 @@ void fs_terrain(VS_OUT IN){
     else {
         if(showTriangles)
         {
-            if(IN.edgeTest.x * IN.edgeTest.y * IN.edgeTest.z < 0.001)
+
+            float3 vBC = IN.edgeTest;
+            float3 d = fwidth(vBC);
+            float3 a3 = smoothstep(float3(0.0), float3(d * 0.95), vBC);
+            float edgeFactor = min(min(a3.x, a3.y), a3.z);
+
+            /*if(any(lessThan(IN.edgeTest, float3(0.02))))
             {
                 Fragment_material.emissive = float4(0.5, 0.5, 0.5, 1.);
             }
             else {
                 Fragment_material.emissive = defaultMaterial.emissive;
-            }
+            }*/
+            Fragment_material.emissive = float4(mix(float3(1.0), float3(0.), edgeFactor), 1.);
         }
         else
         {
