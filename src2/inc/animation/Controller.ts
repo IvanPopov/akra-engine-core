@@ -156,7 +156,6 @@ module akra.animation {
 				}
 
 				pAnimationNext.play(fRealTime);
-
 				this._pActiveAnimation = pAnimationNext;
 			
 				EMIT_BROADCAST(play, _CALL(pAnimationNext, fRealTime));
@@ -179,8 +178,8 @@ module akra.animation {
 			if (!isNull(pAnim)) {
 				if (!pAnim.apply(this._pEngine.time)) {
 
-					this._pActiveAnimation = null;
-					pAnim.stop(this._pEngine.time);
+					// this._pActiveAnimation = null;
+					// pAnim.stop(this._pEngine.time);
 				}
 			}
 		}

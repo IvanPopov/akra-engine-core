@@ -1,6 +1,26 @@
 #ifndef MATH_CONST_TS
 #define MATH_CONST_TS
 
+
+module akra {
+	export var __11: uint = 0;
+	export var __12: uint = 4;
+	export var __13: uint = 8;
+	export var __14: uint = 12;
+	export var __21: uint = 1;
+	export var __22: uint = 5;
+	export var __23: uint = 9;
+	export var __24: uint = 13;
+	export var __31: uint = 2;
+	export var __32: uint = 6;
+	export var __33: uint = 10;
+	export var __34: uint = 14;
+	export var __41: uint = 3;
+	export var __42: uint = 7;
+	export var __43: uint = 11;
+	export var __44: uint = 15;
+}
+
 module akra.math {
 	//
 	// BASIC MATH AND UNIT CONVERSION CONSTANTS

@@ -27,7 +27,7 @@ module akra.info {
 
 	export var uri: IURI = path.uri(document.location.href);
 
-	module is {
+	export module is {
 		/**
          * show status - online or offline
          */
@@ -41,6 +41,8 @@ module akra.info {
 		export var windows: bool = browser.os === 'Windows';
 		export var mac: bool = browser.os === 'Mac';
 		export var iPhone: bool = browser.os === 'iPhone';
+
+		export var Opera: bool = browser.name === "Opera";
 	}
 
 

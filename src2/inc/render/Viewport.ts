@@ -175,13 +175,6 @@ module akra.render {
 				}
 			}
 
-			if (isDefAndNotNull(pCamera)) {
-				// update aspect ratio of new camera if needed.
-				if (!pCamera.isConstantAspect()) {
-					pCamera.aspect = (<float> this._iActWidth / <float> this._iActHeight);
-				}
-			}
-
 			this._setCamera(pCamera);
 			this.viewportCameraChanged();
 
@@ -192,6 +185,10 @@ module akra.render {
 			this._pCamera = pCamera;
 
 			if (isDefAndNotNull(pCamera)) {
+				// update aspect ratio of new camera if needed.
+				if (!pCamera.isConstantAspect()) {
+					pCamera.aspect = (<float> this._iActWidth / <float> this._iActHeight);
+				}
 				pCamera._keepLastViewport(this);
 			}
         }

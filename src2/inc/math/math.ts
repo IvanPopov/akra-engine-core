@@ -1,6 +1,8 @@
 #ifndef MATH_TS
 #define MATH_TS
 
+#include "const.ts"
+
 #define vec2(...) Vec2.stackCeil.set(__VA_ARGS__)
 #define vec3(...) Vec3.stackCeil.set(__VA_ARGS__)
 #define vec4(...) Vec4.stackCeil.set(__VA_ARGS__)
@@ -18,10 +20,10 @@
 
 #include "Quat4.ts"
 
-#include "const.ts"
 #include "global.ts"
 
 module akra.math {	
+
 
  //    export function vec2(): IVec2;
  //    export function vec2(fValue: float): IVec2;

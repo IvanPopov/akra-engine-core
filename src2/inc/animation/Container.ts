@@ -22,7 +22,8 @@ module akra.animation {
 		//реальное время на сцене
 		private _fRealTime: float = 0;	
 		//время с учетом ускорений
-		private _fTime: float = 0;		
+		private _fTime: float = 0;
+
 		private _bPause: bool = false;
 
 		//определена ли анимация до первого и после последнего кадров
@@ -159,6 +160,7 @@ module akra.animation {
 		}
 
 		inline rewind(fRealTime: float): void {
+			console.log("rewind > ", fRealTime);
 			this._fTime = fRealTime;
 		}
 
@@ -171,7 +173,9 @@ module akra.animation {
 		    	return;
 		    }
 
-		    if (this._fRealTime < 0) {
+		    //if loop switched and prev. fRealTime less than new fRealTime
+		    //for ex.: prev real time calced in loop, next - real time from now()
+		    if (this._fRealTime < 0 || this._fRealTime > fRealTime) {
 		    	this._fRealTime = fRealTime;
 		    }
 

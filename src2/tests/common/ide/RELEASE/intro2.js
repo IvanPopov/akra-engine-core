@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Jul 26 2013 14:49:50 GMT+0400 (Московское время (лето))
+ * assembled at: Fri Jul 26 2013 19:45:24 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/RELEASE/
  * file: tests/common/ide/intro2.ts
  * name: intro2
@@ -40,7 +40,7 @@ var akra;
     var bMegaTextureLoaded = false;
     var pEngine = akra.createEngine({
         renderer: {
-            preserveDrawingBuffer: true,
+            preserveDrawingBuffer: false,
             alpha: false
         },
         deps: {

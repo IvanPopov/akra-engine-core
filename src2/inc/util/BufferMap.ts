@@ -487,6 +487,7 @@ module akra.util {
 		} 
 
 		toString(bListAll: bool = false): string {
+#ifdef DEBUG			
 			function _an(sValue, n: int, bBackward?: bool) {
 		        sValue = String(sValue);
 		        bBackward = bBackward || false;
@@ -548,6 +549,10 @@ module akra.util {
 		    s += '=================================================================\n';
 
 		    return s + '\n\n';
+#else
+			return null;
+#endif
+
 		}
 	}
 

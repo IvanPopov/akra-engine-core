@@ -75,7 +75,7 @@ module akra.util {
 			this.bLocalStorage = isDef((<any>window).localStorage);
 			this.bWebSocket = isDef((<any>window).WebSocket);
 			this.bGamepad = !! (<any>navigator).webkitGetGamepads || !! (<any>navigator).webkitGamepads || (navigator.userAgent.indexOf('Firefox/') != -1);
-			this.bZip = isDefAndNotNull(zip);
+			this.bZip = isDefAndNotNull(window["zip"]);
 		}	
 
 		private chechTransferableObjects(): bool {
