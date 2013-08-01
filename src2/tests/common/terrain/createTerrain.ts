@@ -155,9 +155,10 @@ module akra {
 				// ok(isCreate);
 				// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
 				
-				pTerrain.megaTexture.bind("minLevelLoaded", () => {
+				//pTerrain.megaTexture.bind("minLevelLoaded", () => {
+				pEngine.getComposer()["bShowTriangles"] = true;
 					pEngine.exec();
-				});
+				//});
 			});
 		});
 		

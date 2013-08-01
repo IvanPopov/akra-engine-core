@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Aug 01 2013 12:27:51 GMT+0400 (Московское время (лето))
+ * assembled at: Thu Aug 01 2013 12:48:34 GMT+0400 (Московское время (лето))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/intro2.ts
  * name: intro2

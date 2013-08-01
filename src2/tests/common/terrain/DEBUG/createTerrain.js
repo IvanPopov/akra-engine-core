@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 22 2013 14:35:35 GMT+0400 (Московское время (лето))
+ * assembled at: Thu Aug 01 2013 13:02:16 GMT+0400 (Московское время (лето))
  * directory: tests/common/terrain/DEBUG/
  * file: tests/common/terrain/createTerrain.ts
  * name: createTerrain
@@ -129,10 +129,11 @@ var akra;
                 // shouldBeTrue("terrain create");
                 // ok(isCreate);
                 // pTestNode.addRelRotationByXYZAxis(1, 1, 0);
-                akra.pTerrain.megaTexture.bind("minLevelLoaded", /** @inline */function () {
-                    akra.pEngine.exec();
-                });
-            });
+                //pTerrain.megaTexture.bind("minLevelLoaded", () => {
+                akra.pEngine.getComposer()["bShowTriangles"] = true;
+                akra.pEngine.exec();
+                //});
+                            });
         });
         // pTerrain.create();
         // ok(pTerrain);

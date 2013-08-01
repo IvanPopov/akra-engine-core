@@ -508,6 +508,10 @@ module akra.terrain {
 			return this._m4fLastCameraMatrix.isEqual(pCamera.worldMatrix);
 		} 
 
+		private _fAvgTesselateCallsInSec: float = 0;
+		private _iCurrentTesselateCount: uint = 0;
+		private _nSec: uint = 0;
+		private _fLastTimeStart: float = 0;
 
 		_onBeforeRender(pRenderableObject: IRenderableObject, pViewport: IViewport): void {
 			if(this._bIsReadyForTessealtion) {
@@ -519,6 +523,26 @@ module akra.terrain {
 
 				if (this._bUseTesselationThread || 
 					fCurrentTime - this._fLastTessealationTime > this._fTessealationInterval) {
+
+					if(this._fLastTimeStart === 0){
+						this._fLastTimeStart = fCurrentTime;
+						this._iCurrentTesselateCount++;
+						this._nSec = 1;
+						this._fAvgTesselateCallsInSec = 0;
+					}
+					else if(this._fLastTimeStart + 1 > fCurrentTime){
+						this._iCurrentTesselateCount++;
+					}
+					else {
+						this._fAvgTesselateCallsInSec = this._fAvgTesselateCallsInSec * (this._nSec - 1)/this._nSec + this._iCurrentTesselateCount/this._nSec;
+						this._nSec++;
+						this._fLastTimeStart = fCurrentTime;
+						this._iCurrentTesselateCount = 0;
+
+						if(this._nSec % 3 === 0){
+							LOG(this._fAvgTesselateCallsInSec);
+						}
+					}
 
 					if(!this._m4fLastCameraMatrix.isEqual(this._m4fLastTessellationMatrix)) {
 						this.processTessellationQueue();
