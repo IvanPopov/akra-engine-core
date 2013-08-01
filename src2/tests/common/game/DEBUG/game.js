@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Wed Jul 31 2013 20:12:20 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Aug 01 2013 12:05:50 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -459,23 +459,7 @@ var akra;
         }
         pStat.time = akra.self.engine.time;
         pStat.position.set(akra.self.hero.root.worldPosition);
-        //    ((a) => {
-        // 	a["_fTime"] = 0;
-        // 	a["_fRealTime"] = 0;
-        // 	a["_fTrueTime"] = 0;
-        // })(findAnimation("RUN.player"));
-        // ((a) => {
-        // 	a["_fTime"] = 0;
-        // 	a["_fRealTime"] = 0;
-        // 	a["_fTrueTime"] = 0;
-        // })(findAnimation("WALK.player"));
-        // ((a) => {
-        // 	a["_fTime"] = 0;
-        // 	a["_fRealTime"] = 0;
-        // 	a["_fTrueTime"] = 0;
-        // })(findAnimation("WALKBACK.player"));
         findAnimation("MOVEMENT.player");
-        /*.setWeights(0., 0., 0.);*/
         findAnimation("MOVEMENT.blend");
         // findAnimation("RUN.player").stop();
         // findAnimation("WALK.player").stop();
@@ -621,6 +605,7 @@ var akra;
                         (pAnim["MOVEMENT.blend"]).setWeights(0., 1., 0.);
                     }
                     (pAnim["WALK.player"]).setSpeed(fSpeed / fWalkSpeed);
+                    console.log("walk speed: ", fSpeed / fWalkSpeed);
                 } else {
                     fRunWeight = (fSpeed - fWalkToRunSpeed) / (fRunSpeed - fWalkToRunSpeed);
                     fWalkWeight = 1. - fRunWeight;
@@ -631,6 +616,7 @@ var akra;
                     } else {
                         (pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, fWalkWeight, 0.);
                     }
+                    console.log("run weight:", fRunWeight, "walk weight:", fWalkWeight);
                     (pAnim["MOVEMENT.player"]).setSpeed(1.);
                 }
             } else {

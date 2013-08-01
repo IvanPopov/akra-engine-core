@@ -251,24 +251,8 @@ module akra {
 	    pStat.time = self.engine.time;
 	    pStat.position.set(self.hero.root.worldPosition);
 
-	 //    ((a) => {
-		// 	a["_fTime"] = 0;
-		// 	a["_fRealTime"] = 0;
-		// 	a["_fTrueTime"] = 0;
-		// })(findAnimation("RUN.player"));
-		// ((a) => {
-		// 	a["_fTime"] = 0;
-		// 	a["_fRealTime"] = 0;
-		// 	a["_fTrueTime"] = 0;
-		// })(findAnimation("WALK.player"));
-		// ((a) => {
-		// 	a["_fTime"] = 0;
-		// 	a["_fRealTime"] = 0;
-		// 	a["_fTrueTime"] = 0;
-		// })(findAnimation("WALKBACK.player"));
-
 	    findAnimation("MOVEMENT.player");
-	    findAnimation("MOVEMENT.blend");/*.setWeights(0., 0., 0.);*/
+	    findAnimation("MOVEMENT.blend");
 
 		// findAnimation("RUN.player").stop();
 		// findAnimation("WALK.player").stop();
@@ -478,11 +462,11 @@ module akra {
 	                }
 
 	                (<IAnimationContainer>pAnim["WALK.player"]).setSpeed(fSpeed / fWalkSpeed);
-	            }
+	                console.log("walk speed: ", fSpeed / fWalkSpeed);
+	            }	
 	            else {
 	                fRunWeight = (fSpeed - fWalkToRunSpeed) / (fRunSpeed - fWalkToRunSpeed);
 	                fWalkWeight = 1. - fRunWeight;
-
 	                //run //walk frw //walk back
 	                if (pStat.state) {
 	                	//with gun
@@ -492,6 +476,7 @@ module akra {
 	                    (<IAnimationBlend>pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, fWalkWeight, 0.);
 	                }
 
+	                console.log("run weight:", fRunWeight, "walk weight:", fWalkWeight);
 	                (<IAnimationContainer>pAnim["MOVEMENT.player"]).setSpeed(1.);
 	            }
 	        }
