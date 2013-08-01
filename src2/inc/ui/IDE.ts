@@ -196,7 +196,7 @@ module akra.ui {
 
 				this.connect(pViewport, SIGNAL(render), SLOT(_onDSViewportRender));
 				// this._pSelectedObject = (<any>this._pColorViewport).getObject(x, y);
-
+				
 				var pColor: IColor = (<render.DSViewport>this.getViewport())._getDeferredTex1Value(pMouse.x, pMouse.y);
 				var iRid: int = pColor.a;
 				var iSoid: int = (iRid - 1) >>> 10;
@@ -208,7 +208,7 @@ module akra.ui {
 				// console.log("diffuse", math.floatToFloat3(pColor.b).toString());
 				// console.log("rid", pColor.a);
 
-				// console.log("(getRenderId()) >> rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);
+				console.log("(getRenderId()) >> rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);
 				this._iSelectedRid = iRid;
 
 				this.inspectNode(this.getEngine().getComposer()._getObjectByRid(iRid));

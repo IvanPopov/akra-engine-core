@@ -311,8 +311,9 @@ module akra.render {
 			pFloatColorPixel.top = y;
 			pFloatColorPixel.right = x + 1;
 			pFloatColorPixel.bottom = y + 1;
-
+			console.log(">>>>");
 			pColorTexture.getBuffer(0, 0).readPixels(pFloatColorPixel);
+			console.log("<<<<");
 			// LOG(pFloatColorPixel.data);
 			return pFloatColorPixel.getColorAt(pColor, 0, 0);
 		}
