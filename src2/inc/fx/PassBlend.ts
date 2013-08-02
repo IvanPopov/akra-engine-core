@@ -154,7 +154,6 @@ module akra.fx {
 		generateFXMaker(pPassInput: IAFXPassInputBlend,
 					    pSurfaceMaterial: ISurfaceMaterial,
 					    pBuffer: IBufferMap): IAFXMaker {
-
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
 			var sForeignPartHash: string = this.prepareForeigns(pPassInput);
 			var sSamplerPartHash: string = this.prepareSamplers(pPassInput);
@@ -661,20 +660,20 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pKeys.length; i++){
 				var sName: string = pKeys[i];
-				if(!isDef(pForeignValues[sName])){
-					LOG("V",sName, pForeignValues, pKeys, this);
-				}
-				sHash += pForeignValues[sName].toString() + "%";
+				// if(!isDef(pForeignValues[sName])){
+				// 	LOG("V",sName, pForeignValues, pKeys, this);
+				// }
+				sHash += pForeignValues[pPassInput._getVarNameIndex(sName)].toString() + "%";
 			}
 
 			pKeys = this._pForeignContainerP.keys;
 
 			for(var i: uint = 0; i < pKeys.length; i++){
 				var sName: string = pKeys[i];
-				if(!isDef(pForeignValues[sName])){
-					LOG("P",sName, pForeignValues, pKeys, this);
-				}
-				sHash += pForeignValues[sName].toString() + "%";
+				// if(!isDef(pForeignValues[sName])){
+				// 	LOG("P",sName, pForeignValues, pKeys, this);
+				// }
+				sHash += pForeignValues[pPassInput._getVarNameIndex(sName)].toString() + "%";
 			}
 
 			return sHash;
@@ -691,8 +690,9 @@ module akra.fx {
 			for(var i: uint = 0; i < pSamplersId.length; i++){
 				var pSampler: IAFXVariableDeclInstruction = this._pSamplerByIdMap[pSamplersId[i]];
 				var sName: string = pSampler.getRealName();
+				var iNameIndex: uint = pPassInput._getVarNameIndex(sName);
 
-				var pSamplerState: IAFXSamplerState = pSamplers[sName];
+				var pSamplerState: IAFXSamplerState = pSamplers[iNameIndex];
 				var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerState);
 
 				if(isNull(pTexture)){
@@ -711,11 +711,12 @@ module akra.fx {
 			for(var i: uint = 0; i < pSamplerArraysId.length; i++){
 				var pSamplerArray: IAFXVariableDeclInstruction = this._pSamplerArrayByIdMap[pSamplerArraysId[i]];
 				var sName: string = pSamplerArray.getRealName();
+				var iNameIndex: uint = pPassInput._getVarNameIndex(sName);
 
-				var pSamplerStateList: IAFXSamplerState[] = pSamplerArrays[sName];
+				var pSamplerStateList: IAFXSamplerState[] = pSamplerArrays[iNameIndex];
 				var isNeedToCollapse: bool = true;
 				var pTexture: ITexture = null;	
-				var iLength: uint = pPassInput.samplerArrayLength[sName];	
+				var iLength: uint = pPassInput.samplerArrayLength[iNameIndex];	
 			
 				for(var j: uint = 0; j < iLength; j++) {
 					if(j === 0) {
@@ -768,27 +769,28 @@ module akra.fx {
 
 		private applyForeigns(pPassInput: IAFXPassInputBlend): void {
 			var pForeignValues: any = pPassInput.foreigns;
-			var pKeys: string[] = pPassInput.foreignKeys;
+			var pKeys: uint[] = pPassInput.foreignKeys;
 
 			var pForeignsV = this._pForeignContainerV;
 			var pForeignsP = this._pForeignContainerP;
 
 			for(var i: uint = 0; i < pKeys.length; i++){
-				var sName: string = pKeys[i];
+				var iNameIndex: uint = pKeys[i];
+				var sName: string = pPassInput._getVarNameByIndex(iNameIndex);
 				var pVarList: IAFXVariableDeclInstruction[] = null;
 
 				if(pForeignsV.hasVariableWithName(sName)){
 					pVarList = pForeignsV.getVarList(sName);
 					
 					for(var j: uint = 0; j < pVarList.length; j++){
-						pVarList[j].setValue(pForeignValues[sName] || 1);
+						pVarList[j].setValue(pForeignValues[iNameIndex] || 1);
 					}
 				}
 				if(pForeignsP.hasVariableWithName(sName)){
 					pVarList = pForeignsP.getVarList(sName);
 					
 					for(var j: uint = 0; j < pVarList.length; j++){
-						pVarList[j].setValue(pForeignValues[sName] || 1);
+						pVarList[j].setValue(pForeignValues[iNameIndex] || 1);
 					}
 				}
 			}

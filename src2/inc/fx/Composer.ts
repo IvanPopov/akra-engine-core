@@ -26,6 +26,8 @@
 
 #define RID_TOTAL 1024
 
+#define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[pInput._getVarNameIndex(sName)] = pValue;
+
 module akra.fx {
 
 	export interface IPreRenderState {
@@ -486,7 +488,7 @@ module akra.fx {
 					this.prepareComposerState();
 
 					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
-																  pPassInput.foreigns, pPassInput.uniforms);
+																  pPassInput.foreignsByNames, pPassInput.uniforms);
 				}
 
 				if(isNull(pPassBlend)){
@@ -597,8 +599,6 @@ module akra.fx {
 		//fog
 		protected cHeightFalloff: float = 0.04;
 		protected cGlobalDensity: float = 0.002;
-
-#define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[sName] = pValue;
 
 		_calcRenderID(pSceneObject: ISceneObject, pRenderable: IRenderableObject, bCreateIfNotExists: bool = false): int {
 			//assume, that less than 1024 draw calls may be & less than 1024 scene object will be rendered.

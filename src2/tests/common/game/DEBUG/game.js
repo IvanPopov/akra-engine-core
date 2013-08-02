@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Aug 01 2013 12:05:50 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Aug 01 2013 13:25:34 GMT+0400 (Московское время (лето))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game

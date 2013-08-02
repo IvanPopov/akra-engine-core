@@ -19,7 +19,7 @@ module akra {
 						iXVerts: uint, iYVerts: uint, 
 						pWorldRect: IRect2d, iStartIndex?: uint): bool;
 
-		_initTesselationData(): void;
+		_initTessellationData(): void;
 		
 		reset(): void;
 		tessellate(fScale: float, fLimit: float): void;

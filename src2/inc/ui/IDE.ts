@@ -175,7 +175,7 @@ module akra.ui {
 		_sceneUpdate(pScene: IScene3d): void {
 			var pKeymap: IKeyMap = this.getKeymap();
 			
-			if (pKeymap.isMousePress()) {
+			if (pKeymap.isMousePress() && false) {
 				// var v3fPoint: IVec3 = this.getViewport().unprojectPoint(pKeymap.getMouse(), vec3());
 				
 				// v3fPoint.z -= 0.075;

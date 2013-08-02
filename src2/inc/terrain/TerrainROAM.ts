@@ -8,7 +8,6 @@
 #include "scene/objects/Camera.ts"
 
 // #include "util/TessellationThread.ts"
-//#define USE_TESSELATION_TREAD 1
 
 /// @TESSELLATION_THREAD: {data}/js/TessellationThread.t.js|src(inc/util/TessellationThread.t.js)|data_location({data},DATA)
 
@@ -27,7 +26,7 @@ module akra.terrain {
 	    private _pTessellationQueue: ITerrainSectionROAM[] = null;
 		private _iTessellationQueueCount: uint = 0;
 		private _isRenderInThisFrame: bool = false;
-		private _iMaxTriTreeNodes: uint = (1024*64); /*64k triangle nodes*/
+		private _iMaxTriTreeNodes: uint = (1024*64*4); /*64k triangle nodes*/
 		private _iTessellationQueueSize: uint = 0;
 		//массив подчиненный секций 
 		protected _pSectorArray: ITerrainSectionROAM[] = null; 
@@ -43,10 +42,11 @@ module akra.terrain {
 		private _v3fLocalCameraCoord: IVec3 = new Vec3();
 		private _isNeedReset: bool = true;
 
-		private _fLastTessealationTime: float = 0.;
-		private _fTessealationInterval: float = 1./25.;
+		private _fLastTessellationTime: float = 0.;
+		private _fTessellationSelfInterval: float = 1./25.;
+		private _fTessellationThreadInterval: float = 1./60.;
 
-		private _bUseTesselationThread: bool = false;
+		private _bUseTessellationThread: bool = false;
 		private _bIsInitTessellationSelfData: bool = false;
 		private _bIsInitTessellationThreadData: bool = false;
 
@@ -54,7 +54,7 @@ module akra.terrain {
 		private _pTessellationTransferableData: ArrayBuffer = null;
 		private _pTmpTransferableArray: any[] = null;
 
-		private _bIsReadyForTessealtion: bool = false;
+		private _bIsReadyForTesseltion: bool = false;
 
 		private _pNodePool: ITriangleNodePool = null;
 
@@ -88,11 +88,11 @@ module akra.terrain {
 		};
 
 		inline get useTessellationThread(): bool {
-			return this._bUseTesselationThread;
+			return this._bUseTessellationThread;
 		}
 
 		inline set useTessellationThread(bUseThread: bool) {
-			this._bUseTesselationThread = bUseThread;
+			this._bUseTessellationThread = bUseThread;
 
 			if(this._isCreate){
 				if(bUseThread && !this._bIsInitTessellationThreadData){
@@ -102,6 +102,12 @@ module akra.terrain {
 					this.initTessellationSelfData();
 				}
 			}
+
+			this._fAvgTesselateCallsInSec = 0;
+			this._iCurrentTesselateCount = 0;
+			this._nSec = 0;
+			this._fLastTimeStart = 0;
+
 		}
 
 		inline get maxTriTreeNodes(): uint {
@@ -159,7 +165,7 @@ module akra.terrain {
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
 				this.connect(this._pRenderableObject.getTechnique(), SIGNAL(render), SLOT(_onRender));
 
-				if(!this._bUseTesselationThread){
+				if(!this._bUseTessellationThread){
 					this._pNodePool = new TriangleNodePool(this._iMaxTriTreeNodes);
 				}
 
@@ -167,12 +173,12 @@ module akra.terrain {
 				this.reset();
 
 
-				if(this._bUseTesselationThread){
+				if(this._bUseTessellationThread){
 					this.initTessellationThreadData();
 				}
 				else {
 					this._bIsInitTessellationSelfData = true;
-					this._bIsReadyForTessealtion = true;
+					this._bIsReadyForTesseltion = true;
 				}
 
 				this._isCreate = true;
@@ -195,7 +201,7 @@ module akra.terrain {
 		}
 
 		protected initTessellationSelfData(): void {
-			this._bIsReadyForTessealtion = true;
+			this._bIsReadyForTesseltion = true;
 
 			if(this._bIsInitTessellationSelfData){
 				return;
@@ -203,14 +209,14 @@ module akra.terrain {
 			
 			this._pNodePool = new TriangleNodePool(this._iMaxTriTreeNodes);
 			for(var i: uint = 0; i < this._pSectorArray.length; i++){
-				this._pSectorArray[i]._initTesselationData();
+				this._pSectorArray[i]._initTessellationData();
 			}
 
 			this._bIsInitTessellationSelfData = true;			
 		}
 
 		protected initTessellationThreadData(): void {
-			this._bIsReadyForTessealtion = false;
+			this._bIsReadyForTesseltion = false;
 
 			if(this._bIsInitTessellationThreadData){
 				return;
@@ -226,7 +232,7 @@ module akra.terrain {
 				else {
 					WARNING("Cannot inititalize tessellation thread. So we will tessellate terraint in main thread.");
 					me.useTessellationThread = false;
-					me.terminateTesselationThread();
+					me.terminateTessellationThread();
 				}
 			};
 
@@ -235,7 +241,7 @@ module akra.terrain {
 				LOG(event);
 				pThread.onmessage = null;
 				me.useTessellationThread = false;
-				me.terminateTesselationThread();
+				me.terminateTessellationThread();
 			};
 
 			this._bIsInitTessellationThreadData = true;
@@ -273,7 +279,7 @@ module akra.terrain {
 
 		}
 
-		protected terminateTesselationThread(): void {
+		protected terminateTessellationThread(): void {
 			this._pTessellationThread.terminate();
 			this._bIsInitTessellationThreadData = false;
 		}
@@ -282,7 +288,7 @@ module akra.terrain {
 			var me: TerrainROAM = this;
 			this._pTessellationTransferableData = new ArrayBuffer(4 * this._iMaxTriTreeNodes * 3 + 4);
 			this._pTmpTransferableArray = [null];
-			this._bIsReadyForTessealtion = true;
+			this._bIsReadyForTesseltion = true;
 
 			this._pTessellationThread.onmessage = function(event: any){
 				me.prepareIndexData(<ArrayBuffer>event.data);
@@ -376,7 +382,7 @@ module akra.terrain {
 				this._iTessellationQueueCount = 0;
 				// this._pTessellationQueue.length = this._iTessellationQueueSize;
 
-				if(!this._bUseTesselationThread && this._bIsInitTessellationSelfData){
+				if(!this._bUseTessellationThread && this._bIsInitTessellationSelfData){
 					this._pNodePool.reset();
 
 					// reset each section
@@ -388,8 +394,8 @@ module akra.terrain {
 		}
 
 		resetWithCamera(pCamera: ICamera): bool {
-			if(this._isNeedReset){
-				if(!this._isOldCamera(pCamera)){
+			if(this._bIsReadyForTesseltion && !this._isOldCamera(pCamera)){
+				if(this._isNeedReset){
 
 					this.reset();
 					this._isNeedReset = false;
@@ -400,13 +406,15 @@ module akra.terrain {
 
 		    		this._v3fLocalCameraCoord.set(v4fCameraCoord.x, v4fCameraCoord.y, v4fCameraCoord.z);
 					
-					return true;
+					// return true;
 				}
 
-				return false;
+				return true;
+				// return false;
 			}
 			else {
-				return true;
+				// return true;
+				return false;
 			}
 		}
 
@@ -433,7 +441,7 @@ module akra.terrain {
 			// this._pTessellationQueue.length = this._iTessellationQueueCount;
 			this._pTessellationQueue.sort(TerrainROAM.fnSortSection);
 
-			if(this._bUseTesselationThread){
+			if(this._bUseTessellationThread){
 				var pDataView: DataView = new DataView(this._pTessellationTransferableData);
 
 				pDataView.setFloat32(0, this._v3fLocalCameraCoord.x, true);
@@ -442,13 +450,15 @@ module akra.terrain {
 
 				pDataView.setUint32(12, this._iTessellationQueueCount, true);
 
+				// var pSectionIndices: Uint32Array = new Uint32Array(this._pTessellationTransferableData, 16);
 				for (var i: uint = 0; i < this._iTessellationQueueCount; ++i) {
 					pDataView.setUint32(16 + i * 4, this._pTessellationQueue[i].sectionIndex, true);
+					// pSectionIndices[i] = this._pTessellationQueue[i].sectionIndex;
 				}
 
 				this._pTmpTransferableArray[0] = this._pTessellationTransferableData;
 				this._pTessellationThread.postMessage(this._pTessellationTransferableData, this._pTmpTransferableArray);
-				this._bIsReadyForTessealtion = false;
+				this._bIsReadyForTesseltion = false;
 			}
 			else {
 				for (var i: uint = 0; i < this._iTessellationQueueCount; ++i) {
@@ -495,7 +505,7 @@ module akra.terrain {
 
 			this._pTessellationTransferableData = pData;
 
-			this._bIsReadyForTessealtion = true;
+			this._bIsReadyForTesseltion = true;
 		}
 
 
@@ -514,15 +524,16 @@ module akra.terrain {
 		private _fLastTimeStart: float = 0;
 
 		_onBeforeRender(pRenderableObject: IRenderableObject, pViewport: IViewport): void {
-			if(this._bIsReadyForTessealtion) {
+			if(this._bIsReadyForTesseltion) {
 
 				var pCamera: ICamera = pViewport.getCamera();
 				var fCurrentTime: float = this.scene.getManager().getEngine().time;
 
 				this._m4fLastCameraMatrix.set(pCamera.worldMatrix);
 
-				if (this._bUseTesselationThread || 
-					fCurrentTime - this._fLastTessealationTime > this._fTessealationInterval) {
+				if ((this._bUseTessellationThread && 
+					fCurrentTime - this._fLastTessellationTime > this._fTessellationThreadInterval) || 
+					fCurrentTime - this._fLastTessellationTime > this._fTessellationSelfInterval) {
 
 					if(this._fLastTimeStart === 0){
 						this._fLastTimeStart = fCurrentTime;
@@ -535,13 +546,15 @@ module akra.terrain {
 					}
 					else {
 						this._fAvgTesselateCallsInSec = this._fAvgTesselateCallsInSec * (this._nSec - 1)/this._nSec + this._iCurrentTesselateCount/this._nSec;
+						
+
+						if(this._nSec % 3 === 0){
+							LOG("Avg:", this._fAvgTesselateCallsInSec.toFixed(2), "Last:", this._iCurrentTesselateCount);
+						}
+
 						this._nSec++;
 						this._fLastTimeStart = fCurrentTime;
 						this._iCurrentTesselateCount = 0;
-
-						if(this._nSec % 3 === 0){
-							LOG(this._fAvgTesselateCallsInSec);
-						}
 					}
 
 					if(!this._m4fLastCameraMatrix.isEqual(this._m4fLastTessellationMatrix)) {
@@ -550,7 +563,7 @@ module akra.terrain {
 						//this._iTessellationQueueCountOld = this._iTessellationQueueCount;
 					}
 
-					this._fLastTessealationTime = fCurrentTime;
+					this._fLastTessellationTime = fCurrentTime;
 				}				
 			}
 

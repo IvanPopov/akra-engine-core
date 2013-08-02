@@ -222,8 +222,9 @@ module akra.render {
 				for (var k: int = 0; k < pSceneObject.totalRenderable; k++) {
 					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
 					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+					var iTotalPasses: uint = pTechCurr.totalPasses;
 
-					for (var j: int = 0; j < 2; j++) {
+					for (var j: int = 0; j < iTotalPasses; j++) {
 						var sMethod: string = "deferred_shading_pass_" + j;
 						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
 

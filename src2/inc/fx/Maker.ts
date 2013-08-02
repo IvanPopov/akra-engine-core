@@ -83,6 +83,7 @@ module akra.fx {
 
 	export interface IInputUniformInfo {
 		name: string;
+		nameIndex: uint;
 		isComplex: bool;
 		isCollapsedArray: bool;
 		shaderVarInfo: IShaderUniformInfo;
@@ -136,9 +137,10 @@ module akra.fx {
 		};
 	}
 
-	function createInputUniformInfo(sName: string, pShaderUniformInfo: IShaderUniformInfo, isComplex: bool): IInputUniformInfo {
+	function createInputUniformInfo(sName: string, iNameIndex: uint, pShaderUniformInfo: IShaderUniformInfo, isComplex: bool): IInputUniformInfo {
 		return <IInputUniformInfo>{
 			name: sName,
+			nameIndex: iNameIndex,
 			isComplex: isComplex,
 			isCollapsedArray: false,
 			shaderVarInfo: pShaderUniformInfo,
@@ -364,21 +366,22 @@ module akra.fx {
 
 		_initInput(pPassInput: IAFXPassInputBlend, pBlend: SamplerBlender, pAttrs: AttributeBlendContainer): bool {
 			/* Initialize info about uniform variables(not samplers and video buffers) */			
-			var pUniformKeys: string[] = pPassInput.uniformKeys;
+			var pUniformKeys: uint[] = pPassInput.uniformKeys;
 			this._pInputUniformInfoList = [];
 
 			for(var i: uint = 0; i < pUniformKeys.length; i++) {
-				var sName: string = pUniformKeys[i];
-				var eType: EAFXShaderVariableType =  pPassInput._getUniformType(sName);
-				var iLength: uint = pPassInput._getUnifromLength(sName);
+				var iNameIndex: uint = pUniformKeys[i];
+				var sName: string = pPassInput._getVarNameByIndex(iNameIndex);
+				var eType: EAFXShaderVariableType = pPassInput._getUniformType(iNameIndex);
+				var iLength: uint = pPassInput._getUnifromLength(iNameIndex);
 				var isArray: bool = (iLength > 0);
 
 				var pInputUniformInfo: IInputUniformInfo = null;
 
 				if(eType === EAFXShaderVariableType.k_Complex){
-					var pStructInfo: IUniformStructInfo = this.expandStructUniforms(pPassInput._getAFXUniformVar(sName));
+					var pStructInfo: IUniformStructInfo = this.expandStructUniforms(pPassInput._getAFXUniformVar(iNameIndex));
 					if(!isNull(pStructInfo)){
-						pInputUniformInfo = createInputUniformInfo(sName, null, true);
+						pInputUniformInfo = createInputUniformInfo(sName, iNameIndex, null, true);
 						pInputUniformInfo.structVarInfo = pStructInfo;
 						this._pInputUniformInfoList.push(pInputUniformInfo);
 					}
@@ -395,7 +398,7 @@ module akra.fx {
 					pShaderUniformInfo.type = eType;
 					pShaderUniformInfo.length = iLength;
 
-					pInputUniformInfo = createInputUniformInfo(sName, pShaderUniformInfo, false);
+					pInputUniformInfo = createInputUniformInfo(sName, iNameIndex, pShaderUniformInfo, false);
 					this._pInputUniformInfoList.push(pInputUniformInfo);
 				}
 			}
@@ -437,6 +440,7 @@ module akra.fx {
 
 				var pSampler: IAFXVariableDeclInstruction = pBlend.getSamplersBySlot(i).value(0);
 				var sSampler: string = pSampler.getSemantic() || pSampler.getName();
+				var iNameIndex: uint = pPassInput._getVarNameIndex(sSampler);
 				var eType: EAFXShaderVariableType = pSampler.getType().isSampler2D() ?
 									 					EAFXShaderVariableType.k_Sampler2D :
 									 					EAFXShaderVariableType.k_SamplerCUBE;
@@ -446,7 +450,7 @@ module akra.fx {
 				pShaderUniformInfo.type = eType;
 				pShaderUniformInfo.length = 0;
 				
-				pInputUniformInfo = createInputUniformInfo(sSampler, pShaderUniformInfo, false);
+				pInputUniformInfo = createInputUniformInfo(sSampler, iNameIndex, pShaderUniformInfo, false);
 				pInputUniformInfo.isCollapsedArray = (pSampler.getType().getLength() > 0);
 
 				this._pInputSamplerInfoList.push(pInputUniformInfo);
@@ -454,13 +458,14 @@ module akra.fx {
 
 
 			/* Initialize info about array of samplers */
-			var pSamplerArrayKeys: string[] = pPassInput.samplerArrayKeys;
+			var pSamplerArrayKeys: uint[] = pPassInput.samplerArrayKeys;
 			this._pInputSamplerArrayInfoList = [];
 
 			for(var i: uint = 0; i < pSamplerArrayKeys.length; i++) {
-				var sName: string = pSamplerArrayKeys[i];
-				var eType: EAFXShaderVariableType =  pPassInput._getUniformType(sName);
-				var iLength: uint = pPassInput._getUnifromLength(sName);
+				var iNameIndex: uint = pSamplerArrayKeys[i];
+				var sName: string = pPassInput._getVarNameByIndex(iNameIndex);
+				var eType: EAFXShaderVariableType =  pPassInput._getUniformType(iNameIndex);
+				var iLength: uint = pPassInput._getUnifromLength(iNameIndex);
 				var sShaderName: string = sName + "[0]";
 				var pInputUniformInfo: IInputUniformInfo = null;
 
@@ -473,7 +478,7 @@ module akra.fx {
 				pShaderUniformInfo.type = eType;
 				pShaderUniformInfo.length = iLength;
 
-				pInputUniformInfo = createInputUniformInfo(sName, pShaderUniformInfo, false);
+				pInputUniformInfo = createInputUniformInfo(sName, iNameIndex, pShaderUniformInfo, false);
 
 				this._pInputSamplerArrayInfoList.push(pInputUniformInfo);
 			}
@@ -562,8 +567,8 @@ module akra.fx {
 		}
 
 		_make(pPassInput: IAFXPassInputBlend, pBufferMap: util.BufferMap): IShaderInput {
-			var pUniforms: Object = pPassInput.uniforms;
-			var pTextures: Object = pPassInput.textures
+			var pUniforms: any = pPassInput.uniforms;
+			var pTextures: any = pPassInput.textures
 			var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
 			var pRenderStates: IRenderStateMap = pPassInput.renderStates;
 			var pSamplerArrays: IAFXSamplerStateListMap = pPassInput.samplerArrays;
@@ -574,10 +579,10 @@ module akra.fx {
 				var pInfo: IInputUniformInfo = this._pInputUniformInfoList[i];
 				
 				if(pInfo.isComplex) {
-					this.applyStructUniform(pInfo.structVarInfo, pUniforms[pInfo.name], pInput);
+					this.applyStructUniform(pInfo.structVarInfo, pUniforms[pInfo.nameIndex], pInput);
 				}
 				else {
-					pInput.uniforms[pInfo.shaderVarInfo.location] = pUniforms[pInfo.name];
+					pInput.uniforms[pInfo.shaderVarInfo.location] = pUniforms[pInfo.nameIndex];
 				}				
 			}
 
@@ -588,10 +593,10 @@ module akra.fx {
 				var pTexture: ITexture = null;
 
 				if(pInfo.isCollapsedArray){
-					pState = pSamplerArrays[pInfo.name][0];
+					pState = pSamplerArrays[pInfo.nameIndex][0];
 				}
 				else {
-					pState = pPassInput._getSamplerState(pInfo.name);					
+					pState = pPassInput._getSamplerState(pInfo.nameIndex);					
 				}
 
 				// if(!isDef(pState)){
@@ -606,7 +611,7 @@ module akra.fx {
 			for(var i: uint = 0; i < this._pInputSamplerArrayInfoList.length; i++){
 				var pInfo: IInputUniformInfo = this._pInputSamplerArrayInfoList[i];
 
-				var pSamplerStates: IAFXSamplerState[] = pSamplerArrays[pInfo.name];
+				var pSamplerStates: IAFXSamplerState[] = pSamplerArrays[pInfo.nameIndex];
 				var pInputStates: IAFXSamplerState[] = pInput.uniforms[pInfo.shaderVarInfo.location];
 
 				for(var j: uint = 0; j < pInfo.shaderVarInfo.length; j++) {

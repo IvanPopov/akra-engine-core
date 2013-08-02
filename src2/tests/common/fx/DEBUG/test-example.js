@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 22 2013 13:39:55 GMT+0400 (Московское время (лето))
+ * assembled at: Fri Aug 02 2013 18:01:38 GMT+0400 (Московское время (лето))
  * directory: tests/common/fx/DEBUG/
  * file: tests/common/fx/test-example.ts
  * name: test-example
@@ -280,8 +280,8 @@ var akra;
         // var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube2.setPosition(2., 0.8, -5.);
         // pCube2.scale(0.1);
-        // loadManyModels(100, DATA + "models/cube.dae");
-        loadManyModels(30, akra.DATA + "models/box/opened_box.dae");
+        // loadManyModels(300, DATA + "models/cube.dae");
+        loadManyModels(100, akra.DATA + "models/box/opened_box.dae");
     }
     akra.pEngine.bind("depsLoaded", main);
     akra.pEngine.exec();

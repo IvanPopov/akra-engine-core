@@ -33,6 +33,9 @@ module akra {
 
 		foreignNameList: string[];
 
+		getVarNameIndex(sName: string): uint;
+		getVarNameByIndex(iIndex: uint): string;
+
 		addDataFromPass(pPass: IAFXPassInstruction): void;
 		finalizeInput(): void;
 

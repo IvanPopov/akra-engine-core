@@ -127,30 +127,60 @@ module akra.geometry {
             Box.stackPosition = 0;
         }
 
+        var iLeft: uint = 0, 
+        	iTop: uint = 0, 
+        	iFront: uint = 0,
+        	iWidth: uint = 0, 
+        	iHeight: uint = 0, 
+        	iDepth: uint = 0;
+
 		switch(arguments.length){
 			case 1:
-				pBox.setPosition(arguments[0].left,
-								 arguments[0].top,
-								 arguments[0].width,
-								 arguments[0].height,
-								 arguments[0].front,
-								 arguments[0].depth);
+				iLeft 	= arguments[0].left;
+				iTop 	= arguments[0].top;
+				iFront 	= arguments[0].front;
+				iWidth 	= arguments[0].width;
+				iHeight = arguments[0].height;
+				iDepth 	= arguments[0].depth;
 				break;
 			case 0:
-				pBox.setPosition (0, 0, 1, 1, 0, 1);
+				iLeft 	= 0;
+				iTop 	= 0;
+				iFront 	= 0;
+				iWidth 	= 1;
+				iHeight = 1;
+				iDepth 	= 1;
 				break;
 			case 3:
-				pBox.setPosition(arguments[0], arguments[1], 1, 1, arguments[2], 1);
+				iLeft 	= arguments[0];
+				iTop 	= arguments[1];
+				iFront 	= arguments[2];
+				iWidth 	= arguments[0] + 1;
+				iHeight = arguments[1] + 1;
+				iDepth 	= arguments[2] + 1;
 				break;
 			case 6:
-				pBox.setPosition(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+				iLeft 	= arguments[0];
+				iTop 	= arguments[1];
+				iFront 	= arguments[2];
+				iWidth 	= arguments[3] - arguments[0];
+				iHeight = arguments[4] - arguments[1];
+				iDepth 	= arguments[5] - arguments[2];
 				break;
 			case 4:
-				pBox.setPosition(arguments[0], arguments[1], arguments[2] - arguments[0], arguments[3] - arguments[1], 0, 1);
+				iLeft 	= arguments[0];
+				iTop 	= arguments[1];
+				iFront 	= 0;
+				iWidth 	= arguments[2] - arguments[0];
+				iHeight = arguments[3] - arguments[1];
+				iDepth 	= 1;
 				break;
 			default:
 				ERROR("Inavlid number of arguments");
+				return null;
 		}
+
+		pBox.setPosition(iLeft, iTop, iWidth, iHeight, iFront, iDepth);
 
 		return pBox;
 	}

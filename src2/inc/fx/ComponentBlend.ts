@@ -6,6 +6,7 @@
 #include "IAFXInstruction.ts"
 #include "util/unique.ts"
 #include "fx/PassInputBlend.ts"
+#include "util/StringDictionary.ts"
 
 module akra.fx {
 	export class ComponentBlend implements IAFXComponentBlend {
@@ -329,6 +330,18 @@ module akra.fx {
 
 		private _pFreePassInputBlendList: IAFXPassInputBlend[] = null;
 
+		private _pVarNamesDictionary: IntMap = null;
+		private _pIndexToVarNamesMap: StringMap = null;
+		static pShaderVarNamesGlobalDictionary: util.StringDictionary = new util.StringDictionary();
+
+		inline getVarNameIndex(sName: string): uint {
+			return this._pVarNamesDictionary[sName] || (this._pVarNamesDictionary[sName] = 0);
+		}
+
+		inline getVarNameByIndex(iIndex: uint): string {
+			return this._pIndexToVarNamesMap[iIndex];
+		}
+
 		inline get uniformNameToReal(): StringMap{
 			return this._pUniformNameToRealMap;
 		}
@@ -438,6 +451,8 @@ module akra.fx {
 			this._pForeignNameList = Object.keys(this._pForeignByNameMap);
 
 			this._pFreePassInputBlendList = [];
+
+			this.addVarNamesToDictionary();
 			this.generateNewPassInputs();
 		}
 
@@ -500,6 +515,35 @@ module akra.fx {
 			this._pUniformNameToRealMap[sName] = sRealName;
 			this._pUniformByRealNameMap[sRealName] = pVariable;
 			this._pUniformDefaultValueMap[sRealName] = pVariable.getDefaultValue();
+		}
+
+		private addVarNamesToDictionary(): void {
+			this._pVarNamesDictionary = <IntMap>{};
+			this._pIndexToVarNamesMap = <StringMap>{};
+
+			for(var i: uint = 0; i < this._pTextureRealNameList.length; i++){
+				var sName: string = this._pTextureRealNameList[i];
+				var iIndex: uint = ComponentPassInputBlend.pShaderVarNamesGlobalDictionary.add(sName);
+
+				this._pVarNamesDictionary[sName] = iIndex;
+				this._pIndexToVarNamesMap[iIndex] = sName;				
+			}
+
+			for(var i: uint = 0; i < this._pUniformRealNameList.length; i++){
+				var sName: string = this._pUniformRealNameList[i];
+				var iIndex: uint = ComponentPassInputBlend.pShaderVarNamesGlobalDictionary.add(sName);
+
+				this._pVarNamesDictionary[sName] = iIndex;
+				this._pIndexToVarNamesMap[iIndex] = sName;				
+			}	
+
+			for(var i: uint = 0; i < this._pForeignNameList.length; i++){
+				var sName: string = this._pForeignNameList[i];
+				var iIndex: uint = ComponentPassInputBlend.pShaderVarNamesGlobalDictionary.add(sName);
+
+				this._pVarNamesDictionary[sName] = iIndex;
+				this._pIndexToVarNamesMap[iIndex] = sName;				
+			}		
 		}
 
 		private generateNewPassInputs(nCount?: uint = 5): void {

@@ -47,14 +47,15 @@ module akra {
 
 		uniforms: any; /* all uniforms without samlers */
 		foreigns: any;
+		foreignsByNames: any;
 		textures: any;
 
-		samplerKeys: string[];
-		samplerArrayKeys: string[];
+		samplerKeys: uint[];
+		samplerArrayKeys: uint[];
 
-		uniformKeys: string[];
-		foreignKeys: string[];
-		textureKeys: string[];
+		uniformKeys: uint[];
+		foreignKeys: uint[];
+		textureKeys: uint[];
 
 		renderStates: IRenderStateMap;
 
@@ -77,12 +78,15 @@ module akra {
 
 		setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void;
 
-		_getSamplerState(sName: string): IAFXSamplerState;
-		_getSamplerTexture(sName: string): ITexture;
+		_getVarNameIndex(sName: string): uint;
+		_getVarNameByIndex(iNameIndex: uint): string;
+
+		_getSamplerState(iNameIndex: uint): IAFXSamplerState;
+		_getSamplerTexture(iNameIndex: uint): ITexture;
 		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture;
 
-		_getUnifromLength(sName: string): uint;
-		_getUniformType(sName: string): EAFXShaderVariableType;
+		_getUnifromLength(iNameIndex: uint): uint;
+		_getUniformType(iNameIndex: uint): EAFXShaderVariableType;
 
 		_release(): void;
 
@@ -94,7 +98,7 @@ module akra {
 		_setPassBlendId(id: uint): void;
 		_setShaderId(id: uint): void;
 
-		_getAFXUniformVar(sName: string): IAFXVariableDeclInstruction;
+		_getAFXUniformVar(iNameIndex: uint): IAFXVariableDeclInstruction;
 	}
 }
 

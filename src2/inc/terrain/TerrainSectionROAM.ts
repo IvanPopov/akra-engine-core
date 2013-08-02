@@ -83,13 +83,13 @@ module akra.terrain {
 													pWorldRect);
 
 			if(!(<ITerrainROAM>this.terrainSystem).useTessellationThread){
-				this._initTesselationData();
+				this._initTessellationData();
 			}
 
 			return bResult;
 		}
 
-		_initTesselationData(): void {
+		_initTessellationData(): void {
 			var iVerts: uint = math.max(this._iXVerts, this._iYVerts);
 			this._iTotalDetailLevels = 2*(math.round(math.log(iVerts - 1)/math.LN2));
 			this._iTotalVariances = 1<<this._iTotalDetailLevels;
