@@ -160,7 +160,8 @@ module akra.animation {
 		}
 
 		inline rewind(fRealTime: float): void {
-			console.log("rewind > ", fRealTime);
+			// console.log("rewind > ", fRealTime);
+			this._fTrueTime = 0;
 			this._fTime = fRealTime;
 		}
 

@@ -44,8 +44,11 @@ export interface IGameHeroParameters {
         gunDrawStartTime         : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunDrawToIdleStartTime   : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunIdleToUnDrawStartTime : float;/*sec [temp/system] DO NOT EDIT!!!*/
+        gunUndrawToIdleTime      : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunUndrawedTime          : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunUndrawStartTime       : float;/*sec [temp/system] DO NOT EDIT!!!*/
+
+        gunDirection: float;
 
         anim: IAnimationMap;
 

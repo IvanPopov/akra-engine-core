@@ -306,6 +306,12 @@ module akra.animation {
 				pMask = pPointer.mask;
 				fBoneWeight = 1.0;
 
+				//для того чтобы циклы используемые выше работали корректно
+				if (fRealTime < pPointer.realTime) {
+					pPointer.time = 0;
+					pPointer.realTime = 0;
+				}
+
 				pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
 		    	pPointer.realTime = fRealTime;
 

@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Aug 01 2013 19:12:56 GMT+0400 (Московское время (зима))
+ * assembled at: Fri Aug 02 2013 20:05:15 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -297,7 +297,7 @@ var akra;
             deps: {
                 files: [
                     {
-                        path: "models/character/all.json",
+                        path: "models/character/all-ed.json",
                         name: "HERO_CONTROLLER"
                     }
                 ]
@@ -447,6 +447,8 @@ var akra;
                 0.35,
                 gunIdleToUndrawTime: /*sec*/
                 .15,
+                gunUndrawToIdleTime: /*sec*/
+                .3,
                 gunDrawToIdleTime: /*sec*/
                 .2,
                 gunToStateTime: /*sec*/
@@ -465,6 +467,7 @@ var akra;
                 0,
                 gunUndrawStartTime: /*sec [temp/system] DO NOT EDIT!!!*/
                 0,
+                gunDirection: 0,
                 fallDown: false,
                 fallTransSpeed: 0,
                 fallStartTime: 0,
@@ -492,17 +495,25 @@ var akra;
         findAnimation("WALK.player");
         findAnimation("GUN.blend");
         var pAnimGunDraw = findAnimation("GUN_DRAW.player");
+        var pGunDrawBlend = findAnimation("GUN_DRAW.blend");
         var pAnimGunUnDraw = findAnimation("GUN_UNDRAW.player");
+        var pGunUnDrawBlend = findAnimation("GUN_UNDRAW.blend");
         var pAnimGunIdle = findAnimation("GUN_IDLE.player");
+        var pGunIdleBlend = findAnimation("GUN_IDLE.blend");
         var pAnimGunFire = findAnimation("GUN_FIRE.player");
+        var pGunFireBlend = findAnimation("GUN_FIRE.blend");
         var pGunNode = pHeroRoot.findEntity("node-Object025");
         var pRightHolster = pHeroRoot.findEntity("node-Dummy01");
         var pRightHand = pHeroRoot.findEntity("node-Dummy06");
         var fGunDrawAttachmentTime = (14 / 46) * pAnimGunDraw.duration;
         var fGunUnDrawAttachmentTime = (21 / 53) * pAnimGunUnDraw.duration;
+        pAnimGunDraw.useLoop(false);
+        pAnimGunUnDraw.useLoop(false);
         if (akra.isDefAndNotNull(pAnimGunDraw)) {
             pAnimGunDraw.bind("enterFrame", function (pAnim, fRealTime, fTime) {
-                console.log(">>>> draw ...");
+                // if (!(!isNull(pGunNode) && !isNull(pRightHolster) && !isNull(pRightHand))) {
+                // 	console.log("!!!!!!");
+                // }
                 if (fTime < fGunDrawAttachmentTime) {
                     pGunNode.attachToParent(pRightHolster);
                 } else {
@@ -512,6 +523,9 @@ var akra;
         }
         if (akra.isDefAndNotNull(pAnimGunUnDraw)) {
             pAnimGunUnDraw.bind("enterFrame", function (pAnim, fRealTime, fTime) {
+                // if (!(!isNull(pGunNode) && !isNull(pRightHolster) && !isNull(pRightHand))) {
+                // 	console.log("!!!!!!");
+                // }
                 if (fTime < fGunUnDrawAttachmentTime) {
                     pGunNode.attachToParent(pRightHand);
                 } else {
@@ -519,16 +533,16 @@ var akra;
                 }
             });
         }
-        if (akra.isDefAndNotNull(pAnimGunIdle)) {
-            pAnimGunIdle.bind("play", function () {
-                pGunNode.attachToParent(pRightHand);
-            });
-        }
-        if (akra.isDefAndNotNull(pAnimGunFire)) {
-            pAnimGunFire.bind("play", function () {
-                pGunNode.attachToParent(pRightHand);
-            });
-        }
+        // if (isDefAndNotNull(pAnimGunIdle)) {
+        //     pAnimGunIdle.bind("play", (): void => {
+        //         pGunNode.attachToParent(pRightHand);
+        //     });
+        // }
+        // if (isDefAndNotNull(pAnimGunFire)) {
+        //     pAnimGunFire.bind("play", (): void => {
+        //         pGunNode.attachToParent(pRightHand);
+        //     });
+        // }
         /*run, walk, walkback, weapon_walk*/
         findAnimation('MOVEMENT.blend').setWeights(0., 1., 0., 0.);
         /*idle_0, idle_1, movement, gun*/
@@ -640,9 +654,9 @@ var akra;
         var fSpeed;
         var fRunWeight;
         var fWalkWeight;
-        //pStat.movementSpeedMax = pStat.state? pStat.walkToRunSpeed: pStat.runSpeed;
         pStat.walkSpeed = pStat.walWithoutWeaponSpeed;
-        pStat.movementSpeedMax = pStat.runSpeed;
+        pStat.movementSpeedMax = pStat.state ? pStat.walkToRunSpeed : pStat.runSpeed;
+        // pStat.movementSpeedMax = pStat.runSpeed;
         fSpeed = fMovementRateAbs * pStat.movementSpeedMax;
         if (pController.active) {
             if (pController.active.name !== "STATE.player") {
@@ -656,16 +670,18 @@ var akra;
             // if ((<IAnimationContainer>pAnim["MOVEMENT.player"]).isPaused()) {
             //     (<IAnimationContainer>pAnim["MOVEMENT.player"]).pause(false);
             // }
+            //зануляем IDLE'ы чтобы избежать проблем с тазом
+            (pAnim["STATE.blend"]).setWeights(0., 0.);
             if (fMovementRate > 0.0) {
                 //run forward
                 if (fSpeed < pStat.walkToRunSpeed) {
                     if (pStat.state) {
                         //walk with gun
                         /*only walk*/
-                        (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 0., 1.);
+                        (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 0., 1., .0);
                     } else {
                         /* only walk */
-                        (pAnim["MOVEMENT.blend"]).setWeights(0., 1., 0.);
+                        (pAnim["MOVEMENT.blend"]).setWeights(0., 1., 0., 0., 0.);
                     }
                     (pAnim["WALK.player"]).setSpeed(fSpeed / fWalkSpeed);
                     // console.log("walk speed: ", fSpeed / fWalkSpeed);
@@ -675,16 +691,17 @@ var akra;
                     //run //walk frw //walk back
                     if (pStat.state) {
                         //with gun
-                        (pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, 0., 0., fWalkWeight);
-                    } else {
-                        (pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, fWalkWeight, 0.);
+                        console.log("could not run with gun!!!");
+                        //(<IAnimationBlend>pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, 0., 0., fWalkWeight);
+                                            } else {
+                        (pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, fWalkWeight, 0., 0., 0.);
                     }
                     // console.log("run weight:", fRunWeight, "walk weight:", fWalkWeight);
                     (pAnim["MOVEMENT.player"]).setSpeed(1.);
                 }
             } else {
                 //run //walk frw //walk back
-                (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 1.);
+                (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 1., 0., 0.);
                 (pAnim["MOVEMENT.player"]).setSpeed(fMovementRateAbs);
                 pStat.movementSpeedMax = fWalkSpeed;
             }
@@ -696,22 +713,23 @@ var akra;
             var iIDLE = pStat.state ? 3 : 0.;
             var iMOVEMENT = 2;
             // (<IAnimationContainer>pAnim["MOVEMENT.player"]).pause(true);
-            if (pStat.state == EGameHeroStates.GUN_NOT_DRAWED || pStat.state >= EGameHeroStates.GUN_IDLE) {
+            if ((pStat.state == EGameHeroStates.GUN_NOT_DRAWED || pStat.state == EGameHeroStates.GUN_IDLE)) {
                 /* idle ---> run */
                 (pAnim["STATE.blend"]).setWeightSwitching(fSpeed / fWalkSpeed, iIDLE, iMOVEMENT);
-            }
+                // console.log(fSpeed/fWalkSpeed, "IDLE --> MOVEMENT(" + (pStat.state? "with": "without") + " gun)");
+                            }
             // console.log(pAnim["STATE.blend"].getAnimationWeight(0), pAnim["STATE.blend"].getAnimationWeight(1), pAnim["STATE.blend"].getAnimationWeight(2))
             if (fMovementRate > 0.0) {
                 //walk forward --> idle
                 if (pStat.state) {
                     //with gun
-                    (pAnim["MOVEMENT.blend"]).setWeights(null, 0., 0., fSpeed / fWalkSpeed);
+                    (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 0., fSpeed / fWalkSpeed, 0.);
                 } else {
-                    (pAnim["MOVEMENT.blend"]).setWeights(null, fSpeed / fWalkSpeed, 0.);
+                    (pAnim["MOVEMENT.blend"]).setWeights(0., fSpeed / fWalkSpeed, 0., 0., 0.);
                 }
             } else if (fMovementRate < 0.0) {
                 //walk back --> idle
-                (pAnim["MOVEMENT.blend"]).setWeights(null, 0, fSpeed / fWalkSpeed);
+                (pAnim["MOVEMENT.blend"]).setWeights(0., 0, fSpeed / fWalkSpeed, 0., 0.);
             }
             (pAnim["MOVEMENT.player"]).setSpeed(1);
         }
@@ -737,15 +755,34 @@ var akra;
         var fWalkToRunSpeed = pStat.walkToRunSpeed;
         var fSpeed = fRunSpeed * fMovementRateAbs;
         var fDelta;
-        var pAnimGunDraw = pAnim['GUN_DRAW.player'];
-        var pAnimGunUnDraw = pAnim['GUN_UNDRAW.player'];
+        var pGunDrawAnim = pAnim['GUN_DRAW.player'];
+        var pGunDrawBlend = pAnim['GUN_DRAW.blend'];
+        var pGunUnDrawAnim = pAnim['GUN_UNDRAW.player'];
+        var pGunUnDrawBlend = pAnim['GUN_UNDRAW.blend'];
+        var pGunIdleAnim = pAnim['GUN_IDLE.player'];
+        var pGunIdleBlend = pAnim['GUN_IDLE.blend'];
         var pGunBlend = pAnim['GUN.blend'];
         var pStateBlend = pAnim['STATE.blend'];
         var fNow = akra.now() / 1000;
+        if (pControls.forward && pStat.gunDirection < 1.) {
+            pStat.gunDirection += 0.05;
+        }
+        if (pControls.back && pStat.gunDirection > -1.) {
+            pStat.gunDirection -= 0.05;
+        }
+        //положение пистолета(куда направлен, вверх или вниз)
+        var fGd = akra.math.clamp(pStat.gunDirection, -1, 1);
+        //веса верхнего, прямого и нижнего положений
+        var fGKup = akra.math.max(fGd, 0.);
+        var fGKfrw = (1. - akra.math.abs(fGd));
+        var fGKdown = akra.math.abs(akra.math.min(fGd, 0));
+        var isOK = true;
         if ((/*checked (origin: akra)>>*/akra.self.hero.parameters.lastTriggers !== /*checked (origin: akra)>>*/akra.self.hero.triggers.length)) {
-            console.log('gun branch started...');
-            pAnimGunDraw.rewind(0.);
-            pAnimGunDraw.pause(true);
+            console.log("PREPARE TRIGGER!");
+            //переводим персонажа в состоянии убранного пистолета
+            //имеенно в это состояние мы будем переходим, при условии, что у нас нету пистолета
+            pGunDrawAnim.rewind(0.);
+            pGunDrawAnim.pause(true);
             /*idle, fire, draw, undraw*/
             pGunBlend.setWeights(0., 0., 1., 0.);
         }
@@ -756,80 +793,110 @@ var akra;
         if (pStat.state == EGameHeroStates.GUN_NOT_DRAWED && fSpeed < 0.5) {
             console.log('getting gun...');
             pStat.state = EGameHeroStates.GUN_BEFORE_DRAW;
+            //с этого времени стало понятно, что надо достать пистолет
             pStat.movementToGunEndTime = fNow;
-            pStat.idleWeightBeforeDraw = pStateBlend.getAnimationWeight(0.);
+            //необходимо для перехода в состояние с оружием, надо быстро
+            //перевести персонажа state::IDLE --> state::GUN
+            //за время stat.stateToGunTime(sec.)
+            pStat.idleWeightBeforeDraw = pStateBlend.getAnimationWeight(0);
         }
+        //переводим персонажа в состояние state::GUN при условии, что
+        //его скорость меньше скорости хотьбы, это важно, так как во всех остальных случаях
+        //мы зануляем controls.direct.x = controls.direct.y = 0, принуждая его остановиться
         if (fSpeed < fWalkSpeed) {
-            //idle --> gun idle
+            //время с момента, как стало ясно, что надо доставать пистолет
             fDelta = fNow - pStat.movementToGunEndTime;
             if (fDelta <= pStat.stateToGunTime) {
-                pStateBlend.setWeights(pStat.idleWeightBeforeDraw * (1. - fDelta / pStat.stateToGunTime), null, null, fDelta);
+                //вес state::GUN
+                var fK = fDelta / pStat.stateToGunTime;
+                //вес state::IDLE
+                var fkInv = 1. - fK;
+                console.log("state::IDLE --> state::GUN (" + fK + ")");
+                pStateBlend.setWeights(pStat.idleWeightBeforeDraw * fkInv, null, null, fK);
             }
         }
         if (pStat.state == EGameHeroStates.GUN_BEFORE_DRAW) {
-            pAnimGunDraw.pause(false);
+            //с этого момента, должна начать играться анимация доставания питолета
+            pGunDrawAnim.pause(false);
             pStat.state = EGameHeroStates.GUN_DRAWING;
             pStat.gunDrawStartTime = fNow;
-        } else if (pStat.state == EGameHeroStates.GUN_DRAWING) {
+            // pStateBlend.setWeights(0., 0., 0., 1.);
+                    } else if (pStat.state == EGameHeroStates.GUN_DRAWING) {
+            //во время доставания пистолета, можно целиться
+            pGunDrawBlend.setWeights(fGKup, fGKfrw, fGKdown);
             fDelta = fNow - pStat.gunDrawStartTime;
             if (fDelta >= pGunBlend.duration) {
                 console.log('go to idle with gun..');
                 pStat.state = EGameHeroStates.GUN_DRAWED;
                 pStat.gunDrawToIdleStartTime = fNow;
-            }
-        } else if (pStat.state == EGameHeroStates.GUN_DRAWED) {
+                //оставляем только IDLE, для упрощения вычислений
+                            }
+        }
+        if (pStat.state == EGameHeroStates.GUN_DRAWED) {
             fDelta = fNow - pStat.gunDrawToIdleStartTime;
+            pGunIdleBlend.setWeights(fGKup, fGKfrw, fGKdown);
             if (fDelta <= pStat.gunDrawToIdleTime) {
-                pGunBlend.setWeightSwitching(fDelta / pStat.gunDrawToIdleTime, 1, 2);
+                //переходим от gun::DRAW --> gun::IDLE
+                pGunBlend.setWeightSwitching(fDelta / pStat.gunDrawToIdleTime, 2, 0);
             } else {
                 pStat.state = EGameHeroStates.GUN_IDLE;
+                pGunBlend.setWeights(1., 0., 0., 0.);
                 console.log('only idle with gun..');
-                /*idle --> 0*/
-                pStateBlend.setAnimationWeight(0, 0);
-                //console.log(pGunBlend.getAnimationWeight(0), pGunBlend.getAnimationWeight(1), pGunBlend.getAnimationWeight(2), pGunBlend.getAnimationWeight(3));
+                //idle --> 0
+                // pStateBlend.setAnimationWeight(0, 0);
                             }
         } else if (pStat.state == EGameHeroStates.GUN_IDLE) {
-            /*undraw gun*/
+            pGunIdleBlend.setWeights(fGKup, fGKfrw, fGKdown);
             if (pControls.gun) {
+                //undraw gun
                 //pStat.state
                 console.log('before gun undrawing...');
-                pAnimGunUnDraw.rewind(0.);
-                pAnimGunUnDraw.pause(true);
+                pGunUnDrawAnim.rewind(0.);
+                pGunUnDrawAnim.pause(true);
+                pGunUnDrawBlend.setWeights(fGKup, fGKfrw, fGKdown);
                 pStat.gunIdleToUnDrawStartTime = fNow;
                 pStat.state = EGameHeroStates.GUN_BEFORE_UNDRAW;
             }
         } else if (pStat.state == EGameHeroStates.GUN_BEFORE_UNDRAW) {
-            //pGunBlend.setWeights(1., );
             fDelta = fNow - pStat.gunIdleToUnDrawStartTime;
             if (fDelta <= pStat.gunIdleToUndrawTime) {
-                pGunBlend.setWeightSwitching(fDelta / pStat.gunIdleToUndrawTime, 2, 0);
-            } else {
+                //переходим из gun::IDLE --> gun.UNDRAW
+                // pGunUnDrawAnim.rewind(0.);
+                pGunBlend.setWeightSwitching(fDelta / pStat.gunIdleToUndrawTime, 0, 3);
+                // console.log("gun undraw time > ", pGunUnDrawAnim.animationTime,  pGunUnDrawAnim.isPaused());
+                            } else {
+                // console.log("after", pGunUnDrawAnim.isPaused());
+                pGunBlend.setWeights(0., 0., 0., 1.);
                 pStat.gunUndrawStartTime = fNow;
                 pStat.state = EGameHeroStates.GUN_UNDRAWING;
-                pAnimGunUnDraw.pause(false);
+                pGunUnDrawAnim.pause(false);
                 console.log('go to gun undrawning....');
             }
         } else if (pStat.state == EGameHeroStates.GUN_UNDRAWING) {
             fDelta = fNow - pStat.gunUndrawStartTime;
-            if (fDelta >= pAnimGunUnDraw.duration) {
+            pGunUnDrawBlend.setWeights(fGKup, fGKfrw, fGKdown);
+            if (fDelta >= pGunBlend.duration) {
                 console.log('gun undrawed.');
                 pStat.state = EGameHeroStates.GUN_UNDRAWED;
                 pStat.gunUndrawedTime = fNow;
             }
         } else if (pStat.state == EGameHeroStates.GUN_UNDRAWED) {
             fDelta = fNow - pStat.gunUndrawedTime;
-            if (fDelta <= pStat.gunIdleToUndrawTime) {
-                pStateBlend.setWeightSwitching(fDelta / pStat.gunIdleToUndrawTime, 2, 0);
+            if (fDelta <= pStat.gunUndrawToIdleTime) {
+                //переходим из state::GUN --> state.IDLE
+                pStateBlend.setWeightSwitching(fDelta / pStat.gunUndrawToIdleTime, 3, 0);
             } else {
+                pStateBlend.setWeights(1.0, 0., 0., 0.);
                 pStat.state = EGameHeroStates.GUN_NOT_DRAWED;
                 deactivateTrigger();
+                console.log("deactivateTrigger();");
             }
         }
+        movementHero(pControls, pHero, pStat, pController);
         // }
         // else {
         //     pControls.direct.x = pControls.direct.y = 0.;
         // }
-        movementHero(pControls, pHero, pStat, pController);
         // if (fNow - fTriggerTime < pStat.fMovementToGunTime) {
         //     pAnim['STATE.blend'].setWeightSwitching((this.fTime - fTriggerTime) / pStat.fMovementToGunTime, 0, 2);
         // }
