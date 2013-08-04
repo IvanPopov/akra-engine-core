@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Aug 02 2013 20:05:15 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Aug 05 2013 03:05:28 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -113,6 +113,10 @@ var akra;
         pTerrain.setInheritance(akra.ENodeInheritance.ALL);
         pTerrain.setRotationByXYZAxis(-Math.PI / 2, 0., 0.);
         pTerrain.setPosition(11, -109, -109.85);
+        var pMinLevel = pRmgr.imagePool.findResource("MEGATEXTURE_MIN_LEVEL");
+        if (pMinLevel) {
+            pTerrain.megaTexture.setMinLevelTexture(pMinLevel);
+        }
         return pTerrain;
     }
     function createSkyBox(pRmgr, pViewport) {
@@ -292,7 +296,10 @@ var akra;
                     path: "models/character/charX.dae",
                     name: "CHARACTER_MODEL"
                 }, 
-                
+                {
+                    path: "textures/terrain/diffuse.dds",
+                    name: "MEGATEXTURE_MIN_LEVEL"
+                }
             ],
             deps: {
                 files: [
@@ -556,7 +563,7 @@ var akra;
     function updateCharacterCamera(pControls, pHero, pStat, pController) {
         var pCamera = akra.self.hero.camera;
         var fTimeDelta = pStat.timeDelta;
-        var pGamepad = akra.self.gamepads.find(0);
+        var pGamepad = akra.self.gamepads.find(0) || virtualGamepad(pKeymap);
         if (!pGamepad || !pCamera.isActive()) {
             return;
         }
@@ -1045,17 +1052,43 @@ var akra;
         return akra.self.hero.triggers.pop();
     }
     ;
+    var pVirtualGamepad = {
+        id: "akra virtual gamepad",
+        index: -1,
+        timestamp: akra.now(),
+        axes: [],
+        buttons: []
+    };
+    function virtualGamepad(pKeymap) {
+        var pGamepad = pVirtualGamepad;
+        pGamepad.buttons[akra.EGamepadCodes.SELECT] = pKeymap.isKeyPress(akra.EKeyCodes.ENTER);
+        pGamepad.buttons[akra.EGamepadCodes.START] = pKeymap.isKeyPress(akra.EKeyCodes.G);
+        pGamepad.buttons[akra.EGamepadCodes.PAD_TOP] = pKeymap.isKeyPress(akra.EKeyCodes.UP);
+        pGamepad.buttons[akra.EGamepadCodes.PAD_BOTTOM] = pKeymap.isKeyPress(akra.EKeyCodes.DOWN);
+        pGamepad.buttons[akra.EGamepadCodes.PAD_LEFT] = pKeymap.isKeyPress(akra.EKeyCodes.LEFT);
+        pGamepad.buttons[akra.EGamepadCodes.PAD_RIGHT] = pKeymap.isKeyPress(akra.EKeyCodes.RIGHT);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_1] = pKeymap.isKeyPress(akra.EKeyCodes.N1);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_2] = pKeymap.isKeyPress(akra.EKeyCodes.N2);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_3] = pKeymap.isKeyPress(akra.EKeyCodes.N3);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_4] = pKeymap.isKeyPress(akra.EKeyCodes.N4);
+        var fX = (pKeymap.isKeyPress(akra.EKeyCodes.A) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.D) ? 1.0 : 0.0);
+        var fY = (pKeymap.isKeyPress(akra.EKeyCodes.S) ? 1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.W) ? -1.0 : 0.0);
+        pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_VERT] = fY;
+        pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_HOR] = fX;
+        fX = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD4) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD6) ? 1.0 : 0.0);
+        fY = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD5) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD8) ? 1.0 : 0.0);
+        pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_VERT] = fY;
+        pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_HOR] = fX;
+        return pGamepad;
+    }
     function updateHero() {
-        var pGamepad = akra.self.gamepads.find(0);
+        var pGamepad = akra.self.gamepads.find(0) || virtualGamepad(pKeymap);
         var pHero = akra.self.hero.root;
         var pStat = akra.self.hero.parameters;
         var pController = akra.self.hero.root.getController();
         var pTriggers = akra.self.hero.triggers.last;
         var pControls = akra.self.hero.controls;
         var pTriggersData = pTriggers.triggers;
-        if (!pGamepad) {
-            return;
-        }
         if (pGamepad.buttons[akra.EGamepadCodes.SELECT]) {
             pStat.blocked = true;
         }
@@ -1124,9 +1157,42 @@ var akra;
         }
         return true;
     }
+    function motionBlur(pViewport) {
+        var pCamera = pViewport.getCamera();
+        var pViewProjMat = new akra.Mat4(pCamera.projViewMatrix);
+        var pViewProjMatInv = new akra.Mat4();
+        //var pPrevViewMat: IMat4 = new Mat4(pCamera.viewMatrix);
+        var t1 = new akra.Mat4(pCamera.viewMatrix);
+        var t2 = new akra.Mat4(pCamera.viewMatrix);
+        pViewport.effect.addComponent("akra.system.motionBlur", 2, 0);
+        pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
+        pViewport.bind("render", function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
+            var pPass = pTechnique.getPass(iPass);
+            var pDepthTex = pViewport.depth;
+            var pCamera = pViewport.getCamera();
+            switch(iPass) {
+                case 2:
+                    pCamera.update();
+                    pPass.setUniform("SCREEN_TEXTURE_RATIO", akra.Vec2.stackCeil.set(pViewport.actualWidth / pDepthTex.width, pViewport.actualHeight / pDepthTex.height));
+                    pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTex);
+                    //pPass.setUniform("PREV_VIEW_PROJ_MATRIX",/*m4fM1.set*/(pViewProjMat));
+                    /*m4fM2.set*/
+                    pPass.setUniform("PREV_VIEW_MATRIX", t1);
+                    //pViewProjMat.set(pCamera.projViewMatrix);
+                    t2.set(pCamera.viewMatrix);
+                    pPass.setUniform("VIEW_PROJ_INV_MATRIX", pViewProjMat.inverse(pViewProjMatInv));
+                    pPass.setUniform("CURR_INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
+                    pPass.setUniform("CURR_PROJ_MATRIX", pCamera.projectionMatrix);
+                    pPass.setUniform("CURR_VIEW_MATRIX", t2);
+                    var p = t1;
+                    t1 = t2;
+                    t2 = p;
+            }
+        });
+    }
     function update() {
         var pCharacterCamera = akra.self.hero.camera;
-        var pGamepad = pGamepads.find(0);
+        var pGamepad = pGamepads.find(0) || virtualGamepad(pKeymap);
         if (isDefaultCamera(pViewport, pKeymap, pCamera, pCharacterCamera, pGamepad)) {
             updateCamera(pCamera, pKeymap, pGamepad);
         }
@@ -1176,6 +1242,15 @@ var akra;
             var pCam = akra.self.cameras[akra.self.activeCamera];
             pViewport.setCamera(pCam);
         });
+        pKeymap.bind("M", /** @inline */function () {
+            pEngine.getComposer()["bShowTriangles"] = !pEngine.getComposer()["bShowTriangles"];
+        });
+        pKeymap.bind("N", /** @inline */function () {
+            if (pTerrain.megaTexture) {
+                pTerrain.megaTexture["_bColored"] = !pTerrain.megaTexture["_bColored"];
+            }
+        });
+        motionBlur(pViewport);
         createSceneEnvironment(pScene, true, true);
         pEngine.getComposer()["bShowTriangles"] = true;
         if (pTerrain.megaTexture) {

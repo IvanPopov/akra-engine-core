@@ -70,6 +70,7 @@ module akra {
 				{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
 				// {path: "models/hero/movie.dae", name: "HERO_MODEL"},
 				{path: "models/character/charX.dae", name: "CHARACTER_MODEL"},
+				{path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL"}
 			],
 			deps: {
 				files: [{path: "models/character/all-ed.json", name: "HERO_CONTROLLER"}]
@@ -359,7 +360,7 @@ module akra {
 	function updateCharacterCamera(pControls: IGameControls, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController) {
 	    var pCamera: ICamera = self.hero.camera;
 	    var fTimeDelta: float = pStat.timeDelta;
-	    var pGamepad: Gamepad = self.gamepads.find(0);
+	    var pGamepad: Gamepad = self.gamepads.find(0) || virtualGamepad(pKeymap);
 
 	    if (!pGamepad || !pCamera.isActive()) {
 	        return;
@@ -1022,8 +1023,48 @@ module akra {
 	    return self.hero.triggers.pop();
 	};
 
+	var pVirtualGamepad: Gamepad = {
+		id: "akra virtual gamepad",
+
+	    index: -1,
+	    timestamp: now(),
+	    axes: [],
+	    buttons: []
+	};
+
+	function virtualGamepad(pKeymap: IKeyMap): Gamepad {
+		var pGamepad: Gamepad = pVirtualGamepad;
+		pGamepad.buttons[EGamepadCodes.SELECT] = pKeymap.isKeyPress(EKeyCodes.ENTER);
+		pGamepad.buttons[EGamepadCodes.START] = pKeymap.isKeyPress(EKeyCodes.G);
+
+		pGamepad.buttons[EGamepadCodes.PAD_TOP] = pKeymap.isKeyPress(EKeyCodes.UP);
+	    pGamepad.buttons[EGamepadCodes.PAD_BOTTOM] = pKeymap.isKeyPress(EKeyCodes.DOWN);
+	    pGamepad.buttons[EGamepadCodes.PAD_LEFT] = pKeymap.isKeyPress(EKeyCodes.LEFT);
+	    pGamepad.buttons[EGamepadCodes.PAD_RIGHT] = pKeymap.isKeyPress(EKeyCodes.RIGHT);
+
+	    pGamepad.buttons[EGamepadCodes.FACE_1] = pKeymap.isKeyPress(EKeyCodes.N1);
+	    pGamepad.buttons[EGamepadCodes.FACE_2] = pKeymap.isKeyPress(EKeyCodes.N2);
+	    pGamepad.buttons[EGamepadCodes.FACE_3] = pKeymap.isKeyPress(EKeyCodes.N3);
+	    pGamepad.buttons[EGamepadCodes.FACE_4] = pKeymap.isKeyPress(EKeyCodes.N4);
+
+
+		var fX: float = (pKeymap.isKeyPress(EKeyCodes.A)? -1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.D)? 1.0: 0.0);
+		var fY: float = (pKeymap.isKeyPress(EKeyCodes.S)? 1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.W)? -1.0: 0.0);
+		
+		pGamepad.axes[EGamepadAxis.LEFT_ANALOGUE_VERT] = fY;
+		pGamepad.axes[EGamepadAxis.LEFT_ANALOGUE_HOR] = fX;
+
+		fX = (pKeymap.isKeyPress(EKeyCodes.NUMPAD4)? -1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.NUMPAD6)? 1.0: 0.0);
+		fY = (pKeymap.isKeyPress(EKeyCodes.NUMPAD5)? -1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.NUMPAD8)? 1.0: 0.0);
+		
+		pGamepad.axes[EGamepadAxis.RIGHT_ANALOGUE_VERT] = fY;
+		pGamepad.axes[EGamepadAxis.RIGHT_ANALOGUE_HOR] = fX;
+
+		return pGamepad;
+	}
+
 	function updateHero (): void {
-	    var pGamepad: Gamepad = self.gamepads.find(0);
+	    var pGamepad: Gamepad = self.gamepads.find(0) || virtualGamepad(pKeymap);
 	    var pHero: ISceneNode = self.hero.root;
 	    var pStat: IGameParameters = self.hero.parameters;
 	    var pController: IAnimationController = self.hero.root.getController();
@@ -1032,9 +1073,6 @@ module akra {
 	    var pControls: IGameControls  = self.hero.controls;
 	    var pTriggersData: Function[] = pTriggers.triggers;
 
-	    if (!pGamepad) {
-	        return;
-	    }
 	    if (pGamepad.buttons[EGamepadCodes.SELECT]) {
 	        pStat.blocked = true;
 	    }
@@ -1131,10 +1169,56 @@ module akra {
 	    return true;
 	}
 
+	function motionBlur(pViewport: IDSViewport): void {
+		var pCamera: ICamera = pViewport.getCamera();
+		var pViewProjMat: IMat4 = new Mat4(pCamera.projViewMatrix);
+		var pViewProjMatInv: IMat4 = new Mat4;
+		//var pPrevViewMat: IMat4 = new Mat4(pCamera.viewMatrix);
+		var t1: IMat4 = new Mat4(pCamera.viewMatrix);
+		var t2: IMat4 = new Mat4(pCamera.viewMatrix);
+
+		
+		pViewport.effect.addComponent("akra.system.motionBlur", 2, 0);
+		pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
+
+		pViewport.bind("render", (
+			pViewport: IDSViewport, 
+			pTechnique: IRenderTechnique, 
+			iPass: int, 
+			pRenderable: IRenderableObject, 
+			pSceneObject: ISceneObject): void => {
+
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			var pDepthTex: ITexture = pViewport.depth;
+			var pCamera: ICamera = pViewport.getCamera();
+
+			switch (iPass) {
+				case 2:
+					pCamera.update();
+				    pPass.setUniform("SCREEN_TEXTURE_RATIO",
+                        vec2(pViewport.actualWidth / pDepthTex.width, pViewport.actualHeight / pDepthTex.height));
+				    
+					pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTex);
+					//pPass.setUniform("PREV_VIEW_PROJ_MATRIX",/*m4fM1.set*/(pViewProjMat));
+					pPass.setUniform("PREV_VIEW_MATRIX", /*m4fM2.set*/t1);
+					//pViewProjMat.set(pCamera.projViewMatrix);
+					t2.set(pCamera.viewMatrix);
+					pPass.setUniform("VIEW_PROJ_INV_MATRIX", pViewProjMat.inverse(pViewProjMatInv));
+					pPass.setUniform("CURR_INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
+					pPass.setUniform("CURR_PROJ_MATRIX", pCamera.projectionMatrix);
+					pPass.setUniform("CURR_VIEW_MATRIX", t2);
+
+					var p = t1;
+					t1 = t2;
+					t2 = p;
+			}
+		});
+	}
+
 
 	function update(): void {
 		var pCharacterCamera: ICamera = self.hero.camera;
-		var pGamepad: Gamepad = pGamepads.find(0);
+		var pGamepad: Gamepad = pGamepads.find(0) || virtualGamepad(pKeymap);
 
 		if (isDefaultCamera(pViewport, pKeymap, pCamera, pCharacterCamera, pGamepad)) {
 			updateCamera(pCamera, pKeymap, pGamepad);
@@ -1209,6 +1293,16 @@ module akra {
 	    	pViewport.setCamera(pCam);
 		});
 
+		pKeymap.bind("M", () => {
+			pEngine.getComposer()["bShowTriangles"] = !pEngine.getComposer()["bShowTriangles"];
+		});
+
+		pKeymap.bind("N", () => {
+			if (pTerrain.megaTexture)
+				pTerrain.megaTexture["_bColored"] = !pTerrain.megaTexture["_bColored"];
+		});
+
+		motionBlur(<IDSViewport>pViewport);
 
 		createSceneEnvironment(pScene, true, true);
 #if DEBUG_TERRAIN == 1

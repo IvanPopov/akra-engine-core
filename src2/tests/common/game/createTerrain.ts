@@ -14,5 +14,9 @@ function createTerrain(pScene: IScene3d): ITerrain {
 	pTerrain.setRotationByXYZAxis(-Math.PI/2, 0., 0.);
 	pTerrain.setPosition(11, -109, -109.85);
 
+	var pMinLevel: IImg = <IImg>pRmgr.imagePool.findResource("MEGATEXTURE_MIN_LEVEL");
+	if (pMinLevel)
+		pTerrain.megaTexture.setMinLevelTexture(pMinLevel);
+
 	return pTerrain;
 }

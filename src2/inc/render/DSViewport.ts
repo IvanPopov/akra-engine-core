@@ -27,6 +27,7 @@ module akra.render {
 	var pColor: IColor = new Color(0);
 
 	export class DSViewport extends Viewport implements IDSViewport  {
+		private _pDeferredEffect: IEffect = null;
 		private _pDeferredColorTextures: ITexture[] = [];
 		private _pDeferredDepthTexture: ITexture = null;
 		private _pDeferredView: IRenderableObject = null;
@@ -97,7 +98,7 @@ module akra.render {
 			}
 
 			var pDSMethod: IRenderMethod  	= pResMgr.createRenderMethod(".deferred_shading");
-			var pDSEffect: IEffect 			= pResMgr.createEffect(".deferred_shading");
+			var pDSEffect: IEffect 			= this._pDeferredEffect = pResMgr.createEffect(".deferred_shading");
 
 			pDSEffect.addComponent("akra.system.deferredShading");
 			pDSEffect.addComponent("akra.system.omniLighting");
@@ -125,6 +126,18 @@ module akra.render {
 			pDefferedView.addRenderMethod(pSeeTextureMethod, ".see_texture");
 
 			// this._pDeferredView.switchRenderMethod(null);
+		}
+
+		inline get effect(): IEffect {
+			return this._pDeferredEffect;
+		}
+
+		inline get depth(): ITexture {
+			return this._pDeferredDepthTexture;
+		}
+
+		inline get view(): IRenderableObject {
+			return this._pDeferredView;
 		}
 
 		setCamera(pCamera: ICamera): bool {
@@ -331,16 +344,16 @@ module akra.render {
 		}
 
 		setFXAA(bValue: bool = true): void {
-			var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
+			// var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
 			
-			if (bValue) {
-				pEffect.addComponent("akra.system.fxaa", 2, 0);
-				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(2);
-			}
-			else {
-				pEffect.delComponent("akra.system.fxaa", 2, 0);
-				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
-			}
+			// if (bValue) {
+			// 	pEffect.addComponent("akra.system.fxaa", 2, 0);
+			// 	this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(2);
+			// }
+			// else {
+			// 	pEffect.delComponent("akra.system.fxaa", 2, 0);
+			// 	this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
+			// }
 		}
 
 		setOutlining(bValue: bool = true): void {

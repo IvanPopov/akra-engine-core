@@ -14,7 +14,7 @@
 #include "render/Screen.ts"
 #include "IViewport.ts"
 
-// #define USE_MEGA_TEXTURE 1
+#define USE_MEGA_TEXTURE 1
 
 module akra.terrain {
 

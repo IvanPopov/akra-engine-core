@@ -679,11 +679,13 @@ module akra.fx {
 
 			if(!isNull(pViewport)){
 				FAST_SET_UNIFORM(pPassInput, "FRAMEBUFFER_SIZE", vec2(pViewport.width, pViewport.height));
+				FAST_SET_UNIFORM(pPassInput, "VIEWPORT_SIZE", vec2(pViewport.actualWidth, pViewport.actualHeight));
 
 				var pCamera: ICamera = pViewport.getCamera();
 				if(!isNull(pCamera)) { 
 					FAST_SET_UNIFORM(pPassInput, "VIEW_MATRIX", pCamera.viewMatrix);
 					FAST_SET_UNIFORM(pPassInput, "PROJ_MATRIX", pCamera.projectionMatrix);
+					FAST_SET_UNIFORM(pPassInput, "VIEW_PROJ_MATRIX", pCamera.projViewMatrix);
 					FAST_SET_UNIFORM(pPassInput, "INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
 					FAST_SET_UNIFORM(pPassInput, "CAMERA_POSITION", pCamera.worldPosition);
 
