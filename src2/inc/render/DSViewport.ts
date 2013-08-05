@@ -344,16 +344,16 @@ module akra.render {
 		}
 
 		setFXAA(bValue: bool = true): void {
-			// var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
+			var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
 			
-			// if (bValue) {
-			// 	pEffect.addComponent("akra.system.fxaa", 2, 0);
-			// 	this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(2);
-			// }
-			// else {
-			// 	pEffect.delComponent("akra.system.fxaa", 2, 0);
-			// 	this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
-			// }
+			if (bValue) {
+				pEffect.addComponent("akra.system.fxaa", 2, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(2);
+			}
+			else {
+				pEffect.delComponent("akra.system.fxaa", 2, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
+			}
 		}
 
 		setOutlining(bValue: bool = true): void {

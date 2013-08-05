@@ -63,7 +63,7 @@ float uVelocityScale = 1.;
 float2 screenSize : INPUT_TEXTURE_SIZE;
 float2 framebufferSize : FRAMEBUFFER_SIZE;
 float2 viewportSize : VIEWPORT_SIZE;
-int MAX_SAMPLES = 8;
+int MAX_SAMPLES = 4;
 
 float4 fs_motion_blur(VS_OUT IN) : COLOR
 {
@@ -74,10 +74,10 @@ float4 fs_motion_blur(VS_OUT IN) : COLOR
   float depth = sceneDepth * 2. - 1.;
   float4 H = float4(IN.screenPosition.xy, depth, 1.);
 
-	float4 D = viewProjectionInverseMatrix * H;
-  //float4 worldPos = float4(invView * float4(unproj(projMat, H.xyz), 1.));
+	//float4 D = viewProjectionInverseMatrix * H;
+  float4 worldPos = float4(invView * float4(unproj(projMat, H.xyz), 1.));
   //worldPos /= worldPos.w;
-  float4 worldPos = D / D.w;  
+  //float4 worldPos = D / D.w;  
 
 
    float4 currentPos =  H;//projMat * viewMat * worldPos;  
@@ -85,7 +85,7 @@ float4 fs_motion_blur(VS_OUT IN) : COLOR
    currentPos /= currentPos.w;  
    previousPos /= previousPos.w;  
 
-   float2 velocity = (currentPos - previousPos).xy;
+   float2 velocity = (currentPos - previousPos).xy * 0.5;
    //velocity = pow(velocity, 1.0 / 3.0);
    //velocity = velocity * 2.0 - 1.0;
 
@@ -110,17 +110,17 @@ float4 fs_motion_blur(VS_OUT IN) : COLOR
   }
 
   oResult /= float(rSamples);
-  if (texCoord.y < inputTextureRatio.y / 2. && texCoord.x < inputTextureRatio.x / 2.) {
-    return float4(abs(currentPos.xy), 0., 1.);
-  }
-  if (texCoord.y < inputTextureRatio.y / 2.) {
+ // if (texCoord.y < inputTextureRatio.y / 2. && texCoord.x < inputTextureRatio.x / 2.) {
+ //   return float4(abs(currentPos.xy), 0., 1.);
+ // }
+  //if (texCoord.y < inputTextureRatio.y / 2.) {
     return oResult;
-  }
-  if (texCoord.x < inputTextureRatio.x / 2.) {
-    return float4(abs(previousPos.xy), 0, 1.);
-  }
+ // }
+  //if (texCoord.x < inputTextureRatio.x / 2.) {
+  //  return float4(abs(previousPos.xy), 0, 1.);
+  //}
   //return float4(abs(currentPos.xyz), 1.);
-  return float4(abs(velocity) * 10., 0., 1.);
+  //return float4(abs(velocity) * 10., 0., 1.);
 }
 
 technique motionBlur {

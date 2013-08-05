@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Aug 05 2013 03:05:28 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Aug 05 2013 19:12:28 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -414,15 +414,21 @@ var akra;
                 rotationRate: /* current speed*/
                 0,
                 runSpeed: /* m/sec*/
-                9.0,
+                6.0,
                 walkToRunSpeed: /* m/sec*/
                 2.5,
                 walkSpeed: /* m/sec*/
-                1.5,
-                walWithWeaponSpeed: /* m/sec */
-                1.0,
-                walWithoutWeaponSpeed: /* m/sec */
-                1.5,
+                1.8,
+                walkbackSpeed: /* m/sec*/
+                1.6,
+                walkbackSpeedMin: /* m/sec*/
+                0.5,
+                walkWithWeaponSpeed: /* m/sec */
+                1.4,
+                walkWithWeaponSpeedMin: /* m/sec */
+                0.75,
+                walkWithoutWeaponSpeed: /* m/sec */
+                1.8,
                 movementDerivativeMax: 1.0,
                 movementDerivativeMin: 0.5,
                 movementDerivativeConst: (2 * (Math.E + 1) / (Math.E - 1) * /*(fSpeedDerivativeMax - fSpeedDerivativeMin)*/
@@ -653,18 +659,19 @@ var akra;
             }
     function movementHero(pControls, pHero, pStat, pController) {
         var pAnim = pStat.anim;
+        var pMovementPlayer = (pAnim["MOVEMENT.player"]);
+        var pMovementBlend = (pAnim["MOVEMENT.blend"]);
         var fMovementRate = pStat.movementRate;
         var fMovementRateAbs = akra.math.abs(fMovementRate);
         var fRunSpeed = pStat.runSpeed;
-        var fWalkSpeed = pStat.walkSpeed;
         var fWalkToRunSpeed = pStat.walkToRunSpeed;
+        var fWalkSpeed = determWalkSpeed(pStat);
+        var fMinSpeed = determMinSpeed(pStat);
+        var fMaxSpeed = determMaxSpeed(pStat);
         var fSpeed;
         var fRunWeight;
         var fWalkWeight;
-        pStat.walkSpeed = pStat.walWithoutWeaponSpeed;
-        pStat.movementSpeedMax = pStat.state ? pStat.walkToRunSpeed : pStat.runSpeed;
-        // pStat.movementSpeedMax = pStat.runSpeed;
-        fSpeed = fMovementRateAbs * pStat.movementSpeedMax;
+        fSpeed = fMovementRateAbs * fMaxSpeed;
         if (pController.active) {
             if (pController.active.name !== "STATE.player") {
                 pController.play('STATE.player');
@@ -673,77 +680,72 @@ var akra;
             console.warn("controller::active is null ;(");
         }
         //character move
-        if (fSpeed > fWalkSpeed) {
-            // if ((<IAnimationContainer>pAnim["MOVEMENT.player"]).isPaused()) {
-            //     (<IAnimationContainer>pAnim["MOVEMENT.player"]).pause(false);
-            // }
+        if (fSpeed > fMinSpeed) {
+            if (pMovementPlayer.isPaused()) {
+                pMovementPlayer.pause(false);
+            }
             //зануляем IDLE'ы чтобы избежать проблем с тазом
             (pAnim["STATE.blend"]).setWeights(0., 0.);
             if (fMovementRate > 0.0) {
                 //run forward
-                if (fSpeed < pStat.walkToRunSpeed) {
-                    if (pStat.state) {
+                if (fSpeed < fWalkToRunSpeed || ((pStat).state != EGameHeroStates.GUN_NOT_DRAWED)) {
+                    if (((pStat).state != EGameHeroStates.GUN_NOT_DRAWED)) {
                         //walk with gun
                         /*only walk*/
-                        (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 0., 1., .0);
+                        pMovementBlend.setWeights(0., 0., 0., 1., .0);
                     } else {
                         /* only walk */
-                        (pAnim["MOVEMENT.blend"]).setWeights(0., 1., 0., 0., 0.);
+                        pMovementBlend.setWeights(0., 1., 0., 0., 0.);
                     }
                     (pAnim["WALK.player"]).setSpeed(fSpeed / fWalkSpeed);
-                    // console.log("walk speed: ", fSpeed / fWalkSpeed);
-                                    } else {
+                } else {
+                    (pAnim["WALK.player"]).setSpeed(1.);
                     fRunWeight = (fSpeed - fWalkToRunSpeed) / (fRunSpeed - fWalkToRunSpeed);
                     fWalkWeight = 1. - fRunWeight;
                     //run //walk frw //walk back
-                    if (pStat.state) {
-                        //with gun
-                        console.log("could not run with gun!!!");
-                        //(<IAnimationBlend>pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, 0., 0., fWalkWeight);
-                                            } else {
-                        (pAnim["MOVEMENT.blend"]).setWeights(fRunWeight, fWalkWeight, 0., 0., 0.);
-                    }
-                    // console.log("run weight:", fRunWeight, "walk weight:", fWalkWeight);
-                    (pAnim["MOVEMENT.player"]).setSpeed(1.);
+                    pMovementBlend.setWeights(fRunWeight, fWalkWeight, 0., 0., 0.);
+                    pMovementPlayer.setSpeed(1.);
                 }
             } else {
-                //run //walk frw //walk back
-                (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 1., 0., 0.);
-                (pAnim["MOVEMENT.player"]).setSpeed(fMovementRateAbs);
-                pStat.movementSpeedMax = fWalkSpeed;
+                console.log("walkback");
+                //walkback
+                pMovementBlend.setWeights(0., 0., 1., 0., 0.);
+                pMovementPlayer.setSpeed(fMovementRateAbs);
             }
             //дабы быть уверенными что IDLE не считается
             // pAnim["STATE.blend"].setAnimationWeight(0, 0.); /* idle */
             // pAnim["STATE.blend"].setAnimationWeight(2, 0.); /* gun */
                     } else//character IDLE
          {
-            var iIDLE = pStat.state ? 3 : 0.;
+            pMovementPlayer.pause(true);
+            pMovementPlayer.rewind(0);
+            var iIDLE = ((pStat).state != EGameHeroStates.GUN_NOT_DRAWED) ? 3 : 0.;
             var iMOVEMENT = 2;
-            // (<IAnimationContainer>pAnim["MOVEMENT.player"]).pause(true);
-            if ((pStat.state == EGameHeroStates.GUN_NOT_DRAWED || pStat.state == EGameHeroStates.GUN_IDLE)) {
+            if ((!((pStat).state != EGameHeroStates.GUN_NOT_DRAWED) || pStat.state == EGameHeroStates.GUN_IDLE)) {
                 /* idle ---> run */
-                (pAnim["STATE.blend"]).setWeightSwitching(fSpeed / fWalkSpeed, iIDLE, iMOVEMENT);
-                // console.log(fSpeed/fWalkSpeed, "IDLE --> MOVEMENT(" + (pStat.state? "with": "without") + " gun)");
-                            }
-            // console.log(pAnim["STATE.blend"].getAnimationWeight(0), pAnim["STATE.blend"].getAnimationWeight(1), pAnim["STATE.blend"].getAnimationWeight(2))
+                (pAnim["STATE.blend"]).setWeightSwitching(fSpeed / fMinSpeed, iIDLE, iMOVEMENT);
+            }
             if (fMovementRate > 0.0) {
                 //walk forward --> idle
-                if (pStat.state) {
+                if (((pStat).state != EGameHeroStates.GUN_NOT_DRAWED)) {
                     //with gun
-                    (pAnim["MOVEMENT.blend"]).setWeights(0., 0., 0., fSpeed / fWalkSpeed, 0.);
+                    pMovementBlend.setWeights(0., 0., 0., fSpeed / fMinSpeed, 0.);
                 } else {
-                    (pAnim["MOVEMENT.blend"]).setWeights(0., fSpeed / fWalkSpeed, 0., 0., 0.);
+                    pMovementBlend.setWeights(0., fSpeed / fMinSpeed, 0., 0., 0.);
                 }
             } else if (fMovementRate < 0.0) {
                 //walk back --> idle
-                (pAnim["MOVEMENT.blend"]).setWeights(0., 0, fSpeed / fWalkSpeed, 0., 0.);
+                pMovementBlend.setWeights(0., 0, fSpeed / fMinSpeed, 0., 0.);
             }
-            (pAnim["MOVEMENT.player"]).setSpeed(1);
+            pMovementPlayer.setSpeed(1);
         }
         // if (pController.dodge) {
         //     this.activateTrigger([this.dodgeHero, this.moveHero]);
         // }
             }
+    /** @inline */function hasWeapon(pStat) {
+        return pStat.state != EGameHeroStates.GUN_NOT_DRAWED;
+    }
     function checkHeroState(pControls, pHero, pStat, pController) {
         if (pControls.gun) {
             activateTrigger([
@@ -752,15 +754,26 @@ var akra;
             ]);
         }
     }
+    function determWalkSpeed(pStat) {
+        return pStat.movementRate > 0.0 ? (!((pStat).state != EGameHeroStates.GUN_NOT_DRAWED) ? pStat.walkWithoutWeaponSpeed : pStat.walkWithWeaponSpeed) : pStat.walkbackSpeed;
+    }
+    function determMaxSpeed(pStat) {
+        return pStat.movementRate > 0.0 ? (!((pStat).state != EGameHeroStates.GUN_NOT_DRAWED) ? pStat.runSpeed : pStat.walkWithWeaponSpeed) : pStat.walkbackSpeed;
+    }
+    function determMinSpeed(pStat) {
+        return pStat.movementRate > 0.0 ? (!((pStat).state != EGameHeroStates.GUN_NOT_DRAWED) ? pStat.walkWithoutWeaponSpeed : pStat.walkWithWeaponSpeedMin) : pStat.walkbackSpeedMin;
+    }
     function gunWeaponHero(pControls, pHero, pStat, pController/*, fTriggerTime*/
     ) {
         var pAnim = pStat.anim;
         var fMovementRate = pStat.movementRate;
         var fMovementRateAbs = akra.math.abs(fMovementRate);
         var fRunSpeed = pStat.runSpeed;
-        var fWalkSpeed = pStat.walkSpeed;
         var fWalkToRunSpeed = pStat.walkToRunSpeed;
-        var fSpeed = fRunSpeed * fMovementRateAbs;
+        var fWalkSpeed = determWalkSpeed(pStat);
+        var fMinSpeed = determMinSpeed(pStat);
+        var fMaxSpeed = determMaxSpeed(pStat);
+        var fSpeed = fMaxSpeed * fMovementRateAbs;
         var fDelta;
         var pGunDrawAnim = pAnim['GUN_DRAW.player'];
         var pGunDrawBlend = pAnim['GUN_DRAW.blend'];
@@ -785,7 +798,6 @@ var akra;
         var fGKdown = akra.math.abs(akra.math.min(fGd, 0));
         var isOK = true;
         if ((/*checked (origin: akra)>>*/akra.self.hero.parameters.lastTriggers !== /*checked (origin: akra)>>*/akra.self.hero.triggers.length)) {
-            console.log("PREPARE TRIGGER!");
             //переводим персонажа в состоянии убранного пистолета
             //имеенно в это состояние мы будем переходим, при условии, что у нас нету пистолета
             pGunDrawAnim.rewind(0.);
@@ -793,7 +805,6 @@ var akra;
             /*idle, fire, draw, undraw*/
             pGunBlend.setWeights(0., 0., 1., 0.);
         }
-        // if (fSpeed < 0.5) {
         if (pStat.state !== EGameHeroStates.GUN_IDLE) {
             pControls.direct.x = pControls.direct.y = 0.;
         }
@@ -810,7 +821,7 @@ var akra;
         //переводим персонажа в состояние state::GUN при условии, что
         //его скорость меньше скорости хотьбы, это важно, так как во всех остальных случаях
         //мы зануляем controls.direct.x = controls.direct.y = 0, принуждая его остановиться
-        if (fSpeed < fWalkSpeed) {
+        if (fSpeed < fMinSpeed) {
             //время с момента, как стало ясно, что надо доставать пистолет
             fDelta = fNow - pStat.movementToGunEndTime;
             if (fDelta <= pStat.stateToGunTime) {
@@ -833,7 +844,7 @@ var akra;
             pGunDrawBlend.setWeights(fGKup, fGKfrw, fGKdown);
             fDelta = fNow - pStat.gunDrawStartTime;
             if (fDelta >= pGunBlend.duration) {
-                console.log('go to idle with gun..');
+                // console.log('go to idle with gun..');
                 pStat.state = EGameHeroStates.GUN_DRAWED;
                 pStat.gunDrawToIdleStartTime = fNow;
                 //оставляем только IDLE, для упрощения вычислений
@@ -848,7 +859,7 @@ var akra;
             } else {
                 pStat.state = EGameHeroStates.GUN_IDLE;
                 pGunBlend.setWeights(1., 0., 0., 0.);
-                console.log('only idle with gun..');
+                // console.log('only idle with gun..');
                 //idle --> 0
                 // pStateBlend.setAnimationWeight(0, 0);
                             }
@@ -857,7 +868,7 @@ var akra;
             if (pControls.gun) {
                 //undraw gun
                 //pStat.state
-                console.log('before gun undrawing...');
+                // console.log('before gun undrawing...');
                 pGunUnDrawAnim.rewind(0.);
                 pGunUnDrawAnim.pause(true);
                 pGunUnDrawBlend.setWeights(fGKup, fGKfrw, fGKdown);
@@ -877,13 +888,13 @@ var akra;
                 pStat.gunUndrawStartTime = fNow;
                 pStat.state = EGameHeroStates.GUN_UNDRAWING;
                 pGunUnDrawAnim.pause(false);
-                console.log('go to gun undrawning....');
-            }
+                // console.log('go to gun undrawning....');
+                            }
         } else if (pStat.state == EGameHeroStates.GUN_UNDRAWING) {
             fDelta = fNow - pStat.gunUndrawStartTime;
             pGunUnDrawBlend.setWeights(fGKup, fGKfrw, fGKdown);
             if (fDelta >= pGunBlend.duration) {
-                console.log('gun undrawed.');
+                // console.log('gun undrawed.');
                 pStat.state = EGameHeroStates.GUN_UNDRAWED;
                 pStat.gunUndrawedTime = fNow;
             }
@@ -896,25 +907,11 @@ var akra;
                 pStateBlend.setWeights(1.0, 0., 0., 0.);
                 pStat.state = EGameHeroStates.GUN_NOT_DRAWED;
                 deactivateTrigger();
-                console.log("deactivateTrigger();");
-            }
+                // console.log("deactivateTrigger();");
+                            }
         }
         movementHero(pControls, pHero, pStat, pController);
-        // }
-        // else {
-        //     pControls.direct.x = pControls.direct.y = 0.;
-        // }
-        // if (fNow - fTriggerTime < pStat.fMovementToGunTime) {
-        //     pAnim['STATE.blend'].setWeightSwitching((this.fTime - fTriggerTime) / pStat.fMovementToGunTime, 0, 2);
-        // }
-        // if (this.fTime - fTriggerTime > 10.) {
-        //     console.log('end of gun..');
-        //     this.deactivateTrigger();
-        //     this.iGunState = 0;
-        //     //debug
-        //     pAnim['STATE.blend'].setAnimationWeight(2, 0);//disable gun
-        // }
-            }
+    }
     ;
     /** @inline */function isFirstFrameOfTrigger() {
         return akra.self.hero.parameters.lastTriggers !== akra.self.hero.triggers.length;
@@ -987,8 +984,8 @@ var akra;
             fRotationRate = 0.0;
         }
         fTimeDelta = pEngine.time - pStat.time;
-        fMovementSpeedMax = pStat.movementSpeedMax;
-        fWalkRate = pStat.walkSpeed / pStat.movementSpeedMax;
+        fMovementSpeedMax = determMaxSpeed(pStat);
+        fWalkRate = determMinSpeed(pStat) / fMovementSpeedMax;
         if (fTimeDelta != 0.0) {
             fMovementDerivative = (fMovementRate - pStat.movementRate) / fTimeDelta;
             f = akra.math.exp(akra.math.abs(pStat.movementRate));
@@ -1004,7 +1001,9 @@ var akra;
             pHero.addRelRotationByEulerAngles(fRotationRate * pStat.rotationSpeedMax * fTimeDelta, 0.0, 0.0);
         }
         // var _p = vec3(pHero.worldPosition);
-        if (pStat.fallDown || fMovementRateAbs >= fWalkRate || (fMovementRate < 0. && fMovementRateAbs > pStat.walkSpeed / pStat.runSpeed)) {
+        /* ||
+        (fMovementRate < 0. && fMovementRateAbs > pStat.walkSpeed / pStat.runSpeed)*/
+        if (pStat.fallDown || fMovementRateAbs >= fWalkRate) {
             //projection of the hero on the terrin
             var v3fHeroTerrainProjPoint = akra.Vec3.stackCeil.set(0.);
             //prev. hero position
@@ -1031,9 +1030,8 @@ var akra;
                     pHero.setPosition(v3fHeroTerrainProjPoint);
                 }
             }
-            // this.pCurrentSpeedField.edit((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
-                    }
-        // pHero.setPosition(_p);
+            console.log((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
+        }
         pStat.rotationRate = fRotationRate;
         pStat.movementRate = fMovementRate;
         pStat.time = pEngine.time;
@@ -1250,7 +1248,7 @@ var akra;
                 pTerrain.megaTexture["_bColored"] = !pTerrain.megaTexture["_bColored"];
             }
         });
-        motionBlur(pViewport);
+        // motionBlur(<IDSViewport>pViewport);
         createSceneEnvironment(pScene, true, true);
         pEngine.getComposer()["bShowTriangles"] = true;
         if (pTerrain.megaTexture) {

@@ -21,9 +21,15 @@ export interface IGameHeroParameters {
 
         runSpeed           		: float;
         walkToRunSpeed    		: float;
-        walkSpeed          		: float;
-        walWithWeaponSpeed 		: float;
-        walWithoutWeaponSpeed 	: float;
+        walkSpeed                       : float;
+        walkbackSpeed                   : float;
+        //минимальная скорость с которой можно пятиться
+        walkbackSpeedMin       		: float;
+        walkWithWeaponSpeed             : float;
+        //минимальная скорость, с которой можно идти с оружием
+        walkWithWeaponSpeedMin 		: float;
+
+        walkWithoutWeaponSpeed 	: float;
 
         movementDerivativeMax   : float;
         movementDerivativeMin   : float;
