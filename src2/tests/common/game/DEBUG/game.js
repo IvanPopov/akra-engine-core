@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Aug 05 2013 19:12:28 GMT+0400 (Московское время (зима))
+ * assembled at: Tue Aug 06 2013 16:49:59 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -1155,37 +1155,46 @@ var akra;
         }
         return true;
     }
+    function edgeDetection(pViewport) {
+        pViewport.effect.addComponent("akra.system.edgeDetection", 2, 0);
+        pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
+        var pParams = {
+            lineWidth: 2.0,
+            threshold: 0.2
+        };
+        pViewport.bind("render", function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
+            var pPass = pTechnique.getPass(iPass);
+            switch(iPass) {
+                case 2:
+                    pPass.setUniform("EDGE_DETECTION_THRESHOLD", pParams.threshold);
+                    pPass.setUniform("EDGE_DETECTION_LINEWIDTH", pParams.lineWidth);
+            }
+        });
+        return pParams;
+    }
     function motionBlur(pViewport) {
+        var pPrevViewMat = new akra.Mat4(1.);
         var pCamera = pViewport.getCamera();
-        var pViewProjMat = new akra.Mat4(pCamera.projViewMatrix);
-        var pViewProjMatInv = new akra.Mat4();
-        //var pPrevViewMat: IMat4 = new Mat4(pCamera.viewMatrix);
-        var t1 = new akra.Mat4(pCamera.viewMatrix);
-        var t2 = new akra.Mat4(pCamera.viewMatrix);
         pViewport.effect.addComponent("akra.system.motionBlur", 2, 0);
         pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
+        setInterval(/** @inline */function () {
+            pPrevViewMat.set(pCamera.viewMatrix);
+        }, 10);
         pViewport.bind("render", function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
             var pPass = pTechnique.getPass(iPass);
             var pDepthTex = pViewport.depth;
             var pCamera = pViewport.getCamera();
+            // console.log(pCamera.isWorldMatrixNew());
             switch(iPass) {
                 case 2:
                     pCamera.update();
                     pPass.setUniform("SCREEN_TEXTURE_RATIO", akra.Vec2.stackCeil.set(pViewport.actualWidth / pDepthTex.width, pViewport.actualHeight / pDepthTex.height));
                     pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTex);
-                    //pPass.setUniform("PREV_VIEW_PROJ_MATRIX",/*m4fM1.set*/(pViewProjMat));
-                    /*m4fM2.set*/
-                    pPass.setUniform("PREV_VIEW_MATRIX", t1);
-                    //pViewProjMat.set(pCamera.projViewMatrix);
-                    t2.set(pCamera.viewMatrix);
-                    pPass.setUniform("VIEW_PROJ_INV_MATRIX", pViewProjMat.inverse(pViewProjMatInv));
-                    pPass.setUniform("CURR_INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
-                    pPass.setUniform("CURR_PROJ_MATRIX", pCamera.projectionMatrix);
-                    pPass.setUniform("CURR_VIEW_MATRIX", t2);
-                    var p = t1;
-                    t1 = t2;
-                    t2 = p;
-            }
+                    pPass.setUniform("PREV_VIEW_MATRIX", pPrevViewMat);
+                    // pPass.setUniform("CURR_INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
+                    // pPass.setUniform("CURR_PROJ_MATRIX", pCamera.projectionMatrix);
+                    // pPass.setUniform("CURR_VIEW_MATRIX", t2);
+                                }
         });
     }
     function update() {
@@ -1248,6 +1257,7 @@ var akra;
                 pTerrain.megaTexture["_bColored"] = !pTerrain.megaTexture["_bColored"];
             }
         });
+        // (<any>self).edgeDetection = edgeDetection(<IDSViewport>pViewport);
         // motionBlur(<IDSViewport>pViewport);
         createSceneEnvironment(pScene, true, true);
         pEngine.getComposer()["bShowTriangles"] = true;

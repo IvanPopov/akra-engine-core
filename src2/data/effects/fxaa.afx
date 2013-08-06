@@ -96,3 +96,5 @@ technique fxaa{
 		PixelShader = compile fs_fxaa_shading();
 	};
 };
+
+

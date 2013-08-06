@@ -2,10 +2,10 @@ provide akra.system;
 
 float4x4 viewProjectionInverseMatrix: VIEW_PROJ_INV_MATRIX;
 //float4x4 previousViewProjectionMatrix: PREV_VIEW_PROJ_MATRIX;
-float4x4 invView: CURR_INV_VIEW_CAMERA_MAT;
-float4x4 projMat : CURR_PROJ_MATRIX;
+float4x4 invView: INV_VIEW_CAMERA_MAT;
+float4x4 projMat : PROJ_MATRIX;
 float4x4 prevViewMat : PREV_VIEW_MATRIX;
-float4x4 viewMat : CURR_VIEW_MATRIX;
+float4x4 viewMat : VIEW_MATRIX;
 
 texture tex4 : SCENE_DEPTH_TEXTURE;
 texture tex0 : INPUT_TEXTURE;
@@ -64,6 +64,8 @@ float2 screenSize : INPUT_TEXTURE_SIZE;
 float2 framebufferSize : FRAMEBUFFER_SIZE;
 float2 viewportSize : VIEWPORT_SIZE;
 int MAX_SAMPLES = 4;
+
+
 
 float4 fs_motion_blur(VS_OUT IN) : COLOR
 {
@@ -129,3 +131,4 @@ technique motionBlur {
 		PixelShader = compile fs_motion_blur();
 	};
 };
+

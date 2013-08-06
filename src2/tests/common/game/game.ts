@@ -1166,17 +1166,44 @@ module akra {
 	    return true;
 	}
 
-	function motionBlur(pViewport: IDSViewport): void {
-		var pCamera: ICamera = pViewport.getCamera();
-		var pViewProjMat: IMat4 = new Mat4(pCamera.projViewMatrix);
-		var pViewProjMatInv: IMat4 = new Mat4;
-		//var pPrevViewMat: IMat4 = new Mat4(pCamera.viewMatrix);
-		var t1: IMat4 = new Mat4(pCamera.viewMatrix);
-		var t2: IMat4 = new Mat4(pCamera.viewMatrix);
+	function edgeDetection(pViewport: IDSViewport): any {
+		pViewport.effect.addComponent("akra.system.edgeDetection", 2, 0);
+		pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
 
+		var pParams = {
+			lineWidth: 2.0,
+			threshold: 0.2
+		};
+
+		pViewport.bind("render", (
+			pViewport: IDSViewport, 
+			pTechnique: IRenderTechnique, 
+			iPass: int, 
+			pRenderable: IRenderableObject, 
+			pSceneObject: ISceneObject): void => {
+
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+			
+			switch (iPass) {
+				case 2:
+					pPass.setUniform("EDGE_DETECTION_THRESHOLD", pParams.threshold);
+					pPass.setUniform("EDGE_DETECTION_LINEWIDTH", pParams.lineWidth);
+			}
+		});
+
+		return pParams;
+	}
+
+	function motionBlur(pViewport: IDSViewport): void {
+		var pPrevViewMat: IMat4 = new Mat4(1.);
+		var pCamera: ICamera = pViewport.getCamera();
 		
 		pViewport.effect.addComponent("akra.system.motionBlur", 2, 0);
 		pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
+
+		setInterval(() => {
+			pPrevViewMat.set(pCamera.viewMatrix);
+		}, 10);
 
 		pViewport.bind("render", (
 			pViewport: IDSViewport, 
@@ -1188,7 +1215,7 @@ module akra {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pDepthTex: ITexture = pViewport.depth;
 			var pCamera: ICamera = pViewport.getCamera();
-
+			// console.log(pCamera.isWorldMatrixNew());
 			switch (iPass) {
 				case 2:
 					pCamera.update();
@@ -1196,18 +1223,10 @@ module akra {
                         vec2(pViewport.actualWidth / pDepthTex.width, pViewport.actualHeight / pDepthTex.height));
 				    
 					pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTex);
-					//pPass.setUniform("PREV_VIEW_PROJ_MATRIX",/*m4fM1.set*/(pViewProjMat));
-					pPass.setUniform("PREV_VIEW_MATRIX", /*m4fM2.set*/t1);
-					//pViewProjMat.set(pCamera.projViewMatrix);
-					t2.set(pCamera.viewMatrix);
-					pPass.setUniform("VIEW_PROJ_INV_MATRIX", pViewProjMat.inverse(pViewProjMatInv));
-					pPass.setUniform("CURR_INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
-					pPass.setUniform("CURR_PROJ_MATRIX", pCamera.projectionMatrix);
-					pPass.setUniform("CURR_VIEW_MATRIX", t2);
-
-					var p = t1;
-					t1 = t2;
-					t2 = p;
+					pPass.setUniform("PREV_VIEW_MATRIX", pPrevViewMat);
+					// pPass.setUniform("CURR_INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
+					// pPass.setUniform("CURR_PROJ_MATRIX", pCamera.projectionMatrix);
+					// pPass.setUniform("CURR_VIEW_MATRIX", t2);
 			}
 		});
 	}
@@ -1299,6 +1318,7 @@ module akra {
 				pTerrain.megaTexture["_bColored"] = !pTerrain.megaTexture["_bColored"];
 		});
 
+		// (<any>sefl).edgeDetection = edgeDetection(<IDSViewport>pViewport);
 		// motionBlur(<IDSViewport>pViewport);
 
 		createSceneEnvironment(pScene, true, true);
