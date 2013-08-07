@@ -7,6 +7,7 @@
 #include "util/unique.ts"
 #include "fx/PassInputBlend.ts"
 #include "util/StringDictionary.ts"
+#include "fx/VariableContainer.ts"
 
 module akra.fx {
 	export class ComponentBlend implements IAFXComponentBlend {
@@ -309,150 +310,62 @@ module akra.fx {
 		}
 	}
 
+
 	export class ComponentPassInputBlend implements IAFXComponentPassInputBlend {
-		private _pUniformNameToRealMap: StringMap = null;
-		private _pUniformByRealNameMap: IAFXVariableDeclMap = null;
-		private _pUniformDefaultValueMap: any = null;
-
-		private _pTextureNameToRealMap: StringMap = null;
-		private _pTextureByRealNameMap: IAFXVariableDeclMap = null;
-
-		private _pForeignByNameMap: IAFXVariableDeclMap = null;
-
-
-		private _pUniformRealNameList: string[] = null;
-		private _pUniformNameList: string[] = null;
-
-		private _pTextureRealNameList: string[] = null;
-		private _pTextureNameList: string[] = null;
-
-		private _pForeignNameList: string[] = null;
+		private _pUniformsContainer: VariableContainer = null;
+		private _pForeignsContainer: VariableContainer = null;
+		private _pTexturesContainer: VariableContainer = null;
 
 		private _pFreePassInputBlendList: IAFXPassInputBlend[] = null;
 
-		private _pVarNamesDictionary: IntMap = null;
-		private _pIndexToVarNamesMap: StringMap = null;
-		static pShaderVarNamesGlobalDictionary: util.StringDictionary = new util.StringDictionary();
-
-		inline getVarNameIndex(sName: string): uint {
-			return this._pVarNamesDictionary[sName] || (this._pVarNamesDictionary[sName] = 0);
+		inline get uniforms(): IAFXVariableContainer {
+			return this._pUniformsContainer;
 		}
 
-		inline getVarNameByIndex(iIndex: uint): string {
-			return this._pIndexToVarNamesMap[iIndex];
+		inline get textures(): IAFXVariableContainer {
+			return this._pTexturesContainer;
 		}
 
-		inline get uniformNameToReal(): StringMap{
-			return this._pUniformNameToRealMap;
-		}
-
-		inline get uniformByRealName(): IAFXVariableDeclMap{
-			return this._pUniformByRealNameMap;
-		}
-
-		inline get uniformDefaultValue(): any {
-			return this._pUniformDefaultValueMap;
-		}
-
-		inline get textureNameToReal(): StringMap {
-			return this._pTextureNameToRealMap;
-		}
-
-		inline get textureByRealName(): IAFXVariableDeclMap {
-			return this._pTextureByRealNameMap;
-		}
-
-		inline get foreignByName(): IAFXVariableDeclMap {
-			return this._pForeignByNameMap;
-		}
-
-		inline get uniformNameList(): string[] {
-			return this._pUniformNameList;
-		}
-
-		inline get uniformRealNameList(): string[] {
-			return this._pUniformRealNameList;
-		}
-
-		inline get textureNameList(): string[] {
-			return this._pTextureNameList;
-		}
-
-		inline get textureRealNameList(): string[] {
-			return this._pTextureRealNameList;
-		}
-
-		inline get foreignNameList(): string[] {
-			return this._pForeignNameList;
+		inline get foreigns(): IAFXVariableContainer {
+			return this._pForeignsContainer;
 		}
 
 		constructor() {
-			this._pUniformNameToRealMap = <StringMap>{};
-			this._pUniformByRealNameMap = <IAFXVariableDeclMap>{};
-			this._pUniformDefaultValueMap = <any>{};
+			this._pUniformsContainer = new VariableContainer();
+			this._pForeignsContainer = new VariableContainer();
+			this._pTexturesContainer = new VariableContainer();
 
-			this._pTextureNameToRealMap = <StringMap>{}; 
-			this._pTextureByRealNameMap = <IAFXVariableDeclMap><any>{
-				TEXTURE0  : null,
-                TEXTURE1  : null,
-                TEXTURE2  : null,
-                TEXTURE3  : null,
-                TEXTURE4  : null,
-                TEXTURE5  : null,
-                TEXTURE6  : null,
-                TEXTURE7  : null,
-                TEXTURE8  : null,
-                TEXTURE9  : null,
-                TEXTURE10 : null,
-                TEXTURE11 : null,
-                TEXTURE12 : null,
-                TEXTURE13 : null,
-                TEXTURE14 : null,
-                TEXTURE15 : null
-			};
-			
-			this._pForeignByNameMap = <IAFXVariableDeclMap>{};
+			for(var i: uint = 0; i < 16; i++){
+				this._pTexturesContainer.addSystemEntry("TEXTURE" + i.toString(), EAFXShaderVariableType.k_Texture);
+			}
 		}
 
 		addDataFromPass(pPass: IAFXPassInstruction): void {
 			var pUniformMap: IAFXVariableDeclMap = pPass._getFullUniformMap();
 			var pForeignMap: IAFXVariableDeclMap = pPass._getFullForeignMap();
 			var pTextureMap: IAFXVariableDeclMap = pPass._getFullTextureMap();
-
-			var pVar: IAFXVariableDeclInstruction = null;
 			
 			for(var i in pForeignMap){
-				pVar = pForeignMap[i];
-
-				this._pForeignByNameMap[pVar.getName()] = pVar;
+				this._pForeignsContainer.add(pForeignMap[i]);
 			}
 
 			for(var i in pTextureMap){
-				pVar = pTextureMap[i];
-
-				this._pTextureNameToRealMap[pVar.getName()] = pVar.getRealName();
-				this._pTextureByRealNameMap[pVar.getRealName()] = pVar;
+				this._pTexturesContainer.add(pTextureMap[i]);
 			}
 
 			for(var i in pUniformMap){
-				pVar = pUniformMap[i];
-				this.addUniformVariable(pVar, "", "");
+				this.addUniformVariable(pUniformMap[i], "", "");
 			}
 
 		}
 
 		finalizeInput(): void {
-			this._pUniformNameList = Object.keys(this._pUniformNameToRealMap);
-			this._pUniformRealNameList = Object.keys(this._pUniformByRealNameMap);
-
-			this._pTextureNameList = Object.keys(this._pTextureNameToRealMap);
-			this._pTextureRealNameList = Object.keys(this._pTextureByRealNameMap);
-
-			this._pForeignNameList = Object.keys(this._pForeignByNameMap);
+			this._pUniformsContainer.finalize();
+			this._pForeignsContainer.finalize();
+			this._pTexturesContainer.finalize();
 
 			this._pFreePassInputBlendList = [];
 
-			this.addVarNamesToDictionary();
 			this.generateNewPassInputs();
 		}
 
@@ -470,80 +383,17 @@ module akra.fx {
 
 		private addUniformVariable(pVariable: IAFXVariableDeclInstruction, 
 								   sPrevName: string, sPrevRealName: string): void {
-			var sName: string = "";
-			var sRealName: string = "";
+			var sName: string = pVariable.getName();
+			var sRealName: string = pVariable.getRealName();
 
-			// if(sPrevName !== ""){
-			// 	sName = sPrevName + "." + pVariable.getName();
-			// }
-			// else {
-			// 	sName = pVariable.getName();
-			// }
+			var pHasVar: IAFXVariableDeclInstruction = this._pUniformsContainer.getVarByRealName(sRealName);
 
-			// if(sPrevRealName !== ""){
-			// 	sRealName = sPrevRealName + "." + pVariable.getRealName();
-			// }
-			// else {
-			// 	sRealName = pVariable.getRealName();
-			// }
-			
-			sName = pVariable.getName();
-			sRealName = pVariable.getRealName();
-
-			var pHasVar: IAFXVariableDeclInstruction = this._pUniformByRealNameMap[sRealName];
-			
-			if(isDef(pHasVar) && !pHasVar.getType().isEqual(pVariable.getType())){
+			if(isDefAndNotNull(pHasVar) && !pHasVar.getType().isEqual(pVariable.getType())){
 				debug_warning("You used uniforms with the same real-names. Now we don`t work very well with that.");
 				return;
 			}
 
-			var pVariableType: IAFXVariableTypeInstruction = pVariable.getType();
-
-			// if(!pVariableType.isComplex()) {
-			// 	this._pUniformNameToRealMap[sName] = sRealName;
-			// 	this._pUniformByRealNameMap[sRealName] = pVariable;
-			// 	this._pUniformDefaultValueMap[sRealName] = pVariable.getDefaultValue();
-			// }
-			// else {
-			// 	var pFieldNameList: string[] = pVariableType.getFieldNameList();
-				
-			// 	for(var i: uint = 0; i < pFieldNameList.length; i++){
-			// 		this.addUniformVariable(pVariableType.getField(pFieldNameList[i]), sName, sRealName);
-			// 	}
-			// }
-			
-			this._pUniformNameToRealMap[sName] = sRealName;
-			this._pUniformByRealNameMap[sRealName] = pVariable;
-			this._pUniformDefaultValueMap[sRealName] = pVariable.getDefaultValue();
-		}
-
-		private addVarNamesToDictionary(): void {
-			this._pVarNamesDictionary = <IntMap>{};
-			this._pIndexToVarNamesMap = <StringMap>{};
-
-			for(var i: uint = 0; i < this._pTextureRealNameList.length; i++){
-				var sName: string = this._pTextureRealNameList[i];
-				var iIndex: uint = ComponentPassInputBlend.pShaderVarNamesGlobalDictionary.add(sName);
-
-				this._pVarNamesDictionary[sName] = iIndex;
-				this._pIndexToVarNamesMap[iIndex] = sName;				
-			}
-
-			for(var i: uint = 0; i < this._pUniformRealNameList.length; i++){
-				var sName: string = this._pUniformRealNameList[i];
-				var iIndex: uint = ComponentPassInputBlend.pShaderVarNamesGlobalDictionary.add(sName);
-
-				this._pVarNamesDictionary[sName] = iIndex;
-				this._pIndexToVarNamesMap[iIndex] = sName;				
-			}	
-
-			for(var i: uint = 0; i < this._pForeignNameList.length; i++){
-				var sName: string = this._pForeignNameList[i];
-				var iIndex: uint = ComponentPassInputBlend.pShaderVarNamesGlobalDictionary.add(sName);
-
-				this._pVarNamesDictionary[sName] = iIndex;
-				this._pIndexToVarNamesMap[iIndex] = sName;				
-			}		
+			this._pUniformsContainer.add(pVariable);
 		}
 
 		private generateNewPassInputs(nCount?: uint = 5): void {

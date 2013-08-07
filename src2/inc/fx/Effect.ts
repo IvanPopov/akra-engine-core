@@ -1796,6 +1796,7 @@ module akra.fx {
         	CHECK_INSTRUCTION(pVarDecl, ECheckStage.CODE_TARGET_SUPPORT);
 
         	this.addVariableDecl(pVarDecl);
+        	pVarDecl._getNameIndex();
 
         	return pVarDecl;
         }

@@ -26,7 +26,7 @@
 
 #define RID_TOTAL 1024
 
-#define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[pInput._getVarNameIndex(sName)] = pValue;
+#define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[pInput._getUniformVarNameIndex(sName)] = pValue;
 
 module akra.fx {
 
@@ -488,7 +488,7 @@ module akra.fx {
 					this.prepareComposerState();
 
 					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
-																  pPassInput.foreignsByNames, pPassInput.uniforms);
+																  pPassInput.foreigns, pPassInput.uniforms);
 				}
 
 				if(isNull(pPassBlend)){

@@ -371,15 +371,15 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pUniformKeys.length; i++) {
 				var iNameIndex: uint = pUniformKeys[i];
-				var sName: string = pPassInput._getVarNameByIndex(iNameIndex);
+				var sName: string = pPassInput._getUniformVarNameByIndex(iNameIndex);
 				var eType: EAFXShaderVariableType = pPassInput._getUniformType(iNameIndex);
-				var iLength: uint = pPassInput._getUnifromLength(iNameIndex);
+				var iLength: uint = pPassInput._getUniformLength(iNameIndex);
 				var isArray: bool = (iLength > 0);
 
 				var pInputUniformInfo: IInputUniformInfo = null;
 
 				if(eType === EAFXShaderVariableType.k_Complex){
-					var pStructInfo: IUniformStructInfo = this.expandStructUniforms(pPassInput._getAFXUniformVar(iNameIndex));
+					var pStructInfo: IUniformStructInfo = this.expandStructUniforms(pPassInput._getUniformVar(iNameIndex));
 					if(!isNull(pStructInfo)){
 						pInputUniformInfo = createInputUniformInfo(sName, iNameIndex, null, true);
 						pInputUniformInfo.structVarInfo = pStructInfo;
@@ -440,7 +440,7 @@ module akra.fx {
 
 				var pSampler: IAFXVariableDeclInstruction = pBlend.getSamplersBySlot(i).value(0);
 				var sSampler: string = pSampler.getSemantic() || pSampler.getName();
-				var iNameIndex: uint = pPassInput._getVarNameIndex(sSampler);
+				var iNameIndex: uint = pPassInput._getUniformVarNameIndex(sSampler);
 				var eType: EAFXShaderVariableType = pSampler.getType().isSampler2D() ?
 									 					EAFXShaderVariableType.k_Sampler2D :
 									 					EAFXShaderVariableType.k_SamplerCUBE;
@@ -463,9 +463,9 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pSamplerArrayKeys.length; i++) {
 				var iNameIndex: uint = pSamplerArrayKeys[i];
-				var sName: string = pPassInput._getVarNameByIndex(iNameIndex);
+				var sName: string = pPassInput._getUniformVarNameByIndex(iNameIndex);
 				var eType: EAFXShaderVariableType =  pPassInput._getUniformType(iNameIndex);
-				var iLength: uint = pPassInput._getUnifromLength(iNameIndex);
+				var iLength: uint = pPassInput._getUniformLength(iNameIndex);
 				var sShaderName: string = sName + "[0]";
 				var pInputUniformInfo: IInputUniformInfo = null;
 
@@ -994,7 +994,7 @@ module akra.fx {
 					}
 					else {
 						var sFieldRealName: string = sFieldPrevName + "." + pField.getRealName();
-						var eFieldType: EAFXShaderVariableType = PassInputBlend.getVariableType(pField);
+						var eFieldType: EAFXShaderVariableType = VariableContainer.getVariableType(pField);
 						var iFieldLength: uint = pField.getType().getLength();
 						var isFieldArray: bool = pField.getType().isNotBaseArray();
 						var sFieldShaderName: string = sFieldRealName;

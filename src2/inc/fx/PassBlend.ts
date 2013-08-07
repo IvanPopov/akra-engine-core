@@ -663,7 +663,7 @@ module akra.fx {
 				// if(!isDef(pForeignValues[sName])){
 				// 	LOG("V",sName, pForeignValues, pKeys, this);
 				// }
-				sHash += pForeignValues[pPassInput._getVarNameIndex(sName)].toString() + "%";
+				sHash += pForeignValues[pPassInput._getForeignVarNameIndex(sName)].toString() + "%";
 			}
 
 			pKeys = this._pForeignContainerP.keys;
@@ -673,7 +673,7 @@ module akra.fx {
 				// if(!isDef(pForeignValues[sName])){
 				// 	LOG("P",sName, pForeignValues, pKeys, this);
 				// }
-				sHash += pForeignValues[pPassInput._getVarNameIndex(sName)].toString() + "%";
+				sHash += pForeignValues[pPassInput._getForeignVarNameIndex(sName)].toString() + "%";
 			}
 
 			return sHash;
@@ -690,7 +690,7 @@ module akra.fx {
 			for(var i: uint = 0; i < pSamplersId.length; i++){
 				var pSampler: IAFXVariableDeclInstruction = this._pSamplerByIdMap[pSamplersId[i]];
 				var sName: string = pSampler.getRealName();
-				var iNameIndex: uint = pPassInput._getVarNameIndex(sName);
+				var iNameIndex: uint = pPassInput._getUniformVarNameIndex(sName);
 
 				var pSamplerState: IAFXSamplerState = pSamplers[iNameIndex];
 				var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerState);
@@ -711,7 +711,7 @@ module akra.fx {
 			for(var i: uint = 0; i < pSamplerArraysId.length; i++){
 				var pSamplerArray: IAFXVariableDeclInstruction = this._pSamplerArrayByIdMap[pSamplerArraysId[i]];
 				var sName: string = pSamplerArray.getRealName();
-				var iNameIndex: uint = pPassInput._getVarNameIndex(sName);
+				var iNameIndex: uint = pPassInput._getUniformVarNameIndex(sName);
 
 				var pSamplerStateList: IAFXSamplerState[] = pSamplerArrays[iNameIndex];
 				var isNeedToCollapse: bool = true;
@@ -776,7 +776,7 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pKeys.length; i++){
 				var iNameIndex: uint = pKeys[i];
-				var sName: string = pPassInput._getVarNameByIndex(iNameIndex);
+				var sName: string = pPassInput._getForeignVarNameByIndex(iNameIndex);
 				var pVarList: IAFXVariableDeclInstruction[] = null;
 
 				if(pForeignsV.hasVariableWithName(sName)){
@@ -893,8 +893,7 @@ module akra.fx {
 
 			this.enableVaringPrefixes(eType, true);
 
-			sCode = /*"#define while(expr) for(int _i = 0; _i < 1; _i--) if(!(expr)) break; else" + "\n" +*/
-					this.generateSystemExtBlock(eType) + "\n" +
+			sCode = this.generateSystemExtBlock(eType) + "\n" +
 
 					"vec4 resultAFXColor;" + "\n" +
 					

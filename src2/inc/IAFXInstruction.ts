@@ -505,7 +505,7 @@ module akra {
         _markAsShaderOutput(isShaderOutput: bool): void;
         _isShaderOutput(): bool;
 
-
+        _getNameIndex(): uint;
         _getFullNameExpr(): IAFXExprInstruction;
         _getFullName(): string;
         _getVideoBufferSampler(): IAFXVariableDeclInstruction;
