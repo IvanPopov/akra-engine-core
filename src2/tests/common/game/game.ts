@@ -54,6 +54,7 @@ module akra {
 
 	#include "updateKeyboardControls.ts"
 	#include "updateCamera.ts"
+	#include "virtualGamepad.ts"
 
 	var pProgress: IProgress = createProgress();
 	var pGameDeps: IDependens = {
@@ -69,7 +70,7 @@ module akra {
 				{path: "models/tube/tube.dae", name: "TUBE"},
 				{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
 				// {path: "models/hero/movie.dae", name: "HERO_MODEL"},
-				{path: "models/character/charX.dae", name: "CHARACTER_MODEL"},
+				{path: "models/character/charY.dae", name: "CHARACTER_MODEL"},
 				{path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL"}
 			],
 			deps: {
@@ -243,6 +244,7 @@ module akra {
 
 		        movementToGunEndTime     : 0,/*sec [temp/system] DO NOT EDIT!!!*/
 		        idleWeightBeforeDraw     : 10,/*sec [temp/system] DO NOT EDIT!!!*/
+		        movementWeightBeforeUnDraw     : 10,/*sec [temp/system] DO NOT EDIT!!!*/
 		        gunDrawStartTime         : 0,/*sec [temp/system] DO NOT EDIT!!!*/
 		        gunDrawToIdleStartTime   : 0,/*sec [temp/system] DO NOT EDIT!!!*/
 		        gunIdleToUnDrawStartTime : 0,/*sec [temp/system] DO NOT EDIT!!!*/
@@ -250,6 +252,8 @@ module akra {
 		        gunUndrawStartTime       : 0,/*sec [temp/system] DO NOT EDIT!!!*/
 
 		        gunDirection			 : 0,
+
+		        inFire: false,
 
 		        fallDown: false,
 		        fallTransSpeed: 0,
@@ -299,23 +303,23 @@ module akra {
 	    var pAnimGunFire: IAnimationContainer = findAnimation("GUN_FIRE.player");
 	    var pGunFireBlend: IAnimationBlend = findAnimation("GUN_FIRE.blend");
 
-	    var pGunNode: ISceneNode = <ISceneNode>pHeroRoot.findEntity("node-Object025");
+	    var pGunNode: ISceneNode = <ISceneNode>pHeroRoot.findEntity("node-pistol_in_r_hand");
 	    var pRightHolster: ISceneNode = <ISceneNode>pHeroRoot.findEntity("node-Dummy01");
 	    var pRightHand: ISceneNode = <ISceneNode>pHeroRoot.findEntity("node-Dummy06");
 
-	    var fGunDrawAttachmentTime: float = (14/46) * pAnimGunDraw.duration;
+	    var fGunDrawAttachmentTime: float = (15/46) * pAnimGunDraw.duration;
 		var fGunUnDrawAttachmentTime: float = (21/53) * pAnimGunUnDraw.duration;
+		var fGunFireTime: float = (9/53) * pAnimGunUnDraw.duration;
 
 
 		pAnimGunDraw.useLoop(false);
 		pAnimGunUnDraw.useLoop(false);
 
+		pGunNode.attachToParent(pRightHolster);
+
 		if (isDefAndNotNull(pAnimGunDraw)) {
 	        pAnimGunDraw.bind("enterFrame", 
 	        	(pAnim: IAnimationContainer, fRealTime: float, fTime: float): void => {
-	        	// if (!(!isNull(pGunNode) && !isNull(pRightHolster) && !isNull(pRightHand))) {
-	        	// 	console.log("!!!!!!");	
-	        	// }
 
 	            if (fTime < fGunDrawAttachmentTime) {
 	                pGunNode.attachToParent(pRightHolster);
@@ -329,9 +333,6 @@ module akra {
 	    if (isDefAndNotNull(pAnimGunUnDraw)) {
 	        pAnimGunUnDraw.bind("enterFrame", 
 	        	(pAnim: IAnimationContainer, fRealTime: float, fTime: float): void => {
-	        	// if (!(!isNull(pGunNode) && !isNull(pRightHolster) && !isNull(pRightHand))) {
-	        	// 	console.log("!!!!!!");	
-	        	// }
 	            if (fTime < fGunUnDrawAttachmentTime) {
 	                pGunNode.attachToParent(pRightHand);
 	            }
@@ -341,17 +342,24 @@ module akra {
 	        });
 	    }
 
+	    pAnimGunFire.setSpeed(1.);
+
 	    // if (isDefAndNotNull(pAnimGunIdle)) {
 	    //     pAnimGunIdle.bind("play", (): void => {
 	    //         pGunNode.attachToParent(pRightHand);
 	    //     });
 	    // }
 
-	    // if (isDefAndNotNull(pAnimGunFire)) {
-	    //     pAnimGunFire.bind("play", (): void => {
-	    //         pGunNode.attachToParent(pRightHand);
-	    //     });
-	    // }
+
+
+	    if (isDefAndNotNull(pAnimGunFire)) {
+	        pAnimGunFire.bind("enterFrame", 
+	        		(pAnim: IAnimationContainer, fRealTime: float, fTime: float): void => {
+	            if (fTime >= fGunFireTime) {
+	            	console.log("fire...");
+	            }
+	        });
+	    }
 
 	    findAnimation('MOVEMENT.blend').setWeights(0., 1., 0., 0.);/*run, walk, walkback, weapon_walk*/
 	    findAnimation('STATE.blend').setWeights(1., 0., 0., 0.); /*idle_0, idle_1, movement, gun*/
@@ -501,8 +509,11 @@ module akra {
 	function movementHero(pControls: IGameControls, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController) {
 	    var pAnim: IAnimationMap = pStat.anim;
 
-	    var pMovementPlayer: IAnimationContainer = (<IAnimationContainer>pAnim["MOVEMENT.player"]);
-	    var pMovementBlend: IAnimationBlend = (<IAnimationBlend>pAnim["MOVEMENT.blend"]);
+	    var pMovementPlayer: IAnimationContainer = <IAnimationContainer>pAnim["MOVEMENT.player"];
+	    var pMovementBlend: IAnimationBlend = <IAnimationBlend>pAnim["MOVEMENT.blend"];
+	    var pWalkPlayer: IAnimationContainer = <IAnimationContainer>pAnim["WALK.player"];
+	    var pRunPlayer: IAnimationContainer = <IAnimationContainer>pAnim["RUN.player"];
+	    var pStateBlend: IAnimationBlend = <IAnimationBlend>pAnim["STATE.blend"];
 
 	    var fMovementRate: float = pStat.movementRate;
 	    var fMovementRateAbs: float = math.abs(fMovementRate);
@@ -537,7 +548,7 @@ module akra {
 	        }
 	        
 	        //зануляем IDLE'ы чтобы избежать проблем с тазом
-	        (<IAnimationBlend>pAnim["STATE.blend"]).setWeights(0., 0.);
+	        pStateBlend.setWeights(0., 0., 1., 0.);
 
 	        if (fMovementRate > 0.0) {
 	            //run forward
@@ -550,10 +561,10 @@ module akra {
 	                    pMovementBlend.setWeights(0., 1., 0., 0., 0.); /* only walk */
 	                }
 
-	                (<IAnimationContainer>pAnim["WALK.player"]).setSpeed(fSpeed / fWalkSpeed);
+	                pWalkPlayer.setSpeed(fSpeed / fWalkSpeed);
 	            }	
 	            else {
-	            	(<IAnimationContainer>pAnim["WALK.player"]).setSpeed(1.);
+	            	pWalkPlayer.setSpeed(1.);
 
 	                fRunWeight = (fSpeed - fWalkToRunSpeed) / (fRunSpeed - fWalkToRunSpeed);
 	                fWalkWeight = 1. - fRunWeight;
@@ -564,26 +575,21 @@ module akra {
 	            }
 	        }
 	        else {
-	        	console.log("walkback");
 	            //walkback
 	            pMovementBlend.setWeights(0., 0., 1., 0., 0.);
 	            pMovementPlayer.setSpeed(fMovementRateAbs);
 	        }
-
-	        //дабы быть уверенными что IDLE не считается
-	        // pAnim["STATE.blend"].setAnimationWeight(0, 0.); /* idle */
-	        // pAnim["STATE.blend"].setAnimationWeight(2, 0.); /* gun */
 	    }
 	    //character IDLE
 	    else {
 	    	pMovementPlayer.pause(true);
-	    	pMovementPlayer.rewind(0);
+	    	//pMovementPlayer.rewind(0);
 
 	        var iIDLE: int = hasWeapon(pStat) ? 3 : 0.;
 	        var iMOVEMENT: int = 2;
 
 	        if ((!hasWeapon(pStat) || pStat.state == EGameHeroStates.GUN_IDLE)) {
-	            (<IAnimationBlend>pAnim["STATE.blend"]).setWeightSwitching(fSpeed / fMinSpeed, iIDLE, iMOVEMENT); /* idle ---> run */
+	            pStateBlend.setWeightSwitching(fSpeed / fMinSpeed, iIDLE, iMOVEMENT); /* idle ---> run */
 	        }
 
 	        if (fMovementRate > 0.0) {
@@ -666,6 +672,12 @@ module akra {
 
 	    var pGunBlend: IAnimationBlend = <IAnimationBlend>pAnim['GUN.blend'];
 	    var pStateBlend: IAnimationBlend = <IAnimationBlend>pAnim['STATE.blend'];
+	    var pFireBlend: IAnimationBlend = <IAnimationBlend>pAnim['GUN_FIRE.blend'];
+	    var pFirePlayer: IAnimationContainer = <IAnimationContainer>pAnim['GUN_FIRE.player'];
+
+	    var pMovementBlend: IAnimationBlend = <IAnimationBlend>pAnim["MOVEMENT.blend"];
+	   	var pWalkPlayer: IAnimationContainer = <IAnimationContainer>pAnim["WALK.player"];
+	    var pRunPlayer: IAnimationContainer = <IAnimationContainer>pAnim["RUN.player"];
 
 	    var fNow: float = now() / 1000;
 
@@ -775,6 +787,28 @@ module akra {
 	    else if (pStat.state == EGameHeroStates.GUN_IDLE) {
 	    	pGunIdleBlend.setWeights(fGKup, fGKfrw, fGKdown);
 
+	    	if (pControls.fire > 0.20 && !pStat.inFire) {
+	    		pStat.inFire = true;
+	    		pFirePlayer.rewind(0.);
+		    	pGunBlend.setAnimationWeight(1, pControls.fire * 100);
+	    	}
+	    	
+	    	if (pStat.inFire && pControls.fire < 0.20) {
+	    		var fK: float = (1. - pFirePlayer.animationTime / pFirePlayer.duration);
+	    		if (fK > pGunBlend.getAnimationWeight(1)) {
+	    			pGunBlend.setAnimationWeight(1, 0);	
+	    			console.log("end of fire anim");
+	    			pStat.inFire = false;
+	    		}
+	    		else {
+	    			pGunBlend.setAnimationWeight(1, fK);	
+	    		}
+	    	}
+
+	    	if (pStat.inFire) {
+	    		pFireBlend.setWeights(fGKup, fGKfrw, fGKdown);
+	    	}
+
 	        if (pControls.gun) { 
 	        	//undraw gun
 	            //pStat.state
@@ -786,21 +820,23 @@ module akra {
 	            pGunUnDrawBlend.setWeights(fGKup, fGKfrw, fGKdown);
 
 	            pStat.gunIdleToUnDrawStartTime = fNow;
-
+				pStat.movementWeightBeforeUnDraw = pStateBlend.getAnimationWeight(2.);
 	            pStat.state = EGameHeroStates.GUN_BEFORE_UNDRAW;
+
 	        }
 	    }
 	    
 	    else if (pStat.state == EGameHeroStates.GUN_BEFORE_UNDRAW) {
 	        fDelta = fNow - pStat.gunIdleToUnDrawStartTime;
 	        if (fDelta <= pStat.gunIdleToUndrawTime) {
+	        	var fK: float = fDelta / pStat.gunIdleToUndrawTime;
+	            pStateBlend.setWeights(pStat.movementWeightBeforeUnDraw * (1. - fK), null, null, fK);
+
 	        	//переходим из gun::IDLE --> gun.UNDRAW
-	        	// pGunUnDrawAnim.rewind(0.);
-	            pGunBlend.setWeightSwitching(fDelta / pStat.gunIdleToUndrawTime, 0, 3);
-	            // console.log("gun undraw time > ", pGunUnDrawAnim.animationTime,  pGunUnDrawAnim.isPaused());
+	            pGunBlend.setWeightSwitching(fDelta / pStat.gunIdleToUndrawTime, 2, 3);
 	        }
 	        else {
-	        	// console.log("after", pGunUnDrawAnim.isPaused());
+	        	pStateBlend.setWeights(0., 0., 0., 1.);
 	        	pGunBlend.setWeights(0., 0., 0., 1.);
 
 	            pStat.gunUndrawStartTime = fNow;
@@ -833,6 +869,14 @@ module akra {
 	        }
 	        else {
 	        	pStateBlend.setWeights(1.0, 0., 0., 0.);
+	        	pMovementBlend.setWeights(0., 1., 0., 0., 0.);
+	        	
+	        	pRunPlayer.rewind(0.);
+	        	pWalkPlayer.rewind(0.);
+	        	pRunPlayer.setSpeed(1.);
+	        	pWalkPlayer.setSpeed(1.);
+	        	pRunPlayer.pause(false);
+	        	pWalkPlayer.pause(false);
 
 	            pStat.state = EGameHeroStates.GUN_NOT_DRAWED;
 	            deactivateTrigger();
@@ -841,7 +885,8 @@ module akra {
 	        }
 	    }
 
-	    movementHero(pControls, pHero, pStat, pController);
+	    if (pStat.state < EGameHeroStates.GUN_BEFORE_UNDRAW)
+	    	movementHero(pControls, pHero, pStat, pController);
 	};
 
 
@@ -1002,7 +1047,7 @@ module akra {
 	    		}
 	    	}
 
-	        console.log((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
+	        //console.log((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
 	    }
 
 	    pStat.rotationRate = fRotationRate;
@@ -1020,45 +1065,7 @@ module akra {
 	    return self.hero.triggers.pop();
 	};
 
-	var pVirtualGamepad: Gamepad = {
-		id: "akra virtual gamepad",
-
-	    index: -1,
-	    timestamp: now(),
-	    axes: [],
-	    buttons: []
-	};
-
-	function virtualGamepad(pKeymap: IKeyMap): Gamepad {
-		var pGamepad: Gamepad = pVirtualGamepad;
-		pGamepad.buttons[EGamepadCodes.SELECT] = pKeymap.isKeyPress(EKeyCodes.ENTER);
-		pGamepad.buttons[EGamepadCodes.START] = pKeymap.isKeyPress(EKeyCodes.G);
-
-		pGamepad.buttons[EGamepadCodes.PAD_TOP] = pKeymap.isKeyPress(EKeyCodes.UP);
-	    pGamepad.buttons[EGamepadCodes.PAD_BOTTOM] = pKeymap.isKeyPress(EKeyCodes.DOWN);
-	    pGamepad.buttons[EGamepadCodes.PAD_LEFT] = pKeymap.isKeyPress(EKeyCodes.LEFT);
-	    pGamepad.buttons[EGamepadCodes.PAD_RIGHT] = pKeymap.isKeyPress(EKeyCodes.RIGHT);
-
-	    pGamepad.buttons[EGamepadCodes.FACE_1] = pKeymap.isKeyPress(EKeyCodes.N1);
-	    pGamepad.buttons[EGamepadCodes.FACE_2] = pKeymap.isKeyPress(EKeyCodes.N2);
-	    pGamepad.buttons[EGamepadCodes.FACE_3] = pKeymap.isKeyPress(EKeyCodes.N3);
-	    pGamepad.buttons[EGamepadCodes.FACE_4] = pKeymap.isKeyPress(EKeyCodes.N4);
-
-
-		var fX: float = (pKeymap.isKeyPress(EKeyCodes.A)? -1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.D)? 1.0: 0.0);
-		var fY: float = (pKeymap.isKeyPress(EKeyCodes.S)? 1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.W)? -1.0: 0.0);
-		
-		pGamepad.axes[EGamepadAxis.LEFT_ANALOGUE_VERT] = fY;
-		pGamepad.axes[EGamepadAxis.LEFT_ANALOGUE_HOR] = fX;
-
-		fX = (pKeymap.isKeyPress(EKeyCodes.NUMPAD4)? -1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.NUMPAD6)? 1.0: 0.0);
-		fY = (pKeymap.isKeyPress(EKeyCodes.NUMPAD5)? -1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.NUMPAD8)? 1.0: 0.0);
-		
-		pGamepad.axes[EGamepadAxis.RIGHT_ANALOGUE_VERT] = fY;
-		pGamepad.axes[EGamepadAxis.RIGHT_ANALOGUE_HOR] = fX;
-
-		return pGamepad;
-	}
+	
 
 	function updateHero (): void {
 	    var pGamepad: Gamepad = self.gamepads.find(0) || virtualGamepad(pKeymap);
@@ -1110,6 +1117,8 @@ module akra {
 
 	    pControls.dodge = !!pGamepad.buttons[EGamepadCodes.FACE_1];
 	    pControls.gun = !!pGamepad.buttons[EGamepadCodes.FACE_4];
+
+	    pControls.fire = pGamepad.buttons[EGamepadCodes.RIGHT_SHOULDER_BOTTOM];
 
 	    var iTrigger: uint = self.hero.triggers.length;
 
@@ -1292,7 +1301,7 @@ module akra {
 
 		pCamera 		= self.camera 	= createCameras(pScene);
 		pViewport 						= createViewports(pCamera, pCanvas, pUI);
-		pTerrain 		= self.terrain 	= createTerrain(pScene);
+		pTerrain 		= self.terrain 	= createTerrain(pScene, false);
 										  createModels();
 		pSkyBoxTexture 					= createSkyBox(pRmgr, <IDSViewport>pViewport);
 		pSky 			= self.sky 		= createSky(pScene, 14.0);

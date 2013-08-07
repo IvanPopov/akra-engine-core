@@ -182,11 +182,16 @@ module akra.fx {
 		}
 
 		setSamplerArray(sName: string, pValue: IAFXSamplerState[]): void {
-			for (var i: int = 0; i < pValue.length; i++) {
-				PassInputBlend.copySamplerState(pValue[i], this.samplerArrays[sName][i]);
-			}
+			if(!isNull(pValue)){
+				for (var i: int = 0; i < pValue.length; i++) {
+					PassInputBlend.copySamplerState(pValue[i], this.samplerArrays[sName][i]);
+				}
 
-			this.samplerArrayLength[sName] = pValue.length;
+				this.samplerArrayLength[sName] = pValue.length;
+			}
+			else {
+				this.samplerArrayLength[sName] = 0;
+			}
 		}
 
 		inline setStruct(sName: string, pValue: any): void {

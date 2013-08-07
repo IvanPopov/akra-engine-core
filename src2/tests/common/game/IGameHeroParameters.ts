@@ -47,6 +47,7 @@ export interface IGameHeroParameters {
 
         movementToGunEndTime     : float;/*sec [temp/system] DO NOT EDIT!!!*/
         idleWeightBeforeDraw     : float;/*sec [temp/system] DO NOT EDIT!!!*/
+        movementWeightBeforeUnDraw     : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunDrawStartTime         : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunDrawToIdleStartTime   : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunIdleToUnDrawStartTime : float;/*sec [temp/system] DO NOT EDIT!!!*/
@@ -59,6 +60,8 @@ export interface IGameHeroParameters {
         anim: IAnimationMap;
 
         position: IVec3;
+
+        inFire: bool;
 
         fallDown: bool;
         //поступательная скорость движения

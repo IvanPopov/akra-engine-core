@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Aug 06 2013 16:49:59 GMT+0400 (Московское время (зима))
+ * assembled at: Wed Aug 07 2013 19:14:51 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -102,12 +102,14 @@ var akra;
         }
         return pViewport;
     }
-    function createTerrain(pScene) {
+    function createTerrain(pScene, bShowMegaTex) {
+        if (typeof bShowMegaTex === "undefined") { bShowMegaTex = true; }
         var pRmgr = pScene.getManager().getEngine().getResourceManager();
         var pTerrain = pScene.createTerrainROAM("Terrain");
         var pTerrainMap = {};
         pTerrainMap["height"] = pRmgr.imagePool.findResource("TERRAIN_HEIGHT_MAP");
         pTerrainMap["normal"] = pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");
+        // pTerrain.manualMegaTextureInit = !bShowMegaTex;
         var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
         pTerrain.attachToParent(pScene.getRootNode());
         pTerrain.setInheritance(akra.ENodeInheritance.ALL);
@@ -117,6 +119,7 @@ var akra;
         if (pMinLevel) {
             pTerrain.megaTexture.setMinLevelTexture(pMinLevel);
         }
+        pTerrain.showMegaTexture = bShowMegaTex;
         return pTerrain;
     }
     function createSkyBox(pRmgr, pViewport) {
@@ -257,6 +260,35 @@ var akra;
             pCamera.addRelRotationByEulerAngles(-fX / 10, -fY / 10, 0);
         }
     }
+    var pVirtualGamepad = {
+        id: "akra virtual gamepad",
+        index: -1,
+        timestamp: akra.now(),
+        axes: [],
+        buttons: []
+    };
+    function virtualGamepad(pKeymap) {
+        var pGamepad = pVirtualGamepad;
+        pGamepad.buttons[akra.EGamepadCodes.SELECT] = pKeymap.isKeyPress(akra.EKeyCodes.ENTER);
+        pGamepad.buttons[akra.EGamepadCodes.START] = pKeymap.isKeyPress(akra.EKeyCodes.G);
+        pGamepad.buttons[akra.EGamepadCodes.PAD_TOP] = pKeymap.isKeyPress(akra.EKeyCodes.UP);
+        pGamepad.buttons[akra.EGamepadCodes.PAD_BOTTOM] = pKeymap.isKeyPress(akra.EKeyCodes.DOWN);
+        pGamepad.buttons[akra.EGamepadCodes.PAD_LEFT] = pKeymap.isKeyPress(akra.EKeyCodes.LEFT);
+        pGamepad.buttons[akra.EGamepadCodes.PAD_RIGHT] = pKeymap.isKeyPress(akra.EKeyCodes.RIGHT);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_1] = pKeymap.isKeyPress(akra.EKeyCodes.N1);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_2] = pKeymap.isKeyPress(akra.EKeyCodes.N2);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_3] = pKeymap.isKeyPress(akra.EKeyCodes.N3);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_4] = pKeymap.isKeyPress(akra.EKeyCodes.N4);
+        var fX = (pKeymap.isKeyPress(akra.EKeyCodes.A) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.D) ? 1.0 : 0.0);
+        var fY = (pKeymap.isKeyPress(akra.EKeyCodes.S) ? 1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.W) ? -1.0 : 0.0);
+        pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_VERT] = fY;
+        pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_HOR] = fX;
+        fX = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD4) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD6) ? 1.0 : 0.0);
+        fY = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD5) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD8) ? 1.0 : 0.0);
+        pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_VERT] = fY;
+        pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_HOR] = fX;
+        return pGamepad;
+    }
     var pProgress = createProgress();
     var pGameDeps = {
         files: [
@@ -293,7 +325,7 @@ var akra;
                 }, 
                 // {path: "models/hero/movie.dae", name: "HERO_MODEL"},
                 {
-                    path: "models/character/charX.dae",
+                    path: "models/character/charY.dae",
                     name: "CHARACTER_MODEL"
                 }, 
                 {
@@ -470,6 +502,8 @@ var akra;
                 0,
                 idleWeightBeforeDraw: /*sec [temp/system] DO NOT EDIT!!!*/
                 10,
+                movementWeightBeforeUnDraw: /*sec [temp/system] DO NOT EDIT!!!*/
+                10,
                 gunDrawStartTime: /*sec [temp/system] DO NOT EDIT!!!*/
                 0,
                 gunDrawToIdleStartTime: /*sec [temp/system] DO NOT EDIT!!!*/
@@ -481,6 +515,7 @@ var akra;
                 gunUndrawStartTime: /*sec [temp/system] DO NOT EDIT!!!*/
                 0,
                 gunDirection: 0,
+                inFire: false,
                 fallDown: false,
                 fallTransSpeed: 0,
                 fallStartTime: 0,
@@ -515,18 +550,16 @@ var akra;
         var pGunIdleBlend = findAnimation("GUN_IDLE.blend");
         var pAnimGunFire = findAnimation("GUN_FIRE.player");
         var pGunFireBlend = findAnimation("GUN_FIRE.blend");
-        var pGunNode = pHeroRoot.findEntity("node-Object025");
+        var pGunNode = pHeroRoot.findEntity("node-pistol_in_r_hand");
         var pRightHolster = pHeroRoot.findEntity("node-Dummy01");
         var pRightHand = pHeroRoot.findEntity("node-Dummy06");
-        var fGunDrawAttachmentTime = (14 / 46) * pAnimGunDraw.duration;
+        var fGunDrawAttachmentTime = (15 / 46) * pAnimGunDraw.duration;
         var fGunUnDrawAttachmentTime = (21 / 53) * pAnimGunUnDraw.duration;
         pAnimGunDraw.useLoop(false);
         pAnimGunUnDraw.useLoop(false);
+        pGunNode.attachToParent(pRightHolster);
         if (akra.isDefAndNotNull(pAnimGunDraw)) {
             pAnimGunDraw.bind("enterFrame", function (pAnim, fRealTime, fTime) {
-                // if (!(!isNull(pGunNode) && !isNull(pRightHolster) && !isNull(pRightHand))) {
-                // 	console.log("!!!!!!");
-                // }
                 if (fTime < fGunDrawAttachmentTime) {
                     pGunNode.attachToParent(pRightHolster);
                 } else {
@@ -536,9 +569,6 @@ var akra;
         }
         if (akra.isDefAndNotNull(pAnimGunUnDraw)) {
             pAnimGunUnDraw.bind("enterFrame", function (pAnim, fRealTime, fTime) {
-                // if (!(!isNull(pGunNode) && !isNull(pRightHolster) && !isNull(pRightHand))) {
-                // 	console.log("!!!!!!");
-                // }
                 if (fTime < fGunUnDrawAttachmentTime) {
                     pGunNode.attachToParent(pRightHand);
                 } else {
@@ -546,6 +576,7 @@ var akra;
                 }
             });
         }
+        pAnimGunFire.setSpeed(1.);
         // if (isDefAndNotNull(pAnimGunIdle)) {
         //     pAnimGunIdle.bind("play", (): void => {
         //         pGunNode.attachToParent(pRightHand);
@@ -659,8 +690,11 @@ var akra;
             }
     function movementHero(pControls, pHero, pStat, pController) {
         var pAnim = pStat.anim;
-        var pMovementPlayer = (pAnim["MOVEMENT.player"]);
-        var pMovementBlend = (pAnim["MOVEMENT.blend"]);
+        var pMovementPlayer = pAnim["MOVEMENT.player"];
+        var pMovementBlend = pAnim["MOVEMENT.blend"];
+        var pWalkPlayer = pAnim["WALK.player"];
+        var pRunPlayer = pAnim["RUN.player"];
+        var pStateBlend = pAnim["STATE.blend"];
         var fMovementRate = pStat.movementRate;
         var fMovementRateAbs = akra.math.abs(fMovementRate);
         var fRunSpeed = pStat.runSpeed;
@@ -685,7 +719,7 @@ var akra;
                 pMovementPlayer.pause(false);
             }
             //зануляем IDLE'ы чтобы избежать проблем с тазом
-            (pAnim["STATE.blend"]).setWeights(0., 0.);
+            pStateBlend.setWeights(0., 0., 1., 0.);
             if (fMovementRate > 0.0) {
                 //run forward
                 if (fSpeed < fWalkToRunSpeed || ((pStat).state != EGameHeroStates.GUN_NOT_DRAWED)) {
@@ -697,9 +731,9 @@ var akra;
                         /* only walk */
                         pMovementBlend.setWeights(0., 1., 0., 0., 0.);
                     }
-                    (pAnim["WALK.player"]).setSpeed(fSpeed / fWalkSpeed);
+                    pWalkPlayer.setSpeed(fSpeed / fWalkSpeed);
                 } else {
-                    (pAnim["WALK.player"]).setSpeed(1.);
+                    pWalkPlayer.setSpeed(1.);
                     fRunWeight = (fSpeed - fWalkToRunSpeed) / (fRunSpeed - fWalkToRunSpeed);
                     fWalkWeight = 1. - fRunWeight;
                     //run //walk frw //walk back
@@ -707,23 +741,19 @@ var akra;
                     pMovementPlayer.setSpeed(1.);
                 }
             } else {
-                console.log("walkback");
                 //walkback
                 pMovementBlend.setWeights(0., 0., 1., 0., 0.);
                 pMovementPlayer.setSpeed(fMovementRateAbs);
             }
-            //дабы быть уверенными что IDLE не считается
-            // pAnim["STATE.blend"].setAnimationWeight(0, 0.); /* idle */
-            // pAnim["STATE.blend"].setAnimationWeight(2, 0.); /* gun */
-                    } else//character IDLE
+        } else//character IDLE
          {
             pMovementPlayer.pause(true);
-            pMovementPlayer.rewind(0);
+            //pMovementPlayer.rewind(0);
             var iIDLE = ((pStat).state != EGameHeroStates.GUN_NOT_DRAWED) ? 3 : 0.;
             var iMOVEMENT = 2;
             if ((!((pStat).state != EGameHeroStates.GUN_NOT_DRAWED) || pStat.state == EGameHeroStates.GUN_IDLE)) {
                 /* idle ---> run */
-                (pAnim["STATE.blend"]).setWeightSwitching(fSpeed / fMinSpeed, iIDLE, iMOVEMENT);
+                pStateBlend.setWeightSwitching(fSpeed / fMinSpeed, iIDLE, iMOVEMENT);
             }
             if (fMovementRate > 0.0) {
                 //walk forward --> idle
@@ -783,6 +813,11 @@ var akra;
         var pGunIdleBlend = pAnim['GUN_IDLE.blend'];
         var pGunBlend = pAnim['GUN.blend'];
         var pStateBlend = pAnim['STATE.blend'];
+        var pFireBlend = pAnim['GUN_FIRE.blend'];
+        var pFirePlayer = pAnim['GUN_FIRE.player'];
+        var pMovementBlend = pAnim["MOVEMENT.blend"];
+        var pWalkPlayer = pAnim["WALK.player"];
+        var pRunPlayer = pAnim["RUN.player"];
         var fNow = akra.now() / 1000;
         if (pControls.forward && pStat.gunDirection < 1.) {
             pStat.gunDirection += 0.05;
@@ -865,6 +900,24 @@ var akra;
                             }
         } else if (pStat.state == EGameHeroStates.GUN_IDLE) {
             pGunIdleBlend.setWeights(fGKup, fGKfrw, fGKdown);
+            if (pControls.fire > 0.20 && !pStat.inFire) {
+                pStat.inFire = true;
+                pFirePlayer.rewind(0.);
+                pGunBlend.setAnimationWeight(1, pControls.fire * 100);
+            }
+            if (pStat.inFire && pControls.fire < 0.20) {
+                var fK = (1. - pFirePlayer.animationTime / pFirePlayer.duration);
+                if (fK > pGunBlend.getAnimationWeight(1)) {
+                    pGunBlend.setAnimationWeight(1, 0);
+                    console.log("end of fire anim");
+                    pStat.inFire = false;
+                } else {
+                    pGunBlend.setAnimationWeight(1, fK);
+                }
+            }
+            if (pStat.inFire) {
+                pFireBlend.setWeights(fGKup, fGKfrw, fGKdown);
+            }
             if (pControls.gun) {
                 //undraw gun
                 //pStat.state
@@ -873,17 +926,18 @@ var akra;
                 pGunUnDrawAnim.pause(true);
                 pGunUnDrawBlend.setWeights(fGKup, fGKfrw, fGKdown);
                 pStat.gunIdleToUnDrawStartTime = fNow;
+                pStat.movementWeightBeforeUnDraw = pStateBlend.getAnimationWeight(2.);
                 pStat.state = EGameHeroStates.GUN_BEFORE_UNDRAW;
             }
         } else if (pStat.state == EGameHeroStates.GUN_BEFORE_UNDRAW) {
             fDelta = fNow - pStat.gunIdleToUnDrawStartTime;
             if (fDelta <= pStat.gunIdleToUndrawTime) {
+                var fK = fDelta / pStat.gunIdleToUndrawTime;
+                pStateBlend.setWeights(pStat.movementWeightBeforeUnDraw * (1. - fK), null, null, fK);
                 //переходим из gun::IDLE --> gun.UNDRAW
-                // pGunUnDrawAnim.rewind(0.);
-                pGunBlend.setWeightSwitching(fDelta / pStat.gunIdleToUndrawTime, 0, 3);
-                // console.log("gun undraw time > ", pGunUnDrawAnim.animationTime,  pGunUnDrawAnim.isPaused());
-                            } else {
-                // console.log("after", pGunUnDrawAnim.isPaused());
+                pGunBlend.setWeightSwitching(fDelta / pStat.gunIdleToUndrawTime, 2, 3);
+            } else {
+                pStateBlend.setWeights(0., 0., 0., 1.);
                 pGunBlend.setWeights(0., 0., 0., 1.);
                 pStat.gunUndrawStartTime = fNow;
                 pStat.state = EGameHeroStates.GUN_UNDRAWING;
@@ -905,12 +959,21 @@ var akra;
                 pStateBlend.setWeightSwitching(fDelta / pStat.gunUndrawToIdleTime, 3, 0);
             } else {
                 pStateBlend.setWeights(1.0, 0., 0., 0.);
+                pMovementBlend.setWeights(0., 1., 0., 0., 0.);
+                pRunPlayer.rewind(0.);
+                pWalkPlayer.rewind(0.);
+                pRunPlayer.setSpeed(1.);
+                pWalkPlayer.setSpeed(1.);
+                pRunPlayer.pause(false);
+                pWalkPlayer.pause(false);
                 pStat.state = EGameHeroStates.GUN_NOT_DRAWED;
                 deactivateTrigger();
                 // console.log("deactivateTrigger();");
                             }
         }
-        movementHero(pControls, pHero, pStat, pController);
+        if (pStat.state < EGameHeroStates.GUN_BEFORE_UNDRAW) {
+            movementHero(pControls, pHero, pStat, pController);
+        }
     }
     ;
     /** @inline */function isFirstFrameOfTrigger() {
@@ -1030,8 +1093,8 @@ var akra;
                     pHero.setPosition(v3fHeroTerrainProjPoint);
                 }
             }
-            console.log((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
-        }
+            //console.log((fMovementRate * fMovementSpeedMax).toFixed(2) + " m/sec");
+                    }
         pStat.rotationRate = fRotationRate;
         pStat.movementRate = fMovementRate;
         pStat.time = pEngine.time;
@@ -1050,35 +1113,6 @@ var akra;
         return akra.self.hero.triggers.pop();
     }
     ;
-    var pVirtualGamepad = {
-        id: "akra virtual gamepad",
-        index: -1,
-        timestamp: akra.now(),
-        axes: [],
-        buttons: []
-    };
-    function virtualGamepad(pKeymap) {
-        var pGamepad = pVirtualGamepad;
-        pGamepad.buttons[akra.EGamepadCodes.SELECT] = pKeymap.isKeyPress(akra.EKeyCodes.ENTER);
-        pGamepad.buttons[akra.EGamepadCodes.START] = pKeymap.isKeyPress(akra.EKeyCodes.G);
-        pGamepad.buttons[akra.EGamepadCodes.PAD_TOP] = pKeymap.isKeyPress(akra.EKeyCodes.UP);
-        pGamepad.buttons[akra.EGamepadCodes.PAD_BOTTOM] = pKeymap.isKeyPress(akra.EKeyCodes.DOWN);
-        pGamepad.buttons[akra.EGamepadCodes.PAD_LEFT] = pKeymap.isKeyPress(akra.EKeyCodes.LEFT);
-        pGamepad.buttons[akra.EGamepadCodes.PAD_RIGHT] = pKeymap.isKeyPress(akra.EKeyCodes.RIGHT);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_1] = pKeymap.isKeyPress(akra.EKeyCodes.N1);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_2] = pKeymap.isKeyPress(akra.EKeyCodes.N2);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_3] = pKeymap.isKeyPress(akra.EKeyCodes.N3);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_4] = pKeymap.isKeyPress(akra.EKeyCodes.N4);
-        var fX = (pKeymap.isKeyPress(akra.EKeyCodes.A) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.D) ? 1.0 : 0.0);
-        var fY = (pKeymap.isKeyPress(akra.EKeyCodes.S) ? 1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.W) ? -1.0 : 0.0);
-        pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_VERT] = fY;
-        pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_HOR] = fX;
-        fX = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD4) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD6) ? 1.0 : 0.0);
-        fY = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD5) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD8) ? 1.0 : 0.0);
-        pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_VERT] = fY;
-        pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_HOR] = fX;
-        return pGamepad;
-    }
     function updateHero() {
         var pGamepad = akra.self.gamepads.find(0) || virtualGamepad(pKeymap);
         var pHero = akra.self.hero.root;
@@ -1117,6 +1151,7 @@ var akra;
         pControls.right = !!pGamepad.buttons[akra.EGamepadCodes.PAD_RIGHT];
         pControls.dodge = !!pGamepad.buttons[akra.EGamepadCodes.FACE_1];
         pControls.gun = !!pGamepad.buttons[akra.EGamepadCodes.FACE_4];
+        pControls.fire = pGamepad.buttons[akra.EGamepadCodes.RIGHT_SHOULDER_BOTTOM];
         var iTrigger = akra.self.hero.triggers.length;
         for(var i = 0; i < pTriggersData.length; ++i) {
             pTriggersData[i](pControls, pHero, pStat, pController, pTriggers.time);
@@ -1237,7 +1272,7 @@ var akra;
         setup(pCanvas, pUI);
         pCamera = akra.self.camera = createCameras(pScene);
         pViewport = createViewports(pCamera, pCanvas, pUI);
-        pTerrain = akra.self.terrain = createTerrain(pScene);
+        pTerrain = akra.self.terrain = createTerrain(pScene, false);
         createModels();
         pSkyBoxTexture = createSkyBox(pRmgr, pViewport);
         pSky = akra.self.sky = createSky(pScene, 14.0);
@@ -1257,7 +1292,7 @@ var akra;
                 pTerrain.megaTexture["_bColored"] = !pTerrain.megaTexture["_bColored"];
             }
         });
-        // (<any>self).edgeDetection = edgeDetection(<IDSViewport>pViewport);
+        // (<any>sefl).edgeDetection = edgeDetection(<IDSViewport>pViewport);
         // motionBlur(<IDSViewport>pViewport);
         createSceneEnvironment(pScene, true, true);
         pEngine.getComposer()["bShowTriangles"] = true;

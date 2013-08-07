@@ -1,4 +1,4 @@
-function createTerrain(pScene: IScene3d): ITerrain {
+function createTerrain(pScene: IScene3d, bShowMegaTex: bool = true): ITerrain {
 	var pRmgr: IResourcePoolManager = pScene.getManager().getEngine().getResourceManager();
 	var pTerrain: ITerrain = pScene.createTerrainROAM("Terrain");
 
@@ -6,7 +6,9 @@ function createTerrain(pScene: IScene3d): ITerrain {
 
 	pTerrainMap["height"] = <IImg>pRmgr.imagePool.findResource("TERRAIN_HEIGHT_MAP");
 	pTerrainMap["normal"] = <IImg>pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");
-		
+	
+	// pTerrain.manualMegaTextureInit = !bShowMegaTex;
+
 	var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
 	pTerrain.attachToParent(pScene.getRootNode());
 	pTerrain.setInheritance(ENodeInheritance.ALL);
@@ -17,6 +19,8 @@ function createTerrain(pScene: IScene3d): ITerrain {
 	var pMinLevel: IImg = <IImg>pRmgr.imagePool.findResource("MEGATEXTURE_MIN_LEVEL");
 	if (pMinLevel)
 		pTerrain.megaTexture.setMinLevelTexture(pMinLevel);
+
+	pTerrain.showMegaTexture = bShowMegaTex;
 
 	return pTerrain;
 }

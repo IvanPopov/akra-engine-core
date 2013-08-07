@@ -7,4 +7,6 @@ export interface IGameControls {
 	left    : bool;
 	dodge   : bool;
 	gun     : bool;
+
+	fire: float;
 }

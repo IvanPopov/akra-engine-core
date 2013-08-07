@@ -163,6 +163,24 @@ float4 fs_outline(VS_OUT IN) : COLOR
     return int(outline_reid) == int(reid)? resultAFXColor / float4(.75, .75, 3., 1.): resultAFXColor / 2.;
 };	
 
+float4 bulletFrom: BULLET_FROM;
+float4 bulletTo: BULLET_TO;
+
+float4 fs_bullet_trace(VS_OUT IN): COLOR {
+	float2 textureCoords = IN.texCoords;
+
+	bulletFrom = projMat * bulletFrom;
+	bulletTo = projMat * bulletTo;
+
+	bulletFrom /= bulletFrom.w;
+	bulletTo /= bulletTo.w;
+
+	//if ()
+	//a = (y1 - y) / (x1 - x);
+	//b = y - ax;
+
+}
+
 technique outline 
 {
 	pass outline 

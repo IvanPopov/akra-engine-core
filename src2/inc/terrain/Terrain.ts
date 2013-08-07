@@ -71,6 +71,10 @@ module akra.terrain {
 		private _f2DDiagonal: float = 0.;
 
 		protected _isCreate: bool = false;
+		protected _bManualMegaTextureInit: bool = false;
+		protected _bShowMegaTexture: bool = true;
+		protected _bMegaTextureCreated: bool = false;
+		protected _sSurfaceTextures: string = "";
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN) {
 			super(pScene, eType);
@@ -136,6 +140,22 @@ module akra.terrain {
 
 		inline get megaTexture(): IMegaTexture {
 			return this._pMegaTexures;
+		}
+
+		inline get manualMegaTextureInit(): bool {
+			return this._bManualMegaTextureInit;
+		}
+
+		inline set manualMegaTextureInit(bManual: bool) {
+			this._bManualMegaTextureInit = bManual;
+		}
+
+		inline get showMegaTexture(): bool {
+			return this._bShowMegaTexture;
+		}
+
+		inline set showMegaTexture(bShow: bool) {
+			this._bShowMegaTexture = bShow;
 		}
 
 		protected _initSystemData(): bool {
@@ -246,13 +266,23 @@ module akra.terrain {
 			this.computeBoundingBox();
 
 #ifdef USE_MEGA_TEXTURE
-			//Мегатекстурные параметры
-			this._pMegaTexures.init(this, sSurfaceTextures);
+			this._sSurfaceTextures = sSurfaceTextures;
+			if(!this._bManualMegaTextureInit){
+				//Мегатекстурные параметры
+				this.initMegaTexture(sSurfaceTextures);
+			}			
 #endif
 
 			this._isCreate = true;
 
 			return true;
+		}
+
+		initMegaTexture(sSurfaceTextures?: string = this._sSurfaceTextures): void {
+#ifdef USE_MEGA_TEXTURE
+			this._pMegaTexures.init(this, sSurfaceTextures);
+			this._bMegaTextureCreated = true;
+#endif
 		}
 
 		findSection(iX: uint, iY: uint) {
@@ -442,7 +472,9 @@ module akra.terrain {
 		 */
 		prepareForRender(pViewport: IViewport): void {
 #ifdef USE_MEGA_TEXTURE
-			this._pMegaTexures.prepareForRender(pViewport);
+			if(this._bMegaTextureCreated && this._bShowMegaTexture){
+				this._pMegaTexures.prepareForRender(pViewport);
+			}
 #endif
 		}
 
@@ -527,7 +559,13 @@ module akra.terrain {
 			pPass.setSamplerTexture("S_NORMAL", "TEXTURE6");
 
 #ifdef USE_MEGA_TEXTURE
-			this._pMegaTexures.applyForRender(pPass);
+			if(this._bMegaTextureCreated && this._bShowMegaTexture){
+				this._pMegaTexures.applyForRender(pPass);
+			}
+			else {
+				pPass.setUniform("S_TERRAIN", null);
+				pPass.setForeign("nTotalLevels", 0);
+			}
 #else
 			// pPass.setUniform("S_TERRAIN", []);
 			// pPass.setUniform("TEXTURE_LEVEL_OFFSET", []);
