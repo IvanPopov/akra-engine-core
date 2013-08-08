@@ -9,6 +9,7 @@ declare var $: JQueryStatic;
 #define float number
 #define double number
 #define long number
+#define const var
 
 #define vec2(...) Vec2.stackCeil.set(__VA_ARGS__)
 #define vec3(...) Vec3.stackCeil.set(__VA_ARGS__)
@@ -70,7 +71,7 @@ module akra {
 				{path: "models/tube/tube.dae", name: "TUBE"},
 				{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
 				// {path: "models/hero/movie.dae", name: "HERO_MODEL"},
-				{path: "models/character/charY.dae", name: "CHARACTER_MODEL"},
+				{path: "models/character/charZ.dae", name: "CHARACTER_MODEL"},
 				{path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL"}
 			],
 			deps: {
@@ -290,6 +291,9 @@ module akra {
     	findAnimation("WALK.player");
 
     	findAnimation("GUN.blend");
+    	findAnimation("GUN.blend");
+
+	    var pAnimHarpoonDraw: IAnimationContainer = findAnimation("HARPOON_DRAW.player");
 
 	    var pAnimGunDraw: IAnimationContainer = findAnimation("GUN_DRAW.player");
 	    var pGunDrawBlend: IAnimationBlend = findAnimation("GUN_DRAW.blend");
@@ -307,9 +311,24 @@ module akra {
 	    var pRightHolster: ISceneNode = <ISceneNode>pHeroRoot.findEntity("node-Dummy01");
 	    var pRightHand: ISceneNode = <ISceneNode>pHeroRoot.findEntity("node-Dummy06");
 
-	    var fGunDrawAttachmentTime: float = (15/46) * pAnimGunDraw.duration;
-		var fGunUnDrawAttachmentTime: float = (21/53) * pAnimGunUnDraw.duration;
-		var fGunFireTime: float = (9/53) * pAnimGunUnDraw.duration;
+	    var pHarpoonNode: ISceneNode[] = [
+	    	<ISceneNode>pHeroRoot.findEntity("node-Mesh04"),
+	    	<ISceneNode>pHeroRoot.findEntity("node-Mesh05"),
+	    	<ISceneNode>pHeroRoot.findEntity("node-Mesh06")
+	    ];
+
+	    var pHarpoonBackpackNode: ISceneNode[] = [
+	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy02"),
+	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy04"),
+	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy03")
+	    ];
+
+	     var pHarpoonRightHand: ISceneNode[] = [
+	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy08"),
+	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy09"),
+	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy010")
+	    ];
+
 
 
 		pAnimGunDraw.useLoop(false);
@@ -317,7 +336,13 @@ module akra {
 
 		pGunNode.attachToParent(pRightHolster);
 
+		pHarpoonNode[0].attachToParent(pHarpoonBackpackNode[0]);
+		pHarpoonNode[1].attachToParent(pHarpoonBackpackNode[1]);
+		pHarpoonNode[2].attachToParent(pHarpoonBackpackNode[2]);
+
 		if (isDefAndNotNull(pAnimGunDraw)) {
+			var fGunDrawAttachmentTime: float = (15/46) * pAnimGunDraw.duration;
+
 	        pAnimGunDraw.bind("enterFrame", 
 	        	(pAnim: IAnimationContainer, fRealTime: float, fTime: float): void => {
 
@@ -331,6 +356,7 @@ module akra {
 	    }
 
 	    if (isDefAndNotNull(pAnimGunUnDraw)) {
+	    	var fGunUnDrawAttachmentTime: float = (21/53) * pAnimGunUnDraw.duration;
 	        pAnimGunUnDraw.bind("enterFrame", 
 	        	(pAnim: IAnimationContainer, fRealTime: float, fTime: float): void => {
 	            if (fTime < fGunUnDrawAttachmentTime) {
@@ -344,19 +370,31 @@ module akra {
 
 	    pAnimGunFire.setSpeed(1.);
 
-	    // if (isDefAndNotNull(pAnimGunIdle)) {
-	    //     pAnimGunIdle.bind("play", (): void => {
-	    //         pGunNode.attachToParent(pRightHand);
-	    //     });
-	    // }
-
-
 
 	    if (isDefAndNotNull(pAnimGunFire)) {
+	    	var fGunFireTime: float = (9/53) * pAnimGunUnDraw.duration;
 	        pAnimGunFire.bind("enterFrame", 
 	        		(pAnim: IAnimationContainer, fRealTime: float, fTime: float): void => {
 	            if (fTime >= fGunFireTime) {
-	            	console.log("fire...");
+	            	// console.log("fire...");
+	            }
+	        });
+	    }
+
+	    if (isDefAndNotNull(pAnimHarpoonDraw)) {
+	    	var fHarpoonDrawTime: float = (29/75) * pAnimHarpoonDraw.duration;
+	        pAnimHarpoonDraw.bind("enterFrame", 
+	        	(pAnim: IAnimationContainer, fRealTime: float, fTime: float): void => {
+
+	            if (fTime < fHarpoonDrawTime) {
+	            	pHarpoonNode[0].attachToParent(pHarpoonBackpackNode[0]);
+	            	pHarpoonNode[1].attachToParent(pHarpoonBackpackNode[1]);
+	            	pHarpoonNode[2].attachToParent(pHarpoonBackpackNode[2]);
+	            }
+	            else {
+	                pHarpoonNode[0].attachToParent(pHarpoonRightHand[0]);
+	            	pHarpoonNode[1].attachToParent(pHarpoonRightHand[1]);
+	            	pHarpoonNode[2].attachToParent(pHarpoonRightHand[2]);
 	            }
 	        });
 	    }
@@ -506,6 +544,53 @@ module akra {
 	    
 	}
 
+	function fireInWalk(pControls: IGameControls, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController) {
+		var pAnim: IAnimationMap = pStat.anim;
+		var pMovementBlend: IAnimationBlend = <IAnimationBlend>pAnim["MOVEMENT.blend"];
+		var pFirePlayer: IAnimationContainer = <IAnimationContainer>pAnim["GUN_FIRE.player"];
+		var fTimeDelta: float = pStat.timeDelta;
+
+		const iFireAnim: int = 4;
+        const iTotalFireAnimWeight: int = 100;
+		
+		var iWeight: int = pMovementBlend.getAnimationWeight(iFireAnim);
+        
+        if (inAttack(pControls)) {	
+        	if (iWeight == 0) {
+        		console.log("fire player > rewind && pause");
+        		pFirePlayer.rewind(0.);
+        		pFirePlayer.pause(true);
+        	}
+
+        	var iSpeed: int = 3.;
+
+        	if (iWeight > 1.) iSpeed = 10.;
+
+        	if (iWeight < iTotalFireAnimWeight) {
+        		iWeight += iSpeed * fTimeDelta;
+        	}
+
+        	iWeight = math.clamp(iWeight, 0., iTotalFireAnimWeight);
+
+        	if (iWeight > 10. && pFirePlayer.isPaused()) {
+        		pFirePlayer.pause(false);
+        	}
+
+        	//добавляем выстрелы
+        	pMovementBlend.setAnimationWeight(iFireAnim, iWeight);
+        }
+        else {
+        	var fK: float = (1. - pFirePlayer.animationTime / pFirePlayer.duration);
+    		
+    		if (fK > iWeight) {
+    			pMovementBlend.setAnimationWeight(iFireAnim, 0);	
+    		}
+    		else {
+    			pMovementBlend.setAnimationWeight(iFireAnim, fK);	
+    		}
+        }
+	}
+
 	function movementHero(pControls: IGameControls, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController) {
 	    var pAnim: IAnimationMap = pStat.anim;
 
@@ -555,7 +640,9 @@ module akra {
 	            if (fSpeed < fWalkToRunSpeed || hasWeapon(pStat)) {
 	                if (hasWeapon(pStat)) {
 	                	//walk with gun
-	                    pMovementBlend.setWeights(0., 0., 0., 1., .0); /*only walk*/
+	                    pMovementBlend.setWeights(0., 0., 0., 1., null); /*only walk*/
+
+	                    fireInWalk(pControls, pHero, pStat, pController);
 	                }
 	                else {
 	                    pMovementBlend.setWeights(0., 1., 0., 0., 0.); /* only walk */
@@ -613,6 +700,10 @@ module akra {
 	    // if (pController.dodge) {
 	    //     this.activateTrigger([this.dodgeHero, this.moveHero]);
 	    // }
+	}
+
+	inline function inAttack(pControls: IGameControls): bool {
+		return pControls.fire > 0.2;
 	}
 
 	inline function hasWeapon(pStat: IGameParameters): bool {
@@ -1065,7 +1156,46 @@ module akra {
 	    return self.hero.triggers.pop();
 	};
 
-	
+	enum EDisplayModes {
+		WIREFRAME,
+		COLORED,
+		COLORED_WIREFRAME,
+		TEXTURE
+	};
+
+	var iSWTimer: int = -1;
+	var eMode: EDisplayModes = EDisplayModes.WIREFRAME;
+	function switchDisplayMode(): void {
+		switch (eMode) {
+			case EDisplayModes.WIREFRAME:
+				pEngine.getComposer()["bShowTriangles"] = true;
+				pTerrain.megaTexture["_bColored"] = false;
+				pTerrain.showMegaTexture = false;
+				break;
+			case EDisplayModes.COLORED:
+				pEngine.getComposer()["bShowTriangles"] = false;
+				pTerrain.megaTexture["_bColored"] = true;
+				pTerrain.showMegaTexture = true;
+				break;
+			case EDisplayModes.COLORED_WIREFRAME:
+				pEngine.getComposer()["bShowTriangles"] = true;
+				pTerrain.megaTexture["_bColored"] = true;
+				pTerrain.showMegaTexture = true;
+				break;
+			case EDisplayModes.TEXTURE:
+				pEngine.getComposer()["bShowTriangles"] = false;
+				pTerrain.megaTexture["_bColored"] = false;
+				pTerrain.showMegaTexture = true;
+				break;
+		}
+		
+		if (eMode == EDisplayModes.TEXTURE) {
+			eMode = EDisplayModes.WIREFRAME;
+		}
+		else {
+			eMode ++;
+		}
+	}
 
 	function updateHero (): void {
 	    var pGamepad: Gamepad = self.gamepads.find(0) || virtualGamepad(pKeymap);
@@ -1119,6 +1249,15 @@ module akra {
 	    pControls.gun = !!pGamepad.buttons[EGamepadCodes.FACE_4];
 
 	    pControls.fire = pGamepad.buttons[EGamepadCodes.RIGHT_SHOULDER_BOTTOM];
+
+	    if (pGamepad.buttons[EGamepadCodes.LEFT_SHOULDER_BOTTOM] > 0.5) {
+	    	if (iSWTimer == -1) {
+	    		iSWTimer = setTimeout(() => {
+	    			iSWTimer = -1;
+	    			switchDisplayMode();
+	    		}, 200);
+	    	}
+	    }
 
 	    var iTrigger: uint = self.hero.triggers.length;
 
@@ -1301,7 +1440,7 @@ module akra {
 
 		pCamera 		= self.camera 	= createCameras(pScene);
 		pViewport 						= createViewports(pCamera, pCanvas, pUI);
-		pTerrain 		= self.terrain 	= createTerrain(pScene, false);
+		pTerrain 		= self.terrain 	= createTerrain(pScene, true);
 										  createModels();
 		pSkyBoxTexture 					= createSkyBox(pRmgr, <IDSViewport>pViewport);
 		pSky 			= self.sky 		= createSky(pScene, 14.0);

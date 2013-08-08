@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Wed Aug 07 2013 19:14:51 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Aug 08 2013 18:14:22 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -275,16 +275,18 @@ var akra;
         pGamepad.buttons[akra.EGamepadCodes.PAD_BOTTOM] = pKeymap.isKeyPress(akra.EKeyCodes.DOWN);
         pGamepad.buttons[akra.EGamepadCodes.PAD_LEFT] = pKeymap.isKeyPress(akra.EKeyCodes.LEFT);
         pGamepad.buttons[akra.EGamepadCodes.PAD_RIGHT] = pKeymap.isKeyPress(akra.EKeyCodes.RIGHT);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_1] = pKeymap.isKeyPress(akra.EKeyCodes.N1);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_2] = pKeymap.isKeyPress(akra.EKeyCodes.N2);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_3] = pKeymap.isKeyPress(akra.EKeyCodes.N3);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_4] = pKeymap.isKeyPress(akra.EKeyCodes.N4);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_1] = pKeymap.isKeyPress(akra.EKeyCodes.N5);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_2] = pKeymap.isKeyPress(akra.EKeyCodes.N6);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_3] = pKeymap.isKeyPress(akra.EKeyCodes.N7);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_4] = pKeymap.isKeyPress(akra.EKeyCodes.N8);
+        pGamepad.buttons[akra.EGamepadCodes.RIGHT_SHOULDER_BOTTOM] = pKeymap.isKeyPress(akra.EKeyCodes.CTRL) ? 1.0 : 0.0;
+        pGamepad.buttons[akra.EGamepadCodes.LEFT_SHOULDER_BOTTOM] = pKeymap.isKeyPress(akra.EKeyCodes.SHIFT) ? 1.0 : 0.0;
         var fX = (pKeymap.isKeyPress(akra.EKeyCodes.A) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.D) ? 1.0 : 0.0);
         var fY = (pKeymap.isKeyPress(akra.EKeyCodes.S) ? 1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.W) ? -1.0 : 0.0);
         pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_VERT] = fY;
         pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_HOR] = fX;
         fX = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD4) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD6) ? 1.0 : 0.0);
-        fY = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD5) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD8) ? 1.0 : 0.0);
+        fY = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD5) ? 1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD8) ? -1.0 : 0.0);
         pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_VERT] = fY;
         pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_HOR] = fX;
         return pGamepad;
@@ -325,7 +327,7 @@ var akra;
                 }, 
                 // {path: "models/hero/movie.dae", name: "HERO_MODEL"},
                 {
-                    path: "models/character/charY.dae",
+                    path: "models/character/charZ.dae",
                     name: "CHARACTER_MODEL"
                 }, 
                 {
@@ -542,6 +544,8 @@ var akra;
         findAnimation("RUN.player");
         findAnimation("WALK.player");
         findAnimation("GUN.blend");
+        findAnimation("GUN.blend");
+        var pAnimHarpoonDraw = findAnimation("HARPOON_DRAW.player");
         var pAnimGunDraw = findAnimation("GUN_DRAW.player");
         var pGunDrawBlend = findAnimation("GUN_DRAW.blend");
         var pAnimGunUnDraw = findAnimation("GUN_UNDRAW.player");
@@ -553,12 +557,29 @@ var akra;
         var pGunNode = pHeroRoot.findEntity("node-pistol_in_r_hand");
         var pRightHolster = pHeroRoot.findEntity("node-Dummy01");
         var pRightHand = pHeroRoot.findEntity("node-Dummy06");
-        var fGunDrawAttachmentTime = (15 / 46) * pAnimGunDraw.duration;
-        var fGunUnDrawAttachmentTime = (21 / 53) * pAnimGunUnDraw.duration;
+        var pHarpoonNode = [
+            pHeroRoot.findEntity("node-Mesh04"), 
+            pHeroRoot.findEntity("node-Mesh05"), 
+            pHeroRoot.findEntity("node-Mesh06")
+        ];
+        var pHarpoonBackpackNode = [
+            pHeroRoot.findEntity("node-Dummy02"), 
+            pHeroRoot.findEntity("node-Dummy04"), 
+            pHeroRoot.findEntity("node-Dummy03")
+        ];
+        var pHarpoonRightHand = [
+            pHeroRoot.findEntity("node-Dummy08"), 
+            pHeroRoot.findEntity("node-Dummy09"), 
+            pHeroRoot.findEntity("node-Dummy010")
+        ];
         pAnimGunDraw.useLoop(false);
         pAnimGunUnDraw.useLoop(false);
         pGunNode.attachToParent(pRightHolster);
+        pHarpoonNode[0].attachToParent(pHarpoonBackpackNode[0]);
+        pHarpoonNode[1].attachToParent(pHarpoonBackpackNode[1]);
+        pHarpoonNode[2].attachToParent(pHarpoonBackpackNode[2]);
         if (akra.isDefAndNotNull(pAnimGunDraw)) {
+            var fGunDrawAttachmentTime = (15 / 46) * pAnimGunDraw.duration;
             pAnimGunDraw.bind("enterFrame", function (pAnim, fRealTime, fTime) {
                 if (fTime < fGunDrawAttachmentTime) {
                     pGunNode.attachToParent(pRightHolster);
@@ -568,6 +589,7 @@ var akra;
             });
         }
         if (akra.isDefAndNotNull(pAnimGunUnDraw)) {
+            var fGunUnDrawAttachmentTime = (21 / 53) * pAnimGunUnDraw.duration;
             pAnimGunUnDraw.bind("enterFrame", function (pAnim, fRealTime, fTime) {
                 if (fTime < fGunUnDrawAttachmentTime) {
                     pGunNode.attachToParent(pRightHand);
@@ -577,16 +599,28 @@ var akra;
             });
         }
         pAnimGunFire.setSpeed(1.);
-        // if (isDefAndNotNull(pAnimGunIdle)) {
-        //     pAnimGunIdle.bind("play", (): void => {
-        //         pGunNode.attachToParent(pRightHand);
-        //     });
-        // }
-        // if (isDefAndNotNull(pAnimGunFire)) {
-        //     pAnimGunFire.bind("play", (): void => {
-        //         pGunNode.attachToParent(pRightHand);
-        //     });
-        // }
+        if (akra.isDefAndNotNull(pAnimGunFire)) {
+            var fGunFireTime = (9 / 53) * pAnimGunUnDraw.duration;
+            pAnimGunFire.bind("enterFrame", function (pAnim, fRealTime, fTime) {
+                if (fTime >= fGunFireTime) {
+                    // console.log("fire...");
+                                    }
+            });
+        }
+        if (akra.isDefAndNotNull(pAnimHarpoonDraw)) {
+            var fHarpoonDrawTime = (29 / 75) * pAnimHarpoonDraw.duration;
+            pAnimHarpoonDraw.bind("enterFrame", function (pAnim, fRealTime, fTime) {
+                if (fTime < fHarpoonDrawTime) {
+                    pHarpoonNode[0].attachToParent(pHarpoonBackpackNode[0]);
+                    pHarpoonNode[1].attachToParent(pHarpoonBackpackNode[1]);
+                    pHarpoonNode[2].attachToParent(pHarpoonBackpackNode[2]);
+                } else {
+                    pHarpoonNode[0].attachToParent(pHarpoonRightHand[0]);
+                    pHarpoonNode[1].attachToParent(pHarpoonRightHand[1]);
+                    pHarpoonNode[2].attachToParent(pHarpoonRightHand[2]);
+                }
+            });
+        }
         /*run, walk, walkback, weapon_walk*/
         findAnimation('MOVEMENT.blend').setWeights(0., 1., 0., 0.);
         /*idle_0, idle_1, movement, gun*/
@@ -688,6 +722,42 @@ var akra;
         //-pStat.cameraPitchMax
         //pStat.cameraPitchSpeed
             }
+    function fireInWalk(pControls, pHero, pStat, pController) {
+        var pAnim = pStat.anim;
+        var pMovementBlend = pAnim["MOVEMENT.blend"];
+        var pFirePlayer = pAnim["GUN_FIRE.player"];
+        var fTimeDelta = pStat.timeDelta;
+        var iFireAnim = 4;
+        var iTotalFireAnimWeight = 100;
+        var iWeight = pMovementBlend.getAnimationWeight(iFireAnim);
+        if (((pControls).fire > 0.2)) {
+            if (iWeight == 0) {
+                console.log("fire player > rewind && pause");
+                pFirePlayer.rewind(0.);
+                pFirePlayer.pause(true);
+            }
+            var iSpeed = 3.;
+            if (iWeight > 1.) {
+                iSpeed = 10.;
+            }
+            if (iWeight < iTotalFireAnimWeight) {
+                iWeight += iSpeed * fTimeDelta;
+            }
+            iWeight = akra.math.clamp(iWeight, 0., iTotalFireAnimWeight);
+            if (iWeight > 10. && pFirePlayer.isPaused()) {
+                pFirePlayer.pause(false);
+            }
+            //добавляем выстрелы
+            pMovementBlend.setAnimationWeight(iFireAnim, iWeight);
+        } else {
+            var fK = (1. - pFirePlayer.animationTime / pFirePlayer.duration);
+            if (fK > iWeight) {
+                pMovementBlend.setAnimationWeight(iFireAnim, 0);
+            } else {
+                pMovementBlend.setAnimationWeight(iFireAnim, fK);
+            }
+        }
+    }
     function movementHero(pControls, pHero, pStat, pController) {
         var pAnim = pStat.anim;
         var pMovementPlayer = pAnim["MOVEMENT.player"];
@@ -726,7 +796,8 @@ var akra;
                     if (((pStat).state != EGameHeroStates.GUN_NOT_DRAWED)) {
                         //walk with gun
                         /*only walk*/
-                        pMovementBlend.setWeights(0., 0., 0., 1., .0);
+                        pMovementBlend.setWeights(0., 0., 0., 1., null);
+                        fireInWalk(pControls, pHero, pStat, pController);
                     } else {
                         /* only walk */
                         pMovementBlend.setWeights(0., 1., 0., 0., 0.);
@@ -773,6 +844,9 @@ var akra;
         //     this.activateTrigger([this.dodgeHero, this.moveHero]);
         // }
             }
+    /** @inline */function inAttack(pControls) {
+        return pControls.fire > 0.2;
+    }
     /** @inline */function hasWeapon(pStat) {
         return pStat.state != EGameHeroStates.GUN_NOT_DRAWED;
     }
@@ -1113,6 +1187,50 @@ var akra;
         return akra.self.hero.triggers.pop();
     }
     ;
+    var EDisplayModes;
+    (function (EDisplayModes) {
+        EDisplayModes._map = [];
+        EDisplayModes._map[0] = "WIREFRAME";
+        EDisplayModes.WIREFRAME = 0;
+        EDisplayModes._map[1] = "COLORED";
+        EDisplayModes.COLORED = 1;
+        EDisplayModes._map[2] = "COLORED_WIREFRAME";
+        EDisplayModes.COLORED_WIREFRAME = 2;
+        EDisplayModes._map[3] = "TEXTURE";
+        EDisplayModes.TEXTURE = 3;
+    })(EDisplayModes || (EDisplayModes = {}));
+    ;
+    var iSWTimer = -1;
+    var eMode = EDisplayModes.WIREFRAME;
+    function switchDisplayMode() {
+        switch(eMode) {
+            case EDisplayModes.WIREFRAME:
+                pEngine.getComposer()["bShowTriangles"] = true;
+                pTerrain.megaTexture["_bColored"] = false;
+                pTerrain.showMegaTexture = false;
+                break;
+            case EDisplayModes.COLORED:
+                pEngine.getComposer()["bShowTriangles"] = false;
+                pTerrain.megaTexture["_bColored"] = true;
+                pTerrain.showMegaTexture = true;
+                break;
+            case EDisplayModes.COLORED_WIREFRAME:
+                pEngine.getComposer()["bShowTriangles"] = true;
+                pTerrain.megaTexture["_bColored"] = true;
+                pTerrain.showMegaTexture = true;
+                break;
+            case EDisplayModes.TEXTURE:
+                pEngine.getComposer()["bShowTriangles"] = false;
+                pTerrain.megaTexture["_bColored"] = false;
+                pTerrain.showMegaTexture = true;
+                break;
+        }
+        if (eMode == EDisplayModes.TEXTURE) {
+            eMode = EDisplayModes.WIREFRAME;
+        } else {
+            eMode++;
+        }
+    }
     function updateHero() {
         var pGamepad = akra.self.gamepads.find(0) || virtualGamepad(pKeymap);
         var pHero = akra.self.hero.root;
@@ -1152,6 +1270,14 @@ var akra;
         pControls.dodge = !!pGamepad.buttons[akra.EGamepadCodes.FACE_1];
         pControls.gun = !!pGamepad.buttons[akra.EGamepadCodes.FACE_4];
         pControls.fire = pGamepad.buttons[akra.EGamepadCodes.RIGHT_SHOULDER_BOTTOM];
+        if (pGamepad.buttons[akra.EGamepadCodes.LEFT_SHOULDER_BOTTOM] > 0.5) {
+            if (iSWTimer == -1) {
+                iSWTimer = setTimeout(/** @inline */function () {
+                    iSWTimer = -1;
+                    switchDisplayMode();
+                }, 200);
+            }
+        }
         var iTrigger = akra.self.hero.triggers.length;
         for(var i = 0; i < pTriggersData.length; ++i) {
             pTriggersData[i](pControls, pHero, pStat, pController, pTriggers.time);
@@ -1272,7 +1398,7 @@ var akra;
         setup(pCanvas, pUI);
         pCamera = akra.self.camera = createCameras(pScene);
         pViewport = createViewports(pCamera, pCanvas, pUI);
-        pTerrain = akra.self.terrain = createTerrain(pScene, false);
+        pTerrain = akra.self.terrain = createTerrain(pScene, true);
         createModels();
         pSkyBoxTexture = createSkyBox(pRmgr, pViewport);
         pSky = akra.self.sky = createSky(pScene, 14.0);

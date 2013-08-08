@@ -100,7 +100,7 @@ module akra.ui {
 
 		_beforeSceneUpdate(pScene: IScene3d): void {
 
-			var pNode: ISceneNode = <ISceneNode>this._pSceneTree.selectedNode;
+			/*var pNode: ISceneNode = <ISceneNode>this._pSceneTree.selectedNode;
 			var pKeymap: IKeyMap = this.getKeymap()
 
 			if (pKeymap.isKeyPress(EKeyCodes.NUMPAD8)) {
@@ -131,7 +131,7 @@ module akra.ui {
 		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD6)) {
 		    	
 		     	pNode.addPosition(vec3(0., 0., 1.));   
-		    }
+		    }*/
 		}
 
 		private setupObjectPicking(): void {

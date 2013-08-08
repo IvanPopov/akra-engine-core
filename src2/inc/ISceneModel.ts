@@ -7,8 +7,9 @@ module akra {
 	IFACE (IMesh);
 
 	export interface ISceneModel extends ISceneObject {
+		visible: bool;
 		mesh: IMesh;
-		
+		inline isVisible(): bool;
 	}
 }
 

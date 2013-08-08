@@ -17,10 +17,13 @@ function virtualGamepad(pKeymap: IKeyMap): Gamepad {
     pGamepad.buttons[EGamepadCodes.PAD_LEFT] = pKeymap.isKeyPress(EKeyCodes.LEFT);
     pGamepad.buttons[EGamepadCodes.PAD_RIGHT] = pKeymap.isKeyPress(EKeyCodes.RIGHT);
 
-    pGamepad.buttons[EGamepadCodes.FACE_1] = pKeymap.isKeyPress(EKeyCodes.N1);
-    pGamepad.buttons[EGamepadCodes.FACE_2] = pKeymap.isKeyPress(EKeyCodes.N2);
-    pGamepad.buttons[EGamepadCodes.FACE_3] = pKeymap.isKeyPress(EKeyCodes.N3);
-    pGamepad.buttons[EGamepadCodes.FACE_4] = pKeymap.isKeyPress(EKeyCodes.N4);
+    pGamepad.buttons[EGamepadCodes.FACE_1] = pKeymap.isKeyPress(EKeyCodes.N5);
+    pGamepad.buttons[EGamepadCodes.FACE_2] = pKeymap.isKeyPress(EKeyCodes.N6);
+    pGamepad.buttons[EGamepadCodes.FACE_3] = pKeymap.isKeyPress(EKeyCodes.N7);
+    pGamepad.buttons[EGamepadCodes.FACE_4] = pKeymap.isKeyPress(EKeyCodes.N8);
+
+    pGamepad.buttons[EGamepadCodes.RIGHT_SHOULDER_BOTTOM] = pKeymap.isKeyPress(EKeyCodes.CTRL)? 1.0: 0.0;
+    pGamepad.buttons[EGamepadCodes.LEFT_SHOULDER_BOTTOM] = pKeymap.isKeyPress(EKeyCodes.SHIFT)? 1.0: 0.0;
 
 
 	var fX: float = (pKeymap.isKeyPress(EKeyCodes.A)? -1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.D)? 1.0: 0.0);
@@ -30,7 +33,7 @@ function virtualGamepad(pKeymap: IKeyMap): Gamepad {
 	pGamepad.axes[EGamepadAxis.LEFT_ANALOGUE_HOR] = fX;
 
 	fX = (pKeymap.isKeyPress(EKeyCodes.NUMPAD4)? -1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.NUMPAD6)? 1.0: 0.0);
-	fY = (pKeymap.isKeyPress(EKeyCodes.NUMPAD5)? -1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.NUMPAD8)? 1.0: 0.0);
+	fY = (pKeymap.isKeyPress(EKeyCodes.NUMPAD5)? 1.0: 0.0) + (pKeymap.isKeyPress(EKeyCodes.NUMPAD8)? -1.0: 0.0);
 	
 	pGamepad.axes[EGamepadAxis.RIGHT_ANALOGUE_VERT] = fY;
 	pGamepad.axes[EGamepadAxis.RIGHT_ANALOGUE_HOR] = fX;
