@@ -194,6 +194,10 @@ module akra.fx {
 			return this.hasUniformWithName(sName);
 		}
 
+		inline _hasUniformWithNameIndex(iNameIndex: uint): bool {
+			return this.hasUniformWithNameIndex(iNameIndex);
+		}
+
 		inline _getRenderStates(): IRenderStateMap {
 			return this._pPassStateMap;
 		}
@@ -577,11 +581,10 @@ module akra.fx {
 				pVars = this._pVaryingContainerP;
 			}
 
-			var pKeys: string[] = pVars.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = pVars.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++){
-				var sName: string = pKeys[i];
-				var pVarList: IAFXVariableDeclInstruction[] = pVars.getVarList(sName);
+			for(var i: uint = 0; i < pVarInfoList.length; i++){
+				var pVarList: IAFXVariableDeclInstruction[] = pVarInfoList[i].varList;
 
 				for(var j: uint = 0; j < pVarList.length; j++) {
 					pVarList[j]._markAsVarying(bEnabled);
@@ -639,41 +642,38 @@ module akra.fx {
 			return true;
 		}
 
-		private inline hasUniform(pVar: IAFXVariableDeclInstruction): bool {
-			return this.hasUniformWithName(pVar.getRealName());
-		}
-
 		private inline hasUniformWithName(sName: string): bool {
 			return this._pUniformContainerV.hasVariableWithName(sName) ||
 				   this._pUniformContainerP.hasVariableWithName(sName);
 		}
 
-		private inline getUniformByName(sName: string): IAFXVariableDeclInstruction {
-			return this._pUniformContainerV.getVariableByName(sName) ||
-				   this._pUniformContainerP.getVariableByName(sName);
+		private inline hasUniformWithNameIndex(iNameIndex: uint): bool {
+			return this._pUniformContainerV.hasVariableWithNameIndex(iNameIndex) ||
+				   this._pUniformContainerP.hasVariableWithNameIndex(iNameIndex);
 		}
+
+		// private inline hasUniform(pVar: IAFXVariableDeclInstruction): bool {
+		// 	return this.hasUniformWithName(pVar.getRealName());
+		// }
+
+		// private inline getUniformByName(sName: string): IAFXVariableDeclInstruction {
+		// 	return this._pUniformContainerV.getVariableByName(sName) ||
+		// 		   this._pUniformContainerP.getVariableByName(sName);
+		// }
 
 		private prepareForeigns(pPassInput: IAFXPassInputBlend): string {
 			var pForeignValues: any = pPassInput.foreigns;
 			var sHash: string = "";
-			var pKeys: string[] = this._pForeignContainerV.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = this._pForeignContainerV.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++){
-				var sName: string = pKeys[i];
-				// if(!isDef(pForeignValues[sName])){
-				// 	LOG("V",sName, pForeignValues, pKeys, this);
-				// }
-				sHash += pForeignValues[pPassInput._getForeignVarNameIndex(sName)].toString() + "%";
+			for(var i: uint = 0; i < pVarInfoList.length; i++){
+				sHash += pForeignValues[pVarInfoList[i].nameIndex].toString() + "%";
 			}
 
-			pKeys = this._pForeignContainerP.keys;
+			pVarInfoList = this._pForeignContainerP.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++){
-				var sName: string = pKeys[i];
-				// if(!isDef(pForeignValues[sName])){
-				// 	LOG("P",sName, pForeignValues, pKeys, this);
-				// }
-				sHash += pForeignValues[pPassInput._getForeignVarNameIndex(sName)].toString() + "%";
+			for(var i: uint = 0; i < pVarInfoList.length; i++){
+				sHash += pForeignValues[pVarInfoList[i].nameIndex].toString() + "%";
 			}
 
 			return sHash;
@@ -689,8 +689,7 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pSamplersId.length; i++){
 				var pSampler: IAFXVariableDeclInstruction = this._pSamplerByIdMap[pSamplersId[i]];
-				var sName: string = pSampler.getRealName();
-				var iNameIndex: uint = pPassInput._getUniformVarNameIndex(sName);
+				var iNameIndex: uint = pSampler._getNameIndex();
 
 				var pSamplerState: IAFXSamplerState = pSamplers[iNameIndex];
 				var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerState);
@@ -710,8 +709,7 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pSamplerArraysId.length; i++){
 				var pSamplerArray: IAFXVariableDeclInstruction = this._pSamplerArrayByIdMap[pSamplerArraysId[i]];
-				var sName: string = pSamplerArray.getRealName();
-				var iNameIndex: uint = pPassInput._getUniformVarNameIndex(sName);
+				var iNameIndex: uint = pSamplerArray._getNameIndex();
 
 				var pSamplerStateList: IAFXSamplerState[] = pSamplerArrays[iNameIndex];
 				var isNeedToCollapse: bool = true;
@@ -744,7 +742,7 @@ module akra.fx {
 					pSamplerArray._setCollapsed(false);
 				}
 			}
-
+			
 			return pBlender.getHash();
 		}
 
@@ -764,7 +762,7 @@ module akra.fx {
 
 		private isSamplerUsedInShader(pSampler: IAFXVariableDeclInstruction, eType: EFunctionType): bool{
 			return (eType === EFunctionType.k_Vertex && this._pUniformContainerV.hasVariable(pSampler)) ||
-					(eType === EFunctionType.k_Pixel && this._pUniformContainerP.hasVariable(pSampler));
+				   (eType === EFunctionType.k_Pixel && this._pUniformContainerP.hasVariable(pSampler));
 		}
 
 		private applyForeigns(pPassInput: IAFXPassInputBlend): void {
@@ -776,18 +774,21 @@ module akra.fx {
 
 			for(var i: uint = 0; i < pKeys.length; i++){
 				var iNameIndex: uint = pKeys[i];
-				var sName: string = pPassInput._getForeignVarNameByIndex(iNameIndex);
 				var pVarList: IAFXVariableDeclInstruction[] = null;
+				var iVarBlendIndex: int = 0;
 
-				if(pForeignsV.hasVariableWithName(sName)){
-					pVarList = pForeignsV.getVarList(sName);
+				iVarBlendIndex = pForeignsV.getKeyIndexByNameIndex(iNameIndex);
+				if(iVarBlendIndex !== -1){
+					pVarList = pForeignsV.getVarList(iVarBlendIndex);
 					
 					for(var j: uint = 0; j < pVarList.length; j++){
 						pVarList[j].setValue(pForeignValues[iNameIndex] || 1);
 					}
 				}
-				if(pForeignsP.hasVariableWithName(sName)){
-					pVarList = pForeignsP.getVarList(sName);
+
+				iVarBlendIndex = pForeignsP.getKeyIndexByNameIndex(iNameIndex);
+				if(iVarBlendIndex !== -1){
+					pVarList = pForeignsP.getVarList(iVarBlendIndex);
 					
 					for(var j: uint = 0; j < pVarList.length; j++){
 						pVarList[j].setValue(pForeignValues[iNameIndex] || 1);
@@ -800,27 +801,25 @@ module akra.fx {
 			var pForeignsV = this._pForeignContainerV;
 			var pForeignsP = this._pForeignContainerP;
 
-			var pKeys: string[] = pForeignsV.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = pForeignsV.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++){
-				var sName: string = pKeys[i];
-				var pVarList: IAFXVariableDeclInstruction[] = null;
+			for(var i: uint = 0; i < pVarInfoList.length; i++){
+				var pVarInfo: fx.IVariableBlendInfo = pVarInfoList[i];
+				var pVarList: IAFXVariableDeclInstruction[] = pVarInfo.varList;
 				
-				pVarList = pForeignsV.getVarList(sName);					
 				for(var j: uint = 0; j < pVarList.length; j++){
-					pVarList[j].setRealName(sName);
+					pVarList[j].setRealName(pVarInfo.name);
 				}
 			}
 
-			var pKeys: string[] = pForeignsP.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = pForeignsP.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++){
-				var sName: string = pKeys[i];
-				var pVarList: IAFXVariableDeclInstruction[] = null;
+			for(var i: uint = 0; i < pVarInfoList.length; i++){
+				var pVarInfo: fx.IVariableBlendInfo = pVarInfoList[i];
+				var pVarList: IAFXVariableDeclInstruction[] = pVarInfo.varList;
 				
-				pVarList = pForeignsP.getVarList(sName);					
 				for(var j: uint = 0; j < pVarList.length; j++){
-					pVarList[j].setRealName(sName);
+					pVarList[j].setRealName(pVarInfo.name);
 				}
 			}
 		}
@@ -962,11 +961,13 @@ module akra.fx {
 
 				for (var j: int = 0; j < pSamplers.length; j++) {
 					var pSampler: IAFXVariableDeclInstruction = pSamplers.value(j);
-					var sRealSamplerName: string = pSampler.getRealName();
+					var iNameIndex: uint = pSampler._getNameIndex();
+					var iIndexForSamplerV: int = this._pUniformContainerV.getKeyIndexByNameIndex(iNameIndex);
+					var iIndexForSamplerP: int = this._pUniformContainerP.getKeyIndexByNameIndex(iNameIndex);
 
 					if(i === ZERO_SLOT){
-						if(this.isSamplerUsedInShader(pSampler, EFunctionType.k_Vertex)){
-							this._pUniformContainerV.forEach(sRealSamplerName, PassBlend.fnSamplerReducer);
+						if(iIndexForSamplerV !== -1){
+							this._pUniformContainerV.forEach(iIndexForSamplerV, PassBlend.fnSamplerReducer);
 
 							if(pSampler.getType().isSampler2D()) {
 								isZeroSampler2DV = true;
@@ -977,8 +978,8 @@ module akra.fx {
 							}
 						}
 
-						if(this.isSamplerUsedInShader(pSampler, EFunctionType.k_Pixel)){
-							this._pUniformContainerP.forEach(sRealSamplerName, PassBlend.fnSamplerReducer);
+						if(iIndexForSamplerP !== -1){
+							this._pUniformContainerP.forEach(iIndexForSamplerP, PassBlend.fnSamplerReducer);
 
 							if(pSampler.getType().isSampler2D()) {
 								isZeroSampler2DP = true;
@@ -990,16 +991,16 @@ module akra.fx {
 						}
 					}
 					else{
-						if(this.isSamplerUsedInShader(pSampler, EFunctionType.k_Vertex)){
+						if(iIndexForSamplerV !== -1){
 							isInVertex = true;
 						}
-						if(this.isSamplerUsedInShader(pSampler, EFunctionType.k_Pixel)){
+						if(iIndexForSamplerP !== -1){
 							isInPixel = true;
 						}
 					}
 
-					this._pUniformContainerV.setNameForEach(sRealSamplerName, sSamplerName);
-					this._pUniformContainerP.setNameForEach(sRealSamplerName, sSamplerName);
+					this._pUniformContainerV.setNameForEach(iIndexForSamplerV, sSamplerName);
+					this._pUniformContainerP.setNameForEach(iIndexForSamplerP, sSamplerName);
 				}
 
 
@@ -1029,7 +1030,7 @@ module akra.fx {
 			}
 
 
-			this._sUniformSamplerCodeV = sUniformSamplerCodeV;
+			this._sUniformSamplerCodeV = sUniformSamplerCodeV; 
 			this._sUniformSamplerCodeP = sUniformSamplerCodeP;
 		}
 
@@ -1038,40 +1039,44 @@ module akra.fx {
 			var iTotalSlots: uint = pSamplerBlender.totalActiveSlots;
 
 			pSamplerBlender.clearSamplerNames();
+			// for(var i: uint = 0; i < iTotalSlots; i++){
+			// 	var pSamplers: util.ObjectArray = pSamplerBlender.getSamplersBySlot(i);
 
-			for(var i: uint = 0; i < iTotalSlots; i++){
-				var pSamplers: util.ObjectArray = pSamplerBlender.getSamplersBySlot(i);
-				for (var j: int = 0; j < pSamplers.length; j++) {
-					var pSampler: IAFXVariableDeclInstruction = pSamplers.value(j);
-					var sRealSamplerName: string = pSampler.getRealName();
+			// 	for (var j: int = 0; j < pSamplers.length; j++) {
+			// 		var pSampler: IAFXVariableDeclInstruction = pSamplers.value(j);
+			// 		var iNameIndex: uint = pSampler._getNameIndex();
 
-					this._pUniformContainerV.forEach(sRealSamplerName, PassBlend.fnResetDefaultSamplerParams);
-				}
-			}
+			// 		var iIndexForSamplerV: int = this._pUniformContainerV.getKeyIndexByNameIndex(iNameIndex);
+			// 		var iIndexForSamplerP: int = this._pUniformContainerP.getKeyIndexByNameIndex(iNameIndex);
+
+			// 		this._pUniformContainerV.forEach(iIndexForSamplerV, PassBlend.fnResetDefaultSamplerParams);
+			// 		this._pUniformContainerV.forEach(iIndexForSamplerP, PassBlend.fnResetDefaultSamplerParams);
+			// 	}
+			// }
 		}
 
 		static private fnSamplerReducer(pSamplerVar: IAFXVariableDeclInstruction): void {
 			pSamplerVar.defineByZero(true);
 		}
 
-		static private fnResetDefaultSamplerParams(pSamplerVar: IAFXVariableDeclInstruction): void {
-			pSamplerVar.defineByZero(false);
-			pSamplerVar.setRealName(pSamplerVar.getSemantic() || pSamplerVar.getName());
-		}
+		// static private fnResetDefaultSamplerParams(pSamplerVar: IAFXVariableDeclInstruction): void {
+		// 	pSamplerVar.defineByZero(false);
+		// 	pSamplerVar.setRealName(pSamplerVar.getSemantic() || pSamplerVar.getName());
+		// }
 
 		private reduceAttributes(): void {
 			var pAttributeContainer: AttributeBlendContainer = this._pAttributeContainerV;
-			var pSemantics: string[] = pAttributeContainer.semantics;
+			var pAttrInfoList: fx.IVariableBlendInfo[] = pAttributeContainer.attrsInfo;
 			
 			var nPreparedBufferSlots: int = -1;
 			var nPreparedAttributeSlots: int = -1;
 
-			for(var i: uint = 0; i < pSemantics.length; i++) {
-				var sSemantic: string = pSemantics[i];
-				// var pFlow: IDataFlow = pAttributeContainer.getFlowBySemantic(sSemantic);
-				var pAttributes: IAFXVariableDeclInstruction[] = pAttributeContainer.getAttributeList(sSemantic);
+			for(var i: uint = 0; i < pAttrInfoList.length; i++) {
+				var iSemanticIndex: uint = i;
+				var pAttrInfo: fx.IVariableBlendInfo = pAttrInfoList[iSemanticIndex];
+				var pAttributes: IAFXVariableDeclInstruction[] = pAttributeContainer.getAttributeListBySemanticIndex(iSemanticIndex);
+				var iSlot: uint = pAttributeContainer.getSlotBySemanticIndex(iSemanticIndex);
 				var iBufferSlot: uint = -1;
-				var iSlot: uint = pAttributeContainer.getSlotBySemantic(sSemantic);
 				var sAttrName: string = "";
 
 				//1) set buffer maps for shader attribures
@@ -1083,8 +1088,7 @@ module akra.fx {
 					}
 				}
 				else {
-					//iSlot = pAttributeContainer.getSlotBySemantic(sSemantic);
-					iBufferSlot = pAttributeContainer.getBufferSlotBySemantic(sSemantic);
+					iBufferSlot = pAttributeContainer.getBufferSlotBySemanticIndex(iSemanticIndex);
 
 					sAttrName = "aa" + iSlot.toString();
 
@@ -1109,13 +1113,15 @@ module akra.fx {
 
 					//2) gnerate real attrs
 					if(iSlot > nPreparedAttributeSlots){
-						this._sAttrDeclCode += "attribute " + pAttributeContainer.getTypeForShaderAttribute(sSemantic).toFinalCode() + " " + sAttrName + ";\n"; 
+						this._sAttrDeclCode += "attribute " + 
+							pAttributeContainer.getTypeForShaderAttributeBySemanticIndex(iSemanticIndex).toFinalCode() + " " + 
+							sAttrName + ";\n"; 
 						nPreparedAttributeSlots++;
 					}
 				}
 
 				// 3) add afx attributes 
-				var pAttribute: IAFXVariableDeclInstruction = pAttributeContainer.getAttribute(sSemantic);
+				var pAttribute: IAFXVariableDeclInstruction = pAttributeContainer.getAttributeBySemanticIndex(iSemanticIndex);
 				var pAttributeType: IAFXVariableTypeInstruction = pAttribute.getType();
 
 				this._sAFXAttrDeclCode += pAttribute.toFinalCode() + ";\n";
@@ -1262,10 +1268,10 @@ module akra.fx {
 			}
 
 			var sCode: string = "";
-			var pKeys = pVars.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = pVars.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++){
-				sCode += pVars.getDeclCodeForVar(pKeys[i], true) + ";\n";
+			for(var i: uint = 0; i < pVarInfoList.length; i++){
+				sCode += pVars.getDeclCodeForVar(i, true) + ";\n";
 			}
 
 			if(eType === EFunctionType.k_Vertex){
@@ -1304,10 +1310,10 @@ module akra.fx {
 			}
 
 			var sCode: string = "";
-			var pKeys = pVars.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = pVars.varsInfo;
 
-			for (var i: int = 0; i < pKeys.length; i++) {
-				sCode += "varying " + pVars.getDeclCodeForVar(pKeys[i], false) + ";\n";
+			for (var i: int = 0; i < pVarInfoList.length; i++) {
+				sCode += "varying " + pVars.getDeclCodeForVar(i, false) + ";\n";
 			}
 
 			if(eType === EFunctionType.k_Vertex){
@@ -1340,17 +1346,18 @@ module akra.fx {
 			}
 
 			var sCode: string = "";
-			var pKeys = pVars.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = pVars.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++){
-				var pVar: IAFXVariableDeclInstruction = pVars.getVariableByName(pKeys[i]);
-				var pType: IAFXVariableTypeInstruction = pVars.getBlendType(pKeys[i]);
+			for(var i: uint = 0; i < pVarInfoList.length; i++){
+				var pVar: IAFXVariableDeclInstruction = pVars.getVariable(i);
+				var pType: IAFXVariableTypeInstruction = pVars.getBlendType(i);
+
 				if (pType.isSampler() && 
 					(!pType.isArray() || pVar.isDefinedByZero() || pVar._isCollapsed())){
 					continue;
 				}
 
-				sCode += "uniform " + pVars.getDeclCodeForVar(pKeys[i], false) + ";\n";
+				sCode += "uniform " + pVars.getDeclCodeForVar(i, false) + ";\n";
 			}
 
 			return sCode;
@@ -1371,10 +1378,10 @@ module akra.fx {
 			}
 
 			var sCode: string = "";
-			var pKeys = pVars.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = pVars.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++){
-				sCode += pVars.getDeclCodeForVar(pKeys[i], true) + ";\n";
+			for(var i: uint = 0; i < pVarInfoList.length; i++){
+				sCode += pVars.getDeclCodeForVar(i, true) + ";\n";
 			}
 
 			return sCode;
@@ -1479,12 +1486,12 @@ module akra.fx {
 			}
 
 			var pVars: VariableBlendContainer = this._pVaryingContainerV;
-			var pKeys: string[] = pVars.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = pVars.varsInfo;
 			var sCode: string = "";
 
 			sCode += "gl_Position=Out.POSITION;\ngl_PointSize=Out.PSIZE;\n";
-			for(var i: uint = 0; i < pKeys.length; i++) {
-				var sName: string = pKeys[i];
+			for(var i: uint = 0; i < pVarInfoList.length; i++) {
+				var sName: string = pVarInfoList[i].name;
 				if(sName !== "POSITION" && sName !== "PSIZE"){
 					sCode += "V_"+sName + "=" + "Out." + sName + ";\n";
 				}
@@ -1511,10 +1518,10 @@ module akra.fx {
 
 			var pContainer: VariableBlendContainer = eType === EFunctionType.k_Vertex ? 
 														this._pUniformContainerV : this._pUniformContainerP;
-			var pKeys: string[] = pContainer.keys;
+			var pVarInfoList: fx.IVariableBlendInfo[] = pContainer.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++) {
-				var pVar: IAFXVariableDeclInstruction = pContainer.getVariableByName(pKeys[i]);
+			for(var i: uint = 0; i < pVarInfoList.length; i++) {
+				var pVar: IAFXVariableDeclInstruction = pContainer.getVariable(i);
 
 				if(pVar.getType().isSampler()) {
 					var id: uint = pVar._getInstructionID();

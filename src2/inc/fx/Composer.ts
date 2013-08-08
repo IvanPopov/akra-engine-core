@@ -26,7 +26,8 @@
 
 #define RID_TOTAL 1024
 
-#define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[pInput._getUniformVarNameIndex(sName)] = pValue;
+#define FAST_SET_UNIFORM(pInput, sName, pValue) iIndex = pInput._getUniformVarNameIndex(sName); if(iIndex > 0) pInput.uniforms[iIndex] = pValue;
+//if(pInput.hasUniform(sName)) pInput.uniforms[pInput._getUniformVarNameIndex(sName)] = pValue;
 
 module akra.fx {
 
@@ -39,6 +40,35 @@ module akra.fx {
 		index: IIndexData;
 		//flows: IDataFlow[];
 		flows: util.ObjectArray;
+	}
+
+	export enum ESystemUniformsIndices{
+		k_ModelMatrix,
+		k_FramebufferSize,
+		k_ViewMatrix,
+		k_ProjMatrix,
+		k_InvViewCameraMat,
+		k_CameraPosition,
+		k_OptimizedProjMatrix,
+		k_BindShapeMatrix,
+		k_RenderObjectId,
+		k_InputTexture,
+		k_InputSampler,
+		k_InputTextureSize,
+		k_InputTextureRatio,
+		
+		k_useNormal,
+		k_isDebug,
+		k_isRealNormal,
+		k_normalFix,
+		k_isWithBalckSectors,
+		k_showTriangles,
+		k_u1,
+		k_kFixNormal,
+		k_fSunAmbient,
+		k_fSunSpecular,
+		k_cHeightFalloff,
+		k_cGlobalDensity
 	}
 
 	export class Composer implements IAFXComposer {
@@ -666,12 +696,16 @@ module akra.fx {
 			return isDefAndNotNull(pRidPair)? pRidPair.object: null;
 		}
 
+		// private _pSystemUniformsNameIndexList: uint[] = new Array();
+		// private _bIsFirstApplySysytemUnifoms: bool = true; 
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
+			// if()
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
 			var pViewport: IViewport = this._getCurrentViewport();
 			var pRenderable: IRenderableObject = this._getCurrentRenderableObject();
 
 			var iRenderableID: int = this._calcRenderID(pSceneObject, pRenderable, true);
+			var iIndex: uint = 0;
 
 			if(!isNull(pSceneObject)){
 				FAST_SET_UNIFORM(pPassInput, "MODEL_MATRIX", pSceneObject.worldMatrix);

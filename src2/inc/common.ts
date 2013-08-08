@@ -210,6 +210,39 @@ module akra {
         return b - a;
     }
 
+    export function binarySearchInSortIntArray(pArray: int[], iValue: int): uint {
+            if(iValue < pArray[0] || iValue > pArray[pArray.length - 1]){
+                return -1;
+            }
+
+            if(iValue === pArray[0]){
+                return 0;
+            }
+
+            if(iValue === pArray[pArray.length - 1]){
+                return pArray.length - 1;
+            }
+
+            var p: uint = 0;
+            var q: uint = pArray.length - 1;
+
+            while(p < q){
+                var s: uint = (p + q) >> 1;
+
+                if(iValue === pArray[s]){
+                    return s;
+                }
+                else if(iValue > pArray[s]){
+                    p = s + 1;
+                }
+                else {
+                    q = s;
+                }
+            }
+
+            return -1;
+        }
+
     export interface Pair {
         first: any;
         second: any;

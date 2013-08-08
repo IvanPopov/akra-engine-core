@@ -367,7 +367,7 @@ module akra {
 		// var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
 		// pCube2.setPosition(2., 0.8, -5.);
 		// pCube2.scale(0.1);
-		// loadManyModels(1, DATA + "models/cube.dae");
+		// loadManyModels(300, DATA + "models/cube.dae");
 		loadManyModels(100, DATA + "models/box/opened_box.dae");
 	}
 

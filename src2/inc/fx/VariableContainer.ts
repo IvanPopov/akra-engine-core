@@ -69,7 +69,7 @@ module akra.fx {
 			for(var i: uint = 0; i < pTmpKeys.length; i++){
 				this._pIndexList[i] = +pTmpKeys[i];
 			}
-
+			this._pIndexList.sort(fnSortMinMax);
 			this._bLock = true;
 		}
 
@@ -90,11 +90,11 @@ module akra.fx {
 		}
 
 		inline getIndexByName(sName: string): uint {
-			return this._pNameToIndexMap[sName] || (this._pNameToIndexMap[0] = 0);
+			return this._pNameToIndexMap[sName] || (this._pNameToIndexMap[sName] = 0);
 		}
 
 		inline getIndexByRealName(sName: string): uint {
-			return this._pRealNameToIndexMap[sName] || (this._pRealNameToIndexMap[0] = 0);
+			return this._pRealNameToIndexMap[sName] || (this._pRealNameToIndexMap[sName] = 0);
 		}
 
 		inline hasVariableWithName(sName: string): bool {

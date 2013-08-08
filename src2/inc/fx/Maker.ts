@@ -483,20 +483,22 @@ module akra.fx {
 				this._pInputSamplerArrayInfoList.push(pInputUniformInfo);
 			}
 
-			var pSemantics: string[] = pAttrs.semantics;
-			
+			var pAttrInfoList: fx.IVariableBlendInfo[] = pAttrs.attrsInfo;
+
 			var nPreparedAttrs: int = -1;
 			var nPreparedBuffers: int = -1;
 
-			for(var i: uint = 0; i < pSemantics.length; i++){
-				var sSemantic: string = pSemantics[i];
-				var iSlot: uint = pAttrs.getSlotBySemantic(sSemantic);
+			for(var i: uint = 0; i < pAttrInfoList.length; i++){
+				var iSemanticIndex: uint = i;
+				var pAttrInfo: fx.IVariableBlendInfo = pAttrInfoList[iSemanticIndex];
+				var sSemantic: string = pAttrInfo.name;
+				var iSlot: uint = pAttrs.getSlotBySemanticIndex(iSemanticIndex);
 
 				if(iSlot === -1) {
 					continue;
 				}
 
-				var iBufferSlot: uint = pAttrs.getBufferSlotBySemantic(sSemantic);			
+				var iBufferSlot: uint = pAttrs.getBufferSlotBySemanticIndex(iSemanticIndex);			
 
 				// is it not initied attr?
 				if(iSlot > nPreparedAttrs) {
@@ -510,7 +512,7 @@ module akra.fx {
 					var pShaderAttrInfo: IShaderAttrInfo = this._pShaderAttrInfoMap[sAttrName];
 					var isMappable: bool = iBufferSlot >= 0;
 					var pVertexTextureInfo: IShaderUniformInfo = isMappable ? this._pShaderUniformInfoMap[sBufferName] : null;
-					var isComplex: bool = pAttrs.getType(sSemantic).isComplex();
+					var isComplex: bool = pAttrs.getTypeBySemanticIndex(iSemanticIndex).isComplex();
 
 					// need to init buffer
 					if(iBufferSlot > nPreparedBuffers){
