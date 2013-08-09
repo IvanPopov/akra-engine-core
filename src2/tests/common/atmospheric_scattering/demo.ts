@@ -38,7 +38,9 @@ module akra {
 	var pOptions: IEngineOptions = {
 		deps: {
 			files: [
-				{path: "models/hero/movie.dae", name: "HERO_MODEL"},
+				// {path: "models/hero/movie.dae", name: "HERO_MODEL"},
+				{path: "models/cube.dae", name: "CUBE_MODEL"},
+				{path: "models/box/opened_box.dae", name: "BOX_MODEL"}
 			]
 		},
 		loader: {
@@ -254,7 +256,7 @@ module akra {
 		createCameras();
 		createViewports();
 		// createModelEntry("HERO_MODEL");
-		createSceneEnvironment(createModelEntry("HERO_MODEL"));
+		createSceneEnvironment(createModelEntry("CUBE_MODEL"));
 		createLighting();
 
 		pSky = new model.Sky(pEngine, 32, 32, 1000.0);

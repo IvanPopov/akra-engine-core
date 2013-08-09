@@ -7,8 +7,8 @@ texture skyBox : SKYBOX_TEXTURE;
 sampler sceneTexture : INPUT_SAMPLER = sampler_state
 {
 	Texture = <tex0>;
-//	MinFilter = LINEAR;
-//	MagFilter = LINEAR;
+	MinFilter = NEAREST;
+	MagFilter = NEAREST;
 };
 
 
@@ -16,8 +16,8 @@ sampler sceneTexture : INPUT_SAMPLER = sampler_state
 sampler deferredTexture0 : SAMPLER_TEXTURE0 = sampler_state
 {
 	Texture = <tex1>;
-//	MinFilter = NEAREST;
-//	MagFilter = NEAREST;
+	MinFilter = NEAREST;
+	MagFilter = NEAREST;
 };
 
 //texture tex2 : SKYBOX_TEXTURE;

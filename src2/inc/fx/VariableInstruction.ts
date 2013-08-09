@@ -27,6 +27,9 @@ module akra.fx {
 
         private _iNameIndex: uint = 0;
         static pShaderVarNamesGlobalDictionary: util.StringDictionary = new util.StringDictionary();
+        static inline _getIndex(sName: string): uint {
+            return VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(sName);
+        }
         /**
 		 * Represent type var_name [= init_expr]
 		 * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction

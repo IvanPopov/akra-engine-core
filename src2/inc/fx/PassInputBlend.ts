@@ -14,10 +14,14 @@ module akra.fx {
 		return <IAFXSamplerState>{ 
 			textureName: "",
 			texture: null,
-			wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
+			wrap_s: ETextureWrapModes.UNDEF,
+			wrap_t: ETextureWrapModes.UNDEF,
+			mag_filter: ETextureFilters.UNDEF,
+			min_filter: ETextureFilters.UNDEF
+			/*wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
 			wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
 			mag_filter: ETextureFilters.LINEAR,
-			min_filter: ETextureFilters.LINEAR
+			min_filter: ETextureFilters.LINEAR*/
 		};
 	}
 
@@ -44,6 +48,8 @@ module akra.fx {
 			"SHININESS" : 1.
 		};
 
+		private _sSamplerHash: string = "";
+		private _bIsNeedUpdateSamplerHash: bool = true;
 
 		samplers: IAFXSamplerStateMap = null;
 		samplerArrays: IAFXSamplerStateListMap = null; 
@@ -61,6 +67,19 @@ module akra.fx {
 		textureKeys: uint[] = null;
 
 		renderStates: IRenderStateMap = null;
+
+		inline isNeedUpdateSamplerHash(): bool {
+			return this._bIsNeedUpdateSamplerHash;
+		}
+
+		inline set samplerHash(sSamplerHash: string) {
+			this._sSamplerHash = sSamplerHash;
+			this._bIsNeedUpdateSamplerHash = false;
+		}
+
+		inline get samplerHash(): string {
+			return this._sSamplerHash;
+		}
 
 
 		constructor(pCreator: IAFXComponentPassInputBlend){
@@ -95,13 +114,13 @@ module akra.fx {
 
 				if (pInfo.isArray) {
 					for (var i: int = 0; i < pValue.length; i++) {
-						PassInputBlend.copySamplerState(pValue[i], this.samplerArrays[iIndex][i]);
+						this.copySamplerState(pValue[i], this.samplerArrays[iIndex][i]);
 					}
 
 					this.samplerArrayLength[iIndex] = pValue.length;
 				}
 				else {
-					PassInputBlend.copySamplerState(pValue, this.samplers[iIndex]);
+					this.copySamplerState(pValue, this.samplers[iIndex]);
 				}
 
 				return;
@@ -120,6 +139,10 @@ module akra.fx {
 			}
 
 			//Check type
+
+			if(!this._bIsNeedUpdateSamplerHash && this.textures[iIndex] !== pValue){
+				this._bIsNeedUpdateSamplerHash = true;
+			}
 
 			this.textures[iIndex] = pValue;
 		}
@@ -158,7 +181,7 @@ module akra.fx {
 				return;
 			}
 
-			PassInputBlend.copySamplerState(pValue, this.samplers[iIndex]);
+			this.copySamplerState(pValue, this.samplers[iIndex]);
 		}
 
 		setSamplerArray(sName: string, pValue: IAFXSamplerState[]): void {
@@ -177,7 +200,7 @@ module akra.fx {
 			}
 
 			for (var i: int = 0; i < pValue.length; i++) {
-				PassInputBlend.copySamplerState(pValue[i], this.samplerArrays[iIndex][i]);
+				this.copySamplerState(pValue[i], this.samplerArrays[iIndex][i]);
 			}
 
 			this.samplerArrayLength[iIndex] = pValue.length;
@@ -199,20 +222,27 @@ module akra.fx {
 
 				return;
 			}
+			var pState: IAFXSamplerState = this.samplers[iIndex];
 
 			if(isString(pTexture)){
-				this.samplers[iIndex].textureName = pTexture;
+				if(isNull(pState.texture) && pState.textureName !== pTexture){
+					pState.textureName = pTexture;
+					this._bIsNeedUpdateSamplerHash = true;
+				}
 			}
 			else {
-				var pState: IAFXSamplerState = this.samplers[iIndex];
+				if(pState.texture !== pTexture){
+					this._bIsNeedUpdateSamplerHash = true;
+				}
+
 				pState.texture = pTexture;
 
-				if (!isNull(pTexture)) {
-					pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
-					pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
-					pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
-					pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
-				}
+				// if (!isNull(pTexture)) {
+				// 	pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
+				// 	pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
+				// 	pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
+				// 	pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
+				// }
 			}
 		}
 
@@ -232,46 +262,23 @@ module akra.fx {
 			}
 
 			var pState: IAFXSamplerState = this.samplers[iIndex];
+			
+			if(pState.texture !== pTexture){
+				this._bIsNeedUpdateSamplerHash = true;
+			}
+
 			pState.texture = pTexture;
 			
-			if (!isNull(pTexture)) {
-				pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
-				pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
-				pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
-				pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
-			}
-		}
-
-		private _setSamplerTextureObjectByIndex(iNameIndex: uint, pTexture: ITexture): void {
-			if(iNameIndex === 0){
-				return;
-			}
-
-			var pState: IAFXSamplerState = this.samplers[iNameIndex];
-			pState.texture = pTexture;
-
-			if (!isNull(pTexture)) {
-				pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
-				pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
-				pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
-				pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
-			}
-		}
-		
+			// if (!isNull(pTexture)) {
+			// 	pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
+			// 	pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
+			// 	pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
+			// 	pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
+			// }
+		}		
 
 		inline setStruct(sName: string, pValue: any): void {
 			this.setUniform(sName, pValue);
-		}
-
-		static copySamplerState(pFrom: IAFXSamplerState, pTo: IAFXSamplerState): void {
-			pTo.textureName = pFrom.textureName;
-			pTo.texture = pFrom.texture;
-
-			pTo.wrap_s = pFrom.wrap_s;
-			pTo.wrap_t = pFrom.wrap_t;
-
-			pTo.mag_filter = pFrom.mag_filter;
-			pTo.min_filter = pFrom.min_filter;
 		}
 
 		private _isFirstSetSurfaceNaterial: bool = true;
@@ -287,7 +294,7 @@ module akra.fx {
 
 		setSurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): void {
 			if(isNull(pSurfaceMaterial)){
-				return ;
+				return;
 			}
 
 			if(this._isFirstSetSurfaceNaterial){
@@ -324,7 +331,6 @@ module akra.fx {
 			 	}
 			 	
 			}
-			
 
 			if(this._pMaterialNameIndices.material > 0) {
 				var pMaterial: IMaterial = pSurfaceMaterial.material;
@@ -477,7 +483,6 @@ module akra.fx {
 			var eType: EAFXShaderVariableType = 0;
 			var sName: string = "";
 			var iIndex: uint = 0;
-			var isArray: bool = false;
 
 			for(var i: uint = 0; i < pUniformKeys.length; i++){
 				var iIndex: uint = pUniformKeys[i];
@@ -489,7 +494,7 @@ module akra.fx {
 
 					var hasDefaultValue: bool = !isNull(pDefaultValue);
 
-					if(isArray){
+					if(pInfo.isArray){
 						if(hasDefaultValue){
 							this.samplerArrays[iIndex] = new Array(pDefaultValue.length);
 							this.samplerArrayLength[iIndex] = this.samplerArrays[iIndex].length;
@@ -580,10 +585,55 @@ module akra.fx {
 		private clearSamplerState(pState: IAFXSamplerState): void {
 			pState.textureName = "";
 			pState.texture = null;
-			pState.wrap_s = ETextureWrapModes.CLAMP_TO_EDGE;
+			pState.wrap_s = ETextureWrapModes.UNDEF;
+			pState.wrap_t = ETextureWrapModes.UNDEF;
+			pState.mag_filter = ETextureFilters.UNDEF;
+			pState.min_filter = ETextureFilters.UNDEF;
+			/*pState.wrap_s = ETextureWrapModes.CLAMP_TO_EDGE;
 			pState.wrap_t = ETextureWrapModes.CLAMP_TO_EDGE;
 			pState.mag_filter = ETextureFilters.LINEAR;
-			pState.min_filter = ETextureFilters.LINEAR;
+			pState.min_filter = ETextureFilters.LINEAR;*/
+		}
+
+		private _setSamplerTextureObjectByIndex(iNameIndex: uint, pTexture: ITexture): void {
+			if(iNameIndex === 0){
+				return;
+			}
+
+			var pState: IAFXSamplerState = this.samplers[iNameIndex];
+			if(pState.texture !== pTexture){
+				this._bIsNeedUpdateSamplerHash = true;
+			}
+
+			pState.texture = pTexture;
+
+			// if (!isNull(pTexture)) {
+			// 	pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
+			// 	pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
+			// 	pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
+			// 	pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
+			// }
+		}
+
+		private copySamplerState(pFrom: IAFXSamplerState, pTo: IAFXSamplerState): void {
+			if(!this._bIsNeedUpdateSamplerHash){
+				/**
+				 * TODO: need imporove check of changing sampler state
+				 */
+				if (pTo.textureName !== pFrom.textureName ||
+					pTo.texture !== pFrom.texture){
+
+					this._bIsNeedUpdateSamplerHash = true;
+				}
+			}
+			pTo.textureName = pFrom.textureName;
+			pTo.texture = pFrom.texture;
+
+			pTo.wrap_s = pFrom.wrap_s;
+			pTo.wrap_t = pFrom.wrap_t;
+
+			pTo.mag_filter = pFrom.mag_filter;
+			pTo.min_filter = pFrom.min_filter;
 		}
 	}
 }

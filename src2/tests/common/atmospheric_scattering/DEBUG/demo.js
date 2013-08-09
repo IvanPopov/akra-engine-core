@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Jul 16 2013 18:41:08 GMT+0400 (Московское время (лето))
+ * assembled at: Fri Aug 09 2013 19:12:37 GMT+0400 (Московское время (лето))
  * directory: tests/common/atmospheric_scattering/DEBUG/
  * file: tests/common/atmospheric_scattering/demo.ts
  * name: demo
@@ -27,11 +27,15 @@ var akra;
     var pOptions = {
         deps: {
             files: [
+                // {path: "models/hero/movie.dae", name: "HERO_MODEL"},
                 {
-                    path: "models/hero/movie.dae",
-                    name: "HERO_MODEL"
+                    path: "models/cube.dae",
+                    name: "CUBE_MODEL"
                 }, 
-                
+                {
+                    path: "models/box/opened_box.dae",
+                    name: "BOX_MODEL"
+                }
             ]
         },
         loader: {
@@ -208,7 +212,7 @@ var akra;
         createCameras();
         createViewports();
         // createModelEntry("HERO_MODEL");
-        createSceneEnvironment(createModelEntry("HERO_MODEL"));
+        createSceneEnvironment(createModelEntry("CUBE_MODEL"));
         createLighting();
         akra.pSky = new akra.model.Sky(pEngine, 32, 32, 1000.0);
         akra.pSky.setTime(0);

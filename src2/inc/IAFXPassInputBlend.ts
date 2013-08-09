@@ -25,6 +25,9 @@ module akra {
 
 		renderStates: IRenderStateMap;
 
+		samplerHash: string;
+		isNeedUpdateSamplerHash(): bool;
+
 		hasUniform(sName: string): bool;
 		hasTexture(sName: string): bool;
 		hasForeign(sName: string): bool;

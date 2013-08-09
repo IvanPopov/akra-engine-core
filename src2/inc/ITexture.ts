@@ -29,6 +29,7 @@ module akra {
     }
 
     export enum ETextureFilters {
+        UNDEF = 0x0000,
         NEAREST = 0x2600,
         LINEAR = 0x2601,
         NEAREST_MIPMAP_NEAREST = 0x2700,
@@ -38,6 +39,7 @@ module akra {
     };
 
     export enum ETextureWrapModes {
+        UNDEF = 0x0000,
         REPEAT = 0x2901,
         CLAMP_TO_EDGE = 0x812F,
         MIRRORED_REPEAT = 0x8370

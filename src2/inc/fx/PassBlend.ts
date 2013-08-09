@@ -155,16 +155,23 @@ module akra.fx {
 					    pSurfaceMaterial: ISurfaceMaterial,
 					    pBuffer: IBufferMap): IAFXMaker {
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
+
 			var sForeignPartHash: string = this.prepareForeigns(pPassInput);
-			var sSamplerPartHash: string = this.prepareSamplers(pPassInput);
+			var sSamplerPartHash: string = pPassInput.isNeedUpdateSamplerHash() ? 
+											this.prepareSamplers(pPassInput) : pPassInput.samplerHash;
+			
 			var sMaterialPartHash: string = this.prepareSurfaceMaterial(pSurfaceMaterial);
 			var sBufferPartHash: string = this.prepareBufferMap(pBuffer);
 
 			var sTotalHash: string = sForeignPartHash + "|" + sSamplerPartHash + "|" + sMaterialPartHash + "|" + sBufferPartHash;
 
 			var pMaker: IAFXMaker = this.getMakerByHash(sTotalHash);
-
+			
 			if(!isDef(pMaker)) {
+
+				if(!pPassInput.isNeedUpdateSamplerHash()){
+					this.prepareSamplers(pPassInput);
+				}
 
 				this.applyForeigns(pPassInput);
 				this.swapTexcoords(pSurfaceMaterial);
@@ -183,10 +190,15 @@ module akra.fx {
 				pMaker._initInput(pPassInput, this._pDefaultSamplerBlender, this._pAttributeContainerV);
 
 				this._pFXMakerByHashMap[sTotalHash] = pMaker;
-				
+				this._pDefaultSamplerBlender.clear();
 			}
+			
+			if(pPassInput.isNeedUpdateSamplerHash()){
+				pPassInput.samplerHash = sSamplerPartHash;
+				this._pDefaultSamplerBlender.clear();
+			}
+			
 
-			this._pDefaultSamplerBlender.clear();
 			return pMaker;
 		}
 
