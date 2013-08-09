@@ -70,12 +70,11 @@ module akra {
 				{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
 				{path: "models/tube/tube.dae", name: "TUBE"},
 				{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
-				// {path: "models/hero/movie.dae", name: "HERO_MODEL"},
 				{path: "models/character/charZ.dae", name: "CHARACTER_MODEL"},
 				{path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL"}
 			],
 			deps: {
-				files: [{path: "models/character/all-ed.json", name: "HERO_CONTROLLER"}]
+				files: [{path: "models/character/all-ih.json", name: "HERO_CONTROLLER"}]
 			}
 		}
 	};
@@ -217,25 +216,47 @@ module akra {
 
 		        walkBackAngleRange : -0.85, /*rad*/
 
+		        //camera parameters
 		        cameraPitchChaseSpeed : 10.0, /*rad/sec*/
 		        cameraPitchSpeed      : 3.0,
 		        cameraPitchMax        : -60.0 * math.RADIAN_RATIO,
 		        cameraPitchMin        : +30.0 * math.RADIAN_RATIO, 
 		        cameraPitchBase       : Math.PI / 10,
 
-
+		        //triggers parameters
 		        blocked     	: true,
 		        lastTriggers 	: 1,
 
+		        //current hero postion
 		        position: new Vec3(0.),
+
+		        //camer parameters
 		        cameraCharacterDistanceBase       : 5.0, /*метров [расстояние на которое можно убежать от центра камеры]*/
 		        cameraCharacterDistanceMax        : 15.0,
 		        cameraCharacterChaseSpeed         : 25, /* m/sec*/
 		        cameraCharacterChaseRotationSpeed : 5., /* rad/sec*/
 		        cameraCharacterFocusPoint         : new Vec3(0.0, 0.5, 0.0), /*meter*/
 
-		        state : EGameHeroStates.GUN_NOT_DRAWED,
+		        state : EGameHeroStates.WEAPON_NOT_DRAWED,
 
+		        //harpoon trigger params
+		        movementToHarpoonTime   : 1., 		/*sec*/
+		        stateToHarpoonTime      : 0.35, 	/*sec*/
+		        harpoonIdleToUndrawTime : .15, 		/*sec*/
+		        harpoonUndrawToIdleTime : .3, 		/*sec*/
+		        harpoonDrawToIdleTime   : .2, 		/*sec*/
+		        harpoonToStateTime      : 0.35, 	/*sec*/
+
+				//temp variables for harpoon
+		        movementToHarpoonEndTime     : 0.,/*sec [temp/system] DO NOT EDIT!!!*/
+		        harpoonDrawStartTime         : 0.,/*sec [temp/system] DO NOT EDIT!!!*/
+		        harpoonDrawToIdleStartTime   : 0.,/*sec [temp/system] DO NOT EDIT!!!*/
+		        harpoonIdleToUnDrawStartTime : 0.,/*sec [temp/system] DO NOT EDIT!!!*/
+		        harpoonUndrawToIdleTime      : 0.,/*sec [temp/system] DO NOT EDIT!!!*/
+		        harpoonUndrawedTime          : 0.,/*sec [temp/system] DO NOT EDIT!!!*/
+		        harpoonUndrawStartTime       : 0.,/*sec [temp/system] DO NOT EDIT!!!*/
+
+		        //gun trigger params
 		        movementToGunTime   : 1., 		/*sec*/
 		        stateToGunTime      : 0.35, 	/*sec*/
 		        gunIdleToUndrawTime : .15, 		/*sec*/
@@ -243,6 +264,7 @@ module akra {
 		        gunDrawToIdleTime   : .2, 		/*sec*/
 		        gunToStateTime      : 0.35, 	/*sec*/
 
+		        //temp variables for gun
 		        movementToGunEndTime     : 0,/*sec [temp/system] DO NOT EDIT!!!*/
 		        idleWeightBeforeDraw     : 10,/*sec [temp/system] DO NOT EDIT!!!*/
 		        movementWeightBeforeUnDraw     : 10,/*sec [temp/system] DO NOT EDIT!!!*/
@@ -252,10 +274,13 @@ module akra {
 		        gunUndrawedTime          : 0,/*sec [temp/system] DO NOT EDIT!!!*/
 		        gunUndrawStartTime       : 0,/*sec [temp/system] DO NOT EDIT!!!*/
 
+		        //gund direction beetween top and bottom(across Y-axis)
 		        gunDirection			 : 0,
 
-		        inFire: false,
+		        //attack state
+		        inAttack: false,	
 
+		        //fall params
 		        fallDown: false,
 		        fallTransSpeed: 0,
 		        fallStartTime: 0,
@@ -268,7 +293,7 @@ module akra {
 	pKeymap.captureMouse((<webgl.WebGLCanvas>pCanvas).el);
 	pKeymap.captureKeyboard(document);
 
-	//>>>>>>>>>>>>>>>>>>>>>
+
 	function initState(pHeroNode: ISceneNode) {
 		var pStat = self.hero.parameters;
 		var pHeroRoot: ISceneNode = self.hero.root;
@@ -291,9 +316,12 @@ module akra {
     	findAnimation("WALK.player");
 
     	findAnimation("GUN.blend");
-    	findAnimation("GUN.blend");
+    	findAnimation("HARPOON.blend");
+    	// findAnimation("HARPOON_COMBO.player").useLoop(false);
+
 
 	    var pAnimHarpoonDraw: IAnimationContainer = findAnimation("HARPOON_DRAW.player");
+	    var pAnimHarpoonUndraw: IAnimationContainer = findAnimation("HARPOON_UNDRAW.player");
 
 	    var pAnimGunDraw: IAnimationContainer = findAnimation("GUN_DRAW.player");
 	    var pGunDrawBlend: IAnimationBlend = findAnimation("GUN_DRAW.blend");
@@ -311,34 +339,28 @@ module akra {
 	    var pRightHolster: ISceneNode = <ISceneNode>pHeroRoot.findEntity("node-Dummy01");
 	    var pRightHand: ISceneNode = <ISceneNode>pHeroRoot.findEntity("node-Dummy06");
 
-	    var pHarpoonNode: ISceneNode[] = [
-	    	<ISceneNode>pHeroRoot.findEntity("node-Mesh04"),
-	    	<ISceneNode>pHeroRoot.findEntity("node-Mesh05"),
-	    	<ISceneNode>pHeroRoot.findEntity("node-Mesh06")
+	    var pHarpoonNode: ISceneModel[] = [
+	    	(<ISceneModel>pHeroRoot.findEntity("node-Mesh04").child),
+	    	(<ISceneModel>pHeroRoot.findEntity("node-Mesh05").child),
+	    	(<ISceneModel>pHeroRoot.findEntity("node-Mesh06").child)
 	    ];
 
-	    var pHarpoonBackpackNode: ISceneNode[] = [
-	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy02"),
-	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy04"),
-	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy03")
-	    ];
-
-	     var pHarpoonRightHand: ISceneNode[] = [
-	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy08"),
-	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy09"),
-	    	<ISceneNode>pHeroRoot.findEntity("node-Dummy010")
+	    var pHarpoonBackpackNode: ISceneModel[] = [
+	    	(<ISceneModel>pHeroRoot.findEntity("node-Mesh002").child),
+	    	(<ISceneModel>pHeroRoot.findEntity("node-Mesh003").child),
+	    	(<ISceneModel>pHeroRoot.findEntity("node-Mesh07").child)
 	    ];
 
 
+	    pHarpoonNode.forEach((pModel: ISceneModel) => {pModel.visible = false});
 
 		pAnimGunDraw.useLoop(false);
 		pAnimGunUnDraw.useLoop(false);
+		
+		pAnimHarpoonDraw.useLoop(false);
+		pAnimHarpoonUndraw.useLoop(false);
 
 		pGunNode.attachToParent(pRightHolster);
-
-		pHarpoonNode[0].attachToParent(pHarpoonBackpackNode[0]);
-		pHarpoonNode[1].attachToParent(pHarpoonBackpackNode[1]);
-		pHarpoonNode[2].attachToParent(pHarpoonBackpackNode[2]);
 
 		if (isDefAndNotNull(pAnimGunDraw)) {
 			var fGunDrawAttachmentTime: float = (15/46) * pAnimGunDraw.duration;
@@ -383,18 +405,42 @@ module akra {
 
 	    if (isDefAndNotNull(pAnimHarpoonDraw)) {
 	    	var fHarpoonDrawTime: float = (29/75) * pAnimHarpoonDraw.duration;
+	        
 	        pAnimHarpoonDraw.bind("enterFrame", 
 	        	(pAnim: IAnimationContainer, fRealTime: float, fTime: float): void => {
 
 	            if (fTime < fHarpoonDrawTime) {
-	            	pHarpoonNode[0].attachToParent(pHarpoonBackpackNode[0]);
-	            	pHarpoonNode[1].attachToParent(pHarpoonBackpackNode[1]);
-	            	pHarpoonNode[2].attachToParent(pHarpoonBackpackNode[2]);
+	            	pHarpoonBackpackNode.forEach((pModel: ISceneModel, i: int) => {
+	            		pHarpoonBackpackNode[i].visible = true;
+	            		pHarpoonNode[i].visible = false;
+	            	});
 	            }
 	            else {
-	                pHarpoonNode[0].attachToParent(pHarpoonRightHand[0]);
-	            	pHarpoonNode[1].attachToParent(pHarpoonRightHand[1]);
-	            	pHarpoonNode[2].attachToParent(pHarpoonRightHand[2]);
+	            	pHarpoonBackpackNode.forEach((pModel: ISceneModel, i: int) => {
+	            		pHarpoonBackpackNode[i].visible = false;
+	            		pHarpoonNode[i].visible = true;
+	            	});
+	            }
+	        });
+	    }
+
+	     if (isDefAndNotNull(pAnimHarpoonUndraw)) {
+	    	var fHarpoonUndrawTime: float = (44/70) * pAnimHarpoonUndraw.duration;
+	        
+	        pAnimHarpoonUndraw.bind("enterFrame", 
+	        	(pAnim: IAnimationContainer, fRealTime: float, fTime: float): void => {
+
+	            if (fTime < fHarpoonUndrawTime) {
+	            	pHarpoonBackpackNode.forEach((pModel: ISceneModel, i: int) => {
+	            		pHarpoonBackpackNode[i].visible = false;
+	            		pHarpoonNode[i].visible = true;
+	            	});
+	            }
+	            else {
+	            	pHarpoonBackpackNode.forEach((pModel: ISceneModel, i: int) => {
+	            		pHarpoonBackpackNode[i].visible = true;
+	            		pHarpoonNode[i].visible = false;
+	            	});
 	            }
 	        });
 	    }
@@ -675,7 +721,7 @@ module akra {
 	        var iIDLE: int = hasWeapon(pStat) ? 3 : 0.;
 	        var iMOVEMENT: int = 2;
 
-	        if ((!hasWeapon(pStat) || pStat.state == EGameHeroStates.GUN_IDLE)) {
+	        if ((!hasWeapon(pStat) || pStat.state == EGameHeroStates.WEAPON_IDLE)) {
 	            pStateBlend.setWeightSwitching(fSpeed / fMinSpeed, iIDLE, iMOVEMENT); /* idle ---> run */
 	        }
 
@@ -707,12 +753,15 @@ module akra {
 	}
 
 	inline function hasWeapon(pStat: IGameParameters): bool {
-		return pStat.state != EGameHeroStates.GUN_NOT_DRAWED;
+		return pStat.state != EGameHeroStates.WEAPON_NOT_DRAWED;
 	}
 
 	function checkHeroState(pControls, pHero, pStat, pController) {
 	    if (pControls.gun) {
 	        activateTrigger([gunWeaponHero, moveHero]);
+	    }
+	    else if (pControls.harpoon) {
+	    	activateTrigger([harpoonWeaponHero, moveHero]);
 	    }
 	}
 
@@ -733,6 +782,184 @@ module akra {
 			(!hasWeapon(pStat)? pStat.walkWithoutWeaponSpeed: pStat.walkWithWeaponSpeedMin): 
 			pStat.walkbackSpeedMin;
 	}
+
+	function harpoonWeaponHero (pControls: IGameControls, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController
+		/*, fTriggerTime*/) {
+	    var pAnim: IAnimationMap = pStat.anim;
+
+	    var fMovementRate: float = pStat.movementRate;
+	    var fMovementRateAbs: float = math.abs(fMovementRate);
+
+	    var fWalkSpeed: float = determWalkSpeed(pStat);
+	    var fMinSpeed: float = determMinSpeed(pStat);
+	    var fMaxSpeed: float = determMaxSpeed(pStat);
+
+	    var fSpeed: float = fMaxSpeed * fMovementRateAbs;
+	    var fDelta: float;
+
+	    var pHarpoonDrawPlayer: IAnimationContainer = <IAnimationContainer>pAnim['HARPOON_DRAW.player'];
+	    var pHarpoonUnDrawPlayer: IAnimationContainer = <IAnimationContainer>pAnim['HARPOON_UNDRAW.player'];
+	    var pHarpoonIdlePlayer: IAnimationContainer = <IAnimationContainer>pAnim['HARPOON_IDLE.player'];
+	    var pHarpoonComboPlayer: IAnimationContainer = <IAnimationContainer>pAnim['HARPOON_COMBO.player'];
+	    var pHarpoonBlend: IAnimationBlend = <IAnimationBlend>pAnim['HARPOON.blend'];
+
+	    var pStateBlend: IAnimationBlend = <IAnimationBlend>pAnim['STATE.blend'];
+
+	    var pMovementBlend: IAnimationBlend = <IAnimationBlend>pAnim["MOVEMENT.blend"];
+	   	var pWalkPlayer: IAnimationContainer = <IAnimationContainer>pAnim["WALK.player"];
+	    var pRunPlayer: IAnimationContainer = <IAnimationContainer>pAnim["RUN.player"];
+
+	    var fNow: float = now() / 1000;
+
+
+	    if (isFirstFrameOfTrigger()) {
+	        //переводим персонажа в состоянии убранного гарпуна
+	        //имеенно в это состояние мы будем переходим, при условии, что у нас нету гарпуна
+	        pHarpoonDrawPlayer.rewind(0.);
+	        pHarpoonDrawPlayer.pause(true);
+
+	        pHarpoonBlend.setWeights(0., 0., 1., 0.); /*idle, fire, draw, undraw*/
+	    }
+
+	    if (pStat.state !== EGameHeroStates.WEAPON_IDLE) {
+	        pControls.direct.x = pControls.direct.y = 0.;
+	    }
+
+	    if (pStat.state == EGameHeroStates.WEAPON_NOT_DRAWED && fSpeed < 0.5) {
+	        pStat.state = EGameHeroStates.HARPOON_BEFORE_DRAW;
+	        //с этого времени стало понятно, что надо достать гарпун
+	        pStat.movementToHarpoonEndTime = fNow;
+	        //необходимо для перехода в состояние с оружием, надо быстро 
+	        //перевести персонажа state::IDLE --> state::HARPOON
+	        //за время stat.stateToHarpoonTime(sec.)
+	        pStat.idleWeightBeforeDraw = pStateBlend.getAnimationWeight(0);
+	    }
+
+	    //переводим персонажа в состояние state::HARPOON при условии, что 
+	    //его скорость меньше скорости хотьбы, это важно, так как во всех остальных случаях
+	    //мы зануляем controls.direct.x = controls.direct.y = 0, принуждая его остановиться
+	    if (fSpeed < fMinSpeed) {
+	        //время с момента, как стало ясно, что надо доставать гарпун
+	        fDelta = fNow - pStat.movementToHarpoonEndTime;
+
+	        if (fDelta <= pStat.stateToHarpoonTime) {
+	        	//вес state::HARPOON
+	        	var fK: float = fDelta / pStat.stateToHarpoonTime;
+	        	//вес state::IDLE
+	        	var fkInv: float = 1. - fK;
+	            pStateBlend.setWeights(pStat.idleWeightBeforeDraw * fkInv, null, null, null, fK);
+	        }
+	    }
+
+	    if (pStat.state == EGameHeroStates.HARPOON_BEFORE_DRAW) {
+	    	//с этого момента, должна начать играться анимация доставания питолета
+	        pHarpoonDrawPlayer.pause(false);
+	        pStat.state = EGameHeroStates.HARPOON_DRAWING;
+	        pStat.harpoonDrawStartTime = fNow;
+	    }
+	    else if (pStat.state == EGameHeroStates.HARPOON_DRAWING) {
+	        fDelta = fNow - pStat.harpoonDrawStartTime;
+
+	        if (fDelta >= pHarpoonBlend.duration) {
+	            pStat.state = EGameHeroStates.HARPOON_DRAWED;
+	            pStat.harpoonDrawToIdleStartTime = fNow;
+	        }
+	    }
+	    
+	    if (pStat.state == EGameHeroStates.HARPOON_DRAWED) {
+	        fDelta = fNow - pStat.harpoonDrawToIdleStartTime;
+
+	        if (fDelta <= pStat.harpoonDrawToIdleTime) {
+	        	//переходим от harpoon::DRAW --> harpoon::IDLE
+	            pHarpoonBlend.setWeightSwitching(fDelta / pStat.harpoonDrawToIdleTime, 2, 0);
+	        }
+	        else {
+	            pStat.state = EGameHeroStates.WEAPON_IDLE;
+	            pHarpoonBlend.setWeights(0., 1., 0., 0.);
+	        }
+	    }
+	    else if (pStat.state == EGameHeroStates.WEAPON_IDLE) {
+
+	    	if (inAttack(pControls) && !pStat.inAttack) {
+	    		pStat.inAttack = true;
+	    		pHarpoonComboPlayer.rewind(0.);
+		    	pHarpoonBlend.setAnimationWeight(0., pControls.fire * 100);
+	    	}
+	    	
+	    	if (pStat.inAttack && !inAttack(pControls)) {
+	    		var fK: float = (1. - pHarpoonComboPlayer.animationTime / pHarpoonComboPlayer.duration);
+	    		if (fK > pHarpoonBlend.getAnimationWeight(0)) {
+	    			pHarpoonBlend.setAnimationWeight(0, 0);	
+	    			pStat.inAttack = false;
+	    		}
+	    		else {
+	    			pHarpoonBlend.setAnimationWeight(0, fK);	
+	    		}
+	    	}
+
+	        if (pControls.harpoon) { 
+	            pHarpoonUnDrawPlayer.rewind(0.);
+	            pHarpoonUnDrawPlayer.pause(true);
+
+	            pStat.harpoonIdleToUnDrawStartTime = fNow;
+				pStat.movementWeightBeforeUnDraw = pStateBlend.getAnimationWeight(2.);
+	            pStat.state = EGameHeroStates.HARPOON_BEFORE_UNDRAW;
+
+	        }
+	    }
+	    else if (pStat.state == EGameHeroStates.HARPOON_BEFORE_UNDRAW) {
+	        fDelta = fNow - pStat.harpoonIdleToUnDrawStartTime;
+	        if (fDelta <= pStat.harpoonIdleToUndrawTime) {
+	        	var fK: float = fDelta / pStat.harpoonIdleToUndrawTime;
+	            pStateBlend.setWeights(pStat.movementWeightBeforeUnDraw * (1. - fK), null, null, null, fK);
+
+	        	//переходим из harpoon::IDLE --> harpoon.UNDRAW
+	            pHarpoonBlend.setWeightSwitching(fDelta / pStat.harpoonIdleToUndrawTime, 2, 3);
+	        }
+	        else {
+	        	pStateBlend.setWeights(0., 0., 0., 0., 1.);
+	        	pHarpoonBlend.setWeights(0., 0., 0., 1.);
+
+	            pStat.harpoonUndrawStartTime = fNow;
+	            pStat.state = EGameHeroStates.HARPOON_UNDRAWING;
+
+	            pHarpoonUnDrawPlayer.pause(false);
+	        }
+	    }
+	    else if (pStat.state == EGameHeroStates.HARPOON_UNDRAWING) {
+	        fDelta = fNow - pStat.harpoonUndrawStartTime;
+
+	        if (fDelta >= pHarpoonBlend.duration) {
+	            pStat.state = EGameHeroStates.HARPOON_UNDRAWED;
+	            pStat.harpoonUndrawedTime = fNow;
+	        }
+	    }
+	    else if (pStat.state == EGameHeroStates.HARPOON_UNDRAWED) {
+	        fDelta = fNow - pStat.harpoonUndrawedTime;
+
+	        if (fDelta <= pStat.harpoonUndrawToIdleTime) {
+	        	//переходим из state::HARPOON --> state.IDLE
+	            pStateBlend.setWeightSwitching(fDelta / pStat.harpoonUndrawToIdleTime, 4, 0);
+	        }
+	        else {
+	        	pStateBlend.setWeights(1., 0., 0., 0., 0.);
+	        	pMovementBlend.setWeights(0., 1., 0., 0., 0.);
+	        	
+	        	pRunPlayer.rewind(0.);
+	        	pWalkPlayer.rewind(0.);
+	        	pRunPlayer.setSpeed(1.);
+	        	pWalkPlayer.setSpeed(1.);
+	        	pRunPlayer.pause(false);
+	        	pWalkPlayer.pause(false);
+
+	            pStat.state = EGameHeroStates.WEAPON_NOT_DRAWED;
+	            deactivateTrigger();
+	        }
+	    }
+
+	    if (pStat.state < EGameHeroStates.HARPOON_BEFORE_UNDRAW)
+	    	movementHero(pControls, pHero, pStat, pController);
+	};
 
 	function gunWeaponHero (pControls: IGameControls, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController
 		/*, fTriggerTime*/) {
@@ -800,11 +1027,11 @@ module akra {
 	        pGunBlend.setWeights(0., 0., 1., 0.); /*idle, fire, draw, undraw*/
 	    }
 
-	    if (pStat.state !== EGameHeroStates.GUN_IDLE) {
+	    if (pStat.state !== EGameHeroStates.WEAPON_IDLE) {
 	        pControls.direct.x = pControls.direct.y = 0.;
 	    }
 
-	    if (pStat.state == EGameHeroStates.GUN_NOT_DRAWED && fSpeed < 0.5) {
+	    if (pStat.state == EGameHeroStates.WEAPON_NOT_DRAWED && fSpeed < 0.5) {
 	        console.log('getting gun...');
 
 	        pStat.state = EGameHeroStates.GUN_BEFORE_DRAW;
@@ -866,7 +1093,7 @@ module akra {
 	            pGunBlend.setWeightSwitching(fDelta / pStat.gunDrawToIdleTime, 2, 0);
 	        }
 	        else {
-	            pStat.state = EGameHeroStates.GUN_IDLE;
+	            pStat.state = EGameHeroStates.WEAPON_IDLE;
 	            pGunBlend.setWeights(1., 0., 0., 0.);
 
 	            // console.log('only idle with gun..');
@@ -875,28 +1102,28 @@ module akra {
 	        }
 	    }
 	    
-	    else if (pStat.state == EGameHeroStates.GUN_IDLE) {
+	    else if (pStat.state == EGameHeroStates.WEAPON_IDLE) {
 	    	pGunIdleBlend.setWeights(fGKup, fGKfrw, fGKdown);
 
-	    	if (pControls.fire > 0.20 && !pStat.inFire) {
-	    		pStat.inFire = true;
+	    	if (pControls.fire > 0.20 && !pStat.inAttack) {
+	    		pStat.inAttack = true;
 	    		pFirePlayer.rewind(0.);
 		    	pGunBlend.setAnimationWeight(1, pControls.fire * 100);
 	    	}
 	    	
-	    	if (pStat.inFire && pControls.fire < 0.20) {
+	    	if (pStat.inAttack && pControls.fire < 0.20) {
 	    		var fK: float = (1. - pFirePlayer.animationTime / pFirePlayer.duration);
 	    		if (fK > pGunBlend.getAnimationWeight(1)) {
 	    			pGunBlend.setAnimationWeight(1, 0);	
 	    			console.log("end of fire anim");
-	    			pStat.inFire = false;
+	    			pStat.inAttack = false;
 	    		}
 	    		else {
 	    			pGunBlend.setAnimationWeight(1, fK);	
 	    		}
 	    	}
 
-	    	if (pStat.inFire) {
+	    	if (pStat.inAttack) {
 	    		pFireBlend.setWeights(fGKup, fGKfrw, fGKdown);
 	    	}
 
@@ -969,7 +1196,7 @@ module akra {
 	        	pRunPlayer.pause(false);
 	        	pWalkPlayer.pause(false);
 
-	            pStat.state = EGameHeroStates.GUN_NOT_DRAWED;
+	            pStat.state = EGameHeroStates.WEAPON_NOT_DRAWED;
 	            deactivateTrigger();
 
 	            // console.log("deactivateTrigger();");
@@ -1247,6 +1474,7 @@ module akra {
 
 	    pControls.dodge = !!pGamepad.buttons[EGamepadCodes.FACE_1];
 	    pControls.gun = !!pGamepad.buttons[EGamepadCodes.FACE_4];
+	    pControls.harpoon = !!pGamepad.buttons[EGamepadCodes.FACE_3];
 
 	    pControls.fire = pGamepad.buttons[EGamepadCodes.RIGHT_SHOULDER_BOTTOM];
 

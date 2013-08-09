@@ -73,7 +73,10 @@ module akra.ui.animation {
 					pEntry.extra = {}
 				}
 
-				pEntry.extra.graph = {x: pOffset.left - pGraphOffset.left, y: pOffset.top - pGraphOffset.top};
+				pEntry.extra.graph = {
+					x: pOffset.left - pGraphOffset.left, 
+					y: pOffset.top - pGraphOffset.top
+				};
 			}
 
 			return pExporter;

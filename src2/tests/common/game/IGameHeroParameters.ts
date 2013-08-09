@@ -1,14 +1,22 @@
 export enum EGameHeroStates {
-        GUN_NOT_DRAWED,
+        WEAPON_NOT_DRAWED,
+        WEAPON_IDLE,
+
         GUN_BEFORE_DRAW,
         GUN_DRAWING,
         GUN_DRAWED,
         GUN_BEFORE_IDLE,
-        GUN_IDLE,
         GUN_BEFORE_UNDRAW,
         GUN_UNDRAWING,
         GUN_UNDRAWED,
-        GUN_END
+
+        HARPOON_BEFORE_DRAW,
+        HARPOON_DRAWING,
+        HARPOON_DRAWED,
+        HARPOON_BEFORE_IDLE,
+        HARPOON_BEFORE_UNDRAW,
+        HARPOON_UNDRAWING,
+        HARPOON_UNDRAWED,
 }
 
 export interface IGameHeroParameters {
@@ -28,23 +36,42 @@ export interface IGameHeroParameters {
         walkWithWeaponSpeed             : float;
         //минимальная скорость, с которой можно идти с оружием
         walkWithWeaponSpeedMin 		: float;
-
         walkWithoutWeaponSpeed 	: float;
 
+        //movement acceleration params
         movementDerivativeMax   : float;
         movementDerivativeMin   : float;
         movementDerivativeConst : float;
 
+        //walkbak params
         walkBackAngleRange : float;
 
         state : EGameHeroStates;
 
+        //harpoon trigger params
+        movementToHarpoonTime   : float;
+        stateToHarpoonTime      : float;
+        harpoonIdleToUndrawTime : float;
+        harpoonDrawToIdleTime   : float;
+        harpoonToStateTime      : float;
+
+        //temp variables for harpoon
+        movementToHarpoonEndTime     : float;/*sec [temp/system] DO NOT EDIT!!!*/
+        harpoonDrawStartTime         : float;/*sec [temp/system] DO NOT EDIT!!!*/
+        harpoonDrawToIdleStartTime   : float;/*sec [temp/system] DO NOT EDIT!!!*/
+        harpoonIdleToUnDrawStartTime : float;/*sec [temp/system] DO NOT EDIT!!!*/
+        harpoonUndrawToIdleTime      : float;/*sec [temp/system] DO NOT EDIT!!!*/
+        harpoonUndrawedTime          : float;/*sec [temp/system] DO NOT EDIT!!!*/
+        harpoonUndrawStartTime       : float;/*sec [temp/system] DO NOT EDIT!!!*/
+
+        //gun trigger params
         movementToGunTime       : float;
         stateToGunTime          : float;
         gunIdleToUndrawTime     : float;
         gunDrawToIdleTime       : float;
         gunToStateTime          : float;
 
+        //temp variables for gun
         movementToGunEndTime     : float;/*sec [temp/system] DO NOT EDIT!!!*/
         idleWeightBeforeDraw     : float;/*sec [temp/system] DO NOT EDIT!!!*/
         movementWeightBeforeUnDraw     : float;/*sec [temp/system] DO NOT EDIT!!!*/
@@ -55,13 +82,17 @@ export interface IGameHeroParameters {
         gunUndrawedTime          : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunUndrawStartTime       : float;/*sec [temp/system] DO NOT EDIT!!!*/
 
+        //gund direction beetween top and bottom
         gunDirection: float;
 
+        //animation mar for quick access
         anim: IAnimationMap;
 
+        //current hero position 
         position: IVec3;
-
-        inFire: bool;
+        
+        //attack state
+        inAttack: bool;
 
         fallDown: bool;
         //поступательная скорость движения
