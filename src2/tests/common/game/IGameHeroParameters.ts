@@ -17,6 +17,16 @@ export enum EGameHeroStates {
         HARPOON_BEFORE_UNDRAW,
         HARPOON_UNDRAWING,
         HARPOON_UNDRAWED,
+
+        HARPOON_BEFORE_ATTACK,
+        HARPOON_ATTACKING,
+        HARPOON_ATTACK_FINISHED
+}
+
+export enum EGameHeroWeapons {
+        NONE,
+        GUN,
+        HARPOON
 }
 
 export interface IGameHeroParameters {
@@ -47,12 +57,14 @@ export interface IGameHeroParameters {
         walkBackAngleRange : float;
 
         state : EGameHeroStates;
+        weapon: EGameHeroWeapons;
 
         //harpoon trigger params
         movementToHarpoonTime   : float;
         stateToHarpoonTime      : float;
         harpoonIdleToUndrawTime : float;
         harpoonDrawToIdleTime   : float;
+        harpoonUndrawToIdleTime : float;
         harpoonToStateTime      : float;
 
         //temp variables for harpoon
@@ -60,7 +72,6 @@ export interface IGameHeroParameters {
         harpoonDrawStartTime         : float;/*sec [temp/system] DO NOT EDIT!!!*/
         harpoonDrawToIdleStartTime   : float;/*sec [temp/system] DO NOT EDIT!!!*/
         harpoonIdleToUnDrawStartTime : float;/*sec [temp/system] DO NOT EDIT!!!*/
-        harpoonUndrawToIdleTime      : float;/*sec [temp/system] DO NOT EDIT!!!*/
         harpoonUndrawedTime          : float;/*sec [temp/system] DO NOT EDIT!!!*/
         harpoonUndrawStartTime       : float;/*sec [temp/system] DO NOT EDIT!!!*/
 
@@ -81,6 +92,8 @@ export interface IGameHeroParameters {
         gunUndrawToIdleTime      : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunUndrawedTime          : float;/*sec [temp/system] DO NOT EDIT!!!*/
         gunUndrawStartTime       : float;/*sec [temp/system] DO NOT EDIT!!!*/
+
+        temp: float[];
 
         //gund direction beetween top and bottom
         gunDirection: float;

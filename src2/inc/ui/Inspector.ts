@@ -9,6 +9,7 @@
 #include "animation/ControllerProperties.ts"
 #include "model/MeshProperties.ts"
 #include "light/Properties.ts"
+#include "scene/Model.ts"
 #include "animation/NodeProperties.ts"
 #include "animation/MaskProperties.ts"
 #include "camera/Events.ts"
@@ -39,6 +40,7 @@ module akra.ui {
 
 		//scene model properties
 		protected _pMesh: model.MeshProperties;
+		protected _pSceneModel: scene.Model; 
 
 		//light properties
 		protected _pLight: light.Properties;
@@ -75,6 +77,7 @@ module akra.ui {
 			this._pMesh = <model.MeshProperties>this.findEntity("mesh");
 
 			this._pLight = <light.Properties>this.findEntity("light");
+			this._pSceneModel = <scene.Model>this.findEntity("scene-model-properties");
 
 			this._pCameraEvents = <camera.Events>this.findEntity("camera-events");
 
@@ -267,6 +270,8 @@ module akra.ui {
 			if (akra.scene.isModel(pNode)) {
 				var pModel: ISceneModel = <ISceneModel>pNode;
 				this.el.find("div[name=scene-model]").show();
+
+				this._pSceneModel.setModel(pModel);
 
 				if (!isNull(pModel.mesh)) {
 					this._pMesh.setMesh(pModel.mesh);
