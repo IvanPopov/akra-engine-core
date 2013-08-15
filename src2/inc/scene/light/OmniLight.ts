@@ -6,6 +6,7 @@
 #include "util/ObjectArray.ts"
 #include "geometry/Plane3d.ts"
 #include "geometry/classifications.ts"
+#include "util/CalculatePlanesForLighting.ts"
 
 module akra.scene.light {
 	export struct OmniParameters implements IOmniParameters {
@@ -130,6 +131,17 @@ module akra.scene.light {
 			this._isShadowCaster = bValue;
 			if(bValue && isNull(this._pDepthTextureCube)){
 				this.initializeTextures();
+			}
+		};
+
+		inline get lightingDistance(): float{
+			return this._pShadowCasterCube[0].farPlane;
+		};
+
+		set lightingDistance(fDistance){
+			var pCube: IShadowCaster[] = this._pShadowCasterCube;
+			for(var i:int = 0; i < 6; i++){
+				pCube[i].farPlane = fDistance;
 			}
 		};
 
@@ -262,96 +274,16 @@ module akra.scene.light {
 
 			var pRawResult: IObjectArray = pShadowCaster.display(DL_DEFAULT);
 
-			var v3fLightPosition: IVec3 = this.worldPosition;
-
 			var pTestArray: IPlane3d[] = OmniLight._pFrustumPlanes;
 			var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;
-			//frustum projection
-			//TODO: rewrite additional testing
-			//create list for additional testing
-			var v3fLightPosition: IVec3 = this.worldPosition;
+			
+			util.calculatePlanesForFrustumLighting(
+											pShadowCaster.frustum, pShadowCaster.worldPosition,
+											pCameraFrustum, pTestArray);
 
-			for(var i: int = 0; i<6; i++){
-				var sKey: string = pFrustumPlanesKeys[i];
-
-				var pPlane: IPlane3d = pCameraFrustum[sKey];
-
-				var v3fNormal: IVec3 = vec3().set(pPlane.normal);
-				var fDistance: float = pPlane.distance;
-
-				if(pPlane.signedDistance(v3fLightPosition) > 0){
-
-					// fDistance = -v3fNormal.dot(v3fLightPosition);
-
-					var pPlanePoints = [new Vec3(), new Vec3(), new Vec3(), new Vec3()];
-					pCameraFrustum.getPlanePoints(sKey, pPlanePoints);
-
-					//find far points;
-					var pDirections = new Array(4);
-
-					for(var j: int = 0; j<4; j++){
-						pDirections[j] = new Vec3();
-						pPlanePoints[j].subtract(v3fLightPosition,pDirections[j]);
-					}
-
-					var fLength1: float = pDirections[0].length();
-					var fLength2: float = pDirections[1].length();
-					var fLength3: float = pDirections[2].length();
-					var fLength4: float = pDirections[3].length();
-
-					var pTmp1: float[] = [fLength1, fLength2, fLength3, fLength4];
-
-					var pIndex: uint[] = [-1,-1,-1,-1];
-
-					for(var j: uint = 0; j<4;j++){
-						var iTest = 3;
-						for(var k: uint = 0; k<4;k++){
-							if(k == j){
-								continue;
-							}
-							if(pTmp1[j] >= pTmp1[k]){
-								iTest--;
-							}
-						}
-						for(var k: uint = 0 ; k<4; k++){
-							if(pIndex[iTest] == -1){
-								pIndex[iTest] = j;
-								break;
-							}
-							else{
-								iTest++;
-							}
-						}
-					}
-
-					var pDir1: IVec3 = pDirections[pIndex[0]];
-					var pDir2: IVec3 = pDirections[pIndex[1]];
-
-					var pTestPoint1: IVec3 = pPlanePoints[pIndex[2]];
-					var pTestPoint2: IVec3 = pPlanePoints[pIndex[3]];
-
-					pDir1.cross(pDir2, v3fNormal).normalize();
-
-					var pTestPlane: IPlane3d = pTestArray[i];
-					pTestPlane.set(v3fNormal, -v3fNormal.dot(v3fLightPosition));
-
-					// console.log(pTestPlane.signedDistance(pTestPoint1), pTestPlane.signedDistance(pTestPoint2));
-
-					var fThreshold: float = 0.1;
-
-					if(math.abs(pTestPlane.signedDistance(pTestPoint1)) <= fThreshold && math.abs(pTestPlane.signedDistance(pTestPoint2)) <= fThreshold){
-						pTestPlane.set(pPlane.normal, -pPlane.normal.dot(v3fLightPosition)); 
-					}
-					else if(pTestPlane.signedDistance(pTestPoint1) > 0 && math.abs(pTestPlane.signedDistance(pTestPoint2)) > 0) {
-						pTestPlane.negate();
-					}
-					// console.log(pTestPlane.normal.toString(), pTestPlane.distance);
-					// console.log(pTmp1[pIndex[0]], pTmp1[pIndex[1]], pTmp1[pIndex[2]], pTmp1[pIndex[3]]);
-				}
-				else{
-					pTestArray[i].set(v3fNormal, fDistance);
-				}
-			}				
+			var v3fMidPoint: IVec3 = vec3();
+			var v3fShadowDir: IVec3 = vec3();
+			var v3fCameraDir: IVec3 = vec3();
 
 			for(var i:int = 0; i<pRawResult.length; i++){
 				var pObject: ISceneObject = pRawResult.value(i);
@@ -370,7 +302,19 @@ module akra.scene.light {
 					}
 
 					if(j == 6){
-						pResult.push(pObject);
+						//discard shadow by distance?
+
+						pWorldBounds.midPoint(v3fMidPoint);
+
+						v3fMidPoint.subtract(pShadowCaster.worldPosition, v3fShadowDir);
+						v3fMidPoint.subtract(pCamera.worldPosition, v3fCameraDir);
+
+						if(v3fCameraDir.dot(v3fShadowDir) > 0 &&
+							pWorldBounds.distanceToPoint(pCamera.worldPosition) >= SHADOW_DISCARD_DISTANCE){
+						}
+						else{
+							pResult.push(pObject);
+						}
 					}	
 				}
 				else{

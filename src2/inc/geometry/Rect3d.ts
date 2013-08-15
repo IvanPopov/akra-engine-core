@@ -799,6 +799,21 @@ module akra.geometry {
 			return pSphere;			
 		};
 
+		distanceToPoint(v3fPoint: IVec3): float{
+			var fX: float = v3fPoint.x, fY: float = v3fPoint.y, fZ: float = v3fPoint.z;
+
+			var fX0: float = this.x0, fY0: float = this.y0, fZ0: float = this.z0;
+			var fX1: float = this.x1, fY1: float = this.y1, fZ1: float = this.z1;
+
+			var fXN: float, fYN: float, fZN: float;
+
+			fXN = (math.abs(fX0 - fX) < math.abs(fX1 - fX)) ? fX0 : fX1;
+			fYN = (math.abs(fY0 - fY) < math.abs(fY1 - fY)) ? fY0 : fY1;
+			fZN = (math.abs(fZ0 - fZ) < math.abs(fZ1 - fZ)) ? fZ0 : fZ1;
+			
+			return math.sqrt((fXN - fX)*(fXN - fX) + (fYN - fY)*(fYN - fY) + (fZN - fZ)*(fZN - fZ));
+		};
+
 		toString(): string{
 			return "(" + this.x0 + ", " + this.y0 + ", " + this.z0 + ") --> (" + 
 					this.x1 + ", " + this.y1 + ", " + this.z1 +")";

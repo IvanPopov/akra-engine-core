@@ -99,7 +99,7 @@ module akra.ui {
 		}
 
 		_beforeSceneUpdate(pScene: IScene3d): void {
-
+/*
 			var pNode: ISceneNode = <ISceneNode>this._pSceneTree.selectedNode;
 			var pKeymap: IKeyMap = this.getKeymap()
 
@@ -131,7 +131,7 @@ module akra.ui {
 		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD6)) {
 		    	
 		     	pNode.addPosition(vec3(0., 0., 1.));   
-		    }
+		    }*/
 		}
 
 		private setupObjectPicking(): void {
@@ -175,7 +175,7 @@ module akra.ui {
 		_sceneUpdate(pScene: IScene3d): void {
 			var pKeymap: IKeyMap = this.getKeymap();
 			
-			if (pKeymap.isMousePress()) {
+			if (false && pKeymap.isMousePress()) {
 				// var v3fPoint: IVec3 = this.getViewport().unprojectPoint(pKeymap.getMouse(), vec3());
 				
 				// v3fPoint.z -= 0.075;

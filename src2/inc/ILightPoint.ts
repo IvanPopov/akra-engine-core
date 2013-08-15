@@ -28,6 +28,7 @@ module akra {
 		lightType: ELightTypes;
 
 		isShadowCaster: bool;
+		lightingDistance: float;
 
 		//optimized camera frustum for better shadow casting
 		readonly optimizedCameraFrustum: IFrustum;

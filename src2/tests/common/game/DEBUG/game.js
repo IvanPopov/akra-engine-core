@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Wed Aug 07 2013 19:14:51 GMT+0400 (Московское время (зима))
+ * assembled at: Wed Aug 14 2013 14:06:31 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -275,16 +275,18 @@ var akra;
         pGamepad.buttons[akra.EGamepadCodes.PAD_BOTTOM] = pKeymap.isKeyPress(akra.EKeyCodes.DOWN);
         pGamepad.buttons[akra.EGamepadCodes.PAD_LEFT] = pKeymap.isKeyPress(akra.EKeyCodes.LEFT);
         pGamepad.buttons[akra.EGamepadCodes.PAD_RIGHT] = pKeymap.isKeyPress(akra.EKeyCodes.RIGHT);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_1] = pKeymap.isKeyPress(akra.EKeyCodes.N1);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_2] = pKeymap.isKeyPress(akra.EKeyCodes.N2);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_3] = pKeymap.isKeyPress(akra.EKeyCodes.N3);
-        pGamepad.buttons[akra.EGamepadCodes.FACE_4] = pKeymap.isKeyPress(akra.EKeyCodes.N4);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_1] = pKeymap.isKeyPress(akra.EKeyCodes.N5);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_2] = pKeymap.isKeyPress(akra.EKeyCodes.N6);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_3] = pKeymap.isKeyPress(akra.EKeyCodes.N7);
+        pGamepad.buttons[akra.EGamepadCodes.FACE_4] = pKeymap.isKeyPress(akra.EKeyCodes.N8);
+        pGamepad.buttons[akra.EGamepadCodes.RIGHT_SHOULDER_BOTTOM] = pKeymap.isKeyPress(akra.EKeyCodes.CTRL) ? 1.0 : 0.0;
+        pGamepad.buttons[akra.EGamepadCodes.LEFT_SHOULDER_BOTTOM] = pKeymap.isKeyPress(akra.EKeyCodes.SHIFT) ? 1.0 : 0.0;
         var fX = (pKeymap.isKeyPress(akra.EKeyCodes.A) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.D) ? 1.0 : 0.0);
         var fY = (pKeymap.isKeyPress(akra.EKeyCodes.S) ? 1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.W) ? -1.0 : 0.0);
         pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_VERT] = fY;
         pGamepad.axes[akra.EGamepadAxis.LEFT_ANALOGUE_HOR] = fX;
         fX = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD4) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD6) ? 1.0 : 0.0);
-        fY = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD5) ? -1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD8) ? 1.0 : 0.0);
+        fY = (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD5) ? 1.0 : 0.0) + (pKeymap.isKeyPress(akra.EKeyCodes.NUMPAD8) ? -1.0 : 0.0);
         pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_VERT] = fY;
         pGamepad.axes[akra.EGamepadAxis.RIGHT_ANALOGUE_HOR] = fX;
         return pGamepad;
@@ -555,6 +557,7 @@ var akra;
         var pRightHand = pHeroRoot.findEntity("node-Dummy06");
         var fGunDrawAttachmentTime = (15 / 46) * pAnimGunDraw.duration;
         var fGunUnDrawAttachmentTime = (21 / 53) * pAnimGunUnDraw.duration;
+        var fGunFireTime = (9 / 53) * pAnimGunUnDraw.duration;
         pAnimGunDraw.useLoop(false);
         pAnimGunUnDraw.useLoop(false);
         pGunNode.attachToParent(pRightHolster);
@@ -582,11 +585,13 @@ var akra;
         //         pGunNode.attachToParent(pRightHand);
         //     });
         // }
-        // if (isDefAndNotNull(pAnimGunFire)) {
-        //     pAnimGunFire.bind("play", (): void => {
-        //         pGunNode.attachToParent(pRightHand);
-        //     });
-        // }
+        if (akra.isDefAndNotNull(pAnimGunFire)) {
+            pAnimGunFire.bind("enterFrame", function (pAnim, fRealTime, fTime) {
+                if (fTime >= fGunFireTime) {
+                    console.log("fire...");
+                }
+            });
+        }
         /*run, walk, walkback, weapon_walk*/
         findAnimation('MOVEMENT.blend').setWeights(0., 1., 0., 0.);
         /*idle_0, idle_1, movement, gun*/
@@ -1272,10 +1277,21 @@ var akra;
         setup(pCanvas, pUI);
         pCamera = akra.self.camera = createCameras(pScene);
         pViewport = createViewports(pCamera, pCanvas, pUI);
-        pTerrain = akra.self.terrain = createTerrain(pScene, false);
+        pTerrain = akra.self.terrain = createTerrain(pScene, true);
         createModels();
         pSkyBoxTexture = createSkyBox(pRmgr, pViewport);
-        pSky = akra.self.sky = createSky(pScene, 14.0);
+        pSky = akra.self.sky = createSky(pScene, 14.);
+        var pProject = pScene.createLightPoint(akra.ELightTypes.PROJECT, true, 512);
+        pProject.attachToParent(pScene.getRootNode());
+        pProject.enabled = false;
+        var pParams = pProject.params;
+        pParams.ambient.set(0.0, 0.0, 0.0, 1);
+        pParams.diffuse.set(1.);
+        pParams.specular.set(1.);
+        pParams.attenuation.set(0.5, 0, 0);
+        pProject.setPosition(new akra.Vec3(-300, 300, -300));
+        pProject.lookAt(new akra.Vec3(0., .0, 0.));
+        pProject.lightingDistance = 10000.;
         pKeymap.bind("equalsign", /** @inline */function () {
             akra.self.activeCamera++;
             if (akra.self.activeCamera === akra.self.cameras.length) {

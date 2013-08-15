@@ -1301,10 +1301,26 @@ module akra {
 
 		pCamera 		= self.camera 	= createCameras(pScene);
 		pViewport 						= createViewports(pCamera, pCanvas, pUI);
-		pTerrain 		= self.terrain 	= createTerrain(pScene, false);
+		pTerrain 		= self.terrain 	= createTerrain(pScene, true);
 										  createModels();
 		pSkyBoxTexture 					= createSkyBox(pRmgr, <IDSViewport>pViewport);
-		pSky 			= self.sky 		= createSky(pScene, 14.0);
+		pSky 			= self.sky 		= createSky(pScene, 14.);
+
+		var pProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512);
+			
+		pProject.attachToParent(pScene.getRootNode());
+		pProject.enabled = false;
+		var pParams = <any>pProject.params;
+		pParams.ambient.set(0.0, 0.0, 0.0, 1);
+		pParams.diffuse.set(1.);
+		pParams.specular.set(1.);
+		pParams.attenuation.set(0.5, 0, 0);
+
+
+		pProject.setPosition(new Vec3(-300, 300, -300));
+		pProject.lookAt(new Vec3(0., .0, 0.));	
+
+		pProject.lightingDistance = 10000.;
 
 		pKeymap.bind("equalsign", () => {
 			self.activeCamera ++;

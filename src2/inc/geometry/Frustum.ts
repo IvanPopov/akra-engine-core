@@ -183,7 +183,7 @@ module akra.geometry{
 
 		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4, pSearchRect?: IRect3d): IFrustum{
 
-			if(this._pFrustumVertices == null){
+			if(isNull(this._pFrustumVertices)){
 				this._pFrustumVertices = new Array(8);
 
 				for(var i:int = 0; i < 8; i++){
@@ -417,6 +417,30 @@ module akra.geometry{
 			}
 
 			return true;
+		};
+
+		getViewDirection(v3fDirection?: IVec3): IVec3{
+			if(!isDef(v3fDirection)){
+				v3fDirection = new Vec3();
+			}
+
+			v3fDirection.set(0);
+
+			if(isNull(this._pFrustumVertices)){
+				this.calculateFrustumVertices();
+			}
+
+			//far plane
+			for(var i: uint = 4; i<8; i++){
+				v3fDirection.add(this._pFrustumVertices[i]);
+			}
+
+			//near plane
+			for(var i: uint = 0; i<4; i++){
+				v3fDirection.subtract(this._pFrustumVertices[i]);
+			}
+
+			return v3fDirection.normalize();
 		};
 
 		toString(): string{
