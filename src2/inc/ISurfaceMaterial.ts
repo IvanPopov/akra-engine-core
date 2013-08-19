@@ -50,6 +50,7 @@ module akra {
     	textureMatrix(iSlot: int): IMat4;
 
         _getHash(): string;
+        _getTimeOfLastChangeTextures(): float;
     }
 
 }

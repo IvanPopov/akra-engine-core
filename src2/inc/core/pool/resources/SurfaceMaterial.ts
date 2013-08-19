@@ -18,6 +18,8 @@ module akra.core.pool.resources {
 		//For acceleration of composer
 		protected _sLastHash: string = "";
 		protected _isNeedToUpdateHash: bool = true;
+		//For acceleration of PassInpuBlend.setSurfaceMaterial
+		protected _fLastTimeChangeTexture: float = 0.;
 
 
 		inline get totalTextures(): uint { return this._nTotalTextures; }
@@ -55,6 +57,8 @@ module akra.core.pool.resources {
 		    if(iIndex !== iTexcoord) {
 		    	this._isNeedToUpdateHash = true;
 		    }
+
+		    this._fLastTimeChangeTexture = pRmgr.getEngine().time;
 		    
 		    if (isString(texture)) {
 		    	pTexture = this._pTextures[iIndex];
@@ -230,6 +234,10 @@ module akra.core.pool.resources {
 
     	static MAX_TEXTURES_PER_SURFACE: uint = 16;
 
+    	_getTimeOfLastChangeTextures(): float {
+    		return this._fLastTimeChangeTexture;
+    	}
+    	
     	_getHash(): string {
     		if(this._isNeedToUpdateHash){
     			this._sLastHash = this.calcHash();

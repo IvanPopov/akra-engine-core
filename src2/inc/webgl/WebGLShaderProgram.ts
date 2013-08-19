@@ -375,8 +375,37 @@ module akra.webgl {
                 return ZERO_SAMPLER_SLOT;
             }
 
+            var pTextureStateManager: WebGLInternalTextureStateManager = this._pWebGLRenderer._getTextureStateManager();
+            var pStates: IntMap = pTextureStateManager.add(pTexture);
             var iSlot: int = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
 
+            if(pSampler.min_filter){
+                pTexture.setFilter(ETextureParameters.MIN_FILTER, pSampler.min_filter);
+            }
+            else {
+                pTexture.setFilter(ETextureParameters.MIN_FILTER, pStates[ETextureParameters.MIN_FILTER]);
+            }
+
+            if(pSampler.mag_filter){
+                pTexture.setFilter(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
+            }
+            else {
+                pTexture.setFilter(ETextureParameters.MAG_FILTER, pStates[ETextureParameters.MAG_FILTER]);
+            }
+
+            if(pSampler.wrap_s){
+                pTexture.setWrapMode(ETextureParameters.WRAP_S, pSampler.wrap_s);
+            }
+            else {
+                pTexture.setWrapMode(ETextureParameters.WRAP_S, pStates[ETextureParameters.WRAP_S]);
+            }
+
+            if(pSampler.wrap_t){
+                pTexture.setWrapMode(ETextureParameters.WRAP_T, pSampler.wrap_t);
+            }
+            else {
+                pTexture.setWrapMode(ETextureParameters.WRAP_T, pStates[ETextureParameters.WRAP_T]);
+            }
             // LOG("sampler states: ",
             // (<any>pSampler.min_filter).toString(16),
             // (<any>pSampler.mag_filter).toString(16),
@@ -395,20 +424,20 @@ module akra.webgl {
             // pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s || pTexture.getWrapMode(ETextureParameters.WRAP_S));
             // pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t || pTexture.getWrapMode(ETextureParameters.WRAP_T));
             
-            if(pSampler.min_filter){
-                pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.min_filter);
-            }
+            // if(pSampler.min_filter){
+            //     pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.min_filter);
+            // }
 
-            if(pSampler.mag_filter){
-                pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
-            }
+            // if(pSampler.mag_filter){
+            //     pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
+            // }
 
-            if(pSampler.wrap_s) {
-                pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s);
-            }
-            if(pSampler.wrap_t) {
-                pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t);
-            }
+            // if(pSampler.wrap_s) {
+            //     pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s);
+            // }
+            // if(pSampler.wrap_t) {
+            //     pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t);
+            // }
 
             return iSlot;
         }

@@ -51,6 +51,10 @@ module akra.fx {
 		private _sSamplerHash: string = "";
 		private _bIsNeedUpdateSamplerHash: bool = true;
 
+		//need for accelerate setSurfaceMaterial
+		private _fLastTimeChangeSurfaceMaterial: float = 0.;
+		private _pLastSurfaceMaterial: ISurfaceMaterial = null;
+
 		samplers: IAFXSamplerStateMap = null;
 		samplerArrays: IAFXSamplerStateListMap = null; 
 		samplerArrayLength: IntMap = null;
@@ -324,13 +328,17 @@ module akra.fx {
 				this._isFirstSetSurfaceNaterial = false;
 			}
 
-			var iTotalTextures: uint = pSurfaceMaterial.totalTextures;
-			for (var i: int = 0; i < iTotalTextures; i++) {
-			 	if(this._pMaterialNameIndices.textures[i] > 0){
-			 		this.textures[this._pMaterialNameIndices.textures[i]] =  pSurfaceMaterial.texture(i) || null;
-			 	}
-			 	
-			}
+			if (this._bIsNeedUpdateSamplerHash || 
+				this._pLastSurfaceMaterial !== pSurfaceMaterial ||
+				this._fLastTimeChangeSurfaceMaterial !== pSurfaceMaterial._getTimeOfLastChangeTextures()){
+
+				var iTotalTextures: uint = pSurfaceMaterial.totalTextures;
+				for (var i: int = 0; i < 16; i++) {
+				 	if(this._pMaterialNameIndices.textures[i] > 0){
+				 		this.textures[this._pMaterialNameIndices.textures[i]] =  pSurfaceMaterial.texture(i) || null;
+				 	}
+				}
+			}			
 
 			if(this._pMaterialNameIndices.material > 0) {
 				var pMaterial: IMaterial = pSurfaceMaterial.material;
@@ -345,11 +353,16 @@ module akra.fx {
 				this.uniforms[this._pMaterialNameIndices.material] = pMatContainer;
 			}
 
-			this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.diffuse, pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
-			this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.ambient, pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
-			this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.specular, pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
-			this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.emissive, pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
-			this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.normal, pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
+			this._pLastSurfaceMaterial = pSurfaceMaterial;
+			this._fLastTimeChangeSurfaceMaterial = pSurfaceMaterial._getTimeOfLastChangeTextures();
+
+			if (this._bIsNeedUpdateSamplerHash){
+				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.diffuse, pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
+				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.ambient, pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
+				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.specular, pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
+				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.emissive, pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
+				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.normal, pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
+			}
 		}
 
 		inline setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {

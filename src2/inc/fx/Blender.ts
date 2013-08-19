@@ -6,6 +6,8 @@
 #include "fx/PassBlend.ts"
 #include "fx/ComponentBlend.ts"
 
+#include "util/HashTree.ts"
+
 module akra.fx {
 	export class Blender implements IAFXBlender {
 		private _pComposer: IAFXComposer = null;
@@ -197,9 +199,12 @@ module akra.fx {
 		}
 
 
+		private _pPassBlendHashTree: util.HashTree = new util.HashTree();
+
 		generatePassBlend(pPassList: IAFXPassInstruction[],
 						  pStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend {
-			var sPassBlendHash: string = "";
+
+			this._pPassBlendHashTree.release();
 
 			for(var i: uint = 0; i < pPassList.length; i++) {
 				var pPass: IAFXPassInstruction = pPassList[i];
@@ -209,36 +214,26 @@ module akra.fx {
 				var pVertexShader: IAFXFunctionDeclInstruction = pPass.getVertexShader();
 				var pPixelShader: IAFXFunctionDeclInstruction = pPass.getPixelShader();
 				
-				if(!isNull(pVertexShader)){
-					sPassBlendHash += pVertexShader.getGuid().toString() + ":"; 
-				}
-				else {
-					sPassBlendHash += "E:";
-				}
-
-				if(!isNull(pPixelShader)){
-					sPassBlendHash += pPixelShader.getGuid().toString() + ":";
-				}
-				else {
-					sPassBlendHash += "E:";
-				}
+				this._pPassBlendHashTree.has(isNull(pVertexShader) ? 0 : pVertexShader.getGuid());
+				this._pPassBlendHashTree.has(isNull(pPixelShader) ? 0 : pPixelShader.getGuid());
 			}
 
-			if(isDef(this._pPassBlendByHashMap[sPassBlendHash])){
-				return this._pPassBlendByHashMap[sPassBlendHash];
+			var pBlend: IAFXPassBlend = this._pPassBlendHashTree.getContent();
+			if(!pBlend){
+				var pNewPassBlend: IAFXPassBlend = new PassBlend(this._pComposer); 
+				var isOk: bool = pNewPassBlend.initFromPassList(pPassList);
+
+				if(!isOk){
+					return null;
+				}
+
+				this._pPassBlendHashTree.addContent(pNewPassBlend);
+				this._pPassBlendByIdMap[pNewPassBlend.getGuid()] = pNewPassBlend;
+				return pNewPassBlend;
 			}
-
-			var pNewPassBlend: IAFXPassBlend = new PassBlend(this._pComposer); 
-			var isOk: bool = pNewPassBlend.initFromPassList(pPassList);
-
-			if(!isOk){
-				return null;
+			else {
+				return pBlend;
 			}
-
-			this._pPassBlendByHashMap[sPassBlendHash] = pNewPassBlend;
-			this._pPassBlendByIdMap[pNewPassBlend.getGuid()] = pNewPassBlend;
-
-			return pNewPassBlend;
 		}
 
 		inline getPassBlendById(id: uint): IAFXPassBlend {

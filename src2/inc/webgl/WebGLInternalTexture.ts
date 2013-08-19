@@ -138,7 +138,7 @@ module akra.webgl {
             if (!this.isValid()) {
                 return false;
             }
-
+            
             var iWebGLTarget: int = this._getWebGLTextureTarget();
             var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();

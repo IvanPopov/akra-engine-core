@@ -242,11 +242,19 @@ module akra.core.pool.resources {
         }
         
         setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool {
+            if(this._pParams[eParam] === eValue){
+                return true;
+            }
+
             this._pParams[eParam] = eValue;
             return this._setFilterInternalTexture(eParam,eValue);
         }
         
         setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): bool {
+            if(this._pParams[eParam] === eValue){
+                return true;
+            }
+            
             this._pParams[eParam] = eValue;
             return this._setWrapModeInternalTexture(eParam, eValue);
         }

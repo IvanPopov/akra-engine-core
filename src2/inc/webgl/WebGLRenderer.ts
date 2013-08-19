@@ -7,6 +7,7 @@
 #include "render/Viewport.ts"
 #include "WebGLShaderProgram.ts"
 #include "IShaderInput.ts"
+#include "WebGLInternalTextureStateManager.ts"
 
 #define WEBGL_MAX_FRAMEBUFFER_NUM 32
 
@@ -87,6 +88,10 @@ module akra.webgl {
 		private _iCurrentTextureSlot: uint = 0;
 		private _iNextTextureSlot: uint = 0;
 		private _pTextureSlotList: WebGLTexture[] = null;
+		/**
+		 * Need To reset texture states after render
+		 */
+		private _pTextureStateManager: WebGLInternalTextureStateManager = null;
 		/**
 		 * Need to impove speed
 		 */
@@ -172,6 +177,8 @@ module akra.webgl {
 			}
 
 			this.forceUpdateContextRenderStates();
+
+			this._pTextureStateManager = new WebGLInternalTextureStateManager(this);
 		}
 
 		debug(bValue: bool = true, useApiTrace: bool = false): bool {
@@ -575,6 +582,10 @@ module akra.webgl {
 			}
 		}
 
+		inline _getTextureStateManager(): WebGLInternalTextureStateManager {
+			return this._pTextureStateManager;
+		}
+ 
 		_beginRender(): void {
 			this.enable(GL_SCISSOR_TEST);
 			this.disable(GL_BLEND);
@@ -749,6 +760,7 @@ module akra.webgl {
 
 		_endRender(): void {
 			this.disable(GL_SCISSOR_TEST);
+			this._pTextureStateManager.reset();
 		}
 
 		_setViewport(pViewport: IViewport): void {
