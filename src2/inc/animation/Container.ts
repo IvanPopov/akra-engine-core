@@ -2,7 +2,7 @@
 #define ANIMATIONCONTAINER_TS
 
 #include "IAnimationContainer.ts"
-#include "IAnimationFrame.ts"
+#include "IPositionFrame.ts"
 #include "IAnimationBase.ts"
 
 #include "Base.ts"
@@ -160,7 +160,8 @@ module akra.animation {
 		}
 
 		inline rewind(fRealTime: float): void {
-			console.log("rewind > ", fRealTime);
+			// console.log("rewind > ", fRealTime);
+			this._fTrueTime = 0;
 			this._fTime = fRealTime;
 		}
 
@@ -194,7 +195,7 @@ module akra.animation {
 		    this._fTrueTime = fTime;
 		}
 
-		frame(sName: string, fRealTime: float): IAnimationFrame {
+		frame(sName: string, fRealTime: float): IPositionFrame {
 			if (!this._bEnable) {
 		    	return null;
 		    }

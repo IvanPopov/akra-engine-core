@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Aug 01 2013 13:19:08 GMT+0400 (Московское время (лето))
+ * assembled at: Tue Aug 20 2013 17:05:11 GMT+0400 (Московское время (лето))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/demo02.ts
  * name: demo02

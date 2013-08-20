@@ -99,6 +99,8 @@ module akra{
 
 		createBoundingCircle(pCircle?: ICircle): ICircle;
 
+		distanceToPoint(v2fPoint: IVec2): float;
+
 		toString(): string;
 	};
 };

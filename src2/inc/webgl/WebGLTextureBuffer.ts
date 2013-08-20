@@ -543,7 +543,6 @@ module akra.webgl {
 
 				return;
 			}
-		
 
 			if(checkReadPixelFormat(pData.format))
 			{

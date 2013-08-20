@@ -71,6 +71,7 @@ module akra {
 		time: float;
 		weight: float;
 		matrix: float[];
+		type: int;
 	}
 
 	export interface IAnimationTrackEntry {

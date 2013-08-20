@@ -17,13 +17,16 @@ module akra {
 		readonly totalAnimations: int;
 
 		addAnimation(pAnimation: IAnimationBase, fWeight?: float, pMask?: FloatMap): int;
-		setAnimation(iAnimation: int, pAnimation: IAnimationBase, fWeight?: float, pMask?: FloatMap): int;
+		setAnimation(iAnimation: int, pAnimation: IAnimationBase, fWeight?: float, pMask?: FloatMap): bool;
 		
 		getAnimationIndex(sName: string): int;
 		getAnimation(sName: string): IAnimationBase;
 		getAnimation(iAnimation: int): IAnimationBase;
 		getAnimationWeight(sName: string): float;
 		getAnimationWeight(iAnimation: int): float;
+
+		swapAnimations(i: int, j: int): bool;
+		removeAnimation(iAnimation: int): bool;
 		
 		setWeights(...pWeight: float[]): bool;
 		setWeightSwitching(fWeight: float, iAnimationFrom: int, iAnimationTo: int): bool;

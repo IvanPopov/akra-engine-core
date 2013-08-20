@@ -168,9 +168,19 @@ module akra.scene.objects {
 		}
 
 		recalcProjMatrix(): void {
-			//TODO: check proj matrix type --> this._eCameraType
-			//now, temrary, supported on perspective proj
-			this.setProjParams(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane);
+			switch(this._eCameraType){
+				case ECameraTypes.PERSPECTIVE:
+					Mat4.perspective(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane,this._m4fProj);
+					break;
+				case ECameraTypes.ORTHO:
+					Mat4.orthogonalProjection(this._fWidth, this._fHeight,
+					 this._fNearPlane, this._fFarPlane, this._m4fProj);
+					break;
+				case ECameraTypes.OFFSET_ORTHO:
+					Mat4.orthogonalProjectionAsymmetric(this._fMinX, this._fMaxX,
+					 this._fMinY, this._fMaxY,this._fNearPlane, this._fFarPlane, this._m4fProj);
+					break;
+			}
 			CLEAR_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 

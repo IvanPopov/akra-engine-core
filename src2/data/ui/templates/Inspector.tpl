@@ -58,6 +58,11 @@
 <component name="scene-model">
 	<div class="node-type">Scene model properties</div>
 	<div class="row">
+		<component type="Panel" title="Scene model" collapsible >
+			<component type="scene.Model" name="scene-model-properties"/>
+		</component>
+	</div>
+	<div class="row">
 		<component type="Panel" title="Mesh" collapsible >
 			<component type="model.MeshProperties" name="mesh"/>
 		</component>

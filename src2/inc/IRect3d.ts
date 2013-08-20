@@ -106,6 +106,8 @@ module akra {
 
 		createBoundingSphere(pSphere?: ISphere): ISphere;
 
+		distanceToPoint(v3fPoint: IVec3): float;
+
 		toString(): string;
 	}
 }

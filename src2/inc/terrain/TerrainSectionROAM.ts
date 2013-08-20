@@ -474,7 +474,7 @@ module akra.terrain {
 				if(!pTri.rightChild) {
 					WARNING("invalid triangle node");
 				}
-
+				
 				var iPointMid: uint = (iPointLeft + iPointRight) * 0.5;
 				this.recursiveBuildTriangleList(
 					pTri.leftChild,

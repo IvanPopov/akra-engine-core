@@ -6,11 +6,13 @@
       <authoring_tool>OpenCOLLADA for 3ds Max;  Version: 1.4.1;  Revision: exported;  Platform: x64;  Configuration: Release_Max2013_static</authoring_tool>
       <source_data>file:///C:/Users/IvanPopov/Desktop/man_all_animation_140713/man_run_0-20.max</source_data>
     </contributor>
-    <created>2013-07-31T17:44:23</created>
-    <modified>2013-07-31T17:44:23</modified>
+    <created>2013-08-01T16:47:51</created>
+    <modified>2013-08-01T16:47:51</modified>
     <unit name="centimeter" meter="0.01"/>
     <up_axis>Z_UP</up_axis>
   </asset>
+  
+  
   <library_geometries>
     <geometry id="geom-mesh_body" name="mesh_body">
       <mesh>
@@ -464,13 +466,17 @@
       </skin>
     </controller>
   </library_controllers>
+  
+  
   <library_visual_scenes>
     <visual_scene id="MaxScene">
       <node name="EnvironmentAmbientLight">
+        
       </node>
       <node id="node-mesh_body" name="mesh_body">
         <instance_controller url="#geom-mesh_body-skin1">
           <skeleton>#node-Bip001_Pelvis</skeleton>
+          
         </instance_controller>
         <extra>
           <technique profile="OpenCOLLADA">
@@ -486,6 +492,7 @@
           <matrix>1 0 0 0 0 1 0 2.795797 0 0 1 98.96528 0 0 0 1</matrix>
           <instance_controller url="#geom-mesh_backpack-skin1">
             <skeleton>#node-Bone_backpack</skeleton>
+            
           </instance_controller>
         </node>
         <extra>
@@ -511,6 +518,17 @@
                   <matrix sid="matrix">0.9819831 0.1423386 -0.1242927 18.02325 -0.143516 0.989648 -5.25552e-4 2.016598 0.1229312 0.01835407 0.9922455 -1.02997e-4 0 0 0 1</matrix>
                   <node id="node-Bip001_Head" name="Bip001_Head" sid="joint0" type="JOINT">
                     <matrix sid="matrix">0.9661686 0.2382568 0.09875196 7.528137 -0.247415 0.9643366 0.09402287 1.97673 -0.07282858 -0.1152747 0.9906601 -4.76837e-7 0 0 0 1</matrix>
+                    <node id="node-Bip001_HeadNub" name="Bip001_HeadNub">
+                      <matrix>0.9999999 0 -3.72529e-9 25.2341 0 0.9999999 -9.31323e-10 1.90735e-6 0 9.31323e-10 0.9999999 0 0 0 0 1</matrix>
+                      <extra>
+                        <technique profile="OpenCOLLADA">
+                          <cast_shadows>1</cast_shadows>
+                          <primary_visibility>1</primary_visibility>
+                          <receive_shadows>1</receive_shadows>
+                          <secondary_visibility>1</secondary_visibility>
+                        </technique>
+                      </extra>
+                    </node>
                     <node id="node-Bone_jaw" name="Bone_jaw" sid="joint69" type="JOINT">
                       <matrix>-0.7151757 0.6989458 2.27243e-7 8.442719 0.6989457 0.715176 1.27591e-6 3.320728 5.92321e-7 1.13994e-6 -1.000001 3.33786e-5 0 0 0 1</matrix>
                       <node id="node-Bone_lip_d" name="Bone_lip_d" sid="joint68" type="JOINT">
@@ -820,6 +838,17 @@
                               <matrix>0.7331654 -0.6770188 -0.06414369 3.509895 0.6744425 0.735966 -0.05900611 0 0.08715573 -5.96046e-8 0.9961948 0 0 0 0 1</matrix>
                               <node id="node-Bip001_L_Finger02" name="Bip001_L_Finger02" sid="joint5" type="JOINT">
                                 <matrix>0.2500754 -0.9682263 -2.98023e-8 3.509888 0.9682264 0.2500753 1.49012e-8 0 1.49012e-8 2.98023e-8 1 0 0 0 0 1</matrix>
+                                <node id="node-Bip001_L_Finger0Nub" name="Bip001_L_Finger0Nub">
+                                  <matrix>1 -1.49012e-8 -2.23517e-8 3.509899 0 1 -2.98023e-8 -7.62939e-6 7.45058e-9 0 1 0 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -853,6 +882,17 @@
                               <matrix>-0.3482142 -0.9374149 -5.58794e-8 4.213402 0.9374149 -0.3482143 -1.49012e-8 -3.8147e-6 -7.45058e-9 -3.25963e-8 1 0 0 0 0 1</matrix>
                               <node id="node-Bip001_L_Finger12" name="Bip001_L_Finger12" sid="joint10" type="JOINT">
                                 <matrix>-0.08191666 -0.9966392 0 3.130775 0.9966392 -0.0819167 -1.86265e-8 -7.62939e-6 -2.98023e-8 1.11759e-8 1 -3.8147e-6 0 0 0 1</matrix>
+                                <node id="node-Bip001_L_Finger1Nub" name="Bip001_L_Finger1Nub">
+                                  <matrix>0.9999999 -1.49012e-8 -2.93367e-8 2.496101 0 1 0 -7.62939e-6 3.11993e-8 7.45058e-9 1 9.53674e-7 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -886,6 +926,17 @@
                               <matrix>-0.1985286 -0.9800949 0 4.150826 0.9800951 -0.1985286 1.11759e-8 3.8147e-6 -4.09782e-8 1.86265e-8 0.9999999 0 0 0 0 1</matrix>
                               <node id="node-Bip001_L_Finger22" name="Bip001_L_Finger22" sid="joint12" type="JOINT">
                                 <matrix>0.3247053 -0.9458152 -1.11759e-8 3.745148 0.9458153 0.3247054 1.11759e-8 0 7.45058e-9 3.72529e-9 0.9999999 -2.86102e-6 0 0 0 1</matrix>
+                                <node id="node-Bip001_L_Finger2Nub" name="Bip001_L_Finger2Nub">
+                                  <matrix>1 -2.98023e-8 -1.49012e-8 2.647072 0 1 -7.45058e-9 7.62939e-6 -1.11759e-8 -2.23517e-8 1 9.53674e-7 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -919,6 +970,17 @@
                               <matrix>0.02864429 -0.9995897 0 3.641129 0.9995898 0.02864414 -1.86265e-9 0 -9.31323e-9 4.65661e-9 1 9.53674e-7 0 0 0 1</matrix>
                               <node id="node-Bip001_L_Finger32" name="Bip001_L_Finger32" sid="joint14" type="JOINT">
                                 <matrix>0.02683821 -0.9996399 0 3.694462 0.99964 0.02683815 0 0 1.86265e-8 -3.72529e-9 1 -9.53674e-7 0 0 0 1</matrix>
+                                <node id="node-Bip001_L_Finger3Nub" name="Bip001_L_Finger3Nub">
+                                  <matrix>0.9999999 0 -1.86265e-9 2.194283 2.98023e-8 1 0 0 -9.31323e-10 0 1 0 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -952,6 +1014,17 @@
                               <matrix>0.1346342 -0.9908953 1.49012e-8 3.291214 0.9908953 0.1346342 0 7.62939e-6 -1.49012e-8 0 1 0 0 0 0 1</matrix>
                               <node id="node-Bip001_L_Finger42" name="Bip001_L_Finger42" sid="joint16" type="JOINT">
                                 <matrix>0.3547095 -0.9349765 1.49012e-8 2.358398 0.9349765 0.3547095 0 0 -2.98023e-8 -3.35276e-8 1 0 0 0 0 1</matrix>
+                                <node id="node-Bip001_L_Finger4Nub" name="Bip001_L_Finger4Nub">
+                                  <matrix>1 -2.98023e-8 0 1.871559 -2.98023e-8 1 -7.45058e-9 3.8147e-6 7.45058e-9 0 1 9.53674e-7 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -1073,6 +1146,17 @@
                               <matrix>0.7331652 -0.6770186 0.06414366 3.509897 0.6744424 0.7359657 0.05900601 -7.62939e-6 -0.08715576 2.98023e-8 0.9961947 0 0 0 0 1</matrix>
                               <node id="node-Bip001_R_Finger02" name="Bip001_R_Finger02" sid="joint37" type="JOINT">
                                 <matrix>0.2500754 -0.9682264 -1.49012e-8 3.509895 0.9682265 0.2500755 0 -7.62939e-6 2.98023e-8 0 1 0 0 0 0 1</matrix>
+                                <node id="node-Bip001_R_Finger0Nub" name="Bip001_R_Finger0Nub">
+                                  <matrix>1 -2.98023e-8 -2.98023e-8 3.509895 0 1 0 -1.90735e-6 2.98023e-8 0 -1 0 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -1106,6 +1190,17 @@
                               <matrix>-0.3482145 -0.9374149 2.98023e-8 4.213402 0.9374148 -0.3482145 0 0 0 2.98023e-8 1 0 0 0 0 1</matrix>
                               <node id="node-Bip001_R_Finger12" name="Bip001_R_Finger12" sid="joint42" type="JOINT">
                                 <matrix>-0.08191667 -0.9966393 0 3.130783 0.9966393 -0.08191672 -2.98023e-8 7.62939e-6 -5.96046e-8 2.98023e-8 1 0 0 0 0 1</matrix>
+                                <node id="node-Bip001_R_Finger1Nub" name="Bip001_R_Finger1Nub">
+                                  <matrix>1 0 5.96046e-8 2.496094 -1.49012e-8 1 0 -3.8147e-6 2.98023e-8 4.47035e-8 -1 0 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -1139,6 +1234,17 @@
                               <matrix>-0.1985288 -0.980095 -1.49012e-8 4.150829 0.9800951 -0.1985288 2.98023e-8 0 -5.96046e-8 2.98023e-8 1 0 0 0 0 1</matrix>
                               <node id="node-Bip001_R_Finger22" name="Bip001_R_Finger22" sid="joint44" type="JOINT">
                                 <matrix>0.3247053 -0.9458152 0 3.745155 0.9458154 0.3247053 -5.96046e-8 0 0 2.98023e-8 1 0 0 0 0 1</matrix>
+                                <node id="node-Bip001_R_Finger2Nub" name="Bip001_R_Finger2Nub">
+                                  <matrix>0.9999999 7.45058e-9 0 2.647068 -7.45058e-9 0.9999999 0 0 -1.49012e-8 0 -0.9999999 0 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -1172,6 +1278,17 @@
                               <matrix>0.02864422 -0.9995897 -1.49012e-8 3.641144 0.9995898 0.02864424 1.49012e-8 0 -2.98023e-8 -4.47035e-8 1 -7.62939e-6 0 0 0 1</matrix>
                               <node id="node-Bip001_R_Finger32" name="Bip001_R_Finger32" sid="joint46" type="JOINT">
                                 <matrix>0.02683829 -0.9996397 2.98023e-8 3.694466 0.9996399 0.02683822 -7.45058e-9 0 -7.45058e-9 5.96046e-8 1 1.52588e-5 0 0 0 1</matrix>
+                                <node id="node-Bip001_R_Finger3Nub" name="Bip001_R_Finger3Nub">
+                                  <matrix>1 -1.86265e-8 0 2.194279 -1.49012e-8 0.9999999 0 7.62939e-6 -7.45058e-9 -2.98023e-8 -1 0 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -1205,6 +1322,17 @@
                               <matrix>0.1346341 -0.9908953 9.31323e-10 3.291214 0.9908954 0.1346342 -3.72529e-9 7.62939e-6 7.45058e-9 1.44355e-8 1 -7.62939e-6 0 0 0 1</matrix>
                               <node id="node-Bip001_R_Finger42" name="Bip001_R_Finger42" sid="joint48" type="JOINT">
                                 <matrix>0.3547094 -0.9349767 0 2.358383 0.9349768 0.3547094 -4.65661e-10 0 -2.23517e-8 1.49012e-8 1 7.62939e-6 0 0 0 1</matrix>
+                                <node id="node-Bip001_R_Finger4Nub" name="Bip001_R_Finger4Nub">
+                                  <matrix>1 1.71713e-8 1.86265e-9 1.871562 -1.26311e-8 1 7.45058e-9 7.62939e-6 0 -3.72529e-9 -1 7.62939e-6 0 0 0 1</matrix>
+                                  <extra>
+                                    <technique profile="OpenCOLLADA">
+                                      <cast_shadows>1</cast_shadows>
+                                      <primary_visibility>1</primary_visibility>
+                                      <receive_shadows>1</receive_shadows>
+                                      <secondary_visibility>1</secondary_visibility>
+                                    </technique>
+                                  </extra>
+                                </node>
                                 <extra>
                                   <technique profile="OpenCOLLADA">
                                     <cast_shadows>1</cast_shadows>
@@ -1400,6 +1528,7 @@
                           <node>
                             <matrix>1 0 0 -55.74791 0 1 0 22.66077 0 0 1 -11.0312 0 0 0 1</matrix>
                             <instance_geometry url="#geom-Mesh002">
+                              
                             </instance_geometry>
                           </node>
                           <extra>
@@ -1418,6 +1547,7 @@
                             <node>
                               <matrix>1 0 0 -55.77631 0 1 0 22.66079 0 0 1 12.47481 0 0 0 1</matrix>
                               <instance_geometry url="#geom-Mesh003">
+                                
                               </instance_geometry>
                             </node>
                             <extra>
@@ -1445,6 +1575,7 @@
                             <node>
                               <matrix>1 0 0 -52.40501 0 1 0 22.66076 0 0 1 -34.64672 0 0 0 1</matrix>
                               <instance_geometry url="#geom-Mesh001">
+                                
                               </instance_geometry>
                             </node>
                             <extra>
@@ -1571,6 +1702,17 @@
                   <matrix sid="matrix">0.9982452 -0.02683702 0.05278745 46.30315 0.02176809 0.9953001 0.09435955 3.8147e-6 -0.05507169 -0.0930449 0.9941378 4.76837e-7 0 0 0 1</matrix>
                   <node id="node-Bip001_L_Toe0" name="Bip001_L_Toe0" sid="joint23" type="JOINT">
                     <matrix sid="matrix">-0.01360002 -0.9994004 0.03184461 11.91276 0.9998468 -0.01324137 0.01144622 15.20695 -0.01101771 0.0319954 0.9994274 2.38419e-7 0 0 0 1</matrix>
+                    <node id="node-Bip001_L_Toe0Nub" name="Bip001_L_Toe0Nub">
+                      <matrix>1 -4.65661e-10 -3.00497e-9 7.374142 0 0.9999999 0 2.98023e-8 3.03044e-9 -4.65661e-10 -1 -9.53674e-7 0 0 0 1</matrix>
+                      <extra>
+                        <technique profile="OpenCOLLADA">
+                          <cast_shadows>1</cast_shadows>
+                          <primary_visibility>1</primary_visibility>
+                          <receive_shadows>1</receive_shadows>
+                          <secondary_visibility>1</secondary_visibility>
+                        </technique>
+                      </extra>
+                    </node>
                     <extra>
                       <technique profile="OpenCOLLADA">
                         <cast_shadows>1</cast_shadows>
@@ -1659,6 +1801,17 @@
                   <matrix sid="matrix">0.9912968 -0.01483957 0.1308084 46.30315 0.03614567 0.9861206 -0.1620499 1.14441e-5 -0.126588 0.1653677 0.9780741 -1.90735e-6 0 0 0 1</matrix>
                   <node id="node-Bip001_R_Toe0" name="Bip001_R_Toe0" sid="joint53" type="JOINT">
                     <matrix sid="matrix">-0.1363814 -0.9898589 0.03974083 11.91276 0.9906556 -0.1363233 0.004179686 15.20694 0.001280248 0.03993955 0.9992013 0 0 0 0 1</matrix>
+                    <node id="node-Bip001_R_Toe0Nub" name="Bip001_R_Toe0Nub">
+                      <matrix>1 0 0 7.374138 7.45058e-9 1 2.79397e-8 -3.8147e-6 -2.98023e-8 1.67638e-8 1 0 0 0 0 1</matrix>
+                      <extra>
+                        <technique profile="OpenCOLLADA">
+                          <cast_shadows>1</cast_shadows>
+                          <primary_visibility>1</primary_visibility>
+                          <receive_shadows>1</receive_shadows>
+                          <secondary_visibility>1</secondary_visibility>
+                        </technique>
+                      </extra>
+                    </node>
                     <extra>
                       <technique profile="OpenCOLLADA">
                         <cast_shadows>1</cast_shadows>
@@ -1721,9 +1874,21 @@
                     </technique>
                   </extra>
                 </node>
+                <node id="node-Dummy01" name="Dummy01">
+                  <matrix>4.61936e-7 -0.9015235 1.07288e-6 -3.507652 0.9015235 3.8743e-7 -1.39698e-7 0.7789917 7.07805e-8 1.19209e-6 0.9015235 -4.622221 0 0 0 1</matrix>
+                  <extra>
+                    <technique profile="OpenCOLLADA">
+                      <cast_shadows>1</cast_shadows>
+                      <primary_visibility>1</primary_visibility>
+                      <receive_shadows>1</receive_shadows>
+                      <secondary_visibility>1</secondary_visibility>
+                    </technique>
+                  </extra>
+                </node>
                 <node id="node-Object025" name="Object025">
                   <matrix>5.1409e-7 -0.9015235 8.9407e-7 -2.913612 0.9015238 4.84288e-7 3.48315e-7 0.7789917 -3.07336e-7 9.38773e-7 0.9015234 -4.622225 0 0 0 1</matrix>
                   <instance_geometry url="#geom-Object025">
+                    
                   </instance_geometry>
                   <extra>
                     <technique profile="OpenCOLLADA">
@@ -1826,6 +1991,7 @@
       <node id="node-mesh_misc" name="mesh_misc">
         <instance_controller url="#geom-mesh_misc-skin1">
           <skeleton>#node-Bip001_Spine</skeleton>
+          
         </instance_controller>
         <extra>
           <technique profile="OpenCOLLADA">
@@ -1839,6 +2005,7 @@
       <node id="node-mesh_misc1" name="mesh_misc1">
         <instance_controller url="#geom-mesh_misc1-skin1">
           <skeleton>#node-Bip001_Head</skeleton>
+          
         </instance_controller>
         <extra>
           <technique profile="OpenCOLLADA">

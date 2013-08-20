@@ -163,6 +163,7 @@ float4 fs_outline(VS_OUT IN) : COLOR
     return int(outline_reid) == int(reid)? resultAFXColor / float4(.75, .75, 3., 1.): resultAFXColor / 2.;
 };	
 
+
 technique outline 
 {
 	pass outline 

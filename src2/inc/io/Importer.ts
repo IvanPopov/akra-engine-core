@@ -214,8 +214,10 @@ module akra.io {
 			}
 		}
 
-		protected decodeAnimationFrame(pEntry: IAnimationFrameEntry): IAnimationFrame {
-			var pFrame: IAnimationFrame = animation.createFrame(pEntry.time, new Mat4(pEntry.matrix), pEntry.weight);
+		protected decodeAnimationFrame(pEntry: IAnimationFrameEntry): IPositionFrame {
+			var pFrame: IPositionFrame = new animation.PositionFrame(pEntry.time, new Mat4(pEntry.matrix), pEntry.weight);
+			//FIXME: avoid capability problems
+			pFrame.type = isInt(pEntry.type)? pEntry.type: EAnimationInterpolations.SPHERICAL;
 			return pFrame;
 		}
 

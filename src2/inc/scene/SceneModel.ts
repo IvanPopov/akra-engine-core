@@ -11,6 +11,15 @@
 module akra.scene {
 	export class SceneModel extends SceneObject implements ISceneModel {
 		private _pMesh: IMesh = null;
+		private _bShow: bool = true;
+
+		inline get visible(): bool {
+			return this._bShow;
+		}
+
+		inline set visible(bValue: bool) {
+			this._bShow = bValue;
+		}
 
 		constructor (pScene: IScene3d) {
 			super(pScene, EEntityTypes.MODEL);
@@ -35,7 +44,7 @@ module akra.scene {
 		}
 
 		inline get totalRenderable(): uint {
-			return isNull(this._pMesh)? 0: this._pMesh.length;
+			return isNull(this._pMesh) || !this._bShow? 0: this._pMesh.length;
 		}
 
 		inline getRenderable(i: uint = 0): IRenderableObject {
@@ -51,6 +60,11 @@ module akra.scene {
 
 		inline set hasShadow(bValue) {
 			this._pMesh.hasShadow = bValue;
+		}
+
+
+		inline isVisible(): bool {
+			return this._bShow;
 		}
 
 		toString(isRecursive: bool = false, iDepth: uint = 0): string {

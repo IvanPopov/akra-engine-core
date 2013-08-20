@@ -33,6 +33,9 @@ module akra {
 	
 
     export interface ISurfaceMaterial extends IResourcePoolItem {
+        readonly totalUpdatesOfTextures: uint;
+        readonly totalUpdatesOfTexcoords: uint;
+
     	totalTextures: uint;
     	material: IMaterial;
     	textureFlags: int;
@@ -48,9 +51,6 @@ module akra {
     	texture(iSlot: int): ITexture;
     	texcoord(iSlot: int): uint;
     	textureMatrix(iSlot: int): IMat4;
-
-        _getHash(): string;
-        _getTimeOfLastChangeTextures(): float;
     }
 
 }

@@ -1,8 +1,10 @@
 #ifndef IBUFFERMAP_TS
 #define IBUFFERMAP_TS
 
+#include "IReferenceCounter.ts"
+#include "IEventProvider.ts"
+
 module akra {
-	IFACE(IReferenceCounter);
 	IFACE(IVertexData);
 	IFACE(IDataMapper);
 	IFACE(IIndexData);
@@ -25,7 +27,7 @@ module akra {
     	addition: int;
     }
 
-	export interface IBufferMap extends IReferenceCounter{
+	export interface IBufferMap extends IReferenceCounter, IEventProvider {
 		primType: EPrimitiveTypes;
 		index: IIndexData;
 		length: uint;
@@ -33,6 +35,8 @@ module akra {
 		//FIXME: hack for terraing, for force limiting length of drawinf index.
 		/** writeonly */ _length: uint;
 		
+		readonly totalUpdates: uint;
+
 		/** Number of primitives. */
 		readonly primCount: uint;
 		/** Maximum flow available in buffer map. */
@@ -94,6 +98,9 @@ module akra {
 		_draw(): void;
 		
 		toString(bListAll?: bool): string;
+
+		//some data, such as VertexTexture or VertexBuffer have been modified.
+		signal modified(): void;
 	}
 }
 

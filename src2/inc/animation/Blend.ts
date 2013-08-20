@@ -51,19 +51,29 @@ module akra.animation {
 			debug_assert(isDef(pAnimation), 'animation must be setted.');
 
 			this._pAnimationList.push(null);
+			var iAnimation: int = this._pAnimationList.length - 1;
 			
-			return this.setAnimation(this._pAnimationList.length - 1, pAnimation, fWeight, pMask);
+			if (this.setAnimation(iAnimation, pAnimation, fWeight, pMask)) {
+				return iAnimation;
+			}
+
+			return -1;
 		}
 
-		setAnimation(iAnimation: int, pAnimation: IAnimationBase, fWeight: float = 1.0, pMask: FloatMap = null): int {
+		setAnimation(iAnimation: int, pAnimation: IAnimationBase, fWeight: float = 1.0, pMask: FloatMap = null): bool {
 			debug_assert(iAnimation <= this._pAnimationList.length, 'invalid animation slot: ' + iAnimation + '/' + this._pAnimationList.length);
 
 		    var pPointer: IAnimationElement = this._pAnimationList[iAnimation];
 		    var pAnimationList: IAnimationElement[] = this._pAnimationList;
 
 		    if (!pAnimation) {
-		    	pAnimationList[iAnimation] = null;
-		    	return iAnimation;
+		    	if (isDefAndNotNull(pAnimationList[iAnimation])) {
+			    	pAnimationList[iAnimation] = null;
+			    	this.updateDuration();
+			    	return true;
+		    	}
+
+		    	return false;
 		    }
 
 		    if (!pPointer) {
@@ -85,11 +95,38 @@ module akra.animation {
 					pAnimationList[iAnimation] = pPointer;
 				}
 			}
+			else {
+				return false;
+			}
 
 			this.grab(pAnimation);
 			this.updateDuration();
 			
-			return iAnimation;
+			return true;
+		}
+
+		swapAnimations(i: int, j: int): bool {
+		    var pAnimationList: IAnimationElement[] = this._pAnimationList;
+			var pPointerA: IAnimationElement = pAnimationList[i];
+			var pPointerB: IAnimationElement = pAnimationList[j];
+
+		    if (!isDefAndNotNull(pPointerA) || !isDefAndNotNull(pPointerB)) {
+		    	return false;
+		    }
+
+		    pAnimationList[i] = pPointerB;
+		    pAnimationList[j] = pPointerA;
+
+		    return true;
+		}
+
+		removeAnimation(i: int): bool {
+			if (this.setAnimation(i, null)) {
+				this._pAnimationList.splice(i, 1);
+				return true;
+			}
+
+			return false;
 		}
 
 		_onDurationUpdate(pAnimation: IAnimationBase, fDuration: float): void {
@@ -282,10 +319,10 @@ module akra.animation {
 			return pAnimation.createAnimationMask();
 		}
 
-		frame(sName: string, fRealTime: float) {
+		frame(sName: string, fRealTime: float): IPositionFrame {
 			var pAnimationList: IAnimationElement[] = this._pAnimationList;
-			var pResultFrame: IAnimationFrame = animationFrame().reset();
-			var pFrame: IAnimationFrame;
+			var pResultFrame: IPositionFrame = animationFrame().reset();
+			var pFrame: IPositionFrame;
 			var pMask: FloatMap;
 			var pPointer: IAnimationElement;
 			var fAcceleration: float;
@@ -306,6 +343,12 @@ module akra.animation {
 				pMask = pPointer.mask;
 				fBoneWeight = 1.0;
 
+				//для того чтобы циклы используемые выше работали корректно
+				if (fRealTime < pPointer.realTime) {
+					pPointer.time = 0;
+					pPointer.realTime = 0;
+				}
+
 				pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
 		    	pPointer.realTime = fRealTime;
 
@@ -322,18 +365,15 @@ module akra.animation {
 						iAnim ++;
 						//first, if 1
 						pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);
-						// if (iAnim === 1) {
-						// 	console.log((<any>pPointer.animation).name);
-						// }
 					}
 				}
 			}
 
 			if (pResultFrame.weight === 0.0) {
-				return null;
+				return <IPositionFrame>null;
 			}
 
-			return pResultFrame.normilize();
+			return <IPositionFrame>pResultFrame.normilize();
 		}
 
 		BROADCAST(weightUpdated, CALL(iAnim, fWeight));

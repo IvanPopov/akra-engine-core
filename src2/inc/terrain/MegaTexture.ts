@@ -476,7 +476,7 @@ module akra.terrain {
 		protected rpcErrorOccured(pRPC: IRPC, pError: Error): void {
 			this.disconnect(this._pRPC, SIGNAL(error), SLOT(rpcErrorOccured), EEventTypes.BROADCAST);
 
-			CRITICAL("Server for MeagTexture not response. Connection can not be established. Report us please.");
+			WARNING("Server for MeagTexture not response. Connection can not be established. Report us please.");
 		}
 
 

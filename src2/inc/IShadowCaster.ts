@@ -8,6 +8,8 @@ module akra {
 	IFACE(IMat4);
 	IFACE(IFrustum);
 
+	#define SHADOW_DISCARD_DISTANCE 70.
+
 	export interface IShadowCaster extends ICamera {
 		readonly lightPoint: ILightPoint;
 		readonly face: uint;

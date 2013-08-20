@@ -4,7 +4,7 @@
 #include "IAnimationBase.ts"
 
 module akra {
-	IFACE(IAnimationFrame);
+	IFACE(IPositionFrame);
 
 	export interface IAnimationContainer extends IAnimationBase {
 		readonly animationName: string;

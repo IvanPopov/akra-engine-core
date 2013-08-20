@@ -59,7 +59,7 @@ module akra.geometry {
 					this.right 	= arguments[0] + 1;
 					this.bottom = arguments[1] + 1;
 					this.back 	= arguments[2] + 1;
-
+					break;
 				case 6:
 					this.left 	= arguments[0];
 					this.top 	= arguments[1];
@@ -159,6 +159,16 @@ module akra.geometry {
 				iHeight = arguments[1] + 1;
 				iDepth 	= arguments[2] + 1;
 				break;
+				/*case 0:
+			case 3:
+			case 6:
+				pBox.setPosition(l, t, r - l, b - t, ff, bb - ff);
+				break;
+			case 4:
+				pBox.setPosition(l, t, arguments[2] - l, arguments[3]- t, 0, 1);
+				break;
+			default:
+				ERROR("Inavlid number of arguments");*/
 			case 6:
 				iLeft 	= arguments[0];
 				iTop 	= arguments[1];

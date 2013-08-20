@@ -11,6 +11,8 @@
 
 /// @TESSELLATION_THREAD: {data}/js/TessellationThread.t.js|src(inc/util/TessellationThread.t.js)|data_location({data},DATA)
 
+// #define PROFILE_TESSEALLATION 1
+
 module akra.terrain {
 	export class TerrainROAM implements ITerrainROAM extends Terrain {
 		private _pRenderableObject: IRenderableObject = null;
@@ -59,7 +61,12 @@ module akra.terrain {
 		private _pNodePool: ITriangleNodePool = null;
 
 		// private _pTestTerrainInfo: util.TerrainInfo = null;
-
+#ifdef PROFILE_TESSEALLATION
+		private _fAvgTesselateCallsInSec: float = 0;
+		private _iCurrentTesselateCount: uint = 0;
+		private _nSec: uint = 0;
+		private _fLastTimeStart: float = 0;
+#endif
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.TERRAIN_ROAM) {
 			super(pScene, eType);
@@ -102,12 +109,12 @@ module akra.terrain {
 					this.initTessellationSelfData();
 				}
 			}
-
+#ifdef PROFILE_TESSEALLATION
 			this._fAvgTesselateCallsInSec = 0;
 			this._iCurrentTesselateCount = 0;
 			this._nSec = 0;
 			this._fLastTimeStart = 0;
-
+#endif
 		}
 
 		inline get maxTriTreeNodes(): uint {
@@ -516,12 +523,7 @@ module akra.terrain {
 
 		inline _isOldCamera(pCamera: ICamera): bool {
 			return this._m4fLastCameraMatrix.isEqual(pCamera.worldMatrix);
-		} 
-
-		private _fAvgTesselateCallsInSec: float = 0;
-		private _iCurrentTesselateCount: uint = 0;
-		private _nSec: uint = 0;
-		private _fLastTimeStart: float = 0;
+		}
 
 		_onBeforeRender(pRenderableObject: IRenderableObject, pViewport: IViewport): void {
 			if(this._bIsReadyForTesseltion) {
@@ -535,6 +537,7 @@ module akra.terrain {
 					fCurrentTime - this._fLastTessellationTime > this._fTessellationThreadInterval) || 
 					fCurrentTime - this._fLastTessellationTime > this._fTessellationSelfInterval) {
 
+#ifdef PROFILE_TESSEALLATION
 					if(this._fLastTimeStart === 0){
 						this._fLastTimeStart = fCurrentTime;
 						this._iCurrentTesselateCount++;
@@ -556,6 +559,7 @@ module akra.terrain {
 						this._fLastTimeStart = fCurrentTime;
 						this._iCurrentTesselateCount = 0;
 					}
+#endif
 
 					if(!this._m4fLastCameraMatrix.isEqual(this._m4fLastTessellationMatrix)) {
 						this.processTessellationQueue();

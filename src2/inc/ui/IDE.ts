@@ -100,7 +100,7 @@ module akra.ui {
 
 		_beforeSceneUpdate(pScene: IScene3d): void {
 
-			var pNode: ISceneNode = <ISceneNode>this._pSceneTree.selectedNode;
+			/*var pNode: ISceneNode = <ISceneNode>this._pSceneTree.selectedNode;
 			var pKeymap: IKeyMap = this.getKeymap()
 
 			if (pKeymap.isKeyPress(EKeyCodes.NUMPAD8)) {
@@ -131,7 +131,7 @@ module akra.ui {
 		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD6)) {
 		    	
 		     	pNode.addPosition(vec3(0., 0., 1.));   
-		    }
+		    }*/
 		}
 
 		private setupObjectPicking(): void {
@@ -174,8 +174,8 @@ module akra.ui {
 
 		_sceneUpdate(pScene: IScene3d): void {
 			var pKeymap: IKeyMap = this.getKeymap();
-			
-			if (pKeymap.isMousePress() && false) {
+
+			if (false && pKeymap.isMousePress()) {
 				// var v3fPoint: IVec3 = this.getViewport().unprojectPoint(pKeymap.getMouse(), vec3());
 				
 				// v3fPoint.z -= 0.075;
@@ -196,7 +196,7 @@ module akra.ui {
 
 				this.connect(pViewport, SIGNAL(render), SLOT(_onDSViewportRender));
 				// this._pSelectedObject = (<any>this._pColorViewport).getObject(x, y);
-
+				
 				var pColor: IColor = (<render.DSViewport>this.getViewport())._getDeferredTex1Value(pMouse.x, pMouse.y);
 				var iRid: int = pColor.a;
 				var iSoid: int = (iRid - 1) >>> 10;
@@ -208,7 +208,7 @@ module akra.ui {
 				// console.log("diffuse", math.floatToFloat3(pColor.b).toString());
 				// console.log("rid", pColor.a);
 
-				// console.log("(getRenderId()) >> rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);
+				console.log("(getRenderId()) >> rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);
 				this._iSelectedRid = iRid;
 
 				this.inspectNode(this.getEngine().getComposer()._getObjectByRid(iRid));

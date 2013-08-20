@@ -3,7 +3,7 @@
 
 #include "IAnimation.ts"
 #include "ISceneNode.ts"
-#include "IAnimationFrame.ts"
+#include "IPositionFrame.ts"
 #include "IAnimationTrack.ts"
 
 #include "Base.ts"
@@ -50,14 +50,14 @@ module akra.animation {
 			return this._pTracks[i];
 		}
 		
-		frame(sName: string, fTime: float): IAnimationFrame {
+		frame(sName: string, fTime: float): IPositionFrame {
 			var pPointer: IAnimationTarget = this.getTargetByName(sName);
 		    
 		    if (!pPointer || !pPointer.track) {
 		    	return null;
 		    }
 
-			return pPointer.track.frame(math.clamp(fTime, 0, this._fDuration));
+			return <IPositionFrame>pPointer.track.frame(math.clamp(fTime, 0, this._fDuration));
 		}
 
 		extend(pAnimation: IAnimation): void {

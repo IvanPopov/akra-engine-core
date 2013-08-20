@@ -256,6 +256,11 @@ module akra.ui.animation {
 		            		var o = pBlender.el.offset();
 		            		for (var i = 0; i < pBlender.totalMasks; ++ i) {
 		            			var pMaskNode = pBlender.getMaskNode(i);
+		            			
+		            			if (!pMaskNode) {
+		            				continue;
+		            			}
+
 		            			pMaskNode.el.offset({left: o.left - 60 - pMaskNode.el.width() + i * 30, top: o.top - 30 + i * 30});
 		            			pMaskNode.routing();
 		            		}

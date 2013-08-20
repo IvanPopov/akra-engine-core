@@ -1,34 +1,24 @@
 #ifndef IANIMATIONTRACK_TS
 #define IANIMATIONTRACK_TS
 
+#include "IAnimationParameter.ts"
+#include "IPositionFrame.ts"
+
 module akra {
-	IFACE(IAnimationFrame);
 	IFACE(ISkeleton);
 	IFACE(ISceneNode);
-	IFACE(IMat4);
 
-	export interface IAnimationTrack {
+	export interface IAnimationTrack extends IAnimationParameter {
 		targetName: string;
 		
-		readonly totalFrames: uint;
 		readonly target: ISceneNode;
-		readonly duration: float;
-		readonly first: float;
-
-		/** Get keyframe by number */
-		getKeyFrame(iFrame: int): IAnimationFrame;
-		/** Set keyframe */
-		keyFrame(pFrame: IAnimationFrame): bool;
-		keyFrame(fTime: float, pMatrix: IMat4): bool;
-		/** Find keyframe by time */
-		findKeyFrame(fTime: float): int;
-		/** Calculate frame by time */
-		frame(fTime: float): IAnimationFrame;
 		
+		keyFrame(pFrame: IPositionFrame): bool;
+		keyFrame(fTime: float, pMatrix: IMat4): bool;
+
 		bind(sJoint: string, pSkeleton: ISkeleton);
 		bind(pSkeleton: ISkeleton);
-		bind(pNode: ISceneNode);
-		
+		bind(pNode: ISceneNode);		
 	}
 }
 

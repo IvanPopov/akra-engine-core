@@ -9,11 +9,21 @@
 #include "fx/BlendContainers.ts"
 #include "fx/TexcoordSwapper.ts"
 #include "fx/Maker.ts"
+#include "core/pool/resources/SurfaceMaterial.ts"
 
 #define ADD_PASS_STATE(eType) this._pPassStateMap[eType] = pPass.getState(eType) !== EPassStateValue.UNDEF ? \
 															pPass.getState(eType) : this._pPassStateMap[eType];
 
 module akra.fx {
+	export interface HashEntry {
+		hash: string;
+		modifyMark: uint;
+	}
+
+	export interface HashEntryMap {
+		[index: uint]: HashEntry;
+	}
+
 	export class PassBlend implements IAFXPassBlend {
 		UNIQUE();
 
@@ -95,6 +105,13 @@ module akra.fx {
 		private _pSamplerArrayByIdMap: IAFXVariableDeclMap = null;
 		private _pSamplerArrayIdList: uint[] = null;
 
+		private _pBufferMapHashMap: HashEntryMap = null;
+		private _pSurfaceMaterialHashMap: HashEntryMap = null;
+
+		private _isSamplersPrepared: bool = false;
+		private _isBufferMapPrepared: bool = false;
+		private _isSurfaceMaterialPrepared: bool = false;
+
 		static private texcoordSwapper: TexcoordSwapper = null;
 
 		constructor(pComposer: IAFXComposer){
@@ -135,6 +152,9 @@ module akra.fx {
 			this._pTexcoordSwapper = PassBlend.texcoordSwapper;
 
 			this._pPassStateMap = fx.createPassStateMap();
+
+			this._pBufferMapHashMap = <HashEntryMap>{};
+			this._pSurfaceMaterialHashMap = <HashEntryMap>{};
 		}
 
 		initFromPassList(pPassList: IAFXPassInstruction[]): bool {
@@ -157,20 +177,21 @@ module akra.fx {
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
 
 			var sForeignPartHash: string = this.prepareForeigns(pPassInput);
-			var sSamplerPartHash: string = pPassInput.isNeedUpdateSamplerHash() ? 
-											this.prepareSamplers(pPassInput) : pPassInput.samplerHash;
-			
-			var sMaterialPartHash: string = this.prepareSurfaceMaterial(pSurfaceMaterial);
-			var sBufferPartHash: string = this.prepareBufferMap(pBuffer);
+			var sSamplerPartHash: string = this.prepareSamplers(pPassInput, false);
+			var sMaterialPartHash: string = this.prepareSurfaceMaterial(pSurfaceMaterial, false);
+			var sBufferPartHash: string = this.prepareBufferMap(pBuffer, false);
 
 			var sTotalHash: string = sForeignPartHash + "|" + sSamplerPartHash + "|" + sMaterialPartHash + "|" + sBufferPartHash;
 
 			var pMaker: IAFXMaker = this.getMakerByHash(sTotalHash);
 			
 			if(!isDef(pMaker)) {
+				if(!this._isBufferMapPrepared){
+					this.prepareBufferMap(pBuffer, true);
+				}
 
-				if(!pPassInput.isNeedUpdateSamplerHash()){
-					this.prepareSamplers(pPassInput);
+				if(!this._isSamplersPrepared){
+					this.prepareSamplers(pPassInput, true);
 				}
 
 				this.applyForeigns(pPassInput);
@@ -191,13 +212,7 @@ module akra.fx {
 
 				this._pFXMakerByHashMap[sTotalHash] = pMaker;
 				this._pDefaultSamplerBlender.clear();
-			}
-			
-			if(pPassInput.isNeedUpdateSamplerHash()){
-				pPassInput.samplerHash = sSamplerPartHash;
-				this._pDefaultSamplerBlender.clear();
-			}
-			
+			}		
 
 			return pMaker;
 		}
@@ -691,9 +706,15 @@ module akra.fx {
 			return sHash;
 		}
 
-		private prepareSamplers(pPassInput: IAFXPassInputBlend): string {
-			var pBlender: SamplerBlender = this._pDefaultSamplerBlender;
+		private prepareSamplers(pPassInput: IAFXPassInputBlend, isForce: bool): string {
+			this._isSamplersPrepared = false;
+			
+			if(!pPassInput.isNeedUpdateSamplerHash() && !isForce){
+				return pPassInput.samplerHash;
+			}
 
+			var pBlender: SamplerBlender = this._pDefaultSamplerBlender;
+			pBlender.clear();
 			//Gum samplers
 			
 			var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
@@ -755,16 +776,82 @@ module akra.fx {
 				}
 			}
 			
-			return pBlender.getHash();
+			this._isSamplersPrepared = true;
+			pPassInput.samplerHash = pBlender.getHash();
+
+			return pPassInput.samplerHash;
 		}
 
-		private inline prepareSurfaceMaterial(pMaterial: ISurfaceMaterial): string{
-			return isNull(pMaterial) ? "" : pMaterial._getHash();
+		private inline prepareSurfaceMaterial(pMaterial: ISurfaceMaterial, isForce: bool): string {
+			this._isSurfaceMaterialPrepared = false;
+
+			if(isNull(pMaterial)){
+				return "";
+			}
+
+			var iMaterialId: uint = pMaterial.getGuid();
+			var pMaterialHashEntry: HashEntry = this._pSurfaceMaterialHashMap[iMaterialId];
+			if(isDef(pMaterialHashEntry) && pMaterialHashEntry.modifyMark === pMaterial.totalUpdatesOfTexcoords){
+				return pMaterialHashEntry.hash;
+			}
+			else {
+				var sMaterailHash: string = "";
+				for(var i: uint = 0; i < core.pool.resources.SurfaceMaterial.MAX_TEXTURES_PER_SURFACE; i++){
+					var iTexcoord: uint = pMaterial.texcoord(i);
+
+					if(i !== iTexcoord){
+						sMaterailHash += i.toString() + "<" + iTexcoord.toString() + ".";
+					}
+				}
+
+				if(!isDef(pMaterialHashEntry)){
+					pMaterialHashEntry = <HashEntry>{
+						hash: sMaterailHash,
+						modifyMark: 0
+					};
+
+					this._pSurfaceMaterialHashMap[iMaterialId] = pMaterialHashEntry;
+				}
+
+				pMaterialHashEntry.hash = sMaterailHash;
+				pMaterialHashEntry.modifyMark = pMaterial.totalUpdatesOfTexcoords;
+
+				return sMaterailHash;
+			}
 		}
 
-		private prepareBufferMap(pMap: IBufferMap): string {
-			this._pAttributeContainerV.initFromBufferMap(<util.BufferMap>pMap);
-			return this._pAttributeContainerV.getHash();
+		private prepareBufferMap(pMap: IBufferMap, isForce: bool): string {
+			this._isBufferMapPrepared = false;
+
+			var sBufferMapHash: string = "";
+
+			var iBufferMapId: uint = pMap.getGuid();
+			var pBufferMapHashEntry: HashEntry = this._pBufferMapHashMap[iBufferMapId];
+
+			if (!isForce && 
+				isDef(pBufferMapHashEntry) && pBufferMapHashEntry.modifyMark === pMap.totalUpdates) {
+				sBufferMapHash = pBufferMapHashEntry.hash;
+			}
+			else {
+				this._pAttributeContainerV.initFromBufferMap(<util.BufferMap>pMap);
+				sBufferMapHash = this._pAttributeContainerV.getHash();
+
+				this._isBufferMapPrepared = true;
+
+				if(!isDef(pBufferMapHashEntry)){
+					pBufferMapHashEntry = <HashEntry>{
+						hash: sBufferMapHash,
+						modifyMark: 0
+					};
+
+					this._pBufferMapHashMap[iBufferMapId] = pBufferMapHashEntry;
+				}
+
+				pBufferMapHashEntry.modifyMark = pMap.totalUpdates;
+				pBufferMapHashEntry.hash = sBufferMapHash;			
+			}
+			
+			return sBufferMapHash;
 		}
 
 		private inline swapTexcoords(pMaterial: ISurfaceMaterial): void {

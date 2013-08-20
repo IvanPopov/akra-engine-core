@@ -4,7 +4,6 @@
 #include "IDocument.ts"
 #include "info/info.ts"
 
-#include "IAnimationFrame.ts"
 #include "IAnimationTrack.ts"
 #include "IAnimation.ts"
 #include "IAnimationBlend.ts"
@@ -144,17 +143,21 @@ module akra.io {
 			return pEntry;
 		}
 
-		protected encodeAnimationFrameEntry(pFrame: IAnimationFrame): IAnimationFrameEntry {
+		protected encodeAnimationFrameEntry(pFrame: IPositionFrame): IAnimationFrameEntry {
 			var pEntry: IAnimationFrameEntry = {
 				time: pFrame.time,
 				weight: pFrame.weight,
-				matrix: []
+				matrix: [],
+				type: <int>pFrame.type
 			};
+
 
 			pEntry.matrix['$type'] = "Float32Array";
 
-			for (var i = 0; i < pFrame.matrix.data.length; ++ i) {
-				pEntry.matrix.push(pFrame.matrix.data[i]);
+			var pMatrix: IMat4 = pFrame.toMatrix();
+
+			for (var i = 0; i < pMatrix.data.length; ++ i) {
+				pEntry.matrix.push(pMatrix.data[i]);
 			}
 
 			return pEntry;
@@ -173,7 +176,7 @@ module akra.io {
 			}
 
 			for (var i: int = 0; i < pTrack.totalFrames; ++ i) {
-				var pFrame: IAnimationFrameEntry = this.encodeAnimationFrameEntry(pTrack.getKeyFrame(i));
+				var pFrame: IAnimationFrameEntry = this.encodeAnimationFrameEntry(<IPositionFrame>pTrack.getKeyFrame(i));
 				pEntry.keyframes.push(pFrame);
 			};
 

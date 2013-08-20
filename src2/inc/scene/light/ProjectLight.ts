@@ -9,6 +9,7 @@
 #include "util/ObjectArray.ts"
 #include "geometry/Plane3d.ts"
 #include "geometry/classifications.ts"
+#include "util/CalculatePlanesForLighting.ts"
 
 module akra.scene.light {
 
@@ -76,6 +77,14 @@ module akra.scene.light {
 			if(bValue && isNull(this._pDepthTexture)){
 				this.initializeTextures();
 			}
+		};
+
+		inline get lightingDistance(): float{
+			return this._pShadowCaster.farPlane;
+		};
+
+		inline set lightingDistance(fDistance){
+			this._pShadowCaster.farPlane = fDistance;
 		};
 
 		protected initializeTextures(): void {
@@ -191,217 +200,22 @@ module akra.scene.light {
 			var pRawResult: IObjectArray = pShadowCaster.display(DL_DEFAULT);
 
 			var pTestArray: IPlane3d[] = ProjectLight._pFrustumPlanes;
-			var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;
 			var nAdditionalTestLength: int = 0;
 
 			if(pShadowCaster.projectionMatrix.isOrthogonalProjection()){
-				//orthogonal projection
-				//defining light sight direction;
-				//TODO: rewrite additional testing
-				var pLightFrustumVertices: IVec3[] = pShadowCaster.frustum.frustumVertices;
-
-				var v3fDirection1: IVec3 = vec3(0.);
-				var v3fDirection2: IVec3 = vec3(0.);
-
-				var v3fDirection: IVec3 = vec3(0.);
-
-				//nearPlane
-				for(var i: int = 0; i<4;i++){
-					v3fDirection1.add(pLightFrustumVertices[i]);
-				}
-				//farPlane
-				for(var i: int = 4; i<8;i++){
-					v3fDirection2.add(pLightFrustumVertices[i]);
-				}
-
-				v3fDirection2.subtract(v3fDirection1, v3fDirection);
-				v3fDirection.normalize();
-
-				for(var i: int = 0; i<6; i++){
-					var sKey: string = pFrustumPlanesKeys[i];
-
-					var pPlane: IPlane3d = pCameraFrustum[sKey];
-
-					if(v3fDirection.dot(pPlane.normal) >= 0.){
-						//adding plane
-						
-						pTestArray[nAdditionalTestLength].set(pPlane);
-						nAdditionalTestLength++;
-					}
-					else{
-						var pPlanePoints = [new Vec3(), new Vec3(), new Vec3(), new Vec3()];
-						pCameraFrustum.getPlanePoints(sKey, pPlanePoints);
-
-						//find far points;
-						var pDirections = new Array(4);
-
-						for(var j: int = 0; j<4; j++){
-							pDirections[j] = new Vec3();
-							pPlanePoints[j].subtract(this.worldPosition,pDirections[j]);
-						}
-
-						var fLength1: float = pDirections[0].length();
-						var fLength2: float = pDirections[1].length();
-						var fLength3: float = pDirections[2].length();
-						var fLength4: float = pDirections[3].length();
-
-						var pTmp1: float[] = [fLength1, fLength2, fLength3, fLength4];
-
-						var pIndex: uint[] = [-1,-1,-1,-1];
-
-						for(var j: uint = 0; j<4;j++){
-							var iTest = 3;
-							for(var k: uint = 0; k<4;k++){
-								if(k == j){
-									continue;
-								}
-								if(pTmp1[j] >= pTmp1[k]){
-									iTest--;
-								}
-							}
-							for(var k: uint = 0 ; k<4; k++){
-								if(pIndex[iTest] == -1){
-									pIndex[iTest] = j;
-									break;
-								}
-								else{
-									iTest++;
-								}
-							}
-						}
-
-						var pPoint1: IVec3 = pPlanePoints[pIndex[0]];
-						var pPoint2: IVec3 = pPlanePoints[pIndex[1]];
-
-						var pTestPoint1: IVec3 = pPlanePoints[pIndex[2]];
-						var pTestPoint2: IVec3 = pPlanePoints[pIndex[3]];
-
-						// console.log(pPoint1, pPoint2, pTestPoint1, pTestPoint2)
-
-						var v3fDir: IVec3 = pPoint2.subtract(pPoint1, vec3());
-
-						var v3fNormal: IVec3 = v3fDir.cross(v3fDirection, vec3()).normalize();
-
-						var pTestPlane: IPlane3d = pTestArray[nAdditionalTestLength];
-						pTestPlane.set(v3fNormal, -v3fNormal.dot(pPoint1));
-
-						var pVertices: IVec3[] = pCamera.frustum.frustumVertices;
-						var iTest: uint = 0;
-						for(var k: int =0; k < 8;k++){
-							// console.log(pTestPlane.signedDistance(pVertices[k]));
-							if(pTestPlane.signedDistance(pVertices[k]) > 0.1){
-								iTest++;
-							}
-						}
-
-						if(iTest == 6){
-							pTestPlane.negate();
-						}
-						else if(iTest != 0){
-							continue;
-						}
-
-						nAdditionalTestLength++;
-
-						//pTestPlane.set(v3fNormal, -v3fNormal.dot(pPoint1));
-						
-
-						// if(pTestPlane.signedDistance(pTestPoint1) > 0.1 && math.abs(pTestPlane.signedDistance(pTestPoint2)) > 0.1){
-						// 	v3fNormal.negate();
-							
-						// }
-					}
-				}
+				nAdditionalTestLength = util.calculatePlanesForOrthogonalLighting(
+											pShadowCaster.frustum, pShadowCaster.worldPosition,
+											pCameraFrustum, pTestArray);
 			}
 			else{
-				//frustum projection
-				//TODO: rewrite additional testing
-				//create list for additional testing
-				var v3fLightPosition: IVec3 = this.worldPosition;
-
-				for(var i: int = 0; i<6; i++){
-					var sKey: string = pFrustumPlanesKeys[i];
-
-					var pPlane: IPlane3d = pCameraFrustum[sKey];
-
-					var v3fNormal: IVec3 = vec3().set(pPlane.normal);
-					var fDistance: float = pPlane.distance;
-
-					if(pPlane.signedDistance(v3fLightPosition) > 0){
-
-						// fDistance = -v3fNormal.dot(v3fLightPosition);
-
-						var pPlanePoints = [new Vec3(), new Vec3(), new Vec3(), new Vec3()];
-						pCameraFrustum.getPlanePoints(sKey, pPlanePoints);
-
-						//find far points;
-						var pDirections = new Array(4);
-
-						for(var j: int = 0; j<4; j++){
-							pDirections[j] = new Vec3();
-							pPlanePoints[j].subtract(v3fLightPosition,pDirections[j]);
-						}
-
-						var fLength1: float = pDirections[0].length();
-						var fLength2: float = pDirections[1].length();
-						var fLength3: float = pDirections[2].length();
-						var fLength4: float = pDirections[3].length();
-
-						var pTmp1: float[] = [fLength1, fLength2, fLength3, fLength4];
-
-						var pIndex: uint[] = [-1,-1,-1,-1];
-
-						for(var j: uint = 0; j<4;j++){
-							var iTest = 3;
-							for(var k: uint = 0; k<4;k++){
-								if(k == j){
-									continue;
-								}
-								if(pTmp1[j] >= pTmp1[k]){
-									iTest--;
-								}
-							}
-							for(var k: uint = 0 ; k<4; k++){
-								if(pIndex[iTest] == -1){
-									pIndex[iTest] = j;
-									break;
-								}
-								else{
-									iTest++;
-								}
-							}
-						}
-
-						var pDir1: IVec3 = pDirections[pIndex[0]];
-						var pDir2: IVec3 = pDirections[pIndex[1]];
-
-						var pTestPoint1: IVec3 = pPlanePoints[pIndex[2]];
-						var pTestPoint2: IVec3 = pPlanePoints[pIndex[3]];
-
-						pDir1.cross(pDir2, v3fNormal).normalize();
-
-						var pTestPlane: IPlane3d = pTestArray[i];
-						pTestPlane.set(v3fNormal, -v3fNormal.dot(v3fLightPosition));
-
-						// console.log(pTestPlane.signedDistance(pTestPoint1), pTestPlane.signedDistance(pTestPoint2));
-
-						var fThreshold: float = 0.1;
-
-						if(math.abs(pTestPlane.signedDistance(pTestPoint1)) <= fThreshold && math.abs(pTestPlane.signedDistance(pTestPoint2)) <= fThreshold){
-							pTestPlane.set(pPlane.normal, -pPlane.normal.dot(v3fLightPosition)); 
-						}
-						else if(pTestPlane.signedDistance(pTestPoint1) > 0 && math.abs(pTestPlane.signedDistance(pTestPoint2)) > 0) {
-							pTestPlane.negate();
-						}
-						// console.log(pTestPlane.normal.toString(), pTestPlane.distance);
-						// console.log(pTmp1[pIndex[0]], pTmp1[pIndex[1]], pTmp1[pIndex[2]], pTmp1[pIndex[3]]);
-					}
-					else{
-						pTestArray[i].set(v3fNormal, fDistance);
-					}
-				}				
-				nAdditionalTestLength = 6;
+				nAdditionalTestLength = util.calculatePlanesForFrustumLighting(
+											pShadowCaster.frustum, pShadowCaster.worldPosition,
+											pCameraFrustum, pTestArray);
 			}
+
+			var v3fMidPoint: IVec3 = vec3();
+			var v3fShadowDir: IVec3 = vec3();
+			var v3fCameraDir: IVec3 = vec3();
 
 			for(var i:int = 0; i<pRawResult.length; i++){
 				var pObject: ISceneObject = pRawResult.value(i);
@@ -419,7 +233,19 @@ module akra.scene.light {
 						}
 					}
 					if(j == nAdditionalTestLength){
-						pResult.push(pObject);
+						//discard shadow by distance?
+
+						pWorldBounds.midPoint(v3fMidPoint);
+
+						v3fMidPoint.subtract(pShadowCaster.worldPosition, v3fShadowDir);
+						v3fMidPoint.subtract(pCamera.worldPosition, v3fCameraDir);
+
+						if(v3fCameraDir.dot(v3fShadowDir) > 0 &&
+							pWorldBounds.distanceToPoint(pCamera.worldPosition) >= SHADOW_DISCARD_DISTANCE){
+						}
+						else{
+							pResult.push(pObject);
+						}
 					}	
 				}
 				else{
@@ -442,6 +268,7 @@ module akra.scene.light {
 	for(var i:int = 0; i<6; i++){
 		ProjectLight._pFrustumPlanes[i] = new geometry.Plane3d();
 	}
+
 }
 
 #endif

@@ -33,6 +33,9 @@ module akra {
 		readonly terrain2DLength: float;
 		readonly megaTexture: IMegaTexture;
 
+		manualMegaTextureInit: bool;
+		showMegaTexture: bool;
+		
 		isCreate(): bool;
 
 		/**
@@ -46,6 +49,7 @@ module akra {
 		 * @param {string} sSurfaceTextures Название мега текстуры.
 		 */
 		init(pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode?: ISceneNode): bool;
+		initMegaTexture(sSurfaceTextures?: string): void;
 		/**
 		 * Ищет секцию по координате
 		 */

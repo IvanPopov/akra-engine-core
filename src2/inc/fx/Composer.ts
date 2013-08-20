@@ -49,6 +49,7 @@ module akra.fx {
 	export enum ESystemUniformsIndices{
 		k_ModelMatrix,
 		k_FramebufferSize,
+		k_ViewportSize,
 		k_ViewMatrix,
 		k_ProjMatrix,
 		k_InvViewCameraMat,
@@ -708,6 +709,7 @@ module akra.fx {
 			if(this._bIsFirstApplySystemUnifoms){
 				PREPARE_INDEX(ESystemUniformsIndices.k_ModelMatrix, "MODEL_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_FramebufferSize, "FRAMEBUFFER_SIZE");
+				PREPARE_INDEX(ESystemUniformsIndices.k_ViewportSize, "VIEWPORT_SIZE");
 				PREPARE_INDEX(ESystemUniformsIndices.k_ViewMatrix, "VIEW_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_ProjMatrix, "PROJ_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_InvViewCameraMat, "INV_VIEW_CAMERA_MAT");
@@ -733,6 +735,7 @@ module akra.fx {
 				
 				this._bIsFirstApplySystemUnifoms = false;
 			}
+			
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
 			var pViewport: IViewport = this._getCurrentViewport();
 			var pRenderable: IRenderableObject = this._getCurrentRenderableObject();
@@ -746,6 +749,7 @@ module akra.fx {
 
 			if(!isNull(pViewport)){
 				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_FramebufferSize, vec2(pViewport.width, pViewport.height));
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_ViewportSize, vec2(pViewport.actualWidth, pViewport.actualHeight));
 
 				var pCamera: ICamera = pViewport.getCamera();
 				if(!isNull(pCamera)) { 

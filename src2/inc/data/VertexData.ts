@@ -81,6 +81,8 @@ module akra.data {
 		    debug_assert(iStride <= this.stride, 
 		    	"stride in VertexDeclaration grather than stride in construtor");
 
+		    this.declarationChanged(this._pVertexDeclaration);
+
 		    return true;
 		}
 
@@ -172,6 +174,7 @@ module akra.data {
 		                this.setVertexDeclaration(pDecl);
 		            }
 
+		            this.resized(this.byteLength);
 		            return true;
 		        }
 		        else {
@@ -185,15 +188,17 @@ module akra.data {
 
 		            if (this.byteOffset != iOldOffset) {
 		                WARNING("vertex data moved from " + iOldOffset + " ---> " + this.byteOffset);
-		                this.relocation(this, iOldOffset, this.byteOffset);
+		                this.relocated(iOldOffset, this.byteOffset);
 		            }
 
+		            this.resized(this.byteLength);
 		            return true;
 		        }
 		    }
 		    else if (arguments.length == 1) {
 		        if (nCount <= this.length) {
 		            this._iLength = nCount;
+		            this.resized(this.byteLength);
 		            return true;
 		        }
 		        else {
@@ -211,9 +216,10 @@ module akra.data {
 
 		            if (this.byteOffset != iOldOffset) {
 		                WARNING("vertex data moved from " + iOldOffset + " ---> " + this.byteOffset);
-		                this.relocation(this, iOldOffset, this.byteOffset);
+		                this.relocated(iOldOffset, this.byteOffset);
 		            }
 
+		            this.resized(this.byteLength);
 		            return true;
 		        }
 		    }
@@ -301,6 +307,8 @@ module akra.data {
 		                	/*iOffset + */this.byteOffset + iStride * nCountStart,
 		                    iStride * nCount); 
 		            }
+
+		            this.updated();
 		            return true;
 		        case 4:
 		            pElement = null;
@@ -348,6 +356,7 @@ module akra.data {
 		                       	nCountStart, 
 		                        nCount);
 		                }
+
 		                return false
 		            }
 		            else if (arguments.length === 3) {
@@ -360,6 +369,7 @@ module akra.data {
 		            }
 
 		            return false;
+
 		        case 1:
 		            return this.setData(pData, this._pVertexDeclaration.element(0).usage);
 		        default:
@@ -394,6 +404,7 @@ module akra.data {
 
 		            var iStride: uint = this.stride;
 		            var pBufferData: Uint8Array = new Uint8Array(iSize * iCount);
+
 	            	for (var i: int = 0; i < iCount; i++) {
 	            		var iCurrent: uint = iFrom + i;
 	            		var isOk: bool = this._pVertexBuffer.readData(iStride * iCurrent + iOffset + this.byteOffset, 
@@ -402,6 +413,7 @@ module akra.data {
 
 		                //pBufferData.set(new Uint8Array(), i * iSize);
 		            }
+
 		            return pBufferData.buffer;
 
 		        case 3:
@@ -448,7 +460,7 @@ module akra.data {
 		}
 
 		toString(): string {
-		    if (DEBUG) {
+#ifdef DEBUG
 
 			    var s: string = "";
 			    
@@ -464,15 +476,19 @@ module akra.data {
 			    s += this.getVertexDeclaration().toString();
 
 			    return s;
-		    }
-
+#else
 		    return null;
+#endif
 		}
 
 
 
 		CREATE_EVENT_TABLE(VertexData);
-		BROADCAST(relocation, CALL(pTarget, iFrom, iTo));
+		
+		BROADCAST(relocated, CALL(iFrom, iTo));
+		BROADCAST(resized, CALL(iByteLength));
+		BROADCAST(declarationChanged, CALL(pDecl));
+		BROADCAST(updated, VOID);
 	}
 
 }

@@ -48,6 +48,13 @@ module akra.scene.light {
 			this._isShadowCaster = bValue;
 		};
 
+		inline get lightingDistance(): float{
+			return -1.;
+		};
+
+		inline set lightingDistance(fDistance: float){
+		};
+
 		inline get optimizedCameraFrustum(): IFrustum{
 			return this._pOptimizedCameraFrustum;
 		};

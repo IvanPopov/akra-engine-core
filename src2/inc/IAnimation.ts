@@ -5,7 +5,7 @@
 
 module akra {
 	IFACE(ISceneNode);
-	IFACE(IAnimationFrame);
+	IFACE(IPositionFrame);
 	IFACE(IAnimationTrack);
 
 	export interface IAnimation extends IAnimationBase {
@@ -17,7 +17,7 @@ module akra {
 		getTracks(): IAnimationTrack[];
 		getTrack(i: int): IAnimationTrack;
 		
-		frame(sName: string, fTime: float): IAnimationFrame;
+		frame(sName: string, fTime: float): IPositionFrame;
 		extend(pAnimation: IAnimation): void;
 	}
 }

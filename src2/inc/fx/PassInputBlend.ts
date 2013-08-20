@@ -52,7 +52,7 @@ module akra.fx {
 		private _bIsNeedUpdateSamplerHash: bool = true;
 
 		//need for accelerate setSurfaceMaterial
-		private _fLastTimeChangeSurfaceMaterial: float = 0.;
+		private _nLastSufraceMaterialTextureUpdates: uint = 0;
 		private _pLastSurfaceMaterial: ISurfaceMaterial = null;
 
 		private _isFirstSetSurfaceNaterial: bool = true;
@@ -214,11 +214,16 @@ module akra.fx {
 				return;
 			}
 
-			for (var i: int = 0; i < pValue.length; i++) {
-				this.copySamplerState(pValue[i], this.samplerArrays[iIndex][i]);
-			}
+			if(!isNull(pValue)){
+				for (var i: int = 0; i < pValue.length; i++) {
+					this.copySamplerState(pValue[i], this.samplerArrays[iIndex][i]);
+				}
 
-			this.samplerArrayLength[iIndex] = pValue.length;
+				this.samplerArrayLength[iIndex] = pValue.length;
+			}
+			else {
+				this.samplerArrayLength[iIndex] = 0;
+			}			
 		}
 
 		setSamplerTexture(sName: string, sTexture: string): void;
@@ -330,7 +335,7 @@ module akra.fx {
 
 			if (this._bIsNeedUpdateSamplerHash || 
 				this._pLastSurfaceMaterial !== pSurfaceMaterial ||
-				this._fLastTimeChangeSurfaceMaterial !== pSurfaceMaterial._getTimeOfLastChangeTextures()){
+				this._nLastSufraceMaterialTextureUpdates !== pSurfaceMaterial.totalUpdatesOfTextures){
 
 				var iTotalTextures: uint = pSurfaceMaterial.totalTextures;
 				for (var i: int = 0; i < 16; i++) {
@@ -354,7 +359,7 @@ module akra.fx {
 			}
 
 			this._pLastSurfaceMaterial = pSurfaceMaterial;
-			this._fLastTimeChangeSurfaceMaterial = pSurfaceMaterial._getTimeOfLastChangeTextures();
+			this._nLastSufraceMaterialTextureUpdates = pSurfaceMaterial.totalUpdatesOfTextures;
 
 			if (this._bIsNeedUpdateSamplerHash){
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.diffuse, pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
