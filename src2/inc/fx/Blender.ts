@@ -21,6 +21,8 @@ module akra.fx {
 		private _pPassBlendByHashMap: IAFXPassBlendMap = null;
 		private _pPassBlendByIdMap: IAFXPassBlendMap = null;
 
+		private _pPassBlendHashTree: util.HashTree = null;
+
 		constructor(pComposer: IAFXComposer) {
 			this._pComposer = pComposer;
 
@@ -31,6 +33,8 @@ module akra.fx {
 
 			this._pPassBlendByHashMap = <IAFXPassBlendMap>{};
 			this._pPassBlendByIdMap = <IAFXPassBlendMap>{};
+
+			this._pPassBlendHashTree = new util.HashTree();
 		}
 
 		addComponentToBlend(pComponentBlend: IAFXComponentBlend, 
@@ -197,9 +201,6 @@ module akra.fx {
 
 			return pNewBlend;
 		}
-
-
-		private _pPassBlendHashTree: util.HashTree = new util.HashTree();
 
 		generatePassBlend(pPassList: IAFXPassInstruction[],
 						  pStates: any, pForeigns: any, pUniforms: any): IAFXPassBlend {

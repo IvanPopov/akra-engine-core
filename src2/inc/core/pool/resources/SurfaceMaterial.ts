@@ -248,6 +248,14 @@ module akra.core.pool.resources {
     	}
 
     	private calcHash(): string {
+    		// var iHash: uint = 0;
+    		// for(var i: uint = 0; i < this._pTexcoords.length; i++){
+    		// 	if(this._pTexcoords[i] !== i){
+    		// 		iHash += (this._pTexcoords[i] + 1) << i;
+    		// 	}
+    		// }
+
+    		// return iHash.toString();
     		var sHash: string = "";
 
     		for(var i = 0; i < this._pTexcoords.length; i++){
@@ -256,7 +264,7 @@ module akra.core.pool.resources {
     			}
     		}
 
-    		return sHash;
+	   		return sHash;
     	}
 	}
 }

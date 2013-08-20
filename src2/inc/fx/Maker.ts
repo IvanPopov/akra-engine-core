@@ -17,6 +17,9 @@
 
 #define SET_RENDER_STATE_TO_INPUT(eState) pInput.renderStates[eState] = pRenderStates[eState] || pPassBlendRenderStates[eState];
 
+
+// #define PROFILE_MAKE 1
+
 module akra.fx {
 
 	export interface IUniformTypeMap {
@@ -568,7 +571,17 @@ module akra.fx {
 			return true;
 		}
 
+#ifdef PROFILE_MAKE
+		private _pMakeTime: float[] = [0., 0., 0., 0., 0.];
+		private _iCount: uint = 0;
+#endif
+
 		_make(pPassInput: IAFXPassInputBlend, pBufferMap: util.BufferMap): IShaderInput {
+
+#ifdef PROFILE_MAKE
+			var tStartTime: float = (<any>window).performance.now();
+			var tEndTime: float = 0.;
+#endif
 			var pUniforms: any = pPassInput.uniforms;
 			var pTextures: any = pPassInput.textures
 			var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
@@ -588,6 +601,12 @@ module akra.fx {
 				}				
 			}
 
+#ifdef PROFILE_MAKE
+			tEndTime = (<any>window).performance.now();
+			this._pMakeTime[0] += tEndTime - tStartTime;
+			tStartTime = tEndTime;
+#endif
+
 			for(var i: uint = 0; i < this._pInputSamplerInfoList.length; i++){
 				var pInfo: IInputUniformInfo = this._pInputSamplerInfoList[i];
 
@@ -601,14 +620,16 @@ module akra.fx {
 					pState = pPassInput._getSamplerState(pInfo.nameIndex);					
 				}
 
-				// if(!isDef(pState)){
-				// 	LOG("Bad");
-				// }
-
 				pTexture = pPassInput._getTextureForSamplerState(pState);
 
 				this.setSamplerState(pInput.uniforms[pInfo.shaderVarInfo.location], pTexture, pState);
 			}
+
+#ifdef PROFILE_MAKE
+			tEndTime = (<any>window).performance.now();
+			this._pMakeTime[1] += tEndTime - tStartTime;
+			tStartTime = tEndTime;
+#endif
 
 			for(var i: uint = 0; i < this._pInputSamplerArrayInfoList.length; i++){
 				var pInfo: IInputUniformInfo = this._pInputSamplerArrayInfoList[i];
@@ -621,6 +642,12 @@ module akra.fx {
 					this.setSamplerState(pInputStates[j], pTexture, pSamplerStates[j]);
 				}
 			} 
+
+#ifdef PROFILE_MAKE
+			tEndTime = (<any>window).performance.now();
+			this._pMakeTime[2] += tEndTime - tStartTime;
+			tStartTime = tEndTime;
+#endif
 
 			for(var i: uint = 0; i < this._pShaderAttrInfoList.length; i++) {
 				var pAttrInfo: IShaderAttrInfo = this._pShaderAttrInfoList[i];
@@ -654,6 +681,12 @@ module akra.fx {
 
 			}
 
+#ifdef PROFILE_MAKE
+			tEndTime = (<any>window).performance.now();
+			this._pMakeTime[3] += tEndTime - tStartTime;
+			tStartTime = tEndTime;
+#endif
+
 			if(this._isUsedZero2D){
 				pInput.uniforms[this._pShaderUniformInfoMap["as0"].location] = 19;
 			}
@@ -684,6 +717,29 @@ module akra.fx {
 	        SET_RENDER_STATE_TO_INPUT(EPassState.ALPHABLENDENABLE);
 	        SET_RENDER_STATE_TO_INPUT(EPassState.ALPHATESTENABLE);
 
+#ifdef PROFILE_MAKE
+	    	tEndTime = (<any>window).performance.now();
+			this._pMakeTime[4] += tEndTime - tStartTime;
+			tStartTime = tEndTime;
+
+	        if(this._iCount %(100 * 300) === 0){
+	        	LOG("----------------")
+	        	LOG("uniforms: ", this._pMakeTime[0])
+	        	LOG("samplers: ", this._pMakeTime[1])
+	        	LOG("sampler arrays: ", this._pMakeTime[2])
+	        	LOG("attrs: ", this._pMakeTime[3])
+	        	LOG("states: ", this._pMakeTime[4])
+	        	LOG("----------------")
+				this._pMakeTime[0] = 0.;
+				this._pMakeTime[1] = 0.;
+				this._pMakeTime[2] = 0.;
+				this._pMakeTime[3] = 0.;
+				this._pMakeTime[4] = 0.;
+	        	this._iCount = 0;
+	        }
+
+	        this._iCount++;
+#endif
 			return pInput;
 		}
 

@@ -55,6 +55,17 @@ module akra.fx {
 		private _fLastTimeChangeSurfaceMaterial: float = 0.;
 		private _pLastSurfaceMaterial: ISurfaceMaterial = null;
 
+		private _isFirstSetSurfaceNaterial: bool = true;
+		private _pMaterialNameIndices: any = {
+			diffuse: 0,
+			ambient: 0,
+			specular: 0,
+			emissive: 0,
+			normal: 0,
+			material: 0,
+			textures: new Array(16)
+		}; 
+
 		samplers: IAFXSamplerStateMap = null;
 		samplerArrays: IAFXSamplerStateListMap = null; 
 		samplerArrayLength: IntMap = null;
@@ -284,17 +295,6 @@ module akra.fx {
 		inline setStruct(sName: string, pValue: any): void {
 			this.setUniform(sName, pValue);
 		}
-
-		private _isFirstSetSurfaceNaterial: bool = true;
-		private _pMaterialNameIndices: any = {
-			diffuse: 0,
-			ambient: 0,
-			specular: 0,
-			emissive: 0,
-			normal: 0,
-			material: 0,
-			textures: new Array(16)
-		}; 
 
 		setSurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): void {
 			if(isNull(pSurfaceMaterial)){
