@@ -1213,7 +1213,7 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		inline decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool{
+		inline decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool {
 			this.getTranslation(v3fTranslation);
 			var m3fRotScale = this.toMat3(mat3());
 			return m3fRotScale.decompose(q4fRotation,v3fScale);

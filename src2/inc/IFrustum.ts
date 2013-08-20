@@ -37,6 +37,8 @@ module akra{
 		testSphere(pSphere: ISphere): bool;
 		testFrustum(pFrustum: IFrustum): bool;
 
+		getViewDirection(v3fDirection?: IVec3): IVec3;
+
 		toString(): string;
 	};
 };

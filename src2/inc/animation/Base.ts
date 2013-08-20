@@ -3,7 +3,7 @@
 
 #include "IAnimationBase.ts"
 #include "ISceneNode.ts"
-#include "IAnimationFrame.ts"
+#include "IPositionFrame.ts"
 #include "IAnimationTrack.ts"
 #include "scene/Joint.ts"
 
@@ -83,14 +83,14 @@ module akra.animation {
 			debug_error("method AnimationBase::attach() must be overwritten.");
 		}
 		
-		frame(sName: string, fRealTime: float): IAnimationFrame {
+		frame(sName: string, fRealTime: float): IPositionFrame {
 			return null;
 		}
 
 		apply(fRealTime: float): bool {
 			var pTargetList: IAnimationTarget[] = this._pTargetList;
 		    var pTarget: ISceneNode = null;
-		    var pFrame: IAnimationFrame = null;
+		    var pFrame: IPositionFrame = null;
 		    var pTransform: IMat4 = null;
 		    var bAffected: bool = false;
 

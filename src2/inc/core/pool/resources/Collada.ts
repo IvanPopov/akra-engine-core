@@ -2129,8 +2129,10 @@ module akra.core.pool.resources {
                                      "incorrect output length of transformation data (" + pFloatArray.length + ")");
 
                         for (var i: int = 0; i < nMatrices; i++) {
-                            pTrack.keyFrame(pTimeMarks[i],
-                                            (new Mat4(pFloatArray.subarray(i * 16, i * 16 + 16), true)).transpose());
+                            var pFrame: IPositionFrame = new animation.PositionFrame(
+                                pTimeMarks[i],
+                                (new Mat4(pFloatArray.subarray(i * 16, i * 16 + 16), true)).transpose());
+                            pTrack.keyFrame(pFrame);
                         }
        
 

@@ -7,20 +7,16 @@
 #include "IMat4.ts"
 
 #include "model/Skeleton.ts"
-#include "Frame.ts"
+#include "Parameter.ts"
 
 
 module akra.animation {
-	class Track implements IAnimationTrack {
+	
+	class Track extends Parameter implements IAnimationTrack {
 		private _sTarget: string = null;
 		private _pTarget: ISceneNode = null;
-		private _pKeyFrames: IAnimationFrame[] = [];
-		private _eInterpolationType: EAnimationInterpolations = EAnimationInterpolations.MATRIX_LINEAR;
 
-		inline get totalFrames(): uint {
-			return this._pKeyFrames.length;
-		}
-
+	
 		inline get target(): ISceneNode{
 			return this._pTarget;
 		}
@@ -29,71 +25,28 @@ module akra.animation {
 			return this._sTarget;
 		}
 
-		inline set targetName(sValue: string){
+		inline set targetName(sValue: string) {
 			this._sTarget = sValue;
 		}
 
-		inline get duration(): float {
-			return (<IAnimationFrame>(this._pKeyFrames.last)).time;
-		}
-
-		inline get first(): float {
-			return (<IAnimationFrame>(this._pKeyFrames.first)).time;
-		}
-
-
 		constructor (sTarget: string = null) {
+			super();
 			this._sTarget = sTarget;
 		}
 
-		keyFrame(pFrame: IAnimationFrame): bool;
+		keyFrame(pFrame: PositionFrame): bool;
 		keyFrame(fTime: float, pMatrix: IMat4): bool;
 		keyFrame(fTime, pMatrix?): bool {
-			var pFrame: IAnimationFrame;
-		    var iFrame: int;
+			var pFrame: PositionFrame;
 
-		    var pKeyFrames: IAnimationFrame[] = this._pKeyFrames;
-		  	var nTotalFrames: int = pKeyFrames.length;
-
-		  	if (arguments.length > 1) {
-		  		pFrame = createFrame(<float>fTime, <IMat4>pMatrix);
+			if (arguments.length > 1) {
+		  		pFrame = new PositionFrame(<float>fTime, <IMat4>pMatrix);
 		  	}
 		    else {
-		    	pFrame = arguments[0];
+		    	pFrame = <PositionFrame>arguments[0];
 		    }
 
-		    if (nTotalFrames && (iFrame = this.findKeyFrame(pFrame.time)) >= 0) {
-				pKeyFrames.splice(iFrame, 0, pFrame);
-			}
-			else {
-				pKeyFrames.push(pFrame);
-			}
-
-			return true;
-		}
-
-		getKeyFrame(iFrame: int): IAnimationFrame {
-			debug_assert(iFrame < this.totalFrames, 'iFrame must be less then number of total jey frames.');
-
-			return this._pKeyFrames[iFrame];
-		}
-
-		findKeyFrame(fTime: float): int {
-			var pKeyFrames: IAnimationFrame[] = this._pKeyFrames;
-		    var nTotalFrames: int             = pKeyFrames.length;
-			
-			if (pKeyFrames[nTotalFrames - 1].time == fTime) {
-				return nTotalFrames - 1;
-			}
-			else {
-				for (var i: int = nTotalFrames - 1; i >= 0; i--) {
-					if (pKeyFrames[i].time > fTime && pKeyFrames[i - 1].time <= fTime) {
-						return i - 1;
-					}
-				}
-			}
-
-			return -1;
+		    return super.keyFrame(pFrame);
 		}
 
 		bind(sJoint: string, pSkeleton: ISkeleton): bool;
@@ -136,73 +89,10 @@ module akra.animation {
 			return isDefAndNotNull(pNode);
 		}
 
-		frame(fTime: float): IAnimationFrame {
-			var iKey1: int = 0, iKey2: int = 0;
-			var fScalar: float;
-			var fTimeDiff: float;
-			
-			var pKeys:  IAnimationFrame[] = this._pKeyFrames;
-			var nKeys:  int = pKeys.length;
-			var pFrame: IAnimationFrame = animationFrame();
-
-			debug_assert(nKeys > 0, 'no frames :(');
-
-			if (nKeys === 1) {
-				pFrame.set(pKeys[0]);
-			}
-			else {
-				//TODO: реализовать эвристики для бинарного поиска
-				
-				if(fTime >= this._pKeyFrames[nKeys - 1].time){
-					iKey1 = nKeys - 1;
-				}
-				else {
-					var p: uint = 0;
-					var q: uint = nKeys - 1;
-
-					while(p < q){
-						var s:uint = (p + q) >> 1;
-						var fKeyTime: float = this._pKeyFrames[s].time;
-
-						if(fTime >= fKeyTime){
-							if(fTime === fKeyTime || fTime < this._pKeyFrames[s+1].time){
-								iKey1 = s;
-								break;
-							}
-
-							p = s + 1;
-						}
-						else {
-							q = s;
-						}
-					}
-				}
-
-			    iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
-			
-			    fTimeDiff = pKeys[iKey2].time - pKeys[iKey1].time;
-			    
-			    if (!fTimeDiff){
-			        fTimeDiff = 1;
-			    }
-				
-				fScalar = (fTime - pKeys[iKey1].time) / fTimeDiff;
-
-				pFrame.interpolate(
-					this._pKeyFrames[iKey1], 
-					this._pKeyFrames[iKey2], 
-					fScalar);
-			}
-
-			pFrame.time = fTime;
-			pFrame.weight = 1.0;
-
-			return pFrame;
-		}
-
+		
 #ifdef DEBUG
 		toString(): string {
-			var s = "target: " + this.targetName + ", from: " + this._pKeyFrames[0].time + "sec. , duration: " + this.duration + 
+			var s = "target: " + this.targetName + ", from: " + this.first + "sec. , duration: " + this.duration + 
 				" sec. , frames: " + this.totalFrames; 
 			return s;
 		}

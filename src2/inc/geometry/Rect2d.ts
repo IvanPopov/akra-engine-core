@@ -590,6 +590,20 @@ module akra.geometry{
 			return pCircle;
 		};
 
+		distanceToPoint(v2fPoint: IVec2): float{
+			var fX: float = v2fPoint.x, fY: float = v2fPoint.y;
+
+			var fX0: float = this.x0, fY0: float = this.y0;
+			var fX1: float = this.x1, fY1: float = this.y1;
+
+			var fXN: float, fYN: float;
+
+			fXN = (math.abs(fX0 - fX) < math.abs(fX1 - fX)) ? fX0 : fX1;
+			fYN = (math.abs(fY0 - fY) < math.abs(fY1 - fY)) ? fY0 : fY1;
+			
+			return math.sqrt((fXN - fX)*(fXN - fX) + (fYN - fY)*(fYN - fY));
+		};
+
 		toString(): string{
 			return "(" + this.x0 + ", " + this.y0 + ") --> (" + 
 					this.x1 + ", " + this.y1 + ")";

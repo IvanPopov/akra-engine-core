@@ -4,7 +4,7 @@
 module akra {
 	IFACE(ISceneNode);
 	IFACE(IJoint);
-	IFACE(IAnimationFrame);
+	IFACE(IPositionFrame);
 	IFACE(IAnimationTrack);
 
 	export interface IAnimationTarget {
@@ -37,7 +37,7 @@ module akra {
 		isAttached(): bool;
 		attach(pTarget: ISceneNode): void;
 		
-		frame(sName: string, fRealTime: float): IAnimationFrame;
+		frame(sName: string, fRealTime: float): IPositionFrame;
 		apply(fRealTime: float): bool;
 
 		addTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;

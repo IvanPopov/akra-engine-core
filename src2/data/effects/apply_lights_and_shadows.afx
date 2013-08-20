@@ -247,6 +247,7 @@ float unprojOrthoZ(float4x4 projMat, float screenZ){
 
 float fMinShadow : MIN_SHADOW_VALUE = 0.5;
 float shadowConstant : SHADOW_CONSTANT = 5.e+2;
+float shadowAttenuationConstant: SHADOW_ATTENUATION_CONSTANT = 0.2;
 
 float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
     float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
@@ -258,6 +259,7 @@ float calculateShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCo
     float lightRealDepth = unprojZ(projMat, lightDepth); //negative
 
     float fShadowMultiplier = clamp(exp(shadowConstant*(1.e-2 - lightRealDepth + realDepth)), fMinShadow, 1.);
+    fShadowMultiplier = 1. - (1. - fShadowMultiplier) * exp(shadowAttenuationConstant*(realDepth - lightRealDepth));
     return fShadowMultiplier;
 };
 
@@ -427,16 +429,70 @@ float4 apply_sun_light() : COLOR {
 
 
 float calculateSunShadowMultiplier(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
+
     float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
-    //float lightDepth = blur(shadowSampler,v2fShadowTextureCoords,float2(1./512.)).x*2. - 1.;
     if(lightDepth == 1.){
         return 1.;
     }
 
     float lightRealDepth = unprojOrthoZ(projMat, lightDepth); //negative
 
-    float fShadowMultiplier = clamp(exp(shadowConstant*(0.08 - lightRealDepth + realDepth)), fMinShadow, 1.);
-    return fShadowMultiplier;
+    return clamp(exp(shadowConstant*(0.08 - lightRealDepth + realDepth)), fMinShadow, 1.);
+};
+
+float readRealLightDepth(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat){
+	float lightDepth = tex2D(shadowSampler, v2fShadowTextureCoords).x*2. - 1.;
+    if(lightDepth == 1.){
+        return 1.;
+    }
+
+    return unprojOrthoZ(projMat, lightDepth); //negative
+};
+
+float2 v2fShadowTexSize = float2(2048.);
+
+float calculateSunShadowMultiplierUpgraded(sampler shadowSampler, float2 v2fShadowTextureCoords, float4x4 projMat, float realDepth){
+
+	float2 v2fTexPos = v2fShadowTextureCoords*v2fShadowTexSize - float2(0.5);
+	float2 v2fTmp = floor(v2fTexPos);
+	float2 alpha = v2fTexPos - v2fTmp;
+	float2 beta = float2(1.) - alpha;
+
+	float2 v2fTex1 = (v2fTmp + float2(0.5))/v2fShadowTexSize;
+	float2 v2fTex2 = v2fTex1 + float2(1.)/v2fShadowTexSize;
+
+	float lightDepth1 = readRealLightDepth(shadowSampler, float2(v2fTex1.x, v2fTex1.y), projMat);
+	float lightDepth2 = readRealLightDepth(shadowSampler, float2(v2fTex1.x, v2fTex2.y), projMat);
+	float lightDepth3 = readRealLightDepth(shadowSampler, float2(v2fTex2.x, v2fTex1.y), projMat);
+	float lightDepth4 = readRealLightDepth(shadowSampler, float2(v2fTex2.x, v2fTex2.y), projMat);
+
+	float lightRealDepth = 0.;
+	float quantity = 0.;
+	float minDepth = -1000000.;
+
+	if(lightDepth1 < 0.){lightRealDepth += lightDepth1; quantity++; minDepth = max(minDepth, lightDepth1);}
+	if(lightDepth2 < 0.){lightRealDepth += lightDepth2; quantity++; minDepth = max(minDepth, lightDepth2);}
+	if(lightDepth3 < 0.){lightRealDepth += lightDepth3; quantity++; minDepth = max(minDepth, lightDepth3);}
+	if(lightDepth4 < 0.){lightRealDepth += lightDepth4; quantity++; minDepth = max(minDepth, lightDepth4);}
+
+	if(quantity == 0.){
+		return 1.;
+	}
+	else{
+		lightRealDepth = lightRealDepth/quantity;
+	}
+
+	float fShadowMultiplier;
+	fShadowMultiplier = clamp(exp(shadowConstant*(0.08 - lightRealDepth + realDepth)), fMinShadow, 1.);
+	fShadowMultiplier = 1. - (1. - fShadowMultiplier) * exp(shadowAttenuationConstant*(realDepth - minDepth));
+	return fShadowMultiplier;
+
+	/*
+	fShadowMultiplier = (shadowMult1 * alpha.y + shadowMult2 * beta.y) * alpha.x
+							+ (shadowMult3 * alpha.y + shadowMult4 * beta.y) * beta.x;
+
+   
+    return fShadowMultiplier;*/
 };
 
 float4 apply_sun_light_shadows() : COLOR {
@@ -468,7 +524,7 @@ float4 apply_sun_light_shadows() : COLOR {
             //color.rgb = lerp(color.rgb, points_sun[i].ground0, fFogValue );
             
             float4 colorWithLight = calculateSunLight(pixelData, float4(view * float4(points_sun_shadows[i].sunDir, 0.)).xyz, color, float4(fSunAmbient), float4(fSunSpecular));
-            color = float4(lerp(points_sun_shadows[i].ground0, colorWithLight.rgb, fFogValue), 1.);
+            //color = float4(lerp(points_sun_shadows[i].ground0, colorWithLight.rgb, fFogValue), 1.);
             //float4(pixelData.diffuse.rgb*color.rgb, 0.);//float4(1., 0., 0., 1.);;
             //result_color += float4(float3(fCos), 0.);
 
@@ -480,11 +536,12 @@ float4 apply_sun_light_shadows() : COLOR {
             if(all(lessThanEqual(float2(v3fTest.xy),float2(1.))) && v3fOptimizedLightSpacePosition.z >= -1. && v4fTmp.w >= 0.){
                 float2 v2fShadowTextureCoords = (v3fOptimizedLightSpacePosition.xy + 1.)/2.;
 
-                shadowMultiplier = calculateSunShadowMultiplier(sun_shadow_sampler[i], v2fShadowTextureCoords,
+                shadowMultiplier = calculateSunShadowMultiplierUpgraded(sun_shadow_sampler[i], v2fShadowTextureCoords,
                                                                 points_sun_shadows[i].optimized_projection_matrix, v4fLightSpace.z);
             }
-
-            result_color += color * shadowMultiplier;
+            color = float4(lerp(points_sun_shadows[i].ground0, colorWithLight.rgb* shadowMultiplier, fFogValue), 1.);
+            //result_color += color * shadowMultiplier;
+            result_color += color;
         }
     }
 

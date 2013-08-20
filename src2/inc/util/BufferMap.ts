@@ -9,6 +9,8 @@
 #include "data/IndexData.ts"
 #include "IVertexDeclaration.ts"
 
+#include "events/events.ts"
+
 #ifdef WEBGL
 	#include "webgl/webgl.ts"
 	#include "webgl/WebGLRenderer.ts"
@@ -23,7 +25,7 @@ module akra.util {
 		[semantics: string]: IDataFlow;
 	}
 
-	export class BufferMap implements IBufferMap extends ReferenceCounter{
+	export class BufferMap implements IBufferMap extends ReferenceCounter {
 		private _pFlows: IDataFlow[] = null;
 		private _pMappers: IDataMapper[] = null;
 		private _pIndex: IIndexData = null;
@@ -38,6 +40,7 @@ module akra.util {
 		private _nStartIndex: uint = 0;
 		private _pBuffersCompatibleMap: IBuffersCompatibleMap = null;
 		private _pSemanticsMap: ISemanticsMap = null;
+		private _nUpdates: int = 0;
 
 		constructor(pEngine: IEngine){
 			super();
@@ -45,12 +48,17 @@ module akra.util {
 			this.reset();
 		};
 
+		inline get totalUpdates(): uint {
+			return this._nUpdates;
+		}
+
 		inline get primType(): EPrimitiveTypes{
 			return this._pIndex ? this._pIndex.getPrimitiveType() : this._ePrimitiveType;
 		};
 
 		inline set primType(eType: EPrimitiveTypes){
 			this._ePrimitiveType = eType;
+			this.modified();
 		};
 
 		inline get primCount(): uint {
@@ -80,10 +88,12 @@ module akra.util {
 
 		inline set length(nLength: uint) {
 			this._nLength = Math.min(this._nLength, nLength);
+			this.modified();
 		}
 
 		inline set _length(nLength: uint) {
 			this._nLength = nLength;
+			this.modified();
 		}
 
 		inline get startIndex(): uint {
@@ -227,6 +237,9 @@ module akra.util {
 		    this._nUsedFlows = 0;
 
 		    this._pSemanticsMap = {};
+		    this._nUpdates = 0;
+
+		    this.modified();
 		}
 
 		flow(pVertexData: IVertexData): int;
@@ -263,12 +276,15 @@ module akra.util {
 		        isOk = this.checkData(pVertexData);
 		        debug_assert(isOk, 'You can use several unmappable data flows from one buffer.');
 
-		        this.pushEtalon(pVertexData);
+		        this.trackData(pVertexData);
 		    }
 		    else {
 		        pFlow.type = EDataFlowTypes.MAPPABLE;
 		    }
 
+		    if (isDefAndNotNull(pFlow.data)) {
+		    	this.untrackData(pVertexData);
+		    }
 
 		    pFlow.data = pVertexData;
 
@@ -315,9 +331,11 @@ module akra.util {
 
 		checkData(pData: IVertexData): bool {
 			var pEtalon = this._pBuffersCompatibleMap[pData.getBufferHandle()];
+		    
 		    if (!pEtalon || pEtalon.byteOffset === pData.byteOffset) {
 		        return true;
 		    }
+
 		    return false;
 		}
 
@@ -366,12 +384,15 @@ module akra.util {
 		        }
 		    }
 		    else {
-		        pMapper = {data: pMap, semantics: eSemantics, addition: iAddition};
+		        pMapper = <IDataMapper>{
+		        	data: pMap, 
+		        	semantics: eSemantics, 
+		        	addition: iAddition
+		        };
 
 		        this._pMappers.push(pMapper);
 		        this.length = pMap.length;
-		        //this.startIndex = pMap.getStartIndex();
-		        this.pushEtalon(pMap);
+		        this.trackData(pMap);
 		    }
 
 		    pFlow.mapper = pMapper;
@@ -379,8 +400,24 @@ module akra.util {
 		    return this.update();
 		}
 
-		private inline pushEtalon(pData: IVertexData): void {
+		private trackData(pData: IVertexData): void {
+			//only one vertex data may be used in one veetex buffer
+			//случаи, когда выделяются 2 vertex data'ы в одной области памяти не рассматриваются
 			this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
+
+			//this.connect(pData, SIGNAL(relocated), SLOT(modified));
+		    //this.connect(pData, SIGNAL(resized), SLOT(modified));
+		    //this.connect(pData, SIGNAL(updated), SLOT(modified));
+		    this.connect(pData, SIGNAL(declarationChanged), SLOT(modified));
+		}
+
+		private untrackData(pData: IVertexData): void {
+			delete this._pBuffersCompatibleMap[pData.getBufferHandle()];
+
+			//this.disconnect(pData, SIGNAL(relocated), SLOT(modified));
+		    //this.disconnect(pData, SIGNAL(resized), SLOT(modified));
+		    //this.disconnect(pData, SIGNAL(updated), SLOT(modified));
+		    this.disconnect(pData, SIGNAL(declarationChanged), SLOT(modified));
 		}
 
 		update(): bool {
@@ -446,8 +483,7 @@ module akra.util {
 		    this._nCompleteVideoBuffers = nCompleteVideoBuffers;
 		    this._nUsedFlows = nUsedFlows;
 
-		    // LOG(this.toString());
-		    // LOG("\n" + JSON.stringify(Object.keys(this._pSemanticsMap), null, "\t"))
+		    this.modified();
 
 		    return true;
 		}
@@ -552,7 +588,13 @@ module akra.util {
 #else
 			return null;
 #endif
+		}
 
+		CREATE_EVENT_TABLE(BufferMap);
+
+		modified(): void {
+			this._nUpdates ++;
+			EMIT_BROADCAST(modified, _VOID);
 		}
 	}
 

@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Aug 12 2013 21:51:37 GMT+0400 (Московское время (зима))
+ * assembled at: Tue Aug 20 2013 12:34:13 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -467,6 +467,8 @@ var akra;
                 time: /*this.fTime*/
                 0,
                 timeDelta: 0.,
+                manualSpeedControl: false,
+                manualSpeedRate: 0.,
                 movementRate: 0,
                 movementRateThreshold: 0.0001,
                 movementSpeedMax: /* sec */
@@ -1023,6 +1025,9 @@ var akra;
     /** @inline */function isHarpoon(pStat) {
         return pStat.weapon === EGameHeroWeapons.HARPOON;
     }
+    /** @inline */function disableMovement(pControls) {
+        pControls.direct.x = pControls.direct.y = 0.;
+    }
     function harpoonWeaponHero(pControls, pHero, pStat, pController) {
         // console.log((<IAnimationBlend>pStat.anim["STATE.blend"]).getAnimationWeight(3.), "gun weight << ");
         var pAnim = pStat.anim;
@@ -1053,7 +1058,7 @@ var akra;
             pHarpoonBlend.setWeights(0., 0., 1., 0.);
         }
         if (pStat.state !== EGameHeroStates.WEAPON_IDLE) {
-            pControls.direct.x = pControls.direct.y = 0.;
+            ((pControls).direct.x = (pControls).direct.y = 0.);
         }
         if (pStat.state == EGameHeroStates.WEAPON_NOT_DRAWED && fSpeed < 0.5) {
             pStat.state = EGameHeroStates.HARPOON_BEFORE_DRAW;
@@ -1137,20 +1142,28 @@ var akra;
                 pStat.state = EGameHeroStates.HARPOON_ATTACKING;
             }
         } else if (pStat.state == EGameHeroStates.HARPOON_ATTACKING) {
+            //in attacking
+            pStat.manualSpeedControl = true;
+            pStat.manualSpeedRate = 1.5 / 1.4;
+            var iJumpTime = 70 / 125 * pHarpoonComboPlayer.duration;
+            if (pHarpoonComboPlayer.animationTime >= iJumpTime) {
+            }
+            //attack finished
             if (pHarpoonComboPlayer.animationTime >= pHarpoonComboPlayer.duration) {
+                pStat.manualSpeedRate = 0.;
                 pStat.state = EGameHeroStates.HARPOON_ATTACK_FINISHED;
                 pStat.temp[0] = fNow;
             }
         } else if (pStat.state == EGameHeroStates.HARPOON_ATTACK_FINISHED) {
             fDelta = fNow - pStat.temp[0];
             if (fDelta <= pStat.harpoonIdleToUndrawTime) {
+                pStat.manualSpeedControl = false;
                 //переходим из harpoon::IDLE --> harpoon::COMBO
                 pHarpoonBlend.setWeightSwitching(fDelta / pStat.harpoonIdleToUndrawTime, 0, 1);
             } else {
                 pHarpoonBlend.setWeights(0., 1., 0., 0.);
                 pStat.state = EGameHeroStates.WEAPON_IDLE;
                 pStat.inAttack = false;
-                console.log("weapon IDLE >> ");
             }
         } else if (pStat.state == EGameHeroStates.HARPOON_BEFORE_UNDRAW) {
             fDelta = fNow - pStat.harpoonIdleToUnDrawStartTime;
@@ -1389,6 +1402,9 @@ var akra;
         return akra.self.hero.parameters.lastTriggers !== akra.self.hero.triggers.length;
     }
     ;
+    /** @inline */function isSpeedControlEnabled(pStat) {
+        return pStat.manualSpeedControl;
+    }
     function moveHero(pControls, pHero, pStat, pController) {
         var fMovementRate;
         var fMovementSpeedMax;
@@ -1464,15 +1480,17 @@ var akra;
             fMovementDerivativeMax = pStat.movementDerivativeMin + ((f - 1.) / (f + 1.)) * pStat.movementDerivativeConst;
             fMovementRate = pStat.movementRate + fTimeDelta * akra.math.clamp(fMovementDerivative, -fMovementDerivativeMax, fMovementDerivativeMax);
         }
+        //use manual speed
+        if (((pStat).manualSpeedControl)) {
+            fMovementRate = pStat.manualSpeedRate;
+        }
         fMovementRateAbs = akra.math.abs(fMovementRate);
         if (fMovementRateAbs < pStat.movementRateThreshold) {
             fMovementRate = 0.;
-            // this.pCurrentSpeedField.edit("0.00 m/sec");
-                    }
+        }
         if (fRotationRate != 0.) {
             pHero.addRelRotationByEulerAngles(fRotationRate * pStat.rotationSpeedMax * fTimeDelta, 0.0, 0.0);
         }
-        // var _p = vec3(pHero.worldPosition);
         /* ||
         (fMovementRate < 0. && fMovementRateAbs > pStat.walkSpeed / pStat.runSpeed)*/
         if (pStat.fallDown || fMovementRateAbs >= fWalkRate) {
@@ -1737,7 +1755,18 @@ var akra;
         pTerrain = akra.self.terrain = createTerrain(pScene, true);
         createModels();
         pSkyBoxTexture = createSkyBox(pRmgr, pViewport);
-        pSky = akra.self.sky = createSky(pScene, 14.0);
+        pSky = akra.self.sky = createSky(pScene, 14.);
+        var pProject = pScene.createLightPoint(akra.ELightTypes.PROJECT, true, 512);
+        pProject.attachToParent(pScene.getRootNode());
+        pProject.enabled = false;
+        var pParams = pProject.params;
+        pParams.ambient.set(0.0, 0.0, 0.0, 1);
+        pParams.diffuse.set(1.);
+        pParams.specular.set(1.);
+        pParams.attenuation.set(0.5, 0, 0);
+        pProject.setPosition(new akra.Vec3(-300, 300, -300));
+        pProject.lookAt(new akra.Vec3(0., .0, 0.));
+        pProject.lightingDistance = 10000.;
         pKeymap.bind("equalsign", /** @inline */function () {
             akra.self.activeCamera++;
             if (akra.self.activeCamera === akra.self.cameras.length) {

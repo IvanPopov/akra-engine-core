@@ -30,6 +30,10 @@ export enum EGameHeroWeapons {
 }
 
 export interface IGameHeroParameters {
+        //do not calcalate speed, if this cariable is ON
+        manualSpeedControl      : bool;
+        manualSpeedRate         : float;
+
         movementRate          : float;
         movementRateThreshold : float;
         movementSpeedMax      : float;

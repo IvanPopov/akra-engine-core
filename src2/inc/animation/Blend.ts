@@ -319,10 +319,10 @@ module akra.animation {
 			return pAnimation.createAnimationMask();
 		}
 
-		frame(sName: string, fRealTime: float) {
+		frame(sName: string, fRealTime: float): IPositionFrame {
 			var pAnimationList: IAnimationElement[] = this._pAnimationList;
-			var pResultFrame: IAnimationFrame = animationFrame().reset();
-			var pFrame: IAnimationFrame;
+			var pResultFrame: IPositionFrame = animationFrame().reset();
+			var pFrame: IPositionFrame;
 			var pMask: FloatMap;
 			var pPointer: IAnimationElement;
 			var fAcceleration: float;
@@ -365,18 +365,15 @@ module akra.animation {
 						iAnim ++;
 						//first, if 1
 						pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);
-						// if (iAnim === 1) {
-						// 	console.log((<any>pPointer.animation).name);
-						// }
 					}
 				}
 			}
 
 			if (pResultFrame.weight === 0.0) {
-				return null;
+				return <IPositionFrame>null;
 			}
 
-			return pResultFrame.normilize();
+			return <IPositionFrame>pResultFrame.normilize();
 		}
 
 		BROADCAST(weightUpdated, CALL(iAnim, fWeight));

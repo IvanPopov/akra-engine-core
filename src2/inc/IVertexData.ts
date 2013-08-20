@@ -41,6 +41,15 @@ module akra {
 		getBufferHandle(): int;
 		
 		toString(): string;
+
+		//when data moved in memory(in parent Hardware Buffer)
+		signal relocated(from: uint, to: uint): void;
+		//when data size changed
+		signal resized(byteLength: uint): void;
+		//when declaration changed
+		declarationChanged(decl: IVertexDeclaration): void;
+		//when data has been modified
+		signal updated(): void;
 	}
 }
 

@@ -194,6 +194,9 @@ module akra {
 		        time                    : 0,/*this.fTime*/
 		        timeDelta               : 0.,
 
+		        manualSpeedControl	  : false,
+		        manualSpeedRate 	  : 0.,
+
 		        movementRate          : 0,
 		        movementRateThreshold : 0.0001,
 		        movementSpeedMax      : 9.0, /* sec */
@@ -858,6 +861,10 @@ module akra {
 		return pStat.weapon === EGameHeroWeapons.HARPOON;
 	}
 
+	inline function disableMovement(pControls: IGameControls): void {
+		pControls.direct.x = pControls.direct.y = 0.;
+	}
+
 	function harpoonWeaponHero (pControls: IGameControls, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController) {
 		// console.log((<IAnimationBlend>pStat.anim["STATE.blend"]).getAnimationWeight(3.), "gun weight << ");
 	    var pAnim: IAnimationMap = pStat.anim;
@@ -899,7 +906,7 @@ module akra {
 	    }
 
 	    if (pStat.state !== EGameHeroStates.WEAPON_IDLE) {
-	        pControls.direct.x = pControls.direct.y = 0.;
+	        disableMovement(pControls);
 	    }
 
 	    if (pStat.state == EGameHeroStates.WEAPON_NOT_DRAWED && fSpeed < 0.5) {
@@ -1002,7 +1009,18 @@ module akra {
 	        }	
 	    }
 	    else if (pStat.state == EGameHeroStates.HARPOON_ATTACKING) {
+	    	//in attacking
+	    	pStat.manualSpeedControl = true;
+	    	pStat.manualSpeedRate = 1.5 / 1.4;
+	    	var iJumpTime: number = 70 / 125 * pHarpoonComboPlayer.duration;
+
+	    	if (pHarpoonComboPlayer.animationTime >= iJumpTime) {
+
+	    	}
+
+	    	//attack finished
 	    	if (pHarpoonComboPlayer.animationTime >= pHarpoonComboPlayer.duration) {
+	    		pStat.manualSpeedRate = 0.;
 	    		pStat.state = EGameHeroStates.HARPOON_ATTACK_FINISHED;
 	    		pStat.temp[0] = fNow;
 	    	}
@@ -1010,6 +1028,7 @@ module akra {
 	    else if (pStat.state == EGameHeroStates.HARPOON_ATTACK_FINISHED) {
 	    	fDelta = fNow - pStat.temp[0];
 	    	if (fDelta <= pStat.harpoonIdleToUndrawTime) {
+	    		pStat.manualSpeedControl = false;
 	        	//переходим из harpoon::IDLE --> harpoon::COMBO
 	            pHarpoonBlend.setWeightSwitching(fDelta / pStat.harpoonIdleToUndrawTime, 0, 1);
 	        }
@@ -1331,6 +1350,10 @@ module akra {
 	    return self.hero.parameters.lastTriggers !== self.hero.triggers.length;
 	};
 
+	inline function isSpeedControlEnabled(pStat: IGameHeroParameters): bool {
+		return pStat.manualSpeedControl;
+	}
+
 	function moveHero(pControls: IGameControls, pHero: ISceneNode, pStat: IGameParameters, pController: IAnimationController): void {
 	    var fMovementRate: float;
 	    var fMovementSpeedMax: float;
@@ -1433,18 +1456,21 @@ module akra {
 	                        fTimeDelta * math.clamp(fMovementDerivative, -fMovementDerivativeMax, fMovementDerivativeMax);
 	    }
 
+	    //use manual speed
+	    if (isSpeedControlEnabled(pStat)) {
+	    	fMovementRate = pStat.manualSpeedRate;
+	    }
+	    
 	    fMovementRateAbs = math.abs(fMovementRate);
+		
 
 	    if (fMovementRateAbs < pStat.movementRateThreshold) {
 	        fMovementRate = 0.;
-
-	        // this.pCurrentSpeedField.edit("0.00 m/sec");
 	    }
 
 	    if (fRotationRate != 0.) {
 	        pHero.addRelRotationByEulerAngles(fRotationRate * pStat.rotationSpeedMax * fTimeDelta, 0.0, 0.0);
 	    }
-	    // var _p = vec3(pHero.worldPosition);
 
 	    if (pStat.fallDown || fMovementRateAbs >= fWalkRate/* ||
 	        (fMovementRate < 0. && fMovementRateAbs > pStat.walkSpeed / pStat.runSpeed)*/) {
@@ -1790,7 +1816,23 @@ module akra {
 		pTerrain 		= self.terrain 	= createTerrain(pScene, true);
 										  createModels();
 		pSkyBoxTexture 					= createSkyBox(pRmgr, <IDSViewport>pViewport);
-		pSky 			= self.sky 		= createSky(pScene, 14.0);
+		pSky 			= self.sky 		= createSky(pScene, 14.);
+
+		var pProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512);
+			
+		pProject.attachToParent(pScene.getRootNode());
+		pProject.enabled = false;
+		var pParams = <any>pProject.params;
+		pParams.ambient.set(0.0, 0.0, 0.0, 1);
+		pParams.diffuse.set(1.);
+		pParams.specular.set(1.);
+		pParams.attenuation.set(0.5, 0, 0);
+
+
+		pProject.setPosition(new Vec3(-300, 300, -300));
+		pProject.lookAt(new Vec3(0., .0, 0.));	
+
+		pProject.lightingDistance = 10000.;
 
 		pKeymap.bind("equalsign", () => {
 			self.activeCamera ++;

@@ -2,7 +2,7 @@
 #define ANIMATIONCONTAINER_TS
 
 #include "IAnimationContainer.ts"
-#include "IAnimationFrame.ts"
+#include "IPositionFrame.ts"
 #include "IAnimationBase.ts"
 
 #include "Base.ts"
@@ -195,7 +195,7 @@ module akra.animation {
 		    this._fTrueTime = fTime;
 		}
 
-		frame(sName: string, fRealTime: float): IAnimationFrame {
+		frame(sName: string, fRealTime: float): IPositionFrame {
 			if (!this._bEnable) {
 		    	return null;
 		    }
