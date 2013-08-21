@@ -31,11 +31,12 @@ module akra.fx {
 	}
 
 	export class PassInputBlend implements IAFXPassInputBlend {
+		UNIQUE()
 		private _isFirstInit: bool = true;
 		private _pCreator: IAFXComponentPassInputBlend = null;
 
-		private _bNeedToCalcBlend: bool = true;
-		private _bNeedToCalcShader: bool = true;
+		// private _bNeedToCalcBlend: bool = true;
+		// private _bNeedToCalcShader: bool = true;
 
 		private _iLastPassBlendId: uint = 0;
 		private _iLastShaderId: uint = 0;
@@ -48,11 +49,9 @@ module akra.fx {
 			"SHININESS" : 1.
 		};
 
-		private _sSamplerHash: string = "";
-		private _bIsNeedUpdateSamplerHash: bool = true;
-
 		//need for accelerate setSurfaceMaterial
 		private _nLastSufraceMaterialTextureUpdates: uint = 0;
+		private _nLastSamplerUpdates: uint = 0;
 		private _pLastSurfaceMaterial: ISurfaceMaterial = null;
 
 		private _isFirstSetSurfaceNaterial: bool = true;
@@ -64,7 +63,10 @@ module akra.fx {
 			normal: 0,
 			material: 0,
 			textures: new Array(16)
-		}; 
+		};
+
+		private _nSamplerUpdates: uint = 0;
+		private _nForeignUpdates: uint = 0;
 
 		samplers: IAFXSamplerStateMap = null;
 		samplerArrays: IAFXSamplerStateListMap = null; 
@@ -83,19 +85,13 @@ module akra.fx {
 
 		renderStates: IRenderStateMap = null;
 
-		inline isNeedUpdateSamplerHash(): bool {
-			return this._bIsNeedUpdateSamplerHash;
+		inline get totalSamplerUpdates(): uint {
+			return  this._nSamplerUpdates;
 		}
 
-		inline set samplerHash(sSamplerHash: string) {
-			this._sSamplerHash = sSamplerHash;
-			this._bIsNeedUpdateSamplerHash = false;
+		inline get totalForeignUpdates(): uint {
+			return this._nForeignUpdates;
 		}
-
-		inline get samplerHash(): string {
-			return this._sSamplerHash;
-		}
-
 
 		constructor(pCreator: IAFXComponentPassInputBlend){
 			this._pCreator = pCreator;
@@ -155,8 +151,8 @@ module akra.fx {
 
 			//Check type
 
-			if(!this._bIsNeedUpdateSamplerHash && this.textures[iIndex] !== pValue){
-				this._bIsNeedUpdateSamplerHash = true;
+			if(this.textures[iIndex] !== pValue){
+				this._nSamplerUpdates++;
 			}
 
 			this.textures[iIndex] = pValue;
@@ -174,8 +170,9 @@ module akra.fx {
 			var pOldValue: any = this.foreigns[iIndex];
 
 			if(pOldValue !== pValue) {
-				this._bNeedToCalcBlend = true;
-				this._bNeedToCalcShader = true;
+				// this._bNeedToCalcBlend = true;
+				// this._bNeedToCalcShader = true;
+				this._nForeignUpdates++;
 			}
 
 			this.foreigns[iIndex] = pValue;
@@ -245,24 +242,19 @@ module akra.fx {
 			var pState: IAFXSamplerState = this.samplers[iIndex];
 
 			if(isString(pTexture)){
-				if(isNull(pState.texture) && pState.textureName !== pTexture){
-					pState.textureName = pTexture;
-					this._bIsNeedUpdateSamplerHash = true;
+				if (!isNull(pTexture) || pState.textureName !== pTexture){
+					this._nSamplerUpdates++;
 				}
+
+				pState.textureName = pTexture;
+				pState.texture = null;
 			}
 			else {
 				if(pState.texture !== pTexture){
-					this._bIsNeedUpdateSamplerHash = true;
+					this._nSamplerUpdates++;
 				}
 
 				pState.texture = pTexture;
-
-				// if (!isNull(pTexture)) {
-				// 	pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
-				// 	pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
-				// 	pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
-				// 	pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
-				// }
 			}
 		}
 
@@ -284,17 +276,10 @@ module akra.fx {
 			var pState: IAFXSamplerState = this.samplers[iIndex];
 			
 			if(pState.texture !== pTexture){
-				this._bIsNeedUpdateSamplerHash = true;
+				this._nSamplerUpdates++;
 			}
 
 			pState.texture = pTexture;
-			
-			// if (!isNull(pTexture)) {
-			// 	pState.min_filter = pTexture.getFilter(ETextureParameters.MIN_FILTER);
-			// 	pState.mag_filter = pTexture.getFilter(ETextureParameters.MAG_FILTER);
-			// 	pState.wrap_s = pTexture.getWrapMode(ETextureParameters.WRAP_S);
-			// 	pState.wrap_t = pTexture.getWrapMode(ETextureParameters.WRAP_T);
-			// }
 		}		
 
 		inline setStruct(sName: string, pValue: any): void {
@@ -333,7 +318,7 @@ module akra.fx {
 				this._isFirstSetSurfaceNaterial = false;
 			}
 
-			if (this._bIsNeedUpdateSamplerHash || 
+			if (this._nLastSamplerUpdates !== this._nSamplerUpdates || 
 				this._pLastSurfaceMaterial !== pSurfaceMaterial ||
 				this._nLastSufraceMaterialTextureUpdates !== pSurfaceMaterial.totalUpdatesOfTextures){
 
@@ -358,16 +343,17 @@ module akra.fx {
 				this.uniforms[this._pMaterialNameIndices.material] = pMatContainer;
 			}
 
-			this._pLastSurfaceMaterial = pSurfaceMaterial;
-			this._nLastSufraceMaterialTextureUpdates = pSurfaceMaterial.totalUpdatesOfTextures;
-
-			if (this._bIsNeedUpdateSamplerHash){
+			if (this._nLastSamplerUpdates !== this._nSamplerUpdates){
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.diffuse, pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.ambient, pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.specular, pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.emissive, pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.normal, pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
 			}
+
+			this._pLastSurfaceMaterial = pSurfaceMaterial;
+			this._nLastSufraceMaterialTextureUpdates = pSurfaceMaterial.totalUpdatesOfTextures;
+			this._nLastSamplerUpdates = this._nSamplerUpdates;
 		}
 
 		inline setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
@@ -454,18 +440,18 @@ module akra.fx {
 
 			this._pCreator.releasePassInput(this);
 
-			this._bNeedToCalcShader = true;
-			this._bNeedToCalcBlend = true;
+			// this._bNeedToCalcShader = true;
+			// this._bNeedToCalcBlend = true;
 		}
 
 
-		inline _isNeedToCalcBlend(): bool {
-			return this._bNeedToCalcBlend;
-		}
+		// inline _isNeedToCalcBlend(): bool {
+		// 	return this._bNeedToCalcBlend;
+		// }
 
-		inline _isNeedToCalcShader(): bool {
-			return this._bNeedToCalcBlend || this._bNeedToCalcShader;
-		}
+		// inline _isNeedToCalcShader(): bool {
+		// 	return this._bNeedToCalcBlend || this._bNeedToCalcShader;
+		// }
 
 		inline _getLastPassBlendId(): uint {
 			return this._iLastPassBlendId;
@@ -620,7 +606,7 @@ module akra.fx {
 
 			var pState: IAFXSamplerState = this.samplers[iNameIndex];
 			if(pState.texture !== pTexture){
-				this._bIsNeedUpdateSamplerHash = true;
+				this._nSamplerUpdates++;
 			}
 
 			pState.texture = pTexture;
@@ -634,16 +620,11 @@ module akra.fx {
 		}
 
 		private copySamplerState(pFrom: IAFXSamplerState, pTo: IAFXSamplerState): void {
-			if(!this._bIsNeedUpdateSamplerHash){
-				/**
-				 * TODO: need imporove check of changing sampler state
-				 */
-				if (pTo.textureName !== pFrom.textureName ||
-					pTo.texture !== pFrom.texture){
-
-					this._bIsNeedUpdateSamplerHash = true;
-				}
+			if (pTo.textureName !== pFrom.textureName ||
+				pTo.texture !== pFrom.texture){
+				this._nSamplerUpdates++;
 			}
+
 			pTo.textureName = pFrom.textureName;
 			pTo.texture = pFrom.texture;
 

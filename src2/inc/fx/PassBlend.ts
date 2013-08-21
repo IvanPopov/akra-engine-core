@@ -10,26 +10,27 @@
 #include "fx/TexcoordSwapper.ts"
 #include "fx/Maker.ts"
 #include "core/pool/resources/SurfaceMaterial.ts"
+#include "util/StringMinifier.ts"
+#include "util/HashTree.ts"
 
 #define ADD_PASS_STATE(eType) this._pPassStateMap[eType] = pPass.getState(eType) !== EPassStateValue.UNDEF ? \
 															pPass.getState(eType) : this._pPassStateMap[eType];
 
 module akra.fx {
-	export interface HashEntry {
-		hash: string;
+	export interface IHashEntry {
+		hash: uint;
 		modifyMark: uint;
 	}
 
-	export interface HashEntryMap {
-		[index: uint]: HashEntry;
+	export interface IHashEntryMap {
+		[index: uint]: IHashEntry;
 	}
 
 	export class PassBlend implements IAFXPassBlend {
 		UNIQUE();
 
 		private _pComposer: IAFXComposer = null;
-		private _pFXMakerByHashMap: IAFXMakerMap = null;
-
+		private _pFXMakerHashTree: util.HashTree = null;
 		
 		private _pExtSystemDataV: ExtSystemDataContainer = null;
 		private _pComplexTypeContainerV: ComplexTypeBlendContainer = null;
@@ -105,19 +106,22 @@ module akra.fx {
 		private _pSamplerArrayByIdMap: IAFXVariableDeclMap = null;
 		private _pSamplerArrayIdList: uint[] = null;
 
-		private _pBufferMapHashMap: HashEntryMap = null;
-		private _pSurfaceMaterialHashMap: HashEntryMap = null;
+		private _pPassInputForeignsHashMap: IHashEntryMap = null;
+		private _pPassInputSamplersHashMap: IHashEntryMap = null;
+		private _pBufferMapHashMap: IHashEntryMap = null;
+		private _pSurfaceMaterialHashMap: IHashEntryMap = null;
 
 		private _isSamplersPrepared: bool = false;
 		private _isBufferMapPrepared: bool = false;
 		private _isSurfaceMaterialPrepared: bool = false;
 
 		static private texcoordSwapper: TexcoordSwapper = null;
+		static private hashMinifier: util.StringMinifier = null;
 
 		constructor(pComposer: IAFXComposer){
 			this._pComposer = pComposer;
 
-			this._pFXMakerByHashMap = <IAFXMakerMap>{};
+			this._pFXMakerHashTree = new util.HashTree();
 
 			this._pExtSystemDataV = new ExtSystemDataContainer();
 			this._pComplexTypeContainerV = new ComplexTypeBlendContainer();
@@ -149,12 +153,18 @@ module akra.fx {
 				PassBlend.texcoordSwapper = new TexcoordSwapper();
 			}
 
+			if(isNull(PassBlend.hashMinifier)){
+				PassBlend.hashMinifier = new util.StringMinifier();
+			}
+
 			this._pTexcoordSwapper = PassBlend.texcoordSwapper;
 
 			this._pPassStateMap = fx.createPassStateMap();
 
-			this._pBufferMapHashMap = <HashEntryMap>{};
-			this._pSurfaceMaterialHashMap = <HashEntryMap>{};
+			this._pPassInputForeignsHashMap = <IHashEntryMap>{};
+			this._pPassInputSamplersHashMap = <IHashEntryMap>{};
+			this._pBufferMapHashMap = <IHashEntryMap>{};
+			this._pSurfaceMaterialHashMap = <IHashEntryMap>{};
 		}
 
 		initFromPassList(pPassList: IAFXPassInstruction[]): bool {
@@ -176,16 +186,19 @@ module akra.fx {
 					    pBuffer: IBufferMap): IAFXMaker {
 			pPassInput.setSurfaceMaterial(pSurfaceMaterial);
 
-			var sForeignPartHash: string = this.prepareForeigns(pPassInput);
-			var sSamplerPartHash: string = this.prepareSamplers(pPassInput, false);
-			var sMaterialPartHash: string = this.prepareSurfaceMaterial(pSurfaceMaterial, false);
-			var sBufferPartHash: string = this.prepareBufferMap(pBuffer, false);
+			var iForeignPartHash: uint = this.prepareForeigns(pPassInput);
+			var iSamplerPartHash: uint = this.prepareSamplers(pPassInput, false);
+			var iMaterialPartHash: uint = this.prepareSurfaceMaterial(pSurfaceMaterial, false);
+			var iBufferPartHash: uint = this.prepareBufferMap(pBuffer, false);
 
-			var sTotalHash: string = sForeignPartHash + "|" + sSamplerPartHash + "|" + sMaterialPartHash + "|" + sBufferPartHash;
-
-			var pMaker: IAFXMaker = this.getMakerByHash(sTotalHash);
+			this._pFXMakerHashTree.release();
+			var pMaker: IAFXMaker = this._pFXMakerHashTree.next(iForeignPartHash)
+														  .next(iSamplerPartHash)
+														  .next(iMaterialPartHash)
+														  .next(iBufferPartHash)
+														  .getContent();
 			
-			if(!isDef(pMaker)) {
+			if(isNull(pMaker)) {
 				if(!this._isBufferMapPrepared){
 					this.prepareBufferMap(pBuffer, true);
 				}
@@ -200,7 +213,6 @@ module akra.fx {
 				this.resetForeigns();
 
 				pMaker = new Maker(this._pComposer, this);
-				// LOG(this, pMaker);
 				var isCreate: bool = pMaker._create(this._sVertexCode, this._sPixelCode);
 				
 				if(!isCreate){
@@ -210,7 +222,7 @@ module akra.fx {
 
 				pMaker._initInput(pPassInput, this._pDefaultSamplerBlender, this._pAttributeContainerV);
 
-				this._pFXMakerByHashMap[sTotalHash] = pMaker;
+				this._pFXMakerHashTree.addContent(pMaker);
 				this._pDefaultSamplerBlender.clear();
 			}		
 
@@ -227,10 +239,6 @@ module akra.fx {
 
 		inline _getRenderStates(): IRenderStateMap {
 			return this._pPassStateMap;
-		}
-		
-		private inline getMakerByHash(sHash: string): IAFXMaker {
-			return this._pFXMakerByHashMap[sHash];
 		}
 
 		private finalizeBlend(): bool {
@@ -688,29 +696,53 @@ module akra.fx {
 		// 		   this._pUniformContainerP.getVariableByName(sName);
 		// }
 
-		private prepareForeigns(pPassInput: IAFXPassInputBlend): string {
-			var pForeignValues: any = pPassInput.foreigns;
-			var sHash: string = "";
-			var pVarInfoList: fx.IVariableBlendInfo[] = this._pForeignContainerV.varsInfo;
+		private prepareForeigns(pPassInput: IAFXPassInputBlend): uint {
+			var iPassInputId: uint = pPassInput.getGuid();
+			var pForignsHashEntry: IHashEntry = this._pPassInputForeignsHashMap[iPassInputId];
 
-			for(var i: uint = 0; i < pVarInfoList.length; i++){
-				sHash += pForeignValues[pVarInfoList[i].nameIndex].toString() + "%";
+			if(isDef(pForignsHashEntry) && pForignsHashEntry.modifyMark === pPassInput.totalForeignUpdates){
+				return pForignsHashEntry.hash;
 			}
+			else {
+				var pForeignValues: any = pPassInput.foreigns;
+				var sHash: string = "";
+				var pVarInfoList: fx.IVariableBlendInfo[] = this._pForeignContainerV.varsInfo;
 
-			pVarInfoList = this._pForeignContainerP.varsInfo;
+				for(var i: uint = 0; i < pVarInfoList.length; i++){
+					sHash += pForeignValues[pVarInfoList[i].nameIndex].toString() + "%";
+				}
 
-			for(var i: uint = 0; i < pVarInfoList.length; i++){
-				sHash += pForeignValues[pVarInfoList[i].nameIndex].toString() + "%";
+				pVarInfoList = this._pForeignContainerP.varsInfo;
+
+				for(var i: uint = 0; i < pVarInfoList.length; i++){
+					sHash += pForeignValues[pVarInfoList[i].nameIndex].toString() + "%";
+				}
+
+				if(!isDef(pForignsHashEntry)){
+					pForignsHashEntry = <IHashEntry>{
+						hash: 0,
+						modifyMark: 0
+					};
+
+					this._pPassInputForeignsHashMap[iPassInputId] = pForignsHashEntry;
+				}
+
+				pForignsHashEntry.hash = PassBlend.hashMinifier.minify(sHash);
+				pForignsHashEntry.modifyMark = pPassInput.totalForeignUpdates;
+
+				return pForignsHashEntry.hash;
 			}
-
-			return sHash;
 		}
 
-		private prepareSamplers(pPassInput: IAFXPassInputBlend, isForce: bool): string {
+		private prepareSamplers(pPassInput: IAFXPassInputBlend, isForce: bool): uint {
 			this._isSamplersPrepared = false;
 			
-			if(!pPassInput.isNeedUpdateSamplerHash() && !isForce){
-				return pPassInput.samplerHash;
+			var iPassInputId: uint = pPassInput.getGuid();
+			var pSamplersHashEntry: IHashEntry = this._pPassInputSamplersHashMap[iPassInputId];
+
+			if (!isForce && 
+				isDef(pSamplersHashEntry) && pSamplersHashEntry.modifyMark === pPassInput.totalSamplerUpdates) {
+				return pSamplersHashEntry.hash;
 			}
 
 			var pBlender: SamplerBlender = this._pDefaultSamplerBlender;
@@ -777,20 +809,31 @@ module akra.fx {
 			}
 			
 			this._isSamplersPrepared = true;
-			pPassInput.samplerHash = pBlender.getHash();
 
-			return pPassInput.samplerHash;
+			if(!isDef(pSamplersHashEntry)){
+				pSamplersHashEntry = <IHashEntry>{
+					hash: 0,
+					modifyMark: 0
+				};
+
+				this._pPassInputSamplersHashMap[iPassInputId] = pSamplersHashEntry;
+			}
+
+			pSamplersHashEntry.hash =  PassBlend.hashMinifier.minify(pBlender.getHash());
+			pSamplersHashEntry.modifyMark = pPassInput.totalSamplerUpdates;
+
+			return pSamplersHashEntry.hash;
 		}
 
-		private inline prepareSurfaceMaterial(pMaterial: ISurfaceMaterial, isForce: bool): string {
+		private inline prepareSurfaceMaterial(pMaterial: ISurfaceMaterial, isForce: bool): uint {
 			this._isSurfaceMaterialPrepared = false;
 
 			if(isNull(pMaterial)){
-				return "";
+				return 0;
 			}
 
 			var iMaterialId: uint = pMaterial.getGuid();
-			var pMaterialHashEntry: HashEntry = this._pSurfaceMaterialHashMap[iMaterialId];
+			var pMaterialHashEntry: IHashEntry = this._pSurfaceMaterialHashMap[iMaterialId];
 			if(isDef(pMaterialHashEntry) && pMaterialHashEntry.modifyMark === pMaterial.totalUpdatesOfTexcoords){
 				return pMaterialHashEntry.hash;
 			}
@@ -804,43 +847,45 @@ module akra.fx {
 					}
 				}
 
+				var iMaterialHash: uint = PassBlend.hashMinifier.minify(sMaterailHash);
+
 				if(!isDef(pMaterialHashEntry)){
-					pMaterialHashEntry = <HashEntry>{
-						hash: sMaterailHash,
+					pMaterialHashEntry = <IHashEntry>{
+						hash: 0,
 						modifyMark: 0
 					};
 
 					this._pSurfaceMaterialHashMap[iMaterialId] = pMaterialHashEntry;
 				}
 
-				pMaterialHashEntry.hash = sMaterailHash;
+				pMaterialHashEntry.hash = iMaterialHash;
 				pMaterialHashEntry.modifyMark = pMaterial.totalUpdatesOfTexcoords;
 
-				return sMaterailHash;
+				return iMaterialHash;
 			}
 		}
 
-		private prepareBufferMap(pMap: IBufferMap, isForce: bool): string {
+		private prepareBufferMap(pMap: IBufferMap, isForce: bool): uint {
 			this._isBufferMapPrepared = false;
 
-			var sBufferMapHash: string = "";
+			var iBufferMapHash: uint = 0;
 
 			var iBufferMapId: uint = pMap.getGuid();
-			var pBufferMapHashEntry: HashEntry = this._pBufferMapHashMap[iBufferMapId];
+			var pBufferMapHashEntry: IHashEntry = this._pBufferMapHashMap[iBufferMapId];
 
 			if (!isForce && 
 				isDef(pBufferMapHashEntry) && pBufferMapHashEntry.modifyMark === pMap.totalUpdates) {
-				sBufferMapHash = pBufferMapHashEntry.hash;
+				iBufferMapHash = pBufferMapHashEntry.hash;
 			}
 			else {
 				this._pAttributeContainerV.initFromBufferMap(<util.BufferMap>pMap);
-				sBufferMapHash = this._pAttributeContainerV.getHash();
+				iBufferMapHash = PassBlend.hashMinifier.minify(this._pAttributeContainerV.getHash());
 
 				this._isBufferMapPrepared = true;
 
 				if(!isDef(pBufferMapHashEntry)){
-					pBufferMapHashEntry = <HashEntry>{
-						hash: sBufferMapHash,
+					pBufferMapHashEntry = <IHashEntry>{
+						hash: 0,
 						modifyMark: 0
 					};
 
@@ -848,10 +893,10 @@ module akra.fx {
 				}
 
 				pBufferMapHashEntry.modifyMark = pMap.totalUpdates;
-				pBufferMapHashEntry.hash = sBufferMapHash;			
+				pBufferMapHashEntry.hash = iBufferMapHash;			
 			}
 			
-			return sBufferMapHash;
+			return iBufferMapHash;
 		}
 
 		private inline swapTexcoords(pMaterial: ISurfaceMaterial): void {

@@ -3,11 +3,12 @@
 
 #include "IAFXSamplerState.ts"
 #include "ISurfaceMaterial.ts"
+#include "IUnique.ts"
 
 module akra {
 	IFACE(IRenderStateMap)
 
-	export interface IAFXPassInputBlend {
+	export interface IAFXPassInputBlend extends IUnique {
 		samplers: IAFXSamplerStateMap;
 		samplerArrays: IAFXSamplerStateListMap;
 		samplerArrayLength: IntMap;
@@ -25,8 +26,8 @@ module akra {
 
 		renderStates: IRenderStateMap;
 
-		samplerHash: string;
-		isNeedUpdateSamplerHash(): bool;
+		readonly totalSamplerUpdates: uint;
+		readonly totalForeignUpdates: uint;
 
 		hasUniform(sName: string): bool;
 		hasTexture(sName: string): bool;
@@ -66,8 +67,8 @@ module akra {
 
 		_release(): void;
 
-		_isNeedToCalcBlend(): bool;
-		_isNeedToCalcShader(): bool;
+		// _isNeedToCalcBlend(): bool;
+		// _isNeedToCalcShader(): bool;
 
 		_getLastPassBlendId(): uint;
 		_getLastShaderId(): uint;

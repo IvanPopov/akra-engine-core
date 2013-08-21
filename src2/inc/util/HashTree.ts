@@ -49,6 +49,28 @@ module akra.util {
 			return false;
 		}
 
+		next(iValue: uint): HashTree {
+			var iIndex: uint = this.binarySearchInSortArray(this._pCurrent.children, iValue);
+			
+			if(iIndex !== -1){
+				this._pCurrent = this._pCurrent.children[iIndex];
+				return this;
+			}
+
+			var pNewEntry: IHashTreeEntry = <IHashTreeEntry>{
+				parent: this._pCurrent,
+				children: [],
+				value: iValue,
+				content: null
+			};
+
+			this._pCurrent.children.push(pNewEntry);
+			this._pCurrent.children.sort(<any>this._fnSort);
+
+			this._pCurrent = pNewEntry;
+			return this;
+		}
+
 		release(): void {
 			this._pCurrent = this._pRoot;
 		}
