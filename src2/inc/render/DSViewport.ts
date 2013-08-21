@@ -192,6 +192,10 @@ module akra.render {
 			
 			this._pDeferredView.render(this, this._bSeeDepth ? ".see_texture": null);
 		}
+		
+		endFrame(): void {
+        	this.getTarget().getRenderer().executeQueue(false);
+        }
 
 		prepareForDeferredShading(): void {
 #ifndef OPTIMIZED_DEFFERED

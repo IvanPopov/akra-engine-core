@@ -261,8 +261,8 @@ module  akra.render {
         	this._pRenderQueue.push(pEntry);
         }
 
-        inline executeQueue(): void {
-        	this._pRenderQueue.execute();
+        inline executeQueue(bSort?: bool = false): void {
+        	this._pRenderQueue.execute(bSort);
         }
 
         protected inline lockRenderTarget(): void {

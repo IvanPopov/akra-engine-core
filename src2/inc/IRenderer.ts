@@ -350,7 +350,7 @@ module akra {
         createEntry(): IRenderEntry;
         releaseEntry(pEntry: IRenderEntry): void;
         pushEntry(pEntry: IRenderEntry): void;
-        executeQueue(): void;
+        executeQueue(bSort?: bool): void;
 
     }
 

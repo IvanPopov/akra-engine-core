@@ -615,6 +615,9 @@ module akra.webgl {
 			// deltaTime = Date.now();
 
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
+			if(isNull(pViewport)){
+				LOG(pEntry);
+			}
 			var pRenderTarget: IRenderTarget = (<render.Viewport>pViewport).getTarget();
 			var pInput: IShaderInput = pEntry.input;
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
