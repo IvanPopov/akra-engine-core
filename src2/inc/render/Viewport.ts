@@ -123,6 +123,7 @@ module akra.render {
 
 		clear(iBuffers: uint = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH,
 			  cColor: IColor = Color.BLACK, fDepth: float = 1., iStencil: uint = 0): void {
+			
 			var pRenderer: IRenderer = this._pTarget.getRenderer();
 
 			if (pRenderer) {
@@ -411,6 +412,7 @@ module akra.render {
     	BROADCAST(viewportDimensionsChanged, VOID);
     	BROADCAST(viewportCameraChanged, VOID);
     	BROADCAST(render, CALL(pTechnique, iPass, pRenderable, pSceneObject));
+    	BROADCAST(click, CALL(x, y));
 	}
 }
 

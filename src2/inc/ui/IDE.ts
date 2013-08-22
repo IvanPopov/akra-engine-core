@@ -174,8 +174,8 @@ module akra.ui {
 
 		_sceneUpdate(pScene: IScene3d): void {
 			var pKeymap: IKeyMap = this.getKeymap();
-
-			if (false && pKeymap.isMousePress()) {
+			
+			if (pKeymap.isMousePress()) {
 				// var v3fPoint: IVec3 = this.getViewport().unprojectPoint(pKeymap.getMouse(), vec3());
 				
 				// v3fPoint.z -= 0.075;
@@ -202,23 +202,10 @@ module akra.ui {
 				var iSoid: int = (iRid - 1) >>> 10;
 				var iReid: int = (iRid - 1) & 1023;
 
-				// console.log("original", pColor.r, pColor.g, pColor.b, pColor.a);
-				// console.log("emissive", math.floatToFloat3(pColor.r).toString());
-				// console.log("normal", math.floatToFloat3(pColor.g).toString());
-				// console.log("diffuse", math.floatToFloat3(pColor.b).toString());
-				// console.log("rid", pColor.a);
-
 				console.log("(getRenderId()) >> rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);
 				this._iSelectedRid = iRid;
 
 				this.inspectNode(this.getEngine().getComposer()._getObjectByRid(iRid));
-
-				// if (isNull(this._pSelectedObject.renderable)) {
-				// 	this._pSelectedObject = null;
-				// }
-				// else {
-				// 	LOG(this._pSelectedObject)
-				// }
 			}
 		}
 
@@ -270,6 +257,8 @@ module akra.ui {
 		}
 
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
+			this.disconnect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
+
 			this._pPreview.setViewport(pViewport);	
 			this.setupApiEntry();	
 

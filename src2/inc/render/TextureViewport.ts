@@ -1,23 +1,29 @@
-#ifndef RENDERCOLORVIEWPORT_TS
-#define RENDERCOLORVIEWPORT_TS
+#ifndef RENDERTEXTUREVIEWPORT_TS
+#define RENDERTEXTUREVIEWPORT_TS
 
 #include "Viewport.ts"
 
 
-#define DEFAULT_COLORPICKER_NAME ".color-picker"
+#define DEFAULT_TEXTUREVIEW_NAME ".see_texture"
 
 module akra.render {
 	var pPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.BYTE_RGBA, new Uint8Array(4));
 
 	export class ColorViewport extends Viewport implements IViewport {
-		protected _pGuidToColorMap: IntMap = <any>{};
-		protected _pColorToSceneObjectMap: ISceneObject[] = new Array(256);
-		protected _pColorToRenderableMap: IRenderableObject[] = new Array(256);
+		
 
-		inline get type(): EViewportTypes { return EViewportTypes.COLORVIEWPORT; }
+		inline get type(): EViewportTypes { return EViewportTypes.TEXTUREVIEWPORT; }
 
 		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
-			super(pCamera, pTarget, DEFAULT_COLORPICKER_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
+			super(pCamera, pTarget, DEFAULT_TEXTUREVIEW_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
+
+			var pSeeTextureMethod: IRenderMethod  	= pResMgr.createRenderMethod(".see_texture");
+			var pSeeTextureEffect: IEffect 			= pResMgr.createEffect(".see_texture");
+
+			pSeeTextureEffect.addComponent("akra.system.texture_to_screen");
+			pSeeTextureMethod.effect = pSeeTextureEffect;
+			
+			pDefferedView.addRenderMethod(pSeeTextureMethod, ".see_texture");
 		}
 
 		_updateImpl(): void {

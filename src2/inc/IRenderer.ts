@@ -352,6 +352,10 @@ module akra {
         pushEntry(pEntry: IRenderEntry): void;
         executeQueue(bSort?: bool): void;
 
+        _lockRenderTarget(): void;
+        _unlockRenderTarget(): void;
+        _isLockRenderTarget(): bool;
+
     }
 
 

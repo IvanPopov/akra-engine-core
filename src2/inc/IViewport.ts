@@ -87,9 +87,12 @@ module akra {
 
         _getViewportState(): IViewportState;
 
+
         signal viewportDimensionsChanged(): void;
         signal viewportCameraChanged(): void;
         signal render(pTechnique: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject);
+
+        signal click(x: uint, y: uint): void;
     }
 }
 

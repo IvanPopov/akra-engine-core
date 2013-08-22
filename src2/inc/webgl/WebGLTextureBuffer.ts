@@ -90,7 +90,8 @@ module akra.webgl {
 		private notifyResized(): void {
 			if (!isNull(this._pRTTList)) {
 				for (var i: int = 0; i < this._pRTTList.length; ++ i) {
-					this._pRTTList[i].resized();
+					var pRTT: IRenderTexture = this._pRTTList[i];
+					pRTT.resized(pRTT.width, pRTT.height);
 				}
 			}
 		}

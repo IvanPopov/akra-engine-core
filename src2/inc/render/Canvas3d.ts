@@ -31,7 +31,7 @@ module akra.render {
 		}
 
 
-		create(sName: string, iWidth: uint, iHeight: uint, isFullscreen: bool = false): bool {
+		create(sName: string, iWidth?: uint, iHeight?: uint, isFullscreen: bool = false): bool {
 			return false;
 		}
 

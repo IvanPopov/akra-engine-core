@@ -1,5 +1,5 @@
-function createViewports(pCamera: ICamera, pCanvas: ICanvas3d, pUI: IUI = null): IViewport {
-	var pViewport: IViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
+function createViewports(pCamera: ICamera, pCanvas: ICanvas3d, pUI: IUI = null, eType: EViewportTypes = EViewportTypes.DSVIEWPORT): IViewport {
+	var pViewport: IViewport = pCanvas.addViewport(pCamera, eType);
 
 	if (isNull(pUI)) {
 		pCanvas.resize(window.innerWidth, window.innerHeight);

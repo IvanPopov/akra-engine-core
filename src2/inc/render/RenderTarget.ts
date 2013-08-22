@@ -458,7 +458,7 @@ module akra.render {
 		BROADCAST(viewportRemoved, CALL(pViewport));
 		BROADCAST(postUpdate, VOID)
 
-		BROADCAST(resized, VOID);
+		BROADCAST(resized, CALL(iWidth, iHeight));
 
 		BROADCAST(cameraRemoved, CALL(pCamera));
 	} 

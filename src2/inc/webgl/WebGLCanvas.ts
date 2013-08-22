@@ -1,13 +1,15 @@
 #ifndef WEBGLCANVAS_TS
 #define WEBGLCANVAS_TS
 
+#include "IClickable.ts"
+
 #include "render/Canvas3d.ts"
 #include "info/info.ts"
 #include "IRenderer.ts"
 #include "webgl.ts"
 
 module akra.webgl {
-	export class WebGLCanvas extends render.Canvas3d {
+	export class WebGLCanvas extends render.Canvas3d implements IClickable {
 		protected _pCanvas: HTMLCanvasElement;
 		protected _pCanvasCreationInfo: ICanvasInfo;
 
@@ -20,6 +22,7 @@ module akra.webgl {
 			for (var lx: int = 0; el != null; lx += el.offsetLeft, el = <HTMLElement>el.offsetParent);
 			return lx;
 		}
+
 		get top(): int {
 			var el: HTMLElement = this._pCanvas;
 			for (var ly: int = 0; el != null; ly += el.offsetTop, el = <HTMLElement>el.offsetParent);
@@ -27,11 +30,11 @@ module akra.webgl {
 		}
 
 		set left(x: int) {
-
+			//TODO
 		}
 
 		set top(x: int) {
-			
+			//TODO
 		}
 
 		inline get el(): HTMLCanvasElement { return this._pCanvas; }
@@ -50,8 +53,25 @@ module akra.webgl {
 			this.resize(iWidth, iHeight);
 			this.setFullscreen(isFullscreen);
 
+			var fn = (e: MouseEvent): void => {
+				this.click(e.offsetX, e.offsetY);
+			};
+
+			this.el.addEventListener("click", fn, true);
+
 			return true;
 		}
+
+		// viewportAdded(pViewport: IViewport): void {
+		// 	pViewport.connect(this, SIGNAL(click), SLOT(click))
+
+		// 	super.viewportAdded(pViewport);
+		// }
+
+		// viewportRemoved(pViewport: IViewport): void {
+
+		// 	super.viewportRemoved(pViewport);
+		// }
 
 		destroy(): void {
 			super.destroy();
@@ -61,10 +81,6 @@ module akra.webgl {
 		}
 
 		getCustomAttribute(sName: string): any {
-			// if(sName === "FBO") {
-			// 	return null;
-			// }
-
 			return null;
 		}
 
@@ -137,7 +153,10 @@ module akra.webgl {
 		}
 
 		resize(iWidth: uint = this._iWidth, iHeight: uint = this._iHeight): void {
-			// LOG(__CALLSTACK__, iWidth, iHeight);
+			if (this.width === iWidth && this.height === iHeight) {
+				return;
+			}
+
 			var pCanvas: HTMLCanvasElement = this._pCanvas;	
 
 			this._iWidth = iWidth;
@@ -146,28 +165,7 @@ module akra.webgl {
 			pCanvas.width = iWidth;
 			pCanvas.height = iHeight;
 
-			// var pRoot: ISceneNode = this.getScene().getRootNode();
-
-			// //TODO: update textures, lighting etc!
-
-			// pRoot.explore(function(pNode: INode) {
-			// 	var pCamera: ICamera;
-
-			// 	if (pNode.type === EEntityTypes.CAMERA) {
-			// 		pCamera = (<ICamera>pNode);
-			// 		if (!pCamera.isConstantAspect()) {
-			// 			pCamera.setProjParams(
-			// 				pCamera.fov(),
-			// 				pCanvas.width / pCanvas.height,
-			// 				pCamera.nearPlane(),
-			// 				pCamera.farPlane());
-
-			// 			pCamera.setUpdatedLocalMatrixFlag();
-			// 		}
-			// 	}
-			// });
-
-			this.resized();
+			this.resized(iWidth, iHeight);
 		}
 
 		readPixels(ppDest: IPixelBox = null, eFramebuffer: EFramebuffer = EFramebuffer.AUTO): IPixelBox {
@@ -226,9 +224,35 @@ module akra.webgl {
 				
 			// 	delete [] tmpData;
 			// }
+			
 
 			return ppDest;
 		}
+
+		signal click(x: uint, y: uint): void {
+			//propagation of click event to all viewports, that can be handle it
+			var pViewport: IViewport = null;
+
+			//finding top viewport, taht contains (x, y) point.
+			for (var v in this._pViewportList) {
+				var pVp: IViewport = this._pViewportList[v];
+
+				if (pVp.actualLeft <= x && pVp.actualTop <= y && 
+					pVp.actualLeft + pVp.actualWidth >= x && pVp.actualTop + pVp.actualHeight >= y) {
+					if (isNull(pViewport) || pVp.zIndex > pViewport.zIndex) {
+						pViewport = pVp;
+					}
+				}
+			}			
+
+			if (!isNull(pViewport)) {
+				pViewport.click(x - pViewport.actualLeft, y - pViewport.actualTop);
+			}
+
+			EMIT_BROADCAST(click, _CALL(x, y));
+		}
+
+		// BROADCAST(click, CALL(x, y));
 
 		static fullscreenLock: bool = false;
 	}

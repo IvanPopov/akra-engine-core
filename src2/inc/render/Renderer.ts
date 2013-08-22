@@ -265,15 +265,15 @@ module  akra.render {
         	this._pRenderQueue.execute(bSort);
         }
 
-        protected inline lockRenderTarget(): void {
+        inline _lockRenderTarget(): void {
         	this._bLockRenderTarget = true;
         }
 
-        protected inline unlockRenderTarget(): void {
+        inline _unlockRenderTarget(): void {
         	this._bLockRenderTarget = false;
         }
 
-        protected inline isLockRenderTarget(): bool {
+        inline _isLockRenderTarget(): bool {
         	return this._bLockRenderTarget;
         }
 

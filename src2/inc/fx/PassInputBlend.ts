@@ -413,7 +413,10 @@ module akra.fx {
 
 		_release(): void {
 			for(var i: uint = 0; i < this.uniformKeys.length; i++){
-				this.uniforms[this.uniformKeys[i]] = null;
+				var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.uniformKeys[i]);
+				var pDefaultValue: any = pInfo.variable.getDefaultValue();
+
+				this.uniforms[this.uniformKeys[i]] = pDefaultValue;
 			}
 
 			for(var i: uint = 0; i < this.foreignKeys.length; i++){
@@ -425,17 +428,39 @@ module akra.fx {
 			}
 
 			for(var i: uint = 0; i < this.samplerKeys.length; i++){
-				this.clearSamplerState(this.samplers[this.samplerKeys[i]]);
+				var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.samplerKeys[i]);
+				var pDefaultState: IAFXSamplerState = pInfo.variable.getDefaultValue();
+				var pSamplerState: IAFXSamplerState = this.samplers[this.samplerKeys[i]];
+
+				this.clearSamplerState(pSamplerState);
+
+				if(!isNull(pDefaultState)){
+					pSamplerState.textureName = pDefaultState.textureName;
+					pSamplerState.wrap_s = pDefaultState.wrap_s || pSamplerState.wrap_s;
+					pSamplerState.wrap_t = pDefaultState.wrap_t || pSamplerState.wrap_t;
+					pSamplerState.mag_filter = pDefaultState.mag_filter || pSamplerState.mag_filter;
+					pSamplerState.min_filter = pDefaultState.min_filter || pSamplerState.min_filter;
+				}
 			}
 
 			for(var i: uint = 0; i < this.samplerArrayKeys.length; i++){
+				var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.samplerArrayKeys[i]);
+				var pDefaultStateList: IAFXSamplerState[] = pInfo.variable.getDefaultValue();
 				var pStateList: IAFXSamplerState[] = this.samplerArrays[this.samplerArrayKeys[i]];
 
 				for(var j: uint = 0; j < pStateList.length; j++){
 					this.clearSamplerState(pStateList[j]);
+
+					if(!isNull(pDefaultStateList) && i < pDefaultStateList.length){
+						pStateList[j].textureName = pDefaultStateList[j].textureName;
+						pStateList[j].wrap_s = pDefaultStateList[j].wrap_s || pStateList[j].wrap_s;
+						pStateList[j].wrap_t = pDefaultStateList[j].wrap_t || pStateList[j].wrap_t;
+						pStateList[j].mag_filter = pDefaultStateList[j].mag_filter || pStateList[j].mag_filter;
+						pStateList[j].min_filter = pDefaultStateList[j].min_filter || pStateList[j].min_filter;
+					}					
 				}
 
-				this.samplerArrayLength[this.samplerArrayKeys[i]] = 0;
+				this.samplerArrayLength[this.samplerArrayKeys[i]] = !isNull(pDefaultStateList) ? pDefaultStateList.length : 0;
 			}
 
 			this._pCreator.releasePassInput(this);
