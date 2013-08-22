@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Aug 20 2013 12:34:13 GMT+0400 (Московское время (зима))
+ * assembled at: Wed Aug 21 2013 18:25:22 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -119,9 +119,10 @@ var akra;
         // pCameraTerrainProj.scale(.25);
         // self.cameraTerrainProj = pCameraTerrainProj;
             }
-    function createViewports(pCamera, pCanvas, pUI) {
+    function createViewports(pCamera, pCanvas, pUI, eType) {
         if (typeof pUI === "undefined") { pUI = null; }
-        var pViewport = pCanvas.addViewport(pCamera, akra.EViewportTypes.DSVIEWPORT);
+        if (typeof eType === "undefined") { eType = akra.EViewportTypes.DSVIEWPORT; }
+        var pViewport = pCanvas.addViewport(pCamera, eType);
         if (akra.isNull(pUI)) {
             pCanvas.resize(window.innerWidth, window.innerHeight);
             window.onresize = function (event) {
@@ -427,6 +428,7 @@ var akra;
     var pMovementController = null;
     var pRmgr = pEngine.getResourceManager();
     var pScene = pEngine.getScene();
+    var pTestViewport = null;
     akra.self = {
         engine: pEngine,
         scene: pScene,
@@ -1751,11 +1753,14 @@ var akra;
     function main(pEngine) {
         setup(pCanvas, pUI);
         pCamera = akra.self.camera = createCameras(pScene);
-        pViewport = createViewports(pCamera, pCanvas, pUI);
+        pViewport = createViewports(pCamera, pCanvas, pUI, akra.EViewportTypes.DSVIEWPORT);
         pTerrain = akra.self.terrain = createTerrain(pScene, true);
         createModels();
         pSkyBoxTexture = createSkyBox(pRmgr, pViewport);
         pSky = akra.self.sky = createSky(pScene, 14.);
+        //test viewports
+        var pTestViewport = pCanvas.addViewport(pCamera, akra.EViewportTypes.DSVIEWPORT, 1, .25, .25, .5, .5);
+        //end of test
         var pProject = pScene.createLightPoint(akra.ELightTypes.PROJECT, true, 512);
         pProject.attachToParent(pScene.getRootNode());
         pProject.enabled = false;

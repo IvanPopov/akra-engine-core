@@ -159,6 +159,8 @@ module akra.webgl {
 			}
 
 			this._pDefaultCanvas = new WebGLCanvas(this);
+			ASSERT(this._pDefaultCanvas.create("primary-target"), "could not create WebGL canvas");
+
 			this.attachRenderTarget(this._pDefaultCanvas);
 
 			this._pTextureSlotList = new Array(maxTextureImageUnits);
@@ -780,6 +782,9 @@ module akra.webgl {
 
 					this._pWebGLContext.viewport(x, y, w, h);
 					this._pWebGLContext.scissor(x, y, w, h);
+					// if(w !== 2048){
+					// 	LOG(x, y, w, h, pViewport.getGuid());
+					// }
 
 					pViewport._clearUpdatedFlag();
 				}
@@ -1014,9 +1019,10 @@ module akra.webgl {
 
 
 		clearFrameBuffer(iBuffers: int, cColor: IColor, fDepth: float, iStencil: uint): void {
-			// if(true){
-			// 	return;
-			// }
+			var bScissorTestEnable: bool = this.getParameter(GL_SCISSOR_TEST);
+
+			this.enable(GL_SCISSOR_TEST);
+
 			var iWebGLFlag: int = 0;
 			var bOldDepthWrite: bool = this.getParameter(GL_DEPTH_WRITEMASK);
 
@@ -1046,6 +1052,10 @@ module akra.webgl {
 
 			if (!bOldDepthWrite && (iBuffers & EFrameBufferTypes.DEPTH)) {
 	            this._pWebGLContext.depthMask(false);
+        	}
+
+        	if(!bScissorTestEnable){
+        		this.disable(GL_SCISSOR_TEST);
         	}
 		}
 

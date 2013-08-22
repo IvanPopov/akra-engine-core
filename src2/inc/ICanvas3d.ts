@@ -4,12 +4,14 @@
 #include "ICanvas.ts"
 
 module akra {
+	IFACE(IPoint);
+
 	export interface ICanvas3d extends ICanvas, IRenderTarget {
 		left: int;
 		top: int;
 
 
-		create(sName: string, iWidth: uint, iHeight: uint, isFullscreen?: bool): bool;
+		create(sName: string, iWidth?: uint, iHeight?: uint, isFullscreen?: bool): bool;
 		destroy(): void;
 
 		setFullscreen(isFullscreen?: bool): void;

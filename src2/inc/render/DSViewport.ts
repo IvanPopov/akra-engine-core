@@ -60,7 +60,7 @@ module akra.render {
 			var pDeferredData: IRenderTarget[] = <IRenderTarget[]>new Array(2);
 			var pDeferredTextures: ITexture[] = <ITexture[]>new Array(2);
 			var pDepthTexture: ITexture;
-			var pDefferedView: IRenderableObject = this._pDeferredView = new Screen(pEngine.getRenderer());
+			var pDefferedView: IRenderableObject = new Screen(pEngine.getRenderer());
 			var iGuid: int = sid();
 			var iWidth: uint = math.ceilingPowerOfTwo(this.actualWidth);
     		var iHeight: uint = math.ceilingPowerOfTwo(this.actualHeight);
@@ -97,20 +97,32 @@ module akra.render {
 				}
 			}
 
-			var pDSMethod: IRenderMethod  	= pResMgr.createRenderMethod(".deferred_shading");
-			var pDSEffect: IEffect 			= this._pDeferredEffect = pResMgr.createEffect(".deferred_shading");
+			var pDSMethod: IRenderMethod = null;
+			var pDSEffect: IEffect = null;
 
-			pDSEffect.addComponent("akra.system.deferredShading");
-			pDSEffect.addComponent("akra.system.omniLighting");
-			pDSEffect.addComponent("akra.system.projectLighting");
-			pDSEffect.addComponent("akra.system.omniShadowsLighting");
-			pDSEffect.addComponent("akra.system.projectShadowsLighting");
-			pDSEffect.addComponent("akra.system.sunLighting");
-			pDSEffect.addComponent("akra.system.sunShadowsLighting");
-			// pDSEffect.addComponent("akra.system.color_maps");
-			pDSEffect.addComponent("akra.system.skybox", 1, 0);
+			if (pDSMethod = <IRenderMethod>pResMgr.renderMethodPool.findResource(".deferred_shading")) {
+				pDSEffect = pDSMethod.effect;
+			}
+			else {
+				pDSMethod = pResMgr.createRenderMethod(".deferred_shading");
+				pDSEffect = pResMgr.createEffect(".deferred_shading");
 
-			pDSMethod.effect = pDSEffect;
+				pDSEffect.addComponent("akra.system.deferredShading");
+				pDSEffect.addComponent("akra.system.omniLighting");
+				pDSEffect.addComponent("akra.system.projectLighting");
+				pDSEffect.addComponent("akra.system.omniShadowsLighting");
+				pDSEffect.addComponent("akra.system.projectShadowsLighting");
+				pDSEffect.addComponent("akra.system.sunLighting");
+				pDSEffect.addComponent("akra.system.sunShadowsLighting");
+				// pDSEffect.addComponent("akra.system.color_maps");
+				pDSEffect.addComponent("akra.system.skybox", 1, 0);
+
+				pDSMethod.effect = pDSEffect;
+			}
+
+			this._pDeferredEffect = pDSEffect;
+			this._pDeferredView = pDefferedView;
+
 			pDefferedView.getTechnique().setMethod(pDSMethod);
 			pDefferedView.getTechnique()._setGlobalPostEffectsFrom(1);			
 
@@ -118,14 +130,6 @@ module akra.render {
 			this.setDepthParams(false, false, 0);			
 
 			this.setFXAA(true);
-
-			var pSeeTextureMethod: IRenderMethod  	= pResMgr.createRenderMethod(".see_texture");
-			var pSeeTextureEffect: IEffect 			= pResMgr.createEffect(".see_texture");
-			pSeeTextureEffect.addComponent("akra.system.texture_to_screen");
-			pSeeTextureMethod.effect = pSeeTextureEffect;
-			pDefferedView.addRenderMethod(pSeeTextureMethod, ".see_texture");
-
-			// this._pDeferredView.switchRenderMethod(null);
 		}
 
 		inline get effect(): IEffect {
@@ -164,7 +168,7 @@ module akra.render {
 
 		_updateImpl (): void {
 			this.prepareForDeferredShading();
-
+			// console.log("deferred rendeing...");
 		    //prepare deferred textures
 // #ifndef OPTIMIZED_DEFFERED
 			this._pDeferredColorTextures[0].getBuffer().getRenderTarget().update();
@@ -190,7 +194,7 @@ module akra.render {
 // #endif
 			//render deferred
 			
-			this._pDeferredView.render(this, this._bSeeDepth ? ".see_texture": null);
+			this._pDeferredView.render(this);
 		}
 
 		prepareForDeferredShading(): void {
@@ -386,17 +390,6 @@ module akra.render {
 			this._pDeferredSkyTexture = null;
 		}
 
-		private _bSeeDepth: bool = false;
-		seeDepthTexture(): void {
-			this._bSeeDepth = !this._bSeeDepth;
-
-			if(this._bSeeDepth){
-				this._pDeferredView.switchRenderMethod(".see_texture");
-			}
-			else {
-				this._pDeferredView.switchRenderMethod(null);
-			}
-		}
 
 
 		render(
@@ -408,16 +401,6 @@ module akra.render {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
 			var pDeferredTextures: ITexture[] = this._pDeferredColorTextures;
-
-			if(this._bSeeDepth){
-				var pSun: ISunLight = this._pLightPoints.value(0);
-
-				pPass.setTexture("TEXTURE0", pSun.getDepthTexture());
-				super.render(pTechnique, iPass, pRenderable, pSceneObject);
-				return;
-			}
-
-
 
 			switch (iPass) {
 				case 0:

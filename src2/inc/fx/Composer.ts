@@ -798,15 +798,27 @@ module akra.fx {
 					pRenderer._setDepthBufferParams(false, false, 0);
 					
 					pRenderer._setRenderTarget(this._pRenderTargetA);
-					pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH, Color.ZERO, 1., 0);
+					// pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH, Color.ZERO, 1., 0);
 
-					if(pEntry.viewport.getClearEveryFrame()){
+					// if(pEntry.viewport.getClearEveryFrame()){
 						var pViewportState: IViewportState = pEntry.viewport._getViewportState();
-						pRenderer.clearFrameBuffer(pViewportState.clearBuffers, 
+						var pCurrentViewport: IViewport = pRenderer._getViewport();
+
+						if(pCurrentViewport === pEntry.viewport){
+							pRenderer.clearFrameBuffer(pViewportState.clearBuffers, 
 												   pViewportState.clearColor,
 												   pViewportState.clearDepth, 0);
-
-					}
+						}
+						else {
+							(<any>pRenderer).lockRenderTarget();
+							pRenderer._setViewport(pEntry.viewport);
+							pRenderer.clearFrameBuffer(pViewportState.clearBuffers, 
+												   pViewportState.clearColor,
+												   pViewportState.clearDepth, 0);
+							pRenderer._setViewport(pCurrentViewport);
+							(<any>pRenderer).unlockRenderTarget();
+						}
+					// }
 					
 				}
 

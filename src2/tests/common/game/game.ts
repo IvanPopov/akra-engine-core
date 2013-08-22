@@ -149,6 +149,8 @@ module akra {
 	var pRmgr: IResourcePoolManager 	= pEngine.getResourceManager();
 	var pScene: IScene3d 				= pEngine.getScene();
 
+	var pTestViewport: IViewport = null;
+
 	export var self = {
 		engine 				: pEngine,
 		scene 				: pScene,
@@ -1812,17 +1814,23 @@ module akra {
 		setup(pCanvas, pUI);
 
 		pCamera 		= self.camera 	= createCameras(pScene);
-		pViewport 						= createViewports(pCamera, pCanvas, pUI);
+		pViewport 						= createViewports(pCamera, pCanvas, pUI, EViewportTypes.DSVIEWPORT);
 		pTerrain 		= self.terrain 	= createTerrain(pScene, true);
 										  createModels();
 		pSkyBoxTexture 					= createSkyBox(pRmgr, <IDSViewport>pViewport);
 		pSky 			= self.sky 		= createSky(pScene, 14.);
 
+		//test viewports
+		var pTestViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT, 1, .25, .25, .5, .5);
+		//end of test
+
 		var pProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512);
 			
 		pProject.attachToParent(pScene.getRootNode());
 		pProject.enabled = false;
+		
 		var pParams = <any>pProject.params;
+
 		pParams.ambient.set(0.0, 0.0, 0.0, 1);
 		pParams.diffuse.set(1.);
 		pParams.specular.set(1.);
