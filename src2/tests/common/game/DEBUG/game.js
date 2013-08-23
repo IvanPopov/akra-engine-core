@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Wed Aug 21 2013 18:25:22 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Aug 22 2013 14:55:52 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -119,10 +119,9 @@ var akra;
         // pCameraTerrainProj.scale(.25);
         // self.cameraTerrainProj = pCameraTerrainProj;
             }
-    function createViewports(pCamera, pCanvas, pUI, eType) {
+    function createViewports(pViewport, pCanvas, pUI) {
         if (typeof pUI === "undefined") { pUI = null; }
-        if (typeof eType === "undefined") { eType = akra.EViewportTypes.DSVIEWPORT; }
-        var pViewport = pCanvas.addViewport(pCamera, eType);
+        pCanvas.addViewport(pViewport);
         if (akra.isNull(pUI)) {
             pCanvas.resize(window.innerWidth, window.innerHeight);
             window.onresize = function (event) {
@@ -1753,13 +1752,27 @@ var akra;
     function main(pEngine) {
         setup(pCanvas, pUI);
         pCamera = akra.self.camera = createCameras(pScene);
-        pViewport = createViewports(pCamera, pCanvas, pUI, akra.EViewportTypes.DSVIEWPORT);
+        pViewport = createViewports(new akra.render.DSViewport(pCamera), pCanvas, pUI);
         pTerrain = akra.self.terrain = createTerrain(pScene, true);
         createModels();
         pSkyBoxTexture = createSkyBox(pRmgr, pViewport);
         pSky = akra.self.sky = createSky(pScene, 14.);
         //test viewports
-        var pTestViewport = pCanvas.addViewport(pCamera, akra.EViewportTypes.DSVIEWPORT, 1, .25, .25, .5, .5);
+        // var pTestViewport = pCanvas.addViewport(new render.DSViewport(pCamera, .25, .25, .5, .5, 1.));
+        var pTex = pViewport["_pDeferredColorTextures"][0];
+        var pColorViewport = pCanvas.addViewport(new akra.render.TextureViewport(pTex, 0.05, 0.05, .30, .30, 4.));
+        var pNormalViewport = pCanvas.addViewport(new akra.render.TextureViewport(pTex, 0.05, 0.40, .30, .30, 5.));
+        var pDSViewport = pViewport;
+        pColorViewport.bind("render", function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
+            var pPass = pTechnique.getPass(iPass);
+            pPass.setUniform("VIEWPORT", akra.Vec4.stackCeil.set(0., 0., pDSViewport.actualWidth / pTex.width, pDSViewport.actualHeight / pTex.height));
+        });
+        pNormalViewport.bind("render", function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
+            var pPass = pTechnique.getPass(iPass);
+            pPass.setUniform("VIEWPORT", akra.Vec4.stackCeil.set(0., 0., pDSViewport.actualWidth / pTex.width, pDSViewport.actualHeight / pTex.height));
+        });
+        pColorViewport.effect.addComponent("akra.system.display_consistent_colors");
+        pNormalViewport.effect.addComponent("akra.system.display_normals");
         //end of test
         var pProject = pScene.createLightPoint(akra.ELightTypes.PROJECT, true, 512);
         pProject.attachToParent(pScene.getRootNode());

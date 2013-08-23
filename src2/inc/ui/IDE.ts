@@ -33,6 +33,7 @@ module akra.ui {
 		protected _pPreview: ViewportProperties;
 		protected _pTabs: IUITabs;
 		protected _pColladaDialog: IUIPopup = null;
+		protected _p3DControls: IUICheckboxList;
 
 		protected _pKeymap: IKeyMap;
 
@@ -87,6 +88,14 @@ module akra.ui {
 			var pTree: scene.SceneTree = this._pSceneTree = <scene.SceneTree>this.findEntity("SceneTree");
 			pTree.fromScene(this.getScene());
 
+			//setup 3d controls
+			var p3DControls: IUICheckboxList = this._p3DControls = <IUICheckboxList>this.findEntity("3d-controls");
+
+			this.connect(<IUICheckbox>p3DControls.findEntity("pick"), SIGNAL(changed), SLOT(_enablePickMode));
+			this.connect(<IUICheckbox>p3DControls.findEntity("translate"), SIGNAL(changed), SLOT(_enableTranslateMode));
+			this.connect(<IUICheckbox>p3DControls.findEntity("rotate"), SIGNAL(changed), SLOT(_enableRotateMode));
+			this.connect(<IUICheckbox>p3DControls.findEntity("scale-control"), SIGNAL(changed), SLOT(_enableScaleMode));
+
 			//connect node properties to scene tree
 			this.connect(pInspector, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
 
@@ -96,6 +105,22 @@ module akra.ui {
 
 		private setupKeyControls(): void {
 			this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_beforeSceneUpdate));
+		}
+
+		_enablePickMode(pCb: IUICheckbox, bValue: bool): void {
+			console.log("pick mode: ", bValue);
+		}
+
+		_enableTranslateMode(pCb: IUICheckbox, bValue: bool): void {
+			console.log("pick translate: ", bValue);
+		}
+
+		_enableRotateMode(pCb: IUICheckbox, bValue: bool): void {
+			console.log("pick rotate: ", bValue);
+		}
+
+		_enableScaleMode(pCb: IUICheckbox, bValue: bool): void {
+			console.log("pick scale: ", bValue);
 		}
 
 		_beforeSceneUpdate(pScene: IScene3d): void {
@@ -174,39 +199,6 @@ module akra.ui {
 
 		_sceneUpdate(pScene: IScene3d): void {
 			var pKeymap: IKeyMap = this.getKeymap();
-			
-			if (pKeymap.isMousePress()) {
-				// var v3fPoint: IVec3 = this.getViewport().unprojectPoint(pKeymap.getMouse(), vec3());
-				
-				// v3fPoint.z -= 0.075;
-				// this._pSearchCam.setPosition(v3fPoint);
-				// this._pSearchCam.update();
-				
-				var pMouse: IPoint = pKeymap.getMouse();
-				var pViewport: IViewport = this.getViewport();
-				this.getCamera().update();
-				// this._pColorViewport.update();
-
-				// // LOG(this._pSearchCam._getLastResults());
-				// var x: uint = math.floor(pMouse.x / pViewport.actualWidth * this._pColorViewport.actualWidth);
-				// var y: uint = math.floor((1. - pMouse.y / pViewport.actualHeight) * this._pColorViewport.actualHeight);
-
-				// x = math.clamp(x, 0, this._pColorViewport.actualWidth - 1);
-				// y = math.clamp(y, 0, this._pColorViewport.actualHeight - 1);
-
-				this.connect(pViewport, SIGNAL(render), SLOT(_onDSViewportRender));
-				// this._pSelectedObject = (<any>this._pColorViewport).getObject(x, y);
-				
-				var pColor: IColor = (<render.DSViewport>this.getViewport())._getDeferredTex1Value(pMouse.x, pMouse.y);
-				var iRid: int = pColor.a;
-				var iSoid: int = (iRid - 1) >>> 10;
-				var iReid: int = (iRid - 1) & 1023;
-
-				console.log("(getRenderId()) >> rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);
-				this._iSelectedRid = iRid;
-
-				this.inspectNode(this.getEngine().getComposer()._getObjectByRid(iRid));
-			}
 		}
 
 		_onDSViewportRender(
@@ -265,6 +257,18 @@ module akra.ui {
 			this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_sceneUpdate));
 			this.setupObjectPicking();
 			this.created();
+
+			this.connect(pViewport, SIGNAL(render), SLOT(_onDSViewportRender));
+
+			pViewport.bind(SIGNAL(click), (pViewport: IDSViewport, x: uint, y: uint): void => {
+				this.getCamera().update();
+				
+				var pRes: IDSPickingResult = pViewport.pick(x, y);
+
+				this._iSelectedRid = pRes.rid;
+
+				this.inspectNode(pRes.object);
+			});
 		}
 
 		cmd(eCommand: ECMD, ...argv: any[]): bool {

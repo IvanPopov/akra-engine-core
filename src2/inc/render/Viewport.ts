@@ -13,17 +13,17 @@
 module akra.render {
 	export class Viewport implements IViewport {
 		protected _pCamera: ICamera = null;
-		protected _pTarget: IRenderTarget;
+		protected _pTarget: IRenderTarget = null;
 
 		protected _fRelLeft: float;
 		protected _fRelTop: float;
 		protected _fRelWidth: float;
 		protected _fRelHeight: float;
 
-		protected _iActLeft: int;
-		protected _iActTop: int;
-		protected _iActWidth: int;
-		protected _iActHeight: int;
+		protected _iActLeft: int = 0;
+		protected _iActTop: int = 0;
+		protected _iActWidth: int = 1;
+		protected _iActHeight: int = 1;
 
 		protected _iZIndex: int;
 
@@ -94,9 +94,7 @@ module akra.render {
 
         inline get type(): EViewportTypes { return EViewportTypes.DEFAULT; }
 
-		constructor (pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
-			this._pTarget = pTarget;
-
+		constructor (pCamera: ICamera, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			this._fRelLeft = fLeft;
 			this._fRelTop = fTop;
 			this._fRelWidth = fWidth;
@@ -106,11 +104,7 @@ module akra.render {
 
 			this._csDefaultRenderMethod = csRenderMethod;
 
-			this._updateDimensions();
-
 			this._setCamera(pCamera);
-
-			this.connect(pTarget, SIGNAL(resized), SLOT(_updateDimensions));
 		}
 
 		destroy(): void {
@@ -391,6 +385,20 @@ module akra.render {
 			return v3fDestination;
 		}
 
+		_setTarget(pTarget: IRenderTarget): void {
+			if (!isNull(this._pTarget)) {
+				CRITICAL("render target already exists in this viewport");
+				//this.disconnect(this._pTarget, SIGNAL(resized), SLOT(_updateDimensions));
+			}
+
+			this._pTarget = pTarget;
+
+			if (!isNull(this._pTarget)) {
+				this.connect(this._pTarget, SIGNAL(resized), SLOT(_updateDimensions));
+				this._updateDimensions();
+				this._setCamera(this._pCamera);
+			}
+		}
 
         inline isUpdated(): bool {
         	return this._bUpdated;

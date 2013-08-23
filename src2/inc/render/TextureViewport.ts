@@ -2,100 +2,54 @@
 #define RENDERTEXTUREVIEWPORT_TS
 
 #include "Viewport.ts"
-
-
 #define DEFAULT_TEXTUREVIEW_NAME ".see_texture"
 
 module akra.render {
-	var pPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.BYTE_RGBA, new Uint8Array(4));
-
-	export class ColorViewport extends Viewport implements IViewport {
-		
+	export class TextureViewport extends Viewport implements IViewport {
+		private _pTargetTexture: ITexture;
+		private _pDeferredView: IRenderableObject;
+		private _pEffect: IEffect; 
+		private _v4fMapping: IVec4 = new Vec4(0., 0., 1., 1.);
 
 		inline get type(): EViewportTypes { return EViewportTypes.TEXTUREVIEWPORT; }
 
-		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
-			super(pCamera, pTarget, DEFAULT_TEXTUREVIEW_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
+		constructor(pTexture: ITexture, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
+			super(null, DEFAULT_TEXTUREVIEW_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
 
-			var pSeeTextureMethod: IRenderMethod  	= pResMgr.createRenderMethod(".see_texture");
-			var pSeeTextureEffect: IEffect 			= pResMgr.createEffect(".see_texture");
+			this._pTargetTexture = pTexture;
+		}
+
+		inline get effect(): IEffect {
+			return this._pEffect;
+		}
+
+		_setTarget(pTarget: IRenderTarget): void {
+			super._setTarget(pTarget);
+
+			var pEngine: IEngine = this.getTarget().getRenderer(). getEngine();
+			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
+			var pDefferedView: IRenderableObject = new Screen(pEngine.getRenderer());
+
+
+			var pSeeTextureMethod: IRenderMethod  	= pResMgr.createRenderMethod(DEFAULT_TEXTUREVIEW_NAME + this.getGuid());
+			var pSeeTextureEffect: IEffect 			= pResMgr.createEffect(DEFAULT_TEXTUREVIEW_NAME + this.getGuid());
 
 			pSeeTextureEffect.addComponent("akra.system.texture_to_screen");
 			pSeeTextureMethod.effect = pSeeTextureEffect;
 			
-			pDefferedView.addRenderMethod(pSeeTextureMethod, ".see_texture");
+			pDefferedView.addRenderMethod(pSeeTextureMethod, DEFAULT_TEXTUREVIEW_NAME);
+
+			this._pDeferredView = pDefferedView;
+			this._pEffect = pSeeTextureEffect;
 		}
 
-		_updateImpl(): void {
-			var pVisibleObjects: IObjectArray = this.getCamera().display();
-			var pRenderable: IRenderableObject;
-			
-			for(var i: int = 0; i < pVisibleObjects.length; ++ i){
-				pVisibleObjects.value(i).prepareForRender(this);
-			}
-
-
-			for (var i = 0; i < 256; ++ i) {
-				this._pColorToSceneObjectMap[i] = null;
-				this._pColorToRenderableMap[i] = null;
-			}
-
-			for (var g in this._pGuidToColorMap) {
-				this._pGuidToColorMap[g] = 0;	
-			}
-
-			var r = 1;
-			var s = 1;
-
-			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
-				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
-				
-				this._pGuidToColorMap[pSceneObject.getGuid()] = s;
-				this._pColorToSceneObjectMap[s] = pSceneObject;
-				s ++;
-				
-				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
-					pRenderable = pSceneObject.getRenderable(j);
-					
-					if (!isNull(pRenderable) && !pRenderable.isFrozen()) {
-
-						this._pGuidToColorMap[pRenderable.getGuid()] = r;
-						this._pColorToRenderableMap[r] = pRenderable;
-						r ++;
-
-						this.prepareRenderableForPicking(pRenderable);
-						pRenderable.render(this, this._csDefaultRenderMethod, pSceneObject);
-					}
-				}
-			}
-
-			// this._pCamera = pOldCamera;
+		_updateImpl (): void {
+			this._pDeferredView.render(this, DEFAULT_TEXTUREVIEW_NAME);
 		}
 
-		getObject(x: uint = 0, y: uint = 0): IRIDPair {
-			var pTarget: IRenderTarget = this.getTarget();
-
-			if (pTarget instanceof RenderTexture) {
-				var pPixelBuffer: IPixelBuffer = (<IRenderTexture>pTarget).getPixelBuffer();
-				x = math.round(x);
-				y = math.round(y);
-
-				pPixel.left = x;
-				pPixel.right = x + 1;
-				pPixel.top = y;
-				pPixel.bottom = y + 1;
-
-				if (pPixelBuffer.readPixels(pPixel)) {
-					console.log(pPixel.data[0], pPixel.data[1], pPixel.data[2], pPixel.data[3]);
-					return {
-						object: this._pColorToSceneObjectMap[pPixel.data[0]] || null,
-						renderable: this._pColorToRenderableMap[pPixel.data[1]] || null
-					};
-				}
-			}
-
-			return null;
-		}		
+		inline setMapping(x: uint, y: uint, w: uint, h: uint): void {
+			this._v4fMapping.set(x, y, w, h);
+		}
 
 		render(
 			pTechnique: IRenderTechnique, 
@@ -105,36 +59,10 @@ module akra.render {
 
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-			pPass.setUniform("RENDERABLE_ID", this._pGuidToColorMap[pRenderable.getGuid()]);
-			pPass.setUniform("OPTIMIZED_PROJ_MATRIX", this.getCamera().projectionMatrix);
-			pPass.setUniform("color", util.colorToVec4(util.randomColor(true)));
-			
-			if (!isNull(pSceneObject)) {
-				pPass.setUniform("SCENE_OBJECT_ID", this._pGuidToColorMap[pSceneObject.getGuid()]);
-			}
+			pPass.setTexture("TEXTURE0", this._pTargetTexture);
+			pPass.setUniform("VIEWPORT", this._v4fMapping);
 
 			super.render(pTechnique, iPass, pRenderable, pSceneObject);
-		}
-
-		private prepareRenderableForPicking(pRenderable: IRenderableObject): void {
-			var pRenderTechnique: IRenderTechnique = pRenderable.getTechnique(this._csDefaultRenderMethod);
-
-			if(!isNull(pRenderTechnique)) {
-				return;
-			}
-
-
-			var pRmgr: IResourcePoolManager = this.getTarget().getRenderer().getEngine().getResourceManager();
-			var pMethodPool: IResourcePool = pRmgr.renderMethodPool;
-			var pMethod: IRenderMethod = <IRenderMethod>pMethodPool.findResource(".method-color-picker");
-			
-			if (isNull(pMethod)) {
-				pMethod = pRmgr.createRenderMethod(".method-color-picker");
-				pMethod.effect = pRmgr.createEffect(".effect-color-picker");
-				pMethod.effect.addComponent("akra.system.colorPicker");
-			}
-
-			pRenderable.addRenderMethod(pMethod, this._csDefaultRenderMethod);
 		}
 	}
 }

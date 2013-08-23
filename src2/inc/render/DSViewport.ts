@@ -52,10 +52,14 @@ module akra.render {
 
 	    inline get type(): EViewportTypes { return EViewportTypes.DSVIEWPORT; }
 
-		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
-			super(pCamera, pTarget, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
+			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+		}
 
-			var pEngine: IEngine = this.getTarget().getRenderer().getEngine();
+		_setTarget(pTarget: IRenderTarget): void {
+			super._setTarget(pTarget);
+
+			var pEngine: IEngine = pTarget.getRenderer().getEngine();
 			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
 			var pDeferredData: IRenderTarget[] = <IRenderTarget[]>new Array(2);
 			var pDeferredTextures: ITexture[] = <ITexture[]>new Array(2);
@@ -86,9 +90,8 @@ module akra.render {
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
 				pDeferredData[i].setAutoUpdated(false);
-				var pViewport:  IViewport = pDeferredData[i].addViewport(this.getCamera(), "deferred_shading_pass_" + i, 0, 
-											0, 0, this.actualWidth / pDeferredTextures[i].width, 
-											this.actualHeight / pDeferredTextures[i].height);
+				var pViewport:  IViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), "deferred_shading_pass_" + i, 
+											0, 0, this.actualWidth / pDeferredTextures[i].width, this.actualHeight / pDeferredTextures[i].height));
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 
 				if (i === 1) {
@@ -312,26 +315,48 @@ module akra.render {
 			return pRange;
 		}
 		
-		inline getRenderId(x: int, y: int): int {
-			return this._getDeferredTex1Value(x, y).a;
+		
+
+		inline getObject(x: uint, y: uint): ISceneObject {
+			return this.getTarget().getRenderer().getEngine().getComposer()._getObjectByRid(this._getRenderId(x, y));
 		}
 
-		_getDeferredTex1Value(x: int, y: int): IColor {
+		inline getRenderable(x: uint, y: uint): IRenderableObject {
+			return this.getTarget().getRenderer().getEngine().getComposer()._getRenderableByRid(this._getRenderId(x, y));
+		}
+
+		pick(x: uint, y: uint): IDSPickingResult {
+			var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
+			var iRid: int = this._getRenderId(x, y);
+			var iSoid: int = (iRid - 1) >>> 10;
+			var iReid: int = (iRid - 1) & 1023;
+			return {
+				rid: iRid,
+				reid: iReid,
+				soid: iSoid,
+				renderable: pComposer._getRenderableByRid(iRid),
+				object: pComposer._getObjectByRid(iRid)
+			};
+		}
+
+		inline _getRenderId(x: int, y: int): int {
+			return this._getDeferredTexValue(0, x, y).a;
+		}
+
+		_getDeferredTexValue(iTex: int, x: int, y: int): IColor {
 			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
 			
-			var pColorTexture: ITexture = this._pDeferredColorTextures[0];
+			var pColorTexture: ITexture = this._pDeferredColorTextures[iTex];
 
 			//depth texture has POT sized, but viewport not;
 			//depth texture attached to left bottom angle of viewport
-			y = y + (pColorTexture.height - this.actualHeight);
+			y = pColorTexture.height  - y;
 			pFloatColorPixel.left = x;
 			pFloatColorPixel.top = y;
 			pFloatColorPixel.right = x + 1;
 			pFloatColorPixel.bottom = y + 1;
-			console.log(">>>>");
 			pColorTexture.getBuffer(0, 0).readPixels(pFloatColorPixel);
-			console.log("<<<<");
-			// LOG(pFloatColorPixel.data);
+			
 			return pFloatColorPixel.getColorAt(pColor, 0, 0);
 		}
 

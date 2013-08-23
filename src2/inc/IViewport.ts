@@ -20,7 +20,8 @@ module akra {
         DEFAULT = -1,
         DSVIEWPORT = 1,
         SHADOWVIEWPORT = 2,
-        COLORVIEWPORT
+        COLORVIEWPORT,
+        TEXTUREVIEWPORT
     }
 
     export interface IViewport extends IEventProvider {
@@ -86,6 +87,7 @@ module akra {
         _updateDimensions(pDimensions: IRect2d): void;
 
         _getViewportState(): IViewportState;
+        _setTarget(pTarget: IRenderTarget): void;
 
 
         signal viewportDimensionsChanged(): void;

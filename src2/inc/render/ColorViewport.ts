@@ -16,8 +16,8 @@ module akra.render {
 
 		inline get type(): EViewportTypes { return EViewportTypes.COLORVIEWPORT; }
 
-		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
-			super(pCamera, pTarget, DEFAULT_COLORPICKER_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
+		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
+			super(pCamera, DEFAULT_COLORPICKER_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
 		}
 
 		_updateImpl(): void {

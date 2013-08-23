@@ -18,6 +18,13 @@
 						<component type="Button" text="Edit demo" name="edit-demo" 
 								onclick="akra.ide.cmd(akra.ECMD.EDIT_MAIN_SCRIPT)"/>
 					</component>
+					<component type="CheckboxList" style="display: inline-block; height: 22px;" name="3d-controls">
+						<component type="Checkbox" img="{% filter data %}ui/img/select24.png{% endfilter %}" name="pick" />
+						<component type="Checkbox" img="{% filter data %}ui/img/move24.png{% endfilter %}" name="translate" />
+						<component type="Checkbox" img="{% filter data %}ui/img/rotate24.png{% endfilter %}" name="rotate" />
+						<component type="Checkbox" img="{% filter data %}ui/img/scale24.png{% endfilter %}" name="scale-control" />
+					</component>
+
 				</div>
 			</td>
 		</tr>

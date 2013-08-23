@@ -11,8 +11,8 @@ module akra.render {
 		
 		inline get type(): EViewportTypes { return EViewportTypes.SHADOWVIEWPORT; }
 
-		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
-			super(pCamera, pTarget, DEFAULT_SHADOW_TECHNIQUE_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
+		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
+			super(pCamera, DEFAULT_SHADOW_TECHNIQUE_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
 
 			this.setClearEveryFrame(true, EFrameBufferTypes.DEPTH);
 			this.setDepthParams(true, true, ECompareFunction.LESS);

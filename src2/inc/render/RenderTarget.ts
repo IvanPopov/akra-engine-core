@@ -8,6 +8,7 @@
 #include "DSViewport.ts"
 #include "ColorViewport.ts"
 #include "ShadowViewport.ts"
+#include "TextureViewport.ts"
 #include "events/events.ts"
 #include "IFrameStats.ts"
 #include "IPixelBuffer.ts"
@@ -216,39 +217,21 @@ module akra.render {
 			this.viewportPostUpdate(pViewport);
 		}
 
-		addViewport(pCamera: ICamera, csRenderMethod: string = null, iZIndex: int = 0, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1.): IViewport;
-		addViewport(pCamera: ICamera, eType: int = -1, iZIndex: int = 0, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1.): IViewport;
-		addViewport(pCamera: ICamera, csRenderMethod: any = null, iZIndex: int = 0, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1.): IViewport {
-			var pViewport: IViewport = this._pViewportList[iZIndex];
+		addViewport(pViewport: IViewport): IViewport {
+			if (isNull(pViewport)) {
+				return null;
+			}
 
-			if (isDefAndNotNull(pViewport)) {
+			var iZIndex: int = pViewport.zIndex;
+
+			if (isDefAndNotNull(this._pViewportList[iZIndex])) {
 				CRITICAL("Can't create another viewport for %s with Z-index %s \
 					because a viewport exists with this Z-Order already.", this._sName, iZIndex, "RenderTarget::addViewport");
 			}
 
-			if(isNumber(arguments[1])){
-				switch(arguments[1]){
-					case EViewportTypes.DSVIEWPORT:
-						pViewport = new DSViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
-						break;
-					case EViewportTypes.SHADOWVIEWPORT:
-						pViewport = new ShadowViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
-						break;
-					case EViewportTypes.COLORVIEWPORT:
-						pViewport = new ColorViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
-						break;
-					default:
-						pViewport = new Viewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
-						break;
-				}
-			}
-			else{
-				pViewport = new Viewport(pCamera, this, csRenderMethod, 
-						fLeft, fTop, fWidth, fHeight, iZIndex);
-			}
-
+			pViewport._setTarget(this);
+			
 			this._pViewportList[iZIndex] = pViewport;
-
 			this.viewportAdded(pViewport);
 
 			return pViewport;

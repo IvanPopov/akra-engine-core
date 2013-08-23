@@ -54,7 +54,7 @@ module akra.webgl {
 			this.setFullscreen(isFullscreen);
 
 			var fn = (e: MouseEvent): void => {
-				this.click(e.offsetX, e.offsetY);
+				this.click(e.offsetX, this.height - e.offsetY);
 			};
 
 			this.el.addEventListener("click", fn, true);
@@ -234,9 +234,8 @@ module akra.webgl {
 			var pViewport: IViewport = null;
 
 			//finding top viewport, taht contains (x, y) point.
-			for (var v in this._pViewportList) {
-				var pVp: IViewport = this._pViewportList[v];
-
+			for (var z in this._pViewportList) {
+				var pVp: IViewport = this._pViewportList[z];
 				if (pVp.actualLeft <= x && pVp.actualTop <= y && 
 					pVp.actualLeft + pVp.actualWidth >= x && pVp.actualTop + pVp.actualHeight >= y) {
 					if (isNull(pViewport) || pVp.zIndex > pViewport.zIndex) {

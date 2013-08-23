@@ -321,13 +321,18 @@ module akra.ui {
 			
 			var sLayout: string = $comp.attr("layout");
 			var sTemplate: string = $comp.attr("template");
-			
+			var sClick: string = $comp.attr("onclick");
+
 			if (isString(sTemplate)) {
 				this.template(sTemplate);
 			}
 
 			if (isString(sLayout)) {
 				this.setLayout(sLayout);
+			}
+
+			if (isString(sClick)) {
+				this.el.attr("onclick", sClick);
 			}
 
 			this.el.attr("id", "cuid-" + this.getGuid());

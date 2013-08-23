@@ -24,7 +24,6 @@ module akra.ui {
 			super._createdFrom($comp);
 
 			var sImage: string = $comp.attr("img");
-			var sClick: string = $comp.attr("onclick");
 
 			if (isString(sImage)) {
 				this.text = ("<img src='" + sImage + "' />");
@@ -32,8 +31,6 @@ module akra.ui {
 			else {
 				this.text = $comp.attr("text") || (sImage? "": "push");
 			}
-
-			this.el.attr("onclick", sClick);
 		}
 
 		protected applyOptions(pOptions: IUIButtonOptions): void {

@@ -497,7 +497,7 @@ module akra.terrain {
 			var pTarget: IRenderTarget = this._pBaseNormalTexture.getBuffer().getRenderTarget();
 			pTarget.setAutoUpdated(false);
 
-			var pViewport: IViewport = pTarget.addViewport(null, ".terrain_generate_normal", 0, 0, 0, 1, 1);
+			var pViewport: IViewport = pTarget.addViewport(new render.Viewport(null, ".terrain_generate_normal"));
 			pViewport.setDepthParams(false, false, 0);
 			pViewport.setClearEveryFrame(false);
 

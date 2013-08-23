@@ -1814,14 +1814,29 @@ module akra {
 		setup(pCanvas, pUI);
 
 		pCamera 		= self.camera 	= createCameras(pScene);
-		pViewport 						= createViewports(pCamera, pCanvas, pUI, EViewportTypes.DSVIEWPORT);
+		pViewport 						= createViewports(new render.DSViewport(pCamera), pCanvas, pUI);
 		pTerrain 		= self.terrain 	= createTerrain(pScene, true);
 										  createModels();
 		pSkyBoxTexture 					= createSkyBox(pRmgr, <IDSViewport>pViewport);
 		pSky 			= self.sky 		= createSky(pScene, 14.);
 
 		//test viewports
-		var pTestViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT, 1, .25, .25, .5, .5);
+		// var pTestViewport = pCanvas.addViewport(new render.DSViewport(pCamera, .25, .25, .5, .5, 1.));
+		var pTex: ITexture = <ITexture>pViewport["_pDeferredColorTextures"][0];
+		var pColorViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.05, .30, .30, 4.));
+		var pNormalViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.40, .30, .30, 5.));
+
+		function onResize(pViewport: IViewport) {
+			pColorViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height));
+			pNormalViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height));
+		}
+
+		onResize();
+		
+		pViewport.bind("viewportDimensionsChanged", onResize);
+
+		pColorViewport.effect.addComponent("akra.system.display_consistent_colors");
+		pNormalViewport.effect.addComponent("akra.system.display_normals");
 		//end of test
 
 		var pProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512);

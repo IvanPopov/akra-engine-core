@@ -120,7 +120,7 @@ module akra.scene.light {
 			//TODO: Multiple render target
 			this.getRenderTarget().attachDepthTexture(pDepthTexture); 
 			this.getRenderTarget().setAutoUpdated(false);
-			this.getRenderTarget().addViewport(this._pShadowCaster, EViewportTypes.SHADOWVIEWPORT);
+			this.getRenderTarget().addViewport(new render.ShadowViewport(this._pShadowCaster));
 		};
 
 		_calculateShadows(): void {

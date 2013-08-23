@@ -57,8 +57,7 @@ module akra {
 
 		getCustomAttribute(sName: string): any;
 
-		addViewport(pCamera: ICamera, csRenderMethod?: string, iZIndex?: uint, fLeft?: float, fTop?: float, fWidth?: float, fHeight?: float): IViewport;
-		addViewport(pCamera: ICamera, eType?: int, iZIndex?: uint, fLeft?: float, fTop?: float, fWidth?: float, fHeight?: float): IViewport;
+		addViewport(pViewport: IViewport): IViewport;
 
 		getViewport(iIndex: int): IViewport;
 		getViewportByZIndex(iZIndex: int): IViewport;
