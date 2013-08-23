@@ -99,11 +99,16 @@ module akra {
 	function createViewports(): void {
 		pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
 		
-		var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>pUI.createComponent("RenderTargetStats");
-		pStats.target = pViewport.getTarget();
-		pStats.render(pMainScene);
+		pCanvas.resize(window.innerWidth, window.innerHeight);
+		window.onresize = function(event) {
+			pCanvas.resize(window.innerWidth, window.innerHeight);
+		}
 
-		pStats.el.css({position: "relative", top: "-720px"});
+		// var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>pUI.createComponent("RenderTargetStats");
+		// pStats.target = pViewport.getTarget();
+		// pStats.render(pMainScene);
+
+		// pStats.el.css({position: "relative", top: "-720px"});
 	}
 
 	function createLighting(): void {
@@ -134,6 +139,7 @@ module akra {
 
 	function createTerrain(): void {
 		pTerrain = pScene.createTerrainROAM();
+		pTerrain.megaTexture.manualMinLevelLoad = true;
 		var pTerrainMap: IImageMap = <IImageMap>{};
 
 		// shouldBeNotNull("new terrain");
@@ -141,10 +147,10 @@ module akra {
 		
 		pTerrainMap["height"] = pRmgr.loadImage(DATA + "textures/terrain/main_height_map_1025.dds");
 
-		pTerrainMap["height"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
+		pTerrainMap["height"].bind(SIGNAL(loaded), (pImg: IImg) => {
 			pTerrainMap["normal"] = pRmgr.loadImage(DATA + "textures/terrain/main_terrain_normal_map.dds");
 			
-			pTerrainMap["normal"].bind(SIGNAL(loaded), (pTexture: ITexture) => {
+			pTerrainMap["normal"].bind(SIGNAL(loaded), (pImg: IImg) => {
 				var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 200), 5, 5, 5, "main");
 				pTerrain.attachToParent(pScene.getRootNode());
 				pTerrain.setInheritance(ENodeInheritance.ALL);
@@ -155,9 +161,16 @@ module akra {
 				// ok(isCreate);
 				// pTestNode.addRelRotationByXYZAxis(1, 1, 0);
 				
-				pTerrain.megaTexture.bind("minLevelLoaded", () => {
+				//pTerrain.megaTexture.bind("minLevelLoaded", () => {
+				pEngine.getComposer()["bShowTriangles"] = true;
+				var pMinLevelImg: IImg = pRmgr.loadImage(DATA + "textures/terrain/diffuse.dds");
+
+				pMinLevelImg.bind(SIGNAL(loaded), (pImg: IImg) => {
+					pTerrain.megaTexture.setMinLevelTexture(pMinLevelImg);
 					pEngine.exec();
-				});
+				}); 
+					
+				//});
 			});
 		});
 		

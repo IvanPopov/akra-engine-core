@@ -300,7 +300,7 @@ module akra.render {
         }
 
         endFrame(): void {
-        	this.getTarget().getRenderer().executeQueue();
+        	this.getTarget().getRenderer().executeQueue(true);
         }
 
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {

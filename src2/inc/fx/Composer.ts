@@ -26,6 +26,13 @@
 
 #define RID_TOTAL 1024
 
+#define FAST_SET_UNIFORM(pInput, eIndex, pValue) pInput.uniforms[this._pSystemUniformsNameIndexList[eIndex]] = pValue;
+#define PREPARE_INDEX(eIndex, sName) this._pSystemUniformsNameIndexList[eIndex] = VariableDeclInstruction._getIndex(sName);
+
+// #define FAST_SET_UNIFORM(pInput, sName, pValue) pInput.setUniform(sName, pValue);
+// iIndex = pInput._getUniformVarNameIndex(sName); if(iIndex > 0) pInput.uniforms[iIndex] = pValue;
+//if(pInput.hasUniform(sName)) pInput.uniforms[pInput._getUniformVarNameIndex(sName)] = pValue;
+
 module akra.fx {
 
 	export interface IPreRenderState {
@@ -37,6 +44,36 @@ module akra.fx {
 		index: IIndexData;
 		//flows: IDataFlow[];
 		flows: util.ObjectArray;
+	}
+
+	export enum ESystemUniformsIndices{
+		k_ModelMatrix,
+		k_FramebufferSize,
+		k_ViewportSize,
+		k_ViewMatrix,
+		k_ProjMatrix,
+		k_InvViewCameraMat,
+		k_CameraPosition,
+		k_OptimizedProjMatrix,
+		k_BindShapeMatrix,
+		k_RenderObjectId,
+		// k_InputTexture,
+		// k_InputSampler,
+		k_InputTextureSize,
+		k_InputTextureRatio,
+		
+		k_useNormal,
+		k_isDebug,
+		k_isRealNormal,
+		k_normalFix,
+		k_isWithBalckSectors,
+		k_showTriangles,
+		k_u1,
+		k_kFixNormal,
+		k_fSunAmbient,
+		k_fSunSpecular,
+		k_cHeightFalloff,
+		k_cGlobalDensity
 	}
 
 	export class Composer implements IAFXComposer {
@@ -71,6 +108,7 @@ module akra.fx {
 		private _pRenderTargetA: IRenderTarget = null;
 		private _pRenderTargetB: IRenderTarget = null;
 		private _pLastRenderTarget: IRenderTarget = null;
+		private _pPostEffectClearViewport: IViewport = null;
 
 		private _pPostEffectTextureA: ITexture = null;
 		private _pPostEffectTextureB: ITexture = null;
@@ -84,7 +122,11 @@ module akra.fx {
 		private _pRidMap: IRIDMap = <any>{};
 		private _nRidSO: int = 0;
 		private _nRidRE: int = 0;
-
+		
+		//For fast set system uniforms
+		private _pSystemUniformsNameIndexList: uint[] = new Array();
+		private _bIsFirstApplySystemUnifoms: bool = true; 
+		
 		constructor(pEngine: IEngine){
 			this._pEngine = pEngine;
 
@@ -471,36 +513,36 @@ module akra.fx {
 
 			this.applySystemUnifoms(pPassInput);
 			
-			if(!pPassInput._isNeedToCalcShader()){
-				//TODO: set pShader to shader program by id
+			// if(!pPassInput._isNeedToCalcShader()){
+			// 	//TODO: set pShader to shader program by id
+			// }
+			// else {
+				// if(!pPassInput._isNeedToCalcBlend()){
+				// 	pPassBlend = this._pBlender.getPassBlendById(pPassInput._getLastPassBlendId());
+				// }
+				// else {
+			var id: uint = pRenderTechnique.getGuid();
+			var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
+			var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
+
+			this.prepareComposerState();
+
+			pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
+														  pPassInput.foreigns, pPassInput.uniforms);
+				// }
+
+			if(isNull(pPassBlend)){
+				ERROR("Could not render. Error with generation pass-blend.");
+				return;
 			}
-			else {
-				if(!pPassInput._isNeedToCalcBlend()){
-					pPassBlend = this._pBlender.getPassBlendById(pPassInput._getLastPassBlendId());
-				}
-				else {
-					var id: uint = pRenderTechnique.getGuid();
-					var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
-					var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
 
-					this.prepareComposerState();
-
-					pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
-																  pPassInput.foreigns, pPassInput.uniforms);
-				}
-
-				if(isNull(pPassBlend)){
-					ERROR("Could not render. Error with generation pass-blend.");
-					return;
-				}
-
-				pMaker = pPassBlend.generateFXMaker(pPassInput, 
-													this._pCurrentSurfaceMaterial, 
-													this._pCurrentBufferMap);
-				if(isNull(pMaker)){
-					return;
-				}
+			pMaker = pPassBlend.generateFXMaker(pPassInput, 
+												this._pCurrentSurfaceMaterial, 
+												this._pCurrentBufferMap);
+			if(isNull(pMaker)){
+				return;
 			}
+			// }
 
 			//TODO: generate input from PassInputBlend to correct unifoms and attributes list
 			//TODO: generate RenderEntry
@@ -598,8 +640,6 @@ module akra.fx {
 		protected cHeightFalloff: float = 0.04;
 		protected cGlobalDensity: float = 0.002;
 
-#define FAST_SET_UNIFORM(pInput, sName, pValue) if(pInput.hasUniform(sName)) pInput.uniforms[sName] = pValue;
-
 		_calcRenderID(pSceneObject: ISceneObject, pRenderable: IRenderableObject, bCreateIfNotExists: bool = false): int {
 			//assume, that less than 1024 draw calls may be & less than 1024 scene object will be rendered.
 			//beacause only 1024
@@ -667,40 +707,70 @@ module akra.fx {
 		}
 
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
+			if(this._bIsFirstApplySystemUnifoms){
+				PREPARE_INDEX(ESystemUniformsIndices.k_ModelMatrix, "MODEL_MATRIX");
+				PREPARE_INDEX(ESystemUniformsIndices.k_FramebufferSize, "FRAMEBUFFER_SIZE");
+				PREPARE_INDEX(ESystemUniformsIndices.k_ViewportSize, "VIEWPORT_SIZE");
+				PREPARE_INDEX(ESystemUniformsIndices.k_ViewMatrix, "VIEW_MATRIX");
+				PREPARE_INDEX(ESystemUniformsIndices.k_ProjMatrix, "PROJ_MATRIX");
+				PREPARE_INDEX(ESystemUniformsIndices.k_InvViewCameraMat, "INV_VIEW_CAMERA_MAT");
+				PREPARE_INDEX(ESystemUniformsIndices.k_CameraPosition, "CAMERA_POSITION");
+				PREPARE_INDEX(ESystemUniformsIndices.k_OptimizedProjMatrix, "OPTIMIZED_PROJ_MATRIX");
+				PREPARE_INDEX(ESystemUniformsIndices.k_BindShapeMatrix, "BIND_SHAPE_MATRIX");
+				PREPARE_INDEX(ESystemUniformsIndices.k_RenderObjectId, "RENDER_OBJECT_ID");
+				PREPARE_INDEX(ESystemUniformsIndices.k_InputTextureSize, "INPUT_TEXTURE_SIZE");
+				PREPARE_INDEX(ESystemUniformsIndices.k_InputTextureRatio, "INPUT_TEXTURE_RATIO");
+
+				PREPARE_INDEX(ESystemUniformsIndices.k_useNormal, "useNormal");
+				PREPARE_INDEX(ESystemUniformsIndices.k_isDebug, "isDebug");
+				PREPARE_INDEX(ESystemUniformsIndices.k_isRealNormal, "isRealNormal");
+				PREPARE_INDEX(ESystemUniformsIndices.k_normalFix, "normalFix");
+				PREPARE_INDEX(ESystemUniformsIndices.k_isWithBalckSectors, "isWithBalckSectors");
+				PREPARE_INDEX(ESystemUniformsIndices.k_showTriangles, "showTriangles");
+				PREPARE_INDEX(ESystemUniformsIndices.k_u1, "u1");
+				PREPARE_INDEX(ESystemUniformsIndices.k_kFixNormal, "kFixNormal");
+				PREPARE_INDEX(ESystemUniformsIndices.k_fSunAmbient, "fSunAmbient");
+				PREPARE_INDEX(ESystemUniformsIndices.k_fSunSpecular, "fSunSpecular");
+				PREPARE_INDEX(ESystemUniformsIndices.k_cHeightFalloff, "cHeightFalloff");
+				PREPARE_INDEX(ESystemUniformsIndices.k_cGlobalDensity, "cGlobalDensity");
+				
+				this._bIsFirstApplySystemUnifoms = false;
+			}
+			
 			var pSceneObject: ISceneObject = this._getCurrentSceneObject();
 			var pViewport: IViewport = this._getCurrentViewport();
 			var pRenderable: IRenderableObject = this._getCurrentRenderableObject();
 
 			var iRenderableID: int = this._calcRenderID(pSceneObject, pRenderable, true);
+			var iIndex: uint = 0;
 
 			if(!isNull(pSceneObject)){
-				FAST_SET_UNIFORM(pPassInput, "MODEL_MATRIX", pSceneObject.worldMatrix);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_ModelMatrix, pSceneObject.worldMatrix);
 			}
 
 			if(!isNull(pViewport)){
-				FAST_SET_UNIFORM(pPassInput, "FRAMEBUFFER_SIZE", vec2(pViewport.width, pViewport.height));
-				FAST_SET_UNIFORM(pPassInput, "VIEWPORT_SIZE", vec2(pViewport.actualWidth, pViewport.actualHeight));
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_FramebufferSize, vec2(pViewport.width, pViewport.height));
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_ViewportSize, vec2(pViewport.actualWidth, pViewport.actualHeight));
 
 				var pCamera: ICamera = pViewport.getCamera();
 				if(!isNull(pCamera)) { 
-					FAST_SET_UNIFORM(pPassInput, "VIEW_MATRIX", pCamera.viewMatrix);
-					FAST_SET_UNIFORM(pPassInput, "PROJ_MATRIX", pCamera.projectionMatrix);
-					FAST_SET_UNIFORM(pPassInput, "VIEW_PROJ_MATRIX", pCamera.projViewMatrix);
-					FAST_SET_UNIFORM(pPassInput, "INV_VIEW_CAMERA_MAT", pCamera.worldMatrix);
-					FAST_SET_UNIFORM(pPassInput, "CAMERA_POSITION", pCamera.worldPosition);
+					FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_ViewMatrix, pCamera.viewMatrix);
+					FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_ProjMatrix, pCamera.projectionMatrix);
+					FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_InvViewCameraMat, pCamera.worldMatrix);
+					FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_CameraPosition, pCamera.worldPosition);
 
 					if(pCamera.type === EEntityTypes.SHADOW_CASTER){
-						FAST_SET_UNIFORM(pPassInput, "OPTIMIZED_PROJ_MATRIX", (<IShadowCaster>pCamera).optimizedProjection);
+						FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_OptimizedProjMatrix, (<IShadowCaster>pCamera).optimizedProjection);
 					}
 				}
 			}
 
 			if(!isNull(pRenderable)){
 				if(render.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()){
-					FAST_SET_UNIFORM(pPassInput, "BIND_SHAPE_MATRIX", (<IMeshSubset>pRenderable).skin.getBindMatrix());
+					FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_BindShapeMatrix, (<IMeshSubset>pRenderable).skin.getBindMatrix());
 				}
 
-				FAST_SET_UNIFORM(pPassInput, "RENDER_OBJECT_ID", iRenderableID);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_RenderObjectId, iRenderableID);
 			}
 
 			if(!isNull(this._pLastRenderTarget)){
@@ -709,23 +779,23 @@ module akra.fx {
 
 				pPassInput.setTexture("INPUT_TEXTURE", pLastTexture);
 				pPassInput.setSamplerTexture("INPUT_SAMPLER", pLastTexture);
-				FAST_SET_UNIFORM(pPassInput, "INPUT_TEXTURE_SIZE", vec2(pLastTexture.width, pLastTexture.height));
-				FAST_SET_UNIFORM(pPassInput, "INPUT_TEXTURE_RATIO", vec2(this._pCurrentViewport.actualWidth / pLastTexture.width,
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_InputTextureSize, vec2(pLastTexture.width, pLastTexture.height));
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_InputTextureRatio, vec2(this._pCurrentViewport.actualWidth / pLastTexture.width,
 											 				 	    this._pCurrentViewport.actualHeight / pLastTexture.height));
 			}
 
-			FAST_SET_UNIFORM(pPassInput, "useNormal", this.bUseNormalMap);
-			FAST_SET_UNIFORM(pPassInput, "isDebug", this.bIsDebug);
-			FAST_SET_UNIFORM(pPassInput, "isRealNormal", this.bIsRealNormal);
-			FAST_SET_UNIFORM(pPassInput, "normalFix", this.bNormalFix);
-			FAST_SET_UNIFORM(pPassInput, "isWithBalckSectors", this.bTerrainBlackSectors);
-			FAST_SET_UNIFORM(pPassInput, "showTriangles", this.bShowTriangles);
-			FAST_SET_UNIFORM(pPassInput, "u1", 64);
-			FAST_SET_UNIFORM(pPassInput, "kFixNormal", this.kFixNormal);
-			FAST_SET_UNIFORM(pPassInput, "fSunAmbient", this.fSunAmbient);
-			FAST_SET_UNIFORM(pPassInput, "fSunSpecular", this.fSunSpecular);
-			FAST_SET_UNIFORM(pPassInput, "cHeightFalloff", this.cHeightFalloff);
-			FAST_SET_UNIFORM(pPassInput, "cGlobalDensity", this.cGlobalDensity);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_useNormal, this.bUseNormalMap);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_isDebug, this.bIsDebug);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_isRealNormal, this.bIsRealNormal);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_normalFix, this.bNormalFix);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_isWithBalckSectors, this.bTerrainBlackSectors);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_showTriangles, this.bShowTriangles);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_u1, 64);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_kFixNormal, this.kFixNormal);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_fSunAmbient, this.fSunAmbient);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_fSunSpecular, this.fSunSpecular);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_cHeightFalloff, this.cHeightFalloff);
+			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_cGlobalDensity, this.cGlobalDensity);
 		}
 
 		private prepareComposerState(): void {
@@ -780,6 +850,8 @@ module akra.fx {
 			(<webgl.WebGLInternalRenderBuffer>this._pPostEffectDepthBuffer).create(GL_DEPTH_COMPONENT, 512, 512, false);
 
 			this._pRenderTargetA.attachDepthPixelBuffer(this._pPostEffectDepthBuffer);
+
+			this._pPostEffectClearViewport = this._pRenderTargetA.addViewport(null, EViewportTypes.DEFAULT, 1., 0., 0., 1., 1.);
 		}
 
 		private resizePostEffectTextures(iWidth: uint, iHeight: uint): void {
@@ -794,43 +866,46 @@ module akra.fx {
 			var pRenderer: IRenderer = this._pEngine.getRenderer();
 			
 			if(pRenderTechnique.hasGlobalPostEffect()){
-				if(!pRenderTechnique.isFirstPass(iPass)){
+				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
+					pEntry.viewport.actualHeight > this._pRenderTargetA.height) {
+
+					this.resizePostEffectTextures(pEntry.viewport.actualWidth, pEntry.viewport.actualHeight);
+				}
+
+				if(pRenderTechnique.isFirstPass(iPass)){
 					pRenderer._setDepthBufferParams(false, false, 0);
 					
 					pRenderer._setRenderTarget(this._pRenderTargetA);
-					// pRenderer.clearFrameBuffer(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH, Color.ZERO, 1., 0);
-
-					// if(pEntry.viewport.getClearEveryFrame()){
-						var pViewportState: IViewportState = pEntry.viewport._getViewportState();
-						var pCurrentViewport: IViewport = pRenderer._getViewport();
-
-						if(pCurrentViewport === pEntry.viewport){
-							pRenderer.clearFrameBuffer(pViewportState.clearBuffers, 
-												   pViewportState.clearColor,
-												   pViewportState.clearDepth, 0);
-						}
-						else {
-							(<any>pRenderer).lockRenderTarget();
-							pRenderer._setViewport(pEntry.viewport);
-							pRenderer.clearFrameBuffer(pViewportState.clearBuffers, 
-												   pViewportState.clearColor,
-												   pViewportState.clearDepth, 0);
-							pRenderer._setViewport(pCurrentViewport);
-							(<any>pRenderer).unlockRenderTarget();
-						}
-					// }
 					
-				}
+					var pViewportState: IViewportState = pEntry.viewport._getViewportState();
+					this._pPostEffectClearViewport.setDimensions(0., 0., 
+																 pEntry.viewport.actualWidth / this._pRenderTargetA.width,
+																 pEntry.viewport.actualHeight / this._pRenderTargetA.height); 
+					this._pPostEffectClearViewport.setDepthParams(pViewportState.depthTest, pViewportState.depthWrite, pViewportState.depthFunction);
+					this._pPostEffectClearViewport.setCullingMode(pViewportState.cullingMode);
 
-				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
-					pEntry.viewport.actualHeight > this._pRenderTargetA.height)
-				{
-					this.resizePostEffectTextures(pEntry.viewport.actualWidth, pEntry.viewport.actualHeight);
+					// pRenderer._lockRenderTarget();
+
+					if(pEntry.viewport.getClearEveryFrame()){						
+						this._pPostEffectClearViewport.clear(pViewportState.clearBuffers,
+															 pViewportState.clearColor,
+															 pViewportState.clearDepth, 0);
+					}
+					else {
+						this._pPostEffectClearViewport.clear(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH,
+															 Color.ZERO,
+															 1., 0);
+					}
+
+					// pRenderer._unlockRenderTarget();					
 				}
+				
 
 				if(!pRenderTechnique.isPostEffectPass(iPass)){
 					this._pLastRenderTarget = this._pRenderTargetA;
 					pEntry.renderTarget = this._pRenderTargetA;
+
+					pEntry.viewport = this._pPostEffectClearViewport;
 				}
 				else {
 					if(pRenderTechnique.isLastPass(iPass)){
@@ -846,6 +921,8 @@ module akra.fx {
 							pEntry.renderTarget = this._pRenderTargetA;
 							this._pLastRenderTarget = this._pRenderTargetA;
 						}
+
+						pEntry.viewport = this._pPostEffectClearViewport;
 					}
 				}
 			}

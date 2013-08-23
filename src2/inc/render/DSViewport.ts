@@ -199,6 +199,10 @@ module akra.render {
 			
 			this._pDeferredView.render(this);
 		}
+		
+		endFrame(): void {
+        	this.getTarget().getRenderer().executeQueue(false);
+        }
 
 		prepareForDeferredShading(): void {
 #ifndef OPTIMIZED_DEFFERED
@@ -242,8 +246,9 @@ module akra.render {
 				for (var k: int = 0; k < pSceneObject.totalRenderable; k++) {
 					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
 					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+					var iTotalPasses: uint = pTechCurr.totalPasses;
 
-					for (var j: int = 0; j < 2; j++) {
+					for (var j: int = 0; j < iTotalPasses; j++) {
 						var sMethod: string = "deferred_shading_pass_" + j;
 						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
 
@@ -377,11 +382,11 @@ module akra.render {
 			
 			if (bValue) {
 				pEffect.addComponent("akra.system.fxaa", 2, 0);
-				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(2);
+				// this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(2);
 			}
 			else {
 				pEffect.delComponent("akra.system.fxaa", 2, 0);
-				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
+				// this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
 			}
 		}
 

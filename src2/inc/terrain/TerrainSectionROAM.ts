@@ -81,10 +81,16 @@ module akra.terrain {
 													iHeightMapX, iHeightMapY, 
 													iVerts, iVerts, 
 													pWorldRect);
-			if(!bResult){
-				return false;
+
+			if(!(<ITerrainROAM>this.terrainSystem).useTessellationThread){
+				this._initTessellationData();
 			}
 
+			return bResult;
+		}
+
+		_initTessellationData(): void {
+			var iVerts: uint = math.max(this._iXVerts, this._iYVerts);
 			this._iTotalDetailLevels = 2*(math.round(math.log(iVerts - 1)/math.LN2));
 			this._iTotalVariances = 1<<this._iTotalDetailLevels;
 
@@ -99,10 +105,10 @@ module akra.terrain {
 			}
 
 			var pRoamTerrain: ITerrainROAM = this.terrainSystem;
-			var pNorthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY - 1);
-			var pSouthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY + 1);
-			var pEastSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX + 1, iSectorY);
-			var pWestSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX - 1, iSectorY);
+			var pNorthSection: ITerrainSectionROAM = pRoamTerrain.findSection(this._iSectorX, this._iSectorY - 1);
+			var pSouthSection: ITerrainSectionROAM = pRoamTerrain.findSection(this._iSectorX, this._iSectorY + 1);
+			var pEastSection: ITerrainSectionROAM  = pRoamTerrain.findSection(this._iSectorX + 1, this._iSectorY);
+			var pWestSection: ITerrainSectionROAM  = pRoamTerrain.findSection(this._iSectorX - 1, this._iSectorY);
 
 			if (pNorthSection) {
 				this._leftNeighborOfA = pNorthSection.triangleB;
@@ -125,8 +131,6 @@ module akra.terrain {
 
 			// build the variance trees
 			this.computeVariance();
-
-			return bResult;
 		}
 
 		//private _v3fOldPosition: 
@@ -168,6 +172,10 @@ module akra.terrain {
 		}
 
 		reset(): void {
+			if((<ITerrainROAM>this.terrainSystem).useTessellationThread){
+				return;
+			}
+
 			this._pRootTriangleA.leftChild  = null;
 			this._pRootTriangleA.rightChild = null;
 			this._pRootTriangleB.leftChild  = null;
@@ -184,6 +192,10 @@ module akra.terrain {
 		}
 
 		tessellate(fScale: float, fLimit: float): void {
+			if((<ITerrainROAM>this.terrainSystem).useTessellationThread){
+				return;
+			}
+
 			var iIndex0: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY);
 			var iIndex1: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY + this._iYVerts-1);
 			var iIndex2: uint =  this.terrainSystem._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY + this._iYVerts-1);
@@ -426,6 +438,10 @@ module akra.terrain {
 		}
 
 		buildTriangleList(): void {
+			if((<ITerrainROAM>this.terrainSystem).useTessellationThread){
+				return;
+			}
+
 			this._iTempTotalIndices = this.terrainSystem.totalIndex;
 
 			this._pTempIndexList = this.terrainSystem.index;
@@ -450,7 +466,6 @@ module akra.terrain {
 			this._iTempTotalIndices = undefined;
 			this._iVertexID = undefined;
 			this._pTempIndexList = null;
-
 		}
 
 		protected recursiveBuildTriangleList(pTri: ITriTreeNode, iPointBase: uint, iPointLeft: uint, iPointRight: uint): void {
@@ -468,7 +483,8 @@ module akra.terrain {
 					pTri.rightChild,
 					iPointMid, iPointRight, iPointBase);
 
-			} else if (this._iTempTotalIndices + 3 < this._iMaxIndices) {
+			} 
+			else if (this._iTempTotalIndices + 3 < this._iMaxIndices) {
 				var nElementSize: uint = 0;
 				if(this.terrainSystem._useVertexNormal()){
 					nElementSize = (3/*кординаты вершин*/ + 3/*нормаль*/ + 2/*текстурные координаты*/);
@@ -482,7 +498,8 @@ module akra.terrain {
 				this._pTempIndexList[this._iTempTotalIndices++]=((iPointRight+this._iStartIndex) * nElementSize * 4 + this._iVertexID)/4;
 				this._pTempIndexList[this._iTempTotalIndices++]=((iPointLeft+this._iStartIndex) * nElementSize * 4 + this._iVertexID)/4;
 				this._pTempIndexList[this._iTempTotalIndices++]=((iPointBase+this._iStartIndex) * nElementSize * 4 + this._iVertexID)/4;
-			} else {
+			} 
+			else {
 				debug_print("else", this._iTempTotalIndices, this._iMaxIndices)
 			}
 		}

@@ -5,6 +5,7 @@
 #include "fx/Instruction.ts"
 #include "fx/TypeInstruction.ts"
 #include "fx/ExprInstruction.ts"
+#include "util/StringDictionary.ts"
 
 module akra.fx {
 	export class VariableDeclInstruction extends DeclInstruction implements IAFXVariableDeclInstruction {
@@ -23,7 +24,12 @@ module akra.fx {
         private _pDefaultValue: any = null;
 
         private _bLockInitializer: bool = false;
-        
+
+        private _iNameIndex: uint = 0;
+        static pShaderVarNamesGlobalDictionary: util.StringDictionary = new util.StringDictionary();
+        static inline _getIndex(sName: string): uint {
+            return VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(sName);
+        }
         /**
 		 * Represent type var_name [= init_expr]
 		 * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
@@ -230,6 +236,10 @@ module akra.fx {
 
         _getAttrExtractionBlock(): IAFXInstruction {
             return this._pAttrExtractionBlock;
+        }
+
+        _getNameIndex(): uint {
+            return this._iNameIndex || (this._iNameIndex = VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(this.getRealName()));    
         }
 
         _getFullNameExpr(): IAFXExprInstruction {

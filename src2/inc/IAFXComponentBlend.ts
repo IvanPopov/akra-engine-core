@@ -5,33 +5,22 @@
 #include "IAFXInstruction.ts"
 #include "IUnique.ts"
 #include "IAFXPassInputBlend.ts"
+#include "IAFXVariableContainer.ts"
 
 #define EMPTY_BLEND "EMPTY_BLEND"
 
 module akra {
-	
+
+
 	export interface IAFXComponentBlendMap {
 		[index: uint]: IAFXComponentBlend;
 		[index: string]: IAFXComponentBlend; 
 	}
 
 	export interface IAFXComponentPassInputBlend {
-		uniformNameToReal: StringMap;
-		uniformByRealName: IAFXVariableDeclMap;
-		uniformDefaultValue: any;
-
-		textureNameToReal: StringMap;
-		textureByRealName: IAFXVariableDeclMap;
-
-		foreignByName: IAFXVariableDeclMap;
-
-		uniformNameList: string[];
-		uniformRealNameList: string[];
-
-		textureNameList: string[];
-		textureRealNameList: string[];
-
-		foreignNameList: string[];
+		uniforms: IAFXVariableContainer;
+		textures: IAFXVariableContainer;
+		foreigns: IAFXVariableContainer;
 
 		addDataFromPass(pPass: IAFXPassInstruction): void;
 		finalizeInput(): void;

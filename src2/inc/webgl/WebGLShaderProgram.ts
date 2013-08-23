@@ -375,19 +375,69 @@ module akra.webgl {
                 return ZERO_SAMPLER_SLOT;
             }
 
+            var pTextureStateManager: WebGLInternalTextureStateManager = this._pWebGLRenderer._getTextureStateManager();
+            var pStates: IntMap = pTextureStateManager.add(pTexture);
             var iSlot: int = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
 
-            // var iSlot: int = this._pWebGLRenderer.getNextTextureSlot();
-            // this._pWebGLRenderer.activateWebGLTexture(iSlot + GL_TEXTURE0);
+            if(pSampler.min_filter){
+                pTexture.setFilter(ETextureParameters.MIN_FILTER, pSampler.min_filter);
+            }
+            else {
+                pTexture.setFilter(ETextureParameters.MIN_FILTER, pStates[ETextureParameters.MIN_FILTER]);
+            }
 
-            // this._pWebGLRenderer.bindWebGLTexture(pTexture._getWebGLTextureTarget(), null);
-            // this._pWebGLRenderer.bindWebGLTexture(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
+            if(pSampler.mag_filter){
+                pTexture.setFilter(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
+            }
+            else {
+                pTexture.setFilter(ETextureParameters.MAG_FILTER, pStates[ETextureParameters.MAG_FILTER]);
+            }
 
-            pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
-            pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.min_filter);
+            if(pSampler.wrap_s){
+                pTexture.setWrapMode(ETextureParameters.WRAP_S, pSampler.wrap_s);
+            }
+            else {
+                pTexture.setWrapMode(ETextureParameters.WRAP_S, pStates[ETextureParameters.WRAP_S]);
+            }
 
-            pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s);
-            pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t);
+            if(pSampler.wrap_t){
+                pTexture.setWrapMode(ETextureParameters.WRAP_T, pSampler.wrap_t);
+            }
+            else {
+                pTexture.setWrapMode(ETextureParameters.WRAP_T, pStates[ETextureParameters.WRAP_T]);
+            }
+            // LOG("sampler states: ",
+            // (<any>pSampler.min_filter).toString(16),
+            // (<any>pSampler.mag_filter).toString(16),
+            // (<any>pSampler.wrap_s).toString(16),
+            // (<any>pSampler.wrap_t).toString(16)
+            // );
+
+            // LOG("texture states: ",
+            // (<any>pTexture.getFilter(ETextureParameters.MIN_FILTER)).toString(16),
+            // (<any>pTexture.getFilter(ETextureParameters.MAG_FILTER)).toString(16),
+            // (<any>pTexture.getWrapMode(ETextureParameters.WRAP_S)).toString(16),
+            // (<any>pTexture.getWrapMode(ETextureParameters.WRAP_T)).toString(16)
+            // );
+            // pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.min_filter || pTexture.getFilter(ETextureParameters.MIN_FILTER));
+            // pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.mag_filter || pTexture.getFilter(ETextureParameters.MAG_FILTER));
+            // pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s || pTexture.getWrapMode(ETextureParameters.WRAP_S));
+            // pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t || pTexture.getWrapMode(ETextureParameters.WRAP_T));
+            
+            // if(pSampler.min_filter){
+            //     pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.min_filter);
+            // }
+
+            // if(pSampler.mag_filter){
+            //     pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
+            // }
+
+            // if(pSampler.wrap_s) {
+            //     pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s);
+            // }
+            // if(pSampler.wrap_t) {
+            //     pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t);
+            // }
 
             return iSlot;
         }
@@ -580,8 +630,14 @@ module akra.webgl {
         }
 
         inline _setSampler(pWebGLUniformLocation: WebGLUniformLocation, pSampler: IAFXSamplerState): void {
-           var iSlot: int = this.applySamplerState(pSampler);
-           this._setInt(pWebGLUniformLocation, iSlot);
+            // for(var i in this._pWebGLUniformLocations){
+            //     if(this._pWebGLUniformLocations[i] === pWebGLUniformLocation){
+            //         LOG(i);
+            //         break;
+            //     }
+            // }
+            var iSlot: int = this.applySamplerState(pSampler);
+            this._setInt(pWebGLUniformLocation, iSlot);
         }
 
         inline _setVertexBuffer(pWebGLUniformLocation: WebGLUniformLocation, pBuffer: IVertexBuffer): void {

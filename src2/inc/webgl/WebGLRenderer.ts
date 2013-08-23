@@ -7,6 +7,7 @@
 #include "render/Viewport.ts"
 #include "WebGLShaderProgram.ts"
 #include "IShaderInput.ts"
+#include "WebGLInternalTextureStateManager.ts"
 
 #define WEBGL_MAX_FRAMEBUFFER_NUM 32
 
@@ -87,6 +88,10 @@ module akra.webgl {
 		private _iCurrentTextureSlot: uint = 0;
 		private _iNextTextureSlot: uint = 0;
 		private _pTextureSlotList: WebGLTexture[] = null;
+		/**
+		 * Need To reset texture states after render
+		 */
+		private _pTextureStateManager: WebGLInternalTextureStateManager = null;
 		/**
 		 * Need to impove speed
 		 */
@@ -174,6 +179,8 @@ module akra.webgl {
 			}
 
 			this.forceUpdateContextRenderStates();
+
+			this._pTextureStateManager = new WebGLInternalTextureStateManager(this);
 		}
 
 		debug(bValue: bool = true, useApiTrace: bool = false): bool {
@@ -577,6 +584,10 @@ module akra.webgl {
 			}
 		}
 
+		inline _getTextureStateManager(): WebGLInternalTextureStateManager {
+			return this._pTextureStateManager;
+		}
+ 
 		_beginRender(): void {
 			this.enable(GL_SCISSOR_TEST);
 			this.disable(GL_BLEND);
@@ -606,6 +617,9 @@ module akra.webgl {
 			// deltaTime = Date.now();
 
 			var pViewport: render.Viewport = <render.Viewport>pEntry.viewport;
+			if(isNull(pViewport)){
+				LOG(pEntry);
+			}
 			var pRenderTarget: IRenderTarget = (<render.Viewport>pViewport).getTarget();
 			var pInput: IShaderInput = pEntry.input;
 			var pMaker: fx.Maker = <fx.Maker>pEntry.maker;
@@ -622,11 +636,11 @@ module akra.webgl {
 			// deltaTime = Date.now();
 			if(!isNull(pEntry.renderTarget)){
 				this._setRenderTarget(pEntry.renderTarget);
-				this.lockRenderTarget();
+				this._lockRenderTarget();
 
 				this._setViewportForRender(pViewport);
 
-				this.unlockRenderTarget();
+				this._unlockRenderTarget();
 			}
 			else {
 				this._setViewportForRender(pViewport);
@@ -751,6 +765,7 @@ module akra.webgl {
 
 		_endRender(): void {
 			this.disable(GL_SCISSOR_TEST);
+			this._pTextureStateManager.reset();
 		}
 
 		_setViewport(pViewport: IViewport): void {
@@ -797,7 +812,7 @@ module akra.webgl {
         	// }
         	//May be unbind()
         	
-        	if(this.isLockRenderTarget()){
+        	if(this._isLockRenderTarget()){
         		return;
         	}
 

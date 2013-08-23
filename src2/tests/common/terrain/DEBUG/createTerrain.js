@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Jul 22 2013 14:35:35 GMT+0400 (Московское время (лето))
+ * assembled at: Thu Aug 01 2013 17:58:39 GMT+0400 (Московское время (лето))
  * directory: tests/common/terrain/DEBUG/
  * file: tests/common/terrain/createTerrain.ts
  * name: createTerrain
@@ -83,14 +83,15 @@ var akra;
     }
     function createViewports() {
         pViewport = pCanvas.addViewport(akra.pCamera, akra.EViewportTypes.DSVIEWPORT);
-        var pStats = pUI.createComponent("RenderTargetStats");
-        pStats.target = pViewport.getTarget();
-        pStats.render(pMainScene);
-        pStats.el.css({
-            position: "relative",
-            top: "-720px"
-        });
-    }
+        pCanvas.resize(window.innerWidth, window.innerHeight);
+        window.onresize = function (event) {
+            pCanvas.resize(window.innerWidth, window.innerHeight);
+        };
+        // var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>pUI.createComponent("RenderTargetStats");
+        // pStats.target = pViewport.getTarget();
+        // pStats.render(pMainScene);
+        // pStats.el.css({position: "relative", top: "-720px"});
+            }
     function createLighting() {
         var pOmniLight = pScene.createLightPoint(akra.ELightTypes.OMNI, false, 0, "test-omni");
         pOmniLight.attachToParent(pScene.getRootNode());
@@ -113,13 +114,14 @@ var akra;
     }
     function createTerrain() {
         akra.pTerrain = pScene.createTerrainROAM();
+        akra.pTerrain.megaTexture.manualMinLevelLoad = true;
         var pTerrainMap = {};
         // shouldBeNotNull("new terrain");
         // ok(pTerrain);
         pTerrainMap["height"] = pRmgr.loadImage(akra.DATA + "textures/terrain/main_height_map_1025.dds");
-        pTerrainMap["height"].bind("loaded", function (pTexture) {
+        pTerrainMap["height"].bind("loaded", function (pImg) {
             pTerrainMap["normal"] = pRmgr.loadImage(akra.DATA + "textures/terrain/main_terrain_normal_map.dds");
-            pTerrainMap["normal"].bind("loaded", function (pTexture) {
+            pTerrainMap["normal"].bind("loaded", function (pImg) {
                 var isCreate = akra.pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 200), 5, 5, 5, "main");
                 akra.pTerrain.attachToParent(pScene.getRootNode());
                 akra.pTerrain.setInheritance(akra.ENodeInheritance.ALL);
@@ -129,10 +131,15 @@ var akra;
                 // shouldBeTrue("terrain create");
                 // ok(isCreate);
                 // pTestNode.addRelRotationByXYZAxis(1, 1, 0);
-                akra.pTerrain.megaTexture.bind("minLevelLoaded", /** @inline */function () {
+                //pTerrain.megaTexture.bind("minLevelLoaded", () => {
+                akra.pEngine.getComposer()["bShowTriangles"] = true;
+                var pMinLevelImg = pRmgr.loadImage(akra.DATA + "textures/terrain/diffuse.dds");
+                pMinLevelImg.bind("loaded", function (pImg) {
+                    akra.pTerrain.megaTexture.setMinLevelTexture(pMinLevelImg);
                     akra.pEngine.exec();
                 });
-            });
+                //});
+                            });
         });
         // pTerrain.create();
         // ok(pTerrain);

@@ -15,10 +15,12 @@ module akra.core.pool.resources {
 		protected _pTexcoords: uint[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 		protected _pTextureMatrices: IMat4[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 
-		//For acceleration of composer
-		protected _sLastHash: string = "";
-		protected _isNeedToUpdateHash: bool = true;
+		//For acceleration of PassInpuBlend.setSurfaceMaterial and PassBlend.generateFXMaker
+		protected _nTextureUpdates: uint = 0;
+		protected _nTexcoordUpdates: uint = 0;
 
+		inline get totalUpdatesOfTextures(): uint { return this._nTextureUpdates; }
+		inline get totalUpdatesOfTexcoords(): uint { return this._nTexcoordUpdates; }
 
 		inline get totalTextures(): uint { return this._nTotalTextures; }
     	inline get material(): IMaterial { return this._pMaterial; }
@@ -53,8 +55,10 @@ module akra.core.pool.resources {
 		    this._pTexcoords[iIndex] = iTexcoord;
 
 		    if(iIndex !== iTexcoord) {
-		    	this._isNeedToUpdateHash = true;
+		    	this._nTexcoordUpdates = 0;
 		    }
+
+		    this._nTextureUpdates++;
 		    
 		    if (isString(texture)) {
 		    	pTexture = this._pTextures[iIndex];
@@ -230,26 +234,35 @@ module akra.core.pool.resources {
 
     	static MAX_TEXTURES_PER_SURFACE: uint = 16;
 
-    	_getHash(): string {
-    		if(this._isNeedToUpdateHash){
-    			this._sLastHash = this.calcHash();
-  				this._isNeedToUpdateHash = false;
-    		}
+    	
+    	// _getHash(): string {
+    	// 	if(this._isNeedToUpdateHash){
+    	// 		this._sLastHash = this.calcHash();
+  			// 	this._isNeedToUpdateHash = false;
+    	// 	}
 
-    		return this._sLastHash;
-    	}
+    	// 	return this._sLastHash;
+    	// }
 
-    	private calcHash(): string {
-    		var sHash: string = "";
+    	// private calcHash(): string {
+    	// 	// var iHash: uint = 0;
+    	// 	// for(var i: uint = 0; i < this._pTexcoords.length; i++){
+    	// 	// 	if(this._pTexcoords[i] !== i){
+    	// 	// 		iHash += (this._pTexcoords[i] + 1) << i;
+    	// 	// 	}
+    	// 	// }
 
-    		for(var i = 0; i < this._pTexcoords.length; i++){
-    			if(this._pTexcoords[i] !== i){
-    				sHash += i.toString() + "<" + this._pTexcoords[i].toString() + ".";
-    			}
-    		}
+    	// 	// return iHash.toString();
+    	// 	var sHash: string = "";
 
-    		return sHash;
-    	}
+    	// 	for(var i = 0; i < this._pTexcoords.length; i++){
+    	// 		if(this._pTexcoords[i] !== i){
+    	// 			sHash += i.toString() + "<" + this._pTexcoords[i].toString() + ".";
+    	// 		}
+    	// 	}
+
+	   	// 	return sHash;
+    	// }
 	}
 }
 

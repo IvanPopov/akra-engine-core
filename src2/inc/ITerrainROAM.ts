@@ -13,6 +13,8 @@ module akra {
 		tessellationScale: float;
 		tessellationLimit: float;
 
+		useTessellationThread: bool;
+
 		readonly verts: float[];
 		readonly index: Float32Array;
 		readonly maxTriTreeNodes: uint;

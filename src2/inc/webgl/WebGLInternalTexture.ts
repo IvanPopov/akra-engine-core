@@ -138,7 +138,7 @@ module akra.webgl {
             if (!this.isValid()) {
                 return false;
             }
-
+            
             var iWebGLTarget: int = this._getWebGLTextureTarget();
             var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
@@ -286,6 +286,10 @@ module akra.webgl {
             this.setWrapMode(ETextureParameters.WRAP_S, this.getWrapMode(ETextureParameters.WRAP_S));
             this.setWrapMode(ETextureParameters.WRAP_T, this.getWrapMode(ETextureParameters.WRAP_T));
 
+            pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(ETextureParameters.MIN_FILTER), eMinFiler);
+            pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(ETextureParameters.MAG_FILTER), eMagFiler);
+            pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(ETextureParameters.WRAP_S), this.getWrapMode(ETextureParameters.WRAP_S));
+            pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(ETextureParameters.WRAP_T), this.getWrapMode(ETextureParameters.WRAP_T));
 
 	        var iWebGLFormat: int = webgl.getWebGLFormat(this._eFormat);
 	        var iWebGLDataType: int = webgl.getWebGLDataType(this._eFormat);

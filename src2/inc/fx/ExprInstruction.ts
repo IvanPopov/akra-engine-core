@@ -298,11 +298,14 @@ module akra.fx {
 		toFinalCode(): string {
 			var sCode: string = "";
 			if(this._bToFinalCode){
-				if(this._isInPassForeigns){
-					sCode += "foreigns[\"" + this.getInstructions()[0].toFinalCode() + "\"]";
-				}
-				else if(this._isInPassUnifoms){
-					sCode += "uniforms[\"" + this.getInstructions()[0].toFinalCode() + "\"]";
+				if(this._isInPassForeigns || this._isInPassUnifoms){
+					var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getInstructions()[0].getParent();
+					if(this._isInPassForeigns){
+						sCode += "foreigns[\"" + pVarDecl._getNameIndex() + "\"]";
+					}
+					else {
+						sCode += "uniforms[\"" + pVarDecl._getNameIndex() + "\"]";
+					}
 				}
 				else {
 					sCode += this.getInstructions()[0].toFinalCode();

@@ -21,7 +21,9 @@ module akra {
 		generateFXMaker(pPassInput: IAFXPassInputBlend,
 						pSurfaceMaterial: ISurfaceMaterial,
 						pBuffer: IBufferMap): IAFXMaker;
+		
 		_hasUniformWithName(sName: string): bool;
+		_hasUniformWithNameIndex(iNameIndex: uint): bool;
 		_getRenderStates(): IRenderStateMap;
 	}
 }

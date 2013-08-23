@@ -3,44 +3,12 @@
 
 #include "IAFXSamplerState.ts"
 #include "ISurfaceMaterial.ts"
+#include "IUnique.ts"
 
 module akra {
 	IFACE(IRenderStateMap)
-	
-	export enum EAFXShaderVariableType {
-        k_NotVar = 0,
-        
-        k_Texture = 2,
-        
-        k_Float,
-        k_Int,
-        k_Bool,
 
-        k_Float2,
-        k_Int2,
-        k_Bool2,
-
-        k_Float3,
-        k_Int3,
-        k_Bool3,
-
-        k_Float4,
-        k_Int4,
-        k_Bool4,
-
-        k_Float2x2,
-        k_Float3x3,
-        k_Float4x4,
-
-        k_Sampler2D,
-        k_SamplerCUBE,
-        k_SamplerVertexTexture,
-
-        k_CustomSystem,
-        k_Complex
-    }
-
-	export interface IAFXPassInputBlend {
+	export interface IAFXPassInputBlend extends IUnique {
 		samplers: IAFXSamplerStateMap;
 		samplerArrays: IAFXSamplerStateListMap;
 		samplerArrayLength: IntMap;
@@ -49,21 +17,25 @@ module akra {
 		foreigns: any;
 		textures: any;
 
-		samplerKeys: string[];
-		samplerArrayKeys: string[];
+		samplerKeys: uint[];
+		samplerArrayKeys: uint[];
 
-		uniformKeys: string[];
-		foreignKeys: string[];
-		textureKeys: string[];
+		uniformKeys: uint[];
+		foreignKeys: uint[];
+		textureKeys: uint[];
 
 		renderStates: IRenderStateMap;
 
-		hasTexture(sName: string): bool;
+		readonly totalSamplerUpdates: uint;
+		readonly totalForeignUpdates: uint;
+
 		hasUniform(sName: string): bool;
+		hasTexture(sName: string): bool;
+		hasForeign(sName: string): bool;
 		
 		setUniform(sName: string, pValue: any): void;
-		setForeign(sName: string, pValue: any): void;
 		setTexture(sName: string, pValue: any): void;
+		setForeign(sName: string, pValue: any): void;
 
 		setSampler(sName: string, pState: IAFXSamplerState): void;
 		setSamplerArray(sName: string, pSamplerArray: IAFXSamplerState[]): void;
@@ -77,24 +49,31 @@ module akra {
 
 		setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void;
 
-		_getSamplerState(sName: string): IAFXSamplerState;
-		_getSamplerTexture(sName: string): ITexture;
+		_getForeignVarNameIndex(sName: string): uint;
+		_getForeignVarNameByIndex(iNameIndex: uint): string;
+		
+		_getUniformVarNameIndex(sName: string): uint;
+		_getUniformVarNameByIndex(iNameIndex: uint): string;
+		
+		_getUniformVar(iNameIndex: uint): IAFXVariableDeclInstruction;
+		_getUniformLength(iNameIndex: uint): uint;
+		_getUniformType(iNameIndex: uint): EAFXShaderVariableType;
+
+		_getSamplerState(iNameIndex: uint): IAFXSamplerState;
+		_getSamplerTexture(iNameIndex: uint): ITexture;
+
 		_getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture;
 
-		_getUnifromLength(sName: string): uint;
-		_getUniformType(sName: string): EAFXShaderVariableType;
 
 		_release(): void;
 
-		_isNeedToCalcBlend(): bool;
-		_isNeedToCalcShader(): bool;
+		// _isNeedToCalcBlend(): bool;
+		// _isNeedToCalcShader(): bool;
 
 		_getLastPassBlendId(): uint;
 		_getLastShaderId(): uint;
 		_setPassBlendId(id: uint): void;
 		_setShaderId(id: uint): void;
-
-		_getAFXUniformVar(sName: string): IAFXVariableDeclInstruction;
 	}
 }
 

@@ -200,16 +200,16 @@ module akra.render {
 
 
 		render(pViewport: IViewport, csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
-			this.beforeRender(pViewport);
-
 			if (!this.isReadyForRender()) {
 				return;
 			}
 			
 			if (!this.switchRenderMethod(csMethod)) {
-				debug_error("could not switch render method <" + csMethod + ">");
+				//debug_error("could not switch render method <" + csMethod + ">");
 				return;
 			}
+
+			this.beforeRender(pViewport);
 			
 			this.data._draw(this._pTechnique, pViewport, this, pSceneObject);
 		}

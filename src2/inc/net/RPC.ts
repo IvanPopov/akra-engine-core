@@ -7,6 +7,7 @@
 #include "events/events.ts"
 #include "util/util.ts"
 #include "util/ObjectList.ts"
+#include "util/ObjectSortCollection.ts"
 
 /// @: {data}/server|src(inc/net/server)|location()|data_location({data},DATA)
 
@@ -16,6 +17,7 @@
 #define HAS_SYSTEM_ROUTINE(rpc) (rpc.options.systemRoutineInterval > 0)
 #define HAS_CALLBACK_LIFETIME(rpc) (rpc.options.callbackLifetime > 0)
 #define HAS_GROUP_CALLS(rpc) (rpc.options.callsFrequency > 0)
+#define HAS_CALLBACKS_COUNT_LIMIT(rpc) (rpc.options.maxCallbacksCount > 0)
 
 module akra.net {
 
@@ -42,7 +44,8 @@ module akra.net {
         protected _pDefferedRequests: IObjectList = new ObjectList;
         //стек вызовов, ожидающих результата
         //type: ObjectList<IRPCCallback>
-        protected _pCallbacks: IObjectList = new ObjectList;
+        protected _pCallbacksList: IObjectList = null;
+        protected _pCallbacksCollection: IObjectSortCollection = null;
         //число совершенных вызовов
         protected _nCalls: uint = 0;
 
@@ -79,6 +82,15 @@ module akra.net {
                 priority: 10
             };
 
+            if(HAS_CALLBACKS_COUNT_LIMIT(this)){
+                this._pCallbacksCollection = new util.ObjectSortCollection(this._pOption.maxCallbacksCount);
+                this._pCallbacksCollection.setCollectionFuncion((pCallback: IRPCCallback): int => {
+                    return isNull(pCallback) ? -1 : pCallback.n;
+                });
+            }
+            else {
+                this._pCallbacksList = new util.ObjectList();
+            }
             pAddr = pAddr || pOption.addr;
 
             if (isDefAndNotNull(pAddr)) {
@@ -243,25 +255,40 @@ module akra.net {
         }
 
         private response(nSerial: uint, eType: ERPCPacketTypes, pResult: any): void {
-            var pStack: IObjectList = this._pCallbacks;
-            var fn: Function = null;
-
             if (eType === ERPCPacketTypes.RESPONSE) {
-                var pCallback: IRPCCallback = <IRPCCallback>pStack.last;
+                var fn: Function = null;
+                var pCallback: IRPCCallback = null;
                 // WARNING("---------------->",nSerial,"<-----------------");
                 // LOG(pStack.length);
-                do {
-                    // LOG("#n: ", nSerial, " result: ", pResult);
-                    if (pCallback.n === nSerial) {
+                if(HAS_CALLBACKS_COUNT_LIMIT(this)){
+                    var pCollection: IObjectSortCollection = this._pCallbacksCollection;
+                    pCallback = pCollection.takeElement(nSerial);
+                    if(!isNull(pCallback)){
                         fn = pCallback.fn;
-                        this._releaseCallback(pStack.takeCurrent());
+                        this._releaseCallback(pCallback);
 
                         if (!isNull(fn)) {
                             fn(null, pResult);
                         }
-                        return;
+                        return; 
                     }
-                } while (pCallback = pStack.prev());
+                }
+                else {
+                    var pStack: IObjectList = this._pCallbacksList;
+                    pCallback = <IRPCCallback>pStack.last;
+                    do {
+                        // LOG("#n: ", nSerial, " result: ", pResult);
+                        if (pCallback.n === nSerial) {
+                            fn = pCallback.fn;
+                            this._releaseCallback(pStack.takeCurrent());
+
+                            if (!isNull(fn)) {
+                                fn(null, pResult);
+                            }
+                            return;
+                        }
+                    } while (pCallback = pStack.prev());
+                }
 
 
                 // WARNING("package droped, invalid serial: " + nSerial);
@@ -292,15 +319,20 @@ module akra.net {
         }
 
         private freeCallbacks(): void {
-            var pStack: IObjectList = this._pCallbacks;
-            var pCallback: IRPCCallback = <IRPCCallback>pStack.first;
-            
-            if (pCallback) {
-                do {
-                    this._releaseCallback(pCallback);
-                } while (pCallback = pStack.next());
+            if(HAS_CALLBACKS_COUNT_LIMIT(this)){
+                this._pCallbacksCollection.clear();
+            }
+            else {
+                var pStack: IObjectList = this._pCallbacksList;
+                var pCallback: IRPCCallback = <IRPCCallback>pStack.first;
+                
+                if (pCallback) {
+                    do {
+                        this._releaseCallback(pCallback);
+                    } while (pCallback = pStack.next());
 
-                pStack.clear();
+                    pStack.clear();
+                }
             }
         }
 
@@ -393,7 +425,13 @@ module akra.net {
                     this._pDefferedRequests.length <= this.options.deferredCallsLimit) {
 
                     this._pDefferedRequests.push(pProc);
-                    this._pCallbacks.push(pCallback);
+
+                    if(HAS_CALLBACKS_COUNT_LIMIT(this)){
+                        this._pCallbacksCollection.push(pCallback);
+                    }
+                    else {
+                        this._pCallbacksList.push(pCallback);
+                    }
                 }
                 else {
                     pCallback.fn(RPC.ERRORS.STACK_SIZE_EXCEEDED);
@@ -406,7 +444,12 @@ module akra.net {
                 return false;
             }
 
-            this._pCallbacks.push(pCallback);
+            if(HAS_CALLBACKS_COUNT_LIMIT(this)){
+                this._pCallbacksCollection.push(pCallback);
+            }
+            else {
+                this._pCallbacksList.push(pCallback);
+            }
 
             return this.callProc(pProc);
         }
@@ -494,30 +537,52 @@ module akra.net {
         }
 
         _removeExpiredCallbacks(): void {
-            var pCallbacks: IObjectList = this._pCallbacks;
-            var pCallback: IRPCCallback = <IRPCCallback>pCallbacks.first;
+            var pCallback: IRPCCallback = null;
             var iNow: int = now();
             var fn: Function = null;
             var sInfo: string = null;
 
-            while(!isNull(pCallback)) {
+            if(HAS_CALLBACKS_COUNT_LIMIT(this)){
+//                 for(var i: uint = 0; i < this.options.maxCallbacksCount; i++){
+//                     pCallback = <IRPCCallback>this._pCallbacksCollection.getElementAt(i);
 
-                if (HAS_CALLBACK_LIFETIME(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
-                    fn = pCallback.fn;
+//                     if (!isNull(pCallback) && HAS_CALLBACK_LIFETIME(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
+//                         fn = pCallback.fn;
+// #ifdef DEBUG                    
+//                         sInfo = pCallback.procInfo;
+// #endif
+//                         this._releaseCallback(pCallback);
+//                         this._pCallbacksCollection.removeElementAt(i);
+
+//                         if (!isNull(fn)) {
+//                             // debug_print("procedure info: ", sInfo);
+//                             fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
+//                         }
+//                     }
+//                 }
+            }
+            else {
+                var pCallbacks: IObjectList = this._pCallbacksList;
+                pCallback = <IRPCCallback>pCallbacks.first;
+                while(!isNull(pCallback)) {
+
+                    if (HAS_CALLBACK_LIFETIME(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
+                        fn = pCallback.fn;
 #ifdef DEBUG                    
-                    sInfo = pCallback.procInfo;
+                        sInfo = pCallback.procInfo;
 #endif
-                    this._releaseCallback(<IRPCCallback>pCallbacks.takeCurrent());
+                        this._releaseCallback(<IRPCCallback>pCallbacks.takeCurrent());
 
-                    pCallback = pCallbacks.current;
+                        pCallback = pCallbacks.current;
 
-                    if (!isNull(fn)) {
-                        // debug_print("procedure info: ", sInfo);
-                        fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
+                        if (!isNull(fn)) {
+                            // debug_print("procedure info: ", sInfo);
+                            fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
+                        }
                     }
-                }
-                else {
-                    pCallback = <IRPCCallback>pCallbacks.next();
+                    else {
+                        pCallback = <IRPCCallback>pCallbacks.next();
+                    }
                 }
             }
         }
@@ -572,6 +637,7 @@ module akra.net {
             reconnectTimeout          : 2500,
             systemRoutineInterval     : 10000,
             callbackLifetime          : 60000,
+            maxCallbacksCount         : -1,
             procListName              : "proc_list",
             callsFrequency            : -1
         }

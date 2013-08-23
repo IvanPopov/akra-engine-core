@@ -8,6 +8,167 @@
 #endif
 
 module akra.fx {
+	export interface IVariableBlendInfo {
+		varList: IAFXVariableDeclInstruction[];
+		blendType: IAFXVariableTypeInstruction;
+		name: string;
+		nameIndex: uint;
+	}
+
+	export interface IVariableBlendInfoMap {
+		[index: uint]: IVariableBlendInfo;
+	}
+
+	export class VariableBlendContainer {
+		protected _pVarBlendInfoList: IVariableBlendInfo[] = null;
+		protected _pNameToIndexMap: IntMap = null;
+		protected _pNameIndexToIndexMap: IntMap = null;
+
+		inline get varsInfo(): IVariableBlendInfo[] {
+			return this._pVarBlendInfoList;
+		}
+
+		inline getVarBlenInfo(iIndex: uint): IVariableBlendInfo {
+			return this._pVarBlendInfoList[iIndex];
+		}
+
+		inline getVarList(iIndex: uint): IAFXVariableDeclInstruction[] {
+			return this._pVarBlendInfoList[iIndex].varList;
+		}
+
+		inline getBlendType(iIndex: uint): IAFXVariableTypeInstruction {
+			return this._pVarBlendInfoList[iIndex].blendType;
+		}
+
+		inline getKeyIndexByName(sName: string): int {
+			return isDef(this._pNameToIndexMap[sName]) ? this._pNameToIndexMap[sName] : (this._pNameToIndexMap[sName] = -1);
+		}
+
+		inline getKeyIndexByNameIndex(iNameIndex: uint): int {
+			return isDef(this._pNameIndexToIndexMap[iNameIndex]) ? this._pNameIndexToIndexMap[iNameIndex] : (this._pNameIndexToIndexMap[iNameIndex] = -1);
+		}
+
+		inline hasVariableWithName(sName: string): bool {
+			return this.getKeyIndexByName(sName) === -1 ? false : true;
+		}
+
+		inline hasVariableWithNameIndex(iNameIndex: uint): bool {
+			return this.getKeyIndexByNameIndex(iNameIndex) === -1 ? false : true;
+		}
+
+		inline hasVariable(pVar: IAFXVariableDeclInstruction): bool {
+			return this.hasVariableWithNameIndex(pVar._getNameIndex());
+		}
+
+		inline getVariable(iIndex: uint): IAFXVariableDeclInstruction {
+			return this._pVarBlendInfoList[iIndex].varList[0];
+		}
+
+		inline getVariableByName(sName: string): IAFXVariableDeclInstruction {
+			var iIndex: uint = this.getKeyIndexByName(sName);
+			return iIndex === -1 ? null : this.getVariable(iIndex);
+		}
+
+		inline getVariableByNameIndex(iNameIndex: uint): IAFXVariableDeclInstruction {
+			var iIndex: uint = this.getKeyIndexByNameIndex(iNameIndex);
+			return iIndex === -1 ? null : this.getVariable(iIndex);
+		}
+
+		constructor() {
+			this._pVarBlendInfoList = [];
+			this._pNameToIndexMap = <IntMap>{};
+			this._pNameIndexToIndexMap = <IntMap>{};
+		}
+
+		addVariable(pVariable: IAFXVariableDeclInstruction, eBlendMode: EAFXBlendMode): bool {
+			var sName: string = pVariable.getRealName();
+			var iNameIndex: uint = pVariable._getNameIndex();
+			var iIndex: uint = this.getKeyIndexByNameIndex(iNameIndex);
+
+			if(iIndex === -1){
+				this._pVarBlendInfoList.push(<IVariableBlendInfo>{
+					varList: [pVariable],
+					blendType:  pVariable.getType(),
+					name: sName,
+					nameIndex: iNameIndex
+				});
+
+				iIndex = this._pVarBlendInfoList.length - 1;
+
+				this._pNameToIndexMap[sName] = iIndex;
+				this._pNameIndexToIndexMap[iNameIndex] = iIndex;
+
+				return true;
+			}
+
+			var pBlendType: IAFXVariableTypeInstruction = this._pVarBlendInfoList[iIndex].blendType.blend(pVariable.getType(), eBlendMode);
+
+			if(pBlendType === this._pVarBlendInfoList[iIndex].blendType){
+				return true;
+			}
+
+			if(isNull(pBlendType)){
+				ERROR("Could not blend type for variable '" + sName + "'");
+				return false;
+			}
+
+			 this._pVarBlendInfoList[iIndex].varList.push(pVariable);
+			 this._pVarBlendInfoList[iIndex].blendType = pBlendType;
+
+			return true;
+		}
+
+		inline getDeclCodeForVar(iIndex: uint, bWithInitializer: bool): string {
+			var pInfo: IVariableBlendInfo = this._pVarBlendInfoList[iIndex];
+			var pType: IAFXVariableTypeInstruction = pInfo.blendType;
+			var pVar: IAFXVariableDeclInstruction = this.getVariable(iIndex);
+
+			var sCode: string = pType.toFinalCode() + " ";
+			sCode += pVar.getRealName();
+			
+			if(pVar.getType().isNotBaseArray()){
+				var iLength: uint = pVar.getType().getLength();
+				if(webgl.isANGLE && iLength === 1 && pVar.getType().isComplex()){
+					sCode += "[" + 2 + "]";
+				}
+				else {
+					sCode += "[" + iLength + "]";
+				}
+			}
+
+			if(bWithInitializer && pVar.hasInitializer()){
+				sCode += "=" + pVar.getInitializeExpr().toFinalCode();
+			}
+
+			return sCode;
+		}
+
+		forEach(iIndex: uint, fnModifier: {(pVar: IAFXVariableDeclInstruction): void;}): void {
+			if(iIndex === -1){
+				return;
+			}
+
+			var pVarList: IAFXVariableDeclInstruction[] = this.getVarList(iIndex);
+
+			for(var i: uint = 0; i < pVarList.length; i++) {
+				fnModifier.call(null, pVarList[i]);
+			}
+		}
+
+		setNameForEach(iIndex: uint, sNewRealName: string): void {
+			if(iIndex === -1){
+				return;
+			}
+
+			var pVarList: IAFXVariableDeclInstruction[] = this.getVarList(iIndex);
+
+			for(var i: uint = 0; i < pVarList.length; i++) {
+				pVarList[i].setRealName(sNewRealName);
+			}
+		}
+	}
+
+	/*
 	export class VariableBlendContainer {
 		protected _pVarListMap: IAFXVariableDeclListMap = null;
 		protected _pVarKeys: string[] = null;
@@ -130,6 +291,7 @@ module akra.fx {
 			}
 		}
 	}
+	*/
 
 
 	export class ComplexTypeBlendContainer {
@@ -184,10 +346,10 @@ module akra.fx {
 				return true;
 			}
 
-			var pKeys: string[] = pContainer.keys;
+			var pVarInfoList: IVariableBlendInfo[] = pContainer.varsInfo;
 
-			for(var i: uint = 0; i < pKeys.length; i++){
-				var pType: IAFXTypeInstruction = pContainer.getBlendType(pKeys[i]).getBaseType();
+			for(var i: uint = 0; i < pVarInfoList.length; i++){
+				var pType: IAFXTypeInstruction = pContainer.getBlendType(i).getBaseType();
 
 				if(pType.isComplex()){
 					if(!this.addComplexType(pType)){
@@ -291,8 +453,8 @@ module akra.fx {
 
 		protected _sHash: string = "";
 
-		inline get semantics(): string[] {
-			return this.keys;
+		inline get attrsInfo(): IVariableBlendInfo[] {
+			return this.varsInfo;
 		}
 
 		inline get totalSlots(): uint {
@@ -334,27 +496,27 @@ module akra.fx {
 			return this._pOffsetDefaultMap[sName];
 		}
 
-		inline getSlotBySemantic(sSemantic: string): uint {
-			return this._pSlotBySemanticIndex[this.getKeyIndex(sSemantic)];
+		inline getSlotBySemanticIndex(iIndex: uint): uint {
+			return this._pSlotBySemanticIndex[iIndex];
 		}
 
-		inline getBufferSlotBySemantic(sSemantic: string): uint {
-			return this._pBufferSlotBySlots[this.getSlotBySemantic(sSemantic)];
+		inline getBufferSlotBySemanticIndex(iIndex: uint): uint {
+			return this._pBufferSlotBySlots[this.getSlotBySemanticIndex(iIndex)];
 		}
 
-		inline getAttributeList(sSemantic: string): IAFXVariableDeclInstruction[] {
-			return this.getVarList(sSemantic);
+		inline getAttributeListBySemanticIndex(iIndex: uint): IAFXVariableDeclInstruction[] {
+			return this.getVarList(iIndex);
 		}
 	
-		inline getTypeForShaderAttribute(sSemantic: string): IAFXTypeInstruction {
-			return this._pIsPointerBySlot[this.getSlotBySemantic(sSemantic)] ? 
+		inline getTypeForShaderAttributeBySemanticIndex(iIndex: uint): IAFXTypeInstruction {
+			return this._pIsPointerBySlot[this.getSlotBySemanticIndex(iIndex)] ? 
 						Effect.getSystemType("ptr") :
-						this.getType(sSemantic).getBaseType();
+						this.getTypeBySemanticIndex(iIndex).getBaseType();
 		} 
 		
 
-		inline getType(sSemantic: string): IAFXVariableTypeInstruction {
-			return this.getBlendType(sSemantic);
+		inline getTypeBySemanticIndex(iIndex: uint): IAFXVariableTypeInstruction {
+			return this.getBlendType(iIndex);
 		}
 
 		inline addAttribute(pVariable: IAFXVariableDeclInstruction): bool {
@@ -365,7 +527,11 @@ module akra.fx {
 			return this.hasVariableWithName(sSemantic);
 		}
 
-		inline getAttribute(sSemantic: string): IAFXVariableDeclInstruction {
+		inline getAttributeBySemanticIndex(iIndex: uint): IAFXVariableDeclInstruction {
+			return this.getVariable(iIndex);
+		}
+
+		inline getAttributeBySemantic(sSemantic: string): IAFXVariableDeclInstruction {
 			return this.getVariableByName(sSemantic);
 		}
 
@@ -378,14 +544,14 @@ module akra.fx {
 		}
 
 		finalize(): void {
-			this._nSemantics = this.semantics.length;
+			this._nSemantics = this.attrsInfo.length;
 
 			this._pSlotBySemanticIndex = new Array(this._nSemantics);
 			this._pTypeInfoBySemanticIndex = new Array(this._nSemantics);
 
 			for(var i: uint = 0; i < this._nSemantics; i++){
 				this._pSlotBySemanticIndex[i] = -1;
-				this._pTypeInfoBySemanticIndex[i] = this.createTypeInfo(this.semantics[i]);
+				this._pTypeInfoBySemanticIndex[i] = this.createTypeInfo(i);
 			}
 
 			for(var i: uint = 0; i < this._pFlowBySlots.length; i++){
@@ -411,11 +577,12 @@ module akra.fx {
 			this._pOffsetVarsBySemanticMap = <IAFXVaribaleListMap>{};
 			this._pOffsetDefaultMap = <IntMap>{};
 			
-			var pSemantics: string[] = this.semantics;
+			var pAttrs: IVariableBlendInfo[] = this.attrsInfo;
 
-			for(var i: uint = 0; i < pSemantics.length; i++){
-				var sSemantic: string = pSemantics[i];
-				var pAttr: IAFXVariableDeclInstruction = this.getAttribute(sSemantic);
+			for(var i: uint = 0; i < pAttrs.length; i++){
+				var pAttrInfo: IVariableBlendInfo = pAttrs[i];
+				var sSemantic: string = pAttrInfo.name;
+				var pAttr: IAFXVariableDeclInstruction = this.getAttributeBySemanticIndex(i);
 
 				if(pAttr.isPointer()){
 					this._pOffsetVarsBySemanticMap[sSemantic] = [];
@@ -456,11 +623,12 @@ module akra.fx {
 				return;
 			}
 
-			var pSemanticList: string[] = this.semantics;
+			var pAttrs: IVariableBlendInfo[] = this.attrsInfo;
 			var iHash: uint = 0;
 
-			for(var i: uint = 0; i < pSemanticList.length; i++) {
-				var sSemantic: string = pSemanticList[i];
+			for(var i: uint = 0; i < pAttrs.length; i++) {
+				var pAttrInfo: IVariableBlendInfo = pAttrs[i];
+				var sSemantic: string = pAttrInfo.name;
 				var pTypeInfo: ITypeInfo = this._pTypeInfoBySemanticIndex[i];
 
 				var pFindFlow: IDataFlow = null;
@@ -548,11 +716,11 @@ module akra.fx {
 		}	
 
 
-		private createTypeInfo(sSemantic: string): ITypeInfo {
+		private createTypeInfo(iIndex: uint): ITypeInfo {
 			return <ITypeInfo>{
-				isComplex: this.getType(sSemantic).isComplex(),
-				isPointer: this.getType(sSemantic).isPointer(),
-				isStrictPointer: this.getType(sSemantic).isStrictPointer()
+				isComplex: this.getTypeBySemanticIndex(iIndex).isComplex(),
+				isPointer: this.getTypeBySemanticIndex(iIndex).isPointer(),
+				isStrictPointer: this.getTypeBySemanticIndex(iIndex).isStrictPointer()
 			};
 		}
 	}

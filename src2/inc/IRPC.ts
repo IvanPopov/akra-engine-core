@@ -56,6 +56,7 @@ module akra {
     export interface IRPCOptions {
         addr?: string;
         deferredCallsLimit?: int;       /* -1 - unlimited */
+        maxCallbacksCount?: int;        /* -1 - unlimited */
         reconnectTimeout?: int;         /* -1 - never */
         systemRoutineInterval?: int;    /* -1 - never*/
         callbackLifetime?: uint;        /* 0 - immortal */
@@ -63,6 +64,7 @@ module akra {
         callsFrequency?: int;           /* 0 or -1 - disable group calls */
         context?: any;                  /* контекст, у которого будут вызываться методы, при получении REQUEST запросов со стороны сервера */
         procMap?: IRPCProcOptionsMap;
+
     }
 
 	export interface IRPC extends IEventProvider {

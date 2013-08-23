@@ -2,7 +2,11 @@
 
 
 /*---------------------------------------------
+<<<<<<< HEAD
+ * assembled at: Thu Aug 01 2013 12:48:34 GMT+0400 (Московское время (лето))
+=======
  * assembled at: Fri Jul 26 2013 19:32:01 GMT+0400 (Московское время (зима))
+>>>>>>> origin/typescript
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/intro2.ts
  * name: intro2
