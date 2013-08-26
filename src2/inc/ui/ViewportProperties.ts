@@ -11,6 +11,13 @@
 #include "render/DSViewport.ts"
 
 module akra.ui {
+
+	// Engine.depends({
+	// 	files: [
+	// 		{path: "models/barrel/barrel_and_support.dae", name: "BARREL"}
+	// 	]
+	// });
+
 	export class ViewportProperties extends Component {
 		protected _pViewport: IViewport = null;
 		protected _pStats: IUIRenderTargetStats;
@@ -155,21 +162,45 @@ module akra.ui {
 
 			this.connect(pViewport, SIGNAL(addedSkybox), SLOT(_addedSkybox));
 
-			// this.setup(pViewport);
+			this.setup(pViewport);
 		}
 
-		protected setup(pViewport: IViewport): void {
-			console.log("HER >>> ");
+		protected setup(pGeneralViewport: IViewport): void {
+			
 			var pSceneMgr: ISceneManager = this.getEngine().getSceneManager();
 			var pScene: IScene3d = pSceneMgr.createScene3D(".3d-box");
 
 			var pBasis: ISceneModel = util.basis(pScene);
-			var pCamera: ICamera = pScene.createCamera(".cam");
+			pBasis.attachToParent(pScene.getRootNode());
+
+			var pCamera: ICamera = pScene.createCamera();
 
 			pCamera.attachToParent(pScene.getRootNode());
-			// pCamera.lookAt(vec3(0.));
+			pCamera.setPosition(0., 0.5, 3.);
+			pCamera.lookAt(vec3(0.));
 
-			pViewport.getTarget().addViewport(new render.DSViewport(pCamera, .8, .8, .15, .15, 100));
+			pScene.bind(SIGNAL(beforeUpdate), () => { pBasis.addRelRotationByXYZAxis(0.05, 0.05, 0.); });
+
+			var pViewport: IViewport = pGeneralViewport.getTarget().addViewport(new render.DSViewport(pCamera, .7, .05, .25, .25, 100));
+			(<any>pViewport).setFXAA(false);
+			pViewport["effect"].delComponent("akra.system.skybox", 1, 0);
+			pViewport["view"].getTechnique()._setGlobalPostEffectsFrom(0);	
+		
+			// pViewport.bind(SIGNAL(render), (
+			// 	pViewport: IDSViewport, 
+			// 	pTechnique: IRenderTechnique, 
+			// 	iPass: int, 
+			// 	pRenderable: IRenderableObject, 
+			// 	pSceneObject: ISceneObject): void => {
+
+			// 	var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			// 	pPass.setRenderState(ERenderStates.BLENDENABLE, ERenderStateValues.TRUE);
+   //      		pPass.setRenderState(ERenderStates.SRCBLEND, ERenderStateValues.ONE);
+   //      		pPass.setRenderState(ERenderStates.DESTBLEND, ERenderStateValues.ONE);
+   //      		pPass.setRenderState(ERenderStates.ZENABLE, ERenderStateValues.FALSE);
+   //      		pPass.setRenderState(ERenderStates.ZFUNC, ERenderStateValues.LESSEQUAL);
+			// });
 		}
 
 		_addedSkybox(pViewport: IViewport, pSkyTexture: ITexture): void {

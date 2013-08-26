@@ -80,6 +80,7 @@ module akra {
 	};
 
 	var pRenderOpts: IRendererOptions = {
+		premultipliedAlpha: false,
 		//for screenshoting
 		preserveDrawingBuffer: true,
 		//for black background & and avoiding composing with other html

@@ -32,6 +32,9 @@ module akra.render {
 		private _pDeferredDepthTexture: ITexture = null;
 		private _pDeferredView: IRenderableObject = null;
 		private _pDeferredSkyTexture: ITexture = null;
+
+		private _pDeferredBgTexture: ITexture = null;
+		private _v4fDeferredBgMapping: IVec4 = new Vec4(0., 0., 1., 1.);
 		//index of lighting display list
 		private _pLightDL: int; 
 
@@ -109,25 +112,21 @@ module akra.render {
 			var pDSMethod: IRenderMethod = null;
 			var pDSEffect: IEffect = null;
 
-			if (pDSMethod = <IRenderMethod>pResMgr.renderMethodPool.findResource(".deferred_shading")) {
-				pDSEffect = pDSMethod.effect;
-			}
-			else {
-				pDSMethod = pResMgr.createRenderMethod(".deferred_shading");
-				pDSEffect = pResMgr.createEffect(".deferred_shading");
+			pDSMethod = pResMgr.createRenderMethod(".deferred_shading" + iGuid);
+			pDSEffect = pResMgr.createEffect(".deferred_shading" + iGuid);
 
-				pDSEffect.addComponent("akra.system.deferredShading");
-				pDSEffect.addComponent("akra.system.omniLighting");
-				pDSEffect.addComponent("akra.system.projectLighting");
-				pDSEffect.addComponent("akra.system.omniShadowsLighting");
-				pDSEffect.addComponent("akra.system.projectShadowsLighting");
-				pDSEffect.addComponent("akra.system.sunLighting");
-				pDSEffect.addComponent("akra.system.sunShadowsLighting");
-				// pDSEffect.addComponent("akra.system.color_maps");
-				pDSEffect.addComponent("akra.system.skybox", 1, 0);
+			pDSEffect.addComponent("akra.system.deferredShading");
+			pDSEffect.addComponent("akra.system.omniLighting");
+			pDSEffect.addComponent("akra.system.projectLighting");
+			pDSEffect.addComponent("akra.system.omniShadowsLighting");
+			pDSEffect.addComponent("akra.system.projectShadowsLighting");
+			pDSEffect.addComponent("akra.system.sunLighting");
+			pDSEffect.addComponent("akra.system.sunShadowsLighting");
+			// pDSEffect.addComponent("akra.system.color_maps");
+			pDSEffect.addComponent("akra.system.skybox", 1, 0);
 
-				pDSMethod.effect = pDSEffect;
-			}
+			pDSMethod.effect = pDSEffect;
+			
 
 			this._pDeferredEffect = pDSEffect;
 			this._pDeferredView = pDefferedView;
@@ -295,7 +294,8 @@ module akra.render {
 		}
 
 		inline getSkybox(): ITexture { return this._pDeferredSkyTexture; }
-
+		inline getBackground(): ITexture { return this._pDeferredBgTexture; }
+		inline getBackgroundMapping(): IVec4 { return this._v4fDeferredBgMapping; }
 		
 
 		getDepth(x: int, y: int): float {
@@ -380,6 +380,26 @@ module akra.render {
 			this.addedSkybox(pSkyTexture);
 
 			return true;
+		}
+
+		setBackground(pTexture: ITexture, v4fMapping: IVec4 = vec4(0., 0., 1., 1.)): void {
+			this._pDeferredBgTexture = pTexture;
+			this.setBackgoundMapping(v4fMapping);
+
+			var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
+			
+			if (pTexture) {
+				pEffect.addComponent("akra.system.deferredBackground", 1, 0);
+			}
+			else {
+				pEffect.delComponent("akra.system.deferredBackground", 1, 0);
+			}
+
+			this.addedBackground(pTexture);
+		}
+
+		setBackgoundMapping(v4fMapping: IVec4): void {
+			this._v4fDeferredBgMapping.set(v4fMapping);
 		}
 
 		setFXAA(bValue: bool = true): void {
@@ -530,6 +550,9 @@ module akra.render {
 					// 	min_filter: ETextureFilters.NEAREST
 					// });
 
+					pPass.setTexture("TEXTURE0", this._pDeferredBgTexture);
+					pPass.setUniform("VIEWPORT", this._v4fDeferredBgMapping);
+
 					break;
 			}
 
@@ -676,6 +699,7 @@ module akra.render {
 		}
 
 		BROADCAST(addedSkybox, CALL(pSkyTexture));
+		BROADCAST(addedBackground, CALL(pTexture));
 	}
 }
 

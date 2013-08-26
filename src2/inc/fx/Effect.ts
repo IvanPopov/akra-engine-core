@@ -455,6 +455,7 @@ module akra.fx {
 
 
 		private addSystemVariables(): void {
+			this.generateSystemVariable("fragColor", "gl_FragColor", "float4", false, true, true);
 			this.generateSystemVariable("fragCoord", "gl_FragCoord", "float4", false, true, true);
 			this.generateSystemVariable("frontFacing", "gl_FrontFacing", "bool", false, true, true);
 			this.generateSystemVariable("pointCoord", "gl_PointCoord", "float2", false, true, true);
