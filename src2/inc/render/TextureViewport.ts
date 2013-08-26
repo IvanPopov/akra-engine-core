@@ -41,10 +41,6 @@ module akra.render {
 
 			this._pDeferredView = pDefferedView;
 			this._pEffect = pSeeTextureEffect;
-
-			LOG(this._pTargetTexture.getFilter(ETextureParameters.MIN_FILTER), this._pTargetTexture.getFilter(ETextureParameters.MAG_FILTER))
-			LOG((<any>this._pTargetTexture)._getFilterInternalTexture(ETextureParameters.MIN_FILTER),
-				(<any>this._pTargetTexture)._getFilterInternalTexture(ETextureParameters.MAG_FILTER) )
 		}
 
 		_updateImpl (): void {

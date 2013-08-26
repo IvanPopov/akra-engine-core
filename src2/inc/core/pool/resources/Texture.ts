@@ -242,12 +242,7 @@ module akra.core.pool.resources {
         }
         
         setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool {
-            if(this._pParams[eParam] === eValue){ 
-                var eRealValue = this._getFilterInternalTexture(eParam);
-                if(eValue !== eRealValue){
-                    LOG("TEXTURE FILTERS::----->", eParam, (<any>eValue).toString(16), (<any>eRealValue).toString(16));
-                }
-
+            if(this._pParams[eParam] === eValue){
                 return true;
             }
 

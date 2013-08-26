@@ -242,7 +242,7 @@ module akra.fx {
 			var pState: IAFXSamplerState = this.samplers[iIndex];
 
 			if(isString(pTexture)){
-				if (!isNull(pTexture) || pState.textureName !== pTexture){
+				if (!isNull(pState.texture) || pState.textureName !== pTexture){
 					this._nSamplerUpdates++;
 				}
 

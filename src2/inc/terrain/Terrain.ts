@@ -555,9 +555,8 @@ module akra.terrain {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			//pPass.setTexture("TEXTURE6", this._pBaseNormalTexture);
-			pPass.setTexture("TEXTURE6", this._pNormalMapTexture);
-			pPass.setSamplerTexture("S_NORMAL", "TEXTURE6");
-
+			pPass.setSamplerTexture("S_NORMAL_MAP", this._pNormalMapTexture);
+			
 #ifdef USE_MEGA_TEXTURE
 			if(this._bMegaTextureCreated && this._bShowMegaTexture){
 				this._pMegaTexures.applyForRender(pPass);

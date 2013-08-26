@@ -821,14 +821,18 @@ module akra.fx {
         				pSamplerStates = <SamplerStateBlockInstruction>pList[i].getInstructions()[0];
         				pTexture = pSamplerStates.getTexture();
 
-        				this._pTextureVariableMap[pTexture._getInstructionID()] = pTexture;
+        				if(!isNull(pTexture)){
+        					this._pTextureVariableMap[pTexture._getInstructionID()] = pTexture;
+        				}
         			}
         		}
         		else {
         			pSamplerStates = <SamplerStateBlockInstruction>pInitExpr.getInstructions()[0];
         			pTexture = pSamplerStates.getTexture();
 
-        			this._pTextureVariableMap[pTexture._getInstructionID()] = pTexture;
+        			if(!isNull(pTexture)){
+    					this._pTextureVariableMap[pTexture._getInstructionID()] = pTexture;
+    				}
         		}
         	}
 
