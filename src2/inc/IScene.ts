@@ -12,6 +12,7 @@ module akra {
 
 	export interface IScene extends IEventProvider {
 		type: ESceneTypes;
+		name: string;
 
 		getManager(): ISceneManager;
 	}

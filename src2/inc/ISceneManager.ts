@@ -13,15 +13,21 @@ module akra {
     IFACE(IUI);
 
     export interface ISceneManager extends IManager {
-        createScene3D(): IScene3d;
+        createScene3D(sName?: string): IScene3d;
         // createScene2D(): IScene2d;
 
         createUI(): IUI;
 
         getEngine(): IEngine;
 
-        getScene3D(iScene?: uint): IScene3d;
-        getScene2D(iScene?: uint): IScene2d;
+        getScene3D(): IScene3d;
+        getScene3D(sName: string): IScene3d;
+        getScene3D(iScene: uint): IScene3d;
+
+        getScene2D(): IScene2d;
+        getScene2D(sName: string): IScene2d;
+        getScene2D(iScene: uint): IScene2d;
+
         getScene(iScene?: uint, eType?: ESceneTypes): IScene;
 
         update(): void;

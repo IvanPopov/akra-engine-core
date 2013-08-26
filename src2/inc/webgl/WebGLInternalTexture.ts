@@ -274,7 +274,7 @@ module akra.webgl {
                 eMinFiler = ETextureFilters.LINEAR;
             }
 
-            if ((eMagFiler >= ETextureFilters.NEAREST_MIPMAP_NEAREST || eMagFiler <= ETextureFilters.LINEAR_MIPMAP_LINEAR) && 
+            if ((eMagFiler >= ETextureFilters.NEAREST_MIPMAP_NEAREST && eMagFiler <= ETextureFilters.LINEAR_MIPMAP_LINEAR) && 
                 this._nMipLevels < 2) {
                 eMagFiler = ETextureFilters.LINEAR;
             }

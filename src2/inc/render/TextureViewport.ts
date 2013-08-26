@@ -41,6 +41,10 @@ module akra.render {
 
 			this._pDeferredView = pDefferedView;
 			this._pEffect = pSeeTextureEffect;
+
+			LOG(this._pTargetTexture.getFilter(ETextureParameters.MIN_FILTER), this._pTargetTexture.getFilter(ETextureParameters.MAG_FILTER))
+			LOG((<any>this._pTargetTexture)._getFilterInternalTexture(ETextureParameters.MIN_FILTER),
+				(<any>this._pTargetTexture)._getFilterInternalTexture(ETextureParameters.MAG_FILTER) )
 		}
 
 		_updateImpl (): void {
@@ -49,6 +53,7 @@ module akra.render {
 
 		inline setMapping(x: uint, y: uint, w: uint, h: uint): void {
 			this._v4fMapping.set(x, y, w, h);
+			console.log("set mapping > ", x, y, w, h, this._v4fMapping.toString());
 		}
 
 		render(

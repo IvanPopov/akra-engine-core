@@ -30,6 +30,7 @@
 module akra.scene {
 
 	export class Scene3d implements IScene3d {
+		protected _sName: string;
 		protected _pRootNode: ISceneNode;
 		protected _pSceneManager: ISceneManager;
 		// protected _pNodeList: ISceneNode[];
@@ -47,8 +48,13 @@ module akra.scene {
 			return this._pDisplayListsCount;
 		}
 
-		constructor (pSceneManager: ISceneManager) {
+		inline get name(): string {
+			return this._sName;
+		}
+
+		constructor (pSceneManager: ISceneManager, sName: string = null) {
 			this._pSceneManager = pSceneManager;
+			this._sName = sName;
 			this._pRootNode = this.createNode("root-node");
 			this._pRootNode.create();
 

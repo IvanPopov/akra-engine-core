@@ -83,7 +83,7 @@ module akra {
 		//for screenshoting
 		preserveDrawingBuffer: true,
 		//for black background & and avoiding composing with other html
-		alpha: false,
+		alpha: true,
 	};
 
 	
@@ -1827,11 +1827,11 @@ module akra {
 		var pNormalViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.40, .30, .30, 5.));
 
 		function onResize(pViewport: IViewport) {
-			pColorViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height));
-			pNormalViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height));
+			pColorViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
+			pNormalViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
 		}
 
-		onResize();
+		onResize(pViewport);
 		
 		pViewport.bind("viewportDimensionsChanged", onResize);
 

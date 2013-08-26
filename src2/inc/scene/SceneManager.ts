@@ -81,14 +81,14 @@ module akra.scene {
             }
         }
 
-        createScene3D(): IScene3d {
-            var pScene: IScene3d = new Scene3d(this);
+        createScene3D(sName: string = null): IScene3d {
+            var pScene: IScene3d = new Scene3d(this, sName);
             this._pSceneList.push(pScene);
 
             return pScene;
         }
 
-        createScene2D(): IScene2d {
+        createScene2D(sName: string = null): IScene2d {
             return null;
         }
 
@@ -101,29 +101,51 @@ module akra.scene {
 #endif
         }
 
-        getScene3D(iScene: uint = 0): IScene3d {
-            var pScene: IScene;
+        getScene3D(): IScene3d;
+        getScene3D(sName: string): IScene3d;
+        getScene3D(iScene: int): IScene3d;
+        getScene3D(scene?: any): IScene3d {
+        	if (isNumber(arguments[0]) || !isDef(arguments[0])) {
+        		var iScene: int = <int>arguments[0] || 0;
+	            var pScene: IScene;
 
-            if (iScene === 0 && this._pSceneList.length === 0) {
-                this.createScene3D();
-                debug_print("Default scene automatically created.");
+	            if (iScene === 0 && this._pSceneList.length === 0) {
+	                this.createScene3D();
+	                debug_print("Default scene automatically created.");
+	            }
+
+	            pScene = this._pSceneList[iScene];
+	            
+	            if (pScene && pScene.type === ESceneTypes.TYPE_3D) {
+	                return <IScene3d>pScene;
+	            }
+
+	            return null;
             }
-
-            pScene = this._pSceneList[iScene];
-            
-            if (pScene && pScene.type === ESceneTypes.TYPE_3D) {
-                return <IScene3d>pScene;
+            else if (isString(arguments[0])) {
+            	for (var i: int = 0; i < this._pSceneList.length; ++ i) {
+            		if (this._pSceneList[i].name === <string>arguments[0]) {
+            			return <IScene3d>this._pSceneList[i];
+            		}
+            	}
             }
 
             return null;
+
         }
 
-        getScene2D(IScene?: uint): IScene2d {
-            var pScene: IScene = this._pSceneList[IScene];
-            
-            if (pScene && pScene.type === ESceneTypes.TYPE_2D) {
-                return pScene;
-            }
+        getScene2D(): IScene2d;
+        getScene2D(sName: string): IScene2d;
+        getScene2D(iScene: uint): IScene2d;
+        getScene2D(scene?: uint): IScene2d {
+        	if (isNumber(arguments[0]) || !isDef(arguments[0])) {
+        		var iScene: int = arguments[0] || 0;
+	            var pScene: IScene = this._pSceneList[iScene];
+	            
+	            if (pScene && pScene.type === ESceneTypes.TYPE_2D) {
+	                return <IScene2d>pScene;
+	            }
+        	}
             
             return null;
         }

@@ -141,7 +141,6 @@ module akra.ui {
 			this._pViewport = pViewport;
 
 			this.el.find("div[name=preview]").append(this.getCanvasElement());
-			// this.getCanvas().resize(640, 480);
 
 			var pStats: IUIRenderTargetStats = this._pStats;
 			pStats.target = pViewport.getTarget();
@@ -155,13 +154,31 @@ module akra.ui {
 			}
 
 			this.connect(pViewport, SIGNAL(addedSkybox), SLOT(_addedSkybox));
+
+			// this.setup(pViewport);
+		}
+
+		protected setup(pViewport: IViewport): void {
+			console.log("HER >>> ");
+			var pSceneMgr: ISceneManager = this.getEngine().getSceneManager();
+			var pScene: IScene3d = pSceneMgr.createScene3D(".3d-box");
+
+			var pBasis: ISceneModel = util.basis(pScene);
+			var pCamera: ICamera = pScene.createCamera(".cam");
+
+			pCamera.attachToParent(pScene.getRootNode());
+			// pCamera.lookAt(vec3(0.));
+
+			pViewport.getTarget().addViewport(new render.DSViewport(pCamera, .8, .8, .15, .15, 100));
 		}
 
 		_addedSkybox(pViewport: IViewport, pSkyTexture: ITexture): void {
 			this._pSkyboxLb.text = pSkyTexture.findResourceName();
 		}
 
-		inline getCanvas(): ICanvas3d { return this._pViewport.getTarget().getRenderer().getDefaultCanvas(); }
+		inline getRenderer(): IRenderer { return this._pViewport.getTarget().getRenderer(); }
+		inline getEngine(): IEngine { return this.getRenderer().getEngine(); }
+		inline getCanvas(): ICanvas3d { return this.getRenderer().getDefaultCanvas(); }
 		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
 		inline getViewport(): IViewport { return this._pViewport; }
 

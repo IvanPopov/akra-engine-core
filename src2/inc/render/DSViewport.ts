@@ -88,6 +88,12 @@ module akra.render {
 				pDeferredTextures[i].create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0, 
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
+				LOG(pDeferredTextures[i].getFilter(ETextureParameters.MIN_FILTER),
+					pDeferredTextures[i].getFilter(ETextureParameters.MAG_FILTER), pDeferredTextures[i].getGuid())
+
+				LOG((<any>pDeferredTextures[i])._getFilterInternalTexture(ETextureParameters.MIN_FILTER),
+					(<any>pDeferredTextures[i])._getFilterInternalTexture(ETextureParameters.MAG_FILTER))
+
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
 				pDeferredData[i].setAutoUpdated(false);
 				var pViewport:  IViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), "deferred_shading_pass_" + i, 
@@ -154,8 +160,8 @@ module akra.render {
 			return isOk;
 		}
 
-		_updateDimensions(): void {
-			super._updateDimensions();
+		_updateDimensions(bEmitEvent: bool = true): void {
+			super._updateDimensions(false);
 
 			var pDeferredTextures: ITexture[] = this._pDeferredColorTextures;
 
@@ -166,6 +172,10 @@ module akra.render {
 					pDeferredTextures[i].getBuffer().getRenderTarget().getViewport(0)
 						.setDimensions(0., 0., this.actualWidth / pDeferredTextures[i].width, this.actualHeight / pDeferredTextures[i].height)
 				}
+			}
+
+			if (bEmitEvent) {
+				this.viewportDimensionsChanged();
 			}
 		}
 
@@ -199,10 +209,6 @@ module akra.render {
 			
 			this._pDeferredView.render(this);
 		}
-		
-		endFrame(): void {
-        	this.getTarget().getRenderer().executeQueue(false);
-        }
 
 		prepareForDeferredShading(): void {
 #ifndef OPTIMIZED_DEFFERED
@@ -246,9 +252,8 @@ module akra.render {
 				for (var k: int = 0; k < pSceneObject.totalRenderable; k++) {
 					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
 					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
-					var iTotalPasses: uint = pTechCurr.totalPasses;
 
-					for (var j: int = 0; j < iTotalPasses; j++) {
+					for (var j: int = 0; j < 2; j++) {
 						var sMethod: string = "deferred_shading_pass_" + j;
 						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
 
@@ -382,11 +387,9 @@ module akra.render {
 			
 			if (bValue) {
 				pEffect.addComponent("akra.system.fxaa", 2, 0);
-				// this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(2);
 			}
 			else {
 				pEffect.delComponent("akra.system.fxaa", 2, 0);
-				// this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
 			}
 		}
 

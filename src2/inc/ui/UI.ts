@@ -54,6 +54,8 @@
 module akra.ui {
 
 	export class UI implements IUI {
+		name: string = null;
+
 		protected _pManager: ISceneManager;
 
 		inline get type(): ESceneTypes { return ESceneTypes.TYPE_2D; }

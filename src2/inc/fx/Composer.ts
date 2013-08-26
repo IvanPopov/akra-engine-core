@@ -851,7 +851,7 @@ module akra.fx {
 
 			this._pRenderTargetA.attachDepthPixelBuffer(this._pPostEffectDepthBuffer);
 
-			this._pPostEffectClearViewport = this._pRenderTargetA.addViewport(null, EViewportTypes.DEFAULT, 1., 0., 0., 1., 1.);
+			this._pPostEffectClearViewport = this._pRenderTargetA.addViewport(new render.Viewport(null));
 		}
 
 		private resizePostEffectTextures(iWidth: uint, iHeight: uint): void {

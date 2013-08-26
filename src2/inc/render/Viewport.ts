@@ -241,7 +241,7 @@ module akra.render {
         inline setAutoUpdated(bValue: bool = true): void { this._isAutoUpdated = bValue; }
         inline isAutoUpdated(): bool { return this._isAutoUpdated; }
 
-		_updateDimensions(): void {
+		_updateDimensions(bEmitEvent: bool = true): void {
 			var fHeight: float  = <float>this._pTarget.height;
 			var fWidth: float  = <float>this._pTarget.width;
 
@@ -250,7 +250,7 @@ module akra.render {
 			this._iActWidth = <int>(this._fRelWidth * fWidth);
 			this._iActHeight = <int>(this._fRelHeight * fHeight);
 
-			 // This will check if the cameras getAutoAspectRatio() property is set.
+			// This will check if the cameras getAutoAspectRatio() property is set.
 	        // If it's true its aspect ratio is fit to the current viewport
 	        // If it's false the camera remains unchanged.
 	        // This allows cameras to be used to render to many viewports,
@@ -264,7 +264,9 @@ module akra.render {
 	
 	 		this._bUpdated = true;
 
-			this.viewportDimensionsChanged();
+	 		if (bEmitEvent) {
+				this.viewportDimensionsChanged();
+	 		}
 		}
 
 		update(): void {
