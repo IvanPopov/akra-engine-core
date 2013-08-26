@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Aug 26 2013 14:53:58 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Aug 26 2013 16:54:49 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -373,6 +373,7 @@ var akra;
         }
     };
     var pRenderOpts = {
+        premultipliedAlpha: false,
         preserveDrawingBuffer: //for screenshoting
         true,
         alpha: //for black background & and avoiding composing with other html

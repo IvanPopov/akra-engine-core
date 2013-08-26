@@ -745,6 +745,10 @@ module akra.webgl {
 
 	        // Set up source texture
         	pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), pSource._getWebGLTexture());
+        	var iOldMagFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), GL_TEXTURE_MAG_FILTER),
+        		iOldMinFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), GL_TEXTURE_MIN_FILTER),
+        		iOldWrapS: uint 	= pWebGLContext.getTexParameter(pSource._getFaceTarget(), GL_TEXTURE_WRAP_S),
+        		iOldWrapT: uint 	= pWebGLContext.getTexParameter(pSource._getFaceTarget(), GL_TEXTURE_WRAP_T);
 
         	if (isNull(pSrcBox)) {
         		pSrcBox = pDestBox;
@@ -869,6 +873,11 @@ module akra.webgl {
 	        pWebGLRenderer.deleteWebGLBuffer(pTexCoordsBuffer);
 
 	        // Reset source texture to sane state
+	        pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), pSource._getWebGLTexture());
+	        pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_MIN_FILTER, iOldMinFilter);
+	        pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_MAG_FILTER, iOldMagFilter);
+	        pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_WRAP_S, iOldWrapS);
+	        pWebGLContext.texParameteri(pSource._getFaceTarget(), GL_TEXTURE_WRAP_T, iOldWrapT);
 	        pWebGLRenderer.bindWebGLTexture(pSource._getFaceTarget(), null);
 	        
 	        // Detach texture from temporary framebuffer
@@ -941,6 +950,10 @@ module akra.webgl {
 
 	        // Set up source texture
         	pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), pSource._getWebGLTexture());
+        	var iOldMagFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), GL_TEXTURE_MAG_FILTER),
+        		iOldMinFilter: uint = pWebGLContext.getTexParameter(pSource._getFaceTarget(), GL_TEXTURE_MIN_FILTER),
+        		iOldWrapS: uint 	= pWebGLContext.getTexParameter(pSource._getFaceTarget(), GL_TEXTURE_WRAP_S),
+        		iOldWrapT: uint 	= pWebGLContext.getTexParameter(pSource._getFaceTarget(), GL_TEXTURE_WRAP_T);
 
         	// Set filtering modes depending on the dimensions and source
 	        if(pSrcBox.width === pDestBox.width &&
@@ -1117,7 +1130,12 @@ module akra.webgl {
 	        }
 	        
 	        // Reset source texture to sane state
-	        pWebGLRenderer.bindWebGLTexture(this._eTarget, null);
+	        pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), pSource._getWebGLTexture());
+	        pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_MIN_FILTER, iOldMinFilter);
+	        pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_MAG_FILTER, iOldMagFilter);
+	        pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_WRAP_S, iOldWrapS);
+	        pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_WRAP_T, iOldWrapT);
+	        pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), null);
 	        
 	        // Detach texture from temporary framebuffer
 	        pWebGLContext.framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,

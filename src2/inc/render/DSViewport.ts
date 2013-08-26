@@ -91,12 +91,6 @@ module akra.render {
 				pDeferredTextures[i].create(iWidth, iHeight, 1, null, ETextureFlags.RENDERTARGET, 0, 0, 
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
-				LOG(pDeferredTextures[i].getFilter(ETextureParameters.MIN_FILTER),
-					pDeferredTextures[i].getFilter(ETextureParameters.MAG_FILTER), pDeferredTextures[i].getGuid())
-
-				LOG((<any>pDeferredTextures[i])._getFilterInternalTexture(ETextureParameters.MIN_FILTER),
-					(<any>pDeferredTextures[i])._getFilterInternalTexture(ETextureParameters.MAG_FILTER))
-
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
 				pDeferredData[i].setAutoUpdated(false);
 				var pViewport:  IViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), "deferred_shading_pass_" + i, 

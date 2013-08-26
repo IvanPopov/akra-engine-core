@@ -87,14 +87,6 @@ struct base_material{
 shared base_material Fragment_material;
 shared float3 Normal;
 
-texture tex0:TEXTURE0;
-texture tex1:TEXTURE1;
-texture tex2:TEXTURE2;
-texture tex3:TEXTURE3;
-texture tex4:TEXTURE4;
-texture tex5:TEXTURE5;
-texture tex6:TEXTURE6;
-
 struct Material {
     float4 ambient:AMBIENT;
     float4 diffuse:DIFFUSE;
@@ -106,10 +98,10 @@ struct Material {
 
 Material defaultMaterial:MATERIAL;
 
-
-sampler ptNormal:S_NORMAL = sampler_state
+sampler ptNormal:S_NORMAL_MAP = sampler_state
 {
-    Texture = <tex6>;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
 };
 
 
