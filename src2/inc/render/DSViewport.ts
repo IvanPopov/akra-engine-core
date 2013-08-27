@@ -127,7 +127,7 @@ module akra.render {
 			this._pDeferredView = pDefferedView;
 
 			pDefferedView.getTechnique().setMethod(pDSMethod);
-			pDefferedView.getTechnique()._setGlobalPostEffectsFrom(1);			
+			// pDefferedView.getTechnique()._setPostEffectsFrom(1);			
 
 			this.setClearEveryFrame(false);
 			this.setDepthParams(false, false, 0);			
@@ -203,6 +203,10 @@ module akra.render {
 			
 			this._pDeferredView.render(this);
 		}
+
+		endFrame(): void {
+        	this.getTarget().getRenderer().executeQueue(false);
+        }
 
 		prepareForDeferredShading(): void {
 #ifndef OPTIMIZED_DEFFERED

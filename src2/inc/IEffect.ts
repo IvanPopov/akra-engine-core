@@ -17,9 +17,9 @@ module akra {
 		replicable(bValue: bool): void;
 		miscible(bValue: bool): void;
 
-		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint, isSet?: bool): bool;
-		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint, isSet?: bool): bool;
-		addComponent(sComponent: string, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
+		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
+		addComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
 
 		delComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;

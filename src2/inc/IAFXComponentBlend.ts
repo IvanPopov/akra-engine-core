@@ -16,6 +16,14 @@ module akra {
 		[index: uint]: IAFXComponentBlend;
 		[index: string]: IAFXComponentBlend; 
 	}
+	
+	export interface IAFXComponentInfo {
+		component: IAFXComponent;
+		shift: int;
+		pass: uint;
+		hash: string;
+	}
+
 
 	export interface IAFXComponentPassInputBlend {
 		uniforms: IAFXVariableContainer;
@@ -37,8 +45,13 @@ module akra {
 		getTotalPasses(): uint;
 		getHash(): string;
 
+		hasPostEffect(): bool;
+		getPostEffectStartPass(): uint;
+
 		containComponent(pComponent: IAFXComponent, iShift: int, iPass: uint);
 		containComponentHash(sComponentHash: string): bool;
+
+		findAddedComponentInfo(pComponent: IAFXComponent, iShift: int, iPass: uint): IAFXComponentInfo;
 
 		addComponent(pComponent: IAFXComponent, iShift: int, iPass: int): void;
 		removeComponent(pComponent: IAFXComponent, iShift: int, iPass: int): void;
@@ -49,14 +62,10 @@ module akra {
 		getPassListAtPass(iPass: uint): IAFXPassInstruction[];
 
 		clone(): IAFXComponentBlend;
-		
-		_getComponentList(): IAFXComponent[];
-		_getComponentShiftList(): int[];
-		_getComponentPassIdList(): uint[];
 
-		_setDataForClone(pComponentList: IAFXComponent[],
-						 pComponentShiftList: int[],
-						 pComponentPassNumnerList: int[],
+		_getComponentInfoList(): IAFXComponentInfo[];
+
+		_setDataForClone(pAddedComponentInfoList: IAFXComponentInfo[],
 						 pComponentHashMap: BoolMap,
 						 nShiftMin: int, nShiftMax: int): void;
 	}

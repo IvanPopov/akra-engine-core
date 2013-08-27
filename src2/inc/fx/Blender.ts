@@ -40,14 +40,23 @@ module akra.fx {
 		addComponentToBlend(pComponentBlend: IAFXComponentBlend, 
 						    pComponent: IAFXComponent, iShift: int, iPass: uint): IAFXComponentBlend {
 
+			if(!isNull(pComponentBlend) && pComponentBlend.containComponent(pComponent, iShift, iPass)){
+				debug_warning("You try to add already used component '" + pComponent.findResourceName() + "' in blend.");
+				return pComponentBlend;
+			}
+
+			if(iShift === DEFAULT_SHIFT){
+				if(pComponent.isPostEffect()){
+					iShift = pComponentBlend.getTotalPasses();
+				}
+				else {
+					iShift = 0;
+				}
+			}
+
 			var sBlendPartHash: string = isDefAndNotNull(pComponentBlend) ? pComponentBlend.getGuid().toString() : "";
 			var sComponentPartHash: string = pComponent.getHash(iShift, iPass);
 			var sShortHash: string = sBlendPartHash + "+" + sComponentPartHash;
-
-			if(!isNull(pComponentBlend) && pComponentBlend.containComponentHash(sComponentPartHash)){
-				debug_warning("You try to add already used component '" + sComponentPartHash + "' in blend.");
-				return pComponentBlend;
-			}
 
 			if(isDef(this._pBlendWithComponentMap[sShortHash])){
 				return this._pBlendWithComponentMap[sShortHash];
@@ -103,8 +112,24 @@ module akra.fx {
 								 pComponent: IAFXComponent, iShift: int, iPass: uint): IAFXComponentBlend {
 			if(isNull(pComponentBlend)){
 				WARNING("You try to remove component '" + pComponent.getName() + 
-						"' with shift " + iShift.toString() + "from empty blend.");
+						"' with shift " + iShift.toString() + " from empty blend.");
 				return null;	
+			}
+
+			var pComponentInfo: IAFXComponentInfo = pComponentBlend.findAddedComponentInfo(pComponent, iShift, iPass);
+			if(isNull(pComponentInfo)){
+				WARNING("You try to remove component '" + pComponent.getName() + 
+						"' with shift " + iShift.toString() + " from blend that not contain it.");
+				return null;
+			}
+
+			if(iShift === DEFAULT_SHIFT){
+				if(pComponent.isPostEffect()){
+					iShift = pComponentInfo.shift;
+				}
+				else {
+					iShift = 0;
+				}
 			}
 
 			var sBlendPartHash: string = isDefAndNotNull(pComponentBlend) ? pComponentBlend.getGuid().toString() : "";
@@ -113,13 +138,7 @@ module akra.fx {
 
 			if(isDef(this._pBlendWithComponentMap[sShortHash])){
 				return this._pBlendWithComponentMap[sShortHash];
-			}
-
-			if(!pComponentBlend.containComponentHash(sComponentPartHash)){
-				WARNING("You try to remove component '" + pComponent.getName() + 
-						"' with shift " + iShift.toString() + "from blend that not contain it.");
-				return null;
-			}
+			}			
 
 			var pNewBlend: IAFXComponentBlend = pComponentBlend.clone();
 
@@ -163,6 +182,7 @@ module akra.fx {
 		addBlendToBlend(pComponentBlend: IAFXComponentBlend, 
 						pAddBlend: IAFXComponentBlend, iShift: int): IAFXComponentBlend {
 
+			//TODO: ADD CORRECT BLENDING FOR POSTEFFECTS
 			if(isNull(pComponentBlend)){
 				return pAddBlend;
 			}
@@ -178,14 +198,12 @@ module akra.fx {
 
 			var pNewBlend: IAFXComponentBlend = pComponentBlend.clone();
 
-			var pAddComponentList: IAFXComponent[] = pAddBlend._getComponentList();
-			var pAddComponentShiftList: int[] = pAddBlend._getComponentShiftList();
-			var pAddComponentPassIdList: uint[] = pAddBlend._getComponentPassIdList();
+			var pAddComponentInfoList: IAFXComponentInfo[] = pAddBlend._getComponentInfoList();
 
-			for(var i: uint = 0; i < pAddComponentList.length; i++){
-				pNewBlend.addComponent(pAddComponentList[i], 
-									   pAddComponentShiftList[i] + iShift,
-									   pAddComponentPassIdList[i]);
+			for(var i: uint = 0; i < pAddComponentInfoList.length; i++){
+				pNewBlend.addComponent(pAddComponentInfoList[i].component, 
+									   pAddComponentInfoList[i].shift + iShift,
+									   pAddComponentInfoList[i].pass);
 			}
 
 			this._pBlendWithBlendMap[sShortHash] = pNewBlend;

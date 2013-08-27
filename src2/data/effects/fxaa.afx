@@ -90,7 +90,7 @@ float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 	return color;
 };	
 
-technique fxaa{
+technique fxaa : POST_EFFECT {
 	pass applyFXAA{
 		VertexShader = compile vs_fxaa_shading();
 		PixelShader = compile fs_fxaa_shading();

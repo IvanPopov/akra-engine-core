@@ -32,10 +32,10 @@ module akra.core.pool.resources {
 		replicable(bValue: bool): void {return;}
 		miscible(bValue: bool): void {return;}
 
-		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint, isSet?: bool): bool;
-		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint, isSet?: bool): bool;
-		addComponent(sComponent: string, iShift?: int, iPass?: uint, isSet?: bool): bool;
-		addComponent(pComponent: any, iShift?: int = 0, iPass?: uint = ALL_PASSES, isSet?: bool = true): bool {
+		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
+		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
+		addComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
+		addComponent(pComponent: any, iShift?: int = DEFAULT_SHIFT, iPass?: uint = ALL_PASSES): bool {
 			var pComponentPool: IResourcePool = this.manager.componentPool;
 
 			if(isInt(pComponent)) {
@@ -46,30 +46,19 @@ module akra.core.pool.resources {
 			}
 			
 			if(!isDef(pComponent) || isNull(pComponent)){
-				debug_error("Bad component for add/delete: ", pComponent);
+				debug_error("Bad component for add: ", pComponent);
 				return false;
 			}
 
-			if(isSet){
-				if(!this.getComposer().addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
-					debug_error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'");
-					return false;
-				}
-			}
-			else {
-				if(!this.getComposer().removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
-					debug_error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'");
-					return false;
-				}
+			if(!this.getComposer().addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
+				debug_error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'");
+				return false;
 			}
 
 			this.notifyAltered();
 
-		    if (this.totalComponents === 1 && isSet) {
+		    if (this.totalComponents === 1) {
 		        this.notifyRestored();
-		    }
-		    else if (this.totalComponents === 0 && !isSet) {
-		        this.notifyDisabled();
 		    }
 
 			return true;
@@ -78,8 +67,33 @@ module akra.core.pool.resources {
 		delComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
-		delComponent(pComponent: any, iShift?: int = 0, iPass?: uint = ALL_PASSES): bool {
-			return this.addComponent(pComponent, iShift, iPass, false);
+		delComponent(pComponent: any, iShift?: int = DEFAULT_SHIFT, iPass?: uint = ALL_PASSES): bool {
+			var pComponentPool: IResourcePool = this.manager.componentPool;
+
+			if(isInt(pComponent)) {
+				pComponent = pComponentPool.getResource(<int>pComponent);
+			}
+			else if(isString(pComponent)){
+				pComponent = pComponentPool.findResource(<string>pComponent);
+			}
+			
+			if(!isDef(pComponent) || isNull(pComponent)){
+				debug_error("Bad component for delete: ", pComponent);
+				return false;
+			}
+
+			if(!this.getComposer().removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
+				debug_error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'");
+				return false;
+			}
+
+			this.notifyAltered();
+
+			if (this.totalComponents === 0) {
+		        this.notifyDisabled();
+		    }
+
+			return true;
 		}
 
 		hasComponent(sComponent: string, iShift?: int = ANY_SHIFT, iPass?: int = ANY_PASS): bool {

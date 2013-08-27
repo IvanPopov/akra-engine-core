@@ -409,6 +409,9 @@ module akra.fx {
 				if(isNeedToUpdatePasses) {
 					pRenderTechnique.updatePasses(isTechniqueUpdate);
 				}
+
+				pRenderTechnique._setPostEffectsFrom(pBlend.getPostEffectStartPass());
+				return true;
 			}
 			else {
 				return false;
@@ -865,7 +868,7 @@ module akra.fx {
 		private prepareRenderTarget(pEntry: IRenderEntry, pRenderTechnique: IRenderTechnique, iPass: uint): void {
 			var pRenderer: IRenderer = this._pEngine.getRenderer();
 			
-			if(pRenderTechnique.hasGlobalPostEffect()){
+			if(pRenderTechnique.hasPostEffect()){
 				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
 					pEntry.viewport.actualHeight > this._pRenderTargetA.height) {
 

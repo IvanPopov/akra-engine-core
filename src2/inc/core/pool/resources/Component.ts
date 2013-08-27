@@ -25,6 +25,10 @@ module akra.core.pool.resources {
 			this._pTechnique = pTechnique;
 		}
 
+		inline isPostEffect(): bool {
+			return isNull(this._pTechnique) ? false : this._pTechnique.isPostEffect(); 
+		}
+
 		inline getName(): string {
 			return this._pTechnique.getName();
 		}

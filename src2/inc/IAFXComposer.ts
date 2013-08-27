@@ -6,8 +6,9 @@
 #endif
 
 #define ALL_PASSES 0xffffff
-#define ANY_PASS 0xfffffe
-#define ANY_SHIFT 0xfffffe
+#define ANY_PASS 0xfffffa
+#define ANY_SHIFT 0xfffffb
+#define DEFAULT_SHIFT 0xfffffc
 
 #include "IEngine.ts"
 #include "IAFXComponent.ts"

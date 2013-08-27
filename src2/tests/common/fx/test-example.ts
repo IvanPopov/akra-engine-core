@@ -88,7 +88,8 @@ module akra {
 	}
 
 	function createViewports(): void {
-		pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
+		pViewport = new render.DSViewport(pCamera);
+		pCanvas.addViewport(pViewport);
 		
 		var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>pUI.createComponent("RenderTargetStats");
 		pStats.target = pViewport.getTarget();

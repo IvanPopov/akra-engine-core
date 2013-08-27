@@ -99,10 +99,10 @@ module akra.render {
 			return this._pMethod.isResourceLoaded() && !this._pMethod.isResourceDisabled();
 		}
 
-		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint, isSet?: bool): bool;
-		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint, isSet?: bool): bool;
-		addComponent(sComponent: string, iShift?: int, iPass?: uint, isSet?: bool): bool;
-		addComponent(pComponent: any, iShift?: int = 0, iPass?: uint = ALL_PASSES, isSet?: bool = true): bool {
+		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
+		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
+		addComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
+		addComponent(pComponent: any, iShift?: int = 0, iPass?: uint = ALL_PASSES): bool {
 			if(isNull(this._pComposer)){
 				return false;
 			}
@@ -117,21 +117,13 @@ module akra.render {
 			}
 			
 			if(!isDef(pComponent) || isNull(pComponent)){
-				debug_error("Bad component for add/delete.");
+				debug_error("Bad component for add.");
 				return false;
 			}
 
-			if(isSet){
-				if(!this._pComposer.addOwnComponentToTechnique(this, <IAFXComponent>pComponent, iShift, iPass)){
-					debug_error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'");
-					return false;
-				}
-			}
-			else {
-				if(!this._pComposer.removeOwnComponentToTechnique(this, <IAFXComponent>pComponent, iShift, iPass)){
-					debug_error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'");
-					return false;
-				}
+			if(!this._pComposer.addOwnComponentToTechnique(this, <IAFXComponent>pComponent, iShift, iPass)){
+				debug_error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'");
+				return false;
 			}
 
 			return true;
@@ -141,7 +133,30 @@ module akra.render {
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
 		delComponent(pComponent: any, iShift?: int = 0, iPass?: uint = ALL_PASSES): bool {
-			return this.addComponent(pComponent, iShift, iPass, false);
+			if(isNull(this._pComposer)){
+				return false;
+			}
+
+			var pComponentPool: IResourcePool = this._pComposer.getEngine().getResourceManager().componentPool;
+
+			if(isInt(pComponent)) {
+				pComponent = pComponentPool.getResource(<int>pComponent);
+			}
+			else if(isString(pComponent)){
+				pComponent = pComponentPool.findResource(<string>pComponent);
+			}
+			
+			if(!isDef(pComponent) || isNull(pComponent)){
+				debug_error("Bad component for delete.");
+				return false;
+			}
+
+			if(!this._pComposer.removeOwnComponentToTechnique(this, <IAFXComponent>pComponent, iShift, iPass)){
+				debug_error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'");
+				return false;
+			}
+
+			return true;
 		}
 
 		hasComponent(sComponent: string, iShift?: int = ANY_SHIFT, iPass: uint = ANY_PASS): bool {
@@ -165,7 +180,7 @@ module akra.render {
 			return this._pComposer.hasOwnComponentInTechnique(this, pComponent, iShift, iPass);
 		}
 
-		hasGlobalPostEffect(): bool {
+		hasPostEffect(): bool {
 			return this._iGlobalPostEffectsStart > 0;
 		}
 
@@ -302,7 +317,7 @@ module akra.render {
 		}
 
 
-        _setGlobalPostEffectsFrom(iPass: uint): void {
+        _setPostEffectsFrom(iPass: uint): void {
         	this._iGlobalPostEffectsStart = iPass;
         }
 

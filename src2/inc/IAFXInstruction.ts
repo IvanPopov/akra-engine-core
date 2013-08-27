@@ -716,6 +716,8 @@ module akra {
         getName(): string;
         hasComplexName(): bool;
 
+        isPostEffect(): bool;
+
         addPass(pPass: IAFXPassInstruction): void;
         getPassList(): IAFXPassInstruction[];
         getPass(iPass: uint): IAFXPassInstruction;
