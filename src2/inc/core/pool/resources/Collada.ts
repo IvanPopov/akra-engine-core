@@ -20,6 +20,16 @@
 #include "io/files.ts"
 #include "util/util.ts"
 
+#define COLLADA_DEBUG true
+
+#if COLLADA_DEBUG == true
+#define CLD_PRINT(context, ...) LOG("[COLLADA [" + context.findResourceName() + "]]", __VA_ARGS__)
+#define CLD_WARNING(context, ...) debug_warning("[COLLADA [" + context.findResourceName() + "]]", __VA_ARGS__)
+#else
+#define CLD_PRINT(context, ...) 
+#define CLD_WARNING(context, ...) 
+#endif
+
 module akra.core.pool.resources {
 
 	 /* COMMON FUNCTIONS
@@ -856,6 +866,8 @@ module akra.core.pool.resources {
 
             pLib[sTag] = {};
 
+            CLD_PRINT(this, "read library <" + sTag + "/>");
+
             this.eachChild(pXML, (pXMLData: Element, sName?: string): void => {
                 if (sTag !== sName) {
                     return;
@@ -1377,10 +1389,15 @@ module akra.core.pool.resources {
                 var pImage: IColladaImage = <IColladaImage>this.source((<IColladaSurface>pTexture.surface.value).initFrom);
                 pTexture.image = pImage;
 
+                CLD_PRINT(this, "load texture \"" + pImage.path + "\"...");
+
                 var pTex: ITexture = <ITexture>this.getManager().texturePool.loadResource(pImage.path);
+                // var pModel = this;
+                // pTex.bind("loaded", () => {
+                //     LOG(pTex.findResourceName(), "loaded", pModel.isResourceLoaded());
+                //     })
                 this.sync(pTex, EResourceItemEvents.LOADED);
 
-                // LOG("is texture valid?? - ", pTex.isValid());
                 //FIX THIS
                 pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
                 pTex.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR_MIPMAP_LINEAR);
@@ -1485,7 +1502,7 @@ module akra.core.pool.resources {
                 //FIXME: at now, all materials draws similar..
                 case "blinn":
                 case "lambert":
-                    WARNING("<blinn /> or <lambert /> material interprated as phong");
+                    CLD_WARNING(this, "<blinn /> or <lambert /> material interprated as phong");
                 case "phong":
                     pTech.value = this.COLLADAPhong(pValue);
                     break;
@@ -1549,7 +1566,7 @@ module akra.core.pool.resources {
                         pEffect.profileCommon.technique.value.name = pEffect.id;
                         break;
                     default:
-                        WARNING("<" + sName + " /> unsupported in effect section");
+                        CLD_WARNING(this, "<" + sName + " /> unsupported in effect section");
                 }
             });
 
@@ -1659,6 +1676,8 @@ module akra.core.pool.resources {
                 }
             });
 
+            CLD_PRINT(this, "visual scene loaded.");
+
             return pScene;
         }
         
@@ -1730,13 +1749,13 @@ module akra.core.pool.resources {
 
             this.eachByTag(pXML, "technique_hint", (pXMLData: Element): void => {
                 pInstance.techniqueHint[attr(pXMLData, "platform")] = attr(pXMLData, "ref");
-                WARNING("<technique_hint /> used, but will be ignored!");
+                CLD_WARNING(this, "<technique_hint /> used, but will be ignored!");
             });
 
             this.eachByTag(pXML, "setparam", (pXMLData: Element): void => {
                 //can be any type
                 pInstance.parameters[attr(pXMLData, "ref")] = <any>this.COLLADAData(pXMLData);
-                WARNING("<setparam /> used, but will be ignored!");
+                CLD_WARNING(this, "<setparam /> used, but will be ignored!");
             });
 
             return pInstance;
@@ -1788,7 +1807,7 @@ module akra.core.pool.resources {
             var pScene: IColladaVisualScene = <IColladaVisualScene>this.source(attr(pXMLData, "url"));
 
             if (isNull(pXMLData) || isNull(pScene)) {
-                debug_warning("collada model: <" + this.getBasename() + "> has no visual scenes.");
+                CLD_WARNING(this, "model has no visual scenes.");
             }
 
             return this._pVisualScene = pScene;
@@ -1878,7 +1897,7 @@ module akra.core.pool.resources {
 
 
             if (isNull(pChannel.target) || isNull(pChannel.target.object)) {
-                WARNING("cound not setup animation channel for <" + attr(pXML, "target") + ">");
+                CLD_WARNING(this, "cound not setup animation channel for <" + attr(pXML, "target") + ">");
                 return null;
             }
 
@@ -1930,7 +1949,7 @@ module akra.core.pool.resources {
             });
 
             if (pAnimation.channels.length == 0 && pAnimation.animations.length == 0) {
-                WARNING("animation with id \"" + pAnimation.id + "\" skipped, because channels/sub animation are empty");
+                CLD_WARNING(this, "animation with id \"" + pAnimation.id + "\" skipped, because channels/sub animation are empty");
                 return null;
             }
 
@@ -1952,7 +1971,7 @@ module akra.core.pool.resources {
             var pElement: IColladaEntry = this._pLinks[sUrl];
 
             if (!isDefAndNotNull(pElement)) {
-                WARNING("cannot find element with id: " + sUrl + __CALLSTACK__);
+                CLD_WARNING(this, "cannot find element with id: " + sUrl + __CALLSTACK__);
             }
 
             return pElement || null;
@@ -2246,7 +2265,7 @@ module akra.core.pool.resources {
 
             pDecl.push(VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pAccessor.params.length, 0));
 
-            debug_print("Automatically constructed declaration: ", createVertexDeclaration(pDecl).toString());
+            CLD_PRINT(this, "Automatically constructed declaration: ", createVertexDeclaration(pDecl).toString());
             
             return pDecl;
         }
@@ -2450,7 +2469,7 @@ module akra.core.pool.resources {
                                 break;
                             default:
                                 pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
-                                WARNING("unsupported semantics used: " + sSemantic);
+                                CLD_WARNING(this, "unsupported semantics used: " + sSemantic);
                         }
 
                         pMeshData.allocateData(pDecl, pData);
@@ -2831,7 +2850,7 @@ module akra.core.pool.resources {
             var pScene: IColladaVisualScene = this.getVisualScene();
             
             if (isNull(pScene)) {
-                WARNING("build complete, but visual scene not parsed correctly!");
+                CLD_WARNING(this, "build complete, but visual scene not parsed correctly!");
                 return;
             }
 
@@ -3003,12 +3022,11 @@ module akra.core.pool.resources {
                 debug_error("must be specified collada content.");
                 return false;
             }
-            // console.log("before dom parser creation...");
+
+            CLD_PRINT(this, "parsing started...");
 
             var pParser: DOMParser = new DOMParser();
-            // LOG(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             var pXMLDocument: Document = pParser.parseFromString(sXMLData, "application/xml");
-            // LOG("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             var pXMLRoot: Element = <Element>pXMLDocument.getElementsByTagName("COLLADA")[0];
 
             this.setOptions(pOptions);
@@ -3026,6 +3044,8 @@ module akra.core.pool.resources {
                 this.readLibraries(pXMLRoot, Collada.ANIMATION_TEMPLATE);
             }
 
+            CLD_PRINT(this, "parsed.");
+
             return true;
         }
 
@@ -3035,7 +3055,7 @@ module akra.core.pool.resources {
             }
 
             if (this.isResourceLoaded()) {
-                WARNING("collada model already loaded");
+                CLD_WARNING(this, "collada model already loaded");
                 return false;
             }
 
@@ -3049,9 +3069,10 @@ module akra.core.pool.resources {
             var pFile: IFile = io.fopen(sFilename);
 
             pFile.open(function (err, meta): void {
+                //FIXME: setuop byteLength correctly..
                 (<any>pModel)["_iByteLength"] = meta.size || 0;
             });
-
+        
             pFile.read(function (pErr: Error, sXML: string) {
                 if (!isNull(pErr)) {
                     ERROR(pErr);
@@ -3060,23 +3081,23 @@ module akra.core.pool.resources {
                 pModel.notifyRestored();
            
                 if (pModel.parse(sXML, pOptions)) {
-                    // pModel.notifyLoaded();
-                    pModel.setResourceFlag(EResourceItemEvents.LOADED, true)
-                    // LOG(pModel.findResourceName(), pModel.isResourceLoaded());
-                    
-                    // LOG(pModel.findResourceName(), "[synced to: ", pModel.isSyncedTo(EResourceItemEvents.LOADED), "]");
+                    //if resource not synced to any other resources
+                    //loaded satet must be setted manuality
+                    //but if resource has dependend sub-resources,
+                    //loaded event happen automaticly, when all depenedences will be loaded.
 
                     if (pModel.isSyncedTo(EResourceItemEvents.LOADED)) {
                         pModel.setChangesNotifyRoutine((eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: bool) => {
                             if (eFlag === EResourceItemEvents.LOADED && isSet) {
-                                // LOG("!!!!!!!!!!!!!!!!!!", pModel.findResourceName(), "LOADED!!!");
+                                //automaticly LOADED
+                                CLD_PRINT(pModel, "resource loaded");
                                 pModel.loaded();
                             }
                         });
                     }
                     else {
-                         // LOG("!!!!!!!!!!!!!!!!!!", pModel.findResourceName(), "LOADED!!!");
-                        pModel.loaded();
+                        CLD_PRINT(pModel, "resource loaded");
+                        pModel.notifyLoaded();
                     }
                 }
             });

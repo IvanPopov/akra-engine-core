@@ -97,6 +97,10 @@ float4x4 view_mat:VIEW_MATRIX;
 bool useNormal;
 bool normalFix;
 
+/*float4 fs_consistent_colors(VS_OUT_2 IN): COLOR {
+    return tex2D(sampler_diffuse, float2(IN.as.xy));
+}*/
+
 void fs_mesh_texture_pass_1(VS_OUT_2 IN){
     float3 texNormal = tex2D(sampler_normal, float2(IN.tc_normal.xy)).xyz;
     float4 norm;

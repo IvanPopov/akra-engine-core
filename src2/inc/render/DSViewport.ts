@@ -116,8 +116,8 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.projectShadowsLighting");
 			pDSEffect.addComponent("akra.system.sunLighting");
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
-			// pDSEffect.addComponent("akra.system.color_maps");
-			pDSEffect.addComponent("akra.system.skybox", 1, 0);
+
+			// pDSEffect.
 
 			pDSMethod.effect = pDSEffect;
 			
@@ -126,7 +126,6 @@ module akra.render {
 			this._pDeferredView = pDefferedView;
 
 			pDefferedView.getTechnique().setMethod(pDSMethod);
-			pDefferedView.getTechnique()._setGlobalPostEffectsFrom(1);			
 
 			this.setClearEveryFrame(false);
 			this.setDepthParams(false, false, 0);			
@@ -369,6 +368,18 @@ module akra.render {
 				return null;
 			}
 
+			var pTechnique: IRenderTechnique = this._pDeferredView.getTechnique();
+			var pEffect: IEffect = pTechnique.getMethod().effect;
+			
+			if (pSkyTexture) {
+				pEffect.addComponent("akra.system.skybox", 1, 0);
+				pTechnique._setGlobalPostEffectsFrom(1);
+			}
+			else {
+				pEffect.delComponent("akra.system.skybox", 1, 0);
+				pTechnique._setGlobalPostEffectsFrom(this.isOutline() || this.isFXAA()? 1: 0);
+			}
+
 			this._pDeferredSkyTexture = pSkyTexture;
 
 			this.addedSkybox(pSkyTexture);
@@ -377,23 +388,23 @@ module akra.render {
 		}
 
 		setBackground(pTexture: ITexture, v4fMapping: IVec4 = vec4(0., 0., 1., 1.)): void {
-			this._pDeferredBgTexture = pTexture;
-			this.setBackgoundMapping(v4fMapping);
+			// this._pDeferredBgTexture = pTexture;
+			// this.setBackgoundMapping(v4fMapping);
 
-			var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
+			// var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
 			
-			if (pTexture) {
-				pEffect.addComponent("akra.system.deferredBackground", 1, 0);
-			}
-			else {
-				pEffect.delComponent("akra.system.deferredBackground", 1, 0);
-			}
+			// if (pTexture) {
+			// 	pEffect.addComponent("akra.system.deferredBackground", 1, 0);
+			// }
+			// else {
+			// 	pEffect.delComponent("akra.system.deferredBackground", 1, 0);
+			// }
 
-			this.addedBackground(pTexture);
+			// this.addedBackground(pTexture);
 		}
 
 		setBackgoundMapping(v4fMapping: IVec4): void {
-			this._v4fDeferredBgMapping.set(v4fMapping);
+			// this._v4fDeferredBgMapping.set(v4fMapping);
 		}
 
 		setFXAA(bValue: bool = true): void {
@@ -401,9 +412,11 @@ module akra.render {
 			
 			if (bValue) {
 				pEffect.addComponent("akra.system.fxaa", 2, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
 			}
 			else {
 				pEffect.delComponent("akra.system.fxaa", 2, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(this.isOutline() || this.getSkybox()? 1: 0);
 			}
 		}
 
@@ -412,14 +425,20 @@ module akra.render {
 			
 			if (bValue) {
 				pEffect.addComponent("akra.system.outline", 1, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
 			}
 			else {
 				pEffect.delComponent("akra.system.outline", 1, 0);
+				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(this.isFXAA() || this.getSkybox()? 1: 0);
 			}
 		}
 
+		isOutline(): bool {
+			return this.effect.hasComponent("akra.system.outline");
+		}
+
 		isFXAA(): bool {
-			return false;
+			return this.effect.hasComponent("akra.system.fxaa");
 		}
 
 

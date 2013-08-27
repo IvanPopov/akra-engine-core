@@ -203,6 +203,246 @@ module akra.util {
 
 	    return pSceneModel;
 	}
+
+	// export  
+	// function cube (pScene: IScene3d, eOptions?: int, fSize: float = 1.) {
+	//     var pMesh: IMesh, pSubMesh: IMeshSubset;
+	//     var iPos: int, iNorm: int;
+
+	//     var pVerticesData = new Float32Array([
+	//                                              -0.5, 0.5, 0.5,
+	//                                              0.5, 0.5, 0.5,
+	//                                              -0.5, -0.5, 0.5,
+	//                                              0.5, -0.5, 0.5,
+	//                                              -0.5, 0.5, -0.5,
+	//                                              0.5, 0.5, -0.5,
+	//                                              -0.5, -0.5, -0.5,
+	//                                              0.5, -0.5, -0.5
+	//                                          ]);
+
+	//     for (var i: int = 0; i < pVerticesData.length; ++ i) {
+	//     	pVerticesData[i] *= fSize;
+	//     }
+
+	//     var pMapData = new Float32Array([
+	//                                         0, 0, 0,
+	//                                         1, 0, 0,
+	//                                         0, 1, 0,
+	//                                         1, 1, 0
+	//                                     ]);
+
+	//     var pNormalsData = new Float32Array([
+	//                                             1.0, 0.0, 0.0,
+	//                                             -1.0, 0.0, 0.0,
+	//                                             0.0, 1.0, 0.0,
+	//                                             0.0, -1.0, 0.0,
+	//                                             0.0, 0.0, 1.0,
+	//                                             0.0, 0.0, -1.0
+	//                                         ]);
+	//     var pVertexIndicesData = new Float32Array([
+	//                                                   0, 2, 3, 0, 3, 1,//front
+	//                                                   0, 1, 5, 0, 5, 4,//top
+	//                                                   6, 7, 3, 6, 3, 2,//bottom
+	//                                                   0, 4, 6, 0, 6, 2,//left
+	//                                                   3, 7, 5, 3, 5, 1,//right
+	//                                                   5, 7, 6, 5, 6, 4 //back
+	//                                               ]);
+	//     var pNormalIndicesData = new Float32Array([
+	//                                                   4, 4, 4, 4, 4, 4,
+	//                                                   2, 2, 2, 2, 2, 2,
+	//                                                   3, 3, 3, 3, 3, 3,
+	//                                                   1, 1, 1, 1, 1, 1,
+	//                                                   0, 0, 0, 0, 0, 0,
+	//                                                   5, 5, 5, 5, 5, 5
+	//                                               ]);
+
+	//     var pMapIndices = new Float32Array([
+	//                                            0, 2, 3, 0, 3, 1,
+	//                                            0, 2, 3, 0, 3, 1,
+	//                                            0, 2, 3, 0, 3, 1,
+	//                                            0, 2, 3, 0, 3, 1,
+	//                                            0, 2, 3, 0, 3, 1,
+	//                                            0, 2, 3, 0, 3, 1
+	//                                        ]);
+
+	//     var pSerialData = new Float32Array(pNormalIndicesData.length);
+
+	//     for (var i = 0; i < pSerialData.length; i++) {
+	//         pSerialData[i] = i % 3;
+	//     };
+
+	//     var iNorm, iPos, iMap;
+
+	//     pMesh = new a.Mesh(pEngine, eOptions || a.Mesh.VB_READABLE, sName || 'cube');
+	//     pSubMesh = pMesh.createSubset('cube::main');
+
+	//     iPos  = pSubMesh.data.allocateData([VE_VEC3('POSITION')], pVerticesData);
+	//     iNorm = pSubMesh.data.allocateData([VE_VEC3('NORMAL')], pNormalsData);
+	//     iMap  = pSubMesh.data.allocateData([VE_VEC3('TEXCOORD0')], pMapData);
+
+	//     pSubMesh.data.allocateIndex([VE_FLOAT('INDEX0')], pVertexIndicesData);
+	//     pSubMesh.data.allocateIndex([VE_FLOAT('INDEX1')], pNormalIndicesData);
+	//     pSubMesh.data.allocateIndex([VE_FLOAT('INDEX2')], pMapIndices);
+
+	//     pSubMesh.data.index(iPos,  'INDEX0');
+	//     pSubMesh.data.index(iNorm, 'INDEX1');
+	//     pSubMesh.data.index(iMap,  'INDEX2');
+
+	//     // pSubMesh.applyFlexMaterial('default');
+	//     var pMat = pSubMesh.material;
+	    
+	//     pMat.diffuse = new a.Color4f(0.5, 0., 0., 1.);
+	//     pMat.ambient = new a.Color4f(0.7, 0., 0., 1.);
+	//     pMat.specular = new a.Color4f(1., 0.7, 0. ,1);
+	//     pMat.shininess = 30.;
+
+	//     pSubMesh.effect.create();
+	//     pSubMesh.effect.use("akra.system.mesh_texture");
+	//     pSubMesh.effect.use("akra.system.prepareForDeferredShading");
+	//     //trace(pSubMesh._pMap.toString());
+
+	//     return pMesh;
+	// }
+
 }
 
 #endif
+
+
+// var pMesh: IMesh;
+// 			var pEngine: IEngine = this.getEngine();
+
+// 			var pVerticesData = new Float32Array([
+// 					-0.5, 0.5, 0.5,
+// 					0.5, 0.5, 0.5,
+// 					-0.5, -0.5, 0.5,
+// 					0.5, -0.5, 0.5,
+// 					-0.5, 0.5, -0.5,
+// 					0.5, 0.5, -0.5,
+// 					-0.5, -0.5, -0.5,
+// 					0.5, -0.5, -0.5
+// 	            ]);
+
+// 			var pVertexIndicesData = new Float32Array([
+// 					0, 2, 3, 0, 3, 1,	/*front*/
+// 					0, 1, 5, 0, 5, 4,	/*top*/
+// 					6, 7, 3, 6, 3, 2,	/*bottom*/
+// 					0, 4, 6, 0, 6, 2,	/*left*/
+// 					3, 7, 5, 3, 5, 1,	/*right*/
+// 					5, 7, 6, 5, 6, 4 	/*back*/
+// 				]);
+
+// 			var pNormalsData = new Float32Array([
+// 					1.0, 0.0, 0.0,
+// 					-1.0, 0.0, 0.0,
+// 					0.0, 1.0, 0.0,
+// 					0.0, -1.0, 0.0,
+// 					0.0, 0.0, 1.0,
+// 					0.0, 0.0, -1.0
+// 	            ]);
+
+// 		    var pNormalIndicesData = new Float32Array([
+// 					4, 4, 4, 4, 4, 4,
+// 					2, 2, 2, 2, 2, 2,
+// 					3, 3, 3, 3, 3, 3,
+// 					1, 1, 1, 1, 1, 1,
+// 					0, 0, 0, 0, 0, 0,
+// 					5, 5, 5, 5, 5, 5
+// 				]);
+
+// 			var pMapData = new Float32Array([
+// 	                0, 0, 0,
+// 	                1, 0, 0,
+// 	                0, 1, 0,
+// 	                1, 1, 0
+// 	            ]);
+
+// 			//UV map
+// 			/*-----------------------------------------------------*
+// 		     *        *        *        *        *        *        *
+// 		     *        *        *        *        *        *        *
+// 		     *        *        *        *        *        *        *
+// 		     *------------------------------------------------------*/
+
+
+// 			var pMapData = new Float32Array([
+// 	                0, 0, 0,
+// 	                1, 0, 0,
+// 	                0, 1, 0,
+// 	                1, 1, 0
+// 	            ]);
+
+// 			var pMapIndices = new Float32Array([
+// 					0, 2, 3, 0, 3, 1,
+// 					0, 2, 3, 0, 3, 1,
+// 					0, 2, 3, 0, 3, 1,
+// 					0, 2, 3, 0, 3, 1,
+// 					0, 2, 3, 0, 3, 1,
+// 					0, 2, 3, 0, 3, 1
+//                 ]);
+
+// 			var pColorData = new Float32Array([
+// 					1.0, 0.0, 0.0, /*red*/
+// 					0.0, 1.0, 0.0, /*green*/
+// 					0.0, 0.0, 1.0, /*blue*/
+
+// 					1.0, 1.0, 0.0, /*orange*/
+// 					1.0, 0.0, 1.0, /*purple*/
+// 					0.0, 1.0, 1.0  /*turquoise*/
+// 				]);
+
+// 			var pColorIndices = pNormalIndicesData;
+// 			var pSerialData = new Float32Array(pNormalIndicesData.length);
+
+// 		    for (var i = 0; i < pSerialData.length; i++) {
+// 		        pSerialData[i] = i % 3;
+// 		    };
+
+// 		    var iNorm: int, 
+// 			    iPos: int, 
+// 			    iMap: int,
+// 			    iColor: int;
+
+// 		    pMesh = model.createMesh(pEngine, "cube", eOptions || EMeshOptions.HB_READABLE);
+// 		    pSubMesh = pMesh.createSubset();
+
+
+// 	        iPos  = pSubMesh.data.allocateData([VE_VEC3("POSITION")], pVerticesData);
+// 		    iNorm = pSubMesh.data.allocateData([VE_VEC3("NORMAL")], pNormalsData);
+// 		    iMap  = pSubMesh.data.allocateData([VE_VEC3("TEXCOORD0")], pMapData);
+// 		    iColor  = pSubMesh.data.allocateData([VE_VEC3("COLOR0")], pColorData);
+
+// 		    pSubMesh.data.allocateIndex([VE_FLOAT("INDEX0")], pVertexIndicesData);
+// 		    pSubMesh.data.allocateIndex([VE_FLOAT("INDEX1")], pNormalIndicesData);
+// 		    pSubMesh.data.allocateIndex([VE_FLOAT("INDEX2")], pMapIndices);
+// 		    pSubMesh.data.allocateIndex([VE_FLOAT("INDEX3")], pColorIndices);
+
+// 		    pSubMesh.data.index(iPos,   "INDEX0");
+// 		    pSubMesh.data.index(iNorm,  "INDEX1");
+// 		    pSubMesh.data.index(iMap,   "INDEX2");
+// 		    pSubMesh.data.index(iColor, "INDEX3");
+
+// 		    pSubMesh.hasShadow = false;
+
+// 		    if((<core.Engine>pEngine).isDepsLoaded()){
+// 		    	pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+// 		    }
+// 		    else {
+// 		    	pScene.getManager().getEngine().bind(SIGNAL(depsLoaded), () => {
+// 		    		pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+// 		    	});
+// 		    }
+
+// 		    var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
+
+// 		    pMatrial.diffuse = Color.LIGHT_GRAY;
+// 		    pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
+// 			pMatrial.specular = new Color(0.7, 0.7, 0.7 ,1);
+// 			pMatrial.emissive = new Color(0., 0., 0., 1.);
+// 		    pMatrial.shininess = 30.;
+
+
+// 		    var pSceneModel: ISceneModel = pScene.createModel("cube");
+// 		    pSceneModel.mesh = pMesh;
+
+// 		    return pSceneModel;

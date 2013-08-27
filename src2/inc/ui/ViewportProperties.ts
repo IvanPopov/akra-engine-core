@@ -12,11 +12,6 @@
 
 module akra.ui {
 
-	// Engine.depends({
-	// 	files: [
-	// 		{path: "models/barrel/barrel_and_support.dae", name: "BARREL"}
-	// 	]
-	// });
 
 	export class ViewportProperties extends Component {
 		protected _pViewport: IViewport = null;
@@ -165,42 +160,87 @@ module akra.ui {
 			this.setup(pViewport);
 		}
 
+
 		protected setup(pGeneralViewport: IViewport): void {
 			
 			var pSceneMgr: ISceneManager = this.getEngine().getSceneManager();
 			var pScene: IScene3d = pSceneMgr.createScene3D(".3d-box");
 
-			var pBasis: ISceneModel = util.basis(pScene);
-			pBasis.attachToParent(pScene.getRootNode());
+			// var pBasis: ISceneModel = util.basis(pScene);
+			// pBasis.attachToParent(pScene.getRootNode());
+			// pBasis.scale(5.);
+
+			var pRmgr: IResourcePoolManager = this.getEngine().getResourceManager();
+			var pModel: ICollada = <ICollada>pRmgr.colladaPool.loadResource(DATA + "/models/ocube/cube.DAE");
+			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT);
+
+			pLight.attachToParent(pScene.getRootNode());
+			pLight.setPosition(0., 0, 100.);
+			pLight.lookAt(vec3(0.));
+
+			pLight.params.ambient.set(0.0, 0.0, 0.0, 1);
+			pLight.params.diffuse.set(1.);
+			pLight.params.specular.set(.1);
+			pLight.params.attenuation.set(0.5, 0, 0);
+
+
+			pModel.bind(SIGNAL(loaded), (): void => {
+				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
+
+				pScene.bind(SIGNAL(beforeUpdate), () => { 
+					pModelRoot.addRelRotationByXYZAxis(0.01, 0.01, 0.); 
+				});
+			});
+			
+
 
 			var pCamera: ICamera = pScene.createCamera();
 
 			pCamera.attachToParent(pScene.getRootNode());
-			pCamera.setPosition(0., 0.5, 3.);
+			pCamera.setPosition(0., 0, 5.5);
 			pCamera.lookAt(vec3(0.));
-
-			pScene.bind(SIGNAL(beforeUpdate), () => { pBasis.addRelRotationByXYZAxis(0.05, 0.05, 0.); });
 
 			var pViewport: IViewport = pGeneralViewport.getTarget().addViewport(new render.DSViewport(pCamera, .7, .05, .25, .25, 100));
 			(<any>pViewport).setFXAA(false);
-			pViewport["effect"].delComponent("akra.system.skybox", 1, 0);
-			pViewport["view"].getTechnique()._setGlobalPostEffectsFrom(0);	
-		
-			// pViewport.bind(SIGNAL(render), (
-			// 	pViewport: IDSViewport, 
-			// 	pTechnique: IRenderTechnique, 
-			// 	iPass: int, 
-			// 	pRenderable: IRenderableObject, 
-			// 	pSceneObject: ISceneObject): void => {
+			// (<any>pViewport).setOutlining(true);
 
-			// 	var pPass: IRenderPass = pTechnique.getPass(iPass);
+			var iRid: int = 0;
 
-			// 	pPass.setRenderState(ERenderStates.BLENDENABLE, ERenderStateValues.TRUE);
-   //      		pPass.setRenderState(ERenderStates.SRCBLEND, ERenderStateValues.ONE);
-   //      		pPass.setRenderState(ERenderStates.DESTBLEND, ERenderStateValues.ONE);
-   //      		pPass.setRenderState(ERenderStates.ZENABLE, ERenderStateValues.FALSE);
-   //      		pPass.setRenderState(ERenderStates.ZFUNC, ERenderStateValues.LESSEQUAL);
-			// });
+
+			pViewport.bind(SIGNAL(render), (
+				pViewport: IViewport, 
+				pTechnique: IRenderTechnique, 
+				iPass: uint, 
+				pRenderable: IRenderableObject, 
+				pSceneObject: ISceneObject): void => {
+
+				var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+				switch (iPass) {
+					case 1:	
+					pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
+					pPass.setUniform("OUTLINE_SOID", (iRid - 1) >>> 10);
+					pPass.setUniform("OUTLINE_TARGET", iRid);
+				}
+			});
+			
+			var c = pGeneralViewport.getTarget().addViewport(new render.ColorViewport(pCamera, .7, .35, .25, .25, 101));
+			c.setDepthParams(true, true, ECompareFunction.LESS); 
+			pViewport.bind(SIGNAL(click), (pViewport: IDSViewport, x: uint, y: uint): void => {
+				var pRes: IDSPickingResult = pViewport.pick(x, y);
+
+				switch(pRes.reid) {
+					case 17: console.log("bottom"); break;
+					case 18: console.log("right"); break;
+					case 19: console.log("left"); break;
+					case 20: console.log("bottom"); break;
+					case 21: console.log("front"); break;
+					case 22: console.log("back"); break;
+				}
+
+				iRid = pRes.rid;
+				// console.log(pRes.reid);
+			});
 		}
 
 		_addedSkybox(pViewport: IViewport, pSkyTexture: ITexture): void {
