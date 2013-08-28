@@ -121,7 +121,6 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.sunLighting");
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
 
-			// pDSEffect.
 
 			pDSMethod.effect = pDSEffect;
 			
@@ -131,6 +130,7 @@ module akra.render {
 
 			pDefferedView.getTechnique().setMethod(pDSMethod);
 
+			// this.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
 			this.setClearEveryFrame(false);
 			this.setDepthParams(false, false, 0);			
 
@@ -413,10 +413,10 @@ module akra.render {
 			var pEffect: IEffect = this._pDeferredEffect;
 			
 			if (bValue) {
-				pEffect.addComponent("akra.system.fxaa", 2, 0);
+				pEffect.addComponent("akra.system.fxaa", 3, 0);
 			}
 			else {
-				pEffect.delComponent("akra.system.fxaa", 2, 0);
+				pEffect.delComponent("akra.system.fxaa", 3, 0);
 			}
 		}
 
@@ -453,10 +453,10 @@ module akra.render {
 			}
 
 			if (p.object) {
-				pEffect.addComponent("akra.system.outline", 1, 0);
+				pEffect.addComponent("akra.system.outline", 2, 0);
 			}
 			else if (pObjectPrev) {
-				pEffect.delComponent("akra.system.outline", 1, 0);
+				pEffect.delComponent("akra.system.outline", 2, 0);
 			}
 		}
 
@@ -575,7 +575,8 @@ module akra.render {
 
 					pPass.setTexture("TEXTURE0", this._pDeferredBgTexture);
 					pPass.setUniform("VIEWPORT", this._v4fDeferredBgMapping);
-
+					break;
+				case 2:
 					//outline
 					var p: IRIDPair = this._pSelectedObject;
 
@@ -587,6 +588,9 @@ module akra.render {
 						pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
 					}	
 
+					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
+					pPass.setUniform("SCREEN_TEXTURE_RATIO",
+                                     vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
 					break;
 			}
 

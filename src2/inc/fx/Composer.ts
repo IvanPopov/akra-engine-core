@@ -108,7 +108,7 @@ module akra.fx {
 		private _pRenderTargetA: IRenderTarget = null;
 		private _pRenderTargetB: IRenderTarget = null;
 		private _pLastRenderTarget: IRenderTarget = null;
-		private _pPostEffectClearViewport: IViewport = null;
+		private _pPostEffectViewport: IViewport = null;
 
 		private _pPostEffectTextureA: ITexture = null;
 		private _pPostEffectTextureB: ITexture = null;
@@ -854,7 +854,7 @@ module akra.fx {
 
 			this._pRenderTargetA.attachDepthPixelBuffer(this._pPostEffectDepthBuffer);
 
-			this._pPostEffectClearViewport = this._pRenderTargetA.addViewport(new render.Viewport(null));
+			this._pPostEffectViewport = this._pRenderTargetA.addViewport(new render.Viewport(null));
 		}
 
 		private resizePostEffectTextures(iWidth: uint, iHeight: uint): void {
@@ -862,7 +862,7 @@ module akra.fx {
 			iHeight = math.ceilingPowerOfTwo(iHeight);
 			
 			this._pPostEffectTextureA.reset(iWidth, iHeight);
-			this._pPostEffectTextureB.reset(iWidth, iHeight);		
+			this._pPostEffectTextureB.reset(iWidth, iHeight);
 		}
 
 		private prepareRenderTarget(pEntry: IRenderEntry, pRenderTechnique: IRenderTechnique, iPass: uint): void {
@@ -876,26 +876,27 @@ module akra.fx {
 				}
 
 				if(pRenderTechnique.isFirstPass(iPass)){
-					pRenderer._setDepthBufferParams(false, false, 0);
-					
+					var pRenderViewport: IViewport = pEntry.viewport;
+
+					pRenderer._setDepthBufferParams(false, false, 0);					
 					pRenderer._setRenderTarget(this._pRenderTargetA);
 					
-					var pViewportState: IViewportState = pEntry.viewport._getViewportState();
-					this._pPostEffectClearViewport.setDimensions(0., 0., 
-																 pEntry.viewport.actualWidth / this._pRenderTargetA.width,
-																 pEntry.viewport.actualHeight / this._pRenderTargetA.height); 
-					this._pPostEffectClearViewport.setDepthParams(pViewportState.depthTest, pViewportState.depthWrite, pViewportState.depthFunction);
-					this._pPostEffectClearViewport.setCullingMode(pViewportState.cullingMode);
+					var pViewportState: IViewportState = pRenderViewport._getViewportState();
+					this._pPostEffectViewport.setDimensions(0., 0., 
+																 pRenderViewport.actualWidth / this._pRenderTargetA.width,
+																 pRenderViewport.actualHeight / this._pRenderTargetA.height); 
+					this._pPostEffectViewport.setDepthParams(pViewportState.depthTest, pViewportState.depthWrite, pViewportState.depthFunction);
+					this._pPostEffectViewport.setCullingMode(pViewportState.cullingMode);
 
 					// pRenderer._lockRenderTarget();
 
-					if(pEntry.viewport.getClearEveryFrame()){						
-						this._pPostEffectClearViewport.clear(pViewportState.clearBuffers,
+					if(pRenderViewport.getClearEveryFrame()){						
+						this._pPostEffectViewport.clear(pViewportState.clearBuffers,
 															 pViewportState.clearColor,
 															 pViewportState.clearDepth, 0);
 					}
 					else {
-						this._pPostEffectClearViewport.clear(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH,
+						this._pPostEffectViewport.clear(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH,
 															 Color.ZERO,
 															 1., 0);
 					}
@@ -908,7 +909,7 @@ module akra.fx {
 					this._pLastRenderTarget = this._pRenderTargetA;
 					pEntry.renderTarget = this._pRenderTargetA;
 
-					pEntry.viewport = this._pPostEffectClearViewport;
+					pEntry.viewport = this._pPostEffectViewport;
 				}
 				else {
 					if(pRenderTechnique.isLastPass(iPass)){
@@ -925,7 +926,7 @@ module akra.fx {
 							this._pLastRenderTarget = this._pRenderTargetA;
 						}
 
-						pEntry.viewport = this._pPostEffectClearViewport;
+						pEntry.viewport = this._pPostEffectViewport;
 					}
 				}
 			}

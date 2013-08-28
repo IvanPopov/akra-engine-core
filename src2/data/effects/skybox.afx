@@ -46,7 +46,7 @@ struct VS_OUT{
 	float2 texCoords : TEXCOORD0;
 	float2 texCoordsDeferred : TEXCOORD1;
 	float3 texCoordsSkybox : TEXCOORD2;
-};;
+};
 
 float4x4 projMat : PROJ_MATRIX;
 float4x4 invView : INV_VIEW_CAMERA_MAT;
@@ -92,7 +92,6 @@ float4 fs_skybox(VS_OUT IN) : COLOR{
     	return texCUBE(skyboxSampler,IN.texCoordsSkybox);
     }
 };	
-
 
 
 texture bgTexure: TEXTURE0;
@@ -158,7 +157,8 @@ float4 fs_outline(VS_OUT IN) : COLOR
 
     if (outline_target == 0 || (rid < soid_begin || rid >= soid_end)) 
     {
-    	return resultAFXColor;
+    	return tex2D(sceneTexture, textureCoords);
+    	// return resultAFXColor;
     }
 
 
@@ -182,7 +182,11 @@ float4 fs_outline(VS_OUT IN) : COLOR
 	    }
 	}
 
-    return int(outline_reid) == int(reid)? resultAFXColor / float4(.75, .75, 3., 1.): resultAFXColor / 2.;
+    //return int(outline_reid) == int(reid) ? resultAFXColor / float4(.75, .75, 3., 1.): resultAFXColor / 2.;
+    return int(outline_reid) == int(reid) ? 
+    			tex2D(sceneTexture, textureCoords) / float4(.75, .75, 3., 1.) : 
+    			tex2D(sceneTexture, textureCoords) / float4(float3(2.), 1.);
+    
 };	
 
 
@@ -192,7 +196,6 @@ technique skybox : POST_EFFECT {
 		PixelShader = compile fs_skybox();
 	};
 };
-
 
 technique outline : POST_EFFECT {
 	pass outline 

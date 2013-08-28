@@ -184,6 +184,35 @@ module akra.ui {
 			pLight.params.attenuation.set(0.5, 0, 0);
 
 
+			var pCamera: ICamera = pScene.createCamera();
+
+			pCamera.attachToParent(pScene.getRootNode());
+			pCamera.setPosition(0., 0, 5.5);
+			pCamera.lookAt(vec3(0.));
+
+			var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(new render.DSViewport(pCamera, .7, .05, .25, .25, 100));
+
+			pViewport.setFXAA(true);
+
+			pViewport.bind(SIGNAL(render), (
+				pViewport: IViewport, 
+				pTechnique: IRenderTechnique, 
+				iPass: uint, 
+				pRenderable: IRenderableObject, 
+				pSceneObject: ISceneObject): void => {
+
+				var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+				if(pTechnique.isLastPass(iPass)){
+					pPass.setRenderState(ERenderStates.ZENABLE, ERenderStateValues.FALSE);
+					pPass.setRenderState(ERenderStates.BLENDENABLE, ERenderStateValues.TRUE);
+					pPass.setRenderState(ERenderStates.SRCBLEND, ERenderStateValues.ONE);
+					pPass.setRenderState(ERenderStates.DESTBLEND, ERenderStateValues.INVSRCALPHA);
+				}
+			});
+			
+			pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK);
+
 			pModel.bind(SIGNAL(loaded), (): void => {
 				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 
@@ -194,24 +223,12 @@ module akra.ui {
 				var pMesh: IMesh = (<ISceneModel>pModelRoot.child).mesh;
 
 				for (var i = 0; i < pMesh.length; ++ i) {
-					pMesh.getSubset(i).bind(SIGNAL(click), () => {
-						console.log(arguments);
+					pMesh.getSubset(i).bind(SIGNAL(click), 
+						(pRenderable: IRenderableObject, pViewport: IDSViewport, pObject: ISceneObject) => {
+						pViewport.highlight(pObject, pRenderable);
 					});
 				}
 			});
-			
-
-
-			var pCamera: ICamera = pScene.createCamera();
-
-			pCamera.attachToParent(pScene.getRootNode());
-			pCamera.setPosition(0., 0, 5.5);
-			pCamera.lookAt(vec3(0.));
-
-			var pViewport: IViewport = pGeneralViewport.getTarget().addViewport(new render.DSViewport(pCamera, .7, .05, .25, .25, 100));
-			(<any>pViewport).setFXAA(false);
-			
-			pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK);
 						
 		}
 
