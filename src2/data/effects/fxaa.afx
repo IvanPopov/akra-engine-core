@@ -48,7 +48,7 @@ float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 	float3 rgbM=tex2D(screenSampler,texCoords).xyz;
 
 	color.w = tex2D(screenSampler,texCoords).w;
-	
+
 	float3 luma=float3(0.299, 0.587, 0.114);
 	float lumaNW = dot(rgbNW, luma);
 	float lumaNE = dot(rgbNE, luma);
@@ -87,11 +87,18 @@ float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 	else {
 		color.xyz=rgbB;
 	}
+
 	return color;
 };	
 
 technique fxaa : POST_EFFECT {
 	pass applyFXAA{
+		/*		
+		ZENABLE = false;
+		BLENDENABLE = TRUE;
+		SRCBLEND = ONE;
+		DESTBLEND = INVSRCALPHA;
+		*/
 		VertexShader = compile vs_fxaa_shading();
 		PixelShader = compile fs_fxaa_shading();
 	};

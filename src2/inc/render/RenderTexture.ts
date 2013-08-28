@@ -46,7 +46,24 @@ module akra.render {
 			}
 
 			this._pBuffer.blitToMemory(pDest);
-		} 
+		}
+
+		readPixels(ppDest?: IPixelBox, eFramebuffer?: EFramebuffer): IPixelBox {
+			if (isNull(ppDest)) {
+				var ePixelFormat: EPixelFormats = EPixelFormats.BYTE_RGB;
+
+				ppDest = new pixelUtil.PixelBox(this._iWidth, this._iHeight, 1, ePixelFormat, 
+					new Uint8Array(pixelUtil.getMemorySize(this._iWidth, this._iHeight, 1, ePixelFormat)));
+			}
+
+			if ((ppDest.right > this._iWidth) || (ppDest.bottom > this._iHeight) || (ppDest.front != 0) || (ppDest.back != 1)) {
+				CRITICAL("Invalid box.", "RenderTexture::readPixels");
+			}
+
+			this._pBuffer.readPixels(ppDest);
+
+			return ppDest;
+		}
 	}
 }
 

@@ -201,8 +201,9 @@ module akra.ui {
 			pCamera.lookAt(vec3(0.));
 
 			var pViewport: IViewport = pGeneralViewport.getTarget().addViewport(new render.DSViewport(pCamera, .7, .05, .25, .25, 100));
-			(<any>pViewport).setFXAA(false);
-			// (<any>pViewport).setOutlining(true);
+			// pViewport.setClearEveryFrame(false);
+			(<any>pViewport).setFXAA(true);
+			(<any>pViewport).setOutlining(true);
 
 			var iRid: int = 0;
 
@@ -217,10 +218,18 @@ module akra.ui {
 				var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 				switch (iPass) {
-					case 1:	
-					pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
-					pPass.setUniform("OUTLINE_SOID", (iRid - 1) >>> 10);
-					pPass.setUniform("OUTLINE_TARGET", iRid);
+					case 2:	
+						pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
+						pPass.setUniform("OUTLINE_SOID", (iRid - 1) >>> 10);
+						pPass.setUniform("OUTLINE_TARGET", iRid);
+						break;
+				}
+
+				if(pTechnique.isLastPass(iPass)){
+					pPass.setRenderState(ERenderStates.ZENABLE, ERenderStateValues.FALSE);
+					pPass.setRenderState(ERenderStates.BLENDENABLE, ERenderStateValues.TRUE);
+					pPass.setRenderState(ERenderStates.SRCBLEND, ERenderStateValues.ONE);
+					pPass.setRenderState(ERenderStates.DESTBLEND, ERenderStateValues.INVSRCALPHA);
 				}
 			});
 			

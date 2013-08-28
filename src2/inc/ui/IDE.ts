@@ -211,7 +211,7 @@ module akra.ui {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			switch (iPass) {
-				case 1:	
+				case 2:	
 					var iRid: int = this._iSelectedRid;/*isNull(this._pSelectedObject)? 0: pTechnique._getComposer()._calcRenderID(this._pSelectedObject.object, this._pSelectedObject.renderable);*/
 					var iSoid: int = (iRid - 1) >>> 10;
 					var iReid: int = (iRid - 1) & 1023;
