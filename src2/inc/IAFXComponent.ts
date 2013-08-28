@@ -16,6 +16,8 @@ module akra {
 		getTechnique(): IAFXTechniqueInstruction;
 		setTechnique(pTechnique: IAFXTechniqueInstruction): void;
 
+		isPostEffect(): bool;
+
 		getName(): string;
 		getTotalPasses(): uint;
 		getHash(iShift: int, iPass: uint): string;

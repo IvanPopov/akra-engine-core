@@ -569,15 +569,30 @@ module akra.util {
     function logRoutine(pLogEntity: ILoggerEntity): void{
         var pArgs:any[] = pLogEntity.info;
         
-        pArgs.unshift(sourceLocationToString(pLogEntity.location));
+        var sLocation: string = sourceLocationToString(pLogEntity.location);
+
+        if(isString(pArgs[0])){
+           pArgs[0] = sLocation + " " + pArgs[0]; 
+        }
+        else {
+            pArgs.unshift(sLocation);
+        }
+        
         console["log"].apply(console, pArgs);
     }
 
     function warningRoutine(pLogEntity: ILoggerEntity): void{
         var pArgs:any[] = pLogEntity.info; 
 
-        pArgs.unshift("Code: " + pLogEntity.code.toString());
-        pArgs.unshift(sourceLocationToString(pLogEntity.location));
+        var sCodeInfo: string = "Code: " + pLogEntity.code.toString() + ".";
+        var sLocation: string = sourceLocationToString(pLogEntity.location);
+        
+        if(isString(pArgs[0])){
+            pArgs[0] = sLocation + " " + sCodeInfo + " " + pArgs[0];
+        }
+        else {
+            pArgs.unshift(sLocation + " " + sCodeInfo);
+        }
         
         console["warn"].apply(console, pArgs);    
     }
@@ -585,9 +600,16 @@ module akra.util {
     function errorRoutine(pLogEntity: ILoggerEntity): void{
         var pArgs:any[] = pLogEntity.info; 
 
-        pArgs.unshift(pLogEntity.message);
-        pArgs.unshift("Error code: " + pLogEntity.code.toString() + ".");
-        pArgs.unshift(sourceLocationToString(pLogEntity.location));
+        var sMessage: string = pLogEntity.message;
+        var sCodeInfo: string = "Error code: " + pLogEntity.code.toString() + ".";
+        var sLocation: string = sourceLocationToString(pLogEntity.location);
+
+        if(isString(pArgs[0])){
+            pArgs[0] = sLocation + " " + sCodeInfo + " " + sMessage + " " + pArgs[0];
+        }
+        else {
+            pArgs.unshift(sLocation + " " + sCodeInfo + " " + sMessage);
+        }
         
         console["error"].apply(console, pArgs);    
     }

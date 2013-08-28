@@ -10,6 +10,7 @@
 #include "fx/VariableContainer.ts"
 
 module akra.fx {
+
 	export class ComponentBlend implements IAFXComponentBlend {
 		UNIQUE();
 		private _pComposer: IAFXComposer = null;
@@ -20,12 +21,12 @@ module akra.fx {
 
 		private _pComponentHashMap: BoolMap = null;
 
-		private _pComponentList: IAFXComponent[] = null;
-		private _pComponentShiftList: int[] = null;
-		private _pComponentPassIdList: uint[] = null;
+		private _pAddedComponentInfoList: IAFXComponentInfo[] = null;
 
 		private _iShiftMin: int = 0;
 		private _iShiftMax: int = 0;
+		private _nTotalPasses: uint = 0;
+		private _iPostEffectsStart: uint = 0;
 
 		private _pPassesDList: IAFXPassInstruction[][] = null;
 		private _pComponentInputVarBlend: ComponentPassInputBlend[] = null;
@@ -35,9 +36,7 @@ module akra.fx {
 
 			this._pComponentHashMap = <BoolMap>{};
 
-			this._pComponentList = [];
-			this._pComponentShiftList = [];
-			this._pComponentPassIdList = [];
+			this._pAddedComponentInfoList = [];
 		}
 
 		inline isReadyToUse(): bool {
@@ -45,15 +44,23 @@ module akra.fx {
 		}
 
 		inline isEmpty(): bool {
-			return this._pComponentList.length === 0;
+			return this._pAddedComponentInfoList.length === 0;
 		}
 
 		inline getComponentCount(): uint {
-			return this._pComponentList.length;
+			return this._pAddedComponentInfoList.length;
 		}
 
 		inline getTotalPasses(): uint {
-			return !isNull(this._pPassesDList) ? this._pPassesDList.length : 0;
+			return !isNull(this._pPassesDList) ? this._pPassesDList.length : (this._iShiftMax - this._iShiftMin + 1);
+		}
+
+		inline hasPostEffect(): bool {
+			return this._iPostEffectsStart > 0;
+		}
+
+		inline getPostEffectStartPass(): uint {
+			return this._iPostEffectsStart;
 		}
 
 		getHash(): string {
@@ -66,19 +73,33 @@ module akra.fx {
 		}
 
 		containComponent(pComponent: IAFXComponent, iShift: int, iPass: uint): bool {
-			if(iShift !== ANY_SHIFT && iPass !== ANY_PASS){
-				return this.containComponentHash(pComponent.getHash(iShift, iPass));
+			var iCorrectShift: uint = iShift;
+			var iCorrectPass: uint = iPass;
+
+			if(iShift === DEFAULT_SHIFT){
+				if(pComponent.isPostEffect()){
+					iCorrectShift = ANY_PASS;  
+				}
+				else {
+					iCorrectShift = 0;
+				}
+			}
+
+			if(iCorrectShift !== ANY_SHIFT && iCorrectPass !== ANY_PASS){
+				return this.containComponentHash(pComponent.getHash(iCorrectShift, iCorrectPass));
 			}
 			else {
-				for(var i: uint = 0; i < this._pComponentList.length; i++) {
-					if(this._pComponentList[i] === pComponent){
-						if (iShift === ANY_SHIFT && iPass === ANY_PASS) {
+				for(var i: uint = 0; i < this._pAddedComponentInfoList.length; i++) {
+					var pInfo: IAFXComponentInfo = this._pAddedComponentInfoList[i];
+
+					if(pInfo.component === pComponent){
+						if (iCorrectShift === ANY_SHIFT && iCorrectPass === ANY_PASS) {
 							return true;
 						}
-						else if(iShift === ANY_SHIFT && this._pComponentPassIdList[i] === iPass){
+						else if(iCorrectShift === ANY_SHIFT && pInfo.pass === iCorrectPass){
 							return true;
 						}
-						else if(iPass === ANY_PASS && this._pComponentShiftList[i] === iShift){
+						else if(iCorrectPass === ANY_PASS && pInfo.shift === iCorrectShift){
 							return true;
 						}
 					}
@@ -92,8 +113,49 @@ module akra.fx {
 			return (this._pComponentHashMap[sComponentHash]);
 		}
 
+		findAddedComponentInfo(pComponent: IAFXComponent, iShift: int, iPass: uint): IAFXComponentInfo {
+			var iCorrectShift: uint = iShift;
+			var iCorrectPass: uint = iPass;
+
+			if(iShift === DEFAULT_SHIFT){
+				if(pComponent.isPostEffect()){
+					iCorrectShift = ANY_PASS;  
+				}
+				else {
+					iCorrectShift = 0;
+				}
+			}
+
+			if (iCorrectShift !== ANY_SHIFT && iCorrectPass !== ANY_PASS &&
+				!this.containComponentHash(pComponent.getHash(iCorrectShift, iCorrectPass))){
+
+				return null;
+			}
+			else {
+				for(var i: uint = 0; i < this._pAddedComponentInfoList.length; i++) {
+					var pInfo: IAFXComponentInfo = this._pAddedComponentInfoList[i];
+
+					if(pInfo.component === pComponent){
+						if (iCorrectShift === ANY_SHIFT && iCorrectPass === ANY_PASS) {
+							return pInfo;
+						}
+						else if(iCorrectShift === ANY_SHIFT && pInfo.pass === iCorrectPass){
+							return pInfo;
+						}
+						else if(iCorrectPass === ANY_PASS && pInfo.shift === iCorrectShift){
+							return pInfo;
+						}
+						else if(pInfo.pass === iCorrectPass && pInfo.shift === iCorrectShift) {
+							return pInfo;
+						}
+					}
+				}
+
+				return null;
+			}
+		}
+
 		addComponent(pComponent: IAFXComponent, iShift: int, iPass: int): void {
-			var sComponentHash: string = pComponent.getHash(iShift, iPass);
 			var iPassCount: uint = pComponent.getTotalPasses();
 
 			if(iPass === ALL_PASSES) {
@@ -107,11 +169,10 @@ module akra.fx {
 			else if(iPass < 0 || iPass >= iPassCount){
 				return;
 			}
-
-			var sComponentHash: string = pComponent.getHash(iShift, iPass);
 			
+			var sComponentHash: string = pComponent.getHash(iShift, iPass);
 			if(this.containComponentHash(sComponentHash)){
-				debug_warning("You try to add already used component '" + sComponentHash + "' in blend.");
+				debug_warning("You try to add already used component '" + pComponent.findResourceName() + "' in blend.");
 				return;
 			}
 
@@ -123,12 +184,18 @@ module akra.fx {
 				this._iShiftMax = iShift;
 			}
 
+			var pInfo: IAFXComponentInfo = <IAFXComponentInfo>{
+				component: pComponent,
+				shift: iShift,
+				pass: iPass,
+				hash: sComponentHash
+			};
+
 			this._pComponentHashMap[sComponentHash] = true;
-			this._pComponentList.push(pComponent);
-			this._pComponentShiftList.push(iShift);
-			this._pComponentPassIdList.push(iPass);
+			this._pAddedComponentInfoList.push(pInfo);
 
 			this._isReady = false;
+			this._iPostEffectsStart = 0;
 			this._bNeedToUpdateHash = true;
 
 		}
@@ -155,14 +222,14 @@ module akra.fx {
 
 			this._pComponentHashMap[sComponentHash] = false;
 
-			for(var i: uint = 0; i < this._pComponentList.length; i++){
-				if (this._pComponentList[i] === pComponent &&
-					this._pComponentShiftList[i] === iShift &&
-					this._pComponentPassIdList[i] === iPass) {
+			for(var i: uint = 0; i < this._pAddedComponentInfoList.length; i++){
+				var pInfo: IAFXComponentInfo = this._pAddedComponentInfoList[i];
 
-					this._pComponentList.splice(i, 1);
-					this._pComponentShiftList.splice(i, 1);
-					this._pComponentPassIdList.splice(i, 1);
+				if (pInfo.component === pComponent &&
+					pInfo.shift === iShift &&
+					pInfo.pass === iPass) {
+
+					this._pAddedComponentInfoList.splice(i, 1);
 					break;
 				}
 			}
@@ -171,18 +238,21 @@ module akra.fx {
 				this._iShiftMax = 0;
 				this._iShiftMin = 0;
 			
-				for(var i: uint = 0; i < this._pComponentShiftList.length; i++){
-					if(this._pComponentShiftList[i] < this._iShiftMin){
-						this._iShiftMin = this._pComponentShiftList[i];
+				for(var i: uint = 0; i < this._pAddedComponentInfoList.length; i++){
+					var iTestShift: uint = this._pAddedComponentInfoList[i].shift;
+
+					if(iTestShift < this._iShiftMin){
+						this._iShiftMin = iTestShift;
 					}
 
-					if(this._pComponentShiftList[i] > this._iShiftMax){
-						this._iShiftMax = this._pComponentShiftList[i];
+					if(iTestShift > this._iShiftMax){
+						this._iShiftMax = iTestShift;
 					}
 				}
 			}
 
 			this._isReady = false;
+			this._iPostEffectsStart = 0;
 			this._bNeedToUpdateHash = true;
 		}
 
@@ -194,10 +264,12 @@ module akra.fx {
 			this._pPassesDList = [];
 			this._pComponentInputVarBlend = [];
 
-			for(var i: uint = 0; i < this._pComponentList.length; i++){
-				var pComponentTechnique: IAFXTechniqueInstruction = this._pComponentList[i].getTechnique();
-				var iShift: int = this._pComponentShiftList[i] - this._iShiftMin;
-				var iPass: int = this._pComponentPassIdList[i];
+			for(var i: uint = 0; i < this._pAddedComponentInfoList.length; i++){
+				var pInfo: IAFXComponentInfo = this._pAddedComponentInfoList[i];
+
+				var pComponentTechnique: IAFXTechniqueInstruction = pInfo.component.getTechnique();
+				var iShift: int = pInfo.shift - this._iShiftMin;
+				var iPass: int = pInfo.pass;
 
 				var pPass: IAFXPassInstruction = pComponentTechnique.getPass(iPass);
 
@@ -205,8 +277,15 @@ module akra.fx {
 					this._pPassesDList[iShift] = [];
 					this._pComponentInputVarBlend[iShift] = new ComponentPassInputBlend();
 				}
+
 				this._pPassesDList[iShift].push(pPass);
 				this._pComponentInputVarBlend[iShift].addDataFromPass(pPass);
+
+				if (pInfo.component.isPostEffect()){
+					if(this._iPostEffectsStart === 0 || iShift < this._iPostEffectsStart){
+						this._iPostEffectsStart = iShift;
+					}
+				}
 			}
 
 			for(var i: uint = 0; i < this._pComponentInputVarBlend.length; i++){
@@ -252,40 +331,29 @@ module akra.fx {
 		clone(): IAFXComponentBlend {
 			var pClone: IAFXComponentBlend = new ComponentBlend(this._pComposer);
 
-			pClone._setDataForClone(this._pComponentList, 
-									this._pComponentShiftList, 
-									this._pComponentPassIdList,
+			pClone._setDataForClone(this._pAddedComponentInfoList, 
 									this._pComponentHashMap,
 									this._iShiftMin, this._iShiftMax);
 			return pClone;
 		}
 
-		inline _getComponentList(): IAFXComponent[] {
-			return this._pComponentList;
+		inline _getComponentInfoList(): IAFXComponentInfo[] {
+			return this._pAddedComponentInfoList;
 		}
 
-		inline _getComponentShiftList(): int[] {
-			return this._pComponentShiftList;
-		}
-
-		inline _getComponentPassIdList(): uint[] {
-			return this._pComponentPassIdList;
-		}
-
-		_setDataForClone(pComponentList: IAFXComponent[],
-						 pComponentShiftList: int[],
-						 pComponentPassNumnerList: int[],
+		_setDataForClone(pComponentInfoList: IAFXComponentInfo[],
 						 pComponentHashMap: BoolMap,
 						 iShiftMin: int, iShiftMax: int): void {
 
-			for(var i: uint = 0; i < pComponentList.length; i++){
-				this._pComponentList.push(pComponentList[i]);
-				this._pComponentShiftList.push(pComponentShiftList[i]);
-				this._pComponentPassIdList.push(pComponentPassNumnerList[i]);
+			for(var i: uint = 0; i < pComponentInfoList.length; i++){
+				this._pAddedComponentInfoList.push({
+					component: pComponentInfoList[i].component,
+					shift: pComponentInfoList[i].shift,
+					pass: pComponentInfoList[i].pass,
+					hash: pComponentInfoList[i].hash
+				});
 
-				var sComponentHash: string = pComponentList[i].getHash(pComponentShiftList[i], pComponentPassNumnerList[i]);
-
-				this._pComponentHashMap[sComponentHash] = pComponentHashMap[sComponentHash];
+				this._pComponentHashMap[pComponentInfoList[i].hash] = pComponentHashMap[pComponentInfoList[i].hash];
 			}
 
 			this._iShiftMin = iShiftMin;
@@ -300,10 +368,8 @@ module akra.fx {
 				return EMPTY_BLEND;
 			}
 
-			for(var i: uint = 0; i < this._pComponentList.length; i++){
-				var sComponentHash: string = this._pComponentList[i].getHash(this._pComponentShiftList[i], 
-																			 this._pComponentPassIdList[i]);
-				sHash += sComponentHash + ":";	
+			for(var i: uint = 0; i < this._pAddedComponentInfoList.length; i++){
+				sHash += this._pAddedComponentInfoList[i].hash + ":";	
 			}
 
 			return sHash;

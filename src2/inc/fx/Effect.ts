@@ -12,6 +12,7 @@
 #include "fx/FunctionInstruction.ts"
 #include "fx/ExprInstruction.ts"
 #include "fx/StmtInstruction.ts"
+#include "fx/TechniqueInstruction.ts"
 #include "fx/EffectErrors.ts"
 #include "fx/EffectUtil.ts"
 #include "IAFXComposer.ts"

@@ -202,6 +202,10 @@ module akra.render {
 			this._pDeferredView.render(this);
 		}
 
+		endFrame(): void {
+        	this.getTarget().getRenderer().executeQueue(false);
+        }
+
 		prepareForDeferredShading(): void {
 #ifndef OPTIMIZED_DEFFERED
 			var pNodeList: IObjectArray = this.getCamera().display();
@@ -369,15 +373,13 @@ module akra.render {
 			}
 
 			var pTechnique: IRenderTechnique = this._pDeferredView.getTechnique();
-			var pEffect: IEffect = pTechnique.getMethod().effect;
+			var pEffect: IEffect = this._pDeferredEffect;
 			
 			if (pSkyTexture) {
 				pEffect.addComponent("akra.system.skybox", 1, 0);
-				pTechnique._setGlobalPostEffectsFrom(1);
 			}
 			else {
 				pEffect.delComponent("akra.system.skybox", 1, 0);
-				pTechnique._setGlobalPostEffectsFrom(this.isOutline() || this.isFXAA()? 1: 0);
 			}
 
 			this._pDeferredSkyTexture = pSkyTexture;
@@ -408,28 +410,24 @@ module akra.render {
 		}
 
 		setFXAA(bValue: bool = true): void {
-			var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
+			var pEffect: IEffect = this._pDeferredEffect;
 			
 			if (bValue) {
 				pEffect.addComponent("akra.system.fxaa", 2, 0);
-				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
 			}
 			else {
 				pEffect.delComponent("akra.system.fxaa", 2, 0);
-				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(this.isOutline() || this.getSkybox()? 1: 0);
 			}
 		}
 
 		setOutlining(bValue: bool = true): void {
-			var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
+			var pEffect: IEffect = this._pDeferredEffect;
 			
 			if (bValue) {
 				pEffect.addComponent("akra.system.outline", 1, 0);
-				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(1);
 			}
 			else {
 				pEffect.delComponent("akra.system.outline", 1, 0);
-				this._pDeferredView.getTechnique()._setGlobalPostEffectsFrom(this.isFXAA() || this.getSkybox()? 1: 0);
 			}
 		}
 

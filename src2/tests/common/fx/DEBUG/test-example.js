@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Aug 22 2013 16:28:49 GMT+0400 (Московское время (лето))
+ * assembled at: Tue Aug 27 2013 19:00:45 GMT+0400 (Московское время (лето))
  * directory: tests/common/fx/DEBUG/
  * file: tests/common/fx/test-example.ts
  * name: test-example
@@ -68,7 +68,8 @@ var akra;
         });
     }
     function createViewports() {
-        akra.pViewport = pCanvas.addViewport(akra.pCamera, akra.EViewportTypes.DSVIEWPORT);
+        akra.pViewport = new akra.render.DSViewport(akra.pCamera);
+        pCanvas.addViewport(akra.pViewport);
         var pStats = pUI.createComponent("RenderTargetStats");
         pStats.target = akra.pViewport.getTarget();
         pStats.render(pMainScene);

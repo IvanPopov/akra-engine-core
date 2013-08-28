@@ -93,12 +93,6 @@ float4 fs_skybox(VS_OUT IN) : COLOR{
     }
 };	
 
-technique skybox{
-	pass skybox{
-		VertexShader = compile vs_skybox();
-		PixelShader = compile fs_skybox();
-	};
-};
 
 
 texture bgTexure: TEXTURE0;
@@ -192,16 +186,23 @@ float4 fs_outline(VS_OUT IN) : COLOR
 };	
 
 
-technique outline 
-{
+technique skybox : POST_EFFECT {
+	pass skybox{
+		VertexShader = compile vs_skybox();
+		PixelShader = compile fs_skybox();
+	};
+};
+
+
+technique outline : POST_EFFECT {
 	pass outline 
 	{
 		VertexShader = compile vs_outline();
 		PixelShader = compile fs_outline();
 	};
 };
-
-technique deferredBackground 
+/*
+technique deferredBackground : POST_EFFECT
 {
 	pass outline 
 	{
@@ -210,3 +211,4 @@ technique deferredBackground
 	};
 };
 
+*/
