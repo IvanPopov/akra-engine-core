@@ -24,6 +24,7 @@ module akra {
         prepareForRender(pViewport: IViewport): void;
         
         signal worldBoundsUpdated(): void;
+        signal click(pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint);
     }
 }
 

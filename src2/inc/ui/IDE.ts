@@ -23,6 +23,14 @@ module akra.ui {
 		return fnCallback;
 	}
 
+	export enum EEditModes {
+		NONE,
+		PICK,
+		MOVE,
+		ROTATE,
+		SCALE
+	}
+
 	export class IDE extends Component implements IUIIDE {
 		protected _fnMainScript: Function = () => {};
 
@@ -35,14 +43,14 @@ module akra.ui {
 		protected _pColladaDialog: IUIPopup = null;
 		protected _p3DControls: IUICheckboxList;
 
-		protected _pKeymap: IKeyMap;
 
 		//picking
-		// protected _pColorTexture: ITexture;
-		// protected _pColorViewport: IViewport;
-		// protected _pSearchCam: ICamera;
-		// protected _pSelectedObject: IRIDPair = null;
-		protected _iSelectedRid: int = 0;
+		protected _pSelectedObject: IRIDPair = {object: null, renderable: null};
+
+		//editing
+		protected _eEditMode: EEditModes = EEditModes.NONE;
+		protected _pModelBasis: ISceneModel;
+		protected _pModelBasisTrans: IModelEntry;
 
 
 		//=======================================
@@ -57,6 +65,19 @@ module akra.ui {
 			this._fnMainScript = fn;
 		}
 
+		//-===============================
+		inline get selectedObject(): ISceneObject {
+			return this._pSelectedObject.object;
+		}
+
+		inline get selectedRenderable(): IRenderableObject {
+			return this._pSelectedObject.renderable;
+		}
+
+		inline get editMode(): EEditModes {
+			return this._eEditMode;
+		}
+
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 
@@ -66,10 +87,6 @@ module akra.ui {
 
 			this._pEngine = getUI(parent).getManager().getEngine();
 			debug_assert(!isNull(this._pEngine), "Engine required!");
-			
-			this._pKeymap = controls.createKeymap();
-			this._pKeymap.captureMouse(this.getCanvasElement());
-			this._pKeymap.captureKeyboard(<any>document);
 
 			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
@@ -101,63 +118,51 @@ module akra.ui {
 
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
 			this.setupKeyControls();
+
+			//create mode basis
+			var pScene: IScene3d = this.getScene();
+			var pBasis: ISceneModel = util.basis(pScene);
+
+			pBasis.name = ".model-basis";
+			pBasis.visible = false;
+			pBasis.setInheritance(ENodeInheritance.ROTPOSITION);
+
+			this._pModelBasis = pBasis;
+
+			var pBasisTranslation: ICollada = <ICollada>this.getResourceManager().colladaPool.loadResource(DATA + "/models/basis_translation.DAE");
+
+			pBasisTranslation.bind(SIGNAL(loaded), (pModel: ICollada): void => {
+				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
+				pModelRoot.attachToParent(pScene.getRootNode());
+				this._pModelBasisTrans = pModelRoot;
+				// pModelRoot.visible = false;
+			});
 		}
 
 		private setupKeyControls(): void {
-			this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_beforeSceneUpdate));
+			
 		}
 
 		_enablePickMode(pCb: IUICheckbox, bValue: bool): void {
-			console.log("pick mode: ", bValue);
+			this._eEditMode = bValue? EEditModes.PICK: EEditModes.NONE;
+			this.updateEditting();
 		}
 
 		_enableTranslateMode(pCb: IUICheckbox, bValue: bool): void {
-			console.log("pick translate: ", bValue);
+			this._eEditMode = bValue? EEditModes.MOVE: EEditModes.NONE;
+			this.updateEditting();
 		}
 
 		_enableRotateMode(pCb: IUICheckbox, bValue: bool): void {
-			console.log("pick rotate: ", bValue);
+			this._eEditMode = bValue? EEditModes.ROTATE: EEditModes.NONE;
+			this.updateEditting();
 		}
 
 		_enableScaleMode(pCb: IUICheckbox, bValue: bool): void {
-			console.log("pick scale: ", bValue);
+			this._eEditMode = bValue? EEditModes.SCALE: EEditModes.NONE;
+			this.updateEditting();
 		}
 
-		_beforeSceneUpdate(pScene: IScene3d): void {
-
-			/*var pNode: ISceneNode = <ISceneNode>this._pSceneTree.selectedNode;
-			var pKeymap: IKeyMap = this.getKeymap()
-
-			if (pKeymap.isKeyPress(EKeyCodes.NUMPAD8)) {
-				
-		     	pNode.addPosition(vec3(1., 0., 0.));   
-		    }
-
-		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD2)) {
-		    	
-		     	pNode.addPosition(vec3(-1., 0., 0.));   
-		    }
-
-		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD9)) {
-				
-		     	pNode.addPosition(vec3(0., 1., 0.));   
-		    }
-
-		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD7)) {
-		    	
-		     	pNode.addPosition(vec3(0., -1., 0.));   
-		    }
-
-		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD4)) {
-				
-		     	pNode.addPosition(vec3(0., 0., -1.));   
-		    }
-
-		    if (pKeymap.isKeyPress(EKeyCodes.NUMPAD6)) {
-		    	
-		     	pNode.addPosition(vec3(0., 0., 1.));   
-		    }*/
-		}
 
 		private setupObjectPicking(): void {
 			// var pSearchCam: ICamera;
@@ -190,37 +195,12 @@ module akra.ui {
 			// this._pSearchCam = pSearchCam;
 			// this._pColorTexture = pColorTex;
 			var pViewport: IViewport = this.getViewport();
-			
-			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
-				(<IDSViewport>pViewport).setOutlining(true);
-				LOG("USE OUTLINING!!!!");
-			}
 		}
 
 		_sceneUpdate(pScene: IScene3d): void {
-			var pKeymap: IKeyMap = this.getKeymap();
+			
 		}
 
-		_onDSViewportRender(
-			pViewport: IViewport, 
-			pTechnique: IRenderTechnique, 
-			iPass: uint, 
-			pRenderable: IRenderableObject, 
-			pSceneObject: ISceneObject): void {
-
-			var pPass: IRenderPass = pTechnique.getPass(iPass);
-
-			switch (iPass) {
-				case 1:	
-					var iRid: int = this._iSelectedRid;/*isNull(this._pSelectedObject)? 0: pTechnique._getComposer()._calcRenderID(this._pSelectedObject.object, this._pSelectedObject.renderable);*/
-					var iSoid: int = (iRid - 1) >>> 10;
-					var iReid: int = (iRid - 1) & 1023;
-					// console.log("rid: ", iRid, "reid: ", iReid, "soid: ", iSoid);
-					pPass.setUniform("OUTLINE_REID", iReid);
-					pPass.setUniform("OUTLINE_SOID", iSoid);
-					pPass.setUniform("OUTLINE_TARGET", iRid);
-			}
-		}
 
 		protected setupApiEntry(): void {
 			this._apiEntry = {
@@ -230,8 +210,7 @@ module akra.ui {
 				canvas: this.getCanvas(),
 				scene: this.getScene(),
 				rsmgr: this.getResourceManager(),
-				renderer: this.getEngine().getRenderer(),
-				keymap: this.getKeymap()
+				renderer: this.getEngine().getRenderer()
 			};
 		}
 
@@ -242,7 +221,7 @@ module akra.ui {
 		inline getResourceManager(): IResourcePoolManager { return this.getEngine().getResourceManager(); }
 		inline getViewport(): IViewport { return this._pPreview.viewport; }
 		inline getCamera(): ICamera { return this.getViewport().getCamera(); }
-		inline getKeymap(): IKeyMap { return this._pKeymap; }
+		inline getComposer(): IAFXComposer { return this.getEngine().getComposer(); }
 
 		_updateSceneNodeName(pInspector: Inspector, pNode: ISceneNode): void {
 			this._pSceneTree.sync(pNode);
@@ -258,17 +237,67 @@ module akra.ui {
 			this.setupObjectPicking();
 			this.created();
 
-			this.connect(pViewport, SIGNAL(render), SLOT(_onDSViewportRender));
-
 			pViewport.bind(SIGNAL(click), (pViewport: IDSViewport, x: uint, y: uint): void => {
-				this.getCamera().update();
-				
-				var pRes: IDSPickingResult = pViewport.pick(x, y);
+				var pObjectPrev: ISceneObject = this.selectedObject;
+				var pRenderablePrev: IRenderableObject = this.selectedRenderable;
 
-				this._iSelectedRid = pRes.rid;
+				if (this.editMode !== EEditModes.NONE) {
+					var pRes: IRIDPair = pViewport.pick(x, y);
 
-				this.inspectNode(pRes.object);
+					this.selected(pRes.object, pRes.renderable);
+					this.inspectNode(pRes.object);
+				}
+
+				this.updateEditting(pObjectPrev, pRenderablePrev);
 			});
+		}
+
+		private updateEditting(pObjectPrev: ISceneObject = null, pRenderablePrev: IRenderableObject = null): void {
+			var pViewport: IDSViewport = <IDSViewport>this.getViewport();
+			var pObject: ISceneObject = this.selectedObject;
+			var pRenderable: IRenderableObject = this.selectedRenderable;
+
+			if (!isNull(pObjectPrev)) {
+				if (akra.scene.isModel(pObjectPrev)) {
+					(<ISceneModel>pObjectPrev).mesh.hideBoundingBox();
+				}
+			}
+
+			if (this.editMode === EEditModes.NONE) {
+				pViewport.highlight(null, null);
+			}
+
+			if (this.editMode !== EEditModes.NONE) {
+				pViewport.highlight(pObject, pRenderable);
+				if (akra.scene.isModel(pObject)) {
+					(<ISceneModel>pObject).mesh.hideBoundingBox();
+				}
+			}
+
+			if (this.editMode === EEditModes.MOVE) {
+				if (akra.scene.isModel(pObject)) {
+					(<ISceneModel>pObject).mesh.showBoundingBox();
+				}
+
+				if (!isNull(pObject)) {
+					this._pModelBasis.visible = true;
+					this._pModelBasis.detachFromParent();
+					this._pModelBasis.setPosition(vec3(0));
+
+					this._pModelBasis.attachToParent(pObject);
+				}
+			}
+			else {
+				this._pModelBasis.visible = false;
+				this._pModelBasis.detachFromParent();
+			}
+		}
+
+		private selected(pObj: ISceneObject, pRenderable: IRenderableObject = null): void {
+			var p = this._pSelectedObject;
+			
+			p.object = pObj;
+			p.renderable = pRenderable;
 		}
 
 		cmd(eCommand: ECMD, ...argv: any[]): bool {
@@ -278,10 +307,10 @@ module akra.ui {
 				case ECMD.SET_PREVIEW_FULLSCREEN:
 					return this.setFullscreen();
 				case ECMD.INSPECT_SCENE_NODE:
-					// console.log("b", this._iSelectedRid);
-					this._iSelectedRid = akra.scene.isSceneObject(argv[0])? this.getEngine().getComposer()._calcRenderID(<ISceneObject>argv[0], null): 0;
-					// console.log("a", this._iSelectedRid);
+					
+					this.selected(akra.scene.isSceneObject(argv[0])? argv[0]: null);
 					return this.inspectNode(argv[0]);
+
 				case ECMD.EDIT_ANIMATION_CONTROLLER: 
 					return this.editAnimationController(argv[0]);
 				case ECMD.INSPECT_ANIMATION_NODE:

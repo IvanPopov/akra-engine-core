@@ -62,6 +62,8 @@ module akra {
 		signal shadow(bValue: bool): void;
 		/** Notify, before object start rendendering */
 		signal beforeRender(pViewport: IViewport): void;
+
+		signal click(pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint);
 	}
 }
 

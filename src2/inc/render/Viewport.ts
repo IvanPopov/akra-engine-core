@@ -134,6 +134,10 @@ module akra.render {
 			}
 		}
 
+		enableSupportFor3DEvent(eType: E3DEventTypes): bool {
+			return false;
+		}
+
         inline getTarget(): IRenderTarget {
         	return this._pTarget;
         }

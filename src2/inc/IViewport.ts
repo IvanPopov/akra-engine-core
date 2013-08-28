@@ -24,6 +24,10 @@ module akra {
         TEXTUREVIEWPORT
     }
 
+    export enum E3DEventTypes {
+        CLICK = 0x01
+    }
+
     export interface IViewport extends IEventProvider {
         left: float;
         top: float;
@@ -51,6 +55,8 @@ module akra {
         endFrame(): void;
 
         clear(iBuffers?: uint, cColor?: IColor, fDepth?: float, iStencil?: uint): void;
+
+        enableSupportFor3DEvent(eType: E3DEventTypes): bool;
 
         getTarget(): IRenderTarget;
         getCamera(): ICamera;

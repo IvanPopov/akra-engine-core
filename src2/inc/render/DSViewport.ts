@@ -35,9 +35,9 @@ module akra.render {
 
 		private _pDeferredBgTexture: ITexture = null;
 		private _v4fDeferredBgMapping: IVec4 = new Vec4(0., 0., 1., 1.);
+		
 		//index of lighting display list
 		private _pLightDL: int; 
-
 		private _pLightingUnifoms: UniformMap = {
 	        omni           	: [],
 	        project        	: [],
@@ -50,8 +50,12 @@ module akra.render {
 	        samplersProject : [],
 	        samplersSun		: []
 	    };
-
 	    private _pLightPoints: util.ObjectArray = null;
+
+	    private _pSelectedObject: IRIDPair = {object: null, renderable: null};
+
+	    //3d event handing
+	    private _i3DEvents: int = 0;
 
 	    inline get type(): EViewportTypes { return EViewportTypes.DSVIEWPORT; }
 
@@ -332,15 +336,11 @@ module akra.render {
 			return this.getTarget().getRenderer().getEngine().getComposer()._getRenderableByRid(this._getRenderId(x, y));
 		}
 
-		pick(x: uint, y: uint): IDSPickingResult {
+		pick(x: uint, y: uint): IRIDPair {
 			var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
 			var iRid: int = this._getRenderId(x, y);
-			var iSoid: int = (iRid - 1) >>> 10;
-			var iReid: int = (iRid - 1) & 1023;
+
 			return {
-				rid: iRid,
-				reid: iReid,
-				soid: iSoid,
 				renderable: pComposer._getRenderableByRid(iRid),
 				object: pComposer._getObjectByRid(iRid)
 			};
@@ -420,13 +420,42 @@ module akra.render {
 			}
 		}
 
-		setOutlining(bValue: bool = true): void {
+		enableSupportFor3DEvent(iType: E3DEventTypes): bool {
+			SET_ALL(this._i3DEvents, iType);
+			return true;
+		}
+
+		highlight(iRid: int): void;
+		highlight(pObject: ISceneObject, pRenderable: IRenderableObject = null): void;
+		highlight(pPair: IRIDPair): void;
+		highlight(a): void {
+			var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
 			var pEffect: IEffect = this._pDeferredEffect;
+			var iRid: int = 0;
+			var p: IRIDPair = this._pSelectedObject;
+			var pObjectPrev: ISceneObject = p.object;
 			
-			if (bValue) {
-				pEffect.addComponent("akra.system.outline", 1, 0);
+			if (isNull(arguments[0])) {
+				p.object = null;
+				p.renderable = null;
+			}
+			else if (isInt(arguments[0])) {
+				p.object = pComposer._getObjectByRid(iRid);
+				p.renderable = pComposer._getRenderableByRid(iRid);
+			}
+			else if (arguments[0] instanceof akra.scene.SceneObject) {
+				p.object = arguments[0];
+				p.renderable = arguments[1];
 			}
 			else {
+				p.object = arguments[0].object;
+				p.renderable = arguments[0].renderable;
+			}
+
+			if (p.object) {
+				pEffect.addComponent("akra.system.outline", 1, 0);
+			}
+			else if (pObjectPrev) {
 				pEffect.delComponent("akra.system.outline", 1, 0);
 			}
 		}
@@ -537,32 +566,26 @@ module akra.render {
 
 					break;
 				case 1:
+					//skybox
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 				    pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);
 				    
 				    pPass.setUniform("SCREEN_TEXTURE_RATIO",
                                      vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
 
-				 //    pPass.setUniform("SAMPLER_SKYBOX", <IAFXSamplerState>{ 
-					// 	textureName: "SKYBOX_TEXTURE",
-					// 	texture: null,
-					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	mag_filter: ETextureFilters.LINEAR,
-					// 	min_filter: ETextureFilters.LINEAR
-					// });
-
-					// pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 
-					// 	textureName: "DEFERRED_TEXTURE0",
-					// 	texture: null,
-					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	mag_filter: ETextureFilters.NEAREST,
-					// 	min_filter: ETextureFilters.NEAREST
-					// });
-
 					pPass.setTexture("TEXTURE0", this._pDeferredBgTexture);
 					pPass.setUniform("VIEWPORT", this._v4fDeferredBgMapping);
+
+					//outline
+					var p: IRIDPair = this._pSelectedObject;
+
+					if (!isNull(p.object)) {
+						var iRid: int = this.getTarget().getRenderer().getEngine().getComposer()._calcRenderID(p.object, p.renderable);
+
+						pPass.setUniform("OUTLINE_TARGET", iRid);
+						pPass.setUniform("OUTLINE_SOID", (iRid - 1) >>> 10);
+						pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
+					}	
 
 					break;
 			}
@@ -707,6 +730,19 @@ module akra.render {
 		        	CRITICAL("Invalid light point type detected.");
 		        }
 		    }
+		}
+
+		click(x: uint, y: uint): void {
+			super.click(x, y);
+
+			if (!TEST_ANY(this._i3DEvents, E3DEventTypes.CLICK)) {
+				return;
+			}
+
+			var p = this.pick(x, y);
+
+			p.object && p.object.click(this, p.renderable, x, y);
+			p.renderable && p.renderable.click(this, p.object, x, y);
 		}
 
 		BROADCAST(addedSkybox, CALL(pSkyTexture));

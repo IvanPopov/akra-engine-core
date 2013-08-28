@@ -16,6 +16,8 @@ module akra {
 		POSITION,
 		//inheritance rotation and scale only
         ROTSCALE,
+        //inheritance rotation ans position only
+        ROTPOSITION,
         //inheritance all
     	ALL
 	};

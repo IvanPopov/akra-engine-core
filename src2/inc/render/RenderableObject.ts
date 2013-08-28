@@ -234,8 +234,11 @@ module akra.render {
 		}
 
 		CREATE_EVENT_TABLE(RenderableObject);
+		
 		UNICAST(shadow, CALL(bValue));
 		UNICAST(beforeRender, CALL(pViewport));
+
+		BROADCAST(click, CALL(pViewport, object, x, y));
 	}
 
 	export inline function isMeshSubset(pObject: IRenderableObject): bool {

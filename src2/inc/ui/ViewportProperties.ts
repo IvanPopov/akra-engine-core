@@ -190,6 +190,14 @@ module akra.ui {
 				pScene.bind(SIGNAL(beforeUpdate), () => { 
 					pModelRoot.addRelRotationByXYZAxis(0.01, 0.01, 0.); 
 				});
+
+				var pMesh: IMesh = (<ISceneModel>pModelRoot.child).mesh;
+
+				for (var i = 0; i < pMesh.length; ++ i) {
+					pMesh.getSubset(i).bind(SIGNAL(click), () => {
+						console.log(arguments);
+					});
+				}
 			});
 			
 
@@ -202,45 +210,9 @@ module akra.ui {
 
 			var pViewport: IViewport = pGeneralViewport.getTarget().addViewport(new render.DSViewport(pCamera, .7, .05, .25, .25, 100));
 			(<any>pViewport).setFXAA(false);
-			// (<any>pViewport).setOutlining(true);
-
-			var iRid: int = 0;
-
-
-			pViewport.bind(SIGNAL(render), (
-				pViewport: IViewport, 
-				pTechnique: IRenderTechnique, 
-				iPass: uint, 
-				pRenderable: IRenderableObject, 
-				pSceneObject: ISceneObject): void => {
-
-				var pPass: IRenderPass = pTechnique.getPass(iPass);
-
-				switch (iPass) {
-					case 1:	
-					pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
-					pPass.setUniform("OUTLINE_SOID", (iRid - 1) >>> 10);
-					pPass.setUniform("OUTLINE_TARGET", iRid);
-				}
-			});
 			
-			var c = pGeneralViewport.getTarget().addViewport(new render.ColorViewport(pCamera, .7, .35, .25, .25, 101));
-			c.setDepthParams(true, true, ECompareFunction.LESS); 
-			pViewport.bind(SIGNAL(click), (pViewport: IDSViewport, x: uint, y: uint): void => {
-				var pRes: IDSPickingResult = pViewport.pick(x, y);
-
-				switch(pRes.reid) {
-					case 17: console.log("bottom"); break;
-					case 18: console.log("right"); break;
-					case 19: console.log("left"); break;
-					case 20: console.log("bottom"); break;
-					case 21: console.log("front"); break;
-					case 22: console.log("back"); break;
-				}
-
-				iRid = pRes.rid;
-				// console.log(pRes.reid);
-			});
+			pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK);
+						
 		}
 
 		_addedSkybox(pViewport: IViewport, pSkyTexture: ITexture): void {
@@ -249,6 +221,7 @@ module akra.ui {
 
 		inline getRenderer(): IRenderer { return this._pViewport.getTarget().getRenderer(); }
 		inline getEngine(): IEngine { return this.getRenderer().getEngine(); }
+		inline getComposer(): IAFXComposer { return this.getEngine().getComposer(); }
 		inline getCanvas(): ICanvas3d { return this.getRenderer().getDefaultCanvas(); }
 		inline getCanvasElement(): HTMLCanvasElement { return (<any>this.getCanvas())._pCanvas; }
 		inline getViewport(): IViewport { return this._pViewport; }

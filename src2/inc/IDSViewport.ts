@@ -6,15 +6,6 @@
 module akra {
 	IFACE(IColor);
 
-	export interface IDSPickingResult extends IRIDPair {
-		//render id - common id
-		rid: int; 
-		//renderable id - id of renderable object
-		reid: int;
-		//scene object id - id of scene object
-		soid: int;
-	}
-
 	export interface IDSViewport extends IViewport {
 		readonly effect: IEffect;
 		readonly depth: ITexture;
@@ -31,9 +22,11 @@ module akra {
 		setFXAA(bValue?: bool): void;
 		isFXAA(): bool;
 		
-		setOutlining(bValue?: bool): void;
+		highlight(iRid: int): void;
+		highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
+		highlight(pPair: IRIDPair): void;
 
-		pick(x: uint, y: uint): IDSPickingResult;
+		pick(x: uint, y: uint): IRIDPair;
 
 		getObject(x: uint, y: uint): ISceneObject;
 		getRenderable(x: uint, y: uint): IRenderableObject;

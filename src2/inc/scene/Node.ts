@@ -146,8 +146,8 @@ module akra.scene {
 		        var m4fLocal: IMat4 = this._m4fLocalMatrix;
 		        var m4fWorld: IMat4 = this._m4fWorldMatrix;
 		        
-		        var m4fOrient: IMat4 = Node._m4fTemp;
-		        var v3fTemp: IVec3 = Node._v3fTemp;
+		        var m4fOrient: IMat4 = Node._m4fTemp1;
+		        var v3fTemp: IVec3 = Node._v3fTemp1;
 		        
 		        var pWorldData: Float32Array = m4fWorld.data;
 		        var pOrientData: Float32Array = m4fOrient.data;
@@ -174,7 +174,21 @@ module akra.scene {
 		                pWorldData[__24] = pParentData[__24] + pOrientData[__24];
 		                pWorldData[__34] = pParentData[__34] + pOrientData[__34];
 		            }
+		            else if (this._eInheritance === ENodeInheritance.ROTPOSITION) {
+		            	//FIXME: add faster way to compute this inheritance...
+		            	ASSERT(m4fParent.toMat3(Node._m3fTemp1).decompose(Node._q4fTemp1, Node._v3fTemp1), 
+		            		"could not decompose.");
+
+		            	var m4fParentNoScale: IMat4 = Node._q4fTemp1.toMat4(Node._m4fTemp2);
+
+		            	m4fParentNoScale.data[__14] = pParentData[__14];
+		            	m4fParentNoScale.data[__24] = pParentData[__24];
+		            	m4fParentNoScale.data[__34] = pParentData[__34];
+
+		            	m4fParentNoScale.multiply(m4fOrient, m4fWorld);
+		            }
 		            else if (this._eInheritance === ENodeInheritance.ROTSCALE) {
+		            	//3x3 parent world matrix
 		                var p11 = pParentData[__11], p12 = pParentData[__12],
 		                    p13 = pParentData[__13];
 		                var p21 = pParentData[__21], p22 = pParentData[__22],
@@ -182,6 +196,7 @@ module akra.scene {
 		                var p31 = pParentData[__31], p32 = pParentData[__32],
 		                    p33 = pParentData[__33];
 
+		                //3x3 local matrix
 		                var l11 = pOrientData[__11], l12 = pOrientData[__12],
 		                    l13 = pOrientData[__13];
 		                var l21 = pOrientData[__21], l22 = pOrientData[__22],
@@ -189,6 +204,7 @@ module akra.scene {
 		                var l31 = pOrientData[__31], l32 = pOrientData[__32],
 		                    l33 = pOrientData[__33];
 		                
+		                //parent x local with local world pos.
 		                pWorldData[__11] = p11 * l11 + p12 * l21 + p13 * l31;
 		                pWorldData[__12] = p11 * l12 + p12 * l22 + p13 * l32;
 		                pWorldData[__13] = p11 * l13 + p12 * l23 + p13 * l33;
@@ -309,23 +325,23 @@ module akra.scene {
 		addRelRotationByMatrix(m3fRotation: IMat3): void;
 		addRelRotationByMatrix(m4fRotation: IMat4): void;
 		addRelRotationByMatrix(matrix: any): void {
-			this.addRelRotation(arguments[0].toQuat4(Node._q4fTemp));
+			this.addRelRotation(arguments[0].toQuat4(Node._q4fTemp1));
 		}
 
 		inline addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
-			this.addRelRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));	
+			this.addRelRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp1));	
 		}
 
 		inline addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
-			this.addRelRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
+			this.addRelRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp1));
 		}
 
 		inline addRelRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
-			this.addRelRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
+			this.addRelRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp1));
 		}
 
 		inline addRelRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
-			this.addRelRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
+			this.addRelRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp1));
 		}
 
 		addRelRotation(q4fRotation: IQuat4): void {
@@ -336,23 +352,23 @@ module akra.scene {
 		inline addRotationByMatrix(m3fRotation: IMat3): void;
 		inline addRotationByMatrix(m4fRotation: IMat4): void;
 		inline addRotationByMatrix(matrix: any): void {
-			this.addRotation(arguments[0].toQuat4(Node._q4fTemp));
+			this.addRotation(arguments[0].toQuat4(Node._q4fTemp1));
 		}
 
 		inline addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
-			this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));	
+			this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp1));	
 		}
 
 		inline addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
-			this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
+			this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp1));
 		}
 
 		inline addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
-			this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
+			this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp1));
 		}
 
 		inline addRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
-			this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
+			this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp1));
 		}
 
 		addRotation(q4fRotation: IQuat4): void {
@@ -476,11 +492,12 @@ module akra.scene {
 #endif
 		};
 
-		private static _v3fTemp: IVec3 = new Vec3();
-		private static _v4fTemp: IVec4 = new Vec4();
-		private static _m3fTemp: IMat3 = new Mat3();
-		private static _m4fTemp: IMat4 = new Mat4();
-		private static _q4fTemp: IQuat4 = new Quat4();
+		private static _v3fTemp1: IVec3 = new Vec3();
+		private static _v4fTemp1: IVec4 = new Vec4();
+		private static _m3fTemp1: IMat3 = new Mat3();
+		private static _m4fTemp1: IMat4 = new Mat4();
+		private static _m4fTemp2: IMat4 = new Mat4();
+		private static _q4fTemp1: IQuat4 = new Quat4();
 	}
 }
 

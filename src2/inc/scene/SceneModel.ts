@@ -90,7 +90,7 @@ module akra.scene {
 	var iUpdatedOnce: int = 0;
 
 	export inline function isModel(pEntity: IEntity): bool {
-		return pEntity.type === EEntityTypes.MODEL;
+		return !isNull(pEntity) && pEntity.type === EEntityTypes.MODEL;
 	}
 }
 

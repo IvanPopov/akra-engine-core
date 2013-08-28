@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>IvanPopov</author>
+      <authoring_tool>OpenCOLLADA for 3ds Max;  Version: 1.4.1;  Revision: exported;  Platform: x64;  Configuration: Release_Max2013_static</authoring_tool>
+      <source_data>file:///C:/Users/IvanPopov/Desktop/basis_translation.max</source_data>
+    </contributor>
+    <created>2013-08-28T17:15:50</created>
+    <modified>2013-08-28T17:15:50</modified>
+    <unit name="centimeter" meter="0.01"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="_3_-_Default">
+      <profile_COMMON>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0 1 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0 0 0 1</color>
+            </diffuse>
+            <specular>
+              <color>0 0 0 1</color>
+            </specular>
+            <shininess>
+              <float>0</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="_1_-_Default">
+      <profile_COMMON>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>1 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0 0 0 1</color>
+            </diffuse>
+            <specular>
+              <color>0 0 0 1</color>
+            </specular>
+            <shininess>
+              <float>0</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="_2_-_Default">
+      <profile_COMMON>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 1 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0 0 0 1</color>
+            </diffuse>
+            <specular>
+              <color>0 0 0 1</color>
+            </specular>
+            <shininess>
+              <float>0</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+        </technique>
+      </profile_COMMON>
+      
+    </effect>
+    <effect id="_9_-_Default">
+      <profile_COMMON>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0.5 0.5 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0 0 0 1</color>
+            </diffuse>
+            <specular>
+              <color>0 0 0 1</color>
+            </specular>
+            <shininess>
+              <float>0</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="_7_-_Default">
+      <profile_COMMON>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0.5 0 0.5 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0 0 0 1</color>
+            </diffuse>
+            <specular>
+              <color>0 0 0 1</color>
+            </specular>
+            <shininess>
+              <float>0</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="_8_-_Default">
+      <profile_COMMON>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0.5 0.5 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0 0 0 1</color>
+            </diffuse>
+            <specular>
+              <color>0 0 0 1</color>
+            </specular>
+            <shininess>
+              <float>0</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="_3_-_Default-material" name="_3_-_Default">
+      <instance_effect url="#_3_-_Default"/>
+    </material>
+    <material id="_1_-_Default-material" name="_1_-_Default">
+      <instance_effect url="#_1_-_Default"/>
+    </material>
+    <material id="_2_-_Default-material" name="_2_-_Default">
+      <instance_effect url="#_2_-_Default"/>
+    </material>
+    <material id="_9_-_Default-material" name="_9_-_Default">
+      <instance_effect url="#_9_-_Default"/>
+    </material>
+    <material id="_7_-_Default-material" name="_7_-_Default">
+      <instance_effect url="#_7_-_Default"/>
+    </material>
+    <material id="_8_-_Default-material" name="_8_-_Default">
+      <instance_effect url="#_8_-_Default"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="geom-Cone001" name="Cone001">
+      <mesh>
+        <source id="geom-Cone001-positions">
+          <float_array id="geom-Cone001-positions-array" count="240">0 0 0 5 0 0 4.42728 2.323616 0 2.840323 4.114919 0 0.6026828 4.963544 0 -1.773025 4.675081 0 -3.742554 3.315613 0 -4.854709 1.196578 0 -4.854709 -1.196578 0 -3.742554 -3.315613 0 -1.773025 -4.675081 0 0.6026837 -4.963544 0 2.840325 -4.114919 0 4.427281 -2.323614 0 4 0 2 3.541824 1.858893 2 2.272259 3.291935 2 0.4821463 3.970835 2 -1.41842 3.740065 2 -2.994043 2.652491 2 -3.883767 0.9572627 2 -3.883767 -0.9572625 2 -2.994043 -2.65249 2 -1.41842 -3.740065 2 0.482147 -3.970835 2 2.27226 -3.291935 2 3.541825 -1.858891 2 3 0 4 2.656368 1.39417 4 1.704194 2.468952 4 0.3616097 2.978127 4 -1.063815 2.805049 4 -2.245532 1.989368 4 -2.912826 0.717947 4 -2.912826 -0.7179468 4 -2.245533 -1.989368 4 -1.063815 -2.805049 4 0.3616102 -2.978127 4 1.704195 -2.468951 4 2.656369 -1.394168 4 2 0 6 1.770912 0.9294463 6 1.136129 1.645968 6 0.2410731 1.985418 6 -0.7092099 1.870032 6 -1.497021 1.326245 6 -1.941884 0.4786313 6 -1.941884 -0.4786312 6 -1.497022 -1.326245 6 -0.70921 -1.870032 6 0.2410735 -1.985418 6 1.13613 -1.645967 6 1.770912 -0.9294455 6 0.9999999 0 8 0.885456 0.4647232 8 0.5680646 0.8229838 8 0.1205366 0.9927088 8 -0.3546049 0.9350162 8 -0.7485107 0.6631226 8 -0.9709418 0.2393157 8 -0.9709418 -0.2393156 8 -0.7485108 -0.6631225 8 -0.354605 -0.9350162 8 0.1205367 -0.9927088 8 0.5680649 -0.8229837 8 0.8854562 -0.4647228 8 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10 0 0 10</float_array>
+ 
+
+          <technique_common>
+            <accessor source="#geom-Cone001-positions-array" count="80" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-Cone001-normals">
+          <float_array id="geom-Cone001-normals-array" count="318">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0.8944272 1.56388e-7 0.4472136 0.791976 0.4156611 0.4472136 0.8944272 1.31141e-7 0.4472137 0.791976 0.4156612 0.4472136 0.5080925 0.7360992 0.4472136 0.5080925 0.7360992 0.4472136 0.1078113 0.8879059 0.4472136 0.1078113 0.8879058 0.4472136 -0.3171683 0.836304 0.4472136 -0.3171683 0.8363039 0.4472136 -0.6694884 0.593115 0.4472136 -0.6694884 0.5931149 0.4472136 -0.8684368 0.2140505 0.4472136 -0.8684368 0.2140504 0.4472136 -0.8684368 -0.2140504 0.4472136 -0.8684368 -0.2140504 0.4472136 -0.6694885 -0.5931149 0.4472136 -0.6694884 -0.5931148 0.4472136 -0.3171683 -0.8363039 0.4472136 -0.3171683 -0.8363039 0.4472136 0.1078113 -0.8879059 0.4472136 0.1078114 -0.8879058 0.4472136 0.5080928 -0.7360991 0.4472136 0.5080927 -0.736099 0.4472136 0.7919761 -0.4156608 0.4472137 0.7919761 -0.4156608 0.4472136 0.791976 0.4156611 0.4472136 0.8944272 1.11713e-7 0.4472136 0.5080925 0.7360992 0.4472136 0.1078112 0.8879058 0.4472137 -0.3171683 0.8363039 0.4472136 -0.6694884 0.593115 0.4472136 -0.8684368 0.2140505 0.4472136 -0.8684368 -0.2140504 0.4472136 -0.6694885 -0.5931148 0.4472136 -0.3171683 -0.8363039 0.4472137 0.1078113 -0.8879058 0.4472136 0.5080927 -0.7360991 0.4472136 0.7919761 -0.4156608 0.4472136 0.791976 0.4156612 0.4472136 0.8944272 1.1657e-7 0.4472136 0.5080925 0.7360992 0.4472136 0.1078112 0.8879058 0.4472136 -0.3171683 0.8363039 0.4472136 -0.6694884 0.593115 0.4472137 -0.8684368 0.2140505 0.4472137 -0.8684368 -0.2140504 0.4472136 -0.6694884 -0.5931149 0.4472136 -0.3171684 -0.8363039 0.4472136 0.1078113 -0.8879058 0.4472136 0.5080927 -0.7360991 0.4472136 0.7919761 -0.4156608 0.4472136 0.791976 0.4156611 0.4472136 0.8944272 1.1657e-7 0.4472136 0.5080925 0.7360992 0.4472135 0.1078113 0.8879059 0.4472136 -0.3171683 0.836304 0.4472136 -0.6694884 0.593115 0.4472136 -0.8684368 0.2140505 0.4472136 -0.8684368 -0.2140504 0.4472136 -0.6694885 -0.5931149 0.4472136 -0.3171683 -0.8363039 0.4472136 0.1078114 -0.8879059 0.4472136 0.5080927 -0.7360991 0.4472136 0.7919761 -0.4156608 0.4472136 0.8734536 0.215287 0.4367268 0.8734536 -0.2152867 0.4367268 0.6733558 0.5965414 0.4367267 0.3190005 0.8411353 0.4367268 -0.1084341 0.8930352 0.4367268 -0.5110278 0.7403515 0.4367268 -0.7965512 0.4180624 0.4367268 -0.8995942 0 0.4367268 -0.7965512 -0.4180622 0.4367268 -0.5110279 -0.7403514 0.4367268 -0.1084341 -0.8930352 0.4367268 0.3190006 -0.8411351 0.4367268 0.6733561 -0.5965411 0.4367267 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0</float_array>
+ 
+
+          <technique_common>
+            <accessor source="#geom-Cone001-normals-array" count="106" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-Cone001-map1">
+          <float_array id="geom-Cone001-map1-array" count="282">0.5 0 0 0.75 0 1 0.8269231 0 1 0.9038462 0 0.9999999 0.9807692 0 0.9999999 0.05769233 0 1 0.1346154 0 1 0.2115385 0 1 0.2884615 0 1 0.3653846 0 1 0.4423077 0 1 0.5192308 0 1 0.5961539 0 1 0.673077 0 1 0.75 0.2 0.8 0.8269231 0.2 0.8000001 0.9038462 0.2 0.8 0.9807692 0.2 0.8 0.05769233 0.2 0.8 0.1346154 0.2 0.8000001 0.2115385 0.2 0.8 0.2884615 0.2 0.8 0.3653846 0.2 0.8000001 0.4423077 0.2 0.8 0.5192308 0.2 0.8 0.5961539 0.2 0.8000001 0.673077 0.2 0.8 0.75 0.4 0.6 0.8269231 0.4 0.6 0.9038462 0.4 0.6 0.9807692 0.4 0.6 0.05769233 0.4 0.6 0.1346154 0.4 0.6 0.2115385 0.4 0.6 0.2884615 0.4 0.6 0.3653846 0.4 0.6 0.4423077 0.4 0.6 0.5192308 0.4 0.6 0.5961539 0.4 0.6 0.673077 0.4 0.6 0.75 0.6 0.4 0.8269231 0.6 0.4 0.9038462 0.6 0.3999999 0.9807692 0.6 0.4 0.05769233 0.6 0.4 0.1346154 0.6 0.4 0.2115385 0.6 0.4 0.2884615 0.6 0.4 0.3653846 0.6 0.4 0.4423077 0.6 0.4 0.5192308 0.6 0.4 0.5961539 0.6 0.4 0.673077 0.6 0.4 0.75 0.8 0.2 0.8269231 0.8 0.2 0.9038462 0.8 0.2 0.9807692 0.8 0.2 0.05769233 0.8 0.2 0.1346154 0.8 0.2 0.2115385 0.8 0.2 0.2884615 0.8 0.2 0.3653846 0.8 0.2 0.4423077 0.8 0.2 0.5192308 0.8 0.2 0.5961539 0.8 0.2 0.673077 0.8 0.2 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 0.5 1 0 -0.01923078 0 0.9999999 -0.01923078 0 0.9999999 -0.01923078 0.2 0.8 -0.01923078 0 0.9999999 -0.01923078 0.2 0.8 -0.01923078 0.4 0.6 -0.01923078 0.2 0.8 -0.01923078 0.4 0.6 -0.01923078 0.6 0.4 -0.01923078 0.4 0.6 -0.01923078 0.6 0.4 -0.01923078 0.8 0.2 -0.01923078 0.6 0.4 -0.01923078 0.8 0.2</float_array>
+ 
+
+          <technique_common>
+            <accessor source="#geom-Cone001-map1-array" count="94" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-Cone001-vertices">
+          <input semantic="POSITION" source="#geom-Cone001-positions"/>
+        </vertices>
+        <triangles material="_3_-_Default_1" count="156">
+          <input semantic="VERTEX" source="#geom-Cone001-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-Cone001-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-Cone001-map1" offset="2" set="0"/>
+          <p>0 0 0 2 1 2 1 2 1 0 0 0 3 3 3 2 1 2 0 0 0 4 4 4 3 3 3 0 0 0 5 5 5 4 4 80 0 0 0 6 6 6 5 5 5 0 0 0 7 7 7 6 6 6 0 0 0 8 8 8 7 7 7 0 0 0 9 9 9 8 8 8 0 0 0 10 10 10 9 9 9 0 0 0 11 11 11 10 10 10 0 0 0 12 12 12 11 11 11 0 0 0 13 13 13 12 12 12 0 0 0 1 2 1 13 13 13 1 14 1 15 15 15 14 16 14 1 14 1 2 17 2 15 15 15 2 17 2 16 18 16 15 15 15 2 17 2 3 19 3 16 18 16 3 19 3 17 20 17 16 18 16 3 19 3 4 21 4 17 20 17 4 21 81 18 22 18 17 20 82 4 21 83 5 23 5 18 22 18 5 23 5 19 24 19 18 22 18 5 23 5 6 25 6 19 24 19 6 25 6 20 26 20 19 24 19 6 25 6 7 27 7 20 26 20 7 27 7 21 28 21 20 26 20 7 27 7 8 29 8 21 28 21 8 29 8 22 30 22 21 28 21 8 29 8 9 31 9 22 30 22 9 31 9 23 32 23 22 30 22 9 31 9 10 33 10 23 32 23 10 33 10 24 34 24 23 32 23 10 33 10 11 35 11 24 34 24 11 35 11 25 36 25 24 34 24 11 35 11 12 37 12 25 36 25 12 37 12 26 38 26 25 36 25 12 37 12 13 39 13 26 38 26 13 39 13 14 16 14 26 38 26 13 39 13 1 14 1 14 16 14 14 16 14 28 40 28 27 41 27 14 16 14 15 15 15 28 40 28 15 15 15 29 42 29 28 40 28 15 15 15 16 18 16 29 42 29 16 18 16 30 43 30 29 42 29 16 18 16 17 20 17 30 43 30 17 20 84 31 44 31 30 43 85 17 20 86 18 22 18 31 44 31 18 22 18 32 45 32 31 44 31 18 22 18 19 24 19 32 45 32 19 24 19 33 46 33 32 45 32 19 24 19 20 26 20 33 46 33 20 26 20 34 47 34 33 46 33 20 26 20 21 28 21 34 47 34 21 28 21 35 48 35 34 47 34 21 28 21 22 30 22 35 48 35 22 30 22 36 49 36 35 48 35 22 30 22 23 32 23 36 49 36 23 32 23 37 50 37 36 49 36 23 32 23 24 34 24 37 50 37 24 34 24 38 51 38 37 50 37 24 34 24 25 36 25 38 51 38 25 36 25 39 52 39 38 51 38 25 36 25 26 38 26 39 52 39 26 38 26 27 41 27 39 52 39 26 38 26 14 16 14 27 41 27 27 41 27 41 53 41 40 54 40 27 41 27 28 40 28 41 53 41 28 40 28 42 55 42 41 53 41 28 40 28 29 42 29 42 55 42 29 42 29 43 56 43 42 55 42 29 42 29 30 43 30 43 56 43 30 43 87 44 57 44 43 56 88 30 43 89 31 44 31 44 57 44 31 44 31 45 58 45 44 57 44 31 44 31 32 45 32 45 58 45 32 45 32 46 59 46 45 58 45 32 45 32 33 46 33 46 59 46 33 46 33 47 60 47 46 59 46 33 46 33 34 47 34 47 60 47 34 47 34 48 61 48 47 60 47 34 47 34 35 48 35 48 61 48 35 48 35 49 62 49 48 61 48 35 48 35 36 49 36 49 62 49 36 49 36 50 63 50 49 62 49 36 49 36 37 50 37 50 63 50 37 50 37 51 64 51 50 63 50 37 50 37 38 51 38 51 64 51 38 51 38 52 65 52 51 64 51 38 51 38 39 52 39 52 65 52 39 52 39 40 54 40 52 65 52 39 52 39 27 41 27 40 54 40 40 54 40 54 66 54 53 67 53 40 54 40 41 53 41 54 66 54 41 53 41 55 68 55 54 66 54 41 53 41 42 55 42 55 68 55 42 55 42 56 69 56 55 68 55 42 55 42 43 56 43 56 69 56 43 56 90 57 70 57 56 69 91 43 56 92 44 57 44 57 70 57 44 57 44 58 71 58 57 70 57 44 57 44 45 58 45 58 71 58 45 58 45 59 72 59 58 71 58 45 58 45 46 59 46 59 72 59 46 59 46 60 73 60 59 72 59 46 59 46 47 60 47 60 73 60 47 60 47 61 74 61 60 73 60 47 60 47 48 61 48 61 74 61 48 61 48 62 75 62 61 74 61 48 61 48 49 62 49 62 75 62 49 62 49 63 76 63 62 75 62 49 62 49 50 63 50 63 76 63 50 63 50 64 77 64 63 76 63 50 63 50 51 64 51 64 77 64 51 64 51 65 78 65 64 77 64 51 64 51 52 65 52 65 78 65 52 65 52 53 67 53 65 78 65 52 65 52 40 54 40 53 67 53 53 67 53 67 79 67 66 80 66 53 67 53 54 66 54 67 79 67 54 66 54 68 81 68 67 79 67 54 66 54 55 68 55 68 81 68 55 68 55 69 82 69 68 81 68 55 68 55 56 69 56 69 82 69 56 69 56 70 83 70 69 82 69 56 69 93 57 70 57 70 83 70 57 70 57 71 84 71 70 83 70 57 70 57 58 71 58 71 84 71 58 71 58 72 85 72 71 84 71 58 71 58 59 72 59 72 85 72 59 72 59 73 86 73 72 85 72 59 72 59 60 73 60 73 86 73 60 73 60 74 87 74 73 86 73 60 73 60 61 74 61 74 87 74 61 74 61 75 88 75 74 87 74 61 74 61 62 75 62 75 88 75 62 75 62 76 89 76 75 88 75 62 75 62 63 76 63 76 89 76 63 76 63 77 90 77 76 89 76 63 76 63 64 77 64 77 90 77 64 77 64 78 91 78 77 90 77 64 77 64 65 78 65 78 91 78 65 78 65 66 80 66 78 91 78 65 78 65 53 67 53 66 80 66 79 92 79 66 93 66 67 94 67 79 92 79 67 94 67 68 95 68 79 92 79 68 95 68 69 96 69 79 92 79 69 96 69 70 97 70 79 92 79 70 97 70 71 98 71 79 92 79 71 98 71 72 99 72 79 92 79 72 99 72 73 100 73 79 92 79 73 100 73 74 101 74 79 92 79 74 101 74 75 102 75 79 92 79 75 102 75 76 103 76 79 92 79 76 103 76 77 104 77 79 92 79 77 104 77 78 105 78 79 92 79 78 105 78 66 93 66</p>
+
+
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-Cylinder001" name="Cylinder001">
+      <mesh>
+        <source id="geom-Cylinder001-positions">
+          <float_array id="geom-Cylinder001-positions-array" count="24">0 0 0 1 0 0 -0.5000001 0.8660254 0 -0.4999999 -0.8660254 0 1 0 10 -0.5000001 0.8660254 10 -0.4999999 -0.8660254 10 0 0 10</float_array>
+          <technique_common>
+            <accessor source="#geom-Cylinder001-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-Cylinder001-normals">
+          <float_array id="geom-Cylinder001-normals-array" count="42">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0.9999999 -7.5891e-8 0 -0.5000001 0.8660254 0 1 -1.0435e-7 0 -0.5000001 0.8660254 0 -0.4999998 -0.8660255 0 -0.4999999 -0.8660255 0 0 0 1 0 0 1 0 0 1 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#geom-Cylinder001-normals-array" count="14" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-Cylinder001-map1">
+          <float_array id="geom-Cylinder001-map1-array" count="39">0.5 0 0 0.75 0 1 0.08333335 0 1 0.4166667 0 0.9999999 0.75 1 1 0.08333335 1 1 0.4166667 1 0.9999999 0.5 1 0 -0.25 0 1 -0.25 0 1 -0.25 1 1 -0.25 0 1 -0.25 1 1</float_array>
+          <technique_common>
+            <accessor source="#geom-Cylinder001-map1-array" count="13" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-Cylinder001-vertices">
+          <input semantic="POSITION" source="#geom-Cylinder001-positions"/>
+        </vertices>
+        <triangles material="_1_-_Default_1" count="12">
+          <input semantic="VERTEX" source="#geom-Cylinder001-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-Cylinder001-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-Cylinder001-map1" offset="2" set="0"/>
+          <p>0 0 0 2 1 2 1 2 8 0 0 0 3 3 3 2 1 2 0 0 0 1 2 1 3 3 3 1 4 9 5 5 5 4 6 10 1 4 11 2 7 2 5 5 5 2 7 2 6 8 6 5 5 5 2 7 2 3 9 3 6 8 6 3 9 3 4 6 4 6 8 6 3 9 3 1 4 1 4 6 4 7 10 7 4 11 12 5 12 5 7 10 7 5 12 5 6 13 6 7 10 7 6 13 6 4 11 4</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-Plane001" name="Plane001">
+      <mesh>
+        <source id="geom-Plane001-positions">
+          <float_array id="geom-Plane001-positions-array" count="12">-12.5 -12.5 0 12.5 -12.5 0 -12.5 12.5 0 12.5 12.5 0</float_array>
+          <technique_common>
+            <accessor source="#geom-Plane001-positions-array" count="4" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-Plane001-normals">
+          <float_array id="geom-Plane001-normals-array" count="12">0 0 1 0 0 1 0 0 1 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#geom-Plane001-normals-array" count="4" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-Plane001-map1">
+          <float_array id="geom-Plane001-map1-array" count="24">0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 1 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-Plane001-map1-array" count="8" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-Plane001-vertices">
+          <input semantic="POSITION" source="#geom-Plane001-positions"/>
+        </vertices>
+        <triangles material="_9_-_Default_1" count="2">
+          <input semantic="VERTEX" source="#geom-Plane001-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-Plane001-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-Plane001-map1" offset="2" set="0"/>
+          <p>2 0 6 0 1 4 3 2 7 1 3 5 3 2 7 0 1 4</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_lights>
+    <light id="EnvironmentAmbientLight" name="EnvironmentAmbientLight">
+      <technique_common>
+        <ambient>
+          <color>0 0 0</color>
+        </ambient>
+      </technique_common>
+    </light>
+  </library_lights>
+  <library_visual_scenes>
+    <visual_scene id="MaxScene">
+      <node name="EnvironmentAmbientLight">
+        <instance_light url="#EnvironmentAmbientLight"/>
+      </node>
+      <node id="node-Cone001" name="Cone001">
+        <matrix>1 0 0 0 0 1 0 0 0 0 1 57 0 0 0 1</matrix>
+        <instance_geometry url="#geom-Cone001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="_3_-_Default_1" target="#_3_-_Default-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="node-Cylinder001" name="Cylinder001">
+        <matrix>-9.1077e-8 -6.2923e-7 6.122321 0 0 2.0836 1.84889e-6 0 -2.0836 2.75045e-14 -2.67615e-7 0 0 0 0 1</matrix>
+        <instance_geometry url="#geom-Cylinder001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="_1_-_Default_1" target="#_1_-_Default-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="node-Cylinder002" name="Cylinder002">
+        <matrix>2.0836 2.48384e-7 8.70034e-14 0 -2.48384e-7 2.0836 7.29837e-7 0 0 -2.48384e-7 6.122321 0 0 0 0 1</matrix>
+        <instance_geometry url="#geom-Cylinder001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="_1_-_Default_1" target="#_3_-_Default-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="node-Cylinder003" name="Cylinder003">
+        <matrix>4.05692e-7 -2.0836 8.02845e-7 0 -4.83622e-14 2.73231e-7 6.122321 0 -2.0836 -4.05692e-7 1.42152e-14 0 0 0 0 1</matrix>
+        <instance_geometry url="#geom-Cylinder001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="_1_-_Default_1" target="#_2_-_Default-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="node-Cone002" name="Cone002">
+        <matrix>-4.37114e-8 0 1 57 0 1 0 0 -1 0 -4.37114e-8 0 0 0 0 1</matrix>
+        <instance_geometry url="#geom-Cone001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="_3_-_Default_1" target="#_1_-_Default-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="node-Cone003" name="Cone003">
+        <matrix>1 0 0 0 0 -4.37114e-8 1 57 0 -1 -4.37114e-8 0 0 0 0 1</matrix>
+        <instance_geometry url="#geom-Cone001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="_3_-_Default_1" target="#_2_-_Default-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="node-Plane001" name="Plane001">
+        <matrix>1 0 0 12.5 0 1 0 12.5 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#geom-Plane001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="_9_-_Default_1" target="#_9_-_Default-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="node-Plane002" name="Plane002">
+        <matrix>1 0 0 12.5 0 -4.37114e-8 -1 0 0 1 -4.37114e-8 12.5 0 0 0 1</matrix>
+        <instance_geometry url="#geom-Plane001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="_9_-_Default_1" target="#_7_-_Default-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="node-Plane003" name="Plane003">
+        <matrix>-4.37114e-8 4.37114e-8 1 0 1 1.91069e-15 4.37114e-8 12.5 0 1 -4.37114e-8 12.5 0 0 0 1</matrix>
+        <instance_geometry url="#geom-Plane001">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="_9_-_Default_1" target="#_8_-_Default-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#MaxScene"/>
+  </scene>
+</COLLADA>
+

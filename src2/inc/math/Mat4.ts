@@ -8,7 +8,7 @@
 #include "IQuat4.ts"
 
 module akra.math {
-    export class Mat4 implements IMat4{
+    export class Mat4 implements IMat4 {
     	data: Float32Array;
 
 		constructor();
@@ -749,7 +749,7 @@ module akra.math {
 		    return m3fDestination;
 		};
 
-		toQuat4(q4fDestination?: IQuat4){
+		toQuat4(q4fDestination?: IQuat4) {
 			if(!isDef(q4fDestination)){
 				q4fDestination = new Quat4();
 			}

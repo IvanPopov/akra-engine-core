@@ -129,10 +129,11 @@ module akra.scene {
     	}
 
 		UNICAST(worldBoundsUpdated, VOID);
+		BROADCAST(click, CALL(pViewport, renderable, x, y));
 	}
 
 	export inline function isSceneObject(pEntity: IEntity): bool {
-		return pEntity.type >= EEntityTypes.SCENE_OBJECT && pEntity.type < EEntityTypes.OBJECTS_LIMIT;
+		return !isNull(pEntity) && pEntity.type >= EEntityTypes.SCENE_OBJECT && pEntity.type < EEntityTypes.OBJECTS_LIMIT;
 	}
 }
 

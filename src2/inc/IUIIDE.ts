@@ -50,7 +50,6 @@ module akra {
 		getViewport(): IViewport;
 		getCamera(): ICamera;
 		getCanvas(): ICanvas3d;
-		getKeymap(): IKeyMap;
 
 		cmd(eCommand: ECMD, ...argv: any[]): bool;
 

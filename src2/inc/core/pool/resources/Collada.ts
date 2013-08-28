@@ -20,7 +20,7 @@
 #include "io/files.ts"
 #include "util/util.ts"
 
-#define COLLADA_DEBUG true
+#define COLLADA_DEBUG false
 
 #if COLLADA_DEBUG == true
 #define CLD_PRINT(context, ...) LOG("[COLLADA [" + context.findResourceName() + "]]", __VA_ARGS__)
