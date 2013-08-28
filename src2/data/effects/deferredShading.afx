@@ -112,19 +112,20 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
     pixelData.id = int(data0.w);
     pixelData.depth = sceneDepth;
 
-    if(data0.w==0.){
+    if (data0.w == 0.) {
         discard;
     }
     
     float4 emissive = float4(floatToFloat3(data0.x),1.);
 
     float3 temp = floatToFloat3(data0.y);
-    if(normalFix){
+
+    if (normalFix) {
     	pixelData.normal = float3((temp.xyz * 2. - 1.) * 0.95);
     	pixelData.shininess = data1.z * 255.;
     }
     else {
-    	temp.xy = (temp.xy*2. - 1.) * 0.95;//fix me
+    	temp.xy = (temp.xy * 2. - 1.) * 0.95;//fix me
     	pixelData.normal = normalize(float3(temp.xy, sqrt(1. - clamp(dot(temp.xy,temp.xy),0.,1.))));
     	pixelData.shininess = temp.z * 255.;
     }    
@@ -141,7 +142,8 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 };	
 
 technique deferredShading{
-	pass applyDeferredShading{
+	pass applyDeferredShading
+    {
 		VertexShader = compile vs_deferred_shading();
 		PixelShader = compile fs_deferred_shading();
 	};

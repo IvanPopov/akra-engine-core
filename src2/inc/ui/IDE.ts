@@ -193,7 +193,7 @@ module akra.ui {
 			
 			if (pViewport.type === EViewportTypes.DSVIEWPORT) {
 				(<IDSViewport>pViewport).setOutlining(true);
-				// LOG("USE OUTLINING!!!!");
+				LOG("USE OUTLINING!!!!");
 			}
 		}
 

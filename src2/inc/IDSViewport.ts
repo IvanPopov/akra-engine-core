@@ -20,10 +20,17 @@ module akra {
 		readonly depth: ITexture;
 		readonly view: IRenderableObject;
 		
+		getBackground(): ITexture;
+		setBackground(pTexture: ITexture, v4fMapping?: IVec4): void;
+		getBackgroundMapping(): IVec4;
+		setBackgoundMapping(v4fMapping: IVec4): void;
+
 		getSkybox(): ITexture;
 		setSkybox(pSkyTexture: ITexture): void;
+
 		setFXAA(bValue?: bool): void;
 		isFXAA(): bool;
+		
 		setOutlining(bValue?: bool): void;
 
 		pick(x: uint, y: uint): IDSPickingResult;

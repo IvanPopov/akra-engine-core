@@ -217,7 +217,7 @@ module akra.core.pool.resources {
             else if (isString(arguments[0])) {
                 var sFilename: string = arguments[0];
                 var fnCallBack: Function = arguments[1];
-                var sExt : string = path.info(sFilename).ext;
+                var sExt : string = path.info(sFilename).ext.toLowerCase();
                 
                 if(sExt === "png" || sExt === "jpg" || sExt === "jpeg" || sExt === "gif" || sExt === "bmp") {
                     var pImg:HTMLImageElement = new Image();

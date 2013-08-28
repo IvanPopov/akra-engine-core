@@ -101,7 +101,7 @@ module akra.render {
 
 			pPass.setUniform("RENDERABLE_ID", this._pGuidToColorMap[pRenderable.getGuid()]);
 			pPass.setUniform("OPTIMIZED_PROJ_MATRIX", this.getCamera().projectionMatrix);
-			pPass.setUniform("color", util.colorToVec4(util.randomColor(true)));
+			//pPass.setUniform("color", util.colorToVec4(util.randomColor(true)));
 			
 			if (!isNull(pSceneObject)) {
 				pPass.setUniform("SCENE_OBJECT_ID", this._pGuidToColorMap[pSceneObject.getGuid()]);

@@ -158,9 +158,11 @@ module akra.core.pool {
 
 		            for (var i: int = 0; i < pSignSlots.length; ++i) {
 		                if (pSignSlots[i].bState === false) {
+		                    
 		                    if (bf.testBit(me.resourceFlags, <number>eFlag)) {
 		                        me.setResourceFlag(eFlag, false);
 		                    }
+
 		                    return;
 		                }
 		            }
@@ -360,6 +362,7 @@ module akra.core.pool {
 		                this.pCallbackFunctions[i].call(this, iFlagBit, this.iResourceFlags, isSetting);
 		            }
 		        }
+		        
 		        return true;
 		    }
 
