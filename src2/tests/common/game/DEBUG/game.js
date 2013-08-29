@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Wed Aug 28 2013 18:01:58 GMT+0400 (Московское время (лето))
+ * assembled at: Thu Aug 29 2013 19:20:02 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -1717,7 +1717,7 @@ var akra;
     function update() {
         var pCharacterCamera = akra.self.hero.camera;
         var pGamepad = pGamepads.find(0) || virtualGamepad(pKeymap);
-        if (isDefaultCamera(pViewport, pKeymap, pCamera, pCharacterCamera, pGamepad)) {
+        if (isDefaultCamera(pViewport, pKeymap, pCamera, pCharacterCamera, pGamepad) && akra.isNull(pUI)) {
             updateCamera(pCamera, pKeymap, pGamepad);
         }
         updateHero();

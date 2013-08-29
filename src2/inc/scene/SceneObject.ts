@@ -33,6 +33,42 @@ module akra.scene {
 			return this._pLocalBounds;
 		}
 
+		inline set onclick(
+			fn: (pObject: ISceneObject, pViewport: IViewport, 
+				pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(click), fn);
+        }
+
+        inline set onmousemove(
+        	fn: (pObject: ISceneObject, pViewport: IViewport, 
+        		pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mousemove), fn);
+        }
+
+        inline set onmousedown(
+        	fn: (pObject: ISceneObject, pViewport: IViewport, 
+        		pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mousedown), fn);
+        }
+
+        inline set onmouseup(
+        	fn: (pObject: ISceneObject, pViewport: IViewport, 
+        		pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mouseup), fn);
+        }
+
+        inline set onmouseover(
+        	fn: (pObject: ISceneObject, pViewport: IViewport, 
+        		pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mouseover), fn);
+        }
+
+        inline set onmouseout(
+        	fn: (pObject: ISceneObject, pViewport: IViewport, 
+        		pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mouseout), fn);
+        }
+
 
 		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
 			super(pScene, eType);
@@ -129,7 +165,13 @@ module akra.scene {
     	}
 
 		UNICAST(worldBoundsUpdated, VOID);
-		BROADCAST(click, CALL(pViewport, renderable, x, y));
+
+		BROADCAST(click, CALL(pViewport, pRenderable, x, y));
+		BROADCAST(mousemove, CALL(pViewport, pRenderable, x, y));
+		BROADCAST(mousedown, CALL(pViewport, pRenderable, x, y));
+		BROADCAST(mouseup, CALL(pViewport, pRenderable, x, y));
+		BROADCAST(mouseover, CALL(pViewport, pRenderable, x, y));
+		BROADCAST(mouseout, CALL(pViewport, pRenderable, x, y));
 	}
 
 	export inline function isSceneObject(pEntity: IEntity): bool {

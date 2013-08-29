@@ -17,6 +17,10 @@ module akra.webgl {
 		protected _iRealWidth: uint;
 		protected _iRealHeight: uint;
 
+		//last viewport, that can be finded by mouse event
+		//needed for simulating mouseover/mouseout events
+		protected _pViewportLast: IViewport = null;
+
 		get left(): int {
 			var el: HTMLElement = this._pCanvas;
 			for (var lx: int = 0; el != null; lx += el.offsetLeft, el = <HTMLElement>el.offsetParent);
@@ -53,25 +57,32 @@ module akra.webgl {
 			this.resize(iWidth, iHeight);
 			this.setFullscreen(isFullscreen);
 
-			var fn = (e: MouseEvent): void => {
-				this.click(e.offsetX, this.height - e.offsetY);
+			var fnClick = (e: MouseEvent): void => {
+				//0 --> 149, 149/150 --> 0
+				this.click(e.offsetX, this.height - e.offsetY - 1);
 			};
 
-			this.el.addEventListener("click", fn, true);
+			var fnMouseMove = (e: MouseEvent): void => {
+				this.mousemove(e.offsetX, this.height - e.offsetY - 1);
+			};
+
+			var fnMouseDown = (e: MouseEvent): void => {
+				this.mousedown(e.offsetX, this.height - e.offsetY - 1);
+			};
+
+			var fnMouseUp = (e: MouseEvent): void => {
+				this.mouseup(e.offsetX, this.height - e.offsetY - 1);
+			};
+
+			this.el.addEventListener("click", fnClick, true);
+			this.el.addEventListener("mousemove", fnMouseMove, true);
+			this.el.addEventListener("mousedown", fnMouseDown, true);
+			this.el.addEventListener("mouseup", fnMouseUp, true);
 
 			return true;
 		}
 
-		// viewportAdded(pViewport: IViewport): void {
-		// 	pViewport.connect(this, SIGNAL(click), SLOT(click))
-
-		// 	super.viewportAdded(pViewport);
-		// }
-
-		// viewportRemoved(pViewport: IViewport): void {
-
-		// 	super.viewportRemoved(pViewport);
-		// }
+		
 
 		destroy(): void {
 			super.destroy();
@@ -229,7 +240,8 @@ module akra.webgl {
 			return ppDest;
 		}
 
-		signal click(x: uint, y: uint): void {
+
+		private findViewportByPosition(x: uint, y: uint): IViewport {
 			//propagation of click event to all viewports, that can be handle it
 			var pViewport: IViewport = null;
 
@@ -237,18 +249,91 @@ module akra.webgl {
 			for (var z in this._pViewportList) {
 				var pVp: IViewport = this._pViewportList[z];
 				if (pVp.actualLeft <= x && pVp.actualTop <= y && 
-					pVp.actualLeft + pVp.actualWidth >= x && pVp.actualTop + pVp.actualHeight >= y) {
+					pVp.actualLeft + pVp.actualWidth > x && pVp.actualTop + pVp.actualHeight > y) {
 					if (isNull(pViewport) || pVp.zIndex > pViewport.zIndex) {
 						pViewport = pVp;
 					}
 				}
-			}			
+			}
+
+			return pViewport;	
+		}
+
+		private getViewportByMouseEvent(x: uint, y: uint): IViewport {
+			var pViewportCurr: IViewport = this.findViewportByPosition(x, y);
+			var pViewportPrev: IViewport = this._pViewportLast;
+
+			if (pViewportPrev !== pViewportCurr) {
+				if (!isNull(pViewportPrev)) {
+					pViewportPrev.mouseout(x - pViewportPrev.actualLeft, y - pViewportPrev.actualTop);
+				}
+
+				if (!isNull(pViewportCurr)) {
+					pViewportCurr.mouseover(x - pViewportCurr.actualLeft, y - pViewportCurr.actualTop);
+				}
+			}
+
+			this._pViewportLast = pViewportCurr;
+
+			return pViewportCurr;
+		}
+
+		inline set onclick(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(click), fn);
+        }
+
+        inline set onmousemove(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mousemove), fn);
+        }
+
+        inline set onmousedown(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mousedown), fn);
+        }
+
+        inline set onmouseup(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mouseup), fn);
+        }
+
+		signal click(x: uint, y: uint): void {
+			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
 			if (!isNull(pViewport)) {
 				pViewport.click(x - pViewport.actualLeft, y - pViewport.actualTop);
 			}
 
 			EMIT_BROADCAST(click, _CALL(x, y));
+		}
+
+		signal mousemove(x: uint, y: uint): void {
+			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
+
+			if (!isNull(pViewport)) {
+				// console.log("(" + x + ", " + y + ") --> ({" + pViewport.actualLeft + "} " + (x - pViewport.actualLeft) + "/" + pViewport.actualWidth + ", {" + pViewport.actualTop + "} " + (y - pViewport.actualTop) + "/" + pViewport.actualHeight + ")")
+				pViewport.mousemove(x - pViewport.actualLeft, y - pViewport.actualTop);
+			}
+
+			EMIT_BROADCAST(mousemove, _CALL(x, y));
+		}
+
+		signal mousedown(x: uint, y: uint): void {
+			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
+
+			if (!isNull(pViewport)) {
+				pViewport.mousedown(x - pViewport.actualLeft, y - pViewport.actualTop);
+			}
+			
+			EMIT_BROADCAST(mousedown, _CALL(x, y));
+		}
+
+
+		signal mouseup(x: uint, y: uint): void {
+			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
+
+			if (!isNull(pViewport)) {
+				pViewport.mouseup(x - pViewport.actualLeft, y - pViewport.actualTop);
+			}
+			
+			EMIT_BROADCAST(mouseup, _CALL(x, y));
 		}
 
 		// BROADCAST(click, CALL(x, y));

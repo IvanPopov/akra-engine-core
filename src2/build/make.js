@@ -285,7 +285,8 @@ function preprocess() {
 		"-D protected=/**@protected*/",
 		"-D const=/**@const*/var",
 		"-D struct=class",
-		"-D readonly="
+		"-D readonly=",
+		"-D writeonly="
 		];
 
 	if (pOptions.gui) {

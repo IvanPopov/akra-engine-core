@@ -10,11 +10,6 @@ module akra {
 		readonly effect: IEffect;
 		readonly depth: ITexture;
 		readonly view: IRenderableObject;
-		
-		getBackground(): ITexture;
-		setBackground(pTexture: ITexture, v4fMapping?: IVec4): void;
-		getBackgroundMapping(): IVec4;
-		setBackgoundMapping(v4fMapping: IVec4): void;
 
 		getSkybox(): ITexture;
 		setSkybox(pSkyTexture: ITexture): void;

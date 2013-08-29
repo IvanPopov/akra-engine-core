@@ -69,7 +69,16 @@ module akra.render {
 
 		protected _csDefaultRenderMethod: string = null;
 
-		protected _isDepthRangeUpdated = false;
+		protected _isDepthRangeUpdated: bool = false;
+
+		//get last mouse postion backend
+		protected _pMousePositionLast: IPoint = {x: 0, y: 0};
+		//is mouse under the viewport?
+		protected _bMouseIsCaptured: bool = false;
+
+		//3d event handing
+	    private _i3DEvents: int = 0;
+	    private _p3DEventPickLast: IRIDPair = {object: null, renderable: null};
 
 		inline get zIndex(): int {
 			return this._iZIndex;
@@ -93,6 +102,22 @@ module akra.render {
 
 
         inline get type(): EViewportTypes { return EViewportTypes.DEFAULT; }
+
+        inline set onclick(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(click), fn);
+        }
+
+        inline set onmousemove(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mousemove), fn);
+        }
+
+        inline set onmousedown(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mousedown), fn);
+        }
+
+        inline set onmouseup(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mouseup), fn);
+        }
 
 		constructor (pCamera: ICamera, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			this._fRelLeft = fLeft;
@@ -134,8 +159,19 @@ module akra.render {
 			}
 		}
 
-		enableSupportFor3DEvent(eType: E3DEventTypes): bool {
-			return false;
+		enableSupportFor3DEvent(iType: int): bool {
+			//mouse over and mouse out events require mouse move
+			if (TEST_ANY(iType, E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT)) {
+				SET_ALL(iType, E3DEventTypes.MOUSEMOVE);
+			}
+
+			SET_ALL(this._i3DEvents, iType);
+			
+			return true;
+		}
+
+		inline is3DEventSupported(eType: E3DEventTypes): bool {
+			return TEST_ANY(this._i3DEvents, <int>eType);
 		}
 
         inline getTarget(): IRenderTarget {
@@ -249,10 +285,10 @@ module akra.render {
 			var fHeight: float  = <float>this._pTarget.height;
 			var fWidth: float  = <float>this._pTarget.width;
 
-			this._iActLeft = <int>(this._fRelLeft * fWidth);
-			this._iActTop = <int>(this._fRelTop * fHeight);
-			this._iActWidth = <int>(this._fRelWidth * fWidth);
-			this._iActHeight = <int>(this._fRelHeight * fHeight);
+			this._iActLeft = <int>math.round(this._fRelLeft * fWidth);
+			this._iActTop = <int>math.round(this._fRelTop * fHeight);
+			this._iActWidth = <int>math.round(this._fRelWidth * fWidth);
+			this._iActHeight = <int>math.round(this._fRelHeight * fHeight);
 
 			// This will check if the cameras getAutoAspectRatio() property is set.
 	        // If it's true its aspect ratio is fit to the current viewport
@@ -410,6 +446,10 @@ module akra.render {
         	return this._bUpdated;
         }
 
+        inline isMouseCaptured(): bool {
+        	return this._bMouseIsCaptured;
+        }
+
         inline _clearUpdatedFlag(): void {
         	this._bUpdated = false;
         }
@@ -422,11 +462,165 @@ module akra.render {
         	return this._pViewportState;
         }
 
+        pick(x: uint, y: uint): IRIDPair {
+        	return {object: null, renderable: null};
+        }
+
+		getObject(x: uint, y: uint): ISceneObject {
+			return null;
+		}
+
+		getRenderable(x: uint, y: uint): IRenderableObject {
+			return null;
+		}
+
+		protected handleMouseInout(pCurr: IRIDPair, x: uint, y: uint): IRIDPair {
+			// var pCurr: IRIDPair = this.pick(x, y);
+			var pPrev: IRIDPair = this._p3DEventPickLast;
+			
+			if (pCurr.object !== pPrev.object) {
+				if (!isNull(pPrev.object)) {
+					pPrev.object.mouseout(this, pPrev.renderable, x, y);
+				}
+
+				if (!isNull(pCurr.object)) {
+					pCurr.object.mouseover(this, pCurr.renderable, x, y);
+				}
+			}
+			var ov = false;
+			var ou = false;
+			// var n = math.floor(Math.random() * 100500);
+			if (pCurr.renderable !== pPrev.renderable) {
+				if (!isNull(pPrev.renderable)) {
+					ou = true;
+					pPrev.renderable.mouseout(this, pPrev.object, x, y);
+				}
+
+				if (!isNull(pCurr.renderable)) {
+					ov = true;
+					pCurr.renderable.mouseover(this, pCurr.object, x, y);
+				}
+			}
+
+			if (!ov && ou) {
+				console.log("opacity enabled");
+			}
+
+			this._p3DEventPickLast = pCurr;
+
+			return pCurr;
+		}
+
+        _keepLastMousePosition(x: uint, y: uint): void {
+        	this._pMousePositionLast.x = x;
+        	this._pMousePositionLast.y = y;
+        }
+
+        inline _getLastMousePosition(): IPoint {
+        	return this._pMousePositionLast;
+        }
+
         CREATE_EVENT_TABLE(Viewport);
+        
     	BROADCAST(viewportDimensionsChanged, VOID);
     	BROADCAST(viewportCameraChanged, VOID);
-    	BROADCAST(render, CALL(pTechnique, iPass, pRenderable, pSceneObject));
-    	BROADCAST(click, CALL(x, y));
+
+    	render(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+    		//is mouse under the viewport
+			if (this.isMouseCaptured() && 
+				// ... and pass is last
+				iPass === 0 && 
+				// ... and mouseover or mouse out events are supported
+				(this.is3DEventSupported(E3DEventTypes.MOUSEOVER) || this.is3DEventSupported(E3DEventTypes.MOUSEOUT))) {
+				//check, if the object are loss the mouse
+
+				var x = this._pMousePositionLast.x;
+				var y = this._pMousePositionLast.y;
+				this.handleMouseInout(this.pick(x, y), x, y);
+			}
+
+			EMIT_BROADCAST(render, _CALL(pTechnique, iPass, pRenderable, pSceneObject));
+    	}
+
+    	// BROADCAST(render, CALL(pTechnique, iPass, pRenderable, pSceneObject));
+
+    	click(x: uint, y: uint): void {
+			this._keepLastMousePosition(x, y);
+    		EMIT_BROADCAST(click, _CALL(x, y));
+
+			if (!this.is3DEventSupported(E3DEventTypes.CLICK)) {
+				return;
+			}
+
+			var p = this.pick(x, y);
+
+
+			p.object && p.object.click(this, p.renderable, x, y);
+			p.renderable && p.renderable.click(this, p.object, x, y);
+		}
+
+		mousemove(x: uint, y: uint): void {
+			this._keepLastMousePosition(x, y);
+    		EMIT_BROADCAST(mousemove, _CALL(x, y));
+
+			if (!this.is3DEventSupported(E3DEventTypes.MOUSEMOVE)) {
+				return;
+			}
+
+			var p = this.pick(x, y);
+
+			p.object && p.object.mousemove(this, p.renderable, x, y);
+			p.renderable && p.renderable.mousemove(this, p.object, x, y);
+		}
+
+		mousedown(x: uint, y: uint): void {
+			this._keepLastMousePosition(x, y);
+    		EMIT_BROADCAST(mousedown, _CALL(x, y));
+
+			if (!this.is3DEventSupported(E3DEventTypes.MOUSEDOWN)) {
+				return;
+			}
+
+			var p = this.pick(x, y);
+
+			p.object && p.object.mousedown(this, p.renderable, x, y);
+			p.renderable && p.renderable.mousedown(this, p.object, x, y);
+		}
+
+		mouseup(x: uint, y: uint): void {
+			this._keepLastMousePosition(x, y);
+    		EMIT_BROADCAST(mouseup, _CALL(x, y));
+
+			if (!this.is3DEventSupported(E3DEventTypes.MOUSEUP)) {
+				return;
+			}
+
+			var p = this.pick(x, y);
+
+			p.object && p.object.mouseup(this, p.renderable, x, y);
+			p.renderable && p.renderable.mouseup(this, p.object, x, y);
+		}
+
+    	mouseover(x: uint, y: uint): void {
+    		this._keepLastMousePosition(x, y);
+    		this._bMouseIsCaptured = true;
+    		EMIT_BROADCAST(mouseover, _CALL(x, y));
+    	}
+
+    	mouseout(x: uint, y: uint): void {
+    		this._keepLastMousePosition(x, y);
+    		this._bMouseIsCaptured = false;
+    		this.handleMouseInout({object: null, renderable: null}, x, y);
+    		EMIT_BROADCAST(mouseout, _CALL(x, y));
+    	}
+
+    	// BROADCAST(click, CALL(x, y));
+    	// BROADCAST(mousemove, CALL(x, y));
+    	// BROADCAST(mousedown, CALL(x, y));
+    	// BROADCAST(mouseup, CALL(x, y));
+
+    	// BROADCAST(mouseover, CALL(x, y));
+    	// BROADCAST(mouseout, CALL(x, y));
 	}
 }
 

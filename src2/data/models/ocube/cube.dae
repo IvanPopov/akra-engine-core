@@ -69,7 +69,7 @@
     <geometry id="Cube-mesh" name="Cube">
       <mesh>
         <source id="Cube-mesh-positions">
-          <float_array id="Cube-mesh-positions-array" count="24">1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1</float_array>
+          <float_array id="Cube-mesh-positions-array" count="24">1 1 -1 1 -1 -1 -1 -1 -1 -1 1 -1 1 1 1 1 -1 1 -1 -1 1 -1 1 1</float_array>
           <technique_common>
             <accessor source="#Cube-mesh-positions-array" count="8" stride="3">
               <param name="X" type="float"/>
@@ -80,18 +80,18 @@
         </source>
         <source id="Cube-mesh-normals">
           <float_array id="Cube-mesh-normals-array" count="36">
-            0 0 -1 
-            0 0 1 
-            1 0 -2.38419e-7 
-            0 -1 -2.98023e-7
-            -1 2.38419e-7 -1.19209e-7
-            2.68221e-7 1 2.38419e-7 
-            0 0 -1 
-            0 0 1 
-            1 -5.66244e-7 3.27825e-7 
-            -4.76837e-7 -1 0
-            -1 2.08616e-7 -1.49012e-7
-            2.08616e-7 1 1.78814e-7</float_array>
+            0   0 -1 
+            0   0 1 
+            1   0 0 
+            0  -1 0
+            -1  0 0
+            0   1 0 
+            0   0 -1 
+            0   0 1 
+            1  -0 0 
+            -0 -1 0
+            -1  0 0
+            0   1 0</float_array>
           <technique_common>
             <accessor source="#Cube-mesh-normals-array" count="12" stride="3">
               <param name="X" type="float"/>

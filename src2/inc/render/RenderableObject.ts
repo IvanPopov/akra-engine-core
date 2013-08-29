@@ -25,38 +25,60 @@ module akra.render {
 		protected _bVisible: bool = true;
 		protected _bFrozen: bool = false;
 
-		inline get type(): ERenderDataTypes {
-			return this._eRenderableType;
-		}
-
-		constructor (eType: ERenderDataTypes = ERenderDataTypes.UNKNOWN) {
-			this._eRenderableType = eType;
-		}
-
-		inline get renderMethod(): IRenderMethod {
-			return this._pTechnique.getMethod();
-		}
-
-		inline set renderMethod(pMethod: IRenderMethod) {
-			this.switchRenderMethod(pMethod);
-		}
-		
+		inline get type(): ERenderDataTypes { return this._eRenderableType; }
+		inline get renderMethod(): IRenderMethod { return this._pTechnique.getMethod(); }
+		inline set renderMethod(pMethod: IRenderMethod) {this.switchRenderMethod(pMethod); }
 		inline get effect(): IEffect { return this._pTechnique.getMethod().effect; }
 		inline get surfaceMaterial(): ISurfaceMaterial  { return this._pTechnique.getMethod().surfaceMaterial; }
-
 		inline get material(): IMaterial  { return this.surfaceMaterial.material; }
-
 		inline get data(): IRenderData { return this._pRenderData; }
-
-		inline get hasShadow(): bool {
-			return this._bShadow;
-		}
-
+		inline get hasShadow(): bool { return this._bShadow; }
+		
 		inline set hasShadow(bShadow: bool) {
 			if(this._bShadow !== bShadow){
 				this._bShadow = bShadow;
 				this.shadow(bShadow);
 			}
+		}
+
+		inline set onclick(
+			fn: (pRenderable: IRenderableObject, pViewport: IViewport, 
+				pObject: ISceneObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(click), fn);
+        }
+
+        inline set onmousemove(
+        	fn: (pRenderable: IRenderableObject, pViewport: IViewport, 
+        		pObject: ISceneObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mousemove), fn);
+        }
+
+        inline set onmousedown(
+        	fn: (pRenderable: IRenderableObject, pViewport: IViewport, 
+        		pObject: ISceneObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mousedown), fn);
+        }
+
+        inline set onmouseup(
+        	fn: (pRenderable: IRenderableObject, pViewport: IViewport, 
+        		pObject: ISceneObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mouseup), fn);
+        }
+
+        inline set onmouseover(
+        	fn: (pRenderable: IRenderableObject, pViewport: IViewport, 
+        		pObject: ISceneObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mouseover), fn);
+        }
+
+        inline set onmouseout(
+        	fn: (pRenderable: IRenderableObject, pViewport: IViewport, 
+        		pObject: ISceneObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(mouseout), fn);
+        }
+
+		constructor (eType: ERenderDataTypes = ERenderDataTypes.UNKNOWN) {
+			this._eRenderableType = eType;
 		}
 
 		inline _setRenderData(pData: IRenderData): void {
@@ -238,7 +260,12 @@ module akra.render {
 		UNICAST(shadow, CALL(bValue));
 		UNICAST(beforeRender, CALL(pViewport));
 
-		BROADCAST(click, CALL(pViewport, object, x, y));
+		BROADCAST(click, CALL(pViewport, pObject, x, y));
+		BROADCAST(mousemove, CALL(pViewport, pObject, x, y));
+		BROADCAST(mousedown, CALL(pViewport, pObject, x, y));
+		BROADCAST(mouseup, CALL(pViewport, pObject, x, y));
+		BROADCAST(mouseover, CALL(pViewport, pObject, x, y));
+		BROADCAST(mouseout, CALL(pViewport, pObject, x, y));
 	}
 
 	export inline function isMeshSubset(pObject: IRenderableObject): bool {

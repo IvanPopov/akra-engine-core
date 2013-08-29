@@ -26,7 +26,13 @@ module akra {
 		readonly data: IRenderData;
 		readonly material: IMaterial;
 
-		getGuid(): uint;
+		writeonly onclick:   (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
+        writeonly onmousemove: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
+        writeonly onmousedown: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
+        writeonly onmouseup:   (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
+        writeonly onmouseover:   (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
+        writeonly onmouseout:   (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
+
 		getRenderer(): IRenderer;
 		getTechnique(sName?: string): IRenderTechnique;
 		getTechniqueDefault(): IRenderTechnique;
@@ -51,7 +57,6 @@ module akra {
 		isAllMethodsLoaded(): bool;
 		isFrozen(): bool;
 
-
 		render(pViewport: IViewport, csMethod?: string, pSceneObject?: ISceneObject): void;
 
 		_setRenderData(pData: IRenderData): void;
@@ -64,6 +69,11 @@ module akra {
 		signal beforeRender(pViewport: IViewport): void;
 
 		signal click(pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint);
+        signal mousemove(pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint);
+        signal mousedown(pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint);
+        signal mouseup(pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint);
+        signal mouseover(pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint);
+        signal mouseout(pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint);
 	}
 }
 

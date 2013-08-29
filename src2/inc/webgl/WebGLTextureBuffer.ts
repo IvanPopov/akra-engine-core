@@ -485,7 +485,7 @@ module akra.webgl {
 		protected download(pData: IPixelBox): void {
 
 
-			ASSERT (!((pData.right > this._iWidth) || (pData.bottom > this._iHeight) || (pData.front != 0) || (pData.back != 1)), "Invalid box");
+			ASSERT (!((pData.right > this._iWidth) || (pData.bottom > this._iHeight) || (pData.front != 0) || (pData.back != 1)), "Invalid box " + pData.toString());
 
 			var pSrcBox:IPixelBox = null;
 			var pWebGLTexture: WebGLTexture = this._pWebGLTexture;

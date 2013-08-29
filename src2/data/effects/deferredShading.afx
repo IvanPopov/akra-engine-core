@@ -99,7 +99,9 @@ shared pixel_data pixelData;
 shared float4 result_color;
 
 bool normalFix;
-
+float rand(float2 co){
+    return fract(sin(dot(co.xy, float2(12.9898,78.233))) * 43758.5453);
+}
 float4 fs_deferred_shading(VS_OUT IN) : COLOR{
 	float2 textureCoords = IN.textureCoords;
 
@@ -130,9 +132,11 @@ float4 fs_deferred_shading(VS_OUT IN) : COLOR{
     	pixelData.shininess = temp.z * 255.;
     }    
 
-    pixelData.diffuse = float4(floatToFloat3(data0.z),1.);
-    pixelData.ambient = float4(floatToFloat3(data1.x),1.);
-    pixelData.specular = float4(floatToFloat3(data1.y),1.);
+    pixelData.diffuse = float4(floatToFloat3(data0.z), 1.);
+    pixelData.ambient = float4(floatToFloat3(data1.x), 1.);
+    pixelData.specular = float4(floatToFloat3(data1.y), 1.);
+
+    //pixelData.diffuse = float4(float3(rand(float2(data0.w))), 1.);
 
     //result_color = pixelData.diffuse;
     result_color = emissive;

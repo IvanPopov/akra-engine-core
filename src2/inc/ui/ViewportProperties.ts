@@ -31,27 +31,29 @@ module akra.ui {
 
 			this.template("ViewportProperties.tpl");
 
-			this._pStats = <IUIRenderTargetStats>this.findEntity("stats");
-			this._pFullscreenBtn = <IUIButton>this.findEntity("fullscreen");
-			this._pFXAASwh = <IUISwitch>this.findEntity("FXAA");
-			this._pResolutionCbl = <IUICheckboxList>this.findEntity("resolution-list");
-			this._pSkyboxLb = <IUILabel>this.findEntity("skybox");
-			this._pScreenshotBtn = <IUIButton>this.findEntity("screenshot");
+			this._pStats 			= <IUIRenderTargetStats>this.findEntity("stats");
+			this._pFullscreenBtn 	= <IUIButton>this.findEntity("fullscreen");
+			this._pFXAASwh 			= <IUISwitch>this.findEntity("FXAA");
+			this._pResolutionCbl 	= <IUICheckboxList>this.findEntity("resolution-list");
+			this._pSkyboxLb 		= <IUILabel>this.findEntity("skybox");
+			this._pScreenshotBtn 	= <IUIButton>this.findEntity("screenshot");
 
-			this._pFullscreenBtn.bind(SIGNAL(click), () => {
-				akra.ide.cmd(akra.ECMD.SET_PREVIEW_FULLSCREEN);
-			});
 
 			this.connect(this._pResolutionCbl, SIGNAL(changed), SLOT(_previewResChanged));
-			this.connect(this._pFXAASwh, SIGNAL(changed), SLOT(_fxaaChanged));
-			this.connect(this._pScreenshotBtn, SIGNAL(click), SLOT(_doScreenshot));
+			this.connect(this._pFXAASwh, 	   SIGNAL(changed), SLOT(_fxaaChanged));
+			this.connect(this._pScreenshotBtn, SIGNAL(click), SLOT(_screenshot));
+			this.connect(this._pFullscreenBtn, SIGNAL(click), SLOT(_fullscreen));
 
 			this._previewResChanged(this._pResolutionCbl, this._pResolutionCbl.checked);
 
 			this.setupFileDropping();
 		}
 
-		_doScreenshot(): void {
+		_fullscreen(): void {
+			akra.ide.cmd(akra.ECMD.SET_PREVIEW_FULLSCREEN);
+		}
+
+		_screenshot(): void {
 			ide.cmd(akra.ECMD.SCREENSHOT);
 		}
 
@@ -162,7 +164,7 @@ module akra.ui {
 
 
 		protected setup(pGeneralViewport: IViewport): void {
-			
+
 			var pSceneMgr: ISceneManager = this.getEngine().getSceneManager();
 			var pScene: IScene3d = pSceneMgr.createScene3D(".3d-box");
 
@@ -194,6 +196,9 @@ module akra.ui {
 
 			pViewport.setFXAA(true);
 
+			var eSrcBlend: ERenderStateValues = ERenderStateValues.SRCALPHA;
+			var eDestBlend: ERenderStateValues = ERenderStateValues.DESTALPHA;
+
 			pViewport.bind(SIGNAL(render), (
 				pViewport: IViewport, 
 				pTechnique: IRenderTechnique, 
@@ -206,27 +211,133 @@ module akra.ui {
 				if(pTechnique.isLastPass(iPass)){
 					pPass.setRenderState(ERenderStates.ZENABLE, ERenderStateValues.FALSE);
 					pPass.setRenderState(ERenderStates.BLENDENABLE, ERenderStateValues.TRUE);
-					pPass.setRenderState(ERenderStates.SRCBLEND, ERenderStateValues.ONE);
-					pPass.setRenderState(ERenderStates.DESTBLEND, ERenderStateValues.INVSRCALPHA);
+
+					// pPass.setRenderState(ERenderStates.SRCBLEND, ERenderStateValues.ONE);
+					// pPass.setRenderState(ERenderStates.DESTBLEND, ERenderStateValues.INVSRCALPHA);
+
+					pPass.setRenderState(ERenderStates.SRCBLEND, eSrcBlend);
+     				pPass.setRenderState(ERenderStates.DESTBLEND, eDestBlend);
 				}
 			});
 			
-			pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK);
+			pViewport.enableSupportFor3DEvent(
+				E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | 
+				E3DEventTypes.MOUSEOUT | E3DEventTypes.MOUSEDOWN | E3DEventTypes.MOUSEUP);
 
 			pModel.bind(SIGNAL(loaded), (): void => {
 				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 
-				pScene.bind(SIGNAL(beforeUpdate), () => { 
-					pModelRoot.addRelRotationByXYZAxis(0.01, 0.01, 0.); 
-				});
+				// pScene.bind(SIGNAL(beforeUpdate), () => { 
+				// 	pModelRoot.addRelRotationByXYZAxis(0.01, 0.01, 0.); 
+				// });
 
-				var pMesh: IMesh = (<ISceneModel>pModelRoot.child).mesh;
+				var fnSyncCubeWithCamera = (pViewport: IViewport) => {
+					pModelRoot.setRotation(pViewport.getCamera().localOrientation.conjugate(quat4()));
+				}
+
+				pGeneralViewport.bind(SIGNAL(viewportCameraChanged), fnSyncCubeWithCamera);
+
+				fnSyncCubeWithCamera(pGeneralViewport);
+
+				var pCubeModel: ISceneModel = <ISceneModel>pModelRoot.child;
+				var pMesh: IMesh = pCubeModel.mesh;
+
+				var bDrag: bool = false;
+				var bSkipClick: bool = false;
+				var pStartPos: IPoint = {x: 0, y: 0};
+				var pStartAngle: IQuat4 = new Quat4;
+
+				pCubeModel.onmouseover = pCubeModel.onmouseout = pCubeModel.onmouseup = <any>() => {
+					bDrag = false;
+					bSkipClick = false;
+				}
+
+				pCubeModel.onmousedown = (pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
+					bDrag = true;
+					pStartPos.x = x;
+					pStartPos.y = y;
+
+					var pCamera: ICamera = pGeneralViewport.getCamera();
+
+					pStartAngle.set(pCamera.localOrientation);
+				}
+
+				pCubeModel.onmousemove = <any>(pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
+					if (bDrag) {
+						bSkipClick = true;
+						
+						var fdX = (x - pStartPos.x) / pViewport.actualWidth / 10.;
+						var fdY = (y - pStartPos.y) / pViewport.actualHeight / 10.;
+
+						var pCamera: ICamera = pGeneralViewport.getCamera();
+						pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
+
+						fnSyncCubeWithCamera(pGeneralViewport);
+					}
+				}
 
 				for (var i = 0; i < pMesh.length; ++ i) {
-					pMesh.getSubset(i).bind(SIGNAL(click), 
-						(pRenderable: IRenderableObject, pViewport: IDSViewport, pObject: ISceneObject) => {
-						pViewport.highlight(pObject, pRenderable);
-					});
+					var pSubset: IMeshSubset = pMesh.getSubset(i);
+
+					pSubset.onmouseover = (pRenderable: IRenderableObject, pViewport: IDSViewport, pObject: ISceneObject) => {
+						pViewport.highlight(pObject, pRenderable);	
+						eSrcBlend = ERenderStateValues.ONE;
+						eDestBlend = ERenderStateValues.INVSRCALPHA;
+					}
+
+					pSubset.onmouseout = (pRenderable: IRenderableObject, pViewport: IDSViewport, pObject: ISceneObject) => {
+						pViewport.highlight(null, null);	
+						eSrcBlend = ERenderStateValues.SRCALPHA;
+						eDestBlend = ERenderStateValues.DESTALPHA;
+					}
+
+					pSubset.onclick = <any>(pSubset: IMeshSubset) => {
+						if (bSkipClick) {
+							return;
+						}
+
+						var pCamera: ICamera = pGeneralViewport.getCamera();
+						var v3fRotation: IVec3 = pCamera.localOrientation.toYawPitchRoll(vec3());
+
+
+						switch (pSubset.name) {
+							case "submesh-0": 
+								pCamera.setRotationByXYZAxis(-math.PI / 2, 0, 0);
+								console.log("bottom"); 
+								break;
+							case "submesh-1": 
+								pCamera.setRotationByXYZAxis(0, math.PI / 2, 0);
+								console.log("right"); 
+								break;
+							case "submesh-2": 
+								console.log("left"); 
+								pCamera.setRotationByXYZAxis(0, -math.PI / 2, 0);
+								break;
+							case "submesh-3": 
+								console.log("top"); 
+								pCamera.setRotationByXYZAxis(math.PI / 2, 0, 0);
+								break;
+							case "submesh-4": 
+								pCamera.setRotationByXYZAxis(0, 0, 0);
+								console.log("front"); 
+								break;
+
+							case "submesh-5": 
+								pCamera.setRotationByXYZAxis(0, math.PI, 0);
+								console.log("back"); 
+								break;
+						}
+
+						fnSyncCubeWithCamera(pGeneralViewport);
+					}
+
+					pSubset.onmousedown = <any>() => {
+						console.log("mousedown");
+					}
+
+					pSubset.onmouseup = <any>() => {
+						console.log("mouseup");
+					}
 				}
 			});
 						

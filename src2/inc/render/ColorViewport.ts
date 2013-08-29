@@ -66,7 +66,7 @@ module akra.render {
 			// this._pCamera = pOldCamera;
 		}
 
-		getObject(x: uint = 0, y: uint = 0): IRIDPair {
+		pick(x: uint = 0, y: uint = 0): IRIDPair {
 			var pTarget: IRenderTarget = this.getTarget();
 
 			if (pTarget instanceof RenderTexture) {

@@ -18,7 +18,6 @@
 #include "util/DepthRange.ts"
 #include "Screen.ts"
 
-#define OPTIMIZED_DEFFERED 1
 
 module akra.render {
 
@@ -33,11 +32,9 @@ module akra.render {
 		private _pDeferredView: IRenderableObject = null;
 		private _pDeferredSkyTexture: ITexture = null;
 
-		private _pDeferredBgTexture: ITexture = null;
-		private _v4fDeferredBgMapping: IVec4 = new Vec4(0., 0., 1., 1.);
-		
 		//index of lighting display list
 		private _pLightDL: int; 
+	    private _pLightPoints: util.ObjectArray = null;
 		private _pLightingUnifoms: UniformMap = {
 	        omni           	: [],
 	        project        	: [],
@@ -50,14 +47,25 @@ module akra.render {
 	        samplersProject : [],
 	        samplersSun		: []
 	    };
-	    private _pLightPoints: util.ObjectArray = null;
 
-	    private _pSelectedObject: IRIDPair = {object: null, renderable: null};
+	    //highligting
+	    private _pHighlightedObject: IRIDPair = {object: null, renderable: null};
 
-	    //3d event handing
-	    private _i3DEvents: int = 0;
 
 	    inline get type(): EViewportTypes { return EViewportTypes.DSVIEWPORT; }
+
+
+	    inline get effect(): IEffect {
+			return this._pDeferredEffect;
+		}
+
+		inline get depth(): ITexture {
+			return this._pDeferredDepthTexture;
+		}
+
+		inline get view(): IRenderableObject {
+			return this._pDeferredView;
+		}
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -66,28 +74,40 @@ module akra.render {
 		_setTarget(pTarget: IRenderTarget): void {
 			super._setTarget(pTarget);
 
-			var pEngine: IEngine = pTarget.getRenderer().getEngine();
-			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
-			var pDeferredData: IRenderTarget[] = <IRenderTarget[]>new Array(2);
-			var pDeferredTextures: ITexture[] = <ITexture[]>new Array(2);
+			//common api access
+			var pEngine: IEngine 				= pTarget.getRenderer().getEngine();
+			var pResMgr: IResourcePoolManager 	= pEngine.getResourceManager();
+
+			//textures for deferred shading
+			var pDeferredData: IRenderTarget[] 	= <IRenderTarget[]>new Array(2);
+			var pDeferredTextures: ITexture[] 	= <ITexture[]>new Array(2);
 			var pDepthTexture: ITexture;
+
+			//renderable for displaying result from deferred textures
 			var pDefferedView: IRenderableObject = new Screen(pEngine.getRenderer());
-			var iGuid: int = sid();
+			
+			//unique idetifier for creation dependent resources
+			var iGuid: int = this.getGuid();
+
+			//Float point texture must be power of two.
 			var iWidth: uint = math.ceilingPowerOfTwo(this.actualWidth);
     		var iHeight: uint = math.ceilingPowerOfTwo(this.actualHeight);
 
-    		if (info.browser.name === "Firefox") {
-		        iWidth 	= math.min(iWidth, 1024);
-		        iHeight = math.min(iHeight, 1024);
-		    }
+    		//detect max texture resolution correctly
+			#ifdef WEBGL
+	        iWidth 	= math.min(iWidth, webgl.maxTextureSize);
+	        iHeight = math.min(iHeight, webgl.maxTextureSize);
+			#endif
 
+			//creating depth
 			pDepthTexture = this._pDeferredDepthTexture = pResMgr.createTexture("deferred-depth-texture-" + iGuid);
-			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0,
-					ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
-
+			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 			pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 			pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 
+			var pViewport:  IViewport;
+
+			//creating float textures
 			for (var i = 0; i < 2; ++ i) {
 				pDeferredTextures[i] = this._pDeferredColorTextures[i] = 
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
@@ -97,7 +117,7 @@ module akra.render {
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
 				pDeferredData[i].setAutoUpdated(false);
-				var pViewport:  IViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), "deferred_shading_pass_" + i, 
+				pViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), "deferred_shading_pass_" + i, 
 											0, 0, this.actualWidth / pDeferredTextures[i].width, this.actualHeight / pDeferredTextures[i].height));
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 
@@ -107,6 +127,7 @@ module akra.render {
 				}
 			}
 
+			//creatin deferred effects
 			var pDSMethod: IRenderMethod = null;
 			var pDSEffect: IEffect = null;
 
@@ -130,23 +151,13 @@ module akra.render {
 
 			pDefferedView.getTechnique().setMethod(pDSMethod);
 
-			// this.setClearEveryFrame(true, EFrameBufferTypes.COLOR);
+			//deferred viewport completely rewritten, so there is no
+			//necessary to clean it additionally
 			this.setClearEveryFrame(false);
 			this.setDepthParams(false, false, 0);			
 
+			//AA is default
 			this.setFXAA(true);
-		}
-
-		inline get effect(): IEffect {
-			return this._pDeferredEffect;
-		}
-
-		inline get depth(): ITexture {
-			return this._pDeferredDepthTexture;
-		}
-
-		inline get view(): IRenderableObject {
-			return this._pDeferredView;
 		}
 
 		setCamera(pCamera: ICamera): bool {
@@ -177,14 +188,15 @@ module akra.render {
 
 		_updateImpl (): void {
 			this.prepareForDeferredShading();
-			// console.log("deferred rendeing...");
+
 		    //prepare deferred textures
-// #ifndef OPTIMIZED_DEFFERED
 			this._pDeferredColorTextures[0].getBuffer().getRenderTarget().update();
 			this._pDeferredColorTextures[1].getBuffer().getRenderTarget().update();
 
+			//camera last viewport changed, because camera used in deferred textures updating
 			this._pCamera._keepLastViewport(this);
 
+			//calculate lighting
 			var pLights: util.ObjectArray = <util.ObjectArray>this.getCamera().display(DL_LIGHTING);
 		    
 		    for (var i: int = 0; i < pLights.length; i++) {
@@ -192,17 +204,8 @@ module akra.render {
 		    }
 
 		    this._pLightPoints = pLights;
-// #else
-// 			var pNodeList: IObjectArray = this.getCamera().display();
-// 			for (var i: int = 0; i < pNodeList.length; ++ i) {
-// 				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
-// 				pRenderable.render(this._pDeferredColorTextures[i].getBuffer().getRenderTarget().getViewport(0), null, pNodeList.value(i));
-// 			}
 
-// 			this.getTarget().getRenderer().executeQueue();
-// #endif
 			//render deferred
-			
 			this._pDeferredView.render(this);
 		}
 
@@ -211,39 +214,6 @@ module akra.render {
         }
 
 		prepareForDeferredShading(): void {
-#ifndef OPTIMIZED_DEFFERED
-			var pNodeList: IObjectArray = this.getCamera().display();
-
-			for (var i: int = 0; i < pNodeList.length; ++ i) {
-				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
-
-				if (pRenderable) {
-					for (var j: int = 0; j < 2; ++ j) {
-						var sMethod: string = "deferred_shading_pass_" + j;
-						var pMethod: IRenderMethod = pRenderable.getRenderMethod(sMethod);
-						var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
-						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
-
-						if (isNull(pTechnique) || pTechCurr.modified > pTechnique.modified) {
-							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
-								CRITICAL("cannot clone active render method");
-							}
-
-							pTechnique = pRenderable.getTechnique(sMethod);
-							pTechnique._syncTable(pTechCurr);
-
-							for (var k: int = 0; k < pTechnique.totalPasses; ++ k) {
-								var pPass: IRenderPass = pTechnique.getPass(k);
-								
-								if (isNull(pPass.getRenderTarget())) {
-									pPass.blend("akra.system.prepareForDeferredShading", j);
-								}
-							}
-						}
-					}
-				}
-			};
-#else
 			var pNodeList: IObjectArray = this.getCamera().display();
 
 			for (var i: int = 0; i < pNodeList.length; ++ i) {
@@ -265,7 +235,8 @@ module akra.render {
 							pTechnique = pRenderable.getTechnique(sMethod);
 							pTechnique._syncTable(pTechCurr);
 
-							if(j === 0){
+
+							if (j === 0) {
 								pTechnique._blockPass(1);
 							}
 							else {
@@ -280,24 +251,11 @@ module akra.render {
 						}
 					}
 				}
-
-
-				// for(var j: uint = 0; j < pTechCurr.totalPasses; j++){
-				// 	if(!pTechCurr.hasComponent("akra.system.prepareForDeferredShading", j, j)){
-				// 		pTechCurr.getPass(j).blend("akra.system.prepareForDeferredShading", j);
-				// 	}
-				// }
-
-				// pTechCurr.getPass(0).setRenderTarget(this._pDeferredColorTextures[0].getBuffer().getRenderTarget());
-				// pTechCurr.getPass(1).setRenderTarget(this._pDeferredColorTextures[1].getBuffer().getRenderTarget());
 			};
-#endif		
+	
 		}
 
 		inline getSkybox(): ITexture { return this._pDeferredSkyTexture; }
-		inline getBackground(): ITexture { return this._pDeferredBgTexture; }
-		inline getBackgroundMapping(): IVec4 { return this._v4fDeferredBgMapping; }
-		
 
 		getDepth(x: int, y: int): float {
 			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
@@ -351,13 +309,14 @@ module akra.render {
 		}
 
 		_getDeferredTexValue(iTex: int, x: int, y: int): IColor {
-			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
+			ASSERT(x < this.actualWidth && y < this.actualHeight, 
+				"invalid pixel: {" + x + "(" + this.actualWidth + ")" + ", " + y + "(" + this.actualHeight + ")" + "}");
 			
 			var pColorTexture: ITexture = this._pDeferredColorTextures[iTex];
 
 			//depth texture has POT sized, but viewport not;
 			//depth texture attached to left bottom angle of viewport
-			y = pColorTexture.height  - y;
+			y = pColorTexture.height - y - 1;
 			pFloatColorPixel.left = x;
 			pFloatColorPixel.top = y;
 			pFloatColorPixel.right = x + 1;
@@ -389,26 +348,6 @@ module akra.render {
 			return true;
 		}
 
-		setBackground(pTexture: ITexture, v4fMapping: IVec4 = vec4(0., 0., 1., 1.)): void {
-			// this._pDeferredBgTexture = pTexture;
-			// this.setBackgoundMapping(v4fMapping);
-
-			// var pEffect: IEffect = this._pDeferredView.getTechnique().getMethod().effect;
-			
-			// if (pTexture) {
-			// 	pEffect.addComponent("akra.system.deferredBackground", 1, 0);
-			// }
-			// else {
-			// 	pEffect.delComponent("akra.system.deferredBackground", 1, 0);
-			// }
-
-			// this.addedBackground(pTexture);
-		}
-
-		setBackgoundMapping(v4fMapping: IVec4): void {
-			// this._v4fDeferredBgMapping.set(v4fMapping);
-		}
-
 		setFXAA(bValue: bool = true): void {
 			var pEffect: IEffect = this._pDeferredEffect;
 			
@@ -420,10 +359,6 @@ module akra.render {
 			}
 		}
 
-		enableSupportFor3DEvent(iType: E3DEventTypes): bool {
-			SET_ALL(this._i3DEvents, iType);
-			return true;
-		}
 
 		highlight(iRid: int): void;
 		highlight(pObject: ISceneObject, pRenderable: IRenderableObject = null): void;
@@ -432,7 +367,7 @@ module akra.render {
 			var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
 			var pEffect: IEffect = this._pDeferredEffect;
 			var iRid: int = 0;
-			var p: IRIDPair = this._pSelectedObject;
+			var p: IRIDPair = this._pHighlightedObject;
 			var pObjectPrev: ISceneObject = p.object;
 			
 			if (isNull(arguments[0])) {
@@ -452,16 +387,12 @@ module akra.render {
 				p.renderable = arguments[0].renderable;
 			}
 
-			if (p.object) {
+			if (p.object && isNull(pObjectPrev)) {
 				pEffect.addComponent("akra.system.outline", 2, 0);
 			}
-			else if (pObjectPrev) {
+			else if (isNull(p.object) && pObjectPrev) {
 				pEffect.delComponent("akra.system.outline", 2, 0);
 			}
-		}
-
-		isOutline(): bool {
-			return this.effect.hasComponent("akra.system.outline");
 		}
 
 		isFXAA(): bool {
@@ -503,8 +434,6 @@ module akra.render {
 
 					this.createLightingUniforms(pCamera, pLightPoints, pLightUniforms);
 
-					// LOG(pLightUniforms);
-					
 					pPass.setForeign("nOmni", pLightUniforms.omni.length);
 				    pPass.setForeign("nProject", pLightUniforms.project.length);
 				    pPass.setForeign("nOmniShadows", pLightUniforms.omniShadows.length);
@@ -536,35 +465,8 @@ module akra.render {
 				    pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 				    pPass.setTexture("DEFERRED_TEXTURE1", pDeferredTextures[1]);
 				    pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTexture);
-
-				 //    pPass.setUniform("SAMPLER_TEXTURE0", <IAFXSamplerState>{ 
-					// 	textureName: "DEFERRED_TEXTURE0",
-					// 	texture: null,
-					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	mag_filter: ETextureFilters.NEAREST,
-					// 	min_filter: ETextureFilters.NEAREST
-					// });
-
-					// pPass.setUniform("SAMPLER_TEXTURE1", <IAFXSamplerState>{ 
-					// 	textureName: "DEFERRED_TEXTURE1",
-					// 	texture: null,
-					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	mag_filter: ETextureFilters.NEAREST,
-					// 	min_filter: ETextureFilters.NEAREST
-					// });
-
-					// pPass.setUniform("SAMPLER_SCENE_DEPTH", <IAFXSamplerState>{ 
-					// 	textureName: "SCENE_DEPTH_TEXTURE",
-					// 	texture: null,
-					// 	wrap_s: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	wrap_t: ETextureWrapModes.CLAMP_TO_EDGE,
-					// 	mag_filter: ETextureFilters.LINEAR,
-					// 	min_filter: ETextureFilters.LINEAR
-					// });
-
 					break;
+
 				case 1:
 					//skybox
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
@@ -572,13 +474,11 @@ module akra.render {
 				    
 				    pPass.setUniform("SCREEN_TEXTURE_RATIO",
                                      vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
-
-					pPass.setTexture("TEXTURE0", this._pDeferredBgTexture);
-					pPass.setUniform("VIEWPORT", this._v4fDeferredBgMapping);
 					break;
+
 				case 2:
 					//outline
-					var p: IRIDPair = this._pSelectedObject;
+					var p: IRIDPair = this._pHighlightedObject;
 
 					if (!isNull(p.object)) {
 						var iRid: int = this.getTarget().getRenderer().getEngine().getComposer()._calcRenderID(p.object, p.renderable);
@@ -597,7 +497,7 @@ module akra.render {
 			super.render(pTechnique, iPass, pRenderable, pSceneObject);
 		}
 
-		private inline resetUniforms(): void {
+		private resetUniforms(): void {
 			var pUniforms = this._pLightingUnifoms;
 			pUniforms.omni.clear();
 		    pUniforms.project.clear();
@@ -736,18 +636,6 @@ module akra.render {
 		    }
 		}
 
-		click(x: uint, y: uint): void {
-			super.click(x, y);
-
-			if (!TEST_ANY(this._i3DEvents, E3DEventTypes.CLICK)) {
-				return;
-			}
-
-			var p = this.pick(x, y);
-
-			p.object && p.object.click(this, p.renderable, x, y);
-			p.renderable && p.renderable.click(this, p.object, x, y);
-		}
 
 		BROADCAST(addedSkybox, CALL(pSkyTexture));
 		BROADCAST(addedBackground, CALL(pTexture));

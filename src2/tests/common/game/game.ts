@@ -1760,7 +1760,7 @@ module akra {
 		var pCharacterCamera: ICamera = self.hero.camera;
 		var pGamepad: Gamepad = pGamepads.find(0) || virtualGamepad(pKeymap);
 
-		if (isDefaultCamera(pViewport, pKeymap, pCamera, pCharacterCamera, pGamepad)) {
+		if (isDefaultCamera(pViewport, pKeymap, pCamera, pCharacterCamera, pGamepad) && isNull(pUI)) {
 			updateCamera(pCamera, pKeymap, pGamepad);
 		}
 

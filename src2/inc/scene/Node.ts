@@ -84,6 +84,13 @@ module akra.scene {
 			return this._v3fWorldPosition;
 		}
 
+		inline get worldRotation(): IQuat4 {
+			ASSERT((<Node>this._pParent).worldMatrix.toMat3(Node._m3fTemp1).decompose(Node._q4fTemp1, Node._v3fTemp1), 
+		            		"could not decompose.");
+			//FIXME: use correct way to get world rotation
+			return Node._q4fTemp1;
+		}
+
 		get inverseWorldMatrix(): IMat4 {
 			if (TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix)) {
 		        this._m4fWorldMatrix.inverse(this._m4fInverseWorldMatrix);

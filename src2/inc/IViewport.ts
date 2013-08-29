@@ -25,10 +25,15 @@ module akra {
     }
 
     export enum E3DEventTypes {
-        CLICK = 0x01
+        CLICK = 0x01,
+        MOUSEMOVE = 0x02,
+        MOUSEDOWN = 0x04,
+        MOUSEUP = 0x08,
+        MOUSEOVER = 0x10,
+        MOUSEOUT = 0x20
     }
 
-    export interface IViewport extends IEventProvider {
+    export interface IViewport extends IEventProvider, IClickable {
         left: float;
         top: float;
         width: float;
@@ -56,7 +61,13 @@ module akra {
 
         clear(iBuffers?: uint, cColor?: IColor, fDepth?: float, iStencil?: uint): void;
 
-        enableSupportFor3DEvent(eType: E3DEventTypes): bool;
+        enableSupportFor3DEvent(iType: int): bool;
+        is3DEventSupported(eType: E3DEventTypes): bool;
+
+        pick(x: uint, y: uint): IRIDPair;
+
+        getObject(x: uint, y: uint): ISceneObject;
+        getRenderable(x: uint, y: uint): IRenderableObject;
 
         getTarget(): IRenderTarget;
         getCamera(): ICamera;
@@ -85,6 +96,10 @@ module akra {
         isAutoUpdated(): bool;
 
         isUpdated(): bool;
+        /**
+         * Is mouse under the viewport?
+         */
+        isMouseCaptured(): bool;
 
         _clearUpdatedFlag(): void;
         _updateImpl(): void;
@@ -100,7 +115,8 @@ module akra {
         signal viewportCameraChanged(): void;
         signal render(pTechnique: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject);
 
-        signal click(x: uint, y: uint): void;
+        signal mouseover(x: uint, y: uint): void;
+        signal mouseout(x: uint, y: uint): void;
     }
 }
 
