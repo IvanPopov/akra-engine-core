@@ -614,6 +614,8 @@ module akra.fx {
 			pComponent.create();
 			pComponent.setTechnique(pTechnique);
 
+			pTechnique.finalize(this);
+
 			return true;
 		}
 

@@ -218,7 +218,7 @@ module akra.ui {
 				var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 				switch (iPass) {
-					case 2:	
+					case 1:	
 						pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
 						pPass.setUniform("OUTLINE_SOID", (iRid - 1) >>> 10);
 						pPass.setUniform("OUTLINE_TARGET", iRid);
@@ -230,6 +230,8 @@ module akra.ui {
 					pPass.setRenderState(ERenderStates.BLENDENABLE, ERenderStateValues.TRUE);
 					pPass.setRenderState(ERenderStates.SRCBLEND, ERenderStateValues.ONE);
 					pPass.setRenderState(ERenderStates.DESTBLEND, ERenderStateValues.INVSRCALPHA);
+					// pPass.setRenderState(ERenderStates.SRCBLEND, ERenderStateValues.SRCALPHA);
+					// pPass.setRenderState(ERenderStates.DESTBLEND, ERenderStateValues.DESTALPHA);
 				}
 			});
 			

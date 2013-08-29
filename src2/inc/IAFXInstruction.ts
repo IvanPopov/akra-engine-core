@@ -12,6 +12,8 @@
 #define IPassStateMap IRenderStateMap
 
 module akra {
+    IFACE(IAFXComposer)
+
     export enum EAFXInstructionTypes {
         k_Instruction = 0,
         k_InstructionCollector,
@@ -207,6 +209,12 @@ module akra {
         k_Varying,
         k_TypeDecl,
         k_VertexOut
+    }
+
+    export interface IAFXImportedTechniqueInfo {
+        technique: IAFXTechniqueInstruction;
+        component: IAFXComponent;
+        shift: int;
     }
 
 	/**
@@ -728,18 +736,18 @@ module akra {
         getSharedVariablesForVertex(): IAFXVariableDeclInstruction[];
         getSharedVariablesForPixel(): IAFXVariableDeclInstruction[];
 
+        addTechniqueFromSameEffect(pTechnique: IAFXTechniqueInstruction, iShift: uint): void;
         addComponent(pComponent: IAFXComponent, iShift: int): void;
-        
-        getComponentList(): IAFXComponent[];
-        getComponentListShift(): int[];
 
         getFullComponentList(): IAFXComponent[];
         getFullComponentShiftList(): int[];
 
         checkForCorrectImports(): bool;
-        finalizeTechnique(sProvideNameSpace: string, 
-                          pGloabalComponentList: IAFXComponent[],
-                          pGloabalComponentShiftList: int[]): void;
+
+        setGlobalParams(sProvideNameSpace: string, 
+                        pGloabalImportList: IAFXImportedTechniqueInfo[]): void;
+
+        finalize(pComposer: IAFXComposer): void;
     }
 
 }
