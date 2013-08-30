@@ -24,15 +24,6 @@ module akra {
         TEXTUREVIEWPORT
     }
 
-    export enum E3DEventTypes {
-        CLICK = 0x01,
-        MOUSEMOVE = 0x02,
-        MOUSEDOWN = 0x04,
-        MOUSEUP = 0x08,
-        MOUSEOVER = 0x10,
-        MOUSEOUT = 0x20
-    }
-
     export interface IViewport extends IEventProvider, IClickable {
         left: float;
         top: float;
@@ -61,8 +52,9 @@ module akra {
 
         clear(iBuffers?: uint, cColor?: IColor, fDepth?: float, iStencil?: uint): void;
 
-        enableSupportFor3DEvent(iType: int): bool;
+        enableSupportFor3DEvent(iType: int): int;
         is3DEventSupported(eType: E3DEventTypes): bool;
+        touch(): void;
 
         pick(x: uint, y: uint): IRIDPair;
 
@@ -114,9 +106,6 @@ module akra {
         signal viewportDimensionsChanged(): void;
         signal viewportCameraChanged(): void;
         signal render(pTechnique: IRenderTechnique, iPass: int, pRenderable: IRenderableObject, pSceneObject: ISceneObject);
-
-        signal mouseover(x: uint, y: uint): void;
-        signal mouseout(x: uint, y: uint): void;
     }
 }
 

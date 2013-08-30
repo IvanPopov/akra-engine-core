@@ -50,6 +50,8 @@ module akra.render {
 
 		protected _pViewportList: IViewport[] = [];
 
+		//3d event handing
+	    private _i3DEvents: int = 0;
 
 		inline get name(): string { return this._sName; }
 		inline set name(sName: string) { this._sName = sName; }
@@ -80,6 +82,29 @@ module akra.render {
 				polygonsCount: 0
 			}
 			this.resetStatistics();
+		}
+
+		enableSupportFor3DEvent(iType: int): int {
+			if (TEST_ANY(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING)) {
+				SET_ALL(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
+					E3DEventTypes.MOUSEDOWN | E3DEventTypes.MOUSEUP | E3DEventTypes.MOUSEMOVE);
+			}
+
+			//mouse over and mouse out events require mouse move
+			if (TEST_ANY(iType, E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT)) {
+				SET_ALL(iType, E3DEventTypes.MOUSEMOVE);
+			}
+
+			//get events that have not yet been activated
+			var iNotActivate: int = (this._i3DEvents ^ 0x7fffffff) & iType;
+
+			SET_ALL(this._i3DEvents, iNotActivate);
+			
+			return iNotActivate;
+		}
+
+		inline is3DEventSupported(eType: E3DEventTypes): bool {
+			return TEST_ANY(this._i3DEvents, <int>eType);
 		}
 
 		inline getRenderer(): IRenderer { return this._pRenderer; }

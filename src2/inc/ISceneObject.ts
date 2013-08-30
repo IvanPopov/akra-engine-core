@@ -19,6 +19,9 @@ module akra {
         writeonly onmouseup: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
         writeonly onmouseover: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
         writeonly onmouseout: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
+        writeonly ondragstart: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
+        writeonly ondragstop: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
+        writeonly ondragging: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
 
     	readonly localBounds: IRect3d;
     	
@@ -38,6 +41,10 @@ module akra {
         signal mouseup(pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint);
         signal mouseover(pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint);
         signal mouseout(pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint);
+
+        signal dragstart(pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint);
+        signal dragstop(pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint);
+        signal dragging(pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint);
     }
 }
 

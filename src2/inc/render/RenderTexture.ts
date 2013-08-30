@@ -23,6 +23,10 @@ module akra.render {
 			this._iColorDepth = pixelUtil.getNumElemBits(pBuffer.format);
 		}
 
+		enableSupportFor3DEvent(iType: int): int {
+			return 0;
+		}
+
 		inline getPixelBuffer(): IPixelBuffer {
 			return this._pBuffer;
 		}

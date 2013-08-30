@@ -176,21 +176,20 @@ module akra.ui {
 			var pModel: ICollada = <ICollada>pRmgr.colladaPool.loadResource(DATA + "/models/ocube/cube.DAE");
 			var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT);
 
-			pLight.attachToParent(pScene.getRootNode());
-			pLight.setPosition(0., 0, 100.);
-			pLight.lookAt(vec3(0.));
+			var pCamera: ICamera = pScene.createCamera();
+
+			pCamera.attachToParent(pScene.getRootNode());
+
+			pLight.attachToParent(pCamera);
+			pLight.setInheritance(ENodeInheritance.ALL);
+			// pLight.setPosition(0., 0, 100.);
+			// pLight.lookAt(vec3(0.));
 
 			pLight.params.ambient.set(0.0, 0.0, 0.0, 1);
 			pLight.params.diffuse.set(1.);
 			pLight.params.specular.set(.1);
 			pLight.params.attenuation.set(0.5, 0, 0);
 
-
-			var pCamera: ICamera = pScene.createCamera();
-
-			pCamera.attachToParent(pScene.getRootNode());
-			pCamera.setPosition(0., 0, 5.5);
-			pCamera.lookAt(vec3(0.));
 
 			var pViewport: IDSViewport = <IDSViewport>pGeneralViewport.getTarget().addViewport(new render.DSViewport(pCamera, .7, .05, .25, .25, 100));
 
@@ -222,7 +221,7 @@ module akra.ui {
 			
 			pViewport.enableSupportFor3DEvent(
 				E3DEventTypes.CLICK | E3DEventTypes.MOUSEOVER | 
-				E3DEventTypes.MOUSEOUT | E3DEventTypes.MOUSEDOWN | E3DEventTypes.MOUSEUP);
+				E3DEventTypes.MOUSEOUT | E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP);
 
 			pModel.bind(SIGNAL(loaded), (): void => {
 				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
@@ -231,112 +230,199 @@ module akra.ui {
 				// 	pModelRoot.addRelRotationByXYZAxis(0.01, 0.01, 0.); 
 				// });
 
-				var fnSyncCubeWithCamera = (pViewport: IViewport) => {
-					pModelRoot.setRotation(pViewport.getCamera().localOrientation.conjugate(quat4()));
+				function syncCubeWithCamera(pGeneralViewport: IViewport): void {
+					var pSceneCam: ICamera = pGeneralViewport.getCamera();
+					ASSERT (pSceneCam.parent === pSceneCam.root, "only general camera may be used.");
+					
+					var pCubeCam: ICamera = pViewport.getCamera();
+
+
+					var vPos: IVec3 = pSceneCam.worldPosition.normalize(vec3()).scale(5.5);
+					
+					pCubeCam.setPosition(vPos);
+					pCubeCam.lookAt(vec3(0.));
 				}
 
-				pGeneralViewport.bind(SIGNAL(viewportCameraChanged), fnSyncCubeWithCamera);
+				pGeneralViewport.bind(SIGNAL(viewportCameraChanged), syncCubeWithCamera);
 
-				fnSyncCubeWithCamera(pGeneralViewport);
+				syncCubeWithCamera(pGeneralViewport);
 
 				var pCubeModel: ISceneModel = <ISceneModel>pModelRoot.child;
 				var pMesh: IMesh = pCubeModel.mesh;
 
-				var bDrag: bool = false;
-				var bSkipClick: bool = false;
 				var pStartPos: IPoint = {x: 0, y: 0};
-				var pStartAngle: IQuat4 = new Quat4;
+				var vStartPos: IVec3 = new Vec3;
+				var pCenterPoint: IVec3 = new Vec3;
+				var bDragStarted: bool = false;
 
-				pCubeModel.onmouseover = pCubeModel.onmouseout = pCubeModel.onmouseup = <any>() => {
-					bDrag = false;
-					bSkipClick = false;
-				}
-
-				pCubeModel.onmousedown = (pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
-					bDrag = true;
+	
+				pCubeModel.ondragstart = (pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
+					var pCamera: ICamera = pGeneralViewport.getCamera();
+					
 					pStartPos.x = x;
 					pStartPos.y = y;
 
-					var pCamera: ICamera = pGeneralViewport.getCamera();
+					bDragStarted = true;
+					pViewport.highlight(pCubeModel, null);	
 
-					pStartAngle.set(pCamera.localOrientation);
+					(<webgl.WebGLCanvas>pViewport.getTarget()).hideCursor();
+
+					// pGeneralViewport.unprojectPoint(
+					// 	pGeneralViewport.actualWidth / 2., 
+					// 	pGeneralViewport.actualHeight / 2., pCenterPoint);
+					pCenterPoint.set(0.);
+
+					vStartPos.set(pCamera.worldPosition);
 				}
 
-				pCubeModel.onmousemove = <any>(pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
-					if (bDrag) {
-						bSkipClick = true;
-						
-						var fdX = (x - pStartPos.x) / pViewport.actualWidth / 10.;
-						var fdY = (y - pStartPos.y) / pViewport.actualHeight / 10.;
+				pCubeModel.ondragstop = <any>(pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
+					bDragStarted = false;
+					(<webgl.WebGLCanvas>pViewport.getTarget()).hideCursor(false);
 
-						var pCamera: ICamera = pGeneralViewport.getCamera();
-						pCamera.addRelRotationByEulerAngles(-fdX, -fdY, 0);
+					eSrcBlend = ERenderStateValues.SRCALPHA;
+					eDestBlend = ERenderStateValues.DESTALPHA;
+					pViewport.highlight(null, null);
+					pViewport.touch();
+				}
 
-						fnSyncCubeWithCamera(pGeneralViewport);
+				function orbitRotation(pNode: INode, v3fCenter, v3fFrom: IVec3, fPitchRotation, fYawRotation, bLookAt: bool = true): void {
+					var qPitchRot: IQuat4;
+					var qYawRot: IQuat4;
+
+					if (isNull(v3fFrom)) {
+						v3fFrom = pNode.worldPosition;
 					}
+
+					var v3fDistance: IVec3;
+
+					var pNodeWorldData: Float32Array = pCamera.worldMatrix.data;
+				    var v3fNodeDir: IVec3 = vec3(-pNodeWorldData[__13], 0., -pNodeWorldData[__33]).normalize();
+				    var v3fNodeOrtho: IVec3 = vec3(v3fNodeDir.z, 0., -v3fNodeDir.x);
+
+				    //rotation around X-axis
+				    qPitchRot = Quat4.fromAxisAngle(v3fNodeOrtho, fPitchRotation, quat4());
+				    
+				    v3fDistance = v3fFrom.subtract(v3fCenter, vec3());
+				    pNode.localPosition = qPitchRot.multiplyVec3(v3fDistance, vec3()).add(v3fCenter);
+				    pNode.update();
+
+				    //rotate around Y-axis
+				    qYawRot = Quat4.fromYawPitchRoll(fYawRotation, 0., 0., quat4());
+				   
+				    v3fDistance = pNode.worldPosition.subtract(v3fCenter, vec3());
+				    pNode.localPosition = qYawRot.multiplyVec3(v3fDistance, vec3()).add(v3fCenter);
+				    pNode.update();
+
+				    //look ata target
+				    if (bLookAt) {
+				    	pNode.lookAt(v3fCenter);
+				    }
+				}
+
+				pCubeModel.ondragging = <any>(pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
+					
+
+					var pCamera: ICamera = pGeneralViewport.getCamera();
+					var fdX: float = (x - pStartPos.x) / 100;
+					var fdY: float = (y - pStartPos.y) / 100;
+
+					orbitRotation(pCamera, pCenterPoint, vStartPos, -fdY, -fdX);
+
+					syncCubeWithCamera(pGeneralViewport);
+				}
+
+				function softAlignTo(vDir: IVec3): void {
+					var pCamera: ICamera = pGeneralViewport.getCamera();
+					var qDest: IQuat4 = Quat4.fromForwardUp(vDir.normalize(), vec3(0., 1., 0.), quat4());
+				 	var qSrc: IQuat4 = Quat4.fromForwardUp(pCamera.worldPosition.normalize(), vec3(0., 1., 0.), quat4());
+				 	var fDelta: float = 0.0;
+				 	
+				 	var i = setInterval(() => {
+				 		if (fDelta >= 1.) {
+				 			clearInterval(i);
+				 		}
+
+				 		qSrc.smix(qDest, fDelta);
+				 		
+				 		var vDistance: IVec3 = pCamera.worldPosition.subtract(pCenterPoint, vec3());
+					    pCamera.localPosition = qSrc.multiplyVec3(vDistance, vec3()).add(pCenterPoint);
+				 		pCamera.lookAt(pCenterPoint);
+						pCamera.update();
+
+				 		fDelta += 0.05;
+
+				 		syncCubeWithCamera(pGeneralViewport);
+				 	}, 18);
+				}
+
+				function alignTo(vDir: IVec3): void {
+
+				 	var pCamera: ICamera = pGeneralViewport.getCamera();
+					var fDist: float = pCamera.worldPosition.length();
+
+					pCamera.setPosition(vDir.normalize().scale(fDist));
+					pCamera.lookAt(pCenterPoint);
+					pCamera.update();
+
+
+					syncCubeWithCamera(pGeneralViewport);
 				}
 
 				for (var i = 0; i < pMesh.length; ++ i) {
 					var pSubset: IMeshSubset = pMesh.getSubset(i);
 
 					pSubset.onmouseover = (pRenderable: IRenderableObject, pViewport: IDSViewport, pObject: ISceneObject) => {
-						pViewport.highlight(pObject, pRenderable);	
+						pViewport.highlight(pCubeModel, bDragStarted? null: pRenderable);	
 						eSrcBlend = ERenderStateValues.ONE;
 						eDestBlend = ERenderStateValues.INVSRCALPHA;
 					}
 
 					pSubset.onmouseout = (pRenderable: IRenderableObject, pViewport: IDSViewport, pObject: ISceneObject) => {
-						pViewport.highlight(null, null);	
-						eSrcBlend = ERenderStateValues.SRCALPHA;
-						eDestBlend = ERenderStateValues.DESTALPHA;
+						if (bDragStarted) {
+							pViewport.highlight(pCubeModel, null);	
+							eSrcBlend = ERenderStateValues.ONE;
+							eDestBlend = ERenderStateValues.INVSRCALPHA;
+						}
+						else {
+							pViewport.highlight(null, null);
+							eSrcBlend = ERenderStateValues.SRCALPHA;
+							eDestBlend = ERenderStateValues.DESTALPHA;
+						}
 					}
 
 					pSubset.onclick = <any>(pSubset: IMeshSubset) => {
-						if (bSkipClick) {
-							return;
-						}
-
-						var pCamera: ICamera = pGeneralViewport.getCamera();
-						var v3fRotation: IVec3 = pCamera.localOrientation.toYawPitchRoll(vec3());
-
+						// var pCamera: ICamera = pGeneralViewport.getCamera();
+						// var v3fRotation: IVec3 = pCamera.localOrientation.toYawPitchRoll(vec3());
 
 						switch (pSubset.name) {
 							case "submesh-0": 
-								pCamera.setRotationByXYZAxis(-math.PI / 2, 0, 0);
+								alignTo(vec3(0., 1., 0.));
 								console.log("bottom"); 
 								break;
 							case "submesh-1": 
-								pCamera.setRotationByXYZAxis(0, math.PI / 2, 0);
+								alignTo(vec3(1., 0., 0.));
 								console.log("right"); 
 								break;
 							case "submesh-2": 
 								console.log("left"); 
-								pCamera.setRotationByXYZAxis(0, -math.PI / 2, 0);
+								alignTo(vec3(-1., 0., 0.));
 								break;
 							case "submesh-3": 
 								console.log("top"); 
-								pCamera.setRotationByXYZAxis(math.PI / 2, 0, 0);
+								alignTo(vec3(0., 1., 0.));
 								break;
 							case "submesh-4": 
-								pCamera.setRotationByXYZAxis(0, 0, 0);
 								console.log("front"); 
+								alignTo(vec3(0., 0., 1.));
 								break;
 
 							case "submesh-5": 
-								pCamera.setRotationByXYZAxis(0, math.PI, 0);
+								alignTo(vec3(0., 0., -1.));
 								console.log("back"); 
 								break;
 						}
 
-						fnSyncCubeWithCamera(pGeneralViewport);
-					}
-
-					pSubset.onmousedown = <any>() => {
-						console.log("mousedown");
-					}
-
-					pSubset.onmouseup = <any>() => {
-						console.log("mouseup");
+						// syncCubeWithCamera(pGeneralViewport);
 					}
 				}
 			});

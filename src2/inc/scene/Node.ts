@@ -84,12 +84,21 @@ module akra.scene {
 			return this._v3fWorldPosition;
 		}
 
-		inline get worldRotation(): IQuat4 {
-			ASSERT((<Node>this._pParent).worldMatrix.toMat3(Node._m3fTemp1).decompose(Node._q4fTemp1, Node._v3fTemp1), 
-		            		"could not decompose.");
-			//FIXME: use correct way to get world rotation
-			return Node._q4fTemp1;
-		}
+		inline get parent(): INode { return <INode>this._pParent; }
+		inline set parent(pParent: INode) { this.attachToParent(pParent); }
+
+		inline get sibling(): INode { return <INode>this._pSibling; }
+		inline set sibling(pSibling: INode) { this._pSibling = pSibling; }
+
+		inline get child(): INode { return <INode>this._pChild; }
+		inline set child(pChild: INode) { this._pChild = pChild; }
+
+		// inline get worldRotation(): IQuat4 {
+		// 	ASSERT((<Node>this._pParent).worldMatrix.toMat3(Node._m3fTemp1).decompose(Node._q4fTemp1, Node._v3fTemp1), 
+		//             		"could not decompose.");
+		// 	//FIXME: use correct way to get world rotation
+		// 	return Node._q4fTemp1;
+		// }
 
 		get inverseWorldMatrix(): IMat4 {
 			if (TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix)) {

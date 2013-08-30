@@ -77,6 +77,25 @@ module akra.render {
         	this.bind(SIGNAL(mouseout), fn);
         }
 
+        inline set ondragstart(
+        	fn: (pRenderable: IRenderableObject, pViewport: IViewport, 
+        		pObject: ISceneObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(dragstart), fn);
+        }
+
+		inline set ondragstop(
+        	fn: (pRenderable: IRenderableObject, pViewport: IViewport, 
+        		pObject: ISceneObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(dragstop), fn);
+        }
+
+        inline set ondragging(
+        	fn: (pRenderable: IRenderableObject, pViewport: IViewport, 
+        		pObject: ISceneObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(dragging), fn);
+        }
+
+
 		constructor (eType: ERenderDataTypes = ERenderDataTypes.UNKNOWN) {
 			this._eRenderableType = eType;
 		}
@@ -266,6 +285,9 @@ module akra.render {
 		BROADCAST(mouseup, CALL(pViewport, pObject, x, y));
 		BROADCAST(mouseover, CALL(pViewport, pObject, x, y));
 		BROADCAST(mouseout, CALL(pViewport, pObject, x, y));
+		BROADCAST(dragstart, CALL(pViewport, pObject, x, y));
+		BROADCAST(dragstop, CALL(pViewport, pObject, x, y));
+		BROADCAST(dragging, CALL(pViewport, pObject, x, y));
 	}
 
 	export inline function isMeshSubset(pObject: IRenderableObject): bool {

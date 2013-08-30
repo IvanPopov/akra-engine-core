@@ -21,11 +21,6 @@ module akra {
 		highlight(pObject: ISceneObject, pRenderable?: IRenderableObject): void;
 		highlight(pPair: IRIDPair): void;
 
-		pick(x: uint, y: uint): IRIDPair;
-
-		getObject(x: uint, y: uint): ISceneObject;
-		getRenderable(x: uint, y: uint): IRenderableObject;
-
 		_getRenderId(x: uint, y: uint): int;
 		_getDeferredTexValue(iTex: int, x: uint, y: uint): IColor;
 

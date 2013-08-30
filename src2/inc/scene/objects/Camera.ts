@@ -417,7 +417,8 @@ module akra.scene.objects {
 			}
 
 			return v3fDestination;
-		};
+		}
+
 
 		getDepthRange(): IDepthRange{
 			var pDepthRange: IDepthRange = this._pLastViewport.getDepthRange();

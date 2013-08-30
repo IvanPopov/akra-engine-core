@@ -576,7 +576,7 @@ module akra {
 		    pCamera.update();
 
 	        // pCamera.localPosition.scale(1. + fY / 25);
-	        pCamera.update();
+	        // pCamera.update();
 	    }
 	    
 	   	fYawRotation = fX * pStat.cameraPitchChaseSpeed * fTimeDelta;

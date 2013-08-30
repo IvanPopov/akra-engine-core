@@ -26,6 +26,18 @@ module akra {
         ALL            = 0xFFFF
 	};
 
+	export enum E3DEventTypes {
+        CLICK = 0x01,
+        MOUSEMOVE = 0x02,
+        MOUSEDOWN = 0x04,
+        MOUSEUP = 0x08,
+        MOUSEOVER = 0x10,
+        MOUSEOUT = 0x20,
+        DRAGSTART = 0x40,
+        DRAGSTOP = 0x80,
+        DRAGGING = 0x100
+    }
+
 	export interface IRenderTarget extends IEventProvider {
 		name: string;
 		width: uint;
@@ -48,7 +60,10 @@ module akra {
 
 		detachDepthBuffer(): void;
 		detachDepthTexture(): void;
-		detachDepthPixelBuffer(): void;     
+		detachDepthPixelBuffer(): void; 
+
+		enableSupportFor3DEvent(iType: int): int;
+        is3DEventSupported(eType: E3DEventTypes): bool;    
 
 		destroy(): void;
 

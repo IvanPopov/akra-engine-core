@@ -69,6 +69,24 @@ module akra.scene {
         	this.bind(SIGNAL(mouseout), fn);
         }
 
+        inline set ondragstart(
+        	fn: (pObject: ISceneObject, pViewport: IViewport, 
+        		pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(dragstart), fn);
+        }
+
+        inline set ondragstop(
+        	fn: (pObject: ISceneObject, pViewport: IViewport, 
+        		pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(dragstop), fn);
+        }
+
+        inline set ondragging(
+        	fn: (pObject: ISceneObject, pViewport: IViewport, 
+        		pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(dragging), fn);
+        }
+
 
 		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
 			super(pScene, eType);
@@ -167,11 +185,16 @@ module akra.scene {
 		UNICAST(worldBoundsUpdated, VOID);
 
 		BROADCAST(click, CALL(pViewport, pRenderable, x, y));
+		
 		BROADCAST(mousemove, CALL(pViewport, pRenderable, x, y));
 		BROADCAST(mousedown, CALL(pViewport, pRenderable, x, y));
 		BROADCAST(mouseup, CALL(pViewport, pRenderable, x, y));
 		BROADCAST(mouseover, CALL(pViewport, pRenderable, x, y));
 		BROADCAST(mouseout, CALL(pViewport, pRenderable, x, y));
+
+		BROADCAST(dragstart, CALL(pViewport, pRenderable, x, y));
+		BROADCAST(dragstop, CALL(pViewport, pRenderable, x, y));
+		BROADCAST(dragging, CALL(pViewport, pRenderable, x, y));
 	}
 
 	export inline function isSceneObject(pEntity: IEntity): bool {

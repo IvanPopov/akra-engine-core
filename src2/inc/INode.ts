@@ -34,10 +34,14 @@ module akra {
 		
 		readonly worldMatrix: IMat4;
 		readonly worldPosition: IVec3;
-		readonly worldRotation: IQuat4;
+		// readonly worldRotation: IQuat4;
 		
 		readonly inverseWorldMatrix: IMat4;
 		readonly normalMatrix: IMat3;
+
+		parent: INode;
+		sibling: INode;
+		child: INode;
 
 		create(): bool;
 
