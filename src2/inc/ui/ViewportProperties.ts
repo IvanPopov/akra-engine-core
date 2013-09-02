@@ -295,13 +295,17 @@ module akra.ui {
 
 					var v3fDistance: IVec3;
 
-					var pNodeWorldData: Float32Array = pCamera.worldMatrix.data;
+					var pNodeWorldData: Float32Array = pNode.worldMatrix.data;
 				    var v3fNodeDir: IVec3 = vec3(-pNodeWorldData[__13], 0., -pNodeWorldData[__33]).normalize();
 				    var v3fNodeOrtho: IVec3 = vec3(v3fNodeDir.z, 0., -v3fNodeDir.x);
 
 				    //rotation around X-axis
+				    // v3fNodeOrtho = Quat4.fromAxisAngle(vec3(0., 1., 0.), pNode.localOrientation.getYaw()).multiplyVec3(vec3(1., 0., 0.))
 				    qPitchRot = Quat4.fromAxisAngle(v3fNodeOrtho, fPitchRotation, quat4());
+				    // qPitchRot = Quat4.fromAxisAngle(pNode.localOrientation.multiplyVec3(vec3(1., 0., 0.)), -fPitchRotation);
+				    Quat4.fromAxisAngle(vec3(0., 1., 0.), pNode.localOrientation.getYaw()).multiplyVec3(vec3(1., 0., 0.))
 				    
+
 				    v3fDistance = v3fFrom.subtract(v3fCenter, vec3());
 				    pNode.localPosition = qPitchRot.multiplyVec3(v3fDistance, vec3()).add(v3fCenter);
 				    pNode.update();
@@ -315,7 +319,10 @@ module akra.ui {
 
 				    //look ata target
 				    if (bLookAt) {
-				    	pNode.lookAt(v3fCenter, pNode.localOrientation.multiplyVec3(vec3(0., 1., 0.)));
+				    	
+				    	var vUp: IVec3 = pNode.localOrientation.multiplyVec3(vec3(0., 1., 0.), vec3());
+
+				    	pNode.lookAt(v3fCenter, vUp);
 				    }
 				}
 
@@ -330,22 +337,27 @@ module akra.ui {
 					syncCubeWithCamera(pGeneralViewport);
 				}
 
-				function softAlignTo(vDir: IVec3): void {
+				function softAlignTo(vDir: IVec3, vUp: IVec3): void {
 					var pCamera: ICamera = pGeneralViewport.getCamera();
-					var qDest: IQuat4 = Quat4.fromForwardUp(vDir.normalize(), vec3(0., 1., 0.), quat4());
-				 	var qSrc: IQuat4 = Quat4.fromForwardUp(pCamera.worldPosition.normalize(), vec3(0., 1., 0.), quat4());
+					var qDest: IQuat4 = Quat4.fromForwardUp(vDir, vUp, quat4());
+				 	var qSrc: IQuat4 = Quat4.fromForwardUp(pCamera.worldPosition.normalize(), 
+				 		pCamera.localOrientation.multiplyVec3(vec3(0., 1., 0.), vec3()), quat4());
 				 	var fDelta: float = 0.0;
 				 	
 				 	var i = setInterval(() => {
 				 		if (fDelta >= 1.) {
 				 			clearInterval(i);
+				 			return;
 				 		}
 
-				 		qSrc.smix(qDest, fDelta);
+				 		fDelta = 1.0;
+
+				 		var q = qDest;
+				 		//qSrc.smix(qDest, fDelta, quat4());
 				 		
 				 		var vDistance: IVec3 = pCamera.worldPosition.subtract(pCenterPoint, vec3());
-					    pCamera.localPosition = qSrc.multiplyVec3(vDistance, vec3()).add(pCenterPoint);
-				 		pCamera.lookAt(pCenterPoint);
+					    pCamera.localPosition = q.multiplyVec3(vDistance, vec3()).add(pCenterPoint);
+				 		pCamera.lookAt(pCenterPoint, vUp);
 						pCamera.update();
 
 				 		fDelta += 0.05;
@@ -354,13 +366,13 @@ module akra.ui {
 				 	}, 18);
 				}
 
-				function alignTo(vDir: IVec3): void {
+				function alignTo(vDir: IVec3, vUp: IVec3): void {
 
 				 	var pCamera: ICamera = pGeneralViewport.getCamera();
 					var fDist: float = pCamera.worldPosition.length();
 
 					pCamera.setPosition(vDir.normalize().scale(fDist));
-					pCamera.lookAt(pCenterPoint, pCamera.localOrientation.multiplyVec3(vec3(0., 1., 0.)));
+					pCamera.lookAt(pCenterPoint, vUp);
 					pCamera.update();
 
 
@@ -392,31 +404,31 @@ module akra.ui {
 					pSubset.onclick = <any>(pSubset: IMeshSubset) => {
 						// var pCamera: ICamera = pGeneralViewport.getCamera();
 						// var v3fRotation: IVec3 = pCamera.localOrientation.toYawPitchRoll(vec3());
-
+						var alignTo = softAlignTo;
 						switch (pSubset.name) {
 							case "submesh-0": 
-								alignTo(vec3(0., 1., 0.));
+								alignTo(vec3(0., -1., 0.), vec3(0., 0., 1.));
 								console.log("bottom"); 
 								break;
 							case "submesh-1": 
-								alignTo(vec3(1., 0., 0.));
+								alignTo(vec3(1., 0., 0.), vec3(0., 1., 0.));
 								console.log("right"); 
 								break;
 							case "submesh-2": 
 								console.log("left"); 
-								alignTo(vec3(-1., 0., 0.));
+								alignTo(vec3(-1., 0., 0.), vec3(0., 1., 0.));
 								break;
 							case "submesh-3": 
 								console.log("top"); 
-								alignTo(vec3(0., 1., 0.));
+								alignTo(vec3(0., 1., 0.), vec3(0., 0., -1.));
 								break;
 							case "submesh-4": 
 								console.log("front"); 
-								alignTo(vec3(0., 0., 1.));
+								alignTo(vec3(0., 0., 1.), vec3(0., 1., 0.));
 								break;
 
 							case "submesh-5": 
-								alignTo(vec3(0., 0., -1.));
+								alignTo(vec3(0., 0., -1.), vec3(0., 1., 0.));
 								console.log("back"); 
 								break;
 						}

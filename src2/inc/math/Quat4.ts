@@ -574,15 +574,15 @@ module akra.math {
 		    var m3fTemp: IMat3 = mat3();
 		    var pTempData: Float32Array = m3fTemp.data;
 
-		    pTempData[__a11] = fUpY*fForwardZ - fUpZ*fForwardY;
+		    pTempData[__a11] = fUpY * fForwardZ - fUpZ * fForwardY;
 		    pTempData[__a12] = fUpX;
 		    pTempData[__a13] = fForwardX;
 
-		    pTempData[__a21] = fUpZ*fForwardX - fUpX*fForwardZ;
+		    pTempData[__a21] = fUpZ * fForwardX - fUpX * fForwardZ;
 		    pTempData[__a22] = fUpY;
 		    pTempData[__a23] = fForwardY;
 
-		    pTempData[__a31] = fUpX*fForwardY - fUpY*fForwardX;
+		    pTempData[__a31] = fUpX * fForwardY - fUpY * fForwardX;
 		    pTempData[__a32] = fUpZ;
 		    pTempData[__a33] = fForwardZ;
 

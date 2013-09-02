@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Aug 29 2013 19:20:02 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Sep 02 2013 23:30:55 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -812,8 +812,8 @@ var akra;
             pCamera.localPosition = qPitchRot.multiplyVec3(v3fCameraHeroDist, akra.Vec3.stackCeil.set()).add(v3fHeroFocusPoint);
             pCamera.update();
             // pCamera.localPosition.scale(1. + fY / 25);
-            pCamera.update();
-        }
+            // pCamera.update();
+                    }
         fYawRotation = fX * pStat.cameraPitchChaseSpeed * fTimeDelta;
         qYawRot = akra.Quat4.fromYawPitchRoll(fYawRotation, 0, 0., akra.Quat4.stackCeil.set());
         v3fCameraHeroDist = pCamera.worldPosition.subtract(v3fHeroFocusPoint, akra.Vec3.stackCeil.set());
@@ -1674,7 +1674,6 @@ var akra;
     }
     function edgeDetection(pViewport) {
         pViewport.effect.addComponent("akra.system.edgeDetection", 2, 0);
-        pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
         var pParams = {
             lineWidth: 2.0,
             threshold: 0.2
@@ -1693,7 +1692,6 @@ var akra;
         var pPrevViewMat = new akra.Mat4(1.);
         var pCamera = pViewport.getCamera();
         pViewport.effect.addComponent("akra.system.motionBlur", 2, 0);
-        pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
         setInterval(/** @inline */function () {
             pPrevViewMat.set(pCamera.viewMatrix);
         }, 10);
