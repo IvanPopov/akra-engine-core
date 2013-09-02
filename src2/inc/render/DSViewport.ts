@@ -117,9 +117,7 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.sunLighting");
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
 
-
 			pDSMethod.effect = pDSEffect;
-			
 
 			this._pDeferredEffect = pDSEffect;
 			this._pDeferredView = pDefferedView;

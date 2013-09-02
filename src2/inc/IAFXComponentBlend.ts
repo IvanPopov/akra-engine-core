@@ -45,6 +45,9 @@ module akra {
 		getTotalPasses(): uint;
 		getHash(): string;
 
+		_getMinShift(): int;
+		_getMaxShift(): int;
+
 		hasPostEffect(): bool;
 		getPostEffectStartPass(): uint;
 

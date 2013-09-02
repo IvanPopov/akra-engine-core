@@ -7,6 +7,7 @@
 
 module akra {
 	IFACE(IRenderStateMap)
+	IFACE(IAFXComponentPassInputBlend)
 
 	export interface IAFXPassInputBlend extends IUnique {
 		samplers: IAFXSamplerStateMap;
@@ -28,6 +29,8 @@ module akra {
 
 		readonly totalSamplerUpdates: uint;
 		readonly totalForeignUpdates: uint;
+		readonly totalUniformUpdates: uint;
+		readonly totalRenderStateUpdates: uint;
 
 		hasUniform(sName: string): bool;
 		hasTexture(sName: string): bool;
@@ -67,8 +70,14 @@ module akra {
 
 		_release(): void;
 
-		// _isNeedToCalcBlend(): bool;
-		// _isNeedToCalcShader(): bool;
+		_isFromSameBlend(pInput: IAFXPassInputBlend): bool;
+		_getBlend(): IAFXComponentPassInputBlend;
+		_copyFrom(pInput: IAFXPassInputBlend): void;
+
+		_copyUniformsFromInput(pInput: IAFXPassInputBlend): void;
+		_copySamplersFromInput(pInput: IAFXPassInputBlend): void;
+		_copyForeignsFromInput(pInput: IAFXPassInputBlend): void;
+		_copyRenderStatesFromInput(pInput: IAFXPassInputBlend): void;
 
 		_getLastPassBlendId(): uint;
 		_getLastShaderId(): uint;

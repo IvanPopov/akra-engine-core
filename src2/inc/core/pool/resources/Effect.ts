@@ -7,12 +7,15 @@
 
 module akra.core.pool.resources {
 	export class Effect implements IEffect extends ResourcePoolItem {
+		protected _nTotalPasses: uint = 0;
+		protected _nTotalComponents: uint = 0;
+
 		get totalComponents(): uint{
-			return this.getComposer().getComponentCountForEffect(this);
+			return this._nTotalComponents;			
 		}
 
 		get totalPasses(): uint{
-			return this.getComposer().getTotalPassesForEffect(this);
+			return this._nTotalPasses;
 		}
 
 		constructor () {
@@ -55,6 +58,9 @@ module akra.core.pool.resources {
 				return false;
 			}
 
+			this._nTotalComponents = this.getComposer().getComponentCountForEffect(this);
+			this._nTotalPasses = this.getComposer().getTotalPassesForEffect(this);
+
 			this.notifyAltered();
 
 		    if (this.totalComponents === 1) {
@@ -87,6 +93,9 @@ module akra.core.pool.resources {
 				return false;
 			}
 
+			this._nTotalComponents = this.getComposer().getComponentCountForEffect(this);
+			this._nTotalPasses = this.getComposer().getTotalPassesForEffect(this);
+			
 			this.notifyAltered();
 
 			if (this.totalComponents === 0) {

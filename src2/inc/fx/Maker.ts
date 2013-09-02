@@ -8,15 +8,13 @@
 #include "PassInputBlend.ts"
 
 #include "IShaderInput.ts"
+#include "render/renderUtil.ts"
 
 #ifdef WEBGL
 
 #include "webgl/WebGLShaderProgram.ts"
 
 #endif
-
-#define SET_RENDER_STATE_TO_INPUT(eState) pInput.renderStates[eState] = pRenderStates[eState] || pPassBlendRenderStates[eState];
-
 
 // #define PROFILE_MAKE 1
 
@@ -319,7 +317,7 @@ module akra.fx {
 			var pInput: IShaderInput = {
 				uniforms: <{[index: uint]: any;}>{},
 				attrs: <{[index: uint]: any;}>{},
-				renderStates: fx.createPassStateMap()
+				renderStates: render.createRenderStateMap()
 			};
 
 			//assume, that attr & uniform never have same names!!!
@@ -695,27 +693,8 @@ module akra.fx {
 				pInput.uniforms[this._pShaderUniformInfoMap["asc0"].location] = 19;
 			}
 
-			var pPassBlendRenderStates: IRenderStateMap = this._pPassBlend._getRenderStates();
-
-			SET_RENDER_STATE_TO_INPUT(EPassState.BLENDENABLE);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.CULLFACEENABLE);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.ZENABLE);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.ZWRITEENABLE);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.DITHERENABLE);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.SCISSORTESTENABLE);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.STENCILTESTENABLE);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.POLYGONOFFSETFILLENABLE);
-
-	        SET_RENDER_STATE_TO_INPUT(EPassState.CULLFACE);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.FRONTFACE);
-
-	        SET_RENDER_STATE_TO_INPUT(EPassState.SRCBLEND);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.DESTBLEND);
-
-	        SET_RENDER_STATE_TO_INPUT(EPassState.ZFUNC);
-
-	        SET_RENDER_STATE_TO_INPUT(EPassState.ALPHABLENDENABLE);
-	        SET_RENDER_STATE_TO_INPUT(EPassState.ALPHATESTENABLE);
+			render.copyRenderStateMap(this._pPassBlend._getRenderStates(), pInput.renderStates);
+			render.copyRenderStateMap(pRenderStates, pInput.renderStates);
 
 #ifdef PROFILE_MAKE
 	    	tEndTime = (<any>window).performance.now();

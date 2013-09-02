@@ -4,6 +4,7 @@
 #include "IAFXPassInputBlend.ts"
 #include "IAFXVariableContainer.ts"
 #include "util/Color.ts"
+#include "render/renderUtil.ts"
 
 #define FAST_SET_INPUT_UNIFORM(sName, pValue) if(this.hasUniform(sName)) this.uniforms[this._getUniformVarNameIndex(sName)] = pValue;
 //#define FAST_SET_SAMPLER_TEXTURE(sName, pTexture) if(this.hasUniform(sName)) this.samplers[sName].texture = pTexture;
@@ -32,8 +33,7 @@ module akra.fx {
 
 	export class PassInputBlend implements IAFXPassInputBlend {
 		UNIQUE()
-		private _isFirstInit: bool = true;
-		private _pCreator: IAFXComponentPassInputBlend = null;
+		protected _pCreator: IAFXComponentPassInputBlend = null;
 
 		// private _bNeedToCalcBlend: bool = true;
 		// private _bNeedToCalcShader: bool = true;
@@ -67,6 +67,8 @@ module akra.fx {
 
 		private _nSamplerUpdates: uint = 0;
 		private _nForeignUpdates: uint = 0;
+		private _nUniformUpdates: uint = 0;
+		private _nRenderStateUpdates: uint = 0;
 
 		samplers: IAFXSamplerStateMap = null;
 		samplerArrays: IAFXSamplerStateListMap = null; 
@@ -91,6 +93,14 @@ module akra.fx {
 
 		inline get totalForeignUpdates(): uint {
 			return this._nForeignUpdates;
+		}
+
+		inline get totalUniformUpdates(): uint {
+			return this._nUniformUpdates;
+		}
+
+		inline get totalRenderStateUpdates(): uint {
+			return this._nRenderStateUpdates;
 		}
 
 		constructor(pCreator: IAFXComponentPassInputBlend){
@@ -139,6 +149,7 @@ module akra.fx {
 
 			//Check type
 
+			this._nUniformUpdates++;
 			this.uniforms[iIndex] = pValue;
 		}
 
@@ -357,6 +368,10 @@ module akra.fx {
 		}
 
 		inline setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
+			if(this.renderStates[eState] !== eValue){
+				this._nRenderStateUpdates++;
+			}
+
 			this.renderStates[eState] = eValue;
 		}
 
@@ -469,14 +484,78 @@ module akra.fx {
 			// this._bNeedToCalcBlend = true;
 		}
 
+		inline _isFromSameBlend(pInput: IAFXPassInputBlend): bool{
+			return (pInput._getBlend() === this._getBlend());
+		}
 
-		// inline _isNeedToCalcBlend(): bool {
-		// 	return this._bNeedToCalcBlend;
-		// }
+		inline _getBlend(): IAFXComponentPassInputBlend {
+			return this._pCreator;
+		}
 
-		// inline _isNeedToCalcShader(): bool {
-		// 	return this._bNeedToCalcBlend || this._bNeedToCalcShader;
-		// }
+		_copyFrom(pInput: IAFXPassInputBlend): void {
+			this._copyUniformsFromInput(pInput);
+			this._copyForeignsFromInput(pInput);
+			this._copySamplersFromInput(pInput);
+			this._copyRenderStatesFromInput(pInput);			
+		}
+
+		_copyUniformsFromInput(pInput: IAFXPassInputBlend): void {
+			for(var i: uint = 0; i < pInput.uniformKeys.length; i++){
+				var iIndex: uint = pInput.uniformKeys[i];
+
+				if(isDef(this.uniforms[iIndex])){
+					this.uniforms[iIndex] = pInput.uniforms[iIndex];
+				}				
+			}
+		}
+
+		_copySamplersFromInput(pInput: IAFXPassInputBlend): void {
+			for(var i: uint = 0; i < pInput.textureKeys.length; i++){
+				var iIndex: uint = pInput.textureKeys[i];
+
+				if(isDef(this.textures[iIndex])){
+					this.textures[iIndex] = pInput.textures[iIndex];
+				}				
+			}
+
+			for(var i: uint = 0; i < pInput.samplerKeys.length; i++){
+				var iIndex: uint = pInput.samplerKeys[i];
+
+				if(isDef(this.samplers[iIndex])){
+					this.copySamplerState(pInput.samplers[iIndex], this.samplers[iIndex]);
+				}				
+			}
+
+			for(var i: uint = 0; i < pInput.samplerArrayKeys.length; i++){
+				var iIndex: uint = pInput.samplerArrayKeys[i];
+
+				if(isDef(this.samplerArrays[iIndex])){
+					var pFrom: IAFXSamplerState[] = pInput.samplerArrays[iIndex];
+					var pTo: IAFXSamplerState[] = this.samplerArrays[iIndex];
+					var iLength: uint = pInput.samplerArrayLength[iIndex];
+
+					for(var j: uint = 0; j < iLength; j++){
+						this.copySamplerState(pFrom[j], pTo[j]);
+					}
+					
+					this.samplerArrayLength[iIndex] = iLength;
+				}				
+			}
+		}
+
+		_copyForeignsFromInput(pInput: IAFXPassInputBlend): void {
+			for(var i: uint = 0; i < pInput.foreignKeys.length; i++){
+				var iIndex: uint = pInput.foreignKeys[i];
+
+				if(isDef(this.foreigns[iIndex])){
+					this.foreigns[iIndex] = pInput.foreigns[iIndex];
+				}				
+			}
+		}
+
+		_copyRenderStatesFromInput(pInput: IAFXPassInputBlend): void {
+			render.copyRenderStateMap(pInput.renderStates, this.renderStates);
+		}
 
 		inline _getLastPassBlendId(): uint {
 			return this._iLastPassBlendId;
@@ -503,7 +582,7 @@ module akra.fx {
 			this.foreigns = <any>{};
 			this.textures = <any>{};
 
-			this.renderStates = fx.createPassStateMap();
+			this.renderStates = render.createRenderStateMap();
 
 			var pUniformKeys: uint[] = this._pCreator.uniforms.indices;
 			var pForeignKeys: uint[] = this._pCreator.foreigns.indices;

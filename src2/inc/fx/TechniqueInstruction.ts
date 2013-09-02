@@ -2,6 +2,7 @@
 #define AFXTECHNIQUEINSTRUCTION_TS
 
 #include "fx/Instruction.ts"
+#include "render/renderUtil.ts"
 
 #define POST_EFFECT_SEMANTIC "POST_EFFECT"
 
@@ -205,7 +206,7 @@ module akra.fx {
 
         setState(eType: EPassState, eValue: EPassStateValue): void {
         	if(isNull(this._pPassStateMap)){
-        		this._pPassStateMap = createPassStateMap();
+        		this._pPassStateMap = render.createRenderStateMap();
         	}
 
         	if(this.isComplexPass()){
@@ -244,6 +245,10 @@ module akra.fx {
 
         inline getState(eType: EPassState): EPassStateValue {
         	return !isNull(this._pPassStateMap) ? this._pPassStateMap[eType] : EPassStateValue.UNDEF;
+        }
+
+        inline _getRenderStates(): IRenderStateMap {
+            return this._pPassStateMap;
         }
 
         private clearPassStates(): void {

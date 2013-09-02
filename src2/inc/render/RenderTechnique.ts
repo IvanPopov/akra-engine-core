@@ -19,6 +19,7 @@ module akra.render {
 		private _pCurrentPass: IRenderPass = null;
 
 		private _iGlobalPostEffectsStart: uint = 0;
+		private _iMinShiftOfOwnBlend: int = 0;
 
 		inline get modified(): uint {
 			return this.getGuid();
@@ -126,6 +127,8 @@ module akra.render {
 				return false;
 			}
 
+			this._iMinShiftOfOwnBlend = this._pComposer.getMinShiftForOwnTechniqueBlend(this);
+
 			return true;
 		}
 
@@ -155,6 +158,8 @@ module akra.render {
 				debug_error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'");
 				return false;
 			}
+
+			this._iMinShiftOfOwnBlend = this._pComposer.getMinShiftForOwnTechniqueBlend(this);
 
 			return true;
 		}
@@ -254,7 +259,7 @@ module akra.render {
 			
 			for(var i: uint = 0; i < iTotalPasses; i++){
 				if(!this._pPassBlackList[i]){
-					var pInput: IAFXPassInputBlend = this._pComposer.getPassInputBlend(this, i);
+					var pInput: IAFXPassInputBlend = this._pComposer.getPassInputBlendForTechnique(this, i);
 					if(!isNull(pInput)){
 						this._pPassList[i].setPassInput(pInput, bSaveOldUniformValue);
 						this._pPassList[i].activate();
@@ -291,6 +296,8 @@ module akra.render {
 			pComposer.applySurfaceMaterial(this._pMethod.surfaceMaterial);
 
 			this._isFreeze = true;
+
+			
 
 			for(var i: uint = 0; i < this.totalPasses; i++){
 				if(this._pPassBlackList[i] === false && this._pPassList[i].isActive()){

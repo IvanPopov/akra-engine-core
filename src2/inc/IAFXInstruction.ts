@@ -717,6 +717,7 @@ module akra {
         evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): bool;
 
         getState(eType: EPassState): EPassStateValue;
+        _getRenderStates(): IRenderStateMap;
     }
 
     export interface IAFXTechniqueInstruction extends IAFXDeclInstruction{

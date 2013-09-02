@@ -39,6 +39,14 @@ module akra.fx {
 			this._pAddedComponentInfoList = [];
 		}
 
+		inline _getMinShift(): int {
+			return this._iShiftMin;
+		}
+
+		inline _getMaxShift(): int {
+			return this._iShiftMax;
+		}
+
 		inline isReadyToUse(): bool {
 			return this._isReady;
 		}
