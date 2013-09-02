@@ -207,7 +207,7 @@ module akra.ui {
 
 				var pPass: IRenderPass = pTechnique.getPass(iPass);
 
-				if(pTechnique.isLastPass(iPass)){
+				if (pTechnique.isLastPass(iPass)) {
 					pPass.setRenderState(ERenderStates.ZENABLE, ERenderStateValues.FALSE);
 					pPass.setRenderState(ERenderStates.BLENDENABLE, ERenderStateValues.TRUE);
 
@@ -240,7 +240,7 @@ module akra.ui {
 					var vPos: IVec3 = pSceneCam.worldPosition.normalize(vec3()).scale(5.5);
 					
 					pCubeCam.setPosition(vPos);
-					pCubeCam.lookAt(vec3(0.));
+					pCubeCam.lookAt(vec3(0.), pSceneCam.localOrientation.multiplyVec3(vec3(0., 1., 0.)));
 				}
 
 				pGeneralViewport.bind(SIGNAL(viewportCameraChanged), syncCubeWithCamera);
@@ -315,12 +315,11 @@ module akra.ui {
 
 				    //look ata target
 				    if (bLookAt) {
-				    	pNode.lookAt(v3fCenter);
+				    	pNode.lookAt(v3fCenter, pNode.localOrientation.multiplyVec3(vec3(0., 1., 0.)));
 				    }
 				}
 
 				pCubeModel.ondragging = <any>(pObject: ISceneObject, pViewport: IDSViewport, pRenderable: IRenderableObject, x: uint, y: uint) => {
-					
 
 					var pCamera: ICamera = pGeneralViewport.getCamera();
 					var fdX: float = (x - pStartPos.x) / 100;
@@ -361,7 +360,7 @@ module akra.ui {
 					var fDist: float = pCamera.worldPosition.length();
 
 					pCamera.setPosition(vDir.normalize().scale(fDist));
-					pCamera.lookAt(pCenterPoint);
+					pCamera.lookAt(pCenterPoint, pCamera.localOrientation.multiplyVec3(vec3(0., 1., 0.)));
 					pCamera.update();
 
 
