@@ -5,23 +5,29 @@
 
 module akra {
 	export interface IClickable extends IEventProvider {
-		writeonly onclick: (target: any, x: uint, y: uint) => void;
-		writeonly onmousemove: (target: any, x: uint, y: uint) => void;
-		writeonly onmousedown: (target: any, x: uint, y: uint) => void;
-		writeonly onmouseup: (target: any, x: uint, y: uint) => void;
-		writeonly onmouseover: (target: any, x: uint, y: uint) => void;
-		writeonly onmouseout: (target: any, x: uint, y: uint) => void;
+		writeonly onclick: (target: any, x: int, y: int) => void;
+		writeonly onmousemove: (target: any, x: int, y: int) => void;
+		writeonly onmousedown: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+		writeonly onmouseup: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+		writeonly onmouseover: (target: any, x: int, y: int) => void;
+		writeonly onmouseout: (target: any, x: int, y: int) => void;
+		writeonly onmousewheel: (target: any, x: int, y: int, delta: float) => void;
 
-		signal click(x: uint, y: uint): void;
-		signal mousemove(x: uint, y: uint): void;
-		signal mousedown(x: uint, y: uint): void;
-		signal mouseup(x: uint, y: uint): void;
-		signal mouseover(x: uint, y: uint): void;
-		signal mouseout(x: uint, y: uint): void;
+		writeonly ondragstart: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+		writeonly ondragstop: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+		writeonly ondragging: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
 
-		signal dragstart(x: uint, y: uint): void;
-		signal dragstop(x: uint, y: uint): void;
-		signal dragging(x: uint, y: uint): void;
+		signal click(x: int, y: int): void;
+		signal mousemove(x: int, y: int): void;
+		signal mousedown(eBtn: EMouseButton, x: int, y: int): void;
+		signal mouseup(eBtn: EMouseButton, x: int, y: int): void;
+		signal mouseover(x: int, y: int): void;
+		signal mouseout(x: int, y: int): void;
+		signal mousewheel(x: int, y: int, delta: float): void;
+
+		signal dragstart(eBtn: EMouseButton, x: int, y: int): void;
+		signal dragstop(eBtn: EMouseButton, x: int, y: int): void;
+		signal dragging(eBtn: EMouseButton, x: int, y: int): void;
 	}
 }
 

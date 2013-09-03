@@ -9,6 +9,14 @@
 #include "webgl.ts"
 
 module akra.webgl {
+
+	function absorbEvent(e) {
+		e.preventDefault && e.preventDefault();
+		e.stopPropagation && e.stopPropagation();
+		e.cancelBubble = true;
+		e.returnValue = false;
+    }
+
 	export class WebGLCanvas extends render.Canvas3d implements IClickable {
 		protected _pCanvas: HTMLCanvasElement;
 		protected _pCanvasCreationInfo: ICanvasInfo;
@@ -25,6 +33,7 @@ module akra.webgl {
 		//на сколько пикселей надо протащить курсор, чтобы сработал dragging
 		protected _i3DEventDragDeadZone: uint = 3;
 		protected _b3DEventDragging: bool = false;
+		protected _e3DEventDragBtn: EMouseButton = EMouseButton.UNKNOWN;
 		//переменная нужна, для того чтобы пропустить событие клика приходящее после окончания драггинга
 		//так как драггинг заканчивается вместе с событием отжатия мыши, которое в свою очередь всегда приходит раньше 
 		//клика
@@ -69,6 +78,10 @@ module akra.webgl {
 			}
 		}
 
+		setCursor(sType: string): void {
+			this.el.style.cursor = sType;
+		}
+
 		create(sName: string = null, iWidth: uint = this._pCanvasCreationInfo.width, 
 				iHeight: uint = this._pCanvasCreationInfo.height, isFullscreen: bool = false): bool {
 			
@@ -86,45 +99,73 @@ module akra.webgl {
 			var iActivated: int = super.enableSupportFor3DEvent(iType);
 
 			if (iActivated & E3DEventTypes.CLICK) {
-				LOG("WebGLCanvas activate <CLICK> event handing");
-				this.el.addEventListener("click", (e: MouseEvent): void => {
+				debug_print("WebGLCanvas activate <CLICK> event handing");
+				this.el.addEventListener("click", (e: MouseEvent): bool => {
+					absorbEvent(e);
 					//0 --> 149, 149/150 --> 0
-					this.click(e.offsetX, this.height - e.offsetY - 1);
+					this.click(e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					return false;
 				}, true);
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEMOVE) {
-				LOG("WebGLCanvas activate <MOUSEMOVE> event handing");
-				this.el.addEventListener("mousemove", (e: MouseEvent): void => {
-					this.mousemove(e.offsetX, this.height - e.offsetY - 1);
+				debug_print("WebGLCanvas activate <MOUSEMOVE> event handing");
+				this.el.addEventListener("mousemove", (e: MouseEvent): bool => {
+					absorbEvent(e);
+					this.mousemove(e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					return false;
 				}, true);
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEDOWN) {
-				LOG("WebGLCanvas activate <MOUSEDOWN> event handing");
-				this.el.addEventListener("mousedown", (e: MouseEvent): void => {
-					this.mousedown(e.offsetX, this.height - e.offsetY - 1);
+				debug_print("WebGLCanvas activate <MOUSEDOWN> event handing");
+				this.el.addEventListener("mousedown", (e: MouseEvent): bool => {
+					absorbEvent(e);
+					this.mousedown(e.which, e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					return false;
 				}, true);
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEUP) {
-				LOG("WebGLCanvas activate <MOUSEUP> event handing");
-				this.el.addEventListener("mouseup", (e: MouseEvent): void => {
-					this.mouseup(e.offsetX, this.height - e.offsetY - 1);
+				debug_print("WebGLCanvas activate <MOUSEUP> event handing");
+				this.el.addEventListener("mouseup", (e: MouseEvent): bool => {
+					absorbEvent(e);
+					this.mouseup(e.which, e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					return false;
 				}, true);
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEOVER) {
-				LOG("WebGLCanvas activate <MOUSEOVER> event handing");
-				this.el.addEventListener("mouseover", (e: MouseEvent): void => {
-					this.mouseover(e.offsetX, this.height - e.offsetY - 1);
+				debug_print("WebGLCanvas activate <MOUSEOVER> event handing");
+				this.el.addEventListener("mouseover", (e: MouseEvent): bool => {
+					absorbEvent(e);
+					this.mouseover(e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					return false;
 				}, true);
 			}
 
 			if (iActivated & E3DEventTypes.MOUSEOUT) {
-				LOG("WebGLCanvas activate <MOUSEOUT> event handing");
-				this.el.addEventListener("mouseout", (e: MouseEvent): void => {
-					this.mouseout(e.offsetX, this.height - e.offsetY - 1);
+				debug_print("WebGLCanvas activate <MOUSEOUT> event handing");
+				this.el.addEventListener("mouseout", (e: MouseEvent): bool => {
+					absorbEvent(e);
+					this.mouseout(e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					return false;
+				}, true);
+			}
+
+			if (iActivated & E3DEventTypes.MOUSEWHEEL) {
+				debug_print("WebGLCanvas activate <MOUSEWHEEL> event handing");
+				this.el.addEventListener("mousewheel", (e: MouseWheelEvent): bool => {
+					absorbEvent(e);
+
+					//FIXME: skipping middle button click
+					if (isDef(e["wheelDeltaX"]) && e["wheelDeltaX"] > 0) {
+						// console.log("skip mouse wheel event:", e);
+						return;
+					}
+
+					this.mousewheel(e.offsetX, this.height - e.offsetY - 1, e.wheelDelta/*, e*/);
+					return false;
 				}, true);
 			}
 
@@ -334,11 +375,11 @@ module akra.webgl {
         	this.bind(SIGNAL(mousemove), fn);
         }
 
-        inline set onmousedown(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
+        inline set onmousedown(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
         	this.bind(SIGNAL(mousedown), fn);
         }
 
-        inline set onmouseup(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
+        inline set onmouseup(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
         	this.bind(SIGNAL(mouseup), fn);
         }
 
@@ -350,15 +391,19 @@ module akra.webgl {
         	this.bind(SIGNAL(mouseout), fn);
         }
 
-        inline set ondragstart(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
+        inline set onmousewheel(fn: (pCanvas: ICanvas3d, x: uint, y: uint, fDelta: float) => void) {
+        	this.bind(SIGNAL(mousewheel), fn);
+        }
+
+        inline set ondragstart(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
         	this.bind(SIGNAL(dragstart), fn);
         }
 
-        inline set ondragstop(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
+        inline set ondragstop(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
         	this.bind(SIGNAL(dragstop), fn);
         }
 
-        inline set ondragging(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
+        inline set ondragging(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
         	this.bind(SIGNAL(dragging), fn);
         }
 
@@ -392,10 +437,10 @@ module akra.webgl {
 					if (!this._b3DEventDragging && 
 						//mouse shift from mousedown point greather than drag dead zone constant
 						vec2(x - this._p3DEventMouseDownPos.x, y - this._p3DEventMouseDownPos.y).length() > this._i3DEventDragDeadZone) {
-						this.dragstart(x, y);
+						this.dragstart(this._e3DEventDragBtn, x, y);
 					}
 					else if (this._b3DEventDragging) {
-						this.dragging(x, y);
+						this.dragging(this._e3DEventDragBtn, x, y);
 					}
 				}
 			}
@@ -403,43 +448,49 @@ module akra.webgl {
 			EMIT_BROADCAST(mousemove, _CALL(x, y));
 		}
 
-		signal mousedown(x: uint, y: uint): void {
+		signal mousedown(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 			
 			this._p3DEventMouseDownPos.x = x;
 			this._p3DEventMouseDownPos.y = y;
 
 			if (!isNull(pViewport)) {
-				pViewport.mousedown(x - pViewport.actualLeft, y - pViewport.actualTop);
+				pViewport.mousedown(eBtn, x - pViewport.actualLeft, y - pViewport.actualTop);
 			}
-
-			if (this.is3DEventSupported(E3DEventTypes.DRAGSTART)) {
+			if (this.is3DEventSupported(E3DEventTypes.DRAGSTART) 
+				&& this._e3DEventDragBtn === EMouseButton.UNKNOWN) {
 				this._p3DEventDragTarget = pViewport;
+				this._e3DEventDragBtn = eBtn;
 
 				if (this._i3DEventDragDeadZone === 0) {
-					this.dragstart(x, y);
+					this.dragstart(eBtn, x, y);
 				}
 			}
 			
-			EMIT_BROADCAST(mousedown, _CALL(x, y));
+			EMIT_BROADCAST(mousedown, _CALL(eBtn, x, y));
 		}
 
-		signal mouseup(x: uint, y: uint): void {
+		signal mouseup(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
 			if (!isNull(pViewport)) {
-				pViewport.mouseup(x - pViewport.actualLeft, y - pViewport.actualTop);
+				pViewport.mouseup(eBtn, x - pViewport.actualLeft, y - pViewport.actualTop);
 			}
 
-			if (this.is3DEventSupported(E3DEventTypes.DRAGSTOP)) {
-				if (this._b3DEventDragging) {
-					this.dragstop(x, y);
-				}
+			if (this.is3DEventSupported(E3DEventTypes.DRAGSTOP) && 
+					this._e3DEventDragBtn === eBtn) {
 				
+				if (this._b3DEventDragging) {
+					this.dragstop(eBtn, x, y);
+				}
+
 				this._p3DEventDragTarget = null;
+				this._e3DEventDragBtn = EMouseButton.UNKNOWN;
 			}
+
 			
-			EMIT_BROADCAST(mouseup, _CALL(x, y));
+			
+			EMIT_BROADCAST(mouseup, _CALL(eBtn, x, y));
 		}
 
 		signal mouseover(x: uint, y: uint): void {
@@ -461,46 +512,61 @@ module akra.webgl {
 
 			//stop dragging if mouse goes out of target
 			if (this.is3DEventSupported(E3DEventTypes.DRAGSTOP)) {
-				this.dragstop(x, y);
+				this.dragstop(this._e3DEventDragBtn, x, y);
+
 				this._p3DEventDragTarget = null;
+				this._e3DEventDragBtn = EMouseButton.UNKNOWN;
 			}
 			
 			EMIT_BROADCAST(mouseout, _CALL(x, y));
 		}
 
-		signal dragstart(x: uint, y: uint): void {
+		signal mousewheel(x: uint, y: uint, fDelta: float): void {
+			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
+
+			if (!isNull(pViewport)) {
+				pViewport.mousewheel(x - pViewport.actualLeft, y - pViewport.actualTop, fDelta);
+			}
+			
+			EMIT_BROADCAST(mousewheel, _CALL(x, y, fDelta));
+		}
+
+		signal dragstart(eBtn: EMouseButton, x: uint, y: uint): void {
 			this._b3DEventDragging = true;
 			
 			if (!isNull(this._p3DEventDragTarget)) {
 				this._p3DEventDragTarget.dragstart(
+					eBtn,
 					x - this._p3DEventDragTarget.actualLeft, 
 					y - this._p3DEventDragTarget.actualTop);
 			}
 
-			EMIT_BROADCAST(dragstart, _CALL(x, y));
+			EMIT_BROADCAST(dragstart, _CALL(eBtn, x, y));
 		}
 
-		signal dragstop(x: uint, y: uint): void {
+		signal dragstop(eBtn: EMouseButton, x: uint, y: uint): void {
 			this._b3DEventSkipNextClick = true;
 			this._b3DEventDragging = false;
 
 			if (!isNull(this._p3DEventDragTarget)) {
 				this._p3DEventDragTarget.dragstop(
+					eBtn,
 					x - this._p3DEventDragTarget.actualLeft, 
 					y - this._p3DEventDragTarget.actualTop);
 			}
 			
-			EMIT_BROADCAST(dragstop, _CALL(x, y));
+			EMIT_BROADCAST(dragstop, _CALL(eBtn, x, y));
 		}
 
-		signal dragging(x: uint, y: uint): void {
+		signal dragging(eBtn: EMouseButton, x: uint, y: uint): void {
 			if (!isNull(this._p3DEventDragTarget)) {
 				this._p3DEventDragTarget.dragging(
+					eBtn,
 					x - this._p3DEventDragTarget.actualLeft, 
 					y - this._p3DEventDragTarget.actualTop);
 			}
 
-			EMIT_BROADCAST(dragging, _CALL(x, y));
+			EMIT_BROADCAST(dragging, _CALL(eBtn, x, y));
 		}
 
 		static fullscreenLock: bool = false;

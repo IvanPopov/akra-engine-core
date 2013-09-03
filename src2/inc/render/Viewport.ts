@@ -112,11 +112,11 @@ module akra.render {
         	this.bind(SIGNAL(mousemove), fn);
         }
 
-        inline set onmousedown(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
+        inline set onmousedown(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
         	this.bind(SIGNAL(mousedown), fn);
         }
 
-        inline set onmouseup(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
+        inline set onmouseup(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
         	this.bind(SIGNAL(mouseup), fn);
         }
 
@@ -126,6 +126,22 @@ module akra.render {
 
         inline set onmouseout(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
         	this.bind(SIGNAL(mouseout), fn);
+        }
+
+        inline set onmousewheel(fn: (pViewport: IViewport, x: uint, y: uint, fDelta: float) => void) {
+        	this.bind(SIGNAL(mousewheel), fn);
+        }
+
+        inline set ondragstart(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(dragstart), fn);
+        }
+
+        inline set ondragstop(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(dragstop), fn);
+        }
+
+        inline set ondragging(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
+        	this.bind(SIGNAL(dragging), fn);
         }
 
 		constructor (pCamera: ICamera, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
@@ -601,7 +617,7 @@ module akra.render {
 			p.renderable && p.renderable.mousemove(this, p.object, x, y);
 		}
 
-		signal mousedown(x: uint, y: uint): void {
+		signal mousedown(eBtn: EMouseButton, x: uint, y: uint): void {
 			this._keepLastMousePosition(x, y);
     		EMIT_BROADCAST(mousedown, _CALL(x, y));
 
@@ -615,7 +631,7 @@ module akra.render {
 			p.renderable && p.renderable.mousedown(this, p.object, x, y);
 		}
 
-		signal mouseup(x: uint, y: uint): void {
+		signal mouseup(eBtn: EMouseButton, x: uint, y: uint): void {
 			this._keepLastMousePosition(x, y);
     		EMIT_BROADCAST(mouseup, _CALL(x, y));
 
@@ -642,7 +658,12 @@ module akra.render {
     		EMIT_BROADCAST(mouseout, _CALL(x, y));
     	}
 
-    	signal dragstart(x: uint, y: uint): void {
+    	signal mousewheel(x: uint, y: uint, fDelta: float): void {
+    		this._keepLastMousePosition(x, y);
+    		EMIT_BROADCAST(mousewheel, _CALL(x, y, fDelta));
+    	}
+
+    	signal dragstart(eBtn: EMouseButton, x: uint, y: uint): void {
     		this._keepLastMousePosition(x, y);
 
     		if (!this.is3DEventSupported(E3DEventTypes.DRAGSTART)) {
@@ -657,10 +678,10 @@ module akra.render {
 			p.object && p.object.dragstart(this, p.renderable, x, y);
 			p.renderable && p.renderable.dragstart(this, p.object, x, y);
 
-    		EMIT_BROADCAST(dragstart, _CALL(x, y));
+    		EMIT_BROADCAST(dragstart, _CALL(eBtn, x, y));
     	}
 
-    	signal dragstop(x: uint, y: uint): void {
+    	signal dragstop(eBtn: EMouseButton, x: uint, y: uint): void {
     		this._keepLastMousePosition(x, y);
 
     		if (!this.is3DEventSupported(E3DEventTypes.DRAGSTOP)) {
@@ -672,10 +693,10 @@ module akra.render {
 			p.object && p.object.dragstop(this, p.renderable, x, y);
 			p.renderable && p.renderable.dragstop(this, p.object, x, y);
 
-    		EMIT_BROADCAST(dragstop, _CALL(x, y));
+    		EMIT_BROADCAST(dragstop, _CALL(eBtn, x, y));
     	}
 
-    	signal dragging(x: uint, y: uint): void {
+    	signal dragging(eBtn: EMouseButton, x: uint, y: uint): void {
     		this._keepLastMousePosition(x, y);
 
     		if (!this.is3DEventSupported(E3DEventTypes.DRAGGING)) {
@@ -687,7 +708,7 @@ module akra.render {
 			p.object && p.object.dragging(this, p.renderable, x, y);
 			p.renderable && p.renderable.dragging(this, p.object, x, y);
 
-    		EMIT_BROADCAST(dragging, _CALL(x, y));
+    		EMIT_BROADCAST(dragging, _CALL(eBtn, x, y));
     	}
 	}
 }

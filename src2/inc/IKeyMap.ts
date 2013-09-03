@@ -30,6 +30,13 @@ module akra {
 		TOTAL = 256
 	}
 
+	export enum EMouseButton {
+		UNKNOWN = 0,
+		LEFT = 1,
+		MIDDLE = 2,
+		RIGHT = 3
+	}
+
 	export interface IKeyMap {
 		isKeyPress(iCode: int);
 		isKeyPress(eCode: EKeyCodes);

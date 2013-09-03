@@ -23,8 +23,11 @@
 			<span>Skybox:</span>
 			<component type="Label" name="skybox" text="[not specified]" />
 		</div>
-		<div class="row last">
+		<div class="row">
 			<component type="Button" name="screenshot" text="Save Screenshot" />
+		</div>
+		<div class="row last">
+			<component type="Button" name="lookat" text="[ Look At ]" />
 		</div>
 	</div>
 </div>

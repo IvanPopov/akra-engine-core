@@ -35,7 +35,8 @@ module akra {
         MOUSEOUT = 0x20,
         DRAGSTART = 0x40,
         DRAGSTOP = 0x80,
-        DRAGGING = 0x100
+        DRAGGING = 0x100,
+        MOUSEWHEEL = 0x200
     }
 
 	export interface IRenderTarget extends IEventProvider {
