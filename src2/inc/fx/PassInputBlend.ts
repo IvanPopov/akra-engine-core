@@ -65,10 +65,7 @@ module akra.fx {
 			textures: new Array(16)
 		};
 
-		private _nSamplerUpdates: uint = 0;
-		private _nForeignUpdates: uint = 0;
-		private _nUniformUpdates: uint = 0;
-		private _nRenderStateUpdates: uint = 0;
+		private _pStatesInfo: IAFXPassInputStateInfo = null;
 
 		samplers: IAFXSamplerStateMap = null;
 		samplerArrays: IAFXSamplerStateListMap = null; 
@@ -87,24 +84,19 @@ module akra.fx {
 
 		renderStates: IRenderStateMap = null;
 
-		inline get totalSamplerUpdates(): uint {
-			return  this._nSamplerUpdates;
-		}
-
-		inline get totalForeignUpdates(): uint {
-			return this._nForeignUpdates;
-		}
-
-		inline get totalUniformUpdates(): uint {
-			return this._nUniformUpdates;
-		}
-
-		inline get totalRenderStateUpdates(): uint {
-			return this._nRenderStateUpdates;
+		inline get statesInfo(): IAFXPassInputStateInfo {
+			return  this._pStatesInfo;
 		}
 
 		constructor(pCreator: IAFXComponentPassInputBlend){
 			this._pCreator = pCreator;
+
+			this._pStatesInfo = <IAFXPassInputStateInfo>{
+				uniformKey: 0,
+				foreignKey: 0,
+				samplerKey: 0,
+				renderStatesKey: 0
+			};
 
 			this.init();
 		}
@@ -149,7 +141,7 @@ module akra.fx {
 
 			//Check type
 
-			this._nUniformUpdates++;
+			this._pStatesInfo.uniformKey++;
 			this.uniforms[iIndex] = pValue;
 		}
 
@@ -163,7 +155,7 @@ module akra.fx {
 			//Check type
 
 			if(this.textures[iIndex] !== pValue){
-				this._nSamplerUpdates++;
+				this._pStatesInfo.samplerKey++;
 			}
 
 			this.textures[iIndex] = pValue;
@@ -183,7 +175,7 @@ module akra.fx {
 			if(pOldValue !== pValue) {
 				// this._bNeedToCalcBlend = true;
 				// this._bNeedToCalcShader = true;
-				this._nForeignUpdates++;
+				this._pStatesInfo.foreignKey++;
 			}
 
 			this.foreigns[iIndex] = pValue;
@@ -254,7 +246,7 @@ module akra.fx {
 
 			if(isString(pTexture)){
 				if (!isNull(pState.texture) || pState.textureName !== pTexture){
-					this._nSamplerUpdates++;
+					this._pStatesInfo.samplerKey++;
 				}
 
 				pState.textureName = pTexture;
@@ -262,7 +254,7 @@ module akra.fx {
 			}
 			else {
 				if(pState.texture !== pTexture){
-					this._nSamplerUpdates++;
+					this._pStatesInfo.samplerKey++;
 				}
 
 				pState.texture = pTexture;
@@ -287,7 +279,7 @@ module akra.fx {
 			var pState: IAFXSamplerState = this.samplers[iIndex];
 			
 			if(pState.texture !== pTexture){
-				this._nSamplerUpdates++;
+				this._pStatesInfo.samplerKey++;
 			}
 
 			pState.texture = pTexture;
@@ -329,7 +321,7 @@ module akra.fx {
 				this._isFirstSetSurfaceNaterial = false;
 			}
 
-			if (this._nLastSamplerUpdates !== this._nSamplerUpdates || 
+			if (this._nLastSamplerUpdates !== this._pStatesInfo.samplerKey || 
 				this._pLastSurfaceMaterial !== pSurfaceMaterial ||
 				this._nLastSufraceMaterialTextureUpdates !== pSurfaceMaterial.totalUpdatesOfTextures){
 
@@ -354,7 +346,7 @@ module akra.fx {
 				this.uniforms[this._pMaterialNameIndices.material] = pMatContainer;
 			}
 
-			if (this._nLastSamplerUpdates !== this._nSamplerUpdates){
+			if (this._nLastSamplerUpdates !== this._pStatesInfo.samplerKey){
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.diffuse, pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.ambient, pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.specular, pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
@@ -364,12 +356,12 @@ module akra.fx {
 
 			this._pLastSurfaceMaterial = pSurfaceMaterial;
 			this._nLastSufraceMaterialTextureUpdates = pSurfaceMaterial.totalUpdatesOfTextures;
-			this._nLastSamplerUpdates = this._nSamplerUpdates;
+			this._nLastSamplerUpdates = this._pStatesInfo.samplerKey;
 		}
 
 		inline setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
 			if(this.renderStates[eState] !== eValue){
-				this._nRenderStateUpdates++;
+				this._pStatesInfo.renderStatesKey++;
 			}
 
 			this.renderStates[eState] = eValue;
@@ -710,7 +702,7 @@ module akra.fx {
 
 			var pState: IAFXSamplerState = this.samplers[iNameIndex];
 			if(pState.texture !== pTexture){
-				this._nSamplerUpdates++;
+				this._pStatesInfo.samplerKey++;
 			}
 
 			pState.texture = pTexture;
@@ -719,7 +711,7 @@ module akra.fx {
 		private copySamplerState(pFrom: IAFXSamplerState, pTo: IAFXSamplerState): void {
 			if (pTo.textureName !== pFrom.textureName ||
 				pTo.texture !== pFrom.texture){
-				this._nSamplerUpdates++;
+				this._pStatesInfo.samplerKey++;
 			}
 
 			pTo.textureName = pFrom.textureName;

@@ -4,6 +4,7 @@
 #include "IRenderTechnique.ts"
 #include "events/events.ts"
 #include "render/RenderPass.ts"
+#include "util/ObjectArray.ts"
 
 module akra.render {
 	export class RenderTechnique implements IRenderTechnique {
@@ -20,6 +21,10 @@ module akra.render {
 
 		private _iGlobalPostEffectsStart: uint = 0;
 		private _iMinShiftOfOwnBlend: int = 0;
+
+		private _pRenderMethodPassStateList: util.ObjectArray = null;
+		
+		static protected pRenderMethodPassStatesPool: util.ObjectArray = new util.ObjectArray();
 
 		inline get modified(): uint {
 			return this.getGuid();
@@ -40,6 +45,8 @@ module akra.render {
 			if(!isNull(pMethod)){
 				this.setMethod(pMethod);
 			}
+
+			this._pRenderMethodPassStateList = new util.ObjectArray();
 		}
 
 
@@ -69,7 +76,7 @@ module akra.render {
 				this.connect(pMethod, SIGNAL(altered), SLOT(_updateMethod), EEventTypes.BROADCAST);
 			}
 
-			this.informComposer();			
+			this._updateMethod(pMethod);			
 		}
 
 		setState(sName: string, pValue: any): void {
@@ -296,10 +303,11 @@ module akra.render {
 			pComposer.applySurfaceMaterial(this._pMethod.surfaceMaterial);
 
 			this._isFreeze = true;
-
 			
+			this.takePassInputsFromRenderMethod();
 
-			for(var i: uint = 0; i < this.totalPasses; i++){
+			var iTotalPasses: uint = this.totalPasses;
+			for(var i: uint = 0; i < iTotalPasses; i++){
 				if(this._pPassBlackList[i] === false && this._pPassList[i].isActive()){
 					this.activatePass(i);
 					this.render(i, pRenderable, pSceneObject, pViewport);
@@ -314,6 +322,7 @@ module akra.render {
 
 		_updateMethod(pMethod: IRenderMethod): void {
 			this.informComposer();
+			this.prepareRenderMethodPassStateInfo(pMethod);
 		} 
 
 		_blockPass(iPass: uint): void {
@@ -334,12 +343,101 @@ module akra.render {
 			}
 		}
 
+		private prepareRenderMethodPassStateInfo(pMethod: IRenderMethod): void {
+			var iLength: uint = this._pRenderMethodPassStateList.length;
+			
+			for(var i: uint = 0; i < iLength; i++){
+				this.freePassState(this._pRenderMethodPassStateList.value(i));
+			}
+
+			this._pRenderMethodPassStateList.clear();
+			
+			if(isNull(pMethod)){
+				return;
+			}
+
+			var iMethodTotalPasses: uint = pMethod.effect.totalPasses;
+
+			for(var i: uint = 0; i < iMethodTotalPasses; i++){
+				var pState: IAFXPassInputStateInfo = this.getFreePassState();
+				pState.uniformKey = 0;
+				pState.foreignKey = 0;
+				pState.samplerKey = 0;
+				pState.renderStatesKey = 0;
+				
+				this._pRenderMethodPassStateList.push(pState);
+			}
+		}
+
+		private takePassInputsFromRenderMethod(): void {
+			if(isNull(this._pMethod)){
+				return;
+			}
+			
+			var iRenderMethodStartPass: uint = (this._iMinShiftOfOwnBlend < 0) ?
+												(-this._iMinShiftOfOwnBlend) : 0;
+			var iTotalPasses: uint = this._pMethod.effect.totalPasses;
+
+			for(var i: uint = 0; i < iTotalPasses; i++){
+				if(this._pPassBlackList[i + iRenderMethodStartPass]){
+					continue;
+				}
+
+				var pRenderMethodPassInput: IAFXPassInputBlend = this._pMethod._getPassInput(i);
+				var pPassInput: IAFXPassInputBlend = this._pPassList[i].getPassInput();
+
+				if(isNull(pRenderMethodPassInput) || isNull(pPassInput)){
+					continue;
+				}
+				
+				var pOldStates: IAFXPassInputStateInfo = this._pRenderMethodPassStateList.value(i);
+				var pCurrentStates: IAFXPassInputStateInfo = pRenderMethodPassInput.statesInfo;
+
+				if(pOldStates.uniformKey !== pCurrentStates.uniformKey){
+					pPassInput._copyUniformsFromInput(pRenderMethodPassInput);
+					pOldStates.uniformKey = pCurrentStates.uniformKey;
+				}
+
+				if(pOldStates.foreignKey !== pCurrentStates.foreignKey){
+					pPassInput._copyForeignsFromInput(pRenderMethodPassInput);
+					pOldStates.foreignKey = pCurrentStates.foreignKey;
+				}
+
+				if(pOldStates.samplerKey !== pCurrentStates.samplerKey){
+					pPassInput._copySamplersFromInput(pRenderMethodPassInput);
+					pOldStates.samplerKey = pCurrentStates.samplerKey;
+				}
+
+				if(pOldStates.renderStatesKey !== pCurrentStates.renderStatesKey){
+					pPassInput._copyRenderStatesFromInput(pRenderMethodPassInput);
+					pOldStates.renderStatesKey = pCurrentStates.renderStatesKey;
+				}
+			}
+		}
+
 		private activatePass(iPass: uint): void {
 			this._iCurrentPass = iPass;
 			this._pCurrentPass = this._pPassList[iPass];
 		}
 
+		private getFreePassState(): IAFXPassInputStateInfo {
+			if(RenderTechnique.pRenderMethodPassStatesPool.length > 0){
+				return RenderTechnique.pRenderMethodPassStatesPool.pop();
+			}
+			else {
+				return <IAFXPassInputStateInfo>{
+					uniformKey: 0,
+					foreignKey: 0,
+					samplerKey: 0,
+					renderStatesKey: 0
+				};
+			}
+		}
 
+		private freePassState(pState: IAFXPassInputStateInfo): void {
+			RenderTechnique.pRenderMethodPassStatesPool.push(pState);
+		}
+		
 		CREATE_EVENT_TABLE(RenderTechnique);
 		BROADCAST(render, CALL(iPass, pRenderable, pSceneObject, pViewport));
 	}

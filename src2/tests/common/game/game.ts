@@ -1692,7 +1692,7 @@ module akra {
 
 	function edgeDetection(pViewport: IDSViewport): any {
 		pViewport.effect.addComponent("akra.system.edgeDetection", 2, 0);
-		pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
+		// pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
 
 		var pParams = {
 			lineWidth: 2.0,
@@ -1723,7 +1723,7 @@ module akra {
 		var pCamera: ICamera = pViewport.getCamera();
 		
 		pViewport.effect.addComponent("akra.system.motionBlur", 2, 0);
-		pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
+		// pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
 
 		setInterval(() => {
 			pPrevViewMat.set(pCamera.viewMatrix);

@@ -698,7 +698,7 @@ module akra.fx {
 			var iPassInputId: uint = pPassInput.getGuid();
 			var pForignsHashEntry: IHashEntry = this._pPassInputForeignsHashMap[iPassInputId];
 
-			if(isDef(pForignsHashEntry) && pForignsHashEntry.modifyMark === pPassInput.totalForeignUpdates){
+			if(isDef(pForignsHashEntry) && pForignsHashEntry.modifyMark === pPassInput.statesInfo.foreignKey){
 				return pForignsHashEntry.hash;
 			}
 			else {
@@ -726,7 +726,7 @@ module akra.fx {
 				}
 
 				pForignsHashEntry.hash = PassBlend.hashMinifier.minify(sHash);
-				pForignsHashEntry.modifyMark = pPassInput.totalForeignUpdates;
+				pForignsHashEntry.modifyMark = pPassInput.statesInfo.foreignKey;
 
 				return pForignsHashEntry.hash;
 			}
@@ -739,7 +739,7 @@ module akra.fx {
 			var pSamplersHashEntry: IHashEntry = this._pPassInputSamplersHashMap[iPassInputId];
 
 			if (!isForce && 
-				isDef(pSamplersHashEntry) && pSamplersHashEntry.modifyMark === pPassInput.totalSamplerUpdates) {
+				isDef(pSamplersHashEntry) && pSamplersHashEntry.modifyMark === pPassInput.statesInfo.samplerKey) {
 				return pSamplersHashEntry.hash;
 			}
 
@@ -818,7 +818,7 @@ module akra.fx {
 			}
 
 			pSamplersHashEntry.hash =  PassBlend.hashMinifier.minify(pBlender.getHash());
-			pSamplersHashEntry.modifyMark = pPassInput.totalSamplerUpdates;
+			pSamplersHashEntry.modifyMark = pPassInput.statesInfo.samplerKey;
 
 			return pSamplersHashEntry.hash;
 		}

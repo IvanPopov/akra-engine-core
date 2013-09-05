@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Wed Aug 28 2013 18:01:58 GMT+0400 (Московское время (лето))
+ * assembled at: Thu Sep 05 2013 16:18:13 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -1674,7 +1674,7 @@ var akra;
     }
     function edgeDetection(pViewport) {
         pViewport.effect.addComponent("akra.system.edgeDetection", 2, 0);
-        pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
+        // pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
         var pParams = {
             lineWidth: 2.0,
             threshold: 0.2
@@ -1693,7 +1693,7 @@ var akra;
         var pPrevViewMat = new akra.Mat4(1.);
         var pCamera = pViewport.getCamera();
         pViewport.effect.addComponent("akra.system.motionBlur", 2, 0);
-        pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
+        // pViewport.view.getTechnique()._setGlobalPostEffectsFrom(2);
         setInterval(/** @inline */function () {
             pPrevViewMat.set(pCamera.viewMatrix);
         }, 10);

@@ -9,6 +9,13 @@ module akra {
 	IFACE(IRenderStateMap)
 	IFACE(IAFXComponentPassInputBlend)
 
+	export interface IAFXPassInputStateInfo {
+		uniformKey: uint;
+		foreignKey: uint;
+		samplerKey: uint;
+		renderStatesKey: uint;
+	};
+
 	export interface IAFXPassInputBlend extends IUnique {
 		samplers: IAFXSamplerStateMap;
 		samplerArrays: IAFXSamplerStateListMap;
@@ -27,10 +34,7 @@ module akra {
 
 		renderStates: IRenderStateMap;
 
-		readonly totalSamplerUpdates: uint;
-		readonly totalForeignUpdates: uint;
-		readonly totalUniformUpdates: uint;
-		readonly totalRenderStateUpdates: uint;
+		readonly statesInfo: IAFXPassInputStateInfo;
 
 		hasUniform(sName: string): bool;
 		hasTexture(sName: string): bool;
