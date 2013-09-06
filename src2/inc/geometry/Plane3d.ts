@@ -171,6 +171,22 @@ module akra.geometry{
 			return 0.;
 		};
 
+		intersectRay3d(pRay: IRay3d, vDest: IVec3): bool {
+			if (!intersectPlane3dRay3d(this, pRay)) {
+				return false;
+			}
+
+			var r0: IVec3 = pRay.point;
+			var n: IVec3 = this.normal;
+			var l: IVec3 = pRay.normal;
+			var d: float = this.distance;
+
+			var t0: float = -(r0.dot(n) + d) / (l.dot(n));
+
+			vDest.set(r0.x + l.x * t0, r0.y + l.y * t0, r0.z + l.z * t0);
+			return true;
+		}
+
 		signedDistance(v3fPoint: IVec3): float{
 			return this.distance + this.normal.dot(v3fPoint);
 		};

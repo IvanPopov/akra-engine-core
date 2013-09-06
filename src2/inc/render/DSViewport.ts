@@ -264,7 +264,13 @@ module akra.render {
 
 			//depth texture has POT sized, but viewport not;
 			//depth texture attached to left bottom angle of viewport
-			y = y + (pDepthTexture.height - this.actualHeight);
+			// y = y + (pDepthTexture.height - this.actualHeight);
+			// pDepthPixel.left = x;
+			// pDepthPixel.top = y;
+			// pDepthPixel.right = x + 1;
+			// pDepthPixel.bottom = y + 1;
+
+			y = pDepthTexture.height - y - 1;
 			pDepthPixel.left = x;
 			pDepthPixel.top = y;
 			pDepthPixel.right = x + 1;

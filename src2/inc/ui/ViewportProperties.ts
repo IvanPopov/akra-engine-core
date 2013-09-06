@@ -174,10 +174,10 @@ module akra.ui {
 
 			var pSceneMgr: ISceneManager = this.getEngine().getSceneManager();
 			var pScene: IScene3d = pSceneMgr.createScene3D(".3d-box");
-
-			// var pBasis: ISceneModel = util.basis(pScene);
-			// pBasis.attachToParent(pScene.getRootNode());
-			// pBasis.scale(5.);
+			var pGeneralScene: IScene3d = this.getEngine().getScene();
+			var pBasis: ISceneModel = util.basis(pGeneralScene);
+			pBasis.attachToParent(pGeneralScene.getRootNode());
+			pBasis.scale(5.);
 
 			var pRmgr: IResourcePoolManager = this.getEngine().getResourceManager();
 			var pModel: ICollada = <ICollada>pRmgr.colladaPool.loadResource(DATA + "/models/ocube/cube.DAE");
@@ -298,6 +298,8 @@ module akra.ui {
 				var vWorldPosition: IVec3 = new Vec3;
 				var vLocalPosition: IVec3 = new Vec3;
 				var qLocalOrientation: IQuat4 = new Quat4;
+				var pPlaneXZ: IPlane3d = new geometry.Plane3d(vec3(1., 0., 0.), vec3(0.), vec3(0., 0., 1.));
+				var pCameraDir: IRay3d = new geometry.Ray3d;
 
 
 
@@ -312,10 +314,45 @@ module akra.ui {
 
 					pCanvas.hideCursor();
 
-					// pGeneralViewport.unprojectPoint(
-					// 	pGeneralViewport.actualWidth / 2., 
-					// 	pGeneralViewport.actualHeight / 2., pCenterPoint);
-					pCenterPoint.set(0.);
+
+					var vDest: IVec3 = vec3(0.);
+					var fDistXY: float;
+					var fUnprojDist: float;
+
+					pGeneralViewport.unprojectPoint(
+						pGeneralViewport.actualWidth / 2., 
+						pGeneralViewport.actualHeight / 2., vDest);
+
+					fUnprojDist = vDest.subtract(pCamera.worldPosition).length();
+					
+					if (fUnprojDist >= pCamera.farPlane) {
+
+						pCameraDir.point = pCamera.worldPosition;
+						pCameraDir.normal = pCamera.localOrientation.multiplyVec3(vec3(0., 0., -1.0));
+
+						if (!pPlaneXZ.intersectRay3d(pCameraDir, vDest)) {
+							vDest.set(pCameraDir.normal.scale(10., vec3()).add(pCameraDir.point));
+							console.log("used aprox. result");
+						}
+						else {
+							console.log("used XY intersect result");
+						}
+
+					}
+					else {
+						console.log("used unproj result");
+					}
+					
+					
+					pCenterPoint.set(vDest);
+					
+					pBasis.setPosition(pCenterPoint);					
+
+					
+
+					console.log("unproject dist", fUnprojDist);
+
+					// pCenterPoint.set(0.);
 
 					vWorldPosition.set(pCamera.worldPosition);
 					vLocalPosition.set(pCamera.localPosition);
@@ -376,14 +413,18 @@ module akra.ui {
 
 					var qOrient: IQuat4;
 
+					var vDistance: IVec3 = vFrom.subtract(vCenter, vec3());
+
 					qOrient = Quat4.fromYawPitchRoll(fY, 0., 0., quat4());					
 					
-					pNode.setPosition(qOrient.multiplyVec3(vWorldPosition, vec3()));
+					pNode.setPosition(qOrient.multiplyVec3(vDistance, vec3()).add(vCenter));
 		    		pNode.setRotation(qOrient.multiply(qLocalOrientation, quat4()));
 
 		    		qOrient = Quat4.fromAxisAngle(pNode.localOrientation.multiplyVec3(vec3(1., 0., 0.)), -fX);
+
+		    		vDistance = pNode.localPosition.subtract(vCenter, vec3());
 					
-					pNode.setPosition(qOrient.multiplyVec3(pNode.localPosition, vec3()));
+					pNode.setPosition(qOrient.multiplyVec3(vDistance, vec3()).add(vCenter));
 		    		pNode.setRotation(qOrient.multiply(pNode.localOrientation, quat4()));
 				}
 

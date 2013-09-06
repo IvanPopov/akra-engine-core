@@ -24,6 +24,8 @@ module akra{
 
 		projectPointToPlane(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
 
+		intersectRay3d(pRay: IRay3d, vDest: IVec3): bool;
+
 		solveForX(fY: float, fZ: float): float;
 		solveForY(fX: float, fZ: float): float;
 		solveForZ(fX: float, fY: float): float;
