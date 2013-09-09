@@ -257,30 +257,6 @@ module akra.render {
 
 		inline getSkybox(): ITexture { return this._pDeferredSkyTexture; }
 
-		getDepth(x: int, y: int): float {
-			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
-			
-			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
-
-			//depth texture has POT sized, but viewport not;
-			//depth texture attached to left bottom angle of viewport
-			// y = y + (pDepthTexture.height - this.actualHeight);
-			// pDepthPixel.left = x;
-			// pDepthPixel.top = y;
-			// pDepthPixel.right = x + 1;
-			// pDepthPixel.bottom = y + 1;
-
-			y = pDepthTexture.height - y - 1;
-			pDepthPixel.left = x;
-			pDepthPixel.top = y;
-			pDepthPixel.right = x + 1;
-			pDepthPixel.bottom = y + 1;
-
-			pDepthTexture.getBuffer(0, 0).readPixels(pDepthPixel);
-
-			return pDepthPixel.getColorAt(pColor, 0, 0).r;
-		}
-
 		protected _getDepthRangeImpl(): IDepthRange{
 			var pRange: IDepthRange = util.getDepthRange(this._pDeferredDepthTexture);
 			//[0,1] -> [-1, 1]
@@ -327,9 +303,34 @@ module akra.render {
 			pFloatColorPixel.top = y;
 			pFloatColorPixel.right = x + 1;
 			pFloatColorPixel.bottom = y + 1;
+			
 			pColorTexture.getBuffer(0, 0).readPixels(pFloatColorPixel);
 			
 			return pFloatColorPixel.getColorAt(pColor, 0, 0);
+		}
+
+		getDepth(x: int, y: int): float {
+			ASSERT(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
+			
+			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
+
+			//depth texture has POT sized, but viewport not;
+			//depth texture attached to left bottom angle of viewport
+			// y = y + (pDepthTexture.height - this.actualHeight);
+			// pDepthPixel.left = x;
+			// pDepthPixel.top = y;
+			// pDepthPixel.right = x + 1;
+			// pDepthPixel.bottom = y + 1;
+
+			y = pDepthTexture.height - y - 1;
+			pDepthPixel.left = x;
+			pDepthPixel.top = y;
+			pDepthPixel.right = x + 1;
+			pDepthPixel.bottom = y + 1;
+
+			pDepthTexture.getBuffer(0, 0).readPixels(pDepthPixel);
+
+			return pDepthPixel.getColorAt(pColor, 0, 0).r;
 		}
 
 		setSkybox(pSkyTexture: ITexture): bool {

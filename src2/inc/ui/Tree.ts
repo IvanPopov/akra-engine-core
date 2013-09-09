@@ -114,8 +114,10 @@ module akra.ui {
 
 		protected removeChildren(): void {
 			for (var i in this._pNodeMap) {
-				this._pNodeMap[i].destroy();
-				this._pNodeMap[i] = null;
+				if (!isNull(this._pNodeMap[i])) {
+					this._pNodeMap[i].destroy();
+					this._pNodeMap[i] = null;
+				}
 			}
 		}
 
@@ -143,8 +145,11 @@ module akra.ui {
 		destroy(): void {
 			this.removeChildren();
 
-			this.tree._unlink(this);
-			this.tree = null;
+			if (!isNull(this.tree)) {
+				this.tree._unlink(this);
+				this.tree = null;
+			}
+			
 			this.source = null;
 			this.el.remove();
 		}

@@ -44,6 +44,8 @@ module akra {
 		//системные объект для быстрого доступа к основным функциям API
 		_apiEntry: any;
 
+		selectedObject: ISceneObject;
+
 		getEngine(): IEngine;
 		getResourceManager(): IResourcePoolManager;
 		getScene(): IScene3d;

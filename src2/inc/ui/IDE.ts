@@ -135,6 +135,7 @@ module akra.ui {
 				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 				pModelRoot.attachToParent(pScene.getRootNode());
 				this._pModelBasisTrans = pModelRoot;
+				this._pModelBasisTrans.setInheritance(ENodeInheritance.ALL);
 				// pModelRoot.visible = false;
 			});
 		}
@@ -243,6 +244,8 @@ module akra.ui {
 
 				if (this.editMode !== EEditModes.NONE) {
 					var pRes: IRIDPair = pViewport.pick(x, y);
+					// var vPoint: IVec3 = pViewport.unprojectPoint(x, y, vec3());
+					// console.log(x, y, vPoint.toString());
 
 					this.selected(pRes.object, pRes.renderable);
 					this.inspectNode(pRes.object);
@@ -283,8 +286,13 @@ module akra.ui {
 					this._pModelBasis.visible = true;
 					this._pModelBasis.detachFromParent();
 					this._pModelBasis.setPosition(vec3(0));
-
 					this._pModelBasis.attachToParent(pObject);
+
+					this._pModelBasisTrans.detachFromParent();
+					this._pModelBasisTrans.setPosition(vec3(0));
+					this._pModelBasisTrans.attachToParent(pObject);
+
+					console.log(this._pModelBasisTrans.worldPosition.toString());
 				}
 			}
 			else {

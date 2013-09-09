@@ -456,11 +456,10 @@ module akra.render {
 			var v4fIn: IVec4 = vec4(), v4fOut: IVec4 = vec4();
 
 			//Transformation of normalized coordinates between -1 and 1
-			v4fIn.x = (x - this.actualLeft) / this.actualWidth * 2.0 - 1.0;
+			v4fIn.x = ((x - this.actualLeft) / this.actualWidth * 2.0 - 1.0);
 			//Y-axis look down for viewport, but look UP in GL
-			v4fIn.y = -((y - this.actualTop) / this.actualHeight * 2.0 - 1.0);
+			v4fIn.y = ((y - this.actualTop) / this.actualHeight * 2.0 - 1.0);
 			v4fIn.z = 2.0 * this.getDepth(x, y) - 1.0;
-
 			v4fIn.w = 1.0;
 
             v3fDestination.set(m4fWorld.multiplyVec4(m4fProjection.unproj(v4fIn, v4fOut)).xyz);
