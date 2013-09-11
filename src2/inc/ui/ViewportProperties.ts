@@ -228,6 +228,7 @@ module akra.ui {
 					return;
 				}
 
+
 				pCanvas.setCursor("auto");
 			}
 

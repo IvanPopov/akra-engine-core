@@ -69,8 +69,7 @@ module akra.fx {
 
 		private _sProvideNameSpace: string = "";
 
-		private _pGlobalComponentList: IAFXComponent[] = null;
-		private _pGlobalComponetShiftList: int[] = null;
+		private _pImportedGlobalTechniqueList: IAFXImportedTechniqueInfo[] = null;
 
 		private _pAddedTechniqueList: IAFXTechniqueInstruction[] = null;
 
@@ -3839,9 +3838,7 @@ module akra.fx {
 				return;
 			}      
 
-			pTechnique.finalizeTechnique(this._sProvideNameSpace, 
-										 this._pGlobalComponentList, 
-										 this._pGlobalComponetShiftList);  	
+			pTechnique.setGlobalParams(this._sProvideNameSpace, this._pImportedGlobalTechniqueList);  	
         }
 
         private resumePassAnalysis(pPass: IAFXPassInstruction): void {
@@ -4225,6 +4222,21 @@ module akra.fx {
 		        iShift = this.analyzeShiftOpt(pChildren[0]);
 		    }
 		    
+		    if(!isNull(pTechnique)){
+		    	//We can import techniques from the same file, but on this stage they don`t have component yet.
+		    	//So we need special mehanism to add them on more belated stage
+		    	var sShortedComponentName: string = sComponentName;
+		    	if(this._sProvideNameSpace !== ""){
+		    		sShortedComponentName = sComponentName.replace(this._sProvideNameSpace + ".", "");
+		    	}
+
+		    	var pTechniqueFromSameEffect: IAFXTechniqueInstruction = this._pTechniqueMap[sComponentName] || this._pTechniqueMap[sShortedComponentName];
+		    	if(isDefAndNotNull(pTechniqueFromSameEffect)){
+		    		pTechnique.addTechniqueFromSameEffect(pTechniqueFromSameEffect, iShift);
+		    		return;
+		    	}
+		    }
+
 		    var pComponent: IAFXComponent = this._pComposer.getComponentByName(sComponentName);
 		    if (!pComponent) {
 		        this._error(EFFECT_BAD_IMPORTED_COMPONENT_NOT_EXIST, { componentName: sComponentName });
@@ -4270,13 +4282,15 @@ module akra.fx {
         		pTechnique.addComponent(pComponent, iShift);
         	}
         	else {
-        		if(isNull(this._pGlobalComponentList)){
-        			this._pGlobalComponentList = [];
-        			this._pGlobalComponetShiftList = [];
+        		if(isNull(this._pImportedGlobalTechniqueList)){
+        			this._pImportedGlobalTechniqueList = [];
         		}
 
-        		this._pGlobalComponentList.push(pComponent);
-        		this._pGlobalComponetShiftList.push(iShift);
+        		this._pImportedGlobalTechniqueList.push({
+        			technique: pComponent.getTechnique(),
+        			component: pComponent,
+        			shift: iShift
+        		});
         	}
 
         	//TODO: add correct add of compnent, not global

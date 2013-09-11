@@ -39,8 +39,10 @@ module akra {
 		activateEffectResource(pEffectResource: IEffect, iShift: int): bool;
 		deactivateEffectResource(pEffectResource: IEffect): bool; 
 
+		getPassInputBlendForEffect(pEffectResource: IEffect, iPass: uint): IAFXPassInputBlend;
 		//API for RenderTechnique
-		
+		getMinShiftForOwnTechniqueBlend(pRenderTechnique: IRenderTechnique): int;
+
 		getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique): uint;
 		
 		addOwnComponentToTechnique(pRenderTechnique: IRenderTechnique, 
@@ -54,7 +56,7 @@ module akra {
 
 		markTechniqueAsNeedUpdate(pRenderTechnique: IRenderTechnique): void;
 
-		getPassInputBlend(pRenderTechnique: IRenderTechnique, iPass: uint): IAFXPassInputBlend;
+		getPassInputBlendForTechnique(pRenderTechnique: IRenderTechnique, iPass: uint): IAFXPassInputBlend;
 
 		//API for render
 		

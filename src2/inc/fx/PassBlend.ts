@@ -12,9 +12,7 @@
 #include "core/pool/resources/SurfaceMaterial.ts"
 #include "util/StringMinifier.ts"
 #include "util/HashTree.ts"
-
-#define ADD_PASS_STATE(eType) this._pPassStateMap[eType] = pPass.getState(eType) !== EPassStateValue.UNDEF ? \
-															pPass.getState(eType) : this._pPassStateMap[eType];
+#include "render/renderUtil.ts"
 
 module akra.fx {
 	export interface IHashEntry {
@@ -159,7 +157,7 @@ module akra.fx {
 
 			this._pTexcoordSwapper = PassBlend.texcoordSwapper;
 
-			this._pPassStateMap = fx.createPassStateMap();
+			this._pPassStateMap = render.createRenderStateMap();
 
 			this._pPassInputForeignsHashMap = <IHashEntryMap>{};
 			this._pPassInputSamplersHashMap = <IHashEntryMap>{};
@@ -574,7 +572,7 @@ module akra.fx {
 				this._pPassFunctionListP.push(pPixel);
 			}
 
-			this.addPassStates(pPass);
+			render.copyRenderStateMap(pPass._getRenderStates(), this._pPassStateMap);
 
 			return true;
 		}
@@ -700,7 +698,7 @@ module akra.fx {
 			var iPassInputId: uint = pPassInput.getGuid();
 			var pForignsHashEntry: IHashEntry = this._pPassInputForeignsHashMap[iPassInputId];
 
-			if(isDef(pForignsHashEntry) && pForignsHashEntry.modifyMark === pPassInput.totalForeignUpdates){
+			if(isDef(pForignsHashEntry) && pForignsHashEntry.modifyMark === pPassInput.statesInfo.foreignKey){
 				return pForignsHashEntry.hash;
 			}
 			else {
@@ -728,7 +726,7 @@ module akra.fx {
 				}
 
 				pForignsHashEntry.hash = PassBlend.hashMinifier.minify(sHash);
-				pForignsHashEntry.modifyMark = pPassInput.totalForeignUpdates;
+				pForignsHashEntry.modifyMark = pPassInput.statesInfo.foreignKey;
 
 				return pForignsHashEntry.hash;
 			}
@@ -741,7 +739,7 @@ module akra.fx {
 			var pSamplersHashEntry: IHashEntry = this._pPassInputSamplersHashMap[iPassInputId];
 
 			if (!isForce && 
-				isDef(pSamplersHashEntry) && pSamplersHashEntry.modifyMark === pPassInput.totalSamplerUpdates) {
+				isDef(pSamplersHashEntry) && pSamplersHashEntry.modifyMark === pPassInput.statesInfo.samplerKey) {
 				return pSamplersHashEntry.hash;
 			}
 
@@ -820,7 +818,7 @@ module akra.fx {
 			}
 
 			pSamplersHashEntry.hash =  PassBlend.hashMinifier.minify(pBlender.getHash());
-			pSamplersHashEntry.modifyMark = pPassInput.totalSamplerUpdates;
+			pSamplersHashEntry.modifyMark = pPassInput.statesInfo.samplerKey;
 
 			return pSamplersHashEntry.hash;
 		}
@@ -1681,28 +1679,6 @@ module akra.fx {
 				}
 			}
 
-		}
-
-		private addPassStates(pPass: IAFXPassInstruction): void {
-			ADD_PASS_STATE(EPassState.BLENDENABLE);
-	        ADD_PASS_STATE(EPassState.CULLFACEENABLE);
-	        ADD_PASS_STATE(EPassState.ZENABLE);
-	        ADD_PASS_STATE(EPassState.ZWRITEENABLE);
-	        ADD_PASS_STATE(EPassState.DITHERENABLE);
-	        ADD_PASS_STATE(EPassState.SCISSORTESTENABLE);
-	        ADD_PASS_STATE(EPassState.STENCILTESTENABLE);
-	        ADD_PASS_STATE(EPassState.POLYGONOFFSETFILLENABLE);
-
-	        ADD_PASS_STATE(EPassState.CULLFACE);
-	        ADD_PASS_STATE(EPassState.FRONTFACE);
-
-	        ADD_PASS_STATE(EPassState.SRCBLEND);
-	        ADD_PASS_STATE(EPassState.DESTBLEND);
-
-	        ADD_PASS_STATE(EPassState.ZFUNC);
-
-	        ADD_PASS_STATE(EPassState.ALPHABLENDENABLE);
-	        ADD_PASS_STATE(EPassState.ALPHATESTENABLE);
 		}
 	}
 }

@@ -142,17 +142,13 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.sunLighting");
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
 
-
 			pDSMethod.effect = pDSEffect;
-			
 
 			this._pDeferredEffect = pDSEffect;
 			this._pDeferredView = pDefferedView;
 
 			pDefferedView.getTechnique().setMethod(pDSMethod);
 
-			//deferred viewport completely rewritten, so there is no
-			//necessary to clean it additionally
 			this.setClearEveryFrame(false);
 			this.setDepthParams(false, false, 0);			
 
@@ -359,10 +355,10 @@ module akra.render {
 			var pEffect: IEffect = this._pDeferredEffect;
 			
 			if (bValue) {
-				pEffect.addComponent("akra.system.fxaa", 3, 0);
+				pEffect.addComponent("akra.system.fxaa", 2, 0);
 			}
 			else {
-				pEffect.delComponent("akra.system.fxaa", 3, 0);
+				pEffect.delComponent("akra.system.fxaa", 2, 0);
 			}
 		}
 
@@ -395,10 +391,10 @@ module akra.render {
 			}
 
 			if (p.object && isNull(pObjectPrev)) {
-				pEffect.addComponent("akra.system.outline", 2, 0);
+				pEffect.addComponent("akra.system.outline", 1, 0);
 			}
 			else if (isNull(p.object) && pObjectPrev) {
-				pEffect.delComponent("akra.system.outline", 2, 0);
+				pEffect.delComponent("akra.system.outline", 1, 0);
 			}
 		}
 
@@ -499,6 +495,11 @@ module akra.render {
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
                                      vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
 					break;
+				// case 2:
+				// 	pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
+				// 	pPass.setUniform("SCREEN_TEXTURE_RATIO",
+    //                                  vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+					// break;
 			}
 
 			super.render(pTechnique, iPass, pRenderable, pSceneObject);

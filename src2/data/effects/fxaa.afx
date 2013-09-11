@@ -28,6 +28,9 @@ VS_OUT vs_fxaa_shading(float2 pos: POSITION){
 };
 
 float2 screenSize : INPUT_TEXTURE_SIZE;
+float FXAA_SPAN_MAX = 4.0;
+float FXAA_REDUCE_MUL = 1.0/8.0;
+float FXAA_REDUCE_MIN = 1.0/128.0;
 
 float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 
@@ -37,9 +40,9 @@ float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 	float2 texCoords = IN.textureCoords;
 	float2 invScreenSize = float2(1./screenSize.x, 1./screenSize.y);
 	
-	float FXAA_SPAN_MAX = 4.0;
-	float FXAA_REDUCE_MUL = 1.0/8.0;
-	float FXAA_REDUCE_MIN = 1.0/128.0;
+//	float FXAA_SPAN_MAX = 4.0;
+//	float FXAA_REDUCE_MUL = 1.0/8.0;
+//	float FXAA_REDUCE_MIN = 1.0/128.0;
 
 	float3 rgbNW=tex2D(screenSampler,texCoords+(float2(-1.0,-1.0) * invScreenSize)).xyz;
 	float3 rgbNE=tex2D(screenSampler,texCoords+(float2(1.0,-1.0) * invScreenSize)).xyz;

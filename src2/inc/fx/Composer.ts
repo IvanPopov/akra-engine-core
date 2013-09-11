@@ -291,10 +291,36 @@ module akra.fx {
 			return true;
 		}
 
+		getPassInputBlendForEffect(pEffectResource: IEffect, iPass: uint): IAFXPassInputBlend {
+			var id: uint = pEffectResource.resourceHandle;
+			var pBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
+
+			if(!isDef(this._pEffectResourceToComponentBlendMap[id])){
+				return null;
+			}
+
+			if(!pBlend.isReadyToUse()) {
+				pBlend.finalizeBlend();
+			}
+			
+			return pBlend.getPassInputForPass(iPass);
+		}
 
 		//-----------------------------------------------------------------------------//
 		//----------------------------API for RenderTechnique--------------------------//
 		//-----------------------------------------------------------------------------//
+
+		getMinShiftForOwnTechniqueBlend(pRenderTechnique: IRenderTechnique): int {
+			var id: uint = pRenderTechnique.getGuid();
+			var pBlend: IAFXComponentBlend = this._pTechniqueToOwnBlendMap[id];
+
+			if(isDefAndNotNull(this._pTechniqueToOwnBlendMap[id])){
+				return pBlend._getMinShift();
+			}
+			else {
+				return 0;
+			}
+		}
 
 		getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique): uint {
 			this.prepareTechniqueBlend(pRenderTechnique);
@@ -422,7 +448,7 @@ module akra.fx {
 			this._pTechniqueNeedUpdateMap[pRenderTechnique.getGuid()] = true;
 		}
 
-		getPassInputBlend(pRenderTechnique: IRenderTechnique, iPass: uint): IAFXPassInputBlend {
+		getPassInputBlendForTechnique(pRenderTechnique: IRenderTechnique, iPass: uint): IAFXPassInputBlend {
 			var id: uint = pRenderTechnique.getGuid();
 
 			if(!isDef(this._pTechniqueToBlendMap[id])){
@@ -613,6 +639,8 @@ module akra.fx {
 			var pComponent: IAFXComponent = <IAFXComponent>pComponentPool.createResource(sTechniqueName);
 			pComponent.create();
 			pComponent.setTechnique(pTechnique);
+
+			pTechnique.finalize(this);
 
 			return true;
 		}

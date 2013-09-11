@@ -63,7 +63,7 @@ module akra.render {
 
 		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: bool): void {
 			if(isNeedRelocate){
-				this.relocateOldInput(pInput);
+				pInput._copyFrom(pInput);
 			}
 
 			if(!isNull(this._pInput)) {

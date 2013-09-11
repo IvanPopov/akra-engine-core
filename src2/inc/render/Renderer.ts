@@ -30,29 +30,6 @@
 #include "render/RenderQueue.ts"
 
 module  akra.render {
-
-	export function createRenderStateMap(): IRenderStateMap {
-		var pMap: IRenderStateMap = <IRenderStateMap>{};
-		
-		pMap[EPassState.BLENDENABLE] = EPassStateValue.UNDEF;
-		pMap[EPassState.CULLFACEENABLE] = EPassStateValue.UNDEF;
-		pMap[EPassState.ZENABLE] = EPassStateValue.UNDEF;
-		pMap[EPassState.ZWRITEENABLE] = EPassStateValue.UNDEF;
-		pMap[EPassState.DITHERENABLE] = EPassStateValue.UNDEF;
-		pMap[EPassState.SCISSORTESTENABLE] = EPassStateValue.UNDEF;
-		pMap[EPassState.STENCILTESTENABLE] = EPassStateValue.UNDEF;
-		pMap[EPassState.POLYGONOFFSETFILLENABLE] = EPassStateValue.UNDEF;
-		pMap[EPassState.CULLFACE] = EPassStateValue.UNDEF;
-		pMap[EPassState.FRONTFACE] = EPassStateValue.UNDEF;
-		pMap[EPassState.SRCBLEND] = EPassStateValue.UNDEF;
-		pMap[EPassState.DESTBLEND] = EPassStateValue.UNDEF;
-		pMap[EPassState.ZFUNC] = EPassStateValue.UNDEF;
-		pMap[EPassState.ALPHABLENDENABLE] = EPassStateValue.UNDEF;
-		pMap[EPassState.ALPHATESTENABLE] = EPassStateValue.UNDEF;
-
-		return pMap;
-	}
-
 	export var SShaderPrefixes = {
 		k_Sampler    : "A_s_",
 		k_Header     : "A_h_",

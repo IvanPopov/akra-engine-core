@@ -2,6 +2,7 @@
 #define AFXTECHNIQUEINSTRUCTION_TS
 
 #include "fx/Instruction.ts"
+#include "render/renderUtil.ts"
 
 #define POST_EFFECT_SEMANTIC "POST_EFFECT"
 
@@ -205,7 +206,7 @@ module akra.fx {
 
         setState(eType: EPassState, eValue: EPassStateValue): void {
         	if(isNull(this._pPassStateMap)){
-        		this._pPassStateMap = createPassStateMap();
+        		this._pPassStateMap = render.createRenderStateMap();
         	}
 
         	if(this.isComplexPass()){
@@ -244,6 +245,10 @@ module akra.fx {
 
         inline getState(eType: EPassState): EPassStateValue {
         	return !isNull(this._pPassStateMap) ? this._pPassStateMap[eType] : EPassStateValue.UNDEF;
+        }
+
+        inline _getRenderStates(): IRenderStateMap {
+            return this._pPassStateMap;
         }
 
         private clearPassStates(): void {
@@ -371,7 +376,6 @@ module akra.fx {
         }
 	}
 
-	
 
 	export class TechniqueInstruction extends DeclInstruction implements IAFXTechniqueInstruction {
 		private _sName: string = "";
@@ -380,12 +384,16 @@ module akra.fx {
 		private _pSharedVariableListV: IAFXVariableDeclInstruction[] = null;
 		private _pSharedVariableListP: IAFXVariableDeclInstruction[] = null;
 		private _pPassList: IAFXPassInstruction[] = null;
-		private _pComponentList: IAFXComponent[] = null;
-		private _pComponentShiftList: int[] = null;
+        
+        private _bHasImportedTechniqueFromSameEffect: bool = false;
+        private _pImportedTechniqueList: IAFXImportedTechniqueInfo[] = null;
+
 		private _pFullComponentList: IAFXComponent[] = null;
 		private _pFullComponentShiftList: int[] = null;
-		private _nTotalPasses: uint = 0;
+		
+        private _nTotalPasses: uint = 0;
 		private _isPostEffect: bool = false;
+        private _isFinalize: bool = false;
 
 		constructor() {
 			super();
@@ -452,24 +460,32 @@ module akra.fx {
         totalPasses(): uint{
         	return this._nTotalPasses;
         } 
+        
+        addTechniqueFromSameEffect(pTechnique: IAFXTechniqueInstruction, iShift: uint): void {
+            if(isNull(this._pImportedTechniqueList)){
+                this._pImportedTechniqueList = [];
+            }
+
+            this._pImportedTechniqueList.push({
+                technique: pTechnique,
+                component: null,
+                shift: iShift
+            });
+
+            this._bHasImportedTechniqueFromSameEffect = true;
+        }
 
 		addComponent(pComponent: IAFXComponent, iShift: int): void{
-			if(isNull(this._pComponentList)){
-				this._pComponentList = [];
-				this._pComponentShiftList = [];
+			if(isNull(this._pImportedTechniqueList)){
+				this._pImportedTechniqueList = [];
 			}
 
-			this._pComponentList.push(pComponent);
-			this._pComponentShiftList.push(iShift);
+            this._pImportedTechniqueList.push({
+                technique: pComponent.getTechnique(),
+                component: pComponent,
+                shift: iShift
+            });
 		}
-
-		inline getComponentList(): IAFXComponent[]{
-			return this._pComponentList;
-		}
-
-        inline getComponentListShift(): int[]{
-        	return this._pComponentShiftList;
-        }
 
         getFullComponentList(): IAFXComponent[]{
         	return this._pFullComponentList;
@@ -483,28 +499,45 @@ module akra.fx {
 			return true;
 		}
 
-		finalizeTechnique(sProvideNameSpace: string, 
-                          pGloabalComponentList: IAFXComponent[],
-                          pGloabalComponentShiftList: uint[]): void {
+		setGlobalParams(sProvideNameSpace: string, 
+                        pGlobalImportList: IAFXImportedTechniqueInfo[]): void {
 			this.generateListOfSharedVariables();
 
 			if(!this.hasComplexName() && sProvideNameSpace !== ""){
 				this._sName = sProvideNameSpace + "." + this._sName;
 			}
 
-			if(!isNull(pGloabalComponentList)){
-				if(!isNull(this._pComponentList)){
-					this._pComponentList = pGloabalComponentList.concat(this._pComponentList);
-					this._pComponentShiftList = pGloabalComponentShiftList.concat(this._pComponentShiftList);
+			if(!isNull(pGlobalImportList)){
+				if(!isNull(this._pImportedTechniqueList)){
+					this._pImportedTechniqueList = pGlobalImportList.concat(this._pImportedTechniqueList);
 				}
 				else {
-					this._pComponentList = pGloabalComponentList.concat();
-					this._pComponentShiftList = pGloabalComponentShiftList.concat();
+					this._pImportedTechniqueList = pGlobalImportList.concat();
 				}
 			}
 
-			this.generateFullListOfComponent();
+            if(!this._bHasImportedTechniqueFromSameEffect){
+                this.generateFullListOfComponent();
+                this._isFinalize = true;
+            }
 		}
+
+        finalize(pComposer: IAFXComposer): void {
+            if(this._isFinalize){
+                return;
+            }
+
+            for(var i: uint = 0; i < this._pImportedTechniqueList.length; i++){
+                var pInfo: IAFXImportedTechniqueInfo = this._pImportedTechniqueList[i];
+
+                if(isNull(pInfo.component)){
+                    pInfo.component = pComposer.getComponentByName(pInfo.technique.getName());
+                }
+            }
+            
+            this.generateFullListOfComponent();
+            this._isFinalize = true;
+        }
 
 		private generateListOfSharedVariables(): void {
 			this._pSharedVariableListV = [];
@@ -546,16 +579,18 @@ module akra.fx {
 		private generateFullListOfComponent(): void {
 			this._nTotalPasses = this.totalOwnPasses();
 
-			if(isNull(this._pComponentList)){
+			if(isNull(this._pImportedTechniqueList)){
 				return;
 			}
 
 			this._pFullComponentList = [];
 			this._pFullComponentShiftList = [];
 
-			for(var i: uint = 0; i < this._pComponentList.length; i++){
-				var pTechnique: IAFXTechniqueInstruction = this._pComponentList[i].getTechnique();
-				var iMainShift: int = this._pComponentShiftList[i];
+			for(var i: uint = 0; i < this._pImportedTechniqueList.length; i++){
+                var pInfo: IAFXImportedTechniqueInfo = this._pImportedTechniqueList[i];
+
+				var pTechnique: IAFXTechniqueInstruction = pInfo.technique;
+				var iMainShift: int = pInfo.shift;
 				var pAddComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
 				var pAddComponentShiftList: int[] = pTechnique.getFullComponentShiftList();
 
@@ -566,7 +601,7 @@ module akra.fx {
 					}
 				}
 
-				this._pFullComponentList.push(this._pComponentList[i]);
+				this._pFullComponentList.push(pInfo.component);
 				this._pFullComponentShiftList.push(iMainShift);
 
 				if(this._nTotalPasses < iMainShift + pTechnique.totalPasses()) {
