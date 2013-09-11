@@ -49,7 +49,7 @@ module akra.ui {
 
 		//editing
 		protected _eEditMode: EEditModes = EEditModes.NONE;
-		protected _pModelBasis: ISceneModel;
+		// protected _pModelBasis: ISceneModel;
 		protected _pModelBasisTrans: IModelEntry;
 
 
@@ -121,13 +121,13 @@ module akra.ui {
 
 			//create mode basis
 			var pScene: IScene3d = this.getScene();
-			var pBasis: ISceneModel = util.basis(pScene);
+			// var pBasis: ISceneModel = util.basis(pScene);
 
-			pBasis.name = ".model-basis";
-			pBasis.visible = false;
-			pBasis.setInheritance(ENodeInheritance.ROTPOSITION);
+			// pBasis.name = ".model-basis";
+			// pBasis.visible = false;
+			// pBasis.setInheritance(ENodeInheritance.ROTPOSITION);
 
-			this._pModelBasis = pBasis;
+			// this._pModelBasis = pBasis;
 
 			var pBasisTranslation: ICollada = <ICollada>this.getResourceManager().colladaPool.loadResource(DATA + "/models/basis_translation.DAE");
 
@@ -283,21 +283,15 @@ module akra.ui {
 				}
 
 				if (!isNull(pObject)) {
-					this._pModelBasis.visible = true;
-					this._pModelBasis.detachFromParent();
-					this._pModelBasis.setPosition(vec3(0));
-					this._pModelBasis.attachToParent(pObject);
+					// this._pModelBasis.visible = true;
+					// this._pModelBasis.setPosition(vec3(0));
 
-					this._pModelBasisTrans.detachFromParent();
-					this._pModelBasisTrans.setPosition(vec3(0));
-					this._pModelBasisTrans.attachToParent(pObject);
-
-					console.log(this._pModelBasisTrans.worldPosition.toString());
+					// (<ISceneModel>this._pModelBasisTrans.child).visible = true;
+					this._pModelBasisTrans.setPosition(pObject.worldPosition);
 				}
 			}
 			else {
-				this._pModelBasis.visible = false;
-				this._pModelBasis.detachFromParent();
+				// (<ISceneModel>this._pModelBasisTrans.child).visible = false;
 			}
 		}
 
