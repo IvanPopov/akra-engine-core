@@ -180,7 +180,7 @@ module akra.core.pool.resources {
 				var pNewInput: IAFXPassInputBlend = pComposer.getPassInputBlendForEffect(pEffect, i);
 				var pOldInput: IAFXPassInputBlend = this._pPassInputList[i];
 
-				if(isDefAndNotNull(pOldInput)){
+				if(isDefAndNotNull(pOldInput) && isDefAndNotNull(pNewInput)){
 					if(pNewInput._isFromSameBlend(pOldInput)){
 						return;
 					}

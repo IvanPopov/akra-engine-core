@@ -48,6 +48,27 @@ module akra.render {
 		pTo[EPassState.ALPHATESTENABLE] = pFrom[EPassState.ALPHATESTENABLE] || pTo[EPassState.ALPHATESTENABLE];
 	}
 
+	export function mergeRenderStateMap(pFromA: IRenderStateMap, pFromB: IRenderStateMap, pTo: IRenderStateMap): void {
+		if(isNull(pFromA) || isNull(pFromB)){
+			return;
+		}
+		pTo[EPassState.BLENDENABLE] = pFromA[EPassState.BLENDENABLE] || pFromB[EPassState.BLENDENABLE];
+		pTo[EPassState.CULLFACEENABLE] = pFromA[EPassState.CULLFACEENABLE] || pFromB[EPassState.CULLFACEENABLE];
+		pTo[EPassState.ZENABLE] = pFromA[EPassState.ZENABLE] || pFromB[EPassState.ZENABLE];
+		pTo[EPassState.ZWRITEENABLE] = pFromA[EPassState.ZWRITEENABLE] || pFromB[EPassState.ZWRITEENABLE];
+		pTo[EPassState.DITHERENABLE] = pFromA[EPassState.DITHERENABLE] || pFromB[EPassState.DITHERENABLE];
+		pTo[EPassState.SCISSORTESTENABLE] = pFromA[EPassState.SCISSORTESTENABLE] || pFromB[EPassState.SCISSORTESTENABLE];
+		pTo[EPassState.STENCILTESTENABLE] = pFromA[EPassState.STENCILTESTENABLE] || pFromB[EPassState.STENCILTESTENABLE];
+		pTo[EPassState.POLYGONOFFSETFILLENABLE] = pFromA[EPassState.POLYGONOFFSETFILLENABLE] || pFromB[EPassState.POLYGONOFFSETFILLENABLE];
+		pTo[EPassState.CULLFACE] = pFromA[EPassState.CULLFACE] || pFromB[EPassState.CULLFACE];
+		pTo[EPassState.FRONTFACE] = pFromA[EPassState.FRONTFACE] || pFromB[EPassState.FRONTFACE];
+		pTo[EPassState.SRCBLEND] = pFromA[EPassState.SRCBLEND] || pFromB[EPassState.SRCBLEND];
+		pTo[EPassState.DESTBLEND] = pFromA[EPassState.DESTBLEND] || pFromB[EPassState.DESTBLEND];
+		pTo[EPassState.ZFUNC] = pFromA[EPassState.ZFUNC] || pFromB[EPassState.ZFUNC];
+		pTo[EPassState.ALPHABLENDENABLE] = pFromA[EPassState.ALPHABLENDENABLE] || pFromB[EPassState.ALPHABLENDENABLE];
+		pTo[EPassState.ALPHATESTENABLE] = pFromA[EPassState.ALPHATESTENABLE] || pFromB[EPassState.ALPHATESTENABLE];
+	}
+
 	export function clearRenderStateMap(pMap: IRenderStateMap): void {
 		pMap[EPassState.BLENDENABLE] = EPassStateValue.UNDEF;
 		pMap[EPassState.CULLFACEENABLE] = EPassStateValue.UNDEF;

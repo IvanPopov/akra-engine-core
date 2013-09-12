@@ -583,7 +583,7 @@ module akra.fx {
 			var pUniforms: any = pPassInput.uniforms;
 			var pTextures: any = pPassInput.textures
 			var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
-			var pRenderStates: IRenderStateMap = pPassInput.renderStates;
+			var pPassInputRenderStates: IRenderStateMap = pPassInput.renderStates;
 			var pSamplerArrays: IAFXSamplerStateListMap = pPassInput.samplerArrays;
 
 			var pInput: IShaderInput = this._getShaderInput();
@@ -693,8 +693,7 @@ module akra.fx {
 				pInput.uniforms[this._pShaderUniformInfoMap["asc0"].location] = 19;
 			}
 
-			render.copyRenderStateMap(this._pPassBlend._getRenderStates(), pInput.renderStates);
-			render.copyRenderStateMap(pRenderStates, pInput.renderStates);
+			render.mergeRenderStateMap(pPassInputRenderStates, this._pPassBlend._getRenderStates(), pInput.renderStates);
 
 #ifdef PROFILE_MAKE
 	    	tEndTime = (<any>window).performance.now();

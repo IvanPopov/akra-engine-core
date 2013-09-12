@@ -149,7 +149,7 @@ module akra.render {
 
 			pDefferedView.getTechnique().setMethod(pDSMethod);
 
-			// this.setClearEveryFrame(false);
+			this.setClearEveryFrame(false);
 			this.setDepthParams(false, false, 0);			
 
 			//AA is default

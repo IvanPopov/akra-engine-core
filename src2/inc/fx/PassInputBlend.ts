@@ -470,6 +470,8 @@ module akra.fx {
 				this.samplerArrayLength[this.samplerArrayKeys[i]] = !isNull(pDefaultStateList) ? pDefaultStateList.length : 0;
 			}
 
+			render.clearRenderStateMap(this.renderStates);
+			
 			this._pCreator.releasePassInput(this);
 
 			// this._bNeedToCalcShader = true;

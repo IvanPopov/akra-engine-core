@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Sep 05 2013 14:46:08 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Sep 12 2013 14:52:50 GMT+0400 (Московское время (лето))
  * directory: tests/common/fx/DEBUG/
  * file: tests/common/fx/test-example.ts
  * name: test-example

@@ -242,7 +242,7 @@ module akra.fx {
 				}
 			}
 
-			if(this._iShiftMin === iShift && this._iShiftMax === iShift){
+			if(this._iShiftMin === iShift || this._iShiftMax === iShift){
 				this._iShiftMax = 0;
 				this._iShiftMin = 0;
 			
