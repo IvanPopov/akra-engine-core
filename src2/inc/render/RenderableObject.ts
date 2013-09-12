@@ -250,7 +250,7 @@ module akra.render {
 				return;
 			}
 
-			this.beforeRender(pViewport);
+			this.beforeRender(pViewport, this._pTechnique);
 			
 			this.data._draw(this._pTechnique, pViewport, this, pSceneObject);
 		}
@@ -277,7 +277,7 @@ module akra.render {
 		CREATE_EVENT_TABLE(RenderableObject);
 		
 		UNICAST(shadow, CALL(bValue));
-		UNICAST(beforeRender, CALL(pViewport));
+		UNICAST(beforeRender, CALL(pViewport, pTechnique));
 
 		BROADCAST(click, CALL(pViewport, pObject, x, y));
 		BROADCAST(mousemove, CALL(pViewport, pObject, x, y));

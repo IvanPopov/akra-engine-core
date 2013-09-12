@@ -365,20 +365,8 @@
       </mesh>
     </geometry>
   </library_geometries>
-  <library_lights>
-    <light id="EnvironmentAmbientLight" name="EnvironmentAmbientLight">
-      <technique_common>
-        <ambient>
-          <color>0 0 0</color>
-        </ambient>
-      </technique_common>
-    </light>
-  </library_lights>
   <library_visual_scenes>
     <visual_scene id="MaxScene">
-      <node name="EnvironmentAmbientLight">
-        <instance_light url="#EnvironmentAmbientLight"/>
-      </node>
       <node id="node-Cone001" name="Cone001">
         <matrix>1 0 0 0 0 1 0 0 0 0 1 57 0 0 0 1</matrix>
         <instance_geometry url="#geom-Cone001">

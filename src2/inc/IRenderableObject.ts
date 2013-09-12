@@ -70,7 +70,7 @@ module akra {
 		/** Notify, when shadow added or removed. */
 		signal shadow(bValue: bool): void;
 		/** Notify, before object start rendendering */
-		signal beforeRender(pViewport: IViewport): void;
+		signal beforeRender(pViewport: IViewport, pTechnique: IRenderTechnique): void;
 
 		signal click(pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint);
 		

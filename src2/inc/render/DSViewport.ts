@@ -149,7 +149,7 @@ module akra.render {
 
 			pDefferedView.getTechnique().setMethod(pDSMethod);
 
-			this.setClearEveryFrame(false);
+			// this.setClearEveryFrame(false);
 			this.setDepthParams(false, false, 0);			
 
 			//AA is default
@@ -239,7 +239,7 @@ module akra.render {
 								pTechnique._blockPass(0);
 							}
 
-							if(pTechnique.totalPasses > j){
+							if (pTechnique.totalPasses > j) {
 								var pPass: IRenderPass = pTechnique.getPass(j);
 								pPass.blend("akra.system.prepareForDeferredShading", j);
 							}
@@ -477,9 +477,6 @@ module akra.render {
 				    
 				    pPass.setUniform("SCREEN_TEXTURE_RATIO",
                                      vec2(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
-					break;
-
-				case 2:
 					//outline
 					var p: IRIDPair = this._pHighlightedObject;
 

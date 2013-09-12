@@ -133,7 +133,25 @@ module akra.ui {
 
 			pBasisTranslation.bind(SIGNAL(loaded), (pModel: ICollada): void => {
 				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
+				
 				pModelRoot.attachToParent(pScene.getRootNode());
+
+				var pEl: ISceneModel = <ISceneModel>pModelRoot.child;
+
+				while(!isNull(pEl)) {
+					var pMesh: IMesh = pEl.mesh;
+
+					for (var i = 0; i < pMesh.length; ++ i) {
+						console.log(pMesh.getSubset(i));
+						// pMesh.getSubset(i).bind(SIGNAL(beforeRender), 
+						// 	(pRenderable: IRenderableObject, pViewport: IViewport, pTechnique: IRenderTechnique) => {
+						// 	pTechnique.getPass(0).setRenderState(ERenderStates.ZENABLE, ERenderStateValues.FALSE);
+						// });
+					}
+
+					pEl = <ISceneModel>pEl.sibling;
+				}
+
 				this._pModelBasisTrans = pModelRoot;
 				this._pModelBasisTrans.setInheritance(ENodeInheritance.ALL);
 				// pModelRoot.visible = false;
