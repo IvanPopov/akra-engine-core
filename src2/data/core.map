@@ -16,7 +16,8 @@
 		    {"path": "effects/generate_normal_map.afx"},
 		    {"path": "effects/sky.afx"},
 		    {"path": "effects/motion_blur.afx"},
-		    {"path": "effects/edge_detection.afx"}
+		    {"path": "effects/edge_detection.afx"},
+		    {"path": "effects/wireframe.afx"}
 		],
 		"deps": {
 			"files": [

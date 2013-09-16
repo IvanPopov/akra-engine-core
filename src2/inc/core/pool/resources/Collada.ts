@@ -2282,6 +2282,7 @@ module akra.core.pool.resources {
                 // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 0);
                 // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 1);
                 pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+                // pSubMesh.renderMethod.effect.addComponent("akra.system.wireframe");
             }
 
             return pMesh;
@@ -2319,6 +2320,7 @@ module akra.core.pool.resources {
                         // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 0);
                         // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 1);
                         pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+                        // pSubMesh.renderMethod.effect.addComponent("akra.system.wireframe");
                         // pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
 
                         //setup textures
@@ -2872,7 +2874,7 @@ module akra.core.pool.resources {
 
                 pOptions[i] = Collada.DEFAULT_OPTIONS[i];
             }
-
+            
             this._pOptions = pOptions;
         }
 
