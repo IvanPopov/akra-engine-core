@@ -17,7 +17,6 @@ module akra {
 		//for screenshoting
 		preserveDrawingBuffer: true,
 		//for black background & and avoiding composing with other html
-		alpha: false,
 	};
 
 	
@@ -66,6 +65,7 @@ module akra {
 		deps: {
 			files: [
 				//{path: "models/arteries.DAE", name: "arteries"}
+				//{path: "", name: "TEST_IMAGE"}
 			]
 		}
 	};
@@ -111,8 +111,32 @@ module akra {
 			pArteriesMesh.showBoundingBox();
 			pArteriesMesh.getSubset(0).wireframe(true);
 			(<IColor>pArteriesMesh.getSubset(0).material.diffuse).set(1., 0., 0., 0.);
+
+			window["arteries_mesh"] = pArteriesMesh;
 		});
 		
+
+		var pCubeModel: IModel = pRmgr.loadModel(DATA + "/models/ocube/cube.DAE", {shadows: false, wireframe: true});
+		pCubeModel.bind("loaded", () => {
+			var pCube: IModelEntry = pCubeModel.attachToScene(pScene);
+		
+			
+		});
+
+		
+		/*var pTex: ITexture = <ITexture>pRmgr.texturePool.loadResource(DATA + "/textures/10004.jpg");
+		var pSprite: ISprite = pScene.createSprite();
+		pTex.bind("loaded", () => {
+			pSprite.setTexture(pTex);
+			pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.05, .5 * 512/pViewport.actualWidth, .5 * 512/pViewport.actualHeight, 4.));
+			// pTex.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+			// pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+
+			window["billboard"] = pSprite;
+		});
+		
+		pSprite.attachToParent(pScene.getRootNode());*/
+
 	}
 
 	pEngine.bind("depsLoaded", main);	

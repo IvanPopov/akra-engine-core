@@ -44,7 +44,9 @@ module akra {
          */
         releaseData(iDataLocation: int): void;
         
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool;
         allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+        allocateAttribute(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
         allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
         
         allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;

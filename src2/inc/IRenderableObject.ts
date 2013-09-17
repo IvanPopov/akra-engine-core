@@ -13,7 +13,8 @@ module akra {
 		UNKNOWN,
 		
         MESH_SUBSET,
-        SCREEN
+        SCREEN,
+        SPRITE
     }
 
 	export interface IRenderableObject extends IEventProvider {
@@ -60,6 +61,8 @@ module akra {
 		isReadyForRender(): bool;
 		isAllMethodsLoaded(): bool;
 		isFrozen(): bool;
+
+		wireframe(enable?: bool, bOverlay?: bool): bool;
 
 		render(pViewport: IViewport, csMethod?: string, pSceneObject?: ISceneObject): void;
 

@@ -114,9 +114,12 @@ module akra.render {
 		 * Allocate attribute.
 		 * Attribute - data without index.
 		 */
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: any): bool {
+        allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBuffer): bool;
+        allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+        allocateAttribute(pDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+        allocateAttribute(pDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
+        allocateAttribute(pDecl: any, pData: any): bool {
+            var pAttrDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
         	var pIndexData = this._pIndexData;
 		    var pAttribData: IVertexData = this._pAttribData;
 		    var pAttribBuffer: IVertexBuffer = this._pAttribBuffer;

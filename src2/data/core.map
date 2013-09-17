@@ -17,7 +17,8 @@
 		    {"path": "effects/sky.afx"},
 		    {"path": "effects/motion_blur.afx"},
 		    {"path": "effects/edge_detection.afx"},
-		    {"path": "effects/wireframe.afx"}
+		    {"path": "effects/wireframe.afx"},
+		    {"path": "effects/sprite.afx"}
 		],
 		"deps": {
 			"files": [

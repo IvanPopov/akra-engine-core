@@ -21,6 +21,7 @@ module akra {
     IFACE(IDepsManager);
     IFACE(IDep);
     IFACE(IDependens);
+    IFACE(ISpriteManager);
    
     export interface IEngineOptions {
         depsRoot?: string;
@@ -42,6 +43,7 @@ module akra {
         getSceneManager(): ISceneManager;
         getParticleManager(): IParticleManager;
         getResourceManager(): IResourcePoolManager;
+        getSpriteManager(): ISpriteManager;
 
         getRenderer(): IRenderer;
 

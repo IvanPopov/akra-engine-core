@@ -11,6 +11,7 @@
 #include "IUtilTimer.ts"
 #include "IScene3d.ts"
 #include "IAFXComposer.ts"
+#include "ISpriteManager.ts"
 
 #include "pool/ResourcePoolManager.ts"
 #include "scene/SceneManager.ts"
@@ -184,6 +185,10 @@ module akra.core {
 			}
 
 			//===========================================================
+		}
+
+		inline getSpriteManager(): ISpriteManager {
+			return this._pSpriteManager;
 		}
 
 		inline getDepsManager(): IDepsManager {

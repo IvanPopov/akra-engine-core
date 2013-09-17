@@ -24,6 +24,7 @@ module akra.render {
 		protected _bShadow: bool = true;
 		protected _bVisible: bool = true;
 		protected _bFrozen: bool = false;
+		protected _bWireframeOverlay: bool = false;
 
 		inline get type(): ERenderDataTypes { return this._eRenderableType; }
 		inline get renderMethod(): IRenderMethod { return this._pTechnique.getMethod(); }
@@ -142,6 +143,7 @@ module akra.render {
 		        pMethod = pRmgr.createRenderMethod((csMethod) + this.getGuid());
 
 		        if (!isDefAndNotNull(pMethod)) {
+		        	CRITICAL("resource manager failed to create method...");
 		        	return false;
 		        }
 
@@ -239,6 +241,41 @@ module akra.render {
 			return this._bFrozen;
 		}
 
+		wireframe(bEnable: bool = true, bOverlay: bool = true): bool {
+			if (this.data.getDataLocation("BARYCENTRIC") == -1) {
+				var ePrimType: EPrimitiveTypes = this.data.getPrimitiveType();
+
+				if (ePrimType !== EPrimitiveTypes.TRIANGLELIST/* && ePrimType !== EPrimitiveTypes.TRIANGLESTRIP*/) {
+					WARNING("wireframe supported only for TRIANGLELIST");
+					return false;
+				}
+
+				var iPosition: int = this.data.getDataLocation('POSITION');
+				var pIndices: Float32Array = <Float32Array>this.data.getIndexFor("POSITION");
+				
+				// var pIndices: Float32Array = <any>this.data._getFlow("POSITION").mapper.data.getTypedData(this.data._getFlow("POSITION").mapper.semantics);
+				var pBarycentric: Float32Array = new Float32Array(pIndices.length);
+				
+				if (ePrimType == EPrimitiveTypes.TRIANGLELIST) {
+					for (var n = 0; n < pIndices.length; ++ n) {
+						pIndices[n] = n;
+						pBarycentric[n] = n % 3;
+					}
+				}
+
+				
+				this.data.allocateData([VE_FLOAT('BARYCENTRIC')], pBarycentric);
+				this.data.allocateIndex([VE_FLOAT('BARYCENTRIC_INDEX')], pIndices);
+
+				this.data.index('BARYCENTRIC', 'BARYCENTRIC_INDEX');
+			}
+
+			this._bWireframeOverlay = bOverlay;
+
+			this.switchRenderMethod(null);
+			this.renderMethod.effect.addComponent("akra.system.wireframe");
+		}
+
 
 		render(pViewport: IViewport, csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
 			if (!this.isReadyForRender()) {
@@ -296,6 +333,10 @@ module akra.render {
 
 	export inline function isScreen(pObject: IRenderableObject): bool {
 		return pObject.type === ERenderDataTypes.SCREEN;
+	}
+
+	export inline function isSprite(pObject: IRenderableObject): bool {
+		return pObject.type === ERenderDataTypes.SPRITE;
 	}
 }
 

@@ -205,36 +205,6 @@ module akra.model {
 			return true;
 		}
 
-		wireframe(bEnable: bool = true): bool {
-			if (this.data.getDataLocation("BARYCENTRIC") == -1) {
-				var ePrimType: EPrimitiveTypes = this.data.getPrimitiveType();
-
-				if (ePrimType !== EPrimitiveTypes.TRIANGLELIST) {
-					WARNING("wireframe supported only for TRIANGLELIST");
-					return false;
-				}
-
-				var iPosition: int = this.data.getDataLocation('POSITION');
-				var pIndices: Float32Array = <Float32Array>this.data.getIndexFor("POSITION");
-				
-				// var pIndices: Float32Array = <any>this.data._getFlow("POSITION").mapper.data.getTypedData(this.data._getFlow("POSITION").mapper.semantics);
-				var pBarycentric: Float32Array = new Float32Array(pIndices.length);
-				
-				for (var n = 0; n < pIndices.length; ++ n) {
-					pIndices[n] = n;
-					pBarycentric[n] = n % 3;
-				}
-
-				
-				this.data.allocateData([VE_FLOAT('BARYCENTRIC')], pBarycentric);
-				this.data.allocateIndex([VE_FLOAT('BARYCENTRIC_INDEX')], pIndices);
-
-				this.data.index('BARYCENTRIC', 'BARYCENTRIC_INDEX');
-			}
-
-			this.switchRenderMethod(null);
-			this.renderMethod.effect.addComponent("akra.system.wireframe");
-		}
 
 		/*wireframe(bEnable: bool = true): bool {
 			if(this.data.findIndexSet(".wireframe") == -1) {
