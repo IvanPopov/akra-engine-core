@@ -2279,9 +2279,8 @@ module akra.core.pool.resources {
             for (var j: int = 0; j < pMesh.length; ++j) {
                 var pSubMesh: IMeshSubset = pMesh.getSubset(j);
                 pSubMesh.material.set(pDefaultMaterial);
-                // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 0);
-                // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 1);
                 pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+                // pSubMesh.renderMethod.effect.addComponent("akra.system.wireframe");
             }
 
             return pMesh;
@@ -2316,11 +2315,9 @@ module akra.core.pool.resources {
                         //FIXME: remove flex material setup(needs only demo with flexmats..)
                         // pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
 
-                        // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 0);
-                        // pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_geometry", 1);
-                        pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
-                        // pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
 
+                        pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+                        
                         //setup textures
                         for (var sTextureType in pPhongMaterial.textures) {
                             var pColladaTexture: IColladaTexture = pPhongMaterial.textures[sTextureType];
@@ -2358,6 +2355,10 @@ module akra.core.pool.resources {
                             // LOG(iTexture, sTextureType)
                             pSurfaceMaterial.setTexture(iTexture, pTexture, iTexCoord);
                             // LOG(pSurfaceMaterial);
+                        }
+
+                        if (this.isWireframeEnabled()) {
+                            pSubMesh.wireframe(true);
                         }
                     }
                 }
@@ -2416,9 +2417,7 @@ module akra.core.pool.resources {
 
             //creating subsets
             for (var i: int = 0; i < pPolyGroup.length; ++i) {
-                pMesh.createSubset(
-                    "submesh-" + i, 
-                    this.isWireframeEnabled() ? EPrimitiveTypes.LINELIST : pPolyGroup[i].type);
+                pMesh.createSubset("submesh-" + i, pPolyGroup[i].type);
             }
 
             //filling data
@@ -2872,7 +2871,7 @@ module akra.core.pool.resources {
 
                 pOptions[i] = Collada.DEFAULT_OPTIONS[i];
             }
-
+            
             this._pOptions = pOptions;
         }
 

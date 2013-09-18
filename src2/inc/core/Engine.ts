@@ -11,6 +11,7 @@
 #include "IUtilTimer.ts"
 #include "IScene3d.ts"
 #include "IAFXComposer.ts"
+#include "ISpriteManager.ts"
 
 #include "pool/ResourcePoolManager.ts"
 #include "scene/SceneManager.ts"
@@ -56,6 +57,7 @@ module akra.core {
 		private _pResourceManager: IResourcePoolManager;
 		private _pSceneManager: ISceneManager;
 		private _pParticleManager: IParticleManager;
+		private _pSpriteManager: ISpriteManager;
 		private _pRenderer: IRenderer;
 		private _pComposer: IAFXComposer;
 		private _pDepsManager: IDepsManager;
@@ -98,6 +100,7 @@ module akra.core {
 			}
 
 			this._pParticleManager = null;
+			this._pSpriteManager = new scene.SpriteManager(this);
 			this._pTimer = util.UtilTimer.start(); 
 
 #ifdef WEBGL
@@ -182,6 +185,10 @@ module akra.core {
 			}
 
 			//===========================================================
+		}
+
+		inline getSpriteManager(): ISpriteManager {
+			return this._pSpriteManager;
 		}
 
 		inline getDepsManager(): IDepsManager {

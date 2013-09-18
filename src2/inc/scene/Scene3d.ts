@@ -12,6 +12,7 @@
 #include "OcTree.ts"
 #include "LightGraph.ts"
 
+#include "Sprite.ts"
 #include "SceneModel.ts"
 #include "Joint.ts"
 
@@ -197,7 +198,14 @@ module akra.scene {
 
 
 		createSprite(sName: string = null): ISprite {
-			return null;
+			var pSprite: ISprite = new Sprite(this);
+			
+			if (!pSprite.create()) {
+				ERROR("cannot create sprite..");
+				return null;
+			}
+
+			return <ISprite>this.setupNode(pSprite, sName);
 		};
 
 		createJoint(sName: string = null): IJoint {

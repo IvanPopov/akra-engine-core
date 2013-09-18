@@ -1,8 +1,8 @@
 provide akra.system;
 
 struct VS_IN_1{
-    float4 pos:POSITION;
-    float4 norm:NORMAL;
+    float4 pos: POSITION;
+    float4 norm: NORMAL;
 };
 
 struct VS_IN_2{
@@ -50,6 +50,28 @@ VS_OUT_1 vs_mesh_geometry(VS_IN_1 IN) {
     Out.vert = vertex_geometry.vert = vertex.xyz;
 	Out.pos = vertex_geometry.pos = proj_mat * vertex;
     Out.psize = 1.0;
+
+    return Out;
+}
+
+VS_OUT_1 vs_sprite_geometry(VS_IN_1 IN) {
+    VS_OUT_1 Out;
+
+
+    float4 pos = view_mat * model_mat * (float4(0., 0., 0. ,1.) + float4(IN.pos.xyz, 0.));
+    Out.pos = proj_mat * pos;
+    Out.norm = float3(view_mat * model_mat * float4(0., 0., 1., 1.)).xyz;
+
+    return Out;
+}
+
+VS_OUT_1 vs_billboard_geometry(VS_IN_1 IN) {
+    VS_OUT_1 Out;
+
+
+    float4 pos = view_mat * model_mat * float4(0., 0., 0. ,1.) + float4(IN.pos.xyz, 0.);
+    Out.pos = proj_mat * pos;
+    Out.norm = float3(view_mat * float4(0., 0., 1., 1.)).xyz;
 
     return Out;
 }
@@ -135,17 +157,26 @@ VS_OUT_1 vs_mesh_optimized_skinning(VS_IN_2 IN) {
 
 technique mesh_geometry{
     pass p0 {
-        
-        if(engine.mesh.isSkinned){
-            if(engine.mesh.isOptimizedSkinned){
-                VertexShader = compile vs_mesh_optimized_skinning();
+        if (engine.mesh.isSprite) {
+            if (engine.mesh.isBillboard) {
+                VertexShader = compile vs_billboard_geometry();
             }
             else{
-                VertexShader = compile vs_mesh_skinning();
+                VertexShader = compile vs_sprite_geometry();
             }
         }
         else {
-            VertexShader = compile vs_mesh_geometry();
+            if(engine.mesh.isSkinned){
+                if(engine.mesh.isOptimizedSkinned){
+                    VertexShader = compile vs_mesh_optimized_skinning();
+                }
+                else{
+                    VertexShader = compile vs_mesh_skinning();
+                }
+            }
+            else {
+                VertexShader = compile vs_mesh_geometry();
+            }
         }
     }
 }

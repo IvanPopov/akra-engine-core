@@ -57,6 +57,7 @@ module akra.fx {
 		k_OptimizedProjMatrix,
 		k_BindShapeMatrix,
 		k_RenderObjectId,
+		k_WireframeOverlay,
 		// k_InputTexture,
 		// k_InputSampler,
 		k_InputTextureSize,
@@ -100,9 +101,21 @@ module akra.fx {
 		private _pCurrentBufferMap: IBufferMap = null;
 		private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 
-		private _pComposerState: any = { mesh : { isSkinned : false, isOptimizedSkinned : false},
-										 terrain : { isROAM : false },
-										 renderable: { isAdvancedIndex: false } };
+		private _pComposerState: any = { 
+			mesh : { 
+				isSkinned : false, 
+				isOptimizedSkinned : false, 
+
+				isSprite : false,
+				isBillboard: false
+			},
+			terrain : { 
+				isROAM : false 
+			},
+			renderable: { 
+				isAdvancedIndex: false 
+			} 
+		};
 
 		/** Render targets for global-post effects */
 		private _pRenderTargetA: IRenderTarget = null;
@@ -749,6 +762,7 @@ module akra.fx {
 				PREPARE_INDEX(ESystemUniformsIndices.k_OptimizedProjMatrix, "OPTIMIZED_PROJ_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_BindShapeMatrix, "BIND_SHAPE_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_RenderObjectId, "RENDER_OBJECT_ID");
+				PREPARE_INDEX(ESystemUniformsIndices.k_WireframeOverlay, "WIREFRAME_OVERLAY");
 				PREPARE_INDEX(ESystemUniformsIndices.k_InputTextureSize, "INPUT_TEXTURE_SIZE");
 				PREPARE_INDEX(ESystemUniformsIndices.k_InputTextureRatio, "INPUT_TEXTURE_RATIO");
 
@@ -797,11 +811,13 @@ module akra.fx {
 			}
 
 			if(!isNull(pRenderable)){
-				if(render.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()){
+
+				if (render.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()){
 					FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_BindShapeMatrix, (<IMeshSubset>pRenderable).skin.getBindMatrix());
 				}
 
 				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_RenderObjectId, iRenderableID);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_WireframeOverlay, pRenderable["_bWireframeOverlay"]);
 			}
 
 			if(!isNull(this._pLastRenderTarget)){
@@ -832,17 +848,13 @@ module akra.fx {
 		private prepareComposerState(): void {
 			if(!isNull(this._pCurrentRenderable)){
 				this._pComposerState.renderable.isAdvancedIndex = this._pCurrentRenderable.data.useAdvancedIndex();
+				this._pComposerState.mesh.isSprite = render.isSprite(this._pCurrentRenderable);
+				this._pComposerState.mesh.isBillboard = this._pComposerState.mesh.isSprite && (<ISprite>this._pCurrentSceneObject).isBillboard();
+				
 
 				if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){
 					this._pComposerState.mesh.isSkinned = true;
-					if((<IMeshSubset>this._pCurrentRenderable).isOptimizedSkinned()){
-						this._pComposerState.mesh.isOptimizedSkinned = true;
-					}
-					else{
-						this._pComposerState.mesh.isOptimizedSkinned = false;	
-					}
-
-					// this._pComposerState.mesh.isOptimizedSkinned = false;	
+					this._pComposerState.mesh.isOptimizedSkinned = (<IMeshSubset>this._pCurrentRenderable).isOptimizedSkinned();	
 				}
 				else {
 					this._pComposerState.mesh.isSkinned = false;

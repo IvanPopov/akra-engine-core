@@ -150,6 +150,8 @@ void fs_mesh_texture_pass_1(VS_OUT_2 IN){
     if(!normalFix){
         Fragment_material.shininess = defaultMaterial.shininess;
     }
+
+    //Fragment_material.emissive = float4(IN.tc_emissive.xy, 0., 1.);
 }
 
 void fs_mesh_texture_pass_2(VS_OUT_2 IN){

@@ -205,7 +205,8 @@ module akra.model {
 			return true;
 		}
 
-		wireframe(bEnable: bool = true): bool {
+
+		/*wireframe(bEnable: bool = true): bool {
 			if(this.data.findIndexSet(".wireframe") == -1) {
 				var ePrimType: EPrimitiveTypes = this.data.getPrimitiveType();
 
@@ -265,7 +266,7 @@ module akra.model {
 			this.data.setRenderable(iCurrentIndexSet, !bEnable);
 
 			return true;
-		}
+		}*/
 
 		inline isBoundingSphereVisible(): bool {
 			return this.data.isRenderable(this.data.findIndexSet(".BoundingSphere"));

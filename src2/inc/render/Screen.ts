@@ -8,10 +8,13 @@ module akra.render {
 	export class Screen extends RenderableObject {
 		protected _pBuffer: IRenderDataCollection;
 
-		constructor(pRenderer: IRenderer) {
+		constructor(pRenderer: IRenderer, pCollection?: IRenderDataCollection) {
 			super(ERenderDataTypes.SCREEN);
 
-			var pCollection: IRenderDataCollection = pRenderer.getEngine().createRenderDataCollection(0);	
+			if (!isDefAndNotNull(pCollection)) {
+				pCollection = pRenderer.getEngine().createRenderDataCollection(0);	
+			}
+			
 			var pData: IRenderData = pCollection.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP);
 
 			pData.allocateAttribute(createVertexDeclaration([VE_FLOAT2(DeclUsages.POSITION)]), 
