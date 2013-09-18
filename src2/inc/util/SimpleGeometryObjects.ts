@@ -127,8 +127,6 @@ module akra.util {
 
 	    iNorm = pSubMesh.data.allocateData([VE_VEC3('NORMAL')], pNormalsData);
 	    pSubMesh.data.allocateIndex([VE_FLOAT('INDEX1')], pNormalIndicesData);
-
-	    
 	    pSubMesh.data.index('NORMAL', 'INDEX1');
 
 	    pSubMesh.hasShadow = false;
@@ -151,6 +149,56 @@ module akra.util {
 
 
 	    var pSceneModel: ISceneModel = pScene.createModel("quad");
+	    pSceneModel.mesh = pMesh;
+
+	    return pSceneModel;
+	}
+
+	export function createSimpleQuad(pScene: IScene3d, fSize?: float = 20.): ISceneModel {
+		var pMesh: IMesh = null,
+			pSubMesh: IMeshSubset = null;
+
+	    var pVerticesData: Float32Array = new Float32Array([
+	                                             -fSize, 0., -fSize,
+	                                              fSize, 0., -fSize,
+	                                             -fSize, 0.,  fSize,
+	                                              fSize, 0.,  fSize
+	                                         ]);
+	    var pNormalsData: Float32Array = new Float32Array([
+	                                              0., 1., 0.,
+	                                              0., 1., 0.,
+	                                              0., 1., 0.,
+	                                              0., 1., 0.
+	                                        ]);
+
+	    var pEngine: IEngine = pScene.getManager().getEngine();
+
+	    pMesh = model.createMesh(pEngine, 'simple_quad', EMeshOptions.HB_READABLE);
+	    pSubMesh = pMesh.createSubset('simple_quad::main', EPrimitiveTypes.TRIANGLESTRIP);
+
+	    pSubMesh.data.allocateAttribute(createVertexDeclaration([VE_VEC3('POSITION')]), pVerticesData);
+	    pSubMesh.data.allocateAttribute(createVertexDeclaration([VE_VEC3('NORMAL')]), pNormalsData);
+
+	    pSubMesh.hasShadow = false;
+
+	    if((<core.Engine>pEngine).isDepsLoaded()){
+	    	pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+	    }
+	    else {
+	    	pScene.getManager().getEngine().bind(SIGNAL(depsLoaded), () => {
+	    		pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+	    	});
+	    }
+
+	    var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
+	    pMatrial.diffuse = Color.LIGHT_GRAY;
+	    pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
+		pMatrial.specular = new Color(0.7, 0.7, 0.7 ,1);
+		pMatrial.emissive = new Color(0., 0., 0., 1.);
+	    pMatrial.shininess = 30.;
+
+
+	    var pSceneModel: ISceneModel = pScene.createModel("simple_quad");
 	    pSceneModel.mesh = pMesh;
 
 	    return pSceneModel;
