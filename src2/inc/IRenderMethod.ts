@@ -22,6 +22,7 @@ module akra {
 		setSamplerTexture(sName: string, sTexture: string, iPass?: uint): void;
 		
 		isEqual(pRenderMethod: IRenderMethod): bool;
+		
 
 		_getPassInput(iPass: uint): IAFXPassInputBlend;
 	}

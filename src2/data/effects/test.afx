@@ -1,0 +1,14 @@
+struct base_material{
+    float4 emissive:EMISSIVE;
+};
+
+shared base_material Fragment_material;
+void fs_main(){
+	Fragment_material.emissive = float4(1., 0., 0., 1.);
+}
+
+technique test{
+	pass {
+		PixelShader = compile fs_main();
+	}
+}

@@ -18,7 +18,8 @@
 		    {"path": "effects/motion_blur.afx"},
 		    {"path": "effects/edge_detection.afx"},
 		    {"path": "effects/wireframe.afx"},
-		    {"path": "effects/sprite.afx"}
+		    {"path": "effects/sprite.afx"},
+		    {"path": "effects/test.afx"}
 		],
 		"deps": {
 			"files": [

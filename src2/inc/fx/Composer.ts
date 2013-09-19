@@ -544,25 +544,15 @@ module akra.fx {
 
 
 		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void {
-			// if(true){
-			// 	return;
-			// }
+
 			var pPass: IRenderPass = pRenderTechnique.getPass(iPass);
 			var pPassInput: IAFXPassInputBlend = pPass.getPassInput();
 
 			var pPassBlend: IAFXPassBlend = null;
 			var pMaker: IAFXMaker = null;
-
+			
 			this.applySystemUnifoms(pPassInput);
 			
-			// if(!pPassInput._isNeedToCalcShader()){
-			// 	//TODO: set pShader to shader program by id
-			// }
-			// else {
-				// if(!pPassInput._isNeedToCalcBlend()){
-				// 	pPassBlend = this._pBlender.getPassBlendById(pPassInput._getLastPassBlendId());
-				// }
-				// else {
 			var id: uint = pRenderTechnique.getGuid();
 			var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
 			var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
@@ -571,7 +561,6 @@ module akra.fx {
 
 			pPassBlend = this._pBlender.generatePassBlend(pPassInstructionList, this._pComposerState, 
 														  pPassInput.foreigns, pPassInput.uniforms);
-				// }
 
 			if(isNull(pPassBlend)){
 				ERROR("Could not render. Error with generation pass-blend.");
@@ -584,12 +573,7 @@ module akra.fx {
 			if(isNull(pMaker)){
 				return;
 			}
-			// }
 
-			//TODO: generate input from PassInputBlend to correct unifoms and attributes list
-			//TODO: generate RenderEntry
-				
-			//this.clearPreRenderState();
 			var pInput: IShaderInput = pMaker._make(pPassInput, this._pCurrentBufferMap);
 			var pRenderer: IRenderer = this._pEngine.getRenderer();
 			var pEntry: IRenderEntry = pRenderer.createEntry();

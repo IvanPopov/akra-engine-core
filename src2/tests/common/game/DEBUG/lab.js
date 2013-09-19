@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Sep 17 2013 17:59:03 GMT+0400 (Московское время (зима))
+ * assembled at: Wed Sep 18 2013 16:24:24 GMT+0400 (Московское время (лето))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/lab.ts
  * name: lab
@@ -421,36 +421,29 @@ var akra;
         pLight.params.diffuse.set(1.);
         pLight.params.specular.set(.1);
         pLight.params.attenuation.set(0.5, 0, 0);
-        var pArteriesModel = pRmgr.loadModel(akra.DATA + "/models/arteries.DAE", {
-            shadows: false
+        // var pArteriesModel: IModel = pRmgr.loadModel(DATA + "/models/arteries.DAE", {shadows: false});
+        // pArteriesModel.bind("loaded", () => {
+        // 	var pArteries: IModelEntry = pArteriesModel.attachToScene(pScene);
+        // 	var pArteriesMesh: IMesh = (<ISceneModel>pArteries.child.child).mesh;
+        // 	pArteriesMesh.showBoundingBox();
+        // 	pArteriesMesh.getSubset(0).wireframe(true);
+        // 	(<IColor>pArteriesMesh.getSubset(0).material.diffuse).set(1., 0., 0., 0.);
+        // 	window["arteries_mesh"] = pArteriesMesh;
+        // });
+        // var pCubeModel: IModel = pRmgr.loadModel(DATA + "/models/ocube/cube.DAE", {shadows: false, wireframe: true});
+        // pCubeModel.bind("loaded", () => {
+        // 	var pCube: IModelEntry = pCubeModel.attachToScene(pScene);
+        // });
+        var pTex = pRmgr.texturePool.loadResource(akra.DATA + "/textures/10004.jpg");
+        var pSprite = pScene.createSprite();
+        pTex.bind("loaded", /** @inline */function () {
+            pSprite.setTexture(pTex);
+            pCanvas.addViewport(new akra.render.TextureViewport(pTex, 0.05, 0.05, .5 * 512 / pViewport.actualWidth, .5 * 512 / pViewport.actualHeight, 4.));
+            pTex.setFilter(akra.ETextureParameters.MIN_FILTER, akra.ETextureFilters.LINEAR);
+            pTex.setFilter(akra.ETextureParameters.MAG_FILTER, akra.ETextureFilters.LINEAR);
+            window["billboard"] = pSprite;
         });
-        pArteriesModel.bind("loaded", /** @inline */function () {
-            var pArteries = pArteriesModel.attachToScene(pScene);
-            var pArteriesMesh = (pArteries.child.child).mesh;
-            pArteriesMesh.showBoundingBox();
-            pArteriesMesh.getSubset(0).wireframe(true);
-            (pArteriesMesh.getSubset(0).material.diffuse).set(1., 0., 0., 0.);
-            window["arteries_mesh"] = pArteriesMesh;
-        });
-        var pCubeModel = pRmgr.loadModel(akra.DATA + "/models/ocube/cube.DAE", {
-            shadows: false,
-            wireframe: true
-        });
-        pCubeModel.bind("loaded", /** @inline */function () {
-            var pCube = pCubeModel.attachToScene(pScene);
-        });
-        /*var pTex: ITexture = <ITexture>pRmgr.texturePool.loadResource(DATA + "/textures/10004.jpg");
-        var pSprite: ISprite = pScene.createSprite();
-        pTex.bind("loaded", () => {
-        pSprite.setTexture(pTex);
-        pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.05, .5 * 512/pViewport.actualWidth, .5 * 512/pViewport.actualHeight, 4.));
-        // pTex.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
-        // pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-        
-        window["billboard"] = pSprite;
-        });
-        
-        pSprite.attachToParent(pScene.getRootNode());*/
-            }
+        pSprite.attachToParent(pScene.getRootNode());
+    }
     pEngine.bind("depsLoaded", main);
 })(akra || (akra = {}));

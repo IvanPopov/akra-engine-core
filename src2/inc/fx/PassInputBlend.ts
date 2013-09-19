@@ -329,6 +329,7 @@ module akra.fx {
 				for (var i: int = 0; i < 16; i++) {
 				 	if(this._pMaterialNameIndices.textures[i] > 0){
 				 		this.textures[this._pMaterialNameIndices.textures[i]] =  pSurfaceMaterial.texture(i) || null;
+				 		this._pStatesInfo.samplerKey++;
 				 	}
 				}
 			}			
@@ -472,6 +473,15 @@ module akra.fx {
 
 			render.clearRenderStateMap(this.renderStates);
 			
+			this._nLastSufraceMaterialTextureUpdates = 0;
+			this._nLastSamplerUpdates = 0;
+			this._pLastSurfaceMaterial = null;
+
+			this._pStatesInfo.uniformKey++;
+			this._pStatesInfo.foreignKey++;
+			this._pStatesInfo.samplerKey++;
+			this._pStatesInfo.renderStatesKey++;
+
 			this._pCreator.releasePassInput(this);
 
 			// this._bNeedToCalcShader = true;

@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Wed Sep 18 2013 15:40:30 GMT+0400 (Московское время (лето))
+ * assembled at: Thu Sep 19 2013 16:28:02 GMT+0400 (Московское время (лето))
  * directory: tests/common/render/DEBUG/
  * file: tests/common/render/baseObjects.ts
  * name: baseObjects
@@ -81,6 +81,7 @@ var akra;
         pSceneSurface.scale(5.);
         pSceneSurface.attachToParent(pScene.getRootNode());
     }
+    var pEffect = null;
     function createObjects() {
         // var pSceneQuadA: ISceneModel = util.createQuad(pScene, 2.);
         // pSceneQuadA.attachToParent(pScene.getRootNode());
@@ -90,7 +91,24 @@ var akra;
         pSceneQuadB.attachToParent(pScene.getRootNode());
         pSceneQuadB.setPosition(4., 5., 0.);
         pSceneQuadB.addRelRotationByXYZAxis(Math.PI / 2, 0, 0);
+        pEffect = pSceneQuadB.getRenderable().getTechnique().getMethod().effect;
+        // pSceneQuadB.getRenderable().getTechnique().addComponent("test");
+            }
+    var isAdded = false;
+    function test() {
+        isAdded ? del() : add();
     }
+    akra.test = test;
+    function add() {
+        pEffect.addComponent("test");
+        isAdded = true;
+    }
+    akra.add = add;
+    function del() {
+        pEffect.delComponent("test");
+        isAdded = false;
+    }
+    akra.del = del;
     function main(pEngine) {
         setup();
         createCameras();

@@ -170,32 +170,14 @@ module akra {
 
         getSyntaxTree(): IParseTree;
 
+#ifdef DEBUG
         printStates(isPrintOnlyBase?: bool): void;
         printState(iStateIndex: uint, isPrintOnlyBase?: bool): void; 
-
+#endif
         getGrammarSymbols(): StringMap;
 
         _saveState(): IParserState;
         _loadState(pState: IParserState): void;
-        
-        // _getLexer(): ILexer;
-        // _getSource(): string;
-        // _getIndex(): uint;
-        // _getTypeMap(): BoolMap;
-        // _getStack(): uint[];
-        // _getToken(): IToken;
-        // _getCallback(): IFinishFunc;
-        // _getCaller(): any;
-
-        // _setParserState(sSource: string,
-        //                 iIndex: uint,
-        //                 sFileName: string,
-        //                 pTree: IParseTree,
-        //                 pTypes: BoolMap,
-        //                 pStack: uint[],
-        //                 pToken: IToken,
-        //                 fnCallback: IFinishFunc,
-        //                 pCaller: any): void;
     }
 }
 

@@ -91,6 +91,7 @@ module akra{
 		pSceneSurface.attachToParent(pScene.getRootNode());
 	}
 
+	var pEffect = null;
 	function createObjects(): void {
 		// var pSceneQuadA: ISceneModel = util.createQuad(pScene, 2.);
 		// pSceneQuadA.attachToParent(pScene.getRootNode());
@@ -101,6 +102,24 @@ module akra{
 		pSceneQuadB.attachToParent(pScene.getRootNode());
 		pSceneQuadB.setPosition(4., 5., 0.);
 		pSceneQuadB.addRelRotationByXYZAxis(Math.PI/2, 0, 0);
+
+		pEffect = pSceneQuadB.getRenderable().getTechnique().getMethod().effect;
+		// pSceneQuadB.getRenderable().getTechnique().addComponent("test");
+	}
+
+	var isAdded: bool = false;
+	export function test(){
+		isAdded ? del() : add();
+	}
+
+	export function add(){
+		pEffect.addComponent("test");
+		isAdded = true;
+	}
+
+	export function del(){
+		pEffect.delComponent("test");
+		isAdded = false;
 	}
 
 	function main(pEngine: IEngine): void {

@@ -116,6 +116,22 @@ module akra.fx {
 				return null;	
 			}
 
+			if(iPass === ALL_PASSES){
+				var pLastBlend: IAFXComponentBlend = pComponentBlend;
+				for(var i: uint = 0; i < pComponent.getTotalPasses(); i++){
+					pLastBlend = this.removeComponentFromBlend(pLastBlend, pComponent, iShift, i) || pLastBlend;
+				}
+
+				if(pLastBlend === pComponentBlend){
+					WARNING("You try to remove component '" + pComponent.getName() + 
+						"' with shift " + iShift.toString() + " from blend that not contain it.");
+				
+					return null;
+				}
+				
+				return pLastBlend;
+			}
+
 			var pComponentInfo: IAFXComponentInfo = pComponentBlend.findAddedComponentInfo(pComponent, iShift, iPass);
 			if(isNull(pComponentInfo)){
 				WARNING("You try to remove component '" + pComponent.getName() + 
