@@ -223,8 +223,8 @@ module akra.render {
 						var sMethod: string = "deferred_shading_pass_" + j;
 						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
 
-						if (isNull(pTechnique) || pTechCurr.modified > pTechnique.modified) {
-							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
+						if (isNull(pTechnique) || pTechCurr !== pTechnique._getParentTechnique()) {
+							if (!pRenderable._addSystemTechnique(pTechCurr, sMethod)) {
 								CRITICAL("cannot clone active render method");
 							}
 

@@ -51,6 +51,7 @@ module akra {
 									  pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
 		hasOwnComponentInTechnique(pRenderTechnique: IRenderTechnique, 
 								   pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+		cloneOwnComponentBlend(pFrom: IRenderTechnique, pTo: IRenderTechnique): void;
 
 		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool;
 

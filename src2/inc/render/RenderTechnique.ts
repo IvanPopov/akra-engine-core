@@ -23,7 +23,8 @@ module akra.render {
 		private _iMinShiftOfOwnBlend: int = 0;
 
 		private _pRenderMethodPassStateList: util.ObjectArray = null;
-		
+		private _pParentTechnique: IRenderTechnique = null;
+
 		static protected pRenderMethodPassStatesPool: util.ObjectArray = new util.ObjectArray();
 
 		inline get modified(): uint {
@@ -38,15 +39,23 @@ module akra.render {
 			return null;
 		}
 
-		constructor (pMethod: IRenderMethod = null) {
+		constructor (pMethod: IRenderMethod);
+		constructor (pTechnique: IRenderTechnique);
+		constructor ();
+		constructor () {
 			this._pPassList = [];
 			this._pPassBlackList = [];
 
-			if(!isNull(pMethod)){
-				this.setMethod(pMethod);
-			}
-
 			this._pRenderMethodPassStateList = new util.ObjectArray();
+			
+			if(arguments.length > 0){
+				if(arguments[0] instanceof RenderTechnique){
+					this.branchTechnique(arguments[0]);
+				}
+				else {
+					this.setMethod(arguments[0]);
+				}
+			}			
 		}
 
 
@@ -61,6 +70,10 @@ module akra.render {
 
 		getMethod(): IRenderMethod {
 			return this._pMethod;
+		}
+
+		_getParentTechnique(): IRenderTechnique {
+			return this._pParentTechnique;
 		}
 
 		setMethod(pMethod: IRenderMethod): void {
@@ -135,6 +148,7 @@ module akra.render {
 			}
 
 			this._iMinShiftOfOwnBlend = this._pComposer.getMinShiftForOwnTechniqueBlend(this);
+			this.ownBlenChange(pComponent, iShift, iPass, true);
 
 			return true;
 		}
@@ -167,6 +181,7 @@ module akra.render {
 			}
 
 			this._iMinShiftOfOwnBlend = this._pComposer.getMinShiftForOwnTechniqueBlend(this);
+			this.ownBlenChange(pComponent, iShift, iPass, false);
 
 			return true;
 		}
@@ -337,6 +352,29 @@ module akra.render {
         	this._iGlobalPostEffectsStart = iPass;
         }
 
+        private branchTechnique(pTechnique: IRenderTechnique): void {
+			this._pParentTechnique = pTechnique;
+			this.setMethod(this._pParentTechnique.getMethod());
+
+			// this.connect(pTechnique, SIGNAL(ownBlenChange), SLOT(onParentTechniqueChange), EEventTypes.BROADCAST);
+			this._pComposer.cloneOwnComponentBlend(pTechnique, this);
+		}
+
+		private onParentTechniqueChange(pTechnique: IRenderTechnique, 
+										pComponent: IAFXComponent, 
+										iShift: int, iPass: uint, bAdd: bool): void{
+			if(pTechnique === this){
+				return;
+			}
+			
+			if(bAdd){
+				this.addComponent(pComponent, iShift, iPass);
+			}
+			else {
+				this.delComponent(pComponent, iShift, iPass);
+			}
+		}
+
 		private informComposer(): void {
 			if(!isNull(this._pComposer)){
 				this._pComposer.markTechniqueAsNeedUpdate(this);
@@ -440,6 +478,7 @@ module akra.render {
 		
 		CREATE_EVENT_TABLE(RenderTechnique);
 		BROADCAST(render, CALL(iPass, pRenderable, pSceneObject, pViewport));
+		BROADCAST(ownBlenChange, CALL(pComponent, iShift, iPass, bAdd));
 	}
 }
 

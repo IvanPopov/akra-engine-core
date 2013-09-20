@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Sep 19 2013 16:28:02 GMT+0400 (Московское время (лето))
+ * assembled at: Fri Sep 20 2013 17:23:49 GMT+0400 (Московское время (лето))
  * directory: tests/common/render/DEBUG/
  * file: tests/common/render/baseObjects.ts
  * name: baseObjects

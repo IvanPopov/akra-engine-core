@@ -304,6 +304,11 @@ module akra.render {
 			ERROR("RenderableObject::_draw() pure virtual method() isn't callable!!");
 		}
 
+		_addSystemTechnique(pTechnique: IRenderTechnique, csName: string): bool {			
+		    this._pTechniqueMap[csName] = new RenderTechnique(pTechnique);
+		    return true;
+		}
+
 		inline isVisible(): bool {
 			return this._bVisible;
 		}

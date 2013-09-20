@@ -20,6 +20,7 @@ module akra {
 
 		getPass(n: uint): IRenderPass;
 		getMethod(): IRenderMethod;
+		_getParentTechnique(): IRenderTechnique;
 
 		setMethod(pMethod: IRenderMethod);
 		isReady(): bool;
@@ -62,6 +63,7 @@ module akra {
 		_renderTechnique(pViewport: IViewport, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
 
 		signal render(iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject, pViewport: IViewport): void;
+		signal ownBlenChange(pComponent: IAFXComponent, iShift: int, iPass: uint, bAdd: bool);
 	}
 }
 

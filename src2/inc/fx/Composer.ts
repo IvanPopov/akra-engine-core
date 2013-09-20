@@ -404,6 +404,16 @@ module akra.fx {
 			return pCurrentBlend.containComponent(pComponent, iShift, iPass);
 		}
 
+		cloneOwnComponentBlend(pFrom: IRenderTechnique, pTo: IRenderTechnique): void {
+			var iFromId: uint = pFrom.getGuid();
+			var iToId: uint = pTo.getGuid();
+			var pFromBlend: IAFXComponentBlend = this._pTechniqueToOwnBlendMap[iFromId];
+
+			if(isDefAndNotNull(pFromBlend)){
+				this._pTechniqueToOwnBlendMap[iToId] = pFromBlend;
+			}
+		}
+
 		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool {
 			if(pRenderTechnique.isFreeze()){
 				return true;
