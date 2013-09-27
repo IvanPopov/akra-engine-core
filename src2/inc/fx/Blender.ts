@@ -115,7 +115,7 @@ module akra.fx {
 						"' with shift " + iShift.toString() + " from empty blend.");
 				return null;	
 			}
-
+			
 			var pComponentInfo: IAFXComponentInfo = pComponentBlend.findAddedComponentInfo(pComponent, iShift, iPass);
 			if(isNull(pComponentInfo)){
 				WARNING("You try to remove component '" + pComponent.getName() + 

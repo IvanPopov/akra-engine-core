@@ -51,6 +51,7 @@ function usage() {
 		'\n\t--declaration		Generates corresponding .d.ts file.' +
 		'\n\t--no-const			Do not replace constant from enum values.' +
 		'\n\t--gui				Define GUI macro.' +
+		'\n\t--filedrop-api		Define FILEDROP_API macro.' +
 		'\n\t--preprocess		Preprocessing only.'
 	);
 
@@ -74,6 +75,7 @@ var pOptions = {
 	pathToTemp: null,
 	declaration: false,
 	gui: false,
+	filedrop: false,
 	preprocess: false,
 	clean: false, //clean tests data instead build
 	listOnly: false, //list available tests
@@ -160,6 +162,9 @@ function parseArguments() {
 				break;
 			case '--gui':
 				pOptions.gui = true;
+				break;
+			case '--filedrop-api':
+				pOptions.filedrop = true;
 				break;
 			case '--nw':
 				pOptions.testsFormat.nw = true;
@@ -292,6 +297,11 @@ function preprocess() {
 	if (pOptions.gui) {
 		capabilityOptions.push("-D GUI=1");
 		console.log("Build with GUI.");
+	}
+
+	if (pOptions.filedrop) {
+		capabilityOptions.push("-D FILEDROP_API=1");
+		console.log("Build with FILEDROP API.");
 	}
 
 	if (pOptions.debug) {

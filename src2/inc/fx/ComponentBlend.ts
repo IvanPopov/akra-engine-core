@@ -136,7 +136,7 @@ module akra.fx {
 
 			if (iCorrectShift !== ANY_SHIFT && iCorrectPass !== ANY_PASS &&
 				!this.containComponentHash(pComponent.getHash(iCorrectShift, iCorrectPass))){
-
+				
 				return null;
 			}
 			else {
@@ -158,7 +158,7 @@ module akra.fx {
 						}
 					}
 				}
-
+				
 				return null;
 			}
 		}

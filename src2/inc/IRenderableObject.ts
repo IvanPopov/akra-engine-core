@@ -19,7 +19,7 @@ module akra {
 
 	export interface IRenderableObject extends IEventProvider {
 		renderMethod: IRenderMethod;
-		hasShadow: bool;
+		shadow: bool;
 
 		readonly type: ERenderDataTypes;
 		readonly effect: IEffect;
@@ -71,9 +71,9 @@ module akra {
 		_draw(): void;
 
 		/** Notify, when shadow added or removed. */
-		signal shadow(bValue: bool): void;
+		signal shadowed(bValue: bool): void;
 		/** Notify, before object start rendendering */
-		signal beforeRender(pViewport: IViewport, pTechnique: IRenderTechnique): void;
+		signal beforeRender(pViewport: IViewport, pMethod: IRenderMethod): void;
 
 		signal click(pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint);
 		

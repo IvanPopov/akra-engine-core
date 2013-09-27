@@ -58,7 +58,7 @@ VS_OUT_1 vs_sprite_geometry(VS_IN_1 IN) {
     VS_OUT_1 Out;
 
 
-    float4 pos = view_mat * model_mat * (float4(0., 0., 0. ,1.) + float4(IN.pos.xyz, 0.));
+    float4 pos = view_mat * model_mat * float4(IN.pos.xyz, 1.);
     Out.pos = proj_mat * pos;
     Out.norm = float3(view_mat * model_mat * float4(0., 0., 1., 1.)).xyz;
 

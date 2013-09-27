@@ -275,11 +275,17 @@ module akra.render {
 		pick(x: uint, y: uint): IRIDPair {
 			var pComposer: IAFXComposer = this.getTarget().getRenderer().getEngine().getComposer();
 			var iRid: int = this._getRenderId(x, y);
+			var pObject: ISceneObject = pComposer._getObjectByRid(iRid);
+			var pRenderable: IRenderableObject = null;
 
-			return {
-				renderable: pComposer._getRenderableByRid(iRid),
-				object: pComposer._getObjectByRid(iRid)
-			};
+			if (isNull(pObject) || !pObject.isFrozen()) {
+				pRenderable = pComposer._getRenderableByRid(iRid);
+			}
+			else {
+				pObject = null;
+			}
+			
+			return {renderable: pRenderable, object: pObject};
 		}
 
 		inline _getRenderId(x: int, y: int): int {

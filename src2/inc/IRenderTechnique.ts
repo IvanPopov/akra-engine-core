@@ -14,7 +14,7 @@ module akra {
 	export interface IRenderTechnique extends IEventProvider {
 		readonly totalPasses: uint;
 		readonly modified: uint;
-		readonly data: IAFXComponentBlend;
+	readonly data: IAFXComponentBlend;
 
 		destroy(): void;
 

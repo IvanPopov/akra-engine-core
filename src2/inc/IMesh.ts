@@ -38,7 +38,7 @@ module akra {
         readonly boundingSphere: ISphere;
 
 		skeleton: ISkeleton;
-        hasShadow: bool;
+        shadow: bool;
 
         
         getOptions(): int;
@@ -95,7 +95,7 @@ module akra {
         _draw(): void;
 
         /** notify, when one of substets added or removed shadow */
-        signal shadow(pSubset: IMeshSubset, bShadow: bool): void;
+        signal shadowed(pSubset: IMeshSubset, bShadow: bool): void;
 	}
 }
 

@@ -2,17 +2,23 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Sep 17 2013 17:59:03 GMT+0400 (Московское время (зима))
+ * assembled at: Wed Sep 25 2013 17:02:34 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/lab.ts
  * name: lab
  *--------------------------------------------*/
 
 
+var __extends = this.__extends || function (d, b) {
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var akra;
 (function (akra) {
     (function (util) {
-        function navigation(pGeneralViewport) {
+        function navigation(pGeneralViewport, pRotationPoint) {
+            if (typeof pRotationPoint === "undefined") { pRotationPoint = null; }
             var pCanvas = pGeneralViewport.getTarget();
             var pEngine = pCanvas.getRenderer().getEngine();
             var pSceneMgr = pEngine.getSceneManager();
@@ -43,6 +49,10 @@ var akra;
                 var pCamera = pGeneralViewport.getCamera();
                 if (akra.ide && akra.ide.selectedObject) {
                     vDest.set(akra.ide.selectedObject.worldPosition);
+                    return vDest;
+                }
+                if (pRotationPoint) {
+                    vDest.set(pRotationPoint);
                     return vDest;
                 }
                 pGeneralViewport.unprojectPoint(pGeneralViewport.actualWidth / 2., pGeneralViewport.actualHeight / 2., vDest);
@@ -114,8 +124,8 @@ var akra;
             //cube scene synchronization backend
             function syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint) {
                 var pSceneCam = pGeneralViewport.getCamera();
-                util.logger.assert(pSceneCam.parent === pSceneCam.root, "only general camera may be used.");
-                ;
+                // ASSERT (pSceneCam.parent === pSceneCam.root, "only general camera may be used.");
+                pViewport.hide(pSceneCam.parent !== pSceneCam.root);
                 var pCubeCam = pViewport.getCamera();
                 var vPos = pSceneCam.worldPosition.subtract(pCenterPoint, akra.Vec3.stackCeil.set()).normalize().scale(5.5);
                 pCubeCam.setPosition(vPos);
@@ -315,15 +325,16 @@ var akra;
         pCamera.update();
         return pCamera;
     }
-    function createSceneEnvironment(pScene, bHideQuad, bHideSurface) {
+    function createSceneEnvironment(pScene, bHideQuad, bHideSurface, fSize) {
         if (typeof bHideQuad === "undefined") { bHideQuad = false; }
         if (typeof bHideSurface === "undefined") { bHideSurface = false; }
-        var pSceneQuad = akra.util.createQuad(pScene, 500.);
+        if (typeof fSize === "undefined") { fSize = 100; }
+        var pSceneQuad = akra.util.createQuad(pScene, fSize * 5.);
         pSceneQuad.attachToParent(pScene.getRootNode());
         pSceneQuad.mesh.getSubset(0).setVisible(!bHideQuad);
-        var pSceneSurface = akra.util.createSceneSurface(pScene, 100);
+        var pSceneSurface = akra.util.createSceneSurface(pScene, fSize);
         // pSceneSurface.scale(5.);
-        pSceneSurface.addPosition(0, 0.01, 0);
+        pSceneSurface.addPosition(0, -0.01, 0);
         pSceneSurface.attachToParent(pScene.getRootNode());
         pSceneSurface.mesh.getSubset(0).setVisible(!bHideSurface);
         // var pCameraTerrainProj: ISceneModel = util.basis(pScene);
@@ -393,11 +404,23 @@ var akra;
         renderer: pRenderOpts,
         loader: pLoader,
         deps: {
-            files: []
+            files: [
+                {
+                    path: "grammars/HLSL.gr"
+                }
+            ],
+            deps: {
+                files: [
+                    {
+                        path: "effects/custom/arteries.afx"
+                    }, 
+                    {
+                        path: "textures/arteries/arteries.ara"
+                    }
+                ]
+            }
         }
     };
-    //{path: "models/arteries.DAE", name: "arteries"}
-    //{path: "", name: "TEST_IMAGE"}
     var pEngine = akra.createEngine(pOptions);
     var pUI = pEngine.getSceneManager().createUI();
     var pCanvas = pEngine.getRenderer().getDefaultCanvas();
@@ -408,11 +431,14 @@ var akra;
     var pScene = pEngine.getScene();
     function main(pEngine) {
         setup(pCanvas, pUI);
-        pCamera = createCameras(pScene);
-        pCamera.lookAt(akra.Vec3.stackCeil.set(0.));
+        pCamera = pScene.createCamera();
+        pCamera.attachToParent(pScene.getRootNode());
+        pCamera.setPosition(4., 4., 3.5);
+        pCamera.lookAt(akra.Vec3.stackCeil.set(0., 1., 0.));
+        window["camera"] = pCamera;
         pViewport = createViewports(new akra.render.DSViewport(pCamera), pCanvas, pUI);
         akra.util.navigation(pViewport);
-        createSceneEnvironment(pScene, true);
+        createSceneEnvironment(pScene, true, false, 2);
         pEngine.exec();
         var pLight = pScene.createLightPoint(akra.ELightTypes.PROJECT);
         pLight.attachToParent(pCamera);
@@ -421,36 +447,111 @@ var akra;
         pLight.params.diffuse.set(1.);
         pLight.params.specular.set(.1);
         pLight.params.attenuation.set(0.5, 0, 0);
-        var pArteriesModel = pRmgr.loadModel(akra.DATA + "/models/arteries.DAE", {
+        var pCube = akra.util.lineCube(pScene);
+        pCube.attachToParent(pScene.getRootNode());
+        pCube.setPosition(0., 1., 0.);
+        var pGUI = new dat.GUI();
+        // pGUI.add(pViewer, 'threshold', 0, 1.);
+        // pGUI.add(pViewer, 'colored');
+        // pGUI.add(pViewer, 'waveStripStep', 1, 25).step(1);
+        // pGUI.add(pViewer, 'waveStripWidth', 1, 10).step(1);
+        // pGUI.addColor(pViewer, 'waveColor');
+        // pGUI.addColor(pViewer, 'waveStripColor');
+        var pSlices = [];
+        for(var i = 2, t = 0; i <= 92; ++i) {
+            var n = "ar.";
+            if (i < 10) {
+                n += "0";
+            }
+            n += String(i);
+            var pTex = pRmgr.texturePool.loadResource(n);
+            pTex.setFilter(akra.ETextureParameters.MIN_FILTER, akra.ETextureFilters.LINEAR);
+            pTex.setFilter(akra.ETextureParameters.MAG_FILTER, akra.ETextureFilters.LINEAR);
+            pSlices.push(pTex);
+            // console.log(n, t++);
+                    }
+        var pArteriesModel = pRmgr.loadModel(akra.DATA + "/models/artery_system.DAE", {
             shadows: false
         });
         pArteriesModel.bind("loaded", /** @inline */function () {
             var pArteries = pArteriesModel.attachToScene(pScene);
-            var pArteriesMesh = (pArteries.child.child).mesh;
-            pArteriesMesh.showBoundingBox();
-            pArteriesMesh.getSubset(0).wireframe(true);
-            (pArteriesMesh.getSubset(0).material.diffuse).set(1., 0., 0., 0.);
+            pArteries.setRotationByXYZAxis(0., akra.math.PI, 0.);
+            var pArteriesMesh = (pArteries.findEntity("node-_Artery_system")).mesh;
+            // pArteriesMesh.showBoundingBox();
+            // pArteriesMesh.getSubset(0).wireframe(true);
+            (pArteriesMesh.getSubset(0).material.emissive).set(0., 0., 0., 0.);
+            (pArteriesMesh.getSubset(0).material.ambient).set(0., 0., 0., 0.);
+            (pArteriesMesh.getSubset(0).material.diffuse).set(0.5, 0., 0., 0.);
+            pArteries.scale(2.25);
+            pArteries.addPosition(0., 1., -0.3);
+            pArteriesMesh.getSubset(0).getRenderMethodDefault().effect.addComponent("akra.custom.highlight_mri_slice");
+            pArteriesMesh.getSubset(0).bind("beforeRender", /** @inline */function (pRenderable, pViewportCurrent, pMethod) {
+                // console.log(pSprite.worldMatrix.multiplyVec4(vec4(0., 0., -1., 1.)).xyz);
+                pMethod.setUniform("SPLICE_NORMAL", akra.Vec3.stackCeil.set(0., -1., 0.));
+                pMethod.setUniform("SPLICE_D", pSprite.worldPosition.y);
+            });
             window["arteries_mesh"] = pArteriesMesh;
+            window["arteries"] = pArteries;
+            var gui = pGUI.addFolder('arteries');
+            var controller = gui.add({
+                wireframe: false
+            }, 'wireframe');
+            controller.onChange(function (value) {
+                pArteriesMesh.getSubset(0).wireframe(value);
+            });
         });
-        var pCubeModel = pRmgr.loadModel(akra.DATA + "/models/ocube/cube.DAE", {
-            shadows: false,
-            wireframe: true
-        });
-        pCubeModel.bind("loaded", /** @inline */function () {
-            var pCube = pCubeModel.attachToScene(pScene);
-        });
-        /*var pTex: ITexture = <ITexture>pRmgr.texturePool.loadResource(DATA + "/textures/10004.jpg");
-        var pSprite: ISprite = pScene.createSprite();
-        pTex.bind("loaded", () => {
-        pSprite.setTexture(pTex);
-        pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.05, .5 * 512/pViewport.actualWidth, .5 * 512/pViewport.actualHeight, 4.));
-        // pTex.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
-        // pTex.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-        
+        var pSprite = pScene.createSprite();
+        var fSlice = 0.;
+        var fKL = 0.;
+        var iA = 0.;
+        var iB = 1;
+        var fSliceK = 0.;
+        var fOpacity = 0.05;
+        pSprite.attachToParent(pScene.getRootNode());
+        pSprite.setRotationByXYZAxis(akra.math.PI / 2., 0., 0.);
+        pSprite.setPosition(0., 1., 0.);
+        pSprite.setTexture(pSlices[0]);
         window["billboard"] = pSprite;
+        var gui = pGUI.addFolder('slice');
+        var slice = (gui.add({
+            slice: 0.
+        }, 'slice')).min(0.).max(1.).step(.005);
+        var opacity = (gui.add({
+            opacity: fOpacity
+        }, 'opacity')).min(0.0).max(1.).step(.01);
+        opacity.onChange(function (fValue) {
+            fOpacity = fValue;
         });
-        
-        pSprite.attachToParent(pScene.getRootNode());*/
-            }
+        slice.onChange(function (fValue) {
+            // console.log(fValue, fValue * 0.55 + 1.);
+            pSprite.setPosition(0., fValue * 0.55 + 1., 0.);
+            fSlice = fValue;
+            fKL = fSlice * (pSlices.length - 1.);
+            iA = akra.math.floor(fKL);
+            iB = iA + 1;
+            fSliceK = (fKL - iA) / (iB - iA);
+            // console.log("A:", iA, "B:", iB, "k:", fSliceK);
+                    });
+        pSprite.getRenderable().getRenderMethodDefault().effect.addComponent("akra.custom.arteries_slice");
+        pSprite.getRenderable().bind("beforeRender", /** @inline */function (pRenderable, pViewport, pMethod) {
+            pMethod.setTexture("SLICE_A", pSlices[iA]);
+            pMethod.setTexture("SLICE_B", pSlices[iB] || null);
+            pMethod.setUniform("SLICE_K", fSliceK);
+            pMethod.setUniform("SLICE_OPACITY", fOpacity);
+        });
+        var pProjCam = pScene.createCamera();
+        var fDelta = 0.01;
+        pProjCam.setOrthoParams(2., 2., -fDelta, fDelta);
+        pProjCam.attachToParent(pSprite);
+        pProjCam.setInheritance(akra.ENodeInheritance.ALL);
+        pProjCam.setPosition(0., 0., 0.);
+        pProjCam.setRotationByXYZAxis(akra.math.PI, 0., 0.);
+        window["projCam"] = pProjCam;
+        var pTexTarget = pRmgr.createTexture("slice");
+        var iRes = 2048;
+        pTexTarget.create(iRes, iRes, 1, null, akra.ETextureFlags.RENDERTARGET, 0, 0, akra.ETextureTypes.TEXTURE_2D, akra.EPixelFormats.R8G8B8);
+        pTexTarget.getBuffer().getRenderTarget().addViewport(new akra.render.DSViewport(pProjCam));
+        pCanvas.addViewport(new akra.render.TextureViewport(pTexTarget, 0.05, 0.05, .5 * 512 / pViewport.actualWidth, .5 * 512 / pViewport.actualHeight, 5.));
+    }
     pEngine.bind("depsLoaded", main);
 })(akra || (akra = {}));

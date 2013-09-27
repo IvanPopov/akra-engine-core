@@ -74,7 +74,7 @@ module akra.core.pool {
 			return null;
 		}
 
-		inline getManager(): ResourcePoolManager {
+		inline getManager(): core.pool.ResourcePoolManager {
 			return <ResourcePoolManager>(<ResourcePool>this.pResourcePool).manager;
 		}
 

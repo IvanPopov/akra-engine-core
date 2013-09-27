@@ -484,7 +484,7 @@ module akra.scene {
 		        return '<node' + (this.name? " " + this.name: "") + '>';
 		    }
 
-		    var pSibling: IEntity = this.sibling;
+		    // var pSibling: IEntity = this.sibling;
 		    var pChild: IEntity = this.child;
 		    var s = "";
 
@@ -494,14 +494,15 @@ module akra.scene {
 
 		    s += '+----[depth: ' + this.depth + ']' + this.toString() +  '\n';
 /*"[updated: " + this.isUpdated() + ", childs updated: " + this.hasUpdatedSubNodes() + ", new wm: " + this.isWorldMatrixNew() + "]" +*/
-		    if (pChild) {
+		    while (pChild) {
 		        s += pChild.toString(true, iDepth + 1);
+		        pChild = pChild.sibling;
 		    }
 
-		    if (pSibling) {
-		        s += pSibling.toString(true, iDepth);
-		    }
-
+		    // if (pSibling) {
+		        // s += pSibling.toString(true, iDepth);
+		    // }
+// 
 		    return s;
 #else
 			return null;

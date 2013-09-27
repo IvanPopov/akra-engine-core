@@ -17,7 +17,8 @@ module akra.scene {
 		protected _iObjectFlags: int = 0;
 		protected _pLocalBounds: IRect3d = new geometry.Rect3d();
 		protected _pWorldBounds: IRect3d = new geometry.Rect3d();
-		protected _hasShadow: bool = false;
+		protected _bShadow: bool = false;
+
 
 		inline get totalRenderable(): uint { return 0; }
 
@@ -153,14 +154,14 @@ module akra.scene {
 		    return false;
 		}
 
-    	inline get hasShadow(): bool {
-    		return this._hasShadow;
+    	inline get shadow(): bool {
+    		return this._bShadow;
     	};
 
-    	inline set hasShadow(bValue: bool){
-    		this._hasShadow = bValue;
+    	inline set shadow(bValue: bool){
+    		this._bShadow = bValue;
     		for(var i: uint = 0; i < this.totalRenderable; i++){
-    			(<IRenderableObject>this.getRenderable(i)).hasShadow = bValue;
+    			(<IRenderableObject>this.getRenderable(i)).shadow = bValue;
     		}
     	};
 
@@ -173,7 +174,7 @@ module akra.scene {
     	toString(isRecursive: bool = false, iDepth: uint = 0): string {
 #ifdef DEBUG
 			if (!isRecursive) {
-		        return "<scene_object" + (this._sName ? " " + this._sName : "") + ">" + " height: " + this.worldPosition.y;
+		        return "<scene_object" + (this._sName ? " " + this._sName : "") + ">"/* + " height: " + this.worldPosition.y*/;
 		    }
 
 		    return super.toString(isRecursive, iDepth);
@@ -181,6 +182,7 @@ module akra.scene {
 			return null;
 #endif
     	}
+
 
 		UNICAST(worldBoundsUpdated, VOID);
 

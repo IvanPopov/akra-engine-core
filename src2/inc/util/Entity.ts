@@ -500,7 +500,7 @@ module akra.util {
 		        return '<entity' + (this._sName? ' ' + this._sName: "") + '>';
 		    }
 
-		    var pSibling: IEntity = this.sibling;
+		    // var pSibling: IEntity = this.sibling;
 		    var pChild: IEntity = this.child;
 		    var s: string = "";
 
@@ -514,9 +514,9 @@ module akra.util {
 		        s += pChild.toString(true, iDepth + 1);
 		    }
 
-		    if (pSibling) {
-		        s += pSibling.toString(true, iDepth);
-		    }
+		    // if (pSibling) {
+		    //     s += pSibling.toString(true, iDepth);
+		    // }
 
 		    return s;
 

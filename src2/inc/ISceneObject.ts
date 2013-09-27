@@ -11,7 +11,7 @@ module akra {
     export interface ISceneObject extends ISceneNode {
     	worldBounds: IRect3d;
     	totalRenderable: uint;
-        hasShadow: bool;
+        shadow: bool;
 
         writeonly onclick: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
         writeonly onmousemove: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;

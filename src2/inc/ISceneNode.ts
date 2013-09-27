@@ -17,6 +17,8 @@ module akra {
     	getController(i?: uint): IAnimationController;
     	addController(pController: IAnimationController): void;
 
+        isFrozen(): bool;
+        freeze(value?: bool): void;
     }
 }
 

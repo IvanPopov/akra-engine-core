@@ -2,7 +2,7 @@
 #define UTILNAVIGATION_TS
 
 module akra.util {
-	export function navigation(pGeneralViewport: IViewport): void {
+	export function navigation(pGeneralViewport: IViewport, pRotationPoint: IVec3 = null): void {
 		var pCanvas: webgl.WebGLCanvas = <webgl.WebGLCanvas>pGeneralViewport.getTarget();
 		var pEngine: IEngine = pCanvas.getRenderer().getEngine();
 		var pSceneMgr: ISceneManager = pEngine.getSceneManager();
@@ -40,6 +40,11 @@ module akra.util {
 
 			if (ide && ide.selectedObject) {
 				vDest.set(ide.selectedObject.worldPosition);
+				return vDest;
+			}
+
+			if (pRotationPoint) {
+				vDest.set(pRotationPoint);
 				return vDest;
 			}
 
@@ -143,7 +148,9 @@ module akra.util {
 
 		function syncCubeWithCamera(pGeneralViewport: IViewport, pViewport: IViewport, pCenterPoint): void {
 			var pSceneCam: ICamera = pGeneralViewport.getCamera();
-			ASSERT (pSceneCam.parent === pSceneCam.root, "only general camera may be used.");
+			// ASSERT (pSceneCam.parent === pSceneCam.root, "only general camera may be used.");
+			
+			pViewport.hide(pSceneCam.parent !== pSceneCam.root);
 			
 			var pCubeCam: ICamera = pViewport.getCamera();
 			var vPos: IVec3 = pSceneCam.worldPosition.subtract(pCenterPoint, vec3()).normalize().scale(5.5);

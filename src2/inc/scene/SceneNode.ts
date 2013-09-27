@@ -12,6 +12,7 @@ module akra.scene {
 	export class SceneNode extends Node implements ISceneNode {
 		protected _pScene: IScene3d = null;
 		protected _pAnimationControllers: IAnimationController[] = null;
+		protected _bFrozen: bool = false;
 
 		inline get scene(): IScene3d { return this._pScene; }
 		inline set scene(pScene: IScene3d) { this._pScene = pScene; }
@@ -41,6 +42,16 @@ module akra.scene {
 			pController.attach(this);
 			this._pAnimationControllers.push(pController);
 		}
+
+
+    	inline isFrozen(): bool {
+    		//TODO: avoid recursive call parent method
+    		return this._bFrozen || (this.parent && (<ISceneNode>this.parent).isFrozen());
+    	}
+
+    	freeze(bValue: bool = true): void {
+    		this._bFrozen = bValue;
+    	}
 
 		create(): bool {
 			super.create();
@@ -87,7 +98,7 @@ module akra.scene {
 
 		toString(isRecursive: bool = false, iDepth: uint = 0): string {
 			if (!isRecursive) {
-		        return "<scene_node" + (this.name? " " + this.name: "") + ">" + " height: " + this.worldPosition.y;
+		        return "<scene_node" + (this.name? " " + this.name: "") + ">"/* + " height: " + this.worldPosition.y*/;
 		    }
 
 		    return super.toString(isRecursive, iDepth);

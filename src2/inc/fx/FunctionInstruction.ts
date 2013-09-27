@@ -1907,22 +1907,28 @@ module akra.fx {
 							pParam.getType()._containSampler() ||
 							pParam.getType()._containPointer() ||
 							pParam.getType().isPointer()){
+							LOG(1);
 							return false;
 						}
 
 						isVaryingsByStruct = true;
 					}
 					else if(pParam.getSemantic() !== ""){
-						if (pParam.getType().isPointer() ||
+						if (pParam.getType().isStrictPointer() ||
 						    pParam.getType()._containPointer() ||
 						    pParam.getType()._containSampler() ||
 						    Effect.isSamplerType(pParam.getType())){
+							LOG(2, pParam.getType().isPointer() ,
+						    pParam.getType()._containPointer() ,
+						    pParam.getType()._containSampler() ,
+						    Effect.isSamplerType(pParam.getType()));
 							return false;
 						}
 
 						if (pParam.getType().isComplex() && 
 							(pParam.getType().hasFieldWithoutSemantic() || 
 							!pParam.getType().hasAllUniqueSemantics())){
+							LOG(3);
 							return false;
 						}
 
@@ -1932,23 +1938,27 @@ module akra.fx {
 					isStartAnalyze = true;
 				}
 				else if (isVaryingsByStruct){
+					LOG(4);
 					return false;
 				}
 				else if (isVaryingsByParams){
 					if(pParam.getSemantic() === "") {
+						LOG(5);
 						return false;
 					}
 
-					if (pParam.getType().isPointer() ||
+					if (pParam.getType().isStrictPointer() ||
 					    pParam.getType()._containPointer() ||
 					    pParam.getType()._containSampler() ||
 					    Effect.isSamplerType(pParam.getType())){
+						LOG(6);
 						return false;
 					}
 
 					if (pParam.getType().isComplex() && 
 						(pParam.getType().hasFieldWithoutSemantic() || 
 						!pParam.getType().hasAllUniqueSemantics())){
+						LOG(7);
 						return false;
 					}
 				}

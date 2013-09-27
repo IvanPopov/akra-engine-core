@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Sep 12 2013 14:52:45 GMT+0400 (Московское время (лето))
+ * assembled at: Fri Sep 27 2013 13:24:24 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -103,15 +103,16 @@ var akra;
         pCamera.update();
         return pCamera;
     }
-    function createSceneEnvironment(pScene, bHideQuad, bHideSurface) {
+    function createSceneEnvironment(pScene, bHideQuad, bHideSurface, fSize) {
         if (typeof bHideQuad === "undefined") { bHideQuad = false; }
         if (typeof bHideSurface === "undefined") { bHideSurface = false; }
-        var pSceneQuad = akra.util.createQuad(pScene, 500.);
+        if (typeof fSize === "undefined") { fSize = 100; }
+        var pSceneQuad = akra.util.createQuad(pScene, fSize * 5.);
         pSceneQuad.attachToParent(pScene.getRootNode());
         pSceneQuad.mesh.getSubset(0).setVisible(!bHideQuad);
-        var pSceneSurface = akra.util.createSceneSurface(pScene, 100);
+        var pSceneSurface = akra.util.createSceneSurface(pScene, fSize);
         // pSceneSurface.scale(5.);
-        pSceneSurface.addPosition(0, 0.01, 0);
+        pSceneSurface.addPosition(0, -0.01, 0);
         pSceneSurface.attachToParent(pScene.getRootNode());
         pSceneSurface.mesh.getSubset(0).setVisible(!bHideSurface);
         // var pCameraTerrainProj: ISceneModel = util.basis(pScene);
@@ -138,6 +139,7 @@ var akra;
         pTerrainMap["height"] = pRmgr.imagePool.findResource("TERRAIN_HEIGHT_MAP");
         pTerrainMap["normal"] = pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");
         // pTerrain.manualMegaTextureInit = !bShowMegaTex;
+        // (<ITerrainROAM>pTerrain).useTessellationThread = true;
         var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
         pTerrain.attachToParent(pScene.getRootNode());
         pTerrain.setInheritance(akra.ENodeInheritance.ALL);
@@ -1758,17 +1760,21 @@ var akra;
         pSky = akra.self.sky = createSky(pScene, 14.);
         //test viewports
         // var pTestViewport = pCanvas.addViewport(new render.DSViewport(pCamera, .25, .25, .5, .5, 1.));
-        var pTex = pViewport["_pDeferredColorTextures"][0];
-        var pColorViewport = pCanvas.addViewport(new akra.render.TextureViewport(pTex, 0.05, 0.05, .30, .30, 4.));
-        var pNormalViewport = pCanvas.addViewport(new akra.render.TextureViewport(pTex, 0.05, 0.40, .30, .30, 5.));
-        function onResize(pViewport) {
-            pColorViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
-            pNormalViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
+        /*		var pTex: ITexture = <ITexture>pViewport["_pDeferredColorTextures"][0];
+        var pColorViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.05, .30, .30, 4.));
+        var pNormalViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.40, .30, .30, 5.));
+        
+        function onResize(pViewport: IViewport) {
+        pColorViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
+        pNormalViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
         }
+        
         onResize(pViewport);
+        
         pViewport.bind("viewportDimensionsChanged", onResize);
+        
         pColorViewport.effect.addComponent("akra.system.display_consistent_colors");
-        pNormalViewport.effect.addComponent("akra.system.display_normals");
+        pNormalViewport.effect.addComponent("akra.system.display_normals");*/
         //end of test
         var pProject = pScene.createLightPoint(akra.ELightTypes.PROJECT, true, 512);
         pProject.attachToParent(pScene.getRootNode());

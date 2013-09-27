@@ -75,7 +75,7 @@ module akra.util {
 	    pSubMesh.data.allocateIndex([VE_FLOAT('INDEX_POSITION')], pVertexIndicesData);
 	    pSubMesh.data.index('POSITION', 'INDEX_POSITION');
 
-	    pSubMesh.hasShadow = false;
+	    pSubMesh.shadow = false;
 
 	    if((<core.Engine>pEngine).isDepsLoaded()){
 	    	pSubMesh.renderMethod.effect.addComponent("akra.system.plane");
@@ -131,7 +131,7 @@ module akra.util {
 	    
 	    pSubMesh.data.index('NORMAL', 'INDEX1');
 
-	    pSubMesh.hasShadow = false;
+	    pSubMesh.shadow = false;
 
 	    if((<core.Engine>pEngine).isDepsLoaded()){
 	    	pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
@@ -156,12 +156,12 @@ module akra.util {
 	    return pSceneModel;
 	}
 
-	export function basis(pScene, eOptions?: int): ISceneModel {
+	export function basis(pScene, eOptions: int = EMeshOptions.HB_READABLE, fSize: float = 1.): ISceneModel {
 	    var pMesh: IMesh, pSubMesh: IMeshSubset, pMaterial: IMaterial;
 	    var iPos: int, iNorm: int;
 	    var pEngine: IEngine = pScene.getManager().getEngine();
 
-	    pMesh = model.createMesh(pEngine, "basis", eOptions || EMeshOptions.HB_READABLE);
+	    pMesh = model.createMesh(pEngine, "basis", eOptions);
 	    iNorm = pMesh.data.allocateData([VE_VEC3("NORMAL")], new Float32Array([1,0,0]));
 
 	    function createAxis(sName: string, pCoords: Float32Array, pColor: IColor): void {
@@ -182,7 +182,7 @@ module akra.util {
 	        pMaterial.diffuse = pColor;
 	        pMaterial.shininess = 100.;
 
-	        pSubMesh.hasShadow = false;
+	        pSubMesh.shadow = false;
 
 	        if((<core.Engine>pEngine).isDepsLoaded()){
 		    	pSubMesh.effect.addComponent("akra.system.mesh_texture");
@@ -194,9 +194,149 @@ module akra.util {
 		    }
 	    }
 
-	    createAxis('basis::X-axis', new Float32Array([0,0,0, 1,0,0]), Color.RED);
-	    createAxis('basis::Y-axis', new Float32Array([0,0,0, 0,1,0]), Color.GREEN);
-	    createAxis('basis::Z-axis', new Float32Array([0,0,0, 0,0,1]), Color.BLUE);
+	    createAxis('basis::X-axis', new Float32Array([0,0,0, 1 * fSize,0,0]), Color.RED);
+	    createAxis('basis::Y-axis', new Float32Array([0,0,0, 0,1 * fSize,0]), Color.GREEN);
+	    createAxis('basis::Z-axis', new Float32Array([0,0,0, 0,0,1 * fSize]), Color.BLUE);
+
+	    var pSceneModel: ISceneModel = pScene.createModel("basis");
+	    pSceneModel.mesh = pMesh;
+
+	    return pSceneModel;
+	}
+
+	export function bone(pJoint: IJoint): ISceneModel {
+
+		var pScene: IScene3d = pJoint.scene;
+		var pParent: INode = <INode>pJoint.parent;
+					
+		if (isNull(pParent)) {
+			return null;
+		}
+
+		pParent.update();
+		pJoint.update();
+
+		// return basis(pScene);
+
+		var pMesh: IMesh, pSubMesh: IMeshSubset, pMaterial: IMaterial;
+	    var iPos: int, iNorm: int;
+	    var pEngine: IEngine = pScene.getManager().getEngine();
+	    var v: IVec3 = pJoint.worldPosition.subtract(pParent.worldPosition, vec3());
+
+	    pMesh = model.createMesh(pEngine, "bone-" + pJoint.name, EMeshOptions.HB_READABLE);
+        pSubMesh = pMesh.createSubset("bone", EPrimitiveTypes.LINELIST);
+        
+        // pJoint.localOrientation.inverse(quat4()).multiplyVec3(v);
+
+        // var s:IVec3 = pJoint.localScale;
+        // v.x *= 1./s.x;
+        // v.y *= 1./s.y;
+        // v.z *= 1./s.z;
+
+        // console.log(pJoint.name, "-->", pParent.name, pJoint.worldPosition.toString(), pParent.worldPosition.toString(), v.toString());
+        
+        pSubMesh.data.allocateData([VE_VEC3("POSITION")], new Float32Array([0,0,0, v.x, v.y, v.z]));
+        pSubMesh.data.allocateIndex([VE_FLOAT("INDEX0")],   new Float32Array([0,1]));
+
+        pSubMesh.data.index("POSITION", "INDEX0");
+
+        pMaterial = pSubMesh.material;
+        (<IColor>pMaterial.emissive).set(Color.WHITE);
+
+        pSubMesh.shadow = false;
+
+        pSubMesh.effect.addComponent("akra.system.mesh_texture");
+	    
+
+	    var pSceneModel: ISceneModel = pScene.createModel("bone-" + pJoint.name);
+	    pSceneModel.mesh = pMesh;
+
+	    return pSceneModel;
+	}
+
+
+	export function lineCube(pScene, eOptions?: int): ISceneModel {
+		var pMesh: IMesh, pSubMesh: IMeshSubset, pMaterial: IMaterial;
+	    var iPos: int, iNorm: int;
+	    var pEngine: IEngine = pScene.getManager().getEngine();
+
+	    pMesh = model.createMesh(pEngine, "basis", eOptions || EMeshOptions.HB_READABLE);
+	    iNorm = pMesh.data.allocateData([VE_VEC3("NORMAL")], new Float32Array([1,0,0]));
+
+	    pSubMesh = pMesh.createSubset("cube", EPrimitiveTypes.LINELIST);
+
+	    pSubMesh.data.allocateAttribute([VE_VEC3("POSITION")], new Float32Array([
+	    	//front
+	    	-1,	-1,	-1,
+	    	1,	-1,	-1,
+
+	    	1,	-1,	-1,
+	    	1,	1,	-1,
+
+	    	1,	1,	-1,
+	    	-1,	1,	-1,
+
+	    	-1,	1,	-1,
+	    	-1,	-1,	-1,
+
+	    	//bottom
+	    	-1,	-1,	1,
+	    	1,	-1,	1,
+
+	    	1,	-1,	1,
+	    	1,	1,	1,
+
+	    	1,	1,	1,
+	    	-1,	1,	1,
+
+	    	-1,	1,	1,
+	    	-1,	-1,	1,
+
+
+	    	//left
+	    	-1,	-1,	-1,	
+	    	-1,	1,	-1,	
+
+	    	-1,	1,	-1,	
+	    	-1,	1,	1,	
+
+	    	-1,	1,	1,	
+	    	-1,	-1,	1,	
+
+	    	-1,	-1,	1,	
+	    	-1,	-1,	-1,	
+
+	    	//right
+	    	1,	-1,	-1,	
+	    	1,	1,	-1,	
+
+	    	1,	1,	-1,	
+	    	1,	1,	1,	
+
+	    	1,	1,	1,	
+	    	1,	-1,	1,	
+
+	    	1,	-1,	1,	
+	    	1,	-1,	-1
+	    ]));
+
+	    pMaterial = pSubMesh.material;
+        (<IColor>pMaterial.emissive).set(1.);
+        (<IColor>pMaterial.ambient).set(1.);
+        (<IColor>pMaterial.diffuse).set(1.);
+        pMaterial.shininess = 100.;
+
+        pSubMesh.shadow = false;
+
+     	if((<core.Engine>pEngine).isDepsLoaded()){
+	    	pSubMesh.effect.addComponent("akra.system.mesh_texture");
+	    }
+	    else {
+	    	pScene.getManager().getEngine().bind(SIGNAL(depsLoaded), () => {
+	    		pSubMesh.effect.addComponent("akra.system.mesh_texture");
+	    	});
+	    }
+
 
 	    var pSceneModel: ISceneModel = pScene.createModel("basis");
 	    pSceneModel.mesh = pMesh;
@@ -422,7 +562,7 @@ module akra.util {
 // 		    pSubMesh.data.index(iMap,   "INDEX2");
 // 		    pSubMesh.data.index(iColor, "INDEX3");
 
-// 		    pSubMesh.hasShadow = false;
+// 		    pSubMesh.shadow = false;
 
 // 		    if((<core.Engine>pEngine).isDepsLoaded()){
 // 		    	pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");

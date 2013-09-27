@@ -54,6 +54,7 @@ module akra.fx {
 		k_ProjMatrix,
 		k_InvViewCameraMat,
 		k_CameraPosition,
+		k_WorldPosition,
 		k_OptimizedProjMatrix,
 		k_BindShapeMatrix,
 		k_RenderObjectId,
@@ -742,12 +743,14 @@ module akra.fx {
 
 		inline _getRenderableByRid(iRid: int): IRenderableObject {
 			var pRidPair: IRIDPair = this._pRidMap[iRid];
-			return isDefAndNotNull(pRidPair)? pRidPair.renderable: null;
+			var pRenderable: IRenderableObject = isDefAndNotNull(pRidPair)? pRidPair.renderable: null;
+			return isNull(pRenderable) || pRenderable.isFrozen()? null: pRenderable;
 		}
 
 		inline _getObjectByRid(iRid: int): ISceneObject {
 			var pRidPair: IRIDPair = this._pRidMap[iRid];
-			return isDefAndNotNull(pRidPair)? pRidPair.object: null;
+			var pSceneObject: ISceneObject = isDefAndNotNull(pRidPair)? pRidPair.object: null;
+			return isNull(pSceneObject) || pSceneObject.isFrozen()? null: pSceneObject;
 		}
 
 		private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
@@ -759,6 +762,7 @@ module akra.fx {
 				PREPARE_INDEX(ESystemUniformsIndices.k_ProjMatrix, "PROJ_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_InvViewCameraMat, "INV_VIEW_CAMERA_MAT");
 				PREPARE_INDEX(ESystemUniformsIndices.k_CameraPosition, "CAMERA_POSITION");
+				PREPARE_INDEX(ESystemUniformsIndices.k_WorldPosition, "WORLD_POSITION");
 				PREPARE_INDEX(ESystemUniformsIndices.k_OptimizedProjMatrix, "OPTIMIZED_PROJ_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_BindShapeMatrix, "BIND_SHAPE_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_RenderObjectId, "RENDER_OBJECT_ID");
@@ -791,6 +795,7 @@ module akra.fx {
 
 			if(!isNull(pSceneObject)){
 				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_ModelMatrix, pSceneObject.worldMatrix);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_WorldPosition, pSceneObject.worldPosition);
 			}
 
 			if(!isNull(pViewport)){

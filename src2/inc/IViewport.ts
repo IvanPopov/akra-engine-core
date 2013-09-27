@@ -46,6 +46,8 @@ module akra {
         update(): void;
         destroy(): void;
 
+        hide(bValue?: bool): void;
+
         startFrame(): void;
         renderObject(pRenderable: IRenderableObject): void;
         endFrame(): void;

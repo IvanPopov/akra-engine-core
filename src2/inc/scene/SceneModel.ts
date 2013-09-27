@@ -54,12 +54,12 @@ module akra.scene {
 			return this._pMesh.getSubset(i);
 		}
 
-		inline get hasShadow(): bool {
-			return this._pMesh.hasShadow;
+		inline get shadow(): bool {
+			return this._pMesh.shadow;
 		}
 
-		inline set hasShadow(bValue) {
-			this._pMesh.hasShadow = bValue;
+		inline set shadow(bValue) {
+			this._pMesh.shadow = bValue;
 		}
 
 
@@ -70,7 +70,7 @@ module akra.scene {
 		toString(isRecursive: bool = false, iDepth: uint = 0): string {
 #ifdef DEBUG
 		    if (!isRecursive) {
-		        var sData: string = "<model" + (this.name? " " + this.name: "") + "(" + (isNull(this._pMesh)? 0: this._pMesh.length) + ")" +  '>' + " height: " + this.worldPosition.y;
+		        var sData: string = "<model" + (this.name? " " + this.name: "") + "(" + (isNull(this._pMesh)? 0: this._pMesh.length) + ")" +  '>'/* + " height: " + this.worldPosition.y*/;
 		        
 		        if (!isNull(this._pMesh)) {
 		            sData += "( " + this._pMesh.name + " )";
