@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Sep 27 2013 13:24:24 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Sep 30 2013 15:42:56 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -1776,6 +1776,11 @@ var akra;
         pColorViewport.effect.addComponent("akra.system.display_consistent_colors");
         pNormalViewport.effect.addComponent("akra.system.display_normals");*/
         //end of test
+        var pSprite = pScene.createSprite("sprite");
+        pSprite.attachToParent(pScene.getRootNode());
+        pSprite.setRotationByXYZAxis(akra.math.PI / 2., 0., 0.);
+        pSprite.setPosition(0., -1., 0.);
+        pSprite.setTexture(pViewport["_pDeferredColorTextures"][0]);
         var pProject = pScene.createLightPoint(akra.ELightTypes.PROJECT, true, 512);
         pProject.attachToParent(pScene.getRootNode());
         pProject.enabled = false;

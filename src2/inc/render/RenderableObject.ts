@@ -286,7 +286,7 @@ module akra.render {
 
 
 		render(pViewport: IViewport, csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
-			if (!this.isReadyForRender()) {
+			if (!this.isReadyForRender() || (!isNull(pSceneObject) && pSceneObject.isHidden())) {
 				return;
 			}
 			

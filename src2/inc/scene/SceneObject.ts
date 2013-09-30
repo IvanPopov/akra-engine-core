@@ -13,11 +13,16 @@ module akra.scene {
 		k_NewWorldBounds
 	};
 
+	export enum EObjectViewModes {
+        k_Shadows = 0x01,
+        k_Billboard = 0x02
+    }
+
 	export class SceneObject extends SceneNode implements ISceneObject {
 		protected _iObjectFlags: int = 0;
 		protected _pLocalBounds: IRect3d = new geometry.Rect3d();
 		protected _pWorldBounds: IRect3d = new geometry.Rect3d();
-		protected _bShadow: bool = false;
+		protected _iViewModes: int = 0;
 
 
 		inline get totalRenderable(): uint { return 0; }
@@ -155,15 +160,28 @@ module akra.scene {
 		}
 
     	inline get shadow(): bool {
-    		return this._bShadow;
+    		return (this._iViewModes & EObjectViewModes.k_Shadows) != 0;
     	};
 
-    	inline set shadow(bValue: bool){
-    		this._bShadow = bValue;
+    	inline set shadow(bValue: bool) {
+    		bValue ? SET_ALL(this._iViewModes, EObjectViewModes.k_Shadows) : CLEAR_ALL(this._iViewModes, EObjectViewModes.k_Shadows);
+
     		for(var i: uint = 0; i < this.totalRenderable; i++){
     			(<IRenderableObject>this.getRenderable(i)).shadow = bValue;
     		}
     	};
+
+    	inline set billboard(bValue: bool) {
+    		bValue ? SET_ALL(this._iViewModes, EObjectViewModes.k_Billboard) : CLEAR_ALL(this._iViewModes, EObjectViewModes.k_Billboard);
+    	}
+
+    	inline get billboard(): bool {
+    		return (this._iViewModes & EObjectViewModes.k_Billboard) != 0;
+    	}
+
+    	inline isBillboard(): bool {
+			return this.billboard;
+		}
 
     	getObjectFlags(): int {
     		return this._iObjectFlags;

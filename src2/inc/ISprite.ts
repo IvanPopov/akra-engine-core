@@ -7,8 +7,6 @@ module akra {
 	IFACE(ITexture);
 
 	export interface ISprite extends ISceneObject {
-		billboard: bool;
-		isBillboard(): bool;
 		setTexture(pTex: ITexture): void;
 	}
 }

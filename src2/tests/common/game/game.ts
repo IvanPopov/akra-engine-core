@@ -1838,6 +1838,12 @@ module akra {
 		pNormalViewport.effect.addComponent("akra.system.display_normals");*/
 		//end of test
 
+		var pSprite: ISprite = pScene.createSprite("sprite");
+
+		pSprite.attachToParent(pScene.getRootNode());
+		pSprite.setPosition(0., -1., 0.);
+		pSprite.setTexture(<ITexture>pViewport["_pDeferredDepthTexture"]);
+
 		var pProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512);
 			
 		pProject.attachToParent(pScene.getRootNode());

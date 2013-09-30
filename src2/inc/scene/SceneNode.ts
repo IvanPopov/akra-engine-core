@@ -12,7 +12,7 @@ module akra.scene {
 	export class SceneNode extends Node implements ISceneNode {
 		protected _pScene: IScene3d = null;
 		protected _pAnimationControllers: IAnimationController[] = null;
-		protected _bFrozen: bool = false;
+		protected _iSceneNodeFlags: int = 0;
 
 		inline get scene(): IScene3d { return this._pScene; }
 		inline set scene(pScene: IScene3d) { this._pScene = pScene; }
@@ -45,12 +45,39 @@ module akra.scene {
 
 
     	inline isFrozen(): bool {
-    		//TODO: avoid recursive call parent method
-    		return this._bFrozen || (this.parent && (<ISceneNode>this.parent).isFrozen());
+    		return TEST_ANY(this._iSceneNodeFlags, 
+    			(FLAG(ESceneNodeFlags.FROZEN_SELF) | FLAG(ESceneNodeFlags.FROZEN_PARENT)));
+    	}
+
+    	inline isSelfFrozen(): bool {
+    		return TEST_BIT(this._iSceneNodeFlags, ESceneNodeFlags.FROZEN_SELF);
+    	}
+
+    	inline isParentFrozen(): bool {
+    		return TEST_BIT(this._iSceneNodeFlags, ESceneNodeFlags.FROZEN_PARENT);	
     	}
 
     	freeze(bValue: bool = true): void {
-    		this._bFrozen = bValue;
+    		SET_BIT(this._iSceneNodeFlags, ESceneNodeFlags.FROZEN_SELF, bValue);
+    		this.frozen(bValue);
+    	}
+
+    	inline isHidden(): bool {
+    		return TEST_ANY(this._iSceneNodeFlags, 
+    			(FLAG(ESceneNodeFlags.HIDDEN_SELF) | FLAG(ESceneNodeFlags.HIDDEN_PARENT)));
+    	}
+
+    	hide(bValue: bool = true): void {
+    		SET_BIT(this._iSceneNodeFlags, ESceneNodeFlags.HIDDEN_SELF, bValue);
+    		this.hidden(bValue);
+    	}
+
+    	_parentFrozen(pParent: ISceneNode, bValue: bool): void {
+    		SET_BIT(this._iSceneNodeFlags, ESceneNodeFlags.FROZEN_PARENT, bValue);
+    	}
+
+    	_parentHidden(pParent: ISceneNode, bValue: bool): void {
+    		SET_BIT(this._iSceneNodeFlags, ESceneNodeFlags.HIDDEN_PARENT, bValue);
     	}
 
 		create(): bool {
@@ -93,7 +120,27 @@ module akra.scene {
 				return false;
 			}
 
-			return super.attachToParent(pParent);
+			if (super.attachToParent(pParent)) {
+				if (!isNull(this.parent)) {
+					this.connect(this.parent, SIGNAL(frozen), SLOT(_parentFrozen));
+					this.connect(this.parent, SIGNAL(hidden), SLOT(_parentHidden));
+				}
+				return true;
+			}
+
+			return false;
+		}
+
+		detachFromParent(): bool {
+			if (super.detachFromParent()) {
+				if (!isNull(this.parent)) {
+					this.disconnect(this.parent, SIGNAL(frozen), SLOT(_parentFrozen));
+					this.disconnect(this.parent, SIGNAL(hidden), SLOT(_parentHidden));
+				}
+				return true;
+			}
+
+			return false;
 		}
 
 		toString(isRecursive: bool = false, iDepth: uint = 0): string {
@@ -103,6 +150,9 @@ module akra.scene {
 
 		    return super.toString(isRecursive, iDepth);
 		}
+
+		BROADCAST(frozen, CALL(value));
+		BROADCAST(hidden, CALL(value));
 
 	}
 }

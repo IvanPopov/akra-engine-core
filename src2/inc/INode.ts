@@ -34,7 +34,8 @@ module akra {
 		
 		readonly worldMatrix: IMat4;
 		readonly worldPosition: IVec3;
-		// readonly worldRotation: IQuat4;
+		readonly worldOrientation: IQuat4;
+		readonly worldScale: IVec3;
 		
 		readonly inverseWorldMatrix: IMat4;
 		readonly normalMatrix: IMat3;
@@ -51,7 +52,8 @@ module akra {
 		isWorldMatrixNew(): bool;
 		isLocalMatrixNew(): bool;
 
-		//recalcWorldMatrix(): bool;
+		setWorldPosition(v3fPosition: IVec3): void;
+		setWorldPosition(fX: float, fY: float, fZ: float): void;
 
 		setPosition(v3fPosition: IVec3): void;
 		setPosition(fX: float, fY: float, fZ: float): void;

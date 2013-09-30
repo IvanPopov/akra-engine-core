@@ -55,6 +55,12 @@ module akra.fx {
 		k_InvViewCameraMat,
 		k_CameraPosition,
 		k_WorldPosition,
+		k_WorldScale,
+		k_WorldOrientation,
+		k_LocalPosition,
+		k_LocalScale,
+		k_LocalOrientation,
+		k_LocalMatrix,
 		k_OptimizedProjMatrix,
 		k_BindShapeMatrix,
 		k_RenderObjectId,
@@ -105,9 +111,9 @@ module akra.fx {
 		private _pComposerState: any = { 
 			mesh : { 
 				isSkinned : false, 
-				isOptimizedSkinned : false, 
-
-				isSprite : false,
+				isOptimizedSkinned : false
+			},
+			object: {
 				isBillboard: false
 			},
 			terrain : { 
@@ -689,8 +695,8 @@ module akra.fx {
 			//assume, that less than 1024 draw calls may be & less than 1024 scene object will be rendered.
 			//beacause only 1024
 			
-			var iSceneObjectGuid: int = isNull(pSceneObject)? 0: pSceneObject.getGuid();
-			var iRenderableObjectGuid: int = isNull(pRenderable)? MAX_UINT32: pRenderable.getGuid();
+			var iSceneObjectGuid: int = !isDefAndNotNull(pSceneObject)? 0: pSceneObject.getGuid();
+			var iRenderableObjectGuid: int = !isDefAndNotNull(pRenderable)? MAX_UINT32: pRenderable.getGuid();
 
 			if (this._nRidSO === RID_TOTAL || this._nRidRE === RID_TOTAL) {
 				this._pRidTable = <any>{};
@@ -763,6 +769,12 @@ module akra.fx {
 				PREPARE_INDEX(ESystemUniformsIndices.k_InvViewCameraMat, "INV_VIEW_CAMERA_MAT");
 				PREPARE_INDEX(ESystemUniformsIndices.k_CameraPosition, "CAMERA_POSITION");
 				PREPARE_INDEX(ESystemUniformsIndices.k_WorldPosition, "WORLD_POSITION");
+				PREPARE_INDEX(ESystemUniformsIndices.k_WorldScale, "WORLD_SCALE");
+				PREPARE_INDEX(ESystemUniformsIndices.k_WorldOrientation, "WORLD_ORIENTATION");
+				PREPARE_INDEX(ESystemUniformsIndices.k_LocalScale, "LOCAL_SCALE");
+				PREPARE_INDEX(ESystemUniformsIndices.k_LocalPosition, "LOCAL_POSITION");
+				PREPARE_INDEX(ESystemUniformsIndices.k_LocalOrientation, "LOCAL_ORIENTATION");
+				PREPARE_INDEX(ESystemUniformsIndices.k_LocalMatrix, "LOCAL_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_OptimizedProjMatrix, "OPTIMIZED_PROJ_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_BindShapeMatrix, "BIND_SHAPE_MATRIX");
 				PREPARE_INDEX(ESystemUniformsIndices.k_RenderObjectId, "RENDER_OBJECT_ID");
@@ -796,6 +808,12 @@ module akra.fx {
 			if(!isNull(pSceneObject)){
 				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_ModelMatrix, pSceneObject.worldMatrix);
 				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_WorldPosition, pSceneObject.worldPosition);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_WorldScale, pSceneObject.worldScale);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_WorldOrientation, pSceneObject.worldOrientation);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_LocalScale, pSceneObject.localScale);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_LocalPosition, pSceneObject.localPosition);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_LocalOrientation, pSceneObject.localOrientation);
+				FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_LocalMatrix, pSceneObject.localMatrix);
 			}
 
 			if(!isNull(pViewport)){
@@ -848,13 +866,14 @@ module akra.fx {
 			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_fSunSpecular, this.fSunSpecular);
 			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_cHeightFalloff, this.cHeightFalloff);
 			FAST_SET_UNIFORM(pPassInput, ESystemUniformsIndices.k_cGlobalDensity, this.cGlobalDensity);
+
+			pPassInput.setUniform("isBillboard", this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard());
 		}
 
 		private prepareComposerState(): void {
 			if(!isNull(this._pCurrentRenderable)){
 				this._pComposerState.renderable.isAdvancedIndex = this._pCurrentRenderable.data.useAdvancedIndex();
-				this._pComposerState.mesh.isSprite = render.isSprite(this._pCurrentRenderable);
-				this._pComposerState.mesh.isBillboard = this._pComposerState.mesh.isSprite && (<ISprite>this._pCurrentSceneObject).isBillboard();
+				this._pComposerState.object.isBillboard = this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard();
 				
 
 				if(render.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()){

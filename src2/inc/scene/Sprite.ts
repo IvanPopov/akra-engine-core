@@ -28,7 +28,6 @@ module akra.scene {
 	}
 
 	export class Sprite extends SceneObject implements ISprite {
-		billboard: bool = false;
 
 		protected _pManager: ISpriteManager;
 		protected _pRenderable: IRenderableObject;
@@ -61,15 +60,12 @@ module akra.scene {
 			this.create(2, 2);
 		}
 
-		inline isBillboard(): bool {
-			return this.billboard;
-		}
-
 		create(fSizeX: float = 2, fSizeY: float = 2): bool {
 			super.create();
 			//4 vertex * (4 coords + 3 texcoords)
 			var pGeometry = new Float32Array(4 * 4);
 			var pTexCoords = new Float32Array(4 * 3);
+			var pNormals = new Float32Array([0., 0., 1., 0.]);
 
 			for (var i = 0; i < 4; i ++) {
 				//-1, -1, -1, 1, 1, -1, 1, 1
@@ -95,10 +91,13 @@ module akra.scene {
 			
 			pData.allocateData([VE_FLOAT4("POSITION")], pGeometry);
 			pData.allocateData([VE_FLOAT3("TEXCOORD0")], pTexCoords);
+			pData.allocateData([VE_FLOAT4("NORMAL")], pNormals);
 			pData.allocateIndex([VE_FLOAT('INDEX0')], new Float32Array([0,1,2,3]));
 			pData.allocateIndex([VE_FLOAT('INDEX1')], new Float32Array([0,1,2,3]));
+			pData.allocateIndex([VE_FLOAT('INDEX2')], new Float32Array([0,0,0,0]));
 			pData.index('POSITION', 'INDEX0');
 			pData.index('TEXCOORD0', 'INDEX1');
+			pData.index('NORMAL', 'INDEX2');
 
 			this._pRenderable._setRenderData(pData);
 			

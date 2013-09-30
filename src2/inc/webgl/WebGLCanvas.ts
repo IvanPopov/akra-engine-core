@@ -31,7 +31,7 @@ module akra.webgl {
 		protected _p3DEventDragTarget: IViewport = null;
 		protected _p3DEventMouseDownPos: IPoint = {x: 0, y: 0};
 		//на сколько пикселей надо протащить курсор, чтобы сработал dragging
-		protected _i3DEventDragDeadZone: uint = 3;
+		protected _i3DEventDragDeadZone: uint = 2;
 		protected _b3DEventDragging: bool = false;
 		protected _e3DEventDragBtn: EMouseButton = EMouseButton.UNKNOWN;
 		//переменная нужна, для того чтобы пропустить событие клика приходящее после окончания драггинга
