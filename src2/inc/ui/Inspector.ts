@@ -33,6 +33,7 @@ module akra.ui {
 		protected _pAddControllerBtn: IUIButton;
 		protected _pControllers: ui.animation.Controller[] = [];
 		protected _nTotalVisibleControllers: uint = 0;
+		protected _bControllerVisible: bool = false;
 
 		//model entry properties
 		protected _pResource: resource.Properties;
@@ -100,6 +101,7 @@ module akra.ui {
 
 		private getControllerUI(): ui.animation.Controller {
 			if (this._nTotalVisibleControllers === this._pControllers.length) {
+				console.log("create controller >> ");
 				var pController: ui.animation.Controller = <ui.animation.Controller>
 					this.createComponent("animation.Controller", {
 						show: false
@@ -120,6 +122,8 @@ module akra.ui {
 			for (var i = 0; i < this._nTotalVisibleControllers; ++ i) {
 				this._pControllers[i].hide();
 			}
+
+			this._nTotalVisibleControllers = 0;
 		}
 
 		_addController(pBtn: IUIButton): void {
@@ -241,11 +245,16 @@ module akra.ui {
 
 		inspectAnimationController(pController: IAnimationController): void {
 			if (isNull(pController)) {
-				this.el.find("div[name=animation-controller]").hide();
+				if (this._bControllerVisible) {
+					this.el.find("div[name=animation-controller]").hide();
+					this._bControllerVisible = false;
+				}
 				return;
 			}
-
-			this.el.find("div[name=animation-controller]").show();
+			if (!this._bControllerVisible) {
+				this._bControllerVisible = true;
+				this.el.find("div[name=animation-controller]").show();
+			}
 			this._pController.setController(pController);
 		}
 
