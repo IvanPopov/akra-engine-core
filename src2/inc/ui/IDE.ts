@@ -422,10 +422,10 @@ module akra.ui {
 			var pRenderablePrev: IRenderableObject = this.selectedRenderable;
 
 			var p = this._pSelectedObject;
-			console.log(pObj);
+
 			p.object = pObj;
 			p.renderable = pRenderable;
-			console.log(this.selectedObject, "<<<");
+
 			this.updateEditting(pObjectPrev, pRenderablePrev);
 		}
 
