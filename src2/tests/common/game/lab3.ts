@@ -152,6 +152,39 @@ module akra {
 	    	pSlices.push(pTex);
 	    }
 
+	    var pArteriesModelHP: IModel = pRmgr.loadModel(DATA + "models/arteries_hp.DAE", {shadows: false});
+	    var pArteriesMeshHP: IMesh = null;
+	    var pArteriesHP: IModelEntry = null;
+
+	    pArteriesModelHP.bind("loaded", () => {
+			pArteriesHP = pArteriesModelHP.attachToScene(pScene);
+			pArteriesHP.setRotationByXYZAxis(0., math.PI, 0.);
+
+			var pBasis: ISceneModel = util.basis(pScene);
+			pBasis.scale(.25);
+			pBasis.attachToParent((<ISceneModel>pArteriesHP.child));
+
+			var pArteriesSceneModelHP: ISceneModel = (<ISceneModel>pArteriesHP.findEntity("node-main_arteries_L01").child.sibling);
+			pArteriesMeshHP = pArteriesSceneModelHP.mesh;
+			pArteriesMeshHP.showBoundingBox();
+			pArteriesMeshHP.getSubset(0).wireframe();
+
+
+
+			pArteriesHP.scale(2.25);
+
+			pArteriesHP.localScale.y *= 1.15;
+			pArteriesHP.setPosition(-0.017, 1.1275, -0.20);
+			(<ISceneNode>pArteriesHP.child).addRotationByXYZAxis(0., Math.PI/2, 0.);
+
+			var pBasis: ISceneModel = util.basis(pScene);
+			pBasis.attachToParent(pArteriesHP);
+			pBasis.scale(.1);
+
+			window["arteries_hp"] = pArteriesHP;
+		});
+
+
 		var pArteriesModel: IModel = pRmgr.loadModel(DATA + "/models/arteries_segment_with_bones.DAE", {shadows: false});
 		var pArteriesMesh: IMesh = null;
 		var pArteries: IModelEntry = null;
@@ -272,9 +305,11 @@ module akra {
 						
 						var v: IVec3 = pCoords[i - 1];
 						var vn: IVec3 = vec3();
+						/*31,25 = 64 * 0,48828125 = ((512 - 384) / 2.) * (25cm / 512px)*/
 						
-						vn.x = (v.y * 0.01 - 1.);
-						vn.z = (v.x * 0.01 - 1.) - 26 * 0.01;/*31,25 = 64 * 0,48828125 = ((512 - 384) / 2.) * (25cm / 512px)*/
+						vn.x = ((v.y + 31.25) * (2. / 2.5) * 0.01 - 1.);
+						vn.z = ((v.x/* - 31.25*/) * (2. / 2.5) * 0.01 - 1.);
+
 						vn.y = v.z / fTopZcoord * pSlices.length * fSliceStep + 1.;
 						// vn.y = v.z * 0.01 + 1.;
 
@@ -398,7 +433,7 @@ module akra {
 
 		slice.onChange(function(fValue: float) {
 			pSprite.setPosition(0., fValue * pSlices.length * fSliceStep + 1., 0.);
-			console.log(fValue * pSlices.length * fSliceStep + 1.)
+			// console.log(fValue * pSlices.length * fSliceStep + 1.)
 			
 			fSlice = fValue;
 			fKL = fSlice * (pSlices.length - 1.);

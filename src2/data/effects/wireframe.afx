@@ -45,7 +45,7 @@ float4 fs_wireframe(VS_OUT IN): COLOR
     float3 a3 = smoothstep(float3(0.0), float3(d * 0.95), vBC);
     float edgeFactor = min(min(a3.x, a3.y), a3.z);
 
-    float4 color = float4(mix(float3(1.0), float3(0.), edgeFactor), 1.);
+    float4 color = float4(mix(float3(85./255.), float3(0.), edgeFactor), 1.);
 
     if (!overlay) {
         if (edgeFactor == 1.) {

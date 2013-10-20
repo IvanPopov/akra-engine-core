@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Sun Oct 13 2013 16:50:57 GMT+0400 (Московское время (зима))
+ * assembled at: Sun Oct 20 2013 17:01:24 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/lab3.ts
  * name: lab3
@@ -471,6 +471,30 @@ var akra;
             pTex.setFilter(akra.ETextureParameters.MAG_FILTER, akra.ETextureFilters.LINEAR);
             pSlices.push(pTex);
         }
+        var pArteriesModelHP = pRmgr.loadModel(akra.DATA + "models/arteries_hp.DAE", {
+            shadows: false
+        });
+        var pArteriesMeshHP = null;
+        var pArteriesHP = null;
+        pArteriesModelHP.bind("loaded", /** @inline */function () {
+            pArteriesHP = pArteriesModelHP.attachToScene(pScene);
+            pArteriesHP.setRotationByXYZAxis(0., akra.math.PI, 0.);
+            var pBasis = akra.util.basis(pScene);
+            pBasis.scale(.25);
+            pBasis.attachToParent((pArteriesHP.child));
+            var pArteriesSceneModelHP = (pArteriesHP.findEntity("node-main_arteries_L01").child.sibling);
+            pArteriesMeshHP = pArteriesSceneModelHP.mesh;
+            pArteriesMeshHP.showBoundingBox();
+            pArteriesMeshHP.getSubset(0).wireframe();
+            pArteriesHP.scale(2.25);
+            pArteriesHP.localScale.y *= 1.15;
+            pArteriesHP.setPosition(-0.017, 1.1275, -0.20);
+            (pArteriesHP.child).addRotationByXYZAxis(0., Math.PI / 2, 0.);
+            var pBasis = akra.util.basis(pScene);
+            pBasis.attachToParent(pArteriesHP);
+            pBasis.scale(.1);
+            window["arteries_hp"] = pArteriesHP;
+        });
         var pArteriesModel = pRmgr.loadModel(akra.DATA + "/models/arteries_segment_with_bones.DAE", {
             shadows: false
         });
@@ -567,9 +591,10 @@ var akra;
                     pCoords.push(new akra.Vec3(parseFloat(coords[0]), parseFloat(coords[1]), parseFloat(coords[2])));
                     var v = pCoords[i - 1];
                     var vn = akra.Vec3.stackCeil.set();
-                    vn.x = (v.y * 0.01 - 1.);
                     /*31,25 = 64 * 0,48828125 = ((512 - 384) / 2.) * (25cm / 512px)*/
-                    vn.z = (v.x * 0.01 - 1.) - 26 * 0.01;
+                    vn.x = ((v.y + 31.25) * (2. / 2.5) * 0.01 - 1.);
+                    /* - 31.25*/
+                    vn.z = ((v.x) * (2. / 2.5) * 0.01 - 1.);
                     vn.y = v.z / fTopZcoord * pSlices.length * fSliceStep + 1.;
                     // vn.y = v.z * 0.01 + 1.;
                     v.set(vn);

@@ -83,7 +83,7 @@ module akra {
 		}
 	};
 
-	var pEngine: IEngine = createEngine(pOptions);
+	export var pEngine: IEngine = createEngine(pOptions);
 	
 	
 	var pUI: IUI 						= pEngine.getSceneManager().createUI();
@@ -154,7 +154,7 @@ module akra {
 			pSprite.shadow = false;
 
 
-			pSprite.attachToParent(pLightOmni);
+			// pSprite.attachToParent(pLightOmni);
 			pLightOmni.lookAt(vec3(0., 0., 0.))
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
 			// pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
@@ -181,7 +181,7 @@ module akra {
 
 
 		var pController: IAnimationController = pEngine.createAnimationController();
-		var pMiner: IModel = <IModel>pRmgr.colladaPool.findResource("MINER");
+		var pMiner: ICollada = <ICollada>pRmgr.colladaPool.findResource("MINER");
 
 		var pGUI = new dat.GUI();
 
@@ -250,7 +250,7 @@ module akra {
 	    // pGUI.add(pViewer, 'waveStripWidth', 1, 10).step(1);
 	    // pGUI.addColor(pViewer, 'waveColor');
 	    // pGUI.addColor(pViewer, 'waveStripColor');
-
+    	pMiner.options.wireframe = true;
 		var pModel: ISceneNode = pMiner.attachToScene(pScene);
 		pModel.addController(pController);
 		pModel.scale(.5);

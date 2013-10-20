@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Oct 11 2013 20:03:02 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Oct 14 2013 15:09:04 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/animation.ts
  * name: animation
@@ -452,14 +452,14 @@ var akra;
             ]
         }
     };
-    var pEngine = akra.createEngine(pOptions);
-    var pUI = pEngine.getSceneManager().createUI();
-    var pCanvas = pEngine.getRenderer().getDefaultCanvas();
+    akra.pEngine = akra.createEngine(pOptions);
+    var pUI = akra.pEngine.getSceneManager().createUI();
+    var pCanvas = akra.pEngine.getRenderer().getDefaultCanvas();
     var pCamera = null;
     var pViewport = null;
     var pIDE = null;
-    var pRmgr = pEngine.getResourceManager();
-    var pScene = pEngine.getScene();
+    var pRmgr = akra.pEngine.getResourceManager();
+    var pScene = akra.pEngine.getScene();
     function main(pEngine) {
         setup(pCanvas, pUI);
         pCamera = pScene.createCamera();
@@ -504,7 +504,7 @@ var akra;
             pSprite.setTexture(pRmgr.texturePool.loadResource("LIGHT_ICON"));
             pSprite.billboard = true;
             pSprite.shadow = false;
-            pSprite.attachToParent(pLightOmni);
+            // pSprite.attachToParent(pLightOmni);
             pLightOmni.lookAt(akra.Vec3.stackCeil.set(0., 0., 0.));
             pLightOmni.setInheritance(akra.ENodeInheritance.ALL);
             // pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
@@ -576,10 +576,11 @@ var akra;
         // pGUI.add(pViewer, 'waveStripWidth', 1, 10).step(1);
         // pGUI.addColor(pViewer, 'waveColor');
         // pGUI.addColor(pViewer, 'waveStripColor');
+        pMiner.options.wireframe = true;
         var pModel = pMiner.attachToScene(pScene);
         pModel.addController(pController);
         pModel.scale(.5);
         pController.play(0);
     }
-    pEngine.bind("depsLoaded", main);
+    akra.pEngine.bind("depsLoaded", main);
 })(akra || (akra = {}));

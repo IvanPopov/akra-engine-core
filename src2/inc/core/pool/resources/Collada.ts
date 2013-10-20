@@ -2524,6 +2524,7 @@ module akra.core.pool.resources {
 
             //adding all data to cahce data
             this.addMesh(pMesh);
+            
 
             return this.buildMaterials(pMesh, pGeometryInstance);
         }
