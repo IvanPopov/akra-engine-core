@@ -38,20 +38,7 @@ module akra.core.pool.resources {
     
     function getSupportedFormat(sSemantic: string): IColladaUnknownFormat[];
     function calcFormatStride(pFormat: IColladaUnknownFormat[]): int;
-    
-    // data convertion
 
-    function parseBool(sValue: string): bool;
-    function parseString(sValue: string): string;
-    function retrieve(pSrc: any[], pDst: any[], iStride?: int, iFrom?: int, iCount?: int, iOffset?: int, iLen?: int): uint;
-
-    function string2Array(sData: string, ppData: any[], fnConv: (data: string) => any, iFrom?: uint): uint;
-    function string2IntArray(sData: string, ppData: int[], iFrom?: uint): uint;
-    function string2FloatArray(sData: string, ppData: float[], iFrom?: uint): uint;
-    function string2BoolArray(sData: string, ppData: bool[], iFrom?: uint): uint;
-    function string2StringArray(sData: string, ppData: string[], iFrom?: uint): uint;
-
-    function string2Any(sData: string, n: uint, sType: string, isArray?: bool): any;
 
     // additional
     
@@ -81,8 +68,6 @@ module akra.core.pool.resources {
     var pSupportedTangentFormat: IColladaUnknownFormat[];
 
     var pFormatStrideTable: IColladaFormatStrideTable;
-
-    var pConvFormats: IColladaConvertionTable;
 
     export class Collada extends ResourcePoolItem implements ICollada {
         constructor ();
@@ -311,7 +296,9 @@ module akra.core.pool.resources {
             "specular"
         ];
 
-        public modelFormat: EModelFormats = EModelFormats.COLLADA;
+        inline get modelFormat(): EModelFormats {
+            return EModelFormats.COLLADA;
+        }
 
         //=======================================================================================
         
@@ -3318,13 +3305,6 @@ module akra.core.pool.resources {
         "IDREF"    : 1
     };
 
-    pConvFormats = {
-        "int"    : { type: Int32Array,      converter: string2IntArray      },
-        "float"  : { type: Float32Array,    converter: string2FloatArray    },
-        "bool"   : { type: Array,           converter: string2BoolArray     },
-        "string" : { type: Array,           converter: string2StringArray   }
-    };
-
      /* COMMON FUNCTIONS
      ------------------------------------------------------
      */
@@ -3393,92 +3373,6 @@ module akra.core.pool.resources {
 
         return iStride;
     }
-    
-
-    // data convertion
-
-    inline function parseBool(sValue: string): bool {
-        return (sValue === "true");
-    }
-
-    inline function parseString(sValue: string): string {
-        return String(sValue);
-    }
-
-    /**
-     * Получить часть данных массива
-     * @param pSrc
-     * @param pDst
-     * @param iStride шаг (количество элементов в шаге)
-     * @param iFrom номер элемента с которого начинать
-     * @param iCount сколько элементов надо получить
-     * @param iOffset смещение внутри шага (в элементах)
-     * @param iLen количество элементов в шаге.
-     */
-    
-    function retrieve(pSrc: any[], pDst: any[], iStride: int = 1, iFrom: int = 0, iCount?: int, iOffset: int = 0, iLen: int = iStride - iOffset): uint {
-        
-        if (!isDef(iCount)) {
-            iCount = (pSrc.length / iStride - iFrom);
-        }
-
-        if (iOffset + iLen > iStride) {
-            iLen = iStride - iOffset;
-        }
-
-        var iBegin: int = iFrom * iStride;
-        var n: int = 0;
-        
-        for (var i: int = 0; i < iCount; ++i) {
-            for (var j = 0; j < iLen; ++j) {
-                pDst[n++] = (pSrc[iBegin + i * iStride + iOffset + j]);
-            }
-        }
-
-        return n;
-    }
-
-    function string2Array(sData: string, ppData: any[], fnConv: (data: string) => any = parseFloat, iFrom: uint = 0): uint {
-        var pData: string[] = sData.split(/[\s]+/g);
-        
-        for (var i = 0, n = pData.length, j = 0; i < n; ++i) {
-            if (pData[i] != "") {
-                ppData[iFrom + j] = fnConv(pData[i]);
-                j++;
-            }
-        }
-
-        return j;
-    }
-    
-    inline function string2IntArray(sData: string, ppData: int[], iFrom?: uint): uint {
-        return string2Array(sData, ppData, parseInt, iFrom);
-    }
-
-    inline function string2FloatArray(sData: string, ppData: float[], iFrom?: uint): uint {
-        return string2Array(sData, ppData, parseFloat, iFrom);
-    }
-
-    inline function string2BoolArray(sData: string, ppData: bool[], iFrom?: uint): uint {
-        return string2Array(sData, ppData, parseBool, iFrom);
-    }
-    
-    inline function string2StringArray(sData: string, ppData: string[], iFrom?: uint): uint {
-        return string2Array(sData, ppData, parseString, iFrom);
-    }
-
-   
-    function string2Any(sData: string, n: uint, sType: string, isArray = false): any {
-        var ppData: any = new (pConvFormats[sType].type)(n);
-        
-        pConvFormats[sType].converter(sData, ppData);
-        
-        if (n == 1 && !isArray) {
-            return ppData[0];
-        }
-        
-        return ppData;
-    };
 
     // additional
     

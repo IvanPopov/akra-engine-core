@@ -36,6 +36,7 @@ module akra {
         extractAnimation(i: int): IAnimation;
         
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
+        loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): bool;
     }
 
     export interface IColladaCache {
@@ -51,7 +52,7 @@ module akra {
         flipY?: bool;
     }
 
-	export interface IColladaLoadOptions {
+	export interface IColladaLoadOptions extends IModelLoadOptions {
     	/** Add nodes, that visualize joints in animated models. */
     	drawJoints?: bool;
     	/** Convert all meshed to wireframe. */
@@ -118,19 +119,6 @@ module akra {
     /** Stride for collada formats, discretized at 32 bits. */
     export interface IColladaFormatStrideTable {
     	[format: string]: uint;
-    }
-
-    export interface IColladaConverter {
-    	(data: string, output: any[], from?: int): uint;
-    }
-
-    export interface IColladaConvertionTableRow {
-        type: any; 
-        converter: IColladaConverter;
-    }
-
-    export interface IColladaConvertionTable {
-    	[type: string]: IColladaConvertionTableRow;
     }
 
     export interface IColladaLinkMap {

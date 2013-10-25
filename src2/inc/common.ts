@@ -213,37 +213,158 @@ module akra {
     }
 
     export function binarySearchInSortIntArray(pArray: int[], iValue: int): uint {
-            if(iValue < pArray[0] || iValue > pArray[pArray.length - 1]){
-                return -1;
-            }
-
-            if(iValue === pArray[0]){
-                return 0;
-            }
-
-            if(iValue === pArray[pArray.length - 1]){
-                return pArray.length - 1;
-            }
-
-            var p: uint = 0;
-            var q: uint = pArray.length - 1;
-
-            while(p < q){
-                var s: uint = (p + q) >> 1;
-
-                if(iValue === pArray[s]){
-                    return s;
-                }
-                else if(iValue > pArray[s]){
-                    p = s + 1;
-                }
-                else {
-                    q = s;
-                }
-            }
-
+        if(iValue < pArray[0] || iValue > pArray[pArray.length - 1]){
             return -1;
         }
+
+        if(iValue === pArray[0]){
+            return 0;
+        }
+
+        if(iValue === pArray[pArray.length - 1]){
+            return pArray.length - 1;
+        }
+
+        var p: uint = 0;
+        var q: uint = pArray.length - 1;
+
+        while(p < q){
+            var s: uint = (p + q) >> 1;
+
+            if(iValue === pArray[s]){
+                return s;
+            }
+            else if(iValue > pArray[s]){
+                p = s + 1;
+            }
+            else {
+                q = s;
+            }
+        }
+
+        return -1;
+    }
+
+     // data convertion
+
+    export interface IConverter {
+        (data: string, output: any[], from?: int): uint;
+    }
+
+    export interface IConvertionTableRow {
+        type: any; 
+        converter: IConverter;
+    }
+
+    export interface IConvertionTable {
+        [type: string]: IConvertionTableRow;
+    }
+
+     var pConvFormats: IConvertionTable;
+
+    export function parseBool(sValue: string): bool;
+    export function parseString(sValue: string): string;
+    export function retrieve(pSrc: any[], pDst: any[], iStride?: int, iFrom?: int, iCount?: int, iOffset?: int, iLen?: int): uint;
+
+    export function string2Array(sData: string, ppData: any[], fnConv: (data: string) => any, iFrom?: uint): uint;
+    export function string2IntArray(sData: string, ppData: int[], iFrom?: uint): uint;
+    export function string2FloatArray(sData: string, ppData: float[], iFrom?: uint): uint;
+    export function string2BoolArray(sData: string, ppData: bool[], iFrom?: uint): uint;
+    export function string2StringArray(sData: string, ppData: string[], iFrom?: uint): uint;
+
+    export function string2Any(sData: string, n: uint, sType: string, isArray?: bool): any;
+
+    // data convertion
+
+    pConvFormats = {
+        "int"    : { type: Int32Array,      converter: string2IntArray      },
+        "float"  : { type: Float32Array,    converter: string2FloatArray    },
+        "bool"   : { type: Array,           converter: string2BoolArray     },
+        "string" : { type: Array,           converter: string2StringArray   }
+    };
+
+    export inline function parseBool(sValue: string): bool {
+        return (sValue === "true");
+    }
+
+    export inline function parseString(sValue: string): string {
+        return String(sValue);
+    }
+
+    /**
+     * Получить часть данных массива
+     * @param pSrc
+     * @param pDst
+     * @param iStride шаг (количество элементов в шаге)
+     * @param iFrom номер элемента с которого начинать
+     * @param iCount сколько элементов надо получить
+     * @param iOffset смещение внутри шага (в элементах)
+     * @param iLen количество элементов в шаге.
+     */
+    
+    export function retrieve(pSrc: any[], pDst: any[], iStride: int = 1, iFrom: int = 0, iCount?: int, iOffset: int = 0, iLen: int = iStride - iOffset): uint {
+        
+        if (!isDef(iCount)) {
+            iCount = (pSrc.length / iStride - iFrom);
+        }
+
+        if (iOffset + iLen > iStride) {
+            iLen = iStride - iOffset;
+        }
+
+        var iBegin: int = iFrom * iStride;
+        var n: int = 0;
+        
+        for (var i: int = 0; i < iCount; ++i) {
+            for (var j = 0; j < iLen; ++j) {
+                pDst[n++] = (pSrc[iBegin + i * iStride + iOffset + j]);
+            }
+        }
+
+        return n;
+    }
+
+    export function string2Array(sData: string, ppData: any[], fnConv: (data: string) => any = parseFloat, iFrom: uint = 0): uint {
+        var pData: string[] = sData.split(/[\s]+/g);
+        
+        for (var i = 0, n = pData.length, j = 0; i < n; ++i) {
+            if (pData[i] != "") {
+                ppData[iFrom + j] = fnConv(pData[i]);
+                j++;
+            }
+        }
+
+        return j;
+    }
+    
+    export inline function string2IntArray(sData: string, ppData: int[], iFrom?: uint): uint {
+        return string2Array(sData, ppData, parseInt, iFrom);
+    }
+
+    export inline function string2FloatArray(sData: string, ppData: float[], iFrom?: uint): uint {
+        return string2Array(sData, ppData, parseFloat, iFrom);
+    }
+
+    export inline function string2BoolArray(sData: string, ppData: bool[], iFrom?: uint): uint {
+        return string2Array(sData, ppData, parseBool, iFrom);
+    }
+    
+    export inline function string2StringArray(sData: string, ppData: string[], iFrom?: uint): uint {
+        return string2Array(sData, ppData, parseString, iFrom);
+    }
+
+   
+    export function string2Any(sData: string, n: uint, sType: string, isArray = false): any {
+        var ppData: any = new (pConvFormats[sType].type)(n);
+        
+        pConvFormats[sType].converter(sData, ppData);
+        
+        if (n == 1 && !isArray) {
+            return ppData[0];
+        }
+        
+        return ppData;
+    };
 
     export interface Pair {
         first: any;

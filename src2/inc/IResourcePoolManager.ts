@@ -18,6 +18,7 @@ module akra {
     IFACE(ISurfaceMaterial);
     IFACE(IEffect);
     IFACE(IShaderProgram);
+    IFACE(IModelLoadOptions);
 
 
 
@@ -65,7 +66,8 @@ module akra {
     	indexBufferPool: IResourcePool;
         textureBufferPool: IResourcePool;
     	renderMethodPool: IResourcePool;
-    	colladaPool: IResourcePool;
+        colladaPool: IResourcePool;
+    	objPool: IResourcePool;
     	imagePool: IResourcePool;			
         //ex: private
     	shaderProgramPool: IResourcePool;		
@@ -102,6 +104,8 @@ module akra {
     	findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
         findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
 
+        getModelPoolByFormat(eFormat: EModelFormats): IResourcePool;
+
         /**
          * @deprecated
          */
@@ -133,10 +137,10 @@ module akra {
         createVideoBuffer(sResourceName: string): IVertexBuffer;
         createIndexBuffer(sResourceName: string): IIndexBuffer;
         createShaderProgram(sResourceName: string): IShaderProgram;
-        createModel(sResourceName: string): IModel;
+        createModel(sResourceName: string, eFormat?: EModelFormats): IModel;
 
         createImg(sResourceName: string): IImg;
-        loadModel(sFilename: string, pOptions?: any): IModel;
+        loadModel(sFilename: string, pOptions?: IModelLoadOptions): IModel;
         loadImage(sFilename: string): IImg;
 
     }

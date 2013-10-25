@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Sun Oct 20 2013 17:01:24 GMT+0400 (Московское время (зима))
+ * assembled at: Fri Oct 25 2013 18:31:52 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/lab3.ts
  * name: lab3
@@ -416,7 +416,8 @@ var akra;
                     }, 
                     {
                         path: "textures/arteries/AG/arteries.ara"
-                    }
+                    }, 
+                    
                 ]
             }
         }
@@ -458,7 +459,7 @@ var akra;
         // pGUI.addColor(pViewer, 'waveColor');
         // pGUI.addColor(pViewer, 'waveStripColor');
         /*m*/
-        var fSliceStep = 0.008;
+        var fSliceStep = 0.00781102 * (100. / 125.);
         var pSlices = [];
         for(var i = 1, t = 0; i <= 41; ++i) {
             var n = "ar.";
@@ -471,201 +472,451 @@ var akra;
             pTex.setFilter(akra.ETextureParameters.MAG_FILTER, akra.ETextureFilters.LINEAR);
             pSlices.push(pTex);
         }
-        var pArteriesModelHP = pRmgr.loadModel(akra.DATA + "models/arteries_hp.DAE", {
-            shadows: false
+        var pArteriesModelObj = pRmgr.loadModel(akra.DATA + "models/arteries_hp.obj", {
+            shadows: false,
+            axis: {
+                x: {
+                    index: 0,
+                    inverse: false
+                },
+                y: {
+                    index: 2,
+                    inverse: false
+                },
+                z: {
+                    index: 1,
+                    inverse: false
+                }
+            }
         });
+        var pArteriesMeshObj = null;
+        var pArteriesObj = null;
+        var pArteriesSceneModelObj = null;
+        function parsePoydaFileCurveFromGodunov(content) {
+            var lines = content.split("\n");
+            var format = lines[0].split(",");
+            if (format[0] !== "Mx" || format[1] !== "My" || format[2] !== "Mz") {
+                alert("wrong coords format: " + lines[0]);
+                return;
+            }
+            var vDelta = akra.Vec3.stackCeil.set(1.0588, -1.7443, -1.8989);
+            // vDelta.set(0);
+            /*note: last line is empty!!*/
+            var fTopZcoord = parseFloat(lines[lines.length - 2].split(',')[2]);
+            var pCoords = [];
+            for(var i = 1; i < lines.length; ++i) {
+                if (lines[i].length < 3) {
+                    continue;
+                }
+                var coords = lines[i].split(",");
+                pCoords.push(new akra.Vec3(parseFloat(coords[0]), parseFloat(coords[1]), parseFloat(coords[2])));
+                var v = pCoords[i - 1];
+                var vn = akra.Vec3.stackCeil.set();
+                vn.x = v.y;
+                vn.y = v.z;
+                vn.z = v.x;
+                v.set(vn);
+            }
+            return pCoords;
+        }
+        function createSpline(pCoords, pParent, bDebug) {
+            if (typeof pParent === "undefined") { pParent = null; }
+            if (typeof bDebug === "undefined") { bDebug = false; }
+            var pParam = akra.animation.createParameter();
+            var pFrame;
+            var m;
+            var v;
+            for(var i = 0; i < pCoords.length; ++i) {
+                v = pCoords[i];
+                if (pParent) {
+                    v.set(pParent.worldMatrix.multiplyVec4(akra.Vec4.stackCeil.set(v, 1.)).xyz);
+                }
+                m = akra.Mat4.stackCeil.set(1.);
+                m.setTranslation(v);
+                pFrame = new akra.animation.PositionFrame(i / (pCoords.length - 1), m);
+                pParam.keyFrame(pFrame);
+                if (bDebug) {
+                    console.log(i / (pCoords.length - 1), v.toString());
+                }
+            }
+            return pParam;
+        }
+        function visualizeCurve(pNode, pCoords, fScale) {
+            if (typeof fScale === "undefined") { fScale = .1; }
+            for(var i = 0; i < pCoords.length; ++i) {
+                var v = pCoords[i];
+                var pBasis = akra.util.basis(pScene);
+                // pBasis.attachToParent(pArteriesSceneModelHP);
+                pBasis.attachToParent(pNode);
+                pBasis.setInheritance(akra.ENodeInheritance.ALL);
+                pBasis.scale(fScale);
+                pBasis.setPosition(v);
+            }
+        }
+        function parsePoydaFileCurveFromAG(content) {
+            var lines = content.split("\n");
+            var format = lines[0].split(",");
+            if (format[0] !== "Mx" || format[1] !== "My" || format[2] !== "Mz") {
+                alert("wrong coords format: " + lines[0]);
+                return;
+            }
+            var vDelta = akra.Vec3.stackCeil.set(1.0588, -1.7443, -1.8989);
+            // vDelta.set(0);
+            /*note: last line is empty!!*/
+            var fTopZcoord = parseFloat(lines[lines.length - 2].split(',')[2]);
+            var pCoords = [];
+            for(var i = 1; i < lines.length; ++i) {
+                if (lines[i].length < 3) {
+                    continue;
+                }
+                var coords = lines[i].split(",");
+                pCoords.push(new akra.Vec3(parseFloat(coords[0]), parseFloat(coords[1]), parseFloat(coords[2])));
+                var v = pCoords[i - 1];
+                var vn = akra.Vec3.stackCeil.set();
+                var fScale = (100. / 125.) * 0.01;
+                vn.x = ((v.y + 31.25) * fScale - 1.);
+                vn.z = ((v.x) * fScale - 1.);
+                vn.y = v.z * fScale + 1.;
+                // / fTopZcoord * pSlices.length * fSliceStep + 1.;
+                v.set(vn);
+            }
+            return pCoords;
+        }
+        akra.fopen(akra.DATA + "/models/coord_real_ag.txt", "r").read(/** @inline */function (err, data) {
+            var pCoords = parsePoydaFileCurveFromAG(data);
+            visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
+        });
+        var pRealArtery = pRmgr.loadModel(akra.DATA + "models/tof_multislab_tra_2.obj", {
+            shadows: false,
+            axis: {
+                x: {
+                    index: 0,
+                    inverse: false
+                },
+                y: {
+                    index: 2,
+                    inverse: false
+                },
+                z: {
+                    index: 1,
+                    inverse: false
+                }
+            }
+        });
+        pArteriesModelObj.bind("loaded", /** @inline */function () {
+            var pParent = pScene.createNode();
+            pParent.attachToParent(pScene.getRootNode());
+            pArteriesObj = pArteriesModelObj.attachToScene(pParent);
+            pArteriesObj.setInheritance(akra.ENodeInheritance.ALL);
+            pParent.scale(0.0525);
+            // pParent.setRotationByXYZAxis(-math.PI / 2, -math.PI/2, -math.PI / 2);
+            pParent.setPosition(0.0415, 1.099, -0.026);
+            pParent.update();
+            akra.fopen(akra.DATA + "/models/coord4.txt", "r").read(/** @inline */function (err, data) {
+                var pCoords = parsePoydaFileCurveFromGodunov(data);
+                var pParam = createSpline(pCoords, pParent, true);
+                // visualizeCurve(pParent, pCoords);
+                function calcSplineParameterValueByY(pSpline, y) {
+                    if (((pSpline.frame(0)).translation.y > y) || ((pSpline.frame(1.)).translation.y < y)) {
+                        return 0.;
+                    }
+                    if ((akra.math.abs((pSpline.frame(0)).translation.y - y) < 0.01)) {
+                        return 0;
+                    }
+                    if ((akra.math.abs((pSpline.frame(1)).translation.y - y) < 0.01)) {
+                        return 1;
+                    }
+                    var p = 0;
+                    var q = 1.;
+                    while(p < q) {
+                        var s = (p + q) / 2.;
+                        if ((akra.math.abs((pSpline.frame(s)).translation.y - y) < 0.01)) {
+                            return s;
+                        } else if (((pSpline.frame(s)).translation.y < y)) {
+                            p = s + 0.01;
+                        } else {
+                            q = s;
+                        }
+                    }
+                    return 0;
+                }
+                var pBasis = akra.util.basis(pScene);
+                pBasis.attachToParent(pScene.getRootNode());
+                pBasis.scale(0.25);
+                pBasis.setPosition((pParam.frame(0.5)).translation);
+                var pParameter = (pGUI.add({
+                    "parameter": 0.
+                }, "parameter")).min(1.0).max(1. + pSlices.length * fSliceStep).step(.01);
+                pParameter.onChange(function (f) {
+                    var t = calcSplineParameterValueByY(pParam, f);
+                    console.log(t);
+                    pBasis.setPosition((pParam.frame(t)).translation);
+                });
+                // pGUI.add({"transform to real": () => {
+                // 	var pArteriesNode: ISceneModel = (<ISceneModel>pArteriesObj.child);
+                // 	var pArteriesMesh: IMesh = pArteriesNode.mesh;
+                // 	var pSubset: IMeshSubset = pArteriesMesh.getSubset(0);
+                // 	var pPosVd: IVertexData = pSubset.data._getData("POSITION");
+                // 	var pNormVd: IVertexData = pSubset.data._getData("NORMAL");
+                // 	var pPosInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("POSITION");
+                // 	var pNormInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("NORMAL");
+                // 	var iStride: int = pPosVd.stride;
+                // 	var iAddition: int = pPosVd.byteOffset;
+                // 	var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+                // 	for (var i = 0; i < pPosInd.length; ++ i) {
+                // 		pPosInd[i] = (pPosInd[i] * iTypeSize - iAddition) / iStride;
+                // 	}
+                // 	var iStride: int = pNormVd.stride;
+                // 	var iAddition: int = pNormVd.byteOffset;
+                // 	var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+                // 	for (var i = 0; i < pNormInd.length; ++ i) {
+                // 		pNormInd[i] = (pNormInd[i] * iTypeSize - iAddition) / iStride;
+                // 	}
+                // 	var pPos: Float32Array = new Float32Array(pPosVd.getData());
+                // 	var pNorm: Float32Array = new Float32Array(pNormVd.getData());
+                // 	var pPosNew: Float32Array = new Float32Array(pPos.length);
+                // 	var m4World: IMat4 = pArteriesNode.worldMatrix;
+                // 	for (var i = 0; i < pPos.length; i += 4) {
+                // 		var vPos: IVec3 = vec3(pPos[i], pPos[i + 1], pPos[i + 2]);
+                // 		var vWorldPos: IVec3 = m4World.multiplyVec4(vec4(vPos, 1.)).xyz;
+                // 		//параметр кривой от 0. до 1.;
+                // 		//в силу равномерно распределения точек после алгоритма пойды,
+                // 		//параметр меняется линейно вдоль кривой - это ВАЖНО
+                // 		var pFrame: IPositionFrame = <IPositionFrame>pParam.frame();
+                // 		var vSrcCenter: IVec3 =
+                // 		// var vNorm: IVec3 = vec3(pNormAvg[i], pNormAvg[i + 1], pNormAvg[i + 2]);
+                // 		// vNorm.normalize();
+                // 		// vPos.add(vNorm.scale(fValue));
+                // 		// pPosNew[i] = vPos.x;
+                // 		// pPosNew[i + 1] = vPos.y;
+                // 		// pPosNew[i + 2] = vPos.z;
+                // 	}
+                // 	pPosVd.setData(pPosNew, 0, 16);
+                // }}, "transform to real");
+                            });
+            var gui = pGUI.addFolder('modeled carotid artery');
+            var wireframe = gui.add({
+                mode: "edged faces"
+            }, "mode", [
+                "colored", 
+                "wireframe", 
+                "edged faces"
+            ]);
+            var visible = gui.add({
+                visible: true
+            }, "visible");
+            visible.onChange(function (bValue) {
+                (pArteriesObj.child).mesh.getSubset(0).setVisible(bValue);
+                ;
+            });
+            wireframe.onChange(function (sMode) {
+                switch(sMode) {
+                    case "colored":
+                        (pArteriesObj.child).mesh.getSubset(0).wireframe(false);
+                        break;
+                    case "wireframe":
+                        (pArteriesObj.child).mesh.getSubset(0).wireframe(true, false);
+                        break;
+                    case "edged faces":
+                        (pArteriesObj.child).mesh.getSubset(0).wireframe(true);
+                        break;
+                }
+            });
+            window["arteries_obj"] = pParent;
+        });
+        var pArteriesModelHP = null;
         var pArteriesMeshHP = null;
         var pArteriesHP = null;
-        pArteriesModelHP.bind("loaded", /** @inline */function () {
+        var pArteriesSceneModelHP = null;
+        pRealArtery.bind("loaded", /** @inline */function () {
+            var pRealArteryObj = pRealArtery.attachToScene(pScene);
+            console.log("pRealArteryObj >> ", pRealArteryObj);
+            //1m / 125mm
+            pRealArteryObj.scale(1. / 125);
+            pRealArteryObj.setPosition(-.75, 1., -1);
+            var gui = pGUI.addFolder('real carotid artery');
+            var wireframe = gui.add({
+                mode: "edged faces"
+            }, "mode", [
+                "colored", 
+                "wireframe", 
+                "edged faces"
+            ]);
+            var visible = gui.add({
+                visible: true
+            }, "visible");
+            visible.onChange(function (bValue) {
+                (pRealArteryObj.child).mesh.getSubset(0).setVisible(bValue);
+                ;
+            });
+            wireframe.onChange(function (sMode) {
+                switch(sMode) {
+                    case "colored":
+                        (pRealArteryObj.child).mesh.getSubset(0).wireframe(false);
+                        break;
+                    case "wireframe":
+                        (pRealArteryObj.child).mesh.getSubset(0).wireframe(true, false);
+                        break;
+                    case "edged faces":
+                        (pRealArteryObj.child).mesh.getSubset(0).wireframe(true);
+                        break;
+                }
+            });
+            // pParent.setRotationByXYZAxis(-math.PI / 2, -math.PI/2, -math.PI / 2);
+            window["arteries_real"] = pRealArteryObj;
+            pArteriesModelHP = pRmgr.loadModel(akra.DATA + "models/arteries_hp.DAE", {
+                shadows: false
+            });
+            pArteriesModelHP.bind("loaded", loadTestArteryForShrinkCallback);
+        });
+        //AKRA
+        //X - вправо
+        //Y - вверх
+        //Z - на нас
+        //MATLAB
+        //Z - вверх
+        //X - вправо
+        //Y - от нас
+        function loadTestArteryForShrinkCallback() {
             pArteriesHP = pArteriesModelHP.attachToScene(pScene);
             pArteriesHP.setRotationByXYZAxis(0., akra.math.PI, 0.);
-            var pBasis = akra.util.basis(pScene);
-            pBasis.scale(.25);
-            pBasis.attachToParent((pArteriesHP.child));
-            var pArteriesSceneModelHP = (pArteriesHP.findEntity("node-main_arteries_L01").child.sibling);
+            // var pBasis: ISceneModel = util.basis(pScene);
+            // pBasis.scale(.25);
+            // pBasis.attachToParent((<ISceneModel>pArteriesHP.child));
+            // console.log(pArteriesHP.findEntity("node-main_arteries_L01").toString(true));
+            pArteriesSceneModelHP = (pArteriesHP.findEntity("node-main_arteries_L01").child);
             pArteriesMeshHP = pArteriesSceneModelHP.mesh;
-            pArteriesMeshHP.showBoundingBox();
-            pArteriesMeshHP.getSubset(0).wireframe();
+            /////
+            var pSubset = pArteriesMeshHP.getSubset(0);
+            var pPosVd = pSubset.data._getData("POSITION");
+            var pNormVd = pSubset.data._getData("NORMAL");
+            var pPosInd = pSubset.data.getIndexFor("POSITION");
+            var pNormInd = pSubset.data.getIndexFor("NORMAL");
+            var iStride = pPosVd.stride;
+            var iAddition = pPosVd.byteOffset;
+            var iTypeSize = akra.EDataTypeSizes.BYTES_PER_FLOAT;
+            for(var i = 0; i < pPosInd.length; ++i) {
+                pPosInd[i] = (pPosInd[i] * iTypeSize - iAddition) / iStride;
+            }
+            var iStride = pNormVd.stride;
+            var iAddition = pNormVd.byteOffset;
+            var iTypeSize = akra.EDataTypeSizes.BYTES_PER_FLOAT;
+            for(var i = 0; i < pNormInd.length; ++i) {
+                pNormInd[i] = (pNormInd[i] * iTypeSize - iAddition) / iStride;
+            }
+            var pPos = new Float32Array(pPosVd.getData());
+            var pNorm = new Float32Array(pNormVd.getData());
+            var gui = pGUI.addFolder('shrink deformation');
+            var shrink = (gui.add({
+                shrink: 0.0
+            }, 'shrink')).min(-1.0).max(1.0).step(.01);
+            var visible = gui.add({
+                visible: false
+            }, 'visible');
+            pArteriesMeshHP.getSubset(0).setVisible(false);
+            visible.onChange(function (bValue) {
+                pArteriesMeshHP.getSubset(0).setVisible(bValue);
+                ;
+            });
+            var pNormAvg = new Float32Array(pPos.length);
+            var pNormCount = new Float32Array(pPos.length / 4);
+            // for (var i: int = 0; i < pPosInd.length; ++ i) {
+            // 	if (pPosInd[i] < 100) {
+            // 		console.log(pPosInd[i], "<<<<");
+            // 	}
+            // }
+            for(var i = 0; i < pPosInd.length; i++) {
+                var n = pNormInd[i] * 4;
+                var v = pPosInd[i] * 4;
+                // var vPos: IVec3 = vec3(pPos[v], pPos[v + 1], pPos[v + 2]);
+                var vNorm = akra.Vec3.stackCeil.set(pNorm[n], pNorm[n + 1], pNorm[n + 2]);
+                var vNormAvg = akra.Vec3.stackCeil.set(pNormAvg[v], pNormAvg[v + 1], pNormAvg[v + 2]);
+                // console.log(vNorm.toString(), "norm");
+                vNormAvg.add(vNorm);
+                pNormCount[v / 4]++;
+                pNormAvg[v] = vNormAvg.x;
+                pNormAvg[v + 1] = vNormAvg.y;
+                pNormAvg[v + 2] = vNormAvg.z;
+                // console.log(vNormAvg.toString(), "norm avg.")
+                            }
+            for(var i = 0; i < pNormCount.length; i++) {
+                var n = i * 4;
+                var c = pNormCount[i];
+                if (!(pNormAvg[n] == 0 && pNormAvg[n + 1] == 0 && pNormAvg[n + 2] == 0)) {
+                    pNormAvg[n] /= c;
+                    pNormAvg[n + 1] /= c;
+                    pNormAvg[n + 2] /= c;
+                }
+            }
+            var pPosNew = new Float32Array(pPos.length);
+            shrink.onChange(function (fValue) {
+                for(var i = 0; i < pPos.length; i += 4) {
+                    var vPos = akra.Vec3.stackCeil.set(pPos[i], pPos[i + 1], pPos[i + 2]);
+                    var vNorm = akra.Vec3.stackCeil.set(pNormAvg[i], pNormAvg[i + 1], pNormAvg[i + 2]);
+                    vNorm.normalize();
+                    vPos.add(vNorm.scale(fValue));
+                    pPosNew[i] = vPos.x;
+                    pPosNew[i + 1] = vPos.y;
+                    pPosNew[i + 2] = vPos.z;
+                }
+                /*var pPoints: IVec4[] = [];
+                var nPointStep: float = 50;
+                for (var i = 0; i < pPosInd.length; i += nPointStep) {
+                
+                var vA: IVec3 = vec3(0.);
+                var fN: float = math.min(i + nPointStep, pPosInd.length);
+                var nT: int = 0;
+                
+                for (var j = i; j < fN; ++ j) {
+                var k: int = pPosInd[j];
+                var v: float = k * 4;
+                var vPos: IVec3 = vec3(pPosNew[v], pPosNew[v + 1], pPosNew[v + 2]);
+                vA.add(vPos);
+                nT ++;
+                }
+                
+                vA.scale(1. / nT);
+                
+                var v4fWorldPos: IVec4 = pArteriesSceneModelHP.worldMatrix.multiplyVec4(vec4(vA, 1.), vec4());
+                
+                // var pBasis: ISceneModel = util.basis(pScene);
+                // pBasis.attachToParent(pScene.getRootNode());
+                // pBasis.scale(.02);
+                // pBasis.setPosition(v4fWorldPos.xyz);
+                pPoints.push(new Vec4(v4fWorldPos));
+                }
+                
+                for (var i = 1; i < pPoints.length; ++ i) {
+                if (pPoints[i].subtract(pPoints[i - 1], vec4()).length() > .075) {
+                pPoints[i] = null;
+                i ++;
+                }
+                }
+                
+                for (var i: int = 0; i < pPoints.length; ++ i) {
+                if (isNull(pPoints[i])) continue;
+                
+                var pBasis: ISceneModel = util.basis(pScene);
+                pBasis.attachToParent(pScene.getRootNode());
+                pBasis.scale(.005);
+                pBasis.setPosition(pPoints[i].xyz);
+                
+                console.log(pPoints[i].toString())
+                }
+                */
+                // console.log(pPosNew);
+                pPosVd.setData(pPosNew, 0, 16);
+            });
+            // pArteriesMeshHP.showBoundingBox();
+            pArteriesMeshHP.getSubset(0).wireframe(true, false);
             pArteriesHP.scale(2.25);
             pArteriesHP.localScale.y *= 1.15;
             pArteriesHP.setPosition(-0.017, 1.1275, -0.20);
             (pArteriesHP.child).addRotationByXYZAxis(0., Math.PI / 2, 0.);
-            var pBasis = akra.util.basis(pScene);
-            pBasis.attachToParent(pArteriesHP);
-            pBasis.scale(.1);
+            // var pBasis: ISceneModel = util.basis(pScene);
+            // pBasis.attachToParent(pArteriesHP);
             window["arteries_hp"] = pArteriesHP;
-        });
-        var pArteriesModel = pRmgr.loadModel(akra.DATA + "/models/arteries_segment_with_bones.DAE", {
-            shadows: false
-        });
-        var pArteriesMesh = null;
-        var pArteries = null;
-        pArteriesModel.bind("loaded", /** @inline */function () {
-            pArteries = pArteriesModel.attachToScene(pScene);
-            pArteries.setRotationByXYZAxis(0., akra.math.PI, 0.);
-            var pBasis = akra.util.basis(pScene);
-            pBasis.scale(.25);
-            pBasis.attachToParent((pArteries.child));
-            var pArteriesSceneModel = (pArteries.findEntity("node-Bone001[mesh-container]"));
-            pArteriesMesh = pArteriesSceneModel.mesh;
-            // pArteriesMesh.showBoundingBox();
-            pArteriesMesh.getSubset(0).wireframe(true, false);
-            (pArteriesMesh.getSubset(0).material.emissive).set(0., 0., 0., 0.);
-            (pArteriesMesh.getSubset(0).material.ambient).set(0., 0., 0., 0.);
-            (pArteriesMesh.getSubset(0).material.diffuse).set(1., 0., 0., 0.);
-            pArteries.scale(2.25);
-            // pArteries.setPosition(0.03, 1.22, -0.15);
-            pArteries.localScale.y *= 1.15;
-            pArteries.setPosition(-0.017, 1.1275, -0.20);
-            (pArteries.child).addRotationByXYZAxis(0., Math.PI / 2, 0.);
-            var pBasis = akra.util.basis(pScene);
-            pBasis.attachToParent(pArteries);
-            pBasis.scale(.1);
-            pArteriesMesh.getSubset(0).getRenderMethodDefault().effect.addComponent("akra.custom.highlight_mri_slice");
-            pArteriesMesh.getSubset(0).bind("beforeRender", /** @inline */function (pRenderable, pViewportCurrent, pMethod) {
-                // console.log(pSprite.worldMatrix.multiplyVec4(vec4(0., 0., -1., 1.)).xyz);
-                pMethod.setUniform("SPLICE_NORMAL", akra.Vec3.stackCeil.set(0., -1., 0.));
-                pMethod.setUniform("SPLICE_D", pSprite.worldPosition.y);
-            });
-            var pSkeleton = pArteriesMesh.skeleton;
-            if (pSkeleton) {
-                var pJoints = pSkeleton.getJointMap();
-                // var pKeys: string[] = Object.keys(pJoints);
-                // pKeys.sort(function (a, b) {
-                //     return parseInt((/^joint([\d]+)$/g).exec(a)[1]) < parseInt((/^joint([\d]+)$/g).exec(b)[1])? -1: 1;
-                // });
-                // console.log(pKeys);
-                for(var i in pJoints) {
-                    var pJoint = pJoints[i];
-                    var pParent = pJoint.parent;
-                    // var vWp: IVec3 = vec3(pJoint.worldPosition);
-                    // pJoint.setInheritance(ENodeInheritance.ROTPOSITION);
-                    // pJoint.setPosition(vWp);
-                    if (akra.isNull(pParent)) {
-                        continue;
-                    }
-                    var pBone = akra.util.bone(pJoint);
-                    if (pParent !== pArteries) {
-                        pBone.attachToParent(pParent);
-                    }
-                    // console.log(pBone);
-                    var pBasis = akra.util.basis(pScene);
-                    pBasis.attachToParent(pJoint);
-                    pBasis.scale(.01);
-                }
-            }
-            window["arteries_mesh"] = pArteriesMesh;
-            window["arteries"] = pArteries;
-            var gui = pGUI.addFolder('arteries');
-            var controller = gui.add({
-                visible: true
-            }, 'visible');
-            controller.onChange(function (value) {
-                pArteriesMesh.getSubset(0).setVisible(value);
-            });
-            controller = gui.add({
-                wireframe: true
-            }, 'wireframe');
-            controller.onChange(function (value) {
-                pArteriesMesh.getSubset(0).wireframe(value, false);
-            });
-        });
-        akra.io.createFileDropArea(document.body, {
-            drop: function (file, content, format, e) {
-                var pName = akra.path.info(file.name);
-                var sExt = pName.ext.toUpperCase();
-                var lines = content.split("\n");
-                var format = lines[0].split(",");
-                if (format[0] !== "Mx" || format[1] !== "My" || format[2] !== "Mz") {
-                    alert("wrong coords format: " + lines[0]);
-                    return;
-                }
-                /*note: last line is empty!!*/
-                var fTopZcoord = parseFloat(lines[lines.length - 2].split(',')[2]);
-                var pCoords = [];
-                for(var i = 1; i < lines.length; ++i) {
-                    if (lines[i].length < 3) {
-                        continue;
-                    }
-                    var coords = lines[i].split(",");
-                    pCoords.push(new akra.Vec3(parseFloat(coords[0]), parseFloat(coords[1]), parseFloat(coords[2])));
-                    var v = pCoords[i - 1];
-                    var vn = akra.Vec3.stackCeil.set();
-                    /*31,25 = 64 * 0,48828125 = ((512 - 384) / 2.) * (25cm / 512px)*/
-                    vn.x = ((v.y + 31.25) * (2. / 2.5) * 0.01 - 1.);
-                    /* - 31.25*/
-                    vn.z = ((v.x) * (2. / 2.5) * 0.01 - 1.);
-                    vn.y = v.z / fTopZcoord * pSlices.length * fSliceStep + 1.;
-                    // vn.y = v.z * 0.01 + 1.;
-                    v.set(vn);
-                }
-                // console.log(content);
-                // console.log(pCoords);
-                var pParam = akra.animation.createParameter();
-                var pPoints = [];
-                for(var i = 0; i < pCoords.length; ++i) {
-                    var v = pCoords[i];
-                    var pBasis = akra.util.basis(pScene);
-                    pBasis.attachToParent(pScene.getRootNode());
-                    pBasis.scale(.01);
-                    pBasis.setPosition(v);
-                    pPoints.push(pBasis);
-                    var m = akra.Mat4.stackCeil.set(1.);
-                    m.setTranslation(v);
-                    var pFrame = new akra.animation.PositionFrame(i / (pCoords.length - 1), m);
-                    // console.log(pFrame);
-                    pParam.keyFrame(pFrame);
-                    // console.log(">>");
-                                    }
-                pGUI.add({
-                    "apply": /** @inline */function () {
-                        var pSkeleton = pArteriesMesh.skeleton;
-                        function moveJoint(j, v) {
-                            var Au = new akra.Mat4(1.);
-                            Au.setTranslation(new akra.Vec3(v));
-                            // console.log("Au", Au.toString());
-                            // console.log("P0", pPoints[0].worldMatrix.toString());
-                            // var A0 = new akra.Mat4(j.worldMatrix);
-                            var A0 = new akra.Mat4(1.);
-                            A0.setTranslation(new akra.Vec3(j.worldPosition));
-                            var A0inv = A0.inverse(new akra.Mat4());
-                            var C = Au.multiply(A0inv, new akra.Mat4());
-                            // console.log(C.multiply(A0, new akra.Mat4).toString(), "C * A0");
-                            // console.log(Au.toString(), "Au");
-                            var Mp = new akra.Mat4(j.parent.worldMatrix);
-                            var Mo = new akra.Mat4();
-                            //assemble local orientaion matrix
-                            j.localOrientation.toMat4(Mo);
-                            Mo.setTranslation(j.localPosition);
-                            Mo.scaleRight(j.localScale);
-                            var Ml = new akra.Mat4(j.localMatrix);
-                            // console.log(A0.toString(), "A0");
-                            // console.log(Mp.multiply(Mo, new akra.Mat4).multiply(Ml).toString(), "Mp * Mo * Ml");
-                            var Mpinv = Mp.inverse(new akra.Mat4());
-                            var Moinv = Mo.inverse(new akra.Mat4());
-                            var Cc = Moinv.multiply(Mpinv, new akra.Mat4()).multiply(C).multiply(Mp).multiply(Mo);
-                            var Mlc = Cc.multiply(Ml, new akra.Mat4());
-                            // j.localMatrix = Mlc;
-                            j.localMatrix = j.localMatrix.setTranslation(Mlc.getTranslation());
-                            j.update();
-                            j.recursiveUpdate();
-                            // console.log(j.worldPosition.toString(), "< after");
-                                                    }
-                        if (pSkeleton) {
-                            var pJoints = pSkeleton.getJointMap();
-                            var total = Object.keys(pJoints).length - 1;
-                            var n = 0;
-                            for(var i in pJoints) {
-                                var pJoint = pJoints[i];
-                                var pFrame = pParam.frame(n / total);
-                                moveJoint(pJoint, pFrame.translation);
-                                n++;
-                            }
-                        }
-                    }
-                }, "apply");
-            }
-        });
+        }
         var pSprite = pScene.createSprite();
         var fSlice = 0.;
         var fKL = 0.;
@@ -690,7 +941,7 @@ var akra;
         });
         slice.onChange(function (fValue) {
             pSprite.setPosition(0., fValue * pSlices.length * fSliceStep + 1., 0.);
-            console.log(fValue * pSlices.length * fSliceStep + 1.);
+            // console.log(fValue * pSlices.length * fSliceStep + 1.)
             fSlice = fValue;
             fKL = fSlice * (pSlices.length - 1.);
             iA = akra.math.floor(fKL);
@@ -717,6 +968,9 @@ var akra;
         pTexTarget.create(iRes, iRes, 1, null, akra.ETextureFlags.RENDERTARGET, 0, 0, akra.ETextureTypes.TEXTURE_2D, akra.EPixelFormats.R8G8B8);
         pTexTarget.getBuffer().getRenderTarget().addViewport(new akra.render.DSViewport(pProjCam));
         pCanvas.addViewport(new akra.render.TextureViewport(pTexTarget, 0.05, 0.05, .5 * 512 / pViewport.actualWidth, .5 * 512 / pViewport.actualHeight, 5.));
-    }
+        // pGUI.add({"save intersection": () => {
+        // 	saveAs(util.dataURItoBlob(this.getCanvasElement().toDataURL("image/png")), "screen.png");
+        // }}, "save intersection");
+            }
     pEngine.bind("depsLoaded", main);
 })(akra || (akra = {}));

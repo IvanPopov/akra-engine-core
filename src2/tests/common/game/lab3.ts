@@ -71,7 +71,7 @@ module akra {
 			deps: {
 				files: [
 					{path: "effects/custom/arteries2.afx"},
-					{path: "textures/arteries/AG/arteries.ara"}
+					{path: "textures/arteries/AG/arteries.ara"},
 				]
 			}
 		}
@@ -133,7 +133,7 @@ module akra {
 	    // pGUI.add(pViewer, 'waveStripWidth', 1, 10).step(1);
 	    // pGUI.addColor(pViewer, 'waveColor');
 	    // pGUI.addColor(pViewer, 'waveStripColor');
-	    var fSliceStep: float = 0.008; /*m*/
+	    var fSliceStep: float = 0.00781102 * (100. / 125.); /*m*/
 	    var pSlices: ITexture[] = [];
 	    for (var i = 1, t = 0; i <= 41; ++ i) {
 	    	var n: string = "ar.";
@@ -152,24 +152,505 @@ module akra {
 	    	pSlices.push(pTex);
 	    }
 
-	    var pArteriesModelHP: IModel = pRmgr.loadModel(DATA + "models/arteries_hp.DAE", {shadows: false});
+	    var pArteriesModelObj: IModel = pRmgr.loadModel(DATA + "models/arteries_hp.obj", 
+	    	{
+	    		shadows: false,
+	    		axis: {
+	    			x: {index: 0, inverse: false},
+					y: {index: 2, inverse: false},
+					z: {index: 1, inverse: false}
+	    		}
+	    	});
+	    var pArteriesMeshObj: IMesh = null;
+	    var pArteriesObj: IModelEntry = null;
+	    var pArteriesSceneModelObj: ISceneModel = null;
+
+	    function parsePoydaFileCurveFromGodunov(content: string): IVec3[] {
+			var lines: string[] = content.split("\n");
+			var format: string[] = lines[0].split(",");
+
+			if (format[0] !== "Mx" || format[1] !== "My" || format[2] !== "Mz") {
+				alert("wrong coords format: " + lines[0]);
+				return;
+			}
+
+			var vDelta: IVec3 = vec3(1.0588, -1.7443, -1.8989);
+			// vDelta.set(0);
+
+			var fTopZcoord: float = parseFloat(lines[lines.length-2].split(',')[2]);/*note: last line is empty!!*/
+			var pCoords: IVec3[] = [];
+
+			for (var i = 1; i < lines.length; ++ i) {
+				if (lines[i].length < 3) continue;
+
+				var coords: string[] = lines[i].split(",");
+				
+				pCoords.push(new Vec3(parseFloat(coords[0]), parseFloat(coords[1]), parseFloat(coords[2])));
+				
+				var v: IVec3 = pCoords[i - 1];
+				var vn: IVec3 = vec3();
+
+				vn.x = v.y;
+				vn.y = v.z;
+				vn.z = v.x;
+
+				v.set(vn);
+			}
+
+			return pCoords;
+	    }
+
+	    function createSpline(pCoords: IVec3[], pParent: ISceneNode = null, bDebug: bool = false): IAnimationParameter {
+	    	var pParam: IAnimationParameter = animation.createParameter();
+	    	var pFrame: IFrame;
+	    	var m: IMat4;
+	    	var v: IVec3;
+
+			for (var i = 0; i < pCoords.length; ++ i) {
+				v = pCoords[i];
+
+				if (pParent) {
+                	v.set(pParent.worldMatrix.multiplyVec4(vec4(v, 1.)).xyz);
+                }
+
+                m = mat4(1.);
+                m.setTranslation(v);
+
+          		pFrame = new animation.PositionFrame(i / (pCoords.length - 1), m);
+                pParam.keyFrame(pFrame);
+
+                if (bDebug) {
+                	console.log(i / (pCoords.length - 1), v.toString());
+                }
+			}
+
+			return pParam;
+	    }
+
+	    function visualizeCurve(pNode: ISceneNode, pCoords: IVec3[], fScale: float = .1): void {
+	    	for (var i = 0; i < pCoords.length; ++ i) {
+				var v: IVec3 = pCoords[i];
+				var pBasis: ISceneModel = util.basis(pScene);
+				// pBasis.attachToParent(pArteriesSceneModelHP);
+				pBasis.attachToParent(pNode);
+				pBasis.setInheritance(ENodeInheritance.ALL);
+				pBasis.scale(fScale);
+				pBasis.setPosition(v);
+			}
+	    }
+
+	    function parsePoydaFileCurveFromAG(content: string): IVec3[] {
+	    	var lines: string[] = content.split("\n");
+			var format: string[] = lines[0].split(",");
+
+			if (format[0] !== "Mx" || format[1] !== "My" || format[2] !== "Mz") {
+				alert("wrong coords format: " + lines[0]);
+				return;
+			}
+
+			var vDelta: IVec3 = vec3(1.0588, -1.7443, -1.8989);
+			// vDelta.set(0);
+
+			var fTopZcoord: float = parseFloat(lines[lines.length-2].split(',')[2]);/*note: last line is empty!!*/
+			var pCoords: IVec3[] = [];
+
+			for (var i = 1; i < lines.length; ++ i) {
+				if (lines[i].length < 3) continue;
+
+				var coords: string[] = lines[i].split(",");
+				
+				pCoords.push(new Vec3(parseFloat(coords[0]), parseFloat(coords[1]), parseFloat(coords[2])));
+				
+				var v: IVec3 = pCoords[i - 1];
+				var vn: IVec3 = vec3();
+				var fScale: float = (100. / 125.) * 0.01;
+				vn.x = ((v.y + 31.25) * fScale - 1.);
+                vn.z = ((v.x) * fScale - 1.);
+                vn.y = v.z * fScale + 1.;
+                // / fTopZcoord * pSlices.length * fSliceStep + 1.;
+
+				v.set(vn);
+			}
+
+			return pCoords;
+	    }
+
+	    fopen(DATA + "/models/coord_real_ag.txt", "r").read((err, data) => {
+			var pCoords: IVec3[] = parsePoydaFileCurveFromAG(data);
+
+
+
+			visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
+		});
+
+
+		var pRealArtery: IModel = pRmgr.loadModel(DATA + "models/tof_multislab_tra_2.obj", {
+			shadows: false,
+			axis: {
+				x: {index: 0, inverse: false},
+				y: {index: 2, inverse: false},
+				z: {index: 1, inverse: false}
+			}
+		});
+
+
+	    pArteriesModelObj.bind("loaded", () => {
+	    	var pParent: ISceneNode = pScene.createNode();
+	    	pParent.attachToParent(pScene.getRootNode());
+
+			pArteriesObj = pArteriesModelObj.attachToScene(pParent);
+			pArteriesObj.setInheritance(ENodeInheritance.ALL);
+
+			pParent.scale(0.0525);
+			// pParent.setRotationByXYZAxis(-math.PI / 2, -math.PI/2, -math.PI / 2);
+			pParent.setPosition(0.0415, 1.099, -0.026);
+			pParent.update();
+
+			fopen(DATA + "/models/coord4.txt", "r").read((err, data) => {
+				var pCoords: IVec3[] = parsePoydaFileCurveFromGodunov(data);
+				var pParam: IAnimationParameter = createSpline(pCoords, pParent, true);
+
+				// visualizeCurve(pParent, pCoords);
+				function calcSplineParameterValueByY(pSpline: IAnimationParameter, y: float): float {
+					#define IS_LT_PARAM(spline, t, y)  ((<IPositionFrame>pSpline.frame(t)).translation.y > y)
+					#define IS_GT_PARAM(spline, t, y)  ((<IPositionFrame>pSpline.frame(t)).translation.y < y)
+					#define IS_EQ_PARAM(spline, t, y) (math.abs((<IPositionFrame>pSpline.frame(t)).translation.y - y) < 0.01)
+
+				    if(IS_LT_PARAM(pSpline, 0, y) || IS_GT_PARAM(pSpline, 1., y)) {
+			            return 0.;
+			        }
+
+			        if(IS_EQ_PARAM(pSpline, 0, y)){
+			            return 0;
+			        }
+
+			        if(IS_EQ_PARAM(pSpline, 1, y)){
+			            return 1;
+			        }
+
+			        var p: uint = 0;
+			        var q: uint = 1.;
+
+			        while(p < q){
+			            var s: uint = (p + q) / 2.;
+
+			            if(IS_EQ_PARAM(pSpline, s, y)) {
+			                return s;
+			            }
+			            else if(IS_GT_PARAM(pSpline, s, y)){
+			                p = s + 0.01;
+			            }
+			            else {
+			                q = s;
+			            }
+			        }
+
+			        return 0;
+			    }
+
+			    var pBasis = util.basis(pScene);
+			    pBasis.attachToParent(pScene.getRootNode());
+			    pBasis.scale(0.25);
+			    pBasis.setPosition((<IPositionFrame>pParam.frame(0.5)).translation);
+			    
+			    var pParameter = (<dat.NumberControllerSlider>pGUI.add({"parameter": 0.}, "parameter")).min(1.0).max(1. + pSlices.length * fSliceStep).step(.01);
+			    
+			    pParameter.onChange((f: float) => {
+			    	var t = calcSplineParameterValueByY(pParam, f);
+			    	console.log(t);
+			    	pBasis.setPosition((<IPositionFrame>pParam.frame(t)).translation);
+			    });
+
+				// pGUI.add({"transform to real": () => {
+				// 	var pArteriesNode: ISceneModel = (<ISceneModel>pArteriesObj.child);
+				// 	var pArteriesMesh: IMesh = pArteriesNode.mesh;
+				// 	var pSubset: IMeshSubset = pArteriesMesh.getSubset(0);
+				// 	var pPosVd: IVertexData = pSubset.data._getData("POSITION");
+				// 	var pNormVd: IVertexData = pSubset.data._getData("NORMAL");
+
+				// 	var pPosInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("POSITION");
+				// 	var pNormInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("NORMAL");
+
+				// 	var iStride: int = pPosVd.stride;
+				// 	var iAddition: int = pPosVd.byteOffset;
+				// 	var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+
+
+				// 	for (var i = 0; i < pPosInd.length; ++ i) {
+				// 		pPosInd[i] = (pPosInd[i] * iTypeSize - iAddition) / iStride;
+				// 	}
+
+				// 	var iStride: int = pNormVd.stride;
+				// 	var iAddition: int = pNormVd.byteOffset;
+				// 	var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+
+				// 	for (var i = 0; i < pNormInd.length; ++ i) {
+				// 		pNormInd[i] = (pNormInd[i] * iTypeSize - iAddition) / iStride;
+				// 	}
+
+				// 	var pPos: Float32Array = new Float32Array(pPosVd.getData());
+				// 	var pNorm: Float32Array = new Float32Array(pNormVd.getData());
+
+				// 	var pPosNew: Float32Array = new Float32Array(pPos.length);
+				// 	var m4World: IMat4 = pArteriesNode.worldMatrix;
+
+
+
+				// 	for (var i = 0; i < pPos.length; i += 4) {
+						
+				// 		var vPos: IVec3 = vec3(pPos[i], pPos[i + 1], pPos[i + 2]);
+				// 		var vWorldPos: IVec3 = m4World.multiplyVec4(vec4(vPos, 1.)).xyz;
+				// 		//параметр кривой от 0. до 1.;
+				// 		//в силу равномерно распределения точек после алгоритма пойды, 
+				// 		//параметр меняется линейно вдоль кривой - это ВАЖНО
+				// 		var pFrame: IPositionFrame = <IPositionFrame>pParam.frame(); 
+				// 		var vSrcCenter: IVec3 = 
+				// 		// var vNorm: IVec3 = vec3(pNormAvg[i], pNormAvg[i + 1], pNormAvg[i + 2]);
+				// 		// vNorm.normalize();
+				// 		// vPos.add(vNorm.scale(fValue));
+
+				// 		// pPosNew[i] = vPos.x;
+				// 		// pPosNew[i + 1] = vPos.y;
+				// 		// pPosNew[i + 2] = vPos.z;
+
+
+				// 	}
+
+				// 	pPosVd.setData(pPosNew, 0, 16);
+
+				// }}, "transform to real");
+			});
+
+		
+
+			var gui = pGUI.addFolder('modeled carotid artery');
+
+
+			var wireframe = gui.add({mode: "edged faces"}, "mode", [ "colored", "wireframe", "edged faces" ] );
+			var visible = gui.add({visible: true}, "visible");
+			visible.onChange((bValue: bool) => {
+				(<ISceneModel>pArteriesObj.child).mesh.getSubset(0).setVisible(bValue);;
+			});
+
+			wireframe.onChange((sMode: string) => {
+				switch (sMode) {
+					case "colored": (<ISceneModel>pArteriesObj.child).mesh.getSubset(0).wireframe(false); break;
+					case "wireframe": (<ISceneModel>pArteriesObj.child).mesh.getSubset(0).wireframe(true, false); break;
+					case "edged faces": (<ISceneModel>pArteriesObj.child).mesh.getSubset(0).wireframe(true); break;
+				}
+				
+			});
+
+
+
+
+			window["arteries_obj"] = pParent;
+		});
+
+		var pArteriesModelHP: IModel = null;
 	    var pArteriesMeshHP: IMesh = null;
 	    var pArteriesHP: IModelEntry = null;
+	    var pArteriesSceneModelHP: ISceneModel = null;
 
-	    pArteriesModelHP.bind("loaded", () => {
+	    pRealArtery.bind("loaded", () => {
+			var pRealArteryObj: ISceneNode = pRealArtery.attachToScene(pScene);
+
+			console.log("pRealArteryObj >> ", pRealArteryObj);
+			//1m / 125mm
+			pRealArteryObj.scale(1. / 125);
+			pRealArteryObj.setPosition(-.75, 1., -1);
+
+			var gui = pGUI.addFolder('real carotid artery');
+			var wireframe = gui.add({mode: "edged faces"}, "mode", [ "colored", "wireframe", "edged faces" ] );
+			var visible = gui.add({visible: true}, "visible");
+			visible.onChange((bValue: bool) => {
+				(<ISceneModel>pRealArteryObj.child).mesh.getSubset(0).setVisible(bValue);;
+			});
+
+			wireframe.onChange((sMode: string) => {
+				switch (sMode) {
+					case "colored": (<ISceneModel>pRealArteryObj.child).mesh.getSubset(0).wireframe(false); break;
+					case "wireframe": (<ISceneModel>pRealArteryObj.child).mesh.getSubset(0).wireframe(true, false); break;
+					case "edged faces": (<ISceneModel>pRealArteryObj.child).mesh.getSubset(0).wireframe(true); break;
+				}
+				
+			});
+
+			// pParent.setRotationByXYZAxis(-math.PI / 2, -math.PI/2, -math.PI / 2);
+
+			window["arteries_real"] = pRealArteryObj;
+
+			pArteriesModelHP = pRmgr.loadModel(DATA + "models/arteries_hp.DAE", {shadows: false});
+			pArteriesModelHP.bind("loaded", loadTestArteryForShrinkCallback);
+		});
+
+	   
+
+	    //AKRA
+	    //X - вправо
+	    //Y - вверх
+	    //Z - на нас
+
+	    //MATLAB
+	    //Z - вверх 
+	    //X - вправо
+	    //Y - от нас
+
+	    function loadTestArteryForShrinkCallback () => {
 			pArteriesHP = pArteriesModelHP.attachToScene(pScene);
 			pArteriesHP.setRotationByXYZAxis(0., math.PI, 0.);
 
-			var pBasis: ISceneModel = util.basis(pScene);
-			pBasis.scale(.25);
-			pBasis.attachToParent((<ISceneModel>pArteriesHP.child));
 
-			var pArteriesSceneModelHP: ISceneModel = (<ISceneModel>pArteriesHP.findEntity("node-main_arteries_L01").child.sibling);
+			
+			// var pBasis: ISceneModel = util.basis(pScene);
+			// pBasis.scale(.25);
+			// pBasis.attachToParent((<ISceneModel>pArteriesHP.child));
+			// console.log(pArteriesHP.findEntity("node-main_arteries_L01").toString(true));
+			pArteriesSceneModelHP = (<ISceneModel>pArteriesHP.findEntity("node-main_arteries_L01").child);
 			pArteriesMeshHP = pArteriesSceneModelHP.mesh;
-			pArteriesMeshHP.showBoundingBox();
-			pArteriesMeshHP.getSubset(0).wireframe();
 
 
+			/////
+			var pSubset: IMeshSubset = pArteriesMeshHP.getSubset(0);
+			var pPosVd: IVertexData = pSubset.data._getData("POSITION");
+			var pNormVd: IVertexData = pSubset.data._getData("NORMAL");
+
+			var pPosInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("POSITION");
+			var pNormInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("NORMAL");
+
+			var iStride: int = pPosVd.stride;
+			var iAddition: int = pPosVd.byteOffset;
+			var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+
+
+			for (var i = 0; i < pPosInd.length; ++ i) {
+				pPosInd[i] = (pPosInd[i] * iTypeSize - iAddition) / iStride;
+			}
+
+			var iStride: int = pNormVd.stride;
+			var iAddition: int = pNormVd.byteOffset;
+			var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+
+			for (var i = 0; i < pNormInd.length; ++ i) {
+				pNormInd[i] = (pNormInd[i] * iTypeSize - iAddition) / iStride;
+			}
+
+			var pPos: Float32Array = new Float32Array(pPosVd.getData());
+			var pNorm: Float32Array = new Float32Array(pNormVd.getData());
+
+			var gui = pGUI.addFolder('shrink deformation');
+			var shrink = (<dat.NumberControllerSlider>gui.add({shrink: 0.0}, 'shrink')).min(-1.0).max(1.0).step(.01);
+			var visible = gui.add({visible: false}, 'visible');
+			pArteriesMeshHP.getSubset(0).setVisible(false);
+			visible.onChange((bValue: bool) => {
+				pArteriesMeshHP.getSubset(0).setVisible(bValue);;
+			});
+
+			var pNormAvg: Float32Array = new Float32Array(pPos.length);
+			var pNormCount: Float32Array = new Float32Array(pPos.length / 4);
+
+			// for (var i: int = 0; i < pPosInd.length; ++ i) {
+			// 	if (pPosInd[i] < 100) {
+			// 		console.log(pPosInd[i], "<<<<");
+			// 	}
+			// }
+
+			for (var i = 0; i < pPosInd.length; i ++) {
+				var n: int = pNormInd[i] * 4;
+				var v: int = pPosInd[i] * 4;
+				
+				// var vPos: IVec3 = vec3(pPos[v], pPos[v + 1], pPos[v + 2]);
+				var vNorm: IVec3 = vec3(pNorm[n], pNorm[n + 1], pNorm[n + 2]);
+				var vNormAvg: IVec3 = vec3(pNormAvg[v], pNormAvg[v + 1], pNormAvg[v + 2]);
+				// console.log(vNorm.toString(), "norm");
+				vNormAvg.add(vNorm);
+				pNormCount[v / 4] ++;
+
+
+				pNormAvg[v] = vNormAvg.x;
+				pNormAvg[v + 1] = vNormAvg.y;
+				pNormAvg[v + 2] = vNormAvg.z;
+
+				// console.log(vNormAvg.toString(), "norm avg.")
+			}
+
+			for (var i = 0; i < pNormCount.length; i ++) {
+				var n = i * 4;
+				var c = pNormCount[i];
+				if (!(pNormAvg[n] == 0 && pNormAvg[n + 1] == 0 && pNormAvg[n + 2] == 0)) {
+					pNormAvg[n] /= c;
+					pNormAvg[n + 1] /= c;
+					pNormAvg[n + 2] /= c;
+				}
+			}
+
+			var pPosNew: Float32Array = new Float32Array(pPos.length);
+			shrink.onChange(function(fValue: float) {
+				for (var i = 0; i < pPos.length; i += 4) {
+					
+					var vPos: IVec3 = vec3(pPos[i], pPos[i + 1], pPos[i + 2]);
+
+					var vNorm: IVec3 = vec3(pNormAvg[i], pNormAvg[i + 1], pNormAvg[i + 2]);
+					vNorm.normalize();
+					vPos.add(vNorm.scale(fValue));
+
+					pPosNew[i] = vPos.x;
+					pPosNew[i + 1] = vPos.y;
+					pPosNew[i + 2] = vPos.z;
+				}
+
+				/*var pPoints: IVec4[] = [];
+				var nPointStep: float = 50;
+				for (var i = 0; i < pPosInd.length; i += nPointStep) {
+
+					var vA: IVec3 = vec3(0.);
+					var fN: float = math.min(i + nPointStep, pPosInd.length);
+					var nT: int = 0;
+
+					for (var j = i; j < fN; ++ j) {
+						var k: int = pPosInd[j];
+						var v: float = k * 4;
+						var vPos: IVec3 = vec3(pPosNew[v], pPosNew[v + 1], pPosNew[v + 2]);
+						vA.add(vPos);
+						nT ++;
+					}
+
+					vA.scale(1. / nT);
+
+					var v4fWorldPos: IVec4 = pArteriesSceneModelHP.worldMatrix.multiplyVec4(vec4(vA, 1.), vec4());
+
+					// var pBasis: ISceneModel = util.basis(pScene);
+					// pBasis.attachToParent(pScene.getRootNode());
+					// pBasis.scale(.02);
+					// pBasis.setPosition(v4fWorldPos.xyz);
+					pPoints.push(new Vec4(v4fWorldPos));
+				}
+
+				for (var i = 1; i < pPoints.length; ++ i) {
+					if (pPoints[i].subtract(pPoints[i - 1], vec4()).length() > .075) {
+						pPoints[i] = null;
+						i ++;
+					}
+				}
+
+				for (var i: int = 0; i < pPoints.length; ++ i) {
+					if (isNull(pPoints[i])) continue;
+
+					var pBasis: ISceneModel = util.basis(pScene);
+					pBasis.attachToParent(pScene.getRootNode());
+					pBasis.scale(.005);
+					pBasis.setPosition(pPoints[i].xyz);
+
+					console.log(pPoints[i].toString())
+				}
+*/
+				// console.log(pPosNew);
+				pPosVd.setData(pPosNew, 0, 16);
+			});
+
+
+			// pArteriesMeshHP.showBoundingBox();
+			pArteriesMeshHP.getSubset(0).wireframe(true, false);
 
 			pArteriesHP.scale(2.25);
 
@@ -177,232 +658,11 @@ module akra {
 			pArteriesHP.setPosition(-0.017, 1.1275, -0.20);
 			(<ISceneNode>pArteriesHP.child).addRotationByXYZAxis(0., Math.PI/2, 0.);
 
-			var pBasis: ISceneModel = util.basis(pScene);
-			pBasis.attachToParent(pArteriesHP);
-			pBasis.scale(.1);
+			// var pBasis: ISceneModel = util.basis(pScene);
+			// pBasis.attachToParent(pArteriesHP);
 
 			window["arteries_hp"] = pArteriesHP;
-		});
-
-
-		var pArteriesModel: IModel = pRmgr.loadModel(DATA + "/models/arteries_segment_with_bones.DAE", {shadows: false});
-		var pArteriesMesh: IMesh = null;
-		var pArteries: IModelEntry = null;
-
-		pArteriesModel.bind("loaded", () => {
-			pArteries = pArteriesModel.attachToScene(pScene);
-			pArteries.setRotationByXYZAxis(0., math.PI, 0.);
-
-			var pBasis: ISceneModel = util.basis(pScene);
-			pBasis.scale(.25);
-			pBasis.attachToParent((<ISceneModel>pArteries.child));
-
-			var pArteriesSceneModel: ISceneModel = (<ISceneModel>pArteries.findEntity("node-Bone001[mesh-container]"));
-			pArteriesMesh = pArteriesSceneModel.mesh;
-			// pArteriesMesh.showBoundingBox();
-			pArteriesMesh.getSubset(0).wireframe(true, false);
-
-
-
-			(<IColor> pArteriesMesh.getSubset(0).material.emissive).set(0., 0., 0., 0.);
-			(<IColor>pArteriesMesh.getSubset(0).material.ambient).set(0., 0., 0., 0.);
-			(<IColor>pArteriesMesh.getSubset(0).material.diffuse).set(1., 0., 0., 0.);
-			pArteries.scale(2.25);
-			// pArteries.setPosition(0.03, 1.22, -0.15);
-
-			pArteries.localScale.y *= 1.15;
-			pArteries.setPosition(-0.017, 1.1275, -0.20);
-			(<ISceneNode>pArteries.child).addRotationByXYZAxis(0., Math.PI/2, 0.);
-
-			var pBasis: ISceneModel = util.basis(pScene);
-			pBasis.attachToParent(pArteries);
-			pBasis.scale(.1);
-
-
-			pArteriesMesh.getSubset(0).getRenderMethodDefault().effect.addComponent("akra.custom.highlight_mri_slice");
-
-			pArteriesMesh.getSubset(0).bind("beforeRender", (pRenderable, pViewportCurrent, pMethod) => {
-				// console.log(pSprite.worldMatrix.multiplyVec4(vec4(0., 0., -1., 1.)).xyz);
-				pMethod.setUniform("SPLICE_NORMAL", vec3(0., -1., 0.));
-				pMethod.setUniform("SPLICE_D", pSprite.worldPosition.y);
-			});
-
-			var pSkeleton: ISkeleton = pArteriesMesh.skeleton;
-
-			if (pSkeleton) {
-				var pJoints: IJointMap = pSkeleton.getJointMap();
-				// var pKeys: string[] = Object.keys(pJoints);
-
-				// pKeys.sort(function (a, b) {
-				//     return parseInt((/^joint([\d]+)$/g).exec(a)[1]) < parseInt((/^joint([\d]+)$/g).exec(b)[1])? -1: 1;
-				// });
-
-				// console.log(pKeys);
-
-				for (var i in pJoints) {
-					var pJoint: IJoint = pJoints[i];
-					var pParent: INode = <INode>pJoint.parent;
-
-					// var vWp: IVec3 = vec3(pJoint.worldPosition);
-					// pJoint.setInheritance(ENodeInheritance.ROTPOSITION);
-					// pJoint.setPosition(vWp);
-					
-					if (isNull(pParent)) {
-						continue;
-					}
-
-					var pBone: ISceneModel = util.bone(pJoint);
-					if (pParent !== pArteries)
-						pBone.attachToParent(pParent);
-					// console.log(pBone);
-
-					var pBasis: ISceneModel = util.basis(pScene);
-					pBasis.attachToParent(pJoint);
-					pBasis.scale(.01);
-				}
-			}
-
-			window["arteries_mesh"] = pArteriesMesh;
-			
-			window["arteries"] = pArteries;
-
-			var gui = pGUI.addFolder('arteries');
-			var controller = gui.add({visible: true}, 'visible');
-
-			controller.onChange(function(value) {
-				pArteriesMesh.getSubset(0).setVisible(value);
-			});
-
-			controller = gui.add({wireframe: true}, 'wireframe');
-
-			controller.onChange(function(value) {
-				pArteriesMesh.getSubset(0).wireframe(value, false);
-			});
-		});
-		
-
-		io.createFileDropArea(document.body, {
-			drop: (file: File, content, format, e: DragEvent): void => {
-					var pName: IPathinfo = path.info(file.name);
-					var sExt: string = pName.ext.toUpperCase();
-
-					var lines: string[] = content.split("\n");
-					var format: string[] = lines[0].split(",");
-
-					if (format[0] !== "Mx" || format[1] !== "My" || format[2] !== "Mz") {
-						alert("wrong coords format: " + lines[0]);
-						return;
-					}
-
-					var fTopZcoord: float = parseFloat(lines[lines.length-2].split(',')[2]);/*note: last line is empty!!*/
-
-					var pCoords: IVec3[] = [];
-					for (var i = 1; i < lines.length; ++ i) {
-						if (lines[i].length < 3) continue;
-						var coords: string[] = lines[i].split(",");
-						
-						pCoords.push(new Vec3(parseFloat(coords[0]), parseFloat(coords[1]), parseFloat(coords[2])));
-						
-						var v: IVec3 = pCoords[i - 1];
-						var vn: IVec3 = vec3();
-						/*31,25 = 64 * 0,48828125 = ((512 - 384) / 2.) * (25cm / 512px)*/
-						
-						vn.x = ((v.y + 31.25) * (2. / 2.5) * 0.01 - 1.);
-						vn.z = ((v.x/* - 31.25*/) * (2. / 2.5) * 0.01 - 1.);
-
-						vn.y = v.z / fTopZcoord * pSlices.length * fSliceStep + 1.;
-						// vn.y = v.z * 0.01 + 1.;
-
-						v.set(vn);
-					}
-
-					// console.log(content);
-					// console.log(pCoords);
-
-					var pParam: IAnimationParameter = animation.createParameter();
-					var pPoints: INode[] = [];
-
-					for (var i = 0; i < pCoords.length; ++ i) {
-						var v: IVec3 = pCoords[i];
-						var pBasis: ISceneModel = util.basis(pScene);
-						pBasis.attachToParent(pScene.getRootNode());
-						pBasis.scale(.01);
-						pBasis.setPosition(v);
-						pPoints.push(pBasis);
-
-						
-                        var m: IMat4 = mat4(1.);
-                        m.setTranslation(v);
-                  		var pFrame: IFrame = new animation.PositionFrame(i / (pCoords.length - 1), m);
-                  		// console.log(pFrame);
-                        pParam.keyFrame(pFrame);
-                        // console.log(">>");
-					}
-
-					pGUI.add({"apply": () => {
-						
-					var pSkeleton: ISkeleton = pArteriesMesh.skeleton;
-
-					function moveJoint(j: IJoint, v: IVec3): void {
-						var Au = new akra.Mat4(1.);
-						Au.setTranslation(new akra.Vec3(v));
-						// console.log("Au", Au.toString());
-						// console.log("P0", pPoints[0].worldMatrix.toString());
-
-						// var A0 = new akra.Mat4(j.worldMatrix);
-						var A0 = new akra.Mat4(1.);
-						A0.setTranslation(new akra.Vec3(j.worldPosition));
-						var A0inv = A0.inverse(new akra.Mat4);
-						var C = Au.multiply(A0inv, new akra.Mat4);
-
-						// console.log(C.multiply(A0, new akra.Mat4).toString(), "C * A0");
-						// console.log(Au.toString(), "Au");
-
-						var Mp = new akra.Mat4(j.parent.worldMatrix);
-						var Mo = new akra.Mat4;
-
-						//assemble local orientaion matrix
-						j.localOrientation.toMat4(Mo);
-				        Mo.setTranslation(j.localPosition);
-				        Mo.scaleRight(j.localScale);
-
-						var Ml = new akra.Mat4(j.localMatrix);
-
-						// console.log(A0.toString(), "A0");
-						// console.log(Mp.multiply(Mo, new akra.Mat4).multiply(Ml).toString(), "Mp * Mo * Ml");
-
-						var Mpinv = Mp.inverse(new akra.Mat4);
-						var Moinv = Mo.inverse(new akra.Mat4);
-						var Cc = Moinv.multiply(Mpinv, new akra.Mat4).multiply(C).multiply(Mp).multiply(Mo);
-						var Mlc = Cc.multiply(Ml, new akra.Mat4);
-
-						// j.localMatrix = Mlc;
-						j.localMatrix = j.localMatrix.setTranslation(Mlc.getTranslation());
-						j.update();
-						j.recursiveUpdate();
-
-						// console.log(j.worldPosition.toString(), "< after");
-					}
-
-					if (pSkeleton) {
-						var pJoints: IJointMap = pSkeleton.getJointMap();
-						var total: int = Object.keys(pJoints).length - 1;
-						var n = 0;
-						for (var i in pJoints) {
-							var pJoint: IJoint = pJoints[i];
-							var pFrame: IPositionFrame = <IPositionFrame>pParam.frame(n/total);
-							moveJoint(pJoint, pFrame.translation);
-							
-							n ++;
-						}
-					}	
-
-					
-
-					}}, "apply");
-
-				}
-		});
+		};
 
 		
 		var pSprite: ISprite = pScene.createSprite();
@@ -413,9 +673,6 @@ module akra {
 		var fSliceK: float = 0.;
 		var fOpacity: float = 0.0;
 
-		
-
-		
 		pSprite.attachToParent(pScene.getRootNode());
 		pSprite.setRotationByXYZAxis(math.PI / 2., 0., 0.);
 		pSprite.setPosition(0., 1., 0.);
@@ -426,6 +683,8 @@ module akra {
 		var gui = pGUI.addFolder('slice');
 		var slice = (<dat.NumberControllerSlider>gui.add({slice: 0.}, 'slice')).min(0.).max(1.).step(.005);
 		var opacity = (<dat.NumberControllerSlider>gui.add({opacity: fOpacity}, 'opacity')).min(0.0).max(1.).step(.01);
+
+
 
 		opacity.onChange(function(fValue: float) {
 			fOpacity = fValue;
@@ -469,6 +728,9 @@ module akra {
 
 		pCanvas.addViewport(new render.TextureViewport(pTexTarget, 0.05, 0.05, .5 * 512/pViewport.actualWidth, .5 * 512/pViewport.actualHeight, 5.));
 
+		// pGUI.add({"save intersection": () => {
+		// 	saveAs(util.dataURItoBlob(this.getCanvasElement().toDataURL("image/png")), "screen.png");
+		// }}, "save intersection");
 		
 	}
 

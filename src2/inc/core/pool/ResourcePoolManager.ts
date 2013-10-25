@@ -21,6 +21,7 @@
 #include "resources/Component.ts"
 
 #include "resources/Collada.ts"
+#include "resources/Obj.ts"
 #include "resources/EffectData.ts"
 
 #ifdef WEBGL
@@ -40,6 +41,17 @@
 
 
 module akra.core.pool {
+    function determModelFormat(sPath: string): EModelFormats {
+        switch (path.info(sPath).ext.toLowerCase()) {
+            case "obj":
+                return EModelFormats.OBJ; 
+            case "dae":
+                return EModelFormats.COLLADA; 
+        }
+
+        return EModelFormats.UNKNOWN;
+    }
+
 	//is this class really singleton??
     export class ResourcePoolManager implements IResourcePoolManager {
         //all predefined pools
@@ -49,6 +61,7 @@ module akra.core.pool {
         private pVertexBufferPool: IResourcePool;
         private pIndexBufferPool: IResourcePool;
         private pColladaPool: IResourcePool;
+        private pObjPool: IResourcePool;
         private pImagePool: IResourcePool;
         private pTexturePool: IResourcePool;
         private pVideoBufferPool: IResourcePool;
@@ -74,6 +87,7 @@ module akra.core.pool {
         get vertexBufferPool(): IResourcePool { return this.pVertexBufferPool; }
         get indexBufferPool(): IResourcePool { return this.pIndexBufferPool; }
         get colladaPool(): IResourcePool { return this.pColladaPool; }
+        get objPool(): IResourcePool { return this.pObjPool; }
         get imagePool(): IResourcePool { return this.pImagePool; }
         get texturePool(): IResourcePool { return this.pTexturePool; }
         get videoBufferPool(): IResourcePool { return this.pVideoBufferPool; }
@@ -380,31 +394,53 @@ module akra.core.pool {
             return <IShaderProgram>this.shaderProgramPool.createResource(sResourceName);
         };
 
-        inline createModel(sResourceName: string): IModel {
-            return <IModel>this.colladaPool.createResource(sResourceName);   
+        inline createModel(sResourceName: string, eFormat?: EModelFormats): IModel {
+            var pPool: IResourcePool = this.getModelPoolByFormat(eFormat || determModelFormat(sResourceName));
+
+            if (!isNull(pPool)) {
+                return <IModel>pPool.createResource(sResourceName);
+            }
+
+            return null;   
+        }
+
+        getModelPoolByFormat(eFormat: EModelFormats): IResourcePool {
+            switch (eFormat) {
+                case EModelFormats.OBJ: 
+                    return this.objPool;
+                case EModelFormats.COLLADA: 
+                    return this.colladaPool;
+            }
+
+            return null;
+        }
+
+        inline loadModel(sFilename: string, pOptions: IModelLoadOptions = null): IModel {
+            var eFormat: EModelFormats = determModelFormat(sFilename);
+            var pPool: IResourcePool = this.getModelPoolByFormat(eFormat);
+            var pModel: IModel = null;
+
+            if (!isNull(pPool)) {
+                pModel = <IModel>pPool.findResource(sFilename);
+
+                if (isNull(pModel)) {
+                    pModel = <IModel>pPool.createResource(sFilename);
+                }
+
+                if (!pModel.isResourceLoaded()) {
+                    pModel.loadResource(sFilename, pOptions);
+                }
+
+                return pModel;
+            }
+
+            return null;
         }
 
         inline createImg(sResourceName: string): IImg {
             return <IImg>this.imagePool.createResource(sResourceName);   
         }
 
-        inline loadModel(sFilename: string, pOptions: any = null): IModel {
-            if (path.info(sFilename).ext.toLowerCase() === "dae") {
-                var pCollada: ICollada = <ICollada>this.colladaPool.findResource(sFilename);
-
-                if (isNull(pCollada)) {
-                    pCollada = <ICollada>this.colladaPool.createResource(sFilename);
-                }
-
-                if (!pCollada.isResourceLoaded()) {
-                    pCollada.loadResource(sFilename, <IColladaLoadOptions>pOptions);
-                }
-
-                return pCollada;
-            }
-
-            return null;
-        }
 
         loadImage(sFilename: string): IImg {
              var pImg: IImg = <IImg>this.imagePool.findResource(sFilename);
@@ -434,6 +470,9 @@ module akra.core.pool {
 
             this.pColladaPool = new ResourcePool(this, resources.Collada);
             this.pColladaPool.initialize(0);
+
+            this.pObjPool = new ResourcePool(this, resources.Obj);
+            this.pObjPool.initialize(0);
 
             this.pImagePool = new ResourcePool(this, resources.Img);
             this.pImagePool.initialize(16);
@@ -499,7 +538,11 @@ module akra.core.pool {
             this.pColladaPool.registerResourcePool(
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
-                    <number>EVideoResources.MODEL_RESOURCE));
+                    <number>EVideoResources.MODEL_RESOURCE | EModelFormats.COLLADA));
+            this.pObjPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.MODEL_RESOURCE | EModelFormats.OBJ));
             this.pImagePool.registerResourcePool(
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
@@ -535,6 +578,7 @@ module akra.core.pool {
             this.pEffectPool.unregisterResourcePool();
             this.pRenderMethodPool.unregisterResourcePool();
             this.pColladaPool.unregisterResourcePool();
+            this.pObjPool.unregisterResourcePool();
             this.pImagePool.unregisterResourcePool();
             this.pSurfaceMaterialPool.unregisterResourcePool();
             this.pVideoBufferPool.unregisterResourcePool();

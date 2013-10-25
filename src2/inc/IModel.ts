@@ -6,14 +6,19 @@
 module akra {
     IFACE(IAnimationBase);
     IFACE(IAnimationBaseController);
-    IFACE(IColladaLoadOptions);
     IFACE(ISceneNode);
     IFACE(IScene3d);
     IFACE(ISkeleton);
     IFACE(IMesh);
 
     export enum EModelFormats {
-        COLLADA
+        UNKNOWN,
+        COLLADA = 0x1000,
+        OBJ = 0x2000
+    }
+
+    export interface IModelLoadOptions {
+
     }
 
     export interface IModel extends IResourcePoolItem {
@@ -21,7 +26,7 @@ module akra {
 
         modelFormat: EModelFormats;
 
-        loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): bool;
+        loadResource(sFilename?: string, pOptions?: IModelLoadOptions): bool;
         attachToScene(pNode: ISceneNode): IModelEntry;
         attachToScene(pScene: IScene3d): IModelEntry;
     }
