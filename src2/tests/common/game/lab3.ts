@@ -275,6 +275,68 @@ module akra {
 			return pCoords;
 	    }
 
+	    function findClosestVertex(pCoords: IVec3[], v: IVec3): uint {
+	    	var l: float = -1;
+			var c: uint = 0;
+
+			for (var i: int = 0; i < pCoords.length; ++ i) {
+				var f: float = pCoords[i].subtract(v, vec3()).length();
+
+				if (l < 0 || f < l) {
+					c = i;
+					l = f;
+				}
+			}
+
+			return c;
+	    }
+
+	    /**
+	     * Функция для создания модели по вершинам  из атласа с центральной линией pDest.
+	     * @param  {IVec3[]} pSrc Оригинальная центральная линия
+	     * @param  {IVec3[]} pDst Центральная линия к которой стремимся
+	     * @param  {Float32Array} pPositions вершины оригинальной модели
+	     * @param  {Float32Array} pIndexes индексы вершин
+	     * @return {IModel}  Результирующая модель
+	     */
+	    function constructTransformedReal(pSrc: IVec3[], pDst: IVec3[], pPositions: Float32Array, pIndexes: Float32Array): void {
+	    	var pParam: IAnimationParameter = createSpline(pDst);
+	    	var n: uint = 0;
+
+	    	for (var i: int = 0; i < pPositions.length; i += 3) {
+	    		var v: IVec3 = vec3(pPositions[i], pPositions[i + 1], pPositions[i + 2]);
+	    		var k: uint = findClosestVertex(pSrc, v);
+	    		//параметр на оригинальной кривой, именно его будем сопоставлять с новой кривой
+	    		var t: float = <float>k / <float>pSrc.length;
+	    		//ближайшая точки на оригинальной центральной линии, наш центр локальных координат
+	    		var o: IVec3 = pSrc[k];
+	    		//координаты точки в системе координат центральной линии оригинальнйо кривой
+	    		var l: IVec3 = v.subtract(o, vec3());
+	    		//новый центр координат
+	    		var s: IVec3 = (<IPositionFrame>pParam.frame(t)).translation;
+	    		//новое положение вершины
+	    		var m: IVec3 = s.add(l, vec3());
+
+	    		pPositions[i] = m.x;
+	    		pPositions[i + 1] = m.y;
+	    		pPositions[i + 2] = m.z;
+	    		
+	    		//////
+	    		/*if (n < 300) {
+		    		var b: ISceneModel = util.basis(pScene);
+					b.scale(.01);
+					b.attachToParent(pScene.getRootNode()); 
+					b.setPosition(m);
+					n ++;
+				}*/
+	    	}
+
+	    	var pModel: IObj = <IObj>pRmgr.objPool.createResource("modified_artery");
+	    	(<any>pModel).setOptions({shadows: false});
+	    	pModel.uploadVertexes(pPositions, pIndexes);
+	    	var pNode: ISceneNode = pModel.attachToScene(pScene);
+	    }
+
 	    fopen(DATA + "/models/coord_real_ag.txt", "r").read((err, data) => {
 			var pCoords: IVec3[] = parsePoydaFileCurveFromAG(data);
 
@@ -308,117 +370,75 @@ module akra {
 
 			fopen(DATA + "/models/coord4.txt", "r").read((err, data) => {
 				var pCoords: IVec3[] = parsePoydaFileCurveFromGodunov(data);
-				var pParam: IAnimationParameter = createSpline(pCoords, pParent, true);
+				// var pParam: IAnimationParameter = createSpline(pCoords, pParent, true);
+				 
+				for (var i: int = 0; i < pCoords.length; ++ i) {
+					var v: IVec4 = pParent.worldMatrix.multiplyVec4(vec4(pCoords[i], 1.));
+					pCoords[i].set(v.xyz);
+				};
 
-				// visualizeCurve(pParent, pCoords);
-				function calcSplineParameterValueByY(pSpline: IAnimationParameter, y: float): float {
-					#define IS_LT_PARAM(spline, t, y)  ((<IPositionFrame>pSpline.frame(t)).translation.y > y)
-					#define IS_GT_PARAM(spline, t, y)  ((<IPositionFrame>pSpline.frame(t)).translation.y < y)
-					#define IS_EQ_PARAM(spline, t, y) (math.abs((<IPositionFrame>pSpline.frame(t)).translation.y - y) < 0.01)
+				// visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
 
-				    if(IS_LT_PARAM(pSpline, 0, y) || IS_GT_PARAM(pSpline, 1., y)) {
-			            return 0.;
-			        }
+				pGUI.add({"transform to real": () => {
+					var pArteriesNode: ISceneModel = (<ISceneModel>pArteriesObj.child);
+					var pArteriesMesh: IMesh = pArteriesNode.mesh;
+					var pSubset: IMeshSubset = pArteriesMesh.getSubset(0);
+					var pPosVd: IVertexData = pSubset.data._getData("POSITION");
+					// var pNormVd: IVertexData = pSubset.data._getData("NORMAL");
 
-			        if(IS_EQ_PARAM(pSpline, 0, y)){
-			            return 0;
-			        }
+					var pPosInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("POSITION");
+					// var pNormInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("NORMAL");
 
-			        if(IS_EQ_PARAM(pSpline, 1, y)){
-			            return 1;
-			        }
-
-			        var p: uint = 0;
-			        var q: uint = 1.;
-
-			        while(p < q){
-			            var s: uint = (p + q) / 2.;
-
-			            if(IS_EQ_PARAM(pSpline, s, y)) {
-			                return s;
-			            }
-			            else if(IS_GT_PARAM(pSpline, s, y)){
-			                p = s + 0.01;
-			            }
-			            else {
-			                q = s;
-			            }
-			        }
-
-			        return 0;
-			    }
-
-			    var pBasis = util.basis(pScene);
-			    pBasis.attachToParent(pScene.getRootNode());
-			    pBasis.scale(0.25);
-			    pBasis.setPosition((<IPositionFrame>pParam.frame(0.5)).translation);
-			    
-			    var pParameter = (<dat.NumberControllerSlider>pGUI.add({"parameter": 0.}, "parameter")).min(1.0).max(1. + pSlices.length * fSliceStep).step(.01);
-			    
-			    pParameter.onChange((f: float) => {
-			    	var t = calcSplineParameterValueByY(pParam, f);
-			    	console.log(t);
-			    	pBasis.setPosition((<IPositionFrame>pParam.frame(t)).translation);
-			    });
-
-				// pGUI.add({"transform to real": () => {
-				// 	var pArteriesNode: ISceneModel = (<ISceneModel>pArteriesObj.child);
-				// 	var pArteriesMesh: IMesh = pArteriesNode.mesh;
-				// 	var pSubset: IMeshSubset = pArteriesMesh.getSubset(0);
-				// 	var pPosVd: IVertexData = pSubset.data._getData("POSITION");
-				// 	var pNormVd: IVertexData = pSubset.data._getData("NORMAL");
-
-				// 	var pPosInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("POSITION");
-				// 	var pNormInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("NORMAL");
-
-				// 	var iStride: int = pPosVd.stride;
-				// 	var iAddition: int = pPosVd.byteOffset;
-				// 	var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+					var iStride: int = pPosVd.stride;
+					var iAddition: int = pPosVd.byteOffset;
+					var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
 
 
-				// 	for (var i = 0; i < pPosInd.length; ++ i) {
-				// 		pPosInd[i] = (pPosInd[i] * iTypeSize - iAddition) / iStride;
-				// 	}
+					for (var i = 0; i < pPosInd.length; ++ i) {
+						pPosInd[i] = (pPosInd[i] * iTypeSize - iAddition) / iStride;
+					}
 
-				// 	var iStride: int = pNormVd.stride;
-				// 	var iAddition: int = pNormVd.byteOffset;
-				// 	var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+					// var iStride: int = pNormVd.stride;
+					// var iAddition: int = pNormVd.byteOffset;
+					// var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
 
-				// 	for (var i = 0; i < pNormInd.length; ++ i) {
-				// 		pNormInd[i] = (pNormInd[i] * iTypeSize - iAddition) / iStride;
-				// 	}
+					// for (var i = 0; i < pNormInd.length; ++ i) {
+					// 	pNormInd[i] = (pNormInd[i] * iTypeSize - iAddition) / iStride;
+					// }
+					console.log(pPosVd.toString())
+					var pPos: Float32Array = new Float32Array(pPosVd.getData());
+					// var pNorm: Float32Array = new Float32Array(pNormVd.getData());
 
-				// 	var pPos: Float32Array = new Float32Array(pPosVd.getData());
-				// 	var pNorm: Float32Array = new Float32Array(pNormVd.getData());
+					var pPosNew: Float32Array = new Float32Array(pPos.length);
 
-				// 	var pPosNew: Float32Array = new Float32Array(pPos.length);
-				// 	var m4World: IMat4 = pArteriesNode.worldMatrix;
+					pArteriesNode.update();
+
+					var m4World: IMat4 = pArteriesNode.worldMatrix;
 
 
-
-				// 	for (var i = 0; i < pPos.length; i += 4) {
+					var count: int = iStride / 4;
+					for (var i = 0; i < pPos.length; i += count) {
 						
-				// 		var vPos: IVec3 = vec3(pPos[i], pPos[i + 1], pPos[i + 2]);
-				// 		var vWorldPos: IVec3 = m4World.multiplyVec4(vec4(vPos, 1.)).xyz;
-				// 		//параметр кривой от 0. до 1.;
-				// 		//в силу равномерно распределения точек после алгоритма пойды, 
-				// 		//параметр меняется линейно вдоль кривой - это ВАЖНО
-				// 		var pFrame: IPositionFrame = <IPositionFrame>pParam.frame(); 
-				// 		var vSrcCenter: IVec3 = 
-				// 		// var vNorm: IVec3 = vec3(pNormAvg[i], pNormAvg[i + 1], pNormAvg[i + 2]);
-				// 		// vNorm.normalize();
-				// 		// vPos.add(vNorm.scale(fValue));
+						var vPos: IVec3 = vec3(pPos[i], pPos[i + 1], pPos[i + 2]);
+						var vWorldPos: IVec4 = m4World.multiplyVec4(vec4(vPos, 1.));
 
-				// 		// pPosNew[i] = vPos.x;
-				// 		// pPosNew[i + 1] = vPos.y;
-				// 		// pPosNew[i + 2] = vPos.z;
+						pPosNew[i] = vWorldPos.x;
+						pPosNew[i + 1] = vWorldPos.y;
+						pPosNew[i + 2] = vWorldPos.z;
+					}
 
+					fopen(DATA + "/models/coord_real_ag.txt", "r").read((err, data) => {
+						//данные восстановленные по ангионрафии
+						var pDestCoords: IVec3[] = parsePoydaFileCurveFromAG(data);
+						//данные востановленные годуновым по сосуду из атласа
+						var pSrcCoords: IVec3[] = pCoords;
 
-				// 	}
+						constructTransformedReal(pSrcCoords, pDestCoords, pPosNew, pPosInd);
+					});
 
-				// 	pPosVd.setData(pPosNew, 0, 16);
+					// pPosVd.setData(pPosNew, 0, 16);
 
-				// }}, "transform to real");
+				}}, "transform to real");
 			});
 
 		
@@ -455,7 +475,7 @@ module akra {
 	    pRealArtery.bind("loaded", () => {
 			var pRealArteryObj: ISceneNode = pRealArtery.attachToScene(pScene);
 
-			console.log("pRealArteryObj >> ", pRealArteryObj);
+			// console.log("pRealArteryObj >> ", pRealArteryObj);
 			//1m / 125mm
 			pRealArteryObj.scale(1. / 125);
 			pRealArteryObj.setPosition(-.75, 1., -1);

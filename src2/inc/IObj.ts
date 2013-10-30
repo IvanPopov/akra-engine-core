@@ -23,6 +23,7 @@ module akra {
         
         parse(sXMLData: string, pOptions?: IObjLoadOptions): bool;
         loadResource(sFilename?: string, pOptions?: IObjLoadOptions): bool;
+        uploadVertexes(pPositions: Float32Array, pIndexes?: Float32Array): void;
     }
 }
 
