@@ -23,6 +23,8 @@
 //trace all render entry
 // #define __VIEW_INTERNALS__ 1
 
+//#define FILEDROP_API 1
+
 #include "ILogger.ts"
 
 #define UNKNOWN_CODE 0

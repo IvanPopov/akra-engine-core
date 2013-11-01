@@ -48,6 +48,10 @@
 #include "model/Sky.ts"
 #endif
 
+#ifdef FILEDROP_API
+#include "io/filedrop.ts"
+#endif
+
 #include "io/Exporter.ts"
 #include "io/Importer.ts"
 

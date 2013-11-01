@@ -33,12 +33,12 @@ module akra.render {
 		inline get surfaceMaterial(): ISurfaceMaterial  { return this._pTechnique.getMethod().surfaceMaterial; }
 		inline get material(): IMaterial  { return this.surfaceMaterial.material; }
 		inline get data(): IRenderData { return this._pRenderData; }
-		inline get hasShadow(): bool { return this._bShadow; }
+		inline get shadow(): bool { return this._bShadow; }
 		
-		inline set hasShadow(bShadow: bool) {
+		inline set shadow(bShadow: bool) {
 			if(this._bShadow !== bShadow){
 				this._bShadow = bShadow;
-				this.shadow(bShadow);
+				this.shadowed(bShadow);
 			}
 		}
 
@@ -242,6 +242,15 @@ module akra.render {
 		}
 
 		wireframe(bEnable: bool = true, bOverlay: bool = true): bool {
+			var pDefaultRm: IRenderMethod = this.getRenderMethodDefault();
+
+			if (!bEnable) {
+				if (pDefaultRm.effect.hasComponent("akra.system.wireframe")) {
+					pDefaultRm.effect.delComponent("akra.system.wireframe", 0, 0);
+				}
+				return;
+			}
+
 			if (this.data.getDataLocation("BARYCENTRIC") == -1) {
 				var ePrimType: EPrimitiveTypes = this.data.getPrimitiveType();
 
@@ -272,13 +281,12 @@ module akra.render {
 
 			this._bWireframeOverlay = bOverlay;
 
-			this.switchRenderMethod(null);
-			this.renderMethod.effect.addComponent("akra.system.wireframe");
+			pDefaultRm.effect.addComponent("akra.system.wireframe", 0, 0);
 		}
 
 
 		render(pViewport: IViewport, csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
-			if (!this.isReadyForRender()) {
+			if (!this.isReadyForRender() || (!isNull(pSceneObject) && pSceneObject.isHidden())) {
 				return;
 			}
 			
@@ -286,8 +294,8 @@ module akra.render {
 				//debug_error("could not switch render method <" + csMethod + ">");
 				return;
 			}
-
-			this.beforeRender(pViewport, this._pTechnique);
+			
+			this.beforeRender(pViewport, this._pTechnique.getMethod());
 			
 			this.data._draw(this._pTechnique, pViewport, this, pSceneObject);
 		}
@@ -318,8 +326,8 @@ module akra.render {
 
 		CREATE_EVENT_TABLE(RenderableObject);
 		
-		UNICAST(shadow, CALL(bValue));
-		UNICAST(beforeRender, CALL(pViewport, pTechnique));
+		UNICAST(shadowed, CALL(bValue));
+		BROADCAST(beforeRender, CALL(pViewport, pMethod));
 
 		BROADCAST(click, CALL(pViewport, pObject, x, y));
 		BROADCAST(mousemove, CALL(pViewport, pObject, x, y));

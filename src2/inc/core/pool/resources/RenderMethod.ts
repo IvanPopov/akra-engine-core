@@ -59,6 +59,10 @@ module akra.core.pool.resources {
 			this.notifyAltered();
 		}
 
+		inline get material(): IMaterial {
+			return this.surfaceMaterial.material;
+		}
+
 		isEqual(pRenderMethod: IRenderMethod): bool {return false;}
 
 		setForeign(sName: string, pValue: any, iPass?: uint = ALL_PASSES): void {

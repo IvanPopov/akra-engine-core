@@ -464,7 +464,7 @@ module akra.model {
 		    var e = pSubMesh.data.allocateData([VE_VEC3("POSITION"), VE_VEC2("TEXCOORD0")], pVertices);
 		    pSubMesh.data.allocateIndex([VE_FLOAT("INDEX0")], pIndices);
 		    pSubMesh.data.index(e, "INDEX0");
-		    pSubMesh.hasShadow = false;
+		    pSubMesh.shadow = false;
 
 		    var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
 		    pMatrial.diffuse = Color.LIGHT_GRAY;

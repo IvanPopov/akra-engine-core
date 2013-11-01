@@ -11,7 +11,8 @@ module akra {
     export interface ISceneObject extends ISceneNode {
     	worldBounds: IRect3d;
     	totalRenderable: uint;
-        hasShadow: bool;
+        shadow: bool;
+        billboard: bool;
 
         writeonly onclick: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
         writeonly onmousemove: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
@@ -24,6 +25,8 @@ module akra {
         writeonly ondragging: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
 
     	readonly localBounds: IRect3d;
+
+        isBillboard(): bool;
     	
         getRenderable(i?: uint): IRenderableObject;
     	getObjectFlags(): int;

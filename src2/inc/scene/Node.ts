@@ -84,6 +84,16 @@ module akra.scene {
 			return this._v3fWorldPosition;
 		}
 
+		inline get worldOrientation(): IQuat4 {
+			//TODO: calc right world orient.
+			return null;
+		}
+
+		inline get worldScale(): IVec3 {
+			//TODO: calc right world scale.
+			return this.localScale;
+		}
+
 		inline get parent(): INode { return <INode>this._pParent; }
 		inline set parent(pParent: INode) { this.attachToParent(pParent); }
 
@@ -259,6 +269,54 @@ module akra.scene {
 
 		    return false;
 		}
+
+
+		setWorldPosition(v3fPosition: IVec3): void;
+		setWorldPosition(fX: float, fY: float, fZ: float): void;
+		setWorldPosition(fX?: any, fY?: any, fZ?: any): void {
+			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
+					
+			//target world matrix
+			var Au: IMat4 = mat4(1.);
+			Au.setTranslation(pPos);
+
+			//original translation matrices of this node
+			var A0: IMat4 = mat4(1.);
+			A0.setTranslation(this.worldPosition);
+
+			//inversed A0
+			var A0inv: IMat4 = A0.inverse(mat4());
+			//transformation matrix A0 to Au
+			var C: IMat4 = Au.multiply(A0inv, mat4());
+
+			//parent world matrix
+			var Mp: IMat4 = isNull(this.parent)? mat4(1.): mat4(this.parent.worldMatrix);
+			//this orientation matrix (orientation + sclae + translation)
+			var Mo: IMat4 = mat4();
+
+			//assemble local orientaion matrix
+			this.localOrientation.toMat4(Mo);
+	        Mo.setTranslation(this.localPosition);
+	        Mo.scaleRight(this.localScale);
+
+	        //this local matrix
+			var Ml: IMat4 = mat4(this.localMatrix);
+
+			//inversed parent world matrix
+			var Mpinv: IMat4 = Mp.inverse(mat4());
+			//inversed this orientation matrix
+			var Moinv: IMat4 = Mo.inverse(mat4());
+
+			//transformation matrix Ml to Mlc
+			var Cc: IMat4 = Moinv.multiply(Mpinv, mat4()).multiply(C).multiply(Mp).multiply(Mo);
+			//modified local matrix, that translate node to pPos world position
+			var Mlc: IMat4 = Cc.multiply(Ml, mat4());
+
+			this._m4fLocalMatrix.setTranslation(Mlc.getTranslation());
+
+			TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);			
+		}
+
 
 		setPosition(v3fPosition: IVec3): void;
 		setPosition(fX: float, fY: float, fZ: float): void;
@@ -484,7 +542,7 @@ module akra.scene {
 		        return '<node' + (this.name? " " + this.name: "") + '>';
 		    }
 
-		    var pSibling: IEntity = this.sibling;
+		    // var pSibling: IEntity = this.sibling;
 		    var pChild: IEntity = this.child;
 		    var s = "";
 
@@ -494,14 +552,15 @@ module akra.scene {
 
 		    s += '+----[depth: ' + this.depth + ']' + this.toString() +  '\n';
 /*"[updated: " + this.isUpdated() + ", childs updated: " + this.hasUpdatedSubNodes() + ", new wm: " + this.isWorldMatrixNew() + "]" +*/
-		    if (pChild) {
+		    while (pChild) {
 		        s += pChild.toString(true, iDepth + 1);
+		        pChild = pChild.sibling;
 		    }
 
-		    if (pSibling) {
-		        s += pSibling.toString(true, iDepth);
-		    }
-
+		    // if (pSibling) {
+		        // s += pSibling.toString(true, iDepth);
+		    // }
+// 
 		    return s;
 #else
 			return null;

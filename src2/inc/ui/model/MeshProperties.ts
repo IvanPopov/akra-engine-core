@@ -33,7 +33,7 @@ module akra.ui.model {
 		}
 
 		_useShadows(pSwc: IUISwitch, bValue: bool): void {
-			this._pMesh.hasShadow = bValue;
+			this._pMesh.shadow = bValue;
 		}
 
 		_useBoundingBox(pSwc: IUISwitch, bValue: bool): void {
@@ -61,7 +61,7 @@ module akra.ui.model {
 			var pMesh: IMesh = this._pMesh;
 
 			this._pName.text = pMesh.name;
-			this._pShadows._setValue(pMesh.hasShadow);
+			this._pShadows._setValue(pMesh.shadow);
 			this._pBoundingBox._setValue(pMesh.isBoundingBoxVisible());
 			this._pBoundingSphere._setValue(pMesh.isBoundingSphereVisible());
 

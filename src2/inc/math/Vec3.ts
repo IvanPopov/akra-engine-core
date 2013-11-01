@@ -350,6 +350,10 @@ module akra.math {
             return v3fDestination;
         };
 
+        static X: IVec3 = new Vec3(1., 0., 0.);
+        static Y: IVec3 = new Vec3(0., 1., 0.);
+        static Z: IVec3 = new Vec3(0., 0., 1.);
+
         ALLOCATE_STORAGE(Vec3, MATH_STACK_SIZE)
     }
 }

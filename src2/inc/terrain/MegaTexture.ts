@@ -35,7 +35,7 @@ module akra.terrain {
 	    private _sSurfaceTextures: string = "";
 
 	    //Маскимальный размер стороны текстуры
-	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(1024 * 4.);
+	    private _v2iOriginalTextreMaxSize: IVec2 = new Vec2(1024 * 32.);
 	    private _v2iOriginalTextreMinSize: IVec2 = new Vec2(1024 * 4.);
 	    private _v2iTextureLevelSize: IVec2 = new Vec2(1024);
 
@@ -166,8 +166,8 @@ module akra.terrain {
     	    	this.connect(this._pRPC, SIGNAL(error), SLOT(rpcErrorOccured), EEventTypes.BROADCAST);
     		}
 
-    	    this._pRPC.join("ws://23.21.68.208:6112");
-    	    // this._pRPC.join("ws://localhost:6112");
+    	    // this._pRPC.join("ws://23.21.68.208:6112");
+    	    this._pRPC.join("ws://localhost:6112");
     	    
     	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 60000);
     	    this._pRPC.setProcedureOption("getMegaTexture", "priority", 1);

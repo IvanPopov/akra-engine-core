@@ -44,7 +44,7 @@ module akra.ui.model {
 		}
 
 		_useShadows(pSwc: IUISwitch, bValue: bool): void {
-			this._pSubset.hasShadow = bValue;
+			this._pSubset.shadow = bValue;
 		}
 
 		_useBoundingBox(pSwc: IUISwitch, bValue: bool): void {
@@ -68,7 +68,7 @@ module akra.ui.model {
 			this._pSubset.switchRenderMethod(null);
 			this._pMaterial.set(this._pSubset.material);
 			this.title = this._pSubset.name;
-			this._pShadows._setValue(this._pSubset.hasShadow);
+			this._pShadows._setValue(this._pSubset.shadow);
 			this._pBoundingBox._setValue(this._pSubset.isBoundingBoxVisible());
 			this._pBoundingSphere._setValue(this._pSubset.isBoundingSphereVisible());
 			this._pVisible._setValue(this._pSubset.isVisible());

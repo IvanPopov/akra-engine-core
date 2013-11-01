@@ -13,7 +13,7 @@ module akra.model {
 		private _pJointMap: IJointMap = null;
 		private _pNodeList: ISceneNode[]  = null;
 		private _pMeshNode: ISceneModel = null;
-		private _iFlags: bool = false;
+		// private _iFlags: bool = false;
 
 
 		inline get totalBones(): int{

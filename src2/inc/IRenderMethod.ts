@@ -12,6 +12,7 @@ module akra {
 	export interface IRenderMethod extends IResourcePoolItem {
 		effect: IEffect;
 		surfaceMaterial: ISurfaceMaterial;
+		material: IMaterial;
 
 		setForeign(sName: string, pValue: any, iPass?: uint): void;
 		setUniform(sName: string, pValue: any, iPass?: uint): void;

@@ -7,7 +7,7 @@
 #include "terrain/TriTreeNode.ts"
 #include "scene/objects/Camera.ts"
 
-// #include "util/TessellationThread.ts"
+#include "util/TessellationThread.ts"
 
 /// @TESSELLATION_THREAD: {data}/js/TessellationThread.t.js|src(inc/util/TessellationThread.t.js)|data_location({data},DATA)
 
@@ -75,7 +75,7 @@ module akra.terrain {
 			this._pRenderableObject._setup(this._pEngine.getRenderer());
 			this._pRenderableObject._setRenderData(this._pRenderData);
 
-			this.connect(this._pRenderableObject, SIGNAL(beforeRender), SLOT(_onBeforeRender), EEventTypes.UNICAST);
+			this.connect(this._pRenderableObject, SIGNAL(beforeRender), SLOT(_onBeforeRender)/*, EEventTypes.UNICAST*/);
 		}
 
 		inline get tessellationScale(): float{

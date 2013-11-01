@@ -9,6 +9,12 @@
 
 module akra.ui {
 
+	export enum IAxis {
+		X = 0x01,
+		Y = 0x04,
+		Z = 0x02
+	}
+
 	function getFuncBody(f: Function): string {
 		var s = f.toString(); 
 		var sCode = s.slice(s.indexOf("{") + 1, s.lastIndexOf("}"));
@@ -29,6 +35,17 @@ module akra.ui {
 		MOVE,
 		ROTATE,
 		SCALE
+	}
+
+	interface IAxisModifier {
+		//конце оси вдоль которой двигаем спроецированный на экран
+		dir: IVec3;
+		//направление вдоль которого двигаем в мировой системе координат
+		axis: IVec4;
+		//направление вдоль которого двигаем в локальной системе координат
+		axisOrigin: IVec4;
+		//напрвление вдоль которого двигаем оъект в системе координат экрана
+		a: IVec2;
 	}
 
 	export class IDE extends Component implements IUIIDE {
@@ -117,7 +134,6 @@ module akra.ui {
 			this.connect(pInspector, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
 
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
-			this.setupKeyControls();
 
 			//create mode basis
 			var pScene: IScene3d = this.getScene();
@@ -129,7 +145,7 @@ module akra.ui {
 
 			// this._pModelBasis = pBasis;
 
-			var pBasisTranslation: ICollada = <ICollada>this.getResourceManager().colladaPool.loadResource(DATA + "/models/basis_translation.DAE");
+			var pBasisTranslation: ICollada = <ICollada>this.getResourceManager().loadModel(DATA + "/models/basis_translation.DAE", {shadows: false});
 
 			pBasisTranslation.bind(SIGNAL(loaded), (pModel: ICollada): void => {
 				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
@@ -138,11 +154,11 @@ module akra.ui {
 
 				var pEl: ISceneModel = <ISceneModel>pModelRoot.child;
 
-				while(!isNull(pEl)) {
+				/*while(!isNull(pEl)) {
 					var pMesh: IMesh = pEl.mesh;
 
 					for (var i = 0; i < pMesh.length; ++ i) {
-						console.log(pMesh.getSubset(i));
+						// console.log(pMesh.getSubset(i));
 						// pMesh.getSubset(i).bind(SIGNAL(beforeRender), 
 						// 	(pRenderable: IRenderableObject, pViewport: IViewport, pTechnique: IRenderTechnique) => {
 						// 	pTechnique.getPass(0).setRenderState(ERenderStates.ZENABLE, ERenderStateValues.FALSE);
@@ -150,16 +166,140 @@ module akra.ui {
 					}
 
 					pEl = <ISceneModel>pEl.sibling;
-				}
+				}*/
 
 				this._pModelBasisTrans = pModelRoot;
-				this._pModelBasisTrans.setInheritance(ENodeInheritance.ALL);
-				// pModelRoot.visible = false;
-			});
-		}
 
-		private setupKeyControls(): void {
-			
+				pModelRoot.setInheritance(ENodeInheritance.ALL);
+				pModelRoot.hide(true);
+
+				var iAxis: int = 0;
+				//basis-model center in world coord system
+				var vCenter: IVec3 = new Vec3;
+				//point under cursor in screen space
+				var vB: IVec2 = new Vec2;
+				//drag start point in screen space
+				var vO: IVec2 = new Vec2;
+				//basis model world position before dragging
+				var vStart: IVec3 = new Vec3;
+				
+				//axis modifiers info array
+				var am: IAxisModifier[] = [];
+
+				function createAxisModifier(pModelRoot: ISceneNode, pViewport: IViewport, iAx: IAxis): void {
+					
+					if (!isDef(am[iAx])) {
+						am[iAx] = {
+							dir: new Vec3,
+							axis: new Vec4,
+							axisOrigin: new Vec4,
+							a: new Vec2
+						};
+					}
+
+					var vDir: IVec3 = am[iAx].dir;
+					var vAxis: IVec4 = am[iAx].axis;
+					var vAxisOrigin: IVec4 = am[iAx].axisOrigin;
+					var vA: IVec2 = am[iAx].a;
+
+					switch (iAx) {
+						case IAxis.X: vAxisOrigin.set(0.1, 0., 0., 1.); break;
+						case IAxis.Z: vAxisOrigin.set(0., 0., 0.1, 1.); break;
+						case IAxis.Y: vAxisOrigin.set(0., 0.1, 0., 1.); break;
+					}
+
+
+					iAxis |= iAx; 
+
+					pModelRoot.worldMatrix.multiplyVec4(vAxisOrigin, vAxis);
+
+					pViewport.projectPoint(vAxis.xyz, vDir);
+
+					vDir.xy.subtract(vCenter.xy, vA);
+				}
+
+				function applyAxisModifier(m: IAxisModifier): IVec3 {
+					var vA: IVec2 = m.a;
+					var vAxisOrigin: IVec4 = m.axisOrigin;
+
+					//угол между направлением куда тянет пользователь и проекциец ветора вдоль которго тянуть на экран.
+					var cosAlpha: float = vA.dot(vB) / (vA.length() * vB.length());
+
+					var fX: float = (cosAlpha * vB.length()) / vA.length();
+					//длинна вектора на который надо сдвинуть объект в пространстве камеры.
+					var vAx: IVec2 = vec2(vA.x * fX, vA.y * fX);
+					var vC: IVec2 = vO.add(vAx, vec2(0.));
+
+					var vC3d: IVec3 = vAxisOrigin.xyz.scale(fX);
+
+					return vC3d.add(vStart);
+				}
+
+				var pNodes: ISceneObject[] = <ISceneObject[]>pModelRoot.children();
+
+				for (var i: int = 0; i < pNodes.length; ++ i) {
+					pNodes[i].onmouseover = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset) => {
+						var c: IColor = <IColor>pSubset.getRenderMethodDefault().material.emissive;
+						c.set(c.r / 2., c.g / 2., c.b / 2., c.a / 2.);
+					};
+
+					pNodes[i].onmouseout = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset) => {
+						var c: IColor = <IColor>pSubset.getRenderMethodDefault().material.emissive;
+						c.set(c.r * 2., c.g * 2., c.b * 2., c.a * 2.);
+					};
+
+
+					pNodes[i].ondragstart = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset, x, y) => {
+						var c: IColor = <IColor>pSubset.getRenderMethodDefault().material.emissive;
+						
+						vO.set(x, y);
+						vStart.set(pModelRoot.worldPosition);
+						pViewport.projectPoint(pModelRoot.worldPosition, vCenter);
+						
+						//colors at basis model on Y and Z axis was swaped, FAIL :(
+						if (c.r > 0) { 
+							createAxisModifier(pModelRoot, pViewport, IAxis.X);
+						}
+
+						if (c.g > 0) { 
+							createAxisModifier(pModelRoot, pViewport, IAxis.Z);
+						}
+
+						if (c.b > 0) { 
+							createAxisModifier(pModelRoot, pViewport, IAxis.Y);
+						}
+					}
+
+					pNodes[i].ondragstop = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset) => {
+						iAxis = 0;
+					}
+
+					pNodes[i].ondragging = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset, x, y) => {
+						vec2(x, y).subtract(vO, vB);
+
+						var vPos: IVec3 = vec3(0.);
+						
+						if (iAxis & IAxis.X) {
+							vPos.add(applyAxisModifier(am[IAxis.X]));
+						}
+
+						if (iAxis & IAxis.Y) {
+							vPos.add(applyAxisModifier(am[IAxis.Y]));
+						}
+
+						if (iAxis & IAxis.Z) {
+							vPos.add(applyAxisModifier(am[IAxis.Z]));
+						}
+
+						vPos.scale(1. / (iAxis).toString(2).match(/1/gi).length);
+
+
+						pModelRoot.setPosition(vPos);
+						this.selectedObject.setWorldPosition(vPos);
+					}
+				}
+				
+			});
 		}
 
 		_enablePickMode(pCb: IUICheckbox, bValue: bool): void {
@@ -182,39 +322,6 @@ module akra.ui {
 			this.updateEditting();
 		}
 
-
-		private setupObjectPicking(): void {
-			// var pSearchCam: ICamera;
-			
-			// pSearchCam = this.getScene().createCamera(".search-cam");
-			// pSearchCam.setOrthoParams(0.1, 0.1, 0.01, 0.1);
-			// pSearchCam.update();
-
-			// pSearchCam.attachToParent(this.getScene().getRootNode());
-
-			// var pResMgr: IResourcePoolManager = this.getResourceManager();
-			// var pColorTex: ITexture = <ITexture>pResMgr.texturePool.createResource(".texture_for_color_picking");
-			// var pColorTarget: IRenderTarget;
-			// var pDepthTex: ITexture;
-
-			// pColorTex.create(640, 480, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.BYTE_RGB);
-
-			// pColorTarget = pColorTex.getBuffer().getRenderTarget();
-			// pColorTarget.setAutoUpdated(false);
-
-			// pDepthTex = pResMgr.createTexture(".texture_for_color_picking_depth");
-			// pDepthTex.create(640, 480, 1, null, 0, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
-
-			// pColorTarget.attachDepthTexture(pDepthTex);
-
-			// var pViewport: IViewport = pColorTarget.addViewport(this.getCamera()pSearchCam, EViewportTypes.COLORVIEWPORT);
-			// pViewport.setAutoUpdated(false);
-
-			// this._pColorViewport = pViewport;
-			// this._pSearchCam = pSearchCam;
-			// this._pColorTexture = pColorTex;
-			var pViewport: IViewport = this.getViewport();
-		}
 
 		_sceneUpdate(pScene: IScene3d): void {
 			
@@ -249,27 +356,24 @@ module akra.ui {
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
 			this.disconnect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
 
+			pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK|E3DEventTypes.MOUSEOVER|E3DEventTypes.MOUSEOUT|
+				E3DEventTypes.DRAGSTART|E3DEventTypes.DRAGSTOP);
+
 			this._pPreview.setViewport(pViewport);	
 			this.setupApiEntry();	
 
 			this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_sceneUpdate));
-			this.setupObjectPicking();
 			this.created();
 
 			pViewport.bind(SIGNAL(click), (pViewport: IDSViewport, x: uint, y: uint): void => {
-				var pObjectPrev: ISceneObject = this.selectedObject;
-				var pRenderablePrev: IRenderableObject = this.selectedRenderable;
-
 				if (this.editMode !== EEditModes.NONE) {
 					var pRes: IRIDPair = pViewport.pick(x, y);
-					// var vPoint: IVec3 = pViewport.unprojectPoint(x, y, vec3());
-					// console.log(x, y, vPoint.toString());
-
-					this.selected(pRes.object, pRes.renderable);
-					this.inspectNode(pRes.object);
+					
+ 					if (!this._pModelBasisTrans.isAChild(pRes.object)) {
+						this.selected(pRes.object, pRes.renderable);
+						this.inspectNode(pRes.object);
+					}
 				}
-
-				this.updateEditting(pObjectPrev, pRenderablePrev);
 			});
 		}
 
@@ -277,6 +381,10 @@ module akra.ui {
 			var pViewport: IDSViewport = <IDSViewport>this.getViewport();
 			var pObject: ISceneObject = this.selectedObject;
 			var pRenderable: IRenderableObject = this.selectedRenderable;
+
+			if (isNull(pViewport)) {
+				return;
+			}
 
 			if (!isNull(pObjectPrev)) {
 				if (akra.scene.isModel(pObjectPrev)) {
@@ -290,34 +398,35 @@ module akra.ui {
 
 			if (this.editMode !== EEditModes.NONE) {
 				pViewport.highlight(pObject, pRenderable);
+
 				if (akra.scene.isModel(pObject)) {
 					(<ISceneModel>pObject).mesh.hideBoundingBox();
 				}
 			}
 
-			if (this.editMode === EEditModes.MOVE) {
+			if (this.editMode === EEditModes.MOVE && !isNull(pObject)) {
 				if (akra.scene.isModel(pObject)) {
 					(<ISceneModel>pObject).mesh.showBoundingBox();
 				}
 
-				if (!isNull(pObject)) {
-					// this._pModelBasis.visible = true;
-					// this._pModelBasis.setPosition(vec3(0));
-
-					// (<ISceneModel>this._pModelBasisTrans.child).visible = true;
-					this._pModelBasisTrans.setPosition(pObject.worldPosition);
-				}
+				this._pModelBasisTrans.hide(false);
+				this._pModelBasisTrans.setPosition(pObject.worldPosition);
 			}
 			else {
-				// (<ISceneModel>this._pModelBasisTrans.child).visible = false;
+				this._pModelBasisTrans.hide();
 			}
 		}
 
 		private selected(pObj: ISceneObject, pRenderable: IRenderableObject = null): void {
+			var pObjectPrev: ISceneObject = this.selectedObject;
+			var pRenderablePrev: IRenderableObject = this.selectedRenderable;
+
 			var p = this._pSelectedObject;
-			
+
 			p.object = pObj;
 			p.renderable = pRenderable;
+
+			this.updateEditting(pObjectPrev, pRenderablePrev);
 		}
 
 		cmd(eCommand: ECMD, ...argv: any[]): bool {
@@ -327,8 +436,7 @@ module akra.ui {
 				case ECMD.SET_PREVIEW_FULLSCREEN:
 					return this.setFullscreen();
 				case ECMD.INSPECT_SCENE_NODE:
-					
-					this.selected(akra.scene.isSceneObject(argv[0])? argv[0]: null);
+					this.selected(/*akra.scene.isSceneObject(argv[0])? argv[0]: null*/argv[0]);
 					return this.inspectNode(argv[0]);
 
 				case ECMD.EDIT_ANIMATION_CONTROLLER: 

@@ -1821,7 +1821,7 @@ module akra {
 
 		//test viewports
 		// var pTestViewport = pCanvas.addViewport(new render.DSViewport(pCamera, .25, .25, .5, .5, 1.));
-		var pTex: ITexture = <ITexture>pViewport["_pDeferredColorTextures"][0];
+/*		var pTex: ITexture = <ITexture>pViewport["_pDeferredColorTextures"][0];
 		var pColorViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.05, .30, .30, 4.));
 		var pNormalViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.40, .30, .30, 5.));
 
@@ -1835,8 +1835,14 @@ module akra {
 		pViewport.bind("viewportDimensionsChanged", onResize);
 
 		pColorViewport.effect.addComponent("akra.system.display_consistent_colors");
-		pNormalViewport.effect.addComponent("akra.system.display_normals");
+		pNormalViewport.effect.addComponent("akra.system.display_normals");*/
 		//end of test
+
+		var pSprite: ISprite = pScene.createSprite("sprite");
+
+		pSprite.attachToParent(pScene.getRootNode());
+		pSprite.setPosition(0., -1., 0.);
+		pSprite.setTexture(<ITexture>pViewport["_pDeferredDepthTexture"]);
 
 		var pProject: ILightPoint = pScene.createLightPoint(ELightTypes.PROJECT, true, 512);
 			

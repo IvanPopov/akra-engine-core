@@ -162,7 +162,7 @@ module akra.model {
             this._pSubMeshes.push(pSubMesh);
 
             this.connect(pSubMesh, SIGNAL(skinAdded), SLOT(_skinAdded));
-            this.connect(pSubMesh, SIGNAL(shadow), SLOT(shadow), EEventTypes.UNICAST);
+            this.connect(pSubMesh, SIGNAL(shadowed), SLOT(shadowed), EEventTypes.UNICAST);
 
             return pSubMesh;
         }
@@ -454,7 +454,7 @@ module akra.model {
                 pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
 
                 pSubMesh.effect.addComponent("akra.system.mesh_texture");
-                pSubMesh.hasShadow = false;
+                pSubMesh.shadow = false;
             }
             else {
                 pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
@@ -586,7 +586,7 @@ module akra.model {
                 pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
 
                 pSubMesh.effect.addComponent("akra.system.mesh_texture");
-                pSubMesh.hasShadow = false;
+                pSubMesh.shadow = false;
             }
             else {
                 pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
@@ -620,13 +620,13 @@ module akra.model {
             return pSubMesh.data.isRenderable(pSubMesh.data.getIndexSet());
         }
 
-        inline get hasShadow(): bool {
+        inline get shadow(): bool {
             return this._bShadow;
         }
 
-        set hasShadow(bValue: bool) {
+        set shadow(bValue: bool) {
             for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-                this._pSubMeshes[i].hasShadow = bValue;
+                this._pSubMeshes[i].shadow = bValue;
             }            
         }
 
@@ -666,20 +666,20 @@ module akra.model {
         }
 
         CREATE_EVENT_TABLE(Mesh);
-        signal shadow(pSubMesh: IMeshSubset, bShadow: bool): void {
+        signal shadowed(pSubMesh: IMeshSubset, bShadow: bool): void {
 
             this._bShadow = bShadow;
 
             if (!bShadow) {
                 for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-                    if (this._pSubMeshes[i].hasShadow) {
+                    if (this._pSubMeshes[i].shadow) {
                         this._bShadow = true;
                         break;
                     }
                 }
             }
 
-            EMIT_BROADCAST(shadow, _CALL(pSubMesh, bShadow));
+            EMIT_BROADCAST(shadowed, _CALL(pSubMesh, bShadow));
         }
 
 	}

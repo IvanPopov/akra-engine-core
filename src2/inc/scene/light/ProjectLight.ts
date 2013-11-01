@@ -222,7 +222,7 @@ module akra.scene.light {
 				var pWorldBounds: IRect3d = pObject.worldBounds;
 
 				//have object shadows?
-				if(pObject.hasShadow){
+				if(pObject.shadow){
 					var j:int = 0;
 					for(j = 0; j<nAdditionalTestLength; j++){
 						var pPlane: IPlane3d = pTestArray[j];

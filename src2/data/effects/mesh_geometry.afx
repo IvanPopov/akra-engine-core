@@ -34,26 +34,43 @@ float4x4 bind_matrix:BIND_SHAPE_MATRIX;
 
 shared baseGeometry vertex_geometry;
 
+bool isBillboard = false;
+
+void computePositionNormal(float4x4 world_mat, inout float4 position, inout float3 normal){
+    if(isBillboard){
+        position = (view_mat * world_mat * float4(0., 0., 0., 1.)) + world_mat * float4(position.xyz, 0.);
+        
+        if(normal != float3(0.)){
+            normal = normalize((world_mat * float4(normal, 0.)).xyz);
+        }        
+    }
+    else {
+        position = view_mat * world_mat * position;
+
+        if(normal != float3(0.)){
+            normal = normalize((view_mat * world_mat * float4(normal,0.)).xyz);
+        }
+
+    }
+}
+
 VS_OUT_1 vs_mesh_geometry(VS_IN_1 IN) {
     VS_OUT_1 Out;
 
 	float4 pos = float4(IN.pos.xyz, 1.);
-    float4 vertex;
     float3 norm = float3(IN.norm);
 
-	vertex = (view_mat * model_mat * (pos));
+	computePositionNormal(model_mat, pos, norm);
 
-    if(norm != float3(0.)){
-        Out.norm = vertex_geometry.norm = normalize((view_mat * model_mat * float4(norm,0.)).xyz);
-    }
+    Out.vert = vertex_geometry.vert = pos.xyz;
+    Out.norm = vertex_geometry.norm = norm;
 
-    Out.vert = vertex_geometry.vert = vertex.xyz;
-	Out.pos = vertex_geometry.pos = proj_mat * vertex;
+	Out.pos = vertex_geometry.pos = proj_mat * pos;
     Out.psize = 1.0;
 
     return Out;
 }
-
+/*
 VS_OUT_1 vs_sprite_geometry(VS_IN_1 IN) {
     VS_OUT_1 Out;
 
@@ -64,23 +81,37 @@ VS_OUT_1 vs_sprite_geometry(VS_IN_1 IN) {
 
     return Out;
 }
+*/
 
+//float3 worldScale: WORLD_SCALE;
+//worldOrientation
+//float3 localMatrix: LOCAL_MATRIX;
+/*
 VS_OUT_1 vs_billboard_geometry(VS_IN_1 IN) {
     VS_OUT_1 Out;
 
+    float4 vertex;
+    float3 norm = float3(IN.norm);
 
-    float4 pos = view_mat * model_mat * float4(0., 0., 0. ,1.) + float4(IN.pos.xyz, 0.);
-    Out.pos = proj_mat * pos;
-    Out.norm = float3(view_mat * float4(0., 0., 1., 1.)).xyz;
+    vertex = computePosition(IN.pos, model_mat);
+
+    if(norm != float3(0.)){
+        Out.norm = vertex_geometry.norm = computeNormal(norm, model_mat);;
+    }
+
+    Out.vert = vertex_geometry.vert = vertex.xyz;
+    Out.pos = vertex_geometry.pos = proj_mat * vertex;
+    Out.psize = 1.0;
 
     return Out;
 }
+*/
 
 VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
     VS_OUT_1 Out;
 
     float4 pos = float4(IN.pos.xyz, 1.);
-    float4 vertex;
+    float3 norm = float3(IN.norm);
 
     float2 meta_data[](memof IN.pos);
 
@@ -95,22 +126,6 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
 
     float number_matrix = meta_data.x;
     float bone_inf_ptr = meta_data.y;
-
-/*
-    float i = 0.;
-
-    while(number_matrix >= i + 1.) {
-        //get data about matrix and weight
-        @bone_inf = bone_inf_ptr + i * 2.;
-
-        @bone_matrix = bone_inf.x;
-        weight = bone_inf.y;
-
-        result_mat += bone_matrix * weight;
-
-        i++;
-    }
-*/
         
     for(float i = 0.; i < 16.; i++){
         if(i < number_matrix){
@@ -128,12 +143,12 @@ VS_OUT_1 vs_mesh_skinning(VS_IN_1 IN) {
 
     result_mat = result_mat * bind_matrix;
 
-    vertex = (view_mat * result_mat * pos);
+    computePositionNormal(result_mat, pos, norm);
 
-    Out.pos = vertex_geometry.pos = proj_mat * vertex;
+    Out.pos = vertex_geometry.pos = proj_mat * pos;
 
-    Out.vert = vertex_geometry.vert = vertex.xyz;
-    Out.norm = vertex_geometry.norm = normalize((view_mat * result_mat * float4(IN.norm.xyz,0.)).xyz);
+    Out.vert = vertex_geometry.vert = pos.xyz;
+    Out.norm = vertex_geometry.norm = norm;
 //    Out.norm = vertex_geometry.norm = IN.norm.xyz;
 //    Out.normal_mat = view_mat*result_mat;
     Out.psize = point_size;
@@ -157,26 +172,21 @@ VS_OUT_1 vs_mesh_optimized_skinning(VS_IN_2 IN) {
 
 technique mesh_geometry{
     pass p0 {
-        if (engine.mesh.isSprite) {
-            if (engine.mesh.isBillboard) {
-                VertexShader = compile vs_billboard_geometry();
+        if(engine.mesh.isSkinned){
+            if(engine.mesh.isOptimizedSkinned){
+                VertexShader = compile vs_mesh_optimized_skinning();
             }
             else{
-                VertexShader = compile vs_sprite_geometry();
+                VertexShader = compile vs_mesh_skinning();
             }
         }
         else {
-            if(engine.mesh.isSkinned){
-                if(engine.mesh.isOptimizedSkinned){
-                    VertexShader = compile vs_mesh_optimized_skinning();
-                }
-                else{
-                    VertexShader = compile vs_mesh_skinning();
-                }
-            }
-            else {
+//            if (engine.object.isBillboard) {
+//                VertexShader = compile vs_billboard_geometry();
+//            }
+//            else{
                 VertexShader = compile vs_mesh_geometry();
-            }
+//            }
         }
     }
 }

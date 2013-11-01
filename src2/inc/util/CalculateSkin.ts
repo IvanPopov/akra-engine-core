@@ -11,7 +11,7 @@ module akra.util{
 		
 		var isOk: bool = pRenderData.selectIndexSet(".update_skinned_position");
 
-		if(true || !isOk){
+		if(!isOk){
 			return false;
 		}
 

@@ -125,6 +125,10 @@ module akra.animation {
 			return pFrame;
 		}
 	}
+
+	export function createParameter(): IAnimationParameter {
+		return new Parameter();
+	}
 }
 
 #endif

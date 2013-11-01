@@ -34,12 +34,13 @@ module akra.core.pool.resources {
     		var me: EffectData = this;
     		
 #ifndef AFX_ENABLE_TEXT_EFFECTS
+			//binary only
     		if(!isBinary){
     			ERROR("You can load text effect-files only in debug-mode");
     			return;
     		}
 #endif
-			if(isBinary){
+			if(isBinary) {
     			var pFile: IFile = this._pFile = io.fopen(sFileName, "r+b");
 	    		
 	    		pFile.read(function(err, pData: Uint8Array) {
@@ -51,7 +52,7 @@ module akra.core.pool.resources {
 			}
 
 #ifdef AFX_ENABLE_TEXT_EFFECTS
-
+			//text only
 			var pFile: IFile = this._pFile = io.fopen(sFileName, "r+t");
 
 			pFile.read(function(pErr: Error, sData: string){

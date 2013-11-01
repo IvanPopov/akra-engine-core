@@ -39,7 +39,7 @@ module akra {
 
 			var z: float = math.floor(math.random()*10);
 
-			pObject.hasShadows = true;
+			pObject.shadow = true;
 		}
 	}
 
@@ -217,7 +217,7 @@ module akra {
 			for(var i:int = 0; i<pAffectedObjects.length; i++){
 				var pObject: ISceneObject = pAffectedObjects.value(i);
 
-				if(pObject.hasShadows){
+				if(pObject.shadow){
 					pContext2d.strokeStyle = "rgb(128,0,128)";
 				}
 				else{

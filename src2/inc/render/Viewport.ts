@@ -71,6 +71,9 @@ module akra.render {
 
 		protected _isDepthRangeUpdated: bool = false;
 
+		//show/hide
+		protected _bHidden: bool = false;
+
 		//get last mouse postion backend
 		protected _pMousePositionLast: IPoint = {x: 0, y: 0};
 		//is mouse under the viewport?
@@ -348,7 +351,18 @@ module akra.render {
 	 		}
 		}
 
+		hide(bValue: bool = true): void {
+			if (bValue !== this._bHidden) {
+				this.clear();
+				this._bHidden = bValue;
+			}
+		}
+
 		update(): void {
+			if (this._bHidden) {
+				return;
+			}
+
 			if (isDefAndNotNull(this._pCamera)) {
 				this._pCamera._keepLastViewport(this);
 			}
@@ -417,13 +431,13 @@ module akra.render {
 			var fY: float = v3fResult.y;
 			var fZ: float = v3fResult.z;
 
-			fX = fX*0.5 + 0.5;
-			fY = fY*0.5 + 0.5;
-			fZ = fZ*0.5 + 0.5;
+			fX = fX * 0.5 + 0.5;
+			fY = fY * 0.5 + 0.5;
+			fZ = fZ * 0.5 + 0.5;
 
 			//from top left angle of element
 			fX = this.actualLeft + this.actualWidth * fX;
-			fY = this.actualTop + this.actualHeight * (1. - fY);
+			fY = this.actualTop + this.actualHeight * fY;
 
 			return v3fResult.set(fX, fY, fZ);
 		};

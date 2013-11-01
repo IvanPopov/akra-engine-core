@@ -126,11 +126,16 @@ module akra.fx {
 				pInfo.type === EAFXShaderVariableType.k_SamplerCUBE) {
 
 				if (pInfo.isArray) {
-					for (var i: int = 0; i < pValue.length; i++) {
-						this.copySamplerState(pValue[i], this.samplerArrays[iIndex][i]);
+					if(isNull(pValue)){
+						this.samplerArrayLength[iIndex] = 0;
 					}
+					else {
+						for (var i: int = 0; i < pValue.length; i++) {
+							this.copySamplerState(pValue[i], this.samplerArrays[iIndex][i]);
+						}
 
-					this.samplerArrayLength[iIndex] = pValue.length;
+						this.samplerArrayLength[iIndex] = pValue.length;
+					}
 				}
 				else {
 					this.copySamplerState(pValue, this.samplers[iIndex]);
@@ -347,13 +352,13 @@ module akra.fx {
 				this.uniforms[this._pMaterialNameIndices.material] = pMatContainer;
 			}
 
-			if (this._nLastSamplerUpdates !== this._pStatesInfo.samplerKey){
+			// if (this._nLastSamplerUpdates !== this._pStatesInfo.samplerKey){
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.diffuse, pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.ambient, pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.specular, pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.emissive, pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
 				this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.normal, pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
-			}
+			// }
 
 			this._pLastSurfaceMaterial = pSurfaceMaterial;
 			this._nLastSufraceMaterialTextureUpdates = pSurfaceMaterial.totalUpdatesOfTextures;
