@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Oct 14 2013 15:09:04 GMT+0400 (Московское время (зима))
+ * assembled at: Sat Nov 02 2013 00:00:38 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/animation.ts
  * name: animation
@@ -448,6 +448,9 @@ var akra;
                 {
                     path: "models/cube.DAE",
                     name: "CUBE"
+                }, 
+                {
+                    path: "effects/custom/heatmap.afx"
                 }
             ]
         }
@@ -467,6 +470,28 @@ var akra;
         pCamera.setPosition(4., 4., 3.5);
         pCamera.lookAt(akra.Vec3.stackCeil.set(0., 1., 0.));
         pViewport = createViewports(new akra.render.DSViewport(pCamera), pCanvas, pUI);
+        var pGUI = new dat.GUI();
+        // (<IDSViewport>pViewport).bind("render", (
+        // 	pViewport: IDSViewport,
+        // 	pTechnique: IRenderTechnique,
+        // 	iPass: uint,
+        // 	pRenderable: IRenderableObject,
+        // 	pSceneObject: ISceneObject): void => {
+        // 	if (iPass == 2) {
+        // 		var pPass: IRenderPass = pTechnique.getPass(iPass);
+        // 		pPass.setTexture("DEFERRED_TEXTURE0", pViewport["_pDeferredColorTextures"][0]);
+        // 		pPass.setTexture("DEFERRED_TEXTURE1", pViewport["_pDeferredColorTextures"][1]);
+        // 	}
+        // });
+        pGUI.add({
+            heatmap: false
+        }, "heatmap").onChange(function (use) {
+            if (use) {
+                (pViewport).effect.addComponent("akra.custom.heatmap", 3, 0);
+            } else {
+                (pViewport).effect.delComponent("akra.custom.heatmap", 3, 0);
+            }
+        });
         akra.util.navigation(pViewport);
         createSceneEnvironment(pScene, false, true, 10);
         pEngine.exec();
@@ -523,7 +548,6 @@ var akra;
         pQuad.setPosition(-10, 10., 0.);
         var pController = pEngine.createAnimationController();
         var pMiner = pRmgr.colladaPool.findResource("MINER");
-        var pGUI = new dat.GUI();
         function anim2controller(pController, sAnim) {
             var pAnimModel = pRmgr.colladaPool.findResource(sAnim);
             if (akra.isNull(pAnimModel)) {

@@ -78,7 +78,9 @@ module akra {
 
 				{path: "textures/light_icon.png", name: "LIGHT_ICON"},
 
-				{path: "models/cube.DAE", name: "CUBE"}
+				{path: "models/cube.DAE", name: "CUBE"},
+
+				{path: "effects/custom/heatmap.afx"}
 			],
 		}
 	};
@@ -104,6 +106,34 @@ module akra {
 		pCamera.lookAt(vec3(0., 1., 0.));
 
 		pViewport = createViewports(new render.DSViewport(pCamera), pCanvas, pUI);
+
+		var pGUI = new dat.GUI();
+
+		// (<IDSViewport>pViewport).bind("render", (
+		// 	pViewport: IDSViewport,
+		// 	pTechnique: IRenderTechnique, 
+		// 	iPass: uint, 
+		// 	pRenderable: IRenderableObject, 
+		// 	pSceneObject: ISceneObject): void => {
+
+		// 	if (iPass == 2) {
+		// 		var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+		// 		pPass.setTexture("DEFERRED_TEXTURE0", pViewport["_pDeferredColorTextures"][0]);
+		// 		pPass.setTexture("DEFERRED_TEXTURE1", pViewport["_pDeferredColorTextures"][1]);
+		// 	}
+
+		// });
+
+		pGUI.add({heatmap: false}, "heatmap").onChange((use: bool) => {
+			if (use) {
+				(<IDSViewport>pViewport).effect.addComponent("akra.custom.heatmap", 3, 0);
+			}
+			else {
+				(<IDSViewport>pViewport).effect.delComponent("akra.custom.heatmap", 3, 0);	
+			}
+		});
+
 
 		util.navigation(pViewport);
 
@@ -183,7 +213,7 @@ module akra {
 		var pController: IAnimationController = pEngine.createAnimationController();
 		var pMiner: ICollada = <ICollada>pRmgr.colladaPool.findResource("MINER");
 
-		var pGUI = new dat.GUI();
+		
 
 		function anim2controller(pController: IAnimationController, sAnim: string): IAnimationContainer {
 			var pAnimModel: ICollada = <ICollada>pRmgr.colladaPool.findResource(sAnim);

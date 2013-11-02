@@ -49,7 +49,7 @@ module akra.render {
 
 		inline setMapping(x: uint, y: uint, w: uint, h: uint): void {
 			this._v4fMapping.set(x, y, w, h);
-			console.log("set mapping > ", x, y, w, h, this._v4fMapping.toString());
+			// console.log("set mapping > ", x, y, w, h, this._v4fMapping.toString());
 		}
 
 		render(
