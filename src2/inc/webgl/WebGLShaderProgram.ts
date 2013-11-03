@@ -66,7 +66,7 @@ module akra.webgl {
             // LOG("================================", this.findResourceName());
             // LOG(pWebGLContext.getShaderSource(pWebGLVs));
             // LOG(pWebGLContext.getShaderSource(pWebGLFs));
-
+            // console.log(csPixel);
 			if (!this.isLinked()) {
 				ERROR("cannot link GLSL program(guid: %d)", this.getGuid());
 

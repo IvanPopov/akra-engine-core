@@ -2849,7 +2849,7 @@ module akra.core.pool.resources {
 
         private setOptions(pOptions: IColladaLoadOptions): void {
             if (isNull(pOptions)) {
-                pOptions = Collada.DEFAULT_OPTIONS;
+                pOptions = {};
             }
 
             for (var i in Collada.DEFAULT_OPTIONS) {

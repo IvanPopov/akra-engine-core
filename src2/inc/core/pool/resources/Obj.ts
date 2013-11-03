@@ -211,6 +211,24 @@ module akra.core.pool.resources {
 	    	pSceneModel.attachToParent(pRoot);
         }
 
+        uploadVertexes(pPositions: Float32Array, pIndexes: Float32Array = null): void {
+        	
+        	for (var i: int = 0; i < pPositions.length; ++ i) {
+        		this._pVertices[i] = pPositions[i];
+        	}
+
+        	if (!isNull(pIndexes)) {
+        		for (var i: int = 0; i < pIndexes.length; ++ i) {
+        			this._pVertexIndexes[i] = pIndexes[i];
+        		}
+        	}
+
+        	this.calcDeps();
+
+        	this.notifyRestored();
+        	this.notifyLoaded();
+        }
+
 		parse(sData: string, pOptions: IObjLoadOptions = null): bool {
 			if (isNull(sData)) {
                 debug_error("must be specified obj content.");
@@ -249,7 +267,14 @@ module akra.core.pool.resources {
             //end of index fix
 
 
-            //FIXME: crete model with out indices, instead using pseudo indices like 0, 1, 2, 3....
+            this.calcDeps();
+
+            
+            return true;
+		}
+
+		private calcDeps(): void {
+			 //FIXME: crete model with out indices, instead using pseudo indices like 0, 1, 2, 3....
             //fill indices, if not presented
             if (this._pVertexIndexes.length === 0) {
             	this.calcVertexIndices();
@@ -259,9 +284,6 @@ module akra.core.pool.resources {
             	OBJ_PRINT(this, "calculation normals....")
             	this.calcNormals();
             }
-
-            // console.log(this);
-            return true;
 		}
 
 		private calcVertexIndices(): void {
