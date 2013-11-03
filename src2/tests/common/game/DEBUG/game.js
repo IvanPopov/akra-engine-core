@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Sep 30 2013 15:42:56 GMT+0400 (Московское время (зима))
+ * assembled at: Sun Nov 03 2013 20:44:39 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/game.ts
  * name: game
@@ -139,7 +139,7 @@ var akra;
         pTerrainMap["height"] = pRmgr.imagePool.findResource("TERRAIN_HEIGHT_MAP");
         pTerrainMap["normal"] = pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");
         // pTerrain.manualMegaTextureInit = !bShowMegaTex;
-        // (<ITerrainROAM>pTerrain).useTessellationThread = true;
+        (pTerrain).useTessellationThread = true;
         var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
         pTerrain.attachToParent(pScene.getRootNode());
         pTerrain.setInheritance(akra.ENodeInheritance.ALL);
@@ -1778,9 +1778,8 @@ var akra;
         //end of test
         var pSprite = pScene.createSprite("sprite");
         pSprite.attachToParent(pScene.getRootNode());
-        pSprite.setRotationByXYZAxis(akra.math.PI / 2., 0., 0.);
         pSprite.setPosition(0., -1., 0.);
-        pSprite.setTexture(pViewport["_pDeferredColorTextures"][0]);
+        pSprite.setTexture(pViewport["_pDeferredDepthTexture"]);
         var pProject = pScene.createLightPoint(akra.ELightTypes.PROJECT, true, 512);
         pProject.attachToParent(pScene.getRootNode());
         pProject.enabled = false;

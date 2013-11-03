@@ -9,6 +9,11 @@ var stream  = require('stream');
 var prompt 	= require('prompt');
 var wrench  = require('wrench');
 
+//minifiers
+var jsp = require("uglify-js").parser;
+var pro = require("uglify-js").uglify;
+
+
 function include(file) {
 	eval(fs.readFileSync(file, "utf-8"));
 }
@@ -609,13 +614,42 @@ function dataLocModifier(name, value, argv) {
 	return result;
 }
 
+/**
+ * JSON stringify 
+ */
+function stringifyModifier(name, value, argv) {
+	return JSON.stringify(value);
+}
+
+
+/**
+ * minify JS code in {value} param
+ */
+function minifyJsModifier(name, value, argv) {
+
+	var orig_code = value;
+	var ast = jsp.parse(orig_code); // parse code and get the initial AST
+	ast = pro.ast_mangle(ast/*, {toplevel: true, no_functions : true}*/); // get a new AST with mangled names
+	ast = pro.ast_squeeze(ast); // get an AST with compression optimizations
+	var final_code = pro.gen_code(ast, {beautify: false}); // compressed code here
+
+	// console.log(value);
+	// console.log("==============================================>");
+	// console.log(final_code);
+
+	var ratio = final_code.length / value.length;
+
+	console.log("[minify JS content]", name, (ratio * 100).toFixed(2), "% compression ratio");
+
+	return ratio > 1.? value: final_code;
+}
 
 /**
  * Get content of file by path in {atgv[0]}
  */
 function contentModifier(name, value, argv) {
 	var value = fs.readFileSync(argv[0], 'utf8');
-	return JSON.stringify(value);
+	return value;
 }
 
 function fetchDeps(sDir, sTestData, pResult) {
@@ -668,6 +702,12 @@ function fetchDeps(sDir, sTestData, pResult) {
 						break;
 					case "content":
 						value = contentModifier(name, value, argv);
+						break;
+					case "minify":
+						value = minifyJsModifier(name, value, argv);
+						break;
+					case "stringify":
+						value = stringifyModifier(name, value, argv);
 						break;
 					default:
 						console.log("[WARNING] unknown modifier founded in deps: ", modifier, "(" + cmd + ")");

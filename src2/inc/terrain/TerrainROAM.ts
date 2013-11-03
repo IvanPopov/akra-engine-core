@@ -21,7 +21,7 @@
 #else
 
 //read threads data and insert to code
-/// @TESSELLATION_THREAD: |content(inc/util/TessellationThread.t.js)
+/// @TESSELLATION_THREAD: |content(inc/util/TessellationThread.t.js)|minify()|stringify()
 
 #define TessellationThread() Worker(util.dataToURL("@TESSELLATION_THREAD", "application/javascript"))
 

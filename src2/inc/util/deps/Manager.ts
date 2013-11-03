@@ -281,6 +281,7 @@ module akra.util.deps {
 
 			pEntry.getData(new zip.ArrayBufferWriter(), (data: ArrayBuffer): void => {
 				// console.log(sPath);
+				console.log("forceExtractARADependence(", sPath, ")");
 				var pCopy: IFile = fopen(sPath, "w+b");
 				
 				pCopy.write(data, (e: Error) => {

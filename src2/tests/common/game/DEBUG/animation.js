@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Sat Nov 02 2013 00:00:38 GMT+0400 (Московское время (зима))
+ * assembled at: Sun Nov 03 2013 19:53:00 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/animation.ts
  * name: animation
@@ -449,12 +449,11 @@ var akra;
                     path: "models/cube.DAE",
                     name: "CUBE"
                 }, 
-                {
-                    path: "effects/custom/heatmap.afx"
-                }
+                
             ]
         }
     };
+    // {path: "effects/custom/heatmap.afx"}
     akra.pEngine = akra.createEngine(pOptions);
     var pUI = akra.pEngine.getSceneManager().createUI();
     var pCanvas = akra.pEngine.getRenderer().getDefaultCanvas();
@@ -483,15 +482,14 @@ var akra;
         // 		pPass.setTexture("DEFERRED_TEXTURE1", pViewport["_pDeferredColorTextures"][1]);
         // 	}
         // });
-        pGUI.add({
-            heatmap: false
-        }, "heatmap").onChange(function (use) {
-            if (use) {
-                (pViewport).effect.addComponent("akra.custom.heatmap", 3, 0);
-            } else {
-                (pViewport).effect.delComponent("akra.custom.heatmap", 3, 0);
-            }
-        });
+        // pGUI.add({heatmap: false}, "heatmap").onChange((use: bool) => {
+        // 	if (use) {
+        // 		(<IDSViewport>pViewport).effect.addComponent("akra.custom.heatmap", 3, 0);
+        // 	}
+        // 	else {
+        // 		(<IDSViewport>pViewport).effect.delComponent("akra.custom.heatmap", 3, 0);
+        // 	}
+        // });
         akra.util.navigation(pViewport);
         createSceneEnvironment(pScene, false, true, 10);
         pEngine.exec();

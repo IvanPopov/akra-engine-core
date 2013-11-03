@@ -27,11 +27,10 @@
 
 //read threads data and insert to code
 
-//TODO: minify JS
 
-/// @FILE_INTERFACE_THREAD: |content(inc/io/FileInterface.t.js)
-/// @FILE_LOCAL_THREAD: |content(inc/io/LocalFile.t.js)
-/// @FILE_REMOTE_THREAD: |content(inc/io/RemoteFile.t.js)
+/// @FILE_INTERFACE_THREAD: |content(inc/io/FileInterface.t.js)|minify()|stringify()
+/// @FILE_LOCAL_THREAD: |content(inc/io/LocalFile.t.js)|minify()|stringify()
+/// @FILE_REMOTE_THREAD: |content(inc/io/RemoteFile.t.js)|minify()|stringify()
 
 #define LocalFileThreadManager() \
 	util.ThreadManager(util.dataToURL("var $INTERFACE_DEFINED = true;\n" + \

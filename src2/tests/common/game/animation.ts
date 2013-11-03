@@ -80,7 +80,7 @@ module akra {
 
 				{path: "models/cube.DAE", name: "CUBE"},
 
-				{path: "effects/custom/heatmap.afx"}
+				// {path: "effects/custom/heatmap.afx"}
 			],
 		}
 	};
@@ -125,14 +125,14 @@ module akra {
 
 		// });
 
-		pGUI.add({heatmap: false}, "heatmap").onChange((use: bool) => {
-			if (use) {
-				(<IDSViewport>pViewport).effect.addComponent("akra.custom.heatmap", 3, 0);
-			}
-			else {
-				(<IDSViewport>pViewport).effect.delComponent("akra.custom.heatmap", 3, 0);	
-			}
-		});
+		// pGUI.add({heatmap: false}, "heatmap").onChange((use: bool) => {
+		// 	if (use) {
+		// 		(<IDSViewport>pViewport).effect.addComponent("akra.custom.heatmap", 3, 0);
+		// 	}
+		// 	else {
+		// 		(<IDSViewport>pViewport).effect.delComponent("akra.custom.heatmap", 3, 0);	
+		// 	}
+		// });
 
 
 		util.navigation(pViewport);

@@ -7,7 +7,7 @@ try {
     pFileSystem = self.requestFileSystemSync(TEMPORARY, 1024 * 1024 * 32 /*32MB*/);
 }
 catch (e) {
-    throw e.code;
+    throw e;
 }
 
 function read (pFile, fnReaded, fnProgress) {
@@ -127,6 +127,9 @@ function file (pCmd) {
                 }
                 catch (e) {}
             }
+            // else {
+            //     throw e;//new Error("*** code: " + e.code + ", can write: " + canWrite(pCmd.mode) + " ***");
+            // }
 
             return null;
         }

@@ -16,6 +16,7 @@
 		"node-native-zip": "latest",
 		"prompt": "latest",
 		"wrench": "latest",
-		"autoloader": "latest"
+		"autoloader": "latest",
+		"uglify-js": "latest"
 	}
 }

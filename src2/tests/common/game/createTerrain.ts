@@ -8,7 +8,7 @@ function createTerrain(pScene: IScene3d, bShowMegaTex: bool = true): ITerrain {
 	pTerrainMap["normal"] = <IImg>pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");
 	
 	// pTerrain.manualMegaTextureInit = !bShowMegaTex;
-	// (<ITerrainROAM>pTerrain).useTessellationThread = true;
+	(<ITerrainROAM>pTerrain).useTessellationThread = true;
 	var isCreate: bool = pTerrain.init(pTerrainMap, new geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
 	pTerrain.attachToParent(pScene.getRootNode());
 	pTerrain.setInheritance(ENodeInheritance.ALL);
