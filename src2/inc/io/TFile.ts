@@ -12,12 +12,37 @@
 //переносим все зависисмости в папку js паки с данными
 //обычно, это data/js
 
-/// @: {data}/js/FileInterface.t.js|src(inc/io/FileInterface.t.js)|data_location({data},DATA)
+#ifdef DEBUG
+
+//copy threads from sources to {data} folder and modify path to relative
+
+/// @FILE_INTERFACE_THREAD: {data}/js/FileInterface.t.js|src(inc/io/FileInterface.t.js)|data_location({data},DATA)
 /// @FILE_LOCAL_THREAD: {data}/js/LocalFile.t.js|src(inc/io/LocalFile.t.js)|data_location({data},DATA)
 /// @FILE_REMOTE_THREAD: {data}/js/RemoteFile.t.js|src(inc/io/RemoteFile.t.js)|data_location({data},DATA)
 
 #define LocalFileThreadManager() util.ThreadManager("@FILE_LOCAL_THREAD")
 #define RemoteFileThreadManager() util.ThreadManager("@FILE_REMOTE_THREAD")
+
+#else
+
+//read threads data and insert to code
+
+//TODO: minify JS
+
+/// @FILE_INTERFACE_THREAD: |content(inc/io/FileInterface.t.js)
+/// @FILE_LOCAL_THREAD: |content(inc/io/LocalFile.t.js)
+/// @FILE_REMOTE_THREAD: |content(inc/io/RemoteFile.t.js)
+
+#define LocalFileThreadManager() \
+	util.ThreadManager(util.dataToURL("var $INTERFACE_DEFINED = true;\n" + \
+		"@FILE_LOCAL_THREAD" + "\n" + "@FILE_INTERFACE_THREAD", "application/javascript"))
+#define RemoteFileThreadManager() \
+	util.ThreadManager(util.dataToURL("var $INTERFACE_DEFINED = true;\n" + \
+		"@FILE_REMOTE_THREAD" + "\n" + "@FILE_INTERFACE_THREAD", "application/javascript"))
+
+#endif
+
+
 
 #define CHECK_IFNOT_OPEN(method, callback) \
 		if (!this.isOpened()) {						\
@@ -493,6 +518,8 @@ module akra.io {
 					fnCallback.call(pFile, e);
 					pManager.releaseThread(pThread);
 				}
+
+				
 
 				if (isDef(pTransferables)) {
 					pThread.send(pCommand, pTransferables);

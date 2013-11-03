@@ -195,7 +195,7 @@ module akra.path {
 		return pFile;
 	}
 
-	export function resolve(sFile, sAbsolutePath: string = document.location.pathname): string {
+	export function resolve(sFile, sAbsolutePath: string = document.location.href): string {
 
 		var pCurrentPath: IURI = uri(sAbsolutePath);
 		var pFile: IURI = uri(sFile);

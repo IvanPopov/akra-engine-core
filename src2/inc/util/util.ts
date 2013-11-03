@@ -172,6 +172,21 @@ module akra.util {
 	    return bb;
 	}
 
+	export function dataToURL(data: any, mime: string = "text/plain"): string {
+		var blob: Blob;
+
+		try {
+		    blob = new Blob([data], {type: mime});
+		} catch (e) { 
+			// Backwards-compatibility
+		    var bb: BlobBuilder = new BlobBuilder();
+		    bb.append(data);
+		    blob = bb.getBlob(mime);
+		}
+
+		return URL.createObjectURL(blob);
+	}
+
 }
 
 #endif

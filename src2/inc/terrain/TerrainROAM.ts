@@ -7,9 +7,25 @@
 #include "terrain/TriTreeNode.ts"
 #include "scene/objects/Camera.ts"
 
+#include "util/util.ts"
 #include "util/TessellationThread.ts"
 
+#ifdef DEBUG
+
+//copy threads from sources to {data} folder and modify path to relative
+
 /// @TESSELLATION_THREAD: {data}/js/TessellationThread.t.js|src(inc/util/TessellationThread.t.js)|data_location({data},DATA)
+
+#define TessellationThread() Worker("@TESSELLATION_THREAD")
+
+#else
+
+//read threads data and insert to code
+/// @TESSELLATION_THREAD: |content(inc/util/TessellationThread.t.js)
+
+#define TessellationThread() Worker(util.dataToURL("@TESSELLATION_THREAD", "application/javascript"))
+
+#endif
 
 // #define PROFILE_TESSEALLATION 1
 
@@ -230,7 +246,7 @@ module akra.terrain {
 			}
 
 			var me: TerrainROAM = this;
-			var pThread: Worker = this._pTessellationThread = new Worker("@TESSELLATION_THREAD");
+			var pThread: Worker = this._pTessellationThread = new TessellationThread();
 
 			pThread.onmessage = function(event: any){
 				if(event.data === "ok"){

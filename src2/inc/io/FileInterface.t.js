@@ -1,3 +1,7 @@
+//required to prevent excessive imports of that script
+//will be automaticly defined by build script
+//$INTERFACE_DEFINED = true;
+
 function canCreate (iMode) {
     return ((iMode & (1 << 1)) != 0);
 }

@@ -204,3 +204,13 @@ interface Navigator {
 interface GamepadEvent extends Event {
     gamepad: Gamepad;
 }
+
+//BlobBuilder
+interface BlobBuilder {
+    append(data: any, endings?: string): void;
+    getBlob(contentType?: string): Blob;
+}
+declare var BlobBuilder: {
+    prototype: BlobBuilder;
+    new (): BlobBuilder;
+}

@@ -43,7 +43,7 @@ function usage() {
 		'\n\t--ES6			Activate ecmascript 6 capability.' + 
 		'\n\t--compress		Compress output javascript.' + 
 		'\n\t--debug			Debug build.' + 
-		'\n\t--no-debug		Release build.' + 
+		'\n\t--no-debug/--release	Release build.' + 
 		'\n\t--clean			Clean tests data.' + 
 		'\n\t--list		[-l] List all available tests.' + 
 		'\n\t--webgl-debug	[-w] Add webgl debug utils.' + 
@@ -176,6 +176,7 @@ function parseArguments() {
 				pOptions.debug = true;
 				break;
 			case '--no-debug':
+			case '--release':
 				pOptions.debug = false;
 				break;
 			case '--clean':
@@ -322,8 +323,6 @@ function preprocess() {
 		console.log("EcmaScript 6 capability mode: ON");
 	}
 
-	// pwd();
-
 	var cmd = (isWin? pOptions.baseDir + "/": "") + "mcpp";
 	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -I ./"/* + pOptions.buildDir*/ + " -I " + 
 		pOptions.baseDir + "/definitions/ -j -+ -W 0 -k " + 
@@ -337,12 +336,9 @@ function preprocess() {
 	var iTotalChars = 0;
 
 	mcpp.stdout.on('data', function (data) {
- 	  // console.log("##############################################################################################");
-	  // console.log('stdout: \n' + data.toString());
 	  data.copy(stdout, iTotalChars);
 
-	  iTotalChars  += data.length;
-	  // console.log(stdout.slice(0, iTotalChars).toString());
+	  iTotalChars += data.length;
 	});
 
 	mcpp.stderr.on('data', function (data) {
@@ -371,6 +367,7 @@ function preprocess() {
 
 function compress(sFile) {
 	console.log(">>>>>>>>>>>>>>>>>>>>>>>");
+	
 	var cmd = "java";
 	var argv = (
 		"-jar " + 
@@ -571,6 +568,9 @@ function findDepends(sData, pDepExp) {
 }
 
 
+/**
+ * Copy file/directory from argv[0] to {value}
+ */
 function srcModifier(name, value, argv) {
 	if (argv.length != 1) {
 		throw Error("copy modifier must have a path param");
@@ -593,16 +593,29 @@ function srcModifier(name, value, argv) {
 		}
 	}
 	else {
-		console.log("[WARNING] could not find file for copy:", argv[0]);
+		console.warn("[WARNING] could not find file for copy:", argv[0]);
 	}
 
 	return gitignore.join("\n");
 }
 
+/**
+ * replace path in {value} to relative to {akra.DATA} value
+ * name - name of variable
+ * value - value of virable
+ */
 function dataLocModifier(name, value, argv) {
 	var result = (/*argv[1] || */"akra.DATA") + " + \"/" + path.relative(argv[0], value).replace(/\\/ig, "/") + "\"";
-	// console.log("-------------------->",result);
 	return result;
+}
+
+
+/**
+ * Get content of file by path in {atgv[0]}
+ */
+function contentModifier(name, value, argv) {
+	var value = fs.readFileSync(argv[0], 'utf8');
+	return JSON.stringify(value);
 }
 
 function fetchDeps(sDir, sTestData, pResult) {
@@ -652,6 +665,9 @@ function fetchDeps(sDir, sTestData, pResult) {
 						break;
 					case "data_location":
 						value = dataLocModifier(name, value, argv);
+						break;
+					case "content":
+						value = contentModifier(name, value, argv);
 						break;
 					default:
 						console.log("[WARNING] unknown modifier founded in deps: ", modifier, "(" + cmd + ")");

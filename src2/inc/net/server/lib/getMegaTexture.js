@@ -57,16 +57,21 @@ setInterval(processingStack, 1);
 
 function fetchCanvasData(pCt, pParam, nBytePerCount) {
 	var data = pCt.getImageData(pParam.x, pParam.y, pParam.width, pParam.height).data;
-	var pBufMG = pCt.buffer = new Buffer(pParam.width * pParam.height * nBytePerCount);
+	var pBufMG = pCt.buffer = new Buffer(pParam.width * pParam.height * nBytePerCount + 8);
+    
+    pBufMG.writeUInt16LE(pParam.iSizeX, 0);
+    pBufMG.writeUInt16LE(pParam.width, 2);
+    pBufMG.writeUInt16LE(pParam.iOrigX, 4);
+    pBufMG.writeUInt16LE(pParam.iOrigY, 6);
 
     if (nBytePerCount == 3) {
-        for (var i = 0, k = 0; i < data.length; i += 3, k += 4) {
+        for (var i = 8, k = 0; i < data.length + 8; i += 3, k += 4) {
             pBufMG[i] = data[k];
             pBufMG[i + 1] = data[k + 1];
             pBufMG[i + 2] = data[k + 2];
         }
     } else {
-        for (var i = 0; i < data.length; i++) {
+        for (var i = 8; i < data.length + 8; i++) {
             pBufMG[i] = data[i];
         }
     }
@@ -190,6 +195,8 @@ module.exports = function (fnCallback, sName, iSizeX, iSizeY, x, y, width, heigh
     pParam.iSizeY = iSizeY;
     pParam.x = x;
     pParam.y = y;
+    pParam.iOrigX = x;
+    pParam.iOrigY = y;
     pParam.width = width;
     pParam.height = height;
     pParam.eType = eType;

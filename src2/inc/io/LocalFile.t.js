@@ -135,5 +135,5 @@ function file (pCmd) {
     return pFiles[sName];
 }
 
-
-importScripts('FileInterface.t.js');
+if (!$INTERFACE_DEFINED)
+    importScripts('FileInterface.t.js');
