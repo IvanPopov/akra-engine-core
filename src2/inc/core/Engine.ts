@@ -1,6 +1,21 @@
 #ifndef ENGINE_TS
 #define ENGINE_TS
 
+#ifdef DEBUG
+
+
+#else
+
+//pack resources 
+//all {.map} files will be packaged together with the resources described within them
+//{data}/effects/floatSpecialFunctions.afx uses as "#include", but not described in {.map}
+
+//pack_resources(map, ...additional_files: string[]) - generate archive with resources and encode it into base64 string
+
+///@CORE_ARA: |pack_resources({data}/core.map, {data}/effects/floatSpecialFunctions.afx, {data}/textures)|stringify()
+
+#endif
+
 #include "common.ts"
 
 #include "IEngine.ts"
@@ -397,12 +412,13 @@ module akra.core {
 				]
 			}
 #else
+//RELEASE
+//engine core dependences
 			{
 				files: [
 					{
-						path: "core.ara", 
-						name: ".ENGINE_DATA", 
-						comment: "engine core dependences"
+						path: "@CORE_ARA", 
+						type: "ARA"
 					}
 				]
 			}
@@ -438,23 +454,5 @@ module akra {
 	}
 }
 
-/*
-		private initDefaultStates(): bool {
-			this.pRenderState = {
-		        mesh            : {
-		            isSkinning : false
-		        },
-		        isAdvancedIndex : false,
-		        lights          : {
-		            omni : 0,
-		            project : 0,
-		            omniShadows : 0,
-		            projectShadows : 0
-		        }
-		    };
-
-			return true;
-		}
- */
 
 #endif

@@ -9,6 +9,9 @@ var stream  = require('stream');
 var prompt 	= require('prompt');
 var wrench  = require('wrench');
 
+var Zip = require('node-zip');
+
+
 //minifiers
 var jsp = require("uglify-js").parser;
 var pro = require("uglify-js").uglify;
@@ -586,13 +589,13 @@ function srcModifier(name, value, argv) {
 	if (fs.existsSync(argv[0])) {
 		stat = fs.statSync(argv[0]);
 		if (stat.isDirectory()) {
-			console.log("copy dir from ", argv[0], "to", value);
+			console.log("[copy directory]", argv[0], "-->", value);
 			wrench.copyDirSyncRecursive(path.resolve(argv[0]), path.resolve(value));
 			gitignore.push(value + "/");
 		}
 		else {
 			var sFile = fs.readFileSync(argv[0], "utf-8");
-			console.log("copy file from ", argv[0], "to", value);
+			console.log("[copy file]", argv[0], "-->", value);
 			fs.writeFileSync(value, sFile, "utf-8");
 			gitignore.push(value);
 		}
@@ -652,6 +655,73 @@ function contentModifier(name, value, argv) {
 	return value;
 }
 
+/**
+ * create zip archive with files described in {argv}
+ * pack_resources(map, ...additional_files: string[]) - generate archive with resources and encode it into base64 string
+ */
+function packResourcesModifier(name, value, argv) {
+	var archive = new Zip();
+// 	zip.file('test.file', 'hello there');
+// var data = zip.generate({base64:false,compression:'DEFLATE'});
+// console.log(data); // ugly data
+	console.log("[pack resource]", name);
+
+	var map = argv.shift();
+	var data_folder = path.dirname(map);
+	var map_content = fs.readFileSync(map, 'utf8');
+
+	archive.file(".map", map_content);
+
+	console.log("\t [add file]", map, "-->", ".map");
+
+	var map_json = JSON.parse(map_content);
+
+	var p = map_json;
+
+	while(p) {
+		if (p.files) {
+			for (var i = 0; i < p.files.length; i++) {
+				var file = p.files[i].path;
+				var res = path.normalize(data_folder + "/" + file).replace(/\\/ig, "/");
+
+				console.log("\t [add file]", res, "-->", file);
+				
+				archive.file(file, fs.readFileSync(res, 'utf8'));
+			};
+		}
+
+		p  = p.deps;
+	}
+
+	argv.forEach(function (value, i) {
+		var name = path.relative(data_folder, value).replace(/\\/ig, "/");
+
+		if (fs.existsSync(value)) {
+			if (fs.statSync(value).isDirectory()) {
+				var files = wrench.readdirSyncRecursive(value);
+				
+				//files in string[] array, include directories..
+			}
+			else {
+				archive.file(name, fs.readFileSync(value, 'utf8'));
+				console.log("\t [add file]", value, "-->", name);
+			}
+		}
+		else {
+			console.error("\t [could not find file]", value, "(cwd: " + process.cwd() + ")");
+		}
+	});
+
+
+	// var archive_content = archive.generate({base64: false, compression:'DEFLATE'});
+
+	// fs.writeFile("~temp.zip", archive_content, "binary", function(err) {
+	// 	if (err) throw err;
+	// });
+
+	return "data:application/octet-stream;base64," + archive.generate({base64: true, compression:'DEFLATE'});
+}
+
 function fetchDeps(sDir, sTestData, pResult) {
 	var pDeps = findDepends(sTestData, /\/\/\/\s*@([\w\d]*)\s*\:\s*([\w\d\.\-\/\:\-\{\}\|\(\)\ \"\,]+)\s*/ig);//"
 
@@ -680,7 +750,7 @@ function fetchDeps(sDir, sTestData, pResult) {
 			if (matches = (/\s*([\w]+)\(([\/\.\-\w\d\ \t\,]*)\)\s*/ig).exec(mod)) {
 				var modifier = matches[1];
 				var args = matches[2];
-				var argv = args.split(',');
+				var argv = args.split(/[\s]*,[\s]*/);
 
 				switch (modifier.toLowerCase()) {
 					case "src":
@@ -688,11 +758,11 @@ function fetchDeps(sDir, sTestData, pResult) {
 						break;
 					case "css":
 						pResult['css'].push(value);
-						console.log('<link rel="stylesheet" type="text/css" href="' + value + '">');
+						console.log('[dependence, style] <link rel="stylesheet" type="text/css" href="' + value + '">');
 						break;
 					case "script":
 						pResult['script'].push(value);
-						console.log('<script type="text/javascript" src="' + value + '"></script>');
+						console.log('[dependence, script] <script type="text/javascript" src="' + value + '"></script>');
 						break;
 					case "location":
 						value = "\"" + path.relative(sDir, value).replace(/\\/ig, "/") + "\"";
@@ -709,8 +779,11 @@ function fetchDeps(sDir, sTestData, pResult) {
 					case "stringify":
 						value = stringifyModifier(name, value, argv);
 						break;
+					case "pack_resources":
+						value = packResourcesModifier(name, value, argv);
+						break;
 					default:
-						console.log("[WARNING] unknown modifier founded in deps: ", modifier, "(" + cmd + ")");
+						console.warn("[WARNING] unknown modifier founded in deps: ", modifier, "(" + cmd + ")");
 				}
 			}
 		}

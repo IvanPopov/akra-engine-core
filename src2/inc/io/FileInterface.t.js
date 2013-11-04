@@ -42,6 +42,11 @@ function isURL (iMode) {
     return ((iMode & (256)) != 0);
 }
 
+//FIXME: write efficient blob detection
+function isBlobURL(name) {
+    return name.substr(0, 5) === "blob:";
+}
+
 function directories (sFilename) {
     var pParts = sFilename.replace('\\', '/').split('/');
     pParts.pop();

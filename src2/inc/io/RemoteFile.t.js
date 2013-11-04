@@ -198,6 +198,12 @@ function clear (pFile) {
 function meta (pFile) {
     var pXhr = new XMLHttpRequest();
 
+    //HEAD request disallow for blob data.
+
+    if (isBlobURL(pFile.name)) {
+        return {};
+    }
+
     pXhr.open('HEAD', pFile.name, false);
     pXhr.send(null);
     

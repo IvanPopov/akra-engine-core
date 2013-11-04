@@ -17,7 +17,6 @@ module akra.util {
 		private bLocalStorage: bool = false;
 		private bWebSocket: bool = false;
 		private bGamepad: bool = false;
-		private bZip: bool = false;
 
 		inline get webGL(): bool {
 			return webgl.isEnabled();
@@ -60,7 +59,7 @@ module akra.util {
 		}
 
 		inline get zip(): bool {
-			return this.bZip;
+			return isDefAndNotNull(window["zip"]);
 		}
 
 		constructor () {
@@ -75,7 +74,6 @@ module akra.util {
 			this.bLocalStorage = isDef((<any>window).localStorage);
 			this.bWebSocket = isDef((<any>window).WebSocket);
 			this.bGamepad = !! (<any>navigator).webkitGetGamepads || !! (<any>navigator).webkitGamepads || (navigator.userAgent.indexOf('Firefox/') != -1);
-			this.bZip = isDefAndNotNull(window["zip"]);
 		}	
 
 		private chechTransferableObjects(): bool {

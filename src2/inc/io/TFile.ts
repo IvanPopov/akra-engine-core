@@ -521,6 +521,7 @@ module akra.io {
 				
 
 				if (isDef(pTransferables)) {
+					// console.log(pCommand, pTransferables);
 					pThread.send(pCommand, pTransferables);
 				}
 				else {

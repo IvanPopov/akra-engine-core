@@ -2,6 +2,7 @@
 #define URI_TS
 
 #include "IURI.ts"
+#include "IDataURI.ts"
 
 module akra.path {
 	export class URI implements IURI {
@@ -193,6 +194,22 @@ module akra.path {
 		}
 
 		return pFile;
+	}
+
+
+	export function decodeDataURI(sUri: string): IDataURI {
+		var re: RegExp = /^data:([\w\d\-\/]+)?(;charset=[\w\d\-]*)?(;base64)?,(.*)$/;
+		var m: string[] = sUri.match(re);
+
+		return {
+			//like [text/plain]
+			mediatype: m[1] || null,
+			//like [;charset=windows-1251]
+			charset: isString(m[2])? m[2].substr(9): null,
+			//like [;base64]
+			base64: isDef(m[3]),
+			data: m[4] || null
+		};
 	}
 
 	export function resolve(sFile, sAbsolutePath: string = document.location.href): string {

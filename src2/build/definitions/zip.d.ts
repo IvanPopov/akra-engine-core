@@ -36,6 +36,9 @@ interface ZipArrayBufferReaderConstructor {
 	new (ab: ArrayBuffer): ZipReader;
 }
 
+interface ZipData64URIReaderConstructor {
+	new (dataURI: string): ZipReader;
+}
 
 interface Zip {
 
@@ -46,6 +49,7 @@ interface ZipStatic {
 
 	BlobReader: ZipBlobReaderConstructor;
 	ArrayBufferReader: ZipArrayBufferReaderConstructor;
+	Data64URIReader: ZipData64URIReaderConstructor;
 
 	BlobWriter: {new (entry?: ZipEntry): ZipWriter;};
 	TextWriter: {new (entry?: ZipEntry): ZipWriter;};
