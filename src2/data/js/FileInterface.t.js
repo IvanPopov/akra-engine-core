@@ -1,32 +1,50 @@
+//required to prevent excessive imports of that script
+//will be automaticly defined by build script
+//$INTERFACE_DEFINED = true;
+
 function canCreate (iMode) {
-    return ((iMode & (1 << 1)) != 0);
+    // return ((iMode & (1 << 1)) != 0);
+    return ((iMode & (2)) != 0);
 }
 function canRead (iMode) {
-    return ((iMode & (1 << 0)) != 0);
+    // return ((iMode & (1 << 0)) != 0);
+    return ((iMode & (1)) != 0);
 }
 function canWrite (iMode) {
-    return ((iMode & (1 << 1)) != 0);
+    // return ((iMode & (1 << 1)) != 0);
+    return ((iMode & (2)) != 0);
 }
 function isBinary (iMode) {
-    return ((iMode & (1 << 5)) != 0);
+    // return ((iMode & (1 << 5)) != 0);
+    return ((iMode & (32)) != 0);
 }
 function isAppend (iMode) {
-    return ((iMode & (1 << 3)) != 0);
+    // return ((iMode & (1 << 3)) != 0);
+    return ((iMode & (8)) != 0);
 }
 function isTrunc (iMode) {
-    return ((iMode & (1 << 4)) != 0);
+    // return ((iMode & (1 << 4)) != 0);
+    return ((iMode & (16)) != 0);
 }
 
 function isText (iMode) {
-    return ((iMode & (1 << 6)) != 0);
+    // return ((iMode & (1 << 6)) != 0);
+    return ((iMode & (64)) != 0);
 }
 
 function isJSON (iMode) {
-    return ((iMode & (1 << 7)) != 0);
+    // return ((iMode & (1 << 7)) != 0);
+    return ((iMode & (128)) != 0);
 }
 
 function isURL (iMode) {
-    return ((iMode & (1 << 8)) != 0);
+    // return ((iMode & (1 << 8)) != 0);
+    return ((iMode & (256)) != 0);
+}
+
+//FIXME: write efficient blob detection
+function isBlobURL(name) {
+    return name.substr(0, 5) === "blob:";
 }
 
 function directories (sFilename) {
@@ -57,7 +75,6 @@ onmessage = function (pEvent) {
     var pCommand = pEvent.data;
     var pFile;
 
-
     pFile = file(pCommand);
 
     if (pFile == null) {
@@ -66,7 +83,7 @@ onmessage = function (pEvent) {
             return;
         }
         else {
-            throw new Error('cannot get file: ' + pCommand.name + ' (' + pCommand.act + ')');
+            throw new Error('cannot get file: ' + pCommand.name + ' (act: ' + pCommand.act + ', can write: ' + canWrite(pCommand.mode) + ')');
         }
     }
 

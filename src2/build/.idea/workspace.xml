@@ -26,14 +26,15 @@
       <file leaf-file-name="make.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/make.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="246" column="17" selection-start="5866" selection-end="5866" vertical-scroll-proportion="0.25458714" vertical-offset="2923" max-vertical-offset="22338">
+            <state line="1421" column="2" selection-start="37289" selection-end="37289" vertical-scroll-proportion="0.3325688" vertical-offset="20892" max-vertical-offset="21896">
               <folding>
                 <element signature="n#!!block;n#isDef#0" expanded="false" />
                 <element signature="e#717#1568#0" expanded="false" />
-                <element signature="e#4545#5324#0" expanded="false" />
-                <marker date="1383665793707" expanded="true" signature="24925:25051" placeholder="..." />
-                <marker date="1383665793707" expanded="true" signature="24986:25051" placeholder="..." />
-                <marker date="1383665793707" expanded="true" signature="25223:25281" placeholder="..." />
+                <element signature="n#!!block;n#parseArguments2#0" expanded="false" />
+                <element signature="n#!!block;n#parseArguments#0" expanded="false" />
+                <marker date="1383678720090" expanded="true" signature="27772:27898" placeholder="..." />
+                <marker date="1383678720090" expanded="true" signature="27833:27898" placeholder="..." />
+                <marker date="1383678720090" expanded="true" signature="28070:28128" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -89,6 +90,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -109,25 +111,16 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="options.lastSelected" value="vcs.Git" />
-    <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="RunManager">
-    <configuration default="true" type="DartUnitRunConfigurationType" factoryName="DartUnit">
-      <option name="VMOptions" />
-      <option name="arguments" />
-      <option name="filePath" />
-      <option name="scope" value="ALL" />
-      <option name="testName" />
-      <method />
-    </configuration>
     <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
       <option name="VMOptions" />
       <option name="arguments" />
@@ -136,6 +129,14 @@
       <option name="saveOutputToFile" value="false" />
       <option name="showConsoleOnStdErr" value="false" />
       <option name="showConsoleOnStdOut" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="DartUnitRunConfigurationType" factoryName="DartUnit">
+      <option name="VMOptions" />
+      <option name="arguments" />
+      <option name="filePath" />
+      <option name="scope" value="ALL" />
+      <option name="testName" />
       <method />
     </configuration>
     <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma" singleton="true" config-file="">
@@ -178,26 +179,26 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936078" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1171875" sideWeight="0.6706392" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936078" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -212,23 +213,37 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/make.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="246" column="17" selection-start="5866" selection-end="5866" vertical-scroll-proportion="0.0" vertical-offset="4182" max-vertical-offset="22338">
+          <folding>
+            <element signature="n#!!block;n#isDef#0" expanded="false" />
+            <element signature="e#717#1568#0" expanded="false" />
+            <element signature="n#!!block;n#parseArguments2#0" expanded="false" />
+            <element signature="n#!!block;n#parseArguments#0" expanded="false" />
+            <marker date="1383678720090" expanded="true" signature="27772:27898" placeholder="..." />
+            <marker date="1383678720090" expanded="true" signature="27833:27898" placeholder="..." />
+            <marker date="1383678720090" expanded="true" signature="28070:28128" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="841">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="841" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/make.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="246" column="17" selection-start="5866" selection-end="5866" vertical-scroll-proportion="0.25458714" vertical-offset="2923" max-vertical-offset="22338">
+        <state line="1421" column="2" selection-start="37289" selection-end="37289" vertical-scroll-proportion="0.3325688" vertical-offset="20892" max-vertical-offset="21896">
           <folding>
             <element signature="n#!!block;n#isDef#0" expanded="false" />
             <element signature="e#717#1568#0" expanded="false" />
-            <element signature="e#4545#5324#0" expanded="false" />
-            <marker date="1383665793707" expanded="true" signature="24925:25051" placeholder="..." />
-            <marker date="1383665793707" expanded="true" signature="24986:25051" placeholder="..." />
-            <marker date="1383665793707" expanded="true" signature="25223:25281" placeholder="..." />
+            <element signature="n#!!block;n#parseArguments2#0" expanded="false" />
+            <element signature="n#!!block;n#parseArguments#0" expanded="false" />
+            <marker date="1383678720090" expanded="true" signature="27772:27898" placeholder="..." />
+            <marker date="1383678720090" expanded="true" signature="27833:27898" placeholder="..." />
+            <marker date="1383678720090" expanded="true" signature="28070:28128" placeholder="..." />
           </folding>
         </state>
       </provider>

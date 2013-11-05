@@ -39,9 +39,24 @@ function base64_encode (data) {
 // }
 
 
+function createCORSRequest(method, url){
+    var xhr = new XMLHttpRequest();
+    if ("withCredentials" in xhr){
+        xhr.open(method, url, true);
+    } else if (typeof XDomainRequest != "undefined"){
+        xhr = new XDomainRequest();
+        xhr.open(method, url);
+    } else {
+        xhr = null;
+    }
+    return xhr;
+}
+
 function read (pFile, fnReaded, fnProgress) {
-    var pXhr = new XMLHttpRequest();
-    pXhr.open('GET', pFile.name, true);
+    // var pXhr = new XMLHttpRequest();
+    // pXhr.open('GET', pFile.name, true);
+
+    var pXhr = createCORSRequest("GET", pFile.name);
 
     pXhr.onload = function (e) {
         if (parseInt(pXhr.status) != 200 && parseInt(pXhr.status) != 0) {
@@ -183,6 +198,12 @@ function clear (pFile) {
 function meta (pFile) {
     var pXhr = new XMLHttpRequest();
 
+    //HEAD request disallow for blob data.
+
+    if (isBlobURL(pFile.name)) {
+        return {};
+    }
+
     pXhr.open('HEAD', pFile.name, false);
     pXhr.send(null);
     
@@ -202,5 +223,5 @@ function file (pCmd) {
     return {};
 }
 
-
-importScripts('FileInterface.t.js');
+if (!$INTERFACE_DEFINED)
+    importScripts('FileInterface.t.js');

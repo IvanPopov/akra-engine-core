@@ -56,59 +56,139 @@ var scanDir = function(dir, done, withFolders) {
     });
 };
 
+var options = {
+    //target of build, core or tests
+    target: {
+        core: true,
+        tests: false
+    },
+    outputFolder: "./bin",		//output file name
+    outputFile: null,		    //output file name
+    buildDir: "./",			    //dir from witch we build
+    tempFile: "~tmp.ts",		//temprorary file name
+    baseDir: __dirname,		    //home dir for this script
+    includeDir: null,
+    capability: null,           //{STRING} constant like "ES6" for EcmaScript support, needed for TS compiler
+    testDir: null,
+    pathToTests: null,          //path to folder with tests
+    compress: false,            //use compression for final JS file [google-closure will be used]
+    files: [],
+    debug: true,                //debug or release build (DEBUG const will be used)
+    pathToTemp: null,
+    declaration: false,
+    gui: false,
+    filedrop: false,
+    preprocess: false,
+    clean: false, //clean tests data instead build
+    listOnly: false, //list available tests
+    webglDebug: false,
+    dataDir: "./data/",
+    noConst: false,
+    /**
+     * Поиск всех файлов с комеентариями вида // стоящими не на отдельной строке
+     */
+    magicMode: false,
+    testsFormat: {nw: false, html: false, js: false}
+};
+
 var params = [
     {
         key: ["target"],
         shortKey: "t",
-        desc: "{ \"ALL\" | \"TESTS\" | \"CORE\" } Specify target. Default target is CORE."
+        desc: "{ \"ALL\" | \"TESTS\" | \"CORE\" } Specify target. Default target is CORE.",
+        logic: function (key, argv) {
+            //default target = {test: false, core: true}
+            var target = options.target;
+
+            //argv[1] --> next arguments, file name.
+            var type = argv.shift().toUpperCase();
+
+
+            switch(type) {
+                case "ALL":
+                    target.core = true;
+                    target.tests = true;
+                    break;
+                case "TESTS":
+                    target.tests = true;
+                    target.core = false;
+            }
+        }
     },
     {
         key: ["out"],
         shortKey: "o",
-        desc: "{ path/to/output/[ folder | file ] } Specify output folder or file. "
+        desc: "{ path/to/output/[ folder | file ] } Specify output folder or file. ",
+        logic: function (key, argv) {
+            options.outputFolder = argv.shift();
+        }
     },
     {
         key: ["build"],
         shortKey: "d",
-        desc: "{ path/to/build/directory } Specify build directory. "
+        desc: "{ path/to/build/directory } Specify build directory. ",
+        logic: function (key, argv) {
+            options.buildDir = argv.shift();
+        }
     },
     {
         key: ["tests"],
         shortKey: "s",
-        desc: "{ path/to/tests/folder } Specify tests directory. "
+        desc: "{ path/to/tests/folder } Specify tests directory. ",
+        logic: function (key, argv) {
+            options.pathToTests = argv.shift();
+        }
     },
     {
         key: ["test"],
         shortKey: "c",
-        desc: "{ path/to/single/test } Specify test directory. "
+        desc: "{ path/to/single/test } Specify test directory. ",
+        logic: function (key, argv) {
+            options.testDir = argv.shift();
+        }
     },
     {
         key: ["clean"],
         shortKey: "",
-        desc: "Clean tests data."
+        desc: "Clean tests data.",
+        logic: function (key, argv) {
+            options.clean = true;
+        }
     },
     {
         key: ["list"],
         shortKey: "l",
-        desc: "List all available tests."
+        desc: "List all available tests.",
+        logic: function (key, argv) {
+            options.listOnly = true;
+        }
     },
     /** @deprecated */
     {
         key: ["html"],
         shortKey: null,
-        desc: "Build tests as HTML. "
+        desc: "Build tests as HTML. ",
+        logic: function (key, argv) {
+            options.testsFormat.html = true;
+        }
     },
     /** @deprecated */
     {
         key: ["nw"],
         shortKey: null,
-        desc: "Build tests as NW."
+        desc: "Build tests as NW.",
+        logic: function (key, argv) {
+            options.testsFormat.nw = true;
+        }
     },
     /** @deprecated */
     {
         key: ["js"],
         shortKey: null,
-        desc: "Build tests as JS. "
+        desc: "Build tests as JS. ",
+        logic: function (key, argv) {
+            options.testsFormat.js = true;
+        }
     },
     {
         key: ["help"],
@@ -118,57 +198,90 @@ var params = [
     {
         key: ["ES6"],
         shortKey: null,
-        desc: "Activate ecmascript 6 capability."
+        desc: "Activate ecmascript 6 capability.",
+        logic: function (key, argv) {
+            options.capability = "ES6";
+        }
     },
     {
         key: ["compress"],
         shortKey: "z",
-        desc: "Compress output javascript."
+        desc: "Compress output javascript.",
+        logic: function (key, argv) {
+            options.compress = true;
+        }
     },
     {
         key: ["debug"],
         shortKey: null,
-        desc: "Debug build."
+        desc: "Debug build.",
+        logic: function (key, argv) {
+            options.debug = true;
+        }
     },
     {
         key: ["no-debug", "release"],
         shortKey: null,
-        desc: "Release build."
+        desc: "Release build.",
+        logic: function (key, argv) {
+            options.debug = false;
+        }
     },
     {
         key: ["webgl-debug"],
         shortKey: "w",
-        desc: "Add webgl debug utils."
+        desc: "Add webgl debug utils.",
+        logic: function (key, argv) {
+            options.webglDebug = true;
+        }
     },
     {
         key: ["do-magic"],
         shortKey: "m",
-        desc: "It\'s wonderfull magic!(Ask Igor'!)."
+        desc: "It\'s wonderfull magic!(Ask Igor'!).",
+        logic: function (key, argv) {
+            options.magicMode = true;
+        }
     },
     {
         key: ["declaration"],
         shortKey: null,
-        desc: "Generates corresponding .d.ts file."
+        desc: "Generates corresponding .d.ts file.",
+        logic: function (key, argv) {
+            options.declaration = true;
+        }
     },
     {
         key: ["no-const"],
         shortKey: null,
-        desc: "Do not replace constant from enum values."
+        desc: "Do not replace constant from enum values.",
+        logic: function (key, argv) {
+            options.noConst = true;
+        }
     },
     {
         key: ["gui"],
         shortKey: null,
-        desc: "Define GUI macro"
+        desc: "Define GUI macro",
+        logic: function (key, argv) {
+            options.gui = true;
+        }
     },
     {
         key: ["filedrop-api"],
         shortKey: null,
-        desc: "Define FILEDROP_API macro."
+        desc: "Define FILEDROP_API macro.",
+        logic: function (key, argv) {
+            options.filedrop = true;
+        }
     },
     {
         key: ["preprocess"],
         shortKey: null,
-        desc: "Preprocessing only."
+        desc: "Preprocessing only.",
+        logic: function (key, argv) {
+            options.preprocess = true;
+        }
     }
 ];
 
@@ -188,36 +301,7 @@ function usage() {
 }
 
 
-var options = {
-	target: {core: true, tests: false},			
-	outputFolder: "./bin",		//output file name
-	outputFile: null,		//output file name
-	buildDir: "./",			//dir from witch we build
-	tempFile: "~tmp.ts",		//temprorary file name
-	baseDir: __dirname,		//home dir for this script
-	includeDir: null,
-	capability: null,
-	testDir: null,
-	pathToTests: null,
-	compress: false,
-	files: [],
-	debug: true,
-	pathToTemp: null,
-	declaration: false,
-	gui: false,
-	filedrop: false,
-	preprocess: false,
-	clean: false, //clean tests data instead build
-	listOnly: false, //list available tests
-	webglDebug: false,
-	dataDir: "./data/",
-	noConst: false,
-	/**
-	 * Поиск всех файлов с комеентариями вида // стоящими не на отдельной строке
-	 */
-	magicMode: false,
-	testsFormat: {nw: false, html: false, js: false}
-};
+
 
 if (process.argv.length < 3) {
 	usage();
@@ -231,9 +315,13 @@ function readKey(sOption, i) {
 	if (!isDef(options[sOption])) usage();
 }
 
+//parse arguments of this script
 function parseArguments2() {
     var argv = process.argv.slice(0);
 
+    //first arguments is [node]
+    argv.shift();
+    //second argument is this script [make.js]
     argv.shift();
 
     while(argv.length) {
@@ -261,19 +349,19 @@ function parseArguments2() {
                 break;
             }
 
-            options.files.push(arg);
+            console.log(arg);
+            //options.files.push(arg);
         }
         else {
             var opt = opts[0];
-            //opt.logic(arg, argv);
-            console.log(arg);
+            opt.logic(arg, argv);
         }
     }
 }
 
 function parseArguments() {
-    //parseArguments2();
 	for (var i = 2, sArg, sTarget; i < process.argv.length; ++ i) {
+
 		sArg = process.argv[i];
 
 		switch (sArg) {
@@ -1330,8 +1418,8 @@ function addTestDirectory(sTestDir, sTestFile) {
 
 
 //=================================
-
-parseArguments();
+parseArguments2();
+//parseArguments();
 verifyOptions();
 
 process.chdir(options.buildDir);
