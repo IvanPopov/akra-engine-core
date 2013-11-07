@@ -72,6 +72,10 @@ module akra {
         images?: IColladaImageLoadOptions;
 
         name?: string;
+
+#ifdef DEBUG
+        debug?: bool; /*remove me*/
+#endif
     }
 
     // xml

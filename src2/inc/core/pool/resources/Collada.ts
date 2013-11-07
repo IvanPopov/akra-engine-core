@@ -20,7 +20,11 @@
 #include "io/files.ts"
 #include "util/util.ts"
 
+#ifdef DEBUG
+#define COLLADA_DEBUG true
+#else
 #define COLLADA_DEBUG false
+#endif
 
 #if COLLADA_DEBUG == true
 #define CLD_PRINT(context, ...) LOG("[COLLADA [" + context.findResourceName() + "]]", __VA_ARGS__)
@@ -266,7 +270,10 @@ module akra.core.pool.resources {
             scene           : true,
             extractPoses    : true,
             skeletons       : [],
-            images          : { flipY: false }
+            images          : { flipY: false },
+#ifdef COLLADA_DEBUG
+            debug          : false
+#endif
         };
 
         private static SCENE_TEMPLATE: IColladaLibraryTemplate[] = [
@@ -678,7 +685,7 @@ module akra.core.pool.resources {
                 }
                 
             }
-
+            
             return pAccess.data;
         }
 
@@ -1012,6 +1019,9 @@ module akra.core.pool.resources {
 
                     case "INV_BIND_MATRIX":
                         pJoints.inputs["INV_BIND_MATRIX"] = this.COLLADAInput(pXMLData);
+                        if (this.options.debug) {
+                            console.log(pJoints.inputs["INV_BIND_MATRIX"]);
+                        }
                         break;
 
                     default:
@@ -1547,8 +1557,8 @@ module akra.core.pool.resources {
             };
 
             this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
-                switch (sName) {
-                    case "profile_COMMON":
+                switch (sName.toLowerCase()) {
+                    case "profile_common":
                         pEffect.profileCommon = this.COLLADAProfileCommon(pXMLData);
                         pEffect.profileCommon.technique.value.name = pEffect.id;
                         break;
@@ -2439,6 +2449,13 @@ module akra.core.pool.resources {
 
                                 pData = pDataExt;
                                 pDecl = [VE_FLOAT3(sSemantic), VE_END(16)];
+// #if COLLADA_DEBUG == true
+//                                 if (this.options.debug) {
+//                                     CLD_PRINT(this, "[add vertex data]");
+//                                     console.log(pDecl);
+//                                     console.log(pData);
+//                                 }
+// #endif
                                 break;
                             case DeclUsages.TEXCOORD:
                             case DeclUsages.TEXCOORD1:

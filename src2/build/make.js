@@ -78,6 +78,7 @@ var options = {
     declaration: false,
     gui: false,
     filedrop: false,
+    filesave: false,
     preprocess: false,
     clean: false, //clean tests data instead build
     listOnly: false, //list available tests
@@ -276,6 +277,14 @@ var params = [
         }
     },
     {
+        key: ["filesave-api"],
+        shortKey: null,
+        desc: "Define FILESAVE_API macro.",
+        logic: function (key, argv) {
+            options.filesave = true;
+        }
+    },
+    {
         key: ["preprocess"],
         shortKey: null,
         desc: "Preprocessing only.",
@@ -308,15 +317,8 @@ if (process.argv.length < 3) {
 }
 
 
-
-
-function readKey(sOption, i) {
-	options[sOption] = process.argv[i];
-	if (!isDef(options[sOption])) usage();
-}
-
 //parse arguments of this script
-function parseArguments2() {
+function parseArguments() {
     var argv = process.argv.slice(0);
 
     //first arguments is [node]
@@ -349,118 +351,13 @@ function parseArguments2() {
                 break;
             }
 
-            console.log(arg);
-            //options.files.push(arg);
+            options.files.push(arg);
         }
         else {
             var opt = opts[0];
             opt.logic(arg, argv);
         }
     }
-}
-
-function parseArguments() {
-	for (var i = 2, sArg, sTarget; i < process.argv.length; ++ i) {
-
-		sArg = process.argv[i];
-
-		switch (sArg) {
-			case '--compress':
-			case '-z':
-				options.compress = true;
-				break;
-			case '--ES6':
-				options.capability = "ES6";
-				break;
-			case '--target':
-			case '-t':
-				sTarget = process.argv[++i].toUpperCase();
-
-				if (sTarget === "TESTS") {
-					options.target.tests = true;
-					options.target.core = false;
-				}
-				else if (sTarget === "ALL") {
-					options.target.tests = true;
-					options.target.core = true;
-				}
-
-				break;
-			case '--html':
-				options.testsFormat.html = true;
-				break;
-			case '--gui':
-				options.gui = true;
-				break;
-			case '--filedrop-api':
-				options.filedrop = true;
-				break;
-			case '--nw':
-				options.testsFormat.nw = true;
-				break;
-			case '--js':
-				options.testsFormat.js = true;
-				break;
-			case '--debug':
-				options.debug = true;
-				break;
-			case '--no-debug':
-			case '--release':
-				options.debug = false;
-				break;
-			case '--clean':
-				options.clean = true;
-				break;
-			case '--declaration':
-				options.declaration = true;
-				break;
-			case '--no-const':
-				options.noConst = true;
-				break;
-			case '--preprocess':
-				options.preprocess = true;
-				break;
-			case '--tests':
-			case '-s':
-				readKey("pathToTests", ++ i);
-				break;
-			case '--test':
-			case '-c':
-				readKey("testDir", ++ i);
-				break;
-			case '-o':
-            case '--out':
-                readKey("outputFolder", ++i);
-                break;
-			case '-d':
-			case '--build':
-				readKey("buildDir", ++ i);
-				break;
-			case '-l':
-			case '--list':
-				options.listOnly = true;
-				break;
-			case '-m':
-			case '--do-magic':
-				options.magicMode = true;
-				break;
-			case '--webgl-debug':
-			case '-w':
-				 options.webglDebug = true;
-				 break;
-			default:
-				if (sArg.charAt(0) == '-') {
-					console.log("unknown arguments detected: " + sArg, "\n");
-					usage();
-				}
-
-				if (!sArg.length || sArg.match(/\s+/ig)) {
-					break;
-				}
-
-				options.files.push(sArg);
-		}
-	};
 }
 
 function verifyOptions() {
@@ -475,36 +372,31 @@ function verifyOptions() {
 	options.outputFolder = path.dirname(options.outputFolder);
 
 	if (!options.includeDir) {
-		options.includeDir = "inc/";//options.buildDir +
-
+		options.includeDir = "inc/";
 	}
 
-	if (options.testsFormat.html 	== false &&
-		options.testsFormat.nw 	== false &&
-		options.testsFormat.js 	== false) {
-		options.testsFormat.html = true;
+    //default is html
+    var formats = options.testsFormat;
+	if (!formats.html && !formats.nw && !formats.js) {
+        formats.html = true;
 	}
 
-	// for (var i in options.files) {
-	// 	options.files[i] = (path.normalize(options.buildDir + "/" + options.files[i]));
-	// 	console.log(">>>>>", options.files[i])
-	// }
-
+    //use default output file
 	if (options.outputFile == null || options.outputFile == "") {
-		var pOutExt = ".out.js";
+		var ext = ".out.js";
 
 		if (options.declaration) {
-			pOutExt = ".d.ts";
+			ext = ".d.ts";
 		}
 
 		if (options.preprocess) {
-			pOutExt = ".ts";
+			ext = ".ts";
 		}
 
-		options.outputFile = options.files[0] + pOutExt;
+		options.outputFile = options.files[0] + ext;
 	}
 }
-
+/** @deprecated */
 function pwd() {
 	var pwd = spawn("pwd");
 	pwd.stdout.on('data', function (data) {
@@ -534,6 +426,11 @@ function preprocess() {
 		console.log("Build with FILEDROP API.");
 	}
 
+    if (options.filesave) {
+        capabilityOptions.push("-D FILESAVE_API=1");
+        console.log("Build with FILESAVE API.");
+    }
+
 	if (options.debug) {
 		capabilityOptions.push("-D DEBUG=DEBUG");
 		console.log("Debug build.");
@@ -546,28 +443,27 @@ function preprocess() {
 
 	if (options.capability == null) {
 		capabilityMacro = "";
-		console.log("EcmaScript 6 capability mode: OFF");
 	}
 	else {
-		console.log("EcmaScript 6 capability mode: ON");
+		console.log("EcmaScript 6 capability enabled.");
 	}
 
+    //path to mcpp preprocessor
 	var cmd = (WIN_PLATFORM? options.baseDir + "/": "") + "mcpp";
-	var argv = ("-P -C -e utf8 -I " + options.includeDir + " -I ./"/* + options.buildDir*/ + " -I " +
+	var argv = ("-P -C -e utf8 -I " + options.includeDir + " -I ./" + " -I " +
 		options.baseDir + "/definitions/ -j -+ -W 0 -k " +
 		capabilityMacro + " " + options.files.join(" ")).split(" ");
 
-	//console.log(options.files);
 	console.log(cmd + " " + argv.join(" "));
 
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
 	var stdout = new Buffer(BUFFER_SIZE);
-	var iTotalChars = 0;
+	var totalCharacters = 0;
 
 	mcpp.stdout.on('data', function (data) {
-	  data.copy(stdout, iTotalChars);
+	  data.copy(stdout, totalCharacters);
 
-	  iTotalChars += data.length;
+	  totalCharacters += data.length;
 	});
 
 	mcpp.stderr.on('data', function (data) {
@@ -582,28 +478,35 @@ function preprocess() {
 	  	options.pathToTemp = options.outputFolder + "/" + options.tempFile;
 
 		if (options.preprocess) {
-			fs.writeFileSync(options.outputFolder + "/" + options.outputFile, stdout.slice(0, iTotalChars).toString('utf8'), "utf8");
+			fs.writeFileSync(options.outputFolder + "/" + options.outputFile, stdout.slice(0, totalCharacters).toString('utf8'), "utf8");
 			console.log("preprocessed to: ", options.outputFolder + "/" + options.outputFile);
 		}
 		else {
 			console.log("preprocessed to: ", options.pathToTemp);
-			fs.writeFileSync(options.pathToTemp, stdout.slice(0, iTotalChars), "utf8");
+			fs.writeFileSync(options.pathToTemp, stdout.slice(0, totalCharacters), "utf8");
 			compile();
 		}
 	  }
 	});
 }
 
-function compress(sFile) {
-	console.log(">>>>>>>>>>>>>>>>>>>>>>>");
+function compress(file, callback) {
+	//console.log(">>>>>>>>>>>>>>>>>>>>>>>");
+    callback = callback || function (err) {
+        if (err) {
+            throw err;
+            process.exit(1);
+        }
+    }
 	
 	var cmd = "java";
+    var outputPath = file + ".min";
 	var argv = (
 		"-jar " + 
 		options.baseDir + "/compiler.jar " +
-		sFile + 
+		file +
 		//" --warning_level=VERBOSE " + 
-		" --js_output_file " + sFile + ".min" + 
+		" --js_output_file " + outputPath +
 		" --language_in=ECMASCRIPT5_STRICT" + 
 		// " --compilation_level=ADVANCED_OPTIMIZATIONS" + 
 		""
@@ -612,29 +515,37 @@ function compress(sFile) {
 
 	var closure = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE,  stdio: 'inherit' });
 
+    console.log(cmd + " " + argv.join(" "));
+
 	closure.on('exit', function (code) {
 		console.log('compression exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 
 		if (code == 0) {
-
-		  	console.log("compressed to: ", sFile);
+		  	console.log("compressed to: ", file);
+            callback(null, outputPath);
 		}
 		else {
 			console.log("TODO: REMOVE TEMP COMPRESSED FILE >> ");
-		  	process.exit(1);
-		}
+            callback(new Error("code: " + code));
+        }
 	});
 }
 
-function compile() {
-   
+function compile(callback) {
+    callback = callback || function (err) {
+        if (err) {
+            throw err;
+            process.exit(1);
+        }
+    }
+
 	console.log("\n> compilation started (" + this.process.pid + ")  \n");
 
 	var cmd = "node";
-	var sOutputFolder = options.outputFolder + "/" + (options.debug? "DEBUG": "RELEASE");
-	var sOutputFile = sOutputFolder + "/" + options.outputFile;
+	var outputFolder = options.outputFolder + "/" + (options.debug? "DEBUG": "RELEASE");
+	var outputFile = outputFolder + "/" + options.outputFile;
 
-	wrench.mkdirSyncRecursive(sOutputFolder, 0777);
+	wrench.mkdirSyncRecursive(outputFolder, 0777);
 
 	var argv = (  
 		options.baseDir + "/tsc.js -c --target ES5  " +
@@ -642,7 +553,7 @@ function compile() {
 		// options.buildDir + "/bin/RELEASE/akra.d.ts " +
 		//options.baseDir + "/WebGL.d.ts " +
 		options.pathToTemp + " --out " +
-		sOutputFile +
+		outputFile +
 		// (options.compress? " --comments --jsdoc ": "") +
 		(options.declaration? " --declaration ": "") +
 		" --cflowu " + (!options.noConst? " --const ": "")).replace(/\s+/ig, " ").split(" ");
@@ -655,33 +566,46 @@ function compile() {
 	  console.log('compilation exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 
 	  if (code == 0) {
-	  	console.log("compiled to: ", sOutputFile);
+	  	console.log("compiled to: ", outputFile);
 
 		fs.unlink(options.pathToTemp, function (err) {
 			if (err && fs.existsSync(options.pathToTemp)) {
-				throw err;
+				return callback(err);
 			}
 
 			console.log("temp file: " + options.pathToTemp + " removed.\n\n");
 
-			var pFetchResult = {css: [], script: [], data: null};
+			var fetchResult = {
+                css: [],
+                script: [],
+                data: null
+            };
 			
 		    var gitignore = fetchDeps(
-		    	sOutputFolder,
-		    	fs.readFileSync(sOutputFile, "utf-8"), 
-		    	pFetchResult);
+		    	outputFolder,
+		    	fs.readFileSync(outputFile, "utf-8"),
+		    	fetchResult);
 
 
-		    fs.writeFileSync(sOutputFile, pFetchResult.data, "utf-8");
+		    fs.writeFileSync(outputFile, fetchResult.data, "utf-8");
 
 			if (options.compress) {
-				compress(sOutputFile);
+				compress(outputFile, function(err, file) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    else {
+                        callback(null, file, gitignore);
+                    }
+                });
 			}
-
+            else {
+                callback(null, outputFile, gitignore);
+            }
 		});
 	  }
 	  else {
-	  	process.exit(1);
+        callback(new Error("preproces failed with code: " + code));
 	  }
 	});
 
@@ -691,29 +615,29 @@ function doMagic() {
 
 	scanDir(options.includeDir, function (err, files) {
 		for (var i in files) {
-			var sFile = files[i].path;
-			if (path.extname(sFile).toLowerCase() !== ".ts") {
+			var file = files[i].path;
+			if (path.extname(file).toLowerCase() !== ".ts") {
 				continue;
 			}
-			var sData = fs.readFileSync(sFile, "utf8");
-			var sLines = sData.split("\n");
+			var data = fs.readFileSync(file, "utf8");
+			var lines = data.split("\n");
 
-			var pIncorrectComments = [];
+			var incorrectComments = [];
 
-			for (var n in sLines) {
-				var sLine = sLines[n];
-				var iPos = sLine.indexOf("//");
-				if (iPos != -1) {
-					if (!sLine.substr(0, iPos).match(/^[\s]*$/ig)) {
-						pIncorrectComments.push({n: n, comment: sLine});
+			for (var n in lines) {
+				var line = lines[n];
+				var pos = line.indexOf("//");
+				if (pos != -1) {
+					if (!line.substr(0, pos).match(/^[\s]*$/ig)) {
+						incorrectComments.push({n: n, comment: line});
 					}
 				}
 			}
 
-			if (pIncorrectComments.length > 0) {
-				console.log("\nfile: " + sFile);
-				for (var n in pIncorrectComments) {
-					console.log("\t line " + pIncorrectComments[n].n + ":: " + pIncorrectComments[n].comment);
+			if (incorrectComments.length > 0) {
+				console.log("\nfile: " + file);
+				for (var n in incorrectComments) {
+					console.log("\t line " + incorrectComments[n].n + ":: " + incorrectComments[n].comment);
 				}
 			}
 		}
@@ -1037,11 +961,11 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		" *--------------------------------------------*/\n\n\n" + 
 		sTestData;
 
-	var pAdditionalScripts = [];//findDepends(sTestData, /\/\/\/\s*@script\s+([^\s]+)\s*/ig);
+	var pAdditionalScripts = [];
 	var sAdditionalCode = "";
 
 
-	var pAdditionalCSS = [];//findDepends(sTestData, /\/\/\/\s*@css\s+([^\s]+)\s*/ig);
+	var pAdditionalCSS = [];
 	var sAdditionalCSS = "";
 
 
@@ -1101,9 +1025,6 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
                   </html>";
     
     
-
-
-    //fetchDeps(sDir, findDepends(sTestData, /\/\/\/\s*@dep\s+([\w\d\.\-\/\:\-\>]+)\s*/ig));
 
 
     function writeOutput(sOutputFile, pData) {
@@ -1418,8 +1339,8 @@ function addTestDirectory(sTestDir, sTestFile) {
 
 
 //=================================
-parseArguments2();
-//parseArguments();
+parseArguments();
+
 verifyOptions();
 
 process.chdir(options.buildDir);

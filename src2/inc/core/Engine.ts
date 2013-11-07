@@ -12,7 +12,7 @@
 
 //pack_resources(map, ...additional_files: string[]) - generate archive with resources and encode it into base64 string
 
-///@CORE_ARA: |pack_resources({data}/core.map, {data}/effects/floatSpecialFunctions.afx, {data}/textures)|stringify()
+///@CORE_ARA: |pack_resources({data}/core.map, {data}/effects/floatSpecialFunctions.afx)|stringify()
 
 #endif
 
@@ -65,6 +65,10 @@
 
 #ifdef FILEDROP_API
 #include "io/filedrop.ts"
+#endif
+
+#ifdef FILESAVE_API
+#include "io/save.ts"
 #endif
 
 #include "io/Exporter.ts"

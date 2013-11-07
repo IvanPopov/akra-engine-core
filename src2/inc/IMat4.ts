@@ -107,6 +107,7 @@ module akra {
 		toQuat4(q4fDestination?: IQuat4): IQuat4;
 		toRotationMatrix(m4fDestination?: IMat4): IMat4;
 		toString(): string;
+		toArray(pDest?: float[]): float[];
 
 		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
 		rotateLeft(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;

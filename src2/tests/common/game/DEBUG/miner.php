@@ -6,7 +6,7 @@
         <script type="text/javascript" src="../../../../data/ui/3d-party/jQuery/jquery-1.9.1.js"></script>
 		<script type="text/javascript" src="../../../../data/ui/3d-party/jQuery/jquery-ui.js"></script>
         <!-- GENERATED AUTOMATICALLY -->
-        <script type="text/javascript" src="../../../../bin/RELEASE/akra.js" data="../../../../data" ></script>
+        <script type="text/javascript" src="../../../../bin/DEBUG/akra.js" data="../../../../data" ></script>
         <script type="text/javascript" src="../../../../data/js/Progress.js"></script>
         <script type="text/javascript" src="../../../../data/3d-party/dat.gui/dat.gui.js"></script>
     </head>                              			

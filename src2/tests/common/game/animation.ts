@@ -66,6 +66,10 @@ module akra {
 		loader: pLoader,
 		deps: {
 			files: [
+				// {path: "models/generated_artery.DAE", name: "GENERATED_ARTERY"},
+				{path: "models/artery_controller.DAE", name: "GENERATED_ARTERY"},
+
+
 				{path: "models/miner/miner.DAE", name: "MINER"},
 				{path: "models/miner/idle0.DAE", name: "ANIM_MINER_IDLE0"},
 				{path: "models/miner/idle1.DAE", name: "ANIM_MINER_IDLE1"},
@@ -78,7 +82,7 @@ module akra {
 
 				{path: "textures/light_icon.png", name: "LIGHT_ICON"},
 
-				{path: "models/cube.DAE", name: "CUBE"},
+				{path: "models/cube.DAE", name: "CUBE"}
 
 				// {path: "effects/custom/heatmap.afx"}
 			],
@@ -134,6 +138,12 @@ module akra {
 		// 	}
 		// });
 
+		var pGenArtery: ICollada = <ICollada>pRmgr.colladaPool.findResource("GENERATED_ARTERY");
+		pGenArtery.options.debug = true;
+		pGenArtery.options.wireframe = true;
+		var pGenArteryModel: IModelEntry = pGenArtery.attachToScene(pScene);
+		console.log(pGenArteryModel);
+
 
 		util.navigation(pViewport);
 
@@ -149,6 +159,8 @@ module akra {
 		// pLight.params.diffuse.set(1.);
 		// pLight.params.specular.set(1.);
 		// pLight.params.attenuation.set(0.5, 0, 0);
+
+
 
 		function animateLight(pLight: IOmniLight, pSprite: ISprite): void {
 			var i = 1000;
@@ -281,11 +293,11 @@ module akra {
 	    // pGUI.addColor(pViewer, 'waveColor');
 	    // pGUI.addColor(pViewer, 'waveStripColor');
     	pMiner.options.wireframe = true;
-		var pModel: ISceneNode = pMiner.attachToScene(pScene);
-		pModel.addController(pController);
-		pModel.scale(.5);
+		// var pModel: ISceneNode = pMiner.attachToScene(pScene);
+		// pModel.addController(pController);
+		// pModel.scale(.5);
 
-		pController.play(0);
+		// pController.play(0);
 		
 	}
 

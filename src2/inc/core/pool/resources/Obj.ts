@@ -146,7 +146,7 @@ module akra.core.pool.resources {
 		    var pNormalsData: Float32Array = new Float32Array(this._pNormals);
 		    var pTexcoordsData: Float32Array = new Float32Array(this._pTextureCoords);
 
-		    console.log(pVerticesData, pNormalsData)
+		    // console.log(pVerticesData, pNormalsData)
 
 		    var pVertexIndicesData: Float32Array = new Float32Array(this._pVertexIndexes);
 		    var pNormalIndicesData:Float32Array = new Float32Array(this._pNormalIndexes);

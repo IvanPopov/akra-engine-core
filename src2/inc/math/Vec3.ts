@@ -307,6 +307,13 @@ module akra.math {
             return "[x: " + this.x + " ,y: " + this.y + ", z: " + this.z + "]";
         };
 
+        inline toArray(pDest: float[] = []): float[] {
+            pDest[0] = this.x;
+            pDest[1] = this.y;
+            pDest[2] = this.z;
+            return pDest;
+        }
+
         toTranslationMatrix(m4fDestination?: IMat4): IMat4{
             if(!isDef(m4fDestination)){
                 m4fDestination = new Mat4(1.);

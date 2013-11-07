@@ -3,6 +3,8 @@
 
 #include "dat.gui.d.ts"
 
+declare var saveAs: FileSaver;
+
 module akra {
 
 	#include "setup.ts"
@@ -88,6 +90,10 @@ module akra {
 	var pRmgr: IResourcePoolManager 	= pEngine.getResourceManager();
 	var pScene: IScene3d 				= pEngine.getScene();
 
+	var pCoordsSrc: IVec3[];
+	var pCoordsDst: IVec3[];
+
+	
 
 	function main(pEngine: IEngine): void {
 		setup(pCanvas, pUI);
@@ -152,6 +158,42 @@ module akra {
 	    	pSlices.push(pTex);
 	    }
 
+	    io.createFileDropArea(document.body, {
+			drop: (file: File, content, format, e: DragEvent): void => {
+				var pModel: ICollada = <ICollada>pRmgr.colladaPool.createResource("dynamic" + sid());
+				pModel.parse(content, {wireframe: true, debug: true});
+				pModel.notifyLoaded();
+
+				var pRoot: ISceneNode = pModel.attachToScene(pScene);
+
+				var pRootJoint: ISceneNode = <ISceneNode>pRoot.findEntity("joint0");
+				// console.log(pRootJoint);
+				pRootJoint.explore((pJoint: ISceneNode) => {
+					var b: ISceneModel = util.basis(pScene);
+					b.scale(.01);
+					b.attachToParent(pScene.getRootNode()); 
+					pJoint.update();
+					// b.setPosition(pJoint.worldPosition);
+					b.setInheritance(ENodeInheritance.ALL);
+					b.attachToParent(pJoint);
+					// console.log(pJoint.worldMatrix.transpose(mat4()).toArray());
+				});
+
+	    		// console.log(pCoordsSrc, pCoordsDst)
+	    		var pParam: IAnimationParameter = createSpline(pCoordsDst);
+	    		for (var k: int = 0; k < pCoordsSrc.length; k ++) {
+		    		//параметр на оригинальной кривой, именно его будем сопоставлять с новой кривой
+		    		var t: float = <float>k / <float>pCoordsSrc.length;
+		    		//новый центр координат
+		    		var s: IVec3 = (<IPositionFrame>pParam.frame(t)).translation;
+		    		var pJoint: ISceneNode = <ISceneNode>pRoot.findEntity("joint" + k);
+		    		pJoint.update();
+		    		pJoint.setWorldPosition(s);
+	    		}
+			}
+		});
+
+
 	    var pArteriesModelObj: IModel = pRmgr.loadModel(DATA + "models/arteries_hp.obj", 
 	    	{
 	    		shadows: false,
@@ -161,6 +203,7 @@ module akra {
 					z: {index: 1, inverse: false}
 	    		}
 	    	});
+
 	    var pArteriesMeshObj: IMesh = null;
 	    var pArteriesObj: IModelEntry = null;
 	    var pArteriesSceneModelObj: ISceneModel = null;
@@ -238,6 +281,377 @@ module akra {
 				pBasis.setPosition(v);
 			}
 	    }
+
+
+
+	    function generateModel(pParent: ISceneNode, pModelData: 
+	    {
+	    	positions: {
+	    		data: Float32Array; 
+	    		indexes: Float32Array;
+	    	}; 
+	    	normals: {
+	    		data: Float32Array;
+	    		indexes: Float32Array;
+	    	};
+	    }): void {
+			fopen(DATA + "/models/coord4.txt", "r").read((err, data) => {
+				var pCoords: IVec3[] = parsePoydaFileCurveFromGodunov(data);
+				 
+				for (var i: int = 0; i < pCoords.length; ++ i) {
+					var v: IVec4 = pParent.worldMatrix.multiplyVec4(vec4(pCoords[i], 1.));
+					pCoords[i].set(v.xyz);
+				}
+
+				var pColladaDocument: Document = document.implementation.createDocument(null, "COLLADA", null);
+				var pRootNode: Element = pColladaDocument.documentElement;
+				var pAssetNode: DocumentFragment = util.parseHTML(
+					"<asset>\n\
+					    <contributor>\n\
+					      <author>IvanPopov</author>\n\
+					      <authoring_tool>Akra Engine</authoring_tool>\n\
+					      <comments></comments>\n\
+					    </contributor>\n\
+					    <created>" + (new Date).toISOString() + "</created>\n\
+					    <modified>" + (new Date).toISOString() + "</modified>\n\
+					    <unit meter=\"1.\" name=\"meter\"/>\n\
+					    <up_axis>Y_UP</up_axis>\n\
+					  </asset>"
+				);
+
+				pRootNode.appendChild(pAssetNode);
+
+				var pSceneNode: DocumentFragment = util.parseHTML(
+					"<scene>\n\
+						<instance_visual_scene url=\"#unnamed_scene\"/>\n\
+					</scene>"
+				);
+
+				var pLibraryVisualScenesNode: DocumentFragment = util.parseHTML(
+					"<library_visual_scenes>\n\
+	    				<visual_scene id=\"unnamed_scene\" name=\"unnamed_scene\">\n\
+	    				</visual_scene>\n\
+	    			</library_visual_scenes>"
+	    		);
+
+	    		function createFloatArrayNode(id: string, pArray: any): Element {
+	    			var sData: string = "";
+	    			for (var i: int = 0; i < pArray.length; ++ i) {
+	    				sData += pArray[i].toString() + " ";
+	    			}
+
+	    			return util.parseHTML(
+						"<float_array id=\"" + id + "\" count=\"" + pArray.length + "\">" + 
+		    				sData +
+		    			"</float_array>"
+		    		).childNodes[0];
+	    		}
+
+	    		function createNameArrayNode(id: string, pArray: any): Element {
+	    			var sData: string = "";
+	    			for (var i: int = 0; i < pArray.length; ++ i) {
+	    				sData += pArray[i].toString() + " ";
+	    			}
+
+	    			return util.parseHTML(
+						"<Name_array id=\"" + id + "\" count=\"" + pArray.length + "\">" + 
+		    				sData +
+		    			"</Name_array>"
+		    		).childNodes[0];
+	    		}
+
+
+
+
+				//GENERATE SCENE HIERARCHY
+
+	    		var pVisualSceneNode: Element = <Element>(<any>pLibraryVisualScenesNode.childNodes[0]).children[0];
+
+	    		function createNode(sID: string = null, sName: string = null, sSID: string = null, sType: string = "NODE", m4fTransform: IMat4 = null): Element {
+	    			return util.parseHTML(
+						"<node " + (sID? " id=\"" + sID + "\" ": "") + (sName? " name=\"" + sName + "\" ": "") + 
+						(sSID? " sid=\"" + sSID + "\" ": "") + "type=\"" + sType + "\">" + 
+						(m4fTransform? "<translate>" + m4fTransform.getTranslation(vec3()).toArray().join(" ") + "</translate>": "") + 
+						"</node>"
+		    		).childNodes[0];
+	    		}
+
+	    		//root <node /> of scene
+	    		var pSceneRoot: Element = createNode(null, "root");
+	    		var pTempRoot: ISceneNode = pScene.createNode();
+	    		var pRootBone: Element = pSceneRoot;
+
+
+	    		//SKIN 
+	    		var pLibraryControllersNode: Element = util.parseHTML(
+	    			"<library_controllers>\n\
+					    <controller id=\"artery-skin-skin\">\n\
+					      <skin source=\"#artery-skin\">\n\
+					      </skin>\n\
+					    </controller>\n\
+					</library_controllers"
+				).childNodes[0];
+
+				var pSkinNode: Element = pLibraryControllersNode.children[0].children[0];
+				var pBindShapeMatrixNode: Element = util.parseHTML("<bind_shape_matrix>1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</bind_shape_matrix>").childNodes[0];
+
+				pSkinNode.appendChild(pBindShapeMatrixNode);
+
+				
+
+				//END OF SKIN
+
+				var pBoneNames: string[] = [];
+				var pBoneOffsetMatrices: float[] = [];
+				var pWeights: float[] = [1.];
+
+	    		for (var i = 0; i < pCoords.length; ++ i) {
+	    			var id: string = "joint" + i;
+	    			var name: string = "Joint_" + i;
+	    			var sid: string = "Bone" + i;
+
+	    			var pTempNode: ISceneNode = pScene.createNode(sid);
+
+	    			pTempNode.attachToParent(pTempRoot);
+	    			pTempNode.update();
+	    			pTempNode.setWorldPosition(pCoords[i]);
+	    			pTempNode.update();
+	    			pTempRoot = pTempNode;
+
+	    			var pTempJoint: Element = createNode(id, name, sid, "JOINT", pTempNode.localMatrix);
+	    			pRootBone = <Element>pRootBone.appendChild(pTempJoint);
+	    			pBoneNames.push(sid);
+	    			pBoneOffsetMatrices = pBoneOffsetMatrices.concat(pTempNode.worldMatrix.inverse(mat4()).transpose().toArray());
+	    		}
+
+	    		var pPositions: Float32Array = pModelData.positions.data;
+
+	    		var pVCount: float[] = [];
+				var pV: float[] = [];
+
+	    		for (var i: int = 0; i < pPositions.length; i += 3) {
+		    		var v: IVec3 = vec3(pPositions[i], pPositions[i + 1], pPositions[i + 2]);
+		    		var k: uint = findClosestVertex(pCoords, v);
+
+		    		pVCount.push(1);
+		    		pV.push(k, 0);
+		    	}
+
+		    	var pVertexWeightsNode: Element = <Element>util.parseHTML(
+		    		"<vertex_weights count=\"" + (pPositions.length / 3) + "\">\n\
+		          		<input semantic=\"JOINT\" source=\"#artery-skin-skin-joints\" offset=\"0\"/>\n\
+		          		<input semantic=\"WEIGHT\" source=\"#artery-skin-skin-weights\" offset=\"1\"/>\n\
+		          	<vcount>" + pVCount.join(" ") + "</vcount><v>" + pV.join(" ") + "</v>"
+		        ).childNodes[0];
+
+
+	    		var pSourceJointsNode: Element = <Element>util.parseHTML("<source id=\"artery-skin-skin-joints\"></source>").childNodes[0];
+	    		pSourceJointsNode.appendChild(createNameArrayNode("artery-skin-skin-joints-array", pBoneNames));
+	    		pSourceJointsNode.appendChild(util.parseHTML(
+						"<technique_common>\n\
+				            <accessor source=\"#artery-skin-skin-joints-array\" count=\"" + String(pBoneNames.length) + "\" stride=\"1\">\n\
+				              <param name=\"JOINT\" type=\"Name\"/>\n\
+				        	</accessor>\n\
+				        </technique_common>"
+		    		).childNodes[0]);
+
+	    		var pSourceBindPosesNode: Element = <Element>util.parseHTML("<source id=\"artery-skin-skin-bind_poses\"></source>").childNodes[0];
+	    		pSourceBindPosesNode.appendChild(createFloatArrayNode("artery-skin-skin-bind_poses-array", pBoneOffsetMatrices));
+	    		pSourceBindPosesNode.appendChild(util.parseHTML(
+						"<technique_common>\n\
+				            <accessor source=\"#artery-skin-skin-bind_poses-array\" count=\"" + String(pBoneOffsetMatrices.length / 16) + "\" stride=\"16\">\n\
+				              <param name=\"TRANSFORM\" type=\"float4x4\"/>\n\
+				        	</accessor>\n\
+				        </technique_common>"
+		    		).childNodes[0]);
+
+
+
+	    		var pSourceWeightsNode: Element = <Element>util.parseHTML("<source id=\"artery-skin-skin-weights\"></source>").childNodes[0];
+	    		pSourceWeightsNode.appendChild(createFloatArrayNode("artery-skin-skin-weights-array", pWeights));
+	    		pSourceWeightsNode.appendChild(util.parseHTML(
+						"<technique_common>\n\
+				            <accessor source=\"#artery-skin-skin-weights-array\" count=\"" + String(pWeights.length) + "\" stride=\"1\">\n\
+				              <param name=\"WEIGHT\" type=\"float\"/>\n\
+				        	</accessor>\n\
+				        </technique_common>"
+		    		).childNodes[0]);
+
+	    		var pJointsNode: Element = util.parseHTML(
+	    			"<joints>\n\
+			          <input semantic=\"JOINT\" source=\"#artery-skin-skin-joints\"/>\n\
+			          <input semantic=\"INV_BIND_MATRIX\" source=\"#artery-skin-skin-bind_poses\"/>\n\
+			        </joints>"
+			    ).childNodes[0];
+
+
+	    		pSkinNode.appendChild(pSourceJointsNode);
+	    		pSkinNode.appendChild(pSourceBindPosesNode);
+	    		pSkinNode.appendChild(pSourceWeightsNode);
+	    		pSkinNode.appendChild(pJointsNode);
+	    		pSkinNode.appendChild(pVertexWeightsNode);
+
+	    		pVisualSceneNode.appendChild(pSceneRoot);
+
+	    		//MATERIALS
+
+	    		var pLibraryEffectsNode: Element = util.parseHTML(
+	    			"<library_effects>\n\
+			        	<effect id=\"bluePhong\">\n\
+				            <profile_COMMON>\n\
+				                <technique sid=\"phong1\">\n\
+				                    <phong>\n\
+				                        <emission>\n\
+				                            <color>0.0 0.0 0.0 1.0</color>\n\
+				                        </emission>\n\
+				                        <ambient>\n\
+				                            <color>0.0 0.0 0.0 1.0</color>\n\
+				                        </ambient>\n\
+				                        <diffuse>\n\
+				                            <color>1.0 0.0 0.0 1.0</color>\n\
+				                        </diffuse>\n\
+				                        <specular>\n\
+				                            <color>1.0 0.0 0.0 1.0</color>\n\
+				                        </specular>\n\
+				                        <shininess>\n\
+				                            <float>0.41</float>\n\
+				                        </shininess>\n\
+				                        <reflective>\n\
+				                            <color>1.0 1.0 1.0 1.0</color>\n\
+				                        </reflective>\n\
+				                        <reflectivity>\n\
+				                            <float>0.5</float>\n\
+				                        </reflectivity>\n\
+				                        <transparent>\n\
+				                            <color>1.0 1.0 1.0 1.0</color>\n\
+				                        </transparent>\n\
+				                        <transparency>\n\
+				                            <float>1.0</float>\n\
+				                        </transparency>\n\
+				                    </phong>\n\
+				                </technique>\n\
+				            </profile_COMMON>\n\
+				        </effect>\n\
+			    	</library_effects>"
+	    		);
+
+				var pLibraryMaterialsNode: Element = util.parseHTML(
+				    "<library_materials>\n\
+				        <material id=\"whiteMaterial\">\n\
+				            <instance_effect url=\"#bluePhong\"/>\n\
+				        </material>\n\
+				    </library_materials>"
+				);
+
+				pRootNode.appendChild(pLibraryEffectsNode);
+				pRootNode.appendChild(pLibraryMaterialsNode);
+				pRootNode.appendChild(pLibraryControllersNode);
+
+	    		//GENERATE GEOMETRY
+
+	    		var pLibraryGeometriesNode: DocumentFragment = util.parseHTML(
+					"<library_geometries>\n\
+	    				<geometry id=\"artery-skin\" name=\"artery-skin\">\n\
+	    					<mesh></mesh>\n\
+	    				</geometry>\n\
+	    			</library_geometries>"
+	    		);
+
+
+	    		var pMeshNode: Element = <Element>(<any>pLibraryGeometriesNode.childNodes[0]).children[0].children[0];
+	    		var pSourcePositionsNode: Element = <Element>util.parseHTML("<source id=\"artery-skin-positions\"></source>").childNodes[0];
+	    		var pSourceNormalsNode: Element = <Element>util.parseHTML("<source id=\"artery-skin-normals\"></source>").childNodes[0];
+	    		
+	    		
+	    		var pTransformedPositions
+
+	    		pSourcePositionsNode.appendChild(createFloatArrayNode("artery-skin-positions-array", pModelData.positions.data));
+	    		pSourcePositionsNode.appendChild(util.parseHTML(
+						"<technique_common>\n\
+				            <accessor source=\"#artery-skin-positions-array\" count=\"" + String(pModelData.positions.data.length / 3) + "\" stride=\"3\">\n\
+				              <param name=\"X\" type=\"float\"/>\n\
+				              <param name=\"Y\" type=\"float\"/>\n\
+				              <param name=\"Z\" type=\"float\"/>\n\
+				        	</accessor>\n\
+				        </technique_common>"
+		    		).childNodes[0]);
+
+	    		pSourceNormalsNode.appendChild(createFloatArrayNode("artery-skin-normals-array", pModelData.normals.data));
+	    		pSourceNormalsNode.appendChild(util.parseHTML(
+						"<technique_common>\n\
+				            <accessor source=\"#artery-skin-normals-array\" count=\"" + String(pModelData.normals.data.length / 3) + "\" stride=\"3\">\n\
+				              <param name=\"X\" type=\"float\"/>\n\
+				              <param name=\"Y\" type=\"float\"/>\n\
+				              <param name=\"Z\" type=\"float\"/>\n\
+				        	</accessor>\n\
+				        </technique_common>"
+		    		).childNodes[0]);
+
+	    		pMeshNode.appendChild(pSourcePositionsNode);
+	    		pMeshNode.appendChild(pSourceNormalsNode);
+
+	    		pMeshNode.appendChild(util.parseHTML(
+						"<vertices id=\"artery-skin-vertices\">\n\
+				          <input semantic=\"POSITION\" source=\"#artery-skin-positions\"/>\n\
+				        </vertices>"
+		    		).childNodes[0]);
+
+	    		var sIndexes: string = "";
+	    		var pPosInd: Float32Array = pModelData.positions.indexes;
+	    		var pNormInd: Float32Array = pModelData.normals.indexes;
+
+	    		for (var i: int = 0; i < pPosInd.length; ++ i) {
+	    			sIndexes += String(pPosInd[i]) + " " + String(pNormInd[i]) + " ";
+	    		}
+
+	    		pMeshNode.appendChild(util.parseHTML(
+		    			"<triangles material=\"unknown\" count=\"" + (pModelData.positions.indexes.length / 3) + "\">\n\
+				        	<input semantic=\"VERTEX\" source=\"#artery-skin-vertices\" offset=\"0\"/>\n\
+				        	<input semantic=\"NORMAL\" source=\"#artery-skin-normals\" offset=\"1\"/>\n\
+				        	<p>" + sIndexes + "</p>" +
+				        "</triangles>"
+				    ).childNodes[0]);
+
+
+	    		pRootNode.appendChild(pLibraryGeometriesNode);
+	    		pRootNode.appendChild(pLibraryVisualScenesNode);
+				pRootNode.appendChild(pSceneNode);
+
+				// var sResultName = "artery_geometry";
+				// pSceneRoot.appendChild(
+				// 	util.parseHTML(
+				// 		"<instance_geometry url=\"#artery-skin\">\n\
+				// 			<bind_material>\n\
+		  //                       <technique_common>\n\
+		  //                           <instance_material symbol=\"unknown\" target=\"#whiteMaterial\"/>\n\
+		  //                       </technique_common>\n\
+		  //                   </bind_material>\n\
+				// 		</instance_geometry>"
+		  //           ).childNodes[0]);
+
+				var sResultName = "artery_controller";
+				pSceneRoot.appendChild(
+					util.parseHTML(
+						"<instance_controller url=\"#artery-skin-skin\">\n\
+							<skeleton>#" + ("joint" + 0) + "</skeleton>\n\
+							<bind_material>\n\
+		                        <technique_common>\n\
+		                            <instance_material symbol=\"unknown\" target=\"#whiteMaterial\"/>\n\
+		                        </technique_common>\n\
+		                    </bind_material>\n\
+						</instance_controller>"
+		            ).childNodes[0]);
+	    		
+	    		// console.log(new XMLSerializer().serializeToString(pColladaDocument));
+				console.log(pRootNode);
+
+				pGUI.add({"save as COLLADA (.DAE)": () => {
+					saveAs(new Blob([new XMLSerializer().serializeToString(pColladaDocument)], {type: "text/xml"}), sResultName + ".DAE");	
+				}}, "save as COLLADA (.DAE)");
+				
+			});
+		}
+
 
 	    function parsePoydaFileCurveFromAG(content: string): IVec3[] {
 	    	var lines: string[] = content.split("\n");
@@ -333,16 +747,16 @@ module akra {
 
 	    	var pModel: IObj = <IObj>pRmgr.objPool.createResource("modified_artery");
 	    	(<any>pModel).setOptions({shadows: false});
-	    	pModel.uploadVertexes(pPositions, pIndexes);
+	    	(<any>pModel).uploadVertexes(pPositions, pIndexes);
 	    	var pNode: ISceneNode = pModel.attachToScene(pScene);
 	    }
 
 	    fopen(DATA + "/models/coord_real_ag.txt", "r").read((err, data) => {
 			var pCoords: IVec3[] = parsePoydaFileCurveFromAG(data);
 
+			pCoordsSrc = pCoords;
 
-
-			visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
+			// visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
 		});
 
 
@@ -377,7 +791,117 @@ module akra {
 					pCoords[i].set(v.xyz);
 				};
 
+				pCoordsDst = pCoords;
 				// visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
+
+				pGUI.add({"generate model": () => {
+					var pArteriesNode: ISceneModel = (<ISceneModel>pArteriesObj.child);
+					var pArteriesMesh: IMesh = pArteriesNode.mesh;
+					var pSubset: IMeshSubset = pArteriesMesh.getSubset(0);
+					
+					pArteriesNode.update();
+					var m4World: IMat4 = pArteriesNode.worldMatrix;
+
+					//vertices
+					var pPosVd: IVertexData = pSubset.data._getData("POSITION");
+					var pPosInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("POSITION");
+					
+					var iStride: int = pPosVd.stride;
+					var iAddition: int = pPosVd.byteOffset;
+					var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+
+					for (var i = 0; i < pPosInd.length; ++ i) {
+						pPosInd[i] = (pPosInd[i] * iTypeSize - iAddition) / iStride;
+					}
+
+					var pPos: Float32Array = new Float32Array(pPosVd.getData());
+					var pPosNew: Float32Array = new Float32Array(pPos.length);
+					var count: int = iStride / 4;
+
+					for (var i = 0; i < pPos.length; i += count) {
+						
+						var vPos: IVec3 = vec3(pPos[i], pPos[i + 1], pPos[i + 2]);
+						var vWorldPos: IVec4 = m4World.multiplyVec4(vec4(vPos, 1.));
+
+						pPosNew[i] = vWorldPos.x;
+						pPosNew[i + 1] = vWorldPos.y;
+						pPosNew[i + 2] = vWorldPos.z;
+					}
+
+
+					//NORMALS
+					// var pNormVd: IVertexData = pSubset.data._getData("NORMAL");
+					// var pNormInd: Float32Array = <Float32Array>pSubset.data.getIndexFor("NORMAL");
+
+					// var iStride: int = pNormVd.stride;
+					// var iAddition: int = pNormVd.byteOffset;
+					// var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
+
+					// for (var i = 0; i < pNormInd.length; ++ i) {
+					// 	pNormInd[i] = (pNormInd[i] * iTypeSize - iAddition) / iStride;
+					// }
+
+					// var pNorm: Float32Array = new Float32Array(pNormVd.getData());
+					// var pNormNew: Float32Array = new Float32Array(pNorm.length);
+					// var count: int = iStride / 4;
+
+					// for (var i = 0; i < pNorm.length; i += count) {
+						
+					// 	var vNorm: IVec3 = vec3(pNorm[i], pNorm[i + 1], pNorm[i + 2]);
+					// 	var vWorldNorm: IVec4 = m4World.multiplyVec4(vec4(vNorm, 1.));
+
+					// 	pNormNew[i] = vWorldNorm.x;
+					// 	pNormNew[i + 1] = vWorldNorm.y;
+					// 	pNormNew[i + 2] = vWorldNorm.z;
+					// }
+					var v = new Array(3), 
+						p: IVec3 = new Vec3, 
+						q: IVec3 = new Vec3, 
+						i, j, 
+						n: IVec3 = new Vec3, 
+						k;
+
+					var pNormNew: Float32Array = new Float32Array(pPosNew.length);
+					var pNormInd: Float32Array = pPosInd;
+
+				    for (i = 0; i < pPosNew.length; ++i) {
+				        pNormNew[i] = 0.;
+				    }
+
+				    for (i = 0; i < pPosInd.length; i += 3) {
+				        for (k = 0; k < 3; ++k) {
+
+				            j = pPosInd[i + k] * 3;
+				            v[k] = vec3([pPosNew[j], pPosNew[j + 1], pPosNew[j + 2]]);
+				        }
+
+				        v[1].subtract(v[2], p);
+				        v[0].subtract(v[2], q);
+				        p.cross(q, n);
+				        n.normalize();
+				        // n.negate();
+
+				        for (k = 0; k < 3; ++k) {
+				            j = pPosInd[i + k] * 3;
+				            pNormNew[j] = n.x;
+				            pNormNew[j + 1] = n.y;
+				            pNormNew[j + 2] = n.z;
+				        }
+				    }
+
+					///END
+
+					generateModel(pParent, {
+						positions: {
+							data: pPosNew, 
+							indexes: pPosInd
+						},
+						normals: {
+							data: pNormNew,
+							indexes: pNormInd
+						}
+					});
+				}}, "generate model");
 
 				pGUI.add({"transform to real": () => {
 					var pArteriesNode: ISceneModel = (<ISceneModel>pArteriesObj.child);

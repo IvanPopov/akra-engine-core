@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Sun Nov 03 2013 19:53:00 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Nov 07 2013 18:18:14 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/animation.ts
  * name: animation
@@ -405,6 +405,11 @@ var akra;
         loader: pLoader,
         deps: {
             files: [
+                // {path: "models/generated_artery.DAE", name: "GENERATED_ARTERY"},
+                {
+                    path: "models/artery_controller.DAE",
+                    name: "GENERATED_ARTERY"
+                }, 
                 {
                     path: "models/miner/miner.DAE",
                     name: "MINER"
@@ -448,8 +453,7 @@ var akra;
                 {
                     path: "models/cube.DAE",
                     name: "CUBE"
-                }, 
-                
+                }
             ]
         }
     };
@@ -490,6 +494,11 @@ var akra;
         // 		(<IDSViewport>pViewport).effect.delComponent("akra.custom.heatmap", 3, 0);
         // 	}
         // });
+        var pGenArtery = pRmgr.colladaPool.findResource("GENERATED_ARTERY");
+        pGenArtery.options.debug = true;
+        pGenArtery.options.wireframe = true;
+        var pGenArteryModel = pGenArtery.attachToScene(pScene);
+        console.log(pGenArteryModel);
         akra.util.navigation(pViewport);
         createSceneEnvironment(pScene, false, true, 10);
         pEngine.exec();
@@ -599,10 +608,10 @@ var akra;
         // pGUI.addColor(pViewer, 'waveColor');
         // pGUI.addColor(pViewer, 'waveStripColor');
         pMiner.options.wireframe = true;
-        var pModel = pMiner.attachToScene(pScene);
-        pModel.addController(pController);
-        pModel.scale(.5);
-        pController.play(0);
-    }
+        // var pModel: ISceneNode = pMiner.attachToScene(pScene);
+        // pModel.addController(pController);
+        // pModel.scale(.5);
+        // pController.play(0);
+            }
     akra.pEngine.bind("depsLoaded", main);
 })(akra || (akra = {}));

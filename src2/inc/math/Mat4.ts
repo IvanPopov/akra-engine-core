@@ -617,7 +617,7 @@ module akra.math {
 		    var fDeterminant: float = b00*b11 - b01*b10 + b02*b09 + b03*b08 - b04*b07 + b05*b06;
 
 		    if(fDeterminant === 0.){
-		        debug_assert(false,"обращение матрицы с нулевым детеминантом:\n" 
+		        debug_assert(false,"inversion of a matrix with zero determinant:\n" 
 		                        + this.toString());
 				//чтоб все не навернулось
 		        return m4fDestination.set(1.); 
@@ -846,6 +846,11 @@ module akra.math {
 		                + pData[__31].toFixed(iFixed) + ", " + pData[__32].toFixed(iFixed) + ', ' + pData[__33].toFixed(iFixed) + ', ' + pData[__34].toFixed(iFixed) + ',\n'
 		                + pData[__41].toFixed(iFixed) + ", " + pData[__42].toFixed(iFixed) + ', ' + pData[__43].toFixed(iFixed) + ', ' + pData[__44].toFixed(iFixed)+ ']';
 		};
+
+		toArray(pDest: float[] = new Array(16)): float[] {
+			//TODO: too slow :(
+			return retrieve(<float[]><any>this.data, pDest, 1, 0, 16) && pDest;
+		}
 
 		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4{
 			var pData: Float32Array = this.data;
