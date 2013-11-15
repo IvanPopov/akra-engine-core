@@ -1,0 +1,1 @@
+node "C:\Program Files (x86)\Microsoft SDKs\TypeScript\tsc.js" %*

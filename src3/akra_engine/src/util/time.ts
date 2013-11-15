@@ -1,0 +1,1 @@
+﻿export var now = (): uint => Date.now();
