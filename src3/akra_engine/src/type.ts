@@ -43,8 +43,8 @@
     return s;
 };
 
-export function isDefAndNotNull(x: any): boolean { return x != null };
-export function isDef(x: any): boolean { return x !== undefined };
+export var isDef = (x: any): boolean => x !== undefined;
+export var isDefAndNotNull = (x: any): boolean => x != null;
 export var isEmpty = (x: any): boolean => x.length == 0;
 export var isNull = (x: any): boolean => x === null;
 export var isBoolean = (x: any): boolean => typeof x === "boolean";

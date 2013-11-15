@@ -1,0 +1,15 @@
+﻿declare function typeOf(x: any): string;
+declare function isDef(x: any): boolean;
+declare function isDefAndNotNull(x: any): boolean;
+declare function isEmpty(x: any): boolean;
+declare function isNull(x: any): boolean;
+declare function isBoolean(x: any): boolean;
+declare function isString(x: any): boolean;
+declare function isNumber(x: any): boolean;
+declare function isFloat(x: any): boolean;
+declare function isInt(x: any): boolean;
+declare function isFunction(x: any): boolean;
+declare function isObject(x: any): boolean;
+declare function isArrayBuffer(x: any): boolean;
+declare function isBlob(x: any): boolean;
+declare function isArray(x: any): boolean;

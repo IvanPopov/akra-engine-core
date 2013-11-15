@@ -15,6 +15,14 @@ interface AIVec2 {
 	x: float;
 	y: float;
 
+    /*represents two-component vector from original vector*/
+    xx: AIVec2;
+    /*represents two-component vector from original vector*/
+    xy: AIVec2;
+    /*represents two-component vector from original vector*/
+    yx: AIVec2;
+    /*represents two-component vector from original vector*/
+    yy: AIVec2;
 	
 	set(): AIVec2;
 	set(fValue: float): AIVec2;
@@ -44,3 +52,6 @@ interface AIVec2 {
 
 	toString(): string;
 }
+
+
+declare var vec2: AIVec2Constructor;
