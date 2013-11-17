@@ -1,7 +1,4 @@
-﻿export var math = {
-    stackSize: 256
-};
-
+﻿
 export var unknownCode: uint = 0;
 export var unknownMessage: string = "Unknown code.";
 export var unknownName: string = "unknown";

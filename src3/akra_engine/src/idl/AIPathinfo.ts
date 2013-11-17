@@ -1,7 +1,7 @@
 // AIPathinfo interface
 // [write description here...]
 
-module akra {
+
 interface AIPathinfo {
 	path: string;
 	dirname: string;
@@ -17,5 +17,4 @@ interface AIPathinfo {
 	toString(): string;
 }
 
-}
-
+

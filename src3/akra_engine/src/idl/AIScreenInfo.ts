@@ -1,7 +1,7 @@
 // AIScreenInfo interface
 // [write description here...]
 
-module akra {
+
 interface AIScreenInfo {
 	width: int;
 	height: int;
@@ -9,6 +9,4 @@ interface AIScreenInfo {
 	pixelDepth: int;
 	colorDepth: int;
 }
-}
 
-#endif

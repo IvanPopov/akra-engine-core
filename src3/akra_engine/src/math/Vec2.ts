@@ -1,7 +1,13 @@
-/// <reference path="../idl/type.d.ts" />
+/// <reference path="../idl/common.d.ts" />
 /// <reference path="../idl/AIVec2.ts" />
 
+import gen = require("generate");
 import math = require("math");
+import abs = math.abs;
+import clamp = math.clamp;
+
+var pBuffer: AIVec2[];
+var iElement: uint;
 
 class Vec2 implements AIVec2 {
     x: float = 0.;
@@ -36,37 +42,35 @@ class Vec2 implements AIVec2 {
     }
 
     constructor();
-    constructor(fValue: float);
-    constructor(v2fVec: AIVec2);
-    constructor(pArray: float[]);
-    constructor(fValue1: float, fValue2: float);
-    constructor(fValue1?, fValue2?) {
-        var nArgumentsLength: uint = arguments.length;
+    constructor(xy: float);
+    constructor(xy: AIVec2);
+    constructor(xy: float[]);
+    constructor(x: float, y: float);
+    constructor(x?, y?) {
+        var n: uint = arguments.length;
+        var v: AIVec2 = this;
 
-        var v2fVec: AIVec2 = this;
-
-        switch (nArgumentsLength) {
+        switch (n) {
             case 1:
-                v2fVec.set(arguments[0]);
+                v.set(arguments[0]);
                 break;
             case 2:
-                v2fVec.set(arguments[0], arguments[1]);
+                v.set(arguments[0], arguments[1]);
                 break;
             default:
-                v2fVec.x = v2fVec.y = 0.;
-                break;
+                v.x = v.y = 0.;
         }
     }
 
     set(): AIVec2;
-    set(fValue: float): AIVec2;
-    set(v2fVec: AIVec2): AIVec2;
-    set(pArray: float[]): AIVec2;
-    set(fValue1: float, fValue2: float): AIVec2;
-    set(fValue1?, fValue2?): AIVec2 {
-        var nArgumentsLength: uint = arguments.length;
+    set(xy: float): AIVec2;
+    set(xy: AIVec2): AIVec2;
+    set(xy: float[]): AIVec2;
+    set(x: float, y: float): AIVec2;
+    set(x?, y?): AIVec2 {
+        var n: uint = arguments.length;
 
-        switch (nArgumentsLength) {
+        switch (n) {
             case 0:
                 this.x = this.y = 0.;
                 break;
@@ -91,7 +95,7 @@ class Vec2 implements AIVec2 {
                 this.x = arguments[0];
                 this.y = arguments[1];
                 break;
-        };
+        }
 
         return this;
     }
@@ -261,8 +265,20 @@ class Vec2 implements AIVec2 {
         return "[x: " + this.x + ", y: " + this.y + "]";
     }
 
-    //ALLOCATE_STORAGE(Vec2, MATH_STACK_SIZE)
+    static temp(): AIVec2;
+    static temp(xy: float): AIVec2;
+    static temp(xy: AIVec2): AIVec2;
+    static temp(xy: float[]): AIVec2;
+    static temp(x: float, y: float): AIVec2;
+    static temp(x?, y?): AIVec2 {
+        iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
+        var p = pBuffer[iElement++];
+        return p.set.apply(p, arguments);
+    }
 }
 
+
+pBuffer = gen.array<AIVec3>(256, Vec2);
+iElement = 0;
 
 export = Vec2;

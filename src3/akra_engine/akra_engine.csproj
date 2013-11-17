@@ -21,9 +21,9 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="src\akra.ts" />
-    <TypeScriptCompile Include="src\cfg.ts" />
+    <TypeScriptCompile Include="src\config.ts" />
     <TypeScriptCompile Include="src\common.ts" />
-    <TypeScriptCompile Include="src\core\core.ts" />
+    <TypeScriptCompile Include="src\core.ts" />
     <Content Include="src\idl\AEDataTypes.ts" />
     <Content Include="src\idl\AEPixelFormats.ts" />
     <Content Include="src\idl\AEPrimitiveTypes.ts" />
@@ -252,25 +252,55 @@
     <Content Include="src\idl\3d-party\jqueryui.d.ts" />
     <Content Include="src\idl\3d-party\webgl.d.ts" />
     <Content Include="src\idl\3d-party\zip.d.ts" />
+    <TypeScriptCompile Include="src\data\IndexData.ts" />
+    <TypeScriptCompile Include="src\data\VertexData.ts" />
+    <TypeScriptCompile Include="src\data\VertexDeclaration.ts" />
+    <TypeScriptCompile Include="src\data\VertexElement.ts" />
+    <TypeScriptCompile Include="src\generate.ts" />
+    <TypeScriptCompile Include="src\geometry.ts" />
+    <TypeScriptCompile Include="src\geometry\Box.ts" />
+    <TypeScriptCompile Include="src\geometry\Circle.ts" />
+    <TypeScriptCompile Include="src\classify.ts" />
+    <TypeScriptCompile Include="src\geometry\Frustum.ts" />
+    <Content Include="src\idl\common.d.ts" />
+    <TypeScriptCompile Include="src\intersect.ts" />
+    <TypeScriptCompile Include="src\geometry\Plane2d.ts" />
+    <TypeScriptCompile Include="src\geometry\Plane3d.ts" />
+    <TypeScriptCompile Include="src\geometry\Ray2d.ts" />
+    <TypeScriptCompile Include="src\geometry\Ray3d.ts" />
+    <TypeScriptCompile Include="src\geometry\Rect2d.ts" />
+    <TypeScriptCompile Include="src\geometry\Rect3d.ts" />
+    <TypeScriptCompile Include="src\geometry\Segment2d.ts" />
+    <TypeScriptCompile Include="src\geometry\Segment3d.ts" />
+    <TypeScriptCompile Include="src\geometry\Sphere.ts" />
     <TypeScriptCompile Include="src\idl\3d-party\gamepad.d.ts" />
     <Content Include="src\idl\AIPair.ts" />
     <Content Include="src\idl\AIAFXVariableBlendContainer.ts" />
     <Content Include="src\idl\AIAFXAttributeBlendContainer.ts" />
-    <TypeScriptCompile Include="src\math\math.ts" />
-    <TypeScriptCompile Include="src\pixelUtil\pixelUtil.ts" />
+    <Content Include="src\idl\AEVolumeClassifications.ts" />
+    <Content Include="src\idl\AEPlaneClassifications.ts" />
+    <TypeScriptCompile Include="src\math.ts" />
+    <Content Include="src\math\Mat3.ts" />
+    <Content Include="src\math\Mat4.ts" />
+    <Content Include="src\math\Quat4.ts" />
+    <Content Include="src\math\Vec2.ts" />
+    <Content Include="src\math\Vec3.ts" />
+    <Content Include="src\math\Vec4.ts" />
+    <TypeScriptCompile Include="src\pixelUtil.ts" />
+    <TypeScriptCompile Include="src\sid.ts" />
+    <TypeScriptCompile Include="src\time.ts" />
     <TypeScriptCompile Include="src\type.ts" />
     <TypeScriptCompile Include="src\util\ApiInfo.ts" />
-    <TypeScriptCompile Include="src\util\bitflags.ts" />
+    <TypeScriptCompile Include="src\bitflags.ts" />
     <TypeScriptCompile Include="src\util\BrowserInfo.ts" />
-    <TypeScriptCompile Include="src\util\dataType.ts" />
-    <TypeScriptCompile Include="src\util\gen.ts" />
-    <TypeScriptCompile Include="src\util\limit.ts" />
-    <TypeScriptCompile Include="src\util\conv.ts" />
-    <TypeScriptCompile Include="src\util\logger.ts" />
-    <TypeScriptCompile Include="src\util\mem.ts" />
+    <TypeScriptCompile Include="src\dataType.ts" />
+    <TypeScriptCompile Include="src\limit.ts" />
+    <TypeScriptCompile Include="src\conv.ts" />
+    <TypeScriptCompile Include="src\logger.ts" />
+    <TypeScriptCompile Include="src\mem.ts" />
     <TypeScriptCompile Include="src\util\Singleton.ts" />
-    <TypeScriptCompile Include="src\util\sort.ts" />
-    <TypeScriptCompile Include="src\util\time.ts" />
+    <TypeScriptCompile Include="src\sort.ts" />
+    <TypeScriptCompile Include="src\webgl.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">
@@ -281,6 +311,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="src\core\" />
+    <Folder Include="src\pixelUtil\" />
     <Folder Include="src\webgl\" />
   </ItemGroup>
   <ItemGroup />

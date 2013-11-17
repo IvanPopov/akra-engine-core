@@ -1,8 +1,16 @@
-/// <reference path="../idl/type.d.ts" />
+/// <reference path="../idl/common.d.ts" />
 /// <reference path="../idl/AIVec2.ts" />
 
+import gen = require("generate");
 import math = require("math");
 import Mat3 = math.Mat3;
+import Mat4 = math.Mat4;
+import abs = math.abs;
+import clamp = math.clamp;
+
+
+var pBuffer: AIVec3[];
+var iElement: uint;
 
 class Vec3 {
     x: float;
@@ -263,17 +271,16 @@ class Vec3 {
     }
 
     constructor();
-    constructor(fValue: float);
-    constructor(v3fVec: AIVec3);
-    constructor(pArray: float[]);
-    constructor(fValue: float, v2fVec: AIVec2);
-    constructor(v2fVec: AIVec2, fValue: float);
-    constructor(fValue1: float, fValue2: float, fValue3: float);
-    constructor(fValue1?, fValue2?, fValue3?) {
-        var nArgumentsLength: uint = arguments.length;
+    constructor(xyz: float);
+    constructor(xyz: AIVec3);
+    constructor(xyz: float[]);
+    constructor(x: float, yz: AIVec2);
+    constructor(xy: AIVec2, z: float);
+    constructor(x: float, y: float, z: float);
+    constructor(x?, y?, z?) {
+        var nArg: uint = arguments.length;
 
-
-        switch (nArgumentsLength) {
+        switch (nArg) {
             case 1:
                 this.set(arguments[0]);
                 break;
@@ -287,16 +294,18 @@ class Vec3 {
                 this.x = this.y = this.z = 0.;
                 break;
         }
+
+        return 10;
     }
 
     set(): AIVec3;
-    set(fValue: float): AIVec3;
-    set(v3fVec: AIVec3): AIVec3;
-    set(pArray: float[]): AIVec3;
-    set(fValue: float, v2fVec: AIVec2): AIVec3;
-    set(v2fVec: AIVec2, fValue: float): AIVec3;
-    set(fValue1: float, fValue2: float, fValue3: float): AIVec3;
-    set(fValue1?, fValue2?, fValue3?): AIVec3 {
+    set(xyz: float): AIVec3;
+    set(xyz: AIVec3): AIVec3;
+    set(xyz: float[]): AIVec3;
+    set(x: float, yz: AIVec2): AIVec3;
+    set(xy: AIVec2, z: float): AIVec3;
+    set(x: float, y: float, z: float): AIVec3;
+    set(x?, y?, z?): AIVec3 {
         var nArgumentsLength = arguments.length;
 
         switch (nArgumentsLength) {
@@ -348,6 +357,19 @@ class Vec3 {
         }
 
         return this;
+    }
+    
+
+    X(fLength: float = 1.): AIVec3 {
+        return this.set(fLength, 0., 0.);
+    }
+
+    Y(fLength: float = 1.): AIVec3 {
+        return this.set(0., fLength, 0.);
+    }
+
+    Z(fLength: float = 1.): AIVec3 {
+        return this.set(0., 0., fLength);
     }
 
     /** inline */ clear(): AIVec3 {
@@ -605,9 +627,21 @@ class Vec3 {
         return v3fDestination;
     }
 
-    static X: AIVec3 = new Vec3(1., 0., 0.);
-    static Y: AIVec3 = new Vec3(0., 1., 0.);
-    static Z: AIVec3 = new Vec3(0., 0., 1.);
-
-    //ALLOCATE_STORAGE(Vec3, MATH_STACK_SIZE)
+    static temp(): AIVec3;
+    static temp(xyz: float): AIVec3;
+    static temp(xyz: AIVec3): AIVec3;
+    static temp(xyz: float[]): AIVec3;
+    static temp(x: float, yz: AIVec2): AIVec3;
+    static temp(xy: AIVec2, z: float): AIVec3;
+    static temp(x: float, y: float, z: float): AIVec3;
+    static temp(x?, y?, z?): AIVec3 {
+        iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
+        var p = pBuffer[iElement++];
+        return p.set.apply(p, arguments);
+    }
 }
+
+pBuffer = gen.array<AIVec3>(256, Vec3);
+iElement = 0;
+
+export = Vec3;

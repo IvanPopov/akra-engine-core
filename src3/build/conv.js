@@ -1,6 +1,6 @@
-﻿define(["require", "exports"], function(require, exports) {
+define(["require", "exports"], function(require, exports) {
     /// <reference path="idl/AIConverter.ts" />
-    /// <reference path="idl/type.d.ts" />
+    /// <reference path="idl/common.d.ts" />
     exports.conversionFormats;
 
     function parseBool(sValue) {

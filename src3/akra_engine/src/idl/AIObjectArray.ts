@@ -1,5 +1,5 @@
 /** ObjectArray interface */
-interface AIObjectArray<ELEMENT_TYPE> {
+interface AIObjectArray<T> {
 	/** number of element in array */
 	length: uint;
 
@@ -18,23 +18,23 @@ interface AIObjectArray<ELEMENT_TYPE> {
 	 * Remove all elements from array;
 	 * @param {Bool=false} bRemoveLinks Remove old pointers to data. 
 	 */
-	clear(bRemoveLinks?: boolean): AIObjectArray<ELEMENT_TYPE>;
+	clear(bRemoveLinks?: boolean): AIObjectArray<T>;
 
 	/** Get value of <n> element. */
-	value(n: uint): ELEMENT_TYPE;
+	value(n: uint): T;
 	/** Set value for <n> element. */
-	set(n: uint, data: ELEMENT_TYPE): AIObjectArray<ELEMENT_TYPE>;
-	/** Fill ObjectArray from ELEMENT_TYPE <Array> */
-	fromArray(elements: ELEMENT_TYPE[], iOffset?: uint, iSize?: uint): AIObjectArray<ELEMENT_TYPE>;
+	set(n: uint, data: T): AIObjectArray<T>;
+	/** Fill ObjectArray from T <Array> */
+	fromArray(elements: T[], iOffset?: uint, iSize?: uint): AIObjectArray<T>;
 	/** Push element to end of array */
-	push(element: ELEMENT_TYPE): AIObjectArray<ELEMENT_TYPE>;
+	push(element: T): AIObjectArray<T>;
 	/** Get & remove last element in array */
-	pop(): ELEMENT_TYPE;
+	pop(): T;
 	/** Complitly remove all data from array */
-	release(): AIObjectArray<ELEMENT_TYPE>;
+	release(): AIObjectArray<T>;
 	/** Swap elements in array */
-	swap(i: int, j: int): AIObjectArray<ELEMENT_TYPE>;
+	swap(i: int, j: int): AIObjectArray<T>;
 
-	takeAt(iPos): ELEMENT_TYPE;
+	takeAt(iPos): T;
 }
 

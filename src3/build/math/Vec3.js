@@ -1,14 +1,21 @@
-/// <reference path="../idl/type.d.ts" />
+/// <reference path="../idl/common.d.ts" />
 /// <reference path="../idl/AIVec2.ts" />
-define(["require", "exports", "math"], function(require, exports, __math__) {
+define(["require", "exports", "generate", "math"], function(require, exports, __gen__, __math__) {
+    var gen = __gen__;
     var math = __math__;
     
+    var Mat4 = math.Mat4;
+    var abs = math.abs;
+    var clamp = math.clamp;
+
+    var pBuffer;
+    var iElement;
 
     var Vec3 = (function () {
-        function Vec3(fValue1, fValue2, fValue3) {
-            var nArgumentsLength = arguments.length;
+        function Vec3(x, y, z) {
+            var nArg = arguments.length;
 
-            switch (nArgumentsLength) {
+            switch (nArg) {
                 case 1:
                     this.set(arguments[0]);
                     break;
@@ -22,6 +29,8 @@ define(["require", "exports", "math"], function(require, exports, __math__) {
                     this.x = this.y = this.z = 0.;
                     break;
             }
+
+            return 10;
         }
         Object.defineProperty(Vec3.prototype, "xx", {
             get: function () {
@@ -482,7 +491,7 @@ define(["require", "exports", "math"], function(require, exports, __math__) {
             configurable: true
         });
 
-        Vec3.prototype.set = function (fValue1, fValue2, fValue3) {
+        Vec3.prototype.set = function (x, y, z) {
             var nArgumentsLength = arguments.length;
 
             switch (nArgumentsLength) {
@@ -531,6 +540,21 @@ define(["require", "exports", "math"], function(require, exports, __math__) {
             }
 
             return this;
+        };
+
+        Vec3.prototype.X = function (fLength) {
+            if (typeof fLength === "undefined") { fLength = 1.; }
+            return this.set(fLength, 0., 0.);
+        };
+
+        Vec3.prototype.Y = function (fLength) {
+            if (typeof fLength === "undefined") { fLength = 1.; }
+            return this.set(0., fLength, 0.);
+        };
+
+        Vec3.prototype.Z = function (fLength) {
+            if (typeof fLength === "undefined") { fLength = 1.; }
+            return this.set(0., 0., fLength);
         };
 
         /** inline */ Vec3.prototype.clear = function () {
@@ -769,10 +793,18 @@ define(["require", "exports", "math"], function(require, exports, __math__) {
             return v3fDestination;
         };
 
-        Vec3.X = new Vec3(1., 0., 0.);
-        Vec3.Y = new Vec3(0., 1., 0.);
-        Vec3.Z = new Vec3(0., 0., 1.);
+        Vec3.temp = function (x, y, z) {
+            iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
+            var p = pBuffer[iElement++];
+            return p.set.apply(p, arguments);
+        };
         return Vec3;
     })();
+
+    pBuffer = gen.array(256, Vec3);
+    iElement = 0;
+
+    
+    return Vec3;
 });
 //# sourceMappingURL=Vec3.js.map

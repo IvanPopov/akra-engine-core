@@ -1,7 +1,7 @@
 // AIURI interface
 // [write description here...]
 
-module akra {
+
 interface AIURI {
 	scheme: string;
 	userinfo: string;
@@ -17,5 +17,4 @@ interface AIURI {
 
 	toString(): string;
 }
-}
-
+

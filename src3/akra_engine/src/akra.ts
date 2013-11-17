@@ -24,8 +24,8 @@ has.add("AFX_ENABLE_TEXT_EFFECTS", true);
 //has.add("__VIEW_INTERNALS__", true)
 
 //import common = require("common");
-export import core = require("core/core");
-export import webgl = require("webgl/webgl");
+export import core = require("core");
+export import webgl = require("webgl");
 
 console.log(AEDataTypes.FLOAT);
 

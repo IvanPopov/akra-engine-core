@@ -6,6 +6,36 @@ export import Mat4 = require("math/Mat4");
 export import Quat4 = require("math/Quat4");
 
 
+//matrix 4x4 elements
+export var __11 = 0;
+export var __12 = 4;
+export var __13 = 8;
+export var __14 = 12;
+export var __21 = 1;
+export var __22 = 5;
+export var __23 = 9;
+export var __24 = 13;
+export var __31 = 2;
+export var __32 = 6;
+export var __33 = 10;
+export var __34 = 14;
+export var __41 = 3;
+export var __42 = 7;
+export var __43 = 11;
+export var __44 = 15;
+
+//matrix 3x3 elements
+export var __a11 = 0;
+export var __a12 = 3;
+export var __a13 = 6;
+export var __a21 = 1;
+export var __a22 = 4;
+export var __a23 = 7;
+export var __a31 = 2;
+export var __a32 = 5;
+export var __a33 = 8;
+
+
 export var E: float = <float>Math.E;
 export var LN2: float = <float>Math.LN2;
 export var LOG2E: float = <float>Math.LOG2E;

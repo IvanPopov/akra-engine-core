@@ -1,4 +1,4 @@
-/// <reference path="idl/type.d.ts" />
+/// <reference path="idl/common.d.ts" />
 /// <reference path="idl/AILogger.ts" />
 
 import Singleton = require("util/Singleton");

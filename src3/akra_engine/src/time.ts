@@ -1,9 +1,8 @@
-﻿interface Time {
+﻿
+var t: {
     /** Get current timestamp. */
     (): uint;
-}
-
-var t: Time = <Time>((): uint => Date.now());
+} = ((): uint => Date.now());
 
 export = t;
 

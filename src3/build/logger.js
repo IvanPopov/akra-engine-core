@@ -1,4 +1,4 @@
-/// <reference path="idl/type.d.ts" />
+/// <reference path="idl/common.d.ts" />
 /// <reference path="idl/AILogger.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];

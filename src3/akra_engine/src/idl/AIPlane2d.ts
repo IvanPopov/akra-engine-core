@@ -1,7 +1,7 @@
 // AIPlane2d interface
 // [write description here...]
 
-module akra{
+
 /// <reference path="AIVec2.ts" />
 /// <reference path="AICircle.ts" />
 
@@ -31,5 +31,4 @@ interface AIPlane2d {
 
 	toString(): string;
 }
-}
-
+

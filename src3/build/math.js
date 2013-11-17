@@ -1,10 +1,40 @@
-define(["require", "exports"], function(require, exports) {
+define(["require", "exports", "math/Vec2"], function(require, exports, __Vec2__) {
+    var Vec2 = __Vec2__;
+    exports.Vec2 = Vec2;
     
     
     
     
     
-    
+
+    //matrix 4x4 elements
+    exports.__11 = 0;
+    exports.__12 = 4;
+    exports.__13 = 8;
+    exports.__14 = 12;
+    exports.__21 = 1;
+    exports.__22 = 5;
+    exports.__23 = 9;
+    exports.__24 = 13;
+    exports.__31 = 2;
+    exports.__32 = 6;
+    exports.__33 = 10;
+    exports.__34 = 14;
+    exports.__41 = 3;
+    exports.__42 = 7;
+    exports.__43 = 11;
+    exports.__44 = 15;
+
+    //matrix 3x3 elements
+    exports.__a11 = 0;
+    exports.__a12 = 3;
+    exports.__a13 = 6;
+    exports.__a21 = 1;
+    exports.__a22 = 4;
+    exports.__a23 = 7;
+    exports.__a31 = 2;
+    exports.__a32 = 5;
+    exports.__a33 = 8;
 
     exports.E = Math.E;
     exports.LN2 = Math.LN2;
