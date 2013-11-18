@@ -11,14 +11,6 @@ enum AELogLevel {
 	ALL = 0x001F
 }
 
-interface AILogPrint {
-    (...argv): void;
-}
-
-interface AILogAssert {
-    (cond: boolean, ...argv): void;
-}
-
 interface AILogRoutineFunc {
 	(pEntity: AILoggerEntity): void;
 }
@@ -36,56 +28,60 @@ interface AILoggerEntity {
 }
 
 interface AILogger {
-   
-	///**
-	//* For plugin api:
-	//* Load file with custom user codes and three messages 
-	//*/
-	//loadManifestFile(): boolean;
 
-	init(): boolean;
+    ///**
+    //* For plugin api:
+    //* Load file with custom user codes and three messages 
+    //*/
+    //loadManifestFile(): boolean;
 
-	setLogLevel(eLevel: AELogLevel): void;
-	getLogLevel(): AELogLevel;
-	
-	registerCode(eCode: uint, sMessage?: string): boolean;
-	setUnknownCode(eCode: uint, sMessage: string): void;
+    init(): boolean;
 
-	registerCodeFamily(eCodeMin: uint, eCodeMax: uint, sFamilyName?: string): boolean;
+    setLogLevel(eLevel: AELogLevel): void;
+    getLogLevel(): AELogLevel;
 
-	getFamilyName(eCode: uint): string;
+    registerCode(eCode: uint, sMessage?: string): boolean;
+    setUnknownCode(eCode: uint, sMessage: string): void;
 
-	setCodeFamilyRoutine(eCodeFromFamily: uint, fnLogRoutine: AILogRoutineFunc, eLevel: AELogLevel): boolean;
-	setCodeFamilyRoutine(sFamilyName: string, fnLogRoutine: AILogRoutineFunc, eLevel: AELogLevel): boolean;
+    registerCodeFamily(eCodeMin: uint, eCodeMax: uint, sFamilyName?: string): boolean;
 
-	setLogRoutine(fnLogRoutine: AILogRoutineFunc, eLevel: AELogLevel): void;
+    getFamilyName(eCode: uint): string;
 
-	setSourceLocation(sFile: string, iLine: uint): void;
-	setSourceLocation(pLocation: AISourceLocation): void;
+    setCodeFamilyRoutine(eCodeFromFamily: uint, fnLogRoutine: AILogRoutineFunc, eLevel: AELogLevel): boolean;
+    setCodeFamilyRoutine(sFamilyName: string, fnLogRoutine: AILogRoutineFunc, eLevel: AELogLevel): boolean;
 
-	// Print messages methods
-	
-	log(...pArgs: any[]);
+    setLogRoutine(fnLogRoutine: AILogRoutineFunc, eLevel: AELogLevel): void;
 
-	info(pEntity: AILoggerEntity): void;
-	info(eCode: uint, ...pArgs: any[]): void;
-	info(...pArgs: any[]): void;
+    setSourceLocation(sFile: string, iLine: uint): void;
+    setSourceLocation(pLocation: AISourceLocation): void;
 
-	warning(pEntity: AILoggerEntity): void;
-	warning(eCode: uint, ...pArgs: any[]): void;
-	warning(...pArgs: any[]): void;
+    // Print messages methods
 
-	error(pEntity: AILoggerEntity): void;
-	error(eCode: uint, ...pArgs: any[]): void;
-	error(...pArgs: any[]): void;
+    log(...pArgs: any[]);
 
-	critical(pEntity: AILoggerEntity): void;
-	critical(eCode: uint, ...pArgs: any[]): void;
-	critical(...pArgs: any[]):void;
+    info(pEntity: AILoggerEntity): void;
+    info(eCode: uint, ...pArgs: any[]): void;
+    info(...pArgs: any[]): void;
 
-	assert(bCondition: boolean, pEntity: AILoggerEntity): void;
-	assert(bCondition: boolean, eCode: uint, ...pArgs: any[]): void;
-	assert(bCondition: boolean, ...pArgs: any[]):void;
+    warn(pEntity: AILoggerEntity): void;
+    warn(eCode: uint, ...pArgs: any[]): void;
+    warn(...pArgs: any[]): void;
+
+    error(pEntity: AILoggerEntity): void;
+    error(eCode: uint, ...pArgs: any[]): void;
+    error(...pArgs: any[]): void;
+
+    critical(pEntity: AILoggerEntity): void;
+    critical(eCode: uint, ...pArgs: any[]): void;
+    critical(...pArgs: any[]): void;
+
+    assert(bCondition: boolean, pEntity: AILoggerEntity): void;
+    assert(bCondition: boolean, eCode: uint, ...pArgs: any[]): void;
+    assert(bCondition: boolean, ...pArgs: any[]): void;
+
+    presume(bCond: boolean, pEntity: AILoggerEntity): void;
+    presume(bCond: boolean, eCode: uint, ...pArgs: any[]);
+    presume(bCond: boolean, ...pArgs: any[]);
 }
 
 

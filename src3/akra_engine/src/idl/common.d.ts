@@ -59,3 +59,9 @@ interface String {
     fromUTF8(): string;
     replaceAt(n: int, s: string);
 }
+
+//macro
+
+declare function __CONTENT__(data);
+declare function __MINIFY__(data);
+declare function __STRINGIFY__(data);

@@ -1,8 +1,3 @@
-// AIFile interface
-// [write description here...]
-
-module akra {
-
 interface AIFileMeta {
 	lastModifiedDate: string;
 	size: uint;
@@ -53,5 +48,3 @@ interface AIFile {
 
 	getMetaData(fnCallback: Function): void;
 }
-}
-

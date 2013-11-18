@@ -1,7 +1,3 @@
-// AIThread interface
-// [write description here...]
-
-module akra {
 interface AIThread {
 	onmessage: Function;
 	onerror: Function;
@@ -11,5 +7,3 @@ interface AIThread {
 	send(pData: ArrayBuffer, pTransferables?: any[]): void;
 	send(pData: ArrayBufferView, pTransferables?: any[]): void;
 }
-}
-

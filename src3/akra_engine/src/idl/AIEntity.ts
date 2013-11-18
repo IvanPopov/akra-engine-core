@@ -109,4 +109,4 @@ interface AIEntity extends AIEventProvider, AIReferenceCounter {
 	signal childAdded(pChild: AIEntity): void;
 	signal childRemoved(pChild: AIEntity): void;
 }
-
+

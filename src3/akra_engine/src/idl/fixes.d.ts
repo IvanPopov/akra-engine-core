@@ -214,3 +214,6 @@ declare var BlobBuilder: {
     prototype: BlobBuilder;
     new (): BlobBuilder;
 }
+
+//default JS function
+declare function unescape(s: string): string;

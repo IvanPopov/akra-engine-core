@@ -27,17 +27,20 @@ interface AIDep {
 	type?: string;
 }
 
-interface AIDependens {
-	parent?: AIDependens;
-	depth?: uint;
-	
-	loaded?: uint;
-	total?: uint;
 
-	//user
-	files?: AIDep[];
-	deps?: AIDependens;
-	root?: string;
+
+interface AIDependens {
+    //system paramaters
+	parent?: AIDependens;   //parent dep.
+	depth?: uint;           //current depth of this Dep
+	
+	loaded?: uint;          //files loaded
+	total?: uint;           //files total
+
+	//user defined
+	files?: AIDep[];        //files for loading
+	deps?: AIDependens;     //sub dependens
+	root?: string;          //root for this.level only
 }
 
 interface AIDepsManager extends AIEventProvider {

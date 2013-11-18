@@ -21,6 +21,8 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="src\akra.ts" />
+    <TypeScriptCompile Include="src\color.ts" />
+    <TypeScriptCompile Include="src\color\Color.ts" />
     <TypeScriptCompile Include="src\config.ts" />
     <TypeScriptCompile Include="src\common.ts" />
     <TypeScriptCompile Include="src\core.ts" />
@@ -253,6 +255,7 @@
     <Content Include="src\idl\3d-party\webgl.d.ts" />
     <Content Include="src\idl\3d-party\zip.d.ts" />
     <TypeScriptCompile Include="src\data\IndexData.ts" />
+    <TypeScriptCompile Include="src\data\Usage.ts" />
     <TypeScriptCompile Include="src\data\VertexData.ts" />
     <TypeScriptCompile Include="src\data\VertexDeclaration.ts" />
     <TypeScriptCompile Include="src\data\VertexElement.ts" />
@@ -263,6 +266,9 @@
     <TypeScriptCompile Include="src\classify.ts" />
     <TypeScriptCompile Include="src\geometry\Frustum.ts" />
     <Content Include="src\idl\common.d.ts" />
+    <TypeScriptCompile Include="src\idl\fixes.d.ts" />
+    <TypeScriptCompile Include="src\info.ts" />
+    <TypeScriptCompile Include="src\info\ScreenInfo.ts" />
     <TypeScriptCompile Include="src\intersect.ts" />
     <TypeScriptCompile Include="src\geometry\Plane2d.ts" />
     <TypeScriptCompile Include="src\geometry\Plane3d.ts" />
@@ -279,6 +285,7 @@
     <Content Include="src\idl\AIAFXAttributeBlendContainer.ts" />
     <Content Include="src\idl\AEVolumeClassifications.ts" />
     <Content Include="src\idl\AEPlaneClassifications.ts" />
+    <TypeScriptCompile Include="src\logger\Logger.ts" />
     <TypeScriptCompile Include="src\math.ts" />
     <Content Include="src\math\Mat3.ts" />
     <Content Include="src\math\Mat4.ts" />
@@ -286,20 +293,27 @@
     <Content Include="src\math\Vec2.ts" />
     <Content Include="src\math\Vec3.ts" />
     <Content Include="src\math\Vec4.ts" />
+    <TypeScriptCompile Include="src\path.ts" />
     <TypeScriptCompile Include="src\pixelUtil.ts" />
     <TypeScriptCompile Include="src\sid.ts" />
     <TypeScriptCompile Include="src\time.ts" />
     <TypeScriptCompile Include="src\type.ts" />
-    <TypeScriptCompile Include="src\util\ApiInfo.ts" />
+    <TypeScriptCompile Include="src\uri.ts" />
+    <TypeScriptCompile Include="src\info\ApiInfo.ts" />
     <TypeScriptCompile Include="src\bitflags.ts" />
-    <TypeScriptCompile Include="src\util\BrowserInfo.ts" />
+    <TypeScriptCompile Include="src\info\BrowserInfo.ts" />
     <TypeScriptCompile Include="src\dataType.ts" />
     <TypeScriptCompile Include="src\limit.ts" />
     <TypeScriptCompile Include="src\conv.ts" />
     <TypeScriptCompile Include="src\logger.ts" />
     <TypeScriptCompile Include="src\mem.ts" />
+    <TypeScriptCompile Include="src\util\Entity.ts" />
+    <TypeScriptCompile Include="src\util\ObjectArray.ts" />
+    <TypeScriptCompile Include="src\util\ObjectList.ts" />
+    <TypeScriptCompile Include="src\util\ReferenceCounter.ts" />
     <TypeScriptCompile Include="src\util\Singleton.ts" />
     <TypeScriptCompile Include="src\sort.ts" />
+    <TypeScriptCompile Include="src\util\Timer.ts" />
     <TypeScriptCompile Include="src\webgl.ts" />
   </ItemGroup>
   <ItemGroup>

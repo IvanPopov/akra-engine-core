@@ -282,4 +282,7 @@ export function toURL(data: any, mime: string = "text/plain"): string {
     return URL.createObjectURL(blob);
 }
 
-
+/** Convert UTF8 string to Base64 string*/
+export function utf8tob64(s: string): string {
+    return window.btoa(unescape(encodeURIComponent(str)));
+}
