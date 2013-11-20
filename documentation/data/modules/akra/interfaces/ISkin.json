@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "data" : { "location" : "akra.ISkin",
+"type" : "IRenderDataCollection"},
+"skeleton" : { "location" : "akra.ISkin",
+"type" : "ISkeleton"},
+"totalBones" : { "location" : "akra.ISkin",
+"type" : "number"}}}}

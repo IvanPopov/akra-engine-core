@@ -1,0 +1,42 @@
+
+{
+"location":"akra",
+"classes":
+{
+"Frame":{ }
+,
+"Base":{ }
+,
+"Controller":{ }
+,
+"Container":{ }
+}
+,
+"functions":
+{
+"animationFrame":{ }
+,
+"createFrame":{ }
+,
+"createTrack":{ }
+,
+"isAnimation":{ }
+,
+"createAnimation":{ }
+,
+"createController":{ }
+,
+"isBlend":{ }
+,
+"createBlend":{ }
+,
+"isContainer":{ }
+,
+"createContainer":{ }
+}
+,
+"interfaces":
+{
+"IAnimationTargetMap":{ }
+}
+}

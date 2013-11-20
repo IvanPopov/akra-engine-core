@@ -1,0 +1,12 @@
+[ { "name" : "MAG_FILTER",
+"text" : "0x2800",
+"value" : 10240},
+{ "name" : "MIN_FILTER",
+"text" : "10241",
+"value" : 10241},
+{ "name" : "WRAP_S",
+"text" : "10242",
+"value" : 10242},
+{ "name" : "WRAP_T",
+"text" : "10243",
+"value" : 10243} ]

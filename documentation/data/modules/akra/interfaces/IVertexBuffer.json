@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "type" : { "location" : "akra.IVertexBuffer",
+"type" : "EVertexBufferTypes"}}}}

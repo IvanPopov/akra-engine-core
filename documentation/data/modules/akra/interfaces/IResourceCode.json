@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "family" : { "location" : "akra.IResourceCode",
+"type" : "number"},
+"type" : { "location" : "akra.IResourceCode",
+"type" : "number"}}}}

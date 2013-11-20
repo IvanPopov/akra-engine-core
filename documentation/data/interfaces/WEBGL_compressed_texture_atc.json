@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "COMPRESSED_RGB_ATC_WEBGL" : { "location" : "WEBGL_compressed_texture_atc",
+"type" : "number"},
+"COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL" : { "location" : "WEBGL_compressed_texture_atc",
+"type" : "number"},
+"COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL" : { "location" : "WEBGL_compressed_texture_atc",
+"type" : "number"}}}}

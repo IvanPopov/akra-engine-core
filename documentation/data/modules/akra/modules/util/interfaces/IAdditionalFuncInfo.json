@@ -1,0 +1,7 @@
+{ "location" : "akra.util",
+"variables" : { "public" : { "name" : { "location" : "akra.util.IAdditionalFuncInfo",
+"type" : "string"},
+"position" : { "location" : "akra.util.IAdditionalFuncInfo",
+"type" : "number"},
+"rule" : { "location" : "akra.util.IAdditionalFuncInfo",
+"type" : "IRule"}}}}

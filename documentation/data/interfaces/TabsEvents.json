@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "activate" : { "location" : "TabsEvents",
+"type" : "TabsEvent"},
+"beforeActivate" : { "location" : "TabsEvents",
+"type" : "TabsEvent"},
+"beforeLoad" : { "location" : "TabsEvents",
+"type" : "TabsEvent"},
+"load" : { "location" : "TabsEvents",
+"type" : "TabsEvent"}}}}

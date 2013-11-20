@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IColladaUnit",
+"type" : "string"},
+"meter" : { "location" : "akra.IColladaUnit",
+"type" : "number"}}}}

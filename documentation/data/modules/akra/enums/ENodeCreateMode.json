@@ -1,0 +1,9 @@
+[ { "name" : "k_Default",
+"text" : "0",
+"value" : 0},
+{ "name" : "k_Necessary",
+"text" : "1",
+"value" : 1},
+{ "name" : "k_Not",
+"text" : "2",
+"value" : 2} ]

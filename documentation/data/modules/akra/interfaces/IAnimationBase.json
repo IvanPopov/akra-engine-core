@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "duration" : { "location" : "akra.IAnimationBase",
+"type" : "number"},
+"name" : { "location" : "akra.IAnimationBase",
+"type" : "string"},
+"type" : { "location" : "akra.IAnimationBase",
+"type" : "EAnimationTypes"}}}}

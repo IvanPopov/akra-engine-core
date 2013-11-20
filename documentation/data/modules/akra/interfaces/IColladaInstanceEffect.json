@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "parameters" : { "location" : "akra.IColladaInstanceEffect",
+"type" : "Object"},
+"techniqueHint" : { "location" : "akra.IColladaInstanceEffect",
+"type" : "StringMap"},
+"effect" : { "location" : "akra.IColladaInstanceEffect",
+"type" : "IColladaEffect"}}}}

@@ -1,0 +1,13 @@
+{ "comments" : [ [ "/**",
+"* Преобразование html-сформированного текста",
+"* в dom.",
+"*/" ] ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "sHTML",
+"isOptional" : false,
+"type" : "string"},
+{ "name" : "useDocFragment",
+"isOptional" : true,
+"type" : "bool"} ],
+"type" : "any",
+"isInline" : false}

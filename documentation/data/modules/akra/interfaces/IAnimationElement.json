@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "animation" : { "location" : "akra.IAnimationElement",
+"type" : "IAnimationBase"},
+"weight" : { "location" : "akra.IAnimationElement",
+"type" : "number"},
+"mask" : { "location" : "akra.IAnimationElement",
+"type" : "FloatMap"},
+"acceleration" : { "location" : "akra.IAnimationElement",
+"type" : "number"},
+"time" : { "location" : "akra.IAnimationElement",
+"type" : "number"},
+"realTime" : { "location" : "akra.IAnimationElement",
+"type" : "number"}}}}

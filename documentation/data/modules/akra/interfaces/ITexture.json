@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "width" : { "location" : "akra.ITexture",
+"type" : "number"},
+"height" : { "location" : "akra.ITexture",
+"type" : "number"},
+"depth" : { "location" : "akra.ITexture",
+"type" : "number"},
+"format" : { "location" : "akra.ITexture",
+"type" : "EPixelFormats"},
+"mipLevels" : { "location" : "akra.ITexture",
+"type" : "number"},
+"textureType" : { "location" : "akra.ITexture",
+"type" : "ETextureTypes"}}}}

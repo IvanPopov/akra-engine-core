@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "checked" : { "location" : "akra.IUICheckbox",
+"type" : "bool"},
+"text" : { "location" : "akra.IUICheckbox",
+"type" : "string"}}}}

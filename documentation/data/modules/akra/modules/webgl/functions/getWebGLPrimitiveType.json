@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.webgl",
+"arguments" : [ { "name" : "eType",
+"isOptional" : false,
+"type" : "EPrimitiveTypes"} ],
+"type" : "number",
+"isInline" : false}

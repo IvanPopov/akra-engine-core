@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "activate" : { "location" : "AccordionEvents",
+"type" : "AccordionEvent"},
+"beforeActivate" : { "location" : "AccordionEvents",
+"type" : "AccordionEvent"},
+"create" : { "location" : "AccordionEvents",
+"type" : "AccordionEvent"}}}}

@@ -1,0 +1,3 @@
+{ "location" : "",
+"variables" : { "public" : { "color" : { "location" : "HighlightEffect",
+"type" : "string"}}}}

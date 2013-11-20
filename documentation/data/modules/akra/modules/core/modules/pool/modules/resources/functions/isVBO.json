@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.core.pool.resources",
+"arguments" : [ { "name" : "pBuffer",
+"isOptional" : false,
+"type" : "IVertexBuffer"} ],
+"type" : "bool",
+"isInline" : true}

@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "fValue1",
+"isOptional" : false,
+"type" : "number"},
+{ "name" : "fValue2",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "IVec2",
+"isInline" : false}

@@ -1,0 +1,9 @@
+[ { "name" : "PLANE_FRONT",
+"text" : "0",
+"value" : 0},
+{ "name" : "PLANE_BACK",
+"text" : "1",
+"value" : 1},
+{ "name" : "PLANE_INTERSECT",
+"text" : "2",
+"value" : 2} ]

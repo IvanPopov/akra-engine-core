@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "totalDL" : { "location" : "akra.IScene3d",
+"type" : "number"}}}}

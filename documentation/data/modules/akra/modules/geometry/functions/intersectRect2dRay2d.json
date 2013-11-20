@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.geometry",
+"arguments" : [ { "name" : "pRect",
+"isOptional" : false,
+"type" : "IRect2d"},
+{ "name" : "pRay",
+"isOptional" : false,
+"type" : "IRay2d"} ],
+"type" : "bool",
+"isInline" : false}

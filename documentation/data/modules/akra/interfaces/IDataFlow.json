@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "flow" : { "location" : "akra.IDataFlow",
+"type" : "number"},
+"data" : { "location" : "akra.IDataFlow",
+"type" : "IVertexData"},
+"type" : { "location" : "akra.IDataFlow",
+"type" : "EDataFlowTypes"},
+"mapper" : { "location" : "akra.IDataFlow",
+"type" : "IDataMapper"}}}}

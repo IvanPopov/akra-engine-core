@@ -1,0 +1,9 @@
+[ { "name" : "k_Default",
+"text" : "0",
+"value" : 0},
+{ "name" : "k_Struct",
+"text" : "1",
+"value" : 1},
+{ "name" : "k_Annotation",
+"text" : "2",
+"value" : 2} ]

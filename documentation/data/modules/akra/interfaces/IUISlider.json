@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "pin" : { "location" : "akra.IUISlider",
+"type" : "IUIComponent"},
+"value" : { "location" : "akra.IUISlider",
+"type" : "number"},
+"range" : { "location" : "akra.IUISlider",
+"type" : "number"}}}}

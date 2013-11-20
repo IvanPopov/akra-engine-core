@@ -1,0 +1,9 @@
+{ "location" : "akra.fx",
+"constructors" : [ { "comments" : [  ],
+"location" : "akra.fx.CompileExprInstruction",
+"arguments" : [  ]} ],
+"functions" : { "getFunction" : { "comments" : [  ],
+"location" : "akra.fx.CompileExprInstruction",
+"arguments" : [  ],
+"type" : "IAFXFunctionDeclInstruction",
+"isInline" : true}}}

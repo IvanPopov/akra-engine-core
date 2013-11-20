@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IMeshSubset",
+"type" : "string"},
+"mesh" : { "location" : "akra.IMeshSubset",
+"type" : "IMesh"},
+"skin" : { "location" : "akra.IMeshSubset",
+"type" : "ISkin"},
+"data" : { "location" : "akra.IMeshSubset",
+"type" : "IRenderData"},
+"boundingBox" : { "location" : "akra.IMeshSubset",
+"type" : "IRect3d"},
+"boundingSphere" : { "location" : "akra.IMeshSubset",
+"type" : "ISphere"}}}}

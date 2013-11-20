@@ -1,0 +1,9 @@
+{ "location" : "akra.fx",
+"constructors" : [ { "comments" : [  ],
+"location" : "akra.fx.WhileStmtInstruction",
+"arguments" : [  ]} ],
+"functions" : { "toFinalCode" : { "comments" : [  ],
+"location" : "akra.fx.WhileStmtInstruction",
+"arguments" : [  ],
+"type" : "string",
+"isInline" : false}}}

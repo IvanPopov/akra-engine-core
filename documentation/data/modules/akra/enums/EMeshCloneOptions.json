@@ -1,0 +1,6 @@
+[ { "name" : "GEOMETRY_ONLY",
+"text" : "0x00",
+"value" : 0},
+{ "name" : "SHARED_GEOMETRY",
+"text" : "0x01",
+"value" : 1} ]

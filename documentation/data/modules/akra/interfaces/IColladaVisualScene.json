@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IColladaVisualScene",
+"type" : "string"},
+"nodes" : { "location" : "akra.IColladaVisualScene",
+"type" : "IColladaNode[  ]"}}}}

@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "shapeMatrix" : { "location" : "akra.IColladaSkin",
+"type" : "IMat4"},
+"sources" : { "location" : "akra.IColladaSkin",
+"type" : "IColladaSource[  ]"},
+"geometry" : { "location" : "akra.IColladaSkin",
+"type" : "IColladaGeometrie"},
+"joints" : { "location" : "akra.IColladaSkin",
+"type" : "IColladaJoints"},
+"vertexWeights" : { "location" : "akra.IColladaSkin",
+"type" : "IColladaVertexWeights"}}}}

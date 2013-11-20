@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.geometry",
+"arguments" : [ { "name" : "pVertexData",
+"isOptional" : false,
+"type" : "IVertexData"},
+{ "name" : "pSphere",
+"isOptional" : false,
+"type" : "ISphere"} ],
+"type" : "bool",
+"isInline" : false}

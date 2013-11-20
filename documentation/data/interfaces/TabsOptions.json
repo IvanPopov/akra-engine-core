@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "collapsible" : { "location" : "TabsOptions",
+"type" : "bool"},
+"event" : { "location" : "TabsOptions",
+"type" : "string"},
+"heightStyle" : { "location" : "TabsOptions",
+"type" : "string"}}}}

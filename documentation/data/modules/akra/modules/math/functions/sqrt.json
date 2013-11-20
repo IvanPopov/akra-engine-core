@@ -1,0 +1,10 @@
+{ "comments" : [ [ "/**",
+"* Returns the square root of a number.",
+"* @param x A numeric expression.",
+"*/" ] ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "x",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : false}

@@ -1,0 +1,9 @@
+{ "location" : "akra.fx",
+"constructors" : [ { "comments" : [  ],
+"location" : "akra.fx.BreakStmtInstruction",
+"arguments" : [  ]} ],
+"functions" : { "toFinalCode" : { "comments" : [  ],
+"location" : "akra.fx.BreakStmtInstruction",
+"arguments" : [  ],
+"type" : "string",
+"isInline" : false}}}

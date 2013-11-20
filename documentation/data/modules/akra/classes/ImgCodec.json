@@ -1,0 +1,6 @@
+{ "location" : "akra",
+"functions" : { "getDataType" : { "comments" : [  ],
+"location" : "akra.ImgCodec",
+"arguments" : [  ],
+"type" : "string",
+"isInline" : false}}}

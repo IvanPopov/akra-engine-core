@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "resize" : { "location" : "ResizableEvents",
+"type" : "ResizableEvent"},
+"start" : { "location" : "ResizableEvents",
+"type" : "ResizableEvent"},
+"stop" : { "location" : "ResizableEvents",
+"type" : "ResizableEvent"}}}}

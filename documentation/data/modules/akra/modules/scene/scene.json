@@ -1,0 +1,55 @@
+
+{
+"location":"akra",
+"enums":
+{
+"ENodeUpdateFlags":{ }
+,
+"ESceneObjectFlags":{ }
+,
+"EOcTreeConstants":{ }
+}
+,
+"classes":
+{
+"Node":{ }
+,
+"SceneNode":{ }
+,
+"Joint":{ }
+,
+"SceneObject":{ }
+,
+"DisplayList":{ }
+,
+"OcTreeNode":{ }
+,
+"OcTreeRootNode":{ }
+,
+"OcTree":{ }
+,
+"LightGraph":{ }
+,
+"SceneModel":{ }
+,
+"Scene3d":{ }
+,
+"SceneManager":{ }
+}
+,
+"functions":
+{
+"isJoint":{ }
+,
+"isSceneObject":{ }
+,
+"isModel":{ }
+}
+,
+"modules":
+{
+"objects":{ }
+,
+"light":{ }
+}
+}

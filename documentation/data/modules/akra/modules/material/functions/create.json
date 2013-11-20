@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.material",
+"arguments" : [ { "name" : "sName",
+"isOptional" : true,
+"type" : "string"},
+{ "name" : "pMat",
+"isOptional" : true,
+"type" : "IMaterial"} ],
+"type" : "IMaterial",
+"isInline" : false}

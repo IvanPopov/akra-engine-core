@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "resource" : { "location" : "akra.IModelEntry",
+"type" : "IModel"},
+"controller" : { "location" : "akra.IModelEntry",
+"type" : "IAnimationController"}}}}

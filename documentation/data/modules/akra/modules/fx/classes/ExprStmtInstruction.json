@@ -1,0 +1,9 @@
+{ "location" : "akra.fx",
+"constructors" : [ { "comments" : [  ],
+"location" : "akra.fx.ExprStmtInstruction",
+"arguments" : [  ]} ],
+"functions" : { "toFinalCode" : { "comments" : [  ],
+"location" : "akra.fx.ExprStmtInstruction",
+"arguments" : [  ],
+"type" : "string",
+"isInline" : false}}}

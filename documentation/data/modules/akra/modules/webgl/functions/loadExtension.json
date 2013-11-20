@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.webgl",
+"arguments" : [ { "name" : "pWebGLContext",
+"isOptional" : false,
+"type" : "WebGLRenderingContext"},
+{ "name" : "sExtName",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "bool",
+"isInline" : false}

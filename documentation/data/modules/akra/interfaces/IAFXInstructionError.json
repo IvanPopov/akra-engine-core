@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "code" : { "location" : "akra.IAFXInstructionError",
+"type" : "number"},
+"info" : { "location" : "akra.IAFXInstructionError",
+"type" : "any"}}}}

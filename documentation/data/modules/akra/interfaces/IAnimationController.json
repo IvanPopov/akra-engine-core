@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "totalAnimations" : { "location" : "akra.IAnimationController",
+"type" : "number"},
+"active" : { "location" : "akra.IAnimationController",
+"type" : "IAnimationBase"}}}}

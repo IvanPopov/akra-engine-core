@@ -1,0 +1,60 @@
+
+{
+"location":"akra",
+"functions":
+{
+"flag":{ }
+,
+"testBit":{ }
+,
+"testAll":{ }
+,
+"testAny":{ }
+,
+"setBit":{ }
+,
+"clearBit":{ }
+,
+"setAll":{ }
+,
+"clearAll":{ }
+,
+"equal":{ }
+,
+"isEqual":{ }
+,
+"isNotEqaul":{ }
+,
+"set":{ }
+,
+"clear":{ }
+,
+"setFlags":{ }
+,
+"clearFlags":{ }
+,
+"isEmpty":{ }
+,
+"totalBits":{ }
+,
+"totalSet":{ }
+,
+"fixedToFixed":{ }
+,
+"floatToFixed":{ }
+,
+"fixedToFloat":{ }
+,
+"intWrite":{ }
+,
+"intRead":{ }
+,
+"floatToHalfI":{ }
+,
+"floatToHalf":{ }
+,
+"halfToFloat":{ }
+,
+"halfToFloatI":{ }
+}
+}

@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "size" : { "location" : "akra.IVertexElement",
+"type" : "number"},
+"index" : { "location" : "akra.IVertexElement",
+"type" : "number"},
+"semantics" : { "location" : "akra.IVertexElement",
+"type" : "string"}}}}

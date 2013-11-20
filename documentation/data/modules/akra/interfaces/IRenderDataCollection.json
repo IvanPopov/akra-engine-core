@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "buffer" : { "location" : "akra.IRenderDataCollection",
+"type" : "IVertexBuffer"},
+"byteLength" : { "location" : "akra.IRenderDataCollection",
+"type" : "number"},
+"length" : { "location" : "akra.IRenderDataCollection",
+"type" : "number"}}}}

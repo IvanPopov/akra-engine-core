@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "direction" : { "location" : "ScaleEffect",
+"type" : "string"},
+"origin" : { "location" : "ScaleEffect",
+"type" : "string[  ]"},
+"percent" : { "location" : "ScaleEffect",
+"type" : "number"},
+"scale" : { "location" : "ScaleEffect",
+"type" : "string"}}}}

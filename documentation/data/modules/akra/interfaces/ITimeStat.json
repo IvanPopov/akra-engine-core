@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "best" : { "location" : "akra.ITimeStat",
+"type" : "number"},
+"worst" : { "location" : "akra.ITimeStat",
+"type" : "number"}}}}

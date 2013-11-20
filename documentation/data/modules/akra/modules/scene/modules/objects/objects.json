@@ -1,0 +1,24 @@
+
+{
+"location":"akra.scene",
+"enums":
+{
+"ECameraFlags":{ }
+}
+,
+"classes":
+{
+"DLTechnique":{ }
+,
+"Camera":{ }
+,
+"ModelEntry":{ }
+}
+,
+"functions":
+{
+"isCamera":{ }
+,
+"isModelEntry":{ }
+}
+}

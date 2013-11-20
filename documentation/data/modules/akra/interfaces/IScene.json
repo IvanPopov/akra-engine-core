@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "type" : { "location" : "akra.IScene",
+"type" : "ESceneTypes"}}}}

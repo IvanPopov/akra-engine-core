@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "value" : { "location" : "akra.IToken",
+"type" : "string"},
+"start" : { "location" : "akra.IToken",
+"type" : "number"},
+"end" : { "location" : "akra.IToken",
+"type" : "number"},
+"line" : { "location" : "akra.IToken",
+"type" : "number"},
+"name" : { "location" : "akra.IToken",
+"type" : "string"},
+"type" : { "location" : "akra.IToken",
+"type" : "ETokenType"}}}}

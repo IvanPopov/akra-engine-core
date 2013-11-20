@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "boneName" : { "location" : "akra.IJoint",
+"type" : "string"}}}}

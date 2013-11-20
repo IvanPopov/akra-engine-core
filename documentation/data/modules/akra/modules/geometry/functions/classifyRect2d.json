@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.geometry",
+"arguments" : [ { "name" : "pRectA",
+"isOptional" : false,
+"type" : "IRect2d"},
+{ "name" : "pRectB",
+"isOptional" : false,
+"type" : "IRect2d"} ],
+"type" : "EVolumeClassifications",
+"isInline" : false}

@@ -1,0 +1,10 @@
+{ "comments" : [ [ "/**",
+"* Returns a supplied numeric expression rounded to the nearest integer.",
+"* @param x The value to be rounded to the nearest integer.",
+"*/" ] ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "x",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : false}

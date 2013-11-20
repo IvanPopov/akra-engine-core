@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.render",
+"arguments" : [ { "name" : "pEngine",
+"isOptional" : false,
+"type" : "IEngine"},
+{ "name" : "eOptions",
+"isOptional" : true,
+"type" : "ERenderDataBufferOptions"} ],
+"type" : "IRenderDataCollection",
+"isInline" : false}

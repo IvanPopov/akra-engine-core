@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.io",
+"arguments" : [ { "name" : "sMethod",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "EAjaxHttpMethods",
+"isInline" : false}

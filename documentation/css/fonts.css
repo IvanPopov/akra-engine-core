@@ -1,0 +1,51 @@
+@font-face {
+	font-family: 'AGHelvetica';
+	src: url('../fonts/aghelv_n-webfont.eot');
+	src: url('../fonts/aghelv_n-webfont.eot?#iefix') format('embedded-opentype'),
+	url('../fonts/aghelv_n-webfont.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+	}
+
+@font-face {
+	font-family: 'AGHelvetica';
+	src: url('../fonts/aghlv-b-webfont.eot');
+	src: url('../fonts/aghlv-b-webfont.eot?#iefix') format('embedded-opentype'),
+	url('../fonts/aghlv-b-webfont.woff') format('woff');
+	font-weight: bold;
+	font-style: normal;
+	}
+
+@font-face {
+	font-family: 'AGHelvetica';
+	src: url('../fonts/aghelv_i-webfont.eot');
+	src: url('../fonts/aghelv_i-webfont.eot?#iefix') format('embedded-opentype'),
+	url('../fonts/aghelv_i-webfont.woff') format('woff');
+	font-weight: normal;
+	font-style: italic;
+	}
+
+@font-face {
+	font-family: 'AGHelvetica Normal';
+	src: url('../fonts/aghlv-n-webfont.eot');
+	src: url('../fonts/aghlv-n-webfont.eot?#iefix') format('embedded-opentype'),
+	url('../fonts/aghlv-n-webfont.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+	}
+
+@font-face {
+	font-family: 'MagistralC';
+	src: url('../fonts/mgs45.eot');
+	src: url('../fonts/mgs45.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+	}
+
+@font-face {
+	font-family: 'MagistralC';
+	src: url('../fonts/mgs65.eot');
+	src: url('../fonts/mgs65.woff') format('woff');
+	font-weight: bold;
+	font-style: normal;
+	}

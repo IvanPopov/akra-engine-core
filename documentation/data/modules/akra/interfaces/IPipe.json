@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "uri" : { "location" : "akra.IPipe",
+"type" : "IURI"}}}}

@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "rootNode" : { "location" : "akra.IUITree",
+"type" : "IUITreeNode"}}}}

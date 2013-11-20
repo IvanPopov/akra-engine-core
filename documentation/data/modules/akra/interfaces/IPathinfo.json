@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "path" : { "location" : "akra.IPathinfo",
+"type" : "string"},
+"dirname" : { "location" : "akra.IPathinfo",
+"type" : "string"},
+"filename" : { "location" : "akra.IPathinfo",
+"type" : "string"},
+"ext" : { "location" : "akra.IPathinfo",
+"type" : "string"},
+"basename" : { "location" : "akra.IPathinfo",
+"type" : "string"}}}}

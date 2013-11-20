@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "manager" : { "location" : "akra.IDataPool",
+"type" : "IResourcePoolManager"}}}}

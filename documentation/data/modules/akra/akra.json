@@ -1,0 +1,1234 @@
+
+{
+"location":"",
+"enums":
+{
+"ELogLevel":{ }
+,
+"EDataTypes":{ }
+,
+"EDataTypeSizes":{ }
+,
+"EEventTypes":{ }
+,
+"ESceneTypes":{ }
+,
+"EResourceFamilies":{ }
+,
+"EVideoResources":{ }
+,
+"EAudioResources":{ }
+,
+"EGameResources":{ }
+,
+"ECompareFunction":{ }
+,
+"ECullingMode":{ }
+,
+"EFrameBufferTypes":{ }
+,
+"EPrimitiveTypes":{ }
+,
+"ERenderCapabilitiesCategory":{ }
+,
+"ERenderCapabilities":{ }
+,
+"EAttachmentTypes":{ }
+,
+"EUtilTimerCommands":{ }
+,
+"ELightTypes":{ }
+,
+"ENodeCreateMode":{ }
+,
+"EParserCode":{ }
+,
+"EParserType":{ }
+,
+"EParseMode":{ }
+,
+"ETokenType":{ }
+,
+"EOperationType":{ }
+,
+"EResourceItemEvents":{ }
+,
+"EAFXInstructionTypes":{ }
+,
+"EFunctionType":{ }
+,
+"ECheckStage":{ }
+,
+"EVarUsedMode":{ }
+,
+"EExtractExprType":{ }
+,
+"EAFXBlendMode":{ }
+,
+"EPixelFormats":{ }
+,
+"EPixelFormatFlags":{ }
+,
+"EPixelComponentTypes":{ }
+,
+"EFilters":{ }
+,
+"EHardwareBufferFlags":{ }
+,
+"ELockFlags":{ }
+,
+"ETextureFlags":{ }
+,
+"ETextureFilters":{ }
+,
+"ETextureWrapModes":{ }
+,
+"ETextureParameters":{ }
+,
+"ETextureTypes":{ }
+,
+"ECubeFace":{ }
+,
+"ETextureCubeFlags":{ }
+,
+"ETextureUnits":{ }
+,
+"ESurfaceMaterialTextures":{ }
+,
+"EAFXShaderVariableType":{ }
+,
+"EDataFlowTypes":{ }
+,
+"EResourceCodes":{ }
+,
+"EImageFlags":{ }
+,
+"EImageCubeFlags":{ }
+,
+"ERenderDataTypes":{ }
+,
+"ERenderDataOptions":{ }
+,
+"EMeshOptions":{ }
+,
+"EMeshCloneOptions":{ }
+,
+"ERenderDataBufferOptions":{ }
+,
+"EEntityTypes":{ }
+,
+"ENodeInheritance":{ }
+,
+"EAnimationInterpolations":{ }
+,
+"EAnimationTypes":{ }
+,
+"ECameraParameters":{ }
+,
+"ECameraTypes":{ }
+,
+"EFramebuffer":{ }
+,
+"EStatFlags":{ }
+,
+"EViewportTypes":{ }
+,
+"EVertexBufferTypes":{ }
+,
+"ECanvasTypes":{ }
+,
+"EVolumeClassifications":{ }
+,
+"EPlaneClassifications":{ }
+,
+"ERPCPacketTypes":{ }
+,
+"EPipeTypes":{ }
+,
+"EPipeDataTypes":{ }
+,
+"EGamepadCodes":{ }
+,
+"EGamepadAxis":{ }
+,
+"EKeyCodes":{ }
+,
+"EUILayouts":{ }
+,
+"EUINodeTypes":{ }
+,
+"EUIComponents":{ }
+,
+"EAjaxDataTypes":{ }
+,
+"EAjaxHttpMethods":{ }
+,
+"EAjaxHttpCodes":{ }
+,
+"EUIGraphNodes":{ }
+,
+"EUIGraphDirections":{ }
+,
+"EUIGraphTypes":{ }
+,
+"EUIGraphEvents":{ }
+,
+"EGraphConnectorOrient":{ }
+}
+,
+"interfaces":
+{
+"ILogRoutineFunc":{ }
+,
+"ISourceLocation":{ }
+,
+"ILoggerEntity":{ }
+,
+"ILogger":{ }
+,
+"Pair":{ }
+,
+"StringMap":{ }
+,
+"IntMap":{ }
+,
+"UintMap":{ }
+,
+"FloatMap":{ }
+,
+"BoolMap":{ }
+,
+"BoolDMap":{ }
+,
+"StringDMap":{ }
+,
+"ISceneManager":{ }
+,
+"IParticleManager":{ }
+,
+"IResourcePoolManager":{ }
+,
+"IRenderer":{ }
+,
+"IUtilTimer":{ }
+,
+"IMesh":{ }
+,
+"IRenderDataCollection":{ }
+,
+"IBufferMap":{ }
+,
+"IAnimationController":{ }
+,
+"ISkeleton":{ }
+,
+"IScene3d":{ }
+,
+"IDependens":{ }
+,
+"IAFXComposer":{ }
+,
+"IGamepadMap":{ }
+,
+"IEngineOptions":{ }
+,
+"IEngine":{ }
+,
+"IManager":{ }
+,
+"IUnique":{ }
+,
+"IEventTable":{ }
+,
+"IEventProvider":{ }
+,
+"IScene":{ }
+,
+"IScene2d":{ }
+,
+"IUI":{ }
+,
+"IResourceCode":{ }
+,
+"IResourcePool":{ }
+,
+"IResourceWatcherFunc":{ }
+,
+"IResourcePoolItem":{ }
+,
+"IRenderMethod":{ }
+,
+"ITexture":{ }
+,
+"IVertexBuffer":{ }
+,
+"IModel":{ }
+,
+"ISurfaceMaterial":{ }
+,
+"IEffect":{ }
+,
+"IShaderProgram":{ }
+,
+"IRenderEntry":{ }
+,
+"IRenderQueue":{ }
+,
+"IViewportState":{ }
+,
+"IAFXComponent":{ }
+,
+"IAFXEffect":{ }
+,
+"IRenderableObject":{ }
+,
+"IRenderSnapshot":{ }
+,
+"ISceneObject":{ }
+,
+"IVertexData":{ }
+,
+"IIndexBuffer":{ }
+,
+"IRenderResource":{ }
+,
+"IViewport":{ }
+,
+"IColor":{ }
+,
+"IRenderTarget":{ }
+,
+"ICanvas3d":{ }
+,
+"ISceneNode":{ }
+,
+"ICamera":{ }
+,
+"ILightParameters":{ }
+,
+"ILightPoint":{ }
+,
+"ISceneModel":{ }
+,
+"ISprite":{ }
+,
+"IJoint":{ }
+,
+"IText3d":{ }
+,
+"IDisplayList":{ }
+,
+"IShadowCaster":{ }
+,
+"ITerrainSection":{ }
+,
+"ITerrainSectionROAM":{ }
+,
+"ITerrain":{ }
+,
+"ITerrainROAM":{ }
+,
+"IModelEntry":{ }
+,
+"IToken":{ }
+,
+"IRule":{ }
+,
+"IFinishFunc":{ }
+,
+"IRuleFunction":{ }
+,
+"IParseNode":{ }
+,
+"IParseTree":{ }
+,
+"ILexer":{ }
+,
+"IParserState":{ }
+,
+"IParser":{ }
+,
+"IReferenceCounter":{ }
+,
+"IResourceNotifyRoutineFunc":{ }
+,
+"IResourcePoolItemType":{ }
+,
+"IAFXInstructionStateMap":{ }
+,
+"IAFXInstructionRoutine":{ }
+,
+"IAFXInstructionError":{ }
+,
+"IAFXInstructionMap":{ }
+,
+"IAFXSimpleInstructionMap":{ }
+,
+"IAFXIdExprMap":{ }
+,
+"IAFXVariableTypeMap":{ }
+,
+"IAFXTypeMap":{ }
+,
+"IAFXTypeListMap":{ }
+,
+"IAFXTypeDeclMap":{ }
+,
+"IAFXVariableDeclMap":{ }
+,
+"IAFXVariableDeclListMap":{ }
+,
+"IAFXVarUsedModeMap":{ }
+,
+"IAFXFunctionDeclMap":{ }
+,
+"IAFXTypeUseInfoContainer":{ }
+,
+"IAFXTypeUseInfoMap":{ }
+,
+"IAFXInstruction":{ }
+,
+"IAFXSimpleInstruction":{ }
+,
+"IAFXTypeInstruction":{ }
+,
+"IAFXVariableTypeInstruction":{ }
+,
+"IAFXTypedInstruction":{ }
+,
+"IAFXDeclInstruction":{ }
+,
+"IAFXTypeDeclInstruction":{ }
+,
+"IAFXVariableDeclInstruction":{ }
+,
+"IAFXFunctionDeclInstruction":{ }
+,
+"IAFXStructDeclInstruction":{ }
+,
+"IAFXIdInstruction":{ }
+,
+"IAFXKeywordInstruction":{ }
+,
+"IAFXAnalyzedInstruction":{ }
+,
+"IAFXExprInstruction":{ }
+,
+"IAFXInitExprInstruction":{ }
+,
+"IAFXIdExprInstruction":{ }
+,
+"IAFXLiteralInstruction":{ }
+,
+"IAFXAnnotationInstruction":{ }
+,
+"IAFXStmtInstruction":{ }
+,
+"IAFXPassInstruction":{ }
+,
+"IAFXTechniqueInstruction":{ }
+,
+"IAFXComponentMap":{ }
+,
+"IHardwareObject":{ }
+,
+"PixelFormatList":{ }
+,
+"IBuffer":{ }
+,
+"IHardwareBuffer":{ }
+,
+"EPixelFormats":{ }
+,
+"IBox":{ }
+,
+"IPixelBuffer":{ }
+,
+"IImg":{ }
+,
+"IAFXSamplerStateMap":{ }
+,
+"IAFXSamplerStateListMap":{ }
+,
+"IAFXSamplerState":{ }
+,
+"IMaterial":{ }
+,
+"IAFXPassInputBlend":{ }
+,
+"IAFXComponentBlendMap":{ }
+,
+"IAFXComponentPassInputBlend":{ }
+,
+"IAFXComponentBlend":{ }
+,
+"IDataMapper":{ }
+,
+"IIndexData":{ }
+,
+"IDataFlow":{ }
+,
+"IColladaAsset":{ }
+,
+"ICollada":{ }
+,
+"IColladaCache":{ }
+,
+"IColladaAnimationLoadOptions":{ }
+,
+"IColladaImageLoadOptions":{ }
+,
+"IColladaLoadOptions":{ }
+,
+"IXMLExplorer":{ }
+,
+"IColladaTarget":{ }
+,
+"IColladaEntry":{ }
+,
+"IColladaEntryMap":{ }
+,
+"IColladaLibrary":{ }
+,
+"IColladaEffectLibrary":{ }
+,
+"IColladaEntryLoader":{ }
+,
+"IColladaUnknownFormat":{ }
+,
+"IColladaFormatStrideTable":{ }
+,
+"IColladaConverter":{ }
+,
+"IColladaConvertionTableRow":{ }
+,
+"IColladaConvertionTable":{ }
+,
+"IColladaLinkMap":{ }
+,
+"IColladaLibraryMap":{ }
+,
+"IColladaLibraryTemplate":{ }
+,
+"IColladaArray":{ }
+,
+"IColladaUnit":{ }
+,
+"IColladaContributor":{ }
+,
+"IColladaInstance":{ }
+,
+"IColladaAnnotate":{ }
+,
+"IColladaNewParam":{ }
+,
+"IColladaNewParamMap":{ }
+,
+"IColladaParam":{ }
+,
+"IColladaAccessor":{ }
+,
+"IColladaTechniqueCommon":{ }
+,
+"IColladaSource":{ }
+,
+"IColladaInput":{ }
+,
+"IColladaTransform":{ }
+,
+"IColladaRotate":{ }
+,
+"IColladaTranslate":{ }
+,
+"IColladaScale":{ }
+,
+"IColladaMatrix":{ }
+,
+"IColladaVertices":{ }
+,
+"IColladaJoints":{ }
+,
+"IColladaPolygons":{ }
+,
+"IColladaMesh":{ }
+,
+"IColladaConvexMesh":{ }
+,
+"IColladaSpline":{ }
+,
+"IColladaGeometrie":{ }
+,
+"IColladaMorph":{ }
+,
+"IColladaVertexWeights":{ }
+,
+"IColladaSkin":{ }
+,
+"IColladaController":{ }
+,
+"IColladaImage":{ }
+,
+"IColladaSurface":{ }
+,
+"IColladaSampler2D":{ }
+,
+"IColladaTexture":{ }
+,
+"IColladaInstanceEffect":{ }
+,
+"IColladaPhong":{ }
+,
+"IColladaEffectTechnique":{ }
+,
+"IColladaProfileCommon":{ }
+,
+"IColladaEffect":{ }
+,
+"IColladaMaterial":{ }
+,
+"IColladaTechniqueValue":{ }
+,
+"IColladaBindVertexInput":{ }
+,
+"IColladaBindVertexInputMap":{ }
+,
+"IColladaInstanceMaterial":{ }
+,
+"IColladaBindMaterial":{ }
+,
+"IColladaInstanceGeometry":{ }
+,
+"IColladaInstanceController":{ }
+,
+"IColladaNode":{ }
+,
+"IColladaVisualScene":{ }
+,
+"IColladaAnimationSampler":{ }
+,
+"IColladaAnimationChannel":{ }
+,
+"IColladaAnimation":{ }
+,
+"IColladaScene":{ }
+,
+"IColladaDocument":{ }
+,
+"IColladaAnimationClip":{ }
+,
+"IAnimationBase":{ }
+,
+"IAnimationBaseController":{ }
+,
+"IDataPool":{ }
+,
+"IEventSlot":{ }
+,
+"IEventSlotListMap":{ }
+,
+"IEventSlotMap":{ }
+,
+"IEventSlotTable":{ }
+,
+"IEventSlotList":{ }
+,
+"IMaterialBase":{ }
+,
+"IFlexMaterial":{ }
+,
+"IVertexElement":{ }
+,
+"IVertexDeclaration":{ }
+,
+"IVertexElementInterface":{ }
+,
+"IColorIValue":{ }
+,
+"IColorValue":{ }
+,
+"IPixelBox":{ }
+,
+"IPathinfo":{ }
+,
+"IURI":{ }
+,
+"ICanvasInfo":{ }
+,
+"IBrowserInfo":{ }
+,
+"IScreenInfo":{ }
+,
+"IApiInfo":{ }
+,
+"IVec2Constructor":{ }
+,
+"IVec2":{ }
+,
+"IMat4":{ }
+,
+"IVec3Constructor":{ }
+,
+"IVec3":{ }
+,
+"IVec4":{ }
+,
+"IMat3":{ }
+,
+"IQuat4":{ }
+,
+"IMat4Constructor":{ }
+,
+"IMat3Constructor":{ }
+,
+"IQuat4Constructor":{ }
+,
+"IVec4Constructor":{ }
+,
+"IPixelFormatDescription":{ }
+,
+"IFileMeta":{ }
+,
+"IFile":{ }
+,
+"IThread":{ }
+,
+"IThreadManager":{ }
+,
+"ICodec":{ }
+,
+"ICodecData":{ }
+,
+"IImgCodec":{ }
+,
+"IImgData":{ }
+,
+"ICodecMap":{ }
+,
+"IRenderDataType":{ }
+,
+"IRenderData":{ }
+,
+"IRect3d":{ }
+,
+"ISphere":{ }
+,
+"IMeshSubset":{ }
+,
+"ISkin":{ }
+,
+"IMeshMap":{ }
+,
+"IAnimationFrame":{ }
+,
+"IAnimationTrack":{ }
+,
+"IExplorerFunc":{ }
+,
+"IEntity":{ }
+,
+"INodeMap":{ }
+,
+"INode":{ }
+,
+"ISceneNodeMap":{ }
+,
+"IJointMap":{ }
+,
+"IAnimationTarget":{ }
+,
+"IAnimation":{ }
+,
+"IAnimationElement":{ }
+,
+"IAnimationBlend":{ }
+,
+"IDepthBuffer":{ }
+,
+"IFPSStat":{ }
+,
+"ITimeStat":{ }
+,
+"IFrameStats":{ }
+,
+"IFrustum":{ }
+,
+"ISceneBuilder":{ }
+,
+"IObjectArray":{ }
+,
+"IRenderTexture":{ }
+,
+"IAFXObject":{ }
+,
+"IAFXVariable":{ }
+,
+"IAFXType":{ }
+,
+"IAFXFunction":{ }
+,
+"IAFXPass":{ }
+,
+"IAFXTechnique":{ }
+,
+"IAFXEffectStats":{ }
+,
+"IAFXPreRenderState":{ }
+,
+"IMat2":{ }
+,
+"IShaderInput":{ }
+,
+"IAFXMakerMap":{ }
+,
+"IAFXMaker":{ }
+,
+"IAFXPassBlendMap":{ }
+,
+"IAFXPassBlend":{ }
+,
+"IRenderPass":{ }
+,
+"IRenderTechnique":{ }
+,
+"IRect2d":{ }
+,
+"IBufferData":{ }
+,
+"IBufferDataModifier":{ }
+,
+"ICanvas":{ }
+,
+"ICircle":{ }
+,
+"IDSViewport":{ }
+,
+"IOmniLight":{ }
+,
+"IProjectLight":{ }
+,
+"IPlane3d":{ }
+,
+"IPlane2d":{ }
+,
+"IRect3":{ }
+,
+"IOcTreeNode":{ }
+,
+"IOcTreeRect":{ }
+,
+"IOcTree":{ }
+,
+"IObjectList":{ }
+,
+"IListExplorerFunc":{ }
+,
+"IRay2d":{ }
+,
+"IRay3d":{ }
+,
+"ILightGraph":{ }
+,
+"ISegment2d":{ }
+,
+"ISegment3d":{ }
+,
+"IImageMap":{ }
+,
+"ITerrainSampleData":{ }
+,
+"IMegaTexture":{ }
+,
+"IRPCCallback":{ }
+,
+"IRPCPacket":{ }
+,
+"IRPCRequest":{ }
+,
+"IRPCResponse":{ }
+,
+"IRPC":{ }
+,
+"IPipe":{ }
+,
+"ITerrainSystem":{ }
+,
+"ITriTreeNode":{ }
+,
+"ITriangleNodePool":{ }
+,
+"IAFXBlender":{ }
+,
+"IDDSCodec":{ }
+,
+"IDepsManager":{ }
+,
+"IPoint":{ }
+,
+"IOffset":{ }
+,
+"IKeyMap":{ }
+,
+"IUIHTMLNode":{ }
+,
+"IUIDNDNode":{ }
+,
+"IUIComponentOptions":{ }
+,
+"IUILayoutAttributes":{ }
+,
+"IUILayout":{ }
+,
+"IUINode":{ }
+,
+"IUIEvent":{ }
+,
+"IUIComponentType":{ }
+,
+"IUIComponent":{ }
+,
+"IAjaxStatusCodeCallback":{ }
+,
+"IAjaxStatusCodeMap":{ }
+,
+"IAjaxErrorCallback":{ }
+,
+"IAjaxSuccessCallback":{ }
+,
+"IAjaxBeforeSendCallback":{ }
+,
+"IAjaxParams":{ }
+,
+"IAjaxResultSync":{ }
+,
+"IUIPanelOptions":{ }
+,
+"IUIPanel":{ }
+,
+"IUITabs":{ }
+,
+"IUIButtonOptions":{ }
+,
+"IUIButton":{ }
+,
+"IUISwitch":{ }
+,
+"IUILabelOptions":{ }
+,
+"IUILabel":{ }
+,
+"IUIVector":{ }
+,
+"IUISlider":{ }
+,
+"IUICheckboxOptions":{ }
+,
+"IUICheckbox":{ }
+,
+"IUICheckboxList":{ }
+,
+"IUIWindowOptions":{ }
+,
+"IUIWindow":{ }
+,
+"IUIRenderTargetStats":{ }
+,
+"IUITreeNode":{ }
+,
+"IUITree":{ }
+,
+"IUIGraph":{ }
+,
+"IUIGraphRoute":{ }
+,
+"IUIGraphConnectionArea":{ }
+,
+"IGraphNodeAreaMap":{ }
+,
+"IUIGraphNode":{ }
+,
+"IUIGraphControls":{ }
+,
+"IUIAnimationGraph":{ }
+,
+"IUIAnimationControls":{ }
+,
+"RaphaelPaper":{ }
+,
+"IUIGraphConnector":{ }
+,
+"IUIGraphEvent":{ }
+,
+"IUIAnimationNode":{ }
+,
+"IUIlabel":{ }
+,
+"IUIAnimationData":{ }
+,
+"IUIConnectionAreaOptions":{ }
+,
+"RaphaelPath":{ }
+,
+"IUITempGraphRoute":{ }
+,
+"IAnimationContainer":{ }
+,
+"IUIAnimationPlayer":{ }
+,
+"IUIAnimationMask":{ }
+,
+"IUIAnimationBlender":{ }
+}
+,
+"variables":
+{
+"DEBUG":{ }
+,
+"logger":{ }
+,
+"INVALID_INDEX":{ }
+,
+"MIN_INT32":{ }
+,
+"MAX_INT32":{ }
+,
+"MIN_INT16":{ }
+,
+"MAX_INT16":{ }
+,
+"MIN_INT8":{ }
+,
+"MAX_INT8":{ }
+,
+"MIN_UINT32":{ }
+,
+"MAX_UINT32":{ }
+,
+"MIN_UINT16":{ }
+,
+"MAX_UINT16":{ }
+,
+"MIN_UINT8":{ }
+,
+"MAX_UINT8":{ }
+,
+"SIZE_FLOAT64":{ }
+,
+"SIZE_REAL64":{ }
+,
+"SIZE_FLOAT32":{ }
+,
+"SIZE_REAL32":{ }
+,
+"SIZE_INT32":{ }
+,
+"SIZE_UINT32":{ }
+,
+"SIZE_INT16":{ }
+,
+"SIZE_UINT16":{ }
+,
+"SIZE_INT8":{ }
+,
+"SIZE_UINT8":{ }
+,
+"SIZE_BYTE":{ }
+,
+"SIZE_UBYTE":{ }
+,
+"MAX_FLOAT64":{ }
+,
+"MIN_FLOAT64":{ }
+,
+"TINY_FLOAT64":{ }
+,
+"MAX_FLOAT32":{ }
+,
+"MIN_FLOAT32":{ }
+,
+"TINY_FLOAT32":{ }
+,
+"DEFAULT_MATERIAL_NAME":{ }
+,
+"sid":{ }
+,
+"DeclarationUsages":{ }
+,
+"DeclUsages":{ }
+}
+,
+"functions":
+{
+"typeOf":{ }
+,
+"isDef":{ }
+,
+"isEmpty":{ }
+,
+"isDefAndNotNull":{ }
+,
+"isNull":{ }
+,
+"isBoolean":{ }
+,
+"isString":{ }
+,
+"isNumber":{ }
+,
+"isFloat":{ }
+,
+"isInt":{ }
+,
+"isFunction":{ }
+,
+"isObject":{ }
+,
+"isArrayBuffer":{ }
+,
+"isTypedArray":{ }
+,
+"isBlob":{ }
+,
+"isArray":{ }
+,
+"genArray":{ }
+,
+"getTypeSize":{ }
+,
+"now":{ }
+,
+"memcpy":{ }
+,
+"createEngine":{ }
+,
+"VE_CUSTOM":{ }
+,
+"VE_FLOAT":{ }
+,
+"VE_FLOAT2":{ }
+,
+"VE_FLOAT3":{ }
+,
+"VE_FLOAT4":{ }
+,
+"VE_FLOAT4x4":{ }
+,
+"VE_VEC2":{ }
+,
+"VE_VEC3":{ }
+,
+"VE_VEC4":{ }
+,
+"VE_MAT4":{ }
+,
+"VE_INT":{ }
+,
+"VE_END":{ }
+,
+"createVertexDeclaration":{ }
+,
+"vec2":{ }
+,
+"vec3":{ }
+,
+"vec4":{ }
+,
+"quat4":{ }
+,
+"mat3":{ }
+,
+"mat4":{ }
+,
+"createSingleStripGrid":{ }
+,
+"getCountIndexForStripGrid":{ }
+}
+,
+"modules":
+{
+"libs":{ }
+,
+"bf":{ }
+,
+"util":{ }
+,
+"core":{ }
+,
+"events":{ }
+,
+"data":{ }
+,
+"material":{ }
+,
+"math":{ }
+,
+"geometry":{ }
+,
+"pixelUtil":{ }
+,
+"webgl":{ }
+,
+"info":{ }
+,
+"io":{ }
+,
+"scene":{ }
+,
+"model":{ }
+,
+"animation":{ }
+,
+"fx":{ }
+,
+"render":{ }
+,
+"net":{ }
+,
+"terrain":{ }
+,
+"controls":{ }
+,
+"ui":{ }
+}
+,
+"typeDefs":
+{
+"VertexElement":{ }
+,
+"VertexDeclaration":{ }
+,
+"Color":{ }
+,
+"Material":{ }
+,
+"Pathinfo":{ }
+,
+"Vec2":{ }
+,
+"Vec3":{ }
+,
+"Vec4":{ }
+,
+"Mat3":{ }
+,
+"Mat4":{ }
+,
+"Quat4":{ }
+,
+"ObjectArray":{ }
+,
+"ObjectList":{ }
+}
+,
+"classes":
+{
+"Codec":{ }
+,
+"CodecData":{ }
+,
+"ImgCodec":{ }
+,
+"ImgData":{ }
+,
+"DDSCodec":{ }
+}
+}

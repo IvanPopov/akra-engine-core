@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "totalPasses" : { "location" : "akra.IRenderTechnique",
+"type" : "number"},
+"modified" : { "location" : "akra.IRenderTechnique",
+"type" : "number"},
+"data" : { "location" : "akra.IRenderTechnique",
+"type" : "IAFXComponentBlend"}}}}

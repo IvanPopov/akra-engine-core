@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "disabled" : { "location" : "TooltipOptions",
+"type" : "bool"},
+"items" : { "location" : "TooltipOptions",
+"type" : "string"},
+"tooltipClass" : { "location" : "TooltipOptions",
+"type" : "string"},
+"track" : { "location" : "TooltipOptions",
+"type" : "bool"}}}}

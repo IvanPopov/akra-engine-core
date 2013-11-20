@@ -1,0 +1,28 @@
+<span>
+	<div class="wrap">
+		<a class="arrow opened" href="javascript:void(0);"><span class="bg"></span></a>
+		<a class="icon {{docobject.type|toStyleType}}" href="#"></a>
+		<a class="text" href="#{{docobject.location}}/{{docobject.name}}">{{docobject.name}}</a>
+	</div>
+	<div class="sub-menu">
+		<div class="legend">
+			<div class="row">
+				<div class="col-md-2"><a class="link j-sm-button" data-name="methods" href="javascript:void(0);"><img src="images/sm-methods-icon.png" alt=""/></a></div>
+				<div class="col-md-2"><a class="link j-sm-button" data-name="members" href="javascript:void(0);"><img src="images/sm-members-icon.png" alt=""/></a></div>
+				<div class="col-md-2"><a class="link j-sm-button" data-name="accessors" href="javascript:void(0);"><img src="images/sm-accessors-icon.png" alt=""/></a></div>
+				<div class="col-md-2"><a class="link j-sm-button" data-name="signals" href="javascript:void(0);"><img src="images/sm-signals-icon.png" alt=""/></a></div>
+				<div class="col-md-2"><a class="link j-sm-button" data-name="static" href="javascript:void(0);"><img src="images/sm-static-icon.png" alt=""/></a></div>
+				<div class="col-md-2"></div>
+			</div>
+		</div>
+		<div class="sub-wrap">
+			<div class="j-sm-sub-list" ng-repeat="(key,subdata) in filtersubobjects(docobject.data)" data-name="{{key}}">
+				<ul class="sub-list" ng-repeat="(subkey,subsubdata) in subdata">
+					<li class="sub-item"><a class="sub-link {{key|toStyleType}}" href="#{{docobject.location}}/{{docobject.name}}/{{subkey}}">{{subkey}}</a></li>
+				</ul>
+				<div class="sep"></div>
+			</div>
+		</div>
+		<div class="sub-bottom-row"></div>
+	</div>
+</span>

@@ -1,0 +1,13 @@
+{ "location" : "",
+"variables" : { "public" : { "alpha" : { "location" : "WebGLContextAttributes",
+"type" : "bool"},
+"depth" : { "location" : "WebGLContextAttributes",
+"type" : "bool"},
+"stencil" : { "location" : "WebGLContextAttributes",
+"type" : "bool"},
+"antialias" : { "location" : "WebGLContextAttributes",
+"type" : "bool"},
+"premultipliedAlpha" : { "location" : "WebGLContextAttributes",
+"type" : "bool"},
+"preserveDrawingBuffer" : { "location" : "WebGLContextAttributes",
+"type" : "bool"}}}}

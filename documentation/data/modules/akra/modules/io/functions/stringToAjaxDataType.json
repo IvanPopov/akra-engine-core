@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.io",
+"arguments" : [ { "name" : "sDataType",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "EAjaxDataTypes",
+"isInline" : false}

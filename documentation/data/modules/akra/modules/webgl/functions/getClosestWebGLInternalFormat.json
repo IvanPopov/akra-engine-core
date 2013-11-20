@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.webgl",
+"arguments" : [ { "name" : "eFormat",
+"isOptional" : false,
+"type" : "EPixelFormats"},
+{ "name" : "isHWGamma",
+"isOptional" : true,
+"type" : "bool"} ],
+"type" : "number",
+"isInline" : false}

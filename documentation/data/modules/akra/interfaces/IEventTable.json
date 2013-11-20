@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "broadcast" : { "location" : "akra.IEventTable",
+"type" : "IEventSlotTable"},
+"unicast" : { "location" : "akra.IEventTable",
+"type" : "IEventSlotList"}}}}

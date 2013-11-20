@@ -1,0 +1,11 @@
+{ "location" : "",
+"variables" : { "public" : { "autoFocus" : { "location" : "AutocompleteOptions",
+"type" : "bool"},
+"delay" : { "location" : "AutocompleteOptions",
+"type" : "number"},
+"disabled" : { "location" : "AutocompleteOptions",
+"type" : "bool"},
+"minLength" : { "location" : "AutocompleteOptions",
+"type" : "number"},
+"position" : { "location" : "AutocompleteOptions",
+"type" : "string"}}}}

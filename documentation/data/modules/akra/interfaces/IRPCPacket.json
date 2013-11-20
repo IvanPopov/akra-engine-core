@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "n" : { "location" : "akra.IRPCPacket",
+"type" : "number"},
+"type" : { "location" : "akra.IRPCPacket",
+"type" : "ERPCPacketTypes"}}}}

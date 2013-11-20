@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IColladaUnknownFormat",
+"type" : "string[  ]"},
+"type" : { "location" : "akra.IColladaUnknownFormat",
+"type" : "string[  ]"}}}}

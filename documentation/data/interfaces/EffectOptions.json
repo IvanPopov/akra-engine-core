@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "effect" : { "location" : "EffectOptions",
+"type" : "string"},
+"easing" : { "location" : "EffectOptions",
+"type" : "string"},
+"duration" : { "location" : "EffectOptions",
+"type" : "any"},
+"complete" : { "location" : "EffectOptions",
+"type" : "Function"}}}}

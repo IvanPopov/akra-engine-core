@@ -1,0 +1,7 @@
+{ "location" : "akra.util",
+"variables" : { "public" : { "code" : { "location" : "akra.util.ICodeInfo",
+"type" : "number"},
+"message" : { "location" : "akra.util.ICodeInfo",
+"type" : "string"},
+"familyName" : { "location" : "akra.util.ICodeInfo",
+"type" : "string"}}}}

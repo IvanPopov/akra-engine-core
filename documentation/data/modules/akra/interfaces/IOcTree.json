@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "depth" : { "location" : "akra.IOcTree",
+"type" : "number"},
+"worldScale" : { "location" : "akra.IOcTree",
+"type" : "IVec3"},
+"worldOffset" : { "location" : "akra.IOcTree",
+"type" : "IVec3"}}}}

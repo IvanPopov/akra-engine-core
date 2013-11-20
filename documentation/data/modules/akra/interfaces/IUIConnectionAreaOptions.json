@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "maxConnections" : { "location" : "akra.IUIConnectionAreaOptions",
+"type" : "number"},
+"maxInConnections" : { "location" : "akra.IUIConnectionAreaOptions",
+"type" : "number"},
+"maxOutConnections" : { "location" : "akra.IUIConnectionAreaOptions",
+"type" : "number"}}}}

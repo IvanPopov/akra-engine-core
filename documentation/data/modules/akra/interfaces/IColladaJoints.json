@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "inputs" : { "location" : "akra.IColladaJoints",
+"type" : "{  [ input :  string ] :  IColladaInput; }"}}}}

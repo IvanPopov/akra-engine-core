@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "time" : { "location" : "akra.IEngine",
+"type" : "number"},
+"elapsedTime" : { "location" : "akra.IEngine",
+"type" : "number"}}}}

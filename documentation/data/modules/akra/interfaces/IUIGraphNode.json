@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "graphNodeType" : { "location" : "akra.IUIGraphNode",
+"type" : "EUIGraphNodes"},
+"graph" : { "location" : "akra.IUIGraphNode",
+"type" : "IUIGraph"},
+"areas" : { "location" : "akra.IUIGraphNode",
+"type" : "IGraphNodeAreaMap"}}}}

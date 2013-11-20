@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "params" : { "location" : "akra.ILightPoint",
+"type" : "ILightParameters"},
+"enabled" : { "location" : "akra.ILightPoint",
+"type" : "bool"},
+"lightType" : { "location" : "akra.ILightPoint",
+"type" : "ELightTypes"},
+"isShadowCaster" : { "location" : "akra.ILightPoint",
+"type" : "bool"}}}}

@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.controls",
+"arguments" : [ { "name" : "target",
+"isOptional" : true,
+"type" : "HTMLElement"} ],
+"type" : "IKeyMap",
+"isInline" : false}

@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "rgba" : { "location" : "akra.IColor",
+"type" : "number"},
+"argb" : { "location" : "akra.IColor",
+"type" : "number"},
+"bgra" : { "location" : "akra.IColor",
+"type" : "number"},
+"abgr" : { "location" : "akra.IColor",
+"type" : "number"},
+"html" : { "location" : "akra.IColor",
+"type" : "string"},
+"htmlRgba" : { "location" : "akra.IColor",
+"type" : "string"}}}}

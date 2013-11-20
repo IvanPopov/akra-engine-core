@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "componentType" : { "location" : "akra.IUIComponent",
+"type" : "EUIComponents"},
+"genericType" : { "location" : "akra.IUIComponent",
+"type" : "string"},
+"layout" : { "location" : "akra.IUIComponent",
+"type" : "IUILayout"}}}}

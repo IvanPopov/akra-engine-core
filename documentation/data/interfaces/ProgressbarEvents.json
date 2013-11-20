@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "change" : { "location" : "ProgressbarEvents",
+"type" : "ProgressbarEvent"},
+"complete" : { "location" : "ProgressbarEvents",
+"type" : "ProgressbarEvent"},
+"create" : { "location" : "ProgressbarEvents",
+"type" : "ProgressbarEvent"}}}}

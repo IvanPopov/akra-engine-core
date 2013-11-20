@@ -1,0 +1,9 @@
+{ "location" : "akra.fx",
+"constructors" : [ { "comments" : [  ],
+"location" : "akra.fx.StmtBlockInstruction",
+"arguments" : [  ]} ],
+"functions" : { "toFinalCode" : { "comments" : [  ],
+"location" : "akra.fx.StmtBlockInstruction",
+"arguments" : [  ],
+"type" : "string",
+"isInline" : false}}}

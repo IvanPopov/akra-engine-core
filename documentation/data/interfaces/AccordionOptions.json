@@ -1,0 +1,13 @@
+{ "location" : "",
+"variables" : { "public" : { "collapsible" : { "location" : "AccordionOptions",
+"type" : "bool"},
+"disabled" : { "location" : "AccordionOptions",
+"type" : "bool"},
+"event" : { "location" : "AccordionOptions",
+"type" : "string"},
+"header" : { "location" : "AccordionOptions",
+"type" : "string"},
+"heightStyle" : { "location" : "AccordionOptions",
+"type" : "string"},
+"icons" : { "location" : "AccordionOptions",
+"type" : "any"}}}}

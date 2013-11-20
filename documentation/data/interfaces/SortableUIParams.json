@@ -1,0 +1,13 @@
+{ "location" : "",
+"variables" : { "public" : { "helper" : { "location" : "SortableUIParams",
+"type" : "JQuery"},
+"item" : { "location" : "SortableUIParams",
+"type" : "JQuery"},
+"offset" : { "location" : "SortableUIParams",
+"type" : "any"},
+"position" : { "location" : "SortableUIParams",
+"type" : "any"},
+"originalPosition" : { "location" : "SortableUIParams",
+"type" : "any"},
+"sender" : { "location" : "SortableUIParams",
+"type" : "JQuery"}}}}

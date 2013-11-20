@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IColladaAnimationClip",
+"type" : "string"},
+"start" : { "location" : "akra.IColladaAnimationClip",
+"type" : "number"},
+"end" : { "location" : "akra.IColladaAnimationClip",
+"type" : "number"}}}}

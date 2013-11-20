@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "width" : { "location" : "akra.IPixelBuffer",
+"type" : "number"},
+"height" : { "location" : "akra.IPixelBuffer",
+"type" : "number"},
+"depth" : { "location" : "akra.IPixelBuffer",
+"type" : "number"},
+"format" : { "location" : "akra.IPixelBuffer",
+"type" : "EPixelFormats"}}}}

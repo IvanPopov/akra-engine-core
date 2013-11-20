@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "baseNeighbor" : { "location" : "akra.ITriTreeNode",
+"type" : "ITriTreeNode"},
+"leftNeighbor" : { "location" : "akra.ITriTreeNode",
+"type" : "ITriTreeNode"},
+"rightNeighbor" : { "location" : "akra.ITriTreeNode",
+"type" : "ITriTreeNode"},
+"leftChild" : { "location" : "akra.ITriTreeNode",
+"type" : "ITriTreeNode"},
+"rightChild" : { "location" : "akra.ITriTreeNode",
+"type" : "ITriTreeNode"}}}}

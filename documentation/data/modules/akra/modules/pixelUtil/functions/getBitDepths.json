@@ -1,0 +1,13 @@
+{ "comments" : [ [ "/** Gives the number of bits (RGBA) for a format. See remarks.",
+"@remarks      For non-colour formats (dxt,
+ depth) this returns [ 0,
+0,
+0,
+0 ].",
+"*/" ] ],
+"location" : "akra.pixelUtil",
+"arguments" : [ { "name" : "eFormat",
+"isOptional" : false,
+"type" : "EPixelFormats"} ],
+"type" : "[  ]",
+"isInline" : false}

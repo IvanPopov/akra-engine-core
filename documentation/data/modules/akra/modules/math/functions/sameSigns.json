@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "a",
+"isOptional" : false,
+"type" : "number"},
+{ "name" : "b",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "bool",
+"isInline" : true}

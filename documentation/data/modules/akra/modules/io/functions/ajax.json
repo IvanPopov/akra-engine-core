@@ -1,0 +1,13 @@
+{ "comments" : [  ],
+"location" : "akra.io",
+"arguments" : [ { "name" : "pUrl",
+"isOptional" : false,
+"type" : "any"},
+{ "name" : "pSettings",
+"isOptional" : true,
+"type" : "any"},
+{ "name" : "pRequest",
+"isOptional" : true,
+"type" : "any"} ],
+"type" : "IAjaxResultSync",
+"isInline" : false}

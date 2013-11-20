@@ -1,0 +1,25 @@
+
+{
+"location":"akra.ui",
+"classes":
+{
+"Node":{ }
+,
+"Data":{ }
+,
+"Player":{ }
+,
+"Mask":{ }
+,
+"Blender":{ }
+,
+"Controls":{ }
+,
+"Graph":{ }
+}
+,
+"interfaces":
+{
+"IBlenderSliderContainer":{ }
+}
+}

@@ -1,0 +1,5 @@
+{ "location" : "",
+"variables" : { "public" : { "distance" : { "location" : "BounceEffect",
+"type" : "number"},
+"times" : { "location" : "BounceEffect",
+"type" : "number"}}}}

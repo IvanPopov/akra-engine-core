@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "center" : { "location" : "akra.ISphere",
+"type" : "IVec3"},
+"radius" : { "location" : "akra.ISphere",
+"type" : "number"},
+"circle" : { "location" : "akra.ISphere",
+"type" : "ICircle"},
+"z" : { "location" : "akra.ISphere",
+"type" : "number"}}}}

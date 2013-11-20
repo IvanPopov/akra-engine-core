@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "lib" : { "location" : "akra.IColladaLibraryTemplate",
+"type" : "string"},
+"element" : { "location" : "akra.IColladaLibraryTemplate",
+"type" : "string"},
+"loader" : { "location" : "akra.IColladaLibraryTemplate",
+"type" : "string"}}}}

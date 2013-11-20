@@ -1,0 +1,5 @@
+{ "location" : "",
+"variables" : { "public" : { "disabled" : { "location" : "ProgressbarOptions",
+"type" : "bool"},
+"value" : { "location" : "ProgressbarOptions",
+"type" : "number"}}}}

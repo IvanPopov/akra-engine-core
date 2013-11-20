@@ -1,0 +1,12 @@
+[ { "name" : "COLOR_ATTACHMENT0",
+"text" : "0x8CE0",
+"value" : 36064},
+{ "name" : "DEPTH_ATTACHMENT",
+"text" : "0x8D00",
+"value" : 36096},
+{ "name" : "STENCIL_ATTACHMENT",
+"text" : "0x8D20",
+"value" : 36128},
+{ "name" : "DEPTH_STENCIL_ATTACHMENT",
+"text" : "0x821A",
+"value" : 33306} ]

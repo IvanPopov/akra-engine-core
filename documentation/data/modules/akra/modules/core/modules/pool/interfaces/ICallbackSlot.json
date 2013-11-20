@@ -1,0 +1,7 @@
+{ "location" : "akra.core.pool",
+"variables" : { "public" : { "bState" : { "location" : "akra.core.pool.ICallbackSlot",
+"type" : "bool"},
+"fn" : { "location" : "akra.core.pool.ICallbackSlot",
+"type" : "IResourceNotifyRoutineFunc"},
+"pResourceItem" : { "location" : "akra.core.pool.ICallbackSlot",
+"type" : "IResourcePoolItem"}}}}

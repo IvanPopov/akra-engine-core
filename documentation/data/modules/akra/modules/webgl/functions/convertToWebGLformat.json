@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.webgl",
+"arguments" : [ { "name" : "pSource",
+"isOptional" : false,
+"type" : "IPixelBox"},
+{ "name" : "pDest",
+"isOptional" : false,
+"type" : "IPixelBox"} ],
+"type" : "void",
+"isInline" : false}

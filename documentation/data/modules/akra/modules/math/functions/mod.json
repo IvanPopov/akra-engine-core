@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "e",
+"isOptional" : false,
+"type" : "number"},
+{ "name" : "divisor",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : true}

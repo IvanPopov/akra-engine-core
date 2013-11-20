@@ -1,0 +1,9 @@
+[ { "name" : "k_Pause",
+"text" : "0",
+"value" : 0},
+{ "name" : "k_Ok",
+"text" : "1",
+"value" : 1},
+{ "name" : "k_Error",
+"text" : "2",
+"value" : 2} ]

@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "totalComponents" : { "location" : "akra.IEffect",
+"type" : "number"},
+"totalPasses" : { "location" : "akra.IEffect",
+"type" : "number"}}}}

@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pBuf",
+"isOptional" : false,
+"type" : "ArrayBuffer"} ],
+"type" : "string",
+"isInline" : false}

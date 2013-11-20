@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "graphType" : { "location" : "akra.IUIGraph",
+"type" : "EUIGraphTypes"},
+"nodes" : { "location" : "akra.IUIGraph",
+"type" : "IUIGraphNode[  ]"},
+"canvas" : { "location" : "akra.IUIGraph",
+"type" : "RaphaelPaper"}}}}

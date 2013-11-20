@@ -1,0 +1,9 @@
+[ { "name" : "UNKNOWN",
+"text" : "0",
+"value" : 0},
+{ "name" : "WEBSOCKET",
+"text" : "1",
+"value" : 1},
+{ "name" : "WEBWORKER",
+"text" : "2",
+"value" : 2} ]

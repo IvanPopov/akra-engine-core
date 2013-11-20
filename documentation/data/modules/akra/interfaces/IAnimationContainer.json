@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "animationName" : { "location" : "akra.IAnimationContainer",
+"type" : "string"},
+"speed" : { "location" : "akra.IAnimationContainer",
+"type" : "number"},
+"animationTime" : { "location" : "akra.IAnimationContainer",
+"type" : "number"},
+"time" : { "location" : "akra.IAnimationContainer",
+"type" : "number"}}}}

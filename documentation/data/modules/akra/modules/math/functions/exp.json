@@ -1,0 +1,10 @@
+{ "comments" : [ [ "/**",
+"* Returns e (the base of natural logarithms) raised to a power.",
+"* @param x A numeric expression representing the power of e.",
+"*/" ] ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "x",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : false}

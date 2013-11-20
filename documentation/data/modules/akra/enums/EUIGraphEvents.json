@@ -1,0 +1,12 @@
+[ { "name" : "UNKNOWN",
+"text" : "0",
+"value" : 0},
+{ "name" : "DELETE",
+"text" : "1",
+"value" : 1},
+{ "name" : "SHOW_MAP",
+"text" : "2",
+"value" : 2},
+{ "name" : "HIDE_MAP",
+"text" : "3",
+"value" : 3} ]

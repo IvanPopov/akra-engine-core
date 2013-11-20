@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.io",
+"arguments" : [ { "name" : "pData",
+"isOptional" : false,
+"type" : "any"},
+{ "name" : "sPrefix",
+"isOptional" : true,
+"type" : "string"} ],
+"type" : "string",
+"isInline" : false}

@@ -1,0 +1,5 @@
+{ "location" : "",
+"variables" : { "public" : { "close" : { "location" : "TooltipEvents",
+"type" : "TooltipEvent"},
+"open" : { "location" : "TooltipEvents",
+"type" : "TooltipEvent"}}}}

@@ -1,0 +1,11 @@
+{ "location" : "",
+"variables" : { "public" : { "culture" : { "location" : "SpinnerOptions",
+"type" : "string"},
+"disabled" : { "location" : "SpinnerOptions",
+"type" : "bool"},
+"icons" : { "location" : "SpinnerOptions",
+"type" : "any"},
+"numberFormat" : { "location" : "SpinnerOptions",
+"type" : "string"},
+"page" : { "location" : "SpinnerOptions",
+"type" : "number"}}}}

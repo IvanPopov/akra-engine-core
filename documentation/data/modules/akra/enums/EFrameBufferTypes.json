@@ -1,0 +1,9 @@
+[ { "name" : "COLOR",
+"text" : "0x1",
+"value" : 1},
+{ "name" : "DEPTH",
+"text" : "0x2",
+"value" : 2},
+{ "name" : "STENCIL",
+"text" : "0x4",
+"value" : 4} ]

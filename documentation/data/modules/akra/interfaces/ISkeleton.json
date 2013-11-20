@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "totalBones" : { "location" : "akra.ISkeleton",
+"type" : "number"},
+"totalNodes" : { "location" : "akra.ISkeleton",
+"type" : "number"},
+"name" : { "location" : "akra.ISkeleton",
+"type" : "string"},
+"root" : { "location" : "akra.ISkeleton",
+"type" : "IJoint"}}}}

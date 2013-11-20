@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "size" : { "location" : "WebGLActiveInfo",
+"type" : "number"},
+"type" : { "location" : "WebGLActiveInfo",
+"type" : "number"},
+"name" : { "location" : "WebGLActiveInfo",
+"type" : "string"}}}}

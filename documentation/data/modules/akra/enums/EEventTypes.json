@@ -1,0 +1,6 @@
+[ { "name" : "BROADCAST",
+"text" : "0",
+"value" : 0},
+{ "name" : "UNICAST",
+"text" : "1",
+"value" : 1} ]

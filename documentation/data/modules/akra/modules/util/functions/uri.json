@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "sUri",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IURI",
+"isInline" : true}

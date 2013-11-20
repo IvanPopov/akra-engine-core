@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "semantics" : { "location" : "akra.IColladaInput",
+"type" : "string"},
+"source" : { "location" : "akra.IColladaInput",
+"type" : "IColladaSource"},
+"offset" : { "location" : "akra.IColladaInput",
+"type" : "number"},
+"set" : { "location" : "akra.IColladaInput",
+"type" : "string"},
+"array" : { "location" : "akra.IColladaInput",
+"type" : "any[  ]"},
+"accessor" : { "location" : "akra.IColladaInput",
+"type" : "IColladaAccessor"}}}}

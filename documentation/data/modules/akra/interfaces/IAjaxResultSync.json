@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "data" : { "location" : "akra.IAjaxResultSync",
+"type" : "any"},
+"statusText" : { "location" : "akra.IAjaxResultSync",
+"type" : "string"},
+"xhr" : { "location" : "akra.IAjaxResultSync",
+"type" : "XMLHttpRequest"}}}}

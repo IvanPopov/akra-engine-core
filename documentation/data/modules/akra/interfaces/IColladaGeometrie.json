@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IColladaGeometrie",
+"type" : "string"},
+"mesh" : { "location" : "akra.IColladaGeometrie",
+"type" : "IColladaMesh"},
+"convexMesh" : { "location" : "akra.IColladaGeometrie",
+"type" : "IColladaConvexMesh"},
+"spline" : { "location" : "akra.IColladaGeometrie",
+"type" : "IColladaSpline"}}}}

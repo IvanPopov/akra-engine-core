@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "target" : { "location" : "akra.IAnimationTarget",
+"type" : "ISceneNode"},
+"index" : { "location" : "akra.IAnimationTarget",
+"type" : "number"},
+"name" : { "location" : "akra.IAnimationTarget",
+"type" : "string"},
+"track" : { "location" : "akra.IAnimationTarget",
+"type" : "IAnimationTrack"}}}}

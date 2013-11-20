@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "totalTextures" : { "location" : "akra.ISurfaceMaterial",
+"type" : "number"},
+"material" : { "location" : "akra.ISurfaceMaterial",
+"type" : "IMaterial"},
+"textureFlags" : { "location" : "akra.ISurfaceMaterial",
+"type" : "number"},
+"textureMatrixFlags" : { "location" : "akra.ISurfaceMaterial",
+"type" : "number"}}}}

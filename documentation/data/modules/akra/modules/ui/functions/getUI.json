@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.ui",
+"arguments" : [ { "name" : "parent",
+"isOptional" : false,
+"type" : "IUI"} ],
+"type" : "IUI",
+"isInline" : false}

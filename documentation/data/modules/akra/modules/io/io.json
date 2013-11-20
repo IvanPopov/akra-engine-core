@@ -1,0 +1,51 @@
+
+{
+"location":"akra",
+"enums":
+{
+"EFileActions":{ }
+,
+"EFileTransferModes":{ }
+,
+"EIO":{ }
+}
+,
+"interfaces":
+{
+"IFileCommand":{ }
+}
+,
+"functions":
+{
+"getLocalFileThreadManager":{ }
+,
+"getRemoteFileThreadManager":{ }
+,
+"getFileSystem":{ }
+,
+"filemode":{ }
+,
+"fopen":{ }
+,
+"stringToHttpMethod":{ }
+,
+"stringToAjaxDataType":{ }
+,
+"ajaxDataTypeToXHRResponseType":{ }
+,
+"createXMLHttpRequest":{ }
+,
+"queryString":{ }
+,
+"ajax":{ }
+}
+,
+"classes":
+{
+"TFile":{ }
+,
+"LocalFile":{ }
+,
+"StorageFile":{ }
+}
+}

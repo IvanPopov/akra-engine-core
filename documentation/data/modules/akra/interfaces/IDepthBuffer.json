@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "bitDepth" : { "location" : "akra.IDepthBuffer",
+"type" : "number"},
+"width" : { "location" : "akra.IDepthBuffer",
+"type" : "number"},
+"height" : { "location" : "akra.IDepthBuffer",
+"type" : "number"}}}}

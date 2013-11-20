@@ -1,0 +1,6 @@
+[ { "name" : "MAPPABLE",
+"text" : "1",
+"value" : 1},
+{ "name" : "UNMAPPABLE",
+"text" : "0",
+"value" : 0} ]

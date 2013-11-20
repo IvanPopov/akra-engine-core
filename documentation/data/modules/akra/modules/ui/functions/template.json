@@ -1,0 +1,13 @@
+{ "comments" : [  ],
+"location" : "akra.ui",
+"arguments" : [ { "name" : "pNode",
+"isOptional" : false,
+"type" : "IUIComponent"},
+{ "name" : "sUrl",
+"isOptional" : false,
+"type" : "string"},
+{ "name" : "pData",
+"isOptional" : true,
+"type" : "any"} ],
+"type" : "void",
+"isInline" : false}

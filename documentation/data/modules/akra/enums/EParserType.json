@@ -1,0 +1,9 @@
+[ { "name" : "k_LR0",
+"text" : "0",
+"value" : 0},
+{ "name" : "k_LR1",
+"text" : "1",
+"value" : 1},
+{ "name" : "k_LALR",
+"text" : "2",
+"value" : 2} ]

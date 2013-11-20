@@ -1,0 +1,5 @@
+{ "location" : "",
+"variables" : { "public" : { "className" : { "location" : "TransferEffect",
+"type" : "string"},
+"to" : { "location" : "TransferEffect",
+"type" : "string"}}}}

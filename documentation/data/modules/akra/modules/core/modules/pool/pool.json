@@ -1,0 +1,30 @@
+
+{
+"location":"akra.core",
+"classes":
+{
+"ResourceCode":{ }
+,
+"ResourcePool":{ }
+,
+"PoolGroup":{ }
+,
+"DataPool":{ }
+,
+"ResourcePoolItem":{ }
+,
+"ResourcePoolManager":{ }
+}
+,
+"interfaces":
+{
+"IGroupNumber":{ }
+,
+"ICallbackSlot":{ }
+}
+,
+"modules":
+{
+"resources":{ }
+}
+}

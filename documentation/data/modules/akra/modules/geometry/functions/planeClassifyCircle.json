@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.geometry",
+"arguments" : [ { "name" : "pPlane",
+"isOptional" : false,
+"type" : "IPlane2d"},
+{ "name" : "pCircle",
+"isOptional" : false,
+"type" : "ICircle"} ],
+"type" : "EPlaneClassifications",
+"isInline" : false}

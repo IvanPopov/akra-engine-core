@@ -1,0 +1,9 @@
+{ "location" : "akra.util",
+"variables" : { "public" : { "items" : { "location" : "akra.util.IState",
+"type" : "IItem[  ]"},
+"numBaseItems" : { "location" : "akra.util.IState",
+"type" : "number"},
+"index" : { "location" : "akra.util.IState",
+"type" : "number"},
+"nextStates" : { "location" : "akra.util.IState",
+"type" : "IStateMap"}}}}

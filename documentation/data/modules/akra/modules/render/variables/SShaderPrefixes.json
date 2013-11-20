@@ -1,0 +1,2 @@
+{ "location" : "akra.render",
+"type" : "{  k_Sampler :  string; k_Header :  string; k_Attribute :  string; k_Offset :  string; k_Texture :  string; k_Texcoord :  string; k_Texmatrix :  string; k_Temp :  string; k_BlendType :  string; }"}

@@ -1,0 +1,9 @@
+[ { "name" : "COMPRESSED",
+"text" : "0x00000001",
+"value" : 1},
+{ "name" : "CUBEMAP",
+"text" : "0x00000002",
+"value" : 2},
+{ "name" : "TEXTURE_3D",
+"text" : "0x00000004",
+"value" : 4} ]

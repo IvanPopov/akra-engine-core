@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.bf",
+"arguments" : [ { "name" : "i",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : false}

@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "depsRoot" : { "location" : "akra.IEngineOptions",
+"type" : "string"},
+"deps" : { "location" : "akra.IEngineOptions",
+"type" : "IDependens"},
+"gamepads" : { "location" : "akra.IEngineOptions",
+"type" : "bool"}}}}

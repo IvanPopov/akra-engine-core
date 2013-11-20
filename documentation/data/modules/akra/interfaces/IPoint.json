@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "x" : { "location" : "akra.IPoint",
+"type" : "number"},
+"y" : { "location" : "akra.IPoint",
+"type" : "number"}}}}

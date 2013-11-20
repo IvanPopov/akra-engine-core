@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "symbol" : { "location" : "akra.IColladaInstanceMaterial",
+"type" : "string"},
+"target" : { "location" : "akra.IColladaInstanceMaterial",
+"type" : "string"},
+"vertexInput" : { "location" : "akra.IColladaInstanceMaterial",
+"type" : "IColladaBindVertexInputMap"},
+"material" : { "location" : "akra.IColladaInstanceMaterial",
+"type" : "IColladaMaterial"}}}}

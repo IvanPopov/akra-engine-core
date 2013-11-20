@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra",
+"arguments" : [ { "name" : "eType",
+"isOptional" : false,
+"type" : "EDataTypes"} ],
+"type" : "number",
+"isInline" : false}

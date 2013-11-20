@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "viewport" : { "location" : "akra.IRenderEntry",
+"type" : "IViewport"},
+"renderTarget" : { "location" : "akra.IRenderEntry",
+"type" : "IRenderTarget"},
+"maker" : { "location" : "akra.IRenderEntry",
+"type" : "IAFXMaker"},
+"input" : { "location" : "akra.IRenderEntry",
+"type" : "IShaderInput"},
+"bufferMap" : { "location" : "akra.IRenderEntry",
+"type" : "IBufferMap"}}}}

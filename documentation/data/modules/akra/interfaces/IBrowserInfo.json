@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IBrowserInfo",
+"type" : "string"},
+"version" : { "location" : "akra.IBrowserInfo",
+"type" : "string"},
+"os" : { "location" : "akra.IBrowserInfo",
+"type" : "string"}}}}

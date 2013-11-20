@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "worldBounds" : { "location" : "akra.ISceneObject",
+"type" : "IRect3d"},
+"totalRenderable" : { "location" : "akra.ISceneObject",
+"type" : "number"},
+"hasShadow" : { "location" : "akra.ISceneObject",
+"type" : "bool"},
+"localBounds" : { "location" : "akra.ISceneObject",
+"type" : "IRect3d"}}}}

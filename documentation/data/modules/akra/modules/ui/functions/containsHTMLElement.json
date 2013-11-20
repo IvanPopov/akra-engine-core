@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.ui",
+"arguments" : [ { "name" : "pEntity",
+"isOptional" : false,
+"type" : "IEntity"} ],
+"type" : "bool",
+"isInline" : true}

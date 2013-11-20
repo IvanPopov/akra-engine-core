@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "proc" : { "location" : "akra.IRPCRequest",
+"type" : "string"},
+"argv" : { "location" : "akra.IRPCRequest",
+"type" : "any[  ]"}}}}

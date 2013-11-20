@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "shaderProgram" : { "location" : "akra.IAFXMaker",
+"type" : "IShaderProgram"},
+"attributeSemantics" : { "location" : "akra.IAFXMaker",
+"type" : "string[  ]"},
+"attributeNames" : { "location" : "akra.IAFXMaker",
+"type" : "string[  ]"}}}}

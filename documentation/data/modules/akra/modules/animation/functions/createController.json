@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.animation",
+"arguments" : [ { "name" : "pEngine",
+"isOptional" : false,
+"type" : "IEngine"},
+{ "name" : "iOptions",
+"isOptional" : true,
+"type" : "number"} ],
+"type" : "IAnimationController",
+"isInline" : false}

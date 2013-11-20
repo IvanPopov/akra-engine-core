@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IColladaSource",
+"type" : "string"},
+"array" : { "location" : "akra.IColladaSource",
+"type" : "Object"},
+"techniqueCommon" : { "location" : "akra.IColladaSource",
+"type" : "IColladaTechniqueCommon"}}}}

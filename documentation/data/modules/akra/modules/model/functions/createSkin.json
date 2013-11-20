@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.model",
+"arguments" : [ { "name" : "pMesh",
+"isOptional" : false,
+"type" : "IMesh"} ],
+"type" : "ISkin",
+"isInline" : false}

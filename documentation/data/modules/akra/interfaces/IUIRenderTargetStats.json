@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "target" : { "location" : "akra.IUIRenderTargetStats",
+"type" : "IRenderTarget"}}}}

@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "initFrom" : { "location" : "akra.IColladaSurface",
+"type" : "string"}}}}

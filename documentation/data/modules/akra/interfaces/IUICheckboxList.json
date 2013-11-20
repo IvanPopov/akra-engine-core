@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "length" : { "location" : "akra.IUICheckboxList",
+"type" : "number"},
+"items" : { "location" : "akra.IUICheckboxList",
+"type" : "IUICheckbox[  ]"},
+"checked" : { "location" : "akra.IUICheckboxList",
+"type" : "IUICheckbox"},
+"radio" : { "location" : "akra.IUICheckboxList",
+"type" : "bool"}}}}

@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "x" : { "location" : "akra.IVec2",
+"type" : "number"},
+"y" : { "location" : "akra.IVec2",
+"type" : "number"},
+"xx" : { "location" : "akra.IVec2",
+"type" : "IVec2"},
+"xy" : { "location" : "akra.IVec2",
+"type" : "IVec2"},
+"yx" : { "location" : "akra.IVec2",
+"type" : "IVec2"},
+"yy" : { "location" : "akra.IVec2",
+"type" : "IVec2"}}}}

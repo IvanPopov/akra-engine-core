@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "$element" : { "location" : "akra.IUIHTMLNode",
+"type" : "JQuery"},
+"el" : { "location" : "akra.IUIHTMLNode",
+"type" : "JQuery"}}}}

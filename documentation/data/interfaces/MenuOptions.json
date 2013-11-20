@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "disabled" : { "location" : "MenuOptions",
+"type" : "bool"},
+"icons" : { "location" : "MenuOptions",
+"type" : "any"},
+"menus" : { "location" : "MenuOptions",
+"type" : "string"},
+"role" : { "location" : "MenuOptions",
+"type" : "string"}}}}

@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "disabled" : { "location" : "WidgetOptions",
+"type" : "bool"},
+"hide" : { "location" : "WidgetOptions",
+"type" : "any"},
+"show" : { "location" : "WidgetOptions",
+"type" : "any"}}}}

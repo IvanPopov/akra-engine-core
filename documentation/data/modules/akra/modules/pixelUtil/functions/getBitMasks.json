@@ -1,0 +1,11 @@
+{ "comments" : [ [ "/** Gives the masks for the R,
+ G,
+ B and A component",
+"@note\t\t\tOnly valid for native endian formats",
+"*/" ] ],
+"location" : "akra.pixelUtil",
+"arguments" : [ { "name" : "eFormat",
+"isOptional" : false,
+"type" : "EPixelFormats"} ],
+"type" : "[  ]",
+"isInline" : false}

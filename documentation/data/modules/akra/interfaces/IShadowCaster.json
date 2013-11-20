@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "lightPoint" : { "location" : "akra.IShadowCaster",
+"type" : "ILightPoint"},
+"face" : { "location" : "akra.IShadowCaster",
+"type" : "number"},
+"affectedObjects" : { "location" : "akra.IShadowCaster",
+"type" : "IObjectArray"},
+"optimizedProjection" : { "location" : "akra.IShadowCaster",
+"type" : "IMat4"},
+"isShadowCasted" : { "location" : "akra.IShadowCaster",
+"type" : "bool"}}}}

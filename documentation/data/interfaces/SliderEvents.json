@@ -1,0 +1,11 @@
+{ "location" : "",
+"variables" : { "public" : { "change" : { "location" : "SliderEvents",
+"type" : "SliderEvent"},
+"create" : { "location" : "SliderEvents",
+"type" : "SliderEvent"},
+"slide" : { "location" : "SliderEvents",
+"type" : "SliderEvent"},
+"start" : { "location" : "SliderEvents",
+"type" : "SliderEvent"},
+"stop" : { "location" : "SliderEvents",
+"type" : "SliderEvent"}}}}

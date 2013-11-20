@@ -1,0 +1,7 @@
+{ "comments" : [ [ "/** Shortcut method to determine if the format is in native endian format. */" ] ],
+"location" : "akra.pixelUtil",
+"arguments" : [ { "name" : "eFormat",
+"isOptional" : false,
+"type" : "EPixelFormats"} ],
+"type" : "bool",
+"isInline" : true}

@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "cancel" : { "location" : "MouseOptions",
+"type" : "string"},
+"delay" : { "location" : "MouseOptions",
+"type" : "number"},
+"distance" : { "location" : "MouseOptions",
+"type" : "number"}}}}

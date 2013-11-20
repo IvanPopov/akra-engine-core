@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "ray" : { "location" : "akra.ISegment3d",
+"type" : "IRay3d"},
+"distance" : { "location" : "akra.ISegment3d",
+"type" : "number"},
+"point" : { "location" : "akra.ISegment3d",
+"type" : "IVec3"},
+"normal" : { "location" : "akra.ISegment3d",
+"type" : "IVec3"}}}}

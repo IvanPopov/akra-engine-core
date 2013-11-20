@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "helper" : { "location" : "DraggableEventUIParams",
+"type" : "JQuery"},
+"position" : { "location" : "DraggableEventUIParams",
+"type" : "{  top :  number; left :  number; }"},
+"offset" : { "location" : "DraggableEventUIParams",
+"type" : "{  top :  number; left :  number; }"}}}}

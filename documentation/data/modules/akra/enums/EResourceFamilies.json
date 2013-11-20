@@ -1,0 +1,12 @@
+[ { "name" : "VIDEO_RESOURCE",
+"text" : "0",
+"value" : 0},
+{ "name" : "AUDIO_RESOURCE",
+"text" : "1",
+"value" : 1},
+{ "name" : "GAME_RESOURCE",
+"text" : "2",
+"value" : 2},
+{ "name" : "TOTAL_RESOURCE_FAMILIES",
+"text" : "3",
+"value" : 3} ]

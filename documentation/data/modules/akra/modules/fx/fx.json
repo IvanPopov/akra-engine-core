@@ -1,0 +1,189 @@
+
+{
+"location":"akra",
+"classes":
+{
+"VariableBlendContainer":{ }
+,
+"ComplexTypeBlendContainer":{ }
+,
+"ExtSystemDataContainer":{ }
+,
+"AttributeBlendContainer":{ }
+,
+"SamplerBlender":{ }
+,
+"ProgramScope":{ }
+,
+"ExprTemplateTranslator":{ }
+,
+"Instruction":{ }
+,
+"InstructionCollector":{ }
+,
+"SimpleInstruction":{ }
+,
+"TypedInstruction":{ }
+,
+"DeclInstruction":{ }
+,
+"IdInstruction":{ }
+,
+"KeywordInstruction":{ }
+,
+"AnnotationInstruction":{ }
+,
+"PassInstruction":{ }
+,
+"TechniqueInstruction":{ }
+,
+"TypeDeclInstruction":{ }
+,
+"VariableTypeInstruction":{ }
+,
+"SystemTypeInstruction":{ }
+,
+"ComplexTypeInstruction":{ }
+,
+"ExprInstruction":{ }
+,
+"IntInstruction":{ }
+,
+"FloatInstruction":{ }
+,
+"BoolInstruction":{ }
+,
+"StringInstruction":{ }
+,
+"IdExprInstruction":{ }
+,
+"ArithmeticExprInstruction":{ }
+,
+"AssignmentExprInstruction":{ }
+,
+"RelationalExprInstruction":{ }
+,
+"LogicalExprInstruction":{ }
+,
+"ConditionalExprInstruction":{ }
+,
+"CastExprInstruction":{ }
+,
+"UnaryExprInstruction":{ }
+,
+"PostfixIndexInstruction":{ }
+,
+"PostfixPointInstruction":{ }
+,
+"PostfixArithmeticInstruction":{ }
+,
+"PrimaryExprInstruction":{ }
+,
+"ComplexExprInstruction":{ }
+,
+"FunctionCallInstruction":{ }
+,
+"SystemCallInstruction":{ }
+,
+"ConstructorCallInstruction":{ }
+,
+"CompileExprInstruction":{ }
+,
+"MemExprInstruction":{ }
+,
+"InitExprInstruction":{ }
+,
+"SamplerStateBlockInstruction":{ }
+,
+"ExtractExprInstruction":{ }
+,
+"VariableDeclInstruction":{ }
+,
+"StmtInstruction":{ }
+,
+"StmtBlockInstruction":{ }
+,
+"ExprStmtInstruction":{ }
+,
+"BreakStmtInstruction":{ }
+,
+"WhileStmtInstruction":{ }
+,
+"ForStmtInstruction":{ }
+,
+"IfStmtInstruction":{ }
+,
+"DeclStmtInstruction":{ }
+,
+"ReturnStmtInstruction":{ }
+,
+"ExtractStmtInstruction":{ }
+,
+"SemicolonStmtInstruction":{ }
+,
+"FunctionDeclInstruction":{ }
+,
+"SystemFunctionInstruction":{ }
+,
+"FunctionDefInstruction":{ }
+,
+"Effect":{ }
+,
+"TexcoordSwapper":{ }
+,
+"PassInputBlend":{ }
+,
+"Maker":{ }
+,
+"PassBlend":{ }
+,
+"ComponentBlend":{ }
+,
+"ComponentPassInputBlend":{ }
+,
+"Blender":{ }
+,
+"Composer":{ }
+}
+,
+"interfaces":
+{
+"IDataFlowMap":{ }
+,
+"IAFXVaribaleListMap":{ }
+,
+"IEffectErrorInfo":{ }
+,
+"IAFXFunctionDeclListMap":{ }
+,
+"IScope":{ }
+,
+"IScopeMap":{ }
+,
+"SystemTypeMap":{ }
+,
+"SystemFunctionMap":{ }
+,
+"TechniqueMap":{ }
+,
+"IAFXShaderVarTypeMap":{ }
+,
+"IUniformTypeMap":{ }
+,
+"IPreRenderState":{ }
+}
+,
+"enums":
+{
+"EScopeType":{ }
+}
+,
+"functions":
+{
+"getEffectBaseType":{ }
+,
+"isSamplerType":{ }
+,
+"createSamplerState":{ }
+}
+}

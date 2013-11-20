@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html ng-app="docsApp">
+<head>
+	<!--base href="/"-->
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css" media="all"/>
+	<link type="text/css" rel="stylesheet" href="css/style.css">
+	<link rel="shortcut icon" href="favicon.png">
+
+	<!-- СКРИПТЫ -->
+	<script type="text/javascript" src="js/jquery/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="http://yandex.st/jquery/mousewheel/3.0.6/jquery.mousewheel.min.js"></script>
+	<script type="text/javascript" src="js/scrollbarJS-master/jquery.scrollbarJS.js"></script>
+	<script type="text/javascript" src="js/bootstrap/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/angular/angular.js"></script>
+	<script type="text/javascript" src="js/angular/angular-route.js"></script>
+	<script type="text/javascript" src="js/app.js"></script>
+	<script type="text/javascript" src="js/document.js"></script>
+
+	<title>Компания</title>
+</head>
+<body>
+
+<div class="b-page" ng-controller="MainCtrl">
+  
+	<div class="b-header">
+		<div class="row1">
+			<a class="logo" href="#/">API REFERENCE</a>
+			<form class="search" action="#" method="GET">
+				<input type="text" name="search" id="search" placeholder="Search" class="text"/>
+				<input type="submit" value="" class="submit"/>
+			</form>
+		</div>
+		<div class="row2">
+			<a class="logo" href="#/">AKRA</a>
+			<div class="menu">
+				<ul class="wrap">
+					<li class="item" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
+						<documobject navigation docobject="currParent"></documobject>
+					</li>
+					<li class="item">
+						<documobject navigation docobject="currentObject"></documobject>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="b-navigate-row">
+		<a class="left-column-bar j-left-bar opened" href="javascript:void(0);"><span class="bg"></span></a>
+	</div>
+	<div class="b-center">
+		<div class="b-left j-sidebar">
+			<ul class="b-side-menu j-side-menu">
+				<li class="item has-sub-menu" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
+					<documobject docobject="currParent" treeview arrow="opened"></documobject>
+				</li>
+				<li class="item has-sub-menu">
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="opened"></documobject>
+				</li>
+				<li class="item has-sub-menu" ng-repeat="currSibling in currentObject.siblings" ng-show="currSibling.name != currentObject.name">
+					<documobject docobject="currSibling" treeview arrow="closed"></documobject>
+				</li>
+			</ul>
+		</div>
+		<div class="b-content j-content">
+			<p>
+				currentObject.name : {{currentObject.name}}
+				<br>
+				currentObject.type : {{currentObject.type != '' ? currentObject.type : "undefined"}}
+				<br>
+				currentObject.parents : {{currentObject.parents}}
+				<br>
+				currentObject.siblings : {{currentObject.siblings}}
+				<br>
+				currentObject.path : {{currentObject.path}}
+				<br>
+				currentObject.data : {{currentObject.data}}
+				<span ng-switch ></span>
+			</p>
+		</div>
+	</div>
+</div>
+
+
+
+<!-- <div class="b-footer-wrap">
+	<div class="b-footer">
+		<ul class="b-footer-menu">
+			<li class="b-footer-menu-item">
+				<ul class="b-footer-sub-menu">
+					<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Main page</a></li>
+					<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Technology</a></li>
+					<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Documents</a></li>
+				</ul>
+			</li>
+			<li class="b-footer-menu-item">
+				<ul class="b-footer-sub-menu">
+					<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Licensing</a></li>
+					<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Vacancies</a></li>
+					<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Blog</a></li>
+				</ul>
+			</li>
+			<li class="b-footer-menu-item">
+				<ul class="b-footer-sub-menu">
+					<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Demo</a></li>
+					<li class="b-footer-sub-menu-item active"><a class="b-footer-sub-menu-item-link" href="#">Team</a></li>
+					<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Contacts</a></li>
+				</ul>
+			</li>
+		</ul>
+		<div class="b-footer-copy">
+			<p>© 2011 ODServe Engine.Imprint Partnership</p>
+			<p>ODServe project, ODServe Engine, Akra 3D Engine, Roto, DraftGen are employed by us for supreme goals.</p>
+		</div>
+	</div>
+</div> -->
+</body>
+</html>

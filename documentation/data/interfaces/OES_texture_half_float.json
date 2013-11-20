@@ -1,0 +1,3 @@
+{ "location" : "",
+"variables" : { "public" : { "HALF_FLOAT_OES" : { "location" : "OES_texture_half_float",
+"type" : "number"}}}}

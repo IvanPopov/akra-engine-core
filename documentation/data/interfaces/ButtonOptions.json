@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "disabled" : { "location" : "ButtonOptions",
+"type" : "bool"},
+"icons" : { "location" : "ButtonOptions",
+"type" : "any"},
+"label" : { "location" : "ButtonOptions",
+"type" : "string"},
+"text" : { "location" : "ButtonOptions",
+"type" : "bool"}}}}

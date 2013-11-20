@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.ui",
+"arguments" : [ { "name" : "pEntity",
+"isOptional" : false,
+"type" : "IEntity"},
+{ "name" : "eComponent",
+"isOptional" : true,
+"type" : "EUIComponents"} ],
+"type" : "bool",
+"isInline" : false}

@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "target" : { "location" : "akra.IEventSlot",
+"type" : "any"},
+"callback" : { "location" : "akra.IEventSlot",
+"type" : "string"},
+"listener" : { "location" : "akra.IEventSlot",
+"type" : "Function"}}}}

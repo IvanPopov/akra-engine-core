@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.scene.objects",
+"arguments" : [ { "name" : "pNode",
+"isOptional" : false,
+"type" : "IEntity"} ],
+"type" : "bool",
+"isInline" : true}

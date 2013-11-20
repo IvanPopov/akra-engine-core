@@ -1,0 +1,9 @@
+{ "location" : "akra.fx",
+"constructors" : [ { "comments" : [  ],
+"location" : "akra.fx.SemicolonStmtInstruction",
+"arguments" : [  ]} ],
+"functions" : { "toFinalCode" : { "comments" : [  ],
+"location" : "akra.fx.SemicolonStmtInstruction",
+"arguments" : [  ],
+"type" : "string",
+"isInline" : false}}}

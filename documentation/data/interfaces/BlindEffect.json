@@ -1,0 +1,3 @@
+{ "location" : "",
+"variables" : { "public" : { "direction" : { "location" : "BlindEffect",
+"type" : "string"}}}}

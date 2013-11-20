@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.webgl",
+"arguments" : [ { "name" : "sExtName",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "bool",
+"isInline" : false}

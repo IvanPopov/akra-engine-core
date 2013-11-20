@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "graph" : { "location" : "akra.IUIGraphControls",
+"type" : "IUIGraph"}}}}

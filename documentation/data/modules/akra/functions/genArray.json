@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra",
+"arguments" : [ { "name" : "pType",
+"isOptional" : false,
+"type" : "any"},
+{ "name" : "nSize",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "[  ]",
+"isInline" : false}

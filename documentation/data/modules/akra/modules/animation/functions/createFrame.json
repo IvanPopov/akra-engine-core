@@ -1,0 +1,13 @@
+{ "comments" : [  ],
+"location" : "akra.animation",
+"arguments" : [ { "name" : "fTime",
+"isOptional" : true,
+"type" : "number"},
+{ "name" : "pMatrix",
+"isOptional" : true,
+"type" : "IMat4"},
+{ "name" : "fWeight",
+"isOptional" : true,
+"type" : "number"} ],
+"type" : "IAnimationFrame",
+"isInline" : false}

@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "code" : { "location" : "akra.ILoggerEntity",
+"type" : "number"},
+"location" : { "location" : "akra.ILoggerEntity",
+"type" : "ISourceLocation"},
+"message" : { "location" : "akra.ILoggerEntity",
+"type" : "string"},
+"info" : { "location" : "akra.ILoggerEntity",
+"type" : "any"}}}}

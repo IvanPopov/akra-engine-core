@@ -1,0 +1,315 @@
+
+{
+"modules":
+{
+"akra":{ }
+}
+,
+"functions":
+{
+"utf8_encode":{ }
+,
+"utf8_decode":{ }
+}
+,
+"interfaces":
+{
+"String":{ }
+,
+"Array":{ }
+,
+"Number":{ }
+,
+"WebGLObject":{ }
+,
+"WebGLBuffer":{ }
+,
+"WebGLFramebuffer":{ }
+,
+"WebGLProgram":{ }
+,
+"WebGLRenderbuffer":{ }
+,
+"WebGLShader":{ }
+,
+"WebGLTexture":{ }
+,
+"WebGLUniformLocation":{ }
+,
+"WebGLActiveInfo":{ }
+,
+"WebGLShaderPrecisionFormat":{ }
+,
+"WebGLContextAttributes":{ }
+,
+"WebGLRenderingContext":{ }
+,
+"CanvasRenderingContext":{ }
+,
+"HTMLCanvasElement":{ }
+,
+"WEBGL_debug_shaders":{ }
+,
+"WEBGL_debug_renderer_info":{ }
+,
+"WEBGL_compressed_texture_pvrtc":{ }
+,
+"WEBGL_compressed_texture_atc":{ }
+,
+"WEBGL_compressed_texture_s3tc":{ }
+,
+"WEBGL_depth_texture":{ }
+,
+"OES_element_index_uint":{ }
+,
+"WebGLVertexArrayObjectOES":{ }
+,
+"OES_vertex_array_object":{ }
+,
+"OES_standard_derivatives":{ }
+,
+"OES_texture_half_float":{ }
+,
+"OES_texture_float":{ }
+,
+"WEBGL_lose_context":{ }
+,
+"WEBGL_multiple_render_targets":{ }
+,
+"WEBGL_fbo_color_attachments":{ }
+,
+"JQueryAjaxSettings":{ }
+,
+"JQueryXHR":{ }
+,
+"JQueryCallback":{ }
+,
+"JQueryPromise":{ }
+,
+"JQueryDeferred":{ }
+,
+"JQueryEventObject":{ }
+,
+"JQueryBrowserInfo":{ }
+,
+"JQuerySupport":{ }
+,
+"JQueryStatic":{ }
+,
+"JQuery":{ }
+,
+"AccordionOptions":{ }
+,
+"AccordionUIParams":{ }
+,
+"AccordionEvent":{ }
+,
+"AccordionEvents":{ }
+,
+"Accordion":{ }
+,
+"AutocompleteOptions":{ }
+,
+"AutocompleteUIParams":{ }
+,
+"AuotcompleteEvent":{ }
+,
+"AutocompleteEvents":{ }
+,
+"Autocomplete":{ }
+,
+"ButtonOptions":{ }
+,
+"Button":{ }
+,
+"DatepickerOptions":{ }
+,
+"DatepickerFormatDateOptions":{ }
+,
+"Datepicker":{ }
+,
+"DialogOptions":{ }
+,
+"DialogUIParams":{ }
+,
+"DialogEvent":{ }
+,
+"DialogEvents":{ }
+,
+"Dialog":{ }
+,
+"DraggableEventUIParams":{ }
+,
+"DraggableEvent":{ }
+,
+"DraggableOptions":{ }
+,
+"DraggableEvents":{ }
+,
+"Draggable":{ }
+,
+"DroppableEventUIParam":{ }
+,
+"DroppableEvent":{ }
+,
+"DroppableOptions":{ }
+,
+"DroppableEvents":{ }
+,
+"Droppable":{ }
+,
+"MenuOptions":{ }
+,
+"MenuUIParams":{ }
+,
+"MenuEvent":{ }
+,
+"MenuEvents":{ }
+,
+"Menu":{ }
+,
+"ProgressbarOptions":{ }
+,
+"ProgressbarUIParams":{ }
+,
+"ProgressbarEvent":{ }
+,
+"ProgressbarEvents":{ }
+,
+"Progressbar":{ }
+,
+"ResizableOptions":{ }
+,
+"ResizableUIParams":{ }
+,
+"ResizableEvent":{ }
+,
+"ResizableEvents":{ }
+,
+"Resizable":{ }
+,
+"SelectableOptions":{ }
+,
+"SelectableEvents":{ }
+,
+"Selectable":{ }
+,
+"SliderOptions":{ }
+,
+"SliderUIParams":{ }
+,
+"SliderEvent":{ }
+,
+"SliderEvents":{ }
+,
+"Slider":{ }
+,
+"SortableOptions":{ }
+,
+"SortableUIParams":{ }
+,
+"SortableEvent":{ }
+,
+"SortableEvents":{ }
+,
+"Sortable":{ }
+,
+"SpinnerOptions":{ }
+,
+"SpinnerUIParams":{ }
+,
+"SpinnerEvent":{ }
+,
+"SpinnerEvents":{ }
+,
+"Spinner":{ }
+,
+"TabsOptions":{ }
+,
+"TabsUIParams":{ }
+,
+"TabsEvent":{ }
+,
+"TabsEvents":{ }
+,
+"Tabs":{ }
+,
+"TooltipOptions":{ }
+,
+"TooltipUIParams":{ }
+,
+"TooltipEvent":{ }
+,
+"TooltipEvents":{ }
+,
+"Tooltip":{ }
+,
+"EffectOptions":{ }
+,
+"BlindEffect":{ }
+,
+"BounceEffect":{ }
+,
+"ClipEffect":{ }
+,
+"DropEffect":{ }
+,
+"ExplodeEffect":{ }
+,
+"FadeEffect":{ }
+,
+"FoldEffect":{ }
+,
+"HighlightEffect":{ }
+,
+"PuffEffect":{ }
+,
+"PulsateEffect":{ }
+,
+"ScaleEffect":{ }
+,
+"ShakeEffect":{ }
+,
+"SizeEffect":{ }
+,
+"SlideEffect":{ }
+,
+"TransferEffect":{ }
+,
+"JQueryPositionOptions":{ }
+,
+"MouseOptions":{ }
+,
+"keyCode":{ }
+,
+"UI":{ }
+,
+"WidgetOptions":{ }
+,
+"Widget":{ }
+,
+"BoundingBox":{ }
+,
+"RaphaelAnimation":{ }
+,
+"RaphaelFont":{ }
+,
+"RaphaelElement":{ }
+,
+"RaphaelPath":{ }
+,
+"RaphaelSet":{ }
+,
+"RaphaelMatrix":{ }
+,
+"RaphaelPaper":{ }
+,
+"RaphaelStatic":{ }
+,
+"SwigOptions":{ }
+,
+"SwigTemplate":{ }
+,
+"Swig":{ }
+}
+}

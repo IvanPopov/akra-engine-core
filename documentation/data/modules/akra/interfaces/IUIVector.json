@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "x" : { "location" : "akra.IUIVector",
+"type" : "IUILabel"},
+"y" : { "location" : "akra.IUIVector",
+"type" : "IUILabel"},
+"z" : { "location" : "akra.IUIVector",
+"type" : "IUILabel"},
+"w" : { "location" : "akra.IUIVector",
+"type" : "IUILabel"},
+"totalComponents" : { "location" : "akra.IUIVector",
+"type" : "number"},
+"value" : { "location" : "akra.IUIVector",
+"type" : "any"}}}}

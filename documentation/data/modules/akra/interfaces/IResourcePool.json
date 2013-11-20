@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "iFourcc" : { "location" : "akra.IResourcePool",
+"type" : "number"},
+"manager" : { "location" : "akra.IResourcePool",
+"type" : "IResourcePoolManager"}}}}

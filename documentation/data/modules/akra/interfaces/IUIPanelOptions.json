@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "title" : { "location" : "akra.IUIPanelOptions",
+"type" : "string"}}}}

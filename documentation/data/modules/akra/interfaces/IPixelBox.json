@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "format" : { "location" : "akra.IPixelBox",
+"type" : "EPixelFormats"},
+"data" : { "location" : "akra.IPixelBox",
+"type" : "Uint8Array"},
+"rowPitch" : { "location" : "akra.IPixelBox",
+"type" : "number"},
+"slicePitch" : { "location" : "akra.IPixelBox",
+"type" : "number"}}}}

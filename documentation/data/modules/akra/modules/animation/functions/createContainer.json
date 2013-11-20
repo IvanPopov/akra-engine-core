@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.animation",
+"arguments" : [ { "name" : "pAnimation",
+"isOptional" : true,
+"type" : "IAnimationBase"},
+{ "name" : "sName",
+"isOptional" : true,
+"type" : "string"} ],
+"type" : "IAnimationContainer",
+"isInline" : false}

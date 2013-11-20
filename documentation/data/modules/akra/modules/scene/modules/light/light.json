@@ -1,0 +1,23 @@
+
+{
+"location":"akra.scene",
+"classes":
+{
+"ShadowCaster":{ }
+,
+"LightParameters":{ }
+,
+"LightPoint":{ }
+,
+"ProjectLight":{ }
+,
+"OmniLight":{ }
+}
+,
+"functions":
+{
+"isShadowCaster":{ }
+,
+"isLightPoint":{ }
+}
+}

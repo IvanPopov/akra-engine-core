@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "transform" : { "location" : "akra.IColladaTransform",
+"type" : "string"},
+"value" : { "location" : "akra.IColladaTransform",
+"type" : "any"}}}}

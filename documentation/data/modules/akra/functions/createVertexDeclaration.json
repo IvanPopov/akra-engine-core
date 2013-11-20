@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra",
+"arguments" : [ { "name" : "pData",
+"isOptional" : true,
+"type" : "any"} ],
+"type" : "data.VertexDeclaration",
+"isInline" : false}

@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "create" : { "location" : "DraggableEvents",
+"type" : "DraggableEvent"},
+"start" : { "location" : "DraggableEvents",
+"type" : "DraggableEvent"},
+"drag" : { "location" : "DraggableEvents",
+"type" : "DraggableEvent"},
+"stop" : { "location" : "DraggableEvents",
+"type" : "DraggableEvent"}}}}

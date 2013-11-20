@@ -1,0 +1,13 @@
+{ "comments" : [  ],
+"location" : "akra",
+"arguments" : [ { "name" : "fValue1",
+"isOptional" : true,
+"type" : "any"},
+{ "name" : "fValue2",
+"isOptional" : true,
+"type" : "any"},
+{ "name" : "fValue3",
+"isOptional" : true,
+"type" : "any"} ],
+"type" : "IVec3",
+"isInline" : false}

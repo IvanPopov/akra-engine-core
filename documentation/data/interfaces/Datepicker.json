@@ -1,0 +1,3 @@
+{ "location" : "",
+"variables" : { "public" : { "regional" : { "location" : "Datepicker",
+"type" : "{  [ languageCod3 :  string ] :  any; }"}}}}

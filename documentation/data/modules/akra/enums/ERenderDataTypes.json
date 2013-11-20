@@ -1,0 +1,9 @@
+[ { "name" : "UNKNOWN",
+"text" : "0",
+"value" : 0},
+{ "name" : "MESH_SUBSET",
+"text" : "1",
+"value" : 1},
+{ "name" : "SCREEN",
+"text" : "2",
+"value" : 2} ]

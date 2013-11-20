@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "sid" : { "location" : "akra.IColladaNewParam",
+"type" : "string"},
+"annotate" : { "location" : "akra.IColladaNewParam",
+"type" : "IColladaAnnotate"},
+"semantics" : { "location" : "akra.IColladaNewParam",
+"type" : "string"},
+"modifier" : { "location" : "akra.IColladaNewParam",
+"type" : "string"},
+"value" : { "location" : "akra.IColladaNewParam",
+"type" : "any"},
+"type" : { "location" : "akra.IColladaNewParam",
+"type" : "string"}}}}

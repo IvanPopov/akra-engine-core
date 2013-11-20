@@ -1,0 +1,13 @@
+{ "location" : "akra.ui",
+"variables" : { "public" : { "_pWindow" : { "location" : "akra.ui.Window",
+"type" : "any"},
+"$document" : { "location" : "akra.ui.Window",
+"type" : "any"}}},
+"constructors" : [ { "comments" : [  ],
+"location" : "akra.ui.Window",
+"arguments" : [ { "name" : "pUI",
+"isOptional" : false,
+"type" : "IUI"},
+{ "name" : "options",
+"isOptional" : true,
+"type" : "IUIWindowOptions"} ]} ]}

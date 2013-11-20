@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "spin" : { "location" : "SpinnerEvents",
+"type" : "SpinnerEvent"},
+"start" : { "location" : "SpinnerEvents",
+"type" : "SpinnerEvent"},
+"stop" : { "location" : "SpinnerEvents",
+"type" : "SpinnerEvent"}}}}

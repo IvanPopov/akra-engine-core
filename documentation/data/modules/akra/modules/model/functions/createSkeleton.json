@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.model",
+"arguments" : [ { "name" : "sName",
+"isOptional" : true,
+"type" : "string"} ],
+"type" : "ISkeleton",
+"isInline" : false}

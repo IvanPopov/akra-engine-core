@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "resourceCode" : { "location" : "akra.IResourcePoolItem",
+"type" : "IResourceCode"},
+"resourcePool" : { "location" : "akra.IResourcePoolItem",
+"type" : "IResourcePool"},
+"resourceHandle" : { "location" : "akra.IResourcePoolItem",
+"type" : "number"},
+"resourceFlags" : { "location" : "akra.IResourcePoolItem",
+"type" : "number"},
+"alteredFlag" : { "location" : "akra.IResourcePoolItem",
+"type" : "bool"},
+"manager" : { "location" : "akra.IResourcePoolItem",
+"type" : "IResourcePoolManager"}}}}

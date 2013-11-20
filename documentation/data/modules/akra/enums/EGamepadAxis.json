@@ -1,0 +1,12 @@
+[ { "name" : "LEFT_ANALOGUE_HOR",
+"text" : "0",
+"value" : 0},
+{ "name" : "LEFT_ANALOGUE_VERT",
+"text" : "1",
+"value" : 1},
+{ "name" : "RIGHT_ANALOGUE_HOR",
+"text" : "2",
+"value" : 2},
+{ "name" : "RIGHT_ANALOGUE_VERT",
+"text" : "3",
+"value" : 3} ]

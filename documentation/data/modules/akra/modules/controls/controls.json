@@ -1,0 +1,10 @@
+
+{
+"location":"akra",
+"functions":
+{
+"createGamepadMap":{ }
+,
+"createKeymap":{ }
+}
+}

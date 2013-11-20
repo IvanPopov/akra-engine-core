@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "draggable" : { "location" : "DroppableEventUIParam",
+"type" : "JQuery"},
+"helper" : { "location" : "DroppableEventUIParam",
+"type" : "JQuery"},
+"position" : { "location" : "DroppableEventUIParam",
+"type" : "{  top :  number; left :  number; }"},
+"offset" : { "location" : "DroppableEventUIParam",
+"type" : "{  top :  number; left :  number; }"}}}}

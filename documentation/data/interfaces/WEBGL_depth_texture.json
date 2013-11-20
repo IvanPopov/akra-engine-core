@@ -1,0 +1,3 @@
+{ "location" : "",
+"variables" : { "public" : { "UNSIGNED_INT_24_8_WEBGL" : { "location" : "WEBGL_depth_texture",
+"type" : "number"}}}}

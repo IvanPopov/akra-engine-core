@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "url" : { "location" : "akra.IColladaInstance",
+"type" : "string"}}}}

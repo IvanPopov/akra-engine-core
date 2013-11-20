@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.pixelUtil",
+"arguments" : [ { "name" : "eFmt",
+"isOptional" : false,
+"type" : "EPixelFormats"} ],
+"type" : "IPixelFormatDescription",
+"isInline" : true}

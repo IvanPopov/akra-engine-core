@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "remote" : { "location" : "akra.IRPC",
+"type" : "any"}}}}

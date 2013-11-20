@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "normal" : { "location" : "akra.IPlane2d",
+"type" : "IVec2"},
+"distance" : { "location" : "akra.IPlane2d",
+"type" : "number"}}}}

@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "diffuse" : { "location" : "akra.IMaterialBase",
+"type" : "IColorValue"},
+"ambient" : { "location" : "akra.IMaterialBase",
+"type" : "IColorValue"},
+"specular" : { "location" : "akra.IMaterialBase",
+"type" : "IColorValue"},
+"emissive" : { "location" : "akra.IMaterialBase",
+"type" : "IColorValue"},
+"shininess" : { "location" : "akra.IMaterialBase",
+"type" : "number"}}}}

@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "r" : { "location" : "akra.IColorValue",
+"type" : "number"},
+"g" : { "location" : "akra.IColorValue",
+"type" : "number"},
+"b" : { "location" : "akra.IColorValue",
+"type" : "number"},
+"a" : { "location" : "akra.IColorValue",
+"type" : "number"}}}}

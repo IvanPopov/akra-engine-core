@@ -1,0 +1,5 @@
+{ "comments" : [ [ "/** Returns a pseudorandom number between 0 and 1. */" ] ],
+"location" : "akra.math",
+"arguments" : [  ],
+"type" : "number",
+"isInline" : false}

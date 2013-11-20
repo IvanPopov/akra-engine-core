@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.geometry",
+"arguments" : [ { "name" : "pCircle",
+"isOptional" : false,
+"type" : "ICircle"},
+{ "name" : "pRay",
+"isOptional" : false,
+"type" : "IRay2d"} ],
+"type" : "bool",
+"isInline" : false}

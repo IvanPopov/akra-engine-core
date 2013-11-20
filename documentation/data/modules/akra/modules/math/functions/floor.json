@@ -1,0 +1,10 @@
+{ "comments" : [ [ "/**",
+"* Returns the greatest integer less than or equal to its numeric argument.",
+"* @param x A numeric expression.",
+"*/" ] ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "x",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : false}

@@ -1,0 +1,13 @@
+{ "location" : "",
+"variables" : { "public" : { "bottom" : { "location" : "RaphaelPaper",
+"type" : "RaphaelElement"},
+"canvas" : { "location" : "RaphaelPaper",
+"type" : "Element"},
+"defs" : { "location" : "RaphaelPaper",
+"type" : "Element"},
+"height" : { "location" : "RaphaelPaper",
+"type" : "number"},
+"top" : { "location" : "RaphaelPaper",
+"type" : "RaphaelElement"},
+"width" : { "location" : "RaphaelPaper",
+"type" : "number"}}}}

@@ -1,0 +1,12 @@
+{ "comments" : [ [ "/**",
+"* Convert GL format to EPixelFormat.",
+"*/" ] ],
+"location" : "akra.webgl",
+"arguments" : [ { "name" : "iGLFormat",
+"isOptional" : false,
+"type" : "number"},
+{ "name" : "iGLDataType",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "EPixelFormats",
+"isInline" : false}

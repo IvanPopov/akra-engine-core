@@ -1,0 +1,19 @@
+
+{
+"location":"akra",
+"functions":
+{
+"createSkeleton":{ }
+,
+"createSkin":{ }
+,
+"createMesh":{ }
+}
+,
+"classes":
+{
+"Skin":{ }
+,
+"MeshSubset":{ }
+}
+}

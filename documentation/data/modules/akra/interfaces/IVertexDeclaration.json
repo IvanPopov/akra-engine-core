@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "stride" : { "location" : "akra.IVertexDeclaration",
+"type" : "number"},
+"length" : { "location" : "akra.IVertexDeclaration",
+"type" : "number"}}}}

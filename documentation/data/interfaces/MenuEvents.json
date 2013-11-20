@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "blur" : { "location" : "MenuEvents",
+"type" : "MenuEvent"},
+"create" : { "location" : "MenuEvents",
+"type" : "MenuEvent"},
+"focus" : { "location" : "MenuEvents",
+"type" : "MenuEvent"},
+"select" : { "location" : "MenuEvents",
+"type" : "MenuEvent"}}}}

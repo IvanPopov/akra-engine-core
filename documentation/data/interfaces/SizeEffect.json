@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "to" : { "location" : "SizeEffect",
+"type" : "any"},
+"origin" : { "location" : "SizeEffect",
+"type" : "string[  ]"},
+"scale" : { "location" : "SizeEffect",
+"type" : "string"}}}}

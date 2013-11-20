@@ -1,0 +1,11 @@
+{ "location" : "akra.util",
+"variables" : { "public" : { "string" : { "location" : "akra.util.IBrowserData",
+"type" : "string"},
+"subString" : { "location" : "akra.util.IBrowserData",
+"type" : "string"},
+"identity" : { "location" : "akra.util.IBrowserData",
+"type" : "string"},
+"versionSearch" : { "location" : "akra.util.IBrowserData",
+"type" : "string"},
+"prop" : { "location" : "akra.util.IBrowserData",
+"type" : "string"}}}}

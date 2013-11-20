@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "time" : { "location" : "akra.IAnimationFrame",
+"type" : "number"},
+"weight" : { "location" : "akra.IAnimationFrame",
+"type" : "number"},
+"matrix" : { "location" : "akra.IAnimationFrame",
+"type" : "IMat4"},
+"rotation" : { "location" : "akra.IAnimationFrame",
+"type" : "IQuat4"},
+"scale" : { "location" : "akra.IAnimationFrame",
+"type" : "IVec3"},
+"translation" : { "location" : "akra.IAnimationFrame",
+"type" : "IVec3"}}}}

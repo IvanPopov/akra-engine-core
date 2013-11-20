@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "byteOffset" : { "location" : "akra.IBufferData",
+"type" : "number"},
+"byteLength" : { "location" : "akra.IBufferData",
+"type" : "number"},
+"buffer" : { "location" : "akra.IBufferData",
+"type" : "IBuffer"}}}}

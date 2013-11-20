@@ -1,0 +1,236 @@
+
+{
+"location":"akra",
+"classes":
+{
+"Vec2":{ }
+,
+"Vec3":{ }
+,
+"Vec4":{ }
+,
+"Mat3":{ }
+,
+"Mat4":{ }
+,
+"Quat4":{ }
+}
+,
+"variables":
+{
+"E":{ }
+,
+"LN2":{ }
+,
+"LOG2E":{ }
+,
+"LOG10E":{ }
+,
+"PI":{ }
+,
+"SQRT1_2":{ }
+,
+"SQRT2":{ }
+,
+"LN10":{ }
+,
+"POSITIVE_INFINITY":{ }
+,
+"NEGATIVE_INFINITY":{ }
+,
+"FLOAT_PRECISION":{ }
+,
+"TWO_PI":{ }
+,
+"HALF_PI":{ }
+,
+"QUARTER_PI":{ }
+,
+"EIGHTH_PI":{ }
+,
+"PI_SQUARED":{ }
+,
+"PI_INVERSE":{ }
+,
+"PI_OVER_180":{ }
+,
+"PI_DIV_180":{ }
+,
+"NATURAL_LOGARITHM_BASE":{ }
+,
+"EULERS_CONSTANT":{ }
+,
+"SQUARE_ROOT_2":{ }
+,
+"INVERSE_ROOT_2":{ }
+,
+"SQUARE_ROOT_3":{ }
+,
+"SQUARE_ROOT_5":{ }
+,
+"SQUARE_ROOT_10":{ }
+,
+"CUBE_ROOT_2":{ }
+,
+"CUBE_ROOT_3":{ }
+,
+"FOURTH_ROOT_2":{ }
+,
+"NATURAL_LOG_2":{ }
+,
+"NATURAL_LOG_3":{ }
+,
+"NATURAL_LOG_10":{ }
+,
+"NATURAL_LOG_PI":{ }
+,
+"BASE_TEN_LOG_PI":{ }
+,
+"NATURAL_LOGARITHM_BASE_INVERSE":{ }
+,
+"NATURAL_LOGARITHM_BASE_SQUARED":{ }
+,
+"GOLDEN_RATIO":{ }
+,
+"DEGREE_RATIO":{ }
+,
+"RADIAN_RATIO":{ }
+,
+"GRAVITY_CONSTANT":{ }
+,
+"fpOneBits":{ }
+}
+,
+"functions":
+{
+"abs":{ }
+,
+"acos":{ }
+,
+"asin":{ }
+,
+"atan":{ }
+,
+"atan2":{ }
+,
+"exp":{ }
+,
+"min":{ }
+,
+"random":{ }
+,
+"sqrt":{ }
+,
+"log":{ }
+,
+"round":{ }
+,
+"floor":{ }
+,
+"ceil":{ }
+,
+"sin":{ }
+,
+"cos":{ }
+,
+"tan":{ }
+,
+"pow":{ }
+,
+"max":{ }
+,
+"fpBits":{ }
+,
+"intBits":{ }
+,
+"fpSign":{ }
+,
+"fpExponent":{ }
+,
+"fpExponentSign":{ }
+,
+"fpPureMantissa":{ }
+,
+"fpMantissa":{ }
+,
+"flipSign":{ }
+,
+"absoluteValue":{ }
+,
+"raiseToPower":{ }
+,
+"isPositive":{ }
+,
+"isNegative":{ }
+,
+"sameSigns":{ }
+,
+"copySign":{ }
+,
+"deltaRangeTest":{ }
+,
+"clamp":{ }
+,
+"clampPositive":{ }
+,
+"clampNegative":{ }
+,
+"clampUnitSize":{ }
+,
+"highestBitSet":{ }
+,
+"lowestBitSet":{ }
+,
+"isPowerOfTwo":{ }
+,
+"nearestPowerOfTwo":{ }
+,
+"ceilingPowerOfTwo":{ }
+,
+"floorPowerOfTwo":{ }
+,
+"modulus":{ }
+,
+"mod":{ }
+,
+"alignUp":{ }
+,
+"alignDown":{ }
+,
+"inverse":{ }
+,
+"log2":{ }
+,
+"trimFloat":{ }
+,
+"realToInt32_chop":{ }
+,
+"realToInt32_floor":{ }
+,
+"realToInt32_ceil":{ }
+,
+"nod":{ }
+,
+"nok":{ }
+,
+"gcd":{ }
+,
+"lcm":{ }
+,
+"isRealEqual":{ }
+,
+"calcPOTtextureSize":{ }
+,
+"vec2":{ }
+,
+"vec3":{ }
+,
+"vec4":{ }
+,
+"quat4":{ }
+,
+"mat3":{ }
+,
+"mat4":{ }
+}
+}

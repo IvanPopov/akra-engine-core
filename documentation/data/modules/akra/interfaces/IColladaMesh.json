@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "sources" : { "location" : "akra.IColladaMesh",
+"type" : "IColladaSource[  ]"},
+"polygons" : { "location" : "akra.IColladaMesh",
+"type" : "IColladaPolygons[  ]"}}}}

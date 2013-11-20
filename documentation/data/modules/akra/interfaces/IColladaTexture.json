@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "texcoord" : { "location" : "akra.IColladaTexture",
+"type" : "string"},
+"sampler" : { "location" : "akra.IColladaTexture",
+"type" : "IColladaNewParam"},
+"surface" : { "location" : "akra.IColladaTexture",
+"type" : "IColladaNewParam"},
+"image" : { "location" : "akra.IColladaTexture",
+"type" : "IColladaImage"}}}}

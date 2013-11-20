@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.ui",
+"arguments" : [ { "name" : "pOptionsLeft",
+"isOptional" : false,
+"type" : "IUIComponentOptions"},
+{ "name" : "pOptionsRight",
+"isOptional" : false,
+"type" : "IUIComponentOptions"} ],
+"type" : "IUIComponentOptions",
+"isInline" : false}

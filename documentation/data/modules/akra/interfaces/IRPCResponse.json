@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "res" : { "location" : "akra.IRPCResponse",
+"type" : "any"}}}}

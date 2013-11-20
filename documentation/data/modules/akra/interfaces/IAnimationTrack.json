@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "targetName" : { "location" : "akra.IAnimationTrack",
+"type" : "string"},
+"totalFrames" : { "location" : "akra.IAnimationTrack",
+"type" : "number"},
+"target" : { "location" : "akra.IAnimationTrack",
+"type" : "ISceneNode"},
+"duration" : { "location" : "akra.IAnimationTrack",
+"type" : "number"}}}}

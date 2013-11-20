@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "mesh" : { "location" : "akra.ISceneModel",
+"type" : "IMesh"}}}}

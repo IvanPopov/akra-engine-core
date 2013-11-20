@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "type" : { "location" : "akra.IUIGraphEvent",
+"type" : "EUIGraphEvents"},
+"traversedRoutes" : { "location" : "akra.IUIGraphEvent",
+"type" : "IUIGraphRoute[  ]"}}}}

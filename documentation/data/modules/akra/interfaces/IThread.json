@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "onmessage" : { "location" : "akra.IThread",
+"type" : "Function"},
+"onerror" : { "location" : "akra.IThread",
+"type" : "Function"},
+"id" : { "location" : "akra.IThread",
+"type" : "number"}}}}

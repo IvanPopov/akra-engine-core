@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "value" : { "location" : "akra.IUISwitch",
+"type" : "bool"}}}}

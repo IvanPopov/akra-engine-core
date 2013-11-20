@@ -1,0 +1,3 @@
+{ "location" : "",
+"variables" : { "public" : { "FRAGMENT_SHADER_DERIVATIVE_HINT_OES" : { "location" : "OES_standard_derivatives",
+"type" : "number"}}}}

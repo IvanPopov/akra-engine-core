@@ -1,0 +1,7 @@
+{ "location" : "akra.util",
+"variables" : { "public" : { "next" : { "location" : "akra.util.IObjectListItem",
+"type" : "IObjectListItem"},
+"prev" : { "location" : "akra.util.IObjectListItem",
+"type" : "IObjectListItem"},
+"data" : { "location" : "akra.util.IObjectListItem",
+"type" : "any"}}}}

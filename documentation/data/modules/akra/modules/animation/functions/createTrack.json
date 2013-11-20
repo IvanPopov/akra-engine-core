@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.animation",
+"arguments" : [ { "name" : "sTarget",
+"isOptional" : true,
+"type" : "string"} ],
+"type" : "IAnimationTrack",
+"isInline" : false}

@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "width" : { "location" : "akra.IScreenInfo",
+"type" : "number"},
+"height" : { "location" : "akra.IScreenInfo",
+"type" : "number"},
+"aspect" : { "location" : "akra.IScreenInfo",
+"type" : "number"},
+"pixelDepth" : { "location" : "akra.IScreenInfo",
+"type" : "number"},
+"colorDepth" : { "location" : "akra.IScreenInfo",
+"type" : "number"}}}}

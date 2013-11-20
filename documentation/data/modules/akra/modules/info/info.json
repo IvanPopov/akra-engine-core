@@ -1,0 +1,19 @@
+
+{
+"location":"akra",
+"functions":
+{
+"canvas":{ }
+}
+,
+"variables":
+{
+"browser":{ }
+,
+"api":{ }
+,
+"screen":{ }
+,
+"uri":{ }
+}
+}

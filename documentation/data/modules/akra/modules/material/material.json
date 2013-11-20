@@ -1,0 +1,22 @@
+
+{
+"location":"akra",
+"classes":
+{
+"Material":{ }
+}
+,
+"variables":
+{
+"VERTEX_DECL":{ }
+,
+"DEFAULT":{ }
+}
+,
+"functions":
+{
+"create":{ }
+,
+"_createFlex":{ }
+}
+}

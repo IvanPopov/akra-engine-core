@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "text" : { "location" : "akra.IUICheckboxOptions",
+"type" : "string"}}}}

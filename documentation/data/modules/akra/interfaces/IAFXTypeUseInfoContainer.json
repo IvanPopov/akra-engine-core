@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "type" : { "location" : "akra.IAFXTypeUseInfoContainer",
+"type" : "IAFXVariableTypeInstruction"},
+"isRead" : { "location" : "akra.IAFXTypeUseInfoContainer",
+"type" : "bool"},
+"isWrite" : { "location" : "akra.IAFXTypeUseInfoContainer",
+"type" : "bool"},
+"numRead" : { "location" : "akra.IAFXTypeUseInfoContainer",
+"type" : "number"},
+"numWrite" : { "location" : "akra.IAFXTypeUseInfoContainer",
+"type" : "number"},
+"numUsed" : { "location" : "akra.IAFXTypeUseInfoContainer",
+"type" : "number"}}}}

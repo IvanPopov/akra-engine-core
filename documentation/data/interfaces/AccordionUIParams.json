@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "newHeader" : { "location" : "AccordionUIParams",
+"type" : "JQuery"},
+"oldHeader" : { "location" : "AccordionUIParams",
+"type" : "JQuery"},
+"newPanel" : { "location" : "AccordionUIParams",
+"type" : "JQuery"},
+"oldPanel" : { "location" : "AccordionUIParams",
+"type" : "JQuery"}}}}

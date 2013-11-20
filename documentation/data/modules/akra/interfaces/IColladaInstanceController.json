@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "controller" : { "location" : "akra.IColladaInstanceController",
+"type" : "IColladaController"},
+"material" : { "location" : "akra.IColladaInstanceController",
+"type" : "IColladaBindMaterial"},
+"skeletons" : { "location" : "akra.IColladaInstanceController",
+"type" : "string[  ]"}}}}

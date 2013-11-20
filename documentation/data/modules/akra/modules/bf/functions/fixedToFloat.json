@@ -1,0 +1,12 @@
+{ "comments" : [ [ "/**",
+"* Fixed point to float",
+"*/" ] ],
+"location" : "akra.bf",
+"arguments" : [ { "name" : "value",
+"isOptional" : false,
+"type" : "number"},
+{ "name" : "bits",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : true}

@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "point" : { "location" : "akra.IRay3d",
+"type" : "IVec3"},
+"normal" : { "location" : "akra.IRay3d",
+"type" : "IVec3"}}}}

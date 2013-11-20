@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "semantics" : { "location" : "akra.IColladaBindVertexInput",
+"type" : "string"},
+"inputSemantic" : { "location" : "akra.IColladaBindVertexInput",
+"type" : "string"},
+"inputSet" : { "location" : "akra.IColladaBindVertexInput",
+"type" : "number"}}}}

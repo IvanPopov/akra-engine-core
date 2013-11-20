@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "layoutType" : { "location" : "akra.IUILayout",
+"type" : "EUILayouts"}}}}

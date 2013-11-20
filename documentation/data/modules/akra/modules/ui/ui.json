@@ -1,0 +1,96 @@
+
+{
+"location":"akra",
+"variables":
+{
+"$document":{ }
+,
+"$body":{ }
+,
+"COMPONENTS":{ }
+}
+,
+"classes":
+{
+"Node":{ }
+,
+"HTMLNode":{ }
+,
+"DNDNode":{ }
+,
+"Component":{ }
+,
+"Panel":{ }
+,
+"Tabs":{ }
+,
+"Button":{ }
+,
+"Switch":{ }
+,
+"Label":{ }
+,
+"Vector":{ }
+,
+"Layout":{ }
+,
+"Horizontal":{ }
+,
+"Vertical":{ }
+,
+"Slider":{ }
+,
+"Checkbox":{ }
+,
+"CheckboxList":{ }
+,
+"Window":{ }
+,
+"RenderTargetStats":{ }
+,
+"TreeNode":{ }
+,
+"Tree":{ }
+,
+"UI":{ }
+}
+,
+"functions":
+{
+"isUI":{ }
+,
+"getUI":{ }
+,
+"isUINode":{ }
+,
+"isLayout":{ }
+,
+"containsHTMLElement":{ }
+,
+"template":{ }
+,
+"register":{ }
+,
+"isComponent":{ }
+,
+"isGeneric":{ }
+,
+"mergeOptions":{ }
+,
+"isPanel":{ }
+,
+"isCheckbox":{ }
+}
+,
+"interfaces":
+{
+"IUITreeNodeMap":{ }
+}
+,
+"modules":
+{
+"graph":{ }
+,
+"animation":{ }
+}
+}

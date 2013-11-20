@@ -1,0 +1,13 @@
+{ "comments" : [  ],
+"location" : "akra.geometry",
+"arguments" : [ { "name" : "pSphereA",
+"isOptional" : false,
+"type" : "ISphere"},
+{ "name" : "pSphereB",
+"isOptional" : false,
+"type" : "ISphere"},
+{ "name" : "pSphereDest",
+"isOptional" : true,
+"type" : "ISphere"} ],
+"type" : "bool",
+"isInline" : false}

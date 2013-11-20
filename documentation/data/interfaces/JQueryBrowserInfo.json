@@ -1,0 +1,11 @@
+{ "location" : "",
+"variables" : { "public" : { "safari" : { "location" : "JQueryBrowserInfo",
+"type" : "bool"},
+"opera" : { "location" : "JQueryBrowserInfo",
+"type" : "bool"},
+"msie" : { "location" : "JQueryBrowserInfo",
+"type" : "bool"},
+"mozilla" : { "location" : "JQueryBrowserInfo",
+"type" : "bool"},
+"version" : { "location" : "JQueryBrowserInfo",
+"type" : "string"}}}}

@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "x" : { "location" : "akra.IQuat4",
+"type" : "number"},
+"y" : { "location" : "akra.IQuat4",
+"type" : "number"},
+"z" : { "location" : "akra.IQuat4",
+"type" : "number"},
+"w" : { "location" : "akra.IQuat4",
+"type" : "number"}}}}

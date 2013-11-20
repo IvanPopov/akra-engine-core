@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pValue",
+"isOptional" : false,
+"type" : "IColorValue"} ],
+"type" : "IVec4",
+"isInline" : true}

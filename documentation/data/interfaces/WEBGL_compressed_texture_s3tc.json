@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "COMPRESSED_RGB_S3TC_DXT1_EXT" : { "location" : "WEBGL_compressed_texture_s3tc",
+"type" : "number"},
+"COMPRESSED_RGBA_S3TC_DXT1_EXT" : { "location" : "WEBGL_compressed_texture_s3tc",
+"type" : "number"},
+"COMPRESSED_RGBA_S3TC_DXT3_EXT" : { "location" : "WEBGL_compressed_texture_s3tc",
+"type" : "number"},
+"COMPRESSED_RGBA_S3TC_DXT5_EXT" : { "location" : "WEBGL_compressed_texture_s3tc",
+"type" : "number"}}}}

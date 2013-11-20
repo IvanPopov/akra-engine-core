@@ -1,0 +1,5 @@
+{ "location" : "",
+"variables" : { "public" : { "direction" : { "location" : "SlideEffect",
+"type" : "string"},
+"distance" : { "location" : "SlideEffect",
+"type" : "number"}}}}

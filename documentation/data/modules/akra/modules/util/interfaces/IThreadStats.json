@@ -1,0 +1,7 @@
+{ "location" : "akra.util",
+"variables" : { "public" : { "status" : { "location" : "akra.util.IThreadStats",
+"type" : "EThreadStatuses"},
+"creationTime" : { "location" : "akra.util.IThreadStats",
+"type" : "number"},
+"releaseTime" : { "location" : "akra.util.IThreadStats",
+"type" : "number"}}}}

@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "lastModifiedDate" : { "location" : "akra.IFileMeta",
+"type" : "string"},
+"size" : { "location" : "akra.IFileMeta",
+"type" : "number"}}}}

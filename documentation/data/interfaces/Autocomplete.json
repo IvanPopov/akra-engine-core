@@ -1,0 +1,3 @@
+{ "location" : "",
+"variables" : { "public" : { "escapeRegex" : { "location" : "Autocomplete",
+"type" : "(string :  any) => string"}}}}

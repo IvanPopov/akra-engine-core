@@ -1,0 +1,5 @@
+{ "location" : "",
+"variables" : { "public" : { "size" : { "location" : "FoldEffect",
+"type" : "any"},
+"horizFirst" : { "location" : "FoldEffect",
+"type" : "bool"}}}}

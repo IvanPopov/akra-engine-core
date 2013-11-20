@@ -1,0 +1,44 @@
+
+{
+"location":"akra.core.pool",
+"classes":
+{
+"RenderMethod":{ }
+,
+"SurfaceMaterial":{ }
+,
+"Effect":{ }
+,
+"Img":{ }
+,
+"Component":{ }
+,
+"Collada":{ }
+,
+"EffectData":{ }
+,
+"HardwareBuffer":{ }
+,
+"Texture":{ }
+,
+"MemoryBuffer":{ }
+,
+"VertexBuffer":{ }
+,
+"IndexBuffer":{ }
+,
+"DepthBuffer":{ }
+}
+,
+"enums":
+{
+"ETextureForcedFormatFlags":{ }
+}
+,
+"functions":
+{
+"isVBO":{ }
+,
+"isTBO":{ }
+}
+}

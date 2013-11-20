@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "rangeMin" : { "location" : "WebGLShaderPrecisionFormat",
+"type" : "number"},
+"rangeMax" : { "location" : "WebGLShaderPrecisionFormat",
+"type" : "number"},
+"precision" : { "location" : "WebGLShaderPrecisionFormat",
+"type" : "number"}}}}

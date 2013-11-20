@@ -1,0 +1,10 @@
+{ "comments" : [ [ "/**",
+"* Returns the arctangent of a number.",
+"* @param x A numeric expression for which the arctangent is needed.",
+"*/" ] ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "x",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : false}

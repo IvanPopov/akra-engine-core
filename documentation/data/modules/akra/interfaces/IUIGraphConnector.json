@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "route" : { "location" : "akra.IUIGraphConnector",
+"type" : "IUIGraphRoute"},
+"orient" : { "location" : "akra.IUIGraphConnector",
+"type" : "EGraphConnectorOrient"},
+"area" : { "location" : "akra.IUIGraphConnector",
+"type" : "IUIGraphConnectionArea"},
+"node" : { "location" : "akra.IUIGraphConnector",
+"type" : "IUIGraphNode"},
+"graph" : { "location" : "akra.IUIGraphConnector",
+"type" : "IUIGraph"},
+"direction" : { "location" : "akra.IUIGraphConnector",
+"type" : "EUIGraphDirections"}}}}

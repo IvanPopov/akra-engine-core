@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "connectors" : { "location" : "akra.IUIGraphConnectionArea",
+"type" : "IUIGraphConnector[  ]"},
+"node" : { "location" : "akra.IUIGraphConnectionArea",
+"type" : "IUIGraphNode"},
+"maxInConnections" : { "location" : "akra.IUIGraphConnectionArea",
+"type" : "number"},
+"maxOutConnections" : { "location" : "akra.IUIGraphConnectionArea",
+"type" : "number"},
+"maxConnections" : { "location" : "akra.IUIGraphConnectionArea",
+"type" : "number"}}}}

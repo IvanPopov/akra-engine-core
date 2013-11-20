@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "source" : { "location" : "akra.IColladaSampler2D",
+"type" : "string"},
+"wrapS" : { "location" : "akra.IColladaSampler2D",
+"type" : "string"},
+"wrapT" : { "location" : "akra.IColladaSampler2D",
+"type" : "string"},
+"minFilter" : { "location" : "akra.IColladaSampler2D",
+"type" : "string"},
+"mipFilter" : { "location" : "akra.IColladaSampler2D",
+"type" : "string"},
+"magFilter" : { "location" : "akra.IColladaSampler2D",
+"type" : "string"}}}}

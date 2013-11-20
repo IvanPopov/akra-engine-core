@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.fx",
+"arguments" : [ { "name" : "sTypeName",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "SystemTypeInstruction",
+"isInline" : false}

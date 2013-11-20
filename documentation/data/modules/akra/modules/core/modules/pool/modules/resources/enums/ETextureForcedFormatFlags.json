@@ -1,0 +1,9 @@
+[ { "name" : "FORCEMIPLEVELS",
+"text" : "0",
+"value" : 0},
+{ "name" : "FORCEFORMAT",
+"text" : "1",
+"value" : 1},
+{ "name" : "FORCESIZE",
+"text" : "2",
+"value" : 2} ]

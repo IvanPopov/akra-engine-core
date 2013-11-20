@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.ui.graph",
+"arguments" : [ { "name" : "pEntity",
+"isOptional" : false,
+"type" : "IEntity"} ],
+"type" : "bool",
+"isInline" : true}

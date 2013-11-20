@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "animation" : { "location" : "akra.IUIAnimationNode",
+"type" : "IAnimationBase"}}}}

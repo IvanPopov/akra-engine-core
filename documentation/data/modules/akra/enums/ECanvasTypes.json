@@ -1,0 +1,7 @@
+[ { "name" : "TYPE_UNKNOWN"},
+{ "name" : "TYPE_2D",
+"text" : "1",
+"value" : 1},
+{ "name" : "TYPE_3D",
+"text" : "2",
+"value" : 2} ]

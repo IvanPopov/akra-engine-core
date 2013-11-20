@@ -1,0 +1,13 @@
+{ "location" : "",
+"variables" : { "public" : { "x" : { "location" : "BoundingBox",
+"type" : "number"},
+"y" : { "location" : "BoundingBox",
+"type" : "number"},
+"x2" : { "location" : "BoundingBox",
+"type" : "number"},
+"y2" : { "location" : "BoundingBox",
+"type" : "number"},
+"width" : { "location" : "BoundingBox",
+"type" : "number"},
+"height" : { "location" : "BoundingBox",
+"type" : "number"}}}}

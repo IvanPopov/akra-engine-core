@@ -1,0 +1,11 @@
+{ "location" : "",
+"variables" : { "public" : { "context" : { "location" : "JQuery",
+"type" : "Element"},
+"jquery" : { "location" : "JQuery",
+"type" : "string"},
+"length" : { "location" : "JQuery",
+"type" : "number"},
+"widget" : { "location" : "JQuery",
+"type" : "Widget"},
+"jQuery" : { "location" : "JQuery",
+"type" : "JQueryStatic"}}}}

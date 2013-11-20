@@ -1,0 +1,9 @@
+{ "location" : "",
+"variables" : { "public" : { "dayNamesShort" : { "location" : "DatepickerFormatDateOptions",
+"type" : "string[  ]"},
+"dayNames" : { "location" : "DatepickerFormatDateOptions",
+"type" : "string[  ]"},
+"monthNamesShort" : { "location" : "DatepickerFormatDateOptions",
+"type" : "string[  ]"},
+"monthNames" : { "location" : "DatepickerFormatDateOptions",
+"type" : "string[  ]"}}}}

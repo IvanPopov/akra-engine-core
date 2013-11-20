@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "id" : { "location" : "akra.IColladaEntry",
+"type" : "string"},
+"sid" : { "location" : "akra.IColladaEntry",
+"type" : "string"},
+"name" : { "location" : "akra.IColladaEntry",
+"type" : "string"}}}}

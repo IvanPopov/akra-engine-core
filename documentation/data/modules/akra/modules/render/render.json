@@ -1,0 +1,77 @@
+
+{
+"location":"akra",
+"classes":
+{
+"Viewport":{ }
+,
+"LightData":{ }
+,
+"UniformOmni":{ }
+,
+"UniformProject":{ }
+,
+"UniformProjectShadow":{ }
+,
+"UniformOmniShadow":{ }
+,
+"RenderPass":{ }
+,
+"RenderTechnique":{ }
+,
+"ShadowViewport":{ }
+,
+"RenderableObject":{ }
+,
+"Screen":{ }
+,
+"DSViewport":{ }
+,
+"RenderTarget":{ }
+,
+"RenderEntry":{ }
+,
+"RenderQueue":{ }
+,
+"Renderer":{ }
+,
+"Canvas3d":{ }
+,
+"RenderTexture":{ }
+,
+"RenderData":{ }
+,
+"RenderDataCollection":{ }
+}
+,
+"interfaces":
+{
+"IUniform":{ }
+,
+"UniformMap":{ }
+,
+"IRenderTechniqueMap":{ }
+,
+"IRenderTargetPriorityMap":{ }
+,
+"IIndexSet":{ }
+}
+,
+"functions":
+{
+"isMeshSubset":{ }
+,
+"isScreen":{ }
+,
+"createRenderDataCollection":{ }
+}
+,
+"variables":
+{
+"SShaderPrefixes":{ }
+,
+"ZEROSAMPLER":{ }
+,
+"SSystemSemantics":{ }
+}
+}

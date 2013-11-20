@@ -1,0 +1,5 @@
+{ "location" : "akra.ui.animation",
+"variables" : { "public" : { "slider" : { "location" : "akra.ui.animation.IBlenderSliderContainer",
+"type" : "IUISlider"},
+"animation" : { "location" : "akra.ui.animation.IBlenderSliderContainer",
+"type" : "IAnimationBase"}}}}

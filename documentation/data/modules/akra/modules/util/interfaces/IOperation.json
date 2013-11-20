@@ -1,0 +1,7 @@
+{ "location" : "akra.util",
+"variables" : { "public" : { "type" : { "location" : "akra.util.IOperation",
+"type" : "EOperationType"},
+"rule" : { "location" : "akra.util.IOperation",
+"type" : "IRule"},
+"index" : { "location" : "akra.util.IOperation",
+"type" : "number"}}}}

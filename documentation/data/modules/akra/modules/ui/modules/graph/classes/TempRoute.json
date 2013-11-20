@@ -1,0 +1,13 @@
+{ "location" : "akra.ui.graph",
+"constructors" : [ { "comments" : [  ],
+"location" : "akra.ui.graph.TempRoute",
+"arguments" : [ { "name" : "pLeft",
+"isOptional" : false,
+"type" : "IUIGraphConnector"} ]} ],
+"functions" : { "routing" : { "comments" : [  ],
+"location" : "akra.ui.graph.TempRoute",
+"arguments" : [ { "name" : "pRight",
+"isOptional" : true,
+"type" : "IPoint"} ],
+"type" : "void",
+"isInline" : false}}}

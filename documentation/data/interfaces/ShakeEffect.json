@@ -1,0 +1,7 @@
+{ "location" : "",
+"variables" : { "public" : { "direction" : { "location" : "ShakeEffect",
+"type" : "string"},
+"distance" : { "location" : "ShakeEffect",
+"type" : "number"},
+"times" : { "location" : "ShakeEffect",
+"type" : "number"}}}}

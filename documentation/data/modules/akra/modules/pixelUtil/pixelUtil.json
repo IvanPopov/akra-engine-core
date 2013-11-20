@@ -1,0 +1,73 @@
+
+{
+"location":"akra",
+"classes":
+{
+"PixelBox":{ }
+}
+,
+"functions":
+{
+"getDescriptionFor":{ }
+,
+"getNumElemBytes":{ }
+,
+"getNumElemBits":{ }
+,
+"getMemorySize":{ }
+,
+"getFlags":{ }
+,
+"hasAlpha":{ }
+,
+"isFloatingPoint":{ }
+,
+"isCompressed":{ }
+,
+"isDepth":{ }
+,
+"isNativeEndian":{ }
+,
+"isLuminance":{ }
+,
+"isValidExtent":{ }
+,
+"getBitDepths":{ }
+,
+"getBitMasks":{ }
+,
+"getBitShifts":{ }
+,
+"getFormatName":{ }
+,
+"isAccessible":{ }
+,
+"getComponentType":{ }
+,
+"getComponentCount":{ }
+,
+"getComponentTypeBits":{ }
+,
+"getFormatFromName":{ }
+,
+"getBNFExpressionOfPixelFormats":{ }
+,
+"getFormatForBitDepths":{ }
+,
+"packColour":{ }
+,
+"packColourUint":{ }
+,
+"packColourFloat":{ }
+,
+"unpackColour":{ }
+,
+"unpackColourUint":{ }
+,
+"unpackColourFloat":{ }
+,
+"bulkPixelConversion":{ }
+,
+"calculateSizeForImage":{ }
+}
+}

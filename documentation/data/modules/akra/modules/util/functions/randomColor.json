@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "bVarious",
+"isOptional" : true,
+"type" : "bool"} ],
+"type" : "IColor",
+"isInline" : false}

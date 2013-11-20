@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "sGrammar",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "void",
+"isInline" : false}

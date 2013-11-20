@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.geometry",
+"arguments" : [ { "name" : "pVertexData",
+"isOptional" : false,
+"type" : "IVertexData"},
+{ "name" : "pBoundingBox",
+"isOptional" : false,
+"type" : "IRect3d"} ],
+"type" : "bool",
+"isInline" : false}

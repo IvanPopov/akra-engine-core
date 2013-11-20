@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!--base href="/"-->
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css" media="all"/>
+	<link type="text/css" rel="stylesheet" href="css/style.css">
+	<link rel="shortcut icon" href="favicon.png">
+
+	<script type="text/javascript" src="http://yandex.st/angularjs/1.0.8/angular.min.js"></script>
+	<!-- СКРИПТЫ -->
+	<script type="text/javascript" src="http://yandex.st/jquery/1.10.2/jquery.min.js"></script>
+	<script type="text/javascript" src="http://yandex.st/jquery/mousewheel/3.0.6/jquery.mousewheel.min.js"></script>
+	<script type="text/javascript" src="js/scrollbarJS-master/jquery.scrollbarJS.js"></script>
+	<script type="text/javascript" src="js/bootstrap/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/document.js"></script>
+
+	<title>Компания</title>
+</head>
+<body>
+
+<div class="b-page">
+	<div class="b-header">
+		<div class="row1">
+			<a class="logo" href="#">Api Reference</a>
+
+			<form class="search" action="#" method="GET">
+				<input type="text" name="search" id="search" placeholder="Search" class="text"/>
+				<input type="submit" value="" class="submit"/>
+			</form>
+		</div>
+		<div class="row2">
+			<a class="logo" href="#">AKRA</a>
+			<div class="menu">
+				<ul class="wrap">
+					<li class="item">
+						<a class="link namespaces" href="#">Akra</a>
+					</li>
+					<li class="item">
+						<a class="link namespaces" href="#">Core</a>
+					</li>
+					<li class="item">
+						<a class="link namespaces" href="#">Pool</a>
+					</li>
+					<li class="item">
+						<a class="link namespaces" href="#">Resources</a>
+					</li>
+					<li class="item">
+						<a class="link classes" href="#">RenderMethod</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="b-navigate-row">
+		<a class="left-column-bar j-left-bar opened" href="javascript:void(0);"><span class="bg"></span></a>
+	</div>
+	<div class="b-center">
+		<div class="b-left j-sidebar">
+			<ul class="b-side-menu j-side-menu">
+				<li class="item parent">
+					<div class="wrap">
+						<a class="arrow opened" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon namespaces" href="#"></a>
+						<a class="text" href="#">akra</a>
+						<a class="tree j-tree-button" href="#"></a>
+						<div class="b-tree-menu j-tree-menu">
+							<div class="b-tree-menu-wrap">
+								<ul class="tree-list j-tree-list">
+									<li class="tree-item"><a class="tree-link namespaces" href="#">RenderMethod</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">SurfaceMaterial</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Effect</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Img</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Component</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Collada</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">EffectData</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">HardwareBuffer</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">RenderMethod</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">SurfaceMaterial</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Effect</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Img</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Component</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Collada</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">EffectData</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">HardwareBuffer</a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="item parent">
+					<div class="wrap">
+						<a class="arrow opened" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon namespaces" href="#"></a>
+						<a class="text" href="#">core</a>
+						<a class="tree j-tree-button" href="#"></a>
+						<div class="b-tree-menu j-tree-menu">
+							<div class="b-tree-menu-wrap">
+								<ul class="tree-list j-tree-list">
+									<li class="tree-item"><a class="tree-link namespaces" href="#">RenderMethod</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">SurfaceMaterial</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Effect</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Img</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Component</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Collada</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">EffectData</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">HardwareBuffer</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">RenderMethod</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">SurfaceMaterial</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Effect</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Img</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Component</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Collada</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">EffectData</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">HardwareBuffer</a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="item parent">
+					<div class="wrap">
+						<a class="arrow opened" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon namespaces" href="#"></a>
+						<a class="text" href="#">pool</a>
+						<a class="tree j-tree-button" href="#"></a>
+						<div class="b-tree-menu j-tree-menu">
+							<div class="b-tree-menu-wrap">
+								<ul class="tree-list j-tree-list">
+									<li class="tree-item"><a class="tree-link namespaces" href="#">RenderMethod</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">SurfaceMaterial</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Effect</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Img</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Component</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Collada</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">EffectData</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">HardwareBuffer</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">RenderMethod</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">SurfaceMaterial</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Effect</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Img</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Component</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">Collada</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">EffectData</a></li>
+									<li class="tree-item"><a class="tree-link namespaces" href="#">HardwareBuffer</a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="item has-sub-menu">
+					<div class="wrap">
+						<a class="arrow opened" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">RenderMethod</a>
+					</div>
+					<div class="sub-menu">
+						<div class="legend">
+							<div class="row">
+								<div class="col-md-2"><a class="link j-sm-button" data-name="methods" href="javascript:void(0);"><img src="images/sm-methods-icon.png" alt=""/></a></div>
+								<div class="col-md-2"><a class="link j-sm-button" data-name="members" href="javascript:void(0);"><img src="images/sm-members-icon.png" alt=""/></a></div>
+								<div class="col-md-2"><a class="link j-sm-button" data-name="accessors" href="javascript:void(0);"><img src="images/sm-accessors-icon.png" alt=""/></a></div>
+								<div class="col-md-2"><a class="link j-sm-button disabled" data-name="signals" href="javascript:void(0);"><img src="images/sm-signals-icon.png" alt=""/></a></div>
+								<div class="col-md-2"><a class="link j-sm-button disabled" data-name="static" href="javascript:void(0);"><img src="images/sm-static-icon.png" alt=""/></a></div>
+								<div class="col-md-2"></div>
+							</div>
+						</div>
+						<div class="sub-wrap">
+							<div class="j-sm-sub-list" data-name="methods">
+								<ul class="sub-list">
+									<li class="sub-item"><a class="sub-link methods" href="#">RenderMethod</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">SurfaceMaterial</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">Effect</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">Img</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">Component</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">Collada</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">EffectData</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">HardwareBuffer</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">Texture</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">MemoryBuffer</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">VertexBuffer</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">IndexBuffer</a></li>
+									<li class="sub-item"><a class="sub-link methods" href="#">DepthBuffer</a></li>
+								</ul>
+								<div class="sep"></div>
+							</div>
+							<div class="j-sm-sub-list" data-name="members">
+								<ul class="sub-list">
+									<li class="sub-item"><a class="sub-link members" href="#">ETextureForcedFormatFlags</a></li>
+								</ul>
+								<div class="sep"></div>
+							</div>
+							<div class="j-sm-sub-list" data-name="accessors">
+								<ul class="sub-list">
+									<li class="sub-item"><a class="sub-link accessors" href="#">isVBO</a></li>
+									<li class="sub-item"><a class="sub-link accessors" href="#">isTBO</a></li>
+								</ul>
+							</div>
+						</div>
+						<div class="sub-bottom-row"></div>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">data</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">events</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">fx</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">geometry</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">info</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">io</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">libs</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">material</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">math</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">model</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">net</a>
+					</div>
+				</li>
+				<li class="item">
+					<div class="wrap">
+						<a class="arrow closed" href="javascript:void(0);"><span class="bg"></span></a>
+						<a class="icon classes" href="#"></a>
+						<a class="text" href="#">pixelUtil</a>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div class="b-content j-content">
+			<div class="b-intro">
+				<div class="menu">
+					<ul class="wrap">
+						<li class="item"><a class="link methods j-content-chapter-button" data-name="methods" href="#">Methods</a></li>
+						<li class="item"><a class="link members j-content-chapter-button" data-name="members" href="#">Members</a></li>
+						<li class="item"><a class="link accessors j-content-chapter-button" data-name="accessors" href="#">Accessors</a></li>
+						<li class="item"><a class="link signals j-content-chapter-button" data-name="signals" href="#">Signals</a></li>
+						<li class="item"><a class="link static j-content-chapter-button" data-name="static" href="#">Statics</a></li>
+					</ul>
+				</div>
+				<div class="title">
+					<span class="icon"><img src="images/classes-title-icon.png" alt=""/></span>
+					<span class="way">akra.core.pool.resourses</span>
+					<h1 class="text">rendermethod</h1>
+				</div>
+				<div class="text">
+					<p>An axis to handle numeric values. This axis is used for quantitative data as opposed to the
+						category axis. You can set mininum and maximum values to the axis so that the values are bound
+						to that. If no values are set, then the scale will auto-adjust to the values.</p>
+				</div>
+				<div class="clr"></div>
+			</div>
+			<div class="b-intro-sep"></div>
+			<div class="b-description">
+			<div class="j-content-chapter" data-name="methods">
+				<h2 class="b-description-title methods">Methods</h2>
+
+				<h3 class="b-description-title2 public-methods"><span class="text">Public Methods</span></h3>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">next(...<span class="red">iy</span>: <span class="blue">int[]</span>): <span class="blue">IElement</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="title">next(<span class="red">ix</span>: <span class="blue">int</span>, <span class="red">bShowAll</span>: <span class="blue">bool</span>, [<span class="red">bRec</span>: <span class="blue">bool</span> = <span class="green">true</span>]): <span class="blue">IElement</span></div>
+							<div class="intro">Short annatation of BoolDMap interface...</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type">inline</div>
+<div class="title">isVisible(): <span class="blue">bool;</span></div>
+						</div>
+
+					</div>
+					<div class="b-single-method j-single-method closed">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="title">loadDynamicImage(<span class="red">pData</span>: <span class="blue">Uint8Array</span>, <span class="red">iWidth</span>: <span class="blue">uint</span>, <span class="red">iHeight</span>: <span class="blue">uint</span>,
+	[<span class="red">iDepth</span>: <span class="blue">uint</span>, [<span class="red">eFormat</span>: [<span class="blue">EPixelFormats</span>, <span class="red">nFaces</span>: <span class="blue">uint</span>, [<span class="red">nMipMaps</span>: <span class="blue">uint</span>]]]]): <span class="blue">IImg</span>;</div>
+							<div class="intro">Short annatation of BoolDMap interface...</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="title">internalCreate (<span class="red">pParentSystem</span>: <span class="blue">ITerrainROAM</span>,
+              <span class="red">iSectorX</span>: <span class="blue">uint</span>): <span class="blue">bool</span>
+</div>
+							<div class="intro">Short annatation of BoolDMap interface...</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+
+				<h3 class="b-description-title2 privat-methods"><span class="text">Privat Methods</span></h3>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">next(...<span class="red">iy</span>: <span class="blue">int[]</span>): <span class="blue">IElement</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="title">next(<span class="red">ix</span>: <span class="blue">int</span>, <span class="red">bShowAll</span>: <span class="blue">bool</span>, [<span class="red">bRec</span>: <span class="blue">bool</span> = <span class="green">true</span>]): <span class="blue">IElement</span></div>
+							<div class="intro">Short annatation of BoolDMap interface...</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+
+
+				<h3 class="b-description-title2 protected-methods"><span class="text">Protected Methods</span></h3>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">next(...<span class="red">iy</span>: <span class="blue">int[]</span>): <span class="blue">IElement</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="title">next(<span class="red">ix</span>: <span class="blue">int</span>, <span class="red">bShowAll</span>: <span class="blue">bool</span>, [<span class="red">bRec</span>: <span class="blue">bool</span> = <span class="green">true</span>]): <span class="blue">IElement</span></div>
+							<div class="intro">Short annatation of BoolDMap interface...</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="j-content-chapter" data-name="members">
+
+				<h2 class="b-description-title members">Members</h2>
+
+
+				<h3 class="b-description-title2 public-methods"><span class="text">Public Methods</span></h3>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">iClose: <span class="blue">int</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">iRepeat: <span class="blue">int</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+
+				<h3 class="b-description-title2 privat-methods"><span class="text">Privat Methods</span></h3>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">iClose: <span class="blue">int</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">iRepeat: <span class="blue">int</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+
+
+				<h3 class="b-description-title2 protected-methods"><span class="text">Protected Methods</span></h3>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">iClose: <span class="blue">int</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">iRepeat: <span class="blue">int</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="j-content-chapter" data-name="accessors">
+				<h2 class="b-description-title accessors">Accessors</h2>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type">readonly</div>
+<div class="title">resourceCode: <span class="blue">IResourceCode</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">resourcePool: <span class="blue">IResourcePool</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type">readonly</div>
+<div class="title">manager: <span class="blue">IResourcePoolManager</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+
+			<div class="j-content-chapter" data-name="signals">
+				<h2 class="b-description-title signals">Signals</h2>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type">multicast</div>
+							<div class="multicast"></div>
+<div class="title">changed(<span class="red">value</span>: <span class="blue">bool</span>): <span class="blue">void</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type">unicast</div>
+							<div class="unicast"></div>
+<div class="title">changed(<span class="red">value</span>: <span class="blue">bool</span>): <span class="blue">void</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type">multicast</div>
+							<div class="multicast"></div>
+<div class="title">durationUpdated(<span class="red">fDuration</span>: <span class="blue">float</span>): <span class="blue">void</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="j-content-chapter" data-name="static">
+				<h2 class="b-description-title static">Statics</h2>
+				<h3 class="b-description-title2 public-methods"><span class="text">Public Static Methods</span></h3>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">next(...<span class="red">iy</span>: <span class="blue">int[]</span>): <span class="blue">IElement</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="title">next(<span class="red">ix</span>: <span class="blue">int</span>, <span class="red">bShowAll</span>: <span class="blue">bool</span>, [<span class="red">bRec</span>: <span class="blue">bool</span> = <span class="green">true</span>]): <span class="blue">IElement</span></div>
+							<div class="intro">Short annatation of BoolDMap interface...</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type">inline</div>
+<div class="title">isVisible(): <span class="blue">bool;</span></div>
+						</div>
+
+					</div>
+					<div class="b-single-method j-single-method closed">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="title">loadDynamicImage(<span class="red">pData</span>: <span class="blue">Uint8Array</span>, <span class="red">iWidth</span>: <span class="blue">uint</span>, <span class="red">iHeight</span>: <span class="blue">uint</span>,
+	[<span class="red">iDepth</span>: <span class="blue">uint</span>, [<span class="red">eFormat</span>: [<span class="blue">EPixelFormats</span>, <span class="red">nFaces</span>: <span class="blue">uint</span>, [<span class="red">nMipMaps</span>: <span class="blue">uint</span>]]]]): <span class="blue">IImg</span>;</div>
+							<div class="intro">Short annatation of BoolDMap interface...</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="deprecated"></div>
+							<div class="title">internalCreate (<span class="red">pParentSystem</span>: <span class="blue">ITerrainROAM</span>,
+              <span class="red">iSectorX</span>: <span class="blue">uint</span>): <span class="blue">bool</span>
+</div>
+							<div class="intro">Short annatation of BoolDMap interface...</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+
+				<h3 class="b-description-title2 privat-methods"><span class="text">Privat Methods</span></h3>
+				<div class="b-single-methods-wrap">
+					<div class="b-single-method j-single-method closed">
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+<div class="title">next(...<span class="red">iy</span>: <span class="blue">int[]</span>): <span class="blue">IElement</span></div>
+<div class="intro">
+Short annatation of BoolDMap interface...
+</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+					<div class="b-single-method j-single-method closed">
+
+						<div class="top-row">
+							<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+							<div class="type"></div>
+							<div class="title">next(<span class="red">ix</span>: <span class="blue">int</span>, <span class="red">bShowAll</span>: <span class="blue">bool</span>, [<span class="red">bRec</span>: <span class="blue">bool</span> = <span class="green">true</span>]): <span class="blue">IElement</span></div>
+							<div class="intro">Short annatation of BoolDMap interface...</div>
+						</div>
+						<div class="bottom-row">
+<div class="description">Short annatation of BoolDMap interface...These options are usually specific for a certain implementation of the Timer class, and may (and probably will) not exist
+across different implementations. reset() must be called after all setOption() calls.
+<p><span class="bold">Parameters</span>:
+	<span class="red bold">pParentSystem:</span>  The name of the option to set
+	<span class="red bold">iSectorX:</span>  A pointer to the value - the size should be calculated by the timer based on the key</p><p><span class="bold">Returns</span>:
+	On success, true is returned.
+	On failure, false is returned.</p><span class="warning"><span class="bold">Note:</span>  Do not use this method with <span class="bold">Terrain::create()</span> initialisation.</span><p><span class="bold">See also:</span>
+	<span class="bold blue">next, next, isVisible</span></p><p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<!--<div class="b-footer-wrap">-->
+	<!--<div class="b-footer">-->
+		<!--<ul class="b-footer-menu">-->
+			<!--<li class="b-footer-menu-item">-->
+				<!--<ul class="b-footer-sub-menu">-->
+					<!--<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Main page</a></li>-->
+					<!--<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Technology</a></li>-->
+					<!--<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Documents</a></li>-->
+				<!--</ul>-->
+			<!--</li>-->
+			<!--<li class="b-footer-menu-item">-->
+				<!--<ul class="b-footer-sub-menu">-->
+					<!--<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Licensing</a></li>-->
+					<!--<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Vacancies</a></li>-->
+					<!--<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Blog</a></li>-->
+				<!--</ul>-->
+			<!--</li>-->
+			<!--<li class="b-footer-menu-item">-->
+				<!--<ul class="b-footer-sub-menu">-->
+					<!--<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Demo</a></li>-->
+					<!--<li class="b-footer-sub-menu-item active"><a class="b-footer-sub-menu-item-link" href="#">Team</a></li>-->
+					<!--<li class="b-footer-sub-menu-item"><a class="b-footer-sub-menu-item-link" href="#">Contacts</a></li>-->
+				<!--</ul>-->
+			<!--</li>-->
+		<!--</ul>-->
+		<!--<div class="b-footer-copy">-->
+			<!--<p>© 2011 ODServe Engine.Imprint Partnership</p>-->
+			<!--<p>ODServe project, ODServe Engine, Akra 3D Engine, Roto, DraftGen are employed by us for supreme goals.</p>-->
+		<!--</div>-->
+	<!--</div>-->
+<!--</div>-->
+</body>
+</html>

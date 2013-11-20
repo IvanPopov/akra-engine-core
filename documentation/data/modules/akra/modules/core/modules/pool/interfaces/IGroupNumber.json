@@ -1,0 +1,3 @@
+{ "location" : "akra.core.pool",
+"variables" : { "public" : { "value" : { "location" : "akra.core.pool.IGroupNumber",
+"type" : "number"}}}}

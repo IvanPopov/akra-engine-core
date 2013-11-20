@@ -1,0 +1,13 @@
+{ "location" : "",
+"variables" : { "public" : { "create" : { "location" : "DroppableEvents",
+"type" : "DroppableEvent"},
+"activate" : { "location" : "DroppableEvents",
+"type" : "DroppableEvent"},
+"deactivate" : { "location" : "DroppableEvents",
+"type" : "DroppableEvent"},
+"over" : { "location" : "DroppableEvents",
+"type" : "DroppableEvent"},
+"out" : { "location" : "DroppableEvents",
+"type" : "DroppableEvent"},
+"drop" : { "location" : "DroppableEvents",
+"type" : "DroppableEvent"}}}}

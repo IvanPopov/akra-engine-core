@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.net",
+"arguments" : [ { "name" : "sAddr",
+"isOptional" : true,
+"type" : "string"} ],
+"type" : "IPipe",
+"isInline" : false}

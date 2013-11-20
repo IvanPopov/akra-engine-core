@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "nPixels",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "[  ]",
+"isInline" : false}

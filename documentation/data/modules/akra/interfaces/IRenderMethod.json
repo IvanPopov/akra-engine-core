@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "effect" : { "location" : "akra.IRenderMethod",
+"type" : "IEffect"},
+"surfaceMaterial" : { "location" : "akra.IRenderMethod",
+"type" : "ISurfaceMaterial"}}}}

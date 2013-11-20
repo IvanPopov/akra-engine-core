@@ -1,0 +1,12 @@
+{ "comments" : [ [ "/**",
+"* Read a n*8 bits integer value to memory in native endian.",
+"*/" ] ],
+"location" : "akra.bf",
+"arguments" : [ { "name" : "pSrc",
+"isOptional" : false,
+"type" : "Uint8Array"},
+{ "name" : "n",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : true}

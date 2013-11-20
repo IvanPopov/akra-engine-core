@@ -1,0 +1,113 @@
+
+{
+"location":"akra",
+"variables":
+{
+"maxTextureSize":{ }
+,
+"maxCubeMapTextureSize":{ }
+,
+"maxViewPortSize":{ }
+,
+"maxTextureImageUnits":{ }
+,
+"maxVertexAttributes":{ }
+,
+"maxVertexTextureImageUnits":{ }
+,
+"maxCombinedTextureImageUnits":{ }
+,
+"maxColorAttachments":{ }
+,
+"stencilBits":{ }
+,
+"colorBits":{ }
+,
+"alphaBits":{ }
+,
+"multisampleType":{ }
+,
+"shaderVersion":{ }
+,
+"hasNonPowerOf2Textures":{ }
+,
+"isANGLE":{ }
+,
+"pSupportedExtensionList":{ }
+}
+,
+"functions":
+{
+"loadExtension":{ }
+,
+"isEnabled":{ }
+,
+"createContext":{ }
+,
+"hasExtension":{ }
+,
+"getWebGLUsage":{ }
+,
+"getWebGLFormat":{ }
+,
+"isWebGLFormatSupport":{ }
+,
+"getWebGLDataType":{ }
+,
+"getWebGLInternalFormat":{ }
+,
+"getWebGLPrimitiveType":{ }
+,
+"getClosestWebGLInternalFormat":{ }
+,
+"getClosestAkraFormat":{ }
+,
+"optionalPO2":{ }
+,
+"convertToWebGLformat":{ }
+,
+"checkFBOAttachmentFormat":{ }
+,
+"checkReadPixelFormat":{ }
+,
+"getSupportedAlternative":{ }
+,
+"computeLog":{ }
+}
+,
+"classes":
+{
+"WebGLPixelBuffer":{ }
+,
+"WebGLCanvas":{ }
+,
+"WebGLShaderProgram":{ }
+,
+"WebGLRenderer":{ }
+,
+"WebGLTextureBuffer":{ }
+,
+"WebGLInternalTexture":{ }
+,
+"WebGLVertexBuffer":{ }
+,
+"WebGLVertexTexture":{ }
+,
+"WebGLIndexBuffer":{ }
+,
+"WebGLInternalRenderBuffer":{ }
+,
+"WebGLRenderTexture":{ }
+,
+"WebGLInternalFrameBuffer":{ }
+,
+"WebGLDepthBuffer":{ }
+}
+,
+"interfaces":
+{
+"WebGLUniformLocationMap":{ }
+,
+"IWebGLAttachments":{ }
+}
+}

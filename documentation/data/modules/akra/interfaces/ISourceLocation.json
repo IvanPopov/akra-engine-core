@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "file" : { "location" : "akra.ISourceLocation",
+"type" : "string"},
+"line" : { "location" : "akra.ISourceLocation",
+"type" : "number"}}}}

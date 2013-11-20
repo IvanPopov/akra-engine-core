@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pBuffer",
+"isOptional" : false,
+"type" : "ArrayBuffer"},
+{ "name" : "eType",
+"isOptional" : false,
+"type" : "EDataTypes"} ],
+"type" : "ArrayBufferView",
+"isInline" : false}

@@ -1,0 +1,15 @@
+
+{
+"location":"akra",
+"variables":
+{
+"WEBSOCKET_PORT":{ }
+}
+,
+"functions":
+{
+"createPipe":{ }
+,
+"createRpc":{ }
+}
+}

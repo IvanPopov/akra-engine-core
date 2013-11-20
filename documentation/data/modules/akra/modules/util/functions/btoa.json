@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pBlob",
+"isOptional" : false,
+"type" : "Blob"},
+{ "name" : "fn",
+"isOptional" : false,
+"type" : ""} ],
+"type" : "void",
+"isInline" : false}

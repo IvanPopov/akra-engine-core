@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.fx",
+"arguments" : [ { "name" : "pType",
+"isOptional" : false,
+"type" : "IAFXVariableTypeInstruction"} ],
+"type" : "bool",
+"isInline" : false}

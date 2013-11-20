@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "verts" : { "location" : "akra.ITerrainROAM",
+"type" : "number[  ]"},
+"index" : { "location" : "akra.ITerrainROAM",
+"type" : "Float32Array"},
+"maxTriTreeNodes" : { "location" : "akra.ITerrainROAM",
+"type" : "number"},
+"vertexId" : { "location" : "akra.ITerrainROAM",
+"type" : "number"},
+"totalIndex" : { "location" : "akra.ITerrainROAM",
+"type" : "number"}}}}

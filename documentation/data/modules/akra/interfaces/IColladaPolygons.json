@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IColladaPolygons",
+"type" : "string"},
+"inputs" : { "location" : "akra.IColladaPolygons",
+"type" : "IColladaInput[  ]"},
+"p" : { "location" : "akra.IColladaPolygons",
+"type" : "number[  ]"},
+"material" : { "location" : "akra.IColladaPolygons",
+"type" : "string"},
+"type" : { "location" : "akra.IColladaPolygons",
+"type" : "EPrimitiveTypes"},
+"count" : { "location" : "akra.IColladaPolygons",
+"type" : "number"}}}}

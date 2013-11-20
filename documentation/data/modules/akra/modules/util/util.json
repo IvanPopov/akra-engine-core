@@ -1,0 +1,134 @@
+
+{
+"location":"akra",
+"interfaces":
+{
+"ILogRoutineMap":{ }
+,
+"ICodeFamily":{ }
+,
+"ICodeFamilyMap":{ }
+,
+"ICodeInfo":{ }
+,
+"ICodeInfoMap":{ }
+,
+"ICodeFamilyRoutineDMap":{ }
+,
+"IBrowserData":{ }
+,
+"IThreadStats":{ }
+,
+"IOperation":{ }
+,
+"IItem":{ }
+,
+"IState":{ }
+,
+"IStateMap":{ }
+,
+"IOperationMap":{ }
+,
+"IOperationDMap":{ }
+,
+"IRuleMap":{ }
+,
+"IRuleDMap":{ }
+,
+"IRuleFunctionMap":{ }
+,
+"IRuleFunctionDMap":{ }
+,
+"IAdditionalFuncInfo":{ }
+,
+"IObjectListItem":{ }
+,
+"IBuffersCompatibleMap":{ }
+,
+"ISemanticsMap":{ }
+}
+,
+"classes":
+{
+"Logger":{ }
+,
+"ReferenceCounter":{ }
+,
+"Color":{ }
+,
+"Pathinfo":{ }
+,
+"URI":{ }
+,
+"Singleton":{ }
+,
+"BrowserInfo":{ }
+,
+"ScreenInfo":{ }
+,
+"ApiInfo":{ }
+,
+"ThreadManager":{ }
+,
+"Entity":{ }
+,
+"ParseTree":{ }
+,
+"Parser":{ }
+,
+"EffectParser":{ }
+,
+"ObjectArray":{ }
+,
+"UtilTimer":{ }
+,
+"ObjectList":{ }
+,
+"BufferMap":{ }
+}
+,
+"variables":
+{
+"logger":{ }
+,
+"parser":{ }
+}
+,
+"functions":
+{
+"randomColor":{ }
+,
+"colorToVec4":{ }
+,
+"pathinfo":{ }
+,
+"uri":{ }
+,
+"stoab":{ }
+,
+"abtos":{ }
+,
+"abtota":{ }
+,
+"parseJSON":{ }
+,
+"btoa":{ }
+,
+"parseHTML":{ }
+,
+"initAFXParser":{ }
+,
+"createBufferMap":{ }
+,
+"createDepsManager":{ }
+}
+,
+"enums":
+{
+"EThreadStatuses":{ }
+,
+"EEntityStates":{ }
+,
+"EDepsManagerStates":{ }
+}
+}

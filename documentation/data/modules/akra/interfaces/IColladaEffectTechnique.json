@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "sid" : { "location" : "akra.IColladaEffectTechnique",
+"type" : "string"},
+"type" : { "location" : "akra.IColladaEffectTechnique",
+"type" : "string"},
+"value" : { "location" : "akra.IColladaEffectTechnique",
+"type" : "IColladaEntry"}}}}

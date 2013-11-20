@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.io",
+"arguments" : [ { "name" : "sMode",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "number",
+"isInline" : false}

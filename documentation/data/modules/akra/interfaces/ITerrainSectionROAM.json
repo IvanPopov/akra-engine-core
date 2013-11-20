@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "triangleA" : { "location" : "akra.ITerrainSectionROAM",
+"type" : "ITriTreeNode"},
+"triangleB" : { "location" : "akra.ITerrainSectionROAM",
+"type" : "ITriTreeNode"},
+"queueSortValue" : { "location" : "akra.ITerrainSectionROAM",
+"type" : "number"},
+"terrainSystem" : { "location" : "akra.ITerrainSectionROAM",
+"type" : "ITerrainROAM"}}}}

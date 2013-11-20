@@ -1,0 +1,9 @@
+[ { "name" : "PERSPECTIVE",
+"text" : "0",
+"value" : 0},
+{ "name" : "ORTHO",
+"text" : "1",
+"value" : 1},
+{ "name" : "OFFSET_ORTHO",
+"text" : "2",
+"value" : 2} ]

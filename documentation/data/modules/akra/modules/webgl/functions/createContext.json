@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.webgl",
+"arguments" : [ { "name" : "pCanvas",
+"isOptional" : true,
+"type" : "HTMLCanvasElement"},
+{ "name" : "pOptions",
+"isOptional" : true,
+"type" : "{ ; }"} ],
+"type" : "WebGLRenderingContext",
+"isInline" : false}

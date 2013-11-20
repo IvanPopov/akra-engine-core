@@ -1,0 +1,12 @@
+{ "comments" : [ [ "/**",
+"* Returns the larger of a set of supplied numeric expressions.",
+"* @param values Numeric expressions to be evaluated.",
+"*/" ] ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "..."},
+{ "name" : "values",
+"isOptional" : false,
+"type" : "[  ]"} ],
+"variableArgList" : true,
+"type" : "number",
+"isInline" : false}

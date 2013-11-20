@@ -1,0 +1,9 @@
+[ { "name" : "FAILURE",
+"text" : "0",
+"value" : 0},
+{ "name" : "REQUEST",
+"text" : "1",
+"value" : 1},
+{ "name" : "RESPONSE",
+"text" : "2",
+"value" : 2} ]

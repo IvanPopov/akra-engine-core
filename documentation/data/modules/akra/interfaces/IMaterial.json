@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IMaterial",
+"type" : "string"}}}}

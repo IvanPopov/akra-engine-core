@@ -1,0 +1,13 @@
+{ "location" : "akra.render",
+"variables" : { "public" : { "sName" : { "location" : "akra.render.IIndexSet",
+"type" : "string"},
+"pMap" : { "location" : "akra.render.IIndexSet",
+"type" : "IBufferMap"},
+"pIndexData" : { "location" : "akra.render.IIndexSet",
+"type" : "IBufferData"},
+"pAttribData" : { "location" : "akra.render.IIndexSet",
+"type" : "IVertexData"},
+"pI2IDataCache" : { "location" : "akra.render.IIndexSet",
+"type" : "IntMap"},
+"pAdditionCache" : { "location" : "akra.render.IIndexSet",
+"type" : "IntMap"}}}}

@@ -1,0 +1,9 @@
+[ { "name" : "k_Normal",
+"text" : "0",
+"value" : 0},
+{ "name" : "k_Fast",
+"text" : "1",
+"value" : 1},
+{ "name" : "k_Slow",
+"text" : "2",
+"value" : 2} ]

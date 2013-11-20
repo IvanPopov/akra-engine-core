@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "stride" : { "location" : "akra.IVertexData",
+"type" : "number"},
+"startIndex" : { "location" : "akra.IVertexData",
+"type" : "number"},
+"id" : { "location" : "akra.IVertexData",
+"type" : "number"}}}}

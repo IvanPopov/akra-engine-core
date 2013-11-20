@@ -1,0 +1,89 @@
+
+{
+"location":"akra",
+"classes":
+{
+"Box":{ }
+,
+"Circle":{ }
+,
+"Rect2d":{ }
+,
+"Sphere":{ }
+,
+"Rect3d":{ }
+,
+"Plane3d":{ }
+,
+"Plane2d":{ }
+,
+"Frustum":{ }
+,
+"Ray2d":{ }
+,
+"Ray3d":{ }
+,
+"Segment2d":{ }
+,
+"Segment3d":{ }
+}
+,
+"functions":
+{
+"planeClassifyCircle":{ }
+,
+"planeClassifySphere":{ }
+,
+"planeClassifyRect2d":{ }
+,
+"planeClassifyRect3d":{ }
+,
+"planeClassify":{ }
+,
+"classifyRect2d":{ }
+,
+"classifyRect3d":{ }
+,
+"classifyFrustumRect3d":{ }
+,
+"intersectPlane2dRay2d":{ }
+,
+"intersectPlane3dRay3d":{ }
+,
+"intersectCircleRay2d":{ }
+,
+"intersectSphereRay3d":{ }
+,
+"intersectRect2dRay2d":{ }
+,
+"intersectRect3dRay3d":{ }
+,
+"intersectCircleCircle":{ }
+,
+"intersectSphereSphere":{ }
+,
+"intersectRect2dCircle":{ }
+,
+"intersectRect3dSphere":{ }
+,
+"intersectRect2dRect2d":{ }
+,
+"intersectRect3dRect3d":{ }
+,
+"intersect":{ }
+,
+"computeBoundingBox":{ }
+,
+"computeDataForCascadeBoundingBox":{ }
+,
+"computeBoundingSphere":{ }
+,
+"computeBoundingSphereFast":{ }
+,
+"computeBoundingSphereMinimal":{ }
+,
+"computeGeneralizingSphere":{ }
+,
+"computeDataForCascadeBoundingSphere":{ }
+}
+}

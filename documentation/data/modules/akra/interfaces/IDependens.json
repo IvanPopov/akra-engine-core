@@ -1,0 +1,12 @@
+{ "location" : "akra",
+"variables" : { "public" : { "files" : { "location" : "akra.IDependens",
+"type" : "string[  ]"},
+"deps" : { "location" : "akra.IDependens",
+"type" : "IDependens"},
+"root" : { "location" : "akra.IDependens",
+"type" : "string"},
+"type" : { "location" : "akra.IDependens",
+"type" : "string"},
+"loader" : { "location" : "akra.IDependens",
+"type" : "(dep :  IDependens,
+ ...data :  any[  ]) => void"}}}}

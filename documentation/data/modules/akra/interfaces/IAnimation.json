@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "totalTracks" : { "location" : "akra.IAnimation",
+"type" : "number"}}}}

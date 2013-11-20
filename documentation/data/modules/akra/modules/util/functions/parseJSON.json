@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "sJSON",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "Object",
+"isInline" : false}

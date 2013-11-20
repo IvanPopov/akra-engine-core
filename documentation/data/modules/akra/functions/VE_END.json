@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra",
+"arguments" : [ { "name" : "iOffset",
+"isOptional" : true,
+"type" : "number"} ],
+"type" : "IVertexElementInterface",
+"isInline" : true}

@@ -1,0 +1,4 @@
+{ "location" : "akra",
+"getters" : { "dataType" : { "type" : "string",
+"isInline" : true,
+"location" : "akra.CodecData"}}}

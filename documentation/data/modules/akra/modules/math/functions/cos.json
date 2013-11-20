@@ -1,0 +1,10 @@
+{ "comments" : [ [ "/**",
+"* Returns the cosine of a number.",
+"* @param x A numeric expression that contains an angle measured in radians.",
+"*/" ] ],
+"location" : "akra.math",
+"arguments" : [ { "name" : "x",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : false}

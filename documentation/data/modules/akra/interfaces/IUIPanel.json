@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "title" : { "location" : "akra.IUIPanel",
+"type" : "string"},
+"index" : { "location" : "akra.IUIPanel",
+"type" : "number"}}}}

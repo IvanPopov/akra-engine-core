@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.io",
+"arguments" : [ { "name" : "fnCallback",
+"isOptional" : false,
+"type" : ""} ],
+"type" : "void",
+"isInline" : false}

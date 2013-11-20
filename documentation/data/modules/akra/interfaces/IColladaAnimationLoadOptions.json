@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "pose" : { "location" : "akra.IColladaAnimationLoadOptions",
+"type" : "bool"}}}}

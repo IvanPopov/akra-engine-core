@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.info",
+"arguments" : [ { "name" : "id",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "ICanvasInfo",
+"isInline" : false}

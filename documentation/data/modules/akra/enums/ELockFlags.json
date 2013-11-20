@@ -1,0 +1,13 @@
+[ { "name" : "READ",
+"text" : "0x01",
+"value" : 1},
+{ "name" : "WRITE",
+"text" : "0x02",
+"value" : 2},
+{ "name" : "DISCARD",
+"text" : "0x04",
+"value" : 4},
+{ "name" : "NO_OVERWRITE",
+"text" : "0x08",
+"value" : 8},
+{ "name" : "NORMAL"} ]

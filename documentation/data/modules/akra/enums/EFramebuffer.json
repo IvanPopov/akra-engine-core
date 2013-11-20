@@ -1,0 +1,9 @@
+[ { "name" : "FRONT",
+"text" : "0",
+"value" : 0},
+{ "name" : "BACK",
+"text" : "1",
+"value" : 1},
+{ "name" : "AUTO",
+"text" : "2",
+"value" : 2} ]

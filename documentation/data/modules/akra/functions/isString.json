@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra",
+"arguments" : [ { "name" : "x",
+"isOptional" : false,
+"type" : "any"} ],
+"type" : "bool",
+"isInline" : true}

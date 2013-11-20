@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "iColor" : { "location" : "akra.ITerrainSampleData",
+"type" : "number"},
+"fScale" : { "location" : "akra.ITerrainSampleData",
+"type" : "number"}}}}

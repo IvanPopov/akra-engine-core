@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "nodeType" : { "location" : "akra.IUINode",
+"type" : "EUINodeTypes"},
+"ui" : { "location" : "akra.IUINode",
+"type" : "IUI"}}}}

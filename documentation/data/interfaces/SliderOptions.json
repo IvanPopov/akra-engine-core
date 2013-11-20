@@ -1,0 +1,11 @@
+{ "location" : "",
+"variables" : { "public" : { "disabled" : { "location" : "SliderOptions",
+"type" : "bool"},
+"max" : { "location" : "SliderOptions",
+"type" : "number"},
+"min" : { "location" : "SliderOptions",
+"type" : "number"},
+"orientation" : { "location" : "SliderOptions",
+"type" : "string"},
+"step" : { "location" : "SliderOptions",
+"type" : "number"}}}}

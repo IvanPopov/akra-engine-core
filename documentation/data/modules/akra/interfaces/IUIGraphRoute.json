@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "left" : { "location" : "akra.IUIGraphRoute",
+"type" : "IUIGraphConnector"},
+"right" : { "location" : "akra.IUIGraphRoute",
+"type" : "IUIGraphConnector"},
+"path" : { "location" : "akra.IUIGraphRoute",
+"type" : "RaphaelPath"},
+"color" : { "location" : "akra.IUIGraphRoute",
+"type" : "IColor"}}}}

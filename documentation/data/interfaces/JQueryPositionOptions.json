@@ -1,0 +1,13 @@
+{ "location" : "",
+"variables" : { "public" : { "my" : { "location" : "JQueryPositionOptions",
+"type" : "string"},
+"at" : { "location" : "JQueryPositionOptions",
+"type" : "string"},
+"of" : { "location" : "JQueryPositionOptions",
+"type" : "any"},
+"collision" : { "location" : "JQueryPositionOptions",
+"type" : "string"},
+"using" : { "location" : "JQueryPositionOptions",
+"type" : "Function"},
+"within" : { "location" : "JQueryPositionOptions",
+"type" : "any"}}}}

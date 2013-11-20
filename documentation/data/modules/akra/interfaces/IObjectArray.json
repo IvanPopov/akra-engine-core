@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "length" : { "location" : "akra.IObjectArray",
+"type" : "number"}}}}

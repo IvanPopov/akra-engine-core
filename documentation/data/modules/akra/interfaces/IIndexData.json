@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "type" : { "location" : "akra.IIndexData",
+"type" : "EDataTypes"},
+"length" : { "location" : "akra.IIndexData",
+"type" : "number"},
+"bytesPerIndex" : { "location" : "akra.IIndexData",
+"type" : "number"},
+"id" : { "location" : "akra.IIndexData",
+"type" : "number"}}}}

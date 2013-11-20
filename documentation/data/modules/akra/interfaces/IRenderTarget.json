@@ -1,0 +1,13 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IRenderTarget",
+"type" : "string"},
+"width" : { "location" : "akra.IRenderTarget",
+"type" : "number"},
+"height" : { "location" : "akra.IRenderTarget",
+"type" : "number"},
+"colorDepth" : { "location" : "akra.IRenderTarget",
+"type" : "number"},
+"totalViewports" : { "location" : "akra.IRenderTarget",
+"type" : "number"},
+"priority" : { "location" : "akra.IRenderTarget",
+"type" : "number"}}}}

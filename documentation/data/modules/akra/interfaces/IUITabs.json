@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "active" : { "location" : "akra.IUITabs",
+"type" : "IUIPanel"}}}}
