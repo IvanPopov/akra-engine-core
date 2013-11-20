@@ -44,7 +44,7 @@ function createCORSRequest(method, url){
     if ("withCredentials" in xhr){
         xhr.open(method, url, true);
     } else if (typeof XDomainRequest != "undefined"){
-        xhr = new XDomainRequest();
+        xhr = new (<any><XMLHttpRequest>XDomainRequest());
         xhr.open(method, url);
     } else {
         xhr = null;
@@ -136,7 +136,7 @@ function queryString (pObj, sPrefix) {
     for (var p in pObj) {
         var k = sPrefix ? sPrefix + "[" + p + "]" : p, v = pObj[p];
         str.push(typeof v == "object" ?
-                     a.queryString(v, k) :
+                     queryString(v, k) :
                      encodeURIComponent(k) + "=" + encodeURIComponent(v));
     }
 

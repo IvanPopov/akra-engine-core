@@ -103,7 +103,7 @@ class VertexData implements AIVertexData {
 
     extend(pDecl: AIVertexDeclaration, pData: ArrayBufferView = null): boolean {
         pDecl = VertexDeclaration.normalize(pDecl);
-
+        
         if (isNull(pData)) {
             pData = new Uint8Array(this.length * pDecl.stride);
         }

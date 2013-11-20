@@ -44,4 +44,4 @@ interface AIAnimationContainer extends AIAnimationBase {
 
 	signal durationUpdated(fDuration: float): void;
 	signal enterFrame(fRealTime: float, fTime: float): void;
-}
+}

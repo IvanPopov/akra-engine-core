@@ -4,35 +4,35 @@
 import bf = require("bitflags");
 import Singleton = require("util/Singleton");
 
-export interface AILogRoutineMap {
+interface AILogRoutineMap {
     [eLogLevel: uint]: AILogRoutineFunc;
 }
 
-export interface AICodeFamily {
+interface AICodeFamily {
     familyName: string;
     codeMin: uint;
     codeMax: uint;
 }
 
-export interface AICodeFamilyMap {
+interface AICodeFamilyMap {
     [familyName: string]: AICodeFamily;
 }
 
-export interface AICodeInfo {
+interface AICodeInfo {
     code: uint;
     message: string;
     familyName: string;
 }
 
-export interface AICodeInfoMap {
+interface AICodeInfoMap {
     [code: uint]: AICodeInfo;
 }
 
-export interface AICodeFamilyRoutineDMap {
+interface AICodeFamilyRoutineDMap {
     [familyName: string]: AILogRoutineMap;
 }
 
-export class Logger extends Singleton<Logger> implements AILogger {
+class Logger extends Singleton<Logger> implements AILogger {
     private _eLogLevel: AELogLevel;
     private _pGeneralRoutineMap: AILogRoutineMap;
 

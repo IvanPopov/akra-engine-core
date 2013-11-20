@@ -1,7 +1,3 @@
-// AIPackerFormat interface
-// [write description here...]
-
-module akra {
 interface AIPackerBlacklist {
 	[type: string]: Function;
 };
@@ -36,6 +32,3 @@ interface AIPackerTemplate {
 	properties(sType): AIPackerCodec;
 	data(): AIPackerFormat;
 }
-}
-
-#endif

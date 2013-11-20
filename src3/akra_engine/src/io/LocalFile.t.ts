@@ -1,10 +1,10 @@
-self.requestFileSystemSync = self.webkitRequestFileSystemSync || self.requestFileSystemSync;
+self["requestFileSystemSync"] = self["webkitRequestFileSystemSync"] || self["requestFileSystemSync"];
 
 var pFileSystem = null;
 var pFiles = {};
 
 try {
-    pFileSystem = self.requestFileSystemSync(TEMPORARY, 1024 * 1024 * 32 /*32MB*/);
+    pFileSystem = self["requestFileSystemSync"](self["TEMPORARY"], 1024 * 1024 * 32 /*32MB*/);
 }
 catch (e) {
     throw e;
@@ -110,7 +110,7 @@ function file (pCmd) {
                                                      create:    canCreate(pCmd.mode),
                                                      exclusive: false
                                                  }),
-                reader: new FileReaderSync
+                reader: new self["FileReaderSync"]
             };
         }
         catch (e) {
@@ -118,7 +118,7 @@ function file (pCmd) {
 
             if ((e.code == FileError.NOT_FOUND_ERR || e.code == NotFoundError) 
                 && canWrite(pCmd.mode)
-                && pCmd.act != File.EXISTS) {
+                && pCmd.act != (<any>File).EXISTS) {
                 
                 try {
                     if (createDir(pFileSystem.root, directories(sName))) {

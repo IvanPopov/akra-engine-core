@@ -1,6 +1,7 @@
 /// <reference path="../idl/AIColor.ts" />
 
 import math = require("math");
+import gen = require("generate");
 
 var pBuffer: AIColor[];
 var iElement: uint;
@@ -159,7 +160,7 @@ class Color implements AIColor {
                     this.b = c[2];
                     this.a = c[3];
                 }
-                else if (isString(arguments[0)) {
+                else if (isString(arguments[0])) {
                     var s: string = (<string>arguments[0]).toLowerCase();
 
                     if (s[0] === '#') {

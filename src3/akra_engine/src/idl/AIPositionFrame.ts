@@ -14,4 +14,4 @@ interface AIPositionFrame extends AIFrame {
 	/** readonly */ translation: AIVec3;
 
 	toMatrix(): AIMat4;
-}
+}

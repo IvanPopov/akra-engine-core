@@ -17,7 +17,42 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="default.htm" />
+    <Content Include="src\idl\AEFileTransferModes.ts" />
+    <Content Include="src\idl\3d-party\FileSaver.d.ts" />
+    <Content Include="src\idl\AIFileDropArea.ts" />
+    <None Include="src\io\FileInterface.t.ts" />
+    <Content Include="src\idl\AEIO.ts" />
+    <None Include="src\io\LocalFile.t.ts" />
+    <Content Include="src\io\PackerTemplate.ts" />
+    <None Include="src\io\RemoteFile.t.ts" />
+    <Content Include="src\net\server\ConnectionWrapper.js" />
+    <Content Include="src\net\server\core.js" />
+    <Content Include="src\net\server\lib\getMegaTexture.js" />
+    <Content Include="src\net\server\lib\getMegaTextureColored.js" />
+    <Content Include="src\net\server\lib\getMegaTextureNative.js" />
+    <Content Include="src\net\server\lib\loadMegaTexture.js" />
+    <Content Include="src\net\server\lib\todo.js" />
+    <Content Include="src\net\server\lib\trace.js" />
+    <Content Include="src\net\server\procedurer.js" />
+    <Content Include="src\net\server\readme.txt" />
+    <Content Include="src\progress\tpl\progress-bar.html" />
+    <Content Include="src\progress\tpl\progress.css" />
+    <Content Include="src\progress\tpl\progress.min.css">
+      <DependentUpon>progress.css</DependentUpon>
+    </Content>
     <Content Include="web.config" />
+    <TypeScriptCompile Include="src\net.ts" />
+    <TypeScriptCompile Include="src\net\Pipe.ts" />
+    <TypeScriptCompile Include="src\net\RPC.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\Codec.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\CodecData.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\DDSCodec.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\ImgCodec.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\ImgData.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\PixelBox.ts" />
+    <TypeScriptCompile Include="src\progress\progress.ts" />
+    <TypeScriptCompile Include="src\util\ObjectSortCollection.ts" />
+    <TypeScriptCompile Include="src\zip.ts" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="src\akra.ts" />
@@ -74,7 +109,7 @@
     <Content Include="src\idl\AIDataPool.ts" />
     <Content Include="src\idl\AIDataURI.ts" />
     <Content Include="src\idl\AIDDSCodec.ts" />
-    <Content Include="src\idl\AIDepsManager.ts" />
+    <Content Include="src\idl\AIDeps.ts" />
     <Content Include="src\idl\AIDepthBuffer.ts" />
     <Content Include="src\idl\AIDeviceInfo.ts" />
     <Content Include="src\idl\AIDisplayList.ts" />
@@ -259,6 +294,7 @@
     <TypeScriptCompile Include="src\data\VertexData.ts" />
     <TypeScriptCompile Include="src\data\VertexDeclaration.ts" />
     <TypeScriptCompile Include="src\data\VertexElement.ts" />
+    <TypeScriptCompile Include="src\deps.ts" />
     <TypeScriptCompile Include="src\generate.ts" />
     <TypeScriptCompile Include="src\geometry.ts" />
     <TypeScriptCompile Include="src\geometry\Box.ts" />
@@ -285,6 +321,21 @@
     <Content Include="src\idl\AIAFXAttributeBlendContainer.ts" />
     <Content Include="src\idl\AEVolumeClassifications.ts" />
     <Content Include="src\idl\AEPlaneClassifications.ts" />
+    <TypeScriptCompile Include="src\ajax.ts" />
+    <TypeScriptCompile Include="src\export\BinExporter.ts" />
+    <TypeScriptCompile Include="src\io\BinReader.ts" />
+    <TypeScriptCompile Include="src\io\BinWriter.ts" />
+    <TypeScriptCompile Include="src\export\Exporter.ts" />
+    <TypeScriptCompile Include="src\filedrop.ts" />
+    <TypeScriptCompile Include="src\io.ts" />
+    <TypeScriptCompile Include="src\import\Importer.ts" />
+    <TypeScriptCompile Include="src\io\LocalFile.ts" />
+    <TypeScriptCompile Include="src\io\Packer.ts" />
+    <TypeScriptCompile Include="src\io\templates\common.ts" />
+    <TypeScriptCompile Include="src\save.ts" />
+    <TypeScriptCompile Include="src\io\StorageFile.ts" />
+    <TypeScriptCompile Include="src\io\TFile.ts" />
+    <TypeScriptCompile Include="src\io\UnPacker.ts" />
     <TypeScriptCompile Include="src\logger\Logger.ts" />
     <TypeScriptCompile Include="src\math.ts" />
     <Content Include="src\math\Mat3.ts" />
@@ -296,6 +347,7 @@
     <TypeScriptCompile Include="src\path.ts" />
     <TypeScriptCompile Include="src\pixelUtil.ts" />
     <TypeScriptCompile Include="src\sid.ts" />
+    <TypeScriptCompile Include="src\threading.ts" />
     <TypeScriptCompile Include="src\time.ts" />
     <TypeScriptCompile Include="src\type.ts" />
     <TypeScriptCompile Include="src\uri.ts" />
@@ -313,6 +365,7 @@
     <TypeScriptCompile Include="src\util\ReferenceCounter.ts" />
     <TypeScriptCompile Include="src\util\Singleton.ts" />
     <TypeScriptCompile Include="src\sort.ts" />
+    <TypeScriptCompile Include="src\threading\ThreadManager.ts" />
     <TypeScriptCompile Include="src\util\Timer.ts" />
     <TypeScriptCompile Include="src\webgl.ts" />
   </ItemGroup>
@@ -326,7 +379,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\core\" />
-    <Folder Include="src\pixelUtil\" />
+    <Folder Include="src\sort\" />
     <Folder Include="src\webgl\" />
   </ItemGroup>
   <ItemGroup />

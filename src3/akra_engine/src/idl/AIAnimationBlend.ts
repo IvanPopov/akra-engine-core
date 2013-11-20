@@ -3,11 +3,12 @@
 
 
 /// <reference path="AIAnimationBase.ts" />
+/// <reference path="AIMap.ts" />
 
 interface AIAnimationElement {
 	animation: AIAnimationBase;
 	weight: float;
-	mask: FloatMap;
+	mask: AIMap<float>;
 	acceleration?: float;
 	time: float;
 	realTime: float;
@@ -16,8 +17,8 @@ interface AIAnimationElement {
 interface AIAnimationBlend extends AIAnimationBase {
 	/** readonly */ totalAnimations: int;
 
-	addAnimation(pAnimation: AIAnimationBase, fWeight?: float, pMask?: FloatMap): int;
-	setAnimation(iAnimation: int, pAnimation: AIAnimationBase, fWeight?: float, pMask?: FloatMap): boolean;
+    addAnimation(pAnimation: AIAnimationBase, fWeight?: float, pMask?: AIMap<float>): int;
+    setAnimation(iAnimation: int, pAnimation: AIAnimationBase, fWeight?: float, pMask?: AIMap<float>): boolean;
 	
 	getAnimationIndex(sName: string): int;
 	getAnimation(sName: string): AIAnimationBase;
@@ -33,17 +34,17 @@ interface AIAnimationBlend extends AIAnimationBase {
 	setAnimationWeight(iAnimation: int, fWeight: float): boolean;
 	setAnimationWeight(fWeight: float): boolean;
 
-	setAnimationMask(sName: string, pMask: FloatMap): boolean;
-	setAnimationMask(iAnimation: int, pMask: FloatMap): boolean;
+    setAnimationMask(sName: string, pMask: AIMap<float>): boolean;
+    setAnimationMask(iAnimation: int, pMask: AIMap<float>): boolean;
 	
-	getAnimationMask(sName: string): FloatMap;
-	getAnimationMask(iAnimation: int): FloatMap;
+    getAnimationMask(sName: string): AIMap<float>;
+    getAnimationMask(iAnimation: int): AIMap<float>;
 
 	getAnimationAcceleration(sName: string): float;
 	getAnimationAcceleration(iAnimation: int): float;
 	
-	createAnimationMask(iAnimation?: int): FloatMap;
+    createAnimationMask(iAnimation?: int): AIMap<float>;
 
 	signal durationUpdated(fDuration: float);
 	signal weightUpdated(iAnim: int, fWeight: float);
-}
+}

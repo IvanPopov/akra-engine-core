@@ -2,9 +2,6 @@
 // [write description here...]
 
 
-
-module akra {
-
 interface AICodec {
 
 	getType():string;
@@ -23,5 +20,3 @@ interface AICodecData {
 	dataType: string;
 }
 
-}
-

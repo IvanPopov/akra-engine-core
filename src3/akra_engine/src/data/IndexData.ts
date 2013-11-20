@@ -1,142 +1,140 @@
-#ifndef INDEXDATA_TS
-#define INDEXDATA_TS
+/// <reference path="../idl/AIBufferData.ts" />
+/// <reference path="../idl/AIIndexBuffer.ts" />
+/// <reference path="../idl/AEPrimitiveTypes.ts" />
 
-/// <reference path="AIBufferData.ts" />
-/// <reference path="AIIndexBuffer.ts" />
+import logger = require("logger");
+import type = require("dataType");
+
+class IndexData implements AIIndexData {
+    private _pIndexBuffer: AIIndexBuffer;
+    private _iOffset: uint;
+    private _iLength: uint;
+    private _ePrimitiveType: AEPrimitiveTypes;
+    private _eElementsType: AEDataTypes;
+    private _iId: int;
+
+    get id(): uint { return this._iId; }
+    get type(): uint { return this._eElementsType; }
+    get length(): uint { return this._iLength; }
+    get bytesPerIndex(): uint { return type.size(this._eElementsType); }
+    get byteOffset(): uint { return this._iOffset; }
+    get byteLength(): uint { return this._iLength * this.bytesPerIndex; }
+    get buffer(): AIIndexBuffer { return this._pIndexBuffer; }
+
+    constructor(
+        pIndexBuffer: AIIndexBuffer,
+        id: uint,
+        iOffset: int,
+        iCount: int,
+        ePrimitiveType: AEPrimitiveTypes = AEPrimitiveTypes.TRIANGLELIST,
+        eElementsType: AEDataTypes = AEDataTypes.UNSIGNED_SHORT) {
+
+        logger.presume(
+            eElementsType == AEDataTypes.UNSIGNED_SHORT ||
+            eElementsType == AEDataTypes.UNSIGNED_BYTE ||
+            eElementsType == AEDataTypes.UNSIGNED_INT, "supported only short, byte, uint data types.");
+
+        this._pIndexBuffer = pIndexBuffer;
+        this._iOffset = iOffset;
+        this._iLength = iCount;
+        this._iId = id;
+
+        this._ePrimitiveType = ePrimitiveType;
+        this._eElementsType = eElementsType;
+
+        logger.presume(pIndexBuffer.byteLength >= this.byteLength + this.byteOffset, "out of buffer limits.");
+    }
 
 
-module akra.data {
-	class IndexData implements AIIndexData {
-		private _pIndexBuffer: AIIndexBuffer;
-		private _iOffset: uint;
-		private _iLength: uint;
-		private _ePrimitiveType: EPrimitiveTypes;
-		private _eElementsType: EDataTypes;
-		private _iId: int;
+    getData(iOffset: int, iSize: int): ArrayBuffer {
+        logger.presume(iOffset + iSize <= this.byteLength, "out of buffer limits");
+        var pBuffer: Uint8Array = new Uint8Array(iSize);
 
-		/** inline */ get id(): uint { return this._iId; }
-		/** inline */ get type(): uint { return this._eElementsType; };
-		/** inline */ get length(): uint { return this._iLength; };
-		/** inline */ get bytesPerIndex(): uint { return getTypeSize(this._eElementsType); };
-		/** inline */ get byteOffset(): uint { return this._iOffset; };
-		/** inline */ get byteLength(): uint { return this._iLength * this.bytesPerIndex; };
-		/** inline */ get buffer(): AIIndexBuffer { return this._pIndexBuffer; };
+        if (this._pIndexBuffer.readData(this.byteOffset + iOffset, iSize, pBuffer)) {
+            return pBuffer.buffer;
+        }
 
-		constructor (
-			pIndexBuffer: AIIndexBuffer, 
-			id: uint,
-			iOffset: int, 
-			iCount: int, 
-			ePrimitiveType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST, 
-			eElementsType: EDataTypes = EDataTypes.UNSIGNED_SHORT) {
+        logger.presume(false, "cannot read data from index buffer");
 
-			debug_assert(
-				eElementsType == EDataTypes.UNSIGNED_SHORT || 
-				eElementsType == EDataTypes.UNSIGNED_BYTE || 
-				eElementsType == EDataTypes.UNSIGNED_INT, "supported only short, byte, uint data types.");
+        return null;
+    }
 
-			this._pIndexBuffer = pIndexBuffer;
-			this._iOffset = iOffset;
-			this._iLength = iCount;
-			this._iId = id;
+    getTypedData(iStart: int, iCount: int): ArrayBufferView {
+        logger.presume((iStart + iCount) <= this._iLength, "out of buffer limits");
 
-			this._ePrimitiveType = ePrimitiveType;
-			this._eElementsType = eElementsType;
+        var iTypeSize: uint = type.size(this._eElementsType);
 
-			debug_assert(pIndexBuffer.byteLength >= this.byteLength + this.byteOffset, "out of buffer limits.");
-		}
+        var iOffset: uint = iStart * iTypeSize;
+        var iSize: uint = iCount * iTypeSize;
 
+        var pBuffer: Uint8Array = new Uint8Array(iSize);
 
-		getData(iOffset: int, iSize: int): ArrayBuffer {
-			debug_assert(iOffset + iSize <= this.byteLength, "out of buffer limits");
-			var pBuffer: Uint8Array = new Uint8Array(iSize);
-			
-			if (this._pIndexBuffer.readData(this.byteOffset + iOffset, iSize, pBuffer)) {
-				return pBuffer.buffer;
-			}
+        if (this._pIndexBuffer.readData(this.byteOffset + iOffset, iSize, pBuffer)) {
+            switch (this._eElementsType) {
+                case AEDataTypes.UNSIGNED_BYTE:
+                    return pBuffer;
+                case AEDataTypes.UNSIGNED_SHORT:
+                    return new Uint16Array(pBuffer.buffer);
+                case AEDataTypes.UNSIGNED_INT:
+                    return new Uint32Array(pBuffer.buffer);
+                default:
+                    return null;
+            }
+        }
 
-			debug_error("cannot read data from index buffer");
+        return null;
+    }
 
-			return null;
-		};
+    setData(pData: ArrayBufferView, iOffset: int = 0, iCount: uint = pData.byteLength / this.bytesPerIndex): boolean {
+        logger.presume((iOffset + iCount) * this.bytesPerIndex <= this.byteLength, "out of buffer limits.");
 
-		getTypedData(iStart: int, iCount: int): ArrayBufferView{
-			debug_assert((iStart + iCount) <= this._iLength, "out of buffer limits");
+        return this._pIndexBuffer.writeData(
+            pData,
+            this.byteOffset + iOffset * this.bytesPerIndex,
+            iCount * this.bytesPerIndex);
+    }
 
-			var iTypeSize: uint = getTypeSize(this._eElementsType);
+    destroy(): void {
+        this._pIndexBuffer = null;
+        this._iOffset = undefined;
+        this._iLength = undefined;
+        this._eElementsType = undefined;
+        this._eElementsType = undefined;
+    }
 
-			var iOffset: uint = iStart * iTypeSize;
-			var iSize: uint = iCount * iTypeSize;
+    getPrimitiveType(): AEPrimitiveTypes {
+        return this._ePrimitiveType;
+    }
 
-			var pBuffer: Uint8Array = new Uint8Array(iSize);
+    getPrimitiveCount(iIndexCount: uint = this.length): uint {
+        return IndexData.getPrimitiveCount(this._ePrimitiveType, iIndexCount);
+    }
 
-			if (this._pIndexBuffer.readData(this.byteOffset + iOffset, iSize, pBuffer)){
-				switch(this._eElementsType){
-					case EDataTypes.UNSIGNED_BYTE: 
-						return pBuffer;
-					case EDataTypes.UNSIGNED_SHORT:
-						return new Uint16Array(pBuffer.buffer);
-					case EDataTypes.UNSIGNED_INT:
-						return new Uint32Array(pBuffer.buffer);
-					default:
-						return null;
-				}
-			}
+    getBufferHandle(): int {
+        return this._pIndexBuffer.resourceHandle;
+    }
 
-			return null;
-		};
+    static getPrimitiveCount(eType: AEPrimitiveTypes, nVertices: uint): uint {
+        switch (eType) {
+            case AEPrimitiveTypes.POINTLIST:
+                return nVertices;
+            case AEPrimitiveTypes.LINELIST:
+                return nVertices / 2;
+            case AEPrimitiveTypes.LINESTRIP:
+                return nVertices - 1;
+            case AEPrimitiveTypes.LINELOOP:
+                return nVertices;
+            case AEPrimitiveTypes.TRIANGLELIST:
+                return nVertices / 3;
+            case AEPrimitiveTypes.TRIANGLEFAN:
+            case AEPrimitiveTypes.TRIANGLESTRIP:
+                return nVertices - 2;
+        }
 
-		setData(pData: ArrayBufferView, iOffset: int = 0, iCount: uint = pData.byteLength / this.bytesPerIndex): boolean {
-			debug_assert((iOffset + iCount) * this.bytesPerIndex <= this.byteLength, "out of buffer limits.");
-			
-			return this._pIndexBuffer.writeData(
-				pData, 
-				this.byteOffset + iOffset * this.bytesPerIndex, 
-				iCount * this.bytesPerIndex);
-		}
+        logger.presume(false, "unhandled case detected..");
 
-		destroy(): void {
-			this._pIndexBuffer = null;
-			this._iOffset = undefined;
-			this._iLength = undefined;
-			this._eElementsType = undefined;
-			this._eElementsType = undefined;
-		}
-		
-		/** inline */ getPrimitiveType(): EPrimitiveTypes {
-			return this._ePrimitiveType;
-		}
-
-		/** inline */ getPrimitiveCount(iIndexCount: uint = this.length): uint {
-			return IndexData.getPrimitiveCount(this._ePrimitiveType, iIndexCount);
-		}
-
-		/** inline */ getBufferHandle(): int {
-			return this._pIndexBuffer.resourceHandle;
-		}
-
-		static getPrimitiveCount(eType: EPrimitiveTypes, nVertices: uint): uint {
-			switch (eType) {
-				case EPrimitiveTypes.POINTLIST:
-					return nVertices;
-				case EPrimitiveTypes.LINELIST: 
-					return nVertices / 2;
-				case EPrimitiveTypes.LINESTRIP: 
-					return nVertices - 1;
-				case EPrimitiveTypes.LINELOOP:
-					return nVertices;
-				case EPrimitiveTypes.TRIANGLELIST:
-					return nVertices / 3;
-				case EPrimitiveTypes.TRIANGLEFAN:
-				case EPrimitiveTypes.TRIANGLESTRIP:
-					return nVertices - 2;
-			}
-
-			debug_error("unhandled case detected..");
-
-			return 0;
-		}
-	}
+        return 0;
+    }
 }
 
-#endif
+export = IndexData;

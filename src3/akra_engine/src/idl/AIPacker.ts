@@ -1,19 +1,12 @@
-// AIPacker interface
-// [write description here...]
+/// <reference path="AIBinWriter.ts" />
+/// <reference path="AIPackerFormat.ts" />
 
-
-module akra {
 
 interface AIPackerOptions {
 	header?: boolean;
 }
 
 interface AIPacker extends AIBinWriter {
-	template: AIPackerTemplate;
-
+	getTemplate(): AIPackerTemplate;
 	write(pData: any, sType?: string, bHeader?: boolean): boolean;
 }
-}
-
-#endif
-

@@ -1,8 +1,5 @@
-#ifndef BINREADER_TS
-#define BINREADER_TS
-
-
-/// <reference path="AIBinReader.ts" />
+/// <reference path="../idl/AIBinReader.ts" />
+/// <reference path="../idl/AIBinWriter.ts" />
 
 /**
  * Usage:
@@ -31,302 +28,299 @@
  * Работает заебись, докуменитировать лень.
  */
 
+import logger = require("logger");
+import limit = require("limit");
 
-#define ARRAY_LIMIT(POSITION, LIMIT) debug_assert(POSITION < LIMIT, "Выход за пределы массива");
+class Reader implements AIBinReader {
+    protected _pDataView: DataView;
+    protected _iPosition: uint;
 
-module akra.io {
+    constructor(pBuffer: ArrayBuffer, iByteOffset?: uint, iByteLength?: uint);
+    constructor(pBuffer: AIBinWriter, iByteOffset?: uint, iByteLength?: uint);
+    constructor(pBuffer: any, iByteOffset?: uint, iByteLength?: uint) {
+        if (!isDef(iByteOffset)) { iByteOffset = 0; }
+        if (!isDef(iByteLength)) { iByteLength = pBuffer.byteLength; }
 
-	class BinReader implements AIBinReader {
-		protected _pDataView: DataView;
-		protected _iPosition: uint;
+        this._pDataView = new DataView(isArrayBuffer(pBuffer) ? (<ArrayBuffer>pBuffer) : (<AIBinWriter>pBuffer).data(),
+            iByteOffset, iByteLength);
+        this._iPosition = 0;
+    }
 
-		constructor (pBuffer: ArrayBuffer, iByteOffset?: uint, iByteLength?: uint);
-		constructor (pBuffer: AIBinWriter, iByteOffset?: uint, iByteLength?: uint);
-		constructor (pBuffer: any, iByteOffset?: uint, iByteLength?: uint) {
-			if (!isDef(iByteOffset)) { iByteOffset = 0; }
-			if (!isDef(iByteLength)) { iByteLength = pBuffer.byteLength; }
+    string(sDefault: string = null): string {
+        var iStringLength: uint = this.uint32();
+        var iBitesToAdd: uint;
 
-			this._pDataView = new DataView(isArrayBuffer(pBuffer)? (<ArrayBuffer>pBuffer): (<AIBinWriter>pBuffer).data(), 
-									iByteOffset, iByteLength);
-			this._iPosition = 0;
-		}
+        if (iStringLength == limit.MAX_INT32) {
+            return sDefault;
+        }
 
-		string(sDefault: string = null): string {
-			var iStringLength: uint = this.uint32();
-			var iBitesToAdd: uint;
+        iBitesToAdd = ((4 - (iStringLength % 4) == 4)) ? 0 : (4 - (iStringLength % 4));
+        iStringLength += iBitesToAdd;
 
-			if (iStringLength == MAX_INT32) {
-				return sDefault;
-			}
+        //Out of array limits
+        logger.assert((this._iPosition + iStringLength - 1) < this._pDataView.byteLength);
 
-			iBitesToAdd = (( 4 - (iStringLength % 4) == 4)) ? 0 : ( 4 - (iStringLength % 4));
-			iStringLength += iBitesToAdd;
+        var pBuffer: Uint8Array = new Uint8Array(iStringLength);
 
-			//Проверка на возможный выход за пределы массива.
-			ARRAY_LIMIT(this._iPosition + iStringLength - 1, this._pDataView.byteLength)
-			
-			var pBuffer: Uint8Array = new Uint8Array(iStringLength);
+        for (var i: int = 0; i < iStringLength; i++) {
+            pBuffer[i] = this._pDataView.getUint8(this._iPosition + i);
+        }
 
-			for (var i: int = 0; i < iStringLength; i++) {
-				pBuffer[i] = this._pDataView.getUint8(this._iPosition + i);
-			}
+        this._iPosition += iStringLength;
+        var sString: string = "",
+            charCode: string,
+            code: uint;
 
-			this._iPosition += iStringLength;
-			var sString: string = "", 
-				charCode: string, 
-				code: uint;
+        for (var n = 0; n < pBuffer.length; ++n) {
+            code = pBuffer[n];
 
-			for (var n = 0; n < pBuffer.length; ++n) {
-				code = pBuffer[n];
-				
-				if (code == 0) {
-					break;
-				}
+            if (code == 0) {
+                break;
+            }
 
-				charCode = String.fromCharCode(code);
-				sString = sString + charCode;
-			}
+            charCode = String.fromCharCode(code);
+            sString = sString + charCode;
+        }
 
-			sString = sString.fromUTF8();
-			/*sString.substr(0, iStringLength);//sString;//*/
-			return sString;
-		}
+        sString = sString.fromUTF8();
+        /*sString.substr(0, iStringLength);//sString;//*/
+        return sString;
+    }
 
-		uint32(): uint {
-			var i: uint = this._pDataView.getUint32(this._iPosition, true);
-			this._iPosition += 4;
-			// LOG("uint32:", i);
-			return i;
-		}
+    uint32(): uint {
+        var i: uint = this._pDataView.getUint32(this._iPosition, true);
+        this._iPosition += 4;
+        // LOG("uint32:", i);
+        return i;
+    }
 
-		uint16(): uint {
-			var i: uint = this._pDataView.getUint16(this._iPosition, true);
-			this._iPosition += 4;
-			return i;
-		}
+    uint16(): uint {
+        var i: uint = this._pDataView.getUint16(this._iPosition, true);
+        this._iPosition += 4;
+        return i;
+    }
 
-		uint8(): uint {
-			var i: uint = this._pDataView.getUint8(this._iPosition);
-			this._iPosition += 4;
-			return i;
-		}
+    uint8(): uint {
+        var i: uint = this._pDataView.getUint8(this._iPosition);
+        this._iPosition += 4;
+        return i;
+    }
 
-		/** inline */ boolean(): boolean {
-			return this.uint8() > 0;
-		}
+    /** inline */ boolean(): boolean {
+        return this.uint8() > 0;
+    }
 
-		int32(): int {
-			var i: int = this._pDataView.getInt32(this._iPosition, true);
-			this._iPosition += 4;
-			return i;
-		}
+    int32(): int {
+        var i: int = this._pDataView.getInt32(this._iPosition, true);
+        this._iPosition += 4;
+        return i;
+    }
 
-		int16(): int {
-			var i: int = this._pDataView.getInt16(this._iPosition, true);
-			this._iPosition += 4;
-			return i;
-		}
+    int16(): int {
+        var i: int = this._pDataView.getInt16(this._iPosition, true);
+        this._iPosition += 4;
+        return i;
+    }
 
-		int8(): int {
-			var i: int = this._pDataView.getInt8(this._iPosition);
-			this._iPosition += 4;
-			return i;
-		}
+    int8(): int {
+        var i: int = this._pDataView.getInt8(this._iPosition);
+        this._iPosition += 4;
+        return i;
+    }
 
-		float64(): float {
-			var f: float = this._pDataView.getFloat64(this._iPosition, true);
-			this._iPosition += 8;
-			return f;
-		}
-		
-		float32(): float {
-			var f: float = this._pDataView.getFloat32(this._iPosition, true);
-			this._iPosition += 4;
-			// LOG("float32:", f);
-			return f;
-		}
+    float64(): float {
+        var f: float = this._pDataView.getFloat64(this._iPosition, true);
+        this._iPosition += 8;
+        return f;
+    }
 
-		stringArray(): string[] {
-			var iLength: int = this.uint32();
-			
-			if (iLength == MAX_INT32) {
-				return null;
-			}
+    float32(): float {
+        var f: float = this._pDataView.getFloat32(this._iPosition, true);
+        this._iPosition += 4;
+        // LOG("float32:", f);
+        return f;
+    }
 
-			var pArray: string[] = new Array(iLength);
-			
-			for (var i: int = 0; i < iLength; i++) {
-				pArray[i] = this.string();
-			}
+    stringArray(): string[] {
+        var iLength: int = this.uint32();
 
-			return pArray;
-		}
+        if (iLength == limit.MAX_INT32) {
+            return null;
+        }
 
-		/** inline */ uint32Array(): Uint32Array {
-			return <Uint32Array>this.uintXArray(32);
-		}
+        var pArray: string[] = new Array<string>(iLength);
 
-		/** inline */ uint16Array(): Uint16Array {
-			return <Uint16Array>this.uintXArray(16);
-		}
-		
-		/** inline */ uint8Array(): Uint8Array {
-			return <Uint8Array>this.uintXArray(8);
-		}
+        for (var i: int = 0; i < iLength; i++) {
+            pArray[i] = this.string();
+        }
 
-		/** inline */ int32Array(): Int32Array {
-			return <Int32Array>this.intXArray(32);
-		}
+        return pArray;
+    }
 
-		/** inline */ int16Array(): Int16Array {
-			return <Int16Array>this.intXArray(16);
-		}
+    /** inline */ uint32Array(): Uint32Array {
+        return <Uint32Array>this.uintXArray(32);
+    }
 
-		/** inline */ int8Array(): Int8Array {
-			return <Int8Array>this.intXArray(8);
-		}
+    /** inline */ uint16Array(): Uint16Array {
+        return <Uint16Array>this.uintXArray(16);
+    }
 
-		/** inline */ float64Array(): Float64Array {
-			return <Float64Array>this.floatXArray(64);
-		}
+    /** inline */ uint8Array(): Uint8Array {
+        return <Uint8Array>this.uintXArray(8);
+    }
 
-		/** inline */ float32Array(): Float32Array {
-			return <Float32Array>this.floatXArray(32);
-		}
+    /** inline */ int32Array(): Int32Array {
+        return <Int32Array>this.intXArray(32);
+    }
 
-		private uintXArray(iX: uint): ArrayBufferView {
-			var iLength: uint = this.uint32();
+    /** inline */ int16Array(): Int16Array {
+        return <Int16Array>this.intXArray(16);
+    }
 
-			if (iLength == MAX_INT32) {
-				return null;
-			}
+    /** inline */ int8Array(): Int8Array {
+        return <Int8Array>this.intXArray(8);
+    }
 
-			var iBytes: uint = iX / 8;
-			var pArray: ArrayBufferView;
-			
-			switch (iBytes) {
-				case 1:
-					pArray = new Uint8Array(iLength);
-					
-					for (var i = 0; i < iLength; i++) {
-						pArray[i] = this._pDataView.getUint8(this._iPosition + i * iBytes);
-					}
+    /** inline */ float64Array(): Float64Array {
+        return <Float64Array>this.floatXArray(64);
+    }
 
-					break;
-				case 2:
-					pArray = new Uint16Array(iLength);
-					
-					for (var i = 0; i < iLength; i++) {
-						pArray[i] = this._pDataView.getUint16(this._iPosition + i * iBytes, true);
-					}
-					
-					break;
-				case 4:
-					pArray = new Uint32Array(iLength);
-					
-					for (var i = 0; i < iLength; i++) {
-						pArray[i] = this._pDataView.getUint32(this._iPosition + i * iBytes, true);
-					}
-					
-					break;  
-				default:
-					ERROR("unsupported array length detected: " + iBytes);  
-			}
-		   
-			var iByteLength: uint = iBytes * iLength;
-			iByteLength += -iByteLength & 3;
+    /** inline */ float32Array(): Float32Array {
+        return <Float32Array>this.floatXArray(32);
+    }
 
-			this._iPosition += iByteLength;
+    private uintXArray(iX: uint): ArrayBufferView {
+        var iLength: uint = this.uint32();
 
-			return pArray;
-		}
+        if (iLength == limit.MAX_INT32) {
+            return null;
+        }
 
-		private intXArray(iX: uint): ArrayBufferView {
-			var iLength: uint = this.uint32();
+        var iBytes: uint = iX / 8;
+        var pArray: ArrayBufferView;
 
-			if (iLength == MAX_INT32) {
-				return null;
-			}
+        switch (iBytes) {
+            case 1:
+                pArray = new Uint8Array(iLength);
 
-			var iBytes: uint = iX / 8;
-			var pArray: ArrayBufferView;
-			
-			switch (iBytes) {
-				case 1:
-					pArray = new Int8Array(iLength);
-					
-					for (var i = 0; i < iLength; i++) {
-						pArray[i] = this._pDataView.getInt8(this._iPosition + i * iBytes);
-					}
+                for (var i = 0; i < iLength; i++) {
+                    pArray[i] = this._pDataView.getUint8(this._iPosition + i * iBytes);
+                }
 
-					break;
-				case 2:
-					pArray = new Int16Array(iLength);
-					
-					for (var i = 0; i < iLength; i++) {
-						pArray[i] = this._pDataView.getInt16(this._iPosition + i * iBytes, true);
-					}
-					
-					break;
-				case 4:
-					pArray = new Int32Array(iLength);
-					
-					for (var i = 0; i < iLength; i++) {
-						pArray[i] = this._pDataView.getInt32(this._iPosition + i * iBytes, true);
-					}
-					
-					break;  
-				default:
-					ERROR("unsupported array length detected: " + iBytes);  
-			}
-		   
-			var iByteLength: uint = iBytes * iLength;
-			iByteLength += -iByteLength & 3;
+                break;
+            case 2:
+                pArray = new Uint16Array(iLength);
 
-			this._iPosition += iByteLength;
+                for (var i = 0; i < iLength; i++) {
+                    pArray[i] = this._pDataView.getUint16(this._iPosition + i * iBytes, true);
+                }
 
-			return pArray;
-		}
+                break;
+            case 4:
+                pArray = new Uint32Array(iLength);
 
-		private floatXArray(iX: uint): ArrayBufferView {
-			var iLength: uint = this.uint32();
+                for (var i = 0; i < iLength; i++) {
+                    pArray[i] = this._pDataView.getUint32(this._iPosition + i * iBytes, true);
+                }
 
-			if (iLength == MAX_INT32) {
-				return null;
-			}
+                break;
+            default:
+                logger.error("unsupported array length detected: " + iBytes);
+        }
 
-			var iBytes: uint = iX / 8;
-			var pArray: ArrayBufferView;
+        var iByteLength: uint = iBytes * iLength;
+        iByteLength += -iByteLength & 3;
 
-			switch (iBytes) {
-				case 4:
-					pArray = new Float32Array(iLength);
-					
-					for (var i = 0; i < iLength; i++) {
-						pArray[i] = this._pDataView.getFloat32(this._iPosition + i * iBytes, true);
-					}
-					
-					break;
-				case 8:
-					pArray = new Float64Array(iLength);
-					
-					for (var i = 0; i < iLength; i++) {
-						pArray[i] = this._pDataView.getFloat64(this._iPosition + i * iBytes, true);
-					}
-					
-					break; 
-				default:
-					ERROR("unsupported array length detected: " + iBytes);   
-			}
-		   
-			var iByteLength = iBytes * iLength;
-			iByteLength += -iByteLength & 3;
+        this._iPosition += iByteLength;
 
-			this._iPosition += iByteLength;
+        return pArray;
+    }
 
-			return pArray;
-		}
-	}
+    private intXArray(iX: uint): ArrayBufferView {
+        var iLength: uint = this.uint32();
+
+        if (iLength == limit.MAX_INT32) {
+            return null;
+        }
+
+        var iBytes: uint = iX / 8;
+        var pArray: ArrayBufferView;
+
+        switch (iBytes) {
+            case 1:
+                pArray = new Int8Array(iLength);
+
+                for (var i = 0; i < iLength; i++) {
+                    pArray[i] = this._pDataView.getInt8(this._iPosition + i * iBytes);
+                }
+
+                break;
+            case 2:
+                pArray = new Int16Array(iLength);
+
+                for (var i = 0; i < iLength; i++) {
+                    pArray[i] = this._pDataView.getInt16(this._iPosition + i * iBytes, true);
+                }
+
+                break;
+            case 4:
+                pArray = new Int32Array(iLength);
+
+                for (var i = 0; i < iLength; i++) {
+                    pArray[i] = this._pDataView.getInt32(this._iPosition + i * iBytes, true);
+                }
+
+                break;
+            default:
+                logger.error("unsupported array length detected: " + iBytes);
+        }
+
+        var iByteLength: uint = iBytes * iLength;
+        iByteLength += -iByteLength & 3;
+
+        this._iPosition += iByteLength;
+
+        return pArray;
+    }
+
+    private floatXArray(iX: uint): ArrayBufferView {
+        var iLength: uint = this.uint32();
+
+        if (iLength == limit.MAX_INT32) {
+            return null;
+        }
+
+        var iBytes: uint = iX / 8;
+        var pArray: ArrayBufferView;
+
+        switch (iBytes) {
+            case 4:
+                pArray = new Float32Array(iLength);
+
+                for (var i = 0; i < iLength; i++) {
+                    pArray[i] = this._pDataView.getFloat32(this._iPosition + i * iBytes, true);
+                }
+
+                break;
+            case 8:
+                pArray = new Float64Array(iLength);
+
+                for (var i = 0; i < iLength; i++) {
+                    pArray[i] = this._pDataView.getFloat64(this._iPosition + i * iBytes, true);
+                }
+
+                break;
+            default:
+                logger.error("unsupported array length detected: " + iBytes);
+        }
+
+        var iByteLength = iBytes * iLength;
+        iByteLength += -iByteLength & 3;
+
+        this._iPosition += iByteLength;
+
+        return pArray;
+    }
 }
 
-#endif
+export = Reader;

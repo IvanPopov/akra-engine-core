@@ -3,10 +3,7 @@
 
 /// <reference path="AIEventProvider.ts" />
 
-#define RPC_STACK_SIZE_EXCEEDED_CODE 1
-#define RPC_CALLBACK_LIFETIME_EXPIRED_CODE 2
 
-module akra {
 enum AERPCPacketTypes {
 	FAILURE,
 	REQUEST,
@@ -26,7 +23,7 @@ interface AIRPCPacket {
 	next: AIRPCPacket;
 }
 
-interface IRPCRequest extends AIRPCPacket {
+interface AIRPCRequest extends AIRPCPacket {
 	proc: string;
 	argv: any[];
 	//ms - life time
@@ -34,7 +31,7 @@ interface IRPCRequest extends AIRPCPacket {
 	pr: uint;
 }
 
-interface IRPCResponse extends AIRPCPacket  {
+interface AIRPCResponse extends AIRPCPacket  {
 	//procedure result
 	res: any;
 }
@@ -49,7 +46,7 @@ interface AIRPCProcOptionsMap {
 	[proc: string]: AIRPCProcOptions;
 }
 
-interface IRPCError extends Error {
+interface AIRPCError extends Error {
 	code: uint;
 }
 
@@ -67,9 +64,20 @@ interface AIRPCOptions {
 
 }
 
+enum AERpcStates {
+    //not connected
+    k_Deteached,
+    //connected, and connection must be established
+    k_Joined,
+    //must be closed
+    k_Closing
+}
+
+
 interface AIRPC extends AIEventProvider {
 	options: AIRPCOptions;
-	remote: any;
+    remote: any;
+    //????/
 	group: int;
 
 	join(sAddr?: string): void;
@@ -78,10 +86,12 @@ interface AIRPC extends AIEventProvider {
 	detach(): void;
 	proc(...argv: any[]): boolean;
 
-	parse(pResponse: IRPCResponse): void;
-	parseBinary(pData: Uint8Array): void;
+	//parse(pResponse: AIRPCResponse): void;
+	//parseBinary(pData: Uint8Array): void;
 
-	groupCall(): int;
+    //??????
+    groupCall(): int;
+    //???????
 	dropGroupCall(): int;
 
 	setProcedureOption(sProc: string, sOpt: string, pValue: any): void;
@@ -89,18 +99,15 @@ interface AIRPC extends AIEventProvider {
 	signal joined(): void;
 	signal error(pError: Error): void;
 
-	_createRequest(): IRPCRequest;
-	_releaseRequest(pReq: IRPCRequest): void;
+	//_createRequest(): AIRPCRequest;
+	//_releaseRequest(pReq: AIRPCRequest): void;
 
-	_createCallback(): AIRPCCallback;
-	_releaseCallback(pCallback: AIRPCCallback): void;
+	//_createCallback(): AIRPCCallback;
+	//_releaseCallback(pCallback: AIRPCCallback): void;
 
 
-	_startRoutines(): void;
-	_stopRoutines(): void;
-	_removeExpiredCallbacks(): void;
+	//_startRoutines(): void;
+	//_stopRoutines(): void;
+	//_removeExpiredCallbacks(): void;
 }  
-}
 
-#endif
-

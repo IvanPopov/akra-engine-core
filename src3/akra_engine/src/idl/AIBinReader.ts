@@ -1,8 +1,3 @@
-// AIBinReader interface
-// [write description here...]
-
-module akra {
-
 interface AIBinReader {
 
 	string(sDefault?: string): string;
@@ -33,6 +28,4 @@ interface AIBinReader {
 	float64Array(): Float64Array;
 	float32Array(): Float32Array;
 }
-}
 
-#endif

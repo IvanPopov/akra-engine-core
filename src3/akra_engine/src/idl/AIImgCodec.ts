@@ -1,16 +1,12 @@
 // AIImgCodec interface
-// [write description here...]
 
 /// <reference path="AICodec.ts" />
-
-
-module akra {
-
+/// <reference path="AEPixelFormats.ts" />
 
 interface AIImgCodec extends AICodec{
 }
 
-interface IImgData extends AICodecData{
+interface AIImgData extends AICodecData{
 	height: uint;
 	width:uint;
 	depth:uint;
@@ -20,10 +16,7 @@ interface IImgData extends AICodecData{
 	flags: uint;
 	cubeFlags:uint;
 
-	format: EPixelFormats;
+	format: AEPixelFormats;
 	numFace: uint;
 
 }
-}
- 
-

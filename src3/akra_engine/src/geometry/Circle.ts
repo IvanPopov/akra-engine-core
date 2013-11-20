@@ -1,7 +1,7 @@
 /// <reference path="../idl/AICircle.ts" />
 
 import Vec2 = require("math/Vec2");
-
+import math = require("math");
 
 class Circle implements AICircle {
     center: AIVec2;

@@ -6,7 +6,11 @@ export import Mat4 = require("math/Mat4");
 export import Quat4 = require("math/Quat4");
 
 
+
+
+
 //matrix 4x4 elements
+
 export var __11 = 0;
 export var __12 = 4;
 export var __13 = 8;
@@ -24,7 +28,10 @@ export var __42 = 7;
 export var __43 = 11;
 export var __44 = 15;
 
+
+
 //matrix 3x3 elements
+
 export var __a11 = 0;
 export var __a12 = 3;
 export var __a13 = 6;
@@ -36,6 +43,9 @@ export var __a32 = 5;
 export var __a33 = 8;
 
 
+
+
+
 export var E: float = <float>Math.E;
 export var LN2: float = <float>Math.LN2;
 export var LOG2E: float = <float>Math.LOG2E;
@@ -45,8 +55,10 @@ export var SQRT1_2: float = <float>Math.SQRT1_2;
 export var SQRT2: float = <float>Math.SQRT2;
 export var LN10: float = <float>Math.LN10;
 
+
 export var POSITIVE_INFINITY: float = <float>Number.POSITIVE_INFINITY;
 export var NEGATIVE_INFINITY: float = <float>Number.NEGATIVE_INFINITY;
+
 
 export var FLOAT_PRECISION: float = <float>(3.4e-8);
 export var TWO_PI: float = <float>(2.0 * PI);
@@ -79,6 +91,8 @@ export var DEGREE_RATIO: float = <float>(PI_DIV_180);
 export var RADIAN_RATIO: float = <float>(PI_OVER_180);
 export var GRAVITY_CONSTANT: float = 9.81;
 
+
+
 export var abs = Math.abs;
 export var acos = Math.acos;
 export var asin = Math.asin;
@@ -99,11 +113,9 @@ export var pow = Math.pow;
 export var max = Math.max;
 
 
-/*	
+/*  
 -----------------------------------------------------------------
-	    
     Floating Point Macros
-	    
 -----------------------------------------------------------------
 */
 // reinterpret a float as an int32
@@ -124,17 +136,24 @@ export var fpSign = (f: int) => (f >> 31);
 /** @inline */
 export var fpExponent = (f: float): int => (((fpBits(f) & 0x7fffffff) >> 23) - 127);
 
+
+
 // return 0 or -1 based on the sign of the exponent
 /** @inline */
 export var fpExponentSign = (f: float): int => (fpExponent(f) >> 31);
+
+
 
 // get the 23 bits of mantissa without the implied bit
 /** @inline */
 export var fpPureMantissa = (f: float): int => ((fpBits(f) & 0x7fffff));
 
+
+
 // get the 23 bits of mantissa with the implied bit replaced
 /** @inline */
 export var fpMantissa = (f: float): int => (fpPureMantissa(f) | (1 << 23));
+
 
 export var fpOneBits = 0x3F800000;
 
@@ -146,55 +165,67 @@ export var fpOneBits = 0x3F800000;
 export var flipSign = (i: number, flip: number): int => ((flip == -1) ? -i : i);
 
 
+
 /**
- * ×èñëî ïîëîæèòåëüíî?
+ * Ð§Ð¸ÑÐ»Ð¾ Ð¿Ð¾Ð»Ð¾Ð¶Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾?
  */
 export var isPositive = (a: number) => (a >= 0);
+
 /**
- * ×èñëî îòðèöàòåëüíî?
+ * Ð§Ð¸ÑÐ»Ð¾ Ð¾Ñ‚Ñ€Ð¸Ñ†Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð¾?
  */
 export var isNegative = (a: number) => (a < 0);
 
 /**
- * ×èñëî îäíîãî çíàêà?
+ * Ð§Ð¸ÑÐ»Ð¾ Ð¾Ð´Ð½Ð¾Ð³Ð¾ Ð·Ð½Ð°ÐºÐ°?
  */
 export var sameSigns = (a: number, b: number): boolean => (isNegative(a) == isNegative(b));
+
 /**
- * Êîïèðîâàòü çíàê
+ * ÐšÐ¾Ð¿Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ Ð·Ð½Ð°Ðº
  */
 export var copySign = (a: number, b: number): number => (isNegative(b) ? -abs(a) : abs(a));
+
 /**
- * Ðàñòîÿíèå ìåæäó à è b ìåíüøå epsilon?
+ * Ð Ð°ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ Ð¼ÐµÐ¶Ð´Ñƒ Ð° Ð¸ b Ð¼ÐµÐ½ÑŒÑˆÐµ epsilon?
  */
 export var deltaRangeTest = (a: number, b: number, epsilon: number = 0.0000001): boolean => ((abs(a - b) < epsilon) ? true : false);
 
+
+
 /**
- * Îãðàíè÷èâàåò value èíòåðâàëîì [low,high]
+ * ÐžÐ³Ñ€Ð°Ð½Ð¸Ñ‡Ð¸Ð²Ð°ÐµÑ‚ value Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð»Ð¾Ð¼ [low,high]
  */
 export var clamp = (value: number, low: number, high: number): number => max(low, min(value, high));
+
 /**
- * Îãðàíè÷èâàåò value èíòåðâàëîì [0,+Infinity]
+ * ÐžÐ³Ñ€Ð°Ð½Ð¸Ñ‡Ð¸Ð²Ð°ÐµÑ‚ value Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð»Ð¾Ð¼ [0,+Infinity]
  */
 export var clampPositive = (value: number): number => (value < 0 ? 0 : value);
+
 /**
- * Îãðàíè÷èâàåò value èíòåðâàëîì [-Infinity,0]
+ * ÐžÐ³Ñ€Ð°Ð½Ð¸Ñ‡Ð¸Ð²Ð°ÐµÑ‚ value Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð»Ð¾Ð¼ [-Infinity,0]
  */
 export var clampNegative = (value: number): number => (value > 0 ? 0 : value);
-/**
- * Îãðàíè÷èâàåò value èíòåðâàëîì [-1,1]
- */
-export var clampUnitSize = (value: number): number => clamp(value, -1, 1);
 
+/**
+ * ÐžÐ³Ñ€Ð°Ð½Ð¸Ñ‡Ð¸Ð²Ð°ÐµÑ‚ value Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð»Ð¾Ð¼ [-1,1]
+ */
+
+export var clampUnitSize = (value: number): number => clamp(value, -1, 1);
 export var sign = (value: number): number => value >= 0 ? 1 : -1;
 
+
+
 /**
- * Íîìåð ñ ïðàâà íà÷èíàÿ îò íóëÿ, ñàìîãî ëåâîãî óñòàíîâëåííîãî áèòà
+ * ÐÐ¾Ð¼ÐµÑ€ Ñ Ð¿Ñ€Ð°Ð²Ð° Ð½Ð°Ñ‡Ð¸Ð½Ð°Ñ Ð¾Ñ‚ Ð½ÑƒÐ»Ñ, ÑÐ°Ð¼Ð¾Ð³Ð¾ Ð»ÐµÐ²Ð¾Ð³Ð¾ ÑƒÑÑ‚Ð°Ð½Ð¾Ð²Ð»ÐµÐ½Ð½Ð¾Ð³Ð¾ Ð±Ð¸Ñ‚Ð°
  */
 export var highestBitSet = (value: number): uint => value == 0 ? (null) : (value < 0 ? 31 : ((log(value) / LN2) << 0));
-	/**
-	 * Íîìåð ñ ïðàâà íà÷èíàÿ îò íóëÿ, ñàìîãî ïðàâîãî óñòàíîâëåííîãî áèòà
-	 */
-	export var lowestBitSet = (value: uint): uint => {
+    /**
+     * ÐÐ¾Ð¼ÐµÑ€ Ñ Ð¿Ñ€Ð°Ð²Ð° Ð½Ð°Ñ‡Ð¸Ð½Ð°Ñ Ð¾Ñ‚ Ð½ÑƒÐ»Ñ, ÑÐ°Ð¼Ð¾Ð³Ð¾ Ð¿Ñ€Ð°Ð²Ð¾Ð³Ð¾ ÑƒÑÑ‚Ð°Ð½Ð¾Ð²Ð»ÐµÐ½Ð½Ð¾Ð³Ð¾ Ð±Ð¸Ñ‚Ð°
+     */
+    export var lowestBitSet = (value: uint): uint => {
+
     var temp: uint;
 
     if (value == 0) {
@@ -210,21 +241,26 @@ export var highestBitSet = (value: number): uint => value == 0 ? (null) : (value
     return null;
 }
 
+
+
 /**
- * ßâëÿåòñÿ ëè ÷èñëî ñòåïåíüþ äâîéêè
+ * Ð¯Ð²Ð»ÑÐµÑ‚ÑÑ Ð»Ð¸ Ñ‡Ð¸ÑÐ»Ð¾ ÑÑ‚ÐµÐ¿ÐµÐ½ÑŒÑŽ Ð´Ð²Ð¾Ð¹ÐºÐ¸
  */
 export var isPowerOfTwo = (value: uint): boolean => (value > 0 && highestBitSet(value) == lowestBitSet(value));
 
+
 /**
- * Îêðóãëåíèå äî ÷èñëà íàèáîëåå áëèçêîãî ê ñòåïåíè äâîéêè
+ * ÐžÐºÑ€ÑƒÐ³Ð»ÐµÐ½Ð¸Ðµ Ð´Ð¾ Ñ‡Ð¸ÑÐ»Ð° Ð½Ð°Ð¸Ð±Ð¾Ð»ÐµÐµ Ð±Ð»Ð¸Ð·ÐºÐ¾Ð³Ð¾ Ðº ÑÑ‚ÐµÐ¿ÐµÐ½Ð¸ Ð´Ð²Ð¾Ð¹ÐºÐ¸
  */
 export var nearestPowerOfTwo = (value: uint): uint => {
     if (value <= 1) {
         return 1;
     }
 
+
     var highestBit: uint = highestBitSet(value);
     var roundingTest: uint = value & (1 << (highestBit - 1));
+
 
     if (roundingTest != 0) {
         ++highestBit;
@@ -233,9 +269,12 @@ export var nearestPowerOfTwo = (value: uint): uint => {
     return 1 << highestBit;
 }
 
+
+
 /**
- * Îêðóãëåíèå äî ñëåäóþùåãî ÷èñëà ÿâëÿþùåãîñÿ ê ñòåïåíè äâîéêè
+ * ÐžÐºÑ€ÑƒÐ³Ð»ÐµÐ½Ð¸Ðµ Ð´Ð¾ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰ÐµÐ³Ð¾ Ñ‡Ð¸ÑÐ»Ð° ÑÐ²Ð»ÑÑŽÑ‰ÐµÐ³Ð¾ÑÑ Ðº ÑÑ‚ÐµÐ¿ÐµÐ½Ð¸ Ð´Ð²Ð¾Ð¹ÐºÐ¸
  */
+
 export var ceilingPowerOfTwo = (value: uint): uint => {
     if (value <= 1) {
         return 1;
@@ -243,28 +282,35 @@ export var ceilingPowerOfTwo = (value: uint): uint => {
 
     var highestBit: int = highestBitSet(value);
     var mask: int = value & ((1 << highestBit) - 1);
+
     highestBit += mask && 1;
+
     return 1 << highestBit;
 }
 
 
+
+
+
 /**
- * Îêðóãëåíèå äî ïðåäûäóùåãî ÷èñëà ÿâëÿþùåãîñÿ ê ñòåïåíè äâîéêè
+ * ÐžÐºÑ€ÑƒÐ³Ð»ÐµÐ½Ð¸Ðµ Ð´Ð¾ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐ³Ð¾ Ñ‡Ð¸ÑÐ»Ð° ÑÐ²Ð»ÑÑŽÑ‰ÐµÐ³Ð¾ÑÑ Ðº ÑÑ‚ÐµÐ¿ÐµÐ½Ð¸ Ð´Ð²Ð¾Ð¹ÐºÐ¸
  */
 export var floorPowerOfTwo = (value: uint): uint => {
     if (value <= 1) {
         return 1;
     }
 
-    var highestBit: int = highestBitSet(value);
 
+    var highestBit: int = highestBitSet(value);
     return 1 << highestBit;
 }
 
+
 /**
- * Äåëåíèå ïî ìîäóëþ
+ * Ð”ÐµÐ»ÐµÐ½Ð¸Ðµ Ð¿Ð¾ Ð¼Ð¾Ð´ÑƒÐ»ÑŽ
  */
 export var modulus = (e: int, divisor: int): int => (e - floor(e / divisor) * divisor);
+
 
 
 /**
@@ -274,87 +320,119 @@ export var mod = modulus;
 
 
 /**
- * Âûðâíèâàíèå ÷èñëà íà alignment ââåðõ
+ * Ð’Ñ‹Ñ€Ð²Ð½Ð¸Ð²Ð°Ð½Ð¸Ðµ Ñ‡Ð¸ÑÐ»Ð° Ð½Ð° alignment Ð²Ð²ÐµÑ€Ñ…
  */
+
 export var alignUp = (value: int, alignment: int): int => {
     var iRemainder: int = modulus(value, alignment);
     if (iRemainder == 0) {
         return (value);
-    }
 
+    }
     return (value + (alignment - iRemainder));
+
 }
 
 
+
+
+
 /**
- * Âûðâíèâàíèå ÷èñëà íà alignment âíèç
+ * Ð’Ñ‹Ñ€Ð²Ð½Ð¸Ð²Ð°Ð½Ð¸Ðµ Ñ‡Ð¸ÑÐ»Ð° Ð½Ð° alignment Ð²Ð½Ð¸Ð·
  */
+
 export var alignDown = (value: int, alignment: int): int => {
     var remainder: int = modulus(value, alignment);
+
     if (remainder == 0) {
         return (value);
     }
 
     return (value - remainder);
+
 }
 
+
+
 /**
- * ïíâåðòèðîâàòü ÷èñëî
+ * Ð¿Ð½Ð²ÐµÑ€Ñ‚Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ Ñ‡Ð¸ÑÐ»Ð¾
  */
 export var inverse = (a: number): number => 1. / a;
+
+
 
 /**
  * log base 2
  */
 export var log2 = (f: float): float => log(f) / LN2;
+
 /**
- * Îêðóãëåíè ÷èñëà ñ îïðåäåëåííîé òî÷íîñòüþ, ãäå îêðóãëÿåòñÿ äî çíà÷àùèõ ÷èñåë êàê 1/(2^precision)
+ * ÐžÐºÑ€ÑƒÐ³Ð»ÐµÐ½Ð¸ Ñ‡Ð¸ÑÐ»Ð° Ñ Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÐµÐ½Ð½Ð¾Ð¹ Ñ‚Ð¾Ñ‡Ð½Ð¾ÑÑ‚ÑŒÑŽ, Ð³Ð´Ðµ Ð¾ÐºÑ€ÑƒÐ³Ð»ÑÐµÑ‚ÑÑ Ð´Ð¾ Ð·Ð½Ð°Ñ‡Ð°Ñ‰Ð¸Ñ… Ñ‡Ð¸ÑÐµÐ» ÐºÐ°Ðº 1/(2^precision)
  */
 export var trimFloat = (f: float, precision: float): float => f;
 
 /**
- * Ïåðåâîä äðîáíîãî â öåëîå ñ óñååíèåì
+ * ÐŸÐµÑ€ÐµÐ²Ð¾Ð´ Ð´Ñ€Ð¾Ð±Ð½Ð¾Ð³Ð¾ Ð² Ñ†ÐµÐ»Ð¾Ðµ Ñ ÑƒÑÐµÐµÐ½Ð¸ÐµÐ¼
  */
+
 export var realToInt32_chop = (a: float): int => round(a);
+
 /**
- * Ïåðåâîä äðîáíîãî â öåëîå äî ìåíüøåãî
+ * ÐŸÐµÑ€ÐµÐ²Ð¾Ð´ Ð´Ñ€Ð¾Ð±Ð½Ð¾Ð³Ð¾ Ð² Ñ†ÐµÐ»Ð¾Ðµ Ð´Ð¾ Ð¼ÐµÐ½ÑŒÑˆÐµÐ³Ð¾
  */
+
 export var realToInt32_floor = (a: float): int => floor(a);
+
 /**
- * Ïåðåâîä äðîáíîãî â öåëîå äî áîëüøåãî
+ * ÐŸÐµÑ€ÐµÐ²Ð¾Ð´ Ð´Ñ€Ð¾Ð±Ð½Ð¾Ð³Ð¾ Ð² Ñ†ÐµÐ»Ð¾Ðµ Ð´Ð¾ Ð±Ð¾Ð»ÑŒÑˆÐµÐ³Ð¾
  */
+
 export var realToInt32_ceil = (a: float): int => ceil(a);
 
-	/**
-	 * Íàèáîëüøèé îáùèé äåëèòåëü
-	 */
-	export var nod = (n: int, m: int): int => {
+    /**
+     * ÐÐ°Ð¸Ð±Ð¾Ð»ÑŒÑˆÐ¸Ð¹ Ð¾Ð±Ñ‰Ð¸Ð¹ Ð´ÐµÐ»Ð¸Ñ‚ÐµÐ»ÑŒ
+     */
+
+    export var nod = (n: int, m: int): int => {
     var p: int = n % m;
+
 
     while (p != 0) {
         n = m
-			m = p
-			p = n % m
-		}
+        m = p
+         p = n % m
+     }
 
     return m;
+
 }
 
+
+
     /**
-	* Íàèìåíüøåå îáùåå êðàòíîå
-	*/
+    * ÐÐ°Ð¸Ð¼ÐµÐ½ÑŒÑˆÐµÐµ Ð¾Ð±Ñ‰ÐµÐµ ÐºÑ€Ð°Ñ‚Ð½Ð¾Ðµ
+    */
+
 export var nok = (n: int, m: int): int => abs(n * m) / nod(n, m);
+
 /**
  * Greatest common devider
  */
+
 export var gcd = nod;
+
 /**
  * Least common multiple
  */
+
 export var lcm = nok;
 
-	// var pMat3Stack = new Array(100);
-	// var iMat3StackIndex = 0;
+
+
+    // var pMat3Stack = new Array(100);
+    // var iMat3StackIndex = 0;
+
+
 
 export var isRealEqual = (a: float, b: float, tolerance: float = 1.19209e-007): boolean => {
     if (abs(b - a) <= tolerance)
@@ -362,6 +440,8 @@ export var isRealEqual = (a: float, b: float, tolerance: float = 1.19209e-007): 
     else
         return false;
 }
+
+
 
 export function calcPOTtextureSize(nPixels: uint): uint[] {
     var w: uint, h: uint;
@@ -373,20 +453,23 @@ export function calcPOTtextureSize(nPixels: uint): uint[] {
     w = Math.pow(2, w);
     h = Math.pow(2, h);
     n = w * h;
+
     return [w, h, n];
+
 }
 
+
+
 export function floatToFloat3(value: float): AIVec3 {
+
     var data: float = value;
     var result: AIVec3 = vec3(0.);
 
     if (data == 0.) {
         var signedZeroTest: float = 1. / value;
-
         if (signedZeroTest < 0.) {
             result.x = 128.;
         }
-
         return result;
     }
 
@@ -395,12 +478,13 @@ export function floatToFloat3(value: float): AIVec3 {
         data = -data;
     }
 
+
+
     var power: float = 0.;
     var counter: float = 0.;
 
     while (counter < 64.) {
         counter += 1.;
-
         if (data >= 2.) {
             data = data * 0.5;
             power += 1.;
@@ -422,6 +506,7 @@ export function floatToFloat3(value: float): AIVec3 {
         }
     }
 
+
     if (power == -62. && data < 1.) {
         power = 0.;
     }
@@ -431,16 +516,12 @@ export function floatToFloat3(value: float): AIVec3 {
     }
 
     result.x += power;
-
     data *= 256.;
-
     result.y = floor(data);
 
     data -= floor(data);
     data *= 256.;
 
     result.z = floor(data);
-
     return result;
 }
-

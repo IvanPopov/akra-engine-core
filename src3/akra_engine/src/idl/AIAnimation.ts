@@ -19,4 +19,4 @@ interface AIAnimation extends AIAnimationBase {
 	
 	frame(sName: string, fTime: float): AIPositionFrame;
 	extend(pAnimation: AIAnimation): void;
-}
+}

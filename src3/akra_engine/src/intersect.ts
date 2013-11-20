@@ -8,7 +8,7 @@ import Rect2d = require("geometry/Rect2d");
 import Ray2d = require("geometry/Ray2d");
 import Ray3d = require("geometry/Ray3d");
 
-function plane2dRay2d(pPlane: AIPlane2d, pRay: AIRay2d): boolean {
+export function plane2dRay2d(pPlane: AIPlane2d, pRay: AIRay2d): boolean {
     var fDistance: float = pPlane.signedDistance(pRay.point);
     var fNdotV: float = pPlane.normal.dot(pRay.normal);
 
@@ -30,7 +30,7 @@ function plane2dRay2d(pPlane: AIPlane2d, pRay: AIRay2d): boolean {
     }
 }
 
-function plane3dRay3d(pPlane: AIPlane3d, pRay: AIRay3d): boolean {
+export function plane3dRay3d(pPlane: AIPlane3d, pRay: AIRay3d): boolean {
     var fDistance: float = pPlane.signedDistance(pRay.point);
     var fNdotV: float = pPlane.normal.dot(pRay.normal);
 
@@ -52,7 +52,7 @@ function plane3dRay3d(pPlane: AIPlane3d, pRay: AIRay3d): boolean {
     }
 }
 
-function circleRay2d(pCircle: AICircle, pRay: AIRay2d): boolean {
+export function circleRay2d(pCircle: AICircle, pRay: AIRay2d): boolean {
     var v2fCenterToPoint: AIVec2 = pRay.point.subtract(pCircle.center, vec2());
 
     var v2fNormal: AIVec2 = pRay.normal;
@@ -84,7 +84,7 @@ function circleRay2d(pCircle: AICircle, pRay: AIRay2d): boolean {
     }
 }
 
-function sphereRay3d(pSphere: AISphere, pRay: AIRay3d): boolean {
+export function sphereRay3d(pSphere: AISphere, pRay: AIRay3d): boolean {
     var v3fCenterToPoint: AIVec3 = pRay.point.subtract(pSphere.center, vec3());
 
     var v3fNormal: AIVec3 = pRay.normal;
@@ -116,7 +116,7 @@ function sphereRay3d(pSphere: AISphere, pRay: AIRay3d): boolean {
     }
 }
 
-function intersectRect2dRay2d(pRect: AIRect2d, pRay: AIRay2d): boolean {
+export function intersectRect2dRay2d(pRect: AIRect2d, pRay: AIRay2d): boolean {
     var v2fNormal: AIVec2 = pRay.normal;
     var v2fPoint: AIVec2 = pRay.point;
 
@@ -159,7 +159,7 @@ function intersectRect2dRay2d(pRect: AIRect2d, pRay: AIRay2d): boolean {
     return true;
 }
 
-function intersectRect3dRay3d(pRect: AIRect3d, pRay: AIRay3d): boolean {
+export function intersectRect3dRay3d(pRect: AIRect3d, pRay: AIRay3d): boolean {
     var v3fNormal: AIVec3 = pRay.normal;
     var v3fPoint: AIVec3 = pRay.point;
 
@@ -213,7 +213,7 @@ function intersectRect3dRay3d(pRect: AIRect3d, pRay: AIRay3d): boolean {
     return true;
 }
 
-function circleCircle(pCircle1: AICircle, pCircle2: AICircle): boolean {
+export function circleCircle(pCircle1: AICircle, pCircle2: AICircle): boolean {
     var v2fCenter1: AIVec2 = pCircle1.center;
     var v2fCenter2: AIVec2 = pCircle2.center;
 
@@ -228,7 +228,7 @@ function circleCircle(pCircle1: AICircle, pCircle2: AICircle): boolean {
     return true;
 }
 
-function sphereSphere(pSphere1: AISphere, pSphere2: AISphere): boolean {
+export function sphereSphere(pSphere1: AISphere, pSphere2: AISphere): boolean {
     var v3fCenter1: AIVec3 = pSphere1.center;
     var v3fCenter2: AIVec3 = pSphere2.center;
 
@@ -244,7 +244,7 @@ function sphereSphere(pSphere1: AISphere, pSphere2: AISphere): boolean {
     return true;
 }
 
-function intersectRect2dCircle(pRect: AIRect2d, pCircle: AICircle) {
+export function intersectRect2dCircle(pRect: AIRect2d, pCircle: AICircle) {
     var v2fCenter: AIVec2 = pCircle.center;
     var fOffsetX: float = 0., fOffsetY: float = 0.;
     var nInside: uint = 0;
@@ -283,7 +283,7 @@ function intersectRect2dCircle(pRect: AIRect2d, pCircle: AICircle) {
     return true;
 }
 
-function intersectRect3dSphere(pRect: AIRect3d, pSphere: AISphere) {
+export function intersectRect3dSphere(pRect: AIRect3d, pSphere: AISphere) {
     var v3fCenter: AIVec3 = pSphere.center;
     var fOffsetX: float = 0., fOffsetY: float = 0., fOffsetZ: float = 0.;
     var nInside: uint = 0;
@@ -332,7 +332,7 @@ function intersectRect3dSphere(pRect: AIRect3d, pSphere: AISphere) {
     return true;
 }
 
-function intersectRect2dRect2d(pRect1: AIRect2d, pRect2: AIRect2d, pResult?: AIRect2d): boolean {
+export function intersectRect2dRect2d(pRect1: AIRect2d, pRect2: AIRect2d, pResult?: AIRect2d): boolean {
     if (!isDef(pResult)) {
         var fX0: float = math.max(pRect1.x0, pRect2.x0);
         var fX1: float = math.min(pRect1.x1, pRect2.x1);
@@ -356,7 +356,7 @@ function intersectRect2dRect2d(pRect1: AIRect2d, pRect2: AIRect2d, pResult?: AIR
     }
 }
 
-function intersectRect3dRect3d(pRect1: AIRect3d, pRect2: AIRect3d, pResult?: AIRect3d): boolean {
+export function intersectRect3dRect3d(pRect1: AIRect3d, pRect2: AIRect3d, pResult?: AIRect3d): boolean {
     if (!isDef(pResult)) {
         var fX0: float = math.max(pRect1.x0, pRect2.x0);
         var fX1: float = math.min(pRect1.x1, pRect2.x1);
@@ -387,19 +387,19 @@ function intersectRect3dRect3d(pRect1: AIRect3d, pRect2: AIRect3d, pResult?: AIR
     }
 }
 
-function intersect(pPlane: AIPlane2d, pRay: AIRay2d): boolean;
-function intersect(pPlane: AIPlane3d, pRay: AIRay3d): boolean;
-function intersect(pCircle: AICircle, pRay: AIRay2d): boolean;
-function intersect(pSphere: AISphere, pRay: AIRay3d): boolean;
-function intersect(pRect: AIRect2d, pRay: AIRay2d): boolean;
-function intersect(pRect: AIRect3d, pRay: AIRay3d): boolean;
-function intersect(pCircle1: AICircle, pCircle2: AICircle): boolean;
-function intersect(pSphere1: AISphere, pSphere2: AISphere): boolean;
-function intersect(pRect: AIRect2d, pCircle: AICircle): boolean;
-function intersect(pRect: AIRect3d, pSphere: AISphere): boolean;
-function intersect(pRect1: AIRect2d, pRect2: AIRect2d, pResult?: AIRect2d): boolean;
-function intersect(pRect1: AIRect3d, pRect2: AIRect3d, pResult?: AIRect3d): boolean;
-function intersect(pRect1?, pRect2?, pResult?): boolean {
+export function intersect(pPlane: AIPlane2d, pRay: AIRay2d): boolean;
+export function intersect(pPlane: AIPlane3d, pRay: AIRay3d): boolean;
+export function intersect(pCircle: AICircle, pRay: AIRay2d): boolean;
+export function intersect(pSphere: AISphere, pRay: AIRay3d): boolean;
+export function intersect(pRect: AIRect2d, pRay: AIRay2d): boolean;
+export function intersect(pRect: AIRect3d, pRay: AIRay3d): boolean;
+export function intersect(pCircle1: AICircle, pCircle2: AICircle): boolean;
+export function intersect(pSphere1: AISphere, pSphere2: AISphere): boolean;
+export function intersect(pRect: AIRect2d, pCircle: AICircle): boolean;
+export function intersect(pRect: AIRect3d, pSphere: AISphere): boolean;
+export function intersect(pRect1: AIRect2d, pRect2: AIRect2d, pResult?: AIRect2d): boolean;
+export function intersect(pRect1: AIRect3d, pRect2: AIRect3d, pResult?: AIRect3d): boolean;
+export function intersect(pRect1?, pRect2?, pResult?): boolean {
     var nArgumentsLength: uint = arguments.length;
 
     if (nArgumentsLength === 3) {

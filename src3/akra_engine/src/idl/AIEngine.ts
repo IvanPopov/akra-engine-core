@@ -13,7 +13,7 @@
 /// <reference path="AIAnimationController.ts" />
 /// <reference path="AISkeleton.ts" />
 /// <reference path="AIScene3d.ts" />
-/// <reference path="AIDepsManager.ts" />
+/// <reference path="AIDeps.ts" />
 /// <reference path="AIAFXComposer.ts" />
 /// <reference path="AIGamepadMap.ts" />
 /// <reference path="AISpriteManager.ts" />
@@ -23,10 +23,10 @@ interface AIEngineOptions {
 	deps?: AIDependens;
 	gamepads?: boolean;
 	renderer?: IRendererOptions;
-	loader?: {
-		loaded?: (manager: AIDepsManager, pDeps: AIDependens) => void;
-		changed?: (manager: AIDepsManager, pFile: AIDep, pInfo: any) => void;
-	};
+	//loader?: {
+	//	loaded?: (manager: AIDepsManager, pDeps: AIDependens) => void;
+	//	changed?: (manager: AIDepsManager, pFile: AIDep, pInfo: any) => void;
+	//};
 }
 
 interface AIEngine extends AIEventProvider {
@@ -43,7 +43,7 @@ interface AIEngine extends AIEventProvider {
 	getRenderer(): AIRenderer;
 
 	getComposer(): AIAFXComposer;
-	getDepsManager(): AIDepsManager;
+	//getDepsManager(): AIDepsManager;
 
 	pause(): boolean;
 	play(): boolean;

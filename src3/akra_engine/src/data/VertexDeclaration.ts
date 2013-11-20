@@ -175,7 +175,7 @@ class VertexDeclaration implements AIVertexDeclaration {
 
     static normalize(pElement: AIVertexElement): AIVertexDeclaration;
     static normalize(pElements: AIVertexElementInterface[]): AIVertexDeclaration;
-    static normalize(pDecl: AIVertexDeclaration[]): AIVertexDeclaration;
+    static normalize(pDecl: AIVertexDeclaration): AIVertexDeclaration;
     static normalize(pData?): AIVertexDeclaration {
         if (!(pData instanceof VertexDeclaration)) {
             if (!Array.isArray(pData) && isDefAndNotNull(pData)) {

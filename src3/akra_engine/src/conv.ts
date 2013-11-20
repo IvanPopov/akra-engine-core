@@ -284,5 +284,5 @@ export function toURL(data: any, mime: string = "text/plain"): string {
 
 /** Convert UTF8 string to Base64 string*/
 export function utf8tob64(s: string): string {
-    return window.btoa(unescape(encodeURIComponent(str)));
+    return window.btoa(unescape(encodeURIComponent(s)));
 }

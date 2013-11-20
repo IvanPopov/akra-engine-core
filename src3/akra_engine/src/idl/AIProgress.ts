@@ -2,7 +2,7 @@
 // [write description here...]
 
 
-module akra {
+
 interface AIProgress {
 	canvas: HTMLCanvasElement;
 			context: CanvasRenderingContext2D;
@@ -35,5 +35,5 @@ interface AIProgress {
 			printText(sText: string): void;
 			cancel(): void;
 }
-}
-
+
+

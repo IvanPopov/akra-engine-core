@@ -6,6 +6,12 @@ interface AIListExplorerFunc<T> {
     (data: T, index?: uint): boolean;
 }
 
+interface AIObjectListItem<T> {
+    next: AIObjectListItem<T>;
+    prev: AIObjectListItem<T>;
+    data: T;
+}
+
 /** ObjectList interface. */
 interface AIObjectList<T> {
 	/** Number of elements in list */

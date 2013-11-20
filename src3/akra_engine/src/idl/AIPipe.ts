@@ -3,7 +3,13 @@
 
 /// <reference path="AIEventProvider.ts" />
 
-module akra {
+interface AIVirualDescriptor {
+    onmessage: (pMessage: any) => void;
+    onerror: (pErr: ErrorEvent) => void;
+    onclose: (pEvent: CloseEvent) => void;
+    onopen: (pEvent: Event) => void;
+}
+
 enum AEPipeTypes {
 	UNKNOWN,
 
@@ -37,7 +43,3 @@ interface AIPipe extends AIEventProvider {
 	signal closed(pEvent: CloseEvent): void;
 	signal message(pData: any, eType: AEPipeDataTypes): void;
 }
-}
-
-#endif
-

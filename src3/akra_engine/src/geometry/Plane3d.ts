@@ -3,7 +3,7 @@
 import math = require("math");
 import Vec3 = math.Vec3;
 
-import intersect = require("intersection");
+import intersect = require("intersect");
 
 class Plane3d implements AIPlane3d {
     normal: AIVec3;
@@ -172,6 +172,7 @@ class Plane3d implements AIPlane3d {
     }
 
     intersectRay3d(pRay: AIRay3d, vDest: AIVec3): boolean {
+        
         if (!intersect.plane3dRay3d(this, pRay)) {
             return false;
         }

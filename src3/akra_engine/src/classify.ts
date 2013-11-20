@@ -1,5 +1,5 @@
-/// <reference path="../idl/AEVolumeClassifications.ts" />
-/// <reference path="../idl/AEPlaneClassifications.ts" />
+/// <reference path="idl/AEVolumeClassifications.ts" />
+/// <reference path="idl/AEPlaneClassifications.ts" />
 
 import Sphere = require("geometry/Sphere");
 import Circle = require("geometry/Circle");

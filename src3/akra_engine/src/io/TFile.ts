@@ -220,7 +220,7 @@ class TFile implements AIFile {
         fnCallback: (e: Error, data: any) => void = <any>TFile.defaultCallback,
         fnProgress?: (bytesLoaded: uint, bytesTotal: uint) => void): void {
 
-        if (this.checkIfNotOpen(read, fnCallback)) {
+        if (this.checkIfNotOpen(this.read, fnCallback)) {
             return;
         }
 
@@ -260,7 +260,7 @@ class TFile implements AIFile {
     write(sData: string, fnCallback?: Function, sContentType?: string): void;
     write(pData: ArrayBuffer, fnCallback?: Function, sContentType?: string): void;
     write(pData: any, fnCallback: Function = TFile.defaultCallback, sContentType?: string): void {
-        if (this.checkIfNotOpen(write, fnCallback)) {
+        if (this.checkIfNotOpen(this.write, fnCallback)) {
             return;
         }
 
@@ -343,7 +343,7 @@ class TFile implements AIFile {
     }
 
     remove(fnCallback: Function = TFile.defaultCallback): void {
-        if (this.checkIfNotOpen(remove, fnCallback)) {
+        if (this.checkIfNotOpen(this.remove, fnCallback)) {
             return;
         }
 

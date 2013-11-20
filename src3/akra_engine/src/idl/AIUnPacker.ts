@@ -1,13 +1,10 @@
 // AIUnPacker interface
-// [write description here...]
 
 /// <reference path="AIBinReader.ts" />
-
-
-/// <reference path="AIPackerTemplate.ts" />
+/// <reference path="AIPackerFormat.ts" />
 
 interface AIUnPacker extends AIBinReader {
-	template: AIPackerTemplate;
+	getTemplate(): AIPackerTemplate;
 
 	read(): any;
-}
+}

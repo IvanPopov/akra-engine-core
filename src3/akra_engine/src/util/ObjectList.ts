@@ -3,13 +3,6 @@
 import logger = require("logger");
 import ObjectArray = require("util/ObjectArray");
 
-interface AIObjectListItem<T> {
-    next: AIObjectListItem<T>;
-    prev: AIObjectListItem<T>;
-    data: T;
-}
-
-
 class ObjectList<T> implements AIObjectList<T> {
     protected _pHead: AIObjectListItem<T> = null;
     protected _pTail: AIObjectListItem<T> = null;

@@ -20,7 +20,7 @@ import Rect3d = require("geometry/Rect3d");
 
 import Frustum = require("geometry/Frustum");
 
-
+import usage = require("data/Usage");
 
 
 //function computeBoundingBox(pVertexData: AIVertexData, pBoundingBox: AIRect3d): boolean;
@@ -48,7 +48,7 @@ function computeBoundingBox(pVertexData, pBoundingBox): boolean {
     if (isNull(pVertexDeclaration))
         return false;
 
-    pVertexElement = pVertexDeclaration.findElement(DeclUsages.POSITION, 3);
+    pVertexElement = pVertexDeclaration.findElement(usage.POSITION, 3);
 
     if (isNull(pVertexElement))
         return false;
@@ -277,7 +277,7 @@ function computeBoundingSphereFast(pVertexData: AIVertexData, pSphere: AISphere,
     }
 
 
-    pVertexElement = pVertexDeclaration.findElement(DeclUsages.POSITION, 3);
+    pVertexElement = pVertexDeclaration.findElement(usage.POSITION, 3);
 
     if (isNull(pVertexElement)) {
         return false;
@@ -349,7 +349,7 @@ function computeBoundingSphereMinimal(pVertexData: AIVertexData, pSphere: AISphe
         return false;
     }
 
-    pVertexElement = pVertexDeclaration.findElement(DeclUsages.POSITION, 3);
+    pVertexElement = pVertexDeclaration.findElement(usage.POSITION, 3);
 
     if (isNull(pVertexElement))
         return false;

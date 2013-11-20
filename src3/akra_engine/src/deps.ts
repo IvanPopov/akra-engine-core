@@ -1,5 +1,5 @@
 ﻿/// <reference path="idl/AIEngine.ts" />
-
+/// <reference path="idl/AIDeps.ts" />
 
 import logger = require("logger");
 import path = require("path");
@@ -356,7 +356,7 @@ export function loadBSON(
         }
 
         pFile.close();
-        pDep.content = undump(pBuffer);
+        pDep.content = io.undump(pBuffer);
 
         updateStatus(pDep, AEDependenceStatuses.LOADED);
         fnLoaded(null, pDep);
@@ -611,7 +611,7 @@ export function loadARA(
 }
 
 
-export function loadDependence(
+export function loadDependences(
     pEngine: AIEngine,
     pDeps: AIDependens,
     fnLoaded: (e: Error, pDeps: AIDependens) => void,
@@ -620,7 +620,7 @@ export function loadDependence(
     //if got empty dependency.
     if (!isArray(pDeps.files) || pDeps.files.length === 0) {
         if (isDefAndNotNull(pDeps.deps)) {
-            loadDependence(pEngine, pDeps.deps, fnLoaded, fnChanged);
+            loadDependences(pEngine, pDeps.deps, fnLoaded, fnChanged);
         }
         else {
             //deps with out subdeps and files
@@ -695,7 +695,7 @@ export function load(
 
     normalize(pDeps, pDeps.root || sRoot);
     createResources(this.getEngine(), pDeps);
-    loadDependence(pEngine, pDeps,
+    loadDependences(pEngine, pDeps,
         (e: Error, pDeps: AIDependens) => {
             //get dependencies, contained dep
             var pDeps: AIDependens = pDep.deps;
@@ -705,7 +705,7 @@ export function load(
             }
 
             if (isDefAndNotNull(pDeps)) {
-                loadDependence(pEngine, pDeps, fnLoaded, fnChanged);
+                loadDependences(pEngine, pDeps, fnLoaded, fnChanged);
             }
             else {
                 fnLoaded(null, pDeps);

@@ -821,6 +821,18 @@ class Rect3d implements AIRect3d {
             this.x1 + ", " + this.y1 + ", " + this.z1 + ")";
     }
 
+    static temp(): AIRect3d;
+    static temp(pRect: AIRect3d): AIRect3d;
+    static temp(v3fSize: AIVec3): AIRect3d;
+    static temp(fSizeX: float, fSizeY: float, fSizeZ: float): AIRect3d;
+    static temp(v3fMinPoint: AIVec3, v3fMaxPoint: AIVec3): AIRect3d;
+    static temp(fX0: float, fX1: float, fY0: float,
+        fY1: float, fZ0: float, fZ1: float): AIRect3d;
+    static temp(): AIRect3d {
+        iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
+        var p = pBuffer[iElement++];
+        return p.set.apply(p, arguments);
+    }
 
 }
 

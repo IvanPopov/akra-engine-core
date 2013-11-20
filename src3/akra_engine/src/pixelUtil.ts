@@ -1140,7 +1140,7 @@ export function getFormatForBitDepths(eFmt: AEPixelFormats, iIntegerBits: uint, 
     @param pf		Pixelformat in which to write the colour
     @param dest		Destination memory location
 */
-/** inline */ function packColour(cColour: AIColor, ePf: AEPixelFormats, pDest: Uint8Array): void {
+export function packColour(cColour: AIColor, ePf: AEPixelFormats, pDest: Uint8Array): void {
     packColourFloat(cColour.r, cColour.g, cColour.b, cColour.a, ePf, pDest);
 }
 /** Pack a colour value to memory

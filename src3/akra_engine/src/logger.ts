@@ -7,7 +7,7 @@ export var logger: AILogger = null;
 logger = Logger.getInstance();
 
 logger.init();
-logger.setUnknownCode(cfg.unknownCode, cfg.unknownMessage);
+logger.setUnknownCode(cfg.unknown.code, cfg.unknown.message);
 logger.setLogLevel(has("DEBUG") ? AELogLevel.ALL : AELogLevel.ERROR);
 
 //Default code families
@@ -81,7 +81,7 @@ logger.setLogRoutine(errorRoutine, AELogLevel.ERROR | AELogLevel.CRITICAL);
 
 
 export var log = <typeof logger.log>logger.log.bind(logger);
-export var warn = <typeof logger.warning>logger.warn.bind(logger);
+export var warn = <typeof logger.warn>logger.warn.bind(logger);
 export var error = <typeof logger.error>logger.error.bind(logger);
 export var critical = <typeof logger.critical>logger.critical.bind(logger);
 export var info = <typeof logger.info>logger.info.bind(logger);

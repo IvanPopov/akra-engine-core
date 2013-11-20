@@ -142,3 +142,6 @@ class StorageFile extends TFile implements AIFile {
         fnCallback.call(this, null);
     }
 }
+
+
+export = StorageFile;

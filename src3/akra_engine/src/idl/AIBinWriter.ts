@@ -1,7 +1,3 @@
-// AIBinWriter interface
-// [write description here...]
-
-module akra {
 interface AIBinWriter {
 	byteLength: uint;
 
@@ -37,5 +33,3 @@ interface AIBinWriter {
 	dataAsString(): string;
 	dataAsUint8Array(): Uint8Array;
 }
-}
-

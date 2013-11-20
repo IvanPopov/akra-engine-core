@@ -5,9 +5,17 @@ import TFile = require("io/TFile");
 import LocalFile = require("io/LocalFile");
 import StorageFile = require("io/StorageFile");
 
+import Packer = require("io/Packer");
+import UnPacker = require("io/UnPacker");
+
+export import BinReader = require("io/BinReader");
+export import BinWriter = require("io/BinWriter");
+
 import bf = require("bitflags");
 import info = require("info");
 import uri = require("uri");
+
+import pCommonTemplate = require("io/templates/common");
 
 export function canCreate(mode: int): boolean { return bf.testBit(mode, 1); }
 export function canRead(mode: int): boolean { return bf.testBit(mode, 0); }
@@ -119,3 +127,18 @@ export function fopen(sUri: string, pMode: any = AEIO.IN): AIFile {
     }
 }
 
+
+
+export function dump(pObject: any, pTemplate: AIPackerTemplate = null): ArrayBuffer {
+    var pPacker: AIPacker = new Packer(pTemplate || pCommonTemplate);
+    pPacker.write(pObject);
+    return pPacker.data();
+}
+
+export function undump(pBuffer: any, pTemplate: AIPackerTemplate = null): any {
+    if (!isDefAndNotNull(pBuffer)) {
+        return null;
+    }
+    var pUnPacker: AIUnPacker = new UnPacker(pBuffer, pTemplate);
+    return pUnPacker.read();
+}

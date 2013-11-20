@@ -1,0 +1,214 @@
+﻿@import url(http://fonts.googleapis.com/css?family=Raleway:100);
+
+@-webkit-keyframes bounceInLeft {
+    0% {
+        opacity: 0;
+        -webkit-transform: translateX(-2000px);
+    }
+
+    60% {
+        opacity: 1;
+        -webkit-transform: translateX(30px);
+    }
+
+    80% {
+        -webkit-transform: translateX(-10px);
+    }
+
+    100% {
+        -webkit-transform: translateX(0);
+    }
+}
+
+@keyframes bounceInLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-2000px);
+    }
+
+    60% {
+        opacity: 1;
+        transform: translateX(30px);
+    }
+
+    80% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+
+
+@keyframes loading {
+    from {
+        left: 0;
+    }
+
+    to {
+        left: 400px;
+    }
+}
+
+@-moz-keyframes loading {
+    from {
+        left: 0;
+    }
+
+    to {
+        left: 400px;
+    }
+}
+
+@-webkit-keyframes loading {
+    from {
+        left: 0;
+    }
+
+    to {
+        left: 400px;
+    }
+}
+
+@-ms-keyframes loading {
+    from {
+        left: 0;
+    }
+
+    to {
+        left: 400px;
+    }
+}
+
+@-o-keyframes loading {
+    from {
+        left: 0;
+    }
+
+    to {
+        left: 400px;
+    }
+}
+
+
+
+div.ae-loader {
+    overflow: hidden;
+    width: 400px;
+    background-color: #2d2d30;
+    box-shadow: 0 0 5px #333;
+    animation: bounceInLeft 1s;
+    -webkit-animation: bounceInLeft 1s;
+}
+
+div.ae-progress:last-child{
+    margin-bottom: 0px;
+}
+
+div.ae-progress {
+    width: 90%;
+    margin: 0 auto;
+    padding-top: 0px;
+    padding-bottom: 20px;
+    margin-bottom
+}
+
+.ae-string {
+    color: #b3b3b3;
+    font-size: 11px;
+    padding-bottom: 5px;
+    display: inline-block;
+    font-family: Tahoma;
+    padding-left: 1px;
+}
+
+div.ae-bar {
+    background-color: #204d6d;
+    height: 8px;
+    padding: 0;
+}
+
+.ae-caption {
+    font-family: 'Raleway', cursive;
+    font-weight: 100;
+    font-stretch: normal;
+    font-size: 4em;
+    color: #ffffff;
+    width: 90%;
+    display: block;
+    margin: 20px auto;
+}
+
+.ae-tip {
+    color: #f1f1f1;
+    padding-top: 7px;
+}
+
+.ae-footer {
+    height: 20px;
+    background-color: #252526;
+}
+
+.ae-complete {
+    background-color: #0097fb;
+    height: 100%;
+    box-shadow: inset 0px 1px 0px #1072b4;
+    -webkit-transition: width 1s ease-in-out;
+    -moz-transition: width 1s ease-in-out;
+    -o-transition: width 1s ease-in-out;
+    transition: width 1s ease-in-out;
+    width: 0%;
+}
+
+.ae-loader:hover .ae-complete {
+    width: 100%;
+}
+
+.ae-slider {
+    position: relative;
+    margin-top: 30px;
+    width: 400px;
+    height: 2px;
+    overflow: hidden; 
+}
+
+    .ae-slider .line {
+        position: relative;
+        background: #204d6d;
+        width: 400px;
+        height: 2px;
+    }
+
+    .ae-slider .break {
+        position: relative;
+        background: #0097fb;
+        width: 6px;
+        height: 2px;
+        margin-top: -2px;
+    }
+
+    .ae-slider .dot1 {
+        -webkit-animation: loading 2s infinite;
+        -moz-animation: loading 2s infinite;
+        -ms-animation: loading 2s infinite;
+        -o-animation: loading 2s infinite;
+        animation: loading 2s infinite;
+    }
+
+    .ae-slider .dot2 {
+        -webkit-animation: loading 2s 0.5s infinite;
+        -moz-animation: loading 2s 0.5s infinite;
+        -ms-animation: loading 2s 0.5s infinite;
+        -o-animation: loading 2s 0.5s infinite;
+        animation: loading 2s 0.5s infinite;
+    }
+
+    .ae-slider .dot3 {
+        -webkit-animation: loading 2s 1s infinite;
+        -moz-animation: loading 2s 1s infinite;
+        -ms-animation: loading 2s 1s infinite;
+        -o-animation: loading 2s 1s infinite;
+        animation: loading 2s 1s infinite;
+    }

@@ -519,12 +519,11 @@ class Entity extends ReferenceCounter implements AIEntity {
 
     }
 
-		//CREATE_EVENT_TABLE(Entity);
+    //CREATE_EVENT_TABLE(Entity);
 
-		//UNICAST(attached, VOID);
-		//UNICAST(detached, VOID);
-		//UNICAST(childAdded, CALL(child));
-		//UNICAST(childRemoved, CALL(child));
-	}
+    //UNICAST(attached, VOID);
+    //UNICAST(detached, VOID);
+    //UNICAST(childAdded, CALL(child));
+    //UNICAST(childRemoved, CALL(child));
 }
 

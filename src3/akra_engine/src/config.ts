@@ -61,9 +61,23 @@ export var deps = {
         file: ".etag",
         forceCheck: false
     }
-};
+}
 
 
+export var net = {
+    port: 1337 //websocket port
+}
+
+
+export var rpc = {
+    deferredCallsLimit: 20000,
+    reconnectTimeout: 2500,
+    systemRoutineInterval: 10000,
+    callbackLifetime: 60000,
+    maxCallbacksCount: -1,
+    procListName: "proc_list",
+    callsFrequency: -1
+}
 
 
 

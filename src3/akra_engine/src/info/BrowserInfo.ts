@@ -1,6 +1,6 @@
 /// <reference path="../idl/AIBrowserInfo.ts" />
 
-import Singleton = require("Singleton");
+import Singleton = require("util/Singleton");
 
 
 interface AIBrowserData {
