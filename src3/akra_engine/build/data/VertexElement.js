@@ -82,6 +82,53 @@ define(["require", "exports", "limit", "dataType", "data/Usage"], function(requi
             }
             return null;
         };
+
+        VertexElement.custom = function (sUsage, eType, iCount, iOffset) {
+            if (typeof eType === "undefined") { eType = 5126 /* FLOAT */; }
+            if (typeof iCount === "undefined") { iCount = 1; }
+            if (typeof iOffset === "undefined") { iOffset = UNKNOWN_OFFSET; }
+            return {
+                count: iCount,
+                type: eType,
+                usage: sUsage,
+                offset: iOffset
+            };
+        };
+
+        VertexElement.float = function (sUsage, iOffset) {
+            if (typeof iOffset === "undefined") { iOffset = UNKNOWN_OFFSET; }
+            return VertexElement.custom(sUsage, 5126 /* FLOAT */, 1, iOffset);
+        };
+
+        VertexElement.float2 = function (sUsage, iOffset) {
+            if (typeof iOffset === "undefined") { iOffset = UNKNOWN_OFFSET; }
+            return VertexElement.custom(sUsage, 5126 /* FLOAT */, 2, iOffset);
+        };
+
+        VertexElement.float3 = function (sUsage, iOffset) {
+            if (typeof iOffset === "undefined") { iOffset = UNKNOWN_OFFSET; }
+            return VertexElement.custom(sUsage, 5126 /* FLOAT */, 3, iOffset);
+        };
+
+        VertexElement.float4 = function (sUsage, iOffset) {
+            if (typeof iOffset === "undefined") { iOffset = UNKNOWN_OFFSET; }
+            return VertexElement.custom(sUsage, 5126 /* FLOAT */, 4, iOffset);
+        };
+
+        VertexElement.float4x4 = function (sUsage, iOffset) {
+            if (typeof iOffset === "undefined") { iOffset = UNKNOWN_OFFSET; }
+            return VertexElement.custom(sUsage, 5126 /* FLOAT */, 16, iOffset);
+        };
+
+        VertexElement.int = function (sUsage, iOffset) {
+            if (typeof iOffset === "undefined") { iOffset = UNKNOWN_OFFSET; }
+            return VertexElement.custom(sUsage, 5124 /* INT */, 1, iOffset);
+        };
+
+        VertexElement.end = function (iOffset) {
+            if (typeof iOffset === "undefined") { iOffset = 0; }
+            return VertexElement.custom(Usage.END, 5121 /* UNSIGNED_BYTE */, 0, iOffset);
+        };
         return VertexElement;
     })();
 

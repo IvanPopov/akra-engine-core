@@ -1,20 +1,13 @@
 // AIAFXInstruction interface
 // [write description here...]
 
-
 /// <reference path="AIParser.ts" />
 /// <reference path="AIAFXComponent.ts" />
 /// <reference path="AIUnique.ts" />
 /// <reference path="AIRenderer.ts" />
 /// <reference path="AIMap.ts" />
-/// <reference path="AIRenderStateMap.ts" />
-
-// #define EPassState AERenderStates
-// #define EPassStateValue AERenderStateValues
-// #define IPassStateMap AIRenderStateMap
-
-
 /// <reference path="AIAFXComposer.ts" />
+
 
 enum AEAFXInstructionTypes {
     k_Instruction = 0,
@@ -719,7 +712,7 @@ interface AIAFXPassInstruction extends AIAFXDeclInstruction {
     evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): boolean;
 
     getState(eType: AERenderStates): AERenderStateValues;
-    _getRenderStates(): AIRenderStateMap;
+    _getRenderStates(): AIMap<AERenderStateValues>;
 }
 
 interface AIAFXTechniqueInstruction extends AIAFXDeclInstruction {
@@ -753,3 +746,17 @@ interface AIAFXTechniqueInstruction extends AIAFXDeclInstruction {
     finalize(pComposer: AIAFXComposer): void;
 }
 
+interface AIAFXVariableBlendInfo {
+    varList: AIAFXVariableDeclInstruction[];
+    blendType: AIAFXVariableTypeInstruction;
+    name: string;
+    nameIndex: uint;
+}
+
+interface AIAFXVariableBlendInfoMap {
+    [index: uint]: AIAFXVariableBlendInfo;
+}
+
+interface AIAFXFunctionDeclListMap {
+    [functionName: string]: AIAFXFunctionDeclInstruction[];
+}

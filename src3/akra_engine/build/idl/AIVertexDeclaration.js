@@ -1,3 +1,2 @@
-// AIVertexDeclaration interface
-// [write description here...]
+/// <reference path="AIVertexElement.ts" />
 //# sourceMappingURL=AIVertexDeclaration.js.map

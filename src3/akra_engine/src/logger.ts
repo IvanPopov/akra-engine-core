@@ -1,7 +1,7 @@
 import cfg = require("config");
 import Logger = require("logger/Logger");
 
-export var logger: AILogger = null;
+var logger: AILogger = null;
 
 
 logger = Logger.getInstance();
@@ -78,13 +78,4 @@ logger.setLogRoutine(logRoutine, AELogLevel.LOG | AELogLevel.INFORMATION);
 logger.setLogRoutine(warningRoutine, AELogLevel.WARNING);
 logger.setLogRoutine(errorRoutine, AELogLevel.ERROR | AELogLevel.CRITICAL);
 
-
-
-export var log = <typeof logger.log>logger.log.bind(logger);
-export var warn = <typeof logger.warn>logger.warn.bind(logger);
-export var error = <typeof logger.error>logger.error.bind(logger);
-export var critical = <typeof logger.critical>logger.critical.bind(logger);
-export var info = <typeof logger.info>logger.info.bind(logger);
-export var assert = <typeof logger.assert>logger.assert.bind(logger);
-export var presume = <typeof logger.presume>logger.presume.bind(logger);
-
+export = logger;

@@ -32,7 +32,7 @@ interface AIAFXPassInputBlend extends AIUnique {
 	foreignKeys: uint[];
 	textureKeys: uint[];
 
-	renderStates: AIRenderStateMap;
+	renderStates: AIMap<AERenderStateValues>;
 
 	/** readonly */ statesInfo: AIAFXPassInputStateInfo;
 

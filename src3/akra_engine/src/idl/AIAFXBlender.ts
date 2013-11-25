@@ -21,7 +21,7 @@ interface AIAFXBlender {
 
 	//Pass blend
 	
-	generatePassBlend(pPassList: IAFXPassInstruction[],
+	generatePassBlend(pPassList: AIAFXPassInstruction[],
 					  pStates: any, pForeigns: any, pUniforms: any): AIAFXPassBlend;
 
 	getPassBlendById(id: uint): AIAFXPassBlend;

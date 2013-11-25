@@ -15,13 +15,13 @@ interface AIAFXPassBlendMap {
 }
 
 interface AIAFXPassBlend extends AIUnique {
-	initFromPassList(pPassList: IAFXPassInstruction[]): boolean;
+	initFromPassList(pPassList: AIAFXPassInstruction[]): boolean;
 	generateFXMaker(pPassInput: AIAFXPassInputBlend,
 					pSurfaceMaterial: AISurfaceMaterial,
 					pBuffer: AIBufferMap): AIAFXMaker;
 	
 	_hasUniformWithName(sName: string): boolean;
 	_hasUniformWithNameIndex(iNameIndex: uint): boolean;
-	_getRenderStates(): AIRenderStateMap;
+	_getRenderStates(): AIMap<AERenderStateValues>;
 }
 

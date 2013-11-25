@@ -93,6 +93,44 @@ class VertexElement implements AIVertexElement {
         }
         return null;
     }
+
+
+    static custom(sUsage: string, eType: AEDataTypes = AEDataTypes.FLOAT, iCount: uint = 1, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
+        return {
+            count: iCount,
+            type: eType,
+            usage: sUsage,
+            offset: iOffset
+        };
+    }
+
+    static float(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
+        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 1, iOffset);
+    }
+
+    static float2(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
+        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 2, iOffset);
+    }
+
+    static float3(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
+        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 3, iOffset);
+    }
+
+    static float4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
+        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 4, iOffset);
+    }
+
+    static float4x4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
+        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 16, iOffset);
+    }
+
+    static int(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
+        return VertexElement.custom(sUsage, AEDataTypes.INT, 1, iOffset);
+    }
+
+    static end(iOffset: uint = 0): AIVertexElementInterface {
+        return VertexElement.custom(Usage.END, AEDataTypes.UNSIGNED_BYTE, 0, iOffset);
+    }
 }
 
 

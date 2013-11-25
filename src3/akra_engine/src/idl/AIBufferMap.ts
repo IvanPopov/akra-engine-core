@@ -61,7 +61,8 @@ interface AIBufferMap extends AIReferenceCounter, AIEventProvider {
 	 * @param {boolean=} bComplete Find only in completed flows. Default is TRUE.
 	 */
 	getFlow(sSemantics: string, bComplete?: boolean): AIDataFlow;
-	getFlow(iFlow: int, bComplete?: boolean): AIDataFlow;
+    getFlow(iFlow: int, bComplete?: boolean): AIDataFlow;
+    getFlowBySemantic(sSemantics: string): IDataFlow;
 
 	findFlow(sSemantics: string): AIDataFlow;
 

@@ -63,6 +63,8 @@
         return vDst.set(cSrc.r, cSrc.g, cSrc.b, cSrc.a);
     }
 
+    exports.ZERO = new exports.Color(0., 0., 0., 0.);
+
     exports.ALICE_BLUE = new exports.Color("#f0f8ff");
     exports.ANTIQUE_WHITE = new exports.Color("#faebd7");
     exports.AQUA = new exports.Color("#00ffff");

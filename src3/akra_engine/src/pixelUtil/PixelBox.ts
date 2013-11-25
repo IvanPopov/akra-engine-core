@@ -21,8 +21,9 @@ class PixelBox extends Box implements AIPixelBox {
     constructor(iWidth: uint, iHeight: uint, iDepth: uint, ePixelFormat: AEPixelFormats, pPixelData?: any);
     constructor(pExtents: AIBox, ePixelFormat: AEPixelFormats, pPixelData?: Uint8Array);
     constructor(iWidth?: any, iHeight?: any, iDepth?: any, ePixelFormat?: any, pPixelData: Uint8Array = null) {
+        super();
+
         if (arguments.length === 0) {
-            super();
             this.data = null;
             this.format = AEPixelFormats.UNKNOWN;
             this.setConsecutive();
@@ -30,12 +31,12 @@ class PixelBox extends Box implements AIPixelBox {
         }
 
         if (arguments.length >= 4) {
-            super(0, 0, 0, <uint>iWidth, <uint>iHeight, <uint>iDepth);
+            this.set(0, 0, 0, <uint>iWidth, <uint>iHeight, <uint>iDepth);
             this.data = isDef(arguments[4]) ? (<Uint8Array>arguments[4]) : null;
             this.format = <AEPixelFormats>arguments[3];
         }
         else {
-            super(<AIBox>arguments[0]);
+            this.set(<AIBox>arguments[0]);
             this.data = <Uint8Array>arguments[2];
             this.format = <AEPixelFormats>arguments[1];
         }

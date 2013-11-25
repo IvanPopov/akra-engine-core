@@ -314,35 +314,25 @@ class ObjectList<T> implements AIObjectList<T> {
         n = Math.min(n, this._iLength);
         pNew.data = pData;
 
+        pItem = this.find(n - 1);
 
-        if (n == 0) {
-            if (isNull(this._pHead)) {
-                this._pTail = pNew;
-            }
-
-            pNew.next = this._pHead;
+        if (pItem == null) {
             this._pHead = pNew;
         }
         else {
-            pItem = this.find(n - 1);
 
-            if (pItem == null) {
-                this._pHead = pNew;
+            if (pItem.next == null) {
+                this._pTail = pNew;
             }
             else {
-
-                if (pItem.next == null) {
-                    this._pTail = pNew;
-                }
-                else {
-                    pNew.next = pItem.next;
-                    pItem.next.prev = pNew;
-                }
-
-                pItem.next = pNew;
-                pNew.prev = pItem;
+                pNew.next = pItem.next;
+                pItem.next.prev = pNew;
             }
+
+            pItem.next = pNew;
+            pNew.prev = pItem;
         }
+
 
         this._iLength++;
         this._pCurrent = pNew;

@@ -21,8 +21,9 @@ define(["require", "exports", "geometry/Box", "pixelUtil", "logger", "color/Colo
         __extends(PixelBox, _super);
         function PixelBox(iWidth, iHeight, iDepth, ePixelFormat, pPixelData) {
             if (typeof pPixelData === "undefined") { pPixelData = null; }
+            _super.call(this);
+
             if (arguments.length === 0) {
-                _super.call(this);
                 this.data = null;
                 this.format = 0 /* UNKNOWN */;
                 this.setConsecutive();
@@ -30,11 +31,11 @@ define(["require", "exports", "geometry/Box", "pixelUtil", "logger", "color/Colo
             }
 
             if (arguments.length >= 4) {
-                _super.call(this, 0, 0, 0, iWidth, iHeight, iDepth);
+                this.set(0, 0, 0, iWidth, iHeight, iDepth);
                 this.data = isDef(arguments[4]) ? (arguments[4]) : null;
                 this.format = arguments[3];
             } else {
-                _super.call(this, arguments[0]);
+                this.set(arguments[0]);
                 this.data = arguments[2];
                 this.format = arguments[1];
             }

@@ -14,6 +14,33 @@ define(["require", "exports", "logger", "generate"], function(require, exports, 
             this.right = 0;
             this.bottom = 0;
             this.back = 0;
+            this.set.apply(this, arguments);
+        }
+        Object.defineProperty(Box.prototype, "width", {
+            get: function () {
+                return this.right - this.left;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Box.prototype, "height", {
+            get: function () {
+                return this.bottom - this.top;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Box.prototype, "depth", {
+            get: function () {
+                return this.back - this.front;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Box.prototype.set = function () {
             switch (arguments.length) {
                 case 1:
                     this.left = arguments[0].left;
@@ -67,30 +94,9 @@ define(["require", "exports", "logger", "generate"], function(require, exports, 
             }
 
             logger.assert(this.right >= this.left && this.bottom >= this.top && this.back >= this.front);
-        }
-        Object.defineProperty(Box.prototype, "width", {
-            get: /** inline */ function () {
-                return this.right - this.left;
-            },
-            enumerable: true,
-            configurable: true
-        });
 
-        Object.defineProperty(Box.prototype, "height", {
-            get: /** inline */ function () {
-                return this.bottom - this.top;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(Box.prototype, "depth", {
-            get: /** inline */ function () {
-                return this.back - this.front;
-            },
-            enumerable: true,
-            configurable: true
-        });
+            return this;
+        };
 
         Box.prototype.contains = function (pDest) {
             return (pDest.left >= this.left && pDest.top >= this.top && pDest.front >= this.front && pDest.right <= this.right && pDest.bottom <= this.bottom && pDest.back <= this.back);

@@ -1,6 +1,6 @@
 /// <reference path="../../idl/AIPackerFormat.ts" />
-define(["require", "exports", "io/PackerTemplate"], function(require, exports, __PackerTemplate__) {
-    
+define(["require", "exports", "logger", "io/PackerTemplate"], function(require, exports, __logger__, __PackerTemplate__) {
+    var logger = __logger__;
     var PackerTemplate = __PackerTemplate__;
 
     var pCommonTemplate = new PackerTemplate();

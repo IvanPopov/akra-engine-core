@@ -14,15 +14,15 @@ class Box implements AIBox {
     bottom: uint = 0;
     back: uint = 0;
 
-    /** inline */ get width(): uint {
+    get width(): uint {
         return this.right - this.left;
     }
 
-    /** inline */ get height(): uint {
+    get height(): uint {
         return this.bottom - this.top;
     }
 
-    /** inline */ get depth(): uint {
+    get depth(): uint {
         return this.back - this.front;
     }
 
@@ -32,6 +32,15 @@ class Box implements AIBox {
     constructor(iLeft: uint, iTop: uint, iRight: uint, iBottom: uint);
     constructor(iLeft: uint, iTop: uint, iFront: uint, iRight: uint, iBottom: uint, iBack: uint);
     constructor() {
+        this.set.apply(this, arguments);
+    }
+
+    set(): AIBox;
+    set(pExtents: AIBox): AIBox;
+    set(iLeft: uint, iTop: uint, iFront: uint): AIBox;
+    set(iLeft: uint, iTop: uint, iRight: uint, iBottom: uint): AIBox;
+    set(iLeft: uint, iTop: uint, iFront: uint, iRight: uint, iBottom: uint, iBack: uint): AIBox;
+    set(): AIBox {
         switch (arguments.length) {
             case 1:
                 this.left = arguments[0].left;
@@ -85,6 +94,8 @@ class Box implements AIBox {
         }
 
         logger.assert(this.right >= this.left && this.bottom >= this.top && this.back >= this.front);
+
+        return this;
     }
 
     contains(pDest: AIBox): boolean {

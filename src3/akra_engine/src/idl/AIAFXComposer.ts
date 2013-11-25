@@ -4,7 +4,6 @@
 //remove in release version
 /// <reference path="AIParser.ts" />
 
-
 // #define ALL_PASSES 0xffffff
 // #define ANY_PASS 0xfffffa
 // #define ANY_SHIFT 0xfffffb

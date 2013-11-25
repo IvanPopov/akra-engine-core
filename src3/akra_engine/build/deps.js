@@ -1,11 +1,12 @@
 ﻿/// <reference path="idl/AIEngine.ts" />
 /// <reference path="idl/AIDeps.ts" />
-define(["require", "exports", "logger", "path", "uri", "io", "afx", "zip", "info", "config", "conv"], function(require, exports, __logger__, __path__, __uri__, __io__, __afx__, __zip__, __info__, __config__, __conv__) {
+define(["require", "exports", "logger", "path", "uri", "io", "zip", "info", "config", "conv"], function(require, exports, __logger__, __path__, __uri__, __io__, __zip__, __info__, __config__, __conv__) {
     var logger = __logger__;
     var path = __path__;
     var uri = __uri__;
     var io = __io__;
-    var afx = "afx";
+
+    //import fx = require("fx");
     var zip = __zip__;
     var info = __info__;
     var config = __config__;
@@ -224,24 +225,23 @@ define(["require", "exports", "logger", "path", "uri", "io", "afx", "zip", "info
     }
     exports.loadMap = loadMap;
 
-    function loadGrammar(pEngine, pDep, fnLoaded, fnChanged) {
-        var pGrammar = io.fopen(pDep.path, "r");
-
-        pGrammar.read(function (e, sData) {
-            if (!isNull(e)) {
-                fnLoaded(e, null);
-            }
-
-            //WARNING: only for HLSL grammar files.
-            afx.initParser(sData);
-
-            pGrammar.close();
-            updateStatus(pDep, 4 /* LOADED */);
-            fnLoaded(null, pDep);
-        });
-    }
-    exports.loadGrammar = loadGrammar;
-
+    //export function loadGrammar(
+    //    pEngine: AIEngine,
+    //    pDep: AIDep,
+    //    fnLoaded: (e: Error, pDep: AIDep) => void,
+    //    fnChanged: (pDep: AIDep, pProgress: any) => void): void {
+    //    var pGrammar: AIFile = io.fopen(pDep.path, "r");
+    //    pGrammar.read((e: Error, sData: string): void => {
+    //        if (!isNull(e)) {
+    //            fnLoaded(e, null);
+    //        }
+    //        //WARNING: only for HLSL grammar files.
+    //        afx.initParser(sData);
+    //        pGrammar.close();
+    //        updateStatus(pDep, AEDependenceStatuses.LOADED);
+    //        fnLoaded(null, pDep);
+    //    });
+    //}
     function loadFromPool(pPool, pDep, fnLoaded, fnChanged) {
         var sResource = pDep.name || pDep.path;
         var pRes = pPool.findResource(sResource);
@@ -580,9 +580,7 @@ define(["require", "exports", "logger", "path", "uri", "io", "afx", "zip", "info
                     //akra resource archive
                     exports.loadARA(pEngine, pDep, fnLoaded, fnChanged);
                     break;
-                case "gr":
-                    exports.loadGrammar(pEngine, pDep, fnLoaded, fnChanged);
-                    break;
+
                 case "fx":
                 case "afx":
                     exports.loadAFX(pEngine, pDep, fnLoaded, fnChanged);

@@ -28,6 +28,11 @@
 
 // #define CAPABILITYVALUE(category, value) ((category << (32 - 4)) | (1 << value))
 
+enum AERenderers {
+    UNKNOWN, 
+    WEBGL
+}
+
 interface IRendererOptions extends WebGLContextAttributes {
 	canvas?: HTMLCanvasElement;
 }
@@ -238,6 +243,8 @@ enum AEAttachmentTypes {
 // }
 
 interface AIRenderer extends AIEventProvider {
+    /*readonly*/ type: AERenderers;
+
 	getEngine(): AIEngine;
 
 	debug(bValue?: boolean, useApiTrace?: boolean): boolean;

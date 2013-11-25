@@ -1,4 +1,5 @@
 ﻿/// <reference path="idl/AIAjaxParams.ts" />
+/// <reference path="idl/AIRenderer.ts" />
 /// <reference path="idl/common.d.ts" />
 define(["require", "exports", "conv"], function(require, exports, __conv__) {
     var conv = __conv__;
@@ -12,14 +13,21 @@ define(["require", "exports", "conv"], function(require, exports, __conv__) {
 
     //global
     exports.DEBUG = has("DEBUG");
+
+    //path to data folder
     exports.data = "";
+
+    //current version
     exports.version = "0.1.1";
+
+    //default <any> name
     exports.defaultName = "default";
 
-    //material
-    exports.material = {
-        name: exports.defaultName
-    };
+    exports.renderer = 0 /* UNKNOWN */;
+
+    if (has("WEBGL")) {
+        exports.renderer = 1 /* WEBGL */;
+    }
 
     //default ajax parameters
     exports.ajax = {
@@ -75,6 +83,21 @@ define(["require", "exports", "conv"], function(require, exports, __conv__) {
         maxCallbacksCount: -1,
         procListName: "proc_list",
         callsFrequency: -1
+    };
+
+    exports.material = {
+        name: exports.defaultName,
+        default: {
+            diffuse: .5,
+            ambient: .5,
+            specular: .5,
+            emissive: .5,
+            shininess: 50.
+        }
+    };
+
+    exports.fx = {
+        grammar: "grammars/HLSL.gr"
     };
 
     if (!exports.DEBUG) {

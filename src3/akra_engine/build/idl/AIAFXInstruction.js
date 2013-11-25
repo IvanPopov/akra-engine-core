@@ -5,10 +5,6 @@
 /// <reference path="AIUnique.ts" />
 /// <reference path="AIRenderer.ts" />
 /// <reference path="AIMap.ts" />
-/// <reference path="AIRenderStateMap.ts" />
-// #define EPassState AERenderStates
-// #define EPassStateValue AERenderStateValues
-// #define IPassStateMap AIRenderStateMap
 /// <reference path="AIAFXComposer.ts" />
 var AEAFXInstructionTypes;
 (function (AEAFXInstructionTypes) {

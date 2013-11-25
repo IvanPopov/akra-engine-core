@@ -1,9 +1,47 @@
-﻿<div>
-    <link rel="stylesheet" href="tpl/progress.css" />
-    <div class="ae-loader bounceInLeft">
+﻿<style>
+body {
+    background-color: darkgray;
+}
+#test {
+    width: 32px;
+    height: 32px;
+    background: url('refresh.png');
+}
+
+@-webkit-keyframes rotating {
+    from{
+        -webkit-transform: rotate(0deg);
+    }
+    to{
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+.rotating {
+    -webkit-animation: rotating .75s linear infinite;
+}
+
+.ae-loader-logo {
+    float: left; margin-top: 23px; margin-left: 23px; margin-right: 5px;
+
+}
+
+
+.ae-caption {
+    text-shadow: -0.06em 0 red, 0.06em 0 cyan;
+}
+
+
+</style>
+
+<div>
+    <link rel="stylesheet" href="progress.css" />
+    <div class="ae-loader bounceInLeft greenPulse">
+        <img src="logo2.png" class="ae-loader-logo rotating stereo" width="67" height="67">
         <h2 class="ae-caption">{{caption}}</h2>
 
         <div class="ae-progress" style="margin-bottom: 20px;">
+            
             <span class="ae-string">{{process}}:</span>
             <div class="ae-bar">
                 <div class="ae-complete"></div>

@@ -60,6 +60,7 @@ interface Navigator{
      * @readonly
      */
     getGamepads(): Gamepad[];
+    gamepads: Gamepad[];
 
     webkitGetGamepads(): GamepadList;
     

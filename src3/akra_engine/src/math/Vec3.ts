@@ -317,7 +317,7 @@ class Vec3 {
                     this.x = this.y = this.z = arguments[0];
                 }
                 else if (arguments[0] instanceof Vec3) {
-                    var v3fVec: AIVec3 = arguments[0];
+                    var v3fVec: AIVec3 = <AIVec3>arguments[0];
 
                     this.x = v3fVec.x;
                     this.y = v3fVec.y;
@@ -334,7 +334,7 @@ class Vec3 {
             case 2:
                 if (isFloat(arguments[0])) {
                     var fValue: float = arguments[0];
-                    var v2fVec: AIVec2 = arguments[1];
+                    var v2fVec: AIVec2 = <AIVec2>arguments[1];
 
                     this.x = fValue;
                     this.y = v2fVec.x;

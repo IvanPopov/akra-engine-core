@@ -6,9 +6,9 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", "bitflags", "util/Singleton"], function(require, exports, __bf__, __Singleton__) {
+define(["require", "exports", "bitflags"], function(require, exports, __bf__) {
     var bf = __bf__;
-    var Singleton = __Singleton__;
+    
 
     var Logger = (function (_super) {
         __extends(Logger, _super);

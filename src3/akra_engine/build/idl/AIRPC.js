@@ -1,6 +1,6 @@
 // AIRPC interface
-// [write description here...]
 /// <reference path="AIEventProvider.ts" />
+/// <reference path="AIMap.ts" />
 var AERPCPacketTypes;
 (function (AERPCPacketTypes) {
     AERPCPacketTypes[AERPCPacketTypes["FAILURE"] = 0] = "FAILURE";

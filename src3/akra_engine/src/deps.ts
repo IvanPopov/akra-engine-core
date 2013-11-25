@@ -5,7 +5,7 @@ import logger = require("logger");
 import path = require("path");
 import uri = require("uri");
 import io = require("io");
-import afx = require("afx");
+//import fx = require("fx");
 import zip = require("zip");
 import info = require("info");
 import config = require("config");
@@ -231,27 +231,27 @@ export function loadMap(
     });
 }
 
-export function loadGrammar(
-    pEngine: AIEngine,
-    pDep: AIDep,
-    fnLoaded: (e: Error, pDep: AIDep) => void,
-    fnChanged: (pDep: AIDep, pProgress: any) => void): void {
+//export function loadGrammar(
+//    pEngine: AIEngine,
+//    pDep: AIDep,
+//    fnLoaded: (e: Error, pDep: AIDep) => void,
+//    fnChanged: (pDep: AIDep, pProgress: any) => void): void {
 
-    var pGrammar: AIFile = io.fopen(pDep.path, "r");
+//    var pGrammar: AIFile = io.fopen(pDep.path, "r");
 
-    pGrammar.read((e: Error, sData: string): void => {
-        if (!isNull(e)) {
-            fnLoaded(e, null);
-        }
+//    pGrammar.read((e: Error, sData: string): void => {
+//        if (!isNull(e)) {
+//            fnLoaded(e, null);
+//        }
 
-        //WARNING: only for HLSL grammar files.
-        afx.initParser(sData);
+//        //WARNING: only for HLSL grammar files.
+//        afx.initParser(sData);
 
-        pGrammar.close();
-        updateStatus(pDep, AEDependenceStatuses.LOADED);
-        fnLoaded(null, pDep);
-    });
-}
+//        pGrammar.close();
+//        updateStatus(pDep, AEDependenceStatuses.LOADED);
+//        fnLoaded(null, pDep);
+//    });
+//}
 
 function loadFromPool(
     pPool: AIResourcePool,
@@ -642,9 +642,9 @@ export function loadDependences(
                 //akra resource archive
                 loadARA(pEngine, pDep, fnLoaded, fnChanged);
                 break;
-            case "gr":
-                loadGrammar(pEngine, pDep, fnLoaded, fnChanged);
-                break;
+            //case "gr":
+            //    loadGrammar(pEngine, pDep, fnLoaded, fnChanged);
+            //    break;
             case "fx":
             case "afx":
                 loadAFX(pEngine, pDep, fnLoaded, fnChanged);

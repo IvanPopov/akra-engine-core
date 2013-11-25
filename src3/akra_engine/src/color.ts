@@ -60,7 +60,7 @@ export function random(bVarious: boolean = false): AIColor {
     return vDst.set(cSrc.r, cSrc.g, cSrc.b, cSrc.a);
 }
 
-
+export var ZERO: AIColor = new Color(0., 0., 0., 0.);
 
 export var ALICE_BLUE: AIColor = new Color("#f0f8ff");
 export var ANTIQUE_WHITE: AIColor = new Color("#faebd7");

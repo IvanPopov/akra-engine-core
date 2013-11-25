@@ -1,4 +1,5 @@
 ﻿/// <reference path="idl/AIAjaxParams.ts" />
+/// <reference path="idl/AIRenderer.ts" />
 /// <reference path="idl/common.d.ts" />
 
 import conv = require("conv");
@@ -12,14 +13,21 @@ export var unknown = {
 
 //global
 export var DEBUG: boolean = has("DEBUG");
+
+//path to data folder
 export var data = "";
+
+//current version
 export var version = "0.1.1";
+
+//default <any> name
 export var defaultName: string = "default";
 
-//material
-export var material = {
-    name: defaultName
-};
+export var renderer = AERenderers.UNKNOWN;
+
+if (has("WEBGL")) {
+    renderer = AERenderers.WEBGL;
+}
 
 //default ajax parameters
 export var ajax = {
@@ -79,7 +87,20 @@ export var rpc = {
     callsFrequency: -1
 }
 
+export var material = {
+    name: defaultName,
+    default: {
+        diffuse: .5, //any color view can be used, like "#888888" or {r: .5, g: .5, b: .5}
+        ambient: .5,
+        specular: .5,
+        emissive: .5,
+        shininess: 50.
+    }
+}
 
+export var fx = {
+    grammar: "grammars/HLSL.gr"
+}
 
 
 

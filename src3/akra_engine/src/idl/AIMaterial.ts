@@ -20,7 +20,7 @@ interface AIMaterial extends AIMaterialBase {
 }
 
 /** @deprecated */
-interface IFlexMaterial extends AIMaterial {
+interface AIFlexMaterial extends AIMaterial {
 	data: AIVertexData;
 }
 

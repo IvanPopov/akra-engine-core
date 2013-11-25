@@ -1,5 +1,34 @@
 // AIRenderer interface
 // [write description here...]
+/// <reference path="AIEventProvider.ts" />
+/// <reference path="AIRenderQueue.ts" />
+/// <reference path="AIViewportState.ts" />
+/// <reference path="AIAFXComponent.ts" />
+/// <reference path="AIAFXEffect.ts" />
+/// <reference path="AIRenderableObject.ts" />
+/// <reference path="AISceneObject.ts" />
+/// <reference path="AIBufferMap.ts" />
+/// <reference path="AIShaderProgram.ts" />
+/// <reference path="AISurfaceMaterial.ts" />
+/// <reference path="AIVertexData.ts" />
+/// <reference path="AIVertexBuffer.ts" />
+/// <reference path="AITexture.ts" />
+/// <reference path="AIIndexBuffer.ts" />
+/// <reference path="AIRenderResource.ts" />
+/// <reference path="AIRenderEntry.ts" />
+/// <reference path="AIViewport.ts" />
+/// <reference path="AIColor.ts" />
+/// <reference path="AIEngine.ts" />
+/// <reference path="AIRenderTarget.ts" />
+/// <reference path="AICanvas3d.ts" />
+/// <reference path="AIViewportState.ts" />
+// #define CAPABILITYVALUE(category, value) ((category << (32 - 4)) | (1 << value))
+var AERenderers;
+(function (AERenderers) {
+    AERenderers[AERenderers["UNKNOWN"] = 0] = "UNKNOWN";
+    AERenderers[AERenderers["WEBGL"] = 1] = "WEBGL";
+})(AERenderers || (AERenderers = {}));
+
 //API SPECIFIFC CONSTANTS
 var AERenderCapabilitiesCategory;
 (function (AERenderCapabilitiesCategory) {
