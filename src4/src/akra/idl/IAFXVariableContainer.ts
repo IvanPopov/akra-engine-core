@@ -1,0 +1,72 @@
+module akra {
+	enum EAFXShaderVariableType {
+		k_NotVar = 0,
+		
+		k_Texture = 2,
+		
+		k_Float,
+		k_Int,
+		k_Bool,
+	
+		k_Float2,
+		k_Int2,
+		k_Bool2,
+	
+		k_Float3,
+		k_Int3,
+		k_Bool3,
+	
+		k_Float4,
+		k_Int4,
+		k_Bool4,
+	
+		k_Float2x2,
+		k_Float3x3,
+		k_Float4x4,
+	
+		k_Sampler2D,
+		k_SamplerCUBE,
+		k_SamplerVertexTexture,
+	
+		k_CustomSystem,
+		k_Complex
+	}
+	
+	interface IAFXShaderVarTypeMap {
+		//[index: string]: EAFXShaderVariableType;
+		[index: uint]: EAFXShaderVariableType;
+	}
+	
+	interface IAFXVariableInfo {
+		variable: IAFXVariableDeclInstruction;
+		type: EAFXShaderVariableType;
+		name: string;
+		realName: string;
+		isArray: boolean;
+	}
+	
+	interface IAFXVariableContainer {
+		indices: uint[];
+	
+		add(pVar: IAFXVariableDeclInstruction): void;
+		addSystemEntry(sName: string, eType: EAFXShaderVariableType): void;
+	
+		finalize(): void;
+	
+		getVarInfoByIndex(iIndex: uint): IAFXVariableInfo;
+		getVarByIndex(iIndex: uint): IAFXVariableDeclInstruction;
+		getTypeByIndex(iIndex: uint): EAFXShaderVariableType;
+		isArrayVariable(iIndex: uint): boolean;
+	
+		getIndexByName(sName: string): uint;
+		getIndexByRealName(sName: string): uint;
+	
+		hasVariableWithName(sName: string): boolean;
+		hasVariableWithRealName(sName: string): boolean;
+	
+		getVarByName(sName: string): IAFXVariableDeclInstruction;
+		getVarByRealName(sName: string): IAFXVariableDeclInstruction;
+	}
+	
+	
+}

@@ -1,0 +1,7 @@
+
+module akra {
+	interface IAFXSamplerBlender {
+		
+	}
+	
+}

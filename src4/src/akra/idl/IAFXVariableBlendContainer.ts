@@ -1,0 +1,5 @@
+module akra {
+	﻿interface IAFXVariableBlendContainer {
+	
+	}
+}
