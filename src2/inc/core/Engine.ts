@@ -3,6 +3,7 @@
 
 #ifdef DEBUG
 
+///@CORE_ARA: core.map
 
 #else
 
@@ -407,27 +408,16 @@ module akra.core {
 
 		static DEPS_ROOT: string = DATA;
 		static DEPS: IDependens = 
-#ifdef DEBUG
-			{
-				files: [
-					{
-						path: "core.map", 
-					}
-				]
-			}
-#else
 //RELEASE
 //engine core dependences
 			{
 				files: [
 					{
 						path: "@CORE_ARA", 
-						type: "ARA"
+						type: "ARA" 
 					}
 				]
-			}
-#endif
-			;			
+			};			
 
 
 		CREATE_EVENT_TABLE(Engine);

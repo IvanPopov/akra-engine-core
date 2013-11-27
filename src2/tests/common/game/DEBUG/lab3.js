@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Nov 07 2013 20:22:51 GMT+0400 (Московское время (зима))
+ * assembled at: Fri Nov 08 2013 15:45:52 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/lab3.ts
  * name: lab3
@@ -484,28 +484,67 @@ var akra;
                 pModel.notifyLoaded();
                 var pRoot = pModel.attachToScene(pScene);
                 var pRootJoint = pRoot.findEntity("joint0");
+                var pContainer = pRoot.findEntity("joint0[mesh-container]");
+                // pContainer.mesh.getSubset(0).setVisible(false);
                 // console.log(pRootJoint);
                 pRootJoint.explore(function (pJoint) {
+                    if (!akra.scene.isJoint(pJoint)) {
+                        return;
+                    }
                     var b = akra.util.basis(pScene);
                     b.scale(.01);
-                    b.attachToParent(pScene.getRootNode());
                     pJoint.update();
                     // b.setPosition(pJoint.worldPosition);
                     b.setInheritance(akra.ENodeInheritance.ALL);
                     b.attachToParent(pJoint);
                     // console.log(pJoint.worldMatrix.transpose(mat4()).toArray());
                                     });
-                // console.log(pCoordsSrc, pCoordsDst)
                 var pParam = createSpline(pCoordsDst);
+                var pPrev = [];
+                var pNext = [];
+                var pJoints = [];
                 for(var k = 0; k < pCoordsSrc.length; k++) {
                     //параметр на оригинальной кривой, именно его будем сопоставлять с новой кривой
                     var t = k / pCoordsSrc.length;
                     //новый центр координат
                     var s = (pParam.frame(t)).translation;
                     var pJoint = pRoot.findEntity("joint" + k);
+                    var vTrans = pJoint.localMatrix.getTranslation(akra.Vec3.stackCeil.set());
+                    pJoint.localMatrix = akra.Mat4.stackCeil.set(1);
+                    pJoint.setPosition(vTrans);
                     pJoint.update();
-                    pJoint.setWorldPosition(s);
-                }
+                    pJoint.setInheritance(akra.ENodeInheritance.NONE);
+                    pJoint.setPosition(pJoint.worldPosition);
+                    pJoint.update();
+                    pPrev.push(new akra.Vec3(pJoint.worldPosition));
+                    pNext.push(new akra.Vec3(s));
+                    pJoints.push(pJoint);
+                    // (function (joint: ISceneNode, from: IVec3, to: IVec3) {
+                    // 	var i: int = 0;
+                    // 	// pJoint.setPosition(s);
+                    // 	var t = setInterval(function () {
+                    // 		var k = i / 100;
+                    // 		var s = from.scale(1. - k, vec3()).add(to.scale(k, vec3()));
+                    // 		joint.setPosition(s);
+                    // 		i ++;
+                    // 		if (i == 100) {
+                    // 			// clearInterval(t);
+                    // 			i = 0;
+                    // 		}
+                    // 	}, 50);
+                    // }) (pJoint, new Vec3(pJoint.worldPosition), new Vec3(s));
+                                    }
+                (pGUI.add({
+                    "transform": 0.
+                }, "transform")).min(0.).max(1.).step(0.005).onChange(function (k) {
+                    for(var i = 0; i < pJoints.length; ++i) {
+                        var from = pPrev[i];
+                        var to = pNext[i];
+                        var joint = pJoints[i];
+                        var s = from.scale(1. - k, akra.Vec3.stackCeil.set()).add(to.scale(k, akra.Vec3.stackCeil.set()));
+                        joint.setPosition(s);
+                    }
+                });
             }
         });
         var pArteriesModelObj = pRmgr.loadModel(akra.DATA + "models/arteries_hp.obj", {
@@ -638,9 +677,12 @@ var akra;
                 //END OF SKIN
                 var pBoneNames = [];
                 var pBoneOffsetMatrices = [];
+                var nBoneDep = 9;
                 var pWeights = [
-                    1.
+                    1., 
+                    0.
                 ];
+                // var pWeights: float[] = [0.0325, 0.0525, 0.0725, 0.0925, .5, 0.0925, 0.0725, 0.0525, 0.0325];
                 for(var i = 0; i < pCoords.length; ++i) {
                     var id = "joint" + i;
                     var name = "Joint_" + i;
@@ -662,8 +704,10 @@ var akra;
                 for(var i = 0; i < pPositions.length; i += 3) {
                     var v = akra.Vec3.stackCeil.set(pPositions[i], pPositions[i + 1], pPositions[i + 2]);
                     var k = findClosestVertex(pCoords, v);
-                    pVCount.push(1);
-                    pV.push(k, 0);
+                    pVCount.push(nBoneDep);
+                    for(var j = -4; j <= 4; ++j) {
+                        pV.push(akra.math.clamp(k + j * 5, 0, pCoords.length - 1), (akra.math.abs(j) == 0 ? 0 : 1));
+                    }
                 }
                 var pVertexWeightsNode = akra.util.parseHTML("<vertex_weights count=\"" + (pPositions.length / 3) + "\">\n		          		<input semantic=\"JOINT\" source=\"#artery-skin-skin-joints\" offset=\"0\"/>\n		          		<input semantic=\"WEIGHT\" source=\"#artery-skin-skin-weights\" offset=\"1\"/>\n		          	<vcount>" + pVCount.join(" ") + "</vcount><v>" + pV.join(" ") + "</v>").childNodes[0];
                 var pSourceJointsNode = akra.util.parseHTML("<source id=\"artery-skin-skin-joints\"></source>").childNodes[0];
@@ -817,9 +861,9 @@ var akra;
         }
         akra.fopen(akra.DATA + "/models/coord_real_ag.txt", "r").read(/** @inline */function (err, data) {
             var pCoords = parsePoydaFileCurveFromAG(data);
-            pCoordsSrc = pCoords;
-            // visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
-                    });
+            pCoordsDst = pCoords;
+            visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
+        });
         var pRealArtery = pRmgr.loadModel(akra.DATA + "models/tof_multislab_tra_2.obj", {
             shadows: false,
             axis: {
@@ -854,7 +898,7 @@ var akra;
                     pCoords[i].set(v.xyz);
                 }
                 ;
-                pCoordsDst = pCoords;
+                pCoordsSrc = pCoords;
                 // visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
                 pGUI.add({
                     "generate model": /** @inline */function () {

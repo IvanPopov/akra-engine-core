@@ -165,13 +165,19 @@ module akra {
 				pModel.notifyLoaded();
 
 				var pRoot: ISceneNode = pModel.attachToScene(pScene);
-
 				var pRootJoint: ISceneNode = <ISceneNode>pRoot.findEntity("joint0");
+				var pContainer: ISceneModel = <ISceneModel>pRoot.findEntity("joint0[mesh-container]");
+
+				// pContainer.mesh.getSubset(0).setVisible(false);
+
 				// console.log(pRootJoint);
 				pRootJoint.explore((pJoint: ISceneNode) => {
+					if (!scene.isJoint(pJoint)) {
+						return;
+					}
+
 					var b: ISceneModel = util.basis(pScene);
 					b.scale(.01);
-					b.attachToParent(pScene.getRootNode()); 
 					pJoint.update();
 					// b.setPosition(pJoint.worldPosition);
 					b.setInheritance(ENodeInheritance.ALL);
@@ -179,17 +185,64 @@ module akra {
 					// console.log(pJoint.worldMatrix.transpose(mat4()).toArray());
 				});
 
-	    		// console.log(pCoordsSrc, pCoordsDst)
+	    		
 	    		var pParam: IAnimationParameter = createSpline(pCoordsDst);
+	    		
+	    		var pPrev: IVec3[] = [];
+	    		var pNext: IVec3[] = [];
+	    		var pJoints: ISceneNode[] = [];
+
 	    		for (var k: int = 0; k < pCoordsSrc.length; k ++) {
 		    		//параметр на оригинальной кривой, именно его будем сопоставлять с новой кривой
 		    		var t: float = <float>k / <float>pCoordsSrc.length;
 		    		//новый центр координат
 		    		var s: IVec3 = (<IPositionFrame>pParam.frame(t)).translation;
+
+
 		    		var pJoint: ISceneNode = <ISceneNode>pRoot.findEntity("joint" + k);
+		    		var vTrans: IVec3 = pJoint.localMatrix.getTranslation(vec3());
+		    		pJoint.localMatrix = mat4(1);
+		    		pJoint.setPosition(vTrans);
 		    		pJoint.update();
-		    		pJoint.setWorldPosition(s);
+		    		pJoint.setInheritance(ENodeInheritance.NONE);
+		    		pJoint.setPosition(pJoint.worldPosition);
+		    		pJoint.update();
+
+		    		pPrev.push(new Vec3(pJoint.worldPosition));
+		    		pNext.push(new Vec3(s));
+		    		pJoints.push(pJoint);
+
+
+		    		// (function (joint: ISceneNode, from: IVec3, to: IVec3) {
+		    		// 	var i: int = 0;
+			    	// 	// pJoint.setPosition(s);
+
+			    	// 	var t = setInterval(function () {
+			    	// 		var k = i / 100;
+
+			    	// 		var s = from.scale(1. - k, vec3()).add(to.scale(k, vec3()));
+			    	// 		joint.setPosition(s);
+
+			    	// 		i ++;
+
+			    	// 		if (i == 100) {
+			    	// 			// clearInterval(t);
+			    	// 			i = 0;
+			    	// 		}
+
+			    	// 	}, 50);
+		    		// }) (pJoint, new Vec3(pJoint.worldPosition), new Vec3(s));
 	    		}
+
+	    		(<dat.NumberControllerSlider>pGUI.add({"transform": 0.}, "transform")).min(0.).max(1.).step(0.005).onChange(function(k: float) {
+	    			for (var i = 0; i < pJoints.length; ++ i) {
+	    				var from = pPrev[i];
+	    				var to = pNext[i];
+	    				var joint = pJoints[i];
+	    				var s = from.scale(1. - k, vec3()).add(to.scale(k, vec3()));
+			    		joint.setPosition(s);
+	    			}
+	    		});
 			}
 		});
 
@@ -403,7 +456,9 @@ module akra {
 
 				var pBoneNames: string[] = [];
 				var pBoneOffsetMatrices: float[] = [];
-				var pWeights: float[] = [1.];
+				var nBoneDep: uint = 9;
+				var pWeights: float[] = [1., 0.];
+				// var pWeights: float[] = [0.0325, 0.0525, 0.0725, 0.0925, .5, 0.0925, 0.0725, 0.0525, 0.0325];
 
 	    		for (var i = 0; i < pCoords.length; ++ i) {
 	    			var id: string = "joint" + i;
@@ -421,6 +476,7 @@ module akra {
 	    			var pTempJoint: Element = createNode(id, name, sid, "JOINT", pTempNode.localMatrix);
 	    			pRootBone = <Element>pRootBone.appendChild(pTempJoint);
 	    			pBoneNames.push(sid);
+	    			
 	    			pBoneOffsetMatrices = pBoneOffsetMatrices.concat(pTempNode.worldMatrix.inverse(mat4()).transpose().toArray());
 	    		}
 
@@ -433,8 +489,11 @@ module akra {
 		    		var v: IVec3 = vec3(pPositions[i], pPositions[i + 1], pPositions[i + 2]);
 		    		var k: uint = findClosestVertex(pCoords, v);
 
-		    		pVCount.push(1);
-		    		pV.push(k, 0);
+			    	pVCount.push(nBoneDep);
+
+		    		for (var j = -4 ; j <= 4; ++ j) {
+			    		pV.push(math.clamp(k + j * 5, 0, pCoords.length - 1), (math.abs(j) == 0? 0: 1));
+		    		}
 		    	}
 
 		    	var pVertexWeightsNode: Element = <Element>util.parseHTML(
@@ -754,9 +813,9 @@ module akra {
 	    fopen(DATA + "/models/coord_real_ag.txt", "r").read((err, data) => {
 			var pCoords: IVec3[] = parsePoydaFileCurveFromAG(data);
 
-			pCoordsSrc = pCoords;
+			pCoordsDst = pCoords;
 
-			// visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
+			visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
 		});
 
 
@@ -791,7 +850,7 @@ module akra {
 					pCoords[i].set(v.xyz);
 				};
 
-				pCoordsDst = pCoords;
+				pCoordsSrc = pCoords;
 				// visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
 
 				pGUI.add({"generate model": () => {
