@@ -1,0 +1,540 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{4F74CBF1-908A-4356-83ED-F55D4991E712}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="default.htm" />
+    <Content Include="src\idl\AEFileTransferModes.ts" />
+    <Content Include="src\idl\3d-party\FileSaver.d.ts" />
+    <Content Include="src\idl\AIFileDropArea.ts" />
+    <None Include="src\io\FileInterface.t.ts" />
+    <Content Include="src\idl\AEIO.ts" />
+    <None Include="src\io\LocalFile.t.ts" />
+    <Content Include="src\idl\AIState.ts" />
+    <Content Include="src\io\PackerTemplate.ts" />
+    <None Include="src\io\RemoteFile.t.ts" />
+    <Content Include="src\net\server\ConnectionWrapper.js" />
+    <Content Include="src\net\server\core.js" />
+    <Content Include="src\net\server\lib\getMegaTexture.js" />
+    <Content Include="src\net\server\lib\getMegaTextureColored.js" />
+    <Content Include="src\net\server\lib\getMegaTextureNative.js" />
+    <Content Include="src\net\server\lib\loadMegaTexture.js" />
+    <Content Include="src\net\server\lib\todo.js" />
+    <Content Include="src\net\server\lib\trace.js" />
+    <Content Include="src\net\server\procedurer.js" />
+    <Content Include="src\net\server\readme.txt" />
+    <Content Include="src\idl\AIItem.ts" />
+    <TypeScriptCompile Include="src\fx.ts" />
+    <TypeScriptCompile Include="src\fx\AnnotationInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ArithmeticExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\AssignmentExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\AttributeBlendContainer.ts" />
+    <TypeScriptCompile Include="src\fx\Blender.ts" />
+    <TypeScriptCompile Include="src\fx\BoolInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\BreakStmtInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\CastExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\CompileExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ComplexExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ComplexTypeBlendContainer.ts" />
+    <TypeScriptCompile Include="src\fx\ComplexTypeInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ComponentBlend.ts" />
+    <TypeScriptCompile Include="src\fx\ComponentPassInputBlend.ts" />
+    <TypeScriptCompile Include="src\fx\Composer.ts" />
+    <TypeScriptCompile Include="src\fx\ConditionalExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ConstructorCallInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\DeclInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\DeclStmtInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\Effect.ts" />
+    <TypeScriptCompile Include="src\fx\errors.ts" />
+    <TypeScriptCompile Include="src\fx\ExtractExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\FloatInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\FunctionCallInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\IdExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\InitExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\IntInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\LogicalExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\MemExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\PassInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\PostfixArithmeticInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\PostfixIndexInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\PostfixPointInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\PrimaryExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ProgramScope.ts" />
+    <TypeScriptCompile Include="src\fx\ExprTemplateTranslator.ts" />
+    <TypeScriptCompile Include="src\fx\ExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ExprStmtInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ExtractStmtInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ExtSystemDataContainer.ts" />
+    <TypeScriptCompile Include="src\fx\ForStmtInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\FunctionDefInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\FunctionInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\IdInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\IfStmtInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\Instruction.ts" />
+    <TypeScriptCompile Include="src\fx\InstructionCollector.ts" />
+    <TypeScriptCompile Include="src\fx\KeywordInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\Maker.ts" />
+    <TypeScriptCompile Include="src\fx\PassBlend.ts" />
+    <TypeScriptCompile Include="src\fx\PassInputBlend.ts" />
+    <TypeScriptCompile Include="src\fx\RelationalExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\ReturnStmtInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\SamplerBlender.ts" />
+    <TypeScriptCompile Include="src\fx\SamplerStateBlockInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\SemicolonStmtInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\SimpleInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\StmtBlockInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\StmtInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\StringInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\SystemCallInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\SystemFunctionInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\SystemTypeInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\TechniqueInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\TexcoordSwapper.ts" />
+    <TypeScriptCompile Include="src\fx\TypedInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\TypeInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\UnaryExprInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\VariableBlendContainer.ts" />
+    <TypeScriptCompile Include="src\fx\VariableContainer.ts" />
+    <TypeScriptCompile Include="src\fx\VariableInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\VariableTypeInstruction.ts" />
+    <TypeScriptCompile Include="src\fx\WhileStmtInstruction.ts" />
+    <Content Include="src\idl\AEEffectErrors.ts" />
+    <TypeScriptCompile Include="src\idl\AIEffectErrorInfo.ts" />
+    <Content Include="src\idl\AIScope.ts" />
+    <TypeScriptCompile Include="src\parser\Item.ts" />
+    <TypeScriptCompile Include="src\parser\State.ts" />
+    <Content Include="src\progress\tpl\progress-bar.html" />
+    <Content Include="src\progress\tpl\progress.css" />
+    <Content Include="src\progress\tpl\progress.min.css">
+      <DependentUpon>progress.css</DependentUpon>
+    </Content>
+    <Content Include="web.config" />
+    <TypeScriptCompile Include="src\control.ts" />
+    <TypeScriptCompile Include="src\control\GamepadMap.ts" />
+    <TypeScriptCompile Include="src\control\KeyMap.ts" />
+    <TypeScriptCompile Include="src\debug.ts" />
+    <TypeScriptCompile Include="src\material.ts" />
+    <TypeScriptCompile Include="src\material\FlexMaterial.ts" />
+    <TypeScriptCompile Include="src\material\Material.ts" />
+    <TypeScriptCompile Include="src\net.ts" />
+    <TypeScriptCompile Include="src\net\Pipe.ts" />
+    <TypeScriptCompile Include="src\net\RPC.ts" />
+    <TypeScriptCompile Include="src\parser.ts" />
+    <TypeScriptCompile Include="src\parser\Lexer.ts" />
+    <TypeScriptCompile Include="src\parser\Parser2.ts" />
+    <TypeScriptCompile Include="src\parser\ParseTree.ts" />
+    <TypeScriptCompile Include="src\parser\symbols.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\Codec.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\CodecData.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\DDSCodec.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\ImgCodec.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\ImgData.ts" />
+    <TypeScriptCompile Include="src\pixelUtil\PixelBox.ts" />
+    <TypeScriptCompile Include="src\progress\progress.ts" />
+    <TypeScriptCompile Include="src\render.ts" />
+    <TypeScriptCompile Include="src\stringUtils\StringDictionary.ts" />
+    <TypeScriptCompile Include="src\stringUtils\StringMinifier.ts" />
+    <TypeScriptCompile Include="src\util\HashTree.ts" />
+    <TypeScriptCompile Include="src\util\ObjectSortCollection.ts" />
+    <TypeScriptCompile Include="src\zip.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="src\akra.ts" />
+    <TypeScriptCompile Include="src\color.ts" />
+    <TypeScriptCompile Include="src\color\Color.ts" />
+    <TypeScriptCompile Include="src\config.ts" />
+    <TypeScriptCompile Include="src\common.ts" />
+    <TypeScriptCompile Include="src\core.ts" />
+    <Content Include="src\idl\AEDataTypes.ts" />
+    <Content Include="src\idl\AEPixelFormats.ts" />
+    <Content Include="src\idl\AEPrimitiveTypes.ts" />
+    <Content Include="src\idl\AIAFXBlender.ts" />
+    <Content Include="src\idl\AIAFXComponent.ts" />
+    <Content Include="src\idl\AIAFXComponentBlend.ts" />
+    <Content Include="src\idl\AIAFXComposer.ts" />
+    <Content Include="src\idl\AIAFXEffect.ts" />
+    <Content Include="src\idl\AIAFXInstruction.ts" />
+    <Content Include="src\idl\AIAFXMaker.ts" />
+    <Content Include="src\idl\AIAFXPassBlend.ts" />
+    <Content Include="src\idl\AIAFXPassInputBlend.ts" />
+    <Content Include="src\idl\AIAFXPreRenderState.ts" />
+    <Content Include="src\idl\AIAFXSamplerBlender.ts" />
+    <Content Include="src\idl\AIAFXSamplerState.ts" />
+    <Content Include="src\idl\AIAFXVariableContainer.ts" />
+    <Content Include="src\idl\AIAjaxParams.ts" />
+    <Content Include="src\idl\AIAnimation.ts" />
+    <Content Include="src\idl\AIAnimationBase.ts" />
+    <Content Include="src\idl\AIAnimationBlend.ts" />
+    <Content Include="src\idl\AIAnimationContainer.ts" />
+    <Content Include="src\idl\AIAnimationController.ts" />
+    <Content Include="src\idl\AIAnimationParameter.ts" />
+    <Content Include="src\idl\AIAnimationTrack.ts" />
+    <Content Include="src\idl\AIApiInfo.ts" />
+    <Content Include="src\idl\AIBinReader.ts" />
+    <Content Include="src\idl\AIBinWriter.ts" />
+    <Content Include="src\idl\AIBox.ts" />
+    <Content Include="src\idl\AIBrowserInfo.ts" />
+    <Content Include="src\idl\AIBuffer.ts" />
+    <Content Include="src\idl\AIBufferData.ts" />
+    <Content Include="src\idl\AIBufferDataModifier.ts" />
+    <Content Include="src\idl\AIBufferMap.ts" />
+    <Content Include="src\idl\AICamera.ts" />
+    <Content Include="src\idl\AICanvas.ts" />
+    <Content Include="src\idl\AICanvas2d.ts" />
+    <Content Include="src\idl\AICanvas3d.ts" />
+    <Content Include="src\idl\AICanvasInfo.ts" />
+    <Content Include="src\idl\AICircle.ts" />
+    <Content Include="src\idl\AIClickable.ts" />
+    <Content Include="src\idl\AICodec.ts" />
+    <Content Include="src\idl\AICollada.ts" />
+    <Content Include="src\idl\AIColor.ts" />
+    <Content Include="src\idl\AIColorValue.ts" />
+    <Content Include="src\idl\AIConverter.ts" />
+    <Content Include="src\idl\AIDataPool.ts" />
+    <Content Include="src\idl\AIDataURI.ts" />
+    <Content Include="src\idl\AIDDSCodec.ts" />
+    <Content Include="src\idl\AIDeps.ts" />
+    <Content Include="src\idl\AIDepthBuffer.ts" />
+    <Content Include="src\idl\AIDeviceInfo.ts" />
+    <Content Include="src\idl\AIDisplayList.ts" />
+    <Content Include="src\idl\AIDocument.ts" />
+    <Content Include="src\idl\AIDSViewport.ts" />
+    <Content Include="src\idl\AIEffect.ts" />
+    <Content Include="src\idl\AIEngine.ts" />
+    <Content Include="src\idl\AIEntity.ts" />
+    <Content Include="src\idl\AIEventProvider.ts" />
+    <Content Include="src\idl\AIEventTable.ts" />
+    <Content Include="src\idl\AIExplorerFunc.ts" />
+    <Content Include="src\idl\AIFile.ts" />
+    <Content Include="src\idl\AIFont2d.ts" />
+    <Content Include="src\idl\AIFrame.ts" />
+    <Content Include="src\idl\AIFrameStats.ts" />
+    <Content Include="src\idl\AIFrustum.ts" />
+    <Content Include="src\idl\AIGamepadMap.ts" />
+    <Content Include="src\idl\AIHardwareBuffer.ts" />
+    <Content Include="src\idl\AIImg.ts" />
+    <Content Include="src\idl\AIImgCodec.ts" />
+    <Content Include="src\idl\AIIndexBuffer.ts" />
+    <Content Include="src\idl\AIIndexData.ts" />
+    <Content Include="src\idl\AIJoint.ts" />
+    <Content Include="src\idl\AIKeyMap.ts" />
+    <Content Include="src\idl\AILightGraph.ts" />
+    <Content Include="src\idl\AILightPoint.ts" />
+    <Content Include="src\idl\AILogger.ts" />
+    <Content Include="src\idl\AIManager.ts" />
+    <Content Include="src\idl\AIMap.ts" />
+    <Content Include="src\idl\AIMat3.ts" />
+    <Content Include="src\idl\AIMat4.ts" />
+    <Content Include="src\idl\AIMaterial.ts" />
+    <Content Include="src\idl\AIMegaTexture.ts" />
+    <Content Include="src\idl\AIMesh.ts" />
+    <Content Include="src\idl\AIMeshSubset.ts" />
+    <Content Include="src\idl\AIModel.ts" />
+    <Content Include="src\idl\AIModelEntry.ts" />
+    <Content Include="src\idl\AIMultiRenderTarget.ts" />
+    <Content Include="src\idl\AINode.ts" />
+    <Content Include="src\idl\AIObj.ts" />
+    <Content Include="src\idl\AIObjectArray.ts" />
+    <Content Include="src\idl\AIObjectList.ts" />
+    <Content Include="src\idl\AIObjectSortCollection.ts" />
+    <Content Include="src\idl\AIOcTree.ts" />
+    <Content Include="src\idl\AIOcTreeNode.ts" />
+    <Content Include="src\idl\AIOcTreeRect.ts" />
+    <Content Include="src\idl\AIOffset.ts" />
+    <Content Include="src\idl\AIOmniLight.ts" />
+    <Content Include="src\idl\AIPacker.ts" />
+    <Content Include="src\idl\AIPackerFormat.ts" />
+    <Content Include="src\idl\AIParser.ts" />
+    <Content Include="src\idl\AIParticleManager.ts" />
+    <Content Include="src\idl\AIPathinfo.ts" />
+    <Content Include="src\idl\AIPipe.ts" />
+    <Content Include="src\idl\AIPixelBox.ts" />
+    <Content Include="src\idl\AIPixelBuffer.ts" />
+    <Content Include="src\idl\AIPlane2d.ts" />
+    <Content Include="src\idl\AIPlane3d.ts" />
+    <Content Include="src\idl\AIPoint.ts" />
+    <Content Include="src\idl\AIPositionFrame.ts" />
+    <Content Include="src\idl\AIProgress.ts" />
+    <Content Include="src\idl\AIProjectLight.ts" />
+    <Content Include="src\idl\AIQuat4.ts" />
+    <Content Include="src\idl\AIRay2d.ts" />
+    <Content Include="src\idl\AIRay3d.ts" />
+    <Content Include="src\idl\AIRect2d.ts" />
+    <Content Include="src\idl\AIRect3d.ts" />
+    <Content Include="src\idl\AIReferenceCounter.ts" />
+    <Content Include="src\idl\AIRenderableObject.ts" />
+    <Content Include="src\idl\AIRenderData.ts" />
+    <Content Include="src\idl\AIRenderDataCollection.ts" />
+    <Content Include="src\idl\AIRenderEntry.ts" />
+    <Content Include="src\idl\AIRenderer.ts" />
+    <Content Include="src\idl\AIRenderMethod.ts" />
+    <Content Include="src\idl\AIRenderPass.ts" />
+    <Content Include="src\idl\AIRenderQueue.ts" />
+    <Content Include="src\idl\AIRenderResource.ts" />
+    <Content Include="src\idl\AIRenderState.ts" />
+    <Content Include="src\idl\AIRenderTarget.ts" />
+    <Content Include="src\idl\AIRenderTechnique.ts" />
+    <Content Include="src\idl\AIRenderTexture.ts" />
+    <Content Include="src\idl\AIResourceCode.ts" />
+    <Content Include="src\idl\AIResourceNotifyRoutineFunc.ts" />
+    <Content Include="src\idl\AIResourcePool.ts" />
+    <Content Include="src\idl\AIResourcePoolItem.ts" />
+    <Content Include="src\idl\AIResourcePoolManager.ts" />
+    <Content Include="src\idl\AIResourceWatcherFunc.ts" />
+    <Content Include="src\idl\AIRID.ts" />
+    <Content Include="src\idl\AIRPC.ts" />
+    <Content Include="src\idl\AIScene.ts" />
+    <Content Include="src\idl\AIScene2d.ts" />
+    <Content Include="src\idl\AIScene3d.ts" />
+    <Content Include="src\idl\AISceneManager.ts" />
+    <Content Include="src\idl\AISceneModel.ts" />
+    <Content Include="src\idl\AISceneNode.ts" />
+    <Content Include="src\idl\AISceneObject.ts" />
+    <Content Include="src\idl\AISceneTree.ts" />
+    <Content Include="src\idl\AIScreenInfo.ts" />
+    <Content Include="src\idl\AISegment2d.ts" />
+    <Content Include="src\idl\AISegment3d.ts" />
+    <Content Include="src\idl\AISequenceRenderTarget.ts" />
+    <Content Include="src\idl\AIShaderInput.ts" />
+    <Content Include="src\idl\AIShaderProgram.ts" />
+    <Content Include="src\idl\AIShadowCaster.ts" />
+    <Content Include="src\idl\AISkeleton.ts" />
+    <Content Include="src\idl\AISkin.ts" />
+    <Content Include="src\idl\AISphere.ts" />
+    <Content Include="src\idl\AISprite.ts" />
+    <Content Include="src\idl\AISpriteManager.ts" />
+    <Content Include="src\idl\AIStringDictionary.ts" />
+    <Content Include="src\idl\AISunLight.ts" />
+    <Content Include="src\idl\AISurfaceMaterial.ts" />
+    <Content Include="src\idl\AITerrain.ts" />
+    <Content Include="src\idl\AITerrainROAM.ts" />
+    <Content Include="src\idl\AITerrainSection.ts" />
+    <Content Include="src\idl\AITerrainSectionROAM.ts" />
+    <Content Include="src\idl\AITexture.ts" />
+    <Content Include="src\idl\AIThread.ts" />
+    <Content Include="src\idl\AIThreadManager.ts" />
+    <Content Include="src\idl\AITriTreeNode.ts" />
+    <Content Include="src\idl\AIUI.ts" />
+    <Content Include="src\idl\AIUIAnimationBlender.ts" />
+    <Content Include="src\idl\AIUIAnimationControls.ts" />
+    <Content Include="src\idl\AIUIAnimationData.ts" />
+    <Content Include="src\idl\AIUIAnimationGraph.ts" />
+    <Content Include="src\idl\AIUIAnimationMask.ts" />
+    <Content Include="src\idl\AIUIAnimationNode.ts" />
+    <Content Include="src\idl\AIUIAnimationPlayer.ts" />
+    <Content Include="src\idl\AIUIButton.ts" />
+    <Content Include="src\idl\AIUICheckbox.ts" />
+    <Content Include="src\idl\AIUICheckboxList.ts" />
+    <Content Include="src\idl\AIUICodeEditor.ts" />
+    <Content Include="src\idl\AIUIComponent.ts" />
+    <Content Include="src\idl\AIUIDNDNode.ts" />
+    <Content Include="src\idl\AIUIGraph.ts" />
+    <Content Include="src\idl\AIUIGraphConnectionArea.ts" />
+    <Content Include="src\idl\AIUIGraphConnector.ts" />
+    <Content Include="src\idl\AIUIGraphControls.ts" />
+    <Content Include="src\idl\AIUIGraphNode.ts" />
+    <Content Include="src\idl\AIUIGraphRoute.ts" />
+    <Content Include="src\idl\AIUIHTMLNode.ts" />
+    <Content Include="src\idl\AIUIIDE.ts" />
+    <Content Include="src\idl\AIUILabel.ts" />
+    <Content Include="src\idl\AIUILayout.ts" />
+    <Content Include="src\idl\AIUIList.ts" />
+    <Content Include="src\idl\AIUIListenerEditor.ts" />
+    <Content Include="src\idl\AIUINode.ts" />
+    <Content Include="src\idl\AIUIPanel.ts" />
+    <Content Include="src\idl\AIUIPopup.ts" />
+    <Content Include="src\idl\AIUIRenderTargetStats.ts" />
+    <Content Include="src\idl\AIUISlider.ts" />
+    <Content Include="src\idl\AIUISwitch.ts" />
+    <Content Include="src\idl\AIUITabs.ts" />
+    <Content Include="src\idl\AIUITree.ts" />
+    <Content Include="src\idl\AIUITreeNode.ts" />
+    <Content Include="src\idl\AIUIVector.ts" />
+    <Content Include="src\idl\AIUIWindow.ts" />
+    <Content Include="src\idl\AIUnique.ts" />
+    <Content Include="src\idl\AIUnPacker.ts" />
+    <Content Include="src\idl\AIURI.ts" />
+    <Content Include="src\idl\AIUtilTimer.ts" />
+    <Content Include="src\idl\AIVec2.ts" />
+    <Content Include="src\idl\AIVec3.ts" />
+    <Content Include="src\idl\AIVec4.ts" />
+    <Content Include="src\idl\AIVertexBuffer.ts" />
+    <Content Include="src\idl\AIVertexData.ts" />
+    <Content Include="src\idl\AIVertexDeclaration.ts" />
+    <Content Include="src\idl\AIVertexElement.ts" />
+    <Content Include="src\idl\AIViewport.ts" />
+    <Content Include="src\idl\AIViewportState.ts" />
+    <Content Include="src\idl\AIWorldExtents.ts" />
+    <Content Include="src\idl\AERenderStates.ts" />
+    <Content Include="src\idl\AERenderStateValues.ts" />
+    <Content Include="src\idl\3d-party\has.d.ts" />
+    <Content Include="src\idl\3d-party\jquery.d.ts" />
+    <Content Include="src\idl\3d-party\jqueryui.d.ts" />
+    <Content Include="src\idl\3d-party\webgl.d.ts" />
+    <Content Include="src\idl\3d-party\zip.d.ts" />
+    <TypeScriptCompile Include="src\data\IndexData.ts" />
+    <TypeScriptCompile Include="src\data\Usage.ts" />
+    <TypeScriptCompile Include="src\data\VertexData.ts" />
+    <TypeScriptCompile Include="src\data\VertexDeclaration.ts" />
+    <TypeScriptCompile Include="src\data\VertexElement.ts" />
+    <TypeScriptCompile Include="src\deps.ts" />
+    <TypeScriptCompile Include="src\generate.ts" />
+    <TypeScriptCompile Include="src\geometry.ts" />
+    <TypeScriptCompile Include="src\geometry\Box.ts" />
+    <TypeScriptCompile Include="src\geometry\Circle.ts" />
+    <TypeScriptCompile Include="src\classify.ts" />
+    <TypeScriptCompile Include="src\geometry\Frustum.ts" />
+    <Content Include="src\idl\common.d.ts" />
+    <Content Include="src\idl\fixes.d.ts" />
+    <TypeScriptCompile Include="src\info.ts" />
+    <TypeScriptCompile Include="src\info\ScreenInfo.ts" />
+    <TypeScriptCompile Include="src\intersect.ts" />
+    <TypeScriptCompile Include="src\geometry\Plane2d.ts" />
+    <TypeScriptCompile Include="src\geometry\Plane3d.ts" />
+    <TypeScriptCompile Include="src\geometry\Ray2d.ts" />
+    <TypeScriptCompile Include="src\geometry\Ray3d.ts" />
+    <TypeScriptCompile Include="src\geometry\Rect2d.ts" />
+    <TypeScriptCompile Include="src\geometry\Rect3d.ts" />
+    <TypeScriptCompile Include="src\geometry\Segment2d.ts" />
+    <TypeScriptCompile Include="src\geometry\Segment3d.ts" />
+    <TypeScriptCompile Include="src\geometry\Sphere.ts" />
+    <Content Include="src\idl\3d-party\gamepad.d.ts" />
+    <Content Include="src\idl\AIPair.ts" />
+    <Content Include="src\idl\AIAFXVariableBlendContainer.ts" />
+    <Content Include="src\idl\AIAFXAttributeBlendContainer.ts" />
+    <Content Include="src\idl\AEVolumeClassifications.ts" />
+    <Content Include="src\idl\AEPlaneClassifications.ts" />
+    <TypeScriptCompile Include="src\ajax.ts" />
+    <TypeScriptCompile Include="src\export\BinExporter.ts" />
+    <TypeScriptCompile Include="src\io\BinReader.ts" />
+    <TypeScriptCompile Include="src\io\BinWriter.ts" />
+    <TypeScriptCompile Include="src\export\Exporter.ts" />
+    <TypeScriptCompile Include="src\filedrop.ts" />
+    <TypeScriptCompile Include="src\io.ts" />
+    <TypeScriptCompile Include="src\import\Importer.ts" />
+    <TypeScriptCompile Include="src\io\LocalFile.ts" />
+    <TypeScriptCompile Include="src\io\Packer.ts" />
+    <TypeScriptCompile Include="src\io\templates\common.ts" />
+    <TypeScriptCompile Include="src\save.ts" />
+    <TypeScriptCompile Include="src\io\StorageFile.ts" />
+    <TypeScriptCompile Include="src\io\TFile.ts" />
+    <TypeScriptCompile Include="src\io\UnPacker.ts" />
+    <TypeScriptCompile Include="src\logger\Logger.ts" />
+    <TypeScriptCompile Include="src\math.ts" />
+    <Content Include="src\math\Mat3.ts" />
+    <Content Include="src\math\Mat4.ts" />
+    <Content Include="src\math\Quat4.ts" />
+    <Content Include="src\math\Vec2.ts" />
+    <Content Include="src\math\Vec3.ts" />
+    <Content Include="src\math\Vec4.ts" />
+    <TypeScriptCompile Include="src\path.ts" />
+    <TypeScriptCompile Include="src\pixelUtil.ts" />
+    <TypeScriptCompile Include="src\sid.ts" />
+    <TypeScriptCompile Include="src\threading.ts" />
+    <TypeScriptCompile Include="src\time.ts" />
+    <TypeScriptCompile Include="src\type.ts" />
+    <TypeScriptCompile Include="src\uri.ts" />
+    <TypeScriptCompile Include="src\info\ApiInfo.ts" />
+    <TypeScriptCompile Include="src\bitflags.ts" />
+    <TypeScriptCompile Include="src\info\BrowserInfo.ts" />
+    <TypeScriptCompile Include="src\dataType.ts" />
+    <TypeScriptCompile Include="src\limit.ts" />
+    <TypeScriptCompile Include="src\conv.ts" />
+    <TypeScriptCompile Include="src\logger.ts" />
+    <TypeScriptCompile Include="src\mem.ts" />
+    <TypeScriptCompile Include="src\util\Entity.ts" />
+    <TypeScriptCompile Include="src\util\ObjectArray.ts" />
+    <TypeScriptCompile Include="src\util\ObjectList.ts" />
+    <TypeScriptCompile Include="src\util\ReferenceCounter.ts" />
+    <TypeScriptCompile Include="src\util\Singleton.ts" />
+    <TypeScriptCompile Include="src\sort.ts" />
+    <TypeScriptCompile Include="src\threading\ThreadManager.ts" />
+    <TypeScriptCompile Include="src\util\Timer.ts" />
+    <TypeScriptCompile Include="src\webgl.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\core\" />
+    <Folder Include="src\resources\" />
+    <Folder Include="src\sort\" />
+    <Folder Include="src\webgl\" />
+  </ItemGroup>
+  <ItemGroup />
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>akra_engine</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>akra_engine</AssemblyName>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:56632/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <Optimize>true</Optimize>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TypeScriptOutDir>./build</TypeScriptOutDir>
+    <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <TypeScriptOutDir>./build</TypeScriptOutDir>
+    <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+</Project>

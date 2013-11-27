@@ -1,0 +1,1 @@
+{"version":3,"file":"control.js","sourceRoot":"","sources":["../src/control.ts"],"names":["createGamepadMap","createKeymap"],"mappings":"AAAA;IAAA,iBAA4B,cAAoB;IAChD,aAAwB,UAAgB;;IAExC,SAAgB,gBAAgB;QAC5BA,OAAOA,IAAIA,UAAUA,EAAAA,CAACA;IAC1BA,CAACA;IAFD,4CAEC;;IAID,SAAgB,YAAY,CAAC,MAAY;QACxCC,OAAOA,IAAIA,MAAMA,CAACA,MAAMA,CAACA,CAACA;IAC3BA,CAACA;IAFD,oCAEC;GAAA"}

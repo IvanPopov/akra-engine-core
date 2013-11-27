@@ -1,0 +1,54 @@
+22197d22196
+<                     case TypeScript.SyntaxKind.ProtectedKeyword:
+22289c22288
+<                 return token.tokenKind === TypeScript.SyntaxKind.ProtectedKeyword || token.tokenKind === TypeScript.SyntaxKind.PublicKeyword || token.tokenKind === TypeScript.SyntaxKind.PrivateKeyword;
+---
+>                 return token.tokenKind === TypeScript.SyntaxKind.PublicKeyword || token.tokenKind === TypeScript.SyntaxKind.PrivateKeyword;
+22749d22747
+<                     case TypeScript.SyntaxKind.ProtectedKeyword:
+25738c25736
+<                 if (modifier.tokenKind === TypeScript.SyntaxKind.ProtectedKeyword || modifier.tokenKind === TypeScript.SyntaxKind.PublicKeyword || modifier.tokenKind === TypeScript.SyntaxKind.PrivateKeyword) {
+---
+>                 if (modifier.tokenKind === TypeScript.SyntaxKind.PublicKeyword || modifier.tokenKind === TypeScript.SyntaxKind.PrivateKeyword) {
+25946c25944
+<                 if (modifier.tokenKind === TypeScript.SyntaxKind.ProtectedKeyword || modifier.tokenKind === TypeScript.SyntaxKind.PublicKeyword || modifier.tokenKind === TypeScript.SyntaxKind.PrivateKeyword || modifier.tokenKind === TypeScript.SyntaxKind.StaticKeyword) {
+---
+>                 if (modifier.tokenKind === TypeScript.SyntaxKind.PublicKeyword || modifier.tokenKind === TypeScript.SyntaxKind.PrivateKeyword || modifier.tokenKind === TypeScript.SyntaxKind.StaticKeyword) {
+26804d26801
+<         DeclFlags[DeclFlags["Protected"] = 1 << 5] = "Protected";
+26815d26811
+<         ModuleFlags[ModuleFlags["Protected"] = 1 << 10] = "Protected";
+26829d26824
+<         VariableFlags[VariableFlags["Protected"] = 1 << 15] = "Protected";
+26844d26838
+<         FunctionFlags[FunctionFlags["Protected"] = 1 << 15] = "Protected";
+32994c32988
+<                 } else if (TypeScript.hasFlag(declFlags, TypeScript.DeclFlags.Public) || TypeScript.hasFlag(declFlags, TypeScript.DeclFlags.Protected)) {
+---
+>                 } else if (TypeScript.hasFlag(declFlags, TypeScript.DeclFlags.Public)) {
+33898d33891
+<         PullElementFlags[PullElementFlags["Protected"] = 1 << 25] = "Protected";
+51544c51537
+<                 if (node.publicOrPrivateKeyword.kind() === TypeScript.SyntaxKind.PublicKeyword || node.publicOrPrivateKeyword.kind() === TypeScript.SyntaxKind.ProtectedKeyword) {
+---
+>                 if (node.publicOrPrivateKeyword.kind() === TypeScript.SyntaxKind.PublicKeyword) {
+58085d58077
+<                     case TypeScript.SyntaxKind.ProtectedKeyword:
+58215d58206
+<             "protected",
+59593,59595d59583
+<             if (symbol.hasFlag(TypeScript.PullElementFlags.Protected)) {
+<                 result.push(Services.ScriptElementKindModifier.publicMemberModifier);
+<             }
+59621,59624d59608
+<             if (flags & TypeScript.PullElementFlags.Protected) {
+<                 result.push(Services.ScriptElementKindModifier.protectedMemberModifier);
+<             }
+< 
+61776,61779d61759
+<             if (TypeScript.SyntaxUtilities.containsToken(modifiers, TypeScript.SyntaxKind.ProtectedKeyword)) {
+<                 result.push(Services.ScriptElementKindModifier.publicMemberModifier);
+<             }
+< 
+62642d62621
+<         ScriptElementKindModifier.protectedMemberModifier = "protected";

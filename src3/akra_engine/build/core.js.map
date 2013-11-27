@@ -1,0 +1,1 @@
+{"version":3,"file":"core.js","sourceRoot":"","sources":["../src/core.ts"],"names":["Engine","Engine.constructor","Engine.renderFrame"],"mappings":"AAAA,wCAAwC;AAAxC;IAEA;QAAAA;;AAICA,QAHGA,+BAAAA;QAEAE,CAACA;QACLF;AAACA,IAADA,CAACA,IAAA;IAJD,wBAIC;GAAA"}
