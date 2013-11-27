@@ -1,36 +1,37 @@
-import ExprInstruction = require("fx/ExprInstruction");
+/// <reference path="ExprInstruction.ts" />
 
-/**
- * Represent (type) expr
- * EMPTY_OPERATOR VariableTypeInstruction Instruction
- */
-class CastExprInstruction extends ExprInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = [null, null];
-        this._eInstructionType = AEAFXInstructionTypes.k_CastExprInstruction;
-    }
+module akra.fx {
+    /**
+     * Represent (type) expr
+     * EMPTY_OPERATOR VariableTypeInstruction Instruction
+     */
+    export class CastExprInstruction extends ExprInstruction {
+        constructor() {
+            super();
+            this._pInstructionList = [null, null];
+            this._eInstructionType = EAFXInstructionTypes.k_CastExprInstruction;
+        }
 
-    toFinalCode(): string {
-        var sCode: string = "";
-        sCode += this.getInstructions()[0].toFinalCode();
-        sCode += "(";
-        sCode += this.getInstructions()[1].toFinalCode();
-        sCode += ")";
-        return sCode;
-    }
+        toFinalCode(): string {
+            var sCode: string = "";
+            sCode += this.getInstructions()[0].toFinalCode();
+            sCode += "(";
+            sCode += this.getInstructions()[1].toFinalCode();
+            sCode += ")";
+            return sCode;
+        }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var pSubExpr: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[1];
-        pSubExpr.addUsedData(pUsedDataCollector, AEVarUsedMode.k_Read);
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+            eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+            pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 
-        // pUsedDataCollector[this.getType()._getInstructionID()] = this.getType();
-    }
+            // pUsedDataCollector[this.getType()._getInstructionID()] = this.getType();
+        }
 
-    isConst(): boolean {
-        return (<AIAFXExprInstruction>this.getInstructions()[1]).isConst();
+        isConst(): boolean {
+            return (<IAFXExprInstruction>this.getInstructions()[1]).isConst();
+        }
     }
 }
 
-export = CastExprInstruction;

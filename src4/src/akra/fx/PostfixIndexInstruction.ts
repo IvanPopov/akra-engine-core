@@ -5,12 +5,12 @@ import ExprInstruction = require("fx/ExprInstruction");
  * EMPTY_OPERATOR Instruction ExprInstruction
  */
 class PostfixIndexInstruction extends ExprInstruction {
-    private _pSamplerArrayDecl: AIAFXVariableDeclInstruction = null;
+    private _pSamplerArrayDecl: IAFXVariableDeclInstruction = null;
 
     constructor() {
         super();
         this._pInstructionList = [null, null];
-        this._eInstructionType = AEAFXInstructionTypes.k_PostfixIndexInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_PostfixIndexInstruction;
     }
 
     toFinalCode(): string {
@@ -26,7 +26,7 @@ class PostfixIndexInstruction extends ExprInstruction {
         else {
             sCode += this.getInstructions()[0].toFinalCode();
 
-            if (!(<AIAFXExprInstruction>this.getInstructions()[0]).getType()._isCollapsed()) {
+            if (!(<IAFXExprInstruction>this.getInstructions()[0]).getType()._isCollapsed()) {
                 sCode += "[" + this.getInstructions()[1].toFinalCode() + "]";
             }
         }
@@ -34,13 +34,13 @@ class PostfixIndexInstruction extends ExprInstruction {
         return sCode;
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var pSubExpr: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[0];
-        var pIndex: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[1];
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+        var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+        var pIndex: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
 
         pSubExpr.addUsedData(pUsedDataCollector, eUsedMode);
-        pIndex.addUsedData(pUsedDataCollector, AEVarUsedMode.k_Read);
+        pIndex.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 
         if (pSubExpr.getType().isFromVariableDecl() && pSubExpr.getType().isSampler()) {
             this._pSamplerArrayDecl = pSubExpr.getType()._getParentVarDecl();
@@ -48,8 +48,8 @@ class PostfixIndexInstruction extends ExprInstruction {
     }
 
     isConst(): boolean {
-        return (<AIAFXExprInstruction>this.getInstructions()[0]).isConst() &&
-            (<AIAFXExprInstruction>this.getInstructions()[1]).isConst();
+        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
+            (<IAFXExprInstruction>this.getInstructions()[1]).isConst();
     }
 }
 

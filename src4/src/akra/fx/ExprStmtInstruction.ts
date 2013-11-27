@@ -8,7 +8,7 @@ class ExprStmtInstruction extends StmtInstruction {
     constructor() {
         super();
         this._pInstructionList = [null];
-        this._eInstructionType = AEAFXInstructionTypes.k_ExprStmtInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_ExprStmtInstruction;
     }
 
     toFinalCode(): string {

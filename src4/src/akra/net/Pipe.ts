@@ -1,226 +1,234 @@
-/// <reference path="../idl/AIPipe.ts" />
-import logger = require("logger");
-import config = require("config");
-import uri = require("uri");
-import path = require("path");
+/// <reference path="../idl/IPipe.ts" />
 
-/** @const */
-var WEBSOCKET_PORT = config.net.port;
+/// <reference path="../logger.ts" />
+/// <reference path="../debug.ts" />
+/// <reference path="../config/config.ts" />
+/// <reference path="../uri/uri.ts" />
+/// <reference path="../path/path.ts" />
+/// <reference path="../events.ts" />
+/// <reference path="../guid.ts" />
+
+module akra.net {
+
+    /** @const */
+    var WEBSOCKET_PORT = config.net.port;
 
 
-class Pipe implements AIPipe {
-    protected _pAddr: AIURI = null;
-    protected _nMesg: uint = 0; /** Number of sended messages.*/
-    protected _eType: AEPipeTypes = AEPipeTypes.UNKNOWN;
-    protected _pConnect: AIVirualDescriptor = null;
-    protected _bSetupComplete: boolean = false;
+    export class Pipe implements IPipe {
+        guid: uint = guid();
 
-    get uri(): AIURI {
-        return uri.parse(this._pAddr.toString());
-    }
+        opened: ISignal<{ (pPipe: IPipe, e: Event): void; }> = new Signal(this);
+        closed: ISignal<{ (pPipe: IPipe, e: CloseEvent): void; }> = new Signal(this);
+        error: ISignal<{ (pPipe: IPipe, e: ErrorEvent): void; }> = new Signal(this);
+        message: ISignal<{ (pPipe: IPipe, pData: any, eType: EPipeDataTypes): void; }> = new Signal(this);   
+        
 
-    constructor(sAddr: string = null) {
-        if (!isNull(sAddr)) {
-            this.open(sAddr);
+        protected _pAddr: IURI = null;
+        protected _nMesg: uint = 0; /** Number of sended messages.*/
+        protected _eType: EPipeTypes = EPipeTypes.UNKNOWN;
+        protected _pConnect: IVirualDescriptor = null;
+        protected _bSetupComplete: boolean = false;
+
+        get uri(): IURI {
+            return uri.parse(this._pAddr.toString());
         }
-    }
 
-    open(pAddr?: AIURI): boolean;
-    open(sAddr?: string): boolean;
-    open(sAddr: any = null): boolean {
-        var pAddr: AIURI;
-        var eType: AEPipeTypes;
-        var pSocket: WebSocket = null;
-        var pWorker: Worker = null;
-        var pPipe: AIPipe = this;
-
-        if (!isNull(sAddr)) {
-            pAddr = uri.parse(<string>sAddr);
+        constructor(sAddr: string = null) {
+            if (!isNull(sAddr)) {
+                this.open(sAddr);
+            }
         }
-        else {
-            if (this.isCreated()) {
-                this.close();
+
+        open(pAddr?: IURI): boolean;
+        open(sAddr?: string): boolean;
+        open(sAddr: any = null): boolean {
+            var pAddr: IURI;
+            var eType: EPipeTypes;
+            var pSocket: WebSocket = null;
+            var pWorker: Worker = null;
+            var pPipe: IPipe = this;
+
+            if (!isNull(sAddr)) {
+                pAddr = uri.parse(<string>sAddr);
+            }
+            else {
+                if (this.isCreated()) {
+                    this.close();
+                }
+
+                pAddr = this.uri;
             }
 
-            pAddr = this.uri;
-        }
+            // pipe to websocket
+            if (pAddr.protocol.toLowerCase() === "ws") {
+                //unknown port
+                if (!(pAddr.port > 0)) {
+                    pAddr.port = WEBSOCKET_PORT;
+                }
 
-        // pipe to websocket
-        if (pAddr.protocol.toLowerCase() === "ws") {
-            //unknown port
-            if (!(pAddr.port > 0)) {
-                pAddr.port = WEBSOCKET_PORT;
+                //websocket unsupported
+                if (!isDefAndNotNull(WebSocket)) {
+                    logger.error("Your browser does not support websocket api.");
+                    return false;
+                }
+
+                pSocket = new WebSocket(pAddr.toString());
+
+
+                pSocket.binaryType = "arraybuffer";
+                eType = EPipeTypes.WEBSOCKET;
             }
+            else if (path.parse(pAddr.path).ext.toLowerCase() === "js") {
+                if (!isDefAndNotNull(Worker)) {
+                    logger.error("Your browser does not support webworker api.");
+                    return false;
+                }
 
-            //websocket unsupported
-            if (!isDefAndNotNull(WebSocket)) {
-                logger.error("Your browser does not support websocket api.");
+                pWorker = new Worker(pAddr.toString());
+                eType = EPipeTypes.WEBWORKER;
+            }
+            else {
+                logger.error("Pipe supported only websockets/webworkers.");
                 return false;
             }
 
-            pSocket = new WebSocket(pAddr.toString());
+            this._pConnect = pWorker || pSocket;
+            this._pAddr = pAddr;
+            this._eType = eType;
 
+            if (isDefAndNotNull(window)) {
+                window.onunload = function (): void {
+                    pPipe.close();
+                }
+			}
 
-            pSocket.binaryType = "arraybuffer";
-            eType = AEPipeTypes.WEBSOCKET;
-        }
-        else if (path.parse(pAddr.path).ext.toLowerCase() === "js") {
-            if (!isDefAndNotNull(Worker)) {
-                logger.error("Your browser does not support webworker api.");
-                return false;
+            if (!isNull(this._pConnect)) {
+                this.setupConnect();
+
+                return true;
             }
 
-            pWorker = new Worker(pAddr.toString());
-            eType = AEPipeTypes.WEBWORKER;
-        }
-        else {
-            logger.error("Pipe supported only websockets/webworkers.");
             return false;
         }
 
-        this._pConnect = pWorker || pSocket;
-        this._pAddr = pAddr;
-        this._eType = eType;
+        private setupConnect(): void {
+            var pConnect: IVirualDescriptor = this._pConnect;
+            var pPipe: IPipe = this;
+            var pAddr: IURI = this._pAddr;
 
-        if (isDefAndNotNull(window)) {
-            window.onunload = function (): void {
-                pPipe.close();
+            if (this._bSetupComplete) {
+                return;
             }
-			}
 
-        if (!isNull(this._pConnect)) {
-            this.setupConnect();
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private setupConnect(): void {
-        var pConnect: AIVirualDescriptor = this._pConnect;
-        var pPipe: AIPipe = this;
-        var pAddr: AIURI = this._pAddr;
-
-        if (this._bSetupComplete) {
-            return;
-        }
-
-        pConnect.onmessage = function (pMessage: any): void {
-            if (isArrayBuffer(pMessage.data)) {
-                pPipe.message(pMessage.data, AEPipeDataTypes.BINARY);
+            pConnect.onmessage = function (pMessage: any): void {
+                if (isArrayBuffer(pMessage.data)) {
+                    pPipe.message.emit(pMessage.data, EPipeDataTypes.BINARY);
+                }
+                else {
+                    pPipe.message.emit(pMessage.data, EPipeDataTypes.STRING);
+                }
             }
-            else {
-                pPipe.message(pMessage.data, AEPipeDataTypes.STRING);
-            }
-        }
 
 			pConnect.onopen = function (pEvent: Event): void {
-            logger.log("created connect to: " + pAddr.toString());
+                logger.log("created connect to: " + pAddr.toString());
 
-            pPipe.opened(pEvent);
-        }
+                pPipe.opened.emit(pEvent);
+            }
 
 			pConnect.onerror = function (pErr: ErrorEvent): void {
-            logger.warn("pipe error detected: " + pErr.message);
-            pPipe.error(pErr);
-        }
+                debug.warn("pipe error detected: " + pErr.message);
+                pPipe.error.emit(pErr);
+            }
 
 			pConnect.onclose = function (pEvent: CloseEvent): void {
-            logger.log("connection to " + pAddr.toString() + " closed");
-            logger.log("Close event:", pEvent);
-            pPipe.closed(pEvent);
-        }
+                logger.log("connection to " + pAddr.toString() + " closed");
+                debug.log("Close event:", pEvent);
+                pPipe.closed.emit(pEvent);
+            }
 
 			this._bSetupComplete = true;
-    }
+        }
 
-    close(): void {
-        var pSocket: WebSocket;
-        var pWorker: Worker;
-        if (this.isOpened()) {
-            switch (this._eType) {
-                case AEPipeTypes.WEBSOCKET:
-                    pSocket = <WebSocket>this._pConnect;
-                    pSocket.onmessage = null;
-                    pSocket.onerror = null;
-                    pSocket.onopen = null;
-                    pSocket.close();
-                    break;
-                case AEPipeTypes.WEBWORKER:
-                    pWorker = <Worker><any>this._pConnect;
-                    pWorker.terminate();
+        close(): void {
+            var pSocket: WebSocket;
+            var pWorker: Worker;
+            if (this.isOpened()) {
+                switch (this._eType) {
+                    case EPipeTypes.WEBSOCKET:
+                        pSocket = <WebSocket>this._pConnect;
+                        pSocket.onmessage = null;
+                        pSocket.onerror = null;
+                        pSocket.onopen = null;
+                        pSocket.close();
+                        break;
+                    case EPipeTypes.WEBWORKER:
+                        pWorker = <Worker><any>this._pConnect;
+                        pWorker.terminate();
+                }
             }
+
+            this._pConnect = null;
+            this._bSetupComplete = false;
         }
 
-        this._pConnect = null;
-        this._bSetupComplete = false;
-    }
+        write(pValue: any): boolean {
+            var pSocket: WebSocket;
+            var pWorker: Worker;
 
-    write(pValue: any): boolean {
-        var pSocket: WebSocket;
-        var pWorker: Worker;
+            if (this.isOpened()) {
+                this._nMesg++;
 
-        if (this.isOpened()) {
-            this._nMesg++;
+                switch (this._eType) {
+                    case EPipeTypes.WEBSOCKET:
+                        pSocket = <WebSocket>this._pConnect;
 
-            switch (this._eType) {
-                case AEPipeTypes.WEBSOCKET:
-                    pSocket = <WebSocket>this._pConnect;
+                        if (isObject(pValue)) {
+                            pValue = JSON.stringify(pValue);
+                        }
 
-                    if (isObject(pValue)) {
-                        pValue = JSON.stringify(pValue);
-                    }
+                        pSocket.send(pValue);
 
-                    pSocket.send(pValue);
+                        return true;
 
-                    return true;
+                    case EPipeTypes.WEBWORKER:
+                        pWorker = <Worker><any>this._pConnect;
 
-                case AEPipeTypes.WEBWORKER:
-                    pWorker = <Worker><any>this._pConnect;
+                        if (isDef(pValue.byteLength)) {
+                            pWorker.postMessage(pValue, [pValue]);
+                        }
+                        else {
+                            pWorker.postMessage(pValue);
+                        }
 
-                    if (isDef(pValue.byteLength)) {
-                        pWorker.postMessage(pValue, [pValue]);
-                    }
-                    else {
-                        pWorker.postMessage(pValue);
-                    }
-
-                    return true;
+                        return true;
+                }
             }
+
+            return false;
         }
 
-        return false;
-    }
+        isClosed(): boolean {
+            switch (this._eType) {
+                case EPipeTypes.WEBSOCKET:
+                    return isNull(this._pConnect) || ((<WebSocket>this._pConnect).readyState === WebSocket.CLOSED);
+            }
 
-    isClosed(): boolean {
-        switch (this._eType) {
-            case AEPipeTypes.WEBSOCKET:
-                return isNull(this._pConnect) || ((<WebSocket>this._pConnect).readyState === WebSocket.CLOSED);
+            return isNull(this._pConnect);
         }
 
-        return isNull(this._pConnect);
-    }
+        isOpened(): boolean {
+            switch (this._eType) {
+                case EPipeTypes.WEBSOCKET:
+                    return !isNull(this._pConnect) && (<WebSocket>this._pConnect).readyState === WebSocket.OPEN;
+            }
 
-    isOpened(): boolean {
-        switch (this._eType) {
-            case AEPipeTypes.WEBSOCKET:
-                return !isNull(this._pConnect) && (<WebSocket>this._pConnect).readyState === WebSocket.OPEN;
+            return !isNull(this._pConnect);
         }
 
-        return !isNull(this._pConnect);
+
+        isCreated(): boolean {
+            return !isNull(this._pConnect);
+        }
     }
 
-
-    isCreated(): boolean {
-        return !isNull(this._pConnect);
-    }
-
-    //CREATE_EVENT_TABLE(Pipe);
-    //BROADCAST(opened, VOID);
-    //BROADCAST(closed, CALL(ev));
-    //BROADCAST(error, CALL(err));
-    //BROADCAST(message, CALL(data, type));
 }
-
-export = Pipe;

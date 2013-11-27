@@ -1,4 +1,4 @@
-/// <reference path="../idl/AIAFXInstruction.ts" />
+/// <reference path="../idl/IAFXInstruction.ts" />
 
 import ExprInstruction = require("fx/ExprInstruction");
 import SimpleInstruction = require("fx/SimpleInstruction");
@@ -6,40 +6,40 @@ import ExtractExprInstruction = require("fx/ExtractExprInstruction");
 import Instruction = require("fx/Instruction");
 
 class ExtractStmtInstruction extends ExprInstruction {
-    private _pExtractInVar: AIAFXVariableDeclInstruction = null;
-    private _pExtractInExpr: AIAFXExprInstruction = null;
+    private _pExtractInVar: IAFXVariableDeclInstruction = null;
+    private _pExtractInExpr: IAFXExprInstruction = null;
     private _pExtactExpr: ExtractExprInstruction = null;
 
     constructor() {
         super();
         this._pInstructionList = [];
-        this._eInstructionType = AEAFXInstructionTypes.k_ExtractStmtInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_ExtractStmtInstruction;
     }
 
-    generateStmtForBaseType(pVarDecl: AIAFXVariableDeclInstruction,
-        pPointer: AIAFXVariableDeclInstruction,
-        pBuffer: AIAFXVariableDeclInstruction,
-        iPadding: uint, pOffset: AIAFXVariableDeclInstruction = null): void {
-        var pVarType: AIAFXVariableTypeInstruction = pVarDecl.getType();
-        var pVarNameExpr: AIAFXExprInstruction = pVarDecl._getFullNameExpr();
+    generateStmtForBaseType(pVarDecl: IAFXVariableDeclInstruction,
+        pPointer: IAFXVariableDeclInstruction,
+        pBuffer: IAFXVariableDeclInstruction,
+        iPadding: uint, pOffset: IAFXVariableDeclInstruction = null): void {
+        var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
+        var pVarNameExpr: IAFXExprInstruction = pVarDecl._getFullNameExpr();
             if (pVarType.isComplex() || isNull(pVarNameExpr) || pVarType.getSize() === Instruction.UNDEFINE_SIZE) {
-            this.setError(AEEffectErrors.BAD_EXTRACTING);
+            this.setError(EEffectErrors.BAD_EXTRACTING);
             return;
         }
 
         // var pPointer: IAFXVariableDeclInstruction = isDef(pPointer) ? pPointer : pVarType.getPointer();
         // var pBuffer: IAFXVariableDeclInstruction = isDef(pBuffer) ?  pBuffer : pVarType.getVideoBuffer();
-        var pBufferSampler: AIAFXVariableDeclInstruction = pBuffer._getVideoBufferSampler();
-        var pBufferHeader: AIAFXVariableDeclInstruction = pBuffer._getVideoBufferHeader();
+        var pBufferSampler: IAFXVariableDeclInstruction = pBuffer._getVideoBufferSampler();
+        var pBufferHeader: IAFXVariableDeclInstruction = pBuffer._getVideoBufferHeader();
 
         var isArray: boolean = pVarType.isNotBaseArray();
         var iLength: uint = pVarType.getLength();
         var sCodeFragment: string = "";
-        var pExtractType: AIAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
+        var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
 
         if (isArray) {
             if (iLength === Instruction.UNDEFINE_LENGTH) {
-                this.setError(AEEffectErrors.BAD_EXTRACTING);
+                this.setError(EEffectErrors.BAD_EXTRACTING);
                 return;
             }
 
@@ -59,7 +59,7 @@ class ExtractStmtInstruction extends ExprInstruction {
 
         this.push(new SimpleInstruction(sCodeFragment), true);
 
-        var pExtractType: AIAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
+        var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
         var pExtractExpr: ExtractExprInstruction = new ExtractExprInstruction();
         var sPaddingExpr: string = "";
 
@@ -106,13 +106,13 @@ class ExtractStmtInstruction extends ExprInstruction {
         return sCode;
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        this._pExtractInExpr.addUsedData(pUsedDataCollector, AEVarUsedMode.k_Write);
-        this._pExtactExpr.addUsedData(pUsedDataCollector, AEVarUsedMode.k_Read);
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+        this._pExtractInExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+        this._pExtactExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
     }
 
-    getExtractFunction(): AIAFXFunctionDeclInstruction {
+    getExtractFunction(): IAFXFunctionDeclInstruction {
         return this._pExtactExpr.getExtractFunction();
     }
 }

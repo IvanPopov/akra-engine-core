@@ -1,15 +1,15 @@
-/// <reference path="../idl/AIAFXInstruction.ts" />
+/// <reference path="../idl/IAFXInstruction.ts" />
 
 import SimpleInstruction = require("fx/SimpleInstruction");
 
 
 class ExprTemplateTranslator {
-    private _pInToOutArgsMap: AIMap<int> = null;
-    private _pExprPart: AIAFXSimpleInstruction[] = null;
+    private _pInToOutArgsMap: IMap<int> = null;
+    private _pExprPart: IAFXSimpleInstruction[] = null;
 
     constructor(sExprTemplate: string) {
-        this._pInToOutArgsMap = <AIMap<int>>{};
-        this._pExprPart = <AIAFXSimpleInstruction[]>[];
+        this._pInToOutArgsMap = <IMap<int>>{};
+        this._pExprPart = <IAFXSimpleInstruction[]>[];
 
         var pSplitTemplate: string[] = sExprTemplate.split(/(\$\d+)/);
 
@@ -26,8 +26,8 @@ class ExprTemplateTranslator {
         }
     }
 
-    toInstructionList(pArguments: AIAFXInstruction[]): AIAFXInstruction[] {
-        var pOutputInstructionList: AIAFXInstruction[] = <AIAFXInstruction[]>[];
+    toInstructionList(pArguments: IAFXInstruction[]): IAFXInstruction[] {
+        var pOutputInstructionList: IAFXInstruction[] = <IAFXInstruction[]>[];
 
         for (var i: uint = 0; i < this._pExprPart.length; i++) {
             if (isNull(this._pExprPart[i])) {

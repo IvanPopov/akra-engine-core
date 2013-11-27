@@ -1,650 +1,664 @@
-/// <reference path="../idl/AIRPC.ts" />
+/// <reference path="../idl/IRPC.ts" />
+
+/// <reference path="../logger.ts" />
+/// <reference path="../debug.ts" />
+/// <reference path="../config/config.ts" />
+/// <reference path="../uri/uri.ts" />
+/// <reference path="../path/path.ts" />
+/// <reference path="../events.ts" />
+/// <reference path="../guid.ts" />
+/// <reference path="../time.ts" />
+
+/// <reference path="Pipe.ts" />
+
+/// <reference path="../util/ObjectArray.ts" />
+/// <reference path="../util/ObjectList.ts" />
+/// <reference path="../util/ObjectSortCollection.ts" />
+
+module akra.net {
+
+	import ObjectList = util.ObjectList;
+	import ObjectArray = util.ObjectArray;
+	import ObjectSortCollection = util.ObjectSortCollection;
 
 
+	var OPTIONS: IRPCOptions = config.rpc;
 
-import config = require("config");
-import logger = require("logger");
-import net = require("net");
-import time = require("time");
+	function hasLimitedDeferredCalls(pRpc: IRPC): boolean {
+		return (pRpc.options.deferredCallsLimit >= 0)
+	}
 
-import ObjectList = require("util/ObjectList");
-import ObjectArray = require("util/ObjectArray");
-import ObjectSortCollection = require("util/ObjectSortCollection");
+	function hasReconnect(pRpc: IRPC): boolean {
+		return (pRpc.options.reconnectTimeout > 0);
+	}
 
-import Pipe = require("net/Pipe");
+	function hasSystemRoutine(pRpc: IRPC): boolean {
+		return (pRpc.options.systemRoutineInterval > 0)
+	}
+	function hasCallbackLifetime(pRpc: IRPC): boolean { 
+		return (pRpc.options.callbackLifetime > 0)
+	}
 
-var OPTIONS: AIRPCOptions = config.rpc;
+	function hasGroupCalls(pRpc: IRPC): boolean {
+		return (pRpc.options.callsFrequency > 0);
+	}
 
-function hasLimitedDeferredCalls(pRpc: AIRPC): boolean {
-    return (pRpc.options.deferredCallsLimit >= 0)
-}
-function hasReconnect(pRpc: AIRPC): boolean {
-    return (pRpc.options.reconnectTimeout > 0);
-}
-function hasSystemRoutine(pRpc: AIRPC): boolean {
-    return (pRpc.options.systemRoutineInterval > 0)
-}
-function hasCallbackLifetime(pRpc: AIRPC): boolean { 
-    return (pRpc.options.callbackLifetime > 0)
-}
-function hasGroupCalls(pRpc: AIRPC): boolean {
-    return (pRpc.options.callsFrequency > 0);
-}
-function hasCallbacksCountLimit(pRpc: AIRPC): boolean {
-    return (pRpc.options.maxCallbacksCount > 0);
-}
+	function hasCallbacksCountLimit(pRpc: IRPC): boolean {
+		return (pRpc.options.maxCallbacksCount > 0);
+	}
 
-class RPC implements AIRPC {
-    protected _pOption: AIRPCOptions;
+	class RPC implements IRPC {
+		guid: uint = guid();
 
-    protected _pPipe: AIPipe = null;
+		joined: ISignal<{ (pRpc: IRPC): void; }> = new Signal(this);
+		error: ISignal<{ (pRpc: IRPC, e: Error): void; }> = new Signal(this);
 
-    protected _iGroupID: int = -1;
-    protected _pGroupCalls: AIRPCRequest = null;
+		protected _pOption: IRPCOptions;
 
-    //стек вызововы, которые были отложены
-    protected _pDefferedRequests: AIObjectList<AIRPCRequest> = new ObjectList<AIRPCRequest>();
-    //стек вызовов, ожидающих результата
-    //type: ObjectList<IRPCCallback>
-    protected _pCallbacksList: AIObjectList<AIRPCCallback> = null;
-    protected _pCallbacksCollection: AIObjectSortCollection<AIRPCCallback> = null;
-    //число совершенных вызовов
-    protected _nCalls: uint = 0;
+		protected _pPipe: IPipe = null;
 
-    protected _pRemoteAPI: Object = {}
-    protected _eState: AERpcStates = AERpcStates.k_Deteached;
+		protected _iGroupID: int = -1;
+		protected _pGroupCalls: IRPCRequest = null;
 
-    //rejoin timer
-    protected _iReconnect: int = -1;
-    //timer for system routine
-    protected _iSystemRoutine: int = -1;
-    protected _iGroupCallRoutine: int = -1;
+		//стек вызововы, которые были отложены
+		protected _pDefferedRequests: IObjectList<IRPCRequest> = new ObjectList<IRPCRequest>();
+		//стек вызовов, ожидающих результата
+		//type: ObjectList<IRPCCallback>
+		protected _pCallbacksList: IObjectList<IRPCCallback> = null;
+		protected _pCallbacksCollection: IObjectSortCollection<IRPCCallback> = null;
+		//число совершенных вызовов
+		protected _nCalls: uint = 0;
+
+		protected _pRemoteAPI: Object = {}
+		protected _eState: ERpcStates = ERpcStates.k_Deteached;
+
+		//rejoin timer
+		protected _iReconnect: int = -1;
+		//timer for system routine
+		protected _iSystemRoutine: int = -1;
+		protected _iGroupCallRoutine: int = -1;
 
 
-    get remote(): any { return this._pRemoteAPI; }
-    get options(): AIRPCOptions { return this._pOption; }
-    get group(): int { return !isNull(this._pGroupCalls) ? this._iGroupID : -1; }
+		get remote(): any { return this._pRemoteAPI; }
+		get options(): IRPCOptions { return this._pOption; }
+		get group(): int { return !isNull(this._pGroupCalls) ? this._iGroupID : -1; }
 
-    constructor(sAddr?: string, pOption?: AIRPCOptions);
-    constructor(pAddr: any = null, pOption: AIRPCOptions = {}) {
-        for (var i in OPTIONS) {
-            if (!isDef(pOption[i])) {
-                pOption[i] = OPTIONS[i];
-            }
-        }
+		constructor(sAddr?: string, pOption?: IRPCOptions);
+		constructor(pAddr: any = null, pOption: IRPCOptions = {}) {
+			for (var i in OPTIONS) {
+				if (!isDef(pOption[i])) {
+					pOption[i] = OPTIONS[i];
+				}
+			}
 
-        this._pOption = pOption;
+			this._pOption = pOption;
 
-        if (!isDefAndNotNull(pOption.procMap)) {
-            pOption.procMap = {}
-        }
+			if (!isDefAndNotNull(pOption.procMap)) {
+				pOption.procMap = {}
+		}
 
-        pOption.procMap[pOption.procListName] = {
-            lifeTime: -1,
-            priority: 10
-        }
+			pOption.procMap[pOption.procListName] = {
+				lifeTime: -1,
+				priority: 10
+			}
 
-        if (hasCallbacksCountLimit(this)) {
-            this._pCallbacksCollection = new ObjectSortCollection<AIRPCCallback>(this._pOption.maxCallbacksCount);
-            this._pCallbacksCollection.setCollectionFuncion((pCallback: AIRPCCallback): int => {
-                return isNull(pCallback) ? -1 : pCallback.n;
-            });
-        }
-        else {
-            this._pCallbacksList = new ObjectList();
-        }
-        pAddr = pAddr || pOption.addr;
+		if (hasCallbacksCountLimit(this)) {
+				this._pCallbacksCollection = new ObjectSortCollection<IRPCCallback>(this._pOption.maxCallbacksCount);
+				this._pCallbacksCollection.setCollectionFuncion((pCallback: IRPCCallback): int => {
+					return isNull(pCallback) ? -1 : pCallback.n;
+				});
+			}
+			else {
+				this._pCallbacksList = new ObjectList();
+			}
+			pAddr = pAddr || pOption.addr;
 
-        if (isDefAndNotNull(pAddr)) {
-            this.join(<string>pAddr);
-        }
-    }
+			if (isDefAndNotNull(pAddr)) {
+				this.join(<string>pAddr);
+			}
+		}
 
-    join(sAddr: string = null): void {
-        var pPipe: AIPipe = this._pPipe;
-        var pDeffered: AIObjectList<AIRPCRequest> = this._pDefferedRequests;
+		join(sAddr: string = null): void {
+			var pPipe: IPipe = this._pPipe;
+			var pDeffered: IObjectList<IRPCRequest> = this._pDefferedRequests;
 
-        if (isNull(pPipe)) {
-            pPipe = new Pipe();
+			if (isNull(pPipe)) {
+				pPipe = new Pipe();
 
-            pPipe.bind("message",
-                function (pPipe: AIPipe, pMessage: any, eType: AEPipeDataTypes): void {
-                    // LOG(pMessage);
-                    if (eType !== AEPipeDataTypes.BINARY) {
-                        this.parse(JSON.parse(<string>pMessage));
-                    }
-                    else {
-                        this.parseBinary(new Uint8Array(pMessage));
-                    }
-                }
-                );
+				pPipe.message.connect(
+					(pPipe: IPipe, pMessage: any, eType: EPipeDataTypes): void => {
+						// LOG(pMessage);
+						if (eType !== EPipeDataTypes.BINARY) {
+							this.parse(JSON.parse(<string>pMessage));
+						}
+						else {
+							this.parseBinary(new Uint8Array(pMessage));
+						}
+					});
 
-            pPipe.bind("opened",
-                function (pPipe: AIPipe, pEvent: Event): void {
+				pPipe.opened.connect(
+					(pPipe: IPipe, pEvent: Event): void => {
 
-                    this._startRoutines();
+						this._startRoutines();
 
-                    //if we have unhandled call in deffered...
-                    if (pDeffered.length) {
-                        pDeffered.seek(0);
+						//if we have unhandled call in deffered...
+						if (pDeffered.length) {
+							pDeffered.seek(0);
 
-                        while (pDeffered.length > 0) {
-                            pPipe.write(pDeffered.current);
-                            this._releaseRequest(<AIRPCRequest>pDeffered.takeCurrent());
-                        }
+							while (pDeffered.length > 0) {
+								pPipe.write(pDeffered.current);
+								this._releaseRequest(<IRPCRequest>pDeffered.takeCurrent());
+							}
 
-                        logger.presume(pDeffered.length === 0, "something going wrong. length is: " + pDeffered.length);
-                    }
+							logger.presume(pDeffered.length === 0, "something going wrong. length is: " + pDeffered.length);
+						}
 
-                    this.proc(this.options.procListName,
-                        function (pError: Error, pList: string[]) {
-                            if (!isNull(pError)) {
-                                logger.critical("could not get proc. list");
-                            }
-                            //TODO: FIX akra. prefix...
-                            if (!isNull(pList) && isArray(pList)) {
+						this.proc(this.options.procListName,
+							function (pError: Error, pList: string[]) {
+								if (!isNull(pError)) {
+									logger.critical("could not get proc. list");
+								}
+								//TODO: FIX akra. prefix...
+								if (!isNull(pList) && isArray(pList)) {
 
-                                for (var i: int = 0; i < pList.length; ++i) {
-                                    (function (sMethod) {
+									for (var i: int = 0; i < pList.length; ++i) {
+										(function (sMethod) {
 
-                                        this.options.procMap[sMethod] = this.options.procMap[sMethod] || {
-                                            lifeTime: -1,
-                                            priority: 0
-                                        }
+											this.options.procMap[sMethod] = this.options.procMap[sMethod] || {
+												lifeTime: -1,
+												priority: 0
+											}
 
-                                        this.remote[sMethod] = function () {
-                                            var pArguments: string[] = [sMethod];
+										this.remote[sMethod] = function () {
+												var pArguments: string[] = [sMethod];
 
-                                            for (var j: int = 0; j < arguments.length; ++j) {
-                                                pArguments.push(arguments[j]);
-                                            }
+												for (var j: int = 0; j < arguments.length; ++j) {
+													pArguments.push(arguments[j]);
+												}
 
-                                            return this.proc.apply(this, pArguments);
-                                        }
+												return this.proc.apply(this, pArguments);
+											}
 										})(String(pList[i]));
-                                }
+									}
 
-                                // logger.log("rpc options: ", pRPC.options);
-                            }
+									// logger.log("rpc options: ", pRPC.options);
+								}
 
-                            this.joined();
-                        }
-                        );
-                }
-                );
+								this.joined();
+							}
+							);
+					}
+					);
 
-            pPipe.bind("error",
-                function (pPipe: AIPipe, pError: Error): void {
-                    logger.error("pipe e rror occured...");
-                    this.error(pError);
-                    //pRPC.rejoin();
-                });
+				pPipe.error.connect(
+					(pPipe: IPipe, pError: ErrorEvent): void => {
+						debug.error("pipe error occured...");
+						this.error.emit(pError);
+						//pRPC.rejoin();
+					});
 
-            pPipe.bind("closed",
-                function (pPipe: AIPipe, pEvent: CloseEvent): void {
-                    this._stopRoutines();
-                    this.rejoin();
-                });
-        }
+				pPipe.closed.connect(
+					(pPipe: IPipe, pEvent: CloseEvent): void => {
+						this._stopRoutines();
+						this.rejoin();
+					});
+			}
 
-        pPipe.open(<string>sAddr);
+			pPipe.open(<string>sAddr);
 
-        this._pPipe = pPipe;
-        this._eState = AERpcStates.k_Joined;
-    }
+			this._pPipe = pPipe;
+			this._eState = ERpcStates.k_Joined;
+		}
 
-    rejoin(): void {
-        var pRPC: AIRPC = this;
+		rejoin(): void {
+			var pRPC: IRPC = this;
 
-        clearTimeout(this._iReconnect);
+			clearTimeout(this._iReconnect);
 
-        //rejoin not needed, because pipe already connected
-        if (this._pPipe.isOpened()) {
-            this._eState = AERpcStates.k_Joined;
-            return;
-        }
+			//rejoin not needed, because pipe already connected
+			if (this._pPipe.isOpened()) {
+				this._eState = ERpcStates.k_Joined;
+				return;
+			}
 
-        //rejoin not needed, because we want close connection
-        if (this._eState == AERpcStates.k_Closing) {
-            this._eState = AERpcStates.k_Deteached;
-            return;
-        }
+			//rejoin not needed, because we want close connection
+			if (this._eState == ERpcStates.k_Closing) {
+				this._eState = ERpcStates.k_Deteached;
+				return;
+			}
 
-        if (this._pPipe.isClosed()) {
-            //callbacks that will not be called, because connection was lost 
-            this.freeCallbacks();
+			if (this._pPipe.isClosed()) {
+				//callbacks that will not be called, because connection was lost 
+				this.freeCallbacks();
 
-            if (hasReconnect(this)) {
-                this._iReconnect = setTimeout(() => {
-                    pRPC.join();
-                }, this.options.reconnectTimeout);
-            }
-        }
-    }
+				if (hasReconnect(this)) {
+					this._iReconnect = setTimeout(() => {
+						pRPC.join();
+					}, this.options.reconnectTimeout);
+				}
+			}
+		}
 
-    parse(pRes: AIRPCResponse): void {
-        if (!isDef(pRes.n)) {
-            //logger.log(pRes);
-            logger.warn("message droped, because seriial not recognized.");
-        }
+		parse(pRes: IRPCResponse): void {
+			if (!isDef(pRes.n)) {
+				//logger.log(pRes);
+				logger.warn("message droped, because seriial not recognized.");
+			}
 
-        this.response(pRes.n, pRes.type, pRes.res);
-    }
-
-
-    parseBinary(pBuffer: Uint8Array): void {
-
-        var iHeaderByteLength: uint = 12;
-        var pHeader: Uint32Array = new Uint32Array(pBuffer.buffer, pBuffer.byteOffset, iHeaderByteLength / 4);
-
-        var nMsg: uint = pHeader[0];
-        var eType: AERPCPacketTypes = <AERPCPacketTypes>pHeader[1];
-        var iByteLength: int = pHeader[2];
-
-        var pResult: Uint8Array = pBuffer.subarray(iHeaderByteLength, iHeaderByteLength + iByteLength);
-
-        this.response(nMsg, eType, pResult);
-
-        var iPacketByteLength: int = iHeaderByteLength + iByteLength;
-
-        if (pBuffer.byteLength > iPacketByteLength) {
-            // console.log("group message detected >> ");
-            this.parseBinary(pBuffer.subarray(iPacketByteLength));
-        }
-    }
-
-    private response(nSerial: uint, eType: AERPCPacketTypes, pResult: any): void {
-        if (eType === AERPCPacketTypes.RESPONSE) {
-            var fn: Function = null;
-            var pCallback: AIRPCCallback = null;
-            // WARNING("---------------->",nSerial,"<-----------------");
-            // LOG(pStack.length);
-            if (hasCallbacksCountLimit(this)) {
-                var pCollection: AIObjectSortCollection<AIRPCCallback> = this._pCallbacksCollection;
-                pCallback = pCollection.takeElement(nSerial);
-                if (!isNull(pCallback)) {
-                    fn = pCallback.fn;
-                    this._releaseCallback(pCallback);
-
-                    if (!isNull(fn)) {
-                        fn(null, pResult);
-                    }
-                    return;
-                }
-            }
-            else {
-                var pStack: AIObjectList<AIRPCCallback> = this._pCallbacksList;
-                pCallback = <AIRPCCallback>pStack.last;
-                do {
-                    // LOG("#n: ", nSerial, " result: ", pResult);
-                    if (pCallback.n === nSerial) {
-                        fn = pCallback.fn;
-                        this._releaseCallback(pStack.takeCurrent());
-
-                        if (!isNull(fn)) {
-                            fn(null, pResult);
-                        }
-                        return;
-                    }
-                } while (pCallback = pStack.prev());
-            }
+			this.response(pRes.n, pRes.type, pRes.res);
+		}
 
 
-            // WARNING("package droped, invalid serial: " + nSerial);
-        }
-        else if (eType === AERPCPacketTypes.REQUEST) {
-            logger.error("TODO: REQUEST package type temprary unsupported.");
-        }
-        else if (eType === AERPCPacketTypes.FAILURE) {
-            logger.error("detected FAILURE on " + nSerial + " package");
-            logger.log(pResult);
-        }
-        else {
-            logger.error("unsupported response type detected: " + eType);
-        }
-    }
+		parseBinary(pBuffer: Uint8Array): void {
 
-    private freeRequests(): void {
-        var pStack: AIObjectList<AIRPCRequest> = this._pDefferedRequests;
-        var pReq: AIRPCRequest = <AIRPCRequest>pStack.first;
+			var iHeaderByteLength: uint = 12;
+			var pHeader: Uint32Array = new Uint32Array(pBuffer.buffer, pBuffer.byteOffset, iHeaderByteLength / 4);
 
-        if (pReq) {
-            do {
-                this._releaseRequest(pReq);
-            } while (pReq = pStack.next());
+			var nMsg: uint = pHeader[0];
+			var eType: ERPCPacketTypes = <ERPCPacketTypes>pHeader[1];
+			var iByteLength: int = pHeader[2];
 
-            pStack.clear();
-        }
-    }
+			var pResult: Uint8Array = pBuffer.subarray(iHeaderByteLength, iHeaderByteLength + iByteLength);
 
-    private freeCallbacks(): void {
-        if (hasCallbacksCountLimit(this)) {
-            this._pCallbacksCollection.clear();
-        }
-        else {
-            var pStack: AIObjectList<AIRPCCallback> = this._pCallbacksList;
-            var pCallback: AIRPCCallback = <AIRPCCallback>pStack.first;
+			this.response(nMsg, eType, pResult);
 
-            if (pCallback) {
-                do {
-                    this._releaseCallback(pCallback);
-                } while (pCallback = pStack.next());
+			var iPacketByteLength: int = iHeaderByteLength + iByteLength;
 
-                pStack.clear();
-            }
-        }
-    }
+			if (pBuffer.byteLength > iPacketByteLength) {
+				// console.log("group message detected >> ");
+				this.parseBinary(pBuffer.subarray(iPacketByteLength));
+			}
+		}
 
-    free(): void {
-        this.freeRequests();
-        this.freeCallbacks();
-    }
+		private response(nSerial: uint, eType: ERPCPacketTypes, pResult: any): void {
+			if (eType === ERPCPacketTypes.RESPONSE) {
+				var fn: Function = null;
+				var pCallback: IRPCCallback = null;
+				// WARNING("---------------->",nSerial,"<-----------------");
+				// LOG(pStack.length);
+				if (hasCallbacksCountLimit(this)) {
+					var pCollection: IObjectSortCollection<IRPCCallback> = this._pCallbacksCollection;
+					pCallback = pCollection.takeElement(nSerial);
+					if (!isNull(pCallback)) {
+						fn = pCallback.fn;
+						this._releaseCallback(pCallback);
 
-    detach(): void {
-        this._eState = AERpcStates.k_Closing;
+						if (!isNull(fn)) {
+							fn(null, pResult);
+						}
+						return;
+					}
+				}
+				else {
+					var pStack: IObjectList<IRPCCallback> = this._pCallbacksList;
+					pCallback = <IRPCCallback>pStack.last;
+					do {
+						// LOG("#n: ", nSerial, " result: ", pResult);
+						if (pCallback.n === nSerial) {
+							fn = pCallback.fn;
+							this._releaseCallback(pStack.takeCurrent());
 
-        if (!isNull(this._pPipe) && this._pPipe.isOpened()) {
-            this._pPipe.close();
-        }
+							if (!isNull(fn)) {
+								fn(null, pResult);
+							}
+							return;
+						}
+					} while (pCallback = pStack.prev());
+				}
 
-        this.free();
-    }
 
-    private findLifeTimeFor(sProc: string): uint {
-        var pProcOpt: AIRPCProcOptions = this._pOption.procMap[sProc];
+				// WARNING("package droped, invalid serial: " + nSerial);
+			}
+			else if (eType === ERPCPacketTypes.REQUEST) {
+				logger.error("TODO: REQUEST package type temprary unsupported.");
+			}
+			else if (eType === ERPCPacketTypes.FAILURE) {
+				logger.error("detected FAILURE on " + nSerial + " package");
+				logger.log(pResult);
+			}
+			else {
+				logger.error("unsupported response type detected: " + eType);
+			}
+		}
 
-        if (pProcOpt) {
-            var iProcLt: int = pProcOpt.lifeTime;
+		private freeRequests(): void {
+			var pStack: IObjectList<IRPCRequest> = this._pDefferedRequests;
+			var pReq: IRPCRequest = <IRPCRequest>pStack.first;
 
-            if (iProcLt >= 0)
-                return iProcLt;
-        }
+			if (pReq) {
+				do {
+					this._releaseRequest(pReq);
+				} while (pReq = pStack.next());
 
-        return this._pOption.callbackLifetime;
-    }
+				pStack.clear();
+			}
+		}
 
-    private findPriorityFor(sProc: string): uint {
-        var pProcOpt: AIRPCProcOptions = this._pOption.procMap[sProc];
+		private freeCallbacks(): void {
+			if (hasCallbacksCountLimit(this)) {
+				this._pCallbacksCollection.clear();
+			}
+			else {
+				var pStack: IObjectList<IRPCCallback> = this._pCallbacksList;
+				var pCallback: IRPCCallback = <IRPCCallback>pStack.first;
 
-        if (pProcOpt) {
-            var iProcPr: int = pProcOpt.priority || 0;
+				if (pCallback) {
+					do {
+						this._releaseCallback(pCallback);
+					} while (pCallback = pStack.next());
 
-            return iProcPr;
-        }
+					pStack.clear();
+				}
+			}
+		}
 
-        return 0;
-    }
+		free(): void {
+			this.freeRequests();
+			this.freeCallbacks();
+		}
 
-    setProcedureOption(sProc: string, sOpt: string, pValue: any): void {
-        var pOptions: AIRPCProcOptions = this.options.procMap[sProc];
+		detach(): void {
+			this._eState = ERpcStates.k_Closing;
 
-        if (!pOptions) {
-            pOptions = this.options.procMap[sProc] = {
-                lifeTime: -1
-            }
-        }
+			if (!isNull(this._pPipe) && this._pPipe.isOpened()) {
+				this._pPipe.close();
+			}
 
-        pOptions[sOpt] = pValue;
-    }
+			this.free();
+		}
 
-    proc(...argv: any[]): boolean {
+		private findLifeTimeFor(sProc: string): uint {
+			var pProcOpt: IRPCProcOptions = this._pOption.procMap[sProc];
 
-        var IRPCCallback: int = arguments.length - 1;
-        var fnCallback: Function =
-            isFunction(arguments[IRPCCallback]) ? <Function>arguments[IRPCCallback] : null;
-        var nArg: uint = arguments.length - (fnCallback ? 2 : 1);
-        var pArgv: any[] = new Array(nArg);
-        var pPipe: AIPipe = this._pPipe;
-        var pCallback: AIRPCCallback = null;
+			if (pProcOpt) {
+				var iProcLt: int = pProcOpt.lifeTime;
 
-        for (var i = 0; i < nArg; ++i) {
-            pArgv[i] = arguments[i + 1];
-        }
+				if (iProcLt >= 0)
+					return iProcLt;
+			}
 
-        var pProc: AIRPCRequest = this._createRequest();
+			return this._pOption.callbackLifetime;
+		}
 
-        pProc.n = this._nCalls++;
-        pProc.type = AERPCPacketTypes.REQUEST;
-        pProc.proc = String(arguments[0]);
-        pProc.argv = pArgv;
-        pProc.next = null;
-        pProc.lt = this.findLifeTimeFor(pProc.proc);
-        pProc.pr = this.findPriorityFor(pProc.proc);
+		private findPriorityFor(sProc: string): uint {
+			var pProcOpt: IRPCProcOptions = this._pOption.procMap[sProc];
 
-        pCallback = <AIRPCCallback>this._createCallback();
-        pCallback.n = pProc.n;
-        pCallback.fn = fnCallback;
-        pCallback.timestamp = time();
+			if (pProcOpt) {
+				var iProcPr: int = pProcOpt.priority || 0;
 
-        if (has("DEBUG")) {
-            pCallback.procInfo = pProc.proc + "(" + pArgv.join(',') + ")";
-        }
+				return iProcPr;
+			}
+
+			return 0;
+		}
+
+		setProcedureOption(sProc: string, sOpt: string, pValue: any): void {
+			var pOptions: IRPCProcOptions = this.options.procMap[sProc];
+
+			if (!pOptions) {
+				pOptions = this.options.procMap[sProc] = {
+					lifeTime: -1
+				}
+		}
+
+			pOptions[sOpt] = pValue;
+		}
+
+		proc(...argv: any[]): boolean {
+
+			var IRPCCallback: int = arguments.length - 1;
+			var fnCallback: Function =
+				isFunction(arguments[IRPCCallback]) ? <Function>arguments[IRPCCallback] : null;
+			var nArg: uint = arguments.length - (fnCallback ? 2 : 1);
+			var pArgv: any[] = new Array(nArg);
+			var pPipe: IPipe = this._pPipe;
+			var pCallback: IRPCCallback = null;
+
+			for (var i = 0; i < nArg; ++i) {
+				pArgv[i] = arguments[i + 1];
+			}
+
+			var pProc: IRPCRequest = this._createRequest();
+
+			pProc.n = this._nCalls++;
+			pProc.type = ERPCPacketTypes.REQUEST;
+			pProc.proc = String(arguments[0]);
+			pProc.argv = pArgv;
+			pProc.next = null;
+			pProc.lt = this.findLifeTimeFor(pProc.proc);
+			pProc.pr = this.findPriorityFor(pProc.proc);
+
+			pCallback = <IRPCCallback>this._createCallback();
+			pCallback.n = pProc.n;
+			pCallback.fn = fnCallback;
+			pCallback.timestamp = time();
+
+			if (config.DEBUG) {
+				pCallback.procInfo = pProc.proc + "(" + pArgv.join(',') + ")";
+			}
 
 			if (isNull(pPipe) || !pPipe.isOpened()) {
-            if (!hasLimitedDeferredCalls(this) ||
-                this._pDefferedRequests.length <= this.options.deferredCallsLimit) {
+				if (!hasLimitedDeferredCalls(this) ||
+					this._pDefferedRequests.length <= this.options.deferredCallsLimit) {
 
-                this._pDefferedRequests.push(pProc);
+					this._pDefferedRequests.push(pProc);
 
-                if (hasCallbacksCountLimit(this)) {
-                    this._pCallbacksCollection.push(pCallback);
-                }
-                else {
-                    this._pCallbacksList.push(pCallback);
-                }
-            }
-            else {
-                pCallback.fn(RPC.ERRORS.STACK_SIZE_EXCEEDED);
-                logger.log(RPC.ERRORS.STACK_SIZE_EXCEEDED);
+					if (hasCallbacksCountLimit(this)) {
+						this._pCallbacksCollection.push(pCallback);
+					}
+					else {
+						this._pCallbacksList.push(pCallback);
+					}
+				}
+				else {
+					pCallback.fn(RPC.ERRORS.STACK_SIZE_EXCEEDED);
+					logger.log(RPC.ERRORS.STACK_SIZE_EXCEEDED);
 
-                this._releaseCallback(pCallback);
-                this._releaseRequest(pProc);
-            }
+					this._releaseCallback(pCallback);
+					this._releaseRequest(pProc);
+				}
 
-            return false;
-        }
+				return false;
+			}
 
-        if (hasCallbacksCountLimit(this)) {
-            this._pCallbacksCollection.push(pCallback);
-        }
-        else {
-            this._pCallbacksList.push(pCallback);
-        }
+			if (hasCallbacksCountLimit(this)) {
+				this._pCallbacksCollection.push(pCallback);
+			}
+			else {
+				this._pCallbacksList.push(pCallback);
+			}
 
-        return this.callProc(pProc);
-    }
+			return this.callProc(pProc);
+		}
 
-    private callProc(pProc: AIRPCRequest): boolean {
-        var pPipe: AIPipe = this._pPipe;
-        var bResult: boolean = false;
+		private callProc(pProc: IRPCRequest): boolean {
+			var pPipe: IPipe = this._pPipe;
+			var bResult: boolean = false;
 
-        if (hasGroupCalls(this)) {
-            if (isNull(this._pGroupCalls)) {
-                this._pGroupCalls = pProc;
-                this._iGroupID++;
-            }
-            else {
-                pProc.next = this._pGroupCalls;
-                this._pGroupCalls = pProc;
-            }
+			if (hasGroupCalls(this)) {
+				if (isNull(this._pGroupCalls)) {
+					this._pGroupCalls = pProc;
+					this._iGroupID++;
+				}
+				else {
+					pProc.next = this._pGroupCalls;
+					this._pGroupCalls = pProc;
+				}
 
-            return true;
-        }
-        else {
-            bResult = pPipe.write(pProc);
-            this._releaseRequest(pProc);
-        }
+				return true;
+			}
+			else {
+				bResult = pPipe.write(pProc);
+				this._releaseRequest(pProc);
+			}
 
-        return bResult;
-    }
+			return bResult;
+		}
 
-    private _systemRoutine(): void {
-        this._removeExpiredCallbacks();
-    }
+		private _systemRoutine(): void {
+			this._removeExpiredCallbacks();
+		}
 
-   private  _startRoutines(): void {
-        var pRPC: RPC = this;
+		private _startRoutines(): void {
+			var pRPC: RPC = this;
 
-        if (hasSystemRoutine(this)) {
-            this._iSystemRoutine = setInterval(() => {
-                pRPC._systemRoutine();
-            }, this.options.systemRoutineInterval);
-        }
+			if (hasSystemRoutine(this)) {
+				this._iSystemRoutine = setInterval(() => {
+					pRPC._systemRoutine();
+				}, this.options.systemRoutineInterval);
+			}
 
-        if (hasGroupCalls(this)) {
-            this._iGroupCallRoutine = setInterval(() => {
-                pRPC.groupCall();
-            }, this.options.callsFrequency);
-        }
-    }
+			if (hasGroupCalls(this)) {
+				this._iGroupCallRoutine = setInterval(() => {
+					pRPC.groupCall();
+				}, this.options.callsFrequency);
+			}
+		}
 
-    private _stopRoutines(): void {
-        clearInterval(this._iSystemRoutine);
-        this._systemRoutine();
+		private _stopRoutines(): void {
+			clearInterval(this._iSystemRoutine);
+			this._systemRoutine();
 
-        clearInterval(this._iGroupCallRoutine);
-        //TODO: remove calls from group call, if RPC finally detached!
-    }
+			clearInterval(this._iGroupCallRoutine);
+			//TODO: remove calls from group call, if RPC finally detached!
+		}
 
-    groupCall(): int {
-        var pReq: AIRPCRequest = this._pGroupCalls;
+		groupCall(): int {
+			var pReq: IRPCRequest = this._pGroupCalls;
 
-        if (isNull(pReq)) {
-            return;
-        }
+			if (isNull(pReq)) {
+				return;
+			}
 
-        this._pPipe.write(pReq);
+			this._pPipe.write(pReq);
 
-        return this.dropGroupCall();
-    }
+			return this.dropGroupCall();
+		}
 
-    dropGroupCall(): int {
-        var pReq: AIRPCRequest = this._pGroupCalls;
+		dropGroupCall(): int {
+			var pReq: IRPCRequest = this._pGroupCalls;
 
-        for (; ;) {
-            var pNext = pReq.next;
-            this._releaseRequest(pReq);
+			for (; ;) {
+				var pNext = pReq.next;
+				this._releaseRequest(pReq);
 
-            if (!pNext) {
-                break;
-            }
+				if (!pNext) {
+					break;
+				}
 
-            pReq = <AIRPCRequest>pNext;
-        }
+				pReq = <IRPCRequest>pNext;
+			}
 
-        this._pGroupCalls = null;
-        return this._iGroupID;
-    }
+			this._pGroupCalls = null;
+			return this._iGroupID;
+		}
 
-    private _removeExpiredCallbacks(): void {
-        var pCallback: AIRPCCallback = null;
-        var iNow: int = time();
-        var fn: Function = null;
-        var sInfo: string = null;
+		private _removeExpiredCallbacks(): void {
+			var pCallback: IRPCCallback = null;
+			var iNow: int = time();
+			var fn: Function = null;
+			var sInfo: string = null;
 
-        if (hasCallbacksCountLimit(this)) {
-            //				 for(var i: uint = 0; i < this.options.maxCallbacksCount; i++){
-            //					 pCallback = <IRPCCallback>this._pCallbacksCollection.getElementAt(i);
+			if (hasCallbacksCountLimit(this)) {
+				//				 for(var i: uint = 0; i < this.options.maxCallbacksCount; i++){
+				//					 pCallback = <IRPCCallback>this._pCallbacksCollection.getElementAt(i);
 
-            //					 if (!isNull(pCallback) && HAS_CALLBACK_LIFETIME(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
-            //						 fn = pCallback.fn;
-            // #ifdef DEBUG					
-            //						 sInfo = pCallback.procInfo;
-            // #endif
-            //						 this._releaseCallback(pCallback);
-            //						 this._pCallbacksCollection.removeElementAt(i);
+				//					 if (!isNull(pCallback) && HAS_CALLBACK_LIFETIME(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
+				//						 fn = pCallback.fn;
+				// #ifdef DEBUG					
+				//						 sInfo = pCallback.procInfo;
+				// #endif
+				//						 this._releaseCallback(pCallback);
+				//						 this._pCallbacksCollection.removeElementAt(i);
 
-            //						 if (!isNull(fn)) {
-            //							 // logger.log("procedure info: ", sInfo);
-            //							 fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
-            //						 }
-            //					 }
-            //				 }
-        }
-        else {
-            var pCallbacks: AIObjectList<AIRPCCallback> = this._pCallbacksList;
-            pCallback = <AIRPCCallback>pCallbacks.first;
-            while (!isNull(pCallback)) {
+				//						 if (!isNull(fn)) {
+				//							 // logger.log("procedure info: ", sInfo);
+				//							 fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
+				//						 }
+				//					 }
+				//				 }
+			}
+			else {
+				var pCallbacks: IObjectList<IRPCCallback> = this._pCallbacksList;
+				pCallback = <IRPCCallback>pCallbacks.first;
+				while (!isNull(pCallback)) {
 
-                if (hasCallbackLifetime(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
-                    fn = pCallback.fn;
-                    if (has("DEBUG")) {
-                        sInfo = pCallback.procInfo;
-                    }
-					this._releaseCallback(<AIRPCCallback>pCallbacks.takeCurrent());
+					if (hasCallbackLifetime(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
+						fn = pCallback.fn;
+						if (config.DEBUG) {
+							sInfo = pCallback.procInfo;
+						}
+						this._releaseCallback(<IRPCCallback>pCallbacks.takeCurrent());
 
-                    pCallback = pCallbacks.current;
+						pCallback = pCallbacks.current;
 
-                    if (!isNull(fn)) {
-                        // logger.log("procedure info: ", sInfo);
-                        fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
-                    }
-                }
-                else {
-                    pCallback = <AIRPCCallback>pCallbacks.next();
-                }
-            }
-        }
-    }
+						if (!isNull(fn)) {
+							// logger.log("procedure info: ", sInfo);
+							fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
+						}
+					}
+					else {
+						pCallback = <IRPCCallback>pCallbacks.next();
+					}
+				}
+			}
+		}
 
-    private _releaseRequest(pReq: AIRPCRequest): void {
-        pReq.n = 0;
-        pReq.proc = null;
-        pReq.argv = null;
-        pReq.next = null;
-        pReq.lt = 0;
-        pReq.pr = 0;
+		private _releaseRequest(pReq: IRPCRequest): void {
+			pReq.n = 0;
+			pReq.proc = null;
+			pReq.argv = null;
+			pReq.next = null;
+			pReq.lt = 0;
+			pReq.pr = 0;
 
-        RPC.requestPool.push(pReq);
-    }
+			RPC.requestPool.push(pReq);
+		}
 
-    private _createRequest(): AIRPCRequest {
-        if (RPC.requestPool.length == 0) {
-            // LOG("allocated rpc request");
-            return { n: 0, type: AERPCPacketTypes.REQUEST, proc: null, argv: null, next: null, lt: 0, pr: 0 }
-        }
+		private _createRequest(): IRPCRequest {
+			if (RPC.requestPool.length == 0) {
+			// LOG("allocated rpc request");
+			return { n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null, next: null, lt: 0, pr: 0 }
+		}
 
-        return RPC.requestPool.pop();
-    }
+			return RPC.requestPool.pop();
+		}
 
-    private _releaseCallback(pCallback: AIRPCCallback): void {
-        pCallback.n = 0;
-        pCallback.fn = null;
-        pCallback.timestamp = 0;
-        pCallback.procInfo = null;
+		private _releaseCallback(pCallback: IRPCCallback): void {
+			pCallback.n = 0;
+			pCallback.fn = null;
+			pCallback.timestamp = 0;
+			pCallback.procInfo = null;
 
-        RPC.callbackPool.push(pCallback);
-    }
+			RPC.callbackPool.push(pCallback);
+		}
 
-    private _createCallback(): AIRPCCallback {
-        if (RPC.callbackPool.length == 0) {
-            // LOG("allocated callback");
-            return { n: 0, fn: null, timestamp: 0, procInfo: <string>null }
-        }
+		private _createCallback(): IRPCCallback {
+			if (RPC.callbackPool.length == 0) {
+			// LOG("allocated callback");
+			return { n: 0, fn: null, timestamp: 0, procInfo: <string>null }
+		}
 
-        return RPC.callbackPool.pop();
-    }
+			return RPC.callbackPool.pop();
+		}
 
-    //CREATE_EVENT_TABLE(RPC);
-    //BROADCAST(joined, VOID);
-    //BROADCAST(error, CALL(pError));
 
-    private static requestPool: AIObjectArray<AIRPCRequest> = new ObjectArray;
-    private static callbackPool: AIObjectArray <AIRPCCallback>= new ObjectArray;
+		private static requestPool: IObjectArray<IRPCRequest> = new ObjectArray;
+		private static callbackPool: IObjectArray<IRPCCallback> = new ObjectArray;
 
 	static ERRORS = {
-        STACK_SIZE_EXCEEDED: <AIRPCError>{
-            name: "RPC err.",
-            message: "stack size exceeded",
-            code: 1
-        },
-        CALLBACK_LIFETIME_EXPIRED: <AIRPCError>{
-            name: "RPC err.",
-            message: "procedure life time expired",
-            code: 2
-        }
-    }
+			STACK_SIZE_EXCEEDED: <IRPCError>{
+				name: "RPC err.",
+				message: "stack size exceeded",
+				code: 1
+			},
+			CALLBACK_LIFETIME_EXPIRED: <IRPCError>{
+				name: "RPC err.",
+				message: "procedure life time expired",
+				code: 2
+			}
+		}
 
+	}
 }
 
-export = RPC;

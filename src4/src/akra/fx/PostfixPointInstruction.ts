@@ -10,10 +10,10 @@ class PostfixPointInstruction extends ExprInstruction {
     constructor() {
         super();
         this._pInstructionList = [null, null];
-        this._eInstructionType = AEAFXInstructionTypes.k_PostfixPointInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_PostfixPointInstruction;
     }
 
-    prepareFor(eUsedMode: AEFunctionType) {
+    prepareFor(eUsedMode: EFunctionType) {
         if (!this.getInstructions()[0].isVisible()) {
             this._bToFinalFirst = false;
         }
@@ -36,17 +36,17 @@ class PostfixPointInstruction extends ExprInstruction {
         return sCode;
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var pSubExpr: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[0];
-        var pPoint: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[1];
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+        var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+        var pPoint: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
 
-        pSubExpr.addUsedData(pUsedDataCollector, AEVarUsedMode.k_Undefined);
+        pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Undefined);
         pPoint.addUsedData(pUsedDataCollector, eUsedMode);
     }
 
     isConst(): boolean {
-        return (<AIAFXExprInstruction>this.getInstructions()[0]).isConst();
+        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
     }
 }
 

@@ -1,79 +1,78 @@
-﻿/// <reference path="../idl/AIAFXInstruction.ts" />
+﻿/// <reference path="../idl/IAFXInstruction.ts" />
+/// <reference path="TypedInstruction.ts" />
 
-import TypedInstruction = require("fx/TypedInstruction");
+module akra.fx {
+    export class DeclInstruction extends TypedInstruction implements IAFXDeclInstruction {
+        protected _sSemantic: string = "";
+        protected _pAnnotation: IAFXAnnotationInstruction = null;
+        protected _bForPixel: boolean = true;
+        protected _bForVertex: boolean = true;
+        protected _isBuiltIn: boolean = false;
 
+        constructor() {
+            super();
+            this._eInstructionType = EAFXInstructionTypes.k_DeclInstruction;
+        }
 
-class DeclInstruction extends TypedInstruction implements AIAFXDeclInstruction {
-    protected _sSemantic: string = "";
-    protected _pAnnotation: AIAFXAnnotationInstruction = null;
-    protected _bForPixel: boolean = true;
-    protected _bForVertex: boolean = true;
-    protected _isBuiltIn: boolean = false;
+        setSemantic(sSemantic: string): void {
+            this._sSemantic = sSemantic;
+        }
 
-    constructor() {
-        super();
-        this._eInstructionType = AEAFXInstructionTypes.k_DeclInstruction;
-    }
+        setAnnotation(pAnnotation: IAFXAnnotationInstruction): void {
+            this._pAnnotation = pAnnotation;
+        }
 
-    setSemantic(sSemantic: string): void {
-        this._sSemantic = sSemantic;
-    }
+        getName(): string {
+            return "";
+        }
 
-    setAnnotation(pAnnotation: AIAFXAnnotationInstruction): void {
-        this._pAnnotation = pAnnotation;
-    }
+        getRealName(): string {
+            return "";
+        }
 
-    getName(): string {
-        return "";
-    }
+        getNameId(): IAFXIdInstruction {
+            return null;
+        }
 
-    getRealName(): string {
-        return "";
-    }
+        getSemantic(): string {
+            return this._sSemantic;
+        }
 
-    getNameId(): AIAFXIdInstruction {
-        return null;
-    }
+        isBuiltIn(): boolean {
+            return this._isBuiltIn;
+        }
 
-    getSemantic(): string {
-        return this._sSemantic;
-    }
+        setBuiltIn(isBuiltIn: boolean): void {
+            this._isBuiltIn = isBuiltIn;
+        }
 
-    isBuiltIn(): boolean {
-        return this._isBuiltIn;
-    }
+        _isForAll(): boolean {
+            return this._bForVertex && this._bForPixel;
+        }
+        _isForPixel(): boolean {
+            return this._bForPixel;
+        }
+        _isForVertex(): boolean {
+            return this._bForVertex;
+        }
 
-    setBuiltIn(isBuiltIn: boolean): void {
-        this._isBuiltIn = isBuiltIn;
-    }
+        _setForAll(canUse: boolean): void {
+            this._bForVertex = canUse;
+            this._bForPixel = canUse;
+        }
+        _setForPixel(canUse: boolean): void {
+            this._bForPixel = canUse;
+        }
+        _setForVertex(canUse: boolean): void {
+            this._bForVertex = canUse;
+        }
 
-    _isForAll(): boolean {
-        return this._bForVertex && this._bForPixel;
-    }
-    _isForPixel(): boolean {
-        return this._bForPixel;
-    }
-    _isForVertex(): boolean {
-        return this._bForVertex;
-    }
-
-    _setForAll(canUse: boolean): void {
-        this._bForVertex = canUse;
-        this._bForPixel = canUse;
-    }
-    _setForPixel(canUse: boolean): void {
-        this._bForPixel = canUse;
-    }
-    _setForVertex(canUse: boolean): void {
-        this._bForVertex = canUse;
+        clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXDeclInstruction {
+            var pClonedInstruction: IAFXDeclInstruction = <IAFXDeclInstruction>(super.clone(pRelationMap));
+            pClonedInstruction.setSemantic(this._sSemantic);
+            pClonedInstruction.setAnnotation(this._pAnnotation);
+            return pClonedInstruction;
+        }
     }
 
-    clone(pRelationMap: AIAFXInstructionMap = <AIAFXInstructionMap>{}): AIAFXDeclInstruction {
-        var pClonedInstruction: AIAFXDeclInstruction = <AIAFXDeclInstruction>(super.clone(pRelationMap));
-        pClonedInstruction.setSemantic(this._sSemantic);
-        pClonedInstruction.setAnnotation(this._pAnnotation);
-        return pClonedInstruction;
-    }
 }
-
-export = DeclInstruction;

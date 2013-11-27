@@ -8,7 +8,7 @@ class UnaryExprInstruction extends ExprInstruction {
     constructor() {
         super();
         this._pInstructionList = [null];
-        this._eInstructionType = AEAFXInstructionTypes.k_UnaryExprInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_UnaryExprInstruction;
     }
 
     toFinalCode(): string {
@@ -18,23 +18,23 @@ class UnaryExprInstruction extends ExprInstruction {
         return sCode;
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
         if (this.getOperator() === "++" || this.getOperator() === "--") {
-            (<AIAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, AEVarUsedMode.k_ReadWrite);
+            (<IAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
         }
         else {
-            (<AIAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, AEVarUsedMode.k_Read);
+            (<IAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         }
     }
 
     isConst(): boolean {
-        return (<AIAFXExprInstruction>this.getInstructions()[0]).isConst();
+        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
     }
 
     evaluate(): boolean {
         var sOperator: string = this.getOperator();
-        var pExpr: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[0];
+        var pExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
 
         if (!pExpr.evaluate()) {
             return;

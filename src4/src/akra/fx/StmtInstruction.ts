@@ -1,27 +1,28 @@
-/// <reference path="../idl/AIAFXInstruction.ts" />
+/// <reference path="../idl/IAFXInstruction.ts" />
 
-import Instruction = require("fx/Instruction");
+/// <reference path="Instruction.ts" />
 
-/**
- * Represent all kind of statements
- */
-class StmtInstruction extends Instruction implements AIAFXStmtInstruction {
-    constructor() {
-        super();
-        this._eInstructionType = AEAFXInstructionTypes.k_StmtInstruction;
-    }
+module akra.fx {
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var pInstructionList: AIAFXAnalyzedInstruction[] = <AIAFXAnalyzedInstruction[]>this.getInstructions();
+    /**
+     * Represent all kind of statements
+     */
+    export class StmtInstruction extends Instruction implements IAFXStmtInstruction {
+        constructor() {
+            super();
+            this._eInstructionType = EAFXInstructionTypes.k_StmtInstruction;
+        }
 
-        if (!isNull(pUsedDataCollector)) {
-            for (var i: uint = 0; i < this._nInstructions; i++) {
-                pInstructionList[i].addUsedData(pUsedDataCollector, eUsedMode);
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+            eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+
+            if (!isNull(pUsedDataCollector)) {
+                for (var i: uint = 0; i < this._nInstructions; i++) {
+                    pInstructionList[i].addUsedData(pUsedDataCollector, eUsedMode);
+                }
             }
         }
     }
+
 }
-
-
-export = StmtInstruction;

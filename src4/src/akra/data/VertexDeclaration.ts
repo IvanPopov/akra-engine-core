@@ -1,194 +1,192 @@
-/// <reference path="../idl/AIVertexDeclaration.ts" />
+/// <reference path="../idl/IVertexDeclaration.ts" />
+/// <reference path="../limit.ts" />
+/// <reference path="../types.ts" />
+/// <reference path="Usage.ts" />
+/// <reference path="VertexElement.ts" />
+/// <reference path="../logger.ts" />
 
-import VertexElement = require("data/VertexElement");
-import logger = require("logger");
-import limit = require("limit");
-import Usage = require("data/Usage");
 
+module akra.data {
+    export class VertexDeclaration implements IVertexDeclaration {
+        ///** readonly */ property for public usage
+        stride: uint = 0;
 
+        private _pElements: IVertexElement[] = [];
 
-class VertexDeclaration implements AIVertexDeclaration {
-    ///** readonly */ property for public usage
-    stride: uint = 0;
-
-    private _pElements: AIVertexElement[] = [];
-
-    /** inline */ get length(): uint {
-        return this._pElements.length;
-    }
-
-    //FIXME: typescript error "Overload signature is not compatible with function definition" ???
-    constructor(...pElements: AIVertexElementInterface[]);
-    constructor(pElements: AIVertexElementInterface[]);
-    constructor(pElements: any) {
-        if (arguments.length > 0 && isDefAndNotNull(pElements)) {
-            this.append.apply(this, arguments);
-        }
-    }
-
-    /** inline */ element(i: uint): AIVertexElement {
-        return this._pElements[i] || null;
-    }
-
-    append(...pElements: AIVertexElementInterface[]): boolean;
-    append(pElements: AIVertexElementInterface[]): boolean;
-    append(pData: any) {
-        var pElements: AIVertexElementInterface[];
-
-        if (!isArray(arguments[0])) {
-            pElements = <AIVertexElementInterface[]><any>arguments;
-        }
-        else {
-            pElements = <AIVertexElementInterface[]><any>arguments[0];
+        get length(): uint {
+            return this._pElements.length;
         }
 
-        for (var i: int = 0; i < pElements.length; i++) {
-            var pElement: AIVertexElementInterface = pElements[i];
-            var iOffset: uint;
+        //FIXME: typescript error "Overload signature is not compatible with function definition" ???
+        constructor(...pElements: IVertexElementInterface[]);
+        constructor(pElements: IVertexElementInterface[]);
+        constructor(pElements: any) {
+            if (arguments.length > 0 && isDefAndNotNull(pElements)) {
+                this.append.apply(this, arguments);
+            }
+        }
 
-            if (VertexElement.hasUnknownOffset(pElement)) {
-                //add element to end
-                iOffset = this.stride;
+        element(i: uint): IVertexElement {
+            return this._pElements[i] || null;
+        }
+
+        append(...pElements: IVertexElementInterface[]): boolean;
+        append(pElements: IVertexElementInterface[]): boolean;
+        append(pData: any) {
+            var pElements: IVertexElementInterface[];
+
+            if (!isArray(arguments[0])) {
+                pElements = <IVertexElementInterface[]><any>arguments;
             }
             else {
-                iOffset = pElement.offset;
+                pElements = <IVertexElementInterface[]><any>arguments[0];
             }
 
-            var pVertexElement: AIVertexElement = new VertexElement(
-                pElement.count,
-                pElement.type,
-                pElement.usage,
-                iOffset);
+            for (var i: int = 0; i < pElements.length; i++) {
+                var pElement: IVertexElementInterface = pElements[i];
+                var iOffset: uint;
 
-            this._pElements.push(pVertexElement);
+                if (VertexElement.hasUnknownOffset(pElement)) {
+                    //add element to end
+                    iOffset = this.stride;
+                }
+                else {
+                    iOffset = pElement.offset;
+                }
 
-            var iStride: uint = iOffset + pVertexElement.size;
+                var pVertexElement: IVertexElement = new VertexElement(
+                    pElement.count,
+                    pElement.type,
+                    pElement.usage,
+                    iOffset);
 
-            if (this.stride < iStride) {
-                this.stride = iStride;
-            }
-        }
+                this._pElements.push(pVertexElement);
 
-        return this._update();
-    }
+                var iStride: uint = iOffset + pVertexElement.size;
 
-    _update(): boolean {
-        var iStride: int;
-
-        for (var i: int = 0; i < this.length; ++i) {
-            //move "END" element to end of declaration
-            if (this._pElements[i].usage === Usage.END) {
-                this._pElements.swap(i, i + 1);
-            }
-
-            //recalc total stride
-            iStride = this._pElements[i].size + this._pElements[i].offset;
-
-            if (this.stride < iStride) {
-                this.stride = iStride
-				}
-        }
-
-        var pLast: AIVertexElement = this._pElements.last;
-
-        if (pLast.usage === Usage.END && pLast.offset < this.stride) {
-            pLast.offset = this.stride;
-        }
-
-        return true;
-    }
-
-
-
-    extend(decl: AIVertexDeclaration): boolean {
-        var pDecl: VertexDeclaration = <VertexDeclaration>decl;
-        var pElement: AIVertexElement;
-
-        for (var i = 0; i < this.length; ++i) {
-            for (var j = 0; j < pDecl.length; ++j) {
-                if (pDecl.element(j).usage == this._pElements[i].usage) {
-                    logger.log('inconsistent declarations:', this, pDecl);
-                    //'The attempt to combine the declaration containing the exact same semantics.'
-                    return false;
+                if (this.stride < iStride) {
+                    this.stride = iStride;
                 }
             }
+
+            return this._update();
         }
 
-        for (var i = 0; i < pDecl.length; i++) {
-            pElement = pDecl.element(i).clone();
-            pElement.offset += this.stride;
-            this._pElements.push(pElement);
-        }
+        _update(): boolean {
+            var iStride: int;
 
-        return this._update();
-    }
+            for (var i: int = 0; i < this.length; ++i) {
+                //move "END" element to end of declaration
+                if (this._pElements[i].usage === Usages.END) {
+                    this._pElements.swap(i, i + 1);
+                }
 
-    /** inline */ hasSemantics(sSemantics: string): boolean {
-        return this.findElement(sSemantics) !== null;
-    }
+                //recalc total stride
+                iStride = this._pElements[i].size + this._pElements[i].offset;
 
-    findElement(sSemantics: string, iCount: uint = limit.MAX_INT32): AIVertexElement {
-        sSemantics = sSemantics.toUpperCase();
-
-        for (var i = 0; i < this.length; ++i) {
-            if (this._pElements[i].usage === sSemantics && (iCount === limit.MAX_INT32 || this._pElements[i].count == iCount)) {
-                return this._pElements[i];
+                if (this.stride < iStride) {
+                    this.stride = iStride
+				}
             }
+
+            var pLast: IVertexElement = this._pElements.last;
+
+            if (pLast.usage === Usages.END && pLast.offset < this.stride) {
+                pLast.offset = this.stride;
+            }
+
+            return true;
         }
 
-        return null;
-    }
 
-    clone(): AIVertexDeclaration {
-        var pElements: AIVertexElement[] = [];
-        var pDecl: VertexDeclaration;
 
-        for (var i = 0; i < this.length; ++i) {
-            pElements.push(this._pElements[i].clone());
-        }
-
-        pDecl = new VertexDeclaration(pElements);
-
-        if (pDecl._update()) {
-            return pDecl;
-        }
-
-        return null;
-    }
-
-    toString(): string {
-        if (has("DEBUG")) {
-            var s = "\n";
-
-            s += "  VERTEX DECLARATION ( " + this.stride + " b. ) \n";
-            s += "---------------------------------------\n";
+        extend(decl: IVertexDeclaration): boolean {
+            var pDecl: VertexDeclaration = <VertexDeclaration>decl;
+            var pElement: IVertexElement;
 
             for (var i = 0; i < this.length; ++i) {
-                s += this._pElements[i].toString() + '\n';
+                for (var j = 0; j < pDecl.length; ++j) {
+                    if (pDecl.element(j).usage == this._pElements[i].usage) {
+                        logger.log('inconsistent declarations:', this, pDecl);
+                        //'The attempt to combine the declaration containing the exact same semantics.'
+                        return false;
+                    }
+                }
             }
 
-            return s;
-        }
-
-        return null;
-    }
-
-    static normalize(pElement: AIVertexElement): AIVertexDeclaration;
-    static normalize(pElements: AIVertexElementInterface[]): AIVertexDeclaration;
-    static normalize(pDecl: AIVertexDeclaration): AIVertexDeclaration;
-    static normalize(pData?): AIVertexDeclaration {
-        if (!(pData instanceof VertexDeclaration)) {
-            if (!Array.isArray(pData) && isDefAndNotNull(pData)) {
-                pData = [pData];
+            for (var i = 0; i < pDecl.length; i++) {
+                pElement = pDecl.element(i).clone();
+                pElement.offset += this.stride;
+                this._pElements.push(pElement);
             }
 
-            pData = new VertexDeclaration(pData);
+            return this._update();
         }
 
-        return pData;
+        hasSemantics(sSemantics: string): boolean {
+            return this.findElement(sSemantics) !== null;
+        }
+
+        findElement(sSemantics: string, iCount: uint = MAX_INT32): IVertexElement {
+            sSemantics = sSemantics.toUpperCase();
+
+            for (var i = 0; i < this.length; ++i) {
+                if (this._pElements[i].usage === sSemantics && (iCount === MAX_INT32 || this._pElements[i].count == iCount)) {
+                    return this._pElements[i];
+                }
+            }
+
+            return null;
+        }
+
+        clone(): IVertexDeclaration {
+            var pElements: IVertexElement[] = [];
+            var pDecl: VertexDeclaration;
+
+            for (var i = 0; i < this.length; ++i) {
+                pElements.push(this._pElements[i].clone());
+            }
+
+            pDecl = new VertexDeclaration(pElements);
+
+            if (pDecl._update()) {
+                return pDecl;
+            }
+
+            return null;
+        }
+
+        toString(): string {
+            if (config.DEBUG) {
+                var s = "\n";
+
+                s += "  VERTEX DECLARATION ( " + this.stride + " b. ) \n";
+                s += "---------------------------------------\n";
+
+                for (var i = 0; i < this.length; ++i) {
+                    s += this._pElements[i].toString() + '\n';
+                }
+
+                return s;
+            }
+
+            return null;
+        }
+
+        static normalize(pElement: IVertexElement): IVertexDeclaration;
+        static normalize(pElements: IVertexElementInterface[]): IVertexDeclaration;
+        static normalize(pDecl: IVertexDeclaration): IVertexDeclaration;
+        static normalize(pData?): IVertexDeclaration {
+            if (!(pData instanceof VertexDeclaration)) {
+                if (!Array.isArray(pData) && isDefAndNotNull(pData)) {
+                    pData = [pData];
+                }
+
+                pData = new VertexDeclaration(pData);
+            }
+
+            return pData;
+        }
     }
+
 }
-
-export = VertexDeclaration;
-
-

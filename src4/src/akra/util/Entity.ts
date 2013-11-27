@@ -1,5 +1,5 @@
-/// <reference path="../idl/AIEntity.ts" />
-/// <reference path="../idl/AIExplorerFunc.ts" />
+/// <reference path="../idl/IEntity.ts" />
+/// <reference path="../idl/IExplorerFunc.ts" />
 
 import ReferenceCounter = require("util/ReferenceCounter");
 import logger = require("logger");
@@ -14,30 +14,30 @@ enum AEEntityStates {
     k_SiblingsUpdated = 0x04
 }
 
-class Entity extends ReferenceCounter implements AIEntity {
+class Entity extends ReferenceCounter implements IEntity {
     protected _sName: string = null;
-    protected _pParent: AIEntity = null;
-    protected _pSibling: AIEntity = null;
-    protected _pChild: AIEntity = null;
-    protected _eType: AEEntityTypes = AEEntityTypes.UNKNOWN;
+    protected _pParent: IEntity = null;
+    protected _pSibling: IEntity = null;
+    protected _pChild: IEntity = null;
+    protected _eType: EEntityTypes = EEntityTypes.UNKNOWN;
     protected _iStateFlags: int = 0;
 
     get name(): string { return this._sName; }
     set name(sName: string) { this._sName = sName; }
 
-    get parent(): AIEntity { return this._pParent; }
-    set parent(pParent: AIEntity) { this.attachToParent(pParent); }
+    get parent(): IEntity { return this._pParent; }
+    set parent(pParent: IEntity) { this.attachToParent(pParent); }
 
-    get sibling(): AIEntity { return this._pSibling; }
-    set sibling(pSibling: AIEntity) { this._pSibling = pSibling; }
+    get sibling(): IEntity { return this._pSibling; }
+    set sibling(pSibling: IEntity) { this._pSibling = pSibling; }
 
-    get child(): AIEntity { return this._pChild; }
-    set child(pChild: AIEntity) { this._pChild = pChild; }
+    get child(): IEntity { return this._pChild; }
+    set child(pChild: IEntity) { this._pChild = pChild; }
 
-    get type(): AEEntityTypes { return this._eType; }
+    get type(): EEntityTypes { return this._eType; }
 
-    get rightSibling(): AIEntity {
-        var pSibling: AIEntity = this.sibling;
+    get rightSibling(): IEntity {
+        var pSibling: IEntity = this.sibling;
 
         if (pSibling) {
             while (pSibling.sibling) {
@@ -50,19 +50,19 @@ class Entity extends ReferenceCounter implements AIEntity {
         return this;
     }
 
-    constructor(eType: AEEntityTypes) {
+    constructor(eType: EEntityTypes) {
         super();
         this._eType = eType;
     }
 
     get depth(): int {
         var iDepth: int = -1;
-        for (var pEntity: AIEntity = this; pEntity; pEntity = pEntity.parent, ++iDepth) { };
+        for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++iDepth) { };
         return iDepth;
     }
 
-    get root(): AIEntity {
-        for (var pEntity: AIEntity = this, iDepth: int = -1; pEntity.parent; pEntity = pEntity.parent, ++iDepth) { };
+    get root(): IEntity {
+        for (var pEntity: IEntity = this, iDepth: int = -1; pEntity.parent; pEntity = pEntity.parent, ++iDepth) { };
         return pEntity;
     }
 
@@ -93,8 +93,8 @@ class Entity extends ReferenceCounter implements AIEntity {
         logger.presume(this._pChild == null, "Failure Destroying Node");
     }
 
-    findEntity(sName: string): AIEntity {
-        var pEntity: AIEntity = null;
+    findEntity(sName: string): IEntity {
+        var pEntity: IEntity = null;
 
         if (this._sName === sName) {
             return this;
@@ -111,7 +111,7 @@ class Entity extends ReferenceCounter implements AIEntity {
         return pEntity;
     }
 
-    explore(fn: AIExplorerFunc): void {
+    explore(fn: IExplorerFunc): void {
         if (fn(this) === false) {
             return;
         }
@@ -126,8 +126,8 @@ class Entity extends ReferenceCounter implements AIEntity {
     }
 
 
-    childOf(pParent: AIEntity): boolean {
-        for (var pEntity: AIEntity = this; pEntity; pEntity = pEntity.parent) {
+    childOf(pParent: IEntity): boolean {
+        for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent) {
             if (pEntity.parent === pParent) {
                 return true;
             }
@@ -136,9 +136,9 @@ class Entity extends ReferenceCounter implements AIEntity {
         return false;
     }
 
-    children(): AIEntity[] {
-        var pChildren: AIEntity[] = [];
-        var pChild: AIEntity = this.child;
+    children(): IEntity[] {
+        var pChildren: IEntity[] = [];
+        var pChild: IEntity = this.child;
 
         while (!isNull(pChild)) {
             pChildren.push(pChild);
@@ -148,8 +148,8 @@ class Entity extends ReferenceCounter implements AIEntity {
         return pChildren;
     }
 
-    childAt(i: int): AIEntity {
-        var pChild: AIEntity = this.child;
+    childAt(i: int): IEntity {
+        var pChild: IEntity = this.child;
         var n: int = 0;
 
         while (!isNull(pChild)) {
@@ -185,7 +185,7 @@ class Entity extends ReferenceCounter implements AIEntity {
 
     descCount(): uint {
         var n: uint = this.childCount();
-        var pChild: AIEntity = this.child;
+        var pChild: IEntity = this.child;
 
         while (!isNull(pChild)) {
             n += pChild.descCount();
@@ -200,14 +200,14 @@ class Entity extends ReferenceCounter implements AIEntity {
      */
     childCount(): uint {
         var iCount: uint = 0;
-        var pChild: AIEntity = this.child;
+        var pChild: IEntity = this.child;
 
         while (!isNull(pChild)) {
             iCount++;
             pChild = pChild.sibling;
         }
 
-        // var pNextChild: AIEntity = this.child;
+        // var pNextChild: IEntity = this.child;
 
         // if (pNextChild) {
         //	 ++ iCount;
@@ -285,7 +285,7 @@ class Entity extends ReferenceCounter implements AIEntity {
     /**
      * Checks to see if the provided item is a sibling of this object
      */
-    isASibling(pSibling: AIEntity): boolean {
+    isASibling(pSibling: IEntity): boolean {
         if (!pSibling) {
             return false;
         }
@@ -302,7 +302,7 @@ class Entity extends ReferenceCounter implements AIEntity {
     }
 
     /** Checks to see if the provided item is a child of this object. (one branch depth only) */
-    isAChild(pChild: AIEntity): boolean {
+    isAChild(pChild: IEntity): boolean {
         if (!pChild) {
             return (false);
         }
@@ -323,7 +323,7 @@ class Entity extends ReferenceCounter implements AIEntity {
      * is TRUE, the check is done recursivly through all siblings and children. SearchEntireTree
      * is FALSE by default.
      */
-    isInFamily(pEntity: AIEntity, bSearchEntireTree?: boolean): boolean {
+    isInFamily(pEntity: IEntity, bSearchEntireTree?: boolean): boolean {
         if (!pEntity) {
             return (false);
         }
@@ -358,7 +358,7 @@ class Entity extends ReferenceCounter implements AIEntity {
      * Adds the provided ModelSpace object to the descendant list of this object. The provided
      * ModelSpace object is removed from any parent it may already belong to.
      */
-    addSibling(pSibling: AIEntity): AIEntity {
+    addSibling(pSibling: IEntity): IEntity {
         if (pSibling) {
             // replace objects current sibling pointer with this new one
             pSibling.sibling = this._pSibling;
@@ -372,7 +372,7 @@ class Entity extends ReferenceCounter implements AIEntity {
      * Adds the provided ModelSpace object to the descendant list of this object. The provided
      * ModelSpace object is removed from any parent it may already belong to.
      */
-    addChild(pChild: AIEntity): AIEntity {
+    addChild(pChild: IEntity): IEntity {
         if (pChild) {
             // Replace the new child's sibling pointer with our old first child.
             pChild.sibling = this._pChild;
@@ -388,14 +388,14 @@ class Entity extends ReferenceCounter implements AIEntity {
      * Removes a specified child object from this parent object. If the child is not the
      * FirstChild of this object, all of the Children are searched to find the object to remove.
      */
-    removeChild(pChild: AIEntity): AIEntity {
+    removeChild(pChild: IEntity): IEntity {
         if (this._pChild && pChild) {
             if (this._pChild == pChild) {
                 this._pChild = pChild.sibling;
                 pChild.sibling = null;
             }
             else {
-                var pTempNode: AIEntity = this._pChild;
+                var pTempNode: IEntity = this._pChild;
                 // keep searching until we find the node who's sibling is our target
                 // or we reach the end of the sibling chain
                 while (pTempNode && (pTempNode.sibling != pChild)) {
@@ -426,9 +426,9 @@ class Entity extends ReferenceCounter implements AIEntity {
     }
 
     /** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
-    attachToParent(pParent: AIEntity): boolean {
+    attachToParent(pParent: IEntity): boolean {
 
-        var pParentPrev: AIEntity = this.parent;
+        var pParentPrev: IEntity = this.parent;
 
         if (pParent != this._pParent) {
 
@@ -473,17 +473,17 @@ class Entity extends ReferenceCounter implements AIEntity {
     promoteChildren(): void {
         // Do I have any children to promote?
         while (!isNull(this._pChild)) {
-            var pNextSibling: AIEntity = this._pChild.sibling;
+            var pNextSibling: IEntity = this._pChild.sibling;
             this._pChild.attachToParent(this._pParent);
             this._pChild = pNextSibling;
         }
     }
 
-    relocateChildren(pParent: AIEntity): void {
+    relocateChildren(pParent: IEntity): void {
         if (pParent != this) {
             // Do I have any children to relocate?
             while (!isNull(this._pChild)) {
-                var pNextSibling: AIEntity = this._pChild.sibling;
+                var pNextSibling: IEntity = this._pChild.sibling;
                 this._pChild.attachToParent(pParent);
                 this._pChild = pNextSibling;
             }
@@ -498,7 +498,7 @@ class Entity extends ReferenceCounter implements AIEntity {
                 return '<entity' + (this._sName ? ' ' + this._sName : "") + '>';
             }
 
-            var pChild: AIEntity = this.child;
+            var pChild: IEntity = this.child;
             var s: string = "";
 
             for (var i = 0; i < iDepth; ++i) {

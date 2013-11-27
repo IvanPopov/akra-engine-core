@@ -1,5 +1,5 @@
-/// <reference path="../idl/AIAFXComposer.ts" />
-/// <reference path="../idl/AIMap.ts" />
+/// <reference path="../idl/IAFXComposer.ts" />
+/// <reference path="../idl/IMap.ts" />
 
 
 import ObjectArray = require("util/ObjectArray");
@@ -10,13 +10,13 @@ var INIT_SLOT_SIZE = 32;
 //TODO: CHECK SAMPLER TYPE
 
 class SamplerBlender {
-    protected _pSlotList: ObjectArray<AIAFXVariableDeclInstruction>[] = null;
+    protected _pSlotList: ObjectArray<IAFXVariableDeclInstruction>[] = null;
     protected _nActiveSlots: uint = 0;
 
-    protected _pIdToSlotMap: AIMap<int> = null;
+    protected _pIdToSlotMap: IMap<int> = null;
     protected _pIdList: uint[] = null;
 
-    get slots(): ObjectArray<AIAFXVariableDeclInstruction>[] {
+    get slots(): ObjectArray<IAFXVariableDeclInstruction>[] {
         return this._pSlotList;
     }
 
@@ -33,11 +33,11 @@ class SamplerBlender {
 
         this._nActiveSlots = 1;
 
-        this._pIdToSlotMap = <AIMap<int>><any>{ 0: 0 };
+        this._pIdToSlotMap = <IMap<int>><any>{ 0: 0 };
         this._pIdList = new Array(INIT_SLOT_SIZE);
     }
 
-    getSamplersBySlot(iSlot: uint): ObjectArray<AIAFXVariableDeclInstruction> {
+    getSamplersBySlot(iSlot: uint): ObjectArray<IAFXVariableDeclInstruction> {
         return this.slots[iSlot];
     }
 
@@ -56,7 +56,7 @@ class SamplerBlender {
     clearSamplerNames(): void {
         for (var i: uint = 0; i < this._nActiveSlots; i++) {
             for (var j: uint = 0; j < this._pSlotList[i].length; j++) {
-                var pSampler: AIAFXVariableDeclInstruction = this._pSlotList[i].value(j);
+                var pSampler: IAFXVariableDeclInstruction = this._pSlotList[i].value(j);
                 pSampler.setRealName(pSampler.getSemantic() || pSampler.getName());
                 pSampler.defineByZero(false);
             }
@@ -90,7 +90,7 @@ class SamplerBlender {
         var sHash: string = "";
 
         for (var i: uint = 0; i < this._nActiveSlots; i++) {
-            var pBlend: ObjectArray<AIAFXVariableDeclInstruction> = this._pSlotList[i];
+            var pBlend: ObjectArray<IAFXVariableDeclInstruction> = this._pSlotList[i];
 
             if (pBlend.length > 0) {
                 if (i === 0) {

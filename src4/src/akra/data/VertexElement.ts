@@ -1,137 +1,137 @@
-/// <reference path="../idl/AIVertexDeclaration.ts" />
-/// <reference path="../idl/AIVertexElement.ts" />
-/// <reference path="../idl/AEDataTypes.ts" />
+/// <reference path="../idl/IVertexDeclaration.ts" />
+/// <reference path="../idl/IVertexElement.ts" />
+/// <reference path="../idl/EDataTypes.ts" />
+/// <reference path="../limit.ts" />
+/// <reference path="../types.ts" />
+/// <reference path="Usage.ts" />
 
-import limit = require("limit");
-import dt = require("dataType");
-import Usage = require("data/Usage");
+module akra.data {
 
-/** @const */
-var UNKNOWN_OFFSET = limit.MAX_INT32;
+    /** @const */
+    var UNKNOWN_OFFSET = MAX_INT32;
 
-class VertexElement implements AIVertexElement {
-    count: uint;
-    type: AEDataTypes;
-    usage: string;
-    offset: int;
+    export class VertexElement implements IVertexElement {
+        count: uint;
+        type: EDataTypes;
+        usage: string;
+        offset: int;
 
-    // this properties is /** readonly */ for public usage.
-    size: uint = 0;
-    index: int = 0;
-    semantics: string = Usage.UNKNOWN;
+        // this properties is /** readonly */ for public usage.
+        size: uint = 0;
+        index: int = 0;
+        semantics: string = Usages.UNKNOWN;
 
-    constructor(
-        nCount: uint = 1,
-        eType: AEDataTypes = AEDataTypes.FLOAT,
-        eUsage: string = Usage.POSITION,
-        //mark invalid offset, for determine true offset in VertexDeclaration::_update();
-        iOffset: int = UNKNOWN_OFFSET) {
+        constructor(
+            nCount: uint = 1,
+            eType: EDataTypes = EDataTypes.FLOAT,
+            eUsage: string = Usages.POSITION,
+            //mark invalid offset, for determine true offset in VertexDeclaration::_update();
+            iOffset: int = UNKNOWN_OFFSET) {
 
-        this.count = nCount;
-        this.type = eType;
-        this.usage = eUsage;
-        this.offset = iOffset;
+            this.count = nCount;
+            this.type = eType;
+            this.usage = eUsage;
+            this.offset = iOffset;
 
-        this.update();
-    }
-
-    private update(): void {
-        this.size = this.count * dt.size(this.type);
-        this.index = 0;
-        this.semantics = null;
-
-        var pMatches: string[] = this.usage.match(/^(.*?\w)(\d+)$/i);
-
-        if (!isNull(pMatches)) {
-            this.semantics = pMatches[1];
-            this.index = parseInt(pMatches[2]);
-
-            // To avoid the colosseum between the "usage" of the element as POSITION & POSITION0, 
-            // given that this is the same thing, here are the elements with index 0 
-            // for "usage" with the POSITION.
-            // if (this.index === 0) {
-            // 	this.usage = this.semantics;
-            // }
+            this.update();
         }
-        else {
-            this.semantics = this.usage;
+
+        private update(): void {
+            this.size = this.count * sizeof(this.type);
+            this.index = 0;
+            this.semantics = null;
+
+            var pMatches: string[] = this.usage.match(/^(.*?\w)(\d+)$/i);
+
+            if (!isNull(pMatches)) {
+                this.semantics = pMatches[1];
+                this.index = parseInt(pMatches[2]);
+
+                // To avoid the colosseum between the "usage" of the element as POSITION & POSITION0, 
+                // given that this is the same thing, here are the elements with index 0 
+                // for "usage" with the POSITION.
+                // if (this.index === 0) {
+                // 	this.usage = this.semantics;
+                // }
+            }
+            else {
+                this.semantics = this.usage;
+            }
         }
-    }
 
-    clone(): AIVertexElement {
-        return new VertexElement(this.count, this.type, this.usage, this.offset);
-    }
+        clone(): IVertexElement {
+            return new VertexElement(this.count, this.type, this.usage, this.offset);
+        }
 
-    /** inline */ static hasUnknownOffset(pElement: AIVertexElementInterface): boolean {
-        return (!isDef(pElement.offset) || (pElement.offset === UNKNOWN_OFFSET));
-    }
+        /**  */ static hasUnknownOffset(pElement: IVertexElementInterface): boolean {
+            return (!isDef(pElement.offset) || (pElement.offset === UNKNOWN_OFFSET));
+        }
 
-    /** inline */ isEnd(): boolean {
-        return this.semantics === Usage.END;
-    }
+        /**  */ isEnd(): boolean {
+            return this.semantics === Usages.END;
+        }
 
-    toString(): string {
-        if (has("DEBUG")) {
-            function _an(data: any, n: uint, bBackward: boolean = false): string {
-                var s: string = String(data);
+        toString(): string {
+            if (config.DEBUG) {
+                function _an(data: any, n: uint, bBackward: boolean = false): string {
+                    var s: string = String(data);
 
-                for (var i = 0, t = n - s.length; i < t; ++i) {
-                    if (bBackward) {
-                        s = " " + s;
+                    for (var i = 0, t = n - s.length; i < t; ++i) {
+                        if (bBackward) {
+                            s = " " + s;
+                        }
+                        else {
+                            s += " ";
+                        }
                     }
-                    else {
-                        s += " ";
-                    }
+                    return s;
                 }
+
+                var s = "[ USAGE: " + _an(this.usage == Usages.END ? "<END>" : this.usage, 12) + ", OFFSET " + _an(this.offset, 4)
+                    + ", SIZE " + _an(this.size, 4) + " ]";
+
                 return s;
             }
-
-            var s = "[ USAGE: " + _an(this.usage == Usage.END ? "<END>" : this.usage, 12) + ", OFFSET " + _an(this.offset, 4)
-                + ", SIZE " + _an(this.size, 4) + " ]";
-
-            return s;
+            return null;
         }
-        return null;
-    }
 
 
-    static custom(sUsage: string, eType: AEDataTypes = AEDataTypes.FLOAT, iCount: uint = 1, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
-        return {
-            count: iCount,
-            type: eType,
-            usage: sUsage,
-            offset: iOffset
-        };
-    }
+        static custom(sUsage: string, eType: EDataTypes = EDataTypes.FLOAT, iCount: uint = 1, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface {
+            return {
+                count: iCount,
+                type: eType,
+                usage: sUsage,
+                offset: iOffset
+            };
+        }
 
-    static float(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
-        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 1, iOffset);
-    }
+        static float(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface {
+            return VertexElement.custom(sUsage, EDataTypes.FLOAT, 1, iOffset);
+        }
 
-    static float2(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
-        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 2, iOffset);
-    }
+        static float2(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface {
+            return VertexElement.custom(sUsage, EDataTypes.FLOAT, 2, iOffset);
+        }
 
-    static float3(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
-        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 3, iOffset);
-    }
+        static float3(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface {
+            return VertexElement.custom(sUsage, EDataTypes.FLOAT, 3, iOffset);
+        }
 
-    static float4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
-        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 4, iOffset);
-    }
+        static float4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface {
+            return VertexElement.custom(sUsage, EDataTypes.FLOAT, 4, iOffset);
+        }
 
-    static float4x4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
-        return VertexElement.custom(sUsage, AEDataTypes.FLOAT, 16, iOffset);
-    }
+        static float4x4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface {
+            return VertexElement.custom(sUsage, EDataTypes.FLOAT, 16, iOffset);
+        }
 
-    static int(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): AIVertexElementInterface {
-        return VertexElement.custom(sUsage, AEDataTypes.INT, 1, iOffset);
-    }
+        static int(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface {
+            return VertexElement.custom(sUsage, EDataTypes.INT, 1, iOffset);
+        }
 
-    static end(iOffset: uint = 0): AIVertexElementInterface {
-        return VertexElement.custom(Usage.END, AEDataTypes.UNSIGNED_BYTE, 0, iOffset);
+        static end(iOffset: uint = 0): IVertexElementInterface {
+            return VertexElement.custom(Usages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset);
+        }
     }
 }
 
-
-export = VertexElement;

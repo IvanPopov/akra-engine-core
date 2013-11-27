@@ -9,7 +9,7 @@ class StmtBlockInstruction extends StmtInstruction {
     constructor() {
         super();
         this._pInstructionList = [];
-        this._eInstructionType = AEAFXInstructionTypes.k_StmtBlockInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_StmtBlockInstruction;
     }
 
     toFinalCode(): string {

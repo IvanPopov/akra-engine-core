@@ -1,9 +1,9 @@
-/// <reference path="../idl/AIReferenceCounter.ts" />
+/// <reference path="../idl/IReferenceCounter.ts" />
 
 import limit = require("limit");
 import logger = require("logger");
 
-class ReferenceCounter implements AIReferenceCounter {
+class ReferenceCounter implements IReferenceCounter {
     private nReferenceCount: uint = 0;
 
     /** Выстанавливает чило ссылок  на объект в ноль */
@@ -12,7 +12,7 @@ class ReferenceCounter implements AIReferenceCounter {
      * Выстанавливает чило ссылок  на объект в ноль
      * количесвто ссылок привязаны к конкретному экземпляру, поэтому никогда не копируются 
      */
-    constructor(pSrc: AIReferenceCounter);
+    constructor(pSrc: IReferenceCounter);
     constructor(pSrc?) { }
 
     referenceCount(): uint {
@@ -37,7 +37,7 @@ class ReferenceCounter implements AIReferenceCounter {
         return this.nReferenceCount;
     }
 
-    eq(pSrc: AIReferenceCounter): AIReferenceCounter {
+    eq(pSrc: IReferenceCounter): IReferenceCounter {
         return this;
     }
 }

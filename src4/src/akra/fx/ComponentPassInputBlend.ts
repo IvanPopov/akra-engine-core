@@ -1,102 +1,101 @@
-﻿
-import debug = require("debug");
+﻿/// <reference path="../debug.ts" />
 
-import PassInputBlend = require("fx/PassInputBlend");
-import VariableContainer = require("fx/VariableContainer");
+/// <reference path="PassInputBlend.ts" />
+/// <reference path="VariableContainer.ts" />
 
 
-class ComponentPassInputBlend implements AIAFXComponentPassInputBlend {
-    private _pUniformsContainer: VariableContainer = null;
-    private _pForeignsContainer: VariableContainer = null;
-    private _pTexturesContainer: VariableContainer = null;
+module akra.fx {
+    export class ComponentPassInputBlend implements IAFXComponentPassInputBlend {
+        private _pUniformsContainer: VariableContainer = null;
+        private _pForeignsContainer: VariableContainer = null;
+        private _pTexturesContainer: VariableContainer = null;
 
-    private _pFreePassInputBlendList: AIAFXPassInputBlend[] = null;
+        private _pFreePassInputBlendList: IAFXPassInputBlend[] = null;
 
-    get uniforms(): AIAFXVariableContainer {
-        return this._pUniformsContainer;
-    }
-
-    get textures(): AIAFXVariableContainer {
-        return this._pTexturesContainer;
-    }
-
-    get foreigns(): AIAFXVariableContainer {
-        return this._pForeignsContainer;
-    }
-
-    constructor() {
-        this._pUniformsContainer = new VariableContainer();
-        this._pForeignsContainer = new VariableContainer();
-        this._pTexturesContainer = new VariableContainer();
-
-        for (var i: uint = 0; i < 16; i++) {
-            this._pTexturesContainer.addSystemEntry("TEXTURE" + i.toString(), AEAFXShaderVariableType.k_Texture);
-        }
-    }
-
-    addDataFromPass(pPass: AIAFXPassInstruction): void {
-        var pUniformMap: AIAFXVariableDeclMap = pPass._getFullUniformMap();
-        var pForeignMap: AIAFXVariableDeclMap = pPass._getFullForeignMap();
-        var pTextureMap: AIAFXVariableDeclMap = pPass._getFullTextureMap();
-
-        for (var i in pForeignMap) {
-            this._pForeignsContainer.add(pForeignMap[i]);
+        get uniforms(): IAFXVariableContainer {
+            return this._pUniformsContainer;
         }
 
-        for (var i in pTextureMap) {
-            this._pTexturesContainer.add(pTextureMap[i]);
+        get textures(): IAFXVariableContainer {
+            return this._pTexturesContainer;
         }
 
-        for (var i in pUniformMap) {
-            this.addUniformVariable(pUniformMap[i], "", "");
+        get foreigns(): IAFXVariableContainer {
+            return this._pForeignsContainer;
         }
 
-    }
+        constructor() {
+            this._pUniformsContainer = new VariableContainer();
+            this._pForeignsContainer = new VariableContainer();
+            this._pTexturesContainer = new VariableContainer();
 
-    finalizeInput(): void {
-        this._pUniformsContainer.finalize();
-        this._pForeignsContainer.finalize();
-        this._pTexturesContainer.finalize();
+            for (var i: uint = 0; i < 16; i++) {
+                this._pTexturesContainer.addSystemEntry("TEXTURE" + i.toString(), EAFXShaderVariableType.k_Texture);
+            }
+        }
 
-        this._pFreePassInputBlendList = [];
+        addDataFromPass(pPass: IAFXPassInstruction): void {
+            var pUniformMap: IAFXVariableDeclMap = pPass._getFullUniformMap();
+            var pForeignMap: IAFXVariableDeclMap = pPass._getFullForeignMap();
+            var pTextureMap: IAFXVariableDeclMap = pPass._getFullTextureMap();
 
-        this.generateNewPassInputs();
-    }
+            for (var i in pForeignMap) {
+                this._pForeignsContainer.add(pForeignMap[i]);
+            }
 
-    getPassInput(): AIAFXPassInputBlend {
-        if (this._pFreePassInputBlendList.length === 0) {
+            for (var i in pTextureMap) {
+                this._pTexturesContainer.add(pTextureMap[i]);
+            }
+
+            for (var i in pUniformMap) {
+                this.addUniformVariable(pUniformMap[i], "", "");
+            }
+
+        }
+
+        finalizeInput(): void {
+            this._pUniformsContainer.finalize();
+            this._pForeignsContainer.finalize();
+            this._pTexturesContainer.finalize();
+
+            this._pFreePassInputBlendList = [];
+
             this.generateNewPassInputs();
         }
 
-        return this._pFreePassInputBlendList.pop();
-    }
+        getPassInput(): IAFXPassInputBlend {
+            if (this._pFreePassInputBlendList.length === 0) {
+                this.generateNewPassInputs();
+            }
 
-    releasePassInput(pInput: AIAFXPassInputBlend): void {
-        this._pFreePassInputBlendList.push(pInput);
-    }
-
-    private addUniformVariable(pVariable: AIAFXVariableDeclInstruction,
-        sPrevName: string, sPrevRealName: string): void {
-        var sName: string = pVariable.getName();
-        var sRealName: string = pVariable.getRealName();
-
-        var pHasVar: AIAFXVariableDeclInstruction = this._pUniformsContainer.getVarByRealName(sRealName);
-
-        if (isDefAndNotNull(pHasVar) && !pHasVar.getType().isEqual(pVariable.getType())) {
-            debug.warn("You used uniforms with the same real-names. Now we don`t work very well with that.");
-            return;
+            return this._pFreePassInputBlendList.pop();
         }
 
-        this._pUniformsContainer.add(pVariable);
-    }
+        releasePassInput(pInput: IAFXPassInputBlend): void {
+            this._pFreePassInputBlendList.push(pInput);
+        }
 
-    private generateNewPassInputs(nCount: uint = 5): void {
-        for (var i: uint = 0; i < nCount; i++) {
-            var pPassInput: AIAFXPassInputBlend = new PassInputBlend(this);
-            this._pFreePassInputBlendList.push(pPassInput);
+        private addUniformVariable(pVariable: IAFXVariableDeclInstruction,
+            sPrevName: string, sPrevRealName: string): void {
+            var sName: string = pVariable.getName();
+            var sRealName: string = pVariable.getRealName();
+
+            var pHasVar: IAFXVariableDeclInstruction = this._pUniformsContainer.getVarByRealName(sRealName);
+
+            if (isDefAndNotNull(pHasVar) && !pHasVar.getType().isEqual(pVariable.getType())) {
+                debug.warn("You used uniforms with the same real-names. Now we don`t work very well with that.");
+                return;
+            }
+
+            this._pUniformsContainer.add(pVariable);
+        }
+
+        private generateNewPassInputs(nCount: uint = 5): void {
+            for (var i: uint = 0; i < nCount; i++) {
+                var pPassInput: IAFXPassInputBlend = new PassInputBlend(this);
+                this._pFreePassInputBlendList.push(pPassInput);
+            }
         }
     }
 }
 
-
-export = ComponentPassInputBlend;

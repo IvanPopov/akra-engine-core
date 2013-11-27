@@ -1,28 +1,28 @@
-﻿/// <reference path="../idl/AIAFXInstruction.ts" />
+﻿/// <reference path="../idl/IAFXInstruction.ts" />
 
 import Instruction = require("fx/Instruction");
 import VariableTypeInstruction = require("fx/VariableTypeInstruction");
 import VariableDeclInstruction = require("fx/VariableInstruction");
 import IdInstruction = require("fx/IdInstruction");
 
-class SystemTypeInstruction extends Instruction implements AIAFXTypeInstruction {
+class SystemTypeInstruction extends Instruction implements IAFXTypeInstruction {
     private _sName: string = "";
     private _sRealName: string = "";
-    private _pElementType: AIAFXTypeInstruction = null;
+    private _pElementType: IAFXTypeInstruction = null;
     private _iLength: uint = 1;
     private _iSize: uint = null;
-    private _pFieldDeclMap: AIAFXVariableDeclMap = null;
+    private _pFieldDeclMap: IAFXVariableDeclMap = null;
     private _isArray: boolean = false;
     private _isWritable: boolean = true;
     private _isReadable: boolean = true;
     private _pFieldNameList: string[] = null;
-    private _pWrapVariableType: AIAFXVariableTypeInstruction = null;
+    private _pWrapVariableType: IAFXVariableTypeInstruction = null;
     private _isBuiltIn: boolean = true;
     private _sDeclString: string = "";
 
     constructor() {
         super();
-        this._eInstructionType = AEAFXInstructionTypes.k_SystemTypeInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_SystemTypeInstruction;
         this._pWrapVariableType = new VariableTypeInstruction();
         this._pWrapVariableType.pushType(this);
     }
@@ -67,11 +67,11 @@ class SystemTypeInstruction extends Instruction implements AIAFXTypeInstruction 
         return false;
     }
 
-    isEqual(pType: AIAFXTypeInstruction): boolean {
+    isEqual(pType: IAFXTypeInstruction): boolean {
         return this.getHash() === pType.getHash();
     }
 
-    isStrongEqual(pType: AIAFXTypeInstruction): boolean {
+    isStrongEqual(pType: IAFXTypeInstruction): boolean {
         return this.getStrongHash() === pType.getStrongHash();
     }
 
@@ -147,19 +147,19 @@ class SystemTypeInstruction extends Instruction implements AIAFXTypeInstruction 
     //---------------------------INIT API------------------------------//
     //-----------------------------------------------------------------//
 
-    addIndex(pType: AIAFXTypeInstruction, iLength: uint): void {
+    addIndex(pType: IAFXTypeInstruction, iLength: uint): void {
         this._pElementType = pType;
         this._iLength = iLength;
         this._iSize = iLength * pType.getSize();
         this._isArray = true;
     }
 
-    addField(sFieldName: string, pType: AIAFXTypeInstruction, isWrite: boolean = true,
+    addField(sFieldName: string, pType: IAFXTypeInstruction, isWrite: boolean = true,
         sRealFieldName: string = sFieldName): void {
 
-        var pField: AIAFXVariableDeclInstruction = new VariableDeclInstruction();
+        var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
         var pFieldType: VariableTypeInstruction = new VariableTypeInstruction();
-        var pFieldId: AIAFXIdInstruction = new IdInstruction();
+        var pFieldId: IAFXIdInstruction = new IdInstruction();
 
         pFieldType.pushType(pType);
         pFieldType._canWrite(isWrite);
@@ -171,7 +171,7 @@ class SystemTypeInstruction extends Instruction implements AIAFXTypeInstruction 
         pField.push(pFieldId, true);
 
         if (isNull(this._pFieldDeclMap)) {
-            this._pFieldDeclMap = <AIAFXVariableDeclMap>{};
+            this._pFieldDeclMap = <IAFXVariableDeclMap>{};
         }
 
         this._pFieldDeclMap[sFieldName] = pField;
@@ -207,24 +207,24 @@ class SystemTypeInstruction extends Instruction implements AIAFXTypeInstruction 
         return this._iSize;
     }
 
-    getBaseType(): AIAFXTypeInstruction {
+    getBaseType(): IAFXTypeInstruction {
         return this;
     }
 
-    getVariableType(): AIAFXVariableTypeInstruction {
+    getVariableType(): IAFXVariableTypeInstruction {
         return this._pWrapVariableType;
     }
 
-    getArrayElementType(): AIAFXTypeInstruction {
+    getArrayElementType(): IAFXTypeInstruction {
         return this._pElementType;
     }
 
-    getTypeDecl(): AIAFXTypeDeclInstruction {
+    getTypeDecl(): IAFXTypeDeclInstruction {
         if (this.isBuiltIn()) {
             return null;
         }
 
-        return <AIAFXTypeDeclInstruction>this.getParent();
+        return <IAFXTypeDeclInstruction>this.getParent();
     }
 
 
@@ -248,15 +248,15 @@ class SystemTypeInstruction extends Instruction implements AIAFXTypeInstruction 
         return false;
     }
 
-    getField(sFieldName: string): AIAFXVariableDeclInstruction {
+    getField(sFieldName: string): IAFXVariableDeclInstruction {
         return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName] : null;
     }
 
-    getFieldBySemantic(sSemantic: string): AIAFXVariableDeclInstruction {
+    getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction {
         return null;
     }
 
-    getFieldType(sFieldName: string): AIAFXVariableTypeInstruction {
+    getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
         return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName].getType() : null;
     }
 
@@ -268,11 +268,11 @@ class SystemTypeInstruction extends Instruction implements AIAFXTypeInstruction 
     //----------------------------SYSTEM-------------------------------//
     //-----------------------------------------------------------------//
 
-    clone(pRelationMap?: AIAFXInstructionMap): SystemTypeInstruction {
+    clone(pRelationMap?: IAFXInstructionMap): SystemTypeInstruction {
         return this;
     }
 
-    blend(pType: AIAFXTypeInstruction, eMode: AEAFXBlendMode): AIAFXTypeInstruction {
+    blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction {
         if (this.isStrongEqual(pType)) {
             return this;
         }

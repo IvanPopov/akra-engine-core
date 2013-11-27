@@ -7,7 +7,7 @@ class LogicalExprInstruction extends ExprInstruction {
     constructor() {
         super();
         this._pInstructionList = [null, null];
-        this._eInstructionType = AEAFXInstructionTypes.k_LogicalExprInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_LogicalExprInstruction;
     }
 
     toFinalCode(): string {
@@ -18,15 +18,15 @@ class LogicalExprInstruction extends ExprInstruction {
         return sCode;
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        super.addUsedData(pUsedDataCollector, AEVarUsedMode.k_Read);
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+        super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
     }
 
     isConst(): boolean {
-        return (<AIAFXExprInstruction>this.getInstructions()[0]).isConst() &&
-            (<AIAFXExprInstruction>this.getInstructions()[1]).isConst() &&
-            (<AIAFXExprInstruction>this.getInstructions()[2]).isConst();
+        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
+            (<IAFXExprInstruction>this.getInstructions()[1]).isConst() &&
+            (<IAFXExprInstruction>this.getInstructions()[2]).isConst();
     }
 }
 

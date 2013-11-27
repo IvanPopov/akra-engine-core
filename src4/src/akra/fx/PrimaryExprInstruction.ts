@@ -8,7 +8,7 @@ class PrimaryExprInstruction extends ExprInstruction {
     constructor() {
         super();
         this._pInstructionList = [null];
-        this._eInstructionType = AEAFXInstructionTypes.k_PrimaryExprInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_PrimaryExprInstruction;
     }
 
     toFinalCode(): string {
@@ -19,13 +19,13 @@ class PrimaryExprInstruction extends ExprInstruction {
         return sCode;
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var pPointerType: AIAFXVariableTypeInstruction = this.getType();
-        var pInfo: AIAFXTypeUseInfoContainer = pUsedDataCollector[pPointerType._getInstructionID()];
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+        var pPointerType: IAFXVariableTypeInstruction = this.getType();
+        var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pPointerType._getInstructionID()];
 
         if (!isDef(pInfo)) {
-            pInfo = <AIAFXTypeUseInfoContainer>{
+            pInfo = <IAFXTypeUseInfoContainer>{
                 type: pPointerType,
                 isRead: false,
                 isWrite: false,
@@ -37,15 +37,15 @@ class PrimaryExprInstruction extends ExprInstruction {
 				pUsedDataCollector[pPointerType._getInstructionID()] = pInfo;
         }
 
-        if (eUsedMode === AEVarUsedMode.k_Read) {
+        if (eUsedMode === EVarUsedMode.k_Read) {
             pInfo.isRead = true;
             pInfo.numRead++;
         }
-        else if (eUsedMode === AEVarUsedMode.k_Write) {
+        else if (eUsedMode === EVarUsedMode.k_Write) {
             pInfo.isWrite = true;
             pInfo.numWrite++;
         }
-        else if (eUsedMode === AEVarUsedMode.k_ReadWrite) {
+        else if (eUsedMode === EVarUsedMode.k_ReadWrite) {
             pInfo.isRead = true;
             pInfo.isWrite = true;
             pInfo.numRead++;

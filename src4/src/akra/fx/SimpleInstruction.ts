@@ -1,14 +1,14 @@
-﻿/// <reference path="../idl/AIAFXInstruction.ts" />
+﻿/// <reference path="../idl/IAFXInstruction.ts" />
 
 import Instruction = require("fx/Instruction");
 
-class SimpleInstruction extends Instruction implements AIAFXSimpleInstruction {
+class SimpleInstruction extends Instruction implements IAFXSimpleInstruction {
     private _sValue: string = "";
 
     constructor(sValue: string) {
         super();
         this._pInstructionList = null;
-        this._eInstructionType = AEAFXInstructionTypes.k_SimpleInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_SimpleInstruction;
 
         this._sValue = sValue;
     }
@@ -29,7 +29,7 @@ class SimpleInstruction extends Instruction implements AIAFXSimpleInstruction {
         return this._sValue;
     }
 
-    clone(pRelationMap?: AIAFXInstructionMap): SimpleInstruction {
+    clone(pRelationMap?: IAFXInstructionMap): SimpleInstruction {
         var pClone: SimpleInstruction = <SimpleInstruction>super.clone(pRelationMap);
         pClone.setValue(this._sValue);
         return pClone;

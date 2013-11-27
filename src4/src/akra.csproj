@@ -16,9 +16,94 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="akra\idl\IAjaxParams.ts" />
-    <Content Include="akra\parser\Parser.ts" />
-    <Content Include="web.config" />
+    <None Include="akra\pixelUtil\DDSCodec.ts" />
+    <None Include="akra\data\IndexData.ts" />
+    <None Include="akra\data\VertexData.ts" />
+    <None Include="akra\data\VertexDeclaration.ts" />
+    <None Include="akra\data\VertexElement.ts" />
+    <None Include="akra\events.ts" />
+    <None Include="akra\fx\AnnotationInstruction.ts" />
+    <None Include="akra\fx\ArithmeticExprInstruction.ts" />
+    <None Include="akra\fx\AssignmentExprInstruction.ts" />
+    <None Include="akra\fx\AttributeBlendContainer.ts" />
+    <None Include="akra\fx\Blender.ts" />
+    <None Include="akra\fx\BoolInstruction.ts" />
+    <None Include="akra\fx\BreakStmtInstruction.ts" />
+    <None Include="akra\fx\CastExprInstruction.ts" />
+    <None Include="akra\fx\CompileExprInstruction.ts" />
+    <None Include="akra\fx\ComplexExprInstruction.ts" />
+    <None Include="akra\fx\ComplexTypeBlendContainer.ts" />
+    <None Include="akra\fx\ComplexTypeInstruction.ts" />
+    <None Include="akra\fx\ComponentBlend.ts" />
+    <None Include="akra\fx\ComponentPassInputBlend.ts" />
+    <None Include="akra\fx\Composer.ts" />
+    <None Include="akra\fx\ConditionalExprInstruction.ts" />
+    <None Include="akra\fx\ConstructorCallInstruction.ts" />
+    <None Include="akra\fx\DeclInstruction.ts" />
+    <None Include="akra\fx\DeclStmtInstruction.ts" />
+    <None Include="akra\fx\errors.ts" />
+    <None Include="akra\fx\ExprInstruction.ts" />
+    <None Include="akra\fx\ExprStmtInstruction.ts" />
+    <None Include="akra\fx\ExprTemplateTranslator.ts" />
+    <None Include="akra\fx\ExtractExprInstruction.ts" />
+    <None Include="akra\fx\ExtractStmtInstruction.ts" />
+    <None Include="akra\fx\ExtSystemDataContainer.ts" />
+    <None Include="akra\fx\FloatInstruction.ts" />
+    <None Include="akra\fx\ForStmtInstruction.ts" />
+    <None Include="akra\fx\FunctionCallInstruction.ts" />
+    <None Include="akra\fx\FunctionDefInstruction.ts" />
+    <None Include="akra\fx\FunctionInstruction.ts" />
+    <None Include="akra\fx\HashTree.ts" />
+    <None Include="akra\fx\IdExprInstruction.ts" />
+    <None Include="akra\fx\IdInstruction.ts" />
+    <None Include="akra\fx\IfStmtInstruction.ts" />
+    <None Include="akra\fx\InitExprInstruction.ts" />
+    <None Include="akra\fx\Instruction.ts" />
+    <None Include="akra\fx\InstructionCollector.ts" />
+    <None Include="akra\fx\IntInstruction.ts" />
+    <None Include="akra\fx\KeywordInstruction.ts" />
+    <None Include="akra\fx\LogicalExprInstruction.ts" />
+    <None Include="akra\fx\Maker.ts" />
+    <None Include="akra\fx\MemExprInstruction.ts" />
+    <None Include="akra\fx\PassBlend.ts" />
+    <None Include="akra\fx\PassInputBlend.ts" />
+    <None Include="akra\fx\PassInstruction.ts" />
+    <None Include="akra\fx\PostfixArithmeticInstruction.ts" />
+    <None Include="akra\fx\PostfixIndexInstruction.ts" />
+    <None Include="akra\fx\PostfixPointInstruction.ts" />
+    <None Include="akra\fx\PrimaryExprInstruction.ts" />
+    <None Include="akra\fx\ProgramScope.ts" />
+    <None Include="akra\fx\RelationalExprInstruction.ts" />
+    <None Include="akra\fx\ReturnStmtInstruction.ts" />
+    <None Include="akra\fx\SamplerBlender.ts" />
+    <None Include="akra\fx\SamplerStateBlockInstruction.ts" />
+    <None Include="akra\fx\SemicolonStmtInstruction.ts" />
+    <None Include="akra\fx\SimpleInstruction.ts" />
+    <None Include="akra\fx\StmtBlockInstruction.ts" />
+    <None Include="akra\fx\StmtInstruction.ts" />
+    <None Include="akra\fx\StringInstruction.ts" />
+    <None Include="akra\fx\SystemCallInstruction.ts" />
+    <None Include="akra\fx\SystemFunctionInstruction.ts" />
+    <None Include="akra\fx\SystemTypeInstruction.ts" />
+    <None Include="akra\fx\TechniqueInstruction.ts" />
+    <None Include="akra\fx\TexcoordSwapper.ts" />
+    <None Include="akra\fx\TypedInstruction.ts" />
+    <None Include="akra\fx\TypeInstruction.ts" />
+    <None Include="akra\fx\UnaryExprInstruction.ts" />
+    <None Include="akra\fx\VariableBlendContainer.ts" />
+    <None Include="akra\fx\VariableContainer.ts" />
+    <None Include="akra\fx\VariableInstruction.ts" />
+    <None Include="akra\fx\VariableTypeInstruction.ts" />
+    <None Include="akra\fx\WhileStmtInstruction.ts" />
+    <None Include="akra\guid.ts" />
+    <None Include="akra\idl\IAjaxParams.ts" />
+    <None Include="akra\material\FlexMaterial.ts" />
+    <None Include="akra\net\Pipe.ts" />
+    <None Include="akra\parser\Parser.ts" />
+    <None Include="akra\util\ObjectArray.ts" />
+    <None Include="akra\util\ObjectList.ts" />
+    <None Include="akra\util\ObjectSortCollection.ts" />
+    <None Include="web.config" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">
@@ -29,6 +114,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="akra\data\Usage.ts" />
+    <None Include="akra\material\Material.ts" />
     <None Include="akra\threading\threading.ts" />
     <None Include="akra\io\templates\common.ts" />
     <None Include="akra\webgl\webgl.ts" />
@@ -46,19 +133,19 @@
     <None Include="akra\net\RPC.ts" />
     <None Include="akra\ajax.ts" />
     <None Include="akra\akra.ts" />
-    <None Include="akra\angular.ts" />
+    <None Include="extrenal\angular.ts" />
     <None Include="akra\geometry\classify\classify.ts" />
     <None Include="akra\color\colors.ts" />
     <None Include="akra\common.ts" />
     <None Include="akra\config\config.ts" />
     <None Include="akra\control\control.ts" />
     <None Include="akra\conv\conv.ts" />
-    <None Include="akra\core.ts" />
+    <None Include="akra\core\core.ts" />
     <None Include="akra\types.ts" />
     <None Include="akra\debug.ts" />
     <None Include="akra\deps\deps.ts" />
-    <None Include="akra\filedrop.ts" />
-    <None Include="akra\fx.ts" />
+    <None Include="akra\filedrop\filedrop.ts" />
+    <None Include="akra\fx\fx.ts" />
     <None Include="akra\gen\generate.ts" />
     <None Include="akra\geometry\geometry.ts" />
     <None Include="akra\geometry\Circle.ts" />
@@ -140,7 +227,6 @@
     <None Include="akra\idl\IEngine.ts" />
     <None Include="akra\idl\IEntity.ts" />
     <None Include="akra\idl\IEventProvider.ts" />
-    <None Include="akra\idl\IEventTable.ts" />
     <None Include="akra\idl\IExplorerFunc.ts" />
     <None Include="akra\idl\IFile.ts" />
     <None Include="akra\idl\IFileDropArea.ts" />
@@ -312,28 +398,24 @@
     <None Include="akra\geometry\intersect\intersect.ts" />
     <None Include="akra\limit.ts" />
     <None Include="akra\logger.ts" />
-    <None Include="akra\material.ts" />
+    <None Include="akra\material\materials.ts" />
     <None Include="akra\math\math.ts" />
     <None Include="akra\mem.ts" />
-    <None Include="akra\net.ts" />
-    <None Include="akra\parser.ts" />
+    <None Include="akra\net\net.ts" />
     <None Include="akra\parser\Item.ts" />
     <None Include="akra\parser\Lexer.ts" />
     <None Include="akra\parser\ParseTree.ts" />
     <None Include="akra\parser\State.ts" />
     <None Include="akra\parser\symbols.ts" />
     <None Include="akra\path\path.ts" />
-    <None Include="akra\pixelUtil.ts" />
-    <None Include="akra\render.ts" />
-    <None Include="akra\save.ts" />
-    <None Include="akra\sid.ts" />
-    <None Include="akra\sort.ts" />
-    <None Include="akra\threading.ts" />
+    <None Include="akra\pixelUtil\pixelUtil.ts" />
+    <None Include="akra\render\render.ts" />
+    <None Include="extrenal\save.ts" />
+    <None Include="akra\sort\sort.ts" />
     <None Include="akra\time.ts" />
-    <None Include="akra\type.ts" />
     <None Include="akra\uri\uri.ts" />
-    <None Include="akra\zip.ts" />
-    <None Include="akra\fixes.d.ts" />
+    <None Include="extrenal\zip.ts" />
+    <None Include="akra\idl\3d-party\fixes.d.ts" />
     <None Include="akra\geometry\Box.ts" />
     <None Include="akra\geometry\Frustum.ts" />
     <None Include="akra\geometry\Plane2d.ts" />
@@ -362,6 +444,21 @@
     <None Include="akra\io\StorageFile.ts" />
     <None Include="akra\io\TFile.ts" />
     <None Include="akra\io\UnPacker.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="akra\idl\IPixelFormatDescription.ts" />
+    <Content Include="akra\pixelUtil\Codec.ts" />
+    <Content Include="akra\pixelUtil\CodecData.ts" />
+    <Content Include="akra\pixelUtil\ImgCodec.ts" />
+    <Content Include="akra\pixelUtil\ImgData.ts" />
+    <Content Include="akra\pixelUtil\PixelBox.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

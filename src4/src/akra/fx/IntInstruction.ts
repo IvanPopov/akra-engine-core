@@ -1,7 +1,7 @@
 import ExprInstruction = require("fx/ExprInstruction");
 import Effect = require("fx/Effect");
 
-class IntInstruction extends ExprInstruction implements AIAFXLiteralInstruction {
+class IntInstruction extends ExprInstruction implements IAFXLiteralInstruction {
 		private _iValue: int;
 		/**
 		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
@@ -10,10 +10,10 @@ class IntInstruction extends ExprInstruction implements AIAFXLiteralInstruction 
 			super();
 			this._iValue = 0;
 			this._pType = Effect.getSystemType("int").getVariableType();
-			this._eInstructionType = AEAFXInstructionTypes.k_IntInstruction;
+			this._eInstructionType = EAFXInstructionTypes.k_IntInstruction;
 		}
 
-		/** inline */ setValue(iValue: int): void{
+		/**  */ setValue(iValue: int): void{
 			this._iValue = iValue;
 		}
 
@@ -36,8 +36,8 @@ class IntInstruction extends ExprInstruction implements AIAFXLiteralInstruction 
 			return true;
 		}
 
-		clone(pRelationMap?: AIAFXInstructionMap): AIAFXLiteralInstruction {
-			var pClonedInstruction: AIAFXLiteralInstruction = <AIAFXLiteralInstruction>(super.clone(pRelationMap));
+		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
 			pClonedInstruction.setValue(this._iValue);
 			return pClonedInstruction;
 		}

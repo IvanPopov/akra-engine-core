@@ -1,63 +1,65 @@
-﻿	var Usages = {
-        
-        POSITION: "POSITION", 
-	    POSITION1	: "POSITION1",
-	    POSITION2	: "POSITION2",
-	    POSITION3	: "POSITION3",
+﻿module akra.data {
 
-	    BLENDWEIGHT	: "BLENDWEIGHT",
-	    BLENDINDICES: "BLENDINDICES",
-	    BLENDMETA	: "BLENDMETA",
+    export var Usages = {
 
-	    NORMAL 		: "NORMAL",
-	    NORMAL1		: "NORMAL1",
-	    NORMAL2		: "NORMAL2",
-	    NORMAL3		: "NORMAL3",
+        POSITION: "POSITION",
+        POSITION1: "POSITION1",
+        POSITION2: "POSITION2",
+        POSITION3: "POSITION3",
 
-	    PSIZE		: "PSIZE",
+        BLENDWEIGHT: "BLENDWEIGHT",
+        BLENDINDICES: "BLENDINDICES",
+        BLENDMETA: "BLENDMETA",
 
-	    TEXCOORD 	: "TEXCOORD",
-	    TEXCOORD1	: "TEXCOORD1",
-	    TEXCOORD2	: "TEXCOORD2",
-	    TEXCOORD3	: "TEXCOORD3",
-	    TEXCOORD4	: "TEXCOORD4",
-	    TEXCOORD5	: "TEXCOORD5",
+        NORMAL: "NORMAL",
+        NORMAL1: "NORMAL1",
+        NORMAL2: "NORMAL2",
+        NORMAL3: "NORMAL3",
 
-	    TANGENT		: "TANGENT",
-	    BINORMAL 	: "BINORMAL",
+        PSIZE: "PSIZE",
 
-	    TESSFACTOR	: "TESSFACTOR",
-	    COLOR 		: "COLOR",
-	    FOG 		: "FOG",
-	    DEPTH 		: "DEPTH",
-	    SAMPLE 		: "SAMPLE",
+        TEXCOORD: "TEXCOORD",
+        TEXCOORD1: "TEXCOORD1",
+        TEXCOORD2: "TEXCOORD2",
+        TEXCOORD3: "TEXCOORD3",
+        TEXCOORD4: "TEXCOORD4",
+        TEXCOORD5: "TEXCOORD5",
 
-	    INDEX 		: "INDEX",
-		INDEX0 		: "INDEX0",
-	    INDEX1 		: "INDEX1",
-	    INDEX2 		: "INDEX2",
-	    INDEX3 		: "INDEX3",
-	    //system indices starts from 10
-	    INDEX10 	: "INDEX10",
-	    INDEX11 	: "INDEX11",
-	    INDEX12 	: "INDEX12",
-	    INDEX13 	: "INDEX13",
+        TANGENT: "TANGENT",
+        BINORMAL: "BINORMAL",
 
-	    MATERIAL 	: "MATERIAL",
-	    MATERIAL1 	: "MATERIAL1",
-	    MATERIAL2 	: "MATERIAL2",
+        TESSFACTOR: "TESSFACTOR",
+        COLOR: "COLOR",
+        FOG: "FOG",
+        DEPTH: "DEPTH",
+        SAMPLE: "SAMPLE",
 
-	    DIFFUSE		: "DIFFUSE",
-	    AMBIENT 	: "AMBIENT",
-	    SPECULAR 	: "SPECULAR",
-	    EMISSIVE 	: "EMISSIVE",
-	    SHININESS 	: "SHININESS",
+        INDEX: "INDEX",
+        INDEX0: "INDEX0",
+        INDEX1: "INDEX1",
+        INDEX2: "INDEX2",
+        INDEX3: "INDEX3",
+        //system indices starts from 10
+        INDEX10: "INDEX10",
+        INDEX11: "INDEX11",
+        INDEX12: "INDEX12",
+        INDEX13: "INDEX13",
 
-	    //special semantic for video buffer
-	    TEXTURE_HEADER : "TEXTURE_HEADER",
+        MATERIAL: "MATERIAL",
+        MATERIAL1: "MATERIAL1",
+        MATERIAL2: "MATERIAL2",
 
-	    UNKNOWN 	: "UNKNOWN",
-	    END 		: "\a\n\r"
+        DIFFUSE: "DIFFUSE",
+        AMBIENT: "AMBIENT",
+        SPECULAR: "SPECULAR",
+        EMISSIVE: "EMISSIVE",
+        SHININESS: "SHININESS",
+
+        //special semantic for video buffer
+        TEXTURE_HEADER: "TEXTURE_HEADER",
+
+        UNKNOWN: "UNKNOWN",
+        END: "\a\n\r"
     };
 
-    export = Usages;
+}

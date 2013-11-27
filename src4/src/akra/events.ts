@@ -2,7 +2,7 @@
 
 module akra {
 
-    export class Signal<T extends Function, S> implements ISignal<T, S> {
+    export class Signal<T extends Function, S> implements ISignal<T> {
         private _pBroadcastListeners: IListener<T>[] = null;
         private _nBroadcastListenersCount: uint = 0;
         private _pUnicastListener: IListener<T> = null;

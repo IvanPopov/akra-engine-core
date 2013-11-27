@@ -1,5 +1,5 @@
-/// <reference path="../idl/AIAFXInstruction.ts" />
-/// <reference path="../idl/AITexture.ts" />
+/// <reference path="../idl/IAFXInstruction.ts" />
+/// <reference path="../idl/ITexture.ts" />
 
 import ExprInstruction = require("fx/ExprInstruction");
 
@@ -7,13 +7,13 @@ import ExprInstruction = require("fx/ExprInstruction");
   * Represetn sampler_state { states }
   */
 class SamplerStateBlockInstruction extends ExprInstruction {
-    private _pTexture: AIAFXVariableDeclInstruction = null;
+    private _pTexture: IAFXVariableDeclInstruction = null;
     private _pSamplerParams: any = null;
 
     constructor() {
         super();
         this._pInstructionList = null;
-        this._eInstructionType = AEAFXInstructionTypes.k_SamplerStateBlockInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_SamplerStateBlockInstruction;
     }
 
     addState(sStateType: string, sStateValue: string): void {
@@ -25,11 +25,11 @@ class SamplerStateBlockInstruction extends ExprInstruction {
         return;
     }
 
-    setTexture(pTexture: AIAFXVariableDeclInstruction): void {
+    setTexture(pTexture: IAFXVariableDeclInstruction): void {
         this._pTexture = pTexture;
     }
 
-    getTexture(): AIAFXVariableDeclInstruction {
+    getTexture(): IAFXVariableDeclInstruction {
         return this._pTexture;
     }
 
@@ -38,7 +38,7 @@ class SamplerStateBlockInstruction extends ExprInstruction {
     }
 
     evaluate(): boolean {
-        var pSamplerState: AIAFXSamplerState = {
+        var pSamplerState: IAFXSamplerState = {
             texture: null,
             textureName: "",
 
@@ -77,34 +77,34 @@ class SamplerStateBlockInstruction extends ExprInstruction {
         return true;
     }
 
-    static convertWrapMode(sState: string): AETextureWrapModes {
+    static convertWrapMode(sState: string): ETextureWrapModes {
         switch (sState) {
             case "WRAP":
-                return AETextureWrapModes.REPEAT;
+                return ETextureWrapModes.REPEAT;
             case "CLAMP":
-                return AETextureWrapModes.CLAMP_TO_EDGE;
+                return ETextureWrapModes.CLAMP_TO_EDGE;
             case "MIRROR":
-                return AETextureWrapModes.MIRRORED_REPEAT;
+                return ETextureWrapModes.MIRRORED_REPEAT;
 
             default:
                 return 0;
         }
     }
 
-    static convertFilters(sState: string): AETextureFilters {
+    static convertFilters(sState: string): ETextureFilters {
         switch (sState) {
             case "NEAREST":
-                return AETextureFilters.NEAREST;
+                return ETextureFilters.NEAREST;
             case "LINEAR":
-                return AETextureFilters.LINEAR;
+                return ETextureFilters.LINEAR;
             case "NEAREST_MIPMAP_NEAREST":
-                return AETextureFilters.NEAREST_MIPMAP_NEAREST;
+                return ETextureFilters.NEAREST_MIPMAP_NEAREST;
             case "LINEAR_MIPMAP_NEAREST":
-                return AETextureFilters.LINEAR_MIPMAP_NEAREST;
+                return ETextureFilters.LINEAR_MIPMAP_NEAREST;
             case "NEAREST_MIPMAP_LINEAR":
-                return AETextureFilters.NEAREST_MIPMAP_LINEAR;
+                return ETextureFilters.NEAREST_MIPMAP_LINEAR;
             case "LINEAR_MIPMAP_LINEAR":
-                return AETextureFilters.LINEAR_MIPMAP_LINEAR;
+                return ETextureFilters.LINEAR_MIPMAP_LINEAR;
 
             default:
                 return 0;

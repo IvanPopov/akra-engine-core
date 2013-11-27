@@ -3,15 +3,15 @@ import ExprInstruction = require("fx/ExprInstruction");
 import Effect = require("fx/Effect");
 
 
-class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstruction {
-    private _pConstructorType: AIAFXTypeInstruction = null;
+class InitExprInstruction extends ExprInstruction implements IAFXInitExprInstruction {
+    private _pConstructorType: IAFXTypeInstruction = null;
     private _isConst: boolean = null;
     private _isArray: boolean = false;
 
     constructor() {
         super();
         this._pInstructionList = [];
-        this._eInstructionType = AEAFXInstructionTypes.k_InitExprInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_InitExprInstruction;
     }
 
     toFinalCode(): string {
@@ -37,7 +37,7 @@ class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstru
 
     isConst(): boolean {
         if (isNull(this._isConst)) {
-            var pInstructionList: AIAFXExprInstruction[] = <AIAFXExprInstruction[]>this.getInstructions();
+            var pInstructionList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
 
             for (var i: uint = 0; i < pInstructionList.length; i++) {
                 if (!pInstructionList[i].isConst()) {
@@ -52,7 +52,7 @@ class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstru
         return this._isConst;
     }
 
-    optimizeForVariableType(pType: AIAFXVariableTypeInstruction): boolean {
+    optimizeForVariableType(pType: IAFXVariableTypeInstruction): boolean {
         if ((pType.isNotBaseArray() && pType._getScope() === 0) ||
             (pType.isArray() && this._nInstructions > 1)) {
 
@@ -68,22 +68,22 @@ class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstru
                 this._isArray = true;
             }
 
-            var pArrayElementType: AIAFXVariableTypeInstruction = pType.getArrayElementType();
-            var pTestedInstruction: AIAFXExprInstruction = null;
+            var pArrayElementType: IAFXVariableTypeInstruction = pType.getArrayElementType();
+            var pTestedInstruction: IAFXExprInstruction = null;
             var isOk: boolean = false;
 
             for (var i: uint = 0; i < this._nInstructions; i++) {
-                pTestedInstruction = (<AIAFXExprInstruction>this.getInstructions()[i]);
+                pTestedInstruction = (<IAFXExprInstruction>this.getInstructions()[i]);
 
-                if (pTestedInstruction._getInstructionType() === AEAFXInstructionTypes.k_InitExprInstruction) {
-                    isOk = (<AIAFXInitExprInstruction>pTestedInstruction).optimizeForVariableType(pArrayElementType);
+                if (pTestedInstruction._getInstructionType() === EAFXInstructionTypes.k_InitExprInstruction) {
+                    isOk = (<IAFXInitExprInstruction>pTestedInstruction).optimizeForVariableType(pArrayElementType);
                     if (!isOk) {
                         return false;
                     }
                 }
                 else {
                     if (Effect.isSamplerType(pArrayElementType)) {
-                        if (pTestedInstruction._getInstructionType() !== AEAFXInstructionTypes.k_SamplerStateBlockInstruction) {
+                        if (pTestedInstruction._getInstructionType() !== EAFXInstructionTypes.k_SamplerStateBlockInstruction) {
                             return false;
                         }
                     }
@@ -100,13 +100,13 @@ class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstru
             return true;
         }
         else {
-            var pFirstInstruction: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[0];
+            var pFirstInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
 
             if (this._nInstructions === 1 &&
-                pFirstInstruction._getInstructionType() !== AEAFXInstructionTypes.k_InitExprInstruction) {
+                pFirstInstruction._getInstructionType() !== EAFXInstructionTypes.k_InitExprInstruction) {
 
                 if (Effect.isSamplerType(pType)) {
-                    if (pFirstInstruction._getInstructionType() === AEAFXInstructionTypes.k_SamplerStateBlockInstruction) {
+                    if (pFirstInstruction._getInstructionType() === EAFXInstructionTypes.k_SamplerStateBlockInstruction) {
                         return true;
                     }
                     else {
@@ -125,11 +125,11 @@ class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstru
                 return false;
             }
 
-            var pInstructionList: AIAFXInitExprInstruction[] = <AIAFXInitExprInstruction[]>this.getInstructions();
+            var pInstructionList: IAFXInitExprInstruction[] = <IAFXInitExprInstruction[]>this.getInstructions();
             var pFieldNameList: string[] = pType.getFieldNameList();
 
             for (var i: uint = 0; i < pInstructionList.length; i++) {
-                var pFieldType: AIAFXVariableTypeInstruction = pType.getFieldType(pFieldNameList[i]);
+                var pFieldType: IAFXVariableTypeInstruction = pType.getFieldType(pFieldNameList[i]);
                 if (!pInstructionList[i].optimizeForVariableType(pFieldType)) {
                     return false;
                 }
@@ -152,7 +152,7 @@ class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstru
             pRes = new Array(this._nInstructions);
 
             for (var i: uint = 0; i < this._nInstructions; i++) {
-                var pEvalInstruction = (<AIAFXExprInstruction>this.getInstructions()[i]);
+                var pEvalInstruction = (<IAFXExprInstruction>this.getInstructions()[i]);
 
                 if (pEvalInstruction.evaluate()) {
                     pRes[i] = pEvalInstruction.getEvalValue();
@@ -160,7 +160,7 @@ class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstru
             }
         }
         else if (this._nInstructions === 1) {
-            var pEvalInstruction = (<AIAFXExprInstruction>this.getInstructions()[0]);
+            var pEvalInstruction = (<IAFXExprInstruction>this.getInstructions()[0]);
             pEvalInstruction.evaluate();
             pRes = pEvalInstruction.getEvalValue();
         }
@@ -174,7 +174,7 @@ class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstru
 
             try {
                 if (Effect.isScalarType(this._pConstructorType)) {
-                    var pTestedInstruction: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[1];
+                    var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
                     if (this._nInstructions > 2 || !pTestedInstruction.evaluate()) {
                         return false;
                     }
@@ -183,7 +183,7 @@ class InitExprInstruction extends ExprInstruction implements AIAFXInitExprInstru
                 }
                 else {
                     for (var i: uint = 0; i < this._nInstructions; i++) {
-                        var pTestedInstruction: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[i];
+                        var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[i];
 
                         if (pTestedInstruction.evaluate()) {
                             pArguments[i] = pTestedInstruction.getEvalValue();

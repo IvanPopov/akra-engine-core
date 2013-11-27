@@ -9,7 +9,7 @@ class ConstructorCallInstruction extends ExprInstruction {
     constructor() {
         super();
         this._pInstructionList = [null];
-        this._eInstructionType = AEAFXInstructionTypes.k_ConstructorCallInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_ConstructorCallInstruction;
     }
 
     // isConst
@@ -32,17 +32,17 @@ class ConstructorCallInstruction extends ExprInstruction {
         return sCode;
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var pInstructionList: AIAFXAnalyzedInstruction[] = <AIAFXAnalyzedInstruction[]>this.getInstructions();
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+        var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
         for (var i: uint = 1; i < this._nInstructions; i++) {
-            pInstructionList[i].addUsedData(pUsedDataCollector, AEVarUsedMode.k_Read);
+            pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         }
     }
 
     isConst(): boolean {
         for (var i: uint = 1; i < this._nInstructions; i++) {
-            if (!(<AIAFXExprInstruction>this.getInstructions()[i]).isConst()) {
+            if (!(<IAFXExprInstruction>this.getInstructions()[i]).isConst()) {
                 return false;
             }
         }
@@ -65,7 +65,7 @@ class ConstructorCallInstruction extends ExprInstruction {
 
         try {
             if (Effect.isScalarType(this.getType())) {
-                var pTestedInstruction: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[1];
+                var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
                 if (this._nInstructions > 2 || !pTestedInstruction.evaluate()) {
                     return false;
                 }
@@ -74,7 +74,7 @@ class ConstructorCallInstruction extends ExprInstruction {
             }
             else {
                 for (var i: uint = 1; i < this._nInstructions; i++) {
-                    var pTestedInstruction: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[i];
+                    var pTestedInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[i];
 
                     if (pTestedInstruction.evaluate()) {
                         pArguments[i - 1] = pTestedInstruction.getEvalValue();

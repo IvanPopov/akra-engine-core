@@ -1,6 +1,6 @@
-/// <reference path="../idl/AIMap.ts" />
-/// <reference path="../idl/AERenderStates.ts" />
-/// <reference path="../idl/AERenderStateValues.ts" />
+/// <reference path="../idl/IMap.ts" />
+/// <reference path="../idl/ERenderStates.ts" />
+/// <reference path="../idl/ERenderStateValues.ts" />
 
 
 import render = require("render");
@@ -8,49 +8,49 @@ import DeclInstruction = require("fx/DeclInstruction");
 
 
 
-class PassInstruction extends DeclInstruction implements AIAFXPassInstruction {
-    private _pTempNodeList: AIParseNode[] = null;
-    private _pTempFoundedFuncList: AIAFXFunctionDeclInstruction[] = null;
-    private _pTempFoundedFuncTypeList: AEFunctionType[] = null;
-    private _pParseNode: AIParseNode = null;
+class PassInstruction extends DeclInstruction implements IAFXPassInstruction {
+    private _pTempNodeList: IParseNode[] = null;
+    private _pTempFoundedFuncList: IAFXFunctionDeclInstruction[] = null;
+    private _pTempFoundedFuncTypeList: EFunctionType[] = null;
+    private _pParseNode: IParseNode = null;
 
     private _sFunctionCode: string = "";
 
     private _isComlexPass: boolean = false;
-    private _pShadersMap: AIAFXFunctionDeclMap = null;
+    private _pShadersMap: IAFXFunctionDeclMap = null;
     private _fnPassFunction: { (engine: any, foreigtn: any, uniforms: any): void; } = null;
 
-    private _pVertexShader: AIAFXFunctionDeclInstruction = null;
-    private _pPixelShader: AIAFXFunctionDeclInstruction = null;
-    private _pPassStateMap: AIMap<AERenderStateValues> = null;
+    private _pVertexShader: IAFXFunctionDeclInstruction = null;
+    private _pPixelShader: IAFXFunctionDeclInstruction = null;
+    private _pPassStateMap: IMap<ERenderStateValues> = null;
 
 
-    private _pSharedVariableMapV: AIAFXVariableDeclMap = null;
-    private _pGlobalVariableMapV: AIAFXVariableDeclMap = null;
-    private _pUniformVariableMapV: AIAFXVariableDeclMap = null;
-    private _pForeignVariableMapV: AIAFXVariableDeclMap = null;
-    private _pTextureVariableMapV: AIAFXVariableDeclMap = null;
-    private _pUsedComplexTypeMapV: AIAFXTypeMap = null;
+    private _pSharedVariableMapV: IAFXVariableDeclMap = null;
+    private _pGlobalVariableMapV: IAFXVariableDeclMap = null;
+    private _pUniformVariableMapV: IAFXVariableDeclMap = null;
+    private _pForeignVariableMapV: IAFXVariableDeclMap = null;
+    private _pTextureVariableMapV: IAFXVariableDeclMap = null;
+    private _pUsedComplexTypeMapV: IAFXTypeMap = null;
 
-    private _pSharedVariableMapP: AIAFXVariableDeclMap = null;
-    private _pGlobalVariableMapP: AIAFXVariableDeclMap = null;
-    private _pUniformVariableMapP: AIAFXVariableDeclMap = null;
-    private _pForeignVariableMapP: AIAFXVariableDeclMap = null;
-    private _pTextureVariableMapP: AIAFXVariableDeclMap = null;
-    private _pUsedComplexTypeMapP: AIAFXTypeMap = null;
+    private _pSharedVariableMapP: IAFXVariableDeclMap = null;
+    private _pGlobalVariableMapP: IAFXVariableDeclMap = null;
+    private _pUniformVariableMapP: IAFXVariableDeclMap = null;
+    private _pForeignVariableMapP: IAFXVariableDeclMap = null;
+    private _pTextureVariableMapP: IAFXVariableDeclMap = null;
+    private _pUsedComplexTypeMapP: IAFXTypeMap = null;
 
-    private _pFullUniformVariableMap: AIAFXVariableDeclMap = null;
-    private _pFullForeignVariableMap: AIAFXVariableDeclMap = null;
-    private _pFullTextureVariableMap: AIAFXVariableDeclMap = null;
+    private _pFullUniformVariableMap: IAFXVariableDeclMap = null;
+    private _pFullForeignVariableMap: IAFXVariableDeclMap = null;
+    private _pFullTextureVariableMap: IAFXVariableDeclMap = null;
 
 
     constructor() {
         super();
         this._pInstructionList = null;
-        this._eInstructionType = AEAFXInstructionTypes.k_PassInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_PassInstruction;
     }
 
-    _addFoundFunction(pNode: AIParseNode, pShader: AIAFXFunctionDeclInstruction, eType: AEFunctionType): void {
+    _addFoundFunction(pNode: IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void {
         if (isNull(this._pTempNodeList)) {
             this._pTempNodeList = [];
             this._pTempFoundedFuncList = [];
@@ -62,7 +62,7 @@ class PassInstruction extends DeclInstruction implements AIAFXPassInstruction {
         this._pTempFoundedFuncTypeList.push(eType);
     }
 
-    _getFoundedFunction(pNode: AIParseNode): AIAFXFunctionDeclInstruction {
+    _getFoundedFunction(pNode: IParseNode): IAFXFunctionDeclInstruction {
         if (isNull(this._pTempNodeList)) {
             return null;
         }
@@ -76,7 +76,7 @@ class PassInstruction extends DeclInstruction implements AIAFXPassInstruction {
         return null;
     }
 
-    _getFoundedFunctionType(pNode: AIParseNode): AEFunctionType {
+    _getFoundedFunctionType(pNode: IParseNode): EFunctionType {
         if (isNull(this._pTempNodeList)) {
             return null;
         }
@@ -90,11 +90,11 @@ class PassInstruction extends DeclInstruction implements AIAFXPassInstruction {
         return null;
     }
 
-    _setParseNode(pNode: AIParseNode): void {
+    _setParseNode(pNode: IParseNode): void {
         this._pParseNode = pNode;
     }
 
-    _getParseNode(): AIParseNode {
+    _getParseNode(): IParseNode {
         return this._pParseNode;
     }
 
@@ -108,63 +108,63 @@ class PassInstruction extends DeclInstruction implements AIAFXPassInstruction {
         this._isComlexPass = isComplex;
     }
 
-    _getSharedVariableMapV(): AIAFXVariableDeclMap {
+    _getSharedVariableMapV(): IAFXVariableDeclMap {
         return this._pSharedVariableMapV;
     }
 
-    _getGlobalVariableMapV(): AIAFXVariableDeclMap {
+    _getGlobalVariableMapV(): IAFXVariableDeclMap {
         return this._pGlobalVariableMapV;
     }
 
-    _getUniformVariableMapV(): AIAFXVariableDeclMap {
+    _getUniformVariableMapV(): IAFXVariableDeclMap {
         return this._pUniformVariableMapV;
     }
 
-    _getForeignVariableMapV(): AIAFXVariableDeclMap {
+    _getForeignVariableMapV(): IAFXVariableDeclMap {
         return this._pForeignVariableMapV;
     }
 
-    _getTextureVariableMapV(): AIAFXVariableDeclMap {
+    _getTextureVariableMapV(): IAFXVariableDeclMap {
         return this._pTextureVariableMapV;
     }
 
-    _getUsedComplexTypeMapV(): AIAFXTypeMap {
+    _getUsedComplexTypeMapV(): IAFXTypeMap {
         return this._pUsedComplexTypeMapV;
     }
 
-    _getSharedVariableMapP(): AIAFXVariableDeclMap {
+    _getSharedVariableMapP(): IAFXVariableDeclMap {
         return this._pSharedVariableMapP;
     }
 
-    _getGlobalVariableMapP(): AIAFXVariableDeclMap {
+    _getGlobalVariableMapP(): IAFXVariableDeclMap {
         return this._pGlobalVariableMapP;
     }
 
-    _getUniformVariableMapP(): AIAFXVariableDeclMap {
+    _getUniformVariableMapP(): IAFXVariableDeclMap {
         return this._pUniformVariableMapP;
     }
 
-    _getForeignVariableMapP(): AIAFXVariableDeclMap {
+    _getForeignVariableMapP(): IAFXVariableDeclMap {
         return this._pForeignVariableMapP;
     }
 
-    _getTextureVariableMapP(): AIAFXVariableDeclMap {
+    _getTextureVariableMapP(): IAFXVariableDeclMap {
         return this._pTextureVariableMapP;
     }
 
-    _getUsedComplexTypeMapP(): AIAFXTypeMap {
+    _getUsedComplexTypeMapP(): IAFXTypeMap {
         return this._pUsedComplexTypeMapP;
     }
 
-    _getFullUniformMap(): AIAFXVariableDeclMap {
+    _getFullUniformMap(): IAFXVariableDeclMap {
         return this._pFullUniformVariableMap;
     }
 
-    _getFullForeignMap(): AIAFXVariableDeclMap {
+    _getFullForeignMap(): IAFXVariableDeclMap {
         return this._pFullForeignVariableMap;
     }
 
-    _getFullTextureMap(): AIAFXVariableDeclMap {
+    _getFullTextureMap(): IAFXVariableDeclMap {
         return this._pFullTextureVariableMap;
     }
 
@@ -173,20 +173,20 @@ class PassInstruction extends DeclInstruction implements AIAFXPassInstruction {
         return this._isComlexPass;
     }
 
-    getVertexShader(): AIAFXFunctionDeclInstruction {
+    getVertexShader(): IAFXFunctionDeclInstruction {
         return this._pVertexShader;
     }
 
-    getPixelShader(): AIAFXFunctionDeclInstruction {
+    getPixelShader(): IAFXFunctionDeclInstruction {
         return this._pPixelShader;
     }
 
-    addShader(pShader: AIAFXFunctionDeclInstruction): void {
-        var isVertex: boolean = pShader.getFunctionType() === AEFunctionType.k_Vertex;
+    addShader(pShader: IAFXFunctionDeclInstruction): void {
+        var isVertex: boolean = pShader.getFunctionType() === EFunctionType.k_Vertex;
 
         if (this.isComplexPass()) {
             if (isNull(this._pShadersMap)) {
-                this._pShadersMap = <AIAFXFunctionDeclMap>{};
+                this._pShadersMap = <IAFXFunctionDeclMap>{};
             }
             var iShader: uint = pShader._getInstructionID();
             this._pShadersMap[iShader] = pShader;
@@ -205,7 +205,7 @@ class PassInstruction extends DeclInstruction implements AIAFXPassInstruction {
         }
     }
 
-    setState(eType: AERenderStates, eValue: AERenderStateValues): void {
+    setState(eType: ERenderStates, eValue: ERenderStateValues): void {
         if (isNull(this._pPassStateMap)) {
             this._pPassStateMap = render.createRenderStateMap();
         }
@@ -244,53 +244,53 @@ class PassInstruction extends DeclInstruction implements AIAFXPassInstruction {
         return true;
     }
 
-    getState(eType: AERenderStates): AERenderStateValues {
-        return !isNull(this._pPassStateMap) ? this._pPassStateMap[eType] : AERenderStateValues.UNDEF;
+    getState(eType: ERenderStates): ERenderStateValues {
+        return !isNull(this._pPassStateMap) ? this._pPassStateMap[eType] : ERenderStateValues.UNDEF;
     }
 
-    _getRenderStates(): AIMap<AERenderStateValues> {
+    _getRenderStates(): IMap<ERenderStateValues> {
         return this._pPassStateMap;
     }
 
     private clearPassStates(): void {
         if (!isNull(this._pPassStateMap)) {
-            this._pPassStateMap[AERenderStates.BLENDENABLE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.CULLFACEENABLE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.ZENABLE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.ZWRITEENABLE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.DITHERENABLE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.SCISSORTESTENABLE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.STENCILTESTENABLE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.POLYGONOFFSETFILLENABLE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.CULLFACE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.FRONTFACE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.SRCBLEND] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.DESTBLEND] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.ZFUNC] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.ALPHABLENDENABLE] = AERenderStateValues.UNDEF;
-            this._pPassStateMap[AERenderStates.ALPHATESTENABLE] = AERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.BLENDENABLE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.CULLFACEENABLE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.ZENABLE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.ZWRITEENABLE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.DITHERENABLE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.SCISSORTESTENABLE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.STENCILTESTENABLE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.POLYGONOFFSETFILLENABLE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.CULLFACE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.FRONTFACE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.SRCBLEND] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.DESTBLEND] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.ZFUNC] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.ALPHABLENDENABLE] = ERenderStateValues.UNDEF;
+            this._pPassStateMap[ERenderStates.ALPHATESTENABLE] = ERenderStateValues.UNDEF;
         }
     }
 
     private generateInfoAboutUsedVaraibles(): void {
         if (isNull(this._pSharedVariableMapV)) {
-            this._pSharedVariableMapV = <AIAFXVariableDeclMap>{};
-            this._pGlobalVariableMapV = <AIAFXVariableDeclMap>{};
-            this._pUniformVariableMapV = <AIAFXVariableDeclMap>{};
-            this._pForeignVariableMapV = <AIAFXVariableDeclMap>{};
-            this._pTextureVariableMapV = <AIAFXVariableDeclMap>{};
-            this._pUsedComplexTypeMapV = <AIAFXTypeMap>{};
+            this._pSharedVariableMapV = <IAFXVariableDeclMap>{};
+            this._pGlobalVariableMapV = <IAFXVariableDeclMap>{};
+            this._pUniformVariableMapV = <IAFXVariableDeclMap>{};
+            this._pForeignVariableMapV = <IAFXVariableDeclMap>{};
+            this._pTextureVariableMapV = <IAFXVariableDeclMap>{};
+            this._pUsedComplexTypeMapV = <IAFXTypeMap>{};
 
-            this._pSharedVariableMapP = <AIAFXVariableDeclMap>{};
-            this._pGlobalVariableMapP = <AIAFXVariableDeclMap>{};
-            this._pUniformVariableMapP = <AIAFXVariableDeclMap>{};
-            this._pForeignVariableMapP = <AIAFXVariableDeclMap>{};
-            this._pTextureVariableMapP = <AIAFXVariableDeclMap>{};
-            this._pUsedComplexTypeMapP = <AIAFXTypeMap>{};
+            this._pSharedVariableMapP = <IAFXVariableDeclMap>{};
+            this._pGlobalVariableMapP = <IAFXVariableDeclMap>{};
+            this._pUniformVariableMapP = <IAFXVariableDeclMap>{};
+            this._pForeignVariableMapP = <IAFXVariableDeclMap>{};
+            this._pTextureVariableMapP = <IAFXVariableDeclMap>{};
+            this._pUsedComplexTypeMapP = <IAFXTypeMap>{};
 
-            this._pFullUniformVariableMap = <AIAFXVariableDeclMap>{};
-            this._pFullForeignVariableMap = <AIAFXVariableDeclMap>{};
-            this._pFullTextureVariableMap = <AIAFXVariableDeclMap>{};
+            this._pFullUniformVariableMap = <IAFXVariableDeclMap>{};
+            this._pFullForeignVariableMap = <IAFXVariableDeclMap>{};
+            this._pFullTextureVariableMap = <IAFXVariableDeclMap>{};
         }
 
         if (this.isComplexPass()) {
@@ -308,23 +308,23 @@ class PassInstruction extends DeclInstruction implements AIAFXPassInstruction {
         }
     }
 
-    private addInfoAbouUsedVariablesFromFunction(pFunction: AIAFXFunctionDeclInstruction): void {
-        var pSharedVars: AIAFXVariableDeclMap = pFunction._getSharedVariableMap();
-        var pGlobalVars: AIAFXVariableDeclMap = pFunction._getGlobalVariableMap();
-        var pUniformVars: AIAFXVariableDeclMap = pFunction._getUniformVariableMap();
-        var pForeignVars: AIAFXVariableDeclMap = pFunction._getForeignVariableMap();
-        var pTextureVars: AIAFXVariableDeclMap = pFunction._getTextureVariableMap();
-        var pTypes: AIAFXTypeMap = pFunction._getUsedComplexTypeMap();
+    private addInfoAbouUsedVariablesFromFunction(pFunction: IAFXFunctionDeclInstruction): void {
+        var pSharedVars: IAFXVariableDeclMap = pFunction._getSharedVariableMap();
+        var pGlobalVars: IAFXVariableDeclMap = pFunction._getGlobalVariableMap();
+        var pUniformVars: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
+        var pForeignVars: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
+        var pTextureVars: IAFXVariableDeclMap = pFunction._getTextureVariableMap();
+        var pTypes: IAFXTypeMap = pFunction._getUsedComplexTypeMap();
 
 
-        var pSharedVarsTo: AIAFXVariableDeclMap = null;
-        var pGlobalVarsTo: AIAFXVariableDeclMap = null;
-        var pUniformVarsTo: AIAFXVariableDeclMap = null;
-        var pForeignVarsTo: AIAFXVariableDeclMap = null;
-        var pTextureVarsTo: AIAFXVariableDeclMap = null;
-        var pTypesTo: AIAFXTypeMap = null;
+        var pSharedVarsTo: IAFXVariableDeclMap = null;
+        var pGlobalVarsTo: IAFXVariableDeclMap = null;
+        var pUniformVarsTo: IAFXVariableDeclMap = null;
+        var pForeignVarsTo: IAFXVariableDeclMap = null;
+        var pTextureVarsTo: IAFXVariableDeclMap = null;
+        var pTypesTo: IAFXTypeMap = null;
 
-        if (pFunction.getFunctionType() === AEFunctionType.k_Vertex) {
+        if (pFunction.getFunctionType() === EFunctionType.k_Vertex) {
             pSharedVarsTo = this._pSharedVariableMapV;
             pGlobalVarsTo = this._pGlobalVariableMapV;
             pUniformVarsTo = this._pUniformVariableMapV;

@@ -1,9 +1,9 @@
-﻿/// <reference path="../idl/AIAFXInstruction.ts" />
+﻿/// <reference path="../idl/IAFXInstruction.ts" />
 
 import Instruction = require("fx/Instruction");
 
 
-class KeywordInstruction extends Instruction implements AIAFXKeywordInstruction {
+class KeywordInstruction extends Instruction implements IAFXKeywordInstruction {
     private _sValue: string;
 
     /**
@@ -12,7 +12,7 @@ class KeywordInstruction extends Instruction implements AIAFXKeywordInstruction 
     constructor() {
         super();
         this._sValue = "";
-        this._eInstructionType = AEAFXInstructionTypes.k_KeywordInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_KeywordInstruction;
     }
 
     setValue(sValue: string): void {

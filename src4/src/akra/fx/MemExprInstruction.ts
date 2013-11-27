@@ -1,30 +1,30 @@
 import ExprInstruction = require("fx/ExprInstruction");
 
 class MemExprInstruction extends ExprInstruction {
-    private _pBuffer: AIAFXVariableDeclInstruction = null;
+    private _pBuffer: IAFXVariableDeclInstruction = null;
 
     constructor() {
         super();
         this._pInstructionList = null;
-        this._eInstructionType = AEAFXInstructionTypes.k_MemExprInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_MemExprInstruction;
     }
 
-    getBuffer(): AIAFXVariableDeclInstruction {
+    getBuffer(): IAFXVariableDeclInstruction {
         return this._pBuffer;
     }
 
-    setBuffer(pBuffer: AIAFXVariableDeclInstruction): void {
+    setBuffer(pBuffer: IAFXVariableDeclInstruction): void {
         this._pBuffer = pBuffer;
         this.setType(pBuffer.getType());
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var pBufferType: AIAFXVariableTypeInstruction = this.getBuffer().getType();
-        var pInfo: AIAFXTypeUseInfoContainer = pUsedDataCollector[pBufferType._getInstructionID()];
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+        var pBufferType: IAFXVariableTypeInstruction = this.getBuffer().getType();
+        var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pBufferType._getInstructionID()];
 
         if (!isDef(pInfo)) {
-            pInfo = <AIAFXTypeUseInfoContainer>{
+            pInfo = <IAFXTypeUseInfoContainer>{
                 type: pBufferType,
                 isRead: false,
                 isWrite: false,
@@ -35,7 +35,7 @@ class MemExprInstruction extends ExprInstruction {
 
 				pUsedDataCollector[pBufferType._getInstructionID()] = pInfo;
         }
-        if (eUsedMode !== AEVarUsedMode.k_Undefined) {
+        if (eUsedMode !== EVarUsedMode.k_Undefined) {
             pInfo.isRead = true;
             pInfo.numRead++;
         }

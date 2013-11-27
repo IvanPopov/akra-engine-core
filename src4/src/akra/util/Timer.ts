@@ -1,9 +1,9 @@
-/// <reference path="../idl/AIUtilTimer.ts" />
+/// <reference path="../idl/IUtilTimer.ts" />
 
 import time = require("time");
 import logger = require("logger");
 
-class Timer implements AIUtilTimer {
+class Timer implements IUtilTimer {
     private _isTimerInitialized: boolean = false;
     private _isTimerStopped: boolean = false;
     private _fTicksPerSec: float = 0.;
@@ -12,29 +12,29 @@ class Timer implements AIUtilTimer {
     private _iBaseTime: int = 0;
 
     get absoluteTime(): float {
-        return this.execCommand(AEUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
+        return this.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
     }
 
     get appTime(): float {
-        return this.execCommand(AEUtilTimerCommands.TIMER_GET_APP_TIME);
+        return this.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
     }
 
     get elapsedTime(): float {
-        return this.execCommand(AEUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
+        return this.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
     }
 
     start(): boolean {
-        return this.execCommand(AEUtilTimerCommands.TIMER_START) === 0;
+        return this.execCommand(EUtilTimerCommands.TIMER_START) === 0;
     }
     stop(): boolean {
-        return this.execCommand(AEUtilTimerCommands.TIMER_STOP) === 0;
+        return this.execCommand(EUtilTimerCommands.TIMER_STOP) === 0;
     }
 
     reset(): boolean {
-        return this.execCommand(AEUtilTimerCommands.TIMER_RESET) === 0;
+        return this.execCommand(EUtilTimerCommands.TIMER_RESET) === 0;
     }
 
-    execCommand(eCommand: AEUtilTimerCommands): float {
+    execCommand(eCommand: EUtilTimerCommands): float {
         var fTime: float = 0.;
         var fElapsedTime: float = 0.;
         var iTime: int;
@@ -46,8 +46,8 @@ class Timer implements AIUtilTimer {
 
         // Get either the current time or the stop time, depending
         // on whether we're stopped and what command was sent
-        if (this._iStopTime != 0 && eCommand != AEUtilTimerCommands.TIMER_START &&
-            eCommand != AEUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
+        if (this._iStopTime != 0 && eCommand != EUtilTimerCommands.TIMER_START &&
+            eCommand != EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
             iTime = this._iStopTime;
         }
         else {
@@ -55,7 +55,7 @@ class Timer implements AIUtilTimer {
         }
 
         // Return the elapsed time
-        if (eCommand == AEUtilTimerCommands.TIMER_GET_ELAPSED_TIME) {
+        if (eCommand == EUtilTimerCommands.TIMER_GET_ELAPSED_TIME) {
             fElapsedTime = (iTime - this._iLastElapsedTime) / this._fTicksPerSec;
             // LOG(iTime - this.iLastElapsedTime,  this.fTicksPerSec, fElapsedTime);
             this._iLastElapsedTime = iTime;
@@ -63,13 +63,13 @@ class Timer implements AIUtilTimer {
         }
 
         // Return the current time
-        if (eCommand == AEUtilTimerCommands.TIMER_GET_APP_TIME) {
+        if (eCommand == EUtilTimerCommands.TIMER_GET_APP_TIME) {
             var fAppTime = (iTime - this._iBaseTime) / this._fTicksPerSec;
             return fAppTime;
         }
 
         // Reset the timer
-        if (eCommand == AEUtilTimerCommands.TIMER_RESET) {
+        if (eCommand == EUtilTimerCommands.TIMER_RESET) {
             this._iBaseTime = iTime;
             this._iLastElapsedTime = iTime;
             this._iStopTime = 0;
@@ -78,7 +78,7 @@ class Timer implements AIUtilTimer {
         }
 
         // Start the timer
-        if (eCommand == AEUtilTimerCommands.TIMER_START) {
+        if (eCommand == EUtilTimerCommands.TIMER_START) {
             if (this._isTimerStopped) {
                 this._iBaseTime += iTime - this._iStopTime;
             }
@@ -89,7 +89,7 @@ class Timer implements AIUtilTimer {
         }
 
         // Stop the timer
-        if (eCommand == AEUtilTimerCommands.TIMER_STOP) {
+        if (eCommand == EUtilTimerCommands.TIMER_STOP) {
             if (!this._isTimerStopped) {
                 this._iStopTime = iTime;
                 this._iLastElapsedTime = iTime;
@@ -99,12 +99,12 @@ class Timer implements AIUtilTimer {
         }
 
         // Advance the timer by 1/10th second
-        if (eCommand == AEUtilTimerCommands.TIMER_ADVANCE) {
+        if (eCommand == EUtilTimerCommands.TIMER_ADVANCE) {
             this._iStopTime += this._fTicksPerSec / 10;
             return 0;
         }
 
-        if (eCommand == AEUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
+        if (eCommand == EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
             fTime = iTime / this._fTicksPerSec;
             return fTime;
         }

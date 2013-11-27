@@ -1,12 +1,14 @@
-﻿/// <reference path="../idl/AIAFXInstruction.ts" />
+﻿/// <reference path="../idl/IAFXInstruction.ts" />
 
-import Instruction = require("fx/Instruction");
+/// <reference path="Instruction.ts" />
 
-class AnnotationInstruction extends Instruction implements AIAFXAnnotationInstruction {
-    constructor() {
-        super();
-        this._eInstructionType = AEAFXInstructionTypes.k_AnnotationInstruction;
+module akra.fx {
+
+    export class AnnotationInstruction extends Instruction implements IAFXAnnotationInstruction {
+        constructor() {
+            super();
+            this._eInstructionType = EAFXInstructionTypes.k_AnnotationInstruction;
+        }
     }
-}
 
-export = AnnotationInstruction;
+}

@@ -1,13 +1,13 @@
-/// <reference path="../idl/AIAFXComposer.ts" />
-/// <reference path="../idl/AIAFXEffect.ts" />
-/// <reference path="../idl/AIEngine.ts" />
-/// <reference path="../idl/AIResourcePool.ts" />
-/// <reference path="../idl/AIAFXComponent.ts" />
-/// <reference path="../idl/AIAFXMaker.ts" />
-/// <reference path="../idl/AIRenderer.ts" />
-/// <reference path="../idl/AIIndexData.ts" />
-/// <reference path="../idl/AIBufferMap.ts" />
-/// <reference path="../idl/AIAFXBlender.ts" />
+/// <reference path="../idl/IAFXComposer.ts" />
+/// <reference path="../idl/IAFXEffect.ts" />
+/// <reference path="../idl/IEngine.ts" />
+/// <reference path="../idl/IResourcePool.ts" />
+/// <reference path="../idl/IAFXComponent.ts" />
+/// <reference path="../idl/IAFXMaker.ts" />
+/// <reference path="../idl/IRenderer.ts" />
+/// <reference path="../idl/IIndexData.ts" />
+/// <reference path="../idl/IBufferMap.ts" />
+/// <reference path="../idl/IAFXBlender.ts" />
 
 
 import math = require("math");
@@ -38,12 +38,12 @@ var RID_TOTAL = 1024;
 interface AIPreRenderState {
     isClear: boolean;
 
-    primType: AEPrimitiveTypes;
+    primType: EPrimitiveTypes;
     offset: uint;
     length: uint;
-    index: AIIndexData;
+    index: IIndexData;
     //flows: IDataFlow[];
-    flows: AIObjectArray<AIDataFlow>;
+    flows: IObjectArray<IDataFlow>;
 }
 
 enum AESystemUniformsIndices {
@@ -84,29 +84,29 @@ enum AESystemUniformsIndices {
     k_cGlobalDensity
 }
 
-class Composer implements AIAFXComposer {
-    private _pEngine: AIEngine = null;
+class Composer implements IAFXComposer {
+    private _pEngine: IEngine = null;
 
-    private _pTechniqueToBlendMap: AIAFXComponentBlendMap = null;
-    private _pTechniqueToOwnBlendMap: AIAFXComponentBlendMap = null;
-    private _pTechniqueLastGlobalBlendMap: AIAFXComponentBlendMap = null;
-    private _pTechniqueNeedUpdateMap: AIMap<boolean> = null;
+    private _pTechniqueToBlendMap: IAFXComponentBlendMap = null;
+    private _pTechniqueToOwnBlendMap: IAFXComponentBlendMap = null;
+    private _pTechniqueLastGlobalBlendMap: IAFXComponentBlendMap = null;
+    private _pTechniqueNeedUpdateMap: IMap<boolean> = null;
 
-    private _pEffectResourceToComponentBlendMap: AIAFXComponentBlendMap = null;
-    private _pBlender: AIAFXBlender = null;
+    private _pEffectResourceToComponentBlendMap: IAFXComponentBlendMap = null;
+    private _pBlender: IAFXBlender = null;
 
     private _pGlobalEffectResorceIdStack: uint[] = null;
     // private _pGlobalEffectResorceShiftStack: int[] = null;
-    private _pGlobalComponentBlendStack: AIAFXComponentBlend[] = null;
-    private _pGlobalComponentBlend: AIAFXComponentBlend = null;
+    private _pGlobalComponentBlendStack: IAFXComponentBlend[] = null;
+    private _pGlobalComponentBlend: IAFXComponentBlend = null;
 
     //Data for render
-    private _pCurrentSceneObject: AISceneObject = null;
-    private _pCurrentViewport: AIViewport = null;
-    private _pCurrentRenderable: AIRenderableObject = null;
+    private _pCurrentSceneObject: ISceneObject = null;
+    private _pCurrentViewport: IViewport = null;
+    private _pCurrentRenderable: IRenderableObject = null;
 
-    private _pCurrentBufferMap: AIBufferMap = null;
-    private _pCurrentSurfaceMaterial: AISurfaceMaterial = null;
+    private _pCurrentBufferMap: IBufferMap = null;
+    private _pCurrentSurfaceMaterial: ISurfaceMaterial = null;
 
     private _pComposerState: any = {
         mesh: {
@@ -125,21 +125,21 @@ class Composer implements AIAFXComposer {
     };
 
     /** Render targets for global-post effects */
-    private _pRenderTargetA: AIRenderTarget = null;
-    private _pRenderTargetB: AIRenderTarget = null;
-    private _pLastRenderTarget: AIRenderTarget = null;
-    private _pPostEffectViewport: AIViewport = null;
+    private _pRenderTargetA: IRenderTarget = null;
+    private _pRenderTargetB: IRenderTarget = null;
+    private _pLastRenderTarget: IRenderTarget = null;
+    private _pPostEffectViewport: IViewport = null;
 
-    private _pPostEffectTextureA: AITexture = null;
-    private _pPostEffectTextureB: AITexture = null;
-    private _pPostEffectDepthBuffer: AIPixelBuffer = null;
+    private _pPostEffectTextureA: ITexture = null;
+    private _pPostEffectTextureB: ITexture = null;
+    private _pPostEffectDepthBuffer: IPixelBuffer = null;
 
     //Temporary objects for fast work
     static pDefaultSamplerBlender: SamplerBlender = null;
 
     //render id data
-    private _pRidTable: AIRIDTable = <any>{};
-    private _pRidMap: AIRIDMap = <any>{};
+    private _pRidTable: IRIDTable = <any>{};
+    private _pRidMap: IRIDMap = <any>{};
     private _nRidSO: int = 0;
     private _nRidRE: int = 0;
 
@@ -147,17 +147,17 @@ class Composer implements AIAFXComposer {
     private _pSystemUniformsNameIndexList: uint[] = new Array();
     private _bIsFirstApplySystemUnifoms: boolean = true;
 
-    constructor(pEngine: AIEngine) {
+    constructor(pEngine: IEngine) {
         this._pEngine = pEngine;
 
         this._pBlender = new Blender(this);
 
-        this._pTechniqueToBlendMap = <AIAFXComponentBlendMap>{};
-        this._pTechniqueToOwnBlendMap = <AIAFXComponentBlendMap>{};
-        this._pTechniqueLastGlobalBlendMap = <AIAFXComponentBlendMap>{};
-        this._pTechniqueNeedUpdateMap = <AIMap<boolean>>{};
+        this._pTechniqueToBlendMap = <IAFXComponentBlendMap>{};
+        this._pTechniqueToOwnBlendMap = <IAFXComponentBlendMap>{};
+        this._pTechniqueLastGlobalBlendMap = <IAFXComponentBlendMap>{};
+        this._pTechniqueNeedUpdateMap = <IMap<boolean>>{};
 
-        this._pEffectResourceToComponentBlendMap = <AIAFXComponentBlendMap>{};
+        this._pEffectResourceToComponentBlendMap = <IAFXComponentBlendMap>{};
 
         this._pGlobalEffectResorceIdStack = [];
         this._pGlobalComponentBlendStack = [];
@@ -171,11 +171,11 @@ class Composer implements AIAFXComposer {
         }
     }
 
-    getComponentByName(sComponentName: string): AIAFXComponent {
-        return <AIAFXComponent>this._pEngine.getResourceManager().componentPool.findResource(sComponentName);
+    getComponentByName(sComponentName: string): IAFXComponent {
+        return <IAFXComponent>this._pEngine.getResourceManager().componentPool.findResource(sComponentName);
     }
 
-    /** inline */ getEngine(): AIEngine {
+    /**  */ getEngine(): IEngine {
         return this._pEngine;
     }
 
@@ -183,7 +183,7 @@ class Composer implements AIAFXComposer {
     //-----------------------------API for Effect-resource-------------------------//
     //-----------------------------------------------------------------------------//
 
-    getComponentCountForEffect(pEffectResource: AIEffect): uint {
+    getComponentCountForEffect(pEffectResource: IEffect): uint {
         var id: uint = pEffectResource.resourceHandle;
 
         if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
@@ -194,7 +194,7 @@ class Composer implements AIAFXComposer {
         }
     }
 
-    getTotalPassesForEffect(pEffectResource: AIEffect): uint {
+    getTotalPassesForEffect(pEffectResource: IEffect): uint {
         var id: uint = pEffectResource.resourceHandle;
 
         if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
@@ -205,15 +205,15 @@ class Composer implements AIAFXComposer {
         }
     }
 
-    addComponentToEffect(pEffectResource: AIEffect, pComponent: AIAFXComponent, iShift: int, iPass: uint): boolean {
+    addComponentToEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int, iPass: uint): boolean {
         var id: uint = pEffectResource.resourceHandle;
-        var pCurrentBlend: AIAFXComponentBlend = null;
+        var pCurrentBlend: IAFXComponentBlend = null;
 
         if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
             pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
         }
 
-        var pNewBlend: AIAFXComponentBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
+        var pNewBlend: IAFXComponentBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
         if (isNull(pNewBlend)) {
             return false;
         }
@@ -222,15 +222,15 @@ class Composer implements AIAFXComposer {
         return true;
     }
 
-    removeComponentFromEffect(pEffectResource: AIEffect, pComponent: AIAFXComponent, iShift: int, iPass: uint): boolean {
+    removeComponentFromEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int, iPass: uint): boolean {
         var id: uint = pEffectResource.resourceHandle;
-        var pCurrentBlend: AIAFXComponentBlend = null;
+        var pCurrentBlend: IAFXComponentBlend = null;
 
         if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
             pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
         }
 
-        var pNewBlend: AIAFXComponentBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
+        var pNewBlend: IAFXComponentBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
         if (isNull(pNewBlend)) {
             return false;
         }
@@ -239,10 +239,10 @@ class Composer implements AIAFXComposer {
         return true;
     }
 
-    hasComponentForEffect(pEffectResource: AIEffect,
-        pComponent: AIAFXComponent, iShift: int, iPass: uint): boolean {
+    hasComponentForEffect(pEffectResource: IEffect,
+        pComponent: IAFXComponent, iShift: int, iPass: uint): boolean {
         var id: uint = pEffectResource.resourceHandle;
-        var pCurrentBlend: AIAFXComponentBlend = null;
+        var pCurrentBlend: IAFXComponentBlend = null;
 
         if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
             pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
@@ -255,15 +255,15 @@ class Composer implements AIAFXComposer {
         return pCurrentBlend.containComponent(pComponent, iShift, iPass);
     }
 
-    activateEffectResource(pEffectResource: AIEffect, iShift: int): boolean {
+    activateEffectResource(pEffectResource: IEffect, iShift: int): boolean {
         var id: uint = pEffectResource.resourceHandle;
-        var pComponentBlend: AIAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
+        var pComponentBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
 
         if (!isDef(pComponentBlend)) {
 				return false
 			}
 
-        var pNewGlobalBlend: AIAFXComponentBlend = null;
+        var pNewGlobalBlend: IAFXComponentBlend = null;
 
         if (isNull(this._pGlobalComponentBlend)) {
             pNewGlobalBlend = pComponentBlend;
@@ -284,7 +284,7 @@ class Composer implements AIAFXComposer {
         return true;
     }
 
-    deactivateEffectResource(pEffectResource: AIEffect): boolean {
+    deactivateEffectResource(pEffectResource: IEffect): boolean {
         var id: uint = pEffectResource.resourceHandle;
         var iStackLength: uint = this._pGlobalEffectResorceIdStack.length;
 
@@ -311,9 +311,9 @@ class Composer implements AIAFXComposer {
         return true;
     }
 
-    getPassInputBlendForEffect(pEffectResource: AIEffect, iPass: uint): AIAFXPassInputBlend {
+    getPassInputBlendForEffect(pEffectResource: IEffect, iPass: uint): IAFXPassInputBlend {
         var id: uint = pEffectResource.resourceHandle;
-        var pBlend: AIAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
+        var pBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
 
         if (!isDef(this._pEffectResourceToComponentBlendMap[id])) {
             return null;
@@ -330,9 +330,9 @@ class Composer implements AIAFXComposer {
     //----------------------------API for RenderTechnique--------------------------//
     //-----------------------------------------------------------------------------//
 
-    getMinShiftForOwnTechniqueBlend(pRenderTechnique: AIRenderTechnique): int {
+    getMinShiftForOwnTechniqueBlend(pRenderTechnique: IRenderTechnique): int {
         var id: uint = pRenderTechnique.getGuid();
-        var pBlend: AIAFXComponentBlend = this._pTechniqueToOwnBlendMap[id];
+        var pBlend: IAFXComponentBlend = this._pTechniqueToOwnBlendMap[id];
 
         if (isDefAndNotNull(this._pTechniqueToOwnBlendMap[id])) {
             return pBlend._getMinShift();
@@ -342,7 +342,7 @@ class Composer implements AIAFXComposer {
         }
     }
 
-    getTotalPassesForTechnique(pRenderTechnique: AIRenderTechnique): uint {
+    getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique): uint {
         this.prepareTechniqueBlend(pRenderTechnique);
 
         var id: uint = pRenderTechnique.getGuid();
@@ -355,16 +355,16 @@ class Composer implements AIAFXComposer {
         }
     }
 
-    addOwnComponentToTechnique(pRenderTechnique: AIRenderTechnique,
-        pComponent: AIAFXComponent, iShift: int, iPass: uint): boolean {
+    addOwnComponentToTechnique(pRenderTechnique: IRenderTechnique,
+        pComponent: IAFXComponent, iShift: int, iPass: uint): boolean {
         var id: uint = pRenderTechnique.getGuid();
-        var pCurrentBlend: AIAFXComponentBlend = null;
+        var pCurrentBlend: IAFXComponentBlend = null;
 
         if (isDef(this._pTechniqueToOwnBlendMap[id])) {
             pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
         }
 
-        var pNewBlend: AIAFXComponentBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
+        var pNewBlend: IAFXComponentBlend = this._pBlender.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
 
         if (isNull(pNewBlend)) {
             return false;
@@ -376,16 +376,16 @@ class Composer implements AIAFXComposer {
         return true;
     }
 
-    removeOwnComponentToTechnique(pRenderTechnique: AIRenderTechnique,
-        pComponent: AIAFXComponent, iShift: int, iPass: uint): boolean {
+    removeOwnComponentToTechnique(pRenderTechnique: IRenderTechnique,
+        pComponent: IAFXComponent, iShift: int, iPass: uint): boolean {
         var id: uint = pRenderTechnique.getGuid();
-        var pCurrentBlend: AIAFXComponentBlend = null;
+        var pCurrentBlend: IAFXComponentBlend = null;
 
         if (isDef(this._pTechniqueToOwnBlendMap[id])) {
             pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
         }
 
-        var pNewBlend: AIAFXComponentBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
+        var pNewBlend: IAFXComponentBlend = this._pBlender.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
         if (isNull(pNewBlend)) {
             return false;
         }
@@ -395,10 +395,10 @@ class Composer implements AIAFXComposer {
         return true;
     }
 
-    hasOwnComponentInTechnique(pRenderTechnique: AIRenderTechnique,
-        pComponent: AIAFXComponent, iShift: int, iPass: uint): boolean {
+    hasOwnComponentInTechnique(pRenderTechnique: IRenderTechnique,
+        pComponent: IAFXComponent, iShift: int, iPass: uint): boolean {
         var id: uint = pRenderTechnique.getGuid();
-        var pCurrentBlend: AIAFXComponentBlend = null;
+        var pCurrentBlend: IAFXComponentBlend = null;
 
         if (isDef(this._pTechniqueToOwnBlendMap[id])) {
             pCurrentBlend = this._pTechniqueToOwnBlendMap[id];
@@ -411,7 +411,7 @@ class Composer implements AIAFXComposer {
         return pCurrentBlend.containComponent(pComponent, iShift, iPass);
     }
 
-    prepareTechniqueBlend(pRenderTechnique: AIRenderTechnique): boolean {
+    prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): boolean {
         if (pRenderTechnique.isFreeze()) {
             return true;
         }
@@ -424,10 +424,10 @@ class Composer implements AIAFXComposer {
 
         if (isTechniqueUpdate || isUpdateGlobalBlend) {
             var iEffect: uint = pRenderTechnique.getMethod().effect.resourceHandle;
-            var pEffectBlend: AIAFXComponentBlend = this._pEffectResourceToComponentBlendMap[iEffect] || null;
-            var pTechniqueBlend: AIAFXComponentBlend = this._pTechniqueToOwnBlendMap[id] || null;
+            var pEffectBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[iEffect] || null;
+            var pTechniqueBlend: IAFXComponentBlend = this._pTechniqueToOwnBlendMap[id] || null;
 
-            var pNewBlend: AIAFXComponentBlend = null;
+            var pNewBlend: IAFXComponentBlend = null;
 
             pNewBlend = this._pBlender.addBlendToBlend(this._pGlobalComponentBlend, pEffectBlend, 0);
             pNewBlend = this._pBlender.addBlendToBlend(pNewBlend, pTechniqueBlend, 0);
@@ -441,7 +441,7 @@ class Composer implements AIAFXComposer {
             this._pTechniqueLastGlobalBlendMap[id] = this._pGlobalComponentBlend;
         }
 
-        var pBlend: AIAFXComponentBlend = this._pTechniqueToBlendMap[id];
+        var pBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
 
         if (isDefAndNotNull(pBlend)) {
             if (!pBlend.isReadyToUse()) {
@@ -464,11 +464,11 @@ class Composer implements AIAFXComposer {
         }
     }
 
-    markTechniqueAsNeedUpdate(pRenderTechnique: AIRenderTechnique): void {
+    markTechniqueAsNeedUpdate(pRenderTechnique: IRenderTechnique): void {
         this._pTechniqueNeedUpdateMap[pRenderTechnique.getGuid()] = true;
     }
 
-    getPassInputBlendForTechnique(pRenderTechnique: AIRenderTechnique, iPass: uint): AIAFXPassInputBlend {
+    getPassInputBlendForTechnique(pRenderTechnique: IRenderTechnique, iPass: uint): IAFXPassInputBlend {
         var id: uint = pRenderTechnique.getGuid();
 
         if (!isDef(this._pTechniqueToBlendMap[id])) {
@@ -483,7 +483,7 @@ class Composer implements AIAFXComposer {
     //---------------------------------API for render------------------------------//
     //-----------------------------------------------------------------------------//
 
-    applyBufferMap(pMap: AIBufferMap): boolean {
+    applyBufferMap(pMap: IBufferMap): boolean {
         this._pCurrentBufferMap = pMap;
         return true;
         // var pBufferMap: util.BufferMap = <util.BufferMap>pMap;
@@ -514,32 +514,32 @@ class Composer implements AIAFXComposer {
         // pState.isClear = false;
     }
 
-    applySurfaceMaterial(pSurfaceMaterial: AISurfaceMaterial): boolean {
+    applySurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): boolean {
         this._pCurrentSurfaceMaterial = pSurfaceMaterial;
         return true;
     }
 
-    /** inline */ _setCurrentSceneObject(pSceneObject: AISceneObject): void {
+    /**  */ _setCurrentSceneObject(pSceneObject: ISceneObject): void {
         this._pCurrentSceneObject = pSceneObject;
     }
 
-    /** inline */ _setCurrentViewport(pViewport: AIViewport): void {
+    /**  */ _setCurrentViewport(pViewport: IViewport): void {
         this._pCurrentViewport = pViewport;
     }
 
-    /** inline */ _setCurrentRenderableObject(pRenderable: AIRenderableObject): void {
+    /**  */ _setCurrentRenderableObject(pRenderable: IRenderableObject): void {
         this._pCurrentRenderable = pRenderable;
     }
 
-    /** inline */ _getCurrentSceneObject(): AISceneObject {
+    /**  */ _getCurrentSceneObject(): ISceneObject {
         return this._pCurrentSceneObject;
     }
 
-    /** inline */ _getCurrentViewport(): AIViewport {
+    /**  */ _getCurrentViewport(): IViewport {
         return this._pCurrentViewport;
     }
 
-    /** inline */ _getCurrentRenderableObject(): AIRenderableObject {
+    /**  */ _getCurrentRenderableObject(): IRenderableObject {
         return this._pCurrentRenderable;
     }
 
@@ -550,15 +550,15 @@ class Composer implements AIAFXComposer {
     }
 
 
-    renderTechniquePass(pRenderTechnique: AIRenderTechnique, iPass: uint): void {
+    renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void {
         // if(true){
         // 	return;
         // }
-        var pPass: AIRenderPass = pRenderTechnique.getPass(iPass);
-        var pPassInput: AIAFXPassInputBlend = pPass.getPassInput();
+        var pPass: IRenderPass = pRenderTechnique.getPass(iPass);
+        var pPassInput: IAFXPassInputBlend = pPass.getPassInput();
 
-        var pPassBlend: AIAFXPassBlend = null;
-        var pMaker: AIAFXMaker = null;
+        var pPassBlend: IAFXPassBlend = null;
+        var pMaker: IAFXMaker = null;
 
         this.applySystemUnifoms(pPassInput);
 
@@ -571,8 +571,8 @@ class Composer implements AIAFXComposer {
         // }
         // else {
         var id: uint = pRenderTechnique.getGuid();
-        var pComponentBlend: AIAFXComponentBlend = this._pTechniqueToBlendMap[id];
-        var pPassInstructionList: AIAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
+        var pComponentBlend: IAFXComponentBlend = this._pTechniqueToBlendMap[id];
+        var pPassInstructionList: IAFXPassInstruction[] = pComponentBlend.getPassListAtPass(iPass);
 
         this.prepareComposerState();
 
@@ -597,9 +597,9 @@ class Composer implements AIAFXComposer {
         //TODO: generate RenderEntry
 
         //this.clearPreRenderState();
-        var pInput: AIShaderInput = pMaker._make(pPassInput, this._pCurrentBufferMap);
-        var pRenderer: AIRenderer = this._pEngine.getRenderer();
-        var pEntry: AIRenderEntry = pRenderer.createEntry();
+        var pInput: IShaderInput = pMaker._make(pPassInput, this._pCurrentBufferMap);
+        var pRenderer: IRenderer = this._pEngine.getRenderer();
+        var pEntry: IRenderEntry = pRenderer.createEntry();
 
         pEntry.maker = pMaker;
         pEntry.input = pInput;
@@ -616,9 +616,9 @@ class Composer implements AIAFXComposer {
     //-----------------------------------------------------------------------------//
 
 
-    _loadEffectFromSyntaxTree(pTree: AIParseTree, sFileName: string): boolean {
+    _loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): boolean {
         if (has("AFX_ENABLE_TEXT_EFFECTS")) {
-            var pEffect: AIAFXEffect = new Effect(this);
+            var pEffect: IAFXEffect = new Effect(this);
             // LOG(sFileName, pTree);
             pEffect.setAnalyzedFileName(sFileName);
             // LOG("\n\n\n-------------------------Try to analyze '" + sFileName + "'-------------");
@@ -626,7 +626,7 @@ class Composer implements AIAFXComposer {
 
             if (isOk) {
                 // LOG("------ANALYZE IS GOOD '" + sFileName + "'.")
-                var pTechniqueList: AIAFXTechniqueInstruction[] = pEffect.getTechniqueList();
+                var pTechniqueList: IAFXTechniqueInstruction[] = pEffect.getTechniqueList();
 
                 for (var i: uint = 0; i < pTechniqueList.length; i++) {
                     isOk = this.initComponent(pTechniqueList[i]);
@@ -651,15 +651,15 @@ class Composer implements AIAFXComposer {
         return false;
     }
 
-    private initComponent(pTechnique: AIAFXTechniqueInstruction): boolean {
+    private initComponent(pTechnique: IAFXTechniqueInstruction): boolean {
         var sTechniqueName: string = pTechnique.getName();
-        var pComponentPool: AIResourcePool = this._pEngine.getResourceManager().componentPool;
+        var pComponentPool: IResourcePool = this._pEngine.getResourceManager().componentPool;
 
         if (!isNull(pComponentPool.findResource(sTechniqueName))) {
             return false;
         }
 
-        var pComponent: AIAFXComponent = <AIAFXComponent>pComponentPool.createResource(sTechniqueName);
+        var pComponent: IAFXComponent = <IAFXComponent>pComponentPool.createResource(sTechniqueName);
         pComponent.create();
         pComponent.setTechnique(pTechnique);
 
@@ -694,7 +694,7 @@ class Composer implements AIAFXComposer {
     protected cHeightFalloff: float = 0.04;
     protected cGlobalDensity: float = 0.002;
 
-    _calcRenderID(pSceneObject: AISceneObject, pRenderable: AIRenderableObject, bCreateIfNotExists: boolean = false): int {
+    _calcRenderID(pSceneObject: ISceneObject, pRenderable: IRenderableObject, bCreateIfNotExists: boolean = false): int {
         //assume, that less than 1024 draw calls may be & less than 1024 scene object will be rendered.
         //beacause only 1024
 
@@ -707,10 +707,10 @@ class Composer implements AIAFXComposer {
             this._nRidSO = 0;
         }
 
-        var pRidTable: AIRIDTable = this._pRidTable;
-        var pRidMap: AIRIDMap = this._pRidMap;
-        var pRidByRenderable: AIMap<int> = pRidTable[iSceneObjectGuid];
-        var pRidPair: AIRIDPair;
+        var pRidTable: IRIDTable = this._pRidTable;
+        var pRidMap: IRIDMap = this._pRidMap;
+        var pRidByRenderable: IMap<int> = pRidTable[iSceneObjectGuid];
+        var pRidPair: IRIDPair;
 
         var iRid: int = 0;
 
@@ -750,19 +750,19 @@ class Composer implements AIAFXComposer {
         return iRid;
     }
 
-    /** inline */ _getRenderableByRid(iRid: int): AIRenderableObject {
-        var pRidPair: AIRIDPair = this._pRidMap[iRid];
-        var pRenderable: AIRenderableObject = isDefAndNotNull(pRidPair) ? pRidPair.renderable : null;
+    /**  */ _getRenderableByRid(iRid: int): IRenderableObject {
+        var pRidPair: IRIDPair = this._pRidMap[iRid];
+        var pRenderable: IRenderableObject = isDefAndNotNull(pRidPair) ? pRidPair.renderable : null;
         return isNull(pRenderable) || pRenderable.isFrozen() ? null : pRenderable;
     }
 
-    /** inline */ _getObjectByRid(iRid: int): AISceneObject {
-        var pRidPair: AIRIDPair = this._pRidMap[iRid];
-        var pSceneObject: AISceneObject = isDefAndNotNull(pRidPair) ? pRidPair.object : null;
+    /**  */ _getObjectByRid(iRid: int): ISceneObject {
+        var pRidPair: IRIDPair = this._pRidMap[iRid];
+        var pSceneObject: ISceneObject = isDefAndNotNull(pRidPair) ? pRidPair.object : null;
         return isNull(pSceneObject) || pSceneObject.isFrozen() ? null : pSceneObject;
     }
 
-    private applySystemUnifoms(pPassInput: AIAFXPassInputBlend): void {
+    private applySystemUnifoms(pPassInput: IAFXPassInputBlend): void {
         if (this._bIsFirstApplySystemUnifoms) {
 
             this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ModelMatrix] = VariableDeclInstruction._getIndex("MODEL_MATRIX");
@@ -802,9 +802,9 @@ class Composer implements AIAFXComposer {
             this._bIsFirstApplySystemUnifoms = false;
         }
 
-        var pSceneObject: AISceneObject = this._getCurrentSceneObject();
-        var pViewport: AIViewport = this._getCurrentViewport();
-        var pRenderable: AIRenderableObject = this._getCurrentRenderableObject();
+        var pSceneObject: ISceneObject = this._getCurrentSceneObject();
+        var pViewport: IViewport = this._getCurrentViewport();
+        var pRenderable: IRenderableObject = this._getCurrentRenderableObject();
 
         var iRenderableID: int = this._calcRenderID(pSceneObject, pRenderable, true);
         var iIndex: uint = 0;
@@ -827,7 +827,7 @@ class Composer implements AIAFXComposer {
             pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_FramebufferSize]] = Vec2.temp(pViewport.width, pViewport.height);
             pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewportSize]] = Vec2.temp(pViewport.actualWidth, pViewport.actualHeight);
 
-            var pCamera: AICamera = pViewport.getCamera();
+            var pCamera: ICamera = pViewport.getCamera();
             if (!isNull(pCamera)) {
 
                 pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewMatrix]] = pCamera.viewMatrix;
@@ -835,16 +835,16 @@ class Composer implements AIAFXComposer {
                 pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InvViewCameraMat]] = pCamera.worldMatrix;
                 pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_CameraPosition]] = pCamera.worldPosition;
 
-                if (pCamera.type === AEEntityTypes.SHADOW_CASTER) {
-                    pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_OptimizedProjMatrix]] = (<AIShadowCaster>pCamera).optimizedProjection;
+                if (pCamera.type === EEntityTypes.SHADOW_CASTER) {
+                    pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_OptimizedProjMatrix]] = (<IShadowCaster>pCamera).optimizedProjection;
                 }
             }
         }
 
         if (!isNull(pRenderable)) {
 
-            if (render.isMeshSubset(pRenderable) && (<AIMeshSubset>pRenderable).isSkinned()) {
-                pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_BindShapeMatrix]] = (<AIMeshSubset>pRenderable).skin.getBindMatrix();
+            if (render.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()) {
+                pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_BindShapeMatrix]] = (<IMeshSubset>pRenderable).skin.getBindMatrix();
             }
 
             pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_RenderObjectId]] = iRenderableID;
@@ -852,7 +852,7 @@ class Composer implements AIAFXComposer {
         }
 
         if (!isNull(this._pLastRenderTarget)) {
-            var pLastTexture: AITexture = this._pLastRenderTarget === this._pRenderTargetA ?
+            var pLastTexture: ITexture = this._pLastRenderTarget === this._pRenderTargetA ?
                 this._pPostEffectTextureA : this._pPostEffectTextureB;
 
             pPassInput.setTexture("INPUT_TEXTURE", pLastTexture);
@@ -890,9 +890,9 @@ class Composer implements AIAFXComposer {
             this._pComposerState.object.isBillboard = this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard();
 
 
-            if (model.isMeshSubset(this._pCurrentRenderable) && (<AIMeshSubset>this._pCurrentRenderable).isSkinned()) {
+            if (model.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()) {
                 this._pComposerState.mesh.isSkinned = true;
-                this._pComposerState.mesh.isOptimizedSkinned = (<AIMeshSubset>this._pCurrentRenderable).isOptimizedSkinned();
+                this._pComposerState.mesh.isOptimizedSkinned = (<IMeshSubset>this._pCurrentRenderable).isOptimizedSkinned();
             }
             else {
                 this._pComposerState.mesh.isSkinned = false;
@@ -901,7 +901,7 @@ class Composer implements AIAFXComposer {
         }
 
         if (!isNull(this._pCurrentSceneObject)) {
-            if (this._pCurrentSceneObject.type === AEEntityTypes.TERRAIN_ROAM) {
+            if (this._pCurrentSceneObject.type === EEntityTypes.TERRAIN_ROAM) {
                 this._pComposerState.terrain.isROAM = true;
             }
             else {
@@ -911,15 +911,15 @@ class Composer implements AIAFXComposer {
     }
 
     private initPostEffectTextures(): void {
-        var pRmgr: AIResourcePoolManager = this._pEngine.getResourceManager();
+        var pRmgr: IResourcePoolManager = this._pEngine.getResourceManager();
         this._pPostEffectTextureA = pRmgr.createTexture(".global-post-effect-texture-A");
         this._pPostEffectTextureB = pRmgr.createTexture(".global-post-effect-texture-B");
 
-        this._pPostEffectTextureA.create(512, 512, 1, null, AETextureFlags.RENDERTARGET, 0, 0,
-            AETextureTypes.TEXTURE_2D, AEPixelFormats.R8G8B8A8);
+        this._pPostEffectTextureA.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+            ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
 
-        this._pPostEffectTextureB.create(512, 512, 1, null, AETextureFlags.RENDERTARGET, 0, 0,
-            AETextureTypes.TEXTURE_2D, AEPixelFormats.R8G8B8A8);
+        this._pPostEffectTextureB.create(512, 512, 1, null, ETextureFlags.RENDERTARGET, 0, 0,
+            ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
 
         // this._pPostEffectTextureA.notifyLoaded();
         // this._pPostEffectTextureB.notifyLoaded();
@@ -943,8 +943,8 @@ class Composer implements AIAFXComposer {
         this._pPostEffectTextureB.reset(iWidth, iHeight);
     }
 
-    private prepareRenderTarget(pEntry: AIRenderEntry, pRenderTechnique: AIRenderTechnique, iPass: uint): void {
-        var pRenderer: AIRenderer = this._pEngine.getRenderer();
+    private prepareRenderTarget(pEntry: IRenderEntry, pRenderTechnique: IRenderTechnique, iPass: uint): void {
+        var pRenderer: IRenderer = this._pEngine.getRenderer();
 
         if (pRenderTechnique.hasPostEffect()) {
             if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
@@ -954,12 +954,12 @@ class Composer implements AIAFXComposer {
             }
 
             if (pRenderTechnique.isFirstPass(iPass)) {
-                var pRenderViewport: AIViewport = pEntry.viewport;
+                var pRenderViewport: IViewport = pEntry.viewport;
 
                 pRenderer._setDepthBufferParams(false, false, 0);
                 pRenderer._setRenderTarget(this._pRenderTargetA);
 
-                var pViewportState: AIViewportState = pRenderViewport._getViewportState();
+                var pViewportState: IViewportState = pRenderViewport._getViewportState();
                 this._pPostEffectViewport.setDimensions(0., 0.,
                     pRenderViewport.actualWidth / this._pRenderTargetA.width,
                     pRenderViewport.actualHeight / this._pRenderTargetA.height);
@@ -974,7 +974,7 @@ class Composer implements AIAFXComposer {
                         pViewportState.clearDepth, 0);
                 }
                 else {
-                    this._pPostEffectViewport.clear(AEFrameBufferTypes.COLOR | AEFrameBufferTypes.DEPTH,
+                    this._pPostEffectViewport.clear(EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH,
                         color.ZERO,
                         1., 0);
                 }

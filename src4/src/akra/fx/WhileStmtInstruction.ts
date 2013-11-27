@@ -8,7 +8,7 @@ class WhileStmtInstruction extends StmtInstruction {
     constructor() {
         super();
         this._pInstructionList = [null, null];
-        this._eInstructionType = AEAFXInstructionTypes.k_WhileStmtInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_WhileStmtInstruction;
     }
 
     toFinalCode(): string {

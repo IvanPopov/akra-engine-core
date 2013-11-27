@@ -1,389 +1,388 @@
-/// <reference path="../idl/AIAFXInstruction.ts" />
+/// <reference path="../idl/IAFXInstruction.ts" />
+/// <reference path="../webgl/webgl.ts" />
 
-import webgl = require("webgl");
+/// <reference path="../stringUtils/StringDictionary.ts" />
 
-import Effect = require("fx/Effect");
-import StringDictionary = require("stringUtils/StringDictionary");
-import DeclInstruction = require("fx/DeclInstruction");
-import IdInstruction = require("fx/IdInstruction");
-import IdExprInstruction = require("fx/IdExprInstruction");
-import PostfixPointInstruction = require("fx/PostfixPointInstruction");
-import ExtractExprInstruction = require("fx/ExtractExprInstruction");
-import VariableTypeInstruction = require("fx/VariableTypeInstruction");
+/// <reference path="DeclInstruction.ts" />
+/// <reference path="Effect.ts" />
+/// <reference path="DeclInstruction.ts" />
+/// <reference path="IdInstruction.ts" />
+/// <reference path="PostfixPointInstruction.ts" />
+/// <reference path="ExtractExprInstruction.ts" />
+/// <reference path="VariableTypeInstruction.ts" />
 
-class VariableDeclInstruction extends DeclInstruction implements AIAFXVariableDeclInstruction {
-    private _isVideoBuffer: boolean = null;
-    private _pVideoBufferSampler: AIAFXVariableDeclInstruction = null;
-    private _pVideoBufferHeader: AIAFXVariableDeclInstruction = null;
-    private _pFullNameExpr: AIAFXExprInstruction = null;
-    private _bDefineByZero: boolean = false;
-    private _pSubDeclList: AIAFXVariableDeclInstruction[] = null;
-    private _bShaderOutput: boolean = false;
+module akra.fx {
 
-    private _pAttrOffset: AIAFXVariableDeclInstruction = null;
-    private _pAttrExtractionBlock: AIAFXInstruction = null;
+    export class VariableDeclInstruction extends DeclInstruction implements IAFXVariableDeclInstruction {
+        private _isVideoBuffer: boolean = null;
+        private _pVideoBufferSampler: IAFXVariableDeclInstruction = null;
+        private _pVideoBufferHeader: IAFXVariableDeclInstruction = null;
+        private _pFullNameExpr: IAFXExprInstruction = null;
+        private _bDefineByZero: boolean = false;
+        private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
+        private _bShaderOutput: boolean = false;
 
-    private _pValue: any = null;
-    private _pDefaultValue: any = null;
+        private _pAttrOffset: IAFXVariableDeclInstruction = null;
+        private _pAttrExtractionBlock: IAFXInstruction = null;
 
-    private _bLockInitializer: boolean = false;
+        private _pValue: any = null;
+        private _pDefaultValue: any = null;
 
-    private _iNameIndex: uint = 0;
-    static pShaderVarNamesGlobalDictionary: StringDictionary = new StringDictionary();
-    static _getIndex(sName: string): uint {
-        return VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(sName);
-    }
-    /**
-     * Represent type var_name [= init_expr]
-     * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
-     */
-    constructor() {
-        super();
-        this._pInstructionList = [null, null, null];
-        this._eInstructionType = AEAFXInstructionTypes.k_VariableDeclInstruction;
-    }
+        private _bLockInitializer: boolean = false;
 
-    hasInitializer(): boolean {
-        return this._nInstructions === 3 && !isNull(this.getInitializeExpr());
-    }
-
-    getInitializeExpr(): AIAFXInitExprInstruction {
-        return <AIAFXInitExprInstruction>this.getInstructions()[2];
-    }
-
-    hasConstantInitializer(): boolean {
-        return this.hasInitializer() && this.getInitializeExpr().isConst();
-    }
-
-    lockInitializer(): void {
-        this._bLockInitializer = true;
-    }
-
-    unlockInitializer(): void {
-        this._bLockInitializer = false;
-    }
-
-    getDefaultValue(): any {
-        return this._pDefaultValue;
-    }
-
-    prepareDefaultValue(): void {
-        this.getInitializeExpr().evaluate();
-        this._pDefaultValue = this.getInitializeExpr().getEvalValue();
-    }
-
-    getValue(): any {
-        return this._pValue;
-    }
-
-    setValue(pValue: any): any {
-        this._pValue = pValue;
-
-        if (this.getType().isForeign()) {
-            this.setRealName(pValue);
+        private _iNameIndex: uint = 0;
+        static pShaderVarNamesGlobalDictionary: StringDictionary = new StringDictionary();
+        static _getIndex(sName: string): uint {
+            return VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(sName);
         }
-    }
-
-    getType(): AIAFXVariableTypeInstruction {
-        return <AIAFXVariableTypeInstruction>this._pInstructionList[0];
-    }
-
-    setType(pType: AIAFXVariableTypeInstruction): void {
-        this._pInstructionList[0] = <AIAFXVariableTypeInstruction>pType;
-        pType.setParent(this);
-
-        if (this._nInstructions === 0) {
-            this._nInstructions = 1;
-        }
-    }
-
-    setName(sName: string): void {
-        var pName: AIAFXIdInstruction = new IdInstruction();
-        pName.setName(sName);
-        pName.setParent(this);
-
-        this._pInstructionList[1] = <AIAFXIdInstruction>pName;
-
-        if (this._nInstructions < 2) {
-            this._nInstructions = 2;
-        }
-    }
-
-    setRealName(sRealName: string): void {
-        this.getNameId().setRealName(sRealName);
-    }
-
-    setVideoBufferRealName(sSampler: string, sHeader: string): void {
-        if (!this.isVideoBuffer()) {
-            return;
+        /**
+         * Represent type var_name [= init_expr]
+         * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
+         */
+        constructor() {
+            super();
+            this._pInstructionList = [null, null, null];
+            this._eInstructionType = EAFXInstructionTypes.k_VariableDeclInstruction;
         }
 
-        this._getVideoBufferSampler().setRealName(sSampler);
-        this._getVideoBufferHeader().setRealName(sHeader);
-    }
+        hasInitializer(): boolean {
+            return this._nInstructions === 3 && !isNull(this.getInitializeExpr());
+        }
 
-    getName(): string {
-        return (<AIAFXIdInstruction>this._pInstructionList[1]).getName();
-    }
+        getInitializeExpr(): IAFXInitExprInstruction {
+            return <IAFXInitExprInstruction>this.getInstructions()[2];
+        }
 
-    getRealName(): string {
-        return (<AIAFXIdInstruction>this._pInstructionList[1]).getRealName();
-    }
+        hasConstantInitializer(): boolean {
+            return this.hasInitializer() && this.getInitializeExpr().isConst();
+        }
 
-    getNameId(): AIAFXIdInstruction {
-        return <AIAFXIdInstruction>this._pInstructionList[1];
-    }
+        lockInitializer(): void {
+            this._bLockInitializer = true;
+        }
 
-    isUniform(): boolean {
-        return this.getType().hasUsage("uniform");
-    }
+        unlockInitializer(): void {
+            this._bLockInitializer = false;
+        }
 
-    isField(): boolean {
-        if (isNull(this.getParent())) {
+        getDefaultValue(): any {
+            return this._pDefaultValue;
+        }
+
+        prepareDefaultValue(): void {
+            this.getInitializeExpr().evaluate();
+            this._pDefaultValue = this.getInitializeExpr().getEvalValue();
+        }
+
+        getValue(): any {
+            return this._pValue;
+        }
+
+        setValue(pValue: any): any {
+            this._pValue = pValue;
+
+            if (this.getType().isForeign()) {
+                this.setRealName(pValue);
+            }
+        }
+
+        getType(): IAFXVariableTypeInstruction {
+            return <IAFXVariableTypeInstruction>this._pInstructionList[0];
+        }
+
+        setType(pType: IAFXVariableTypeInstruction): void {
+            this._pInstructionList[0] = <IAFXVariableTypeInstruction>pType;
+            pType.setParent(this);
+
+            if (this._nInstructions === 0) {
+                this._nInstructions = 1;
+            }
+        }
+
+        setName(sName: string): void {
+            var pName: IAFXIdInstruction = new IdInstruction();
+            pName.setName(sName);
+            pName.setParent(this);
+
+            this._pInstructionList[1] = <IAFXIdInstruction>pName;
+
+            if (this._nInstructions < 2) {
+                this._nInstructions = 2;
+            }
+        }
+
+        setRealName(sRealName: string): void {
+            this.getNameId().setRealName(sRealName);
+        }
+
+        setVideoBufferRealName(sSampler: string, sHeader: string): void {
+            if (!this.isVideoBuffer()) {
+                return;
+            }
+
+            this._getVideoBufferSampler().setRealName(sSampler);
+            this._getVideoBufferHeader().setRealName(sHeader);
+        }
+
+        getName(): string {
+            return (<IAFXIdInstruction>this._pInstructionList[1]).getName();
+        }
+
+        getRealName(): string {
+            return (<IAFXIdInstruction>this._pInstructionList[1]).getRealName();
+        }
+
+        getNameId(): IAFXIdInstruction {
+            return <IAFXIdInstruction>this._pInstructionList[1];
+        }
+
+        isUniform(): boolean {
+            return this.getType().hasUsage("uniform");
+        }
+
+        isField(): boolean {
+            if (isNull(this.getParent())) {
+                return false;
+            }
+
+            var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+            if (eParentType === EAFXInstructionTypes.k_VariableTypeInstruction ||
+                eParentType === EAFXInstructionTypes.k_ComplexTypeInstruction ||
+                eParentType === EAFXInstructionTypes.k_SystemTypeInstruction) {
+                return true;
+            }
+
             return false;
         }
 
-        var eParentType: AEAFXInstructionTypes = this.getParent()._getInstructionType();
-        if (eParentType === AEAFXInstructionTypes.k_VariableTypeInstruction ||
-            eParentType === AEAFXInstructionTypes.k_ComplexTypeInstruction ||
-            eParentType === AEAFXInstructionTypes.k_SystemTypeInstruction) {
-            return true;
+        isPointer(): boolean {
+            return this.getType().isPointer();
         }
 
-        return false;
-    }
+        isVideoBuffer(): boolean {
+            if (isNull(this._isVideoBuffer)) {
+                this._isVideoBuffer = this.getType().isStrongEqual(Effect.getSystemType("video_buffer"));
+            }
 
-    isPointer(): boolean {
-        return this.getType().isPointer();
-    }
-
-    isVideoBuffer(): boolean {
-        if (isNull(this._isVideoBuffer)) {
-            this._isVideoBuffer = this.getType().isStrongEqual(Effect.getSystemType("video_buffer"));
+            return this._isVideoBuffer;
         }
 
-        return this._isVideoBuffer;
-    }
-
-    isSampler(): boolean {
-        return this.getType().isSampler();
-    }
-
-    getSubVarDecls(): AIAFXVariableDeclInstruction[] {
-        return this.getType().getSubVarDecls();
-    }
-
-    isDefinedByZero(): boolean {
-        return this._bDefineByZero;
-    }
-
-    defineByZero(isDefine: boolean): void {
-        this._bDefineByZero = isDefine;
-    }
-
-    toFinalCode(): string {
-        if (this._isShaderOutput()) {
-            return "";
+        isSampler(): boolean {
+            return this.getType().isSampler();
         }
-        var sCode: string = "";
 
-        if (this.isVideoBuffer()) {
-            this._getVideoBufferHeader().lockInitializer();
-
-            sCode = this._getVideoBufferHeader().toFinalCode();
-            sCode += ";\n";
-            sCode += this._getVideoBufferSampler().toFinalCode();
-
-            this._getVideoBufferHeader().unlockInitializer();
+        getSubVarDecls(): IAFXVariableDeclInstruction[] {
+            return this.getType().getSubVarDecls();
         }
-        else {
-            sCode = this.getType().toFinalCode();
-            sCode += " " + this.getNameId().toFinalCode();
 
-            if (this.getType().isNotBaseArray()) {
-                var iLength: uint = this.getType().getLength();
-                if (webgl.isANGLE && iLength === 1 && this.getType().isComplex()) {
-                    sCode += "[" + 2 + "]";
+        isDefinedByZero(): boolean {
+            return this._bDefineByZero;
+        }
+
+        defineByZero(isDefine: boolean): void {
+            this._bDefineByZero = isDefine;
+        }
+
+        toFinalCode(): string {
+            if (this._isShaderOutput()) {
+                return "";
+            }
+            var sCode: string = "";
+
+            if (this.isVideoBuffer()) {
+                this._getVideoBufferHeader().lockInitializer();
+
+                sCode = this._getVideoBufferHeader().toFinalCode();
+                sCode += ";\n";
+                sCode += this._getVideoBufferSampler().toFinalCode();
+
+                this._getVideoBufferHeader().unlockInitializer();
+            }
+            else {
+                sCode = this.getType().toFinalCode();
+                sCode += " " + this.getNameId().toFinalCode();
+
+                if (this.getType().isNotBaseArray()) {
+                    var iLength: uint = this.getType().getLength();
+                    if (webgl.isANGLE && iLength === 1 && this.getType().isComplex()) {
+                        sCode += "[" + 2 + "]";
+                    }
+                    else {
+                        sCode += "[" + iLength + "]";
+                    }
                 }
-                else {
-                    sCode += "[" + iLength + "]";
+
+                if (this.hasInitializer() &&
+                    !this.isSampler() &&
+                    !this.isUniform() &&
+                    !this._bLockInitializer) {
+                    sCode += "=" + this.getInitializeExpr().toFinalCode();
                 }
             }
 
-            if (this.hasInitializer() &&
-                !this.isSampler() &&
-                !this.isUniform() &&
-                !this._bLockInitializer) {
-                sCode += "=" + this.getInitializeExpr().toFinalCode();
-            }
+            return sCode;
         }
 
-        return sCode;
-    }
+        _markAsVarying(bValue: boolean): void {
+            this.getNameId()._markAsVarying(bValue);
+        }
 
-    _markAsVarying(bValue: boolean): void {
-        this.getNameId()._markAsVarying(bValue);
-    }
+        _markAsShaderOutput(isShaderOutput: boolean): void {
+            this._bShaderOutput = isShaderOutput;
+        }
 
-    _markAsShaderOutput(isShaderOutput: boolean): void {
-        this._bShaderOutput = isShaderOutput;
-    }
+        _isShaderOutput(): boolean {
+            return this._bShaderOutput;
+        }
 
-    _isShaderOutput(): boolean {
-        return this._bShaderOutput;
-    }
+        _setAttrExtractionBlock(pCodeBlock: IAFXInstruction): void {
+            this._pAttrExtractionBlock = pCodeBlock;
+        }
 
-    _setAttrExtractionBlock(pCodeBlock: AIAFXInstruction): void {
-        this._pAttrExtractionBlock = pCodeBlock;
-    }
+        _getAttrExtractionBlock(): IAFXInstruction {
+            return this._pAttrExtractionBlock;
+        }
 
-    _getAttrExtractionBlock(): AIAFXInstruction {
-        return this._pAttrExtractionBlock;
-    }
+        _getNameIndex(): uint {
+            return this._iNameIndex || (this._iNameIndex = VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(this.getRealName()));
+        }
 
-    _getNameIndex(): uint {
-        return this._iNameIndex || (this._iNameIndex = VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(this.getRealName()));
-    }
+        _getFullNameExpr(): IAFXExprInstruction {
+            if (!isNull(this._pFullNameExpr)) {
+                return this._pFullNameExpr;
+            }
 
-    _getFullNameExpr(): AIAFXExprInstruction {
-        if (!isNull(this._pFullNameExpr)) {
+            if (!this.isField() ||
+                !(<IAFXVariableTypeInstruction>this.getParent())._getParentVarDecl().isVisible()) {
+                this._pFullNameExpr = new IdExprInstruction();
+                this._pFullNameExpr.push(this.getNameId(), false);
+            }
+            else {
+                var pMainVar: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getType()._getParentContainer();
+
+                if (isNull(pMainVar)) {
+                    return null;
+                }
+
+                var pMainExpr: IAFXExprInstruction = pMainVar._getFullNameExpr();
+                if (isNull(pMainExpr)) {
+                    return null;
+                }
+                var pFieldExpr: IAFXExprInstruction = new IdExprInstruction();
+                pFieldExpr.push(this.getNameId(), false);
+
+                this._pFullNameExpr = new PostfixPointInstruction();
+                this._pFullNameExpr.push(pMainExpr, false);
+                this._pFullNameExpr.push(pFieldExpr, false);
+                this._pFullNameExpr.setType(this.getType());
+            }
+
             return this._pFullNameExpr;
         }
 
-        if (!this.isField() ||
-            !(<AIAFXVariableTypeInstruction>this.getParent())._getParentVarDecl().isVisible()) {
-            this._pFullNameExpr = new IdExprInstruction();
-            this._pFullNameExpr.push(this.getNameId(), false);
-        }
-        else {
-            var pMainVar: AIAFXVariableDeclInstruction = <AIAFXVariableDeclInstruction>this.getType()._getParentContainer();
+        _getFullName(): string {
+            if (this.isField() &&
+                (<IAFXVariableTypeInstruction>this.getParent())._getParentVarDecl().isVisible()) {
 
-            if (isNull(pMainVar)) {
+                var sName: string = "";
+                var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+                if (eParentType === EAFXInstructionTypes.k_VariableTypeInstruction) {
+                    sName = (<IAFXVariableTypeInstruction>this.getParent())._getFullName();
+                }
+
+                sName += "." + this.getName();
+
+                return sName;
+            }
+            else {
+                return this.getName();
+            }
+        }
+
+        _getVideoBufferSampler(): IAFXVariableDeclInstruction {
+            if (!this.isVideoBuffer()) {
                 return null;
             }
 
-            var pMainExpr: AIAFXExprInstruction = pMainVar._getFullNameExpr();
-            if (isNull(pMainExpr)) {
+            if (isNull(this._pVideoBufferSampler)) {
+                this._pVideoBufferSampler = new VariableDeclInstruction();
+                var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+                var pId: IAFXIdInstruction = new IdInstruction();
+
+                pType.pushType(Effect.getSystemType("sampler2D"));
+                pType.addUsage("uniform");
+                pId.setName(this.getName() + "_sampler");
+
+                this._pVideoBufferSampler.push(pType, true);
+                this._pVideoBufferSampler.push(pId, true);
+            }
+
+            return this._pVideoBufferSampler;
+        }
+
+        _getVideoBufferHeader(): IAFXVariableDeclInstruction {
+            if (!this.isVideoBuffer()) {
                 return null;
             }
-            var pFieldExpr: AIAFXExprInstruction = new IdExprInstruction();
-            pFieldExpr.push(this.getNameId(), false);
 
-            this._pFullNameExpr = new PostfixPointInstruction();
-            this._pFullNameExpr.push(pMainExpr, false);
-            this._pFullNameExpr.push(pFieldExpr, false);
-            this._pFullNameExpr.setType(this.getType());
-        }
+            if (isNull(this._pVideoBufferHeader)) {
+                this._pVideoBufferHeader = new VariableDeclInstruction();
+                var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+                var pId: IAFXIdInstruction = new IdInstruction();
+                var pExtarctExpr: ExtractExprInstruction = new ExtractExprInstruction();
 
-        return this._pFullNameExpr;
-    }
+                pType.pushType(Effect.getSystemType("video_buffer_header"));
+                pId.setName(this.getName() + "_header");
 
-    _getFullName(): string {
-        if (this.isField() &&
-            (<AIAFXVariableTypeInstruction>this.getParent())._getParentVarDecl().isVisible()) {
+                this._pVideoBufferHeader.push(pType, true);
+                this._pVideoBufferHeader.push(pId, true);
+                this._pVideoBufferHeader.push(pExtarctExpr, true);
 
-            var sName: string = "";
-            var eParentType: AEAFXInstructionTypes = this.getParent()._getInstructionType();
-
-            if (eParentType === AEAFXInstructionTypes.k_VariableTypeInstruction) {
-                sName = (<AIAFXVariableTypeInstruction>this.getParent())._getFullName();
+                pExtarctExpr.initExtractExpr(pType, null, this, "", null);
             }
 
-            sName += "." + this.getName();
-
-            return sName;
-        }
-        else {
-            return this.getName();
-        }
-    }
-
-    _getVideoBufferSampler(): AIAFXVariableDeclInstruction {
-        if (!this.isVideoBuffer()) {
-            return null;
+            return this._pVideoBufferHeader;
         }
 
-        if (isNull(this._pVideoBufferSampler)) {
-            this._pVideoBufferSampler = new VariableDeclInstruction();
-            var pType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
-            var pId: AIAFXIdInstruction = new IdInstruction();
+        _getVideoBufferInitExpr(): IAFXInitExprInstruction {
+            if (!this.isVideoBuffer()) {
+                return null;
+            }
 
-            pType.pushType(Effect.getSystemType("sampler2D"));
-            pType.addUsage("uniform");
-            pId.setName(this.getName() + "_sampler");
-
-            this._pVideoBufferSampler.push(pType, true);
-            this._pVideoBufferSampler.push(pId, true);
+            return this._getVideoBufferHeader().getInitializeExpr();
         }
 
-        return this._pVideoBufferSampler;
-    }
-
-    _getVideoBufferHeader(): AIAFXVariableDeclInstruction {
-        if (!this.isVideoBuffer()) {
-            return null;
+        _setCollapsed(bValue: boolean): void {
+            this.getType()._setCollapsed(bValue);
         }
 
-        if (isNull(this._pVideoBufferHeader)) {
-            this._pVideoBufferHeader = new VariableDeclInstruction();
-            var pType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
-            var pId: AIAFXIdInstruction = new IdInstruction();
-            var pExtarctExpr: ExtractExprInstruction = new ExtractExprInstruction();
-
-            pType.pushType(Effect.getSystemType("video_buffer_header"));
-            pId.setName(this.getName() + "_header");
-
-            this._pVideoBufferHeader.push(pType, true);
-            this._pVideoBufferHeader.push(pId, true);
-            this._pVideoBufferHeader.push(pExtarctExpr, true);
-
-            pExtarctExpr.initExtractExpr(pType, null, this, "", null);
+        _isCollapsed(): boolean {
+            return this.getType()._isCollapsed();
         }
 
-        return this._pVideoBufferHeader;
-    }
-
-    _getVideoBufferInitExpr(): AIAFXInitExprInstruction {
-        if (!this.isVideoBuffer()) {
-            return null;
+        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction {
+            return <IAFXVariableDeclInstruction>super.clone(pRelationMap);
         }
 
-        return this._getVideoBufferHeader().getInitializeExpr();
-    }
+        blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction {
+            var pBlendType: IAFXVariableTypeInstruction = this.getType().blend(pVariableDecl.getType(), eMode);
 
-    _setCollapsed(bValue: boolean): void {
-        this.getType()._setCollapsed(bValue);
-    }
+            if (isNull(pBlendType)) {
+                return null;
+            }
 
-    _isCollapsed(): boolean {
-        return this.getType()._isCollapsed();
-    }
+            var pBlendVar: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+            var pId: IAFXIdInstruction = new IdInstruction();
 
-    clone(pRelationMap?: AIAFXInstructionMap): AIAFXVariableDeclInstruction {
-        return <AIAFXVariableDeclInstruction>super.clone(pRelationMap);
-    }
+            pId.setName(this.getNameId().getName());
+            pId.setRealName(this.getNameId().getRealName());
 
-    blend(pVariableDecl: AIAFXVariableDeclInstruction, eMode: AEAFXBlendMode): AIAFXVariableDeclInstruction {
-        var pBlendType: AIAFXVariableTypeInstruction = this.getType().blend(pVariableDecl.getType(), eMode);
+            pBlendVar.setSemantic(this.getSemantic());
+            pBlendVar.push(pBlendType, true);
+            pBlendVar.push(pId, true);
 
-        if (isNull(pBlendType)) {
-            return null;
+            return pBlendVar;
         }
-
-        var pBlendVar: AIAFXVariableDeclInstruction = new VariableDeclInstruction();
-        var pId: AIAFXIdInstruction = new IdInstruction();
-
-        pId.setName(this.getNameId().getName());
-        pId.setRealName(this.getNameId().getRealName());
-
-        pBlendVar.setSemantic(this.getSemantic());
-        pBlendVar.push(pBlendType, true);
-        pBlendVar.push(pId, true);
-
-        return pBlendVar;
     }
-
 }
-
-
-export = VariableDeclInstruction;

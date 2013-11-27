@@ -1,24 +1,24 @@
-/// <reference path="../idl/AIMap.ts" />
-/// <reference path="../idl/AERenderStates.ts" />
-/// <reference path="../idl/AERenderStateValues.ts" />
+/// <reference path="../idl/IMap.ts" />
+/// <reference path="../idl/ERenderStates.ts" />
+/// <reference path="../idl/ERenderStateValues.ts" />
 
 
 import render = require("render");
 import DeclInstruction = require("fx/DeclInstruction");
 import PassInstruction = require("fx/PassInstruction");
 
-class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInstruction {
+class TechniqueInstruction extends DeclInstruction implements IAFXTechniqueInstruction {
     private _sName: string = "";
     private _hasComplexName: boolean = false;
-    private _pParseNode: AIParseNode = null;
-    private _pSharedVariableListV: AIAFXVariableDeclInstruction[] = null;
-    private _pSharedVariableListP: AIAFXVariableDeclInstruction[] = null;
-    private _pPassList: AIAFXPassInstruction[] = null;
+    private _pParseNode: IParseNode = null;
+    private _pSharedVariableListV: IAFXVariableDeclInstruction[] = null;
+    private _pSharedVariableListP: IAFXVariableDeclInstruction[] = null;
+    private _pPassList: IAFXPassInstruction[] = null;
 
     private _bHasImportedTechniqueFromSameEffect: boolean = false;
-    private _pImportedTechniqueList: AIAFXImportedTechniqueInfo[] = null;
+    private _pImportedTechniqueList: IAFXImportedTechniqueInfo[] = null;
 
-    private _pFullComponentList: AIAFXComponent[] = null;
+    private _pFullComponentList: IAFXComponent[] = null;
     private _pFullComponentShiftList: int[] = null;
 
     private _nTotalPasses: uint = 0;
@@ -28,7 +28,7 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
     constructor() {
         super();
         this._pInstructionList = null;
-        this._eInstructionType = AEAFXInstructionTypes.k_TechniqueInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_TechniqueInstruction;
     }
 
     setName(sName: string, isComplexName: boolean): void {
@@ -59,15 +59,15 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
         return this._isPostEffect;
     }
 
-    getSharedVariablesForVertex(): AIAFXVariableDeclInstruction[] {
+    getSharedVariablesForVertex(): IAFXVariableDeclInstruction[] {
         return this._pSharedVariableListV;
     }
 
-    getSharedVariablesForPixel(): AIAFXVariableDeclInstruction[] {
+    getSharedVariablesForPixel(): IAFXVariableDeclInstruction[] {
         return this._pSharedVariableListP;
     }
 
-    addPass(pPass: AIAFXPassInstruction): void {
+    addPass(pPass: IAFXPassInstruction): void {
         if (isNull(this._pPassList)) {
             this._pPassList = [];
         }
@@ -75,11 +75,11 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
         this._pPassList.push(pPass);
     }
 
-    getPassList(): AIAFXPassInstruction[] {
+    getPassList(): IAFXPassInstruction[] {
         return this._pPassList;
     }
 
-    getPass(iPass: uint): AIAFXPassInstruction {
+    getPass(iPass: uint): IAFXPassInstruction {
         return iPass < this._pPassList.length ? this._pPassList[iPass] : null;
     }
 
@@ -91,7 +91,7 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
         return this._nTotalPasses;
     }
 
-    addTechniqueFromSameEffect(pTechnique: AIAFXTechniqueInstruction, iShift: uint): void {
+    addTechniqueFromSameEffect(pTechnique: IAFXTechniqueInstruction, iShift: uint): void {
         if (isNull(this._pImportedTechniqueList)) {
             this._pImportedTechniqueList = [];
         }
@@ -105,7 +105,7 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
         this._bHasImportedTechniqueFromSameEffect = true;
     }
 
-    addComponent(pComponent: AIAFXComponent, iShift: int): void {
+    addComponent(pComponent: IAFXComponent, iShift: int): void {
         if (isNull(this._pImportedTechniqueList)) {
             this._pImportedTechniqueList = [];
         }
@@ -117,7 +117,7 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
         });
     }
 
-    getFullComponentList(): AIAFXComponent[] {
+    getFullComponentList(): IAFXComponent[] {
         return this._pFullComponentList;
     }
 
@@ -130,7 +130,7 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
     }
 
     setGlobalParams(sProvideNameSpace: string,
-        pGlobalImportList: AIAFXImportedTechniqueInfo[]): void {
+        pGlobalImportList: IAFXImportedTechniqueInfo[]): void {
         this.generateListOfSharedVariables();
 
         if (!this.hasComplexName() && sProvideNameSpace !== "") {
@@ -152,13 +152,13 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
         }
     }
 
-    finalize(pComposer: AIAFXComposer): void {
+    finalize(pComposer: IAFXComposer): void {
         if (this._isFinalize) {
             return;
         }
 
         for (var i: uint = 0; i < this._pImportedTechniqueList.length; i++) {
-            var pInfo: AIAFXImportedTechniqueInfo = this._pImportedTechniqueList[i];
+            var pInfo: IAFXImportedTechniqueInfo = this._pImportedTechniqueList[i];
 
             if (isNull(pInfo.component)) {
                 pInfo.component = pComposer.getComponentByName(pInfo.technique.getName());
@@ -174,23 +174,23 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
         this._pSharedVariableListP = [];
 
         for (var i: uint = 0; i < this._pPassList.length; i++) {
-            var pSharedV: AIAFXVariableDeclMap = this._pPassList[i]._getSharedVariableMapV();
-            var pSharedP: AIAFXVariableDeclMap = this._pPassList[i]._getSharedVariableMapP();
+            var pSharedV: IAFXVariableDeclMap = this._pPassList[i]._getSharedVariableMapV();
+            var pSharedP: IAFXVariableDeclMap = this._pPassList[i]._getSharedVariableMapP();
 
             for (var j in pSharedV) {
-                this.addSharedVariable(pSharedV[j], AEFunctionType.k_Vertex);
+                this.addSharedVariable(pSharedV[j], EFunctionType.k_Vertex);
             }
 
             for (var j in pSharedP) {
-                this.addSharedVariable(pSharedP[j], AEFunctionType.k_Pixel);
+                this.addSharedVariable(pSharedP[j], EFunctionType.k_Pixel);
             }
         }
     }
 
-    private addSharedVariable(pVar: AIAFXVariableDeclInstruction, eType: AEFunctionType): void {
-        var pAddTo: AIAFXVariableDeclInstruction[] = null;
+    private addSharedVariable(pVar: IAFXVariableDeclInstruction, eType: EFunctionType): void {
+        var pAddTo: IAFXVariableDeclInstruction[] = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pAddTo = this._pSharedVariableListV;
         }
         else {
@@ -217,11 +217,11 @@ class TechniqueInstruction extends DeclInstruction implements AIAFXTechniqueInst
         this._pFullComponentShiftList = [];
 
         for (var i: uint = 0; i < this._pImportedTechniqueList.length; i++) {
-            var pInfo: AIAFXImportedTechniqueInfo = this._pImportedTechniqueList[i];
+            var pInfo: IAFXImportedTechniqueInfo = this._pImportedTechniqueList[i];
 
-            var pTechnique: AIAFXTechniqueInstruction = pInfo.technique;
+            var pTechnique: IAFXTechniqueInstruction = pInfo.technique;
             var iMainShift: int = pInfo.shift;
-            var pAddComponentList: AIAFXComponent[] = pTechnique.getFullComponentList();
+            var pAddComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
             var pAddComponentShiftList: int[] = pTechnique.getFullComponentShiftList();
 
             if (!isNull(pAddComponentList)) {

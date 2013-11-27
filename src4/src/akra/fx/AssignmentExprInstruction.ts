@@ -1,40 +1,41 @@
-import ExprInstruction = require("fx/ExprInstruction");
+/// <reference path="ExprInstruction.ts" />
 
-/**
- * Represent someExpr = += -= /= *= %= someExpr
- * (=|+=|-=|*=|/=|%=) Instruction Instruction
- */
-class AssignmentExprInstruction extends ExprInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = [null, null];
-        this._eInstructionType = AEAFXInstructionTypes.k_AssignmentExprInstruction;
-    }
 
-    toFinalCode(): string {
-        var sCode: string = "";
-        sCode += this.getInstructions()[0].toFinalCode();
-        sCode += this.getOperator();
-        sCode += this.getInstructions()[1].toFinalCode();
-        return sCode;
-    }
+module akra.fx {
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var sOperator: string = this.getOperator();
-        var pSubExprLeft: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[0];
-        var pSubExprRight: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[1];
-
-        if (eUsedMode === AEVarUsedMode.k_Read || sOperator !== "=") {
-            pSubExprLeft.addUsedData(pUsedDataCollector, AEVarUsedMode.k_ReadWrite);
-        }
-        else {
-            pSubExprLeft.addUsedData(pUsedDataCollector, AEVarUsedMode.k_Write);
+    /**
+     * Represent someExpr = += -= /= *= %= someExpr
+     * (=|+=|-=|*=|/=|%=) Instruction Instruction
+     */
+    export class AssignmentExprInstruction extends ExprInstruction {
+        constructor() {
+            super();
+            this._pInstructionList = [null, null];
+            this._eInstructionType = EAFXInstructionTypes.k_AssignmentExprInstruction;
         }
 
-        pSubExprRight.addUsedData(pUsedDataCollector, AEVarUsedMode.k_Read);
+        toFinalCode(): string {
+            var sCode: string = "";
+            sCode += this.getInstructions()[0].toFinalCode();
+            sCode += this.getOperator();
+            sCode += this.getInstructions()[1].toFinalCode();
+            return sCode;
+        }
+
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+            eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            var sOperator: string = this.getOperator();
+            var pSubExprLeft: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+            var pSubExprRight: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+
+            if (eUsedMode === EVarUsedMode.k_Read || sOperator !== "=") {
+                pSubExprLeft.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+            }
+            else {
+                pSubExprLeft.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+            }
+
+            pSubExprRight.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+        }
     }
 }
-
-
-export = AssignmentExprInstruction;

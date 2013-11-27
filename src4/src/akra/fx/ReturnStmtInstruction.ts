@@ -15,16 +15,16 @@ class ReturnStmtInstruction extends StmtInstruction {
         super();
         this._pInstructionList = [null];
         this._sOperatorName = "return";
-        this._eInstructionType = AEAFXInstructionTypes.k_ReturnStmtInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_ReturnStmtInstruction;
     }
 
-    prepareFor(eUsedMode: AEFunctionType): void {
-        var pReturn: AIAFXTypedInstruction = <AIAFXTypedInstruction>this.getInstructions()[0];
+    prepareFor(eUsedMode: EFunctionType): void {
+        var pReturn: IAFXTypedInstruction = <IAFXTypedInstruction>this.getInstructions()[0];
         if (isNull(pReturn)) {
             return;
         }
 
-        if (eUsedMode === AEFunctionType.k_Vertex) {
+        if (eUsedMode === EFunctionType.k_Vertex) {
             if (pReturn.getType().isBase()) {
                 this._isPositionReturn = true;
             }
@@ -32,7 +32,7 @@ class ReturnStmtInstruction extends StmtInstruction {
                 this._isOnlyReturn = true;
             }
         }
-        else if (eUsedMode === AEFunctionType.k_Pixel) {
+        else if (eUsedMode === EFunctionType.k_Pixel) {
             this._isColorReturn = true;
         }
 

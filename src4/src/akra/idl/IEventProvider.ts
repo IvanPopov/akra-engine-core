@@ -1,5 +1,4 @@
 /// <reference path="IUnique.ts" />
-/// <reference path="IEventTable.ts" />
 
 module akra {
     export enum EEventType {
@@ -7,7 +6,7 @@ module akra {
         BROADCAST
     }
 
-    export interface ISignal<T extends Function, S> {
+    export interface ISignal<T extends Function> {
         connect(fnCallback: T, eType?: EEventType): boolean;
         connect(fnCallback: string, eType?: EEventType): boolean;
         connect(pReciever: any, fnCallback: T, eType?: EEventType): boolean;

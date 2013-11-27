@@ -1,31 +1,33 @@
-﻿/// <reference path="../idl/AIAFXInstruction.ts" />
+﻿/// <reference path="../idl/IAFXInstruction.ts" />
 
-import Instruction = require("fx/Instruction");
+/// <reference path="Instruction.ts" />
 
-class TypedInstruction extends Instruction implements AIAFXTypedInstruction {
-    protected _pType: AIAFXTypeInstruction;
+module akra.fx {
 
-    constructor() {
-        super();
-        this._pType = null;
-        this._eInstructionType = AEAFXInstructionTypes.k_TypedInstruction;
-    }
+    export class TypedInstruction extends Instruction implements IAFXTypedInstruction {
+        protected _pType: IAFXTypeInstruction;
 
-    getType(): AIAFXTypeInstruction {
-        return this._pType;
-    }
-
-    setType(pType: AIAFXTypeInstruction): void {
-        this._pType = pType;
-    }
-
-    clone(pRelationMap: AIAFXInstructionMap = <AIAFXInstructionMap>{}): AIAFXTypedInstruction {
-        var pClonedInstruction: AIAFXTypedInstruction = <AIAFXTypedInstruction>(super.clone(pRelationMap));
-        if (!isNull(this.getType())) {
-            pClonedInstruction.setType(this.getType().clone(pRelationMap));
+        constructor() {
+            super();
+            this._pType = null;
+            this._eInstructionType = EAFXInstructionTypes.k_TypedInstruction;
         }
-        return pClonedInstruction;
-    }
-}
 
-export = TypedInstruction;
+        getType(): IAFXTypeInstruction {
+            return this._pType;
+        }
+
+        setType(pType: IAFXTypeInstruction): void {
+            this._pType = pType;
+        }
+
+        clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXTypedInstruction {
+            var pClonedInstruction: IAFXTypedInstruction = <IAFXTypedInstruction>(super.clone(pRelationMap));
+            if (!isNull(this.getType())) {
+                pClonedInstruction.setType(this.getType().clone(pRelationMap));
+            }
+            return pClonedInstruction;
+        }
+    }
+
+}

@@ -1,21 +1,21 @@
-/// <reference path="../idl/AIAFXPassInputBlend.ts" />
-/// <reference path="../idl/AIAFXVariableContainer.ts" />
-/// <reference path="../idl/AIMap.ts" />
+/// <reference path="../idl/IAFXPassInputBlend.ts" />
+/// <reference path="../idl/IAFXVariableContainer.ts" />
+/// <reference path="../idl/IMap.ts" />
 
 import Vec4 = require("math/Vec4");
 
 import render = require("render");
 
 
-interface AIAFXShaderVarTypeMap {
-    //[index: string]: AEAFXShaderVariableType;
-    [index: uint]: AEAFXShaderVariableType;
+interface IAFXShaderVarTypeMap {
+    //[index: string]: EAFXShaderVariableType;
+    [index: uint]: EAFXShaderVariableType;
 }
 
-class PassInputBlend implements AIAFXPassInputBlend {
+class PassInputBlend implements IAFXPassInputBlend {
     //UNIQUE()
 
-    protected _pCreator: AIAFXComponentPassInputBlend = null;
+    protected _pCreator: IAFXComponentPassInputBlend = null;
 
     // private _bNeedToCalcBlend: boolean = true;
     // private _bNeedToCalcShader: boolean = true;
@@ -34,7 +34,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
     //need for accelerate setSurfaceMaterial
     private _nLastSufraceMaterialTextureUpdates: uint = 0;
     private _nLastSamplerUpdates: uint = 0;
-    private _pLastSurfaceMaterial: AISurfaceMaterial = null;
+    private _pLastSurfaceMaterial: ISurfaceMaterial = null;
 
     private _isFirstSetSurfaceNaterial: boolean = true;
     private _pMaterialNameIndices: any = {
@@ -47,11 +47,11 @@ class PassInputBlend implements AIAFXPassInputBlend {
         textures: new Array(16)
     };
 
-    private _pStatesInfo: AIAFXPassInputStateInfo = null;
+    private _pStatesInfo: IAFXPassInputStateInfo = null;
 
-    samplers: AIAFXSamplerStateMap = null;
-    samplerArrays: AIAFXSamplerStateListMap = null;
-    samplerArrayLength: AIMap<int> = null;
+    samplers: IAFXSamplerStateMap = null;
+    samplerArrays: IAFXSamplerStateListMap = null;
+    samplerArrayLength: IMap<int> = null;
 
     uniforms: any = null;
     foreigns: any = null;
@@ -64,16 +64,16 @@ class PassInputBlend implements AIAFXPassInputBlend {
     foreignKeys: uint[] = null;
     textureKeys: uint[] = null;
 
-    renderStates: AIMap<AERenderStateValues> = null;
+    renderStates: IMap<ERenderStateValues> = null;
 
-     get statesInfo(): AIAFXPassInputStateInfo {
+     get statesInfo(): IAFXPassInputStateInfo {
         return this._pStatesInfo;
     }
 
-    constructor(pCreator: AIAFXComponentPassInputBlend) {
+    constructor(pCreator: IAFXComponentPassInputBlend) {
         this._pCreator = pCreator;
 
-        this._pStatesInfo = <AIAFXPassInputStateInfo>{
+        this._pStatesInfo = <IAFXPassInputStateInfo>{
             uniformKey: 0,
             foreignKey: 0,
             samplerKey: 0,
@@ -102,10 +102,10 @@ class PassInputBlend implements AIAFXPassInputBlend {
             return;
         }
 
-        var pInfo: AIAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(iIndex);
+        var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(iIndex);
 
-        if (pInfo.type === AEAFXShaderVariableType.k_Sampler2D ||
-            pInfo.type === AEAFXShaderVariableType.k_SamplerCUBE) {
+        if (pInfo.type === EAFXShaderVariableType.k_Sampler2D ||
+            pInfo.type === EAFXShaderVariableType.k_SamplerCUBE) {
 
             if (pInfo.isArray) {
                 if (isNull(pValue)) {
@@ -168,17 +168,17 @@ class PassInputBlend implements AIAFXPassInputBlend {
         this.foreigns[iIndex] = pValue;
     }
 
-    setSampler(sName: string, pValue: AIAFXSamplerState): void {
+    setSampler(sName: string, pValue: IAFXSamplerState): void {
         var iIndex: uint = this._pCreator.uniforms.getIndexByRealName(sName);
 
         if (iIndex === 0) {
             return;
         }
 
-        var eType: AEAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
+        var eType: EAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
 
-        if (eType !== AEAFXShaderVariableType.k_Sampler2D &&
-            eType !== AEAFXShaderVariableType.k_SamplerCUBE) {
+        if (eType !== EAFXShaderVariableType.k_Sampler2D &&
+            eType !== EAFXShaderVariableType.k_SamplerCUBE) {
 
             return;
         }
@@ -186,17 +186,17 @@ class PassInputBlend implements AIAFXPassInputBlend {
         this.copySamplerState(pValue, this.samplers[iIndex]);
     }
 
-    setSamplerArray(sName: string, pValue: AIAFXSamplerState[]): void {
+    setSamplerArray(sName: string, pValue: IAFXSamplerState[]): void {
         var iIndex: uint = this._pCreator.uniforms.getIndexByRealName(sName);
 
         if (iIndex === 0) {
             return;
         }
 
-        var eType: AEAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
+        var eType: EAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
 
-        if (eType !== AEAFXShaderVariableType.k_Sampler2D &&
-            eType !== AEAFXShaderVariableType.k_SamplerCUBE) {
+        if (eType !== EAFXShaderVariableType.k_Sampler2D &&
+            eType !== EAFXShaderVariableType.k_SamplerCUBE) {
 
             return;
         }
@@ -214,7 +214,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
     }
 
     setSamplerTexture(sName: string, sTexture: string): void;
-    setSamplerTexture(sName: string, pTexture: AITexture): void;
+    setSamplerTexture(sName: string, pTexture: ITexture): void;
     setSamplerTexture(sName: string, pTexture: any): void {
         var iIndex: uint = this._pCreator.uniforms.getIndexByRealName(sName);
 
@@ -222,14 +222,14 @@ class PassInputBlend implements AIAFXPassInputBlend {
             return;
         }
 
-        var eType: AEAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
+        var eType: EAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
 
-        if (eType !== AEAFXShaderVariableType.k_Sampler2D &&
-            eType !== AEAFXShaderVariableType.k_SamplerCUBE) {
+        if (eType !== EAFXShaderVariableType.k_Sampler2D &&
+            eType !== EAFXShaderVariableType.k_SamplerCUBE) {
 
             return;
         }
-        var pState: AIAFXSamplerState = this.samplers[iIndex];
+        var pState: IAFXSamplerState = this.samplers[iIndex];
 
         if (isString(pTexture)) {
             if (!isNull(pState.texture) || pState.textureName !== pTexture) {
@@ -248,22 +248,22 @@ class PassInputBlend implements AIAFXPassInputBlend {
         }
     }
 
-    _setSamplerTextureObject(sName: string, pTexture: AITexture): void {
+    _setSamplerTextureObject(sName: string, pTexture: ITexture): void {
         var iIndex: uint = this._pCreator.uniforms.getIndexByRealName(sName);
 
         if (iIndex === 0) {
             return;
         }
 
-        var eType: AEAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
+        var eType: EAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
 
-        if (eType !== AEAFXShaderVariableType.k_Sampler2D &&
-            eType !== AEAFXShaderVariableType.k_SamplerCUBE) {
+        if (eType !== EAFXShaderVariableType.k_Sampler2D &&
+            eType !== EAFXShaderVariableType.k_SamplerCUBE) {
 
             return;
         }
 
-        var pState: AIAFXSamplerState = this.samplers[iIndex];
+        var pState: IAFXSamplerState = this.samplers[iIndex];
 
         if (pState.texture !== pTexture) {
             this._pStatesInfo.samplerKey++;
@@ -276,7 +276,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
         this.setUniform(sName, pValue);
     }
 
-    setSurfaceMaterial(pSurfaceMaterial: AISurfaceMaterial): void {
+    setSurfaceMaterial(pSurfaceMaterial: ISurfaceMaterial): void {
         if (isNull(pSurfaceMaterial)) {
             return;
         }
@@ -321,7 +321,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
         }
 
         if (this._pMaterialNameIndices.material > 0) {
-            var pMaterial: AIMaterial = pSurfaceMaterial.material;
+            var pMaterial: IMaterial = pSurfaceMaterial.material;
             var pMatContainer: any = this._pMaterialContainer;
 
             pMatContainer.DIFFUSE.set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
@@ -334,11 +334,11 @@ class PassInputBlend implements AIAFXPassInputBlend {
         }
 
         // if (this._nLastSamplerUpdates !== this._pStatesInfo.samplerKey){
-        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.diffuse, pSurfaceMaterial.texture(AESurfaceMaterialTextures.DIFFUSE) || null);
-        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.ambient, pSurfaceMaterial.texture(AESurfaceMaterialTextures.AMBIENT) || null);
-        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.specular, pSurfaceMaterial.texture(AESurfaceMaterialTextures.SPECULAR) || null);
-        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.emissive, pSurfaceMaterial.texture(AESurfaceMaterialTextures.EMISSIVE) || null);
-        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.normal, pSurfaceMaterial.texture(AESurfaceMaterialTextures.NORMAL) || null);
+        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.diffuse, pSurfaceMaterial.texture(ESurfaceMaterialTextures.DIFFUSE) || null);
+        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.ambient, pSurfaceMaterial.texture(ESurfaceMaterialTextures.AMBIENT) || null);
+        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.specular, pSurfaceMaterial.texture(ESurfaceMaterialTextures.SPECULAR) || null);
+        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.emissive, pSurfaceMaterial.texture(ESurfaceMaterialTextures.EMISSIVE) || null);
+        this._setSamplerTextureObjectByIndex(this._pMaterialNameIndices.normal, pSurfaceMaterial.texture(ESurfaceMaterialTextures.NORMAL) || null);
         // }
 
         this._pLastSurfaceMaterial = pSurfaceMaterial;
@@ -346,7 +346,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
         this._nLastSamplerUpdates = this._pStatesInfo.samplerKey;
     }
 
-     setRenderState(eState: AERenderStates, eValue: AERenderStateValues): void {
+     setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
         if (this.renderStates[eState] !== eValue) {
             this._pStatesInfo.renderStatesKey++;
         }
@@ -366,7 +366,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
         return this._pCreator.uniforms.getIndexByRealName(sName);
     }
 
-     _getUniformVar(iNameIndex: uint): AIAFXVariableDeclInstruction {
+     _getUniformVar(iNameIndex: uint): IAFXVariableDeclInstruction {
         return this._pCreator.uniforms.getVarByIndex(iNameIndex);
     }
 
@@ -378,20 +378,20 @@ class PassInputBlend implements AIAFXPassInputBlend {
         return this._pCreator.uniforms.getVarByIndex(iNameIndex).getType().getLength();
     }
 
-     _getUniformType(iNameIndex: uint): AEAFXShaderVariableType {
+     _getUniformType(iNameIndex: uint): EAFXShaderVariableType {
         return this._pCreator.uniforms.getTypeByIndex(iNameIndex);
     }
 
-     _getSamplerState(iNameIndex: uint): AIAFXSamplerState {
+     _getSamplerState(iNameIndex: uint): IAFXSamplerState {
         return this.samplers[iNameIndex];
     }
 
-     _getSamplerTexture(iNameIndex: uint): AITexture {
+     _getSamplerTexture(iNameIndex: uint): ITexture {
         return this._getTextureForSamplerState(this._getSamplerState(iNameIndex));
     }
 
-    _getTextureForSamplerState(pSamplerState: AIAFXSamplerState): AITexture {
-        var pTexture: AITexture = null;
+    _getTextureForSamplerState(pSamplerState: IAFXSamplerState): ITexture {
+        var pTexture: ITexture = null;
 
         if (!isNull(pSamplerState.texture)) {
             pTexture = pSamplerState.texture;
@@ -407,7 +407,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
 
     _release(): void {
         for (var i: uint = 0; i < this.uniformKeys.length; i++) {
-            var pInfo: AIAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.uniformKeys[i]);
+            var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.uniformKeys[i]);
             var pDefaultValue: any = pInfo.variable.getDefaultValue();
 
             this.uniforms[this.uniformKeys[i]] = pDefaultValue;
@@ -422,9 +422,9 @@ class PassInputBlend implements AIAFXPassInputBlend {
         }
 
         for (var i: uint = 0; i < this.samplerKeys.length; i++) {
-            var pInfo: AIAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.samplerKeys[i]);
-            var pDefaultState: AIAFXSamplerState = pInfo.variable.getDefaultValue();
-            var pSamplerState: AIAFXSamplerState = this.samplers[this.samplerKeys[i]];
+            var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.samplerKeys[i]);
+            var pDefaultState: IAFXSamplerState = pInfo.variable.getDefaultValue();
+            var pSamplerState: IAFXSamplerState = this.samplers[this.samplerKeys[i]];
 
             this.clearSamplerState(pSamplerState);
 
@@ -438,9 +438,9 @@ class PassInputBlend implements AIAFXPassInputBlend {
         }
 
         for (var i: uint = 0; i < this.samplerArrayKeys.length; i++) {
-            var pInfo: AIAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.samplerArrayKeys[i]);
-            var pDefaultStateList: AIAFXSamplerState[] = pInfo.variable.getDefaultValue();
-            var pStateList: AIAFXSamplerState[] = this.samplerArrays[this.samplerArrayKeys[i]];
+            var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.samplerArrayKeys[i]);
+            var pDefaultStateList: IAFXSamplerState[] = pInfo.variable.getDefaultValue();
+            var pStateList: IAFXSamplerState[] = this.samplerArrays[this.samplerArrayKeys[i]];
 
             for (var j: uint = 0; j < pStateList.length; j++) {
                 this.clearSamplerState(pStateList[j]);
@@ -465,22 +465,22 @@ class PassInputBlend implements AIAFXPassInputBlend {
         // this._bNeedToCalcBlend = true;
     }
 
-     _isFromSameBlend(pInput: AIAFXPassInputBlend): boolean {
+     _isFromSameBlend(pInput: IAFXPassInputBlend): boolean {
         return (pInput._getBlend() === this._getBlend());
     }
 
-     _getBlend(): AIAFXComponentPassInputBlend {
+     _getBlend(): IAFXComponentPassInputBlend {
         return this._pCreator;
     }
 
-    _copyFrom(pInput: AIAFXPassInputBlend): void {
+    _copyFrom(pInput: IAFXPassInputBlend): void {
         this._copyUniformsFromInput(pInput);
         this._copyForeignsFromInput(pInput);
         this._copySamplersFromInput(pInput);
         this._copyRenderStatesFromInput(pInput);
     }
 
-    _copyUniformsFromInput(pInput: AIAFXPassInputBlend): void {
+    _copyUniformsFromInput(pInput: IAFXPassInputBlend): void {
         for (var i: uint = 0; i < pInput.uniformKeys.length; i++) {
             var iIndex: uint = pInput.uniformKeys[i];
 
@@ -490,7 +490,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
         }
     }
 
-    _copySamplersFromInput(pInput: AIAFXPassInputBlend): void {
+    _copySamplersFromInput(pInput: IAFXPassInputBlend): void {
         for (var i: uint = 0; i < pInput.textureKeys.length; i++) {
             var iIndex: uint = pInput.textureKeys[i];
 
@@ -511,8 +511,8 @@ class PassInputBlend implements AIAFXPassInputBlend {
             var iIndex: uint = pInput.samplerArrayKeys[i];
 
             if (isDef(this.samplerArrays[iIndex])) {
-                var pFrom: AIAFXSamplerState[] = pInput.samplerArrays[iIndex];
-                var pTo: AIAFXSamplerState[] = this.samplerArrays[iIndex];
+                var pFrom: IAFXSamplerState[] = pInput.samplerArrays[iIndex];
+                var pTo: IAFXSamplerState[] = this.samplerArrays[iIndex];
                 var iLength: uint = pInput.samplerArrayLength[iIndex];
 
                 for (var j: uint = 0; j < iLength; j++) {
@@ -524,7 +524,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
         }
     }
 
-    _copyForeignsFromInput(pInput: AIAFXPassInputBlend): void {
+    _copyForeignsFromInput(pInput: IAFXPassInputBlend): void {
         for (var i: uint = 0; i < pInput.foreignKeys.length; i++) {
             var iIndex: uint = pInput.foreignKeys[i];
 
@@ -534,7 +534,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
         }
     }
 
-    _copyRenderStatesFromInput(pInput: AIAFXPassInputBlend): void {
+    _copyRenderStatesFromInput(pInput: IAFXPassInputBlend): void {
         render.copyRenderStateMap(pInput.renderStates, this.renderStates);
     }
 
@@ -555,9 +555,9 @@ class PassInputBlend implements AIAFXPassInputBlend {
     }
 
     private init(): void {
-        this.samplers = <AIAFXSamplerStateMap>{};
-        this.samplerArrays = <AIAFXSamplerStateListMap>{};
-        this.samplerArrayLength = <AIMap<int>>{};
+        this.samplers = <IAFXSamplerStateMap>{};
+        this.samplerArrays = <IAFXSamplerStateListMap>{};
+        this.samplerArrayLength = <IMap<int>>{};
 
         this.uniforms = <any>{};
         this.foreigns = <any>{};
@@ -569,17 +569,17 @@ class PassInputBlend implements AIAFXPassInputBlend {
         var pForeignKeys: uint[] = this._pCreator.foreigns.indices;
         var pTextureKeys: uint[] = this._pCreator.textures.indices;
 
-        var eType: AEAFXShaderVariableType = 0;
+        var eType: EAFXShaderVariableType = 0;
         var sName: string = "";
         var iIndex: uint = 0;
 
         for (var i: uint = 0; i < pUniformKeys.length; i++) {
             var iIndex: uint = pUniformKeys[i];
-            var pInfo: AIAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(iIndex);
+            var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(iIndex);
             var pDefaultValue: any = pInfo.variable.getDefaultValue();
 
-            if (pInfo.type === AEAFXShaderVariableType.k_Sampler2D ||
-                pInfo.type === AEAFXShaderVariableType.k_SamplerCUBE) {
+            if (pInfo.type === EAFXShaderVariableType.k_Sampler2D ||
+                pInfo.type === EAFXShaderVariableType.k_SamplerCUBE) {
 
                 var hasDefaultValue: boolean = !isNull(pDefaultValue);
 
@@ -595,10 +595,10 @@ class PassInputBlend implements AIAFXPassInputBlend {
 
 
                     for (var j: uint = 0; j < this.samplerArrays[iIndex].length; j++) {
-                        var pNewState: AIAFXSamplerState = render.createSamplerState();
+                        var pNewState: IAFXSamplerState = render.createSamplerState();
 
                         if (hasDefaultValue) {
-                            var pDefaultState: AIAFXSamplerState = pDefaultValue[j];
+                            var pDefaultState: IAFXSamplerState = pDefaultValue[j];
                             pNewState.textureName = pDefaultState.textureName;
                             pNewState.wrap_s = pDefaultState.wrap_s || pNewState.wrap_s;
                             pNewState.wrap_t = pDefaultState.wrap_t || pNewState.wrap_t;
@@ -611,10 +611,10 @@ class PassInputBlend implements AIAFXPassInputBlend {
 
                 }
                 else {
-                    var pNewState: AIAFXSamplerState = render.createSamplerState();
+                    var pNewState: IAFXSamplerState = render.createSamplerState();
 
                     if (hasDefaultValue) {
-                        var pDefaultState: AIAFXSamplerState = pDefaultValue;
+                        var pDefaultState: IAFXSamplerState = pDefaultValue;
                         pNewState.textureName = pDefaultState.textureName;
                         pNewState.wrap_s = pDefaultState.wrap_s || pNewState.wrap_s;
                         pNewState.wrap_t = pDefaultState.wrap_t || pNewState.wrap_t;
@@ -667,29 +667,29 @@ class PassInputBlend implements AIAFXPassInputBlend {
         }
     }
 
-    private  isVarArray(pVar: AIAFXVariableDeclInstruction): boolean {
+    private  isVarArray(pVar: IAFXVariableDeclInstruction): boolean {
         return pVar.getType().isNotBaseArray();
     }
 
-    private clearSamplerState(pState: AIAFXSamplerState): void {
+    private clearSamplerState(pState: IAFXSamplerState): void {
         pState.textureName = "";
         pState.texture = null;
-        pState.wrap_s = AETextureWrapModes.UNDEF;
-        pState.wrap_t = AETextureWrapModes.UNDEF;
-        pState.mag_filter = AETextureFilters.UNDEF;
-        pState.min_filter = AETextureFilters.UNDEF;
-        /*pState.wrap_s = AETextureWrapModes.CLAMP_TO_EDGE;
-        pState.wrap_t = AETextureWrapModes.CLAMP_TO_EDGE;
-        pState.mag_filter = AETextureFilters.LINEAR;
-        pState.min_filter = AETextureFilters.LINEAR;*/
+        pState.wrap_s = ETextureWrapModes.UNDEF;
+        pState.wrap_t = ETextureWrapModes.UNDEF;
+        pState.mag_filter = ETextureFilters.UNDEF;
+        pState.min_filter = ETextureFilters.UNDEF;
+        /*pState.wrap_s = ETextureWrapModes.CLAMP_TO_EDGE;
+        pState.wrap_t = ETextureWrapModes.CLAMP_TO_EDGE;
+        pState.mag_filter = ETextureFilters.LINEAR;
+        pState.min_filter = ETextureFilters.LINEAR;*/
     }
 
-    private _setSamplerTextureObjectByIndex(iNameIndex: uint, pTexture: AITexture): void {
+    private _setSamplerTextureObjectByIndex(iNameIndex: uint, pTexture: ITexture): void {
         if (iNameIndex === 0) {
             return;
         }
 
-        var pState: AIAFXSamplerState = this.samplers[iNameIndex];
+        var pState: IAFXSamplerState = this.samplers[iNameIndex];
         if (pState.texture !== pTexture) {
             this._pStatesInfo.samplerKey++;
         }
@@ -697,7 +697,7 @@ class PassInputBlend implements AIAFXPassInputBlend {
         pState.texture = pTexture;
     }
 
-    private copySamplerState(pFrom: AIAFXSamplerState, pTo: AIAFXSamplerState): void {
+    private copySamplerState(pFrom: IAFXSamplerState, pTo: IAFXSamplerState): void {
         if (pTo.textureName !== pFrom.textureName ||
             pTo.texture !== pFrom.texture) {
             this._pStatesInfo.samplerKey++;

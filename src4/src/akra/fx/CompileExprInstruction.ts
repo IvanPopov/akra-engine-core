@@ -1,19 +1,21 @@
-import ExprInstruction = require("fx/ExprInstruction");
+/// <reference path="ExprInstruction.ts" />
 
-/**
-  * Represetn compile vs_func(...args)
-  * compile IdExprInstruction ExprInstruction ... ExprInstruction
-  */
-class CompileExprInstruction extends ExprInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = [null];
-        this._eInstructionType = AEAFXInstructionTypes.k_CompileExprInstruction;
+module akra.fx {
+
+    /**
+      * Represetn compile vs_func(...args)
+      * compile IdExprInstruction ExprInstruction ... ExprInstruction
+      */
+    export class CompileExprInstruction extends ExprInstruction {
+        constructor() {
+            super();
+            this._pInstructionList = [null];
+            this._eInstructionType = EAFXInstructionTypes.k_CompileExprInstruction;
+        }
+
+        getFunction(): IAFXFunctionDeclInstruction {
+            return <IAFXFunctionDeclInstruction>this._pInstructionList[0].getParent().getParent();
+        }
     }
 
-    getFunction(): AIAFXFunctionDeclInstruction {
-        return <AIAFXFunctionDeclInstruction>this._pInstructionList[0].getParent().getParent();
-    }
 }
-
-export = CompileExprInstruction;

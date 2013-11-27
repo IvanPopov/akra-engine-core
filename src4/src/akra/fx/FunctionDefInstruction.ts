@@ -1,4 +1,4 @@
-/// <reference path="../idl/AEEffectErrors.ts" />
+/// <reference path="../idl/EEffectErrors.ts" />
 
 import DeclInstruction = require("fx/DeclInstruction");
 import Effect = require("fx/Effect");
@@ -9,13 +9,13 @@ import Effect = require("fx/Effect");
  * EMPTY_OPERTOR VariableTypeInstruction IdInstruction VarDeclInstruction ... VarDeclInstruction
  */
 class FunctionDefInstruction extends DeclInstruction {
-    private _pParameterList: AIAFXVariableDeclInstruction[] = null;
-    private _pParamListForShaderCompile: AIAFXVariableDeclInstruction[] = null;
-    private _pParamListForShaderInput: AIAFXVariableDeclInstruction[] = null;
+    private _pParameterList: IAFXVariableDeclInstruction[] = null;
+    private _pParamListForShaderCompile: IAFXVariableDeclInstruction[] = null;
+    private _pParamListForShaderInput: IAFXVariableDeclInstruction[] = null;
     private _isComplexShaderInput: boolean = false;
 
-    private _pReturnType: AIAFXVariableTypeInstruction = null;
-    private _pFunctionName: AIAFXIdInstruction = null;
+    private _pReturnType: IAFXVariableTypeInstruction = null;
+    private _pFunctionName: IAFXIdInstruction = null;
     private _nParamsNeeded: uint = 0;
     private _sDefinition: string = "";
     private _isAnalyzedForVertexUsage: boolean = false;
@@ -30,7 +30,7 @@ class FunctionDefInstruction extends DeclInstruction {
         super();
         this._pInstructionList = null;
         this._pParameterList = [];
-        this._eInstructionType = AEAFXInstructionTypes.k_FunctionDefInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_FunctionDefInstruction;
     }
 
     toFinalCode(): string {
@@ -59,24 +59,24 @@ class FunctionDefInstruction extends DeclInstruction {
         return sCode;
     }
 
-    setType(pType: AIAFXTypeInstruction): void {
-        this.setReturnType(<AIAFXVariableTypeInstruction>pType);
+    setType(pType: IAFXTypeInstruction): void {
+        this.setReturnType(<IAFXVariableTypeInstruction>pType);
     }
 
-    getType(): AIAFXTypeInstruction {
-        return <AIAFXTypeInstruction>this.getReturnType();
+    getType(): IAFXTypeInstruction {
+        return <IAFXTypeInstruction>this.getReturnType();
     }
 
-    setReturnType(pReturnType: AIAFXVariableTypeInstruction): boolean {
+    setReturnType(pReturnType: IAFXVariableTypeInstruction): boolean {
         this._pReturnType = pReturnType;
         pReturnType.setParent(this);
         return true;
     }
-    getReturnType(): AIAFXVariableTypeInstruction {
+    getReturnType(): IAFXVariableTypeInstruction {
         return this._pReturnType;
     }
 
-    setFunctionName(pNameId: AIAFXIdInstruction): boolean {
+    setFunctionName(pNameId: IAFXIdInstruction): boolean {
         this._pFunctionName = pNameId;
         pNameId.setParent(this);
         return true;
@@ -90,11 +90,11 @@ class FunctionDefInstruction extends DeclInstruction {
         return this._pFunctionName.getRealName();
     }
 
-    getNameId(): AIAFXIdInstruction {
+    getNameId(): IAFXIdInstruction {
         return this._pFunctionName;
     }
 
-    getArguments(): AIAFXVariableDeclInstruction[] {
+    getArguments(): IAFXVariableDeclInstruction[] {
         return this._pParameterList;
     }
 
@@ -110,11 +110,11 @@ class FunctionDefInstruction extends DeclInstruction {
         return this._bShaderDef;
     }
 
-    addParameter(pParameter: AIAFXVariableDeclInstruction, isStrictModeOn?: boolean): boolean {
+    addParameter(pParameter: IAFXVariableDeclInstruction, isStrictModeOn?: boolean): boolean {
         if (this._pParameterList.length > this._nParamsNeeded &&
             !pParameter.hasInitializer()) {
 
-                this.setError(AEEffectErrors.BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT,
+                this.setError(EEffectErrors.BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT,
                 {
                     funcName: this._pFunctionName.getName(),
                     varName: pParameter.getName()
@@ -122,14 +122,14 @@ class FunctionDefInstruction extends DeclInstruction {
             return false;
         }
 
-        var pParameterType: AIAFXVariableTypeInstruction = pParameter.getType();
+        var pParameterType: IAFXVariableTypeInstruction = pParameter.getType();
 
         if (pParameterType.isPointer() || pParameterType._containPointer()) {
             if (pParameterType.hasUsage("uniform") ||
                 pParameterType.hasUsage("out") ||
                 pParameterType.hasUsage("inout")) {
 
-                    this.setError(AEEffectErrors.BAD_FUNCTION_PARAMETER_USAGE,
+                    this.setError(EEffectErrors.BAD_FUNCTION_PARAMETER_USAGE,
                     {
                         funcName: this._pFunctionName.getName(),
                         varName: pParameter.getName()
@@ -177,7 +177,7 @@ class FunctionDefInstruction extends DeclInstruction {
         return true;
     }
 
-    getParameListForShaderInput(): AIAFXVariableDeclInstruction[] {
+    getParameListForShaderInput(): IAFXVariableDeclInstruction[] {
         return this._pParamListForShaderInput;
     }
 
@@ -185,17 +185,17 @@ class FunctionDefInstruction extends DeclInstruction {
         return this._isComplexShaderInput;
     }
 
-    clone(pRelationMap: AIAFXInstructionMap = <AIAFXInstructionMap>{}): FunctionDefInstruction {
+    clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): FunctionDefInstruction {
         var pClone: FunctionDefInstruction = <FunctionDefInstruction>super.clone(pRelationMap);
 
-        pClone.setFunctionName(<AIAFXIdInstruction>this._pFunctionName.clone(pRelationMap));
-        pClone.setReturnType(<AIAFXVariableTypeInstruction>this.getReturnType().clone(pRelationMap));
+        pClone.setFunctionName(<IAFXIdInstruction>this._pFunctionName.clone(pRelationMap));
+        pClone.setReturnType(<IAFXVariableTypeInstruction>this.getReturnType().clone(pRelationMap));
 
         for (var i: uint = 0; i < this._pParameterList.length; i++) {
             pClone.addParameter(this._pParameterList[i].clone(pRelationMap));
         }
 
-        var pShaderParams: AIAFXVariableDeclInstruction[] = [];
+        var pShaderParams: IAFXVariableDeclInstruction[] = [];
         for (var i: uint = 0; i < this._pParamListForShaderInput.length; i++) {
             pShaderParams.push(this._pParamListForShaderInput[i].clone(pRelationMap));
         }
@@ -208,7 +208,7 @@ class FunctionDefInstruction extends DeclInstruction {
         return pClone;
     }
 
-    _setShaderParams(pParamList: AIAFXVariableDeclInstruction[], isComplexInput: boolean): void {
+    _setShaderParams(pParamList: IAFXVariableDeclInstruction[], isComplexInput: boolean): void {
         this._pParamListForShaderInput = pParamList;
         this._isComplexShaderInput = isComplexInput;
     }
@@ -292,7 +292,7 @@ class FunctionDefInstruction extends DeclInstruction {
     }
 
     private checkReturnTypeForVertexUsage(): boolean {
-        var pReturnType: AIAFXVariableTypeInstruction = this._pReturnType;
+        var pReturnType: IAFXVariableTypeInstruction = this._pReturnType;
         var isGood: boolean = true;
 
         if (pReturnType.isEqual(Effect.getSystemType("void"))) {
@@ -348,7 +348,7 @@ class FunctionDefInstruction extends DeclInstruction {
     }
 
     private checkReturnTypeForPixelUsage(): boolean {
-        var pReturnType: AIAFXVariableTypeInstruction = this._pReturnType;
+        var pReturnType: IAFXVariableTypeInstruction = this._pReturnType;
         var isGood: boolean = true;
 
         if (pReturnType.isEqual(Effect.getSystemType("void"))) {
@@ -374,7 +374,7 @@ class FunctionDefInstruction extends DeclInstruction {
     }
 
     private checkArgumentsForVertexUsage(): boolean {
-        var pArguments: AIAFXVariableDeclInstruction[] = this._pParameterList;
+        var pArguments: IAFXVariableDeclInstruction[] = this._pParameterList;
         var isAttributeByStruct: boolean = false;
         var isAttributeByParams: boolean = false;
         var isStartAnalyze: boolean = false;
@@ -383,7 +383,7 @@ class FunctionDefInstruction extends DeclInstruction {
         this._pParamListForShaderCompile = [];
 
         for (var i: uint = 0; i < pArguments.length; i++) {
-            var pParam: AIAFXVariableDeclInstruction = pArguments[i];
+            var pParam: IAFXVariableDeclInstruction = pArguments[i];
 
             if (pParam.isUniform()) {
                 this._pParamListForShaderCompile.push(pParam);
@@ -438,7 +438,7 @@ class FunctionDefInstruction extends DeclInstruction {
     }
 
     private checkArgumentsForPixelUsage(): boolean {
-        var pArguments: AIAFXVariableDeclInstruction[] = this._pParameterList;
+        var pArguments: IAFXVariableDeclInstruction[] = this._pParameterList;
         var isVaryingsByStruct: boolean = false;
         var isVaryingsByParams: boolean = false;
         var isStartAnalyze: boolean = false;
@@ -447,7 +447,7 @@ class FunctionDefInstruction extends DeclInstruction {
         this._pParamListForShaderCompile = [];
 
         for (var i: uint = 0; i < pArguments.length; i++) {
-            var pParam: AIAFXVariableDeclInstruction = pArguments[i];
+            var pParam: IAFXVariableDeclInstruction = pArguments[i];
 
             if (pParam.isUniform()) {
                 this._pParamListForShaderCompile.push(pParam);

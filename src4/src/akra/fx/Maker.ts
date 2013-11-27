@@ -1,8 +1,8 @@
-/// <reference path="../idl/AIAFXMaker.ts" />
-/// <reference path="../idl/AIAFXComposer.ts" />
-/// <reference path="../idl/AIResourcePoolManager.ts" />
-/// <reference path="../idl/AIShaderInput.ts" />
-/// <reference path="../idl/AIShaderProgram.ts" />
+/// <reference path="../idl/IAFXMaker.ts" />
+/// <reference path="../idl/IAFXComposer.ts" />
+/// <reference path="../idl/IResourcePoolManager.ts" />
+/// <reference path="../idl/IShaderInput.ts" />
+/// <reference path="../idl/IShaderProgram.ts" />
 
 //define PROFILE_MAKER
 
@@ -26,13 +26,13 @@ import Mat3 = math.Mat3;
 import Mat4 = math.Mat4;
 
 interface AIUniformTypeMap {
-    [name: string]: AEAFXShaderVariableType;
+    [name: string]: EAFXShaderVariableType;
 }
 
 // interface AIUniformStructInfo {{
 // 	name: string;
 // 	shaderName: string;
-// 	type: AEAFXShaderVariableType;
+// 	type: EAFXShaderVariableType;
 // 	length: uint;
 // }
 
@@ -50,7 +50,7 @@ interface AIShaderUniformInfo {
     name: string;
     location: uint;
     webGLLocation: WebGLUniformLocation;
-    type: AEAFXShaderVariableType;
+    type: EAFXShaderVariableType;
     length: uint;
     applyFunction: Function;
     defaultValue: any;
@@ -62,7 +62,7 @@ interface AIShaderAttrOffsetInfo {
     defaultValue: float;
 }
 
-interface AIShaderAttrInfo extends AIAFXBaseAttrInfo {
+interface AIShaderAttrInfo extends IAFXBaseAttrInfo {
     name: string;
     location: uint;
     semantic: string;
@@ -100,7 +100,7 @@ function createShaderUniformInfo(sName: string, iLocation: uint, pWebGLLocation:
         name: sName,
         location: iLocation,
         webGLLocation: pWebGLLocation,
-        type: AEAFXShaderVariableType.k_NotVar,
+        type: EAFXShaderVariableType.k_NotVar,
         length: 0,
 
         applyFunction: null,
@@ -142,7 +142,7 @@ function createInputUniformInfo(sName: string, iNameIndex: uint, pShaderUniformI
 }
 
 // function createUniformStructFieldInfo(sName: string, sShaderName: string, 
-// 							  eType: AEAFXShaderVariableType, iLength: uint): AIUniformStructInfo {
+// 							  eType: EAFXShaderVariableType, iLength: uint): AIUniformStructInfo {
 // 	return <AIUniformStructInfo>{
 // 		name: sName,
 // 		shaderName: sShaderName,
@@ -164,27 +164,27 @@ function createUniformStructFieldInfo(sName: string, isComplex: boolean, isArray
 }
 
 
-class Maker implements AIAFXMaker {
+class Maker implements IAFXMaker {
     //UNIQUE();
 
-    private _pComposer: AIAFXComposer = null;
-    private _pPassBlend: AIAFXPassBlend = null;
+    private _pComposer: IAFXComposer = null;
+    private _pPassBlend: IAFXPassBlend = null;
 
-    private _pShaderProgram: AIShaderProgram = null;
+    private _pShaderProgram: IShaderProgram = null;
 
     private _pRealUniformNameList: string[] = null;
     private _pRealAttrNameList: string[] = null;
 
     // is really exists uniform & attr?
-    private _pUniformExistMap: AIMap<boolean> = <AIMap<boolean>>{};
-    private _pAttrExistMap: AIMap<boolean> = <AIMap<boolean>>{};
+    private _pUniformExistMap: IMap<boolean> = <IMap<boolean>>{};
+    private _pAttrExistMap: IMap<boolean> = <IMap<boolean>>{};
 
     private _isUsedZero2D: boolean = false;
     private _isUsedZeroCube: boolean = false;
 
     // private _pAttrContainer: AttributeBlendContainer = null;
     //стек объектов храняих все юниформы и аттрибуты
-    private _pDataPoolArray: AIObjectArray<AIShaderInput> = new ObjectArray<AIShaderInput>();
+    private _pDataPoolArray: IObjectArray<IShaderInput> = new ObjectArray<IShaderInput>();
 
 
     private _pShaderUniformInfoMap: AIShaderUniformInfoMap = null;
@@ -203,7 +203,7 @@ class Maker implements AIAFXMaker {
         return this.getLength(sName) > 0;
     }
 
-    getType(sName: string): AEAFXShaderVariableType {
+    getType(sName: string): EAFXShaderVariableType {
         return this._pShaderUniformInfoMap[sName].type;
     }
 
@@ -211,12 +211,12 @@ class Maker implements AIAFXMaker {
         return this._pShaderUniformInfoMap[sName].length;
     }
 
-    get shaderProgram(): AIShaderProgram {
+    get shaderProgram(): IShaderProgram {
         return this._pShaderProgram;
     }
 
-    get attributeInfo(): AIAFXBaseAttrInfo[] {
-        return <AIAFXBaseAttrInfo[]>this._pShaderAttrInfoList;
+    get attributeInfo(): IAFXBaseAttrInfo[] {
+        return <IAFXBaseAttrInfo[]>this._pShaderAttrInfoList;
     }
 
     get uniformNames(): string[] {
@@ -224,15 +224,15 @@ class Maker implements AIAFXMaker {
     }
 
 
-    constructor(pComposer: AIAFXComposer, pPassBlend: AIAFXPassBlend) {
+    constructor(pComposer: IAFXComposer, pPassBlend: IAFXPassBlend) {
         this._pComposer = pComposer;
         this._pPassBlend = pPassBlend;
     }
 
     _create(sVertex: string, sPixel: string): boolean {
-        var pRmgr: AIResourcePoolManager = this._pComposer.getEngine().getResourceManager();
+        var pRmgr: IResourcePoolManager = this._pComposer.getEngine().getResourceManager();
         // logger.log(this, sVertex, sPixel);
-        var pProgram: AIShaderProgram = pRmgr.createShaderProgram(".shader-prorgam-" + this.getGuid().toString());
+        var pProgram: IShaderProgram = pRmgr.createShaderProgram(".shader-prorgam-" + this.getGuid().toString());
 
 
 
@@ -288,11 +288,11 @@ class Maker implements AIAFXMaker {
         return true;
     }
 
-    _getShaderInput(): AIShaderInput {
+    _getShaderInput(): IShaderInput {
         return this._pDataPoolArray.length > 0 ? this._pDataPoolArray.pop() : this._createDataPool();
     }
 
-    _releaseShaderInput(pPool: AIShaderInput): void {
+    _releaseShaderInput(pPool: IShaderInput): void {
         this._pDataPoolArray.push(pPool);
     }
 
@@ -305,8 +305,8 @@ class Maker implements AIAFXMaker {
     }
 
 
-    _createDataPool(): AIShaderInput {
-        var pInput: AIShaderInput = {
+    _createDataPool(): IShaderInput {
+        var pInput: IShaderInput = {
             uniforms: <{ [index: uint]: any; }>{},
             attrs: <{ [index: uint]: any; }>{},
             renderStates: render.createRenderStateMap()
@@ -319,8 +319,8 @@ class Maker implements AIAFXMaker {
 
             pInput.uniforms[i] = null;
 
-            if ((pUniformInfo.type === AEAFXShaderVariableType.k_Sampler2D ||
-                pUniformInfo.type === AEAFXShaderVariableType.k_SamplerCUBE)) {
+            if ((pUniformInfo.type === EAFXShaderVariableType.k_Sampler2D ||
+                pUniformInfo.type === EAFXShaderVariableType.k_SamplerCUBE)) {
 
                 if (pUniformInfo.length > 0) {
                     pInput.uniforms[i] = new Array(pUniformInfo.length);
@@ -344,7 +344,7 @@ class Maker implements AIAFXMaker {
     }
 
     setUniform(iLocation: uint, pValue: any): void {
-        if (this._pShaderUniformInfoList[iLocation].type !== AEAFXShaderVariableType.k_NotVar) {
+        if (this._pShaderUniformInfoList[iLocation].type !== EAFXShaderVariableType.k_NotVar) {
             if (has("WEBGL")) {
                 this._pShaderUniformInfoList[iLocation].applyFunction.call(this._pShaderProgram,
                     this._pShaderUniformInfoList[iLocation].webGLLocation,
@@ -358,7 +358,7 @@ class Maker implements AIAFXMaker {
         }
     }
 
-    _initInput(pPassInput: AIAFXPassInputBlend, pBlend: SamplerBlender, pAttrs: AIAFXAttributeBlendContainer): boolean {
+    _initInput(pPassInput: IAFXPassInputBlend, pBlend: SamplerBlender, pAttrs: IAFXAttributeBlendContainer): boolean {
         /* Initialize info about uniform variables(not samplers and video buffers) */
         var pUniformKeys: uint[] = pPassInput.uniformKeys;
         this._pInputUniformInfoList = [];
@@ -366,13 +366,13 @@ class Maker implements AIAFXMaker {
         for (var i: uint = 0; i < pUniformKeys.length; i++) {
             var iNameIndex: uint = pUniformKeys[i];
             var sName: string = pPassInput._getUniformVarNameByIndex(iNameIndex);
-            var eType: AEAFXShaderVariableType = pPassInput._getUniformType(iNameIndex);
+            var eType: EAFXShaderVariableType = pPassInput._getUniformType(iNameIndex);
             var iLength: uint = pPassInput._getUniformLength(iNameIndex);
             var isArray: boolean = (iLength > 0);
 
             var pInputUniformInfo: AIInputUniformInfo = null;
 
-            if (eType === AEAFXShaderVariableType.k_Complex) {
+            if (eType === EAFXShaderVariableType.k_Complex) {
                 var pStructInfo: AIUniformStructInfo = this.expandStructUniforms(pPassInput._getUniformVar(iNameIndex));
                 if (!isNull(pStructInfo)) {
                     pInputUniformInfo = createInputUniformInfo(sName, iNameIndex, null, true);
@@ -412,14 +412,14 @@ class Maker implements AIAFXMaker {
                 if (this._isUsedZero2D) {
                     pShaderUniformInfo = this._pShaderUniformInfoMap["as0"];
 
-                    pShaderUniformInfo.type = AEAFXShaderVariableType.k_Int;
+                    pShaderUniformInfo.type = EAFXShaderVariableType.k_Int;
                     pShaderUniformInfo.length = 0;
                 }
 
                 if (this._isUsedZeroCube) {
                     pShaderUniformInfo = this._pShaderUniformInfoMap["asc0"];
 
-                    pShaderUniformInfo.type = AEAFXShaderVariableType.k_Int;
+                    pShaderUniformInfo.type = EAFXShaderVariableType.k_Int;
                     pShaderUniformInfo.length = 0;
                 }
 
@@ -432,12 +432,12 @@ class Maker implements AIAFXMaker {
                 continue;
             }
 
-            var pSampler: AIAFXVariableDeclInstruction = pBlend.getSamplersBySlot(i).value(0);
+            var pSampler: IAFXVariableDeclInstruction = pBlend.getSamplersBySlot(i).value(0);
             var sSampler: string = pSampler.getSemantic() || pSampler.getName();
             var iNameIndex: uint = pPassInput._getUniformVarNameIndex(sSampler);
-            var eType: AEAFXShaderVariableType = pSampler.getType().isSampler2D() ?
-                AEAFXShaderVariableType.k_Sampler2D :
-                AEAFXShaderVariableType.k_SamplerCUBE;
+            var eType: EAFXShaderVariableType = pSampler.getType().isSampler2D() ?
+                EAFXShaderVariableType.k_Sampler2D :
+                EAFXShaderVariableType.k_SamplerCUBE;
 
             pShaderUniformInfo = this._pShaderUniformInfoMap[sRealSamplerName];
 
@@ -458,7 +458,7 @@ class Maker implements AIAFXMaker {
         for (var i: uint = 0; i < pSamplerArrayKeys.length; i++) {
             var iNameIndex: uint = pSamplerArrayKeys[i];
             var sName: string = pPassInput._getUniformVarNameByIndex(iNameIndex);
-            var eType: AEAFXShaderVariableType = pPassInput._getUniformType(iNameIndex);
+            var eType: EAFXShaderVariableType = pPassInput._getUniformType(iNameIndex);
             var iLength: uint = pPassInput._getUniformLength(iNameIndex);
             var sShaderName: string = sName + "[0]";
             var pInputUniformInfo: AIInputUniformInfo = null;
@@ -477,14 +477,14 @@ class Maker implements AIAFXMaker {
             this._pInputSamplerArrayInfoList.push(pInputUniformInfo);
         }
 
-        var pAttrInfoList: AIAFXVariableBlendInfo[] = pAttrs.attrsInfo;
+        var pAttrInfoList: IAFXVariableBlendInfo[] = pAttrs.attrsInfo;
 
         var nPreparedAttrs: int = -1;
         var nPreparedBuffers: int = -1;
 
         for (var i: uint = 0; i < pAttrInfoList.length; i++) {
             var iSemanticIndex: uint = i;
-            var pAttrInfo: AIAFXVariableBlendInfo = pAttrInfoList[iSemanticIndex];
+            var pAttrInfo: IAFXVariableBlendInfo = pAttrInfoList[iSemanticIndex];
             var sSemantic: string = pAttrInfo.name;
             var iSlot: uint = pAttrs.getSlotBySemanticIndex(iSemanticIndex);
 
@@ -515,7 +515,7 @@ class Maker implements AIAFXMaker {
                         continue;
                     }
 
-                    pVertexTextureInfo.type = AEAFXShaderVariableType.k_SamplerVertexTexture;
+                    pVertexTextureInfo.type = EAFXShaderVariableType.k_SamplerVertexTexture;
                     pVertexTextureInfo.length = 0;
                 }
 
@@ -528,7 +528,7 @@ class Maker implements AIAFXMaker {
             }
 
             //add offset uniforms
-            var pOffsetVars: AIAFXVariableDeclInstruction[] = pAttrs.getOffsetVarsBySemantic(sSemantic);
+            var pOffsetVars: IAFXVariableDeclInstruction[] = pAttrs.getOffsetVarsBySemantic(sSemantic);
 
             if (!isNull(pOffsetVars)) {
                 var pShaderAttrInfo: AIShaderAttrInfo = this._pShaderAttrInfoList[iSlot];
@@ -542,7 +542,7 @@ class Maker implements AIAFXMaker {
                         var pOffsetUniformInfo: AIShaderUniformInfo = this._pShaderUniformInfoMap[sOffsetName];
                         var fDefaultValue: float = pAttrs.getOffsetDefault(sOffsetName);
 
-                        pOffsetUniformInfo.type = AEAFXShaderVariableType.k_Float;
+                        pOffsetUniformInfo.type = EAFXShaderVariableType.k_Float;
                         pOffsetUniformInfo.length = 0;
 
                         pOffsetInfoList.push(createShaderAttrOffsetInfo(sOffsetSemantic, pOffsetUniformInfo, fDefaultValue));
@@ -569,7 +569,7 @@ class Maker implements AIAFXMaker {
 
     //}
 
-    _make(pPassInput: AIAFXPassInputBlend, pBufferMap: AIBufferMap): AIShaderInput {
+    _make(pPassInput: IAFXPassInputBlend, pBufferMap: IBufferMap): IShaderInput {
 
         if (has("PROFILE_MAKE")) {
             var tStartTime: float = (<any>window).performance.now();
@@ -578,11 +578,11 @@ class Maker implements AIAFXMaker {
 
         var pUniforms: any = pPassInput.uniforms;
         var pTextures: any = pPassInput.textures
-			var pSamplers: AIAFXSamplerStateMap = pPassInput.samplers;
-        var pPassInputRenderStates: AIMap<AERenderStateValues> = pPassInput.renderStates;
-        var pSamplerArrays: AIAFXSamplerStateListMap = pPassInput.samplerArrays;
+			var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
+        var pPassInputRenderStates: IMap<ERenderStateValues> = pPassInput.renderStates;
+        var pSamplerArrays: IAFXSamplerStateListMap = pPassInput.samplerArrays;
 
-        var pInput: AIShaderInput = this._getShaderInput();
+        var pInput: IShaderInput = this._getShaderInput();
 
         for (var i: uint = 0; i < this._pInputUniformInfoList.length; i++) {
             var pInfo: AIInputUniformInfo = this._pInputUniformInfoList[i];
@@ -604,8 +604,8 @@ class Maker implements AIAFXMaker {
         for (var i: uint = 0; i < this._pInputSamplerInfoList.length; i++) {
             var pInfo: AIInputUniformInfo = this._pInputSamplerInfoList[i];
 
-            var pState: AIAFXSamplerState = null;
-            var pTexture: AITexture = null;
+            var pState: IAFXSamplerState = null;
+            var pTexture: ITexture = null;
 
             if (pInfo.isCollapsedArray) {
                 pState = pSamplerArrays[pInfo.nameIndex][0];
@@ -628,11 +628,11 @@ class Maker implements AIAFXMaker {
         for (var i: uint = 0; i < this._pInputSamplerArrayInfoList.length; i++) {
             var pInfo: AIInputUniformInfo = this._pInputSamplerArrayInfoList[i];
 
-            var pSamplerStates: AIAFXSamplerState[] = pSamplerArrays[pInfo.nameIndex];
-            var pInputStates: AIAFXSamplerState[] = pInput.uniforms[pInfo.shaderVarInfo.location];
+            var pSamplerStates: IAFXSamplerState[] = pSamplerArrays[pInfo.nameIndex];
+            var pInputStates: IAFXSamplerState[] = pInput.uniforms[pInfo.shaderVarInfo.location];
 
             for (var j: uint = 0; j < pInfo.shaderVarInfo.length; j++) {
-                var pTexture: AITexture = pPassInput._getTextureForSamplerState(pSamplerStates[j]);
+                var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerStates[j]);
                 this.setSamplerState(pInputStates[j], pTexture, pSamplerStates[j]);
             }
         }
@@ -645,7 +645,7 @@ class Maker implements AIAFXMaker {
 
         for (var i: uint = 0; i < this._pShaderAttrInfoList.length; i++) {
             var pAttrInfo: AIShaderAttrInfo = this._pShaderAttrInfoList[i];
-            var pFlow: AIDataFlow = pAttrInfo.isComplex ?
+            var pFlow: IDataFlow = pAttrInfo.isComplex ?
                 pBufferMap.findFlow(pAttrInfo.semantic) || pBufferMap.getFlowBySemantic(pAttrInfo.semantic) :
                 pBufferMap.getFlowBySemantic(pAttrInfo.semantic);
             // pBufferMap.findFlow(pAttrInfo.semantic) || pBufferMap.getFlow(pAttrInfo.semantic, true): 
@@ -657,11 +657,11 @@ class Maker implements AIAFXMaker {
                 pInput.uniforms[pAttrInfo.vertexTextureInfo.location] = pFlow.data.buffer;
 
                 if (!isNull(pAttrInfo.offsets)) {
-                    var pVertexDecl: AIVertexDeclaration = pFlow.data.getVertexDeclaration();
+                    var pVertexDecl: IVertexDeclaration = pFlow.data.getVertexDeclaration();
 
                     for (var j: uint = 0; j < pAttrInfo.offsets.length; j++) {
                         var pOffsetInfo: AIShaderAttrOffsetInfo = pAttrInfo.offsets[j];
-                        var pElement: AIVertexElement = pVertexDecl.findElement(pOffsetInfo.semantic);
+                        var pElement: IVertexElement = pVertexDecl.findElement(pOffsetInfo.semantic);
 
                         if (isNull(pElement)) {
                             pInput.uniforms[pOffsetInfo.shaderVarInfo.location] = pOffsetInfo.defaultValue;
@@ -718,55 +718,55 @@ class Maker implements AIAFXMaker {
     }
 
     private prepareApplyFunctionForUniform(pUniform: AIShaderUniformInfo): void {
-        if (pUniform.type !== AEAFXShaderVariableType.k_NotVar) {
+        if (pUniform.type !== EAFXShaderVariableType.k_NotVar) {
             pUniform.applyFunction = this.getUniformApplyFunction(pUniform.type, (pUniform.length > 0));
             pUniform.defaultValue = this.getUnifromDefaultValue(pUniform.type, (pUniform.length > 0));
         }
     }
 
-    private getUniformApplyFunction(eType: AEAFXShaderVariableType, isArray: boolean): Function {
+    private getUniformApplyFunction(eType: EAFXShaderVariableType, isArray: boolean): Function {
         if (has("WEBGL")) {
             var pProgram: WebGLShaderProgram = <WebGLShaderProgram>this._pShaderProgram;
             if (isArray) {
                 switch (eType) {
-                    case AEAFXShaderVariableType.k_Float:
+                    case EAFXShaderVariableType.k_Float:
                         return pProgram._setFloat32Array;
-                    case AEAFXShaderVariableType.k_Int:
+                    case EAFXShaderVariableType.k_Int:
                         return pProgram._setInt32Array;
-                    case AEAFXShaderVariableType.k_Bool:
+                    case EAFXShaderVariableType.k_Bool:
                         return pProgram._setInt32Array;
 
-                    case AEAFXShaderVariableType.k_Float2:
+                    case EAFXShaderVariableType.k_Float2:
                         return pProgram._setVec2Array;
-                    case AEAFXShaderVariableType.k_Int2:
+                    case EAFXShaderVariableType.k_Int2:
                         return pProgram._setVec2iArray;
-                    // case AEAFXShaderVariableType.k_Bool2:
+                    // case EAFXShaderVariableType.k_Bool2:
                     // 	return pProgram._setBool2Array;
 
-                    case AEAFXShaderVariableType.k_Float3:
+                    case EAFXShaderVariableType.k_Float3:
                         return pProgram._setVec3Array;
-                    case AEAFXShaderVariableType.k_Int3:
+                    case EAFXShaderVariableType.k_Int3:
                         return pProgram._setVec3iArray;
-                    // case AEAFXShaderVariableType.k_Bool3:
+                    // case EAFXShaderVariableType.k_Bool3:
                     // 	return pProgram._setBool3Array;
 
-                    case AEAFXShaderVariableType.k_Float4:
+                    case EAFXShaderVariableType.k_Float4:
                         return pProgram._setVec4Array;
-                    case AEAFXShaderVariableType.k_Int4:
+                    case EAFXShaderVariableType.k_Int4:
                         return pProgram._setVec4iArray;
-                    // case AEAFXShaderVariableType.k_Bool4:
+                    // case EAFXShaderVariableType.k_Bool4:
                     // 	return pProgram._setBool4Array;
 
-                    // case AEAFXShaderVariableType.k_Float2x2:
+                    // case EAFXShaderVariableType.k_Float2x2:
                     // 	return pProgram._setMat2Array;
-                    case AEAFXShaderVariableType.k_Float3x3:
+                    case EAFXShaderVariableType.k_Float3x3:
                         return pProgram._setMat3Array;
-                    case AEAFXShaderVariableType.k_Float4x4:
+                    case EAFXShaderVariableType.k_Float4x4:
                         return pProgram._setMat4Array;
 
-                    case AEAFXShaderVariableType.k_Sampler2D:
+                    case EAFXShaderVariableType.k_Sampler2D:
                         return pProgram._setSamplerArray;
-                    case AEAFXShaderVariableType.k_SamplerCUBE:
+                    case EAFXShaderVariableType.k_SamplerCUBE:
                         return pProgram._setSamplerArray;
                     default:
                         logger.critical("Wrong uniform array type (" + eType + ")");
@@ -774,46 +774,46 @@ class Maker implements AIAFXMaker {
             }
             else {
                 switch (eType) {
-                    case AEAFXShaderVariableType.k_Float:
+                    case EAFXShaderVariableType.k_Float:
                         return pProgram._setFloat;
-                    case AEAFXShaderVariableType.k_Int:
+                    case EAFXShaderVariableType.k_Int:
                         return pProgram._setInt;
-                    case AEAFXShaderVariableType.k_Bool:
+                    case EAFXShaderVariableType.k_Bool:
                         return pProgram._setInt;
 
-                    case AEAFXShaderVariableType.k_Float2:
+                    case EAFXShaderVariableType.k_Float2:
                         return pProgram._setVec2;
-                    case AEAFXShaderVariableType.k_Int2:
+                    case EAFXShaderVariableType.k_Int2:
                         return pProgram._setVec2i;
-                    // case AEAFXShaderVariableType.k_Bool2:
+                    // case EAFXShaderVariableType.k_Bool2:
                     // 	return pProgram._setBool2
 
-                    case AEAFXShaderVariableType.k_Float3:
+                    case EAFXShaderVariableType.k_Float3:
                         return pProgram._setVec3;
-                    case AEAFXShaderVariableType.k_Int3:
+                    case EAFXShaderVariableType.k_Int3:
                         return pProgram._setVec3i;
-                    // case AEAFXShaderVariableType.k_Bool3:
+                    // case EAFXShaderVariableType.k_Bool3:
                     // 	return pProgram._setBool3
 
-                    case AEAFXShaderVariableType.k_Float4:
+                    case EAFXShaderVariableType.k_Float4:
                         return pProgram._setVec4;
-                    case AEAFXShaderVariableType.k_Int4:
+                    case EAFXShaderVariableType.k_Int4:
                         return pProgram._setVec4i;
-                    // case AEAFXShaderVariableType.k_Bool4:
+                    // case EAFXShaderVariableType.k_Bool4:
                     // 	return pProgram._setBool4
 
-                    // case AEAFXShaderVariableType.k_Float2x2:
+                    // case EAFXShaderVariableType.k_Float2x2:
                     // 	return pProgram._setMat2
-                    case AEAFXShaderVariableType.k_Float3x3:
+                    case EAFXShaderVariableType.k_Float3x3:
                         return pProgram._setMat3;
-                    case AEAFXShaderVariableType.k_Float4x4:
+                    case EAFXShaderVariableType.k_Float4x4:
                         return pProgram._setMat4;
 
-                    case AEAFXShaderVariableType.k_Sampler2D:
+                    case EAFXShaderVariableType.k_Sampler2D:
                         return pProgram._setSampler;
-                    case AEAFXShaderVariableType.k_SamplerCUBE:
+                    case EAFXShaderVariableType.k_SamplerCUBE:
                         return pProgram._setSampler;
-                    case AEAFXShaderVariableType.k_SamplerVertexTexture:
+                    case EAFXShaderVariableType.k_SamplerVertexTexture:
                         return pProgram._setVertexBuffer;
                     default:
                         logger.critical("Wrong uniform type (" + eType + ")");
@@ -824,44 +824,44 @@ class Maker implements AIAFXMaker {
         else {
             if (isArray) {
                 switch (eType) {
-                    case AEAFXShaderVariableType.k_Float:
+                    case EAFXShaderVariableType.k_Float:
                         return this._pShaderProgram.setFloat32Array;
-                    case AEAFXShaderVariableType.k_Int:
+                    case EAFXShaderVariableType.k_Int:
                         return this._pShaderProgram.setInt32Array;
-                    // case AEAFXShaderVariableType.k_Bool:
+                    // case EAFXShaderVariableType.k_Bool:
                     // 	return this._pShaderProgram.setBoolArray;
 
-                    case AEAFXShaderVariableType.k_Float2:
+                    case EAFXShaderVariableType.k_Float2:
                         return this._pShaderProgram.setVec2Array;
-                    case AEAFXShaderVariableType.k_Int2:
+                    case EAFXShaderVariableType.k_Int2:
                         return this._pShaderProgram.setVec2iArray;
-                    // case AEAFXShaderVariableType.k_Bool2:
+                    // case EAFXShaderVariableType.k_Bool2:
                     // 	return this._pShaderProgram.setBool2Array;
 
-                    case AEAFXShaderVariableType.k_Float3:
+                    case EAFXShaderVariableType.k_Float3:
                         return this._pShaderProgram.setVec3Array;
-                    case AEAFXShaderVariableType.k_Int3:
+                    case EAFXShaderVariableType.k_Int3:
                         return this._pShaderProgram.setVec3iArray;
-                    // case AEAFXShaderVariableType.k_Bool3:
+                    // case EAFXShaderVariableType.k_Bool3:
                     // 	return this._pShaderProgram.setBool3Array;
 
-                    case AEAFXShaderVariableType.k_Float4:
+                    case EAFXShaderVariableType.k_Float4:
                         return this._pShaderProgram.setVec4Array;
-                    case AEAFXShaderVariableType.k_Int4:
+                    case EAFXShaderVariableType.k_Int4:
                         return this._pShaderProgram.setVec4iArray;
-                    // case AEAFXShaderVariableType.k_Bool4:
+                    // case EAFXShaderVariableType.k_Bool4:
                     // 	return this._pShaderProgram.setBool4Array;
 
-                    // case AEAFXShaderVariableType.k_Float2x2:
+                    // case EAFXShaderVariableType.k_Float2x2:
                     // 	return this._pShaderProgram.setMat2Array;
-                    case AEAFXShaderVariableType.k_Float3x3:
+                    case EAFXShaderVariableType.k_Float3x3:
                         return this._pShaderProgram.setMat3Array;
-                    case AEAFXShaderVariableType.k_Float4x4:
+                    case EAFXShaderVariableType.k_Float4x4:
                         return this._pShaderProgram.setMat4Array;
 
-                    case AEAFXShaderVariableType.k_Sampler2D:
+                    case EAFXShaderVariableType.k_Sampler2D:
                         return this._pShaderProgram.setSamplerArray;
-                    case AEAFXShaderVariableType.k_SamplerCUBE:
+                    case EAFXShaderVariableType.k_SamplerCUBE:
                         return this._pShaderProgram.setSamplerArray;
                     default:
                         logger.critical("Wrong uniform array type (" + eType + ")");
@@ -869,46 +869,46 @@ class Maker implements AIAFXMaker {
             }
             else {
                 switch (eType) {
-                    case AEAFXShaderVariableType.k_Float:
+                    case EAFXShaderVariableType.k_Float:
                         return this._pShaderProgram.setFloat;
-                    case AEAFXShaderVariableType.k_Int:
+                    case EAFXShaderVariableType.k_Int:
                         return this._pShaderProgram.setInt;
-                    case AEAFXShaderVariableType.k_Bool:
+                    case EAFXShaderVariableType.k_Bool:
                         return this._pShaderProgram.setInt;
 
-                    case AEAFXShaderVariableType.k_Float2:
+                    case EAFXShaderVariableType.k_Float2:
                         return this._pShaderProgram.setVec2;
-                    case AEAFXShaderVariableType.k_Int2:
+                    case EAFXShaderVariableType.k_Int2:
                         return this._pShaderProgram.setVec2i;
-                    // case AEAFXShaderVariableType.k_Bool2:
+                    // case EAFXShaderVariableType.k_Bool2:
                     // 	return this._pShaderProgram.setBool2
 
-                    case AEAFXShaderVariableType.k_Float3:
+                    case EAFXShaderVariableType.k_Float3:
                         return this._pShaderProgram.setVec3;
-                    case AEAFXShaderVariableType.k_Int3:
+                    case EAFXShaderVariableType.k_Int3:
                         return this._pShaderProgram.setVec3i;
-                    // case AEAFXShaderVariableType.k_Bool3:
+                    // case EAFXShaderVariableType.k_Bool3:
                     // 	return this._pShaderProgram.setBool3
 
-                    case AEAFXShaderVariableType.k_Float4:
+                    case EAFXShaderVariableType.k_Float4:
                         return this._pShaderProgram.setVec4;
-                    case AEAFXShaderVariableType.k_Int4:
+                    case EAFXShaderVariableType.k_Int4:
                         return this._pShaderProgram.setVec4i;
-                    // case AEAFXShaderVariableType.k_Bool4:
+                    // case EAFXShaderVariableType.k_Bool4:
                     // 	return this._pShaderProgram.setBool4
 
-                    // case AEAFXShaderVariableType.k_Float2x2:
+                    // case EAFXShaderVariableType.k_Float2x2:
                     // 	return this._pShaderProgram.setMat2
-                    case AEAFXShaderVariableType.k_Float3x3:
+                    case EAFXShaderVariableType.k_Float3x3:
                         return this._pShaderProgram.setMat3;
-                    case AEAFXShaderVariableType.k_Float4x4:
+                    case EAFXShaderVariableType.k_Float4x4:
                         return this._pShaderProgram.setMat4;
 
-                    case AEAFXShaderVariableType.k_Sampler2D:
+                    case EAFXShaderVariableType.k_Sampler2D:
                         return this._pShaderProgram.setSampler;
-                    case AEAFXShaderVariableType.k_SamplerCUBE:
+                    case EAFXShaderVariableType.k_SamplerCUBE:
                         return this._pShaderProgram.setSampler;
-                    case AEAFXShaderVariableType.k_SamplerVertexTexture:
+                    case EAFXShaderVariableType.k_SamplerVertexTexture:
                         return this._pShaderProgram.setVertexBuffer;
                     default:
                         logger.critical("Wrong uniform type (" + eType + ")");
@@ -917,52 +917,52 @@ class Maker implements AIAFXMaker {
         }
     }
 
-    private getUnifromDefaultValue(eType: AEAFXShaderVariableType, isArray: boolean): any {
+    private getUnifromDefaultValue(eType: EAFXShaderVariableType, isArray: boolean): any {
         if (isArray) {
             return null;
         }
         else {
             switch (eType) {
-                case AEAFXShaderVariableType.k_Float:
+                case EAFXShaderVariableType.k_Float:
                     return 0.;
-                case AEAFXShaderVariableType.k_Int:
+                case EAFXShaderVariableType.k_Int:
                     return 0;
-                case AEAFXShaderVariableType.k_Bool:
+                case EAFXShaderVariableType.k_Bool:
                     return 0;
 
-                case AEAFXShaderVariableType.k_Float2:
+                case EAFXShaderVariableType.k_Float2:
                     return new Vec2(0);
-                case AEAFXShaderVariableType.k_Int2:
+                case EAFXShaderVariableType.k_Int2:
                     return new Vec2(0);
-                case AEAFXShaderVariableType.k_Bool2:
+                case EAFXShaderVariableType.k_Bool2:
                     return new Vec2(0);
 
-                case AEAFXShaderVariableType.k_Float3:
+                case EAFXShaderVariableType.k_Float3:
                     return new Vec3(0);
-                case AEAFXShaderVariableType.k_Int3:
+                case EAFXShaderVariableType.k_Int3:
                     return new Vec3(0);
-                case AEAFXShaderVariableType.k_Bool3:
+                case EAFXShaderVariableType.k_Bool3:
                     return new Vec3(0);
 
-                case AEAFXShaderVariableType.k_Float4:
+                case EAFXShaderVariableType.k_Float4:
                     return new Vec4(0);
-                case AEAFXShaderVariableType.k_Int4:
+                case EAFXShaderVariableType.k_Int4:
                     return new Vec4(0);
-                case AEAFXShaderVariableType.k_Bool4:
+                case EAFXShaderVariableType.k_Bool4:
                     return new Vec4(0);
 
-                // case AEAFXShaderVariableType.k_Float2x2:
+                // case EAFXShaderVariableType.k_Float2x2:
                 // 	return new Mat2(0);
-                case AEAFXShaderVariableType.k_Float3x3:
+                case EAFXShaderVariableType.k_Float3x3:
                     return new Mat3(0);
-                case AEAFXShaderVariableType.k_Float4x4:
+                case EAFXShaderVariableType.k_Float4x4:
                     return new Mat4(0);
 
-                case AEAFXShaderVariableType.k_Sampler2D:
+                case EAFXShaderVariableType.k_Sampler2D:
                     return null;
-                case AEAFXShaderVariableType.k_SamplerCUBE:
+                case EAFXShaderVariableType.k_SamplerCUBE:
                     return null;
-                case AEAFXShaderVariableType.k_SamplerVertexTexture:
+                case EAFXShaderVariableType.k_SamplerVertexTexture:
                     return null;
                 default:
                     logger.critical("Wrong uniform type (" + eType + ")");
@@ -970,7 +970,7 @@ class Maker implements AIAFXMaker {
         }
     }
 
-    private setSamplerState(pOut: AIAFXSamplerState, pTexture: AITexture, pFrom: AIAFXSamplerState): void {
+    private setSamplerState(pOut: IAFXSamplerState, pTexture: ITexture, pFrom: IAFXSamplerState): void {
         pOut.texture = pTexture;
         pOut.wrap_s = pFrom.wrap_s;
         pOut.wrap_t = pFrom.wrap_t;
@@ -978,7 +978,7 @@ class Maker implements AIAFXMaker {
         pOut.min_filter = pFrom.min_filter;
     }
 
-    private expandStructUniforms(pVariable: AIAFXVariableDeclInstruction, sPrevName: string = ""): AIUniformStructInfo {
+    private expandStructUniforms(pVariable: IAFXVariableDeclInstruction, sPrevName: string = ""): AIUniformStructInfo {
         var sRealName: string = pVariable.getRealName();
 
         if (sPrevName !== "") {
@@ -992,7 +992,7 @@ class Maker implements AIAFXMaker {
             sPrevName = sRealName;
         }
 
-        var pVarType: AIAFXVariableTypeInstruction = pVariable.getType();
+        var pVarType: IAFXVariableTypeInstruction = pVariable.getType();
         var pFieldNameList: string[] = pVarType.getFieldNameList();
         var isArray: boolean = pVarType.isNotBaseArray();
         var iLength: uint = isArray ? pVarType.getLength() : 1;
@@ -1020,7 +1020,7 @@ class Maker implements AIAFXMaker {
 
             for (var j: uint = 0; j < pFieldNameList.length; j++) {
                 var sFieldName: string = pFieldNameList[j];
-                var pField: AIAFXVariableDeclInstruction = pVarType.getField(sFieldName);
+                var pField: IAFXVariableDeclInstruction = pVarType.getField(sFieldName);
                 var pFieldInfo: AIUniformStructInfo = null;
 
                 if (pField.getType().isComplex()) {
@@ -1028,7 +1028,7 @@ class Maker implements AIAFXMaker {
                 }
                 else {
                     var sFieldRealName: string = sFieldPrevName + "." + pField.getRealName();
-                    var eFieldType: AEAFXShaderVariableType = VariableContainer.getVariableType(pField);
+                    var eFieldType: EAFXShaderVariableType = VariableContainer.getVariableType(pField);
                     var iFieldLength: uint = pField.getType().getLength();
                     var isFieldArray: boolean = pField.getType().isNotBaseArray();
                     var sFieldShaderName: string = sFieldRealName;
@@ -1071,7 +1071,7 @@ class Maker implements AIAFXMaker {
         }
     }
 
-    private applyStructUniform(pStructInfo: AIUniformStructInfo, pValue: any, pInput: AIShaderInput): void {
+    private applyStructUniform(pStructInfo: AIUniformStructInfo, pValue: any, pInput: IShaderInput): void {
         if (!isDefAndNotNull(pValue)) {
             return;
         }
@@ -1101,62 +1101,62 @@ class Maker implements AIAFXMaker {
         }
     }
 
-    private applyUnifromArray(sName: string, eType: AEAFXShaderVariableType, pValue: any): void {
+    private applyUnifromArray(sName: string, eType: EAFXShaderVariableType, pValue: any): void {
         switch (eType) {
-            case AEAFXShaderVariableType.k_Float:
+            case EAFXShaderVariableType.k_Float:
                 this._pShaderProgram.setFloat32Array(sName, pValue);
                 break;
-            case AEAFXShaderVariableType.k_Int:
+            case EAFXShaderVariableType.k_Int:
                 this._pShaderProgram.setInt32Array(sName, pValue);
                 break;
-            // case AEAFXShaderVariableType.k_Bool:
+            // case EAFXShaderVariableType.k_Bool:
             // 	this._pShaderProgram.setBoolArray(sName, pValue);
             // 	break;
 
-            case AEAFXShaderVariableType.k_Float2:
+            case EAFXShaderVariableType.k_Float2:
                 this._pShaderProgram.setVec2Array(sName, pValue);
                 break;
-            case AEAFXShaderVariableType.k_Int2:
+            case EAFXShaderVariableType.k_Int2:
                 this._pShaderProgram.setVec2iArray(sName, pValue);
                 break;
-            // case AEAFXShaderVariableType.k_Bool2:
+            // case EAFXShaderVariableType.k_Bool2:
             // 	this._pShaderProgram.setBool2Array(sName, pValue);
             // 	break;
 
-            case AEAFXShaderVariableType.k_Float3:
+            case EAFXShaderVariableType.k_Float3:
                 this._pShaderProgram.setVec3Array(sName, pValue);
                 break;
-            case AEAFXShaderVariableType.k_Int3:
+            case EAFXShaderVariableType.k_Int3:
                 this._pShaderProgram.setVec3iArray(sName, pValue);
                 break;
-            // case AEAFXShaderVariableType.k_Bool3:
+            // case EAFXShaderVariableType.k_Bool3:
             // 	this._pShaderProgram.setBool3Array(sName, pValue);
             // 	break;
 
-            case AEAFXShaderVariableType.k_Float4:
+            case EAFXShaderVariableType.k_Float4:
                 this._pShaderProgram.setVec4Array(sName, pValue);
                 break;
-            case AEAFXShaderVariableType.k_Int4:
+            case EAFXShaderVariableType.k_Int4:
                 this._pShaderProgram.setVec4iArray(sName, pValue);
                 break;
-            // case AEAFXShaderVariableType.k_Bool4:
+            // case EAFXShaderVariableType.k_Bool4:
             // 	this._pShaderProgram.setBool4Array(sName, pValue);
             // 	break;
 
-            // case AEAFXShaderVariableType.k_Float2x2:
+            // case EAFXShaderVariableType.k_Float2x2:
             // 	this._pShaderProgram.setMat2Array(sName, pValue);
             // 	break;
-            case AEAFXShaderVariableType.k_Float3x3:
+            case EAFXShaderVariableType.k_Float3x3:
                 this._pShaderProgram.setMat3Array(sName, pValue);
                 break;
-            case AEAFXShaderVariableType.k_Float4x4:
+            case EAFXShaderVariableType.k_Float4x4:
                 this._pShaderProgram.setMat4Array(sName, pValue);
                 break;
 
-            case AEAFXShaderVariableType.k_Sampler2D:
+            case EAFXShaderVariableType.k_Sampler2D:
                 this._pShaderProgram.setSamplerArray(sName, pValue);
                 break;
-            case AEAFXShaderVariableType.k_SamplerCUBE:
+            case EAFXShaderVariableType.k_SamplerCUBE:
                 this._pShaderProgram.setSamplerArray(sName, pValue);
                 break;
 
@@ -1165,65 +1165,65 @@ class Maker implements AIAFXMaker {
         }
     }
 
-    private applyUniform(sName: string, eType: AEAFXShaderVariableType, pValue: any): void {
+    private applyUniform(sName: string, eType: EAFXShaderVariableType, pValue: any): void {
         switch (eType) {
-            case AEAFXShaderVariableType.k_Float:
+            case EAFXShaderVariableType.k_Float:
                 this._pShaderProgram.setFloat(sName, pValue || 0.);
                 break;
-            case AEAFXShaderVariableType.k_Int:
+            case EAFXShaderVariableType.k_Int:
                 this._pShaderProgram.setInt(sName, pValue || 0);
                 break;
-            case AEAFXShaderVariableType.k_Bool:
+            case EAFXShaderVariableType.k_Bool:
                 this._pShaderProgram.setInt(sName, pValue ? 1 : 0);
                 break;
 
-            case AEAFXShaderVariableType.k_Float2:
+            case EAFXShaderVariableType.k_Float2:
                 this._pShaderProgram.setVec2(sName, pValue || Vec2.temp(0));
                 break;
-            case AEAFXShaderVariableType.k_Int2:
+            case EAFXShaderVariableType.k_Int2:
                 this._pShaderProgram.setVec2i(sName, pValue || Vec2.temp(0));
                 break;
-            // case AEAFXShaderVariableType.k_Bool2:
+            // case EAFXShaderVariableType.k_Bool2:
             // 	this._pShaderProgram.setBool2(sName, pValue);
             // 	break;
 
-            case AEAFXShaderVariableType.k_Float3:
+            case EAFXShaderVariableType.k_Float3:
                 this._pShaderProgram.setVec3(sName, pValue || Vec3.temp(0));
                 break;
-            case AEAFXShaderVariableType.k_Int3:
+            case EAFXShaderVariableType.k_Int3:
                 this._pShaderProgram.setVec3i(sName, pValue || Vec3.temp(0));
                 break;
-            // case AEAFXShaderVariableType.k_Bool3:
+            // case EAFXShaderVariableType.k_Bool3:
             // 	this._pShaderProgram.setBool3(sName, pValue);
             // 	break;
 
-            case AEAFXShaderVariableType.k_Float4:
+            case EAFXShaderVariableType.k_Float4:
                 this._pShaderProgram.setVec4(sName, pValue || Vec4.temp(0));
                 break;
-            case AEAFXShaderVariableType.k_Int4:
+            case EAFXShaderVariableType.k_Int4:
                 this._pShaderProgram.setVec4i(sName, pValue || Vec4.temp(0));
                 break;
-            // case AEAFXShaderVariableType.k_Bool4:
+            // case EAFXShaderVariableType.k_Bool4:
             // 	this._pShaderProgram.setBool4(sName, pValue);
             // 	break;
 
-            // case AEAFXShaderVariableType.k_Float2x2:
+            // case EAFXShaderVariableType.k_Float2x2:
             // 	this._pShaderProgram.setMat2(sName, pValue);
             // 	break;
-            case AEAFXShaderVariableType.k_Float3x3:
+            case EAFXShaderVariableType.k_Float3x3:
                 this._pShaderProgram.setMat3(sName, pValue || Mat3.temp(0));
                 break;
-            case AEAFXShaderVariableType.k_Float4x4:
+            case EAFXShaderVariableType.k_Float4x4:
                 this._pShaderProgram.setMat4(sName, pValue || Mat4.temp(0));
                 break;
 
-            case AEAFXShaderVariableType.k_Sampler2D:
+            case EAFXShaderVariableType.k_Sampler2D:
                 this._pShaderProgram.setSampler(sName, pValue);
                 break;
-            case AEAFXShaderVariableType.k_SamplerCUBE:
+            case EAFXShaderVariableType.k_SamplerCUBE:
                 this._pShaderProgram.setSampler(sName, pValue);
                 break;
-            case AEAFXShaderVariableType.k_SamplerVertexTexture:
+            case EAFXShaderVariableType.k_SamplerVertexTexture:
                 this._pShaderProgram.setVertexBuffer(sName, pValue);
                 break;
             default:

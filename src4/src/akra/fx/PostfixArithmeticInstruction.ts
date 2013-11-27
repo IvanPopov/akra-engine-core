@@ -7,7 +7,7 @@ class PostfixArithmeticInstruction extends ExprInstruction {
     constructor() {
         super();
         this._pInstructionList = [null];
-        this._eInstructionType = AEAFXInstructionTypes.k_PostfixArithmeticInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_PostfixArithmeticInstruction;
     }
 
     toFinalCode(): string {
@@ -19,14 +19,14 @@ class PostfixArithmeticInstruction extends ExprInstruction {
         return sCode;
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var pSubExpr: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[0];
-        pSubExpr.addUsedData(pUsedDataCollector, AEVarUsedMode.k_ReadWrite);
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+        var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+        pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
     }
 
     isConst(): boolean {
-        return (<AIAFXExprInstruction>this.getInstructions()[0]).isConst();
+        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
     }
 }
 

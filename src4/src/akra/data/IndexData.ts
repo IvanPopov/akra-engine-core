@@ -1,16 +1,16 @@
-/// <reference path="../idl/AIBufferData.ts" />
-/// <reference path="../idl/AIIndexBuffer.ts" />
-/// <reference path="../idl/AEPrimitiveTypes.ts" />
+/// <reference path="../idl/IBufferData.ts" />
+/// <reference path="../idl/IIndexBuffer.ts" />
+/// <reference path="../idl/EPrimitiveTypes.ts" />
 
 import logger = require("logger");
 import type = require("dataType");
 
-class IndexData implements AIIndexData {
-    private _pIndexBuffer: AIIndexBuffer;
+class IndexData implements IIndexData {
+    private _pIndexBuffer: IIndexBuffer;
     private _iOffset: uint;
     private _iLength: uint;
-    private _ePrimitiveType: AEPrimitiveTypes;
-    private _eElementsType: AEDataTypes;
+    private _ePrimitiveType: EPrimitiveTypes;
+    private _eElementsType: EDataTypes;
     private _iId: int;
 
     get id(): uint { return this._iId; }
@@ -19,20 +19,20 @@ class IndexData implements AIIndexData {
     get bytesPerIndex(): uint { return type.size(this._eElementsType); }
     get byteOffset(): uint { return this._iOffset; }
     get byteLength(): uint { return this._iLength * this.bytesPerIndex; }
-    get buffer(): AIIndexBuffer { return this._pIndexBuffer; }
+    get buffer(): IIndexBuffer { return this._pIndexBuffer; }
 
     constructor(
-        pIndexBuffer: AIIndexBuffer,
+        pIndexBuffer: IIndexBuffer,
         id: uint,
         iOffset: int,
         iCount: int,
-        ePrimitiveType: AEPrimitiveTypes = AEPrimitiveTypes.TRIANGLELIST,
-        eElementsType: AEDataTypes = AEDataTypes.UNSIGNED_SHORT) {
+        ePrimitiveType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST,
+        eElementsType: EDataTypes = EDataTypes.UNSIGNED_SHORT) {
 
         logger.presume(
-            eElementsType == AEDataTypes.UNSIGNED_SHORT ||
-            eElementsType == AEDataTypes.UNSIGNED_BYTE ||
-            eElementsType == AEDataTypes.UNSIGNED_INT, "supported only short, byte, uint data types.");
+            eElementsType == EDataTypes.UNSIGNED_SHORT ||
+            eElementsType == EDataTypes.UNSIGNED_BYTE ||
+            eElementsType == EDataTypes.UNSIGNED_INT, "supported only short, byte, uint data types.");
 
         this._pIndexBuffer = pIndexBuffer;
         this._iOffset = iOffset;
@@ -71,11 +71,11 @@ class IndexData implements AIIndexData {
 
         if (this._pIndexBuffer.readData(this.byteOffset + iOffset, iSize, pBuffer)) {
             switch (this._eElementsType) {
-                case AEDataTypes.UNSIGNED_BYTE:
+                case EDataTypes.UNSIGNED_BYTE:
                     return pBuffer;
-                case AEDataTypes.UNSIGNED_SHORT:
+                case EDataTypes.UNSIGNED_SHORT:
                     return new Uint16Array(pBuffer.buffer);
-                case AEDataTypes.UNSIGNED_INT:
+                case EDataTypes.UNSIGNED_INT:
                     return new Uint32Array(pBuffer.buffer);
                 default:
                     return null;
@@ -102,7 +102,7 @@ class IndexData implements AIIndexData {
         this._eElementsType = undefined;
     }
 
-    getPrimitiveType(): AEPrimitiveTypes {
+    getPrimitiveType(): EPrimitiveTypes {
         return this._ePrimitiveType;
     }
 
@@ -114,20 +114,20 @@ class IndexData implements AIIndexData {
         return this._pIndexBuffer.resourceHandle;
     }
 
-    static getPrimitiveCount(eType: AEPrimitiveTypes, nVertices: uint): uint {
+    static getPrimitiveCount(eType: EPrimitiveTypes, nVertices: uint): uint {
         switch (eType) {
-            case AEPrimitiveTypes.POINTLIST:
+            case EPrimitiveTypes.POINTLIST:
                 return nVertices;
-            case AEPrimitiveTypes.LINELIST:
+            case EPrimitiveTypes.LINELIST:
                 return nVertices / 2;
-            case AEPrimitiveTypes.LINESTRIP:
+            case EPrimitiveTypes.LINESTRIP:
                 return nVertices - 1;
-            case AEPrimitiveTypes.LINELOOP:
+            case EPrimitiveTypes.LINELOOP:
                 return nVertices;
-            case AEPrimitiveTypes.TRIANGLELIST:
+            case EPrimitiveTypes.TRIANGLELIST:
                 return nVertices / 3;
-            case AEPrimitiveTypes.TRIANGLEFAN:
-            case AEPrimitiveTypes.TRIANGLESTRIP:
+            case EPrimitiveTypes.TRIANGLEFAN:
+            case EPrimitiveTypes.TRIANGLESTRIP:
                 return nVertices - 2;
         }
 

@@ -54,38 +54,38 @@ module akra {
 		procListName?: string;		        /* имя процедуры, для получения все поддерживаемых процедур */
 		callsFrequency?: int;		        /* 0 or -1 - disable group calls */
 		context?: any;				        /* контекст, у которого будут вызываться методы, при получении REQUEST запросов со стороны сервера */
-	    procMap?: IMap<IRPCProcOptions>;
+		procMap?: IMap<IRPCProcOptions>;
 	
 	}
 	
 	export enum ERpcStates {
-	    //not connected
-	    k_Deteached,
-	    //connected, and connection must be established
-	    k_Joined,
-	    //must be closed
-	    k_Closing
+		//not connected
+		k_Deteached,
+		//connected, and connection must be established
+		k_Joined,
+		//must be closed
+		k_Closing
 	}
 	
 	
 	export interface IRPC extends IEventProvider {
 		options: IRPCOptions;
-	    remote: any;
-	    group: int;                 //????
-	
+		remote: any;
+		group: int;                 //????
+
 		join(sAddr?: string): void;
 		rejoin(): void;
 		free(): void;
 		detach(): void;
 		proc(...argv: any[]): boolean;
-	
-	    groupCall(): int;           //??????
-	    dropGroupCall(): int;       //???????
-	
+
+		groupCall(): int;           //??????
+		dropGroupCall(): int;       //???????
+
 		setProcedureOption(sProc: string, sOpt: string, pValue: any): void;
-	
-		signal joined(): void;
-		signal error(pError: Error): void;
+
+		joined: ISignal<{ (pRpc: IRPC): void; }>;
+		error: ISignal<{ (pRpc: IRPC, e: Error): void; }>;
 	}  
 	
 	

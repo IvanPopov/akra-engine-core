@@ -1,19 +1,21 @@
-import StmtInstruction = require("fx/StmtInstruction");
+/// <reference path="StmtInstruction.ts" />
 
-/**
- * Reprsernt continue; break; discard;
- * (continue || break || discard) 
- */
-class BreakStmtInstruction extends StmtInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = null;
-        this._eInstructionType = AEAFXInstructionTypes.k_BreakStmtInstruction;
+module akra.fx {
+
+    /**
+     * Reprsernt continue; break; discard;
+     * (continue || break || discard) 
+     */
+    export class BreakStmtInstruction extends StmtInstruction {
+        constructor() {
+            super();
+            this._pInstructionList = null;
+            this._eInstructionType = EAFXInstructionTypes.k_BreakStmtInstruction;
+        }
+
+        toFinalCode(): string {
+            return this.getOperator() + ";";
+        }
     }
 
-    toFinalCode(): string {
-        return this.getOperator() + ";";
-    }
 }
-
-export = BreakStmtInstruction;

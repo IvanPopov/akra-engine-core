@@ -1,52 +1,52 @@
-import ExprInstruction = require("fx/ExprInstruction");
-import Effect = require("fx/Effect");
+/// <reference path="ExprInstruction.ts" />
+/// <reference path="Effect.ts" />
 
-class BoolInstruction extends ExprInstruction implements AIAFXLiteralInstruction {
-    private _bValue: boolean;
-    private static _pBoolType: AIAFXVariableTypeInstruction = null;
-    /**
-     * EMPTY_OPERATOR EMPTY_ARGUMENTS
-     */
-    constructor() {
-        super();
+module akra.fx {
+    class BoolInstruction extends ExprInstruction implements IAFXLiteralInstruction {
+        private _bValue: boolean;
+        private static _pBoolType: IAFXVariableTypeInstruction = null;
+        /**
+         * EMPTY_OPERATOR EMPTY_ARGUMENTS
+         */
+        constructor() {
+            super();
 
-        this._bValue = true;
-        this._pType = Effect.getSystemType("boolean").getVariableType();
-        this._eInstructionType = AEAFXInstructionTypes.k_BoolInstruction;
-    }
-
-    setValue(bValue: boolean): void {
-        this._bValue = bValue;
-    }
-
-    toString(): string {
-        return <string><any>this._bValue;
-    }
-
-    toFinalCode(): string {
-        if (this._bValue) {
-            return "true";
+            this._bValue = true;
+            this._pType = Effect.getSystemType("boolean").getVariableType();
+            this._eInstructionType = EAFXInstructionTypes.k_BoolInstruction;
         }
-        else {
-            return "false";
+
+        setValue(bValue: boolean): void {
+            this._bValue = bValue;
         }
-    }
 
-    evaluate(): boolean {
-        this._pLastEvalResult = this._bValue;
-        return true;
-    }
+        toString(): string {
+            return <string><any>this._bValue;
+        }
 
-    isConst(): boolean {
-        return true;
-    }
+        toFinalCode(): string {
+            if (this._bValue) {
+                return "true";
+            }
+            else {
+                return "false";
+            }
+        }
 
-    clone(pRelationMap?: AIAFXInstructionMap): AIAFXLiteralInstruction {
-        var pClonedInstruction: AIAFXLiteralInstruction = <AIAFXLiteralInstruction>(super.clone(pRelationMap));
-        pClonedInstruction.setValue(this._bValue);
-        return pClonedInstruction;
+        evaluate(): boolean {
+            this._pLastEvalResult = this._bValue;
+            return true;
+        }
+
+        isConst(): boolean {
+            return true;
+        }
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+            var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+            pClonedInstruction.setValue(this._bValue);
+            return pClonedInstruction;
+        }
     }
 }
 
-
-export = BoolInstruction;

@@ -1,4 +1,4 @@
-/// <reference path="../idl/AEEffectErrors.ts" />
+/// <reference path="../idl/EEffectErrors.ts" />
 
 import StmtInstruction = require("fx/StmtInstruction");
 
@@ -10,7 +10,7 @@ class ForStmtInstruction extends StmtInstruction {
     constructor() {
         super();
         this._pInstructionList = [null, null, null, null];
-        this._eInstructionType = AEAFXInstructionTypes.k_ForStmtInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_ForStmtInstruction;
     }
 
     toFinalCode(): string {
@@ -24,63 +24,63 @@ class ForStmtInstruction extends StmtInstruction {
         return sCode;
     }
 
-    check(eStage: AECheckStage, pInfo: any = null): boolean {
-        var pInstructionList: AIAFXInstruction[] = this.getInstructions();
+    check(eStage: ECheckStage, pInfo: any = null): boolean {
+        var pInstructionList: IAFXInstruction[] = this.getInstructions();
 
         if (this._nInstructions !== 4) {
-            this.setError(AEEffectErrors.BAD_FOR_STEP_EMPTY);
+            this.setError(EEffectErrors.BAD_FOR_STEP_EMPTY);
             return false;
         }
 
         if (isNull(pInstructionList[0])) {
-            this.setError(AEEffectErrors.BAD_FOR_INIT_EMPTY_ITERATOR);
+            this.setError(EEffectErrors.BAD_FOR_INIT_EMPTY_ITERATOR);
             return false;
         }
 
-        if (pInstructionList[0]._getInstructionType() !== AEAFXInstructionTypes.k_VariableDeclInstruction) {
-            this.setError(AEEffectErrors.BAD_FOR_INIT_EXPR);
+        if (pInstructionList[0]._getInstructionType() !== EAFXInstructionTypes.k_VariableDeclInstruction) {
+            this.setError(EEffectErrors.BAD_FOR_INIT_EXPR);
             return false;
         }
 
         if (isNull(pInstructionList[1])) {
-            this.setError(AEEffectErrors.BAD_FOR_COND_EMPTY);
+            this.setError(EEffectErrors.BAD_FOR_COND_EMPTY);
             return false;
         }
 
-        if (pInstructionList[1]._getInstructionType() !== AEAFXInstructionTypes.k_RelationalExprInstruction) {
-            this.setError(AEEffectErrors.BAD_FOR_COND_RELATION);
+        if (pInstructionList[1]._getInstructionType() !== EAFXInstructionTypes.k_RelationalExprInstruction) {
+            this.setError(EEffectErrors.BAD_FOR_COND_RELATION);
             return false;
         }
 
-        if (pInstructionList[2]._getInstructionType() === AEAFXInstructionTypes.k_UnaryExprInstruction ||
-            pInstructionList[2]._getInstructionType() === AEAFXInstructionTypes.k_AssignmentExprInstruction ||
-            pInstructionList[2]._getInstructionType() === AEAFXInstructionTypes.k_PostfixArithmeticInstruction) {
+        if (pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_UnaryExprInstruction ||
+            pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_AssignmentExprInstruction ||
+            pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_PostfixArithmeticInstruction) {
 
             var sOperator: string = pInstructionList[2].getOperator();
             if (sOperator !== "++" && sOperator !== "--" &&
                 sOperator !== "+=" && sOperator !== "-=") {
-                this.setError(AEEffectErrors.BAD_FOR_STEP_OPERATOR, { operator: sOperator });
+                this.setError(EEffectErrors.BAD_FOR_STEP_OPERATOR, { operator: sOperator });
                 return false;
             }
         }
         else {
-            this.setError(AEEffectErrors.BAD_FOR_STEP_EXPRESSION);
+            this.setError(EEffectErrors.BAD_FOR_STEP_EXPRESSION);
             return false;
         }
 
         return true;
     }
 
-    addUsedData(pUsedDataCollector: AIAFXTypeUseInfoMap,
-        eUsedMode: AEVarUsedMode = AEVarUsedMode.k_Undefined): void {
-        var pForInit: AIAFXVariableDeclInstruction = <AIAFXVariableDeclInstruction>this.getInstructions()[0];
-        var pForCondition: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[1];
-        var pForStep: AIAFXExprInstruction = <AIAFXExprInstruction>this.getInstructions()[2];
-        var pForStmt: AIAFXStmtInstruction = <AIAFXStmtInstruction>this.getInstructions()[3];
+    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+        var pForInit: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getInstructions()[0];
+        var pForCondition: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+        var pForStep: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[2];
+        var pForStmt: IAFXStmtInstruction = <IAFXStmtInstruction>this.getInstructions()[3];
 
-        var pIteratorType: AIAFXVariableTypeInstruction = pForInit.getType();
+        var pIteratorType: IAFXVariableTypeInstruction = pForInit.getType();
 
-        pUsedDataCollector[pIteratorType._getInstructionID()] = <AIAFXTypeUseInfoContainer>{
+        pUsedDataCollector[pIteratorType._getInstructionID()] = <IAFXTypeUseInfoContainer>{
             type: pIteratorType,
             isRead: false,
             isWrite: true,

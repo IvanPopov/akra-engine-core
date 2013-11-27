@@ -1,4 +1,4 @@
-﻿/// <reference path="../idl/AIAFXInstruction.ts" />
+﻿/// <reference path="../idl/IAFXInstruction.ts" />
 
 import Instruction = require("fx/Instruction");
 import Effect = require("fx/Effect");
@@ -7,8 +7,8 @@ import VariableDeclInstruction = require("fx/VariableInstruction");
 import IntInstruction = require("IntInstruction");
 import IdExprInstruction = require("fx/IdExprInstruction");
 
-class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeInstruction {
-    private _pSubType: AIAFXTypeInstruction = null;
+class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
+    private _pSubType: IAFXTypeInstruction = null;
     private _pUsageList: string[] = null;
 
     private _sName: string = "";
@@ -36,24 +36,24 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
     private _isFromTypeDecl: boolean = null;
     private _isField: boolean = false;
 
-    private _pArrayIndexExpr: AIAFXExprInstruction = null;
-    private _pArrayElementType: AIAFXVariableTypeInstruction = null;
+    private _pArrayIndexExpr: IAFXExprInstruction = null;
+    private _pArrayElementType: IAFXVariableTypeInstruction = null;
 
-    private _pFieldDeclMap: AIAFXVariableDeclMap = null;
-    private _pFieldDeclBySemanticMap: AIAFXVariableDeclMap = null;
-    private _pFieldIdMap: AIAFXIdExprMap = null;
-    private _pUsedFieldMap: AIAFXVarUsedModeMap = null;
+    private _pFieldDeclMap: IAFXVariableDeclMap = null;
+    private _pFieldDeclBySemanticMap: IAFXVariableDeclMap = null;
+    private _pFieldIdMap: IAFXIdExprMap = null;
+    private _pUsedFieldMap: IAFXVarUsedModeMap = null;
 
-    private _pVideoBuffer: AIAFXVariableDeclInstruction = null;
-    private _pMainPointIndex: AIAFXVariableDeclInstruction = null;
-    private _pUpPointIndex: AIAFXVariableDeclInstruction = null;
-    private _pDownPointIndex: AIAFXVariableDeclInstruction = null;
+    private _pVideoBuffer: IAFXVariableDeclInstruction = null;
+    private _pMainPointIndex: IAFXVariableDeclInstruction = null;
+    private _pUpPointIndex: IAFXVariableDeclInstruction = null;
+    private _pDownPointIndex: IAFXVariableDeclInstruction = null;
     private _nPointDim: uint = 0;
-    private _pPointerList: AIAFXVariableDeclInstruction[] = null;
+    private _pPointerList: IAFXVariableDeclInstruction[] = null;
     private _iPadding: uint = Instruction.UNDEFINE_PADDING;
 
-    private _pSubDeclList: AIAFXVariableDeclInstruction[] = null;
-    private _pAttrOffset: AIAFXVariableDeclInstruction = null;
+    private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
+    private _pAttrOffset: IAFXVariableDeclInstruction = null;
 
     private _bUnverifiable: boolean = false;
     private _bCollapsed: boolean = false;
@@ -61,7 +61,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
     constructor() {
         super();
         this._pInstructionList = null;
-        this._eInstructionType = AEAFXInstructionTypes.k_VariableTypeInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_VariableTypeInstruction;
     }
 
     toFinalCode(): string {
@@ -119,7 +119,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return this.getSubType().isComplex();
     }
 
-    isEqual(pType: AIAFXTypeInstruction): boolean {
+    isEqual(pType: IAFXTypeInstruction): boolean {
         if (this._isUnverifiable()) {
             return true;
         }
@@ -138,7 +138,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return true;
     }
 
-    isStrongEqual(pType: AIAFXTypeInstruction): boolean {
+    isStrongEqual(pType: IAFXTypeInstruction): boolean {
         if (!this.isEqual(pType) || this.getStrongHash() !== pType.getStrongHash()) {
             return false;
         }
@@ -207,14 +207,14 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
 
     isPointer(): boolean {
         return this._isPointer ||
-            (this.getSubType()._getInstructionType() === AEAFXInstructionTypes.k_VariableTypeInstruction &&
-            (<AIAFXVariableTypeInstruction>this.getSubType()).isPointer());
+            (this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
+            (<IAFXVariableTypeInstruction>this.getSubType()).isPointer());
     }
 
     isStrictPointer(): boolean {
         return this._isStrictPointer ||
-            (this.getSubType()._getInstructionType() === AEAFXInstructionTypes.k_VariableTypeInstruction &&
-            (<AIAFXVariableTypeInstruction>this.getSubType()).isStrictPointer());
+            (this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
+            (<IAFXVariableTypeInstruction>this.getSubType()).isStrictPointer());
     }
 
     isPointIndex(): boolean {
@@ -234,13 +234,13 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             this._isFromVariableDecl = false;
         }
         else {
-            var eParentType: AEAFXInstructionTypes = this.getParent()._getInstructionType();
+            var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
 
-            if (eParentType === AEAFXInstructionTypes.k_VariableDeclInstruction) {
+            if (eParentType === EAFXInstructionTypes.k_VariableDeclInstruction) {
                 this._isFromVariableDecl = true;
             }
-            else if (eParentType === AEAFXInstructionTypes.k_VariableTypeInstruction) {
-                this._isFromVariableDecl = (<AIAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+            else if (eParentType === EAFXInstructionTypes.k_VariableTypeInstruction) {
+                this._isFromVariableDecl = (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
             }
             else {
                 this._isFromVariableDecl = false;
@@ -259,13 +259,13 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             this._isFromTypeDecl = false;
         }
         else {
-            var eParentType: AEAFXInstructionTypes = this.getParent()._getInstructionType();
+            var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
 
-            if (eParentType === AEAFXInstructionTypes.k_TypeDeclInstruction) {
+            if (eParentType === EAFXInstructionTypes.k_TypeDeclInstruction) {
                 this._isFromTypeDecl = true;
             }
-            else if (eParentType === AEAFXInstructionTypes.k_VariableTypeInstruction) {
-                this._isFromTypeDecl = (<AIAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+            else if (eParentType === EAFXInstructionTypes.k_VariableTypeInstruction) {
+                this._isFromTypeDecl = (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
             }
             else {
                 this._isFromTypeDecl = false;
@@ -320,8 +320,8 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             return false;
         }
 
-        if (this.getParent()._getInstructionType() === AEAFXInstructionTypes.k_VariableDeclInstruction) {
-            var pParentDecl: AIAFXVariableDeclInstruction = <AIAFXVariableDeclInstruction>this.getParent();
+        if (this.getParent()._getInstructionType() === EAFXInstructionTypes.k_VariableDeclInstruction) {
+            var pParentDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getParent();
             return pParentDecl.isField();
         }
 
@@ -355,15 +355,15 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         this._iPadding = iPadding;
     }
 
-    pushType(pType: AIAFXTypeInstruction): void {
-        var eType: AEAFXInstructionTypes = pType._getInstructionType();
+    pushType(pType: IAFXTypeInstruction): void {
+        var eType: EAFXInstructionTypes = pType._getInstructionType();
 
-        if (eType === AEAFXInstructionTypes.k_SystemTypeInstruction ||
-            eType === AEAFXInstructionTypes.k_ComplexTypeInstruction) {
+        if (eType === EAFXInstructionTypes.k_SystemTypeInstruction ||
+            eType === EAFXInstructionTypes.k_ComplexTypeInstruction) {
             this._pSubType = pType;
         }
         else {
-            var pVarType: AIAFXVariableTypeInstruction = <AIAFXVariableTypeInstruction>pType;
+            var pVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pType;
             if (!pVarType.isNotBaseArray() && !pVarType.isPointer()) {
                 var pUsageList: string[] = pVarType.getUsageList();
                 if (!isNull(pUsageList)) {
@@ -391,7 +391,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         }
     }
 
-    addArrayIndex(pExpr: AIAFXExprInstruction): void {
+    addArrayIndex(pExpr: IAFXExprInstruction): void {
         //TODO: add support for v[][10]
 
         this._pArrayElementType = new VariableTypeInstruction();
@@ -422,9 +422,9 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         }
     }
 
-    setVideoBuffer(pBuffer: AIAFXVariableDeclInstruction): void {
+    setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void {
         if (this.isPointIndex()) {
-            (<AIAFXVariableDeclInstruction>this.getParent().getParent()).getType().setVideoBuffer(pBuffer);
+            (<IAFXVariableDeclInstruction>this.getParent().getParent()).getType().setVideoBuffer(pBuffer);
             return;
         }
 
@@ -437,7 +437,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         var pFieldNameList: string[] = this.getFieldNameList();
 
         for (var i: uint = 0; i < pFieldNameList.length; i++) {
-            var pFieldType: AIAFXVariableTypeInstruction = this.getFieldType(pFieldNameList[i]);
+            var pFieldType: IAFXVariableTypeInstruction = this.getFieldType(pFieldNameList[i]);
 
             if (pFieldType.isPointer()) {
                 pFieldType.setVideoBuffer(pBuffer);
@@ -447,12 +447,12 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
 
     initializePointers(): void {
         this._pPointerList = [];
-        var pDownPointer: AIAFXVariableDeclInstruction = this._getParentVarDecl();
+        var pDownPointer: IAFXVariableDeclInstruction = this._getParentVarDecl();
 
         for (var i: uint = 0; i < this.getPointDim(); i++) {
-            var pPointer: AIAFXVariableDeclInstruction = new VariableDeclInstruction();
-            var pPointerType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
-            var pPointerId: AIAFXIdInstruction = new IdInstruction();
+            var pPointer: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+            var pPointerType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+            var pPointerId: IAFXIdInstruction = new IdInstruction();
 
             pPointer.push(pPointerType, true);
             pPointer.push(pPointerId, true);
@@ -490,7 +490,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         var pFieldNameList: string[] = this.getFieldNameList();
 
         for (var i: uint = 0; i < pFieldNameList.length; i++) {
-            var pFieldType: AIAFXVariableTypeInstruction = this.getFieldType(pFieldNameList[i]);
+            var pFieldType: IAFXVariableTypeInstruction = this.getFieldType(pFieldNameList[i]);
             if (!pFieldType.isPointer()) {
                 pFieldType.addPointIndex(false);
                 pFieldType._setVideoBufferInDepth();
@@ -506,7 +506,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             var pFieldNameList: string[] = this.getFieldNameList();
 
             for (var i: uint = 0; i < pFieldNameList.length; i++) {
-                var pFieldType: AIAFXVariableTypeInstruction = this.getFieldType(pFieldNameList[i]);
+                var pFieldType: IAFXVariableTypeInstruction = this.getFieldType(pFieldNameList[i]);
 
                 pFieldType._setVideoBufferInDepth();
             }
@@ -517,7 +517,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         this._bUnverifiable = true;
     }
 
-    _addAttrOffset(pOffset: AIAFXVariableDeclInstruction): void {
+    _addAttrOffset(pOffset: IAFXVariableDeclInstruction): void {
         this._pAttrOffset = pOffset;
     }
 
@@ -570,7 +570,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         }
     }
 
-    getBaseType(): AIAFXTypeInstruction {
+    getBaseType(): IAFXTypeInstruction {
         return this.getSubType().getBaseType();
     }
 
@@ -599,7 +599,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return this.isPointIndex() ? this._getDownPointer().getType().getPadding() : this._iPadding;
     }
 
-    getArrayElementType(): AIAFXVariableTypeInstruction {
+    getArrayElementType(): IAFXVariableTypeInstruction {
         if (this._isUnverifiable()) {
             return this;
         }
@@ -622,18 +622,18 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return this._pArrayElementType;
     }
 
-    getTypeDecl(): AIAFXTypeDeclInstruction {
+    getTypeDecl(): IAFXTypeDeclInstruction {
         if (!this.isFromTypeDecl()) {
             return null;
         }
 
-        var eParentType: AEAFXInstructionTypes = this.getParent()._getInstructionType();
+        var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
 
-        if (eParentType === AEAFXInstructionTypes.k_TypeDeclInstruction) {
-            return <AIAFXTypeDeclInstruction>this.getParent();
+        if (eParentType === EAFXInstructionTypes.k_TypeDeclInstruction) {
+            return <IAFXTypeDeclInstruction>this.getParent();
         }
         else {
-            return (<AIAFXTypeInstruction>this.getParent()).getTypeDecl();
+            return (<IAFXTypeInstruction>this.getParent()).getTypeDecl();
         }
     }
 
@@ -665,25 +665,25 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return this.getSubType().hasFieldWithoutSemantic();
     }
 
-    getField(sFieldName: string): AIAFXVariableDeclInstruction {
+    getField(sFieldName: string): IAFXVariableDeclInstruction {
         if (!this.hasField(sFieldName)) {
             return null;
         }
 
         if (isNull(this._pFieldDeclMap)) {
-            this._pFieldDeclMap = <AIAFXVariableDeclMap>{};
+            this._pFieldDeclMap = <IAFXVariableDeclMap>{};
         }
 
         if (isDef(this._pFieldDeclMap[sFieldName])) {
             return this._pFieldDeclMap[sFieldName];
         }
 
-        var pField: AIAFXVariableDeclInstruction = new VariableDeclInstruction();
+        var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
 
         if (!this._isUnverifiable()) {
-            var pSubField: AIAFXVariableDeclInstruction = this.getSubType().getField(sFieldName);
+            var pSubField: IAFXVariableDeclInstruction = this.getSubType().getField(sFieldName);
 
-            var pFieldType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+            var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
             pFieldType.pushType(pSubField.getType());
             // if(!this.isBase()){
             pFieldType.setPadding(pSubField.getType().getPadding());
@@ -693,7 +693,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             pField.setSemantic(pSubField.getSemantic());
         }
         else {
-            var pFieldName: AIAFXIdInstruction = new IdInstruction();
+            var pFieldName: IAFXIdInstruction = new IdInstruction();
 
             pFieldName.setName(sFieldName);
             pFieldName.setRealName(sFieldName);
@@ -709,23 +709,23 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return pField;
     }
 
-    getFieldBySemantic(sSemantic: string): AIAFXVariableDeclInstruction {
+    getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction {
         if (this.hasFieldWithSematic(sSemantic)) {
             return null;
         }
 
         if (isNull(this._pFieldDeclBySemanticMap)) {
-            this._pFieldDeclBySemanticMap = <AIAFXVariableDeclMap>{};
+            this._pFieldDeclBySemanticMap = <IAFXVariableDeclMap>{};
         }
 
         if (isDef(this._pFieldDeclBySemanticMap[sSemantic])) {
             return this._pFieldDeclBySemanticMap[sSemantic];
         }
 
-        var pField: AIAFXVariableDeclInstruction = new VariableDeclInstruction();
-        var pSubField: AIAFXVariableDeclInstruction = this.getSubType().getFieldBySemantic(sSemantic);
+        var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+        var pSubField: IAFXVariableDeclInstruction = this.getSubType().getFieldBySemantic(sSemantic);
 
-        var pFieldType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
         pFieldType.pushType(pSubField.getType());
         // if(!this.isBase()){
         pFieldType.setPadding(pSubField.getType().getPadding());
@@ -741,8 +741,8 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return pField;
     }
 
-    getFieldType(sFieldName: string): AIAFXVariableTypeInstruction {
-        return <AIAFXVariableTypeInstruction>this.getField(sFieldName).getType();
+    getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
+        return <IAFXVariableTypeInstruction>this.getField(sFieldName).getType();
     }
 
     getFieldNameList(): string[] {
@@ -754,7 +754,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return this._pUsageList;
     }
 
-    getSubType(): AIAFXTypeInstruction {
+    getSubType(): IAFXTypeInstruction {
         return this._pSubType;
     }
 
@@ -769,8 +769,8 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             }
         }
 
-        if (!isNull(this.getSubType()) && this.getSubType()._getInstructionType() === AEAFXInstructionTypes.k_VariableTypeInstruction) {
-            return (<AIAFXVariableTypeInstruction>this.getSubType()).hasUsage(sUsageName);
+        if (!isNull(this.getSubType()) && this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction) {
+            return (<IAFXVariableTypeInstruction>this.getSubType()).hasUsage(sUsageName);
         }
 
         return false;
@@ -782,11 +782,11 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
 
     getPointDim(): uint {
         return this._nPointDim ||
-            ((this.getSubType()._getInstructionType() === AEAFXInstructionTypes.k_VariableTypeInstruction) ?
-            (<AIAFXVariableTypeInstruction>this.getSubType()).getPointDim() : 0);
+            ((this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction) ?
+            (<IAFXVariableTypeInstruction>this.getSubType()).getPointDim() : 0);
     }
 
-    getPointer(): AIAFXVariableDeclInstruction {
+    getPointer(): IAFXVariableDeclInstruction {
         if (!this.isFromVariableDecl() ||
             !(this.isPointer() || this.isPointIndex()) || !this.hasVideoBuffer()) {
             return null;
@@ -805,27 +805,27 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return this._pUpPointIndex;
     }
 
-    getVideoBuffer(): AIAFXVariableDeclInstruction {
+    getVideoBuffer(): IAFXVariableDeclInstruction {
         if (this.isPointIndex()) {
-            return (<AIAFXVariableDeclInstruction>this.getParent().getParent()).getType().getVideoBuffer();
+            return (<IAFXVariableDeclInstruction>this.getParent().getParent()).getType().getVideoBuffer();
         }
 
         return this._pVideoBuffer;
     }
 
-    getFieldExpr(sFieldName: string): AIAFXIdExprInstruction {
+    getFieldExpr(sFieldName: string): IAFXIdExprInstruction {
         if (!this.hasField(sFieldName)) {
             return null;
         }
-        var pField: AIAFXVariableDeclInstruction = this.getField(sFieldName);
-        var pExpr: AIAFXIdExprInstruction = new IdExprInstruction();
+        var pField: IAFXVariableDeclInstruction = this.getField(sFieldName);
+        var pExpr: IAFXIdExprInstruction = new IdExprInstruction();
         pExpr.push(pField.getNameId(), false);
         pExpr.setType(pField.getType());
 
         return pExpr;
     }
 
-    getFieldIfExist(sFieldName: string): AIAFXVariableDeclInstruction {
+    getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction {
         if (isNull(this._pFieldDeclMap) && isDef(this._pFieldDeclMap[sFieldName])) {
             return this._pFieldDeclMap[sFieldName];
         }
@@ -834,7 +834,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         }
     }
 
-    getSubVarDecls(): AIAFXVariableDeclInstruction[] {
+    getSubVarDecls(): IAFXVariableDeclInstruction[] {
         if (!this.canHaveSubDecls()) {
             return null;
         }
@@ -850,13 +850,13 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             return "Not from variable decl";
         }
 
-        var eParentType: AEAFXInstructionTypes = this.getParent()._getInstructionType();
+        var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
 
-        if (eParentType === AEAFXInstructionTypes.k_VariableDeclInstruction) {
-            return (<AIAFXVariableDeclInstruction>this.getParent())._getFullName();
+        if (eParentType === EAFXInstructionTypes.k_VariableDeclInstruction) {
+            return (<IAFXVariableDeclInstruction>this.getParent())._getFullName();
         }
         else {
-            return (<AIAFXVariableTypeInstruction>this.getParent())._getFullName();
+            return (<IAFXVariableTypeInstruction>this.getParent())._getFullName();
         }
     }
 
@@ -865,13 +865,13 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             return "";
         }
 
-        var eParentType: AEAFXInstructionTypes = this.getParent()._getInstructionType();
+        var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
 
-        if (eParentType === AEAFXInstructionTypes.k_VariableDeclInstruction) {
-            return (<AIAFXVariableDeclInstruction>this.getParent()).getName();
+        if (eParentType === EAFXInstructionTypes.k_VariableDeclInstruction) {
+            return (<IAFXVariableDeclInstruction>this.getParent()).getName();
         }
         else {
-            return (<AIAFXVariableTypeInstruction>this.getParent())._getVarDeclName();
+            return (<IAFXVariableTypeInstruction>this.getParent())._getVarDeclName();
         }
     }
 
@@ -880,37 +880,37 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             return "";
         }
 
-        var eParentType: AEAFXInstructionTypes = this.getParent()._getInstructionType();
+        var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
 
-        if (eParentType === AEAFXInstructionTypes.k_VariableDeclInstruction) {
-            return (<AIAFXTypeDeclInstruction>this.getParent()).getName();
+        if (eParentType === EAFXInstructionTypes.k_VariableDeclInstruction) {
+            return (<IAFXTypeDeclInstruction>this.getParent()).getName();
         }
         else {
-            return (<AIAFXVariableTypeInstruction>this.getParent())._getTypeDeclName();
+            return (<IAFXVariableTypeInstruction>this.getParent())._getTypeDeclName();
         }
     }
 
-    _getParentVarDecl(): AIAFXVariableDeclInstruction {
+    _getParentVarDecl(): IAFXVariableDeclInstruction {
         if (!this.isFromVariableDecl()) {
             return null;
         }
 
-        var eParentType: AEAFXInstructionTypes = this.getParent()._getInstructionType();
+        var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
 
-        if (eParentType === AEAFXInstructionTypes.k_VariableDeclInstruction) {
-            return <AIAFXVariableDeclInstruction>this.getParent();
+        if (eParentType === EAFXInstructionTypes.k_VariableDeclInstruction) {
+            return <IAFXVariableDeclInstruction>this.getParent();
         }
         else {
-            return (<AIAFXVariableTypeInstruction>this.getParent())._getParentVarDecl();
+            return (<IAFXVariableTypeInstruction>this.getParent())._getParentVarDecl();
         }
     }
 
-    _getParentContainer(): AIAFXVariableDeclInstruction {
+    _getParentContainer(): IAFXVariableDeclInstruction {
         if (!this.isFromVariableDecl() || !this._isTypeOfField()) {
             return null;
         }
 
-        var pContainerType: AIAFXVariableTypeInstruction = <AIAFXVariableTypeInstruction>this._getParentVarDecl().getParent();
+        var pContainerType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>this._getParentVarDecl().getParent();
         if (!pContainerType.isFromVariableDecl()) {
             return null;
         }
@@ -918,20 +918,20 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return pContainerType._getParentVarDecl();
     }
 
-    _getMainVariable(): AIAFXVariableDeclInstruction {
+    _getMainVariable(): IAFXVariableDeclInstruction {
         if (!this.isFromVariableDecl()) {
             return null;
         }
 
         if (this._isTypeOfField()) {
-            return (<AIAFXVariableTypeInstruction>this.getParent().getParent())._getMainVariable();
+            return (<IAFXVariableTypeInstruction>this.getParent().getParent())._getMainVariable();
         }
         else {
-            return (<AIAFXVariableDeclInstruction>this._getParentVarDecl());
+            return (<IAFXVariableDeclInstruction>this._getParentVarDecl());
         }
     }
 
-    _getMainPointer(): AIAFXVariableDeclInstruction {
+    _getMainPointer(): IAFXVariableDeclInstruction {
         if (isNull(this._pMainPointIndex)) {
             if (isNull(this.getPointer())) {
                 this._pMainPointIndex = this._getParentVarDecl()
@@ -944,15 +944,15 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return this._pMainPointIndex;
     }
 
-    _getUpPointer(): AIAFXVariableDeclInstruction {
+    _getUpPointer(): IAFXVariableDeclInstruction {
         return this._pUpPointIndex;
     }
 
-    _getDownPointer(): AIAFXVariableDeclInstruction {
+    _getDownPointer(): IAFXVariableDeclInstruction {
         return this._pDownPointIndex;
     }
 
-    _getAttrOffset(): AIAFXVariableDeclInstruction {
+    _getAttrOffset(): IAFXVariableDeclInstruction {
         return this._pAttrOffset;
     }
 
@@ -960,16 +960,16 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
     //----------------------------SYSTEM-------------------------------//
     //-----------------------------------------------------------------//		
 
-    wrap(): AIAFXVariableTypeInstruction {
-        var pCloneType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+    wrap(): IAFXVariableTypeInstruction {
+        var pCloneType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
         pCloneType.pushType(this);
 
         return pCloneType;
     }
 
-    clone(pRelationMap: AIAFXInstructionMap = <AIAFXInstructionMap>{}): AIAFXVariableTypeInstruction {
+    clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXVariableTypeInstruction {
         if (isDef(pRelationMap[this._getInstructionID()])) {
-            return <AIAFXVariableTypeInstruction>pRelationMap[this._getInstructionID()];
+            return <IAFXVariableTypeInstruction>pRelationMap[this._getInstructionID()];
         }
 
         if (this._pParentInstruction === null ||
@@ -979,7 +979,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             return this;
         }
 
-        var pClone: AIAFXVariableTypeInstruction = <AIAFXVariableTypeInstruction>super.clone(pRelationMap);
+        var pClone: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>super.clone(pRelationMap);
 
         pClone.pushType(this._pSubType.clone(pRelationMap));
         if (!isNull(this._pUsageList)) {
@@ -1000,10 +1000,10 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         }
 
         if (this._isPointer) {
-            var pClonePointerList: AIAFXVariableDeclInstruction[] = null;
+            var pClonePointerList: IAFXVariableDeclInstruction[] = null;
             if (!isNull(this._pPointerList)) {
                 pClonePointerList = new Array(this._pPointerList.length);
-                var pDownPointer: AIAFXVariableDeclInstruction = pClone._getParentVarDecl();
+                var pDownPointer: IAFXVariableDeclInstruction = pClone._getParentVarDecl();
 
                 for (var i: uint = 0; i < this._pPointerList.length; i++) {
                     pClonePointerList[i] = this._pPointerList[i].clone(pRelationMap);
@@ -1025,7 +1025,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
 
         if (!isNull(this._pFieldDeclMap)) {
             var sFieldName: string = "";
-            var pCloneFieldMap: AIAFXVariableDeclMap = <AIAFXVariableDeclMap>{};
+            var pCloneFieldMap: IAFXVariableDeclMap = <IAFXVariableDeclMap>{};
 
             for (sFieldName in this._pFieldDeclMap) {
                 pCloneFieldMap[sFieldName] = this._pFieldDeclMap[sFieldName].clone(pRelationMap);
@@ -1037,12 +1037,12 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         return pClone;
     }
 
-    blend(pType: AIAFXVariableTypeInstruction, eMode: AEAFXBlendMode): AIAFXVariableTypeInstruction {
+    blend(pType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction {
         if (this === pType) {
             return this;
         }
 
-        if (eMode === AEAFXBlendMode.k_Global) {
+        if (eMode === EAFXBlendMode.k_Global) {
             return null;
         }
 
@@ -1057,12 +1057,12 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             return null;
         }
 
-        var pBlendBaseType: AIAFXTypeInstruction = this.getBaseType().blend(pType.getBaseType(), eMode);
+        var pBlendBaseType: IAFXTypeInstruction = this.getBaseType().blend(pType.getBaseType(), eMode);
         if (isNull(pBlendBaseType)) {
             return null;
         }
 
-        var pBlendType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pBlendType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
         pBlendType.pushType(pBlendBaseType);
 
         if (this.isNotBaseArray()) {
@@ -1081,15 +1081,15 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         this._sStrongHash = sStrongHash;
     }
 
-    _setCloneArrayIndex(pElementType: AIAFXVariableTypeInstruction,
-        pIndexExpr: AIAFXExprInstruction, iLength: uint): void {
+    _setCloneArrayIndex(pElementType: IAFXVariableTypeInstruction,
+        pIndexExpr: IAFXExprInstruction, iLength: uint): void {
         this._isArray = true;
         this._pArrayElementType = pElementType;
         this._pArrayIndexExpr = pIndexExpr;
         this._iLength = iLength;
     }
 
-    _setClonePointeIndexes(nDim: uint, pPointerList: AIAFXVariableDeclInstruction[]): void {
+    _setClonePointeIndexes(nDim: uint, pPointerList: IAFXVariableDeclInstruction[]): void {
         this._isPointer = true;
         this._nPointDim = nDim;
         this._pPointerList = pPointerList;
@@ -1098,12 +1098,12 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
         }
     }
 
-    _setCloneFields(pFieldMap: AIAFXVariableDeclMap): void {
+    _setCloneFields(pFieldMap: IAFXVariableDeclMap): void {
         this._pFieldDeclMap = pFieldMap;
     }
 
-    _setUpDownPointers(pUpPointIndex: AIAFXVariableDeclInstruction,
-        pDownPointIndex: AIAFXVariableDeclInstruction): void {
+    _setUpDownPointers(pUpPointIndex: IAFXVariableDeclInstruction,
+        pDownPointIndex: IAFXVariableDeclInstruction): void {
         this._pUpPointIndex = pUpPointIndex;
         this._pDownPointIndex = pDownPointIndex;
     }
@@ -1161,7 +1161,7 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             return;
         }
 
-        var pDeclList: AIAFXVariableDeclInstruction[] = [];
+        var pDeclList: IAFXVariableDeclInstruction[] = [];
         var i: uint = 0;
 
         if (!isNull(this._pAttrOffset)) {
@@ -1183,8 +1183,8 @@ class VariableTypeInstruction extends Instruction implements AIAFXVariableTypeIn
             var pFieldNameList: string[] = this.getFieldNameList();
 
             for (i = 0; i < pFieldNameList.length; i++) {
-                var pField: AIAFXVariableDeclInstruction = this.getField(pFieldNameList[i]);
-                var pFieldSubDeclList: AIAFXVariableDeclInstruction[] = pField.getSubVarDecls();
+                var pField: IAFXVariableDeclInstruction = this.getField(pFieldNameList[i]);
+                var pFieldSubDeclList: IAFXVariableDeclInstruction[] = pField.getSubVarDecls();
 
                 if (!isNull(pFieldSubDeclList)) {
                     for (var j: uint = 0; j < pFieldSubDeclList.length; j++) {

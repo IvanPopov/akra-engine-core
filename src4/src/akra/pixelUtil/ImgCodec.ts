@@ -1,12 +1,12 @@
-/// <reference path="../idl/AIImgCodec.ts" />
-/// <reference path="../idl/AEPixelFormats.ts" />
+/// <reference path="../idl/IImgCodec.ts" />
+/// <reference path="../idl/EPixelFormats.ts" />
+/// <reference path="Codec.ts" />
 
-import Codec = require("pixelUtil/Codec");
-
-class ImgCodec extends Codec implements AIImgCodec {
-    getDataType(): string {
+module akra.pixelUtil {
+	export class ImgCodec extends Codec implements IImgCodec {
+		getDataType(): string {
 		return "ImgData"
+		}
 	}
 }
 
-export = ImgCodec;

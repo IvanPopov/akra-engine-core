@@ -1,4 +1,4 @@
-/// <reference path="../idl/AIAFXInstruction.ts" />
+/// <reference path="../idl/IAFXInstruction.ts" />
 
 import DeclInstruction = require("fx/DeclInstruction");
 import VariableTypeInstruction = require("fx/VariableTypeInstruction");
@@ -6,25 +6,25 @@ import ExprTemplateTranslator = require("fx/ExprTemplateTranslator");
 import IdInstruction = require("fx/IdInstruction");
 import TypedInstruction = require("fx/TypedInstruction");
 
-class SystemFunctionInstruction extends DeclInstruction implements AIAFXFunctionDeclInstruction {
+class SystemFunctionInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
     private _pExprTranslator: ExprTemplateTranslator = null;
-    private _pName: AIAFXIdInstruction = null;
+    private _pName: IAFXIdInstruction = null;
     private _pReturnType: VariableTypeInstruction = null;
-    private _pArguments: AIAFXTypedInstruction[] = null;
+    private _pArguments: IAFXTypedInstruction[] = null;
 
     private _sDefinition: string = "";
     private _sImplementation: string = "";
 
-    private _pExtSystemTypeList: AIAFXTypeDeclInstruction[] = null;
-    private _pExtSystemFunctionList: AIAFXFunctionDeclInstruction[] = null;
-    private _pExtSystemMacrosList: AIAFXSimpleInstruction[] = null;
+    private _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
+    private _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
+    private _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
 
-    constructor(sName: string, pReturnType: AIAFXTypeInstruction,
+    constructor(sName: string, pReturnType: IAFXTypeInstruction,
         pExprTranslator: ExprTemplateTranslator,
-        pArgumentTypes: AIAFXTypeInstruction[]) {
+        pArgumentTypes: IAFXTypeInstruction[]) {
         super();
 
-        this._eInstructionType = AEAFXInstructionTypes.k_SystemFunctionInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_SystemFunctionInstruction;
 
         this._pName = new IdInstruction();
         this._pName.setName(sName);
@@ -65,9 +65,9 @@ class SystemFunctionInstruction extends DeclInstruction implements AIAFXFunction
         return this._sDefinition;
     }
 
-    setUsedSystemData(pTypeList: AIAFXTypeDeclInstruction[],
-        pFunctionList: AIAFXFunctionDeclInstruction[],
-        pMacrosList: AIAFXSimpleInstruction[]): void {
+    setUsedSystemData(pTypeList: IAFXTypeDeclInstruction[],
+        pFunctionList: IAFXFunctionDeclInstruction[],
+        pMacrosList: IAFXSimpleInstruction[]): void {
 
         this._pExtSystemTypeList = pTypeList;
         this._pExtSystemFunctionList = pFunctionList;
@@ -76,7 +76,7 @@ class SystemFunctionInstruction extends DeclInstruction implements AIAFXFunction
 
     closeSystemDataInfo(): void {
         for (var i: uint = 0; i < this._pExtSystemFunctionList.length; i++) {
-            var pFunction: AIAFXFunctionDeclInstruction = this._pExtSystemFunctionList[i];
+            var pFunction: IAFXFunctionDeclInstruction = this._pExtSystemFunctionList[i];
 
             var pTypes = pFunction._getExtSystemTypeList();
             var pMacroses = pFunction._getExtSystemMacrosList();
@@ -106,11 +106,11 @@ class SystemFunctionInstruction extends DeclInstruction implements AIAFXFunction
         this._pExprTranslator = pExprTranslator;
     }
 
-    getNameId(): AIAFXIdInstruction {
+    getNameId(): IAFXIdInstruction {
         return this._pName;
     }
 
-    getArguments(): AIAFXTypedInstruction[] {
+    getArguments(): IAFXTypedInstruction[] {
         return this._pArguments;
     }
 
@@ -122,55 +122,55 @@ class SystemFunctionInstruction extends DeclInstruction implements AIAFXFunction
         return true;
     }
 
-    getType(): AIAFXVariableTypeInstruction {
+    getType(): IAFXVariableTypeInstruction {
         return this.getReturnType();
     }
 
-    getReturnType(): AIAFXVariableTypeInstruction {
+    getReturnType(): IAFXVariableTypeInstruction {
         return this._pReturnType;
     }
 
-    getFunctionType(): AEFunctionType {
-        return AEFunctionType.k_Function;
+    getFunctionType(): EFunctionType {
+        return EFunctionType.k_Function;
     }
 
-    setFunctionType(eFunctionType: AEFunctionType): void {
+    setFunctionType(eFunctionType: EFunctionType): void {
     }
 
-    closeArguments(pArguments: AIAFXInstruction[]): AIAFXInstruction[] {
+    closeArguments(pArguments: IAFXInstruction[]): IAFXInstruction[] {
         return this._pExprTranslator.toInstructionList(pArguments);
     }
 
-    setFunctionDef(pFunctionDef: AIAFXDeclInstruction): void {
+    setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
     }
 
-    setImplementation(pImplementation: AIAFXStmtInstruction): void {
+    setImplementation(pImplementation: IAFXStmtInstruction): void {
     }
 
-    clone(pRelationMap?: AIAFXInstructionMap): SystemFunctionInstruction {
+    clone(pRelationMap?: IAFXInstructionMap): SystemFunctionInstruction {
         return this;
     }
 
-    _addOutVariable(pVariable: AIAFXVariableDeclInstruction): boolean {
+    _addOutVariable(pVariable: IAFXVariableDeclInstruction): boolean {
         return false;
     }
 
-    _getOutVariable(): AIAFXVariableDeclInstruction {
+    _getOutVariable(): IAFXVariableDeclInstruction {
         return null;
     }
 
-    _getVertexShader(): AIAFXFunctionDeclInstruction {
+    _getVertexShader(): IAFXFunctionDeclInstruction {
         return null;
     }
 
-    _getPixelShader(): AIAFXFunctionDeclInstruction {
+    _getPixelShader(): IAFXFunctionDeclInstruction {
         return null;
     }
 
-    _markUsedAs(eUsedType: AEFunctionType): void {
+    _markUsedAs(eUsedType: EFunctionType): void {
     }
 
-    _isUsedAs(eUsedType: AEFunctionType): boolean {
+    _isUsedAs(eUsedType: EFunctionType): boolean {
         return true;
     }
 
@@ -226,15 +226,15 @@ class SystemFunctionInstruction extends DeclInstruction implements AIAFXFunction
 
     _notCanUsedAsFunction(): void { }
 
-    _addUsedFunction(pFunction: AIAFXFunctionDeclInstruction): boolean {
+    _addUsedFunction(pFunction: IAFXFunctionDeclInstruction): boolean {
         return false;
     }
 
-    _addUsedVariable(pVariable: AIAFXVariableDeclInstruction): void {
+    _addUsedVariable(pVariable: IAFXVariableDeclInstruction): void {
 
     }
 
-    _getUsedFunctionList(): AIAFXFunctionDeclInstruction[] {
+    _getUsedFunctionList(): IAFXFunctionDeclInstruction[] {
         return null;
     }
 
@@ -249,18 +249,18 @@ class SystemFunctionInstruction extends DeclInstruction implements AIAFXFunction
         return "system_func";
     }
 
-    _convertToVertexShader(): AIAFXFunctionDeclInstruction {
+    _convertToVertexShader(): IAFXFunctionDeclInstruction {
         return null;
     }
 
-    _convertToPixelShader(): AIAFXFunctionDeclInstruction {
+    _convertToPixelShader(): IAFXFunctionDeclInstruction {
         return null;
     }
 
     _prepareForVertex(): void { }
     _prepareForPixel(): void { }
 
-    addUsedVariableType(pType: AIAFXVariableTypeInstruction, eUsedMode: AEVarUsedMode): boolean {
+    addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): boolean {
         return false;
     }
 
@@ -268,35 +268,35 @@ class SystemFunctionInstruction extends DeclInstruction implements AIAFXFunction
 
     }
 
-    _getAttributeVariableMap(): AIAFXVariableDeclMap {
+    _getAttributeVariableMap(): IAFXVariableDeclMap {
         return null;
     }
 
-    _getVaryingVariableMap(): AIAFXVariableDeclMap {
+    _getVaryingVariableMap(): IAFXVariableDeclMap {
         return null;
     }
 
-    _getSharedVariableMap(): AIAFXVariableDeclMap {
+    _getSharedVariableMap(): IAFXVariableDeclMap {
         return null;
     }
 
-    _getGlobalVariableMap(): AIAFXVariableDeclMap {
+    _getGlobalVariableMap(): IAFXVariableDeclMap {
         return null;
     }
 
-    _getUniformVariableMap(): AIAFXVariableDeclMap {
+    _getUniformVariableMap(): IAFXVariableDeclMap {
         return null;
     }
 
-    _getForeignVariableMap(): AIAFXVariableDeclMap {
+    _getForeignVariableMap(): IAFXVariableDeclMap {
         return null;
     }
 
-    _getTextureVariableMap(): AIAFXVariableDeclMap {
+    _getTextureVariableMap(): IAFXVariableDeclMap {
         return null;
     }
 
-    _getUsedComplexTypeMap(): AIAFXTypeMap {
+    _getUsedComplexTypeMap(): IAFXTypeMap {
         return null;
     }
 
@@ -332,15 +332,15 @@ class SystemFunctionInstruction extends DeclInstruction implements AIAFXFunction
         return null;
     }
 
-    _getExtSystemFunctionList(): AIAFXFunctionDeclInstruction[] {
+    _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[] {
         return this._pExtSystemFunctionList;
     }
 
-    _getExtSystemMacrosList(): AIAFXSimpleInstruction[] {
+    _getExtSystemMacrosList(): IAFXSimpleInstruction[] {
         return this._pExtSystemMacrosList;
     }
 
-    _getExtSystemTypeList(): AIAFXTypeDeclInstruction[] {
+    _getExtSystemTypeList(): IAFXTypeDeclInstruction[] {
         return this._pExtSystemTypeList;
     }
 

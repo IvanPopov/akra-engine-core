@@ -1,43 +1,45 @@
-/// <reference path="../idl/AIAFXInstruction.ts" />
+/// <reference path="../idl/IAFXInstruction.ts" />
 
-import DeclInstruction = require("fx/DeclInstruction");
+/// <reference path="DeclInstruction.ts" />
 
-class TypeDeclInstruction extends DeclInstruction implements AIAFXTypeDeclInstruction {
-    // EMPTY_OPERATOR VariableTypeInstruction
+module akra.fx {
 
-    constructor() {
-        super();
-        this._pInstructionList = [null];
-        this._eInstructionType = AEAFXInstructionTypes.k_TypeDeclInstruction;
-    }
+    export class TypeDeclInstruction extends DeclInstruction implements IAFXTypeDeclInstruction {
+        // EMPTY_OPERATOR VariableTypeInstruction
 
-    getType(): AIAFXTypeInstruction {
-        return <AIAFXTypeInstruction>this._pInstructionList[0];
-    }
-
-    clone(pRelationMap?: AIAFXInstructionMap): AIAFXTypeDeclInstruction {
-        return <AIAFXTypeDeclInstruction>super.clone(pRelationMap);
-    }
-
-    toFinalCode(): string {
-        return this.getType()._toDeclString() + ";";
-    }
-
-    getName(): string {
-        return this.getType().getName();
-    }
-
-    getRealName(): string {
-        return this.getType().getRealName();
-    }
-
-    blend(pDecl: AIAFXTypeDeclInstruction, eBlendMode: AEAFXBlendMode): AIAFXTypeDeclInstruction {
-        if (pDecl !== this) {
-            return null;
+        constructor() {
+            super();
+            this._pInstructionList = [null];
+            this._eInstructionType = EAFXInstructionTypes.k_TypeDeclInstruction;
         }
 
-        return this;
-    }
-}
+        getType(): IAFXTypeInstruction {
+            return <IAFXTypeInstruction>this._pInstructionList[0];
+        }
 
-export = TypeDeclInstruction;
+        clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction {
+            return <IAFXTypeDeclInstruction>super.clone(pRelationMap);
+        }
+
+        toFinalCode(): string {
+            return this.getType()._toDeclString() + ";";
+        }
+
+        getName(): string {
+            return this.getType().getName();
+        }
+
+        getRealName(): string {
+            return this.getType().getRealName();
+        }
+
+        blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction {
+            if (pDecl !== this) {
+                return null;
+            }
+
+            return this;
+        }
+    }
+
+}

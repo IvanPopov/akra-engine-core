@@ -1,20 +1,20 @@
-﻿/// <reference path="../idl/AIAFXInstruction.ts" />
-/// <reference path="../idl/AIMap.ts" />
+﻿/// <reference path="../idl/IAFXInstruction.ts" />
+/// <reference path="../idl/IMap.ts" />
 
 class ExtSystemDataContainer {
-    protected _pExtSystemMacrosList: AIAFXSimpleInstruction[] = null;
-    protected _pExtSystemTypeList: AIAFXTypeDeclInstruction[] = null;
-    protected _pExtSystemFunctionList: AIAFXFunctionDeclInstruction[] = null;
+    protected _pExtSystemMacrosList: IAFXSimpleInstruction[] = null;
+    protected _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
+    protected _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
 
-    get macroses(): AIAFXSimpleInstruction[] {
+    get macroses(): IAFXSimpleInstruction[] {
         return this._pExtSystemMacrosList;
     }
 
-    get types(): AIAFXTypeDeclInstruction[] {
+    get types(): IAFXTypeDeclInstruction[] {
         return this._pExtSystemTypeList;
     }
 
-    get functions(): AIAFXFunctionDeclInstruction[] {
+    get functions(): IAFXFunctionDeclInstruction[] {
         return this._pExtSystemFunctionList;
     }
 
@@ -24,7 +24,7 @@ class ExtSystemDataContainer {
         this._pExtSystemFunctionList = [];
     }
 
-    addFromFunction(pFunction: AIAFXFunctionDeclInstruction): void {
+    addFromFunction(pFunction: IAFXFunctionDeclInstruction): void {
         var pTypes = pFunction._getExtSystemTypeList();
         var pMacroses = pFunction._getExtSystemMacrosList();
         var pFunctions = pFunction._getExtSystemFunctionList();

@@ -8,7 +8,7 @@ class SemicolonStmtInstruction extends StmtInstruction {
     constructor() {
         super();
         this._pInstructionList = null;
-        this._eInstructionType = AEAFXInstructionTypes.k_SemicolonStmtInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_SemicolonStmtInstruction;
     }
 
     toFinalCode(): string {

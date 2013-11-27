@@ -39,13 +39,13 @@ module akra {
 		toString(): string;
 	
 		//when data moved in memory(in parent Hardware Buffer)
-		signal relocated(from: uint, to: uint): void;
+        relocated: ISignal<{ (pData: IVertexData, from: uint, to: uint): void; }>;
 		//when data size changed
-		signal resized(byteLength: uint): void;
+        resized: ISignal<{ (pData: IVertexData, iByteLength: uint): void; }>;
 		//when declaration changed
-		declarationChanged(decl: IVertexDeclaration): void;
+        declarationChanged: ISignal<{ (pData: IVertexData, pDecl: IVertexDeclaration): void; }>;
 		//when data has been modified
-		signal updated(): void;
+        updated: ISignal<{ (pData: IVertexData): void; }>;
 	}
 	
 }

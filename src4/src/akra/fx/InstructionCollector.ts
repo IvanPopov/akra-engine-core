@@ -4,7 +4,7 @@ class InstructionCollector extends Instruction {
     constructor() {
         super();
         this._pInstructionList = [];
-        this._eInstructionType = AEAFXInstructionTypes.k_InstructionCollector;
+        this._eInstructionType = EAFXInstructionTypes.k_InstructionCollector;
     }
 
     toFinalCode(): string {

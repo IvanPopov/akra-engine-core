@@ -1,4 +1,4 @@
-/// <reference path="../idl/AIAFXAttributeBlendContainer.ts" />
+/// <reference path="../idl/IAFXAttributeBlendContainer.ts" />
 
 import SurfaceMaterial = require("resources/SurfaceMaterial");
 
@@ -38,7 +38,7 @@ class TexcoordSwapper {
         this._sTexToTmpCode = "";
     }
 
-    generateSwapCode(pMaterial: AISurfaceMaterial, pAttrConatiner: AIAFXAttributeBlendContainer): void {
+    generateSwapCode(pMaterial: ISurfaceMaterial, pAttrConatiner: IAFXAttributeBlendContainer): void {
         this.clear();
 
         if (isNull(pMaterial)) {

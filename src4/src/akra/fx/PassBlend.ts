@@ -1,8 +1,8 @@
-/// <reference path="../idl/AERenderStates.ts" />
-/// <reference path="../idl/AIAFXPassBlend.ts" />
-/// <reference path="../idl/AIAFXComposer.ts" />
-/// <reference path="../idl/AITexture.ts" />
-/// <reference path="../idl/AIMap.ts" />
+/// <reference path="../idl/ERenderStates.ts" />
+/// <reference path="../idl/IAFXPassBlend.ts" />
+/// <reference path="../idl/IAFXComposer.ts" />
+/// <reference path="../idl/ITexture.ts" />
+/// <reference path="../idl/IMap.ts" />
 
 import logger = require("logger");
 
@@ -34,11 +34,11 @@ interface AIHashEntryMap {
 		[index: uint]: AIHashEntry;
 }
 
-class PassBlend implements AIAFXPassBlend {
+class PassBlend implements IAFXPassBlend {
     //UNIQUE();
 
-    private _pComposer: AIAFXComposer = null;
-    private _pFXMakerHashTree: HashTree<AIAFXMaker> = null;
+    private _pComposer: IAFXComposer = null;
+    private _pFXMakerHashTree: HashTree<IAFXMaker> = null;
 
     private _pExtSystemDataV: ExtSystemDataContainer = null;
     private _pComplexTypeContainerV: ComplexTypeBlendContainer = null;
@@ -48,11 +48,11 @@ class PassBlend implements AIAFXPassBlend {
     private _pGlobalContainerV: VariableBlendContainer = null;
     private _pAttributeContainerV: AttributeBlendContainer = null;
     private _pVaryingContainerV: VariableBlendContainer = null;
-    private _pVertexOutType: AIAFXTypeInstruction = null;
-    private _pUsedFunctionListV: AIAFXFunctionDeclInstruction[] = null;
+    private _pVertexOutType: IAFXTypeInstruction = null;
+    private _pUsedFunctionListV: IAFXFunctionDeclInstruction[] = null;
 
-    private _pPassFunctionListV: AIAFXFunctionDeclInstruction[] = null;
-    private _pTextureMapV: AIMap<boolean> = null;
+    private _pPassFunctionListV: IAFXFunctionDeclInstruction[] = null;
+    private _pTextureMapV: IMap<boolean> = null;
 
     private _pExtSystemDataP: ExtSystemDataContainer = null;
     private _pComplexTypeContainerP: ComplexTypeBlendContainer = null;
@@ -61,14 +61,14 @@ class PassBlend implements AIAFXPassBlend {
     private _pSharedContainerP: VariableBlendContainer = null;
     private _pGlobalContainerP: VariableBlendContainer = null;
     private _pVaryingContainerP: VariableBlendContainer = null;
-    private _pUsedFunctionListP: AIAFXFunctionDeclInstruction[] = null;
-    private _pPassFunctionListP: AIAFXFunctionDeclInstruction[] = null;
-    private _pTextureMapP: AIMap<boolean> = null;
+    private _pUsedFunctionListP: IAFXFunctionDeclInstruction[] = null;
+    private _pPassFunctionListP: IAFXFunctionDeclInstruction[] = null;
+    private _pTextureMapP: IMap<boolean> = null;
 
     private _hasEmptyVertex: boolean = true;
     private _hasEmptyPixel: boolean = true;
 
-    private _pPassStateMap: AIMap<AERenderStateValues> = null;
+    private _pPassStateMap: IMap<ERenderStateValues> = null;
 
     //Code fragments
     // private _isZeroSampler2dV: boolean = false;
@@ -108,10 +108,10 @@ class PassBlend implements AIAFXPassBlend {
     private _pTexcoordSwapper: TexcoordSwapper = null;
 
     //For speed-up
-    private _pSamplerByIdMap: AIAFXVariableDeclMap = null;
+    private _pSamplerByIdMap: IAFXVariableDeclMap = null;
     private _pSamplerIdList: uint[] = null;
 
-    private _pSamplerArrayByIdMap: AIAFXVariableDeclMap = null;
+    private _pSamplerArrayByIdMap: IAFXVariableDeclMap = null;
     private _pSamplerArrayIdList: uint[] = null;
 
     private _pPassInputForeignsHashMap: AIHashEntryMap = null;
@@ -126,7 +126,7 @@ class PassBlend implements AIAFXPassBlend {
     private static texcoordSwapper: TexcoordSwapper = null;
     private static hashMinifier: StringMinifier = null;
 
-    constructor(pComposer: AIAFXComposer) {
+    constructor(pComposer: IAFXComposer) {
         this._pComposer = pComposer;
 
         this._pFXMakerHashTree = new HashTree();
@@ -142,7 +142,7 @@ class PassBlend implements AIAFXPassBlend {
         this._pVertexOutType = Effect.getBaseVertexOutType();
         this._pUsedFunctionListV = [];
         this._pPassFunctionListV = [];
-        this._pTextureMapV = <AIMap<boolean>>{};
+        this._pTextureMapV = <IMap<boolean>>{};
 
         this._pExtSystemDataP = new ExtSystemDataContainer();
         this._pComplexTypeContainerP = new ComplexTypeBlendContainer();
@@ -153,7 +153,7 @@ class PassBlend implements AIAFXPassBlend {
         this._pVaryingContainerP = new VariableBlendContainer();
         this._pUsedFunctionListP = [];
         this._pPassFunctionListP = [];
-        this._pTextureMapP = <AIMap<boolean>>{};
+        this._pTextureMapP = <IMap<boolean>>{};
 
         this._pDefaultSamplerBlender = Composer.pDefaultSamplerBlender;
 
@@ -175,7 +175,7 @@ class PassBlend implements AIAFXPassBlend {
         this._pSurfaceMaterialHashMap = <AIHashEntryMap>{};
     }
 
-    initFromPassList(pPassList: AIAFXPassInstruction[]): boolean {
+    initFromPassList(pPassList: IAFXPassInstruction[]): boolean {
         for (var i: uint = 0; i < pPassList.length; i++) {
             if (!this.addPass(pPassList[i])) {
                 return false;
@@ -189,9 +189,9 @@ class PassBlend implements AIAFXPassBlend {
         return true;
     }
 
-    generateFXMaker(pPassInput: AIAFXPassInputBlend,
-        pSurfaceMaterial: AISurfaceMaterial,
-        pBuffer: AIBufferMap): AIAFXMaker {
+    generateFXMaker(pPassInput: IAFXPassInputBlend,
+        pSurfaceMaterial: ISurfaceMaterial,
+        pBuffer: IBufferMap): IAFXMaker {
         pPassInput.setSurfaceMaterial(pSurfaceMaterial);
 
         var iForeignPartHash: uint = this.prepareForeigns(pPassInput);
@@ -200,7 +200,7 @@ class PassBlend implements AIAFXPassBlend {
         var iBufferPartHash: uint = this.prepareBufferMap(pBuffer, false);
 
         this._pFXMakerHashTree.release();
-        var pMaker: AIAFXMaker = this._pFXMakerHashTree.next(iForeignPartHash)
+        var pMaker: IAFXMaker = this._pFXMakerHashTree.next(iForeignPartHash)
             .next(iSamplerPartHash)
             .next(iMaterialPartHash)
             .next(iBufferPartHash)
@@ -245,7 +245,7 @@ class PassBlend implements AIAFXPassBlend {
         return this.hasUniformWithNameIndex(iNameIndex);
     }
 
-    _getRenderStates(): AIMap<AERenderStateValues> {
+    _getRenderStates(): IMap<ERenderStateValues> {
         return this._pPassStateMap;
     }
 
@@ -263,18 +263,18 @@ class PassBlend implements AIAFXPassBlend {
         return true;
     }
 
-    private addPass(pPass: AIAFXPassInstruction): boolean {
-        var pVertex: AIAFXFunctionDeclInstruction = pPass.getVertexShader();
-        var pPixel: AIAFXFunctionDeclInstruction = pPass.getPixelShader();
+    private addPass(pPass: IAFXPassInstruction): boolean {
+        var pVertex: IAFXFunctionDeclInstruction = pPass.getVertexShader();
+        var pPixel: IAFXFunctionDeclInstruction = pPass.getPixelShader();
 
-        var pForeignMap: AIAFXVariableDeclMap = null;
-        var pGlobalMap: AIAFXVariableDeclMap = null;
-        var pSharedMap: AIAFXVariableDeclMap = null;
-        var pUniformMap: AIAFXVariableDeclMap = null;
-        var pTextureMap: AIAFXVariableDeclMap = null;
-        var pAttributeMap: AIAFXVariableDeclMap = null;
-        var pVaryingMap: AIAFXVariableDeclMap = null;
-        var pComplexTypeMap: AIAFXTypeMap = null;
+        var pForeignMap: IAFXVariableDeclMap = null;
+        var pGlobalMap: IAFXVariableDeclMap = null;
+        var pSharedMap: IAFXVariableDeclMap = null;
+        var pUniformMap: IAFXVariableDeclMap = null;
+        var pTextureMap: IAFXVariableDeclMap = null;
+        var pAttributeMap: IAFXVariableDeclMap = null;
+        var pVaryingMap: IAFXVariableDeclMap = null;
+        var pComplexTypeMap: IAFXTypeMap = null;
 
 
         var pForeignKeys: uint[] = null;
@@ -286,17 +286,17 @@ class PassBlend implements AIAFXPassBlend {
         var pVaryingKeys: uint[] = null;
         var pComplexTypeKeys: uint[] = null;
 
-        var pForeign: AIAFXVariableDeclInstruction = null;
-        var pGlobal: AIAFXVariableDeclInstruction = null;
-        var pShared: AIAFXVariableDeclInstruction = null;
-        var pUniform: AIAFXVariableDeclInstruction = null;
-        var pTexture: AIAFXVariableDeclInstruction = null;
-        var pAttribute: AIAFXVariableDeclInstruction = null;
-        var pVarying: AIAFXVariableDeclInstruction = null;
-        var pComplexType: AIAFXTypeInstruction = null;
+        var pForeign: IAFXVariableDeclInstruction = null;
+        var pGlobal: IAFXVariableDeclInstruction = null;
+        var pShared: IAFXVariableDeclInstruction = null;
+        var pUniform: IAFXVariableDeclInstruction = null;
+        var pTexture: IAFXVariableDeclInstruction = null;
+        var pAttribute: IAFXVariableDeclInstruction = null;
+        var pVarying: IAFXVariableDeclInstruction = null;
+        var pComplexType: IAFXTypeInstruction = null;
 
-        var pUsedFunctionList: AIAFXFunctionDeclInstruction[] = null;
-        var pUsedFunction: AIAFXFunctionDeclInstruction = null;
+        var pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
+        var pUsedFunction: IAFXFunctionDeclInstruction = null;
 
         if (!isNull(pVertex)) {
             this._hasEmptyVertex = false;
@@ -312,7 +312,7 @@ class PassBlend implements AIAFXPassBlend {
                 for (var i: uint = 0; i < pForeignKeys.length; i++) {
                     pForeign = pForeignMap[pForeignKeys[i]];
 
-                    if (!this._pForeignContainerV.addVariable(pForeign, AEAFXBlendMode.k_Foreign)) {
+                    if (!this._pForeignContainerV.addVariable(pForeign, EAFXBlendMode.k_Foreign)) {
                         logger.error("Could not add foreign variable");
                         return false;
                     }
@@ -327,7 +327,7 @@ class PassBlend implements AIAFXPassBlend {
                 for (var i: uint = 0; i < pGlobalKeys.length; i++) {
                     pGlobal = pGlobalMap[pGlobalKeys[i]];
 
-                    if (!this._pGlobalContainerV.addVariable(pGlobal, AEAFXBlendMode.k_Global)) {
+                    if (!this._pGlobalContainerV.addVariable(pGlobal, EAFXBlendMode.k_Global)) {
                         logger.error("Could not add global variable");
                         return false;
                     }
@@ -342,7 +342,7 @@ class PassBlend implements AIAFXPassBlend {
                 for (var i: uint = 0; i < pSharedKeys.length; i++) {
                     pShared = pSharedMap[pSharedKeys[i]];
 
-                    if (!this._pSharedContainerV.addVariable(pShared, AEAFXBlendMode.k_Shared)) {
+                    if (!this._pSharedContainerV.addVariable(pShared, EAFXBlendMode.k_Shared)) {
                         logger.error("Could not add shared variable");
                         return false;
                     }
@@ -361,7 +361,7 @@ class PassBlend implements AIAFXPassBlend {
                         continue;
                     }
 
-                    if (!this._pUniformContainerV.addVariable(pUniform, AEAFXBlendMode.k_Uniform)) {
+                    if (!this._pUniformContainerV.addVariable(pUniform, EAFXBlendMode.k_Uniform)) {
                         logger.error("Could not add uniform variable");
                         return false;
                     }
@@ -408,7 +408,7 @@ class PassBlend implements AIAFXPassBlend {
                 for (var i: uint = 0; i < pVaryingKeys.length; i++) {
                     pVarying = pVaryingMap[pVaryingKeys[i]];
 
-                    if (!this._pVaryingContainerV.addVariable(pVarying, AEAFXBlendMode.k_Varying)) {
+                    if (!this._pVaryingContainerV.addVariable(pVarying, EAFXBlendMode.k_Varying)) {
                         logger.error("Could not add varying variable");
                         return false;
                     }
@@ -443,10 +443,10 @@ class PassBlend implements AIAFXPassBlend {
                 }
             }
 
-            var pVertexOut: AIAFXTypeInstruction = pVertex.getReturnType().getBaseType();
+            var pVertexOut: IAFXTypeInstruction = pVertex.getReturnType().getBaseType();
 
             if (pVertexOut.isComplex()) {
-                this._pVertexOutType = this._pVertexOutType.blend(pVertexOut, AEAFXBlendMode.k_VertexOut);
+                this._pVertexOutType = this._pVertexOutType.blend(pVertexOut, EAFXBlendMode.k_VertexOut);
             }
             this._pPassFunctionListV.push(pVertex);
         }
@@ -464,7 +464,7 @@ class PassBlend implements AIAFXPassBlend {
                 for (var i: uint = 0; i < pForeignKeys.length; i++) {
                     pForeign = pForeignMap[pForeignKeys[i]];
 
-                    if (!this._pForeignContainerP.addVariable(pForeign, AEAFXBlendMode.k_Foreign)) {
+                    if (!this._pForeignContainerP.addVariable(pForeign, EAFXBlendMode.k_Foreign)) {
                         logger.error("Could not add foreign variable");
                         return false;
                     }
@@ -479,7 +479,7 @@ class PassBlend implements AIAFXPassBlend {
                 for (var i: uint = 0; i < pGlobalKeys.length; i++) {
                     pGlobal = pGlobalMap[pGlobalKeys[i]];
 
-                    if (!this._pGlobalContainerP.addVariable(pGlobal, AEAFXBlendMode.k_Global)) {
+                    if (!this._pGlobalContainerP.addVariable(pGlobal, EAFXBlendMode.k_Global)) {
                         logger.error("Could not add global variable");
                         return false;
                     }
@@ -494,7 +494,7 @@ class PassBlend implements AIAFXPassBlend {
                 for (var i: uint = 0; i < pSharedKeys.length; i++) {
                     pShared = pSharedMap[pSharedKeys[i]];
 
-                    if (!this._pSharedContainerP.addVariable(pShared, AEAFXBlendMode.k_Shared)) {
+                    if (!this._pSharedContainerP.addVariable(pShared, EAFXBlendMode.k_Shared)) {
                         logger.error("Could not add shared variable");
                         return false;
                     }
@@ -513,7 +513,7 @@ class PassBlend implements AIAFXPassBlend {
                         continue;
                     }
 
-                    if (!this._pUniformContainerP.addVariable(pUniform, AEAFXBlendMode.k_Uniform)) {
+                    if (!this._pUniformContainerP.addVariable(pUniform, EAFXBlendMode.k_Uniform)) {
                         logger.error("Could not add uniform variable");
                         return false;
                     }
@@ -544,7 +544,7 @@ class PassBlend implements AIAFXPassBlend {
                 for (var i: uint = 0; i < pVaryingKeys.length; i++) {
                     pVarying = pVaryingMap[pVaryingKeys[i]];
 
-                    if (!this._pVaryingContainerP.addVariable(pVarying, AEAFXBlendMode.k_Varying)) {
+                    if (!this._pVaryingContainerP.addVariable(pVarying, EAFXBlendMode.k_Varying)) {
                         logger.error("Could not add varying variable");
                         return false;
                     }
@@ -592,7 +592,7 @@ class PassBlend implements AIAFXPassBlend {
             return true;
         }
 
-        if (!this.finalizeComplexTypeForShader(AEFunctionType.k_Vertex)) {
+        if (!this.finalizeComplexTypeForShader(EFunctionType.k_Vertex)) {
             return false;
         }
 
@@ -607,27 +607,27 @@ class PassBlend implements AIAFXPassBlend {
             return true;
         }
 
-        if (!this.finalizeComplexTypeForShader(AEFunctionType.k_Pixel)) {
+        if (!this.finalizeComplexTypeForShader(EFunctionType.k_Pixel)) {
             return false;
         }
 
         return true;
     }
 
-    private enableVaringPrefixes(eType: AEFunctionType, bEnabled: boolean): void {
+    private enableVaringPrefixes(eType: EFunctionType, bEnabled: boolean): void {
         var pVars: VariableBlendContainer = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pVars = this._pVaryingContainerV;
         }
         else {
             pVars = this._pVaryingContainerP;
         }
 
-        var pVarInfoList: AIAFXVariableBlendInfo[] = pVars.varsInfo;
+        var pVarInfoList: IAFXVariableBlendInfo[] = pVars.varsInfo;
 
         for (var i: uint = 0; i < pVarInfoList.length; i++) {
-            var pVarList: AIAFXVariableDeclInstruction[] = pVarInfoList[i].varList;
+            var pVarList: IAFXVariableDeclInstruction[] = pVarInfoList[i].varList;
 
             for (var j: uint = 0; j < pVarList.length; j++) {
                 pVarList[j]._markAsVarying(bEnabled);
@@ -635,18 +635,18 @@ class PassBlend implements AIAFXPassBlend {
         }
     }
 
-    private finalizeComplexTypeForShader(eType: AEFunctionType): boolean {
+    private finalizeComplexTypeForShader(eType: EFunctionType): boolean {
         var pTypeContainer: ComplexTypeBlendContainer = null;
 
         var pUniformContainer: VariableBlendContainer = null;
         var pGlobalContainer: VariableBlendContainer = null;
         var pSharedContainer: VariableBlendContainer = null;
-        var pUsedFunctions: AIAFXFunctionDeclInstruction[] = null;
+        var pUsedFunctions: IAFXFunctionDeclInstruction[] = null;
 
         var pAttributeContainer: AttributeBlendContainer = null;
 
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pTypeContainer = this._pComplexTypeContainerV;
             pUniformContainer = this._pUniformContainerV;
             pGlobalContainer = this._pGlobalContainerV;
@@ -654,7 +654,7 @@ class PassBlend implements AIAFXPassBlend {
             pUsedFunctions = this._pUsedFunctionListV;
             pAttributeContainer = this._pAttributeContainerV;
         }
-        else if (eType === AEFunctionType.k_Pixel) {
+        else if (eType === EFunctionType.k_Pixel) {
             pTypeContainer = this._pComplexTypeContainerP;
             pUniformContainer = this._pUniformContainerP;
             pGlobalContainer = this._pGlobalContainerP;
@@ -669,12 +669,12 @@ class PassBlend implements AIAFXPassBlend {
             return false;
         }
 
-        // if(eType === AEFunctionType.k_Vertex){
+        // if(eType === EFunctionType.k_Vertex){
         // 	pTypeContainer.addComplexType(this._pVertexOutType);
         // }
 
         for (var i: uint = 0; i < pUsedFunctions.length; i++) {
-            var pReturnBaseType: AIAFXTypeInstruction = pUsedFunctions[i].getReturnType().getBaseType();
+            var pReturnBaseType: IAFXTypeInstruction = pUsedFunctions[i].getReturnType().getBaseType();
             if (pReturnBaseType.isComplex()) {
                 if (!pTypeContainer.addComplexType(pReturnBaseType)) {
                     return false;
@@ -695,16 +695,16 @@ class PassBlend implements AIAFXPassBlend {
             this._pUniformContainerP.hasVariableWithNameIndex(iNameIndex);
     }
 
-    // private hasUniform(pVar: AIAFXVariableDeclInstruction): boolean {
+    // private hasUniform(pVar: IAFXVariableDeclInstruction): boolean {
     // 	return this.hasUniformWithName(pVar.getRealName());
     // }
 
-    // private getUniformByName(sName: string): AIAFXVariableDeclInstruction {
+    // private getUniformByName(sName: string): IAFXVariableDeclInstruction {
     // 	return this._pUniformContainerV.getVariableByName(sName) ||
     // 		   this._pUniformContainerP.getVariableByName(sName);
     // }
 
-    private prepareForeigns(pPassInput: AIAFXPassInputBlend): uint {
+    private prepareForeigns(pPassInput: IAFXPassInputBlend): uint {
         var iPassInputId: uint = pPassInput.getGuid();
         var pForignsHashEntry: AIHashEntry = this._pPassInputForeignsHashMap[iPassInputId];
 
@@ -714,7 +714,7 @@ class PassBlend implements AIAFXPassBlend {
         else {
             var pForeignValues: any = pPassInput.foreigns;
             var sHash: string = "";
-            var pVarInfoList: AIAFXVariableBlendInfo[] = this._pForeignContainerV.varsInfo;
+            var pVarInfoList: IAFXVariableBlendInfo[] = this._pForeignContainerV.varsInfo;
 
             for (var i: uint = 0; i < pVarInfoList.length; i++) {
                 sHash += pForeignValues[pVarInfoList[i].nameIndex].toString() + "%";
@@ -742,7 +742,7 @@ class PassBlend implements AIAFXPassBlend {
         }
     }
 
-    private prepareSamplers(pPassInput: AIAFXPassInputBlend, isForce: boolean): uint {
+    private prepareSamplers(pPassInput: IAFXPassInputBlend, isForce: boolean): uint {
         this._isSamplersPrepared = false;
 
         var iPassInputId: uint = pPassInput.getGuid();
@@ -757,15 +757,15 @@ class PassBlend implements AIAFXPassBlend {
         pBlender.clear();
         //Gum samplers
 
-        var pSamplers: AIAFXSamplerStateMap = pPassInput.samplers;
+        var pSamplers: IAFXSamplerStateMap = pPassInput.samplers;
         var pSamplersId: uint[] = this._pSamplerIdList;
 
         for (var i: uint = 0; i < pSamplersId.length; i++) {
-            var pSampler: AIAFXVariableDeclInstruction = this._pSamplerByIdMap[pSamplersId[i]];
+            var pSampler: IAFXVariableDeclInstruction = this._pSamplerByIdMap[pSamplersId[i]];
             var iNameIndex: uint = pSampler._getNameIndex();
 
-            var pSamplerState: AIAFXSamplerState = pSamplers[iNameIndex];
-            var pTexture: AITexture = pPassInput._getTextureForSamplerState(pSamplerState);
+            var pSamplerState: IAFXSamplerState = pSamplers[iNameIndex];
+            var pTexture: ITexture = pPassInput._getTextureForSamplerState(pSamplerState);
 
             if (isNull(pTexture)) {
                 pBlender.addObjectToSlotById(pSampler, SamplerBlender.ZERO_SLOT);
@@ -777,16 +777,16 @@ class PassBlend implements AIAFXPassBlend {
         }
 
         //Gum sampler arrays
-        var pSamplerArrays: AIAFXSamplerStateListMap = pPassInput.samplerArrays;
+        var pSamplerArrays: IAFXSamplerStateListMap = pPassInput.samplerArrays;
         var pSamplerArraysId: uint[] = this._pSamplerArrayIdList;
 
         for (var i: uint = 0; i < pSamplerArraysId.length; i++) {
-            var pSamplerArray: AIAFXVariableDeclInstruction = this._pSamplerArrayByIdMap[pSamplerArraysId[i]];
+            var pSamplerArray: IAFXVariableDeclInstruction = this._pSamplerArrayByIdMap[pSamplerArraysId[i]];
             var iNameIndex: uint = pSamplerArray._getNameIndex();
 
-            var pSamplerStateList: AIAFXSamplerState[] = pSamplerArrays[iNameIndex];
+            var pSamplerStateList: IAFXSamplerState[] = pSamplerArrays[iNameIndex];
             var isNeedToCollapse: boolean = true;
-            var pTexture: AITexture = null;
+            var pTexture: ITexture = null;
             var iLength: uint = pPassInput.samplerArrayLength[iNameIndex];
 
             for (var j: uint = 0; j < iLength; j++) {
@@ -833,7 +833,7 @@ class PassBlend implements AIAFXPassBlend {
         return pSamplersHashEntry.hash;
     }
 
-    private prepareSurfaceMaterial(pMaterial: AISurfaceMaterial, isForce: boolean): uint {
+    private prepareSurfaceMaterial(pMaterial: ISurfaceMaterial, isForce: boolean): uint {
         this._isSurfaceMaterialPrepared = false;
 
         if (isNull(pMaterial)) {
@@ -873,7 +873,7 @@ class PassBlend implements AIAFXPassBlend {
         }
     }
 
-    private prepareBufferMap(pMap: AIBufferMap, isForce: boolean): uint {
+    private prepareBufferMap(pMap: IBufferMap, isForce: boolean): uint {
         this._isBufferMapPrepared = false;
 
         var iBufferMapHash: uint = 0;
@@ -907,17 +907,17 @@ class PassBlend implements AIAFXPassBlend {
         return iBufferMapHash;
     }
 
-    private swapTexcoords(pMaterial: AISurfaceMaterial): void {
+    private swapTexcoords(pMaterial: ISurfaceMaterial): void {
         this._pTexcoordSwapper.generateSwapCode(pMaterial,
             this._pAttributeContainerV);
     }
 
-    private isSamplerUsedInShader(pSampler: AIAFXVariableDeclInstruction, eType: AEFunctionType): boolean {
-        return (eType === AEFunctionType.k_Vertex && this._pUniformContainerV.hasVariable(pSampler)) ||
-            (eType === AEFunctionType.k_Pixel && this._pUniformContainerP.hasVariable(pSampler));
+    private isSamplerUsedInShader(pSampler: IAFXVariableDeclInstruction, eType: EFunctionType): boolean {
+        return (eType === EFunctionType.k_Vertex && this._pUniformContainerV.hasVariable(pSampler)) ||
+            (eType === EFunctionType.k_Pixel && this._pUniformContainerP.hasVariable(pSampler));
     }
 
-    private applyForeigns(pPassInput: AIAFXPassInputBlend): void {
+    private applyForeigns(pPassInput: IAFXPassInputBlend): void {
         var pForeignValues: any = pPassInput.foreigns;
         var pKeys: uint[] = pPassInput.foreignKeys;
 
@@ -926,7 +926,7 @@ class PassBlend implements AIAFXPassBlend {
 
         for (var i: uint = 0; i < pKeys.length; i++) {
             var iNameIndex: uint = pKeys[i];
-            var pVarList: AIAFXVariableDeclInstruction[] = null;
+            var pVarList: IAFXVariableDeclInstruction[] = null;
             var iVarBlendIndex: int = 0;
 
             iVarBlendIndex = pForeignsV.getKeyIndexByNameIndex(iNameIndex);
@@ -953,22 +953,22 @@ class PassBlend implements AIAFXPassBlend {
         var pForeignsV = this._pForeignContainerV;
         var pForeignsP = this._pForeignContainerP;
 
-        var pVarInfoList: AIAFXVariableBlendInfo[] = pForeignsV.varsInfo;
+        var pVarInfoList: IAFXVariableBlendInfo[] = pForeignsV.varsInfo;
 
         for (var i: uint = 0; i < pVarInfoList.length; i++) {
-            var pVarInfo: AIAFXVariableBlendInfo = pVarInfoList[i];
-            var pVarList: AIAFXVariableDeclInstruction[] = pVarInfo.varList;
+            var pVarInfo: IAFXVariableBlendInfo = pVarInfoList[i];
+            var pVarList: IAFXVariableDeclInstruction[] = pVarInfo.varList;
 
             for (var j: uint = 0; j < pVarList.length; j++) {
                 pVarList[j].setRealName(pVarInfo.name);
             }
         }
 
-        var pVarInfoList: AIAFXVariableBlendInfo[] = pForeignsP.varsInfo;
+        var pVarInfoList: IAFXVariableBlendInfo[] = pForeignsP.varsInfo;
 
         for (var i: uint = 0; i < pVarInfoList.length; i++) {
-            var pVarInfo: AIAFXVariableBlendInfo = pVarInfoList[i];
-            var pVarList: AIAFXVariableDeclInstruction[] = pVarInfo.varList;
+            var pVarInfo: IAFXVariableBlendInfo = pVarInfoList[i];
+            var pVarList: IAFXVariableDeclInstruction[] = pVarInfo.varList;
 
             for (var j: uint = 0; j < pVarList.length; j++) {
                 pVarList[j].setRealName(pVarInfo.name);
@@ -989,7 +989,7 @@ class PassBlend implements AIAFXPassBlend {
 
     private generateCodeForVertex(): string {
         var sCode: string = "";
-        var eType: AEFunctionType = AEFunctionType.k_Vertex;
+        var eType: EFunctionType = EFunctionType.k_Vertex;
 
 
         sCode = this.generateSystemExtBlock(eType) + "\n" +
@@ -1039,7 +1039,7 @@ class PassBlend implements AIAFXPassBlend {
         }
 
         var sCode: string = "";
-        var eType: AEFunctionType = AEFunctionType.k_Pixel;
+        var eType: EFunctionType = EFunctionType.k_Pixel;
 
 
         this.enableVaringPrefixes(eType, true);
@@ -1104,7 +1104,7 @@ class PassBlend implements AIAFXPassBlend {
         var sSamplerName: string = "";
 
         for (var i: uint = 0; i < iTotalSlots; i++) {
-            var pSamplers: ObjectArray<AIAFXVariableDeclInstruction> = pSamplerBlender.getSamplersBySlot(i);
+            var pSamplers: ObjectArray<IAFXVariableDeclInstruction> = pSamplerBlender.getSamplersBySlot(i);
 
             isInVertex = false;
             isInPixel = false;
@@ -1112,7 +1112,7 @@ class PassBlend implements AIAFXPassBlend {
             sSamplerName = "as" + i.toString();
 
             for (var j: int = 0; j < pSamplers.length; j++) {
-                var pSampler: AIAFXVariableDeclInstruction = pSamplers.value(j);
+                var pSampler: IAFXVariableDeclInstruction = pSamplers.value(j);
                 var iNameIndex: uint = pSampler._getNameIndex();
                 var iIndexForSamplerV: int = this._pUniformContainerV.getKeyIndexByNameIndex(iNameIndex);
                 var iIndexForSamplerP: int = this._pUniformContainerP.getKeyIndexByNameIndex(iNameIndex);
@@ -1193,21 +1193,21 @@ class PassBlend implements AIAFXPassBlend {
         pSamplerBlender.clearSamplerNames();
     }
 
-    private static fnSamplerReducer(pSamplerVar: AIAFXVariableDeclInstruction): void {
+    private static fnSamplerReducer(pSamplerVar: IAFXVariableDeclInstruction): void {
         pSamplerVar.defineByZero(true);
     }
 
     private reduceAttributes(): void {
         var pAttributeContainer: AttributeBlendContainer = this._pAttributeContainerV;
-        var pAttrInfoList: AIAFXVariableBlendInfo[] = pAttributeContainer.attrsInfo;
+        var pAttrInfoList: IAFXVariableBlendInfo[] = pAttributeContainer.attrsInfo;
 
         var nPreparedBufferSlots: int = -1;
         var nPreparedAttributeSlots: int = -1;
 
         for (var i: uint = 0; i < pAttrInfoList.length; i++) {
             var iSemanticIndex: uint = i;
-            var pAttrInfo: AIAFXVariableBlendInfo = pAttrInfoList[iSemanticIndex];
-            var pAttributes: AIAFXVariableDeclInstruction[] = pAttributeContainer.getAttributeListBySemanticIndex(iSemanticIndex);
+            var pAttrInfo: IAFXVariableBlendInfo = pAttrInfoList[iSemanticIndex];
+            var pAttributes: IAFXVariableDeclInstruction[] = pAttributeContainer.getAttributeListBySemanticIndex(iSemanticIndex);
             var iSlot: uint = pAttributeContainer.getSlotBySemanticIndex(iSemanticIndex);
             var iBufferSlot: uint = -1;
             var sAttrName: string = "";
@@ -1229,7 +1229,7 @@ class PassBlend implements AIAFXPassBlend {
                     var sSamplerBufferName: string = "abs" + iBufferSlot.toString();
                     var sHeaderBufferName: string = "abh" + iBufferSlot.toString();
 
-                    var pBufferVar: AIAFXVariableDeclInstruction = null;
+                    var pBufferVar: IAFXVariableDeclInstruction = null;
 
                     for (var j: uint = 0; j < pAttributes.length; j++) {
                         pBufferVar = pAttributes[j].getType().getVideoBuffer();
@@ -1237,7 +1237,7 @@ class PassBlend implements AIAFXPassBlend {
                     }
 
                     if (iBufferSlot > nPreparedBufferSlots) {
-                        var pBufferVar: AIAFXVariableDeclInstruction = pAttributes[0].getType().getVideoBuffer();
+                        var pBufferVar: IAFXVariableDeclInstruction = pAttributes[0].getType().getVideoBuffer();
                         this._sAttrBufferDeclCode = pBufferVar.toFinalCode() + ";\n";
                         this._sAttrBufferInitCode = pBufferVar._getVideoBufferInitExpr().toFinalCode() + ";\n";
                         nPreparedBufferSlots++;
@@ -1254,15 +1254,15 @@ class PassBlend implements AIAFXPassBlend {
             }
 
             // 3) add afx attributes 
-            var pAttribute: AIAFXVariableDeclInstruction = pAttributeContainer.getAttributeBySemanticIndex(iSemanticIndex);
-            var pAttributeType: AIAFXVariableTypeInstruction = pAttribute.getType();
+            var pAttribute: IAFXVariableDeclInstruction = pAttributeContainer.getAttributeBySemanticIndex(iSemanticIndex);
+            var pAttributeType: IAFXVariableTypeInstruction = pAttribute.getType();
 
             this._sAFXAttrDeclCode += pAttribute.toFinalCode() + ";\n";
 
             if (pAttributeType.isStrictPointer() ||
                 (pAttributeType.isPointer() && iBufferSlot >= 0)) {
 
-                var pAttrSubDecls: AIAFXVariableDeclInstruction[] = pAttribute.getSubVarDecls();
+                var pAttrSubDecls: IAFXVariableDeclInstruction[] = pAttribute.getSubVarDecls();
 
                 for (var j: uint = 0; j < pAttrSubDecls.length; j++) {
                     this._sAFXAttrDeclCode += pAttrSubDecls[j].toFinalCode() + ";\n";
@@ -1281,10 +1281,10 @@ class PassBlend implements AIAFXPassBlend {
         }
     }
 
-    private generateSystemExtBlock(eType: AEFunctionType): string {
+    private generateSystemExtBlock(eType: EFunctionType): string {
         var pExtBlock: ExtSystemDataContainer = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pExtBlock = this._pExtSystemDataV;
             if (this._sSystemExtBlockCodeV !== "") {
                 return this._sSystemExtBlockCodeV;
@@ -1316,7 +1316,7 @@ class PassBlend implements AIAFXPassBlend {
         }
 
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             this._sSystemExtBlockCodeV = sCode;
         }
         else {
@@ -1330,10 +1330,10 @@ class PassBlend implements AIAFXPassBlend {
         return sCode;
     }
 
-    private generateTypeDels(eType: AEFunctionType): string {
+    private generateTypeDels(eType: EFunctionType): string {
         var pTypeBlock: ComplexTypeBlendContainer = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pTypeBlock = this._pComplexTypeContainerV;
         }
         else {
@@ -1352,10 +1352,10 @@ class PassBlend implements AIAFXPassBlend {
         return sCode;
     }
 
-    private generateFunctionDefenitions(eType: AEFunctionType): string {
-        var pFunctions: AIAFXFunctionDeclInstruction[] = null;
+    private generateFunctionDefenitions(eType: EFunctionType): string {
+        var pFunctions: IAFXFunctionDeclInstruction[] = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pFunctions = this._pUsedFunctionListV;
             if (this._sFunctionDefCodeV !== "") {
                 return this._sFunctionDefCodeV;
@@ -1374,7 +1374,7 @@ class PassBlend implements AIAFXPassBlend {
             sCode += pFunctions[i].toFinalDefCode() + ";\n";
         }
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             this._sFunctionDefCodeV = sCode;
         }
         else {
@@ -1384,10 +1384,10 @@ class PassBlend implements AIAFXPassBlend {
         return sCode;
     }
 
-    private generateSharedVars(eType: AEFunctionType): string {
+    private generateSharedVars(eType: EFunctionType): string {
         var pVars: VariableBlendContainer = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pVars = this._pSharedContainerV;
             if (this._sSharedVarCodeV !== "") {
                 return this._sSharedVarCodeV;
@@ -1401,13 +1401,13 @@ class PassBlend implements AIAFXPassBlend {
         }
 
         var sCode: string = "";
-        var pVarInfoList: AIAFXVariableBlendInfo[] = pVars.varsInfo;
+        var pVarInfoList: IAFXVariableBlendInfo[] = pVars.varsInfo;
 
         for (var i: uint = 0; i < pVarInfoList.length; i++) {
             sCode += pVars.getDeclCodeForVar(i, true) + ";\n";
         }
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             this._sSharedVarCodeV = sCode;
         }
         else {
@@ -1425,10 +1425,10 @@ class PassBlend implements AIAFXPassBlend {
         return this._sVertexOutDeclCode;
     }
 
-    private generateVaryings(eType: AEFunctionType): string {
+    private generateVaryings(eType: EFunctionType): string {
         var pVars: VariableBlendContainer = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pVars = this._pVaryingContainerV;
 
             if (this._sVaryingDeclCodeV !== "") {
@@ -1443,13 +1443,13 @@ class PassBlend implements AIAFXPassBlend {
         }
 
         var sCode: string = "";
-        var pVarInfoList: AIAFXVariableBlendInfo[] = pVars.varsInfo;
+        var pVarInfoList: IAFXVariableBlendInfo[] = pVars.varsInfo;
 
         for (var i: int = 0; i < pVarInfoList.length; i++) {
             sCode += "varying " + pVars.getDeclCodeForVar(i, false) + ";\n";
         }
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             this._sVaryingDeclCodeV = sCode;
         }
         else {
@@ -1459,8 +1459,8 @@ class PassBlend implements AIAFXPassBlend {
         return sCode;
     }
 
-    private generateUniformSamplers(eType: AEFunctionType): string {
-        if (eType === AEFunctionType.k_Vertex) {
+    private generateUniformSamplers(eType: EFunctionType): string {
+        if (eType === EFunctionType.k_Vertex) {
             return this._sUniformSamplerCodeV;
         }
         else {
@@ -1468,10 +1468,10 @@ class PassBlend implements AIAFXPassBlend {
         }
     }
 
-    private generateUniformVars(eType: AEFunctionType): string {
+    private generateUniformVars(eType: EFunctionType): string {
         var pVars: VariableBlendContainer = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pVars = this._pUniformContainerV;
         }
         else {
@@ -1479,11 +1479,11 @@ class PassBlend implements AIAFXPassBlend {
         }
 
         var sCode: string = "";
-        var pVarInfoList: AIAFXVariableBlendInfo[] = pVars.varsInfo;
+        var pVarInfoList: IAFXVariableBlendInfo[] = pVars.varsInfo;
 
         for (var i: uint = 0; i < pVarInfoList.length; i++) {
-            var pVar: AIAFXVariableDeclInstruction = pVars.getVariable(i);
-            var pType: AIAFXVariableTypeInstruction = pVars.getBlendType(i);
+            var pVar: IAFXVariableDeclInstruction = pVars.getVariable(i);
+            var pType: IAFXVariableTypeInstruction = pVars.getBlendType(i);
 
             if (pType.isSampler() &&
                 (!pType.isArray() || pVar.isDefinedByZero() || pVar._isCollapsed())) {
@@ -1500,10 +1500,10 @@ class PassBlend implements AIAFXPassBlend {
         return this._sAttrBufferDeclCode;
     }
 
-    private generateGlobalVars(eType: AEFunctionType): string {
+    private generateGlobalVars(eType: EFunctionType): string {
         var pVars: VariableBlendContainer = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pVars = this._pGlobalContainerV;
         }
         else {
@@ -1511,7 +1511,7 @@ class PassBlend implements AIAFXPassBlend {
         }
 
         var sCode: string = "";
-        var pVarInfoList: AIAFXVariableBlendInfo[] = pVars.varsInfo;
+        var pVarInfoList: IAFXVariableBlendInfo[] = pVars.varsInfo;
 
         for (var i: uint = 0; i < pVarInfoList.length; i++) {
             sCode += pVars.getDeclCodeForVar(i, true) + ";\n";
@@ -1520,10 +1520,10 @@ class PassBlend implements AIAFXPassBlend {
         return sCode;
     }
 
-    private generateFunctions(eType: AEFunctionType): string {
-        var pFunctions: AIAFXFunctionDeclInstruction[] = null;
+    private generateFunctions(eType: EFunctionType): string {
+        var pFunctions: IAFXFunctionDeclInstruction[] = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pFunctions = this._pUsedFunctionListV;
         }
         else {
@@ -1539,10 +1539,10 @@ class PassBlend implements AIAFXPassBlend {
         return sCode;
     }
 
-    private generatePassFunctions(eType: AEFunctionType): string {
-        var pFunctions: AIAFXFunctionDeclInstruction[] = null;
+    private generatePassFunctions(eType: EFunctionType): string {
+        var pFunctions: IAFXFunctionDeclInstruction[] = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pFunctions = this._pPassFunctionListV;
         }
         else {
@@ -1580,10 +1580,10 @@ class PassBlend implements AIAFXPassBlend {
             this._pTexcoordSwapper.getTecoordSwapCode();
     }
 
-    private generatePassFunctionCall(eType: AEFunctionType): string {
-        var pFunctions: AIAFXFunctionDeclInstruction[] = null;
+    private generatePassFunctionCall(eType: EFunctionType): string {
+        var pFunctions: IAFXFunctionDeclInstruction[] = null;
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             pFunctions = this._pPassFunctionListV;
             if (this._sPassFunctionCallCodeV !== "") {
                 return this._sPassFunctionCallCodeV;
@@ -1602,7 +1602,7 @@ class PassBlend implements AIAFXPassBlend {
             sCode += pFunctions[i].getRealName() + "();\n";
         }
 
-        if (eType === AEFunctionType.k_Vertex) {
+        if (eType === EFunctionType.k_Vertex) {
             this._sPassFunctionCallCodeV = sCode;
         }
         else {
@@ -1619,7 +1619,7 @@ class PassBlend implements AIAFXPassBlend {
         }
 
         var pVars: VariableBlendContainer = this._pVaryingContainerV;
-        var pVarInfoList: AIAFXVariableBlendInfo[] = pVars.varsInfo;
+        var pVarInfoList: IAFXVariableBlendInfo[] = pVars.varsInfo;
         var sCode: string = "";
 
         sCode += "gl_Position=Out.POSITION;\ngl_PointSize=Out.PSIZE;\n";
@@ -1636,25 +1636,25 @@ class PassBlend implements AIAFXPassBlend {
 
 
     private prepareFastObjects(): void {
-        this.prepareFastSamplers(AEFunctionType.k_Vertex);
-        this.prepareFastSamplers(AEFunctionType.k_Pixel);
+        this.prepareFastSamplers(EFunctionType.k_Vertex);
+        this.prepareFastSamplers(EFunctionType.k_Pixel);
     }
 
-    private prepareFastSamplers(eType: AEFunctionType): void {
+    private prepareFastSamplers(eType: EFunctionType): void {
         if (isNull(this._pSamplerByIdMap)) {
-            this._pSamplerByIdMap = <AIAFXVariableDeclMap>{};
+            this._pSamplerByIdMap = <IAFXVariableDeclMap>{};
             this._pSamplerIdList = [];
 
-            this._pSamplerArrayByIdMap = <AIAFXVariableDeclMap>{};
+            this._pSamplerArrayByIdMap = <IAFXVariableDeclMap>{};
             this._pSamplerArrayIdList = [];
         }
 
-        var pContainer: VariableBlendContainer = eType === AEFunctionType.k_Vertex ?
+        var pContainer: VariableBlendContainer = eType === EFunctionType.k_Vertex ?
             this._pUniformContainerV : this._pUniformContainerP;
-        var pVarInfoList: AIAFXVariableBlendInfo[] = pContainer.varsInfo;
+        var pVarInfoList: IAFXVariableBlendInfo[] = pContainer.varsInfo;
 
         for (var i: uint = 0; i < pVarInfoList.length; i++) {
-            var pVar: AIAFXVariableDeclInstruction = pContainer.getVariable(i);
+            var pVar: IAFXVariableDeclInstruction = pContainer.getVariable(i);
 
             if (pVar.getType().isSampler()) {
                 var id: uint = pVar._getInstructionID();

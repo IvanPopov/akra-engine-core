@@ -1,11 +1,11 @@
-/// <reference path="../idl/AIAFXEffect.ts" />
-/// <reference path="../idl/AIParser.ts" />
-/// <reference path="../idl/AIAFXInstruction.ts" />
-/// <reference path="../idl/AIAFXComposer.ts" />
-/// <reference path="../idl/AIAFXComponent.ts" />
-/// <reference path="../idl/AEEffectErrors.ts" />
-/// <reference path="../idl/AIScope.ts" />
-/// <reference path="../idl/AIMap.ts" />
+/// <reference path="../idl/IAFXEffect.ts" />
+/// <reference path="../idl/IParser.ts" />
+/// <reference path="../idl/IAFXInstruction.ts" />
+/// <reference path="../idl/IAFXComposer.ts" />
+/// <reference path="../idl/IAFXComponent.ts" />
+/// <reference path="../idl/EEffectErrors.ts" />
+/// <reference path="../idl/IScope.ts" />
+/// <reference path="../idl/IMap.ts" />
 
 import time = require("time");
 import math = require("math");
@@ -85,51 +85,51 @@ interface SystemFunctionMap {
 }
 
 interface TechniqueMap {
-		[sTechniqueName: string]: AIAFXTechniqueInstruction;
+		[sTechniqueName: string]: IAFXTechniqueInstruction;
 }
 
-class Effect implements AIAFXEffect {
-    private _pComposer: AIAFXComposer = null;
+class Effect implements IAFXEffect {
+    private _pComposer: IAFXComposer = null;
 
-    private _pParseTree: AIParseTree = null;
-    private _pAnalyzedNode: AIParseNode = null;
+    private _pParseTree: IParseTree = null;
+    private _pAnalyzedNode: IParseNode = null;
 
     private _pEffectScope: ProgramScope = null;
-    private _pCurrentInstruction: AIAFXInstruction = null;
-    private _pCurrentFunction: AIAFXFunctionDeclInstruction = null;
+    private _pCurrentInstruction: IAFXInstruction = null;
+    private _pCurrentFunction: IAFXFunctionDeclInstruction = null;
 
-    private _pStatistics: AIAFXEffectStats = null;
+    private _pStatistics: IAFXEffectStats = null;
 
     private _sAnalyzedFileName: string = "";
 
-    private _pSystemMacros: AIAFXSimpleInstructionMap = null;
+    private _pSystemMacros: IAFXSimpleInstructionMap = null;
     private _pSystemTypes: SystemTypeMap = null;
     private _pSystemFunctionsMap: SystemFunctionMap = null;
-    private _pSystemFunctionHashMap: AIMap<boolean> = null;
-    private _pSystemVariables: AIAFXVariableDeclMap = null;
+    private _pSystemFunctionHashMap: IMap<boolean> = null;
+    private _pSystemVariables: IAFXVariableDeclMap = null;
 
-    private _pPointerForExtractionList: AIAFXVariableDeclInstruction[] = null;
+    private _pPointerForExtractionList: IAFXVariableDeclInstruction[] = null;
 
-    private _pFunctionWithImplementationList: AIAFXFunctionDeclInstruction[] = null;
+    private _pFunctionWithImplementationList: IAFXFunctionDeclInstruction[] = null;
 
-    private _pTechniqueList: AIAFXTechniqueInstruction[] = null;
+    private _pTechniqueList: IAFXTechniqueInstruction[] = null;
     private _pTechniqueMap: TechniqueMap = null;
 
     private _isAnalyzeInPass: boolean = false;
 
     private _sProvideNameSpace: string = "";
 
-    private _pImportedGlobalTechniqueList: AIAFXImportedTechniqueInfo[] = null;
+    private _pImportedGlobalTechniqueList: IAFXImportedTechniqueInfo[] = null;
 
-    private _pAddedTechniqueList: AIAFXTechniqueInstruction[] = null;
+    private _pAddedTechniqueList: IAFXTechniqueInstruction[] = null;
 
-    static pSystemMacros: AIAFXSimpleInstructionMap = null;
+    static pSystemMacros: IAFXSimpleInstructionMap = null;
     static pSystemTypes: SystemTypeMap = null;
     static pSystemFunctions: SystemFunctionMap = null;
-    static pSystemVariables: AIAFXVariableDeclMap = null;
+    static pSystemVariables: IAFXVariableDeclMap = null;
     static pSystemVertexOut: ComplexTypeInstruction = null;
 
-    constructor(pComposer: AIAFXComposer) {
+    constructor(pComposer: IAFXComposer) {
         this._pComposer = pComposer;
 
         this._pParseTree = null;
@@ -153,14 +153,14 @@ class Effect implements AIAFXEffect {
         this.initSystemVariables();
     }
 
-    analyze(pTree: AIParseTree): boolean {
-        var pRootNode: AIParseNode = pTree.root;
+    analyze(pTree: IParseTree): boolean {
+        var pRootNode: IParseNode = pTree.root;
         var iParseTime: uint = time();
 
         // LOG(this);
 
         this._pParseTree = pTree;
-        this._pStatistics = <AIAFXEffectStats>{ time: 0 };
+        this._pStatistics = <IAFXEffectStats>{ time: 0 };
 
         try {
             this.newScope();
@@ -215,7 +215,7 @@ class Effect implements AIAFXEffect {
         return true;
     }
 
-    getStats(): AIAFXEffectStats {
+    getStats(): IAFXEffectStats {
         return this._pStatistics;
     }
 
@@ -226,7 +226,7 @@ class Effect implements AIAFXEffect {
     clear(): void {
     }
 
-    getTechniqueList(): AIAFXTechniqueInstruction[] {
+    getTechniqueList(): IAFXTechniqueInstruction[] {
         return this._pTechniqueList;
     }
 
@@ -238,16 +238,16 @@ class Effect implements AIAFXEffect {
         return isDef(Effect.pSystemTypes[sTypeName]) ? Effect.pSystemTypes[sTypeName] : null;
     }
 
-    static getSystemVariable(sName: string): AIAFXVariableDeclInstruction {
+    static getSystemVariable(sName: string): IAFXVariableDeclInstruction {
         return isDef(Effect.pSystemVariables[sName]) ? Effect.pSystemVariables[sName] : null;
     }
 
-    static getSystemMacros(sName: string): AIAFXSimpleInstruction {
+    static getSystemMacros(sName: string): IAFXSimpleInstruction {
         return isDef(Effect.pSystemMacros[sName]) ? Effect.pSystemMacros[sName] : null;
     }
 
     static findSystemFunction(sFunctionName: string,
-        pArguments: AIAFXTypedInstruction[]): AIAFXFunctionDeclInstruction {
+        pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
         var pSystemFunctions: SystemFunctionInstruction[] = Effect.pSystemFunctions[sFunctionName];
 
         if (!isDef(pSystemFunctions)) {
@@ -257,7 +257,7 @@ class Effect implements AIAFXEffect {
         if (isNull(pArguments)) {
             for (var i: uint = 0; i < pSystemFunctions.length; i++) {
                 if (pSystemFunctions[i].getNumNeededArguments() === 0) {
-                    return <AIAFXFunctionDeclInstruction>pSystemFunctions[i];
+                    return <IAFXFunctionDeclInstruction>pSystemFunctions[i];
                 }
             }
         }
@@ -267,7 +267,7 @@ class Effect implements AIAFXEffect {
                 continue;
             }
 
-            var pTestedArguments: AIAFXTypedInstruction[] = pSystemFunctions[i].getArguments();
+            var pTestedArguments: IAFXTypedInstruction[] = pSystemFunctions[i].getArguments();
 
             var isOk: boolean = true;
 
@@ -282,15 +282,15 @@ class Effect implements AIAFXEffect {
             }
 
             if (isOk) {
-                return <AIAFXFunctionDeclInstruction>pSystemFunctions[i];
+                return <IAFXFunctionDeclInstruction>pSystemFunctions[i];
             }
         }
     }
 
-    static createVideoBufferVariable(): AIAFXVariableDeclInstruction {
-        var pBuffer: AIAFXVariableDeclInstruction = new VariableDeclInstruction();
-        var pBufferType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
-        var pBufferName: AIAFXIdInstruction = new IdInstruction();
+    static createVideoBufferVariable(): IAFXVariableDeclInstruction {
+        var pBuffer: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+        var pBufferType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pBufferName: IAFXIdInstruction = new IdInstruction();
 
         pBufferType.pushType(Effect.getSystemType("video_buffer"));
 
@@ -300,7 +300,7 @@ class Effect implements AIAFXEffect {
         return pBuffer;
     }
 
-    static getExternalType(pType: AIAFXTypeInstruction): any {
+    static getExternalType(pType: IAFXTypeInstruction): any {
         if (pType.isEqual(Effect.getSystemType("int")) ||
             pType.isEqual(Effect.getSystemType("float"))) {
             return Number;
@@ -343,7 +343,7 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    static isMatrixType(pType: AIAFXTypeInstruction): boolean {
+    static isMatrixType(pType: IAFXTypeInstruction): boolean {
         return pType.isEqual(Effect.getSystemType("float2x2")) ||
             pType.isEqual(Effect.getSystemType("float3x3")) ||
             pType.isEqual(Effect.getSystemType("float4x4")) ||
@@ -355,7 +355,7 @@ class Effect implements AIAFXEffect {
             pType.isEqual(Effect.getSystemType("bool4x4"));
     }
 
-    static isVectorType(pType: AIAFXTypeInstruction): boolean {
+    static isVectorType(pType: IAFXTypeInstruction): boolean {
         return pType.isEqual(Effect.getSystemType("float2")) ||
             pType.isEqual(Effect.getSystemType("float3")) ||
             pType.isEqual(Effect.getSystemType("float4")) ||
@@ -367,14 +367,14 @@ class Effect implements AIAFXEffect {
             pType.isEqual(Effect.getSystemType("int4"));
     }
 
-    static isScalarType(pType: AIAFXTypeInstruction): boolean {
+    static isScalarType(pType: IAFXTypeInstruction): boolean {
         return pType.isEqual(Effect.getSystemType("boolean")) ||
             pType.isEqual(Effect.getSystemType("int")) ||
             pType.isEqual(Effect.getSystemType("ptr")) ||
             pType.isEqual(Effect.getSystemType("float"));
     }
 
-    static isFloatBasedType(pType: AIAFXTypeInstruction): boolean {
+    static isFloatBasedType(pType: IAFXTypeInstruction): boolean {
         return pType.isEqual(Effect.getSystemType("float")) ||
             pType.isEqual(Effect.getSystemType("float2")) ||
             pType.isEqual(Effect.getSystemType("float3")) ||
@@ -385,7 +385,7 @@ class Effect implements AIAFXEffect {
             pType.isEqual(Effect.getSystemType("ptr"));
     }
 
-    static isIntBasedType(pType: AIAFXTypeInstruction): boolean {
+    static isIntBasedType(pType: IAFXTypeInstruction): boolean {
         return pType.isEqual(Effect.getSystemType("int")) ||
             pType.isEqual(Effect.getSystemType("int2")) ||
             pType.isEqual(Effect.getSystemType("int3")) ||
@@ -395,7 +395,7 @@ class Effect implements AIAFXEffect {
             pType.isEqual(Effect.getSystemType("int4x4"));
     }
 
-    static isBoolBasedType(pType: AIAFXTypeInstruction): boolean {
+    static isBoolBasedType(pType: IAFXTypeInstruction): boolean {
         return pType.isEqual(Effect.getSystemType("boolean")) ||
             pType.isEqual(Effect.getSystemType("bool2")) ||
             pType.isEqual(Effect.getSystemType("bool3")) ||
@@ -405,14 +405,14 @@ class Effect implements AIAFXEffect {
             pType.isEqual(Effect.getSystemType("bool4x4"));
     }
 
-    static isSamplerType(pType: AIAFXTypeInstruction): boolean {
+    static isSamplerType(pType: IAFXTypeInstruction): boolean {
         return pType.isEqual(Effect.getSystemType("sampler")) ||
             pType.isEqual(Effect.getSystemType("sampler2D")) ||
             pType.isEqual(Effect.getSystemType("samplerCUBE")) ||
             pType.isEqual(Effect.getSystemType("video_buffer"));
     }
 
-    private generateSuffixLiterals(pLiterals: string[], pOutput: AIMap<boolean>, iDepth: uint = 0): void {
+    private generateSuffixLiterals(pLiterals: string[], pOutput: IMap<boolean>, iDepth: uint = 0): void {
         if (iDepth >= pLiterals.length) {
             return;
         }
@@ -445,7 +445,7 @@ class Effect implements AIAFXEffect {
 
     private initSystemMacros(): void {
         if (isNull(Effect.pSystemMacros)) {
-            this._pSystemMacros = Effect.pSystemMacros = <AIAFXSimpleInstructionMap>{};
+            this._pSystemMacros = Effect.pSystemMacros = <IAFXSimpleInstructionMap>{};
             this.addSystemMacros();
         }
 
@@ -476,7 +476,7 @@ class Effect implements AIAFXEffect {
 
     private initSystemVariables(): void {
         if (isNull(Effect.pSystemVariables)) {
-            this._pSystemVariables = Effect.pSystemVariables = <AIAFXVariableDeclMap>{};
+            this._pSystemVariables = Effect.pSystemVariables = <IAFXVariableDeclMap>{};
             this.addSystemVariables();
         }
 
@@ -522,9 +522,9 @@ class Effect implements AIAFXEffect {
             return;
         }
 
-        var pVariableDecl: AIAFXVariableDeclInstruction = new VariableDeclInstruction();
-        var pName: AIAFXIdInstruction = new IdInstruction();
-        var pType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pVariableDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+        var pName: IAFXIdInstruction = new IdInstruction();
+        var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
         pName.setName(sName);
         pName.setRealName(sRealName);
@@ -547,9 +547,9 @@ class Effect implements AIAFXEffect {
     }
 
     private generatePassEngineVariable(): void {
-        var pVariableDecl: AIAFXVariableDeclInstruction = new VariableDeclInstruction();
-        var pName: AIAFXIdInstruction = new IdInstruction();
-        var pType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pVariableDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+        var pName: IAFXIdInstruction = new IdInstruction();
+        var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
         pType._canWrite(false);
 
@@ -593,7 +593,7 @@ class Effect implements AIAFXEffect {
         pPosition.setSemantic("POSITION");
         pPointSize.setSemantic("PSIZE");
 
-        var pFieldCollector: AIAFXInstruction = new InstructionCollector();
+        var pFieldCollector: IAFXInstruction = new InstructionCollector();
         pFieldCollector.push(pPosition, false);
         pFieldCollector.push(pPointSize, false);
 
@@ -606,7 +606,7 @@ class Effect implements AIAFXEffect {
     }
 
     private addSystemFunctions(): void {
-        this._pSystemFunctionHashMap = <AIMap<boolean>>{};
+        this._pSystemFunctionHashMap = <IMap<boolean>>{};
 
         this.generateSystemFunction("dot", "dot($1,$2)", "float", [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
         this.generateSystemFunction("mul", "$1*$2", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "int", "float2", "float3", "float4"]);
@@ -854,9 +854,9 @@ class Effect implements AIAFXEffect {
 
         var pExprTranslator: ExprTemplateTranslator = new ExprTemplateTranslator(sTranslationExpr);
         var pSystemFunctions: SystemFunctionMap = this._pSystemFunctionsMap;
-        var pTypes: AIAFXTypeInstruction[] = null;
+        var pTypes: IAFXTypeInstruction[] = null;
         var sFunctionHash: string = "";
-        var pReturnType: AIAFXTypeInstruction = null;
+        var pReturnType: IAFXTypeInstruction = null;
         var pFunction: SystemFunctionInstruction = null;
 
         if (!isNull(pTemplateTypes)) {
@@ -882,7 +882,7 @@ class Effect implements AIAFXEffect {
                 sFunctionHash += ")";
 
                 if (this._pSystemFunctionHashMap[sFunctionHash]) {
-                    this._error(AEEffectErrors.BAD_SYSTEM_FUNCTION_REDEFINE, { funcName: sFunctionHash });
+                    this._error(EEffectErrors.BAD_SYSTEM_FUNCTION_REDEFINE, { funcName: sFunctionHash });
                 }
 
                 pFunction = new SystemFunctionInstruction(sName, pReturnType, pExprTranslator, pTypes);
@@ -921,7 +921,7 @@ class Effect implements AIAFXEffect {
             sFunctionHash += ")";
 
             if (this._pSystemFunctionHashMap[sFunctionHash]) {
-                this._error(AEEffectErrors.BAD_SYSTEM_FUNCTION_REDEFINE, { funcName: sFunctionHash });
+                this._error(EEffectErrors.BAD_SYSTEM_FUNCTION_REDEFINE, { funcName: sFunctionHash });
             }
 
             pFunction = new SystemFunctionInstruction(sName, pReturnType, pExprTranslator, pTypes);
@@ -944,7 +944,7 @@ class Effect implements AIAFXEffect {
             return;
         }
 
-        var pMacros: AIAFXSimpleInstruction = new SimpleInstruction(sMacrosCode);
+        var pMacros: IAFXSimpleInstruction = new SimpleInstruction(sMacrosCode);
 
         this._pSystemMacros[sMacrosName] = pMacros;
     }
@@ -959,18 +959,18 @@ class Effect implements AIAFXEffect {
             return;
         }
 
-        var pReturnType: AIAFXTypeInstruction = Effect.getSystemType(sReturnType);
+        var pReturnType: IAFXTypeInstruction = Effect.getSystemType(sReturnType);
         var pFunction: SystemFunctionInstruction = new SystemFunctionInstruction(sName, pReturnType, null, null);
 
         pFunction.setDeclCode(sDefenition, sImplementation);
 
-        var pUsedExtSystemTypes: AIAFXTypeDeclInstruction[] = [];
-        var pUsedExtSystemFunctions: AIAFXFunctionDeclInstruction[] = [];
-        var pUsedExtSystemMacros: AIAFXSimpleInstruction[] = [];
+        var pUsedExtSystemTypes: IAFXTypeDeclInstruction[] = [];
+        var pUsedExtSystemFunctions: IAFXFunctionDeclInstruction[] = [];
+        var pUsedExtSystemMacros: IAFXSimpleInstruction[] = [];
 
         if (!isNull(pUsedTypes)) {
             for (var i: uint = 0; i < pUsedTypes.length; i++) {
-                var pTypeDecl: AIAFXTypeDeclInstruction = <AIAFXTypeDeclInstruction>Effect.getSystemType(pUsedTypes[i]).getParent();
+                var pTypeDecl: IAFXTypeDeclInstruction = <IAFXTypeDeclInstruction>Effect.getSystemType(pUsedTypes[i]).getParent();
                 if (!isNull(pTypeDecl)) {
                     pUsedExtSystemTypes.push(pTypeDecl);
                 }
@@ -985,7 +985,7 @@ class Effect implements AIAFXEffect {
 
         if (!isNull(pUsedFunctions)) {
             for (var i: uint = 0; i < pUsedFunctions.length; i++) {
-                var pFindFunction: AIAFXFunctionDeclInstruction = Effect.findSystemFunction(pUsedFunctions[i], null);
+                var pFindFunction: IAFXFunctionDeclInstruction = Effect.findSystemFunction(pUsedFunctions[i], null);
                 pUsedExtSystemFunctions.push(pFindFunction);
             }
         }
@@ -999,8 +999,8 @@ class Effect implements AIAFXEffect {
 
     private generateSystemType(sName: string, sRealName: string,
         iSize: uint = 1, isArray: boolean = false,
-        pElementType: AIAFXTypeInstruction = null, iLength: uint = 1
-        ): AIAFXTypeInstruction {
+        pElementType: IAFXTypeInstruction = null, iLength: uint = 1
+        ): IAFXTypeInstruction {
 
         if (isDef(this._pSystemTypes[sName])) {
             return null;
@@ -1023,8 +1023,8 @@ class Effect implements AIAFXEffect {
 
     private generateNotBuildtInSystemType(sName: string, sRealName: string, sDeclString: string,
         iSize: uint = 1, isArray: boolean = false,
-        pElementType: AIAFXTypeInstruction = null, iLength: uint = 1
-        ): AIAFXTypeInstruction {
+        pElementType: IAFXTypeInstruction = null, iLength: uint = 1
+        ): IAFXTypeInstruction {
 
         if (isDef(this._pSystemTypes[sName])) {
             return null;
@@ -1043,7 +1043,7 @@ class Effect implements AIAFXEffect {
         this._pSystemTypes[sName] = pSystemType;
         pSystemType.setBuiltIn(false);
 
-        var pSystemTypeDecl: AIAFXTypeDeclInstruction = new TypeDeclInstruction();
+        var pSystemTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
         pSystemTypeDecl.push(pSystemType, true);
         pSystemTypeDecl.setBuiltIn(false);
 
@@ -1069,17 +1069,17 @@ class Effect implements AIAFXEffect {
     }
 
     private addSystemTypeVector(): void {
-        var pXYSuffix: AIMap<boolean> = <AIMap<boolean>>{};
-        var pXYZSuffix: AIMap<boolean> = <AIMap<boolean>>{};
-        var pXYZWSuffix: AIMap<boolean> = <AIMap<boolean>>{};
+        var pXYSuffix: IMap<boolean> = <IMap<boolean>>{};
+        var pXYZSuffix: IMap<boolean> = <IMap<boolean>>{};
+        var pXYZWSuffix: IMap<boolean> = <IMap<boolean>>{};
 
-        var pRGSuffix: AIMap<boolean> = <AIMap<boolean>>{};
-        var pRGBSuffix: AIMap<boolean> = <AIMap<boolean>>{};
-        var pRGBASuffix: AIMap<boolean> = <AIMap<boolean>>{};
+        var pRGSuffix: IMap<boolean> = <IMap<boolean>>{};
+        var pRGBSuffix: IMap<boolean> = <IMap<boolean>>{};
+        var pRGBASuffix: IMap<boolean> = <IMap<boolean>>{};
 
-        var pSTSuffix: AIMap<boolean> = <AIMap<boolean>>{};
-        var pSTPSuffix: AIMap<boolean> = <AIMap<boolean>>{};
-        var pSTPQSuffix: AIMap<boolean> = <AIMap<boolean>>{};
+        var pSTSuffix: IMap<boolean> = <IMap<boolean>>{};
+        var pSTPSuffix: IMap<boolean> = <IMap<boolean>>{};
+        var pSTPQSuffix: IMap<boolean> = <IMap<boolean>>{};
 
         this.generateSuffixLiterals(["x", "y"], pXYSuffix);
         this.generateSuffixLiterals(["x", "y", "z"], pXYZSuffix);
@@ -1093,21 +1093,21 @@ class Effect implements AIAFXEffect {
         this.generateSuffixLiterals(["s", "t", "p"], pSTPSuffix);
         this.generateSuffixLiterals(["s", "t", "p", "q"], pSTPQSuffix);
 
-        var pFloat: AIAFXTypeInstruction = Effect.getSystemType("float");
-        var pInt: AIAFXTypeInstruction = Effect.getSystemType("int");
-        var pBool: AIAFXTypeInstruction = Effect.getSystemType("boolean");
+        var pFloat: IAFXTypeInstruction = Effect.getSystemType("float");
+        var pInt: IAFXTypeInstruction = Effect.getSystemType("int");
+        var pBool: IAFXTypeInstruction = Effect.getSystemType("boolean");
 
-        var pFloat2: AIAFXTypeInstruction = this.generateSystemType("float2", "vec2", 0, true, pFloat, 2);
-        var pFloat3: AIAFXTypeInstruction = this.generateSystemType("float3", "vec3", 0, true, pFloat, 3);
-        var pFloat4: AIAFXTypeInstruction = this.generateSystemType("float4", "vec4", 0, true, pFloat, 4);
+        var pFloat2: IAFXTypeInstruction = this.generateSystemType("float2", "vec2", 0, true, pFloat, 2);
+        var pFloat3: IAFXTypeInstruction = this.generateSystemType("float3", "vec3", 0, true, pFloat, 3);
+        var pFloat4: IAFXTypeInstruction = this.generateSystemType("float4", "vec4", 0, true, pFloat, 4);
 
-        var pInt2: AIAFXTypeInstruction = this.generateSystemType("int2", "ivec2", 0, true, pInt, 2);
-        var pInt3: AIAFXTypeInstruction = this.generateSystemType("int3", "ivec3", 0, true, pInt, 3);
-        var pInt4: AIAFXTypeInstruction = this.generateSystemType("int4", "ivec4", 0, true, pInt, 4);
+        var pInt2: IAFXTypeInstruction = this.generateSystemType("int2", "ivec2", 0, true, pInt, 2);
+        var pInt3: IAFXTypeInstruction = this.generateSystemType("int3", "ivec3", 0, true, pInt, 3);
+        var pInt4: IAFXTypeInstruction = this.generateSystemType("int4", "ivec4", 0, true, pInt, 4);
 
-        var pBool2: AIAFXTypeInstruction = this.generateSystemType("bool2", "bvec2", 0, true, pBool, 2);
-        var pBool3: AIAFXTypeInstruction = this.generateSystemType("bool3", "bvec3", 0, true, pBool, 3);
-        var pBool4: AIAFXTypeInstruction = this.generateSystemType("bool4", "bvec4", 0, true, pBool, 4);
+        var pBool2: IAFXTypeInstruction = this.generateSystemType("bool2", "bvec2", 0, true, pBool, 2);
+        var pBool3: IAFXTypeInstruction = this.generateSystemType("bool3", "bvec3", 0, true, pBool, 3);
+        var pBool4: IAFXTypeInstruction = this.generateSystemType("bool4", "bvec4", 0, true, pBool, 4);
 
         this.addFieldsToVectorFromSuffixObject(pXYSuffix, pFloat2, "float");
         this.addFieldsToVectorFromSuffixObject(pRGSuffix, pFloat2, "float");
@@ -1147,17 +1147,17 @@ class Effect implements AIAFXEffect {
     }
 
     private addSystemTypeMatrix(): void {
-        var pFloat2: AIAFXTypeInstruction = Effect.getSystemType("float2");
-        var pFloat3: AIAFXTypeInstruction = Effect.getSystemType("float3");
-        var pFloat4: AIAFXTypeInstruction = Effect.getSystemType("float4");
+        var pFloat2: IAFXTypeInstruction = Effect.getSystemType("float2");
+        var pFloat3: IAFXTypeInstruction = Effect.getSystemType("float3");
+        var pFloat4: IAFXTypeInstruction = Effect.getSystemType("float4");
 
-        var pInt2: AIAFXTypeInstruction = Effect.getSystemType("int2");
-        var pInt3: AIAFXTypeInstruction = Effect.getSystemType("int3");
-        var pInt4: AIAFXTypeInstruction = Effect.getSystemType("int4");
+        var pInt2: IAFXTypeInstruction = Effect.getSystemType("int2");
+        var pInt3: IAFXTypeInstruction = Effect.getSystemType("int3");
+        var pInt4: IAFXTypeInstruction = Effect.getSystemType("int4");
 
-        var pBool2: AIAFXTypeInstruction = Effect.getSystemType("bool2");
-        var pBool3: AIAFXTypeInstruction = Effect.getSystemType("bool3");
-        var pBool4: AIAFXTypeInstruction = Effect.getSystemType("bool4");
+        var pBool2: IAFXTypeInstruction = Effect.getSystemType("bool2");
+        var pBool3: IAFXTypeInstruction = Effect.getSystemType("bool3");
+        var pBool4: IAFXTypeInstruction = Effect.getSystemType("bool4");
 
         this.generateSystemType("float2x2", "mat2", 0, true, pFloat2, 2);
         this.generateSystemType("float2x3", "mat2x3", 0, true, pFloat2, 3);
@@ -1196,18 +1196,18 @@ class Effect implements AIAFXEffect {
         this.generateSystemType("bool4x4", "bmat4", 0, true, pBool4, 4);
     }
 
-    private addFieldsToVectorFromSuffixObject(pSuffixMap: AIMap<boolean>, pType: AIAFXTypeInstruction, sBaseType: string) {
+    private addFieldsToVectorFromSuffixObject(pSuffixMap: IMap<boolean>, pType: IAFXTypeInstruction, sBaseType: string) {
         var sSuffix: string = null;
 
         for (sSuffix in pSuffixMap) {
             var sFieldTypeName: string = sBaseType + ((sSuffix.length > 1) ? sSuffix.length.toString() : "");
-            var pFieldType: AIAFXTypeInstruction = Effect.getSystemType(sFieldTypeName);
+            var pFieldType: IAFXTypeInstruction = Effect.getSystemType(sFieldTypeName);
 
             (<SystemTypeInstruction>pType).addField(sSuffix, pFieldType, pSuffixMap[sSuffix]);
         }
     }
 
-    private getVariable(sName: string): AIAFXVariableDeclInstruction {
+    private getVariable(sName: string): IAFXVariableDeclInstruction {
         return Effect.getSystemVariable(sName) || this._pEffectScope.getVariable(sName);
     }
 
@@ -1215,30 +1215,30 @@ class Effect implements AIAFXEffect {
         return this._pEffectScope.hasVariable(sName);
     }
 
-    private getType(sTypeName: string): AIAFXTypeInstruction {
+    private getType(sTypeName: string): IAFXTypeInstruction {
         return Effect.getSystemType(sTypeName) || this._pEffectScope.getType(sTypeName);
     }
 
-    private isSystemFunction(pFunction: AIAFXFunctionDeclInstruction): boolean {
+    private isSystemFunction(pFunction: IAFXFunctionDeclInstruction): boolean {
         return false;
     }
 
-    private isSystemVariable(pVariable: AIAFXVariableDeclInstruction): boolean {
+    private isSystemVariable(pVariable: IAFXVariableDeclInstruction): boolean {
         return false;
     }
 
-    private isSystemType(pType: AIAFXTypeDeclInstruction): boolean {
+    private isSystemType(pType: IAFXTypeDeclInstruction): boolean {
         return false;
     }
 
-    private _errorFromInstruction(pError: AIAFXInstructionError): void {
+    private _errorFromInstruction(pError: IAFXInstructionError): void {
         this._error(pError.code, isNull(pError.info) ? {} : pError.info);
     }
 
-    private _error(eCode: uint, pInfo: AIEffectErrorInfo = {}): void {
+    private _error(eCode: uint, pInfo: IEffectErrorInfo = {}): void {
         var sFileName: string = this._sAnalyzedFileName;
 
-        var pLocation: AISourceLocation = <AISourceLocation>{ file: this._sAnalyzedFileName, line: 0 };
+        var pLocation: ISourceLocation = <ISourceLocation>{ file: this._sAnalyzedFileName, line: 0 };
         var pLineColumn: { line: uint; column: uint; } = this.getNodeSourceLocation(this.getAnalyzedNode());
 
         switch (eCode) {
@@ -1251,7 +1251,7 @@ class Effect implements AIAFXEffect {
                 break;
         }
 
-        var pLogEntity: AILoggerEntity = <AILoggerEntity>{
+        var pLogEntity: ILoggerEntity = <ILoggerEntity>{
             code: eCode,
             info: pInfo,
             location: pLocation
@@ -1261,7 +1261,7 @@ class Effect implements AIAFXEffect {
         //throw new Error(eCode.toString());
     }
 
-    private setAnalyzedNode(pNode: AIParseNode): void {
+    private setAnalyzedNode(pNode: IParseNode): void {
         // if(this._pAnalyzedNode !== pNode){
         // 	// debug_print("Analyze node: ", pNode); 
         // 	//.name + (pNode.value ?  " --> value: " + pNode.value + "." : "."));
@@ -1269,7 +1269,7 @@ class Effect implements AIAFXEffect {
         this._pAnalyzedNode = pNode;
     }
 
-    private getAnalyzedNode(): AIParseNode {
+    private getAnalyzedNode(): IParseNode {
         return this._pAnalyzedNode;
     }
 
@@ -1281,7 +1281,7 @@ class Effect implements AIAFXEffect {
         return this._pEffectScope.setStrictModeOn();
     }
 
-    private newScope(eScopeType: AEScopeType = AEScopeType.k_Default): void {
+    private newScope(eScopeType: EScopeType = EScopeType.k_Default): void {
         this._pEffectScope.newScope(eScopeType);
     }
 
@@ -1301,15 +1301,15 @@ class Effect implements AIAFXEffect {
         this._pEffectScope.endScope();
     }
 
-    private getScopeType(): AEScopeType {
+    private getScopeType(): EScopeType {
         return this._pEffectScope.getScopeType();
     }
 
-    private setCurrentAnalyzedFunction(pFunction: AIAFXFunctionDeclInstruction): void {
+    private setCurrentAnalyzedFunction(pFunction: IAFXFunctionDeclInstruction): void {
         this._pCurrentFunction = pFunction;
     }
 
-    private getCurrentAnalyzedFunction(): AIAFXFunctionDeclInstruction {
+    private getCurrentAnalyzedFunction(): IAFXFunctionDeclInstruction {
         return this._pCurrentFunction;
     }
 
@@ -1331,64 +1331,64 @@ class Effect implements AIAFXEffect {
         this._pPointerForExtractionList.length = 0;
     }
 
-    private addPointerForExtract(pPointer: AIAFXVariableDeclInstruction): void {
+    private addPointerForExtract(pPointer: IAFXVariableDeclInstruction): void {
         this._pPointerForExtractionList.push(pPointer);
     }
 
-    private getPointerForExtractList(): AIAFXVariableDeclInstruction[] {
+    private getPointerForExtractList(): IAFXVariableDeclInstruction[] {
         return this._pPointerForExtractionList;
     }
 
     private findFunction(sFunctionName: string,
-        pArguments: AIAFXExprInstruction[]): AIAFXFunctionDeclInstruction;
+        pArguments: IAFXExprInstruction[]): IAFXFunctionDeclInstruction;
     private findFunction(sFunctionName: string,
-        pArguments: AIAFXVariableDeclInstruction[]): AIAFXFunctionDeclInstruction;
+        pArguments: IAFXVariableDeclInstruction[]): IAFXFunctionDeclInstruction;
     private findFunction(sFunctionName: string,
-        pArguments: AIAFXTypedInstruction[]): AIAFXFunctionDeclInstruction {
+        pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
         return Effect.findSystemFunction(sFunctionName, pArguments) ||
             this._pEffectScope.getFunction(sFunctionName, pArguments);
     }
 
-    private findConstructor(pType: AIAFXTypeInstruction,
-        pArguments: AIAFXExprInstruction[]): AIAFXVariableTypeInstruction {
+    private findConstructor(pType: IAFXTypeInstruction,
+        pArguments: IAFXExprInstruction[]): IAFXVariableTypeInstruction {
 
-        var pVariableType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
         pVariableType.pushType(pType);
 
         return pVariableType;
     }
 
     private findShaderFunction(sFunctionName: string,
-        pArguments: AIAFXExprInstruction[]): AIAFXFunctionDeclInstruction {
+        pArguments: IAFXExprInstruction[]): IAFXFunctionDeclInstruction {
         return this._pEffectScope.getShaderFunction(sFunctionName, pArguments);
     }
 
-    private findFunctionByDef(pDef: FunctionDefInstruction): AIAFXFunctionDeclInstruction {
+    private findFunctionByDef(pDef: FunctionDefInstruction): IAFXFunctionDeclInstruction {
         return this.findFunction(pDef.getName(), pDef.getArguments());
     }
 
     // private addVariable(pVariable: IAFXVariable): void {
     // }
 
-    private addVariableDecl(pVariable: AIAFXVariableDeclInstruction): void {
+    private addVariableDecl(pVariable: IAFXVariableDeclInstruction): void {
         if (this.isSystemVariable(pVariable)) {
-            this._error(AEEffectErrors.REDEFINE_SYSTEM_VARIABLE, { varName: pVariable.getName() });
+            this._error(EEffectErrors.REDEFINE_SYSTEM_VARIABLE, { varName: pVariable.getName() });
         }
 
         var isVarAdded: boolean = this._pEffectScope.addVariable(pVariable);
 
         if (!isVarAdded) {
-            var eScopeType: AEScopeType = this.getScopeType();
+            var eScopeType: EScopeType = this.getScopeType();
 
             switch (eScopeType) {
-                case AEScopeType.k_Default:
-                    this._error(AEEffectErrors.REDEFINE_VARIABLE, { varName: pVariable.getName() });
+                case EScopeType.k_Default:
+                    this._error(EEffectErrors.REDEFINE_VARIABLE, { varName: pVariable.getName() });
                     break;
-                case AEScopeType.k_Struct:
-                    this._error(AEEffectErrors.BAD_NEW_FIELD_FOR_STRUCT_NAME, { fieldName: pVariable.getName() });
+                case EScopeType.k_Struct:
+                    this._error(EEffectErrors.BAD_NEW_FIELD_FOR_STRUCT_NAME, { fieldName: pVariable.getName() });
                     break;
-                case AEScopeType.k_Annotation:
-                    this._error(AEEffectErrors.BAD_NEW_ANNOTATION_VAR, { varName: pVariable.getName() });
+                case EScopeType.k_Annotation:
+                    this._error(EEffectErrors.BAD_NEW_ANNOTATION_VAR, { varName: pVariable.getName() });
                     break;
             }
         }
@@ -1396,40 +1396,40 @@ class Effect implements AIAFXEffect {
         if (pVariable.getName() === "Out" && !isNull(this.getCurrentAnalyzedFunction())) {
             var isOk: boolean = this.getCurrentAnalyzedFunction()._addOutVariable(pVariable);
             if (!isOk) {
-                this._error(AEEffectErrors.BAD_OUT_VARIABLE_IN_FUNCTION);
+                this._error(EEffectErrors.BAD_OUT_VARIABLE_IN_FUNCTION);
             }
         }
     }
 
-    private addTypeDecl(pType: AIAFXTypeDeclInstruction): void {
+    private addTypeDecl(pType: IAFXTypeDeclInstruction): void {
         if (this.isSystemType(pType)) {
-            this._error(AEEffectErrors.REDEFINE_SYSTEM_TYPE, { typeName: pType.getName() });
+            this._error(EEffectErrors.REDEFINE_SYSTEM_TYPE, { typeName: pType.getName() });
         }
 
         var isTypeAdded: boolean = this._pEffectScope.addType(pType);
 
         if (!isTypeAdded) {
-            this._error(AEEffectErrors.REDEFINE_TYPE, { typeName: pType.getName() });
+            this._error(EEffectErrors.REDEFINE_TYPE, { typeName: pType.getName() });
         }
     }
 
-    private addFunctionDecl(pFunction: AIAFXFunctionDeclInstruction): void {
+    private addFunctionDecl(pFunction: IAFXFunctionDeclInstruction): void {
         if (this.isSystemFunction(pFunction)) {
-            this._error(AEEffectErrors.REDEFINE_SYSTEM_FUNCTION, { funcName: pFunction.getName() });
+            this._error(EEffectErrors.REDEFINE_SYSTEM_FUNCTION, { funcName: pFunction.getName() });
         }
 
         var isFunctionAdded: boolean = this._pEffectScope.addFunction(pFunction);
 
         if (!isFunctionAdded) {
-            this._error(AEEffectErrors.REDEFINE_FUNCTION, { funcName: pFunction.getName() });
+            this._error(EEffectErrors.REDEFINE_FUNCTION, { funcName: pFunction.getName() });
         }
     }
 
-    private addTechnique(pTechnique: AIAFXTechniqueInstruction): void {
+    private addTechnique(pTechnique: IAFXTechniqueInstruction): void {
         var sName: string = pTechnique.getName();
 
         if (isDef(this._pTechniqueMap[sName])) {
-            this._error(AEEffectErrors.BAD_TECHNIQUE_REDEFINE_NAME, { techName: sName });
+            this._error(EEffectErrors.BAD_TECHNIQUE_REDEFINE_NAME, { techName: sName });
             return;
         }
 
@@ -1437,18 +1437,18 @@ class Effect implements AIAFXEffect {
         this._pTechniqueList.push(pTechnique);
     }
 
-    private addExternalSharedVariable(pVariable: AIAFXVariableDeclInstruction, eShaderType: AEFunctionType): void {
+    private addExternalSharedVariable(pVariable: IAFXVariableDeclInstruction, eShaderType: EFunctionType): void {
         var isVarAdded: boolean = this._pEffectScope.addVariable(pVariable);
 
         if (!isVarAdded) {
-            this._error(AEEffectErrors.CANNOT_ADD_SHARED_VARIABLE, { varName: pVariable.getName() });
+            this._error(EEffectErrors.CANNOT_ADD_SHARED_VARIABLE, { varName: pVariable.getName() });
             return;
         }
     }
 
 
     private analyzeGlobalUseDecls(): void {
-        var pChildren: AIParseNode[] = this._pParseTree.root.children;
+        var pChildren: IParseNode[] = this._pParseTree.root.children;
         var i: uint = 0;
 
         for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1459,7 +1459,7 @@ class Effect implements AIAFXEffect {
     }
 
     private analyzeGlobalProvideDecls(): void {
-        var pChildren: AIParseNode[] = this._pParseTree.root.children;
+        var pChildren: IParseNode[] = this._pParseTree.root.children;
         var i: uint = 0;
 
         for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1470,7 +1470,7 @@ class Effect implements AIAFXEffect {
     }
 
     private analyzeGlobalTypeDecls(): void {
-        var pChildren: AIParseNode[] = this._pParseTree.root.children;
+        var pChildren: IParseNode[] = this._pParseTree.root.children;
         var i: uint = 0;
 
         for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1481,7 +1481,7 @@ class Effect implements AIAFXEffect {
     }
 
     private analyzeFunctionDefinitions(): void {
-        var pChildren: AIParseNode[] = this._pParseTree.root.children;
+        var pChildren: IParseNode[] = this._pParseTree.root.children;
         var i: uint = 0;
 
         for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1492,7 +1492,7 @@ class Effect implements AIAFXEffect {
     }
 
     private analyzeGlobalImports(): void {
-        var pChildren: AIParseNode[] = this._pParseTree.root.children;
+        var pChildren: IParseNode[] = this._pParseTree.root.children;
         var i: uint = 0;
 
         for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1503,7 +1503,7 @@ class Effect implements AIAFXEffect {
     }
 
     private analyzeTechniqueImports(): void {
-        var pChildren: AIParseNode[] = this._pParseTree.root.children;
+        var pChildren: IParseNode[] = this._pParseTree.root.children;
         var i: uint = 0;
 
         for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1514,7 +1514,7 @@ class Effect implements AIAFXEffect {
     }
 
     private analyzeVariableDecls(): void {
-        var pChildren: AIParseNode[] = this._pParseTree.root.children;
+        var pChildren: IParseNode[] = this._pParseTree.root.children;
         var i: uint = 0;
 
         for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1545,7 +1545,7 @@ class Effect implements AIAFXEffect {
     }
 
     private checkFunctionsForRecursion(): void {
-        var pFunctionList: AIAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+        var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
         var isNewAdd: boolean = true;
         var isNewDelete: boolean = true;
 
@@ -1555,8 +1555,8 @@ class Effect implements AIAFXEffect {
 
             mainFor:
             for (var i: uint = 0; i < pFunctionList.length; i++) {
-                var pTestedFunction: AIAFXFunctionDeclInstruction = pFunctionList[i];
-                var pUsedFunctionList: AIAFXFunctionDeclInstruction[] = pTestedFunction._getUsedFunctionList();
+                var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
+                var pUsedFunctionList: IAFXFunctionDeclInstruction[] = pTestedFunction._getUsedFunctionList();
 
                 if (!pTestedFunction._isUsed()) {
                     //logger.warn("Unused function '" + pTestedFunction._getStringDef() + "'.");
@@ -1571,26 +1571,26 @@ class Effect implements AIAFXEffect {
                 }
 
                 for (var j: uint = 0; j < pUsedFunctionList.length; j++) {
-                    var pAddedUsedFunctionList: AIAFXFunctionDeclInstruction[] = pUsedFunctionList[j]._getUsedFunctionList();
+                    var pAddedUsedFunctionList: IAFXFunctionDeclInstruction[] = pUsedFunctionList[j]._getUsedFunctionList();
 
                     if (isNull(pAddedUsedFunctionList)) {
                         continue;
                     }
 
                     for (var k: uint = 0; k < pAddedUsedFunctionList.length; k++) {
-                        var pAddedFunction: AIAFXFunctionDeclInstruction = pAddedUsedFunctionList[k];
+                        var pAddedFunction: IAFXFunctionDeclInstruction = pAddedUsedFunctionList[k];
 
                         if (pTestedFunction === pAddedFunction) {
                             pTestedFunction._addToBlackList();
                             isNewDelete = true;
-                            this._error(AEEffectErrors.BAD_FUNCTION_USAGE_RECURSION, { funcDef: pTestedFunction._getStringDef() });
+                            this._error(EEffectErrors.BAD_FUNCTION_USAGE_RECURSION, { funcDef: pTestedFunction._getStringDef() });
                             continue mainFor;
                         }
 
                         if (pAddedFunction._isBlackListFunction() ||
                             !pAddedFunction._canUsedAsFunction()) {
                             pTestedFunction._addToBlackList();
-                            this._error(AEEffectErrors.BAD_FUNCTION_USAGE_BLACKLIST, { funcDef: pTestedFunction._getStringDef() });
+                            this._error(EEffectErrors.BAD_FUNCTION_USAGE_BLACKLIST, { funcDef: pTestedFunction._getStringDef() });
                             isNewDelete = true;
                             continue mainFor;
                         }
@@ -1605,7 +1605,7 @@ class Effect implements AIAFXEffect {
     }
 
     private checkFunctionForCorrectUsage(): void {
-        var pFunctionList: AIAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+        var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
         var isNewUsageSet: boolean = true;
         var isNewDelete: boolean = true;
 
@@ -1615,8 +1615,8 @@ class Effect implements AIAFXEffect {
 
             mainFor:
             for (var i: uint = 0; i < pFunctionList.length; i++) {
-                var pTestedFunction: AIAFXFunctionDeclInstruction = pFunctionList[i];
-                var pUsedFunctionList: AIAFXFunctionDeclInstruction[] = pTestedFunction._getUsedFunctionList();
+                var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
+                var pUsedFunctionList: IAFXFunctionDeclInstruction[] = pTestedFunction._getUsedFunctionList();
 
                 if (!pTestedFunction._isUsed()) {
                     //logger.warn("Unused function '" + pTestedFunction._getStringDef() + "'.");
@@ -1627,14 +1627,14 @@ class Effect implements AIAFXEffect {
                 }
 
                 if (!pTestedFunction._checkVertexUsage()) {
-                    this._error(AEEffectErrors.BAD_FUNCTION_USAGE_VERTEX, { funcDef: pTestedFunction._getStringDef() });
+                    this._error(EEffectErrors.BAD_FUNCTION_USAGE_VERTEX, { funcDef: pTestedFunction._getStringDef() });
                     pTestedFunction._addToBlackList();
                     isNewDelete = true;
                     continue mainFor;
                 }
 
                 if (!pTestedFunction._checkPixelUsage()) {
-                    this._error(AEEffectErrors.BAD_FUNCTION_USAGE_PIXEL, { funcDef: pTestedFunction._getStringDef() });
+                    this._error(EEffectErrors.BAD_FUNCTION_USAGE_PIXEL, { funcDef: pTestedFunction._getStringDef() });
                     pTestedFunction._addToBlackList();
                     isNewDelete = true;
                     continue mainFor;
@@ -1645,11 +1645,11 @@ class Effect implements AIAFXEffect {
                 }
 
                 for (var j: uint = 0; j < pUsedFunctionList.length; j++) {
-                    var pUsedFunction: AIAFXFunctionDeclInstruction = pUsedFunctionList[j];
+                    var pUsedFunction: IAFXFunctionDeclInstruction = pUsedFunctionList[j];
 
                     if (pTestedFunction._isUsedInVertex()) {
                         if (!pUsedFunction._isForVertex()) {
-                            this._error(AEEffectErrors.BAD_FUNCTION_USAGE_VERTEX, { funcDef: pTestedFunction._getStringDef() });
+                            this._error(EEffectErrors.BAD_FUNCTION_USAGE_VERTEX, { funcDef: pTestedFunction._getStringDef() });
                             pTestedFunction._addToBlackList();
                             isNewDelete = true;
                             continue mainFor;
@@ -1664,7 +1664,7 @@ class Effect implements AIAFXEffect {
 
                     if (pTestedFunction._isUsedInPixel()) {
                         if (!pUsedFunction._isForPixel()) {
-                            this._error(AEEffectErrors.BAD_FUNCTION_USAGE_PIXEL, { funcDef: pTestedFunction._getStringDef() });
+                            this._error(EEffectErrors.BAD_FUNCTION_USAGE_PIXEL, { funcDef: pTestedFunction._getStringDef() });
                             pTestedFunction._addToBlackList();
                             isNewDelete = true;
                             continue mainFor;
@@ -1685,7 +1685,7 @@ class Effect implements AIAFXEffect {
     }
 
     private generateInfoAboutUsedData(): void {
-        var pFunctionList: AIAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+        var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
 
         for (var i: uint = 0; i < pFunctionList.length; i++) {
             pFunctionList[i]._generateInfoAboutUsedData();
@@ -1693,10 +1693,10 @@ class Effect implements AIAFXEffect {
     }
 
     private generateShadersFromFunctions(): void {
-        var pFunctionList: AIAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+        var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
 
         for (var i: uint = 0; i < pFunctionList.length; i++) {
-            var pShader: AIAFXFunctionDeclInstruction = null;
+            var pShader: IAFXFunctionDeclInstruction = null;
 
             if (pFunctionList[i]._isUsedAsVertex()) {
                 pShader = pFunctionList[i]._convertToVertexShader();
@@ -1707,12 +1707,12 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeVariableDecl(pNode: AIParseNode, pInstruction: AIAFXInstruction = null): void {
+    private analyzeVariableDecl(pNode: IParseNode, pInstruction: IAFXInstruction = null): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pGeneralType: AIAFXVariableTypeInstruction = null;
-        var pVariable: AIAFXVariableDeclInstruction = null;
+        var pChildren: IParseNode[] = pNode.children;
+        var pGeneralType: IAFXVariableTypeInstruction = null;
+        var pVariable: IAFXVariableDeclInstruction = null;
         var i: uint = 0;
 
         pGeneralType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
@@ -1723,8 +1723,8 @@ class Effect implements AIAFXEffect {
 
                 if (!isNull(pInstruction)) {
                     pInstruction.push(pVariable, true);
-                    if (pInstruction._getInstructionType() === AEAFXInstructionTypes.k_DeclStmtInstruction) {
-                        var pVariableSubDecls: AIAFXVariableDeclInstruction[] = pVariable.getSubVarDecls();
+                    if (pInstruction._getInstructionType() === EAFXInstructionTypes.k_DeclStmtInstruction) {
+                        var pVariableSubDecls: IAFXVariableDeclInstruction[] = pVariable.getSubVarDecls();
                         if (!isNull(pVariableSubDecls)) {
                             for (var j: uint = 0; j < pVariableSubDecls.length; j++) {
                                 pInstruction.push(pVariableSubDecls[j], false);
@@ -1736,16 +1736,16 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeUsageType(pNode: AIParseNode): AIAFXVariableTypeInstruction {
+    private analyzeUsageType(pNode: IParseNode): IAFXVariableTypeInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var i: uint = 0;
-        var pType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
         for (i = pChildren.length - 1; i >= 0; i--) {
             if (pChildren[i].name === "Type") {
-                var pMainType: AIAFXTypeInstruction = this.analyzeType(pChildren[i]);
+                var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
                 pType.pushType(pMainType);
             }
             else if (pChildren[i].name === "Usage") {
@@ -1754,23 +1754,23 @@ class Effect implements AIAFXEffect {
             }
         }
 
-        this.checkInstruction(pType, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pType, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pType;
     }
 
-    private analyzeType(pNode: AIParseNode): AIAFXTypeInstruction {
+    private analyzeType(pNode: IParseNode): IAFXTypeInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pType: AIAFXTypeInstruction = null;
+        var pChildren: IParseNode[] = pNode.children;
+        var pType: IAFXTypeInstruction = null;
 
         switch (pNode.name) {
             case "T_TYPE_ID":
                 pType = this.getType(pNode.value);
 
                 if (isNull(pType)) {
-                    this._error(AEEffectErrors.BAD_TYPE_NAME_NOT_TYPE, { typeName: pNode.value });
+                    this._error(EEffectErrors.BAD_TYPE_NAME_NOT_TYPE, { typeName: pNode.value });
                 }
                 break;
 
@@ -1787,14 +1787,14 @@ class Effect implements AIAFXEffect {
                 pType = this.getType(pChildren[pChildren.length - 1].value);
 
                 if (isNull(pType)) {
-                    this._error(AEEffectErrors.BAD_TYPE_NAME_NOT_TYPE, { typeName: pChildren[pChildren.length - 1].value });
+                    this._error(EEffectErrors.BAD_TYPE_NAME_NOT_TYPE, { typeName: pChildren[pChildren.length - 1].value });
                 }
 
                 break;
 
             case "VectorType":
             case "MatrixType":
-                this._error(AEEffectErrors.BAD_TYPE_VECTOR_MATRIX);
+                this._error(EEffectErrors.BAD_TYPE_VECTOR_MATRIX);
                 break;
 
             case "BaseType":
@@ -1805,23 +1805,23 @@ class Effect implements AIAFXEffect {
         return pType;
     }
 
-    private analyzeUsage(pNode: AIParseNode): string {
+    private analyzeUsage(pNode: IParseNode): string {
         this.setAnalyzedNode(pNode);
 
         pNode = pNode.children[0];
         return pNode.value;
     }
 
-    private analyzeVariable(pNode: AIParseNode, pGeneralType: AIAFXVariableTypeInstruction): AIAFXVariableDeclInstruction {
+    private analyzeVariable(pNode: IParseNode, pGeneralType: IAFXVariableTypeInstruction): IAFXVariableDeclInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
-        var pVarDecl: AIAFXVariableDeclInstruction = new VariableDeclInstruction();
-        var pVariableType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
-        var pAnnotation: AIAFXAnnotationInstruction = null;
+        var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+        var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pAnnotation: IAFXAnnotationInstruction = null;
         var sSemantic: string = "";
-        var pInitExpr: AIAFXInitExprInstruction = null;
+        var pInitExpr: IAFXInitExprInstruction = null;
 
         pVarDecl.push(pVariableType, true);
         pVariableType.pushType(pGeneralType);
@@ -1843,14 +1843,14 @@ class Effect implements AIAFXEffect {
             else if (pChildren[i].name === "Initializer") {
                 pInitExpr = this.analyzeInitializer(pChildren[i]);
                 if (!pInitExpr.optimizeForVariableType(pVariableType)) {
-                    this._error(AEEffectErrors.BAD_VARIABLE_INITIALIZER, { varName: pVarDecl.getName() });
+                    this._error(EEffectErrors.BAD_VARIABLE_INITIALIZER, { varName: pVarDecl.getName() });
                     return null;
                 }
                 pVarDecl.push(pInitExpr, true);
             }
         }
 
-        this.checkInstruction(pVarDecl, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pVarDecl, ECheckStage.CODE_TARGET_SUPPORT);
 
         this.addVariableDecl(pVarDecl);
         pVarDecl._getNameIndex();
@@ -1858,14 +1858,14 @@ class Effect implements AIAFXEffect {
         return pVarDecl;
     }
 
-    private analyzeVariableDim(pNode: AIParseNode, pVariableDecl: AIAFXVariableDeclInstruction): void {
+    private analyzeVariableDim(pNode: IParseNode, pVariableDecl: IAFXVariableDeclInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pVariableType: AIAFXVariableTypeInstruction = <AIAFXVariableTypeInstruction>pVariableDecl.getType();
+        var pChildren: IParseNode[] = pNode.children;
+        var pVariableType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pVariableDecl.getType();
 
         if (pChildren.length === 1) {
-            var pName: AIAFXIdInstruction = new IdInstruction();
+            var pName: IAFXIdInstruction = new IdInstruction();
             pName.setName(pChildren[0].value);
             pVariableDecl.push(pName, true);
             return;
@@ -1878,41 +1878,41 @@ class Effect implements AIAFXEffect {
         }
         else if (pChildren.length === 4 && pChildren[0].name === "FromExpr") {
 
-            var pBuffer: AIAFXVariableDeclInstruction = this.analyzeFromExpr(pChildren[0]);
+            var pBuffer: IAFXVariableDeclInstruction = this.analyzeFromExpr(pChildren[0]);
             pVariableType.addPointIndex(true);
             pVariableType.setVideoBuffer(pBuffer);
         }
         else {
             if (pVariableType.isPointer()) {
                 //TODO: add support for v[][10]
-                this._error(AEEffectTempErrors.BAD_ARRAY_OF_POINTERS);
+                this._error(EEffectTempErrors.BAD_ARRAY_OF_POINTERS);
             }
 
-            var pIndexExpr: AIAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+            var pIndexExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
             pVariableType.addArrayIndex(pIndexExpr);
         }
     }
 
-    private analyzeAnnotation(pNode: AIParseNode): AIAFXAnnotationInstruction {
+    private analyzeAnnotation(pNode: IParseNode): IAFXAnnotationInstruction {
         this.setAnalyzedNode(pNode);
 
         return null;
     }
 
-    private analyzeSemantic(pNode: AIParseNode): string {
+    private analyzeSemantic(pNode: IParseNode): string {
         this.setAnalyzedNode(pNode);
 
         var sSemantic: string = pNode.children[0].value;
-        // var pDecl: AIAFXDeclInstruction = <AIAFXDeclInstruction>this._pCurrentInstruction;
+        // var pDecl: IAFXDeclInstruction = <IAFXDeclInstruction>this._pCurrentInstruction;
         // pDecl.setSemantic(sSemantic);	
         return sSemantic;
     }
 
-    private analyzeInitializer(pNode: AIParseNode): AIAFXInitExprInstruction {
+    private analyzeInitializer(pNode: IParseNode): IAFXInitExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pInitExpr: AIAFXInitExprInstruction = new InitExprInstruction();
+        var pChildren: IParseNode[] = pNode.children;
+        var pInitExpr: IAFXInitExprInstruction = new InitExprInstruction();
 
         if (pChildren.length === 2) {
             pInitExpr.push(this.analyzeExpr(pChildren[0]), true);
@@ -1928,11 +1928,11 @@ class Effect implements AIAFXEffect {
         return pInitExpr;
     }
 
-    private analyzeFromExpr(pNode: AIParseNode): AIAFXVariableDeclInstruction {
+    private analyzeFromExpr(pNode: IParseNode): IAFXVariableDeclInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pBuffer: AIAFXVariableDeclInstruction = null;
+        var pChildren: IParseNode[] = pNode.children;
+        var pBuffer: IAFXVariableDeclInstruction = null;
 
         if (pChildren[1].name === "T_NON_TYPE_ID") {
             pBuffer = this.getVariable(pChildren[1].value);
@@ -1944,11 +1944,11 @@ class Effect implements AIAFXEffect {
         return pBuffer;
     }
 
-    private analyzeInitExpr(pNode: AIParseNode): AIAFXInitExprInstruction {
+    private analyzeInitExpr(pNode: IParseNode): IAFXInitExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pInitExpr: AIAFXInitExprInstruction = new InitExprInstruction();
+        var pChildren: IParseNode[] = pNode.children;
+        var pInitExpr: IAFXInitExprInstruction = new InitExprInstruction();
 
         if (pChildren.length === 1) {
             pInitExpr.push(this.analyzeExpr(pChildren[0]), true);
@@ -1964,7 +1964,7 @@ class Effect implements AIAFXEffect {
         return pInitExpr;
     }
 
-    private analyzeExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
         var sName: string = pNode.name;
 
@@ -2005,14 +2005,14 @@ class Effect implements AIAFXEffect {
             case "MemExpr":
                 return this.analyzeMemExpr(pNode);
             default:
-                this._error(AEEffectErrors.UNSUPPORTED_EXPR, { exprName: sName });
+                this._error(EEffectErrors.UNSUPPORTED_EXPR, { exprName: sName });
                 break;
         }
 
         return null;
     }
 
-    private analyzeObjectExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeObjectExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
         var sName: string = pNode.children[pNode.children.length - 1].name;
@@ -2025,21 +2025,21 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeCompileExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeCompileExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExpr: CompileExprInstruction = new CompileExprInstruction();
-        var pExprType: AIAFXVariableTypeInstruction;
-        var pArguments: AIAFXExprInstruction[] = null;
+        var pExprType: IAFXVariableTypeInstruction;
+        var pArguments: IAFXExprInstruction[] = null;
         var sShaderFuncName: string = pChildren[pChildren.length - 2].value;
-        var pShaderFunc: AIAFXFunctionDeclInstruction = null;
+        var pShaderFunc: IAFXFunctionDeclInstruction = null;
         var i: uint = 0;
 
         pArguments = [];
 
         if (pChildren.length > 4) {
-            var pArgumentExpr: AIAFXExprInstruction;
+            var pArgumentExpr: IAFXExprInstruction;
 
             for (i = pChildren.length - 3; i > 0; i--) {
                 if (pChildren[i].value !== ",") {
@@ -2052,11 +2052,11 @@ class Effect implements AIAFXEffect {
         pShaderFunc = this.findShaderFunction(sShaderFuncName, pArguments);
 
         if (isNull(pShaderFunc)) {
-            this._error(AEEffectErrors.BAD_COMPILE_NOT_FUNCTION, { funcName: sShaderFuncName });
+            this._error(EEffectErrors.BAD_COMPILE_NOT_FUNCTION, { funcName: sShaderFuncName });
             return null;
         }
 
-        pExprType = (<AIAFXVariableTypeInstruction>pShaderFunc.getType()).wrap();
+        pExprType = (<IAFXVariableTypeInstruction>pShaderFunc.getType()).wrap();
 
         pExpr.setType(pExprType);
         pExpr.setOperator("complile");
@@ -2068,16 +2068,16 @@ class Effect implements AIAFXEffect {
             }
         }
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeSamplerStateBlock(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeSamplerStateBlock(pNode: IParseNode): IAFXExprInstruction {
         pNode = pNode.children[0];
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExpr: SamplerStateBlockInstruction = new SamplerStateBlockInstruction();
         var i: uint = 0;
 
@@ -2087,42 +2087,42 @@ class Effect implements AIAFXEffect {
             this.analyzeSamplerState(pChildren[i], pExpr);
         }
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeSamplerState(pNode: AIParseNode, pSamplerStates: SamplerStateBlockInstruction): void {
+    private analyzeSamplerState(pNode: IParseNode, pSamplerStates: SamplerStateBlockInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         if (pChildren[pChildren.length - 2].name === "StateIndex") {
-            this._error(AEEffectErrors.NOT_SUPPORT_STATE_INDEX);
+            this._error(EEffectErrors.NOT_SUPPORT_STATE_INDEX);
             return;
         }
 
-        var pStateExprNode: AIParseNode = pChildren[pChildren.length - 3];
-        var pSubStateExprNode: AIParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+        var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
+        var pSubStateExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
         var sStateType: string = pChildren[pChildren.length - 1].value.toUpperCase();
         var sStateValue: string = "";
         var isTexture: boolean = false;
 
         if (isNull(pSubStateExprNode.value)) {
-            this._error(AEEffectErrors.BAD_TEXTURE_FOR_SAMLER);
+            this._error(EEffectErrors.BAD_TEXTURE_FOR_SAMLER);
             return;
         }
-        var pTexture: AIAFXVariableDeclInstruction = null;
+        var pTexture: IAFXVariableDeclInstruction = null;
 
         switch (sStateType) {
             case "TEXTURE":
-                var pTexture: AIAFXVariableDeclInstruction = null;
+                var pTexture: IAFXVariableDeclInstruction = null;
                 if (pStateExprNode.children.length !== 3 || pSubStateExprNode.value === "{") {
-                    this._error(AEEffectErrors.BAD_TEXTURE_FOR_SAMLER);
+                    this._error(EEffectErrors.BAD_TEXTURE_FOR_SAMLER);
                     return;
                 }
                 var sTextureName: string = pStateExprNode.children[1].value;
                 if (isNull(sTextureName) || !this.hasVariable(sTextureName)) {
-                    this._error(AEEffectErrors.BAD_TEXTURE_FOR_SAMLER);
+                    this._error(EEffectErrors.BAD_TEXTURE_FOR_SAMLER);
                     return;
                 }
 
@@ -2187,10 +2187,10 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeComplexExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeComplexExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
         switch (sFirstNodeName) {
@@ -2204,21 +2204,21 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeFunctionCallExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeFunctionCallExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pExpr: AIAFXExprInstruction = null;
-        var pExprType: AIAFXVariableTypeInstruction = null;
-        var pArguments: AIAFXExprInstruction[] = null;
+        var pChildren: IParseNode[] = pNode.children;
+        var pExpr: IAFXExprInstruction = null;
+        var pExprType: IAFXVariableTypeInstruction = null;
+        var pArguments: IAFXExprInstruction[] = null;
         var sFuncName: string = pChildren[pChildren.length - 1].value;
-        var pFunction: AIAFXFunctionDeclInstruction = null;
-        var pFunctionId: AIAFXIdExprInstruction = null;
+        var pFunction: IAFXFunctionDeclInstruction = null;
+        var pFunctionId: IAFXIdExprInstruction = null;
         var i: uint = 0;
-        var pCurrentAnalyzedFunction: AIAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
+        var pCurrentAnalyzedFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
 
         if (pChildren.length > 3) {
-            var pArgumentExpr: AIAFXExprInstruction;
+            var pArgumentExpr: IAFXExprInstruction;
 
             pArguments = [];
 
@@ -2233,12 +2233,12 @@ class Effect implements AIAFXEffect {
         pFunction = this.findFunction(sFuncName, pArguments);
 
         if (isNull(pFunction)) {
-            this._error(AEEffectErrors.BAD_COMPLEX_NOT_FUNCTION, { funcName: sFuncName });
+            this._error(EEffectErrors.BAD_COMPLEX_NOT_FUNCTION, { funcName: sFuncName });
             return null;
         }
 
         if (!isDef(pFunction)) {
-            this._error(AEEffectErrors.BAD_CANNOT_CHOOSE_FUNCTION, { funcName: sFuncName });
+            this._error(EEffectErrors.BAD_CANNOT_CHOOSE_FUNCTION, { funcName: sFuncName });
             return null;
         }
 
@@ -2252,13 +2252,13 @@ class Effect implements AIAFXEffect {
             }
         }
 
-        if (pFunction._getInstructionType() === AEAFXInstructionTypes.k_FunctionDeclInstruction) {
+        if (pFunction._getInstructionType() === EAFXInstructionTypes.k_FunctionDeclInstruction) {
             var pFunctionCallExpr: FunctionCallInstruction = new FunctionCallInstruction();
 
             pFunctionId = new IdExprInstruction();
             pFunctionId.push(pFunction.getNameId(), false);
 
-            pExprType = (<AIAFXVariableTypeInstruction>pFunction.getType()).wrap();
+            pExprType = (<IAFXVariableTypeInstruction>pFunction.getType()).wrap();
 
             pFunctionCallExpr.setType(pExprType);
             pFunctionCallExpr.push(pFunctionId, true);
@@ -2268,11 +2268,11 @@ class Effect implements AIAFXEffect {
                     pFunctionCallExpr.push(pArguments[i], true);
                 }
 
-                var pFunctionArguments: AIAFXVariableDeclInstruction[] = (<FunctionDeclInstruction>pFunction).getArguments();
+                var pFunctionArguments: IAFXVariableDeclInstruction[] = (<FunctionDeclInstruction>pFunction).getArguments();
                 for (i = 0; i < pArguments.length; i++) {
                     if (pFunctionArguments[i].getType().hasUsage("out")) {
                         if (!pArguments[i].getType().isWritable()) {
-                            this._error(AEEffectErrors.BAD_TYPE_FOR_WRITE);
+                            this._error(EEffectErrors.BAD_TYPE_FOR_WRITE);
                             return null;
                         }
 
@@ -2282,12 +2282,12 @@ class Effect implements AIAFXEffect {
                     }
                     else if (pFunctionArguments[i].getType().hasUsage("inout")) {
                         if (!pArguments[i].getType().isWritable()) {
-                            this._error(AEEffectErrors.BAD_TYPE_FOR_WRITE);
+                            this._error(EEffectErrors.BAD_TYPE_FOR_WRITE);
                             return null;
                         }
 
                         if (!pArguments[i].getType().isReadable()) {
-                            this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+                            this._error(EEffectErrors.BAD_TYPE_FOR_READ);
                             return null;
                         }
 
@@ -2297,7 +2297,7 @@ class Effect implements AIAFXEffect {
                     }
                     else {
                         if (!pArguments[i].getType().isReadable()) {
-                            this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+                            this._error(EEffectErrors.BAD_TYPE_FOR_READ);
                             return null;
                         }
                     }
@@ -2313,7 +2313,7 @@ class Effect implements AIAFXEffect {
                 pCurrentAnalyzedFunction._addUsedFunction(pFunction);
             }
 
-            pFunction._markUsedAs(AEFunctionType.k_Function);
+            pFunction._markUsedAs(EFunctionType.k_Function);
 
             pExpr = pFunctionCallExpr;
         }
@@ -2326,7 +2326,7 @@ class Effect implements AIAFXEffect {
             if (!isNull(pCurrentAnalyzedFunction)) {
                 for (i = 0; i < pArguments.length; i++) {
                     if (!pArguments[i].getType().isReadable()) {
-                        this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+                        this._error(EEffectErrors.BAD_TYPE_FOR_READ);
                         return null;
                     }
                 }
@@ -2339,30 +2339,30 @@ class Effect implements AIAFXEffect {
             }
         }
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeConstructorCallExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeConstructorCallExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExpr: ConstructorCallInstruction = new ConstructorCallInstruction();
-        var pExprType: AIAFXVariableTypeInstruction = null;
-        var pArguments: AIAFXExprInstruction[] = null;
-        var pConstructorType: AIAFXTypeInstruction = null;
+        var pExprType: IAFXVariableTypeInstruction = null;
+        var pArguments: IAFXExprInstruction[] = null;
+        var pConstructorType: IAFXTypeInstruction = null;
         var i: uint = 0;
 
         pConstructorType = this.analyzeType(pChildren[pChildren.length - 1]);
 
         if (isNull(pConstructorType)) {
-            this._error(AEEffectErrors.BAD_COMPLEX_NOT_TYPE);
+            this._error(EEffectErrors.BAD_COMPLEX_NOT_TYPE);
             return null;
         }
 
         if (pChildren.length > 3) {
-            var pArgumentExpr: AIAFXExprInstruction = null;
+            var pArgumentExpr: IAFXExprInstruction = null;
 
             pArguments = [];
 
@@ -2377,7 +2377,7 @@ class Effect implements AIAFXEffect {
         pExprType = this.findConstructor(pConstructorType, pArguments);
 
         if (isNull(pExprType)) {
-            this._error(AEEffectErrors.BAD_COMPLEX_NOT_CONSTRUCTOR, { typeName: pConstructorType.toString() });
+            this._error(EEffectErrors.BAD_COMPLEX_NOT_CONSTRUCTOR, { typeName: pConstructorType.toString() });
             return null;
         }
 
@@ -2387,7 +2387,7 @@ class Effect implements AIAFXEffect {
         if (!isNull(pArguments)) {
             for (i = 0; i < pArguments.length; i++) {
                 if (!pArguments[i].getType().isReadable()) {
-                    this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+                    this._error(EEffectErrors.BAD_TYPE_FOR_READ);
                     return null;
                 }
 
@@ -2395,50 +2395,50 @@ class Effect implements AIAFXEffect {
             }
         }
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeSimpleComplexExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeSimpleComplexExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExpr: ComplexExprInstruction = new ComplexExprInstruction();
-        var pComplexExpr: AIAFXExprInstruction;
-        var pExprType: AIAFXVariableTypeInstruction;
+        var pComplexExpr: IAFXExprInstruction;
+        var pExprType: IAFXVariableTypeInstruction;
 
         pComplexExpr = this.analyzeExpr(pChildren[1]);
-        pExprType = <AIAFXVariableTypeInstruction>pComplexExpr.getType();
+        pExprType = <IAFXVariableTypeInstruction>pComplexExpr.getType();
 
         pExpr.setType(pExprType);
         pExpr.push(pComplexExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzePrimaryExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzePrimaryExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExpr: PrimaryExprInstruction = new PrimaryExprInstruction();
-        var pPrimaryExpr: AIAFXExprInstruction;
-        var pPointer: AIAFXVariableDeclInstruction = null;
-        var pPrimaryExprType: AIAFXVariableTypeInstruction;
+        var pPrimaryExpr: IAFXExprInstruction;
+        var pPointer: IAFXVariableDeclInstruction = null;
+        var pPrimaryExprType: IAFXVariableTypeInstruction;
 
         pPrimaryExpr = this.analyzeExpr(pChildren[0]);
-        pPrimaryExprType = <AIAFXVariableTypeInstruction>pPrimaryExpr.getType();
+        pPrimaryExprType = <IAFXVariableTypeInstruction>pPrimaryExpr.getType();
 
         pPointer = pPrimaryExprType.getPointer();
 
         if (isNull(pPointer)) {
-            this._error(AEEffectErrors.BAD_PRIMARY_NOT_POINT, { typeName: pPrimaryExprType.getHash() });
+            this._error(EEffectErrors.BAD_PRIMARY_NOT_POINT, { typeName: pPrimaryExprType.getHash() });
             return null;
         }
 
-        var pPointerVarType: AIAFXVariableTypeInstruction = <AIAFXVariableTypeInstruction>pPrimaryExprType.getParent();
+        var pPointerVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPrimaryExprType.getParent();
         if (!pPrimaryExprType.isStrictPointer()) {
             this.getCurrentAnalyzedFunction()._setForPixel(false);
             this.getCurrentAnalyzedFunction()._notCanUsedAsFunction();
@@ -2449,15 +2449,15 @@ class Effect implements AIAFXEffect {
         pExpr.setOperator("@");
         pExpr.push(pPointer.getNameId(), false);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzePostfixExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzePostfixExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sSymbol: string = pChildren[pChildren.length - 2].value;
 
         switch (sSymbol) {
@@ -2471,82 +2471,82 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzePostfixIndex(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzePostfixIndex(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExpr: PostfixIndexInstruction = new PostfixIndexInstruction();
-        var pPostfixExpr: AIAFXExprInstruction = null;
-        var pIndexExpr: AIAFXExprInstruction = null;
-        var pExprType: AIAFXVariableTypeInstruction = null;
-        var pPostfixExprType: AIAFXVariableTypeInstruction = null;
-        var pIndexExprType: AIAFXVariableTypeInstruction = null;
-        var pIntType: AIAFXTypeInstruction = null;
+        var pPostfixExpr: IAFXExprInstruction = null;
+        var pIndexExpr: IAFXExprInstruction = null;
+        var pExprType: IAFXVariableTypeInstruction = null;
+        var pPostfixExprType: IAFXVariableTypeInstruction = null;
+        var pIndexExprType: IAFXVariableTypeInstruction = null;
+        var pIntType: IAFXTypeInstruction = null;
 
         pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
-        pPostfixExprType = <AIAFXVariableTypeInstruction>pPostfixExpr.getType();
+        pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
         if (!pPostfixExprType.isArray()) {
-            this._error(AEEffectErrors.BAD_POSTIX_NOT_ARRAY, { typeName: pPostfixExprType.toString() });
+            this._error(EEffectErrors.BAD_POSTIX_NOT_ARRAY, { typeName: pPostfixExprType.toString() });
             return null;
         }
 
         pIndexExpr = this.analyzeExpr(pChildren[pChildren.length - 3]);
-        pIndexExprType = <AIAFXVariableTypeInstruction>pIndexExpr.getType();
+        pIndexExprType = <IAFXVariableTypeInstruction>pIndexExpr.getType();
 
         pIntType = Effect.getSystemType("int");
 
         if (!pIndexExprType.isEqual(pIntType)) {
-            this._error(AEEffectErrors.BAD_POSTIX_NOT_INT_INDEX, { typeName: pIndexExprType.toString() });
+            this._error(EEffectErrors.BAD_POSTIX_NOT_INT_INDEX, { typeName: pIndexExprType.toString() });
             return null;
         }
 
-        pExprType = <AIAFXVariableTypeInstruction>(pPostfixExprType.getArrayElementType());
+        pExprType = <IAFXVariableTypeInstruction>(pPostfixExprType.getArrayElementType());
 
         pExpr.setType(pExprType);
         pExpr.push(pPostfixExpr, true);
         pExpr.push(pIndexExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzePostfixPoint(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzePostfixPoint(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExpr: PostfixPointInstruction = new PostfixPointInstruction();
-        var pPostfixExpr: AIAFXExprInstruction = null;
+        var pPostfixExpr: IAFXExprInstruction = null;
         var sFieldName: string = "";
-        var pFieldNameExpr: AIAFXIdExprInstruction = null;
-        var pExprType: AIAFXVariableTypeInstruction = null;
-        var pPostfixExprType: AIAFXVariableTypeInstruction = null;
+        var pFieldNameExpr: IAFXIdExprInstruction = null;
+        var pExprType: IAFXVariableTypeInstruction = null;
+        var pPostfixExprType: IAFXVariableTypeInstruction = null;
 
         pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
-        pPostfixExprType = <AIAFXVariableTypeInstruction>pPostfixExpr.getType();
+        pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
         sFieldName = pChildren[pChildren.length - 3].value;
 
         pFieldNameExpr = pPostfixExprType.getFieldExpr(sFieldName);
 
         if (isNull(pFieldNameExpr)) {
-            this._error(AEEffectErrors.BAD_POSTIX_NOT_FIELD, {
+            this._error(EEffectErrors.BAD_POSTIX_NOT_FIELD, {
                 typeName: pPostfixExprType.toString(),
                 fieldName: sFieldName
             });
             return null;
         }
 
-        pExprType = <AIAFXVariableTypeInstruction>pFieldNameExpr.getType();
+        pExprType = <IAFXVariableTypeInstruction>pFieldNameExpr.getType();
 
         if (pChildren.length === 4) {
             if (!pExprType.isPointer()) {
-                this._error(AEEffectErrors.BAD_POSTIX_NOT_POINTER, { typeName: pExprType.toString() });
+                this._error(EEffectErrors.BAD_POSTIX_NOT_POINTER, { typeName: pExprType.toString() });
                 return null;
             }
 
-            var pBuffer: AIAFXVariableDeclInstruction = this.analyzeFromExpr(pChildren[0]);
+            var pBuffer: IAFXVariableDeclInstruction = this.analyzeFromExpr(pChildren[0]);
             pExprType.setVideoBuffer(pBuffer);
         }
 
@@ -2554,28 +2554,28 @@ class Effect implements AIAFXEffect {
         pExpr.push(pPostfixExpr, true);
         pExpr.push(pFieldNameExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzePostfixArithmetic(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzePostfixArithmetic(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sOperator: string = pChildren[0].value;
         var pExpr: PostfixArithmeticInstruction = new PostfixArithmeticInstruction();
-        var pPostfixExpr: AIAFXExprInstruction;
-        var pExprType: AIAFXVariableTypeInstruction;
-        var pPostfixExprType: AIAFXVariableTypeInstruction;
+        var pPostfixExpr: IAFXExprInstruction;
+        var pExprType: IAFXVariableTypeInstruction;
+        var pPostfixExprType: IAFXVariableTypeInstruction;
 
         pPostfixExpr = this.analyzeExpr(pChildren[1]);
-        pPostfixExprType = <AIAFXVariableTypeInstruction>pPostfixExpr.getType();
+        pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
         pExprType = this.checkOneOperandExprType(sOperator, pPostfixExprType);
 
         if (isNull(pExprType)) {
-            this._error(AEEffectErrors.BAD_POSTIX_ARITHMETIC, {
+            this._error(EEffectErrors.BAD_POSTIX_ARITHMETIC, {
                 operator: sOperator,
                 typeName: pPostfixExprType.toString()
             });
@@ -2586,28 +2586,28 @@ class Effect implements AIAFXEffect {
         pExpr.setOperator(sOperator);
         pExpr.push(pPostfixExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeUnaryExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeUnaryExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sOperator: string = pChildren[1].value;
         var pExpr: UnaryExprInstruction = new UnaryExprInstruction();
-        var pUnaryExpr: AIAFXExprInstruction;
-        var pExprType: AIAFXVariableTypeInstruction;
-        var pUnaryExprType: AIAFXVariableTypeInstruction;
+        var pUnaryExpr: IAFXExprInstruction;
+        var pExprType: IAFXVariableTypeInstruction;
+        var pUnaryExprType: IAFXVariableTypeInstruction;
 
         pUnaryExpr = this.analyzeExpr(pChildren[0]);
-        pUnaryExprType = <AIAFXVariableTypeInstruction>pUnaryExpr.getType();
+        pUnaryExprType = <IAFXVariableTypeInstruction>pUnaryExpr.getType();
 
         pExprType = this.checkOneOperandExprType(sOperator, pUnaryExprType);
 
         if (isNull(pExprType)) {
-            this._error(AEEffectErrors.BAD_UNARY_OPERATION, {
+            this._error(EEffectErrors.BAD_UNARY_OPERATION, {
                 operator: sOperator,
                 tyepName: pUnaryExprType.toString()
             });
@@ -2618,24 +2618,24 @@ class Effect implements AIAFXEffect {
         pExpr.setType(pExprType);
         pExpr.push(pUnaryExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeCastExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeCastExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExpr: CastExprInstruction = new CastExprInstruction();
-        var pExprType: AIAFXVariableTypeInstruction;
-        var pCastedExpr: AIAFXExprInstruction;
+        var pExprType: IAFXVariableTypeInstruction;
+        var pCastedExpr: IAFXExprInstruction;
 
         pExprType = this.analyzeConstTypeDim(pChildren[2]);
         pCastedExpr = this.analyzeExpr(pChildren[0]);
 
-        if (!(<AIAFXVariableTypeInstruction>pCastedExpr.getType()).isReadable()) {
-            this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+        if (!(<IAFXVariableTypeInstruction>pCastedExpr.getType()).isReadable()) {
+            this._error(EEffectErrors.BAD_TYPE_FOR_READ);
             return null;
         }
 
@@ -2643,42 +2643,42 @@ class Effect implements AIAFXEffect {
         pExpr.push(pExprType, true);
         pExpr.push(pCastedExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeConditionalExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeConditionalExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExpr: ConditionalExprInstruction = new ConditionalExprInstruction();
-        var pConditionExpr: AIAFXExprInstruction;
-        var pTrueExpr: AIAFXExprInstruction;
-        var pFalseExpr: AIAFXExprInstruction;
-        var pConditionType: AIAFXVariableTypeInstruction;
-        var pTrueExprType: AIAFXVariableTypeInstruction;
-        var pFalseExprType: AIAFXVariableTypeInstruction;
-        var pExprType: AIAFXVariableTypeInstruction;
-        var pBoolType: AIAFXTypeInstruction;
+        var pConditionExpr: IAFXExprInstruction;
+        var pTrueExpr: IAFXExprInstruction;
+        var pFalseExpr: IAFXExprInstruction;
+        var pConditionType: IAFXVariableTypeInstruction;
+        var pTrueExprType: IAFXVariableTypeInstruction;
+        var pFalseExprType: IAFXVariableTypeInstruction;
+        var pExprType: IAFXVariableTypeInstruction;
+        var pBoolType: IAFXTypeInstruction;
 
         pConditionExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         pTrueExpr = this.analyzeExpr(pChildren[pChildren.length - 3]);
         pFalseExpr = this.analyzeExpr(pChildren[0]);
 
-        pConditionType = <AIAFXVariableTypeInstruction>pConditionExpr.getType();
-        pTrueExprType = <AIAFXVariableTypeInstruction>pTrueExpr.getType();
-        pFalseExprType = <AIAFXVariableTypeInstruction>pFalseExpr.getType();
+        pConditionType = <IAFXVariableTypeInstruction>pConditionExpr.getType();
+        pTrueExprType = <IAFXVariableTypeInstruction>pTrueExpr.getType();
+        pFalseExprType = <IAFXVariableTypeInstruction>pFalseExpr.getType();
 
         pBoolType = Effect.getSystemType("boolean");
 
         if (!pConditionType.isEqual(pBoolType)) {
-            this._error(AEEffectErrors.BAD_CONDITION_TYPE, { typeName: pConditionType.toString() });
+            this._error(EEffectErrors.BAD_CONDITION_TYPE, { typeName: pConditionType.toString() });
             return null;
         }
 
         if (!pTrueExprType.isEqual(pFalseExprType)) {
-            this._error(AEEffectErrors.BAD_CONDITION_VALUE_TYPES, {
+            this._error(EEffectErrors.BAD_CONDITION_VALUE_TYPES, {
                 leftTypeName: pTrueExprType.toString(),
                 rightTypeName: pFalseExprType.toString()
             });
@@ -2686,17 +2686,17 @@ class Effect implements AIAFXEffect {
         }
 
         if (!pConditionType.isReadable()) {
-            this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+            this._error(EEffectErrors.BAD_TYPE_FOR_READ);
             return null;
         }
 
         if (!pTrueExprType.isReadable()) {
-            this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+            this._error(EEffectErrors.BAD_TYPE_FOR_READ);
             return null;
         }
 
         if (!pFalseExprType.isReadable()) {
-            this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+            this._error(EEffectErrors.BAD_TYPE_FOR_READ);
             return null;
         }
 
@@ -2705,33 +2705,33 @@ class Effect implements AIAFXEffect {
         pExpr.push(pTrueExpr, true);
         pExpr.push(pFalseExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeArithmeticExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeArithmeticExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sOperator: string = pNode.children[1].value;
         var pExpr: ArithmeticExprInstruction = new ArithmeticExprInstruction();
-        var pLeftExpr: AIAFXExprInstruction = null;
-        var pRightExpr: AIAFXExprInstruction = null;
-        var pLeftType: AIAFXVariableTypeInstruction = null;
-        var pRightType: AIAFXVariableTypeInstruction = null;
-        var pExprType: AIAFXVariableTypeInstruction = null;
+        var pLeftExpr: IAFXExprInstruction = null;
+        var pRightExpr: IAFXExprInstruction = null;
+        var pLeftType: IAFXVariableTypeInstruction = null;
+        var pRightType: IAFXVariableTypeInstruction = null;
+        var pExprType: IAFXVariableTypeInstruction = null;
 
         pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         pRightExpr = this.analyzeExpr(pChildren[0]);
 
-        pLeftType = <AIAFXVariableTypeInstruction>pLeftExpr.getType();
-        pRightType = <AIAFXVariableTypeInstruction>pRightExpr.getType();
+        pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
+        pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
         pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);
 
         if (isNull(pExprType)) {
-            this._error(AEEffectErrors.BAD_ARITHMETIC_OPERATION, {
+            this._error(EEffectErrors.BAD_ARITHMETIC_OPERATION, {
                 operator: sOperator,
                 leftTypeName: pLeftType.toString(),
                 rightTypeName: pRightType.toString()
@@ -2744,33 +2744,33 @@ class Effect implements AIAFXEffect {
         pExpr.push(pLeftExpr, true);
         pExpr.push(pRightExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeRelationExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeRelationExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sOperator: string = pNode.children[1].value;
         var pExpr: RelationalExprInstruction = new RelationalExprInstruction();
-        var pLeftExpr: AIAFXExprInstruction;
-        var pRightExpr: AIAFXExprInstruction;
-        var pLeftType: AIAFXVariableTypeInstruction;
-        var pRightType: AIAFXVariableTypeInstruction;
-        var pExprType: AIAFXVariableTypeInstruction;
+        var pLeftExpr: IAFXExprInstruction;
+        var pRightExpr: IAFXExprInstruction;
+        var pLeftType: IAFXVariableTypeInstruction;
+        var pRightType: IAFXVariableTypeInstruction;
+        var pExprType: IAFXVariableTypeInstruction;
 
         pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         pRightExpr = this.analyzeExpr(pChildren[0]);
 
-        pLeftType = <AIAFXVariableTypeInstruction>pLeftExpr.getType();
-        pRightType = <AIAFXVariableTypeInstruction>pRightExpr.getType();
+        pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
+        pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
         pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);
 
         if (isNull(pExprType)) {
-            this._error(AEEffectErrors.BAD_RELATIONAL_OPERATION, {
+            this._error(EEffectErrors.BAD_RELATIONAL_OPERATION, {
                 operator: sOperator,
                 leftTypeName: pLeftType.getHash(),
                 rightTypeName: pRightType.getHash()
@@ -2783,40 +2783,40 @@ class Effect implements AIAFXEffect {
         pExpr.push(pLeftExpr, true);
         pExpr.push(pRightExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeLogicalExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeLogicalExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sOperator: string = pNode.children[1].value;
         var pExpr: LogicalExprInstruction = new LogicalExprInstruction();
-        var pLeftExpr: AIAFXExprInstruction;
-        var pRightExpr: AIAFXExprInstruction;
-        var pLeftType: AIAFXVariableTypeInstruction;
-        var pRightType: AIAFXVariableTypeInstruction;
-        var pBoolType: AIAFXTypeInstruction;
+        var pLeftExpr: IAFXExprInstruction;
+        var pRightExpr: IAFXExprInstruction;
+        var pLeftType: IAFXVariableTypeInstruction;
+        var pRightType: IAFXVariableTypeInstruction;
+        var pBoolType: IAFXTypeInstruction;
 
         pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         pRightExpr = this.analyzeExpr(pChildren[0]);
 
-        pLeftType = <AIAFXVariableTypeInstruction>pLeftExpr.getType();
-        pRightType = <AIAFXVariableTypeInstruction>pRightExpr.getType();
+        pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
+        pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
         pBoolType = Effect.getSystemType("boolean");
 
         if (!pLeftType.isEqual(pBoolType)) {
-            this._error(AEEffectErrors.BAD_LOGICAL_OPERATION, {
+            this._error(EEffectErrors.BAD_LOGICAL_OPERATION, {
                 operator: sOperator,
                 typeName: pLeftType.toString()
             });
             return null;
         }
         if (!pRightType.isEqual(pBoolType)) {
-            this._error(AEEffectErrors.BAD_LOGICAL_OPERATION, {
+            this._error(EEffectErrors.BAD_LOGICAL_OPERATION, {
                 operator: sOperator,
                 typeName: pRightType.toString()
             });
@@ -2824,12 +2824,12 @@ class Effect implements AIAFXEffect {
         }
 
         if (!pLeftType.isReadable()) {
-            this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+            this._error(EEffectErrors.BAD_TYPE_FOR_READ);
             return null;
         }
 
         if (!pRightType.isReadable()) {
-            this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+            this._error(EEffectErrors.BAD_TYPE_FOR_READ);
             return null;
         }
 
@@ -2838,33 +2838,33 @@ class Effect implements AIAFXEffect {
         pExpr.push(pLeftExpr, true);
         pExpr.push(pRightExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeAssignmentExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeAssignmentExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sOperator: string = pChildren[1].value;
         var pExpr: AssignmentExprInstruction = new AssignmentExprInstruction();
-        var pLeftExpr: AIAFXExprInstruction;
-        var pRightExpr: AIAFXExprInstruction;
-        var pLeftType: AIAFXVariableTypeInstruction;
-        var pRightType: AIAFXVariableTypeInstruction;
-        var pExprType: AIAFXVariableTypeInstruction;
+        var pLeftExpr: IAFXExprInstruction;
+        var pRightExpr: IAFXExprInstruction;
+        var pLeftType: IAFXVariableTypeInstruction;
+        var pRightType: IAFXVariableTypeInstruction;
+        var pExprType: IAFXVariableTypeInstruction;
 
         pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         pRightExpr = this.analyzeExpr(pChildren[0]);
 
-        pLeftType = <AIAFXVariableTypeInstruction>pLeftExpr.getType();
-        pRightType = <AIAFXVariableTypeInstruction>pRightExpr.getType();
+        pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
+        pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
         if (sOperator !== "=") {
             pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);
             if (isNull(pExprType)) {
-                this._error(AEEffectErrors.BAD_ARITHMETIC_ASSIGNMENT_OPERATION, {
+                this._error(EEffectErrors.BAD_ARITHMETIC_ASSIGNMENT_OPERATION, {
                     operator: sOperator,
                     leftTypeName: pLeftType.getHash(),
                     rightTypeName: pRightType.getHash()
@@ -2878,7 +2878,7 @@ class Effect implements AIAFXEffect {
         pExprType = this.checkTwoOperandExprTypes("=", pLeftType, pExprType);
 
         if (isNull(pExprType)) {
-            this._error(AEEffectErrors.BAD_ASSIGNMENT_OPERATION, {
+            this._error(EEffectErrors.BAD_ASSIGNMENT_OPERATION, {
                 leftTypeName: pLeftType.getHash(),
                 rightTypeName: pRightType.getHash()
             });
@@ -2889,24 +2889,24 @@ class Effect implements AIAFXEffect {
         pExpr.push(pLeftExpr, true);
         pExpr.push(pRightExpr, true);
 
-        this.checkInstruction(pExpr, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExpr;
     }
 
-    private analyzeIdExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeIdExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
         var sName: string = pNode.value;
-        var pVariable: AIAFXVariableDeclInstruction = this.getVariable(sName);
+        var pVariable: IAFXVariableDeclInstruction = this.getVariable(sName);
 
         if (isNull(pVariable)) {
-            this._error(AEEffectErrors.UNKNOWN_VARNAME, { varName: sName });
+            this._error(EEffectErrors.UNKNOWN_VARNAME, { varName: sName });
             return null;
         }
 
         if (pVariable.getType()._isUnverifiable() && !this.isAnalzeInPass()) {
-            this._error(AEEffectErrors.BAD_USE_OF_ENGINE_VARIABLE);
+            this._error(EEffectErrors.BAD_USE_OF_ENGINE_VARIABLE);
             return null;
         }
 
@@ -2922,15 +2922,15 @@ class Effect implements AIAFXEffect {
         var pVarId: IdExprInstruction = new IdExprInstruction();
         pVarId.push(pVariable.getNameId(), false);
 
-        this.checkInstruction(pVarId, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pVarId, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pVarId;
     }
 
-    private analyzeSimpleExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeSimpleExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pInstruction: AIAFXLiteralInstruction = null;
+        var pInstruction: IAFXLiteralInstruction = null;
         var sName: string = pNode.name;
         var sValue: string = pNode.value;
 
@@ -2960,24 +2960,24 @@ class Effect implements AIAFXEffect {
         return pInstruction;
     }
 
-    private analyzeMemExpr(pNode: AIParseNode): AIAFXExprInstruction {
+    private analyzeMemExpr(pNode: IParseNode): IAFXExprInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pMemExpr: MemExprInstruction = new MemExprInstruction();
 
-        var pPostfixExpr: AIAFXExprInstruction = this.analyzeExpr(pChildren[0]);
-        var pPostfixExprType: AIAFXVariableTypeInstruction = <AIAFXVariableTypeInstruction>pPostfixExpr.getType();
+        var pPostfixExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
+        var pPostfixExprType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
         if (!pPostfixExprType.isFromVariableDecl()) {
-            this._error(AEEffectErrors.BAD_MEMOF_ARGUMENT);
+            this._error(EEffectErrors.BAD_MEMOF_ARGUMENT);
             return null;
         }
 
-        var pBuffer: AIAFXVariableDeclInstruction = pPostfixExprType.getVideoBuffer();
+        var pBuffer: IAFXVariableDeclInstruction = pPostfixExprType.getVideoBuffer();
 
         if (isNull(pBuffer)) {
-            this._error(AEEffectErrors.BAD_MEMOF_NO_BUFFER);
+            this._error(EEffectErrors.BAD_MEMOF_NO_BUFFER);
         }
 
         if (!pPostfixExprType.isStrictPointer() && !isNull(this.getCurrentAnalyzedFunction())) {
@@ -2991,35 +2991,35 @@ class Effect implements AIAFXEffect {
         return pMemExpr;
     }
 
-    private analyzeConstTypeDim(pNode: AIParseNode): AIAFXVariableTypeInstruction {
+    private analyzeConstTypeDim(pNode: IParseNode): IAFXVariableTypeInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         if (pChildren.length > 1) {
-            this._error(AEEffectErrors.BAD_CAST_TYPE_USAGE);
+            this._error(EEffectErrors.BAD_CAST_TYPE_USAGE);
             return null;
         }
 
-        var pType: AIAFXVariableTypeInstruction;
+        var pType: IAFXVariableTypeInstruction;
 
-        pType = <AIAFXVariableTypeInstruction>(this.analyzeType(pChildren[0]));
+        pType = <IAFXVariableTypeInstruction>(this.analyzeType(pChildren[0]));
 
         if (!pType.isBase()) {
-            this._error(AEEffectErrors.BAD_CAST_TYPE_NOT_BASE, { typeName: pType.toString() });
+            this._error(EEffectErrors.BAD_CAST_TYPE_NOT_BASE, { typeName: pType.toString() });
         }
 
-        this.checkInstruction(pType, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pType, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pType;
     }
 
-    private analyzeVarStructDecl(pNode: AIParseNode, pInstruction: AIAFXInstruction = null): void {
+    private analyzeVarStructDecl(pNode: IParseNode, pInstruction: IAFXInstruction = null): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pUsageType: AIAFXVariableTypeInstruction = null;
-        var pVariable: AIAFXVariableDeclInstruction = null;
+        var pChildren: IParseNode[] = pNode.children;
+        var pUsageType: IAFXVariableTypeInstruction = null;
+        var pVariable: IAFXVariableDeclInstruction = null;
         var i: uint = 0;
 
         pUsageType = this.analyzeUsageStructDecl(pChildren[pChildren.length - 1]);
@@ -3035,19 +3035,19 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeUsageStructDecl(pNode: AIParseNode): AIAFXVariableTypeInstruction {
+    private analyzeUsageStructDecl(pNode: IParseNode): IAFXVariableTypeInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var i: uint = 0;
-        var pType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
         for (i = pChildren.length - 1; i >= 0; i--) {
             if (pChildren[i].name === "StructDecl") {
-                var pMainType: AIAFXTypeInstruction = this.analyzeStructDecl(pChildren[i]);
+                var pMainType: IAFXTypeInstruction = this.analyzeStructDecl(pChildren[i]);
                 pType.pushType(pMainType);
 
-                var pTypeDecl: AIAFXTypeDeclInstruction = new TypeDeclInstruction();
+                var pTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
                 pTypeDecl.push(pMainType, true);
 
                 this.addTypeDecl(pTypeDecl);
@@ -3058,27 +3058,27 @@ class Effect implements AIAFXEffect {
             }
         }
 
-        this.checkInstruction(pType, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pType, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pType;
     }
 
-    private analyzeTypeDecl(pNode: AIParseNode, pParentInstruction: AIAFXInstruction = null): AIAFXTypeDeclInstruction {
+    private analyzeTypeDecl(pNode: IParseNode, pParentInstruction: IAFXInstruction = null): IAFXTypeDeclInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
-        var pTypeDeclInstruction: AIAFXTypeDeclInstruction = new TypeDeclInstruction();
+        var pTypeDeclInstruction: IAFXTypeDeclInstruction = new TypeDeclInstruction();
 
         if (pChildren.length === 2) {
             var pStructInstruction: ComplexTypeInstruction = <ComplexTypeInstruction>this.analyzeStructDecl(pChildren[1]);
             pTypeDeclInstruction.push(pStructInstruction, true);
         }
         else {
-            this._error(AEEffectErrors.UNSUPPORTED_TYPEDECL);
+            this._error(EEffectErrors.UNSUPPORTED_TYPEDECL);
         }
 
-        this.checkInstruction(pTypeDeclInstruction, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pTypeDeclInstruction, ECheckStage.CODE_TARGET_SUPPORT);
 
         this.addTypeDecl(pTypeDeclInstruction);
 
@@ -3091,19 +3091,19 @@ class Effect implements AIAFXEffect {
         return pTypeDeclInstruction;
     }
 
-    private analyzeStructDecl(pNode: AIParseNode): AIAFXTypeInstruction {
+    private analyzeStructDecl(pNode: IParseNode): IAFXTypeInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
-        var pFieldCollector: AIAFXInstruction = new InstructionCollector();
+        var pFieldCollector: IAFXInstruction = new InstructionCollector();
 
         var sName: string = pChildren[pChildren.length - 2].value;
 
         pStruct.setName(sName);
 
-        this.newScope(AEScopeType.k_Struct);
+        this.newScope(EScopeType.k_Struct);
 
         var i: uint = 0;
         for (i = pChildren.length - 4; i >= 1; i--) {
@@ -3116,20 +3116,20 @@ class Effect implements AIAFXEffect {
 
         pStruct.addFields(pFieldCollector, true);
 
-        this.checkInstruction(pStruct, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pStruct, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pStruct;
     }
 
-    private analyzeStruct(pNode: AIParseNode): AIAFXTypeInstruction {
+    private analyzeStruct(pNode: IParseNode): IAFXTypeInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
-        var pFieldCollector: AIAFXInstruction = new InstructionCollector();
+        var pFieldCollector: IAFXInstruction = new InstructionCollector();
 
-        this.newScope(AEScopeType.k_Struct);
+        this.newScope(EScopeType.k_Struct);
 
         var i: uint = 0;
         for (i = pChildren.length - 4; i >= 1; i--) {
@@ -3142,19 +3142,19 @@ class Effect implements AIAFXEffect {
 
         pStruct.addFields(pFieldCollector, true);
 
-        this.checkInstruction(pStruct, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pStruct, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pStruct;
     }
 
-    private analyzeFunctionDeclOnlyDefinition(pNode: AIParseNode): AIAFXFunctionDeclInstruction {
+    private analyzeFunctionDeclOnlyDefinition(pNode: IParseNode): IAFXFunctionDeclInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pFunction: FunctionDeclInstruction = null;
         var pFunctionDef: FunctionDefInstruction = null;
         var pStmtBlock: StmtBlockInstruction = null;
-        var pAnnotation: AIAFXAnnotationInstruction = null;
+        var pAnnotation: IAFXAnnotationInstruction = null;
         var sLastNodeValue: string = pChildren[0].value;
         var bNeedAddFunction: boolean = false;
 
@@ -3163,12 +3163,12 @@ class Effect implements AIAFXEffect {
         pFunction = <FunctionDeclInstruction>this.findFunctionByDef(pFunctionDef);
 
         if (!isDef(pFunction)) {
-            this._error(AEEffectErrors.BAD_CANNOT_CHOOSE_FUNCTION, { funcName: pFunction.getNameId().toString() });
+            this._error(EEffectErrors.BAD_CANNOT_CHOOSE_FUNCTION, { funcName: pFunction.getNameId().toString() });
             return null;
         }
 
         if (!isNull(pFunction) && pFunction.hasImplementation()) {
-            this._error(AEEffectErrors.BAD_REDEFINE_FUNCTION, { funcName: pFunction.getNameId().toString() });
+            this._error(EEffectErrors.BAD_REDEFINE_FUNCTION, { funcName: pFunction.getNameId().toString() });
             return null;
         }
 
@@ -3178,14 +3178,14 @@ class Effect implements AIAFXEffect {
         }
         else {
             if (!pFunction.getReturnType().isEqual(pFunctionDef.getReturnType())) {
-                this._error(AEEffectErrors.BAD_FUNCTION_DEF_RETURN_TYPE, { funcName: pFunction.getNameId().toString() });
+                this._error(EEffectErrors.BAD_FUNCTION_DEF_RETURN_TYPE, { funcName: pFunction.getNameId().toString() });
                 return null;
             }
 
             bNeedAddFunction = false;
         }
 
-        pFunction.setFunctionDef(<AIAFXDeclInstruction>pFunctionDef);
+        pFunction.setFunctionDef(<IAFXDeclInstruction>pFunctionDef);
 
         this.resumeScope();
 
@@ -3208,14 +3208,14 @@ class Effect implements AIAFXEffect {
 
     }
 
-    private resumeFunctionAnalysis(pAnalzedFunction: AIAFXFunctionDeclInstruction): void {
+    private resumeFunctionAnalysis(pAnalzedFunction: IAFXFunctionDeclInstruction): void {
         var pFunction: FunctionDeclInstruction = <FunctionDeclInstruction>pAnalzedFunction;
-        var pNode: AIParseNode = pFunction._getParseNode();
+        var pNode: IParseNode = pFunction._getParseNode();
 
         this.setAnalyzedNode(pNode);
         this.setScope(pFunction._getImplementationScope());
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pStmtBlock: StmtBlockInstruction = null;
 
         this.setCurrentAnalyzedFunction(pFunction);
@@ -3223,29 +3223,29 @@ class Effect implements AIAFXEffect {
         // LOG("-----Analyze function '" + pFunction.getName() + "'------");
 
         pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
-        pFunction.setImplementation(<AIAFXStmtInstruction>pStmtBlock);
+        pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
 
         this.setCurrentAnalyzedFunction(null);
 
         this.endScope();
 
-        this.checkInstruction(pFunction, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pFunction, ECheckStage.CODE_TARGET_SUPPORT);
     }
 
-    private analyzeFunctionDef(pNode: AIParseNode): FunctionDefInstruction {
+    private analyzeFunctionDef(pNode: IParseNode): FunctionDefInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pFunctionDef: FunctionDefInstruction = new FunctionDefInstruction();
-        var pReturnType: AIAFXVariableTypeInstruction = null;
-        var pFuncName: AIAFXIdInstruction = null;
-        var pArguments: AIAFXVariableDeclInstruction[] = null;
+        var pReturnType: IAFXVariableTypeInstruction = null;
+        var pFuncName: IAFXIdInstruction = null;
+        var pArguments: IAFXVariableDeclInstruction[] = null;
         var sFuncName: string = pChildren[pChildren.length - 2].value;
 
         pReturnType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
 
         if (pReturnType.isPointer() || pReturnType._containSampler() || pReturnType._containPointer()) {
-            this._error(AEEffectErrors.BAD_RETURN_TYPE_FOR_FUNCTION, { funcName: sFuncName });
+            this._error(EEffectErrors.BAD_RETURN_TYPE_FOR_FUNCTION, { funcName: sFuncName });
             return null;
         }
 
@@ -3266,16 +3266,16 @@ class Effect implements AIAFXEffect {
 
         this.endScope();
 
-        this.checkInstruction(pFunctionDef, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pFunctionDef, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pFunctionDef;
     }
 
-    private analyzeParamList(pNode: AIParseNode, pFunctionDef: FunctionDefInstruction): void {
+    private analyzeParamList(pNode: IParseNode, pFunctionDef: FunctionDefInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pParameter: AIAFXVariableDeclInstruction;
+        var pChildren: IParseNode[] = pNode.children;
+        var pParameter: IAFXVariableDeclInstruction;
 
         var i: uint = 0;
 
@@ -3288,12 +3288,12 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeParameterDecl(pNode: AIParseNode): AIAFXVariableDeclInstruction {
+    private analyzeParameterDecl(pNode: IParseNode): IAFXVariableDeclInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pType: AIAFXVariableTypeInstruction = null;
-        var pParameter: AIAFXVariableDeclInstruction = null;
+        var pChildren: IParseNode[] = pNode.children;
+        var pType: IAFXVariableTypeInstruction = null;
+        var pParameter: IAFXVariableDeclInstruction = null;
 
         pType = this.analyzeParamUsageType(pChildren[1]);
         pParameter = this.analyzeVariable(pChildren[0], pType);
@@ -3301,14 +3301,14 @@ class Effect implements AIAFXEffect {
         return pParameter;
     }
 
-    private analyzeParamUsageType(pNode: AIParseNode): AIAFXVariableTypeInstruction {
-        var pChildren: AIParseNode[] = pNode.children;
+    private analyzeParamUsageType(pNode: IParseNode): IAFXVariableTypeInstruction {
+        var pChildren: IParseNode[] = pNode.children;
         var i: uint = 0;
-        var pType: AIAFXVariableTypeInstruction = new VariableTypeInstruction();
+        var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
         for (i = pChildren.length - 1; i >= 0; i--) {
             if (pChildren[i].name === "Type") {
-                var pMainType: AIAFXTypeInstruction = this.analyzeType(pChildren[i]);
+                var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
                 pType.pushType(pMainType);
             }
             else if (pChildren[i].name === "ParamUsage") {
@@ -3317,17 +3317,17 @@ class Effect implements AIAFXEffect {
             }
         }
 
-        this.checkInstruction(pType, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pType, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pType;
     }
 
-    private analyzeStmtBlock(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeStmtBlock(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pStmtBlock: StmtBlockInstruction = new StmtBlockInstruction();
-        var pStmt: AIAFXStmtInstruction;
+        var pStmt: IAFXStmtInstruction;
         var i: uint = 0;
 
         pStmtBlock._setScope(this.getScope());
@@ -3345,15 +3345,15 @@ class Effect implements AIAFXEffect {
 
         this.endScope();
 
-        this.checkInstruction(pStmtBlock, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pStmtBlock, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pStmtBlock;
     }
 
-    private analyzeStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
         switch (sFirstNodeName) {
@@ -3371,10 +3371,10 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeSimpleStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeSimpleStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
         switch (sFirstNodeName) {
@@ -3407,48 +3407,48 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeReturnStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeReturnStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pReturnStmtInstruction: ReturnStmtInstruction = new ReturnStmtInstruction();
 
-        var pFunctionReturnType: AIAFXVariableTypeInstruction = this.getCurrentAnalyzedFunction().getReturnType();
+        var pFunctionReturnType: IAFXVariableTypeInstruction = this.getCurrentAnalyzedFunction().getReturnType();
 
         if (pFunctionReturnType.isEqual(Effect.getSystemType("void")) && pChildren.length === 3) {
-            this._error(AEEffectErrors.BAD_RETURN_STMT_VOID);
+            this._error(EEffectErrors.BAD_RETURN_STMT_VOID);
             return null;
         }
         else if (!pFunctionReturnType.isEqual(Effect.getSystemType("void")) && pChildren.length === 2) {
-            this._error(AEEffectErrors.BAD_RETURN_STMT_EMPTY);
+            this._error(EEffectErrors.BAD_RETURN_STMT_EMPTY);
             return null;
         }
 
         if (pChildren.length === 3) {
-            var pExprInstruction: AIAFXExprInstruction = this.analyzeExpr(pChildren[1]);
-            var pOutVar: AIAFXVariableDeclInstruction = this.getCurrentAnalyzedFunction()._getOutVariable();
+            var pExprInstruction: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
+            var pOutVar: IAFXVariableDeclInstruction = this.getCurrentAnalyzedFunction()._getOutVariable();
 
             if (!isNull(pOutVar) && pOutVar.getType() !== pExprInstruction.getType()) {
-                this._error(AEEffectErrors.BAD_RETURN_STMT_NOT_EQUAL_TYPES);
+                this._error(EEffectErrors.BAD_RETURN_STMT_NOT_EQUAL_TYPES);
                 return null;
             }
 
             if (!pFunctionReturnType.isEqual(pExprInstruction.getType())) {
-                this._error(AEEffectErrors.BAD_RETURN_STMT_NOT_EQUAL_TYPES);
+                this._error(EEffectErrors.BAD_RETURN_STMT_NOT_EQUAL_TYPES);
                 return null;
             }
             pReturnStmtInstruction.push(pExprInstruction, true);
         }
 
-        this.checkInstruction(pReturnStmtInstruction, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pReturnStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pReturnStmtInstruction;
     }
 
-    private analyzeBreakStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeBreakStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pBreakStmtInstruction: BreakStmtInstruction = new BreakStmtInstruction();
         var sOperatorName: string = pChildren[1].value;
 
@@ -3458,15 +3458,15 @@ class Effect implements AIAFXEffect {
             this.getCurrentAnalyzedFunction()._setForVertex(false);
         }
 
-        this.checkInstruction(pBreakStmtInstruction, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pBreakStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pBreakStmtInstruction;
     }
 
-    private analyzeDeclStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeDeclStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sNodeName: string = pNode.name;
         var pDeclStmtInstruction: DeclStmtInstruction = new DeclStmtInstruction();
 
@@ -3482,45 +3482,45 @@ class Effect implements AIAFXEffect {
                 break;
         }
 
-        this.checkInstruction(pDeclStmtInstruction, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pDeclStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pDeclStmtInstruction;
     }
 
-    private analyzeExprStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeExprStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var pExprStmtInstruction: ExprStmtInstruction = new ExprStmtInstruction();
-        var pExprInstruction: AIAFXExprInstruction = this.analyzeExpr(pChildren[1]);
+        var pExprInstruction: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
 
         pExprStmtInstruction.push(pExprInstruction, true);
 
-        this.checkInstruction(pExprStmtInstruction, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pExprStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pExprStmtInstruction;
     }
 
-    private analyzeWhileStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeWhileStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var isDoWhile: boolean = (pChildren[pChildren.length - 1].value === "do");
         var isNonIfStmt: boolean = (pNode.name === "NonIfStmt") ? true : false;
 
         var pWhileStmt: WhileStmtInstruction = new WhileStmtInstruction();
-        var pCondition: AIAFXExprInstruction = null;
-        var pConditionType: AIAFXVariableTypeInstruction = null;
-        var pBoolType: AIAFXTypeInstruction = Effect.getSystemType("boolean");
-        var pStmt: AIAFXStmtInstruction = null;
+        var pCondition: IAFXExprInstruction = null;
+        var pConditionType: IAFXVariableTypeInstruction = null;
+        var pBoolType: IAFXTypeInstruction = Effect.getSystemType("boolean");
+        var pStmt: IAFXStmtInstruction = null;
 
         if (isDoWhile) {
             pWhileStmt.setOperator("do_while");
             pCondition = this.analyzeExpr(pChildren[2]);
-            pConditionType = <AIAFXVariableTypeInstruction>pCondition.getType();
+            pConditionType = <IAFXVariableTypeInstruction>pCondition.getType();
 
             if (!pConditionType.isEqual(pBoolType)) {
-                this._error(AEEffectErrors.BAD_DO_WHILE_CONDITION, { typeName: pConditionType.toString() });
+                this._error(EEffectErrors.BAD_DO_WHILE_CONDITION, { typeName: pConditionType.toString() });
                 return null;
             }
 
@@ -3529,10 +3529,10 @@ class Effect implements AIAFXEffect {
         else {
             pWhileStmt.setOperator("while");
             pCondition = this.analyzeExpr(pChildren[2]);
-            pConditionType = <AIAFXVariableTypeInstruction>pCondition.getType();
+            pConditionType = <IAFXVariableTypeInstruction>pCondition.getType();
 
             if (!pConditionType.isEqual(pBoolType)) {
-                this._error(AEEffectErrors.BAD_WHILE_CONDITION, { typeName: pConditionType.toString() });
+                this._error(EEffectErrors.BAD_WHILE_CONDITION, { typeName: pConditionType.toString() });
                 return null;
             }
 
@@ -3547,27 +3547,27 @@ class Effect implements AIAFXEffect {
             pWhileStmt.push(pStmt, true);
         }
 
-        this.checkInstruction(pWhileStmt, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pWhileStmt, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pWhileStmt;
     }
 
-    private analyzeIfStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeIfStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var isIfElse: boolean = (pChildren.length === 7);
 
         var pIfStmtInstruction: IfStmtInstruction = new IfStmtInstruction();
-        var pCondition: AIAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
-        var pConditionType: AIAFXVariableTypeInstruction = <AIAFXVariableTypeInstruction>pCondition.getType();
-        var pBoolType: AIAFXTypeInstruction = Effect.getSystemType("boolean");
+        var pCondition: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        var pConditionType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pCondition.getType();
+        var pBoolType: IAFXTypeInstruction = Effect.getSystemType("boolean");
 
-        var pIfStmt: AIAFXStmtInstruction = null;
-        var pElseStmt: AIAFXStmtInstruction = null;
+        var pIfStmt: IAFXStmtInstruction = null;
+        var pElseStmt: IAFXStmtInstruction = null;
 
         if (!pConditionType.isEqual(pBoolType)) {
-            this._error(AEEffectErrors.BAD_IF_CONDITION, { typeName: pConditionType.toString() });
+            this._error(EEffectErrors.BAD_IF_CONDITION, { typeName: pConditionType.toString() });
             return null;
         }
 
@@ -3588,15 +3588,15 @@ class Effect implements AIAFXEffect {
             pIfStmtInstruction.push(pIfStmt, true);
         }
 
-        this.checkInstruction(pIfStmtInstruction, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pIfStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pIfStmtInstruction;
     }
 
-    private analyzeNonIfStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeNonIfStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
         switch (sFirstNodeName) {
@@ -3609,13 +3609,13 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeForStmt(pNode: AIParseNode): AIAFXStmtInstruction {
+    private analyzeForStmt(pNode: IParseNode): IAFXStmtInstruction {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var isNonIfStmt: boolean = (pNode.name === "NonIfStmt");
         var pForStmtInstruction: ForStmtInstruction = new ForStmtInstruction();
-        var pStmt: AIAFXStmtInstruction = null;
+        var pStmt: IAFXStmtInstruction = null;
 
         this.newScope();
 
@@ -3641,15 +3641,15 @@ class Effect implements AIAFXEffect {
 
         this.endScope();
 
-        this.checkInstruction(pForStmtInstruction, AECheckStage.CODE_TARGET_SUPPORT);
+        this.checkInstruction(pForStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);
 
         return pForStmtInstruction;
     }
 
-    private analyzeForInit(pNode: AIParseNode, pForStmtInstruction: ForStmtInstruction): void {
+    private analyzeForInit(pNode: IParseNode, pForStmtInstruction: ForStmtInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
         switch (sFirstNodeName) {
@@ -3657,7 +3657,7 @@ class Effect implements AIAFXEffect {
                 this.analyzeVariableDecl(pChildren[0], pForStmtInstruction);
                 break;
             case "Expr":
-                var pExpr: AIAFXExprInstruction = this.analyzeExpr(pChildren[0]);
+                var pExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
                 pForStmtInstruction.push(pExpr, true);
                 break;
             default:
@@ -3669,27 +3669,27 @@ class Effect implements AIAFXEffect {
         return;
     }
 
-    private analyzeForCond(pNode: AIParseNode, pForStmtInstruction: ForStmtInstruction): void {
+    private analyzeForCond(pNode: IParseNode, pForStmtInstruction: ForStmtInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         if (pChildren.length === 1) {
             pForStmtInstruction.push(null);
             return;
         }
 
-        var pConditionExpr: AIAFXExprInstruction = this.analyzeExpr(pChildren[1]);
+        var pConditionExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
 
         pForStmtInstruction.push(pConditionExpr, true);
         return;
     }
 
-    private analyzeForStep(pNode: AIParseNode, pForStmtInstruction: ForStmtInstruction): void {
+    private analyzeForStep(pNode: IParseNode, pForStmtInstruction: ForStmtInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pStepExpr: AIAFXExprInstruction = this.analyzeExpr(pChildren[0]);
+        var pChildren: IParseNode[] = pNode.children;
+        var pStepExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
 
         pForStmtInstruction.push(pStepExpr, true);
 
@@ -3697,16 +3697,16 @@ class Effect implements AIAFXEffect {
     }
 
 
-    private analyzeUseDecl(pNode: AIParseNode): void {
+    private analyzeUseDecl(pNode: IParseNode): void {
         this.setAnalyzedNode(pNode);
         this.setStrictModeOn();
     }
 
-    private analyzeTechniqueForImport(pNode: AIParseNode): void {
+    private analyzeTechniqueForImport(pNode: IParseNode): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
-        var pTechnique: AIAFXTechniqueInstruction = new TechniqueInstruction();
+        var pChildren: IParseNode[] = pNode.children;
+        var pTechnique: IAFXTechniqueInstruction = new TechniqueInstruction();
         var sTechniqueName: string = this.analyzeComplexName(pChildren[pChildren.length - 2]);
         var isComplexName: boolean = pChildren[pChildren.length - 2].children.length !== 1;
 
@@ -3714,7 +3714,7 @@ class Effect implements AIAFXEffect {
 
         for (var i: uint = pChildren.length - 3; i >= 0; i--) {
             if (pChildren[i].name === "Annotation") {
-                var pAnnotation: AIAFXAnnotationInstruction = this.analyzeAnnotation(pChildren[i]);
+                var pAnnotation: IAFXAnnotationInstruction = this.analyzeAnnotation(pChildren[i]);
                 pTechnique.setAnnotation(pAnnotation);
             }
             else if (pChildren[i].name === "Semantic") {
@@ -3729,10 +3729,10 @@ class Effect implements AIAFXEffect {
         this.addTechnique(pTechnique);
     }
 
-    private analyzeComplexName(pNode: AIParseNode): string {
+    private analyzeComplexName(pNode: IParseNode): string {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sName: string = "";
 
         for (var i: uint = pChildren.length - 1; i >= 0; i--) {
@@ -3742,26 +3742,26 @@ class Effect implements AIAFXEffect {
         return sName;
     }
 
-    private analyzeTechniqueBodyForImports(pNode: AIParseNode, pTechnique: AIAFXTechniqueInstruction): void {
+    private analyzeTechniqueBodyForImports(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         for (var i: uint = pChildren.length - 2; i >= 1; i--) {
             this.analyzePassDeclForImports(pChildren[i], pTechnique);
         }
     }
 
-    private analyzePassDeclForImports(pNode: AIParseNode, pTechnique: AIAFXTechniqueInstruction): void {
+    private analyzePassDeclForImports(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         if (pChildren[0].name === "ImportDecl") {
             this.analyzeImportDecl(pChildren[0], pTechnique);
         }
         else if (pChildren.length > 1) {
-            var pPass: AIAFXPassInstruction = new PassInstruction();
+            var pPass: IAFXPassInstruction = new PassInstruction();
             //TODO: add annotation and id
             this.analyzePassStateBlockForShaders(pChildren[0], pPass);
 
@@ -3771,20 +3771,20 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzePassStateBlockForShaders(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassStateBlockForShaders(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         for (var i: uint = pChildren.length - 2; i >= 1; i--) {
             this.analyzePassStateForShader(pChildren[i], pPass);
         }
     }
 
-    private analyzePassStateForShader(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         if (pChildren.length === 1) {
             pPass._markAsComplex(true);
@@ -3800,13 +3800,13 @@ class Effect implements AIAFXEffect {
         }
 
         var sType: string = pChildren[pChildren.length - 1].value.toUpperCase();
-        var eShaderType: AEFunctionType = AEFunctionType.k_Vertex;
+        var eShaderType: EFunctionType = EFunctionType.k_Vertex;
 
         if (sType === "VERTEXSHADER") {
-            eShaderType = AEFunctionType.k_Vertex
+            eShaderType = EFunctionType.k_Vertex
 			}
         else if (sType === "PIXELSHADER") {
-            eShaderType = AEFunctionType.k_Pixel;
+            eShaderType = EFunctionType.k_Pixel;
         }
         else {
             return;
@@ -3814,19 +3814,19 @@ class Effect implements AIAFXEffect {
 
         pNode.isAnalyzed = true;
 
-        var pStateExprNode: AIParseNode = pChildren[pChildren.length - 3];
-        var pExprNode: AIParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+        var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
+        var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
         var pCompileExpr: CompileExprInstruction = <CompileExprInstruction>this.analyzeExpr(pExprNode);
-        var pShaderFunc: AIAFXFunctionDeclInstruction = pCompileExpr.getFunction();
+        var pShaderFunc: IAFXFunctionDeclInstruction = pCompileExpr.getFunction();
 
-        if (eShaderType === AEFunctionType.k_Vertex) {
+        if (eShaderType === EFunctionType.k_Vertex) {
             if (!pShaderFunc._checkDefenitionForVertexUsage()) {
-                this._error(AEEffectErrors.BAD_FUNCTION_VERTEX_DEFENITION, { funcDef: pShaderFunc._getStringDef() });
+                this._error(EEffectErrors.BAD_FUNCTION_VERTEX_DEFENITION, { funcDef: pShaderFunc._getStringDef() });
             }
         }
         else {
             if (!pShaderFunc._checkDefenitionForPixelUsage()) {
-                this._error(AEEffectErrors.BAD_FUNCTION_PIXEL_DEFENITION, { funcDef: pShaderFunc._getStringDef() });
+                this._error(EEffectErrors.BAD_FUNCTION_PIXEL_DEFENITION, { funcDef: pShaderFunc._getStringDef() });
             }
         }
 
@@ -3835,10 +3835,10 @@ class Effect implements AIAFXEffect {
         pPass._addFoundFunction(pNode, pShaderFunc, eShaderType);
     }
 
-    private analyzePassStateIfForShader(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassStateIfForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         if (pChildren.length === 5) {
             this.analyzePassStateBlockForShaders(pChildren[0], pPass);
@@ -3853,18 +3853,18 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzePassStateSwitchForShader(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassStateSwitchForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         this.analyzePassCaseBlockForShader(pChildren[0], pPass);
     }
 
-    private analyzePassCaseBlockForShader(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassCaseBlockForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         for (var i: uint = pChildren.length - 2; i >= 1; i--) {
             if (pChildren[i].name === "CaseState") {
@@ -3876,10 +3876,10 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzePassCaseStateForShader(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassCaseStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         for (var i: uint = pChildren.length - 4; i >= 0; i--) {
             if (pChildren[i].name === "PassState") {
@@ -3888,10 +3888,10 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzePassDefaultStateForShader(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassDefaultStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         for (var i: uint = pChildren.length - 3; i >= 0; i--) {
             if (pChildren[i].name === "PassState") {
@@ -3900,27 +3900,27 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private resumeTechniqueAnalysis(pTechnique: AIAFXTechniqueInstruction): void {
-        var pPassList: AIAFXPassInstruction[] = pTechnique.getPassList();
+    private resumeTechniqueAnalysis(pTechnique: IAFXTechniqueInstruction): void {
+        var pPassList: IAFXPassInstruction[] = pTechnique.getPassList();
 
         for (var i: uint = 0; i < pPassList.length; i++) {
             this.resumePassAnalysis(pPassList[i]);
         }
 
         if (!pTechnique.checkForCorrectImports()) {
-            this._error(AEEffectErrors.BAD_TECHNIQUE_IMPORT, { techniqueName: pTechnique.getName() });
+            this._error(EEffectErrors.BAD_TECHNIQUE_IMPORT, { techniqueName: pTechnique.getName() });
             return;
         }
 
         pTechnique.setGlobalParams(this._sProvideNameSpace, this._pImportedGlobalTechniqueList);
     }
 
-    private resumePassAnalysis(pPass: AIAFXPassInstruction): void {
-        var pNode: AIParseNode = pPass._getParseNode();
+    private resumePassAnalysis(pPass: IAFXPassInstruction): void {
+        var pNode: IParseNode = pPass._getParseNode();
 
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         this.setAnalyzeInPass(true);
         this.analyzePassStateBlock(pChildren[0], pPass);
@@ -3929,10 +3929,10 @@ class Effect implements AIAFXEffect {
         pPass.finalizePass();
     }
 
-    private analyzePassStateBlock(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassStateBlock(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         pPass._addCodeFragment("{");
 
@@ -3943,10 +3943,10 @@ class Effect implements AIAFXEffect {
         pPass._addCodeFragment("}");
     }
 
-    private analyzePassState(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassState(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         if (pChildren.length === 1) {
             if (pChildren[0].name === "StateIf") {
@@ -3960,11 +3960,11 @@ class Effect implements AIAFXEffect {
         }
 
         if (pNode.isAnalyzed) {
-            var pFunc: AIAFXFunctionDeclInstruction = pPass._getFoundedFunction(pNode);
-            var eShaderType: AEFunctionType = pPass._getFoundedFunctionType(pNode);
-            var pShader: AIAFXFunctionDeclInstruction = null;
+            var pFunc: IAFXFunctionDeclInstruction = pPass._getFoundedFunction(pNode);
+            var eShaderType: EFunctionType = pPass._getFoundedFunctionType(pNode);
+            var pShader: IAFXFunctionDeclInstruction = null;
 
-            if (eShaderType === AEFunctionType.k_Vertex) {
+            if (eShaderType === EFunctionType.k_Vertex) {
                 pShader = pFunc._getVertexShader();
             }
             else {
@@ -3975,55 +3975,55 @@ class Effect implements AIAFXEffect {
         }
         else {
             var sType: string = pChildren[pChildren.length - 1].value.toUpperCase();
-            var eType: AERenderStates = null;
-            var pStateExprNode: AIParseNode = pChildren[pChildren.length - 3];
-            var pExprNode: AIParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+            var eType: ERenderStates = null;
+            var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
+            var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
 
             switch (sType) {
                 case "BLENDENABLE":
-                    eType = AERenderStates.BLENDENABLE;
+                    eType = ERenderStates.BLENDENABLE;
                     break;
                 case "CULLFACEENABLE":
-                    eType = AERenderStates.CULLFACEENABLE;
+                    eType = ERenderStates.CULLFACEENABLE;
                     break;
                 case "ZENABLE":
-                    eType = AERenderStates.ZENABLE;
+                    eType = ERenderStates.ZENABLE;
                     break;
                 case "ZWRITEENABLE":
-                    eType = AERenderStates.ZWRITEENABLE;
+                    eType = ERenderStates.ZWRITEENABLE;
                     break;
                 case "DITHERENABLE":
-                    eType = AERenderStates.DITHERENABLE;
+                    eType = ERenderStates.DITHERENABLE;
                     break;
                 case "SCISSORTESTENABLE":
-                    eType = AERenderStates.SCISSORTESTENABLE;
+                    eType = ERenderStates.SCISSORTESTENABLE;
                     break;
                 case "STENCILTESTENABLE":
-                    eType = AERenderStates.STENCILTESTENABLE;
+                    eType = ERenderStates.STENCILTESTENABLE;
                     break;
                 case "POLYGONOFFSETFILLENABLE":
-                    eType = AERenderStates.POLYGONOFFSETFILLENABLE;
+                    eType = ERenderStates.POLYGONOFFSETFILLENABLE;
                     break;
                 case "CULLFACE":
-                    eType = AERenderStates.CULLFACE;
+                    eType = ERenderStates.CULLFACE;
                     break;
                 case "FRONTFACE":
-                    eType = AERenderStates.FRONTFACE;
+                    eType = ERenderStates.FRONTFACE;
                     break;
                 case "SRCBLEND":
-                    eType = AERenderStates.SRCBLEND;
+                    eType = ERenderStates.SRCBLEND;
                     break;
                 case "DESTBLEND":
-                    eType = AERenderStates.DESTBLEND;
+                    eType = ERenderStates.DESTBLEND;
                     break;
                 case "ZFUNC":
-                    eType = AERenderStates.ZFUNC;
+                    eType = ERenderStates.ZFUNC;
                     break;
                 case "ALPHABLENDENABLE":
-                    eType = AERenderStates.ALPHABLENDENABLE;
+                    eType = ERenderStates.ALPHABLENDENABLE;
                     break;
                 case "ALPHATESTENABLE":
-                    eType = AERenderStates.ALPHATESTENABLE;
+                    eType = ERenderStates.ALPHATESTENABLE;
                     break;
 
                 default:
@@ -4038,28 +4038,28 @@ class Effect implements AIAFXEffect {
             }
 
             var sValue: string = pExprNode.value.toUpperCase();
-            var eValue: AERenderStateValues = null;
+            var eValue: ERenderStateValues = null;
 
             switch (eType) {
-                case AERenderStates.ALPHABLENDENABLE:
-                case AERenderStates.ALPHATESTENABLE:
+                case ERenderStates.ALPHABLENDENABLE:
+                case ERenderStates.ALPHATESTENABLE:
                     logger.warn("ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.");
                     return;
 
-                case AERenderStates.BLENDENABLE:
-                case AERenderStates.CULLFACEENABLE:
-                case AERenderStates.ZENABLE:
-                case AERenderStates.ZWRITEENABLE:
-                case AERenderStates.DITHERENABLE:
-                case AERenderStates.SCISSORTESTENABLE:
-                case AERenderStates.STENCILTESTENABLE:
-                case AERenderStates.POLYGONOFFSETFILLENABLE:
+                case ERenderStates.BLENDENABLE:
+                case ERenderStates.CULLFACEENABLE:
+                case ERenderStates.ZENABLE:
+                case ERenderStates.ZWRITEENABLE:
+                case ERenderStates.DITHERENABLE:
+                case ERenderStates.SCISSORTESTENABLE:
+                case ERenderStates.STENCILTESTENABLE:
+                case ERenderStates.POLYGONOFFSETFILLENABLE:
                     switch (sValue) {
                         case "TRUE":
-                            eValue = AERenderStateValues.TRUE;
+                            eValue = ERenderStateValues.TRUE;
                             break;
                         case "FALSE":
-                            eValue = AERenderStateValues.FALSE;
+                            eValue = ERenderStateValues.FALSE;
                             break;
 
                         default:
@@ -4069,16 +4069,16 @@ class Effect implements AIAFXEffect {
                     }
                     break;
 
-                case AERenderStates.CULLFACE:
+                case ERenderStates.CULLFACE:
                     switch (sValue) {
                         case "FRONT":
-                            eValue = AERenderStateValues.FRONT;
+                            eValue = ERenderStateValues.FRONT;
                             break;
                         case "BACK":
-                            eValue = AERenderStateValues.BACK;
+                            eValue = ERenderStateValues.BACK;
 								break
 							case "FRONT_AND_BACK":
-                            eValue = AERenderStateValues.FRONT_AND_BACK;
+                            eValue = ERenderStateValues.FRONT_AND_BACK;
                             break;
 
                         default:
@@ -4087,13 +4087,13 @@ class Effect implements AIAFXEffect {
                     }
                     break;
 
-                case AERenderStates.FRONTFACE:
+                case ERenderStates.FRONTFACE:
                     switch (sValue) {
                         case "CW":
-                            eValue = AERenderStateValues.CW;
+                            eValue = ERenderStateValues.CW;
                             break;
                         case "CCW":
-                            eValue = AERenderStateValues.CCW;
+                            eValue = ERenderStateValues.CCW;
                             break;
 
                         default:
@@ -4102,41 +4102,41 @@ class Effect implements AIAFXEffect {
                     }
                     break;
 
-                case AERenderStates.SRCBLEND:
-                case AERenderStates.DESTBLEND:
+                case ERenderStates.SRCBLEND:
+                case ERenderStates.DESTBLEND:
                     switch (sValue) {
                         case "ZERO":
-                            eValue = AERenderStateValues.ZERO;
+                            eValue = ERenderStateValues.ZERO;
                             break;
                         case "ONE":
-                            eValue = AERenderStateValues.ONE;
+                            eValue = ERenderStateValues.ONE;
                             break;
                         case "SRCCOLOR":
-                            eValue = AERenderStateValues.SRCCOLOR;
+                            eValue = ERenderStateValues.SRCCOLOR;
                             break;
                         case "INVSRCCOLOR":
-                            eValue = AERenderStateValues.INVSRCCOLOR;
+                            eValue = ERenderStateValues.INVSRCCOLOR;
                             break;
                         case "SRCALPHA":
-                            eValue = AERenderStateValues.SRCALPHA;
+                            eValue = ERenderStateValues.SRCALPHA;
                             break;
                         case "INVSRCALPHA":
-                            eValue = AERenderStateValues.INVSRCALPHA;
+                            eValue = ERenderStateValues.INVSRCALPHA;
                             break;
                         case "DESTALPHA":
-                            eValue = AERenderStateValues.DESTALPHA;
+                            eValue = ERenderStateValues.DESTALPHA;
                             break;
                         case "INVDESTALPHA":
-                            eValue = AERenderStateValues.INVDESTALPHA;
+                            eValue = ERenderStateValues.INVDESTALPHA;
                             break;
                         case "DESTCOLOR":
-                            eValue = AERenderStateValues.DESTCOLOR;
+                            eValue = ERenderStateValues.DESTCOLOR;
                             break;
                         case "INVDESTCOLOR":
-                            eValue = AERenderStateValues.INVDESTCOLOR;
+                            eValue = ERenderStateValues.INVDESTCOLOR;
                             break;
                         case "SRCALPHASAT":
-                            eValue = AERenderStateValues.SRCALPHASAT;
+                            eValue = ERenderStateValues.SRCALPHASAT;
                             break;
 
                         default:
@@ -4147,31 +4147,31 @@ class Effect implements AIAFXEffect {
 
 
 
-                case AERenderStates.ZFUNC:
+                case ERenderStates.ZFUNC:
                     switch (sValue) {
                         case "NEVER":
-                            eValue = AERenderStateValues.NEVER;
+                            eValue = ERenderStateValues.NEVER;
                             break;
                         case "LESS":
-                            eValue = AERenderStateValues.LESS;
+                            eValue = ERenderStateValues.LESS;
                             break;
                         case "EQUAL":
-                            eValue = AERenderStateValues.EQUAL;
+                            eValue = ERenderStateValues.EQUAL;
                             break;
                         case "LESSEQUAL":
-                            eValue = AERenderStateValues.LESSEQUAL;
+                            eValue = ERenderStateValues.LESSEQUAL;
                             break;
                         case "GREATER":
-                            eValue = AERenderStateValues.GREATER;
+                            eValue = ERenderStateValues.GREATER;
                             break;
                         case "NOTEQUAL":
-                            eValue = AERenderStateValues.NOTEQUAL;
+                            eValue = ERenderStateValues.NOTEQUAL;
                             break;
                         case "GREATEREQUAL":
-                            eValue = AERenderStateValues.GREATEREQUAL;
+                            eValue = ERenderStateValues.GREATEREQUAL;
                             break;
                         case "ALWAYS":
-                            eValue = AERenderStateValues.ALWAYS;
+                            eValue = ERenderStateValues.ALWAYS;
                             break;
 
                         default:
@@ -4187,13 +4187,13 @@ class Effect implements AIAFXEffect {
 
     }
 
-    private analyzePassStateIf(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassStateIf(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
-        var pIfExpr: AIAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
-        pIfExpr.prepareFor(AEFunctionType.k_PassFunction);
+        var pIfExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        pIfExpr.prepareFor(EFunctionType.k_PassFunction);
 
         pPass._addCodeFragment("if(" + pIfExpr.toFinalCode() + ")");
 
@@ -4212,24 +4212,24 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzePassStateSwitch(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassStateSwitch(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         var sCodeFragment: string = "switch";
-        var pSwitchExpr: AIAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
-        pSwitchExpr.prepareFor(AEFunctionType.k_PassFunction);
+        var pSwitchExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        pSwitchExpr.prepareFor(EFunctionType.k_PassFunction);
 
         pPass._addCodeFragment("(" + pSwitchExpr.toFinalCode() + ")");
 
         this.analyzePassCaseBlock(pChildren[0], pPass);
     }
 
-    private analyzePassCaseBlock(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassCaseBlock(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         pPass._addCodeFragment("{");
 
@@ -4245,13 +4245,13 @@ class Effect implements AIAFXEffect {
         pPass._addCodeFragment("}");
     }
 
-    private analyzePassCaseState(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassCaseState(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
-        var pCaseStateExpr: AIAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 2]);
-        pCaseStateExpr.prepareFor(AEFunctionType.k_PassFunction);
+        var pCaseStateExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 2]);
+        pCaseStateExpr.prepareFor(EFunctionType.k_PassFunction);
 
         pPass._addCodeFragment("case " + pCaseStateExpr.toFinalCode() + ": ");
 
@@ -4265,10 +4265,10 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzePassDefault(pNode: AIParseNode, pPass: AIAFXPassInstruction): void {
+    private analyzePassDefault(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         pPass._addCodeFragment("default: ");
 
@@ -4282,10 +4282,10 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private analyzeImportDecl(pNode: AIParseNode, pTechnique: AIAFXTechniqueInstruction = null): void {
+    private analyzeImportDecl(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction = null): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
         var sComponentName: string = this.analyzeComplexName(pChildren[pChildren.length - 2]);
         var iShift: int = 0;
 
@@ -4304,40 +4304,40 @@ class Effect implements AIAFXEffect {
                 sShortedComponentName = sComponentName.replace(this._sProvideNameSpace + ".", "");
             }
 
-            var pTechniqueFromSameEffect: AIAFXTechniqueInstruction = this._pTechniqueMap[sComponentName] || this._pTechniqueMap[sShortedComponentName];
+            var pTechniqueFromSameEffect: IAFXTechniqueInstruction = this._pTechniqueMap[sComponentName] || this._pTechniqueMap[sShortedComponentName];
             if (isDefAndNotNull(pTechniqueFromSameEffect)) {
                 pTechnique.addTechniqueFromSameEffect(pTechniqueFromSameEffect, iShift);
                 return;
             }
         }
 
-        var pComponent: AIAFXComponent = this._pComposer.getComponentByName(sComponentName);
+        var pComponent: IAFXComponent = this._pComposer.getComponentByName(sComponentName);
         if (!pComponent) {
-            this._error(AEEffectErrors.BAD_IMPORTED_COMPONENT_NOT_EXIST, { componentName: sComponentName });
+            this._error(EEffectErrors.BAD_IMPORTED_COMPONENT_NOT_EXIST, { componentName: sComponentName });
             return;
         }
 
         this.addComponent(pComponent, iShift, pTechnique);
     }
 
-    private analyzeProvideDecl(pNode: AIParseNode): void {
+    private analyzeProvideDecl(pNode: IParseNode): void {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         if (pChildren.length === 2) {
             this._sProvideNameSpace = this.analyzeComplexName(pChildren[0]);
         }
         else {
-            this._error(AEEffectTempErrors.UNSUPPORTED_PROVIDE_AS);
+            this._error(EEffectTempErrors.UNSUPPORTED_PROVIDE_AS);
             return;
         }
     }
 
-    private analyzeShiftOpt(pNode: AIParseNode): int {
+    private analyzeShiftOpt(pNode: IParseNode): int {
         this.setAnalyzedNode(pNode);
 
-        var pChildren: AIParseNode[] = pNode.children;
+        var pChildren: IParseNode[] = pNode.children;
 
         var iShift: int = <int><any>(pChildren[0].value);
 
@@ -4351,7 +4351,7 @@ class Effect implements AIAFXEffect {
         return iShift;
     }
 
-    private addComponent(pComponent: AIAFXComponent, iShift: int, pTechnique: AIAFXTechniqueInstruction): void {
+    private addComponent(pComponent: IAFXComponent, iShift: int, pTechnique: IAFXTechniqueInstruction): void {
         if (!isNull(pTechnique)) {
             pTechnique.addComponent(pComponent, iShift);
         }
@@ -4369,20 +4369,20 @@ class Effect implements AIAFXEffect {
 
         //TODO: add correct add of compnent, not global
 
-        var pComponentTechnique: AIAFXTechniqueInstruction = pComponent.getTechnique();
+        var pComponentTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
         if (this.isAddedTechnique(pComponentTechnique)) {
             return;
         }
 
-        var pSharedListV: AIAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForVertex();
-        var pSharedListP: AIAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForPixel();
+        var pSharedListV: IAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForVertex();
+        var pSharedListP: IAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForPixel();
 
         for (var i: uint = 0; i < pSharedListV.length; i++) {
-            this.addExternalSharedVariable(pSharedListV[i], AEFunctionType.k_Vertex);
+            this.addExternalSharedVariable(pSharedListV[i], EFunctionType.k_Vertex);
         }
 
         for (var i: uint = 0; i < pSharedListP.length; i++) {
-            this.addExternalSharedVariable(pSharedListP[i], AEFunctionType.k_Pixel);
+            this.addExternalSharedVariable(pSharedListP[i], EFunctionType.k_Pixel);
         }
 
         if (isNull(this._pAddedTechniqueList)) {
@@ -4392,7 +4392,7 @@ class Effect implements AIAFXEffect {
         this._pAddedTechniqueList.push(pTechnique);
     }
 
-    private isAddedTechnique(pTechnique: AIAFXTechniqueInstruction): boolean {
+    private isAddedTechnique(pTechnique: IAFXTechniqueInstruction): boolean {
         if (isNull(this._pAddedTechniqueList)) {
             return false;
         }
@@ -4413,12 +4413,12 @@ class Effect implements AIAFXEffect {
      * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
      * 
      * @sOperator {string} Один из операторов: + - * / % += -= *= /= %= = < > <= >= == != =
-     * @pLeftType {AIAFXVariableTypeInstruction} Тип левой части выражения
-     * @pRightType {AIAFXVariableTypeInstruction} Тип правой части выражения
+     * @pLeftType {IAFXVariableTypeInstruction} Тип левой части выражения
+     * @pRightType {IAFXVariableTypeInstruction} Тип правой части выражения
      */
     private checkTwoOperandExprTypes(sOperator: string,
-        pLeftType: AIAFXVariableTypeInstruction,
-        pRightType: AIAFXVariableTypeInstruction): AIAFXVariableTypeInstruction {
+        pLeftType: IAFXVariableTypeInstruction,
+        pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
         if (pLeftType._isUnverifiable()) {
             return pLeftType;
         }
@@ -4430,7 +4430,7 @@ class Effect implements AIAFXEffect {
         var isComplex: boolean = pLeftType.isComplex() || pRightType.isComplex();
         var isArray: boolean = pLeftType.isNotBaseArray() || pRightType.isNotBaseArray();
         var isSampler: boolean = Effect.isSamplerType(pLeftType) || Effect.isSamplerType(pRightType);
-        var pBoolType: AIAFXVariableTypeInstruction = Effect.getSystemType("boolean").getVariableType();
+        var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("boolean").getVariableType();
 
         if (isArray || isSampler) {
             return null;
@@ -4442,7 +4442,7 @@ class Effect implements AIAFXEffect {
 
         if (this.isAssignmentOperator(sOperator)) {
             if (!pLeftType.isWritable()) {
-                this._error(AEEffectErrors.BAD_TYPE_FOR_WRITE);
+                this._error(EEffectErrors.BAD_TYPE_FOR_WRITE);
                 return null;
             }
 
@@ -4451,29 +4451,29 @@ class Effect implements AIAFXEffect {
             }
 
             if (!pRightType.isReadable()) {
-                this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+                this._error(EEffectErrors.BAD_TYPE_FOR_READ);
                 return null;
             }
 
             if (sOperator !== "=" && !pLeftType.isReadable()) {
-                this._error(AEEffectErrors.BAD_TYPE_FOR_READ)
+                this._error(EEffectErrors.BAD_TYPE_FOR_READ)
 				}
         }
         else {
             if (!pLeftType.isReadable()) {
-                this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+                this._error(EEffectErrors.BAD_TYPE_FOR_READ);
                 return null;
             }
 
             if (!pRightType.isReadable()) {
-                this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+                this._error(EEffectErrors.BAD_TYPE_FOR_READ);
                 return null;
             }
         }
 
         if (isComplex) {
             if (sOperator === "=" && pLeftType.isEqual(pRightType)) {
-                return <AIAFXVariableTypeInstruction>pLeftType;
+                return <IAFXVariableTypeInstruction>pLeftType;
             }
             else if (this.isEqualOperator(sOperator) && !pLeftType._containArray() && !pLeftType._containSampler()) {
                 return pBoolType;
@@ -4483,9 +4483,9 @@ class Effect implements AIAFXEffect {
             }
         }
 
-        var pReturnType: AIAFXVariableTypeInstruction = null;
-        var pLeftBaseType: AIAFXVariableTypeInstruction = (<SystemTypeInstruction>pLeftType.getBaseType()).getVariableType();
-        var pRightBaseType: AIAFXVariableTypeInstruction = (<SystemTypeInstruction>pRightType.getBaseType()).getVariableType();
+        var pReturnType: IAFXVariableTypeInstruction = null;
+        var pLeftBaseType: IAFXVariableTypeInstruction = (<SystemTypeInstruction>pLeftType.getBaseType()).getVariableType();
+        var pRightBaseType: IAFXVariableTypeInstruction = (<SystemTypeInstruction>pRightType.getBaseType()).getVariableType();
 
 
         if (pLeftType.isConst() && this.isAssignmentOperator(sOperator)) {
@@ -4559,10 +4559,10 @@ class Effect implements AIAFXEffect {
      * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
      * 
      * @sOperator {string} Один из операторов: + - ! ++ --
-     * @pLeftType {AIAFXVariableTypeInstruction} Тип операнда
+     * @pLeftType {IAFXVariableTypeInstruction} Тип операнда
      */
     private checkOneOperandExprType(sOperator: string,
-        pType: AIAFXVariableTypeInstruction): AIAFXVariableTypeInstruction {
+        pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
 
         if (pType._isUnverifiable === undefined) {
             debug.log(pType);
@@ -4580,14 +4580,14 @@ class Effect implements AIAFXEffect {
         }
 
         if (!pType.isReadable()) {
-            this._error(AEEffectErrors.BAD_TYPE_FOR_READ);
+            this._error(EEffectErrors.BAD_TYPE_FOR_READ);
             return null;
         }
 
 
         if (sOperator === "++" || sOperator === "--") {
             if (!pType.isWritable()) {
-                this._error(AEEffectErrors.BAD_TYPE_FOR_WRITE);
+                this._error(EEffectErrors.BAD_TYPE_FOR_WRITE);
                 return null;
             }
 
@@ -4599,7 +4599,7 @@ class Effect implements AIAFXEffect {
         }
 
         if (sOperator === "!") {
-            var pBoolType: AIAFXVariableTypeInstruction = Effect.getSystemType("boolean").getVariableType();
+            var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("boolean").getVariableType();
 
             if (pType.isEqual(pBoolType)) {
                 return pBoolType;
@@ -4642,8 +4642,8 @@ class Effect implements AIAFXEffect {
         return sOperator === "==" || sOperator === "!=";
     }
 
-    private addExtactionStmts(pStmt: AIAFXStmtInstruction): void {
-        var pPointerList: AIAFXVariableDeclInstruction[] = this.getPointerForExtractList();
+    private addExtactionStmts(pStmt: IAFXStmtInstruction): void {
+        var pPointerList: IAFXVariableDeclInstruction[] = this.getPointerForExtractList();
 
         for (var i: uint = 0; i < pPointerList.length; i++) {
             this.generateExtractStmtFromPointer(pPointerList[i], pStmt);
@@ -4652,12 +4652,12 @@ class Effect implements AIAFXEffect {
         this.clearPointersForExtract();
     }
 
-    private generateExtractStmtFromPointer(pPointer: AIAFXVariableDeclInstruction, pParentStmt: AIAFXStmtInstruction): AIAFXStmtInstruction {
-        var pPointerType: AIAFXVariableTypeInstruction = pPointer.getType();
-        var pWhatExtracted: AIAFXVariableDeclInstruction = pPointerType._getDownPointer();
-        var pWhatExtractedType: AIAFXVariableTypeInstruction = null;
+    private generateExtractStmtFromPointer(pPointer: IAFXVariableDeclInstruction, pParentStmt: IAFXStmtInstruction): IAFXStmtInstruction {
+        var pPointerType: IAFXVariableTypeInstruction = pPointer.getType();
+        var pWhatExtracted: IAFXVariableDeclInstruction = pPointerType._getDownPointer();
+        var pWhatExtractedType: IAFXVariableTypeInstruction = null;
 
-        var pFunction: AIAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
+        var pFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
 
         while (!isNull(pWhatExtracted)) {
             pWhatExtractedType = pWhatExtracted.getType();
@@ -4669,7 +4669,7 @@ class Effect implements AIAFXEffect {
                     pWhatExtractedType.getPointer(),
                     pWhatExtractedType.getVideoBuffer(), 0, null);
 
-                this.checkInstruction(pSingleExtract, AECheckStage.CODE_TARGET_SUPPORT);
+                this.checkInstruction(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT);
 
                 pParentStmt.push(pSingleExtract, true);
 
@@ -4690,18 +4690,18 @@ class Effect implements AIAFXEffect {
         return pParentStmt;
     }
 
-    private generateExtractStmtForComplexVar(pVarDecl: AIAFXVariableDeclInstruction,
-        pParentStmt: AIAFXStmtInstruction,
-        pPointer: AIAFXVariableDeclInstruction,
-        pBuffer: AIAFXVariableDeclInstruction,
+    private generateExtractStmtForComplexVar(pVarDecl: IAFXVariableDeclInstruction,
+        pParentStmt: IAFXStmtInstruction,
+        pPointer: IAFXVariableDeclInstruction,
+        pBuffer: IAFXVariableDeclInstruction,
         iPadding: uint): void {
-        var pVarType: AIAFXVariableTypeInstruction = pVarDecl.getType();
+        var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
         var pFieldNameList: string[] = pVarType.getFieldNameList();
-        var pField: AIAFXVariableDeclInstruction = null;
-        var pFieldType: AIAFXVariableTypeInstruction = null;
+        var pField: IAFXVariableDeclInstruction = null;
+        var pFieldType: IAFXVariableTypeInstruction = null;
         var pSingleExtract: ExtractStmtInstruction = null;
 
-        var pFunction: AIAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
+        var pFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
 
         for (var i: uint = 0; i < pFieldNameList.length; i++) {
             pField = pVarType.getField(pFieldNameList[i]);
@@ -4713,11 +4713,11 @@ class Effect implements AIAFXEffect {
             pFieldType = pField.getType();
 
             if (pFieldType.isPointer()) {
-                var pFieldPointer: AIAFXVariableDeclInstruction = pFieldType._getMainPointer();
+                var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
                 pSingleExtract = new ExtractStmtInstruction();
                 pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding(), null);
 
-                this.checkInstruction(pSingleExtract, AECheckStage.CODE_TARGET_SUPPORT);
+                this.checkInstruction(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT);
 
                 pParentStmt.push(pSingleExtract, true);
                 this.generateExtractStmtFromPointer(pFieldPointer, pParentStmt);
@@ -4733,7 +4733,7 @@ class Effect implements AIAFXEffect {
                 pSingleExtract = new ExtractStmtInstruction();
                 pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding(), null);
 
-                this.checkInstruction(pSingleExtract, AECheckStage.CODE_TARGET_SUPPORT);
+                this.checkInstruction(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT);
 
                 pParentStmt.push(pSingleExtract, true);
 
@@ -4745,7 +4745,7 @@ class Effect implements AIAFXEffect {
     }
 
 
-    private getNodeSourceLocation(pNode: AIParseNode): { line: uint; column: uint; } {
+    private getNodeSourceLocation(pNode: IParseNode): { line: uint; column: uint; } {
         if (isDef(pNode.line)) {
             return { line: pNode.line, column: pNode.start };
         }
@@ -4754,7 +4754,7 @@ class Effect implements AIAFXEffect {
         }
     }
 
-    private checkInstruction(pInst: AIAFXInstruction, eStage: AECheckStage): void {
+    private checkInstruction(pInst: IAFXInstruction, eStage: ECheckStage): void {
         if (!pInst.check(eStage)) {
             this._errorFromInstruction(pInst.getLastError());
         }

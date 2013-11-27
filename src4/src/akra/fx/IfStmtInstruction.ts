@@ -8,7 +8,7 @@ class IfStmtInstruction extends StmtInstruction {
     constructor() {
         super();
         this._pInstructionList = [null, null, null];
-        this._eInstructionType = AEAFXInstructionTypes.k_IfStmtInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_IfStmtInstruction;
     }
 
     toFinalCode(): string {

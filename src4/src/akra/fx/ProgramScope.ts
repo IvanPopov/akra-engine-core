@@ -1,19 +1,19 @@
-﻿/// <reference path="../idl/AIScope.ts" />
+﻿/// <reference path="../idl/IScope.ts" />
 
 class ProgramScope {
 
-    private _pScopeMap: AIScopeMap;
+    private _pScopeMap: IScopeMap;
     private _iCurrentScope: int;
     private _nScope: uint;
 
     constructor() {
-        this._pScopeMap = <AIScopeMap>{};
+        this._pScopeMap = <IScopeMap>{};
         this._iCurrentScope = null;
         this._nScope = 0;
     }
 
     isStrictMode(iScope: uint = this._iCurrentScope): boolean {
-        var pScope: AIScope = this._pScopeMap[iScope];
+        var pScope: IScope = this._pScopeMap[iScope];
 
         while (!isNull(pScope)) {
             if (pScope.isStrictMode) {
@@ -30,9 +30,9 @@ class ProgramScope {
         this._pScopeMap[iScope].isStrictMode = true;
     }
 
-    newScope(eType: AEScopeType): void {
+    newScope(eType: EScopeType): void {
         var isFirstScope: boolean = false;
-        var pParentScope: AIScope;
+        var pParentScope: IScope;
 
         if (isNull(this._iCurrentScope)) {
             pParentScope = null;
@@ -43,7 +43,7 @@ class ProgramScope {
 
         this._iCurrentScope = this._nScope++;
 
-        var pNewScope: AIScope = <AIScope> {
+        var pNewScope: IScope = <IScope> {
             parent: pParentScope,
             index: this._iCurrentScope,
             type: eType,
@@ -77,8 +77,8 @@ class ProgramScope {
             return;
         }
 
-        var pOldScope: AIScope = this._pScopeMap[this._iCurrentScope];
-        var pNewScope: AIScope = pOldScope.parent;
+        var pOldScope: IScope = this._pScopeMap[this._iCurrentScope];
+        var pNewScope: IScope = pOldScope.parent;
 
         if (isNull(pNewScope)) {
             this._iCurrentScope = null;
@@ -88,22 +88,22 @@ class ProgramScope {
         }
     }
 
-    getScopeType(): AEScopeType {
+    getScopeType(): EScopeType {
         return this._pScopeMap[this._iCurrentScope].type;
     }
 
-    getVariable(sVariableName: string, iScope: uint = this._iCurrentScope): AIAFXVariableDeclInstruction {
+    getVariable(sVariableName: string, iScope: uint = this._iCurrentScope): IAFXVariableDeclInstruction {
         if (isNull(iScope)) {
             return null;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
+        var pScope: IScope = this._pScopeMap[iScope];
 
         while (!isNull(pScope)) {
-            var pVariableMap: AIAFXVariableDeclMap = pScope.variableMap;
+            var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
 
             if (!isNull(pVariableMap)) {
-                var pVariable: AIAFXVariableDeclInstruction = pVariableMap[sVariableName];
+                var pVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName];
 
                 if (isDef(pVariable)) {
                     return pVariable;
@@ -116,8 +116,8 @@ class ProgramScope {
         return null;
     }
 
-    getType(sTypeName: string, iScope: uint = this._iCurrentScope): AIAFXTypeInstruction {
-        var pTypeDecl: AIAFXTypeDeclInstruction = this.getTypeDecl(sTypeName, iScope);
+    getType(sTypeName: string, iScope: uint = this._iCurrentScope): IAFXTypeInstruction {
+        var pTypeDecl: IAFXTypeDeclInstruction = this.getTypeDecl(sTypeName, iScope);
 
         if (!isNull(pTypeDecl)) {
             return pTypeDecl.getType();
@@ -127,18 +127,18 @@ class ProgramScope {
         }
     }
 
-    getTypeDecl(sTypeName: string, iScope: uint = this._iCurrentScope): AIAFXTypeDeclInstruction {
+    getTypeDecl(sTypeName: string, iScope: uint = this._iCurrentScope): IAFXTypeDeclInstruction {
         if (isNull(iScope)) {
             return null;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
+        var pScope: IScope = this._pScopeMap[iScope];
 
         while (!isNull(pScope)) {
-            var pTypeMap: AIAFXTypeDeclMap = pScope.typeMap;
+            var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
 
             if (!isNull(pTypeMap)) {
-                var pType: AIAFXTypeDeclInstruction = pTypeMap[sTypeName];
+                var pType: IAFXTypeDeclInstruction = pTypeMap[sTypeName];
 
                 if (isDef(pType)) {
                     return pType;
@@ -155,25 +155,25 @@ class ProgramScope {
      * get function by name and list of types
      * return null - if threre are not function; undefined - if there more then one function; function - if all ok
      */
-    getFunction(sFuncName: string, pArgumentTypes: AIAFXTypedInstruction[], iScope: uint = ProgramScope.GLOBAL_SCOPE): AIAFXFunctionDeclInstruction {
+    getFunction(sFuncName: string, pArgumentTypes: IAFXTypedInstruction[], iScope: uint = ProgramScope.GLOBAL_SCOPE): IAFXFunctionDeclInstruction {
         if (isNull(iScope)) {
             return null;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
-        var pFunction: AIAFXFunctionDeclInstruction = null;
+        var pScope: IScope = this._pScopeMap[iScope];
+        var pFunction: IAFXFunctionDeclInstruction = null;
 
         while (!isNull(pScope)) {
-            var pFunctionListMap: AIAFXFunctionDeclListMap = pScope.functionMap;
+            var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
             if (!isNull(pFunctionListMap)) {
-                var pFunctionList: AIAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
+                var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
 
                 if (isDef(pFunctionList)) {
 
                     for (var i: uint = 0; i < pFunctionList.length; i++) {
-                        var pTestedFunction: AIAFXFunctionDeclInstruction = pFunctionList[i];
-                        var pTestedArguments: AIAFXTypedInstruction[] = pTestedFunction.getArguments();
+                        var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
+                        var pTestedArguments: IAFXTypedInstruction[] = pTestedFunction.getArguments();
 
                         if (pArgumentTypes.length > pTestedArguments.length ||
                             pArgumentTypes.length < pTestedFunction.getNumNeededArguments()) {
@@ -213,25 +213,25 @@ class ProgramScope {
      * get shader function by name and list of types
      * return null - if threre are not function; undefined - if there more then one function; function - if all ok
      */
-    getShaderFunction(sFuncName: string, pArgumentTypes: AIAFXTypedInstruction[], iScope: uint = ProgramScope.GLOBAL_SCOPE): AIAFXFunctionDeclInstruction {
+    getShaderFunction(sFuncName: string, pArgumentTypes: IAFXTypedInstruction[], iScope: uint = ProgramScope.GLOBAL_SCOPE): IAFXFunctionDeclInstruction {
         if (isNull(iScope)) {
             return null;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
-        var pFunction: AIAFXFunctionDeclInstruction = null;
+        var pScope: IScope = this._pScopeMap[iScope];
+        var pFunction: IAFXFunctionDeclInstruction = null;
 
         while (!isNull(pScope)) {
-            var pFunctionListMap: AIAFXFunctionDeclListMap = pScope.functionMap;
+            var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
             if (!isNull(pFunctionListMap)) {
-                var pFunctionList: AIAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
+                var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
 
                 if (isDef(pFunctionList)) {
 
                     for (var i: uint = 0; i < pFunctionList.length; i++) {
-                        var pTestedFunction: AIAFXFunctionDeclInstruction = pFunctionList[i];
-                        var pTestedArguments: AIAFXVariableDeclInstruction[] = <AIAFXVariableDeclInstruction[]>pTestedFunction.getArguments();
+                        var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
+                        var pTestedArguments: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>pTestedFunction.getArguments();
 
                         if (pArgumentTypes.length > pTestedArguments.length) {
                             continue;
@@ -288,16 +288,16 @@ class ProgramScope {
         return pFunction;
     }
 
-    addVariable(pVariable: AIAFXVariableDeclInstruction, iScope: uint = this._iCurrentScope): boolean {
+    addVariable(pVariable: IAFXVariableDeclInstruction, iScope: uint = this._iCurrentScope): boolean {
         if (isNull(iScope)) {
             return false;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
-        var pVariableMap: AIAFXVariableDeclMap = pScope.variableMap;
+        var pScope: IScope = this._pScopeMap[iScope];
+        var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
 
         if (isNull(pVariableMap)) {
-            pVariableMap = pScope.variableMap = <AIAFXVariableDeclMap>{};
+            pVariableMap = pScope.variableMap = <IAFXVariableDeclMap>{};
         }
 
         var sVariableName: string = pVariable.getName();
@@ -316,7 +316,7 @@ class ProgramScope {
                 pVariable._setScope(iScope);
             }
             else {
-                var pBlendVariable: AIAFXVariableDeclInstruction = pVariableMap[sVariableName].blend(pVariable, AEAFXBlendMode.k_Shared);
+                var pBlendVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName].blend(pVariable, EAFXBlendMode.k_Shared);
                 if (isNull(pBlendVariable)) {
                     return false;
                 }
@@ -328,16 +328,16 @@ class ProgramScope {
         return true;
     }
 
-    addType(pType: AIAFXTypeDeclInstruction, iScope: uint = this._iCurrentScope): boolean {
+    addType(pType: IAFXTypeDeclInstruction, iScope: uint = this._iCurrentScope): boolean {
         if (isNull(iScope)) {
             return false;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
-        var pTypeMap: AIAFXTypeDeclMap = pScope.typeMap;
+        var pScope: IScope = this._pScopeMap[iScope];
+        var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
 
         if (isNull(pTypeMap)) {
-            pTypeMap = pScope.typeMap = <AIAFXTypeDeclMap>{};
+            pTypeMap = pScope.typeMap = <IAFXTypeDeclMap>{};
         }
 
         var sTypeName: string = pType.getName();
@@ -352,16 +352,16 @@ class ProgramScope {
         return true;
     }
 
-    addFunction(pFunction: AIAFXFunctionDeclInstruction, iScope: uint = ProgramScope.GLOBAL_SCOPE): boolean {
+    addFunction(pFunction: IAFXFunctionDeclInstruction, iScope: uint = ProgramScope.GLOBAL_SCOPE): boolean {
         if (isNull(iScope)) {
             return false;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
-        var pFunctionMap: AIAFXFunctionDeclListMap = pScope.functionMap;
+        var pScope: IScope = this._pScopeMap[iScope];
+        var pFunctionMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
         if (isNull(pFunctionMap)) {
-            pFunctionMap = pScope.functionMap = <AIAFXFunctionDeclListMap>{};
+            pFunctionMap = pScope.functionMap = <IAFXFunctionDeclListMap>{};
         }
 
         var sFuncName: string = pFunction.getName();
@@ -385,13 +385,13 @@ class ProgramScope {
             return false;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
+        var pScope: IScope = this._pScopeMap[iScope];
 
         while (!isNull(pScope)) {
-            var pVariableMap: AIAFXVariableDeclMap = pScope.variableMap;
+            var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
 
             if (!isNull(pVariableMap)) {
-                var pVariable: AIAFXVariableDeclInstruction = pVariableMap[sVariableName];
+                var pVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName];
 
                 if (isDef(pVariable)) {
                     return true;
@@ -409,13 +409,13 @@ class ProgramScope {
             return false;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
+        var pScope: IScope = this._pScopeMap[iScope];
 
         while (!isNull(pScope)) {
-            var pTypeMap: AIAFXTypeDeclMap = pScope.typeMap;
+            var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
 
             if (!isNull(pTypeMap)) {
-                var pType: AIAFXTypeDeclInstruction = pTypeMap[sTypeName];
+                var pType: IAFXTypeDeclInstruction = pTypeMap[sTypeName];
 
                 if (isDef(pType)) {
                     return true;
@@ -428,25 +428,25 @@ class ProgramScope {
         return false;
     }
 
-    hasFunction(sFuncName: string, pArgumentTypes: AIAFXTypedInstruction[], iScope: uint = ProgramScope.GLOBAL_SCOPE): boolean {
+    hasFunction(sFuncName: string, pArgumentTypes: IAFXTypedInstruction[], iScope: uint = ProgramScope.GLOBAL_SCOPE): boolean {
         if (isNull(iScope)) {
             return false;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
+        var pScope: IScope = this._pScopeMap[iScope];
 
         while (!isNull(pScope)) {
-            var pFunctionListMap: AIAFXFunctionDeclListMap = pScope.functionMap;
+            var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
             if (!isNull(pFunctionListMap)) {
-                var pFunctionList: AIAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
+                var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
 
                 if (isDef(pFunctionList)) {
-                    var pFunction: AIAFXFunctionDeclInstruction = null;
+                    var pFunction: IAFXFunctionDeclInstruction = null;
 
                     for (var i: uint = 0; i < pFunctionList.length; i++) {
-                        var pTestedFunction: AIAFXFunctionDeclInstruction = pFunctionList[i];
-                        var pTestedArguments: AIAFXTypedInstruction[] = pTestedFunction.getArguments();
+                        var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
+                        var pTestedArguments: IAFXTypedInstruction[] = pTestedFunction.getArguments();
 
                         if (pArgumentTypes.length > pTestedArguments.length ||
                             pArgumentTypes.length < pTestedFunction.getNumNeededArguments()) {
@@ -487,24 +487,24 @@ class ProgramScope {
         return isDef(this._pScopeMap[iScope].typeMap[sTypeName]);
     }
 
-    private hasFunctionInScope(pFunction: AIAFXFunctionDeclInstruction, iScope: uint): boolean {
+    private hasFunctionInScope(pFunction: IAFXFunctionDeclInstruction, iScope: uint): boolean {
         if (isNull(iScope)) {
             return false;
         }
 
-        var pScope: AIScope = this._pScopeMap[iScope];
-        var pFunctionListMap: AIAFXFunctionDeclListMap = pScope.functionMap;
-        var pFunctionList: AIAFXFunctionDeclInstruction[] = pFunctionListMap[pFunction.getName()];
+        var pScope: IScope = this._pScopeMap[iScope];
+        var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
+        var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[pFunction.getName()];
 
         if (!isDef(pFunctionList)) {
             return false;
         }
 
-        var pFunctionArguments: AIAFXTypedInstruction[] = <AIAFXTypedInstruction[]>pFunction.getArguments();
+        var pFunctionArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunction.getArguments();
         var hasFunction: boolean = false;
 
         for (var i: uint = 0; i < pFunctionList.length; i++) {
-            var pTestedArguments: AIAFXTypedInstruction[] = <AIAFXTypedInstruction[]>pFunctionList[i].getArguments();
+            var pTestedArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunctionList[i].getArguments();
 
             if (pTestedArguments.length !== pFunctionArguments.length) {
                 continue;

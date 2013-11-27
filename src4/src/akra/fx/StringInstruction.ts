@@ -2,9 +2,9 @@ import ExprInstruction = require("fx/ExprInstruction");
 import Effect = require("fx/Effect");
 
 
-class StringInstruction extends ExprInstruction implements AIAFXLiteralInstruction {
+class StringInstruction extends ExprInstruction implements IAFXLiteralInstruction {
     private _sValue: string;
-    private static _pStringType: AIAFXVariableTypeInstruction = null;
+    private static _pStringType: IAFXVariableTypeInstruction = null;
 
     /**
      * EMPTY_OPERATOR EMPTY_ARGUMENTS
@@ -13,7 +13,7 @@ class StringInstruction extends ExprInstruction implements AIAFXLiteralInstructi
         super();
         this._sValue = "";
         this._pType = Effect.getSystemType("string").getVariableType();
-        this._eInstructionType = AEAFXInstructionTypes.k_StringInstruction;
+        this._eInstructionType = EAFXInstructionTypes.k_StringInstruction;
     }
 
     setValue(sValue: string): void {
@@ -39,8 +39,8 @@ class StringInstruction extends ExprInstruction implements AIAFXLiteralInstructi
         return true;
     }
 
-    clone(pRelationMap?: AIAFXInstructionMap): AIAFXLiteralInstruction {
-        var pClonedInstruction: AIAFXLiteralInstruction = <AIAFXLiteralInstruction>(super.clone(pRelationMap));
+    clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+        var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
         pClonedInstruction.setValue(this._sValue);
         return pClonedInstruction;
     }
