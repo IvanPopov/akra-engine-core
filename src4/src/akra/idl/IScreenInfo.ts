@@ -1,7 +1,7 @@
 
 
 module akra {
-	interface IScreenInfo {
+	export interface IScreenInfo {
 		width: int;
 		height: int;
 		aspect: float;

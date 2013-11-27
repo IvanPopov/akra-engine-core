@@ -5,25 +5,25 @@
 /// <reference path="IIndexData.ts" />
 
 module akra {
-	enum EDataFlowTypes {
+	export enum EDataFlowTypes {
 		MAPPABLE   = 1, /*!< The data stream can be marked up its index.*/
 		UNMAPPABLE = 0  /*!< The data stream cannot be marked up its index.*/
 	};
 	
-	interface IDataFlow {
+	export interface IDataFlow {
 		flow:   int;
 		data:   IVertexData;
 		type:   EDataFlowTypes;
 		mapper: IDataMapper;
 	}
 	
-	interface IDataMapper {
+	export interface IDataMapper {
 		data: IVertexData;
 		semantics: string;
 		addition: int;
 	}
 	
-	interface IBufferMap extends IReferenceCounter, IEventProvider {
+	export interface IBufferMap extends IReferenceCounter, IEventProvider {
 		primType: EPrimitiveTypes;
 		index: IIndexData;
 		length: uint;

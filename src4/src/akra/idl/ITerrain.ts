@@ -7,16 +7,16 @@
 /// <reference path="ISceneNode.ts" />
 
 module akra {
-	interface IImageMap {
+	export interface IImageMap {
 		[index: string]: IImg;
 	}
 	
-	interface ITerrainSampleData {
+	export interface ITerrainSampleData {
 		iColor: uint;
 		fScale: float;
 	}
 	
-	interface ITerrain extends ISceneObject {
+	export interface ITerrain extends ISceneObject {
 		/** readonly */ worldExtents: IRect3d;
 		/** readonly */ worldSize: IVec3;
 		/** readonly */ mapScale: IVec3;

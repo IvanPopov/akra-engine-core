@@ -1,7 +1,7 @@
 
 
 module akra {
-	interface IBrowserInfo {
+	export interface IBrowserInfo {
 		name: string;
 		version: string;
 		os: string;

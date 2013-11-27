@@ -1,20 +1,20 @@
-// IFont2d interface
+// IFont2d export interface
 // [write description here...]
 
 module akra {
-	enum EFontStyles {
-		ITALIC,
-		BOLD
-	}
+export enum FontStyle {
+	ITALIC,
+	BOLD
+};
 
-	interface IFont2d {
-		size: uint;
-		htmlSize: string;
-		color: uint;
-		htmlColor: string;
-		family: string;
-		bold: boolean;
-		italic: boolean;
-	}
+export interface IFont2d {
+	size: uint;
+	htmlSize: string;
+	color: uint;
+	htmlColor: string;
+	family: string;
+	bold: boolean;
+	italic: boolean;
 }
-
+}
+

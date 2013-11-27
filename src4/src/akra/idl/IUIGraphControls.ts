@@ -1,11 +1,12 @@
-// IUIGraphControls interface
+// IUIGraphControls export interface
 // [write description here...]
 
 /// <reference path="IUIPanel.ts" />
 
 module akra {
-	interface IUIGraphControls extends IUIPanel {
-		/** readonly */ graph: IUIGraph;
-	}
+export interface IUIGraphControls extends IUIPanel {
+	/** readonly */ graph: IUIGraph;
+}
 }
 
+#endif

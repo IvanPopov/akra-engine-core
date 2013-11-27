@@ -9,25 +9,25 @@
 /// <reference path="IVertexData.ts" />
 
 module akra {
-	enum ERenderDataTypes {
+	export enum ERenderDataTypes {
 		ISOLATED = 0, /*<! положить данные в текстуру, и больше ничего не делать.*/
 		INDEXED,	  /*<! обычные даннае из текстуры, доступные по индексу.*/
 		I2I,		  /*<! данные по 2йному индексу.*/
 		DIRECT		/*<! непосредственно данные для атрибута.*/
 	};
 	
-	enum ERenderDataOptions {
+	export enum ERenderDataOptions {
 	    ADVANCED_INDEX = 65536/*1 << 0x10*/, /*<! использовать индекс на индекс упаковку данных*/
 	    SINGLE_INDEX   = 131072/*1 << 0x11*/,
 		/*<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.*/
 	    RENDERABLE	 = 262144/*1 << 0x12*/		 /*<! определяет, будет ли объект редерится*/
 	}
 	
-	interface IRenderDataType {
+	export interface IRenderDataType {
 		new (): IRenderData;
 	}
 	
-	interface IRenderData extends IReferenceCounter {
+	export interface IRenderData extends IReferenceCounter {
 		/** readonly */ buffer: IRenderDataCollection;
 	
 		/**

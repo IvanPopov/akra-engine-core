@@ -12,7 +12,7 @@
 /// <reference path="IBufferMap.ts" />
 
 module akra {
-	interface IShaderProgram extends IRenderResource {
+	export interface IShaderProgram extends IRenderResource {
 		create(csVertex?: string, csPixel?: string): boolean;
 		compile(csVertex?: string, csPixel?: string): boolean;
 		isLinked(): boolean;

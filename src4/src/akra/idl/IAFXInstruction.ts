@@ -8,7 +8,7 @@
 
 
 module akra {
-	enum EAFXInstructionTypes {
+	export enum EAFXInstructionTypes {
 	    k_Instruction = 0,
 	    k_InstructionCollector,
 	    k_SimpleInstruction,
@@ -73,7 +73,7 @@ module akra {
 	}
 	
 	
-	enum EFunctionType {
+	export enum EFunctionType {
 	    k_Vertex = 0,
 	    k_Pixel = 1,
 	    k_Fragment = 1,
@@ -81,13 +81,13 @@ module akra {
 	    k_PassFunction = 3
 	}
 	
-	enum ECheckStage {
+	export enum ECheckStage {
 	    CODE_TARGET_SUPPORT, /* Отсутсвуют конструкции не поддерживаемые языком назначения (GLSL) */
 	    SELF_CONTAINED /* Код замкнут, нет не определенных функций, пассов, техник. Нет мертвых функций. */
 	    // VALIDATION  /* Код не содерит синтаксиески неправильных выражений, то что не исчерпывается */ 
 	}
 	
-	enum EVarUsedMode {
+	export enum EVarUsedMode {
 	    k_Read,
 	    k_Write,
 	    k_ReadWrite,
@@ -95,71 +95,71 @@ module akra {
 	    k_Default = k_ReadWrite
 	}
 	
-	interface IAFXInstructionStateMap extends IStringMap {
+	export interface IAFXInstructionStateMap extends IStringMap {
 	}
 	
-	interface IAFXInstructionRoutine {
+	export interface IAFXInstructionRoutine {
 	    (): void;
 	}
 	
-	interface IAFXInstructionError {
+	export interface IAFXInstructionError {
 	    code: uint;
 	    info: any;
 	}
 	
-	interface IAFXInstructionMap {
+	export interface IAFXInstructionMap {
 	    [index: uint]: IAFXInstruction;
 	}
 	
-	interface IAFXSimpleInstructionMap {
+	export interface IAFXSimpleInstructionMap {
 	    [index: string]: IAFXSimpleInstruction;
 	    [index: uint]: IAFXSimpleInstruction;
 	}
 	
-	interface IAFXIdExprMap {
+	export interface IAFXIdExprMap {
 	    [index: string]: IAFXIdExprInstruction;
 	}
 	
-	interface IAFXVariableTypeMap {
+	export interface IAFXVariableTypeMap {
 	    [index: string]: IAFXVariableTypeInstruction;
 	    [index: uint]: IAFXVariableTypeInstruction;
 	}
 	
-	interface IAFXTypeMap {
+	export interface IAFXTypeMap {
 	    [index: string]: IAFXTypeInstruction;
 	    [index: uint]: IAFXTypeInstruction;
 	}
 	
-	interface IAFXTypeListMap {
+	export interface IAFXTypeListMap {
 	    [index: string]: IAFXTypeInstruction[];
 	    [index: uint]: IAFXTypeInstruction[];
 	}
 	
-	interface IAFXTypeDeclMap {
+	export interface IAFXTypeDeclMap {
 	    [index: string]: IAFXTypeDeclInstruction;
 	    [index: uint]: IAFXTypeDeclInstruction;
 	}
 	
-	interface IAFXVariableDeclMap {
+	export interface IAFXVariableDeclMap {
 	    [index: uint]: IAFXVariableDeclInstruction;
 	    [index: string]: IAFXVariableDeclInstruction;
 	}
 	
-	interface IAFXVariableDeclListMap {
+	export interface IAFXVariableDeclListMap {
 	    [index: uint]: IAFXVariableDeclInstruction[];
 	    [index: string]: IAFXVariableDeclInstruction[];
 	}
 	
-	interface IAFXVarUsedModeMap {
+	export interface IAFXVarUsedModeMap {
 	    [index: string]: EVarUsedMode;
 	}
 	
-	interface IAFXFunctionDeclMap {
+	export interface IAFXFunctionDeclMap {
 	    [index: string]: IAFXFunctionDeclInstruction;
 	    [index: uint]: IAFXFunctionDeclInstruction;
 	}
 	
-	interface IAFXTypeUseInfoContainer {
+	export interface IAFXTypeUseInfoContainer {
 	    type: IAFXVariableTypeInstruction;
 	    isRead: boolean;
 	    isWrite: boolean;
@@ -168,11 +168,11 @@ module akra {
 	    numUsed: uint;
 	}
 	
-	interface IAFXTypeUseInfoMap {
+	export interface IAFXTypeUseInfoMap {
 	    [index: uint]: IAFXTypeUseInfoContainer;
 	}
 	
-	enum EExtractExprType {
+	export enum EExtractExprType {
 	    k_Header,
 	
 	    k_Float,
@@ -194,7 +194,7 @@ module akra {
 	    k_Float4x4
 	}
 	
-	enum EAFXBlendMode {
+	export enum EAFXBlendMode {
 	    k_Shared,
 	    k_Uniform,
 	    k_Attribute,
@@ -205,7 +205,7 @@ module akra {
 	    k_VertexOut
 	}
 	
-	interface IAFXImportedTechniqueInfo {
+	export interface IAFXImportedTechniqueInfo {
 	    technique: IAFXTechniqueInstruction;
 	    component: IAFXComponent;
 	    shift: int;
@@ -216,7 +216,7 @@ module akra {
 	 * operator : arg1 ... argn
 	 * Operator and instructions may be empty.
 	 */
-	interface IAFXInstruction extends AIUnique {
+	export interface IAFXInstruction extends AIUnique {
 	    setParent(pParent: IAFXInstruction): void;
 	    getParent(): IAFXInstruction;
 	
@@ -265,12 +265,12 @@ module akra {
 	    clone(pRelationMap?: IAFXInstructionMap): IAFXInstruction;
 	}
 	
-	interface IAFXSimpleInstruction extends IAFXInstruction {
+	export interface IAFXSimpleInstruction extends IAFXInstruction {
 	    setValue(sValue: string): void;
 	    isValue(sValue: string): boolean;
 	}
 	
-	interface IAFXTypeInstruction extends IAFXInstruction {
+	export interface IAFXTypeInstruction extends IAFXInstruction {
 	    _toDeclString(): string;
 	
 	    isBuiltIn(): boolean;
@@ -339,7 +339,7 @@ module akra {
 	    blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction;
 	}
 	
-	interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {
+	export interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {
 	    _setCollapsed(bValue: boolean): void;
 	    _isCollapsed(): boolean;
 	
@@ -438,14 +438,14 @@ module akra {
 	        pDownPointer: IAFXVariableDeclInstruction): void;
 	}
 	
-	interface IAFXTypedInstruction extends IAFXInstruction {
+	export interface IAFXTypedInstruction extends IAFXInstruction {
 	    getType(): IAFXTypeInstruction;
 	    setType(pType: IAFXTypeInstruction): void;
 	
 	    clone(pRelationMap?: IAFXInstructionMap): IAFXTypedInstruction;
 	}
 	
-	interface IAFXDeclInstruction extends IAFXTypedInstruction {
+	export interface IAFXDeclInstruction extends IAFXTypedInstruction {
 	    setSemantic(sSemantic: string);
 	    setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
 	    getName(): string;
@@ -467,12 +467,12 @@ module akra {
 	    clone(pRelationMap?: IAFXInstructionMap): IAFXDeclInstruction;
 	}
 	
-	interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
+	export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
 	    clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction;
 	    blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction;
 	}
 	
-	interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
+	export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
 	    hasInitializer(): boolean;
 	    getInitializeExpr(): IAFXInitExprInstruction;
 	    hasConstantInitializer(): boolean;
@@ -525,7 +525,7 @@ module akra {
 	    blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;
 	}
 	
-	interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
+	export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
 	    toFinalDefCode(): string;
 	
 	    //getNameId(): IAFXIdInstruction;
@@ -610,17 +610,17 @@ module akra {
 	    _getExtSystemTypeList(): IAFXTypeDeclInstruction[];
 	}
 	
-	interface IAFXStructDeclInstruction extends IAFXInstruction {
+	export interface IAFXStructDeclInstruction extends IAFXInstruction {
 	    //id: IAFXIdInstruction
 	    //structFields: IAFXStructInstruction
 	}
 	
-	// interface IAFXBaseTypeInstruction extends IAFXInstruction {
+	// export interface IAFXBaseTypeInstruction extends IAFXInstruction {
 	//	 //id: IAFXIdInstruction
 	//	 //...
 	// }
 	
-	interface IAFXIdInstruction extends IAFXInstruction {
+	export interface IAFXIdInstruction extends IAFXInstruction {
 	    getName(): string;
 	    getRealName(): string;
 	
@@ -632,16 +632,16 @@ module akra {
 	    clone(pRelationMap?: IAFXInstructionMap): IAFXIdInstruction;
 	}
 	
-	interface IAFXKeywordInstruction extends IAFXInstruction {
+	export interface IAFXKeywordInstruction extends IAFXInstruction {
 	    setValue(sValue: string): void;
 	    isValue(sTestValue: string): boolean;
 	}
 	
-	interface IAFXAnalyzedInstruction extends IAFXInstruction {
+	export interface IAFXAnalyzedInstruction extends IAFXInstruction {
 	    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap, eUsedMode?: EVarUsedMode): void;
 	}
 	
-	interface IAFXExprInstruction extends IAFXTypedInstruction, IAFXAnalyzedInstruction {
+	export interface IAFXExprInstruction extends IAFXTypedInstruction, IAFXAnalyzedInstruction {
 	    evaluate(): boolean;
 	    simplify(): boolean;
 	    getEvalValue(): any;
@@ -651,28 +651,28 @@ module akra {
 	    clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction;
 	}
 	
-	interface IAFXInitExprInstruction extends IAFXExprInstruction {
+	export interface IAFXInitExprInstruction extends IAFXExprInstruction {
 	    optimizeForVariableType(pType: IAFXVariableTypeInstruction): boolean;
 	    // getExternalValue(pType: IAFXVariableTypeInstruction): any;
 	}
 	
-	interface IAFXIdExprInstruction extends IAFXExprInstruction {
+	export interface IAFXIdExprInstruction extends IAFXExprInstruction {
 	    clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction;
 	}
 	
-	interface IAFXLiteralInstruction extends IAFXExprInstruction {
+	export interface IAFXLiteralInstruction extends IAFXExprInstruction {
 	    setValue(pValue: any): void;
 	    clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction;
 	}
 	
-	interface IAFXAnnotationInstruction extends IAFXInstruction {
+	export interface IAFXAnnotationInstruction extends IAFXInstruction {
 	
 	}
 	
-	interface IAFXStmtInstruction extends IAFXInstruction, IAFXAnalyzedInstruction {
+	export interface IAFXStmtInstruction extends IAFXInstruction, IAFXAnalyzedInstruction {
 	}
 	
-	interface IAFXPassInstruction extends IAFXDeclInstruction {
+	export interface IAFXPassInstruction extends IAFXDeclInstruction {
 	    _addFoundFunction(pNode: IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
 	    _getFoundedFunction(pNode: IParseNode): IAFXFunctionDeclInstruction;
 	    _getFoundedFunctionType(pNode: IParseNode): EFunctionType;
@@ -714,7 +714,7 @@ module akra {
 	    _getRenderStates(): IMap<ERenderStateValues>;
 	}
 	
-	interface IAFXTechniqueInstruction extends IAFXDeclInstruction {
+	export interface IAFXTechniqueInstruction extends IAFXDeclInstruction {
 	    setName(sName: string, isComplexName: boolean): void;
 	    getName(): string;
 	    hasComplexName(): boolean;
@@ -745,18 +745,18 @@ module akra {
 	    finalize(pComposer: IAFXComposer): void;
 	}
 	
-	interface IAFXVariableBlendInfo {
+	export interface IAFXVariableBlendInfo {
 	    varList: IAFXVariableDeclInstruction[];
 	    blendType: IAFXVariableTypeInstruction;
 	    name: string;
 	    nameIndex: uint;
 	}
 	
-	interface IAFXVariableBlendInfoMap {
+	export interface IAFXVariableBlendInfoMap {
 	    [index: uint]: IAFXVariableBlendInfo;
 	}
 	
-	interface IAFXFunctionDeclListMap {
+	export interface IAFXFunctionDeclListMap {
 	    [functionName: string]: IAFXFunctionDeclInstruction[];
 	}
 }

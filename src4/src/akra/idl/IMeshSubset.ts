@@ -7,7 +7,7 @@
 
 
 module akra {
-	interface IMeshSubset extends IEventProvider, IRenderableObject {
+	export interface IMeshSubset extends IEventProvider, IRenderableObject {
 		name: string;
 	
 		/** readonly */ mesh: IMesh;

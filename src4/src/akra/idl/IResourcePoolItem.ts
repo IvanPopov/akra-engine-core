@@ -13,7 +13,7 @@
  * Отражает состояние ресурса
  **/
 module akra {
-	enum EResourceItemEvents {
+	export enum EResourceItemEvents {
 		//ресур создан
 		CREATED, 			
 		//ресур заполнен данным и готов к использованию
@@ -25,7 +25,7 @@ module akra {
 		TOTALRESOURCEFLAGS
 	};
 	
-	interface IResourcePoolItem extends IReferenceCounter, IEventProvider {
+	export interface IResourcePoolItem extends IReferenceCounter, IEventProvider {
 		/** resource code */
 		/** readonly */ resourceCode: IResourceCode;
 		/** resource pool */
@@ -131,7 +131,7 @@ module akra {
 	
 	}
 	
-	interface IResourcePoolItemType {
+	export interface IResourcePoolItemType {
 		new (pManager: IResourcePoolManager): IResourcePoolItem;
 	}
 	

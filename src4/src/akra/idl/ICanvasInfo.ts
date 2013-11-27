@@ -1,6 +1,6 @@
 
 module akra {
-	interface ICanvasInfo {
+	export interface ICanvasInfo {
 		width: int;
 		height: int;
 		id: string;

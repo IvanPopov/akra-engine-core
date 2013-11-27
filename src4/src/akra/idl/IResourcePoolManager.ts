@@ -17,7 +17,7 @@
 
 /** Семейства ресурсов */
 module akra {
-	enum EResourceFamilies {
+	export enum EResourceFamilies {
 		VIDEO_RESOURCE = 0, 
 		AUDIO_RESOURCE, 
 		GAME_RESOURCE, 
@@ -25,7 +25,7 @@ module akra {
 	};
 	
 	/** Члены семейства видео ресурсов */
-	enum EVideoResources {
+	export enum EVideoResources {
 		TEXTURE_RESOURCE,
 		VIDEOBUFFER_RESOURCE,
 		VERTEXBUFFER_RESOURCE,
@@ -42,16 +42,16 @@ module akra {
 		TOTAL_VIDEO_RESOURCES
 	};
 	
-	enum EAudioResources {
+	export enum EAudioResources {
 		TOTAL_AUDIO_RESOURCES
 	};
 	
-	enum EGameResources {
+	export enum EGameResources {
 		TOTAL_GAME_RESOURCES
 	};
 	
 	/** Конструктор класса, занимается очисткой списков пулов по семействам ресурсвов и краты пулов по коду ресурсов */
-	interface IResourcePoolManager extends IManager {
+	export interface IResourcePoolManager extends IManager {
 		texturePool: IResourcePool;
 		surfaceMaterialPool: IResourcePool;
 		vertexBufferPool: IResourcePool;

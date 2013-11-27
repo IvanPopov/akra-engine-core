@@ -14,7 +14,7 @@
 //=============================================
 
 module akra {
-	interface ICollada extends IModel {
+	export interface ICollada extends IModel {
 		options: IColladaLoadOptions;
 	
 		getAsset(): IColladaAsset;
@@ -37,20 +37,20 @@ module akra {
 		loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): boolean;
 	}
 	
-	interface IColladaCache {
+	export interface IColladaCache {
 		meshMap: IMeshMap;
 		sharedBuffer: IRenderDataCollection;
 	}
 	
-	interface IColladaAnimationLoadOptions {
+	export interface IColladaAnimationLoadOptions {
 		pose?: boolean;
 	}
 	
-	interface IColladaImageLoadOptions {
+	export interface IColladaImageLoadOptions {
 		flipY?: boolean;
 	}
 	
-	interface IColladaLoadOptions extends IModelLoadOptions {
+	export interface IColladaLoadOptions extends IModelLoadOptions {
 		/** Add nodes, that visualize joints in animated models. */
 		drawJoints?: boolean;
 		/** Convert all meshed to wireframe. */
@@ -77,60 +77,60 @@ module akra {
 	
 	// xml
 	
-	interface IXMLExplorer {
+	export interface IXMLExplorer {
 		(pXML: Element, sName?: string): void;
 	}
 	
 	//----------------------
 	
-	interface IColladaTarget {
+	export interface IColladaTarget {
 		value: number;
 		object?: IColladaEntry;
 		source?: IColladaEntry;
 	}
 	
-	interface IColladaEntry {
+	export interface IColladaEntry {
 		id?: string;
 		sid?: string;
 		name?: string;
 	}
 	
-	interface IColladaEntryMap {
+	export interface IColladaEntryMap {
 		[id: string]: IColladaEntry;
 	}
 	
-	interface IColladaLibrary extends IColladaEntry {
+	export interface IColladaLibrary extends IColladaEntry {
 		[element: string]: IColladaEntryMap;
 	}
 	
-	interface IColladaEffectLibrary extends IColladaLibrary {
+	export interface IColladaEffectLibrary extends IColladaLibrary {
 		effect: { [id: string]: IColladaEffect; };
 	}
 	
-	interface IColladaEntryLoader {
+	export interface IColladaEntryLoader {
 		(pXML: Element): IColladaEntry;
 	}
 	
 	
-	interface IColladaUnknownFormat {
+	export interface IColladaUnknownFormat {
 		name: string[];
 		type: string[];
 	}
 	
 	/** Stride for collada formats, discretized at 32 bits. */
-	interface IColladaFormatStrideTable {
+	export interface IColladaFormatStrideTable {
 		[format: string]: uint;
 	}
 	
-	interface IColladaLinkMap {
+	export interface IColladaLinkMap {
 		[link: string]: any;
 	}
 	
-	interface IColladaLibraryMap {
+	export interface IColladaLibraryMap {
 		[library: string]: IColladaLibrary;
 	}
 	
-	interface IColladaLibraryTemplate {
+	export interface IColladaLibraryTemplate {
 		lib: string; 				   /** library tag name.*/
 		element: string;			   /** element in liibrary. */
 		loader: string;				/** loader function */
@@ -141,16 +141,16 @@ module akra {
 	// COLLADA NODES / VISUAL SCENE AND COMMON
 	//=============================================
 	
-	interface IColladaArray extends IColladaEntry {
+	export interface IColladaArray extends IColladaEntry {
 		[i: uint]: any;
 	}	
 	
-	interface IColladaUnit extends IColladaEntry {
+	export interface IColladaUnit extends IColladaEntry {
 		name: string;
 		meter: float;
 	}
 	
-	interface IColladaContributor extends IColladaEntry {
+	export interface IColladaContributor extends IColladaEntry {
 		author?: string;
 		authoringTool?: string;
 		comments?: string;
@@ -158,7 +158,7 @@ module akra {
 		sourceData?: any;
 	}
 	
-	interface IColladaAsset extends IColladaEntry {
+	export interface IColladaAsset extends IColladaEntry {
 		unit: IColladaUnit;
 		upAxis: string;
 		title?: string;
@@ -169,16 +169,16 @@ module akra {
 		contributor?: IColladaContributor;
 	}
 	
-	interface IColladaInstance extends IColladaEntry {
+	export interface IColladaInstance extends IColladaEntry {
 		url?: string;
 	}
 	
-	interface IColladaAnnotate extends IColladaEntry {
+	export interface IColladaAnnotate extends IColladaEntry {
 		name: string;
 		value: string;
 	}
 	
-	interface IColladaNewParam extends IColladaEntry {
+	export interface IColladaNewParam extends IColladaEntry {
 		sid: string;
 		annotate: IColladaAnnotate;
 		semantics: string;
@@ -187,16 +187,16 @@ module akra {
 		type: string;
 	}
 	
-	interface IColladaNewParamMap {
+	export interface IColladaNewParamMap {
 		[sid: string]: IColladaNewParam;
 	}
 	
-	interface IColladaParam extends IColladaEntry {
+	export interface IColladaParam extends IColladaEntry {
 		name: string;
 		type: string;
 	}
 	
-	interface IColladaAccessor extends IColladaEntry {
+	export interface IColladaAccessor extends IColladaEntry {
 		source?: string;
 		data: IColladaArray;
 		count: int;
@@ -205,20 +205,20 @@ module akra {
 	}
 	
 	
-	interface IColladaTechniqueCommon extends IColladaEntry {
+	export interface IColladaTechniqueCommon extends IColladaEntry {
 		accessor: IColladaAccessor;
 		perspective: IColladaPerspective;
 	}
 	
 	
-	interface IColladaSource extends IColladaEntry {
+	export interface IColladaSource extends IColladaEntry {
 		name: string;
 	
 		array: Object;
 		techniqueCommon: IColladaTechniqueCommon;
 	}
 	
-	interface IColladaInput extends IColladaEntry {
+	export interface IColladaInput extends IColladaEntry {
 		semantics: string;
 		source: IColladaSource;
 		offset: int;
@@ -229,37 +229,37 @@ module akra {
 		accessor?: IColladaAccessor;
 	}
 	
-	interface IColladaTransform extends IColladaEntry {
+	export interface IColladaTransform extends IColladaEntry {
 		transform: string; /* transform name: rotate, translate, scale or matrix */
 		value: any;
 	}
 	
-	interface IColladaRotate extends IColladaTransform {
+	export interface IColladaRotate extends IColladaTransform {
 		value: IVec4;
 	}
 	
-	interface IColladaTranslate extends IColladaTransform {
+	export interface IColladaTranslate extends IColladaTransform {
 		value: IVec3;
 	}
 	
-	interface IColladaScale extends IColladaTransform {
+	export interface IColladaScale extends IColladaTransform {
 		value: IVec3;
 	}
 	
-	interface IColladaMatrix extends IColladaTransform {
+	export interface IColladaMatrix extends IColladaTransform {
 		value: IMat4;
 	}
 	
-	interface IColladaVertices extends IColladaEntry {
+	export interface IColladaVertices extends IColladaEntry {
 		inputs: { [semantics: string]: IColladaInput; };
 	}
 	
-	interface IColladaJoints extends IColladaEntry {
+	export interface IColladaJoints extends IColladaEntry {
 		inputs: { [input: string]: IColladaInput; };
 	
 	}
 	
-	interface IColladaPolygons extends IColladaEntry {
+	export interface IColladaPolygons extends IColladaEntry {
 		name: string;
 	
 		inputs: IColladaInput[];
@@ -271,20 +271,20 @@ module akra {
 		count: uint;
 	}
 	
-	interface IColladaMesh extends IColladaEntry {
+	export interface IColladaMesh extends IColladaEntry {
 		sources: IColladaSource[];
 		polygons: IColladaPolygons[];
 	}
 	
-	interface IColladaConvexMesh extends IColladaEntry {
+	export interface IColladaConvexMesh extends IColladaEntry {
 		//TODO: IColladaConvexMesh
 	}
 	
-	interface IColladaSpline extends IColladaEntry {
+	export interface IColladaSpline extends IColladaEntry {
 		//TODO: IColladaSpline
 	}
 	
-	interface IColladaGeometrie extends IColladaEntry {
+	export interface IColladaGeometrie extends IColladaEntry {
 		name: string;
 	
 		mesh: IColladaMesh;
@@ -292,11 +292,11 @@ module akra {
 		spline: IColladaSpline;
 	}
 	
-	interface IColladaMorph extends IColladaEntry {
+	export interface IColladaMorph extends IColladaEntry {
 		//TODO: IColladaMorph
 	}
 	
-	interface IColladaVertexWeights extends IColladaEntry { 
+	export interface IColladaVertexWeights extends IColladaEntry { 
 		count: int;
 		inputs: IColladaInput[];
 		weightInput: IColladaInput;
@@ -304,7 +304,7 @@ module akra {
 		v: int[];
 	}	
 	
-	interface IColladaSkin extends IColladaEntry {
+	export interface IColladaSkin extends IColladaEntry {
 		shapeMatrix: IMat4;
 		sources: IColladaSource[];
 		geometry: IColladaGeometrie;
@@ -312,14 +312,14 @@ module akra {
 		vertexWeights: IColladaVertexWeights;
 	}
 	
-	interface IColladaController extends IColladaEntry {
+	export interface IColladaController extends IColladaEntry {
 		name: string;
 	
 		skin: IColladaSkin;
 		morph: IColladaMorph;
 	}
 	
-	interface IColladaImage extends IColladaEntry {
+	export interface IColladaImage extends IColladaEntry {
 		name: string;
 		
 		data: any;
@@ -333,11 +333,11 @@ module akra {
 	
 	//effects
 	
-	interface IColladaSurface extends IColladaEntry {
+	export interface IColladaSurface extends IColladaEntry {
 		initFrom: string;
 	}
 	
-	interface IColladaSampler2D extends IColladaEntry {
+	export interface IColladaSampler2D extends IColladaEntry {
 		source: string;
 		wrapS: string;
 		wrapT: string;
@@ -346,7 +346,7 @@ module akra {
 		magFilter: string;
 	}
 	
-	interface IColladaTexture extends IColladaEntry {
+	export interface IColladaTexture extends IColladaEntry {
 		texcoord: string;
 		sampler: IColladaNewParam;
 		surface: IColladaNewParam;
@@ -354,14 +354,14 @@ module akra {
 	}
 	
 	
-	interface IColladaInstanceEffect extends IColladaInstance {
+	export interface IColladaInstanceEffect extends IColladaInstance {
 		parameters: Object;
 		techniqueHint: IStringMap;
 		effect: IColladaEffect;
 	}
 	
 	
-	interface IColladaPhong extends IColladaEntry {
+	export interface IColladaPhong extends IColladaEntry {
 		diffuse: IColorValue;
 		specular: IColorValue;
 		ambient: IColorValue;
@@ -386,24 +386,24 @@ module akra {
 		};
 	}
 	
-	interface IColladaEffectTechnique extends IColladaEntry {
+	export interface IColladaEffectTechnique extends IColladaEntry {
 		sid: string;
 		type: string;
 		value: IColladaEntry;
 	}
 	
-	interface IColladaProfileCommon extends IColladaEntry {
+	export interface IColladaProfileCommon extends IColladaEntry {
 		technique: IColladaEffectTechnique;
 		newParam: IColladaNewParamMap;
 	}
 	
-	interface IColladaEffect extends IColladaEntry {
+	export interface IColladaEffect extends IColladaEntry {
 		profileCommon: IColladaProfileCommon;
 	}
 	
 	// materials
 	
-	interface IColladaMaterial extends IColladaEntry {
+	export interface IColladaMaterial extends IColladaEntry {
 		name: string;
 		
 		instanceEffect: IColladaInstanceEffect;
@@ -411,53 +411,53 @@ module akra {
 	
 	
 	
-	interface IColladaTechniqueValue extends IColladaEntry {
+	export interface IColladaTechniqueValue extends IColladaEntry {
 	
 	}
 	
 	
-	interface IColladaBindVertexInput extends IColladaEntry {
+	export interface IColladaBindVertexInput extends IColladaEntry {
 		semantics: string;
 		inputSemantic: string;
 		inputSet: int;
 	}
 	
-	interface IColladaBindVertexInputMap {
+	export interface IColladaBindVertexInputMap {
 		[semantics: string]: IColladaBindVertexInput;
 	}
 	
-	interface IColladaInstanceMaterial extends IColladaInstance {
+	export interface IColladaInstanceMaterial extends IColladaInstance {
 		symbol: string;
 		target: string;
 		vertexInput: IColladaBindVertexInputMap;
 		material: IColladaMaterial;
 	}
 	
-	interface IColladaInstanceCamera extends IColladaInstance {
+	export interface IColladaInstanceCamera extends IColladaInstance {
 		camera: IColladaCamera;
 	}
 	
-	interface IColladaInstanceLight extends IColladaInstance {
+	export interface IColladaInstanceLight extends IColladaInstance {
 		light: IColladaLight;
 	}
 	
-	interface IColladaBindMaterial extends IColladaEntry {
+	export interface IColladaBindMaterial extends IColladaEntry {
 		[symbol: string]: IColladaInstanceMaterial;
 	}
 	
-	interface IColladaInstanceGeometry extends IColladaInstance {
+	export interface IColladaInstanceGeometry extends IColladaInstance {
 		geometry: IColladaGeometrie;
 		material: IColladaBindMaterial;
 	}
 	
 	
-	interface IColladaInstanceController extends IColladaInstance {
+	export interface IColladaInstanceController extends IColladaInstance {
 		controller: IColladaController;
 		material: IColladaBindMaterial;
 		skeletons: string[];
 	}
 	
-	interface IColladaPerspective extends IColladaEntry {
+	export interface IColladaPerspective extends IColladaEntry {
 		xfov: float;
 		yfov: float;
 		znear: float;
@@ -465,20 +465,20 @@ module akra {
 		aspect: float;
 	}
 	
-	interface IColladaOptics extends IColladaEntry {
+	export interface IColladaOptics extends IColladaEntry {
 		techniqueCommon: IColladaTechniqueCommon;
 	}
 	
 	
-	interface IColladaCamera extends IColladaEntry {
+	export interface IColladaCamera extends IColladaEntry {
 		optics: IColladaOptics;
 	}
 	
-	interface IColladaLight extends IColladaEntry {
+	export interface IColladaLight extends IColladaEntry {
 	
 	}
 	
-	interface IColladaNode extends IColladaEntry {
+	export interface IColladaNode extends IColladaEntry {
 		sid: string;
 		name: string;
 		type: string;
@@ -497,7 +497,7 @@ module akra {
 	}
 	
 	
-	interface IColladaVisualScene extends IColladaEntry {
+	export interface IColladaVisualScene extends IColladaEntry {
 		name: string;
 	
 		nodes: IColladaNode[];
@@ -507,16 +507,16 @@ module akra {
 	
 	/// animation
 	
-	interface IColladaAnimationSampler extends IColladaEntry {
+	export interface IColladaAnimationSampler extends IColladaEntry {
 		inputs: { [semantics: string]: IColladaInput; };
 	}
 	
-	interface IColladaAnimationChannel extends IColladaEntry {
+	export interface IColladaAnimationChannel extends IColladaEntry {
 		target: IColladaTarget;
 		sampler: IColladaAnimationSampler;
 	}
 	
-	interface IColladaAnimation extends IColladaEntry {
+	export interface IColladaAnimation extends IColladaEntry {
 		name: string;
 	
 		sources: IColladaSource[];
@@ -527,11 +527,11 @@ module akra {
 	}
 	
 	
-	interface IColladaScene {
+	export interface IColladaScene {
 	
 	}
 	
-	interface IColladaDocument {
+	export interface IColladaDocument {
 		asset?: IColladaAsset;
 	
 		libEffects?: IColladaEffectLibrary;
@@ -543,7 +543,7 @@ module akra {
 		scene?: IColladaScene;
 	}
 	
-	interface IColladaAnimationClip extends IColladaEntry {
+	export interface IColladaAnimationClip extends IColladaEntry {
 		name?: string;
 		start: float;
 		end: float;

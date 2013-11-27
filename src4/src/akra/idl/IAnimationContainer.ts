@@ -5,7 +5,7 @@
 /// <reference path="IPositionFrame.ts" />
 
 module akra {
-	interface IAnimationContainer extends IAnimationBase {
+	export interface IAnimationContainer extends IAnimationBase {
 		/** readonly */ animationName: string;
 		/** readonly */ speed: float;
 		/** readonly */ animationTime: float;

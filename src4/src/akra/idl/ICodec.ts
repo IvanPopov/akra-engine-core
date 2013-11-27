@@ -1,7 +1,7 @@
 
 
 module akra {
-	interface ICodec {
+	export interface ICodec {
 	
 		getType():string;
 		getDataType():string;
@@ -15,7 +15,7 @@ module akra {
 	}
 	
 	
-	interface ICodecData {
+	export interface ICodecData {
 		dataType: string;
 	}
 	

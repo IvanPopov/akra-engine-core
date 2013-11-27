@@ -3,7 +3,7 @@
 /// <reference path="IRenderEntry.ts" />
 
 module akra {
-	interface IRenderQueue {
+	export interface IRenderQueue {
 		execute(bSort?: boolean): void;
 		push(pEntry: IRenderEntry): void;
 		createEntry(): IRenderEntry;

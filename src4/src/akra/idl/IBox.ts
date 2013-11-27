@@ -1,6 +1,6 @@
 
 module akra {
-	interface IBox {
+	export interface IBox {
 		width: uint;
 		height: uint;
 		depth: uint;

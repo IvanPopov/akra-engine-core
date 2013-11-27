@@ -1,9 +1,6 @@
 
 module akra {
-	interface AIUnique {
-		getGuid(): uint;
+	export interface IUnique {
+		guid: uint;
 	}
-	
-	
-	
 }

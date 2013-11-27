@@ -8,7 +8,7 @@
 /// <reference path="ICamera.ts" />
 
 module akra {
-	interface ITerrainROAM extends ITerrain {
+	export interface ITerrainROAM extends ITerrain {
 		tessellationScale: float;
 		tessellationLimit: float;
 	

@@ -3,7 +3,7 @@
 
 
 module akra {
-	interface IDDSCodec extends IImgCodec{
+	export interface IDDSCodec extends IImgCodec{
 	
 	}
 	

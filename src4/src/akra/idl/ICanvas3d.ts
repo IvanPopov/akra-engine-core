@@ -5,7 +5,7 @@
 /// <reference path="IPoint.ts" />
 
 module akra {
-	interface ICanvas3d extends ICanvas, IRenderTarget {
+	export interface ICanvas3d extends ICanvas, IRenderTarget {
 		left: int;
 		top: int;
 	

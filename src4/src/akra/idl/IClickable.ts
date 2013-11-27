@@ -3,7 +3,7 @@
 /// <reference path="IKeyMap.ts" />
 
 module akra {
-	interface IClickable extends IEventProvider {
+	export interface IClickable extends IEventProvider {
 		/** writeonly */ onclick: (target: any, x: int, y: int) => void;
 		/** writeonly */ onmousemove: (target: any, x: int, y: int) => void;
 		/** writeonly */ onmousedown: (target: any, eBtn: EMouseButton, x: int, y: int) => void;

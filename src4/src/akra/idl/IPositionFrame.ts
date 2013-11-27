@@ -7,7 +7,7 @@
 /// <reference path="IMat4.ts" />
 
 module akra {
-	interface IPositionFrame extends IFrame {
+	export interface IPositionFrame extends IFrame {
 		/** readonly */ rotation: IQuat4;
 		/** readonly */ scale: IVec3;
 		/** readonly */ translation: IVec3;

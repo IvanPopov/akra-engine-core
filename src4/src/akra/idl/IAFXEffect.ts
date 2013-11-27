@@ -4,12 +4,12 @@
 
 
 module akra {
-	interface IAFXObject {
+	export interface IAFXObject {
 		getName(): string;
 		getId(): IAFXIdInstruction;
 	}
 	
-	interface IAFXVariable extends IAFXObject {
+	export interface IAFXVariable extends IAFXObject {
 		setName(sName: string): void;
 		setType(pType: IAFXVariableTypeInstruction): void;
 		getType(): IAFXVariableTypeInstruction;
@@ -18,28 +18,28 @@ module akra {
 	
 	}
 	
-	interface IAFXType extends IAFXObject {
+	export interface IAFXType extends IAFXObject {
 		isBase(): boolean;
 		initializeFromInstruction(pInstruction: IAFXTypeDeclInstruction): boolean;
 	}
 	
-	interface IAFXFunction extends IAFXObject {
+	export interface IAFXFunction extends IAFXObject {
 		getHash(): string;
 	}
 	
-	interface IAFXPass extends IAFXObject {
+	export interface IAFXPass extends IAFXObject {
 	
 	}
 	
-	interface IAFXTechnique extends IAFXObject {
+	export interface IAFXTechnique extends IAFXObject {
 	
 	}
 	
-	interface IAFXEffectStats {
+	export interface IAFXEffectStats {
 		time: uint;
 	}
 	
-	interface IAFXEffect {
+	export interface IAFXEffect {
 		analyze(pTree: IParseTree): boolean;
 		setAnalyzedFileName(sFileName: string): void;
 		getStats(): IAFXEffectStats;

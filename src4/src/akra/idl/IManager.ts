@@ -1,6 +1,6 @@
 
 module akra {
-	interface IManager {
+	export interface IManager {
 		initialize(): boolean;
 		destroy(): void;
 	}

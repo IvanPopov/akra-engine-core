@@ -1,17 +1,17 @@
 module akra {
-	﻿enum EFileDataTypes {
+	﻿export enum EFileDataTypes {
 	    ARRAY_BUFFER,
 	    DATA_URL,
 	    TEXT
 	}
 	
-	interface IDropFunc {
+	export interface IDropFunc {
 	    (file: File, content: string, format: EFileDataTypes, e: DragEvent): void;
 	    (file: File, content: Blob, format: EFileDataTypes, e: DragEvent): void;
 	    (file: File, content: ArrayBuffer, format: EFileDataTypes, e: DragEvent): void;
 	}
 	
-	interface IFileDropAreaOptions {
+	export interface IFileDropAreaOptions {
 	    beforedrop?: Function;
 	    drop?: IDropFunc;
 	    dragover?: Function;

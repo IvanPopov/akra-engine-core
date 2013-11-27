@@ -3,7 +3,7 @@
 /// <reference path="IVec2.ts" />
 
 module akra {
-	interface ICircle {
+	export interface ICircle {
 	
 		radius: float;
 		center: IVec2;

@@ -3,7 +3,7 @@
 /// <reference path="IFrame.ts" />
 
 module akra {
-	interface IAnimationParameter {
+	export interface IAnimationParameter {
 		/** readonly */ totalFrames: uint;
 		/** readonly */ duration: float;
 		/** readonly */ first: float;

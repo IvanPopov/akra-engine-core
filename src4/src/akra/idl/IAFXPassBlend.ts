@@ -8,12 +8,12 @@
 
 
 module akra {
-	interface IAFXPassBlendMap {
+	export interface IAFXPassBlendMap {
 		[index: uint]: IAFXPassBlend;
 		[index: string]: IAFXPassBlend;
 	}
 	
-	interface IAFXPassBlend extends AIUnique {
+	export interface IAFXPassBlend extends AIUnique {
 		initFromPassList(pPassList: IAFXPassInstruction[]): boolean;
 		generateFXMaker(pPassInput: IAFXPassInputBlend,
 						pSurfaceMaterial: ISurfaceMaterial,

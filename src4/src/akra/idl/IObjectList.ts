@@ -1,18 +1,18 @@
 
 
 module akra {
-	interface IListExplorerFunc<T> {
+	export interface IListExplorerFunc<T> {
 	    (data: T, index?: uint): boolean;
 	}
 	
-	interface IObjectListItem<T> {
+	export interface IObjectListItem<T> {
 	    next: IObjectListItem<T>;
 	    prev: IObjectListItem<T>;
 	    data: T;
 	}
 	
-	/** ObjectList interface. */
-	interface IObjectList<T> {
+	/** ObjectList export interface. */
+	export interface IObjectList<T> {
 		/** Number of elements in list */
 		length: uint;
 		/** First element in list */

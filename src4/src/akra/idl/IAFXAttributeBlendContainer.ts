@@ -1,7 +1,7 @@
 ﻿/// <reference path="IAFXInstruction.ts" />
 
 module akra {
-	interface IAFXAttributeBlendContainer {
+	export interface IAFXAttributeBlendContainer {
 	    /*readonly*/ attrsInfo: IAFXVariableBlendInfo[];
 	
 	    getTexcoordVar(iSlot: uint): IAFXVariableDeclInstruction;

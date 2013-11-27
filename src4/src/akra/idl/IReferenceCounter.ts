@@ -1,7 +1,7 @@
 
 
 module akra {
-	interface IReferenceCounter {
+	export interface IReferenceCounter {
 		/**
 		 * Текущее количесвто ссылок  на объект
 		 **/

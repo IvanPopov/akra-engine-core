@@ -1,15 +1,17 @@
-// IUIWindow interface
+// IUIWindow export interface
 // [write description here...]
 
 /// <reference path="IUIComponent.ts" />
 
 module akra {
-	interface IUIWindowOptions extends IUIComponentOptions {
-		title?: string;
-	}
-
-	interface IUIWindow extends IUIComponent {
-
-	}
+export interface IUIWindowOptions extends IUIComponentOptions {
+	title?: string;
 }
 
+export interface IUIWindow extends IUIComponent {
+
+}
+}
+
+#endif
+

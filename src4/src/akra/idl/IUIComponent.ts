@@ -2,11 +2,11 @@
 /// <reference path="IUIDNDNode.ts" />
 
 module akra {
-	interface IUIComponentType {
+	export interface IUIComponentType {
 	    new (...argv: any[]): IUIComponent;
 	}
 	
-	interface IUIComponentOptions {
+	export interface IUIComponentOptions {
 	    show?: boolean;
 	    name?: string;
 	    html?: string;
@@ -30,7 +30,7 @@ module akra {
 	    template?: string;
 	}
 	
-	enum EUIComponents {
+	export enum EUIComponents {
 	    UNKNOWN,
 	
 	    WINDOW,
@@ -63,7 +63,7 @@ module akra {
 	    GRAPH_CONNECTIONAREA
 	}
 	
-	interface IUIComponent extends IUIDNDNode {
+	export interface IUIComponent extends IUIDNDNode {
 	    /** readonly */ componentType: EUIComponents;
 	    /** readonly */ genericType: string;
 	

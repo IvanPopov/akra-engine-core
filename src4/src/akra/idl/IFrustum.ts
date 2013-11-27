@@ -6,7 +6,7 @@
 /// <reference path="IPlane3d.ts" />
 
 module akra {
-	interface IFrustum {
+	export interface IFrustum {
 		leftPlane: IPlane3d;
 		rightPlane: IPlane3d;
 		topPlane: IPlane3d;

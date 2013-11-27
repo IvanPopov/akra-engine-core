@@ -6,14 +6,14 @@
 /// <reference path="IAnimationTrack.ts" />
 
 module akra {
-	interface IAnimationTarget {
+	export interface IAnimationTarget {
 		target: ISceneNode;
 		index: int;
 		name: string;
 		track?: IAnimationTrack;
 	}
 	
-	enum EAnimationTypes {
+	export enum EAnimationTypes {
 		ANIMATION,
 		LIST,
 		CLIP,
@@ -21,7 +21,7 @@ module akra {
 		BLEND
 	}
 	
-	interface IAnimationBase extends IEventProvider {
+	export interface IAnimationBase extends IEventProvider {
 		duration: float;
 		name: string;
 		type: EAnimationTypes;
@@ -60,7 +60,7 @@ module akra {
 		signal renamed(sName: string): void;
 	}
 	
-	interface IAnimationMap {
+	export interface IAnimationMap {
 		[name: string]: IAnimationBase;
 	}
 	

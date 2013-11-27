@@ -4,7 +4,7 @@
 /// <reference path="ITexture.ts" />
 
 module akra {
-	enum ESurfaceMaterialTextures {
+	export enum ESurfaceMaterialTextures {
 		TEXTURE0 = 0,
 		TEXTURE1,
 		TEXTURE2,
@@ -31,7 +31,7 @@ module akra {
 	
 	
 	
-	interface ISurfaceMaterial extends IResourcePoolItem {
+	export interface ISurfaceMaterial extends IResourcePoolItem {
 		/** readonly */ totalUpdatesOfTextures: uint;
 		/** readonly */ totalUpdatesOfTexcoords: uint;
 	

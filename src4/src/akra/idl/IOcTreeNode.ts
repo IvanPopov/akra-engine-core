@@ -6,7 +6,7 @@
 /// <reference path="IObjectList.ts" />
 
 module akra {
-	interface IOcTreeNode {
+	export interface IOcTreeNode {
 		/** Parent tree */
 		tree: IOcTree;
 		/** Level of node */

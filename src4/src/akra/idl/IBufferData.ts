@@ -1,6 +1,6 @@
 
 module akra {
-	interface IBufferData {
+	export interface IBufferData {
 		byteOffset: uint;
 		byteLength: uint;
 		buffer: IBuffer;

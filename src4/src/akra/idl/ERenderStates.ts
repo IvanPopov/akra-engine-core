@@ -1,5 +1,5 @@
 module akra {
-	enum ERenderStates {
+	export enum ERenderStates {
 		BLENDENABLE,
 		CULLFACEENABLE,
 		ZENABLE,

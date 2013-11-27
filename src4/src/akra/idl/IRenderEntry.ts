@@ -5,7 +5,7 @@
 /// <reference path="IViewport.ts" />
 
 module akra {
-	interface IRenderEntry {
+	export interface IRenderEntry {
 		viewport: IViewport;
 		renderTarget: IRenderTarget;
 		maker: IAFXMaker;

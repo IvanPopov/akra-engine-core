@@ -3,7 +3,7 @@
 /// <reference path="IRay2d.ts" />
 
 module akra {
-	interface ISegment2d {
+	export interface ISegment2d {
 		ray: IRay2d;
 		distance: float;
 	

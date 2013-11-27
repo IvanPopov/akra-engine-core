@@ -1,9 +1,9 @@
 module akra {
-	interface IPackerBlacklist {
+	export interface IPackerBlacklist {
 		[type: string]: Function;
 	};
 	
-	interface IPackerCodec {
+	export interface IPackerCodec {
 		/**
 		 * Как читать данные кодека
 		 * @type {String | () => any}
@@ -16,13 +16,13 @@ module akra {
 		write?: any;
 	}
 	
-	interface IPackerFormat {
+	export interface IPackerFormat {
 		[type: string]: string;
 		[type: string]: IPackerCodec;
 	}
 	
 	//вспомогательный класс, для разрешения форматов, при упаковке данных
-	interface IPackerTemplate {
+	export interface IPackerTemplate {
 		getType(iType: int): any;
 		getTypeId(sType: string): int;
 	

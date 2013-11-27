@@ -1,7 +1,7 @@
 
 
 module akra {
-	interface IRenderState {
+	export interface IRenderState {
 		mesh: { isSkinning: boolean; };
 		
 		lights: {

@@ -5,7 +5,7 @@
 /// <reference path="EDataTypes.ts" />
 
 module akra {
-	interface IIndexData extends IBufferData, IBuffer {
+	export interface IIndexData extends IBufferData, IBuffer {
 		/** readonly */ type: EDataTypes;
 		/** readonly */ length: uint;
 		/** readonly */ bytesPerIndex: uint;

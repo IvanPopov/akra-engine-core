@@ -2,10 +2,10 @@
 /// <reference path="EPixelFormats.ts" />
 
 module akra {
-	interface IImgCodec extends ICodec{
+	export interface IImgCodec extends ICodec{
 	}
 	
-	interface IImgData extends ICodecData{
+	export interface IImgData extends ICodecData{
 		height: uint;
 		width:uint;
 		depth:uint;

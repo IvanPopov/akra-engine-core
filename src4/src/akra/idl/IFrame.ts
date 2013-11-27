@@ -3,12 +3,12 @@
 //SLERP <==> slerp for rotation, MATRIX_LINEAR - linear between matrices
 
 module akra {
-	enum EAnimationInterpolations {
+	export enum EAnimationInterpolations {
 		LINEAR,
 		SPHERICAL
 	}
 	
-	interface IFrame {
+	export interface IFrame {
 		type: EAnimationInterpolations;
 	
 		/** readonly */ time: float;

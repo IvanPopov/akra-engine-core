@@ -3,7 +3,7 @@
 /// <reference path="ICircle.ts" />
 
 module akra {
-	interface IRect2d {
+	export interface IRect2d {
 		x0: float;
 		x1: float;
 		y0: float;

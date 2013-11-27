@@ -7,7 +7,7 @@
 /// <reference path="IAnimationTrack.ts" />
 
 module akra {
-	interface IAnimation extends IAnimationBase {
+	export interface IAnimation extends IAnimationBase {
 		/** readonly */ totalTracks: int;
 	
 		push(pTrack: IAnimationTrack): void;

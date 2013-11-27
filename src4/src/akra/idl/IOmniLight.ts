@@ -7,7 +7,7 @@
 /// <reference path="ICamera.ts" />
 
 module akra {
-	interface IOmniParameters extends ILightParameters {
+	export interface IOmniParameters extends ILightParameters {
 		 //default parameters
 		ambient: IColor;
 		diffuse: IColor;
@@ -15,7 +15,7 @@ module akra {
 		attenuation: IVec3;	
 	}
 	
-	interface IOmniLight extends ILightPoint {
+	export interface IOmniLight extends ILightPoint {
 		params: IOmniParameters;
 	
 		getShadowCaster(): IShadowCaster[];

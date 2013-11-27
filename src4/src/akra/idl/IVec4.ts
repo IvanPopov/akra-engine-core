@@ -5,7 +5,7 @@
 /// <reference path="IColorValue.ts" />
 
 module akra {
-	interface IVec4Constructor {
+	export interface IVec4Constructor {
 		();
 		(fValue: float);
 		(v4fVec: IVec4);
@@ -20,7 +20,7 @@ module akra {
 	}
 	
 	
-	interface IVec4 {
+	export interface IVec4 {
 		x: float;
 		y: float;
 		z: float;

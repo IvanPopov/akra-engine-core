@@ -1,7 +1,7 @@
 
 
 module akra {
-	interface IPathinfo {
+	export interface IPathinfo {
 		path: string;
 		dirname: string;
 		filename: string;

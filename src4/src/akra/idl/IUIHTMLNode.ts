@@ -3,9 +3,9 @@
 /// <reference path="3d-party/jquery.d.ts" />
 
 module akra {
-	interface IUIEvent extends JQueryEventObject {}
+	export interface IUIEvent extends JQueryEventObject {}
 	
-	interface IUIHTMLNode extends IUINode  {
+	export interface IUIHTMLNode extends IUINode  {
 		$element: JQuery;
 		el: JQuery;
 	

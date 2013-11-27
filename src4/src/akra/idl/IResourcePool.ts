@@ -7,7 +7,7 @@
 /// <reference path="IResourcePoolManager.ts" />
 	
 module akra {
-		interface IResourcePool extends IEventProvider {
+		export interface IResourcePool extends IEventProvider {
 				iFourcc: int;
 				/** readonly */ manager: IResourcePoolManager;
 	

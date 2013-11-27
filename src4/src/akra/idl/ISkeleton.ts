@@ -4,13 +4,13 @@
 /// <reference path="IJoint.ts" />
 
 module akra {
-	interface IJointMap {
+	export interface IJointMap {
 		[index: string]: IJoint;
 	}
 	
 	
 	
-	interface ISkeleton {
+	export interface ISkeleton {
 		/** readonly */ totalBones: int;
 		/** readonly */ totalNodes: int;
 		/** readonly */ name: string;

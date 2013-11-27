@@ -2,7 +2,7 @@
 /// <reference path="IPackerFormat.ts" />
 
 module akra {
-	interface IUnPacker extends IBinReader {
+	export interface IUnPacker extends IBinReader {
 		getTemplate(): IPackerTemplate;
 	
 		read(): any;

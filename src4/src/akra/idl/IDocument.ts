@@ -4,7 +4,7 @@
 /// <reference path="IFrame.ts" />
 
 module akra {
-	enum EDocumentEntry {
+	export enum EDocumentEntry {
 	    k_Unknown,
 	
 	    k_Instance,
@@ -15,31 +15,31 @@ module akra {
 	    k_SceneNode
 	}
 	
-	enum EDocumentFormat {
+	export enum EDocumentFormat {
 	    JSON,
 	    BINARY_JSON
 	}
 	
-	interface IEntry {
+	export interface IEntry {
 	    guid?: int;
 	}
 	
-	interface IDataEntry extends IEntry {
+	export interface IDataEntry extends IEntry {
 	    type: EDocumentEntry;
 	    extra?: any;
 	}
 	
-	interface ILibraryEntry extends IEntry {
+	export interface ILibraryEntry extends IEntry {
 	    data: AIUnique;
 	    entry: IDataEntry;
 	}
 	
-	interface ILibrary {
+	export interface ILibrary {
 	    [guid: int]: ILibraryEntry;
 	}
 	
 	
-	interface IContributor {
+	export interface IContributor {
 	    author?: string;
 	    authoringTool?: string;
 	    comments?: string;
@@ -47,12 +47,12 @@ module akra {
 	    sourceData?: any;
 	}
 	
-	interface IUnit {
+	export interface IUnit {
 	    name: string;
 	    meter: float;
 	}
 	
-	interface IAsset {
+	export interface IAsset {
 	    unit: IUnit;
 	    upAxis: string;
 	    title?: string;
@@ -63,26 +63,26 @@ module akra {
 	    contributor?: IContributor;
 	}
 	
-	interface IAnimationFrameEntry {
+	export interface IAnimationFrameEntry {
 	    time: float;
 	    weight: float;
 	    matrix: float[];
 	    type: int;
 	}
 	
-	interface IAnimationTrackEntry {
+	export interface IAnimationTrackEntry {
 	    interpolation: EAnimationInterpolations;
 	    keyframes: IAnimationFrameEntry[];
 	    targetName: string;
 	    target: int /* ISceneNodeInstance (pointer to  ISceneNodeI)*/;
 	}
 	
-	interface IAnimationTargetEntry {
+	export interface IAnimationTargetEntry {
 	    target: int /* ISceneNodeInstance (pointer to  ISceneNodeI)*/;
 	    name: string;
 	}
 	
-	interface IAnimationBaseEntry extends IDataEntry {
+	export interface IAnimationBaseEntry extends IDataEntry {
 	    name: string;
 	    targets: IAnimationTargetEntry[];
 	    //additional information abtout position on animation graph
@@ -91,22 +91,22 @@ module akra {
 	    };
 	}
 	
-	interface IAnimationEntry extends IAnimationBaseEntry {
+	export interface IAnimationEntry extends IAnimationBaseEntry {
 	    tracks: IAnimationTrackEntry[];
 	}
 	
-	interface IAnimationBlendElementEntry {
+	export interface IAnimationBlendElementEntry {
 	    animation: int /* IAnimationBaseInstance(pointer to  IAnimationBase)*/;
 	    weight: float;
 	    mask: IMap<float>;
 	    // acceleration: float;
 	}
 	
-	interface IAnimationBlendEntry extends IAnimationBaseEntry {
+	export interface IAnimationBlendEntry extends IAnimationBaseEntry {
 	    animations: IAnimationBlendElementEntry[];
 	}
 	
-	interface IAnimationContainerEntry extends IAnimationBaseEntry {
+	export interface IAnimationContainerEntry extends IAnimationBaseEntry {
 	    enable: boolean;
 	    startTime: float;
 	    speed: float;
@@ -118,14 +118,14 @@ module akra {
 	    rightInfinity: boolean;
 	}
 	
-	interface IControllerEntry extends IDataEntry {
+	export interface IControllerEntry extends IDataEntry {
 	    animations: int /* IAnimationBaseInstance(pointer to  IAnimationBase)*/[];
 	    options: int;
 	    name: string;
 	}
 	
 	
-	interface IDocument {
+	export interface IDocument {
 	    asset?: IAsset;
 	    library: IDataEntry[];
 	    scenes: int /* ISceneInstance(pointer to  IScene)*/[];

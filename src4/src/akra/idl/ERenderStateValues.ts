@@ -1,5 +1,5 @@
 module akra {
-	enum ERenderStateValues {
+	export enum ERenderStateValues {
 		UNDEF = 0,
 	
 		TRUE,

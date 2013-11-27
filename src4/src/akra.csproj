@@ -1,0 +1,412 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{0CF93B93-FB68-44FD-B7F0-D6BFB60EAF7F}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="akra\idl\IAjaxParams.ts" />
+    <Content Include="akra\parser\Parser.ts" />
+    <Content Include="web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="akra\threading\threading.ts" />
+    <None Include="akra\io\templates\common.ts" />
+    <None Include="akra\webgl\webgl.ts" />
+    <None Include="akra\io\io.ts" />
+    <None Include="akra\crypto\sha-1.ts" />
+    <None Include="akra\crypto\md5.ts" />
+    <None Include="akra\crypto\crc32.ts" />
+    <None Include="akra\util\Singleton.ts" />
+    <None Include="akra\info\ApiInfo.ts" />
+    <None Include="akra\info\BrowserInfo.ts" />
+    <None Include="akra\info\ScreenInfo.ts" />
+    <None Include="akra\color\Color.ts" />
+    <None Include="akra\control\KeyMap.ts" />
+    <None Include="akra\fx\Effect.ts" />
+    <None Include="akra\net\RPC.ts" />
+    <None Include="akra\ajax.ts" />
+    <None Include="akra\akra.ts" />
+    <None Include="akra\angular.ts" />
+    <None Include="akra\geometry\classify\classify.ts" />
+    <None Include="akra\color\colors.ts" />
+    <None Include="akra\common.ts" />
+    <None Include="akra\config\config.ts" />
+    <None Include="akra\control\control.ts" />
+    <None Include="akra\conv\conv.ts" />
+    <None Include="akra\core.ts" />
+    <None Include="akra\types.ts" />
+    <None Include="akra\debug.ts" />
+    <None Include="akra\deps\deps.ts" />
+    <None Include="akra\filedrop.ts" />
+    <None Include="akra\fx.ts" />
+    <None Include="akra\gen\generate.ts" />
+    <None Include="akra\geometry\geometry.ts" />
+    <None Include="akra\geometry\Circle.ts" />
+    <None Include="akra\math\Vec2.ts" />
+    <None Include="akra\idl\3d-party\angular.d.ts" />
+    <None Include="akra\idl\3d-party\FileSaver.d.ts" />
+    <None Include="akra\idl\3d-party\gamepad.d.ts" />
+    <None Include="akra\idl\3d-party\has.d.ts" />
+    <None Include="akra\idl\3d-party\jquery.d.ts" />
+    <None Include="akra\idl\3d-party\jqueryui.d.ts" />
+    <None Include="akra\idl\3d-party\webgl.d.ts" />
+    <None Include="akra\idl\3d-party\zip.d.ts" />
+    <None Include="akra\idl\parser\IItem.ts" />
+    <None Include="akra\idl\parser\IParser.ts" />
+    <None Include="akra\idl\EDataTypes.ts" />
+    <None Include="akra\idl\EEffectErrors.ts" />
+    <None Include="akra\idl\EFileTransferModes.ts" />
+    <None Include="akra\idl\EIO.ts" />
+    <None Include="akra\idl\EPixelFormats.ts" />
+    <None Include="akra\idl\EPlaneClassifications.ts" />
+    <None Include="akra\idl\EPrimitiveTypes.ts" />
+    <None Include="akra\idl\ERenderStates.ts" />
+    <None Include="akra\idl\ERenderStateValues.ts" />
+    <None Include="akra\idl\EVolumeClassifications.ts" />
+    <None Include="akra\idl\IAFXAttributeBlendContainer.ts" />
+    <None Include="akra\idl\IAFXBlender.ts" />
+    <None Include="akra\idl\IAFXComponent.ts" />
+    <None Include="akra\idl\IAFXComponentBlend.ts" />
+    <None Include="akra\idl\IAFXComposer.ts" />
+    <None Include="akra\idl\IAFXEffect.ts" />
+    <None Include="akra\idl\IAFXInstruction.ts" />
+    <None Include="akra\idl\IAFXMaker.ts" />
+    <None Include="akra\idl\IAFXPassBlend.ts" />
+    <None Include="akra\idl\IAFXPassInputBlend.ts" />
+    <None Include="akra\idl\IAFXPreRenderState.ts" />
+    <None Include="akra\idl\IAFXSamplerBlender.ts" />
+    <None Include="akra\idl\IAFXSamplerState.ts" />
+    <None Include="akra\idl\IAFXVariableBlendContainer.ts" />
+    <None Include="akra\idl\IAFXVariableContainer.ts" />
+    <None Include="akra\idl\IAnimation.ts" />
+    <None Include="akra\idl\IAnimationBase.ts" />
+    <None Include="akra\idl\IAnimationBlend.ts" />
+    <None Include="akra\idl\IAnimationContainer.ts" />
+    <None Include="akra\idl\IAnimationController.ts" />
+    <None Include="akra\idl\IAnimationParameter.ts" />
+    <None Include="akra\idl\IAnimationTrack.ts" />
+    <None Include="akra\idl\IApiInfo.ts" />
+    <None Include="akra\idl\IBinReader.ts" />
+    <None Include="akra\idl\IBinWriter.ts" />
+    <None Include="akra\idl\IBox.ts" />
+    <None Include="akra\idl\IBrowserInfo.ts" />
+    <None Include="akra\idl\IBuffer.ts" />
+    <None Include="akra\idl\IBufferData.ts" />
+    <None Include="akra\idl\IBufferDataModifier.ts" />
+    <None Include="akra\idl\IBufferMap.ts" />
+    <None Include="akra\idl\ICamera.ts" />
+    <None Include="akra\idl\ICanvas.ts" />
+    <None Include="akra\idl\ICanvas2d.ts" />
+    <None Include="akra\idl\ICanvas3d.ts" />
+    <None Include="akra\idl\ICanvasInfo.ts" />
+    <None Include="akra\idl\ICircle.ts" />
+    <None Include="akra\idl\IClickable.ts" />
+    <None Include="akra\idl\ICodec.ts" />
+    <None Include="akra\idl\ICollada.ts" />
+    <None Include="akra\idl\IColor.ts" />
+    <None Include="akra\idl\IColorValue.ts" />
+    <None Include="akra\idl\IConverter.ts" />
+    <None Include="akra\idl\IDataPool.ts" />
+    <None Include="akra\idl\IDataURI.ts" />
+    <None Include="akra\idl\IDDSCodec.ts" />
+    <None Include="akra\idl\IDeps.ts" />
+    <None Include="akra\idl\IDepthBuffer.ts" />
+    <None Include="akra\idl\IDeviceInfo.ts" />
+    <None Include="akra\idl\IDisplayList.ts" />
+    <None Include="akra\idl\IDocument.ts" />
+    <None Include="akra\idl\IDSViewport.ts" />
+    <None Include="akra\idl\IEffect.ts" />
+    <None Include="akra\idl\IEffectErrorInfo.ts" />
+    <None Include="akra\idl\IEngine.ts" />
+    <None Include="akra\idl\IEntity.ts" />
+    <None Include="akra\idl\IEventProvider.ts" />
+    <None Include="akra\idl\IEventTable.ts" />
+    <None Include="akra\idl\IExplorerFunc.ts" />
+    <None Include="akra\idl\IFile.ts" />
+    <None Include="akra\idl\IFileDropArea.ts" />
+    <None Include="akra\idl\IFont2d.ts" />
+    <None Include="akra\idl\IFrame.ts" />
+    <None Include="akra\idl\IFrameStats.ts" />
+    <None Include="akra\idl\IFrustum.ts" />
+    <None Include="akra\idl\IGamepadMap.ts" />
+    <None Include="akra\idl\IHardwareBuffer.ts" />
+    <None Include="akra\idl\IImg.ts" />
+    <None Include="akra\idl\IImgCodec.ts" />
+    <None Include="akra\idl\IIndexBuffer.ts" />
+    <None Include="akra\idl\IIndexData.ts" />
+    <None Include="akra\idl\IItem.ts" />
+    <None Include="akra\idl\IJoint.ts" />
+    <None Include="akra\idl\IKeyMap.ts" />
+    <None Include="akra\idl\ILightGraph.ts" />
+    <None Include="akra\idl\ILightPoint.ts" />
+    <None Include="akra\idl\ILogger.ts" />
+    <None Include="akra\idl\IManager.ts" />
+    <None Include="akra\idl\IMap.ts" />
+    <None Include="akra\idl\IMat3.ts" />
+    <None Include="akra\idl\IMat4.ts" />
+    <None Include="akra\idl\IMaterial.ts" />
+    <None Include="akra\idl\IMegaTexture.ts" />
+    <None Include="akra\idl\IMesh.ts" />
+    <None Include="akra\idl\IMeshSubset.ts" />
+    <None Include="akra\idl\IModel.ts" />
+    <None Include="akra\idl\IModelEntry.ts" />
+    <None Include="akra\idl\IMultiRenderTarget.ts" />
+    <None Include="akra\idl\INode.ts" />
+    <None Include="akra\idl\IObj.ts" />
+    <None Include="akra\idl\IObjectArray.ts" />
+    <None Include="akra\idl\IObjectList.ts" />
+    <None Include="akra\idl\IObjectSortCollection.ts" />
+    <None Include="akra\idl\IOcTree.ts" />
+    <None Include="akra\idl\IOcTreeNode.ts" />
+    <None Include="akra\idl\IOcTreeRect.ts" />
+    <None Include="akra\idl\IOffset.ts" />
+    <None Include="akra\idl\IOmniLight.ts" />
+    <None Include="akra\idl\IPacker.ts" />
+    <None Include="akra\idl\IPackerFormat.ts" />
+    <None Include="akra\idl\IPair.ts" />
+    <None Include="akra\idl\IParser.ts" />
+    <None Include="akra\idl\IParticleManager.ts" />
+    <None Include="akra\idl\IPathinfo.ts" />
+    <None Include="akra\idl\IPipe.ts" />
+    <None Include="akra\idl\IPixelBox.ts" />
+    <None Include="akra\idl\IPixelBuffer.ts" />
+    <None Include="akra\idl\IPlane2d.ts" />
+    <None Include="akra\idl\IPlane3d.ts" />
+    <None Include="akra\idl\IPoint.ts" />
+    <None Include="akra\idl\IPositionFrame.ts" />
+    <None Include="akra\idl\IProgress.ts" />
+    <None Include="akra\idl\IProjectLight.ts" />
+    <None Include="akra\idl\IQuat4.ts" />
+    <None Include="akra\idl\IRay2d.ts" />
+    <None Include="akra\idl\IRay3d.ts" />
+    <None Include="akra\idl\IRect2d.ts" />
+    <None Include="akra\idl\IRect3d.ts" />
+    <None Include="akra\idl\IReferenceCounter.ts" />
+    <None Include="akra\idl\IRenderableObject.ts" />
+    <None Include="akra\idl\IRenderData.ts" />
+    <None Include="akra\idl\IRenderDataCollection.ts" />
+    <None Include="akra\idl\IRenderEntry.ts" />
+    <None Include="akra\idl\IRenderer.ts" />
+    <None Include="akra\idl\IRenderMethod.ts" />
+    <None Include="akra\idl\IRenderPass.ts" />
+    <None Include="akra\idl\IRenderQueue.ts" />
+    <None Include="akra\idl\IRenderResource.ts" />
+    <None Include="akra\idl\IRenderState.ts" />
+    <None Include="akra\idl\IRenderTarget.ts" />
+    <None Include="akra\idl\IRenderTechnique.ts" />
+    <None Include="akra\idl\IRenderTexture.ts" />
+    <None Include="akra\idl\IResourceCode.ts" />
+    <None Include="akra\idl\IResourceNotifyRoutineFunc.ts" />
+    <None Include="akra\idl\IResourcePool.ts" />
+    <None Include="akra\idl\IResourcePoolItem.ts" />
+    <None Include="akra\idl\IResourcePoolManager.ts" />
+    <None Include="akra\idl\IResourceWatcherFunc.ts" />
+    <None Include="akra\idl\IRID.ts" />
+    <None Include="akra\idl\IRPC.ts" />
+    <None Include="akra\idl\IScene.ts" />
+    <None Include="akra\idl\IScene2d.ts" />
+    <None Include="akra\idl\IScene3d.ts" />
+    <None Include="akra\idl\ISceneManager.ts" />
+    <None Include="akra\idl\ISceneModel.ts" />
+    <None Include="akra\idl\ISceneNode.ts" />
+    <None Include="akra\idl\ISceneObject.ts" />
+    <None Include="akra\idl\ISceneTree.ts" />
+    <None Include="akra\idl\IScope.ts" />
+    <None Include="akra\idl\IScreenInfo.ts" />
+    <None Include="akra\idl\ISegment2d.ts" />
+    <None Include="akra\idl\ISegment3d.ts" />
+    <None Include="akra\idl\ISequenceRenderTarget.ts" />
+    <None Include="akra\idl\IShaderInput.ts" />
+    <None Include="akra\idl\IShaderProgram.ts" />
+    <None Include="akra\idl\IShadowCaster.ts" />
+    <None Include="akra\idl\ISkeleton.ts" />
+    <None Include="akra\idl\ISkin.ts" />
+    <None Include="akra\idl\ISphere.ts" />
+    <None Include="akra\idl\ISprite.ts" />
+    <None Include="akra\idl\ISpriteManager.ts" />
+    <None Include="akra\idl\IState.ts" />
+    <None Include="akra\idl\IStringDictionary.ts" />
+    <None Include="akra\idl\ISunLight.ts" />
+    <None Include="akra\idl\ISurfaceMaterial.ts" />
+    <None Include="akra\idl\ITerrain.ts" />
+    <None Include="akra\idl\ITerrainROAM.ts" />
+    <None Include="akra\idl\ITerrainSection.ts" />
+    <None Include="akra\idl\ITerrainSectionROAM.ts" />
+    <None Include="akra\idl\ITexture.ts" />
+    <None Include="akra\idl\IThread.ts" />
+    <None Include="akra\idl\IThreadManager.ts" />
+    <None Include="akra\idl\ITriTreeNode.ts" />
+    <None Include="akra\idl\IUI.ts" />
+    <None Include="akra\idl\IUIAnimationBlender.ts" />
+    <None Include="akra\idl\IUIAnimationControls.ts" />
+    <None Include="akra\idl\IUIAnimationData.ts" />
+    <None Include="akra\idl\IUIAnimationGraph.ts" />
+    <None Include="akra\idl\IUIAnimationMask.ts" />
+    <None Include="akra\idl\IUIAnimationNode.ts" />
+    <None Include="akra\idl\IUIAnimationPlayer.ts" />
+    <None Include="akra\idl\IUIButton.ts" />
+    <None Include="akra\idl\IUICheckbox.ts" />
+    <None Include="akra\idl\IUICheckboxList.ts" />
+    <None Include="akra\idl\IUICodeEditor.ts" />
+    <None Include="akra\idl\IUIComponent.ts" />
+    <None Include="akra\idl\IUIDNDNode.ts" />
+    <None Include="akra\idl\IUIGraph.ts" />
+    <None Include="akra\idl\IUIGraphConnectionArea.ts" />
+    <None Include="akra\idl\IUIGraphConnector.ts" />
+    <None Include="akra\idl\IUIGraphControls.ts" />
+    <None Include="akra\idl\IUIGraphNode.ts" />
+    <None Include="akra\idl\IUIGraphRoute.ts" />
+    <None Include="akra\idl\IUIHTMLNode.ts" />
+    <None Include="akra\idl\IUIIDE.ts" />
+    <None Include="akra\idl\IUILabel.ts" />
+    <None Include="akra\idl\IUILayout.ts" />
+    <None Include="akra\idl\IUIList.ts" />
+    <None Include="akra\idl\IUIListenerEditor.ts" />
+    <None Include="akra\idl\IUINode.ts" />
+    <None Include="akra\idl\IUIPanel.ts" />
+    <None Include="akra\idl\IUIPopup.ts" />
+    <None Include="akra\idl\IUIRenderTargetStats.ts" />
+    <None Include="akra\idl\IUISlider.ts" />
+    <None Include="akra\idl\IUISwitch.ts" />
+    <None Include="akra\idl\IUITabs.ts" />
+    <None Include="akra\idl\IUITree.ts" />
+    <None Include="akra\idl\IUITreeNode.ts" />
+    <None Include="akra\idl\IUIVector.ts" />
+    <None Include="akra\idl\IUIWindow.ts" />
+    <None Include="akra\idl\IUnique.ts" />
+    <None Include="akra\idl\IUnPacker.ts" />
+    <None Include="akra\idl\IURI.ts" />
+    <None Include="akra\idl\IUtilTimer.ts" />
+    <None Include="akra\idl\IVec2.ts" />
+    <None Include="akra\idl\IVec3.ts" />
+    <None Include="akra\idl\IVec4.ts" />
+    <None Include="akra\idl\IVertexBuffer.ts" />
+    <None Include="akra\idl\IVertexData.ts" />
+    <None Include="akra\idl\IVertexDeclaration.ts" />
+    <None Include="akra\idl\IVertexElement.ts" />
+    <None Include="akra\idl\IViewport.ts" />
+    <None Include="akra\idl\IViewportState.ts" />
+    <None Include="akra\idl\IWorldExtents.ts" />
+    <None Include="akra\idl\parser\IState.ts" />
+    <None Include="akra\info\info.ts" />
+    <None Include="akra\geometry\intersect\intersect.ts" />
+    <None Include="akra\limit.ts" />
+    <None Include="akra\logger.ts" />
+    <None Include="akra\material.ts" />
+    <None Include="akra\math\math.ts" />
+    <None Include="akra\mem.ts" />
+    <None Include="akra\net.ts" />
+    <None Include="akra\parser.ts" />
+    <None Include="akra\parser\Item.ts" />
+    <None Include="akra\parser\Lexer.ts" />
+    <None Include="akra\parser\ParseTree.ts" />
+    <None Include="akra\parser\State.ts" />
+    <None Include="akra\parser\symbols.ts" />
+    <None Include="akra\path\path.ts" />
+    <None Include="akra\pixelUtil.ts" />
+    <None Include="akra\render.ts" />
+    <None Include="akra\save.ts" />
+    <None Include="akra\sid.ts" />
+    <None Include="akra\sort.ts" />
+    <None Include="akra\threading.ts" />
+    <None Include="akra\time.ts" />
+    <None Include="akra\type.ts" />
+    <None Include="akra\uri\uri.ts" />
+    <None Include="akra\zip.ts" />
+    <None Include="akra\fixes.d.ts" />
+    <None Include="akra\geometry\Box.ts" />
+    <None Include="akra\geometry\Frustum.ts" />
+    <None Include="akra\geometry\Plane2d.ts" />
+    <None Include="akra\geometry\Plane3d.ts" />
+    <None Include="akra\geometry\Ray2d.ts" />
+    <None Include="akra\geometry\Ray3d.ts" />
+    <None Include="akra\geometry\Rect2d.ts" />
+    <None Include="akra\geometry\Rect3d.ts" />
+    <None Include="akra\geometry\Segment2d.ts" />
+    <None Include="akra\geometry\Segment3d.ts" />
+    <None Include="akra\geometry\Sphere.ts" />
+    <None Include="akra\math\Mat3.ts" />
+    <None Include="akra\math\Mat4.ts" />
+    <None Include="akra\math\Quat4.ts" />
+    <None Include="akra\math\Vec3.ts" />
+    <None Include="akra\math\Vec4.ts" />
+    <None Include="akra\control\GamepadMap.ts" />
+    <None Include="akra\io\BinReader.ts" />
+    <None Include="akra\io\BinWriter.ts" />
+    <None Include="akra\io\FileInterface.t.ts" />
+    <None Include="akra\io\LocalFile.t.ts" />
+    <None Include="akra\io\LocalFile.ts" />
+    <None Include="akra\io\Packer.ts" />
+    <None Include="akra\io\PackerTemplate.ts" />
+    <None Include="akra\io\RemoteFile.t.ts" />
+    <None Include="akra\io\StorageFile.ts" />
+    <None Include="akra\io\TFile.ts" />
+    <None Include="akra\io\UnPacker.ts" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>akra</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:36221/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <Optimize>true</Optimize>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TypeScriptOutDir>./build</TypeScriptOutDir>
+    <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <TypeScriptOutDir>./build</TypeScriptOutDir>
+    <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
+</Project>

@@ -5,7 +5,7 @@
 /// <reference path="EPixelFormats.ts" />
 
 module akra {
-	interface IPixelBox extends IBox {
+	export interface IPixelBox extends IBox {
 		format: EPixelFormats;
 		data: Uint8Array;
 		rowPitch: uint;

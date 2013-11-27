@@ -8,14 +8,14 @@
 /// <reference path="IAFXInstruction.ts" />
 
 module akra {
-	interface IAFXPassInputStateInfo {
+	export interface IAFXPassInputStateInfo {
 		uniformKey: uint;
 		foreignKey: uint;
 		samplerKey: uint;
 		renderStatesKey: uint;
 	};
 	
-	interface IAFXPassInputBlend extends AIUnique {
+	export interface IAFXPassInputBlend extends AIUnique {
 		samplers: IAFXSamplerStateMap;
 		samplerArrays: IAFXSamplerStateListMap;
 		samplerArrayLength: IIntMap;

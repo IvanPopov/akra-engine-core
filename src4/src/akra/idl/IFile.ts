@@ -1,11 +1,11 @@
 module akra {
-	interface IFileMeta {
+	export interface IFileMeta {
 		lastModifiedDate: string;
 		size: uint;
 		eTag?: string;
 	}
 	
-	interface IFile {
+	export interface IFile {
 		/** readonly */ path: string;
 		/** readonly */ name: string;
 		mode: int;

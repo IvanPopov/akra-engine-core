@@ -1,29 +1,29 @@
 
 module akra {
-	interface IEventSlot {
+	export interface IEventSlot {
 		target: any;
 		callback: string;
 		listener: Function;
 	}
 	
-	interface IEventSlotListMap {
+	export interface IEventSlotListMap {
 		[index: string]: IEventSlot[];
 	}
-	interface IEventSlotMap {
+	export interface IEventSlotMap {
 		[index: string]: IEventSlot;
 	}
 	
-	interface IEventSlotTable {
+	export interface IEventSlotTable {
 		[index: number]: IEventSlotListMap;
 		[index: string]: IEventSlotListMap;
 	}
 	
-	interface IEventSlotList {
+	export interface IEventSlotList {
 		[index: number]: IEventSlotMap;
 		[index: string]: IEventSlotMap;
 	}
 	
-	interface IEventTable {
+	export interface IEventTable {
 		broadcast: IEventSlotTable;
 		unicast: IEventSlotList;
 	

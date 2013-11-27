@@ -1,7 +1,7 @@
 
 
 module akra {
-	enum ECompareFunction {
+	export enum ECompareFunction {
 		ALWAYS_FAIL,
 		ALWAYS_PASS,
 		LESS,
@@ -12,19 +12,19 @@ module akra {
 		GREATER
 	}
 	
-	enum ECullingMode {
+	export enum ECullingMode {
 		NONE = 1,
 		CLOCKWISE = 2,
 		ANTICLOCKWISE = 3
 	}
 	
-	enum EFrameBufferTypes {
+	export enum EFrameBufferTypes {
 		COLOR  = 0x1,
 		DEPTH   = 0x2,
 		STENCIL = 0x4
 	}
 	
-	interface IViewportState {
+	export interface IViewportState {
 		cullingMode: ECullingMode;
 	
 		depthTest: boolean;

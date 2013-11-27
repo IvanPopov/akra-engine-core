@@ -22,12 +22,12 @@
 /// <reference path="IModelEntry.ts" />
 
 module akra {
-	interface IText3d extends ISceneNode {
+	export interface IText3d extends ISceneNode {
 	
 	}
 	
 	
-	interface IScene3d extends IScene {
+	export interface IScene3d extends IScene {
 		totalDL: uint;
 	
 		getRootNode(): ISceneNode;

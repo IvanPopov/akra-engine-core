@@ -1,6 +1,6 @@
 
 module akra {
-	interface IApiInfo {
+	export interface IApiInfo {
 		gamepad: boolean;
 		webGL: boolean;
 		webAudio: boolean;

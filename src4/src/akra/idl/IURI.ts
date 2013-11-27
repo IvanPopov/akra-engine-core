@@ -1,7 +1,7 @@
 
 
 module akra {
-	interface IURI {
+	export interface IURI {
 		scheme: string;
 		userinfo: string;
 		host: string;

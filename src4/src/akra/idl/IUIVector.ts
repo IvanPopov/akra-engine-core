@@ -7,7 +7,7 @@
 /// <reference path="IVec4.ts" />
 
 module akra {
-	interface IUIVector extends IUIComponent {
+	export interface IUIVector extends IUIComponent {
 		/** readonly */ x: IUILabel;
 		/** readonly */ y: IUILabel;
 		/** readonly */ z: IUILabel;

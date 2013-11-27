@@ -1,11 +1,11 @@
 
 
 module akra {
-	interface ICollectionIndexFunction {
+	export interface ICollectionIndexFunction {
 		(pElement: any): int;
 	}
 	
-	interface IObjectSortCollection<T> {
+	export interface IObjectSortCollection<T> {
 		getElementAt(iIndex: uint): T;
 		setElementAt(iIndex: uint, pValue: T): void;
 		removeElementAt(iIndex: uint): void;

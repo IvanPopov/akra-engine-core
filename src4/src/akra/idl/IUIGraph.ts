@@ -6,29 +6,29 @@
 /// <reference path="IUIGraphRoute.ts" />
 
 module akra {
-	enum EUIGraphDirections {
+	export enum EUIGraphDirections {
 		IN = 0x01,
 		OUT = 0x02
 	}
 	
-	enum EUIGraphTypes {
+	export enum EUIGraphTypes {
 		UNKNOWN,
 		ANIMATION
 	}
 	
-	enum EUIGraphEvents {
+	export enum EUIGraphEvents {
 		UNKNOWN,
 		DELETE,
 		SHOW_MAP,
 		HIDE_MAP
 	}
 	
-	interface IUIGraphEvent {
+	export interface IUIGraphEvent {
 		type: EUIGraphEvents;
 		traversedRoutes: IUIGraphRoute[];
 	}
 	
-	interface IUIGraph extends IUIComponent {
+	export interface IUIGraph extends IUIComponent {
 		/** readonly */ graphType: EUIGraphTypes;
 		/** readonly */ nodes: IUIGraphNode[];
 		/** readonly */ canvas: RaphaelPaper;

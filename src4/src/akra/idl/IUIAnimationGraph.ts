@@ -7,7 +7,7 @@
 /// <reference path="IAnimationBase.ts" />
 
 module akra {
-	interface IUIAnimationGraph extends IUIGraph {
+	export interface IUIAnimationGraph extends IUIGraph {
 		getController(): IAnimationController;
 	
 		selectNode(pNode: IUIAnimationNode, bModified?: boolean): void;

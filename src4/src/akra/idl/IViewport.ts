@@ -12,12 +12,12 @@
 /// <reference path="IViewportState.ts" />
 
 module akra {
-	interface IDepthRange {
+	export interface IDepthRange {
 		min: float;
 		max: float;
 	};
 	
-	enum EViewportTypes {
+	export enum EViewportTypes {
 		DEFAULT = -1,
 		DSVIEWPORT = 1,
 		SHADOWVIEWPORT = 2,
@@ -25,7 +25,7 @@ module akra {
 		TEXTUREVIEWPORT
 	}
 	
-	interface IViewport extends IEventProvider, IClickable {
+	export interface IViewport extends IEventProvider, IClickable {
 		left: float;
 		top: float;
 		width: float;

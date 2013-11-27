@@ -1,6 +1,6 @@
 
 module akra {
-	interface IPoint {
+	export interface IPoint {
 		x: float;
 		y: float;
 	}

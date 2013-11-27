@@ -6,7 +6,7 @@
 /// <reference path="ITerrainSection.ts" />
 
 module akra {
-	interface ITerrainSectionROAM extends ITerrainSection {
+	export interface ITerrainSectionROAM extends ITerrainSection {
 	    /** readonly */ triangleA: ITriTreeNode;
 	    /** readonly */ triangleB: ITriTreeNode;
 	    /** readonly */ queueSortValue: float;

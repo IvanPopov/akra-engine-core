@@ -1,5 +1,5 @@
 module akra {
-	﻿enum EVolumeClassifications {
+	﻿export enum EVolumeClassifications {
 	    NO_RELATION = 0,
 	    EQUAL,
 	    A_CONTAINS_B,

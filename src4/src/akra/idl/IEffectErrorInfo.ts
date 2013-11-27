@@ -1,5 +1,5 @@
 module akra {
-	﻿interface IEffectErrorInfo {
+	﻿export interface IEffectErrorInfo {
 	    typeName?: string;
 	    techName?: string;
 	    exprName?: string;

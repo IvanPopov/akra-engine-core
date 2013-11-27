@@ -6,7 +6,7 @@
 
 
 module akra {
-	interface IAFXBlender {
+	export interface IAFXBlender {
 	
 		//Component and component blend
 		addComponentToBlend(pComponentBlend: IAFXComponentBlend, 

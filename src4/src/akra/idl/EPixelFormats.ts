@@ -1,5 +1,5 @@
 module akra {
-	enum EPixelFormats {
+	export enum EPixelFormats {
 	    UNKNOWN = 0,          /*Unknown pixel format.*/
 	
 	    L8 = 1,               /*8-bit pixel format, all bits luminance.*/
@@ -76,7 +76,7 @@ module akra {
 	    TOTAL = 48
 	};
 	
-	interface IPixelFormatList {
+	export interface IPixelFormatList {
 	    [index: int]: EPixelFormats;
 	}
 	
@@ -84,7 +84,7 @@ module akra {
 	/**
 	 * Flags defining some on/off properties of pixel formats
 	 */
-	enum EPixelFormatFlags {
+	export enum EPixelFormatFlags {
 	    // This format has an alpha channel
 	    HASALPHA        = 0x00000001,
 	    // This format is compressed. This invalidates the values in elemBytes,
@@ -104,7 +104,7 @@ module akra {
 	}
 	
 	/** Pixel component format */
-	enum EPixelComponentTypes {
+	export enum EPixelComponentTypes {
 	    BYTE = 0,    /*Byte per component (8 bit fixed 0.0..1.0)*/
 	    SHORT = 1,   /*Short per component (16 bit fixed 0.0..1.0))*/
 	    INT = 2,
@@ -114,7 +114,7 @@ module akra {
 	};
 	
 	//used in pixelBox::scale()...
-	enum EFilters {
+	export enum EFilters {
 	    NEAREST,
 	    LINEAR,
 	    BILINEAR,

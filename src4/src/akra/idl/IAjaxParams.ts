@@ -1,6 +1,6 @@
 
 module akra {
-	enum EAjaxDataTypes {
+	export enum EAjaxDataTypes {
 		TEXT,
 		JSON,
 		BLOB,
@@ -8,11 +8,11 @@ module akra {
 		DOCUMENT
 	}
 	
-	enum EAjaxHttpMethods {
+	export enum EAjaxHttpMethods {
 		GET = 1,
 		POST
 	}
-	enum EAjaxHttpCodes {
+	export enum EAjaxHttpCodes {
 		OK = 200,
 		CREATED,
 		ACCEPTED,
@@ -32,27 +32,27 @@ module akra {
 		GATEWAY_TIMEOUT
 	}
 	
-	interface IAjaxStatusCodeCallback {
+	export interface IAjaxStatusCodeCallback {
 		(code: uint): void;
 	}
 	
-	interface IAjaxStatusCodeMap {
+	export interface IAjaxStatusCodeMap {
 		[code: uint]: IAjaxStatusCodeCallback;
 	}
 	
-	interface IAjaxErrorCallback {
+	export interface IAjaxErrorCallback {
 		(request?: XMLHttpRequest, statusText?: string, error?: Error): void;
 	}
 	
-	interface IAjaxSuccessCallback {
+	export interface IAjaxSuccessCallback {
 		(data?: any, statusText?: string, request?: XMLHttpRequest): void;
 	}
 	
-	interface IAjaxBeforeSendCallback {
+	export interface IAjaxBeforeSendCallback {
 		(request?: XMLHttpRequest, settings?: IAjaxParams): boolean;
 	}
 	
-	interface IAjaxParams {
+	export interface IAjaxParams {
 		url?: string;
 		async?: boolean;
 		statusCode?: IAjaxStatusCodeMap;
@@ -67,7 +67,7 @@ module akra {
 		timeout?: uint;
 	}
 	
-	interface IAjaxResultSync {
+	export interface IAjaxResultSync {
 		data: any;
 		statusText: string;
 		xhr: XMLHttpRequest;

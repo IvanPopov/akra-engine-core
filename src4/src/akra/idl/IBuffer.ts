@@ -1,6 +1,6 @@
 
 module akra {
-	interface IBuffer {
+	export interface IBuffer {
 		//number of elements
 		/** readonly */ length: int;
 		

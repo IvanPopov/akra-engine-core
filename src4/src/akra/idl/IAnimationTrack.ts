@@ -7,7 +7,7 @@
 /// <reference path="ISceneNode.ts" />
 
 module akra {
-	interface IAnimationTrack extends IAnimationParameter {
+	export interface IAnimationTrack extends IAnimationParameter {
 		targetName: string;
 		
 		/** readonly */ target: ISceneNode;

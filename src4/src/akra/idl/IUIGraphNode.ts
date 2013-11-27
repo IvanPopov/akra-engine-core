@@ -7,7 +7,7 @@
 /// <reference path="IUIGraphConnectionArea.ts" />
 
 module akra {
-	enum EUIGraphNodes {
+	export enum EUIGraphNodes {
 		UNKNOWN,
 		
 		ANIMATION_DATA,
@@ -16,12 +16,12 @@ module akra {
 		ANIMATION_MASK
 	}
 	
-	interface IGraphNodeAreaMap {
+	export interface IGraphNodeAreaMap {
 		[name: string]: IUIGraphConnectionArea;
 	}
 	
 	
-	interface IUIGraphNode extends IUIComponent {
+	export interface IUIGraphNode extends IUIComponent {
 		/** readonly */ graphNodeType: EUIGraphNodes;
 		/** readonly */ graph: IUIGraph;
 		/** readonly */ areas: IGraphNodeAreaMap;

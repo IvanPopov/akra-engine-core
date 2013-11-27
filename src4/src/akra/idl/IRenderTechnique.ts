@@ -10,7 +10,7 @@
 /// <reference path="IAFXComponentBlend.ts" />
 
 module akra {
-	interface IRenderTechnique extends IEventProvider {
+	export interface IRenderTechnique extends IEventProvider {
 		/** readonly */ totalPasses: uint;
 		/** readonly */ modified: uint;
 	/** readonly */ data: IAFXComponentBlend;

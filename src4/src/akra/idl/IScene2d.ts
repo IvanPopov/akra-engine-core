@@ -2,7 +2,7 @@
 /// <reference path="IScene.ts" />
 
 module akra {
-	interface IScene2d extends IScene {
+	export interface IScene2d extends IScene {
 		
 	}
 	

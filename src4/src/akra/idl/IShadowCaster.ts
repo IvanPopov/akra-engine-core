@@ -7,7 +7,7 @@
 // #define SHADOW_DISCARD_DISTANCE 70.
 
 module akra {
-	interface IShadowCaster extends ICamera {
+	export interface IShadowCaster extends ICamera {
 		/** readonly */ lightPoint: ILightPoint;
 		/** readonly */ face: uint;
 	    /** readonly */ affectedObjects: IObjectArray<ISceneObject>;

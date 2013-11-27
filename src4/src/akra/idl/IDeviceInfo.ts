@@ -1,26 +1,27 @@
-// IDeviceInfo interface
+// IDeviceInfo export interface
 // [write description here...]
 
 module akra {
-	interface IDeviceInfo {
-		maxTextureSize: uint;
-		maxCubeMapTextureSize: uint;
-		maxViewPortSize: uint;
+export interface IDeviceInfo {
+	maxTextureSize: uint;
+	maxCubeMapTextureSize: uint;
+	maxViewPortSize: uint;
 
-		maxTextureImageUnits: uint;
-		maxVertexAttributes: uint;
-		maxVertexTextureImageUnits: uint;
-		maxCombinedTextureImageUnits: uint;
+	maxTextureImageUnits: uint;
+	maxVertexAttributes: uint;
+	maxVertexTextureImageUnits: uint;
+	maxCombinedTextureImageUnits: uint;
 
-		stencilBits: uint;
-		colorBits: uint[];
-		alphaBits: uint;
-		multisampleType: float;
+	stencilBits: uint;
+	colorBits: uint[];
+	alphaBits: uint;
+	multisampleType: float;
 
-		shaderVersion: float;
+	shaderVersion: float;
 
-		getExtention(pDevice: WebGLRenderingContext, csExtension: string);
-		//checkFormat(pDevice: WebGLRenderingContext, eFormat: EImageFormats);
-	}
+	getExtention(pDevice: WebGLRenderingContext, csExtension: string);
+	//checkFormat(pDevice: WebGLRenderingContext, eFormat: EImageFormats);
+}
 }
 
+#endif

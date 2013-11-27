@@ -1,7 +1,7 @@
 
 
 module akra {
-	interface ITriTreeNode {
+	export interface ITriTreeNode {
 	    baseNeighbor: ITriTreeNode;
 	    leftNeighbor: ITriTreeNode;
 	    rightNeighbor: ITriTreeNode;
@@ -9,7 +9,7 @@ module akra {
 	    rightChild: ITriTreeNode;
 	}
 	
-	interface ITriangleNodePool {
+	export interface ITriangleNodePool {
 	    request(): ITriTreeNode;
 	    reset(): void;
 	}

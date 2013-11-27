@@ -6,7 +6,7 @@
 /// <reference path="IVec3.ts" />
 
 module akra {
-	interface ISunParameters extends ILightParameters {
+	export interface ISunParameters extends ILightParameters {
 		eyePosition: IVec3;
 		sunDir: IVec3;
 		groundC0: IVec3;
@@ -14,7 +14,7 @@ module akra {
 		hg: IVec3;
 	}
 	
-	interface ISunLight extends ILightPoint {
+	export interface ISunLight extends ILightPoint {
 		params: ISunParameters;
 		skyDome: ISceneModel;
 	

@@ -1,11 +1,11 @@
 module akra {
-	enum ECanvasTypes {
+	export enum ECanvasTypes {
 		TYPE_UNKNOWN = -1,
 		TYPE_2D = 1,
 		TYPE_3D
 	};
 	
-	interface ICanvas {
+	export interface ICanvas {
 		type: ECanvasTypes;
 	
 	

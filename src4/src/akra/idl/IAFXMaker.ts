@@ -10,17 +10,17 @@
 /// <reference path="IAFXInstruction.ts" />
 
 module akra {
-	interface IAFXMakerMap {
+	export interface IAFXMakerMap {
 		[index: string]: IAFXMaker;
 		[index: uint]: IAFXMaker;
 	}
 	
-	interface IAFXBaseAttrInfo {
+	export interface IAFXBaseAttrInfo {
 		name: string;
 		semantic: string;
 	}
 	
-	interface IAFXMaker extends AIUnique {
+	export interface IAFXMaker extends AIUnique {
 		/** readonly */ shaderProgram: IShaderProgram;
 		/** readonly */ uniformNames: string[];
 		/** readonly */ attributeInfo: IAFXBaseAttrInfo[];

@@ -6,7 +6,7 @@
 /// <reference path="IVertexDeclaration.ts" />
 
 module akra {
-	interface ITerrainSection extends ISceneObject {
+	export interface ITerrainSection extends ISceneObject {
 		/** readonly */ sectorX: uint;
 		/** readonly */ sectorY: uint;
 		/** readonly */ terrainSystem: ITerrain;

@@ -1,10 +1,10 @@
 
 module akra {
-	enum EResourceCodes {
+	export enum EResourceCodes {
 		INVALID_CODE = 0xFFFFFFFF
 	}
 	
-	interface IResourceCode {
+	export interface IResourceCode {
 		family: int;
 		type: int;
 		/** Пеерводит текущее состояние идентифиакора в невалидное */

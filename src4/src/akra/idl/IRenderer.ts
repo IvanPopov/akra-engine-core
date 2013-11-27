@@ -27,12 +27,12 @@
 // #define CAPABILITYVALUE(category, value) ((category << (32 - 4)) | (1 << value))
 
 module akra {
-	enum ERenderers {
+	export enum ERenderers {
 	    UNKNOWN, 
 	    WEBGL
 	}
 	
-	interface IRendererOptions extends WebGLContextAttributes {
+	export interface IRendererOptions extends WebGLContextAttributes {
 		canvas?: HTMLCanvasElement;
 	}
 	
@@ -40,7 +40,7 @@ module akra {
 	
 	
 	
-	enum ERenderCapabilitiesCategory {
+	export enum ERenderCapabilitiesCategory {
 		C_COMMON = 0,
 		C_COMMON_2 = 1,
 		C_WEBGL = 2,
@@ -48,7 +48,7 @@ module akra {
 		COUNT = 3
 	}
 	
-	enum ERenderCapabilities {
+	export enum ERenderCapabilities {
 	// 	AUTOMIPMAP			  = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_COMMON, 0),
 	// 	BLENDING				= CAPABILITYVALUE(ERenderCapabilitiesCategory.C_COMMON, 1),
 	// 	/// Supports anisotropic texture filtering
@@ -151,7 +151,7 @@ module akra {
 	// 	SEPARATE_SHADER_OBJECTS = CAPABILITYVALUE(ERenderCapabilitiesCategory.C_WEBGL, 9)
 	}
 	
-	// enum EGLSpecifics {
+	// export enum EGLSpecifics {
 	//	 UNPACK_ALIGNMENT = 0x0CF5,
 	//	 PACK_ALIGNMENT = 0x0D05,
 	//	 UNPACK_FLIP_Y_WEBGL = 0x9240,
@@ -161,26 +161,26 @@ module akra {
 	//	 BROWSER_DEFAULT_WEBGL = 0x9244
 	// };
 	
-	// enum EBufferMasks {
+	// export enum EBufferMasks {
 	//	 DEPTH_BUFFER_BIT			   = 0x00000100,
 	//	 STENCIL_BUFFER_BIT			 = 0x00000400,
 	//	 COLOR_BUFFER_BIT			   = 0x00004000
 	// };
 	
-	// enum EBufferUsages {
+	// export enum EBufferUsages {
 	//	 STREAM_DRAW = 0x88E0,
 	//	 STATIC_DRAW = 0x88E4,
 	//	 DYNAMIC_DRAW = 0x88E8
 	// };
 	
-	// enum EBufferTypes {
+	// export enum EBufferTypes {
 	//	 ARRAY_BUFFER = 0x8892,
 	//	 ELEMENT_ARRAY_BUFFER = 0x8893,
 	//	 FRAME_BUFFER = 0x8D40,
 	//	 RENDER_BUFFER = 0x8D41
 	// };
 	
-	enum EAttachmentTypes {
+	export enum EAttachmentTypes {
 		 COLOR_ATTACHMENT0 = 0x8CE0,
 		 DEPTH_ATTACHMENT = 0x8D00,
 		 STENCIL_ATTACHMENT = 0x8D20,
@@ -188,7 +188,7 @@ module akra {
 	};
 	
 	
-	// enum ERenderStates {
+	// export enum ERenderStates {
 	//	 ZENABLE = 7,
 	//	 ZWRITEENABLE = 14,
 	//	 SRCBLEND = 19,
@@ -200,7 +200,7 @@ module akra {
 	//	 ALPHATESTENABLE
 	// };
 	
-	// enum EBlendModes {
+	// export enum EBlendModes {
 	//	 ZERO = 0,
 	//	 ONE = 1,
 	//	 SRCCOLOR = 0x0300,
@@ -214,7 +214,7 @@ module akra {
 	//	 SRCALPHASAT = 0x0308
 	// };
 	
-	// enum ECmpFuncs {
+	// export enum ECmpFuncs {
 	//	 NEVER = 1,
 	//	 LESS = 2,
 	//	 EQUAL = 3,
@@ -225,7 +225,7 @@ module akra {
 	//	 ALWAYS = 8
 	// };
 	
-	// enum ECullModes {
+	// export enum ECullModes {
 	//	 NONE = 0,
 	//	 CW = 0x404, //FRONT
 	//	 CCW = 0x0405, //BACK
@@ -234,14 +234,14 @@ module akra {
 	
 	//END OF API SPECIFIC
 	
-	// enum ERenderStages {
+	// export enum ERenderStages {
 	//  SHADOWS = 2,
 	//  LIGHTING,
 	//  GLOBALPOSTEFFECTS,
 	//  DEFAULT
 	// }
 	
-	interface IRenderer extends IEventProvider {
+	export interface IRenderer extends IEventProvider {
 	    /*readonly*/ type: ERenderers;
 	
 		getEngine(): IEngine;

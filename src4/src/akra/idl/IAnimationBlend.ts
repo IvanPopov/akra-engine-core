@@ -4,7 +4,7 @@
 /// <reference path="IMap.ts" />
 
 module akra {
-	interface IAnimationElement {
+	export interface IAnimationElement {
 		animation: IAnimationBase;
 		weight: float;
 		mask: IMap<float>;
@@ -13,7 +13,7 @@ module akra {
 		realTime: float;
 	}
 	
-	interface IAnimationBlend extends IAnimationBase {
+	export interface IAnimationBlend extends IAnimationBase {
 		/** readonly */ totalAnimations: int;
 	
 	    addAnimation(pAnimation: IAnimationBase, fWeight?: float, pMask?: IMap<float>): int;

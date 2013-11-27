@@ -1,5 +1,5 @@
 module akra {
-	﻿enum EIO {
+	﻿export enum EIO {
 	    IN 		= 0x01,
 	    OUT 	= 0x02,
 	    ATE 	= 0x04,

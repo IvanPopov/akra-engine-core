@@ -4,7 +4,7 @@
 /// <reference path="ICircle.ts" />
 
 module akra {
-	interface ISphere {
+	export interface ISphere {
 	
 		center: IVec3;
 		radius: float;

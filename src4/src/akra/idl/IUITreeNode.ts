@@ -3,7 +3,7 @@
 /// <reference path="IUITree.ts" />
 
 module akra {
-	interface IUITreeNode {
+	export interface IUITreeNode {
 		/** readonly */ el: JQuery;
 	
 		/** readonly */ parent: IUITreeNode;

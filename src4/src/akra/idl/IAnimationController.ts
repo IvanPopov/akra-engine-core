@@ -7,7 +7,7 @@
 /// <reference path="ISceneNode.ts" />
 
 module akra {
-	interface IAnimationController extends IEventProvider {
+	export interface IAnimationController extends IEventProvider {
 		name: string;
 	
 		/** readonly */ totalAnimations: int;

@@ -3,7 +3,7 @@
 /// <reference path="AIOffset.ts" />
 
 module akra {
-	enum EKeyCodes {
+	export enum EKeyCodes {
 		BACKSPACE = 8,
 		TAB = 9,
 		ENTER = 13,
@@ -28,14 +28,14 @@ module akra {
 		TOTAL = 256
 	}
 	
-	enum EMouseButton {
+	export enum EMouseButton {
 		UNKNOWN = 0,
 		LEFT = 1,
 		MIDDLE = 2,
 		RIGHT = 3
 	}
 	
-	interface IKeyMap {
+	export interface IKeyMap {
 		isKeyPress(iCode: int);
 		isKeyPress(eCode: EKeyCodes);
 	

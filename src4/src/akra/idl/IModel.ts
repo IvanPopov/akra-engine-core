@@ -9,17 +9,17 @@
 /// <reference path="IMesh.ts" />
 
 module akra {
-	enum EModelFormats {
+	export enum EModelFormats {
 		UNKNOWN,
 		COLLADA = 0x1000,
 		OBJ = 0x2000
 	}
 	
-	interface IModelLoadOptions {
+	export interface IModelLoadOptions {
 	
 	}
 	
-	interface IModel extends IResourcePoolItem {
+	export interface IModel extends IResourcePoolItem {
 		byteLength: uint;
 	
 		modelFormat: EModelFormats;

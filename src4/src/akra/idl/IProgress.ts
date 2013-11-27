@@ -2,7 +2,7 @@
 
 
 module akra {
-	interface IProgress {
+	export interface IProgress {
 		canvas: HTMLCanvasElement;
 				context: CanvasRenderingContext2D;
 				step: number;

@@ -32,7 +32,7 @@
 
 
 module akra {
-	interface IMat4Constructor {
+	export interface IMat4Constructor {
 		();
 		(fValue: float);
 		(v4fVec: IVec4);
@@ -49,7 +49,7 @@ module akra {
 				fValue13: float, fValue14: float, fValue15: float, fValue16: float);
 	}
 	
-	interface IMat4 {
+	export interface IMat4 {
 		data: Float32Array;
 	
 		set(): IMat4;

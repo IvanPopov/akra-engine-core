@@ -7,7 +7,7 @@
 /// <reference path="IViewport.ts" />
 
 module akra {
-	interface ISceneObject extends ISceneNode {
+	export interface ISceneObject extends ISceneNode {
 		worldBounds: IRect3d;
 		totalRenderable: uint;
 		shadow: boolean;

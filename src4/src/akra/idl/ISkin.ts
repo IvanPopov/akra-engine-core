@@ -9,11 +9,11 @@
 /// <reference path="IVertexData.ts" />
 
 module akra {
-	// interface INodeMap {
+	// export interface INodeMap {
 	// 	[index: string]: INode;
 	// }
 	
-	interface ISkin {
+	export interface ISkin {
 		/** readonly */ data: IRenderDataCollection;
 		/** readonly */ skeleton: ISkeleton;
 		/** readonly */ totalBones: uint;

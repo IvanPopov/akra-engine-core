@@ -1,5 +1,5 @@
 module akra {
-	interface IThread {
+	export interface IThread {
 		onmessage: Function;
 		onerror: Function;
 		id: int;

@@ -7,7 +7,7 @@
 /// <reference path="IEventProvider.ts" />
 
 module akra {
-	interface IVertexData extends IBufferData, IBuffer, IEventProvider {
+	export interface IVertexData extends IBufferData, IBuffer, IEventProvider {
 		/** readonly */ stride: uint;
 		/** readonly */ startIndex: uint;
 		/** readonly */ id: int;

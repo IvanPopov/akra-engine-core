@@ -6,7 +6,7 @@
 /// <reference path="IImg.ts" />
 
 module akra {
-	interface IMegaTexture extends IEventProvider {
+	export interface IMegaTexture extends IEventProvider {
 		manualMinLevelLoad: boolean;
 	
 		init(pObject: ISceneObject, sSurfaceTextures: string): void;

@@ -7,7 +7,7 @@
 
 
 module akra {
-	enum ERenderableTypes {
+	export enum ERenderableTypes {
 		UNKNOWN,
 		
 		MESH_SUBSET,
@@ -15,7 +15,7 @@ module akra {
 		SPRITE
 	}
 	
-	interface IRenderableObject extends IEventProvider {
+	export interface IRenderableObject extends IEventProvider {
 		renderMethod: IRenderMethod;
 		shadow: boolean;
 	

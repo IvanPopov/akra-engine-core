@@ -2,7 +2,7 @@
 /// <reference path="IBuffer.ts" />
 
 module akra {
-	enum EHardwareBufferFlags {
+	export enum EHardwareBufferFlags {
 		STATIC 		= 0x01, 
 		DYNAMIC 	= 0x02,
 		STREAM 		= 0x80,
@@ -28,7 +28,7 @@ module akra {
 		DYNAMIC_DISCARDABLE = DYNAMIC | DISCARDABLE
 	}
 	
-	enum ELockFlags {
+	export enum ELockFlags {
 		READ 			= 0x01,
 		WRITE 			= 0x02,
 		DISCARD 		= 0x04,
@@ -37,7 +37,7 @@ module akra {
 		NORMAL			= READ | WRITE
 	}
 	
-	interface IHardwareBuffer extends IBuffer {
+	export interface IHardwareBuffer extends IBuffer {
 		clone(pSrc: IHardwareBuffer): boolean;
 	
 		isValid(): boolean;

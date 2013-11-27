@@ -4,7 +4,7 @@
 /// <reference path="ISceneObject.ts" />
 
 module akra {
-	interface IDisplayList extends IEventProvider {
+	export interface IDisplayList extends IEventProvider {
 		/** readonly */ name: string;
 		//если используется <quick search>, то в случае если узлы сцены не были изменены, выдается null.
 	    _findObjects(pCamera: ICamera, pResultArray?: IObjectArray<ISceneObject>, bQuickSearch?: boolean): IObjectArray<ISceneObject>;

@@ -5,7 +5,7 @@
 /// <reference path="IUICheckbox.ts" />
 
 module akra {
-	interface IUICheckboxList extends IUIComponent {
+	export interface IUICheckboxList extends IUIComponent {
 		/** readonly */ length: uint;
 		/** readonly */ items: IUICheckbox[];
 	

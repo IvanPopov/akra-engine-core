@@ -1,0 +1,2334 @@
+[
+	{
+		"from": "bool",
+		"to": "boolean"
+	},
+	{
+		"from": "inline",
+		"to": ""
+	},
+	{
+		"from": "AEDataTypes",
+		"to": "EDataTypes"
+	},
+	{
+		"from": "AEDataTypeSizes",
+		"to": "EDataTypeSizes"
+	},
+	{
+		"from": "AEEffectErrors",
+		"to": "EEffectErrors"
+	},
+	{
+		"from": "AEEffectTempErrors",
+		"to": "EEffectTempErrors"
+	},
+	{
+		"from": "AEFileTransferModes",
+		"to": "EFileTransferModes"
+	},
+	{
+		"from": "AEIO",
+		"to": "EIO"
+	},
+	{
+		"from": "AIPixelFormatList",
+		"to": "IPixelFormatList"
+	},
+	{
+		"from": "AEPixelFormats",
+		"to": "EPixelFormats"
+	},
+	{
+		"from": "AEPixelFormatFlags",
+		"to": "EPixelFormatFlags"
+	},
+	{
+		"from": "AEPixelComponentTypes",
+		"to": "EPixelComponentTypes"
+	},
+	{
+		"from": "AEFilters",
+		"to": "EFilters"
+	},
+	{
+		"from": "AEPlaneClassifications",
+		"to": "EPlaneClassifications"
+	},
+	{
+		"from": "AEPrimitiveTypes",
+		"to": "EPrimitiveTypes"
+	},
+	{
+		"from": "AERenderStates",
+		"to": "ERenderStates"
+	},
+	{
+		"from": "AERenderStateValues",
+		"to": "ERenderStateValues"
+	},
+	{
+		"from": "AEVolumeClassifications",
+		"to": "EVolumeClassifications"
+	},
+	{
+		"from": "AIAFXAttributeBlendContainer",
+		"to": "IAFXAttributeBlendContainer"
+	},
+	{
+		"from": "AIAFXBlender",
+		"to": "IAFXBlender"
+	},
+	{
+		"from": "AIAFXComponentMap",
+		"to": "IAFXComponentMap"
+	},
+	{
+		"from": "AIAFXComponent",
+		"to": "IAFXComponent"
+	},
+	{
+		"from": "AIAFXComponentBlendMap",
+		"to": "IAFXComponentBlendMap"
+	},
+	{
+		"from": "AIAFXComponentInfo",
+		"to": "IAFXComponentInfo"
+	},
+	{
+		"from": "AIAFXComponentPassInputBlend",
+		"to": "IAFXComponentPassInputBlend"
+	},
+	{
+		"from": "AIAFXComponentBlend",
+		"to": "IAFXComponentBlend"
+	},
+	{
+		"from": "AIAFXComposer",
+		"to": "IAFXComposer"
+	},
+	{
+		"from": "AIAFXObject",
+		"to": "IAFXObject"
+	},
+	{
+		"from": "AIAFXVariable",
+		"to": "IAFXVariable"
+	},
+	{
+		"from": "AIAFXType",
+		"to": "IAFXType"
+	},
+	{
+		"from": "AIAFXFunction",
+		"to": "IAFXFunction"
+	},
+	{
+		"from": "AIAFXPass",
+		"to": "IAFXPass"
+	},
+	{
+		"from": "AIAFXTechnique",
+		"to": "IAFXTechnique"
+	},
+	{
+		"from": "AIAFXEffectStats",
+		"to": "IAFXEffectStats"
+	},
+	{
+		"from": "AIAFXEffect",
+		"to": "IAFXEffect"
+	},
+	{
+		"from": "AIAFXInstructionStateMap",
+		"to": "IAFXInstructionStateMap"
+	},
+	{
+		"from": "AIAFXInstructionRoutine",
+		"to": "IAFXInstructionRoutine"
+	},
+	{
+		"from": "AIAFXInstructionError",
+		"to": "IAFXInstructionError"
+	},
+	{
+		"from": "AIAFXInstructionMap",
+		"to": "IAFXInstructionMap"
+	},
+	{
+		"from": "AIAFXSimpleInstructionMap",
+		"to": "IAFXSimpleInstructionMap"
+	},
+	{
+		"from": "AIAFXIdExprMap",
+		"to": "IAFXIdExprMap"
+	},
+	{
+		"from": "AIAFXVariableTypeMap",
+		"to": "IAFXVariableTypeMap"
+	},
+	{
+		"from": "AIAFXTypeMap",
+		"to": "IAFXTypeMap"
+	},
+	{
+		"from": "AIAFXTypeListMap",
+		"to": "IAFXTypeListMap"
+	},
+	{
+		"from": "AIAFXTypeDeclMap",
+		"to": "IAFXTypeDeclMap"
+	},
+	{
+		"from": "AIAFXVariableDeclMap",
+		"to": "IAFXVariableDeclMap"
+	},
+	{
+		"from": "AIAFXVariableDeclListMap",
+		"to": "IAFXVariableDeclListMap"
+	},
+	{
+		"from": "AIAFXVarUsedModeMap",
+		"to": "IAFXVarUsedModeMap"
+	},
+	{
+		"from": "AIAFXFunctionDeclMap",
+		"to": "IAFXFunctionDeclMap"
+	},
+	{
+		"from": "AIAFXTypeUseInfoContainer",
+		"to": "IAFXTypeUseInfoContainer"
+	},
+	{
+		"from": "AIAFXTypeUseInfoMap",
+		"to": "IAFXTypeUseInfoMap"
+	},
+	{
+		"from": "AIAFXImportedTechniqueInfo",
+		"to": "IAFXImportedTechniqueInfo"
+	},
+	{
+		"from": "AIAFXInstruction",
+		"to": "IAFXInstruction"
+	},
+	{
+		"from": "AIAFXSimpleInstruction",
+		"to": "IAFXSimpleInstruction"
+	},
+	{
+		"from": "AIAFXTypeInstruction",
+		"to": "IAFXTypeInstruction"
+	},
+	{
+		"from": "AIAFXVariableTypeInstruction",
+		"to": "IAFXVariableTypeInstruction"
+	},
+	{
+		"from": "AIAFXTypedInstruction",
+		"to": "IAFXTypedInstruction"
+	},
+	{
+		"from": "AIAFXDeclInstruction",
+		"to": "IAFXDeclInstruction"
+	},
+	{
+		"from": "AIAFXTypeDeclInstruction",
+		"to": "IAFXTypeDeclInstruction"
+	},
+	{
+		"from": "AIAFXVariableDeclInstruction",
+		"to": "IAFXVariableDeclInstruction"
+	},
+	{
+		"from": "AIAFXFunctionDeclInstruction",
+		"to": "IAFXFunctionDeclInstruction"
+	},
+	{
+		"from": "AIAFXStructDeclInstruction",
+		"to": "IAFXStructDeclInstruction"
+	},
+	{
+		"from": "AIAFXIdInstruction",
+		"to": "IAFXIdInstruction"
+	},
+	{
+		"from": "AIAFXKeywordInstruction",
+		"to": "IAFXKeywordInstruction"
+	},
+	{
+		"from": "AIAFXAnalyzedInstruction",
+		"to": "IAFXAnalyzedInstruction"
+	},
+	{
+		"from": "AIAFXExprInstruction",
+		"to": "IAFXExprInstruction"
+	},
+	{
+		"from": "AIAFXInitExprInstruction",
+		"to": "IAFXInitExprInstruction"
+	},
+	{
+		"from": "AIAFXIdExprInstruction",
+		"to": "IAFXIdExprInstruction"
+	},
+	{
+		"from": "AIAFXLiteralInstruction",
+		"to": "IAFXLiteralInstruction"
+	},
+	{
+		"from": "AIAFXAnnotationInstruction",
+		"to": "IAFXAnnotationInstruction"
+	},
+	{
+		"from": "AIAFXStmtInstruction",
+		"to": "IAFXStmtInstruction"
+	},
+	{
+		"from": "AIAFXPassInstruction",
+		"to": "IAFXPassInstruction"
+	},
+	{
+		"from": "AIAFXTechniqueInstruction",
+		"to": "IAFXTechniqueInstruction"
+	},
+	{
+		"from": "AIAFXVariableBlendInfo",
+		"to": "IAFXVariableBlendInfo"
+	},
+	{
+		"from": "AIAFXVariableBlendInfoMap",
+		"to": "IAFXVariableBlendInfoMap"
+	},
+	{
+		"from": "AIAFXFunctionDeclListMap",
+		"to": "IAFXFunctionDeclListMap"
+	},
+	{
+		"from": "AEAFXInstructionTypes",
+		"to": "EAFXInstructionTypes"
+	},
+	{
+		"from": "AEFunctionType",
+		"to": "EFunctionType"
+	},
+	{
+		"from": "AECheckStage",
+		"to": "ECheckStage"
+	},
+	{
+		"from": "AEVarUsedMode",
+		"to": "EVarUsedMode"
+	},
+	{
+		"from": "AEExtractExprType",
+		"to": "EExtractExprType"
+	},
+	{
+		"from": "AEAFXBlendMode",
+		"to": "EAFXBlendMode"
+	},
+	{
+		"from": "AIAFXMakerMap",
+		"to": "IAFXMakerMap"
+	},
+	{
+		"from": "AIAFXBaseAttrInfo",
+		"to": "IAFXBaseAttrInfo"
+	},
+	{
+		"from": "AIAFXMaker",
+		"to": "IAFXMaker"
+	},
+	{
+		"from": "AIAFXPassBlendMap",
+		"to": "IAFXPassBlendMap"
+	},
+	{
+		"from": "AIAFXPassBlend",
+		"to": "IAFXPassBlend"
+	},
+	{
+		"from": "AIAFXPassInputStateInfo",
+		"to": "IAFXPassInputStateInfo"
+	},
+	{
+		"from": "AIAFXPassInputBlend",
+		"to": "IAFXPassInputBlend"
+	},
+	{
+		"from": "AIAFXPreRenderState",
+		"to": "IAFXPreRenderState"
+	},
+	{
+		"from": "AIAFXSamplerBlender",
+		"to": "IAFXSamplerBlender"
+	},
+	{
+		"from": "AIAFXSamplerStateMap",
+		"to": "IAFXSamplerStateMap"
+	},
+	{
+		"from": "AIAFXSamplerStateListMap",
+		"to": "IAFXSamplerStateListMap"
+	},
+	{
+		"from": "AIAFXSamplerState",
+		"to": "IAFXSamplerState"
+	},
+	{
+		"from": "AIAFXVariableBlendContainer",
+		"to": "IAFXVariableBlendContainer"
+	},
+	{
+		"from": "AIAFXShaderVarTypeMap",
+		"to": "IAFXShaderVarTypeMap"
+	},
+	{
+		"from": "AIAFXVariableInfo",
+		"to": "IAFXVariableInfo"
+	},
+	{
+		"from": "AIAFXVariableContainer",
+		"to": "IAFXVariableContainer"
+	},
+	{
+		"from": "AEAFXShaderVariableType",
+		"to": "EAFXShaderVariableType"
+	},
+	{
+		"from": "AIAjaxStatusCodeCallback",
+		"to": "IAjaxStatusCodeCallback"
+	},
+	{
+		"from": "AIAjaxStatusCodeMap",
+		"to": "IAjaxStatusCodeMap"
+	},
+	{
+		"from": "AIAjaxErrorCallback",
+		"to": "IAjaxErrorCallback"
+	},
+	{
+		"from": "AIAjaxSuccessCallback",
+		"to": "IAjaxSuccessCallback"
+	},
+	{
+		"from": "AIAjaxBeforeSendCallback",
+		"to": "IAjaxBeforeSendCallback"
+	},
+	{
+		"from": "AIAjaxParams",
+		"to": "IAjaxParams"
+	},
+	{
+		"from": "AIAjaxResultSync",
+		"to": "IAjaxResultSync"
+	},
+	{
+		"from": "AEAjaxDataTypes",
+		"to": "EAjaxDataTypes"
+	},
+	{
+		"from": "AEAjaxHttpMethods",
+		"to": "EAjaxHttpMethods"
+	},
+	{
+		"from": "AEAjaxHttpCodes",
+		"to": "EAjaxHttpCodes"
+	},
+	{
+		"from": "AIAnimation",
+		"to": "IAnimation"
+	},
+	{
+		"from": "AIAnimationTarget",
+		"to": "IAnimationTarget"
+	},
+	{
+		"from": "AIAnimationBase",
+		"to": "IAnimationBase"
+	},
+	{
+		"from": "AIAnimationMap",
+		"to": "IAnimationMap"
+	},
+	{
+		"from": "AEAnimationTypes",
+		"to": "EAnimationTypes"
+	},
+	{
+		"from": "AIAnimationElement",
+		"to": "IAnimationElement"
+	},
+	{
+		"from": "AIAnimationBlend",
+		"to": "IAnimationBlend"
+	},
+	{
+		"from": "AIAnimationContainer",
+		"to": "IAnimationContainer"
+	},
+	{
+		"from": "AIAnimationController",
+		"to": "IAnimationController"
+	},
+	{
+		"from": "AIAnimationParameter",
+		"to": "IAnimationParameter"
+	},
+	{
+		"from": "AIAnimationTrack",
+		"to": "IAnimationTrack"
+	},
+	{
+		"from": "AIApiInfo",
+		"to": "IApiInfo"
+	},
+	{
+		"from": "AIBinReader",
+		"to": "IBinReader"
+	},
+	{
+		"from": "AIBinWriter",
+		"to": "IBinWriter"
+	},
+	{
+		"from": "AIBox",
+		"to": "IBox"
+	},
+	{
+		"from": "AIBrowserInfo",
+		"to": "IBrowserInfo"
+	},
+	{
+		"from": "AIBuffer",
+		"to": "IBuffer"
+	},
+	{
+		"from": "AIBufferData",
+		"to": "IBufferData"
+	},
+	{
+		"from": "AIBufferDataModifier",
+		"to": "IBufferDataModifier"
+	},
+	{
+		"from": "AIDataFlow",
+		"to": "IDataFlow"
+	},
+	{
+		"from": "AIDataMapper",
+		"to": "IDataMapper"
+	},
+	{
+		"from": "AIBufferMap",
+		"to": "IBufferMap"
+	},
+	{
+		"from": "AEDataFlowTypes",
+		"to": "EDataFlowTypes"
+	},
+	{
+		"from": "AICamera",
+		"to": "ICamera"
+	},
+	{
+		"from": "AECameraParameters",
+		"to": "ECameraParameters"
+	},
+	{
+		"from": "AECameraTypes",
+		"to": "ECameraTypes"
+	},
+	{
+		"from": "AICanvas",
+		"to": "ICanvas"
+	},
+	{
+		"from": "AECanvasTypes",
+		"to": "ECanvasTypes"
+	},
+	{
+		"from": "AICanvas2d",
+		"to": "ICanvas2d"
+	},
+	{
+		"from": "AICanvas3d",
+		"to": "ICanvas3d"
+	},
+	{
+		"from": "AICanvasInfo",
+		"to": "ICanvasInfo"
+	},
+	{
+		"from": "AICircle",
+		"to": "ICircle"
+	},
+	{
+		"from": "AIClickable",
+		"to": "IClickable"
+	},
+	{
+		"from": "AICodec",
+		"to": "ICodec"
+	},
+	{
+		"from": "AICodecData",
+		"to": "ICodecData"
+	},
+	{
+		"from": "AICollada",
+		"to": "ICollada"
+	},
+	{
+		"from": "AIColladaCache",
+		"to": "IColladaCache"
+	},
+	{
+		"from": "AIColladaAnimationLoadOptions",
+		"to": "IColladaAnimationLoadOptions"
+	},
+	{
+		"from": "AIColladaImageLoadOptions",
+		"to": "IColladaImageLoadOptions"
+	},
+	{
+		"from": "AIColladaLoadOptions",
+		"to": "IColladaLoadOptions"
+	},
+	{
+		"from": "AIXMLExplorer",
+		"to": "IXMLExplorer"
+	},
+	{
+		"from": "AIColladaTarget",
+		"to": "IColladaTarget"
+	},
+	{
+		"from": "AIColladaEntry",
+		"to": "IColladaEntry"
+	},
+	{
+		"from": "AIColladaEntryMap",
+		"to": "IColladaEntryMap"
+	},
+	{
+		"from": "AIColladaLibrary",
+		"to": "IColladaLibrary"
+	},
+	{
+		"from": "AIColladaEffectLibrary",
+		"to": "IColladaEffectLibrary"
+	},
+	{
+		"from": "AIColladaEntryLoader",
+		"to": "IColladaEntryLoader"
+	},
+	{
+		"from": "AIColladaUnknownFormat",
+		"to": "IColladaUnknownFormat"
+	},
+	{
+		"from": "AIColladaFormatStrideTable",
+		"to": "IColladaFormatStrideTable"
+	},
+	{
+		"from": "AIColladaLinkMap",
+		"to": "IColladaLinkMap"
+	},
+	{
+		"from": "AIColladaLibraryMap",
+		"to": "IColladaLibraryMap"
+	},
+	{
+		"from": "AIColladaLibraryTemplate",
+		"to": "IColladaLibraryTemplate"
+	},
+	{
+		"from": "AIColladaArray",
+		"to": "IColladaArray"
+	},
+	{
+		"from": "AIColladaUnit",
+		"to": "IColladaUnit"
+	},
+	{
+		"from": "AIColladaContributor",
+		"to": "IColladaContributor"
+	},
+	{
+		"from": "AIColladaAsset",
+		"to": "IColladaAsset"
+	},
+	{
+		"from": "AIColladaInstance",
+		"to": "IColladaInstance"
+	},
+	{
+		"from": "AIColladaAnnotate",
+		"to": "IColladaAnnotate"
+	},
+	{
+		"from": "AIColladaNewParam",
+		"to": "IColladaNewParam"
+	},
+	{
+		"from": "AIColladaNewParamMap",
+		"to": "IColladaNewParamMap"
+	},
+	{
+		"from": "AIColladaParam",
+		"to": "IColladaParam"
+	},
+	{
+		"from": "AIColladaAccessor",
+		"to": "IColladaAccessor"
+	},
+	{
+		"from": "AIColladaTechniqueCommon",
+		"to": "IColladaTechniqueCommon"
+	},
+	{
+		"from": "AIColladaSource",
+		"to": "IColladaSource"
+	},
+	{
+		"from": "AIColladaInput",
+		"to": "IColladaInput"
+	},
+	{
+		"from": "AIColladaTransform",
+		"to": "IColladaTransform"
+	},
+	{
+		"from": "AIColladaRotate",
+		"to": "IColladaRotate"
+	},
+	{
+		"from": "AIColladaTranslate",
+		"to": "IColladaTranslate"
+	},
+	{
+		"from": "AIColladaScale",
+		"to": "IColladaScale"
+	},
+	{
+		"from": "AIColladaMatrix",
+		"to": "IColladaMatrix"
+	},
+	{
+		"from": "AIColladaVertices",
+		"to": "IColladaVertices"
+	},
+	{
+		"from": "AIColladaJoints",
+		"to": "IColladaJoints"
+	},
+	{
+		"from": "AIColladaPolygons",
+		"to": "IColladaPolygons"
+	},
+	{
+		"from": "AIColladaMesh",
+		"to": "IColladaMesh"
+	},
+	{
+		"from": "AIColladaConvexMesh",
+		"to": "IColladaConvexMesh"
+	},
+	{
+		"from": "AIColladaSpline",
+		"to": "IColladaSpline"
+	},
+	{
+		"from": "AIColladaGeometrie",
+		"to": "IColladaGeometrie"
+	},
+	{
+		"from": "AIColladaMorph",
+		"to": "IColladaMorph"
+	},
+	{
+		"from": "AIColladaVertexWeights",
+		"to": "IColladaVertexWeights"
+	},
+	{
+		"from": "AIColladaSkin",
+		"to": "IColladaSkin"
+	},
+	{
+		"from": "AIColladaController",
+		"to": "IColladaController"
+	},
+	{
+		"from": "AIColladaImage",
+		"to": "IColladaImage"
+	},
+	{
+		"from": "AIColladaSurface",
+		"to": "IColladaSurface"
+	},
+	{
+		"from": "AIColladaSampler2D",
+		"to": "IColladaSampler2D"
+	},
+	{
+		"from": "AIColladaTexture",
+		"to": "IColladaTexture"
+	},
+	{
+		"from": "AIColladaInstanceEffect",
+		"to": "IColladaInstanceEffect"
+	},
+	{
+		"from": "AIColladaPhong",
+		"to": "IColladaPhong"
+	},
+	{
+		"from": "AIColladaEffectTechnique",
+		"to": "IColladaEffectTechnique"
+	},
+	{
+		"from": "AIColladaProfileCommon",
+		"to": "IColladaProfileCommon"
+	},
+	{
+		"from": "AIColladaEffect",
+		"to": "IColladaEffect"
+	},
+	{
+		"from": "AIColladaMaterial",
+		"to": "IColladaMaterial"
+	},
+	{
+		"from": "AIColladaTechniqueValue",
+		"to": "IColladaTechniqueValue"
+	},
+	{
+		"from": "AIColladaBindVertexInput",
+		"to": "IColladaBindVertexInput"
+	},
+	{
+		"from": "AIColladaBindVertexInputMap",
+		"to": "IColladaBindVertexInputMap"
+	},
+	{
+		"from": "AIColladaInstanceMaterial",
+		"to": "IColladaInstanceMaterial"
+	},
+	{
+		"from": "AIColladaInstanceCamera",
+		"to": "IColladaInstanceCamera"
+	},
+	{
+		"from": "AIColladaInstanceLight",
+		"to": "IColladaInstanceLight"
+	},
+	{
+		"from": "AIColladaBindMaterial",
+		"to": "IColladaBindMaterial"
+	},
+	{
+		"from": "AIColladaInstanceGeometry",
+		"to": "IColladaInstanceGeometry"
+	},
+	{
+		"from": "AIColladaInstanceController",
+		"to": "IColladaInstanceController"
+	},
+	{
+		"from": "AIColladaPerspective",
+		"to": "IColladaPerspective"
+	},
+	{
+		"from": "AIColladaOptics",
+		"to": "IColladaOptics"
+	},
+	{
+		"from": "AIColladaCamera",
+		"to": "IColladaCamera"
+	},
+	{
+		"from": "AIColladaLight",
+		"to": "IColladaLight"
+	},
+	{
+		"from": "AIColladaNode",
+		"to": "IColladaNode"
+	},
+	{
+		"from": "AIColladaVisualScene",
+		"to": "IColladaVisualScene"
+	},
+	{
+		"from": "AIColladaAnimationSampler",
+		"to": "IColladaAnimationSampler"
+	},
+	{
+		"from": "AIColladaAnimationChannel",
+		"to": "IColladaAnimationChannel"
+	},
+	{
+		"from": "AIColladaAnimation",
+		"to": "IColladaAnimation"
+	},
+	{
+		"from": "AIColladaScene",
+		"to": "IColladaScene"
+	},
+	{
+		"from": "AIColladaDocument",
+		"to": "IColladaDocument"
+	},
+	{
+		"from": "AIColladaAnimationClip",
+		"to": "IColladaAnimationClip"
+	},
+	{
+		"from": "AIColor",
+		"to": "IColor"
+	},
+	{
+		"from": "AIColorIValue",
+		"to": "IColorIValue"
+	},
+	{
+		"from": "AIColorValue",
+		"to": "IColorValue"
+	},
+	{
+		"from": "AIConverter",
+		"to": "IConverter"
+	},
+	{
+		"from": "AIConvertionTableRow",
+		"to": "IConvertionTableRow"
+	},
+	{
+		"from": "AIConvertionTable",
+		"to": "IConvertionTable"
+	},
+	{
+		"from": "AIDataPool",
+		"to": "IDataPool"
+	},
+	{
+		"from": "AIDataURI",
+		"to": "IDataURI"
+	},
+	{
+		"from": "AIDDSCodec",
+		"to": "IDDSCodec"
+	},
+	{
+		"from": "AIDep",
+		"to": "IDep"
+	},
+	{
+		"from": "AIDependens",
+		"to": "IDependens"
+	},
+	{
+		"from": "AEDependenceStatuses",
+		"to": "EDependenceStatuses"
+	},
+	{
+		"from": "AIDepthBuffer",
+		"to": "IDepthBuffer"
+	},
+	{
+		"from": "AIDeviceInfo",
+		"to": "IDeviceInfo"
+	},
+	{
+		"from": "AIDisplayList",
+		"to": "IDisplayList"
+	},
+	{
+		"from": "AIEntry",
+		"to": "IEntry"
+	},
+	{
+		"from": "AIDataEntry",
+		"to": "IDataEntry"
+	},
+	{
+		"from": "AILibraryEntry",
+		"to": "ILibraryEntry"
+	},
+	{
+		"from": "AILibrary",
+		"to": "ILibrary"
+	},
+	{
+		"from": "AIContributor",
+		"to": "IContributor"
+	},
+	{
+		"from": "AIUnit",
+		"to": "IUnit"
+	},
+	{
+		"from": "AIAsset",
+		"to": "IAsset"
+	},
+	{
+		"from": "AIAnimationFrameEntry",
+		"to": "IAnimationFrameEntry"
+	},
+	{
+		"from": "AIAnimationTrackEntry",
+		"to": "IAnimationTrackEntry"
+	},
+	{
+		"from": "AIAnimationTargetEntry",
+		"to": "IAnimationTargetEntry"
+	},
+	{
+		"from": "AIAnimationBaseEntry",
+		"to": "IAnimationBaseEntry"
+	},
+	{
+		"from": "AIAnimationEntry",
+		"to": "IAnimationEntry"
+	},
+	{
+		"from": "AIAnimationBlendElementEntry",
+		"to": "IAnimationBlendElementEntry"
+	},
+	{
+		"from": "AIAnimationBlendEntry",
+		"to": "IAnimationBlendEntry"
+	},
+	{
+		"from": "AIAnimationContainerEntry",
+		"to": "IAnimationContainerEntry"
+	},
+	{
+		"from": "AIControllerEntry",
+		"to": "IControllerEntry"
+	},
+	{
+		"from": "AIDocument",
+		"to": "IDocument"
+	},
+	{
+		"from": "AEDocumentEntry",
+		"to": "EDocumentEntry"
+	},
+	{
+		"from": "AEDocumentFormat",
+		"to": "EDocumentFormat"
+	},
+	{
+		"from": "AIDSViewport",
+		"to": "IDSViewport"
+	},
+	{
+		"from": "AIEffect",
+		"to": "IEffect"
+	},
+	{
+		"from": "AIEffectErrorInfo",
+		"to": "IEffectErrorInfo"
+	},
+	{
+		"from": "AIEngineOptions",
+		"to": "IEngineOptions"
+	},
+	{
+		"from": "AIEngine",
+		"to": "IEngine"
+	},
+	{
+		"from": "AIEntity",
+		"to": "IEntity"
+	},
+	{
+		"from": "AEEntityTypes",
+		"to": "EEntityTypes"
+	},
+	{
+		"from": "AIEventProvider",
+		"to": "IEventProvider"
+	},
+	{
+		"from": "AEEventTypes",
+		"to": "EEventTypes"
+	},
+	{
+		"from": "AIEventSlot",
+		"to": "IEventSlot"
+	},
+	{
+		"from": "AIEventSlotListMap",
+		"to": "IEventSlotListMap"
+	},
+	{
+		"from": "AIEventSlotMap",
+		"to": "IEventSlotMap"
+	},
+	{
+		"from": "AIEventSlotTable",
+		"to": "IEventSlotTable"
+	},
+	{
+		"from": "AIEventSlotList",
+		"to": "IEventSlotList"
+	},
+	{
+		"from": "AIEventTable",
+		"to": "IEventTable"
+	},
+	{
+		"from": "AIExplorerFunc",
+		"to": "IExplorerFunc"
+	},
+	{
+		"from": "AIFileMeta",
+		"to": "IFileMeta"
+	},
+	{
+		"from": "AIFile",
+		"to": "IFile"
+	},
+	{
+		"from": "AIDropFunc",
+		"to": "IDropFunc"
+	},
+	{
+		"from": "AIFileDropAreaOptions",
+		"to": "IFileDropAreaOptions"
+	},
+	{
+		"from": "AEFileDataTypes",
+		"to": "EFileDataTypes"
+	},
+	{
+		"from": "AIFont2d",
+		"to": "IFont2d"
+	},
+	{
+		"from": "AIFrame",
+		"to": "IFrame"
+	},
+	{
+		"from": "AEAnimationInterpolations",
+		"to": "EAnimationInterpolations"
+	},
+	{
+		"from": "AITimeStat",
+		"to": "ITimeStat"
+	},
+	{
+		"from": "AIFrameStats",
+		"to": "IFrameStats"
+	},
+	{
+		"from": "AIFrustum",
+		"to": "IFrustum"
+	},
+	{
+		"from": "AIGamepadMap",
+		"to": "IGamepadMap"
+	},
+	{
+		"from": "AEGamepadCodes",
+		"to": "EGamepadCodes"
+	},
+	{
+		"from": "AEGamepadAxis",
+		"to": "EGamepadAxis"
+	},
+	{
+		"from": "AIHardwareBuffer",
+		"to": "IHardwareBuffer"
+	},
+	{
+		"from": "AEHardwareBufferFlags",
+		"to": "EHardwareBufferFlags"
+	},
+	{
+		"from": "AELockFlags",
+		"to": "ELockFlags"
+	},
+	{
+		"from": "AIImg",
+		"to": "IImg"
+	},
+	{
+		"from": "AEImageFlags",
+		"to": "EImageFlags"
+	},
+	{
+		"from": "AEImageCubeFlags",
+		"to": "EImageCubeFlags"
+	},
+	{
+		"from": "AIImgCodec",
+		"to": "IImgCodec"
+	},
+	{
+		"from": "AIImgData",
+		"to": "IImgData"
+	},
+	{
+		"from": "AIIndexBuffer",
+		"to": "IIndexBuffer"
+	},
+	{
+		"from": "AIIndexData",
+		"to": "IIndexData"
+	},
+	{
+		"from": "AIItem",
+		"to": "IItem"
+	},
+	{
+		"from": "AIJoint",
+		"to": "IJoint"
+	},
+	{
+		"from": "AIKeyMap",
+		"to": "IKeyMap"
+	},
+	{
+		"from": "AEKeyCodes",
+		"to": "EKeyCodes"
+	},
+	{
+		"from": "AEMouseButton",
+		"to": "EMouseButton"
+	},
+	{
+		"from": "AILightGraph",
+		"to": "ILightGraph"
+	},
+	{
+		"from": "AILightParameters",
+		"to": "ILightParameters"
+	},
+	{
+		"from": "AILightPoint",
+		"to": "ILightPoint"
+	},
+	{
+		"from": "AELightTypes",
+		"to": "ELightTypes"
+	},
+	{
+		"from": "AILogRoutineFunc",
+		"to": "ILogRoutineFunc"
+	},
+	{
+		"from": "AISourceLocation",
+		"to": "ISourceLocation"
+	},
+	{
+		"from": "AILoggerEntity",
+		"to": "ILoggerEntity"
+	},
+	{
+		"from": "AILogger",
+		"to": "ILogger"
+	},
+	{
+		"from": "AELogLevel",
+		"to": "ELogLevel"
+	},
+	{
+		"from": "AIManager",
+		"to": "IManager"
+	},
+	{
+		"from": "AIMap",
+		"to": "IMap"
+	},
+	{
+		"from": "AIStringMap",
+		"to": "IStringMap"
+	},
+	{
+		"from": "AIIntMap",
+		"to": "IIntMap"
+	},
+	{
+		"from": "AIUintMap",
+		"to": "IUintMap"
+	},
+	{
+		"from": "AIFloatMap",
+		"to": "IFloatMap"
+	},
+	{
+		"from": "AIBoolMap",
+		"to": "IBoolMap"
+	},
+	{
+		"from": "AIBoolDMap",
+		"to": "IBoolDMap"
+	},
+	{
+		"from": "AIStringDMap",
+		"to": "IStringDMap"
+	},
+	{
+		"from": "AIMat3Constructor",
+		"to": "IMat3Constructor"
+	},
+	{
+		"from": "AIMat3",
+		"to": "IMat3"
+	},
+	{
+		"from": "AIMat4Constructor",
+		"to": "IMat4Constructor"
+	},
+	{
+		"from": "AIMat4",
+		"to": "IMat4"
+	},
+	{
+		"from": "AIMaterialBase",
+		"to": "IMaterialBase"
+	},
+	{
+		"from": "AIMaterial",
+		"to": "IMaterial"
+	},
+	{
+		"from": "AIFlexMaterial",
+		"to": "IFlexMaterial"
+	},
+	{
+		"from": "AIMegaTexture",
+		"to": "IMegaTexture"
+	},
+	{
+		"from": "AIMeshMap",
+		"to": "IMeshMap"
+	},
+	{
+		"from": "AIMesh",
+		"to": "IMesh"
+	},
+	{
+		"from": "AEMeshOptions",
+		"to": "EMeshOptions"
+	},
+	{
+		"from": "AEMeshCloneOptions",
+		"to": "EMeshCloneOptions"
+	},
+	{
+		"from": "AIMeshSubset",
+		"to": "IMeshSubset"
+	},
+	{
+		"from": "AIModelLoadOptions",
+		"to": "IModelLoadOptions"
+	},
+	{
+		"from": "AIModel",
+		"to": "IModel"
+	},
+	{
+		"from": "AEModelFormats",
+		"to": "EModelFormats"
+	},
+	{
+		"from": "AIModelEntry",
+		"to": "IModelEntry"
+	},
+	{
+		"from": "AIMultiRenderTarget",
+		"to": "IMultiRenderTarget"
+	},
+	{
+		"from": "AINodeMap",
+		"to": "INodeMap"
+	},
+	{
+		"from": "AINode",
+		"to": "INode"
+	},
+	{
+		"from": "AENodeInheritance",
+		"to": "ENodeInheritance"
+	},
+	{
+		"from": "AIObj",
+		"to": "IObj"
+	},
+	{
+		"from": "AIObjectArray",
+		"to": "IObjectArray"
+	},
+	{
+		"from": "AIListExplorerFunc",
+		"to": "IListExplorerFunc"
+	},
+	{
+		"from": "AIObjectListItem",
+		"to": "IObjectListItem"
+	},
+	{
+		"from": "AIObjectList",
+		"to": "IObjectList"
+	},
+	{
+		"from": "AICollectionIndexFunction",
+		"to": "ICollectionIndexFunction"
+	},
+	{
+		"from": "AIObjectSortCollection",
+		"to": "IObjectSortCollection"
+	},
+	{
+		"from": "AIOcTree",
+		"to": "IOcTree"
+	},
+	{
+		"from": "AIOcTreeNode",
+		"to": "IOcTreeNode"
+	},
+	{
+		"from": "AIOcTreeRect",
+		"to": "IOcTreeRect"
+	},
+	{
+		"from": "AIOmniLight",
+		"to": "IOmniLight"
+	},
+	{
+		"from": "AIPackerOptions",
+		"to": "IPackerOptions"
+	},
+	{
+		"from": "AIPacker",
+		"to": "IPacker"
+	},
+	{
+		"from": "AIPackerBlacklist",
+		"to": "IPackerBlacklist"
+	},
+	{
+		"from": "AIPackerCodec",
+		"to": "IPackerCodec"
+	},
+	{
+		"from": "AIPackerFormat",
+		"to": "IPackerFormat"
+	},
+	{
+		"from": "AIPackerTemplate",
+		"to": "IPackerTemplate"
+	},
+	{
+		"from": "AIPair",
+		"to": "IPair"
+	},
+	{
+		"from": "AIToken",
+		"to": "IToken"
+	},
+	{
+		"from": "AIRule",
+		"to": "IRule"
+	},
+	{
+		"from": "AIFinishFunc",
+		"to": "IFinishFunc"
+	},
+	{
+		"from": "AIRuleFunction",
+		"to": "IRuleFunction"
+	},
+	{
+		"from": "AIParseNode",
+		"to": "IParseNode"
+	},
+	{
+		"from": "AIParseTree",
+		"to": "IParseTree"
+	},
+	{
+		"from": "AILexer",
+		"to": "ILexer"
+	},
+	{
+		"from": "AIParserState",
+		"to": "IParserState"
+	},
+	{
+		"from": "AIParser",
+		"to": "IParser"
+	},
+	{
+		"from": "AENodeCreateMode",
+		"to": "ENodeCreateMode"
+	},
+	{
+		"from": "AEParserCode",
+		"to": "EParserCode"
+	},
+	{
+		"from": "AEParserType",
+		"to": "EParserType"
+	},
+	{
+		"from": "AEParseMode",
+		"to": "EParseMode"
+	},
+	{
+		"from": "AETokenType",
+		"to": "ETokenType"
+	},
+	{
+		"from": "AEOperationType",
+		"to": "EOperationType"
+	},
+	{
+		"from": "AIParticleManager",
+		"to": "IParticleManager"
+	},
+	{
+		"from": "AIPathinfo",
+		"to": "IPathinfo"
+	},
+	{
+		"from": "AIVirualDescriptor",
+		"to": "IVirualDescriptor"
+	},
+	{
+		"from": "AIPipe",
+		"to": "IPipe"
+	},
+	{
+		"from": "AEPipeTypes",
+		"to": "EPipeTypes"
+	},
+	{
+		"from": "AEPipeDataTypes",
+		"to": "EPipeDataTypes"
+	},
+	{
+		"from": "AIPixelBox",
+		"to": "IPixelBox"
+	},
+	{
+		"from": "AIPixelBuffer",
+		"to": "IPixelBuffer"
+	},
+	{
+		"from": "AIPlane2d",
+		"to": "IPlane2d"
+	},
+	{
+		"from": "AIPlane3d",
+		"to": "IPlane3d"
+	},
+	{
+		"from": "AIPoint",
+		"to": "IPoint"
+	},
+	{
+		"from": "AIPositionFrame",
+		"to": "IPositionFrame"
+	},
+	{
+		"from": "AIProgress",
+		"to": "IProgress"
+	},
+	{
+		"from": "AIProjectLight",
+		"to": "IProjectLight"
+	},
+	{
+		"from": "AIQuat4Constructor",
+		"to": "IQuat4Constructor"
+	},
+	{
+		"from": "AIQuat4",
+		"to": "IQuat4"
+	},
+	{
+		"from": "AIRay2d",
+		"to": "IRay2d"
+	},
+	{
+		"from": "AIRay3d",
+		"to": "IRay3d"
+	},
+	{
+		"from": "AIRect2d",
+		"to": "IRect2d"
+	},
+	{
+		"from": "AIRect3d",
+		"to": "IRect3d"
+	},
+	{
+		"from": "AIReferenceCounter",
+		"to": "IReferenceCounter"
+	},
+	{
+		"from": "AIRenderableObject",
+		"to": "IRenderableObject"
+	},
+	{
+		"from": "AERenderableTypes",
+		"to": "ERenderableTypes"
+	},
+	{
+		"from": "AIRenderDataType",
+		"to": "IRenderDataType"
+	},
+	{
+		"from": "AIRenderData",
+		"to": "IRenderData"
+	},
+	{
+		"from": "AERenderDataTypes",
+		"to": "ERenderDataTypes"
+	},
+	{
+		"from": "AERenderDataOptions",
+		"to": "ERenderDataOptions"
+	},
+	{
+		"from": "AIRenderDataType",
+		"to": "IRenderDataType"
+	},
+	{
+		"from": "AIRenderDataCollection",
+		"to": "IRenderDataCollection"
+	},
+	{
+		"from": "AERenderDataBufferOptions",
+		"to": "ERenderDataBufferOptions"
+	},
+	{
+		"from": "AIRenderEntry",
+		"to": "IRenderEntry"
+	},
+	{
+		"from": "AIRenderer",
+		"to": "IRenderer"
+	},
+	{
+		"from": "AERenderers",
+		"to": "ERenderers"
+	},
+	{
+		"from": "AERenderCapabilitiesCategory",
+		"to": "ERenderCapabilitiesCategory"
+	},
+	{
+		"from": "AERenderCapabilities",
+		"to": "ERenderCapabilities"
+	},
+	{
+		"from": "AEGLSpecifics",
+		"to": "EGLSpecifics"
+	},
+	{
+		"from": "AEBufferMasks",
+		"to": "EBufferMasks"
+	},
+	{
+		"from": "AEBufferUsages",
+		"to": "EBufferUsages"
+	},
+	{
+		"from": "AEBufferTypes",
+		"to": "EBufferTypes"
+	},
+	{
+		"from": "AEAttachmentTypes",
+		"to": "EAttachmentTypes"
+	},
+	{
+		"from": "AERenderStates",
+		"to": "ERenderStates"
+	},
+	{
+		"from": "AEBlendModes",
+		"to": "EBlendModes"
+	},
+	{
+		"from": "AECmpFuncs",
+		"to": "ECmpFuncs"
+	},
+	{
+		"from": "AECullModes",
+		"to": "ECullModes"
+	},
+	{
+		"from": "AERenderStages",
+		"to": "ERenderStages"
+	},
+	{
+		"from": "AIRenderMethod",
+		"to": "IRenderMethod"
+	},
+	{
+		"from": "AIRenderPass",
+		"to": "IRenderPass"
+	},
+	{
+		"from": "AIRenderQueue",
+		"to": "IRenderQueue"
+	},
+	{
+		"from": "AIRenderResource",
+		"to": "IRenderResource"
+	},
+	{
+		"from": "AIRenderState",
+		"to": "IRenderState"
+	},
+	{
+		"from": "AIRenderTarget",
+		"to": "IRenderTarget"
+	},
+	{
+		"from": "AEFramebuffer",
+		"to": "EFramebuffer"
+	},
+	{
+		"from": "AEStatFlags",
+		"to": "EStatFlags"
+	},
+	{
+		"from": "AE3DEventTypes",
+		"to": "E3DEventTypes"
+	},
+	{
+		"from": "AIRenderTechnique",
+		"to": "IRenderTechnique"
+	},
+	{
+		"from": "AIRenderTexture",
+		"to": "IRenderTexture"
+	},
+	{
+		"from": "AIResourceCode",
+		"to": "IResourceCode"
+	},
+	{
+		"from": "AEResourceCodes",
+		"to": "EResourceCodes"
+	},
+	{
+		"from": "AIResourcePool",
+		"to": "IResourcePool"
+	},
+	{
+		"from": "AIResourcePoolItem",
+		"to": "IResourcePoolItem"
+	},
+	{
+		"from": "AIResourcePoolItemType",
+		"to": "IResourcePoolItemType"
+	},
+	{
+		"from": "AEResourceItemEvents",
+		"to": "EResourceItemEvents"
+	},
+	{
+		"from": "AIResourcePoolManager",
+		"to": "IResourcePoolManager"
+	},
+	{
+		"from": "AEResourceFamilies",
+		"to": "EResourceFamilies"
+	},
+	{
+		"from": "AEVideoResources",
+		"to": "EVideoResources"
+	},
+	{
+		"from": "AEAudioResources",
+		"to": "EAudioResources"
+	},
+	{
+		"from": "AEGameResources",
+		"to": "EGameResources"
+	},
+	{
+		"from": "AIResourceWatcherFunc",
+		"to": "IResourceWatcherFunc"
+	},
+	{
+		"from": "AIRIDTable",
+		"to": "IRIDTable"
+	},
+	{
+		"from": "AIRIDPair",
+		"to": "IRIDPair"
+	},
+	{
+		"from": "AIRIDMap",
+		"to": "IRIDMap"
+	},
+	{
+		"from": "AIRPCCallback",
+		"to": "IRPCCallback"
+	},
+	{
+		"from": "AIRPCPacket",
+		"to": "IRPCPacket"
+	},
+	{
+		"from": "AIRPCRequest",
+		"to": "IRPCRequest"
+	},
+	{
+		"from": "AIRPCResponse",
+		"to": "IRPCResponse"
+	},
+	{
+		"from": "AIRPCProcOptions",
+		"to": "IRPCProcOptions"
+	},
+	{
+		"from": "AIRPCError",
+		"to": "IRPCError"
+	},
+	{
+		"from": "AIRPCOptions",
+		"to": "IRPCOptions"
+	},
+	{
+		"from": "AIRPC",
+		"to": "IRPC"
+	},
+	{
+		"from": "AERPCPacketTypes",
+		"to": "ERPCPacketTypes"
+	},
+	{
+		"from": "AERpcStates",
+		"to": "ERpcStates"
+	},
+	{
+		"from": "AIScene",
+		"to": "IScene"
+	},
+	{
+		"from": "AESceneTypes",
+		"to": "ESceneTypes"
+	},
+	{
+		"from": "AIScene2d",
+		"to": "IScene2d"
+	},
+	{
+		"from": "AIText3d",
+		"to": "IText3d"
+	},
+	{
+		"from": "AIScene3d",
+		"to": "IScene3d"
+	},
+	{
+		"from": "AISceneManager",
+		"to": "ISceneManager"
+	},
+	{
+		"from": "AISceneModel",
+		"to": "ISceneModel"
+	},
+	{
+		"from": "AISceneNodeMap",
+		"to": "ISceneNodeMap"
+	},
+	{
+		"from": "AISceneNode",
+		"to": "ISceneNode"
+	},
+	{
+		"from": "AESceneNodeFlags",
+		"to": "ESceneNodeFlags"
+	},
+	{
+		"from": "AISceneObject",
+		"to": "ISceneObject"
+	},
+	{
+		"from": "AISceneTree",
+		"to": "ISceneTree"
+	},
+	{
+		"from": "AIScope",
+		"to": "IScope"
+	},
+	{
+		"from": "AIScopeMap",
+		"to": "IScopeMap"
+	},
+	{
+		"from": "AEScopeType",
+		"to": "EScopeType"
+	},
+	{
+		"from": "AIScreenInfo",
+		"to": "IScreenInfo"
+	},
+	{
+		"from": "AISegment2d",
+		"to": "ISegment2d"
+	},
+	{
+		"from": "AISegment3d",
+		"to": "ISegment3d"
+	},
+	{
+		"from": "AISequenceRenderTarget",
+		"to": "ISequenceRenderTarget"
+	},
+	{
+		"from": "AIShaderInput",
+		"to": "IShaderInput"
+	},
+	{
+		"from": "AIShaderProgram",
+		"to": "IShaderProgram"
+	},
+	{
+		"from": "AIShadowCaster",
+		"to": "IShadowCaster"
+	},
+	{
+		"from": "AIJointMap",
+		"to": "IJointMap"
+	},
+	{
+		"from": "AISkeleton",
+		"to": "ISkeleton"
+	},
+	{
+		"from": "AINodeMap",
+		"to": "INodeMap"
+	},
+	{
+		"from": "AISkin",
+		"to": "ISkin"
+	},
+	{
+		"from": "AISphere",
+		"to": "ISphere"
+	},
+	{
+		"from": "AISprite",
+		"to": "ISprite"
+	},
+	{
+		"from": "AISpriteManager",
+		"to": "ISpriteManager"
+	},
+	{
+		"from": "AIState",
+		"to": "IState"
+	},
+	{
+		"from": "AIStringDictionary",
+		"to": "IStringDictionary"
+	},
+	{
+		"from": "AISunLight",
+		"to": "ISunLight"
+	},
+	{
+		"from": "AISurfaceMaterial",
+		"to": "ISurfaceMaterial"
+	},
+	{
+		"from": "AESurfaceMaterialTextures",
+		"to": "ESurfaceMaterialTextures"
+	},
+	{
+		"from": "AIImageMap",
+		"to": "IImageMap"
+	},
+	{
+		"from": "AITerrainSampleData",
+		"to": "ITerrainSampleData"
+	},
+	{
+		"from": "AITerrain",
+		"to": "ITerrain"
+	},
+	{
+		"from": "AITerrainROAM",
+		"to": "ITerrainROAM"
+	},
+	{
+		"from": "AITerrainSection",
+		"to": "ITerrainSection"
+	},
+	{
+		"from": "AITerrainSectionROAM",
+		"to": "ITerrainSectionROAM"
+	},
+	{
+		"from": "AITextureParameters",
+		"to": "ITextureParameters"
+	},
+	{
+		"from": "AITexture",
+		"to": "ITexture"
+	},
+	{
+		"from": "AETextureFlags",
+		"to": "ETextureFlags"
+	},
+	{
+		"from": "AETextureFilters",
+		"to": "ETextureFilters"
+	},
+	{
+		"from": "AETextureWrapModes",
+		"to": "ETextureWrapModes"
+	},
+	{
+		"from": "AETextureParameters",
+		"to": "ETextureParameters"
+	},
+	{
+		"from": "AETextureTypes",
+		"to": "ETextureTypes"
+	},
+	{
+		"from": "AECubeFace",
+		"to": "ECubeFace"
+	},
+	{
+		"from": "AETextureCubeFlags",
+		"to": "ETextureCubeFlags"
+	},
+	{
+		"from": "AETextureUnits",
+		"to": "ETextureUnits"
+	},
+	{
+		"from": "AIThread",
+		"to": "IThread"
+	},
+	{
+		"from": "AIThreadManager",
+		"to": "IThreadManager"
+	},
+	{
+		"from": "AITriTreeNode",
+		"to": "ITriTreeNode"
+	},
+	{
+		"from": "AITriangleNodePool",
+		"to": "ITriangleNodePool"
+	},
+	{
+		"from": "AIUI",
+		"to": "IUI"
+	},
+	{
+		"from": "AIUIAnimationBlender",
+		"to": "IUIAnimationBlender"
+	},
+	{
+		"from": "AIUIAnimationControls",
+		"to": "IUIAnimationControls"
+	},
+	{
+		"from": "AIUIAnimationData",
+		"to": "IUIAnimationData"
+	},
+	{
+		"from": "AIUIAnimationGraph",
+		"to": "IUIAnimationGraph"
+	},
+	{
+		"from": "AIUIAnimationMask",
+		"to": "IUIAnimationMask"
+	},
+	{
+		"from": "AIUIAnimationNode",
+		"to": "IUIAnimationNode"
+	},
+	{
+		"from": "AIUIAnimationPlayer",
+		"to": "IUIAnimationPlayer"
+	},
+	{
+		"from": "AIUIButton",
+		"to": "IUIButton"
+	},
+	{
+		"from": "AIUICheckbox",
+		"to": "IUICheckbox"
+	},
+	{
+		"from": "AIUICheckboxList",
+		"to": "IUICheckboxList"
+	},
+	{
+		"from": "AIUICodeEditor",
+		"to": "IUICodeEditor"
+	},
+	{
+		"from": "AIUIComponentType",
+		"to": "IUIComponentType"
+	},
+	{
+		"from": "AIUIComponentOptions",
+		"to": "IUIComponentOptions"
+	},
+	{
+		"from": "AIUIComponent",
+		"to": "IUIComponent"
+	},
+	{
+		"from": "AEUIComponents",
+		"to": "EUIComponents"
+	},
+	{
+		"from": "AIUIDraggableOptions",
+		"to": "IUIDraggableOptions"
+	},
+	{
+		"from": "AIUIDNDNode",
+		"to": "IUIDNDNode"
+	},
+	{
+		"from": "AIUIGraphEvent",
+		"to": "IUIGraphEvent"
+	},
+	{
+		"from": "AIUIGraph",
+		"to": "IUIGraph"
+	},
+	{
+		"from": "AEUIGraphDirections",
+		"to": "EUIGraphDirections"
+	},
+	{
+		"from": "AEUIGraphTypes",
+		"to": "EUIGraphTypes"
+	},
+	{
+		"from": "AEUIGraphEvents",
+		"to": "EUIGraphEvents"
+	},
+	{
+		"from": "AIUIGraphConnectionArea",
+		"to": "IUIGraphConnectionArea"
+	},
+	{
+		"from": "AIUIGraphConnector",
+		"to": "IUIGraphConnector"
+	},
+	{
+		"from": "AEGraphConnectorOrient",
+		"to": "EGraphConnectorOrient"
+	},
+	{
+		"from": "AIUIGraphControls",
+		"to": "IUIGraphControls"
+	},
+	{
+		"from": "AIGraphNodeAreaMap",
+		"to": "IGraphNodeAreaMap"
+	},
+	{
+		"from": "AIUIGraphNode",
+		"to": "IUIGraphNode"
+	},
+	{
+		"from": "AEUIGraphNodes",
+		"to": "EUIGraphNodes"
+	},
+	{
+		"from": "AIUIGraphRoute",
+		"to": "IUIGraphRoute"
+	},
+	{
+		"from": "AIUIHTMLNode",
+		"to": "IUIHTMLNode"
+	},
+	{
+		"from": "AIUIIDE",
+		"to": "IUIIDE"
+	},
+	{
+		"from": "AECMD",
+		"to": "ECMD"
+	},
+	{
+		"from": "AIUILabel",
+		"to": "IUILabel"
+	},
+	{
+		"from": "AIUILayoutAttributes",
+		"to": "IUILayoutAttributes"
+	},
+	{
+		"from": "AIUILayout",
+		"to": "IUILayout"
+	},
+	{
+		"from": "AEUILayouts",
+		"to": "EUILayouts"
+	},
+	{
+		"from": "AIUIList",
+		"to": "IUIList"
+	},
+	{
+		"from": "AIUIListenerEditor",
+		"to": "IUIListenerEditor"
+	},
+	{
+		"from": "AIUINode",
+		"to": "IUINode"
+	},
+	{
+		"from": "AEUINodeTypes",
+		"to": "EUINodeTypes"
+	},
+	{
+		"from": "AIUIPanel",
+		"to": "IUIPanel"
+	},
+	{
+		"from": "AIUIPopup",
+		"to": "IUIPopup"
+	},
+	{
+		"from": "AIUIRenderTargetStats",
+		"to": "IUIRenderTargetStats"
+	},
+	{
+		"from": "AIUISlider",
+		"to": "IUISlider"
+	},
+	{
+		"from": "AIUISwitch",
+		"to": "IUISwitch"
+	},
+	{
+		"from": "AIUITabs",
+		"to": "IUITabs"
+	},
+	{
+		"from": "AIUITree",
+		"to": "IUITree"
+	},
+	{
+		"from": "AIUITreeNode",
+		"to": "IUITreeNode"
+	},
+	{
+		"from": "AIUIVector",
+		"to": "IUIVector"
+	},
+	{
+		"from": "AIUIWindow",
+		"to": "IUIWindow"
+	},
+	{
+		"from": "AIUnPacker",
+		"to": "IUnPacker"
+	},
+	{
+		"from": "AIURI",
+		"to": "IURI"
+	},
+	{
+		"from": "AIUtilTimer",
+		"to": "IUtilTimer"
+	},
+	{
+		"from": "AEUtilTimerCommands",
+		"to": "EUtilTimerCommands"
+	},
+	{
+		"from": "AIVec2Constructor",
+		"to": "IVec2Constructor"
+	},
+	{
+		"from": "AIVec2",
+		"to": "IVec2"
+	},
+	{
+		"from": "AIVec3Constructor",
+		"to": "IVec3Constructor"
+	},
+	{
+		"from": "AIVec3",
+		"to": "IVec3"
+	},
+	{
+		"from": "AIVec4Constructor",
+		"to": "IVec4Constructor"
+	},
+	{
+		"from": "AIVec4",
+		"to": "IVec4"
+	},
+	{
+		"from": "AIVertexBuffer",
+		"to": "IVertexBuffer"
+	},
+	{
+		"from": "AEVertexBufferTypes",
+		"to": "EVertexBufferTypes"
+	},
+	{
+		"from": "AIVertexData",
+		"to": "IVertexData"
+	},
+	{
+		"from": "AIVertexDeclaration",
+		"to": "IVertexDeclaration"
+	},
+	{
+		"from": "AIVertexElementInterface",
+		"to": "IVertexElementInterface"
+	},
+	{
+		"from": "AIVertexElement",
+		"to": "IVertexElement"
+	},
+	{
+		"from": "AIDepthRange",
+		"to": "IDepthRange"
+	},
+	{
+		"from": "AIViewport",
+		"to": "IViewport"
+	},
+	{
+		"from": "AEViewportTypes",
+		"to": "EViewportTypes"
+	},
+	{
+		"from": "AIViewportState",
+		"to": "IViewportState"
+	},
+	{
+		"from": "AECompareFunction",
+		"to": "ECompareFunction"
+	},
+	{
+		"from": "AECullingMode",
+		"to": "ECullingMode"
+	},
+	{
+		"from": "AEFrameBufferTypes",
+		"to": "EFrameBufferTypes"
+	},
+	{
+		"from": "AIWorldExtents",
+		"to": "IWorldExtents"
+	}
+]

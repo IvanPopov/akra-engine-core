@@ -5,7 +5,7 @@
 /// <reference path="ITexture.ts" />
 
 module akra {
-	interface ISprite extends ISceneObject {
+	export interface ISprite extends ISceneObject {
 		setTexture(pTex: ITexture): void;
 	}
 }

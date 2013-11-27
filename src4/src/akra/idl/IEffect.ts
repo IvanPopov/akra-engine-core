@@ -3,7 +3,7 @@
 /// <reference path="IAFXComponent.ts" />
 
 module akra {
-	interface IEffect extends IResourcePoolItem {
+	export interface IEffect extends IResourcePoolItem {
 		totalComponents: uint;
 		totalPasses: uint;
 	

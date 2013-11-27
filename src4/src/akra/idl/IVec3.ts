@@ -3,7 +3,7 @@
 /// <reference path="IMat4.ts" />
 
 module akra {
-	interface IVec3Constructor {
+	export interface IVec3Constructor {
 	    ();
 	    (fValue: float);
 	    (v3fVec: IVec3);
@@ -14,7 +14,7 @@ module akra {
 	}
 	
 	
-	interface IVec3 {
+	export interface IVec3 {
 	    x: float;
 	    y: float;
 	    z: float;

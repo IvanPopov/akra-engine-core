@@ -6,7 +6,7 @@
 /// <reference path="EPixelFormats.ts" />
 
 module akra {
-	enum ETextureFlags {
+	export enum ETextureFlags {
 		STATIC = <int>EHardwareBufferFlags.STATIC,
 		DYNAMIC = <int>EHardwareBufferFlags.DYNAMIC,
 		READEBLE = <int>EHardwareBufferFlags.READABLE,
@@ -20,7 +20,7 @@ module akra {
 		DEFAULT = STATIC
 	}
 	
-	enum ETextureFilters {
+	export enum ETextureFilters {
 		UNDEF = 0x0000,
 		NEAREST = 0x2600,
 		LINEAR = 0x2601,
@@ -30,26 +30,26 @@ module akra {
 		LINEAR_MIPMAP_LINEAR = 0x2703
 	}
 	
-	enum ETextureWrapModes {
+	export enum ETextureWrapModes {
 		UNDEF = 0x0000,
 		REPEAT = 0x2901,
 		CLAMP_TO_EDGE = 0x812F,
 		MIRRORED_REPEAT = 0x8370
 	}
 	
-	enum ETextureParameters {
+	export enum ETextureParameters {
 		MAG_FILTER = 0x2800,
 		MIN_FILTER,
 		WRAP_S,
 		WRAP_T
 	}
 	
-	enum ETextureTypes {
+	export enum ETextureTypes {
 		TEXTURE_2D = 0x0DE1,
 		TEXTURE_CUBE_MAP = 0x8513,
 	}
 	
-	enum ECubeFace {
+	export enum ECubeFace {
 		POSITIVE_X = 0,
 		NEGATIVE_X = 1,			
 		POSITIVE_Y = 2,
@@ -58,7 +58,7 @@ module akra {
 		NEGATIVE_Z = 5,
 	}
 	
-	enum ETextureCubeFlags {
+	export enum ETextureCubeFlags {
 		POSITIVE_X = 0x00000001,
 		NEGATIVE_X = 0x00000002,			
 		POSITIVE_Y = 0x00000004,
@@ -67,11 +67,11 @@ module akra {
 		NEGATIVE_Z = 0x000000010,
 	}
 	
-	enum ETextureUnits {
+	export enum ETextureUnits {
 		TEXTURE0 = 0x84C0
 	}
 	
-	// interface ITextureParameters {
+	// export interface ITextureParameters {
 	//	 minFilter: ETextureFilters;
 	//	 magFilter: ETextureFilters;
 	
@@ -79,7 +79,7 @@ module akra {
 	//	 wrapT: ETextureWrapModes;
 	// }
 	
-	interface ITexture extends IRenderResource {
+	export interface ITexture extends IRenderResource {
 		width: uint;
 		height: uint;
 		depth: uint;

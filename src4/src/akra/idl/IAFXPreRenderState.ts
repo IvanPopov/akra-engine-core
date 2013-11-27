@@ -1,6 +1,6 @@
 
 module akra {
-	interface IAFXPreRenderState {
+	export interface IAFXPreRenderState {
 	
 	}
 	

@@ -2,7 +2,7 @@
 /// <reference path="IEventProvider.ts" />
 
 module akra {
-	enum EDependenceStatuses {
+	export enum EDependenceStatuses {
 		NOT_LOADED,
 		LOADING,
 		CHECKING,
@@ -10,7 +10,7 @@ module akra {
 		LOADED
 	}
 	
-	interface IDep {
+	export interface IDep {
 		//system
 		index?: int;
 		deps?: IDependens;
@@ -28,7 +28,7 @@ module akra {
 	
 	
 	
-	interface IDependens {
+	export interface IDependens {
 	    //system paramaters
 		parent?: IDependens;   //parent dep.
 		depth?: uint;           //current depth of this Dep

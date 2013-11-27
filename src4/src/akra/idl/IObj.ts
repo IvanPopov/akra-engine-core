@@ -5,7 +5,7 @@
 /// <reference path="IModel.ts" />
 
 module akra {
-	interface IObjLoadOptions extends IModelLoadOptions {
+	export interface IObjLoadOptions extends IModelLoadOptions {
 		shadows?: boolean;
 		name?: string;
 	
@@ -16,7 +16,7 @@ module akra {
 		};
 	}
 	
-	interface IObj extends IModel {
+	export interface IObj extends IModel {
 		getFilename(): string;
 		getBasename(): string;
 		

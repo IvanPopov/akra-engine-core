@@ -8,13 +8,13 @@
 /// <reference path="IVertexDeclaration.ts" />
 
 module akra {
-	enum EVertexBufferTypes {
+	export enum EVertexBufferTypes {
 		UNKNOWN,
 		VBO,
 		TBO
 	};
 	
-	interface IVertexBuffer extends IHardwareBuffer, IRenderResource {
+	export interface IVertexBuffer extends IHardwareBuffer, IRenderResource {
 	
 		/** readonly */ type: EVertexBufferTypes; 
 	

@@ -1,6 +1,6 @@
 
 module akra {
-	interface IDataURI {
+	export interface IDataURI {
 		base64: boolean;
 		data: string;
 		mediatype: string;

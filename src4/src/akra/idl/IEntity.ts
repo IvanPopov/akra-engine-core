@@ -4,7 +4,7 @@
 /// <reference path="IReferenceCounter.ts" />
 
 module akra {
-	enum EEntityTypes {
+	export enum EEntityTypes {
 		UNKNOWN,
 		NODE,
 		
@@ -44,7 +44,7 @@ module akra {
 		OBJECTS_LIMIT = 128
 	}
 	
-	interface IEntity extends IEventProvider, IReferenceCounter {
+	export interface IEntity extends IEventProvider, IReferenceCounter {
 		name: string;
 	
 		parent: IEntity;

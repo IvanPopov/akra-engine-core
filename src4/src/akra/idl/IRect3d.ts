@@ -3,7 +3,7 @@
 /// <reference path="IVec3.ts" />
 
 module akra {
-	interface IRect3d {
+	export interface IRect3d {
 		x0: float;
 		x1: float;
 		y0: float;

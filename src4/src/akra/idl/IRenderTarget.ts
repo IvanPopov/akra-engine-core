@@ -7,13 +7,13 @@
 /// <reference path="IPixelBox.ts" />
 
 module akra {
-	enum EFramebuffer {
+	export enum EFramebuffer {
 		FRONT, 	
 		BACK, 	
 		AUTO 	
 	};
 	
-	enum EStatFlags {
+	export enum EStatFlags {
 		NONE		   = 0,
 		FPS			= 1,
 		AVG_FPS		= 2,
@@ -23,7 +23,7 @@ module akra {
 		ALL			= 0xFFFF
 	};
 	
-	enum E3DEventTypes {
+	export enum E3DEventTypes {
 		CLICK = 0x01,
 		MOUSEMOVE = 0x02,
 		MOUSEDOWN = 0x04,
@@ -36,7 +36,7 @@ module akra {
 		MOUSEWHEEL = 0x200
 	}
 	
-	interface IRenderTarget extends IEventProvider {
+	export interface IRenderTarget extends IEventProvider {
 		name: string;
 		width: uint;
 		height: uint;

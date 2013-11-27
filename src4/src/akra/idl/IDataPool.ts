@@ -4,7 +4,7 @@
 /// <reference path="IResourcePoolManager.ts" />
 
 module akra {
-	interface IDataPool {
+	export interface IDataPool {
 		manager: IResourcePoolManager;
 		/** Инициализация пула данных */
 		initialize(iGrowSize: uint): void;

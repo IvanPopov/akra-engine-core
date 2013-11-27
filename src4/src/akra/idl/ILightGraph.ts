@@ -1,10 +1,12 @@
+// ILightGraph export interface
+// [write description here...]
+
+module akra{
 /// <reference path="IDisplayList.ts" />
 /// <reference path="ICamera.ts" />
 /// <reference path="IObjectArray.ts" />
 
-module akra{
-	interface ILightGraph extends IDisplayList {
-
-	}
-}
-
+export interface ILightGraph extends IDisplayList{
+};
+};
+

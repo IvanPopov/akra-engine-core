@@ -5,7 +5,7 @@
 /// <reference path="IUIPanel.ts" />
 
 module akra {
-	interface IUITabs extends IUIComponent {
+	export interface IUITabs extends IUIComponent {
 		active: IUIPanel;
 	
 		tab(iTab: int): IUIPanel;

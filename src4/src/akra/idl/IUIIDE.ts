@@ -11,7 +11,7 @@
 /// <reference path="IKeyMap.ts" />
 
 module akra {
-	enum ECMD {
+	export enum ECMD {
 		SET_PREVIEW_RESOLUTION,
 		SET_PREVIEW_FULLSCREEN,
 		
@@ -39,7 +39,7 @@ module akra {
 	}
 	
 	
-	interface IUIIDE extends IUIComponent {
+	export interface IUIIDE extends IUIComponent {
 		//системные объект для быстрого доступа к основным функциям API
 		_apiEntry: any;
 	

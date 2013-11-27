@@ -3,17 +3,17 @@
 
 
 module akra {
-	enum EUILayouts {
+	export enum EUILayouts {
 		UNKNOWN,
 		HORIZONTAL,
 		VERTICAL
 	}
 	
-	interface IUILayoutAttributes {
+	export interface IUILayoutAttributes {
 		comment?: string;
 	}
 	
-	interface IUILayout extends IUIHTMLNode {
+	export interface IUILayout extends IUIHTMLNode {
 		layoutType: EUILayouts;
 	
 		setAttributes(pAttrs: IUILayoutAttributes): void;

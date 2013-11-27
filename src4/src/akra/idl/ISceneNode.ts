@@ -1,19 +1,22 @@
+
 /// <reference path="INode.ts" />
+
+
 /// <reference path="IAnimationController.ts" />
 
 module akra {
-	interface ISceneNodeMap {
+	export interface ISceneNodeMap {
 		[index: string]: ISceneNode;
 	}
 	
-	enum ESceneNodeFlags {
+	export enum ESceneNodeFlags {
 		FROZEN_PARENT,
 		FROZEN_SELF,
 		HIDDEN_PARENT,
 		HIDDEN_SELF
 	}
 	
-	interface ISceneNode extends INode {
+	export interface ISceneNode extends INode {
 		/** readonly */ scene: IScene3d;
 		/** readonly */ totalControllers: uint;
 	

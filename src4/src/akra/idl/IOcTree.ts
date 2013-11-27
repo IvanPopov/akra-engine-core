@@ -9,7 +9,7 @@
 /// <reference path="IVec3.ts" />
 
 module akra {
-	interface IOcTree extends IDisplayList {
+	export interface IOcTree extends IDisplayList {
 	
 		/** readonly */ depth: int;
 		/** readonly */ worldScale: IVec3;

@@ -1,5 +1,5 @@
 module akra {
-	enum EPrimitiveTypes {
+	export enum EPrimitiveTypes {
 		POINTLIST = 0,
 		LINELIST,
 		LINELOOP,

@@ -4,7 +4,7 @@
 /// <reference path="ICircle.ts" />
 
 module akra {
-	interface IPlane2d {
+	export interface IPlane2d {
 		normal: IVec2;
 		distance: float;
 	

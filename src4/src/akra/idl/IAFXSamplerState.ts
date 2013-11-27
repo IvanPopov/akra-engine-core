@@ -2,17 +2,17 @@
 /// <reference path="ITexture.ts" />
 
 module akra {
-	interface IAFXSamplerStateMap {
+	export interface IAFXSamplerStateMap {
 		[index: string]: IAFXSamplerState;
 		[index: uint]: IAFXSamplerState;
 	}
 	
-	interface IAFXSamplerStateListMap {
+	export interface IAFXSamplerStateListMap {
 		[index: string]: IAFXSamplerState[];
 		[index: uint]: IAFXSamplerState[];
 	}
 	
-	interface IAFXSamplerState {
+	export interface IAFXSamplerState {
 		textureName: string;
 		texture: ITexture;
 	

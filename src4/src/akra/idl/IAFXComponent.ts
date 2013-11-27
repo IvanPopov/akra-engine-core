@@ -4,12 +4,12 @@
 
 
 module akra {
-	interface IAFXComponentMap {
+	export interface IAFXComponentMap {
 		[index: uint]: IAFXComponent;
 		[index: string]: IAFXComponent;
 	}
 	
-	interface IAFXComponent extends IResourcePoolItem {
+	export interface IAFXComponent extends IResourcePoolItem {
 		create(): void;
 	
 		getTechnique(): IAFXTechniqueInstruction;

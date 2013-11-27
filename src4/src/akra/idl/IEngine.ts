@@ -17,7 +17,7 @@
 /// <reference path="ISpriteManager.ts" />
    
 module akra {
-	interface IEngineOptions {
+	export interface IEngineOptions {
 		depsRoot?: string;
 		deps?: IDependens;
 		gamepads?: boolean;
@@ -28,7 +28,7 @@ module akra {
 		//};
 	}
 	
-	interface IEngine extends IEventProvider {
+	export interface IEngine extends IEventProvider {
 		time: float;
 		elapsedTime: float;
 	

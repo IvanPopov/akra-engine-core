@@ -5,7 +5,7 @@
 /// <reference path="IPixelBox.ts" />
 
 module akra {
-	interface IMultiRenderTarget extends IRenderTarget {
+	export interface IMultiRenderTarget extends IRenderTarget {
 		bindSurface(iAttachment: uint, pTarget: IRenderTexture): void;
 		unbindSurface(iAttachment: uint): void;
 		// copyContentsToMemory(ppDest: IPixelBox, pBuffer: IFrameBuffer);

@@ -1,6 +1,6 @@
 
 module akra {
-	enum ELogLevel {
+	export enum ELogLevel {
 		NONE = 0x0000,
 		LOG = 0x0001,
 		INFORMATION = 0x0002,
@@ -10,23 +10,23 @@ module akra {
 		ALL = 0x001F
 	}
 	
-	interface ILogRoutineFunc {
+	export interface ILogRoutineFunc {
 		(pEntity: ILoggerEntity): void;
 	}
 	
-	interface ISourceLocation {
+	export interface ISourceLocation {
 		file: string;
 		line: uint;
 	}
 	
-	interface ILoggerEntity {
+	export interface ILoggerEntity {
 		code: uint;
 		location: ISourceLocation;
 		message?: string;
 		info: any;		
 	}
 	
-	interface ILogger {
+	export interface ILogger {
 	
 	    ///**
 	    //* For plugin api:

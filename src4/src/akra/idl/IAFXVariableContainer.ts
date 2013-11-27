@@ -1,5 +1,5 @@
 module akra {
-	enum EAFXShaderVariableType {
+	export enum EAFXShaderVariableType {
 		k_NotVar = 0,
 		
 		k_Texture = 2,
@@ -32,12 +32,12 @@ module akra {
 		k_Complex
 	}
 	
-	interface IAFXShaderVarTypeMap {
+	export interface IAFXShaderVarTypeMap {
 		//[index: string]: EAFXShaderVariableType;
 		[index: uint]: EAFXShaderVariableType;
 	}
 	
-	interface IAFXVariableInfo {
+	export interface IAFXVariableInfo {
 		variable: IAFXVariableDeclInstruction;
 		type: EAFXShaderVariableType;
 		name: string;
@@ -45,7 +45,7 @@ module akra {
 		isArray: boolean;
 	}
 	
-	interface IAFXVariableContainer {
+	export interface IAFXVariableContainer {
 		indices: uint[];
 	
 		add(pVar: IAFXVariableDeclInstruction): void;

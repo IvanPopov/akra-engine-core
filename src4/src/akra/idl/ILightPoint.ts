@@ -5,7 +5,7 @@
 /// <reference path="IFrustum.ts" />
 
 module akra {
-	interface ILightParameters {
+	export interface ILightParameters {
 		 //default parameters
 		// ambient: IColor;
 		// diffuse: IColor;
@@ -13,14 +13,14 @@ module akra {
 		// attenuation: IVec3;
 	}
 	
-	enum ELightTypes {
+	export enum ELightTypes {
 		UNKNOWN,
 		PROJECT,
 		OMNI,
 		SUN
 	}
 	
-	interface ILightPoint extends ISceneNode {
+	export interface ILightPoint extends ISceneNode {
 		params: ILightParameters;
 		enabled: boolean;
 		lightType: ELightTypes;

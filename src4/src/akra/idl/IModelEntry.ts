@@ -6,7 +6,7 @@
 /// <reference path="IAnimationController.ts" />
 
 module akra {
-	interface IModelEntry extends ISceneNode {
+	export interface IModelEntry extends ISceneNode {
 		resource: IModel;
 	}
 }

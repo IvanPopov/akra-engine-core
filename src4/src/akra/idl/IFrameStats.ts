@@ -1,18 +1,18 @@
 
 module akra {
-	interface AIFPSStat {
+	export interface AIFPSStat {
 		last: float;
 		avg: float;
 		best: float;
 		worst: float;
 	}
 	
-	interface ITimeStat {
+	export interface ITimeStat {
 		best: float;
 		worst: float;
 	}
 	
-	interface IFrameStats {
+	export interface IFrameStats {
 		fps: AIFPSStat;
 		time: ITimeStat;
 		polygonsCount: uint;

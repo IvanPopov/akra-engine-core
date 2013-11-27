@@ -1,5 +1,5 @@
 module akra {
-	interface IVertexElementInterface {
+	export interface IVertexElementInterface {
 		/**
 		 * Number of uint.
 		 */
@@ -19,7 +19,7 @@ module akra {
 		offset?: uint;
 	}
 	
-	interface IVertexElement extends IVertexElementInterface {
+	export interface IVertexElement extends IVertexElementInterface {
 		/**
 		 * Size in bytes.
 		 */

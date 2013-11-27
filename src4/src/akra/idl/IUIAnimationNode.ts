@@ -5,7 +5,7 @@
 /// <reference path="IAnimationBase.ts" />
 
 module akra {
-	interface IUIAnimationNode extends IUIGraphNode {
+	export interface IUIAnimationNode extends IUIGraphNode {
 		animation: IAnimationBase;
 	}
 }

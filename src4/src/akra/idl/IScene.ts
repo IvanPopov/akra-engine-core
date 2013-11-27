@@ -3,12 +3,12 @@
 /// <reference path="ISceneManager.ts" />
 
 module akra {
-	enum ESceneTypes {
+	export enum ESceneTypes {
 		TYPE_3D,
 		TYPE_2D
 	}
 	
-	interface IScene extends IEventProvider {
+	export interface IScene extends IEventProvider {
 		type: ESceneTypes;
 		name: string;
 	

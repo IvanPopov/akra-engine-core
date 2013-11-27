@@ -7,7 +7,7 @@
 /// <reference path="IColor.ts" />
 
 module akra {
-	interface IUIGraphRoute {
+	export interface IUIGraphRoute {
 		left: IUIGraphConnector;
 		right: IUIGraphConnector;
 		path: RaphaelPath;
@@ -31,7 +31,7 @@ module akra {
 		routing(): void;
 	}
 	
-	interface IUITempGraphRoute extends IUIGraphRoute {
+	export interface IUITempGraphRoute extends IUIGraphRoute {
 		routing(pRight?: IPoint): void;
 	}
 }

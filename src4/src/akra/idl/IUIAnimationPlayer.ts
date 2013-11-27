@@ -1,13 +1,13 @@
-// IUIAnimationPlayer interface
+// IUIAnimationPlayer export interface
 // [write description here...]
 
 /// <reference path="IUIAnimationNode.ts" />
 
 module akra {
-	interface IUIAnimationPlayer extends IUIAnimationNode {
+export interface IUIAnimationPlayer extends IUIAnimationNode {
 
-	}
+}
 }
 
-
-
+#endif
+

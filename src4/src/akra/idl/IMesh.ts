@@ -12,21 +12,21 @@
 /// <reference path="ISkin.ts" />
 
 module akra {
-	enum EMeshOptions {
+	export enum EMeshOptions {
 		HB_READABLE = <int>EHardwareBufferFlags.READABLE,
 		RD_ADVANCED_INDEX = <int>ERenderDataOptions.ADVANCED_INDEX
 	};
 	
-	enum EMeshCloneOptions {
+	export enum EMeshCloneOptions {
 		GEOMETRY_ONLY = 0x00,   /*<! copy only geometry*/
 		SHARED_GEOMETRY = 0x01  /*<! use shared geometry*/
 	};
 	
-	interface IMeshMap {
+	export interface IMeshMap {
 		[name: string]: IMesh;
 	}
 	
-	interface IMesh extends IEventProvider {
+	export interface IMesh extends IEventProvider {
 		/** readonly */ flexMaterials: IMaterial[];
 		/** readonly */ name: string;
 		/** readonly */ data: IRenderDataCollection;

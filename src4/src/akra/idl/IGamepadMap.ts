@@ -3,7 +3,7 @@
 /// <reference path="3d-party/gamepad.d.ts" />
 
 module akra {
-	enum EGamepadCodes {
+	export enum EGamepadCodes {
 		FACE_1 = 0, 					/*Face (main) buttons*/
 		FACE_2 = 1,
 		FACE_3 = 2,
@@ -22,14 +22,14 @@ module akra {
 		PAD_RIGHT = 15
 	}
 	
-	enum EGamepadAxis {
+	export enum EGamepadAxis {
 		LEFT_ANALOGUE_HOR = 0,
 		LEFT_ANALOGUE_VERT = 1,
 		RIGHT_ANALOGUE_HOR = 2,
 		RIGHT_ANALOGUE_VERT = 3
 	}
 	
-	interface IGamepadMap extends IEventProvider {
+	export interface IGamepadMap extends IEventProvider {
 		init(): boolean;
 		update(): void;
 		isActive(): boolean;

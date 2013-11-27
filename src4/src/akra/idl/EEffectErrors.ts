@@ -1,5 +1,5 @@
 module akra {
-	﻿enum EEffectErrors {
+	﻿export enum EEffectErrors {
 	    REDEFINE_SYSTEM_TYPE = 2201,
 	    REDEFINE_TYPE = 2202,
 	    REDEFINE_VARIABLE = 2234,
@@ -81,7 +81,7 @@ module akra {
 	    CANNOT_ADD_SHARED_VARIABLE = 2278,
 	}
 	
-	enum EEffectTempErrors {
+	export enum EEffectTempErrors {
 	    BAD_ARRAY_OF_POINTERS = 2300,
 	    BAD_LOCAL_OF_SHADER_INPUT = 2301,
 	    BAD_LOCAL_OF_SHADER_OUTPUT = 2302,

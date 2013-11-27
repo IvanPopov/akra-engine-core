@@ -2,7 +2,7 @@
 /// <reference path="IRay3d.ts" />
 
 module akra {
-	interface IPlane3d {
+	export interface IPlane3d {
 		normal: IVec3;
 		distance: float;
 	

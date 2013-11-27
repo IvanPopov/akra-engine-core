@@ -4,7 +4,7 @@
 /// <reference path="IRenderData.ts" />
 
 module akra {
-	interface ISpriteManager {
+	export interface ISpriteManager {
 		_allocateSprite(pSprite: ISprite): IRenderData;
 	}
 }

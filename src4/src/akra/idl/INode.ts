@@ -8,7 +8,7 @@
 /// <reference path="IQuat4.ts" />
 
 module akra {
-	enum ENodeInheritance {
+	export enum ENodeInheritance {
 		NONE,
 		//inheritance only position
 		POSITION,
@@ -20,11 +20,11 @@ module akra {
 		ALL
 	};
 	
-	interface INodeMap {
+	export interface INodeMap {
 		[index: string]: INode;
 	}
 	
-	interface INode extends IEntity {
+	export interface INode extends IEntity {
 		localOrientation: IQuat4;
 		localPosition: IVec3;
 		localScale: IVec3;

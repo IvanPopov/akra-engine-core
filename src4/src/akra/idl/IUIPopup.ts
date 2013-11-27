@@ -1,14 +1,15 @@
-// IUIPopup interface
+// IUIPopup export interface
 // [write description here...]
 
 /// <reference path="IUIComponent.ts" />
 
 module akra {
 
-	interface IUIPopup extends IUIComponent {
-		close(): void;
+export interface IUIPopup extends IUIComponent {
+	close(): void;
 
-		signal closed(): void;
-	}
+	signal closed(): void;
+}
 }
 
+#endif

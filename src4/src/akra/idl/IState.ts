@@ -2,7 +2,7 @@
 /// <reference path="IMap.ts" />
 
 module akra {
-	interface IState {
+	export interface IState {
 	
 	    hasItem(pItem: IItem, eType: EParserType): IItem;
 	    hasParentItem(pItem: IItem): IItem;

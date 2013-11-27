@@ -1,6 +1,6 @@
 
 module akra {
-	enum EUtilTimerCommands {
+	export enum EUtilTimerCommands {
 		//! <to reset the timer
 		TIMER_RESET, 
 		//! <to start the timer
@@ -17,7 +17,7 @@ module akra {
 		//! to get the time that elapsed between TIMER_GETELAPSEDTIME calls
 	}
 	
-	interface IUtilTimer {
+	export interface IUtilTimer {
 		absoluteTime: float;
 		appTime: float;
 		elapsedTime: float;

@@ -8,7 +8,7 @@
 /// <reference path="IUI.ts" />
 
 module akra {
-	enum EUINodeTypes {
+	export enum EUINodeTypes {
 		UNKNOWN,
 		HTML,
 		DND,
@@ -18,7 +18,7 @@ module akra {
 		COMPONENT
 	} 
 	
-	interface IUINode extends IEntity {
+	export interface IUINode extends IEntity {
 		/** readonly */ nodeType: EUINodeTypes;
 		/** readonly */ ui: IUI;
 	

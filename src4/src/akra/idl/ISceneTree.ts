@@ -1,6 +1,9 @@
+// ISceneTree export interface
+// [write description here...]
+
 module akra {
-	interface ISceneTree {
+export interface ISceneTree {
 
-	}
 }
-
+}
+

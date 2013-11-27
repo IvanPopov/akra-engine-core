@@ -1,5 +1,5 @@
 module akra {
-	﻿enum EPlaneClassifications {
+	﻿export enum EPlaneClassifications {
 	    /**
 	     * ax+by+cz+d=0
 	     * PLANE_FRONT - объект находится перед плоскостью, то есть по направлению нормали

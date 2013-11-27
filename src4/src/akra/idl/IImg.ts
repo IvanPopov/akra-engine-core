@@ -6,13 +6,13 @@
 /// <reference path="EPixelFormats.ts" />
 
 module akra {
-	enum EImageFlags {
+	export enum EImageFlags {
 		COMPRESSED = 0x00000001,
 		CUBEMAP	= 0x00000002,
 		TEXTURE_3D = 0x00000004,
 	}
 	
-	enum EImageCubeFlags {
+	export enum EImageCubeFlags {
 		POSITIVE_X = 0x00000001,
 		NEGATIVE_X = 0x00000002,			
 		POSITIVE_Y = 0x00000004,
@@ -21,7 +21,7 @@ module akra {
 		NEGATIVE_Z = 0x000000020,
 	}
 	
-	interface IImg extends IResourcePoolItem {
+	export interface IImg extends IResourcePoolItem {
 		byteLength: uint;
 		
 		width: uint;

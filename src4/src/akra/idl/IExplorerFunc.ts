@@ -3,7 +3,7 @@
 /// <reference path="IEntity.ts" />
 
 module akra {
-	interface IExplorerFunc {
+	export interface IExplorerFunc {
 		(pEntity: IEntity): boolean;
 	}
 }

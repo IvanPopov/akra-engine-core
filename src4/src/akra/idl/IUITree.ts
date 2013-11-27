@@ -5,7 +5,7 @@
 /// <reference path="IUITreeNode.ts" />
 
 module akra {
-	interface IUITree extends IUIComponent {
+	export interface IUITree extends IUIComponent {
 		rootNode: IUITreeNode;
 		selectedNode: IEntity;
 		

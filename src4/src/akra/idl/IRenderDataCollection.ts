@@ -10,18 +10,18 @@
 /// <reference path="IReferenceCounter.ts" />
 
 module akra {
-	enum ERenderDataBufferOptions {
+	export enum ERenderDataBufferOptions {
 		VB_READABLE	   = <int>EHardwareBufferFlags.READABLE,
 		RD_ADVANCED_INDEX = <int>ERenderDataOptions.ADVANCED_INDEX,
 		RD_SINGLE_INDEX   = <int>ERenderDataOptions.SINGLE_INDEX,
 		RD_RENDERABLE	 = <int>ERenderDataOptions.RENDERABLE
 	};
 	
-	// interface IRenderDataType {
+	// export interface IRenderDataType {
 	//	 new (): IRenderData;
 	// }
 	
-	interface IRenderDataCollection extends /*IHardwareBuffer*/IBuffer, IReferenceCounter {
+	export interface IRenderDataCollection extends /*IHardwareBuffer*/IBuffer, IReferenceCounter {
 		/** readonly */ buffer: IVertexBuffer;
 		/** readonly */ byteLength: uint;
 		/** readonly */ length: uint;

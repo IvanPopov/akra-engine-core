@@ -22,7 +22,7 @@
 /// <reference path="IQuat4.ts" />
 
 module akra {
-	interface IMat3Constructor {
+	export interface IMat3Constructor {
 		();
 		(fValue: float);
 		(v3fVec: IVec3);
@@ -37,7 +37,7 @@ module akra {
 					fValue7: float, fValue8: float, fValue9: float);
 	}
 	
-	interface IMat3 {
+	export interface IMat3 {
 		data: Float32Array;
 	
 		set(): IMat3;

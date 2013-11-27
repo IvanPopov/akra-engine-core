@@ -7,7 +7,7 @@
 /// <reference path="ERenderStates.ts" />
 
 module akra {
-	interface IRenderMethod extends IResourcePoolItem {
+	export interface IRenderMethod extends IResourcePoolItem {
 		effect: IEffect;
 		surfaceMaterial: ISurfaceMaterial;
 		material: IMaterial;

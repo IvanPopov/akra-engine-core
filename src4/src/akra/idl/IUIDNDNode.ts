@@ -3,7 +3,7 @@
 /// <reference path="IUIComponent.ts" />
 
 module akra {
-	interface IUIDraggableOptions {
+	export interface IUIDraggableOptions {
 		disabled?: boolean;
 		addClasses?: boolean;
 		appendTo?: any;
@@ -34,7 +34,7 @@ module akra {
 		zIndex?: number;
 	}
 	
-	interface IUIDNDNode extends IUIHTMLNode {
+	export interface IUIDNDNode extends IUIHTMLNode {
 		setDraggable(bValue?: boolean, pOptions?: IUIDraggableOptions): void;
 		setDraggableOptions(pOptions: IUIDraggableOptions): void;
 	

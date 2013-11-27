@@ -1,7 +1,7 @@
 
 
 module akra {
-	interface IVec2Constructor {
+	export interface IVec2Constructor {
 		();
 		(fValue: float);
 		(v2fVec: IVec2);
@@ -10,7 +10,7 @@ module akra {
 	}
 	
 	
-	interface IVec2 {
+	export interface IVec2 {
 		x: float;
 		y: float;
 	

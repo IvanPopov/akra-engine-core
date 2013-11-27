@@ -4,7 +4,7 @@
 /// <reference path="IThread.ts" />
 
 module akra {
-	interface IThreadManager extends IManager {
+	export interface IThreadManager extends IManager {
 		waitForThread(fn: Function): int;
 		createThread(): boolean;
 		occupyThread(): IThread;

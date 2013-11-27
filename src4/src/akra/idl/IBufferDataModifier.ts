@@ -1,6 +1,6 @@
 
 module akra {
-	interface IBufferDataModifier {
+	export interface IBufferDataModifier {
 		(pData: ArrayBufferView): void;
 	}
 	

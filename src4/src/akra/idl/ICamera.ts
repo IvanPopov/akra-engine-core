@@ -10,11 +10,11 @@
 /// <reference path="IObjectArray.ts" />
 
 module akra {
-	enum ECameraParameters {
+	export enum ECameraParameters {
 		CONST_ASPECT = 1
 	}
 	
-	enum ECameraTypes {
+	export enum ECameraTypes {
 		PERSPECTIVE,
 		ORTHO,
 		OFFSET_ORTHO
@@ -22,7 +22,7 @@ module akra {
 	
 	
 	
-	interface ICamera extends ISceneNode {
+	export interface ICamera extends ISceneNode {
 		/** readonly */ viewMatrix: IMat4;
 		/** readonly */ projectionMatrix: IMat4;
 		/** readonly */ projViewMatrix: IMat4;

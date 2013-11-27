@@ -5,7 +5,7 @@
 
 
 module akra {
-	interface IRenderPass extends AIUnique {
+	export interface IRenderPass extends AIUnique {
 		setForeign(sName: string, fValue: float): void;
 		setTexture(sName: string, pTexture: ITexture): void;
 		setUniform(sName: string, pValue: any): void;

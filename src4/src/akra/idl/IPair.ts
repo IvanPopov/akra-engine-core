@@ -1,5 +1,5 @@
 module akra {
-	﻿interface IPair<FIRST_TYPE, SECOND_TYPE> {
+	﻿export interface IPair<FIRST_TYPE, SECOND_TYPE> {
 	    first: FIRST_TYPE;
 	    second: SECOND_TYPE;
 	}

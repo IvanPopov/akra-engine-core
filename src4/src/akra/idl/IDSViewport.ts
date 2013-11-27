@@ -5,7 +5,7 @@
 /// <reference path="IColor.ts" />
 
 module akra {
-	interface IDSViewport extends IViewport {
+	export interface IDSViewport extends IViewport {
 		/** readonly */ effect: IEffect;
 		/** readonly */ depth: ITexture;
 		/** readonly */ view: IRenderableObject;

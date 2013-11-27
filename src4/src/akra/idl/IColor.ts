@@ -2,7 +2,7 @@
 /// <reference path="IColorValue.ts" />
 
 module akra {
-	interface IColor extends IColorValue {
+	export interface IColor extends IColorValue {
 		rgba: uint;
 		argb: uint;
 		bgra: uint;

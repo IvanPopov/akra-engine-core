@@ -1,5 +1,5 @@
 module akra {
-	interface IBinReader {
+	export interface IBinReader {
 	
 		string(sDefault?: string): string;
 	

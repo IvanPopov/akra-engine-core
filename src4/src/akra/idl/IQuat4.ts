@@ -5,7 +5,7 @@
 /// <reference path="IMat4.ts" />
 
 module akra {
-	interface IQuat4Constructor {
+	export interface IQuat4Constructor {
 		();
 		(q4fQuat: IQuat4);
 		(pArray: float[]);
@@ -14,7 +14,7 @@ module akra {
 		(fX: float, fY: float, fZ: float, fW: float);
 	}
 	
-	interface IQuat4 {
+	export interface IQuat4 {
 		x: float;
 		y: float;
 		z: float;

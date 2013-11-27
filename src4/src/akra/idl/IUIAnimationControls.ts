@@ -5,7 +5,7 @@
 /// <reference path="IUIAnimationGraph.ts" />
 
 module akra {
-	interface IUIAnimationControls extends IUIGraphControls {
+	export interface IUIAnimationControls extends IUIGraphControls {
 		/** readonly */ graph: IUIAnimationGraph;
 	}
 }

@@ -1,12 +1,12 @@
 module akra {
-	interface IColorIValue {
+	export interface IColorIValue {
 		r: uint;
 		g: uint;
 		b: uint;
 		a: uint;
 	}
 	
-	interface IColorValue {
+	export interface IColorValue {
 		r: float;
 		g: float;
 		b: float;

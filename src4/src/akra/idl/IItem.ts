@@ -3,7 +3,7 @@
 /// <reference path="AIparser.ts" />
 
 module akra {
-	interface IItem {
+	export interface IItem {
 	    isEqual(pItem: IItem, eType?: EParserType): boolean;
 	    isParentItem(pItem: IItem): boolean;
 	    isChildItem(pItem: IItem): boolean;

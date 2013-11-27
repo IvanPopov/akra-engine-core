@@ -6,7 +6,7 @@
 /// <reference path="EDataTypes.ts" />
 
 module akra {
-	interface IIndexBuffer extends IHardwareBuffer, IRenderResource {
+	export interface IIndexBuffer extends IHardwareBuffer, IRenderResource {
 	
 		create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): boolean;
 	

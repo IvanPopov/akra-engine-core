@@ -6,7 +6,7 @@
 /// <reference path="IUIDNDNode.ts" />
 
 module akra {
-	interface IUI extends IScene2d {
+	export interface IUI extends IScene2d {
 		createHTMLNode(pElement: HTMLElement): IUIHTMLNode;
 		createDNDNode(pElement: HTMLElement): IUIDNDNode;
 		//createComponent(eType: EEntityTypes): IUIComponent;

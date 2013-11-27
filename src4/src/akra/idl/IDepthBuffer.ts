@@ -2,7 +2,7 @@
 /// <reference path="IRenderResource.ts" />
 
 module akra {
-	interface IDepthBuffer extends IRenderResource {
+	export interface IDepthBuffer extends IRenderResource {
 		bitDepth: uint;
 		width: uint;
 		height: uint;

@@ -3,7 +3,7 @@
 /// <reference path="IColorValue.ts" />
 
 module akra {
-	interface IMaterialBase {
+	export interface IMaterialBase {
 		diffuse: IColorValue;
 		ambient: IColorValue;
 		specular: IColorValue;
@@ -11,7 +11,7 @@ module akra {
 		shininess: float;
 	}
 	
-	interface IMaterial extends IMaterialBase {
+	export interface IMaterial extends IMaterialBase {
 		name: string;
 	
 		set(pMat: IMaterialBase): IMaterial;
@@ -19,7 +19,7 @@ module akra {
 	}
 	
 	/** @deprecated */
-	interface IFlexMaterial extends IMaterial {
+	export interface IFlexMaterial extends IMaterial {
 		data: IVertexData;
 	}
 	

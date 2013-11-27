@@ -12,12 +12,12 @@
 
 
 module akra {
-	interface IAFXComponentBlendMap {
+	export interface IAFXComponentBlendMap {
 		[index: uint]: IAFXComponentBlend;
 		[index: string]: IAFXComponentBlend; 
 	}
 	
-	interface IAFXComponentInfo {
+	export interface IAFXComponentInfo {
 		component: IAFXComponent;
 		shift: int;
 		pass: uint;
@@ -25,7 +25,7 @@ module akra {
 	}
 	
 	
-	interface IAFXComponentPassInputBlend {
+	export interface IAFXComponentPassInputBlend {
 		uniforms: IAFXVariableContainer;
 		textures: IAFXVariableContainer;
 		foreigns: IAFXVariableContainer;
@@ -37,7 +37,7 @@ module akra {
 		releasePassInput(pPassInput: IAFXPassInputBlend): void;
 	}
 	
-	interface IAFXComponentBlend extends AIUnique {
+	export interface IAFXComponentBlend extends AIUnique {
 		isReadyToUse(): boolean;
 		isEmpty(): boolean;
 	

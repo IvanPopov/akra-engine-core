@@ -18,25 +18,25 @@
 // #define T_NON_TYPE_ID "T_NON_TYPE_ID"
 
 module akra {
-	enum ENodeCreateMode {
+	export enum ENodeCreateMode {
 		k_Default,
 		k_Necessary,
 		k_Not
 	}
 	
-	enum EParserCode {
+	export enum EParserCode {
 		k_Pause,
 		k_Ok,
 		k_Error
 	}
 	
-	enum EParserType {
+	export enum EParserType {
 		k_LR0,
 		k_LR1,
 		k_LALR
 	}
 	
-	enum EParseMode {
+	export enum EParseMode {
 		k_AllNode = 0x0001,
 		k_Negate = 0x0002,
 		k_Add = 0x0004,
@@ -44,7 +44,7 @@ module akra {
 		k_DebugMode = 0x0010
 	}
 	
-	enum ETokenType {
+	export enum ETokenType {
 		k_NumericLiteral = 1,
 		k_CommentLiteral,
 		k_StringLiteral,
@@ -56,7 +56,7 @@ module akra {
 		k_End
 	}
 	
-	interface IToken {
+	export interface IToken {
 		value: string;
 		start: uint;
 		end: uint;
@@ -67,17 +67,17 @@ module akra {
 	}
 	
 	
-	interface IRule {
+	export interface IRule {
 		left: string;
 		right: string[];
 		index: uint;
 	}
 	
-	interface IFinishFunc {
+	export interface IFinishFunc {
 		(eCode: EParserCode, sFileName: string): void;
 	}
 	
-	enum EOperationType {
+	export enum EOperationType {
 		k_Error = 100,
 		k_Shift,
 		k_Reduce,
@@ -86,11 +86,11 @@ module akra {
 		k_Ok
 	}
 	
-	interface IRuleFunction {
+	export interface IRuleFunction {
 		(): EOperationType;
 	}
 	
-	interface IParseNode {
+	export interface IParseNode {
 		children: IParseNode[];
 		parent: IParseNode;
 		name: string;
@@ -105,7 +105,7 @@ module akra {
 		line?: uint;
 	}
 	
-	interface IParseTree {
+	export interface IParseTree {
 		setRoot(): void;
 	
 		setOptimizeMode(isOptimize: boolean): void;
@@ -123,7 +123,7 @@ module akra {
 		root: IParseNode;
 	}
 	
-	interface ILexer {
+	export interface ILexer {
 		addPunctuator(sValue: string, sName?: string): string;
 		addKeyword(sValue: string, sName: string): string;
 	
@@ -137,7 +137,7 @@ module akra {
 		_setIndex(iIndex: uint): void;
 	}
 	
-	interface IParserState {
+	export interface IParserState {
 		source: string;
 		index: uint;
 		fileName: string;
@@ -149,7 +149,7 @@ module akra {
 		caller: any;
 	}
 	
-	interface IParser {
+	export interface IParser {
 	
 		isTypeId(sValue: string): boolean;
 	

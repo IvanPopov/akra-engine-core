@@ -2,26 +2,26 @@
 /// <reference path="IMap.ts" />
 
 module akra {
-	enum ERPCPacketTypes {
+	export enum ERPCPacketTypes {
 		FAILURE,
 		REQUEST,
 		RESPONSE
 	}
 	
-	interface IRPCCallback {
+	export interface IRPCCallback {
 		n: uint;
 		fn: Function;
 		timestamp: uint;
 		procInfo?: string;
 	}
 	
-	interface IRPCPacket {
+	export interface IRPCPacket {
 		n: uint;
 		type: ERPCPacketTypes;
 		next: IRPCPacket;
 	}
 	
-	interface IRPCRequest extends IRPCPacket {
+	export interface IRPCRequest extends IRPCPacket {
 		proc: string;
 		argv: any[];
 		//ms - life time
@@ -29,22 +29,22 @@ module akra {
 		pr: uint;
 	}
 	
-	interface IRPCResponse extends IRPCPacket  {
+	export interface IRPCResponse extends IRPCPacket  {
 		//procedure result
 		res: any;
 	}
 	
-	interface IRPCProcOptions {
+	export interface IRPCProcOptions {
 		//-1 - unknown, 0 - immortal
 		lifeTime?: int;
 		priority?: uint;
 	}
 	
-	interface IRPCError extends Error {
+	export interface IRPCError extends Error {
 		code: uint;
 	}
 	
-	interface IRPCOptions {
+	export interface IRPCOptions {
 		addr?: string;
 		deferredCallsLimit?: int;	        /* -1 - unlimited */
 		maxCallbacksCount?: int;		    /* -1 - unlimited */
@@ -58,7 +58,7 @@ module akra {
 	
 	}
 	
-	enum ERpcStates {
+	export enum ERpcStates {
 	    //not connected
 	    k_Deteached,
 	    //connected, and connection must be established
@@ -68,7 +68,7 @@ module akra {
 	}
 	
 	
-	interface IRPC extends IEventProvider {
+	export interface IRPC extends IEventProvider {
 		options: IRPCOptions;
 	    remote: any;
 	    group: int;                 //????

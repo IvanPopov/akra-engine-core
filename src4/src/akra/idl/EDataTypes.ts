@@ -1,5 +1,5 @@
 module akra {
-	enum EDataTypes {
+	export enum EDataTypes {
 	    BYTE = 0x1400,
 	    UNSIGNED_BYTE = 0x1401,
 	    SHORT = 0x1402,
@@ -9,7 +9,7 @@ module akra {
 	    FLOAT = 0x1406
 	}
 	
-	enum EDataTypeSizes {
+	export enum EDataTypeSizes {
 	    BYTES_PER_BYTE = 1,
 	    BYTES_PER_UNSIGNED_BYTE = 1,
 	    BYTES_PER_UBYTE = 1,

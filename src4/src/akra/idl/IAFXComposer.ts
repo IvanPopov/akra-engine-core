@@ -17,7 +17,7 @@
 /// <reference path="AIRID.ts" />
 
 module akra {
-	interface IAFXComposer {
+	export interface IAFXComposer {
 		getComponentByName(sComponentName: string): IAFXComponent;
 		getEngine(): IEngine;
 	

@@ -2,26 +2,26 @@
 /// <reference path="IEventProvider.ts" />
 
 module akra {
-	interface IVirualDescriptor {
+	export interface IVirualDescriptor {
 	    onmessage: (pMessage: any) => void;
 	    onerror: (pErr: ErrorEvent) => void;
 	    onclose: (pEvent: CloseEvent) => void;
 	    onopen: (pEvent: Event) => void;
 	}
 	
-	enum EPipeTypes {
+	export enum EPipeTypes {
 		UNKNOWN,
 	
 		WEBSOCKET,		/** Connect to websocket. */
 		WEBWORKER 		/** Connect to webworker. */
 	}
 	
-	enum EPipeDataTypes {
+	export enum EPipeDataTypes {
 		BINARY,
 		STRING
 	}
 	
-	interface IPipe extends IEventProvider {
+	export interface IPipe extends IEventProvider {
 		/** readonly */ uri: IURI;
 	
 		open(pAddr?: IURI): boolean;

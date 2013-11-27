@@ -1,11 +1,11 @@
 module akra {
-	﻿enum EScopeType {
+	﻿export enum EScopeType {
 	    k_Default,
 	    k_Struct,
 	    k_Annotation
 	}
 	
-	interface IScope {
+	export interface IScope {
 	    parent: IScope;
 	    index: uint;
 	    type: EScopeType;
@@ -16,7 +16,7 @@ module akra {
 	    functionMap: IAFXFunctionDeclListMap;
 	}
 	
-	interface IScopeMap {
+	export interface IScopeMap {
 	    [scopeIndex: uint]: IScope;
 	}
 }

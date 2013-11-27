@@ -8,7 +8,7 @@
 /// <reference path="IUI.ts" />
 
 module akra {
-	interface ISceneManager extends IManager {
+	export interface ISceneManager extends IManager {
 		createScene3D(sName?: string): IScene3d;
 		// createScene2D(): IScene2d;
 	

@@ -9,13 +9,13 @@
 /// <reference path="IUIGraphRoute.ts" />
 
 module akra {
-	interface IUIConnectionAreaOptions extends IUIComponentOptions {
+	export interface IUIConnectionAreaOptions extends IUIComponentOptions {
 		maxConnections?: uint;
 		maxInConnections?: uint;
 		maxOutConnections?: uint;
 	}
 	
-	interface IUIGraphConnectionArea extends IUIPanel {
+	export interface IUIGraphConnectionArea extends IUIPanel {
 		/** readonly */ connectors: IUIGraphConnector[];
 		/** readonly */ node: IUIGraphNode;
 	
