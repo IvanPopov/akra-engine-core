@@ -16,6 +16,7 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <None Include="akra\pool\resources\HardwareBuffer.ts" />
     <None Include="akra\pixelUtil\DDSCodec.ts" />
     <None Include="akra\data\IndexData.ts" />
     <None Include="akra\data\VertexData.ts" />
@@ -447,12 +448,14 @@
     <None Include="akra\stringUtils\StringMinifier.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="akra\idl\IPixelFormatDescription.ts" />
-    <Content Include="akra\pixelUtil\Codec.ts" />
-    <Content Include="akra\pixelUtil\CodecData.ts" />
-    <Content Include="akra\pixelUtil\ImgCodec.ts" />
-    <Content Include="akra\pixelUtil\ImgData.ts" />
-    <Content Include="akra\pixelUtil\PixelBox.ts" />
+    <None Include="akra\idl\IPixelFormatDescription.ts" />
+    <None Include="akra\pixelUtil\Codec.ts" />
+    <None Include="akra\pixelUtil\CodecData.ts" />
+    <None Include="akra\pixelUtil\ImgCodec.ts" />
+    <None Include="akra\pixelUtil\ImgData.ts" />
+    <None Include="akra\pixelUtil\PixelBox.ts" />
+    <None Include="akra\stringUtils\StringDictionary.ts" />
+    <None Include="akra\pool\DataPool.ts" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -460,6 +463,34 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="akra\bf\bf.ts" />
+    <Content Include="akra\fx\EffectParser.ts" />
+    <Content Include="akra\pool\PoolGroup.ts" />
+    <Content Include="akra\pool\ResourceCode.ts" />
+    <Content Include="akra\pool\ResourcePool.ts" />
+    <Content Include="akra\pool\ResourcePoolItem.ts" />
+    <Content Include="akra\pool\ResourcePoolManager.ts" />
+    <Content Include="akra\pool\pool.ts" />
+    <Content Include="akra\pool\resources\Collada.ts" />
+    <Content Include="akra\pool\resources\Component.ts" />
+    <Content Include="akra\pool\resources\DepthBuffer.ts" />
+    <Content Include="akra\pool\resources\Effect.ts" />
+    <Content Include="akra\pool\resources\EffectData.ts" />
+    <Content Include="akra\pool\resources\Img.ts" />
+    <Content Include="akra\pool\resources\IndexBuffer.ts" />
+    <Content Include="akra\pool\resources\MemoryBuffer.ts" />
+    <Content Include="akra\pool\resources\Model.ts" />
+    <Content Include="akra\pool\resources\Obj.ts" />
+    <Content Include="akra\pool\resources\RenderMethod.ts" />
+    <Content Include="akra\pool\resources\SurfaceMaterial.ts" />
+    <Content Include="akra\pool\resources\Texture.ts" />
+    <Content Include="akra\pool\resources\VertexBuffer.ts" />
+    <Content Include="akra\util\Entity.ts" />
+    <Content Include="akra\util\Logger.ts" />
+    <Content Include="akra\util\ReferenceCounter.ts" />
+    <Content Include="akra\util\Timer.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

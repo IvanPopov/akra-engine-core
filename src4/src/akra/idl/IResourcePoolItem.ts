@@ -4,7 +4,7 @@
 /// <reference path="IEventProvider.ts" />
 /// <reference path="IEngine.ts" />
 /// <reference path="IResourceWatcherFunc.ts" />
-/// <reference path="AIResourceNotifyRoutineFunc.ts" />
+/// <reference path="IResourceNotifyRoutineFunc.ts" />
 /// <reference path="IResourceCode.ts" />
 /// <reference path="IResourcePool.ts" />
 /// <reference path="IResourcePoolManager.ts" />
@@ -36,8 +36,7 @@ module akra {
 		/** readonly */ resourceFlags: int;
 		/** Проверка был ли изменен ресур после загрузки */
 		/** readonly */ alteredFlag: boolean;
-	
-		/** readonly */ manager: IResourcePoolManager;
+
 	
 		
 		
@@ -60,8 +59,8 @@ module akra {
 		saveResource(sFilename?: string): boolean;
 	
 		/** Добавление и удаление функции, которая будет вызываться при изменении состояния ресурса( fnFunc(iNewSost,iOldSost) ) */
-		setChangesNotifyRoutine(fn: AIResourceNotifyRoutineFunc): void;
-		delChangesNotifyRoutine(fn: AIResourceNotifyRoutineFunc): void;
+		setChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
+		delChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
 	
 		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
 	
@@ -120,14 +119,14 @@ module akra {
 		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: boolean): boolean;
 		setResourceFlag(iFlagBit: int, isSetting: boolean): boolean;
 	
-		signal created(): void;
-		signal destroyed(): void;
-		signal loaded(): void;
-		signal unloaded(): void;
-		signal restored(): void;
-		signal disabled(): void;
-		signal altered(): void;
-		signal saved(): void;
+		created: ISignal<{ (pResource: IResourcePoolItem): void; }> ;
+		destroyed: ISignal <{ (pResource: IResourcePoolItem): void ; }> ;
+		loaded: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
+		unloaded: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
+		restored: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
+		disabled: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
+		altered: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
+		saved: ISignal <{ (pResource: IResourcePoolItem): void; }> ;
 	
 	}
 	

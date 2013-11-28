@@ -119,6 +119,8 @@ interface Object {
       * @param v A property name.
       */
     propertyIsEnumerable(v: string): boolean;
+
+    [s: string]: any;
 }
 
 /**

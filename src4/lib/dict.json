@@ -1,4 +1,40 @@
 [
+ 	{
+ 		"from": "CRITICAL",
+ 		"to": "logger.critical"
+ 	},
+ 	{
+ 		"from": "ASSERT",
+ 		"to": "logger.assert"
+ 	},
+ 	{
+ 		"from": "ERROR",
+ 		"to": "logger.error"
+ 	},
+ 	{
+ 		"from": "WARNING",
+ 		"to": "logger.warn"
+ 	},
+ 	{
+ 		"from": "CLEAR_BIT",
+ 		"to": "bf.clearBit"
+ 	},
+ 	{
+ 		"from": "TRUE_BIT",
+ 		"to": "bf.setBit"
+ 	},
+ 	{
+ 		"from": "debug_assert",
+ 		"to": "debug.assert"
+ 	},
+ 	{
+ 		"from": "debug_print",
+ 		"to": "debug.log"
+ 	},
+ 	{
+ 		"from": "debug_warning",
+ 		"to": "debug.warn"
+ 	},
 	{
 		"from": "bool",
 		"to": "boolean"

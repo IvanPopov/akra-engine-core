@@ -1,6 +1,6 @@
 ﻿/// <reference path="../idl/IConverter.ts" />
 /// <reference path="../idl/EDataTypes.ts" />
-/// <reference path="../fixes.d.ts" />
+/// <reference path="../idl/3d-party/fixes.d.ts" />
 /// <reference path="../common.ts" />
 
 module akra.conv {
