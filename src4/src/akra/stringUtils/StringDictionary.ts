@@ -1,34 +1,33 @@
-/// <reference path="../idl/AIStringDictionary.ts" />
-/// <reference path="../idl/AIMap.ts" />
+/// <reference path="../idl/IStringDictionary.ts" />
+/// <reference path="../idl/IMap.ts" />
 
-class StringDictionary implements AIStringDictionary {
-    private _pDictionary: AIMap<int> = null;
-    private _pIndexToEntryMap: AIMap<string> = null;
+module akra.stringUtils {
+    export class StringDictionary implements IStringDictionary {
+        private _pDictionary: IMap<int> = null;
+        private _pIndexToEntryMap: IMap<string> = null;
 
-    private _nEntryCount: uint = 1;
+        private _nEntryCount: uint = 1;
 
-    constructor() {
-        this._pDictionary = <AIMap<int>>{};
-        this._pIndexToEntryMap = <AIMap<string>>{};
-    }
-
-    add(sEntry: string): uint {
-        if (!isDef(this._pDictionary[sEntry])) {
-            this._pDictionary[sEntry] = this._nEntryCount++;
-            this._pIndexToEntryMap[this._nEntryCount - 1] = sEntry;
+        constructor() {
+            this._pDictionary = <IMap<int>>{};
+            this._pIndexToEntryMap = <IMap<string>>{};
         }
 
-        return this._pDictionary[sEntry];
-    }
+        add(sEntry: string): uint {
+            if (!isDef(this._pDictionary[sEntry])) {
+                this._pDictionary[sEntry] = this._nEntryCount++;
+                this._pIndexToEntryMap[this._nEntryCount - 1] = sEntry;
+            }
 
-    index(sEntry: string): uint {
-        return this._pDictionary[sEntry] || 0;
-    }
+            return this._pDictionary[sEntry];
+        }
 
-    findEntry(iIndex: string): string {
-        return this._pIndexToEntryMap[iIndex];
+        index(sEntry: string): uint {
+            return this._pDictionary[sEntry] || 0;
+        }
+
+        findEntry(iIndex: string): string {
+            return this._pIndexToEntryMap[iIndex];
+        }
     }
 }
-
-
-export = StringDictionary;

@@ -1,56 +1,58 @@
-import ExprInstruction = require("fx/ExprInstruction");
+/// <reference path="ExprInstruction.ts" />
 
-/**
- * Represent someExpr[someIndex]
- * EMPTY_OPERATOR Instruction ExprInstruction
- */
-class PostfixIndexInstruction extends ExprInstruction {
-    private _pSamplerArrayDecl: IAFXVariableDeclInstruction = null;
+module akra.fx {
 
-    constructor() {
-        super();
-        this._pInstructionList = [null, null];
-        this._eInstructionType = EAFXInstructionTypes.k_PostfixIndexInstruction;
-    }
+	/**
+	 * Represent someExpr[someIndex]
+	 * EMPTY_OPERATOR Instruction ExprInstruction
+	 */
+	export class PostfixIndexInstruction extends ExprInstruction {
+		private _pSamplerArrayDecl: IAFXVariableDeclInstruction = null;
 
-    toFinalCode(): string {
-        var sCode: string = "";
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_PostfixIndexInstruction;
+		}
 
-        // if((<ExprInstruction>this.getInstructions()[0]).getType().getLength() === 0){
-        // 	return "";
-        // }
+		toFinalCode(): string {
+			var sCode: string = "";
 
-        if (!isNull(this._pSamplerArrayDecl) && this._pSamplerArrayDecl.isDefinedByZero()) {
-            sCode += this.getInstructions()[0].toFinalCode();
-        }
-        else {
-            sCode += this.getInstructions()[0].toFinalCode();
+			// if((<ExprInstruction>this.getInstructions()[0]).getType().getLength() === 0){
+			// 	return "";
+			// }
 
-            if (!(<IAFXExprInstruction>this.getInstructions()[0]).getType()._isCollapsed()) {
-                sCode += "[" + this.getInstructions()[1].toFinalCode() + "]";
-            }
-        }
+			if (!isNull(this._pSamplerArrayDecl) && this._pSamplerArrayDecl.isDefinedByZero()) {
+				sCode += this.getInstructions()[0].toFinalCode();
+			}
+			else {
+				sCode += this.getInstructions()[0].toFinalCode();
 
-        return sCode;
-    }
+				if (!(<IAFXExprInstruction>this.getInstructions()[0]).getType()._isCollapsed()) {
+					sCode += "[" + this.getInstructions()[1].toFinalCode() + "]";
+				}
+			}
 
-    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
-        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-        var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
-        var pIndex: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+			return sCode;
+		}
 
-        pSubExpr.addUsedData(pUsedDataCollector, eUsedMode);
-        pIndex.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			var pIndex: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
 
-        if (pSubExpr.getType().isFromVariableDecl() && pSubExpr.getType().isSampler()) {
-            this._pSamplerArrayDecl = pSubExpr.getType()._getParentVarDecl();
-        }
-    }
+			pSubExpr.addUsedData(pUsedDataCollector, eUsedMode);
+			pIndex.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 
-    isConst(): boolean {
-        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
-            (<IAFXExprInstruction>this.getInstructions()[1]).isConst();
-    }
+			if (pSubExpr.getType().isFromVariableDecl() && pSubExpr.getType().isSampler()) {
+				this._pSamplerArrayDecl = pSubExpr.getType()._getParentVarDecl();
+			}
+		}
+
+		isConst(): boolean {
+			return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
+				(<IAFXExprInstruction>this.getInstructions()[1]).isConst();
+		}
+	}
 }
 
-export = PostfixIndexInstruction;

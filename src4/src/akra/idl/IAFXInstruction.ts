@@ -1,7 +1,7 @@
 
 /// <reference path="IParser.ts" />
 /// <reference path="IAFXComponent.ts" />
-/// <reference path="AIUnique.ts" />
+/// <reference path="IUnique.ts" />
 /// <reference path="IRenderer.ts" />
 /// <reference path="IMap.ts" />
 /// <reference path="IAFXComposer.ts" />

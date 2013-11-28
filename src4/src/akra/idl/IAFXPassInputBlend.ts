@@ -1,7 +1,7 @@
 
 /// <reference path="IAFXSamplerState.ts" />
 /// <reference path="ISurfaceMaterial.ts" />
-/// <reference path="AIUnique.ts" />
+/// <reference path="IUnique.ts" />
 /// <reference path="ERenderStates.ts" />
 /// <reference path="IAFXComponentBlend.ts" />
 /// <reference path="IMap.ts" />
@@ -15,7 +15,7 @@ module akra {
 		renderStatesKey: uint;
 	};
 	
-	export interface IAFXPassInputBlend extends AIUnique {
+	export interface IAFXPassInputBlend extends IUnique {
 		samplers: IAFXSamplerStateMap;
 		samplerArrays: IAFXSamplerStateListMap;
 		samplerArrayLength: IIntMap;

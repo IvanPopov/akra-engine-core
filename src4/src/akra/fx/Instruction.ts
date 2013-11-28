@@ -4,7 +4,6 @@
 
 
 module akra.fx {
-
     export class Instruction implements IAFXInstruction {
         protected _pParentInstruction: IAFXInstruction = null;
         protected _sOperatorName: string = null;

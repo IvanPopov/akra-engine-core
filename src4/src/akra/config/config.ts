@@ -22,6 +22,7 @@ module akra.config {
     export var CRYPTO_API: boolean = false;
     export var FILEDROP_API: boolean = false;
     export var WEBGL_DEBUG: boolean = false;
+    export var PROFILE_MAKER: boolean = false;
     //////////////////////
 
     //path to data folder

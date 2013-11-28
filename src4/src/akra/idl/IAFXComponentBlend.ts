@@ -1,7 +1,7 @@
 
 /// <reference path="IAFXComponent.ts" />
 /// <reference path="IAFXInstruction.ts" />
-/// <reference path="AIUnique.ts" />
+/// <reference path="IUnique.ts" />
 /// <reference path="IAFXPassInputBlend.ts" />
 /// <reference path="IAFXVariableContainer.ts" />
 /// <reference path="IMap.ts" />
@@ -37,7 +37,7 @@ module akra {
 		releasePassInput(pPassInput: IAFXPassInputBlend): void;
 	}
 	
-	export interface IAFXComponentBlend extends AIUnique {
+	export interface IAFXComponentBlend extends IUnique {
 		isReadyToUse(): boolean;
 		isEmpty(): boolean;
 	

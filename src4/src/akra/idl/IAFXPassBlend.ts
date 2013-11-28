@@ -1,5 +1,5 @@
 
-/// <reference path="AIUnique.ts" />
+/// <reference path="IUnique.ts" />
 /// <reference path="IAFXInstruction.ts" />
 /// <reference path="IAFXMaker.ts" />
 /// <reference path="IAFXPassInputBlend.ts" />
@@ -13,7 +13,7 @@ module akra {
 		[index: string]: IAFXPassBlend;
 	}
 	
-	export interface IAFXPassBlend extends AIUnique {
+	export interface IAFXPassBlend extends IUnique {
 		initFromPassList(pPassList: IAFXPassInstruction[]): boolean;
 		generateFXMaker(pPassInput: IAFXPassInputBlend,
 						pSurfaceMaterial: ISurfaceMaterial,

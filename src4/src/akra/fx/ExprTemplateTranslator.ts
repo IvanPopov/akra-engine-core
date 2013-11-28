@@ -1,46 +1,48 @@
 /// <reference path="../idl/IAFXInstruction.ts" />
 
-import SimpleInstruction = require("fx/SimpleInstruction");
+/// <reference path="SimpleInstruction.ts" />
 
 
-class ExprTemplateTranslator {
-    private _pInToOutArgsMap: IMap<int> = null;
-    private _pExprPart: IAFXSimpleInstruction[] = null;
+module akra.fx {
 
-    constructor(sExprTemplate: string) {
-        this._pInToOutArgsMap = <IMap<int>>{};
-        this._pExprPart = <IAFXSimpleInstruction[]>[];
+    export class ExprTemplateTranslator {
+        private _pInToOutArgsMap: IMap<int> = null;
+        private _pExprPart: IAFXSimpleInstruction[] = null;
 
-        var pSplitTemplate: string[] = sExprTemplate.split(/(\$\d+)/);
+        constructor(sExprTemplate: string) {
+            this._pInToOutArgsMap = <IMap<int>>{};
+            this._pExprPart = <IAFXSimpleInstruction[]>[];
 
-        for (var i: uint = 0; i < pSplitTemplate.length; i++) {
-            if (pSplitTemplate[i]) {
-                if (pSplitTemplate[i][0] !== '$') {
-                    this._pExprPart.push(new SimpleInstruction(pSplitTemplate[i]));
+            var pSplitTemplate: string[] = sExprTemplate.split(/(\$\d+)/);
+
+            for (var i: uint = 0; i < pSplitTemplate.length; i++) {
+                if (pSplitTemplate[i]) {
+                    if (pSplitTemplate[i][0] !== '$') {
+                        this._pExprPart.push(new SimpleInstruction(pSplitTemplate[i]));
+                    }
+                    else {
+                        this._pExprPart.push(null);
+                        this._pInToOutArgsMap[this._pExprPart.length - 1] = ((<number><any>(pSplitTemplate[i].substr(1))) * 1 - 1);
+                    }
+                }
+            }
+        }
+
+        toInstructionList(pArguments: IAFXInstruction[]): IAFXInstruction[] {
+            var pOutputInstructionList: IAFXInstruction[] = <IAFXInstruction[]>[];
+
+            for (var i: uint = 0; i < this._pExprPart.length; i++) {
+                if (isNull(this._pExprPart[i])) {
+                    pOutputInstructionList.push(pArguments[this._pInToOutArgsMap[i]]);
                 }
                 else {
-                    this._pExprPart.push(null);
-                    this._pInToOutArgsMap[this._pExprPart.length - 1] = ((<number><any>(pSplitTemplate[i].substr(1))) * 1 - 1);
+                    pOutputInstructionList.push(this._pExprPart[i]);
                 }
             }
+
+            return pOutputInstructionList;
         }
-    }
-
-    toInstructionList(pArguments: IAFXInstruction[]): IAFXInstruction[] {
-        var pOutputInstructionList: IAFXInstruction[] = <IAFXInstruction[]>[];
-
-        for (var i: uint = 0; i < this._pExprPart.length; i++) {
-            if (isNull(this._pExprPart[i])) {
-                pOutputInstructionList.push(pArguments[this._pInToOutArgsMap[i]]);
-            }
-            else {
-                pOutputInstructionList.push(this._pExprPart[i]);
-            }
-        }
-
-        return pOutputInstructionList;
     }
 }
 
-export = ExprTemplateTranslator;
 

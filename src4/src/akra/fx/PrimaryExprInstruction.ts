@@ -1,59 +1,61 @@
-import ExprInstruction = require("fx/ExprInstruction");
+/// <reference path="ExprInstruction.ts" />
 
-/**
- * Represent @ Expr
- * @ Instruction
- */
-class PrimaryExprInstruction extends ExprInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = [null];
-        this._eInstructionType = EAFXInstructionTypes.k_PrimaryExprInstruction;
-    }
+module akra.fx {
 
-    toFinalCode(): string {
-        var sCode: string = "";
+	/**
+	 * Represent @ Expr
+	 * @ Instruction
+	 */
+	class PrimaryExprInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_PrimaryExprInstruction;
+		}
 
-        sCode += this.getInstructions()[0].toFinalCode();
+		toFinalCode(): string {
+			var sCode: string = "";
 
-        return sCode;
-    }
+			sCode += this.getInstructions()[0].toFinalCode();
 
-    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
-        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-        var pPointerType: IAFXVariableTypeInstruction = this.getType();
-        var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pPointerType._getInstructionID()];
+			return sCode;
+		}
 
-        if (!isDef(pInfo)) {
-            pInfo = <IAFXTypeUseInfoContainer>{
-                type: pPointerType,
-                isRead: false,
-                isWrite: false,
-                numRead: 0,
-                numWrite: 0,
-                numUsed: 0
-            }
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pPointerType: IAFXVariableTypeInstruction = this.getType();
+			var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pPointerType._getInstructionID()];
+
+			if (!isDef(pInfo)) {
+				pInfo = <IAFXTypeUseInfoContainer>{
+					type: pPointerType,
+					isRead: false,
+					isWrite: false,
+					numRead: 0,
+					numWrite: 0,
+					numUsed: 0
+				}
 
 				pUsedDataCollector[pPointerType._getInstructionID()] = pInfo;
-        }
+			}
 
-        if (eUsedMode === EVarUsedMode.k_Read) {
-            pInfo.isRead = true;
-            pInfo.numRead++;
-        }
-        else if (eUsedMode === EVarUsedMode.k_Write) {
-            pInfo.isWrite = true;
-            pInfo.numWrite++;
-        }
-        else if (eUsedMode === EVarUsedMode.k_ReadWrite) {
-            pInfo.isRead = true;
-            pInfo.isWrite = true;
-            pInfo.numRead++;
-            pInfo.numWrite++;
-        }
+			if (eUsedMode === EVarUsedMode.k_Read) {
+				pInfo.isRead = true;
+				pInfo.numRead++;
+			}
+			else if (eUsedMode === EVarUsedMode.k_Write) {
+				pInfo.isWrite = true;
+				pInfo.numWrite++;
+			}
+			else if (eUsedMode === EVarUsedMode.k_ReadWrite) {
+				pInfo.isRead = true;
+				pInfo.isWrite = true;
+				pInfo.numRead++;
+				pInfo.numWrite++;
+			}
 
-        pInfo.numUsed++;
-    }
+			pInfo.numUsed++;
+		}
+	}
 }
 
-export = PrimaryExprInstruction;

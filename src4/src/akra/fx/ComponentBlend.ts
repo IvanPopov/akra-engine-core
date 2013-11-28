@@ -3,6 +3,7 @@
 /// <reference path="../idl/IAFXInstruction.ts" />
 /// <reference path="../idl/IMap.ts" />
 
+/// <reference path="../guid.ts" />
 /// <reference path="../debug.ts" />
 
 /// <reference path="fx.ts" />
@@ -13,7 +14,8 @@ module akra.fx {
 
 
     export class ComponentBlend implements IAFXComponentBlend {
-        //UNIQUE();
+        guid: uint = guid();
+
         private _pComposer: IAFXComposer = null;
 
         private _isReady: boolean = false;

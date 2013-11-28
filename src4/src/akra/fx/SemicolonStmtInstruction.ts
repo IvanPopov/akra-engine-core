@@ -1,20 +1,20 @@
-import StmtInstruction = require("fx/StmtInstruction");
+/// <reference path="StmtInstruction.ts" />
 
-/**
- * Represent empty statement only semicolon ;
- * ;
- */
-class SemicolonStmtInstruction extends StmtInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = null;
-        this._eInstructionType = EAFXInstructionTypes.k_SemicolonStmtInstruction;
-    }
+module akra.fx {
 
-    toFinalCode(): string {
-        return ";";
-    }
+	/**
+	 * Represent empty statement only semicolon ;
+	 * ;
+	 */
+	export class SemicolonStmtInstruction extends StmtInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_SemicolonStmtInstruction;
+		}
+
+		toFinalCode(): string {
+			return ";";
+		}
+	}
 }
-
-export = SemicolonStmtInstruction;
-

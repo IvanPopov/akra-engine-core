@@ -444,6 +444,7 @@
     <None Include="akra\io\StorageFile.ts" />
     <None Include="akra\io\TFile.ts" />
     <None Include="akra\io\UnPacker.ts" />
+    <None Include="akra\stringUtils\StringMinifier.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="akra\idl\IPixelFormatDescription.ts" />

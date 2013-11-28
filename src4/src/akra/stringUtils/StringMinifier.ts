@@ -1,13 +1,14 @@
-/// <reference path="../idl/AIMap.ts" />
+/// <reference path="../idl/IMap.ts" />
 
-class StringMinifier {
-    private _pMinMap: AIMap<int> = <AIMap<int>>{};
-    private _nCount: uint = 1;
+module akra.stringUtils {
+    export class StringMinifier {
+        private _pMinMap: IMap<int> = <IMap<int>>{};
+        private _nCount: uint = 1;
 
-    minify(sValue: string): uint {
-        return this._pMinMap[sValue] || (this._pMinMap[sValue] = this._nCount++);
+        minify(sValue: string): uint {
+            return this._pMinMap[sValue] || (this._pMinMap[sValue] = this._nCount++);
+        }
     }
 }
 
-export = StringMinifier;
 

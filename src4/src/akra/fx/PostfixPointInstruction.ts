@@ -1,53 +1,56 @@
-import ExprInstruction = require("fx/ExprInstruction");
-/*
- * Represent someExpr.id
- * EMPTY_OPERATOR Instruction IdInstruction
- */
-class PostfixPointInstruction extends ExprInstruction {
-    private _bToFinalFirst: boolean = true;
-    private _bToFinalSecond: boolean = true;
+/// <reference path="ExprInstruction.ts" />
 
-    constructor() {
-        super();
-        this._pInstructionList = [null, null];
-        this._eInstructionType = EAFXInstructionTypes.k_PostfixPointInstruction;
-    }
+module akra.fx {
 
-    prepareFor(eUsedMode: EFunctionType) {
-        if (!this.getInstructions()[0].isVisible()) {
-            this._bToFinalFirst = false;
-        }
+	/*
+	 * Represent someExpr.id
+	 * EMPTY_OPERATOR Instruction IdInstruction
+	 */
+	export class PostfixPointInstruction extends ExprInstruction {
+		private _bToFinalFirst: boolean = true;
+		private _bToFinalSecond: boolean = true;
 
-        if (!this.getInstructions()[1].isVisible()) {
-            this._bToFinalSecond = false;
-        }
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_PostfixPointInstruction;
+		}
 
-        this.getInstructions()[0].prepareFor(eUsedMode);
-        this.getInstructions()[1].prepareFor(eUsedMode);
-    }
+		prepareFor(eUsedMode: EFunctionType) {
+			if (!this.getInstructions()[0].isVisible()) {
+				this._bToFinalFirst = false;
+			}
 
-    toFinalCode(): string {
-        var sCode: string = "";
+			if (!this.getInstructions()[1].isVisible()) {
+				this._bToFinalSecond = false;
+			}
 
-        sCode += this._bToFinalFirst ? this.getInstructions()[0].toFinalCode() : "";
-        sCode += this._bToFinalFirst ? "." : "";
-        sCode += this._bToFinalSecond ? this.getInstructions()[1].toFinalCode() : "";
+			this.getInstructions()[0].prepareFor(eUsedMode);
+			this.getInstructions()[1].prepareFor(eUsedMode);
+		}
 
-        return sCode;
-    }
+		toFinalCode(): string {
+			var sCode: string = "";
 
-    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
-        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-        var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
-        var pPoint: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+			sCode += this._bToFinalFirst ? this.getInstructions()[0].toFinalCode() : "";
+			sCode += this._bToFinalFirst ? "." : "";
+			sCode += this._bToFinalSecond ? this.getInstructions()[1].toFinalCode() : "";
 
-        pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Undefined);
-        pPoint.addUsedData(pUsedDataCollector, eUsedMode);
-    }
+			return sCode;
+		}
 
-    isConst(): boolean {
-        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
-    }
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			var pPoint: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+
+			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Undefined);
+			pPoint.addUsedData(pUsedDataCollector, eUsedMode);
+		}
+
+		isConst(): boolean {
+			return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
+		}
+	}
 }
 
-export = PostfixPointInstruction;

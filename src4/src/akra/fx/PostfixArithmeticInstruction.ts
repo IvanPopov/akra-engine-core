@@ -1,33 +1,36 @@
-import ExprInstruction = require("fx/ExprInstruction");
-/**
- * Represent someExpr ++
- * (-- | ++) Instruction
- */
-class PostfixArithmeticInstruction extends ExprInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = [null];
-        this._eInstructionType = EAFXInstructionTypes.k_PostfixArithmeticInstruction;
-    }
+/// <reference path="ExprInstruction.ts" />
 
-    toFinalCode(): string {
-        var sCode: string = "";
+module akra.fx {
 
-        sCode += this.getInstructions()[0].toFinalCode();
-        sCode += this.getOperator();
+	/**
+	 * Represent someExpr ++
+	 * (-- | ++) Instruction
+	 */
+	export class PostfixArithmeticInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_PostfixArithmeticInstruction;
+		}
 
-        return sCode;
-    }
+		toFinalCode(): string {
+			var sCode: string = "";
 
-    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
-        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-        var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
-        pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
-    }
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += this.getOperator();
 
-    isConst(): boolean {
-        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
-    }
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+		}
+
+		isConst(): boolean {
+			return (<IAFXExprInstruction>this.getInstructions()[0]).isConst();
+		}
+	}
 }
 
-export = PostfixArithmeticInstruction;
