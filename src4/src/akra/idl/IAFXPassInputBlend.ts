@@ -1,4 +1,3 @@
-
 /// <reference path="IAFXSamplerState.ts" />
 /// <reference path="ISurfaceMaterial.ts" />
 /// <reference path="IUnique.ts" />

@@ -12,10 +12,6 @@
 
 
 module akra {
-	export interface IAFXComponentBlendMap {
-		[index: uint]: IAFXComponentBlend;
-		[index: string]: IAFXComponentBlend; 
-	}
 	
 	export interface IAFXComponentInfo {
 		component: IAFXComponent;
@@ -71,6 +67,11 @@ module akra {
 		_setDataForClone(pAddedComponentInfoList: IAFXComponentInfo[],
 						 pComponentHashMap: IBoolMap,
 						 nShiftMin: int, nShiftMax: int): void;
+	}
+
+	export interface IAFXComponentBlendMap {
+		[index: uint]: IAFXComponentBlend;
+		[index: string]: IAFXComponentBlend;
 	}
 	
 }

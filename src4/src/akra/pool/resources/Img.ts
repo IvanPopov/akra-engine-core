@@ -306,7 +306,7 @@ module akra.pool.resources {
 				}
 
 				if (!pCodec) {
-					CRITICAL_ERROR("Unable to load image: Image format is unknown. Unable to identify codec. Check it or specify format explicitly.\n" + "Img.load");
+					logger.critical("Unable to load image: Image format is unknown. Unable to identify codec. Check it or specify format explicitly.\n" + "Img.load");
 					if (fnCallBack) {
 						fnCallBack(false);
 					}
@@ -348,7 +348,7 @@ module akra.pool.resources {
 			var iSize: uint = Img.calculateSize(nMipMaps, nFaces, iWidth, iHeight, iDepth, eFormat);
 
 			if (iSize != pData.buffer.byteLength) {
-				CRITICAL_ERROR("Stream size does not match calculated image size\n" + "Img.loadRawData");
+				logger.critical("Stream size does not match calculated image size\n" + "Img.loadRawData");
 			}
 
 			var pBuffer: Uint8Array = new Uint8Array(iSize);
@@ -381,7 +381,7 @@ module akra.pool.resources {
 			}
 
 			if (nFaces != 6 && nFaces != 1) {
-				CRITICAL_ERROR("Number of faces currently must be 6 or 1.\n" + "Img.loadDynamicImage");
+				logger.critical("Number of faces currently must be 6 or 1.\n" + "Img.loadDynamicImage");
 			}
 
 			this._pBuffer = pData;

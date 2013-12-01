@@ -1,4 +1,3 @@
-// ILogger interface
 var akra;
 (function (akra) {
     (function (ELogLevel) {

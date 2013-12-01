@@ -44,30 +44,30 @@ module akra {
 		OBJECTS_LIMIT = 128
 	}
 	
-	export interface IEntity extends IEventProvider, IReferenceCounter {
+	export interface IEntity<T extends IEntity<T>> extends IEventProvider, IReferenceCounter {
 		name: string;
 	
-		parent: IEntity;
-		sibling: IEntity;
-		child: IEntity;
+		parent: T;
+		sibling: T;
+		child: T;
 	
-		/** readonly */ rightSibling: IEntity;
+		/** readonly */ rightSibling: T;
 	
 		/** readonly */ type: EEntityTypes;
 	
 		/** readonly */ depth: int;
-		/** readonly */ root: IEntity;
+		/** readonly */ root: T;
 	
 		//create(): boolean;//moved to INode
 		destroy(bRecursive?: boolean, bPromoteChildren?: boolean): void;
 	
-		findEntity(sName: string): IEntity;
+		findEntity(sName: string): T;
 		explore(fn: IExplorerFunc): void;
-		childOf(pParent: IEntity): boolean;
+		childOf(pParent: T): boolean;
 		siblingCount(): uint;
 		childCount(): uint;
-		children(): IEntity[];
-		childAt(i: int): IEntity;
+		children(): T[];
+		childAt(i: int): T;
 		descCount(): uint;
 	
 		update(): boolean;
@@ -79,9 +79,9 @@ module akra {
 		hasChild(): boolean;
 		hasSibling(): boolean;
 	
-		isASibling(pSibling: IEntity): boolean;
-		isAChild(pChild: IEntity): boolean;
-		isInFamily(pEntity: IEntity, bSearchEntireTree?: boolean): boolean;
+		isASibling(pSibling: T): boolean;
+		isAChild(pChild: T): boolean;
+		isInFamily(pEntity: T, bSearchEntireTree?: boolean): boolean;
 	
 		//обновлен ли сам узел
 		isUpdated(): boolean;
@@ -89,24 +89,23 @@ module akra {
 		hasUpdatedSubNodes(): boolean;
 	
 	
-		addSibling(pSibling: IEntity): IEntity;
-		addChild(pChild: IEntity): IEntity;
-		removeChild(pChild: IEntity): IEntity;
+		addSibling(pSibling: T): T;
+		addChild(pChild: T): T;
+		removeChild(pChild: T): T;
 		removeAllChildren(): void;
 	
-		attachToParent(pParent: IEntity): boolean;
+		attachToParent(pParent: T): boolean;
 		detachFromParent(): boolean;
 		
 		promoteChildren(): void;
-		relocateChildren(pParent: IEntity): void;
+		relocateChildren(pParent: T): void;
 	
 		toString(isRecursive?: boolean, iDepth?: int): string;
 	
-		signal attached(): void;
-		signal detached(): void;
-	
-		signal childAdded(pChild: IEntity): void;
-		signal childRemoved(pChild: IEntity): void;
+		attached: ISignal<{ (pEntity: T): void; }>;
+		detached: ISignal <{ (pEntity: T): void ; }>;
+		childAdded: ISignal <{ (pEntity: T, pChild: T): void; }>;
+		childRemoved: ISignal <{ (pEntity: T, pChild: T): void; }>;
 	}
 	
 	

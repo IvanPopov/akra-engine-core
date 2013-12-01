@@ -1,12 +1,15 @@
-#ifndef VERTEXBUFFER_TS
-#define VERTEXBUFFER_TS
+/// <reference path="../../idl/IVertexBuffer.ts" />
 
-#include "IVertexBuffer.ts"
-#include "data/VertexData.ts"
-#include "HardwareBuffer.ts"
-#include "MemoryBuffer.ts"
+/// <reference path="../../data/VertexData.ts" />
+/// <reference path="../../data/VertexDeclaration.ts" />
+/// <reference path="../../bf/bf.ts" />
 
-module akra.core.pool.resources {
+/// <reference path="HardwareBuffer.ts" />
+/// <reference path="MemoryBuffer.ts" />
+
+module akra.pool.resources {
+	import VertexDeclaration = data.VertexDeclaration;
+
 	interface IBufferHole {
 		start: uint;
 		end: uint;
@@ -28,7 +31,7 @@ module akra.core.pool.resources {
 		// create(iByteSize: uint, iFlags?: uint, pData?: any): boolean {
 			super.create(0, iFlags || 0);
 
-			if (TEST_ANY(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
+			if (bf.testAny(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
 				this._pBackupCopy = new MemoryBuffer();
 				this._pBackupCopy.create(iByteSize);
 				this._pBackupCopy.writeData(pData, 0, iByteSize);
@@ -54,7 +57,7 @@ module akra.core.pool.resources {
 				return this._pVertexDataArray[<uint>arguments[0]];
 			}
 
-			var pDecl: IVertexDeclaration = createVertexDeclaration(pData);
+			var pDecl: IVertexDeclaration = VertexDeclaration.normalize(pData);
 			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter ++, iOffset, iCount, pDecl);
 
 			this._pVertexDataArray.push(pVertexData);
@@ -141,7 +144,7 @@ module akra.core.pool.resources {
 				
 				
 				if(!isInt(pDeclData)) {
-					pDecl = createVertexDeclaration(pDeclData);
+					pDecl = VertexDeclaration.normalize(pDeclData);
 					iStride = pDecl.stride;	
 				}
 				else {
@@ -218,20 +221,20 @@ module akra.core.pool.resources {
 		allocateData(pElements: IVertexElementInterface[], pData: ArrayBufferView): IVertexData;
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
 		allocateData(pDeclData: any, pData: ArrayBufferView): IVertexData {
-			var pDecl: IVertexDeclaration = createVertexDeclaration(pDeclData);
+			var pDecl: IVertexDeclaration = VertexDeclaration.normalize(pDeclData);
 
 			var pVertexData: IVertexData;
-		    var iCount: uint = pData.byteLength / pDecl.stride;
+			var iCount: uint = pData.byteLength / pDecl.stride;
 
-		    debug.assert(iCount === math.floor(iCount), 'Data size should be a multiple of the vertex declaration.');
+			debug.assert(iCount === math.floor(iCount), 'Data size should be a multiple of the vertex declaration.');
 
-		    pVertexData = this.getEmptyVertexData(iCount, pDecl);
+			pVertexData = this.getEmptyVertexData(iCount, pDecl);
 
-		    debug.assert(!isNull(pVertexData), "Could not allocate vertex data!");
+			debug.assert(!isNull(pVertexData), "Could not allocate vertex data!");
 
-		    pVertexData.setData(pData, 0, pDecl.stride);
+			pVertexData.setData(pData, 0, pDecl.stride);
 
-		    return pVertexData;
+			return pVertexData;
 		}
 
 	}
@@ -244,5 +247,3 @@ module akra.core.pool.resources {
 		return pBuffer.type === EVertexBufferTypes.TBO;
 	}
 }
-
-#endif

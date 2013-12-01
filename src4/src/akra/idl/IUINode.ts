@@ -1,7 +1,7 @@
 
 /// <reference path="IEntity.ts" />
 /// <reference path="IPoint.ts" />
-/// <reference path="AIOffset.ts" />
+/// <reference path="IOffset.ts" />
 /// <reference path="IUILayout.ts" />
 
 
@@ -19,8 +19,8 @@ module akra {
 	} 
 	
 	export interface IUINode extends IEntity {
-		/** readonly */ nodeType: EUINodeTypes;
-		/** readonly */ ui: IUI;
+		nodeType: EUINodeTypes;
+		ui: IUI;
 	
 		render(): boolean;
 		render(pParent: IUINode): boolean;

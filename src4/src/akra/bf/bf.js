@@ -1,4 +1,4 @@
-var akra;
+﻿var akra;
 (function (akra) {
     (function (bf) {
         /**
@@ -211,6 +211,8 @@ else
                     pDest[0] = (value & 0xFF);
                     break;
             }
+
+            return;
         }
         bf.intWrite = intWrite;
 

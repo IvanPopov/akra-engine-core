@@ -155,6 +155,8 @@ module akra.bf {
 				pDest[0] = (value & 0xFF);
 				break;
 		}
+
+		return;
 	}
 
 	/**

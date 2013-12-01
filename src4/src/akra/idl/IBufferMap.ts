@@ -1,4 +1,4 @@
-
+/// <reference path="EPrimitiveTypes.ts" />
 /// <reference path="IReferenceCounter.ts" />
 /// <reference path="IEventProvider.ts" />
 /// <reference path="IVertexData.ts" />

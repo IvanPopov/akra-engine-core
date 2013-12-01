@@ -6,7 +6,7 @@
 //RID - renderable ID, for fast searching renderable object
 module akra {
 	export interface IRIDTable {
-	    [iSceneObjectGuid: int]: IIntMap;
+	    [iSceneObjectGuid: int]: IMap<int>;
 	}
 	
 	export interface IRIDPair {
@@ -17,7 +17,4 @@ module akra {
 	export interface IRIDMap {
 		[rid: int]: IRIDPair;
 	}
-	
-	
-	
 }
