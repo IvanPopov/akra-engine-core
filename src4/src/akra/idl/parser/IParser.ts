@@ -90,7 +90,7 @@ module akra.parser {
 	}
 
 	export interface IParseTree {
-		setRoot(): void;
+		finishTree(): void;
 
 		setOptimizeMode(isOptimize: boolean): void;
 
@@ -104,7 +104,8 @@ module akra.parser {
 		getNodes(): IParseNode[];
 		getLastNode(): IParseNode;
 
-		root: IParseNode;
+		getRoot(): IParseNode;
+		setRoot(pRoot: IParseNode): void;
 	}
 
 	export interface ILexer {

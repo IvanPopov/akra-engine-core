@@ -482,7 +482,13 @@ var TypeScript;
         Use_of_deprecated_type_bool_Use_boolean_instead: "Use of deprecated type 'bool'. Use 'boolean' instead.",
         module_is_deprecated_Use_require_instead: "'module(...)' is deprecated. Use 'require(...)' instead.",
         Allow_bool_as_a_synonym_for_boolean: "Allow 'bool' as a synonym for 'boolean'.",
-        Allow_module_as_a_synonym_for_require: "Allow 'module(...)' as a synonym for 'require(...)'."
+        Allow_module_as_a_synonym_for_require: "Allow 'module(...)' as a synonym for 'require(...)'.",
+        Enable_strict_checking_of_numeric_types: "Enable strict checking of numeric types. Special for Akra Engine :)",
+        Numeric_type_0_not_strict_equal_to_1: "Numeric type '{0}' not strict equal to '{1}'",
+        Numeric_type_0_is_not_specified: "Numeric type '{0}' is not specified",
+        Numeric_type_0_is_not_integer: "Numeric type '{0}' is not integer",
+        Type_of_variable_is_number: "Type of variable '{0}' is 'number'. Better to specify it to 'int' or 'float'.",
+        Type_of_variable_init_is_number: "Type of init exprassion for variable '{0}' is 'number'. Better to specify it to 'int' or 'float'."
     };
 })(TypeScript || (TypeScript = {}));
 var TypeScript;
@@ -3306,6 +3312,30 @@ var TypeScript;
         "Allow 'module(...)' as a synonym for 'require(...)'.": {
             "code": 7022,
             "category": 2 /* Message */
+        },
+        "Enable strict checking of numeric types. Special for Akra Engine :)": {
+            "code": 8000,
+            "category": 2 /* Message */
+        },
+        "Numeric type '{0}' not strict equal to '{1}'": {
+            "code": 8001,
+            "category": 0 /* Warning */
+        },
+        "Numeric type '{0}' is not specified": {
+            "code": 8002,
+            "category": 0 /* Warning */
+        },
+        "Numeric type '{0}' is not integer": {
+            "code": 8003,
+            "category": 0 /* Warning */
+        },
+        "Type of variable '{0}' is 'number'. Better to specify it to 'int' or 'float'.": {
+            "code": 8004,
+            "category": 0 /* Warning */
+        },
+        "Type of init exprassion for variable '{0}' is 'number'. Better to specify it to 'int' or 'float'.": {
+            "code": 8005,
+            "category": 0 /* Warning */
         }
     };
 })(TypeScript || (TypeScript = {}));
@@ -21811,6 +21841,7 @@ var TypeScript;
                 this.isInStrictMode = false;
                 this.diagnostics = [];
                 this.factory = TypeScript.Syntax.normalModeFactory;
+                this._currentClassIdentifier = null;
                 this.mergeTokensStorage = [];
                 this.arrayPool = [];
                 this.fileName = fileName;
@@ -22612,12 +22643,16 @@ var TypeScript;
                 var openBraceToken = this.eatToken(89 /* OpenBraceToken */);
                 var classElements = TypeScript.Syntax.emptyList;
 
+                this._currentClassIdentifier = identifier;
+
                 if (openBraceToken.width() > 0) {
                     var result = this.parseSyntaxList(2 /* ClassDeclaration_ClassElements */);
 
                     classElements = result.list;
                     openBraceToken = this.addSkippedTokensAfterToken(openBraceToken, result.skippedTokens);
                 }
+
+                this._currentClassIdentifier = null;
 
                 var closeBraceToken = this.eatToken(90 /* CloseBraceToken */);
                 return this.factory.classDeclaration(modifiers, classKeyword, identifier, typeParameterList, heritageClauses, openBraceToken, classElements, closeBraceToken);
@@ -25878,8 +25913,10 @@ var TypeScript;
                         isInStaticOverloadChain = TypeScript.SyntaxUtilities.containsToken(memberFunctionDeclaration.modifiers, 58 /* StaticKeyword */);
 
                         if (lastElement && inFunctionOverloadChain) {
-                            this.pushDiagnostic1(classElementFullStart, classElement.firstToken(), TypeScript.DiagnosticCode.Function_implementation_expected);
-                            return true;
+                            if (!TypeScript.SyntaxUtilities.containsToken(memberFunctionDeclaration.modifiers, 61 /* UnicastKeyword */) && !TypeScript.SyntaxUtilities.containsToken(memberFunctionDeclaration.modifiers, 62 /* BroadcastKeyword */)) {
+                                this.pushDiagnostic1(classElementFullStart, classElement.firstToken(), TypeScript.DiagnosticCode.Function_implementation_expected);
+                                return true;
+                            }
                         }
                     } else if (classElement.kind() === 156 /* ConstructorDeclaration */) {
                         var constructorDeclaration = classElement;
@@ -26913,6 +26950,7 @@ var TypeScript;
         VariableFlags[VariableFlags["ForInVariable"] = 1 << 14] = "ForInVariable";
 
         VariableFlags[VariableFlags["Protected"] = 1 << 15] = "Protected";
+        VariableFlags[VariableFlags["EventsProvider"] = 1 << 16] = "EventsProvider";
     })(TypeScript.VariableFlags || (TypeScript.VariableFlags = {}));
     var VariableFlags = TypeScript.VariableFlags;
 
@@ -30572,6 +30610,7 @@ var TypeScript;
 (function (TypeScript) {
     var CompilationSettings = (function () {
         function CompilationSettings() {
+            this.akraTypeCheck = false;
             this.propagateEnumConstants = false;
             this.removeComments = false;
             this.watch = false;
@@ -33413,9 +33452,64 @@ var TypeScript;
                 case "float64":
 
                 case "long":
+                case "_int_numeric_literal_":
                     return true;
             }
             return false;
+        };
+
+        PullTypeSymbol.prototype.isIntType = function () {
+            switch (this.name) {
+                case "int":
+                case "int8":
+                case "int16":
+                case "int32":
+                case "int64":
+
+                case "uint":
+                case "uint8":
+                case "uint16":
+                case "uint32":
+                case "uint64":
+
+                case "_int_numeric_literal_":
+                    return true;
+            }
+            return false;
+        };
+
+        PullTypeSymbol.prototype.isUintType = function () {
+            switch (this.name) {
+                case "uint":
+                case "uint8":
+                case "uint16":
+                case "uint32":
+                case "uint64":
+
+                case "_int_numeric_literal_":
+                    return true;
+            }
+            return false;
+        };
+
+        PullTypeSymbol.prototype.isFloatType = function () {
+            switch (this.name) {
+                case "float":
+                case "float32":
+                case "float64":
+
+                case "_int_numeric_literal_":
+                    return true;
+            }
+            return false;
+        };
+
+        PullTypeSymbol.prototype.isUnspecifiedNumberType = function () {
+            return this.name === "number";
+        };
+
+        PullTypeSymbol.prototype.isIntNumericLiteral = function () {
+            return this.name === "_int_numeric_literal_";
         };
 
         PullTypeSymbol.prototype.isType = function () {
@@ -38201,6 +38295,18 @@ var TypeScript;
                         } else {
                             context.postError(this.unitPath, varDecl.minChar, varDecl.getLength(), TypeScript.DiagnosticCode.Cannot_convert_0_to_1, [initTypeSymbol.toString(), typeExprSymbol.toString()], enclosingDecl);
                         }
+                    } else if (this.compilationSettings.akraTypeCheck) {
+                        if (TypeScript.PullHelpers.isNumberType(typeExprSymbol) && TypeScript.PullHelpers.isNumberType(initTypeSymbol)) {
+                            if (typeExprSymbol.isUnspecifiedNumberType() || initTypeSymbol.isUnspecifiedNumberType()) {
+                                if (typeExprSymbol.isUnspecifiedNumberType()) {
+                                    context.postError(this.unitPath, varDecl.minChar, varDecl.getLength(), TypeScript.DiagnosticCode.Type_of_variable_is_number, [varDecl.id.actualText], enclosingDecl);
+                                } else {
+                                    context.postError(this.unitPath, varDecl.minChar, varDecl.getLength(), TypeScript.DiagnosticCode.Type_of_variable_init_is_number, [varDecl.id.actualText], enclosingDecl);
+                                }
+                            } else if (!TypeScript.PullHelpers.isStrictEqualsNumberTypes(typeExprSymbol, initTypeSymbol)) {
+                                context.postError(this.unitPath, varDecl.minChar, varDecl.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_not_strict_equal_to_1, [initTypeSymbol.toString(), typeExprSymbol.toString()], enclosingDecl);
+                            }
+                        }
                     }
                 }
             }
@@ -39001,11 +39107,27 @@ var TypeScript;
             if (context.typeCheck()) {
                 var unaryExpression = ast;
                 var expression = this.resolveAST(unaryExpression.operand, false, enclosingDecl, context);
+                var operandType = expression.type;
 
                 if (nodeType == 27 /* PlusExpression */ || nodeType == 28 /* NegateExpression */ || nodeType == 73 /* BitwiseNotExpression */) {
-                    return this.semanticInfoChain.numberTypeSymbol;
+                    if (this.compilationSettings.akraTypeCheck) {
+                        if (operandType.isUnspecifiedNumberType()) {
+                            context.postError(this.unitPath, unaryExpression.operand.minChar, unaryExpression.operand.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [operandType.name], enclosingDecl);
+                        } else if (nodeType === 73 /* BitwiseNotExpression */ && !(operandType.isIntType() || TypeScript.PullHelpers.symbolIsEnum(operandType))) {
+                            context.postError(this.unitPath, unaryExpression.operand.minChar, unaryExpression.operand.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_integer, [operandType.name], enclosingDecl);
+                        } else if (operandType.isIntNumericLiteral()) {
+                            return this.semanticInfoChain.akraIntNumericLiteralTypeSymbol;
+                        } else if (operandType.isFloatType()) {
+                            return this.semanticInfoChain.akraFloatTypeSymbol;
+                        } else {
+                            return this.semanticInfoChain.akraIntTypeSymbol;
+                        }
+
+                        return this.semanticInfoChain.numberTypeSymbol;
+                    } else {
+                        return this.semanticInfoChain.numberTypeSymbol;
+                    }
                 }
-                var operandType = expression.type;
 
                 var operandIsFit = this.isAnyOrEquivalent(operandType) || operandType.isNumberType() || TypeScript.PullHelpers.symbolIsEnum(operandType);
 
@@ -39024,10 +39146,27 @@ var TypeScript;
 
                         break;
                 }
+
+                var pReturnType = this.semanticInfoChain.numberTypeSymbol;
+
+                if (this.compilationSettings.akraTypeCheck) {
+                    if (operandType.isUnspecifiedNumberType()) {
+                        context.postError(this.unitPath, unaryExpression.operand.minChar, unaryExpression.operand.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [operandType.name], enclosingDecl);
+                    } else if (operandType.isFloatType()) {
+                        pReturnType = this.semanticInfoChain.akraFloatTypeSymbol;
+                    } else {
+                        pReturnType = this.semanticInfoChain.akraIntTypeSymbol;
+                    }
+                }
             }
 
             this.setSymbolForAST(ast, this.semanticInfoChain.numberTypeSymbol, context);
-            return this.semanticInfoChain.numberTypeSymbol;
+
+            if (this.compilationSettings.akraTypeCheck) {
+                return pReturnType;
+            } else {
+                return this.semanticInfoChain.numberTypeSymbol;
+            }
         };
 
         PullTypeResolver.prototype.resolveBinaryArithmeticExpression = function (ast, enclosingDecl, context) {
@@ -39070,10 +39209,86 @@ var TypeScript;
                             break;
                     }
                 }
+
+                if (this.compilationSettings.akraTypeCheck) {
+                    var pReturnType = this.semanticInfoChain.numberTypeSymbol;
+
+                    if (TypeScript.PullHelpers.isNumberType(lhsType) && TypeScript.PullHelpers.isNumberType(rhsType)) {
+                        if (lhsType.isUnspecifiedNumberType() || rhsType.isUnspecifiedNumberType()) {
+                            if (lhsType.isUnspecifiedNumberType()) {
+                                context.postError(this.unitPath, binaryExpression.operand1.minChar, binaryExpression.operand1.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [lhsType.name], enclosingDecl);
+                            }
+                            if (rhsType.isUnspecifiedNumberType()) {
+                                context.postError(this.unitPath, binaryExpression.operand2.minChar, binaryExpression.operand2.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [rhsType.name], enclosingDecl);
+                            }
+                        } else {
+                            var isIntLhsType = lhsType.isNumberType() ? lhsType.isIntType() : true;
+                            var isIntRhsType = rhsType.isNumberType() ? rhsType.isIntType() : true;
+
+                            switch (binaryExpression.nodeType()) {
+                                case 45 /* AndAssignmentExpression */:
+                                case 46 /* ExclusiveOrAssignmentExpression */:
+                                case 47 /* OrAssignmentExpression */:
+                                case 48 /* LeftShiftAssignmentExpression */:
+                                case 49 /* SignedRightShiftAssignmentExpression */:
+                                case 50 /* UnsignedRightShiftAssignmentExpression */:
+                                case 54 /* BitwiseOrExpression */:
+                                case 55 /* BitwiseExclusiveOrExpression */:
+                                case 56 /* BitwiseAndExpression */:
+                                case 70 /* LeftShiftExpression */:
+                                case 71 /* SignedRightShiftExpression */:
+                                case 72 /* UnsignedRightShiftExpression */:
+                                    if (!isIntLhsType) {
+                                        context.postError(this.unitPath, binaryExpression.operand1.minChar, binaryExpression.operand1.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_integer, [lhsType.name], enclosingDecl);
+                                    }
+
+                                    if (!isIntRhsType) {
+                                        context.postError(this.unitPath, binaryExpression.operand2.minChar, binaryExpression.operand2.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_integer, [rhsType.name], enclosingDecl);
+                                    }
+
+                                    if (isIntLhsType && isIntRhsType) {
+                                        if (lhsType.isIntNumericLiteral() && rhsType.isIntNumericLiteral()) {
+                                            pReturnType = this.semanticInfoChain.akraIntNumericLiteralTypeSymbol;
+                                        } else {
+                                            pReturnType = this.semanticInfoChain.akraIntTypeSymbol;
+                                        }
+                                    }
+
+                                    break;
+
+                                case 66 /* SubtractExpression */:
+                                case 41 /* SubtractAssignmentExpression */:
+                                case 67 /* MultiplyExpression */:
+                                case 43 /* MultiplyAssignmentExpression */:
+                                case 68 /* DivideExpression */:
+                                case 69 /* ModuloExpression */:
+                                case 42 /* DivideAssignmentExpression */:
+                                case 44 /* ModuloAssignmentExpression */:
+                                    if (!TypeScript.PullHelpers.isStrictEqualsNumberTypes(lhsType, rhsType)) {
+                                        context.postError(this.unitPath, binaryExpression.operand1.minChar, binaryExpression.operand1.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_not_strict_equal_to_1, [lhsType.name, rhsType.name], enclosingDecl);
+                                    } else {
+                                        if (lhsType.isIntNumericLiteral() && rhsType.isIntNumericLiteral()) {
+                                            pReturnType = this.semanticInfoChain.akraIntNumericLiteralTypeSymbol;
+                                        } else if (!lhsType.isIntNumericLiteral()) {
+                                            pReturnType = isIntLhsType ? this.semanticInfoChain.akraIntTypeSymbol : this.semanticInfoChain.akraFloatTypeSymbol;
+                                        } else {
+                                            pReturnType = isIntRhsType ? this.semanticInfoChain.akraIntTypeSymbol : this.semanticInfoChain.akraFloatTypeSymbol;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                }
             }
 
             this.setSymbolForAST(ast, this.semanticInfoChain.numberTypeSymbol, context);
-            return this.semanticInfoChain.numberTypeSymbol;
+
+            if (this.compilationSettings.akraTypeCheck) {
+                return pReturnType;
+            } else {
+                return this.semanticInfoChain.numberTypeSymbol;
+            }
         };
 
         PullTypeResolver.prototype.resolveTypeOfExpression = function (ast, enclosingDecl, context) {
@@ -39604,7 +39819,15 @@ var TypeScript;
                     return this.resolveExportAssignmentStatement(ast, enclosingDecl, context);
 
                 case 7 /* NumericLiteral */:
-                    return this.semanticInfoChain.numberTypeSymbol;
+                    if (this.compilationSettings.akraTypeCheck) {
+                        if ((ast).isAkraFloatType) {
+                            return this.semanticInfoChain.akraFloatTypeSymbol;
+                        } else {
+                            return this.semanticInfoChain.akraIntNumericLiteralTypeSymbol;
+                        }
+                    } else {
+                        return this.semanticInfoChain.numberTypeSymbol;
+                    }
                 case 5 /* StringLiteral */:
                     return this.semanticInfoChain.stringTypeSymbol;
                 case 8 /* NullLiteral */:
@@ -41077,6 +41300,10 @@ var TypeScript;
 
             if (TypeScript.PullHelpers.symbolIsEnum(lhsType)) {
                 lhsType = this.semanticInfoChain.numberTypeSymbol;
+
+                if (this.compilationSettings.akraTypeCheck) {
+                    lhsType = this.semanticInfoChain.akraIntTypeSymbol;
+                }
             } else if (lhsType === this.semanticInfoChain.nullTypeSymbol || lhsType === this.semanticInfoChain.undefinedTypeSymbol) {
                 if (rhsType != this.semanticInfoChain.nullTypeSymbol && rhsType != this.semanticInfoChain.undefinedTypeSymbol) {
                     lhsType = rhsType;
@@ -41087,6 +41314,10 @@ var TypeScript;
 
             if (TypeScript.PullHelpers.symbolIsEnum(rhsType)) {
                 rhsType = this.semanticInfoChain.numberTypeSymbol;
+
+                if (this.compilationSettings.akraTypeCheck) {
+                    rhsType = this.semanticInfoChain.akraIntTypeSymbol;
+                }
             } else if (rhsType === this.semanticInfoChain.nullTypeSymbol || rhsType === this.semanticInfoChain.undefinedTypeSymbol) {
                 if (lhsType != this.semanticInfoChain.nullTypeSymbol && lhsType != this.semanticInfoChain.undefinedTypeSymbol) {
                     rhsType = lhsType;
@@ -41102,7 +41333,28 @@ var TypeScript;
             } else if (this.isAnyOrEquivalent(lhsType) || this.isAnyOrEquivalent(rhsType)) {
                 exprType = this.semanticInfoChain.anyTypeSymbol;
             } else if (rhsType.isNumberType() && lhsType.isNumberType()) {
-                exprType = this.semanticInfoChain.numberTypeSymbol;
+                if (this.compilationSettings.akraTypeCheck) {
+                    if (lhsType.isUnspecifiedNumberType() || rhsType.isUnspecifiedNumberType()) {
+                        if (lhsType.isUnspecifiedNumberType()) {
+                            context.postError(this.unitPath, binaryExpression.operand1.minChar, binaryExpression.operand1.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [lhsType.name], enclosingDecl);
+                        }
+                        if (rhsType.isUnspecifiedNumberType()) {
+                            context.postError(this.unitPath, binaryExpression.operand2.minChar, binaryExpression.operand2.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [rhsType.name], enclosingDecl);
+                        }
+                        exprType = this.semanticInfoChain.numberTypeSymbol;
+                    } else if (!TypeScript.PullHelpers.isStrictEqualsNumberTypes(lhsType, rhsType)) {
+                        context.postError(this.unitPath, binaryExpression.operand1.minChar, binaryExpression.operand1.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_not_strict_equal_to_1, [lhsType.name, rhsType.name], enclosingDecl);
+                        exprType = this.semanticInfoChain.numberTypeSymbol;
+                    } else if (lhsType.isIntNumericLiteral() && rhsType.isIntNumericLiteral()) {
+                        exprType = this.semanticInfoChain.akraIntNumericLiteralTypeSymbol;
+                    } else if (!lhsType.isIntNumericLiteral()) {
+                        exprType = lhsType.isIntType() ? this.semanticInfoChain.akraIntTypeSymbol : this.semanticInfoChain.akraFloatTypeSymbol;
+                    } else {
+                        exprType = rhsType.isIntType() ? this.semanticInfoChain.akraIntTypeSymbol : this.semanticInfoChain.akraFloatTypeSymbol;
+                    }
+                } else {
+                    exprType = this.semanticInfoChain.numberTypeSymbol;
+                }
             }
 
             if (exprType) {
@@ -41146,6 +41398,24 @@ var TypeScript;
                 }
             } else if (leftType.isNumberType()) {
                 if (rightType.isNumberType()) {
+                    if (this.compilationSettings.akraTypeCheck) {
+                        if (leftType.isUnspecifiedNumberType() || rightType.isUnspecifiedNumberType()) {
+                            if (leftType.isUnspecifiedNumberType()) {
+                                context.postError(this.unitPath, binex.operand1.minChar, binex.operand1.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [leftType.name], enclosingDecl);
+                            }
+                            if (rightType.isUnspecifiedNumberType()) {
+                                context.postError(this.unitPath, binex.operand2.minChar, binex.operand2.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [rightType.name], enclosingDecl);
+                            }
+                        } else if (!TypeScript.PullHelpers.isStrictEqualsNumberTypes(leftType, rightType)) {
+                            context.postError(this.unitPath, binex.operand1.minChar, binex.operand1.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_not_strict_equal_to_1, [leftType.name, rightType.name], enclosingDecl);
+                        } else if (leftType.isIntNumericLiteral() && rightType.isIntNumericLiteral()) {
+                            return this.semanticInfoChain.akraIntNumericLiteralTypeSymbol;
+                        } else if (!leftType.isIntNumericLiteral()) {
+                            return leftType.isIntType() ? this.semanticInfoChain.akraIntTypeSymbol : this.semanticInfoChain.akraFloatTypeSymbol;
+                        } else {
+                            return rightType.isIntType() ? this.semanticInfoChain.akraIntTypeSymbol : this.semanticInfoChain.akraFloatTypeSymbol;
+                        }
+                    }
                     return this.semanticInfoChain.numberTypeSymbol;
                 } else {
                     return this.semanticInfoChain.anyTypeSymbol;
@@ -41949,7 +42219,30 @@ var TypeScript;
 
                 this.checkAssignability(binaryExpression.operand1, rightType, leftType, enclosingDecl, context);
             }
-            return rightType;
+
+            var pReturnType = rightType;
+            if (this.compilationSettings.akraTypeCheck) {
+                if (TypeScript.PullHelpers.isNumberType(leftType) && TypeScript.PullHelpers.isNumberType(rightType)) {
+                    if (leftType.isUnspecifiedNumberType() || rightType.isUnspecifiedNumberType()) {
+                        if (leftType.isUnspecifiedNumberType()) {
+                            context.postError(this.unitPath, binaryExpression.operand1.minChar, binaryExpression.operand1.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [leftType.name], enclosingDecl);
+                        }
+                        if (rightType.isUnspecifiedNumberType()) {
+                            context.postError(this.unitPath, binaryExpression.operand2.minChar, binaryExpression.operand2.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_is_not_specified, [rightType.name], enclosingDecl);
+                        }
+                    } else if (!TypeScript.PullHelpers.isStrictEqualsNumberTypes(leftType, rightType)) {
+                        context.postError(this.unitPath, binaryExpression.operand1.minChar, binaryExpression.operand1.getLength(), TypeScript.DiagnosticCode.Numeric_type_0_not_strict_equal_to_1, [leftType.name, rightType.name], enclosingDecl);
+                    } else if (leftType.isIntNumericLiteral() && rightType.isIntNumericLiteral()) {
+                        pReturnType = this.semanticInfoChain.akraIntNumericLiteralTypeSymbol;
+                    } else if (!leftType.isIntNumericLiteral()) {
+                        pReturnType = leftType.isIntType() ? this.semanticInfoChain.akraIntTypeSymbol : this.semanticInfoChain.akraFloatTypeSymbol;
+                    } else {
+                        pReturnType = rightType.isIntType() ? this.semanticInfoChain.akraIntTypeSymbol : this.semanticInfoChain.akraFloatTypeSymbol;
+                    }
+                }
+            }
+
+            return pReturnType;
         };
 
         PullTypeResolver.prototype.computeAssignmentStatementSymbol = function (binex, inContextuallyTypedAssignment, enclosingDecl, context) {
@@ -45132,6 +45425,10 @@ var TypeScript;
             this.nullTypeSymbol = null;
             this.undefinedTypeSymbol = null;
             this.voidTypeSymbol = null;
+            this.akraIntTypeSymbol = null;
+            this.akraFloatTypeSymbol = null;
+            this.akraUintTypeSymbol = null;
+            this.akraIntNumericLiteralTypeSymbol = null;
             if (TypeScript.globalBinder) {
                 TypeScript.globalBinder.semanticInfoChain = this;
             }
@@ -45180,17 +45477,22 @@ var TypeScript;
             this.stringTypeSymbol = this.addPrimitiveType("string", globalDecl);
             this.voidTypeSymbol = this.addPrimitiveType("void", globalDecl);
 
-            this.addPrimitiveType("int", globalDecl);
+            this.akraIntTypeSymbol = this.addPrimitiveType("int", globalDecl);
+            this.akraUintTypeSymbol = this.addPrimitiveType("uint", globalDecl);
+            this.akraFloatTypeSymbol = this.addPrimitiveType("float", globalDecl);
+
+            this.akraIntNumericLiteralTypeSymbol = this.addPrimitiveType("_int_numeric_literal_", null);
+
             this.addPrimitiveType("int8", globalDecl);
             this.addPrimitiveType("int16", globalDecl);
             this.addPrimitiveType("int32", globalDecl);
             this.addPrimitiveType("int64", globalDecl);
-            this.addPrimitiveType("uint", globalDecl);
+
             this.addPrimitiveType("uint8", globalDecl);
             this.addPrimitiveType("uint16", globalDecl);
             this.addPrimitiveType("uint32", globalDecl);
             this.addPrimitiveType("uint64", globalDecl);
-            this.addPrimitiveType("float", globalDecl);
+
             this.addPrimitiveType("float32", globalDecl);
             this.addPrimitiveType("float64", globalDecl);
             this.addPrimitiveType("long", globalDecl);
@@ -48684,6 +48986,23 @@ var TypeScript;
         }
         PullHelpers.symbolIsModule = symbolIsModule;
 
+        function isNumberType(pType) {
+            return pType.isNumberType() || symbolIsEnum(pType);
+        }
+        PullHelpers.isNumberType = isNumberType;
+
+        function isStrictEqualsNumberTypes(pTypeA, pTypeB) {
+            var isIntTypeA = pTypeA.isIntType() || symbolIsEnum(pTypeA);
+            var isIntTypeB = pTypeB.isIntType() || symbolIsEnum(pTypeB);
+
+            if (isIntTypeA === isIntTypeB || pTypeA.isIntNumericLiteral() || pTypeB.isIntNumericLiteral()) {
+                return true;
+            }
+
+            return false;
+        }
+        PullHelpers.isStrictEqualsNumberTypes = isStrictEqualsNumberTypes;
+
         function isOneDeclarationOfKind(symbol, kind) {
             var decls = symbol.getDeclarations();
             for (var i = 0; i < decls.length; i++) {
@@ -48706,6 +49025,7 @@ var TypeScript;
             this.compilationSettings = compilationSettings;
             this.position = 0;
             this.previousTokenTrailingComments = null;
+            this._currentClassHasEvents = false;
         }
         SyntaxTreeToAstVisitor.visit = function (syntaxTree, fileName, compilationSettings, incrementalAST) {
             var visitor = incrementalAST ? new SyntaxTreeToIncrementalAstVisitor(fileName, syntaxTree.lineMap(), compilationSettings) : new SyntaxTreeToAstVisitor(fileName, syntaxTree.lineMap(), compilationSettings);
@@ -49064,6 +49384,8 @@ var TypeScript;
                 }
             }
 
+            this._currentClassHasEvents = false;
+
             this.movePast(node.openBraceToken);
             var members = this.visitSyntaxList(node.classElements);
             var closeBracePosition = this.position;
@@ -49073,6 +49395,11 @@ var TypeScript;
 
             var result = new TypeScript.ClassDeclaration(name, typeParameters, members, extendsList, implementsList, closeBraceSpan);
             this.setCommentsAndSpan(result, start, node);
+
+            if (this._currentClassHasEvents) {
+                result.setVarFlags(result.getVarFlags() | 65536 /* EventsProvider */);
+                this._currentClassHasEvents = false;
+            }
 
             for (var i = 0; i < members.members.length; i++) {
                 var member = members.members[i];
@@ -50325,10 +50652,12 @@ var TypeScript;
             }
 
             if (TypeScript.SyntaxUtilities.containsToken(node.modifiers, 61 /* UnicastKeyword */)) {
+                this._currentClassHasEvents = true;
                 flags = flags | 262144 /* Unicast */;
             }
 
             if (TypeScript.SyntaxUtilities.containsToken(node.modifiers, 62 /* BroadcastKeyword */)) {
+                this._currentClassHasEvents = true;
                 flags = flags | 524288 /* Broadcast */;
             }
 
@@ -53778,6 +54107,8 @@ var TypeScript;
             _super.call(this);
             this.value = value;
             this._text = text;
+
+            this.isAkraFloatType = this._text.indexOf(".") >= 0;
         }
         NumberLiteral.prototype.text = function () {
             return this._text;

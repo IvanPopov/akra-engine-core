@@ -41,7 +41,7 @@ module.exports = function (grunt) {
                 dest: "build/parser.js",
                 options: {
                     module: "commonjs",
-                    target: "es5"
+                    target: "es3"
                 }
             },
             core: {
