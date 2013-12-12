@@ -20,7 +20,7 @@ module akra {
 		ALL
 	};
 	
-	export interface INode<T extends INode<T>> extends IEntity<T> {
+	export interface INode extends IEntity {
 		localOrientation: IQuat4;
 		localPosition: IVec3;
 		localScale: IVec3;

@@ -1,51 +1,65 @@
-#ifndef CAMERA_TS
-#define CAMERA_TS
+/// <reference path="../../idl/IScene3d.ts" />
+/// <reference path="../../idl/ICamera.ts" />
+/// <reference path="../../idl/IDisplayList.ts" />
+/// <reference path="../../idl/IViewport.ts" />
+/// <reference path="../../idl/IObjectArray.ts" />
 
-#include "common.ts"
-#include "IScene3d.ts"
-#include "ICamera.ts"
-#include "IViewport.ts"
-#include "../SceneObject.ts"
-#include "geometry/Frustum.ts"
-#include "util/ObjectArray.ts"
+/// <reference path="../../geometry/Frustum.ts" />
+/// <reference path="../../common.ts" />
+/// <reference path="../../math/math.ts" />
+/// <reference path="../../util/ObjectArray.ts" />
+
+/// <reference path="../SceneObject.ts" />
 
 module akra.scene.objects {
-	export enum ECameraFlags {
+	import Mat4 = math.Mat4;
+	import Mat3 = math.Mat3;
+	import Vec3 = math.Vec3;
+	import Vec4 = math.Vec4;
+
+	import __13 = math.__13;
+	import __23 = math.__23;
+	import __33 = math.__33;
+
+	enum ECameraFlags {
 		k_NewProjectionMatrix = 0,
 		k_NewProjectionParams
 	}
 
-	export class DLTechnique {
+	export class DLTechnique<T> {
 		list: IDisplayList;
 		camera: ICamera;
 
-		private _pPrevResult: IObjectArray = null;
+		private _pPrevResult: IObjectArray<T> = null;
 
-		constructor (pList: IDisplayList, pCamera: ICamera) {
+		constructor(pList: IDisplayList, pCamera: ICamera) {
 			this.list = pList;
 			this.camera = pCamera;
 		}
 
-		inline findObjects(pResultArray: IObjectArray, bQuickSearch: bool = false): IObjectArray {
-			var pResult: IObjectArray = this.list._findObjects(this.camera, pResultArray,
-					bQuickSearch && isDefAndNotNull(this._pPrevResult));
+		findObjects(pResultArray: IObjectArray<T>, bQuickSearch: boolean = false): IObjectArray<T> {
+			var pResult: IObjectArray<T> = this.list._findObjects(this.camera, pResultArray,
+				bQuickSearch && isDefAndNotNull(this._pPrevResult));
 
 			if (isNull(this._pPrevResult)) {
 				this._pPrevResult = pResult;
 			}
-			
+
 			return this._pPrevResult;
 		}
 	}
 
 	export class Camera extends SceneNode implements ICamera {
+		preRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(this);		
+		postRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(this);
+
 		/** camera type */
 		protected _eCameraType: ECameraTypes = ECameraTypes.PERSPECTIVE;
 		/** camera options */
 		protected _iCameraOptions: int = 0;
 		/** update projection bit flag */
 		protected _iUpdateProjectionFlags: int = 0;
-		
+
 		/** 
 		 * View matrix 
 		 */
@@ -87,59 +101,59 @@ module akra.scene.objects {
 
 		protected _pLastViewport: IViewport = null;
 
-		protected _pDLTechniques: DLTechnique[] = [];
-		protected _pDLResultStorage: IObjectArray[] = [];
+		protected _pDLTechniques: DLTechnique<ISceneObject>[] = [];
+		protected _pDLResultStorage: IObjectArray<ISceneObject>[] = [];
 
 		// protected _pPrevObjects: ISceneNode[] = null;
 		// protected _p
 
-		inline get viewMatrix(): IMat4 { return this._m4fView; }
-    	
-    	inline get projectionMatrix(): IMat4 { return this._m4fProj; }
-    	
-    	inline get projViewMatrix(): IMat4 { return this._m4fProjView; }
-    	
-    	inline get targetPos(): IVec3 { return this._v3fTargetPos; }
-    	
-    	inline get fov(): float { return this._fFOV; }
-    	inline set fov(fFOV: float) { 
-    		this._fFOV = fFOV; 
-    		TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
-    	}
+		get viewMatrix(): IMat4 { return this._m4fView; }
 
-    	inline get aspect(): float { return this._fAspect; }
-    	inline set aspect(fAspect: float) { 
-    		this._fAspect = fAspect; 
-    		TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
-    	}
+		get projectionMatrix(): IMat4 { return this._m4fProj; }
 
-    	inline get nearPlane(): float { return this._fNearPlane; }
-    	inline set nearPlane(fNearPlane: float) { 
-    		this._fNearPlane = fNearPlane; 
-    		TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
-    	}
-    	
-    	inline get farPlane(): float { return this._fFarPlane; }
-    	inline set farPlane(fFarPlane: float) { 
-    		this._fFarPlane = fFarPlane; 
-    		TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
-    	}
-    	
-    	inline get viewDistance(): float { return this._fFarPlane - this._fNearPlane; }
-    	inline get searchRect(): IRect3d { return this._pSearchRect; }
-    	inline get frustum(): IFrustum { return this._pFrustum; }
+		get projViewMatrix(): IMat4 { return this._m4fProjView; }
 
-		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.CAMERA) {
+		get targetPos(): IVec3 { return this._v3fTargetPos; }
+
+		get fov(): float { return this._fFOV; }
+		set fov(fFOV: float) {
+			this._fFOV = fFOV;
+			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+		}
+
+		get aspect(): float { return this._fAspect; }
+		set aspect(fAspect: float) {
+			this._fAspect = fAspect;
+			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+		}
+
+		get nearPlane(): float { return this._fNearPlane; }
+		set nearPlane(fNearPlane: float) {
+			this._fNearPlane = fNearPlane;
+			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+		}
+
+		get farPlane(): float { return this._fFarPlane; }
+		set farPlane(fFarPlane: float) {
+			this._fFarPlane = fFarPlane;
+			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+		}
+
+		get viewDistance(): float { return this._fFarPlane - this._fNearPlane; }
+		get searchRect(): IRect3d { return this._pSearchRect; }
+		get frustum(): IFrustum { return this._pFrustum; }
+
+		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.CAMERA) {
 			super(pScene, eType);
-		};
+		}
 
-		create(): bool {
-			var isOK: bool = super.create();
+		create(): boolean {
+			var isOK: boolean = super.create();
 
 			if (isOK) {
 				this._v3fTargetPos.set(
-					this._m4fLocalMatrix.data[__13], 
-					this._m4fLocalMatrix.data[__23], 
+					this._m4fLocalMatrix.data[__13],
+					this._m4fLocalMatrix.data[__23],
 					this._m4fLocalMatrix.data[__33]);
 				this._v3fTargetPos.negate();
 
@@ -148,12 +162,12 @@ module akra.scene.objects {
 
 				var pScene: IScene3d = this._pScene;
 
-				this.connect(pScene, SIGNAL(displayListAdded), SLOT(_addDisplayList));
-				this.connect(pScene, SIGNAL(displayListRemoved), SLOT(_removeDisplayList));
+				pScene.displayListAdded.connect(this, this._addDisplayList);
+				pScene.displayListRemoved.connect(this, this._removeDisplayList);
 
-				for (var i: uint = 0; i < pScene.totalDL; ++ i) {
+				for (var i: uint = 0; i < pScene.totalDL; ++i) {
 					var pList: IDisplayList = pScene.getDisplayList(i);
-					
+
 					if (!isNull(pList)) {
 						this._addDisplayList(pScene, pList, i);
 					}
@@ -163,25 +177,25 @@ module akra.scene.objects {
 			return isOK;
 		}
 
-		inline isProjParamsNew(): bool {
-			return TEST_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+		isProjParamsNew(): boolean {
+			return bf.testBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
 		recalcProjMatrix(): void {
-			switch(this._eCameraType){
+			switch (this._eCameraType) {
 				case ECameraTypes.PERSPECTIVE:
-					Mat4.perspective(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane,this._m4fProj);
+					Mat4.perspective(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane, this._m4fProj);
 					break;
 				case ECameraTypes.ORTHO:
 					Mat4.orthogonalProjection(this._fWidth, this._fHeight,
-					 this._fNearPlane, this._fFarPlane, this._m4fProj);
+						this._fNearPlane, this._fFarPlane, this._m4fProj);
 					break;
 				case ECameraTypes.OFFSET_ORTHO:
 					Mat4.orthogonalProjectionAsymmetric(this._fMinX, this._fMaxX,
-					 this._fMinY, this._fMaxY,this._fNearPlane, this._fFarPlane, this._m4fProj);
+						this._fMinY, this._fMaxY, this._fNearPlane, this._fFarPlane, this._m4fProj);
 					break;
 			}
-			CLEAR_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+			bf.clearBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
 		prepareForUpdate(): void {
@@ -195,166 +209,166 @@ module akra.scene.objects {
 			// }
 		}
 
-		display(iList: uint = /*DL_DEFAULT*/0): IObjectArray {
-			var pObjects: IObjectArray = this._pDLTechniques[iList].
-								findObjects(this._pDLResultStorage[iList], !this.isUpdated());
+		display(iList: uint = /*DL_DEFAULT*/0): IObjectArray<ISceneObject> {
+			var pObjects: IObjectArray<ISceneObject> = this._pDLTechniques[iList].
+				findObjects(this._pDLResultStorage[iList], !this.isUpdated());
 
 			return pObjects;
 		}
 
-		inline _getLastResults(iList: uint = 0): IObjectArray {
+		_getLastResults(iList: uint = 0): IObjectArray<ISceneObject> {
 			return this._pDLResultStorage[iList] || null;
 		}
 
 		setParameter(eParam: ECameraParameters, pValue: any): void {
-			if (eParam === ECameraParameters.CONST_ASPECT && <bool>pValue) {
-				SET_ALL(this._iCameraOptions, <int>eParam);
+			if (eParam === ECameraParameters.CONST_ASPECT && <boolean>pValue) {
+				bf.setAll(this._iCameraOptions, <int>eParam);
 			}
 		}
 
-		isConstantAspect(): bool {
-			return TEST_ANY(this._iCameraOptions, ECameraParameters.CONST_ASPECT);
+		isConstantAspect(): boolean {
+			return bf.testAny(this._iCameraOptions, ECameraParameters.CONST_ASPECT);
 		}
-    	
-    	setProjParams(fFOV: float, fAspect: float, fNearPlane: float, fFarPlane: float): void {
-    		 // Set attributes for the projection matrix
-		    this._fFOV = fFOV;
-		    this._fAspect = fAspect;
-		    this._fNearPlane = fNearPlane;
-		    this._fFarPlane = fFarPlane;
-		    this._eCameraType = ECameraTypes.PERSPECTIVE;
 
-		    // create the regular projection matrix
-		    Mat4.perspective(fFOV, fAspect, fNearPlane, fFarPlane, this._m4fProj);
+		setProjParams(fFOV: float, fAspect: float, fNearPlane: float, fFarPlane: float): void {
+			// Set attributes for the projection matrix
+			this._fFOV = fFOV;
+			this._fAspect = fAspect;
+			this._fNearPlane = fNearPlane;
+			this._fFarPlane = fFarPlane;
+			this._eCameraType = ECameraTypes.PERSPECTIVE;
 
-		    // create a unit-space matrix 
-		    // for sky box geometry.
-		    // this ensures that the 
-		    // near and far plane enclose 
-		    // the unit space around the camera
-		    // Mat4.perspective(fFOV, fAspect, 0.01, 2.0, this._m4fUnitProj);
+			// create the regular projection matrix
+			Mat4.perspective(fFOV, fAspect, fNearPlane, fFarPlane, this._m4fProj);
 
-		    TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
-    	}
+			// create a unit-space matrix 
+			// for sky box geometry.
+			// this ensures that the 
+			// near and far plane enclose 
+			// the unit space around the camera
+			// Mat4.perspective(fFOV, fAspect, 0.01, 2.0, this._m4fUnitProj);
 
-    	setOrthoParams(fWidth: float, fHeight: float, fNearPlane: float, fFarPlane: float): void {
-		    this._fWidth = fWidth;
-		    this._fHeight = fHeight;
-		    this._fNearPlane = fNearPlane;
-		    this._fFarPlane = fFarPlane;
-		    this._eCameraType = ECameraTypes.ORTHO;
+			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
+		}
 
-		    // create the regular projection matrix
-		    Mat4.orthogonalProjection(fWidth, fHeight, fNearPlane, fFarPlane, this._m4fProj);
+		setOrthoParams(fWidth: float, fHeight: float, fNearPlane: float, fFarPlane: float): void {
+			this._fWidth = fWidth;
+			this._fHeight = fHeight;
+			this._fNearPlane = fNearPlane;
+			this._fFarPlane = fFarPlane;
+			this._eCameraType = ECameraTypes.ORTHO;
 
-		    // create a unit-space matrix 
-		    // for sky box geometry.
-		    // this ensures that the 
-		    // near and far plane enclose 
-		    // the unit space around the camera
-		    // Mat4.matrixOrthoRH(fWidth, fHeight, 0.01, 2.0, this._m4fUnitProj);
-		    
-		    TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
-    	}
+			// create the regular projection matrix
+			Mat4.orthogonalProjection(fWidth, fHeight, fNearPlane, fFarPlane, this._m4fProj);
 
-    	setOffsetOrthoParams(fMinX: float, fMaxX: float, fMinY: float, fMaxY: float, fNearPlane: float, fFarPlane: float): void {
-    		this._fMinX = fMinX;
-		    this._fMaxX = fMaxX;
-		    this._fMinY = fMinY;
-		    this._fMaxY = fMaxY;
-		    this._fNearPlane = fNearPlane;
-		    this._fFarPlane = fFarPlane;
-		    this._eCameraType = ECameraTypes.OFFSET_ORTHO;
+			// create a unit-space matrix 
+			// for sky box geometry.
+			// this ensures that the 
+			// near and far plane enclose 
+			// the unit space around the camera
+			// Mat4.matrixOrthoRH(fWidth, fHeight, 0.01, 2.0, this._m4fUnitProj);
 
-		    // create the regular projection matrix
-		    Mat4.orthogonalProjectionAsymmetric(fMinX, fMaxX, fMinY, fMaxY,
-		                                fNearPlane, fFarPlane, this._m4fProj);
+			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
+		}
 
-		    // create a unit-space matrix 
-		    // for sky box geometry.
-		    // this ensures that the 
-		    // near and far plane enclose 
-		    // the unit space around the camera
-		    // Mat4.orthogonalProjectionorthogonalProjectionAsymmetric(fMinX, fMaxX, fMinY, fMaxY,
-		    //                             0.01, 2.0, this._m4fUnitProj);
+		setOffsetOrthoParams(fMinX: float, fMaxX: float, fMinY: float, fMaxY: float, fNearPlane: float, fFarPlane: float): void {
+			this._fMinX = fMinX;
+			this._fMaxX = fMaxX;
+			this._fMinY = fMinY;
+			this._fMaxY = fMaxY;
+			this._fNearPlane = fNearPlane;
+			this._fFarPlane = fFarPlane;
+			this._eCameraType = ECameraTypes.OFFSET_ORTHO;
 
-		    TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
-    	}
+			// create the regular projection matrix
+			Mat4.orthogonalProjectionAsymmetric(fMinX, fMaxX, fMinY, fMaxY,
+				fNearPlane, fFarPlane, this._m4fProj);
 
-    	private recalcMatrices(): void {
-    		this._v3fTargetPos.set(
-	        this._m4fLocalMatrix.data[__13], 
-	        this._m4fLocalMatrix.data[__23],
-	        this._m4fLocalMatrix.data[__33]);
+			// create a unit-space matrix 
+			// for sky box geometry.
+			// this ensures that the 
+			// near and far plane enclose 
+			// the unit space around the camera
+			// Mat4.orthogonalProjectionorthogonalProjectionAsymmetric(fMinX, fMaxX, fMinY, fMaxY,
+			//                             0.01, 2.0, this._m4fUnitProj);
 
-		    this._v3fTargetPos.negate();
+			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
+		}
 
-		    // the camera view matrix is the
-		    // inverse of the world matrix
-		    this._m4fView.set(this.inverseWorldMatrix);
-		    // sky boxes use the inverse 
-		    // world matrix of the camera (the
-		    // camera view matrix) without 
-		    // any translation information.
+		private recalcMatrices(): void {
+			this._v3fTargetPos.set(
+				this._m4fLocalMatrix.data[__13],
+				this._m4fLocalMatrix.data[__23],
+				this._m4fLocalMatrix.data[__33]);
 
-		    //this.m4fSkyBox.set(this.m4fView);
-		    // this.m4fSkyBox.data[__14] = 0.0;
-		    // this.m4fSkyBox.data[__24] = 0.0;
-		    // this.m4fSkyBox.data[__34] = 0.0;
+			this._v3fTargetPos.negate();
 
-		    // this is combined with the unit
-		    // space projection matrix to form
-		    // the sky box viewing matrix
-		    //this.m4fSkyBox.multiply(this.m4fUnitProj, this.m4fSkyBox);
+			// the camera view matrix is the
+			// inverse of the world matrix
+			this._m4fView.set(this.inverseWorldMatrix);
+			// sky boxes use the inverse 
+			// world matrix of the camera (the
+			// camera view matrix) without 
+			// any translation information.
+
+			//this.m4fSkyBox.set(this.m4fView);
+			// this.m4fSkyBox.data[__14] = 0.0;
+			// this.m4fSkyBox.data[__24] = 0.0;
+			// this.m4fSkyBox.data[__34] = 0.0;
+
+			// this is combined with the unit
+			// space projection matrix to form
+			// the sky box viewing matrix
+			//this.m4fSkyBox.multiply(this.m4fUnitProj, this.m4fSkyBox);
 
 
-		    // billboard objects use our world matrix
-		    // without translation
-		    // this.m4fBillboard.set(this.worldMatrix());
-		    // this.m4fBillboard.data[__14] = 0.0;
-		    // this.m4fBillboard.data[__24] = 0.0;
-		    // this.m4fBillboard.data[__34] = 0.0;
-    	}
+			// billboard objects use our world matrix
+			// without translation
+			// this.m4fBillboard.set(this.worldMatrix());
+			// this.m4fBillboard.data[__14] = 0.0;
+			// this.m4fBillboard.data[__24] = 0.0;
+			// this.m4fBillboard.data[__34] = 0.0;
+		}
 
-    	update(): bool {
-    		var isUpdated: bool = super.update();
+		update(): boolean {
+			var isUpdated: boolean = super.update();
 
-    		if (this.isProjParamsNew()) {
-    			this.recalcProjMatrix();
-    		}
+			if (this.isProjParamsNew()) {
+				this.recalcProjMatrix();
+			}
 
-		    if (this.isWorldMatrixNew() || TEST_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix)) {
-		    	this._pFrustum.extractFromMatrix(this._m4fProj, this._m4fWorldMatrix, this._pSearchRect);
-		    	// this._m4fRenderStageProj.set(this._m4fProj);
+			if (this.isWorldMatrixNew() || bf.testBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix)) {
+				this._pFrustum.extractFromMatrix(this._m4fProj, this._m4fWorldMatrix, this._pSearchRect);
+				// this._m4fRenderStageProj.set(this._m4fProj);
 
-		    	if (this.isWorldMatrixNew()){
-    				this.recalcMatrices();
-    			}
+				if (this.isWorldMatrixNew()) {
+					this.recalcMatrices();
+				}
 
-		        // our projView matrix is the projection 
-		        //matrix multiplied by the inverse of our world matrix  
-		        this._m4fProj.multiply(this._m4fView, this._m4fProjView);
-		        isUpdated = true;
-		    
-		        CLEAR_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
-		    }
+				// our projView matrix is the projection 
+				//matrix multiplied by the inverse of our world matrix  
+				this._m4fProj.multiply(this._m4fView, this._m4fProjView);
+				isUpdated = true;
 
-		    return isUpdated;
-    	}
+				bf.clearBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
+			}
+
+			return isUpdated;
+		}
 
 		// applyRenderStageBias(iStage: int): void {
-	 //    	var fZ_bias = iStage > 1 ? 0.001 : 0.0;
+		//    	var fZ_bias = iStage > 1 ? 0.001 : 0.0;
 
 		//     this._m4fRenderStageProj.set(this._m4fProj);
 		//     this._m4fRenderStageProjView.set(this._m4fProjView);
 
 		//     this._m4fRenderStageProj[__34] -= fZ_bias;
 		//     this._m4fRenderStageProjView[__34] -= fZ_bias;
-	 //    }
+		//    }
 
 
-    	_renderScene(pViewport: IViewport): void {
-    		//update the pixel display ratio
+		_renderScene(pViewport: IViewport): void {
+			//update the pixel display ratio
 			// if (this._eCameraType == ECameraTypes.PERSPECTIVE) {
 			// 	mPixelDisplayRatio = (2. * math.tan(this._fFOV * 0.5)) / pViewport.actualHeight;
 			// }
@@ -363,56 +377,56 @@ module akra.scene.objects {
 			// }
 
 			//notify prerender scene
-			this.preRenderScene();
+			this.preRenderScene.emit();
 
 
 			pViewport.update();
 
 			//notify postrender scene
-			this.postRenderScene();
-    	};
+			this.postRenderScene.emit();
+		}
 
 
-    	_keepLastViewport(pViewport: IViewport): void { this._pLastViewport = pViewport; }
-    	_getLastViewport(): IViewport { return this._pLastViewport; }
-    	_getNumRenderedFaces(): int { return 0; }
-    	_notifyRenderedFaces(nFaces: uint): void {}
+		_keepLastViewport(pViewport: IViewport): void { this._pLastViewport = pViewport; }
+		_getLastViewport(): IViewport { return this._pLastViewport; }
+		_getNumRenderedFaces(): int { return 0; }
+		_notifyRenderedFaces(nFaces: uint): void { }
 
-    	inline isActive(): bool {
-    		return this._pLastViewport && this._pLastViewport.getCamera() === this;
-    	}
+		isActive(): boolean {
+			return this._pLastViewport && this._pLastViewport.getCamera() === this;
+		}
 
-    	toString(isRecursive: bool = false, iDepth: int = 0): string {
-		    if (!isRecursive) {
-		        return "<camera" + (this._sName? " " + this._sName: "") + ">" + " height: " + this.worldPosition.y;
-		    }
+		toString(isRecursive: boolean = false, iDepth: int = 0): string {
+			if (!isRecursive) {
+				return "<camera" + (this._sName ? " " + this._sName : "") + ">" + " height: " + this.worldPosition.y;
+			}
 
-		    return super.toString(isRecursive, iDepth);
-    	};
+			return super.toString(isRecursive, iDepth);
+		}
 
-    	projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3 {
-			if(!isDef(v3fDestination)){
+		projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3 {
+			if (!isDef(v3fDestination)) {
 				v3fDestination = v3fPoint;
 			}
 
 			var m4fView: IMat4 = this.viewMatrix;
 			var m4fProj: IMat4 = this.projectionMatrix;
 
-			var v4fTmp: IVec4 = vec4(v3fPoint, 1.);
+			var v4fTmp: IVec4 = Vec4.temp(v3fPoint, 1.);
 
 			v4fTmp = m4fProj.multiplyVec4(m4fView.multiplyVec4(v4fTmp));
 
-			if(v4fTmp.w <= 0.){
+			if (v4fTmp.w <= 0.) {
 				return null;
 			}
 
-			v3fDestination.set((v4fTmp.scale(1./v4fTmp.w)).xyz);
+			v3fDestination.set((v4fTmp.scale(1. / v4fTmp.w)).xyz);
 
 			var fX: float = math.abs(v3fDestination.x);
 			var fY: float = math.abs(v3fDestination.y);
 			var fZ: float = math.abs(v3fDestination.z);
 
-			if(fX > 1 || fY > 1 || fZ > 1){
+			if (fX > 1 || fY > 1 || fZ > 1) {
 				return null;
 			}
 
@@ -420,32 +434,28 @@ module akra.scene.objects {
 		}
 
 
-		getDepthRange(): IDepthRange{
+		getDepthRange(): IDepthRange {
 			var pDepthRange: IDepthRange = this._pLastViewport.getDepthRange();
 
 			var zNear: float = this._m4fProj.unprojZ(pDepthRange.min);
 			var zFar: float = this._m4fProj.unprojZ(pDepthRange.max);
 
-			return <IDepthRange>{min: zNear, max: zFar};
-		};
+			return <IDepthRange>{ min: zNear, max: zFar }
+		}
 
-    	_addDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
-    		this._pDLTechniques[index] = new DLTechnique(pList, this);
-    		this._pDLResultStorage[index] = new util.ObjectArray();
-    	};
+		_addDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
+			this._pDLTechniques[index] = new DLTechnique(pList, this);
+			this._pDLResultStorage[index] = new util.ObjectArray();
+		}
 
-    	_removeDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
-    		this._pDLTechniques[index] = null;
-    		this._pDLResultStorage[index] = null;
-    	};
+		_removeDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
+			this._pDLTechniques[index] = null;
+			this._pDLResultStorage[index] = null;
+		}
 
-		BROADCAST(preRenderScene, VOID);
-		BROADCAST(postRenderScene, VOID);
-	}
-
-	export inline function isCamera(pNode: IEntity): bool {
-		return pNode.type >= EEntityTypes.CAMERA && pNode.type <= EEntityTypes.SHADOW_CASTER;
+		static isCamera(pNode: IEntity): boolean {
+			return pNode.type >= EEntityTypes.CAMERA && pNode.type <= EEntityTypes.SHADOW_CASTER;
+		}
 	}
 }
 
-#endif

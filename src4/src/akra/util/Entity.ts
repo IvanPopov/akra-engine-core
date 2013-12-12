@@ -22,38 +22,38 @@ module akra.util {
 		k_SiblingsUpdated = 0x04
 	}
 
-	export class Entity<T extends Entity<T>> extends ReferenceCounter implements IEntity<T> {
+	export class Entity extends ReferenceCounter implements IEntity {
 		guid: uint = guid();
 
-		attached: ISignal<{ (pEntity: T): void; }> = new Signal(this);
-		detached: ISignal<{ (pEntity: T): void; }> = new Signal(this);
-		childAdded: ISignal<{ (pEntity: T, pChild: T): void; }> = new Signal(this);
-		childRemoved: ISignal<{ (pEntity: T, pChild: T): void; }> = new Signal(this);
+		attached: ISignal<{ (pEntity: IEntity): void; }> = new Signal(this);
+		detached: ISignal<{ (pEntity: IEntity): void; }> = new Signal(this);
+		childAdded: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }> = new Signal(this);
+		childRemoved: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }> = new Signal(this);
 
 
 		protected _sName: string = null;
-		protected _pParent: T = null;
-		protected _pSibling: T = null;
-		protected _pChild: T = null;
+		protected _pParent: IEntity = null;
+		protected _pSibling: IEntity = null;
+		protected _pChild: IEntity = null;
 		protected _eType: EEntityTypes = EEntityTypes.UNKNOWN;
 		protected _iStateFlags: int = 0;
 
 		get name(): string { return this._sName; }
 		set name(sName: string) { this._sName = sName; }
 
-		get parent(): T { return this._pParent; }
-		set parent(pParent: T) { this.attachToParent(pParent); }
+		get parent(): IEntity { return this._pParent; }
+		set parent(pParent: IEntity) { this.attachToParent(pParent); }
 
-		get sibling(): T { return this._pSibling; }
-		set sibling(pSibling: T) { this._pSibling = pSibling; }
+		get sibling(): IEntity { return this._pSibling; }
+		set sibling(pSibling: IEntity) { this._pSibling = pSibling; }
 
-		get child(): T { return this._pChild; }
-		set child(pChild: T) { this._pChild = pChild; }
+		get child(): IEntity { return this._pChild; }
+		set child(pChild: IEntity) { this._pChild = pChild; }
 
 		get type(): EEntityTypes { return this._eType; }
 		
-		get rightSibling(): T {
-			var pSibling: T = this.sibling;
+		get rightSibling(): IEntity {
+			var pSibling: IEntity = this.sibling;
 
 			if (pSibling) {
 				while (pSibling.sibling) {
@@ -73,12 +73,12 @@ module akra.util {
 
 		get depth(): int {
 			var iDepth: int = -1;
-			for (var pEntity: T = this; pEntity; pEntity = pEntity.parent, ++iDepth) { };
+			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++iDepth) { };
 			return iDepth;
 		}
 		
-		get root(): T {
-			for (var pEntity: T = this, iDepth: int = -1; pEntity.parent; pEntity = pEntity.parent, ++iDepth) { };
+		get root(): IEntity {
+			for (var pEntity: IEntity = this, iDepth: int = -1; pEntity.parent; pEntity = pEntity.parent, ++iDepth) { };
 			return pEntity;
 		}
 
@@ -109,8 +109,8 @@ module akra.util {
 			debug.assert(this._pChild == null, "Failure Destroying Node");
 		}
 
-		findEntity(sName: string): T {
-			var pEntity: T = null;
+		findEntity(sName: string): IEntity {
+			var pEntity: IEntity = null;
 
 			if (this._sName === sName) {
 				return this;
@@ -127,7 +127,7 @@ module akra.util {
 			return pEntity;
 		}
 
-		explore(fn: IExplorerFunc<T>): void {
+		explore(fn: IExplorerFunc): void {
 			if (fn(this) === false) {
 				return;
 			}
@@ -142,8 +142,8 @@ module akra.util {
 		}
 
 
-		childOf(pParent: T): boolean {
-			for (var pEntity: T = <T>this; pEntity; pEntity = pEntity.parent) {
+		childOf(pParent: IEntity): boolean {
+			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent) {
 				if (pEntity.parent === pParent) {
 					return true;
 				}
@@ -152,9 +152,9 @@ module akra.util {
 			return false;
 		}
 		
-		children(): T[] {
-			var pChildren: T[] = [];
-			var pChild: T = this.child;
+		children(): IEntity[] {
+			var pChildren: IEntity[] = [];
+			var pChild: IEntity = this.child;
 
 			while (!isNull(pChild)) {
 				pChildren.push(pChild);
@@ -164,8 +164,8 @@ module akra.util {
 			return pChildren;
 		}
 
-		childAt(i: int): T {
-			var pChild: T = this.child;
+		childAt(i: int): IEntity {
+			var pChild: IEntity = this.child;
 			var n: int = 0;
 
 			while (!isNull(pChild)) {
@@ -201,7 +201,7 @@ module akra.util {
 		
 		descCount(): uint {
 			var n: uint = this.childCount();
-			var pChild: T = this.child;
+			var pChild: IEntity = this.child;
 
 			while (!isNull(pChild)) {
 				n += pChild.descCount();
@@ -216,7 +216,7 @@ module akra.util {
 		 */
 		childCount(): uint {
 			var iCount: uint = 0;
-			var pChild: T = this.child;
+			var pChild: IEntity = this.child;
 
 			while (!isNull(pChild)) {
 				iCount++;
@@ -301,7 +301,7 @@ module akra.util {
 		/**
 		 * Checks to see if the provided item is a sibling of this object
 		 */
-		isASibling(pSibling: T): boolean {
+		isASibling(pSibling: IEntity): boolean {
 			if (!pSibling) {
 				return false;
 			}
@@ -318,7 +318,7 @@ module akra.util {
 		}
 
 		/** Checks to see if the provided item is a child of this object. (one branch depth only) */
-		isAChild(pChild: T): boolean {
+		isAChild(pChild: IEntity): boolean {
 			if (!pChild) {
 				return (false);
 			}
@@ -339,7 +339,7 @@ module akra.util {
 		 * is TRUE, the check is done recursivly through all siblings and children. SearchEntireTree
 		 * is FALSE by default.
 		 */
-		isInFamily(pEntity: T, bSearchEntireTree?: boolean): boolean {
+		isInFamily(pEntity: IEntity, bSearchEntireTree?: boolean): boolean {
 			if (!pEntity) {
 				return (false);
 			}
@@ -374,7 +374,7 @@ module akra.util {
 		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
 		 * ModelSpace object is removed from any parent it may already belong to.
 		 */
-		addSibling(pSibling: T): T {
+		addSibling(pSibling: IEntity): IEntity {
 			if (pSibling) {
 				// replace objects current sibling pointer with this new one
 				pSibling.sibling = this._pSibling;
@@ -388,7 +388,7 @@ module akra.util {
 		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
 		 * ModelSpace object is removed from any parent it may already belong to.
 		 */
-		addChild(pChild: T): T {
+		addChild(pChild: IEntity): IEntity {
 			if (pChild) {
 				// Replace the new child's sibling pointer with our old first child.
 				pChild.sibling = this._pChild;
@@ -404,14 +404,14 @@ module akra.util {
 		 * Removes a specified child object from this parent object. If the child is not the
 		 * FirstChild of this object, all of the Children are searched to find the object to remove.
 		 */
-		removeChild(pChild: T): T {
+		removeChild(pChild: IEntity): IEntity {
 			if (this._pChild && pChild) {
 				if (this._pChild == pChild) {
 					this._pChild = pChild.sibling;
 					pChild.sibling = null;
 				}
 				else {
-					var pTempNode: T = this._pChild;
+					var pTempNode: IEntity = this._pChild;
 					// keep searching until we find the node who's sibling is our target
 					// or we reach the end of the sibling chain
 					while (pTempNode && (pTempNode.sibling != pChild)) {
@@ -442,9 +442,9 @@ module akra.util {
 		}
 		
 		/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
-		attachToParent(pParent: T): boolean {
+		attachToParent(pParent: IEntity): boolean {
 
-			var pParentPrev: T = this.parent;
+			var pParentPrev: IEntity = this.parent;
 
 			if (pParent != this._pParent) {
 
@@ -461,6 +461,8 @@ module akra.util {
 					return this.attachToParent(pParentPrev);
 				}
 			}
+
+			var x: IEntity = null;
 
 			return false;
 		}
@@ -489,17 +491,17 @@ module akra.util {
 		promoteChildren(): void {
 			// Do I have any children to promote?
 			while (!isNull(this._pChild)) {
-				var pNextSibling: T = this._pChild.sibling;
+				var pNextSibling: IEntity = this._pChild.sibling;
 				this._pChild.attachToParent(this._pParent);
 				this._pChild = pNextSibling;
 			}
 		}
 
-		relocateChildren(pParent: T): void {
+		relocateChildren(pParent: IEntity): void {
 			if (pParent != this) {
 				// Do I have any children to relocate?
 				while (!isNull(this._pChild)) {
-					var pNextSibling: T = this._pChild.sibling;
+					var pNextSibling: IEntity = this._pChild.sibling;
 					this._pChild.attachToParent(pParent);
 					this._pChild = pNextSibling;
 				}
@@ -514,7 +516,7 @@ module akra.util {
 					return '<entity' + (this._sName ? ' ' + this._sName : "") + '>';
 				}
 
-				var pChild: T = this.child;
+				var pChild: IEntity = this.child;
 				var s: string = "";
 
 				for (var i = 0; i < iDepth; ++i) {

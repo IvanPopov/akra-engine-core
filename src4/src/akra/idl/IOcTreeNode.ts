@@ -1,12 +1,10 @@
-
-
 /// <reference path="IOcTree.ts" />
 /// <reference path="ISceneObject.ts" />
 /// <reference path="IRect3d.ts" />
 /// <reference path="IObjectList.ts" />
 
 module akra {
-	export interface IOcTreeNode {
+	export interface IOcTreeNode extends IUnique {
 		/** Parent tree */
 		tree: IOcTree;
 		/** Level of node */
@@ -20,7 +18,7 @@ module akra {
 		/** Index in array of nodes in tree */
 		index: int;
 		/** First SceneObject in this node */
-		membersList: IObjectList;
+		membersList: IObjectList<ISceneObject>;
 		/** Rect of node in real world */
 		worldBounds: IRect3d;
 		/** Link ro next node in tree */
@@ -29,7 +27,7 @@ module akra {
 		rearNodeLink: IOcTreeNode;
 	
 		//eight links to possible children nodes;		
-		childrenList: IObjectList[];
+		childrenList: IObjectList<IOcTreeNode>[];
 	
 		addMember(pMember: ISceneObject): void;
 		removeMember(pMember: ISceneObject): void;

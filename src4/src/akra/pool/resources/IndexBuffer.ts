@@ -31,7 +31,7 @@ module akra.core.pool.resources {
 		//create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): boolean {
 			super.create(0, iFlags || 0);
 
-			if (TEST_ANY(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
+			if (bf.testAny(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
 				this._pBackupCopy = new MemoryBuffer();
 				this._pBackupCopy.create(iByteSize);
 				this._pBackupCopy.writeData(pData, 0, iByteSize);

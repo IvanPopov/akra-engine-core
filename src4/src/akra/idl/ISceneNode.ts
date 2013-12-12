@@ -5,10 +5,6 @@
 /// <reference path="IAnimationController.ts" />
 
 module akra {
-	export interface ISceneNodeMap {
-		[index: string]: ISceneNode;
-	}
-	
 	export enum ESceneNodeFlags {
 		FROZEN_PARENT,
 		FROZEN_SELF,
@@ -31,7 +27,7 @@ module akra {
 		isHidden(): boolean;
 		hide(value?: boolean): void;
 	
-		signal frozen(value: boolean): void;
-		signal hidden(value: boolean): void;
+		frozen: ISignal<{ (pNode: ISceneNode, bValue: boolean): void; }>;
+		hidden: ISignal <{ (pNode: ISceneNode, bValue: boolean): void ; }>;
 	}
 }

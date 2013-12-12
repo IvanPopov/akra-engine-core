@@ -1,4 +1,6 @@
 /// <reference path="idl/IEventProvider.ts" />
+/// <reference path="common.ts" />
+
 
 module akra {
 
@@ -7,24 +9,25 @@ module akra {
 		private _nBroadcastListenersCount: uint = 0;
 		private _pUnicastListener: IListener<T> = null;
 		private _pSender: S = null;
-		private _eType: EEventType = EEventType.BROADCAST;
+		private _eType: EEventTypes = EEventTypes.BROADCAST;
 
 		private static _pEmptyListenersList: IListener<T>[] = [];
 		private static _nEmptyListenersCount: uint = 0;
 
-		constructor(pSender: S, eType: EEventType = EEventType.BROADCAST) {
+		constructor(pSender: S, eType: EEventTypes = EEventTypes.BROADCAST) {
 			this._pSender = pSender;
 			this._eType = eType;
 
-			if (this._eType === EEventType.BROADCAST) {
+			if (this._eType === EEventTypes.BROADCAST) {
 				this._pBroadcastListeners = [];
 			}
 		}
 
-		public connect(fnCallback: T, eType?: EEventType): boolean;
-		public connect(fnCallback: string, eType?: EEventType): boolean;
-		public connect(pReciever: any, fnCallback: T, eType?: EEventType): boolean;
-		public connect(pReciever: any, fnCallback: string, eType?: EEventType): boolean;
+		public connect(pSignal: ISignal<any>): boolean;
+		public connect(fnCallback: T, eType?: EEventTypes): boolean;
+		public connect(fnCallback: string, eType?: EEventTypes): boolean;
+		public connect(pReciever: any, fnCallback: T, eType?: EEventTypes): boolean;
+		public connect(pReciever: any, fnCallback: string, eType?: EEventTypes): boolean;
 		public connect(): boolean {
 			var pListener: IListener<T> = this.fromParamsToListener(arguments);
 
@@ -32,7 +35,7 @@ module akra {
 				return false;
 			}
 
-			if (pListener.type === EEventType.UNICAST) {
+			if (pListener.type === EEventTypes.UNICAST) {
 				if (this._pUnicastListener !== null) {
 					this.clearListener(pListener);
 					return false;
@@ -52,10 +55,11 @@ module akra {
 			return true;
 		}
 
-		public disconnect(fnCallback: T, eType?: EEventType): boolean;
-		public disconnect(fnCallback: string, eType?: EEventType): boolean;
-		public disconnect(pReciever: any, fnCallback: T, eType?: EEventType): boolean;
-		public disconnect(pReciever: any, fnCallback: string, eType?: EEventType): boolean;
+		public disconnect(pSignal: ISignal<any>): boolean;
+		public disconnect(fnCallback: T, eType?: EEventTypes): boolean;
+		public disconnect(fnCallback: string, eType?: EEventTypes): boolean;
+		public disconnect(pReciever: any, fnCallback: T, eType?: EEventTypes): boolean;
+		public disconnect(pReciever: any, fnCallback: string, eType?: EEventTypes): boolean;
 		public disconnect(): boolean {
 			var pTmpListener: IListener<T> = this.fromParamsToListener(arguments);
 			var bResult: boolean = false;
@@ -64,7 +68,7 @@ module akra {
 				return false;
 			}
 
-			if (pTmpListener.type === EEventType.UNICAST) {
+			if (pTmpListener.type === EEventTypes.UNICAST) {
 				if (pTmpListener.reciever === this._pUnicastListener.reciever &&
 					pTmpListener.callback === this._pUnicastListener.callback) {
 					this.clearListener(this._pUnicastListener);
@@ -88,9 +92,9 @@ module akra {
 		public emit(...pArgs: any[]);
 		public emit() {
 			var pListener: IListener<Function> = null;
-			var nListeners: uint = this._eType === EEventType.BROADCAST ? this._nBroadcastListenersCount : 1;
+			var nListeners: uint = this._eType === EEventTypes.BROADCAST ? this._nBroadcastListenersCount : 1;
 			for (var i: int = 0; i < nListeners; i++) {
-				if (this._eType === EEventType.UNICAST) {
+				if (this._eType === EEventTypes.UNICAST) {
 					pListener = this._pUnicastListener;
 				}
 				else {
@@ -180,14 +184,22 @@ module akra {
 		private fromParamsToListener(pArguments: IArguments): IListener<T> {
 			var pReciever: any = null;
 			var fnCallback: any = null;
+			var pSignal: ISignal<T> = null;
 			var eType: any = this._eType;
 
 			switch (pArguments.length) {
 				case 1:
-					fnCallback = pArguments[0];
+					if (isFunction(pArguments[0])) {
+						fnCallback = pArguments[0];
+					}
+					else {
+						pSignal = pArguments[0];
+						pReciever = pSignal.getSender();
+						fnCallback = pSignal.emit;
+					}
 					break;
 				case 2:
-					if (typeof (pArguments[1]) === "number") {
+					if (isNumber(pArguments[1])) {
 						fnCallback = pArguments[0];
 						eType = pArguments[1];
 					}
@@ -264,6 +276,14 @@ module akra {
 
 			Signal._pEmptyListenersList[Signal._nEmptyListenersCount++] = pListener;
 		}
+
+		getSender(): S {
+			return this._pSender;
+		}
+
+		getType(): EEventTypes {
+			return this._eType;
+		}
 	}
 }
 
@@ -303,7 +323,7 @@ module akra {
 
 //class Test {
 //    signal1: ISignal<{ (sender: Test, msg: string) }, Test> = new Signal(this);
-//    signal2: ISignal<{ (sender: Test, msg: string) }, Test> = new Signal(this, EEventType.UNICAST);
+//    signal2: ISignal<{ (sender: Test, msg: string) }, Test> = new Signal(this, EEventTypes.UNICAST);
 
 //    constructor(public id: uint = 0) { }
 
@@ -340,14 +360,14 @@ module akra {
 
 //startTest("(CONNECT TO BROADCAST SIGNAL)");
 //passTest(t1.signal1.connect(t2, t2.test1), true);
-//passTest(t1.signal1.connect(t2, t2.test2, EEventType.UNICAST), false);
+//passTest(t1.signal1.connect(t2, t2.test2, EEventTypes.UNICAST), false);
 //passTest(t1.signal1.connect(t2, t2.test2), true);
 //passTest(t1.signal1.connect(t2, "test3"), true);
 //passTest(t1.signal1.connect(t2, t2.test3), false);
 //endTest();
 
 //startTest("(CONNECT TO UNICAST SIGNAL)");
-//passTest(t1.signal2.connect(t2, t2.test1, EEventType.BROADCAST), false);
+//passTest(t1.signal2.connect(t2, t2.test1, EEventTypes.BROADCAST), false);
 //passTest(t1.signal2.connect(t2, "test2"), true);
 //passTest(t1.signal2.connect(t2, t2.test1), false);
 //endTest();

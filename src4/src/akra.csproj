@@ -263,7 +263,6 @@
     <None Include="akra\idl\IObjectSortCollection.ts" />
     <None Include="akra\idl\IOcTree.ts" />
     <None Include="akra\idl\IOcTreeNode.ts" />
-    <None Include="akra\idl\IOcTreeRect.ts" />
     <None Include="akra\idl\IOffset.ts" />
     <None Include="akra\idl\IOmniLight.ts" />
     <None Include="akra\idl\IPacker.ts" />
@@ -489,7 +488,29 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
- 
+  <ItemGroup>
+    <None Include="akra\scene\DisplayList.ts" />
+    <None Include="akra\scene\Joint.ts" />
+    <None Include="akra\scene\LightGraph.ts" />
+    <None Include="akra\scene\OcTree.ts" />
+    <None Include="akra\scene\OcTreeNode.ts" />
+    <None Include="akra\scene\Scene3d.ts" />
+    <None Include="akra\scene\SceneManager.ts" />
+    <None Include="akra\scene\SceneModel.ts" />
+    <None Include="akra\scene\SceneNode.ts" />
+    <None Include="akra\scene\SceneObject.ts" />
+    <None Include="akra\scene\Sprite.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="akra\data\BufferMap.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="akra\data\RenderData.ts" />
+    <TypeScriptCompile Include="akra\data\RenderDataCollection.ts" />
+    <None Include="akra\render\RenderableObject.ts" />
+    <None Include="akra\render\RenderTarget.ts" />
+    <None Include="akra\render\RenderTechnique.ts" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

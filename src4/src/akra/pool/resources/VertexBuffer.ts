@@ -237,13 +237,12 @@ module akra.pool.resources {
 			return pVertexData;
 		}
 
-	}
+		static isVBO(pBuffer: IVertexBuffer): boolean {
+			return pBuffer.type === EVertexBufferTypes.VBO;
+		}
 
-	export  function isVBO(pBuffer: IVertexBuffer): boolean {
-		return pBuffer.type === EVertexBufferTypes.VBO;
-	}
-
-	export  function isTBO(pBuffer: IVertexBuffer): boolean {
-		return pBuffer.type === EVertexBufferTypes.TBO;
+		static isTBO(pBuffer: IVertexBuffer): boolean {
+			return pBuffer.type === EVertexBufferTypes.TBO;
+		}
 	}
 }

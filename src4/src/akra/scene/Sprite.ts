@@ -1,14 +1,12 @@
-#ifndef SPRITE_TS
-#define SPRITE_TS
+/// <reference path="../idl/ISprite.ts" />
+/// <reference path="../idl/ISpriteManager.ts" />
 
-#include "ISprite.ts"
-#include "ISpriteManager.ts"
-#include "SceneObject.ts"
+/// <reference path="SceneObject.ts" />
+
+/// <reference path="render/RenderableObject.ts" />
 
 module akra.scene {
 	export class SpriteManager implements ISpriteManager {
-
-
 		private _pEngine: IEngine;
 		private _pSprites: ISprite[] = [];
 		private _pDataFactory: IRenderDataCollection;
@@ -46,7 +44,7 @@ module akra.scene {
 			
 			pRenderable._setup(pRenderer);
 
-			var iGuid: int = this.getGuid();
+			var iGuid: uint = this.guid;
 			var pRenderMethod: IRenderMethod = pRenderable.renderMethod;
 			var pEffect: IEffect = pRenderMethod.effect;
 
@@ -118,10 +116,7 @@ module akra.scene {
 
 		getRenderable(): IRenderableObject {
 			return this._pRenderable;
-		}
-
-		
+		}		
 	}
 }
 
-#endif

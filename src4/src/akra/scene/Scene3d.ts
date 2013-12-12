@@ -1,36 +1,48 @@
-#ifndef SCENE3D_TS
-#define SCENE3D_TS
+/// <reference path="../idl/IModel.ts" />
+/// <reference path="../idl/IScene3d.ts" />
+/// <reference path="../idl/ISceneManager.ts" />
+/// <reference path="../idl/IDisplayList.ts" />
+/// <reference path="../idl/ILightGraph.ts" />
+/// <reference path="../idl/ILightPoint.ts" />
+/// <reference path="../idl/IOcTree.ts" />
 
-#include "IModel.ts"
-#include "IScene3d.ts"
-#include "ISceneManager.ts"
-#include "SceneNode.ts"
-#include "events/events.ts"
-#include "objects/ModelEntry.ts"
-#include "objects/Camera.ts"
-#include "IDisplayList.ts"
-#include "OcTree.ts"
-#include "LightGraph.ts"
+/// <reference path="../events.ts" />
+/// <reference path="../debug.ts" />
 
-#include "Sprite.ts"
-#include "SceneModel.ts"
-#include "Joint.ts"
+/// <reference path="Joint.ts" />
+/// <reference path="SceneNode.ts" />
+/// <reference path="SceneObject.ts" />
+/// <reference path="SceneModel.ts" />
+/// <reference path="OcTree.ts" />
+/// <reference path="LightGraph.ts" />
+/// <reference path="Sprite.ts" />
+/// <reference path="objects/ModelEntry.ts" />
+/// <reference path="objects/Camera.ts" />
 
-#include "terrain/Terrain.ts"
-#include "terrain/TerrainROAM.ts"
-#include "terrain/TerrainSection.ts"
-#include "terrain/TerrainSectionROAM.ts"
+/// <reference path="../terrain/Terrain.ts" />
+/// <reference path="../terrain/TerrainROAM.ts" />
+/// <reference path="../terrain/TerrainSection.ts" />
+/// <reference path="../terrain/TerrainSectionROAM.ts" />
 
-#include "light/ProjectLight.ts"
-#include "light/OmniLight.ts"
-#include "light/SunLight.ts"
-#include "light/ShadowCaster.ts"
+/// <reference path="light/ProjectLight.ts" />
+/// <reference path="light/OmniLight.ts" />
+/// <reference path="light/SunLight.ts" />
+/// <reference path="light/ShadowCaster.ts" />
 
-#define DEFAULT_DLIST DEFAULT_NAME
 
 module akra.scene {
 
 	export class Scene3d implements IScene3d {
+		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList, iIndex: int): void; }> = new Signal(this);
+		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList, iIndex: int): void; }> = new Signal(this);
+
+		beforeUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(this);
+		postUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(this);
+		preUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(this);
+
+		nodeAttachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }> = new Signal(this);
+		nodeDetachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }> = new Signal(this);
+
 		protected _sName: string;
 		protected _pRootNode: ISceneNode;
 		protected _pSceneManager: ISceneManager;
@@ -66,12 +78,12 @@ module akra.scene {
 			pOctree.create(new geometry.Rect3d(1024, 1024, 1024), 5, 100);
 
 			var i: int = this.addDisplayList(pOctree);
-			debug.assert(i == DL_DEFAULT, "invalid default list index");
+			debug.assert(i == Scene3d.DL_DEFAULT, "invalid default list index");
 
 			var pLightGraph: ILightGraph = new scene.LightGraph();
 
 			i = this.addDisplayList(pLightGraph);
-			debug.assert(i == DL_LIGHTING, "invalid default list index");
+			debug.assert(i == Scene3d.DL_LIGHTING, "invalid default list index");
 
 
 			// this._pNodeList = [];
@@ -103,14 +115,14 @@ module akra.scene {
 
 		recursivePreUpdate(): void {
 			this._isUpdated = false;
-			this.preUpdate();
+			this.preUpdate.emit();
 			this._pRootNode.recursivePreUpdate();
 		}
 
 		recursiveUpdate(): void {
-			this.beforeUpdate();
+			this.beforeUpdate.emit();
 			this._isUpdated = this._pRootNode.recursiveUpdate();
-			this.postUpdate();
+			this.postUpdate.emit();
 		}
 
 		updateCamera(): boolean {
@@ -121,7 +133,6 @@ module akra.scene {
 			return false;
 		}
 
-#ifdef DEBUG
 
 		createObject(sName: string = null): ISceneObject {
 			var pNode: ISceneNode = new SceneObject(this);
@@ -134,7 +145,6 @@ module akra.scene {
 			return <ISceneObject>this.setupNode(pNode, sName);
 		}
 		
-#endif
 
 		createNode(sName: string = null): ISceneNode {
 			var pNode: ISceneNode = new SceneNode(this);
@@ -167,7 +177,7 @@ module akra.scene {
 			}
 			
 			return <ICamera>this.setupNode(pCamera, sName);
-		};
+		}
 
 		createLightPoint(eType: ELightTypes = ELightTypes.UNKNOWN, isShadowCaster: boolean = true,
 						 iMaxShadowResolution: uint = 256, sName: string = null): ILightPoint {
@@ -194,7 +204,7 @@ module akra.scene {
 			}
 
 			return <ILightPoint>this.setupNode(pLight, sName);
-		};
+		}
 
 
 		createSprite(sName: string = null): ISprite {
@@ -206,7 +216,7 @@ module akra.scene {
 			}
 
 			return <ISprite>this.setupNode(pSprite, sName);
-		};
+		}
 
 		createJoint(sName: string = null): IJoint {
 			return <IJoint>this.setupNode(new Joint(this), sName);
@@ -218,7 +228,7 @@ module akra.scene {
 
 		createText3d(sName: string = null): IText3d {
 			return null;
-		};
+		}
 
 		createTerrain(sName?: string): ITerrain {
 			var pTerrain: ITerrain = new terrain.Terrain(this);
@@ -251,7 +261,7 @@ module akra.scene {
 			}
 
 			return <ITerrainSection>this.setupNode(pNode, sName);
-		};
+		}
 
 		createTerrainSectionROAM(sName?: string): ITerrainSectionROAM {
 			var pNode: ISceneNode = new terrain.TerrainSectionROAM(this);
@@ -262,7 +272,7 @@ module akra.scene {
 			}
 
 			return <ITerrainSectionROAM>this.setupNode(pNode, sName);
-		};
+		}
 
 		_createShadowCaster(pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X, sName: string = null){
 			var pShadowCaster: IShadowCaster = new light.ShadowCaster(pLightPoint, iFace);
@@ -273,16 +283,7 @@ module akra.scene {
 			}
 			
 			return <IShadowCaster>this.setupNode(pShadowCaster, sName);
-		};
-
-
-		//  getAllNodes(): ISceneNode[] {
-		// 	return this._pNodeList;
-		// }
-
-		//  getAllObjects(): ISceneObject[] {
-		// 	return this._pObjectList;
-		// }
+		}
 
 		 getDisplayList(i: uint): IDisplayList {
 			debug.assert(isDefAndNotNull(this._pDisplayLists[i]), "display list not defined");
@@ -299,15 +300,6 @@ module akra.scene {
 			return -1;
 		}
 
-
-		// _findObjects(pCamera: ICamera, csList: string = null): ISceneObject[] {
-		// 	var pList: IDisplayList = this._pDisplayListMap[csList || DEFAULT_DLIST];
-
-		// 	debug.assert(!isNull(pList), "display list not founded.");
-
-		// 	return pList.findObjects(pCamera);
-		// }
-
 		_render(pCamera: ICamera, pViewport: IViewport): void {
 			
 		}
@@ -315,8 +307,8 @@ module akra.scene {
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {
 			pNode.name = sName;
 
-			this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
-			this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+			pNode.attached.connect(this.nodeAttachment);
+			pNode.detached.connect(this.nodeDetachment);
 
 			return pNode;
 		}
@@ -329,11 +321,11 @@ module akra.scene {
 					pLists[i] = null;
 					this._pDisplayListsCount --;
 					
-					this.displayListRemoved(pLists[i], i);
+					this.displayListRemoved.emit(pLists[i], i);
 
 					return true;
 				}
-			};
+			}
 
 			return false;
 		}
@@ -352,7 +344,7 @@ module akra.scene {
 					iIndex = i;
 					break;
 				}
-			};
+			}
 
 			if (iIndex == this._pDisplayLists.length) {
 				this._pDisplayLists.push(pList);
@@ -360,57 +352,14 @@ module akra.scene {
 
 			pList._setup(this);
 
-			this.displayListAdded(pList, iIndex);
+			this.displayListAdded.emit(pList, iIndex);
 
 			this._pDisplayListsCount ++;
 
 			return iIndex;
-		}
+		 }
 
-		CREATE_EVENT_TABLE(Scene3d);
-
-		nodeAttachment (pNode: ISceneNode): void {
-			// this._pNodeList.push(pNode);
-
-			// if (SceneObject.isSceneObject(pNode)) {
-			// 	this._pObjectList.push(<ISceneObject>pNode);
-			// }
-			// console.warn("------>here");
-			EMIT_BROADCAST(nodeAttachment, _CALL(pNode));
-		}
-
-		nodeDetachment (pNode: ISceneNode): void {
-
-			// for (var i: int = 0; i < this._pNodeList.length; ++ i) {
-			// 	if (pNode == this._pNodeList[i]) {
-			// 		this._pNodeList.splice(i, 1);
-			// 		break;
-			// 	}
-			// };
-
-			// if (SceneObject.isSceneObject(pNode)) {
-			// 	for (var i: int = 0; i < this._pObjectList.length; ++ i) {
-			// 		if (<ISceneObject>pNode == this._pObjectList[i]) {
-			// 			this._pObjectList.splice(i, 1);
-			// 			break;
-			// 		}
-			// 	};
-			// }
-			
-
-			EMIT_BROADCAST(nodeDetachment, _CALL(pNode));
-		}
-
-	
-		BROADCAST(displayListAdded, CALL(list, index));
-		BROADCAST(displayListRemoved, CALL(list, index));
-		BROADCAST(beforeUpdate, VOID);
-		BROADCAST(postUpdate, VOID);
-		BROADCAST(preUpdate, VOID);
-
-		// BROADCAST(nodeAttachment, CALL(pNode));
-		// BROADCAST(nodeDetachment, CALL(pNode));
+		static DL_DEFAULT: uint8 = 0;
+		static DL_LIGHTING: uint8 = 0;
 	}
 }
-
-#endif

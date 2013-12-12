@@ -43,7 +43,7 @@ module akra.scene {
 	import Mat3 = math.Mat3;
 	import Vec4 = math.Vec4;
 
-	export class Node<T extends Node<T>> extends util.Entity<T> implements INode<T> {
+	export class Node extends util.Entity implements INode {
 		protected _m4fLocalMatrix: IMat4 = null;
 		protected _m4fWorldMatrix: IMat4 = null;
 		protected _m4fInverseWorldMatrix: IMat4 = null;
@@ -304,7 +304,7 @@ module akra.scene {
 			var C: IMat4 = Au.multiply(A0inv, Mat4.temp());
 
 			//parent world matrix
-			var Mp: IMat4 = isNull(this.parent) ? Mat4.temp(1.) : Mat4.temp(this.parent.worldMatrix);
+			var Mp: IMat4 = isNull(this.parent) ? Mat4.temp(1.) : Mat4.temp((<Node>this.parent).worldMatrix);
 			//this orientation matrix (orientation + sclae + translation)
 			var Mo: IMat4 = Mat4.temp();
 
@@ -527,7 +527,7 @@ module akra.scene {
 
 
 
-		attachToParent(pParent: T): boolean {
+		attachToParent(pParent: INode): boolean {
 			if (super.attachToParent(pParent)) {
 				// adjust my local matrix to be relative to this new parent
 				var m4fInvertedParentMatrix: IMat4 = Mat4.temp();
@@ -557,7 +557,7 @@ module akra.scene {
 				}
 
 				// var pSibling: IEntity = this.sibling;
-				var pChild: T = this.child;
+				var pChild: INode = <INode>this.child;
 				var s = "";
 
 				for (var i = 0; i < iDepth; ++i) {
@@ -568,7 +568,7 @@ module akra.scene {
 				/*"[updated: " + this.isUpdated() + ", childs updated: " + this.hasUpdatedSubNodes() + ", new wm: " + this.isWorldMatrixNew() + "]" +*/
 				while (pChild) {
 					s += pChild.toString(true, iDepth + 1);
-					pChild = pChild.sibling;
+					pChild = <INode>pChild.sibling;
 				}
 
 				// if (pSibling) {
@@ -581,11 +581,11 @@ module akra.scene {
 
 		}
 
-		static private _v3fTemp1: IVec3 = new Vec3();
-		static private _v4fTemp1: IVec4 = new Vec4();
-		static private _m3fTemp1: IMat3 = new Mat3();
-		static private _m4fTemp1: IMat4 = new Mat4();
-		static private _m4fTemp2: IMat4 = new Mat4();
-		static private _q4fTemp1: IQuat4 = new Quat4();
+		private static _v3fTemp1: IVec3 = new Vec3();
+		private static _v4fTemp1: IVec4 = new Vec4();
+		private static _m3fTemp1: IMat3 = new Mat3();
+		private static _m4fTemp1: IMat4 = new Mat4();
+		private static _m4fTemp2: IMat4 = new Mat4();
+		private static _q4fTemp1: IQuat4 = new Quat4();
 	}
 }

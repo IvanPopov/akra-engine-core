@@ -410,7 +410,7 @@ module akra.pool.resources {
 				this._nMipLevels=iImageMips;
 
 				// Disable flag for auto mip generation
-				CLEAR_ALL(this._iFlags, ETextureFlags.AUTOMIPMAP);
+				bf.clearAll(this._iFlags, ETextureFlags.AUTOMIPMAP);
 			}
 			else
 			{
@@ -524,7 +524,7 @@ module akra.pool.resources {
 			}   
 
 			var nMipLevels: uint = Math.min(this._nMipLevels, pTarget.mipLevels);
-			if(TEST_ANY(this._iFlags, ETextureFlags.AUTOMIPMAP) || TEST_ANY(this.getFlags(), ETextureFlags.AUTOMIPMAP)){
+			if(bf.testAny(this._iFlags, ETextureFlags.AUTOMIPMAP) || bf.testAny(this.getFlags(), ETextureFlags.AUTOMIPMAP)){
 				nMipLevels = 0;
 			}
 

@@ -1,15 +1,12 @@
-#ifndef LIGHTPOINT_TS
-#define LIGHTPOINT_TS
-
-#include "ILightPoint.ts"
-#include "scene/SceneObject.ts"
-#include "math/math.ts"
+/// <reference path="../../idl/ILightPoint.ts" />
+/// <reference path="../SceneObject.ts" />
+/// <reference path="../../math/math.ts" />
 
 module akra.scene.light {
 
 	export class LightPoint extends SceneNode implements ILightPoint {
-		protected _isShadowCaster: bool = false;
-		protected _isEnabled: bool = true;
+		protected _isShadowCaster: boolean = false;
+		protected _isEnabled: boolean = true;
 		protected _iMaxShadowResolution: uint = 256;
 		// protected _pLightParameters: ILightParameters = new LightParameters;
 		protected _eLightType: ELightTypes;
@@ -17,50 +14,50 @@ module akra.scene.light {
 		//optimized camera frustum for better shadow casting
 		protected _pOptimizedCameraFrustum: IFrustum = new geometry.Frustum();
 
-		inline get lightType(): ELightTypes {
+		get lightType(): ELightTypes {
 			return this._eLightType;
 		}
 
-		constructor(pScene: IScene3d, eType: ELightTypes = ELightTypes.UNKNOWN){
+		constructor(pScene: IScene3d, eType: ELightTypes = ELightTypes.UNKNOWN) {
 			super(pScene, EEntityTypes.LIGHT);
 
 			this._eLightType = eType;
 		}
 
-		inline get enabled(): bool{
+		get enabled(): boolean {
 			return this._isEnabled;
-		};
+		}
 
-		inline set enabled(bValue: bool){
+		set enabled(bValue: boolean) {
 			this._isEnabled = bValue;
-		};
+		}
 
-		inline get params(): ILightParameters {
+		get params(): ILightParameters {
 			// return this._pLightParameters;
 			return null;
-		};
+		}
 
-		inline get isShadowCaster(): bool {
+		get isShadowCaster(): boolean {
 			return this._isShadowCaster;
-		};
+		}
 
-		inline set isShadowCaster(bValue: bool) {
+		set isShadowCaster(bValue: boolean) {
 			this._isShadowCaster = bValue;
-		};
+		}
 
-		inline get lightingDistance(): float{
+		get lightingDistance(): float {
 			return -1.;
-		};
+		}
 
-		inline set lightingDistance(fDistance: float){
-		};
+		set lightingDistance(fDistance: float) {
+		}
 
-		inline get optimizedCameraFrustum(): IFrustum{
+		get optimizedCameraFrustum(): IFrustum {
 			return this._pOptimizedCameraFrustum;
-		};
+		}
 
-		create(isShadowCaster: bool = true, iMaxShadowResolution: int = 256): bool {
-			var isOk: bool = super.create();
+		create(isShadowCaster: boolean = true, iMaxShadowResolution: int = 256): boolean {
+			var isOk: boolean = super.create();
 
 			//есть тени от источника или нет
 			this._isShadowCaster = isShadowCaster;
@@ -68,21 +65,20 @@ module akra.scene.light {
 			this._iMaxShadowResolution = iMaxShadowResolution;
 
 			return isOk;
-		};
+		}
 
-		_prepareForLighting(pCamera: ICamera): bool{
-			WARNING("pure virtual method");
+		_prepareForLighting(pCamera: ICamera): boolean {
+			debug.warn("pure virtual method");
 			return false;
-		};
+		}
 
 		_calculateShadows(): void {
-			debug_print(__CALLSTACK__);
-			CRITICAL("NOT IMPLEMENTED!");
-		};
-	}
-	export function isLightPoint(pNode: IEntity){
-		return pNode.type === EEntityTypes.LIGHT;
+			debug.critical("NOT IMPLEMENTED!");
+		}
+
+		static isLightPoint(pNode: IEntity) {
+			return pNode.type === EEntityTypes.LIGHT;
+		}
 	}
 }
 
-#endif

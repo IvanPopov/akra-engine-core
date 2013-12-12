@@ -27,12 +27,12 @@ module akra {
 		primType: EPrimitiveTypes;
 		index: IIndexData;
 		length: uint;
-	
+
 		//FIXME: hack for terraing, for force limiting length of drawinf index.
 		/** writeonly */ _length: uint;
-		
+
 		/** readonly */ totalUpdates: uint;
-	
+
 		/** Number of primitives. */
 		/** readonly */ primCount: uint;
 		/** Maximum flow available in buffer map. */
@@ -53,20 +53,20 @@ module akra {
 		 * @deprecated
 		 */
 		/** readonly */ offset: uint;
-	
+
 		/**
 		 * Find flow by semantics in.
 		 * @param sSemantics VertexElement usage or semantics.
 		 * @param {boolean=} bComplete Find only in completed flows. Default is TRUE.
 		 */
 		getFlow(sSemantics: string, bComplete?: boolean): IDataFlow;
-	    getFlow(iFlow: int, bComplete?: boolean): IDataFlow;
-	    getFlowBySemantic(sSemantics: string): IDataFlow;
-	
+		getFlow(iFlow: int, bComplete?: boolean): IDataFlow;
+		getFlowBySemantic(sSemantics: string): IDataFlow;
+
 		findFlow(sSemantics: string): IDataFlow;
-	
+
 		reset(): void;
-	
+
 		/**
 		 * Add data to flow.
 		 */
@@ -76,28 +76,28 @@ module akra {
 		 * Add index for flow.
 		 */
 		mapping(iFlow: int, pMap: IVertexData, sSemantics: string, iAddition?: int): boolean;
-	
+
 		/**
 		 * Check, Is pData already used as flow or mapper.
 		 */
 		checkData(pData: IVertexData): boolean;
-	
+
 		/**
 		 * Recals all statistics in buffer map.
 		 */
 		update(): boolean;
-	
-		clone(bWithMapping?: boolean): IBufferMap; 
-	
+
+		clone(bWithMapping?: boolean): IBufferMap;
+
 		/**
 		 * Draw buffer map.
 		 */
 		_draw(): void;
-		
+
 		toString(bListAll?: boolean): string;
-	
+
 		//some data, such as VertexTexture or VertexBuffer have been modified.
-		signal modified(): void;
+		modified: ISignal<{ (pMap: IBufferMap): void; }>;
 	}
 	
 }

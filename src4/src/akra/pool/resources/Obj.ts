@@ -336,7 +336,7 @@ module akra.pool.resources {
 		//        }
 		//    }
 
-			SET_ALL(this._iFVF, EObjFVF.NORMAL);
+			bf.setAll(this._iFVF, EObjFVF.NORMAL);
 		}
 
 		static VERTEX_REGEXP: RegExp = /^v[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)([\s]+[-+]?[\d]*[\.|\,]?[\de-]*?)?[\s]*$/i;
@@ -367,7 +367,7 @@ module akra.pool.resources {
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + ">");
 				regExpResultToFloatArray(pm, temp, 0);
 				this._pVertices.push(iXSign * temp[iX], iYSign * temp[iY], iZSign * temp[iZ]);
-				SET_ALL(this._iFVF, EObjFVF.XYZ);
+				bf.setAll(this._iFVF, EObjFVF.XYZ);
 			}
 
 			//Texture coordinates, in (u,v[,w]) coordinates, w is optional.
@@ -375,7 +375,7 @@ module akra.pool.resources {
 				pm = s.match(Obj.TEXCOORD_REGEXP);
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + "> (" + Obj.TEXCOORD_REGEXP.toString() + ")");
 				regExpResultToFloatArray(pm, this._pTextureCoords);
-				SET_ALL(this._iFVF, EObjFVF.UV);
+				bf.setAll(this._iFVF, EObjFVF.UV);
 			}
 			//Normals in (x,y,z) form; normals might not be unit.	
 			else if (ch == 'n') {
@@ -383,7 +383,7 @@ module akra.pool.resources {
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + ">");
 				regExpResultToFloatArray(pm, temp, 0);
 				this._pNormals.push(iXSign * temp[iX], iYSign * temp[iY], iZSign * temp[iZ]);
-				SET_ALL(this._iFVF, EObjFVF.NORMAL);
+				bf.setAll(this._iFVF, EObjFVF.NORMAL);
 			}
 		}
 

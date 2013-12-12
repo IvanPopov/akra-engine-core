@@ -24,6 +24,10 @@
  		"to": "bf.setBit"
  	},
  	{
+ 		"from": "debug_error",
+ 		"to": "debug.error"
+ 	},
+ 	{
  		"from": "debug_assert",
  		"to": "debug.assert"
  	},

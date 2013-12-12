@@ -13,7 +13,7 @@ module akra {
 		comment?: string;
 	}
 	
-	export interface IUILayout extends IUIHTMLNode {
+	export interface IUILayout extends IUIHTMLNode<IUIHTMLNode> {
 		layoutType: EUILayouts;
 	
 		setAttributes(pAttrs: IUILayoutAttributes): void;
