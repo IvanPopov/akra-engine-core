@@ -104,10 +104,18 @@ module akra {
 		_updateImpl(): void;
 
 		_getNumRenderedPolygons(): uint;
-		_updateDimensions(pDimensions: IRect2d): void;
+		_updateDimensions(bEmitEvent?: boolean): void;
 
 		_getViewportState(): IViewportState;
 		_setTarget(pTarget: IRenderTarget): void;
+
+		_getLastMousePosition(): IPoint;
+		_keepLastMousePosition(x: uint, y: uint): void;
+		_handleMouseInout(pCurr: IRIDPair, x: uint, y: uint): IRIDPair;
+		_set3DEventDragTarget(pObject?: ISceneObject, pRenderable?: IRenderableObject): void;
+		_get3DEventDragTarget(): IRIDPair;
+		_setMouseCaptured(bValue: boolean): void;
+
 	}
 	
 }

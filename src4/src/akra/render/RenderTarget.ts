@@ -1,34 +1,40 @@
-#ifndef RENDERTARGET_TS
-#define RENDERTARGET_TS
+/// <reference path="../idl/IRenderTarget.ts" />
+/// <reference path="../idl/IDepthBuffer.ts" />
+/// <reference path="../idl/IFrameStats.ts" />
+/// <reference path="../idl/IPixelBuffer.ts" />
 
-#include "IRenderTarget.ts"
+/// <reference path="Viewport.ts" />
+/// <reference path="TextureViewport.ts" />
+/// <reference path="DSViewport.ts" />
+/// <reference path="ColorViewport.ts" />
+/// <reference path="ShadowViewport.ts" />
 
-#include "IDepthBuffer.ts"
-#include "Viewport.ts"
-#include "DSViewport.ts"
-#include "ColorViewport.ts"
-#include "ShadowViewport.ts"
-#include "TextureViewport.ts"
-#include "events/events.ts"
-#include "IFrameStats.ts"
-#include "IPixelBuffer.ts"
-#include "pixelUtil/pixelUtil.ts"
+/// <reference path="../events.ts" />
+/// <reference path="../pixelUtil/pixelUtil.ts" />
 
-/* Define the number of priority groups for the render system's render targets. */
-#ifndef NUM_RENDERTARGET_GROUPS
-	#define NUM_RENDERTARGET_GROUPS 10
-	#define DEFAULT_RT_GROUP 4
-	#define REND_TO_TEX_RT_GROUP 2
-#endif
+/// <reference path="../config/config.ts" />
 
 module akra.render {
 
 	export class RenderTarget implements IRenderTarget {
+
+		preUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(this);
+		postUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(this);
+
+		viewportPreUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
+		viewportPostUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
+		viewportAdded: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
+		viewportRemoved: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
+
+		resized: ISignal<{ (pTarget: IrenderTarget, iWidth: uint, iHeight: uint): void; }> = new Signal(this);
+
+		cameraRemoved: ISignal<{ (pTarget: IrenderTarget, pCamera: ICamera): void; }> = new Signal(this);
+
 		protected _sName: string;
 		protected _pRenderer: IRenderer;
-		
-		protected _iPriority: uint = DEFAULT_RT_GROUP;
-		
+
+		protected _iPriority: uint = RenderTarget.DEFAULT_RT_GROUP;
+
 		protected _iWidth: uint;
 		protected _iHeight: uint;
 
@@ -43,29 +49,29 @@ module akra.render {
 		protected _fLastTime: uint;
 		protected _iFrameCount: uint;
 
-		protected _isActive: bool = true;
-		protected _isAutoUpdate: bool = true;
+		protected _isActive: boolean = true;
+		protected _isAutoUpdate: boolean = true;
 
-		protected _bHwGamma: bool = false;
+		protected _bHwGamma: boolean = false;
 
 		protected _pViewportList: IViewport[] = [];
 
 		//3d event handing
-	    private _i3DEvents: int = 0;
+		private _i3DEvents: int = 0;
 
-		inline get name(): string { return this._sName; }
-		inline set name(sName: string) { this._sName = sName; }
+		get name(): string { return this._sName; }
+		set name(sName: string) { this._sName = sName; }
 
-		inline get width(): uint { return this._iWidth; }
-		inline get height(): uint { return this._iHeight; }
-		inline get colorDepth(): int { return this._iColorDepth; }
+		get width(): uint { return this._iWidth; }
+		get height(): uint { return this._iHeight; }
+		get colorDepth(): int { return this._iColorDepth; }
 
-		inline get totalViewports(): uint { return this._pViewportList.length; }
-		inline get totalFrames(): uint { return this._iFrameCount; }
+		get totalViewports(): uint { return this._pViewportList.length; }
+		get totalFrames(): uint { return this._iFrameCount; }
 
-		inline get priority(): uint { return this._iPriority; }
+		get priority(): uint { return this._iPriority; }
 
-		constructor (pRenderer: IRenderer) {
+		constructor(pRenderer: IRenderer) {
 			this._pRenderer = pRenderer;
 			this._pTimer = pRenderer.getEngine().getTimer();
 			this._pFrameStats = {
@@ -99,19 +105,19 @@ module akra.render {
 			var iNotActivate: int = (this._i3DEvents ^ 0x7fffffff) & iType;
 
 			SET_ALL(this._i3DEvents, iNotActivate);
-			
+
 			return iNotActivate;
 		}
 
-		inline is3DEventSupported(eType: E3DEventTypes): bool {
+		is3DEventSupported(eType: E3DEventTypes): boolean {
 			return TEST_ANY(this._i3DEvents, <int>eType);
 		}
 
-		inline getRenderer(): IRenderer { return this._pRenderer; }
+		getRenderer(): IRenderer { return this._pRenderer; }
 
 		destroy(): void {
 			var pViewport: IViewport;
-			
+
 			for (var i in this._pViewportList) {
 				pViewport = this._pViewportList[i];
 				this.viewportRemoved(pViewport)
@@ -120,19 +126,19 @@ module akra.render {
 
 			this.detachDepthBuffer();
 
-			debug_print("RenderTarget '%s'\n Average FPS: %s\n Best FPS: %s\n Worst FPS: %s", 
-				this._sName, 
-				this._pFrameStats.fps.avg, 
+			debug.log("RenderTarget '%s'\n Average FPS: %s\n Best FPS: %s\n Worst FPS: %s",
+				this._sName,
+				this._pFrameStats.fps.avg,
 				this._pFrameStats.fps.best,
 				this._pFrameStats.fps.worst);
 		}
 
-		getDepthBuffer(): IDepthBuffer { 
-			return this._pDepthBuffer; 
+		getDepthBuffer(): IDepthBuffer {
+			return this._pDepthBuffer;
 		}
-		
-		attachDepthBuffer(pBuffer: IDepthBuffer): bool {
-			var isOk: bool = false;
+
+		attachDepthBuffer(pBuffer: IDepthBuffer): boolean {
+			var isOk: boolean = false;
 
 			if ((isOk = pBuffer.isCompatible(this))) {
 				this.detachDepthBuffer();
@@ -143,16 +149,16 @@ module akra.render {
 			return isOk;
 		}
 
-		attachDepthPixelBuffer(pBuffer: IPixelBuffer): bool {
+		attachDepthPixelBuffer(pBuffer: IPixelBuffer): boolean {
 
-			if(this._iWidth !== pBuffer.width ||
-			   this._iHeight !== pBuffer.height) {
+			if (this._iWidth !== pBuffer.width ||
+				this._iHeight !== pBuffer.height) {
 				return false;
 			}
 
 			var eFormat: EPixelFormats = pBuffer.format;
-			if(eFormat !== EPixelFormats.FLOAT32_DEPTH ||
-			   eFormat !== EPixelFormats.DEPTH8){
+			if (eFormat !== EPixelFormats.FLOAT32_DEPTH ||
+				eFormat !== EPixelFormats.DEPTH8) {
 				return false;
 			}
 
@@ -163,24 +169,24 @@ module akra.render {
 		}
 
 		detachDepthPixelBuffer(): void {
-			if(this._pDepthPixelBuffer){
+			if (this._pDepthPixelBuffer) {
 				this._pDepthPixelBuffer = null;
 			}
 		}
 
 		detachDepthBuffer(): void {
 			if (this._pDepthBuffer) {
-				this._pDepthBuffer._notifyRenderTargetDetached( this );
+				this._pDepthBuffer._notifyRenderTargetDetached(this);
 				this._pDepthBuffer = null;
 			}
 		}
 
-		attachDepthTexture(pTexture: ITexture): bool {
+		attachDepthTexture(pTexture: ITexture): boolean {
 			return false;
 		}
 
 		detachDepthTexture(): void {
-			
+
 		}
 
 		_detachDepthBuffer(): void {
@@ -194,13 +200,13 @@ module akra.render {
 			this._pFrameStats.polygonsCount = 0;
 		}
 
-		_updateAutoUpdatedViewports(bUpdateStatistics: bool = true): void {
-	        var pViewport: IViewport;
+		_updateAutoUpdatedViewports(bUpdateStatistics: boolean = true): void {
+			var pViewport: IViewport;
 
-	        for (var i in this._pViewportList) {
+			for (var i in this._pViewportList) {
 				pViewport = this._pViewportList[i];
 
-				if(pViewport.isAutoUpdated()) {
+				if (pViewport.isAutoUpdated()) {
 					this._updateViewport(pViewport, bUpdateStatistics);
 				}
 			}
@@ -211,9 +217,9 @@ module akra.render {
 			this.updateStats();
 		}
 
-		_updateViewport(iZIndex: int, bUpdateStatistics: bool = true): void;
-		_updateViewport(pViewportPtr: IViewport, bUpdateStatistics: bool = true): void;
-		_updateViewport(pViewportPtr: any, bUpdateStatistics: bool = true): void {
+		_updateViewport(iZIndex: int, bUpdateStatistics: boolean = true): void;
+		_updateViewport(pViewportPtr: IViewport, bUpdateStatistics: boolean = true): void;
+		_updateViewport(pViewportPtr: any, bUpdateStatistics: boolean = true): void {
 			var pViewport: IViewport;
 			var iZIndex: int
 
@@ -221,14 +227,14 @@ module akra.render {
 				iZIndex = <int>arguments[0];
 				pViewport = this._pViewportList[iZIndex];
 
-				ASSERT (isDefAndNotNull(pViewport), "No viewport with given z-index : %s", iZIndex, 
+				logger.assert(isDefAndNotNull(pViewport), "No viewport with given z-index : %s", iZIndex,
 					"RenderTarget::_updateViewport");
 			}
 			else {
 				pViewport = <IViewport>arguments[0];
 			}
 
-			ASSERT(pViewport.getTarget() == this, 
+			logger.assert(pViewport.getTarget() == this,
 				"RenderTarget::_updateViewport the requested viewport is not bound to the rendertarget!");
 
 			this.viewportPreUpdate(pViewport);
@@ -250,12 +256,12 @@ module akra.render {
 			var iZIndex: int = pViewport.zIndex;
 
 			if (isDefAndNotNull(this._pViewportList[iZIndex])) {
-				CRITICAL("Can't create another viewport for %s with Z-index %s \
+				logger.critical("Can't create another viewport for %s with Z-index %s \
 					because a viewport exists with this Z-Order already.", this._sName, iZIndex, "RenderTarget::addViewport");
 			}
 
 			pViewport._setTarget(this);
-			
+
 			this._pViewportList[iZIndex] = pViewport;
 			this.viewportAdded(pViewport);
 
@@ -263,7 +269,7 @@ module akra.render {
 		}
 
 
-		removeViewport(iZIndex: int): bool {
+		removeViewport(iZIndex: int): boolean {
 			var pViewport: IViewport = this._pViewportList[iZIndex];
 
 			if (isDefAndNotNull(pViewport)) {
@@ -284,45 +290,45 @@ module akra.render {
 
 			for (var i in this._pViewportList) {
 				pViewport = this._pViewportList[i];
-	            this.viewportRemoved(pViewport);
-	        }
+				this.viewportRemoved(pViewport);
+			}
 
-	        iTotal = this._pViewportList.length;
+			iTotal = this._pViewportList.length;
 
-        	(<any>this._pViewportList).clear();
+			(<any>this._pViewportList).clear();
 
-        	return iTotal;
+			return iTotal;
 		}
 
-		inline getStatistics(): IFrameStats {
+		getStatistics(): IFrameStats {
 			return this._pFrameStats;
 		}
 
-		inline getLastFPS(): float {
+		getLastFPS(): float {
 			return this._pFrameStats.fps.last;
 		}
 
-		inline getAverageFPS(): float {
+		getAverageFPS(): float {
 			return this._pFrameStats.fps.avg;
 		}
 
-		inline getBestFPS(): float {
+		getBestFPS(): float {
 			return this._pFrameStats.fps.best;
 		}
 
-		inline getWorstFPS(): float {
+		getWorstFPS(): float {
 			return this._pFrameStats.fps.worst;
 		}
 
-		inline getPolygonCount(): uint {
+		getPolygonCount(): uint {
 			return this._pFrameStats.polygonsCount;
 		}
 
-		inline getBestFrameTime(): float {
+		getBestFrameTime(): float {
 			return this._pFrameStats.time.best;
 		}
 
-		inline getWorstFrameTime(): float {
+		getWorstFrameTime(): float {
 			return this._pFrameStats.time.worst;
 		}
 
@@ -345,7 +351,7 @@ module akra.render {
 		}
 
 		updateStats(): void {
-			this._iFrameCount ++;
+			this._iFrameCount++;
 
 			var fThisTime: float = this._pTimer.appTime;
 
@@ -379,14 +385,14 @@ module akra.render {
 		}
 
 		getViewport(iIndex: uint): IViewport {
-			ASSERT(iIndex < this._pViewportList.length, "Index out of bounds");
+			logger.assert(iIndex < this._pViewportList.length, "Index out of bounds");
 
 			for (var i in this._pViewportList) {
-				if (iIndex --) {
+				if (iIndex--) {
 					continue;
 				}
 
-				return this._pViewportList[i]; 
+				return this._pViewportList[i];
 			}
 
 			return null;
@@ -394,31 +400,31 @@ module akra.render {
 
 		getViewportByZIndex(iZIndex: int): IViewport {
 			var pViewport: IViewport = this._pViewportList[iZIndex];
-			
-			ASSERT(isDefAndNotNull(pViewport), "No viewport with given z-index : "
+
+			logger.assert(isDefAndNotNull(pViewport), "No viewport with given z-index : "
 				+ String(iZIndex), "RenderTarget::getViewportByZIndex");
 
 			return pViewport;
 		}
 
-		inline hasViewportByZIndex(iZIndex: int): bool {
+		hasViewportByZIndex(iZIndex: int): boolean {
 			return isDefAndNotNull(this._pViewportList[iZIndex]);
 		}
 
-		inline isActive(): bool {
+		isActive(): boolean {
 			return this._isActive;
 		}
 
-		setActive(bValue: bool = true): void {
+		setActive(bValue: boolean = true): void {
 			this._isActive = bValue;
 		}
 
-		inline setAutoUpdated(isAutoUpdate: bool = true): void {
+		setAutoUpdated(isAutoUpdate: boolean = true): void {
 			this._isAutoUpdate = isAutoUpdate;
 		}
 
 		_notifyCameraRemoved(pCamera: ICamera): void {
-			var isRemoved: bool = false;
+			var isRemoved: boolean = false;
 			for (var i in this._pViewportList) {
 				var pViewport: IViewport = this._pViewportList[i];
 
@@ -433,11 +439,11 @@ module akra.render {
 			}
 		}
 
-		inline isAutoUpdated(): bool {
+		isAutoUpdated(): boolean {
 			return this._isAutoUpdate;
 		}
 
-		inline isPrimary(): bool {
+		isPrimary(): boolean {
 			// RenderWindow will override and return true for the primary window
 			return false;
 		}
@@ -450,26 +456,17 @@ module akra.render {
 			return null;
 		}
 
-		
+
 		protected updateImpl(): void {
 			this._beginUpdate();
 			this._updateAutoUpdatedViewports(true);
 			this._endUpdate();
 		}
 
-		CREATE_EVENT_TABLE(RenderTarget);
-		
-		BROADCAST(preUpdate, VOID);
-		BROADCAST(viewportPreUpdate, CALL(pViewport));
-		BROADCAST(viewportPostUpdate, CALL(pViewport));
-		BROADCAST(viewportAdded, CALL(pViewport));
-		BROADCAST(viewportRemoved, CALL(pViewport));
-		BROADCAST(postUpdate, VOID)
-
-		BROADCAST(resized, CALL(iWidth, iHeight));
-
-		BROADCAST(cameraRemoved, CALL(pCamera));
-	} 
+		/* Define the number of priority groups for the render system's render targets. */
+		static NUM_RENDERTARGET_GROUPS: uint = 10;
+		static DEFAULT_RT_GROUP: uint = 4;
+		static REND_TO_TEX_RT_GROUP: uint = 2;
+	}
 }
 
-#endif

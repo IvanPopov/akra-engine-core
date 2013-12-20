@@ -1,51 +1,48 @@
-#ifndef RENDERPASS_TS
-#define RENDERPASS_TS
-
-#include "IRenderPass.ts"
-#include "util/unique.ts"
+/// <reference path="../idl/IRenderPass.ts" />
+/// <reference path="../guid.ts" />
 
 module akra.render {
 	export class RenderPass implements IRenderPass {
-		UNIQUE();
+		guid: uint = guid();
 
 		private _pTechnique: IRenderTechnique = null;
 		private _pRenderTarget: IRenderTarget = null;
 		private _iPassNumber: uint = 0;
 		private _pInput: IAFXPassInputBlend = null;
-		private _isActive: bool = true;
+		private _isActive: boolean = true;
 
-		constructor(pTechnique: IRenderTechnique, iPass: uint){
+		constructor(pTechnique: IRenderTechnique, iPass: uint) {
 			this._pTechnique = pTechnique;
 			this._iPassNumber = iPass;
-		}	
+		}
 
-		inline setForeign(sName: string, fValue: float): void {
+		setForeign(sName: string, fValue: float): void {
 			this._pInput.setForeign(sName, fValue);
 		}
 
-		inline setTexture(sName: string, pTexture: ITexture): void {
+		setTexture(sName: string, pTexture: ITexture): void {
 			this._pInput.setTexture(sName, pTexture);
 		}
 
-		inline setUniform(sName: string, pValue: any): void {
+		setUniform(sName: string, pValue: any): void {
 			this._pInput.setUniform(sName, pValue);
 		}
 
-		inline setStruct(sName: string, pValue: any): void {
+		setStruct(sName: string, pValue: any): void {
 			this._pInput.setStruct(sName, pValue);
 		}
 
-		inline setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
+		setRenderState(eState: ERenderStates, eValue: ERenderStateValues): void {
 			this._pInput.setRenderState(eState, eValue);
 		}
 
-		inline setSamplerTexture(sName: string, sTexture: string): void;
-		inline setSamplerTexture(sName: string, pTexture: ITexture): void;
-		inline setSamplerTexture(sName: string, pTexture: any): void {
+		setSamplerTexture(sName: string, sTexture: string): void;
+		setSamplerTexture(sName: string, pTexture: ITexture): void;
+		setSamplerTexture(sName: string, pTexture: any): void {
 			this._pInput.setSamplerTexture(sName, pTexture);
 		}
 
-		// inline setSamplerState(sName: string, pState: IAFXSamplerState): void {
+		//  setSamplerState(sName: string, pState: IAFXSamplerState): void {
 		// 	this._pInput.setSamplerState(sName, pState);
 		// }
 
@@ -61,31 +58,31 @@ module akra.render {
 			return this._pInput;
 		}
 
-		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: bool): void {
-			if(isNeedRelocate){
+		setPassInput(pInput: IAFXPassInputBlend, isNeedRelocate: boolean): void {
+			if (isNeedRelocate) {
 				//pInput._copyFrom(pInput);
 			}
 
-			if(!isNull(this._pInput)) {
+			if (!isNull(this._pInput)) {
 				this._pInput._release();
 			}
 
 			this._pInput = pInput;
 		}
 
-		blend(sComponentName: string, iPass: uint): bool {
+		blend(sComponentName: string, iPass: uint): boolean {
 			return this._pTechnique.addComponent(sComponentName, this._iPassNumber, iPass);
 		}
 
-		inline activate(): void {
+		activate(): void {
 			this._isActive = true;
 		}
 
-		inline deactivate(): void {
+		deactivate(): void {
 			this._isActive = false;
 		}
 
-		inline isActive(): bool {
+		isActive(): boolean {
 			return this._isActive;
 		}
 
@@ -95,4 +92,3 @@ module akra.render {
 	}
 }
 
-#endif

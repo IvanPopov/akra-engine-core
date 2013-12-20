@@ -1,21 +1,19 @@
-#ifndef CANVAS3D_TS
-#define CANVAS3D_TS
+/// <reference path="../idl/ICanvas3d.ts" />
+/// <reference path="../idl/IRenderer.ts" />
+/// <reference path="../idl/IUtilTimer.ts" />
+/// <reference path="../idl/ICanvasInfo.ts" />
+/// <reference path="../util/UtilTimer.ts" />
 
-#include "ICanvas3d.ts"
-#include "IRenderer.ts"
-#include "IUtilTimer.ts"
-#include "ICanvasInfo.ts"
-#include "util/UtilTimer.ts"
-#include "render/RenderTarget.ts"
+/// <reference path="RenderTarget.ts" />
 
 
 module akra.render {
 	export class Canvas3d extends RenderTarget implements ICanvas3d {
-		// private _useHarwareAntialiasing: bool = false;
+		// private _useHarwareAntialiasing: boolean = false;
 
-		protected _isFullscreen: bool = false;
-		protected _isPrimary: bool = false;
-		protected _bAutoDeactivatedOnFocusChange: bool = false;
+		protected _isFullscreen: boolean = false;
+		protected _isPrimary: boolean = false;
+		protected _bAutoDeactivatedOnFocusChange: boolean = false;
 
 		left: int = 0;
 		top: int = 0;
@@ -31,36 +29,36 @@ module akra.render {
 		}
 
 
-		create(sName: string, iWidth?: uint, iHeight?: uint, isFullscreen: bool = false): bool {
+		create(sName: string, iWidth?: uint, iHeight?: uint, isFullscreen: boolean = false): boolean {
 			return false;
 		}
 
 		destroy(): void {}
 
-		setFullscreen(isFullscreen?: bool): void {}
+		setFullscreen(isFullscreen?: boolean): void {}
 
-		setVisible(bVisible?: bool): void {}
-		setDeactivateOnFocusChange(bDeactivate?: bool): void {
+		setVisible(bVisible?: boolean): void {}
+		setDeactivateOnFocusChange(bDeactivate?: boolean): void {
 			this._bAutoDeactivatedOnFocusChange = bDeactivate;
 		}
 
-		inline isFullscreen(): bool {
+		 isFullscreen(): boolean {
 			return this._isFullscreen;
 		}
 
-		isVisible(): bool {
+		isVisible(): boolean {
 			return true;
 		}
 
-		isClosed(): bool {
+		isClosed(): boolean {
 			return false;
 		}
 
-		isPrimary(): bool {
+		isPrimary(): boolean {
 			return this._isPrimary;
 		}
 
-		isDeactivatedOnFocusChange(): bool {
+		isDeactivatedOnFocusChange(): boolean {
 			return this._bAutoDeactivatedOnFocusChange;
 		}
 
@@ -70,5 +68,3 @@ module akra.render {
 		}
 	}
 }
-
-#endif

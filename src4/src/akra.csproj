@@ -476,7 +476,7 @@
     <None Include="akra\util\Entity.ts" />
     <None Include="akra\util\Logger.ts" />
     <None Include="akra\util\ReferenceCounter.ts" />
-    <None Include="akra\util\Timer.ts" />
+    <None Include="akra\util\UtilTimer.ts" />
     <None Include="akra\scene\Node.ts" />
     <None Include="akra\scene\light\LightPoint.ts" />
     <None Include="akra\scene\objects\Camera.ts" />
@@ -510,6 +510,12 @@
     <None Include="akra\render\RenderableObject.ts" />
     <None Include="akra\render\RenderTarget.ts" />
     <None Include="akra\render\RenderTechnique.ts" />
+    <None Include="akra\render\Canvas2d.ts" />
+    <None Include="akra\render\Canvas3d.ts" />
+    <None Include="akra\render\RenderEntry.ts" />
+    <None Include="akra\render\RenderPass.ts" />
+    <None Include="akra\render\RenderQueue.ts" />
+    <TypeScriptCompile Include="akra\render\Viewport.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

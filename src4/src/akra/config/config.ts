@@ -25,6 +25,10 @@ module akra.config {
 	export var PROFILE_MAKER: boolean = false;
 	//////////////////////
 
+	///render targets
+
+	///end of render targets
+
 	//path to data folder
 	export var data = "";
 
