@@ -92,6 +92,24 @@ var options = {
     testsFormat: {nw: false, html: false, js: false}
 };
 
+
+function usage() {
+    var mesg =
+        'usage: [options] file1, file2 ....' +
+        '\n\n Available options: ';
+
+    //like '\n\t--target    [-t] < "ALL" | "TESTS" | "CORE" > Specify target. Default target is CORE.' +
+    params.forEach(function(opt, i) {
+       mesg += "\n\t" + "--" + opt.key.join("/") + "\t\t" +
+           (opt.shortKey? "[-" + opt.shortKey + "]": "") + " " + opt.desc;
+    });
+
+    console.log(mesg);
+    process.exit(1);
+}
+
+
+
 var params = [
     {
         key: ["target"],
@@ -194,7 +212,8 @@ var params = [
     {
         key: ["help"],
         shortKey: "h",
-        desc: "Print this text."
+        desc: "Print this text.",
+        logic: usage
     },
     {
         key: ["ES6"],
@@ -293,22 +312,6 @@ var params = [
         }
     }
 ];
-
-function usage() {
-    var mesg =
-        'usage: [options] file1, file2 ....' +
-        '\n\n Available options: ';
-
-    //like '\n\t--target	[-t] < "ALL" | "TESTS" | "CORE" > Specify target. Default target is CORE.' +
-    params.forEach(function(opt, i) {
-       mesg += "\n\t" + "--" + opt.key.join("/") + "\t\t" +
-           (opt.shortKey? "[-" + opt.shortKey + "]": "") + " " + opt.desc;
-    });
-
-    console.log(mesg);
-	process.exit(1);
-}
-
 
 
 

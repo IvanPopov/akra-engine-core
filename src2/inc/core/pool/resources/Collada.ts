@@ -1019,9 +1019,11 @@ module akra.core.pool.resources {
 
                     case "INV_BIND_MATRIX":
                         pJoints.inputs["INV_BIND_MATRIX"] = this.COLLADAInput(pXMLData);
+#ifdef DEBUG                        
                         if (this.options.debug) {
                             console.log(pJoints.inputs["INV_BIND_MATRIX"]);
                         }
+#endif                        
                         break;
 
                     default:

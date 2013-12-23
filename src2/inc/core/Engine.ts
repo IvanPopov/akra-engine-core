@@ -3,7 +3,7 @@
 
 #ifdef DEBUG
 
-///@CORE_ARA: core.map
+///@CORE_ARA: "core.map"
 
 #else
 

@@ -365,6 +365,7 @@ module akra.util.deps {
 				sBase64Data = pUri.data;
 			}
 			else {
+				console.log(path.resolve(sArchivePath), "<< archive path");
 				sArchiveHash = utf8_to_b64(sArchivePath);
 				pArchive = io.fopen(sArchivePath, "rb");
 			}
@@ -380,7 +381,7 @@ module akra.util.deps {
 				this.changeDepStatus(pArchiveDep, EDependenceStatuses.LOADED);
 			}
 
-			var fnLoadArchive = (): void => {
+			var fnLoadArchive = (fnLoaded?: Function): void => {
 				this.changeDepStatus(pArchiveDep, EDependenceStatuses.LOADING);
 
 				var fnZipReadedCallback = (pZipReader: ZipReader): void => {
@@ -411,6 +412,12 @@ module akra.util.deps {
 								if (nUnpacked < nTotal) return;
 								
 								console.log("ARA dependences successfully loaded: ", sArchivePath);
+								// debugger;
+
+								if (fnLoaded) {
+									fnLoaded();
+								}
+
 								// alert("ARA dependences successfully loaded: " + sArchivePath);
 
 								pZipReader.close();
@@ -486,11 +493,11 @@ module akra.util.deps {
 							if (!isNull(e) || !isString(pMeta.eTag) || sETag !== pMeta.eTag) {
 								debug_print(sArchivePath, "ETAG not verified.", pMeta.eTag);
 
-								if (isDefAndNotNull(pMeta.eTag)) {
-									pETag.write(pMeta.eTag);
-								}
-
-								fnLoadArchive();
+								fnLoadArchive((): void => {
+									if (isDefAndNotNull(pMeta.eTag)) {
+										pETag.write(pMeta.eTag);
+									}
+								});
 								return;
 							}
 

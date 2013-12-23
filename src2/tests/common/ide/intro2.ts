@@ -2,15 +2,6 @@
 ///<reference path="../../../bin/DEBUG/Progress.ts"/>
 
 
-// declare var jQuery: JQueryStatic;
-// declare var $: JQueryStatic;
-
-
-/// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
-/// @MINER_MODEL: 			"/models/miner/miner.DAE"
-/// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
-
-
 module akra {
 
 	function createProgress(): IProgress {
@@ -44,7 +35,7 @@ module akra {
 	var pEngine: IEngine = createEngine({
 		renderer: {preserveDrawingBuffer: false, alpha: false},
 		deps: {
-			root: /*"http://odserve.org/demo/preview/",*/"../",
+			root: "../",
 			files: [{path: "demo02.ara", name: "DEMO_DATA_ARCHIVE"}]
 		},
 		loader: {
@@ -300,7 +291,7 @@ module akra {
 	// }
 	
 	function createViewports(): void {
-		pViewport = pCanvas.addViewport(pCamera, EViewportTypes.DSVIEWPORT);
+		pViewport = pCanvas.addViewport(new render.DSViewport(pCamera));
 
 		if (isNull(pUI)) {
 			pCanvas.resize(pParentElement.offsetWidth, pParentElement.offsetHeight);

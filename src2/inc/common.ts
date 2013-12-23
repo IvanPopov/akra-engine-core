@@ -13,7 +13,7 @@
 
 #define WEBGL 1
 #define LOGGER_API 1
-// #define CRYPTO_API 1
+#define CRYPTO_API 1
 // #define GUI 1
 #define SKY 1
 // #define WEBGL_DEBUG 1
