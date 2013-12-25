@@ -795,7 +795,7 @@
 			}, onerror);
 		},
 		workerScriptsPath : "",
-		useWebWorkers : true
+		useWebWorkers : false
 	};
 
 })(this);

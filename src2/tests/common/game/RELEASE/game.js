@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Mon Dec 23 2013 16:25:27 GMT+0400 (Московское время (зима))
+ * assembled at: Wed Dec 25 2013 18:37:14 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/RELEASE/
  * file: tests/common/game/game.ts
  * name: game
@@ -139,7 +139,7 @@ var akra;
         pTerrainMap["height"] = pRmgr.imagePool.findResource("TERRAIN_HEIGHT_MAP");
         pTerrainMap["normal"] = pRmgr.imagePool.findResource("TERRAIN_NORMAL_MAP");
         // pTerrain.manualMegaTextureInit = !bShowMegaTex;
-        (pTerrain).useTessellationThread = true;
+        (pTerrain).useTessellationThread = false;
         var isCreate = pTerrain.init(pTerrainMap, new akra.geometry.Rect3d(-250, 250, -250, 250, 0, 150), 6, 4, 4, "main");
         pTerrain.attachToParent(pScene.getRootNode());
         pTerrain.setInheritance(akra.ENodeInheritance.ALL);
@@ -366,7 +366,7 @@ var akra;
                 sText += "Unpacking ";
             }
             if (pFile.status === akra.EDependenceStatuses.LOADING || pFile.status === akra.EDependenceStatuses.UNPACKING) {
-                sText += ("resource " + akra.path.info(akra.path.uri(pFile.path).path).basename);
+                sText += ("resource " + (pFile.name || akra.path.info(akra.path.uri(pFile.path).path).basename));
                 if (!akra.isNull(pInfo)) {
                     sText += " (" + (pInfo.loaded / pInfo.total * 100).toFixed(2) + "%)";
                 }

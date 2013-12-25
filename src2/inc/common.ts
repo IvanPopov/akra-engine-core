@@ -94,7 +94,7 @@
 #define DATA(path) DATA + "/" + path
 module akra {
     var p = document.getElementsByTagName("script");
-    export const DATA = (akra.DATA || ((<Element>p[p.length - 1]).getAttribute("data")) || "@DATA") + "/";
+    export const DATA = (akra.DATA || ((<Element>(<any>document).currentScript || <Element>p[p.length - 1]).getAttribute("data")) || "@DATA") + "/";
 
 
 

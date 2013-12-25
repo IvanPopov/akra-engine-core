@@ -6,13 +6,105 @@
         <script type="text/javascript" src="../../../../data/js/Progress.js"></script>
     </head>                              			
     <body>
-    	<style type="text/css">
-    		body {
-			  margin: 0;
-			  padding: 0;
-			  background-color: black;
-			}
-    	</style>
+        <style type="text/css">
+            body {
+              margin: 0;
+              padding: 0;
+              background-color: black;
+            }
+
+            .info {
+                position: fixed; 
+                z-index: 100; 
+                right: 25px; 
+                bottom: 25px;
+            }
+
+            .info img:hover {
+                border: 3px solid white;
+                width: 122px;
+                height: 122px;
+            }
+
+            .controls {
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                width: 800px;
+                height: 526px;
+                margin-top: -263px;
+                margin-left: -400px;
+                z-index: 10;
+                box-shadow: 0 0 5px black;
+            }
+
+            .controls img, .controls table {
+                width: 100%;
+            }
+
+            .controls-table {
+                padding: 0;
+                border-collapse: collapse;
+            }
+
+            .controls-table td {
+                padding: 0;
+            }
+
+            .note {
+                color: white;
+                background-color: #CCC;
+                padding: 5px !important;
+                padding-left: 10px !important;
+                font-size: 20px;
+                font-weight: bold;
+                font-family: tahoma;
+                -webkit-text-stroke: 0.6px;
+                box-shadow: inset 0px -2px 2px #5b5b5b;
+            }
+
+            .note:hover {
+                background-color: #5b5b5b;
+                box-shadow: none;
+            }
+
+            .active {
+                background-color: #5b5b5b;
+                box-shadow: none;
+            }
+        </style>
+        <script type="text/javascript">
+            function showhide(element) {
+                var display = element.style.display;
+                
+                if (display === 'block') {
+                    element.style.display = 'none';
+                    return;
+                }
+
+                element.style.display = 'block';
+            }
+
+            function viewInfo(element, path) {
+                // element.className += "active";
+                document.getElementById('img-info').src = path;
+            }
+        </script>
+        <div class="controls" id="controls">
+            <table class="controls-table">
+                <tr>
+                    <td class="note" onclick="viewInfo(this, 'assets/Gamepad.svg');">Gamepad</td>
+                    <td class="note" onclick="viewInfo(this, 'assets/Keyboard.svg');">Keyboard</td>
+                </tr>
+                <tr>
+                    <td colspan="2"><img id="img-info" src="assets/Gamepad.svg" /></td>
+                </tr>
+            </table>
+        </div>
+        <div class="info">
+            <img src="assets/about.png" onclick="showhide(document.getElementById('controls'));"/>
+        </div>
     	<script type="text/javascript" src="game.js"></script>
     </body>
 </html>

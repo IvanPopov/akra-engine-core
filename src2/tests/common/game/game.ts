@@ -103,7 +103,7 @@ module akra {
 			}
 
 			if (pFile.status === EDependenceStatuses.LOADING || pFile.status === EDependenceStatuses.UNPACKING) {
-				sText += ("resource " + path.info(path.uri(pFile.path).path).basename);
+				sText += ("resource " + (pFile.name || path.info(path.uri(pFile.path).path).basename));
 				
 				if (!isNull(pInfo)) {
 					sText += " (" + (pInfo.loaded / pInfo.total * 100).toFixed(2) + "%)";

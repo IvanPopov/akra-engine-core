@@ -414,7 +414,8 @@ module akra.core {
 				files: [
 					{
 						path: "@CORE_ARA", 
-						type: "ARA" 
+						type: "ARA",
+						name: "core resources" 
 					}
 				]
 			};			
