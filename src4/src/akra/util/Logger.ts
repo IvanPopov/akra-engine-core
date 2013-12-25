@@ -32,7 +32,7 @@ module akra.util {
 		[familyName: string]: ILogRoutineMap;
 	}
 
-	export class Logger extends util.Singleton<Logger> implements ILogger {
+	final export class Logger extends util.Singleton<Logger> implements ILogger {
 		private _eLogLevel: ELogLevel;
 		private _pGeneralRoutineMap: ILogRoutineMap;
 
@@ -155,13 +155,13 @@ module akra.util {
 				}
 			}
 
-			return null;
+			return "";
 		}
 
 		setCodeFamilyRoutine(eCodeFromFamily: uint, fnLogRoutine: ILogRoutineFunc, eLevel: uint): boolean;
 		setCodeFamilyRoutine(sFamilyName: string, fnLogRoutine: ILogRoutineFunc, eLevel: uint): boolean;
 		setCodeFamilyRoutine(): boolean {
-			var sFamilyName: string = null;
+			var sFamilyName: string = "";
 			var fnLogRoutine: ILogRoutineFunc = null;
 			var eLevel: ELogLevel = ELogLevel.LOG;
 
@@ -170,7 +170,7 @@ module akra.util {
 				fnLogRoutine = arguments[1];
 				eLevel = arguments[2];
 
-				if (isNull(sFamilyName)) {
+				if (sFamilyName === "") {
 					return false;
 				}
 			}

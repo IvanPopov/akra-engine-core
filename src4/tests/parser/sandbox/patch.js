@@ -5,9 +5,7 @@ var akra;
             __extends(EffectParser, _super);
             function EffectParser() {
                 _super.call(this);
-                this._pIncludedFilesMap = null;
                 this.addAdditionalFunction("addType", this._addType);
-                this.addAdditionalFunction("includeCode", this._includeCode);
             }
             EffectParser.prototype.defaultInit = function () {
                 _super.prototype.defaultInit.call(this);
@@ -23,58 +21,14 @@ var akra;
                 this.addTypeId("bool2");
                 this.addTypeId("bool3");
                 this.addTypeId("bool4");
-                this._pIncludedFilesMap = {};
-                this._pIncludedFilesMap[this.getParseFileName()] = true;
-            };
-            EffectParser.prototype._addIncludedFile = function (sFileName) {
-                this._pIncludedFilesMap[sFileName] = true;
             };
             EffectParser.prototype._addType = function () {
-                var pTree = ((this)._pSyntaxTree);
+                var pTree = this.getSyntaxTree();
                 var pNode = pTree.getLastNode();
                 var sTypeId;
                 sTypeId = pNode.children[pNode.children.length - 2].value;
                 this.addTypeId(sTypeId);
                 return 105 /* k_Ok */ ;
-            };
-            EffectParser.prototype.normalizeIncludePath = function (sFile) {
-                // console.log(sFile, this.getParseFileName(), path.resolve(sFile, this.getParseFileName()));
-                return akra.path.resolve(sFile, this.getParseFileName());
-            };
-            EffectParser.prototype._includeCode = function () {
-                var pTree = ((this)._pSyntaxTree);
-                var pNode = pTree.getLastNode();
-                var sFile = pNode.value;
-                //cuttin qoutes
-                sFile = this.normalizeIncludePath(sFile.substr(1, sFile.length - 2));
-                if (this._pIncludedFilesMap[sFile]) {
-                    return 105 /* k_Ok */ ;
-                } else {
-                    var pParserState = this._saveState();
-                    var me = this;
-                    var pFile = akra.io.fopen(sFile, "r+t");
-                    pFile.read(function (err, sData) {
-                        if (err) {
-                            util.logger.setSourceLocation("util/EffectParser.ts", 85)
-                            util.logger.error("Can not read file");
-                        } else {
-                            pParserState.source = pParserState.source.substr(0, pParserState.index) + sData + pParserState.source.substr(pParserState.index);
-                            me._loadState(pParserState);
-                            me._addIncludedFile(sFile);
-                            me.resume();
-                        }
-                    });
-                    return 104 /* k_Pause */ ;
-                }
-            };
-            EffectParser.prototype._saveState = function () {
-                var pState = _super.prototype._saveState.call(this);
-                pState["includeFiles"] = this._pIncludedFilesMap;
-                return pState;
-            };
-            EffectParser.prototype._loadState = function (pState) {
-                _super.prototype._loadState.call(this, pState);
-                this._pIncludedFilesMap = pState["includeFiles"];
             };
             return EffectParser;
         })(akra.parser.Parser);

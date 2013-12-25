@@ -7,7 +7,7 @@
 /// <reference path="symbols.ts" />
 
 module akra.parser {
-	export class Item implements IItem {
+	final export class Item implements IItem {
 		private _pRule: IRule;
 		private _iPos: uint;
 		private _iIndex: uint;
@@ -92,7 +92,7 @@ module akra.parser {
 				if (!(this._pRule === pItem.getRule() && this._iPos === pItem.getPosition() && this._iLength === (<IItem>pItem).getLength())) {
 					return false;
 				}
-				var i: string = null;
+				var i: string = "";
 				for (i in this._pExpected) {
 					if (!(<IItem>pItem).isExpected(i)) {
 						return false;

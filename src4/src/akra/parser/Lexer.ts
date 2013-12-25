@@ -18,7 +18,7 @@ module akra.parser {
 	//    [index: string]: AIState;
 	//}
 
-	export class Lexer implements ILexer {
+	final export class Lexer implements ILexer {
 		private _iLineNumber: uint;
 		private _iColumnNumber: uint;
 		private _sSource: string;
@@ -55,7 +55,7 @@ module akra.parser {
 		}
 
 		getTerminalValueByName(sName: string): string {
-			var sValue: string = null;
+			var sValue: string = "";
 
 			for (sValue in this._pPunctuatorsMap) {
 				if (this._pPunctuatorsMap[sValue] === sName) {
@@ -268,7 +268,7 @@ module akra.parser {
 		private scanString(): IToken {
 			var chFirst: string = this.currentChar();
 			var sValue: string = chFirst;
-			var ch: string = null;
+			var ch: string = "";
 			var chPrevious: string = chFirst;
 			var isGoodFinish: boolean = false;
 			var iStart: uint = this._iColumnNumber;

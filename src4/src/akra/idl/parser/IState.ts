@@ -2,7 +2,6 @@
 /// <reference path="../IMap.ts" />
 
 module akra.parser {
-
 	export interface IState {
 		hasItem(pItem: IItem, eType: EParserType): IItem;
 		hasParentItem(pItem: IItem): IItem;
@@ -23,7 +22,7 @@ module akra.parser {
 		getNextStateBySymbol(sSymbol: string): IState;
 		addNextState(sSymbol: string, pState: IState): boolean;
 
-		toString(isBase: boolean): string;
+		toString(isBase?: boolean): string;
 
 		getIndex(): uint;
 		setIndex(iIndex: uint): void;
@@ -32,5 +31,4 @@ module akra.parser {
 		getNumBaseItems(): uint;
 		getNextStates(): IMap<IState>;
 	}
-
 }

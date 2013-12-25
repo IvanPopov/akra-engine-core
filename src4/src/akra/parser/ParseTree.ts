@@ -1,8 +1,7 @@
 ﻿/// <reference path="../idl/parser/IParser.ts" />
 
 module akra.parser {
-
-	export class ParseTree implements IParseTree {
+	final export class ParseTree implements IParseTree {
 		private _pRoot: IParseNode;
 		private _pNodes: IParseNode[];
 		private _pNodesCountStack: uint[];
@@ -134,7 +133,6 @@ module akra.parser {
 				sRes += sPadding + "value : \"" + pNode.value + "\"" + "\n";
 			}
 			else {
-
 				sRes += sPadding + "name : \"" + pNode.name + "\"" + "\n";
 				sRes += sPadding + "children : [";
 
@@ -161,6 +159,4 @@ module akra.parser {
 			return sRes;
 		}
 	}
-
 }
-

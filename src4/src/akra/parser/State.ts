@@ -3,8 +3,7 @@
 /// <reference path="../idl/parser/IState.ts" />
 
 module akra.parser {
-
-	export class State implements IState {
+	final export class State implements IState {
 		private _pItemList: IItem[];
 		private _pNextStates: IMap<IState>;
 		private _iIndex: uint;
@@ -18,7 +17,7 @@ module akra.parser {
 			this._iIndex = iIndex;
 		}
 
-		getItems(): IItem[]{
+		getItems(): IItem[] {
 			return this._pItemList;
 		}
 
@@ -90,7 +89,6 @@ module akra.parser {
 		}
 
 		isEqual(pState: IState, eType: EParserType): boolean {
-
 			var pItemsA: IItem[] = this._pItemList;
 			var pItemsB: IItem[] = pState.getItems();
 
@@ -177,7 +175,7 @@ module akra.parser {
 			this._pItemList.length = this._nBaseItems;
 		}
 
-		toString(isBase: boolean): string {
+		toString(isBase: boolean = true): string {
 			var len: uint = 0;
 			var sMsg: string;
 			var pItemList: IItem[] = this._pItemList;
@@ -195,4 +193,3 @@ module akra.parser {
 		}
 	}
 }
-

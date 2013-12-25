@@ -161,7 +161,7 @@ module akra.conv {
 			callback(e.target.result);
 		}
 
-	f.readAsText(bb);
+		f.readAsText(bb);
 	}
 
 	/**
@@ -211,8 +211,8 @@ module akra.conv {
 		xhr.responseType = "blob";
 
 		xhr.onload = function (e) {
-			if (this.status == 200) {
-				fn(<Blob>this.response);
+			if (xhr.status == 200) {
+				fn(<Blob>xhr.response);
 			}
 		};
 
@@ -230,8 +230,8 @@ module akra.conv {
 		xhr.responseType = "json";
 
 		xhr.onload = function (e) {
-			if (this.status == 200) {
-				fn(<Object>this.response);
+			if (xhr.status === 200) {
+				fn(<Object>xhr.response);
 			}
 		};
 

@@ -110,7 +110,7 @@ module akra.parser {
 	}
 
 	export class Parser implements IParser {
-		// //Input
+		//Input
 
 		private _sSource: string;
 		private _iIndex: uint;
@@ -213,11 +213,11 @@ module akra.parser {
 			this._sFileName = "stdin";
 		}
 
-		isTypeId(sValue: string): boolean {
+		final isTypeId(sValue: string): boolean {
 			return !!(this._pTypeIdMap[sValue]);
 		}
 
-		returnCode(pNode: IParseNode): string {
+		final returnCode(pNode: IParseNode): string {
 			if (pNode) {
 				if (pNode.value) {
 					return pNode.value + " ";
@@ -254,7 +254,7 @@ module akra.parser {
 			}
 		}
 
-		parse(sSource: string, fnFinishCallback: IFinishFunc = null, pCaller: any = null): EParserCode {
+		final parse(sSource: string, fnFinishCallback: IFinishFunc = null, pCaller: any = null): EParserCode {
 			try {
 				this.defaultInit();
 				this._sSource = sSource;
@@ -368,23 +368,23 @@ module akra.parser {
 			}
 		}
 
-		setParseFileName(sFileName: string): void {
+		final setParseFileName(sFileName: string): void {
 			this._sFileName = sFileName;
 		}
 
-		getParseFileName(): string {
+		final getParseFileName(): string {
 			return this._sFileName;
 		}
 
-		pause(): EParserCode {
+		final pause(): EParserCode {
 			return EParserCode.k_Pause;
 		}
 
-		resume(): EParserCode {
+		final resume(): EParserCode {
 			return this.resumeParse();
 		}
 
-		printStates(isBaseOnly: boolean = true): void {
+		final printStates(isBaseOnly: boolean = true): void {
 			if (!isDef(this._pStateList)) {
 				logger.log("It`s impossible to print states. You must init parser in debug-mode");
 				return;
@@ -393,7 +393,7 @@ module akra.parser {
 			logger.log(sMsg);
 		}
 
-		printState(iStateIndex: uint, isBaseOnly: boolean = true): void {
+		final printState(iStateIndex: uint, isBaseOnly: boolean = true): void {
 			if (!isDef(this._pStateList)) {
 				logger.log("It`s impossible to print states. You must init parser in debug-mode");
 				return;
@@ -409,11 +409,11 @@ module akra.parser {
 			logger.log(sMsg);
 		}
 
-		getGrammarSymbols(): IMap<string> {
+		final getGrammarSymbols(): IMap<string> {
 			return this._pGrammarSymbols;
 		}
 
-		/** inline */ getSyntaxTree(): IParseTree {
+		final getSyntaxTree(): IParseTree {
 			return this._pSyntaxTree;
 		}
 
@@ -688,7 +688,7 @@ module akra.parser {
 
 			var sRule: string, sName: string;
 			var pNames: string[];
-			var i: uint = 0, j: uint = 0, k: uint = null;
+			var i: uint = 0, j: uint = 0, k: uint = 0;
 			var pRulesMap: IRuleMap = this._pRulesDMap[sSymbol];
 
 			var pTempRes: IMap<boolean> = <IMap<boolean>>{};
@@ -1266,7 +1266,7 @@ module akra.parser {
 			var pItemList: IItem[] = <IItem[]>pTestState.getItems();
 			var pState: IState;
 			var pItem: IItem;
-			var i: uint = 0, j: uint = 0, k: string = null;
+			var i: uint = 0, j: uint = 0, k: string;
 
 			var nBaseItemTest = pTestState.getNumBaseItems();
 			var nBaseItemX = pStateX.getNumBaseItems();
@@ -1310,7 +1310,7 @@ module akra.parser {
 			var pItemList: IItem[] = <IItem[]>this._pBaseItemList;
 			var pTable: IBoolDMap = this._pExpectedExtensionDMap;
 			var i: uint = 0, j: uint = 0, k: uint = 0;
-			var sSymbol: string = null;
+			var sSymbol: string = "";
 			var isNewExpected: boolean = false;
 
 			pItemList[0].addExpected(END_SYMBOL);
@@ -1361,7 +1361,7 @@ module akra.parser {
 
 			var i: uint = 0, j: uint = 0;
 			var pStateList: IState[] = this._pStateList;
-			var sSymbol: string = null;
+			var sSymbol: string = "";
 			var pState: IState;
 			var pSymbols: string[] = Object.keys(this._pSymbolMap);
 
@@ -1384,7 +1384,7 @@ module akra.parser {
 
 			var i: uint = 0, j: uint = 0;
 			var pStateList: IState[] = this._pStateList;
-			var sSymbol: string = null;
+			var sSymbol: string = "";
 			var pState: IState;
 			var pSymbols: string[] = Object.keys(this._pSymbolMap);
 
@@ -1653,7 +1653,7 @@ module akra.parser {
 
 		private statesToString(isBaseOnly: boolean = true): string {
 			if (!isDef(this._pStateList)) {
-				return null;
+				return "";
 			}
 
 			var sMsg: string = "";
@@ -1668,7 +1668,7 @@ module akra.parser {
 		}
 
 		private operationToString(pOperation: IOperation): string {
-			var sOperation: string = null;
+			var sOperation: string = "";
 
 			switch (pOperation.type) {
 				case EOperationType.k_Shift:
