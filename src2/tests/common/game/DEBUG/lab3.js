@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Dec 24 2013 13:50:48 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Dec 26 2013 21:08:59 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/lab3.ts
  * name: lab3

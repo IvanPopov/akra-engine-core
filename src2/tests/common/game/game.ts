@@ -18,7 +18,7 @@ declare var $: JQueryStatic;
 #define mat3(...) Mat3.stackCeil.set(__VA_ARGS__)
 #define mat4(...) Mat4.stackCeil.set(__VA_ARGS__)
 
-#define DEBUG_TERRAIN 1
+//#define DEBUG_TERRAIN 1
 
 
 
@@ -1803,6 +1803,11 @@ module akra {
 		pTubeBetweenRocks.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
 		pTubeBetweenRocks.setPosition(new Vec3(-55., -12.15, -82.00));
 		
+		pTubeBetweenRocks.explore((pEntity: IEntity): bool => {
+			if (scene.isModel(pEntity)) {
+				(<ISceneModel>pEntity).mesh.shadow = false;
+			}
+		});
 		
 
 		pScene.bind("beforeUpdate", update);
@@ -1817,6 +1822,7 @@ module akra {
 		pCamera 		= self.camera 	= createCameras(pScene);
 		pViewport 						= createViewports(new render.DSViewport(pCamera), pCanvas, pUI);
 		pTerrain 		= self.terrain 	= createTerrain(pScene, true);
+		// (<any>pTerrain.megaTexture).connectToServer("ws://localhost:6112");
 										  createModels();
 		pSkyBoxTexture 					= createSkyBox(pRmgr, <IDSViewport>pViewport);
 		pSky 			= self.sky 		= createSky(pScene, 14.);
@@ -1883,6 +1889,10 @@ module akra {
 		pKeymap.bind("N", () => {
 			if (pTerrain.megaTexture)
 				pTerrain.megaTexture["_bColored"] = !pTerrain.megaTexture["_bColored"];
+		});
+
+		pKeymap.bind("SPACE", () => {
+			pEngine.isActive()? pEngine.pause(): pEngine.play();
 		});
 
 		// (<any>sefl).edgeDetection = edgeDetection(<IDSViewport>pViewport);

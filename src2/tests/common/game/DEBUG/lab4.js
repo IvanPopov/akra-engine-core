@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Dec 24 2013 14:05:21 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Dec 26 2013 22:32:33 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/lab4.ts
  * name: lab4
@@ -446,10 +446,21 @@ var akra;
         var pLight = pScene.createLightPoint(akra.ELightTypes.PROJECT);
         pLight.attachToParent(pCamera);
         pLight.setInheritance(akra.ENodeInheritance.ALL);
-        pLight.params.ambient.set(0.0, 0.0, 0.0, 1);
-        pLight.params.diffuse.set(1.);
-        pLight.params.specular.set(.1);
-        pLight.params.attenuation.set(0.5, 0, 0);
+        pLight.params.ambient.set(0.05);
+        pLight.params.diffuse.set(0.25);
+        pLight.params.specular.set(.05);
+        pLight.params.attenuation.set(0.25, 0, 0);
+        var pTex = pViewport["_pDeferredColorTextures"][0];
+        var pColorViewport = pCanvas.addViewport(new akra.render.TextureViewport(pTex, 0.05, 0.05, .30, .30, 40.));
+        var pNormalViewport = pCanvas.addViewport(new akra.render.TextureViewport(pTex, 0.05, 0.40, .30, .30, 50.));
+        function onResize(pViewport) {
+            pColorViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
+            pNormalViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
+        }
+        onResize(pViewport);
+        pViewport.bind("viewportDimensionsChanged", onResize);
+        pColorViewport.effect.addComponent("akra.system.display_consistent_colors");
+        pNormalViewport.effect.addComponent("akra.system.display_normals");
         var pCube = akra.util.lineCube(pScene);
         pCube.attachToParent(pScene.getRootNode());
         pCube.setPosition(0., 1., 0.);
@@ -770,7 +781,10 @@ var akra;
                             break;
                     }
                 });
-                ((pRealArteryObj.child).mesh.getSubset(0).material.diffuse).set(akra.util.randomColor(true));
+                var pColor = akra.util.randomColor(true);
+                ((pRealArteryObj.child).mesh.getSubset(0).material.diffuse).set(pColor);
+                ((pRealArteryObj.child).mesh.getSubset(0).material.ambient).set(pColor);
+                ((pRealArteryObj.child).mesh.getSubset(0).material.specular).set(0.25);
                 gui.open();
                 fnCallback && fnCallback();
             });
@@ -778,6 +792,7 @@ var akra;
         loadObjFromMATLAB(akra.DATA + "models/tof_multislab_tra_2-tan.spline.2n_poyda.obj");
         loadObjFromMATLAB(akra.DATA + "models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj");
         loadObjFromMATLAB(akra.DATA + "models/tof_multislab_tra_2.obj");
+        loadObjFromMATLAB(akra.DATA + "models/caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj");
         pArteriesModelObj.bind("loaded", /** @inline */function () {
             var pParent = pScene.createNode();
             pParent.attachToParent(pScene.getRootNode());

@@ -113,17 +113,17 @@ module akra.util {
 		    return pEntity;
 		}
 
-		explore(fn: IExplorerFunc): void {
+		explore(fn: IExplorerFunc, bWithSiblings: bool = false) {
 			if (fn(this) === false) {
 		        return;
 		    }
 
-		    if (this._pSibling) {
-		        this._pSibling.explore(fn);
+			if (this._pSibling && bWithSiblings) {
+		        this._pSibling.explore(fn, true);
 		    }
 
 		    if (this._pChild) {
-		        this._pChild.explore(fn);
+		        this._pChild.explore(fn, true);
 		    }
 		}
 

@@ -76,6 +76,8 @@ module akra.terrain {
 
 		private _bManualMinLevelLoad: bool = false;
 
+		private _bStreaming: bool = false;
+
 	    constructor(pEngine: IEngine) {
 	    	this._pEngine = pEngine;
 	    }
@@ -165,15 +167,38 @@ module akra.terrain {
     	    	this.connect(this._pRPC, SIGNAL(joined), SLOT(loadMinTextureLevel), EEventTypes.BROADCAST);
     	    	this.connect(this._pRPC, SIGNAL(error), SLOT(rpcErrorOccured), EEventTypes.BROADCAST);
     		}
-
-    	    this._pRPC.join("ws://23.21.68.208:6112");
-    	    // this._pRPC.join("ws://localhost:6112");
     	    
+
+
     	    this._pRPC.setProcedureOption("getMegaTexture", "lifeTime", 60000);
     	    this._pRPC.setProcedureOption("getMegaTexture", "priority", 1);
 
     	    this._pRPC.setProcedureOption("loadMegaTexture", "lifeTime", 60000);
     	    this._pRPC.setProcedureOption("loadMegaTexture", "priority", 1);
+	    }
+
+	    enableStreaming(bEnable?: bool = true): void {
+	    	if (bEnable) {
+	    		this.connectToServer();
+	    	}
+	    	else{
+	    		this.disconnectFromServer();
+	    	}
+	    }
+
+	    connectToServer(sURL: string = "ws://23.21.68.208:6112"): void {
+    	    this._pRPC.join(sURL);
+    	    // this._pRPC.join("ws://localhost:6112");
+    	    this._bStreaming = true;
+    	    
+    	    for(var i = 1; i < this._pSectorLoadInfo.length; i++){
+	          this.setSectorLoadInfoToDefault(this._pSectorLoadInfo[i]);
+	        }
+	    }
+
+	    disconnectFromServer(): void {
+	    	this._pRPC.detach();
+			this._bStreaming = false;
 	    }
 
 		inline set manualMinLevelLoad(bManual: bool) {
@@ -191,7 +216,7 @@ module akra.terrain {
 				CRITICAL("ERROR");
 			}
 
-			if(!this._pXY[0].isLoaded){
+			if(!this._pXY[0].isLoaded) {
 				// var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
 
 				// if(tCurrentTime - this._pSectorLoadInfo[0][0] > 90000){
@@ -538,6 +563,7 @@ module akra.terrain {
 						  iAreaX?: uint, iAreaY?: uint, 
 						  iAreaWidth?: uint, iAreaHeight?: uint): void 
 		{
+
 		    var iBlockSize: uint = this._iBlockSize /** this._pXY[iLevelTex].width / this._v2iTextureLevelSize.x*/;
 
 		    var iOrigTexEndX: uint = math.ceil((iOrigTexX + iWidth) / iBlockSize) * iBlockSize;
@@ -609,6 +635,10 @@ module akra.terrain {
 		private _fnPRCCallBack: Function = null;
 
 		private getDataByRPC(iLev: uint, iX: uint, iY: uint, iBlockSize: uint): void {
+			if (!this._bStreaming) {
+				return;
+			}
+
 			var me: MegaTexture = this;
 
 			if(isNull(this._fnPRCCallBack)){

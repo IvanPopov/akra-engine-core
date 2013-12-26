@@ -119,11 +119,29 @@ module akra {
 		var pLight: IProjectLight = <IProjectLight>pScene.createLightPoint(ELightTypes.PROJECT);
 		pLight.attachToParent(pCamera);
 		pLight.setInheritance(ENodeInheritance.ALL);
-		pLight.params.ambient.set(0.0, 0.0, 0.0, 1);
-		pLight.params.diffuse.set(1.);
-		pLight.params.specular.set(.1);
-		pLight.params.attenuation.set(0.5, 0, 0);
+		pLight.params.ambient.set(0.05);
+		pLight.params.diffuse.set(0.25);
+		pLight.params.specular.set(.05);
+		pLight.params.attenuation.set(0.25, 0, 0);
 
+#ifdef DEBUG
+
+		var pTex: ITexture = <ITexture>pViewport["_pDeferredColorTextures"][0];
+		var pColorViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.05, .30, .30, 40.));
+		var pNormalViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.40, .30, .30, 50.));
+
+		function onResize(pViewport: IViewport) {
+			pColorViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
+			pNormalViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
+		}
+
+		onResize(pViewport);
+		
+		pViewport.bind("viewportDimensionsChanged", onResize);
+
+		pColorViewport.effect.addComponent("akra.system.display_consistent_colors");
+		pNormalViewport.effect.addComponent("akra.system.display_normals");
+#endif
 
 		var pCube: ISceneModel = util.lineCube(pScene);
 		pCube.attachToParent(pScene.getRootNode());
@@ -479,7 +497,10 @@ module akra {
 					}
 				});
 
-			(<IColor>(<ISceneModel>pRealArteryObj.child).mesh.getSubset(0).material.diffuse).set(util.randomColor(true));
+			var pColor: IColor = util.randomColor(true);
+			(<IColor>(<ISceneModel>pRealArteryObj.child).mesh.getSubset(0).material.diffuse).set(pColor);
+			(<IColor>(<ISceneModel>pRealArteryObj.child).mesh.getSubset(0).material.ambient).set(pColor);
+			(<IColor>(<ISceneModel>pRealArteryObj.child).mesh.getSubset(0).material.specular).set(0.25);
 
 				gui.open();
 				
@@ -490,6 +511,7 @@ module akra {
 		loadObjFromMATLAB(DATA + "models/tof_multislab_tra_2-tan.spline.2n_poyda.obj");
 		loadObjFromMATLAB(DATA + "models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj");
 		loadObjFromMATLAB(DATA + "models/tof_multislab_tra_2.obj");
+		loadObjFromMATLAB(DATA + "models/caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj");
 
 	    pArteriesModelObj.bind("loaded", () => {
 	    	var pParent: ISceneNode = pScene.createNode();

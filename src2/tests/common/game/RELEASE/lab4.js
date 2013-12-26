@@ -2,39 +2,914 @@
 
 
 /*---------------------------------------------
- * assembled at: Tue Dec 24 2013 21:15:03 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Dec 26 2013 22:38:07 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/RELEASE/
  * file: tests/common/game/lab4.ts
  * name: lab4
  *--------------------------------------------*/
 
 
-'use strict';var __extends=this.__extends||function(a,d){function c(){this.constructor=a}c.prototype=d.prototype;a.prototype=new c},akra;
-(function(a){(a.util||(a.util={})).navigation=function(d,c){function u(b){var l=a.Vec3.stackCeil.set(0),d=b.getCamera();if(a.ide&&a.ide.selectedObject)return l.set(a.ide.selectedObject.worldPosition),l;if(c)return l.set(c),l;b.unprojectPoint(b.actualWidth/2,b.actualHeight/2,l);l.subtract(d.worldPosition,a.Vec3.stackCeil.set()).length()>=d.farPlane&&(e.point=d.worldPosition,e.normal=d.localOrientation.multiplyVec3(a.Vec3.stackCeil.set(0,0,-1)),E.intersectRay3d(e,l)||l.set(e.normal.scale(10,a.Vec3.stackCeil.set()).add(e.point)));
-return l}function p(a){var b=a.getCamera();u(a).subtract(b.worldPosition).length();return u(a).subtract(b.worldPosition).length()/5}function m(b,d,e){b=b.getCamera();d.hide(b.parent!==b.root);d=d.getCamera();e=b.worldPosition.subtract(e,a.Vec3.stackCeil.set()).normalize().scale(5.5);d.setPosition(e);d.lookAt(a.Vec3.stackCeil.set(0),b.localOrientation.multiplyVec3(a.Vec3.stackCeil.set(0,1,0)))}"undefined"===typeof c&&(c=null);var q=d.getTarget(),n=q.getRenderer().getEngine(),h=n.getSceneManager().createScene3D(".3d-box");
-n.getScene();var z=n.getResourceManager().loadModel(a.DATA+"/models/ocube/cube.DAE",{shadows:!1}),n=h.createCamera();n.attachToParent(h.getRootNode());var o=h.createLightPoint(a.ELightTypes.PROJECT);o.attachToParent(n);o.setInheritance(a.ENodeInheritance.ALL);o.params.ambient.set(0,0,0,1);o.params.diffuse.set(1);o.params.specular.set(0.1);o.params.attenuation.set(0.5,0,0);var b=d.getTarget().addViewport(new a.render.DSViewport(n,0.7,0.05,0.25,0.25,100)),E=new a.geometry.Plane3d(a.Vec3.stackCeil.set(1,
-0,0),a.Vec3.stackCeil.set(0),a.Vec3.stackCeil.set(0,0,1)),e=new a.geometry.Ray3d;q.onmousewheel=function(b,e,h,c){d.getCamera().addRelPosition(0,0,a.math.sign(-c)*p(d))};d.enableSupportFor3DEvent(a.E3DEventTypes.DRAGSTART|a.E3DEventTypes.DRAGSTOP);var A=new a.Vec3,g=0,r=0,B=1;d.ondragstart=function(b,e,c,h){e===a.EMouseButton.MIDDLE&&(q.setCursor("move"),A.set(b.getCamera().worldPosition),g=c,r=h,B=p(d))};d.ondragstop=function(b,d){d===a.EMouseButton.MIDDLE&&q.setCursor("auto")};d.ondragging=function(b,
-d,e,c){d===a.EMouseButton.MIDDLE&&(b=b.getCamera(),e=a.Vec3.stackCeil.set(-(e-g),-(c-r),0).scale(0.05*B),b.setPosition(A.add(b.localOrientation.multiplyVec3(e),a.Vec3.stackCeil.set())))};var s=a.ERenderStateValues.SRCALPHA,w=a.ERenderStateValues.DESTALPHA;b.bind("render",function(b,d,e){b=d.getPass(e);d.isLastPass(e)&&(b.setRenderState(a.ERenderStates.ZENABLE,a.ERenderStateValues.FALSE),b.setRenderState(a.ERenderStates.BLENDENABLE,a.ERenderStateValues.TRUE),b.setRenderState(a.ERenderStates.SRCBLEND,
-s),b.setRenderState(a.ERenderStates.DESTBLEND,w))});b.enableSupportFor3DEvent(a.E3DEventTypes.CLICK|a.E3DEventTypes.MOUSEOVER|a.E3DEventTypes.MOUSEOUT|a.E3DEventTypes.DRAGSTART|a.E3DEventTypes.DRAGSTOP|a.E3DEventTypes.MOUSEWHEEL);z.bind("loaded",function(){function e(M,F){k.set(u(d));var j=d.getCamera(),i=j.worldPosition.length();j.setPosition(k.add(M.normalize().scale(i),a.Vec3.stackCeil.set()));j.lookAt(k,F);j.update();m(d,b,k)}var c=z.attachToScene(h).child,A=c.mesh,E=0,n=0,k=new a.Vec3(0),g=!1,
-o=new a.Vec3,p=new a.Vec3,r=new a.Quat4;d.bind("viewportCameraChanged",function(){m(d,b,k)});m(d,b,k);c.ondragstart=function(a,b,e,i,f){a=d.getCamera();E=i;n=f;g=!0;b.highlight(c,null);q.hideCursor();k.set(u(d));o.set(a.worldPosition);p.set(a.localPosition);r.set(a.localOrientation)};c.ondragstop=function(b,e){g=!1;e.getTarget().hideCursor(!1);s=a.ERenderStateValues.SRCALPHA;w=a.ERenderStateValues.DESTALPHA;e.highlight(null,null);e.touch()};c.ondragging=function(b,e,j,i,f){var b=d.getCamera(),j=k,
-c=o,f=-((f-n)/100),i=-((i-E)/100);a.isNull(c)&&(c=b.worldPosition);c=c.subtract(j,a.Vec3.stackCeil.set());i=a.Quat4.fromYawPitchRoll(i,0,0,a.Quat4.stackCeil.set());b.setPosition(i.multiplyVec3(c,a.Vec3.stackCeil.set()).add(j));b.setRotation(i.multiply(r,a.Quat4.stackCeil.set()));i=a.Quat4.fromAxisAngle(b.localOrientation.multiplyVec3(a.Vec3.stackCeil.set(1,0,0)),-f);c=b.localPosition.subtract(j,a.Vec3.stackCeil.set());b.setPosition(i.multiplyVec3(c,a.Vec3.stackCeil.set()).add(j));b.setRotation(i.multiply(b.localOrientation,
-a.Quat4.stackCeil.set()));m(d,e,k)};for(var I=0;I<A.length;++I){var J=A.getSubset(I);J.onmouseover=function(b,e){e.highlight(c,g?null:b);s=a.ERenderStateValues.ONE;w=a.ERenderStateValues.INVSRCALPHA};J.onmouseout=function(b,e){g?(e.highlight(c,null),s=a.ERenderStateValues.ONE,w=a.ERenderStateValues.INVSRCALPHA):(e.highlight(null,null),s=a.ERenderStateValues.SRCALPHA,w=a.ERenderStateValues.DESTALPHA)};J.onclick=function(c){d.getCamera();switch(c.name){case "submesh-0":e(a.Vec3.stackCeil.set(0,-1,0),
-a.Vec3.stackCeil.set(0,0,1));console.log("bottom");break;case "submesh-1":e(a.Vec3.stackCeil.set(1,0,0),a.Vec3.stackCeil.set(0,1,0));console.log("right");break;case "submesh-2":console.log("left");e(a.Vec3.stackCeil.set(-1,0,0),a.Vec3.stackCeil.set(0,1,0));break;case "submesh-3":console.log("top");e(a.Vec3.stackCeil.set(0,1,0),a.Vec3.stackCeil.set(0,0,-1));break;case "submesh-4":console.log("front");e(a.Vec3.stackCeil.set(0,0,1),a.Vec3.stackCeil.set(0,1,0));break;case "submesh-5":e(a.Vec3.stackCeil.set(0,
-0,-1),a.Vec3.stackCeil.set(0,1,0)),console.log("back")}m(d,b,k)}}})}})(akra||(akra={}));
-(function(a){var d=new a.util.Progress,c=d.canvas;d.color="white";d.fontColor="white";c.style.position="absolute";c.style.left="50%";c.style.top="70%";c.style.zIndex="100000";c.style.marginTop=-d.height/2+"px";c.style.marginLeft=-d.width/2+"px";document.body.appendChild(d.canvas);d.drawText("Initializing demo");var c=a.createEngine({renderer:{premultipliedAlpha:!1,preserveDrawingBuffer:!0},loader:{changed:function(b,c,e){b="";switch(c.status){case a.EDependenceStatuses.LOADING:b+="Loading ";break;
-case a.EDependenceStatuses.UNPACKING:b+="Unpacking "}switch(c.status){case a.EDependenceStatuses.LOADING:case a.EDependenceStatuses.UNPACKING:b+="resource "+a.path.info(a.path.uri(c.path).path).basename;a.isNull(e)||(b+=" ("+(100*(e.loaded/e.total)).toFixed(2)+"%)");d.drawText(b);break;case a.EDependenceStatuses.LOADED:d.total[c.deps.depth]=c.deps.total,d.element=c.deps.loaded,d.depth=c.deps.depth,d.draw()}},loaded:function(){d.cancel();document.body.removeChild(d.canvas)}},deps:{files:[{path:"grammars/HLSL.gr"}],
-deps:{files:[{path:"effects/custom/arteries2.afx"},{path:"textures/arteries/AG/arteries.ara"}]}}}),u=c.getSceneManager().createUI(),p=c.getRenderer().getDefaultCanvas(),m=null,q=null,n=c.getResourceManager(),h=c.getScene(),z,o;c.bind("depsLoaded",function(b){function d(b,e){var c=a.path.info(b).filename,F=n.loadModel(b,{shadows:!1,axis:{x:{index:0,inverse:!1},y:{index:2,inverse:!1},z:{index:1,inverse:!1}}});F.bind("loaded",function(){var b=F.attachToScene(h);b.scale(0.008);b.setPosition(-0.75,1,-1);
-var d=s.addFolder(c),f=d.add({mode:"edged faces"},"mode",["colored","wireframe","edged faces"]);d.add({visible:!1},"visible").onChange(function(a){b.child.mesh.getSubset(0).setVisible(a)});b.child.mesh.getSubset(0).setVisible(!1);f.onChange(function(a){switch(a){case "colored":b.child.mesh.getSubset(0).wireframe(!1);break;case "wireframe":b.child.mesh.getSubset(0).wireframe(!0,!1);break;case "edged faces":b.child.mesh.getSubset(0).wireframe(!0)}});b.child.mesh.getSubset(0).material.diffuse.set(a.util.randomColor(!0));
-d.open();e&&e()})}var e=u;"undefined"===typeof e&&(e=null);var c=null;a.isNull(e)?(e=p._pCanvas,c=document.createElement("div"),document.body.appendChild(c),c.appendChild(e),c.style.position="fixed"):(c=e.createComponent("IDE"),c.render($(document.body)));m=h.createCamera();m.attachToParent(h.getRootNode());m.setPosition(4,4,3.5);m.lookAt(a.Vec3.stackCeil.set(0,1,0));window.camera=m;e=new a.render.DSViewport(m);c=u;"undefined"===typeof c&&(c=null);p.addViewport(e);a.isNull(c)&&(p.resize(window.innerWidth,
-window.innerHeight),window.onresize=function(){p.resize(window.innerWidth,window.innerHeight)});q=e;a.util.navigation(q,new a.Vec3(0,1,0));var e=h,g=!0,c=!1,r=2;"undefined"===typeof g&&(g=!1);"undefined"===typeof c&&(c=!1);"undefined"===typeof r&&(r=100);var B=a.util.createQuad(e,5*r);B.attachToParent(e.getRootNode());B.mesh.getSubset(0).setVisible(!g);g=a.util.createSceneSurface(e,r);g.addPosition(0,-0.01,0);g.attachToParent(e.getRootNode());g.mesh.getSubset(0).setVisible(!c);b.exec();b=h.createLightPoint(a.ELightTypes.PROJECT);
-b.attachToParent(m);b.setInheritance(a.ENodeInheritance.ALL);b.params.ambient.set(0,0,0,1);b.params.diffuse.set(1);b.params.specular.set(0.1);b.params.attenuation.set(0.5,0,0);b=a.util.lineCube(h);b.attachToParent(h.getRootNode());b.setPosition(0,1,0);for(var s=new dat.GUI,w=0.00781102*0.8,y=[],b=1;41>=b;++b)e="ar.",10>b&&(e+="0"),e+=String(b),e=n.texturePool.loadResource(e),e.setFilter(a.ETextureParameters.MIN_FILTER,a.ETextureFilters.LINEAR),e.setFilter(a.ETextureParameters.MAG_FILTER,a.ETextureFilters.LINEAR),
-y.push(e);a.io.createFileDropArea(document.body,{drop:function(b,e){var c=n.colladaPool.createResource("dynamic"+a.sid());c.parse(e,{wireframe:true,debug:true});c.notifyLoaded();var c=c.attachToScene(h),d=c.findEntity("joint0");c.findEntity("joint0[mesh-container]");d.explore(function(b){if(a.scene.isJoint(b)){var e=a.util.basis(h);e.scale(0.01);b.update();e.setInheritance(a.ENodeInheritance.ALL);e.attachToParent(b)}});var j=o,i=void 0,f=void 0;typeof i==="undefined"&&(i=null);typeof f==="undefined"&&
-(f=false);for(var d=a.animation.createParameter(),D,x,g=0;g<j.length;++g){x=j[g];i&&x.set(i.worldMatrix.multiplyVec4(a.Vec4.stackCeil.set(x,1)).xyz);D=a.Mat4.stackCeil.set(1);D.setTranslation(x);D=new a.animation.PositionFrame(g/(j.length-1),D);d.keyFrame(D);f&&console.log(g/(j.length-1),x.toString())}for(var k=[],m=[],l=[],j=0;j<z.length;j++){i=d.frame(j/z.length).translation;f=c.findEntity("joint"+j);x=f.localMatrix.getTranslation(a.Vec3.stackCeil.set());f.localMatrix=a.Mat4.stackCeil.set(1);f.setPosition(x);
-f.update();f.setInheritance(a.ENodeInheritance.NONE);f.setPosition(f.worldPosition);f.update();k.push(new a.Vec3(f.worldPosition));m.push(new a.Vec3(i));l.push(f)}s.add({transform:0},"transform").min(0).max(1).step(0.005).onChange(function(b){for(var e=0;e<l.length;++e){var c=m[e],d=l[e],c=k[e].scale(1-b,a.Vec3.stackCeil.set()).add(c.scale(b,a.Vec3.stackCeil.set()));d.setPosition(c)}})}});var l=n.loadModel(a.DATA+"models/arteries_hp.obj",{shadows:!1,axis:{x:{index:0,inverse:!1},y:{index:2,inverse:!1},
-z:{index:1,inverse:!1}}}),v=null;a.fopen(a.DATA+"/models/coord_real_ag.txt","r").read(function(b,e){var c;var d=e.split("\n");c=d[0].split(",");if(c[0]!=="Mx"||c[1]!=="My"||c[2]!=="Mz"){alert("wrong coords format: "+d[0]);c=void 0}else{a.Vec3.stackCeil.set(1.0588,-1.7443,-1.8989);parseFloat(d[d.length-2].split(",")[2]);c=[];for(var j=1;j<d.length;++j)if(!(d[j].length<3)){var i=d[j].split(",");c.push(new a.Vec3(parseFloat(i[0]),parseFloat(i[1]),parseFloat(i[2])));var i=c[j-1],f=a.Vec3.stackCeil.set();
-f.x=(i.y+31.25)*0.008-1;f.z=i.x*0.008-1;f.y=i.z*0.008+1;i.set(f)}}o=c;d=h.getRootNode();j=0.01;typeof j==="undefined"&&(j=0.1);for(i=0;i<c.length;++i){var f=c[i],g=a.util.basis(h);g.attachToParent(d);g.setInheritance(a.ENodeInheritance.ALL);g.scale(j);g.setPosition(f)}});d(a.DATA+"models/tof_multislab_tra_2-tan.spline.2n_poyda.obj");d(a.DATA+"models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj");d(a.DATA+"models/tof_multislab_tra_2.obj");l.bind("loaded",function(){var b=h.createNode();b.attachToParent(h.getRootNode());
-v=l.attachToScene(b);v.setInheritance(a.ENodeInheritance.ALL);b.scale(0.0525);b.setPosition(0.0415,1.099,-0.026);b.update();a.fopen(a.DATA+"/models/coord4.txt","r").read(function(c,e){var d;d=e.split("\n");var f=d[0].split(",");if(f[0]!=="Mx"||f[1]!=="My"||f[2]!=="Mz"){alert("wrong coords format: "+d[0]);d=void 0}else{a.Vec3.stackCeil.set(1.0588,-1.7443,-1.8989);parseFloat(d[d.length-2].split(",")[2]);for(var f=[],g=1;g<d.length;++g)if(!(d[g].length<3)){var h=d[g].split(",");f.push(new a.Vec3(parseFloat(h[0]),
-parseFloat(h[1]),parseFloat(h[2])));var h=f[g-1],k=a.Vec3.stackCeil.set();k.x=h.y;k.y=h.z;k.z=h.x;h.set(k)}d=f}for(f=0;f<d.length;++f){g=b.worldMatrix.multiplyVec4(a.Vec4.stackCeil.set(d[f],1));d[f].set(g.xyz)}z=d});var c=s.addFolder("modeled carotid artery"),e=c.add({mode:"edged faces"},"mode",["colored","wireframe","edged faces"]);c.add({visible:false},"visible").onChange(function(a){v.child.mesh.getSubset(0).setVisible(a)});v.child.mesh.getSubset(0).setVisible(false);e.onChange(function(a){switch(a){case "colored":v.child.mesh.getSubset(0).wireframe(false);
-break;case "wireframe":v.child.mesh.getSubset(0).wireframe(true,false);break;case "edged faces":v.child.mesh.getSubset(0).wireframe(true)}});window.arteries_obj=b});var t=h.createSprite(),K=0,k=0,C=0,G=1,L=0,H=0;t.attachToParent(h.getRootNode());t.setRotationByXYZAxis(a.math.PI/2,0,0);t.setPosition(0,1,0);t.setTexture(y[0]);window.billboard=t;b=s.addFolder("slice");e=b.add({slice:0},"slice").min(0).max(1).step(0.005);b.add({opacity:H},"opacity").min(0).max(1).step(0.01).onChange(function(a){H=a});
-e.onChange(function(b){t.setPosition(0,b*y.length*w+1,0);K=b;k=K*(y.length-1);C=a.math.floor(k);G=C+1;L=(k-C)/(G-C)});t.getRenderable().getRenderMethodDefault().effect.addComponent("akra.custom.arteries_slice");t.getRenderable().bind("beforeRender",function(a,b,c){c.setTexture("SLICE_A",y[C]);c.setTexture("SLICE_B",y[G]||null);c.setUniform("SLICE_K",L);c.setUniform("SLICE_OPACITY",H)});b=h.createCamera();b.setOrthoParams(2,2,-0.01,0.01);b.attachToParent(t);b.setInheritance(a.ENodeInheritance.ALL);
-b.setPosition(0,0,0);b.setRotationByXYZAxis(a.math.PI,0,0);window.projCam=b;e=n.createTexture("slice");e.create(2048,2048,1,null,a.ETextureFlags.RENDERTARGET,0,0,a.ETextureTypes.TEXTURE_2D,a.EPixelFormats.R8G8B8);e.getBuffer().getRenderTarget().addViewport(new a.render.DSViewport(b));p.addViewport(new a.render.TextureViewport(e,0.05,0.05,256/q.actualWidth,256/q.actualHeight,5))})})(akra||(akra={}));
+var __extends = this.__extends || function (d, b) {
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var akra;
+(function (akra) {
+    (function (util) {
+        function navigation(pGeneralViewport, pRotationPoint) {
+            if (typeof pRotationPoint === "undefined") { pRotationPoint = null; }
+            var pCanvas = pGeneralViewport.getTarget();
+            var pEngine = pCanvas.getRenderer().getEngine();
+            var pSceneMgr = pEngine.getSceneManager();
+            var pScene = pSceneMgr.createScene3D(".3d-box");
+            var pGeneralScene = pEngine.getScene();
+            var pRmgr = pEngine.getResourceManager();
+            //scene with cube backend
+            var pModel = pRmgr.loadModel(akra.DATA + "/models/ocube/cube.DAE", {
+                shadows: false
+            });
+            var pCamera = pScene.createCamera();
+            pCamera.attachToParent(pScene.getRootNode());
+            var pLight = pScene.createLightPoint(akra.ELightTypes.PROJECT);
+            pLight.attachToParent(pCamera);
+            pLight.setInheritance(akra.ENodeInheritance.ALL);
+            pLight.params.ambient.set(0.0, 0.0, 0.0, 1);
+            pLight.params.diffuse.set(1.);
+            pLight.params.specular.set(.1);
+            pLight.params.attenuation.set(0.5, 0, 0);
+            var pViewport = pGeneralViewport.getTarget().addViewport(new akra.render.DSViewport(pCamera, .7, .05, .25, .25, 100));
+            //detection of center point
+            var pPlaneXZ = new akra.geometry.Plane3d(akra.Vec3.stackCeil.set(1., 0., 0.), akra.Vec3.stackCeil.set(0.), akra.Vec3.stackCeil.set(0., 0., 1.));
+            var pCameraDir = new akra.geometry.Ray3d();
+            function detectCenterPoint(pGeneralViewport) {
+                var vDest = akra.Vec3.stackCeil.set(0.);
+                var fDistXY;
+                var fUnprojDist;
+                var pCamera = pGeneralViewport.getCamera();
+                if (akra.ide && akra.ide.selectedObject) {
+                    vDest.set(akra.ide.selectedObject.worldPosition);
+                    return vDest;
+                }
+                if (pRotationPoint) {
+                    vDest.set(pRotationPoint);
+                    return vDest;
+                }
+                pGeneralViewport.unprojectPoint(pGeneralViewport.actualWidth / 2., pGeneralViewport.actualHeight / 2., vDest);
+                fUnprojDist = vDest.subtract(pCamera.worldPosition, akra.Vec3.stackCeil.set()).length();
+                if (fUnprojDist >= pCamera.farPlane) {
+                    pCameraDir.point = pCamera.worldPosition;
+                    pCameraDir.normal = pCamera.localOrientation.multiplyVec3(akra.Vec3.stackCeil.set(0., 0., -1.0));
+                    if (!pPlaneXZ.intersectRay3d(pCameraDir, vDest)) {
+                        vDest.set(pCameraDir.normal.scale(10., akra.Vec3.stackCeil.set()).add(pCameraDir.point));
+                    }
+                }
+                return vDest;
+            }
+            function detectSpeedRation(pGeneralViewport) {
+                var pCamera = pGeneralViewport.getCamera();
+                var fLength = detectCenterPoint(pGeneralViewport).subtract(pCamera.worldPosition).length();
+                var fSpeedRation = detectCenterPoint(pGeneralViewport).subtract(pCamera.worldPosition).length() / 5.;
+                return fSpeedRation;
+            }
+            //zoom backend
+            pCanvas.onmousewheel = function (pCanvas, x, y, fDelta) {
+                pGeneralViewport.getCamera().addRelPosition(0., 0., akra.math.sign(-fDelta) * detectSpeedRation(pGeneralViewport));
+            };
+            //movemenet backend!
+            pGeneralViewport.enableSupportFor3DEvent(akra.E3DEventTypes.DRAGSTART | akra.E3DEventTypes.DRAGSTOP);
+            var vWorldPosition = new akra.Vec3();
+            var pStartPos = {
+                x: 0,
+                y: 0
+            };
+            var fDragSpeedRatio = 1.;
+            pGeneralViewport.ondragstart = function (pViewport, eBtn, x, y) {
+                if (eBtn !== akra.EMouseButton.MIDDLE) {
+                    return;
+                }
+                pCanvas.setCursor("move");
+                vWorldPosition.set(pViewport.getCamera().worldPosition);
+                pStartPos.x = x;
+                pStartPos.y = y;
+                fDragSpeedRatio = detectSpeedRation(pGeneralViewport);
+            };
+            pGeneralViewport.ondragstop = function (pViewport, eBtn, x, y) {
+                if (eBtn !== akra.EMouseButton.MIDDLE) {
+                    return;
+                }
+                pCanvas.setCursor("auto");
+            };
+            pGeneralViewport.ondragging = function (pViewport, eBtn, x, y) {
+                if (eBtn !== akra.EMouseButton.MIDDLE) {
+                    return;
+                }
+                var pCamera = pViewport.getCamera();
+                var vDiff = akra.Vec3.stackCeil.set(-(x - pStartPos.x), -(y - pStartPos.y), 0.).scale(0.05 * fDragSpeedRatio);
+                pCamera.setPosition(vWorldPosition.add(pCamera.localOrientation.multiplyVec3(vDiff), akra.Vec3.stackCeil.set()));
+            };
+            //cube alpha
+            var eSrcBlend = akra.ERenderStateValues.SRCALPHA;
+            var eDestBlend = akra.ERenderStateValues.DESTALPHA;
+            pViewport.bind("render", function (pViewport, pTechnique, iPass, pRenderable, pSceneObject) {
+                var pPass = pTechnique.getPass(iPass);
+                if (pTechnique.isLastPass(iPass)) {
+                    pPass.setRenderState(akra.ERenderStates.ZENABLE, akra.ERenderStateValues.FALSE);
+                    pPass.setRenderState(akra.ERenderStates.BLENDENABLE, akra.ERenderStateValues.TRUE);
+                    pPass.setRenderState(akra.ERenderStates.SRCBLEND, eSrcBlend);
+                    pPass.setRenderState(akra.ERenderStates.DESTBLEND, eDestBlend);
+                }
+            });
+            pViewport.enableSupportFor3DEvent(akra.E3DEventTypes.CLICK | akra.E3DEventTypes.MOUSEOVER | akra.E3DEventTypes.MOUSEOUT | akra.E3DEventTypes.DRAGSTART | akra.E3DEventTypes.DRAGSTOP | akra.E3DEventTypes.MOUSEWHEEL);
+            //cube scene synchronization backend
+            function syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint) {
+                var pSceneCam = pGeneralViewport.getCamera();
+                // ASSERT (pSceneCam.parent === pSceneCam.root, "only general camera may be used.");
+                pViewport.hide(pSceneCam.parent !== pSceneCam.root);
+                var pCubeCam = pViewport.getCamera();
+                var vPos = pSceneCam.worldPosition.subtract(pCenterPoint, akra.Vec3.stackCeil.set()).normalize().scale(5.5);
+                pCubeCam.setPosition(vPos);
+                pCubeCam.lookAt(akra.Vec3.stackCeil.set(0.), pSceneCam.localOrientation.multiplyVec3(akra.Vec3.stackCeil.set(0., 1., 0.)));
+            }
+            pModel.bind("loaded", function () {
+                var pModelRoot = pModel.attachToScene(pScene);
+                var pCubeModel = pModelRoot.child;
+                var pMesh = pCubeModel.mesh;
+                var pStartPos = {
+                    x: 0,
+                    y: 0
+                };
+                var pCenterPoint = new akra.Vec3(0.);
+                var bDragStarted = false;
+                var vWorldPosition = new akra.Vec3();
+                var vLocalPosition = new akra.Vec3();
+                var qLocalOrientation = new akra.Quat4();
+                pGeneralViewport.bind("viewportCameraChanged", /** @inline */function () {
+                    syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
+                });
+                syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
+                pCubeModel.ondragstart = function (pObject, pViewport, pRenderable, x, y) {
+                    var pCamera = pGeneralViewport.getCamera();
+                    pStartPos.x = x;
+                    pStartPos.y = y;
+                    bDragStarted = true;
+                    pViewport.highlight(pCubeModel, null);
+                    pCanvas.hideCursor();
+                    pCenterPoint.set(detectCenterPoint(pGeneralViewport));
+                    vWorldPosition.set(pCamera.worldPosition);
+                    vLocalPosition.set(pCamera.localPosition);
+                    qLocalOrientation.set(pCamera.localOrientation);
+                };
+                pCubeModel.ondragstop = function (pObject, pViewport, pRenderable, x, y) {
+                    bDragStarted = false;
+                    (pViewport.getTarget()).hideCursor(false);
+                    eSrcBlend = akra.ERenderStateValues.SRCALPHA;
+                    eDestBlend = akra.ERenderStateValues.DESTALPHA;
+                    pViewport.highlight(null, null);
+                    pViewport.touch();
+                };
+                function orbitRotation2(pNode, vCenter, vFrom, fX, fY, bLookAt) {
+                    if (typeof bLookAt === "undefined") { bLookAt = true; }
+                    if (akra.isNull(vFrom)) {
+                        vFrom = pNode.worldPosition;
+                    }
+                    var qOrient;
+                    var vDistance = vFrom.subtract(vCenter, akra.Vec3.stackCeil.set());
+                    qOrient = akra.Quat4.fromYawPitchRoll(fY, 0., 0., akra.Quat4.stackCeil.set());
+                    pNode.setPosition(qOrient.multiplyVec3(vDistance, akra.Vec3.stackCeil.set()).add(vCenter));
+                    pNode.setRotation(qOrient.multiply(qLocalOrientation, akra.Quat4.stackCeil.set()));
+                    qOrient = akra.Quat4.fromAxisAngle(pNode.localOrientation.multiplyVec3(akra.Vec3.stackCeil.set(1., 0., 0.)), -fX);
+                    vDistance = pNode.localPosition.subtract(vCenter, akra.Vec3.stackCeil.set());
+                    pNode.setPosition(qOrient.multiplyVec3(vDistance, akra.Vec3.stackCeil.set()).add(vCenter));
+                    pNode.setRotation(qOrient.multiply(pNode.localOrientation, akra.Quat4.stackCeil.set()));
+                }
+                pCubeModel.ondragging = function (pObject, pViewport, pRenderable, x, y) {
+                    var pCamera = pGeneralViewport.getCamera();
+                    var fdX = (x - pStartPos.x) / 100;
+                    var fdY = (y - pStartPos.y) / 100;
+                    orbitRotation2(pCamera, pCenterPoint, vWorldPosition, -fdY, -fdX);
+                    syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
+                };
+                /*	function softAlignTo(vDir: IVec3, vUp: IVec3): void {
+                var pCamera: ICamera = pGeneralViewport.getCamera();
+                var qDest: IQuat4 = Quat4.fromForwardUp(vDir, vUp, quat4());
+                var qSrc: IQuat4 = Quat4.fromForwardUp(pCamera.worldPosition.normalize(),
+                pCamera.localOrientation.multiplyVec3(vec3(0., 1., 0.), vec3()), quat4());
+                var fDelta: float = 0.0;
+                
+                var i = setInterval(() => {
+                if (fDelta >= 1.) {
+                clearInterval(i);
+                return;
+                }
+                
+                fDelta = 1.0;
+                
+                var q = qDest;
+                //qSrc.smix(qDest, fDelta, quat4());
+                
+                var vDistance: IVec3 = pCamera.worldPosition.subtract(pCenterPoint, vec3());
+                pCamera.localPosition = q.multiplyVec3(vDistance, vec3()).add(pCenterPoint);
+                pCamera.lookAt(pCenterPoint, vUp);
+                pCamera.update();
+                
+                fDelta += 0.05;
+                
+                syncCubeWithCamera(pGeneralViewport);
+                }, 18);
+                }*/
+                function alignTo(vDir, vUp) {
+                    pCenterPoint.set(detectCenterPoint(pGeneralViewport));
+                    var pCamera = pGeneralViewport.getCamera();
+                    var fDist = pCamera.worldPosition.length();
+                    pCamera.setPosition(pCenterPoint.add(vDir.normalize().scale(fDist), akra.Vec3.stackCeil.set()));
+                    pCamera.lookAt(pCenterPoint, vUp);
+                    pCamera.update();
+                    syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
+                }
+                for(var i = 0; i < pMesh.length; ++i) {
+                    var pSubset = pMesh.getSubset(i);
+                    // pSubset.wireframe(true);
+                    pSubset.onmouseover = function (pRenderable, pViewport, pObject) {
+                        pViewport.highlight(pCubeModel, bDragStarted ? null : pRenderable);
+                        eSrcBlend = akra.ERenderStateValues.ONE;
+                        eDestBlend = akra.ERenderStateValues.INVSRCALPHA;
+                    };
+                    pSubset.onmouseout = function (pRenderable, pViewport, pObject) {
+                        if (bDragStarted) {
+                            pViewport.highlight(pCubeModel, null);
+                            eSrcBlend = akra.ERenderStateValues.ONE;
+                            eDestBlend = akra.ERenderStateValues.INVSRCALPHA;
+                        } else {
+                            pViewport.highlight(null, null);
+                            eSrcBlend = akra.ERenderStateValues.SRCALPHA;
+                            eDestBlend = akra.ERenderStateValues.DESTALPHA;
+                        }
+                    };
+                    pSubset.onclick = function (pSubset) {
+                        var pCamera = pGeneralViewport.getCamera();
+                        switch(pSubset.name) {
+                            case "submesh-0":
+                                alignTo(akra.Vec3.stackCeil.set(0., -1., 0.), akra.Vec3.stackCeil.set(0., 0., 1.));
+                                console.log("bottom");
+                                break;
+                            case "submesh-1":
+                                alignTo(akra.Vec3.stackCeil.set(1., 0., 0.), akra.Vec3.stackCeil.set(0., 1., 0.));
+                                console.log("right");
+                                break;
+                            case "submesh-2":
+                                console.log("left");
+                                alignTo(akra.Vec3.stackCeil.set(-1., 0., 0.), akra.Vec3.stackCeil.set(0., 1., 0.));
+                                break;
+                            case "submesh-3":
+                                console.log("top");
+                                alignTo(akra.Vec3.stackCeil.set(0., 1., 0.), akra.Vec3.stackCeil.set(0., 0., -1.));
+                                break;
+                            case "submesh-4":
+                                console.log("front");
+                                alignTo(akra.Vec3.stackCeil.set(0., 0., 1.), akra.Vec3.stackCeil.set(0., 1., 0.));
+                                break;
+                            case "submesh-5":
+                                alignTo(akra.Vec3.stackCeil.set(0., 0., -1.), akra.Vec3.stackCeil.set(0., 1., 0.));
+                                console.log("back");
+                                break;
+                        }
+                        syncCubeWithCamera(pGeneralViewport, pViewport, pCenterPoint);
+                    };
+                }
+            });
+        }
+        util.navigation = navigation;
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    function setup(pCanvas, pUI) {
+        if (typeof pUI === "undefined") { pUI = null; }
+        var pIDE = null;
+        if (!akra.isNull(pUI)) {
+            pIDE = pUI.createComponent("IDE");
+            pIDE.render($(document.body));
+        } else {
+            var pCanvasElement = (pCanvas)._pCanvas;
+            var pDiv = document.createElement("div");
+            document.body.appendChild(pDiv);
+            pDiv.appendChild(pCanvasElement);
+            pDiv.style.position = "fixed";
+        }
+        return pIDE;
+    }
+    function createProgress() {
+        var pProgress = new akra.util.Progress();
+        var pCanvas = pProgress.canvas;
+        pProgress.color = "white";
+        pProgress.fontColor = "white";
+        pCanvas.style.position = "absolute";
+        pCanvas.style.left = "50%";
+        pCanvas.style.top = "70%";
+        pCanvas.style.zIndex = "100000";
+        // pCanvas.style.backgroundColor = "rgba(70, 94, 118, .8)";
+        // pCanvas.style.display = "none";
+        pCanvas.style.marginTop = (-pProgress.height / 2) + "px";
+        pCanvas.style.marginLeft = (-pProgress.width / 2) + "px";
+        document.body.appendChild(pProgress.canvas);
+        pProgress.drawText("Initializing demo");
+        return pProgress;
+    }
+    function createCameras(pScene) {
+        var pCamera = pScene.createCamera();
+        pCamera.attachToParent(pScene.getRootNode());
+        pCamera.addRelRotationByEulerAngles(-akra.math.PI / 5., 0., 0.);
+        pCamera.addRelPosition(-8.0, 5.0, 11.0);
+        pCamera.update();
+        return pCamera;
+    }
+    function createSceneEnvironment(pScene, bHideQuad, bHideSurface, fSize) {
+        if (typeof bHideQuad === "undefined") { bHideQuad = false; }
+        if (typeof bHideSurface === "undefined") { bHideSurface = false; }
+        if (typeof fSize === "undefined") { fSize = 100; }
+        var pSceneQuad = akra.util.createQuad(pScene, fSize * 5.);
+        pSceneQuad.attachToParent(pScene.getRootNode());
+        pSceneQuad.mesh.getSubset(0).setVisible(!bHideQuad);
+        var pSceneSurface = akra.util.createSceneSurface(pScene, fSize);
+        // pSceneSurface.scale(5.);
+        pSceneSurface.addPosition(0, -0.01, 0);
+        pSceneSurface.attachToParent(pScene.getRootNode());
+        pSceneSurface.mesh.getSubset(0).setVisible(!bHideSurface);
+        // var pCameraTerrainProj: ISceneModel = util.basis(pScene);
+        // pCameraTerrainProj.attachToParent(pScene.getRootNode());
+        // pCameraTerrainProj.scale(.25);
+        // self.cameraTerrainProj = pCameraTerrainProj;
+            }
+    function createViewports(pViewport, pCanvas, pUI) {
+        if (typeof pUI === "undefined") { pUI = null; }
+        pCanvas.addViewport(pViewport);
+        if (akra.isNull(pUI)) {
+            pCanvas.resize(window.innerWidth, window.innerHeight);
+            window.onresize = function (event) {
+                pCanvas.resize(window.innerWidth, window.innerHeight);
+            };
+        }
+        return pViewport;
+    }
+    function createModelEntry(pScene, sResource) {
+        var pRmgr = pScene.getManager().getEngine().getResourceManager();
+        var pModel = pRmgr.colladaPool.findResource(sResource);
+        var pModelRoot = pModel.attachToScene(pScene);
+        return pModelRoot;
+    }
+    var pProgress = createProgress();
+    var pRenderOpts = {
+        premultipliedAlpha: false,
+        preserveDrawingBuffer: //for screenshoting
+        true
+    };
+    //for black background & and avoiding composing with other html
+    var pControllerData = null;
+    var pLoader = {
+        changed: function (pManager, pFile, pInfo) {
+            var sText = "";
+            switch(pFile.status) {
+                case akra.EDependenceStatuses.LOADING:
+                    sText += "Loading ";
+                    break;
+                case akra.EDependenceStatuses.UNPACKING:
+                    sText += "Unpacking ";
+                    break;
+            }
+            switch(pFile.status) {
+                case akra.EDependenceStatuses.LOADING:
+                case akra.EDependenceStatuses.UNPACKING:
+                    sText += ("resource " + akra.path.info(akra.path.uri(pFile.path).path).basename);
+                    if (!akra.isNull(pInfo)) {
+                        sText += " (" + (pInfo.loaded / pInfo.total * 100).toFixed(2) + "%)";
+                    }
+                    pProgress.drawText(sText);
+                    break;
+                case akra.EDependenceStatuses.LOADED:
+                    pProgress.total[pFile.deps.depth] = pFile.deps.total;
+                    pProgress.element = pFile.deps.loaded;
+                    pProgress.depth = pFile.deps.depth;
+                    pProgress.draw();
+                    break;
+            }
+        },
+        loaded: function (pManager) {
+            pProgress.cancel();
+            document.body.removeChild(pProgress.canvas);
+        }
+    };
+    var pOptions = {
+        renderer: pRenderOpts,
+        loader: pLoader,
+        deps: {
+            files: [
+                {
+                    path: "grammars/HLSL.gr"
+                }
+            ],
+            deps: {
+                files: [
+                    {
+                        path: "effects/custom/arteries2.afx"
+                    }, 
+                    {
+                        path: "textures/arteries/AG/arteries.ara"
+                    }, 
+                    
+                ]
+            }
+        }
+    };
+    var pEngine = akra.createEngine(pOptions);
+    var pUI = pEngine.getSceneManager().createUI();
+    var pCanvas = pEngine.getRenderer().getDefaultCanvas();
+    var pCamera = null;
+    var pViewport = null;
+    var pIDE = null;
+    var pRmgr = pEngine.getResourceManager();
+    var pScene = pEngine.getScene();
+    var pCoordsSrc;
+    var pCoordsDst;
+    function main(pEngine) {
+        setup(pCanvas, pUI);
+        pCamera = pScene.createCamera();
+        pCamera.attachToParent(pScene.getRootNode());
+        pCamera.setPosition(4., 4., 3.5);
+        pCamera.lookAt(akra.Vec3.stackCeil.set(0., 1., 0.));
+        window["camera"] = pCamera;
+        pViewport = createViewports(new akra.render.DSViewport(pCamera), pCanvas, pUI);
+        akra.util.navigation(pViewport, new akra.Vec3(0., 1., 0.));
+        createSceneEnvironment(pScene, true, false, 2);
+        pEngine.exec();
+        var pLight = pScene.createLightPoint(akra.ELightTypes.PROJECT);
+        pLight.attachToParent(pCamera);
+        pLight.setInheritance(akra.ENodeInheritance.ALL);
+        pLight.params.ambient.set(0.05);
+        pLight.params.diffuse.set(0.25);
+        pLight.params.specular.set(.05);
+        pLight.params.attenuation.set(0.25, 0, 0);
+        // 		var pTex: ITexture = <ITexture>pViewport["_pDeferredColorTextures"][0];
+        // var pColorViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.05, .30, .30, 40.));
+        // var pNormalViewport: render.TextureViewport = <any>pCanvas.addViewport(new render.TextureViewport(pTex, 0.05, 0.40, .30, .30, 50.));
+        // function onResize(pViewport: IViewport) {
+        // 	pColorViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
+        // 	pNormalViewport.setMapping(0., 0., pViewport.actualWidth / pTex.width, pViewport.actualHeight / pTex.height);
+        // }
+        // onResize(pViewport);
+        // pViewport.bind("viewportDimensionsChanged", onResize);
+        // pColorViewport.effect.addComponent("akra.system.display_consistent_colors");
+        // pNormalViewport.effect.addComponent("akra.system.display_normals");
+        var pCube = akra.util.lineCube(pScene);
+        pCube.attachToParent(pScene.getRootNode());
+        pCube.setPosition(0., 1., 0.);
+        var pGUI = new dat.GUI();
+        // pGUI.add(pViewer, 'threshold', 0, 1.);
+        // pGUI.add(pViewer, 'colored');
+        // pGUI.add(pViewer, 'waveStripStep', 1, 25).step(1);
+        // pGUI.add(pViewer, 'waveStripWidth', 1, 10).step(1);
+        // pGUI.addColor(pViewer, 'waveColor');
+        // pGUI.addColor(pViewer, 'waveStripColor');
+        /*m*/
+        var fSliceStep = 0.00781102 * (100. / 125.);
+        var pSlices = [];
+        for(var i = 1, t = 0; i <= 41; ++i) {
+            var n = "ar.";
+            if (i < 10) {
+                n += "0";
+            }
+            n += String(i);
+            var pTex = pRmgr.texturePool.loadResource(n);
+            pTex.setFilter(akra.ETextureParameters.MIN_FILTER, akra.ETextureFilters.LINEAR);
+            pTex.setFilter(akra.ETextureParameters.MAG_FILTER, akra.ETextureFilters.LINEAR);
+            pSlices.push(pTex);
+        }
+        akra.io.createFileDropArea(document.body, {
+            drop: function (file, content, format, e) {
+                var pModel = pRmgr.colladaPool.createResource("dynamic" + akra.sid());
+                pModel.parse(content, {
+                    wireframe: true,
+                    debug: true
+                });
+                pModel.notifyLoaded();
+                var pRoot = pModel.attachToScene(pScene);
+                var pRootJoint = pRoot.findEntity("joint0");
+                var pContainer = pRoot.findEntity("joint0[mesh-container]");
+                // pContainer.mesh.getSubset(0).setVisible(false);
+                // console.log(pRootJoint);
+                pRootJoint.explore(function (pJoint) {
+                    if (!akra.scene.isJoint(pJoint)) {
+                        return;
+                    }
+                    var b = akra.util.basis(pScene);
+                    b.scale(.01);
+                    pJoint.update();
+                    // b.setPosition(pJoint.worldPosition);
+                    b.setInheritance(akra.ENodeInheritance.ALL);
+                    b.attachToParent(pJoint);
+                    // console.log(pJoint.worldMatrix.transpose(mat4()).toArray());
+                                    });
+                var pParam = createSpline(pCoordsDst);
+                var pPrev = [];
+                var pNext = [];
+                var pJoints = [];
+                for(var k = 0; k < pCoordsSrc.length; k++) {
+                    //параметр на оригинальной кривой, именно его будем сопоставлять с новой кривой
+                    var t = k / pCoordsSrc.length;
+                    //новый центр координат
+                    var s = (pParam.frame(t)).translation;
+                    var pJoint = pRoot.findEntity("joint" + k);
+                    var vTrans = pJoint.localMatrix.getTranslation(akra.Vec3.stackCeil.set());
+                    pJoint.localMatrix = akra.Mat4.stackCeil.set(1);
+                    pJoint.setPosition(vTrans);
+                    pJoint.update();
+                    pJoint.setInheritance(akra.ENodeInheritance.NONE);
+                    pJoint.setPosition(pJoint.worldPosition);
+                    pJoint.update();
+                    pPrev.push(new akra.Vec3(pJoint.worldPosition));
+                    pNext.push(new akra.Vec3(s));
+                    pJoints.push(pJoint);
+                    // (function (joint: ISceneNode, from: IVec3, to: IVec3) {
+                    // 	var i: int = 0;
+                    // 	// pJoint.setPosition(s);
+                    // 	var t = setInterval(function () {
+                    // 		var k = i / 100;
+                    // 		var s = from.scale(1. - k, vec3()).add(to.scale(k, vec3()));
+                    // 		joint.setPosition(s);
+                    // 		i ++;
+                    // 		if (i == 100) {
+                    // 			// clearInterval(t);
+                    // 			i = 0;
+                    // 		}
+                    // 	}, 50);
+                    // }) (pJoint, new Vec3(pJoint.worldPosition), new Vec3(s));
+                                    }
+                (pGUI.add({
+                    "transform": 0.
+                }, "transform")).min(0.).max(1.).step(0.005).onChange(function (k) {
+                    for(var i = 0; i < pJoints.length; ++i) {
+                        var from = pPrev[i];
+                        var to = pNext[i];
+                        var joint = pJoints[i];
+                        var s = from.scale(1. - k, akra.Vec3.stackCeil.set()).add(to.scale(k, akra.Vec3.stackCeil.set()));
+                        joint.setPosition(s);
+                    }
+                });
+            }
+        });
+        var pArteriesModelObj = pRmgr.loadModel(akra.DATA + "models/arteries_hp.obj", {
+            shadows: false,
+            axis: {
+                x: {
+                    index: 0,
+                    inverse: false
+                },
+                y: {
+                    index: 2,
+                    inverse: false
+                },
+                z: {
+                    index: 1,
+                    inverse: false
+                }
+            }
+        });
+        var pArteriesMeshObj = null;
+        var pArteriesObj = null;
+        var pArteriesSceneModelObj = null;
+        function parsePoydaFileCurveFromGodunov(content) {
+            var lines = content.split("\n");
+            var format = lines[0].split(",");
+            if (format[0] !== "Mx" || format[1] !== "My" || format[2] !== "Mz") {
+                alert("wrong coords format: " + lines[0]);
+                return;
+            }
+            var vDelta = akra.Vec3.stackCeil.set(1.0588, -1.7443, -1.8989);
+            // vDelta.set(0);
+            /*note: last line is empty!!*/
+            var fTopZcoord = parseFloat(lines[lines.length - 2].split(',')[2]);
+            var pCoords = [];
+            for(var i = 1; i < lines.length; ++i) {
+                if (lines[i].length < 3) {
+                    continue;
+                }
+                var coords = lines[i].split(",");
+                pCoords.push(new akra.Vec3(parseFloat(coords[0]), parseFloat(coords[1]), parseFloat(coords[2])));
+                var v = pCoords[i - 1];
+                var vn = akra.Vec3.stackCeil.set();
+                vn.x = v.y;
+                vn.y = v.z;
+                vn.z = v.x;
+                v.set(vn);
+            }
+            return pCoords;
+        }
+        function createSpline(pCoords, pParent, bDebug) {
+            if (typeof pParent === "undefined") { pParent = null; }
+            if (typeof bDebug === "undefined") { bDebug = false; }
+            var pParam = akra.animation.createParameter();
+            var pFrame;
+            var m;
+            var v;
+            for(var i = 0; i < pCoords.length; ++i) {
+                v = pCoords[i];
+                if (pParent) {
+                    v.set(pParent.worldMatrix.multiplyVec4(akra.Vec4.stackCeil.set(v, 1.)).xyz);
+                }
+                m = akra.Mat4.stackCeil.set(1.);
+                m.setTranslation(v);
+                pFrame = new akra.animation.PositionFrame(i / (pCoords.length - 1), m);
+                pParam.keyFrame(pFrame);
+                if (bDebug) {
+                    console.log(i / (pCoords.length - 1), v.toString());
+                }
+            }
+            return pParam;
+        }
+        function visualizeCurve(pNode, pCoords, fScale) {
+            if (typeof fScale === "undefined") { fScale = .1; }
+            for(var i = 0; i < pCoords.length; ++i) {
+                var v = pCoords[i];
+                var pBasis = akra.util.basis(pScene);
+                // pBasis.attachToParent(pArteriesSceneModelHP);
+                pBasis.attachToParent(pNode);
+                pBasis.setInheritance(akra.ENodeInheritance.ALL);
+                pBasis.scale(fScale);
+                pBasis.setPosition(v);
+            }
+        }
+        function parsePoydaFileCurveFromAG(content) {
+            var lines = content.split("\n");
+            var format = lines[0].split(",");
+            if (format[0] !== "Mx" || format[1] !== "My" || format[2] !== "Mz") {
+                alert("wrong coords format: " + lines[0]);
+                return;
+            }
+            var vDelta = akra.Vec3.stackCeil.set(1.0588, -1.7443, -1.8989);
+            // vDelta.set(0);
+            /*note: last line is empty!!*/
+            var fTopZcoord = parseFloat(lines[lines.length - 2].split(',')[2]);
+            var pCoords = [];
+            for(var i = 1; i < lines.length; ++i) {
+                if (lines[i].length < 3) {
+                    continue;
+                }
+                var coords = lines[i].split(",");
+                pCoords.push(new akra.Vec3(parseFloat(coords[0]), parseFloat(coords[1]), parseFloat(coords[2])));
+                var v = pCoords[i - 1];
+                var vn = akra.Vec3.stackCeil.set();
+                var fScale = (100. / 125.) * 0.01;
+                vn.x = ((v.y + 31.25) * fScale - 1.);
+                vn.z = ((v.x) * fScale - 1.);
+                vn.y = v.z * fScale + 1.;
+                // / fTopZcoord * pSlices.length * fSliceStep + 1.;
+                v.set(vn);
+            }
+            return pCoords;
+        }
+        function findClosestVertex(pCoords, v) {
+            var l = -1;
+            var c = 0;
+            for(var i = 0; i < pCoords.length; ++i) {
+                var f = pCoords[i].subtract(v, akra.Vec3.stackCeil.set()).length();
+                if (l < 0 || f < l) {
+                    c = i;
+                    l = f;
+                }
+            }
+            return c;
+        }
+        /**
+        * Функция для создания модели по вершинам  из атласа с центральной линией pDest.
+        * @param  {IVec3[]} pSrc Оригинальная центральная линия
+        * @param  {IVec3[]} pDst Центральная линия к которой стремимся
+        * @param  {Float32Array} pPositions вершины оригинальной модели
+        * @param  {Float32Array} pIndexes индексы вершин
+        * @return {IModel}  Результирующая модель
+        */
+        function constructTransformedReal(pSrc, pDst, pPositions, pIndexes) {
+            var pParam = createSpline(pDst);
+            var n = 0;
+            for(var i = 0; i < pPositions.length; i += 3) {
+                var v = akra.Vec3.stackCeil.set(pPositions[i], pPositions[i + 1], pPositions[i + 2]);
+                var k = findClosestVertex(pSrc, v);
+                //параметр на оригинальной кривой, именно его будем сопоставлять с новой кривой
+                var t = k / pSrc.length;
+                //ближайшая точки на оригинальной центральной линии, наш центр локальных координат
+                var o = pSrc[k];
+                //координаты точки в системе координат центральной линии оригинальнйо кривой
+                var l = v.subtract(o, akra.Vec3.stackCeil.set());
+                //новый центр координат
+                var s = (pParam.frame(t)).translation;
+                //новое положение вершины
+                var m = s.add(l, akra.Vec3.stackCeil.set());
+                pPositions[i] = m.x;
+                pPositions[i + 1] = m.y;
+                pPositions[i + 2] = m.z;
+                //////
+                /*if (n < 300) {
+                var b: ISceneModel = util.basis(pScene);
+                b.scale(.01);
+                b.attachToParent(pScene.getRootNode());
+                b.setPosition(m);
+                n ++;
+                }*/
+                            }
+            var pModel = pRmgr.objPool.createResource("modified_artery");
+            (pModel).setOptions({
+                shadows: false
+            });
+            (pModel).uploadVertexes(pPositions, pIndexes);
+            var pNode = pModel.attachToScene(pScene);
+        }
+        akra.fopen(akra.DATA + "/models/coord_real_ag.txt", "r").read(/** @inline */function (err, data) {
+            var pCoords = parsePoydaFileCurveFromAG(data);
+            pCoordsDst = pCoords;
+            visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
+        });
+        //DATA + "models/tof_multislab_tra_2.obj"
+        function loadObjFromMATLAB(sPath, fnCallback) {
+            var sName = akra.path.info(sPath).filename;
+            var pRealArtery = pRmgr.loadModel(sPath, {
+                shadows: false,
+                axis: {
+                    x: {
+                        index: 0,
+                        inverse: false
+                    },
+                    y: {
+                        index: 2,
+                        inverse: false
+                    },
+                    z: {
+                        index: 1,
+                        inverse: false
+                    }
+                }
+            });
+            pRealArtery.bind("loaded", /** @inline */function () {
+                var pRealArteryObj = pRealArtery.attachToScene(pScene);
+                //1m / 125mm
+                pRealArteryObj.scale(1. / 125);
+                pRealArteryObj.setPosition(-.75, 1., -1);
+                var gui = pGUI.addFolder(sName);
+                var wireframe = gui.add({
+                    mode: "edged faces"
+                }, "mode", [
+                    "colored", 
+                    "wireframe", 
+                    "edged faces"
+                ]);
+                var visible = gui.add({
+                    visible: false
+                }, "visible");
+                visible.onChange(function (bValue) {
+                    (pRealArteryObj.child).mesh.getSubset(0).setVisible(bValue);
+                });
+                (pRealArteryObj.child).mesh.getSubset(0).setVisible(false);
+                wireframe.onChange(function (sMode) {
+                    switch(sMode) {
+                        case "colored":
+                            (pRealArteryObj.child).mesh.getSubset(0).wireframe(false);
+                            break;
+                        case "wireframe":
+                            (pRealArteryObj.child).mesh.getSubset(0).wireframe(true, false);
+                            break;
+                        case "edged faces":
+                            (pRealArteryObj.child).mesh.getSubset(0).wireframe(true);
+                            break;
+                    }
+                });
+                var pColor = akra.util.randomColor(true);
+                ((pRealArteryObj.child).mesh.getSubset(0).material.diffuse).set(pColor);
+                ((pRealArteryObj.child).mesh.getSubset(0).material.ambient).set(pColor);
+                ((pRealArteryObj.child).mesh.getSubset(0).material.specular).set(0.25);
+                gui.open();
+                fnCallback && fnCallback();
+            });
+        }
+        loadObjFromMATLAB(akra.DATA + "models/tof_multislab_tra_2-tan.spline.2n_poyda.obj");
+        loadObjFromMATLAB(akra.DATA + "models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj");
+        loadObjFromMATLAB(akra.DATA + "models/tof_multislab_tra_2.obj");
+        loadObjFromMATLAB(akra.DATA + "models/caroid_artery_for_deformation_step0.1-tan.spline.2n.fitted.obj");
+        pArteriesModelObj.bind("loaded", /** @inline */function () {
+            var pParent = pScene.createNode();
+            pParent.attachToParent(pScene.getRootNode());
+            pArteriesObj = pArteriesModelObj.attachToScene(pParent);
+            pArteriesObj.setInheritance(akra.ENodeInheritance.ALL);
+            pParent.scale(0.0525);
+            // pParent.setRotationByXYZAxis(-math.PI / 2, -math.PI/2, -math.PI / 2);
+            pParent.setPosition(0.0415, 1.099, -0.026);
+            pParent.update();
+            akra.fopen(akra.DATA + "/models/coord4.txt", "r").read(/** @inline */function (err, data) {
+                var pCoords = parsePoydaFileCurveFromGodunov(data);
+                // var pParam: IAnimationParameter = createSpline(pCoords, pParent, true);
+                for(var i = 0; i < pCoords.length; ++i) {
+                    var v = pParent.worldMatrix.multiplyVec4(akra.Vec4.stackCeil.set(pCoords[i], 1.));
+                    pCoords[i].set(v.xyz);
+                }
+                ;
+                pCoordsSrc = pCoords;
+                // visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
+                            });
+            var gui = pGUI.addFolder('modeled carotid artery');
+            var wireframe = gui.add({
+                mode: "edged faces"
+            }, "mode", [
+                "colored", 
+                "wireframe", 
+                "edged faces"
+            ]);
+            var visible = gui.add({
+                visible: false
+            }, "visible");
+            visible.onChange(function (bValue) {
+                (pArteriesObj.child).mesh.getSubset(0).setVisible(bValue);
+            });
+            (pArteriesObj.child).mesh.getSubset(0).setVisible(false);
+            wireframe.onChange(function (sMode) {
+                switch(sMode) {
+                    case "colored":
+                        (pArteriesObj.child).mesh.getSubset(0).wireframe(false);
+                        break;
+                    case "wireframe":
+                        (pArteriesObj.child).mesh.getSubset(0).wireframe(true, false);
+                        break;
+                    case "edged faces":
+                        (pArteriesObj.child).mesh.getSubset(0).wireframe(true);
+                        break;
+                }
+            });
+            // gui.open();
+            window["arteries_obj"] = pParent;
+        });
+        var pArteriesModelHP = null;
+        var pArteriesMeshHP = null;
+        var pArteriesHP = null;
+        var pArteriesSceneModelHP = null;
+        //AKRA
+        //X - вправо
+        //Y - вверх
+        //Z - на нас
+        //MATLAB
+        //Z - вверх
+        //X - вправо
+        //Y - от нас
+        var pSprite = pScene.createSprite();
+        var fSlice = 0.;
+        var fKL = 0.;
+        var iA = 0.;
+        var iB = 1;
+        var fSliceK = 0.;
+        var fOpacity = 0.0;
+        pSprite.attachToParent(pScene.getRootNode());
+        pSprite.setRotationByXYZAxis(akra.math.PI / 2., 0., 0.);
+        pSprite.setPosition(0., 1., 0.);
+        pSprite.setTexture(pSlices[0]);
+        window["billboard"] = pSprite;
+        var gui = pGUI.addFolder('slice');
+        var slice = (gui.add({
+            slice: 0.
+        }, 'slice')).min(0.).max(1.).step(.005);
+        var opacity = (gui.add({
+            opacity: fOpacity
+        }, 'opacity')).min(0.0).max(1.).step(.01);
+        opacity.onChange(function (fValue) {
+            fOpacity = fValue;
+        });
+        slice.onChange(function (fValue) {
+            pSprite.setPosition(0., fValue * pSlices.length * fSliceStep + 1., 0.);
+            // console.log(fValue * pSlices.length * fSliceStep + 1.)
+            fSlice = fValue;
+            fKL = fSlice * (pSlices.length - 1.);
+            iA = akra.math.floor(fKL);
+            iB = iA + 1;
+            fSliceK = (fKL - iA) / (iB - iA);
+        });
+        pSprite.getRenderable().getRenderMethodDefault().effect.addComponent("akra.custom.arteries_slice");
+        pSprite.getRenderable().bind("beforeRender", /** @inline */function (pRenderable, pViewport, pMethod) {
+            pMethod.setTexture("SLICE_A", pSlices[iA]);
+            pMethod.setTexture("SLICE_B", pSlices[iB] || null);
+            pMethod.setUniform("SLICE_K", fSliceK);
+            pMethod.setUniform("SLICE_OPACITY", fOpacity);
+        });
+        var pProjCam = pScene.createCamera();
+        var fDelta = 0.01;
+        pProjCam.setOrthoParams(2., 2., -fDelta, fDelta);
+        pProjCam.attachToParent(pSprite);
+        pProjCam.setInheritance(akra.ENodeInheritance.ALL);
+        pProjCam.setPosition(0., 0., 0.);
+        pProjCam.setRotationByXYZAxis(akra.math.PI, 0., 0.);
+        window["projCam"] = pProjCam;
+        var pTexTarget = pRmgr.createTexture("slice");
+        var iRes = 2048;
+        pTexTarget.create(iRes, iRes, 1, null, akra.ETextureFlags.RENDERTARGET, 0, 0, akra.ETextureTypes.TEXTURE_2D, akra.EPixelFormats.R8G8B8);
+        pTexTarget.getBuffer().getRenderTarget().addViewport(new akra.render.DSViewport(pProjCam));
+        pCanvas.addViewport(new akra.render.TextureViewport(pTexTarget, 0.05, 0.05, .5 * 512 / pViewport.actualWidth, .5 * 512 / pViewport.actualHeight, 5.));
+        // pGUI.add({"save intersection": () => {
+        // 	saveAs(util.dataURItoBlob(this.getCanvasElement().toDataURL("image/png")), "screen.png");
+        // }}, "save intersection");
+            }
+    pEngine.bind("depsLoaded", main);
+})(akra || (akra = {}));
