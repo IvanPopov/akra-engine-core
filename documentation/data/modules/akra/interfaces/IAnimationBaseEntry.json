@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IAnimationBaseEntry",
+"type" : "string"},
+"targets" : { "location" : "akra.IAnimationBaseEntry",
+"type" : "IAnimationTargetEntry[  ]"},
+"extra" : { "location" : "akra.IAnimationBaseEntry",
+"type" : "{  graph? :  {  x :  number; y :  number; }; }"}}}}

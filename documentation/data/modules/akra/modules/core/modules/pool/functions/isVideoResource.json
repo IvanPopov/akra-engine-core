@@ -1,0 +1,7 @@
+{ "comments" : [ [ "/**@inline*/" ] ],
+"location" : "akra.core.pool",
+"arguments" : [ { "name" : "pItem",
+"isOptional" : false,
+"type" : "IResourcePoolItem"} ],
+"type" : "bool",
+"isInline" : false}

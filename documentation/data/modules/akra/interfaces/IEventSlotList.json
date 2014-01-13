@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IEventSlotList",
+"arguments" : [ { "name" : "index",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IEventSlotMap",
+"isInline" : false}}}

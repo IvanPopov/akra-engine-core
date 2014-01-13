@@ -1,1 +1,7 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"variables" : { "public" : { "uniforms" : { "location" : "akra.IShaderInput",
+"type" : "{  [ index :  number ] :  any; }"},
+"attrs" : { "location" : "akra.IShaderInput",
+"type" : "{  [ index :  number ] :  any; }"},
+"renderStates" : { "location" : "akra.IShaderInput",
+"type" : "IRenderStateMap"}}}}

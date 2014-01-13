@@ -1,1 +1,11 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.IFinishFunc",
+"arguments" : [ { "name" : "eCode",
+"isOptional" : false,
+"type" : "EParserCode"},
+{ "name" : "sFileName",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "void",
+"isInline" : false}}}

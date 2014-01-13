@@ -1,1 +1,8 @@
-{ "location" : "akra.animation"}
+{ "location" : "akra.animation",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.animation.IAnimationTargetMap",
+"arguments" : [ { "name" : "index",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IAnimationTarget",
+"isInline" : false}}}

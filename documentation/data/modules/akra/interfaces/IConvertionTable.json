@@ -1,0 +1,8 @@
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IConvertionTable",
+"arguments" : [ { "name" : "type",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IConvertionTableRow",
+"isInline" : false}}}

@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra",
+"arguments" : [ { "name" : "pArray",
+"isOptional" : false,
+"type" : "[  ]"},
+{ "name" : "iValue",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "number",
+"isInline" : false}

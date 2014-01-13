@@ -1,1 +1,15 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "setValue" : { "comments" : [  ],
+"location" : "akra.IAFXKeywordInstruction",
+"arguments" : [ { "name" : "sValue",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "void",
+"isInline" : false},
+"isValue" : { "comments" : [  ],
+"location" : "akra.IAFXKeywordInstruction",
+"arguments" : [ { "name" : "sTestValue",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "bool",
+"isInline" : false}}}

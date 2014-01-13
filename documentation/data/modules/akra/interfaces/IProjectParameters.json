@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "ambient" : { "location" : "akra.IProjectParameters",
+"type" : "IColor"},
+"diffuse" : { "location" : "akra.IProjectParameters",
+"type" : "IColor"},
+"specular" : { "location" : "akra.IProjectParameters",
+"type" : "IColor"},
+"attenuation" : { "location" : "akra.IProjectParameters",
+"type" : "IVec3"}}}}

@@ -1,6 +1,4 @@
-{ "comments" : [ [ "/**",
-"* Write a n*8 bits integer value to memory in native endian.",
-"*/" ] ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.bf",
 "arguments" : [ { "name" : "pDest",
 "isOptional" : false,
@@ -12,4 +10,4 @@
 "isOptional" : false,
 "type" : "number"} ],
 "type" : "void",
-"isInline" : true}
+"isInline" : false}

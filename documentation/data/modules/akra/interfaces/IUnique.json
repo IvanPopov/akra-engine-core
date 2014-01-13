@@ -1,1 +1,6 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "getGuid" : { "comments" : [  ],
+"location" : "akra.IUnique",
+"arguments" : [  ],
+"type" : "number",
+"isInline" : false}}}

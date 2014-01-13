@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "component" : { "location" : "akra.IAFXComponentInfo",
+"type" : "IAFXComponent"},
+"shift" : { "location" : "akra.IAFXComponentInfo",
+"type" : "number"},
+"pass" : { "location" : "akra.IAFXComponentInfo",
+"type" : "number"},
+"hash" : { "location" : "akra.IAFXComponentInfo",
+"type" : "string"}}}}

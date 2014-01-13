@@ -1,1 +1,8 @@
-{ "location" : "akra.webgl"}
+{ "location" : "akra.webgl",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.webgl.WebGLUniformLocationMap",
+"arguments" : [ { "name" : "index",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "WebGLUniformLocation",
+"isInline" : false}}}

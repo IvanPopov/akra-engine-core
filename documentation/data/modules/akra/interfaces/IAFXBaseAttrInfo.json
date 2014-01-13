@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "name" : { "location" : "akra.IAFXBaseAttrInfo",
+"type" : "string"},
+"semantic" : { "location" : "akra.IAFXBaseAttrInfo",
+"type" : "string"}}}}

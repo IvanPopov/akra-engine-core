@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IColladaLibrary",
+"arguments" : [ { "name" : "element",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IColladaEntryMap",
+"isInline" : false}}}

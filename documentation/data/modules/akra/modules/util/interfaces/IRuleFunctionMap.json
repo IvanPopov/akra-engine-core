@@ -1,1 +1,8 @@
-{ "location" : "akra.util"}
+{ "location" : "akra.util",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.util.IRuleFunctionMap",
+"arguments" : [ { "name" : "grammarSymbolOrFuncName",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IRuleFunction",
+"isInline" : false}}}

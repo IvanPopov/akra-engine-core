@@ -1,0 +1,13 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pScene",
+"isOptional" : false,
+"type" : "IScene3d"},
+{ "name" : "nCellW",
+"isOptional" : true,
+"type" : "number"},
+{ "name" : "nCellH",
+"isOptional" : true,
+"type" : "number"} ],
+"type" : "ISceneModel",
+"isInline" : false}

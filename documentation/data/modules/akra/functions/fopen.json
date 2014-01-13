@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra",
+"arguments" : [ { "name" : "sUri",
+"isOptional" : false,
+"type" : "any"},
+{ "name" : "pMode",
+"isOptional" : true,
+"type" : "any"} ],
+"type" : "IFile",
+"isInline" : false}

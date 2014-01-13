@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "camera" : { "location" : "akra.IColladaInstanceCamera",
+"type" : "IColladaCamera"}}}}

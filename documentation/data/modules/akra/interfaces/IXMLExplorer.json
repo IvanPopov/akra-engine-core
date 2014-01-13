@@ -1,1 +1,11 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.IXMLExplorer",
+"arguments" : [ { "name" : "pXML",
+"isOptional" : false,
+"type" : "Element"},
+{ "name" : "sName",
+"isOptional" : true,
+"type" : "string"} ],
+"type" : "void",
+"isInline" : false}}}

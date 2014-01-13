@@ -1,1 +1,11 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "getName" : { "comments" : [  ],
+"location" : "akra.IAFXObject",
+"arguments" : [  ],
+"type" : "string",
+"isInline" : false},
+"getId" : { "comments" : [  ],
+"location" : "akra.IAFXObject",
+"arguments" : [  ],
+"type" : "IAFXIdInstruction",
+"isInline" : false}}}

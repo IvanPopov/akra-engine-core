@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "setTexture" : { "comments" : [  ],
+"location" : "akra.ISprite",
+"arguments" : [ { "name" : "pTex",
+"isOptional" : false,
+"type" : "ITexture"} ],
+"type" : "void",
+"isInline" : false}}}

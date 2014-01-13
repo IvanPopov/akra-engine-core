@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.io",
+"arguments" : [ { "name" : "pObject",
+"isOptional" : false,
+"type" : "any"} ],
+"type" : "ArrayBuffer",
+"isInline" : false}

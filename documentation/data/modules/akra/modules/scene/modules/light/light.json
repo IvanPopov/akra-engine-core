@@ -5,13 +5,19 @@
 {
 "ShadowCaster":{ }
 ,
-"LightParameters":{ }
-,
 "LightPoint":{ }
+,
+"ProjectParameters":{ }
 ,
 "ProjectLight":{ }
 ,
+"OmniParameters":{ }
+,
 "OmniLight":{ }
+,
+"SunParameters":{ }
+,
+"SunLight":{ }
 }
 ,
 "functions":

@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "",
+"arguments" : [ { "name" : "pInitInfo",
+"isOptional" : false,
+"type" : "ITerrainInitInfo"} ],
+"type" : "void",
+"isInline" : false}

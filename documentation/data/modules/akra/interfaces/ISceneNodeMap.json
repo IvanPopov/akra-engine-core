@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.ISceneNodeMap",
+"arguments" : [ { "name" : "index",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "ISceneNode",
+"isInline" : false}}}

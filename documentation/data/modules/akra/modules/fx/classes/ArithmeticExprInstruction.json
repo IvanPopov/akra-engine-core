@@ -21,4 +21,9 @@
 "location" : "akra.fx.ArithmeticExprInstruction",
 "arguments" : [  ],
 "type" : "string",
+"isInline" : false},
+"isConst" : { "comments" : [  ],
+"location" : "akra.fx.ArithmeticExprInstruction",
+"arguments" : [  ],
+"type" : "bool",
 "isInline" : false}}}

@@ -1,1 +1,8 @@
-{ "location" : "akra.util"}
+{ "location" : "akra.util",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.util.IBuffersCompatibleMap",
+"arguments" : [ { "name" : "handle",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "IVertexData",
+"isInline" : false}}}

@@ -1,1 +1,6 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.IRuleFunction",
+"arguments" : [  ],
+"type" : "EOperationType",
+"isInline" : false}}}

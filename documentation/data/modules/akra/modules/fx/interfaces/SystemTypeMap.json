@@ -1,1 +1,8 @@
-{ "location" : "akra.fx"}
+{ "location" : "akra.fx",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.fx.SystemTypeMap",
+"arguments" : [ { "name" : "sTypeName",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "SystemTypeInstruction",
+"isInline" : false}}}

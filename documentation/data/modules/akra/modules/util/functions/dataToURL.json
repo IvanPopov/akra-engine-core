@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "data",
+"isOptional" : false,
+"type" : "any"},
+{ "name" : "mime",
+"isOptional" : true,
+"type" : "string"} ],
+"type" : "string",
+"isInline" : false}

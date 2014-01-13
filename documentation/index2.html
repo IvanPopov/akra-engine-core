@@ -52,31 +52,43 @@
 		<div class="b-left j-sidebar">
 			<ul class="b-side-menu j-side-menu">
 				<li class="item has-sub-menu" ng-repeat="currParent in currentObject.parents | orderBy:'location'">
-					<documobject docobject="currParent" treeview arrow="opened"></documobject>
+					<documobject docobject="currParent" treeview arrow="'opened'"></documobject>
 				</li>
 				<li class="item has-sub-menu">
-					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="opened"></documobject>
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' treeview-expanded arrow="'opened'"></documobject>
 				</li>
 				<li class="item has-sub-menu" ng-repeat="currSibling in currentObject.siblings" ng-show="currSibling.name != currentObject.name">
-					<documobject docobject="currSibling" treeview arrow="closed"></documobject>
+					<documobject docobject="currSibling" treeview arrow="'closed'"></documobject>
 				</li>
 			</ul>
 		</div>
 		<div class="b-content j-content">
-			<p>
-				currentObject.name : {{currentObject.name}}
-				<br>
-				currentObject.type : {{currentObject.type != '' ? currentObject.type : "undefined"}}
-				<br>
-				currentObject.parents : {{currentObject.parents}}
-				<br>
-				currentObject.siblings : {{currentObject.siblings}}
-				<br>
-				currentObject.path : {{currentObject.path}}
-				<br>
-				currentObject.data : {{currentObject.data}}
-				<span ng-switch ></span>
-			</p>
+			<div ng-switch="currentObject.type">
+				<div ng-switch-when="classes">
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' class-view></documobject>
+				</div>
+				<div ng-switch-when="modules">
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' module-view></documobject>
+				</div>
+				<div ng-switch-when="interfaces">
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' interface-view></documobject>
+				</div>
+				<div ng-switch-when="functions">
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>
+				</div>
+				<div ng-switch-when="enums">
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>
+				</div>
+				<div ng-switch-when="variables">
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>
+				</div>
+				<div ng-switch-when="typedefs">
+					<documobject docobject="currentObject" filtersubobjects='filtersubobjects' function-view></documobject>
+				</div>
+				<div ng-switch-default>
+					<documobject null-view></documobject>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

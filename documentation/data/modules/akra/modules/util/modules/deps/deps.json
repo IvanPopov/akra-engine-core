@@ -1,0 +1,29 @@
+
+{
+"location":"akra.util",
+"interfaces":
+{
+"IScriptInfo":{ }
+}
+,
+"functions":
+{
+"requireJS":{ }
+,
+"js":{ }
+,
+"css":{ }
+,
+"createManager":{ }
+}
+,
+"enums":
+{
+"EStates":{ }
+}
+,
+"variables":
+{
+"FORCE_ETAG_CHECKING":{ }
+}
+}

@@ -1,7 +1,7 @@
-{ "comments" : [  ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.animation",
 "arguments" : [ { "name" : "pAnimation",
 "isOptional" : false,
 "type" : "IAnimationBase"} ],
 "type" : "bool",
-"isInline" : true}
+"isInline" : false}

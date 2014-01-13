@@ -1,0 +1,6 @@
+[ { "name" : "k_Shadows",
+"text" : "0x01",
+"value" : 1},
+{ "name" : "k_Billboard",
+"text" : "0x02",
+"value" : 2} ]

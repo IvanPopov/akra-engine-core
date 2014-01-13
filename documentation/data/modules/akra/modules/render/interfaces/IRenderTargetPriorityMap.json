@@ -1,1 +1,8 @@
-{ "location" : "akra.render"}
+{ "location" : "akra.render",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.render.IRenderTargetPriorityMap",
+"arguments" : [ { "name" : "priority",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "[  ]",
+"isInline" : false}}}

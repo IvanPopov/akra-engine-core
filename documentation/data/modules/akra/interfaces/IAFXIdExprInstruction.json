@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "clone" : { "comments" : [  ],
+"location" : "akra.IAFXIdExprInstruction",
+"arguments" : [ { "name" : "pRelationMap",
+"isOptional" : true,
+"type" : "IAFXInstructionMap"} ],
+"type" : "IAFXIdExprInstruction",
+"isInline" : false}}}

@@ -8,4 +8,11 @@
 "optimizedProjection" : { "location" : "akra.IShadowCaster",
 "type" : "IMat4"},
 "isShadowCasted" : { "location" : "akra.IShadowCaster",
-"type" : "bool"}}}}
+"type" : "bool"}}},
+"functions" : { "_optimizeProjectionMatrix" : { "comments" : [  ],
+"location" : "akra.IShadowCaster",
+"arguments" : [ { "name" : "pEffectiveCameraFrustum",
+"isOptional" : false,
+"type" : "IFrustum"} ],
+"type" : "void",
+"isInline" : false}}}

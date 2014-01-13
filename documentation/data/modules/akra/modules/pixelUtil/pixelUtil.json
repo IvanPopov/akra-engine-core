@@ -8,6 +8,8 @@
 ,
 "functions":
 {
+"pixelBox":{ }
+,
 "getDescriptionFor":{ }
 ,
 "getNumElemBytes":{ }

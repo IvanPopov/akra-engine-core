@@ -1,9 +1,7 @@
-{ "comments" : [ [ "/** Converts a half in uint16 format to a float",
-"in uint32 format",
-"*/" ] ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.bf",
 "arguments" : [ { "name" : "y",
 "isOptional" : false,
 "type" : "number"} ],
 "type" : "number",
-"isInline" : true}
+"isInline" : false}

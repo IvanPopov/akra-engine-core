@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "variable" : { "location" : "akra.IAFXVariableInfo",
+"type" : "IAFXVariableDeclInstruction"},
+"type" : { "location" : "akra.IAFXVariableInfo",
+"type" : "EAFXShaderVariableType"},
+"name" : { "location" : "akra.IAFXVariableInfo",
+"type" : "string"},
+"realName" : { "location" : "akra.IAFXVariableInfo",
+"type" : "string"},
+"isArray" : { "location" : "akra.IAFXVariableInfo",
+"type" : "bool"}}}}

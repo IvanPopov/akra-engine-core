@@ -1,1 +1,8 @@
-{ "location" : ""}
+{ "location" : "",
+"functions" : { "getTranslatedShaderSource" : { "comments" : [  ],
+"location" : "WEBGL_debug_shaders",
+"arguments" : [ { "name" : "shader",
+"isOptional" : false,
+"type" : "WebGLShader"} ],
+"type" : "DOMString",
+"isInline" : false}}}

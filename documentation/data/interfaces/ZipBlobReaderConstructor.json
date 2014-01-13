@@ -1,0 +1,8 @@
+{ "location" : "",
+"functions" : { "_construct" : { "comments" : [  ],
+"location" : "ZipBlobReaderConstructor",
+"arguments" : [ { "name" : "blob",
+"isOptional" : false,
+"type" : "Blob"} ],
+"type" : "ZipReader",
+"isInline" : false}}}

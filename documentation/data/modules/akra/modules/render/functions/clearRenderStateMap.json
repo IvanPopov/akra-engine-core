@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.render",
+"arguments" : [ { "name" : "pMap",
+"isOptional" : false,
+"type" : "IRenderStateMap"} ],
+"type" : "void",
+"isInline" : false}

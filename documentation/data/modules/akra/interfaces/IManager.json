@@ -1,1 +1,11 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "initialize" : { "comments" : [  ],
+"location" : "akra.IManager",
+"arguments" : [  ],
+"type" : "bool",
+"isInline" : false},
+"destroy" : { "comments" : [  ],
+"location" : "akra.IManager",
+"arguments" : [  ],
+"type" : "void",
+"isInline" : false}}}

@@ -1,0 +1,5 @@
+{ "location" : "akra.fx",
+"variables" : { "public" : { "hash" : { "location" : "akra.fx.IHashEntry",
+"type" : "number"},
+"modifyMark" : { "location" : "akra.fx.IHashEntry",
+"type" : "number"}}}}

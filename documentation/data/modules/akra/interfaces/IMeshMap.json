@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IMeshMap",
+"arguments" : [ { "name" : "name",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IMesh",
+"isInline" : false}}}

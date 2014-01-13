@@ -1,0 +1,23 @@
+
+{
+"location":"akra",
+"classes":
+{
+"Info":{ }
+,
+"URI":{ }
+}
+,
+"functions":
+{
+"info":{ }
+,
+"normalize":{ }
+,
+"decodeDataURI":{ }
+,
+"resolve":{ }
+,
+"uri":{ }
+}
+}

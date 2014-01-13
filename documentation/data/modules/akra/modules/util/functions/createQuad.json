@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pScene",
+"isOptional" : false,
+"type" : "IScene3d"},
+{ "name" : "fSize",
+"isOptional" : true,
+"type" : "number"} ],
+"type" : "ISceneModel",
+"isInline" : false}

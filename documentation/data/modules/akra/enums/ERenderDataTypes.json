@@ -6,4 +6,7 @@
 "value" : 1},
 { "name" : "SCREEN",
 "text" : "2",
-"value" : 2} ]
+"value" : 2},
+{ "name" : "SPRITE",
+"text" : "3",
+"value" : 3} ]

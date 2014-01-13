@@ -1,1 +1,11 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.IVec2Constructor",
+"arguments" : [ { "name" : "fValue1",
+"isOptional" : false,
+"type" : "number"},
+{ "name" : "fValue2",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "any",
+"isInline" : false}}}

@@ -13,6 +13,8 @@
 "type" : "IColladaInstanceGeometry[  ]"},
 "controller" : { "location" : "akra.IColladaNode",
 "type" : "IColladaInstanceController[  ]"},
+"camera" : { "location" : "akra.IColladaNode",
+"type" : "IColladaInstanceCamera[  ]"},
 "childNodes" : { "location" : "akra.IColladaNode",
 "type" : "IColladaNode[  ]"},
 "depth" : { "location" : "akra.IColladaNode",

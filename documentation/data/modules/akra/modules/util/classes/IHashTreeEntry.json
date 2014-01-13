@@ -1,0 +1,9 @@
+{ "location" : "akra.util",
+"variables" : { "public" : { "parent" : { "location" : "akra.util.IHashTreeEntry",
+"type" : "IHashTreeEntry"},
+"children" : { "location" : "akra.util.IHashTreeEntry",
+"type" : "IHashTreeEntry[  ]"},
+"value" : { "location" : "akra.util.IHashTreeEntry",
+"type" : "number"},
+"content" : { "location" : "akra.util.IHashTreeEntry",
+"type" : "any"}}}}

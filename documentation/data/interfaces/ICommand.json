@@ -1,0 +1,5 @@
+{ "location" : "",
+"variables" : { "public" : { "type" : { "location" : "ICommand",
+"type" : "ECommandTypes"},
+"info" : { "location" : "ICommand",
+"type" : "any"}}}}

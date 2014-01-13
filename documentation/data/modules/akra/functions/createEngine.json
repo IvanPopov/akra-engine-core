@@ -1,5 +1,7 @@
 { "comments" : [  ],
 "location" : "akra",
-"arguments" : [  ],
+"arguments" : [ { "name" : "options",
+"isOptional" : true,
+"type" : "IEngineOptions"} ],
 "type" : "IEngine",
 "isInline" : false}

@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.path",
+"arguments" : [ { "name" : "info",
+"isOptional" : true,
+"type" : "any"} ],
+"type" : "IPathinfo",
+"isInline" : false}

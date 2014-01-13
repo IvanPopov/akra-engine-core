@@ -1,4 +1,4 @@
-{ "comments" : [  ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra",
 "arguments" : [ { "name" : "sUsage",
 "isOptional" : false,
@@ -7,4 +7,4 @@
 "isOptional" : true,
 "type" : "number"} ],
 "type" : "IVertexElementInterface",
-"isInline" : true}
+"isInline" : false}

@@ -1,0 +1,8 @@
+{ "location" : "akra.io",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.io.IHash",
+"arguments" : [ { "name" : "type",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "[  ]",
+"isInline" : false}}}

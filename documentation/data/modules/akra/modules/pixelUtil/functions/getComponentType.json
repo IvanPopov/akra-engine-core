@@ -1,13 +1,7 @@
-{ "comments" : [ [ "/** Returns the component type for a certain pixel format. Returns PCT_BYTE",
-"in case there is no clear component type like with compressed formats.",
-"This is one of PCT_BYTE,
- PCT_SHORT,
- PCT_FLOAT16,
- PCT_FLOAT32.",
-"*/" ] ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.pixelUtil",
 "arguments" : [ { "name" : "eFmt",
 "isOptional" : false,
 "type" : "EPixelFormats"} ],
 "type" : "EPixelComponentTypes",
-"isInline" : true}
+"isInline" : false}

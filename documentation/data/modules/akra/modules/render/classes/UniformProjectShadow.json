@@ -19,7 +19,7 @@
 "location" : "akra.render.UniformProjectShadow",
 "arguments" : [ { "name" : "pLightParam",
 "isOptional" : false,
-"type" : "ILightParameters"},
+"type" : "IProjectParameters"},
 { "name" : "v3fPosition",
 "isOptional" : false,
 "type" : "IVec3"} ],

@@ -1,1 +1,11 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "load" : { "comments" : [  ],
+"location" : "akra.IDepsManager",
+"arguments" : [ { "name" : "pDeps",
+"isOptional" : false,
+"type" : "IDependens"},
+{ "name" : "sRoot",
+"isOptional" : true,
+"type" : "string"} ],
+"type" : "bool",
+"isInline" : false}}}

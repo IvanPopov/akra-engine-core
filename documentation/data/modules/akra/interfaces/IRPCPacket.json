@@ -2,4 +2,6 @@
 "variables" : { "public" : { "n" : { "location" : "akra.IRPCPacket",
 "type" : "number"},
 "type" : { "location" : "akra.IRPCPacket",
-"type" : "ERPCPacketTypes"}}}}
+"type" : "ERPCPacketTypes"},
+"next" : { "location" : "akra.IRPCPacket",
+"type" : "IRPCPacket"}}}}

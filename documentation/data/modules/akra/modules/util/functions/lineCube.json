@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pScene",
+"isOptional" : false,
+"type" : "any"},
+{ "name" : "eOptions",
+"isOptional" : true,
+"type" : "number"} ],
+"type" : "ISceneModel",
+"isInline" : false}

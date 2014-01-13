@@ -1,1 +1,6 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "getHash" : { "comments" : [  ],
+"location" : "akra.IAFXFunction",
+"arguments" : [  ],
+"type" : "string",
+"isInline" : false}}}

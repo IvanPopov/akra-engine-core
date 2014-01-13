@@ -4,4 +4,14 @@
 "onerror" : { "location" : "akra.IThread",
 "type" : "Function"},
 "id" : { "location" : "akra.IThread",
-"type" : "number"}}}}
+"type" : "number"}}},
+"functions" : { "send" : { "comments" : [  ],
+"location" : "akra.IThread",
+"arguments" : [ { "name" : "pData",
+"isOptional" : false,
+"type" : "ArrayBufferView"},
+{ "name" : "pTransferables",
+"isOptional" : true,
+"type" : "[  ]"} ],
+"type" : "void",
+"isInline" : false}}}

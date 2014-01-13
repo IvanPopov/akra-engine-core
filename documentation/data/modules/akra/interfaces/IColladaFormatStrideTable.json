@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IColladaFormatStrideTable",
+"arguments" : [ { "name" : "format",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "number",
+"isInline" : false}}}

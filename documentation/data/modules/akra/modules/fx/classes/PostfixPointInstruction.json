@@ -27,4 +27,9 @@
 "isOptional" : true,
 "type" : "EVarUsedMode"} ],
 "type" : "void",
+"isInline" : false},
+"isConst" : { "comments" : [  ],
+"location" : "akra.fx.PostfixPointInstruction",
+"arguments" : [  ],
+"type" : "bool",
 "isInline" : false}}}

@@ -1,6 +1,6 @@
-[ { "name" : "MATRIX_LINEAR",
+[ { "name" : "LINEAR",
 "text" : "0",
 "value" : 0},
-{ "name" : "LINEAR",
+{ "name" : "SPHERICAL",
 "text" : "1",
 "value" : 1} ]

@@ -1,5 +1,5 @@
-{ "comments" : [  ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.fx",
 "arguments" : [  ],
 "type" : "IAFXSamplerState",
-"isInline" : true}
+"isInline" : false}

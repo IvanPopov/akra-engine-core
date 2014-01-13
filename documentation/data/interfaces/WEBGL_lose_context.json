@@ -1,1 +1,11 @@
-{ "location" : ""}
+{ "location" : "",
+"functions" : { "loseContext" : { "comments" : [  ],
+"location" : "WEBGL_lose_context",
+"arguments" : [  ],
+"type" : "void",
+"isInline" : false},
+"restoreContext" : { "comments" : [  ],
+"location" : "WEBGL_lose_context",
+"arguments" : [  ],
+"type" : "void",
+"isInline" : false}}}

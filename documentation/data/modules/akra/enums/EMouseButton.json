@@ -1,0 +1,12 @@
+[ { "name" : "UNKNOWN",
+"text" : "0",
+"value" : 0},
+{ "name" : "LEFT",
+"text" : "1",
+"value" : 1},
+{ "name" : "MIDDLE",
+"text" : "2",
+"value" : 2},
+{ "name" : "RIGHT",
+"text" : "3",
+"value" : 3} ]

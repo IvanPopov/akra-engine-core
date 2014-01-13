@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.IColladaEntryLoader",
+"arguments" : [ { "name" : "pXML",
+"isOptional" : false,
+"type" : "Element"} ],
+"type" : "IColladaEntry",
+"isInline" : false}}}

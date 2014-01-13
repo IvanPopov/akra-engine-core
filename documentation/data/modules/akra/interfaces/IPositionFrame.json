@@ -1,0 +1,12 @@
+{ "location" : "akra",
+"variables" : { "public" : { "rotation" : { "location" : "akra.IPositionFrame",
+"type" : "IQuat4"},
+"scale" : { "location" : "akra.IPositionFrame",
+"type" : "IVec3"},
+"translation" : { "location" : "akra.IPositionFrame",
+"type" : "IVec3"}}},
+"functions" : { "toMatrix" : { "comments" : [  ],
+"location" : "akra.IPositionFrame",
+"arguments" : [  ],
+"type" : "IMat4",
+"isInline" : false}}}

@@ -1,0 +1,8 @@
+{ "location" : "",
+"functions" : { "_construct" : { "comments" : [  ],
+"location" : "ZipData64URIReaderConstructor",
+"arguments" : [ { "name" : "dataURI",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "ZipReader",
+"isInline" : false}}}

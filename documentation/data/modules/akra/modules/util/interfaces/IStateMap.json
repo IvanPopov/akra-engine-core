@@ -1,1 +1,8 @@
-{ "location" : "akra.util"}
+{ "location" : "akra.util",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.util.IStateMap",
+"arguments" : [ { "name" : "index",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IState",
+"isInline" : false}}}

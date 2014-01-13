@@ -1,1 +1,8 @@
-{ "location" : "akra.util"}
+{ "location" : "akra.util",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.util.ICodeFamilyRoutineDMap",
+"arguments" : [ { "name" : "familyName",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "ILogRoutineMap",
+"isInline" : false}}}

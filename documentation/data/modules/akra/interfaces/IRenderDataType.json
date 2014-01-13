@@ -1,1 +1,6 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_construct" : { "comments" : [  ],
+"location" : "akra.IRenderDataType",
+"arguments" : [  ],
+"type" : "IRenderData",
+"isInline" : false}}}

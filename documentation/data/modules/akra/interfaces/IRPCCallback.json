@@ -4,4 +4,6 @@
 "fn" : { "location" : "akra.IRPCCallback",
 "type" : "Function"},
 "timestamp" : { "location" : "akra.IRPCCallback",
-"type" : "number"}}}}
+"type" : "number"},
+"procInfo" : { "location" : "akra.IRPCCallback",
+"type" : "string"}}}}

@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pJoint",
+"isOptional" : false,
+"type" : "IJoint"} ],
+"type" : "ISceneModel",
+"isInline" : false}

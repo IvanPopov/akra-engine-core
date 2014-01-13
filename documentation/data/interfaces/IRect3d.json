@@ -1,0 +1,13 @@
+{ "location" : "",
+"variables" : { "public" : { "x0" : { "location" : "IRect3d",
+"type" : "number"},
+"y0" : { "location" : "IRect3d",
+"type" : "number"},
+"z0" : { "location" : "IRect3d",
+"type" : "number"},
+"x1" : { "location" : "IRect3d",
+"type" : "number"},
+"y1" : { "location" : "IRect3d",
+"type" : "number"},
+"z1" : { "location" : "IRect3d",
+"type" : "number"}}}}

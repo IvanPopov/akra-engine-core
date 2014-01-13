@@ -65,19 +65,11 @@ jQuery(document).ready(function($){
 			hideTreeMenu();
 		}
 	});
+});
 
+$(document).load(function(){setupHiders();});
 
-	/* Single Method Close/Open */
-	$('.j-single-method-arrow').click(function(){
-		var self = $(this);
-		var singleMethod = self.parents('.j-single-method');
-		if (singleMethod.hasClass('opened')){
-			singleMethod.removeClass('opened').addClass('closed');
-		} else if (singleMethod.hasClass('closed')){
-			singleMethod.removeClass('closed').addClass('opened');
-		}
-		enableSideScroll(sidebar);
-	});
+function setupHiders() {
 
 	/* tree-popup-menu */
 	$('.j-tree-button').click(function(){
@@ -93,6 +85,17 @@ jQuery(document).ready(function($){
 				scrollpane:    treeMenu, // parent element
 				scrollcontent: treeMenu.find('.j-tree-list')  // inner content
 			});
+		}
+	});
+
+	/* Single Method Close/Open */
+	$('.j-single-method-arrow').click(function(){
+		var self = $(this);
+		var singleMethod = self.parents('.j-single-method');
+		if (singleMethod.hasClass('opened')){
+			singleMethod.removeClass('opened').addClass('closed');
+		} else if (singleMethod.hasClass('closed')){
+			singleMethod.removeClass('closed').addClass('opened');
 		}
 	});
 
@@ -129,7 +132,7 @@ jQuery(document).ready(function($){
 			}
 		}
 	});
-});
+}
 
 function enableSideScroll(sidebar){
 	//Таймер для того, чтобы браузер успел нормально отобразить левую колонку и вычислить её высоту.
@@ -158,4 +161,38 @@ function enableSideScroll(sidebar){
 
 function hideTreeMenu(){
 	$('.j-tree-menu').removeClass('opened').find('.w-srcollbar-wrap').remove();
+}
+
+function alphabeticColumnSort() {
+	// console.log("Alphabetic sorting");
+	var section = $(".b-description-wrap .row");
+	var section_cursor;
+	for (var i = 0; i < section.length; i++) {
+		section_cursor = $(section[i]);
+		// console.log(section_cursor[0]);
+		var entries = section_cursor.find(".content .title").clone();
+		section_cursor.find(".col-md-3").remove();
+		var column_len = 10;
+		var columns_in_row = 4;
+		var col_num = 1;
+		var new_column, cursor;
+		for (var j = 0; j < entries.length; j++) {
+			// console.log(entries[j],j,entries.length);
+			if(j % column_len == 0) {
+				if(++col_num > columns_in_row) {
+					var new_row = $("<div class='row'></div>");
+					section_cursor.after(new_row);
+					section_cursor = new_row;
+					col_num = 1;
+				}
+				// console.log("Creating new column");
+				new_column = $("<div class=\"col-md-3\"><div class=\"b-alphabet-column\"></div></div>");
+				new_column.find(".b-alphabet-column").append($("<div class='header'><span class='main'>"+$(entries[j]).find("a").html().toUpperCase()[0]+"</span></div>")).append($("<div class='content'></div>"));
+				section_cursor.append(new_column);
+				cursor = new_column.find(".content");
+			}
+			$(entries[j]).clone().appendTo(cursor);
+			$("<p class='text'>&nbsp;</p>").appendTo(cursor);
+		}
+	}
 }

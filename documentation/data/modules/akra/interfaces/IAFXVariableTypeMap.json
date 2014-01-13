@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IAFXVariableTypeMap",
+"arguments" : [ { "name" : "index",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "IAFXVariableTypeInstruction",
+"isInline" : false}}}

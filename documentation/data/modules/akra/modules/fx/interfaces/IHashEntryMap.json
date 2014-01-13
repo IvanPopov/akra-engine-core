@@ -1,0 +1,8 @@
+{ "location" : "akra.fx",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.fx.IHashEntryMap",
+"arguments" : [ { "name" : "index",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "IHashEntry",
+"isInline" : false}}}

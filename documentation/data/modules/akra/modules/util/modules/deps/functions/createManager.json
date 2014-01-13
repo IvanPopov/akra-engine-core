@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util.deps",
+"arguments" : [ { "name" : "pEngine",
+"isOptional" : false,
+"type" : "IEngine"} ],
+"type" : "IDepsManager",
+"isInline" : false}

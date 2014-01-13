@@ -1,0 +1,8 @@
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IPackerFormat",
+"arguments" : [ { "name" : "type",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IPackerCodec",
+"isInline" : false}}}

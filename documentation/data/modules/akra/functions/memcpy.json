@@ -1,4 +1,4 @@
-{ "comments" : [  ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra",
 "arguments" : [ { "name" : "pDst",
 "isOptional" : false,
@@ -16,4 +16,4 @@
 "isOptional" : false,
 "type" : "number"} ],
 "type" : "void",
-"isInline" : true}
+"isInline" : false}

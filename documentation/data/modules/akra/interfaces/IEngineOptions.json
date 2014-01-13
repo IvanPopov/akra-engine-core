@@ -4,4 +4,11 @@
 "deps" : { "location" : "akra.IEngineOptions",
 "type" : "IDependens"},
 "gamepads" : { "location" : "akra.IEngineOptions",
-"type" : "bool"}}}}
+"type" : "bool"},
+"renderer" : { "location" : "akra.IEngineOptions",
+"type" : "IRendererOptions"},
+"loader" : { "location" : "akra.IEngineOptions",
+"type" : "{  loaded? :  (manager :  IDepsManager,
+ pDeps :  IDependens) => void; changed? :  (manager :  IDepsManager,
+ pFile :  IDep,
+ pInfo :  any) => void; }"}}}}

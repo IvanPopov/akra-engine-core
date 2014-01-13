@@ -1,7 +1,7 @@
-{ "comments" : [  ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.pixelUtil",
 "arguments" : [ { "name" : "eFormat",
 "isOptional" : false,
 "type" : "EPixelFormats"} ],
 "type" : "number",
-"isInline" : true}
+"isInline" : false}

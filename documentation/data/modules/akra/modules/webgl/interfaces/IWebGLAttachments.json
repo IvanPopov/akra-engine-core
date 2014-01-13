@@ -1,1 +1,8 @@
-{ "location" : "akra.webgl"}
+{ "location" : "akra.webgl",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.webgl.IWebGLAttachments",
+"arguments" : [ { "name" : "webGLAttachment",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "WebGLPixelBuffer",
+"isInline" : false}}}

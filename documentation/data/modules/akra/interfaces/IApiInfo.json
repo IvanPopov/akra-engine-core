@@ -16,4 +16,6 @@
 "localStorage" : { "location" : "akra.IApiInfo",
 "type" : "bool"},
 "webSocket" : { "location" : "akra.IApiInfo",
+"type" : "bool"},
+"zip" : { "location" : "akra.IApiInfo",
 "type" : "bool"}}}}

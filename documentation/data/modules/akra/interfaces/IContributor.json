@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "author" : { "location" : "akra.IContributor",
+"type" : "string"},
+"authoringTool" : { "location" : "akra.IContributor",
+"type" : "string"},
+"comments" : { "location" : "akra.IContributor",
+"type" : "string"},
+"copyright" : { "location" : "akra.IContributor",
+"type" : "string"},
+"sourceData" : { "location" : "akra.IContributor",
+"type" : "any"}}}}

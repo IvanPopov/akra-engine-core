@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "type" : { "location" : "akra.IDataEntry",
+"type" : "EDocumentEntry"},
+"extra" : { "location" : "akra.IDataEntry",
+"type" : "any"}}}}

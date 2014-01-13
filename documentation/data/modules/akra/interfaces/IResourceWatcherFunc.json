@@ -1,1 +1,14 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.IResourceWatcherFunc",
+"arguments" : [ { "name" : "nLoaded",
+"isOptional" : true,
+"type" : "number"},
+{ "name" : "nTotal",
+"isOptional" : true,
+"type" : "number"},
+{ "name" : "pTarget",
+"isOptional" : true,
+"type" : "IResourcePoolItem"} ],
+"type" : "void",
+"isInline" : false}}}

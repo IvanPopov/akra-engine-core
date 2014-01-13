@@ -1,0 +1,8 @@
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IAnimationMap",
+"arguments" : [ { "name" : "name",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IAnimationBase",
+"isInline" : false}}}

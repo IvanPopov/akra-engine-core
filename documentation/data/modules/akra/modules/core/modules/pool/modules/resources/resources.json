@@ -15,6 +15,8 @@
 ,
 "Collada":{ }
 ,
+"Obj":{ }
+,
 "EffectData":{ }
 ,
 "HardwareBuffer":{ }
@@ -30,15 +32,21 @@
 "DepthBuffer":{ }
 }
 ,
-"enums":
-{
-"ETextureForcedFormatFlags":{ }
-}
-,
 "functions":
 {
+"isModelResource":{ }
+,
+"isColladaResource":{ }
+,
 "isVBO":{ }
 ,
 "isTBO":{ }
+}
+,
+"enums":
+{
+"EObjFVF":{ }
+,
+"ETextureForcedFormatFlags":{ }
 }
 }

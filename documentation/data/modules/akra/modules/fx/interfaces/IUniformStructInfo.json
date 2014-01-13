@@ -1,0 +1,13 @@
+{ "location" : "akra.fx",
+"variables" : { "public" : { "name" : { "location" : "akra.fx.IUniformStructInfo",
+"type" : "string"},
+"isComplex" : { "location" : "akra.fx.IUniformStructInfo",
+"type" : "bool"},
+"isArray" : { "location" : "akra.fx.IUniformStructInfo",
+"type" : "bool"},
+"index" : { "location" : "akra.fx.IUniformStructInfo",
+"type" : "number"},
+"fields" : { "location" : "akra.fx.IUniformStructInfo",
+"type" : "IUniformStructInfo[  ]"},
+"shaderVarInfo" : { "location" : "akra.fx.IUniformStructInfo",
+"type" : "IShaderUniformInfo"}}}}

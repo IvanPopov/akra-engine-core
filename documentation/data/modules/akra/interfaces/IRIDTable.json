@@ -1,0 +1,8 @@
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IRIDTable",
+"arguments" : [ { "name" : "iSceneObjectGuid",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "IntMap",
+"isInline" : false}}}

@@ -1,0 +1,8 @@
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IRPCProcOptionsMap",
+"arguments" : [ { "name" : "proc",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IRPCProcOptions",
+"isInline" : false}}}

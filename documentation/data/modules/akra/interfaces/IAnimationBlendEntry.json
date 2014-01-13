@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "animations" : { "location" : "akra.IAnimationBlendEntry",
+"type" : "IAnimationBlendElementEntry[  ]"}}}}

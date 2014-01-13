@@ -1,8 +1,4 @@
-{ "comments" : [ [ "/** Pack a colour value to memory",
-"@param colour\tThe colour",
-"@param pf\t\tPixelformat in which to write the colour",
-"@param dest\t\tDestination memory location",
-"*/" ] ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.pixelUtil",
 "arguments" : [ { "name" : "cColour",
 "isOptional" : false,
@@ -14,4 +10,4 @@
 "isOptional" : false,
 "type" : "Uint8Array"} ],
 "type" : "void",
-"isInline" : true}
+"isInline" : false}

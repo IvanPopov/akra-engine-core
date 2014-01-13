@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_construct" : { "comments" : [  ],
+"location" : "akra.IResourcePoolItemType",
+"arguments" : [ { "name" : "pManager",
+"isOptional" : false,
+"type" : "IResourcePoolManager"} ],
+"type" : "IResourcePoolItem",
+"isInline" : false}}}

@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "sBlobURL",
+"isOptional" : false,
+"type" : "string"},
+{ "name" : "fn",
+"isOptional" : false,
+"type" : ""} ],
+"type" : "void",
+"isInline" : false}

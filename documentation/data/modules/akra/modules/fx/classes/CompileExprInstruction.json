@@ -2,8 +2,8 @@
 "constructors" : [ { "comments" : [  ],
 "location" : "akra.fx.CompileExprInstruction",
 "arguments" : [  ]} ],
-"functions" : { "getFunction" : { "comments" : [  ],
+"functions" : { "getFunction" : { "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.fx.CompileExprInstruction",
 "arguments" : [  ],
 "type" : "IAFXFunctionDeclInstruction",
-"isInline" : true}}}
+"isInline" : false}}}

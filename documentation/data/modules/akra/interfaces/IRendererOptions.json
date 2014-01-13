@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "canvas" : { "location" : "akra.IRendererOptions",
+"type" : "HTMLCanvasElement"}}}}

@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IColladaBindMaterial",
+"arguments" : [ { "name" : "symbol",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IColladaInstanceMaterial",
+"isInline" : false}}}

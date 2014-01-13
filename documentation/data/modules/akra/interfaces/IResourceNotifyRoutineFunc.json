@@ -1,1 +1,14 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.IResourceNotifyRoutineFunc",
+"arguments" : [ { "name" : "eEvent",
+"isOptional" : true,
+"type" : "EResourceItemEvents"},
+{ "name" : "iResourceFlags",
+"isOptional" : true,
+"type" : "number"},
+{ "name" : "isSet",
+"isOptional" : true,
+"type" : "bool"} ],
+"type" : "void",
+"isInline" : false}}}

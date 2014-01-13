@@ -1,1 +1,11 @@
-{ "location" : ""}
+{ "location" : "",
+"functions" : { "getContext" : { "comments" : [  ],
+"location" : "HTMLCanvasElement",
+"arguments" : [ { "name" : "contextId",
+"isOptional" : false,
+"type" : "string"},
+{ "name" : "args",
+"isOptional" : false,
+"type" : "WebGLContextAttributes"} ],
+"type" : "WebGLRenderingContext",
+"isInline" : false}}}

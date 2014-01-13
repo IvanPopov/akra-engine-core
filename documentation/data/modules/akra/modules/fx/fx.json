@@ -1,6 +1,61 @@
 
 {
 "location":"akra",
+"interfaces":
+{
+"IVariableBlendInfo":{ }
+,
+"IVariableBlendInfoMap":{ }
+,
+"IDataFlowMap":{ }
+,
+"IAFXVaribaleListMap":{ }
+,
+"ITypeInfo":{ }
+,
+"IAFXShaderVarTypeMap":{ }
+,
+"IEffectErrorInfo":{ }
+,
+"IAFXFunctionDeclListMap":{ }
+,
+"IScope":{ }
+,
+"IScopeMap":{ }
+,
+"SystemTypeMap":{ }
+,
+"SystemFunctionMap":{ }
+,
+"TechniqueMap":{ }
+,
+"IUniformTypeMap":{ }
+,
+"IUniformStructInfo":{ }
+,
+"IShaderUniformInfo":{ }
+,
+"IShaderAttrOffsetInfo":{ }
+,
+"IShaderAttrInfo":{ }
+,
+"IShaderUniformInfoMap":{ }
+,
+"IShaderAttrInfoMap":{ }
+,
+"IUniformStructInfoMap":{ }
+,
+"IInputUniformInfo":{ }
+,
+"IHashEntry":{ }
+,
+"IHashEntryMap":{ }
+,
+"IVariableInfoMap":{ }
+,
+"IPreRenderState":{ }
+}
+,
 "classes":
 {
 "VariableBlendContainer":{ }
@@ -12,6 +67,8 @@
 "AttributeBlendContainer":{ }
 ,
 "SamplerBlender":{ }
+,
+"PassInputBlend":{ }
 ,
 "ProgramScope":{ }
 ,
@@ -32,10 +89,6 @@
 "KeywordInstruction":{ }
 ,
 "AnnotationInstruction":{ }
-,
-"PassInstruction":{ }
-,
-"TechniqueInstruction":{ }
 ,
 "TypeDeclInstruction":{ }
 ,
@@ -127,15 +180,19 @@
 ,
 "FunctionDefInstruction":{ }
 ,
+"PassInstruction":{ }
+,
+"TechniqueInstruction":{ }
+,
 "Effect":{ }
 ,
 "TexcoordSwapper":{ }
 ,
-"PassInputBlend":{ }
-,
 "Maker":{ }
 ,
 "PassBlend":{ }
+,
+"VariableContainer":{ }
 ,
 "ComponentBlend":{ }
 ,
@@ -146,44 +203,15 @@
 "Composer":{ }
 }
 ,
-"interfaces":
+"functions":
 {
-"IDataFlowMap":{ }
-,
-"IAFXVaribaleListMap":{ }
-,
-"IEffectErrorInfo":{ }
-,
-"IAFXFunctionDeclListMap":{ }
-,
-"IScope":{ }
-,
-"IScopeMap":{ }
-,
-"SystemTypeMap":{ }
-,
-"SystemFunctionMap":{ }
-,
-"TechniqueMap":{ }
-,
-"IAFXShaderVarTypeMap":{ }
-,
-"IUniformTypeMap":{ }
-,
-"IPreRenderState":{ }
+"createSamplerState":{ }
 }
 ,
 "enums":
 {
 "EScopeType":{ }
-}
 ,
-"functions":
-{
-"getEffectBaseType":{ }
-,
-"isSamplerType":{ }
-,
-"createSamplerState":{ }
+"ESystemUniformsIndices":{ }
 }
 }

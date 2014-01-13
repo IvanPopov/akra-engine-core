@@ -1,0 +1,13 @@
+{ "comments" : [  ],
+"location" : "akra.render",
+"arguments" : [ { "name" : "pFromA",
+"isOptional" : false,
+"type" : "IRenderStateMap"},
+{ "name" : "pFromB",
+"isOptional" : false,
+"type" : "IRenderStateMap"},
+{ "name" : "pTo",
+"isOptional" : false,
+"type" : "IRenderStateMap"} ],
+"type" : "void",
+"isInline" : false}

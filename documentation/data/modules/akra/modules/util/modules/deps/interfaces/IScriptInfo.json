@@ -1,0 +1,5 @@
+{ "location" : "akra.util.deps",
+"variables" : { "public" : { "path" : { "location" : "akra.util.deps.IScriptInfo",
+"type" : "string"},
+"scripts" : { "location" : "akra.util.deps.IScriptInfo",
+"type" : "string[  ]"}}}}

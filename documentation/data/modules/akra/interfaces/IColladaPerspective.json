@@ -1,0 +1,11 @@
+{ "location" : "akra",
+"variables" : { "public" : { "xfov" : { "location" : "akra.IColladaPerspective",
+"type" : "number"},
+"yfov" : { "location" : "akra.IColladaPerspective",
+"type" : "number"},
+"znear" : { "location" : "akra.IColladaPerspective",
+"type" : "number"},
+"zfar" : { "location" : "akra.IColladaPerspective",
+"type" : "number"},
+"aspect" : { "location" : "akra.IColladaPerspective",
+"type" : "number"}}}}

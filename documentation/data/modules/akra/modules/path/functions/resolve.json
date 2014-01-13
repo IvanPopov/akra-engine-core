@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.path",
+"arguments" : [ { "name" : "sFile",
+"isOptional" : false,
+"type" : "any"},
+{ "name" : "sAbsolutePath",
+"isOptional" : true,
+"type" : "string"} ],
+"type" : "string",
+"isInline" : false}

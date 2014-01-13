@@ -14,7 +14,7 @@
 "pMemberList" : { "location" : "akra.core.pool.PoolGroup",
 "type" : "IResourcePoolItem[  ]"}}},
 "getters" : { "manager" : { "type" : "IResourcePoolManager",
-"isInline" : true,
+"isInline" : false,
 "location" : "akra.core.pool.PoolGroup"},
 "totalOpen" : { "type" : "number",
 "isInline" : false,

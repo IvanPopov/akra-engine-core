@@ -1,21 +1,6 @@
 
 {
 "location":"akra",
-"classes":
-{
-"Vec2":{ }
-,
-"Vec3":{ }
-,
-"Vec4":{ }
-,
-"Mat3":{ }
-,
-"Mat4":{ }
-,
-"Quat4":{ }
-}
-,
 "variables":
 {
 "E":{ }
@@ -101,6 +86,21 @@
 "fpOneBits":{ }
 }
 ,
+"classes":
+{
+"Vec2":{ }
+,
+"Vec3":{ }
+,
+"Vec4":{ }
+,
+"Mat3":{ }
+,
+"Mat4":{ }
+,
+"Quat4":{ }
+}
+,
 "functions":
 {
 "abs":{ }
@@ -177,6 +177,8 @@
 ,
 "clampUnitSize":{ }
 ,
+"sign":{ }
+,
 "highestBitSet":{ }
 ,
 "lowestBitSet":{ }
@@ -221,16 +223,6 @@
 ,
 "calcPOTtextureSize":{ }
 ,
-"vec2":{ }
-,
-"vec3":{ }
-,
-"vec4":{ }
-,
-"quat4":{ }
-,
-"mat3":{ }
-,
-"mat4":{ }
+"floatToFloat3":{ }
 }
 }

@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IColladaBindVertexInputMap",
+"arguments" : [ { "name" : "semantics",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IColladaBindVertexInput",
+"isInline" : false}}}

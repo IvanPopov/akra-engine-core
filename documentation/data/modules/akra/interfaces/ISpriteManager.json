@@ -1,0 +1,8 @@
+{ "location" : "akra",
+"functions" : { "_allocateSprite" : { "comments" : [  ],
+"location" : "akra.ISpriteManager",
+"arguments" : [ { "name" : "pSprite",
+"isOptional" : false,
+"type" : "ISprite"} ],
+"type" : "IRenderData",
+"isInline" : false}}}

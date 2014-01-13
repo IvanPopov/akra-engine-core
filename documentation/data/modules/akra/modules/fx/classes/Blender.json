@@ -10,7 +10,9 @@
 "_pPassBlendByHashMap" : { "location" : "akra.fx.Blender",
 "type" : "IAFXPassBlendMap"},
 "_pPassBlendByIdMap" : { "location" : "akra.fx.Blender",
-"type" : "IAFXPassBlendMap"}}},
+"type" : "IAFXPassBlendMap"},
+"_pPassBlendHashTree" : { "location" : "akra.fx.Blender",
+"type" : "HashTree"}}},
 "constructors" : [ { "comments" : [  ],
 "location" : "akra.fx.Blender",
 "arguments" : [ { "name" : "pComposer",
@@ -77,10 +79,10 @@
 "type" : "any"} ],
 "type" : "IAFXPassBlend",
 "isInline" : false},
-"getPassBlendById" : { "comments" : [  ],
+"getPassBlendById" : { "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.fx.Blender",
 "arguments" : [ { "name" : "id",
 "isOptional" : false,
 "type" : "number"} ],
 "type" : "IAFXPassBlend",
-"isInline" : true}}}
+"isInline" : false}}}

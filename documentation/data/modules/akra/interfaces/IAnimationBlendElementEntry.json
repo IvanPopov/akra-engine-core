@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "animation" : { "location" : "akra.IAnimationBlendElementEntry",
+"type" : "number"},
+"weight" : { "location" : "akra.IAnimationBlendElementEntry",
+"type" : "number"},
+"mask" : { "location" : "akra.IAnimationBlendElementEntry",
+"type" : "FloatMap"}}}}

@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pMeshSubset",
+"isOptional" : false,
+"type" : "IMeshSubset"} ],
+"type" : "bool",
+"isInline" : false}

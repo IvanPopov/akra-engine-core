@@ -1,1 +1,11 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.IListExplorerFunc",
+"arguments" : [ { "name" : "data",
+"isOptional" : false,
+"type" : "any"},
+{ "name" : "index",
+"isOptional" : true,
+"type" : "number"} ],
+"type" : "bool",
+"isInline" : false}}}

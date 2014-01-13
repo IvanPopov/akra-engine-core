@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "light" : { "location" : "akra.IColladaInstanceLight",
+"type" : "IColladaLight"}}}}

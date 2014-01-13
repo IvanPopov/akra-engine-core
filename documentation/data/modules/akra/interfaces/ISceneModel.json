@@ -1,3 +1,10 @@
 { "location" : "akra",
-"variables" : { "public" : { "mesh" : { "location" : "akra.ISceneModel",
-"type" : "IMesh"}}}}
+"variables" : { "public" : { "visible" : { "location" : "akra.ISceneModel",
+"type" : "bool"},
+"mesh" : { "location" : "akra.ISceneModel",
+"type" : "IMesh"}}},
+"functions" : { "isVisible" : { "comments" : [  ],
+"location" : "akra.ISceneModel",
+"arguments" : [  ],
+"type" : "bool",
+"isInline" : false}}}

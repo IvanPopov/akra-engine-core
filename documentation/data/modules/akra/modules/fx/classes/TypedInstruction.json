@@ -1,5 +1,5 @@
 { "location" : "akra.fx",
-"variables" : { "public" : { "_pType" : { "location" : "akra.fx.TypedInstruction",
+"variables" : { "protected" : { "_pType" : { "location" : "akra.fx.TypedInstruction",
 "type" : "IAFXTypeInstruction"}}},
 "constructors" : [ { "comments" : [  ],
 "location" : "akra.fx.TypedInstruction",

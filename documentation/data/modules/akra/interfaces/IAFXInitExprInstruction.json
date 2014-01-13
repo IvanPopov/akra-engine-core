@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "optimizeForVariableType" : { "comments" : [  ],
+"location" : "akra.IAFXInitExprInstruction",
+"arguments" : [ { "name" : "pType",
+"isOptional" : false,
+"type" : "IAFXVariableTypeInstruction"} ],
+"type" : "bool",
+"isInline" : false}}}

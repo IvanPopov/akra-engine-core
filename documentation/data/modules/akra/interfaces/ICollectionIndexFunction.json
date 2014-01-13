@@ -1,0 +1,8 @@
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.ICollectionIndexFunction",
+"arguments" : [ { "name" : "pElement",
+"isOptional" : false,
+"type" : "any"} ],
+"type" : "number",
+"isInline" : false}}}

@@ -4,4 +4,10 @@
 "value" : 1},
 { "name" : "SHADOWVIEWPORT",
 "text" : "2",
-"value" : 2} ]
+"value" : 2},
+{ "name" : "COLORVIEWPORT",
+"text" : "3",
+"value" : 3},
+{ "name" : "TEXTUREVIEWPORT",
+"text" : "4",
+"value" : 4} ]

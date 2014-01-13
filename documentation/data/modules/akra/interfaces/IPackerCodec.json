@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "read" : { "location" : "akra.IPackerCodec",
+"type" : "any"},
+"write" : { "location" : "akra.IPackerCodec",
+"type" : "any"}}}}

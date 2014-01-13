@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.util.deps",
+"arguments" : [ { "name" : "info",
+"isOptional" : false,
+"type" : "IScriptInfo"},
+{ "name" : "callback",
+"isOptional" : false,
+"type" : ""} ],
+"type" : "void",
+"isInline" : false}

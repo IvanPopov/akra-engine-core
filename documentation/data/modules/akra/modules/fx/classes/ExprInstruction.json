@@ -1,5 +1,5 @@
 { "location" : "akra.fx",
-"variables" : { "public" : { "_pLastEvalResult" : { "location" : "akra.fx.ExprInstruction",
+"variables" : { "protected" : { "_pLastEvalResult" : { "location" : "akra.fx.ExprInstruction",
 "type" : "any"}}},
 "constructors" : [ { "comments" : [ [ "/**",
 "* Respresent all kind of instruction",

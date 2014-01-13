@@ -4,7 +4,7 @@
 "constructors" : [ { "comments" : [  ],
 "location" : "akra.util.EffectParser",
 "arguments" : [  ]} ],
-"functions" : { "defaultInit" : { "comments" : [ [ "/**@protected*/" ] ],
+"functions" : { "defaultInit" : { "comments" : [  ],
 "location" : "akra.util.EffectParser",
 "arguments" : [  ],
 "type" : "void",

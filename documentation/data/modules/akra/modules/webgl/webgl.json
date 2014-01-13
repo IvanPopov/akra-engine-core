@@ -70,6 +70,8 @@
 ,
 "checkReadPixelFormat":{ }
 ,
+"checkCopyTexImage":{ }
+,
 "getSupportedAlternative":{ }
 ,
 "computeLog":{ }
@@ -82,6 +84,8 @@
 "WebGLCanvas":{ }
 ,
 "WebGLShaderProgram":{ }
+,
+"WebGLInternalTextureStateManager":{ }
 ,
 "WebGLRenderer":{ }
 ,
@@ -107,6 +111,12 @@
 "interfaces":
 {
 "WebGLUniformLocationMap":{ }
+,
+"WebGLInternalTextureState":{ }
+,
+"WebGLInternalTextureStateMap":{ }
+,
+"IWebGLContextStates":{ }
 ,
 "IWebGLAttachments":{ }
 }

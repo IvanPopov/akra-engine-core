@@ -1,5 +1,5 @@
 { "location" : "akra.webgl",
-"variables" : { "public" : { "_pWebGLRenderbuffer" : { "location" : "akra.webgl.WebGLInternalRenderBuffer",
+"variables" : { "protected" : { "_pWebGLRenderbuffer" : { "location" : "akra.webgl.WebGLInternalRenderBuffer",
 "type" : "WebGLRenderbuffer"}}},
 "constructors" : [ { "comments" : [  ],
 "location" : "akra.webgl.WebGLInternalRenderBuffer",

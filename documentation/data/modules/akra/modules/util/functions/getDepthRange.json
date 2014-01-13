@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "pDepthTexture",
+"isOptional" : false,
+"type" : "ITexture"} ],
+"type" : "IDepthRange",
+"isInline" : false}

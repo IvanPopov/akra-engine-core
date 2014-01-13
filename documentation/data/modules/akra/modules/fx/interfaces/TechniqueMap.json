@@ -1,1 +1,8 @@
-{ "location" : "akra.fx"}
+{ "location" : "akra.fx",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.fx.TechniqueMap",
+"arguments" : [ { "name" : "sTechniqueName",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IAFXTechniqueInstruction",
+"isInline" : false}}}

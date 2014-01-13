@@ -8,4 +8,9 @@
 "input" : { "location" : "akra.IRenderEntry",
 "type" : "IShaderInput"},
 "bufferMap" : { "location" : "akra.IRenderEntry",
-"type" : "IBufferMap"}}}}
+"type" : "IBufferMap"}}},
+"functions" : { "clear" : { "comments" : [  ],
+"location" : "akra.IRenderEntry",
+"arguments" : [  ],
+"type" : "void",
+"isInline" : false}}}

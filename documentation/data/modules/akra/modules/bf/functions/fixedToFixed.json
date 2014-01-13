@@ -1,7 +1,4 @@
-{ "comments" : [ [ "/**",
-"* Convert N bit colour channel value to P bits. It fills P bits with the",
-"* bit pattern repeated. (this is /((1<<n)-1) in fixed point)",
-"*/" ] ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.bf",
 "arguments" : [ { "name" : "value",
 "isOptional" : false,
@@ -13,4 +10,4 @@
 "isOptional" : false,
 "type" : "number"} ],
 "type" : "number",
-"isInline" : true}
+"isInline" : false}

@@ -2,7 +2,7 @@
 	<div class="wrap">
 		<a class="arrow opened" href="javascript:void(0);"><span class="bg"></span></a>
 		<a class="icon {{docobject.type|toStyleType}}" href="#"></a>
-		<a class="text" href="#{{docobject.location}}/{{docobject.name}}">{{docobject.name}}</a>
+		<a class="text" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '/' : docobject.location+'/'+docobject.name}}">{{docobject.name}}</a>
 	</div>
 	<div class="sub-menu">
 		<div class="legend">
@@ -17,8 +17,8 @@
 		</div>
 		<div class="sub-wrap">
 			<div class="j-sm-sub-list" ng-repeat="(key,subdata) in filtersubobjects(docobject.data)" data-name="{{key}}">
-				<ul class="sub-list" ng-repeat="(subkey,subsubdata) in subdata">
-					<li class="sub-item"><a class="sub-link {{key|toStyleType}}" href="#{{docobject.location}}/{{docobject.name}}/{{subkey}}">{{subkey}}</a></li>
+				<ul class="sub-list">
+					<li class="sub-item" ng-repeat="(subkey,subsubdata) in subdata"><a class="sub-link {{key|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '' : docobject.location+'/'+docobject.name}}/{{subkey}}">{{subkey}}</a></li>
 				</ul>
 				<div class="sep"></div>
 			</div>

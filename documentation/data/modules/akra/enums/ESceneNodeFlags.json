@@ -1,0 +1,12 @@
+[ { "name" : "FROZEN_PARENT",
+"text" : "0",
+"value" : 0},
+{ "name" : "FROZEN_SELF",
+"text" : "1",
+"value" : 1},
+{ "name" : "HIDDEN_PARENT",
+"text" : "2",
+"value" : 2},
+{ "name" : "HIDDEN_SELF",
+"text" : "3",
+"value" : 3} ]

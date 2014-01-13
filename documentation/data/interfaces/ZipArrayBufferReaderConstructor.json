@@ -1,0 +1,8 @@
+{ "location" : "",
+"functions" : { "_construct" : { "comments" : [  ],
+"location" : "ZipArrayBufferReaderConstructor",
+"arguments" : [ { "name" : "ab",
+"isOptional" : false,
+"type" : "ArrayBuffer"} ],
+"type" : "ZipReader",
+"isInline" : false}}}

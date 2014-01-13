@@ -1,0 +1,72 @@
+			<div>
+				<div class="b-intro">
+				<div class="menu">
+					<ul class="wrap">
+						<li class="item"><a class="link members j-content-chapter-button" data-name="members" href="javascript:void(0);">Members</a></li>
+						<li class="item"><a class="link methods j-content-chapter-button" data-name="methods" href="javascript:void(0);">Methods</a></li>
+						<li class="item"><a class="link signals j-content-chapter-button" data-name="signals" href="javascript:void(0);">Signals</a></li>
+					</ul>
+				</div>
+				<div class="title">
+					<span class="icon"><img src="images/interfaces-title-icon.png" alt=""/></span>
+					<span class="way">{{docobject.location | locationToDocStyle}}&nbsp;</span>
+					<h1 class="text">{{docobject.name}}</h1>
+				</div>
+				<div class="text">
+					<p>{{docobject.description}}</p>
+				</div>
+				<div class="clr"></div>
+			</div>
+			<div class="b-intro-sep"></div>
+			<div class="b-description">
+
+			<div ng-repeat="(key,val) in filtersubobjects(docobject.data)">
+				<div class="j-content-chapter" ng-switch="key" data-name="{{key|toStyleType}}">
+					<h2 class="b-description-title">{{key|toStyleType}}</h2>
+					<div ng-switch-when="variables">
+						<div ng-repeat="(subkey,subval) in filtersubobjects(val)">
+							<h3 class="b-description-title2 {{subkey}}-{{key|toStyleType}}">{{subkey}} {{key|toStyleType}}</h3>
+							<div class="b-single-methods-wrap">
+								<div ng-repeat="(subsubkey,subsubval) in filtersubobjects(subval)">
+									<div class="b-single-method j-single-method closed">
+										<div class="top-row">
+											<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+											<div class="type"></div>
+											<div class="title">{{subsubkey}}<!-- <span class="blue">int</span> --></div>
+											<div class="intro">{{subval.comments[0][1]}}</div>
+										</div>
+										<div class="bottom-row">
+											<div class="description"><p>{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}</p></div>
+											<!-- <p><span class="bold">Parameters</span>:<br></p>
+											<p><span class="bold">Returns</span>:</p>
+											<p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div> -->
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div ng-switch-default>
+						<div class="b-single-methods-wrap">
+							<div ng-repeat="(subkey,subval) in filtersubobjects(val)">
+								<div class="b-single-method j-single-method closed">
+									<div class="top-row">
+										<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
+										<div class="type"></div>
+										<div class="title">{{subkey}}<!-- <span class="blue">int</span> --></div>
+										<div class="intro">{{subval.comments[0][1]}}</div>
+									</div>
+									<div class="bottom-row">
+										<div class="description"><p>{{subval.comments[0][1]}}<br>{{subval.comments[0][2]}}</p></div>
+										<!-- <p><span class="bold">Parameters</span>:<br></p>
+										<p><span class="bold">Returns</span>:</p>
+										<p>Definition at line <span class="blue">60</span> of file <span class="blue">iOS/OgreTimerImp.h.</span></p></div> -->
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			</div>
+		</div>

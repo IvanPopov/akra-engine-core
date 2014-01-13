@@ -1,1 +1,1 @@
-<a class="link {{docobject.type|toStyleType}}" href="#{{docobject.location}}/{{docobject.name}}">{{docobject.name}}</a>
+<a class="link {{docobject.type|toStyleType}}" href="#{{(docobject.name=='index' && docobject.location=='' ) ? '/' : docobject.location+'/'+docobject.name}}">{{docobject.name}}</a>

@@ -1,4 +1,7 @@
-[ { "name" : "NEAREST",
+[ { "name" : "UNDEF",
+"text" : "0x0000",
+"value" : 0},
+{ "name" : "NEAREST",
 "text" : "0x2600",
 "value" : 9728},
 { "name" : "LINEAR",

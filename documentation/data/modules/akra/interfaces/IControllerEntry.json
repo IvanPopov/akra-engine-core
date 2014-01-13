@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "animations" : { "location" : "akra.IControllerEntry",
+"type" : "number[  ]"},
+"options" : { "location" : "akra.IControllerEntry",
+"type" : "number"},
+"name" : { "location" : "akra.IControllerEntry",
+"type" : "string"}}}}

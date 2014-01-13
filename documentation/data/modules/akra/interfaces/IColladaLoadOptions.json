@@ -3,6 +3,8 @@
 "type" : "bool"},
 "wireframe" : { "location" : "akra.IColladaLoadOptions",
 "type" : "bool"},
+"shadows" : { "location" : "akra.IColladaLoadOptions",
+"type" : "bool"},
 "sharedBuffer" : { "location" : "akra.IColladaLoadOptions",
 "type" : "bool"},
 "animation" : { "location" : "akra.IColladaLoadOptions",
@@ -14,4 +16,8 @@
 "skeletons" : { "location" : "akra.IColladaLoadOptions",
 "type" : "ISkeleton[  ]"},
 "images" : { "location" : "akra.IColladaLoadOptions",
-"type" : "IColladaImageLoadOptions"}}}}
+"type" : "IColladaImageLoadOptions"},
+"name" : { "location" : "akra.IColladaLoadOptions",
+"type" : "string"},
+"debug" : { "location" : "akra.IColladaLoadOptions",
+"type" : "bool"}}}}

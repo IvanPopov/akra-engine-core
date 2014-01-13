@@ -1,1 +1,8 @@
-{ "location" : "akra.util"}
+{ "location" : "akra.util",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.util.ILogRoutineMap",
+"arguments" : [ { "name" : "eLogLevel",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "ILogRoutineFunc",
+"isInline" : false}}}

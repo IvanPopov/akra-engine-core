@@ -1,0 +1,9 @@
+[ { "name" : "XYZ",
+"text" : "0x01",
+"value" : 1},
+{ "name" : "NORMAL",
+"text" : "0x02",
+"value" : 2},
+{ "name" : "UV",
+"text" : "0x04",
+"value" : 4} ]

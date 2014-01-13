@@ -5,6 +5,6 @@
 "type" : "HTMLCanvasElement"},
 { "name" : "pOptions",
 "isOptional" : true,
-"type" : "{ ; }"} ],
+"type" : "WebGLContextAttributes"} ],
 "type" : "WebGLRenderingContext",
 "isInline" : false}

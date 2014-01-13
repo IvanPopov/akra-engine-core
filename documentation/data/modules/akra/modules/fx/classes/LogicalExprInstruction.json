@@ -16,4 +16,9 @@
 "isOptional" : true,
 "type" : "EVarUsedMode"} ],
 "type" : "void",
+"isInline" : false},
+"isConst" : { "comments" : [  ],
+"location" : "akra.fx.LogicalExprInstruction",
+"arguments" : [  ],
+"type" : "bool",
 "isInline" : false}}}

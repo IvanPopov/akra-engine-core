@@ -7,4 +7,9 @@
 ,
 "createKeymap":{ }
 }
+,
+"classes":
+{
+"KeyMap":{ }
+}
 }

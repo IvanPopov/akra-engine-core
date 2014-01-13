@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "data" : { "location" : "akra.ILibraryEntry",
+"type" : "IUnique"},
+"entry" : { "location" : "akra.ILibraryEntry",
+"type" : "IDataEntry"}}}}

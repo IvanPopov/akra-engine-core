@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.path",
+"arguments" : [ { "name" : "sUri",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IDataURI",
+"isInline" : false}

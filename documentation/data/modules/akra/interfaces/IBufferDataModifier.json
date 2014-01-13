@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.IBufferDataModifier",
+"arguments" : [ { "name" : "pData",
+"isOptional" : false,
+"type" : "ArrayBufferView"} ],
+"type" : "void",
+"isInline" : false}}}

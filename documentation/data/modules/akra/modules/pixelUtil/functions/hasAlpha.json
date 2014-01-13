@@ -1,7 +1,7 @@
-{ "comments" : [ [ "/** Shortcut method to determine if the format has an alpha component */" ] ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.pixelUtil",
 "arguments" : [ { "name" : "eFormat",
 "isOptional" : false,
 "type" : "EPixelFormats"} ],
 "type" : "bool",
-"isInline" : true}
+"isInline" : false}

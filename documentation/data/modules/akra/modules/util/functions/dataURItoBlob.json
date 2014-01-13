@@ -1,0 +1,7 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "dataURI",
+"isOptional" : false,
+"type" : "any"} ],
+"type" : "Blob",
+"isInline" : false}

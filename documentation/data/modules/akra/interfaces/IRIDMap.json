@@ -1,0 +1,8 @@
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IRIDMap",
+"arguments" : [ { "name" : "rid",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "IRIDPair",
+"isInline" : false}}}

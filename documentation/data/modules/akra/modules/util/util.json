@@ -56,10 +56,6 @@
 ,
 "Color":{ }
 ,
-"Pathinfo":{ }
-,
-"URI":{ }
-,
 "Singleton":{ }
 ,
 "BrowserInfo":{ }
@@ -84,6 +80,16 @@
 ,
 "ObjectList":{ }
 ,
+"ObjectSortCollection":{ }
+,
+"StringDictionary":{ }
+,
+"StringMinifier":{ }
+,
+"IHashTreeEntry":{ }
+,
+"HashTree":{ }
+,
 "BufferMap":{ }
 }
 ,
@@ -100,13 +106,13 @@
 ,
 "colorToVec4":{ }
 ,
-"pathinfo":{ }
-,
-"uri":{ }
+"color":{ }
 ,
 "stoab":{ }
 ,
 "abtos":{ }
+,
+"abtos_blobreader":{ }
 ,
 "abtota":{ }
 ,
@@ -116,11 +122,35 @@
 ,
 "parseHTML":{ }
 ,
+"blobFromDataURL":{ }
+,
+"jsonFromDataURL":{ }
+,
+"dataURItoBlob":{ }
+,
+"dataToURL":{ }
+,
 "initAFXParser":{ }
+,
+"getDepthRange":{ }
+,
+"calculateSkin":{ }
+,
+"calculatePlanesForFrustumLighting":{ }
+,
+"calculatePlanesForOrthogonalLighting":{ }
 ,
 "createBufferMap":{ }
 ,
-"createDepsManager":{ }
+"createSceneSurface":{ }
+,
+"createQuad":{ }
+,
+"basis":{ }
+,
+"bone":{ }
+,
+"lineCube":{ }
 }
 ,
 "enums":
@@ -128,7 +158,10 @@
 "EThreadStatuses":{ }
 ,
 "EEntityStates":{ }
+}
 ,
-"EDepsManagerStates":{ }
+"modules":
+{
+"deps":{ }
 }
 }

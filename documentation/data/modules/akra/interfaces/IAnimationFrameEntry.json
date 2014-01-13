@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "time" : { "location" : "akra.IAnimationFrameEntry",
+"type" : "number"},
+"weight" : { "location" : "akra.IAnimationFrameEntry",
+"type" : "number"},
+"matrix" : { "location" : "akra.IAnimationFrameEntry",
+"type" : "number[  ]"},
+"type" : { "location" : "akra.IAnimationFrameEntry",
+"type" : "number"}}}}

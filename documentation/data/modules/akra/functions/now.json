@@ -1,4 +1,4 @@
-{ "comments" : [  ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra",
 "arguments" : [  ],
 "type" : "number",

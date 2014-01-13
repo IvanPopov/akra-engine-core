@@ -13,7 +13,7 @@
 { "name" : "pCamera",
 "isOptional" : false,
 "type" : "ICamera"} ]} ],
-"functions" : { "findObjects" : { "comments" : [  ],
+"functions" : { "findObjects" : { "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.scene.objects.DLTechnique",
 "arguments" : [ { "name" : "pResultArray",
 "isOptional" : false,
@@ -22,4 +22,4 @@
 "isOptional" : true,
 "type" : "bool"} ],
 "type" : "IObjectArray",
-"isInline" : true}}}
+"isInline" : false}}}

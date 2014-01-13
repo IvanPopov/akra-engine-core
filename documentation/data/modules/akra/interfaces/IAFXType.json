@@ -1,1 +1,13 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "isBase" : { "comments" : [  ],
+"location" : "akra.IAFXType",
+"arguments" : [  ],
+"type" : "bool",
+"isInline" : false},
+"initializeFromInstruction" : { "comments" : [  ],
+"location" : "akra.IAFXType",
+"arguments" : [ { "name" : "pInstruction",
+"isOptional" : false,
+"type" : "IAFXTypeDeclInstruction"} ],
+"type" : "bool",
+"isInline" : false}}}

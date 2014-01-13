@@ -1,4 +1,7 @@
-[ { "name" : "REPEAT",
+[ { "name" : "UNDEF",
+"text" : "0x0000",
+"value" : 0},
+{ "name" : "REPEAT",
 "text" : "0x2901",
 "value" : 10497},
 { "name" : "CLAMP_TO_EDGE",

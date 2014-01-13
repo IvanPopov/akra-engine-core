@@ -1,0 +1,8 @@
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IPackerBlacklist",
+"arguments" : [ { "name" : "type",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "Function",
+"isInline" : false}}}

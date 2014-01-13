@@ -6,4 +6,7 @@
 "value" : 1},
 { "name" : "OMNI",
 "text" : "2",
-"value" : 2} ]
+"value" : 2},
+{ "name" : "SUN",
+"text" : "3",
+"value" : 3} ]

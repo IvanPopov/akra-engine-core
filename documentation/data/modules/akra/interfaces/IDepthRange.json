@@ -1,0 +1,5 @@
+{ "location" : "akra",
+"variables" : { "public" : { "min" : { "location" : "akra.IDepthRange",
+"type" : "number"},
+"max" : { "location" : "akra.IDepthRange",
+"type" : "number"}}}}

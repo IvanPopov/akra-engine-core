@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.IColladaNewParamMap",
+"arguments" : [ { "name" : "sid",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IColladaNewParam",
+"isInline" : false}}}

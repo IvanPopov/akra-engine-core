@@ -1,1 +1,15 @@
-{ "location" : ""}
+{ "location" : "",
+"functions" : { "toHex" : { "comments" : [  ],
+"location" : "Number",
+"arguments" : [ { "name" : "length",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "string",
+"isInline" : false},
+"printBinary" : { "comments" : [  ],
+"location" : "Number",
+"arguments" : [ { "name" : "isPretty",
+"isOptional" : true,
+"type" : "bool"} ],
+"type" : "any",
+"isInline" : false}}}

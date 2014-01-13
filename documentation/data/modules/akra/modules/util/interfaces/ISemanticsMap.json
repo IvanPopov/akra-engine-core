@@ -1,1 +1,8 @@
-{ "location" : "akra.util"}
+{ "location" : "akra.util",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.util.ISemanticsMap",
+"arguments" : [ { "name" : "semantics",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IDataFlow",
+"isInline" : false}}}

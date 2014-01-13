@@ -1,0 +1,9 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "..."},
+{ "name" : "argv",
+"isOptional" : false,
+"type" : "[  ]"} ],
+"variableArgList" : true,
+"type" : "IColor",
+"isInline" : false}

@@ -20,4 +20,9 @@
 "authority" : { "location" : "akra.IURI",
 "type" : "string"},
 "protocol" : { "location" : "akra.IURI",
-"type" : "string"}}}}
+"type" : "string"}}},
+"functions" : { "toString" : { "comments" : [  ],
+"location" : "akra.IURI",
+"arguments" : [  ],
+"type" : "string",
+"isInline" : false}}}

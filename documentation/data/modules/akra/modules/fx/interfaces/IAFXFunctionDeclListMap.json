@@ -1,1 +1,8 @@
-{ "location" : "akra.fx"}
+{ "location" : "akra.fx",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.fx.IAFXFunctionDeclListMap",
+"arguments" : [ { "name" : "functionName",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "[  ]",
+"isInline" : false}}}

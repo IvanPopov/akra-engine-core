@@ -1,1 +1,8 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "_call" : { "comments" : [  ],
+"location" : "akra.ILogRoutineFunc",
+"arguments" : [ { "name" : "pEntity",
+"isOptional" : false,
+"type" : "ILoggerEntity"} ],
+"type" : "void",
+"isInline" : false}}}

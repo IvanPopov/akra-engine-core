@@ -1,3 +1,15 @@
 { "location" : "akra",
 "variables" : { "public" : { "type" : { "location" : "akra.ICanvas",
-"type" : "ECanvasTypes"}}}}
+"type" : "ECanvasTypes"}}},
+"functions" : { "isFullscreen" : { "comments" : [  ],
+"location" : "akra.ICanvas",
+"arguments" : [  ],
+"type" : "bool",
+"isInline" : false},
+"setFullscreen" : { "comments" : [  ],
+"location" : "akra.ICanvas",
+"arguments" : [ { "name" : "isFullscreen",
+"isOptional" : true,
+"type" : "bool"} ],
+"type" : "void",
+"isInline" : false}}}

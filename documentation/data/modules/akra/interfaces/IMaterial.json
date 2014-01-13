@@ -1,3 +1,17 @@
 { "location" : "akra",
 "variables" : { "public" : { "name" : { "location" : "akra.IMaterial",
-"type" : "string"}}}}
+"type" : "string"}}},
+"functions" : { "set" : { "comments" : [  ],
+"location" : "akra.IMaterial",
+"arguments" : [ { "name" : "pMat",
+"isOptional" : false,
+"type" : "IMaterialBase"} ],
+"type" : "IMaterial",
+"isInline" : false},
+"isEqual" : { "comments" : [  ],
+"location" : "akra.IMaterial",
+"arguments" : [ { "name" : "pMat",
+"isOptional" : false,
+"type" : "IMaterialBase"} ],
+"type" : "bool",
+"isInline" : false}}}

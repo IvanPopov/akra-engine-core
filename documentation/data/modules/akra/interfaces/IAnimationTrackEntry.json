@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "interpolation" : { "location" : "akra.IAnimationTrackEntry",
+"type" : "EAnimationInterpolations"},
+"keyframes" : { "location" : "akra.IAnimationTrackEntry",
+"type" : "IAnimationFrameEntry[  ]"},
+"targetName" : { "location" : "akra.IAnimationTrackEntry",
+"type" : "string"},
+"target" : { "location" : "akra.IAnimationTrackEntry",
+"type" : "number"}}}}

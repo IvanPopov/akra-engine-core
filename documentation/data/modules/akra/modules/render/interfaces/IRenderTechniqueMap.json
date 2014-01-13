@@ -1,1 +1,8 @@
-{ "location" : "akra.render"}
+{ "location" : "akra.render",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.render.IRenderTechniqueMap",
+"arguments" : [ { "name" : "key",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IRenderTechnique",
+"isInline" : false}}}

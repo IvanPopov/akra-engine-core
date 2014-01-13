@@ -1,0 +1,8 @@
+{ "location" : "akra.webgl",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.webgl.WebGLInternalTextureStateMap",
+"arguments" : [ { "name" : "guid",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "WebGLInternalTextureState",
+"isInline" : false}}}

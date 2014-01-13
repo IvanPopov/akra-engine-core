@@ -1,1 +1,11 @@
-{ "location" : "akra"}
+{ "location" : "akra",
+"functions" : { "request" : { "comments" : [  ],
+"location" : "akra.ITriangleNodePool",
+"arguments" : [  ],
+"type" : "ITriTreeNode",
+"isInline" : false},
+"reset" : { "comments" : [  ],
+"location" : "akra.ITriangleNodePool",
+"arguments" : [  ],
+"type" : "void",
+"isInline" : false}}}

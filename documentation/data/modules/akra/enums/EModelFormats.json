@@ -1,0 +1,9 @@
+[ { "name" : "UNKNOWN",
+"text" : "0",
+"value" : 0},
+{ "name" : "COLLADA",
+"text" : "0x1000",
+"value" : 4096},
+{ "name" : "OBJ",
+"text" : "0x2000",
+"value" : 8192} ]

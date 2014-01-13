@@ -13,6 +13,8 @@
 "interfaces":
 {
 "IFileCommand":{ }
+,
+"IHash":{ }
 }
 ,
 "functions":
@@ -27,17 +29,11 @@
 ,
 "fopen":{ }
 ,
-"stringToHttpMethod":{ }
+"getPackerTemplate":{ }
 ,
-"stringToAjaxDataType":{ }
+"dump":{ }
 ,
-"ajaxDataTypeToXHRResponseType":{ }
-,
-"createXMLHttpRequest":{ }
-,
-"queryString":{ }
-,
-"ajax":{ }
+"undump":{ }
 }
 ,
 "classes":
@@ -47,5 +43,17 @@
 "LocalFile":{ }
 ,
 "StorageFile":{ }
+,
+"PackerTemplate":{ }
+,
+"BinWriter":{ }
+,
+"Packer":{ }
+,
+"Exporter":{ }
+,
+"BinReader":{ }
+,
+"Importer":{ }
 }
 }

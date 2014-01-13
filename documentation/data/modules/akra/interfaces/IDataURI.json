@@ -1,0 +1,9 @@
+{ "location" : "akra",
+"variables" : { "public" : { "base64" : { "location" : "akra.IDataURI",
+"type" : "bool"},
+"data" : { "location" : "akra.IDataURI",
+"type" : "string"},
+"mediatype" : { "location" : "akra.IDataURI",
+"type" : "string"},
+"charset" : { "location" : "akra.IDataURI",
+"type" : "string"}}}}

@@ -1,0 +1,11 @@
+{ "location" : "",
+"variables" : { "public" : { "baseNeighbor" : { "location" : "ITriTreeNode",
+"type" : "ITriTreeNode"},
+"leftNeighbor" : { "location" : "ITriTreeNode",
+"type" : "ITriTreeNode"},
+"rightNeighbor" : { "location" : "ITriTreeNode",
+"type" : "ITriTreeNode"},
+"leftChild" : { "location" : "ITriTreeNode",
+"type" : "ITriTreeNode"},
+"rightChild" : { "location" : "ITriTreeNode",
+"type" : "ITriTreeNode"}}}}

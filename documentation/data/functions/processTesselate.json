@@ -1,0 +1,13 @@
+{ "comments" : [ [ "/**",
+"* format of pData. pData size in bytes = ( 4 * (pTerrain.maxTriTreeNodeCount * 3) + 4)",
+"* 3 float32 - float camera coords",
+"* 1 uint32 - length of tessellation queue of terrainSection. Define as L.",
+"* L uint32 - index of sections to tesselate",
+"* @type { [ type ]}",
+"*/" ] ],
+"location" : "",
+"arguments" : [ { "name" : "pData",
+"isOptional" : false,
+"type" : "ArrayBuffer"} ],
+"type" : "void",
+"isInline" : false}

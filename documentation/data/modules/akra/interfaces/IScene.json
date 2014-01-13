@@ -1,3 +1,10 @@
 { "location" : "akra",
 "variables" : { "public" : { "type" : { "location" : "akra.IScene",
-"type" : "ESceneTypes"}}}}
+"type" : "ESceneTypes"},
+"name" : { "location" : "akra.IScene",
+"type" : "string"}}},
+"functions" : { "getManager" : { "comments" : [  ],
+"location" : "akra.IScene",
+"arguments" : [  ],
+"type" : "ISceneManager",
+"isInline" : false}}}

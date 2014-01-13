@@ -11,7 +11,7 @@
 "location" : "akra.render.UniformOmni",
 "arguments" : [ { "name" : "pLightParam",
 "isOptional" : false,
-"type" : "ILightParameters"},
+"type" : "IOmniParameters"},
 { "name" : "v3fPosition",
 "isOptional" : false,
 "type" : "IVec3"} ],

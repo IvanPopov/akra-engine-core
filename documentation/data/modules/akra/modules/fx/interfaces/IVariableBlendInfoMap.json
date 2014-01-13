@@ -1,0 +1,8 @@
+{ "location" : "akra.fx",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.fx.IVariableBlendInfoMap",
+"arguments" : [ { "name" : "index",
+"isOptional" : false,
+"type" : "number"} ],
+"type" : "IVariableBlendInfo",
+"isInline" : false}}}

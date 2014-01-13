@@ -1,1 +1,8 @@
-{ "location" : "akra.fx"}
+{ "location" : "akra.fx",
+"functions" : { "__item" : { "comments" : [  ],
+"location" : "akra.fx.IDataFlowMap",
+"arguments" : [ { "name" : "index",
+"isOptional" : false,
+"type" : "string"} ],
+"type" : "IDataFlow",
+"isInline" : false}}}

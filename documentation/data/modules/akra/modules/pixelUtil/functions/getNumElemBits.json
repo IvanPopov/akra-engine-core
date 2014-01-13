@@ -1,12 +1,7 @@
-{ "comments" : [ [ "/** Returns the size in bits of an element of the given pixel format.",
-"@return",
-"The size in bits of an element. See Remarks.",
-"@remarks",
-"Passing PF_UNKNOWN will result in returning a size of 0 bits.",
-"*/" ] ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.pixelUtil",
 "arguments" : [ { "name" : "eFormat",
 "isOptional" : false,
 "type" : "EPixelFormats"} ],
 "type" : "number",
-"isInline" : true}
+"isInline" : false}

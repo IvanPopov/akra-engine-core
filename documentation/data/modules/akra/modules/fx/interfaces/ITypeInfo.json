@@ -1,0 +1,7 @@
+{ "location" : "akra.fx",
+"variables" : { "public" : { "isComplex" : { "location" : "akra.fx.ITypeInfo",
+"type" : "bool"},
+"isPointer" : { "location" : "akra.fx.ITypeInfo",
+"type" : "bool"},
+"isStrictPointer" : { "location" : "akra.fx.ITypeInfo",
+"type" : "bool"}}}}

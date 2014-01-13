@@ -23,6 +23,11 @@
 "ICallbackSlot":{ }
 }
 ,
+"functions":
+{
+"isVideoResource":{ }
+}
+,
 "modules":
 {
 "resources":{ }

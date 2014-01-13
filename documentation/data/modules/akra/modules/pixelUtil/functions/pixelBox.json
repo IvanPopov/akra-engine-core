@@ -1,0 +1,13 @@
+{ "comments" : [  ],
+"location" : "akra.pixelUtil",
+"arguments" : [ { "name" : "pExtents",
+"isOptional" : false,
+"type" : "IBox"},
+{ "name" : "ePixelFormat",
+"isOptional" : false,
+"type" : "EPixelFormats"},
+{ "name" : "pPixelData",
+"isOptional" : true,
+"type" : "Uint8Array"} ],
+"type" : "IPixelBox",
+"isInline" : false}

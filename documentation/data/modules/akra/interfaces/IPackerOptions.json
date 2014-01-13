@@ -1,0 +1,3 @@
+{ "location" : "akra",
+"variables" : { "public" : { "header" : { "location" : "akra.IPackerOptions",
+"type" : "bool"}}}}

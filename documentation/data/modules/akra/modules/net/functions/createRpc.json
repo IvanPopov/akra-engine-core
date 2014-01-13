@@ -1,5 +1,10 @@
 { "comments" : [  ],
 "location" : "akra.net",
-"arguments" : [  ],
+"arguments" : [ { "name" : "addr",
+"isOptional" : true,
+"type" : "string"},
+{ "name" : "opt",
+"isOptional" : true,
+"type" : "IRPCOptions"} ],
 "type" : "IRPC",
 "isInline" : false}

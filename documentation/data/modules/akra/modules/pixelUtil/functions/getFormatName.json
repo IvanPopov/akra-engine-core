@@ -1,8 +1,7 @@
-{ "comments" : [ [ "/** Gets the name of an image format",
-"*/" ] ],
+{ "comments" : [ [ "/**@inline*/" ] ],
 "location" : "akra.pixelUtil",
 "arguments" : [ { "name" : "eSrcFormat",
 "isOptional" : false,
 "type" : "EPixelFormats"} ],
 "type" : "string",
-"isInline" : true}
+"isInline" : false}

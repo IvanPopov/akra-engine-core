@@ -66,4 +66,11 @@
 "MAX_COLOR_ATTACHMENTS_WEBGL" : { "location" : "WEBGL_multiple_render_targets",
 "type" : "number"},
 "MAX_DRAW_BUFFERS_WEBGL" : { "location" : "WEBGL_multiple_render_targets",
-"type" : "number"}}}}
+"type" : "number"}}},
+"functions" : { "drawBuffersWEBGL" : { "comments" : [  ],
+"location" : "WEBGL_multiple_render_targets",
+"arguments" : [ { "name" : "buffers",
+"isOptional" : false,
+"type" : "[  ]"} ],
+"type" : "void",
+"isInline" : false}}}

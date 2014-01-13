@@ -1,0 +1,10 @@
+{ "comments" : [  ],
+"location" : "akra.util",
+"arguments" : [ { "name" : "buf",
+"isOptional" : false,
+"type" : "ArrayBuffer"},
+{ "name" : "callback",
+"isOptional" : false,
+"type" : "Function"} ],
+"type" : "void",
+"isInline" : false}

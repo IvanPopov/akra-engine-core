@@ -1,3 +1,8 @@
 { "location" : "akra",
 "variables" : { "public" : { "boneName" : { "location" : "akra.IJoint",
-"type" : "string"}}}}
+"type" : "string"}}},
+"functions" : { "create" : { "comments" : [  ],
+"location" : "akra.IJoint",
+"arguments" : [  ],
+"type" : "bool",
+"isInline" : false}}}

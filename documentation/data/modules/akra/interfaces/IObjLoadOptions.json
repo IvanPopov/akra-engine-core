@@ -1,0 +1,7 @@
+{ "location" : "akra",
+"variables" : { "public" : { "shadows" : { "location" : "akra.IObjLoadOptions",
+"type" : "bool"},
+"name" : { "location" : "akra.IObjLoadOptions",
+"type" : "string"},
+"axis" : { "location" : "akra.IObjLoadOptions",
+"type" : "{  x :  {  index :  number; inverse :  bool; }; y :  {  index :  number; inverse :  bool; }; z :  {  index :  number; inverse :  bool; }; }"}}}}
