@@ -57,7 +57,6 @@ src2/tests/common/*/*.t.js
 obj/
 bin/
 properties/
-app.js
 
 src2/tests/common/data/
 src2/tests/data/
