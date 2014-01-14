@@ -169,6 +169,8 @@ function alphabeticColumnSort() {
 	var section_cursor;
 	for (var i = 0; i < section.length; i++) {
 		section_cursor = $(section[i]);
+		var section_name = $(section_cursor.parents(".j-content-chapter")[0]).find(".b-description-title").html().toUpperCase();
+		console.log(section_name);
 		// console.log(section_cursor[0]);
 		var entries = section_cursor.find(".content .title").clone();
 		section_cursor.find(".col-md-3").remove();
@@ -187,7 +189,8 @@ function alphabeticColumnSort() {
 				}
 				// console.log("Creating new column");
 				new_column = $("<div class=\"col-md-3\"><div class=\"b-alphabet-column\"></div></div>");
-				new_column.find(".b-alphabet-column").append($("<div class='header'><span class='main'>"+$(entries[j]).find("a").html().toUpperCase()[0]+"</span></div>")).append($("<div class='content'></div>"));
+				var first_entry_name = $(entries[j]).find("a").html().toUpperCase();
+				new_column.find(".b-alphabet-column").append($("<div class='header'><span class='main'>"+(first_entry_name[0]==section_name[0] ? first_entry_name[1] : first_entry_name[0])+"</span></div>")).append($("<div class='content'></div>"));
 				section_cursor.append(new_column);
 				cursor = new_column.find(".content");
 			}
