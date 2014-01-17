@@ -33,7 +33,7 @@ module akra.geometry {
 	/**
 	 * Computes a coordinate-axis oriented bounding box.
 	 */
-	function computeBoundingBox(pVertexData, pBoundingBox): boolean {
+	export function computeBoundingBox(pVertexData, pBoundingBox): boolean {
 		var fX0: float = 0, fY0: float = 0, fZ0: float = 0,
 			fX1: float = 0, fY1: float = 0, fZ1: float = 0;
 		var fTemp: float, pTempData: Float32Array;
@@ -87,7 +87,7 @@ module akra.geometry {
 	}
 
 	/** расчет данных для отрисовки бокса */
-	function computeDataForCascadeBoundingBox(pBoundingBox: IRect3d, ppVertexes: float[], ppIndexes: uint[], fMinSize: float = .25): boolean {
+	export function computeDataForCascadeBoundingBox(pBoundingBox: IRect3d, ppVertexes: float[], ppIndexes: uint[], fMinSize: float = .25): boolean {
 
 		var pInd: uint[];
 		var pPoints: IVec3[][];
@@ -160,7 +160,7 @@ module akra.geometry {
 
 
 	/** подсчет обобщающей сферы над двумя сферами */
-	function computeGeneralizingSphere(pSphereA: ISphere, pSphereB: ISphere, pSphereDest?: ISphere): boolean {
+	export function computeGeneralizingSphere(pSphereA: ISphere, pSphereB: ISphere, pSphereDest?: ISphere): boolean {
 		if (!isDef(pSphereDest)) {
 			pSphereDest = pSphereA;
 		}
@@ -198,7 +198,7 @@ module akra.geometry {
 	}
 
 	/** расчет данных для отрисовки сферы */
-	function computeDataForCascadeBoundingSphere(
+	export function computeDataForCascadeBoundingSphere(
 		pBoundingSphere: ISphere,
 		ppVertexes: float[],
 		ppIndexes: uint[],
@@ -250,7 +250,7 @@ module akra.geometry {
 	 * Computes a bounding sphere.
 	 * При использование быстрого вычисления, опционально можно получить баундинг бокс. 
 	 */
-	function computeBoundingSphere(pVertexData: IVertexData, pSphere: ISphere, bFastMethod: boolean = true, pBoundingBox: IRect3d = null) {
+	export function computeBoundingSphere(pVertexData: IVertexData, pSphere: ISphere, bFastMethod: boolean = true, pBoundingBox: IRect3d = null) {
 		if (bFastMethod) {
 			return computeBoundingSphereFast(pVertexData, pSphere, pBoundingBox);
 		}
@@ -263,7 +263,7 @@ module akra.geometry {
 	/**
 	 * Computes a bounding sphere - not minimal. Also if it need compute dounding box
 	 */
-	function computeBoundingSphereFast(pVertexData: IVertexData, pSphere: ISphere, pBoundingBox: IRect3d = null): boolean {
+	export function computeBoundingSphereFast(pVertexData: IVertexData, pSphere: ISphere, pBoundingBox: IRect3d = null): boolean {
 		var i: int;
 		var pVertexDeclaration: IVertexDeclaration, pVertexElement: IVertexElement;
 		var nCount: uint, nStride: uint;
@@ -325,7 +325,7 @@ module akra.geometry {
 	/**
 	 * Computes a bounding sphere - minimal.
 	 */
-	function computeBoundingSphereMinimal(pVertexData: IVertexData, pSphere: ISphere): boolean {
+	export function computeBoundingSphereMinimal(pVertexData: IVertexData, pSphere: ISphere): boolean {
 		var i: int = 0, j: int = 0, k: int = 0;
 		var points: float[] = [];
 		var length: float = 0;

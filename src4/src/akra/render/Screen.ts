@@ -1,15 +1,15 @@
-#ifndef RENDERSCREEN_TS
-#define RENDERSCREEN_TS
-
-#include "RenderableObject.ts"
-#include "data/VertexDeclaration.ts"
+/// <reference path="RenderableObject.ts" />
+/// <reference path="../data/VertexDeclaration.ts" />
 
 module akra.render {
+	import VE = data.VertexElement;
+	import DeclUsages = data.Usages;
+
 	export class Screen extends RenderableObject {
 		protected _pBuffer: IRenderDataCollection;
 
 		constructor(pRenderer: IRenderer, pCollection?: IRenderDataCollection) {
-			super(ERenderDataTypes.SCREEN);
+			super(ERenderableTypes.SCREEN);
 
 			if (!isDefAndNotNull(pCollection)) {
 				pCollection = pRenderer.getEngine().createRenderDataCollection(0);	
@@ -17,7 +17,7 @@ module akra.render {
 			
 			var pData: IRenderData = pCollection.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP);
 
-			pData.allocateAttribute(createVertexDeclaration([VE_FLOAT2(DeclUsages.POSITION)]), 
+			pData.allocateAttribute(data.VertexDeclaration.normalize([VE.float2(DeclUsages.POSITION)]), 
 				new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]));
 
 			this._pRenderData = pData;
@@ -25,5 +25,3 @@ module akra.render {
 		}
 	}
 }
-
-#endif

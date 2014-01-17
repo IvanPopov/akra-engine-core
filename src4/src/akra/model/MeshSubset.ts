@@ -11,14 +11,14 @@
 /// <reference path="../geometry/geometry.ts" />
 /// <reference path="../material/Material.ts" />
 
-/// <reference path="CalculateSkin.ts" />
+/// <reference path="../webgl/CalculateSkin.ts" />
 
 module akra.model {
 	import VE = data.VertexElement;
 	import DeclUsages = data.Usages;
+	import VertexDeclaration = data.VertexDeclaration;
 
 	export class MeshSubset extends render.RenderableObject implements IMeshSubset {
-		//BROADCAST(skinAdded, CALL(pSkin));
 		skinAdded: ISignal<{ (pSubset: IMeshSubset, pSkin: ISkin) }> = new Signal(this);
 
 		protected _sName: string = null;
@@ -28,21 +28,21 @@ module akra.model {
 		protected _pBoundingSphere: ISphere = null;
 		protected _isOptimizedSkinned: boolean = false;
 
-		 get boundingBox(): IRect3d { return this._pBoundingBox; }
-		 get boundingSphere(): ISphere { return this._pBoundingSphere; }
-		 get skin(): ISkin { return this._pSkin; }
-		 get name(): string { return this._sName; }
-		 get mesh(): IMesh { return this._pMesh; }
+		get boundingBox(): IRect3d { return this._pBoundingBox; }
+		get boundingSphere(): ISphere { return this._pBoundingSphere; }
+		get skin(): ISkin { return this._pSkin; }
+		get name(): string { return this._sName; }
+		get mesh(): IMesh { return this._pMesh; }
 
 
-		constructor (pMesh: IMesh, pRenderData: IRenderData, sName: string = null) {
-			super(ERenderableTypes.MESH_SUBSET); 
+		constructor(pMesh: IMesh, pRenderData: IRenderData, sName: string = null) {
+			super(ERenderableTypes.MESH_SUBSET);
 			this.setup(pMesh, pRenderData, sName);
 		}
 
 		protected setup(pMesh: IMesh, pRenderData: IRenderData, sName: string): void {
 			debug.assert(this._pMesh === null, "mesh subset already prepared");
-			
+
 			this._pMesh = pMesh;
 			this._pRenderData = pRenderData;
 			this._sName = sName;
@@ -57,10 +57,10 @@ module akra.model {
 			pNewBoundingBox = new geometry.Rect3d();
 			pVertexData = this.data._getData(DeclUsages.POSITION);
 
-			if(isNull(pVertexData))
+			if (isNull(pVertexData))
 				return false;
 
-			if(geometry.computeBoundingBox(pVertexData, pNewBoundingBox) == false)
+			if (geometry.computeBoundingBox(pVertexData, pNewBoundingBox) == false)
 				return false;
 
 			this._pBoundingBox = pNewBoundingBox;
@@ -78,11 +78,11 @@ module akra.model {
 			var pMaterial: IMaterial;
 			var iData: int;
 			var iCurrentIndexSet: int;
-			var pPoints: float[], 
-				pIndexes: uint [];
+			var pPoints: float[],
+				pIndexes: uint[];
 
 			if (isNull(this._pBoundingBox)) {
-				if(!this.createBoundingBox()){
+				if (!this.createBoundingBox()) {
 					return false;
 				}
 			}
@@ -94,7 +94,7 @@ module akra.model {
 
 			iCurrentIndexSet = this.data.getIndexSet();
 
-			if(!this.data.selectIndexSet(".BoundingBox")) {
+			if (!this.data.selectIndexSet(".BoundingBox")) {
 				if (this.data.addIndexSet(false, EPrimitiveTypes.LINELIST, ".BoundingBox") == -1) {
 					logger.error("could not add index set '.BoundingBox'");
 					return false;
@@ -104,11 +104,11 @@ module akra.model {
 
 				this.data.allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 
-				this.data.index(iData,DeclUsages.INDEX0);
+				this.data.index(iData, DeclUsages.INDEX0);
 
 				// this.applyFlexMaterial(".MaterialBoundingBox");
 
-		  //       //TODO: некорректно задавать так boundingBox, т.к. надо рендерится со своим рендер методом, а его никто не выбирает. 
+				//       //TODO: некорректно задавать так boundingBox, т.к. надо рендерится со своим рендер методом, а его никто не выбирает. 
 				// pMaterial = this.getFlexMaterial(".MaterialBoundingBox");
 				// pMaterial.emissive = new Color(0.0, 0.0, 1.0, 1.0);
 				// pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
@@ -123,7 +123,7 @@ module akra.model {
 			return true;
 		}
 
-		 isBoundingBoxVisible(): boolean {
+		isBoundingBoxVisible(): boolean {
 			return this.data.isRenderable(this.data.findIndexSet(".BoundingBox"));
 		}
 
@@ -131,7 +131,7 @@ module akra.model {
 			var iCurrentIndexSet: int;
 			iCurrentIndexSet = this.data.getIndexSet();
 
-			if(!this.data.selectIndexSet(".BoundingBox")) {
+			if (!this.data.selectIndexSet(".BoundingBox")) {
 				return false;
 			}
 			else {
@@ -148,11 +148,11 @@ module akra.model {
 			pNewBoundingSphere = new geometry.Sphere();
 			pVertexData = this.data._getData(DeclUsages.POSITION);
 
-			if(!pVertexData) {
+			if (!pVertexData) {
 				return false;
 			}
 
-			if(!geometry.computeBoundingSphere(pVertexData, pNewBoundingSphere, false, this._pBoundingBox)) {
+			if (!geometry.computeBoundingSphere(pVertexData, pNewBoundingSphere, false, this._pBoundingBox)) {
 				return false;
 			}
 
@@ -167,7 +167,7 @@ module akra.model {
 			return true;
 		}
 
-		
+
 
 		showBoundingSphere(): boolean {
 			var pMaterial: IMaterial;
@@ -175,8 +175,8 @@ module akra.model {
 			var iCurrentIndexSet: int;
 			var pPoints: float[], pIndexes: uint[];
 
-			if(isNull(this._pBoundingSphere)) {
-				if(!this.createBoundingSphere()){
+			if (isNull(this._pBoundingSphere)) {
+				if (!this.createBoundingSphere()) {
 					return false;
 				}
 			}
@@ -186,13 +186,13 @@ module akra.model {
 			geometry.computeDataForCascadeBoundingSphere(this._pBoundingSphere, pPoints, pIndexes);
 
 			iCurrentIndexSet = this.data.getIndexSet();
-			if(!this.data.selectIndexSet(".BoundingSphere")) {
+			if (!this.data.selectIndexSet(".BoundingSphere")) {
 				this.data.addIndexSet(false, EPrimitiveTypes.LINELIST, ".BoundingSphere");
 
 				iData = this.data.allocateData([VE.float3(DeclUsages.POSITION)], new Float32Array(pPoints));
 
 				this.data.allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
-				this.data.index(iData,DeclUsages.INDEX0);
+				this.data.index(iData, DeclUsages.INDEX0);
 
 				// this.applyFlexMaterial(".MaterialBoundingSphere");
 
@@ -273,14 +273,14 @@ module akra.model {
 			return true;
 		}*/
 
-		 isBoundingSphereVisible(): boolean {
+		isBoundingSphereVisible(): boolean {
 			return this.data.isRenderable(this.data.findIndexSet(".BoundingSphere"));
 		}
 
-		hideBoundingSphere(): boolean{
+		hideBoundingSphere(): boolean {
 			var iCurrentIndexSet: int = this.data.getIndexSet();
 
-			if(!this.data.selectIndexSet(".BoundingSphere")) {
+			if (!this.data.selectIndexSet(".BoundingSphere")) {
 				return false;
 			}
 			else {
@@ -291,294 +291,295 @@ module akra.model {
 		}
 
 
-		computeNormals () {
-		    //TODO: calc normals
+		computeNormals() {
+			//TODO: calc normals
 		}
 
-		computeTangents () {
-		    //TODO: compute normals
+		computeTangents() {
+			//TODO: compute normals
 		}
 
-		computeBinormals () {
-		    //TODO: calc binormals
+		computeBinormals() {
+			//TODO: calc binormals
 		}
 
-		 isSkinned(): boolean {
-		    return this._pSkin !== null;
+		isSkinned(): boolean {
+			return this._pSkin !== null;
 		}
 
-		 isOptimizedSkinned(): boolean{
+		isOptimizedSkinned(): boolean {
 			return this.isSkinned() && this._isOptimizedSkinned;
 		}
 
-		getSkin(): ISkin{
-		    return this._pSkin;
+		getSkin(): ISkin {
+			return this._pSkin;
 		}
 
 		applyFlexMaterial(sMaterial: string, pMaterialData: IMaterial = null): boolean {
-		    if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {
-		        return this.setFlexMaterial(sMaterial);
-		    }
+			if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {
+				return this.setFlexMaterial(sMaterial);
+			}
 
-		    return false;
+			return false;
 		}
 
 		getFlexMaterial(csName: string): IMaterial;
 		getFlexMaterial(iMaterial: int): IMaterial;
 		getFlexMaterial(iMaterial): IMaterial {
-		    return this._pMesh.getFlexMaterial(<int>iMaterial);
+			return this._pMesh.getFlexMaterial(<int>iMaterial);
 		}
 
-		hasFlexMaterial (): boolean {
-		    return this._pRenderData.hasSemantics(DeclUsages.MATERIAL);
+		hasFlexMaterial(): boolean {
+			return this._pRenderData.hasSemantics(DeclUsages.MATERIAL);
 		}
 
-		setFlexMaterial (iMaterial: int): boolean;
-		setFlexMaterial (csName: string): boolean;
-		setFlexMaterial (iMaterial): boolean {
-		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
+		setFlexMaterial(iMaterial: int): boolean;
+		setFlexMaterial(csName: string): boolean;
+		setFlexMaterial(iMaterial): boolean {
+			var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
 
-		    if (isNull(pMaterial)) {
-		    	logger.warn("could not find material <" + iMaterial + "> in sub mesh <" + this.name + ">");
-		        return false;
-		    }
+			if (isNull(pMaterial)) {
+				logger.warn("could not find material <" + iMaterial + "> in sub mesh <" + this.name + ">");
+				return false;
+			}
 
-		    var pRenderData: IRenderData = this._pRenderData;
-		    var pIndexData: IBufferData = pRenderData.getIndices();
-		    var pMatFlow: IDataFlow = pRenderData._getFlow(DeclUsages.MATERIAL);
-		    var eSemantics: string = DeclUsages.INDEX10;
-		    var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
-		    var iMatFlow: int;
+			var pRenderData: IRenderData = this._pRenderData;
+			var pIndexData: IBufferData = pRenderData.getIndices();
+			var pMatFlow: IDataFlow = pRenderData._getFlow(DeclUsages.MATERIAL);
+			var eSemantics: string = DeclUsages.INDEX10;
+			var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
+			var iMatFlow: int;
 			var iMat: int = (<IFlexMaterial>pMaterial).data.byteOffset;
-		
-		    if (pMatFlow) {
-		        iMatFlow = pMatFlow.flow;
-		        eSemantics = pMatFlow.mapper.semantics;
-		        pIndexData = pMatFlow.mapper.data;
 
-		        pRenderData._addData((<IFlexMaterial>pMaterial).data, iMatFlow);
-		        
-		        return pRenderData.index(iMat, eSemantics, true);
-		    }
-		  
-		    pIndexDecl = createVertexDeclaration([VE.float(eSemantics)]);
-		    pFloatArray = new Float32Array((<IVertexData>pIndexData).length);    
-		    iMatFlow = pRenderData._addData((<IFlexMaterial>pMaterial).data);
+			if (pMatFlow) {
+				iMatFlow = pMatFlow.flow;
+				eSemantics = pMatFlow.mapper.semantics;
+				pIndexData = pMatFlow.mapper.data;
 
-		    debug.assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
+				pRenderData._addData((<IFlexMaterial>pMaterial).data, iMatFlow);
 
-		    if (!pRenderData.allocateIndex(pIndexDecl, pFloatArray)) {
-		        logger.warn("cannot allocate index for material!!!");
-		        return false;
-		    }
+				return pRenderData.index(iMat, eSemantics, true);
+			}
 
-		    return pRenderData.index(iMat, eSemantics, true);
+			pIndexDecl = VertexDeclaration.normalize([VE.float(eSemantics)]);
+			pFloatArray = new Float32Array((<IVertexData>pIndexData).length);
+			iMatFlow = pRenderData._addData((<IFlexMaterial>pMaterial).data);
+
+			debug.assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
+
+			if (!pRenderData.allocateIndex(pIndexDecl, pFloatArray)) {
+				logger.warn("cannot allocate index for material!!!");
+				return false;
+			}
+
+			return pRenderData.index(iMat, eSemantics, true);
 		}
 
-		_draw (): void {
-//		    this._pRenderData._draw();
+		_draw(): void {
+			//		    this._pRenderData._draw();
 			logger.critical("Need to do.");
 		}
 
-		 show(): void {
-		    this.data.setRenderable(true);
+		show(): void {
+			this.data.setRenderable(true);
 		}
 
-		 hide(): void {
-		    this.data.setRenderable(false);
+		hide(): void {
+			this.data.setRenderable(false);
 		}
 
-		 isRenderable(): boolean {
+		isRenderable(): boolean {
 			return this.data.isRenderable();
 		}
 
 		//исходим из того, что данные скина 1:1 соотносятся с вершинами.
 		setSkin(pSkin: ISkin): boolean {
 			var pRenderData: IRenderData = this.data;
-		    var pPosData: IVertexData;
-		    var pPositionFlow: IDataFlow;
-		    var pNormalFlow: IDataFlow;
-		    var pMetaData: Float32Array;
-		    //мета данные разметки
-		    var pInfMetaData: IVertexData;       
-		    //адресс мета данных во флотах
-		    var iInfMetaDataLoc: int;    
-		    //шаг мета данных во флотах
-		    var iInfMetaDataStride: int; 
-		    /*
-		     Получаем данные вершин, чтобы проложить в {W} компоненту адерес мета информации,
-		     о влиянии на данную вершины.
-		     */
+			var pPosData: IVertexData;
+			var pPositionFlow: IDataFlow;
+			var pNormalFlow: IDataFlow;
+			var pMetaData: Float32Array;
+			//мета данные разметки
+			var pInfMetaData: IVertexData;
+			//адресс мета данных во флотах
+			var iInfMetaDataLoc: int;
+			//шаг мета данных во флотах
+			var iInfMetaDataStride: int;
+			/*
+			 Получаем данные вершин, чтобы проложить в {W} компоненту адерес мета информации,
+			 о влиянии на данную вершины.
+			 */
 
-		    //получаем поток данных с вершиными
-		    pPositionFlow = pRenderData._getFlow(DeclUsages.POSITION);
-		    debug.assert(isDefAndNotNull(pPositionFlow), "skin require position with indices in mesh subset");
-		    
-		    pPosData = pPositionFlow.data;
+			//получаем поток данных с вершиными
+			pPositionFlow = pRenderData._getFlow(DeclUsages.POSITION);
+			debug.assert(isDefAndNotNull(pPositionFlow), "skin require position with indices in mesh subset");
 
-		    //проверяем, что данные еще не подвязаны к другому Skin'у
-		    if (pPosData.hasSemantics(DeclUsages.BLENDMETA)) {
-		        //тоже самый skin?
-		        if (pSkin.isAffect(pPosData)) {
-		            return true;
-		        }
+			pPosData = pPositionFlow.data;
 
-		        debug.error("mesh subset already has another skin");
-		        return false;
-		    }
+			//проверяем, что данные еще не подвязаны к другому Skin'у
+			if (pPosData.hasSemantics(DeclUsages.BLENDMETA)) {
+				//тоже самый skin?
+				if (pSkin.isAffect(pPosData)) {
+					return true;
+				}
 
-		    //проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
-		    //или его клону.
-		    debug.assert(this.data.buffer == pSkin.data, 
-		        "can not bind to skin mesh subset that does not belong skin's mesh.")
+				debug.error("mesh subset already has another skin");
+				return false;
+			}
+
+			//проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
+			//или его клону.
+			debug.assert(this.data.buffer == pSkin.data,
+				"can not bind to skin mesh subset that does not belong skin's mesh.")
 
 		    //подвязывем скин, к данным с вершинами текущего подмеша.
 		    //т.е. добавляем разметку в конец каждого пикселя
 		    pSkin.attach(pPosData);
-		    
-		    /*
-		    //получаем данные разметки
-		    pMetaData = <Float32Array>pPosData.getTypedData(DeclUsages.BLENDMETA);
 
-		    //если по каким то причинам нет разметки...
-		    debug.assert(isDefAndNotNull(pMetaData), "you must specify location for storage blending data");
+			/*
+			//получаем данные разметки
+			pMetaData = <Float32Array>pPosData.getTypedData(DeclUsages.BLENDMETA);
 
-		    //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
-		    pInfMetaData = pSkin.getInfluenceMetaData();
-		    iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
-		    iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
+			//если по каким то причинам нет разметки...
+			debug.assert(isDefAndNotNull(pMetaData), "you must specify location for storage blending data");
 
-		    for (var i: int = 0; i < pMetaData.length; ++ i) {
-		        pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
-		    }
+			//выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
+			pInfMetaData = pSkin.getInfluenceMetaData();
+			iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+			iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
 
-		    //обновляем адреса мета данных вершин
-		    pPosData.setData(pMetaData, DeclUsages.BLENDMETA);
+			for (var i: int = 0; i < pMetaData.length; ++ i) {
+				pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
+			}
 
-		    */
+			//обновляем адреса мета данных вершин
+			pPosData.setData(pMetaData, DeclUsages.BLENDMETA);
 
-		    var pDeclaration: IVertexDeclaration = pPosData.getVertexDeclaration();
-		    var pVEMeta: IVertexElement = pDeclaration.findElement(DeclUsages.BLENDMETA);
-		    //if BLENDMETA not found
-		    debug.assert(isDefAndNotNull(pVEMeta), "you must specify location for storage blending data");
+			*/
+
+			var pDeclaration: IVertexDeclaration = pPosData.getVertexDeclaration();
+			var pVEMeta: IVertexElement = pDeclaration.findElement(DeclUsages.BLENDMETA);
+			//if BLENDMETA not found
+			debug.assert(isDefAndNotNull(pVEMeta), "you must specify location for storage blending data");
 
 			//read all data for acceleration
-		    pMetaData = new Float32Array(pPosData.getData(0, pDeclaration.stride));
+			pMetaData = new Float32Array(pPosData.getData(0, pDeclaration.stride));
 
-		    //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
-		    pInfMetaData = pSkin.getInfluenceMetaData();
-		    iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
-		    iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
+			//выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
+			pInfMetaData = pSkin.getInfluenceMetaData();
+			iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+			iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
 
-		    var iCount: uint = pMetaData.byteLength/pDeclaration.stride;
-		    var iOffset: uint = pVEMeta.offset/EDataTypeSizes.BYTES_PER_FLOAT;
-		    var iStride: uint = pDeclaration.stride/EDataTypeSizes.BYTES_PER_FLOAT;
+			var iCount: uint = pMetaData.byteLength / pDeclaration.stride;
+			var iOffset: uint = pVEMeta.offset / EDataTypeSizes.BYTES_PER_FLOAT;
+			var iStride: uint = pDeclaration.stride / EDataTypeSizes.BYTES_PER_FLOAT;
 
-		    for (var i: int = 0; i < iCount; ++ i) {
-		        pMetaData[iOffset + i*iStride] = iInfMetaDataLoc + i * iInfMetaDataStride;
-		    }
+			for (var i: uint = 0; i < iCount; ++i) {
+				pMetaData[iOffset + i * iStride] = iInfMetaDataLoc + i * iInfMetaDataStride;
+			}
 
-		    pPosData.setData(pMetaData, 0, pDeclaration.stride);
+			pPosData.setData(pMetaData, 0, pDeclaration.stride);
 
-		    var pIndexData: IVertexData = <IVertexData>pRenderData.getIndices();
+			var pIndexData: IVertexData = <IVertexData>pRenderData.getIndices();
 
-		    pNormalFlow = pRenderData._getFlow(DeclUsages.NORMAL);
+			pNormalFlow = pRenderData._getFlow(DeclUsages.NORMAL);
 
-		    var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData(pPositionFlow.mapper.semantics);
-		    var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData(pNormalFlow.mapper.semantics);
+			var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData(pPositionFlow.mapper.semantics);
+			var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData(pNormalFlow.mapper.semantics);
 
-		    var iAdditionPosition: uint = pPosData.byteOffset;
-		    var iAdditionNormal: uint = pNormalFlow.data.byteOffset;
+			var iAdditionPosition: uint = pPosData.byteOffset;
+			var iAdditionNormal: uint = pNormalFlow.data.byteOffset;
 
-	    	for(var i=0; i<pIndex0.length; i++){
-	    		pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition)/pPositionFlow.data.stride;
-	    		pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal)/pNormalFlow.data.stride;
-	    	}
+			for (var i: uint = 0; i < pIndex0.length; i++) {
+				pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition) / pPositionFlow.data.stride;
+				pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal) / pNormalFlow.data.stride;
+			}
 
-	    	//update position index
-	    	var pUPPositionIndex: Float32Array = new Float32Array(pPosData.length);
-	    	for(var i: uint=0; i<pPosData.length; i++){
-	    		pUPPositionIndex[i] = i;
-	    	}
+			//update position index
+			var pUPPositionIndex: Float32Array = new Float32Array(pPosData.length);
+			for (var i: uint = 0; i < pPosData.length; i++) {
+				pUPPositionIndex[i] = i;
+			}
 
-	    	//update normal index
+			//update normal index
 
-	    	var pTmp: any = {};
+			var pTmp: any = {};
 
-	    	var pSkinnedNormalIndex: uint[] = [];
-	    	var pUNPositionIndex: uint[] = []; /*update normal position index*/
-	    	var pUNNormalIndex: uint[] = []; /*update normal normal index*/
-	    	var pDestinationSkinnedNormalIndex: uint[] = [];
+			var pSkinnedNormalIndex: uint[] = [];
+			var pUNPositionIndex: uint[] = []; /*update normal position index*/
+			var pUNNormalIndex: uint[] = []; /*update normal normal index*/
+			var pDestinationSkinnedNormalIndex: uint[] = [];
 
-	    	var iCounter: uint = 0;
+			var iCounter: uint = 0;
 
-	    	for(var i=0; i<pIndex0.length; i++){
-	    		var sKey: string = pIndex0[i].toString() + "_" + pIndex1[i];
-	    		if(!isDef(pTmp[sKey])){
-	    			pTmp[sKey] = iCounter;
-	    			pUNPositionIndex.push(pIndex0[i]);
-	    			pUNNormalIndex.push(pIndex1[i]);
-	    			pSkinnedNormalIndex.push(iCounter);
-	    			pDestinationSkinnedNormalIndex.push(iCounter);
-	    			iCounter++;
-	    		}
-	    		else{
-	    			pSkinnedNormalIndex.push(pDestinationSkinnedNormalIndex[pTmp[sKey]]);
-	    		}
-	    	}
+			for (var i : uint= 0; i < pIndex0.length; i++) {
+				var sKey: string = pIndex0[i].toString() + "_" + pIndex1[i];
+				if (!isDef(pTmp[sKey])) {
+					pTmp[sKey] = iCounter;
+					pUNPositionIndex.push(pIndex0[i]);
+					pUNNormalIndex.push(pIndex1[i]);
+					pSkinnedNormalIndex.push(iCounter);
+					pDestinationSkinnedNormalIndex.push(iCounter);
+					iCounter++;
+				}
+				else {
+					pSkinnedNormalIndex.push(pDestinationSkinnedNormalIndex[pTmp[sKey]]);
+				}
+			}
 
-	    	var iSkinnedPos: uint = pRenderData.allocateData([VE.float3("SKINNED_POSITION"), VE.end(16)], new Float32Array(pPosData.length * 4));
-	    	/*skinned vertices uses same index as vertices*/
-	    	pRenderData.allocateIndex([VE.float("SP_INDEX")], pIndex0); 
-	    	pRenderData.index(iSkinnedPos, "SP_INDEX");
+			var iSkinnedPos: uint = pRenderData.allocateData([VE.float3("SKINNED_POSITION"), VE.end(16)], new Float32Array(pPosData.length * 4));
+			/*skinned vertices uses same index as vertices*/
+			pRenderData.allocateIndex([VE.float("SP_INDEX")], pIndex0);
+			pRenderData.index(iSkinnedPos, "SP_INDEX");
 
-	    	var iSkinnedNorm: uint = pRenderData.allocateData([VE.float3("SKINNED_NORMAL"), VE.end(16)], new Float32Array(pUNNormalIndex.length * 4));
-	    	/*skinned normals uses new index*/
-	    	pRenderData.allocateIndex([VE.float("SN_INDEX")], new Float32Array(pSkinnedNormalIndex));
-	    	pRenderData.index(iSkinnedNorm, "SN_INDEX");
+			var iSkinnedNorm: uint = pRenderData.allocateData([VE.float3("SKINNED_NORMAL"), VE.end(16)], new Float32Array(pUNNormalIndex.length * 4));
+			/*skinned normals uses new index*/
+			pRenderData.allocateIndex([VE.float("SN_INDEX")], new Float32Array(pSkinnedNormalIndex));
+			pRenderData.index(iSkinnedNorm, "SN_INDEX");
 
-	    	var iPreviousSet: uint = pRenderData.getIndexSet();
+			var iPreviousSet: uint = pRenderData.getIndexSet();
 
-	    	var iUPIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_position");
-	    	pRenderData.allocateIndex([VE.float("UPP_INDEX")], pUPPositionIndex);
-	    	pRenderData.index(pPosData.byteOffset, "UPP_INDEX");
-	    	pRenderData.allocateIndex([VE.float("DESTINATION_SP")], pUPPositionIndex);
-	    	pRenderData.index(iSkinnedPos, "DESTINATION_SP");
+			var iUPIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_position");
+			pRenderData.allocateIndex([VE.float("UPP_INDEX")], pUPPositionIndex);
+			pRenderData.index(pPosData.byteOffset, "UPP_INDEX");
+			pRenderData.allocateIndex([VE.float("DESTINATION_SP")], pUPPositionIndex);
+			pRenderData.index(iSkinnedPos, "DESTINATION_SP");
 
-	    	var iUNIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_normal");
-	    	pRenderData.allocateIndex([VE.float("UNP_INDEX")], new Float32Array(pUNPositionIndex));
-	    	pRenderData.index(pPosData.byteOffset, "UNP_INDEX");
-	    	pRenderData.allocateIndex([VE.float("UNN_INDEX")], new Float32Array(pUNNormalIndex));
-	    	pRenderData.index(pRenderData._getFlow(DeclUsages.NORMAL, false).data.byteOffset, "UNN_INDEX");
-	    	pRenderData.allocateIndex([VE.float("DESTINATION_SN")], new Float32Array(pDestinationSkinnedNormalIndex));
-	    	pRenderData.index(iSkinnedNorm, "DESTINATION_SN");
+			var iUNIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_normal");
+			pRenderData.allocateIndex([VE.float("UNP_INDEX")], new Float32Array(pUNPositionIndex));
+			pRenderData.index(pPosData.byteOffset, "UNP_INDEX");
+			pRenderData.allocateIndex([VE.float("UNN_INDEX")], new Float32Array(pUNNormalIndex));
+			pRenderData.index(pRenderData._getFlow(DeclUsages.NORMAL, false).data.byteOffset, "UNN_INDEX");
+			pRenderData.allocateIndex([VE.float("DESTINATION_SN")], new Float32Array(pDestinationSkinnedNormalIndex));
+			pRenderData.index(iSkinnedNorm, "DESTINATION_SN");
 
-	    	pRenderData.selectIndexSet(iPreviousSet);
-	    	// LOG(pRenderData.toString());
-	    	
-	    	// pRenderData.selectIndexSet(iUPIndexSet);
-	    	// LOG(pRenderData.toString());
+			pRenderData.selectIndexSet(iPreviousSet);
+			// LOG(pRenderData.toString());
 
-	    	// pRenderData.selectIndexSet(iUNIndexSet);
-	    	// LOG(pRenderData.toString());
+			// pRenderData.selectIndexSet(iUPIndexSet);
+			// LOG(pRenderData.toString());
 
-	    	pRenderData.setRenderable(iUPIndexSet, false);
-	    	pRenderData.setRenderable(iUNIndexSet, false);
+			// pRenderData.selectIndexSet(iUNIndexSet);
+			// LOG(pRenderData.toString());
 
-	    	// LOG(iPreviousSet, iUPIndexSet);
+			pRenderData.setRenderable(iUPIndexSet, false);
+			pRenderData.setRenderable(iUNIndexSet, false);
 
-	    	// LOG(pSkinnedNormalIndex);
-	    	// LOG(pUNPositionIndex);
-	    	// LOG(pUNNormalIndex);
+			// LOG(iPreviousSet, iUPIndexSet);
 
-		    this._pSkin = pSkin;
-		    this.skinAdded.emit(pSkin);
+			// LOG(pSkinnedNormalIndex);
+			// LOG(pUNPositionIndex);
+			// LOG(pUNNormalIndex);
 
-		    return true;
+			this._pSkin = pSkin;
+			this.skinAdded.emit(pSkin);
+
+			return true;
 		}
 
-		_calculateSkin(): boolean{
-			var isOk: boolean = util.calculateSkin(this);
+		_calculateSkin(): boolean {
+			
+			var isOk: boolean = config.WEBGL? webgl.calculateSkin(this): false;
 			this._isOptimizedSkinned = isOk;
 			return isOk;
 		}

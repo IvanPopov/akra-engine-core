@@ -1,15 +1,15 @@
-#ifndef SKIN_TS
-#define SKIN_TS
-
-#include "ISkeleton.ts"
-#include "INode.ts"
-#include "IVertexData.ts"
-#include "IRenderDataCollection.ts"
-#include "IMesh.ts"
-#include "IMat4.ts"
-#include "ISceneNode.ts"
+/// <reference path="../idl/ISkeleton.ts" />
+/// <reference path="../idl/INode.ts" />
+/// <reference path="../idl/IVertexData.ts" />
+/// <reference path="../idl/IRenderDataCollection.ts" />
+/// <reference path="../idl/IMesh.ts" />
+/// <reference path="../idl/IMat4.ts" />
+/// <reference path="../idl/ISceneNode.ts" />
 
 module akra.model {
+	import VE = data.VertexElement;
+	import Mat4 = math.Mat4;
+	import DeclUsages = data.Usages;
 
 	export class Skin implements ISkin {
 		private _pMesh: IMesh;
@@ -178,8 +178,8 @@ module akra.model {
 
 			//FIXME: правильно положить матрицы...
 			this._pBoneOffsetMatrices = pMatrices;
-			this._pBoneTransformMatrixData = pData._allocateData([VE_MAT4("BONE_MATRIX")], pMatrixData);
-			this._pBoneTransformMatrices = new Array(nMatrices);
+			this._pBoneTransformMatrixData = pData._allocateData([VE.float4x4("BONE_MATRIX")], pMatrixData);
+			this._pBoneTransformMatrices = new Array<IMat4>(nMatrices);
 
 			for (var i: int = 0; i < nMatrices; i++) {
 			    this._pBoneTransformMatrices[i] = new Mat4(pMatrixData.subarray(i * 16, (i + 1) * 16), true);
@@ -227,8 +227,8 @@ module akra.model {
 
 			//запоминаем модифицированную информацию о влияниях
 			this._pInfData = pData._allocateData([
-			                                         VE_FLOAT('BONE_INF_DATA'), /*адрес матрицы кости*/
-			                                         VE_FLOAT('BONE_WEIGHT')    /*весовой коэффициент*/
+			                                         VE.float('BONE_INF_DATA'), /*адрес матрицы кости*/
+			                                         VE.float('BONE_WEIGHT')    /*весовой коэффициент*/
 			                                     ],
 			                                     pInfluences);
 
@@ -245,8 +245,8 @@ module akra.model {
 
 			//influences meta: разметка влияний
 			this._pInfMetaData = pData._allocateData([
-			                                             VE_FLOAT('BONE_INF_COUNT'), /*число костей и весов, влияющих на вершину*/
-			                                             VE_FLOAT('BONE_INF_LOC'), /*адресс начала влияний на вершину*/
+			                                             VE.float('BONE_INF_COUNT'), /*число костей и весов, влияющих на вершину*/
+			                                             VE.float('BONE_INF_LOC'), /*адресс начала влияний на вершину*/
 			                                         ], pInfluencesMeta);
 
 			return this._pInfMetaData !== null &&
@@ -314,17 +314,13 @@ module akra.model {
 			debug.assert(pData.stride === 16, "you cannot add skin to mesh with POSITION: {x, y, z}" +
 			                                  "\nyou need POSITION: {x, y, z, w}");
 
-			pData.getVertexDeclaration().append(VE_FLOAT(DeclUsages.BLENDMETA, 12));
+			pData.getVertexDeclaration().append(VE.float(DeclUsages.BLENDMETA, 12));
 
 			this._pTiedData.push(pData);
 		}
 	}
 
-
-
 	export function createSkin(pMesh: IMesh): ISkin {
 		return new Skin(pMesh);
 	}
 }
-
-#endif

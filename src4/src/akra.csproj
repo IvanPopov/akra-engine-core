@@ -525,7 +525,10 @@
     <None Include="akra\render\RenderEntry.ts" />
     <None Include="akra\render\RenderPass.ts" />
     <None Include="akra\render\RenderQueue.ts" />
-    <TypeScriptCompile Include="akra\model\CalculateSkin.ts" />
+    <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
+    <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
+    <TypeScriptCompile Include="akra\render\Screen.ts" />
+    <TypeScriptCompile Include="akra\webgl\CalculateSkin.ts" />
     <TypeScriptCompile Include="akra\model\Mesh.ts" />
     <TypeScriptCompile Include="akra\model\MeshSubset.ts" />
     <TypeScriptCompile Include="akra\model\Skeleton.ts" />

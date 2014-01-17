@@ -10,7 +10,7 @@
 /// <reference path="../debug.ts" />
 /// <reference path="../geometry/Rect2d.ts" />
 /// <reference path="../util/ObjectArray.ts" />
-
+/// <reference path="../guid.ts" />
 
 module akra.render {
 	import Color = color.Color;

@@ -19,12 +19,12 @@ module akra.material {
         ]);
 
 
-    function create(sName: string = null, pMat: IMaterial = null): IMaterial {
+   export  function create(sName: string = null, pMat: IMaterial = null): IMaterial {
         return new Material(sName, pMat);
     }
 
     /** @deprecated Flex material will be removed from core with closest release.*/
-    function _createFlex(sName: string, pData: IVertexData): IMaterial {
+    export function _createFlex(sName: string, pData: IVertexData): IMaterial {
         return new FlexMaterial(sName, pData);
     }
 }

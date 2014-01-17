@@ -1,9 +1,7 @@
-#ifndef SKELETON_TS
-#define SKELETON_TS
+/// <reference path="../idl/ISkeleton.ts" />
+/// <reference path="../idl/ISceneNode.ts" />
 
-#include "ISkeleton.ts"
-#include "ISceneNode.ts"
-#include "scene/Joint.ts"
+/// <reference path="../scene/Joint.ts" />
 
 module akra.model {
 
@@ -81,7 +79,7 @@ module akra.model {
 		    	var sJoint: string = null;
 
 		    	if (!isNull(pNode)) {
-		    		if (scene.isJoint(pNode)) {
+		    		if (scene.Joint.isJoint(pNode)) {
 			    		sJoint = (<IJoint>pNode).boneName;
 			    	}
 
@@ -154,5 +152,3 @@ module akra.model {
 		return new Skeleton(sName);
 	}
 }
-
-#endif
