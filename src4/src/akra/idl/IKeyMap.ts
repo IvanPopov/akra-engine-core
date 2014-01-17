@@ -1,6 +1,6 @@
 
 /// <reference path="IPoint.ts" />
-/// <reference path="AIOffset.ts" />
+/// <reference path="IOffset.ts" />
 
 module akra {
 	export enum EKeyCodes {

@@ -27,12 +27,12 @@ module akra {
 	}
 	
 	export interface IMesh extends IEventProvider {
-		/** readonly */ flexMaterials: IMaterial[];
-		/** readonly */ name: string;
-		/** readonly */ data: IRenderDataCollection;
-		/** readonly */ length: uint; /*<! number of submeshes in. */
-		/** readonly */ boundingBox: IRect3d;
-		/** readonly */ boundingSphere: ISphere;
+		flexMaterials: IMaterial[];
+		name: string;
+		data: IRenderDataCollection;
+		length: uint; /*<! number of submeshes in. */
+		boundingBox: IRect3d;
+		boundingSphere: ISphere;
 	
 		skeleton: ISkeleton;
 		shadow: boolean;

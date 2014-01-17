@@ -3,6 +3,7 @@
 /// <reference path="../idl/EDataTypes.ts" />
 /// <reference path="../limit.ts" />
 /// <reference path="../types.ts" />
+/// <reference path="../config/config.ts" />
 /// <reference path="Usage.ts" />
 
 module akra.data {

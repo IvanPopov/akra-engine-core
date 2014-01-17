@@ -6,7 +6,4 @@ module akra {
 		version: string;
 		os: string;
 	}
-	
-	
-	
 }

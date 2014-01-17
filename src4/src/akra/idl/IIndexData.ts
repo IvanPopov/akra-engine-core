@@ -24,5 +24,4 @@ module akra {
 		getPrimitiveCount(): uint;
 		getBufferHandle(): int;
 	}
-	
 }

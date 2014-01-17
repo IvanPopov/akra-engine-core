@@ -442,7 +442,7 @@ module akra {
 	}
 	
 	export interface IColladaBindMaterial extends IColladaEntry {
-		[symbol: string]: IColladaInstanceMaterial;
+		[index/*symbol*/: string]: IColladaInstanceMaterial;
 	}
 	
 	export interface IColladaInstanceGeometry extends IColladaInstance {
@@ -548,9 +548,4 @@ module akra {
 		start: float;
 		end: float;
 	}
-	
-	
-	
-	
-	
 }

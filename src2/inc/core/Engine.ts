@@ -3,7 +3,7 @@
 
 #ifdef DEBUG
 
-///@CORE_ARA: core.map
+///@CORE_ARA: "core.map"
 
 #else
 
@@ -414,7 +414,8 @@ module akra.core {
 				files: [
 					{
 						path: "@CORE_ARA", 
-						type: "ARA" 
+						type: "ARA",
+						name: "core resources" 
 					}
 				]
 			};			

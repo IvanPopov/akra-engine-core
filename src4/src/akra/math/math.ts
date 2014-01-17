@@ -461,7 +461,7 @@ export function calcPOTtextureSize(nPixels: uint): uint[] {
     export function floatToFloat3(value: float): IVec3 {
 
         var data: float = value;
-        var result: IVec3 = vec3(0.);
+        var result: IVec3 = Vec3.temp(0.);
 
         if (data == 0.) {
             var signedZeroTest: float = 1. / value;

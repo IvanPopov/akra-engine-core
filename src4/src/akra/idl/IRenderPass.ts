@@ -1,11 +1,11 @@
 
-/// <reference path="AIUnique.ts" />
+/// <reference path="IUnique.ts" />
 /// <reference path="IRenderTarget.ts" />
 /// <reference path="IAFXPassInputBlend.ts" />
 
 
 module akra {
-	export interface IRenderPass extends AIUnique {
+	export interface IRenderPass extends IUnique {
 		setForeign(sName: string, fValue: float): void;
 		setTexture(sName: string, pTexture: ITexture): void;
 		setUniform(sName: string, pValue: any): void;
@@ -27,6 +27,4 @@ module akra {
 		deactivate(): void;
 		isActive(): boolean;
 	}	
-	
-	
 }

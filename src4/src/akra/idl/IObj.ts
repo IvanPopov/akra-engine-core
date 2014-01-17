@@ -1,19 +1,11 @@
-
-/// <reference path="IModel.ts" />
-
-
+/// <reference path="IMat4.ts" />
 /// <reference path="IModel.ts" />
 
 module akra {
 	export interface IObjLoadOptions extends IModelLoadOptions {
 		shadows?: boolean;
 		name?: string;
-	
-		axis?: {
-			x: {index: uint; inverse: boolean;};
-			y: {index: uint; inverse: boolean;};
-			z: {index: uint; inverse: boolean;};
-		};
+		transform?: IMat4;
 	}
 	
 	export interface IObj extends IModel {

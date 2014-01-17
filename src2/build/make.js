@@ -92,6 +92,23 @@ var options = {
     testsFormat: {nw: false, html: false, js: false}
 };
 
+
+function usage() {
+    var mesg =
+        'usage: [options] file1, file2 ....' +
+        '\n\n Available options: ';
+
+    //like '\n\t--target    [-t] < "ALL" | "TESTS" | "CORE" > Specify target. Default target is CORE.' +
+    params.forEach(function(opt, i) {
+       mesg += "\n\t" + "--" + opt.key.join("/") + "\t\t" +
+           (opt.shortKey? "[-" + opt.shortKey + "]": "") + " " + opt.desc;
+    });
+
+    console.log(mesg);
+    process.exit(1);
+}
+
+
 var params = [
     {
         key: ["target"],
@@ -194,7 +211,8 @@ var params = [
     {
         key: ["help"],
         shortKey: "h",
-        desc: "Print this text."
+        desc: "Print this text.",
+        logic: usage
     },
     {
         key: ["ES6"],
@@ -294,20 +312,6 @@ var params = [
     }
 ];
 
-function usage() {
-    var mesg =
-        'usage: [options] file1, file2 ....' +
-        '\n\n Available options: ';
-
-    //like '\n\t--target	[-t] < "ALL" | "TESTS" | "CORE" > Specify target. Default target is CORE.' +
-    params.forEach(function(opt, i) {
-       mesg += "\n\t" + "--" + opt.key.join("/") + "\t\t" +
-           (opt.shortKey? "[-" + opt.shortKey + "]": "") + " " + opt.desc;
-    });
-
-    console.log(mesg);
-	process.exit(1);
-}
 
 
 
@@ -774,7 +778,6 @@ function stringifyModifier(name, value, argv) {
  * minify JS code in {value} param
  */
 function minifyJsModifier(name, value, argv) {
-
 	var orig_code = value;
 	var ast = jsp.parse(orig_code); // parse code and get the initial AST
 	ast = pro.ast_mangle(ast/*, {toplevel: true, no_functions : true}*/); // get a new AST with mangled names
@@ -935,8 +938,8 @@ function fetchDeps(sDir, sTestData, pResult) {
 
 		if (name && name.length > 0) {
 			variables[name] = value;
-			sTestData = sTestData.replace(new RegExp("\"@" + name + "\"", "ig"), value);
-			// console.log("[REPLACE] ", "\"@" + name + "\"" , " --> ", value)
+			sTestData = sTestData.replace(new RegExp("\"@" + name + "\"", "g"), value);
+			//console.log("[REPLACE] ", "\"@" + name + "\"" , " --> ", value.substr(0, 32) + "...");
 		}
 	}
 

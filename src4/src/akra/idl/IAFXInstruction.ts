@@ -1,11 +1,11 @@
-
+/// <reference path="../math/Vec3.ts" />
 /// <reference path="IParser.ts" />
 /// <reference path="IAFXComponent.ts" />
-/// <reference path="AIUnique.ts" />
+/// <reference path="IUnique.ts" />
 /// <reference path="IRenderer.ts" />
 /// <reference path="IMap.ts" />
 /// <reference path="IAFXComposer.ts" />
-
+/// <reference path="ERenderStateValues.ts" />
 
 module akra {
 	export enum EAFXInstructionTypes {
@@ -216,7 +216,7 @@ module akra {
 	 * operator : arg1 ... argn
 	 * Operator and instructions may be empty.
 	 */
-	export interface IAFXInstruction extends AIUnique {
+	export interface IAFXInstruction {
 	    setParent(pParent: IAFXInstruction): void;
 	    getParent(): IAFXInstruction;
 	

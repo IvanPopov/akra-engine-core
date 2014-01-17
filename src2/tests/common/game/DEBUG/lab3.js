@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Nov 08 2013 15:45:52 GMT+0400 (Московское время (зима))
+ * assembled at: Thu Dec 26 2013 21:08:59 GMT+0400 (Московское время (зима))
  * directory: tests/common/game/DEBUG/
  * file: tests/common/game/lab3.ts
  * name: lab3
@@ -864,6 +864,64 @@ var akra;
             pCoordsDst = pCoords;
             visualizeCurve(pScene.getRootNode(), pCoords, 0.01);
         });
+        //DATA + "models/tof_multislab_tra_2.obj"
+        function loadObjFromMATLAB(sPath, fnCallback) {
+            var sName = akra.path.info(sPath).filename;
+            var pRealArtery = pRmgr.loadModel(sPath, {
+                shadows: false,
+                axis: {
+                    x: {
+                        index: 0,
+                        inverse: false
+                    },
+                    y: {
+                        index: 2,
+                        inverse: false
+                    },
+                    z: {
+                        index: 1,
+                        inverse: false
+                    }
+                }
+            });
+            pRealArtery.bind("loaded", /** @inline */function () {
+                var pRealArteryObj = pRealArtery.attachToScene(pScene);
+                //1m / 125mm
+                pRealArteryObj.scale(1. / 125);
+                pRealArteryObj.setPosition(-.75, 1., -1);
+                var gui = pGUI.addFolder(sName);
+                var wireframe = gui.add({
+                    mode: "edged faces"
+                }, "mode", [
+                    "colored", 
+                    "wireframe", 
+                    "edged faces"
+                ]);
+                var visible = gui.add({
+                    visible: true
+                }, "visible");
+                visible.onChange(function (bValue) {
+                    (pRealArteryObj.child).mesh.getSubset(0).setVisible(bValue);
+                    ;
+                });
+                wireframe.onChange(function (sMode) {
+                    switch(sMode) {
+                        case "colored":
+                            (pRealArteryObj.child).mesh.getSubset(0).wireframe(false);
+                            break;
+                        case "wireframe":
+                            (pRealArteryObj.child).mesh.getSubset(0).wireframe(true, false);
+                            break;
+                        case "edged faces":
+                            (pRealArteryObj.child).mesh.getSubset(0).wireframe(true);
+                            break;
+                    }
+                });
+                fnCallback && fnCallback();
+            });
+        }
+        loadObjFromMATLAB(akra.DATA + "models/tof_multislab_tra_2-tan.spline.2n_poyda.obj");
+        loadObjFromMATLAB(akra.DATA + "models/tof_multislab_tra_2-tan.spline_smoothed.2n.obj");
         var pRealArtery = pRmgr.loadModel(akra.DATA + "models/tof_multislab_tra_2.obj", {
             shadows: false,
             axis: {

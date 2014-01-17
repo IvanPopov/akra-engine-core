@@ -76,6 +76,7 @@ $RECYCLE.BIN/
 #Typescript output
 src/*.js.map
 src/*.js
+src/*/*.js
 
 #other
 /build/

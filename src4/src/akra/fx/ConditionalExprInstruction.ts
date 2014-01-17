@@ -1,35 +1,37 @@
-import ExprInstruction = require("fx/ExprInstruction");
+/// <reference path="ExprInstruction.ts" />
 
-/**
- * Represen boolExpr ? someExpr : someExpr
- * EMPTY_OPERATOR Instruction Instruction Instruction 
- */
-class ConditionalExprInstruction extends ExprInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = [null, null, null];
-        this._eInstructionType = EAFXInstructionTypes.k_ConditionalExprInstruction;
-    }
+module akra.fx {
 
-    toFinalCode(): string {
-        var sCode: string = "";
-        sCode += this.getInstructions()[0].toFinalCode();
-        sCode += "?";
-        sCode += this.getInstructions()[1].toFinalCode();
-        sCode += ":";
-        sCode += this.getInstructions()[2].toFinalCode();
-        return sCode;
-    }
+    /**
+     * Represen boolExpr ? someExpr : someExpr
+     * EMPTY_OPERATOR Instruction Instruction Instruction 
+     */
+    export class ConditionalExprInstruction extends ExprInstruction {
+        constructor() {
+            super();
+            this._pInstructionList = [null, null, null];
+            this._eInstructionType = EAFXInstructionTypes.k_ConditionalExprInstruction;
+        }
 
-    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
-        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-        super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
-    }
+        toFinalCode(): string {
+            var sCode: string = "";
+            sCode += this.getInstructions()[0].toFinalCode();
+            sCode += "?";
+            sCode += this.getInstructions()[1].toFinalCode();
+            sCode += ":";
+            sCode += this.getInstructions()[2].toFinalCode();
+            return sCode;
+        }
 
-    isConst(): boolean {
-        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
-            (<IAFXExprInstruction>this.getInstructions()[1]).isConst();
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+            eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+        }
+
+        isConst(): boolean {
+            return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
+                (<IAFXExprInstruction>this.getInstructions()[1]).isConst();
+        }
     }
 }
 
-export = ConditionalExprInstruction;

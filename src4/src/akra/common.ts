@@ -7,15 +7,15 @@ interface String {
 	replaceAt(n: int, s: string);
 }
 
-//interface Array {
-//	last: any;
-//	first: any;
-//	el(i: int): any;
-//	clear(): any[];
-//	swap(i: int, j: int): any[];
-//	insert(elements: any[]): any[];
-//	find(pElement: any): boolean;
-//}
+interface Array {
+	last: any;
+	first: any;
+	el(i: int): any;
+	clear(): any[];
+	swap(i: int, j: int): any[];
+	insert(elements: any[]): any[];
+	find(pElement: any): boolean;
+}
 
 interface Number {
 	toHex(length: int): string;
@@ -34,16 +34,16 @@ module akra {
 					return s;
 				}
 
-				var sClassName = Object.prototype.toString.call(x);
+				var sClassName: string = Object.prototype.toString.call(x);
 
 				if (sClassName === "[object Window]") {
 					return "object";
 				}
 
 				if ((sClassName === "[object Array]" ||
-					typeof x.length === "number" &&
-					typeof x.splice !== "undefined" &&
-					typeof x.propertyIsEnumerable !== "undefined" &&
+					(typeof x.length) === "number" &&
+					(typeof x.splice) !== "undefined" &&
+					(typeof x.propertyIsEnumerable) !== "undefined" &&
 					!x.propertyIsEnumerable("splice")
 
 					)) {
@@ -51,15 +51,15 @@ module akra {
 				}
 
 				if ((sClassName === "[object Function]" ||
-					typeof x.call !== "undefined" &&
-					typeof x.propertyIsEnumerable !== "undefined" &&
+					(typeof x.call) !== "undefined" &&
+					(typeof x.propertyIsEnumerable) !== "undefined" &&
 					!x.propertyIsEnumerable("call"))) {
 					return "function";
 				}
 			} else {
 				return "null";
 			}
-		} else if (s === "function" && typeof x.call === "undefined") {
+		} else if (s === "function" && (typeof x.call) === "undefined") {
 			return "object";
 		}
 
@@ -89,60 +89,61 @@ module akra {
 		return this.substr(0, n) + chr + this.substr(n + chr.length);
 	}
 
-	//Object.defineProperty(Array.prototype, 'first', {
-	//	enumerable: false,
-	//	configurable: true,
-	//	get: function () {
-	//		return this[0];
-	//	}
-	//});
 
-	//Object.defineProperty(Array.prototype, 'last', {
-	//	enumerable: false,
-	//	configurable: true,
-	//	get: function () {
-	//		return this[this.length - 1];
-	//	}
-	//});
+	Object.defineProperty(Array.prototype, 'first', {
+		enumerable: false,
+		configurable: true,
+		get: function () {
+			return this[0];
+		}
+	});
 
-	//Object.defineProperty(Array.prototype, 'el', {
-	//	enumerable: false,
-	//	configurable: true,
-	//	value: function (i) { i = i || 0; return this[i < 0 ? this.length + i : i]; }
-	//});
+	Object.defineProperty(Array.prototype, 'last', {
+		enumerable: false,
+		configurable: true,
+		get: function () {
+			return this[this.length - 1];
+		}
+	});
 
-	//Object.defineProperty(Array.prototype, 'clear', {
-	//	enumerable: false,
-	//	configurable: true,
-	//	value: function () { this.length = 0; }
-	//});
+	Object.defineProperty(Array.prototype, 'el', {
+		enumerable: false,
+		configurable: true,
+		value: function (i) { i = i || 0; return this[i < 0 ? this.length + i : i]; }
+	});
 
-	//Object.defineProperty(Array.prototype, 'swap', {
-	//	enumerable: false,
-	//	configurable: true,
-	//	value: function (i, j) {
-	//		if (i < this.length && j < this.length) {
-	//			var t = this[i]; this[i] = this[j]; this[j] = t;
-	//		}
-	//	}
-	//});
+	Object.defineProperty(Array.prototype, 'clear', {
+		enumerable: false,
+		configurable: true,
+		value: function () { this.length = 0; }
+	});
 
-	//Object.defineProperty(Array.prototype, 'insert', {
-	//	enumerable: false,
-	//	configurable: true,
-	//	value: function (pElement) {
-	//		if (typeof pElement.length === 'number') {
-	//			for (var i = 0, n = pElement.length; i < n; ++i) {
-	//				this.push(pElement[i]);
-	//			};
-	//		}
-	//		else {
-	//			this.push(pElement);
-	//		}
+	Object.defineProperty(Array.prototype, 'swap', {
+		enumerable: false,
+		configurable: true,
+		value: function (i, j) {
+			if (i < this.length && j < this.length) {
+				var t = this[i]; this[i] = this[j]; this[j] = t;
+			}
+		}
+	});
 
-	//		return this;
-	//	}
-	//});
+	Object.defineProperty(Array.prototype, 'insert', {
+		enumerable: false,
+		configurable: true,
+		value: function (pElement) {
+			if (typeof pElement.length === 'number') {
+				for (var i = 0, n = pElement.length; i < n; ++i) {
+					this.push(pElement[i]);
+				};
+			}
+			else {
+				this.push(pElement);
+			}
+
+			return this;
+		}
+	});
 
 	Number.prototype.toHex = function (iLength: int): string {
 		var sValue = this.toString(16);

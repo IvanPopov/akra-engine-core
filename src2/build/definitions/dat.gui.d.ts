@@ -24,7 +24,7 @@ declare module dat {
         add(object: any, property: string, values: Object): OptionController;
         addFolder(name: string): GUI;
         addColor(object: any, property: string): Controller;
-
+        open(): void;
     }
 }
 

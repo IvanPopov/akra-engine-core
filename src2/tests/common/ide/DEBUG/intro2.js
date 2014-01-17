@@ -2,11 +2,7 @@
 
 
 /*---------------------------------------------
-<<<<<<< HEAD
- * assembled at: Thu Aug 01 2013 12:48:34 GMT+0400 (Московское время (лето))
-=======
- * assembled at: Fri Jul 26 2013 19:32:01 GMT+0400 (Московское время (зима))
->>>>>>> origin/typescript
+ * assembled at: Mon Dec 23 2013 18:25:39 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/DEBUG/
  * file: tests/common/ide/intro2.ts
  * name: intro2
@@ -15,11 +11,6 @@
 
 ///<reference path="../../../bin/DEBUG/akra.ts"/>
 ///<reference path="../../../bin/DEBUG/Progress.ts"/>
-// declare var jQuery: JQueryStatic;
-// declare var $: JQueryStatic;
-/// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
-/// @MINER_MODEL: 			"/models/miner/miner.DAE"
-/// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 var akra;
 (function (akra) {
     function createProgress() {
@@ -43,10 +34,12 @@ var akra;
     var pProgress = createProgress();
     var bMegaTextureLoaded = false;
     var pEngine = akra.createEngine({
-        deps: //renderer: {preserveDrawingBuffer: true, alpha: false},
-        {
-            root: /*"http://odserve.org/demo/preview/",*/
-            "../",
+        renderer: {
+            preserveDrawingBuffer: false,
+            alpha: false
+        },
+        deps: {
+            root: "../",
             files: [
                 {
                     path: "demo02.ara",
@@ -252,7 +245,7 @@ var akra;
     // 	}
     // }
     function createViewports() {
-        pViewport = pCanvas.addViewport(pCamera, akra.EViewportTypes.DSVIEWPORT);
+        pViewport = pCanvas.addViewport(new akra.render.DSViewport(pCamera));
         if (akra.isNull(pUI)) {
             pCanvas.resize(pParentElement.offsetWidth, pParentElement.offsetHeight);
             window.onresize = function (event) {

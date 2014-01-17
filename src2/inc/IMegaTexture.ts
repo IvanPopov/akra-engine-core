@@ -19,6 +19,8 @@ module akra {
 		getHeightOrig(iLevel: uint): uint;
 
 		setMinLevelTexture(pImg: IImg);
+
+		enableStreaming(bEnable?: bool): void;
 	}
 }
 

@@ -1,50 +1,49 @@
-import ExprInstruction = require("fx/ExprInstruction");
-import Effect = require("fx/Effect");
+/// <reference path="ExprInstruction.ts" />
+/// <reference path="Effect.ts" />
 
+module akra.fx {
 
-class StringInstruction extends ExprInstruction implements IAFXLiteralInstruction {
-    private _sValue: string;
-    private static _pStringType: IAFXVariableTypeInstruction = null;
+	export class StringInstruction extends ExprInstruction implements IAFXLiteralInstruction {
+		private _sValue: string;
+		private static _pStringType: IAFXVariableTypeInstruction = null;
 
-    /**
-     * EMPTY_OPERATOR EMPTY_ARGUMENTS
-     */
-    constructor() {
-        super();
-        this._sValue = "";
-        this._pType = Effect.getSystemType("string").getVariableType();
-        this._eInstructionType = EAFXInstructionTypes.k_StringInstruction;
-    }
+		/**
+		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
+		 */
+		constructor() {
+			super();
+			this._sValue = "";
+			this._pType = Effect.getSystemType("string").getVariableType();
+			this._eInstructionType = EAFXInstructionTypes.k_StringInstruction;
+		}
 
-    setValue(sValue: string): void {
-        this._sValue = sValue;
-    }
+		setValue(sValue: string): void {
+			this._sValue = sValue;
+		}
 
-    toString(): string {
-        return this._sValue;
-    }
+		toString(): string {
+			return this._sValue;
+		}
 
-    toFinalCode(): string {
-        var sCode: string = "";
-        sCode += this._sValue;
-        return sCode;
-    }
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this._sValue;
+			return sCode;
+		}
 
-    evaluate(): boolean {
-        this._pLastEvalResult = this._sValue;
-        return true;
-    }
+		evaluate(): boolean {
+			this._pLastEvalResult = this._sValue;
+			return true;
+		}
 
-    isConst(): boolean {
-        return true;
-    }
+		isConst(): boolean {
+			return true;
+		}
 
-    clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
-        var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
-        pClonedInstruction.setValue(this._sValue);
-        return pClonedInstruction;
-    }
+		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setValue(this._sValue);
+			return pClonedInstruction;
+		}
+	}
 }
-
-
-export = StringInstruction;

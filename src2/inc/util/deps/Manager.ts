@@ -1,6 +1,16 @@
 #ifndef UTILDEPSMANAGER_TS
 #define UTILDEPSMANAGER_TS
 
+///3d-party/zip.js/", scripts: ["zip.js", "zip-ext.js", "inflate.js"
+
+/// @ZIP_JS: |content({data}/3d-party/zip.js/zip.js)|minify()
+/// @ZIP_EXT_JS: |content({data}/3d-party/zip.js/zip-ext.js)|minify()
+/// @INFLATE_JS: |content({data}/3d-party/zip.js/inflate.js)|minify()
+
+"@ZIP_JS"
+"@ZIP_EXT_JS"
+"@INFLATE_JS"
+
 #include "common.ts"
 #include "IDepsManager.ts"
 #include "IEngine.ts"
@@ -98,6 +108,8 @@ module akra.util.deps {
 				WARNING("deps manager in loading state");
 				return false;
 			}
+
+			console.time("LOADING");
 
 			this._eState = EStates.LOADING;
 			this._sRoot = sRoot;
@@ -278,16 +290,17 @@ module akra.util.deps {
 
 		private forceExtractARADependence(pEntry: ZipEntry, sPath: string, fnCallback: Function): void {
 			// console.log("forceExtractARADependence(", pEntry.filename, ")");
-
+			console.time("unzip: " + sPath);
 			pEntry.getData(new zip.ArrayBufferWriter(), (data: ArrayBuffer): void => {
 				// console.log(sPath);
-				console.log("forceExtractARADependence(", sPath, ")");
 				var pCopy: IFile = fopen(sPath, "w+b");
-				
+				console.timeEnd("unzip: " + sPath);
+				console.time("w+ local fs.: " + sPath);
+
 				pCopy.write(data, (e: Error) => {
 					if (e) throw e;
 
-					LOG("unpacked to local filesystem: ", pEntry.filename);
+					debug_print("unpacked to local filesystem: ", pEntry.filename);
 					// alert("unpacked to local filesystem: " + pEntry.filename);
 
 					var pCrc32: IFile = fopen(sPath + ".crc32", "w+");
@@ -297,10 +310,10 @@ module akra.util.deps {
 						pCrc32.close();
 					});
 
+					console.timeEnd("w+ local fs.: " + sPath);
+					// debugger;
 					pCopy.close();
 				});
-
-
 			});
 		}
 
@@ -312,7 +325,7 @@ module akra.util.deps {
 				if (bExists) {
 					pCRC32File.read((e: Error, data: string) => {
 						if (parseInt(data) === pEntry.crc32) {
-							console.log("skip unpacking for dep.: ", sPath);
+							console.log("skip unpacking: ", sPath);
 							fnCallback(sPath);
 						}
 						else {
@@ -335,7 +348,7 @@ module akra.util.deps {
 		private loadARA(pArchiveDep: IDep): void {
 			if (!info.api.zip) {
 
-				js({path: this.root + "/3d-party/zip.js/", scripts: ["zip.js", "zip-ext.js"]}, (e: Event): void => {
+				js({path: this.root + "/3d-party/zip.js/", scripts: ["zip.js", "zip-ext.js", "inflate.js"]}, (e: Event): void => {
 					ASSERT(isNull(e), "Zip loader must be specified");
 					zip.workerScriptsPath = this.root + "/3d-party/zip.js/";
 
@@ -345,7 +358,12 @@ module akra.util.deps {
 				return;
 			}
 
+
 			var sArchivePath: string = pArchiveDep.path;
+
+			console.time("load ARA <" + sArchivePath + ">");
+			// debugger;
+
 			//hash is required to create a unique path for the local file system
 			var sArchiveHash: string = "tmp";
 			var pArchive: IFile = null;
@@ -365,7 +383,7 @@ module akra.util.deps {
 				sBase64Data = pUri.data;
 			}
 			else {
-				sArchiveHash = utf8_to_b64(sArchivePath);
+				sArchiveHash = path.resolve(sArchivePath).md5();
 				pArchive = io.fopen(sArchivePath, "rb");
 			}
 
@@ -380,12 +398,12 @@ module akra.util.deps {
 				this.changeDepStatus(pArchiveDep, EDependenceStatuses.LOADED);
 			}
 
-			var fnLoadArchive = (): void => {
+			var fnLoadArchive = (fnLoaded?: Function): void => {
 				this.changeDepStatus(pArchiveDep, EDependenceStatuses.LOADING);
 
 				var fnZipReadedCallback = (pZipReader: ZipReader): void => {
 					pZipReader.getEntries((pEntries: ZipEntry[]): void => {
-
+						console.timeEnd("UNPACKING");
 						var pEntryMap: {[path: string]: ZipEntry;} = {};
 						var nTotal: uint = 0;
 						var nUnpacked: uint = 0;
@@ -395,6 +413,8 @@ module akra.util.deps {
 							pEntryMap[pEntries[i].filename] = pEntries[i];
 							nTotal ++;
 						}
+
+						console.log("expected unpacking: ", nTotal);
 
 						var pMapEntry: ZipEntry = pEntryMap[ARA_INDEX];
 
@@ -410,7 +430,13 @@ module akra.util.deps {
 
 								if (nUnpacked < nTotal) return;
 								
-								console.log("ARA dependences successfully loaded: ", sArchivePath);
+								debug_print("ARA dependences successfully loaded: ", sArchivePath);
+								console.timeEnd("load ARA <" + sArchivePath + ">");
+
+								if (fnLoaded) {
+									fnLoaded();
+								}
+
 								// alert("ARA dependences successfully loaded: " + sArchivePath);
 
 								pZipReader.close();
@@ -434,6 +460,7 @@ module akra.util.deps {
 								});
 							});
 
+							//Extract all files that were not included in the. MAP file
 							for (var sPath in pEntryMap) {
 								// console.log("unmapped deps: ", sPath);
 								this.extractARADependence(pEntryMap[sPath], sArchiveHash, fnSuccesss);
@@ -444,7 +471,7 @@ module akra.util.deps {
 
 				var fnDataURIReaded = (sBase64Data: string): void => {
 					this.changeDepStatus(pArchiveDep, EDependenceStatuses.UNPACKING);
-
+					// debugger;
 					zip.createReader(new zip.Data64URIReader(sBase64Data), 
 						fnZipReadedCallback, 
 						(err: Error): void => {
@@ -457,7 +484,8 @@ module akra.util.deps {
 				var fnArchiveReadedCallback = (err: Error, pData: ArrayBuffer): void => {
 					
 					this.changeDepStatus(pArchiveDep, EDependenceStatuses.UNPACKING);
-
+					console.time("UNPACKING");
+					
 					zip.createReader(new zip.ArrayBufferReader(pData), 
 						fnZipReadedCallback, 
 						(err: Error): void => {
@@ -486,11 +514,11 @@ module akra.util.deps {
 							if (!isNull(e) || !isString(pMeta.eTag) || sETag !== pMeta.eTag) {
 								debug_print(sArchivePath, "ETAG not verified.", pMeta.eTag);
 
-								if (isDefAndNotNull(pMeta.eTag)) {
-									pETag.write(pMeta.eTag);
-								}
-
-								fnLoadArchive();
+								fnLoadArchive((): void => {
+									if (isDefAndNotNull(pMeta.eTag)) {
+										pETag.write(pMeta.eTag);
+									}
+								});
 								return;
 							}
 
@@ -692,6 +720,7 @@ module akra.util.deps {
 		BROADCAST(statusChanged, CALL(file, info));
 		
 		loaded(pDeps: IDependens): void {
+			console.timeEnd("LOADING");
 			this._eState = EStates.IDLE;
 			EMIT_BROADCAST(loaded, _CALL(pDeps));
 		}

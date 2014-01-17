@@ -60,14 +60,14 @@ module akra {
 		isActive(): boolean;
 	
 		//display via display list with name <csList>
-		display(iList?: int): IObjectArray<ISceneNode>;
+		display(iList?: int): IObjectArray<ISceneObject>;
 	
 		_renderScene(pViewport: IViewport): void;
 		_keepLastViewport(pViewport: IViewport): void;
 		_getLastViewport(): IViewport;
 		_getNumRenderedFaces(): uint;
 		_notifyRenderedFaces(nFaces: uint): void;
-		_getLastResults(iList?: int): IObjectArray<ISceneNode>;
+		_getLastResults(iList?: int): IObjectArray<ISceneObject>;
 	
 		getDepthRange(): IDepthRange;
 	}
