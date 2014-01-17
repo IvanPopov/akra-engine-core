@@ -7,6 +7,7 @@
 
 module akra.pool.resources {
 	import Material = material.Material;
+	import Mat4 = math.Mat4;
 
 	export class SurfaceMaterial extends ResourcePoolItem implements ISurfaceMaterial {
 		protected _pMaterial: IMaterial = new Material;
@@ -108,14 +109,14 @@ module akra.pool.resources {
 							debug.warn("cannot destroy resource...");
 						}
 
-						CLEAR_BIT(this._iTextureFlags, iIndex);
+						bf.clearBit(this._iTextureFlags, iIndex);
 						--this._nTotalTextures;
 					}
 
 					this._pTextures[iIndex] = pTexture;
 
 					this._pTextures[iIndex].addRef();
-					TRUE_BIT(this._iTextureFlags, iIndex);
+					bf.setBit(this._iTextureFlags, iIndex);
 					++this._nTotalTextures;
 					this.sync(this._pTextures[iIndex], EResourceItemEvents.LOADED);
 
@@ -147,14 +148,14 @@ module akra.pool.resources {
 							debug.warn("cannot destroy resource...");
 						}
 
-						CLEAR_BIT(this._iTextureFlags, iIndex);
+						bf.clearBit(this._iTextureFlags, iIndex);
 						--this._nTotalTextures;
 					}
 
 					this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.getResource(<int>texture);
 
 					if (this._pTextures[iIndex]) {
-						TRUE_BIT(this._iTextureFlags, iIndex);
+						bf.setBit(this._iTextureFlags, iIndex);
 						++this._nTotalTextures;
 						this.sync(this._pTextures[iIndex], EResourceItemEvents.LOADED);
 					}
@@ -179,7 +180,7 @@ module akra.pool.resources {
 				this._pTextureMatrices[iIndex] = new Mat4(m4fValue);
 			}
 
-			TRUE_BIT(this._iTextureMatrixFlags, iIndex);
+			bf.setBit(this._iTextureMatrixFlags, iIndex);
 			return true;
 		}
 

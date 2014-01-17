@@ -4,13 +4,13 @@ akraFiles = {
   ],
 
   'akraParser': [
-     'src/akra/common.ts',
-     'src/akra/logger.ts',
-     'src/akra/parser/symbols.ts',
-     'src/akra/parser/Item.ts',
-     'src/akra/parser/State.ts',
-     'src/akra/parser/ParseTree.ts',
-     'src/akra/parser/Lexer.ts',
+     // 'src/akra/common.ts',
+     // 'src/akra/logger.ts',
+     // 'src/akra/parser/symbols.ts',
+     // 'src/akra/parser/Item.ts',
+     // 'src/akra/parser/State.ts',
+     // 'src/akra/parser/ParseTree.ts',
+     // 'src/akra/parser/Lexer.ts',
      'src/akra/parser/Parser.ts',
   ],
 

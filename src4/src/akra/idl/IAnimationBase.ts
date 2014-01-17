@@ -26,7 +26,7 @@ module akra {
 		name: string;
 		type: EAnimationTypes;
 		
-		/** readonly */ first: float;
+		first: float;
 	
 		extra: any;
 	
@@ -53,15 +53,10 @@ module akra {
 		
 		grab(pAnimationBase: IAnimationBase, bRewrite?: boolean): void;
 		
-		createAnimationMask(): IFloatMap;
+		createAnimationMask(): IMap<float>;
 	
-		signal played(fTime: float): void;
-		signal stoped(fTime: float): void;
-		signal renamed(sName: string): void;
-	}
-	
-	export interface IAnimationMap {
-		[name: string]: IAnimationBase;
-	}
-	
+		played: ISignal<{ (pBase: IAnimationBase, fRealTime: float): void; }>;
+		stoped: ISignal <{ (pBase: IAnimationBase, fRealTime: float): void ; }>;
+		renamed: ISignal <{ (pBase: IAnimationBase, sName: float): void; }>;
+	}	
 }

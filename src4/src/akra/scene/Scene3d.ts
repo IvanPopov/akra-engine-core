@@ -33,8 +33,8 @@
 module akra.scene {
 
 	export class Scene3d implements IScene3d {
-		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList, iIndex: int): void; }> = new Signal(this);
-		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList, iIndex: int): void; }> = new Signal(this);
+		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(this);
+		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(this);
 
 		beforeUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(this);
 		postUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(this);
@@ -49,7 +49,7 @@ module akra.scene {
 		// protected _pNodeList: ISceneNode[];
 		// protected _pObjectList: ISceneObject[];
 
-		protected _pDisplayLists: IDisplayList[] = [];
+		protected _pDisplayLists: IDisplayList<ISceneNode>[] = [];
 		protected _pDisplayListsCount: uint = 0;
 		protected _isUpdated: boolean = false;
 
@@ -285,7 +285,7 @@ module akra.scene {
 			return <IShadowCaster>this.setupNode(pShadowCaster, sName);
 		}
 
-		 getDisplayList(i: uint): IDisplayList {
+		 getDisplayList(i: uint): IDisplayList<ISceneNode> {
 			debug.assert(isDefAndNotNull(this._pDisplayLists[i]), "display list not defined");
 			return this._pDisplayLists[i];
 		}
@@ -314,7 +314,7 @@ module akra.scene {
 		}
 
 		delDisplayList(index: uint): boolean {
-			var pLists: IDisplayList[] = this._pDisplayLists;
+			var pLists: IDisplayList<ISceneNode>[] = this._pDisplayLists;
 
 			for (var i: int = 0; i < pLists.length; ++ i) {
 				if (i === index && isDefAndNotNull(pLists[i])) {
@@ -330,12 +330,12 @@ module akra.scene {
 			return false;
 		}
 
-		 addDisplayList(pList: IDisplayList): int {
+		addDisplayList(pList: IDisplayList<ISceneNode>): int {
 			debug.assert(isDefAndNotNull(this.getDisplayListByName(pList.name)), 
 				"DL with name <" + pList.name + "> already exists");
 
 
-			var pLists: IDisplayList[] = this._pDisplayLists;
+			var pLists: IDisplayList<ISceneNode>[] = this._pDisplayLists;
 			var iIndex: uint = this._pDisplayLists.length;
 
 			for (var i: int = 0; i < pLists.length; ++ i) {

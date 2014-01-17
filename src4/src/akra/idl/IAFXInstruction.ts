@@ -216,7 +216,7 @@ module akra {
 	 * operator : arg1 ... argn
 	 * Operator and instructions may be empty.
 	 */
-	export interface IAFXInstruction extends IUnique {
+	export interface IAFXInstruction {
 	    setParent(pParent: IAFXInstruction): void;
 	    getParent(): IAFXInstruction;
 	

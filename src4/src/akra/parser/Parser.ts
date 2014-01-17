@@ -3,7 +3,6 @@
 /// <reference path="../bf/bf.ts" />
 /// <reference path="../logger.ts" />
 
-
 /// <reference path="Lexer.ts" />
 /// <reference path="ParseTree.ts" />
 /// <reference path="Item.ts" />
@@ -24,13 +23,6 @@ module akra.parser {
 	/** @const */
 	var PARSER_SYNTAX_ERROR = 2051;
 
-
-	/** @const */
-	var LEXER_UNKNOWN_TOKEN = 2101;
-	/** @const */
-	var LEXER_BAD_TOKEN = 2102;
-
-																				  
 	logger.registerCode(PARSER_GRAMMAR_ADD_OPERATION, "Grammar not LALR(1)! Cannot to generate syntax table. Add operation error.\n" +
 		"Conflict in state with index: {stateIndex}. With grammar symbol: \"{grammarSymbol}\"\n" +
 		"Old operation: {oldOperation}\n" +
@@ -53,7 +45,6 @@ module akra.parser {
 
 	logger.registerCode(PARSER_SYNTAX_ERROR, "Syntax error during parsing. Token: {tokenValue}\n" +
 		"Line: {line}. Column: {column}.");
-
 
 	function sourceLocationToString(pLocation: ISourceLocation): string {
 		var sLocation: string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
@@ -119,7 +110,7 @@ module akra.parser {
 	}
 
 	export class Parser implements IParser {
-		// //Input
+		//Input
 
 		private _sSource: string;
 		private _iIndex: uint;
@@ -178,7 +169,6 @@ module akra.parser {
 		private _pBaseItemList: IItem[];
 		private _pExpectedExtensionDMap: IBoolDMap;
 
-
 		constructor() {
 			this._sSource = "";
 			this._iIndex = 0;
@@ -220,181 +210,181 @@ module akra.parser {
 
 			this._pExpectedExtensionDMap = null;
 
-			this._sFileName = "stdin";;
+			this._sFileName = "stdin";
 		}
 
-		 isTypeId(sValue: string): boolean {
-			 return !!(this._pTypeIdMap[sValue]);
-		 }
+		final isTypeId(sValue: string): boolean {
+			return !!(this._pTypeIdMap[sValue]);
+		}
 
-		 returnCode(pNode: IParseNode): string {
-			 if (pNode) {
-				 if (pNode.value) {
-					 return pNode.value + " ";
-				 }
-				 else if (pNode.children) {
-					 var sCode: string = "";
-					 var i: uint = 0;
-					 for (i = pNode.children.length - 1; i >= 0; i--) {
-						 sCode += this.returnCode(pNode.children[i]);
-					 }
-					 return sCode;
-				 }
-			 }
-			 return "";
-		 }
+		final returnCode(pNode: IParseNode): string {
+			if (pNode) {
+				if (pNode.value) {
+					return pNode.value + " ";
+				}
+				else if (pNode.children) {
+					var sCode: string = "";
+					var i: uint = 0;
+					for (i = pNode.children.length - 1; i >= 0; i--) {
+						sCode += this.returnCode(pNode.children[i]);
+					}
+					return sCode;
+				}
+			}
+			return "";
+		}
 
-		 init(sGrammar: string, eMode: EParseMode = EParseMode.k_AllNode, eType: EParserType = EParserType.k_LALR): boolean {
-			 try {
-				 this._eType = eType;
-				 this._pLexer = new Lexer(this);
-				 this._eParseMode = eMode;
-				 this.generateRules(sGrammar);
-				 this.buildSyntaxTable();
-				 this.generateFunctionByStateMap();
-				 if (!bf.testAll(eMode, EParseMode.k_DebugMode)) {
-					 this.clearMem();
-				 }
-				 return true;
-			 }
-			 catch (e) {
-				 logger.log(e.stack);
-				 // error("Could`not initialize parser. Error with code has occurred: " + e.message + ". See log for more info.");
-				 return false;
-			 }
-		 }
+		init(sGrammar: string, eMode: EParseMode = EParseMode.k_AllNode, eType: EParserType = EParserType.k_LALR): boolean {
+			try {
+				this._eType = eType;
+				this._pLexer = new Lexer(this);
+				this._eParseMode = eMode;
+				this.generateRules(sGrammar);
+				this.buildSyntaxTable();
+				this.generateFunctionByStateMap();
+				if (!bf.testAll(eMode, EParseMode.k_DebugMode)) {
+					this.clearMem();
+				}
+				return true;
+			}
+			catch (e) {
+				logger.log(e.stack);
+				// error("Could`not initialize parser. Error with code has occurred: " + e.message + ". See log for more info.");
+				return false;
+			}
+		}
 
-		 parse(sSource: string, fnFinishCallback: IFinishFunc = null, pCaller: any = null): EParserCode {
-			 try {
-				 this.defaultInit();
-				 this._sSource = sSource;
-				 this._pLexer.init(sSource);
+		final parse(sSource: string, fnFinishCallback: IFinishFunc = null, pCaller: any = null): EParserCode {
+			try {
+				this.defaultInit();
+				this._sSource = sSource;
+				this._pLexer.init(sSource);
 
-				 //this._isSync = isSync;
+				//this._isSync = isSync;
 
-				 this._fnFinishCallback = fnFinishCallback;
-				 this._pCaller = pCaller;
+				this._fnFinishCallback = fnFinishCallback;
+				this._pCaller = pCaller;
 
-				 var pTree: IParseTree = this._pSyntaxTree;
-				 var pStack: uint[] = this._pStack;
-				 var pSyntaxTable: IOperationDMap = this._pSyntaxTable;
+				var pTree: IParseTree = this._pSyntaxTree;
+				var pStack: uint[] = this._pStack;
+				var pSyntaxTable: IOperationDMap = this._pSyntaxTable;
 
-				 var isStop: boolean = false;
-				 var isError: boolean = false;
-				 var isPause: boolean = false;
-				 var pToken: IToken = this.readToken();
+				var isStop: boolean = false;
+				var isError: boolean = false;
+				var isPause: boolean = false;
+				var pToken: IToken = this.readToken();
 
-				 var pOperation: IOperation;
-				 var iRuleLength: uint;
+				var pOperation: IOperation;
+				var iRuleLength: uint;
 
-				 var eAdditionalOperationCode: EOperationType;
-				 var iStateIndex: uint = 0;
+				var eAdditionalOperationCode: EOperationType;
+				var iStateIndex: uint = 0;
 
-				 while (!isStop) {
-					 pOperation = pSyntaxTable[pStack[pStack.length - 1]][pToken.name];
-					 if (isDef(pOperation)) {
-						 switch (pOperation.type) {
-							 case EOperationType.k_Success:
-								 isStop = true;
-								 break;
+				while (!isStop) {
+					pOperation = pSyntaxTable[pStack[pStack.length - 1]][pToken.name];
+					if (isDef(pOperation)) {
+						switch (pOperation.type) {
+							case EOperationType.k_Success:
+								isStop = true;
+								break;
 
-							 case EOperationType.k_Shift:
+							case EOperationType.k_Shift:
 
-								 iStateIndex = pOperation.index;
-								 pStack.push(iStateIndex);
-								 pTree.addNode(<IParseNode>pToken);
+								iStateIndex = pOperation.index;
+								pStack.push(iStateIndex);
+								pTree.addNode(<IParseNode>pToken);
 
-								 eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pToken.name);
+								eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pToken.name);
 
-								 if (eAdditionalOperationCode === EOperationType.k_Error) {
-									 isError = true;
-									 isStop = true;
-								 }
-								 else if (eAdditionalOperationCode === EOperationType.k_Pause) {
-									 this._pToken = null;
-									 isStop = true;
-									 isPause = true;
-								 }
-								 else if (eAdditionalOperationCode === EOperationType.k_Ok) {
-									 pToken = this.readToken();
-								 }
+								if (eAdditionalOperationCode === EOperationType.k_Error) {
+									isError = true;
+									isStop = true;
+								}
+								else if (eAdditionalOperationCode === EOperationType.k_Pause) {
+									this._pToken = null;
+									isStop = true;
+									isPause = true;
+								}
+								else if (eAdditionalOperationCode === EOperationType.k_Ok) {
+									pToken = this.readToken();
+								}
 
-								 break;
+								break;
 
-							 case EOperationType.k_Reduce:
+							case EOperationType.k_Reduce:
 
-								 iRuleLength = pOperation.rule.right.length;
-								 pStack.length -= iRuleLength;
-								 iStateIndex = pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index;
-								 pStack.push(iStateIndex);
-								 pTree.reduceByRule(pOperation.rule, this._pRuleCreationModeMap[pOperation.rule.left]);
+								iRuleLength = pOperation.rule.right.length;
+								pStack.length -= iRuleLength;
+								iStateIndex = pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index;
+								pStack.push(iStateIndex);
+								pTree.reduceByRule(pOperation.rule, this._pRuleCreationModeMap[pOperation.rule.left]);
 
-								 eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pOperation.rule.left);
+								eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pOperation.rule.left);
 
-								 if (eAdditionalOperationCode === EOperationType.k_Error) {
-									 isError = true;
-									 isStop = true;
-								 }
-								 else if (eAdditionalOperationCode === EOperationType.k_Pause) {
-									 this._pToken = pToken;
-									 isStop = true;
-									 isPause = true;
-								 }
+								if (eAdditionalOperationCode === EOperationType.k_Error) {
+									isError = true;
+									isStop = true;
+								}
+								else if (eAdditionalOperationCode === EOperationType.k_Pause) {
+									this._pToken = pToken;
+									isStop = true;
+									isPause = true;
+								}
 
-								 break;
-						 }
-					 }
-					 else {
-						 isError = true;
-						 isStop = true;
-					 }
-				 }
-			 }
-			 catch (e) {
-				 // debug_print(e.stack);
-				 this._sFileName = "stdin";
-				 return EParserCode.k_Error;
-			 }
+								break;
+						}
+					}
+					else {
+						isError = true;
+						isStop = true;
+					}
+				}
+			}
+			catch (e) {
+				// debug_print(e.stack);
+				this._sFileName = "stdin";
+				return EParserCode.k_Error;
+			}
 
-			 if (isPause) {
-				 return EParserCode.k_Pause;
-			 }
+			if (isPause) {
+				return EParserCode.k_Pause;
+			}
 
-			 if (!isError) {
-				 pTree.setRoot();
-				 if (!isNull(this._fnFinishCallback)) {
-					 this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
-				 }
-				 this._sFileName = "stdin";
-				 return EParserCode.k_Ok;
-			 }
-			 else {
-				 this._error(PARSER_SYNTAX_ERROR, pToken);
-				 if (!isNull(this._fnFinishCallback)) {
-					 this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
-				 }
-				 this._sFileName = "stdin";
-				 return EParserCode.k_Error;
-			 }
-		 }
+			if (!isError) {
+				pTree.finishTree();
+				if (!isNull(this._fnFinishCallback)) {
+					this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
+				}
+				this._sFileName = "stdin";
+				return EParserCode.k_Ok;
+			}
+			else {
+				this._error(PARSER_SYNTAX_ERROR, pToken);
+				if (!isNull(this._fnFinishCallback)) {
+					this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
+				}
+				this._sFileName = "stdin";
+				return EParserCode.k_Error;
+			}
+		}
 
-		 setParseFileName(sFileName: string): void {
-			 this._sFileName = sFileName;
-		 }
+		final setParseFileName(sFileName: string): void {
+			this._sFileName = sFileName;
+		}
 
-		 getParseFileName(): string {
-			 return this._sFileName;
-		 }
+		final getParseFileName(): string {
+			return this._sFileName;
+		}
 
-		 pause(): EParserCode {
-			 return EParserCode.k_Pause;
-		 }
+		final pause(): EParserCode {
+			return EParserCode.k_Pause;
+		}
 
-		 resume(): EParserCode {
-			 return this.resumeParse();
-		 }
+		final resume(): EParserCode {
+			return this.resumeParse();
+		}
 
-		printStates(isBaseOnly: boolean = true): void {
+		final printStates(isBaseOnly: boolean = true): void {
 			if (!isDef(this._pStateList)) {
 				logger.log("It`s impossible to print states. You must init parser in debug-mode");
 				return;
@@ -403,7 +393,7 @@ module akra.parser {
 			logger.log(sMsg);
 		}
 
-		printState(iStateIndex: uint, isBaseOnly: boolean = true): void {
+		final printState(iStateIndex: uint, isBaseOnly: boolean = true): void {
 			if (!isDef(this._pStateList)) {
 				logger.log("It`s impossible to print states. You must init parser in debug-mode");
 				return;
@@ -419,16 +409,16 @@ module akra.parser {
 			logger.log(sMsg);
 		}
 
-		getGrammarSymbols(): IMap<string> {
+		final getGrammarSymbols(): IMap<string> {
 			return this._pGrammarSymbols;
 		}
 
-		/** inline */ getSyntaxTree(): IParseTree {
+		final getSyntaxTree(): IParseTree {
 			return this._pSyntaxTree;
 		}
 
 		_saveState(): IParserState {
-			return {
+			return <IParserState>{
 				source: this._sSource,
 				index: this._pLexer._getIndex(),
 				fileName: this._sFileName,
@@ -455,8 +445,6 @@ module akra.parser {
 			this._pLexer._setSource(pState.source);
 			this._pLexer._setIndex(pState.index);
 		}
-
-
 
 		protected addAdditionalFunction(sFuncName: string, fnRuleFunction: IRuleFunction): void {
 			if (isNull(this._pAdditionalFunctionsMap)) {
@@ -501,10 +489,23 @@ module akra.parser {
 
 			var pLogEntity: ILoggerEntity = <ILoggerEntity>{ code: eCode, info: pInfo, location: pLocation };
 
+			var pToken: IToken;
+			var iLine: uint;
+			var iColumn: uint;
+			var iStateIndex: uint;
+			var sSymbol: string;
+			var pOldOperation: IOperation;
+			var pNewOperation: IOperation;
+			var iOldNextStateIndex: uint;
+			var iNewNextStateIndex: uint;
+			var sExpectedSymbol: string;
+			var sUnexpectedSymbol: string;
+			var sBadKeyword: string;
+
 			if (eCode === PARSER_SYNTAX_ERROR) {
-				var pToken: IToken = <IToken>pErrorInfo;
-				var iLine: uint = pToken.line;
-				var iColumn: uint = pToken.start;
+				pToken = <IToken>pErrorInfo;
+				iLine = pToken.line;
+				iColumn = pToken.start;
 
 				pInfo.tokenValue = pToken.value;
 				pInfo.line = iLine;
@@ -514,10 +515,10 @@ module akra.parser {
 				pLocation.line = iLine;
 			}
 			else if (eCode === PARSER_GRAMMAR_ADD_OPERATION) {
-				var iStateIndex: uint = pErrorInfo.stateIndex;
-				var sSymbol: string = pErrorInfo.grammarSymbol;
-				var pOldOperation: IOperation = pErrorInfo.oldOperation;
-				var pNewOperation: IOperation = pErrorInfo.newOperation;
+				iStateIndex = pErrorInfo.stateIndex;
+				sSymbol = pErrorInfo.grammarSymbol;
+				pOldOperation = pErrorInfo.oldOperation;
+				pNewOperation = pErrorInfo.newOperation;
 
 				pInfo.stateIndex = iStateIndex;
 				pInfo.grammarSymbol = sSymbol;
@@ -528,10 +529,10 @@ module akra.parser {
 				pLocation.line = 0;
 			}
 			else if (eCode === PARSER_GRAMMAR_ADD_STATE_LINK) {
-				var iStateIndex: uint = pErrorInfo.stateIndex;
-				var sSymbol: string = pErrorInfo.grammarSymbol;
-				var iOldNextStateIndex: uint = pErrorInfo.oldNextStateIndex;
-				var iNewNextStateIndex: uint = pErrorInfo.newNextStateIndex;
+				iStateIndex = pErrorInfo.stateIndex;
+				sSymbol = pErrorInfo.grammarSymbol;
+				iOldNextStateIndex = pErrorInfo.oldNextStateIndex;
+				iNewNextStateIndex = pErrorInfo.newNextStateIndex;
 
 				pInfo.stateIndex = iStateIndex;
 				pInfo.grammarSymbol = sSymbol;
@@ -542,9 +543,9 @@ module akra.parser {
 				pLocation.line = 0;
 			}
 			else if (eCode === PARSER_GRAMMAR_UNEXPECTED_SYMBOL) {
-				var iLine: uint = pErrorInfo.grammarLine;
-				var sExpectedSymbol: string = pErrorInfo.expectedSymbol;
-				var sUnexpectedSymbol: string = pErrorInfo.unexpectedSymbol;
+				iLine = pErrorInfo.grammarLine;
+				sExpectedSymbol = pErrorInfo.expectedSymbol;
+				sUnexpectedSymbol = pErrorInfo.unexpectedSymbol;
 
 				pInfo.expectedSymbol = sExpectedSymbol;
 				pInfo.unexpectedSymbol = sExpectedSymbol;
@@ -553,14 +554,14 @@ module akra.parser {
 				pLocation.line = iLine || 0;
 			}
 			else if (eCode === PARSER_GRAMMAR_BAD_ADDITIONAL_FUNC_NAME) {
-				var iLine: uint = pErrorInfo.grammarLine;
+				iLine = pErrorInfo.grammarLine;
 
 				pLocation.file = "GRAMMAR";
 				pLocation.line = iLine || 0;
 			}
 			else if (eCode === PARSER_GRAMMAR_BAD_KEYWORD) {
-				var iLine: uint = pErrorInfo.grammarLine;
-				var sBadKeyword: string = pErrorInfo.badKeyword;
+				iLine = pErrorInfo.grammarLine;
+				sBadKeyword = pErrorInfo.badKeyword;
 
 				pInfo.badKeyword = sBadKeyword;
 
@@ -568,7 +569,7 @@ module akra.parser {
 				pLocation.line = iLine || 0;
 			}
 
-			logger["error"](pLogEntity);
+			logger.error(pLogEntity);
 
 			throw new Error(eCode.toString());
 		}
@@ -604,12 +605,12 @@ module akra.parser {
 		}
 
 		private pushState(pState: IState): void {
-			pState.index = this._pStateList.length;
+			pState.setIndex(this._pStateList.length);
 			this._pStateList.push(pState);
 		}
 
 		private pushBaseItem(pItem: IItem): void {
-			pItem.index = this._pBaseItemList.length;
+			pItem.setIndex(this._pBaseItemList.length);
 			this._pBaseItemList.push(pItem);
 		}
 
@@ -618,7 +619,7 @@ module akra.parser {
 
 			if (isNull(pRes)) {
 				if (eType === EParserType.k_LR0) {
-					var pItems = pState.items;
+					var pItems = pState.getItems();
 					for (var i = 0; i < pItems.length; i++) {
 						this.pushBaseItem(pItems[i]);
 					}
@@ -668,9 +669,9 @@ module akra.parser {
 			var isAddState: boolean = pState.addNextState(sSymbol, pNextState);
 			if (!isAddState) {
 				this._error(PARSER_GRAMMAR_ADD_STATE_LINK, {
-					stateIndex: pState.index,
+					stateIndex: pState.getIndex(),
 					oldNextStateIndex: pState.getNextStateBySymbol(sSymbol),
-					newNextStateIndex: pNextState.index,
+					newNextStateIndex: pNextState.getIndex(),
 					grammarSymbol: this.convertGrammarSymbol(sSymbol)
 				});
 			}
@@ -687,7 +688,7 @@ module akra.parser {
 
 			var sRule: string, sName: string;
 			var pNames: string[];
-			var i: uint = 0, j: uint = 0, k: uint = null;
+			var i: uint = 0, j: uint = 0, k: uint = 0;
 			var pRulesMap: IRuleMap = this._pRulesDMap[sSymbol];
 
 			var pTempRes: IMap<boolean> = <IMap<boolean>>{};
@@ -702,16 +703,19 @@ module akra.parser {
 				pRes[T_EMPTY] = true;
 			}
 
+			if (isNull(pRulesMap)) {
+				return pRes;
+			}
+
 			var pRuleNames: string[] = Object.keys(pRulesMap);
 
 			for (i = 0; i < pRuleNames.length; ++i) {
-			   sRule = pRuleNames[i];
+				sRule = pRuleNames[i];
 
 				isFinish = false;
 				pRight = pRulesMap[sRule].right;
 
 				for (j = 0; j < pRight.length; j++) {
-
 					if (pRight[j] === sSymbol) {
 						if (pRes[T_EMPTY]) {
 							continue;
@@ -737,13 +741,11 @@ module akra.parser {
 						isFinish = true;
 						break;
 					}
-
 				}
 
 				if (!isFinish) {
 					pRes[T_EMPTY] = true;
 				}
-   
 			}
 
 			return pRes;
@@ -754,30 +756,49 @@ module akra.parser {
 				return this._pFollowTerminalsDMap[sSymbol];
 			}
 
-			var i: string = null, j: string = null, k: uint = 0, l: uint = 0, m: string = null;
+			var i: uint = 0, j: uint = 0, k: uint = 0, l: uint = 0, m: uint = 0;
 			var pRulesDMap: IRuleDMap = this._pRulesDMap;
+			var pRulesDMapKeys: string[], pRulesMapKeys: string[];
 
+			var pRule: IRule;
 			var pTempRes: IMap<boolean>;
+			var pTempKeys: string[];
 			var pRes: IMap<boolean>;
 
 			var pRight: string[];
 			var isFinish: boolean;
 
+			var sFirstKey: string;
+			var sSecondKey: string;
+
 			pRes = this._pFollowTerminalsDMap[sSymbol] = <IMap<boolean>>{};
 
-			for (i in pRulesDMap) {
-				for (j in pRulesDMap[i]) {
+			if (isNull(pRulesDMap)) {
+				return pRes;
+			}
 
-					pRight = pRulesDMap[i][j].right;
+			pRulesDMapKeys = Object.keys(pRulesDMap);
+			for (i = 0; i < pRulesDMapKeys.length; i++) {
+				sFirstKey = pRulesDMapKeys[i];
+
+				if (isNull(pRulesDMap[sFirstKey])) {
+					continue;
+				}
+
+				pRulesMapKeys = Object.keys(pRulesDMap[sFirstKey]);
+
+				for (j = 0; j < pRulesMapKeys.length; j++) {
+					pRule = pRulesDMap[sFirstKey][sSecondKey];
+					pRight = pRule.right;
 
 					for (k = 0; k < pRight.length; k++) {
-
 						if (pRight[k] === sSymbol) {
-
 							if (k === pRight.length - 1) {
-								pTempRes = this.followTerminal(pRulesDMap[i][j].left);
-								for (m in pTempRes) {
-									pRes[m] = true;
+								pTempRes = this.followTerminal(pRule.left);
+
+								pTempKeys = Object.keys(pTempRes);
+								for (m = 0; m < pTempKeys.length; i++) {
+									pRes[pTempKeys[m]] = true;
 								}
 							}
 							else {
@@ -792,8 +813,9 @@ module akra.parser {
 										break;
 									}
 									else {
-										for (m in pTempRes) {
-											pRes[m] = true;
+										pTempKeys = Object.keys(pTempRes);
+										for (m = 0; m < pTempKeys.length; i++) {
+											pRes[pTempKeys[m]] = true;
 										}
 									}
 
@@ -804,9 +826,11 @@ module akra.parser {
 								}
 
 								if (!isFinish) {
-									pTempRes = this.followTerminal(pRulesDMap[i][j].left);
-									for (m in pTempRes) {
-										pRes[m] = true;
+									pTempRes = this.followTerminal(pRule.left);
+
+									pTempKeys = Object.keys(pTempRes);
+									for (m = 0; m < pTempKeys.length; i++) {
+										pRes[pTempKeys[m]] = true;
 									}
 								}
 							}
@@ -819,28 +843,39 @@ module akra.parser {
 		}
 
 		private firstTerminalForSet(pSet: string[], pExpected: IMap<boolean>): IMap<boolean> {
-			var i: uint = 0, j: string = null;
+			var i: uint = 0, j: uint = 0;
 
 			var pTempRes: IMap<boolean>;
 			var pRes: IMap<boolean> = <IMap<boolean>>{};
 
 			var isEmpty: boolean;
 
+			var pKeys: string[];
+			var sKey: string;
+
 			for (i = 0; i < pSet.length; i++) {
 				pTempRes = this.firstTerminal(pSet[i]);
 
 				if (isNull(pTempRes)) {
 					pRes[pSet[i]] = true;
+
+					return pRes;
 				}
 
 				isEmpty = false;
 
-				for (j in pTempRes) {
-					if (j === T_EMPTY) {
+
+				pKeys = Object.keys(pTempRes);
+
+				for (j = 0; j < pKeys.length; j++) {
+					sKey = pKeys[j];
+
+					if (sKey === T_EMPTY) {
 						isEmpty = true;
 						continue;
 					}
-					pRes[j] = true;
+					pRes[sKey] = true;
+
 				}
 
 				if (!isEmpty) {
@@ -848,8 +883,12 @@ module akra.parser {
 				}
 			}
 
-			for (j in pExpected) {
-				pRes[j] = true;
+
+			if (!isNull(pExpected)) {
+				pKeys = Object.keys(pExpected);
+				for (j = 0; j < pKeys.length; j++) {
+					pRes[pKeys[j]] = true;
+				}
 			}
 
 			return pRes;
@@ -874,6 +913,7 @@ module akra.parser {
 
 			var pSymbolsWithNodeMap: IMap<int> = this._pRuleCreationModeMap;
 
+			var sName: string;
 
 			for (i = 0; i < pAllRuleList.length; i++) {
 				if (pAllRuleList[i] === "" || pAllRuleList[i] === "\r") {
@@ -898,7 +938,7 @@ module akra.parser {
 						pTempRule[2] = pTempRule[2].slice(1, pTempRule[2].length - 1);
 
 						var ch: string = pTempRule[2][0];
-						var sName: string;
+
 
 						if ((ch === "_") || (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z")) {
 							sName = this._pLexer.addKeyword(pTempRule[2], pTempRule[0]);
@@ -986,7 +1026,8 @@ module akra.parser {
 							});
 							//this._error("Can`t generate rules from grammar! Unexpected symbol! Must be");
 						}
-						var sName: string = this._pLexer.addPunctuator(pTempRule[j][1]);
+
+						sName = this._pLexer.addPunctuator(pTempRule[j][1]);
 						pRule.right.push(sName);
 						this._pSymbolMap[sName] = true;
 					}
@@ -999,7 +1040,6 @@ module akra.parser {
 				pRule.index = this._nRules;
 				this._pRulesDMap[pTempRule[0]][pRule.index] = pRule;
 				this._nRules += 1;
-
 			}
 		}
 
@@ -1035,11 +1075,12 @@ module akra.parser {
 
 				for (j = 0; j < pStateList.length; j++) {
 					if (pStateList[j].hasRule(pRule, iPos)) {
-						if (!isDef(pFuncByStateDMap[pStateList[j].index])) {
-							pFuncByStateDMap[pStateList[j].index] = <IRuleFunctionMap>{};
+
+						if (!isDef(pFuncByStateDMap[pStateList[j].getIndex()])) {
+							pFuncByStateDMap[pStateList[j].getIndex()] = <IRuleFunctionMap>{};
 						}
 
-						pFuncByStateDMap[pStateList[j].index][sGrammarSymbol] = pFunc;
+						pFuncByStateDMap[pStateList[j].getIndex()][sGrammarSymbol] = pFunc;
 					}
 				}
 			}
@@ -1081,35 +1122,41 @@ module akra.parser {
 				return this.closure_LR0(pState);
 			}
 			else {
-				this.closure_LR(pState);
+
+				return this.closure_LR(pState);
 			}
 		}
 
 		private closure_LR0(pState: IState): IState {
-			var pItemList: IItem[] = pState.items;
-			var i: uint = 0, j: string = null;
+			var pItemList: IItem[] = pState.getItems();
+			var i: uint = 0, j: uint = 0;
 			var sSymbol: string;
+			var pKeys: string[];
 
 			for (i = 0; i < pItemList.length; i++) {
 				sSymbol = pItemList[i].mark();
 
 				if (sSymbol !== END_POSITION && (!this.isTerminal(sSymbol))) {
-					for (j in this._pRulesDMap[sSymbol]) {
-						pState.tryPush_LR0(this._pRulesDMap[sSymbol][j], 0);
+
+					pKeys = Object.keys(this._pRulesDMap[sSymbol]);
+					for (j = 0; j < pKeys.length; j++) {
+						pState.tryPush_LR0(this._pRulesDMap[sSymbol][pKeys[j]], 0);
 					}
 				}
-
 			}
 			return pState;
 		}
 
 		private closure_LR(pState: IState): IState {
-			var pItemList: IItem[] = <IItem[]>(pState.items);
-			var i: uint = 0, j: string = null, k: string = null;
+			var pItemList: IItem[] = <IItem[]>(pState.getItems());
+			var i: uint = 0, j: uint = 0, k: uint = 0;
 			var sSymbol: string;
 			var pSymbols: IMap<boolean>;
 			var pTempSet: string[];
 			var isNewExpected: boolean = false;
+
+
+			var pRulesMapKeys: string[], pSymbolsKeys: string[];
 
 			while (true) {
 				if (i === pItemList.length) {
@@ -1122,12 +1169,15 @@ module akra.parser {
 				sSymbol = pItemList[i].mark();
 
 				if (sSymbol !== END_POSITION && (!this.isTerminal(sSymbol))) {
-					pTempSet = pItemList[i].rule.right.slice(pItemList[i].position + 1);
-					pSymbols = this.firstTerminalForSet(pTempSet, pItemList[i].expectedSymbols);
+					pTempSet = pItemList[i].getRule().right.slice(pItemList[i].getPosition() + 1);
+					pSymbols = this.firstTerminalForSet(pTempSet, pItemList[i].getExpectedSymbols());
 
-					for (j in this._pRulesDMap[sSymbol]) {
-						for (k in pSymbols) {
-							if (pState.tryPush_LR(this._pRulesDMap[sSymbol][j], 0, k)) {
+					pRulesMapKeys = Object.keys(this._pRulesDMap[sSymbol]);
+					pSymbolsKeys = Object.keys(pSymbols);
+
+					for (j = 0; j < pRulesMapKeys.length; j++) {
+						for (k = 0; k < pSymbolsKeys.length; k++) {
+							if (pState.tryPush_LR(this._pRulesDMap[sSymbol][pRulesMapKeys[j]], 0, pSymbolsKeys[k])) {
 								isNewExpected = true;
 							}
 						}
@@ -1150,13 +1200,13 @@ module akra.parser {
 		}
 
 		private nextState_LR0(pState: IState, sSymbol: string): IState {
-			var pItemList: IItem[] = pState.items;
+			var pItemList: IItem[] = pState.getItems();
 			var i: uint = 0;
 			var pNewState: IState = new State();
 
 			for (i = 0; i < pItemList.length; i++) {
 				if (sSymbol === pItemList[i].mark()) {
-					pNewState.push(new Item(pItemList[i].rule, pItemList[i].position + 1));
+					pNewState.push(new Item(pItemList[i].getRule(), pItemList[i].getPosition() + 1));
 				}
 			}
 
@@ -1164,13 +1214,13 @@ module akra.parser {
 		}
 
 		private nextState_LR(pState: IState, sSymbol: string): IState {
-			var pItemList: IItem[] = <IItem[]>pState.items;
+			var pItemList: IItem[] = <IItem[]>pState.getItems();
 			var i: uint = 0;
 			var pNewState: IState = new State();
 
 			for (i = 0; i < pItemList.length; i++) {
 				if (sSymbol === pItemList[i].mark()) {
-					pNewState.push(new Item(pItemList[i].rule, pItemList[i].position + 1, pItemList[i].expectedSymbols));
+					pNewState.push(new Item(pItemList[i].getRule(), pItemList[i].getPosition() + 1, pItemList[i].getExpectedSymbols()));
 				}
 			}
 
@@ -1208,13 +1258,13 @@ module akra.parser {
 
 		private addLinkExpected(pItem: IItem, pItemX: IItem): void {
 			var pTable: IBoolDMap = this._pExpectedExtensionDMap;
-			var iIndex: uint = pItem.index;
+			var iIndex: uint = pItem.getIndex();
 
 			if (!isDef(pTable[iIndex])) {
 				pTable[iIndex] = <IMap<boolean>>{};
 			}
 
-			pTable[iIndex][pItemX.index] = true;
+			pTable[iIndex][pItemX.getIndex()] = true;
 		}
 
 		private determineExpected(pTestState: IState, sSymbol: string): void {
@@ -1224,23 +1274,23 @@ module akra.parser {
 				return;
 			}
 
-			var pItemListX: IItem[] = <IItem[]>pStateX.items;
-			var pItemList: IItem[] = <IItem[]>pTestState.items;
+			var pItemListX: IItem[] = <IItem[]>pStateX.getItems();
+			var pItemList: IItem[] = <IItem[]>pTestState.getItems();
 			var pState: IState;
 			var pItem: IItem;
-			var i: uint = 0, j: uint = 0, k: string = null;
+			var i: uint = 0, j: uint = 0, k: string;
 
-			var nBaseItemTest = pTestState.numBaseItems;
-			var nBaseItemX = pStateX.numBaseItems;
+			var nBaseItemTest = pTestState.getNumBaseItems();
+			var nBaseItemX = pStateX.getNumBaseItems();
 
 			for (i = 0; i < nBaseItemTest; i++) {
-				pState = this.closureForItem(pItemList[i].rule, pItemList[i].position);
+				pState = this.closureForItem(pItemList[i].getRule(), pItemList[i].getPosition());
 
 				for (j = 0; j < nBaseItemX; j++) {
 					pItem = <IItem>pState.hasChildItem(pItemListX[j]);
 
 					if (pItem) {
-						var pExpected: IMap<boolean> = pItem.expectedSymbols;
+						var pExpected: IMap<boolean> = pItem.getExpectedSymbols();
 
 						for (k in pExpected) {
 							if (k === UNUSED_SYMBOL) {
@@ -1256,12 +1306,14 @@ module akra.parser {
 		}
 
 		private generateLinksExpected(): void {
-			var i: uint = 0, j: string = null;
+			var i: uint = 0, j: uint = 0;
 			var pStates: IState[] = this._pStateList;
+			var pKeys: string[];
 
 			for (i = 0; i < pStates.length; i++) {
-				for (j in this._pSymbolMap) {
-					this.determineExpected(pStates[i], j);
+				pKeys = Object.keys(this._pSymbolMap);
+				for (j = 0; j < pKeys.length; j++) {
+					this.determineExpected(pStates[i], pKeys[j]);
 				}
 			}
 		}
@@ -1269,15 +1321,14 @@ module akra.parser {
 		private expandExpected(): void {
 			var pItemList: IItem[] = <IItem[]>this._pBaseItemList;
 			var pTable: IBoolDMap = this._pExpectedExtensionDMap;
-			var i: uint = 0, j: string = null;
-			var sSymbol: string = null;
+			var i: uint = 0, j: uint = 0, k: uint = 0;
+			var sSymbol: string = "";
 			var isNewExpected: boolean = false;
 
 			pItemList[0].addExpected(END_SYMBOL);
-			pItemList[0].isNewExpected = true;
+			pItemList[0].setIsNewExpected(true);
 
 			while (true) {
-
 				if (i === pItemList.length) {
 					if (!isNewExpected) {
 						break;
@@ -1286,19 +1337,21 @@ module akra.parser {
 					i = 0;
 				}
 
-				if (pItemList[i].isNewExpected) {
-					var pExpected: IMap<boolean> = pItemList[i].expectedSymbols;
+				if (pItemList[i].getIsNewExpected() && isDefAndNotNull(pTable[i]) && isDefAndNotNull(pItemList[i].getExpectedSymbols())) {
+					var pExpectedSymbols: string[] = Object.keys(pItemList[i].getExpectedSymbols());
+					var pKeys: string[] = Object.keys(pTable[i]);
 
-					for (sSymbol in pExpected) {
-						for (j in pTable[i]) {
-							if (pItemList[<number><any>j].addExpected(sSymbol)) {
+					for (j = 0; j < pExpectedSymbols.length; j++) {
+						sSymbol = pExpectedSymbols[j];
+						for (k = 0; k < pKeys.length; k++) {
+							if (pItemList[<number><any>pKeys[k]].addExpected(sSymbol)) {
 								isNewExpected = true;
 							}
 						}
 					}
 				}
 
-				pItemList[i].isNewExpected = false;
+				pItemList[i].setIsNewExpected(false);
 				i++;
 			}
 		}
@@ -1318,13 +1371,15 @@ module akra.parser {
 		private generateStates_LR0(): void {
 			this.generateFirstState_LR0();
 
-			var i: uint = 0;
+			var i: uint = 0, j: uint = 0;
 			var pStateList: IState[] = this._pStateList;
-			var sSymbol: string = null;
+			var sSymbol: string = "";
 			var pState: IState;
+			var pSymbols: string[] = Object.keys(this._pSymbolMap);
 
 			for (i = 0; i < pStateList.length; i++) {
-				for (sSymbol in this._pSymbolMap) {
+				for (j = 0; j < pSymbols.length; j++) {
+					sSymbol = pSymbols[j];
 					pState = this.nextState_LR0(pStateList[i], sSymbol);
 
 					if (!pState.isEmpty()) {
@@ -1339,13 +1394,15 @@ module akra.parser {
 			this._pFirstTerminalsDMap = <IBoolDMap>{};
 			this.generateFirstState_LR();
 
-			var i: uint = 0;
+			var i: uint = 0, j: uint = 0;
 			var pStateList: IState[] = this._pStateList;
-			var sSymbol: string = null;
+			var sSymbol: string = "";
 			var pState: IState;
+			var pSymbols: string[] = Object.keys(this._pSymbolMap);
 
 			for (i = 0; i < pStateList.length; i++) {
-				for (sSymbol in this._pSymbolMap) {
+				for (j = 0; j < pSymbols.length; j++) {
+					sSymbol = pSymbols[j];
 					pState = this.nextState_LR(pStateList[i], sSymbol);
 
 					if (!pState.isEmpty()) {
@@ -1357,7 +1414,6 @@ module akra.parser {
 		}
 
 		private generateStates_LALR(): void {
-
 			this._pStatesTempMap = <IMap<IState>>{};
 			this._pBaseItemList = <IItem[]>[];
 			this._pExpectedExtensionDMap = <IBoolDMap>{};
@@ -1381,23 +1437,25 @@ module akra.parser {
 			var i: uint = 0;
 
 			for (i = 0; i < this._pStateList.length; i++) {
-				num += this._pStateList[i].numBaseItems;
+				num += this._pStateList[i].getNumBaseItems();
 			}
 
 			return num;
 		}
 
 		private printExpectedTable(): string {
-			var i: string = null, j: string = null;
+			var i: uint = 0, j: uint = 0;
 			var sMsg: string = "";
 
-			for (i in this._pExpectedExtensionDMap) {
-				sMsg += "State " + this._pBaseItemList[<number><any>i].state.index + ":   ";
-				sMsg += this._pBaseItemList[<number><any>i].toString() + "  |----->\n";
+			var pKeys: string[] = Object.keys(this._pExpectedExtensionDMap);
+			for (i = 0; i < pKeys.length; i++) {
+				sMsg += "State " + this._pBaseItemList[<number><any>pKeys[i]].getState().getIndex() + ":   ";
+				sMsg += this._pBaseItemList[<number><any>pKeys[i]].toString() + "  |----->\n";
 
-				for (j in this._pExpectedExtensionDMap[i]) {
-					sMsg += "\t\t\t\t\t" + "State " + this._pBaseItemList[<number><any>j].state.index + ":   ";
-					sMsg += this._pBaseItemList[<number><any>j].toString() + "\n";
+				var pExtentions: string[] = Object.keys(this._pExpectedExtensionDMap[pKeys[i]]);
+				for (j = 0; j < pExtentions.length; j++) {
+					sMsg += "\t\t\t\t\t" + "State " + this._pBaseItemList[<number><any>pExtentions[j]].getState().getIndex() + ":   ";
+					sMsg += this._pBaseItemList[<number><any>pExtentions[j]].toString() + "\n";
 				}
 
 				sMsg += "\n";
@@ -1407,20 +1465,20 @@ module akra.parser {
 		}
 
 		private addReducing(pState: IState): void {
-			var i: uint = 0, j: string = null;
-			var pItemList: IItem[] = pState.items;
+			var i: uint = 0, j: uint = 0;
+			var pItemList: IItem[] = pState.getItems();
 
 			for (i = 0; i < pItemList.length; i++) {
 				if (pItemList[i].mark() === END_POSITION) {
-
-					if (pItemList[i].rule.left === START_SYMBOL) {
-						this.pushInSyntaxTable(pState.index, END_SYMBOL, this._pSuccessOperation);
+					if (pItemList[i].getRule().left === START_SYMBOL) {
+						this.pushInSyntaxTable(pState.getIndex(), END_SYMBOL, this._pSuccessOperation);
 					}
 					else {
-						var pExpected = pItemList[i].expectedSymbols;
+						var pExpected = pItemList[i].getExpectedSymbols();
 
-						for (j in pExpected) {
-							this.pushInSyntaxTable(pState.index, j, this._pReduceOperationsMap[pItemList[i].rule.index]);
+						var pKeys: string[] = Object.keys(pExpected);
+						for (j = 0; j < pKeys.length; j++) {
+							this.pushInSyntaxTable(pState.getIndex(), pKeys[j], this._pReduceOperationsMap[pItemList[i].getRule().index]);
 						}
 					}
 				}
@@ -1428,11 +1486,14 @@ module akra.parser {
 		}
 
 		private addShift(pState: IState) {
-			var i: string = null;
-			var pStateMap: IMap<IState> = pState.nextStates;
+			var i: uint = 0;
+			var pStateMap: IMap<IState> = pState.getNextStates();
 
-			for (i in pStateMap) {
-				this.pushInSyntaxTable(pState.index, i, this._pShiftOperationsMap[pStateMap[i].index]);
+			var pStateKeys: string[] = Object.keys(pStateMap);
+
+			for (i = 0; i < pStateKeys.length; i++) {
+				var sSymbol: string = pStateKeys[i];
+				this.pushInSyntaxTable(pState.getIndex(), sSymbol, this._pShiftOperationsMap[pStateMap[sSymbol].getIndex()]);
 			}
 		}
 
@@ -1452,26 +1513,31 @@ module akra.parser {
 
 			this._pSuccessOperation = <IOperation>{ type: EOperationType.k_Success };
 
-			var i: uint = 0, j: string = null, k: string = null;
+			var i: uint = 0, j: uint = 0, k: uint = 0;
 
 			for (i = 0; i < pStateList.length; i++) {
-				this._pShiftOperationsMap[pStateList[i].index] = <IOperation>{
+				this._pShiftOperationsMap[pStateList[i].getIndex()] = <IOperation>{
 					type: EOperationType.k_Shift,
-					index: pStateList[i].index
+					index: pStateList[i].getIndex()
 				};
 			}
 
-			for (j in this._pRulesDMap) {
-				for (k in this._pRulesDMap[j]) {
-					this._pReduceOperationsMap[k] = <IOperation>{
+			var pRulesDMapKeys: string[] = Object.keys(this._pRulesDMap);
+			for (j = 0; j < pRulesDMapKeys.length; j++) {
+				var pRulesMapKeys: string[] = Object.keys(this._pRulesDMap[pRulesDMapKeys[j]]);
+				for (k = 0; k < pRulesMapKeys.length; k++) {
+					var sSymbol: string = pRulesMapKeys[k];
+					var pRule: IRule = this._pRulesDMap[pRulesDMapKeys[j]][sSymbol];
+
+					this._pReduceOperationsMap[sSymbol] = <IOperation>{
 						type: EOperationType.k_Reduce,
-						rule: this._pRulesDMap[j][k]
+						rule: pRule
 					};
 				}
 			}
 
 			//Build syntax table
-			for (var i: uint = 0; i < pStateList.length; i++) {
+			for (i = 0; i < pStateList.length; i++) {
 				pState = pStateList[i];
 				this.addReducing(pState);
 				this.addShift(pState);
@@ -1488,7 +1554,6 @@ module akra.parser {
 			if (!isNull(this._pAdidtionalFunctByStateDMap) &&
 				isDef(pFuncDMap[iStateIndex]) &&
 				isDef(pFuncDMap[iStateIndex][sGrammarSymbol])) {
-
 				return pFuncDMap[iStateIndex][sGrammarSymbol].call(this);
 			}
 
@@ -1581,7 +1646,7 @@ module akra.parser {
 			}
 
 			if (!isError) {
-				pTree.setRoot();
+				pTree.finishTree();
 				if (isDef(this._fnFinishCallback)) {
 					this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
 				}
@@ -1600,7 +1665,7 @@ module akra.parser {
 
 		private statesToString(isBaseOnly: boolean = true): string {
 			if (!isDef(this._pStateList)) {
-				return null;
+				return "";
 			}
 
 			var sMsg: string = "";
@@ -1615,7 +1680,7 @@ module akra.parser {
 		}
 
 		private operationToString(pOperation: IOperation): string {
-			var sOperation: string = null;
+			var sOperation: string = "";
 
 			switch (pOperation.type) {
 				case EOperationType.k_Shift:
@@ -1650,4 +1715,3 @@ module akra.parser {
 		}
 	}
 }
-

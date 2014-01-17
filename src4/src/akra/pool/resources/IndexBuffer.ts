@@ -1,12 +1,9 @@
-#ifndef INDEXBUFFER_TS
-#define INDEXBUFFER_TS
+/// <reference path="../../idl/IIndexBuffer.ts" />
+/// <reference path="../../idl/IIndexData.ts" />
+/// <reference path="HardwareBuffer.ts" />
+/// <reference path="../../data/IndexData.ts" />
 
-#include "IIndexBuffer.ts"
-#include "IIndexData.ts"
-#include "HardwareBuffer.ts"
-#include "data/IndexData.ts"
-
-module akra.core.pool.resources {
+module akra.pool.resources {
 	
 	interface IBufferHole {
 		start: uint;
@@ -171,5 +168,3 @@ module akra.core.pool.resources {
 
 	}
 }
-
-#endif

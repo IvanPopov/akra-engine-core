@@ -11,8 +11,6 @@
 /// <reference path="SceneObject.ts" />
 
 module akra.scene {
-
-
 	export class DisplayList<T extends ISceneNode> implements IDisplayList<T> {
 		guid: uint = guid();
 

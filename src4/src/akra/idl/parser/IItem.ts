@@ -3,26 +3,36 @@
 /// <reference path="IParser.ts" />
 
 module akra.parser {
-    export interface IItem {
-        isEqual(pItem: IItem, eType?: EParserType): boolean;
-        isParentItem(pItem: IItem): boolean;
-        isChildItem(pItem: IItem): boolean;
+	export interface IItem {
+		isEqual(pItem: IItem, eType?: EParserType): boolean;
+		isParentItem(pItem: IItem): boolean;
+		isChildItem(pItem: IItem): boolean;
 
-        mark(): string;
-        end(): string;
-        nextMarked(): string;
+		mark(): string;
+		end(): string;
+		nextMarked(): string;
 
-        toString(): string;
+		toString(): string;
 
-        isExpected(sSymbol: string): boolean;
-        addExpected(sSymbol: string): boolean;
+		isExpected(sSymbol: string): boolean;
+		addExpected(sSymbol: string): boolean;
 
-        rule: IRule;
-        position: uint;
-        index: uint;
-        state: IState;
-        expectedSymbols: IMap<boolean>;
-        isNewExpected: boolean;
-        length: uint;
-    }
+		getRule(): IRule;
+		setRule(pRule: IRule): void;
+
+		getPosition(): uint;
+		setPosition(iPosition: uint): void;
+
+		getIndex(): uint;
+		setIndex(iIndex: uint): void;
+
+		getState(): IState;
+		setState(pState: IState): void;
+
+		getIsNewExpected(): boolean;
+		setIsNewExpected(isNewExpected: boolean): void;
+
+		getExpectedSymbols(): IMap<boolean>;		
+		getLength(): uint;
+	}
 }

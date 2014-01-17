@@ -34,7 +34,7 @@ module akra {
 		zIndex?: number;
 	}
 	
-	export interface IUIDNDNode<S extends IUIHTMLNode<S>> extends IUIHTMLNode<S> {
+	export interface IUIDNDNode extends IUIHTMLNode {
 		setDraggable(bValue?: boolean, pOptions?: IUIDraggableOptions): void;
 		setDraggableOptions(pOptions: IUIDraggableOptions): void;
 	

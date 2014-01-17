@@ -41,8 +41,8 @@ module akra {
 		pause(bValue?: boolean): void;
 		isPaused(): boolean;
 	
-		signal durationUpdated(fDuration: float): void;
-		signal enterFrame(fRealTime: float, fTime: float): void;
+		durationUpdated: ISignal<{ (pContainer: IAnimationContainer, fDuration: float): void; }>;
+		enterFrame: ISignal <{ (pContainer: IAnimationContainer, fRealTime: float, fTime: float): void ; }>;
 	}
 	
 }

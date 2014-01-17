@@ -60,13 +60,13 @@ module akra {
 	
 		_createShadowCaster(pLightPoint: ILightPoint, iFace?: uint, sName?: string): IShadowCaster;
 	
-		getDisplayList(index: uint): IDisplayList;
+		getDisplayList(index: uint): IDisplayList<ISceneNode>;
 		getDisplayListByName(csName: string): int;
-		addDisplayList(pList: IDisplayList): int;
+		addDisplayList(pList: IDisplayList<ISceneNode>): int;
 		delDisplayList(index: uint): boolean;
 		
-		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList, iIndex: int): void; }>;
-		displayListRemoved: ISignal <{ (pScene: IScene3d, pList: IDisplayList, iIndex: int): void ; }>;
+		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }>;
+		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void ; }>;
 
 		beforeUpdate: ISignal <{ (pScene: IScene3d): void; }>;
 		postUpdate: ISignal <{ (pScene: IScene3d): void; }>;

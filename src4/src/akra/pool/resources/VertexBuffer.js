@@ -204,19 +204,17 @@ var akra;
 
                     return pVertexData;
                 };
+
+                VertexBuffer.isVBO = function (pBuffer) {
+                    return pBuffer.type === akra.EVertexBufferTypes.VBO;
+                };
+
+                VertexBuffer.isTBO = function (pBuffer) {
+                    return pBuffer.type === akra.EVertexBufferTypes.TBO;
+                };
                 return VertexBuffer;
             })(resources.HardwareBuffer);
             resources.VertexBuffer = VertexBuffer;
-
-            function isVBO(pBuffer) {
-                return pBuffer.type === akra.EVertexBufferTypes.VBO;
-            }
-            resources.isVBO = isVBO;
-
-            function isTBO(pBuffer) {
-                return pBuffer.type === akra.EVertexBufferTypes.TBO;
-            }
-            resources.isTBO = isTBO;
         })(pool.resources || (pool.resources = {}));
         var resources = pool.resources;
     })(akra.pool || (akra.pool = {}));

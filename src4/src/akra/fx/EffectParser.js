@@ -14,13 +14,13 @@ var akra;
     /// <reference path="../uri/uri.ts" />
     /// <reference path="../path/path.ts" />
     (function (fx) {
-        
+        var Parser = parser.Parser;
 
         var EffectParser = (function (_super) {
             __extends(EffectParser, _super);
             function EffectParser() {
                 _super.call(this);
-                var _pIncludedFilesMap = null
+                this._pIncludedFilesMap = null;
 
                 this.addAdditionalFunction("addType", this._addType);
                 this.addAdditionalFunction("includeCode", this._includeCode);
@@ -105,7 +105,7 @@ var akra;
                 this._pIncludedFilesMap = pState["includeFiles"];
             };
             return EffectParser;
-        })(Parser);
+        })(parser.Parser);
         fx.EffectParser = EffectParser;
     })(akra.fx || (akra.fx = {}));
     var fx = akra.fx;

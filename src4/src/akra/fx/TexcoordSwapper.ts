@@ -1,88 +1,90 @@
 /// <reference path="../idl/IAFXAttributeBlendContainer.ts" />
-/// <reference path="../resources/SurfaceMaterial.ts" />
+/// <reference path="../pool/resources/SurfaceMaterial.ts" />
 
 module akra.fx {
 
-    export class TexcoordSwapper {
-        protected _pTmpToTex: string[] = null;
-        protected _pTexToTmp: string[] = null;
-        protected _pTexcoords: uint[] = null;
+	import SurfaceMaterial = pool.resources.SurfaceMaterial;
 
-        protected _sTmpToTexCode: string = "";
-        protected _sTexToTmpCode: string = "";
+	export class TexcoordSwapper {
+		protected _pTmpToTex: string[] = null;
+		protected _pTexToTmp: string[] = null;
+		protected _pTexcoords: uint[] = null;
 
-        protected _iMaxTexcoords: uint = 0;
+		protected _sTmpToTexCode: string = "";
+		protected _sTexToTmpCode: string = "";
 
-        constructor() {
-            this._iMaxTexcoords = SurfaceMaterial.MAX_TEXTURES_PER_SURFACE;
-            this._pTmpToTex = new Array<string>(this._iMaxTexcoords);
-            this._pTexToTmp = new Array<string>(this._iMaxTexcoords);
-            this._pTexcoords = new Array<uint>(this._iMaxTexcoords);
-        }
+		protected _iMaxTexcoords: uint = 0;
 
-        getTmpDeclCode(): string {
-            return this._sTexToTmpCode;
-        }
+		constructor() {
+			this._iMaxTexcoords = SurfaceMaterial.MAX_TEXTURES_PER_SURFACE;
+			this._pTmpToTex = new Array<string>(this._iMaxTexcoords);
+			this._pTexToTmp = new Array<string>(this._iMaxTexcoords);
+			this._pTexcoords = new Array<uint>(this._iMaxTexcoords);
+		}
 
-        getTecoordSwapCode(): string {
-            return this._sTmpToTexCode;
-        }
+		getTmpDeclCode(): string {
+			return this._sTexToTmpCode;
+		}
 
-        clear(): void {
-            for (var i: uint = 0; i < this._iMaxTexcoords; i++) {
-                this._pTmpToTex[i] = "";
-                this._pTexToTmp[i] = "";
-                this._pTexcoords[i] = 0;
-            }
+		getTecoordSwapCode(): string {
+			return this._sTmpToTexCode;
+		}
 
-            this._sTmpToTexCode = "";
-            this._sTexToTmpCode = "";
-        }
+		clear(): void {
+			for (var i: uint = 0; i < this._iMaxTexcoords; i++) {
+				this._pTmpToTex[i] = "";
+				this._pTexToTmp[i] = "";
+				this._pTexcoords[i] = 0;
+			}
 
-        generateSwapCode(pMaterial: ISurfaceMaterial, pAttrConatiner: IAFXAttributeBlendContainer): void {
-            this.clear();
+			this._sTmpToTexCode = "";
+			this._sTexToTmpCode = "";
+		}
 
-            if (isNull(pMaterial)) {
-                return;
-            }
-            //TODO: do it faster in one for
-            var pTexcoords: uint[] = this._pTexcoords;
+		generateSwapCode(pMaterial: ISurfaceMaterial, pAttrConatiner: IAFXAttributeBlendContainer): void {
+			this.clear();
 
-            for (var i: uint = 0; i < this._iMaxTexcoords; i++) {
-                var iTexcoord: uint = pMaterial.texcoord(i);
+			if (isNull(pMaterial)) {
+				return;
+			}
+			//TODO: do it faster in one for
+			var pTexcoords: uint[] = this._pTexcoords;
 
-                if (iTexcoord !== i && pAttrConatiner.hasTexcoord(i)) {
-                    var pAttr = pAttrConatiner.getTexcoordVar(i);
+			for (var i: uint = 0; i < this._iMaxTexcoords; i++) {
+				var iTexcoord: uint = pMaterial.texcoord(i);
 
-                    this._pTexToTmp[i] = pAttr.getType().getBaseType().getRealName() + " " +
-                    "T" + i.toString() + "=" + pAttr.getRealName() + ";";
+				if (iTexcoord !== i && pAttrConatiner.hasTexcoord(i)) {
+					var pAttr = pAttrConatiner.getTexcoordVar(i);
 
-                    this._sTexToTmpCode += this._pTexToTmp[i] + "\n";
-                }
+					this._pTexToTmp[i] = pAttr.getType().getBaseType().getRealName() + " " +
+					"T" + i.toString() + "=" + pAttr.getRealName() + ";";
 
-                if (!pAttrConatiner.hasTexcoord(iTexcoord)) {
-                    pTexcoords[iTexcoord] = 0;
-                }
-                else {
-                    pTexcoords[iTexcoord] = iTexcoord;
-                }
-            }
+					this._sTexToTmpCode += this._pTexToTmp[i] + "\n";
+				}
 
-            for (var i: uint = 0; i < this._iMaxTexcoords; i++) {
-                if (pTexcoords[i] !== i && pAttrConatiner.hasTexcoord(i)) {
-                    var pAttr = pAttrConatiner.getTexcoordVar(i);
+				if (!pAttrConatiner.hasTexcoord(iTexcoord)) {
+					pTexcoords[iTexcoord] = 0;
+				}
+				else {
+					pTexcoords[iTexcoord] = iTexcoord;
+				}
+			}
 
-                    if (this._pTexToTmp[pTexcoords[i]] !== "") {
-                        this._pTmpToTex[i] = pAttr.getRealName() + "=" + this._pTexToTmp[pTexcoords[i]] + ";";
-                    }
-                    else {
-                        this._pTmpToTex[i] = pAttr.getRealName() + "=" +
-                        pAttrConatiner.getTexcoordVar(pTexcoords[i]).getRealName() + ";";
-                    }
+			for (var i: uint = 0; i < this._iMaxTexcoords; i++) {
+				if (pTexcoords[i] !== i && pAttrConatiner.hasTexcoord(i)) {
+					var pAttr = pAttrConatiner.getTexcoordVar(i);
 
-                    this._sTmpToTexCode += this._pTmpToTex[i] + "\n";
-                }
-            }
-        }
-    }
+					if (this._pTexToTmp[pTexcoords[i]] !== "") {
+						this._pTmpToTex[i] = pAttr.getRealName() + "=" + this._pTexToTmp[pTexcoords[i]] + ";";
+					}
+					else {
+						this._pTmpToTex[i] = pAttr.getRealName() + "=" +
+						pAttrConatiner.getTexcoordVar(pTexcoords[i]).getRealName() + ";";
+					}
+
+					this._sTmpToTexCode += this._pTmpToTex[i] + "\n";
+				}
+			}
+		}
+	}
 }

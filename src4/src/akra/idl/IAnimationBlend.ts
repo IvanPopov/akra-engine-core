@@ -44,8 +44,8 @@ module akra {
 		
 	    createAnimationMask(iAnimation?: int): IMap<float>;
 	
-		signal durationUpdated(fDuration: float);
-		signal weightUpdated(iAnim: int, fWeight: float);
+		weightUpdated: ISignal<{ (pBlend: IAnimationBlend, iAnim: int, fWeight: float): void; }>;
+		durationUpdated: ISignal <{ (pBlend: IAnimationBlend, fDuration: float): void ; }>;
 	}
 	
 }

@@ -6,6 +6,10 @@
 
 /// <reference path="../../pixelUtil/pixelUtil.ts" />
 /// <reference path="../ResourcePoolItem.ts" />
+
+/// <reference path="../../debug.ts" />
+
+
 module akra.pool.resources {
 
 	export enum ETextureForcedFormatFlags {
@@ -223,12 +227,16 @@ module akra.pool.resources {
 				return this.loadImage(pImage);
 			}
 			// LOG("Texture::loadResource(" + sFilename + ")", pImage);
-			this.connect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
+			//this.connect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
+
+			pImage.loaded.connect(this, this._onImageLoad);
+
 			return true;
 		}
 
 		_onImageLoad(pImage: IImg): void {
-			this.disconnect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
+			pImage.loaded.disconnect(this, this._onImageLoad);
+			//this.disconnect(pImage, SIGNAL(loaded), SLOT(_onImageLoad));
 			// console.log("image loaded > ", pImage.findResourceName());
 			this.loadImage(pImage);
 			// debug.log("texture/image loaded: ", pImage.findResourceName());

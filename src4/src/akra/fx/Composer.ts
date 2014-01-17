@@ -14,7 +14,6 @@
 /// <reference path="../math/math.ts" />
 /// <reference path="../logger.ts" />
 /// <reference path="../color/colors.ts" />
-/// <reference path="../model/model.ts" />
 /// <reference path="../limit.ts" />
 /// <reference path="../webgl/webgl.ts" />
 /// <reference path="../render/render.ts" />

@@ -109,7 +109,6 @@ function usage() {
 }
 
 
-
 var params = [
     {
         key: ["target"],
@@ -312,6 +311,8 @@ var params = [
         }
     }
 ];
+
+
 
 
 
@@ -777,7 +778,6 @@ function stringifyModifier(name, value, argv) {
  * minify JS code in {value} param
  */
 function minifyJsModifier(name, value, argv) {
-    // return value;
 	var orig_code = value;
 	var ast = jsp.parse(orig_code); // parse code and get the initial AST
 	ast = pro.ast_mangle(ast/*, {toplevel: true, no_functions : true}*/); // get a new AST with mangled names
@@ -926,7 +926,6 @@ function fetchDeps(sDir, sTestData, pResult) {
 						break;
 					case "stringify":
 						value = stringifyModifier(name, value, argv);
-                        // console.log(name, " >>>>> ", value.substr(0, 32));
 						break;
 					case "pack_resources":
 						value = packResourcesModifier(name, value, argv);
@@ -1121,7 +1120,7 @@ function packTest(sDir, sFile, sName, pData) {
 		(options.debug? " --debug ": " --no-debug ") +
 		(options.preprocess? " --preprocess ": " ") +
 		(options.noConst? " --no-const ": " ") +
-        (options.gui? " --gui ": " ") +
+		(options.gui? " --gui ": " ") +
 		sFile).split(" ");
 
 	console.log(cmd + " " + argv.join(" "));

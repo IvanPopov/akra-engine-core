@@ -38,7 +38,7 @@ module akra.fx {
 			this.addTypeId("bool3");
 			this.addTypeId("bool4");
 
-			this._pIncludedFilesMap = <BoolMap>{};
+			this._pIncludedFilesMap = <IMap<boolean>>{};
 			this._pIncludedFilesMap[this.getParseFileName()] = true; 
 		}
 

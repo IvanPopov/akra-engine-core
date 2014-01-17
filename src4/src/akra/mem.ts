@@ -1,5 +1,4 @@
 ﻿module akra {
-
     export function copy(pDst: ArrayBuffer, iDstOffset: number, pSrc: ArrayBuffer, iSrcOffset: number, nLength: number): void {
         var dstU8 = new Uint8Array(pDst, iDstOffset, nLength);
         var srcU8 = new Uint8Array(pSrc, iSrcOffset, nLength);

@@ -9,5 +9,4 @@ module akra {
 			bQuickSearch?: boolean): IObjectArray<T>;
 		_setup(pScene: IScene3d): void;
 	}
-	
 }

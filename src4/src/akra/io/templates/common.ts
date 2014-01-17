@@ -4,9 +4,9 @@
 
 module akra.io.templates {
 
-   export var common: AIPackerTemplate = new PackerTemplate;
+   export var common: IPackerTemplate = new PackerTemplate;
 
-    common.set(<AIPackerFormat><any>{
+    common.set(<IPackerFormat><any>{
         "Float32Array": {
             write: function (pData) { this.float32Array(pData); },
             read: function () { return this.float32Array(); }

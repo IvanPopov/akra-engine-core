@@ -23,7 +23,7 @@
 /// <reference path="Effect.ts" />
 /// <reference path="Maker.ts" />
 
-/// <reference path="../resources/SurfaceMaterial.ts" />
+/// <reference path="../pool/resources/SurfaceMaterial.ts" />
 
 module akra.fx {
 	import StringMinifier = stringUtils.StringMinifier;

@@ -185,7 +185,6 @@ module akra.bf {
 		return floatToHalfI(_u32[0]);
 	}
 
-
 	export function floatToHalfI(i: uint): uint {
 
 		var s: int = (i >> 16) & 0x00008000;

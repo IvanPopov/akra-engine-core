@@ -18,21 +18,21 @@ module akra {
 		COMPONENT
 	} 
 	
-	export interface IUINode<T extends IUINode<T>> extends IEntity<T> {
+	export interface IUINode extends IEntity {
 		nodeType: EUINodeTypes;
 		ui: IUI;
 	
 		render(): boolean;
-		render(pParent: IUINode<T>): boolean;
+		render(pParent: IUINode): boolean;
 		render(pElement: HTMLElement): boolean;
 		render(pElement: JQuery): boolean;
 		render(sSelector: string): boolean;
 	
-		attachToParent(pParent: IUINode<T>): boolean;
+		attachToParent(pParent: IUINode): boolean;
 		recursiveRender(): void;
 		renderTarget(): JQuery;
 		hasRenderTarget(): boolean;
 	
-		signal relocated(pNode: IUINode<T>): void;
+		signal relocated(pNode: IUINode): void;
 	}
 }

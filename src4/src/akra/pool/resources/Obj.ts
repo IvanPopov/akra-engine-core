@@ -1,23 +1,21 @@
 /// <reference path="../../idl/IObj.ts" />
 
-#define OBJ_DEBUG true
+/// <reference path="../ResourcePoolItem.ts" />
 
-#if OBJ_DEBUG == true
-#define OBJ_PRINT(context, ...) LOG("[OBJ [" + context.findResourceName() + "]]", __VA_ARGS__)
-#define OBJ_WARNING(context, ...) debug.warn("[OBJ [" + context.findResourceName() + "]]", __VA_ARGS__)
-#else
-#define OBJ_PRINT(context, ...) 
-#define OBJ_WARNING(context, ...) 
-#endif
+/// <reference path="../../debug.ts" />
+/// <reference path="../../config/config.ts" />
 
+/// <reference path="../../io/io.ts" />
 
 module akra.pool.resources {
+	import Mat4 = math.Mat4;
+	import Vec3 = math.Vec3;
+
 	export enum EObjFVF {
 		XYZ = 0x01,
 		NORMAL = 0x02,
 		UV = 0x04
 	}
-
 
 	function regExpResultToFloatArray(pSrc: string[], ppDest: float[], iFrom: int = -1): uint {
 		//i = 1 ==> regexp result starts from original value, like: ("1 2 3").match(/([1-9])/i) = ["1 2 3", "1", "2", "3"];
@@ -31,14 +29,14 @@ module akra.pool.resources {
 		for (var i = 1; i < pSrc.length; ++i) {
 			if (pSrc[i]) {
 				ppDest[iFrom + j] = parseFloat(pSrc[i].replace(/,/g, "."));
-				j ++;
+				j++;
 			}
 		}
 
 		return j;
 	};
 
-	var temp: float[] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
 
 	export class Obj extends ResourcePoolItem implements IObj {
 		private _sFilename: string = null;
@@ -58,27 +56,27 @@ module akra.pool.resources {
 		private _iFVF: int = 0;
 
 
-		public  get modelFormat(): EModelFormats {
+		public get modelFormat(): EModelFormats {
 			return EModelFormats.OBJ;
 		}
 
-		public  getFilename(): string {
+		public getFilename(): string {
 			return this._sFilename;
 		}
 
-		private  setFilename(sName: string): void {
+		private setFilename(sName: string): void {
 			this._sFilename = sName;
 		}
 
-		public  getBasename(): string {
-			return path.info(this._pOptions.name || this._sFilename || "unknown").basename;
+		public getBasename(): string {
+			return path.parse(this._pOptions.name || this._sFilename || "unknown").basename;
 		}
 
-		public  get byteLength(): uint {
+		public get byteLength(): uint {
 			return this._iByteLength;
 		}
 
-		public  get options(): IObjLoadOptions {
+		public get options(): IObjLoadOptions {
 			return this._pOptions;
 		}
 
@@ -94,7 +92,7 @@ module akra.pool.resources {
 
 				pOptions[i] = Obj.DEFAULT_OPTIONS[i];
 			}
-			
+
 			this._pOptions = pOptions;
 		}
 
@@ -137,7 +135,7 @@ module akra.pool.resources {
 
 		private buildMesh(pRoot: ISceneNode): void {
 			var pMesh: IMesh = null,
-			pSubMesh: IMeshSubset = null;
+				pSubMesh: IMeshSubset = null;
 
 			var pVerticesData: Float32Array = new Float32Array(this._pVertices);
 			var pNormalsData: Float32Array = new Float32Array(this._pNormals);
@@ -146,8 +144,8 @@ module akra.pool.resources {
 			// console.log(pVerticesData, pNormalsData)
 
 			var pVertexIndicesData: Float32Array = new Float32Array(this._pVertexIndexes);
-			var pNormalIndicesData:Float32Array = new Float32Array(this._pNormalIndexes);
-			var pTexcoordIndicesData:Float32Array = new Float32Array(this._pTexcoordIndexes);
+			var pNormalIndicesData: Float32Array = new Float32Array(this._pNormalIndexes);
+			var pTexcoordIndicesData: Float32Array = new Float32Array(this._pTexcoordIndexes);
 
 			var iPos: uint = 0,
 				iNorm: uint = 0,
@@ -165,7 +163,7 @@ module akra.pool.resources {
 
 			if (this.hasNormals()) {
 				iNorm = pSubMesh.data.allocateData([VE_VEC3('NORMAL')], pNormalsData);
-				
+
 				if (this._pNormalIndexes.length > 0) {
 					pSubMesh.data.allocateIndex([VE_FLOAT('INDEX1')], pNormalIndicesData);
 					pSubMesh.data.index(iNorm, 'INDEX1');
@@ -195,7 +193,7 @@ module akra.pool.resources {
 			var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
 			pMatrial.diffuse = new Color(0.7, 0., 0., 1.);
 			pMatrial.ambient = new Color(0., 0., 0., 1.);
-			pMatrial.specular = new Color(0.7, 0., 0. ,1);
+			pMatrial.specular = new Color(0.7, 0., 0., 1);
 			pMatrial.emissive = new Color(0., 0., 0., 1.);
 			pMatrial.shininess = 30.;
 
@@ -209,13 +207,13 @@ module akra.pool.resources {
 		}
 
 		uploadVertexes(pPositions: Float32Array, pIndexes: Float32Array = null): void {
-			
-			for (var i: int = 0; i < pPositions.length; ++ i) {
+
+			for (var i: int = 0; i < pPositions.length; ++i) {
 				this._pVertices[i] = pPositions[i];
 			}
 
 			if (!isNull(pIndexes)) {
-				for (var i: int = 0; i < pIndexes.length; ++ i) {
+				for (var i: int = 0; i < pIndexes.length; ++i) {
 					this._pVertexIndexes[i] = pIndexes[i];
 				}
 			}
@@ -228,7 +226,7 @@ module akra.pool.resources {
 
 		parse(sData: string, pOptions: IObjLoadOptions = null): boolean {
 			if (isNull(sData)) {
-				debug_error("must be specified obj content.");
+				debug.error("must be specified obj content.");
 				return false;
 			}
 
@@ -237,7 +235,7 @@ module akra.pool.resources {
 
 			var pLines: string[] = sData.split("\n");
 
-			for (var i: int = 0; i < pLines.length; ++ i) {
+			for (var i: int = 0; i < pLines.length; ++i) {
 				//current line
 				var sLine: string = pLines[i];
 				//first character
@@ -250,28 +248,28 @@ module akra.pool.resources {
 			}
 
 			//fixing indices, all indices starts from 1.....
-			for (var i: int = 0; i < this._pVertexIndexes.length; ++ i) {
-				this._pVertexIndexes[i] --;
+			for (var i: int = 0; i < this._pVertexIndexes.length; ++i) {
+				this._pVertexIndexes[i]--;
 			}
 
-			for (var i: int = 0; i < this._pNormalIndexes.length; ++ i) {
-				this._pNormalIndexes[i] --;
+			for (var i: int = 0; i < this._pNormalIndexes.length; ++i) {
+				this._pNormalIndexes[i]--;
 			}
 
-			for (var i: int = 0; i < this._pTexcoordIndexes.length; ++ i) {
-				this._pTexcoordIndexes[i] --;
+			for (var i: int = 0; i < this._pTexcoordIndexes.length; ++i) {
+				this._pTexcoordIndexes[i]--;
 			}
 			//end of index fix
 
 
 			this.calcDeps();
 
-			
+
 			return true;
 		}
 
 		private calcDeps(): void {
-			 //FIXME: crete model with out indices, instead using pseudo indices like 0, 1, 2, 3....
+			//FIXME: crete model with out indices, instead using pseudo indices like 0, 1, 2, 3....
 			//fill indices, if not presented
 			if (this._pVertexIndexes.length === 0) {
 				this.calcVertexIndices();
@@ -290,16 +288,17 @@ module akra.pool.resources {
 		}
 
 		private calcNormals(useSmoothing: boolean = true): void {
-			var v = new Array(3), 
-				p: IVec3 = new Vec3, 
-				q: IVec3 = new Vec3, 
-				i, j, 
-				n: IVec3 = new Vec3, 
-				k;
+			var v: IVec3[] = new Array<IVec3>(3),
+				p: IVec3 = new Vec3,
+				q: IVec3 = new Vec3,
+				n: IVec3 = new Vec3;
+			var i: int, j: int, k: int;
 
 			for (i = 0; i < this._pVertices.length; ++i) {
 				this._pNormals[i] = 0.;
 			}
+
+			var pNormalsWeights: Float32Array = new Float32Array(this._pNormals.length / 3);
 
 			for (i = 0; i < this._pVertexIndexes.length; i += 3) {
 				for (k = 0; k < 3; ++k) {
@@ -315,58 +314,57 @@ module akra.pool.resources {
 				// n.negate();
 
 				for (k = 0; k < 3; ++k) {
-					j = this._pVertexIndexes[i + k] * 3;
-					this._pNormals[j] = n.x;
-					this._pNormals[j + 1] = n.y;
-					this._pNormals[j + 2] = n.z;
+					var r = this._pVertexIndexes[i + k];
+					pNormalsWeights[r]++;
+					j = r * 3;
+					this._pNormals[j] += n.x;
+					this._pNormals[j + 1] += n.y;
+					this._pNormals[j + 2] += n.z;
 				}
 			}
 
-		//    if (useSmoothing) {
-		//        for (i = 0; i < this._pVertexIndexes.length; i += 3) {
-		//            for (k = 0; k < 3; ++k) {
-		//                j = this._pVertexIndexes[i + k] * 3;
-		//                Vec3.set(this._pNormals[j], this._pNormals[j + 1], this._pNormals[j + 2], n);
-		//                Vec3.normalize(n);
-		//                this._pNormals[j] = n[0];
-		//                this._pNormals[j + 1] = n[1];
-		//                this._pNormals[j + 2] = n[2];
-		//                //a.log(this._pNormals[j] + " : " + this._pNormals[j + 1] + " : " + this._pNormals[j + 2]);
-		//            }
-		//        }
-		//    }
+			for (i = 0; i < pNormalsWeights.length; i++) {
+				j = i * 3;
+				console.log(pNormalsWeights[i]);
+				n.set(this._pNormals[j], this._pNormals[j + 1], this._pNormals[j + 2]).scale(1 / pNormalsWeights[i]).normalize();
+
+				this._pNormals[j] = n.x;
+				this._pNormals[j + 1] = n.y;
+				this._pNormals[j + 2] = n.z;
+			}
 
 			bf.setAll(this._iFVF, EObjFVF.NORMAL);
 		}
 
 		static VERTEX_REGEXP: RegExp = /^v[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)([\s]+[-+]?[\d]*[\.|\,]?[\de-]*?)?[\s]*$/i;
+		
 		//provide only {U, V} pairs, 3D textures unsupported :(
 		static TEXCOORD_REGEXP: RegExp = /^vt[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]*.*$/i;
+
 		static NORMAL_REGEXP: RegExp = /^vn[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]*$/i;
-		
+
 		readVertexInfo(s: string): void {
 			//<s> - current line
 			//second character of line <s>
 			var ch: string = s.charAt(1);
 			//results of regexp matching
 			var pm: string[];
-;
-			var iX: uint = this.options.axis.x.index;
-			var iY: uint = this.options.axis.y.index;
-			var iZ: uint = this.options.axis.z.index;
 
-			var iXSign: int = this.options.axis.x.inverse? -1: 1;
-			var iYSign: int = this.options.axis.y.inverse? -1: 1;
-			var iZSign: int = this.options.axis.z.inverse? -1: 1;
-			
+			var mTransform: IMat4 = this.options.transform;
+			var v: IVec4;
+
 			s = s.replace("\r", "");
 
 			//List of Vertices, with (x,y,z[,w]) coordinates, w is optional.
 			if (ch == ' ') {
 				pm = s.match(Obj.VERTEX_REGEXP);
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + ">");
-				regExpResultToFloatArray(pm, temp, 0);
-				this._pVertices.push(iXSign * temp[iX], iYSign * temp[iY], iZSign * temp[iZ]);
+				regExpResultToFloatArray(pm, Obj.row, 0);
+
+				v = mTransform.multiplyVec4(Vec4.temp(Obj.row[0], Obj.row[1], Obj.row[2], 1.));
+
+				this._pVertices.push(v.x, v.y, v.z);
+
 				bf.setAll(this._iFVF, EObjFVF.XYZ);
 			}
 
@@ -381,24 +379,25 @@ module akra.pool.resources {
 			else if (ch == 'n') {
 				pm = s.match(Obj.NORMAL_REGEXP);
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + ">");
-				regExpResultToFloatArray(pm, temp, 0);
-				this._pNormals.push(iXSign * temp[iX], iYSign * temp[iY], iZSign * temp[iZ]);
+				regExpResultToFloatArray(pm, Obj.row, 0);
+				v = mTransform.multiplyVec4(Vec4.temp(Obj.row[0], Obj.row[1], Obj.row[2], 1.));
+				this._pNormals.push(v.x, v.y, v.z);
 				bf.setAll(this._iFVF, EObjFVF.NORMAL);
 			}
 		}
 
-		 hasTexcoords(): boolean {
+		hasTexcoords(): boolean {
 			return (this._iFVF & EObjFVF.UV) != 0;
 		}
 
-		 hasNormals(): boolean {
-			return (this._iFVF & EObjFVF.NORMAL) != 0;	
+		hasNormals(): boolean {
+			return (this._iFVF & EObjFVF.NORMAL) != 0;
 		}
 
 		static VERTEX_UV_FACE_REGEXP = /^f[\s]+([\d]+)\/([\d]*)[\s]+([\d]+)\/([\d]*)[\s]+([\d]+)\/([\d]*)[\s]*$/i;
 		static VERTEX_NORMAL_FACE_REGEXP = /^f[\s]+([\d]+)\/\/([\d]*)[\s]+([\d]+)\/\/([\d]*)[\s]+([\d]+)\/\/([\d]*)[\s]*$/i;
-		static VERTEX_UV_NORMAL_FACE_REGEXP = 
-					/^f[\s]+([\d]+)\/([\d]*)\/([\d]*)[\s]+([\d]+)\/([\d]*)\/([\d]*)[\s]+([\d]+)\/([\d]*)\/([\d]*)[\s]*$/i;
+		static VERTEX_UV_NORMAL_FACE_REGEXP =
+		/^f[\s]+([\d]+)\/([\d]*)\/([\d]*)[\s]+([\d]+)\/([\d]*)\/([\d]*)[\s]+([\d]+)\/([\d]*)\/([\d]*)[\s]*$/i;
 
 
 
@@ -409,11 +408,11 @@ module akra.pool.resources {
 			// vertex / texcoord
 			if (this.hasTexcoords() && !this.hasNormals()) {
 				pm = s.match(Obj.VERTEX_UV_FACE_REGEXP);
-				
-				regExpResultToFloatArray(pm, temp, 0);
-				
-				this._pVertexIndexes.push(temp[0], temp[2], temp[4]);
-				this._pTexcoordIndexes.push(temp[1], temp[3], temp[5]);
+
+				regExpResultToFloatArray(pm, Obj.row, 0);
+
+				this._pVertexIndexes.push(Obj.row[0], Obj.row[2], Obj.row[4]);
+				this._pTexcoordIndexes.push(Obj.row[1], Obj.row[3], Obj.row[5]);
 			}
 			//vertex / normal
 			else if (!this.hasTexcoords() && this.hasNormals()) {
@@ -424,28 +423,28 @@ module akra.pool.resources {
 				//     this._readFaceInfo(s);
 				//     return;
 				// }
-				regExpResultToFloatArray(pm, temp, 0);
-				this._pVertexIndexes.push(temp[0], temp[2], temp[4]);
-				this._pNormalIndexes.push(temp[1], temp[3], temp[5]);
+				regExpResultToFloatArray(pm, Obj.row, 0);
+				this._pVertexIndexes.push(Obj.row[0], Obj.row[2], Obj.row[4]);
+				this._pNormalIndexes.push(Obj.row[1], Obj.row[3], Obj.row[5]);
 			}
 			//vertex / texcoord / normal
 			else if (this.hasTexcoords() && this.hasNormals()) {
 				pm = s.match(Obj.VERTEX_UV_NORMAL_FACE_REGEXP);
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + ">");
-				regExpResultToFloatArray(pm, temp, 0);
-				this._pVertexIndexes.push(temp[0], temp[3], temp[6]);
-				this._pTexcoordIndexes.push(temp[1], temp[4], temp[7]);
-				this._pNormalIndexes.push(temp[2], temp[5], temp[8]);
+				regExpResultToFloatArray(pm, Obj.row, 0);
+				this._pVertexIndexes.push(Obj.row[0], Obj.row[3], Obj.row[6]);
+				this._pTexcoordIndexes.push(Obj.row[1], Obj.row[4], Obj.row[7]);
+				this._pNormalIndexes.push(Obj.row[2], Obj.row[5], Obj.row[8]);
 			}
 			//vertex only
 			else {
 				pm = s.match(
 					/^f[\s]+([\d]+)[\s]+([\d]+)[\s]+([\d]+)[\s]*$/i);
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + ">");
-				regExpResultToFloatArray(pm, temp, 0);
-				this._pVertexIndexes.push(temp[0], temp[1], temp[2]);
+				regExpResultToFloatArray(pm, Obj.row, 0);
+				this._pVertexIndexes.push(Obj.row[0], Obj.row[1], Obj.row[2]);
 			}
-		};
+		}
 
 
 		loadResource(sFilename: string = null, pOptions: IObjLoadOptions = null): boolean {
@@ -454,14 +453,12 @@ module akra.pool.resources {
 			}
 
 			if (this.isResourceLoaded()) {
-				OBJ_WARNING(this, "obj model already loaded");
+				debug.warn("[OBJ::" + this.findResourceName() + "]", "obj model already loaded");
 				return false;
 			}
 
-			var pModel: Obj = this;
-
 			this.setFilename(sFilename);
-			
+
 			this.notifyDisabled();
 			this.notifyUnloaded();
 
@@ -469,19 +466,19 @@ module akra.pool.resources {
 
 			pFile.open(function (err, meta): void {
 				//FIXME: setuop byteLength correctly..
-				(<any>pModel)["_iByteLength"] = meta.size || 0;
+				(<any>this)["_iByteLength"] = meta.size || 0;
 			});
-		
-			pFile.read(function (pErr: Error, sXML: string) {
+
+			pFile.read((pErr: Error, sXML: string): void => {
 				if (!isNull(pErr)) {
-					ERROR(pErr);
+					logger.error(pErr);
 				}
 
-				pModel.notifyRestored();
-		   
-				if (pModel.parse(sXML, pOptions)) {
-					OBJ_PRINT(pModel, "resource loaded");
-					pModel.notifyLoaded();
+				this.notifyRestored();
+
+				if (this.parse(sXML, pOptions)) {
+					debug.log("[OBJ::" + this.findResourceName() + "]", "resource loaded");
+					this.notifyLoaded();
 				}
 			});
 
@@ -489,15 +486,11 @@ module akra.pool.resources {
 		}
 
 		static DEFAULT_OPTIONS: IObjLoadOptions = {
-			shadows         : true,
-			axis: {
-				x: {index: 0, inverse: false},
-				y: {index: 1, inverse: false},
-				z: {index: 2, inverse: false}
-			}
-		};
+			shadows: true,
+			transform: new Mat4(1)
+		}
+
+		private static row: float[] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 	}
 }
-
-#endif
 

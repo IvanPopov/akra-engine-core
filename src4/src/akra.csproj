@@ -24,6 +24,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="akra\animation\Clip.ts" />
     <None Include="akra\pool\resources\HardwareBuffer.ts" />
     <None Include="akra\pixelUtil\DDSCodec.ts" />
     <None Include="akra\data\IndexData.ts" />
@@ -505,6 +506,15 @@
     <None Include="akra\data\BufferMap.ts" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="akra\animation\Animation.ts" />
+    <TypeScriptCompile Include="akra\animation\Base.ts" />
+    <TypeScriptCompile Include="akra\animation\Blend.ts" />
+    <TypeScriptCompile Include="akra\animation\Container.ts" />
+    <TypeScriptCompile Include="akra\animation\Controller.ts" />
+    <TypeScriptCompile Include="akra\animation\Frame.ts" />
+    <TypeScriptCompile Include="akra\animation\List.ts" />
+    <TypeScriptCompile Include="akra\animation\Parameter.ts" />
+    <TypeScriptCompile Include="akra\animation\Track.ts" />
     <TypeScriptCompile Include="akra\data\RenderData.ts" />
     <TypeScriptCompile Include="akra\data\RenderDataCollection.ts" />
     <None Include="akra\render\RenderableObject.ts" />
@@ -515,6 +525,12 @@
     <None Include="akra\render\RenderEntry.ts" />
     <None Include="akra\render\RenderPass.ts" />
     <None Include="akra\render\RenderQueue.ts" />
+    <TypeScriptCompile Include="akra\model\CalculateSkin.ts" />
+    <TypeScriptCompile Include="akra\model\Mesh.ts" />
+    <TypeScriptCompile Include="akra\model\MeshSubset.ts" />
+    <TypeScriptCompile Include="akra\model\Skeleton.ts" />
+    <TypeScriptCompile Include="akra\model\Skin.ts" />
+    <TypeScriptCompile Include="akra\model\Sky.ts" />
     <TypeScriptCompile Include="akra\render\Viewport.ts" />
   </ItemGroup>
   <PropertyGroup>

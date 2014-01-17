@@ -5,7 +5,7 @@
 module akra {
 	export interface IUIEvent extends JQueryEventObject {}
 	
-	export interface IUIHTMLNode<T extends IUIHTMLNode<T>> extends IUINode<T>  {
+	export interface IUIHTMLNode extends IUINode {
 		$element: JQuery;
 		el: JQuery;
 	
@@ -17,7 +17,7 @@ module akra {
 		width(): uint;
 		height(): uint;
 	
-		attachToParent(pParent: IUINode<T>, bRender?: boolean): boolean;
+		attachToParent(pParent: IUIHTMLNode, bRender?: boolean): boolean;
 	
 		handleEvent(sEvent: string): boolean;
 		disableEvent(sEvent: string): void;

@@ -107,7 +107,9 @@ module akra {
 		translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
 		translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
 	
+		scaleRight(fScale: float, m4fDestination?: IMat4): IMat4;
 		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
+		scaleLeft(fScale: float, m4fDestination?: IMat4): IMat4;
 		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 	
 		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): boolean;

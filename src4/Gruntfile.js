@@ -14,7 +14,9 @@ module.exports = function (grunt) {
     var extend = require('util')._extend,
         resolve = require('path').resolve;
 
-    require(path.resolve('tasks/typescript.js'))(grunt);
+    require(path.resolve('tasks/build.js'))(grunt);
+    //require(path.resolve('tasks/tscc.js'))(grunt);
+    //require(path.resolve('tasks/closure.js'))(grunt);
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-concat");
@@ -35,13 +37,13 @@ module.exports = function (grunt) {
 
     grunt.initConfig({
         pkg: grunt.file.readJSON("package.json"),
-        typescript: {
+        build: {
             parser: {
                 src: files.akraParser,
                 dest: "build/parser.js",
                 options: {
-                    module: "commonjs",
-                    target: "es5"
+                    tscc: false,
+                    target: "es3"
                 }
             },
             core: {
@@ -92,7 +94,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask("lint", ["tslint"]);
-    grunt.registerTask("compile", ["typescript:parser"]);
+    grunt.registerTask("compile", ["build:core"]);
     grunt.registerTask("default", ["compile"]);
     //grunt.registerTask("build", ["compile", "concat", "uglify"]);
     //grunt.registerTask("generate", ["compile", "build", "copy:public"]);

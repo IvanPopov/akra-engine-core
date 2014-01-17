@@ -1,60 +1,61 @@
-#ifndef EFFECT_TS
-#define EFFECT_TS
+/// <reference path="../../idl/IEffect.ts" />
+/// <reference path="../ResourcePoolItem.ts" />
+/// <reference path="../../idl/IAFXComposer.ts" />
 
-#include "IEffect.ts"
-#include "../ResourcePoolItem.ts"
-#include "IAFXComposer.ts"
+/// <reference path="../../debug.ts" />
 
-module akra.core.pool.resources {
-	export class Effect implements IEffect extends ResourcePoolItem {
+/// <reference path="../../fx/fx.ts" />
+
+module akra.pool.resources {
+	export class Effect extends ResourcePoolItem implements IEffect {
 		protected _nTotalPasses: uint = 0;
 		protected _nTotalComponents: uint = 0;
 
-		get totalComponents(): uint{
-			return this._nTotalComponents;			
+		get totalComponents(): uint {
+			return this._nTotalComponents;
 		}
 
-		get totalPasses(): uint{
+		get totalPasses(): uint {
 			return this._nTotalPasses;
 		}
 
-		constructor () {
-            super();
-        }
+		constructor() {
+			super();
+		}
 
-		isEqual(pEffect: IEffect): boolean {return false;}
-		isReplicated(): boolean {return false;}
-		isMixid(): boolean {return false;}
-		isParameterUsed(pParam: any, iPass?: uint): boolean {return false;}
+		isEqual(pEffect: IEffect): boolean { return false; }
+		isReplicated(): boolean { return false; }
+		isMixid(): boolean { return false; }
+		isParameterUsed(pParam: any, iPass?: uint): boolean { return false; }
 
 		createResource(): boolean {
 			this.notifyLoaded();
 			return true;
 		}
 
-		replicable(bValue: boolean): void {return;}
-		miscible(bValue: boolean): void {return;}
+		replicable(bValue: boolean): void { return; }
+		miscible(bValue: boolean): void { return; }
 
 		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint): boolean;
 		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): boolean;
 		addComponent(sComponent: string, iShift?: int, iPass?: uint): boolean;
-		addComponent(pComponent: any, iShift?: int = DEFAULT_SHIFT, iPass?: uint = ALL_PASSES): boolean {
-			var pComponentPool: IResourcePool = this.manager.componentPool;
+		addComponent(pComponent: any, iShift: int = fx.DEFAULT_SHIFT, iPass: uint = fx.ALL_PASSES): boolean {
+			var pComponentPool: IResourcePool = this.getManager().componentPool;
 
-			if(isInt(pComponent)) {
+			if (isInt(pComponent)) {
 				pComponent = pComponentPool.getResource(<int>pComponent);
 			}
-			else if(isString(pComponent)){
+			else if (isString(pComponent)) {
 				pComponent = pComponentPool.findResource(<string>pComponent);
 			}
-			
-			if(!isDef(pComponent) || isNull(pComponent)){
-				debug_error("Bad component for add: ", pComponent);
+
+			if (!isDef(pComponent) || isNull(pComponent)) {
+				debug.error("Bad component for add: ", pComponent);
 				return false;
 			}
 
-			if(!this.getComposer().addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
-				debug_error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'");
+			if (!this.getComposer().addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)) {
+				debug.error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'");
 				return false;
 			}
 
@@ -63,9 +64,9 @@ module akra.core.pool.resources {
 
 			this.notifyAltered();
 
-		    if (this.totalComponents === 1) {
-		        this.notifyRestored();
-		    }
+			if (this.totalComponents === 1) {
+				this.notifyRestored();
+			}
 
 			return true;
 		}
@@ -73,65 +74,63 @@ module akra.core.pool.resources {
 		delComponent(iComponentHandle: int, iShift?: int, iPass?: uint): boolean;
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): boolean;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): boolean;
-		delComponent(pComponent: any, iShift?: int = DEFAULT_SHIFT, iPass?: uint = ALL_PASSES): boolean {
-			var pComponentPool: IResourcePool = this.manager.componentPool;
+		delComponent(pComponent: any, iShift: int = fx.DEFAULT_SHIFT, iPass: uint = fx.ALL_PASSES): boolean {
+			var pComponentPool: IResourcePool = this.getManager().componentPool;
 
-			if(isInt(pComponent)) {
+			if (isInt(pComponent)) {
 				pComponent = pComponentPool.getResource(<int>pComponent);
 			}
-			else if(isString(pComponent)){
+			else if (isString(pComponent)) {
 				pComponent = pComponentPool.findResource(<string>pComponent);
 			}
-			
-			if(!isDef(pComponent) || isNull(pComponent)){
-				debug_error("Bad component for delete: ", pComponent);
+
+			if (!isDef(pComponent) || isNull(pComponent)) {
+				debug.error("Bad component for delete: ", pComponent);
 				return false;
 			}
 
-			if(!this.getComposer().removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
-				debug_error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'");
+			if (!this.getComposer().removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)) {
+				debug.error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'");
 				return false;
 			}
 
 			this._nTotalComponents = this.getComposer().getComponentCountForEffect(this);
 			this._nTotalPasses = this.getComposer().getTotalPassesForEffect(this);
-			
+
 			this.notifyAltered();
 
 			if (this.totalComponents === 0) {
-		        this.notifyDisabled();
-		    }
+				this.notifyDisabled();
+			}
 
 			return true;
 		}
 
-		hasComponent(sComponent: string, iShift?: int = ANY_SHIFT, iPass?: int = ANY_PASS): boolean {
-			var pComponentPool: IResourcePool = this.manager.componentPool;
+		hasComponent(sComponent: string, iShift: int = fx.ANY_SHIFT, iPass: int = fx.ANY_PASS): boolean {
+			var pComponentPool: IResourcePool = this.getManager().componentPool;
 			var pComponent: IAFXComponent = null;
 
 			pComponent = <IAFXComponent>pComponentPool.findResource(sComponent);
-			
-			if(isNull(pComponent)){
+
+			if (isNull(pComponent)) {
 				return false;
 			}
 
 			return this.getComposer().hasComponentForEffect(this, pComponent, iShift, iPass);
 		}
 
-		activate(iShift?: int = 0): boolean {
- 			return this.getComposer().activateEffectResource(this, iShift);
+		activate(iShift: int = 0): boolean {
+			return this.getComposer().activateEffectResource(this, iShift);
 		}
 
 		deactivate(): boolean {
 			return this.getComposer().deactivateEffectResource(this);
 		}
 
-		findParameter(pParam: any, iPass?: uint): any {return null;}
+		findParameter(pParam: any, iPass?: uint): any { return null; }
 
-		private  getComposer(): IAFXComposer {
-			return this.manager.getEngine().getComposer();
+		private getComposer(): IAFXComposer {
+			return this.getManager().getEngine().getComposer();
 		}
 	}
 }
-
-#endif
