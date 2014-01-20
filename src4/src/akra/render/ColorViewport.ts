@@ -18,7 +18,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+		emit(pTechnique?: IRenderTechnique, iPass?: uint, pRenderable?: IRenderableObject, pSceneObject?: ISceneObject): void {
 			var pViewport: ColorViewport = <ColorViewport>this.getSender();
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 

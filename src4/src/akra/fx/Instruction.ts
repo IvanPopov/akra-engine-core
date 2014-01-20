@@ -1,5 +1,5 @@
 /// <reference path="../idl/IAFXInstruction.ts" />
-/// <reference path="../idl/IParser.ts" />
+/// <reference path="../idl/parser/IParser.ts" />
 /// <reference path="../common.ts" />
 
 

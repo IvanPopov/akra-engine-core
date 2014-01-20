@@ -8,10 +8,10 @@
 
 module akra.fx {
 	export class PassInstruction extends DeclInstruction implements IAFXPassInstruction {
-		private _pTempNodeList: IParseNode[] = null;
+		private _pTempNodeList: parser.IParseNode[] = null;
 		private _pTempFoundedFuncList: IAFXFunctionDeclInstruction[] = null;
 		private _pTempFoundedFuncTypeList: EFunctionType[] = null;
-		private _pParseNode: IParseNode = null;
+		private _pParseNode: parser.IParseNode = null;
 
 		private _sFunctionCode: string = "";
 
@@ -49,7 +49,7 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_PassInstruction;
 		}
 
-		_addFoundFunction(pNode: IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void {
+		_addFoundFunction(pNode: parser.IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void {
 			if (isNull(this._pTempNodeList)) {
 				this._pTempNodeList = [];
 				this._pTempFoundedFuncList = [];
@@ -61,7 +61,7 @@ module akra.fx {
 			this._pTempFoundedFuncTypeList.push(eType);
 		}
 
-		_getFoundedFunction(pNode: IParseNode): IAFXFunctionDeclInstruction {
+		_getFoundedFunction(pNode: parser.IParseNode): IAFXFunctionDeclInstruction {
 			if (isNull(this._pTempNodeList)) {
 				return null;
 			}
@@ -75,7 +75,7 @@ module akra.fx {
 			return null;
 		}
 
-		_getFoundedFunctionType(pNode: IParseNode): EFunctionType {
+		_getFoundedFunctionType(pNode: parser.IParseNode): EFunctionType {
 			if (isNull(this._pTempNodeList)) {
 				return null;
 			}
@@ -89,11 +89,11 @@ module akra.fx {
 			return null;
 		}
 
-		_setParseNode(pNode: IParseNode): void {
+		_setParseNode(pNode: parser.IParseNode): void {
 			this._pParseNode = pNode;
 		}
 
-		_getParseNode(): IParseNode {
+		_getParseNode(): parser.IParseNode {
 			return this._pParseNode;
 		}
 

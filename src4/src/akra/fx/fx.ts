@@ -13,18 +13,18 @@ module akra.fx {
 	export var DEFAULT_SHIFT = 0xfffffc;
 
 	/** @const */
-	export var parser: EffectParser = new EffectParser();
+	export var effectParser: EffectParser = new EffectParser();
 
 	export function initAFXParser(sGrammar: string): void {
 		var iMode: int =
-			EParseMode.k_Add |
-			EParseMode.k_Negate |
-			EParseMode.k_Optimize;
+			parser.EParseMode.k_Add |
+			parser.EParseMode.k_Negate |
+			parser.EParseMode.k_Optimize;
 
 		if (config.DEBUG) {
-			iMode |= EParseMode.k_DebugMode;
+			iMode |= parser.EParseMode.k_DebugMode;
 		}
 			
-		parser.init(sGrammar, iMode);
+		effectParser.init(sGrammar, iMode);
 	}
 }

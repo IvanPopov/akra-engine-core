@@ -1,5 +1,5 @@
 /// <reference path="../idl/IAFXEffect.ts" />
-/// <reference path="../idl/IParser.ts" />
+/// <reference path="../idl/parser/IParser.ts" />
 /// <reference path="../idl/IAFXInstruction.ts" />
 /// <reference path="../idl/IAFXComposer.ts" />
 /// <reference path="../idl/IAFXComponent.ts" />
@@ -92,8 +92,8 @@ module akra.fx {
 	export class Effect implements IAFXEffect {
 		private _pComposer: IAFXComposer = null;
 
-		private _pParseTree: IParseTree = null;
-		private _pAnalyzedNode: IParseNode = null;
+		private _pParseTree: parser.IParseTree = null;
+		private _pAnalyzedNode: parser.IParseNode = null;
 
 		private _pEffectScope: ProgramScope = null;
 		private _pCurrentInstruction: IAFXInstruction = null;
@@ -154,8 +154,8 @@ module akra.fx {
 			this.initSystemVariables();
 		}
 
-		analyze(pTree: IParseTree): boolean {
-			var pRootNode: IParseNode = pTree.root;
+		analyze(pTree: parser.IParseTree): boolean {
+			var pRootNode: parser.IParseNode = pTree.getRoot();
 			var iParseTime: uint = time();
 
 			// LOG(this);
@@ -1262,7 +1262,7 @@ module akra.fx {
 			//throw new Error(eCode.toString());
 		}
 
-		private setAnalyzedNode(pNode: IParseNode): void {
+		private setAnalyzedNode(pNode: parser.IParseNode): void {
 			// if(this._pAnalyzedNode !== pNode){
 			// 	// debug_print("Analyze node: ", pNode); 
 			// 	//.name + (pNode.value ?  " --> value: " + pNode.value + "." : "."));
@@ -1270,7 +1270,7 @@ module akra.fx {
 			this._pAnalyzedNode = pNode;
 		}
 
-		private getAnalyzedNode(): IParseNode {
+		private getAnalyzedNode(): parser.IParseNode {
 			return this._pAnalyzedNode;
 		}
 
@@ -1449,7 +1449,7 @@ module akra.fx {
 
 
 		private analyzeGlobalUseDecls(): void {
-			var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var pChildren: parser.IParseNode[] = this._pParseTree.getRoot().children;
 			var i: uint = 0;
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1460,7 +1460,7 @@ module akra.fx {
 		}
 
 		private analyzeGlobalProvideDecls(): void {
-			var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var pChildren: parser.IParseNode[] = this._pParseTree.getRoot().children;
 			var i: uint = 0;
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1471,7 +1471,7 @@ module akra.fx {
 		}
 
 		private analyzeGlobalTypeDecls(): void {
-			var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var pChildren: parser.IParseNode[] = this._pParseTree.getRoot().children;
 			var i: uint = 0;
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1482,7 +1482,7 @@ module akra.fx {
 		}
 
 		private analyzeFunctionDefinitions(): void {
-			var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var pChildren: parser.IParseNode[] = this._pParseTree.getRoot().children;
 			var i: uint = 0;
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1493,7 +1493,7 @@ module akra.fx {
 		}
 
 		private analyzeGlobalImports(): void {
-			var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var pChildren: parser.IParseNode[] = this._pParseTree.getRoot().children;
 			var i: uint = 0;
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1504,7 +1504,7 @@ module akra.fx {
 		}
 
 		private analyzeTechniqueImports(): void {
-			var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var pChildren: parser.IParseNode[] = this._pParseTree.getRoot().children;
 			var i: uint = 0;
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1515,7 +1515,7 @@ module akra.fx {
 		}
 
 		private analyzeVariableDecls(): void {
-			var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var pChildren: parser.IParseNode[] = this._pParseTree.getRoot().children;
 			var i: uint = 0;
 
 			for (i = pChildren.length - 1; i >= 0; i--) {
@@ -1708,10 +1708,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeVariableDecl(pNode: IParseNode, pInstruction: IAFXInstruction = null): void {
+		private analyzeVariableDecl(pNode: parser.IParseNode, pInstruction: IAFXInstruction = null): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pGeneralType: IAFXVariableTypeInstruction = null;
 			var pVariable: IAFXVariableDeclInstruction = null;
 			var i: uint = 0;
@@ -1737,10 +1737,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeUsageType(pNode: IParseNode): IAFXVariableTypeInstruction {
+		private analyzeUsageType(pNode: parser.IParseNode): IAFXVariableTypeInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var i: uint = 0;
 			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
@@ -1760,10 +1760,10 @@ module akra.fx {
 			return pType;
 		}
 
-		private analyzeType(pNode: IParseNode): IAFXTypeInstruction {
+		private analyzeType(pNode: parser.IParseNode): IAFXTypeInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pType: IAFXTypeInstruction = null;
 
 			switch (pNode.name) {
@@ -1806,17 +1806,17 @@ module akra.fx {
 			return pType;
 		}
 
-		private analyzeUsage(pNode: IParseNode): string {
+		private analyzeUsage(pNode: parser.IParseNode): string {
 			this.setAnalyzedNode(pNode);
 
 			pNode = pNode.children[0];
 			return pNode.value;
 		}
 
-		private analyzeVariable(pNode: IParseNode, pGeneralType: IAFXVariableTypeInstruction): IAFXVariableDeclInstruction {
+		private analyzeVariable(pNode: parser.IParseNode, pGeneralType: IAFXVariableTypeInstruction): IAFXVariableDeclInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
 			var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
@@ -1859,10 +1859,10 @@ module akra.fx {
 			return pVarDecl;
 		}
 
-		private analyzeVariableDim(pNode: IParseNode, pVariableDecl: IAFXVariableDeclInstruction): void {
+		private analyzeVariableDim(pNode: parser.IParseNode, pVariableDecl: IAFXVariableDeclInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pVariableType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pVariableDecl.getType();
 
 			if (pChildren.length === 1) {
@@ -1894,13 +1894,13 @@ module akra.fx {
 			}
 		}
 
-		private analyzeAnnotation(pNode: IParseNode): IAFXAnnotationInstruction {
+		private analyzeAnnotation(pNode: parser.IParseNode): IAFXAnnotationInstruction {
 			this.setAnalyzedNode(pNode);
 
 			return null;
 		}
 
-		private analyzeSemantic(pNode: IParseNode): string {
+		private analyzeSemantic(pNode: parser.IParseNode): string {
 			this.setAnalyzedNode(pNode);
 
 			var sSemantic: string = pNode.children[0].value;
@@ -1909,10 +1909,10 @@ module akra.fx {
 			return sSemantic;
 		}
 
-		private analyzeInitializer(pNode: IParseNode): IAFXInitExprInstruction {
+		private analyzeInitializer(pNode: parser.IParseNode): IAFXInitExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pInitExpr: IAFXInitExprInstruction = new InitExprInstruction();
 
 			if (pChildren.length === 2) {
@@ -1929,10 +1929,10 @@ module akra.fx {
 			return pInitExpr;
 		}
 
-		private analyzeFromExpr(pNode: IParseNode): IAFXVariableDeclInstruction {
+		private analyzeFromExpr(pNode: parser.IParseNode): IAFXVariableDeclInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pBuffer: IAFXVariableDeclInstruction = null;
 
 			if (pChildren[1].name === "T_NON_TYPE_ID") {
@@ -1945,10 +1945,10 @@ module akra.fx {
 			return pBuffer;
 		}
 
-		private analyzeInitExpr(pNode: IParseNode): IAFXInitExprInstruction {
+		private analyzeInitExpr(pNode: parser.IParseNode): IAFXInitExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pInitExpr: IAFXInitExprInstruction = new InitExprInstruction();
 
 			if (pChildren.length === 1) {
@@ -1965,7 +1965,7 @@ module akra.fx {
 			return pInitExpr;
 		}
 
-		private analyzeExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 			var sName: string = pNode.name;
 
@@ -2013,7 +2013,7 @@ module akra.fx {
 			return null;
 		}
 
-		private analyzeObjectExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeObjectExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
 			var sName: string = pNode.children[pNode.children.length - 1].name;
@@ -2026,10 +2026,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeCompileExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeCompileExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: CompileExprInstruction = new CompileExprInstruction();
 			var pExprType: IAFXVariableTypeInstruction;
 			var pArguments: IAFXExprInstruction[] = null;
@@ -2074,11 +2074,11 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeSamplerStateBlock(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeSamplerStateBlock(pNode: parser.IParseNode): IAFXExprInstruction {
 			pNode = pNode.children[0];
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: SamplerStateBlockInstruction = new SamplerStateBlockInstruction();
 			var i: uint = 0;
 
@@ -2093,17 +2093,17 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeSamplerState(pNode: IParseNode, pSamplerStates: SamplerStateBlockInstruction): void {
+		private analyzeSamplerState(pNode: parser.IParseNode, pSamplerStates: SamplerStateBlockInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			if (pChildren[pChildren.length - 2].name === "StateIndex") {
 				this._error(EEffectErrors.NOT_SUPPORT_STATE_INDEX);
 				return;
 			}
 
-			var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
-			var pSubStateExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+			var pStateExprNode: parser.IParseNode = pChildren[pChildren.length - 3];
+			var pSubStateExprNode: parser.IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
 			var sStateType: string = pChildren[pChildren.length - 1].value.toUpperCase();
 			var sStateValue: string = "";
 			var isTexture: boolean = false;
@@ -2188,10 +2188,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeComplexExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeComplexExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
 			switch (sFirstNodeName) {
@@ -2205,10 +2205,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeFunctionCallExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeFunctionCallExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: IAFXExprInstruction = null;
 			var pExprType: IAFXVariableTypeInstruction = null;
 			var pArguments: IAFXExprInstruction[] = null;
@@ -2345,10 +2345,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeConstructorCallExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeConstructorCallExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: ConstructorCallInstruction = new ConstructorCallInstruction();
 			var pExprType: IAFXVariableTypeInstruction = null;
 			var pArguments: IAFXExprInstruction[] = null;
@@ -2401,10 +2401,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeSimpleComplexExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeSimpleComplexExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: ComplexExprInstruction = new ComplexExprInstruction();
 			var pComplexExpr: IAFXExprInstruction;
 			var pExprType: IAFXVariableTypeInstruction;
@@ -2420,10 +2420,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzePrimaryExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzePrimaryExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: PrimaryExprInstruction = new PrimaryExprInstruction();
 			var pPrimaryExpr: IAFXExprInstruction;
 			var pPointer: IAFXVariableDeclInstruction = null;
@@ -2455,10 +2455,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzePostfixExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzePostfixExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sSymbol: string = pChildren[pChildren.length - 2].value;
 
 			switch (sSymbol) {
@@ -2472,10 +2472,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzePostfixIndex(pNode: IParseNode): IAFXExprInstruction {
+		private analyzePostfixIndex(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: PostfixIndexInstruction = new PostfixIndexInstruction();
 			var pPostfixExpr: IAFXExprInstruction = null;
 			var pIndexExpr: IAFXExprInstruction = null;
@@ -2513,10 +2513,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzePostfixPoint(pNode: IParseNode): IAFXExprInstruction {
+		private analyzePostfixPoint(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: PostfixPointInstruction = new PostfixPointInstruction();
 			var pPostfixExpr: IAFXExprInstruction = null;
 			var sFieldName: string = "";
@@ -2560,10 +2560,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzePostfixArithmetic(pNode: IParseNode): IAFXExprInstruction {
+		private analyzePostfixArithmetic(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pChildren[0].value;
 			var pExpr: PostfixArithmeticInstruction = new PostfixArithmeticInstruction();
 			var pPostfixExpr: IAFXExprInstruction;
@@ -2592,10 +2592,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeUnaryExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeUnaryExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pChildren[1].value;
 			var pExpr: UnaryExprInstruction = new UnaryExprInstruction();
 			var pUnaryExpr: IAFXExprInstruction;
@@ -2624,10 +2624,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeCastExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeCastExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: CastExprInstruction = new CastExprInstruction();
 			var pExprType: IAFXVariableTypeInstruction;
 			var pCastedExpr: IAFXExprInstruction;
@@ -2649,10 +2649,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeConditionalExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeConditionalExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExpr: ConditionalExprInstruction = new ConditionalExprInstruction();
 			var pConditionExpr: IAFXExprInstruction;
 			var pTrueExpr: IAFXExprInstruction;
@@ -2711,10 +2711,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeArithmeticExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeArithmeticExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pNode.children[1].value;
 			var pExpr: ArithmeticExprInstruction = new ArithmeticExprInstruction();
 			var pLeftExpr: IAFXExprInstruction = null;
@@ -2750,10 +2750,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeRelationExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeRelationExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pNode.children[1].value;
 			var pExpr: RelationalExprInstruction = new RelationalExprInstruction();
 			var pLeftExpr: IAFXExprInstruction;
@@ -2789,10 +2789,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeLogicalExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeLogicalExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pNode.children[1].value;
 			var pExpr: LogicalExprInstruction = new LogicalExprInstruction();
 			var pLeftExpr: IAFXExprInstruction;
@@ -2844,10 +2844,10 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeAssignmentExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeAssignmentExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sOperator: string = pChildren[1].value;
 			var pExpr: AssignmentExprInstruction = new AssignmentExprInstruction();
 			var pLeftExpr: IAFXExprInstruction;
@@ -2895,7 +2895,7 @@ module akra.fx {
 			return pExpr;
 		}
 
-		private analyzeIdExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeIdExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
 			var sName: string = pNode.value;
@@ -2928,7 +2928,7 @@ module akra.fx {
 			return pVarId;
 		}
 
-		private analyzeSimpleExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeSimpleExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
 			var pInstruction: IAFXLiteralInstruction = null;
@@ -2961,10 +2961,10 @@ module akra.fx {
 			return pInstruction;
 		}
 
-		private analyzeMemExpr(pNode: IParseNode): IAFXExprInstruction {
+		private analyzeMemExpr(pNode: parser.IParseNode): IAFXExprInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pMemExpr: MemExprInstruction = new MemExprInstruction();
 
 			var pPostfixExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
@@ -2992,10 +2992,10 @@ module akra.fx {
 			return pMemExpr;
 		}
 
-		private analyzeConstTypeDim(pNode: IParseNode): IAFXVariableTypeInstruction {
+		private analyzeConstTypeDim(pNode: parser.IParseNode): IAFXVariableTypeInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			if (pChildren.length > 1) {
 				this._error(EEffectErrors.BAD_CAST_TYPE_USAGE);
@@ -3015,10 +3015,10 @@ module akra.fx {
 			return pType;
 		}
 
-		private analyzeVarStructDecl(pNode: IParseNode, pInstruction: IAFXInstruction = null): void {
+		private analyzeVarStructDecl(pNode: parser.IParseNode, pInstruction: IAFXInstruction = null): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pUsageType: IAFXVariableTypeInstruction = null;
 			var pVariable: IAFXVariableDeclInstruction = null;
 			var i: uint = 0;
@@ -3036,10 +3036,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeUsageStructDecl(pNode: IParseNode): IAFXVariableTypeInstruction {
+		private analyzeUsageStructDecl(pNode: parser.IParseNode): IAFXVariableTypeInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var i: uint = 0;
 			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
@@ -3064,10 +3064,10 @@ module akra.fx {
 			return pType;
 		}
 
-		private analyzeTypeDecl(pNode: IParseNode, pParentInstruction: IAFXInstruction = null): IAFXTypeDeclInstruction {
+		private analyzeTypeDecl(pNode: parser.IParseNode, pParentInstruction: IAFXInstruction = null): IAFXTypeDeclInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var pTypeDeclInstruction: IAFXTypeDeclInstruction = new TypeDeclInstruction();
 
@@ -3092,10 +3092,10 @@ module akra.fx {
 			return pTypeDeclInstruction;
 		}
 
-		private analyzeStructDecl(pNode: IParseNode): IAFXTypeInstruction {
+		private analyzeStructDecl(pNode: parser.IParseNode): IAFXTypeInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
 			var pFieldCollector: IAFXInstruction = new InstructionCollector();
@@ -3122,10 +3122,10 @@ module akra.fx {
 			return pStruct;
 		}
 
-		private analyzeStruct(pNode: IParseNode): IAFXTypeInstruction {
+		private analyzeStruct(pNode: parser.IParseNode): IAFXTypeInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
 			var pFieldCollector: IAFXInstruction = new InstructionCollector();
@@ -3148,10 +3148,10 @@ module akra.fx {
 			return pStruct;
 		}
 
-		private analyzeFunctionDeclOnlyDefinition(pNode: IParseNode): IAFXFunctionDeclInstruction {
+		private analyzeFunctionDeclOnlyDefinition(pNode: parser.IParseNode): IAFXFunctionDeclInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pFunction: FunctionDeclInstruction = null;
 			var pFunctionDef: FunctionDefInstruction = null;
 			var pStmtBlock: StmtBlockInstruction = null;
@@ -3211,12 +3211,12 @@ module akra.fx {
 
 		private resumeFunctionAnalysis(pAnalzedFunction: IAFXFunctionDeclInstruction): void {
 			var pFunction: FunctionDeclInstruction = <FunctionDeclInstruction>pAnalzedFunction;
-			var pNode: IParseNode = pFunction._getParseNode();
+			var pNode: parser.IParseNode = pFunction._getParseNode();
 
 			this.setAnalyzedNode(pNode);
 			this.setScope(pFunction._getImplementationScope());
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pStmtBlock: StmtBlockInstruction = null;
 
 			this.setCurrentAnalyzedFunction(pFunction);
@@ -3233,10 +3233,10 @@ module akra.fx {
 			this.checkInstruction(pFunction, ECheckStage.CODE_TARGET_SUPPORT);
 		}
 
-		private analyzeFunctionDef(pNode: IParseNode): FunctionDefInstruction {
+		private analyzeFunctionDef(pNode: parser.IParseNode): FunctionDefInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pFunctionDef: FunctionDefInstruction = new FunctionDefInstruction();
 			var pReturnType: IAFXVariableTypeInstruction = null;
 			var pFuncName: IAFXIdInstruction = null;
@@ -3272,10 +3272,10 @@ module akra.fx {
 			return pFunctionDef;
 		}
 
-		private analyzeParamList(pNode: IParseNode, pFunctionDef: FunctionDefInstruction): void {
+		private analyzeParamList(pNode: parser.IParseNode, pFunctionDef: FunctionDefInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pParameter: IAFXVariableDeclInstruction;
 
 			var i: uint = 0;
@@ -3289,10 +3289,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeParameterDecl(pNode: IParseNode): IAFXVariableDeclInstruction {
+		private analyzeParameterDecl(pNode: parser.IParseNode): IAFXVariableDeclInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pType: IAFXVariableTypeInstruction = null;
 			var pParameter: IAFXVariableDeclInstruction = null;
 
@@ -3302,8 +3302,8 @@ module akra.fx {
 			return pParameter;
 		}
 
-		private analyzeParamUsageType(pNode: IParseNode): IAFXVariableTypeInstruction {
-			var pChildren: IParseNode[] = pNode.children;
+		private analyzeParamUsageType(pNode: parser.IParseNode): IAFXVariableTypeInstruction {
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var i: uint = 0;
 			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
@@ -3323,10 +3323,10 @@ module akra.fx {
 			return pType;
 		}
 
-		private analyzeStmtBlock(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeStmtBlock(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pStmtBlock: StmtBlockInstruction = new StmtBlockInstruction();
 			var pStmt: IAFXStmtInstruction;
 			var i: uint = 0;
@@ -3351,10 +3351,10 @@ module akra.fx {
 			return pStmtBlock;
 		}
 
-		private analyzeStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
 			switch (sFirstNodeName) {
@@ -3372,10 +3372,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeSimpleStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeSimpleStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
 			switch (sFirstNodeName) {
@@ -3408,10 +3408,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeReturnStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeReturnStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pReturnStmtInstruction: ReturnStmtInstruction = new ReturnStmtInstruction();
 
 			var pFunctionReturnType: IAFXVariableTypeInstruction = this.getCurrentAnalyzedFunction().getReturnType();
@@ -3446,10 +3446,10 @@ module akra.fx {
 			return pReturnStmtInstruction;
 		}
 
-		private analyzeBreakStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeBreakStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pBreakStmtInstruction: BreakStmtInstruction = new BreakStmtInstruction();
 			var sOperatorName: string = pChildren[1].value;
 
@@ -3464,10 +3464,10 @@ module akra.fx {
 			return pBreakStmtInstruction;
 		}
 
-		private analyzeDeclStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeDeclStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sNodeName: string = pNode.name;
 			var pDeclStmtInstruction: DeclStmtInstruction = new DeclStmtInstruction();
 
@@ -3488,10 +3488,10 @@ module akra.fx {
 			return pDeclStmtInstruction;
 		}
 
-		private analyzeExprStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeExprStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pExprStmtInstruction: ExprStmtInstruction = new ExprStmtInstruction();
 			var pExprInstruction: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
 
@@ -3502,10 +3502,10 @@ module akra.fx {
 			return pExprStmtInstruction;
 		}
 
-		private analyzeWhileStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeWhileStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var isDoWhile: boolean = (pChildren[pChildren.length - 1].value === "do");
 			var isNonIfStmt: boolean = (pNode.name === "NonIfStmt") ? true : false;
 
@@ -3553,10 +3553,10 @@ module akra.fx {
 			return pWhileStmt;
 		}
 
-		private analyzeIfStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeIfStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var isIfElse: boolean = (pChildren.length === 7);
 
 			var pIfStmtInstruction: IfStmtInstruction = new IfStmtInstruction();
@@ -3594,10 +3594,10 @@ module akra.fx {
 			return pIfStmtInstruction;
 		}
 
-		private analyzeNonIfStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeNonIfStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
 			switch (sFirstNodeName) {
@@ -3610,10 +3610,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeForStmt(pNode: IParseNode): IAFXStmtInstruction {
+		private analyzeForStmt(pNode: parser.IParseNode): IAFXStmtInstruction {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var isNonIfStmt: boolean = (pNode.name === "NonIfStmt");
 			var pForStmtInstruction: ForStmtInstruction = new ForStmtInstruction();
 			var pStmt: IAFXStmtInstruction = null;
@@ -3647,10 +3647,10 @@ module akra.fx {
 			return pForStmtInstruction;
 		}
 
-		private analyzeForInit(pNode: IParseNode, pForStmtInstruction: ForStmtInstruction): void {
+		private analyzeForInit(pNode: parser.IParseNode, pForStmtInstruction: ForStmtInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
 			switch (sFirstNodeName) {
@@ -3670,10 +3670,10 @@ module akra.fx {
 			return;
 		}
 
-		private analyzeForCond(pNode: IParseNode, pForStmtInstruction: ForStmtInstruction): void {
+		private analyzeForCond(pNode: parser.IParseNode, pForStmtInstruction: ForStmtInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			if (pChildren.length === 1) {
 				pForStmtInstruction.push(null);
@@ -3686,10 +3686,10 @@ module akra.fx {
 			return;
 		}
 
-		private analyzeForStep(pNode: IParseNode, pForStmtInstruction: ForStmtInstruction): void {
+		private analyzeForStep(pNode: parser.IParseNode, pForStmtInstruction: ForStmtInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pStepExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
 
 			pForStmtInstruction.push(pStepExpr, true);
@@ -3698,15 +3698,15 @@ module akra.fx {
 		}
 
 
-		private analyzeUseDecl(pNode: IParseNode): void {
+		private analyzeUseDecl(pNode: parser.IParseNode): void {
 			this.setAnalyzedNode(pNode);
 			this.setStrictModeOn();
 		}
 
-		private analyzeTechniqueForImport(pNode: IParseNode): void {
+		private analyzeTechniqueForImport(pNode: parser.IParseNode): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var pTechnique: IAFXTechniqueInstruction = new TechniqueInstruction();
 			var sTechniqueName: string = this.analyzeComplexName(pChildren[pChildren.length - 2]);
 			var isComplexName: boolean = pChildren[pChildren.length - 2].children.length !== 1;
@@ -3730,10 +3730,10 @@ module akra.fx {
 			this.addTechnique(pTechnique);
 		}
 
-		private analyzeComplexName(pNode: IParseNode): string {
+		private analyzeComplexName(pNode: parser.IParseNode): string {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sName: string = "";
 
 			for (var i: uint = pChildren.length - 1; i >= 0; i--) {
@@ -3743,20 +3743,20 @@ module akra.fx {
 			return sName;
 		}
 
-		private analyzeTechniqueBodyForImports(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction): void {
+		private analyzeTechniqueBodyForImports(pNode: parser.IParseNode, pTechnique: IAFXTechniqueInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			for (var i: uint = pChildren.length - 2; i >= 1; i--) {
 				this.analyzePassDeclForImports(pChildren[i], pTechnique);
 			}
 		}
 
-		private analyzePassDeclForImports(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction): void {
+		private analyzePassDeclForImports(pNode: parser.IParseNode, pTechnique: IAFXTechniqueInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			if (pChildren[0].name === "ImportDecl") {
 				this.analyzeImportDecl(pChildren[0], pTechnique);
@@ -3772,20 +3772,20 @@ module akra.fx {
 			}
 		}
 
-		private analyzePassStateBlockForShaders(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassStateBlockForShaders(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			for (var i: uint = pChildren.length - 2; i >= 1; i--) {
 				this.analyzePassStateForShader(pChildren[i], pPass);
 			}
 		}
 
-		private analyzePassStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassStateForShader(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			if (pChildren.length === 1) {
 				pPass._markAsComplex(true);
@@ -3815,8 +3815,8 @@ module akra.fx {
 
 			pNode.isAnalyzed = true;
 
-			var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
-			var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+			var pStateExprNode: parser.IParseNode = pChildren[pChildren.length - 3];
+			var pExprNode: parser.IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
 			var pCompileExpr: CompileExprInstruction = <CompileExprInstruction>this.analyzeExpr(pExprNode);
 			var pShaderFunc: IAFXFunctionDeclInstruction = pCompileExpr.getFunction();
 
@@ -3836,10 +3836,10 @@ module akra.fx {
 			pPass._addFoundFunction(pNode, pShaderFunc, eShaderType);
 		}
 
-		private analyzePassStateIfForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassStateIfForShader(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			if (pChildren.length === 5) {
 				this.analyzePassStateBlockForShaders(pChildren[0], pPass);
@@ -3854,18 +3854,18 @@ module akra.fx {
 			}
 		}
 
-		private analyzePassStateSwitchForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassStateSwitchForShader(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			this.analyzePassCaseBlockForShader(pChildren[0], pPass);
 		}
 
-		private analyzePassCaseBlockForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassCaseBlockForShader(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			for (var i: uint = pChildren.length - 2; i >= 1; i--) {
 				if (pChildren[i].name === "CaseState") {
@@ -3877,10 +3877,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzePassCaseStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassCaseStateForShader(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			for (var i: uint = pChildren.length - 4; i >= 0; i--) {
 				if (pChildren[i].name === "PassState") {
@@ -3889,10 +3889,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzePassDefaultStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassDefaultStateForShader(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			for (var i: uint = pChildren.length - 3; i >= 0; i--) {
 				if (pChildren[i].name === "PassState") {
@@ -3917,11 +3917,11 @@ module akra.fx {
 		}
 
 		private resumePassAnalysis(pPass: IAFXPassInstruction): void {
-			var pNode: IParseNode = pPass._getParseNode();
+			var pNode: parser.IParseNode = pPass._getParseNode();
 
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			this.setAnalyzeInPass(true);
 			this.analyzePassStateBlock(pChildren[0], pPass);
@@ -3930,10 +3930,10 @@ module akra.fx {
 			pPass.finalizePass();
 		}
 
-		private analyzePassStateBlock(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassStateBlock(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			pPass._addCodeFragment("{");
 
@@ -3944,10 +3944,10 @@ module akra.fx {
 			pPass._addCodeFragment("}");
 		}
 
-		private analyzePassState(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassState(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			if (pChildren.length === 1) {
 				if (pChildren[0].name === "StateIf") {
@@ -3977,8 +3977,8 @@ module akra.fx {
 			else {
 				var sType: string = pChildren[pChildren.length - 1].value.toUpperCase();
 				var eType: ERenderStates = null;
-				var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
-				var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+				var pStateExprNode: parser.IParseNode = pChildren[pChildren.length - 3];
+				var pExprNode: parser.IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
 
 				switch (sType) {
 					case "BLENDENABLE":
@@ -4188,10 +4188,10 @@ module akra.fx {
 
 		}
 
-		private analyzePassStateIf(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassStateIf(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var pIfExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
 			pIfExpr.prepareFor(EFunctionType.k_PassFunction);
@@ -4213,10 +4213,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzePassStateSwitch(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassStateSwitch(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var sCodeFragment: string = "switch";
 			var pSwitchExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
@@ -4227,10 +4227,10 @@ module akra.fx {
 			this.analyzePassCaseBlock(pChildren[0], pPass);
 		}
 
-		private analyzePassCaseBlock(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassCaseBlock(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			pPass._addCodeFragment("{");
 
@@ -4246,10 +4246,10 @@ module akra.fx {
 			pPass._addCodeFragment("}");
 		}
 
-		private analyzePassCaseState(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassCaseState(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var pCaseStateExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 2]);
 			pCaseStateExpr.prepareFor(EFunctionType.k_PassFunction);
@@ -4266,10 +4266,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzePassDefault(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+		private analyzePassDefault(pNode: parser.IParseNode, pPass: IAFXPassInstruction): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			pPass._addCodeFragment("default: ");
 
@@ -4283,10 +4283,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeImportDecl(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction = null): void {
+		private analyzeImportDecl(pNode: parser.IParseNode, pTechnique: IAFXTechniqueInstruction = null): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 			var sComponentName: string = this.analyzeComplexName(pChildren[pChildren.length - 2]);
 			var iShift: int = 0;
 
@@ -4321,10 +4321,10 @@ module akra.fx {
 			this.addComponent(pComponent, iShift, pTechnique);
 		}
 
-		private analyzeProvideDecl(pNode: IParseNode): void {
+		private analyzeProvideDecl(pNode: parser.IParseNode): void {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			if (pChildren.length === 2) {
 				this._sProvideNameSpace = this.analyzeComplexName(pChildren[0]);
@@ -4335,10 +4335,10 @@ module akra.fx {
 			}
 		}
 
-		private analyzeShiftOpt(pNode: IParseNode): int {
+		private analyzeShiftOpt(pNode: parser.IParseNode): int {
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pChildren: parser.IParseNode[] = pNode.children;
 
 			var iShift: int = <int><any>(pChildren[0].value);
 
@@ -4746,7 +4746,7 @@ module akra.fx {
 		}
 
 
-		private getNodeSourceLocation(pNode: IParseNode): { line: uint; column: uint; } {
+		private getNodeSourceLocation(pNode: parser.IParseNode): { line: uint; column: uint; } {
 			if (isDef(pNode.line)) {
 				return { line: pNode.line, column: pNode.start };
 			}

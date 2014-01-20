@@ -127,11 +127,11 @@ module akra.fx {
 		}
 
 		hasTexcoord(iSlot: uint): boolean {
-			return this.hasAttrWithSemantic(Usage.TEXCOORD + iSlot.toString());
+			return this.hasAttrWithSemantic(data.Usages.TEXCOORD + iSlot.toString());
 		}
 
 		getTexcoordVar(iSlot: uint): IAFXVariableDeclInstruction {
-			return this.getVariableByName(Usage.TEXCOORD + iSlot.toString());
+			return this.getVariableByName(data.Usages.TEXCOORD + iSlot.toString());
 		}
 
 		finalize(): void {

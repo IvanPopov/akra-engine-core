@@ -50,8 +50,8 @@ module akra.net {
 	class RPC implements IRPC {
 		guid: uint = guid();
 
-		joined: ISignal<{ (pRpc: IRPC): void; }> = new Signal(this);
-		error: ISignal<{ (pRpc: IRPC, e: Error): void; }> = new Signal(this);
+		joined: ISignal<{ (pRpc: IRPC): void; }> = new Signal(<any>this);
+		error: ISignal<{ (pRpc: IRPC, e: Error): void; }> = new Signal(<any>this);
 
 		protected _pOption: IRPCOptions;
 
@@ -643,8 +643,8 @@ module akra.net {
 		}
 
 
-		private static requestPool: IObjectArray<IRPCRequest> = new ObjectArray;
-		private static callbackPool: IObjectArray<IRPCCallback> = new ObjectArray;
+		private static requestPool: IObjectArray<IRPCRequest> = new ObjectArray<IRPCRequest>();
+		private static callbackPool: IObjectArray<IRPCCallback> = new ObjectArray<IRPCCallback>();
 
 	static ERRORS = {
 			STACK_SIZE_EXCEEDED: <IRPCError>{

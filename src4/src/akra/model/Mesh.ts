@@ -35,7 +35,7 @@ module akra.model {
 			super(pViewport, EEventTypes.UNICAST);
 		}
 
-		emit(pSubMesh: IMeshSubset, bShadow: boolean): void {
+		emit(pSubMesh?: IMeshSubset, bShadow?: boolean): void {
 
 			var pMesh: Mesh = <Mesh>this.getSender();
 

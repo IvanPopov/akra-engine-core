@@ -1,12 +1,12 @@
 #ifndef COMMON_TS
 #define COMMON_TS
-
+/*
 #define int number
 #define uint number
 #define float number
 #define double number
 #define long number
-
+*/
 #define MATH_STACK_SIZE 256
 /// @data: data
 /// @DATA: {data}|location()

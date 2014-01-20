@@ -2,7 +2,7 @@
 /// <reference path="Effect.ts" />
 
 module akra.fx {
-    class BoolInstruction extends ExprInstruction implements IAFXLiteralInstruction {
+    export class BoolInstruction extends ExprInstruction implements IAFXLiteralInstruction {
         private _bValue: boolean;
         private static _pBoolType: IAFXVariableTypeInstruction = null;
         /**

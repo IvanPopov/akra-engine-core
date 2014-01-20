@@ -14,10 +14,10 @@ module akra.animation {
 			super(pController, EEventTypes.BROADCAST);
 		}
 
-		emit(pAnimation: string): void;
-		emit(pAnimation: int): void;
-		emit(pAnimation: IAnimationBase): void;
-		emit(pAnimation: any): void {
+		emit(pAnimation?: string): void;
+		emit(pAnimation?: int): void;
+		emit(pAnimation?: IAnimationBase): void;
+		emit(pAnimation?: any): void {
 			var pController: IAnimationController = this.getSender();
 			var pAnimationNext: IAnimationBase = pController.findAnimation(arguments[0]);
 			var pAnimationPrev: IAnimationBase = pController.active;
@@ -40,7 +40,7 @@ module akra.animation {
 	class Controller implements IAnimationController {
 		guid: uint = guid();
 
-		animationAdded: ISignal<{ (pController: IAnimationController, pAnimation: IAnimationBase): void; }> = new Signal(this);
+		animationAdded: ISignal<{ (pController: IAnimationController, pAnimation: IAnimationBase): void; }> = new Signal(<any>this);
 		play: ISignal<{ (pController: IAnimationController, pAnimation: IAnimationBase, fRealTime: float): void; }> = new PlaySignal(this);
 
 		public name: string = null;

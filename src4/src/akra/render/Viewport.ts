@@ -28,7 +28,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+		emit(pTechnique?: IRenderTechnique, iPass?: uint, pRenderable?: IRenderableObject, pSceneObject?: ISceneObject): void {
 			//is mouse under the viewport
 			var pViewport: IViewport = this.getSender();
 
@@ -58,7 +58,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(eBtn: EMouseButton, x: uint, y: uint): void {
+		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
 
@@ -83,7 +83,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(eBtn: EMouseButton, x: uint, y: uint): void {
+		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
 
@@ -106,7 +106,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(eBtn: EMouseButton, x: uint, y: uint): void {
+		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -130,7 +130,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(x: int, y: int): void {
+		emit(x?: int, y?: int): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -154,7 +154,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(x: int, y: int): void {
+		emit(x?: int, y?: int): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -178,7 +178,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(eBtn: EMouseButton, x: uint, y: uint): void {
+		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -201,7 +201,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(eBtn: EMouseButton, x: uint, y: uint): void {
+		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
 
@@ -225,7 +225,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(x: int, y: int): void {
+		emit(x?: int, y?: int): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -240,7 +240,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(x: int, y: int): void {
+		emit(x?: int, y?: int): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -257,7 +257,7 @@ module akra.render {
 			super(pViewport, EEventTypes.BROADCAST);
 		}
 
-		emit(x: int, y: int, fDelta: float): void {
+		emit(x?: int, y?: int, fDelta?: float): void {
 			var pViewport: IViewport = this.getSender();
 
 			pViewport._keepLastMousePosition(x, y);
@@ -268,8 +268,8 @@ module akra.render {
 	export class Viewport implements IViewport {
 		guid: uint = guid();
 
-		viewportDimensionsChanged: ISignal<{ (pViewport: IViewport): void; }> = new Signal(this);
-		viewportCameraChanged: ISignal<{ (pViewport: IViewport): void; }> = new Signal(this);
+		viewportDimensionsChanged: ISignal<{ (pViewport: IViewport): void; }> = new Signal(<any>this);
+		viewportCameraChanged: ISignal<{ (pViewport: IViewport): void; }> = new Signal(<any>this);
 
 		render: ISignal<{
 			(pViewport: IViewport, pTechnique: IRenderTechnique,

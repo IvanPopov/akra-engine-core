@@ -25,10 +25,10 @@ module akra.util {
 	export class Entity extends ReferenceCounter implements IEntity {
 		guid: uint = guid();
 
-		attached: ISignal<{ (pEntity: IEntity): void; }> = new Signal(this);
-		detached: ISignal<{ (pEntity: IEntity): void; }> = new Signal(this);
-		childAdded: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }> = new Signal(this);
-		childRemoved: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }> = new Signal(this);
+		attached: ISignal<{ (pEntity: IEntity): void; }> =  new Signal(<any>this);
+		detached: ISignal<{ (pEntity: IEntity): void; }> =  new Signal(<any>this);
+		childAdded: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }> =  new Signal(<any>this);
+		childRemoved: ISignal<{ (pEntity: IEntity, pChild: IEntity): void; }> =  new Signal(<any>this);
 
 
 		protected _sName: string = null;

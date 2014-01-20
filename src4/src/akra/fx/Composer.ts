@@ -618,7 +618,7 @@ module akra.fx {
 		//-----------------------------------------------------------------------------//
 
 
-		_loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): boolean {
+		_loadEffectFromSyntaxTree(pTree: parser.IParseTree, sFileName: string): boolean {
 			if (config.AFX_ENABLE_TEXT_EFFECTS) {
 				var pEffect: IAFXEffect = new Effect(this);
 				// LOG(sFileName, pTree);

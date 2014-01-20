@@ -18,9 +18,9 @@ module akra.animation {
 	export class Base implements IAnimationBase {
 		guid: uint = guid();
 
-		played: ISignal<{ (pBase: IAnimationBase, fRealTime: float): void; }> = new Signal(this);
-		stoped: ISignal<{ (pBase: IAnimationBase, fRealTime: float): void; }> = new Signal(this);
-		renamed: ISignal<{ (pBase: IAnimationBase, sName: float): void; }> = new Signal(this);
+		played: ISignal<{ (pBase: IAnimationBase, fRealTime: float): void; }> = new Signal(<any>this);
+		stoped: ISignal<{ (pBase: IAnimationBase, fRealTime: float): void; }> = new Signal(<any>this);
+		renamed: ISignal<{ (pBase: IAnimationBase, sName: float): void; }> = new Signal(<any>this);
 
 		protected _pTargetMap: IMap<IAnimationTarget> = {};
 		protected _pTargetList: IAnimationTarget[] = [];

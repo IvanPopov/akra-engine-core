@@ -21,29 +21,29 @@ module akra.scene {
 	}
 
 	export class SceneObject extends SceneNode implements ISceneObject {
-		worldBoundsUpdated: ISignal<{ (pObject: ISceneObject): void; }> = new Signal(this, EEventTypes.UNICAST);
+		worldBoundsUpdated: ISignal<{ (pObject: ISceneObject): void; }> = new Signal(<any>this, EEventTypes.UNICAST);
 
 		click: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(this);
+		= new Signal(<any>this);
 
 		mousemove: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(this);
+		= new Signal(<any>this);
 		mousedown: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(this);
+		= new Signal(<any>this);
 		mouseup: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(this);
+		= new Signal(<any>this);
 		mouseover: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(this);
+		= new Signal(<any>this);
 		mouseout: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(this);
+		= new Signal(<any>this);
 
 
 		dragstart: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(this);
+		= new Signal(<any>this);
 		dragstop: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(this);
+		= new Signal(<any>this);
 		dragging: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
-		= new Signal(this);
+		= new Signal(<any>this);
 
 		protected _iObjectFlags: int = 0;
 		protected _pLocalBounds: IRect3d = new geometry.Rect3d();

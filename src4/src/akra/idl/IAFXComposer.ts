@@ -1,6 +1,6 @@
 
 //remove in release version
-/// <reference path="IParser.ts" />
+/// <reference path="parser/IParser.ts" />
 
 // #define ALL_PASSES 0xffffff
 // #define ANY_PASS 0xfffffa
@@ -79,7 +79,7 @@ module akra {
 		//API for load components/AFXEffects
 		
 		/** @deprected will be removed from release version, use _loadEffectFromBinary instead.*/
-		_loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): boolean;
+		_loadEffectFromSyntaxTree(pTree: parser.IParseTree, sFileName: string): boolean;
 		_loadEffectFromBinary(pData: Uint8Array, sFileName: string): boolean;
 	}
 	

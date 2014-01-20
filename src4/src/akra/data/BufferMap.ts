@@ -32,8 +32,8 @@ module akra.data {
 
 	export class BufferMap extends util.ReferenceCounter implements IBufferMap {
 		guid: uint = guid();
-
-		modified: ISignal<{ (pMap: IBufferMap): void; }> = new Signal(this);
+		
+		modified: ISignal<{ (pMap: IBufferMap): void; }> = new Signal(<any>this);
 
 		private _pFlows: IDataFlow[] = null;
 		private _pMappers: IDataMapper[] = null;
