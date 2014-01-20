@@ -33,6 +33,8 @@
 module akra.scene {
 
 	export class Scene3d implements IScene3d {
+		guid: uint = guid();
+
 		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(this);
 		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(this);
 

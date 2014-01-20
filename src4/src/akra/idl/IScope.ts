@@ -16,7 +16,8 @@ module akra {
 	    functionMap: IAFXFunctionDeclListMap;
 	}
 	
+	/** @deprecated Use IMap<IScope> instead. */
 	export interface IScopeMap {
-	    [scopeIndex: uint]: IScope;
+	    [scopeIndex: string]: IScope;
 	}
 }

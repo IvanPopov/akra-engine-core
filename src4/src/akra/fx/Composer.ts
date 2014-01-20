@@ -24,9 +24,11 @@
 /// <reference path="SamplerBlender.ts" />
 /// <reference path="Blender.ts" />
 /// <reference path="Effect.ts" />
+/// <reference path="../model/MeshSubset.ts" />
 
 module akra.fx {
 
+	import MeshSubset = model.MeshSubset;
 	import Vec2 = math.Vec2;
 
 	/** @const */
@@ -845,7 +847,7 @@ module akra.fx {
 
 			if (!isNull(pRenderable)) {
 
-				if (render.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()) {
+				if (MeshSubset.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()) {
 					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_BindShapeMatrix]] = (<IMeshSubset>pRenderable).skin.getBindMatrix();
 				}
 
@@ -892,7 +894,7 @@ module akra.fx {
 				this._pComposerState.object.isBillboard = this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard();
 
 
-				if (model.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()) {
+				if (MeshSubset.isMeshSubset(this._pCurrentRenderable) && (<IMeshSubset>this._pCurrentRenderable).isSkinned()) {
 					this._pComposerState.mesh.isSkinned = true;
 					this._pComposerState.mesh.isOptimizedSkinned = (<IMeshSubset>this._pCurrentRenderable).isOptimizedSkinned();
 				}

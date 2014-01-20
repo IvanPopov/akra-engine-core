@@ -13,10 +13,12 @@
 /// <reference path="../pixelUtil/pixelUtil.ts" />
 
 /// <reference path="../config/config.ts" />
+/// <reference path="../guid.ts" />
 
 module akra.render {
 
 	export class RenderTarget implements IRenderTarget {
+		guid: uint = guid();
 
 		preUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(this);
 		postUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(this);
@@ -26,9 +28,9 @@ module akra.render {
 		viewportAdded: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
 		viewportRemoved: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
 
-		resized: ISignal<{ (pTarget: IrenderTarget, iWidth: uint, iHeight: uint): void; }> = new Signal(this);
+		resized: ISignal<{ (pTarget: IRenderTarget, iWidth: uint, iHeight: uint): void; }> = new Signal(this);
 
-		cameraRemoved: ISignal<{ (pTarget: IrenderTarget, pCamera: ICamera): void; }> = new Signal(this);
+		cameraRemoved: ISignal<{ (pTarget: IRenderTarget, pCamera: ICamera): void; }> = new Signal(this);
 
 		protected _sName: string;
 		protected _pRenderer: IRenderer;
@@ -91,26 +93,26 @@ module akra.render {
 		}
 
 		enableSupportFor3DEvent(iType: int): int {
-			if (TEST_ANY(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING)) {
-				SET_ALL(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
+			if (bf.testAny(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING)) {
+				bf.setAll(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
 					E3DEventTypes.MOUSEDOWN | E3DEventTypes.MOUSEUP | E3DEventTypes.MOUSEMOVE);
 			}
 
 			//mouse over and mouse out events require mouse move
-			if (TEST_ANY(iType, E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT)) {
-				SET_ALL(iType, E3DEventTypes.MOUSEMOVE);
+			if (bf.testAny(iType, E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT)) {
+				bf.setAll(iType, E3DEventTypes.MOUSEMOVE);
 			}
 
 			//get events that have not yet been activated
 			var iNotActivate: int = (this._i3DEvents ^ 0x7fffffff) & iType;
 
-			SET_ALL(this._i3DEvents, iNotActivate);
+			bf.setAll(this._i3DEvents, iNotActivate);
 
 			return iNotActivate;
 		}
 
 		is3DEventSupported(eType: E3DEventTypes): boolean {
-			return TEST_ANY(this._i3DEvents, <int>eType);
+			return bf.testAny(this._i3DEvents, <int>eType);
 		}
 
 		getRenderer(): IRenderer { return this._pRenderer; }
@@ -120,7 +122,7 @@ module akra.render {
 
 			for (var i in this._pViewportList) {
 				pViewport = this._pViewportList[i];
-				this.viewportRemoved(pViewport)
+				this.viewportRemoved.emit(pViewport)
 				pViewport.destroy();
 			}
 
@@ -195,7 +197,7 @@ module akra.render {
 
 
 		_beginUpdate(): void {
-			this.preUpdate();
+			this.preUpdate.emit();
 
 			this._pFrameStats.polygonsCount = 0;
 		}
@@ -213,12 +215,12 @@ module akra.render {
 		}
 
 		_endUpdate(): void {
-			this.postUpdate();
+			this.postUpdate.emit();
 			this.updateStats();
 		}
 
-		_updateViewport(iZIndex: int, bUpdateStatistics: boolean = true): void;
-		_updateViewport(pViewportPtr: IViewport, bUpdateStatistics: boolean = true): void;
+		_updateViewport(iZIndex: int, bUpdateStatistics?: boolean): void;
+		_updateViewport(pViewportPtr: IViewport, bUpdateStatistics?: boolean): void;
 		_updateViewport(pViewportPtr: any, bUpdateStatistics: boolean = true): void {
 			var pViewport: IViewport;
 			var iZIndex: int
@@ -237,7 +239,7 @@ module akra.render {
 			logger.assert(pViewport.getTarget() == this,
 				"RenderTarget::_updateViewport the requested viewport is not bound to the rendertarget!");
 
-			this.viewportPreUpdate(pViewport);
+			this.viewportPreUpdate.emit(pViewport);
 
 			pViewport.update();
 
@@ -245,7 +247,7 @@ module akra.render {
 				this._pFrameStats.polygonsCount += pViewport._getNumRenderedPolygons();
 			}
 
-			this.viewportPostUpdate(pViewport);
+			this.viewportPostUpdate.emit(pViewport);
 		}
 
 		addViewport(pViewport: IViewport): IViewport {
@@ -263,7 +265,7 @@ module akra.render {
 			pViewport._setTarget(this);
 
 			this._pViewportList[iZIndex] = pViewport;
-			this.viewportAdded(pViewport);
+			this.viewportAdded.emit(pViewport);
 
 			return pViewport;
 		}
@@ -273,7 +275,7 @@ module akra.render {
 			var pViewport: IViewport = this._pViewportList[iZIndex];
 
 			if (isDefAndNotNull(pViewport)) {
-				this.viewportRemoved(pViewport);
+				this.viewportRemoved.emit(pViewport);
 
 				this._pViewportList.splice(iZIndex, 1);
 				pViewport = null;
@@ -290,7 +292,7 @@ module akra.render {
 
 			for (var i in this._pViewportList) {
 				pViewport = this._pViewportList[i];
-				this.viewportRemoved(pViewport);
+				this.viewportRemoved.emit(pViewport);
 			}
 
 			iTotal = this._pViewportList.length;
@@ -435,7 +437,7 @@ module akra.render {
 			}
 
 			if (isRemoved) {
-				this.cameraRemoved(pCamera);
+				this.cameraRemoved.emit(pCamera);
 			}
 		}
 

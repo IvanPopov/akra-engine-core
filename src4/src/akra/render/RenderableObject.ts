@@ -338,9 +338,7 @@ module akra.render {
 		//CREATE_EVENT_TABLE(RenderableObject);
 	}
 
-	export function isMeshSubset(pObject: IRenderableObject): boolean {
-		return pObject.type === ERenderableTypes.MESH_SUBSET;
-	}
+	
 
 	export function isScreen(pObject: IRenderableObject): boolean {
 		return pObject.type === ERenderableTypes.SCREEN;

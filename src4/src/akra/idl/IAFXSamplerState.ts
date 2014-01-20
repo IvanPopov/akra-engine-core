@@ -13,13 +13,15 @@ module akra {
 		min_filter: ETextureFilters;
 	}
 
+	/** @deprecated Use IMap<IAFXSamplerState> instead. */
 	export interface IAFXSamplerStateMap {
 		[index: string]: IAFXSamplerState;
-		[index: uint]: IAFXSamplerState;
+		//[index: uint]: IAFXSamplerState;
 	}
 
+	/** @deprecated Use IMap<IAFXSamplerState[]> instead. */
 	export interface IAFXSamplerStateListMap {
 		[index: string]: IAFXSamplerState[];
-		[index: uint]: IAFXSamplerState[];
+		//[index: uint]: IAFXSamplerState[];
 	}
 }

@@ -26,13 +26,13 @@ module akra.scene.objects {
 		k_NewProjectionParams
 	}
 
-	export class DLTechnique<T> {
-		list: IDisplayList;
+	export class DLTechnique<T extends ISceneNode> {
+		list: IDisplayList<T>;
 		camera: ICamera;
 
 		private _pPrevResult: IObjectArray<T> = null;
 
-		constructor(pList: IDisplayList, pCamera: ICamera) {
+		constructor(pList: IDisplayList<T>, pCamera: ICamera) {
 			this.list = pList;
 			this.camera = pCamera;
 		}
@@ -50,7 +50,7 @@ module akra.scene.objects {
 	}
 
 	export class Camera extends SceneNode implements ICamera {
-		preRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(this);		
+		preRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(this);
 		postRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(this);
 
 		/** camera type */
@@ -166,7 +166,8 @@ module akra.scene.objects {
 				pScene.displayListRemoved.connect(this, this._removeDisplayList);
 
 				for (var i: uint = 0; i < pScene.totalDL; ++i) {
-					var pList: IDisplayList = pScene.getDisplayList(i);
+					var pList: IDisplayList<ISceneObject> =
+						<IDisplayList<ISceneObject>>pScene.getDisplayList(i);
 
 					if (!isNull(pList)) {
 						this._addDisplayList(pScene, pList, i);
@@ -443,12 +444,12 @@ module akra.scene.objects {
 			return <IDepthRange>{ min: zNear, max: zFar }
 		}
 
-		_addDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
+		_addDisplayList(pScene: IScene3d, pList: IDisplayList<ISceneObject>, index: uint): void {
 			this._pDLTechniques[index] = new DLTechnique(pList, this);
 			this._pDLResultStorage[index] = new util.ObjectArray();
 		}
 
-		_removeDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
+		_removeDisplayList(pScene: IScene3d, pList: IDisplayList<ISceneObject>, index: uint): void {
 			this._pDLTechniques[index] = null;
 			this._pDLResultStorage[index] = null;
 		}

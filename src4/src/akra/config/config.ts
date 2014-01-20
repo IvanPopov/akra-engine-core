@@ -26,6 +26,8 @@ module akra.config {
 	export var PROFILE_MAKER: boolean = false;
 	//////////////////////
 
+	export var SHADOW_DISCARD_DISTANCE: float = 70.;
+
 	///render targets
 
 	///end of render targets

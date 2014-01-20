@@ -26,6 +26,9 @@
 /// <reference path="../pool/resources/SurfaceMaterial.ts" />
 
 module akra.fx {
+
+	import SurfaceMaterial = pool.resources.SurfaceMaterial;
+
 	import StringMinifier = stringUtils.StringMinifier;
 	import ObjectArray = util.ObjectArray;
 
@@ -39,7 +42,7 @@ module akra.fx {
 	}
 
 	export class PassBlend implements IAFXPassBlend {
-		//UNIQUE();
+		guid: uint = guid();
 
 		private _pComposer: IAFXComposer = null;
 		private _pFXMakerHashTree: HashTree<IAFXMaker> = null;

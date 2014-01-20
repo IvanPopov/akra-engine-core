@@ -4,10 +4,9 @@
 /// <reference path="IUIAnimationNode.ts" />
 
 module akra {
-export interface IUIAnimationPlayer extends IUIAnimationNode {
+	export interface IUIAnimationPlayer extends IUIAnimationNode {
 
-}
+	}
 }
 
-#endif
 

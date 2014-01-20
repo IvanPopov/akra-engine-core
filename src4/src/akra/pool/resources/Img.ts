@@ -4,10 +4,16 @@
 
 /// <reference path="../../io/io.ts" />
 /// <reference path="../../pixelUtil/ImgCodec.ts" />
+/// <reference path="../../pixelUtil/ImgData.ts" />
 /// <reference path="../../path/path.ts" />
 /// <reference path="../ResourcePoolItem.ts" />
 
 module akra.pool.resources {
+	
+	import Codec = pixelUtil.Codec;
+	import ImgCodec = pixelUtil.ImgCodec;
+	import ImgData = pixelUtil.ImgData;
+
 	export class Img extends ResourcePoolItem implements IImg {
 		protected _iWidth: uint = 0;
 		protected _iHeight: uint = 0;
@@ -198,7 +204,7 @@ module akra.pool.resources {
 
 				var pImageData: ImageData = pTempContext.getImageData(0, 0, pCanvas.width, pCanvas.height);
 
-				this.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)), pCanvas.width, pCanvas.height);
+				this.loadDynamicImage(new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength)), pCanvas.width, pCanvas.height);
 
 				if (isDefAndNotNull(fnCallBack)) {
 					fnCallBack(true);
@@ -208,7 +214,7 @@ module akra.pool.resources {
 			else if (isString(arguments[0])) {
 				var sFilename: string = arguments[0];
 				var fnCallBack: Function = arguments[1];
-				var sExt: string = path.info(sFilename).ext.toLowerCase();
+				var sExt: string = path.parse(sFilename).ext.toLowerCase();
 
 				if (sExt === "png" || sExt === "jpg" || sExt === "jpeg" || sExt === "gif" || sExt === "bmp") {
 					var pImg: HTMLImageElement = new Image();
@@ -223,7 +229,7 @@ module akra.pool.resources {
 
 						var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
 
-						pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)), pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
+						pMe.loadDynamicImage(new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength)), pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
 
 						if (isDefAndNotNull(fnCallBack)) {
 							fnCallBack(true);
@@ -272,7 +278,7 @@ module akra.pool.resources {
 						pTempContext.drawImage(pImg, 0, 0);
 						var pImageData: ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
 
-						pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)), pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
+						pMe.loadDynamicImage(new Uint8Array((<any>pImageData.data).buffer.slice(0, (<any>pImageData.data).buffer.byteLength)), pImg.width, pImg.height, 1, EPixelFormats.BYTE_RGBA);
 
 						if (isDefAndNotNull(fnCallBack)) {
 							fnCallBack(true);

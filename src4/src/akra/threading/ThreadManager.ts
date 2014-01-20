@@ -22,7 +22,7 @@ module akra.threading {
 
     export class Manager implements IThreadManager, IEventProvider {
         guid: uint = guid();
-        threadReleased: ISignal<{ (pManager: IThreadManager) }, IThreadManager> = new Signal(this);
+        threadReleased: ISignal<{ (pManager: IThreadManager) }> = new Signal(this);
 
         private _sDefaultScript: string;
         private _pWorkerList: IThread[] = [];

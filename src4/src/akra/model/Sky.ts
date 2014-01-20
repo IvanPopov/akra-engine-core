@@ -3,11 +3,14 @@
 /// <reference path="../core/Engine.ts" />
 /// <reference path="../scene/light/SunLight.ts" />
 /// <reference path="../render/Screen.ts" />
+/// <reference path="../color/colors.ts" />
 
 //#define SKY_GPU
 
 module akra.model {
+	import Vec2 = math.Vec2;
 	import Vec3 = math.Vec3;
+	import Mat4 = math.Mat4;
 	import VE = data.VertexElement;
 
 	import Color = color.Color;
@@ -190,8 +193,9 @@ module akra.model {
 
 				var pSkyDomeTarget: IRenderTarget = this._pSkyBuffer.getBuffer().getRenderTarget();
 				pSkyDomeTarget.setAutoUpdated(false);
-
-				var pViewport: IViewport = pSkyDomeTarget.addViewport(null, ".skydomeupdate", 0, 0, 0, 1, 1);
+				
+				//var pViewport: IViewport = pSkyDomeTarget.addViewport(null, ".skydomeupdate", 0, 0, 0, 1, 1);
+				var pViewport: IViewport = pSkyDomeTarget.addViewport(new render.Viewport(null, ".skydomeupdate", 0, 0, 0, 1, 1));
 				pViewport.setDepthParams(false, false, 0);
 				pViewport.setClearEveryFrame(false);
 
@@ -426,9 +430,9 @@ module akra.model {
 
 			var DomeIndex: uint = 0;
 
-			for (var i: int = 0; i < Cols; i++) {
+			for (var i: uint = 0; i < Cols; i++) {
 				var MoveXZ: float = math.cos(1.0) * i / (Cols - 1);
-				for (var j: int = 0; j < Rows; j++) {
+				for (var j: uint = 0; j < Rows; j++) {
 					var MoveY: float = (math.PI * 2.0) * j / (Rows - 1);
 
 					pVertices[DomeIndex * 5 + 0] = math.sin(MoveXZ) * math.cos(MoveY);
@@ -462,13 +466,13 @@ module akra.model {
 
 			var pSubMesh: IMeshSubset = pDome.createSubset("main", EPrimitiveTypes.TRIANGLELIST);
 
-			var e = pSubMesh.data.allocateData([VE.float3("POSITION"), VE_VEC2("TEXCOORD0")], pVertices);
+			var e = pSubMesh.data.allocateData([VE.float3("POSITION"), VE.float2("TEXCOORD0")], pVertices);
 			pSubMesh.data.allocateIndex([VE.float("INDEX0")], pIndices);
 			pSubMesh.data.index(e, "INDEX0");
 			pSubMesh.shadow = false;
 
 			var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
-			pMatrial.diffuse = Color.LIGHT_GRAY;
+			pMatrial.diffuse = color.LIGHT_GRAY;
 			pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
 			pMatrial.specular = new Color(0.7, 0.7, 0.7, 1);
 			pMatrial.emissive = new Color(0., 0., 0., 1.);
@@ -478,12 +482,16 @@ module akra.model {
 				pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
 			}
 			else {
-				this.getEngine().bind(SIGNAL(depsLoaded), () => {
+				//this.getEngine().bind(SIGNAL(depsLoaded), () => {
+				//	pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
+				//});
+				this.getEngine().depsLoaded.connect(() => {
 					pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
 				});
 			}
 
-			this.connect(pSubMesh.getTechnique(), SIGNAL(render), SLOT(_onDomeRender));
+			pSubMesh.getTechnique().render.connect(this, this._onDomeRender);
+			//this.connect(pSubMesh.getTechnique(), SIGNAL(render), SLOT(_onDomeRender));
 
 			return pDome;
 		}
@@ -492,7 +500,7 @@ module akra.model {
 		// update(pModelView: IMat4, pProjection: IMat4, pPass: IRenderPass): void {
 		update(pSceneObject: ISceneObject, pCamera: ICamera, pPass: IRenderPass): void {
 			var pProjection: IMat4 = pCamera.projectionMatrix;
-			var m4fModel: IMat4 = mat4(pSceneObject.worldMatrix);
+			var m4fModel: IMat4 = Mat4.temp(pSceneObject.worldMatrix);
 
 			// pModelView.data[__41] = 0.0;
 			// pModelView.data[__42] = 0.0;
@@ -501,17 +509,17 @@ module akra.model {
 			m4fModel.setTranslation(Vec3.temp(0.0, -this._fInnerRadius - 1.0e-6, 0.0).add(pCamera.worldPosition));
 			m4fModel.scaleRight(Vec3.temp(this._fOuterRadius * this.k));
 
-			var pModelView: IMat4 = pCamera.viewMatrix.multiply(m4fModel, mat4());
+			var pModelView: IMat4 = pCamera.viewMatrix.multiply(m4fModel, Mat4.temp());
 
-			// var m4fTranslation: IMat4 = mat4(1.).setTranslation(Vec3.temp(0.0, -this._fInnerRadius - 1.0e-6, 0.0));
+			// var m4fTranslation: IMat4 = Mat4.temp(1.).setTranslation(Vec3.temp(0.0, -this._fInnerRadius - 1.0e-6, 0.0));
 			// pModelView.multiply(m4fTranslation);
 
-			var MP: IMat4 = pProjection.multiply(pModelView, mat4());
+			var MP: IMat4 = pProjection.multiply(pModelView, Mat4.temp());
 
 			pPass.setUniform("WorldViewProjection", MP);
 			pPass.setUniform("fKrESun", this._fKrESun);
 			pPass.setUniform("fKmESun", this._fKmESun);
-			var v2fTemp: IVec2 = vec2(<float>this._nSize, 1.0 / this._nSize);
+			var v2fTemp: IVec2 = Vec2.temp(<float>this._nSize, 1.0 / this._nSize);
 			pPass.setUniform("Tex", v2fTemp);
 			pPass.setUniform("vSunPos", this._v3fSunDir);
 			pPass.setUniform("vHG", this._v3fHG);
@@ -567,7 +575,7 @@ module akra.model {
 
 			this._v3fSunDir.normalize();
 
-			this.updateSkyBuffer();
+			this.updateSkyBuffer(null);
 			this.updateSunLight();
 		}
 

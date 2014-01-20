@@ -7,10 +7,13 @@
 /// <reference path="../../pixelUtil/pixelUtil.ts" />
 /// <reference path="../ResourcePoolItem.ts" />
 
-/// <reference path="../../debug.ts" />
+/// <reference path="Img.ts" />
 
+/// <reference path="../../debug.ts" />
+/// <reference path="../../logger.ts" />
 
 module akra.pool.resources {
+
 
 	export enum ETextureForcedFormatFlags {
 		FORCEMIPLEVELS = 0,
@@ -283,20 +286,20 @@ module akra.pool.resources {
 		}
 
 		protected _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): boolean{
-			log.critical("virual");
+			logger.critical("virual");
 			return false;           
 		}
 		protected _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): boolean{
-			log.critical("virual");
+			logger.critical("virual");
 			return false;           
 		}
 
 		protected _getFilterInternalTexture(eParam: ETextureParameters): ETextureFilters{
-			log.critical("virual");
+			logger.critical("virual");
 			return 0;           
 		}
 		protected _getWrapModeInternalTexture(eParam: ETextureParameters): ETextureWrapModes{
-			log.critical("virual");
+			logger.critical("virual");
 			return 0;           
 		}
 
@@ -354,7 +357,7 @@ module akra.pool.resources {
 
 
 			if(this.isResourceLoaded()){
-				WARNING("Yoy try to load texture when it already have been loaded. All texture data was destoyed.");
+				logger.warn("Yoy try to load texture when it already have been loaded. All texture data was destoyed.");
 				this.freeInternalTexture();
 			}
 
@@ -371,7 +374,7 @@ module akra.pool.resources {
 			{
 				pImageList = arguments[0];
 				if(pImageList.length === 0) {
-					log.critical("Cannot load empty list of images");
+					logger.critical("Cannot load empty list of images");
 					return false;
 				}
 				pMainImage = pImageList[0];
@@ -391,14 +394,14 @@ module akra.pool.resources {
 			}
 			else
 			{
-				WARNING("Format not support("  +pixelUtil.getFormatName(pMainImage.format) + ")");
+				logger.warn("Format not support("  +pixelUtil.getFormatName(pMainImage.format) + ")");
 				if(pMainImage.convert(EPixelFormats.B8G8R8A8))
 				{
 					this._eFormat = pMainImage.format;
 				}
 				else
 				{
-					log.critical("Format not convert");
+					logger.critical("Format not convert");
 				}
 			}
 
@@ -406,7 +409,7 @@ module akra.pool.resources {
 			{
 				if(!pImageList[i].convert(pMainImage.format))
 				{
-					log.critical("Format not support and not convert");
+					logger.critical("Format not support and not convert");
 				}
 			}
 
@@ -528,7 +531,7 @@ module akra.pool.resources {
 
 		copyToTexture(pTarget: ITexture): void {
 			if(pTarget.getNumFaces() !== this.getNumFaces()){
-				log.critical("Texture types must match");
+				logger.critical("Texture types must match");
 			}   
 
 			var nMipLevels: uint = Math.min(this._nMipLevels, pTarget.mipLevels);

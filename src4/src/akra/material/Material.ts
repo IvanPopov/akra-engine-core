@@ -16,7 +16,7 @@ module akra.material {
         emissive: IColor = new Color(def.emissive);
         shininess: float = def.shininess;
 
-        constructor(sName: string = null, pMat?: IMaterial) {
+        constructor(sName: string = null, pMat?: IMaterialBase) {
             this.name = sName;
 
             if (isDefAndNotNull(pMat)) {

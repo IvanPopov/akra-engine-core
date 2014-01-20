@@ -6,7 +6,7 @@ module akra.fx {
      * Represent (expr)
      * EMPTY_OPERATOR ExprInstruction
      */
-    class ComplexExprInstruction extends ExprInstruction {
+    export class ComplexExprInstruction extends ExprInstruction {
         constructor() {
             super();
             this._pInstructionList = [null];

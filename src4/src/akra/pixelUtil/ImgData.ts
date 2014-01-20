@@ -1,98 +1,100 @@
 ﻿/// <reference path="../idl/IImgCodec.ts" />
 /// <reference path="../idl/EPixelFormats.ts" />
 
-import CodecData = require("pixelUtil/CodecData");
-import Img = require("resources/Img");
+/// <reference path="CodecData.ts" />
+/// <reference path="../pool/resources/Img.ts" />
 
-class ImgData extends CodecData implements IImgData {
+module akra.pixelUtil {
+	import Img = pool.resources.Img;
+	export class ImgData extends CodecData implements IImgData {
 
-    protected _iHeight: uint = 0;
-    protected _iWidth: uint = 0;
-    protected _iDepth: uint = 1;
-    protected _iSize: uint = 0;
-    protected _iCubeFlags: uint;
+		protected _iHeight: uint = 0;
+		protected _iWidth: uint = 0;
+		protected _iDepth: uint = 1;
+		protected _iSize: uint = 0;
+		protected _iCubeFlags: uint;
 
-    protected _nMipMaps: uint = 0;
-    protected _iFlags: uint = 0;
+		protected _nMipMaps: uint = 0;
+		protected _iFlags: uint = 0;
 
-    protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
-
-
-    /**  */ get width(): uint {
-        return this._iWidth;
-    }
-    /**  */ set width(iWidth: uint) {
-        this._iWidth = iWidth;
-    }
+		protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
 
 
-    /**  */ get height(): uint {
-        return this._iHeight;
-    }
-    /**  */ set height(iHeight: uint) {
-        this._iHeight = iHeight;
-    }
-
-    /**  */ get depth(): uint {
-        return this._iDepth;
-    }
-    /**  */ set depth(iDepth: uint) {
-        this._iDepth = iDepth;
-    }
+		/**  */ get width(): uint {
+			return this._iWidth;
+		}
+		/**  */ set width(iWidth: uint) {
+			this._iWidth = iWidth;
+		}
 
 
-    /**  */ get size(): uint {
-        return Img.calculateSize(this.numMipMaps, this.numFace, this.width, this.height, this.depth, this.format);
-    }
+		/**  */ get height(): uint {
+			return this._iHeight;
+		}
+		/**  */ set height(iHeight: uint) {
+			this._iHeight = iHeight;
+		}
 
-    /**  */ get numMipMaps(): uint {
-        return this._nMipMaps;
-    }
+		/**  */ get depth(): uint {
+			return this._iDepth;
+		}
+		/**  */ set depth(iDepth: uint) {
+			this._iDepth = iDepth;
+		}
 
-    /**  */ set numMipMaps(nNumMipMaps: uint) {
-        this._nMipMaps = nNumMipMaps;
-    }
 
-    /**  */ get format(): EPixelFormats {
-        return this._eFormat;
-    }
+		/**  */ get size(): uint {
+			return Img.calculateSize(this.numMipMaps, this.numFace, this.width, this.height, this.depth, this.format);
+		}
 
-    /**  */ set format(ePixelFormat: EPixelFormats) {
-        this._eFormat = ePixelFormat;
-    }
+		/**  */ get numMipMaps(): uint {
+			return this._nMipMaps;
+		}
 
-    /**  */ get flags(): uint {
-        return this._iFlags;
-    }
+		/**  */ set numMipMaps(nNumMipMaps: uint) {
+			this._nMipMaps = nNumMipMaps;
+		}
 
-    /**  */ set flags(iFlags: uint) {
-        this._iFlags = iFlags;
-    }
+		/**  */ get format(): EPixelFormats {
+			return this._eFormat;
+		}
 
-    /**  */ get cubeFlags(): uint {
-        return this._iCubeFlags;
-    }
+		/**  */ set format(ePixelFormat: EPixelFormats) {
+			this._eFormat = ePixelFormat;
+		}
 
-    /**  */ set cubeFlags(iFlags: uint) {
-        this._iCubeFlags = iFlags;
-    }
+		/**  */ get flags(): uint {
+			return this._iFlags;
+		}
 
-    /**  */ get numFace(): uint {
-        if (this._iFlags & EImageFlags.CUBEMAP) {
-            var nFace: uint = 0;
-            for (var i: uint = 0; i < 32; i++) {
-                nFace++;
-            }
-            return nFace;
-        }
-        else {
-            return 1;
-        }
-    }
+		/**  */ set flags(iFlags: uint) {
+			this._iFlags = iFlags;
+		}
 
-    /**  */ get dataType(): string {
-        return "ImgData";
-    }
+		/**  */ get cubeFlags(): uint {
+			return this._iCubeFlags;
+		}
+
+		/**  */ set cubeFlags(iFlags: uint) {
+			this._iCubeFlags = iFlags;
+		}
+
+		/**  */ get numFace(): uint {
+			if (this._iFlags & EImageFlags.CUBEMAP) {
+				var nFace: uint = 0;
+				for (var i: uint = 0; i < 32; i++) {
+					nFace++;
+				}
+				return nFace;
+			}
+			else {
+				return 1;
+			}
+		}
+
+		/**  */ get dataType(): string {
+			return "ImgData";
+		}
+	}
+
 }
-
-export = ImgData;
