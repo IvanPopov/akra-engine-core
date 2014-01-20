@@ -18,7 +18,7 @@ declare var $: JQueryStatic;
 #define mat3(...) Mat3.stackCeil.set(__VA_ARGS__)
 #define mat4(...) Mat4.stackCeil.set(__VA_ARGS__)
 
-#define DEBUG_TERRAIN 1
+//#define DEBUG_TERRAIN 1
 
 
 
@@ -59,24 +59,26 @@ module akra {
 
 	var pProgress: IProgress = createProgress();
 	var pGameDeps: IDependens = {
-		files: [
-			{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
-			{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
-			{path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
-		],
-		deps: {
-			files: [
-				{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
-				{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
-				{path: "models/tube/tube.dae", name: "TUBE"},
-				{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
-				{path: "models/character/charZ.dae", name: "CHARACTER_MODEL"},
-				{path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL"}
-			],
-			deps: {
-				files: [{path: "models/character/all-ih.json", name: "HERO_CONTROLLER"}]
-			}
-		}
+		root: "../",
+		files: [{path: "game.ara", name: "DEMO_DATA_ARCHIVE"}]
+		// files: [
+		// 	{path: "textures/terrain/main_height_map_1025.dds", name: "TERRAIN_HEIGHT_MAP"},
+		// 	{path: "textures/terrain/main_terrain_normal_map.dds", name: "TERRAIN_NORMAL_MAP"},
+		// 	{path: "textures/skyboxes/desert-3.dds", name: "SKYBOX"}
+		// ],
+		// deps: {
+		// 	files: [
+		// 		{path: "models/barrel/barrel_and_support.dae", name: "BARREL"},
+		// 		{path: "models/box/closed_box.dae", name: "CLOSED_BOX"},
+		// 		{path: "models/tube/tube.dae", name: "TUBE"},
+		// 		{path: "models/tubing/tube_beeween_rocks.DAE", name: "TUBE_BETWEEN_ROCKS"},
+		// 		{path: "models/character/charZ.dae", name: "CHARACTER_MODEL"},
+		// 		{path: "textures/terrain/diffuse.dds", name: "MEGATEXTURE_MIN_LEVEL"}
+		// 	],
+		// 	deps: {
+		// 		files: [{path: "models/character/all-ih.json", name: "HERO_CONTROLLER"}]
+		// 	}
+		// }
 	};
 
 	var pRenderOpts: IRendererOptions = {
@@ -101,7 +103,7 @@ module akra {
 			}
 
 			if (pFile.status === EDependenceStatuses.LOADING || pFile.status === EDependenceStatuses.UNPACKING) {
-				sText += ("resource " + path.info(path.uri(pFile.path).path).basename);
+				sText += ("resource " + (pFile.name || path.info(path.uri(pFile.path).path).basename));
 				
 				if (!isNull(pInfo)) {
 					sText += " (" + (pInfo.loaded / pInfo.total * 100).toFixed(2) + "%)";
@@ -1801,6 +1803,11 @@ module akra {
 		pTubeBetweenRocks.setRotationByXYZAxis(5. * math.RADIAN_RATIO, 100. * math.RADIAN_RATIO, 0.);
 		pTubeBetweenRocks.setPosition(new Vec3(-55., -12.15, -82.00));
 		
+		pTubeBetweenRocks.explore((pEntity: IEntity): bool => {
+			if (scene.isModel(pEntity)) {
+				(<ISceneModel>pEntity).mesh.shadow = false;
+			}
+		});
 		
 
 		pScene.bind("beforeUpdate", update);
@@ -1815,6 +1822,7 @@ module akra {
 		pCamera 		= self.camera 	= createCameras(pScene);
 		pViewport 						= createViewports(new render.DSViewport(pCamera), pCanvas, pUI);
 		pTerrain 		= self.terrain 	= createTerrain(pScene, true);
+		// (<any>pTerrain.megaTexture).connectToServer("ws://localhost:6112");
 										  createModels();
 		pSkyBoxTexture 					= createSkyBox(pRmgr, <IDSViewport>pViewport);
 		pSky 			= self.sky 		= createSky(pScene, 14.);
@@ -1881,6 +1889,10 @@ module akra {
 		pKeymap.bind("N", () => {
 			if (pTerrain.megaTexture)
 				pTerrain.megaTexture["_bColored"] = !pTerrain.megaTexture["_bColored"];
+		});
+
+		pKeymap.bind("SPACE", () => {
+			pEngine.isActive()? pEngine.pause(): pEngine.play();
 		});
 
 		// (<any>sefl).edgeDetection = edgeDetection(<IDSViewport>pViewport);

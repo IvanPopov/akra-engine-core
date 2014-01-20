@@ -155,6 +155,8 @@ module akra.bf {
 				pDest[0] = (value & 0xFF);
 				break;
 		}
+
+		return;
 	}
 
 	/**
@@ -182,7 +184,6 @@ module akra.bf {
 		_f32[0] = f;
 		return floatToHalfI(_u32[0]);
 	}
-
 
 	export function floatToHalfI(i: uint): uint {
 

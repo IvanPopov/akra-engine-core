@@ -858,10 +858,12 @@ module akra.parser {
 
 				if (isNull(pTempRes)) {
 					pRes[pSet[i]] = true;
+
 					return pRes;
 				}
 
 				isEmpty = false;
+
 
 				pKeys = Object.keys(pTempRes);
 
@@ -873,12 +875,14 @@ module akra.parser {
 						continue;
 					}
 					pRes[sKey] = true;
+
 				}
 
 				if (!isEmpty) {
 					return pRes;
 				}
 			}
+
 
 			if (!isNull(pExpected)) {
 				pKeys = Object.keys(pExpected);
@@ -908,6 +912,7 @@ module akra.parser {
 			var isAddMode: boolean = bf.testAll(<int>this._eParseMode, <int>EParseMode.k_Add);
 
 			var pSymbolsWithNodeMap: IMap<int> = this._pRuleCreationModeMap;
+
 			var sName: string;
 
 			for (i = 0; i < pAllRuleList.length; i++) {
@@ -920,6 +925,7 @@ module akra.parser {
 				if (isLexerBlock) {
 					if ((pTempRule.length === 3 || (pTempRule.length === 4 && pTempRule[3] === "")) &&
 						((pTempRule[2][0] === "\"" || pTempRule[2][0] === "'") && pTempRule[2].length > 3)) {
+
 						//TERMINALS
 						if (pTempRule[2][0] !== pTempRule[2][pTempRule[2].length - 1]) {
 							this._error(PARSER_GRAMMAR_UNEXPECTED_SYMBOL, {
@@ -932,6 +938,7 @@ module akra.parser {
 						pTempRule[2] = pTempRule[2].slice(1, pTempRule[2].length - 1);
 
 						var ch: string = pTempRule[2][0];
+
 
 						if ((ch === "_") || (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z")) {
 							sName = this._pLexer.addKeyword(pTempRule[2], pTempRule[0]);
@@ -1019,6 +1026,7 @@ module akra.parser {
 							});
 							//this._error("Can`t generate rules from grammar! Unexpected symbol! Must be");
 						}
+
 						sName = this._pLexer.addPunctuator(pTempRule[j][1]);
 						pRule.right.push(sName);
 						this._pSymbolMap[sName] = true;
@@ -1067,6 +1075,7 @@ module akra.parser {
 
 				for (j = 0; j < pStateList.length; j++) {
 					if (pStateList[j].hasRule(pRule, iPos)) {
+
 						if (!isDef(pFuncByStateDMap[pStateList[j].getIndex()])) {
 							pFuncByStateDMap[pStateList[j].getIndex()] = <IRuleFunctionMap>{};
 						}
@@ -1113,6 +1122,7 @@ module akra.parser {
 				return this.closure_LR0(pState);
 			}
 			else {
+
 				return this.closure_LR(pState);
 			}
 		}
@@ -1127,6 +1137,7 @@ module akra.parser {
 				sSymbol = pItemList[i].mark();
 
 				if (sSymbol !== END_POSITION && (!this.isTerminal(sSymbol))) {
+
 					pKeys = Object.keys(this._pRulesDMap[sSymbol]);
 					for (j = 0; j < pKeys.length; j++) {
 						pState.tryPush_LR0(this._pRulesDMap[sSymbol][pKeys[j]], 0);
@@ -1143,6 +1154,7 @@ module akra.parser {
 			var pSymbols: IMap<boolean>;
 			var pTempSet: string[];
 			var isNewExpected: boolean = false;
+
 
 			var pRulesMapKeys: string[], pSymbolsKeys: string[];
 

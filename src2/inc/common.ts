@@ -13,7 +13,7 @@
 
 #define WEBGL 1
 #define LOGGER_API 1
-// #define CRYPTO_API 1
+#define CRYPTO_API 1
 // #define GUI 1
 #define SKY 1
 // #define WEBGL_DEBUG 1
@@ -94,7 +94,8 @@
 #define DATA(path) DATA + "/" + path
 module akra {
     var p = document.getElementsByTagName("script");
-    export const DATA = (akra.DATA || ((<Element>p[p.length - 1]).getAttribute("data")) || "@DATA") + "/";
+    export const DATA = (akra.DATA || ((<Element>(<any>document).currentScript || <Element>p[p.length - 1]).getAttribute("data")) || "@DATA") + "/";
+
 
 
 

@@ -17,6 +17,5 @@ module akra {
 	
 	
 		allocateData(ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes, pData: ArrayBufferView): IIndexData;
-	}
-	
+	}	
 }

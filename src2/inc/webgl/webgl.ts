@@ -167,7 +167,9 @@ module akra.webgl {
         return pWebGLContext;
     }
 
-    export var isEnabled = (): bool => isSupported;
+    export var isEnabled = function (): bool {
+        return isSupported;
+    }
 
     export function createContext(
             pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 

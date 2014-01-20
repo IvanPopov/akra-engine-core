@@ -114,7 +114,7 @@ module akra.fx {
 
             if (pVar.getType().isNotBaseArray()) {
                 var iLength: uint = pVar.getType().getLength();
-                if (webgl.isANGLE && iLength === 1 && pVar.getType().isComplex()) {
+                if (webgl.ANGLE && iLength === 1 && pVar.getType().isComplex()) {
                     sCode += "[" + 2 + "]";
                 }
                 else {

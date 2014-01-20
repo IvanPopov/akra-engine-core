@@ -1,55 +1,57 @@
-import StmtInstruction = require("fx/StmtInstruction");
+/// <reference path="StmtInstruction.ts" />
 
-/**
- * Represent TypeDecl or VariableDecl or VarStructDecl
- * EMPTY DeclInstruction
- */
-class DeclStmtInstruction extends StmtInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = [null];
-        this._eInstructionType = EAFXInstructionTypes.k_DeclStmtInstruction;
-    }
+module akra.fx {
 
-    toFinalCode(): string {
-        var sCode: string = "";
-        var pVariableList: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>this.getInstructions();
-
-        for (var i: uint = 0; i < this._nInstructions; i++) {
-            sCode += pVariableList[i].toFinalCode() + ";\n";
+    /**
+     * Represent TypeDecl or VariableDecl or VarStructDecl
+     * EMPTY DeclInstruction
+     */
+    export class DeclStmtInstruction extends StmtInstruction {
+        constructor() {
+            super();
+            this._pInstructionList = [null];
+            this._eInstructionType = EAFXInstructionTypes.k_DeclStmtInstruction;
         }
 
-        return sCode;
-    }
+        toFinalCode(): string {
+            var sCode: string = "";
+            var pVariableList: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>this.getInstructions();
 
-    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
-        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-        if (isNull(this.getInstructions()) || this._nInstructions === 0) {
-            return;
+            for (var i: uint = 0; i < this._nInstructions; i++) {
+                sCode += pVariableList[i].toFinalCode() + ";\n";
+            }
+
+            return sCode;
         }
 
-        if (this.getInstructions()[0]._getInstructionType() === EAFXInstructionTypes.k_TypeDeclInstruction) {
-            return;
-        }
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+            eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            if (isNull(this.getInstructions()) || this._nInstructions === 0) {
+                return;
+            }
 
-        var pVariableList: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>this.getInstructions();
-        for (var i: uint = 0; i < this._nInstructions; i++) {
-            var pVarType: IAFXVariableTypeInstruction = pVariableList[i].getType();
+            if (this.getInstructions()[0]._getInstructionType() === EAFXInstructionTypes.k_TypeDeclInstruction) {
+                return;
+            }
 
-            pUsedDataCollector[pVarType._getInstructionID()] = <IAFXTypeUseInfoContainer>{
-                type: pVarType,
-                isRead: false,
-                isWrite: true,
-                numRead: 0,
-                numWrite: 1,
-                numUsed: 1
-            };
+            var pVariableList: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>this.getInstructions();
+            for (var i: uint = 0; i < this._nInstructions; i++) {
+                var pVarType: IAFXVariableTypeInstruction = pVariableList[i].getType();
 
-            if (pVariableList[i].hasInitializer()) {
-                pVariableList[i].getInitializeExpr().addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+                pUsedDataCollector[pVarType._getInstructionID()] = <IAFXTypeUseInfoContainer>{
+                    type: pVarType,
+                    isRead: false,
+                    isWrite: true,
+                    numRead: 0,
+                    numWrite: 1,
+                    numUsed: 1
+                };
+
+                if (pVariableList[i].hasInitializer()) {
+                    pVariableList[i].getInitializeExpr().addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+                }
             }
         }
     }
 }
 
-export = DeclStmtInstruction;

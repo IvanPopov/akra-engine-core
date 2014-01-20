@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Fri Jul 26 2013 19:45:24 GMT+0400 (Московское время (зима))
+ * assembled at: Mon Dec 23 2013 17:50:55 GMT+0400 (Московское время (зима))
  * directory: tests/common/ide/RELEASE/
  * file: tests/common/ide/intro2.ts
  * name: intro2
@@ -11,11 +11,6 @@
 
 ///<reference path="../../../bin/DEBUG/akra.ts"/>
 ///<reference path="../../../bin/DEBUG/Progress.ts"/>
-// declare var jQuery: JQueryStatic;
-// declare var $: JQueryStatic;
-/// @WINDSPOT_MODEL: 		"/models/windspot/WINDSPOT.DAE"
-/// @MINER_MODEL: 			"/models/miner/miner.DAE"
-/// @ROCK_MODEL: 			"/models/rock/rock-1-low-p.DAE"
 var akra;
 (function (akra) {
     function createProgress() {
@@ -44,8 +39,7 @@ var akra;
             alpha: false
         },
         deps: {
-            root: /*"http://odserve.org/demo/preview/",*/
-            "../",
+            root: "../",
             files: [
                 {
                     path: "demo02.ara",
@@ -251,7 +245,7 @@ var akra;
     // 	}
     // }
     function createViewports() {
-        pViewport = pCanvas.addViewport(pCamera, akra.EViewportTypes.DSVIEWPORT);
+        pViewport = pCanvas.addViewport(new akra.render.DSViewport(pCamera));
         if (akra.isNull(pUI)) {
             pCanvas.resize(pParentElement.offsetWidth, pParentElement.offsetHeight);
             window.onresize = function (event) {

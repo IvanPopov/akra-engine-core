@@ -27,24 +27,24 @@ module akra {
 	}
 	
 	export interface IMesh extends IEventProvider {
-		/** readonly */ flexMaterials: IMaterial[];
-		/** readonly */ name: string;
-		/** readonly */ data: IRenderDataCollection;
-		/** readonly */ length: uint; /*<! number of submeshes in. */
-		/** readonly */ boundingBox: IRect3d;
-		/** readonly */ boundingSphere: ISphere;
-	
+		flexMaterials: IMaterial[];
+		name: string;
+		data: IRenderDataCollection;
+		length: uint; /*<! number of submeshes in. */
+		boundingBox: IRect3d;
+		boundingSphere: ISphere;
+
 		skeleton: ISkeleton;
 		shadow: boolean;
-	
-		
+
+
 		getOptions(): int;
 		getEngine(): IEngine;
-		
+
 		//setup(sName: string, eOptions: int, pDataBuffer?: IRenderDataCollection): boolean;
-		destroy(): void;	
+		destroy(): void;
 		clone(iCloneOptions: int): IMesh;
-	
+
 		/** @deprecated */
 		replaceFlexMaterials(pFlexMaterials): void;
 		/** @deprecated */
@@ -55,44 +55,44 @@ module akra {
 		/** @deprecated */
 		setFlexMaterial(iMaterial: int): boolean;
 		setFlexMaterial(csName: string): boolean;
-		
+
 		createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions?: int);
 		freeSubset(sName: string): boolean;
 		getSubset(sMesh: string): IMeshSubset;
 		getSubset(i: uint): IMeshSubset;
 		appendSubset(sName: string, pData: IRenderData): IMeshSubset;
-		
+
 		setSkin(pSkin: ISkin): void;
 		setSkeleton(pSkeleton: ISkeleton): void;
 		createSkin(): ISkin;
-	
+
 		createBoundingBox(): boolean;
 		deleteBoundingBox(): boolean;
 		showBoundingBox(): boolean;
 		hideBoundingBox(): boolean;
 		isBoundingBoxVisible(): boolean;
 		createAndShowSubBoundingBox(): void;
-	
+
 		createBoundingSphere(): boolean;
 		deleteBoundingSphere(): boolean;
 		showBoundingSphere(): boolean;
 		hideBoundingSphere(): boolean;
 		isBoundingSphereVisible(): boolean;
 		createAndShowSubBoundingSphere(): void;
-	
+
 		isReadyForRender(): boolean;
-	
-	
+
+
 		toSceneModel(pParent: ISceneNode, sName?: string): ISceneModel;
-	
+
 		/** Updtae all submeshes(apply bone matricie for skinned submeshes) */
-		update(): boolean; 
-	
+		update(): boolean;
+
 		_drawSubset(iSubset: int): void;
 		_draw(): void;
-	
+
 		/** notify, when one of substets added or removed shadow */
-		signal shadowed(pSubset: IMeshSubset, bShadow: boolean): void;
+		shadowed: ISignal<{ (pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void; }>;
 	}
 	
 }

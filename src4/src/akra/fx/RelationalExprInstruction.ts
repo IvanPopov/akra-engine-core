@@ -1,34 +1,35 @@
-import ExprInstruction = require("fx/ExprInstruction");
+/// <reference path="ExprInstruction.ts" />
 
-/**
- * Represent someExpr == != < > <= >= someExpr
- * (==|!=|<|>|<=|>=) Instruction Instruction
- */
-class RelationalExprInstruction extends ExprInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = [null, null];
-        this._eInstructionType = EAFXInstructionTypes.k_RelationalExprInstruction;
-    }
+module akra.fx {
 
-    toFinalCode(): string {
-        var sCode: string = "";
-        sCode += this.getInstructions()[0].toFinalCode();
-        sCode += this.getOperator();
-        sCode += this.getInstructions()[1].toFinalCode();
-        return sCode;
-    }
+	/**
+	 * Represent someExpr == != < > <= >= someExpr
+	 * (==|!=|<|>|<=|>=) Instruction Instruction
+	 */
+	export class RelationalExprInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_RelationalExprInstruction;
+		}
 
-    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
-        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-        super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
-    }
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += this.getOperator();
+			sCode += this.getInstructions()[1].toFinalCode();
+			return sCode;
+		}
 
-    isConst(): boolean {
-        return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
-            (<IAFXExprInstruction>this.getInstructions()[1]).isConst();
-    }
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
+
+		isConst(): boolean {
+			return (<IAFXExprInstruction>this.getInstructions()[0]).isConst() &&
+				(<IAFXExprInstruction>this.getInstructions()[1]).isConst();
+		}
+	}
 }
 
-
-export = RelationalExprInstruction;

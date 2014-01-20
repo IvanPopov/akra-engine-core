@@ -304,6 +304,8 @@ module akra.core.pool.resources {
 		        this._pNormals[i] = 0.;
 		    }
 
+		    var pNormalsWeights: Float32Array = new Float32Array(this._pNormals.length / 3);
+
 		    for (i = 0; i < this._pVertexIndexes.length; i += 3) {
 		        for (k = 0; k < 3; ++k) {
 
@@ -318,11 +320,23 @@ module akra.core.pool.resources {
 		        // n.negate();
 
 		        for (k = 0; k < 3; ++k) {
-		            j = this._pVertexIndexes[i + k] * 3;
-		            this._pNormals[j] = n.x;
-		            this._pNormals[j + 1] = n.y;
-		            this._pNormals[j + 2] = n.z;
+		        	var r = this._pVertexIndexes[i + k];
+		        	pNormalsWeights[r] ++;
+		            j = r * 3;
+		            this._pNormals[j] += n.x;
+		            this._pNormals[j + 1] += n.y;
+		            this._pNormals[j + 2] += n.z;
 		        }
+		    }
+
+		    for (i = 0; i < pNormalsWeights.length; i ++) {
+		    	j = i * 3;
+		    	console.log(pNormalsWeights[i]);
+		    	n.set(this._pNormals[j], this._pNormals[j + 1], this._pNormals[j + 2]).scale(1/pNormalsWeights[i]).normalize();
+
+		    	this._pNormals[j] = n.x;
+	            this._pNormals[j + 1] = n.y;
+	            this._pNormals[j + 2] = n.z;
 		    }
 
 		//    if (useSmoothing) {

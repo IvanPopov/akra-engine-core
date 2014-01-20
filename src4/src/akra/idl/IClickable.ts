@@ -4,30 +4,30 @@
 
 module akra {
 	export interface IClickable extends IEventProvider {
-		/** writeonly */ onclick: (target: any, x: int, y: int) => void;
-		/** writeonly */ onmousemove: (target: any, x: int, y: int) => void;
-		/** writeonly */ onmousedown: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
-		/** writeonly */ onmouseup: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
-		/** writeonly */ onmouseover: (target: any, x: int, y: int) => void;
-		/** writeonly */ onmouseout: (target: any, x: int, y: int) => void;
-		/** writeonly */ onmousewheel: (target: any, x: int, y: int, delta: float) => void;
-	
-		/** writeonly */ ondragstart: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
-		/** writeonly */ ondragstop: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
-		/** writeonly */ ondragging: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
-	
-		signal click(x: int, y: int): void;
-		signal mousemove(x: int, y: int): void;
-		signal mousedown(eBtn: EMouseButton, x: int, y: int): void;
-		signal mouseup(eBtn: EMouseButton, x: int, y: int): void;
-		signal mouseover(x: int, y: int): void;
-		signal mouseout(x: int, y: int): void;
-		signal mousewheel(x: int, y: int, delta: float): void;
-	
-		signal dragstart(eBtn: EMouseButton, x: int, y: int): void;
-		signal dragstop(eBtn: EMouseButton, x: int, y: int): void;
-		signal dragging(eBtn: EMouseButton, x: int, y: int): void;
+		onclick: (target: any, x: int, y: int) => void;
+		onmousemove: (target: any, x: int, y: int) => void;
+		onmousedown: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+		onmouseup: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+		onmouseover: (target: any, x: int, y: int) => void;
+		onmouseout: (target: any, x: int, y: int) => void;
+		onmousewheel: (target: any, x: int, y: int, delta: float) => void;
+
+		ondragstart: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+		ondragstop: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+		ondragging: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+
+		dragstart: ISignal<{ (pTarget: any, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		dragstop: ISignal<{ (pTarget: any, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		dragging: ISignal<{ (pTarget: any, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+
+		click: ISignal<{ (pTarget: any, x: int, y: int): void; }>;
+		mousemove: ISignal<{ (pTarget: any, x: int, y: int): void; }>;
+
+		mousedown: ISignal<{ (pTarget: any, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+		mouseup: ISignal<{ (pTarget: any, eBtn: EMouseButton, x: uint, y: uint): void; }>;
+
+		mouseover: ISignal<{ (pTarget: any, x: uint, y: uint): void; }>;
+		mouseout: ISignal<{ (pTarget: any, x: uint, y: uint): void; }>;
+		mousewheel: ISignal<{ (pTarget: any, x: uint, y: uint, fDelta: float): void; }>;
 	}
-	
-	
 }

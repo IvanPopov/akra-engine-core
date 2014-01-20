@@ -1,6 +1,6 @@
 
 /// <reference path="IShaderProgram.ts" />
-/// <reference path="AIUnique.ts" />
+/// <reference path="IUnique.ts" />
 /// <reference path="IAFXSamplerBlender.ts" />
 /// <reference path="IAFXAttributeBlendContainer.ts" />
 /// <reference path="IAFXPassInputBlend.ts" />
@@ -10,20 +10,15 @@
 /// <reference path="IAFXInstruction.ts" />
 
 module akra {
-	export interface IAFXMakerMap {
-		[index: string]: IAFXMaker;
-		[index: uint]: IAFXMaker;
-	}
-	
 	export interface IAFXBaseAttrInfo {
 		name: string;
 		semantic: string;
 	}
 	
-	export interface IAFXMaker extends AIUnique {
-		/** readonly */ shaderProgram: IShaderProgram;
-		/** readonly */ uniformNames: string[];
-		/** readonly */ attributeInfo: IAFXBaseAttrInfo[];
+	export interface IAFXMaker extends IUnique {
+		shaderProgram: IShaderProgram;
+		uniformNames: string[];
+		attributeInfo: IAFXBaseAttrInfo[];
 	
 		_create(sVertex: string, sPixel: string): boolean;
 		
@@ -41,7 +36,10 @@ module akra {
 		_createDataPool(): IShaderInput;
 		_getShaderInput(): IShaderInput;
 		_releaseShaderInput(pPool: IShaderInput): void;
-	
 	}
-	
+
+	export interface IAFXMakerMap {
+		[index: string]: IAFXMaker;
+		[index: uint]: IAFXMaker;
+	}
 }

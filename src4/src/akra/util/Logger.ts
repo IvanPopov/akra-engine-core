@@ -4,46 +4,39 @@
 /// <reference path="../util/Singleton.ts" />
 
 module akra.util {
-	interface ILogRoutineMap {
-		[eLogLevel: uint]: ILogRoutineFunc;
-	}
 
-	interface AICodeFamily {
+	interface ICodeFamily {
 		familyName: string;
 		codeMin: uint;
 		codeMax: uint;
 	}
 
-	interface AICodeFamilyMap {
-		[familyName: string]: AICodeFamily;
+	interface ICodeFamilyMap {
+		[familyName: string]: ICodeFamily;
 	}
 
-	interface AICodeInfo {
+	interface ICodeInfo {
 		code: uint;
 		message: string;
 		familyName: string;
 	}
 
-	interface AICodeInfoMap {
-		[code: uint]: AICodeInfo;
-	}
-
-	interface AICodeFamilyRoutineDMap {
-		[familyName: string]: ILogRoutineMap;
+	interface ICodeFamilyRoutineDMap {
+		[familyName: string]: IMap<ILogRoutineFunc>;
 	}
 
 	final export class Logger extends util.Singleton<Logger> implements ILogger {
 		private _eLogLevel: ELogLevel;
-		private _pGeneralRoutineMap: ILogRoutineMap;
+		private _pGeneralRoutineMap: IMap<ILogRoutineFunc>;
 
 		private _pCurrentSourceLocation: ISourceLocation;
 		private _pLastLogEntity: ILoggerEntity;
 
-		private _pCodeFamilyList: AICodeFamily[];
-		private _pCodeFamilyMap: AICodeFamilyMap;
-		private _pCodeInfoMap: AICodeInfoMap;
+		private _pCodeFamilyList: ICodeFamily[];
+		private _pCodeFamilyMap: ICodeFamilyMap;
+		private _pCodeInfoMap: IMap<ICodeInfo>;
 
-		private _pCodeFamilyRoutineDMap: AICodeFamilyRoutineDMap;
+		private _pCodeFamilyRoutineDMap: ICodeFamilyRoutineDMap;
 
 		private _nFamilyGenerator: uint;
 
@@ -59,7 +52,7 @@ module akra.util {
 			this._sUnknownMessage = "Unknown code";
 
 			this._eLogLevel = ELogLevel.ALL;
-			this._pGeneralRoutineMap = <ILogRoutineMap>{};
+			this._pGeneralRoutineMap = <IMap<ILogRoutineFunc>>{};
 
 			this._pCurrentSourceLocation = <ISourceLocation>{
 				file: "",
@@ -73,11 +66,11 @@ module akra.util {
 				info: null,
 			};
 
-			this._pCodeFamilyMap = <AICodeFamilyMap>{};
-			this._pCodeFamilyList = <AICodeFamily[]>[];
-			this._pCodeInfoMap = <AICodeInfoMap>{};
+			this._pCodeFamilyMap = <ICodeFamilyMap>{};
+			this._pCodeFamilyList = <ICodeFamily[]>[];
+			this._pCodeInfoMap = <IMap<ICodeInfo>>{};
 
-			this._pCodeFamilyRoutineDMap = <AICodeFamilyRoutineDMap>{};
+			this._pCodeFamilyRoutineDMap = <ICodeFamilyRoutineDMap>{};
 
 			this._nFamilyGenerator = 0;
 		}
@@ -105,7 +98,7 @@ module akra.util {
 				return false;
 			}
 
-			var pCodeInfo: AICodeInfo = <AICodeInfo>{
+			var pCodeInfo: ICodeInfo = <ICodeInfo>{
 				code: eCode,
 				message: sMessage,
 				familyName: sFamilyName
@@ -130,7 +123,7 @@ module akra.util {
 				return false;
 			}
 
-			var pCodeFamily: AICodeFamily = <AICodeFamily>{
+			var pCodeFamily: ICodeFamily = <ICodeFamily>{
 				familyName: sFamilyName,
 				codeMin: eCodeMin,
 				codeMax: eCodeMax
@@ -144,8 +137,8 @@ module akra.util {
 
 		getFamilyName(eCode): string {
 			var i: uint = 0;
-			var pCodeFamilyList: AICodeFamily[] = this._pCodeFamilyList;
-			var pCodeFamily: AICodeFamily;
+			var pCodeFamilyList: ICodeFamily[] = this._pCodeFamilyList;
+			var pCodeFamily: ICodeFamily;
 
 			for (i = 0; i < pCodeFamilyList.length; i++) {
 				pCodeFamily = pCodeFamilyList[i];
@@ -184,10 +177,10 @@ module akra.util {
 				return false;
 			}
 
-			var pCodeFamilyRoutineMap: ILogRoutineMap = this._pCodeFamilyRoutineDMap[sFamilyName];
+			var pCodeFamilyRoutineMap: IMap<ILogRoutineFunc> = this._pCodeFamilyRoutineDMap[sFamilyName];
 
 			if (!isDef(pCodeFamilyRoutineMap)) {
-				pCodeFamilyRoutineMap = this._pCodeFamilyRoutineDMap[sFamilyName] = <ILogRoutineMap>{};
+				pCodeFamilyRoutineMap = this._pCodeFamilyRoutineDMap[sFamilyName] = <IMap<ILogRoutineFunc>>{};
 			}
 
 			if (bf.testAll(eLevel, ELogLevel.LOG)) {
@@ -411,8 +404,8 @@ module akra.util {
 			}
 
 			var i: uint = 0;
-			var pCodeFamilyList: AICodeFamily[] = this._pCodeFamilyList;
-			var pCodeFamily: AICodeFamily;
+			var pCodeFamilyList: ICodeFamily[] = this._pCodeFamilyList;
+			var pCodeFamily: ICodeFamily;
 
 			for (i = 0; i < pCodeFamilyList.length; i++) {
 				pCodeFamily = pCodeFamilyList[i];
@@ -462,7 +455,7 @@ module akra.util {
 				this.setSourceLocation(pEntity.location);
 
 				if (!isDef(pEntity.message)) {
-					var pCodeInfo: AICodeInfo = this._pCodeInfoMap[eCode];
+					var pCodeInfo: ICodeInfo = this._pCodeInfoMap[eCode];
 					if (isDef(pCodeInfo)) {
 						sMessage = pCodeInfo.message;
 					}
@@ -495,7 +488,7 @@ module akra.util {
 					// }
 				}
 
-				var pCodeInfo: AICodeInfo = this._pCodeInfoMap[eCode];
+				var pCodeInfo: ICodeInfo = this._pCodeInfoMap[eCode];
 				if (isDef(pCodeInfo)) {
 					sMessage = pCodeInfo.message;
 				}
@@ -512,7 +505,7 @@ module akra.util {
 		}
 
 		private getCodeRoutineFunc(eCode: uint, eLevel: ELogLevel): ILogRoutineFunc {
-			var pCodeInfo: AICodeInfo = this._pCodeInfoMap[eCode];
+			var pCodeInfo: ICodeInfo = this._pCodeInfoMap[eCode];
 			var fnLogRoutine: ILogRoutineFunc;
 
 			if (!isDef(pCodeInfo)) {
@@ -520,7 +513,7 @@ module akra.util {
 				return isDef(fnLogRoutine) ? fnLogRoutine : null;
 			}
 
-			var pCodeFamilyRoutineMap: ILogRoutineMap = this._pCodeFamilyRoutineDMap[pCodeInfo.familyName];
+			var pCodeFamilyRoutineMap: IMap<ILogRoutineFunc> = this._pCodeFamilyRoutineDMap[pCodeInfo.familyName];
 
 			if (!isDef(pCodeFamilyRoutineMap) || !isDef(pCodeFamilyRoutineMap[eLevel])) {
 				fnLogRoutine = this._pGeneralRoutineMap[eLevel];

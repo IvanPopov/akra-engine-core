@@ -214,3 +214,9 @@ declare var BlobBuilder: {
     prototype: BlobBuilder;
     new (): BlobBuilder;
 }
+
+
+interface Console {
+    time(name: string): void;
+    timeEnd(name: string): void;
+}

@@ -1,72 +1,74 @@
-import ExprInstruction = require("fx/ExprInstruction");
-import SystemFunctionInstruction = require("fx/SystemFunctionInstruction");
+/// <reference path="ExprInstruction.ts" />
+/// <reference path="SystemFunctionInstruction.ts" />
 
-/**
- * Respresnt system_func(arg1,..., argn)
- * EMPTY_OPERATOR SimpleInstruction ... SimpleInstruction 
- */
-class SystemCallInstruction extends ExprInstruction {
-    private _pSystemFunction: SystemFunctionInstruction = null;
-    private _pSamplerDecl: IAFXVariableDeclInstruction = null;
+module akra.fx {
 
-    constructor() {
-        super();
-        this._pInstructionList = null;
-        this._eInstructionType = EAFXInstructionTypes.k_SystemCallInstruction;
-    }
+	/**
+	 * Respresnt system_func(arg1,..., argn)
+	 * EMPTY_OPERATOR SimpleInstruction ... SimpleInstruction 
+	 */
+	export class SystemCallInstruction extends ExprInstruction {
+		private _pSystemFunction: SystemFunctionInstruction = null;
+		private _pSamplerDecl: IAFXVariableDeclInstruction = null;
 
-    toFinalCode(): string {
-        if (!isNull(this._pSamplerDecl) && this._pSamplerDecl.isDefinedByZero()) {
-            return "vec4(0.)";
-        }
+		constructor() {
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_SystemCallInstruction;
+		}
 
-        var sCode: string = "";
+		toFinalCode(): string {
+			if (!isNull(this._pSamplerDecl) && this._pSamplerDecl.isDefinedByZero()) {
+				return "vec4(0.)";
+			}
 
-        for (var i: uint = 0; i < this.getInstructions().length; i++) {
-            sCode += this.getInstructions()[i].toFinalCode();
-        }
+			var sCode: string = "";
 
-        return sCode;
-    }
+			for (var i: uint = 0; i < this.getInstructions().length; i++) {
+				sCode += this.getInstructions()[i].toFinalCode();
+			}
 
-    setSystemCallFunction(pFunction: IAFXFunctionDeclInstruction): void {
-        this._pSystemFunction = <SystemFunctionInstruction>pFunction;
-        this.setType(pFunction.getType());
-    }
+			return sCode;
+		}
 
-    setInstructions(pInstructionList: IAFXInstruction[]): void {
-        this._pInstructionList = pInstructionList;
-        this._nInstructions = pInstructionList.length;
-        for (var i: uint = 0; i < pInstructionList.length; i++) {
-            pInstructionList[i].setParent(this);
-        }
-    }
+		setSystemCallFunction(pFunction: IAFXFunctionDeclInstruction): void {
+			this._pSystemFunction = <SystemFunctionInstruction>pFunction;
+			this.setType(pFunction.getType());
+		}
 
-    fillByArguments(pArguments: IAFXInstruction[]): void {
-        this.setInstructions(this._pSystemFunction.closeArguments(pArguments));
-    }
+		setInstructions(pInstructionList: IAFXInstruction[]): void {
+			this._pInstructionList = pInstructionList;
+			this._nInstructions = pInstructionList.length;
+			for (var i: uint = 0; i < pInstructionList.length; i++) {
+				pInstructionList[i].setParent(this);
+			}
+		}
 
-    addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
-        eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-        var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
-        for (var i: uint = 0; i < this._nInstructions; i++) {
-            if (pInstructionList[i]._getInstructionType() !== EAFXInstructionTypes.k_SimpleInstruction) {
-                pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
-                if ((<IAFXExprInstruction>pInstructionList[i]).getType().isSampler()) {
-                    this._pSamplerDecl = (<IAFXExprInstruction>pInstructionList[i]).getType()._getParentVarDecl();
-                }
-            }
-        }
-    }
+		fillByArguments(pArguments: IAFXInstruction[]): void {
+			this.setInstructions(this._pSystemFunction.closeArguments(pArguments));
+		}
 
-    clone(pRelationMap?: IAFXInstructionMap): SystemCallInstruction {
-        var pClone: SystemCallInstruction = <SystemCallInstruction>super.clone(pRelationMap);
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+			eUsedMode: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+			for (var i: uint = 0; i < this._nInstructions; i++) {
+				if (pInstructionList[i]._getInstructionType() !== EAFXInstructionTypes.k_SimpleInstruction) {
+					pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+					if ((<IAFXExprInstruction>pInstructionList[i]).getType().isSampler()) {
+						this._pSamplerDecl = (<IAFXExprInstruction>pInstructionList[i]).getType()._getParentVarDecl();
+					}
+				}
+			}
+		}
 
-        pClone.setSystemCallFunction(this._pSystemFunction);
+		clone(pRelationMap?: IAFXInstructionMap): SystemCallInstruction {
+			var pClone: SystemCallInstruction = <SystemCallInstruction>super.clone(pRelationMap);
 
-        return pClone;
-    }
+			pClone.setSystemCallFunction(this._pSystemFunction);
 
+			return pClone;
+		}
+
+	}
 }
 
-export = SystemCallInstruction;

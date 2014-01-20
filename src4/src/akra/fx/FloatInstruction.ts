@@ -1,7 +1,9 @@
-import ExprInstruction = require("fx/ExprInstruction");
-import Effect = require("fx/Effect");
+/// <reference path="ExprInstruction.ts" />
+/// <reference path="Effect.ts" />
 
-class FloatInstruction extends ExprInstruction implements IAFXLiteralInstruction {
+
+module akra.fx {
+	export class FloatInstruction extends ExprInstruction implements IAFXLiteralInstruction {
 		private _fValue: float;
 		/**
 		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
@@ -13,7 +15,7 @@ class FloatInstruction extends ExprInstruction implements IAFXLiteralInstruction
 			this._eInstructionType = EAFXInstructionTypes.k_FloatInstruction;
 		}
 
-		setValue(fValue: float): void{
+		setValue(fValue: float): void {
 			this._fValue = fValue;
 		}
 
@@ -24,10 +26,10 @@ class FloatInstruction extends ExprInstruction implements IAFXLiteralInstruction
 		toFinalCode(): string {
 			var sCode: string = "";
 			sCode += this._fValue.toString();
-			if(this._fValue % 1 === 0){
+			if (this._fValue % 1 === 0) {
 				sCode += ".";
 			}
-			return sCode;			
+			return sCode;
 		}
 
 		evaluate(): boolean {
@@ -45,5 +47,4 @@ class FloatInstruction extends ExprInstruction implements IAFXLiteralInstruction
 			return pClonedInstruction;
 		}
 	}
-
-export = FloatInstruction;
+}

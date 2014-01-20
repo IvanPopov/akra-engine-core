@@ -16,6 +16,16 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="akra\animation\Clip.ts" />
+    <None Include="akra\pool\resources\HardwareBuffer.ts" />
     <None Include="akra\pixelUtil\DDSCodec.ts" />
     <None Include="akra\data\IndexData.ts" />
     <None Include="akra\data\VertexData.ts" />
@@ -104,16 +114,6 @@
     <None Include="akra\util\ObjectList.ts" />
     <None Include="akra\util\ObjectSortCollection.ts" />
     <None Include="web.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="web.Debug.config">
-      <DependentUpon>web.config</DependentUpon>
-    </None>
-    <None Include="web.Release.config">
-      <DependentUpon>web.config</DependentUpon>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="akra\data\Usage.ts" />
     <None Include="akra\material\Material.ts" />
     <None Include="akra\threading\threading.ts" />
@@ -264,7 +264,6 @@
     <None Include="akra\idl\IObjectSortCollection.ts" />
     <None Include="akra\idl\IOcTree.ts" />
     <None Include="akra\idl\IOcTreeNode.ts" />
-    <None Include="akra\idl\IOcTreeRect.ts" />
     <None Include="akra\idl\IOffset.ts" />
     <None Include="akra\idl\IOmniLight.ts" />
     <None Include="akra\idl\IPacker.ts" />
@@ -444,14 +443,44 @@
     <None Include="akra\io\StorageFile.ts" />
     <None Include="akra\io\TFile.ts" />
     <None Include="akra\io\UnPacker.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="akra\idl\IPixelFormatDescription.ts" />
-    <Content Include="akra\pixelUtil\Codec.ts" />
-    <Content Include="akra\pixelUtil\CodecData.ts" />
-    <Content Include="akra\pixelUtil\ImgCodec.ts" />
-    <Content Include="akra\pixelUtil\ImgData.ts" />
-    <Content Include="akra\pixelUtil\PixelBox.ts" />
+    <None Include="akra\stringUtils\StringMinifier.ts" />
+    <None Include="akra\idl\IPixelFormatDescription.ts" />
+    <None Include="akra\pixelUtil\Codec.ts" />
+    <None Include="akra\pixelUtil\CodecData.ts" />
+    <None Include="akra\pixelUtil\ImgCodec.ts" />
+    <None Include="akra\pixelUtil\ImgData.ts" />
+    <None Include="akra\pixelUtil\PixelBox.ts" />
+    <None Include="akra\stringUtils\StringDictionary.ts" />
+    <None Include="akra\pool\DataPool.ts" />
+    <None Include="akra\bf\bf.ts" />
+    <None Include="akra\fx\EffectParser.ts" />
+    <None Include="akra\pool\PoolGroup.ts" />
+    <None Include="akra\pool\ResourceCode.ts" />
+    <None Include="akra\pool\ResourcePool.ts" />
+    <None Include="akra\pool\ResourcePoolItem.ts" />
+    <None Include="akra\pool\ResourcePoolManager.ts" />
+    <None Include="akra\pool\pool.ts" />
+    <None Include="akra\pool\resources\Collada.ts" />
+    <None Include="akra\pool\resources\Component.ts" />
+    <None Include="akra\pool\resources\DepthBuffer.ts" />
+    <None Include="akra\pool\resources\Effect.ts" />
+    <None Include="akra\pool\resources\EffectData.ts" />
+    <None Include="akra\pool\resources\Img.ts" />
+    <None Include="akra\pool\resources\IndexBuffer.ts" />
+    <None Include="akra\pool\resources\MemoryBuffer.ts" />
+    <None Include="akra\pool\resources\Model.ts" />
+    <None Include="akra\pool\resources\Obj.ts" />
+    <None Include="akra\pool\resources\RenderMethod.ts" />
+    <None Include="akra\pool\resources\SurfaceMaterial.ts" />
+    <None Include="akra\pool\resources\Texture.ts" />
+    <None Include="akra\pool\resources\VertexBuffer.ts" />
+    <None Include="akra\util\Entity.ts" />
+    <None Include="akra\util\Logger.ts" />
+    <None Include="akra\util\ReferenceCounter.ts" />
+    <None Include="akra\util\UtilTimer.ts" />
+    <None Include="akra\scene\Node.ts" />
+    <None Include="akra\scene\light\LightPoint.ts" />
+    <None Include="akra\scene\objects\Camera.ts" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -459,6 +488,53 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="akra\scene\DisplayList.ts" />
+    <None Include="akra\scene\Joint.ts" />
+    <None Include="akra\scene\LightGraph.ts" />
+    <None Include="akra\scene\OcTree.ts" />
+    <None Include="akra\scene\OcTreeNode.ts" />
+    <None Include="akra\scene\Scene3d.ts" />
+    <None Include="akra\scene\SceneManager.ts" />
+    <None Include="akra\scene\SceneModel.ts" />
+    <None Include="akra\scene\SceneNode.ts" />
+    <None Include="akra\scene\SceneObject.ts" />
+    <None Include="akra\scene\Sprite.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="akra\data\BufferMap.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="akra\animation\Animation.ts" />
+    <TypeScriptCompile Include="akra\animation\Base.ts" />
+    <TypeScriptCompile Include="akra\animation\Blend.ts" />
+    <TypeScriptCompile Include="akra\animation\Container.ts" />
+    <TypeScriptCompile Include="akra\animation\Controller.ts" />
+    <TypeScriptCompile Include="akra\animation\Frame.ts" />
+    <TypeScriptCompile Include="akra\animation\List.ts" />
+    <TypeScriptCompile Include="akra\animation\Parameter.ts" />
+    <TypeScriptCompile Include="akra\animation\Track.ts" />
+    <TypeScriptCompile Include="akra\data\RenderData.ts" />
+    <TypeScriptCompile Include="akra\data\RenderDataCollection.ts" />
+    <None Include="akra\render\RenderableObject.ts" />
+    <None Include="akra\render\RenderTarget.ts" />
+    <None Include="akra\render\RenderTechnique.ts" />
+    <None Include="akra\render\Canvas2d.ts" />
+    <None Include="akra\render\Canvas3d.ts" />
+    <None Include="akra\render\RenderEntry.ts" />
+    <None Include="akra\render\RenderPass.ts" />
+    <None Include="akra\render\RenderQueue.ts" />
+    <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
+    <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
+    <TypeScriptCompile Include="akra\render\Screen.ts" />
+    <TypeScriptCompile Include="akra\webgl\CalculateSkin.ts" />
+    <TypeScriptCompile Include="akra\model\Mesh.ts" />
+    <TypeScriptCompile Include="akra\model\MeshSubset.ts" />
+    <TypeScriptCompile Include="akra\model\Skeleton.ts" />
+    <TypeScriptCompile Include="akra\model\Skin.ts" />
+    <TypeScriptCompile Include="akra\model\Sky.ts" />
+    <TypeScriptCompile Include="akra\render\Viewport.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

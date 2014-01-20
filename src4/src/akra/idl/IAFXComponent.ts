@@ -4,11 +4,6 @@
 
 
 module akra {
-	export interface IAFXComponentMap {
-		[index: uint]: IAFXComponent;
-		[index: string]: IAFXComponent;
-	}
-	
 	export interface IAFXComponent extends IResourcePoolItem {
 		create(): void;
 	
@@ -22,7 +17,9 @@ module akra {
 		getHash(iShift: int, iPass: uint): string;
 	
 	}
-	
-	
-	
+
+	export interface IAFXComponentMap {
+		[index: uint]: IAFXComponent;
+		[index: string]: IAFXComponent;
+	}
 }

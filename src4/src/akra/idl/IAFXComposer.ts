@@ -14,7 +14,7 @@
 /// <reference path="IAFXPassInputBlend.ts" />
 /// <reference path="IBufferMap.ts" />
 /// <reference path="ISurfaceMaterial.ts" />
-/// <reference path="AIRID.ts" />
+/// <reference path="IRID.ts" />
 
 module akra {
 	export interface IAFXComposer {

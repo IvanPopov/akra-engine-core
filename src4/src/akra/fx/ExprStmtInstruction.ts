@@ -1,20 +1,20 @@
-import StmtInstruction = require("fx/StmtInstruction");
+/// <reference path="StmtInstruction.ts" />
 
-/**
- * Represent expr;
- * EMPTY_OPERTOR ExprInstruction 
- */
-class ExprStmtInstruction extends StmtInstruction {
-    constructor() {
-        super();
-        this._pInstructionList = [null];
-        this._eInstructionType = EAFXInstructionTypes.k_ExprStmtInstruction;
-    }
+module akra.fx {
 
-    toFinalCode(): string {
-        return this.getInstructions()[0].toFinalCode() + ";";
-    }
+	/**
+	 * Represent expr;
+	 * EMPTY_OPERTOR ExprInstruction 
+	 */
+	export class ExprStmtInstruction extends StmtInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_ExprStmtInstruction;
+		}
+
+		toFinalCode(): string {
+			return this.getInstructions()[0].toFinalCode() + ";";
+		}
+	}
 }
-
-
-export = ExprStmtInstruction;

@@ -60,20 +60,20 @@ module akra {
 	
 		_createShadowCaster(pLightPoint: ILightPoint, iFace?: uint, sName?: string): IShadowCaster;
 	
-		getDisplayList(index: uint): IDisplayList;
+		getDisplayList(index: uint): IDisplayList<ISceneNode>;
 		getDisplayListByName(csName: string): int;
-		addDisplayList(pList: IDisplayList): int;
+		addDisplayList(pList: IDisplayList<ISceneNode>): int;
 		delDisplayList(index: uint): boolean;
 		
-		signal nodeAttachment(pNode: ISceneNode): void;
-		signal nodeDetachment(pNode: ISceneNode): void;
-	
-		signal displayListAdded(pList: IDisplayList, index: uint): void;
-		signal displayListRemoved(pList: IDisplayList, index: uint): void;
-	
-		signal beforeUpdate(): void;
-		signal postUpdate(): void;
-		signal preUpdate(): void;
+		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }>;
+		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void ; }>;
+
+		beforeUpdate: ISignal <{ (pScene: IScene3d): void; }>;
+		postUpdate: ISignal <{ (pScene: IScene3d): void; }>;
+		preUpdate: ISignal <{ (pScene: IScene3d): void; }>;
+
+		nodeAttachment: ISignal <{ (pScene: IScene3d, pNode: ISceneNode): void; }>;
+		nodeDetachment: ISignal <{ (pScene: IScene3d, pNode: ISceneNode): void; }>;
 	
 		_render(pCamera: ICamera, pViewport: IViewport): void;
 	}

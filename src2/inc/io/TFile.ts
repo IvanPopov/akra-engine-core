@@ -495,25 +495,47 @@ module akra.io {
 			if (err) {
 				throw err;
 			}
-		}
+		};
 
+		// static $income: uint = 0;
+		// static $process: uint = 0;
+		// static $complete: uint = 0;
 
 		private static execCommand(pFile: IFile, isLocal: bool, pCommand: IFileCommand, fnCallback: Function, pTransferables?: any[]): void {
 
 			// var pFile: IFile = this;
 			var pManager: IThreadManager = isLocal? getLocalFileThreadManager(): getRemoteFileThreadManager();
+
+			// console.log("execCommand[?]", isLocal? "local": "remote", pCommand.name, (<any>EFileActions)._map[pCommand.act], pCommand.act);
+
+			// TFile.$income ++;
+			// console.log(TFile.$income, TFile.$process, TFile.$complete);
+
 			pManager.waitForThread((pThread: IThread) => {
+				
+				// TFile.$process ++;
+				// TFile.$income --;
+
+				// console.log(TFile.$income, TFile.$process, TFile.$complete);
+
+				// console.log("execCommand[>>]", isLocal? "local": "remote", pCommand.name, (<any>EFileActions)._map[pCommand.act], pCommand.act);
 				pThread.onmessage = function (e) {
 					if (fnCallback.call(pFile, null, e.data) === false) {
 						return;
 					}
 
+					// console.log("execCommand[<<]", isLocal? "local": "remote", pCommand.name, (<any>EFileActions)._map[pCommand.act], pCommand.act);
+
+					// TFile.$process --;
+					// TFile.$complete ++;
+					// console.log(TFile.$income, TFile.$process, TFile.$complete);
 					pThread.onmessage = null;
 					pManager.releaseThread(pThread);
 				}
 
 				pThread.onerror = function (e) {
 					pThread.onmessage = null;
+					// TFile.$process --;
 					fnCallback.call(pFile, e);
 					pManager.releaseThread(pThread);
 				}

@@ -20,10 +20,6 @@ module akra {
 		ALL
 	};
 	
-	export interface INodeMap {
-		[index: string]: INode;
-	}
-	
 	export interface INode extends IEntity {
 		localOrientation: IQuat4;
 		localPosition: IVec3;
@@ -37,10 +33,6 @@ module akra {
 		
 		/** readonly */ inverseWorldMatrix: IMat4;
 		/** readonly */ normalMatrix: IMat3;
-	
-		parent: INode;
-		sibling: INode;
-		child: INode;
 	
 		create(): boolean;
 	

@@ -65,27 +65,8 @@ module akra {
 		renderer: pRenderOpts,
 		loader: pLoader,
 		deps: {
-			files: [
-				// {path: "models/generated_artery.DAE", name: "GENERATED_ARTERY"},
-				{path: "models/artery_controller.DAE", name: "GENERATED_ARTERY"},
-
-
-				{path: "models/miner/miner.DAE", name: "MINER"},
-				{path: "models/miner/idle0.DAE", name: "ANIM_MINER_IDLE0"},
-				{path: "models/miner/idle1.DAE", name: "ANIM_MINER_IDLE1"},
-				{path: "models/miner/idle2.DAE", name: "ANIM_MINER_IDLE2"},
-				{path: "models/miner/walk1.DAE", name: "ANIM_MINER_WALK1"},
-				{path: "models/miner/walk2.DAE", name: "ANIM_MINER_WALK2"},
-				{path: "models/miner/walk3.DAE", name: "ANIM_MINER_WALK3"},
-				{path: "models/miner/work_gun.DAE", name: "ANIM_MINER_WORK_GUN"},
-				{path: "models/miner/work_hammer.DAE", name: "ANIM_MINER_WORK_HAMMER"},
-
-				{path: "textures/light_icon.png", name: "LIGHT_ICON"},
-
-				{path: "models/cube.DAE", name: "CUBE"}
-
-				// {path: "effects/custom/heatmap.afx"}
-			],
+			root: "../",
+			files: [{path: "miner.ara", name: "DEMO_DATA"}]
 		}
 	};
 
@@ -138,11 +119,11 @@ module akra {
 		// 	}
 		// });
 
-		var pGenArtery: ICollada = <ICollada>pRmgr.colladaPool.findResource("GENERATED_ARTERY");
-		pGenArtery.options.debug = true;
-		pGenArtery.options.wireframe = true;
-		var pGenArteryModel: IModelEntry = pGenArtery.attachToScene(pScene);
-		console.log(pGenArteryModel);
+		// var pGenArtery: ICollada = <ICollada>pRmgr.colladaPool.findResource("GENERATED_ARTERY");
+		// pGenArtery.options.debug = true;
+		// pGenArtery.options.wireframe = true;
+		// var pGenArteryModel: IModelEntry = pGenArtery.attachToScene(pScene);
+		// console.log(pGenArteryModel);
 
 
 		util.navigation(pViewport);
@@ -196,7 +177,7 @@ module akra {
 			pSprite.shadow = false;
 
 
-			// pSprite.attachToParent(pLightOmni);
+			pSprite.attachToParent(pLightOmni);
 			pLightOmni.lookAt(vec3(0., 0., 0.))
 			pLightOmni.setInheritance(ENodeInheritance.ALL);
 			// pLightOmni.params.ambient.set(math.random(), math.random(), math.random(), 1);
@@ -292,12 +273,28 @@ module akra {
 	    // pGUI.add(pViewer, 'waveStripWidth', 1, 10).step(1);
 	    // pGUI.addColor(pViewer, 'waveColor');
 	    // pGUI.addColor(pViewer, 'waveStripColor');
-    	pMiner.options.wireframe = true;
-		// var pModel: ISceneNode = pMiner.attachToScene(pScene);
-		// pModel.addController(pController);
-		// pModel.scale(.5);
 
-		// pController.play(0);
+
+
+    	pMiner.options.wireframe = true;
+		var pModel: ISceneNode = pMiner.attachToScene(pScene);
+		pModel.addController(pController);
+		pModel.scale(.5);
+
+		pController.play(0);
+
+		pGUI.add({wireframe: true}, 'wireframe').onChange(function(bValue: bool) {
+			pModel.explore((pEntity: IEntity): bool => {
+				if (scene.isModel(pEntity)) {
+					var pNode = <ISceneModel>pEntity;
+					for (var i: int = 0; i < pNode.totalRenderable; ++ i) {
+						pNode.getRenderable(i).wireframe(bValue);
+					}
+				}
+
+				return true;
+			});
+		});
 		
 	}
 
