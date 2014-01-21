@@ -40,6 +40,7 @@ module akra.fx {
 
 	export class PassBlend implements IAFXPassBlend {
 		//UNIQUE();
+		public guid: uint = guid();
 
 		private _pComposer: IAFXComposer = null;
 		private _pFXMakerHashTree: HashTree<IAFXMaker> = null;
@@ -133,7 +134,7 @@ module akra.fx {
 		constructor(pComposer: IAFXComposer) {
 			this._pComposer = pComposer;
 
-			this._pFXMakerHashTree = new HashTree();
+			this._pFXMakerHashTree = new HashTree<IAFXMaker>();
 
 			this._pExtSystemDataV = new ExtSystemDataContainer();
 			this._pComplexTypeContainerV = new ComplexTypeBlendContainer();
@@ -851,7 +852,7 @@ module akra.fx {
 			}
 			else {
 				var sMaterailHash: string = "";
-				for (var i: uint = 0; i < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE; i++) {
+				for (var i: uint = 0; i < pool.resources.SurfaceMaterial.MAX_TEXTURES_PER_SURFACE; i++) {
 					var iTexcoord: uint = pMaterial.texcoord(i);
 
 					if (i !== iTexcoord) {

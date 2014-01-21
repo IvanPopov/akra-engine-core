@@ -17,8 +17,8 @@ module akra.scene {
 	import Quat4 = math.Quat4;
 
 	export class SceneNode extends Node implements ISceneNode {
-		frozen: ISignal<{ (pNode: ISceneNode, bValue: boolean): void; }> = new Signal(this);
-		hidden: ISignal<{ (pNode: ISceneNode, bValue: boolean): void; }> = new Signal(this);
+		frozen: ISignal<{ (pNode: ISceneNode, bValue: boolean): void; }> = new Signal(<any>this);
+		hidden: ISignal<{ (pNode: ISceneNode, bValue: boolean): void; }> = new Signal(<any>this);
 
 		protected _pScene: IScene3d = null;
 		protected _pAnimationControllers: IAnimationController[] = null;

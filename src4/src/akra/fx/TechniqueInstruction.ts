@@ -11,7 +11,7 @@ module akra.fx {
 	export class TechniqueInstruction extends DeclInstruction implements IAFXTechniqueInstruction {
 		private _sName: string = "";
 		private _hasComplexName: boolean = false;
-		private _pParseNode: IParseNode = null;
+		private _pParseNode: parser.IParseNode = null;
 		private _pSharedVariableListV: IAFXVariableDeclInstruction[] = null;
 		private _pSharedVariableListP: IAFXVariableDeclInstruction[] = null;
 		private _pPassList: IAFXPassInstruction[] = null;

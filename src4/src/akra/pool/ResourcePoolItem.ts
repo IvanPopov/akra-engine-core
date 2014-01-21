@@ -25,14 +25,14 @@ module akra.pool {
 	export class ResourcePoolItem extends util.ReferenceCounter implements IResourcePoolItem {
 		guid: uint = guid();
 
-		created: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(this);
-		destroyed: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(this);
-		loaded: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(this);
-		unloaded: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(this);
-		restored: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(this);
-		disabled: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(this);
-		altered: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(this);
-		saved: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(this);
+		created: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
+		destroyed: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
+		loaded: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
+		unloaded: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
+		restored: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
+		disabled: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
+		altered: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
+		saved: ISignal<{ (pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
 
 		//private pManager: IResourcePoolManager;
 		private _pResourceCode: IResourceCode;

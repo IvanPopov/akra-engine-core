@@ -13,25 +13,31 @@
 /// <reference path="../idl/ISceneModel.ts" />
 
 /// <reference path="Skin.ts" />
-
 /// <reference "MeshSubset.ts" />
-/// <reference "../material/Material.ts" />
+
+/// <reference "../material/materials.ts" />
 /// <reference "../util/ReferenceCounter.ts" />
 /// <reference "../events.ts" />
 
+/// <reference "../guid.ts" />
+
 module akra.model {
+	import VE = data.VertexElement;
+	import DeclUsages = data.Usages;
+	import Color = color.Color;
+
 	class ShadowedSignal
 		extends Signal<{
 			(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void;
 		}, IMesh> {
 
 		constructor(pViewport: IMesh) {
-			super(pViewport, EEventTypes.BROADCAST);
+			super(pViewport, EEventTypes.UNICAST);
 		}
 
-		emit(pSubMesh: IMeshSubset, bShadow: boolean): void {
+		emit(pSubMesh?: IMeshSubset, bShadow?: boolean): void {
 
-			var pMesh: IMesh = this.getSender();
+			var pMesh: Mesh = <Mesh>this.getSender();
 
 			pMesh._setShadow(bShadow)
 
@@ -49,6 +55,8 @@ module akra.model {
 	}
 
 	class Mesh extends util.ReferenceCounter implements IMesh  {
+		guid: uint = guid();
+
 		shadowed: ISignal<{(pMesh: IMesh, pSubset: IMeshSubset, bShadow: boolean): void;}> = new ShadowedSignal(this);
 
 		private _sName: string;
@@ -163,7 +171,7 @@ module akra.model {
 			
 			this._pBuffer.addRef();
 			this._eOptions = eOptions || 0;
-			this._sName = sName || UNKNOWN_NAME;
+			this._sName = sName || config.unknown.name;
 
 			return true;
 		}
@@ -187,8 +195,11 @@ module akra.model {
 			var pSubMesh: IMeshSubset = new MeshSubset(this, pData, sName);
 			this._pSubMeshes.push(pSubMesh);
 
-			this.connect(pSubMesh, SIGNAL(skinAdded), SLOT(_skinAdded));
-			this.connect(pSubMesh, SIGNAL(shadowed), SLOT(shadowed), EEventTypes.UNICAST);
+			pSubMesh.skinAdded.connect(this, this._skinAdded);
+			pSubMesh.shadowed.connect(this.shadowed);
+
+			//this.connect(pSubMesh, SIGNAL(skinAdded), SLOT(_skinAdded));
+			//this.connect(pSubMesh, SIGNAL(shadowed), SLOT(shadowed), EEventTypes.UNICAST);
 
 			return pSubMesh;
 		}
@@ -250,7 +261,7 @@ module akra.model {
 			if (!this._pFlexMaterials) {
 				this._pFlexMaterials = [];
 			}
-
+		    
 			pMaterialId = this._pFlexMaterials.length;
 			pMaterial = material._createFlex(
 				sName, 
@@ -258,7 +269,7 @@ module akra.model {
 			);
 
 			if (!pMaterialData) {
-				pMaterialData = material.create(null, material.DEFAULT)
+				pMaterialData = material.create(null, config.material.default)
 			}
 
 			pMaterial.set(pMaterialData);   
@@ -466,9 +477,9 @@ module akra.model {
 					return false;
 				}
 
-				iData = pSubMesh.data.allocateData([VE_FLOAT3(DeclUsages.POSITION)], new Float32Array(pPoints));
+				iData = pSubMesh.data.allocateData([VE.float3(DeclUsages.POSITION)], new Float32Array(pPoints));
 
-				pSubMesh.data.allocateIndex([VE_FLOAT(DeclUsages.INDEX0)], new Float32Array(pIndexes));
+				pSubMesh.data.allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 
 				pSubMesh.data.index(iData, DeclUsages.INDEX0);
 
@@ -597,10 +608,10 @@ module akra.model {
 					return false;
 
 				iData=pSubMesh.data.allocateData(
-					[VE_FLOAT3(DeclUsages.POSITION)],
+					[VE.float3(DeclUsages.POSITION)],
 					new Float32Array(pPoints));
 
-				pSubMesh.data.allocateIndex([VE_FLOAT(DeclUsages.INDEX0)], new Float32Array(pIndexes));
+				pSubMesh.data.allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 				pSubMesh.data.index(iData, DeclUsages.INDEX0);
 
 				// pSubMesh.applyFlexMaterial(".MaterialBoundingSphere");
@@ -691,7 +702,7 @@ module akra.model {
 			return isOk;
 		}
 
-		_setShadow(bValue: bool): void {
+		_setShadow(bValue: boolean): void {
 			this._bShadow = bValue;
 		}
 	}

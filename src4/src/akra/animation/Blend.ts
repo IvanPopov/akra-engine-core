@@ -6,8 +6,8 @@
 
 module akra.animation {
 	export class Blend extends Base implements IAnimationBlend {
-		weightUpdated: ISignal<{ (pBlend: IAnimationBlend, iAnim: int, fWeight: float): void; }> = new Signal(this);
-		durationUpdated: ISignal<{ (pBlend: IAnimationBlend, fDuration: float): void; }> = new Signal(this);
+		weightUpdated: ISignal<{ (pBlend: IAnimationBlend, iAnim: int, fWeight: float): void; }> = new Signal(<any>this);
+		durationUpdated: ISignal<{ (pBlend: IAnimationBlend, fDuration: float): void; }> = new Signal(<any>this);
 
 		public duration: float = 0;
 

@@ -17,7 +17,7 @@ module akra.render {
 		guid: uint = guid();
 
 		render: ISignal<{ (pTech: IRenderTechnique, iPass, pRenderable, pSceneObject, pViewport): void; }>
-			= new Signal(this);
+			= new Signal(<any>this);
 
 		private _pMethod: IRenderMethod = null;
 
@@ -35,7 +35,7 @@ module akra.render {
 
 		private _pRenderMethodPassStateList: IObjectArray<IAFXPassInputStateInfo> = null;
 
-		protected static pRenderMethodPassStatesPool: IObjectArray<IAFXPassInputStateInfo> = new util.ObjectArray();
+		protected static pRenderMethodPassStatesPool: IObjectArray<IAFXPassInputStateInfo> = new util.ObjectArray<IAFXPassInputStateInfo>();
 
 		get modified(): uint {
 			return this.guid;

@@ -240,7 +240,6 @@
     <None Include="akra\idl\IImgCodec.ts" />
     <None Include="akra\idl\IIndexBuffer.ts" />
     <None Include="akra\idl\IIndexData.ts" />
-    <None Include="akra\idl\IItem.ts" />
     <None Include="akra\idl\IJoint.ts" />
     <None Include="akra\idl\IKeyMap.ts" />
     <None Include="akra\idl\ILightGraph.ts" />
@@ -269,7 +268,6 @@
     <None Include="akra\idl\IPacker.ts" />
     <None Include="akra\idl\IPackerFormat.ts" />
     <None Include="akra\idl\IPair.ts" />
-    <None Include="akra\idl\IParser.ts" />
     <None Include="akra\idl\IParticleManager.ts" />
     <None Include="akra\idl\IPathinfo.ts" />
     <None Include="akra\idl\IPipe.ts" />
@@ -329,7 +327,6 @@
     <None Include="akra\idl\ISphere.ts" />
     <None Include="akra\idl\ISprite.ts" />
     <None Include="akra\idl\ISpriteManager.ts" />
-    <None Include="akra\idl\IState.ts" />
     <None Include="akra\idl\IStringDictionary.ts" />
     <None Include="akra\idl\ISunLight.ts" />
     <None Include="akra\idl\ISurfaceMaterial.ts" />
@@ -525,7 +522,10 @@
     <None Include="akra\render\RenderEntry.ts" />
     <None Include="akra\render\RenderPass.ts" />
     <None Include="akra\render\RenderQueue.ts" />
-    <TypeScriptCompile Include="akra\model\CalculateSkin.ts" />
+    <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
+    <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
+    <TypeScriptCompile Include="akra\render\Screen.ts" />
+    <TypeScriptCompile Include="akra\webgl\CalculateSkin.ts" />
     <TypeScriptCompile Include="akra\model\Mesh.ts" />
     <TypeScriptCompile Include="akra\model\MeshSubset.ts" />
     <TypeScriptCompile Include="akra\model\Skeleton.ts" />

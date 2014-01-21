@@ -20,8 +20,8 @@ module akra.data {
 
 		//FIXME: typescript error "Overload signature is not compatible with function definition" ???
 		constructor(...pElements: IVertexElementInterface[]);
-		constructor(pElements: IVertexElementInterface[]);
-		constructor(pElements: any) {
+		constructor(pElements?: IVertexElementInterface[]);
+		constructor(pElements?: any) {
 			if (arguments.length > 0 && isDefAndNotNull(pElements)) {
 				this.append.apply(this, arguments);
 			}
@@ -32,8 +32,8 @@ module akra.data {
 		}
 
 		append(...pElements: IVertexElementInterface[]): boolean;
-		append(pElements: IVertexElementInterface[]): boolean;
-		append(pData: any) {
+		append(pElements?: IVertexElementInterface[]): boolean;
+		append(pData?: any) {
 			var pElements: IVertexElementInterface[];
 
 			if (!isArray(arguments[0])) {

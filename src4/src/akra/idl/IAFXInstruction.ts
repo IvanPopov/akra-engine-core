@@ -1,5 +1,5 @@
 /// <reference path="../math/Vec3.ts" />
-/// <reference path="IParser.ts" />
+/// <reference path="parser/IParser.ts" />
 /// <reference path="IAFXComponent.ts" />
 /// <reference path="IUnique.ts" />
 /// <reference path="IRenderer.ts" />
@@ -673,11 +673,11 @@ module akra {
 	}
 	
 	export interface IAFXPassInstruction extends IAFXDeclInstruction {
-	    _addFoundFunction(pNode: IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
-	    _getFoundedFunction(pNode: IParseNode): IAFXFunctionDeclInstruction;
-	    _getFoundedFunctionType(pNode: IParseNode): EFunctionType;
-	    _setParseNode(pNode: IParseNode): void;
-	    _getParseNode(): IParseNode;
+	    _addFoundFunction(pNode: parser.IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
+		_getFoundedFunction(pNode: parser.IParseNode): IAFXFunctionDeclInstruction;
+		_getFoundedFunctionType(pNode: parser.IParseNode): EFunctionType;
+		_setParseNode(pNode: parser.IParseNode): void;
+		_getParseNode(): parser.IParseNode;
 	    _markAsComplex(isComplex: boolean): void;
 	    _addCodeFragment(sCode: string): void;
 	

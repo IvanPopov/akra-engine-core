@@ -33,15 +33,15 @@
 module akra.scene {
 
 	export class Scene3d implements IScene3d {
-		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(this);
-		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(this);
+		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(<any>this);
+		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(<any>this);
 
-		beforeUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(this);
-		postUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(this);
-		preUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(this);
+		beforeUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(<any>this);
+		postUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(<any>this);
+		preUpdate: ISignal<{ (pScene: IScene3d): void; }> = new Signal(<any>this);
 
-		nodeAttachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }> = new Signal(this);
-		nodeDetachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }> = new Signal(this);
+		nodeAttachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }> = new Signal(<any>this);
+		nodeDetachment: ISignal<{ (pScene: IScene3d, pNode: ISceneNode): void; }> = new Signal(<any>this);
 
 		protected _sName: string;
 		protected _pRootNode: ISceneNode;

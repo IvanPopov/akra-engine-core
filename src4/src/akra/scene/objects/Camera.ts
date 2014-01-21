@@ -50,8 +50,8 @@ module akra.scene.objects {
 	}
 
 	export class Camera extends SceneNode implements ICamera {
-		preRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(this);		
-		postRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(this);
+		preRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(<any>this);		
+		postRenderScene: ISignal<{ (pCamera: ICamera): void; }> = new Signal(<any>this);
 
 		/** camera type */
 		protected _eCameraType: ECameraTypes = ECameraTypes.PERSPECTIVE;

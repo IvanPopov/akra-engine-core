@@ -1,5 +1,5 @@
 /// <reference path="../idl/IAFXInstruction.ts" />
-/// <reference path="../idl/IParser.ts" />
+/// <reference path="../idl/parser/IParser.ts" />
 /// <reference path="../idl/EEffectErrors.ts" />
 
 /// <reference path="../debug.ts" />
@@ -36,7 +36,7 @@ module akra.fx {
 		protected _bUsedInVertex: boolean = false;
 		protected _bUsedInPixel: boolean = false;
 
-		protected _pParseNode: IParseNode = null;
+		protected _pParseNode: parser.IParseNode = null;
 		protected _iImplementationScope: uint = Instruction.UNDEFINE_SCOPE;
 
 		protected _isInBlackList: boolean = false;
@@ -150,11 +150,11 @@ module akra.fx {
 			return this._iImplementationScope;
 		}
 
-		_setParseNode(pNode: IParseNode): void {
+		_setParseNode(pNode: parser.IParseNode): void {
 			this._pParseNode = pNode;
 		}
 
-		_getParseNode(): IParseNode {
+		_getParseNode(): parser.IParseNode {
 			return this._pParseNode;
 		}
 

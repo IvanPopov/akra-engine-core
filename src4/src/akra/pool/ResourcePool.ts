@@ -16,7 +16,7 @@
 module akra.pool {
 	export class ResourcePool extends util.ReferenceCounter implements IResourcePool {
 		guid: uint = guid();
-		createdResource: ISignal<{ (pPool: IResourcePool, pResource: IResourcePoolItem): void; }> = new Signal(this);
+		createdResource: ISignal<{ (pPool: IResourcePool, pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
 
 		private _pManager: IResourcePoolManager = null;
 		/** Конструктор для создания данных в пуле ресурсов */

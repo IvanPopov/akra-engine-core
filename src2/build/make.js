@@ -413,7 +413,7 @@ function preprocess() {
 
 	var capabilityOptions = [
 		// "-D inline=/**@inline*/",
-		"-D protected=/**@protected*/",
+		// "-D protected=/**@protected*/",
 		"-D const=/**@const*/var",
 		"-D struct=class",
 		"-D readonly=",

@@ -1,4 +1,4 @@
-/// <reference path="../idl/IParser.ts />"
+/// <reference path="../idl/parser/IParser.ts />"
 /// <reference path="../idl/IMap.ts />"
 /// <reference path="../parser/Parser.ts" />
 /// <reference path="../common.ts" />
@@ -46,31 +46,31 @@ module akra.fx {
 			this._pIncludedFilesMap[sFileName] = true;
 		}
 
-		private _addType(): EOperationType {
-			var pTree: IParseTree = this.getSyntaxTree();
-			var pNode: IParseNode = pTree.getLastNode();
+		private _addType(): parser.EOperationType {
+			var pTree: parser.IParseTree = this.getSyntaxTree();
+			var pNode: parser.IParseNode = pTree.getLastNode();
 			var sTypeId: string;
 								 
 			sTypeId = pNode.children[pNode.children.length - 2].value;
 
 			this.addTypeId(sTypeId);
 
-			return EOperationType.k_Ok;
+			return parser.EOperationType.k_Ok;
 		}
 
-		private _includeCode(): EOperationType {
-			var pTree: IParseTree = this.getSyntaxTree();
-		    var pNode: IParseNode = pTree.getLastNode();
+		private _includeCode(): parser.EOperationType {
+			var pTree: parser.IParseTree = this.getSyntaxTree();
+			var pNode: parser.IParseNode = pTree.getLastNode();
 		    var sFile: string = pNode.value;
 		    
 		    //cuttin qoutes
 			sFile = uri.resolve(sFile.substr(1, sFile.length - 2), this.getParseFileName());
 
 		    if (this._pIncludedFilesMap[sFile]) {
-		    	return EOperationType.k_Ok;
+		    	return parser.EOperationType.k_Ok;
 		    }
 		    else {
-		    	var pParserState: IParserState = this._saveState();
+				var pParserState: parser.IParserState = this._saveState();
 		    	var pFile: IFile = io.fopen(sFile, "r+t");
 				
 		    	pFile.read((err, sData: string) => {
@@ -87,17 +87,17 @@ module akra.fx {
 		    		}
 		    	});
 
-				return EOperationType.k_Pause;
+				return parser.EOperationType.k_Pause;
 		    }
 		}
 
-		_saveState(): IParserState {
-			var pState: IParserState = super._saveState();
+		_saveState(): parser.IParserState {
+			var pState: parser.IParserState = super._saveState();
 			pState["includeFiles"] = this._pIncludedFilesMap;
 			return pState;
 		}
 
-		_loadState(pState: IParserState): void {
+		_loadState(pState: parser.IParserState): void {
 			super._loadState(pState);
 			this._pIncludedFilesMap = <IMap<boolean>>pState["includeFiles"];
 		}

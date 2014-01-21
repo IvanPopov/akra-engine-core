@@ -1,5 +1,5 @@
 
-/// <reference path="IParser.ts" />
+/// <reference path="parser/IParser.ts" />
 /// <reference path="IAFXInstruction.ts" />
 
 
@@ -40,7 +40,7 @@ module akra {
 	}
 	
 	export interface IAFXEffect {
-		analyze(pTree: IParseTree): boolean;
+		analyze(pTree: parser.IParseTree): boolean;
 		setAnalyzedFileName(sFileName: string): void;
 		getStats(): IAFXEffectStats;
 	

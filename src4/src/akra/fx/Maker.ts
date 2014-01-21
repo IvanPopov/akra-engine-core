@@ -730,7 +730,7 @@ module akra.fx {
 
 		private getUniformApplyFunction(eType: EAFXShaderVariableType, isArray: boolean): Function {
 			if (config.WEBGL) {
-				var pProgram: WebGLShaderProgram = <WebGLShaderProgram>this._pShaderProgram;
+				var pProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram>this._pShaderProgram;
 				if (isArray) {
 					switch (eType) {
 						case EAFXShaderVariableType.k_Float:

@@ -18,17 +18,17 @@ module akra.render {
 
 	export class RenderTarget implements IRenderTarget {
 
-		preUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(this);
-		postUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(this);
+		preUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(<any>this);
+		postUpdate: ISignal<{ (pTarget: IRenderTarget): void; }> = new Signal(<any>this);
 
-		viewportPreUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
-		viewportPostUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
-		viewportAdded: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
-		viewportRemoved: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(this);
+		viewportPreUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(<any>this);
+		viewportPostUpdate: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(<any>this);
+		viewportAdded: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(<any>this);
+		viewportRemoved: ISignal<{ (pTarget: IRenderTarget, pViewport: IViewport): void; }> = new Signal(<any>this);
 
-		resized: ISignal<{ (pTarget: IrenderTarget, iWidth: uint, iHeight: uint): void; }> = new Signal(this);
+		resized: ISignal<{ (pTarget: IRenderTarget, iWidth: uint, iHeight: uint): void; }> = new Signal(<any>this);
 
-		cameraRemoved: ISignal<{ (pTarget: IrenderTarget, pCamera: ICamera): void; }> = new Signal(this);
+		cameraRemoved: ISignal<{ (pTarget: IRenderTarget, pCamera: ICamera): void; }> = new Signal(<any>this);
 
 		protected _sName: string;
 		protected _pRenderer: IRenderer;

@@ -35,7 +35,7 @@ module akra.fx {
 			this._pPassBlendByHashMap = <IAFXPassBlendMap>{};
 			this._pPassBlendByIdMap = <IAFXPassBlendMap>{};
 
-			this._pPassBlendHashTree = new HashTree();
+			this._pPassBlendHashTree = new HashTree<IAFXPassBlend>();
 		}
 
 		addComponentToBlend(pComponentBlend: IAFXComponentBlend,
@@ -234,8 +234,8 @@ module akra.fx {
 				var pVertexShader: IAFXFunctionDeclInstruction = pPass.getVertexShader();
 				var pPixelShader: IAFXFunctionDeclInstruction = pPass.getPixelShader();
 
-				this._pPassBlendHashTree.has(isNull(pVertexShader) ? 0 : pVertexShader.guid);
-				this._pPassBlendHashTree.has(isNull(pPixelShader) ? 0 : pPixelShader.guid);
+				this._pPassBlendHashTree.has(isNull(pVertexShader) ? 0 : pVertexShader._getInstructionID());
+				this._pPassBlendHashTree.has(isNull(pPixelShader) ? 0 : pPixelShader._getInstructionID());
 			}
 
 			var pBlend: IAFXPassBlend = this._pPassBlendHashTree.getContent();

@@ -115,7 +115,7 @@ module akra {
 		create(iWidth: uint, iHeight: uint, iDepth: uint, cFillColor?: IColor, 
 			   eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): boolean;
 	
-		create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: Array, 
+		create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: Array<any>, 
 			   eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): boolean;
 	
 		create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: ArrayBufferView, 
