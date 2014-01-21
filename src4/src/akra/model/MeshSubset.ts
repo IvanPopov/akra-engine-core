@@ -9,7 +9,7 @@
 /// <reference path="../data/VertexElement.ts" />
 /// <reference path="../render/RenderableObject.ts" />
 /// <reference path="../geometry/geometry.ts" />
-/// <reference path="../material/Material.ts" />
+/// <reference path="../material/materials.ts" />
 
 /// <reference path="../webgl/CalculateSkin.ts" />
 
@@ -582,6 +582,10 @@ module akra.model {
 			var isOk: boolean = config.WEBGL? webgl.calculateSkin(this): false;
 			this._isOptimizedSkinned = isOk;
 			return isOk;
+		}
+
+		static isMeshSubset(pObject: IRenderableObject): boolean {
+			return pObject.type === ERenderableTypes.MESH_SUBSET;
 		}
 	}
 }

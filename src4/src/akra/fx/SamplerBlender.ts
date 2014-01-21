@@ -100,9 +100,9 @@ module akra.fx {
 						sHash += "Z";
 					}
 
-					for (var j: uint = 0; j < pBlend.length; j++) {
-						sHash += pBlend.value(j)._getInstructionID().toString() + ".";
-					}
+                    for (var j: uint = 0; j < pBlend.length; j++) {
+                        sHash += pBlend.value(j).getGuid().toString() + ".";
+                    }
 
 					sHash += ".";
 				}

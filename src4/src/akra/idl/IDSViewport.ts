@@ -1,7 +1,4 @@
-
-/// <reference path="AIRID.ts" />
-
-
+/// <reference path="IRID.ts" />
 /// <reference path="IColor.ts" />
 
 module akra {
@@ -23,6 +20,8 @@ module akra {
 		_getRenderId(x: uint, y: uint): int;
 		_getDeferredTexValue(iTex: int, x: uint, y: uint): IColor;
 	
-		signal addedSkybox(pSkyTexture: ITexture): void;
+		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }>;
+		//addedBackground: ISignal <{ (pViewport: IViewport, pTexture: ITexture): void ; }>;
+
 	}
 }

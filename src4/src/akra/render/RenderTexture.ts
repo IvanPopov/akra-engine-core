@@ -1,20 +1,20 @@
-#ifndef RENDERTEXTURE_TS
-#define RENDERTEXTURE_TS
+/// <reference path="../idl/IRenderTarget.ts" />
+/// <reference path="../idl/IPixelBuffer.ts" />
+/// <reference path="../idl/IRenderer.ts" />
+/// <reference path="../idl/IPixelBox.ts" />
+/// <reference path="../idl/IRenderTexture.ts" />
 
-#include "render/RenderTarget.ts"
-#include "IRenderTarget.ts"
-#include "IPixelBuffer.ts"
-#include "IRenderer.ts"
-#include "pixelUtil/pixelUtil.ts"
-#include "IPixelBox.ts"
-#include "IRenderTexture.ts"
+/// <reference path="../pixelUtil/pixelUtil.ts" />
+
+
+/// <reference path="RenderTarget.ts" />
 
 module akra.render {
 	export class RenderTexture extends RenderTarget implements IRenderTexture {
 		protected _pBuffer: IPixelBuffer = null;
 		protected _iZOffset: uint = 0;
 
-		constructor(pRenderer: IRenderer, pBuffer: IPixelBuffer, iZOffset: uint){
+		constructor(pRenderer: IRenderer, pBuffer: IPixelBuffer, iZOffset: uint) {
 			super(pRenderer);
 			this._pBuffer = pBuffer;
 			this._iZOffset = iZOffset;
@@ -27,7 +27,7 @@ module akra.render {
 			return 0;
 		}
 
-		inline getPixelBuffer(): IPixelBuffer {
+		getPixelBuffer(): IPixelBuffer {
 			return this._pBuffer;
 		}
 
@@ -36,17 +36,17 @@ module akra.render {
 			this._pBuffer = null;
 		}
 
-		inline suggestPixelFormat(): EPixelFormats {
+		suggestPixelFormat(): EPixelFormats {
 			return this._pBuffer.format;
 		}
 
 		copyContentsToMemory(pDest: IPixelBox, eBuffer: EFramebuffer): void {
-			if(eBuffer === EFramebuffer.AUTO){
+			if (eBuffer === EFramebuffer.AUTO) {
 				eBuffer = EFramebuffer.FRONT;
 			}
 
-			if(eBuffer !== EFramebuffer.FRONT) {
-				CRITICAL("Invalid buffer.");
+			if (eBuffer !== EFramebuffer.FRONT) {
+				logger.critical("Invalid buffer.");
 			}
 
 			this._pBuffer.blitToMemory(pDest);
@@ -56,12 +56,12 @@ module akra.render {
 			if (isNull(ppDest)) {
 				var ePixelFormat: EPixelFormats = EPixelFormats.BYTE_RGB;
 
-				ppDest = new pixelUtil.PixelBox(this._iWidth, this._iHeight, 1, ePixelFormat, 
+				ppDest = new pixelUtil.PixelBox(this._iWidth, this._iHeight, 1, ePixelFormat,
 					new Uint8Array(pixelUtil.getMemorySize(this._iWidth, this._iHeight, 1, ePixelFormat)));
 			}
 
 			if ((ppDest.right > this._iWidth) || (ppDest.bottom > this._iHeight) || (ppDest.front != 0) || (ppDest.back != 1)) {
-				CRITICAL("Invalid box.", "RenderTexture::readPixels");
+				logger.critical("Invalid box.", "RenderTexture::readPixels");
 			}
 
 			this._pBuffer.readPixels(ppDest);
@@ -70,5 +70,3 @@ module akra.render {
 		}
 	}
 }
-
-#endif

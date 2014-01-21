@@ -7,10 +7,13 @@
 /// <reference path="../../pixelUtil/pixelUtil.ts" />
 /// <reference path="../ResourcePoolItem.ts" />
 
+/// <reference path="Img.ts" />
+
 /// <reference path="../../debug.ts" />
-/// <reference path="Img.ts">
+/// <reference path="../../logger.ts" />
 
 module akra.pool.resources {
+
 
 	export enum ETextureForcedFormatFlags {
 		FORCEMIPLEVELS = 0,
@@ -389,7 +392,8 @@ module akra.pool.resources {
 			{
 				this._eFormat = pMainImage.format;
 			}
-			else {
+			else
+			{
 				logger.warn("Format not support("  +pixelUtil.getFormatName(pMainImage.format) + ")");
 				if(pMainImage.convert(EPixelFormats.B8G8R8A8))
 				{

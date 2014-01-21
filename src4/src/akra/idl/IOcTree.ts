@@ -5,7 +5,6 @@
 /// <reference path="IRect3d.ts" />
 /// <reference path="IOcTreeNode.ts" />
 /// <reference path="ISceneObject.ts" />
-/// <reference path="IOcTreeRect.ts" />
 /// <reference path="IVec3.ts" />
 
 module akra {

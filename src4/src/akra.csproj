@@ -524,7 +524,17 @@
     <None Include="akra\render\RenderQueue.ts" />
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
     <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
+    <TypeScriptCompile Include="akra\render\DSViewport.ts" />
+    <TypeScriptCompile Include="akra\render\RenderTexture.ts" />
     <TypeScriptCompile Include="akra\render\Screen.ts" />
+    <TypeScriptCompile Include="akra\render\ShadowViewport.ts" />
+    <TypeScriptCompile Include="akra\render\TextureViewport.ts" />
+    <TypeScriptCompile Include="akra\scene\light\CalculatePlanesForLighting.ts" />
+    <TypeScriptCompile Include="akra\scene\light\OmniLight.ts" />
+    <TypeScriptCompile Include="akra\scene\light\ProjectLight.ts" />
+    <TypeScriptCompile Include="akra\scene\light\ShadowCaster.ts" />
+    <TypeScriptCompile Include="akra\scene\light\SunLight.ts" />
+    <TypeScriptCompile Include="akra\scene\objects\ModelEntry.ts" />
     <TypeScriptCompile Include="akra\webgl\CalculateSkin.ts" />
     <TypeScriptCompile Include="akra\model\Mesh.ts" />
     <TypeScriptCompile Include="akra\model\MeshSubset.ts" />
@@ -532,6 +542,7 @@
     <TypeScriptCompile Include="akra\model\Skin.ts" />
     <TypeScriptCompile Include="akra\model\Sky.ts" />
     <TypeScriptCompile Include="akra\render\Viewport.ts" />
+    <TypeScriptCompile Include="akra\webgl\DepthRange.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

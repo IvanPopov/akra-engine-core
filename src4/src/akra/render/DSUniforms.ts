@@ -1,26 +1,22 @@
 /// <reference path="../idl/ILightPoint.ts" />
 /// <reference path="../idl/IShaderInput.ts" />
+/// <reference path="../idl/IAFXSamplerState.ts" />
+/// <reference path="../idl/IOmniLight.ts" />
+/// <reference path="../idl/IProjectLight.ts" />
+
+
 /// <reference path="../fx/PassInputBlend.ts" />
 
 
-//#define uniformOmni() UniformOmni.stackCeil
-//#define uniformProject() UniformProject.stackCeil
-//#define uniformSun() UniformSun.stackCeil
-//#define uniformProjectShadow() UniformProjectShadow.stackCeil
-//#define uniformOmniShadow() UniformOmniShadow.stackCeil
-//#define uniformSunShadow() UniformSunShadow.stackCeil
-
-//#define IShadowSampler IAFXSamplerState
-//#define ISampler2d IAFXSamplerState
-
-
 module akra.render {
-
-	import IShadowSampler = IAFXSamplerState;
-	import ISampler2d = IAFXSamplerState;
+	// done to rename interfaces, in the future it 
+	// easier to move to other samplers states.
+	interface IShadowSampler extends IAFXSamplerState {}
+	interface ISampler2d extends IAFXSamplerState {}
 
 	import Vec3 = math.Vec3;
 	import Vec4 = math.Vec4;
+	import Mat4 = math.Mat4;
 
 	export interface IUniform {
 
@@ -106,7 +102,7 @@ module akra.render {
 		TO_LIGHT_SPACE: IMat4 = new Mat4();
 		REAL_PROJECTION_MATRIX: IMat4 = new Mat4();
 		OPTIMIZED_PROJECTION_MATRIX: IMat4 = new Mat4();
-		SHADOW_SAMPLER: IAFXSamplerState = fx.createSamplerState();
+		SHADOW_SAMPLER: IAFXSamplerState = render.createSamplerState();
 
 		setLightData(pLightParam: IProjectParameters, v3fPosition: IVec3): UniformProjectShadow {
 			this.LIGHT_DATA.set(pLightParam, v3fPosition);
@@ -154,8 +150,8 @@ module akra.render {
 		
 		SHADOW_SAMPLER: IAFXSamplerState[] = 
 		[
-			fx.createSamplerState(), fx.createSamplerState(), fx.createSamplerState(),
-			fx.createSamplerState(), fx.createSamplerState(), fx.createSamplerState()
+			render.createSamplerState(), render.createSamplerState(), render.createSamplerState(),
+			render.createSamplerState(), render.createSamplerState(), render.createSamplerState()
 		];
 
 		setLightData(pLightParam: IOmniParameters, v3fPosition: IVec3): UniformOmniShadow {
@@ -225,7 +221,7 @@ module akra.render {
 		GROUNDC1: IVec3 = new Vec3();
 		HG: IVec3 = new Vec3;
 		SKY_DOME_ID: int = 0;
-		SHADOW_SAMPLER: IAFXSamplerState = fx.createSamplerState();
+		SHADOW_SAMPLER: IAFXSamplerState = render.createSamplerState();
 		TO_LIGHT_SPACE: IMat4 = new Mat4();
 		OPTIMIZED_PROJECTION_MATRIX: IMat4 = new Mat4();
 

@@ -13,6 +13,8 @@
 
 module akra.fx {
 
+	import Usage = data.Usages;
+
 	interface AIAFXVaribaleListMap {
 		[index: string]: IAFXVariableDeclInstruction[];
 	}

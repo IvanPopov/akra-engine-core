@@ -12,6 +12,7 @@
 /// <reference path="VariableTypeInstruction.ts" />
 
 module akra.fx {
+	import StringDictionary = stringUtils.StringDictionary;
 
 	export class VariableDeclInstruction extends DeclInstruction implements IAFXVariableDeclInstruction {
 		private _isVideoBuffer: boolean = null;
@@ -31,7 +32,7 @@ module akra.fx {
 		private _bLockInitializer: boolean = false;
 
 		private _iNameIndex: uint = 0;
-		static pShaderVarNamesGlobalDictionary: stringUtils.StringDictionary = new stringUtils.StringDictionary();
+		static pShaderVarNamesGlobalDictionary: StringDictionary = new StringDictionary();
 		static _getIndex(sName: string): uint {
 			return VariableDeclInstruction.pShaderVarNamesGlobalDictionary.add(sName);
 		}

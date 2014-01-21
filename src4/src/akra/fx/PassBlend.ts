@@ -26,6 +26,9 @@
 /// <reference path="../pool/resources/SurfaceMaterial.ts" />
 
 module akra.fx {
+
+	import SurfaceMaterial = pool.resources.SurfaceMaterial;
+
 	import StringMinifier = stringUtils.StringMinifier;
 	import ObjectArray = util.ObjectArray;
 

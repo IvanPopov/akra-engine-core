@@ -1,17 +1,10 @@
-#ifndef UTIL_DEPTH_RANGE
-#define UTIL_DEPTH_RANGE
-
-#include "render/Viewport.ts"
-#include "webgl/WebGLRenderer.ts"
-#include "webgl/WebGLInternalTexture.ts"
-
-module akra.util{
-
-// #ifdef WEBGL
-// #define WEBGL_DEPTH_RANGE 1
-// #endif
-
-#ifdef WEBGL_DEPTH_RANGE
+/// <reference path="../render/Viewport.ts" />
+/// <reference path="WebGLRenderer.ts" />
+/// <reference path="WebGLInternalTexture.ts" />
+/// <reference path="../math/Vec2.ts" />
+module akra.webgl {
+	
+	import Vec2 = math.Vec2;
 
 	var sFloatToVec4Func: string = "\
 			vec4 floatToVec4(float value){						\n\
@@ -213,28 +206,28 @@ module akra.util{
 			pWebGLProgram.create(sVertexCode, sPixelCode);
 		}
 
-		var pOldFrameBuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(GL_FRAMEBUFFER_BINDING);
+		var pOldFrameBuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(gl.FRAMEBUFFER_BINDING);
 
 		var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
 
 		pWebGLRenderer.disableAllWebGLVertexAttribs();
 
-		pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
+		pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pWebGLFramebuffer);
 		pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
-		pWebGLRenderer.disable(GL_DEPTH_TEST);
-		pWebGLRenderer.disable(GL_SCISSOR_TEST);
-		pWebGLRenderer.disable(GL_BLEND);
-		pWebGLRenderer.disable(GL_CULL_FACE);
+		pWebGLRenderer.disable(gl.DEPTH_TEST);
+		pWebGLRenderer.disable(gl.SCISSOR_TEST);
+		pWebGLRenderer.disable(gl.BLEND);
+		pWebGLRenderer.disable(gl.CULL_FACE);
 
 		var iPositionAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("POSITION");
 
 		pWebGLContext.enableVertexAttribArray(iPositionAttribLocation);
 
 		var pPositionBuffer: WebGLBuffer = pWebGLContext.createBuffer();
-		pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pPositionBuffer);
-		pWebGLContext.bufferData(GL_ARRAY_BUFFER, pF32ScreenCoords, GL_STATIC_DRAW);
-		pWebGLContext.vertexAttribPointer(iPositionAttribLocation, 2, GL_FLOAT, false, 0, 0);
+		pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, pPositionBuffer);
+		pWebGLContext.bufferData(gl.ARRAY_BUFFER, pF32ScreenCoords, gl.STATIC_DRAW);
+		pWebGLContext.vertexAttribPointer(iPositionAttribLocation, 2, gl.FLOAT, false, 0, 0);
 
 		var iSrcTextureSizeX: uint = pDepthTexture.width;
 		var iSrcTextureSizeY: uint = pDepthTexture.height;
@@ -256,11 +249,11 @@ module akra.util{
 			iRenderTextureSizeX = 2;
 			iRenderTextureSizeY = 1;
 			
-			pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
-			pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pWebGLRenderTexture);
+			pWebGLRenderer.activateWebGLTexture(gl.TEXTURE0);
+			pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLRenderTexture);
 
-			pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-						2, 1, 0,  GL_RGBA, GL_UNSIGNED_BYTE, null);
+			pWebGLContext.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 
+						2, 1, 0,  gl.RGBA, gl.UNSIGNED_BYTE, null);
 		}
 		else{
 			iSelector = 0;
@@ -282,35 +275,35 @@ module akra.util{
 				iRenderTextureSizeX = iRenderTextureSizeY;
 			}
 
-			pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
-			pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pWebGLRenderTexture);
+			pWebGLRenderer.activateWebGLTexture(gl.TEXTURE0);
+			pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLRenderTexture);
 
-			pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-						iRenderTextureSizeX, iRenderTextureSizeY, 0,  GL_RGBA, GL_FLOAT, null);
+			pWebGLContext.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 
+						iRenderTextureSizeX, iRenderTextureSizeY, 0,  gl.RGBA, gl.FLOAT, null);
 		}
 
 		do {
 
-			pWebGLRenderer.activateWebGLTexture(GL_TEXTURE1);
-			pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pWebGLRenderTexture);
-			pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			pWebGLContext.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			pWebGLRenderer.activateWebGLTexture(gl.TEXTURE1);
+			pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLRenderTexture);
+			pWebGLContext.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			pWebGLContext.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			pWebGLContext.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			pWebGLContext.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-			pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
-				GL_TEXTURE_2D, pWebGLRenderTexture, 0);
+			pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, 
+				gl.TEXTURE_2D, pWebGLRenderTexture, 0);
 
-			pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
-			pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pWebGLSrcTexture);
+			pWebGLRenderer.activateWebGLTexture(gl.TEXTURE0);
+			pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLSrcTexture);
 
 			pWebGLProgram.setInt("selector", iSelector);
 			pWebGLProgram.setInt("srcTexture", 0);
-			pWebGLProgram.setVec2("halfSrcTexureStep", vec2(0.5/iSrcTextureSizeX, 0.5/iSrcTextureSizeY));
+			pWebGLProgram.setVec2("halfSrcTexureStep", Vec2.temp(0.5/iSrcTextureSizeX, 0.5/iSrcTextureSizeY));
 
 			pWebGLContext.viewport(0, 0, iRenderTextureSizeX, iRenderTextureSizeY);
 
-			pWebGLContext.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			pWebGLContext.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 			if(iSelector == 2){
 				break;
@@ -328,10 +321,10 @@ module akra.util{
 
 				pWebGLRenderTexture = (pWebGLRenderTexture === pWebGLTexture1) ? pWebGLTexture2 : pWebGLTexture1;
 
-				pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pWebGLRenderTexture);
+				pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLRenderTexture);
 
-				pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-						iRenderTextureSizeX, iRenderTextureSizeY, 0,  GL_RGBA, GL_UNSIGNED_BYTE, null);
+				pWebGLContext.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 
+						iRenderTextureSizeX, iRenderTextureSizeY, 0,  gl.RGBA, gl.UNSIGNED_BYTE, null);
 			}
 			else{
 				iSrcTextureSizeX = iRenderTextureSizeX;
@@ -344,17 +337,17 @@ module akra.util{
 
 				pWebGLRenderTexture = (pWebGLRenderTexture === pWebGLTexture1) ? pWebGLTexture2 : pWebGLTexture1;
 
-				pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pWebGLRenderTexture);
+				pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pWebGLRenderTexture);
 
-				pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-						iRenderTextureSizeX, iRenderTextureSizeY, 0,  GL_RGBA, GL_FLOAT, null);
+				pWebGLContext.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 
+						iRenderTextureSizeX, iRenderTextureSizeY, 0,  gl.RGBA, gl.FLOAT, null);
 			}
 
 		} while(1);
 
-		pWebGLContext.readPixels(0, 0, 2, 1, GL_RGBA, GL_UNSIGNED_BYTE, pU8Destination);
+		pWebGLContext.readPixels(0, 0, 2, 1, gl.RGBA, gl.UNSIGNED_BYTE, pU8Destination);
 
-		pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFrameBuffer);
+		pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pOldFrameBuffer);
 		pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
 
 		pWebGLContext.disableVertexAttribArray(iPositionAttribLocation);
@@ -362,24 +355,15 @@ module akra.util{
 		pWebGLContext.deleteTexture(pWebGLTexture1);
 		pWebGLContext.deleteTexture(pWebGLTexture2);
 
-		pWebGLRenderer.enable(GL_DEPTH_TEST);
-		// pWebGLContext.disable(GL_SCISSOR_TEST);
-		// pWebGLContext.disable(GL_BLEND);
-		// pWebGLContext.disable(GL_CULL_FACE);
+		pWebGLRenderer.enable(gl.DEPTH_TEST);
+		// pWebGLContext.disable(gl.SCISSOR_TEST);
+		// pWebGLContext.disable(gl.BLEND);
+		// pWebGLContext.disable(gl.CULL_FACE);
 
-		pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
+		pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, null);
 		pWebGLRenderer._setViewport(null);
 		// console.log("depth range:", pF32Destination[1], pF32Destination[0]);
 
 		return <IDepthRange>{min: pF32Destination[1], max: pF32Destination[0]};
 	}
-
-	#else
-	export function getDepthRange(pDepthTexture: ITexture): IDepthRange{
-		return <IDepthRange>{min: 0., max: 1.};
-	};
-	#endif
-	
 }
-
-#endif

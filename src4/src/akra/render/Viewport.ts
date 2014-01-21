@@ -18,7 +18,9 @@ module akra.render {
 	import Vec3 = math.Vec3;
 	import Vec4 = math.Vec4;
 
-	class RenderSignal
+
+	//NOTE: This signal is not called directly from the viewport, call derives from render technique.
+	export class RenderSignal
 		extends Signal<{
 			(pViewport: IViewport, pTechnique: IRenderTechnique,
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
@@ -51,6 +53,8 @@ module akra.render {
 			super.emit(pTechnique, iPass, pRenderable, pSceneObject);
 		}
 	}
+
+	//3D events 
 
 	class DragstartSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
 
@@ -274,7 +278,7 @@ module akra.render {
 		render: ISignal<{
 			(pViewport: IViewport, pTechnique: IRenderTechnique,
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-		}> = new RenderSignal(this);
+		}>;
 
 		dragstart: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstartSignal(this);
 		dragstop: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstopSignal(this);
@@ -283,7 +287,7 @@ module akra.render {
 		click: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new ClickSignal(this);
 		mousemove: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new MousemoveSignal(this);
 
-		mousedown: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MousedownSignal(this); 
+		mousedown: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MousedownSignal(this);
 		mouseup: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MouseupSignal(this);
 
 		mouseover: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoverSignal(this);
@@ -405,14 +409,22 @@ module akra.render {
 		set ondragging(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
 			this.dragging.connect(fn);
 		}
+		
+		/**
+		 * @param csRenderMethod Name of render technique, that will be selected in the renderable for render.
+		 */ 
+		constructor(pCamera: ICamera, csRenderMethod: string = null,
+			fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0,
+			pRenderSignal: ISignal<{ (pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void; }> = null) {
 
-		constructor(pCamera: ICamera, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			this._fRelLeft = fLeft;
 			this._fRelTop = fTop;
 			this._fRelWidth = fWidth;
 			this._fRelHeight = fHeight;
 
 			this._iZIndex = iZIndex;
+
+			this.render = pRenderSignal || new RenderSignal(this);
 
 			this._csDefaultRenderMethod = csRenderMethod;
 
@@ -824,7 +836,7 @@ module akra.render {
 					pCurr.renderable.mouseover.emit(this, pCurr.object, x, y);
 				}
 			}
-			
+
 			// if (!ov && ou) {
 			// console.log("opacity enabled");
 			// }

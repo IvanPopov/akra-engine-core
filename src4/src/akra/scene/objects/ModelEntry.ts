@@ -1,14 +1,11 @@
-#ifndef MODELENTRY_TS
-#define MODELENTRY_TS
-
-#include "IModelEntry.ts"
-#include "../SceneNode.ts"
+/// <reference path="../../idl/IModelEntry.ts" />
+/// <reference path="../SceneNode.ts" />
 
 module akra.scene.objects {
 	export class ModelEntry extends SceneNode implements IModelEntry {
 		protected _pModelResource: IModel = null;
 
-		inline get resource(): IModel {
+		get resource(): IModel {
 			return this._pModelResource;
 		}
 
@@ -17,11 +14,9 @@ module akra.scene.objects {
 
 			this._pModelResource = pModel;
 		}
-	}
 
-	export function isModelEntry(pEntity: IEntity): bool {
-		return !isNull(pEntity) && pEntity.type === EEntityTypes.MODEL_ENTRY;
+		static isModelEntry(pEntity: IEntity): boolean {
+			return !isNull(pEntity) && pEntity.type === EEntityTypes.MODEL_ENTRY;
+		}
 	}
 }
-
-#endif

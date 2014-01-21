@@ -8,9 +8,10 @@
 
 
 module akra {
+	/** @deprecated Use IMap<IAFXPassBlend> instead. */
 	export interface IAFXPassBlendMap {
 		[index: uint]: IAFXPassBlend;
-		[index: string]: IAFXPassBlend;
+		//[index: string]: IAFXPassBlend;
 	}
 	
 	export interface IAFXPassBlend extends IUnique {

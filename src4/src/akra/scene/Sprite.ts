@@ -3,9 +3,11 @@
 
 /// <reference path="SceneObject.ts" />
 
-/// <reference path="render/RenderableObject.ts" />
+/// <reference path="../render/RenderableObject.ts" />
 
 module akra.scene {
+	import VE = data.VertexElement;
+
 	export class SpriteManager implements ISpriteManager {
 		private _pEngine: IEngine;
 		private _pSprites: ISprite[] = [];
@@ -40,7 +42,7 @@ module akra.scene {
 			var pRsmgr: IResourcePoolManager = pEngine.getResourceManager();
 			var pManager: ISpriteManager = pEngine.getSpriteManager();
 			var pRenderer: IRenderer = pEngine.getRenderer();
-			var pRenderable: IRenderableObject = new render.RenderableObject(ERenderDataTypes.SPRITE);
+			var pRenderable: IRenderableObject = new render.RenderableObject(ERenderableTypes.SPRITE);
 			
 			pRenderable._setup(pRenderer);
 
@@ -87,12 +89,12 @@ module akra.scene {
 			
 			var pData: IRenderData = this.manager._allocateSprite(this);
 			
-			pData.allocateData([VE_FLOAT4("POSITION")], pGeometry);
-			pData.allocateData([VE_FLOAT3("TEXCOORD0")], pTexCoords);
-			pData.allocateData([VE_FLOAT4("NORMAL")], pNormals);
-			pData.allocateIndex([VE_FLOAT('INDEX0')], new Float32Array([0,1,2,3]));
-			pData.allocateIndex([VE_FLOAT('INDEX1')], new Float32Array([0,1,2,3]));
-			pData.allocateIndex([VE_FLOAT('INDEX2')], new Float32Array([0,0,0,0]));
+			pData.allocateData([VE.float4("POSITION")], pGeometry);
+			pData.allocateData([VE.float3("TEXCOORD0")], pTexCoords);
+			pData.allocateData([VE.float4("NORMAL")], pNormals);
+			pData.allocateIndex([VE.float('INDEX0')], new Float32Array([0,1,2,3]));
+			pData.allocateIndex([VE.float('INDEX1')], new Float32Array([0,1,2,3]));
+			pData.allocateIndex([VE.float('INDEX2')], new Float32Array([0,0,0,0]));
 			pData.index('POSITION', 'INDEX0');
 			pData.index('TEXCOORD0', 'INDEX1');
 			pData.index('NORMAL', 'INDEX2');
