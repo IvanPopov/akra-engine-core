@@ -33,6 +33,14 @@ module akra.render {
 	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
 	var pColor: IColor = new Color(0);
 
+	class DSRenderSignal extends RenderSignal {
+
+		emit(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pViewport: IViewport = this.getSender();
+			//TODO:
+		}
+	}
+
 	export class DSViewport extends Viewport implements IDSViewport  {
 		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }> = new Signal(this);
 		addedBackground: ISignal<{ (pViewport: IViewport, pTexture: ITexture): void; }> = new Signal(this);
@@ -79,7 +87,7 @@ module akra.render {
 		}
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
-			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex, new DSRenderSignal(<any>this));
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
