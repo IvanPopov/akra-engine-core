@@ -90,7 +90,7 @@ module akra.info {
 			return sData.slice((iStartIndex + 1), iEndIndex);
 		}
 
-		private static dataBrowser: AIBrowserData[] = [
+		private static dataBrowser: AIBrowserData[] = <AIBrowserData[]>[
 			{
 				string: navigator.userAgent,
 				subString: "Chrome",

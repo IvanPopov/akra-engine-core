@@ -40,10 +40,10 @@ module akra {
 	
 		isDraggable(): boolean;
 	
-		signal dragStart(e: IUIEvent): void;
-		signal dragStop(e: IUIEvent): void;
-		signal move(e: IUIEvent): void;
-		signal drop(e: IUIEvent, comp: IUIComponent, info): void;
+		dragStart: ISignal<{ (pNode: IUIDNDNode, e: IUIEvent): void; }>;
+		dragStop: ISignal<{ (pNode: IUIDNDNode, e: IUIEvent): void; }>;
+		move: ISignal<{ (pNode: IUIDNDNode, e: IUIEvent): void; }>;
+		drop: ISignal<{ (pNode: IUIDNDNode, e: IUIEvent, comp: IUIComponent, info): void; }>;
 	}
 	
 	

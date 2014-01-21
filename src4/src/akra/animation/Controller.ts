@@ -11,7 +11,7 @@ module akra.animation {
 	class PlaySignal extends Signal<{ (pController: IAnimationController, pAnimationNext: IAnimationBase, fRealTime: float): void; }, IAnimationController> {
 
 		constructor(pController: IAnimationController) {
-			super(pController, EEventTypes.BROADCAST);
+			super(pController, null, EEventTypes.BROADCAST);
 		}
 
 		emit(pAnimation?: string): void;
@@ -102,8 +102,8 @@ module akra.animation {
 		removeAnimation(pAnimation: string): boolean;
 		removeAnimation(pAnimation: int): boolean;
 		removeAnimation(pAnimation: IAnimationBase): boolean;
-		removeAnimation(pAnimation: any): boolean {
-			var pAnimation = this.findAnimation(arguments[0]);
+		removeAnimation(pAnimationArg: any): boolean {
+			var pAnimation = this.findAnimation(pAnimationArg);
 		    var pAnimations = this._pAnimations;
 
 			for (var i = 0; i < pAnimations.length; ++ i) { 

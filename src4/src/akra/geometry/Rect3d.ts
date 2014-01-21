@@ -186,7 +186,7 @@ module akra.geometry {
 
         addSelf(fValue: float): IRect3d;
         addSelf(v3fVec: IVec3): IRect3d;
-        addSelf(v3fVec?): IRect3d {
+        addSelf(): IRect3d {
             if (isFloat(arguments[0])) {
                 var fValue: float = arguments[0];
 
@@ -216,7 +216,7 @@ module akra.geometry {
 
         subSelf(fValue: float): IRect3d;
         subSelf(v3fVec: IVec3): IRect3d;
-        subSelf(v3fVec?): IRect3d {
+        subSelf(): IRect3d {
             if (isFloat(arguments[0])) {
                 var fValue: float = arguments[0];
 
@@ -245,7 +245,7 @@ module akra.geometry {
 
         multSelf(fValue: float): IRect3d;
         multSelf(v3fVec: IVec3): IRect3d;
-        multSelf(v3fVec?): IRect3d {
+        multSelf(): IRect3d {
             if (isFloat(arguments[0])) {
                 var fValue: float = arguments[0];
 
@@ -274,7 +274,7 @@ module akra.geometry {
 
         divSelf(fValue: float): IRect3d;
         divSelf(v3fVec: IVec3): IRect3d;
-        divSelf(v3fVec?): IRect3d {
+        divSelf(): IRect3d {
             if (isFloat(arguments[0])) {
                 var fValue: float = arguments[0];
 
@@ -411,7 +411,7 @@ module akra.geometry {
 
         resize(v3fSize: IVec3): IRect3d;
         resize(fSizeX: float, fSizeY: float, fSizeZ: float): IRect3d;
-        resize(fSizeX?, fSizeY?, fSizeZ?): IRect3d {
+        resize(): IRect3d {
             var fSizeX: float, fSizeY: float, fSizeZ: float;
 
             if (arguments.length === 1) {

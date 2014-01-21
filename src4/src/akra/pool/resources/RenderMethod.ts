@@ -21,7 +21,7 @@ module akra.pool.resources {
 		set effect(pEffect: IEffect) {
 			if(!isNull(this._pEffect)){
 				this.unsync(this._pEffect, EResourceItemEvents.LOADED);
-				this.disconnect(this._pEffect, SIGNAL(altered), SLOT(updateEffect), EEventTypes.BROADCAST);
+				this._pEffect.altered.disconnect(this.updateEffect, EEventTypes.BROADCAST);
 				this._pEffect.release();
 			}
 
@@ -29,7 +29,7 @@ module akra.pool.resources {
 			
 			if(!isNull(pEffect)){
 				this.sync(this._pEffect, EResourceItemEvents.LOADED);
-				this.connect(this._pEffect, SIGNAL(altered), SLOT(updateEffect), EEventTypes.BROADCAST);
+				this._pEffect.altered.connect(this.updateEffect, EEventTypes.BROADCAST);
 				this._pEffect.addRef();
 			}
 
@@ -43,7 +43,7 @@ module akra.pool.resources {
 		 set surfaceMaterial(pMaterial: ISurfaceMaterial) {
 			if(!isNull(this._pSurfaceMaterial)){
 				this.unsync(this._pSurfaceMaterial, EResourceItemEvents.LOADED);
-				this.disconnect(this._pSurfaceMaterial, SIGNAL(altered), SLOT(notifyAltered), EEventTypes.BROADCAST);
+				this._pSurfaceMaterial.altered.disconnect(this.notifyAltered, EEventTypes.BROADCAST);
 				this._pSurfaceMaterial.release();
 			}
 
@@ -51,7 +51,7 @@ module akra.pool.resources {
 			
 			if(!isNull(pMaterial)){
 				this.sync(this._pSurfaceMaterial, EResourceItemEvents.LOADED);
-				this.connect(this._pSurfaceMaterial, SIGNAL(altered), SLOT(notifyAltered), EEventTypes.BROADCAST);
+				this._pSurfaceMaterial.altered.connect(this.notifyAltered, EEventTypes.BROADCAST);
 			}
 
 			this._pSurfaceMaterial.addRef();
@@ -65,8 +65,8 @@ module akra.pool.resources {
 
 		isEqual(pRenderMethod: IRenderMethod): boolean {return false;}
 
-		setForeign(sName: string, pValue: any, iPass: uint = ALL_PASSES): void {
-			if(iPass === ALL_PASSES){
+		setForeign(sName: string, pValue: any, iPass: uint = fx.ALL_PASSES): void {
+			if(iPass === fx.ALL_PASSES){
 				for(var i: uint = 0; i < this._nTotalPasses; i++){
 					this.setForeign(sName, pValue, i);
 				}
@@ -75,7 +75,7 @@ module akra.pool.resources {
 			}
 
 			if(iPass < 0 || iPass >= this._nTotalPasses){
-				debug_error("RenderMethod::setForeign : wrong number of pass (" + iPass + ")");
+				debug.error("RenderMethod::setForeign : wrong number of pass (" + iPass + ")");
 				return;
 			}
 
@@ -92,7 +92,7 @@ module akra.pool.resources {
 			}
 
 			if(iPass < 0 || iPass >= this._nTotalPasses){
-				debug_error("RenderMethod::setUniform : wrong number of pass (" + iPass + ")");
+				debug.error("RenderMethod::setUniform : wrong number of pass (" + iPass + ")");
 				return;
 			}
 
@@ -100,7 +100,7 @@ module akra.pool.resources {
 		}
 
 		setTexture(sName: string, pValue: ITexture, iPass: uint = fx.ALL_PASSES): void {
-			if(iPass === ALL_PASSES){
+			if(iPass === fx.ALL_PASSES){
 				for(var i: uint = 0; i < this._nTotalPasses; i++){
 					this.setTexture(sName, pValue, i);
 				}
@@ -109,7 +109,7 @@ module akra.pool.resources {
 			}
 
 			if(iPass < 0 || iPass >= this._nTotalPasses){
-				debug_error("RenderMethod::setTexture : wrong number of pass (" + iPass + ")");
+				debug.error("RenderMethod::setTexture : wrong number of pass (" + iPass + ")");
 				return;
 			}
 
@@ -117,7 +117,7 @@ module akra.pool.resources {
 		}
 
 		setRenderState(eState: ERenderStates, eValue: ERenderStateValues, iPass: uint = fx.ALL_PASSES): void {
-			if(iPass === ALL_PASSES){
+			if(iPass === fx.ALL_PASSES){
 				for(var i: uint = 0; i < this._nTotalPasses; i++){
 					this.setRenderState(eState, eValue, i);
 				}
@@ -126,7 +126,7 @@ module akra.pool.resources {
 			}
 
 			if(iPass < 0 || iPass >= this._nTotalPasses){
-				debug_error("RenderMethod::setRenderState : wrong number of pass (" + iPass + ")");
+				debug.error("RenderMethod::setRenderState : wrong number of pass (" + iPass + ")");
 				return;
 			}
 
@@ -136,7 +136,7 @@ module akra.pool.resources {
 		setSamplerTexture(sName: string, sTexture: string, iPass?: uint): void;
 		setSamplerTexture(sName: string, pTexture: ITexture, iPass?: uint): void;
 		setSamplerTexture(sName: string, pTexture: any, iPass: uint = fx.ALL_PASSES): void {
-			if(iPass === ALL_PASSES){
+			if(iPass === fx.ALL_PASSES){
 				for(var i: uint = 0; i < this._nTotalPasses; i++){
 					this.setSamplerTexture(sName, pTexture, i);
 				}
@@ -145,7 +145,7 @@ module akra.pool.resources {
 			}
 
 			if(iPass < 0 || iPass >= this._nTotalPasses){
-				debug_error("RenderMethod::setSamplerTexture : wrong number of pass (" + iPass + ")");
+				debug.error("RenderMethod::setSamplerTexture : wrong number of pass (" + iPass + ")");
 				return;
 			}
 
@@ -172,7 +172,7 @@ module akra.pool.resources {
 				return;
 			}
 
-			var pComposer: IAFXComposer = this.manager.getEngine().getComposer();
+			var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
 			var iTotalPasses: uint = pEffect.totalPasses;
 
 			if(isNull(this._pPassInputList)){

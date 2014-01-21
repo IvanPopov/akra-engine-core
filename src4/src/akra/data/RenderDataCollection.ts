@@ -1,8 +1,8 @@
-/// <reference apth="../idl/IRenderDataCollection.ts" />
-/// <reference apth="../idl/IHardwareBuffer.ts" />
+/// <reference path="../idl/IRenderDataCollection.ts" />
+/// <reference path="../idl/IHardwareBuffer.ts" />
 
-/// <reference apth="RenderData.ts" />
-/// <reference apth="VertexDeclaration.ts" />
+/// <reference path="RenderData.ts" />
+/// <reference path="VertexDeclaration.ts" />
 
 module akra.data {
 

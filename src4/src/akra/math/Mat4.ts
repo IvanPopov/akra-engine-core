@@ -1488,12 +1488,12 @@ module akra.math {
 				return Mat4.fromYawPitchRoll(v3fVec.y, v3fVec.x, v3fVec.z, arguments[1]);
 			}
 			else {
-				//fX fY fZ m4fDestination
-				var fX: float = arguments[0];
-				var fY: float = arguments[1];
-				var fZ: float = arguments[2];
+				////fX fY fZ m4fDestination
+				//var fX: float = arguments[0];
+				//var fY: float = arguments[1];
+				//var fZ: float = arguments[2];
 
-				return Mat4.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
+				return Mat4.fromYawPitchRoll(<float>fY, <float>fX, <float>fZ, <IMat4>arguments[3]);
 			}
 		}
 

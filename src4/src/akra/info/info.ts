@@ -24,7 +24,7 @@ module akra.info {
 	export var browser: IBrowserInfo = new BrowserInfo;
 	export var api: IApiInfo = new ApiInfo;
 	export var screen: IScreenInfo = new ScreenInfo;
-	export var uri: IURI = uri.parse(document.location.href);
+	export var uri: IURI = akra.uri.parse(document.location.href);
 
 	export module is {
 		/**

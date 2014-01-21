@@ -70,7 +70,7 @@ module akra.util {
 				return null;
 			}
 
-			var pNewList: IObjectList<T> = new ObjectList();
+			var pNewList: IObjectList<T> = new ObjectList<T>();
 			var pItem: IObjectListItem<T> = this.find(iPos);
 
 			for (var i: int = 0; i < iSize; ++i) {

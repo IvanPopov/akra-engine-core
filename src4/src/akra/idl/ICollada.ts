@@ -100,7 +100,9 @@ module akra {
 	}
 	
 	export interface IColladaLibrary extends IColladaEntry {
-		[element: string]: IColladaEntryMap;
+		//[element: string]: IColladaEntryMap;
+		/** Real type is IColladaEntryMap, but typescript don`t allow to fo this */
+		[element: string]: any;
 	}
 	
 	export interface IColladaEffectLibrary extends IColladaLibrary {
@@ -442,7 +444,9 @@ module akra {
 	}
 	
 	export interface IColladaBindMaterial extends IColladaEntry {
-		[index/*symbol*/: string]: IColladaInstanceMaterial;
+		/** Real type IColladaInstanceMaterial, but typescript don`t allow to do this */
+		//[index/*symbol*/: string]: IColladaInstanceMaterial;
+		[index/*symbol*/: string]: any;
 	}
 	
 	export interface IColladaInstanceGeometry extends IColladaInstance {

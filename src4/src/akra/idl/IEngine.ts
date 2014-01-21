@@ -66,6 +66,12 @@ module akra {
 		createRenderDataCollection(iOptions?: int): IRenderDataCollection;
 		createBufferMap(): IBufferMap;
 		createAnimationController(sName?: string, iOptions?: int): IAnimationController;
+
+		frameStarted: ISignal<{ (pEngine: IEngine): void; }>;
+		frameEnded: ISignal<{ (pEngine: IEngine): void ; }>;
+		depsLoaded: ISignal<{ (pEngine: IEngine, pDeps: IDependens): void; }>;
+		inactive: ISignal<{ (pEngine: IEngine): void; }>;
+		active: ISignal<{ (pEngine: IEngine): void; }>;
 	};
 	
 	var createEngine: (options?: IEngineOptions) => IEngine;

@@ -446,7 +446,7 @@ module akra.scene.objects {
 
 		_addDisplayList(pScene: IScene3d, pList: IDisplayList<ISceneObject>, index: uint): void {
 			this._pDLTechniques[index] = new DLTechnique(pList, this);
-			this._pDLResultStorage[index] = new util.ObjectArray();
+			this._pDLResultStorage[index] = new util.ObjectArray<ISceneObject>();
 		}
 
 		_removeDisplayList(pScene: IScene3d, pList: IDisplayList<ISceneObject>, index: uint): void {

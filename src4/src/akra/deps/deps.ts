@@ -692,7 +692,7 @@ module akra.deps {
 		normalize(pDeps, pDeps.root || sRoot);
 		createResources(this.getEngine(), pDeps);
 		loadDependences(pEngine, pDeps,
-			(e: Error, pDeps: IDependens) => {
+			(e: Error, pDep: IDependens) => {
 				//get dependencies, contained dep
 				var pDeps: IDependens = pDep.deps;
 

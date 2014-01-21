@@ -26,29 +26,10 @@ module akra.render {
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
 		}, IViewport> {
 
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
-
 		emit(pTechnique?: IRenderTechnique, iPass?: uint, pRenderable?: IRenderableObject, pSceneObject?: ISceneObject): void {
 			//is mouse under the viewport
-			var pViewport: IViewport = this.getSender();
-
-			if (pViewport.isMouseCaptured() &&
-				// ... and pass is last
-				iPass === 0 &&
-				// ... and mouseover or mouse out events are supported
-				(pViewport.is3DEventSupported(E3DEventTypes.MOUSEOVER) ||
-				pViewport.is3DEventSupported(E3DEventTypes.MOUSEOUT))) {
-				//check, if the object are loss the mouse
-
-				var pPos: IPoint = pViewport._getLastMousePosition();
-				var x: int = pPos.x;
-				var y: int = pPos.y;
-
-				pViewport._handleMouseInout(pViewport.pick(x, y), x, y);
-			}
-
+			var pViewport: Viewport = <Viewport>this.getSender();
+			pViewport._onRender(pTechnique, iPass, pRenderable, pSceneObject);
 			//EMIT_BROADCAST(render, _CALL(pTechnique, iPass, pRenderable, pSceneObject));
 			super.emit(pTechnique, iPass, pRenderable, pSceneObject);
 		}
@@ -57,10 +38,6 @@ module akra.render {
 	//3D events 
 
 	class DragstartSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
-
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
 
 		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
@@ -83,10 +60,6 @@ module akra.render {
 
 	class DragstopSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
 
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
-
 		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
 			pViewport._keepLastMousePosition(x, y);
@@ -105,10 +78,6 @@ module akra.render {
 	}
 
 	class DraggingSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
-
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
 
 		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
@@ -130,10 +99,6 @@ module akra.render {
 
 	class ClickSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint): void; }, IViewport> {
 
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
-
 		emit(x?: int, y?: int): void {
 			var pViewport: IViewport = this.getSender();
 
@@ -153,10 +118,6 @@ module akra.render {
 	}
 
 	class MousemoveSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint): void; }, IViewport> {
-
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
 
 		emit(x?: int, y?: int): void {
 			var pViewport: IViewport = this.getSender();
@@ -178,10 +139,6 @@ module akra.render {
 
 	class MousedownSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
 
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
-
 		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
 
@@ -200,10 +157,6 @@ module akra.render {
 	}
 
 	class MouseupSignal extends Signal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }, IViewport> {
-
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
 
 		emit(eBtn?: EMouseButton, x?: uint, y?: uint): void {
 			var pViewport: IViewport = this.getSender();
@@ -225,10 +178,6 @@ module akra.render {
 
 	class MouseoverSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint): void; }, IViewport> {
 
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
-
 		emit(x?: int, y?: int): void {
 			var pViewport: IViewport = this.getSender();
 
@@ -239,10 +188,6 @@ module akra.render {
 	}
 
 	class MouseoutSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint): void; }, IViewport> {
-
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
 
 		emit(x?: int, y?: int): void {
 			var pViewport: IViewport = this.getSender();
@@ -256,10 +201,6 @@ module akra.render {
 	}
 
 	class MousewheelSignal extends Signal<{ (pViewport: IViewport, x: uint, y: uint, fDelta: float): void; }, IViewport> {
-
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
 
 		emit(x?: int, y?: int, fDelta?: float): void {
 			var pViewport: IViewport = this.getSender();
@@ -278,7 +219,7 @@ module akra.render {
 		render: ISignal<{
 			(pViewport: IViewport, pTechnique: IRenderTechnique,
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-		}>;
+		}> = new RenderSignal(this);
 
 		dragstart: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstartSignal(this);
 		dragstop: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstopSignal(this);
@@ -347,7 +288,7 @@ module akra.render {
 		private _p3DEventPickLast: IRIDPair = { object: null, renderable: null }
 		private _p3DEventDragTarget: IRIDPair = { object: null, renderable: null }
 
-		 get zIndex(): int {
+		get zIndex(): int {
 			return this._iZIndex;
 		}
 
@@ -414,8 +355,7 @@ module akra.render {
 		 * @param csRenderMethod Name of render technique, that will be selected in the renderable for render.
 		 */ 
 		constructor(pCamera: ICamera, csRenderMethod: string = null,
-			fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0,
-			pRenderSignal: ISignal<{ (pViewport: IViewport, pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void; }> = null) {
+			fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 
 			this._fRelLeft = fLeft;
 			this._fRelTop = fTop;
@@ -423,8 +363,6 @@ module akra.render {
 			this._fRelHeight = fHeight;
 
 			this._iZIndex = iZIndex;
-
-			this.render = pRenderSignal || new RenderSignal(this);
 
 			this._csDefaultRenderMethod = csRenderMethod;
 
@@ -688,6 +626,24 @@ module akra.render {
 					}
 				}
 			}
+		}
+
+		protected _onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			if (this.isMouseCaptured() &&
+				// ... and pass is last
+				iPass === 0 &&
+				// ... and mouseover or mouse out events are supported
+				(this.is3DEventSupported(E3DEventTypes.MOUSEOVER) ||
+				this.is3DEventSupported(E3DEventTypes.MOUSEOUT))) {
+				//check, if the object are loss the mouse
+
+				var pPos: IPoint = this._getLastMousePosition();
+				var x: int = pPos.x;
+				var y: int = pPos.y;
+
+				this._handleMouseInout(this.pick(x, y), x, y);
+			}
+
 		}
 
 		projectPoint(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3 {

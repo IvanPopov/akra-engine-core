@@ -428,7 +428,7 @@ module akra.scene {
 		}
 
 		_findObjects(pCamera: ICamera,
-			pResultArray: IObjectArray<ISceneObject> = new util.ObjectArray(),
+			pResultArray: IObjectArray<ISceneObject> = new util.ObjectArray<ISceneObject>(),
 			bFastSearch: boolean = false): IObjectArray<ISceneObject> {
 
 			//while we ignore second parametr

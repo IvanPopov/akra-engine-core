@@ -57,7 +57,7 @@ module akra.render {
 				this.setMethod(pMethod);
 			}
 
-			this._pRenderMethodPassStateList = new util.ObjectArray();
+			this._pRenderMethodPassStateList = new util.ObjectArray<IAFXPassInputStateInfo>();
 		}
 
 

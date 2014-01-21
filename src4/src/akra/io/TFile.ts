@@ -65,7 +65,7 @@ module akra.io {
 
 		//set mode(sMode: string);
 		//set mode(iMode: int);
-		set mode(mode: any) {
+		set mode(mode: int) {
 			this._iMode = isString(mode) ? io.filemode(<string><any>mode) : mode;
 		}
 

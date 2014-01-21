@@ -10,6 +10,10 @@
 module akra.pool.resources {
 	import Mat4 = math.Mat4;
 	import Vec3 = math.Vec3;
+	import Vec4 = math.Vec4;
+
+	import VE = data.VertexElement;
+	import Color = color.Color;
 
 	export enum EObjFVF {
 		XYZ = 0x01,
@@ -156,35 +160,35 @@ module akra.pool.resources {
 			pMesh = model.createMesh(pEngine, this.getBasename(), EMeshOptions.HB_READABLE);
 			pSubMesh = pMesh.createSubset(this.getBasename(), EPrimitiveTypes.TRIANGLELIST);
 
-			iPos = pSubMesh.data.allocateData([VE_VEC3('POSITION')], pVerticesData);
-			pSubMesh.data.allocateIndex([VE_FLOAT('INDEX0')], pVertexIndicesData);
+			iPos = pSubMesh.data.allocateData([VE.float3('POSITION')], pVerticesData);
+			pSubMesh.data.allocateIndex([VE.float('INDEX0')], pVertexIndicesData);
 			pSubMesh.data.index(iPos, 'INDEX0');
 			// console.log(pVerticesData, pVertexIndicesData);
 
 			if (this.hasNormals()) {
-				iNorm = pSubMesh.data.allocateData([VE_VEC3('NORMAL')], pNormalsData);
+				iNorm = pSubMesh.data.allocateData([VE.float3('NORMAL')], pNormalsData);
 
 				if (this._pNormalIndexes.length > 0) {
-					pSubMesh.data.allocateIndex([VE_FLOAT('INDEX1')], pNormalIndicesData);
+					pSubMesh.data.allocateIndex([VE.float('INDEX1')], pNormalIndicesData);
 					pSubMesh.data.index(iNorm, 'INDEX1');
 					// console.log(pNormalsData, pNormalIndicesData);
 				}
 				else {
-					OBJ_PRINT(this, "normal index was replaced with vertex index");
-					pSubMesh.data.allocateIndex([VE_FLOAT('INDEX1')], pVertexIndicesData);
+					logger.log("[OBJ [" + this.findResourceName() + "]]", "normal index was replaced with vertex index");
+					pSubMesh.data.allocateIndex([VE.float('INDEX1')], pVertexIndicesData);
 					pSubMesh.data.index(iNorm, 'INDEX1');
 				}
 			}
 
 			if (this.hasTexcoords()) {
-				OBJ_PRINT(this, "model have texture coordinates");
-				iTexcoord = pSubMesh.data.allocateData([VE_VEC2('TEXCOORD0')], pTexcoordsData);
-				pSubMesh.data.allocateIndex([VE_FLOAT('INDEX2')], pTexcoordIndicesData);
+				logger.log("[OBJ [" + this.findResourceName() + "]]", "model have texture coordinates");
+				iTexcoord = pSubMesh.data.allocateData([VE.float2('TEXCOORD0')], pTexcoordsData);
+				pSubMesh.data.allocateIndex([VE.float('INDEX2')], pTexcoordIndicesData);
 				pSubMesh.data.index('TEXCOORD0', 'INDEX2');
 				// console.log(pTexcoordsData, pTexcoordIndicesData);
 			}
 			else {
-				OBJ_PRINT(this, "model does not have any texture coordinates");
+				logger.log("[OBJ [" + this.findResourceName() + "]]", "model does not have any texture coordinates");
 			}
 
 			pSubMesh.shadow = this.options.shadows;
@@ -230,7 +234,7 @@ module akra.pool.resources {
 				return false;
 			}
 
-			OBJ_PRINT(this, "parsing started...");
+			logger.log("[OBJ [" + this.findResourceName() + "]]", "parsing started...");
 			this.setOptions(pOptions);
 
 			var pLines: string[] = sData.split("\n");
@@ -276,7 +280,7 @@ module akra.pool.resources {
 			}
 
 			if (!this._pNormals.length) {
-				OBJ_PRINT(this, "calculation normals....")
+				logger.log("[OBJ [" + this.findResourceName() + "]]", "calculation normals....")
 				this.calcNormals();
 			}
 		}
@@ -304,7 +308,7 @@ module akra.pool.resources {
 				for (k = 0; k < 3; ++k) {
 
 					j = this._pVertexIndexes[i + k] * 3;
-					v[k] = vec3([this._pVertices[j], this._pVertices[j + 1], this._pVertices[j + 2]]);
+					v[k] = Vec3.temp([this._pVertices[j], this._pVertices[j + 1], this._pVertices[j + 2]]);
 				}
 
 				v[1].subtract(v[2], p);

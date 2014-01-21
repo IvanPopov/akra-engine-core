@@ -38,9 +38,9 @@ module akra {
 		find(sID?: string): Gamepad;
 		find(i?: int): Gamepad;
 	
-		signal connected(pGamepad: Gamepad): void;
-		signal disconnected(pGamepad: Gamepad): void;
-		signal updated(pGamepad: Gamepad): void;
+		connected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }>;
+		disconnected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }>;
+		updated: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }>;
 	}
 	
 }

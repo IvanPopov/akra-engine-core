@@ -15,7 +15,7 @@ module akra.data {
 		private _iId: int;
 
 		get id(): uint { return this._iId; }
-		get type(): uint { return this._eElementsType; }
+		get type(): EDataTypes { return this._eElementsType; }
 		get length(): uint { return this._iLength; }
 		get bytesPerIndex(): uint { return sizeof(this._eElementsType); }
 		get byteOffset(): uint { return this._iOffset; }

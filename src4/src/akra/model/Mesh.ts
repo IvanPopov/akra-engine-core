@@ -13,13 +13,13 @@
 /// <reference path="../idl/ISceneModel.ts" />
 
 /// <reference path="Skin.ts" />
-/// <reference "MeshSubset.ts" />
+/// <reference path="MeshSubset.ts" />
 
-/// <reference "../material/materials.ts" />
-/// <reference "../util/ReferenceCounter.ts" />
-/// <reference "../events.ts" />
+/// <reference path="../material/materials.ts" />
+/// <reference path="../util/ReferenceCounter.ts" />
+/// <reference path="../events.ts" />
 
-/// <reference "../guid.ts" />
+/// <reference path="../guid.ts" />
 
 module akra.model {
 	import VE = data.VertexElement;
@@ -32,7 +32,7 @@ module akra.model {
 		}, IMesh> {
 
 		constructor(pViewport: IMesh) {
-			super(pViewport, EEventTypes.UNICAST);
+			super(pViewport, null, EEventTypes.UNICAST);
 		}
 
 		emit(pSubMesh?: IMeshSubset, bShadow?: boolean): void {

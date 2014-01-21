@@ -8,38 +8,7 @@ module akra.render {
 
 	var pPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.BYTE_RGBA, new Uint8Array(4));
 
-	class ColorRenderSignal
-		extends Signal<{
-			(pViewport: IViewport, pTechnique: IRenderTechnique,
-				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-		}, IViewport> {
-
-		constructor(pViewport: IViewport) {
-			super(pViewport, EEventTypes.BROADCAST);
-		}
-
-		emit(pTechnique?: IRenderTechnique, iPass?: uint, pRenderable?: IRenderableObject, pSceneObject?: ISceneObject): void {
-			var pViewport: ColorViewport = <ColorViewport>this.getSender();
-			var pPass: IRenderPass = pTechnique.getPass(iPass);
-
-			pPass.setUniform("RENDERABLE_ID", pViewport.getGuidToColorMap()[pRenderable.guid]);
-			pPass.setUniform("OPTIMIZED_PROJ_MATRIX", pViewport.getCamera().projectionMatrix);
-			//pPass.setUniform("color", util.colorToVec4(util.randomColor(true)));
-
-			if (!isNull(pSceneObject)) {
-				pPass.setUniform("SCENE_OBJECT_ID", pViewport.getGuidToColorMap()[pSceneObject.guid]);
-			}
-
-			super.emit(pTechnique, iPass, pRenderable, pSceneObject);
-		}
-	}
-
 	export class ColorViewport extends Viewport implements IViewport {
-		render: ISignal<{
-			(pViewport: IViewport, pTechnique: IRenderTechnique,
-				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-		}> = new ColorRenderSignal(this);
-
 		protected _pGuidToColorMap: IMap<int> = <any>{};
 		protected _pColorToSceneObjectMap: ISceneObject[] = new Array(256);
 		protected _pColorToRenderableMap: IRenderableObject[] = new Array(256);
@@ -123,7 +92,21 @@ module akra.render {
 			}
 
 			return null;
-		}		
+		}
+		
+		protected _onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
+			var pPass: IRenderPass = pTechnique.getPass(iPass);
+
+			pPass.setUniform("RENDERABLE_ID", this.getGuidToColorMap()[pRenderable.guid]);
+			pPass.setUniform("OPTIMIZED_PROJ_MATRIX", this.getCamera().projectionMatrix);
+			//pPass.setUniform("color", util.colorToVec4(util.randomColor(true)));
+
+			if (!isNull(pSceneObject)) {
+				pPass.setUniform("SCENE_OBJECT_ID", this.getGuidToColorMap()[pSceneObject.guid]);
+			}
+
+			super._onRender(pTechnique, iPass, pRenderable, pSceneObject);
+		}	
 
 		private prepareRenderableForPicking(pRenderable: IRenderableObject): void {
 			var pRenderTechnique: IRenderTechnique = pRenderable.getTechnique(this._csDefaultRenderMethod);

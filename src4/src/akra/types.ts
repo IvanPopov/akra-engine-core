@@ -1,5 +1,5 @@
-﻿/// <reference path="idl/EDataTypes.ts">
-/// <reference path="logger.ts">
+﻿/// <reference path="idl/EDataTypes.ts" />
+/// <reference path="logger.ts" />
 
 module akra {
     export function sizeof(eType: EDataTypes): uint {

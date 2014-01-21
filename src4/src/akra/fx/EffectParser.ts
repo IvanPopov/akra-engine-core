@@ -1,5 +1,5 @@
-/// <reference path="../idl/parser/IParser.ts />"
-/// <reference path="../idl/IMap.ts />"
+/// <reference path="../idl/parser/IParser.ts" />
+/// <reference path="../idl/IMap.ts" />
 /// <reference path="../parser/Parser.ts" />
 /// <reference path="../common.ts" />
 /// <reference path="../io/io.ts" />

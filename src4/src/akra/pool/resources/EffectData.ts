@@ -1,5 +1,4 @@
 /// <reference path="../../idl/IAFXComposer.ts" />
-/// <reference path="../../idl/IParser.ts" />
 /// <reference path="../../idl/IFile.ts" />
 /// <reference path="../../idl/parser/IParser.ts" />
 
@@ -57,15 +56,16 @@ module akra.pool.resources {
 			if (config.AFX_ENABLE_TEXT_EFFECTS) {
 				//text only
 				var pFile: IFile = this._pFile = io.fopen(sFileName, "r+t");
+				var me: EffectData = this;
 
 				pFile.read(function (pErr: Error, sData: string) {
 					if (!isNull(pErr)) {
-						ERROR("Can not load .afx file: '" + sFileName + "'");
+						logger.error("Can not load .afx file: '" + sFileName + "'");
 					}
 					else {
 
-						util.parser.setParseFileName(sFileName);
-						util.parser.parse(sData, me._initFromParsedEffect, me);
+						fx.effectParser.setParseFileName(sFileName);
+						fx.effectParser.parse(sData, me._initFromParsedEffect, me);
 					}
 				});
 			}
@@ -73,12 +73,12 @@ module akra.pool.resources {
 			return true;
 		}
 
-		_initFromParsedEffect(eCode: EParserCode, sFileName: string): void {
-			if(eCode === EParserCode.k_Error) {
+		_initFromParsedEffect(eCode: parser.EParserCode, sFileName: string): void {
+			if (eCode === parser.EParserCode.k_Error) {
 				return;
 			}
 			
-			this._pSyntaxTree = util.parser.getSyntaxTree();
+			this._pSyntaxTree = fx.effectParser.getSyntaxTree();
 
 			var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
 

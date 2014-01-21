@@ -54,18 +54,13 @@ module akra.render {
 			// console.log("set mapping > ", x, y, w, h, this._v4fMapping.toString());
 		}
 
-		render(
-			pTechnique: IRenderTechnique, 
-			iPass: uint, 
-			pRenderable: IRenderableObject, 
-			pSceneObject: ISceneObject): void {
-
+		protected _onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setTexture("TEXTURE0", this._pTargetTexture);
 			pPass.setUniform("VIEWPORT", this._v4fMapping);
 
-			super.render.emit(pTechnique, iPass, pRenderable, pSceneObject);
+			super._onRender(pTechnique, iPass, pRenderable, pSceneObject);
 		}
 	}
 }

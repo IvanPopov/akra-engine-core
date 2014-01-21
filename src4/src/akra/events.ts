@@ -10,12 +10,14 @@ module akra {
 		private _pUnicastListener: IListener<T> = null;
 		private _pSender: S = null;
 		private _eType: EEventTypes = EEventTypes.BROADCAST;
+		private _fnSenderCallback: Function = null;
 
 		private static _pEmptyListenersList: IListener<T>[] = [];
 		private static _nEmptyListenersCount: uint = 0;
 
-		constructor(pSender: S, eType: EEventTypes = EEventTypes.BROADCAST) {
+		constructor(pSender: S, fnSenderCallback: Function = null, eType: EEventTypes = EEventTypes.BROADCAST){
 			this._pSender = pSender;
+			this._fnSenderCallback = fnSenderCallback;
 			this._eType = eType;
 
 			if (this._eType === EEventTypes.BROADCAST) {
@@ -91,7 +93,61 @@ module akra {
 
 		public emit(...pArgs: any[]);
 		public emit() {
-			var pListener: IListener<Function> = null;
+
+			if(!isNull(this._fnSenderCallback)) {
+				switch (arguments.length) {
+					case 0:
+						this._fnSenderCallback.call(this._pSender);
+						break;
+					case 1:
+						this._fnSenderCallback.call(this._pSender, arguments[0]);
+						break;
+					case 2:
+						this._fnSenderCallback.call(this._pSender, arguments[0], arguments[1]);
+						break;
+					case 3:
+						this._fnSenderCallback.call(this._pSender, arguments[0], arguments[1], arguments[2]);
+						break;
+					case 4:
+						this._fnSenderCallback.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3]);
+						break;
+					case 5:
+						this._fnSenderCallback.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+						break;
+					case 6:
+						this._fnSenderCallback.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5]);
+						break;
+					case 7:
+						this._fnSenderCallback.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6]);
+						break;
+					case 8:
+						this._fnSenderCallback.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6], arguments[7]);
+						break;
+					case 9:
+						this._fnSenderCallback.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6], arguments[7], arguments[8]);
+						break;
+					case 10:
+						this._fnSenderCallback.call(this._pSender,
+							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+							arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+						break;
+					default:
+						this._fnSenderCallback.apply(this._pSender, arguments);
+				}
+
+			}
+
+			var pListener: IListener<T> = null;
 			var nListeners: uint = this._eType === EEventTypes.BROADCAST ? this._nBroadcastListenersCount : 1;
 			for (var i: int = 0; i < nListeners; i++) {
 				if (this._eType === EEventTypes.UNICAST) {
@@ -108,8 +164,8 @@ module akra {
 				switch (arguments.length) {
 					case 0:
 						pListener.callback.call(pListener.reciever, this._pSender);
-					break
-				case 1:
+						break;
+					case 1:
 						pListener.callback.call(pListener.reciever, this._pSender,
 							arguments[0]);
 						break;
@@ -159,6 +215,7 @@ module akra {
 						for (var _i = 0; _i < (arguments.length); _i++) {
 							args[_i + 1] = arguments[_i];
 						}
+
 						pListener.callback.apply(pListener.reciever, args);
 				}
 

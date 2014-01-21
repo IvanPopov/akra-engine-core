@@ -6,7 +6,7 @@
 /// <reference path="Codec.ts" />
 /// <reference path="ImgCodec.ts" />
 /// <reference path="pixelUtil.ts" />
-/// <reference path="../resources/Img.ts" />
+/// <reference path="../pool/resources/Img.ts" />
 
 module akra.pixelUtil {
 	/** @const */
@@ -496,7 +496,7 @@ module akra.pixelUtil {
 
 			if (pHeader.dwFlags & DDSD_MIPMAPCOUNT) {
 				pImgData.numMipMaps = pHeader.dwMipMapCount - 1;
-				if (pImgData.numMipMaps != Img.getMaxMipmaps(pImgData.width, pImgData.height, pImgData.depth, pImgData.format)) {
+				if (pImgData.numMipMaps != pool.resources.Img.getMaxMipmaps(pImgData.width, pImgData.height, pImgData.depth, pImgData.format)) {
 					logger.warn("Number of mipmaps are not to degrease image size to 1x1 "
 						+ pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
 

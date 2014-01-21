@@ -6,6 +6,7 @@
 
 
 /// <reference path="IUI.ts" />
+/// <reference path="IEventProvider.ts" />
 
 module akra {
 	export enum EUINodeTypes {
@@ -33,6 +34,6 @@ module akra {
 		renderTarget(): JQuery;
 		hasRenderTarget(): boolean;
 	
-		signal relocated(pNode: IUINode): void;
+		relocated: ISignal<{ (pNode: IUINode, pLocation: IUINode): void; }>;
 	}
 }

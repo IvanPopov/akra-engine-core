@@ -799,11 +799,11 @@ module akra.math {
             }
             else {
                 //fX fY fZ m3fDestination
-                var fX: float = arguments[0];
-                var fY: float = arguments[1];
-                var fZ: float = arguments[2];
+                //var fX: float = arguments[0];
+                //var fY: float = arguments[1];
+                //var fZ: float = arguments[2];
 
-                return Mat3.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
+                return Mat3.fromYawPitchRoll(<float>fY, <float>fX, <float>fZ, <IMat3>arguments[3]);
             }
         }
 

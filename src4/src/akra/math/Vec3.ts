@@ -293,8 +293,6 @@ module akra.math {
                     this.x = this.y = this.z = 0.;
                     break;
             }
-
-            return 10;
         }
 
         set(): IVec3;

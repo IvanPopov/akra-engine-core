@@ -12,6 +12,7 @@ module akra.config {
 	//global
 	export var DEBUG: boolean = true;
 	export var WEBGL: boolean = true;
+	export var GUI: boolean = false;
 
 	//temporary 
 	export var SKY: boolean = true;

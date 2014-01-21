@@ -140,7 +140,6 @@
     <None Include="akra\config\config.ts" />
     <None Include="akra\control\control.ts" />
     <None Include="akra\conv\conv.ts" />
-    <None Include="akra\core\core.ts" />
     <None Include="akra\types.ts" />
     <None Include="akra\debug.ts" />
     <None Include="akra\deps\deps.ts" />
@@ -512,6 +511,7 @@
     <TypeScriptCompile Include="akra\animation\List.ts" />
     <TypeScriptCompile Include="akra\animation\Parameter.ts" />
     <TypeScriptCompile Include="akra\animation\Track.ts" />
+    <TypeScriptCompile Include="akra\core\Engine.ts" />
     <TypeScriptCompile Include="akra\data\RenderData.ts" />
     <TypeScriptCompile Include="akra\data\RenderDataCollection.ts" />
     <None Include="akra\render\RenderableObject.ts" />
@@ -535,6 +535,7 @@
     <TypeScriptCompile Include="akra\scene\light\ShadowCaster.ts" />
     <TypeScriptCompile Include="akra\scene\light\SunLight.ts" />
     <TypeScriptCompile Include="akra\scene\objects\ModelEntry.ts" />
+    <TypeScriptCompile Include="akra\threading\ThreadManager.ts" />
     <TypeScriptCompile Include="akra\webgl\CalculateSkin.ts" />
     <TypeScriptCompile Include="akra\model\Mesh.ts" />
     <TypeScriptCompile Include="akra\model\MeshSubset.ts" />
@@ -575,11 +576,12 @@
     <TypeScriptTarget>ES5</TypeScriptTarget>
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
-    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <TypeScriptModuleKind>none</TypeScriptModuleKind>
     <Optimize>true</Optimize>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TypeScriptOutDir>./build</TypeScriptOutDir>
     <TypeScriptAdditionalFlags>--propagateEnumConstants</TypeScriptAdditionalFlags>
+    <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptTarget>ES5</TypeScriptTarget>

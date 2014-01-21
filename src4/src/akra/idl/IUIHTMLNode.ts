@@ -1,6 +1,7 @@
 
 /// <reference path="IUINode.ts" />
 /// <reference path="3d-party/jquery.d.ts" />
+/// <reference path="IEventProvider.ts" />
 
 module akra {
 	export interface IUIEvent extends JQueryEventObject {}
@@ -25,26 +26,26 @@ module akra {
 		show(): void;
 		hide(): void;
 	
-		signal click(e: IUIEvent): void;
-		signal dblclick(e: IUIEvent): void;
+		click: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
+		dblclick: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
 		
-		signal mousemove(e: IUIEvent): void;
-		signal mouseup(e: IUIEvent): void;
-		signal mousedown(e: IUIEvent): void;
-		signal mouseover(e: IUIEvent): void;
-		signal mouseout(e: IUIEvent): void;
+		mousemove: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
+		mouseup: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
+		mousedown: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
+		mouseover: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
+		mouseout: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
 		
-		signal focusin(e: IUIEvent): void;
-		signal focusout(e: IUIEvent): void;
+		focusin: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
+		focusout: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
 	
-		signal blur(e: IUIEvent): void;
-		signal change(e: IUIEvent): void;
+		blur: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
+		change: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
 	
-		signal keydown(e: IUIEvent): void;
-		signal keyup(e: IUIEvent): void;
+		keydown: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
+		keyup: ISignal<{ (pNode: IUIHTMLNode, e: IUIEvent): void; }>;
 	
-		signal rendered(): void;
-		signal beforeRender(): void;
+		rendered: ISignal<{ (pNode: IUIHTMLNode): void; }>;
+		beforeRender: ISignal<{ (pNode: IUIHTMLNode): void; }>;
 	}
 	
 }

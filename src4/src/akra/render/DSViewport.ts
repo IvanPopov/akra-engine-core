@@ -33,17 +33,9 @@ module akra.render {
 	var pFloatColorPixel: IPixelBox = new pixelUtil.PixelBox(new geometry.Box(0, 0, 1, 1), EPixelFormats.FLOAT32_RGBA, new Uint8Array(4 * 4));
 	var pColor: IColor = new Color(0);
 
-	class DSRenderSignal extends RenderSignal {
-
-		emit(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
-			var pViewport: IViewport = this.getSender();
-			//TODO:
-		}
-	}
-
 	export class DSViewport extends Viewport implements IDSViewport  {
-		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }> = new Signal(this);
-		addedBackground: ISignal<{ (pViewport: IViewport, pTexture: ITexture): void; }> = new Signal(this);
+		addedSkybox: ISignal<{ (pViewport: IViewport, pSkyTexture: ITexture): void; }> = new Signal(<any>this);
+		addedBackground: ISignal<{ (pViewport: IViewport, pTexture: ITexture): void; }> = new Signal(<any>this);
 
 		private _pDeferredEffect: IEffect = null;
 		private _pDeferredColorTextures: ITexture[] = [];
@@ -53,7 +45,7 @@ module akra.render {
 
 		//index of lighting display list
 		private _pLightDL: int; 
-		private _pLightPoints: util.ObjectArray<ILightPoint> = null;
+		private _pLightPoints: IObjectArray<ILightPoint> = null;
 		private _pLightingUnifoms: UniformMap = {
 			omni           	: [],
 			project        	: [],
@@ -71,23 +63,23 @@ module akra.render {
 		private _pHighlightedObject: IRIDPair = {object: null, renderable: null};
 
 
-		 get type(): EViewportTypes { return EViewportTypes.DSVIEWPORT; }
+		get type(): EViewportTypes { return EViewportTypes.DSVIEWPORT; }
 
 
-		 get effect(): IEffect {
+		get effect(): IEffect {
 			return this._pDeferredEffect;
 		}
 
-		 get depth(): ITexture {
+		get depth(): ITexture {
 			return this._pDeferredDepthTexture;
 		}
 
-		 get view(): IRenderableObject {
+		get view(): IRenderableObject {
 			return this._pDeferredView;
 		}
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
-			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex, new DSRenderSignal(<any>this));
+			super(pCamera, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 		}
 
 		_setTarget(pTarget: IRenderTarget): void {
@@ -212,7 +204,8 @@ module akra.render {
 			this._pCamera._keepLastViewport(this);
 
 			//calculate lighting
-			var pLights: IObjectArray<ILightPoint> = <IObjectArray<ILightPoint>>this.getCamera().display(Scene3d.DL_LIGHTING);
+			//TODO: Display techniques return sceneNodes, LightPoints and SceneObjects
+			var pLights: IObjectArray<ILightPoint> = <IObjectArray<any>>this.getCamera().display(Scene3d.DL_LIGHTING);
 			
 			for (var i: int = 0; i < pLights.length; i++) {
 				pLights.value(i)._calculateShadows();
@@ -248,7 +241,8 @@ module akra.render {
 							}
 
 							pTechnique = pRenderable.getTechnique(sMethod);
-							pTechnique._syncTable(pTechCurr);
+							//TODO: need something else
+							//pTechnique._syncTable(pTechCurr);
 
 
 							if (j === 0) {
@@ -270,7 +264,7 @@ module akra.render {
 	
 		}
 
-		 getSkybox(): ITexture { return this._pDeferredSkyTexture; }
+		getSkybox(): ITexture { return this._pDeferredSkyTexture; }
 
 		protected _getDepthRangeImpl(): IDepthRange{
 			var pRange: IDepthRange = config.WEBGL? 
@@ -285,11 +279,11 @@ module akra.render {
 		
 		
 
-		 getObject(x: uint, y: uint): ISceneObject {
+		getObject(x: uint, y: uint): ISceneObject {
 			return this.getTarget().getRenderer().getEngine().getComposer()._getObjectByRid(this._getRenderId(x, y));
 		}
 
-		 getRenderable(x: uint, y: uint): IRenderableObject {
+		getRenderable(x: uint, y: uint): IRenderableObject {
 			return this.getTarget().getRenderer().getEngine().getComposer()._getRenderableByRid(this._getRenderId(x, y));
 		}
 
@@ -309,7 +303,7 @@ module akra.render {
 			return {renderable: pRenderable, object: pObject};
 		}
 
-		 _getRenderId(x: int, y: int): int {
+		_getRenderId(x: int, y: int): int {
 			return this._getDeferredTexValue(0, x, y).a;
 		}
 
@@ -444,14 +438,7 @@ module akra.render {
 			this._pDeferredSkyTexture = null;
 		}
 
-
-
-		render(
-			pTechnique: IRenderTechnique, 
-			iPass: uint, 
-			pRenderable: IRenderableObject, 
-			pSceneObject: ISceneObject): void {
-			
+		protected _onRender(pTechnique: IRenderTechnique, iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
 			var pDeferredTextures: ITexture[] = this._pDeferredColorTextures;
@@ -490,8 +477,8 @@ module akra.render {
 					pPass.setUniform("SHADOW_CONSTANT", 5.e+2);
 
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
-									 Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
-					
+						Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setTexture("DEFERRED_TEXTURE1", pDeferredTextures[1]);
 					pPass.setTexture("SCENE_DEPTH_TEXTURE", pDepthTexture);
@@ -501,9 +488,9 @@ module akra.render {
 					//skybox
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);
-					
+
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
-									 Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+						Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
 					//outline
 					var p: IRIDPair = this._pHighlightedObject;
 
@@ -513,37 +500,23 @@ module akra.render {
 						pPass.setUniform("OUTLINE_TARGET", iRid);
 						pPass.setUniform("OUTLINE_SOID", (iRid - 1) >>> 10);
 						pPass.setUniform("OUTLINE_REID", (iRid - 1) & 1023);
-					}	
+					}
 
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
-									 Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+						Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
 					break;
 				// case 2:
 				// 	pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 				// 	pPass.setUniform("SCREEN_TEXTURE_RATIO",
-	//                                  Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
-					// break;
+				//                                  Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+				// break;
 			}
 
-			super.render.emit(pTechnique, iPass, pRenderable, pSceneObject);
+			super._onRender(pTechnique, iPass, pRenderable, pSceneObject);
 		}
 
-		private resetUniforms(): void {
-			var pUniforms = this._pLightingUnifoms;
-			pUniforms.omni.clear();
-			pUniforms.project.clear();
-			pUniforms.sun.clear();
-			pUniforms.omniShadows.clear();
-			pUniforms.projectShadows.clear();
-			pUniforms.sunShadows.clear();
-			pUniforms.textures.clear();
-			pUniforms.samplersProject.clear();
-			pUniforms.samplersOmni.clear();
-			pUniforms.samplersSun.clear();
-		}
-
-		private createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void {
+		protected createLightingUniforms(pCamera: ICamera, pLightPoints: IObjectArray<ILightPoint>, pUniforms: UniformMap): void {
 			var pLight: ILightPoint;
 			var pOmniLight: IOmniLight;
 			var pProjectLight: IProjectLight;
@@ -666,6 +639,20 @@ module akra.render {
 					logger.critical("Invalid light point type detected.");
 				}
 			}
+		}
+
+		private resetUniforms(): void {
+			var pUniforms = this._pLightingUnifoms;
+			pUniforms.omni.clear();
+			pUniforms.project.clear();
+			pUniforms.sun.clear();
+			pUniforms.omniShadows.clear();
+			pUniforms.projectShadows.clear();
+			pUniforms.sunShadows.clear();
+			pUniforms.textures.clear();
+			pUniforms.samplersProject.clear();
+			pUniforms.samplersOmni.clear();
+			pUniforms.samplersSun.clear();
 		}
 	}
 }

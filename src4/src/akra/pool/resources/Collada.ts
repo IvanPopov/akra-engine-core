@@ -18,8 +18,18 @@
 /// <reference path="../../conv/conv.ts" />
 /// <reference path="../../logger.ts" />
 /// <reference path="../../debug.ts" />
+/// <reference path="../pool.ts" />
 
-module akra.core.pool.resources {
+module akra.pool.resources {
+	import Mat4 = math.Mat4;
+	import Mat3 = math.Mat3;
+
+	import Vec3 = math.Vec3;
+	import Vec4 = math.Vec4;
+
+	import Color = color.Color;
+	import VE = data.VertexElement;
+
 	var COLLADA_DEBUG = config.DEBUG;
 
 	var CLD_PRINT: (c: ICollada, ...argv: any[]) => void = () => { };
@@ -163,10 +173,10 @@ module akra.core.pool.resources {
 			var pIndexes: uint[] = [];
 
 			this.eachByTag(pXML, "p", function (pXMLData) {
-				n = string2IntArray(stringData(pXMLData), pData);
+				n = conv.stoia(stringData(pXMLData), pData);
 
 				for (var i: int = 0; i < 3; i++) {
-					retrieve(pData, tmp, iStride, i, 1);
+					conv.retrieve(pData, tmp, iStride, i, 1);
 					for (var j: int = 0; j < iStride; ++j) {
 						pIndexes.push(tmp[j]);
 					}
@@ -200,10 +210,10 @@ module akra.core.pool.resources {
 			var pIndexes: uint[] = [];
 
 			this.eachByTag(pXML, "p", function (pXMLData) {
-				n = string2IntArray(stringData(pXMLData), pData);
+				n = conv.stoia(stringData(pXMLData), pData);
 
 				for (var i: int = 0; i < 3; i++) {
-					retrieve(pData, tmp, iStride, i, 1);
+					conv.retrieve(pData, tmp, iStride, i, 1);
 					for (var j: int = 0; j < iStride; ++j) {
 						pIndexes.push(tmp[j]);
 					}
@@ -235,7 +245,7 @@ module akra.core.pool.resources {
 			var buf = new Array(256);
 			var pPoly2Tri = [0, 0, 0];
 
-			string2IntArray(stringData(pXMLvcount), pVcount);
+			conv.stoia(stringData(pXMLvcount), pVcount);
 
 			var nElements: uint = 0, 
 				nTotalElement: uint = 0;
@@ -248,13 +258,13 @@ module akra.core.pool.resources {
 			pIndexes = new Array(iStride * nTotalElement);
 			pData = new Array(iStride * nElements);
 
-			string2IntArray(stringData(pXMLp), pData);
+			conv.stoia(stringData(pXMLp), pData);
 
 			for (var i: int = 0, m = 0; i < pVcount.length; i++) {
-				n = retrieve(pData, tmp, iStride, m, pVcount[i]);
+				n = conv.retrieve(pData, tmp, iStride, m, pVcount[i]);
 
 				for (var j: int = 0; j < 3; j++) {
-					retrieve(tmp, buf, iStride, j, 1);
+					conv.retrieve(tmp, buf, iStride, j, 1);
 					for (var k: int = 0; k < iStride; ++k) {
 						pIndexes[h++] = buf[k];
 					}
@@ -356,23 +366,23 @@ module akra.core.pool.resources {
 		private COLLADATranslateMatrix(pXML: Element): IMat4 {
 			var pData: float[] = new Array(3);
 
-			string2FloatArray(stringData(pXML), pData);
+			conv.stofa(stringData(pXML), pData);
 
-			return (vec3(pData)).toTranslationMatrix();
+			return (Vec3.temp(pData)).toTranslationMatrix();
 		}
 
 		private COLLADARotateMatrix(pXML: Element): IMat4 {
 			var pData: float[] = new Array(4);
 
-			string2FloatArray(stringData(pXML), pData);
+			conv.stofa(stringData(pXML), pData);
 			
-			return (new Mat4(1)).rotateLeft(pData[3] * math.RADIAN_RATIO, vec3(pData[0], pData[1], pData[2]));
+			return (new Mat4(1)).rotateLeft(pData[3] * math.RADIAN_RATIO, Vec3.temp(pData[0], pData[1], pData[2]));
 		}
 
 		private COLLADAScaleMatrix(pXML: Element): IMat4 {
 			var pData: float[] = new Array(3);
 
-			string2FloatArray(stringData(pXML), pData);
+			conv.stofa(stringData(pXML), pData);
 
 			return new Mat4(pData[0], pData[1], pData[2], 1.0);
 		}
@@ -383,23 +393,23 @@ module akra.core.pool.resources {
 
 			switch (sName) {
 				case "boolean":
-					return string2Any(sData, 1, "boolean");
+					return conv.stoa<boolean[]>(sData, 1, "boolean");
 
 				case "int":
-					return string2Any(sData, 1, "int");
+					return conv.stoa<int[]>(sData, 1, "int");
 
 				case "float":
-					return string2Any(sData, 1, "float");
+					return conv.stoa<float[]>(sData, 1, "float");
 
 				case "float2":
-					return string2Any(sData, 2, "float");
+					return conv.stoa<float[]>(sData, 2, "float");
 
 				case "float3":
-					return string2Any(sData, 3, "float");
+					return conv.stoa<float[]>(sData, 3, "float");
 
 				case "float4":
 				case "color":
-					return string2Any(sData, 4, "float");
+					return conv.stoa<float[]>(sData, 4, "float");
 
 				case "rotate":
 					return this.COLLADARotateMatrix(pXML);
@@ -412,21 +422,21 @@ module akra.core.pool.resources {
 
 				case "bind_shape_matrix":
 				case "matrix":
-					return (new Mat4(string2Any(sData, 16, "float"), true)).transpose();
+					return (new Mat4(<any>conv.stoa<float[]>(sData, 16, "float"), true)).transpose();
 
 				case "float_array":
-					return string2Any(sData, parseInt(attr(pXML, "count")), "float", true);
+					return conv.stoa<float[]>(sData, parseInt(attr(pXML, "count")), "float", true);
 
 				case "int_array":
-					return string2Any(sData, parseInt(attr(pXML, "count")), "int", true);
+					return conv.stoa<int[]>(sData, parseInt(attr(pXML, "count")), "int", true);
 
 				case "bool_array":
-					return string2Any(sData, parseInt(attr(pXML, "count")), "boolean", true);
+					return conv.stoa<boolean[]>(sData, parseInt(attr(pXML, "count")), "boolean", true);
 
 				case "Name_array":
 				case "name_array":
 				case "IDREF_array":
-					return string2Any(sData, parseInt(attr(pXML, "count")), "string", true);
+					return conv.stoa<string[]>(sData, parseInt(attr(pXML, "count")), "string", true);
 
 				case "sampler2D":
 					return this.COLLADASampler2D(pXML);
@@ -435,7 +445,7 @@ module akra.core.pool.resources {
 					return this.COLLADASurface(pXML);
 
 				default:
-					debug_error("unsupported COLLADA data type <" + sName + " />");
+					debug.error("unsupported COLLADA data type <" + sName + " />");
 			}
 
 			//return null;
@@ -443,25 +453,25 @@ module akra.core.pool.resources {
 		
 		private COLLADAGetSourceData(pSource: IColladaSource, pFormat: IColladaUnknownFormat[]): IColladaArray {
 			
-			ASSERT(isDefAndNotNull(pSource), "<source /> with expected format ", pFormat, " not founded");
+			logger.assert(isDefAndNotNull(pSource), "<source /> with expected format ", pFormat, " not founded");
 			
 			var nStride: uint = calcFormatStride(pFormat);
 			var pTech: IColladaTechniqueCommon = pSource.techniqueCommon;
 
-			ASSERT(isDefAndNotNull(pTech), "<source /> with id <" + pSource.id + "> has no <technique_common />");
+			logger.assert(isDefAndNotNull(pTech), "<source /> with id <" + pSource.id + "> has no <technique_common />");
 
 			var pAccess: IColladaAccessor = pTech.accessor;
 			var isFormatSupported: boolean;
 
 			debug.assert((pAccess.stride <= nStride), pAccess.stride + " / " + nStride);
 
-			ASSERT(pAccess.stride <= nStride,
+			logger.assert(pAccess.stride <= nStride,
 						 "<source /> width id" + pSource.id + " has unsupported stride: " + pAccess.stride);
 
 			var fnUnsupportedFormatError = function (): void {
-				LOG("expected format: " , pFormat);
-				LOG("given format: "    , pAccess.params);
-				ERROR("accessor of <" + pSource.id + "> has unsupported format");
+				logger.log("expected format: " , pFormat);
+				logger.log("given format: "    , pAccess.params);
+				logger.error("accessor of <" + pSource.id + "> has unsupported format");
 			}
 
 			for (var i: int = 0; i < pAccess.params.length; ++ i) {
@@ -523,7 +533,7 @@ module akra.core.pool.resources {
 				case "rotate":
 					
 					pData = new Array(4);
-					string2FloatArray(stringData(pXML), pData);
+					conv.stofa(stringData(pXML), pData);
 					v4f = new Vec4(pData);
 					v4f.w *= math.RADIAN_RATIO; /* to radians. */
 					pTransform.value = v4f;
@@ -534,21 +544,21 @@ module akra.core.pool.resources {
 				case "scale":
 					
 					pData = new Array(3);
-					string2FloatArray(stringData(pXML), pData);
+					conv.stofa(stringData(pXML), pData);
 					pTransform.value = new Vec3(pData);
 					break;
 
 				case "matrix":
 
 					m4f = new Mat4;
-					string2FloatArray(stringData(pXML), <float[]><any>m4f.data);
+					conv.stofa(stringData(pXML), <float[]><any>m4f.data);
 					m4f.transpose();
 					pTransform.value = m4f;
 					
 					break;
 
 				default:
-					ERROR("unsupported transform detected: " + pTransform.transform);
+					logger.error("unsupported transform detected: " + pTransform.transform);
 			}
 
 
@@ -694,7 +704,7 @@ module akra.core.pool.resources {
 			var pAccessor: IColladaAccessor = {
 				data   : <IColladaArray>this.source(attr(pXML, "source")),
 				count  : parseInt(attr(pXML, "count")),
-				stride : parseInt(attr(pXML, "stride") || 1),
+				stride : parseInt(attr(pXML, "stride") || "1"),
 				params : []
 			};
 
@@ -833,7 +843,7 @@ module akra.core.pool.resources {
 						break;
 
 					default:
-						ERROR("semantics are different from JOINT/INV_BIND_MATRIX is not supported in the <joints /> tag");
+						logger.error("semantics are different from JOINT/INV_BIND_MATRIX is not supported in the <joints /> tag");
 				}
 			});
 
@@ -896,7 +906,7 @@ module akra.core.pool.resources {
 					pPolygons.p = this.polygonToTriangles(pXML, iStride);
 
 					this.eachByTag(pXML, "ph", (pXMLData: Element): void => {
-						debug_error("unsupported polygon[polygon] subtype founded: <ph>");
+						debug.error("unsupported polygon[polygon] subtype founded: <ph>");
 					});
 
 					break;
@@ -905,7 +915,7 @@ module akra.core.pool.resources {
 					pPolygons.p = new Array(3 * iCount * iStride);
 
 					this.eachByTag(pXML, "p", (pXMLData: Element): void => {
-						n += string2IntArray(stringData(pXMLData), pPolygons.p, n);
+						n += conv.stoia(stringData(pXMLData), pPolygons.p, n);
 					});
 
 					break;
@@ -918,7 +928,7 @@ module akra.core.pool.resources {
 					break;
 
 				default:
-					ERROR("unsupported polygon[" + sType + "] type founded");
+					logger.error("unsupported polygon[" + sType + "] type founded");
 			}
 
 			if (!isDef(pPolygons.type)) {
@@ -955,7 +965,7 @@ module akra.core.pool.resources {
 				pVData: int[];
 
 			pVcountData = new Array(pVertexWeights.count);
-			string2IntArray(stringData(firstChild(pXML, "vcount")), pVcountData);
+			conv.stoia(stringData(firstChild(pXML, "vcount")), pVcountData);
 			pVertexWeights.vcount = pVcountData;
 
 
@@ -967,11 +977,11 @@ module akra.core.pool.resources {
 
 			n *= pVertexWeights.inputs.length;
 
-			ASSERT(pVertexWeights.inputs.length === 2,
+			logger.assert(pVertexWeights.inputs.length === 2,
 						 "more than 2 inputs in <vertex_weights/> not supported currently");
 
 			pVData = new Array(n);
-			string2IntArray(stringData(firstChild(pXML, "v")), pVData);
+			conv.stoia(stringData(firstChild(pXML, "v")), pVData);
 			pVertexWeights.v = pVData;
 
 			return pVertexWeights;
@@ -1018,7 +1028,7 @@ module akra.core.pool.resources {
 									pPolygons.inputs[i].semantics = pPos.semantics;
 								}
 								else {
-									ERROR("<input /> with semantic VERTEX must refer to <vertices /> tag in same mesh.");
+									logger.error("<input /> with semantic VERTEX must refer to <vertices /> tag in same mesh.");
 								}
 							}
 
@@ -1124,8 +1134,8 @@ module akra.core.pool.resources {
 				name      : attr(pXML, "name"),
 				
 				format    : attr(pXML, "format"),
-				height    : parseInt(attr(pXML, "height") || -1), /*-1 == auto detection*/
-				width     : parseInt(attr(pXML, "width") || -1),
+				height    : parseInt(attr(pXML, "height") || "-1"), /*-1 == auto detection*/
+				width     : parseInt(attr(pXML, "width") || "-1"),
 				
 				depth     : 1, /*only 2D images supported*/
 				data      : null,
@@ -1148,14 +1158,14 @@ module akra.core.pool.resources {
 				// }
 				// console.log("collada deps image: ", path.normalize(sPath));
 				// pImage.path = path.normalize(sPath);
-				pImage.path = path.resolve(sPath, sFilename);
+				pImage.path = uri.resolve(sPath, sFilename);
 				// console.log("collada deps image >>> ", pImage.path);
 			}
 			else if (isDefAndNotNull(pXMLData = firstChild(pXML, "data"))) {
-				ERROR("image loading from <data /> tag unsupported yet.");
+				logger.error("image loading from <data /> tag unsupported yet.");
 			}
 			else {
-				ERROR("image with id: " + pImage.id + " has no data.");
+				logger.error("image with id: " + pImage.id + " has no data.");
 			}
 
 			this.link(pImage);
@@ -1199,7 +1209,7 @@ module akra.core.pool.resources {
 				var pTex: ITexture = <ITexture>this.getManager().texturePool.loadResource(pImage.path);
 				// var pModel = this;
 				// pTex.bind("loaded", () => {
-				//     LOG(pTex.findResourceName(), "loaded", pModel.isResourceLoaded());
+				//     logger.log(pTex.findResourceName(), "loaded", pModel.isResourceLoaded());
 				//     })
 				this.sync(pTex, EResourceItemEvents.LOADED);
 
@@ -1313,7 +1323,7 @@ module akra.core.pool.resources {
 					break;
 
 				default:
-					ERROR("unsupported technique <" + pTech.type + " /> founded");
+					logger.error("unsupported technique <" + pTech.type + " /> founded");
 			}
 
 			//finding normal maps like this
@@ -1333,7 +1343,7 @@ module akra.core.pool.resources {
 					var pXMLBump: Element = firstChild(pXMLTech, "bump");
 					if (isDefAndNotNull(pXMLBump) && attr(pXMLBump, "bumptype") === "HEIGHTFIELD") {
 						(<IColladaPhong>pTech.value).textures.normal = this.COLLADATexture(firstChild(pXMLBump, "texture"));
-						// LOG(pTech.value);
+						// logger.log(pTech.value);
 					}
 				}
 			}
@@ -1512,7 +1522,7 @@ module akra.core.pool.resources {
 					var sInputSemantic: string = attr(pXMLVertexInput, "input_semantic");
 
 					if (sInputSemantic !== "TEXCOORD") {
-						ERROR("unsupported vertex input semantics founded: " + sInputSemantic);
+						logger.error("unsupported vertex input semantics founded: " + sInputSemantic);
 					}
 
 
@@ -1535,7 +1545,7 @@ module akra.core.pool.resources {
 		private COLLADAInstanceEffect(pXML: Element): IColladaInstanceEffect {
 			var pInstance: IColladaInstanceEffect = {
 				parameters    : {},
-				techniqueHint : <StringMap>{},
+				techniqueHint : <IMap<string>>{},
 				effect        : null
 			};
 
@@ -1622,11 +1632,11 @@ module akra.core.pool.resources {
 		
 		private COLLADAPerspective(pXML: Element): IColladaPerspective {
 			var pPerspective: IColladaPerspective = {
-				xfov: parseFloat(stringData(firstChild(pXML, "xfov")) || 60.) * math.RADIAN_RATIO,
-				yfov: parseFloat(stringData(firstChild(pXML, "yfov")) || 60.) * math.RADIAN_RATIO,
-				aspect: parseFloat(stringData(firstChild(pXML, "aspect")) || 4./3.),
-				znear: parseFloat(stringData(firstChild(pXML, "znear")) || .1),
-				zfar: parseFloat(stringData(firstChild(pXML, "zfar")) || 500.),
+				xfov: parseFloat(stringData(firstChild(pXML, "xfov")) || "60.") * math.RADIAN_RATIO,
+				yfov: parseFloat(stringData(firstChild(pXML, "yfov")) || "60.") * math.RADIAN_RATIO,
+				aspect: parseFloat(stringData(firstChild(pXML, "aspect")) || (4./3.).toString()),
+				znear: parseFloat(stringData(firstChild(pXML, "znear")) || ".1"),
+				zfar: parseFloat(stringData(firstChild(pXML, "zfar")) || "500."),
 			}
 
 			return pPerspective;
@@ -1687,7 +1697,7 @@ module akra.core.pool.resources {
 						break;
 
 					default:
-						debug_error("semantics are different from OUTPUT/INTERPOLATION/IN_TANGENT/OUT_TANGENT is not supported in the <sampler /> tag");
+						debug.error("semantics are different from OUTPUT/INTERPOLATION/IN_TANGENT/OUT_TANGENT is not supported in the <sampler /> tag");
 				}
 			});
 
@@ -1776,7 +1786,7 @@ module akra.core.pool.resources {
 			var pElement: IColladaEntry = this._pLinks[sUrl];
 
 			if (!isDefAndNotNull(pElement)) {
-				CLD_WARNING(this, "cannot find element with id: " + sUrl + __CALLSTACK__);
+				CLD_WARNING(this, "cannot find element with id: " + sUrl + (<any>new Error).stack.split("\n").slice(1).join("\n"));
 			}
 
 			return pElement || null;
@@ -1926,7 +1936,7 @@ module akra.core.pool.resources {
 					//     v3f.Z = pOutputValues[i * 3 + 2];
 					//     pTrack.keyFrame(pTimeMarks[i], [v3f.X, v3f.Y, v3f.Z]);
 					// };
-					CRITICAL("TODO: implement animation translation");
+					logger.critical("TODO: implement animation translation");
 					//TODO: implement animation translation
 					break;
 				case "rotate":
@@ -1939,7 +1949,7 @@ module akra.core.pool.resources {
 					// for (var i = 0; i < pTimeMarks.length; ++ i) {
 					//     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * math.PI);
 					// };
-					CRITICAL("TODO: implement animation rotation");
+					logger.critical("TODO: implement animation rotation");
 					//TODO: implement animation rotation
 					break;
 				case "matrix":
@@ -1970,11 +1980,11 @@ module akra.core.pool.resources {
 						// for (var i = 0; i < pTimeMarks.length; ++i) {
 						//     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i]);
 						// }
-						CRITICAL("TODO: implement animation matrix modification");
+						logger.critical("TODO: implement animation matrix modification");
 					}
 					break;
 				default:
-					debug_error("unsupported animation typed founeed: " + sTransform);
+					debug.error("unsupported animation typed founeed: " + sTransform);
 			}
 
 			if (!isNull(pTrack)) {
@@ -2045,7 +2055,7 @@ module akra.core.pool.resources {
 				var fUnit: float = pAsset.unit.meter;
 				var sUPaxis: string = pAsset.upAxis;
 
-				pNode.localScale = vec3(fUnit);
+				pNode.localScale = Vec3.temp(fUnit);
 
 				if (sUPaxis.toUpperCase() == "Z_UP") {
 					//pNode.addRelRotation([1, 0, 0], -.5 * math.PI);
@@ -2063,14 +2073,14 @@ module akra.core.pool.resources {
 				var sUsage: string = pAccessor.params[i].name;
 				var sType: string = pAccessor.params[i].type;
 
-				ASSERT(sType === "float", "Only float type supported for construction declaration from accessor");
+				logger.assert(sType === "float", "Only float type supported for construction declaration from accessor");
 
-				pDecl.push(VE_FLOAT(sUsage));
+				pDecl.push(VE.float(sUsage));
 			}
 
-			pDecl.push(VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pAccessor.params.length, 0));
+			pDecl.push(VE.custom(sSemantic, EDataTypes.FLOAT, pAccessor.params.length, 0));
 
-			CLD_PRINT(this, "Automatically constructed declaration: ", createVertexDeclaration(pDecl).toString());
+			CLD_PRINT(this, "Automatically constructed declaration: ", data.VertexDeclaration.normalize(pDecl).toString());
 			
 			return pDecl;
 		}
@@ -2145,21 +2155,21 @@ module akra.core.pool.resources {
 							var pTexture: ITexture = <ITexture>this.getManager().texturePool.findResource(pColladaImage.path);
 
 							if (this.getImageOptions().flipY === true) {
-								ERROR("TODO: flipY for image unsupported!");
+								logger.error("TODO: flipY for image unsupported!");
 							}
 
 							var pMatches: string[] = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
 							var iTexCoord: int = (pMatches ? parseInt(pMatches[2]) : 0);
 
 
-							var iTexture = ESurfaceMaterialTextures[sTextureType.toUpperCase()];
+							var iTexture: int = <any>ESurfaceMaterialTextures[sTextureType.toUpperCase()] | 0;
 
 							if (!isDef(iTexture)) {
 								continue;
 							}
-							// LOG(iTexture, sTextureType)
+							// logger.log(iTexture, sTextureType)
 							pSurfaceMaterial.setTexture(iTexture, pTexture, iTexCoord);
-							// LOG(pSurfaceMaterial);
+							// logger.log(pSurfaceMaterial);
 						}
 
 						if (this.isWireframeEnabled()) {
@@ -2183,7 +2193,7 @@ module akra.core.pool.resources {
 			for (var i: int = 0; i < pSkeletonsList.length; ++i) {
 				var pJoint: IJoint = <IJoint>(<IColladaNode>this.source(pSkeletonsList[i])).constructedNode;
 				
-				ASSERT(scene.isJoint(pJoint), "skeleton node must be joint");
+				logger.assert(scene.Joint.isJoint(pJoint), "skeleton node must be joint");
 
 				pSkeleton.addRootJoint(pJoint);
 			}
@@ -2210,7 +2220,7 @@ module akra.core.pool.resources {
 					pGeometryInstance);
 			}
 
-			var iBegin: int = now();
+			var iBegin: int = Date.now();
 
 			pMesh = this.getEngine().createMesh(
 				sMeshName,
@@ -2226,7 +2236,7 @@ module akra.core.pool.resources {
 			}
 
 			//filling data
-			for (var i: int = 0, pUsedSemantics: BoolMap = <BoolMap>{}; i < pPolyGroup.length; ++i) {
+			for (var i: int = 0, pUsedSemantics: IMap<boolean> = <IMap<boolean>>{}; i < pPolyGroup.length; ++i) {
 				var pPolygons: IColladaPolygons = pPolyGroup[i];
 
 				for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
@@ -2241,8 +2251,8 @@ module akra.core.pool.resources {
 						pUsedSemantics[sSemantic] = true;
 
 						switch (sSemantic) {
-							case DeclUsages.POSITION:
-							case DeclUsages.NORMAL:
+							case data.Usages.POSITION:
+							case data.Usages.NORMAL:
 								/*
 								 Extend POSITION and NORMAL from {x,y,z} --> {x,y,z,w};
 								 */
@@ -2256,7 +2266,7 @@ module akra.core.pool.resources {
 								}
 
 								pData = pDataExt;
-								pDecl = [VE_FLOAT3(sSemantic), VE_END(16)];
+								pDecl = [VE.float3(sSemantic), VE.end(16)];
 // #if COLLADA_DEBUG == true
 //                                 if (this.options.debug) {
 //                                     CLD_PRINT(this, "[add vertex data]");
@@ -2265,18 +2275,18 @@ module akra.core.pool.resources {
 //                                 }
 // #endif
 								break;
-							case DeclUsages.TEXCOORD:
-							case DeclUsages.TEXCOORD1:
-							case DeclUsages.TEXCOORD2:
-							case DeclUsages.TEXCOORD3:
-							case DeclUsages.TEXCOORD4:
-							case DeclUsages.TEXCOORD5:
+							case data.Usages.TEXCOORD:
+							case data.Usages.TEXCOORD1:
+							case data.Usages.TEXCOORD2:
+							case data.Usages.TEXCOORD3:
+							case data.Usages.TEXCOORD4:
+							case data.Usages.TEXCOORD5:
 								//avoiding semantics collisions
 								if(sSemantic === "TEXCOORD"){
 									sSemantic = "TEXCOORD0";
 								}
 
-								pDecl = [VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pInput.accessor.stride)];
+								pDecl = [VE.custom(sSemantic, EDataTypes.FLOAT, pInput.accessor.stride)];
 								break;
 							default:
 								pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
@@ -2293,16 +2303,16 @@ module akra.core.pool.resources {
 				var pPolygons: IColladaPolygons = pPolyGroup[i];
 				var pSubMesh: IMeshSubset = pMesh.getSubset(i);
 				var pSubMeshData: IRenderData = pSubMesh.data;
-				var pIndexDecl: IVertexDeclaration = createVertexDeclaration();
+				var pIndexDecl: IVertexDeclaration = data.VertexDeclaration.normalize(undefined);
 				var pSurfaceMaterial: ISurfaceMaterial = null;
 				var pSurfacePool: IResourcePool = null;
 
 				for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
 					var iOffset: int = pPolygons.inputs[j].offset;
-					var sIndexSemantic: string = DeclUsages.INDEX + iOffset;
+					var sIndexSemantic: string = data.Usages.INDEX + iOffset;
 					//total number of offsets can be less then number of inputs
 					if (!pIndexDecl.hasSemantics(sIndexSemantic)) {
-						pIndexDecl.append(VE_FLOAT(sIndexSemantic));
+						pIndexDecl.append(VE.float(sIndexSemantic));
 					}
 				}
 
@@ -2310,7 +2320,7 @@ module akra.core.pool.resources {
 
 				for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
 					var sSemantic: string = pPolygons.inputs[j].semantics;
-					var sIndexSemantics: string = DeclUsages.INDEX + pPolygons.inputs[j].offset;
+					var sIndexSemantics: string = data.Usages.INDEX + pPolygons.inputs[j].offset;
 
 					pSubMeshData.index(sSemantic, sIndexSemantics);
 				}
@@ -2329,8 +2339,8 @@ module akra.core.pool.resources {
 				pSubMesh.material.name = pPolygons.material;
 			}
 
-			// ASSERT(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
-			// ASSERT(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
+			// logger.assert(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
+			// logger.assert(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
 
 			pMesh.shadow = this.isShadowsEnabled();
 
@@ -2369,13 +2379,13 @@ module akra.core.pool.resources {
 			pSkin.setBoneNames(pBoneList);
 			pSkin.setBoneOffsetMatrices(pBoneOffsetMatrices);
 			
-			ASSERT(pSkin.setSkeleton(pSkeleton), "Could not set skeleton to skin.");
+			logger.assert(pSkin.setSkeleton(pSkeleton), "Could not set skeleton to skin.");
 
 			if (!pSkin.setVertexWeights(
 				<uint[]>pVertexWeights.vcount,
 				new Float32Array(pVertexWeights.v),
 				new Float32Array(pVertexWeights.weightInput.array))) {
-				ERROR("cannot set vertex weight info to skin");
+				logger.error("cannot set vertex weight info to skin");
 			}
 
 			pMesh.setSkin(pSkin);
@@ -2430,7 +2440,7 @@ module akra.core.pool.resources {
 				var pModelNode: ISceneNode = pNode.constructedNode;
 				
 				if (isNull(pModelNode)) {
-					debug_error("you must call buildScene() before call buildMeshes() or file corrupt");
+					debug.error("you must call buildScene() before call buildMeshes() or file corrupt");
 					return;
 				}
 
@@ -2438,8 +2448,8 @@ module akra.core.pool.resources {
 					return;
 				}
 
-				if (!scene.isModel(pModelNode) && pNode.geometry.length > 0) {
-					pModelNode = pModelNode.scene.createModel(".joint-to-model-link-" + sid());
+				if (!scene.SceneModel.isModel(pModelNode) && pNode.geometry.length > 0) {
+					pModelNode = pModelNode.scene.createModel(".joint-to-model-link-" + guid());
 					pModelNode.attachToParent(pNode.constructedNode);
 				}
 
@@ -2469,7 +2479,7 @@ module akra.core.pool.resources {
 				pSceneNode = pScene.createNode();
 			}
 
-			ASSERT(pSceneNode.create(), "Can not initialize scene node!");
+			logger.assert(pSceneNode.create(), "Can not initialize scene node!");
 
 			pSceneNode.attachToParent(pParentNode);
 		
@@ -2494,7 +2504,7 @@ module akra.core.pool.resources {
 
 			pJointNode = pParentNode.scene.createJoint();
 				
-			ASSERT(pJointNode.create(), "Can not initialize joint node!");
+			logger.assert(pJointNode.create(), "Can not initialize joint node!");
 
 			pJointNode.boneName = sJointSid;
 			pJointNode.attachToParent(pParentNode);
@@ -2599,7 +2609,7 @@ module akra.core.pool.resources {
 			var sPose: string = "Pose-" + this.getBasename() + "-" + pSkeleton.name;
 			var pPose: IAnimation = animation.createAnimation(sPose);
 			var pNodeList: ISceneNode[] = pSkeleton.getNodeList();
-			var pNodeMap: ISceneNodeMap = {};
+			var pNodeMap: IMap<ISceneNode> = {};
 			var pTrack: IAnimationTrack;
 
 			for (var i: int = 0; i < pNodeList.length; ++i) {
@@ -2650,7 +2660,7 @@ module akra.core.pool.resources {
 				// }
 				pPoses.push(this.buildInititalPose(pScene.nodes, pSkeleton));
 			}
-			// LOG(pPoses);
+			// logger.log(pPoses);
 			return pPoses;
 		}
 
@@ -2792,7 +2802,7 @@ module akra.core.pool.resources {
 		}
 
 		public  getBasename(): string {
-			return path.info(this._pOptions.name || this._sFilename || "unknown").basename;
+			return path.parse(this._pOptions.name || this._sFilename || "unknown").basename;
 		}
 
 		public  getFilename(): string {
@@ -2830,7 +2840,7 @@ module akra.core.pool.resources {
 
 		parse(sXMLData: string, pOptions: IColladaLoadOptions = null): boolean {
 			if (isNull(sXMLData)) {
-				debug_error("must be specified collada content.");
+				debug.error("must be specified collada content.");
 				return false;
 			}
 
@@ -2886,7 +2896,7 @@ module akra.core.pool.resources {
 		
 			pFile.read(function (pErr: Error, sXML: string) {
 				if (!isNull(pErr)) {
-					ERROR(pErr);
+					logger.error(pErr);
 				}
 
 				pModel.notifyRestored();
@@ -2902,7 +2912,7 @@ module akra.core.pool.resources {
 							if (eFlag === EResourceItemEvents.LOADED && isSet) {
 								//automaticly LOADED
 								CLD_PRINT(pModel, "resource loaded");
-								pModel.loaded();
+								pModel.loaded.emit();
 							}
 						});
 					}
@@ -3181,7 +3191,7 @@ module akra.core.pool.resources {
 				return null;
 		}
 		
-		ERROR("unknown semantics founded: " + sSemantics);
+		logger.error("unknown semantics founded: " + sSemantics);
 		
 		return null;
 	}
@@ -3259,11 +3269,11 @@ module akra.core.pool.resources {
 	}
 
 
-	export  function isModelResource(pItem: IResourcePoolItem): boolean {
-		return isVideoResource(pItem) && pItem.resourceCode.type === EVideoResources.MODEL_RESOURCE;
+	export function isModelResource(pItem: IResourcePoolItem): boolean {
+		return pool.isVideoResource(pItem) && pItem.resourceCode.type === EVideoResources.MODEL_RESOURCE;
 	}
 
-	export  function isColladaResource(pItem: IResourcePoolItem): boolean {
+	export function isColladaResource(pItem: IResourcePoolItem): boolean {
 		return isModelResource(pItem) && (<IModel>pItem).modelFormat === EModelFormats.COLLADA;
 	}
 }
