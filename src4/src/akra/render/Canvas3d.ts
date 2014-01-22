@@ -42,7 +42,7 @@ module akra.render {
 			this._bAutoDeactivatedOnFocusChange = bDeactivate;
 		}
 
-		 isFullscreen(): boolean {
+		isFullscreen(): boolean {
 			return this._isFullscreen;
 		}
 

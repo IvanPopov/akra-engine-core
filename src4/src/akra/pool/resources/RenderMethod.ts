@@ -21,7 +21,7 @@ module akra.pool.resources {
 		set effect(pEffect: IEffect) {
 			if(!isNull(this._pEffect)){
 				this.unsync(this._pEffect, EResourceItemEvents.LOADED);
-				this._pEffect.altered.disconnect(this.updateEffect, EEventTypes.BROADCAST);
+				this._pEffect.altered.disconnect(this, this.updateEffect, EEventTypes.BROADCAST);
 				this._pEffect.release();
 			}
 
@@ -29,7 +29,7 @@ module akra.pool.resources {
 			
 			if(!isNull(pEffect)){
 				this.sync(this._pEffect, EResourceItemEvents.LOADED);
-				this._pEffect.altered.connect(this.updateEffect, EEventTypes.BROADCAST);
+				this._pEffect.altered.connect(this, this.updateEffect, EEventTypes.BROADCAST);
 				this._pEffect.addRef();
 			}
 
@@ -43,7 +43,7 @@ module akra.pool.resources {
 		 set surfaceMaterial(pMaterial: ISurfaceMaterial) {
 			if(!isNull(this._pSurfaceMaterial)){
 				this.unsync(this._pSurfaceMaterial, EResourceItemEvents.LOADED);
-				this._pSurfaceMaterial.altered.disconnect(this.notifyAltered, EEventTypes.BROADCAST);
+				this._pSurfaceMaterial.altered.disconnect(this, this.notifyAltered, EEventTypes.BROADCAST);
 				this._pSurfaceMaterial.release();
 			}
 
@@ -51,7 +51,7 @@ module akra.pool.resources {
 			
 			if(!isNull(pMaterial)){
 				this.sync(this._pSurfaceMaterial, EResourceItemEvents.LOADED);
-				this._pSurfaceMaterial.altered.connect(this.notifyAltered, EEventTypes.BROADCAST);
+				this._pSurfaceMaterial.altered.connect(this, this.notifyAltered, EEventTypes.BROADCAST);
 			}
 
 			this._pSurfaceMaterial.addRef();

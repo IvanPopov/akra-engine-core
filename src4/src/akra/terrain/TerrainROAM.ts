@@ -103,7 +103,7 @@ module akra.terrain {
 				this._fLastTimeStart = 0;
 			}
 
-			this._pRenderableObject.beforeRender.connect(this._onBeforeRender/*, EEventTypes.UNICAST*/);
+			this._pRenderableObject.beforeRender.connect(this, this._onBeforeRender/*, EEventTypes.UNICAST*/);
 		}
 
 		get tessellationScale(): float{
@@ -197,7 +197,7 @@ module akra.terrain {
 				}
 
 				this._pRenderableObject.getTechnique().setMethod(this._pDefaultRenderMethod);
-				this._pRenderableObject.getTechnique().render.connect(this._onRender);
+				this._pRenderableObject.getTechnique().render.connect(this, this._onRender);
 
 				if(!this._bUseTessellationThread){
 					this._pNodePool = new TriangleNodePool(this._iMaxTriTreeNodes);

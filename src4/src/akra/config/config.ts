@@ -128,6 +128,13 @@ module akra.config {
 			tessellationThread: "TessellationThread.t.js"
 		}
 	}
+
+	export var webgl = {
+		preparedFramebuffersNum: 32,
+		indexbufferMinSize: 1024,
+		vertexbufferMinSize: 1024,
+		vertexTextureMinSize: 32
+	}
 }
 
 

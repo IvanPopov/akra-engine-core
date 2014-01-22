@@ -1,4 +1,3 @@
-
 /// <reference path="IHardwareBuffer.ts" />
 /// <reference path="IRenderTarget.ts" />
 /// <reference path="IBox.ts" />
@@ -26,8 +25,8 @@ module akra {
 	
 		getRenderTarget(): IRenderTarget;
 	
-		lock(iLockFlags: int): any;
-		lock(iOffset: uint, iSize: uint, iLockFlags?: int): any;
+		lock(iLockFlags: int): IPixelBox;
+		lock(iOffset: uint, iSize: uint, iLockFlags?: int): IPixelBox;
 		lock(pLockBox: IBox, iLockFlags?: int): IPixelBox;
 	
 		readPixels(pDestBox: IPixelBox): boolean;

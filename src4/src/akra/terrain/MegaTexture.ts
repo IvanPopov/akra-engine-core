@@ -171,8 +171,8 @@ module akra.terrain {
 			this._pRPC = net.createRpc();
 
 			if(!this._bManualMinLevelLoad){
-				this._pRPC.joined.connect(this.loadMinTextureLevel, EEventTypes.BROADCAST);
-				this._pRPC.error.connect(this.rpcErrorOccured, EEventTypes.BROADCAST);
+				this._pRPC.joined.connect(this, this.loadMinTextureLevel, EEventTypes.BROADCAST);
+				this._pRPC.error.connect(this, this.rpcErrorOccured, EEventTypes.BROADCAST);
 			}
 			
 

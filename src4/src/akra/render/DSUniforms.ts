@@ -3,7 +3,7 @@
 /// <reference path="../idl/IAFXSamplerState.ts" />
 /// <reference path="../idl/IOmniLight.ts" />
 /// <reference path="../idl/IProjectLight.ts" />
-
+/// <reference path="../idl/ISunLight.ts" />
 
 /// <reference path="../fx/PassInputBlend.ts" />
 

@@ -210,7 +210,7 @@ module akra.terrain {
 
 				this._pDefaultScreen.addRenderMethod(pMethod, ".terrain_generate_normal");
 
-				this._pDefaultScreen.getTechnique(".terrain_generate_normal").render.connect(this._onGenerateNormalRender);
+				this._pDefaultScreen.getTechnique(".terrain_generate_normal").render.connect(this, this._onGenerateNormalRender);
 			}
 
 		    return true;
@@ -354,7 +354,7 @@ module akra.terrain {
 		        pSection = this._pSectorArray[i];
 
 		        pSection.getRenderable().getTechnique().setMethod(this._pDefaultRenderMethod);
-				pSection.getRenderable().getTechnique().render.connect(this._onRender);
+				pSection.getRenderable().getTechnique().render.connect(this, this._onRender);
 		    }
 		}
 

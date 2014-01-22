@@ -525,6 +525,7 @@
     <TypeScriptCompile Include="akra\render\ColorViewport.ts" />
     <TypeScriptCompile Include="akra\render\DSUniforms.ts" />
     <TypeScriptCompile Include="akra\render\DSViewport.ts" />
+    <TypeScriptCompile Include="akra\render\Renderer.ts" />
     <TypeScriptCompile Include="akra\render\RenderTexture.ts" />
     <TypeScriptCompile Include="akra\render\Screen.ts" />
     <TypeScriptCompile Include="akra\render\ShadowViewport.ts" />
@@ -550,6 +551,20 @@
     <TypeScriptCompile Include="akra\model\Sky.ts" />
     <TypeScriptCompile Include="akra\render\Viewport.ts" />
     <TypeScriptCompile Include="akra\webgl\DepthRange.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLCanvas.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLDepthBuffer.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLIndexBuffer.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLInternalFrameBuffer.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLInternalRenderBuffer.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLInternalTexture.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLInternalTextureStateManager.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLPixelBuffer.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLRenderer.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLRenderTexture.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLShaderProgram.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLTextureBuffer.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLVertexBuffer.ts" />
+    <TypeScriptCompile Include="akra\webgl\WebGLVertexTexture.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

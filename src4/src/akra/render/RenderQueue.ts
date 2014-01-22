@@ -14,7 +14,7 @@ module akra.render {
 
 		constructor (pRenderer: IRenderer) {
 			this._pRenderer = pRenderer;
-			this._pEntryList = new util.ObjectArray;
+			this._pEntryList = new util.ObjectArray<IRenderEntry>();
 			this._fnSortFunction = (a: IRenderEntry, b: IRenderEntry): int => {
 				if (isNull(a) || isNull(a.maker)) {
 					return 1;
@@ -28,28 +28,15 @@ module akra.render {
 			}
 		}
 
-		bForceDisableSort: boolean = false;
-		// nCount: uint = 0;
-		// fAVGMakerSeq: float = 0.;
-
 		execute(bSort: boolean = false): void {
 			this._pRenderer._beginRender();
-			if (bSort && this._pEntryList.length > 0 && !this.bForceDisableSort) {
+			if (bSort && this._pEntryList.length > 0) {
 				this.quickSortQueue(0, this._pEntryList.length - 1);
-				// this._pEntryList._pData.sort(<any>this._fnSortFunction);
 			}
-
-			// var nCountOfMakerSeq: uint = 0;
-			// var pLastMaker: IAFXMaker = null;
 
 			for (var i: int = 0; i < this._pEntryList.length; i++) {
 				var pEntry: IRenderEntry = this._pEntryList.value(i);
 
-				// var pMaker: IAFXMaker = pEntry.maker;
-				// if(pMaker !== pLastMaker){
-				// 	nCountOfMakerSeq++;
-				// }
-				// pLastMaker = pMaker;
 
 				this._pRenderer._renderEntry(pEntry);
 
@@ -57,15 +44,6 @@ module akra.render {
 					this.releaseEntry(pEntry);
 				}
 			}
-
-			// if(this.nCount % 1000 === 0){
-			// 	LOG("AVG count of sequences of makers:", this.fAVGMakerSeq);
-			// 	this.nCount = 0;
-			// 	this.fAVGMakerSeq = 0.;
-			// }
-
-			// this.fAVGMakerSeq = (this.fAVGMakerSeq * this.nCount + nCountOfMakerSeq) / (this.nCount + 1);
-			// this.nCount++;
 
 			this._pEntryList.clear(false);
 
@@ -113,7 +91,7 @@ module akra.render {
 			pEntry.clear();
 		}
 
-		static pool: IObjectArray<IRenderEntry> = new util.ObjectArray;
+		static pool: IObjectArray<IRenderEntry> = new util.ObjectArray<IRenderEntry>();
 	}
 }
 

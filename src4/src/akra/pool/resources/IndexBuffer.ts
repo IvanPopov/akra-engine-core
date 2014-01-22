@@ -115,7 +115,7 @@ module akra.pool.resources {
 			pHole.sort((a: IBufferHole, b: IBufferHole): number => ((a.end - a.start) - (b.end - b.start))); 
 			
 			for (i = 0; i < pHole.length; i ++) {		
-				if((pHole[i].end - pHole[i].start) >= iCount * getTypeSize(eElementsType)) {
+				if((pHole[i].end - pHole[i].start) >= iCount * sizeof(eElementsType)) {
 					pIndexData = new data.IndexData(this, this._iDataCounter ++, pHole[i].start, iCount, ePrimitiveType, eElementsType);
 					
 					this._pIndexDataArray.push(pIndexData);
@@ -156,7 +156,7 @@ module akra.pool.resources {
 
 		allocateData(ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes, pData: ArrayBufferView): IIndexData {
 			var pIndexData: IIndexData;
-		    var iCount: uint = pData.byteLength / getTypeSize(eElementsType);
+		    var iCount: uint = pData.byteLength / sizeof(eElementsType);
 
 		    debug.assert(iCount === math.floor(iCount), "data size should be a multiple of the vertex declaration");
 

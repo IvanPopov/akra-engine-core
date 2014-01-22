@@ -2370,5 +2370,9 @@
 	{
 		"from": "AIWorldExtents",
 		"to": "IWorldExtents"
+	},
+	{
+		"from": "GL_",
+		"to": "gl."
 	}
 ]

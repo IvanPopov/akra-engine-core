@@ -1,5 +1,3 @@
-
-
 /// <reference path="ILightPoint.ts" />
 /// <reference path="ICamera.ts" />
 /// <reference path="ISceneModel.ts" />
