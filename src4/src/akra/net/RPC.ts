@@ -109,7 +109,7 @@ module akra.net {
 				});
 			}
 			else {
-				this._pCallbacksList = new ObjectList();
+				this._pCallbacksList = new ObjectList<IRPCCallback>();
 			}
 			pAddr = pAddr || pOption.addr;
 
@@ -646,19 +646,33 @@ module akra.net {
 		private static requestPool: IObjectArray<IRPCRequest> = new ObjectArray<IRPCRequest>();
 		private static callbackPool: IObjectArray<IRPCCallback> = new ObjectArray<IRPCCallback>();
 
-	static ERRORS = {
+		static ERRORS = {
 			STACK_SIZE_EXCEEDED: <IRPCError>{
 				name: "RPC err.",
 				message: "stack size exceeded",
-				code: 1
+				code: ERPCErrorCodes.STACK_SIZE_EXCEEDED
 			},
 			CALLBACK_LIFETIME_EXPIRED: <IRPCError>{
 				name: "RPC err.",
 				message: "procedure life time expired",
-				code: 2
+				code: ERPCErrorCodes.CALLBACK_LIFETIME_EXPIRED
 			}
+		};
+
+	}
+
+	export function createRpc(opt?: IRPCOptions): IRPC;
+	export function createRpc(addr?: string, opt?: IRPCOptions): IRPC;
+	export function createRpc(addr?: any, opt?: any): IRPC {
+		if (arguments.length === 1) {
+			if (isString(addr)) {
+				return new RPC(addr);
+			}
+
+			return new RPC(null, arguments[0]);
 		}
 
+		return new RPC(addr, opt);
 	}
 }
 

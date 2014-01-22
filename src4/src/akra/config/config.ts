@@ -25,6 +25,7 @@ module akra.config {
 	export var FILEDROP_API: boolean = false;
 	export var WEBGL_DEBUG: boolean = false;
 	export var PROFILE_MAKER: boolean = false;
+	export var PROFILE_TESSEALLATION: boolean = false;
 	//////////////////////
 
 	export var SHADOW_DISCARD_DISTANCE: float = 70.;
@@ -119,6 +120,13 @@ module akra.config {
 
 	export var fx = {
 		grammar: "grammars/HLSL.gr"
+	}
+
+	export var terrain = {
+		useMegaTexture: true,
+		roam: {
+			tessellationThread: "TessellationThread.t.js"
+		}
 	}
 }
 

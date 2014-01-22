@@ -1,5 +1,3 @@
-
-
 module akra {
 	export interface ITriTreeNode {
 	    baseNeighbor: ITriTreeNode;
@@ -12,8 +10,5 @@ module akra {
 	export interface ITriangleNodePool {
 	    request(): ITriTreeNode;
 	    reset(): void;
-	}
-	
-	
-	
+	}	
 }

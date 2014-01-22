@@ -92,7 +92,7 @@ module akra.net {
 				return false;
 			}
 
-			this._pConnect = pWorker || pSocket;
+			this._pConnect = <IVirualDescriptor>(pWorker || pSocket);
 			this._pAddr = pAddr;
 			this._eType = eType;
 

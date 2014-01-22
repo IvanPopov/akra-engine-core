@@ -27,12 +27,7 @@
 /// <reference path="../model/Skeleton.ts" />
 /// <reference path="../deps/deps.ts" />
 
-/// <reference path="../controls/GamepadMap.ts" />
-/// <reference path="../controls/KeyMap.ts" />
-
-/// <reference path="../util/SimpleGeometryObjects.ts" />
-
-
+/// <reference path="../control/control.ts" />
 
 // #ifdef WEBGL
 /// <reference path="../webgl/WebGLRenderer.ts" />
@@ -43,23 +38,10 @@
 /// <reference path="../ui/IDE.ts" />
 // #endif
 
-// #ifdef SKY
-/// <reference path="../model/Sky.ts" />
-// #endif
-
-// #ifdef FILEDROP_API
-/// <reference path="../io/filedrop.ts" />
-// #endif
-
-// #ifdef FILESAVE_API
-/// <reference path="../io/save.ts" />
-// #endif
-
-/// <reference path="../io/Exporter.ts" />
-/// <reference path="../io/Importer.ts" />
 
 module akra.core {
 	export class Engine implements IEngine {
+		public guid: uint = guid();
 
 		private _pResourceManager: IResourcePoolManager;
 		private _pSceneManager: ISceneManager;
@@ -67,7 +49,6 @@ module akra.core {
 		private _pSpriteManager: ISpriteManager;
 		private _pRenderer: IRenderer;
 		private _pComposer: IAFXComposer;
-		private _pDepsManager: IDepsManager;
 
 		/** stop render loop?*/
 		private _pTimer: IUtilTimer;
@@ -139,7 +120,7 @@ module akra.core {
 				return true;
 			}
 
-			var pGamepads: IGamepadMap = controls.createGamepadMap();
+			var pGamepads: IGamepadMap = control.createGamepadMap();
 			
 			if (pGamepads.init()) {
 				this._pGamepads = pGamepads;
@@ -162,7 +143,19 @@ module akra.core {
 			
 			var pDeps: IDependens = Engine.DEPS;
 			var sDepsRoot: string = Engine.DEPS_ROOT;
-			var pDepsManager: IDepsManager = this._pDepsManager = deps.createManager(this);
+
+			deps.load(this, pDeps, sDepsRoot,
+				(e: Error, pDep: IDependens): void => {
+					if (!isNull(e)) {
+						logger.critical("[DEPS NOT LOADED]");
+					}
+					debug.log("[ALL DEPTS LOADED]");
+					this._isDepsLoaded = true;
+
+					this.depsLoaded.emit(pDep);
+				},
+				(pDep: IDep, pProgress: any): void => {
+				});
 
 			//read options 
 			if (!isNull(pOptions)) {
@@ -176,37 +169,10 @@ module akra.core {
 					this.enableGamepads();
 				}
 			}
-
-			//get loaded signal
-			this.connect(pDepsManager, SIGNAL(loaded), SLOT(_depsLoaded));
-
-			if (!isNull(pOptions) && isDefAndNotNull(pOptions.loader)) {
-				var fnLoaded = pOptions.loader.loaded;
-				var fnChanged = pOptions.loader.changed;
-
-				if (isFunction(fnLoaded)) {
-					pDepsManager.bind(SIGNAL(loaded), fnLoaded);	
-				}
-
-				if (isFunction(fnChanged)) {
-					pDepsManager.bind(SIGNAL(statusChanged), fnChanged);	
-				}
-			}
-
-			//load depends!
-			if (!pDepsManager.load(pDeps, sDepsRoot)) {
-				logger.critical("load dependencies are not started.");
-			}
-
-			//===========================================================
 		}
 
 		getSpriteManager(): ISpriteManager {
 			return this._pSpriteManager;
-		}
-
-		getDepsManager(): IDepsManager {
-			return this._pDepsManager;
 		}
 
 		getScene(): IScene3d {
@@ -351,13 +317,6 @@ module akra.core {
 			return animation.createController(this, sName, iOptions);
 		}
 
-		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {
-			debug.log("[ALL DEPTS LOADED]");
-			this._isDepsLoaded = true;
-
-			this.depsLoaded.emit(pDeps);
-		}
-
 		final protected _inactivate(): void {
 			this._isActive = true;
 		}
@@ -390,10 +349,10 @@ module akra.core {
 			}
 		}
 
-		static DEPS_ROOT: string = DATA;
+		static DEPS_ROOT: string = config.data;
 		static DEPS: IDependens = 
-//RELEASE
-//engine core dependences
+			//RELEASE
+			//engine core dependences
 			{
 				files: [
 					{
@@ -404,8 +363,6 @@ module akra.core {
 				]
 			};			
 			
-		// BROADCAST(inactive, VOID);
-		// BROADCAST(active, VOID);
 
 	}
 

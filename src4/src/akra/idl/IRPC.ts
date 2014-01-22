@@ -40,8 +40,13 @@ module akra {
 		priority?: uint;
 	}
 	
+	export enum ERPCErrorCodes {
+		STACK_SIZE_EXCEEDED,
+		CALLBACK_LIFETIME_EXPIRED
+	}
+
 	export interface IRPCError extends Error {
-		code: uint;
+		code: ERPCErrorCodes;
 	}
 	
 	export interface IRPCOptions {

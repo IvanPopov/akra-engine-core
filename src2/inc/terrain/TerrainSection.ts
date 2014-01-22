@@ -1,11 +1,10 @@
-#ifndef TERRAINSECTION_TS
-#define TERRAINSECTION_TS
+/// <reference path="../idl/ITerrainSection.ts" />
 
-#include "ITerrainSection.ts"
-#include "scene/SceneObject.ts"
-#include "terrain/Terrain.ts"
-#include "render/RenderData.ts"
-#include "render/RenderableObject.ts"
+/// <reference path="../scene/SceneObject.ts" />
+/// <reference path="../data/RenderData.ts" />
+/// <reference path="../render/RenderableObject.ts" />
+
+/// <reference path="Terrain.ts" />
 
 module akra.terrain {
 	export class TerrainSection implements ITerrainSection extends scene.SceneObject{
@@ -31,39 +30,39 @@ module akra.terrain {
 			super(pScene, eType);
 		}
 
-		inline get sectorX(): float {
+		get sectorX(): float {
 			return this._iSectorX;
 		};
 
-		inline get sectorY(): float{
+		get sectorY(): float{
 			return this._iSectorY;
 		};
 
-		inline get terrainSystem(): ITerrain{
+		get terrainSystem(): ITerrain{
 			return this._pTerrainSystem;
 		};
 
-		inline get sectionIndex(): uint {
+		get sectionIndex(): uint {
 			return this._iSectorIndex;
 		}
 
-		inline get heightX(): float {
+		get heightX(): float {
 			return math.abs(this._pWorldRect.x1-this._pWorldRect.x0);
 		};
 
-		inline get heightY(): float {
+		get heightY(): float {
 			return math.abs(this._pWorldRect.y1-this._pWorldRect.y0);
 		};
 
-		inline get vertexDescription(): IVertexElementInterface[]{
+		get vertexDescription(): IVertexElementInterface[]{
 			return this._pVertexDescription;
 		};
 
-		inline get totalRenderable(): uint {
+		get totalRenderable(): uint {
 			return !isNull(this._pRenderableObject) ? 1 : 0;
 		}
 		
-		inline getRenderable(i?: uint): IRenderableObject {
+		getRenderable(i?: uint): IRenderableObject {
 			return this._pRenderableObject;
 		}
 
@@ -72,9 +71,9 @@ module akra.terrain {
 						iSectorX: uint, iSectorY: uint, 
 						iHeightMapX: uint, iHeightMapY: uint, 
 						iXVerts: uint, iYVerts: uint, 
-						pWorldRect: IRect2d): bool {
+						pWorldRect: IRect2d): boolean {
 
-			var bResult: bool = false;
+			var bResult: boolean = false;
 
 			this._pTerrainSystem = pParentSystem;
 			this._iXVerts = iXVerts;
@@ -127,7 +126,7 @@ module akra.terrain {
 			}
 		}
 
-		protected _createRenderDataForVertexAndIndex(): bool {
+		protected _createRenderDataForVertexAndIndex(): boolean {
 			var pRenderable: IRenderableObject = this.getRenderable();
 
 			if(isNull(pRenderable)){
@@ -145,7 +144,7 @@ module akra.terrain {
 			return true;
 		}
 
-		protected _buildVertexBuffer(): bool {
+		protected _buildVertexBuffer(): boolean {
 			this._pWorldRect.z0 = MAX_FLOAT64;
 			this._pWorldRect.z1 = MIN_FLOAT64;
 
@@ -221,7 +220,7 @@ module akra.terrain {
 			return true;
 		}
 
-		protected _buildIndexBuffer(): bool {
+		protected _buildIndexBuffer(): boolean {
 			if(!isNull(this.getRenderable())){
 				var pIndexList: Float32Array = new Float32Array(TerrainSection.getCountIndexForStripGrid(this._iXVerts, this._iYVerts));
 
@@ -295,8 +294,3 @@ module akra.terrain {
 
 	}
 }
-
-#endif
-
-
-
