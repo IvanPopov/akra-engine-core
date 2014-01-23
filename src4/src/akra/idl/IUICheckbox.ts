@@ -4,20 +4,19 @@
 /// <reference path="IUIComponent.ts" />
 
 module akra {
-export interface IUICheckboxOptions extends IUIComponentOptions {
-	text?: string;
+	export interface IUICheckboxOptions extends IUIComponentOptions {
+		text?: string;
+	}
+
+	export interface IUICheckbox extends IUIComponent {
+		changed: ISignal<{ (pChekbox: IUICheckbox, bValue: boolean): void; }>;
+
+		checked: boolean;
+		text: string;
+
+		isChecked(): boolean;
+
+		_setValue(bValue: boolean): void;
+	}
 }
 
-export interface IUICheckbox extends IUIComponent {
-	checked: boolean;
-	text: string;
-
-	isChecked(): boolean;
-
-	signal changed(bValue: boolean): void;
-
-	_setValue(bValue: boolean): void;
-}
-}
-
-#endif

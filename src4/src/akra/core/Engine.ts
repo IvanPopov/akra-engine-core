@@ -33,10 +33,10 @@
 /// <reference path="../webgl/WebGLRenderer.ts" />
 // #endif
 
-// #ifdef GUI
+
 /// <reference path="../ui/UI.ts" />
 /// <reference path="../ui/IDE.ts" />
-// #endif
+
 
 
 module akra.core {

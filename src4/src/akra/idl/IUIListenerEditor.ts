@@ -5,12 +5,9 @@
 /// <reference path="IUICodeEditor.ts" />
 
 module akra {
-export interface IUIListenerEditor extends IUIPanel {
-	editor: IUICodeEditor;
+	export interface IUIListenerEditor extends IUIPanel {
+		editor: IUICodeEditor;
 
-	signal bindEvent(sCode: string): void;
+		bindEvent: ISignal<{ (pEditor: IUIListenerEditor, sCode: string): void; }>;
+	}
 }
-}
-
-#endif
-

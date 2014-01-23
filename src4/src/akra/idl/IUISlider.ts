@@ -4,14 +4,13 @@
 /// <reference path="IUIComponent.ts" />
 
 module akra {
-export interface IUISlider extends IUIComponent {
-	/** readonly */ pin: IUIComponent;
-	value: float;
-	range: float;
-	text: string;
+	export interface IUISlider extends IUIComponent {
+		/** readonly */ pin: IUIComponent;
+		value: float;
+		range: float;
+		text: string;
 
-	signal updated(fValue: float): void;
-}
+		updated: ISignal<{ (pSlider: IUISlider, fValue: float): void; }>;
+	}
 }
 
-#endif

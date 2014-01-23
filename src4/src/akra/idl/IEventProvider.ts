@@ -24,6 +24,7 @@ module akra {
 		hasListeners(): boolean;
 		getSender(): any;
 		getType(): EEventTypes;
+		setForerunner(fn: Function): void;
 	}
 
 	export interface IListener<T extends Function> {

@@ -2,10 +2,6 @@
 /// <reference path="IUIDNDNode.ts" />
 
 module akra {
-	export interface IUIComponentType {
-	    new (...argv: any[]): IUIComponent;
-	}
-	
 	export interface IUIComponentOptions {
 	    show?: boolean;
 	    name?: string;

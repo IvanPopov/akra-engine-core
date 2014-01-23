@@ -57,5 +57,5 @@ module akra {
 		signal created(): void;
 	}
 	
-	var ide: IUIIDE = null;
+	//var ide: IUIIDE = null;
 }

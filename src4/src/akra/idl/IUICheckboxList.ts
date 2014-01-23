@@ -16,6 +16,6 @@ module akra {
 	
 		hasMultiSelect(): boolean;
 	
-		signal changed(pCheckbox: IUICheckbox);
+		changed: ISignal<{ (pList: IUICheckboxList, pCheckbox: IUICheckbox): void; }>;
 	}
 }

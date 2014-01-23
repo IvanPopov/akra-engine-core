@@ -10,19 +10,43 @@ module akra {
 		private _pUnicastListener: IListener<T> = null;
 		private _pSender: S = null;
 		private _eType: EEventTypes = EEventTypes.BROADCAST;
-		private _fnSenderCallback: Function = null;
+		private _fnForerunnerTrigger: Function = null;
 
 		private static _pEmptyListenersList: IListener<T>[] = [];
 		private static _nEmptyListenersCount: uint = 0;
 
-		constructor(pSender: S, fnSenderCallback: Function = null, eType: EEventTypes = EEventTypes.BROADCAST){
+		/**
+		 * @param pSender Object, that will be emit signal.
+		 * @param eType Signal type.
+		 */
+		constructor(pSender: S, eType: EEventTypes = EEventTypes.BROADCAST) {
 			this._pSender = pSender;
-			this._fnSenderCallback = fnSenderCallback;
 			this._eType = eType;
 
 			if (this._eType === EEventTypes.BROADCAST) {
 				this._pBroadcastListeners = [];
 			}
+		}
+
+		// Проверяем, существует ли функция в прототипе сендера, чтобы не подавались noname 
+		// функции в сигналы и в качестве fnForerunner
+		private isMethodExistsInSenderPrototype(fn: Function): boolean {
+			var pProto = (<any>this._pSender).constructor.prototype;
+
+			for (var p in pProto) {
+				if (pProto.hasOwnProperty(p)) {
+					if (pProto[p] === fn)
+						return true;
+				}
+			}
+
+			return false;
+		}
+
+		/** @param fn Must be method of signal sender */
+		public setForerunner(fn: Function): void {
+			debug.assert(this.isMethodExistsInSenderPrototype(fn), "Callback must be a part of sender proto.");
+			this._fnForerunnerTrigger = fn;
 		}
 
 		public connect(pSignal: ISignal<any>): boolean;
@@ -94,55 +118,55 @@ module akra {
 		public emit(...pArgs: any[]);
 		public emit() {
 
-			if(!isNull(this._fnSenderCallback)) {
+			if (!isNull(this._fnForerunnerTrigger)) {
 				switch (arguments.length) {
 					case 0:
-						this._fnSenderCallback.call(this._pSender);
+						this._fnForerunnerTrigger.call(this._pSender);
 						break;
 					case 1:
-						this._fnSenderCallback.call(this._pSender, arguments[0]);
+						this._fnForerunnerTrigger.call(this._pSender, arguments[0]);
 						break;
 					case 2:
-						this._fnSenderCallback.call(this._pSender, arguments[0], arguments[1]);
+						this._fnForerunnerTrigger.call(this._pSender, arguments[0], arguments[1]);
 						break;
 					case 3:
-						this._fnSenderCallback.call(this._pSender, arguments[0], arguments[1], arguments[2]);
+						this._fnForerunnerTrigger.call(this._pSender, arguments[0], arguments[1], arguments[2]);
 						break;
 					case 4:
-						this._fnSenderCallback.call(this._pSender,
+						this._fnForerunnerTrigger.call(this._pSender,
 							arguments[0], arguments[1], arguments[2], arguments[3]);
 						break;
 					case 5:
-						this._fnSenderCallback.call(this._pSender,
+						this._fnForerunnerTrigger.call(this._pSender,
 							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
 						break;
 					case 6:
-						this._fnSenderCallback.call(this._pSender,
+						this._fnForerunnerTrigger.call(this._pSender,
 							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 							arguments[5]);
 						break;
 					case 7:
-						this._fnSenderCallback.call(this._pSender,
+						this._fnForerunnerTrigger.call(this._pSender,
 							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 							arguments[5], arguments[6]);
 						break;
 					case 8:
-						this._fnSenderCallback.call(this._pSender,
+						this._fnForerunnerTrigger.call(this._pSender,
 							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 							arguments[5], arguments[6], arguments[7]);
 						break;
 					case 9:
-						this._fnSenderCallback.call(this._pSender,
+						this._fnForerunnerTrigger.call(this._pSender,
 							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 							arguments[5], arguments[6], arguments[7], arguments[8]);
 						break;
 					case 10:
-						this._fnSenderCallback.call(this._pSender,
+						this._fnForerunnerTrigger.call(this._pSender,
 							arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
 							arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
 						break;
 					default:
-						this._fnSenderCallback.apply(this._pSender, arguments);
+						this._fnForerunnerTrigger.apply(this._pSender, arguments);
 				}
 
 			}
@@ -282,12 +306,15 @@ module akra {
 				}
 				else {
 					fnCallback = pReciever[fnCallback]
-			}
+				}
 			}
 
 			if (eType !== this._eType || fnCallback === undefined || fnCallback === null) {
 				return null;
 			}
+
+			debug.assert(!isNull(pSignal) || this.isMethodExistsInSenderPrototype(fnCallback),
+				"Callback must be a part of sender proto.");
 
 			var pListener: IListener<T> = this.getEmptyListener();
 			pListener.reciever = pReciever;

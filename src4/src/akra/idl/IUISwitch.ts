@@ -1,18 +1,13 @@
-#ifndef IUISwitch_TS
-#define IUISwitch_TS
-
 /// <reference path="IUIComponent.ts" />
 
 module akra {
-export interface IUISwitch extends IUIComponent {
-	value: boolean;
+	export interface IUISwitch extends IUIComponent {
+		changed: ISignal<{ (pSwitch: IUISwitch, bValue: boolean): void; }>;
 
-	isOn(): boolean;
+		value: boolean;
 
-	signal changed(bValue: boolean): void;
+		isOn(): boolean;
 
-	_setValue(bValue: boolean): void;
+		_setValue(bValue: boolean): void;
+	}
 }
-}
-
-#endif

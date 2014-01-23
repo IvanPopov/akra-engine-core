@@ -5,11 +5,9 @@
 
 module akra {
 
-export interface IUIPopup extends IUIComponent {
-	close(): void;
+	export interface IUIPopup extends IUIComponent {
+		close(): void;
 
-	signal closed(): void;
+		closed: ISignal<{ (pPopup: IUIPopup): void; }>;
+	}
 }
-}
-
-#endif

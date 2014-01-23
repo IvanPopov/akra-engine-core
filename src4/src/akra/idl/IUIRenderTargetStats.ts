@@ -5,9 +5,8 @@
 /// <reference path="IRenderTarget.ts" />
 
 module akra {
-export interface IUIRenderTargetStats extends IUIComponent {
-	target: IRenderTarget;
-}
+	export interface IUIRenderTargetStats extends IUIComponent {
+		target: IRenderTarget;
+	}
 }
 
-#endif
