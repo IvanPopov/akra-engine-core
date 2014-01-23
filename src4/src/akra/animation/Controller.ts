@@ -165,12 +165,12 @@ module akra.animation {
 		    }
 
 			if (this.target) {
-				this.target.scene.postUpdate.disconnect(this, this.update);
+				this.target.getScene().postUpdate.disconnect(this, this.update);
 		    	//this.disconnect(this.target.scene, SIGNAL(postUpdate), SLOT(update));
 		    }
 
 			this._pTarget = pTarget;
-			this.target.scene.postUpdate.connect(this, this.update);
+			this.target.getScene().postUpdate.connect(this, this.update);
 		    //this.connect(this.target.scene, SIGNAL(postUpdate), SLOT(update));
 		}
 

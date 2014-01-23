@@ -8,29 +8,37 @@
 
 module akra {
 	export interface ISceneObject extends ISceneNode {
-		worldBounds: IRect3d;
-		totalRenderable: uint;
-		shadow: boolean;
-		billboard: boolean;
+		getTotalRenderable(): uint;
 
-		/** writeonly */ onclick: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
-		/** writeonly */ onmousemove: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
-		/** writeonly */ onmousedown: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
-		/** writeonly */ onmouseup: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
-		/** writeonly */ onmouseover: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
-		/** writeonly */ onmouseout: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
-		/** writeonly */ ondragstart: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
-		/** writeonly */ ondragstop: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
-		/** writeonly */ ondragging: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void;
+		getWorldBounds(): IRect3d;
+		//setWorldBounds(pWorldBounds: IRect3d): void;
 
-		/** readonly */ localBounds: IRect3d;
+		getLocalBounds(): IRect3d;
+		accessLocalBounds(): IRect3d;
 
+		getShadow(): boolean;
+		setShadow(bValue: boolean): void;
+
+		getBillboard(): boolean;
+		setBillboard(bValue: boolean): void;
+
+		setOnClick(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
+		setOnMouseMove(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
+		setOnMouseDown(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
+		setOnMouseUp(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
+		setOnMouseOver(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
+		setOnMouseOut(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
+		setOnDragStart(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
+		setOnDragStop(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
+		setOnDragging(fnCallback: (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: uint, y: uint) => void): void;
+
+		
 		isBillboard(): boolean;
 
 		getRenderable(i?: uint): IRenderableObject;
 		getObjectFlags(): int;
 
-		accessLocalBounds(): IRect3d;
+		
 		isWorldBoundsNew(): boolean;
 
 		prepareForRender(pViewport: IViewport): void;

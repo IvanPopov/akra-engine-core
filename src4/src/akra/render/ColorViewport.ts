@@ -51,7 +51,7 @@ module akra.render {
 				this._pColorToSceneObjectMap[s] = pSceneObject;
 				s ++;
 				
-				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
+				for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
 					pRenderable = pSceneObject.getRenderable(j);
 					
 					if (!isNull(pRenderable) && !pRenderable.isFrozen()) {
@@ -98,7 +98,7 @@ module akra.render {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setUniform("RENDERABLE_ID", this.getGuidToColorMap()[pRenderable.guid]);
-			pPass.setUniform("OPTIMIZED_PROJ_MATRIX", this.getCamera().projectionMatrix);
+			pPass.setUniform("OPTIMIZED_PROJ_MATRIX", this.getCamera().getProjectionMatrix());
 			//pPass.setUniform("color", util.colorToVec4(util.randomColor(true)));
 
 			if (!isNull(pSceneObject)) {

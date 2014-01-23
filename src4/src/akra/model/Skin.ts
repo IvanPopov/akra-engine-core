@@ -274,7 +274,7 @@ module akra.model {
 			    pNode = this._pAffectingNodes[i];
 
 			    if (pNode.isWorldMatrixNew() || bForce) {
-			        pNode.worldMatrix.multiply(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
+			        pNode.getWorldMatrix().multiply(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
 			        isUpdated = true;
 			    }
 			}

@@ -91,7 +91,7 @@ module akra.terrain {
 
 		init(pObject: ISceneObject, sSurfaceTextures: string): void {
 			this._pObject = pObject;
-			this._pWorldExtents = pObject.localBounds;
+			this._pWorldExtents = pObject.getLocalBounds();
 			this._sSurfaceTextures = sSurfaceTextures;
 
 			if(!this.checkTextureSizeSettings()){
@@ -241,7 +241,7 @@ module akra.terrain {
 			this._tLastTime = tCurrentTime;
 
 			var pCamera: ICamera = pViewport.getCamera();
-			var v4fCameraCoord: IVec4 = Vec4.temp(pCamera.worldPosition, 1.);
+			var v4fCameraCoord: IVec4 = Vec4.temp(pCamera.getWorldPosition(), 1.);
 			var m4fTransposeInverse: IMat4 = this._pObject.inverseWorldMatrix;
 
 			v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);

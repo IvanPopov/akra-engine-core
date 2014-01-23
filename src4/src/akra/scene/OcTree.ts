@@ -48,15 +48,15 @@ module akra.scene {
 			super("OcTree");
 		}
 
-		get depth(): int {
+		getDepth(): int {
 			return this._iDepth;
 		}
 
-		get worldScale(): IVec3 {
+		getWorldScale(): IVec3 {
 			return this._v3fWorldScale; 
 		}
 
-		get worldOffset(): IVec3 {
+		getWorldOffset(): IVec3 {
 			return this._v3fWorldOffset;
 		}
 
@@ -124,7 +124,7 @@ module akra.scene {
 		 * find node
 		 */
 		findTreeNode(pObject: ISceneObject): IOcTreeNode {
-			var pRect: IRect3d = pObject.worldBounds;
+			var pRect: IRect3d = pObject.getWorldBounds();
 			var iX0: int = pRect.x0, iX1: int = pRect.x1,
 				iY0: int = pRect.y0, iY1: int = pRect.y1,
 				iZ0: int = pRect.z0, iZ1: int = pRect.z1;
@@ -436,12 +436,12 @@ module akra.scene {
 
 			pResultArray.clear();
 
-			if (!isDef(pCamera.frustum)) {
-				this._buildSearchResultsByRect(pCamera.searchRect, this._pHead, pResultArray);
+			if (!isDef(pCamera.getFrustum())) {
+				this._buildSearchResultsByRect(pCamera.getSearchRect(), this._pHead, pResultArray);
 			}
 			else {
-				this._buildSearchResultsByRectAndFrustum(pCamera.searchRect,
-					pCamera.frustum, this._pHead, pResultArray);
+				this._buildSearchResultsByRectAndFrustum(pCamera.getSearchRect(),
+					pCamera.getFrustum(), this._pHead, pResultArray);
 			}
 
 			return pResultArray;
@@ -460,7 +460,7 @@ module akra.scene {
 				var pMemberList: IObjectList<ISceneObject> = pNode.membersList;
 				var pObject: ISceneObject = pMemberList.first;
 				while (isDefAndNotNull(pObject)) {
-					if (geometry.intersect.rect3dRect3d(pSearchRect, pObject.worldBounds)) {
+					if (geometry.intersect.rect3dRect3d(pSearchRect, pObject.getWorldBounds())) {
 						pResultList.push(pObject);
 					}
 					pObject = pMemberList.next();
@@ -499,7 +499,7 @@ module akra.scene {
 					var pMemberList: IObjectList<ISceneObject> = pNode.membersList;
 					var pObject: ISceneObject = pMemberList.first;
 					while (isDefAndNotNull(pObject)) {
-						if (pFrustum.testRect(pObject.worldBounds)) {
+						if (pFrustum.testRect(pObject.getWorldBounds())) {
 							pResultList.push(pObject);
 						}
 						pObject = pMemberList.next();
@@ -569,7 +569,7 @@ module akra.scene {
 			var pMemberList: IObjectList<ISceneObject> = pNode.membersList;
 			var pObject: ISceneObject = pMemberList.first;
 			while (isDefAndNotNull(pObject)) {
-				pResult.members.push(pObject.worldBounds.toString());
+				pResult.members.push(pObject.getWorldBounds().toString());
 				pObject = pMemberList.next();
 			}
 

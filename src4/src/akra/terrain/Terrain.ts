@@ -321,7 +321,7 @@ module akra.terrain {
 			        var iYPixel: uint = y << this._iSectorShift;
 			        var iIndex: uint = (y * this._iSectorCountX) + x;
 
-			        this._pSectorArray[iIndex] = this.scene.createTerrainSection();
+			        this._pSectorArray[iIndex] = this.getScene().createTerrainSection();
 			        this._pSectorArray[iIndex]._createRenderable();
 
 			        if (!this._pSectorArray[iIndex]._internalCreate(
@@ -446,7 +446,7 @@ module akra.terrain {
 		projectPoint(v3fCoord: IVec3, v3fDestenation: IVec3): boolean {
 			var v4fTerrainCoord: IVec4 = Vec4.temp(v3fCoord, 1.);
 
-		    v4fTerrainCoord = this.inverseWorldMatrix.multiplyVec4(v4fTerrainCoord);
+		    v4fTerrainCoord = this.getInverseWorldMatrix().multiplyVec4(v4fTerrainCoord);
 
 		    if (v4fTerrainCoord.x < this.worldExtents.x0 || v4fTerrainCoord.x > this.worldExtents.x1 ||
 		    	v4fTerrainCoord.y < this.worldExtents.y0 || v4fTerrainCoord.y > this.worldExtents.y1){
@@ -460,7 +460,7 @@ module akra.terrain {
 
 		    var v4fTempDestenation: IVec4 = Vec4.temp(v4fTerrainCoord.x, v4fTerrainCoord.y, fHeight, 1.);
 
-		    v4fTempDestenation = this.worldMatrix.multiplyVec4(v4fTempDestenation);
+		    v4fTempDestenation = this.getWorldMatrix().multiplyVec4(v4fTempDestenation);
 		    v3fDestenation.set(v4fTempDestenation.x, v4fTempDestenation.y, v4fTempDestenation.z);
 
 		    return true;
@@ -533,7 +533,7 @@ module akra.terrain {
 			fX1 = fY1 = fZ1 = MIN_FLOAT64;
 
 			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
-				var pSectionBox: IRect3d = this._pSectorArray[i].localBounds;
+				var pSectionBox: IRect3d = this._pSectorArray[i].getLocalBounds();
 
 				fX0 = math.min(fX0, pSectionBox.x0);
 				fY0 = math.min(fY0, pSectionBox.y0);

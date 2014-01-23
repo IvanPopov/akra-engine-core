@@ -38,26 +38,48 @@ module akra.util {
 		protected _eType: EEntityTypes = EEntityTypes.UNKNOWN;
 		protected _iStateFlags: int = 0;
 
-		get name(): string { return this._sName; }
-		set name(sName: string) { this._sName = sName; }
+		getName(): string {
+			return this._sName;
+		}
 
-		get parent(): IEntity { return this._pParent; }
-		set parent(pParent: IEntity) { this.attachToParent(pParent); }
+		setName(sName: string) {
+			this._sName = sName;
+		}
 
-		get sibling(): IEntity { return this._pSibling; }
-		set sibling(pSibling: IEntity) { this._pSibling = pSibling; }
+		getParent(): IEntity {
+			return this._pParent;
+		}
 
-		get child(): IEntity { return this._pChild; }
-		set child(pChild: IEntity) { this._pChild = pChild; }
+		setParent(pParent: IEntity): void {
+			this.attachToParent(pParent);
+		}
 
-		get type(): EEntityTypes { return this._eType; }
+		getSibling(): IEntity {
+			return this._pSibling;
+		}
+
+		setSibling(pSibling: IEntity): void {
+			this._pSibling = pSibling;
+		}
+
+		getChild(): IEntity {
+			return this._pChild;
+		}
+
+		setChild(pChild: IEntity): void {
+			this._pChild = pChild;
+		}
+
+		getType(): EEntityTypes {
+			return this._eType;
+		}
 		
-		get rightSibling(): IEntity {
-			var pSibling: IEntity = this.sibling;
+		getRightSibling(): IEntity {
+			var pSibling: IEntity = this.getSibling();
 
 			if (pSibling) {
-				while (pSibling.sibling) {
-					pSibling = pSibling.sibling;
+				while (pSibling.getSibling()) {
+					pSibling = pSibling.getSibling();
 				}
 
 				return pSibling;
@@ -66,23 +88,21 @@ module akra.util {
 			return this;
 		}
 
+		getDepth(): int {
+			var iDepth: int = -1;
+			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.getParent(), ++iDepth) { };
+			return iDepth;
+		}
+
+		getRoot(): IEntity {
+			for (var pEntity: IEntity = this, iDepth: int = -1; pEntity.getParent(); pEntity = pEntity.getParent(), ++iDepth) { };
+			return pEntity;
+		}
+
 		constructor(eType: EEntityTypes) {
 			super();
 			this._eType = eType;
 		}
-
-		get depth(): int {
-			var iDepth: int = -1;
-			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++iDepth) { };
-			return iDepth;
-		}
-		
-		get root(): IEntity {
-			for (var pEntity: IEntity = this, iDepth: int = -1; pEntity.parent; pEntity = pEntity.parent, ++iDepth) { };
-			return pEntity;
-		}
-
-
 
 		destroy(bRecursive: boolean = false, bPromoteChildren: boolean = true): void {
 			if (bRecursive) {
@@ -143,8 +163,8 @@ module akra.util {
 
 
 		childOf(pParent: IEntity): boolean {
-			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent) {
-				if (pEntity.parent === pParent) {
+			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.getParent()) {
+				if (pEntity.getParent() === pParent) {
 					return true;
 				}
 			}
@@ -154,18 +174,18 @@ module akra.util {
 		
 		children(): IEntity[] {
 			var pChildren: IEntity[] = [];
-			var pChild: IEntity = this.child;
+			var pChild: IEntity = this.getChild();
 
 			while (!isNull(pChild)) {
 				pChildren.push(pChild);
-				pChild = pChild.sibling;
+				pChild = pChild.getSibling();
 			}
 
 			return pChildren;
 		}
 
 		childAt(i: int): IEntity {
-			var pChild: IEntity = this.child;
+			var pChild: IEntity = this.getChild();
 			var n: int = 0;
 
 			while (!isNull(pChild)) {
@@ -173,7 +193,7 @@ module akra.util {
 					return pChild;
 				}
 				n++;
-				pChild = pChild.sibling;
+				pChild = pChild.getSibling();
 			}
 
 			return pChild;
@@ -186,10 +206,10 @@ module akra.util {
 			var iCount: uint = 0;
 
 			if (this._pParent) {
-				var pNextSibling = this._pParent.child;
+				var pNextSibling = this._pParent.getChild();
 				if (pNextSibling) {
 					while (pNextSibling) {
-						pNextSibling = pNextSibling.sibling;
+						pNextSibling = pNextSibling.getSibling();
 						++iCount;
 					}
 				}
@@ -201,11 +221,11 @@ module akra.util {
 		
 		descCount(): uint {
 			var n: uint = this.childCount();
-			var pChild: IEntity = this.child;
+			var pChild: IEntity = this.getChild();
 
 			while (!isNull(pChild)) {
 				n += pChild.descCount();
-				pChild = pChild.sibling;
+				pChild = pChild.getSibling();
 			}
 
 			return n;
@@ -216,11 +236,11 @@ module akra.util {
 		 */
 		childCount(): uint {
 			var iCount: uint = 0;
-			var pChild: IEntity = this.child;
+			var pChild: IEntity = this.getChild();
 
 			while (!isNull(pChild)) {
 				iCount++;
-				pChild = pChild.sibling;
+				pChild = pChild.getSibling();
 			}
 
 			// var pNextChild: IEntity = this.child;
@@ -377,8 +397,8 @@ module akra.util {
 		addSibling(pSibling: IEntity): IEntity {
 			if (pSibling) {
 				// replace objects current sibling pointer with this new one
-				pSibling.sibling = this._pSibling;
-				this.sibling = pSibling;
+				pSibling.setSibling(this._pSibling);
+				this.setSibling(pSibling);
 			}
 
 			return pSibling;
@@ -391,7 +411,7 @@ module akra.util {
 		addChild(pChild: IEntity): IEntity {
 			if (pChild) {
 				// Replace the new child's sibling pointer with our old first child.
-				pChild.sibling = this._pChild;
+				pChild.setSibling(this._pChild);
 				// the new child becomes our first child pointer.
 				this._pChild = pChild;
 				this.childAdded.emit(pChild);
@@ -407,21 +427,21 @@ module akra.util {
 		removeChild(pChild: IEntity): IEntity {
 			if (this._pChild && pChild) {
 				if (this._pChild == pChild) {
-					this._pChild = pChild.sibling;
-					pChild.sibling = null;
+					this._pChild = pChild.getSibling();
+					pChild.setSibling(null);
 				}
 				else {
 					var pTempNode: IEntity = this._pChild;
 					// keep searching until we find the node who's sibling is our target
 					// or we reach the end of the sibling chain
-					while (pTempNode && (pTempNode.sibling != pChild)) {
-						pTempNode = pTempNode.sibling;
+					while (pTempNode && (pTempNode.getSibling() != pChild)) {
+						pTempNode = pTempNode.getSibling();
 					}
 					// if we found the proper item, set it's FirstSibling to be the FirstSibling of the child
 					// we are removing
 					if (pTempNode) {
-						pTempNode.sibling = pChild.sibling;
-						pChild.sibling = null;
+						pTempNode.setSibling(pChild.getSibling());
+						pChild.setSibling(null);
 					}
 				}
 
@@ -435,7 +455,7 @@ module akra.util {
 		removeAllChildren(): void {
 			// keep removing children until end of chain is reached
 			while (!isNull(this._pChild)) {
-				var pNextSibling = this._pChild.sibling;
+				var pNextSibling = this._pChild.getSibling();
 				this._pChild.detachFromParent();
 				this._pChild = pNextSibling;
 			}
@@ -444,7 +464,7 @@ module akra.util {
 		/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
 		attachToParent(pParent: IEntity): boolean {
 
-			var pParentPrev: IEntity = this.parent;
+			var pParentPrev: IEntity = this.getParent();
 
 			if (pParent != this._pParent) {
 
@@ -491,7 +511,7 @@ module akra.util {
 		promoteChildren(): void {
 			// Do I have any children to promote?
 			while (!isNull(this._pChild)) {
-				var pNextSibling: IEntity = this._pChild.sibling;
+				var pNextSibling: IEntity = this._pChild.getSibling();
 				this._pChild.attachToParent(this._pParent);
 				this._pChild = pNextSibling;
 			}
@@ -501,7 +521,7 @@ module akra.util {
 			if (pParent != this) {
 				// Do I have any children to relocate?
 				while (!isNull(this._pChild)) {
-					var pNextSibling: IEntity = this._pChild.sibling;
+					var pNextSibling: IEntity = this._pChild.getSibling();
 					this._pChild.attachToParent(pParent);
 					this._pChild = pNextSibling;
 				}
@@ -516,14 +536,14 @@ module akra.util {
 					return '<entity' + (this._sName ? ' ' + this._sName : "") + '>';
 				}
 
-				var pChild: IEntity = this.child;
+				var pChild: IEntity = this.getChild();
 				var s: string = "";
 
 				for (var i = 0; i < iDepth; ++i) {
 					s += ':  ';
 				}
 
-				s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
+				s += '+----[depth: ' + this.getDepth() + ']' + this.toString() + '\n';
 
 				if (pChild) {
 					s += pChild.toString(true, iDepth + 1);

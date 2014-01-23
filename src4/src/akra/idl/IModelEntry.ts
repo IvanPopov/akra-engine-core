@@ -7,6 +7,6 @@
 
 module akra {
 	export interface IModelEntry extends ISceneNode {
-		resource: IModel;
+		getResource(): IModel;
 	}
 }

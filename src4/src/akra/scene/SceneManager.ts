@@ -57,7 +57,7 @@ module akra.scene {
 			for (var i = 0; i < this._pSceneList.length; ++ i) {
 				var pScene: IScene = this._pSceneList[i];
 				
-				if (pScene.type != ESceneTypes.TYPE_3D) {
+				if (pScene.getType() != ESceneTypes.TYPE_3D) {
 					continue;
 				}
 				
@@ -69,7 +69,7 @@ module akra.scene {
 			for (var i = 0; i < this._pSceneList.length; ++ i) {
 				var pScene: IScene = this._pSceneList[i];
 				
-				if (pScene.type != ESceneTypes.TYPE_3D) {
+				if (pScene.getType() != ESceneTypes.TYPE_3D) {
 					continue;
 				}
 				
@@ -113,7 +113,7 @@ module akra.scene {
 
 				pScene = this._pSceneList[iScene];
 				
-				if (pScene && pScene.type === ESceneTypes.TYPE_3D) {
+				if (pScene && pScene.getType() === ESceneTypes.TYPE_3D) {
 					return <IScene3d>pScene;
 				}
 
@@ -121,7 +121,7 @@ module akra.scene {
 			}
 			else if (isString(arguments[0])) {
 				for (var i: int = 0; i < this._pSceneList.length; ++ i) {
-					if (this._pSceneList[i].name === <string>arguments[0]) {
+					if (this._pSceneList[i].getName() === <string>arguments[0]) {
 						return <IScene3d>this._pSceneList[i];
 					}
 				}
@@ -139,7 +139,7 @@ module akra.scene {
 				var iScene: int = arguments[0] || 0;
 				var pScene: IScene = this._pSceneList[iScene];
 				
-				if (pScene && pScene.type === ESceneTypes.TYPE_2D) {
+				if (pScene && pScene.getType() === ESceneTypes.TYPE_2D) {
 					return <IScene2d>pScene;
 				}
 			}

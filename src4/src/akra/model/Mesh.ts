@@ -407,7 +407,7 @@ module akra.model {
 
 			if (pSubMesh.isSkinned()) {
 				pNewBoundingBox.transform(pSubMesh.skin.getBindMatrix());    
-				pNewBoundingBox.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName));    
+				pNewBoundingBox.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.getBoneName()));    
 			}
 
 			for(i = 1; i < this.length; i++) {
@@ -428,7 +428,7 @@ module akra.model {
 				if (pSubMesh.isSkinned()) {
 					//trace('calc skinned box');
 					pTempBoundingBox.transform(pSubMesh.skin.getBindMatrix());     
-					pTempBoundingBox.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName)); 
+					pTempBoundingBox.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.getBoneName())); 
 				}
 		   // trace('<<< after box <<');
 
@@ -548,7 +548,7 @@ module akra.model {
 
 			if (pSubMesh.isSkinned()) {
 				pNewBoundingSphere.transform(pSubMesh.skin.getBindMatrix());    
-				pNewBoundingSphere.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName));    
+				pNewBoundingSphere.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.getBoneName()));    
 			}
 
 			for(i = 1; i < this.length; i++) {
@@ -565,7 +565,7 @@ module akra.model {
 
 				if (pSubMesh.isSkinned()) {
 					pTempBoundingSphere.transform(pSubMesh.skin.getBindMatrix());    
-					pTempBoundingSphere.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName));    
+					pTempBoundingSphere.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.getBoneName()));    
 					// trace(pTempBoundingSphere.fRadius, '<<<');
 				}
 
@@ -672,13 +672,13 @@ module akra.model {
 				return null;
 			}
 
-			var pSceneModel: ISceneModel = pParent.scene.createModel(sName);
+			var pSceneModel: ISceneModel = pParent.getScene().createModel(sName);
 			
 			if (!pSceneModel.create()) {
 				return null;
 			}
 
-			pSceneModel.mesh = this;
+			pSceneModel.setMesh(this);
 			pSceneModel.attachToParent(pParent);
 
 			return pSceneModel;

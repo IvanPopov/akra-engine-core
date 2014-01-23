@@ -10,9 +10,9 @@
 module akra {
 	export interface IOcTree extends IDisplayList<ISceneObject> {
 	
-		/** readonly */ depth: int;
-		/** readonly */ worldScale: IVec3;
-		/** readonly */ worldOffset: IVec3;
+		getDepth(): int;
+		getWorldScale(): IVec3;
+		getWorldOffset(): IVec3;
 	
 		create(pWorldBoundingBox: IRect3d, iDepth: int, nNode?: uint): void;
 		isReady(): boolean;

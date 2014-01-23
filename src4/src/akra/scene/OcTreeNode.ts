@@ -107,11 +107,11 @@ module akra.scene {
 		constructor(pTree: IOcTree) {
 			super(pTree);
 
-			var iTmp: int = (1 << this.tree.depth);
+			var iTmp: int = (1 << this.tree.getDepth());
 
 			this._pBasicWorldBounds = new geometry.Rect3d(0, iTmp, 0, iTmp, 0, iTmp);
-			this._pBasicWorldBounds.divSelf(this.tree.worldScale);
-			this._pBasicWorldBounds.subSelf(this.tree.worldOffset);
+			this._pBasicWorldBounds.divSelf(this.tree.getWorldScale());
+			this._pBasicWorldBounds.subSelf(this.tree.getWorldOffset());
 
 			this.worldBounds.set(this._pBasicWorldBounds);
 		}
@@ -144,7 +144,7 @@ module akra.scene {
 
 			var pObject: ISceneObject = this.membersList.first;
 			while (isDefAndNotNull(pObject)) {
-				pNodeWorldBounds.unionRect(pObject.worldBounds);
+				pNodeWorldBounds.unionRect(pObject.getWorldBounds());
 
 				pObject = this.membersList.next();
 			}

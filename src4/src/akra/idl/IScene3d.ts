@@ -28,7 +28,7 @@ module akra {
 	
 	
 	export interface IScene3d extends IScene {
-		totalDL: uint;
+		getTotalDL(): uint;
 	
 		getRootNode(): ISceneNode;
 	

@@ -2055,7 +2055,7 @@ module akra.pool.resources {
 				var fUnit: float = pAsset.unit.meter;
 				var sUPaxis: string = pAsset.upAxis;
 
-				pNode.localScale = Vec3.temp(fUnit);
+				pNode.setLocalScale(Vec3.temp(fUnit));
 
 				if (sUPaxis.toUpperCase() == "Z_UP") {
 					//pNode.addRelRotation([1, 0, 0], -.5 * math.PI);
@@ -2407,7 +2407,7 @@ module akra.pool.resources {
 				debug.assert(isDefAndNotNull(pMesh), "cannot find instance <" + pControllers[m].url + ">\"s data");
 
 				if (!isNull(pSceneNode)) {
-					pSceneNode.mesh = pMesh;
+					pSceneNode.setMesh(pMesh);
 				}
 			}
 
@@ -2425,7 +2425,7 @@ module akra.pool.resources {
 				debug.assert(isDefAndNotNull(pMesh), "cannot find instance <" + pGeometries[m].url + ">\"s data");
 
 				if (!isNull(pSceneNode)) {
-					pSceneNode.mesh = pMesh;
+					pSceneNode.setMesh(pMesh);
 				}
 			}
 
@@ -2449,7 +2449,7 @@ module akra.pool.resources {
 				}
 
 				if (!scene.SceneModel.isModel(pModelNode) && pNode.geometry.length > 0) {
-					pModelNode = pModelNode.scene.createModel(".joint-to-model-link-" + guid());
+					pModelNode = pModelNode.getScene().createModel(".joint-to-model-link-" + guid());
 					pModelNode.attachToParent(pNode.constructedNode);
 				}
 
@@ -2464,7 +2464,7 @@ module akra.pool.resources {
 
 		private buildSceneNode(pNode: IColladaNode, pParentNode: ISceneNode): ISceneNode {
 			var pSceneNode: ISceneNode = pNode.constructedNode;
-			var pScene: IScene3d = pParentNode.scene;
+			var pScene: IScene3d = pParentNode.getScene();
 
 			if (isDefAndNotNull(pSceneNode)) {
 				return pSceneNode;
@@ -2502,11 +2502,11 @@ module akra.pool.resources {
 				return null;
 			}
 
-			pJointNode = pParentNode.scene.createJoint();
+			pJointNode = pParentNode.getScene().createJoint();
 				
 			logger.assert(pJointNode.create(), "Can not initialize joint node!");
 
-			pJointNode.boneName = sJointSid;
+			pJointNode.setBoneName(sJointSid);
 			pJointNode.attachToParent(pParentNode);
 
 
@@ -2525,7 +2525,7 @@ module akra.pool.resources {
 		
 		private buildCamera(pColladaInstanceCamera: IColladaInstanceCamera, pParent: ISceneNode): ICamera {
 			var pColladaCamera: IColladaCamera = pColladaInstanceCamera.camera;
-			var pCamera: ICamera = pParent.scene.createCamera(pColladaCamera.name || pColladaCamera.id || null);
+			var pCamera: ICamera = pParent.getScene().createCamera(pColladaCamera.name || pColladaCamera.id || null);
 
 			pCamera.setInheritance(ENodeInheritance.ALL);
 			pCamera.attachToParent(pParent);
@@ -2566,12 +2566,12 @@ module akra.pool.resources {
 					pHierarchyNode = this.buildSceneNode(pNode, pParentNode);
 				}
 
-				pHierarchyNode.name = (pNode.id || pNode.name);
+				pHierarchyNode.setName(pNode.id || pNode.name);
 				pHierarchyNode.setInheritance(ENodeInheritance.ALL);
 
 				//cache already constructed nodes
 				pNode.constructedNode = pHierarchyNode;
-				pHierarchyNode.localMatrix = pNode.transform;
+				pHierarchyNode.setLocalMatrix(pNode.transform);
 
 				this.buildNodes(pNode.childNodes, pHierarchyNode);
 
@@ -2613,7 +2613,7 @@ module akra.pool.resources {
 			var pTrack: IAnimationTrack;
 
 			for (var i: int = 0; i < pNodeList.length; ++i) {
-				pNodeMap[pNodeList[i].name] = pNodeList[i];
+				pNodeMap[pNodeList[i].getName()] = pNodeList[i];
 			}
 
 			this.findNode(pNodes, null, function (pNode: IColladaNode) {
@@ -2947,7 +2947,7 @@ module akra.pool.resources {
 			if (parent instanceof scene.Node) {
 				//attach collada scene to give node
 				pNode = <ISceneNode>parent;
-				pScene = pNode.scene;
+				pScene = pNode.getScene();
 
 			}
 			else {
@@ -2958,7 +2958,7 @@ module akra.pool.resources {
 
 			pRoot = pScene._createModelEntry(this);
 			pRoot.create();
-			pRoot.name = this.getBasename();
+			pRoot.setName(this.getBasename());
 			pRoot.setInheritance(ENodeInheritance.ALL);
 
 			if (!pRoot.attachToParent(pNode)) {

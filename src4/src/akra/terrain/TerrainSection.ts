@@ -127,7 +127,7 @@ module akra.terrain {
 		_createRenderable(): void {
 			if (isNull(this._pRenderableObject)) {
 				this._pRenderableObject = new render.RenderableObject();
-				this._pRenderableObject._setup(this.scene.getManager().getEngine().getRenderer());
+				this._pRenderableObject._setup(this.getScene().getManager().getEngine().getRenderer());
 			}
 		}
 

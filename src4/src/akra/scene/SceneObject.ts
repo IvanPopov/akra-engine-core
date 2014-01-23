@@ -51,74 +51,100 @@ module akra.scene {
 		protected _iViewModes: int = 0;
 
 
-		get totalRenderable(): uint { return 0; }
+		getTotalRenderable(): uint {
+			return 0;
+		}
 
-		get worldBounds(): IRect3d {
+		getWorldBounds(): IRect3d {
 			return this._pWorldBounds;
 		}
 
-		set worldBounds(pBox: IRect3d) {
-			this._pWorldBounds = pBox;
-		}
+		//setWorldBounds(pBox: IRect3d): void {
+		//	this._pWorldBounds = pBox;
+		//}
 
-		get localBounds(): IRect3d {
+		getLocalBounds(): IRect3d {
 			return this._pLocalBounds;
 		}
 
-		set onclick(
+		accessLocalBounds(): IRect3d {
+			bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds);
+			return this._pLocalBounds;
+		}
+
+		getShadow(): boolean {
+			return (this._iViewModes & EObjectViewModes.k_Shadows) != 0;
+		}
+
+		setShadow(bValue: boolean): void {
+			bValue ? bf.setAll(this._iViewModes, EObjectViewModes.k_Shadows) : bf.clearAll(this._iViewModes, EObjectViewModes.k_Shadows);
+
+			for (var i: uint = 0; i < this.getTotalRenderable(); i++) {
+				(<IRenderableObject>this.getRenderable(i)).shadow = bValue;
+			}
+		}
+
+		setBillboard(bValue: boolean): void {
+			bValue ? bf.setAll(this._iViewModes, EObjectViewModes.k_Billboard) : bf.clearAll(this._iViewModes, EObjectViewModes.k_Billboard);
+		}
+
+		getBillboard(): boolean {
+			return (this._iViewModes & EObjectViewModes.k_Billboard) != 0;
+		}
+
+		setOnClick(
 			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.click.connect(fn);
 		}
 
-		set onmousemove(
+		setOnMouseMove(
 			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.mousemove.connect(fn);
 		}
 
-		set onmousedown(
+		setOnMouseDown(
 			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.mousedown.connect(fn);
 		}
 
-		set onmouseup(
+		setOnMouseUp(
 			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.mouseup.connect(fn);
 		}
 
-		set onmouseover(
+		setOnMouseOver(
 			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.mouseover.connect(fn);
 		}
 
-		set onmouseout(
+		setOnMouseOut(
 			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.mouseout.connect(fn);
 		}
 
-		set ondragstart(
+		setOnDragStart(
 			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.dragstart.connect(fn);
 		}
 
-		set ondragstop(
+		setOnDragStop(
 			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.dragstop.connect(fn);
 		}
 
-		set ondragging(
+		setOnDragging(
 			fn: (pObject: ISceneObject, pViewport: IViewport,
-			pRenderable: IRenderableObject, x: uint, y: uint) => void) {
+			pRenderable: IRenderableObject, x: uint, y: uint) => void): void {
 			this.dragging.connect(fn);
 		}
-
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
 			super(pScene, eType);
@@ -126,11 +152,6 @@ module akra.scene {
 
 		getRenderable(i?: uint): IRenderableObject {
 			return null;
-		}
-
-		accessLocalBounds(): IRect3d {
-			bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds);
-			return this._pLocalBounds;
 		}
 
 		isWorldBoundsNew(): boolean {
@@ -172,7 +193,7 @@ module akra.scene {
 					this._pWorldBounds.y1 = Math.max(this._pWorldBounds.y1, this._pWorldBounds.y0 + 0.01);
 					this._pWorldBounds.z1 = Math.max(this._pWorldBounds.z1, this._pWorldBounds.z0 + 0.01);
 				}
-				this._pWorldBounds.transform(this.worldMatrix);
+				this._pWorldBounds.transform(this.getWorldMatrix());
 
 				// set the flag that our bounding box has changed
 				bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewWorldBounds);
@@ -185,28 +206,8 @@ module akra.scene {
 			return false;
 		}
 
-		get shadow(): boolean {
-			return (this._iViewModes & EObjectViewModes.k_Shadows) != 0;
-		}
-
-		set shadow(bValue: boolean) {
-			bValue ? bf.setAll(this._iViewModes, EObjectViewModes.k_Shadows) : bf.clearAll(this._iViewModes, EObjectViewModes.k_Shadows);
-
-			for (var i: uint = 0; i < this.totalRenderable; i++) {
-				(<IRenderableObject>this.getRenderable(i)).shadow = bValue;
-			}
-		}
-
-		set billboard(bValue: boolean) {
-			bValue ? bf.setAll(this._iViewModes, EObjectViewModes.k_Billboard) : bf.clearAll(this._iViewModes, EObjectViewModes.k_Billboard);
-		}
-
-		get billboard(): boolean {
-			return (this._iViewModes & EObjectViewModes.k_Billboard) != 0;
-		}
-
 		isBillboard(): boolean {
-			return this.billboard;
+			return this.getBillboard();
 		}
 
 		getObjectFlags(): int {
@@ -228,7 +229,7 @@ module akra.scene {
 		}
 
 		static isSceneObject(pEntity: IEntity): boolean {
-			return !isNull(pEntity) && pEntity.type >= EEntityTypes.SCENE_OBJECT && pEntity.type < EEntityTypes.OBJECTS_LIMIT;
+			return !isNull(pEntity) && pEntity.getType() >= EEntityTypes.SCENE_OBJECT && pEntity.getType() < EEntityTypes.OBJECTS_LIMIT;
 		}
 	}
 }

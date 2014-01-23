@@ -16,7 +16,7 @@ module akra {
 	}
 	
 	export interface IOmniLight extends ILightPoint {
-		params: IOmniParameters;
+		getParams(): IOmniParameters;
 	
 		getShadowCaster(): IShadowCaster[];
 		getDepthTextureCube(): ITexture[];

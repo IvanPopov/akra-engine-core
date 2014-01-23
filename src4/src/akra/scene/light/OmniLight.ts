@@ -27,8 +27,47 @@ module akra.scene.light {
 		protected _pLightParameters: IOmniParameters = new OmniParameters;
 		protected _pShadowCasterCube: IShadowCaster[] = null;
 
-		get params(): IOmniParameters {
+		getParams(): IOmniParameters {
 			return this._pLightParameters;
+		}
+
+		getIsShadowCaster(): boolean {
+			return this._isShadowCaster;
+		}
+
+		/**
+		 * overridden setter isShadow caster,
+		 * if depth textures don't created then create depth textures
+		 */
+		setIsShadowCaster(bValue: boolean): void {
+			this._isShadowCaster = bValue;
+			if (bValue && isNull(this._pDepthTextureCube)) {
+				this.initializeTextures();
+			}
+		}
+
+		getLightingDistance(): float {
+			return this._pShadowCasterCube[0].getFarPlane();
+		}
+
+		setLightingDistance(fDistance): void {
+			var pCube: IShadowCaster[] = this._pShadowCasterCube;
+			for (var i: int = 0; i < 6; i++) {
+				pCube[i].setFarPlane(fDistance);
+			}
+		}
+
+		getDepthTextureCube(): ITexture[] {
+			return this._pDepthTextureCube;
+		}
+
+		getRenderTarget(iFace: uint): IRenderTarget {
+			// return this._pDepthTextureCube[iFace].getBuffer().getRenderTarget();
+			return this._pColorTextureCube[iFace].getBuffer().getRenderTarget();
+		}
+
+		getShadowCaster(): IShadowCaster[] {
+			return this._pShadowCasterCube;
 		}
 
 		constructor(pScene: IScene3d) {
@@ -56,101 +95,62 @@ module akra.scene.light {
 			}
 
 			//POSITIVE_X
-			pCasterCube[0].localMatrix = Mat4.temp(
+			pCasterCube[0].setLocalMatrix(Mat4.temp(
 				[0, 0, 1, 0, /*first column, not row!*/
 					0, 1, 0, 0,
 					-1, 0, 0, 0,
 					0, 0, 0, 1
-				]);
+				]));
 
 			//NEGATIVE_X
-			pCasterCube[1].localMatrix = Mat4.temp(
+			pCasterCube[1].setLocalMatrix(Mat4.temp(
 				[0, 0, -1, 0, /*first column, not row!*/
 					0, 1, 0, 0,
 					1, 0, 0, 0,
 					0, 0, 0, 1
-				]);
+				]));
 
 			//POSITIVE_Y
-			pCasterCube[2].localMatrix = Mat4.temp(
+			pCasterCube[2].setLocalMatrix(Mat4.temp(
 				[1, 0, 0, 0, /*first column, not row!*/
 					0, 0, 1, 0,
 					0, -1, 0, 0,
 					0, 0, 0, 1
-				]);
+				]));
 
 			//NEGATIVE_Y
-			pCasterCube[3].localMatrix = Mat4.temp(
+			pCasterCube[3].setLocalMatrix(Mat4.temp(
 				[1, 0, 0, 0, /*first column, not row!*/
 					0, 0, -1, 0,
 					0, 1, 0, 0,
 					0, 0, 0, 1
-				]);
+				]));
 
 			//POSITIVE_Z
-			pCasterCube[4].localMatrix = Mat4.temp(
+			pCasterCube[4].setLocalMatrix(Mat4.temp(
 				[-1, 0, 0, 0, /*first column, not row!*/
 					0, 1, 0, 0,
 					0, 0, -1, 0,
 					0, 0, 0, 1
-				]);
+				]));
 
 			//NEGATIVE_Z
-			pCasterCube[5].localMatrix = Mat4.temp(
+			pCasterCube[5].setLocalMatrix(Mat4.temp(
 				[1, 0, 0, 0, /*first column, not row!*/
 					0, 1, 0, 0,
 					0, 0, 1, 0,
 					0, 0, 0, 1
-				]);
+				]));
 
-			if (this.isShadowCaster) {
+			if (this.getIsShadowCaster()) {
 				this.initializeTextures();
 			}
 
 			return isOk;
 		}
 
-		getDepthTextureCube(): ITexture[] {
-			return this._pDepthTextureCube;
-		}
-
-		getRenderTarget(iFace: uint): IRenderTarget {
-			// return this._pDepthTextureCube[iFace].getBuffer().getRenderTarget();
-			return this._pColorTextureCube[iFace].getBuffer().getRenderTarget();
-		}
-
-		getShadowCaster(): IShadowCaster[] {
-			return this._pShadowCasterCube;
-		}
-
-		get isShadowCaster(): boolean {
-			return this._isShadowCaster;
-		}
-
-		/**
-		 * overridden setter isShadow caster,
-		 * if depth textures don't created then create depth textures
-		 */
-		set isShadowCaster(bValue: boolean) {
-			this._isShadowCaster = bValue;
-			if (bValue && isNull(this._pDepthTextureCube)) {
-				this.initializeTextures();
-			}
-		}
-
-		get lightingDistance(): float {
-			return this._pShadowCasterCube[0].farPlane;
-		}
-
-		set lightingDistance(fDistance) {
-			var pCube: IShadowCaster[] = this._pShadowCasterCube;
-			for (var i: int = 0; i < 6; i++) {
-				pCube[i].farPlane = fDistance;
-			}
-		}
-
 		protected initializeTextures(): void {
-			var pEngine: IEngine = this.scene.getManager().getEngine();
+			var pEngine: IEngine = this.getScene().getManager().getEngine();
 			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
 			var iSize: uint = this._iMaxShadowResolution;
 
@@ -186,7 +186,7 @@ module akra.scene.light {
 		}
 
 		_calculateShadows(): void {
-			if (this.enabled && this.isShadowCaster) {
+			if (this.getEnabled() && this.getIsShadowCaster()) {
 				for (var i: uint = 0; i < 6; i++) {
 					this.getRenderTarget(i).update();
 					// this.getRenderTarget(i).getRenderer()._setViewport(this.getRenderTarget(i).getViewport(0));
@@ -196,7 +196,7 @@ module akra.scene.light {
 		}
 
 		_prepareForLighting(pCamera: ICamera): boolean {
-			if (!this.enabled) {
+			if (!this.getEnabled()) {
 				return false;
 			}
 			else {
@@ -205,16 +205,16 @@ module akra.scene.light {
 				//optimize camera frustum
 				var pDepthRange: IDepthRange = pCamera.getDepthRange();
 
-				var fFov: float = pCamera.fov;
-				var fAspect: float = pCamera.aspect;
+				var fFov: float = pCamera.getFOV();
+				var fAspect: float = pCamera.getAspect();
 
 				var m4fTmp: IMat4 = Mat4.perspective(fFov, fAspect, -pDepthRange.min, -pDepthRange.max, Mat4.temp());
 
-				this.optimizedCameraFrustum.extractFromMatrix(m4fTmp, pCamera.worldMatrix);
+				this.getPptimizedCameraFrustum().extractFromMatrix(m4fTmp, pCamera.getWorldMatrix());
 				/*************************************************************/
 
 				var haveInfluence: boolean = false;
-				if (!this.isShadowCaster) {
+				if (!this.getIsShadowCaster()) {
 					for (var i = 0; i < 6; i++) {
 						var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(pCamera, i);
 						if (pResult.length != 0) {
@@ -237,14 +237,14 @@ module akra.scene.light {
 
 		protected _defineLightingInfluence(pCamera: ICamera, iFace: int): IObjectArray<ISceneObject> {
 			var pShadowCaster: IShadowCaster = this._pShadowCasterCube[iFace];
-			var pCameraFrustum: IFrustum = this.optimizedCameraFrustum;
+			var pCameraFrustum: IFrustum = this.getPptimizedCameraFrustum();
 			// var pCameraFrustum: IFrustum = pCamera.frustum;
 
-			var pResult: IObjectArray<ISceneObject> = pShadowCaster.affectedObjects;
+			var pResult: IObjectArray<ISceneObject> = pShadowCaster.getAffectedObjects();
 			pResult.clear();
 
 			//fast test on frustum intersection
-			if (!pCameraFrustum.testFrustum(pShadowCaster.frustum)) {
+			if (!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())) {
 				//frustums don't intersecting
 				return pResult;
 			}
@@ -254,7 +254,7 @@ module akra.scene.light {
 			for (var i: int = 0; i < pRawResult.length; i++) {
 				var pObject: ISceneObject = pRawResult.value(i);
 
-				if (pCameraFrustum.testRect(pObject.worldBounds)) {
+				if (pCameraFrustum.testRect(pObject.getWorldBounds())) {
 					pResult.push(pObject);
 				}
 			}
@@ -264,13 +264,13 @@ module akra.scene.light {
 
 		protected _defineShadowInfluence(pCamera: ICamera, iFace: int): IObjectArray<ISceneObject> {
 			var pShadowCaster: IShadowCaster = this._pShadowCasterCube[iFace];
-			var pCameraFrustum: IFrustum = this.optimizedCameraFrustum;
+			var pCameraFrustum: IFrustum = this.getPptimizedCameraFrustum();
 
-			var pResult: IObjectArray<ISceneObject> = pShadowCaster.affectedObjects;
+			var pResult: IObjectArray<ISceneObject> = pShadowCaster.getAffectedObjects();
 			pResult.clear();
 
 			//fast test on frustum intersection
-			if (!pCameraFrustum.testFrustum(pShadowCaster.frustum)) {
+			if (!pCameraFrustum.testFrustum(pShadowCaster.getFrustum())) {
 				//frustums don't intersecting
 				pShadowCaster._optimizeProjectionMatrix(pCameraFrustum);
 				return pResult;
@@ -282,7 +282,7 @@ module akra.scene.light {
 			var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;
 
 			calculatePlanesForFrustumLighting(
-				pShadowCaster.frustum, pShadowCaster.worldPosition,
+				pShadowCaster.getFrustum(), pShadowCaster.getWorldPosition(),
 				pCameraFrustum, pTestArray);
 
 			var v3fMidPoint: IVec3 = Vec3.temp();
@@ -291,10 +291,10 @@ module akra.scene.light {
 
 			for (var i: int = 0; i < pRawResult.length; i++) {
 				var pObject: ISceneObject = pRawResult.value(i);
-				var pWorldBounds: IRect3d = pObject.worldBounds;
+				var pWorldBounds: IRect3d = pObject.getWorldBounds();
 
 				//have object shadows?
-				if (pObject.shadow) {
+				if (pObject.getShadow()) {
 					var j: int = 0;
 					for (j = 0; j < 6; j++) {
 						var pPlane: IPlane3d = pTestArray[j];
@@ -310,11 +310,11 @@ module akra.scene.light {
 
 						pWorldBounds.midPoint(v3fMidPoint);
 
-						v3fMidPoint.subtract(pShadowCaster.worldPosition, v3fShadowDir);
-						v3fMidPoint.subtract(pCamera.worldPosition, v3fCameraDir);
+						v3fMidPoint.subtract(pShadowCaster.getWorldPosition(), v3fShadowDir);
+						v3fMidPoint.subtract(pCamera.getWorldPosition(), v3fCameraDir);
 
 						if (v3fCameraDir.dot(v3fShadowDir) > 0 &&
-							pWorldBounds.distanceToPoint(pCamera.worldPosition) >= config.SHADOW_DISCARD_DISTANCE) {
+							pWorldBounds.distanceToPoint(pCamera.getWorldPosition()) >= config.SHADOW_DISCARD_DISTANCE) {
 						}
 						else {
 							pResult.push(pObject);

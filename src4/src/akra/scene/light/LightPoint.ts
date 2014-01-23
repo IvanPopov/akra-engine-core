@@ -14,46 +14,46 @@ module akra.scene.light {
 		//optimized camera frustum for better shadow casting
 		protected _pOptimizedCameraFrustum: IFrustum = new geometry.Frustum();
 
-		get lightType(): ELightTypes {
+		getParams(): ILightParameters {
+			// return this._pLightParameters;
+			return null;
+		}
+
+		getLightType(): ELightTypes {
 			return this._eLightType;
+		}
+
+		getPptimizedCameraFrustum(): IFrustum {
+			return this._pOptimizedCameraFrustum;
+		}
+
+		getEnabled(): boolean {
+			return this._isEnabled;
+		}
+
+		setEnabled(bValue: boolean): void {
+			this._isEnabled = bValue;
+		}
+
+		getIsShadowCaster(): boolean {
+			return this._isShadowCaster;
+		}
+
+		setIsShadowCaster(bValue: boolean): void {
+			this._isShadowCaster = bValue;
+		}
+
+		getLightingDistance(): float {
+			return -1.;
+		}
+
+		setLightingDistance(fDistance: float): void {
 		}
 
 		constructor(pScene: IScene3d, eType: ELightTypes = ELightTypes.UNKNOWN) {
 			super(pScene, EEntityTypes.LIGHT);
 
 			this._eLightType = eType;
-		}
-
-		get enabled(): boolean {
-			return this._isEnabled;
-		}
-
-		set enabled(bValue: boolean) {
-			this._isEnabled = bValue;
-		}
-
-		get params(): ILightParameters {
-			// return this._pLightParameters;
-			return null;
-		}
-
-		get isShadowCaster(): boolean {
-			return this._isShadowCaster;
-		}
-
-		set isShadowCaster(bValue: boolean) {
-			this._isShadowCaster = bValue;
-		}
-
-		get lightingDistance(): float {
-			return -1.;
-		}
-
-		set lightingDistance(fDistance: float) {
-		}
-
-		get optimizedCameraFrustum(): IFrustum {
-			return this._pOptimizedCameraFrustum;
 		}
 
 		create(isShadowCaster: boolean = true, iMaxShadowResolution: int = 256): boolean {
@@ -77,7 +77,7 @@ module akra.scene.light {
 		}
 
 		static isLightPoint(pNode: IEntity) {
-			return pNode.type === EEntityTypes.LIGHT;
+			return pNode.getType() === EEntityTypes.LIGHT;
 		}
 	}
 }

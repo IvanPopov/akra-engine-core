@@ -114,7 +114,7 @@ module akra.pool.resources {
 			if (parent instanceof scene.Node) {
 				//attach collada scene to give node
 				pNode = <ISceneNode>parent;
-				pScene = pNode.scene;
+				pScene = pNode.getScene();
 
 			}
 			else {
@@ -125,7 +125,7 @@ module akra.pool.resources {
 
 			pRoot = pScene._createModelEntry(this);
 			pRoot.create();
-			pRoot.name = this.getBasename();
+			pRoot.setName(this.getBasename());
 			pRoot.setInheritance(ENodeInheritance.ALL);
 
 			if (!pRoot.attachToParent(pNode)) {
@@ -201,9 +201,9 @@ module akra.pool.resources {
 			pMatrial.emissive = new Color(0., 0., 0., 1.);
 			pMatrial.shininess = 30.;
 
-			var pSceneModel: ISceneModel = pRoot.scene.createModel(this.getBasename());
+			var pSceneModel: ISceneModel = pRoot.getScene().createModel(this.getBasename());
 			pSceneModel.setInheritance(ENodeInheritance.ALL);
-			pSceneModel.mesh = pMesh;
+			pSceneModel.setMesh(pMesh);
 
 			pSubMesh.wireframe(true);
 

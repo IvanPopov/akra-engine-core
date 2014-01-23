@@ -13,7 +13,7 @@ module akra {
 	}
 	
 	export interface IProjectLight extends ILightPoint {
-		params: IProjectParameters;
+		getParams(): IProjectParameters;
 		
 		getShadowCaster(): IShadowCaster;
 		getDepthTexture(): ITexture;

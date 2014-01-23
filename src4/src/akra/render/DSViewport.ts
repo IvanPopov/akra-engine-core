@@ -227,7 +227,7 @@ module akra.render {
 			for (var i: int = 0; i < pNodeList.length; ++ i) {
 				var pSceneObject: ISceneObject = pNodeList.value(i);
 
-				for (var k: int = 0; k < pSceneObject.totalRenderable; k++) {
+				for (var k: int = 0; k < pSceneObject.getTotalRenderable(); k++) {
 					var pRenderable: IRenderableObject = pSceneObject.getRenderable(k);
 					var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
 
@@ -523,7 +523,7 @@ module akra.render {
 			var pSunLight: ISunLight;
 			var i: int, j: int;
 			var pUniformData: IUniform;
-			var pCameraView: IMat4 = pCamera.viewMatrix;
+			var pCameraView: IMat4 = pCamera.getViewMatrix();
 
 			var v4fLightPosition: IVec4 = Vec4.temp();
 			var v3fLightTransformPosition: IVec3 = Vec3.temp();
@@ -546,75 +546,75 @@ module akra.render {
 				//     continue;
 				// }
 				
-				v4fLightPosition.set(pLight.worldPosition, 1.);
+				v4fLightPosition.set(pLight.getWorldPosition(), 1.);
 				pCameraView.multiplyVec4(v4fLightPosition, v4fTemp);
 				v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
 
-				if (pLight.lightType === ELightTypes.OMNI) {
+				if (pLight.getLightType() === ELightTypes.OMNI) {
 					
 					pOmniLight = <IOmniLight>pLight;
 
-					if (pLight.isShadowCaster) {
+					if (pLight.getIsShadowCaster()) {
 						pUniformData = UniformOmniShadow.temp();
-						(<UniformOmniShadow>pUniformData).setLightData(<IOmniParameters>pLight.params, v3fLightTransformPosition);
+						(<UniformOmniShadow>pUniformData).setLightData(<IOmniParameters>pLight.getParams(), v3fLightTransformPosition);
 						
 						var pDepthCube: ITexture[]				= pOmniLight.getDepthTextureCube();
 						var pShadowCasterCube: IShadowCaster[] 	= pOmniLight.getShadowCaster();
 						
 						for (j = 0; j < 6; ++ j) {
 							pShadowCaster = pShadowCasterCube[j];
-							m4fToLightSpace = pShadowCaster.viewMatrix.multiply(pCamera.worldMatrix, Mat4.temp());
+							m4fToLightSpace = pShadowCaster.getViewMatrix().multiply(pCamera.getWorldMatrix(), Mat4.temp());
 							pUniforms.textures.push(pDepthCube[j]);
 							sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
 							
 							(<UniformOmniShadow>pUniformData).setSampler(sTexture, j);
 							pUniforms.samplersOmni.push((<UniformOmniShadow>pUniformData).SHADOW_SAMPLER[j]);
-							(<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.optimizedProjection, j);
+							(<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.getOptimizedProjection(), j);
 						}
 
 						pUniforms.omniShadows.push(<UniformOmniShadow>pUniformData);
 					}
 					else {
 						pUniformData = UniformOmni.temp();
-						(<UniformOmni>pUniformData).setLightData(<IOmniParameters>pLight.params, v3fLightTransformPosition);
+						(<UniformOmni>pUniformData).setLightData(<IOmniParameters>pLight.getParams(), v3fLightTransformPosition);
 						pUniforms.omni.push(<UniformOmni>pUniformData);
 					}
 				}
-				else if (pLight.lightType === ELightTypes.PROJECT) {
+				else if (pLight.getLightType() === ELightTypes.PROJECT) {
 					pProjectLight = <IProjectLight>pLight;
 					pShadowCaster = pProjectLight.getShadowCaster();
 
-					if (pLight.isShadowCaster && pShadowCaster.isShadowCasted) {
+					if (pLight.getIsShadowCaster() && pShadowCaster.getIsShadowCasted()) {
 						pUniformData = UniformProjectShadow.temp();
-						(<UniformProjectShadow>pUniformData).setLightData(<IProjectParameters>pLight.params, v3fLightTransformPosition);
+						(<UniformProjectShadow>pUniformData).setLightData(<IProjectParameters>pLight.getParams(), v3fLightTransformPosition);
 						
-						m4fToLightSpace = pShadowCaster.viewMatrix.multiply(pCamera.worldMatrix, Mat4.temp());
+						m4fToLightSpace = pShadowCaster.getViewMatrix().multiply(pCamera.getWorldMatrix(), Mat4.temp());
 						pUniforms.textures.push(pProjectLight.getDepthTexture());
 						sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
 
 						(<UniformProjectShadow>pUniformData).setSampler(sTexture);
 						pUniforms.samplersProject.push((<UniformProjectShadow>pUniformData).SHADOW_SAMPLER);
-						(<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.projectionMatrix, pShadowCaster.optimizedProjection);
+						(<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.getProjectionMatrix(), pShadowCaster.getOptimizedProjection());
 						pUniforms.projectShadows.push(<UniformProjectShadow>pUniformData);
 					}
 					else {
 						pUniformData = UniformProject.temp();
-						(<UniformProject>pUniformData).setLightData(<IProjectParameters>pLight.params, v3fLightTransformPosition);
-						m4fShadow = pShadowCaster.projViewMatrix.multiply(pCamera.worldMatrix, Mat4.temp());
+						(<UniformProject>pUniformData).setLightData(<IProjectParameters>pLight.getParams(), v3fLightTransformPosition);
+						m4fShadow = pShadowCaster.getProjViewMatrix().multiply(pCamera.getWorldMatrix(), Mat4.temp());
 						(<UniformProject>pUniformData).setMatrix(m4fShadow);
 						pUniforms.project.push(<UniformProject>pUniformData);
 					}
 
 				}
-				else if (pLight.lightType === ELightTypes.SUN) {
+				else if (pLight.getLightType() === ELightTypes.SUN) {
 					pSunLight = <ISunLight>pLight;
 					pShadowCaster = pSunLight.getShadowCaster();
 
-					if (pLight.isShadowCaster) {
+					if (pLight.getIsShadowCaster()) {
 						pUniformData = UniformSunShadow.temp();
-						var pSkyDome: ISceneModel = pSunLight.skyDome;
+						var pSkyDome: ISceneModel = pSunLight.getSkyDome();
 						var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);
-						(<UniformSunShadow>pUniformData).setLightData(<ISunParameters>pLight.params, iSkyDomeId);
+						(<UniformSunShadow>pUniformData).setLightData(<ISunParameters>pLight.getParams(), iSkyDomeId);
 						pUniforms.sunShadows.push(<UniformSunShadow>pUniformData);
 
 						pUniforms.textures.push(pSunLight.getDepthTexture());
@@ -623,15 +623,15 @@ module akra.render {
 						(<UniformSunShadow>pUniformData).setSampler(sTexture);
 						pUniforms.samplersSun.push((<UniformSunShadow>pUniformData).SHADOW_SAMPLER);
 
-						m4fToLightSpace = pShadowCaster.viewMatrix.multiply(pCamera.worldMatrix, Mat4.temp());
-						(<UniformSunShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.optimizedProjection);
+						m4fToLightSpace = pShadowCaster.getViewMatrix().multiply(pCamera.getWorldMatrix(), Mat4.temp());
+						(<UniformSunShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.getOptimizedProjection());
 
 					}
 					else {
 						pUniformData = UniformSun.temp();
-						var pSkyDome: ISceneModel = pSunLight.skyDome;
+						var pSkyDome: ISceneModel = pSunLight.getSkyDome();
 						var iSkyDomeId: int = pEngine.getComposer()._calcRenderID(pSkyDome, pSkyDome.getRenderable(0), false);
-						(<UniformSun>pUniformData).setLightData(<ISunParameters>pLight.params, iSkyDomeId);
+						(<UniformSun>pUniformData).setLightData(<ISunParameters>pLight.getParams(), iSkyDomeId);
 						pUniforms.sun.push(<UniformSun>pUniformData);
 					}
 				}

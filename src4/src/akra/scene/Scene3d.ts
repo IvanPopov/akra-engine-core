@@ -55,15 +55,15 @@ module akra.scene {
 		protected _pDisplayListsCount: uint = 0;
 		protected _isUpdated: boolean = false;
 
-		 get type(): ESceneTypes {
+		getType(): ESceneTypes {
 			return ESceneTypes.TYPE_3D;
 		}
 
-		 get totalDL(): uint {
+		getTotalDL(): uint {
 			return this._pDisplayListsCount;
 		}
 
-		 get name(): string {
+		getName(): string {
 			return this._sName;
 		}
 
@@ -294,7 +294,7 @@ module akra.scene {
 
 		getDisplayListByName(csName: string): int {
 			for (var i: int = 0; i < this._pDisplayLists.length; ++ i) {
-				if (this._pDisplayLists[i].name === csName) {
+				if (this._pDisplayLists[i].getName() === csName) {
 					return i;
 				}
 			}
@@ -307,7 +307,7 @@ module akra.scene {
 		}
 
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {
-			pNode.name = sName;
+			pNode.setName(sName);
 
 			pNode.attached.connect(this.nodeAttachment);
 			pNode.detached.connect(this.nodeDetachment);
@@ -333,8 +333,8 @@ module akra.scene {
 		}
 
 		addDisplayList(pList: IDisplayList<ISceneNode>): int {
-			debug.assert(isDefAndNotNull(this.getDisplayListByName(pList.name)), 
-				"DL with name <" + pList.name + "> already exists");
+			debug.assert(isDefAndNotNull(this.getDisplayListByName(pList.getName())), 
+				"DL with name <" + pList.getName() + "> already exists");
 
 
 			var pLists: IDisplayList<ISceneNode>[] = this._pDisplayLists;

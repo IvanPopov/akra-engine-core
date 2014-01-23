@@ -32,8 +32,13 @@ module akra.scene {
 		protected _pManager: ISpriteManager;
 		protected _pRenderable: IRenderableObject;
 
-		 get totalRenderable(): uint { return 1; }
-		 get manager(): ISpriteManager { return this._pManager; }
+		getTotalRenderable(): uint {
+			return 1;
+		}
+
+		getSpriteManager(): ISpriteManager {
+			return this._pManager;
+		}
 
 		constructor(pScene: IScene3d) {
 			super(pScene, EEntityTypes.SPRITE);
@@ -87,7 +92,7 @@ module akra.scene {
 
 			this.accessLocalBounds().set(fMaxSize, fMaxSize, fMaxSize);
 			
-			var pData: IRenderData = this.manager._allocateSprite(this);
+			var pData: IRenderData = this.getSpriteManager()._allocateSprite(this);
 			
 			pData.allocateData([VE.float4("POSITION")], pGeometry);
 			pData.allocateData([VE.float3("TEXCOORD0")], pTexCoords);

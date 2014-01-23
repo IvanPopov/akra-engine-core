@@ -473,7 +473,7 @@ module akra.render {
 			if (isDefAndNotNull(pCamera)) {
 				// update aspect ratio of new camera if needed.
 				if (!pCamera.isConstantAspect()) {
-					pCamera.aspect = (<float> this._iActWidth / <float> this._iActHeight);
+					pCamera.setAspect(<float> this._iActWidth / <float> this._iActHeight);
 				}
 				pCamera._keepLastViewport(this);
 			}
@@ -549,7 +549,7 @@ module akra.render {
 
 			if (this._pCamera) {
 				if (!this._pCamera.isConstantAspect())
-					this._pCamera.aspect = (<float> this._iActWidth / <float> this._iActHeight);
+					this._pCamera.setAspect(<float> this._iActWidth / <float> this._iActHeight);
 
 			}
 
@@ -618,7 +618,7 @@ module akra.render {
 			for (var i: int = 0; i < pVisibleObjects.length; ++i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 
-				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
+				for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
 					pRenderable = pSceneObject.getRenderable(j);
 
 					if (!isNull(pRenderable)) {
@@ -691,8 +691,8 @@ module akra.render {
 			}
 
 			var pCamera: ICamera = this.getCamera();
-			var m4fProjection: IMat4 = pCamera.projectionMatrix;
-			var m4fWorld: IMat4 = pCamera.worldMatrix;
+			var m4fProjection: IMat4 = pCamera.getProjectionMatrix();
+			var m4fWorld: IMat4 = pCamera.getWorldMatrix();
 
 			var v4fIn: IVec4 = Vec4.temp(), v4fOut: IVec4 = Vec4.temp();
 

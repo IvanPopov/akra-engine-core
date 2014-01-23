@@ -814,17 +814,17 @@ module akra.fx {
 			var iIndex: uint = 0;
 
 			if (!isNull(pSceneObject)) {
-				pSceneObject.worldMatrix
-			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ModelMatrix]] = pSceneObject.worldMatrix;
+				pSceneObject.getWorldMatrix()
+			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ModelMatrix]] = pSceneObject.getWorldMatrix();
 
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldPosition]] = pSceneObject.worldPosition;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldScale]] = pSceneObject.worldScale;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldOrientation]] = pSceneObject.worldOrientation;
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldPosition]] = pSceneObject.getWorldPosition();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldScale]] = pSceneObject.getWorldScale();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldOrientation]] = pSceneObject.getWorldOrientation();
 
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalScale]] = pSceneObject.localScale;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalPosition]] = pSceneObject.localPosition;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalOrientation]] = pSceneObject.localOrientation;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalMatrix]] = pSceneObject.localMatrix;
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalScale]] = pSceneObject.getLocalScale();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalPosition]] = pSceneObject.getLocalPosition();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalOrientation]] = pSceneObject.getLocalOrientation();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalMatrix]] = pSceneObject.getLocalMatrix();
 			}
 
 			if (!isNull(pViewport)) {
@@ -834,13 +834,13 @@ module akra.fx {
 				var pCamera: ICamera = pViewport.getCamera();
 				if (!isNull(pCamera)) {
 
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewMatrix]] = pCamera.viewMatrix;
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ProjMatrix]] = pCamera.projectionMatrix;
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InvViewCameraMat]] = pCamera.worldMatrix;
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_CameraPosition]] = pCamera.worldPosition;
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewMatrix]] = pCamera.getViewMatrix();
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ProjMatrix]] = pCamera.getProjectionMatrix();
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InvViewCameraMat]] = pCamera.getWorldMatrix();
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_CameraPosition]] = pCamera.getWorldPosition();
 
-					if (pCamera.type === EEntityTypes.SHADOW_CASTER) {
-						pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_OptimizedProjMatrix]] = (<IShadowCaster>pCamera).optimizedProjection;
+					if (pCamera.getType() === EEntityTypes.SHADOW_CASTER) {
+						pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_OptimizedProjMatrix]] = (<IShadowCaster>pCamera).getOptimizedProjection();
 					}
 				}
 			}
@@ -868,9 +868,6 @@ module akra.fx {
 				Vec2.temp(this._pCurrentViewport.actualWidth / pLastTexture.width, this._pCurrentViewport.actualHeight / pLastTexture.height);
 
 			}
-
-
-
 
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_useNormal]] = this.bUseNormalMap;
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isDebug]] = this.bIsDebug;
@@ -905,7 +902,7 @@ module akra.fx {
 			}
 
 			if (!isNull(this._pCurrentSceneObject)) {
-				if (this._pCurrentSceneObject.type === EEntityTypes.TERRAIN_ROAM) {
+				if (this._pCurrentSceneObject.getType() === EEntityTypes.TERRAIN_ROAM) {
 					this._pComposerState.terrain.isROAM = true;
 				}
 				else {

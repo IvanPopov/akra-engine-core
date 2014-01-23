@@ -8,13 +8,15 @@
 
 module akra {
 	export interface IShadowCaster extends ICamera {
-		/** readonly */ lightPoint: ILightPoint;
-		/** readonly */ face: uint;
-	    /** readonly */ affectedObjects: IObjectArray<ISceneObject>;
-		/** readonly */ optimizedProjection: IMat4;
-		//casted shadows in the last frame
-		isShadowCasted: boolean;
-	
+		getLightPoint(): ILightPoint;
+		getFace(): uint;
+	    getAffectedObjects(): IObjectArray<ISceneObject>;
+		getOptimizedProjection(): IMat4;
+
+		/** casted shadows in the last frame*/
+		getIsShadowCasted(): boolean;
+		setIsShadowCasted(bValue: boolean): void;
+
 		_optimizeProjectionMatrix(pEffectiveCameraFrustum: IFrustum): void;
 	}
 	

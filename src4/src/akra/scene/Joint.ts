@@ -20,11 +20,11 @@ module akra.scene {
 			super(pScene, EEntityTypes.JOINT);
 		}
 
-		get boneName(): string {
+		getBoneName(): string {
 			return this._sBone;
 		}
 
-		set boneName(sBone: string) {
+		setBoneName(sBone: string): void {
 			this._sBone = sBone;
 		}
 
@@ -58,7 +58,7 @@ module akra.scene {
 		}
 
 		static isJoint(pEntity: IEntity): boolean {
-			return pEntity.type == EEntityTypes.JOINT;
+			return pEntity.getType() === EEntityTypes.JOINT;
 		}
 	}
 }

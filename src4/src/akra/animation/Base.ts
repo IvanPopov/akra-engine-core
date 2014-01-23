@@ -110,7 +110,7 @@ module akra.animation {
 				}
 
 				pTransform = pFrame.toMatrix();
-				pTarget.localMatrix = pTransform;
+				pTarget.setLocalMatrix(pTransform);
 				bAffected = true;
 			}
 			// console.log(bAffected);

@@ -346,7 +346,7 @@ module akra.terrain {
 									 (nElementSize));
 
 			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
-				this._pSectorArray[i] = this.scene.createTerrainSectionROAM();
+				this._pSectorArray[i] = this.getScene().createTerrainSectionROAM();
 			}
 
 			// create the sector objects themselves
@@ -434,9 +434,9 @@ module akra.terrain {
 					this.reset();
 					this._isNeedReset = false;
 
-					var v4fCameraCoord: IVec4 = Vec4.temp(pCamera.worldPosition, 1.);
+					var v4fCameraCoord: IVec4 = Vec4.temp(pCamera.getWorldPosition(), 1.);
 
-		    		v4fCameraCoord = this.inverseWorldMatrix.multiplyVec4(v4fCameraCoord);
+		    		v4fCameraCoord = this.getInverseWorldMatrix().multiplyVec4(v4fCameraCoord);
 
 		    		this._v3fLocalCameraCoord.set(v4fCameraCoord.x, v4fCameraCoord.y, v4fCameraCoord.z);
 					
@@ -549,16 +549,16 @@ module akra.terrain {
 		}
 
 		_isOldCamera(pCamera: ICamera): boolean {
-			return this._m4fLastCameraMatrix.isEqual(pCamera.worldMatrix);
+			return this._m4fLastCameraMatrix.isEqual(pCamera.getWorldMatrix());
 		}
 
 		_onBeforeRender(pRenderableObject: IRenderableObject, pViewport: IViewport): void {
 			if(this._bIsReadyForTesseltion) {
 
 				var pCamera: ICamera = pViewport.getCamera();
-				var fCurrentTime: float = this.scene.getManager().getEngine().time;
+				var fCurrentTime: float = this.getScene().getManager().getEngine().time;
 
-				this._m4fLastCameraMatrix.set(pCamera.worldMatrix);
+				this._m4fLastCameraMatrix.set(pCamera.getWorldMatrix());
 
 				if ((this._bUseTessellationThread && 
 					fCurrentTime - this._fLastTessellationTime > this._fTessellationThreadInterval) || 

@@ -80,7 +80,7 @@ module akra.model {
 
 		    	if (!isNull(pNode)) {
 		    		if (scene.Joint.isJoint(pNode)) {
-			    		sJoint = (<IJoint>pNode).boneName;
+			    		sJoint = (<IJoint>pNode).getBoneName();
 			    	}
 
 			    	if (!isNull(sJoint)) {
@@ -92,8 +92,8 @@ module akra.model {
 
 			    	pNodeList.push(pNode);
 
-			    	findNodes(<ISceneNode>pNode.sibling);
-			    	findNodes(<ISceneNode>pNode.child);
+			    	findNodes(<ISceneNode>pNode.getSibling());
+			    	findNodes(<ISceneNode>pNode.getChild());
 		    	}
 		    }
 
@@ -118,7 +118,7 @@ module akra.model {
 
 		findJointByName(sName: string): IJoint {
 			for (var s in this._pJointMap) {
-				if (this._pJointMap[s].name === sName) {
+				if (this._pJointMap[s].getName() === sName) {
 					return this._pJointMap[s];
 				}
 			}
@@ -132,13 +132,13 @@ module akra.model {
 			}
 
 		    if (this._pMeshNode == null) {
-		    	this._pMeshNode = this.root.scene.createModel();
+		    	this._pMeshNode = this.root.getScene().createModel();
 		    	this._pMeshNode.setInheritance(ENodeInheritance.ALL);
 		    	this._pMeshNode.attachToParent(this.root);
 		    }
 
-		    this._pMeshNode.name = this.name + "[mesh-container]";
-		    this._pMeshNode.mesh = (pMesh);
+		    this._pMeshNode.setName(this.name + "[mesh-container]");
+		    this._pMeshNode.setMesh(pMesh);
 
 		    return true;
 		}

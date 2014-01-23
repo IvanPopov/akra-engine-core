@@ -45,18 +45,22 @@ module akra {
 	}
 
 	export interface IEntity extends IEventProvider, IReferenceCounter {
-		name: string;
+		getName(): string;
+		setName(sName: string): void;
 
-		parent: IEntity;
-		sibling: IEntity;
-		child: IEntity;
+		getParent(): IEntity;
+		setParent(pParent: IEntity): void;
 
-		/** readonly */ rightSibling: IEntity;
+		getSibling(): IEntity;
+		setSibling(pSibling: IEntity): void;
 
-		/** readonly */ type: EEntityTypes;
+		getChild(): IEntity;
+		setChild(pChild: IEntity): void;
 
-		/** readonly */ depth: int;
-		/** readonly */ root: IEntity;
+		getRightSibling(): IEntity;
+		getType(): EEntityTypes;
+		getDepth(): int;
+		getRoot(): IEntity;
 
 		//create(): boolean;//moved to INode
 		destroy(bRecursive?: boolean, bPromoteChildren?: boolean): void;

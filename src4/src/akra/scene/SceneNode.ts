@@ -24,15 +24,18 @@ module akra.scene {
 		protected _pAnimationControllers: IAnimationController[] = null;
 		protected _iSceneNodeFlags: int = 0;
 
-		get scene(): IScene3d { return this._pScene; }
-		set scene(pScene: IScene3d) { this._pScene = pScene; }
+		getScene(): IScene3d {
+			return this._pScene;
+		}
 
-		get totalControllers(): uint { return this._pAnimationControllers ? this._pAnimationControllers.length : 0; }
+		getTotalControllers(): uint {
+			return this._pAnimationControllers ? this._pAnimationControllers.length : 0;
+		}
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_NODE) {
 			super(eType);
 
-			this.scene = pScene;
+			this._pScene = pScene;
 		}
 
 		getController(i: uint = 0): IAnimationController {
@@ -125,16 +128,16 @@ module akra.scene {
 		}
 
 		attachToParent(pParent: ISceneNode): boolean {
-			if ((<ISceneNode>pParent).scene !== this._pScene) {
+			if ((<ISceneNode>pParent).getScene() !== this._pScene) {
 				logger.warn("transfer of the scene node between trees scene - forbidden");
 				return false;
 			}
 
 			if (super.attachToParent(pParent)) {
-				if (!isNull(this.parent)) {
-					(<ISceneNode>this.parent).frozen.connect(this, this._parentFrozen);
+				if (!isNull(this.getParent())) {
+					(<ISceneNode>this.getParent()).frozen.connect(this, this._parentFrozen);
 					//this.connect(this.parent, SIGNAL(frozen), SLOT(_parentFrozen));
-					(<ISceneNode>this.parent).hidden.connect(this, this._parentHidden);
+					(<ISceneNode>this.getParent()).hidden.connect(this, this._parentHidden);
 					//this.connect(this.parent, SIGNAL(hidden), SLOT(_parentHidden));
 				}
 
@@ -146,10 +149,10 @@ module akra.scene {
 
 		detachFromParent(): boolean {
 			if (super.detachFromParent()) {
-				if (!isNull(this.parent)) {
-					(<ISceneNode>this.parent).frozen.disconnect(this, this._parentFrozen);
+				if (!isNull(this.getParent())) {
+					(<ISceneNode>this.getParent()).frozen.disconnect(this, this._parentFrozen);
 					//this.disconnect(this.parent, SIGNAL(frozen), SLOT(_parentFrozen));
-					(<ISceneNode>this.parent).hidden.disconnect(this, this._parentHidden);
+					(<ISceneNode>this.getParent()).hidden.disconnect(this, this._parentHidden);
 					//this.disconnect(this.parent, SIGNAL(hidden), SLOT(_parentHidden));
 				}
 				return true;
@@ -160,7 +163,7 @@ module akra.scene {
 
 		toString(isRecursive: boolean = false, iDepth: uint = 0): string {
 			if (!isRecursive) {
-				return "<scene_node" + (this.name ? " " + this.name : "") + ">"/* + " height: " + this.worldPosition.y*/;
+				return "<scene_node" + (this.getName() ? " " + this.getName() : "") + ">"/* + " height: " + this.worldPosition.y*/;
 			}
 
 			return super.toString(isRecursive, iDepth);

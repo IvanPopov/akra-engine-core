@@ -17,8 +17,10 @@ module akra.scene {
 		protected _pScene: IScene3d = null;
 		protected _sName: string = "";
 
-		get name(): string { return this._sName; }
-		set name(sName: string) { this._sName = sName; }
+		getName(): string {
+			return this._sName;
+		}
+		//setName(sName: string): void { this._sName = sName; }
 
 		constructor(sName: string) {
 			this._sName = sName;

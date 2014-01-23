@@ -107,41 +107,69 @@ module akra.scene.objects {
 		// protected _pPrevObjects: ISceneNode[] = null;
 		// protected _p
 
-		get viewMatrix(): IMat4 { return this._m4fView; }
+		getViewMatrix(): IMat4 {
+			return this._m4fView;
+		}
 
-		get projectionMatrix(): IMat4 { return this._m4fProj; }
+		getProjectionMatrix(): IMat4 {
+			return this._m4fProj;
+		}
 
-		get projViewMatrix(): IMat4 { return this._m4fProjView; }
+		getProjViewMatrix(): IMat4 {
+			return this._m4fProjView;
+		}
 
-		get targetPos(): IVec3 { return this._v3fTargetPos; }
+		getTargetPos(): IVec3 {
+			return this._v3fTargetPos;
+		}
 
-		get fov(): float { return this._fFOV; }
-		set fov(fFOV: float) {
+		getViewDistance(): float {
+			return this._fFarPlane - this._fNearPlane;
+		}
+
+		getSearchRect(): IRect3d {
+			return this._pSearchRect;
+		}
+
+		getFrustum(): IFrustum {
+			return this._pFrustum;
+		}
+
+		getFOV(): float {
+			return this._fFOV;
+		}
+
+		setFOV(fFOV: float): void {
 			this._fFOV = fFOV;
 			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
-		get aspect(): float { return this._fAspect; }
-		set aspect(fAspect: float) {
+		getAspect(): float {
+			return this._fAspect;
+		}
+
+		setAspect(fAspect: float): void {
 			this._fAspect = fAspect;
 			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
-		get nearPlane(): float { return this._fNearPlane; }
-		set nearPlane(fNearPlane: float) {
+		getNearPlane(): float {
+			return this._fNearPlane;
+		}
+
+		setNearPlane(fNearPlane: float): void {
 			this._fNearPlane = fNearPlane;
 			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
-		get farPlane(): float { return this._fFarPlane; }
-		set farPlane(fFarPlane: float) {
+		getFarPlane(): float {
+			return this._fFarPlane;
+		}
+
+		setFarPlane(fFarPlane: float): void {
 			this._fFarPlane = fFarPlane;
 			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
-
-		get viewDistance(): float { return this._fFarPlane - this._fNearPlane; }
-		get searchRect(): IRect3d { return this._pSearchRect; }
-		get frustum(): IFrustum { return this._pFrustum; }
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.CAMERA) {
 			super(pScene, eType);
@@ -165,7 +193,7 @@ module akra.scene.objects {
 				pScene.displayListAdded.connect(this, this._addDisplayList);
 				pScene.displayListRemoved.connect(this, this._removeDisplayList);
 
-				for (var i: uint = 0; i < pScene.totalDL; ++i) {
+				for (var i: uint = 0; i < pScene.getTotalDL(); ++i) {
 					var pList: IDisplayList<ISceneObject> =
 						<IDisplayList<ISceneObject>>pScene.getDisplayList(i);
 
@@ -306,7 +334,7 @@ module akra.scene.objects {
 
 			// the camera view matrix is the
 			// inverse of the world matrix
-			this._m4fView.set(this.inverseWorldMatrix);
+			this._m4fView.set(this.getInverseWorldMatrix());
 			// sky boxes use the inverse 
 			// world matrix of the camera (the
 			// camera view matrix) without 
@@ -399,7 +427,7 @@ module akra.scene.objects {
 
 		toString(isRecursive: boolean = false, iDepth: int = 0): string {
 			if (!isRecursive) {
-				return "<camera" + (this._sName ? " " + this._sName : "") + ">" + " height: " + this.worldPosition.y;
+				return "<camera" + (this._sName ? " " + this._sName : "") + ">" + " height: " + this.getWorldPosition().y;
 			}
 
 			return super.toString(isRecursive, iDepth);
@@ -410,8 +438,8 @@ module akra.scene.objects {
 				v3fDestination = v3fPoint;
 			}
 
-			var m4fView: IMat4 = this.viewMatrix;
-			var m4fProj: IMat4 = this.projectionMatrix;
+			var m4fView: IMat4 = this.getViewMatrix();
+			var m4fProj: IMat4 = this.getProjectionMatrix();
 
 			var v4fTmp: IVec4 = Vec4.temp(v3fPoint, 1.);
 
@@ -455,7 +483,7 @@ module akra.scene.objects {
 		}
 
 		static isCamera(pNode: IEntity): boolean {
-			return pNode.type >= EEntityTypes.CAMERA && pNode.type <= EEntityTypes.SHADOW_CASTER;
+			return pNode.getType() >= EEntityTypes.CAMERA && pNode.getType() <= EEntityTypes.SHADOW_CASTER;
 		}
 	}
 }
