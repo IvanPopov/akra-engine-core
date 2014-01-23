@@ -50,6 +50,23 @@ module akra {
 		mix(v2fVec: IVec2, fA: float, v2fDestination?: IVec2): IVec2;
 	
 		toString(): string;
+
+		clone(sForm: string, v2fDest?: IVec2): IVec2;
+		clone(sForm: "xx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "xy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yy", v2fDest?: IVec2): IVec2;
+
+		copy(sForm: string, v2fFrom: IVec2): IVec2;
+		copy(sForm: string, fValue: float): IVec2;
+		copy(sForm: "xx", v2fFrom: IVec2): IVec2;
+		copy(sForm: "xx", fValue: float): IVec2;
+		copy(sForm: "xy", v2fFrom: IVec2): IVec2;
+		copy(sForm: "xy", fValue: float): IVec2;
+		copy(sForm: "yx", v2fFrom: IVec2): IVec2;
+		copy(sForm: "yx", fValue: float): IVec2;
+		copy(sForm: "yy", v2fFrom: IVec2): IVec2;
+		copy(sForm: "yy", fValue: float): IVec2;
 	}
 	
 	

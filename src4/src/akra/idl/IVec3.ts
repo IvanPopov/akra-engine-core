@@ -127,7 +127,47 @@ module akra {
 	    toArray(): float[];
 	    toTranslationMatrix(m4fDestination?: IMat4);
 	
-	    vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3;
+		vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3;
+
+		clone(sForm: string, v2fDest?: IVec2): IVec2;
+		clone(sForm: "xx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "xy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "xz", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yz", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zz", v2fDest?: IVec2): IVec2;
+
+		clone(sForm: string, v3fDest?: IVec3): IVec3;
+		clone(sForm: "xxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzz", v3fDest?: IVec3): IVec3;
 	}
 	
 	
