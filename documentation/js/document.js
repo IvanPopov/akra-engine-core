@@ -176,7 +176,7 @@ function alphabeticColumnSort() {
 		section_cursor.find(".col-md-3").remove();
 		var column_len = 10;
 		var columns_in_row = 4;
-		var col_num = 1;
+		var col_num = 0;
 		var new_column, cursor;
 		for (var j = 0; j < entries.length; j++) {
 			// console.log(entries[j],j,entries.length);

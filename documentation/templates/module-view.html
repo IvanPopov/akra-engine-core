@@ -93,7 +93,7 @@
 									<div class="header"><span class="main">All</span></div>
 									<div class="content">
 										<div ng-repeat="(subkey,subval) in filtersubobjects(val)">
-											<p class="title"><a href="#{{docobject.location}}/{{docobject.name}}/{{subkey}}">{{subkey}}</a></p>
+											<p class="title"><a href="#{{docobject.location}}/{{docobject.name != 'index' ? docobject.name+'/' : '' }}{{subkey}}">{{subkey}}</a></p>
 											<p class="text">{{subval.description}}&nbsp;</p>
 										</div>
 									</div>

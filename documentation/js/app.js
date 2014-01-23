@@ -2,6 +2,7 @@ var app = angular.module("docsApp", ['ngRoute']);
 
 var keywords = ["modules","classes","functions","interfaces","enums","variables","typeDefs"];
 var subobjects = ["modules","classes","functions","interfaces","enums","variables","typeDefs","constants","getters","setters"];
+var systemtypes = ['string','number','bool','void','int','float'];
 
 app.factory('docobjects', function($location) {
 	var pathtree = $location.path().split("/");
@@ -57,6 +58,7 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 				$scope.currentObject.type = type;
 				$scope.currentObject.data = data;
 				setTimeout(setupHiders,100);
+				setTimeout(alphabeticColumnSort,100);
 			})
 		}
 		else {
@@ -81,8 +83,13 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 			
 				enableSideScroll({self:$('.j-sidebar')});
 
+				if($scope.currentObject.type=="modules") {
+					setTimeout(alphabeticColumnSort,100);
+				}
+
 				setTimeout(setupHiders,100);
 				var dir=path.match(/\/[^\/]*\/?$/);
+
 				$http.get(path+"/"+(dir ? dir[0] : 'index').replace(/\//g,"")+".json")
 					.success(function(data,status) {
 						for(key in data) {
@@ -95,9 +102,6 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 						}
 			
 						enableSideScroll({self:$('.j-sidebar')});
-						if($scope.currentObject.type=="modules") {
-							alphabeticColumnSort();
-						}
 						// setTimeout(setupHiders,100);
 					});
 			})
@@ -239,9 +243,39 @@ app.filter('toStyleType', function() {
 	}
 });
 
+app.filter('checkSystemType', function() {
+	return function(input) {
+		return systemtypes.indexOf(input)>=0;
+	}
+});
+
+app.filter('systemTypeToLoc', function() {
+	return function(input) {
+		var name = input.split(".")[input.split(".").length-1];
+		if (systemtypes.indexOf(name)<0) {
+			return '/'+input.replace(/\./g,'/');
+		}
+		else {
+			return '/'+name;
+		}
+	}
+});
+
 app.filter('locationToDocStyle', function() {
 	return function(input) {
 		return input.replace(/^\//,'').replace(/\//g,'.');
+	}
+});
+
+app.filter('locationToUrlStyle', function() {
+	return function(input) {
+		return '/'+input.replace(/\./g,'/');
+	}
+});
+
+app.filter('getNameFromLoc', function() {
+	return function(input) {
+		return input.split('.')[input.split('.').length-1];
 	}
 });
 

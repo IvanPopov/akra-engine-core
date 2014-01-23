@@ -31,7 +31,7 @@
 									<div class="top-row">
 										<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 										<div class="type"></div>
-										<div class="title">{{subsubkey}}<!-- <span class="red">iy</span>: <span class="blue">int[]</span>): <span class="blue">IElement</span> --></div>
+										<div class="title">{{subsubkey}}<span ng-if="subval[subsubkey].type"> : <span class="blue"><a href='#{{subval[subsubkey].type|systemTypeToLoc}}'>{{subval[subsubkey].type|getNameFromLoc}}</a></span></span></div>
 										<div class="intro">{{subval.comments[0][1]}}</div>
 									</div>
 									<div class="bottom-row">
@@ -51,7 +51,7 @@
 							<div class="top-row">
 								<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 								<div class="type"></div>
-								<div class="title">{{subkey}} (<span ng-repeat="arg in subval.arguments"><span ng-if="$index>0"> </span><span class="red">{{arg.name}}</span>: <span class="blue">{{arg.type}}</span><span ng-if="$index < subval.arguments.length-1">,</span><br ng-if="$index %3 == 2 && $index != subval.arguments.length-1"></span>) : <span class="blue">{{subval.type}}</span></div>
+								<div class="title">{{subkey}} (<span ng-repeat="arg in subval.arguments"><span ng-if="$index>0"> </span><span class="red">{{arg.name}}</span>: <span class="blue"><a href='#{{arg.type|systemTypeToLoc}}'>{{arg.type|getNameFromLoc}}</a></span><span ng-if="$index < subval.arguments.length-1">,</span><br ng-if="$index %3 == 2 && $index != subval.arguments.length-1"></span>) : <span class="blue"><a href='#{{subval.type|systemTypeToLoc}}'>{{subval.type|getNameFromLoc}}</a></span></div>
 								<div class="intro">{{subval.comments[0][1]}}</div>
 							</div>
 							<div class="bottom-row">
@@ -69,7 +69,7 @@
 							<div class="top-row">
 								<a class="arrow j-single-method-arrow" href="javascript:void(0);"><span class="bg"></span></a>
 								<div class="type"></div>
-								<div class="title">{{subkey}}</div>
+								<div class="title">{{subkey}}<span ng-if="subval.type"> : <span class="blue"><a href='#{{subval.type|systemTypeToLoc}}'>{{subval.type|getNameFromLoc}}</a></span></span></div>
 								<div class="intro">{{subval.comments[0][1]}}</div>
 							</div>
 							<div class="bottom-row">
