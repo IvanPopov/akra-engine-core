@@ -16,259 +16,6 @@ module akra.math {
 		y: float;
 		z: float;
 
-		get xx(): IVec2 {
-			return Vec2.temp(this.x, this.x);
-		}
-		set xx(v2fVec: IVec2) {
-			this.x = v2fVec.x; this.x = v2fVec.y;
-		}
-
-		get xy(): IVec2 {
-			return Vec2.temp(this.x, this.y);
-		}
-		set xy(v2fVec: IVec2) {
-			this.x = v2fVec.x; this.y = v2fVec.y;
-		}
-
-		get xz(): IVec2 {
-			return Vec2.temp(this.x, this.z);
-		}
-		set xz(v2fVec: IVec2) {
-			this.x = v2fVec.x; this.z = v2fVec.y;
-		}
-
-		get yx(): IVec2 {
-			return Vec2.temp(this.y, this.x);
-		}
-		set yx(v2fVec: IVec2) {
-			this.y = v2fVec.x; this.x = v2fVec.y;
-		}
-
-		get yy(): IVec2 {
-			return Vec2.temp(this.y, this.y);
-		}
-		set yy(v2fVec: IVec2) {
-			this.y = v2fVec.x; this.y = v2fVec.y;
-		}
-
-		get yz(): IVec2 {
-			return Vec2.temp(this.y, this.z);
-		}
-		set yz(v2fVec: IVec2) {
-			this.y = v2fVec.x; this.z = v2fVec.y;
-		}
-
-		get zx(): IVec2 {
-			return Vec2.temp(this.z, this.x);
-		}
-		set zx(v2fVec: IVec2) {
-			this.z = v2fVec.x; this.x = v2fVec.y;
-		}
-
-		get zy(): IVec2 {
-			return Vec2.temp(this.z, this.y);
-		}
-		set zy(v2fVec: IVec2) {
-			this.z = v2fVec.x; this.y = v2fVec.y;
-		}
-
-		get zz(): IVec2 {
-			return Vec2.temp(this.z, this.z);
-		}
-		set zz(v2fVec: IVec2) {
-			this.z = v2fVec.x; this.z = v2fVec.y;
-		}
-
-
-		get xxx(): IVec3 {
-			return Vec3.temp(this.x, this.x, this.x);
-		}
-		set xxx(v3fVec: IVec3) {
-			this.x = v3fVec.x; this.x = v3fVec.y; this.x = v3fVec.z;
-		}
-
-		get xxy(): IVec3 {
-			return Vec3.temp(this.x, this.x, this.y);
-		}
-		set xxy(v3fVec: IVec3) {
-			this.x = v3fVec.x; this.x = v3fVec.y; this.y = v3fVec.z;
-		}
-
-		get xxz(): IVec3 {
-			return Vec3.temp(this.x, this.x, this.z);
-		}
-		set xxz(v3fVec: IVec3) {
-			this.x = v3fVec.x; this.x = v3fVec.y; this.z = v3fVec.z;
-		}
-
-		get xyx(): IVec3 {
-			return Vec3.temp(this.x, this.y, this.x);
-		}
-		set xyx(v3fVec: IVec3) {
-			this.x = v3fVec.x; this.y = v3fVec.y; this.x = v3fVec.z;
-		}
-
-		get xyy(): IVec3 {
-			return Vec3.temp(this.x, this.y, this.y);
-		}
-		set xyy(v3fVec: IVec3) {
-			this.x = v3fVec.x; this.y = v3fVec.y; this.y = v3fVec.z;
-		}
-
-		get xyz(): IVec3 {
-			return Vec3.temp(this.x, this.y, this.z);
-		}
-		set xyz(v3fVec: IVec3) {
-			this.x = v3fVec.x; this.y = v3fVec.y; this.z = v3fVec.z;
-		}
-
-		get xzx(): IVec3 {
-			return Vec3.temp(this.x, this.z, this.x);
-		}
-		set xzx(v3fVec: IVec3) {
-			this.x = v3fVec.x; this.z = v3fVec.y; this.x = v3fVec.z;
-		}
-
-		get xzy(): IVec3 {
-			return Vec3.temp(this.x, this.z, this.y);
-		}
-		set xzy(v3fVec: IVec3) {
-			this.x = v3fVec.x; this.z = v3fVec.y; this.y = v3fVec.z;
-		}
-
-		get xzz(): IVec3 {
-			return Vec3.temp(this.x, this.z, this.z);
-		}
-		set xzz(v3fVec: IVec3) {
-			this.x = v3fVec.x; this.z = v3fVec.y; this.z = v3fVec.z;
-		}
-
-		get yxx(): IVec3 {
-			return Vec3.temp(this.y, this.x, this.x);
-		}
-		set yxx(v3fVec: IVec3) {
-			this.y = v3fVec.x; this.x = v3fVec.y; this.x = v3fVec.z;
-		}
-
-		get yxy(): IVec3 {
-			return Vec3.temp(this.y, this.x, this.y);
-		}
-		set yxy(v3fVec: IVec3) {
-			this.y = v3fVec.x; this.x = v3fVec.y; this.y = v3fVec.z;
-		}
-
-		get yxz(): IVec3 {
-			return Vec3.temp(this.y, this.x, this.z);
-		}
-		set yxz(v3fVec: IVec3) {
-			this.y = v3fVec.x; this.x = v3fVec.y; this.z = v3fVec.z;
-		}
-
-		get yyx(): IVec3 {
-			return Vec3.temp(this.y, this.y, this.x);
-		}
-		set yyx(v3fVec: IVec3) {
-			this.y = v3fVec.x; this.y = v3fVec.y; this.x = v3fVec.z;
-		}
-
-		get yyy(): IVec3 {
-			return Vec3.temp(this.y, this.y, this.y);
-		}
-		set yyy(v3fVec: IVec3) {
-			this.y = v3fVec.x; this.y = v3fVec.y; this.y = v3fVec.z;
-		}
-
-		get yyz(): IVec3 {
-			return Vec3.temp(this.y, this.y, this.z);
-		}
-		set yyz(v3fVec: IVec3) {
-			this.y = v3fVec.x; this.y = v3fVec.y; this.z = v3fVec.z;
-		}
-
-		get yzx(): IVec3 {
-			return Vec3.temp(this.y, this.z, this.x);
-		}
-		set yzx(v3fVec: IVec3) {
-			this.y = v3fVec.x; this.z = v3fVec.y; this.x = v3fVec.z;
-		}
-
-		get yzy(): IVec3 {
-			return Vec3.temp(this.y, this.z, this.y);
-		}
-		set yzy(v3fVec: IVec3) {
-			this.y = v3fVec.x; this.z = v3fVec.y; this.y = v3fVec.z;
-		}
-
-		get yzz(): IVec3 {
-			return Vec3.temp(this.y, this.z, this.z);
-		}
-		set yzz(v3fVec: IVec3) {
-			this.y = v3fVec.x; this.z = v3fVec.y; this.z = v3fVec.z;
-		}
-
-		get zxx(): IVec3 {
-			return Vec3.temp(this.z, this.x, this.x);
-		}
-		set zxx(v3fVec: IVec3) {
-			this.z = v3fVec.x; this.x = v3fVec.y; this.x = v3fVec.z;
-		}
-
-		get zxy(): IVec3 {
-			return Vec3.temp(this.z, this.x, this.y);
-		}
-		set zxy(v3fVec: IVec3) {
-			this.z = v3fVec.x; this.x = v3fVec.y; this.y = v3fVec.z;
-		}
-
-		get zxz(): IVec3 {
-			return Vec3.temp(this.z, this.x, this.z);
-		}
-		set zxz(v3fVec: IVec3) {
-			this.z = v3fVec.x; this.x = v3fVec.y; this.z = v3fVec.z;
-		}
-
-		get zyx(): IVec3 {
-			return Vec3.temp(this.z, this.y, this.x);
-		}
-		set zyx(v3fVec: IVec3) {
-			this.z = v3fVec.x; this.y = v3fVec.y; this.x = v3fVec.z;
-		}
-
-		get zyy(): IVec3 {
-			return Vec3.temp(this.z, this.y, this.y);
-		}
-		set zyy(v3fVec: IVec3) {
-			this.z = v3fVec.x; this.y = v3fVec.y; this.y = v3fVec.z;
-		}
-
-		get zyz(): IVec3 {
-			return Vec3.temp(this.z, this.y, this.z);
-		}
-		set zyz(v3fVec: IVec3) {
-			this.z = v3fVec.x; this.y = v3fVec.y; this.z = v3fVec.z;
-		}
-
-		get zzx(): IVec3 {
-			return Vec3.temp(this.z, this.z, this.x);
-		}
-		set zzx(v3fVec: IVec3) {
-			this.z = v3fVec.x; this.z = v3fVec.y; this.x = v3fVec.z;
-		}
-
-		get zzy(): IVec3 {
-			return Vec3.temp(this.z, this.z, this.y);
-		}
-		set zzy(v3fVec: IVec3) {
-			this.z = v3fVec.x; this.z = v3fVec.y; this.y = v3fVec.z;
-		}
-
-		get zzz(): IVec3 {
-			return Vec3.temp(this.z, this.z, this.z);
-		}
-		set zzz(v3fVec: IVec3) {
-			this.z = v3fVec.x; this.z = v3fVec.y; this.z = v3fVec.z;
-		}
-
 		constructor();
 		constructor(xyz: float);
 		constructor(xyz: IVec3);
@@ -626,45 +373,6 @@ module akra.math {
 
 		clone(sForm: string, v2fDest?: IVec2): IVec2;
 		clone(sForm: string, v3fDest?: IVec3): IVec3;
-
-		clone(sForm: "xx", v2fDest?: IVec2): IVec2;
-		clone(sForm: "xy", v2fDest?: IVec2): IVec2;
-		clone(sForm: "xz", v2fDest?: IVec2): IVec2;
-		clone(sForm: "yx", v2fDest?: IVec2): IVec2;
-		clone(sForm: "yy", v2fDest?: IVec2): IVec2;
-		clone(sForm: "yz", v2fDest?: IVec2): IVec2;
-		clone(sForm: "zx", v2fDest?: IVec2): IVec2;
-		clone(sForm: "zy", v2fDest?: IVec2): IVec2;
-		clone(sForm: "zz", v2fDest?: IVec2): IVec2;
-
-		clone(sForm: "xxx", v3fDest?: IVec3): IVec3;
-		clone(sForm: "xxy", v3fDest?: IVec3): IVec3;
-		clone(sForm: "xxz", v3fDest?: IVec3): IVec3;
-		clone(sForm: "xyx", v3fDest?: IVec3): IVec3;
-		clone(sForm: "xyy", v3fDest?: IVec3): IVec3;
-		clone(sForm: "xyz", v3fDest?: IVec3): IVec3;
-		clone(sForm: "xzx", v3fDest?: IVec3): IVec3;
-		clone(sForm: "xzy", v3fDest?: IVec3): IVec3;
-		clone(sForm: "xzz", v3fDest?: IVec3): IVec3;
-		clone(sForm: "yxx", v3fDest?: IVec3): IVec3;
-		clone(sForm: "yxy", v3fDest?: IVec3): IVec3;
-		clone(sForm: "yxz", v3fDest?: IVec3): IVec3;
-		clone(sForm: "yyx", v3fDest?: IVec3): IVec3;
-		clone(sForm: "yyy", v3fDest?: IVec3): IVec3;
-		clone(sForm: "yyz", v3fDest?: IVec3): IVec3;
-		clone(sForm: "yzx", v3fDest?: IVec3): IVec3;
-		clone(sForm: "yzy", v3fDest?: IVec3): IVec3;
-		clone(sForm: "yzz", v3fDest?: IVec3): IVec3;
-		clone(sForm: "zxx", v3fDest?: IVec3): IVec3;
-		clone(sForm: "zxy", v3fDest?: IVec3): IVec3;
-		clone(sForm: "zxz", v3fDest?: IVec3): IVec3;
-		clone(sForm: "zyx", v3fDest?: IVec3): IVec3;
-		clone(sForm: "zyy", v3fDest?: IVec3): IVec3;
-		clone(sForm: "zyz", v3fDest?: IVec3): IVec3;
-		clone(sForm: "zzx", v3fDest?: IVec3): IVec3;
-		clone(sForm: "zzy", v3fDest?: IVec3): IVec3;
-		clone(sForm: "zzz", v3fDest?: IVec3): IVec3;
-
 		clone(sForm: string, pVec2OrVec3?: any): any {
 			if (sForm.length === 2) {
 				var v2fDest: IVec2 = isDefAndNotNull(pVec2OrVec3) ? <IVec2>pVec2OrVec3 : Vec2.temp();
@@ -758,121 +466,37 @@ module akra.math {
 		copy(sForm: string, fValue: float): IVec3;
 		copy(sForm: string, v2fFrom: IVec2): IVec3;
 		copy(sForm: string, v3fFrom: IVec3): IVec3;
-
-		copy(sForm: "xx", v2fFrom: IVec2): IVec3;
-		copy(sForm: "xx", fValue: float): IVec3;
-		copy(sForm: "xy", v2fFrom: IVec2): IVec3;
-		copy(sForm: "xy", fValue: float): IVec3;
-		copy(sForm: "xz", v2fFrom: IVec2): IVec3;
-		copy(sForm: "xz", fValue: float): IVec3;
-		copy(sForm: "yx", v2fFrom: IVec2): IVec3;
-		copy(sForm: "yx", fValue: float): IVec3;
-		copy(sForm: "yy", v2fFrom: IVec2): IVec3;
-		copy(sForm: "yy", fValue: float): IVec3;
-		copy(sForm: "yz", v2fFrom: IVec2): IVec3;
-		copy(sForm: "yz", fValue: float): IVec3;
-		copy(sForm: "zx", v2fFrom: IVec2): IVec3;
-		copy(sForm: "zx", fValue: float): IVec3;
-		copy(sForm: "zy", v2fFrom: IVec2): IVec3;
-		copy(sForm: "zy", fValue: float): IVec3;
-		copy(sForm: "zz", v2fFrom: IVec2): IVec3;
-		copy(sForm: "zz", fValue: float): IVec3;
-		
-		copy(sForm: "xxx", v3fFrom: IVec3): IVec3;
-		copy(sForm: "xxx", fValue: float): IVec3;
-		copy(sForm: "xxy", v3fFrom: IVec3): IVec3;
-		copy(sForm: "xxy", fValue: float): IVec3;
-		copy(sForm: "xxz", v3fFrom: IVec3): IVec3;
-		copy(sForm: "xxz", fValue: float): IVec3;
-		copy(sForm: "xyx", v3fFrom: IVec3): IVec3;
-		copy(sForm: "xyx", fValue: float): IVec3;
-		copy(sForm: "xyy", v3fFrom: IVec3): IVec3;
-		copy(sForm: "xyy", fValue: float): IVec3;
-		copy(sForm: "xyz", v3fFrom: IVec3): IVec3;
-		copy(sForm: "xyz", fValue: float): IVec3;
-		copy(sForm: "xzx", v3fFrom: IVec3): IVec3;
-		copy(sForm: "xzx", fValue: float): IVec3;
-		copy(sForm: "xzy", v3fFrom: IVec3): IVec3;
-		copy(sForm: "xzy", fValue: float): IVec3;
-		copy(sForm: "xzz", v3fFrom: IVec3): IVec3;
-		copy(sForm: "xzz", fValue: float): IVec3;
-		copy(sForm: "yxx", v3fFrom: IVec3): IVec3;
-		copy(sForm: "yxx", fValue: float): IVec3;
-		copy(sForm: "yxy", v3fFrom: IVec3): IVec3;
-		copy(sForm: "yxy", fValue: float): IVec3;
-		copy(sForm: "yxz", v3fFrom: IVec3): IVec3;
-		copy(sForm: "yxz", fValue: float): IVec3;
-		copy(sForm: "yyx", v3fFrom: IVec3): IVec3;
-		copy(sForm: "yyx", fValue: float): IVec3;
-		copy(sForm: "yyy", v3fFrom: IVec3): IVec3;
-		copy(sForm: "yyy", fValue: float): IVec3;
-		copy(sForm: "yyz", v3fFrom: IVec3): IVec3;
-		copy(sForm: "yyz", fValue: float): IVec3;
-		copy(sForm: "yzx", v3fFrom: IVec3): IVec3;
-		copy(sForm: "yzx", fValue: float): IVec3;
-		copy(sForm: "yzy", v3fFrom: IVec3): IVec3;
-		copy(sForm: "yzy", fValue: float): IVec3;
-		copy(sForm: "yzz", v3fFrom: IVec3): IVec3;
-		copy(sForm: "yzz", fValue: float): IVec3;
-		copy(sForm: "zxx", v3fFrom: IVec3): IVec3;
-		copy(sForm: "zxx", fValue: float): IVec3;
-		copy(sForm: "zxy", v3fFrom: IVec3): IVec3;
-		copy(sForm: "zxy", fValue: float): IVec3;
-		copy(sForm: "zxz", v3fFrom: IVec3): IVec3;
-		copy(sForm: "zxz", fValue: float): IVec3;
-		copy(sForm: "zyx", v3fFrom: IVec3): IVec3;
-		copy(sForm: "zyx", fValue: float): IVec3;
-		copy(sForm: "zyy", v3fFrom: IVec3): IVec3;
-		copy(sForm: "zyy", fValue: float): IVec3;
-		copy(sForm: "zyz", v3fFrom: IVec3): IVec3;
-		copy(sForm: "zyz", fValue: float): IVec3;
-		copy(sForm: "zzx", v3fFrom: IVec3): IVec3;
-		copy(sForm: "zzx", fValue: float): IVec3;
-		copy(sForm: "zzy", v3fFrom: IVec3): IVec3;
-		copy(sForm: "zzy", fValue: float): IVec3;
-		copy(sForm: "zzz", v3fFrom: IVec3): IVec3;
-		copy(sForm: "zzz", fValue: float): IVec3;
-
 		copy(sForm: string, pVectorOrFloat: any): IVec3 {
 			if (sForm.length === 2) {
 				var v2fFrom: IVec2 = isFloat(pVectorOrFloat) ? Vec2.temp(<float>pVectorOrFloat) : <IVec2>pVectorOrFloat;
 
 				switch(sForm){
 					case "xx":
-						this.x = v2fFrom.x;
-						this.x = v2fFrom.y;
+						this.x = v2fFrom.x;	this.x = v2fFrom.y;
 						return this;
 					case "xy":
-						this.x = v2fFrom.x;
-						this.y = v2fFrom.y;
+						this.x = v2fFrom.x;	this.y = v2fFrom.y;
 						return this;
 					case "xz":
-						this.x = v2fFrom.x;
-						this.z = v2fFrom.y;
+						this.x = v2fFrom.x;	this.z = v2fFrom.y;
 						return this;
 					case "yx":
-						this.y = v2fFrom.x;
-						this.x = v2fFrom.y;
+						this.y = v2fFrom.x;	this.x = v2fFrom.y;
 						return this;
 					case "yy":
-						this.y = v2fFrom.x;
-						this.y = v2fFrom.y;
+						this.y = v2fFrom.x;	this.y = v2fFrom.y;
 						return this;
 					case "yz":
-						this.y = v2fFrom.x;
-						this.z = v2fFrom.y;
+						this.y = v2fFrom.x;	this.z = v2fFrom.y;
 						return this;
 					case "zx":
-						this.z = v2fFrom.x;
-						this.x = v2fFrom.y;
+						this.z = v2fFrom.x;	this.x = v2fFrom.y;
 						return this;
 					case "zy":
-						this.z = v2fFrom.x;
-						this.y = v2fFrom.y;
+						this.z = v2fFrom.x;	this.y = v2fFrom.y;
 						return this;
 					case "zz":
-						this.z = v2fFrom.x;
-						this.z = v2fFrom.y;
+						this.z = v2fFrom.x;	this.z = v2fFrom.y;
 						return this;
 				}
 			}
@@ -881,59 +505,86 @@ module akra.math {
 
 				switch(sForm){
 					case "xxx":
-						return this.set(v3fFrom.x, v3fFrom.x, v3fFrom.x);
+						this.x = v3fFrom.x; this.x = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
 					case "xxy":
-						return this.set(v3fFrom.x, v3fFrom.x, v3fFrom.y);
+						this.x = v3fFrom.x; this.x = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
 					case "xxz":
-						return this.set(v3fFrom.x, v3fFrom.x, v3fFrom.z);
+						this.x = v3fFrom.x; this.x = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
 					case "xyx":
-						return this.set(v3fFrom.x, v3fFrom.y, v3fFrom.x);
+						this.x = v3fFrom.x; this.y = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
 					case "xyy":
-						return this.set(v3fFrom.x, v3fFrom.y, v3fFrom.y);
+						this.x = v3fFrom.x; this.y = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
 					case "xyz":
-						return this.set(v3fFrom.x, v3fFrom.y, v3fFrom.z);
+						this.x = v3fFrom.x; this.y = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
 					case "xzx":
-						return this.set(v3fFrom.x, v3fFrom.z, v3fFrom.x);
+						this.x = v3fFrom.x; this.z = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
 					case "xzy":
-						return this.set(v3fFrom.x, v3fFrom.z, v3fFrom.y);
+						this.x = v3fFrom.x; this.z = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
 					case "xzz":
-						return this.set(v3fFrom.x, v3fFrom.z, v3fFrom.z);
+						this.x = v3fFrom.x; this.z = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
 					case "yxx":
-						return this.set(v3fFrom.y, v3fFrom.x, v3fFrom.x);
+						this.y = v3fFrom.x; this.x = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
 					case "yxy":
-						return this.set(v3fFrom.y, v3fFrom.x, v3fFrom.y);
+						this.y = v3fFrom.x; this.x = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
 					case "yxz":
-						return this.set(v3fFrom.y, v3fFrom.x, v3fFrom.z);
+						this.y = v3fFrom.x; this.x = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
 					case "yyx":
-						return this.set(v3fFrom.y, v3fFrom.y, v3fFrom.x);
+						this.y = v3fFrom.x; this.y = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
 					case "yyy":
-						return this.set(v3fFrom.y, v3fFrom.y, v3fFrom.y);
+						this.y = v3fFrom.x; this.y = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
 					case "yyz":
-						return this.set(v3fFrom.y, v3fFrom.y, v3fFrom.z);
+						this.y = v3fFrom.x; this.y = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
 					case "yzx":
-						return this.set(v3fFrom.y, v3fFrom.z, v3fFrom.x);
+						this.y = v3fFrom.x; this.z = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
 					case "yzy":
-						return this.set(v3fFrom.y, v3fFrom.z, v3fFrom.y);
+						this.y = v3fFrom.x; this.z = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
 					case "yzz":
-						return this.set(v3fFrom.y, v3fFrom.z, v3fFrom.z);
+						this.y = v3fFrom.x; this.z = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
 					case "zxx":
-						return this.set(v3fFrom.z, v3fFrom.x, v3fFrom.x);
+						this.z = v3fFrom.x; this.x = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
 					case "zxy":
-						return this.set(v3fFrom.z, v3fFrom.x, v3fFrom.y);
+						this.z = v3fFrom.x; this.x = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
 					case "zxz":
-						return this.set(v3fFrom.z, v3fFrom.x, v3fFrom.z);
+						this.z = v3fFrom.x; this.x = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
 					case "zyx":
-						return this.set(v3fFrom.z, v3fFrom.y, v3fFrom.x);
+						this.z = v3fFrom.x; this.y = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
 					case "zyy":
-						return this.set(v3fFrom.z, v3fFrom.y, v3fFrom.y);
+						this.z = v3fFrom.x; this.y = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
 					case "zyz":
-						return this.set(v3fFrom.z, v3fFrom.y, v3fFrom.z);
+						this.z = v3fFrom.x; this.y = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
 					case "zzx":
-						return this.set(v3fFrom.z, v3fFrom.z, v3fFrom.x);
+						this.z = v3fFrom.x; this.z = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
 					case "zzy":
-						return this.set(v3fFrom.z, v3fFrom.z, v3fFrom.y);
+						this.z = v3fFrom.x; this.z = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
 					case "zzz":
-						return this.set(v3fFrom.z, v3fFrom.z, v3fFrom.z);
+						this.z = v3fFrom.x; this.z = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
 				}
 			}
 

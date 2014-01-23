@@ -137,7 +137,7 @@ module akra.geometry {
 			var v4fTmp: IVec4 = Vec4.temp(this.center, 1.);
 			v4fTmp = m4fMatrix.multiplyVec4(v4fTmp);
 
-			this.center.set(v4fTmp.xyz);
+			this.center.set(v4fTmp.clone("xyz"));
 
 			var m3fTmp: IMat3 = m4fMatrix.toMat3(Mat3.temp());
 			var v3fScale: IVec3 = Vec3.temp();

@@ -421,7 +421,7 @@ module akra.scene.objects {
 				return null;
 			}
 
-			v3fDestination.set((v4fTmp.scale(1. / v4fTmp.w)).xyz);
+			v3fDestination.set((v4fTmp.scale(1. / v4fTmp.w)).clone("xyz"));
 
 			var fX: float = math.abs(v3fDestination.x);
 			var fY: float = math.abs(v3fDestination.y);

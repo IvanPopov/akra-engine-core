@@ -26,681 +26,6 @@ module akra {
 		z: float;
 		w: float;
 	
-	    /*represents two-component vector from original vector*/
-	    xx: IVec2;
-	    /*represents two-component vector from original vector*/
-	    xy: IVec2;
-	    /*represents two-component vector from original vector*/
-	    xz: IVec2;
-	    /*represents two-component vector from original vector*/
-	    xw: IVec2;
-	    /*represents two-component vector from original vector*/
-	    yx: IVec2;
-	    /*represents two-component vector from original vector*/
-	    yy: IVec2;
-	    /*represents two-component vector from original vector*/
-	    yz: IVec2;
-	    /*represents two-component vector from original vector*/
-	    yw: IVec2;
-	    /*represents two-component vector from original vector*/
-	    zx: IVec2;
-	    /*represents two-component vector from original vector*/
-	    zy: IVec2;
-	    /*represents two-component vector from original vector*/
-	    zz: IVec2;
-	    /*represents two-component vector from original vector*/
-	    zw: IVec2;
-	    /*represents two-component vector from original vector*/
-	    wx: IVec2;
-	    /*represents two-component vector from original vector*/
-	    wy: IVec2;
-	    /*represents two-component vector from original vector*/
-	    wz: IVec2;
-	    /*represents two-component vector from original vector*/
-	    ww: IVec2;
-	
-	    /*represents three-component vector from original vector*/
-	    xxx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xxy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xxz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xxw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xyx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xyy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xyz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xyw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xzx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xzy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xzz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xzw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xwx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xwy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xwz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xww: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yxx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yxy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yxz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yxw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yyx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yyy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yyz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yyw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yzx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yzy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yzz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yzw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    ywx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    ywy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    ywz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yww: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zxx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zxy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zxz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zxw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zyx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zyy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zyz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zyw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zzx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zzy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zzz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zzw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zwx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zwy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zwz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zww: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wxx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wxy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wxz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wxw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wyx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wyy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wyz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wyw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wzx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wzy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wzz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wzw: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wwx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wwy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    wwz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    www: IVec3;
-	
-	    /*represents four-component vector from original vector*/
-	    xxxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xxww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xywx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xywy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xywz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xyww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xzww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    xwww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yxww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yywx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yywy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yywz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yyww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    yzww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    ywww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zxww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zywx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zywy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zywz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zyww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zzww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    zwww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wxww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wywx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wywy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wywz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wyww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wzww: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwxx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwxy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwxz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwxw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwyx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwyy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwyz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwyw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwzx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwzy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwzz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwzw: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwwx: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwwy: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwwz: IVec4;
-	    /*represents four-component vector from original vector*/
-	    wwww: IVec4;
-	
 		set(): IVec4;
 		set(fValue: float): IVec4;
 		set(v4fVec: IVec4): IVec4;
@@ -734,6 +59,1029 @@ module akra {
 		mix(v4fVec: IVec4, fA: float, v4fDestination?: IVec4): IVec4;
 	
 		toString(): string;
+
+		clone(sForm: "xx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "xy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "xz", v2fDest?: IVec2): IVec2;
+		clone(sForm: "xw", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yz", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yw", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zz", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zw", v2fDest?: IVec2): IVec2;
+		clone(sForm: "wx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "wy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "wz", v2fDest?: IVec2): IVec2;
+		clone(sForm: "ww", v2fDest?: IVec2): IVec2;
+
+		clone(sForm: "xxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xxw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xwx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xwy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xwz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xww", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "ywx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "ywy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "ywz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yww", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zwx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zwy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zwz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zww", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wxw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wyw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wzz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wzw", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wwx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wwy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "wwz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "www", v3fDest?: IVec3): IVec3;
+
+		clone(sForm: "xxxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xxww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xywx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xywy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xywz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xyww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xzww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "xwww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yxww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yywx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yywy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yywz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yyww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "yzww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "ywww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zxww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zywx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zywy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zywz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zyww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zzww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "zwww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wxww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wywx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wywy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wywz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wyww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wzww", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwxx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwxy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwxz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwxw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwyx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwyy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwyz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwyw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwzx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwzy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwzz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwzw", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwwx", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwwy", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwwz", v4fDest?: IVec4): IVec4;
+		clone(sForm: "wwww", v4fDest?: IVec4): IVec4;
+
+		clone(sForm: string, v2fDest?: IVec2): IVec2;
+		clone(sForm: string, v3fDest?: IVec3): IVec3;
+		clone(sForm: string, v4fDest?: IVec4): IVec4;
+
+		copy(sForm: "xx", v2fFrom: IVec2): IVec4;
+		copy(sForm: "xx", fValue: float): IVec4;
+		copy(sForm: "xy", v2fFrom: IVec2): IVec4;
+		copy(sForm: "xy", fValue: float): IVec4;
+		copy(sForm: "xz", v2fFrom: IVec2): IVec4;
+		copy(sForm: "xz", fValue: float): IVec4;
+		copy(sForm: "xw", v2fFrom: IVec2): IVec4;
+		copy(sForm: "xw", fValue: float): IVec4;
+		copy(sForm: "yx", v2fFrom: IVec2): IVec4;
+		copy(sForm: "yx", fValue: float): IVec4;
+		copy(sForm: "yy", v2fFrom: IVec2): IVec4;
+		copy(sForm: "yy", fValue: float): IVec4;
+		copy(sForm: "yz", v2fFrom: IVec2): IVec4;
+		copy(sForm: "yz", fValue: float): IVec4;
+		copy(sForm: "yw", v2fFrom: IVec2): IVec4;
+		copy(sForm: "yw", fValue: float): IVec4;
+		copy(sForm: "zx", v2fFrom: IVec2): IVec4;
+		copy(sForm: "zx", fValue: float): IVec4;
+		copy(sForm: "zy", v2fFrom: IVec2): IVec4;
+		copy(sForm: "zy", fValue: float): IVec4;
+		copy(sForm: "zz", v2fFrom: IVec2): IVec4;
+		copy(sForm: "zz", fValue: float): IVec4;
+		copy(sForm: "zw", v2fFrom: IVec2): IVec4;
+		copy(sForm: "zw", fValue: float): IVec4;
+		copy(sForm: "wx", v2fFrom: IVec2): IVec4;
+		copy(sForm: "wx", fValue: float): IVec4;
+		copy(sForm: "wy", v2fFrom: IVec2): IVec4;
+		copy(sForm: "wy", fValue: float): IVec4;
+		copy(sForm: "wz", v2fFrom: IVec2): IVec4;
+		copy(sForm: "wz", fValue: float): IVec4;
+		copy(sForm: "ww", v2fFrom: IVec2): IVec4;
+		copy(sForm: "ww", fValue: float): IVec4;
+
+		copy(sForm: "xxx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xxx", fValue: float): IVec4;
+		copy(sForm: "xxy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xxy", fValue: float): IVec4;
+		copy(sForm: "xxz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xxz", fValue: float): IVec4;
+		copy(sForm: "xxw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xxw", fValue: float): IVec4;
+		copy(sForm: "xyx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xyx", fValue: float): IVec4;
+		copy(sForm: "xyy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xyy", fValue: float): IVec4;
+		copy(sForm: "xyz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xyz", fValue: float): IVec4;
+		copy(sForm: "xyw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xyw", fValue: float): IVec4;
+		copy(sForm: "xzx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xzx", fValue: float): IVec4;
+		copy(sForm: "xzy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xzy", fValue: float): IVec4;
+		copy(sForm: "xzz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xzz", fValue: float): IVec4;
+		copy(sForm: "xzw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xzw", fValue: float): IVec4;
+		copy(sForm: "xwx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xwx", fValue: float): IVec4;
+		copy(sForm: "xwy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xwy", fValue: float): IVec4;
+		copy(sForm: "xwz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xwz", fValue: float): IVec4;
+		copy(sForm: "xww", v3fFrom: IVec3): IVec4;
+		copy(sForm: "xww", fValue: float): IVec4;
+		copy(sForm: "yxx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yxx", fValue: float): IVec4;
+		copy(sForm: "yxy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yxy", fValue: float): IVec4;
+		copy(sForm: "yxz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yxz", fValue: float): IVec4;
+		copy(sForm: "yxw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yxw", fValue: float): IVec4;
+		copy(sForm: "yyx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yyx", fValue: float): IVec4;
+		copy(sForm: "yyy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yyy", fValue: float): IVec4;
+		copy(sForm: "yyz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yyz", fValue: float): IVec4;
+		copy(sForm: "yyw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yyw", fValue: float): IVec4;
+		copy(sForm: "yzx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yzx", fValue: float): IVec4;
+		copy(sForm: "yzy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yzy", fValue: float): IVec4;
+		copy(sForm: "yzz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yzz", fValue: float): IVec4;
+		copy(sForm: "yzw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yzw", fValue: float): IVec4;
+		copy(sForm: "ywx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "ywx", fValue: float): IVec4;
+		copy(sForm: "ywy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "ywy", fValue: float): IVec4;
+		copy(sForm: "ywz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "ywz", fValue: float): IVec4;
+		copy(sForm: "yww", v3fFrom: IVec3): IVec4;
+		copy(sForm: "yww", fValue: float): IVec4;
+		copy(sForm: "zxx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zxx", fValue: float): IVec4;
+		copy(sForm: "zxy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zxy", fValue: float): IVec4;
+		copy(sForm: "zxz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zxz", fValue: float): IVec4;
+		copy(sForm: "zxw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zxw", fValue: float): IVec4;
+		copy(sForm: "zyx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zyx", fValue: float): IVec4;
+		copy(sForm: "zyy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zyy", fValue: float): IVec4;
+		copy(sForm: "zyz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zyz", fValue: float): IVec4;
+		copy(sForm: "zyw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zyw", fValue: float): IVec4;
+		copy(sForm: "zzx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zzx", fValue: float): IVec4;
+		copy(sForm: "zzy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zzy", fValue: float): IVec4;
+		copy(sForm: "zzz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zzz", fValue: float): IVec4;
+		copy(sForm: "zzw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zzw", fValue: float): IVec4;
+		copy(sForm: "zwx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zwx", fValue: float): IVec4;
+		copy(sForm: "zwy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zwy", fValue: float): IVec4;
+		copy(sForm: "zwz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zwz", fValue: float): IVec4;
+		copy(sForm: "zww", v3fFrom: IVec3): IVec4;
+		copy(sForm: "zww", fValue: float): IVec4;
+		copy(sForm: "wxx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wxx", fValue: float): IVec4;
+		copy(sForm: "wxy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wxy", fValue: float): IVec4;
+		copy(sForm: "wxz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wxz", fValue: float): IVec4;
+		copy(sForm: "wxw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wxw", fValue: float): IVec4;
+		copy(sForm: "wyx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wyx", fValue: float): IVec4;
+		copy(sForm: "wyy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wyy", fValue: float): IVec4;
+		copy(sForm: "wyz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wyz", fValue: float): IVec4;
+		copy(sForm: "wyw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wyw", fValue: float): IVec4;
+		copy(sForm: "wzx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wzx", fValue: float): IVec4;
+		copy(sForm: "wzy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wzy", fValue: float): IVec4;
+		copy(sForm: "wzz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wzz", fValue: float): IVec4;
+		copy(sForm: "wzw", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wzw", fValue: float): IVec4;
+		copy(sForm: "wwx", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wwx", fValue: float): IVec4;
+		copy(sForm: "wwy", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wwy", fValue: float): IVec4;
+		copy(sForm: "wwz", v3fFrom: IVec3): IVec4;
+		copy(sForm: "wwz", fValue: float): IVec4;
+		copy(sForm: "www", v3fFrom: IVec3): IVec4;
+		copy(sForm: "www", fValue: float): IVec4;
+
+		copy(sForm: "xxxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxxx", fValue: float): IVec4;
+		copy(sForm: "xxxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxxy", fValue: float): IVec4;
+		copy(sForm: "xxxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxxz", fValue: float): IVec4;
+		copy(sForm: "xxxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxxw", fValue: float): IVec4;
+		copy(sForm: "xxyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxyx", fValue: float): IVec4;
+		copy(sForm: "xxyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxyy", fValue: float): IVec4;
+		copy(sForm: "xxyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxyz", fValue: float): IVec4;
+		copy(sForm: "xxyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxyw", fValue: float): IVec4;
+		copy(sForm: "xxzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxzx", fValue: float): IVec4;
+		copy(sForm: "xxzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxzy", fValue: float): IVec4;
+		copy(sForm: "xxzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxzz", fValue: float): IVec4;
+		copy(sForm: "xxzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxzw", fValue: float): IVec4;
+		copy(sForm: "xxwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxwx", fValue: float): IVec4;
+		copy(sForm: "xxwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxwy", fValue: float): IVec4;
+		copy(sForm: "xxwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxwz", fValue: float): IVec4;
+		copy(sForm: "xxww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xxww", fValue: float): IVec4;
+		copy(sForm: "xyxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyxx", fValue: float): IVec4;
+		copy(sForm: "xyxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyxy", fValue: float): IVec4;
+		copy(sForm: "xyxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyxz", fValue: float): IVec4;
+		copy(sForm: "xyxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyxw", fValue: float): IVec4;
+		copy(sForm: "xyyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyyx", fValue: float): IVec4;
+		copy(sForm: "xyyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyyy", fValue: float): IVec4;
+		copy(sForm: "xyyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyyz", fValue: float): IVec4;
+		copy(sForm: "xyyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyyw", fValue: float): IVec4;
+		copy(sForm: "xyzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyzx", fValue: float): IVec4;
+		copy(sForm: "xyzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyzy", fValue: float): IVec4;
+		copy(sForm: "xyzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyzz", fValue: float): IVec4;
+		copy(sForm: "xyzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyzw", fValue: float): IVec4;
+		copy(sForm: "xywx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xywx", fValue: float): IVec4;
+		copy(sForm: "xywy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xywy", fValue: float): IVec4;
+		copy(sForm: "xywz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xywz", fValue: float): IVec4;
+		copy(sForm: "xyww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xyww", fValue: float): IVec4;
+		copy(sForm: "xzxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzxx", fValue: float): IVec4;
+		copy(sForm: "xzxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzxy", fValue: float): IVec4;
+		copy(sForm: "xzxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzxz", fValue: float): IVec4;
+		copy(sForm: "xzxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzxw", fValue: float): IVec4;
+		copy(sForm: "xzyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzyx", fValue: float): IVec4;
+		copy(sForm: "xzyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzyy", fValue: float): IVec4;
+		copy(sForm: "xzyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzyz", fValue: float): IVec4;
+		copy(sForm: "xzyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzyw", fValue: float): IVec4;
+		copy(sForm: "xzzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzzx", fValue: float): IVec4;
+		copy(sForm: "xzzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzzy", fValue: float): IVec4;
+		copy(sForm: "xzzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzzz", fValue: float): IVec4;
+		copy(sForm: "xzzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzzw", fValue: float): IVec4;
+		copy(sForm: "xzwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzwx", fValue: float): IVec4;
+		copy(sForm: "xzwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzwy", fValue: float): IVec4;
+		copy(sForm: "xzwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzwz", fValue: float): IVec4;
+		copy(sForm: "xzww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xzww", fValue: float): IVec4;
+		copy(sForm: "xwxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwxx", fValue: float): IVec4;
+		copy(sForm: "xwxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwxy", fValue: float): IVec4;
+		copy(sForm: "xwxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwxz", fValue: float): IVec4;
+		copy(sForm: "xwxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwxw", fValue: float): IVec4;
+		copy(sForm: "xwyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwyx", fValue: float): IVec4;
+		copy(sForm: "xwyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwyy", fValue: float): IVec4;
+		copy(sForm: "xwyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwyz", fValue: float): IVec4;
+		copy(sForm: "xwyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwyw", fValue: float): IVec4;
+		copy(sForm: "xwzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwzx", fValue: float): IVec4;
+		copy(sForm: "xwzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwzy", fValue: float): IVec4;
+		copy(sForm: "xwzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwzz", fValue: float): IVec4;
+		copy(sForm: "xwzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwzw", fValue: float): IVec4;
+		copy(sForm: "xwwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwwx", fValue: float): IVec4;
+		copy(sForm: "xwwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwwy", fValue: float): IVec4;
+		copy(sForm: "xwwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwwz", fValue: float): IVec4;
+		copy(sForm: "xwww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "xwww", fValue: float): IVec4;
+		copy(sForm: "yxxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxxx", fValue: float): IVec4;
+		copy(sForm: "yxxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxxy", fValue: float): IVec4;
+		copy(sForm: "yxxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxxz", fValue: float): IVec4;
+		copy(sForm: "yxxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxxw", fValue: float): IVec4;
+		copy(sForm: "yxyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxyx", fValue: float): IVec4;
+		copy(sForm: "yxyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxyy", fValue: float): IVec4;
+		copy(sForm: "yxyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxyz", fValue: float): IVec4;
+		copy(sForm: "yxyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxyw", fValue: float): IVec4;
+		copy(sForm: "yxzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxzx", fValue: float): IVec4;
+		copy(sForm: "yxzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxzy", fValue: float): IVec4;
+		copy(sForm: "yxzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxzz", fValue: float): IVec4;
+		copy(sForm: "yxzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxzw", fValue: float): IVec4;
+		copy(sForm: "yxwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxwx", fValue: float): IVec4;
+		copy(sForm: "yxwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxwy", fValue: float): IVec4;
+		copy(sForm: "yxwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxwz", fValue: float): IVec4;
+		copy(sForm: "yxww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yxww", fValue: float): IVec4;
+		copy(sForm: "yyxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyxx", fValue: float): IVec4;
+		copy(sForm: "yyxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyxy", fValue: float): IVec4;
+		copy(sForm: "yyxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyxz", fValue: float): IVec4;
+		copy(sForm: "yyxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyxw", fValue: float): IVec4;
+		copy(sForm: "yyyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyyx", fValue: float): IVec4;
+		copy(sForm: "yyyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyyy", fValue: float): IVec4;
+		copy(sForm: "yyyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyyz", fValue: float): IVec4;
+		copy(sForm: "yyyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyyw", fValue: float): IVec4;
+		copy(sForm: "yyzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyzx", fValue: float): IVec4;
+		copy(sForm: "yyzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyzy", fValue: float): IVec4;
+		copy(sForm: "yyzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyzz", fValue: float): IVec4;
+		copy(sForm: "yyzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyzw", fValue: float): IVec4;
+		copy(sForm: "yywx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yywx", fValue: float): IVec4;
+		copy(sForm: "yywy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yywy", fValue: float): IVec4;
+		copy(sForm: "yywz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yywz", fValue: float): IVec4;
+		copy(sForm: "yyww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yyww", fValue: float): IVec4;
+		copy(sForm: "yzxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzxx", fValue: float): IVec4;
+		copy(sForm: "yzxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzxy", fValue: float): IVec4;
+		copy(sForm: "yzxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzxz", fValue: float): IVec4;
+		copy(sForm: "yzxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzxw", fValue: float): IVec4;
+		copy(sForm: "yzyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzyx", fValue: float): IVec4;
+		copy(sForm: "yzyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzyy", fValue: float): IVec4;
+		copy(sForm: "yzyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzyz", fValue: float): IVec4;
+		copy(sForm: "yzyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzyw", fValue: float): IVec4;
+		copy(sForm: "yzzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzzx", fValue: float): IVec4;
+		copy(sForm: "yzzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzzy", fValue: float): IVec4;
+		copy(sForm: "yzzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzzz", fValue: float): IVec4;
+		copy(sForm: "yzzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzzw", fValue: float): IVec4;
+		copy(sForm: "yzwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzwx", fValue: float): IVec4;
+		copy(sForm: "yzwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzwy", fValue: float): IVec4;
+		copy(sForm: "yzwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzwz", fValue: float): IVec4;
+		copy(sForm: "yzww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "yzww", fValue: float): IVec4;
+		copy(sForm: "ywxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywxx", fValue: float): IVec4;
+		copy(sForm: "ywxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywxy", fValue: float): IVec4;
+		copy(sForm: "ywxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywxz", fValue: float): IVec4;
+		copy(sForm: "ywxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywxw", fValue: float): IVec4;
+		copy(sForm: "ywyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywyx", fValue: float): IVec4;
+		copy(sForm: "ywyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywyy", fValue: float): IVec4;
+		copy(sForm: "ywyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywyz", fValue: float): IVec4;
+		copy(sForm: "ywyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywyw", fValue: float): IVec4;
+		copy(sForm: "ywzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywzx", fValue: float): IVec4;
+		copy(sForm: "ywzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywzy", fValue: float): IVec4;
+		copy(sForm: "ywzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywzz", fValue: float): IVec4;
+		copy(sForm: "ywzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywzw", fValue: float): IVec4;
+		copy(sForm: "ywwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywwx", fValue: float): IVec4;
+		copy(sForm: "ywwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywwy", fValue: float): IVec4;
+		copy(sForm: "ywwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywwz", fValue: float): IVec4;
+		copy(sForm: "ywww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "ywww", fValue: float): IVec4;
+		copy(sForm: "zxxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxxx", fValue: float): IVec4;
+		copy(sForm: "zxxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxxy", fValue: float): IVec4;
+		copy(sForm: "zxxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxxz", fValue: float): IVec4;
+		copy(sForm: "zxxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxxw", fValue: float): IVec4;
+		copy(sForm: "zxyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxyx", fValue: float): IVec4;
+		copy(sForm: "zxyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxyy", fValue: float): IVec4;
+		copy(sForm: "zxyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxyz", fValue: float): IVec4;
+		copy(sForm: "zxyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxyw", fValue: float): IVec4;
+		copy(sForm: "zxzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxzx", fValue: float): IVec4;
+		copy(sForm: "zxzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxzy", fValue: float): IVec4;
+		copy(sForm: "zxzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxzz", fValue: float): IVec4;
+		copy(sForm: "zxzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxzw", fValue: float): IVec4;
+		copy(sForm: "zxwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxwx", fValue: float): IVec4;
+		copy(sForm: "zxwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxwy", fValue: float): IVec4;
+		copy(sForm: "zxwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxwz", fValue: float): IVec4;
+		copy(sForm: "zxww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zxww", fValue: float): IVec4;
+		copy(sForm: "zyxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyxx", fValue: float): IVec4;
+		copy(sForm: "zyxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyxy", fValue: float): IVec4;
+		copy(sForm: "zyxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyxz", fValue: float): IVec4;
+		copy(sForm: "zyxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyxw", fValue: float): IVec4;
+		copy(sForm: "zyyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyyx", fValue: float): IVec4;
+		copy(sForm: "zyyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyyy", fValue: float): IVec4;
+		copy(sForm: "zyyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyyz", fValue: float): IVec4;
+		copy(sForm: "zyyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyyw", fValue: float): IVec4;
+		copy(sForm: "zyzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyzx", fValue: float): IVec4;
+		copy(sForm: "zyzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyzy", fValue: float): IVec4;
+		copy(sForm: "zyzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyzz", fValue: float): IVec4;
+		copy(sForm: "zyzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyzw", fValue: float): IVec4;
+		copy(sForm: "zywx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zywx", fValue: float): IVec4;
+		copy(sForm: "zywy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zywy", fValue: float): IVec4;
+		copy(sForm: "zywz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zywz", fValue: float): IVec4;
+		copy(sForm: "zyww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zyww", fValue: float): IVec4;
+		copy(sForm: "zzxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzxx", fValue: float): IVec4;
+		copy(sForm: "zzxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzxy", fValue: float): IVec4;
+		copy(sForm: "zzxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzxz", fValue: float): IVec4;
+		copy(sForm: "zzxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzxw", fValue: float): IVec4;
+		copy(sForm: "zzyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzyx", fValue: float): IVec4;
+		copy(sForm: "zzyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzyy", fValue: float): IVec4;
+		copy(sForm: "zzyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzyz", fValue: float): IVec4;
+		copy(sForm: "zzyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzyw", fValue: float): IVec4;
+		copy(sForm: "zzzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzzx", fValue: float): IVec4;
+		copy(sForm: "zzzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzzy", fValue: float): IVec4;
+		copy(sForm: "zzzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzzz", fValue: float): IVec4;
+		copy(sForm: "zzzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzzw", fValue: float): IVec4;
+		copy(sForm: "zzwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzwx", fValue: float): IVec4;
+		copy(sForm: "zzwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzwy", fValue: float): IVec4;
+		copy(sForm: "zzwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzwz", fValue: float): IVec4;
+		copy(sForm: "zzww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zzww", fValue: float): IVec4;
+		copy(sForm: "zwxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwxx", fValue: float): IVec4;
+		copy(sForm: "zwxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwxy", fValue: float): IVec4;
+		copy(sForm: "zwxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwxz", fValue: float): IVec4;
+		copy(sForm: "zwxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwxw", fValue: float): IVec4;
+		copy(sForm: "zwyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwyx", fValue: float): IVec4;
+		copy(sForm: "zwyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwyy", fValue: float): IVec4;
+		copy(sForm: "zwyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwyz", fValue: float): IVec4;
+		copy(sForm: "zwyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwyw", fValue: float): IVec4;
+		copy(sForm: "zwzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwzx", fValue: float): IVec4;
+		copy(sForm: "zwzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwzy", fValue: float): IVec4;
+		copy(sForm: "zwzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwzz", fValue: float): IVec4;
+		copy(sForm: "zwzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwzw", fValue: float): IVec4;
+		copy(sForm: "zwwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwwx", fValue: float): IVec4;
+		copy(sForm: "zwwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwwy", fValue: float): IVec4;
+		copy(sForm: "zwwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwwz", fValue: float): IVec4;
+		copy(sForm: "zwww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "zwww", fValue: float): IVec4;
+		copy(sForm: "wxxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxxx", fValue: float): IVec4;
+		copy(sForm: "wxxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxxy", fValue: float): IVec4;
+		copy(sForm: "wxxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxxz", fValue: float): IVec4;
+		copy(sForm: "wxxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxxw", fValue: float): IVec4;
+		copy(sForm: "wxyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxyx", fValue: float): IVec4;
+		copy(sForm: "wxyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxyy", fValue: float): IVec4;
+		copy(sForm: "wxyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxyz", fValue: float): IVec4;
+		copy(sForm: "wxyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxyw", fValue: float): IVec4;
+		copy(sForm: "wxzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxzx", fValue: float): IVec4;
+		copy(sForm: "wxzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxzy", fValue: float): IVec4;
+		copy(sForm: "wxzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxzz", fValue: float): IVec4;
+		copy(sForm: "wxzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxzw", fValue: float): IVec4;
+		copy(sForm: "wxwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxwx", fValue: float): IVec4;
+		copy(sForm: "wxwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxwy", fValue: float): IVec4;
+		copy(sForm: "wxwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxwz", fValue: float): IVec4;
+		copy(sForm: "wxww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wxww", fValue: float): IVec4;
+		copy(sForm: "wyxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyxx", fValue: float): IVec4;
+		copy(sForm: "wyxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyxy", fValue: float): IVec4;
+		copy(sForm: "wyxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyxz", fValue: float): IVec4;
+		copy(sForm: "wyxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyxw", fValue: float): IVec4;
+		copy(sForm: "wyyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyyx", fValue: float): IVec4;
+		copy(sForm: "wyyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyyy", fValue: float): IVec4;
+		copy(sForm: "wyyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyyz", fValue: float): IVec4;
+		copy(sForm: "wyyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyyw", fValue: float): IVec4;
+		copy(sForm: "wyzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyzx", fValue: float): IVec4;
+		copy(sForm: "wyzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyzy", fValue: float): IVec4;
+		copy(sForm: "wyzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyzz", fValue: float): IVec4;
+		copy(sForm: "wyzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyzw", fValue: float): IVec4;
+		copy(sForm: "wywx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wywx", fValue: float): IVec4;
+		copy(sForm: "wywy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wywy", fValue: float): IVec4;
+		copy(sForm: "wywz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wywz", fValue: float): IVec4;
+		copy(sForm: "wyww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wyww", fValue: float): IVec4;
+		copy(sForm: "wzxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzxx", fValue: float): IVec4;
+		copy(sForm: "wzxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzxy", fValue: float): IVec4;
+		copy(sForm: "wzxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzxz", fValue: float): IVec4;
+		copy(sForm: "wzxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzxw", fValue: float): IVec4;
+		copy(sForm: "wzyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzyx", fValue: float): IVec4;
+		copy(sForm: "wzyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzyy", fValue: float): IVec4;
+		copy(sForm: "wzyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzyz", fValue: float): IVec4;
+		copy(sForm: "wzyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzyw", fValue: float): IVec4;
+		copy(sForm: "wzzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzzx", fValue: float): IVec4;
+		copy(sForm: "wzzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzzy", fValue: float): IVec4;
+		copy(sForm: "wzzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzzz", fValue: float): IVec4;
+		copy(sForm: "wzzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzzw", fValue: float): IVec4;
+		copy(sForm: "wzwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzwx", fValue: float): IVec4;
+		copy(sForm: "wzwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzwy", fValue: float): IVec4;
+		copy(sForm: "wzwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzwz", fValue: float): IVec4;
+		copy(sForm: "wzww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wzww", fValue: float): IVec4;
+		copy(sForm: "wwxx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwxx", fValue: float): IVec4;
+		copy(sForm: "wwxy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwxy", fValue: float): IVec4;
+		copy(sForm: "wwxz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwxz", fValue: float): IVec4;
+		copy(sForm: "wwxw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwxw", fValue: float): IVec4;
+		copy(sForm: "wwyx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwyx", fValue: float): IVec4;
+		copy(sForm: "wwyy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwyy", fValue: float): IVec4;
+		copy(sForm: "wwyz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwyz", fValue: float): IVec4;
+		copy(sForm: "wwyw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwyw", fValue: float): IVec4;
+		copy(sForm: "wwzx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwzx", fValue: float): IVec4;
+		copy(sForm: "wwzy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwzy", fValue: float): IVec4;
+		copy(sForm: "wwzz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwzz", fValue: float): IVec4;
+		copy(sForm: "wwzw", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwzw", fValue: float): IVec4;
+		copy(sForm: "wwwx", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwwx", fValue: float): IVec4;
+		copy(sForm: "wwwy", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwwy", fValue: float): IVec4;
+		copy(sForm: "wwwz", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwwz", fValue: float): IVec4;
+		copy(sForm: "wwww", v4fFrom: IVec4): IVec4;
+		copy(sForm: "wwww", fValue: float): IVec4;
+
+		copy(sForm: string, fValue: float): IVec4;
+		copy(sForm: string, v2fFrom: IVec2): IVec4;
+		copy(sForm: string, v3fFrom: IVec3): IVec4;
+		copy(sForm: string, v4fFrom: IVec4): IVec4;
 	};
 	
 }

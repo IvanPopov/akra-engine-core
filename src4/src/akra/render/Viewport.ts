@@ -703,7 +703,7 @@ module akra.render {
 			v4fIn.z = 2.0 * this.getDepth(x, y) - 1.0;
 			v4fIn.w = 1.0;
 
-			v3fDestination.set(m4fWorld.multiplyVec4(m4fProjection.unproj(v4fIn, v4fOut)).xyz);
+			v3fDestination.set(m4fWorld.multiplyVec4(m4fProjection.unproj(v4fIn, v4fOut)).clone("xyz"));
 			return v3fDestination;
 		}
 

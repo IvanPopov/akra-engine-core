@@ -13,15 +13,6 @@ module akra {
 	export interface IVec2 {
 		x: float;
 		y: float;
-	
-	    /*represents two-component vector from original vector*/
-	    xx: IVec2;
-	    /*represents two-component vector from original vector*/
-	    xy: IVec2;
-	    /*represents two-component vector from original vector*/
-	    yx: IVec2;
-	    /*represents two-component vector from original vector*/
-	    yy: IVec2;
 		
 		set(): IVec2;
 		set(fValue: float): IVec2;
@@ -51,14 +42,13 @@ module akra {
 	
 		toString(): string;
 
-		clone(sForm: string, v2fDest?: IVec2): IVec2;
+		
 		clone(sForm: "xx", v2fDest?: IVec2): IVec2;
 		clone(sForm: "xy", v2fDest?: IVec2): IVec2;
 		clone(sForm: "yx", v2fDest?: IVec2): IVec2;
 		clone(sForm: "yy", v2fDest?: IVec2): IVec2;
-
-		copy(sForm: string, v2fFrom: IVec2): IVec2;
-		copy(sForm: string, fValue: float): IVec2;
+		clone(sForm: string, v2fDest?: IVec2): IVec2;
+		
 		copy(sForm: "xx", v2fFrom: IVec2): IVec2;
 		copy(sForm: "xx", fValue: float): IVec2;
 		copy(sForm: "xy", v2fFrom: IVec2): IVec2;
@@ -67,6 +57,8 @@ module akra {
 		copy(sForm: "yx", fValue: float): IVec2;
 		copy(sForm: "yy", v2fFrom: IVec2): IVec2;
 		copy(sForm: "yy", fValue: float): IVec2;
+		copy(sForm: string, v2fFrom: IVec2): IVec2;
+		copy(sForm: string, fValue: float): IVec2;
 	}
 	
 	

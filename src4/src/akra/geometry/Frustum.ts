@@ -229,15 +229,15 @@ module akra.geometry {
                 m4fWorld.multiplyVec4(v4fRightTopFar);
             }
 
-            var v3fLeftBottomNear: IVec3 = pFrustumVertices[0].set(v4fLeftBottomNear.xyz);
-            var v3fRightBottomNear: IVec3 = pFrustumVertices[1].set(v4fRightBottomNear.xyz);
-            var v3fLeftTopNear: IVec3 = pFrustumVertices[2].set(v4fLeftTopNear.xyz);
-            var v3fRightTopNear: IVec3 = pFrustumVertices[3].set(v4fRightTopNear.xyz);
+            var v3fLeftBottomNear: IVec3 = pFrustumVertices[0].set(v4fLeftBottomNear.clone("xyz"));
+            var v3fRightBottomNear: IVec3 = pFrustumVertices[1].set(v4fRightBottomNear.clone("xyz"));
+            var v3fLeftTopNear: IVec3 = pFrustumVertices[2].set(v4fLeftTopNear.clone("xyz"));
+            var v3fRightTopNear: IVec3 = pFrustumVertices[3].set(v4fRightTopNear.clone("xyz"));
 
-            var v3fLeftBottomFar: IVec3 = pFrustumVertices[4].set(v4fLeftBottomFar.xyz);
-            var v3fRightBottomFar: IVec3 = pFrustumVertices[5].set(v4fRightBottomFar.xyz);
-            var v3fLeftTopFar: IVec3 = pFrustumVertices[6].set(v4fLeftTopFar.xyz);
-            var v3fRightTopFar: IVec3 = pFrustumVertices[7].set(v4fRightTopFar.xyz);
+            var v3fLeftBottomFar: IVec3 = pFrustumVertices[4].set(v4fLeftBottomFar.clone("xyz"));
+            var v3fRightBottomFar: IVec3 = pFrustumVertices[5].set(v4fRightBottomFar.clone("xyz"));
+            var v3fLeftTopFar: IVec3 = pFrustumVertices[6].set(v4fLeftTopFar.clone("xyz"));
+            var v3fRightTopFar: IVec3 = pFrustumVertices[7].set(v4fRightTopFar.clone("xyz"));
 
             //filling search rectangle
 

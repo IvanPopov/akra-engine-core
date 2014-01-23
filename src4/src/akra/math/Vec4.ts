@@ -6,2997 +6,2123 @@
 
 module akra.math {
 
-    var pBuffer: IVec4[];
-    var iElement: uint;
-
-    export class Vec4 implements IVec4 {
-        x: float;
-        y: float;
-        z: float;
-        w: float;
-
-        get xx(): IVec2 {
-            return Vec2.temp(this.x, this.x);
-        }
-        set xx(v2fVec: IVec2) {
-            this.x = v2fVec.x; this.x = v2fVec.y;
-        }
-
-        get xy(): IVec2 {
-            return Vec2.temp(this.x, this.y);
-        }
-        set xy(v2fVec: IVec2) {
-            this.x = v2fVec.x; this.y = v2fVec.y;
-        }
-
-        get xz(): IVec2 {
-            return Vec2.temp(this.x, this.z);
-        }
-        set xz(v2fVec: IVec2) {
-            this.x = v2fVec.x; this.z = v2fVec.y;
-        }
-
-        get xw(): IVec2 {
-            return Vec2.temp(this.x, this.w);
-        }
-        set xw(v2fVec: IVec2) {
-            this.x = v2fVec.x; this.w = v2fVec.y;
-        }
-
-        get yx(): IVec2 {
-            return Vec2.temp(this.y, this.x);
-        }
-        set yx(v2fVec: IVec2) {
-            this.y = v2fVec.x; this.x = v2fVec.y;
-        }
-
-        get yy(): IVec2 {
-            return Vec2.temp(this.y, this.y);
-        }
-        set yy(v2fVec: IVec2) {
-            this.y = v2fVec.x; this.y = v2fVec.y;
-        }
-
-        get yz(): IVec2 {
-            return Vec2.temp(this.y, this.z);
-        }
-        set yz(v2fVec: IVec2) {
-            this.y = v2fVec.x; this.z = v2fVec.y;
-        }
-
-        get yw(): IVec2 {
-            return Vec2.temp(this.y, this.w);
-        }
-        set yw(v2fVec: IVec2) {
-            this.y = v2fVec.x; this.w = v2fVec.y;
-        }
-
-        get zx(): IVec2 {
-            return Vec2.temp(this.z, this.x);
-        }
-        set zx(v2fVec: IVec2) {
-            this.z = v2fVec.x; this.x = v2fVec.y;
-        }
-
-        get zy(): IVec2 {
-            return Vec2.temp(this.z, this.y);
-        }
-        set zy(v2fVec: IVec2) {
-            this.z = v2fVec.x; this.y = v2fVec.y;
-        }
-
-        get zz(): IVec2 {
-            return Vec2.temp(this.z, this.z);
-        }
-        set zz(v2fVec: IVec2) {
-            this.z = v2fVec.x; this.z = v2fVec.y;
-        }
-
-        get zw(): IVec2 {
-            return Vec2.temp(this.z, this.w);
-        }
-        set zw(v2fVec: IVec2) {
-            this.z = v2fVec.x; this.w = v2fVec.y;
-        }
-
-        get wx(): IVec2 {
-            return Vec2.temp(this.w, this.x);
-        }
-        set wx(v2fVec: IVec2) {
-            this.w = v2fVec.x; this.x = v2fVec.y;
-        }
-
-        get wy(): IVec2 {
-            return Vec2.temp(this.w, this.y);
-        }
-        set wy(v2fVec: IVec2) {
-            this.w = v2fVec.x; this.y = v2fVec.y;
-        }
-
-        get wz(): IVec2 {
-            return Vec2.temp(this.w, this.z);
-        }
-        set wz(v2fVec: IVec2) {
-            this.w = v2fVec.x; this.z = v2fVec.y;
-        }
-
-        get ww(): IVec2 {
-            return Vec2.temp(this.w, this.w);
-        }
-        set ww(v2fVec: IVec2) {
-            this.w = v2fVec.x; this.w = v2fVec.y;
-        }
-
-
-        get xxx(): IVec3 {
-            return Vec3.temp(this.x, this.x, this.x);
-        }
-        set xxx(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.x = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get xxy(): IVec3 {
-            return Vec3.temp(this.x, this.x, this.y);
-        }
-        set xxy(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.x = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get xxz(): IVec3 {
-            return Vec3.temp(this.x, this.x, this.z);
-        }
-        set xxz(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.x = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get xxw(): IVec3 {
-            return Vec3.temp(this.x, this.x, this.w);
-        }
-        set xxw(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.x = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get xyx(): IVec3 {
-            return Vec3.temp(this.x, this.y, this.x);
-        }
-        set xyx(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.y = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get xyy(): IVec3 {
-            return Vec3.temp(this.x, this.y, this.y);
-        }
-        set xyy(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.y = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get xyz(): IVec3 {
-            return Vec3.temp(this.x, this.y, this.z);
-        }
-        set xyz(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.y = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get xyw(): IVec3 {
-            return Vec3.temp(this.x, this.y, this.w);
-        }
-        set xyw(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.y = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get xzx(): IVec3 {
-            return Vec3.temp(this.x, this.z, this.x);
-        }
-        set xzx(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.z = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get xzy(): IVec3 {
-            return Vec3.temp(this.x, this.z, this.y);
-        }
-        set xzy(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.z = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get xzz(): IVec3 {
-            return Vec3.temp(this.x, this.z, this.z);
-        }
-        set xzz(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.z = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get xzw(): IVec3 {
-            return Vec3.temp(this.x, this.z, this.w);
-        }
-        set xzw(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.z = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get xwx(): IVec3 {
-            return Vec3.temp(this.x, this.w, this.x);
-        }
-        set xwx(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.w = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get xwy(): IVec3 {
-            return Vec3.temp(this.x, this.w, this.y);
-        }
-        set xwy(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.w = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get xwz(): IVec3 {
-            return Vec3.temp(this.x, this.w, this.z);
-        }
-        set xwz(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.w = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get xww(): IVec3 {
-            return Vec3.temp(this.x, this.w, this.w);
-        }
-        set xww(v3fVec: IVec3) {
-            this.x = v3fVec.x; this.w = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get yxx(): IVec3 {
-            return Vec3.temp(this.y, this.x, this.x);
-        }
-        set yxx(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.x = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get yxy(): IVec3 {
-            return Vec3.temp(this.y, this.x, this.y);
-        }
-        set yxy(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.x = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get yxz(): IVec3 {
-            return Vec3.temp(this.y, this.x, this.z);
-        }
-        set yxz(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.x = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get yxw(): IVec3 {
-            return Vec3.temp(this.y, this.x, this.w);
-        }
-        set yxw(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.x = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get yyx(): IVec3 {
-            return Vec3.temp(this.y, this.y, this.x);
-        }
-        set yyx(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.y = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get yyy(): IVec3 {
-            return Vec3.temp(this.y, this.y, this.y);
-        }
-        set yyy(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.y = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get yyz(): IVec3 {
-            return Vec3.temp(this.y, this.y, this.z);
-        }
-        set yyz(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.y = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get yyw(): IVec3 {
-            return Vec3.temp(this.y, this.y, this.w);
-        }
-        set yyw(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.y = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get yzx(): IVec3 {
-            return Vec3.temp(this.y, this.z, this.x);
-        }
-        set yzx(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.z = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get yzy(): IVec3 {
-            return Vec3.temp(this.y, this.z, this.y);
-        }
-        set yzy(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.z = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get yzz(): IVec3 {
-            return Vec3.temp(this.y, this.z, this.z);
-        }
-        set yzz(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.z = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get yzw(): IVec3 {
-            return Vec3.temp(this.y, this.z, this.w);
-        }
-        set yzw(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.z = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get ywx(): IVec3 {
-            return Vec3.temp(this.y, this.w, this.x);
-        }
-        set ywx(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.w = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get ywy(): IVec3 {
-            return Vec3.temp(this.y, this.w, this.y);
-        }
-        set ywy(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.w = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get ywz(): IVec3 {
-            return Vec3.temp(this.y, this.w, this.z);
-        }
-        set ywz(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.w = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get yww(): IVec3 {
-            return Vec3.temp(this.y, this.w, this.w);
-        }
-        set yww(v3fVec: IVec3) {
-            this.y = v3fVec.x; this.w = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get zxx(): IVec3 {
-            return Vec3.temp(this.z, this.x, this.x);
-        }
-        set zxx(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.x = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get zxy(): IVec3 {
-            return Vec3.temp(this.z, this.x, this.y);
-        }
-        set zxy(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.x = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get zxz(): IVec3 {
-            return Vec3.temp(this.z, this.x, this.z);
-        }
-        set zxz(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.x = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get zxw(): IVec3 {
-            return Vec3.temp(this.z, this.x, this.w);
-        }
-        set zxw(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.x = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get zyx(): IVec3 {
-            return Vec3.temp(this.z, this.y, this.x);
-        }
-        set zyx(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.y = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get zyy(): IVec3 {
-            return Vec3.temp(this.z, this.y, this.y);
-        }
-        set zyy(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.y = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get zyz(): IVec3 {
-            return Vec3.temp(this.z, this.y, this.z);
-        }
-        set zyz(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.y = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get zyw(): IVec3 {
-            return Vec3.temp(this.z, this.y, this.w);
-        }
-        set zyw(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.y = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get zzx(): IVec3 {
-            return Vec3.temp(this.z, this.z, this.x);
-        }
-        set zzx(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.z = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get zzy(): IVec3 {
-            return Vec3.temp(this.z, this.z, this.y);
-        }
-        set zzy(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.z = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get zzz(): IVec3 {
-            return Vec3.temp(this.z, this.z, this.z);
-        }
-        set zzz(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.z = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get zzw(): IVec3 {
-            return Vec3.temp(this.z, this.z, this.w);
-        }
-        set zzw(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.z = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get zwx(): IVec3 {
-            return Vec3.temp(this.z, this.w, this.x);
-        }
-        set zwx(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.w = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get zwy(): IVec3 {
-            return Vec3.temp(this.z, this.w, this.y);
-        }
-        set zwy(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.w = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get zwz(): IVec3 {
-            return Vec3.temp(this.z, this.w, this.z);
-        }
-        set zwz(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.w = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get zww(): IVec3 {
-            return Vec3.temp(this.z, this.w, this.w);
-        }
-        set zww(v3fVec: IVec3) {
-            this.z = v3fVec.x; this.w = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get wxx(): IVec3 {
-            return Vec3.temp(this.w, this.x, this.x);
-        }
-        set wxx(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.x = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get wxy(): IVec3 {
-            return Vec3.temp(this.w, this.x, this.y);
-        }
-        set wxy(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.x = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get wxz(): IVec3 {
-            return Vec3.temp(this.w, this.x, this.z);
-        }
-        set wxz(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.x = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get wxw(): IVec3 {
-            return Vec3.temp(this.w, this.x, this.w);
-        }
-        set wxw(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.x = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get wyx(): IVec3 {
-            return Vec3.temp(this.w, this.y, this.x);
-        }
-        set wyx(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.y = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get wyy(): IVec3 {
-            return Vec3.temp(this.w, this.y, this.y);
-        }
-        set wyy(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.y = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get wyz(): IVec3 {
-            return Vec3.temp(this.w, this.y, this.z);
-        }
-        set wyz(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.y = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get wyw(): IVec3 {
-            return Vec3.temp(this.w, this.y, this.w);
-        }
-        set wyw(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.y = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get wzx(): IVec3 {
-            return Vec3.temp(this.w, this.z, this.x);
-        }
-        set wzx(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.z = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get wzy(): IVec3 {
-            return Vec3.temp(this.w, this.z, this.y);
-        }
-        set wzy(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.z = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get wzz(): IVec3 {
-            return Vec3.temp(this.w, this.z, this.z);
-        }
-        set wzz(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.z = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get wzw(): IVec3 {
-            return Vec3.temp(this.w, this.z, this.w);
-        }
-        set wzw(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.z = v3fVec.y; this.w = v3fVec.z;
-        }
-
-        get wwx(): IVec3 {
-            return Vec3.temp(this.w, this.w, this.x);
-        }
-        set wwx(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.w = v3fVec.y; this.x = v3fVec.z;
-        }
-
-        get wwy(): IVec3 {
-            return Vec3.temp(this.w, this.w, this.y);
-        }
-        set wwy(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.w = v3fVec.y; this.y = v3fVec.z;
-        }
-
-        get wwz(): IVec3 {
-            return Vec3.temp(this.w, this.w, this.z);
-        }
-        set wwz(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.w = v3fVec.y; this.z = v3fVec.z;
-        }
-
-        get www(): IVec3 {
-            return Vec3.temp(this.w, this.w, this.w);
-        }
-        set www(v3fVec: IVec3) {
-            this.w = v3fVec.x; this.w = v3fVec.y; this.w = v3fVec.z;
-        }
-
-
-        get xxxx(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.x, this.x);
-        }
-        set xxxx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xxxy(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.x, this.y);
-        }
-        set xxxy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xxxz(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.x, this.z);
-        }
-        set xxxz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xxxw(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.x, this.w);
-        }
-        set xxxw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xxyx(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.y, this.x);
-        }
-        set xxyx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xxyy(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.y, this.y);
-        }
-        set xxyy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xxyz(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.y, this.z);
-        }
-        set xxyz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xxyw(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.y, this.w);
-        }
-        set xxyw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xxzx(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.z, this.x);
-        }
-        set xxzx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xxzy(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.z, this.y);
-        }
-        set xxzy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xxzz(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.z, this.z);
-        }
-        set xxzz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xxzw(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.z, this.w);
-        }
-        set xxzw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xxwx(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.w, this.x);
-        }
-        set xxwx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xxwy(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.w, this.y);
-        }
-        set xxwy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xxwz(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.w, this.z);
-        }
-        set xxwz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xxww(): IVec4 {
-            return Vec4.temp(this.x, this.x, this.w, this.w);
-        }
-        set xxww(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xyxx(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.x, this.x);
-        }
-        set xyxx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xyxy(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.x, this.y);
-        }
-        set xyxy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xyxz(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.x, this.z);
-        }
-        set xyxz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xyxw(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.x, this.w);
-        }
-        set xyxw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xyyx(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.y, this.x);
-        }
-        set xyyx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xyyy(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.y, this.y);
-        }
-        set xyyy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xyyz(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.y, this.z);
-        }
-        set xyyz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xyyw(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.y, this.w);
-        }
-        set xyyw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xyzx(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.z, this.x);
-        }
-        set xyzx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xyzy(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.z, this.y);
-        }
-        set xyzy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xyzz(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.z, this.z);
-        }
-        set xyzz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xyzw(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.z, this.w);
-        }
-        set xyzw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xywx(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.w, this.x);
-        }
-        set xywx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xywy(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.w, this.y);
-        }
-        set xywy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xywz(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.w, this.z);
-        }
-        set xywz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xyww(): IVec4 {
-            return Vec4.temp(this.x, this.y, this.w, this.w);
-        }
-        set xyww(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xzxx(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.x, this.x);
-        }
-        set xzxx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xzxy(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.x, this.y);
-        }
-        set xzxy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xzxz(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.x, this.z);
-        }
-        set xzxz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xzxw(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.x, this.w);
-        }
-        set xzxw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xzyx(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.y, this.x);
-        }
-        set xzyx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xzyy(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.y, this.y);
-        }
-        set xzyy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xzyz(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.y, this.z);
-        }
-        set xzyz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xzyw(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.y, this.w);
-        }
-        set xzyw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xzzx(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.z, this.x);
-        }
-        set xzzx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xzzy(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.z, this.y);
-        }
-        set xzzy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xzzz(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.z, this.z);
-        }
-        set xzzz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xzzw(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.z, this.w);
-        }
-        set xzzw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xzwx(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.w, this.x);
-        }
-        set xzwx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xzwy(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.w, this.y);
-        }
-        set xzwy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xzwz(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.w, this.z);
-        }
-        set xzwz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xzww(): IVec4 {
-            return Vec4.temp(this.x, this.z, this.w, this.w);
-        }
-        set xzww(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xwxx(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.x, this.x);
-        }
-        set xwxx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xwxy(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.x, this.y);
-        }
-        set xwxy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xwxz(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.x, this.z);
-        }
-        set xwxz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xwxw(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.x, this.w);
-        }
-        set xwxw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xwyx(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.y, this.x);
-        }
-        set xwyx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xwyy(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.y, this.y);
-        }
-        set xwyy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xwyz(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.y, this.z);
-        }
-        set xwyz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xwyw(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.y, this.w);
-        }
-        set xwyw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xwzx(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.z, this.x);
-        }
-        set xwzx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xwzy(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.z, this.y);
-        }
-        set xwzy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xwzz(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.z, this.z);
-        }
-        set xwzz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xwzw(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.z, this.w);
-        }
-        set xwzw(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get xwwx(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.w, this.x);
-        }
-        set xwwx(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get xwwy(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.w, this.y);
-        }
-        set xwwy(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get xwwz(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.w, this.z);
-        }
-        set xwwz(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get xwww(): IVec4 {
-            return Vec4.temp(this.x, this.w, this.w, this.w);
-        }
-        set xwww(v4fVec: IVec4) {
-            this.x = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yxxx(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.x, this.x);
-        }
-        set yxxx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yxxy(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.x, this.y);
-        }
-        set yxxy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yxxz(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.x, this.z);
-        }
-        set yxxz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yxxw(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.x, this.w);
-        }
-        set yxxw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yxyx(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.y, this.x);
-        }
-        set yxyx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yxyy(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.y, this.y);
-        }
-        set yxyy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yxyz(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.y, this.z);
-        }
-        set yxyz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yxyw(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.y, this.w);
-        }
-        set yxyw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yxzx(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.z, this.x);
-        }
-        set yxzx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yxzy(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.z, this.y);
-        }
-        set yxzy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yxzz(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.z, this.z);
-        }
-        set yxzz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yxzw(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.z, this.w);
-        }
-        set yxzw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yxwx(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.w, this.x);
-        }
-        set yxwx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yxwy(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.w, this.y);
-        }
-        set yxwy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yxwz(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.w, this.z);
-        }
-        set yxwz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yxww(): IVec4 {
-            return Vec4.temp(this.y, this.x, this.w, this.w);
-        }
-        set yxww(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yyxx(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.x, this.x);
-        }
-        set yyxx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yyxy(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.x, this.y);
-        }
-        set yyxy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yyxz(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.x, this.z);
-        }
-        set yyxz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yyxw(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.x, this.w);
-        }
-        set yyxw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yyyx(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.y, this.x);
-        }
-        set yyyx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yyyy(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.y, this.y);
-        }
-        set yyyy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yyyz(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.y, this.z);
-        }
-        set yyyz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yyyw(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.y, this.w);
-        }
-        set yyyw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yyzx(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.z, this.x);
-        }
-        set yyzx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yyzy(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.z, this.y);
-        }
-        set yyzy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yyzz(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.z, this.z);
-        }
-        set yyzz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yyzw(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.z, this.w);
-        }
-        set yyzw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yywx(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.w, this.x);
-        }
-        set yywx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yywy(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.w, this.y);
-        }
-        set yywy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yywz(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.w, this.z);
-        }
-        set yywz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yyww(): IVec4 {
-            return Vec4.temp(this.y, this.y, this.w, this.w);
-        }
-        set yyww(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yzxx(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.x, this.x);
-        }
-        set yzxx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yzxy(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.x, this.y);
-        }
-        set yzxy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yzxz(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.x, this.z);
-        }
-        set yzxz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yzxw(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.x, this.w);
-        }
-        set yzxw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yzyx(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.y, this.x);
-        }
-        set yzyx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yzyy(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.y, this.y);
-        }
-        set yzyy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yzyz(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.y, this.z);
-        }
-        set yzyz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yzyw(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.y, this.w);
-        }
-        set yzyw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yzzx(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.z, this.x);
-        }
-        set yzzx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yzzy(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.z, this.y);
-        }
-        set yzzy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yzzz(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.z, this.z);
-        }
-        set yzzz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yzzw(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.z, this.w);
-        }
-        set yzzw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get yzwx(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.w, this.x);
-        }
-        set yzwx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get yzwy(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.w, this.y);
-        }
-        set yzwy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get yzwz(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.w, this.z);
-        }
-        set yzwz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get yzww(): IVec4 {
-            return Vec4.temp(this.y, this.z, this.w, this.w);
-        }
-        set yzww(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get ywxx(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.x, this.x);
-        }
-        set ywxx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get ywxy(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.x, this.y);
-        }
-        set ywxy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get ywxz(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.x, this.z);
-        }
-        set ywxz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get ywxw(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.x, this.w);
-        }
-        set ywxw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get ywyx(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.y, this.x);
-        }
-        set ywyx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get ywyy(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.y, this.y);
-        }
-        set ywyy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get ywyz(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.y, this.z);
-        }
-        set ywyz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get ywyw(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.y, this.w);
-        }
-        set ywyw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get ywzx(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.z, this.x);
-        }
-        set ywzx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get ywzy(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.z, this.y);
-        }
-        set ywzy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get ywzz(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.z, this.z);
-        }
-        set ywzz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get ywzw(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.z, this.w);
-        }
-        set ywzw(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get ywwx(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.w, this.x);
-        }
-        set ywwx(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get ywwy(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.w, this.y);
-        }
-        set ywwy(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get ywwz(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.w, this.z);
-        }
-        set ywwz(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get ywww(): IVec4 {
-            return Vec4.temp(this.y, this.w, this.w, this.w);
-        }
-        set ywww(v4fVec: IVec4) {
-            this.y = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zxxx(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.x, this.x);
-        }
-        set zxxx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zxxy(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.x, this.y);
-        }
-        set zxxy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zxxz(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.x, this.z);
-        }
-        set zxxz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zxxw(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.x, this.w);
-        }
-        set zxxw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zxyx(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.y, this.x);
-        }
-        set zxyx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zxyy(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.y, this.y);
-        }
-        set zxyy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zxyz(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.y, this.z);
-        }
-        set zxyz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zxyw(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.y, this.w);
-        }
-        set zxyw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zxzx(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.z, this.x);
-        }
-        set zxzx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zxzy(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.z, this.y);
-        }
-        set zxzy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zxzz(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.z, this.z);
-        }
-        set zxzz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zxzw(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.z, this.w);
-        }
-        set zxzw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zxwx(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.w, this.x);
-        }
-        set zxwx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zxwy(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.w, this.y);
-        }
-        set zxwy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zxwz(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.w, this.z);
-        }
-        set zxwz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zxww(): IVec4 {
-            return Vec4.temp(this.z, this.x, this.w, this.w);
-        }
-        set zxww(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zyxx(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.x, this.x);
-        }
-        set zyxx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zyxy(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.x, this.y);
-        }
-        set zyxy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zyxz(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.x, this.z);
-        }
-        set zyxz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zyxw(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.x, this.w);
-        }
-        set zyxw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zyyx(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.y, this.x);
-        }
-        set zyyx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zyyy(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.y, this.y);
-        }
-        set zyyy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zyyz(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.y, this.z);
-        }
-        set zyyz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zyyw(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.y, this.w);
-        }
-        set zyyw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zyzx(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.z, this.x);
-        }
-        set zyzx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zyzy(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.z, this.y);
-        }
-        set zyzy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zyzz(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.z, this.z);
-        }
-        set zyzz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zyzw(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.z, this.w);
-        }
-        set zyzw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zywx(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.w, this.x);
-        }
-        set zywx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zywy(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.w, this.y);
-        }
-        set zywy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zywz(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.w, this.z);
-        }
-        set zywz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zyww(): IVec4 {
-            return Vec4.temp(this.z, this.y, this.w, this.w);
-        }
-        set zyww(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zzxx(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.x, this.x);
-        }
-        set zzxx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zzxy(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.x, this.y);
-        }
-        set zzxy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zzxz(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.x, this.z);
-        }
-        set zzxz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zzxw(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.x, this.w);
-        }
-        set zzxw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zzyx(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.y, this.x);
-        }
-        set zzyx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zzyy(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.y, this.y);
-        }
-        set zzyy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zzyz(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.y, this.z);
-        }
-        set zzyz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zzyw(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.y, this.w);
-        }
-        set zzyw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zzzx(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.z, this.x);
-        }
-        set zzzx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zzzy(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.z, this.y);
-        }
-        set zzzy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zzzz(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.z, this.z);
-        }
-        set zzzz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zzzw(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.z, this.w);
-        }
-        set zzzw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zzwx(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.w, this.x);
-        }
-        set zzwx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zzwy(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.w, this.y);
-        }
-        set zzwy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zzwz(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.w, this.z);
-        }
-        set zzwz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zzww(): IVec4 {
-            return Vec4.temp(this.z, this.z, this.w, this.w);
-        }
-        set zzww(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zwxx(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.x, this.x);
-        }
-        set zwxx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zwxy(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.x, this.y);
-        }
-        set zwxy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zwxz(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.x, this.z);
-        }
-        set zwxz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zwxw(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.x, this.w);
-        }
-        set zwxw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zwyx(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.y, this.x);
-        }
-        set zwyx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zwyy(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.y, this.y);
-        }
-        set zwyy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zwyz(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.y, this.z);
-        }
-        set zwyz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zwyw(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.y, this.w);
-        }
-        set zwyw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zwzx(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.z, this.x);
-        }
-        set zwzx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zwzy(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.z, this.y);
-        }
-        set zwzy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zwzz(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.z, this.z);
-        }
-        set zwzz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zwzw(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.z, this.w);
-        }
-        set zwzw(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get zwwx(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.w, this.x);
-        }
-        set zwwx(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get zwwy(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.w, this.y);
-        }
-        set zwwy(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get zwwz(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.w, this.z);
-        }
-        set zwwz(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get zwww(): IVec4 {
-            return Vec4.temp(this.z, this.w, this.w, this.w);
-        }
-        set zwww(v4fVec: IVec4) {
-            this.z = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wxxx(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.x, this.x);
-        }
-        set wxxx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wxxy(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.x, this.y);
-        }
-        set wxxy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wxxz(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.x, this.z);
-        }
-        set wxxz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wxxw(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.x, this.w);
-        }
-        set wxxw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wxyx(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.y, this.x);
-        }
-        set wxyx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wxyy(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.y, this.y);
-        }
-        set wxyy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wxyz(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.y, this.z);
-        }
-        set wxyz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wxyw(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.y, this.w);
-        }
-        set wxyw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wxzx(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.z, this.x);
-        }
-        set wxzx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wxzy(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.z, this.y);
-        }
-        set wxzy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wxzz(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.z, this.z);
-        }
-        set wxzz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wxzw(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.z, this.w);
-        }
-        set wxzw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wxwx(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.w, this.x);
-        }
-        set wxwx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wxwy(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.w, this.y);
-        }
-        set wxwy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wxwz(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.w, this.z);
-        }
-        set wxwz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wxww(): IVec4 {
-            return Vec4.temp(this.w, this.x, this.w, this.w);
-        }
-        set wxww(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.x = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wyxx(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.x, this.x);
-        }
-        set wyxx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wyxy(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.x, this.y);
-        }
-        set wyxy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wyxz(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.x, this.z);
-        }
-        set wyxz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wyxw(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.x, this.w);
-        }
-        set wyxw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wyyx(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.y, this.x);
-        }
-        set wyyx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wyyy(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.y, this.y);
-        }
-        set wyyy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wyyz(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.y, this.z);
-        }
-        set wyyz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wyyw(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.y, this.w);
-        }
-        set wyyw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wyzx(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.z, this.x);
-        }
-        set wyzx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wyzy(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.z, this.y);
-        }
-        set wyzy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wyzz(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.z, this.z);
-        }
-        set wyzz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wyzw(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.z, this.w);
-        }
-        set wyzw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wywx(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.w, this.x);
-        }
-        set wywx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wywy(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.w, this.y);
-        }
-        set wywy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wywz(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.w, this.z);
-        }
-        set wywz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wyww(): IVec4 {
-            return Vec4.temp(this.w, this.y, this.w, this.w);
-        }
-        set wyww(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.y = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wzxx(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.x, this.x);
-        }
-        set wzxx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wzxy(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.x, this.y);
-        }
-        set wzxy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wzxz(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.x, this.z);
-        }
-        set wzxz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wzxw(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.x, this.w);
-        }
-        set wzxw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wzyx(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.y, this.x);
-        }
-        set wzyx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wzyy(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.y, this.y);
-        }
-        set wzyy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wzyz(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.y, this.z);
-        }
-        set wzyz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wzyw(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.y, this.w);
-        }
-        set wzyw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wzzx(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.z, this.x);
-        }
-        set wzzx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wzzy(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.z, this.y);
-        }
-        set wzzy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wzzz(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.z, this.z);
-        }
-        set wzzz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wzzw(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.z, this.w);
-        }
-        set wzzw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wzwx(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.w, this.x);
-        }
-        set wzwx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wzwy(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.w, this.y);
-        }
-        set wzwy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wzwz(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.w, this.z);
-        }
-        set wzwz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wzww(): IVec4 {
-            return Vec4.temp(this.w, this.z, this.w, this.w);
-        }
-        set wzww(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.z = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wwxx(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.x, this.x);
-        }
-        set wwxx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wwxy(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.x, this.y);
-        }
-        set wwxy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wwxz(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.x, this.z);
-        }
-        set wwxz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wwxw(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.x, this.w);
-        }
-        set wwxw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.x = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wwyx(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.y, this.x);
-        }
-        set wwyx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wwyy(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.y, this.y);
-        }
-        set wwyy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wwyz(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.y, this.z);
-        }
-        set wwyz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wwyw(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.y, this.w);
-        }
-        set wwyw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.y = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wwzx(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.z, this.x);
-        }
-        set wwzx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wwzy(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.z, this.y);
-        }
-        set wwzy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wwzz(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.z, this.z);
-        }
-        set wwzz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wwzw(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.z, this.w);
-        }
-        set wwzw(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.z = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        get wwwx(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.w, this.x);
-        }
-        set wwwx(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.x = v4fVec.w;
-        }
-
-        get wwwy(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.w, this.y);
-        }
-        set wwwy(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.y = v4fVec.w;
-        }
-
-        get wwwz(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.w, this.z);
-        }
-        set wwwz(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.z = v4fVec.w;
-        }
-
-        get wwww(): IVec4 {
-            return Vec4.temp(this.w, this.w, this.w, this.w);
-        }
-        set wwww(v4fVec: IVec4) {
-            this.w = v4fVec.x; this.w = v4fVec.y;
-            this.w = v4fVec.z; this.w = v4fVec.w;
-        }
-
-        constructor();
-        constructor(xyzw: float);
-        constructor(xyzw: IVec4);
-        constructor(xyzw: float[]);
-        constructor(rgba: IColorValue);
-        constructor(x: float, yzw: IVec3);
-        constructor(xy: IVec2, zw: IVec2);
-        constructor(xyz: IVec3, w: float);
-        constructor(x: float, y: float, zw: IVec2);
-        constructor(x: float, yz: IVec2, w: float);
-        constructor(xy: IVec2, z: float, w: float);
-        constructor(x: float, y: float, z: float, w: float);
-        constructor(x?, y?, z?, w?) {
-            var n: uint = arguments.length;
-            var v: IVec4 = this;
-
-            switch (n) {
-                case 1:
-                    v.set(arguments[0]);
-                    break;
-                case 2:
-                    v.set(arguments[0], arguments[1]);
-                    break;
-                case 3:
-                    v.set(arguments[0], arguments[1], arguments[2]);
-                    break;
-                case 4:
-                    v.set(arguments[0], arguments[1], arguments[2], arguments[3]);
-                    break;
-                default:
-                    v.x = v.y = v.z = v.w = 0.;
-                    break;
-            }
-        }
-
-        set(): IVec4;
-        set(xyzw: float): IVec4;
-        set(xyzw: IVec4): IVec4;
-        set(xyzw: float[]): IVec4;
-        set(rgba: IColorValue): IVec4;
-        set(x: float, yzw: IVec3): IVec4;
-        set(xy: IVec2, zw: IVec2): IVec4;
-        set(xyz: IVec3, w: float): IVec4;
-        set(x: float, y: float, zw: IVec2): IVec4;
-        set(x: float, yz: IVec2, w: float): IVec4;
-        set(xy: IVec2, z: float, w: float): IVec4;
-        set(x: float, y: float, z: float, w: float): IVec4;
-        set(): IVec4 {
-            var nArgumentsLength: uint = arguments.length;
-
-            switch (nArgumentsLength) {
-                case 0:
-                    this.x = this.y = this.z = this.w = 0.;
-                    break;
-                case 1:
-                    if (isFloat(arguments[0])) {
-                        this.x = this.y = this.z = this.w = arguments[0];
-                    }
-                    else if (arguments[0] instanceof Vec4) {
-                        var v4fVec: IVec4 = arguments[0];
-
-                        this.x = v4fVec.x;
-                        this.y = v4fVec.y;
-                        this.z = v4fVec.z;
-                        this.w = v4fVec.w;
-                    }
-                    //color
-                    else if (isDef(arguments[0].r)) {
-                        this.x = arguments[0].r;
-                        this.y = arguments[0].g;
-                        this.z = arguments[0].b;
-                        this.w = arguments[0].a;
-                    }
-                    else {
-                        //array
-                        var pArray: float[] = arguments[0];
-
-                        this.x = pArray[0];
-                        this.y = pArray[1];
-                        this.z = pArray[2];
-                        this.w = pArray[3];
-                    }
-                    break;
-                case 2:
-                    if (isFloat(arguments[0])) {
-                        var fValue: float = arguments[0];
-                        var v3fVec: IVec3 = arguments[1];
-
-                        this.x = fValue;
-                        this.y = v3fVec.x;
-                        this.z = v3fVec.y;
-                        this.w = v3fVec.z;
-                    }
-                    else if (arguments[0] instanceof Vec2) {
-                        var v2fVec1: IVec2 = arguments[0];
-                        var v2fVec2: IVec2 = arguments[1];
-
-                        this.x = v2fVec1.x;
-                        this.y = v2fVec1.y;
-                        this.z = v2fVec2.x;
-                        this.w = v2fVec2.y;
-                    }
-                    else {
-                        var v3fVec: IVec3 = arguments[0];
-                        var fValue: float = arguments[1];
-
-                        this.x = v3fVec.x;
-                        this.y = v3fVec.y;
-                        this.z = v3fVec.z;
-                        this.w = fValue;
-                    }
-                    break;
-                case 3:
-                    if (isFloat(arguments[0])) {
-                        var fValue1: float = arguments[0];
-
-                        if (isFloat(arguments[1])) {
-                            var fValue2: float = arguments[1];
-                            var v2fVec: IVec2 = arguments[2];
-
-                            this.x = fValue1;
-                            this.y = fValue2;
-                            this.z = v2fVec.x;
-                            this.w = v2fVec.y;
-                        }
-                        else {
-                            var v2fVec: IVec2 = arguments[1];
-                            var fValue2: float = arguments[2];
-
-                            this.x = fValue1;
-                            this.y = v2fVec.x;
-                            this.z = v2fVec.y;
-                            this.w = fValue2;
-                        }
-                    }
-                    else {
-                        var v2fVec: IVec2 = arguments[0];
-                        var fValue1: float = arguments[1];
-                        var fValue2: float = arguments[2];
-
-                        this.x = v2fVec.x;
-                        this.y = v2fVec.y;
-                        this.z = fValue1;
-                        this.w = fValue2;
-                    }
-                    break;
-                case 4:
-                    this.x = arguments[0];
-                    this.y = arguments[1];
-                    this.z = arguments[2];
-                    this.w = arguments[3];
-                    break;
-            }
-
-            return this;
-        }
-
-        /**  */ clear(): IVec4 {
-            this.x = this.y = this.z = this.w = 0.;
-            return this;
-        }
-
-        add(v4fVec: IVec4, v4fDestination?: IVec4): IVec4 {
-            if (!isDef(v4fDestination)) {
-                v4fDestination = this;
-            }
-
-            v4fDestination.x = this.x + v4fVec.x;
-            v4fDestination.y = this.y + v4fVec.y;
-            v4fDestination.z = this.z + v4fVec.z;
-            v4fDestination.w = this.w + v4fVec.w;
-
-            return v4fDestination;
-        }
-
-        subtract(v4fVec: IVec4, v4fDestination?: IVec4): IVec4 {
-            if (!isDef(v4fDestination)) {
-                v4fDestination = this;
-            }
-
-            v4fDestination.x = this.x - v4fVec.x;
-            v4fDestination.y = this.y - v4fVec.y;
-            v4fDestination.z = this.z - v4fVec.z;
-            v4fDestination.w = this.w - v4fVec.w;
-
-            return v4fDestination;
-        }
-
-        /**  */ dot(v4fVec: IVec4): float {
-            return this.x * v4fVec.x + this.y * v4fVec.y + this.z * v4fVec.z + this.w * v4fVec.w;
-        }
-
-        isEqual(v4fVec: IVec4, fEps: float = 0.): boolean {
-            if (fEps === 0.) {
-                if (this.x != v4fVec.x
-                    || this.y != v4fVec.y
-                    || this.z != v4fVec.z
-                    || this.w != v4fVec.w) {
-
-                    return false;
-                }
-            }
-            else {
-                if (abs(this.x - v4fVec.x) > fEps
-                    || abs(this.y - v4fVec.y) > fEps
-                    || abs(this.z - v4fVec.z) > fEps
-                    || abs(this.w - v4fVec.w) > fEps) {
-
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        isClear(fEps: float = 0.): boolean {
-
-            if (fEps === 0.) {
-                if (this.x != 0.
-                    || this.y != 0.
-                    || this.z != 0.
-                    || this.w != 0.) {
-
-                    return false;
-                }
-            }
-            else {
-                if (abs(this.x) > fEps
-                    || abs(this.y) > fEps
-                    || abs(this.z) > fEps
-                    || abs(this.w) > fEps) {
-
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        negate(v4fDestination?: IVec4): IVec4 {
-            if (!isDef(v4fDestination)) {
-                v4fDestination = this;
-            }
-
-            v4fDestination.x = -this.x;
-            v4fDestination.y = -this.y;
-            v4fDestination.z = -this.z;
-            v4fDestination.w = -this.w;
-
-            return v4fDestination;
-        }
-
-        scale(fScale: float, v4fDestination?: IVec4): IVec4 {
-            if (!isDef(v4fDestination)) {
-                v4fDestination = this;
-            }
-
-            v4fDestination.x = this.x * fScale;
-            v4fDestination.y = this.y * fScale;
-            v4fDestination.z = this.z * fScale;
-            v4fDestination.w = this.w * fScale;
-
-            return v4fDestination;
-        }
-
-        normalize(v4fDestination?: IVec4): IVec4 {
-            if (!isDef(v4fDestination)) {
-                v4fDestination = this;
-            }
-
-            var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
-            var fLength: float = sqrt(x * x + y * y + z * z + w * w);
-
-            if (fLength !== 0.) {
-                var fInvLength: float = 1. / fLength;
-
-                x *= fInvLength;
-                y *= fInvLength;
-                z *= fInvLength;
-                w *= fInvLength;
-            }
-
-            v4fDestination.x = x;
-            v4fDestination.y = y;
-            v4fDestination.z = z;
-            v4fDestination.w = w;
-
-            return v4fDestination;
-        }
-
-        /**  */ length(): float {
-            var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
-            return sqrt(x * x + y * y + z * z + w * w);
-        }
-
-        /**  */ lengthSquare(): float {
-            var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
-            return x * x + y * y + z * z + w * w;
-        }
-
-        direction(v4fVec: IVec4, v4fDestination?: IVec4): IVec4 {
-            if (!isDef(v4fDestination)) {
-                v4fDestination = this;
-            }
-
-            var x: float = v4fVec.x - this.x;
-            var y: float = v4fVec.y - this.y;
-            var z: float = v4fVec.z - this.z;
-            var w: float = v4fVec.w - this.w;
-
-            var fLength: float = sqrt(x * x + y * y + z * z + w * w);
-
-            if (fLength !== 0.) {
-                var fInvLength = 1. / fLength;
-
-                x *= fInvLength;
-                y *= fInvLength;
-                z *= fInvLength;
-                w *= fInvLength;
-            }
-
-            v4fDestination.x = x;
-            v4fDestination.y = y;
-            v4fDestination.z = z;
-            v4fDestination.w = w;
-
-            return v4fDestination;
-        }
-
-        mix(v4fVec: IVec4, fA: float, v4fDestination?: IVec4): IVec4 {
-            if (!isDef(v4fDestination)) {
-                v4fDestination = this;
-            }
-
-            fA = clamp(fA, 0., 1.);
-
-            var fA1: float = 1. - fA;
-            var fA2: float = fA;
-
-            v4fDestination.x = fA1 * this.x + fA2 * v4fVec.x;
-            v4fDestination.y = fA1 * this.y + fA2 * v4fVec.y;
-            v4fDestination.z = fA1 * this.z + fA2 * v4fVec.z;
-            v4fDestination.w = fA1 * this.w + fA2 * v4fVec.w;
-
-            return v4fDestination;
-        }
-
-        /**  */ toString(): string {
-            return "[x: " + this.x + ", y: " + this.y
-                + ", z: " + this.z + ", w: " + this.w + "]";
-        }
-
-        static temp(): IVec4;
-        static temp(xyzw: float): IVec4;
-        static temp(xyzw: IVec4): IVec4;
-        static temp(xyzw: float[]): IVec4;
-        static temp(rgba: IColorValue): IVec4;
-        static temp(x: float, yzw: IVec3): IVec4;
-        static temp(xy: IVec2, zw: IVec2): IVec4;
-        static temp(xyz: IVec3, w: float): IVec4;
-        static temp(x: float, y: float, zw: IVec2): IVec4;
-        static temp(x: float, yz: IVec2, w: float): IVec4;
-        static temp(xy: IVec2, z: float, w: float): IVec4;
-        static temp(x: float, y: float, z: float, w: float): IVec4;
-        static temp(x?, y?, z?, w?): IVec4 {
-            iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
-            var p = pBuffer[iElement++];
-            return p.set.apply(p, arguments);
-        }
-
-    }
-
-
-    pBuffer = gen.array<IVec4>(256, Vec4);
-    iElement = 0;
+	var pBuffer: IVec4[];
+	var iElement: uint;
+
+	export class Vec4 implements IVec4 {
+		x: float;
+		y: float;
+		z: float;
+		w: float;
+
+		constructor();
+		constructor(xyzw: float);
+		constructor(xyzw: IVec4);
+		constructor(xyzw: float[]);
+		constructor(rgba: IColorValue);
+		constructor(x: float, yzw: IVec3);
+		constructor(xy: IVec2, zw: IVec2);
+		constructor(xyz: IVec3, w: float);
+		constructor(x: float, y: float, zw: IVec2);
+		constructor(x: float, yz: IVec2, w: float);
+		constructor(xy: IVec2, z: float, w: float);
+		constructor(x: float, y: float, z: float, w: float);
+		constructor(x?, y?, z?, w?) {
+			var n: uint = arguments.length;
+			var v: IVec4 = this;
+
+			switch (n) {
+				case 1:
+					v.set(arguments[0]);
+					break;
+				case 2:
+					v.set(arguments[0], arguments[1]);
+					break;
+				case 3:
+					v.set(arguments[0], arguments[1], arguments[2]);
+					break;
+				case 4:
+					v.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+					break;
+				default:
+					v.x = v.y = v.z = v.w = 0.;
+					break;
+			}
+		}
+
+		set(): IVec4;
+		set(xyzw: float): IVec4;
+		set(xyzw: IVec4): IVec4;
+		set(xyzw: float[]): IVec4;
+		set(rgba: IColorValue): IVec4;
+		set(x: float, yzw: IVec3): IVec4;
+		set(xy: IVec2, zw: IVec2): IVec4;
+		set(xyz: IVec3, w: float): IVec4;
+		set(x: float, y: float, zw: IVec2): IVec4;
+		set(x: float, yz: IVec2, w: float): IVec4;
+		set(xy: IVec2, z: float, w: float): IVec4;
+		set(x: float, y: float, z: float, w: float): IVec4;
+		set(): IVec4 {
+			var nArgumentsLength: uint = arguments.length;
+
+			switch (nArgumentsLength) {
+				case 0:
+					this.x = this.y = this.z = this.w = 0.;
+					break;
+				case 1:
+					if (isFloat(arguments[0])) {
+						this.x = this.y = this.z = this.w = arguments[0];
+					}
+					else if (arguments[0] instanceof Vec4) {
+						var v4fVec: IVec4 = arguments[0];
+
+						this.x = v4fVec.x;
+						this.y = v4fVec.y;
+						this.z = v4fVec.z;
+						this.w = v4fVec.w;
+					}
+					//color
+					else if (isDef(arguments[0].r)) {
+						this.x = arguments[0].r;
+						this.y = arguments[0].g;
+						this.z = arguments[0].b;
+						this.w = arguments[0].a;
+					}
+					else {
+						//array
+						var pArray: float[] = arguments[0];
+
+						this.x = pArray[0];
+						this.y = pArray[1];
+						this.z = pArray[2];
+						this.w = pArray[3];
+					}
+					break;
+				case 2:
+					if (isFloat(arguments[0])) {
+						var fValue: float = arguments[0];
+						var v3fVec: IVec3 = arguments[1];
+
+						this.x = fValue;
+						this.y = v3fVec.x;
+						this.z = v3fVec.y;
+						this.w = v3fVec.z;
+					}
+					else if (arguments[0] instanceof Vec2) {
+						var v2fVec1: IVec2 = arguments[0];
+						var v2fVec2: IVec2 = arguments[1];
+
+						this.x = v2fVec1.x;
+						this.y = v2fVec1.y;
+						this.z = v2fVec2.x;
+						this.w = v2fVec2.y;
+					}
+					else {
+						var v3fVec: IVec3 = arguments[0];
+						var fValue: float = arguments[1];
+
+						this.x = v3fVec.x;
+						this.y = v3fVec.y;
+						this.z = v3fVec.z;
+						this.w = fValue;
+					}
+					break;
+				case 3:
+					if (isFloat(arguments[0])) {
+						var fValue1: float = arguments[0];
+
+						if (isFloat(arguments[1])) {
+							var fValue2: float = arguments[1];
+							var v2fVec: IVec2 = arguments[2];
+
+							this.x = fValue1;
+							this.y = fValue2;
+							this.z = v2fVec.x;
+							this.w = v2fVec.y;
+						}
+						else {
+							var v2fVec: IVec2 = arguments[1];
+							var fValue2: float = arguments[2];
+
+							this.x = fValue1;
+							this.y = v2fVec.x;
+							this.z = v2fVec.y;
+							this.w = fValue2;
+						}
+					}
+					else {
+						var v2fVec: IVec2 = arguments[0];
+						var fValue1: float = arguments[1];
+						var fValue2: float = arguments[2];
+
+						this.x = v2fVec.x;
+						this.y = v2fVec.y;
+						this.z = fValue1;
+						this.w = fValue2;
+					}
+					break;
+				case 4:
+					this.x = arguments[0];
+					this.y = arguments[1];
+					this.z = arguments[2];
+					this.w = arguments[3];
+					break;
+			}
+
+			return this;
+		}
+
+		/**  */ clear(): IVec4 {
+			this.x = this.y = this.z = this.w = 0.;
+			return this;
+		}
+
+		add(v4fVec: IVec4, v4fDestination?: IVec4): IVec4 {
+			if (!isDef(v4fDestination)) {
+				v4fDestination = this;
+			}
+
+			v4fDestination.x = this.x + v4fVec.x;
+			v4fDestination.y = this.y + v4fVec.y;
+			v4fDestination.z = this.z + v4fVec.z;
+			v4fDestination.w = this.w + v4fVec.w;
+
+			return v4fDestination;
+		}
+
+		subtract(v4fVec: IVec4, v4fDestination?: IVec4): IVec4 {
+			if (!isDef(v4fDestination)) {
+				v4fDestination = this;
+			}
+
+			v4fDestination.x = this.x - v4fVec.x;
+			v4fDestination.y = this.y - v4fVec.y;
+			v4fDestination.z = this.z - v4fVec.z;
+			v4fDestination.w = this.w - v4fVec.w;
+
+			return v4fDestination;
+		}
+
+		/**  */ dot(v4fVec: IVec4): float {
+			return this.x * v4fVec.x + this.y * v4fVec.y + this.z * v4fVec.z + this.w * v4fVec.w;
+		}
+
+		isEqual(v4fVec: IVec4, fEps: float = 0.): boolean {
+			if (fEps === 0.) {
+				if (this.x != v4fVec.x
+					|| this.y != v4fVec.y
+					|| this.z != v4fVec.z
+					|| this.w != v4fVec.w) {
+
+					return false;
+				}
+			}
+			else {
+				if (abs(this.x - v4fVec.x) > fEps
+					|| abs(this.y - v4fVec.y) > fEps
+					|| abs(this.z - v4fVec.z) > fEps
+					|| abs(this.w - v4fVec.w) > fEps) {
+
+					return false;
+				}
+			}
+			return true;
+		}
+
+		isClear(fEps: float = 0.): boolean {
+
+			if (fEps === 0.) {
+				if (this.x != 0.
+					|| this.y != 0.
+					|| this.z != 0.
+					|| this.w != 0.) {
+
+					return false;
+				}
+			}
+			else {
+				if (abs(this.x) > fEps
+					|| abs(this.y) > fEps
+					|| abs(this.z) > fEps
+					|| abs(this.w) > fEps) {
+
+					return false;
+				}
+			}
+			return true;
+		}
+
+		negate(v4fDestination?: IVec4): IVec4 {
+			if (!isDef(v4fDestination)) {
+				v4fDestination = this;
+			}
+
+			v4fDestination.x = -this.x;
+			v4fDestination.y = -this.y;
+			v4fDestination.z = -this.z;
+			v4fDestination.w = -this.w;
+
+			return v4fDestination;
+		}
+
+		scale(fScale: float, v4fDestination?: IVec4): IVec4 {
+			if (!isDef(v4fDestination)) {
+				v4fDestination = this;
+			}
+
+			v4fDestination.x = this.x * fScale;
+			v4fDestination.y = this.y * fScale;
+			v4fDestination.z = this.z * fScale;
+			v4fDestination.w = this.w * fScale;
+
+			return v4fDestination;
+		}
+
+		normalize(v4fDestination?: IVec4): IVec4 {
+			if (!isDef(v4fDestination)) {
+				v4fDestination = this;
+			}
+
+			var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+			var fLength: float = sqrt(x * x + y * y + z * z + w * w);
+
+			if (fLength !== 0.) {
+				var fInvLength: float = 1. / fLength;
+
+				x *= fInvLength;
+				y *= fInvLength;
+				z *= fInvLength;
+				w *= fInvLength;
+			}
+
+			v4fDestination.x = x;
+			v4fDestination.y = y;
+			v4fDestination.z = z;
+			v4fDestination.w = w;
+
+			return v4fDestination;
+		}
+
+		/**  */ length(): float {
+			var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+			return sqrt(x * x + y * y + z * z + w * w);
+		}
+
+		/**  */ lengthSquare(): float {
+			var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+			return x * x + y * y + z * z + w * w;
+		}
+
+		direction(v4fVec: IVec4, v4fDestination?: IVec4): IVec4 {
+			if (!isDef(v4fDestination)) {
+				v4fDestination = this;
+			}
+
+			var x: float = v4fVec.x - this.x;
+			var y: float = v4fVec.y - this.y;
+			var z: float = v4fVec.z - this.z;
+			var w: float = v4fVec.w - this.w;
+
+			var fLength: float = sqrt(x * x + y * y + z * z + w * w);
+
+			if (fLength !== 0.) {
+				var fInvLength = 1. / fLength;
+
+				x *= fInvLength;
+				y *= fInvLength;
+				z *= fInvLength;
+				w *= fInvLength;
+			}
+
+			v4fDestination.x = x;
+			v4fDestination.y = y;
+			v4fDestination.z = z;
+			v4fDestination.w = w;
+
+			return v4fDestination;
+		}
+
+		mix(v4fVec: IVec4, fA: float, v4fDestination?: IVec4): IVec4 {
+			if (!isDef(v4fDestination)) {
+				v4fDestination = this;
+			}
+
+			fA = clamp(fA, 0., 1.);
+
+			var fA1: float = 1. - fA;
+			var fA2: float = fA;
+
+			v4fDestination.x = fA1 * this.x + fA2 * v4fVec.x;
+			v4fDestination.y = fA1 * this.y + fA2 * v4fVec.y;
+			v4fDestination.z = fA1 * this.z + fA2 * v4fVec.z;
+			v4fDestination.w = fA1 * this.w + fA2 * v4fVec.w;
+
+			return v4fDestination;
+		}
+
+		/**  */ toString(): string {
+			return "[x: " + this.x + ", y: " + this.y
+				+ ", z: " + this.z + ", w: " + this.w + "]";
+		}
+
+		clone(sForm: string, v2fDest?: IVec2): IVec2;
+		clone(sForm: string, v3fDest?: IVec3): IVec3;
+		clone(sForm: string, v4fDest?: IVec4): IVec4;
+		clone(sForm: string, pVec2OrVec3OrVec4?: any): any {
+			if (sForm.length === 2) {
+				var v2fDest: IVec2 = isDefAndNotNull(pVec2OrVec3OrVec4) ? <IVec2>pVec2OrVec3OrVec4 : Vec2.temp();
+
+				switch(sForm){
+					case "xx":
+						return v2fDest.set(this.x, this.x);
+					case "xy":
+						return v2fDest.set(this.x, this.y);
+					case "xz":
+						return v2fDest.set(this.x, this.z);
+					case "xw":
+						return v2fDest.set(this.x, this.w);
+					case "yx":
+						return v2fDest.set(this.y, this.x);
+					case "yy":
+						return v2fDest.set(this.y, this.y);
+					case "yz":
+						return v2fDest.set(this.y, this.z);
+					case "yw":
+						return v2fDest.set(this.y, this.w);
+					case "zx":
+						return v2fDest.set(this.z, this.x);
+					case "zy":
+						return v2fDest.set(this.z, this.y);
+					case "zz":
+						return v2fDest.set(this.z, this.z);
+					case "zw":
+						return v2fDest.set(this.z, this.w);
+					case "wx":
+						return v2fDest.set(this.w, this.x);
+					case "wy":
+						return v2fDest.set(this.w, this.y);
+					case "wz":
+						return v2fDest.set(this.w, this.z);
+					case "ww":
+						return v2fDest.set(this.w, this.w);
+				}
+			}
+			else if(sForm.length === 3) {
+				var v3fDest: IVec3 = isDefAndNotNull(pVec2OrVec3OrVec4) ? <IVec3>pVec2OrVec3OrVec4 : Vec3.temp();
+
+				switch(sForm){
+					case "xxx":
+						return v3fDest.set(this.x, this.x, this.x);
+					case "xxy":
+						return v3fDest.set(this.x, this.x, this.y);
+					case "xxz":
+						return v3fDest.set(this.x, this.x, this.z);
+					case "xxw":
+						return v3fDest.set(this.x, this.x, this.w);
+					case "xyx":
+						return v3fDest.set(this.x, this.y, this.x);
+					case "xyy":
+						return v3fDest.set(this.x, this.y, this.y);
+					case "xyz":
+						return v3fDest.set(this.x, this.y, this.z);
+					case "xyw":
+						return v3fDest.set(this.x, this.y, this.w);
+					case "xzx":
+						return v3fDest.set(this.x, this.z, this.x);
+					case "xzy":
+						return v3fDest.set(this.x, this.z, this.y);
+					case "xzz":
+						return v3fDest.set(this.x, this.z, this.z);
+					case "xzw":
+						return v3fDest.set(this.x, this.z, this.w);
+					case "xwx":
+						return v3fDest.set(this.x, this.w, this.x);
+					case "xwy":
+						return v3fDest.set(this.x, this.w, this.y);
+					case "xwz":
+						return v3fDest.set(this.x, this.w, this.z);
+					case "xww":
+						return v3fDest.set(this.x, this.w, this.w);
+					case "yxx":
+						return v3fDest.set(this.y, this.x, this.x);
+					case "yxy":
+						return v3fDest.set(this.y, this.x, this.y);
+					case "yxz":
+						return v3fDest.set(this.y, this.x, this.z);
+					case "yxw":
+						return v3fDest.set(this.y, this.x, this.w);
+					case "yyx":
+						return v3fDest.set(this.y, this.y, this.x);
+					case "yyy":
+						return v3fDest.set(this.y, this.y, this.y);
+					case "yyz":
+						return v3fDest.set(this.y, this.y, this.z);
+					case "yyw":
+						return v3fDest.set(this.y, this.y, this.w);
+					case "yzx":
+						return v3fDest.set(this.y, this.z, this.x);
+					case "yzy":
+						return v3fDest.set(this.y, this.z, this.y);
+					case "yzz":
+						return v3fDest.set(this.y, this.z, this.z);
+					case "yzw":
+						return v3fDest.set(this.y, this.z, this.w);
+					case "ywx":
+						return v3fDest.set(this.y, this.w, this.x);
+					case "ywy":
+						return v3fDest.set(this.y, this.w, this.y);
+					case "ywz":
+						return v3fDest.set(this.y, this.w, this.z);
+					case "yww":
+						return v3fDest.set(this.y, this.w, this.w);
+					case "zxx":
+						return v3fDest.set(this.z, this.x, this.x);
+					case "zxy":
+						return v3fDest.set(this.z, this.x, this.y);
+					case "zxz":
+						return v3fDest.set(this.z, this.x, this.z);
+					case "zxw":
+						return v3fDest.set(this.z, this.x, this.w);
+					case "zyx":
+						return v3fDest.set(this.z, this.y, this.x);
+					case "zyy":
+						return v3fDest.set(this.z, this.y, this.y);
+					case "zyz":
+						return v3fDest.set(this.z, this.y, this.z);
+					case "zyw":
+						return v3fDest.set(this.z, this.y, this.w);
+					case "zzx":
+						return v3fDest.set(this.z, this.z, this.x);
+					case "zzy":
+						return v3fDest.set(this.z, this.z, this.y);
+					case "zzz":
+						return v3fDest.set(this.z, this.z, this.z);
+					case "zzw":
+						return v3fDest.set(this.z, this.z, this.w);
+					case "zwx":
+						return v3fDest.set(this.z, this.w, this.x);
+					case "zwy":
+						return v3fDest.set(this.z, this.w, this.y);
+					case "zwz":
+						return v3fDest.set(this.z, this.w, this.z);
+					case "zww":
+						return v3fDest.set(this.z, this.w, this.w);
+					case "wxx":
+						return v3fDest.set(this.w, this.x, this.x);
+					case "wxy":
+						return v3fDest.set(this.w, this.x, this.y);
+					case "wxz":
+						return v3fDest.set(this.w, this.x, this.z);
+					case "wxw":
+						return v3fDest.set(this.w, this.x, this.w);
+					case "wyx":
+						return v3fDest.set(this.w, this.y, this.x);
+					case "wyy":
+						return v3fDest.set(this.w, this.y, this.y);
+					case "wyz":
+						return v3fDest.set(this.w, this.y, this.z);
+					case "wyw":
+						return v3fDest.set(this.w, this.y, this.w);
+					case "wzx":
+						return v3fDest.set(this.w, this.z, this.x);
+					case "wzy":
+						return v3fDest.set(this.w, this.z, this.y);
+					case "wzz":
+						return v3fDest.set(this.w, this.z, this.z);
+					case "wzw":
+						return v3fDest.set(this.w, this.z, this.w);
+					case "wwx":
+						return v3fDest.set(this.w, this.w, this.x);
+					case "wwy":
+						return v3fDest.set(this.w, this.w, this.y);
+					case "wwz":
+						return v3fDest.set(this.w, this.w, this.z);
+					case "www":
+						return v3fDest.set(this.w, this.w, this.w);
+				}
+			}
+			else if(sForm.length === 4) {
+				var v4fDest: IVec4 = isDefAndNotNull(pVec2OrVec3OrVec4) ? <IVec4>pVec2OrVec3OrVec4 : Vec4.temp();
+
+				switch(sForm){
+					case "xxxx":
+						return v4fDest.set(this.x, this.x, this.x, this.x);
+					case "xxxy":
+						return v4fDest.set(this.x, this.x, this.x, this.y);
+					case "xxxz":
+						return v4fDest.set(this.x, this.x, this.x, this.z);
+					case "xxxw":
+						return v4fDest.set(this.x, this.x, this.x, this.w);
+					case "xxyx":
+						return v4fDest.set(this.x, this.x, this.y, this.x);
+					case "xxyy":
+						return v4fDest.set(this.x, this.x, this.y, this.y);
+					case "xxyz":
+						return v4fDest.set(this.x, this.x, this.y, this.z);
+					case "xxyw":
+						return v4fDest.set(this.x, this.x, this.y, this.w);
+					case "xxzx":
+						return v4fDest.set(this.x, this.x, this.z, this.x);
+					case "xxzy":
+						return v4fDest.set(this.x, this.x, this.z, this.y);
+					case "xxzz":
+						return v4fDest.set(this.x, this.x, this.z, this.z);
+					case "xxzw":
+						return v4fDest.set(this.x, this.x, this.z, this.w);
+					case "xxwx":
+						return v4fDest.set(this.x, this.x, this.w, this.x);
+					case "xxwy":
+						return v4fDest.set(this.x, this.x, this.w, this.y);
+					case "xxwz":
+						return v4fDest.set(this.x, this.x, this.w, this.z);
+					case "xxww":
+						return v4fDest.set(this.x, this.x, this.w, this.w);
+					case "xyxx":
+						return v4fDest.set(this.x, this.y, this.x, this.x);
+					case "xyxy":
+						return v4fDest.set(this.x, this.y, this.x, this.y);
+					case "xyxz":
+						return v4fDest.set(this.x, this.y, this.x, this.z);
+					case "xyxw":
+						return v4fDest.set(this.x, this.y, this.x, this.w);
+					case "xyyx":
+						return v4fDest.set(this.x, this.y, this.y, this.x);
+					case "xyyy":
+						return v4fDest.set(this.x, this.y, this.y, this.y);
+					case "xyyz":
+						return v4fDest.set(this.x, this.y, this.y, this.z);
+					case "xyyw":
+						return v4fDest.set(this.x, this.y, this.y, this.w);
+					case "xyzx":
+						return v4fDest.set(this.x, this.y, this.z, this.x);
+					case "xyzy":
+						return v4fDest.set(this.x, this.y, this.z, this.y);
+					case "xyzz":
+						return v4fDest.set(this.x, this.y, this.z, this.z);
+					case "xyzw":
+						return v4fDest.set(this.x, this.y, this.z, this.w);
+					case "xywx":
+						return v4fDest.set(this.x, this.y, this.w, this.x);
+					case "xywy":
+						return v4fDest.set(this.x, this.y, this.w, this.y);
+					case "xywz":
+						return v4fDest.set(this.x, this.y, this.w, this.z);
+					case "xyww":
+						return v4fDest.set(this.x, this.y, this.w, this.w);
+					case "xzxx":
+						return v4fDest.set(this.x, this.z, this.x, this.x);
+					case "xzxy":
+						return v4fDest.set(this.x, this.z, this.x, this.y);
+					case "xzxz":
+						return v4fDest.set(this.x, this.z, this.x, this.z);
+					case "xzxw":
+						return v4fDest.set(this.x, this.z, this.x, this.w);
+					case "xzyx":
+						return v4fDest.set(this.x, this.z, this.y, this.x);
+					case "xzyy":
+						return v4fDest.set(this.x, this.z, this.y, this.y);
+					case "xzyz":
+						return v4fDest.set(this.x, this.z, this.y, this.z);
+					case "xzyw":
+						return v4fDest.set(this.x, this.z, this.y, this.w);
+					case "xzzx":
+						return v4fDest.set(this.x, this.z, this.z, this.x);
+					case "xzzy":
+						return v4fDest.set(this.x, this.z, this.z, this.y);
+					case "xzzz":
+						return v4fDest.set(this.x, this.z, this.z, this.z);
+					case "xzzw":
+						return v4fDest.set(this.x, this.z, this.z, this.w);
+					case "xzwx":
+						return v4fDest.set(this.x, this.z, this.w, this.x);
+					case "xzwy":
+						return v4fDest.set(this.x, this.z, this.w, this.y);
+					case "xzwz":
+						return v4fDest.set(this.x, this.z, this.w, this.z);
+					case "xzww":
+						return v4fDest.set(this.x, this.z, this.w, this.w);
+					case "xwxx":
+						return v4fDest.set(this.x, this.w, this.x, this.x);
+					case "xwxy":
+						return v4fDest.set(this.x, this.w, this.x, this.y);
+					case "xwxz":
+						return v4fDest.set(this.x, this.w, this.x, this.z);
+					case "xwxw":
+						return v4fDest.set(this.x, this.w, this.x, this.w);
+					case "xwyx":
+						return v4fDest.set(this.x, this.w, this.y, this.x);
+					case "xwyy":
+						return v4fDest.set(this.x, this.w, this.y, this.y);
+					case "xwyz":
+						return v4fDest.set(this.x, this.w, this.y, this.z);
+					case "xwyw":
+						return v4fDest.set(this.x, this.w, this.y, this.w);
+					case "xwzx":
+						return v4fDest.set(this.x, this.w, this.z, this.x);
+					case "xwzy":
+						return v4fDest.set(this.x, this.w, this.z, this.y);
+					case "xwzz":
+						return v4fDest.set(this.x, this.w, this.z, this.z);
+					case "xwzw":
+						return v4fDest.set(this.x, this.w, this.z, this.w);
+					case "xwwx":
+						return v4fDest.set(this.x, this.w, this.w, this.x);
+					case "xwwy":
+						return v4fDest.set(this.x, this.w, this.w, this.y);
+					case "xwwz":
+						return v4fDest.set(this.x, this.w, this.w, this.z);
+					case "xwww":
+						return v4fDest.set(this.x, this.w, this.w, this.w);
+					case "yxxx":
+						return v4fDest.set(this.y, this.x, this.x, this.x);
+					case "yxxy":
+						return v4fDest.set(this.y, this.x, this.x, this.y);
+					case "yxxz":
+						return v4fDest.set(this.y, this.x, this.x, this.z);
+					case "yxxw":
+						return v4fDest.set(this.y, this.x, this.x, this.w);
+					case "yxyx":
+						return v4fDest.set(this.y, this.x, this.y, this.x);
+					case "yxyy":
+						return v4fDest.set(this.y, this.x, this.y, this.y);
+					case "yxyz":
+						return v4fDest.set(this.y, this.x, this.y, this.z);
+					case "yxyw":
+						return v4fDest.set(this.y, this.x, this.y, this.w);
+					case "yxzx":
+						return v4fDest.set(this.y, this.x, this.z, this.x);
+					case "yxzy":
+						return v4fDest.set(this.y, this.x, this.z, this.y);
+					case "yxzz":
+						return v4fDest.set(this.y, this.x, this.z, this.z);
+					case "yxzw":
+						return v4fDest.set(this.y, this.x, this.z, this.w);
+					case "yxwx":
+						return v4fDest.set(this.y, this.x, this.w, this.x);
+					case "yxwy":
+						return v4fDest.set(this.y, this.x, this.w, this.y);
+					case "yxwz":
+						return v4fDest.set(this.y, this.x, this.w, this.z);
+					case "yxww":
+						return v4fDest.set(this.y, this.x, this.w, this.w);
+					case "yyxx":
+						return v4fDest.set(this.y, this.y, this.x, this.x);
+					case "yyxy":
+						return v4fDest.set(this.y, this.y, this.x, this.y);
+					case "yyxz":
+						return v4fDest.set(this.y, this.y, this.x, this.z);
+					case "yyxw":
+						return v4fDest.set(this.y, this.y, this.x, this.w);
+					case "yyyx":
+						return v4fDest.set(this.y, this.y, this.y, this.x);
+					case "yyyy":
+						return v4fDest.set(this.y, this.y, this.y, this.y);
+					case "yyyz":
+						return v4fDest.set(this.y, this.y, this.y, this.z);
+					case "yyyw":
+						return v4fDest.set(this.y, this.y, this.y, this.w);
+					case "yyzx":
+						return v4fDest.set(this.y, this.y, this.z, this.x);
+					case "yyzy":
+						return v4fDest.set(this.y, this.y, this.z, this.y);
+					case "yyzz":
+						return v4fDest.set(this.y, this.y, this.z, this.z);
+					case "yyzw":
+						return v4fDest.set(this.y, this.y, this.z, this.w);
+					case "yywx":
+						return v4fDest.set(this.y, this.y, this.w, this.x);
+					case "yywy":
+						return v4fDest.set(this.y, this.y, this.w, this.y);
+					case "yywz":
+						return v4fDest.set(this.y, this.y, this.w, this.z);
+					case "yyww":
+						return v4fDest.set(this.y, this.y, this.w, this.w);
+					case "yzxx":
+						return v4fDest.set(this.y, this.z, this.x, this.x);
+					case "yzxy":
+						return v4fDest.set(this.y, this.z, this.x, this.y);
+					case "yzxz":
+						return v4fDest.set(this.y, this.z, this.x, this.z);
+					case "yzxw":
+						return v4fDest.set(this.y, this.z, this.x, this.w);
+					case "yzyx":
+						return v4fDest.set(this.y, this.z, this.y, this.x);
+					case "yzyy":
+						return v4fDest.set(this.y, this.z, this.y, this.y);
+					case "yzyz":
+						return v4fDest.set(this.y, this.z, this.y, this.z);
+					case "yzyw":
+						return v4fDest.set(this.y, this.z, this.y, this.w);
+					case "yzzx":
+						return v4fDest.set(this.y, this.z, this.z, this.x);
+					case "yzzy":
+						return v4fDest.set(this.y, this.z, this.z, this.y);
+					case "yzzz":
+						return v4fDest.set(this.y, this.z, this.z, this.z);
+					case "yzzw":
+						return v4fDest.set(this.y, this.z, this.z, this.w);
+					case "yzwx":
+						return v4fDest.set(this.y, this.z, this.w, this.x);
+					case "yzwy":
+						return v4fDest.set(this.y, this.z, this.w, this.y);
+					case "yzwz":
+						return v4fDest.set(this.y, this.z, this.w, this.z);
+					case "yzww":
+						return v4fDest.set(this.y, this.z, this.w, this.w);
+					case "ywxx":
+						return v4fDest.set(this.y, this.w, this.x, this.x);
+					case "ywxy":
+						return v4fDest.set(this.y, this.w, this.x, this.y);
+					case "ywxz":
+						return v4fDest.set(this.y, this.w, this.x, this.z);
+					case "ywxw":
+						return v4fDest.set(this.y, this.w, this.x, this.w);
+					case "ywyx":
+						return v4fDest.set(this.y, this.w, this.y, this.x);
+					case "ywyy":
+						return v4fDest.set(this.y, this.w, this.y, this.y);
+					case "ywyz":
+						return v4fDest.set(this.y, this.w, this.y, this.z);
+					case "ywyw":
+						return v4fDest.set(this.y, this.w, this.y, this.w);
+					case "ywzx":
+						return v4fDest.set(this.y, this.w, this.z, this.x);
+					case "ywzy":
+						return v4fDest.set(this.y, this.w, this.z, this.y);
+					case "ywzz":
+						return v4fDest.set(this.y, this.w, this.z, this.z);
+					case "ywzw":
+						return v4fDest.set(this.y, this.w, this.z, this.w);
+					case "ywwx":
+						return v4fDest.set(this.y, this.w, this.w, this.x);
+					case "ywwy":
+						return v4fDest.set(this.y, this.w, this.w, this.y);
+					case "ywwz":
+						return v4fDest.set(this.y, this.w, this.w, this.z);
+					case "ywww":
+						return v4fDest.set(this.y, this.w, this.w, this.w);
+					case "zxxx":
+						return v4fDest.set(this.z, this.x, this.x, this.x);
+					case "zxxy":
+						return v4fDest.set(this.z, this.x, this.x, this.y);
+					case "zxxz":
+						return v4fDest.set(this.z, this.x, this.x, this.z);
+					case "zxxw":
+						return v4fDest.set(this.z, this.x, this.x, this.w);
+					case "zxyx":
+						return v4fDest.set(this.z, this.x, this.y, this.x);
+					case "zxyy":
+						return v4fDest.set(this.z, this.x, this.y, this.y);
+					case "zxyz":
+						return v4fDest.set(this.z, this.x, this.y, this.z);
+					case "zxyw":
+						return v4fDest.set(this.z, this.x, this.y, this.w);
+					case "zxzx":
+						return v4fDest.set(this.z, this.x, this.z, this.x);
+					case "zxzy":
+						return v4fDest.set(this.z, this.x, this.z, this.y);
+					case "zxzz":
+						return v4fDest.set(this.z, this.x, this.z, this.z);
+					case "zxzw":
+						return v4fDest.set(this.z, this.x, this.z, this.w);
+					case "zxwx":
+						return v4fDest.set(this.z, this.x, this.w, this.x);
+					case "zxwy":
+						return v4fDest.set(this.z, this.x, this.w, this.y);
+					case "zxwz":
+						return v4fDest.set(this.z, this.x, this.w, this.z);
+					case "zxww":
+						return v4fDest.set(this.z, this.x, this.w, this.w);
+					case "zyxx":
+						return v4fDest.set(this.z, this.y, this.x, this.x);
+					case "zyxy":
+						return v4fDest.set(this.z, this.y, this.x, this.y);
+					case "zyxz":
+						return v4fDest.set(this.z, this.y, this.x, this.z);
+					case "zyxw":
+						return v4fDest.set(this.z, this.y, this.x, this.w);
+					case "zyyx":
+						return v4fDest.set(this.z, this.y, this.y, this.x);
+					case "zyyy":
+						return v4fDest.set(this.z, this.y, this.y, this.y);
+					case "zyyz":
+						return v4fDest.set(this.z, this.y, this.y, this.z);
+					case "zyyw":
+						return v4fDest.set(this.z, this.y, this.y, this.w);
+					case "zyzx":
+						return v4fDest.set(this.z, this.y, this.z, this.x);
+					case "zyzy":
+						return v4fDest.set(this.z, this.y, this.z, this.y);
+					case "zyzz":
+						return v4fDest.set(this.z, this.y, this.z, this.z);
+					case "zyzw":
+						return v4fDest.set(this.z, this.y, this.z, this.w);
+					case "zywx":
+						return v4fDest.set(this.z, this.y, this.w, this.x);
+					case "zywy":
+						return v4fDest.set(this.z, this.y, this.w, this.y);
+					case "zywz":
+						return v4fDest.set(this.z, this.y, this.w, this.z);
+					case "zyww":
+						return v4fDest.set(this.z, this.y, this.w, this.w);
+					case "zzxx":
+						return v4fDest.set(this.z, this.z, this.x, this.x);
+					case "zzxy":
+						return v4fDest.set(this.z, this.z, this.x, this.y);
+					case "zzxz":
+						return v4fDest.set(this.z, this.z, this.x, this.z);
+					case "zzxw":
+						return v4fDest.set(this.z, this.z, this.x, this.w);
+					case "zzyx":
+						return v4fDest.set(this.z, this.z, this.y, this.x);
+					case "zzyy":
+						return v4fDest.set(this.z, this.z, this.y, this.y);
+					case "zzyz":
+						return v4fDest.set(this.z, this.z, this.y, this.z);
+					case "zzyw":
+						return v4fDest.set(this.z, this.z, this.y, this.w);
+					case "zzzx":
+						return v4fDest.set(this.z, this.z, this.z, this.x);
+					case "zzzy":
+						return v4fDest.set(this.z, this.z, this.z, this.y);
+					case "zzzz":
+						return v4fDest.set(this.z, this.z, this.z, this.z);
+					case "zzzw":
+						return v4fDest.set(this.z, this.z, this.z, this.w);
+					case "zzwx":
+						return v4fDest.set(this.z, this.z, this.w, this.x);
+					case "zzwy":
+						return v4fDest.set(this.z, this.z, this.w, this.y);
+					case "zzwz":
+						return v4fDest.set(this.z, this.z, this.w, this.z);
+					case "zzww":
+						return v4fDest.set(this.z, this.z, this.w, this.w);
+					case "zwxx":
+						return v4fDest.set(this.z, this.w, this.x, this.x);
+					case "zwxy":
+						return v4fDest.set(this.z, this.w, this.x, this.y);
+					case "zwxz":
+						return v4fDest.set(this.z, this.w, this.x, this.z);
+					case "zwxw":
+						return v4fDest.set(this.z, this.w, this.x, this.w);
+					case "zwyx":
+						return v4fDest.set(this.z, this.w, this.y, this.x);
+					case "zwyy":
+						return v4fDest.set(this.z, this.w, this.y, this.y);
+					case "zwyz":
+						return v4fDest.set(this.z, this.w, this.y, this.z);
+					case "zwyw":
+						return v4fDest.set(this.z, this.w, this.y, this.w);
+					case "zwzx":
+						return v4fDest.set(this.z, this.w, this.z, this.x);
+					case "zwzy":
+						return v4fDest.set(this.z, this.w, this.z, this.y);
+					case "zwzz":
+						return v4fDest.set(this.z, this.w, this.z, this.z);
+					case "zwzw":
+						return v4fDest.set(this.z, this.w, this.z, this.w);
+					case "zwwx":
+						return v4fDest.set(this.z, this.w, this.w, this.x);
+					case "zwwy":
+						return v4fDest.set(this.z, this.w, this.w, this.y);
+					case "zwwz":
+						return v4fDest.set(this.z, this.w, this.w, this.z);
+					case "zwww":
+						return v4fDest.set(this.z, this.w, this.w, this.w);
+					case "wxxx":
+						return v4fDest.set(this.w, this.x, this.x, this.x);
+					case "wxxy":
+						return v4fDest.set(this.w, this.x, this.x, this.y);
+					case "wxxz":
+						return v4fDest.set(this.w, this.x, this.x, this.z);
+					case "wxxw":
+						return v4fDest.set(this.w, this.x, this.x, this.w);
+					case "wxyx":
+						return v4fDest.set(this.w, this.x, this.y, this.x);
+					case "wxyy":
+						return v4fDest.set(this.w, this.x, this.y, this.y);
+					case "wxyz":
+						return v4fDest.set(this.w, this.x, this.y, this.z);
+					case "wxyw":
+						return v4fDest.set(this.w, this.x, this.y, this.w);
+					case "wxzx":
+						return v4fDest.set(this.w, this.x, this.z, this.x);
+					case "wxzy":
+						return v4fDest.set(this.w, this.x, this.z, this.y);
+					case "wxzz":
+						return v4fDest.set(this.w, this.x, this.z, this.z);
+					case "wxzw":
+						return v4fDest.set(this.w, this.x, this.z, this.w);
+					case "wxwx":
+						return v4fDest.set(this.w, this.x, this.w, this.x);
+					case "wxwy":
+						return v4fDest.set(this.w, this.x, this.w, this.y);
+					case "wxwz":
+						return v4fDest.set(this.w, this.x, this.w, this.z);
+					case "wxww":
+						return v4fDest.set(this.w, this.x, this.w, this.w);
+					case "wyxx":
+						return v4fDest.set(this.w, this.y, this.x, this.x);
+					case "wyxy":
+						return v4fDest.set(this.w, this.y, this.x, this.y);
+					case "wyxz":
+						return v4fDest.set(this.w, this.y, this.x, this.z);
+					case "wyxw":
+						return v4fDest.set(this.w, this.y, this.x, this.w);
+					case "wyyx":
+						return v4fDest.set(this.w, this.y, this.y, this.x);
+					case "wyyy":
+						return v4fDest.set(this.w, this.y, this.y, this.y);
+					case "wyyz":
+						return v4fDest.set(this.w, this.y, this.y, this.z);
+					case "wyyw":
+						return v4fDest.set(this.w, this.y, this.y, this.w);
+					case "wyzx":
+						return v4fDest.set(this.w, this.y, this.z, this.x);
+					case "wyzy":
+						return v4fDest.set(this.w, this.y, this.z, this.y);
+					case "wyzz":
+						return v4fDest.set(this.w, this.y, this.z, this.z);
+					case "wyzw":
+						return v4fDest.set(this.w, this.y, this.z, this.w);
+					case "wywx":
+						return v4fDest.set(this.w, this.y, this.w, this.x);
+					case "wywy":
+						return v4fDest.set(this.w, this.y, this.w, this.y);
+					case "wywz":
+						return v4fDest.set(this.w, this.y, this.w, this.z);
+					case "wyww":
+						return v4fDest.set(this.w, this.y, this.w, this.w);
+					case "wzxx":
+						return v4fDest.set(this.w, this.z, this.x, this.x);
+					case "wzxy":
+						return v4fDest.set(this.w, this.z, this.x, this.y);
+					case "wzxz":
+						return v4fDest.set(this.w, this.z, this.x, this.z);
+					case "wzxw":
+						return v4fDest.set(this.w, this.z, this.x, this.w);
+					case "wzyx":
+						return v4fDest.set(this.w, this.z, this.y, this.x);
+					case "wzyy":
+						return v4fDest.set(this.w, this.z, this.y, this.y);
+					case "wzyz":
+						return v4fDest.set(this.w, this.z, this.y, this.z);
+					case "wzyw":
+						return v4fDest.set(this.w, this.z, this.y, this.w);
+					case "wzzx":
+						return v4fDest.set(this.w, this.z, this.z, this.x);
+					case "wzzy":
+						return v4fDest.set(this.w, this.z, this.z, this.y);
+					case "wzzz":
+						return v4fDest.set(this.w, this.z, this.z, this.z);
+					case "wzzw":
+						return v4fDest.set(this.w, this.z, this.z, this.w);
+					case "wzwx":
+						return v4fDest.set(this.w, this.z, this.w, this.x);
+					case "wzwy":
+						return v4fDest.set(this.w, this.z, this.w, this.y);
+					case "wzwz":
+						return v4fDest.set(this.w, this.z, this.w, this.z);
+					case "wzww":
+						return v4fDest.set(this.w, this.z, this.w, this.w);
+					case "wwxx":
+						return v4fDest.set(this.w, this.w, this.x, this.x);
+					case "wwxy":
+						return v4fDest.set(this.w, this.w, this.x, this.y);
+					case "wwxz":
+						return v4fDest.set(this.w, this.w, this.x, this.z);
+					case "wwxw":
+						return v4fDest.set(this.w, this.w, this.x, this.w);
+					case "wwyx":
+						return v4fDest.set(this.w, this.w, this.y, this.x);
+					case "wwyy":
+						return v4fDest.set(this.w, this.w, this.y, this.y);
+					case "wwyz":
+						return v4fDest.set(this.w, this.w, this.y, this.z);
+					case "wwyw":
+						return v4fDest.set(this.w, this.w, this.y, this.w);
+					case "wwzx":
+						return v4fDest.set(this.w, this.w, this.z, this.x);
+					case "wwzy":
+						return v4fDest.set(this.w, this.w, this.z, this.y);
+					case "wwzz":
+						return v4fDest.set(this.w, this.w, this.z, this.z);
+					case "wwzw":
+						return v4fDest.set(this.w, this.w, this.z, this.w);
+					case "wwwx":
+						return v4fDest.set(this.w, this.w, this.w, this.x);
+					case "wwwy":
+						return v4fDest.set(this.w, this.w, this.w, this.y);
+					case "wwwz":
+						return v4fDest.set(this.w, this.w, this.w, this.z);
+					case "wwww":
+						return v4fDest.set(this.w, this.w, this.w, this.w);
+				}
+			}
+
+			logger.error("Bad vector form", sForm);
+			return null;
+		}
+		
+		copy(sForm: string, fValue: float): IVec4;
+		copy(sForm: string, v2fFrom: IVec2): IVec4;
+		copy(sForm: string, v3fFrom: IVec3): IVec4;
+		copy(sForm: string, v4fFrom: IVec4): IVec4;
+		copy(sForm: string, pVectorOrFloat: any): IVec4 {
+			if (sForm.length === 2) {
+				var v2fFrom: IVec2 = isFloat(pVectorOrFloat) ? Vec2.temp(pVectorOrFloat) : <IVec2>pVectorOrFloat;
+
+				switch(sForm){
+					case "xx":
+						this.x = v2fFrom.x; this.x = v2fFrom.y;
+						return this;
+					case "xy":
+						this.x = v2fFrom.x; this.y = v2fFrom.y;
+						return this;
+					case "xz":
+						this.x = v2fFrom.x; this.z = v2fFrom.y;
+						return this;
+					case "xw":
+						this.x = v2fFrom.x; this.w = v2fFrom.y;
+						return this;
+					case "yx":
+						this.y = v2fFrom.x; this.x = v2fFrom.y;
+						return this;
+					case "yy":
+						this.y = v2fFrom.x; this.y = v2fFrom.y;
+						return this;
+					case "yz":
+						this.y = v2fFrom.x; this.z = v2fFrom.y;
+						return this;
+					case "yw":
+						this.y = v2fFrom.x; this.w = v2fFrom.y;
+						return this;
+					case "zx":
+						this.z = v2fFrom.x; this.x = v2fFrom.y;
+						return this;
+					case "zy":
+						this.z = v2fFrom.x; this.y = v2fFrom.y;
+						return this;
+					case "zz":
+						this.z = v2fFrom.x; this.z = v2fFrom.y;
+						return this;
+					case "zw":
+						this.z = v2fFrom.x; this.w = v2fFrom.y;
+						return this;
+					case "wx":
+						this.w = v2fFrom.x; this.x = v2fFrom.y;
+						return this;
+					case "wy":
+						this.w = v2fFrom.x; this.y = v2fFrom.y;
+						return this;
+					case "wz":
+						this.w = v2fFrom.x; this.z = v2fFrom.y;
+						return this;
+					case "ww":
+						this.w = v2fFrom.x; this.w = v2fFrom.y;
+						return this;
+				}
+			}
+			else if(sForm.length === 3) {
+				var v3fFrom: IVec3 = isFloat(pVectorOrFloat) ? Vec3.temp(pVectorOrFloat) : <IVec3>pVectorOrFloat;
+
+				switch(sForm){
+					case "xxx":
+						this.x = v3fFrom.x;	this.x = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "xxy":
+						this.x = v3fFrom.x;	this.x = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "xxz":
+						this.x = v3fFrom.x;	this.x = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "xxw":
+						this.x = v3fFrom.x;	this.x = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "xyx":
+						this.x = v3fFrom.x;	this.y = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "xyy":
+						this.x = v3fFrom.x;	this.y = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "xyz":
+						this.x = v3fFrom.x;	this.y = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "xyw":
+						this.x = v3fFrom.x;	this.y = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "xzx":
+						this.x = v3fFrom.x;	this.z = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "xzy":
+						this.x = v3fFrom.x;	this.z = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "xzz":
+						this.x = v3fFrom.x;	this.z = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "xzw":
+						this.x = v3fFrom.x;	this.z = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "xwx":
+						this.x = v3fFrom.x;	this.w = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "xwy":
+						this.x = v3fFrom.x;	this.w = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "xwz":
+						this.x = v3fFrom.x;	this.w = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "xww":
+						this.x = v3fFrom.x;	this.w = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "yxx":
+						this.y = v3fFrom.x;	this.x = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "yxy":
+						this.y = v3fFrom.x;	this.x = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "yxz":
+						this.y = v3fFrom.x;	this.x = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "yxw":
+						this.y = v3fFrom.x;	this.x = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "yyx":
+						this.y = v3fFrom.x;	this.y = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "yyy":
+						this.y = v3fFrom.x;	this.y = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "yyz":
+						this.y = v3fFrom.x;	this.y = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "yyw":
+						this.y = v3fFrom.x;	this.y = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "yzx":
+						this.y = v3fFrom.x;	this.z = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "yzy":
+						this.y = v3fFrom.x;	this.z = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "yzz":
+						this.y = v3fFrom.x;	this.z = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "yzw":
+						this.y = v3fFrom.x;	this.z = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "ywx":
+						this.y = v3fFrom.x;	this.w = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "ywy":
+						this.y = v3fFrom.x;	this.w = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "ywz":
+						this.y = v3fFrom.x;	this.w = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "yww":
+						this.y = v3fFrom.x;	this.w = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "zxx":
+						this.z = v3fFrom.x;	this.x = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "zxy":
+						this.z = v3fFrom.x;	this.x = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "zxz":
+						this.z = v3fFrom.x;	this.x = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "zxw":
+						this.z = v3fFrom.x;	this.x = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "zyx":
+						this.z = v3fFrom.x;	this.y = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "zyy":
+						this.z = v3fFrom.x;	this.y = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "zyz":
+						this.z = v3fFrom.x;	this.y = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "zyw":
+						this.z = v3fFrom.x;	this.y = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "zzx":
+						this.z = v3fFrom.x;	this.z = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "zzy":
+						this.z = v3fFrom.x;	this.z = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "zzz":
+						this.z = v3fFrom.x;	this.z = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "zzw":
+						this.z = v3fFrom.x;	this.z = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "zwx":
+						this.z = v3fFrom.x;	this.w = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "zwy":
+						this.z = v3fFrom.x;	this.w = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "zwz":
+						this.z = v3fFrom.x;	this.w = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "zww":
+						this.z = v3fFrom.x;	this.w = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "wxx":
+						this.w = v3fFrom.x;	this.x = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "wxy":
+						this.w = v3fFrom.x;	this.x = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "wxz":
+						this.w = v3fFrom.x;	this.x = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "wxw":
+						this.w = v3fFrom.x;	this.x = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "wyx":
+						this.w = v3fFrom.x;	this.y = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "wyy":
+						this.w = v3fFrom.x;	this.y = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "wyz":
+						this.w = v3fFrom.x;	this.y = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "wyw":
+						this.w = v3fFrom.x;	this.y = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "wzx":
+						this.w = v3fFrom.x;	this.z = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "wzy":
+						this.w = v3fFrom.x;	this.z = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "wzz":
+						this.w = v3fFrom.x;	this.z = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "wzw":
+						this.w = v3fFrom.x;	this.z = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+					case "wwx":
+						this.w = v3fFrom.x;	this.w = v3fFrom.y;	this.x = v3fFrom.z;
+						return this;
+					case "wwy":
+						this.w = v3fFrom.x;	this.w = v3fFrom.y;	this.y = v3fFrom.z;
+						return this;
+					case "wwz":
+						this.w = v3fFrom.x;	this.w = v3fFrom.y;	this.z = v3fFrom.z;
+						return this;
+					case "www":
+						this.w = v3fFrom.x;	this.w = v3fFrom.y;	this.w = v3fFrom.z;
+						return this;
+				}
+			}
+			else if(sForm.length === 4) {
+				var v4fFrom: IVec4 = isFloat(pVectorOrFloat) ? Vec4.temp(pVectorOrFloat) : <IVec4>pVectorOrFloat;
+
+				switch(sForm){
+					case "xxxx":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xxxy":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xxxz":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xxxw":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xxyx":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xxyy":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xxyz":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xxyw":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xxzx":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xxzy":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xxzz":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xxzw":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xxwx":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xxwy":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xxwz":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xxww":
+						this.x = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xyxx":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xyxy":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xyxz":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xyxw":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xyyx":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xyyy":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xyyz":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xyyw":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xyzx":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xyzy":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xyzz":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xyzw":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xywx":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xywy":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xywz":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xyww":
+						this.x = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xzxx":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xzxy":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xzxz":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xzxw":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xzyx":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xzyy":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xzyz":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xzyw":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xzzx":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xzzy":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xzzz":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xzzw":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xzwx":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xzwy":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xzwz":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xzww":
+						this.x = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xwxx":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xwxy":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xwxz":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xwxw":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xwyx":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xwyy":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xwyz":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xwyw":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xwzx":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xwzy":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xwzz":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xwzw":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "xwwx":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "xwwy":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "xwwz":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "xwww":
+						this.x = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yxxx":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yxxy":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yxxz":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yxxw":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yxyx":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yxyy":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yxyz":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yxyw":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yxzx":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yxzy":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yxzz":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yxzw":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yxwx":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yxwy":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yxwz":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yxww":
+						this.y = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yyxx":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yyxy":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yyxz":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yyxw":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yyyx":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yyyy":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yyyz":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yyyw":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yyzx":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yyzy":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yyzz":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yyzw":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yywx":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yywy":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yywz":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yyww":
+						this.y = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yzxx":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yzxy":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yzxz":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yzxw":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yzyx":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yzyy":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yzyz":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yzyw":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yzzx":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yzzy":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yzzz":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yzzw":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "yzwx":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "yzwy":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "yzwz":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "yzww":
+						this.y = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "ywxx":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "ywxy":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "ywxz":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "ywxw":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "ywyx":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "ywyy":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "ywyz":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "ywyw":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "ywzx":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "ywzy":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "ywzz":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "ywzw":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "ywwx":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "ywwy":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "ywwz":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "ywww":
+						this.y = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zxxx":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zxxy":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zxxz":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zxxw":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zxyx":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zxyy":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zxyz":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zxyw":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zxzx":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zxzy":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zxzz":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zxzw":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zxwx":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zxwy":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zxwz":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zxww":
+						this.z = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zyxx":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zyxy":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zyxz":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zyxw":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zyyx":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zyyy":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zyyz":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zyyw":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zyzx":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zyzy":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zyzz":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zyzw":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zywx":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zywy":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zywz":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zyww":
+						this.z = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zzxx":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zzxy":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zzxz":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zzxw":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zzyx":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zzyy":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zzyz":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zzyw":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zzzx":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zzzy":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zzzz":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zzzw":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zzwx":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zzwy":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zzwz":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zzww":
+						this.z = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zwxx":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zwxy":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zwxz":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zwxw":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zwyx":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zwyy":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zwyz":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zwyw":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zwzx":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zwzy":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zwzz":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zwzw":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "zwwx":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "zwwy":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "zwwz":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "zwww":
+						this.z = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wxxx":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wxxy":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wxxz":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wxxw":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wxyx":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wxyy":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wxyz":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wxyw":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wxzx":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wxzy":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wxzz":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wxzw":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wxwx":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wxwy":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wxwz":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wxww":
+						this.w = v4fFrom.x; this.x = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wyxx":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wyxy":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wyxz":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wyxw":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wyyx":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wyyy":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wyyz":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wyyw":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wyzx":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wyzy":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wyzz":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wyzw":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wywx":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wywy":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wywz":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wyww":
+						this.w = v4fFrom.x; this.y = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wzxx":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wzxy":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wzxz":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wzxw":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wzyx":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wzyy":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wzyz":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wzyw":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wzzx":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wzzy":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wzzz":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wzzw":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wzwx":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wzwy":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wzwz":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wzww":
+						this.w = v4fFrom.x; this.z = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wwxx":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wwxy":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wwxz":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wwxw":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.x = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wwyx":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wwyy":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wwyz":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wwyw":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.y = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wwzx":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wwzy":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wwzz":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wwzw":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.z = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+					case "wwwx":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.x = v4fFrom.w;
+						return this;
+					case "wwwy":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.y = v4fFrom.w;
+						return this;
+					case "wwwz":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.z = v4fFrom.w;
+						return this;
+					case "wwww":
+						this.w = v4fFrom.x; this.w = v4fFrom.y;	this.w = v4fFrom.z;	this.w = v4fFrom.w;
+						return this;
+				}
+			}
+
+			logger.error("Bad vector form", sForm);
+			return this;
+		}
+
+
+		static temp(): IVec4;
+		static temp(xyzw: float): IVec4;
+		static temp(xyzw: IVec4): IVec4;
+		static temp(xyzw: float[]): IVec4;
+		static temp(rgba: IColorValue): IVec4;
+		static temp(x: float, yzw: IVec3): IVec4;
+		static temp(xy: IVec2, zw: IVec2): IVec4;
+		static temp(xyz: IVec3, w: float): IVec4;
+		static temp(x: float, y: float, zw: IVec2): IVec4;
+		static temp(x: float, yz: IVec2, w: float): IVec4;
+		static temp(xy: IVec2, z: float, w: float): IVec4;
+		static temp(x: float, y: float, z: float, w: float): IVec4;
+		static temp(x?, y?, z?, w?): IVec4 {
+			iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
+			var p = pBuffer[iElement++];
+			return p.set.apply(p, arguments);
+		}
+
+	}
+
+
+	pBuffer = gen.array<IVec4>(256, Vec4);
+	iElement = 0;
 
 }

@@ -12,35 +12,7 @@ module akra.math {
 	export class Vec2 implements IVec2 {
 		x: float = 0.;
 		y: float = 0.;
-
-		get xx(): IVec2 {
-			return Vec2.temp(this.x, this.x);
-		}
-		set xx(v2fVec: IVec2) {
-			this.x = v2fVec.x; this.x = v2fVec.y;
-		}
-
-		get xy(): IVec2 {
-			return Vec2.temp(this.x, this.y);
-		}
-		set xy(v2fVec: IVec2) {
-			this.x = v2fVec.x; this.y = v2fVec.y;
-		}
-
-		get yx(): IVec2 {
-			return Vec2.temp(this.y, this.x);
-		}
-		set yx(v2fVec: IVec2) {
-			this.y = v2fVec.x; this.x = v2fVec.y;
-		}
-
-		get yy(): IVec2 {
-			return Vec2.temp(this.y, this.y);
-		}
-		set yy(v2fVec: IVec2) {
-			this.y = v2fVec.x; this.y = v2fVec.y;
-		}
-
+		
 		constructor();
 		constructor(xy: float);
 		constructor(xy: IVec2);
@@ -265,11 +237,6 @@ module akra.math {
 			return "[x: " + this.x + ", y: " + this.y + "]";
 		}
 
-		clone(sForm: string, v2fDest?: IVec2): IVec2;
-		clone(sForm: "xx", v2fDest?: IVec2): IVec2;
-		clone(sForm: "xy", v2fDest?: IVec2): IVec2;
-		clone(sForm: "yx", v2fDest?: IVec2): IVec2;
-		clone(sForm: "yy", v2fDest?: IVec2): IVec2;
 		clone(sForm: string, v2fDest?: IVec2): IVec2 {
 			if (!isDefAndNotNull(v2fDest)) {
 				v2fDest = Vec2.temp();
@@ -292,26 +259,22 @@ module akra.math {
 
 		copy(sForm: string, v2fFrom: IVec2): IVec2;
 		copy(sForm: string, fValue: float): IVec2;
-		copy(sForm: "xx", v2fFrom: IVec2): IVec2;
-		copy(sForm: "xx", fValue: float): IVec2;
-		copy(sForm: "xy", v2fFrom: IVec2): IVec2;
-		copy(sForm: "xy", fValue: float): IVec2;
-		copy(sForm: "yx", v2fFrom: IVec2): IVec2;
-		copy(sForm: "yx", fValue: float): IVec2;
-		copy(sForm: "yy", v2fFrom: IVec2): IVec2;
-		copy(sForm: "yy", fValue: float): IVec2;
 		copy(sForm: string, pVec2OrFloat: any): IVec2 {
 			var v2fFrom: IVec2 = isFloat(pVec2OrFloat) ? Vec2.temp(<float>pVec2OrFloat) : <IVec2>pVec2OrFloat;
 
 			switch (sForm) {
 				case "xx":
-					this.set(v2fFrom.x);
+					this.x = v2fFrom.x;	this.x = v2fFrom.y;
+					break;
 				case "xy":
-					this.set(v2fFrom.x, v2fFrom.y);
+					this.x = v2fFrom.x;	this.y = v2fFrom.y;
+					break;
 				case "yx":
-					this.set(v2fFrom.y, v2fFrom.x);
+					this.y = v2fFrom.x;	this.x = v2fFrom.y;
+					break;
 				case "yy":
-					this.set(v2fFrom.y);
+					this.y = v2fFrom.x;	this.y = v2fFrom.y;
+					break;
 				default:
 					logger.error("Bad vector form", sForm);
 					break;
