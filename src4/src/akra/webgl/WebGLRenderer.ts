@@ -649,8 +649,8 @@ module akra.webgl {
 
 			var pBufferMap: IBufferMap = pEntry.bufferMap;
 
-			if(!isNull(pBufferMap.index)){
-				this.bindWebGLBuffer(gl.ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.index.buffer).getWebGLBuffer());
+			if(!isNull(pBufferMap.getIndex())){
+				this.bindWebGLBuffer(gl.ELEMENT_ARRAY_BUFFER, (<WebGLIndexBuffer>pBufferMap.getIndex().getBuffer()).getWebGLBuffer());
 			}
 			
 			for(var i: uint = 0; i < pAttributeInfo.length; i++){
@@ -673,12 +673,12 @@ module akra.webgl {
 				var pDecl: data.VertexDeclaration = <data.VertexDeclaration>pData.getVertexDeclaration();
 				var pVertexElement: data.VertexElement = <data.VertexElement>pDecl.findElement(sSemantics);
 
-				this.bindWebGLBuffer(gl.ARRAY_BUFFER, (<WebGLVertexBuffer>pData.buffer).getWebGLBuffer());
+				this.bindWebGLBuffer(gl.ARRAY_BUFFER, (<WebGLVertexBuffer>pData.getBuffer()).getWebGLBuffer());
 				this._pWebGLContext.vertexAttribPointer(iLoc,
 									pVertexElement.count,
 									pVertexElement.type,
 									false,
-									pData.stride,
+									pData.getStride(),
 									pVertexElement.offset);
 			}
 

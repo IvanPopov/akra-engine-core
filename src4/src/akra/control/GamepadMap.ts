@@ -16,6 +16,11 @@ module akra.control {
 	import ObjectArray = util.ObjectArray;
 
 	export class GamepadMap implements IGamepadMap {
+
+		connected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
+		disconnected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
+		updated: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
+
 		public guid: uint = guid();
 
 		private _bTicking: boolean = false;
@@ -152,10 +157,6 @@ module akra.control {
 				//}
 			}
 		}
-
-		connected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
-		disconnected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
-		updated: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
 	}
 
 

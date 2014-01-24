@@ -890,7 +890,7 @@ module akra.fx {
 			var pBufferMapHashEntry: AIHashEntry = this._pBufferMapHashMap[iBufferMapId];
 
 			if (!isForce &&
-				isDef(pBufferMapHashEntry) && pBufferMapHashEntry.modifyMark === pMap.totalUpdates) {
+				isDef(pBufferMapHashEntry) && pBufferMapHashEntry.modifyMark === pMap.getTotalUpdates()) {
 				iBufferMapHash = pBufferMapHashEntry.hash;
 			}
 			else {
@@ -908,7 +908,7 @@ module akra.fx {
 					this._pBufferMapHashMap[iBufferMapId] = pBufferMapHashEntry;
 				}
 
-				pBufferMapHashEntry.modifyMark = pMap.totalUpdates;
+				pBufferMapHashEntry.modifyMark = pMap.getTotalUpdates();
 				pBufferMapHashEntry.hash = iBufferMapHash;
 			}
 

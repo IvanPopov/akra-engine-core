@@ -14,13 +14,33 @@ module akra.data {
 		private _eElementsType: EDataTypes;
 		private _iId: int;
 
-		get id(): uint { return this._iId; }
-		get type(): EDataTypes { return this._eElementsType; }
-		get length(): uint { return this._iLength; }
-		get bytesPerIndex(): uint { return sizeof(this._eElementsType); }
-		get byteOffset(): uint { return this._iOffset; }
-		get byteLength(): uint { return this._iLength * this.bytesPerIndex; }
-		get buffer(): IIndexBuffer { return this._pIndexBuffer; }
+		getID(): uint {
+			return this._iId;
+		}
+
+		getType(): EDataTypes {
+			return this._eElementsType;
+		}
+
+		getLength(): uint {
+			return this._iLength;
+		}
+
+		getBytesPerIndex(): uint {
+			return sizeof(this._eElementsType);
+		}
+
+		getByteOffset(): uint {
+			return this._iOffset;
+		}
+
+		getByteLength(): uint {
+			return this._iLength * this.getBytesPerIndex();
+		}
+
+		getBuffer(): IIndexBuffer {
+			return this._pIndexBuffer;
+		}
 
 		constructor(
 			pIndexBuffer: IIndexBuffer,
@@ -43,15 +63,15 @@ module akra.data {
 			this._ePrimitiveType = ePrimitiveType;
 			this._eElementsType = eElementsType;
 
-			logger.presume(pIndexBuffer.byteLength >= this.byteLength + this.byteOffset, "out of buffer limits.");
+			logger.presume(pIndexBuffer.getByteLength() >= this.getByteLength() + this.getByteOffset(), "out of buffer limits.");
 		}
 
 
 		getData(iOffset: int, iSize: int): ArrayBuffer {
-			logger.presume(iOffset + iSize <= this.byteLength, "out of buffer limits");
+			logger.presume(iOffset + iSize <= this.getByteLength(), "out of buffer limits");
 			var pBuffer: Uint8Array = new Uint8Array(iSize);
 
-			if (this._pIndexBuffer.readData(this.byteOffset + iOffset, iSize, pBuffer)) {
+			if (this._pIndexBuffer.readData(this.getByteOffset() + iOffset, iSize, pBuffer)) {
 				return pBuffer.buffer;
 			}
 
@@ -70,7 +90,7 @@ module akra.data {
 
 			var pBuffer: Uint8Array = new Uint8Array(iSize);
 
-			if (this._pIndexBuffer.readData(this.byteOffset + iOffset, iSize, pBuffer)) {
+			if (this._pIndexBuffer.readData(this.getByteOffset() + iOffset, iSize, pBuffer)) {
 				switch (this._eElementsType) {
 					case EDataTypes.UNSIGNED_BYTE:
 						return pBuffer;
@@ -86,13 +106,13 @@ module akra.data {
 			return null;
 		}
 
-		setData(pData: ArrayBufferView, iOffset: int = 0, iCount: uint = pData.byteLength / this.bytesPerIndex): boolean {
-			logger.presume((iOffset + iCount) * this.bytesPerIndex <= this.byteLength, "out of buffer limits.");
+		setData(pData: ArrayBufferView, iOffset: int = 0, iCount: uint = pData.byteLength / this.getBytesPerIndex()): boolean {
+			logger.presume((iOffset + iCount) * this.getBytesPerIndex() <= this.getByteLength(), "out of buffer limits.");
 
 			return this._pIndexBuffer.writeData(
 				pData,
-				this.byteOffset + iOffset * this.bytesPerIndex,
-				iCount * this.bytesPerIndex);
+				this.getByteOffset() + iOffset * this.getBytesPerIndex(),
+				iCount * this.getBytesPerIndex());
 		}
 
 		destroy(): void {
@@ -107,7 +127,7 @@ module akra.data {
 			return this._ePrimitiveType;
 		}
 
-		getPrimitiveCount(iIndexCount: uint = this.length): uint {
+		getPrimitiveCount(iIndexCount: uint = this.getLength()): uint {
 			return IndexData.getPrimitiveCount(this._ePrimitiveType, iIndexCount);
 		}
 

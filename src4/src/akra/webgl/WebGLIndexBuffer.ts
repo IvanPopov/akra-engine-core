@@ -160,8 +160,8 @@ module akra.webgl {
 				for(var k: int = 0; k < this._pIndexDataArray.length; ++ k) {
 					pIndexData = this._pIndexDataArray[k];
 
-					if(pIndexData.byteOffset + pIndexData.byteLength > iMax) {
-						iMax = pIndexData.byteOffset + pIndexData.byteLength;
+					if(pIndexData.getByteOffset() + pIndexData.getByteLength() > iMax) {
+						iMax = pIndexData.getByteOffset() + pIndexData.getByteLength();
 					}		
 				}	
 

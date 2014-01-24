@@ -41,6 +41,13 @@
 
 module akra.core {
 	export class Engine implements IEngine {
+
+		frameStarted: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
+		frameEnded: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
+		depsLoaded: ISignal<{ (pEngine: IEngine, pDeps: IDependens): void; }> = new Signal(<any>this);
+		inactive: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._inactivate);
+		active: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._activate);
+
 		public guid: uint = guid();
 
 		private _pResourceManager: IResourcePoolManager;
@@ -66,17 +73,11 @@ module akra.core {
 
 		private _fElapsedAppTime: float = 0.0;
 
-		frameStarted: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
-		frameEnded: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
-		depsLoaded: ISignal<{ (pEngine: IEngine, pDeps: IDependens): void; }> = new Signal(<any>this);
-		inactive: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._inactivate);
-		active: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._activate);
-
-		get time(): float {
+		getTime(): float {
 			return this._pTimer.appTime;
 		}
 
-		get elapsedTime(): float {
+		getElapsedTime(): float {
 			return this._fElapsedAppTime;
 		}
 

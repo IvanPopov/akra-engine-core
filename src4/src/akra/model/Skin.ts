@@ -217,7 +217,7 @@ module akra.model {
 			pInfluences = new Float32Array(pInfluences);
 
 			//вычисляем адресса матриц транфсормации и весов
-			iTransformLoc = this._pBoneTransformMatrixData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+			iTransformLoc = this._pBoneTransformMatrixData.getByteOffset() / EDataTypeSizes.BYTES_PER_FLOAT;
 
 
 			for (var i: int = 0, n: int = pInfluences.length; i < n; i += 2) {
@@ -232,7 +232,7 @@ module akra.model {
 			                                     ],
 			                                     pInfluences);
 
-			iInfLoc = this._pInfData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+			iInfLoc = this._pInfData.getByteOffset() / EDataTypeSizes.BYTES_PER_FLOAT;
 
 			//подсчет мета данных, которые укажут, где взять влияния на кость..
 			for (var i: int = 0, j: int = 0, n: int = iInfLoc; i < pInfluencesMeta.length; i += 2) {
@@ -311,7 +311,7 @@ module akra.model {
 		}
 
 		attach(pData: IVertexData): void {
-			debug.assert(pData.stride === 16, "you cannot add skin to mesh with POSITION: {x, y, z}" +
+			debug.assert(pData.getStride() === 16, "you cannot add skin to mesh with POSITION: {x, y, z}" +
 			                                  "\nyou need POSITION: {x, y, z, w}");
 
 			pData.getVertexDeclaration().append(VE.float(DeclUsages.BLENDMETA, 12));

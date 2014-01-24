@@ -28,7 +28,7 @@ module akra {
 	}
 	
 	export interface IRenderData extends IReferenceCounter {
-		/** readonly */ buffer: IRenderDataCollection;
+		getBuffer(): IRenderDataCollection;
 	
 		/**
 		 * Allocate data for rendering.

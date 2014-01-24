@@ -282,7 +282,7 @@ module akra.geometry {
 			return false;
 		}
 
-		nCount = pVertexData.length;
+		nCount = pVertexData.getLength();
 		nStride = pVertexElement.size;
 
 		pData = pVertexData.getData(pVertexElement.offset, pVertexElement.size);
@@ -353,7 +353,7 @@ module akra.geometry {
 		if (isNull(pVertexElement))
 			return false;
 
-		nCount = pVertexData.length;
+		nCount = pVertexData.getLength();
 		nStride = pVertexElement.size;
 
 		pData = pVertexData.getData(pVertexElement.offset, pVertexElement.size);

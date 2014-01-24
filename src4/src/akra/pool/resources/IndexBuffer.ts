@@ -57,7 +57,7 @@ module akra.pool.resources {
 			var i: int;
 			var pIndexData: IIndexData;
 
-			pHole[0] = {start: 0, end: this.byteLength};
+			pHole[0] = {start: 0, end: this.getByteLength()};
 			
 			//console.log(pHole[0].end);
 			for(var k: int = 0; k < this._pIndexDataArray.length; ++ k) {
@@ -67,46 +67,46 @@ module akra.pool.resources {
 				for (i = 0; i < pHole.length; i ++) {
 					//console.log("pHole:",pHole[i].start,pHole[i].end);
 					//Полностью попадает внутрь
-					if (pIndexData.byteOffset > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength < pHole[i].end) {
+					if (pIndexData.getByteOffset() > pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() < pHole[i].end) {
 						var iTemp: int = pHole[i].end;
 
-						pHole[i].end = pIndexData.byteOffset;
-						pHole.splice(i + 1, 0, {start: pIndexData.byteOffset + pIndexData.byteLength, end: iTemp});
+						pHole[i].end = pIndexData.getByteOffset();
+						pHole.splice(i + 1, 0, {start: pIndexData.getByteOffset() + pIndexData.getByteLength(), end: iTemp});
 						
 						i--;
 					}
-					else if(pIndexData.byteOffset == pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength < pHole[i].end) {
-						pHole[i].start = pIndexData.byteOffset + pIndexData.byteLength;
+					else if(pIndexData.getByteOffset() == pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() < pHole[i].end) {
+						pHole[i].start = pIndexData.getByteOffset() + pIndexData.getByteLength();
 					}
-					else if(pIndexData.byteOffset > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength == pHole[i].end) {
+					else if(pIndexData.getByteOffset() > pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() == pHole[i].end) {
 						
 					}
-					else if(pIndexData.byteOffset == pHole[i].start && pIndexData.byteLength == (pHole[i].end - pHole[i].start)) {
+					else if(pIndexData.getByteOffset() == pHole[i].start && pIndexData.getByteLength() == (pHole[i].end - pHole[i].start)) {
 						pHole.splice(i, 1);		
 						i--;
 					}
 					//Перекрывает снизу
-					else if(pIndexData.byteOffset<pHole[i].start &&
-						pIndexData.byteOffset + pIndexData.byteLength > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength < pHole[i].end) {
-						pHole[i].start = pIndexData.byteOffset + pIndexData.byteLength;
+					else if(pIndexData.getByteOffset()<pHole[i].start &&
+						pIndexData.getByteOffset() + pIndexData.getByteLength() > pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() < pHole[i].end) {
+						pHole[i].start = pIndexData.getByteOffset() + pIndexData.getByteLength();
 					}
-					else if(pIndexData.byteOffset < pHole[i].start &&
-						pIndexData.byteOffset + pIndexData.byteLength > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength == pHole[i].end) {
+					else if(pIndexData.getByteOffset() < pHole[i].start &&
+						pIndexData.getByteOffset() + pIndexData.getByteLength() > pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() == pHole[i].end) {
 						pHole.splice(i, 1);
 						i--;
 					}
 					//Перекрывается сверху
-					else if(pIndexData.byteOffset + pIndexData.byteLength>pHole[i].end &&
-						pIndexData.byteOffset > pHole[i].start && pIndexData.byteOffset < pHole[i].end) {
-						pHole[i].end = pIndexData.byteOffset;
+					else if(pIndexData.getByteOffset() + pIndexData.getByteLength()>pHole[i].end &&
+						pIndexData.getByteOffset() > pHole[i].start && pIndexData.getByteOffset() < pHole[i].end) {
+						pHole[i].end = pIndexData.getByteOffset();
 					}
-					else if(pIndexData.byteOffset + pIndexData.byteLength > pHole[i].end &&
-						pIndexData.byteOffset == pHole[i].start && pIndexData.byteOffset < pHole[i].end) {
+					else if(pIndexData.getByteOffset() + pIndexData.getByteLength() > pHole[i].end &&
+						pIndexData.getByteOffset() == pHole[i].start && pIndexData.getByteOffset() < pHole[i].end) {
 						pHole.splice(i, 1);
 						i--;
 					}
 					//полнстью перекрывает
-					else if(pIndexData.byteOffset < pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength > pHole[i].end) {
+					else if(pIndexData.getByteOffset() < pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() > pHole[i].end) {
 						i--;
 					}			
 				}

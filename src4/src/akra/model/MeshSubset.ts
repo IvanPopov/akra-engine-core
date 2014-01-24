@@ -349,7 +349,7 @@ module akra.model {
 			var eSemantics: string = DeclUsages.INDEX10;
 			var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
 			var iMatFlow: int;
-			var iMat: int = (<IFlexMaterial>pMaterial).data.byteOffset;
+			var iMat: int = (<IFlexMaterial>pMaterial).data.getByteOffset();
 
 			if (pMatFlow) {
 				iMatFlow = pMatFlow.flow;
@@ -362,7 +362,7 @@ module akra.model {
 			}
 
 			pIndexDecl = VertexDeclaration.normalize([VE.float(eSemantics)]);
-			pFloatArray = new Float32Array((<IVertexData>pIndexData).length);
+			pFloatArray = new Float32Array((<IVertexData>pIndexData).getLength());
 			iMatFlow = pRenderData._addData((<IFlexMaterial>pMaterial).data);
 
 			debug.assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
@@ -429,7 +429,7 @@ module akra.model {
 
 			//проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
 			//или его клону.
-			debug.assert(this.data.buffer == pSkin.data,
+			debug.assert(this.data.getBuffer() == pSkin.data,
 				"can not bind to skin mesh subset that does not belong skin's mesh.")
 
 		    //подвязывем скин, к данным с вершинами текущего подмеша.
@@ -467,8 +467,8 @@ module akra.model {
 
 			//выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
 			pInfMetaData = pSkin.getInfluenceMetaData();
-			iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
-			iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
+			iInfMetaDataLoc = pInfMetaData.getByteOffset() / EDataTypeSizes.BYTES_PER_FLOAT;
+			iInfMetaDataStride = pInfMetaData.getStride() / EDataTypeSizes.BYTES_PER_FLOAT;
 
 			var iCount: uint = pMetaData.byteLength / pDeclaration.stride;
 			var iOffset: uint = pVEMeta.offset / EDataTypeSizes.BYTES_PER_FLOAT;
@@ -487,17 +487,17 @@ module akra.model {
 			var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData(pPositionFlow.mapper.semantics);
 			var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData(pNormalFlow.mapper.semantics);
 
-			var iAdditionPosition: uint = pPosData.byteOffset;
-			var iAdditionNormal: uint = pNormalFlow.data.byteOffset;
+			var iAdditionPosition: uint = pPosData.getByteOffset();
+			var iAdditionNormal: uint = pNormalFlow.data.getByteOffset();
 
 			for (var i: uint = 0; i < pIndex0.length; i++) {
-				pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition) / pPositionFlow.data.stride;
-				pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal) / pNormalFlow.data.stride;
+				pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition) / pPositionFlow.data.getStride();
+				pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal) / pNormalFlow.data.getStride();
 			}
 
 			//update position index
-			var pUPPositionIndex: Float32Array = new Float32Array(pPosData.length);
-			for (var i: uint = 0; i < pPosData.length; i++) {
+			var pUPPositionIndex: Float32Array = new Float32Array(pPosData.getLength());
+			for (var i: uint = 0; i < pPosData.getLength(); i++) {
 				pUPPositionIndex[i] = i;
 			}
 
@@ -527,7 +527,7 @@ module akra.model {
 				}
 			}
 
-			var iSkinnedPos: uint = pRenderData.allocateData([VE.float3("SKINNED_POSITION"), VE.end(16)], new Float32Array(pPosData.length * 4));
+			var iSkinnedPos: uint = pRenderData.allocateData([VE.float3("SKINNED_POSITION"), VE.end(16)], new Float32Array(pPosData.getLength() * 4));
 			/*skinned vertices uses same index as vertices*/
 			pRenderData.allocateIndex([VE.float("SP_INDEX")], pIndex0);
 			pRenderData.index(iSkinnedPos, "SP_INDEX");
@@ -541,15 +541,15 @@ module akra.model {
 
 			var iUPIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_position");
 			pRenderData.allocateIndex([VE.float("UPP_INDEX")], pUPPositionIndex);
-			pRenderData.index(pPosData.byteOffset, "UPP_INDEX");
+			pRenderData.index(pPosData.getByteOffset(), "UPP_INDEX");
 			pRenderData.allocateIndex([VE.float("DESTINATION_SP")], pUPPositionIndex);
 			pRenderData.index(iSkinnedPos, "DESTINATION_SP");
 
 			var iUNIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_normal");
 			pRenderData.allocateIndex([VE.float("UNP_INDEX")], new Float32Array(pUNPositionIndex));
-			pRenderData.index(pPosData.byteOffset, "UNP_INDEX");
+			pRenderData.index(pPosData.getByteOffset(), "UNP_INDEX");
 			pRenderData.allocateIndex([VE.float("UNN_INDEX")], new Float32Array(pUNNormalIndex));
-			pRenderData.index(pRenderData._getFlow(DeclUsages.NORMAL, false).data.byteOffset, "UNN_INDEX");
+			pRenderData.index(pRenderData._getFlow(DeclUsages.NORMAL, false).data.getByteOffset(), "UNN_INDEX");
 			pRenderData.allocateIndex([VE.float("DESTINATION_SN")], new Float32Array(pDestinationSkinnedNormalIndex));
 			pRenderData.index(iSkinnedNorm, "DESTINATION_SN");
 

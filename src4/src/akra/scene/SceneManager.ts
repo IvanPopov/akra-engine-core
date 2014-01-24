@@ -27,7 +27,7 @@ module akra.scene {
 			var isSceneUpdated: boolean = false;
 			// add the real time elapsed to our
 			// internal delay counter
-			this._fUpdateTimeCount += this._pEngine.elapsedTime;
+			this._fUpdateTimeCount += this._pEngine.getElapsedTime();
 			// is there an update ready to happen?
 
 			// LOG(this._fUpdateTimeCount, this._pEngine.elapsedTime);

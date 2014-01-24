@@ -372,8 +372,8 @@ module akra.webgl {
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
-			var pVertexBuffer: IVertexBuffer = <IVertexBuffer>pData.buffer;
-			var iStride: uint = pData.stride;
+			var pVertexBuffer: IVertexBuffer = <IVertexBuffer>pData.getBuffer();
+			var iStride: uint = pData.getStride();
 
 			if (pVertexBuffer.type !== EVertexBufferTypes.VBO) {
 				return false
@@ -383,7 +383,7 @@ module akra.webgl {
 			var pVertexElement: IVertexElement;
 			var iLoc: int;
 
-			for (var i: int = 0; i < pVertexDecl.length; ++ i) {
+			for (var i: int = 0; i < pVertexDecl.getLength(); ++ i) {
 				pVertexElement = pVertexDecl[i];
 				iLoc = this.getWebGLAttributeLocation(pVertexElement.usage);
 

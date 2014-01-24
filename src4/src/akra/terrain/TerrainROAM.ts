@@ -556,7 +556,7 @@ module akra.terrain {
 			if(this._bIsReadyForTesseltion) {
 
 				var pCamera: ICamera = pViewport.getCamera();
-				var fCurrentTime: float = this.getScene().getManager().getEngine().time;
+				var fCurrentTime: float = this.getScene().getManager().getEngine().getTime();
 
 				this._m4fLastCameraMatrix.set(pCamera.getWorldMatrix());
 

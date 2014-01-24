@@ -262,7 +262,7 @@ module akra.fx {
 
 							// iSlot = this._nSlots;
 
-							var iBuffer: uint = (<any>pFindFlow.data.buffer).getGuid();
+							var iBuffer: uint = (<any>pFindFlow.data.getBuffer()).getGuid();
 
 							for (var j: uint = 0; j < this._nBufferSlots; j++) {
 								if (this._pVBByBufferSlots[j] === iBuffer) {

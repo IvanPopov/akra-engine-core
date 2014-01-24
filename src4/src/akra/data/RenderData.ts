@@ -75,11 +75,11 @@ module akra.data {
 		private _pComposer: IAFXComposer = null;
 
 
-		 get buffer(): IRenderDataCollection {
+		getBuffer(): IRenderDataCollection {
 			return this._pBuffer;
 		}
 
-		 private get indexSet(): IIndexSet {
+		private getCurrentIndexSet(): IIndexSet {
 			return this._pIndicesArray[this._iIndexSet];
 		}
 
@@ -197,7 +197,7 @@ module akra.data {
 				this._pAttribData = null;
 			}
 
-			this._pMap.primType = ePrimType;
+			this._pMap.setPrimType(ePrimType);
 			this._pIndexData = null;
 			this._iIndexSet = this._pIndicesArray.length;
 			this._pIndicesArray.push({
@@ -332,7 +332,7 @@ module akra.data {
 		getDataLocation(sSemantics?): int {
 			var pData: IVertexData = this._getData(<string>sSemantics);
 
-			return pData ? pData.byteOffset : -1;
+			return pData ? pData.getByteOffset() : -1;
 		}
 
 		/**
@@ -358,11 +358,11 @@ module akra.data {
 		 * Get number of primitives for rendering.
 		 */
 		 getPrimitiveCount(): uint {
-			return this._pMap.primCount;
+			return this._pMap.getPrimCount();
 		}
 
 		 getPrimitiveType(): EPrimitiveTypes {
-			return this._pMap.primType;
+			return this._pMap.getPrimType();
 		}
 
 		/**
@@ -385,8 +385,8 @@ module akra.data {
 
 			if (this.useAdvancedIndex()) {
 				pRealData = this._getData(<string>arguments[0]);
-				iAddition = pRealData.byteOffset;
-				iStride = pRealData.stride;
+				iAddition = pRealData.getByteOffset();
+				iStride = pRealData.getStride();
 				//индекс, который подал юзер
 				pData = this._getData(sSemantics, true); 
 
@@ -396,7 +396,7 @@ module akra.data {
 					}
 				});
 
-				iData = pData.byteOffset;
+				iData = pData.getByteOffset();
 				sSemantics = "INDEX_" + sSemantics;
 			}
 			else if (isString(arguments[0])) {
@@ -414,7 +414,7 @@ module akra.data {
 
 			if (pFlow === null) {
 				//поищем эти данные в общем буфере
-				pData = this.buffer.getData(iData);
+				pData = this.getBuffer().getData(iData);
 
 				if (isNull(pData)) {
 					debug.warn("Could not find data flow <" + iData + "> int buffer map: " + this._pMap.toString(true));
@@ -435,11 +435,11 @@ module akra.data {
 			}
 
 
-			iStride = pFlow.data.stride;
+			iStride = pFlow.data.getStride();
 
-			if (this.indexSet.pAdditionCache[iIndexOffset] !== iAddition && !bForceUsage) {
+			if (this.getCurrentIndexSet().pAdditionCache[iIndexOffset] !== iAddition && !bForceUsage) {
 				if (!useSame) {
-					iPrevAddition = this.indexSet.pAdditionCache[iIndexOffset] || 0;
+					iPrevAddition = this.getCurrentIndexSet().pAdditionCache[iIndexOffset] || 0;
 					iRealAddition = iAddition - iPrevAddition;
 
 					for (var i = 0; i < pFloat32Array.length; i++) {
@@ -456,7 +456,7 @@ module akra.data {
 				}
 
 				//remeber addition, that we added to index.
-				this.indexSet.pAdditionCache[iIndexOffset] = iAddition;
+				this.getCurrentIndexSet().pAdditionCache[iIndexOffset] = iAddition;
 
 				if (!(<IVertexData>pIndexData).setData(pFloat32Array, sSemantics)) {
 					return false;
@@ -481,7 +481,7 @@ module akra.data {
 
 			//setup buffer map
 			this._pMap = pCollection.getEngine().createBufferMap();
-			this._pMap.primType = ePrimType;
+			this._pMap.setPrimType(ePrimType);
 
 			//setup default index set
 			this._pIndicesArray.push({
@@ -508,7 +508,7 @@ module akra.data {
 
 			var iFlow: int;
 			var pVertexData: IVertexData = this._pBuffer._allocateData(pDataDecl, pData);
-			var iOffset: int = pVertexData.byteOffset;
+			var iOffset: int = pVertexData.getByteOffset();
 
 			iFlow = this._addData(pVertexData, undefined, eType);
 
@@ -542,13 +542,13 @@ module akra.data {
 		 */
 		private _registerData(pVertexData: IVertexData): int {
 			'use strict';
-			var iOffset: int = pVertexData.byteOffset;
+			var iOffset: int = pVertexData.getByteOffset();
 			var pDataDecl: data.VertexDeclaration = <data.VertexDeclaration>pVertexData.getVertexDeclaration();
 
 			//необходимо запоминать расположение данных, которые подаются,
 			//т.к. иначе их потом нельзя будет найти среди других данных
-			for (var i: int = 0; i < pDataDecl.length; i++) {
-				this.indexSet.pI2IDataCache[pDataDecl.element(i).usage] = iOffset;
+			for (var i: int = 0; i < pDataDecl.getLength(); i++) {
+				this.getCurrentIndexSet().pI2IDataCache[pDataDecl.element(i).usage] = iOffset;
 			}
 			
 
@@ -572,7 +572,7 @@ module akra.data {
 			var pI2IData: Float32Array = new Float32Array(nCount);
 			var pI2IDecl: IVertexElementInterface[] = [];
 
-			for (var i: int = 0; i < pDecl.length; i++) {
+			 for (var i: int = 0; i < pDecl.getLength(); i++) {
 				pI2IDecl.push(VertexElement.float('INDEX_' + pDecl.element(i).usage, 0));
 			}
 			
@@ -614,8 +614,8 @@ module akra.data {
 			}
 
 			this._pIndexData = (<IVertexBuffer>this._pIndexBuffer).allocateData(pAttrDecl, pData);
-			this.indexSet.pIndexData = this._pIndexData;
-			this.indexSet.pAdditionCache = <IMap<int>>{}
+			this.getCurrentIndexSet().pIndexData = this._pIndexData;
+			this.getCurrentIndexSet().pAdditionCache = <IMap<int>>{}
 			return this._pIndexData !== null;
 		}
 
@@ -635,7 +635,7 @@ module akra.data {
 			var pBuffer: IRenderDataCollection = this._pBuffer;
 
 			if (config.DEBUG) {
-				for (var i: int = 0; i < pAttrDecl.length; i++) {
+				for (var i: int = 0; i < pAttrDecl.getLength(); i++) {
 					if (pAttrDecl.element(i).type !== EDataTypes.FLOAT) {
 						return false;
 					}
@@ -660,7 +660,7 @@ module akra.data {
 			var bResult: boolean = (<IVertexData>this._pIndexData).resize(iLength);
 			
 			if(bResult) {
-				this._pMap._length = iLength;
+				this._pMap._setLengthForce(iLength);
 			}
 
 			return bResult;
@@ -677,10 +677,10 @@ module akra.data {
 				return this._pMap.getFlow(arguments[0], arguments[1]);
 			}
 
-			for (var i: int = 0, n = this._pMap.limit; i < n; ++i) {
+			for (var i: int = 0, n = this._pMap.getLimit(); i < n; ++i) {
 				var pFlow = this._pMap.getFlow(i, false);
 
-				if (pFlow.data && pFlow.data.byteOffset === arguments[0]) {
+				if (pFlow.data && pFlow.data.getByteOffset() === arguments[0]) {
 					return pFlow;
 				}
 			}
@@ -698,14 +698,14 @@ module akra.data {
 
 			if (this.useAdvancedIndex() && arguments.length < 2) {
 				if (typeof arguments[0] === 'string') {
-					return this._getData(this.indexSet.pI2IDataCache[arguments[0]]);
+					return this._getData(this.getCurrentIndexSet().pI2IDataCache[arguments[0]]);
 				}
 
 				return this._pBuffer.getData(<string>arguments[0]);
 			}
 
 			if (typeof arguments[0] === 'string') {
-				for (var i = 0, n = this._pMap.limit; i < n; ++i) {
+				for (var i = 0, n = this._pMap.getLimit(); i < n; ++i) {
 					pFlow = this._pMap.getFlow(i, false);
 					if (pFlow.data != null && pFlow.data.hasSemantics(arguments[0])) {
 						return pFlow.data;

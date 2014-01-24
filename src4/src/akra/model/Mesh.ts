@@ -190,7 +190,7 @@ module akra.model {
 		}
 
 		appendSubset(sName: string, pData: IRenderData): IMeshSubset {
-			debug.assert(pData.buffer === this._pBuffer, "invalid data used");
+			debug.assert(pData.getBuffer() === this._pBuffer, "invalid data used");
 
 			var pSubMesh: IMeshSubset = new MeshSubset(this, pData, sName);
 			this._pSubMeshes.push(pSubMesh);

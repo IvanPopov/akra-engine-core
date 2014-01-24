@@ -658,7 +658,7 @@ module akra.fx {
 				pInput.attrs[pAttrInfo.location] = pFlow;
 
 				if (pAttrInfo.isMappable) {
-					pInput.uniforms[pAttrInfo.vertexTextureInfo.location] = pFlow.data.buffer;
+					pInput.uniforms[pAttrInfo.vertexTextureInfo.location] = pFlow.data.getBuffer();
 
 					if (!isNull(pAttrInfo.offsets)) {
 						var pVertexDecl: IVertexDeclaration = pFlow.data.getVertexDeclaration();

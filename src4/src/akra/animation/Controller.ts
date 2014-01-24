@@ -21,7 +21,7 @@ module akra.animation {
 			var pController: IAnimationController = this.getSender();
 			var pAnimationNext: IAnimationBase = pController.findAnimation(arguments[0]);
 			var pAnimationPrev: IAnimationBase = pController.getActive();
-			var fRealTime: float = pController.getEngine().time;
+			var fRealTime: float = pController.getEngine().getTime();
 
 			if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
 
@@ -176,7 +176,7 @@ module akra.animation {
 
 		stop(): void {
 			if (this._pActiveAnimation) {
-				this._pActiveAnimation.stop(this._pEngine.time);
+				this._pActiveAnimation.stop(this._pEngine.getTime());
 			}
 
 			this._pActiveAnimation = null;
@@ -185,7 +185,7 @@ module akra.animation {
 		update(): void {
 			var pAnim: IAnimationBase = this._pActiveAnimation;
 			if (!isNull(pAnim)) {
-				if (!pAnim.apply(this._pEngine.time)) {
+				if (!pAnim.apply(this._pEngine.getTime())) {
 
 					// this._pActiveAnimation = null;
 					// pAnim.stop(this._pEngine.time);

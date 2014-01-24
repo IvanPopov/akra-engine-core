@@ -20,8 +20,13 @@ module akra.pool.resources {
 		protected _pBackupUpdated: boolean = false;
 		protected _bIgnoreHardwareUpdate: boolean = false;
 
-		get byteLength(): uint { return 0; }
-		get length(): uint { return 0; }
+		getByteLength(): uint {
+			return 0;
+		}
+
+		getLength(): uint {
+			return 0;
+		}
 
 		// byteLength: uint = 0;
 		// length: uint = 0;
@@ -132,7 +137,7 @@ module akra.pool.resources {
 			if (arguments.length == 1) {
 				iLockFlags = <int>arguments[0];
 				iOffset = 0;
-				iSize = this.byteLength;
+				iSize = this.getByteLength();
 			}
 			else {
 				iOffset = arguments[0];
@@ -142,7 +147,7 @@ module akra.pool.resources {
 
 			var pResult: any = null;
 
-			if ((iOffset + iSize) > this.byteLength) {
+			if ((iOffset + iSize) > this.getByteLength()) {
 				logger.error("Lock request out of bounds.", "HardwareBuffer::lock");
 			}
 			else if (this.isBackupPresent()) {
@@ -190,7 +195,7 @@ module akra.pool.resources {
 				// Lock with discard if the whole buffer was locked, otherwise normal
 				var iLockFlags: int;
 
-				if (this._iLockStart == 0 && this._iLockSize == this.byteLength) {
+				if (this._iLockStart == 0 && this._iLockSize == this.getByteLength()) {
 					iLockFlags = ELockFlags.DISCARD;
 				}
 				else {
