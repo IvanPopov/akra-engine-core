@@ -159,9 +159,9 @@ module akra.webgl {
 					
 				var pDstlock: IPixelBox = this.lock(pDestBox, eLockMethod);
 
-				if (pDstlock.width != pSrclock.width ||
-					pDstlock.height != pSrclock.height ||
-					pDstlock.depth != pSrclock.depth) {
+				if (pDstlock.getWidth() != pSrclock.getWidth() ||
+					pDstlock.getHeight() != pSrclock.getHeight() ||
+					pDstlock.getDepth() != pSrclock.getDepth()) {
 					// Scaling desired
 					pSrclock.scale(pDstlock);
 				}
@@ -199,9 +199,9 @@ module akra.webgl {
 
 			var pScaledBox: IPixelBox;
 
-			if (pSource.width != pDestBox.width ||
-				pSource.height != pDestBox.height ||
-				pSource.depth != pDestBox.depth) {
+			if (pSource.getWidth() != pDestBox.getWidth() ||
+				pSource.getHeight() != pDestBox.getHeight() ||
+				pSource.getDepth() != pDestBox.getDepth()) {
 				// Scale to destination size.
 				// This also does pixel format conversion if needed
 				this.allocateBuffer();
@@ -260,9 +260,9 @@ module akra.webgl {
 			if (pSrcBox.left == 0 && pSrcBox.right == this._iWidth &&
 				pSrcBox.top == 0 && pSrcBox.bottom == this._iHeight &&
 				pSrcBox.front == 0 && pSrcBox.back == this._iDepth &&
-				pDest.width == this._iWidth &&
-				pDest.height == this._iHeight &&
-				pDest.depth == this._iDepth &&
+				pDest.getWidth() == this._iWidth &&
+				pDest.getHeight() == this._iHeight &&
+				pDest.getDepth() == this._iDepth &&
 				getWebGLFormat(pDest.format) != 0) {
 				// The direct case: the user wants the entire texture in a format supported by GL
 				// so we don't need an intermediate buffer
@@ -274,9 +274,9 @@ module akra.webgl {
 				// Download entire buffer
 				this.download(this._pBuffer);
 
-				if(pSrcBox.width != pDest.width ||
-				   pSrcBox.height != pDest.height ||
-				   pSrcBox.depth != pDest.depth) {
+				if(pSrcBox.getWidth() != pDest.getWidth() ||
+					pSrcBox.getHeight() != pDest.getHeight() ||
+				   pSrcBox.getDepth() != pDest.getDepth()) {
 					// We need scaling
 					this._pBuffer.getSubBox(pSrcBox).scale(pDest, EFilters.BILINEAR);
 				}

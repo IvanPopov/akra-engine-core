@@ -331,39 +331,39 @@ module akra.pixelUtil {
 				logger.error("Флаг DDSD_PIXELFORMAT в заголовке DDS всегда должен быть");
 			}
 
-			pImgData.width = pHeader.dwWidth;
-			pImgData.height = pHeader.dwHeight;
-			pImgData.depth = 1;
+			pImgData.setWidth(pHeader.dwWidth);
+			pImgData.setHeight(pHeader.dwHeight);
+			pImgData.setDepth(1);
 			var nFace: uint = 1;
 
-			pImgData.flags = 0;
+			pImgData.setFlags(0);
 
 			if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP) {
-				pImgData.flags |= EImageFlags.CUBEMAP;
+				pImgData.setFlags(pImgData.getFlags() | EImageFlags.CUBEMAP);
 				nFace = 0;
 				if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_POSITIVEX) {
 					nFace++;
-					pImgData.cubeFlags |= EImageCubeFlags.POSITIVE_X;
+					pImgData.setCubeFlags(pImgData.getCubeFlags() | EImageCubeFlags.POSITIVE_X);
 				}
 				if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_NEGATIVEX) {
 					nFace++;
-					pImgData.cubeFlags |= EImageCubeFlags.NEGATIVE_X;
+					pImgData.setCubeFlags(pImgData.getCubeFlags() | EImageCubeFlags.NEGATIVE_X);
 				}
 				if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_POSITIVEY) {
 					nFace++;
-					pImgData.cubeFlags |= EImageCubeFlags.POSITIVE_Y;
+					pImgData.setCubeFlags(pImgData.getCubeFlags() | EImageCubeFlags.POSITIVE_Y);
 				}
 				if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_NEGATIVEY) {
 					nFace++;
-					pImgData.cubeFlags |= EImageCubeFlags.NEGATIVE_Y;
+					pImgData.setCubeFlags(pImgData.getCubeFlags() | EImageCubeFlags.NEGATIVE_Y);
 				}
 				if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_POSITIVEZ) {
 					nFace++;
-					pImgData.cubeFlags |= EImageCubeFlags.POSITIVE_Z;
+					pImgData.setCubeFlags(pImgData.getCubeFlags() | EImageCubeFlags.POSITIVE_Z);
 				}
 				if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_NEGATIVEZ) {
 					nFace++;
-					pImgData.cubeFlags |= EImageCubeFlags.NEGATIVE_Z;
+					pImgData.setCubeFlags(pImgData.getCubeFlags() | EImageCubeFlags.NEGATIVE_Z);
 				}
 
 				if (nFace == 0) {
@@ -372,8 +372,8 @@ module akra.pixelUtil {
 			}
 
 			if (pHeader.dwCaps2 & DDSCAPS2_VOLUME) {
-				pImgData.flags |= EImageFlags.TEXTURE_3D;
-				pImgData.depth = pHeader.dwDepth;
+				pImgData.setFlags(pImgData.getFlags() | EImageFlags.TEXTURE_3D);
+				pImgData.setDepth(pHeader.dwDepth);
 			}
 
 			var eSourceFormat: EPixelFormats = EPixelFormats.UNKNOWN;
@@ -492,32 +492,32 @@ module akra.pixelUtil {
 				}
 			}*/
 
-			pImgData.format = eSourceFormat;
+			pImgData.setFormat(eSourceFormat);
 
 			if (pHeader.dwFlags & DDSD_MIPMAPCOUNT) {
-				pImgData.numMipMaps = pHeader.dwMipMapCount - 1;
-				if (pImgData.numMipMaps != pool.resources.Img.getMaxMipmaps(pImgData.width, pImgData.height, pImgData.depth, pImgData.format)) {
+				pImgData.setNumMipMaps(pHeader.dwMipMapCount - 1);
+				if (pImgData.getNumMipMaps() != pool.resources.Img.getMaxMipmaps(pImgData.getWidth(), pImgData.getHeight(), pImgData.getDepth(), pImgData.getFormat())) {
 					logger.warn("Number of mipmaps are not to degrease image size to 1x1 "
 						+ pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
 
 				}
 			}
 			else {
-				pImgData.numMipMaps = 0;
+				pImgData.setNumMipMaps(0);
 			}
 
-			var pOutput: Uint8Array = new Uint8Array(pImgData.size)
+			var pOutput: Uint8Array = new Uint8Array(pImgData.getSize())
 			var iOutputOffset: uint = 0;
 
 			for (var i: uint = 0; i < nFace; i++) {
-				var iWidth: uint = pImgData.width;
-				var iHeight: uint = pImgData.height;
-				var iDepth: uint = pImgData.depth;
+				var iWidth: uint = pImgData.getWidth();
+				var iHeight: uint = pImgData.getHeight();
+				var iDepth: uint = pImgData.getDepth();
 
-				for (var iMip: uint = 0; iMip <= pImgData.numMipMaps; iMip++) {
+				for (var iMip: uint = 0; iMip <= pImgData.getNumMipMaps(); iMip++) {
 
-					if (pixelUtil.isCompressed(pImgData.format)) {
-						var iDXTSize: uint = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, pImgData.format);
+					if (pixelUtil.isCompressed(pImgData.getFormat())) {
+						var iDXTSize: uint = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, pImgData.getFormat());
 						for (var a: uint = 0; a < iDXTSize; a++) {
 							pOutput[a + iOutputOffset] = pData[iOffset + a];
 
@@ -527,7 +527,7 @@ module akra.pixelUtil {
 
 					}
 					else {
-						var iDstPitch: uint = iWidth * pixelUtil.getNumElemBytes(pImgData.format);
+						var iDstPitch: uint = iWidth * pixelUtil.getNumElemBytes(pImgData.getFormat());
 						var iSrcPitch: uint = 0;
 						if (pHeader.dwFlags & DDSD_PITCH) {
 							iSrcPitch = pHeader.dwPitchOrLinearSize / Math.max(1, iMip * 2);
@@ -540,8 +540,8 @@ module akra.pixelUtil {
 							logger.warn("Странный размер питча у картинки")
 						}
 
-						for (var z: uint = 0; z < pImgData.depth; z++) {
-							for (var y: uint = 0; y < pImgData.height; y++) {
+						for (var z: uint = 0; z < pImgData.getDepth(); z++) {
+							for (var y: uint = 0; y < pImgData.getHeight(); y++) {
 
 								for (var a: uint = 0; a < iDstPitch; a++) {
 									pOutput[a + iOutputOffset] = pData[iOffset + a];

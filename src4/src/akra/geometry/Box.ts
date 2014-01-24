@@ -15,15 +15,15 @@ module akra.geometry {
 		bottom: uint = 0;
 		back: uint = 0;
 
-		get width(): uint {
+		getWidth(): uint {
 			return this.right - this.left;
 		}
 
-		get height(): uint {
+		getHeight(): uint {
 			return this.bottom - this.top;
 		}
 
-		get depth(): uint {
+		getDepth(): uint {
 			return this.back - this.front;
 		}
 

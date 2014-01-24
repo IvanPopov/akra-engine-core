@@ -3,7 +3,7 @@
 module akra.pixelUtil {
     export class CodecData implements ICodecData {
 
-        get dataType(): string {
+        getDataType(): string {
             logger.critical("CodecData.dataType is virtual");
             return "CodecData";
         }

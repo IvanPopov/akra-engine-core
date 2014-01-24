@@ -325,16 +325,16 @@ module akra.pool.resources {
 
 				this._pBuffer = pCodec.decode(pData, pImgData);
 
-				this._iWidth = pImgData.width;
-				this._iHeight = pImgData.height;
-				this._iDepth = pImgData.depth;
-				this._nMipMaps = pImgData.numMipMaps;
-				this._iFlags = pImgData.flags;
-				this._iCubeFlags = pImgData.cubeFlags;
+				this._iWidth = pImgData.getWidth();
+				this._iHeight = pImgData.getHeight();
+				this._iDepth = pImgData.getDepth();
+				this._nMipMaps = pImgData.getNumMipMaps();
+				this._iFlags = pImgData.getFlags();
+				this._iCubeFlags = pImgData.getCubeFlags();
 
 				//console.log(this._iCubeFlags.toString(16),this._iFlags.toString(16));
 
-				this._eFormat = pImgData.format;
+				this._eFormat = pImgData.getFormat();
 
 				this.notifyLoaded();
 

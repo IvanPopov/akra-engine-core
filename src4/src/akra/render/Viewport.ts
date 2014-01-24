@@ -491,10 +491,10 @@ module akra.render {
 			}
 			else {
 				pRect = <IRect2d>arguments[0];
-				this._fRelLeft = pRect.left;
-				this._fRelTop = pRect.top;
-				this._fRelWidth = pRect.width;
-				this._fRelHeight = pRect.height;
+				this._fRelLeft = pRect.getLeft();
+				this._fRelTop = pRect.getTop();
+				this._fRelWidth = pRect.getWidth();
+				this._fRelHeight = pRect.getHeight();
 			}
 
 			this._updateDimensions();

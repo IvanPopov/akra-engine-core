@@ -20,66 +20,68 @@ module akra.pixelUtil {
 		protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
 
 
-		/**  */ get width(): uint {
+		getWidth(): uint {
 			return this._iWidth;
 		}
-		/**  */ set width(iWidth: uint) {
+
+		setWidth(iWidth: uint): void {
 			this._iWidth = iWidth;
 		}
 
 
-		/**  */ get height(): uint {
+		getHeight(): uint {
 			return this._iHeight;
 		}
-		/**  */ set height(iHeight: uint) {
+
+		setHeight(iHeight: uint): void {
 			this._iHeight = iHeight;
 		}
 
-		/**  */ get depth(): uint {
+		getDepth(): uint {
 			return this._iDepth;
 		}
-		/**  */ set depth(iDepth: uint) {
+
+		setDepth(iDepth: uint): void {
 			this._iDepth = iDepth;
 		}
 
-
-		/**  */ get size(): uint {
-			return Img.calculateSize(this.numMipMaps, this.numFace, this.width, this.height, this.depth, this.format);
-		}
-
-		/**  */ get numMipMaps(): uint {
+		getNumMipMaps(): uint {
 			return this._nMipMaps;
 		}
 
-		/**  */ set numMipMaps(nNumMipMaps: uint) {
+		setNumMipMaps(nNumMipMaps: uint): void {
 			this._nMipMaps = nNumMipMaps;
 		}
 
-		/**  */ get format(): EPixelFormats {
+		getFormat(): EPixelFormats {
 			return this._eFormat;
 		}
 
-		/**  */ set format(ePixelFormat: EPixelFormats) {
+		setFormat(ePixelFormat: EPixelFormats): void {
 			this._eFormat = ePixelFormat;
 		}
 
-		/**  */ get flags(): uint {
+		getFlags(): uint {
 			return this._iFlags;
 		}
 
-		/**  */ set flags(iFlags: uint) {
+		setFlags(iFlags: uint): void {
 			this._iFlags = iFlags;
 		}
 
-		/**  */ get cubeFlags(): uint {
+		getCubeFlags(): uint {
 			return this._iCubeFlags;
 		}
 
-		/**  */ set cubeFlags(iFlags: uint) {
+		setCubeFlags(iFlags: uint): void {
 			this._iCubeFlags = iFlags;
 		}
 
-		/**  */ get numFace(): uint {
+		getSize(): uint {
+			return Img.calculateSize(this.getNumMipMaps(), this.getNumFace(), this.getWidth(), this.getHeight(), this.getDepth(), this.getFormat());
+		}
+
+		getNumFace(): uint {
 			if (this._iFlags & EImageFlags.CUBEMAP) {
 				var nFace: uint = 0;
 				for (var i: uint = 0; i < 32; i++) {
@@ -92,7 +94,7 @@ module akra.pixelUtil {
 			}
 		}
 
-		/**  */ get dataType(): string {
+		getDataType(): string {
 			return "ImgData";
 		}
 	}

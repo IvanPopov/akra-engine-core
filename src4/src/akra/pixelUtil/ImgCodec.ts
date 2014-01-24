@@ -5,7 +5,7 @@
 module akra.pixelUtil {
 	export class ImgCodec extends Codec implements IImgCodec {
 		getDataType(): string {
-		return "ImgData"
+			return "ImgData"
 		}
 	}
 }

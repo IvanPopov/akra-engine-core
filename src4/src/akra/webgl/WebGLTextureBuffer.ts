@@ -394,24 +394,24 @@ module akra.webgl {
 				if (pDestBox.left === 0 && pDestBox.top === 0) {
 					pWebGLContext.compressedTexImage2D(this._eFaceTarget, this._iLevel,
 													   iWebGLFormat,
-													   pDestBox.width,
-													   pDestBox.height,
+													   pDestBox.getWidth(),
+														pDestBox.getHeight(),
 													   0,
 													   pData.data);
 				}
 				else {
 					pWebGLContext.compressedTexSubImage2D(this._eFaceTarget, this._iLevel,
-														  pDestBox.left, pDestBox.top,
-														  pDestBox.width, pDestBox.height,
-														  iWebGLFormat, pData.data);
+														 pDestBox.left, pDestBox.top,
+														 pDestBox.getWidth(), pDestBox.getHeight(),
+														 iWebGLFormat, pData.data);
 
 				}
 			}
 			else if(this._bSoftwareMipmap) {
 
-				if (pData.width !== pData.rowPitch ||
-					pData.height * pData.width !== pData.slicePitch)
-				{
+				if (pData.getWidth() !== pData.rowPitch ||
+					pData.getHeight() * pData.getWidth() !== pData.slicePitch) {
+
 					pDataBox = this._pBuffer.getSubBox(pDestBox, pixelUtil.PixelBox.temp());
 					pDataBox.setConsecutive();
 					pixelUtil.bulkPixelConversion(pData, pDataBox);
@@ -426,9 +426,8 @@ module akra.webgl {
 				this.buildMipmaps(pDataBox); 
 			}
 			else {
-				if (pData.width !== pData.rowPitch ||
-					pData.height * pData.width !== pData.slicePitch)
-				{
+				if (pData.getWidth() !== pData.rowPitch ||
+					pData.getHeight() * pData.getWidth() !== pData.slicePitch) {
 					pDataBox = this._pBuffer.getSubBox(pDestBox, pixelUtil.PixelBox.temp());
 					pDataBox.setConsecutive();
 					pixelUtil.bulkPixelConversion(pData, pDataBox);
@@ -437,17 +436,17 @@ module akra.webgl {
 					pDataBox = pData;
 				}
 
-				if ((pData.width * pixelUtil.getNumElemBytes(pData.format)) & 3) {
+				if ((pData.getWidth() * pixelUtil.getNumElemBytes(pData.format)) & 3) {
 					// Standard alignment of 4 is not right
 					pWebGLRenderer.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 				}
 				if (pDestBox.left === 0 && pDestBox.top === 0 && 
-					pDestBox.width >= this.width && pDestBox.height >= this.height) 
+					pDestBox.getWidth() >= this.width && pDestBox.getHeight() >= this.height) 
 				{
 					pWebGLContext.texImage2D(this._eFaceTarget,
 										this._iLevel,
 										webgl.getWebGLFormat(pData.format),	                            			
-										pDestBox.width, pDestBox.height, 0,
+										pDestBox.getWidth(), pDestBox.getHeight(), 0,
 										webgl.getWebGLFormat(pData.format),
 										webgl.getWebGLDataType(pData.format),
 										!pixelUtil.isFloatingPoint(pData.format)? 
@@ -459,7 +458,7 @@ module akra.webgl {
 					pWebGLContext.texSubImage2D(this._eFaceTarget,
 										this._iLevel,
 										pDestBox.left, pDestBox.top,                            			
-										pDestBox.width, pDestBox.height,
+										pDestBox.getWidth(), pDestBox.getHeight(),
 										webgl.getWebGLFormat(pData.format),
 										webgl.getWebGLDataType(pData.format),
 										pDataBox.data);
@@ -500,7 +499,7 @@ module akra.webgl {
 					this.format === EPixelFormats.FLOAT32_RGBA, "TODO: downloading for all formats");
 
 				var eFormat: EPixelFormats = this.format;
-				var pDestBox: IBox = geometry.Box.temp(0, 0, 0, pData.width * pixelUtil.getComponentCount(this.format), pData.height, pData.depth);
+				var pDestBox: IBox = geometry.Box.temp(0, 0, 0, pData.getWidth() * pixelUtil.getComponentCount(this.format), pData.getHeight(), pData.getDepth());
 
 				if (this.format === EPixelFormats.DEPTH32) {
 					eFormat = EPixelFormats.FLOAT32_DEPTH;
@@ -518,9 +517,9 @@ module akra.webgl {
 				else {
 					pSrcBox = new pixelUtil.PixelBox(pData, eFormat, 
 						new Uint8Array(pixelUtil.getMemorySize(
-							pData.width * pixelUtil.getComponentCount(this.format), 
-							pData.height, 
-							pData.depth, 
+							pData.getWidth() * pixelUtil.getComponentCount(this.format), 
+							pData.getHeight(), 
+							pData.getDepth(), 
 							EPixelFormats.R8G8B8A8)));
 				}
 
@@ -529,7 +528,7 @@ module akra.webgl {
 				
 				pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pFrameBuffer);
 				pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, pWebGLTexture, 0);
-				pWebGLContext.readPixels(0, 0, pDestBox.width, pDestBox.height, gl.RGBA, gl.UNSIGNED_BYTE, pSrcBox.data);
+				pWebGLContext.readPixels(0, 0, pDestBox.getWidth(), pDestBox.getHeight(), gl.RGBA, gl.UNSIGNED_BYTE, pSrcBox.data);
 				pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pOldFramebuffer);
 				pWebGLRenderer.deleteWebGLFramebuffer(pFrameBuffer);
 				pWebGLRenderer.deleteWebGLTexture(pWebGLTexture);
@@ -549,7 +548,7 @@ module akra.webgl {
 			else
 			{
 				pSrcBox = new pixelUtil.PixelBox(pData, EPixelFormats.BYTE_RGBA, 
-												 new Uint8Array(pixelUtil.getMemorySize(pData.width, pData.height, pData.depth, EPixelFormats.BYTE_RGBA)));
+					new Uint8Array(pixelUtil.getMemorySize(pData.getWidth(), pData.getHeight(), pData.getDepth(), EPixelFormats.BYTE_RGBA)));
 			}			
 
 			
@@ -563,7 +562,7 @@ module akra.webgl {
 			var eType: int = getWebGLDataType(pSrcBox.format);
 
 			pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, this._eFaceTarget, pWebGLTexture, this._iLevel);
-			pWebGLContext.readPixels(pSrcBox.left, pSrcBox.top, pSrcBox.width, pSrcBox.height, eFormat, eType, pSrcBox.data);
+			pWebGLContext.readPixels(pSrcBox.left, pSrcBox.top, pSrcBox.getWidth(), pSrcBox.getHeight(), eFormat, eType, pSrcBox.data);
 			
 
 			if(!checkReadPixelFormat(pData.format))
@@ -624,8 +623,8 @@ module akra.webgl {
 			pScaled.front = pData.front;
 			pScaled.back = pData.back;
 
-			iWidth = pData.width;
-			iHeight = pData.height;
+			iWidth = pData.getWidth();
+			iHeight = pData.getHeight();
 
 			iLogW = computeLog(iWidth);
 			iLogH = computeLog(iHeight);
@@ -752,9 +751,9 @@ module akra.webgl {
 			}
 
 			// Set filtering modes depending on the dimensions and source
-			if(pSrcBox.width === pDestBox.width &&
-			   pSrcBox.height === pDestBox.height &&
-			   pSrcBox.depth === pDestBox.depth) {
+			if (pSrcBox.getWidth() === pDestBox.getWidth() &&
+				pSrcBox.getHeight() === pDestBox.getHeight() &&
+			    pSrcBox.getDepth() === pDestBox.getDepth()) {
 				// Dimensions match -- use nearest filtering (fastest and pixel correct)
 				pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 				pWebGLContext.texParameteri(pSource._getFaceTarget(), gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -783,14 +782,14 @@ module akra.webgl {
 			pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pTempWebGLTexture);
 			// Allocate temporary texture of the size of the destination area
 			pWebGLContext.texImage2D(gl.TEXTURE_2D, 0, iGLTempFormat, 
-									 /*math.ceilingPowerOfTwo*/(pDestBox.width), 
-									 /*math.ceilingPowerOfTwo*/(pDestBox.height), 
-									 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+				/*math.ceilingPowerOfTwo*/(pDestBox.getWidth()), 
+				/*math.ceilingPowerOfTwo*/(pDestBox.getHeight()), 
+				0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
 			pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
 											   gl.TEXTURE_2D, pTempWebGLTexture, 0);
 			// Set viewport to size of destination slice
-			pWebGLContext.viewport(0, 0, pDestBox.width, pDestBox.height);
+			pWebGLContext.viewport(0, 0, pDestBox.getWidth(), pDestBox.getHeight());
 	
 
 			//Get WebGL program
@@ -819,8 +818,8 @@ module akra.webgl {
 
 			pWebGLShaderProgram.setInt("uSampler", 0);
 			pWebGLShaderProgram.setInt("src_components_num", pixelUtil.getComponentCount(pSource.format));
-			pWebGLShaderProgram.setInt("dst_width", pDestBox.width);
-			pWebGLShaderProgram.setInt("dst_height", pDestBox.height);
+			pWebGLShaderProgram.setInt("dst_width", pDestBox.getWidth());
+			pWebGLShaderProgram.setInt("dst_height", pDestBox.getHeight());
 			// LOG("dest size: ", pDestBox.width, "x", pDestBox.height, "cn: ", pixelUtil.getComponentCount(pSource.format));
 			// Process each destination slice
 			var iSlice: int = 0;
@@ -831,9 +830,9 @@ module akra.webgl {
 				var u2: float = <float>pSrcBox.right / <float>pSource.width;
 				var v2: float = <float>pSrcBox.bottom / <float>pSource.height;
 				/// Calculate source slice for this destination slice
-				var w: float = <float>(iSlice - pDestBox.front) / <float>pDestBox.depth;
+				var w: float = <float>(iSlice - pDestBox.front) / <float>pDestBox.getDepth();
 				/// Get slice # in source
-				w = w * <float>pSrcBox.depth + pSrcBox.front;
+				w = w * <float>pSrcBox.getDepth() + pSrcBox.front;
 				/// Normalise to texture coordinate in 0.0 .. 1.0
 				w = (w + 0.5) / <float>pSource.depth;
 				
@@ -900,9 +899,9 @@ module akra.webgl {
 			if (this.format === pSource.format && 
 				checkCopyTexImage(this.format) &&
 				this._pBuffer.contains(pDestBox) &&
-				pSrcBox.width === pDestBox.width &&
-				pSrcBox.height === pDestBox.height &&
-				pSrcBox.depth === pDestBox.depth) 
+				pSrcBox.getWidth() === pDestBox.getWidth() &&
+				pSrcBox.getHeight() === pDestBox.getHeight() &&
+				pSrcBox.getDepth() === pDestBox.getDepth()) 
 			{
 				var pOldFramebuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(gl.FRAMEBUFFER_BINDING);
 				var pFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
@@ -914,17 +913,17 @@ module akra.webgl {
 
 				pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
 
-				if(pDestBox.width === this.width && pDestBox.height === this.height){
+				if (pDestBox.getWidth() === this.width && pDestBox.getHeight() === this.height){
 					pWebGLContext.copyTexImage2D(this._eFaceTarget, this._iLevel, 
-												 getWebGLFormat(this._eFormat),
-												 pSrcBox.left, pSrcBox.top,
-												 pSrcBox.width, pSrcBox.height, 0);
+						getWebGLFormat(this._eFormat),
+						pSrcBox.left, pSrcBox.top,
+						pSrcBox.getWidth(), pSrcBox.getHeight(), 0);
 				}
 				else {
 					pWebGLContext.copyTexSubImage2D(this._eFaceTarget, this._iLevel, 
-													pDestBox.left, pDestBox.top,
-													pSrcBox.left, pSrcBox.top,
-													pSrcBox.width, pSrcBox.height);
+						pDestBox.left, pDestBox.top,
+						pSrcBox.left, pSrcBox.top,
+						pSrcBox.getWidth(), pSrcBox.getHeight());
 				}
 
 				pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, pOldFramebuffer);
@@ -953,9 +952,9 @@ module akra.webgl {
 				iOldWrapT: uint 	= pWebGLContext.getTexParameter(pSource._getFaceTarget(), gl.TEXTURE_WRAP_T);
 
 			// Set filtering modes depending on the dimensions and source
-			if(pSrcBox.width === pDestBox.width &&
-			   pSrcBox.height === pDestBox.height &&
-			   pSrcBox.depth === pDestBox.depth) {
+			if (pSrcBox.getWidth() === pDestBox.getWidth() &&
+				pSrcBox.getHeight() === pDestBox.getHeight() &&
+			    pSrcBox.getDepth() === pDestBox.getDepth()) {
 				// Dimensions match -- use nearest filtering (fastest and pixel correct)
 				pWebGLContext.texParameteri(pSource._getTarget(), gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 				pWebGLContext.texParameteri(pSource._getTarget(), gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -997,18 +996,18 @@ module akra.webgl {
 				pWebGLRenderer.bindWebGLTexture(gl.TEXTURE_2D, pTempWebGLTexture);
 				// Allocate temporary texture of the size of the destination area
 				pWebGLContext.texImage2D(gl.TEXTURE_2D, 0, iGLTempFormat, 
-										 math.ceilingPowerOfTwo(pDestBox.width), 
-										 math.ceilingPowerOfTwo(pDestBox.height), 
-										 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+					math.ceilingPowerOfTwo(pDestBox.getWidth()), 
+					math.ceilingPowerOfTwo(pDestBox.getHeight()), 
+					0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
 				pWebGLContext.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-												   gl.TEXTURE_2D, pTempWebGLTexture, 0);
-				// Set viewport to size of destination slice
-				pWebGLContext.viewport(0, 0, pDestBox.width, pDestBox.height);
+					gl.TEXTURE_2D, pTempWebGLTexture, 0);
+					// Set viewport to size of destination slice
+					pWebGLContext.viewport(0, 0, pDestBox.getWidth(), pDestBox.getHeight());
 			}
 			else {
 				// We are going to bind directly, so set viewport to size and position of destination slice
-				pWebGLContext.viewport(pDestBox.left, pDestBox.top, pDestBox.width, pDestBox.height);	
+				pWebGLContext.viewport(pDestBox.left, pDestBox.top, pDestBox.getWidth(), pDestBox.getHeight());	
 			}
 
 			//Get WebGL program
@@ -1051,9 +1050,9 @@ module akra.webgl {
 				var u2: float = <float>pSrcBox.right / <float>pSource.width;
 				var v2: float = <float>pSrcBox.bottom / <float>pSource.height;
 				/// Calculate source slice for this destination slice
-				var w: float = <float>(iSlice - pDestBox.front) / <float>pDestBox.depth;
+				var w: float = <float>(iSlice - pDestBox.front) / <float>pDestBox.getDepth();
 				/// Get slice # in source
-				w = w * <float>pSrcBox.depth + pSrcBox.front;
+				w = w * <float>pSrcBox.getDepth() + pSrcBox.front;
 				/// Normalise to texture coordinate in 0.0 .. 1.0
 				w = (w + 0.5) / <float>pSource.depth;
 				
@@ -1092,8 +1091,8 @@ module akra.webgl {
 						pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
 						
 						this._pWebGLTexture = pTempWebGLTexture;
-						this._iWidth = math.ceilingPowerOfTwo(pDestBox.width);
-						this._iHeight = math.ceilingPowerOfTwo(pDestBox.height);
+						this._iWidth = math.ceilingPowerOfTwo(pDestBox.getWidth());
+						this._iHeight = math.ceilingPowerOfTwo(pDestBox.getHeight());
 					}
 					else {
 						// Copy temporary texture
@@ -1103,8 +1102,8 @@ module akra.webgl {
 							case gl.TEXTURE_2D:
 							case gl.TEXTURE_CUBE_MAP:
 								pWebGLContext.copyTexSubImage2D(this._eFaceTarget, this._iLevel, 
-																pDestBox.left, pDestBox.top, 
-																0, 0, pDestBox.width, pDestBox.height);
+									pDestBox.left, pDestBox.top, 
+									0, 0, pDestBox.getWidth(), pDestBox.getHeight());
 								break;
 						}
 					}
@@ -1166,11 +1165,11 @@ module akra.webgl {
 			var pSourceOrigin: IPixelBox = arguments[0];
 			var pDestBox: IBox = arguments[1];
 
-			if(pixelUtil.isLuminance(pSourceOrigin.format) ||
-			   pixelUtil.isLuminance(this._eFormat) ||
-			   (pSourceOrigin.width === pDestBox.width &&
-				pSourceOrigin.height === pDestBox.height &&
-				pSourceOrigin.depth === pDestBox.depth)) {
+			if (pixelUtil.isLuminance(pSourceOrigin.format) ||
+			    pixelUtil.isLuminance(this._eFormat) ||
+			   (pSourceOrigin.getWidth() === pDestBox.getWidth() &&
+			    pSourceOrigin.getHeight() === pDestBox.getHeight() &&
+				pSourceOrigin.getDepth() === pDestBox.getDepth())) {
 
 				return super.blitFromMemory(pSourceOrigin, pDestBox);	            
 			}
@@ -1183,10 +1182,10 @@ module akra.webgl {
 			// First, convert the srcbox to a OpenGL compatible pixel format
 			if(getWebGLFormat(pSourceOrigin.format) === 0){
 				// Convert to buffer internal format
-				var iSizeInBytes: int = pixelUtil.getMemorySize(pSourceOrigin.width, pSourceOrigin.height,
-																pSourceOrigin.depth, this._eFormat);
-				pSource = new pixelUtil.PixelBox(pSourceOrigin.width, pSourceOrigin.height,
-												 pSourceOrigin.depth, this._eFormat, new Uint8Array(iSizeInBytes));
+				var iSizeInBytes: int = pixelUtil.getMemorySize(pSourceOrigin.getWidth(), pSourceOrigin.getHeight(),
+																pSourceOrigin.getDepth(), this._eFormat);
+				pSource = new pixelUtil.PixelBox(pSourceOrigin.getWidth(), pSourceOrigin.getHeight(),
+												 pSourceOrigin.getDepth(), this._eFormat, new Uint8Array(iSizeInBytes));
 
 				pixelUtil.bulkPixelConversion(pSourceOrigin, pSource);
 			}
@@ -1201,8 +1200,8 @@ module akra.webgl {
 			// Create temporary texture to store source data
 			var pTempWebGLTexture: WebGLTexture = null;
 			var eTarget: int = gl.TEXTURE_2D;
-			var iWidth: int = math.ceilingPowerOfTwo(pSource.width);
-			var iHeight: int = math.ceilingPowerOfTwo(pSource.height);
+			var iWidth: int = math.ceilingPowerOfTwo(pSource.getWidth());
+			var iHeight: int = math.ceilingPowerOfTwo(pSource.getHeight());
 			var iWebGLFormat:int = getClosestWebGLInternalFormat(pSource.format);
 			var iWebGLDataType: int = getWebGLDataType(pSource.format);
 
@@ -1231,7 +1230,7 @@ module akra.webgl {
 								  false);
 
 			// Upload data to 0,0,0 in temporary texture
-			var pTempBoxTarget: IBox = new geometry.Box(0, 0, 0, pSource.width, pSource.height, pSource.depth);
+			var pTempBoxTarget: IBox = new geometry.Box(0, 0, 0, pSource.getWidth(), pSource.getHeight(), pSource.getDepth());
 			pTempTexBuffer.upload(pSource, pTempBoxTarget);
 
 			//Blit

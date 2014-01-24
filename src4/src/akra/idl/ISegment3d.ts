@@ -6,8 +6,11 @@ module akra {
 	export interface ISegment3d {
 		ray: IRay3d;
 		distance: float;
-	
-		point: IVec3;
-		normal: IVec3;
+
+		getPoint(): IVec3;
+		setPoint(v3fPoint: IVec3): void;
+
+		getNormal(): IVec3;
+		setNormal(v3fNormal: IVec3): void;
 	};
 }

@@ -68,11 +68,11 @@ module akra.geometry {
             }
         }
 
-        get rect2d(): IRect2d {
+        getRect2d(): IRect2d {
             return new Rect2d(this.x0, this.x1, this.y0, this.y1);
         }
 
-        set rect2d(pRect: IRect2d) {
+        setRect2d(pRect: IRect2d): void {
             this.x0 = pRect.x0;
             this.x1 = pRect.x1;
             this.y0 = pRect.y0;

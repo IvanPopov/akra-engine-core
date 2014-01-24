@@ -11,7 +11,8 @@ module akra {
 		z0: float;
 		z1: float;
 	
-		rect2d: IRect2d;
+		getRect2d(): IRect2d;
+		setRect2d(pRect: IRect2d): void;
 	
 		set(): IRect3d;
 		set(pRect: IRect3d): IRect3d;
