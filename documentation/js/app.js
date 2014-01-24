@@ -57,6 +57,8 @@ app.controller('MainCtrl', function($scope, $http, $location, docobjects) {
 				// console.log(objname, path, $scope.currentObject.parents, type, data);
 				$scope.currentObject.type = type;
 				$scope.currentObject.data = data;
+			
+				enableSideScroll({self:$('.j-sidebar')});
 				setTimeout(setupHiders,100);
 				setTimeout(alphabeticColumnSort,100);
 			})
