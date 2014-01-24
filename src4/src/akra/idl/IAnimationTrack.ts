@@ -8,9 +8,10 @@
 
 module akra {
 	export interface IAnimationTrack extends IAnimationParameter {
-		targetName: string;
-		
-		/** readonly */ target: ISceneNode;
+		getTargetName(): string;
+		setTargetName(sName: string): void;
+
+		getTarget(): ISceneNode;
 		
 		keyFrame(pFrame: IPositionFrame): boolean;
 		keyFrame(fTime: float, pMatrix: IMat4): boolean;

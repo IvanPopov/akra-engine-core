@@ -38,20 +38,35 @@ module akra.animation {
 			}
 		}
 
-		 get animationName(): string{
-			return this._pAnimation.name;
+		getAnimationName(): string{
+			return this._pAnimation.getName();
 		}
-
-		 get speed(): float{
-			return this._fSpeed;
-		}
-
-		 get animationTime(): float{
+		
+		getAnimationTime(): float{
 			return this._fTrueTime;
 		}
 
-		 get time(): float {
+		getTime(): float {
 			return this._fTime;
+		}
+
+		setStartTime(fRealTime: float): void {
+			this._fStartTime = fRealTime;
+		}
+
+		getStartTime(): float {
+			return this._fStartTime;
+		}
+
+		setSpeed(fSpeed: float): void {
+			this._fSpeed = fSpeed;
+			this.setDuration(this._pAnimation.getDuration() / fSpeed);
+
+			this.durationUpdated.emit(this.getDuration());
+		}
+
+		getSpeed(): float {
+			return this._fSpeed;
 		}
 
 		play(fRealTime: float): void {
@@ -61,7 +76,7 @@ module akra.animation {
 		    this.played.emit(this._fTime);
 		}
 
-		 stop(): void {
+		stop(): void {
 			this.stoped.emit(this._fTime);
 		}
 
@@ -76,7 +91,7 @@ module akra.animation {
 			debug.assert(!this._pAnimation, "anim. already exists");
 
 			this._pAnimation = pAnimation;
-			this.setSpeed(this.speed);
+			this.setSpeed(this.getSpeed());
 
 			if (Container.isContainer(pAnimation) || Blend.isBlend(pAnimation)) {
 				(<IAnimationBlend>pAnimation).durationUpdated.connect(this, this._onDurationUpdate);
@@ -86,73 +101,54 @@ module akra.animation {
 		}
 
 		_onDurationUpdate(pAnimation: IAnimationBase, fDuration: float): void {
-			this.setSpeed(this.speed);
+			this.setSpeed(this.getSpeed());
 		}
 
 		getAnimation(): IAnimationBase {
 			return this._pAnimation;
 		}
 
-		 enable(): void {
+		enable(): void {
 			this._bEnable = true;
 		}
 
-		 disable(): void {
+		disable(): void {
 			this._bEnable = false;
 		}
 
-		 isEnabled(): boolean {
+		isEnabled(): boolean {
 			return this._bEnable;
 		}
 
-		 leftInfinity(bValue: boolean): void {
+		leftInfinity(bValue: boolean): void {
 			this._bLeftInfinity = bValue;
 		}
 
-		 inLeftInfinity(): boolean {
+		inLeftInfinity(): boolean {
 			return this._bLeftInfinity;
 		}
 
-		 inRightInfinity(): boolean {
+		inRightInfinity(): boolean {
 			return this._bRightInfinity;
 		}
 
-		 rightInfinity(bValue: boolean): void {
+		rightInfinity(bValue: boolean): void {
 			this._bRightInfinity = bValue;
 		}
 
-		 setStartTime(fRealTime: float): void {
-			this._fStartTime = fRealTime;
-		}
-
-		 getStartTime(): float {
-			return this._fStartTime;
-		}
-
-		setSpeed(fSpeed: float): void {
-			this._fSpeed = fSpeed;
-			this.duration = this._pAnimation.duration / fSpeed;
-			
-			this.durationUpdated.emit(this.duration);
-		}
-
-		 getSpeed(): float {
-			return this._fSpeed;
-		}
-
-		 useLoop(bValue: boolean): void {
+		useLoop(bValue: boolean): void {
 			this._bLoop = bValue;
 		}
 
-		 inLoop(): boolean {
+		inLoop(): boolean {
 			return this._bLoop;
 		}
 
-		 reverse(bValue: boolean): void {
+		reverse(bValue: boolean): void {
 			this._bReverse = bValue;
 		}
 
-		 isReversed(): boolean {
+		isReversed(): boolean {
 			return this._bReverse;
 		}
 
@@ -161,13 +157,13 @@ module akra.animation {
 			this._bPause = bValue;
 		}
 
-		 rewind(fRealTime: float): void {
+		rewind(fRealTime: float): void {
 			// console.log("rewind > ", fRealTime);
 			this._fTrueTime = 0;
 			this._fTime = fRealTime;
 		}
 
-		 isPaused(): boolean {
+		isPaused(): boolean {
 			return this._bPause;
 		}
 
@@ -188,9 +184,9 @@ module akra.animation {
 		    var fTime = this._fTime;
 
 		    if (this._bLoop) {
-		    	fTime = math.mod(fTime, (this._pAnimation.duration));
+		    	fTime = math.mod(fTime, (this._pAnimation.getDuration()));
 		    	if (this._bReverse) {
-		    		fTime = this._pAnimation.duration - fTime; 
+		    		fTime = this._pAnimation.getDuration() - fTime; 
 		    	}
 		    }
 
@@ -210,12 +206,12 @@ module akra.animation {
 		    	this.enterFrame.emit(fRealTime, this._fTrueTime);
 		    }
 
-		    if (!this._bLeftInfinity  && this._fTrueTime < this.first) {
+		    if (!this._bLeftInfinity  && this._fTrueTime < this.getFirst()) {
 		    	return null;
 		    }
 
 
-			if (!this._bRightInfinity && this._fTrueTime > this.duration) {
+			if (!this._bRightInfinity && this._fTrueTime > this.getDuration()) {
 		    	return null;
 		    }    
 
@@ -224,7 +220,7 @@ module akra.animation {
 
 
 		static isContainer(pAnimation: IAnimationBase): boolean {
-			return pAnimation.type === EAnimationTypes.CONTAINER;
+			return pAnimation.getType() === EAnimationTypes.CONTAINER;
 		}
 	} 
 

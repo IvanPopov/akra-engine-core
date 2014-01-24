@@ -1988,7 +1988,7 @@ module akra.pool.resources {
 			}
 
 			if (!isNull(pTrack)) {
-				pTrack.targetName = sNodeId;
+				pTrack.setTargetName(sNodeId);
 			}
 
 			return pTrack;
@@ -2625,7 +2625,7 @@ module akra.pool.resources {
 				}
 
 				pTrack = animation.createTrack(sJoint);
-				pTrack.targetName = sNodeId;
+				pTrack.setTargetName(sNodeId);
 				pTrack.keyFrame(0.0, pNode.transform);
 
 				pPose.push(pTrack);

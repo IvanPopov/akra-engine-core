@@ -22,14 +22,17 @@ module akra {
 	}
 	
 	export interface IAnimationBase extends IEventProvider {
-		duration: float;
-		name: string;
-		type: EAnimationTypes;
-		
-		first: float;
-	
+		getDuration(): float;
+		setDuration(fDuration: float): void;
+
+		getName(): string;
+		setName(sName: string): void;
+			
+		getType(): EAnimationTypes;
+		getFirst(): float;
+
 		extra: any;
-	
+
 		play(fRealTime: float): void;
 		stop(fRealTime: float): void;
 	

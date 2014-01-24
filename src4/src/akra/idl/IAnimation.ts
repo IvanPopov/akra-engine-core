@@ -8,7 +8,7 @@
 
 module akra {
 	export interface IAnimation extends IAnimationBase {
-		/** readonly */ totalTracks: int;
+		getTotalTracks(): int;
 	
 		push(pTrack: IAnimationTrack): void;
 		attach(pTarget: ISceneNode): void;

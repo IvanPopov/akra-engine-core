@@ -34,33 +34,28 @@ module akra.animation {
 
 		public extra: any = null;
 
-		constructor(eType: EAnimationTypes, sName: string = null) {
-			this._sName = sName || ("animation-" + "-" + this.guid);
-			this._eType = eType;
-		}
-
-		get type(): EAnimationTypes {
+		getType(): EAnimationTypes {
 			return this._eType;
 		}
 
-		get duration(): float {
+		getDuration(): float {
 			return this._fDuration;
 		}
 
-		set duration(fValue: float) {
+		getFirst(): float {
+			return this._fFirst;
+		}
+
+		setDuration(fValue: float): void {
 			// LOG("new duration(", this.name, ") > " + fValue);
 			this._fDuration = fValue;
 		}
 
-		get first(): float {
-			return this._fFirst;
-		}
-
-		get name(): string{
+		getName(): string {
 			return this._sName;
 		}
 
-		set name(sName: string){
+		setName(sName: string): void {
 			if (sName == this._sName) {
 				return;
 			}
@@ -69,6 +64,10 @@ module akra.animation {
 			this.renamed.emit(sName);
 		}
 
+		constructor(eType: EAnimationTypes, sName: string = null) {
+			this._sName = sName || ("animation-" + "-" + this.guid);
+			this._eType = eType;
+		}
 
 		play(fRealTime: float): void {
 			this.played.emit(fRealTime);
@@ -209,7 +208,7 @@ module akra.animation {
 				}
 			}
 
-			this._fFirst = math.min(this.first, pAnimationBase.first);
+			this._fFirst = math.min(this.getFirst(), pAnimationBase.getFirst());
 		}
 
 		createAnimationMask(): IMap<float> {
@@ -228,8 +227,8 @@ module akra.animation {
 
 			if (config.DEBUG) {
 				var s = "\n";
-				s += "name         : " + this.name + "\n";
-				s += "duration     : " + this.duration + " sec\n";
+				s += "name         : " + this.getName() + "\n";
+				s += "duration     : " + this.getDuration() + " sec\n";
 				s += "total targets: " + this.targetList().length.toString() + "\n";
 				return s;
 			}

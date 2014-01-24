@@ -230,7 +230,7 @@ module akra.animation {
 			return this;
 		}
 
-		 toMatrix(): IMat4 {
+		toMatrix(): IMat4 {
 			return this.matrix;
 		}
 

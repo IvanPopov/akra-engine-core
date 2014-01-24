@@ -10,9 +10,9 @@ module akra {
 	export interface IAnimationController extends IEventProvider {
 		name: string;
 
-		/** readonly */ totalAnimations: int;
-		/** readonly */ active: IAnimationBase;
-		/** readonly */ target: ISceneNode;
+		getTotalAnimations(): int;
+		getActive(): IAnimationBase;
+		getTarget(): ISceneNode;
 
 		getEngine(): IEngine;
 

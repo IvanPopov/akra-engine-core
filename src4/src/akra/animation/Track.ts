@@ -14,15 +14,15 @@ module akra.animation {
 		private _pTarget: ISceneNode = null;
 
 	
-		 get target(): ISceneNode{
+		getTarget(): ISceneNode{
 			return this._pTarget;
 		}
 
-		 get targetName(): string{
+		getTargetName(): string{
 			return this._sTarget;
 		}
 
-		 set targetName(sValue: string) {
+		setTargetName(sValue: string): void {
 			this._sTarget = sValue;
 		}
 
@@ -77,7 +77,7 @@ module akra.animation {
 					//bind by <Node node>
 					else {
 						pRootNode = <ISceneNode>arguments[0];
-						pNode = <ISceneNode>pRootNode.findEntity(this.targetName);
+						pNode = <ISceneNode>pRootNode.findEntity(this.getTargetName());
 					}
 			}
 			
@@ -90,8 +90,8 @@ module akra.animation {
 
 		toString(): string {
 			if (config.DEBUG) {
-				var s = "target: " + this.targetName + ", from: " + this.first + "sec. , duration: " + this.duration +
-					" sec. , frames: " + this.totalFrames;
+				var s = "target: " + this.getTargetName() + ", from: " + this.getFirst() + "sec. , duration: " + this.getDuration() +
+					" sec. , frames: " + this.getTotalFrames();
 				return s;
 			}
 
