@@ -109,7 +109,7 @@ module akra.io {
 
             this.x++;
             if (this.x % 1000 == 0)
-                console.log((this.byteLength / (1024 * 1024)).toFixed(2), "mb");
+                console.log((this.getByteLength() / (1024 * 1024)).toFixed(2), "mb");
 
 
             if (!isNull(fnWriter)) {
@@ -152,7 +152,7 @@ module akra.io {
 
 
             if (iAddr < 0) {
-                iAddr = this.byteLength + 4 + 4;
+                iAddr = this.getByteLength() + 4 + 4;
 
                 this.uint32(iAddr);
                 this.uint32(iType);

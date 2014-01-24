@@ -29,7 +29,7 @@ module akra.net {
 		protected _pConnect: IVirualDescriptor = null;
 		protected _bSetupComplete: boolean = false;
 
-		get uri(): IURI {
+		getURI(): IURI {
 			return uri.parse(this._pAddr.toString());
 		}
 
@@ -56,7 +56,7 @@ module akra.net {
 					this.close();
 				}
 
-				pAddr = this.uri;
+				pAddr = this.getURI();
 			}
 
 			// pipe to websocket
@@ -78,7 +78,7 @@ module akra.net {
 				pSocket.binaryType = "arraybuffer";
 				eType = EPipeTypes.WEBSOCKET;
 			}
-			else if (path.parse(pAddr.path).ext.toLowerCase() === "js") {
+			else if (path.parse(pAddr.path).getExt().toLowerCase() === "js") {
 				if (!isDefAndNotNull(Worker)) {
 					logger.error("Your browser does not support webworker api.");
 					return false;

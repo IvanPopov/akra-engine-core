@@ -2091,10 +2091,10 @@ module akra.pool.resources {
 		private buildDefaultMaterials(pMesh: IMesh): IMesh {
 			var pDefaultMaterial: IMaterial = material.create("default");
 
-			for (var j: int = 0; j < pMesh.length; ++j) {
+			for (var j: int = 0; j < pMesh.getLength(); ++j) {
 				var pSubMesh: IMeshSubset = pMesh.getSubset(j);
-				pSubMesh.material.set(pDefaultMaterial);
-				pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+				pSubMesh.getMaterial().set(pDefaultMaterial);
+				pSubMesh.getRenderMethod().effect.addComponent("akra.system.mesh_texture");
 				// pSubMesh.renderMethod.effect.addComponent("akra.system.wireframe");
 			}
 
@@ -2120,18 +2120,18 @@ module akra.pool.resources {
 
 				pMaterial.set(<IMaterialBase>pPhongMaterial);
 
-				for (var j: int = 0; j < pMesh.length; ++j) {
+				for (var j: int = 0; j < pMesh.getLength(); ++j) {
 					var pSubMesh: IMeshSubset = pMesh.getSubset(j);
 
 					//if (pSubMesh.surfaceMaterial.findResourceName() === sMaterial) {
-					if (pSubMesh.material.name === sMaterial) {
+					if (pSubMesh.getMaterial().name === sMaterial) {
 						//setup materials
-						pSubMesh.material.set(pMaterial);
+						pSubMesh.getMaterial().set(pMaterial);
 						//FIXME: remove flex material setup(needs only demo with flexmats..)
 						// pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
 
 
-						pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+						pSubMesh.getRenderMethod().effect.addComponent("akra.system.mesh_texture");
 						
 						//setup textures
 						for (var sTextureType in pPhongMaterial.textures) {
@@ -2151,7 +2151,7 @@ module akra.pool.resources {
 							var pColladaImage: IColladaImage = pColladaTexture.image;
 
 
-							var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.surfaceMaterial;
+							var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.getSurfaceMaterial();
 							var pTexture: ITexture = <ITexture>this.getManager().texturePool.findResource(pColladaImage.path);
 
 							if (this.getImageOptions().flipY === true) {
@@ -2228,7 +2228,7 @@ module akra.pool.resources {
 				this.sharedBuffer());    /*shared buffer, if supported*/
 
 			var pPolyGroup: IColladaPolygons[] = pNodeData.polygons;
-			var pMeshData: IRenderDataCollection = pMesh.data;
+			var pMeshData: IRenderDataCollection = pMesh.getData();
 
 			//creating subsets
 			for (var i: int = 0; i < pPolyGroup.length; ++i) {
@@ -2302,7 +2302,7 @@ module akra.pool.resources {
 			for (var i: int = 0; i < pPolyGroup.length; ++i) {
 				var pPolygons: IColladaPolygons = pPolyGroup[i];
 				var pSubMesh: IMeshSubset = pMesh.getSubset(i);
-				var pSubMeshData: IRenderData = pSubMesh.data;
+				var pSubMeshData: IRenderData = pSubMesh.getData();
 				var pIndexDecl: IVertexDeclaration = data.VertexDeclaration.normalize(undefined);
 				var pSurfaceMaterial: ISurfaceMaterial = null;
 				var pSurfacePool: IResourcePool = null;
@@ -2336,13 +2336,13 @@ module akra.pool.resources {
 				//     pSubMesh.surfaceMaterial = pSurfaceMaterial;
 				// }
 				
-				pSubMesh.material.name = pPolygons.material;
+				pSubMesh.getMaterial().name = pPolygons.material;
 			}
 
 			// logger.assert(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
 			// logger.assert(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
 
-			pMesh.shadow = this.isShadowsEnabled();
+			pMesh.setShadow(this.isShadowsEnabled());
 
 			//adding all data to cahce data
 			this.addMesh(pMesh);
@@ -2606,7 +2606,7 @@ module akra.pool.resources {
 		}
 
 		private buildInititalPose(pNodes: IColladaNode[], pSkeleton: ISkeleton): IAnimation {
-			var sPose: string = "Pose-" + this.getBasename() + "-" + pSkeleton.name;
+			var sPose: string = "Pose-" + this.getBasename() + "-" + pSkeleton.getName();
 			var pPose: IAnimation = animation.createAnimation(sPose);
 			var pNodeList: ISceneNode[] = pSkeleton.getNodeList();
 			var pNodeMap: IMap<ISceneNode> = {};
@@ -2710,8 +2710,8 @@ module akra.pool.resources {
 		}
 
 		private addMesh(pMesh: IMesh): void {
-			this._pCache.meshMap[pMesh.name] = pMesh;
-			this.sharedBuffer(pMesh.data);
+			this._pCache.meshMap[pMesh.getName()] = pMesh;
+			this.sharedBuffer(pMesh.getData());
 		}
 
 		private sharedBuffer(pBuffer?: IRenderDataCollection): IRenderDataCollection {
@@ -2802,7 +2802,7 @@ module akra.pool.resources {
 		}
 
 		public  getBasename(): string {
-			return path.parse(this._pOptions.name || this._sFilename || "unknown").basename;
+			return path.parse(this._pOptions.name || this._sFilename || "unknown").getBaseName();
 		}
 
 		public  getFilename(): string {

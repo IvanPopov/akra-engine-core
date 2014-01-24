@@ -46,49 +46,49 @@ module akra.io {
 		protected _pFileMeta: IFileMeta = null;
 		protected _isLocal: boolean = false;
 
-		get path(): string {
+		getPath(): string {
 			return this._pUri.toString();
 		}
 
-		get name(): string {
-			return path.parse(this._pUri.path).basename;
+		getName(): string {
+			return path.parse(this._pUri.path).getBaseName();
 		}
 
-		get mode(): int {
-			return this._iMode;
-		}
-
-		get meta(): IFileMeta {
+		getMeta(): IFileMeta {
 			logger.assert(isDefAndNotNull(this._pFileMeta), "There is no file handle open.");
 			return this._pFileMeta;
 		}
 
-		//set mode(sMode: string);
-		//set mode(iMode: int);
-		set mode(mode: int) {
+		getByteLength(): uint {
+			return this._pFileMeta ? this._pFileMeta.size : 0;
+		}
+
+		getMode(): int {
+			return this._iMode;
+		}
+
+		setMode(sMode: string): void;
+		setMode(iMode: int): void;
+		setMode(mode: any): void {
 			this._iMode = isString(mode) ? io.filemode(<string><any>mode) : mode;
 		}
 
-		set onread(fnCallback: (e: Error, data: any) => void) {
-			this.read(fnCallback);
-		}
-
-		set onopen(fnCallback: Function) {
-			this.open(fnCallback);
-		}
-
-		get position(): uint {
+		getPosition(): uint {
 			logger.assert(isDefAndNotNull(this._pFileMeta), "There is no file handle open.");
 			return this._nCursorPosition;
 		}
 
-		set position(iOffset: uint) {
+		setPosition(iOffset: uint): void {
 			logger.assert(isDefAndNotNull(this._pFileMeta), "There is no file handle open.");
 			this._nCursorPosition = iOffset;
 		}
 
-		get byteLength(): uint {
-			return this._pFileMeta ? this._pFileMeta.size : 0;
+		setOnRead(fnCallback: (e: Error, data: any) => void): void {
+			this.read(fnCallback);
+		}
+
+		setOnOpen(fnCallback: Function): void {
+			this.open(fnCallback);
 		}
 
 		constructor(sFilename?: string, sMode?: string, fnCallback?: Function);
@@ -100,7 +100,7 @@ module akra.io {
 
 			this.setAndValidateUri(uri.parse(sFilename));
 
-			if (info.api.transferableObjects) {
+			if (info.api.getTransferableObjects()) {
 				this._eTransferMode = EFileTransferModes.k_Fast;
 			}
 			//OPERA MOVED TO WEBKIT, and this TRAP not more be needed!
@@ -147,7 +147,7 @@ module akra.io {
 			fnCallback = fnCallback || TFile.defaultCallback;
 
 			if (this.isOpened()) {
-				logger.warn("file already opened: " + this.name);
+				logger.warn("file already opened: " + this.getName());
 				(<Function>fnCallback).call(pFile, null, this._pFileMeta);
 			}
 
@@ -205,7 +205,7 @@ module akra.io {
 
 			var pCommand: AIFileCommand = {
 				act: AEFileActions.k_Clear,
-				name: this.path,
+				name: this.getPath(),
 				mode: this._iMode
 			};
 
@@ -228,7 +228,7 @@ module akra.io {
 
 			var pCommand: AIFileCommand = {
 				act: AEFileActions.k_Read,
-				name: this.path,
+				name: this.getPath(),
 				mode: this._iMode,
 				pos: this._nCursorPosition,
 				transfer: this._eTransferMode,
@@ -270,7 +270,7 @@ module akra.io {
 					return;
 				}
 
-				pFile.position += isString(pData) ? pData.length : pData.byteLength;
+				pFile.setPosition(pFile.getPosition() + (isString(pData) ? pData.length : pData.byteLength));
 				(<any>pFile)._pFileMeta = <IFileMeta>pMeta;
 
 				fnCallback.call(pFile, null, pMeta);
@@ -282,7 +282,7 @@ module akra.io {
 
 			pCommand = {
 				act: AEFileActions.k_Write,
-				name: this.path,
+				name: this.getPath(),
 				mode: this._iMode,
 				data: pData,
 				contentType: sContentType,
@@ -334,9 +334,9 @@ module akra.io {
 		rename(sFilename: string, fnCallback: Function = TFile.defaultCallback): void {
 			var pName: IPathinfo = path.parse(sFilename);
 
-			logger.assert(!pName.dirname, 'only filename can be specified.');
+			logger.assert(!pName.getDirName(), 'only filename can be specified.');
 
-			this.move(path.parse(this._pUri.path).dirname + "/" + pName.basename, fnCallback);
+			this.move(path.parse(this._pUri.path).getDirName() + "/" + pName.getBaseName(), fnCallback);
 		}
 
 		remove(fnCallback: Function = TFile.defaultCallback): void {
@@ -347,7 +347,7 @@ module akra.io {
 			var pFile: IFile = this;
 			var pCommand: AIFileCommand = {
 				act: AEFileActions.k_Remove,
-				name: this.path,
+				name: this.getPath(),
 				mode: this._iMode
 			};
 			var fnCallbackSystem: Function = function (err, pData) {
@@ -363,7 +363,7 @@ module akra.io {
 
 		//return current position
 		atEnd(): int {
-			this.position = this.byteLength;
+			this.setPosition(this.getByteLength());
 			return this._nCursorPosition;
 		}
 		//return current position;
@@ -372,10 +372,10 @@ module akra.io {
 
 			var nSeek: int = this._nCursorPosition + iOffset;
 			if (nSeek < 0) {
-				nSeek = this.byteLength - (math.abs(nSeek) % this.byteLength);
+				nSeek = this.getByteLength() - (math.abs(nSeek) % this.getByteLength());
 			}
 
-			logger.assert(nSeek >= 0 && nSeek <= this.byteLength, "Invalid offset parameter");
+			logger.assert(nSeek >= 0 && nSeek <= this.getByteLength(), "Invalid offset parameter");
 
 			this._nCursorPosition = nSeek;
 
@@ -389,7 +389,7 @@ module akra.io {
 		isExists(fnCallback: Function): void {
 			var pCommand: AIFileCommand = {
 				act: AEFileActions.k_Exists,
-				name: this.path,
+				name: this.getPath(),
 				mode: this._iMode
 			};
 			this.execCommand(pCommand, fnCallback);

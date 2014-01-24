@@ -848,7 +848,7 @@ module akra.fx {
 			if (!isNull(pRenderable)) {
 
 				if (MeshSubset.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()) {
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_BindShapeMatrix]] = (<IMeshSubset>pRenderable).skin.getBindMatrix();
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_BindShapeMatrix]] = (<IMeshSubset>pRenderable).getSkin().getBindMatrix();
 				}
 
 				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_RenderObjectId]] = iRenderableID;
@@ -887,7 +887,7 @@ module akra.fx {
 
 		private prepareComposerState(): void {
 			if (!isNull(this._pCurrentRenderable)) {
-				this._pComposerState.renderable.isAdvancedIndex = this._pCurrentRenderable.data.useAdvancedIndex();
+				this._pComposerState.renderable.isAdvancedIndex = this._pCurrentRenderable.getData().useAdvancedIndex();
 				this._pComposerState.object.isBillboard = this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard();
 
 

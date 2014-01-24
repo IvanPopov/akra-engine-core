@@ -25,26 +25,26 @@ module akra.net {
 	var OPTIONS: IRPCOptions = config.rpc;
 
 	function hasLimitedDeferredCalls(pRpc: IRPC): boolean {
-		return (pRpc.options.deferredCallsLimit >= 0)
+		return (pRpc.getOptions().deferredCallsLimit >= 0)
 	}
 
 	function hasReconnect(pRpc: IRPC): boolean {
-		return (pRpc.options.reconnectTimeout > 0);
+		return (pRpc.getOptions().reconnectTimeout > 0);
 	}
 
 	function hasSystemRoutine(pRpc: IRPC): boolean {
-		return (pRpc.options.systemRoutineInterval > 0)
+		return (pRpc.getOptions().systemRoutineInterval > 0)
 	}
 	function hasCallbackLifetime(pRpc: IRPC): boolean { 
-		return (pRpc.options.callbackLifetime > 0)
+		return (pRpc.getOptions().callbackLifetime > 0)
 	}
 
 	function hasGroupCalls(pRpc: IRPC): boolean {
-		return (pRpc.options.callsFrequency > 0);
+		return (pRpc.getOptions().callsFrequency > 0);
 	}
 
 	function hasCallbacksCountLimit(pRpc: IRPC): boolean {
-		return (pRpc.options.maxCallbacksCount > 0);
+		return (pRpc.getOptions().maxCallbacksCount > 0);
 	}
 
 	class RPC implements IRPC {
@@ -79,9 +79,9 @@ module akra.net {
 		protected _iGroupCallRoutine: int = -1;
 
 
-		get remote(): any { return this._pRemoteAPI; }
-		get options(): IRPCOptions { return this._pOption; }
-		get group(): int { return !isNull(this._pGroupCalls) ? this._iGroupID : -1; }
+		getRemote(): any { return this._pRemoteAPI; }
+		getOptions(): IRPCOptions { return this._pOption; }
+		getGroup(): int { return !isNull(this._pGroupCalls) ? this._iGroupID : -1; }
 
 		constructor(sAddr?: string, pOption?: IRPCOptions);
 		constructor(pAddr: any = null, pOption: IRPCOptions = {}) {
@@ -153,7 +153,7 @@ module akra.net {
 							logger.presume(pDeffered.length === 0, "something going wrong. length is: " + pDeffered.length);
 						}
 
-						this.proc(this.options.procListName,
+						this.proc(this.getOptions().procListName,
 							function (pError: Error, pList: string[]) {
 								if (!isNull(pError)) {
 									logger.critical("could not get proc. list");
@@ -234,7 +234,7 @@ module akra.net {
 				if (hasReconnect(this)) {
 					this._iReconnect = setTimeout(() => {
 						pRPC.join();
-					}, this.options.reconnectTimeout);
+					}, this.getOptions().reconnectTimeout);
 				}
 			}
 		}
@@ -393,10 +393,10 @@ module akra.net {
 		}
 
 		setProcedureOption(sProc: string, sOpt: string, pValue: any): void {
-			var pOptions: IRPCProcOptions = this.options.procMap[sProc];
+			var pOptions: IRPCProcOptions = this.getOptions().procMap[sProc];
 
 			if (!pOptions) {
-				pOptions = this.options.procMap[sProc] = {
+				pOptions = this.getOptions().procMap[sProc] = {
 					lifeTime: -1
 				}
 		}
@@ -439,7 +439,7 @@ module akra.net {
 
 			if (isNull(pPipe) || !pPipe.isOpened()) {
 				if (!hasLimitedDeferredCalls(this) ||
-					this._pDefferedRequests.length <= this.options.deferredCallsLimit) {
+					this._pDefferedRequests.length <= this.getOptions().deferredCallsLimit) {
 
 					this._pDefferedRequests.push(pProc);
 
@@ -505,13 +505,13 @@ module akra.net {
 			if (hasSystemRoutine(this)) {
 				this._iSystemRoutine = setInterval(() => {
 					pRPC._systemRoutine();
-				}, this.options.systemRoutineInterval);
+				}, this.getOptions().systemRoutineInterval);
 			}
 
 			if (hasGroupCalls(this)) {
 				this._iGroupCallRoutine = setInterval(() => {
 					pRPC.groupCall();
-				}, this.options.callsFrequency);
+				}, this.getOptions().callsFrequency);
 			}
 		}
 
@@ -583,7 +583,7 @@ module akra.net {
 				pCallback = <IRPCCallback>pCallbacks.first;
 				while (!isNull(pCallback)) {
 
-					if (hasCallbackLifetime(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
+					if (hasCallbackLifetime(this) && (iNow - pCallback.timestamp) >= this.getOptions().callbackLifetime) {
 						fn = pCallback.fn;
 						if (config.DEBUG) {
 							sInfo = pCallback.procInfo;

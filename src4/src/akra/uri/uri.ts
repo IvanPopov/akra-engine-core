@@ -211,7 +211,7 @@ module akra.uri {
             return sFrom;
         }
 
-        sDirname = path.parse(pCurrentPath.path).dirname;
+        sDirname = path.parse(pCurrentPath.path).getDirName();
         pCurrentPath.path = sDirname ? sDirname + "/" + sFrom : sFrom;
 
         return normalizeURIPath(pCurrentPath).toString();

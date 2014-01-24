@@ -2,11 +2,11 @@
 
 module akra {
 	export interface IScreenInfo {
-		width: int;
-		height: int;
-		aspect: float;
-		pixelDepth: int;
-		colorDepth: int;
+		getWidth(): int;
+		getHeight(): int;
+		getAspect(): float;
+		getPixelDepth(): int;
+		getColorDepth(): int;
 	}
 	
 	

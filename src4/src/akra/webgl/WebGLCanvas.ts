@@ -239,7 +239,7 @@ module akra.webgl {
 					if (!!(doc.webkitFullscreenElement ||
 						doc.mozFullScreenElement ||
 						doc.fullscreenElement)) {
-						pCanvas.resize(info.screen.width, info.screen.height);
+						pCanvas.resize(info.screen.getWidth(), info.screen.getHeight());
 					}
 					else {
 						this.setFullscreen(false);

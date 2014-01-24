@@ -466,12 +466,12 @@ module akra.model {
 
 			var pSubMesh: IMeshSubset = pDome.createSubset("main", EPrimitiveTypes.TRIANGLELIST);
 
-			var e = pSubMesh.data.allocateData([VE.float3("POSITION"), VE.float2("TEXCOORD0")], pVertices);
-			pSubMesh.data.allocateIndex([VE.float("INDEX0")], pIndices);
-			pSubMesh.data.index(e, "INDEX0");
-			pSubMesh.shadow = false;
+			var e = pSubMesh.getData().allocateData([VE.float3("POSITION"), VE.float2("TEXCOORD0")], pVertices);
+			pSubMesh.getData().allocateIndex([VE.float("INDEX0")], pIndices);
+			pSubMesh.getData().index(e, "INDEX0");
+			pSubMesh.setShadow(false);
 
-			var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
+			var pMatrial: IMaterial = pSubMesh.getRenderMethod().surfaceMaterial.material;
 			pMatrial.diffuse = color.LIGHT_GRAY;
 			pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
 			pMatrial.specular = new Color(0.7, 0.7, 0.7, 1);
@@ -479,14 +479,14 @@ module akra.model {
 			pMatrial.shininess = 30.;
 
 			if ((<core.Engine>this.getEngine()).isDepsLoaded()) {
-				pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
+				pSubMesh.getRenderMethod().effect.addComponent("akra.system.sky");
 			}
 			else {
 				//this.getEngine().bind(SIGNAL(depsLoaded), () => {
 				//	pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
 				//});
 				this.getEngine().depsLoaded.connect(() => {
-					pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
+					pSubMesh.getRenderMethod().effect.addComponent("akra.system.sky");
 				});
 			}
 

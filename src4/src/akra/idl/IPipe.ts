@@ -22,7 +22,7 @@ module akra {
 	}
 	
 	export interface IPipe extends IEventProvider {
-		/** readonly */ uri: IURI;
+		getURI(): IURI;
 
 		open(pAddr?: IURI): boolean;
 		open(sAddr?: string): boolean;

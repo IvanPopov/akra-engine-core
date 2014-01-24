@@ -119,10 +119,10 @@ module akra.io {
     export function fopen(sUri: string, pMode: any = EIO.IN): IFile {
         sUri = uri.resolve(sUri);
 
-        if (info.api.webWorker) {
+        if (info.api.getWebWorker()) {
             return new TFile(<string>sUri, pMode);
         }
-        else if (info.api.fileSystem) {
+        else if (info.api.getFileSystem()) {
             return new LocalFile(<string>sUri, pMode);
         }
         else {

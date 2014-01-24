@@ -32,7 +32,7 @@ module akra.scene {
 			}
 
 			if (!isNull(pMesh)) {
-				this.accessLocalBounds().set(pMesh.boundingBox);
+				this.accessLocalBounds().set(pMesh.getBoundingBox());
 				this._pMesh = pMesh;
 				//FIXME: event handing used out of object, bad practice..
 				this.getScene().postUpdate.connect(this._pMesh, this._pMesh.update);
@@ -41,7 +41,7 @@ module akra.scene {
 		}
 
 		getTotalRenderable(): uint {
-			return isNull(this._pMesh) || !this._bShow ? 0 : this._pMesh.length;
+			return isNull(this._pMesh) || !this._bShow ? 0 : this._pMesh.getLength();
 		}
 
 		constructor(pScene: IScene3d) {
@@ -55,14 +55,13 @@ module akra.scene {
 			return this._pMesh.getSubset(i);
 		}
 
-		get shadow(): boolean {
-			return this._pMesh.shadow;
+		getShadow(): boolean {
+			return this._pMesh.getShadow();
 		}
 
-		set shadow(bValue) {
-			this._pMesh.shadow = bValue;
+		setShadow(bValue: boolean): void {
+			this._pMesh.setShadow(bValue);
 		}
-
 
 		isVisible(): boolean {
 			return this._bShow;
@@ -71,10 +70,10 @@ module akra.scene {
 		toString(isRecursive: boolean = false, iDepth: uint = 0): string {
 			if (config.DEBUG) {
 				if (!isRecursive) {
-					var sData: string = "<model" + (this.getName() ? " " + this.getName() : "") + "(" + (isNull(this._pMesh) ? 0 : this._pMesh.length) + ")" + '>'/* + " height: " + this.worldPosition.y*/;
+					var sData: string = "<model" + (this.getName() ? " " + this.getName() : "") + "(" + (isNull(this._pMesh) ? 0 : this._pMesh.getLength()) + ")" + '>'/* + " height: " + this.worldPosition.y*/;
 
 					if (!isNull(this._pMesh)) {
-						sData += "( " + this._pMesh.name + " )";
+						sData += "( " + this._pMesh.getName() + " )";
 					}
 
 					return sData;

@@ -41,76 +41,44 @@ module akra.render {
 		protected _bFrozen: boolean = false;
 		protected _bWireframeOverlay: boolean = false;
 
-		get type(): ERenderableTypes { return this._eRenderableType; }
-		get renderMethod(): IRenderMethod { return this._pTechnique.getMethod(); }
-		set renderMethod(pMethod: IRenderMethod) { this.switchRenderMethod(pMethod); }
-		get effect(): IEffect { return this._pTechnique.getMethod().effect; }
-		get surfaceMaterial(): ISurfaceMaterial { return this._pTechnique.getMethod().surfaceMaterial; }
-		get material(): IMaterial { return this.surfaceMaterial.material; }
-		get data(): IRenderData { return this._pRenderData; }
-		get shadow(): boolean { return this._bShadow; }
+		getType(): ERenderableTypes {
+			return this._eRenderableType;
+		}
 
-		set shadow(bShadow: boolean) {
+		getEffect(): IEffect {
+			return this._pTechnique.getMethod().effect;
+		}
+
+		getSurfaceMaterial(): ISurfaceMaterial {
+			return this._pTechnique.getMethod().surfaceMaterial;
+		}
+
+		getMaterial(): IMaterial {
+			return this.getSurfaceMaterial().material;
+		}
+
+		getData(): IRenderData {
+			return this._pRenderData;
+		}
+
+		getRenderMethod(): IRenderMethod {
+			return this._pTechnique.getMethod();
+		}
+
+		setRenderMethod(pMethod: IRenderMethod): void {
+			this.switchRenderMethod(pMethod);
+		}
+
+		getShadow(): boolean {
+			return this._bShadow;
+		}
+
+		setShadow(bShadow: boolean): void {
 			if (this._bShadow !== bShadow) {
 				this._bShadow = bShadow;
 				this.shadowed.emit(bShadow);
 			}
 		}
-
-		set onclick(
-			fn: (pRenderable: IRenderableObject, pViewport: IViewport,
-			pObject: ISceneObject, x: uint, y: uint) => void) {
-			this.click.connect(fn);
-		}
-
-		set onmousemove(
-			fn: (pRenderable: IRenderableObject, pViewport: IViewport,
-			pObject: ISceneObject, x: uint, y: uint) => void) {
-			this.mousemove.connect(fn);
-		}
-
-		set onmousedown(
-			fn: (pRenderable: IRenderableObject, pViewport: IViewport,
-			pObject: ISceneObject, x: uint, y: uint) => void) {
-			this.mousedown.connect(fn);
-		}
-
-		set onmouseup(
-			fn: (pRenderable: IRenderableObject, pViewport: IViewport,
-			pObject: ISceneObject, x: uint, y: uint) => void) {
-			this.mouseup.connect(fn);
-		}
-
-		set onmouseover(
-			fn: (pRenderable: IRenderableObject, pViewport: IViewport,
-			pObject: ISceneObject, x: uint, y: uint) => void) {
-			this.mouseover.connect(fn);
-		}
-
-		set onmouseout(
-			fn: (pRenderable: IRenderableObject, pViewport: IViewport,
-			pObject: ISceneObject, x: uint, y: uint) => void) {
-			this.mouseout.connect(fn);
-		}
-
-		set ondragstart(
-			fn: (pRenderable: IRenderableObject, pViewport: IViewport,
-			pObject: ISceneObject, x: uint, y: uint) => void) {
-			this.dragstart.connect(fn);
-		}
-
-		set ondragstop(
-			fn: (pRenderable: IRenderableObject, pViewport: IViewport,
-			pObject: ISceneObject, x: uint, y: uint) => void) {
-			this.dragstop.connect(fn);
-		}
-
-		set ondragging(
-			fn: (pRenderable: IRenderableObject, pViewport: IViewport,
-			pObject: ISceneObject, x: uint, y: uint) => void) {
-			this.dragging.connect(fn);
-		}
-
 
 		constructor(eType: ERenderableTypes = ERenderableTypes.UNKNOWN) {
 			this._eRenderableType = eType;
@@ -228,13 +196,13 @@ module akra.render {
 
 
 
-		getRenderMethod(csName: string = null): IRenderMethod {
+		getRenderMethodByName(csName: string = null): IRenderMethod {
 			var pTechnique: IRenderTechnique = this._pTechniqueMap[csName || DEFAULT_RT];
 			return pTechnique ? pTechnique.getMethod() : null;
 		}
 
 		getRenderMethodDefault(): IRenderMethod {
-			return this.getRenderMethod(DEFAULT_RM);
+			return this.getRenderMethodByName(DEFAULT_RM);
 		}
 
 		isReadyForRender(): boolean {
@@ -267,16 +235,16 @@ module akra.render {
 				return;
 			}
 
-			if (this.data.getDataLocation("BARYCENTRIC") == -1) {
-				var ePrimType: EPrimitiveTypes = this.data.getPrimitiveType();
+			if (this.getData().getDataLocation("BARYCENTRIC") == -1) {
+				var ePrimType: EPrimitiveTypes = this.getData().getPrimitiveType();
 
 				if (ePrimType !== EPrimitiveTypes.TRIANGLELIST/* && ePrimType !== EPrimitiveTypes.TRIANGLESTRIP*/) {
 					logger.warn("wireframe supported only for TRIANGLELIST");
 					return false;
 				}
 
-				var iPosition: int = this.data.getDataLocation('POSITION');
-				var pIndices: Float32Array = <Float32Array>this.data.getIndexFor("POSITION");
+				var iPosition: int = this.getData().getDataLocation('POSITION');
+				var pIndices: Float32Array = <Float32Array>this.getData().getIndexFor("POSITION");
 
 				// var pIndices: Float32Array = <any>this.data._getFlow("POSITION").mapper.data.getTypedData(this.data._getFlow("POSITION").mapper.semantics);
 				var pBarycentric: Float32Array = new Float32Array(pIndices.length);
@@ -289,10 +257,10 @@ module akra.render {
 				}
 
 
-				this.data.allocateData([VE.float('BARYCENTRIC')], pBarycentric);
-				this.data.allocateIndex([VE.float('BARYCENTRIC_INDEX')], pIndices);
+				this.getData().allocateData([VE.float('BARYCENTRIC')], pBarycentric);
+				this.getData().allocateIndex([VE.float('BARYCENTRIC_INDEX')], pIndices);
 
-				this.data.index('BARYCENTRIC', 'BARYCENTRIC_INDEX');
+				this.getData().index('BARYCENTRIC', 'BARYCENTRIC_INDEX');
 			}
 
 			this._bWireframeOverlay = bOverlay;
@@ -313,7 +281,7 @@ module akra.render {
 
 			this.beforeRender.emit(pViewport, this._pTechnique.getMethod());
 
-			this.data._draw(this._pTechnique, pViewport, this, pSceneObject);
+			this.getData()._draw(this._pTechnique, pViewport, this, pSceneObject);
 		}
 
 		getTechnique(sName: string = DEFAULT_RT): IRenderTechnique {
@@ -341,10 +309,10 @@ module akra.render {
 	
 
 	export function isScreen(pObject: IRenderableObject): boolean {
-		return pObject.type === ERenderableTypes.SCREEN;
+		return pObject.getType() === ERenderableTypes.SCREEN;
 	}
 
 	export function isSprite(pObject: IRenderableObject): boolean {
-		return pObject.type === ERenderableTypes.SPRITE;
+		return pObject.getType() === ERenderableTypes.SPRITE;
 	}
 }

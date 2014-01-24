@@ -8,13 +8,12 @@
 
 module akra {
 	export interface IMeshSubset extends IEventProvider, IRenderableObject {
-		name: string;
+		getName(): string;
 
-		/** readonly */ mesh: IMesh;
-		/** readonly */ skin: ISkin;
-		/** readonly */ data: IRenderData;
-		/** readonly */ boundingBox: IRect3d;
-		/** readonly */ boundingSphere: ISphere;
+		getMesh(): IMesh;
+		getSkin(): ISkin;
+		getBoundingBox(): IRect3d;
+		getBoundingSphere(): ISphere;
 
 		createBoundingBox(): boolean;
 		deleteBoundingBox(): boolean;
@@ -34,7 +33,6 @@ module akra {
 
 		isSkinned(): boolean;
 		isOptimizedSkinned(): boolean;
-		getSkin(): ISkin;
 		setSkin(pSkin: ISkin): boolean;
 
 		/** @deprecated */

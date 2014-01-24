@@ -281,8 +281,8 @@ module akra {
 					fnCallback = pReciever.constructor.prototype[fnCallback];
 				}
 				else {
-					fnCallback = pReciever[fnCallback]
-			}
+					fnCallback = pReciever[fnCallback];
+				}
 			}
 
 			if (eType !== this._eType || fnCallback === undefined || fnCallback === null) {

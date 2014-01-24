@@ -80,7 +80,7 @@ module akra.scene {
 			bValue ? bf.setAll(this._iViewModes, EObjectViewModes.k_Shadows) : bf.clearAll(this._iViewModes, EObjectViewModes.k_Shadows);
 
 			for (var i: uint = 0; i < this.getTotalRenderable(); i++) {
-				(<IRenderableObject>this.getRenderable(i)).shadow = bValue;
+				(<IRenderableObject>this.getRenderable(i)).setShadow(bValue);
 			}
 		}
 

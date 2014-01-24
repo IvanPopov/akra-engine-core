@@ -138,11 +138,11 @@ module akra.terrain {
 				return true;
 			}
 
-			debug.assert(isNull(pRenderable.data), "У терраин сектиона уже созданы данные");
+			debug.assert(isNull(pRenderable.getData()), "У терраин сектиона уже созданы данные");
 
 			pRenderable._setRenderData(this.terrainSystem.dataFactory.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP, 0));
 
-			if (isNull(pRenderable.data)) {
+			if (isNull(pRenderable.getData())) {
 				return false;
 			}
 
@@ -209,7 +209,7 @@ module akra.terrain {
 					}
 				}
 
-				this._iVertexID = this.getRenderable().data.allocateData(this.vertexDescription, new Float32Array(pVerts));
+				this._iVertexID = this.getRenderable().getData().allocateData(this.vertexDescription, new Float32Array(pVerts));
 			}
 			else {
 				for (var y: uint = 0; y < this._iYVerts; ++y) {
@@ -237,8 +237,8 @@ module akra.terrain {
 					this._iYVerts, /*horz vertex count in vbuffer*/
 					0);
 
-				this.getRenderable().data.allocateIndex([VE.float(data.Usages.INDEX0)], pIndexList);
-				this.getRenderable().data.index(this._iVertexID, data.Usages.INDEX0);
+				this.getRenderable().getData().allocateIndex([VE.float(data.Usages.INDEX0)], pIndexList);
+				this.getRenderable().getData().index(this._iVertexID, data.Usages.INDEX0);
 			}
 			return true;
 		}

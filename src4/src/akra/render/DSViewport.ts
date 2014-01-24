@@ -236,7 +236,7 @@ module akra.render {
 						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
 
 						if (isNull(pTechnique) || pTechCurr.modified > pTechnique.modified) {
-							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
+							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(), sMethod)) {
 								logger.critical("cannot clone active render method");
 							}
 

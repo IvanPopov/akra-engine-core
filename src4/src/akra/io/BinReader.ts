@@ -108,7 +108,7 @@ module akra.io {
             return i;
         }
 
-        /**  */ boolean(): boolean {
+        boolean(): boolean {
             return this.uint8() > 0;
         }
 
@@ -159,35 +159,35 @@ module akra.io {
             return pArray;
         }
 
-        /**  */ uint32Array(): Uint32Array {
+        uint32Array(): Uint32Array {
             return <Uint32Array>this.uintXArray(32);
         }
 
-        /**  */ uint16Array(): Uint16Array {
+        uint16Array(): Uint16Array {
             return <Uint16Array>this.uintXArray(16);
         }
 
-        /**  */ uint8Array(): Uint8Array {
+        uint8Array(): Uint8Array {
             return <Uint8Array>this.uintXArray(8);
         }
 
-        /**  */ int32Array(): Int32Array {
+        int32Array(): Int32Array {
             return <Int32Array>this.intXArray(32);
         }
 
-        /**  */ int16Array(): Int16Array {
+        int16Array(): Int16Array {
             return <Int16Array>this.intXArray(16);
         }
 
-        /**  */ int8Array(): Int8Array {
+        int8Array(): Int8Array {
             return <Int8Array>this.intXArray(8);
         }
 
-        /**  */ float64Array(): Float64Array {
+        float64Array(): Float64Array {
             return <Float64Array>this.floatXArray(64);
         }
 
-        /**  */ float32Array(): Float32Array {
+        float32Array(): Float32Array {
             return <Float32Array>this.floatXArray(32);
         }
 

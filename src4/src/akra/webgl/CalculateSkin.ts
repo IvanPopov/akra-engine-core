@@ -6,7 +6,7 @@
 module akra.webgl {
 	import Vec2 = math.Vec2;
 	export function calculateSkin(pMeshSubset: IMeshSubset): boolean {
-		var pRenderData: IRenderData = pMeshSubset.data;
+		var pRenderData: IRenderData = pMeshSubset.getData();
 
 		var isOk: boolean = pRenderData.selectIndexSet(".update_skinned_position");
 
@@ -257,7 +257,7 @@ module akra.webgl {
 		pWebGLProgram.setInt("videoBuffer", 0);
 		pWebGLProgram.setVec2("frameBufferSize", Vec2.temp(iWidth, iHeight));
 		pWebGLProgram.setInt("type", 0);
-		pWebGLProgram.setMat4("bind_matrix", pMeshSubset.skin.getBindMatrix());
+		pWebGLProgram.setMat4("bind_matrix", pMeshSubset.getSkin().getBindMatrix());
 
 		pWebGLContext.viewport(0, 0, iWidth, iHeight);
 		//PASS 1

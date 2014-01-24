@@ -30,7 +30,7 @@ module akra.control {
 
 		init(): boolean {
 
-			if (!info.api.gamepad) {
+			if (!info.api.getGamepad()) {
 				logger.warn("Gamepad API is unsupported.");
 				return false;
 			}

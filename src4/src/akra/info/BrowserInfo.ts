@@ -25,15 +25,15 @@ module akra.info {
 			this.init();
 		}
 
-		get name(): string {
+		getName(): string {
 			return this._sBrowser;
 		}
 
-		get version(): string {
+		getVersion(): string {
 			return this._sVersion;
 		}
 
-		get os(): string {
+		getOS(): string {
 			return this._sOS;
 		}
 

@@ -73,7 +73,7 @@ module akra.pool.resources {
 		}
 
 		public getBasename(): string {
-			return path.parse(this._pOptions.name || this._sFilename || "unknown").basename;
+			return path.parse(this._pOptions.name || this._sFilename || "unknown").getBaseName();
 		}
 
 		public get byteLength(): uint {
@@ -160,41 +160,41 @@ module akra.pool.resources {
 			pMesh = model.createMesh(pEngine, this.getBasename(), EMeshOptions.HB_READABLE);
 			pSubMesh = pMesh.createSubset(this.getBasename(), EPrimitiveTypes.TRIANGLELIST);
 
-			iPos = pSubMesh.data.allocateData([VE.float3('POSITION')], pVerticesData);
-			pSubMesh.data.allocateIndex([VE.float('INDEX0')], pVertexIndicesData);
-			pSubMesh.data.index(iPos, 'INDEX0');
+			iPos = pSubMesh.getData().allocateData([VE.float3('POSITION')], pVerticesData);
+			pSubMesh.getData().allocateIndex([VE.float('INDEX0')], pVertexIndicesData);
+			pSubMesh.getData().index(iPos, 'INDEX0');
 			// console.log(pVerticesData, pVertexIndicesData);
 
 			if (this.hasNormals()) {
-				iNorm = pSubMesh.data.allocateData([VE.float3('NORMAL')], pNormalsData);
+				iNorm = pSubMesh.getData().allocateData([VE.float3('NORMAL')], pNormalsData);
 
 				if (this._pNormalIndexes.length > 0) {
-					pSubMesh.data.allocateIndex([VE.float('INDEX1')], pNormalIndicesData);
-					pSubMesh.data.index(iNorm, 'INDEX1');
+					pSubMesh.getData().allocateIndex([VE.float('INDEX1')], pNormalIndicesData);
+					pSubMesh.getData().index(iNorm, 'INDEX1');
 					// console.log(pNormalsData, pNormalIndicesData);
 				}
 				else {
 					logger.log("[OBJ [" + this.findResourceName() + "]]", "normal index was replaced with vertex index");
-					pSubMesh.data.allocateIndex([VE.float('INDEX1')], pVertexIndicesData);
-					pSubMesh.data.index(iNorm, 'INDEX1');
+					pSubMesh.getData().allocateIndex([VE.float('INDEX1')], pVertexIndicesData);
+					pSubMesh.getData().index(iNorm, 'INDEX1');
 				}
 			}
 
 			if (this.hasTexcoords()) {
 				logger.log("[OBJ [" + this.findResourceName() + "]]", "model have texture coordinates");
-				iTexcoord = pSubMesh.data.allocateData([VE.float2('TEXCOORD0')], pTexcoordsData);
-				pSubMesh.data.allocateIndex([VE.float('INDEX2')], pTexcoordIndicesData);
-				pSubMesh.data.index('TEXCOORD0', 'INDEX2');
+				iTexcoord = pSubMesh.getData().allocateData([VE.float2('TEXCOORD0')], pTexcoordsData);
+				pSubMesh.getData().allocateIndex([VE.float('INDEX2')], pTexcoordIndicesData);
+				pSubMesh.getData().index('TEXCOORD0', 'INDEX2');
 				// console.log(pTexcoordsData, pTexcoordIndicesData);
 			}
 			else {
 				logger.log("[OBJ [" + this.findResourceName() + "]]", "model does not have any texture coordinates");
 			}
 
-			pSubMesh.shadow = this.options.shadows;
-			pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+			pSubMesh.setShadow(this.options.shadows);
+			pSubMesh.getRenderMethod().effect.addComponent("akra.system.mesh_texture");
 
-			var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
+			var pMatrial: IMaterial = pSubMesh.getRenderMethod().surfaceMaterial.material;
 			pMatrial.diffuse = new Color(0.7, 0., 0., 1.);
 			pMatrial.ambient = new Color(0., 0., 0., 1.);
 			pMatrial.specular = new Color(0.7, 0., 0., 1);

@@ -11,10 +11,10 @@ module akra {
 	
 	
 	export interface ISkeleton {
-		/** readonly */ totalBones: int;
-		/** readonly */ totalNodes: int;
-		/** readonly */ name: string;
-		/** readonly */ root: IJoint;
+		getTotalBones(): int;
+		getTotalNodes(): int;
+		getName(): string;
+		getRoot(): IJoint;
 	
 		getRootJoint(): IJoint;
 		getRootJoints(): IJoint[];

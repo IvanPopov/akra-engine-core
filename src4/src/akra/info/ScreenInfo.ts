@@ -4,24 +4,24 @@
 module akra.info {
 
     export class ScreenInfo implements IScreenInfo {
-        get width(): int {
-            return screen.width;
+        getWidth(): int {
+            return screen.getWidth();
         }
 
-        get height(): int {
-            return screen.height;
+        getHeight(): int {
+            return screen.getHeight();
         }
 
-        get aspect(): float {
-            return screen.width / screen.height;
+        getAspect(): float {
+            return screen.getWidth() / screen.getHeight();
         }
 
-        get pixelDepth(): int {
-            return screen.pixelDepth;
+        getPixelDepth(): int {
+            return screen.getPixelDepth();
         }
 
-        get colorDepth(): int {
-            return screen.colorDepth;
+        getColorDepth(): int {
+            return screen.getColorDepth();
         }
     }
 

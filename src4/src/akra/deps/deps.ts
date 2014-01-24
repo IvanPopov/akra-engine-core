@@ -129,7 +129,7 @@ module akra.deps {
 }
 
 	export function detectType(pDep: IDep): string {
-		return pDep.type || path.parse(pDep.path).ext || "";
+		return pDep.type || path.parse(pDep.path).getExt() || "";
 	}
 
 	export function createResources(pEngine: IEngine, pDeps: IDependens): void {

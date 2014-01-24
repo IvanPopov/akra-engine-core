@@ -35,7 +35,7 @@ module akra.render {
 					for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
 						pRenderable = pSceneObject.getRenderable(j);
 
-						if (!isNull(pRenderable) && pRenderable.shadow) {
+						if (!isNull(pRenderable) && pRenderable.getShadow()) {
 							this.prepareRenderableForShadows(pRenderable);
 							pRenderable.render(this, this._csDefaultRenderMethod, pSceneObject);
 							nShadowsCasted++;

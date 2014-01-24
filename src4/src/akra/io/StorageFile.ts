@@ -28,7 +28,7 @@ module akra.io {
                 return;
             }
 
-            localStorage.setItem(this.path, "");
+            localStorage.setItem(this.getPath(), "");
             this._pFileMeta.size = 0;
 
             fnCallback(null, this);
@@ -91,7 +91,7 @@ module akra.io {
             (<string>pCurrentData).substr(this._nCursorPosition + (<string>pData).length);
 
             try {
-                localStorage.setItem(this.path, pData);
+                localStorage.setItem(this.getPath(), pData);
             }
             catch (e) {
                 fnCallback(e);
@@ -104,23 +104,23 @@ module akra.io {
         }
 
         isExists(fnCallback: Function = TFile.defaultCallback): void {
-            fnCallback.call(this, null, localStorage.getItem(this.path) == null);
+            fnCallback.call(this, null, localStorage.getItem(this.getPath()) == null);
         }
 
         remove(fnCallback: Function = TFile.defaultCallback): void {
-            localStorage.removeItem(this.path);
+            localStorage.removeItem(this.getPath());
             fnCallback.call(this, null);
         }
 
         private readData(): any {
             var pFileMeta: IFileMeta = this._pFileMeta;
-            var pData: string = localStorage.getItem(this.path);
+            var pData: string = localStorage.getItem(this.getPath());
             var pDataBin: ArrayBuffer;
 
             if (pData == null) {
                 pData = "";
                 if (io.canCreate(this._iMode)) {
-                    localStorage.setItem(this.path, pData);
+                    localStorage.setItem(this.getPath(), pData);
                 }
             }
 

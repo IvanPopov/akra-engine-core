@@ -19,11 +19,11 @@ module akra.info {
 		private _bWebSocket: boolean = false;
 		private _bGamepad: boolean = false;
 
-		get webGL(): boolean {
+		getWebGL(): boolean {
 			return webgl.isEnabled();
 		}
 
-		get transferableObjects(): boolean {
+		getTransferableObjects(): boolean {
 			if (!this._bTransferableObjects) {
 				this._bTransferableObjects = (this._bWebWorker && this.chechTransferableObjects() ? true : false);
 			}
@@ -31,35 +31,35 @@ module akra.info {
 			return this._bTransferableObjects;
 		}
 
-		get file(): boolean {
+		getFile(): boolean {
 			return this._bFile;
 		}
 
-		get fileSystem(): boolean {
+		getFileSystem(): boolean {
 			return this._bFileSystem;
 		}
 
-		get webAudio(): boolean {
+		getWebAudio(): boolean {
 			return this._bWebAudio;
 		}
 
-		get webWorker(): boolean {
+		getWebWorker(): boolean {
 			return this._bWebWorker;
 		}
 
-		get localStorage(): boolean {
+		getLocalStorage(): boolean {
 			return this._bLocalStorage;
 		}
 
-		get webSocket(): boolean {
+		getWebSocket(): boolean {
 			return this._bWebSocket;
 		}
 
-		get gamepad(): boolean {
+		getGamepad(): boolean {
 			return this._bGamepad;
 		}
 
-		get zip(): boolean {
+		getZip(): boolean {
 			return isDefAndNotNull(window["zip"]);
 		}
 

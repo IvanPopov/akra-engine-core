@@ -214,7 +214,7 @@ module akra.pool.resources {
 			else if (isString(arguments[0])) {
 				var sFilename: string = arguments[0];
 				var fnCallBack: Function = arguments[1];
-				var sExt: string = path.parse(sFilename).ext.toLowerCase();
+				var sExt: string = path.parse(sFilename).getExt().toLowerCase();
 
 				if (sExt === "png" || sExt === "jpg" || sExt === "jpeg" || sExt === "gif" || sExt === "bmp") {
 					var pImg: HTMLImageElement = new Image();
@@ -250,9 +250,9 @@ module akra.pool.resources {
 					pImg.src = sFilename;
 				}
 				else {
-					io.fopen(sFilename, "rb").onread = function (pError: Error, pDataInFile: ArrayBuffer) {
+					io.fopen(sFilename, "rb").setOnRead(function (pError: Error, pDataInFile: ArrayBuffer) {
 						pMe.load(new Uint8Array(pDataInFile), sExt, fnCallBack);
-					}
+					});
 				}
 
 				return this;

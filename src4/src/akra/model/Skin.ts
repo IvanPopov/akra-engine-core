@@ -70,31 +70,16 @@ module akra.model {
 
 
 
-		 get data(): IRenderDataCollection {
-			return this._pMesh.data;
+		getData(): IRenderDataCollection {
+			return this._pMesh.getData();
 		}
 
-		 get skeleton(): ISkeleton{
-			return this._pSkeleton;
-		}
-
-		 set skeleton(pSkeleton: ISkeleton) {
-			if (isNull(pSkeleton) || pSkeleton.totalBones < this.totalBones) {
-				logger.warn("cannnot set skeletonm because skeleton has to little bones");
-		        return;
-		    }
-
-		    for (var i: int = 0, nMatrices: uint = this.totalBones; i < nMatrices; i++) {
-		        this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
-		        debug.assert(isDefAndNotNull(this._pAffectingNodes[i]), "joint<" + this._pNodeNames[i] + "> must exists...");
-		    }
-		    
-
-		    this._pSkeleton = pSkeleton;
-		}
-
-		 get totalBones(): uint {
+		getTotalBones(): uint {
 			return this._pNodeNames.length;
+		}
+
+		getSkeleton(): ISkeleton {
+			return this._pSkeleton;
 		}
 
 		constructor(pMesh: IMesh) {
@@ -128,15 +113,15 @@ module akra.model {
 		}
 
 		setSkeleton(pSkeleton: ISkeleton): boolean {
-			if (!pSkeleton || pSkeleton.totalBones < this.totalBones) {
-				debug.warn("number of bones in skeleton (" + pSkeleton.totalBones + 
-					") less then number of bones in skin (" + this.totalBones + ").");
-			    return false;
+			if (isNull(pSkeleton) || pSkeleton.getTotalBones() < this.getTotalBones()) {
+				debug.warn("number of bones in skeleton (" + pSkeleton.getTotalBones() +
+					") less then number of bones in skin (" + this.getTotalBones() + ").");
+				return false;
 			}
 
-			for (var i: int = 0, nMatrices = this.totalBones; i < nMatrices; i++) {
-			    this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
-			    debug.assert(!isNull(this._pAffectingNodes[i]), "joint<" + this._pNodeNames[i] + "> must exists...");
+			for (var i: int = 0, nMatrices = this.getTotalBones(); i < nMatrices; i++) {
+				this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
+				debug.assert(!isNull(this._pAffectingNodes[i]), "joint<" + this._pNodeNames[i] + "> must exists...");
 			}
 
 			this._pSkeleton = pSkeleton;
@@ -145,7 +130,7 @@ module akra.model {
 		}
 
 		attachToScene(pRootNode: ISceneNode): boolean {
-			for (var i: int = 0, nMatrices: uint = this.totalBones; i < nMatrices; i++) {
+			for (var i: int = 0, nMatrices: uint = this.getTotalBones(); i < nMatrices; i++) {
 			    this._pAffectingNodes[i] = <ISceneNode>pRootNode.findEntity(this._pNodeNames[i]);
 			    debug.assert(isDefAndNotNull(this._pAffectingNodes[i]), "node<" + this._pNodeNames[i] + "> must exists...");
 			}
@@ -173,7 +158,7 @@ module akra.model {
 			            pMatrices.length);
 
 			var nMatrices: uint = pMatrixNames.length;
-			var pData: IRenderDataCollection = this.data;
+			var pData: IRenderDataCollection = this.getData();
 			var pMatrixData: Float32Array = new Float32Array(nMatrices * 16);
 
 			//FIXME: правильно положить матрицы...
@@ -206,7 +191,7 @@ module akra.model {
 			debug.assert(this._pInfMetaData == null && this._pInfData == null, "vertex weights already setuped.");
 			debug.assert(!isNull(this._pWeights), "you must set weight data before setup influences");
 
-			var pData: IRenderDataCollection = this.data;
+			var pData: IRenderDataCollection = this.getData();
 			var pInfluencesMeta: Float32Array = new Float32Array(pInfluencesCount.length * 2);
 			var pWeights: Float32Array = this._pWeights;
 
@@ -270,7 +255,7 @@ module akra.model {
 			var pNode: ISceneNode;
 			var isUpdated: boolean = false;
 
-			for (var i: int = 0, nMatrices = this.totalBones; i < nMatrices; ++i) {
+			for (var i: int = 0, nMatrices = this.getTotalBones(); i < nMatrices; ++i) {
 			    pNode = this._pAffectingNodes[i];
 
 			    if (pNode.isWorldMatrixNew() || bForce) {

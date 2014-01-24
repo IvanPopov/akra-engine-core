@@ -41,7 +41,7 @@
 
 module akra.pool {
 	function determModelFormat(sPath: string): EModelFormats {
-		switch ((path.parse(sPath).ext || "").toLowerCase()) {
+		switch ((path.parse(sPath).getExt() || "").toLowerCase()) {
 			case "obj":
 				return EModelFormats.OBJ;
 			case "dae":
