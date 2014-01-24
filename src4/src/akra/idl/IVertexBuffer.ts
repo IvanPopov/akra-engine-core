@@ -15,8 +15,7 @@ module akra {
 	};
 	
 	export interface IVertexBuffer extends IHardwareBuffer, IRenderResource {
-	
-		/** readonly */ type: EVertexBufferTypes; 
+		getType(): EVertexBufferTypes; 
 	
 		getVertexData(i: uint): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;

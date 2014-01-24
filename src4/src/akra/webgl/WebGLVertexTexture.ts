@@ -145,10 +145,10 @@ module akra.webgl {
 			* update program
 			**/
 
-			var pProgram: IShaderProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBgl.vertex_texture_update");
+			var pProgram: IShaderProgram = <IShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.vertex_texture_update");
 
 			if (isNull(pProgram)) {
-				pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBgl.vertex_texture_update");
+				pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().createResource("WEBgl.vertex_texture_update");
 				pProgram.create(
 				"																									\n\
 				uniform sampler2D sourceTexture;																	\n\
@@ -213,10 +213,10 @@ module akra.webgl {
 			* resize program
 			**/
 
-			pProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBgl.vertex_texture_resize");
+			pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.vertex_texture_resize");
 
 			if (isNull(pProgram)) {
-				pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBgl.vertex_texture_resize");
+				pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().createResource("WEBgl.vertex_texture_resize");
 				pProgram.create(
 				"																									\n\
 				attribute float INDEX;																				\n\
@@ -432,7 +432,7 @@ module akra.webgl {
 				var pOldFrameBuffer: WebGLFramebuffer = pWebGLRenderer.getParameter(gl.FRAMEBUFFER_BINDING);
 
 				var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
-				var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBgl.vertex_texture_update");
+				var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.vertex_texture_update");
 
 				var pValueBuffer: WebGLBuffer 		= WebGLVertexTexture._pWebGLBuffer1;
 				var pMarkupIndexBuffer: WebGLBuffer = WebGLVertexTexture._pWebGLBuffer2;
@@ -557,7 +557,7 @@ module akra.webgl {
 					this.writeData(pData, 0, iByteLength);
 				}
 				else{
-					var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBgl.vertex_texture_resize");
+					var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.vertex_texture_resize");
 
 					debug.assert(isDef(pWebGLProgram), "cound not find WEBgl.vertex_texture_resize program");
 

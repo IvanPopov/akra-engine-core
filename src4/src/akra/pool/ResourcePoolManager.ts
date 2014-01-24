@@ -54,55 +54,102 @@ module akra.pool {
 	//is this class really singleton??
 	export class ResourcePoolManager implements IResourcePoolManager {
 		//all predefined pools
-		private pSurfaceMaterialPool: IResourcePool;
-		private pEffectPool: IResourcePool;
-		private pRenderMethodPool: IResourcePool;
-		private pVertexBufferPool: IResourcePool;
-		private pIndexBufferPool: IResourcePool;
-		private pColladaPool: IResourcePool;
-		private pObjPool: IResourcePool;
-		private pImagePool: IResourcePool;
-		private pTexturePool: IResourcePool;
-		private pVideoBufferPool: IResourcePool;
-		private pShaderProgramPool: IResourcePool;
-		private pComponentPool: IResourcePool;
-		private pTextureBufferPool: IResourcePool;
-		private pRenderBufferPool: IResourcePool;
-		private pDepthBufferPool: IResourcePool;
-		private pEffectDataPool: IResourcePool;
+		private pSurfaceMaterialPool: IResourcePool<ISurfaceMaterial>;
+		private pEffectPool: IResourcePool<IEffect>;
+		private pRenderMethodPool: IResourcePool<IRenderMethod>;
+		private pVertexBufferPool: IResourcePool<IVertexBuffer>;
+		private pIndexBufferPool: IResourcePool<IIndexBuffer>;
+		private pColladaPool: IResourcePool<ICollada>;
+		private pObjPool: IResourcePool<IObj>;
+		private pImagePool: IResourcePool<IImg>;
+		private pTexturePool: IResourcePool<ITexture>;
+		private pVideoBufferPool: IResourcePool<IResourcePoolItem>;
+		private pShaderProgramPool: IResourcePool<IShaderProgram>;
+		private pComponentPool: IResourcePool<IAFXComponent>;
+		private pTextureBufferPool: IResourcePool<IPixelBuffer>;
+		private pRenderBufferPool: IResourcePool<IPixelBuffer>;
+		private pDepthBufferPool: IResourcePool<IDepthBuffer>;
+		private pEffectDataPool: IResourcePool<IResourcePoolItem>;
 
 		/** Списки пулов по семействам ресурсов */
-		private pResourceFamilyList: IResourcePool[][] = null;
+		private pResourceFamilyList: IResourcePool<IResourcePoolItem>[][] = null;
 		/** Карта пулов по коду ресурса */
-		private pResourceTypeMap: IResourcePool[] = null;
+		private pResourceTypeMap: IResourcePool<IResourcePoolItem>[] = null;
 		/** Ресурс для ожидания остальных */
 		private pWaiterResource: IResourcePoolItem = null;
 
 		private pEngine: IEngine;
 
-		get surfaceMaterialPool(): IResourcePool { return this.pSurfaceMaterialPool; }
-		get effectPool(): IResourcePool { return this.pEffectPool; }
-		get renderMethodPool(): IResourcePool { return this.pRenderMethodPool; }
-		get vertexBufferPool(): IResourcePool { return this.pVertexBufferPool; }
-		get indexBufferPool(): IResourcePool { return this.pIndexBufferPool; }
-		get colladaPool(): IResourcePool { return this.pColladaPool; }
-		get objPool(): IResourcePool { return this.pObjPool; }
-		get imagePool(): IResourcePool { return this.pImagePool; }
-		get texturePool(): IResourcePool { return this.pTexturePool; }
-		get videoBufferPool(): IResourcePool { return this.pVideoBufferPool; }
-		get shaderProgramPool(): IResourcePool { return this.pShaderProgramPool; }
-		get componentPool(): IResourcePool { return this.pComponentPool; }
-		get textureBufferPool(): IResourcePool { return this.pTextureBufferPool; }
-		get renderBufferPool(): IResourcePool { return this.pRenderBufferPool; }
-		get depthBufferPool(): IResourcePool { return this.pDepthBufferPool; }
-		get effectDataPool(): IResourcePool { return this.pEffectDataPool; }
+		getSurfaceMaterialPool(): IResourcePool<ISurfaceMaterial> {
+			return this.pSurfaceMaterialPool;
+		}
+
+		getEffectPool(): IResourcePool<IEffect> {
+			return this.pEffectPool;
+		}
+
+		getRenderMethodPool(): IResourcePool<IRenderMethod> {
+			return this.pRenderMethodPool;
+		}
+
+		getVertexBufferPool(): IResourcePool<IVertexBuffer> {
+			return this.pVertexBufferPool;
+		}
+
+		getIndexBufferPool(): IResourcePool<IIndexBuffer> {
+			return this.pIndexBufferPool;
+		}
+
+		getColladaPool(): IResourcePool<ICollada> {
+			return this.pColladaPool;
+		}
+
+		getObjPool(): IResourcePool<IObj> {
+			return this.pObjPool;
+		}
+
+		getImagePool(): IResourcePool<IImg> {
+			return this.pImagePool;
+		}
+
+		getTexturePool(): IResourcePool<ITexture> {
+			return this.pTexturePool;
+		}
+
+		getVideoBufferPool(): IResourcePool<IResourcePoolItem> {
+			return this.pVideoBufferPool;
+		}
+
+		getShaderProgramPool(): IResourcePool<IShaderProgram> {
+			return this.pShaderProgramPool;
+		}
+
+		getComponentPool(): IResourcePool<IAFXComponent> {
+			return this.pComponentPool;
+		}
+
+		getTextureBufferPool(): IResourcePool<IPixelBuffer> {
+			return this.pTextureBufferPool;
+		}
+
+		getRenderBufferPool(): IResourcePool<IPixelBuffer> {
+			return this.pRenderBufferPool;
+		}
+
+		getDepthBufferPool(): IResourcePool<IDepthBuffer> {
+			return this.pDepthBufferPool;
+		}
+
+		getEffectDataPool(): IResourcePool<IResourcePoolItem> {
+			return this.pEffectDataPool;
+		}
 
 		constructor(pEngine: IEngine) {
 			//super();
 
 			this.pEngine = pEngine;
 
-			this.pResourceFamilyList = new Array<IResourcePool[]>(EResourceFamilies.TOTAL_RESOURCE_FAMILIES);
+			this.pResourceFamilyList = new Array<IResourcePool<IResourcePoolItem>[]>(EResourceFamilies.TOTAL_RESOURCE_FAMILIES);
 
 			for (var i = 0; i < EResourceFamilies.TOTAL_RESOURCE_FAMILIES; i++) {
 				this.pResourceFamilyList[i] = new Array();
@@ -123,19 +170,19 @@ module akra.pool {
 			this.unregisterDeviceResources();
 		}
 
-		registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void {
-			debug.assert(pCode.family >= 0 && pCode.family < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES,
+		registerResourcePool(pCode: IResourceCode, pPool: IResourcePool<IResourcePoolItem>): void {
+			debug.assert(pCode.getFamily() >= 0 && pCode.getFamily() < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES,
 				"invalid code familyi index");
 
 			debug.assert(!isDef(this.pResourceTypeMap[pCode.toNumber()]), "Resource type code already registered");
 
 			this.pResourceTypeMap[pCode.toNumber()] = pPool;
-			this.pResourceFamilyList[pCode.family].push(pPool);
+			this.pResourceFamilyList[pCode.getFamily()].push(pPool);
 		}
 
-		unregisterResourcePool(pCode: IResourceCode): IResourcePool {
-			debug.assert(pCode.family >= 0, "invalid family index");
-			debug.assert(pCode.family < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES, "invalid family index");
+		unregisterResourcePool(pCode: IResourceCode): IResourcePool<IResourcePoolItem> {
+			debug.assert(pCode.getFamily() >= 0, "invalid family index");
+			debug.assert(pCode.getFamily() < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES, "invalid family index");
 
 			var iCode = pCode.toNumber();
 			var pPool = null;
@@ -145,9 +192,9 @@ module akra.pool {
 			}
 
 			if (pPool != null) {
-				for (var i in this.pResourceFamilyList[pCode.family]) {
-					if (this.pResourceFamilyList[pCode.family][i] == pPool) {
-						delete this.pResourceFamilyList[pCode.family][i];
+				for (var i in this.pResourceFamilyList[pCode.getFamily()]) {
+					if (this.pResourceFamilyList[pCode.getFamily()][i] == pPool) {
+						delete this.pResourceFamilyList[pCode.getFamily()][i];
 						return pPool;
 					}
 				}
@@ -217,7 +264,7 @@ module akra.pool {
 			}
 		}
 
-		findResourcePool(pCode: IResourceCode): IResourcePool {
+		findResourcePool(pCode: IResourceCode): IResourcePool<IResourcePoolItem> {
 			if (isDef(this.pResourceTypeMap[pCode.toNumber()])) {
 				return this.pResourceTypeMap[pCode.toNumber()];
 			}
@@ -226,7 +273,7 @@ module akra.pool {
 		}
 
 		findResourceHandle(pCode: IResourceCode, sName: string): int {
-			var pPool: IResourcePool = this.findResourcePool(pCode);
+			var pPool: IResourcePool<IResourcePoolItem> = this.findResourcePool(pCode);
 			var iHandle: int = PoolGroup.INVALID_INDEX;
 
 			if (!isNull(pPool)) {
@@ -239,7 +286,7 @@ module akra.pool {
 		findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
 		findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
 		findResource(pCode, sName): IResourcePoolItem {
-			var pPool: IResourcePool = this.findResourcePool(pCode);
+			var pPool: IResourcePool<IResourcePoolItem> = this.findResourcePool(pCode);
 			var pResult: IResourcePoolItem = null;
 			var iHandle: int = 0;
 
@@ -266,7 +313,7 @@ module akra.pool {
 		}
 
 		setLoadedAllRoutine(fnCallback: Function): void {
-			var pPool: IResourcePool;
+			var pPool: IResourcePool<IResourcePoolItem>;
 			var pResource: IResourcePoolItem;
 			var iHandleResource: int;
 			var pWaiterResouse: IResourcePoolItem = this.pWaiterResource;
@@ -362,39 +409,39 @@ module akra.pool {
 		getEngine(): IEngine { return this.pEngine; }
 
 		createRenderMethod(sResourceName: string): IRenderMethod {
-			return <IRenderMethod>this.renderMethodPool.createResource(sResourceName);
+			return <IRenderMethod>this.getRenderMethodPool().createResource(sResourceName);
 		}
 
 		createTexture(sResourceName: string): ITexture {
-			return <ITexture>this.texturePool.createResource(sResourceName);
+			return <ITexture>this.getTexturePool().createResource(sResourceName);
 		}
 
 		createEffect(sResourceName: string): IEffect {
-			return <IEffect>this.effectPool.createResource(sResourceName);
+			return <IEffect>this.getEffectPool().createResource(sResourceName);
 		}
 
 		createSurfaceMaterial(sResourceName: string): ISurfaceMaterial {
-			return <ISurfaceMaterial>this.surfaceMaterialPool.createResource(sResourceName);
+			return <ISurfaceMaterial>this.getSurfaceMaterialPool().createResource(sResourceName);
 		}
 
 		createVertexBuffer(sResourceName: string): IVertexBuffer {
-			return <IVertexBuffer>this.vertexBufferPool.createResource(sResourceName);
+			return <IVertexBuffer>this.getVertexBufferPool().createResource(sResourceName);
 		}
 
 		createVideoBuffer(sResourceName: string): IVertexBuffer {
-			return <IVertexBuffer>this.videoBufferPool.createResource(sResourceName);
+			return <IVertexBuffer>this.getVideoBufferPool().createResource(sResourceName);
 		}
 
 		createIndexBuffer(sResourceName: string): IIndexBuffer {
-			return <IIndexBuffer>this.indexBufferPool.createResource(sResourceName);
+			return <IIndexBuffer>this.getIndexBufferPool().createResource(sResourceName);
 		}
 
 		createShaderProgram(sResourceName: string): IShaderProgram {
-			return <IShaderProgram>this.shaderProgramPool.createResource(sResourceName);
+			return <IShaderProgram>this.getShaderProgramPool().createResource(sResourceName);
 		}
 
 		createModel(sResourceName: string, eFormat?: EModelFormats): IModel {
-			var pPool: IResourcePool = this.getModelPoolByFormat(eFormat || determModelFormat(sResourceName));
+			var pPool: IResourcePool<IResourcePoolItem> = this.getModelPoolByFormat(eFormat || determModelFormat(sResourceName));
 
 			if (!isNull(pPool)) {
 				return <IModel>pPool.createResource(sResourceName);
@@ -403,12 +450,12 @@ module akra.pool {
 			return null;
 		}
 
-		getModelPoolByFormat(eFormat: EModelFormats): IResourcePool {
+		getModelPoolByFormat(eFormat: EModelFormats): IResourcePool<IResourcePoolItem> {
 			switch (eFormat) {
 				case EModelFormats.OBJ:
-					return this.objPool;
+					return this.getObjPool();
 				case EModelFormats.COLLADA:
-					return this.colladaPool;
+					return this.getColladaPool();
 			}
 
 			return null;
@@ -416,7 +463,7 @@ module akra.pool {
 
 		loadModel(sFilename: string, pOptions: IModelLoadOptions = null): IModel {
 			var eFormat: EModelFormats = determModelFormat(sFilename);
-			var pPool: IResourcePool = this.getModelPoolByFormat(eFormat);
+			var pPool: IResourcePool<IResourcePoolItem> = this.getModelPoolByFormat(eFormat);
 			var pModel: IModel = null;
 
 			if (!isNull(pPool)) {
@@ -437,15 +484,15 @@ module akra.pool {
 		}
 
 		createImg(sResourceName: string): IImg {
-			return <IImg>this.imagePool.createResource(sResourceName);
+			return <IImg>this.getImagePool().createResource(sResourceName);
 		}
 
 
 		loadImage(sFilename: string): IImg {
-			var pImg: IImg = <IImg>this.imagePool.findResource(sFilename);
+			var pImg: IImg = <IImg>this.getImagePool().findResource(sFilename);
 
 			if (isNull(pImg)) {
-				pImg = <IImg>this.imagePool.createResource(sFilename);
+				pImg = <IImg>this.getImagePool().createResource(sFilename);
 
 				if (!pImg.isResourceLoaded()) {
 					pImg.loadResource(sFilename);
@@ -457,59 +504,59 @@ module akra.pool {
 
 
 		private createDeviceResource(): void {
-			this.pSurfaceMaterialPool = new ResourcePool(this, resources.SurfaceMaterial);
+			this.pSurfaceMaterialPool = new ResourcePool<ISurfaceMaterial>(this, resources.SurfaceMaterial);
 			this.pSurfaceMaterialPool.initialize(16);
 
-			this.pEffectPool = new ResourcePool(this, resources.Effect);
+			this.pEffectPool = new ResourcePool<IEffect>(this, resources.Effect);
 			this.pEffectPool.initialize(16);
 
-			this.pRenderMethodPool = new ResourcePool(this, resources.RenderMethod);
+			this.pRenderMethodPool = new ResourcePool<IRenderMethod>(this, resources.RenderMethod);
 			this.pRenderMethodPool.initialize(16);
 
 
-			this.pColladaPool = new ResourcePool(this, resources.Collada);
+			this.pColladaPool = new ResourcePool<ICollada>(this, resources.Collada);
 			this.pColladaPool.initialize(0);
 
-			this.pObjPool = new ResourcePool(this, resources.Obj);
+			this.pObjPool = new ResourcePool<IObj>(this, resources.Obj);
 			this.pObjPool.initialize(0);
 
-			this.pImagePool = new ResourcePool(this, resources.Img);
+			this.pImagePool = new ResourcePool<IImg>(this, resources.Img);
 			this.pImagePool.initialize(16);
 
 			if (config.WEBGL) {
-				this.pTexturePool = new ResourcePool(this, webgl.WebGLInternalTexture);
+				this.pTexturePool = new ResourcePool<ITexture>(this, webgl.WebGLInternalTexture);
 				this.pTexturePool.initialize(16);
 
-				this.pIndexBufferPool = new ResourcePool(this, webgl.WebGLIndexBuffer);
+				this.pIndexBufferPool = new ResourcePool<IIndexBuffer>(this, webgl.WebGLIndexBuffer);
 				this.pIndexBufferPool.initialize(16);
 
-				this.pVertexBufferPool = new ResourcePool(this, webgl.WebGLVertexBuffer);
+				this.pVertexBufferPool = new ResourcePool<IVertexBuffer>(this, webgl.WebGLVertexBuffer);
 				this.pVertexBufferPool.initialize(16);
 
-				this.pVideoBufferPool = new ResourcePool(this, webgl.WebGLVertexTexture);
+				this.pVideoBufferPool = new ResourcePool<IResourcePoolItem>(this, webgl.WebGLVertexTexture);
 				this.pVideoBufferPool.initialize(16);
 
-				this.pTextureBufferPool = new ResourcePool(this, webgl.WebGLTextureBuffer);
+				this.pTextureBufferPool = new ResourcePool<IPixelBuffer>(this, webgl.WebGLTextureBuffer);
 				this.pTextureBufferPool.initialize(16);
 
-				this.pShaderProgramPool = new ResourcePool(this, webgl.WebGLShaderProgram);
+				this.pShaderProgramPool = new ResourcePool<IShaderProgram>(this, webgl.WebGLShaderProgram);
 				this.pShaderProgramPool.initialize(16);
 
-				this.pRenderBufferPool = new ResourcePool(this, webgl.WebGLInternalRenderBuffer);
+				this.pRenderBufferPool = new ResourcePool<IPixelBuffer>(this, webgl.WebGLInternalRenderBuffer);
 				this.pRenderBufferPool.initialize(16);
 
-				this.pDepthBufferPool = new ResourcePool(this, webgl.WebGLDepthBuffer);
+				this.pDepthBufferPool = new ResourcePool<IDepthBuffer>(this, webgl.WebGLDepthBuffer);
 				this.pDepthBufferPool.initialize(16);
 			}
 			else {
 				logger.critical("Render system not specified");
 			}
 
-			this.pEffectDataPool = new ResourcePool(this, resources.EffectData);
+			this.pEffectDataPool = new ResourcePool<IResourcePoolItem>(this, resources.EffectData);
 			this.pEffectDataPool.initialize(8);
 
 
-			this.pComponentPool = new ResourcePool(this, resources.Component);
+			this.pComponentPool = new ResourcePool<IAFXComponent>(this, resources.Component);
 			this.pComponentPool.initialize(16);
 		}
 

@@ -464,7 +464,6 @@
     <None Include="akra\pool\resources\Img.ts" />
     <None Include="akra\pool\resources\IndexBuffer.ts" />
     <None Include="akra\pool\resources\MemoryBuffer.ts" />
-    <None Include="akra\pool\resources\Model.ts" />
     <None Include="akra\pool\resources\Obj.ts" />
     <None Include="akra\pool\resources\RenderMethod.ts" />
     <None Include="akra\pool\resources\SurfaceMaterial.ts" />

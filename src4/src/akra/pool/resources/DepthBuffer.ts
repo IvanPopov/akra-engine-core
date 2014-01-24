@@ -15,15 +15,15 @@ module akra.pool.resources {
 			super();
 		}
 
-		 get bitDepth(): uint {
+		getBitDepth(): uint {
 			return this._iBitDepth;
 		}
 
-		 get width(): uint {
+		getWidth(): uint {
 			return this._iWidth;
 		}
 
-		 get height(): uint {
+		getHeight(): uint {
 			return this._iHeight;
 		}
 

@@ -32,19 +32,20 @@ module akra {
 	
 	
 	export interface ISurfaceMaterial extends IResourcePoolItem {
-		/** readonly */ totalUpdatesOfTextures: uint;
-		/** readonly */ totalUpdatesOfTexcoords: uint;
+		getTotalUpdatesOfTextures(): uint;
+		getTotalUpdatesOfTexcoords(): uint;
 	
-		totalTextures: uint;
-		material: IMaterial;
-		textureFlags: int;
-		textureMatrixFlags: int;
-	
+		getTotalTextures(): uint;
+		getTextureFlags(): int;
+		getTextureMatrixFlags(): int;
+
+		getMaterial(): IMaterial;
+		setMaterial(pMaterial: IMaterial): void;
+
 		setTexture(iIndex: int, sTexture: string, iTexcoord?: int): boolean;
 		setTexture(iIndex: int, iTextureHandle: int, iTexcoord?: int): boolean;
 		setTexture(iIndex: int, pTexture: ITexture, iTexcoord?: int): boolean;
 		setTextureMatrix(iIndex: int, m4fValue: IMat4): boolean;
-		setMaterial(pMaterial: IMaterial): void;
 		isEqual(pSurface: ISurfaceMaterial): boolean;
 		
 		texture(iSlot: int): ITexture;

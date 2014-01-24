@@ -850,7 +850,7 @@ module akra.fx {
 
 			var iMaterialId: uint = pMaterial.guid;
 			var pMaterialHashEntry: AIHashEntry = this._pSurfaceMaterialHashMap[iMaterialId];
-			if (isDef(pMaterialHashEntry) && pMaterialHashEntry.modifyMark === pMaterial.totalUpdatesOfTexcoords) {
+			if (isDef(pMaterialHashEntry) && pMaterialHashEntry.modifyMark === pMaterial.getTotalUpdatesOfTexcoords()) {
 				return pMaterialHashEntry.hash;
 			}
 			else {
@@ -875,7 +875,7 @@ module akra.fx {
 				}
 
 				pMaterialHashEntry.hash = iMaterialHash;
-				pMaterialHashEntry.modifyMark = pMaterial.totalUpdatesOfTexcoords;
+				pMaterialHashEntry.modifyMark = pMaterial.getTotalUpdatesOfTexcoords();
 
 				return iMaterialHash;
 			}

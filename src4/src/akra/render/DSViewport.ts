@@ -129,7 +129,7 @@ module akra.render {
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
 				pDeferredData[i].setAutoUpdated(false);
 				pViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), "deferred_shading_pass_" + i, 
-											0, 0, this.actualWidth / pDeferredTextures[i].width, this.actualHeight / pDeferredTextures[i].height));
+					0, 0, this.actualWidth / pDeferredTextures[i].getWidth(), this.actualHeight / pDeferredTextures[i].getHeight()));
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 
 				if (i === 1) {
@@ -153,7 +153,7 @@ module akra.render {
 			pDSEffect.addComponent("akra.system.sunLighting");
 			pDSEffect.addComponent("akra.system.sunShadowsLighting");
 
-			pDSMethod.effect = pDSEffect;
+			pDSMethod.setEffect(pDSEffect);
 
 			this._pDeferredEffect = pDSEffect;
 			this._pDeferredView = pDefferedView;
@@ -184,7 +184,7 @@ module akra.render {
 				for (var i = 0; i < 2; ++ i) {
 					pDeferredTextures[i].reset(math.ceilingPowerOfTwo(this.actualWidth), math.ceilingPowerOfTwo(this.actualHeight));
 					pDeferredTextures[i].getBuffer().getRenderTarget().getViewport(0)
-						.setDimensions(0., 0., this.actualWidth / pDeferredTextures[i].width, this.actualHeight / pDeferredTextures[i].height)
+						.setDimensions(0., 0., this.actualWidth / pDeferredTextures[i].getWidth(), this.actualHeight / pDeferredTextures[i].getHeight())
 				}
 			}
 
@@ -315,7 +315,7 @@ module akra.render {
 
 			//depth texture has POT sized, but viewport not;
 			//depth texture attached to left bottom angle of viewport
-			y = pColorTexture.height - y - 1;
+			y = pColorTexture.getHeight() - y - 1;
 			pFloatColorPixel.left = x;
 			pFloatColorPixel.top = y;
 			pFloatColorPixel.right = x + 1;
@@ -339,7 +339,7 @@ module akra.render {
 			// pDepthPixel.right = x + 1;
 			// pDepthPixel.bottom = y + 1;
 
-			y = pDepthTexture.height - y - 1;
+			y = pDepthTexture.getHeight() - y - 1;
 			pDepthPixel.left = x;
 			pDepthPixel.top = y;
 			pDepthPixel.right = x + 1;
@@ -351,7 +351,7 @@ module akra.render {
 		}
 
 		setSkybox(pSkyTexture: ITexture): boolean {
-			if (pSkyTexture.textureType !== ETextureTypes.TEXTURE_CUBE_MAP) {
+			if (pSkyTexture.getTextureType() !== ETextureTypes.TEXTURE_CUBE_MAP) {
 				return null;
 			}
 
@@ -477,7 +477,7 @@ module akra.render {
 					pPass.setUniform("SHADOW_CONSTANT", 5.e+2);
 
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
-						Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+						Vec2.temp(this.actualWidth / pDepthTexture.getWidth(), this.actualHeight / pDepthTexture.getHeight()));
 
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setTexture("DEFERRED_TEXTURE1", pDeferredTextures[1]);
@@ -490,7 +490,7 @@ module akra.render {
 					pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);
 
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
-						Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+						Vec2.temp(this.actualWidth / pDepthTexture.getWidth(), this.actualHeight / pDepthTexture.getHeight()));
 					//outline
 					var p: IRIDPair = this._pHighlightedObject;
 
@@ -504,7 +504,7 @@ module akra.render {
 
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
-						Vec2.temp(this.actualWidth / pDepthTexture.width, this.actualHeight / pDepthTexture.height));
+						Vec2.temp(this.actualWidth / pDepthTexture.getWidth(), this.actualHeight / pDepthTexture.getHeight()));
 					break;
 				// case 2:
 				// 	pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);

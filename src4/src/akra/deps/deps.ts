@@ -141,8 +141,8 @@ module akra.deps {
 			switch (sExt.toLowerCase()) {
 				case "fx":
 				case "afx":
-					if (!pRmgr.effectDataPool.findResource(sResource)) {
-						pRmgr.effectDataPool.createResource(sResource);
+					if (!pRmgr.getEffectDataPool().findResource(sResource)) {
+						pRmgr.getEffectDataPool().createResource(sResource);
 					}
 					break;
 				case "jpg":
@@ -151,13 +151,13 @@ module akra.deps {
 				case "bmp":
 				case "gif":
 				case "dds":
-					if (!pRmgr.imagePool.findResource(sResource)) {
-						pRmgr.imagePool.createResource(sResource);
+					if (!pRmgr.getImagePool().findResource(sResource)) {
+						pRmgr.getImagePool().createResource(sResource);
 					}
 					break;
 				case "dae":
-					if (!pRmgr.colladaPool.findResource(sResource)) {
-						pRmgr.colladaPool.createResource(sResource);
+					if (!pRmgr.getColladaPool().findResource(sResource)) {
+						pRmgr.getColladaPool().createResource(sResource);
 					}
 					break;
 			}
@@ -253,7 +253,7 @@ module akra.deps {
 	//}
 
 	function loadFromPool(
-		pPool: IResourcePool,
+		pPool: IResourcePool<IResourcePoolItem>,
 		pDep: IDep,
 		fnLoaded: (e: Error, pDep: IDep) => void,
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
@@ -277,7 +277,7 @@ module akra.deps {
 		pDep: IDep,
 		fnLoaded: (e: Error, pDep: IDep) => void,
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
-		loadFromPool(pEngine.getResourceManager().effectDataPool, pDep, fnLoaded, fnChanged);
+		loadFromPool(pEngine.getResourceManager().getEffectDataPool(), pDep, fnLoaded, fnChanged);
 	}
 
 	export function loadImage(
@@ -286,7 +286,7 @@ module akra.deps {
 		fnLoaded: (e: Error, pDep: IDep) => void,
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
 
-		loadFromPool(pEngine.getResourceManager().imagePool, pDep, fnLoaded, fnChanged);
+		loadFromPool(pEngine.getResourceManager().getImagePool(), pDep, fnLoaded, fnChanged);
 	}
 
 	export function loadDAE(
@@ -295,7 +295,7 @@ module akra.deps {
 		fnLoaded: (e: Error, pDep: IDep) => void,
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
 
-		loadFromPool(pEngine.getResourceManager().colladaPool, pDep, fnLoaded, fnChanged);
+		loadFromPool(pEngine.getResourceManager().getColladaPool(), pDep, fnLoaded, fnChanged);
 	}
 
 	export function loadCustom(

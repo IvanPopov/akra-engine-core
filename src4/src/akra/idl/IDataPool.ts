@@ -5,7 +5,7 @@
 
 module akra {
 	export interface IDataPool {
-		manager: IResourcePoolManager;
+		getManager(): IResourcePoolManager;
 		/** Инициализация пула данных */
 		initialize(iGrowSize: uint): void;
 	

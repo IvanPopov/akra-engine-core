@@ -14,9 +14,9 @@
 /// <reference path="DataPool.ts" />
 
 module akra.pool {
-	export class ResourcePool extends util.ReferenceCounter implements IResourcePool {
+	export class ResourcePool<T extends IResourcePoolItem> extends util.ReferenceCounter implements IResourcePool<T> {
 		guid: uint = guid();
-		createdResource: ISignal<{ (pPool: IResourcePool, pResource: IResourcePoolItem): void; }> = new Signal(<any>this);
+		createdResource: ISignal<{ (pPool: IResourcePool<T>, pResource: T): void; }> = new Signal(<any>this);
 
 		private _pManager: IResourcePoolManager = null;
 		/** Конструктор для создания данных в пуле ресурсов */
@@ -27,23 +27,21 @@ module akra.pool {
 		private _pDataPool: IDataPool = null;
 
 
-		 get iFourcc(): int {
+		getFourcc(): int {
 			return (this._sExt.charCodeAt(3) << 24)
-					  | (this._sExt.charCodeAt(2) << 16)
-					  | (this._sExt.charCodeAt(1) << 8)
-					  | (this._sExt.charCodeAt(0));
+				| (this._sExt.charCodeAt(2) << 16)
+				| (this._sExt.charCodeAt(1) << 8)
+				| (this._sExt.charCodeAt(0));
 		}
 
-
-
-		set iFourcc(iNewFourcc: int) {
+		setFourcc(iNewFourcc: int): void {
 			this._sExt = String.fromCharCode((iNewFourcc & 0x000000FF),
-											 (iNewFourcc & 0x0000FF00) >>> 8,
-											 (iNewFourcc & 0x00FF0000) >>> 16,
-											 (iNewFourcc & 0xFF000000) >>> 24);
+				(iNewFourcc & 0x0000FF00) >>> 8,
+				(iNewFourcc & 0x00FF0000) >>> 16,
+				(iNewFourcc & 0xFF000000) >>> 24);
 		}
 
-		 get manager(): IResourcePoolManager {
+		getManager(): IResourcePoolManager {
 			return this._pManager;
 		}
 
@@ -127,11 +125,11 @@ module akra.pool {
 
 	   
 
-		createResource(sResourceName: string): IResourcePoolItem {
+		createResource(sResourceName: string): T {
 			var iHandle: int = this.internalCreateResource(sResourceName);
 
 			if (iHandle !== PoolGroup.INVALID_INDEX) {
-				var pResource: IResourcePoolItem = this.getResource(iHandle);
+				var pResource: T = this.getResource(iHandle);
 
 				pResource.setResourcePool(this);
 				pResource.setResourceHandle(iHandle);
@@ -145,9 +143,9 @@ module akra.pool {
 			return null;
 		}
 
-		loadResource(sResourceName: string): IResourcePoolItem {
+		loadResource(sResourceName: string): T {
 			// does the resource already exist?
-			var pResource: IResourcePoolItem = this.findResource(sResourceName);
+			var pResource: T = this.findResource(sResourceName);
 	   
 			if (pResource == null) {
 				// create a new resource
@@ -171,7 +169,7 @@ module akra.pool {
 			return pResource;
 		}
 
-		saveResource(pResource: IResourcePoolItem): boolean {
+		saveResource(pResource: T): boolean {
 			if (pResource != null) {
 				// save the resource using it's own name as the file path
 				return pResource.saveResource();
@@ -179,20 +177,20 @@ module akra.pool {
 			return false;
 		}
 
-		destroyResource(pResource: IResourcePoolItem): void {
+		destroyResource(pResource: T): void {
 			if (pResource != null) {
 				var iReferenceCount: int = pResource.referenceCount();
 
 				debug.assert(iReferenceCount == 0, "destruction of non-zero reference count!");
 
 				if (iReferenceCount <= 0) {
-					var iHandle: int = pResource.resourceHandle;
+					var iHandle: int = pResource.getResourceHandle();
 					this.internalDestroyResource(iHandle);
 				}
 			}
 		}
 
-		findResource(sName: string): IResourcePoolItem {
+		findResource(sName: string): T {
 
 			// look up the name in our map
 			for (var iHandle: int = 0; iHandle < this._pNameMap.length; ++ iHandle) {
@@ -207,8 +205,8 @@ module akra.pool {
 			return null;
 		}
 
-		getResource(iHandle: int): IResourcePoolItem {
-			var pResource: IResourcePoolItem = this.internalGetResource(iHandle);
+		getResource(iHandle: int): T {
+			var pResource: T = this.internalGetResource(iHandle);
 
 			if (pResource != null) {
 				pResource.addRef();
@@ -217,8 +215,8 @@ module akra.pool {
 			return pResource;
 		}
 
-		getResources(): IResourcePoolItem[] {
-			var pResources: IResourcePoolItem[] = [];
+		getResources(): T[] {
+			var pResources: T[] = [];
 
 			for (var iHandleResource in this._pNameMap) {
 				pResources.push(this.getResource(parseInt(iHandleResource)));
@@ -228,7 +226,7 @@ module akra.pool {
 		}
 
 
-		private internalGetResource(iHandle: int): IResourcePoolItem {
+		private internalGetResource(iHandle: int): T {
 			return this._pDataPool.getPtr(iHandle);
 		}
 

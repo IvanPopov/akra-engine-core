@@ -22,14 +22,33 @@ module akra.pool.resources {
 		protected _nTextureUpdates: uint = 0;
 		protected _nTexcoordUpdates: uint = 0;
 
-		get totalUpdatesOfTextures(): uint { return this._nTextureUpdates; }
-		get totalUpdatesOfTexcoords(): uint { return this._nTexcoordUpdates; }
+		getTotalUpdatesOfTextures(): uint {
+			return this._nTextureUpdates;
+		}
 
-		get totalTextures(): uint { return this._nTotalTextures; }
-		get material(): IMaterial { return this._pMaterial; }
-		set material(pMaterial: IMaterial) { this._pMaterial.set(pMaterial); }
-		get textureFlags(): int { return this._iTextureFlags; }
-		get textureMatrixFlags(): int { return this._iTextureMatrixFlags; }
+		getTotalUpdatesOfTexcoords(): uint {
+			return this._nTexcoordUpdates;
+		}
+
+		getTotalTextures(): uint {
+			return this._nTotalTextures;
+		}
+
+		getTextureFlags(): int {
+			return this._iTextureFlags;
+		}
+
+		getTextureMatrixFlags(): int {
+			return this._iTextureMatrixFlags;
+		}
+
+		getMaterial(): IMaterial {
+			return this._pMaterial;
+		}
+
+		setMaterial(pMaterial: IMaterial): void {
+			this._pMaterial.set(pMaterial);
+		}
 
 		constructor() {
 			super();
@@ -82,7 +101,7 @@ module akra.pool.resources {
 				}
 
 
-				this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.loadResource(<string>texture);
+				this._pTextures[iIndex] = <ITexture>pRmgr.getTexturePool().loadResource(<string>texture);
 
 				if (this._pTextures[iIndex]) {
 					bf.setBit(this._iTextureFlags, iIndex);
@@ -137,7 +156,7 @@ module akra.pool.resources {
 			}
 			//similar to [cPoolHandle texture]
 			else if (isNumber(texture)) {
-				if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != <int>texture) {
+				if (!this._pTextures[iIndex] || this._pTextures[iIndex].getResourceHandle() != <int>texture) {
 					if (this._pTextures[iIndex]) {
 						//TheGameHost.displayManager().texturePool().releaseResource(m_pTextures[index]);
 						if (this._pTextures[iIndex].release() === 0) {
@@ -152,7 +171,7 @@ module akra.pool.resources {
 						--this._nTotalTextures;
 					}
 
-					this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.getResource(<int>texture);
+					this._pTextures[iIndex] = <ITexture>pRmgr.getTexturePool().getResource(<int>texture);
 
 					if (this._pTextures[iIndex]) {
 						bf.setBit(this._iTextureFlags, iIndex);
@@ -184,17 +203,13 @@ module akra.pool.resources {
 			return true;
 		}
 
-		setMaterial(pMaterial: IMaterial): void {
-			this._pMaterial.set(pMaterial);
-		}
-
 		isEqual(pSurfaceMaterial: ISurfaceMaterial): boolean {
-			if (this._nTotalTextures === pSurfaceMaterial.totalTextures &&
-				this._iTextureFlags === pSurfaceMaterial.textureFlags &&
-				this._iTextureMatrixFlags === pSurfaceMaterial.textureMatrixFlags) {
+			if (this._nTotalTextures === pSurfaceMaterial.getTotalTextures() &&
+				this._iTextureFlags === pSurfaceMaterial.getTextureFlags() &&
+				this._iTextureMatrixFlags === pSurfaceMaterial.getTextureMatrixFlags()) {
 
-				if ((this._pMaterial && this._pMaterial.isEqual(pSurfaceMaterial.material))
-					|| (pSurfaceMaterial.material === null)) {
+				if ((this._pMaterial && this._pMaterial.isEqual(pSurfaceMaterial.getMaterial()))
+					|| (pSurfaceMaterial.getMaterial() === null)) {
 
 					for (var i = 0; i < this._pTextures.length; i++) {
 						if (this._pTextures[i] !== pSurfaceMaterial.texture[i]) {

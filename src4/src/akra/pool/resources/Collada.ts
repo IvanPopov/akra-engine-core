@@ -125,9 +125,6 @@ module akra.pool.resources {
 			"specular"
 		];
 
-		 get modelFormat(): EModelFormats {
-			return EModelFormats.COLLADA;
-		}
 
 		//=======================================================================================
 		
@@ -148,19 +145,25 @@ module akra.pool.resources {
 
 		private _iByteLength: uint = 0;
 
+		getModelFormat(): EModelFormats {
+			return EModelFormats.COLLADA;
+		}
+
+		// polygon index convertion
+
+		getOptions(): IColladaLoadOptions {
+			return this._pOptions;
+		}
+
+		getByteLength(): uint {
+			return this._iByteLength;
+		}
 	
 
 		constructor () {
 			super();
 
 		}
-
-		// polygon index convertion
-	
-		get options(): IColladaLoadOptions {
-			return this._pOptions;
-		}
-
 
 		isShadowsEnabled(): boolean {
 			return this._pOptions.shadows;
@@ -837,7 +840,7 @@ module akra.pool.resources {
 
 					case "INV_BIND_MATRIX":
 						pJoints.inputs["INV_BIND_MATRIX"] = this.COLLADAInput(pXMLData);
-						if (this.options.debug) {
+						if (this.getOptions().debug) {
 							console.log(pJoints.inputs["INV_BIND_MATRIX"]);
 						}
 						break;
@@ -1206,7 +1209,7 @@ module akra.pool.resources {
 
 				CLD_PRINT(this, "load texture \"" + pImage.path + "\"...");
 
-				var pTex: ITexture = <ITexture>this.getManager().texturePool.loadResource(pImage.path);
+				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().loadResource(pImage.path);
 				// var pModel = this;
 				// pTex.bind("loaded", () => {
 				//     logger.log(pTex.findResourceName(), "loaded", pModel.isResourceLoaded());
@@ -2094,7 +2097,7 @@ module akra.pool.resources {
 			for (var j: int = 0; j < pMesh.getLength(); ++j) {
 				var pSubMesh: IMeshSubset = pMesh.getSubset(j);
 				pSubMesh.getMaterial().set(pDefaultMaterial);
-				pSubMesh.getRenderMethod().effect.addComponent("akra.system.mesh_texture");
+				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 				// pSubMesh.renderMethod.effect.addComponent("akra.system.wireframe");
 			}
 
@@ -2131,7 +2134,7 @@ module akra.pool.resources {
 						// pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
 
 
-						pSubMesh.getRenderMethod().effect.addComponent("akra.system.mesh_texture");
+						pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 						
 						//setup textures
 						for (var sTextureType in pPhongMaterial.textures) {
@@ -2152,7 +2155,7 @@ module akra.pool.resources {
 
 
 							var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.getSurfaceMaterial();
-							var pTexture: ITexture = <ITexture>this.getManager().texturePool.findResource(pColladaImage.path);
+							var pTexture: ITexture = <ITexture>this.getManager().getTexturePool().findResource(pColladaImage.path);
 
 							if (this.getImageOptions().flipY === true) {
 								logger.error("TODO: flipY for image unsupported!");
@@ -2305,7 +2308,7 @@ module akra.pool.resources {
 				var pSubMeshData: IRenderData = pSubMesh.getData();
 				var pIndexDecl: IVertexDeclaration = data.VertexDeclaration.normalize(undefined);
 				var pSurfaceMaterial: ISurfaceMaterial = null;
-				var pSurfacePool: IResourcePool = null;
+				var pSurfacePool: IResourcePool<ISurfaceMaterial> = null;
 
 				for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
 					var iOffset: int = pPolygons.inputs[j].offset;
@@ -2834,10 +2837,6 @@ module akra.pool.resources {
 			}
 		}
 
-		 get byteLength(): uint {
-			return this._iByteLength;
-		}
-
 		parse(sXMLData: string, pOptions: IColladaLoadOptions = null): boolean {
 			if (isNull(sXMLData)) {
 				debug.error("must be specified collada content.");
@@ -3270,10 +3269,10 @@ module akra.pool.resources {
 
 
 	export function isModelResource(pItem: IResourcePoolItem): boolean {
-		return pool.isVideoResource(pItem) && pItem.resourceCode.type === EVideoResources.MODEL_RESOURCE;
+		return pool.isVideoResource(pItem) && pItem.getResourceCode().getType() === EVideoResources.MODEL_RESOURCE;
 	}
 
 	export function isColladaResource(pItem: IResourcePoolItem): boolean {
-		return isModelResource(pItem) && (<IModel>pItem).modelFormat === EModelFormats.COLLADA;
+		return isModelResource(pItem) && (<IModel>pItem).getModelFormat() === EModelFormats.COLLADA;
 	}
 }

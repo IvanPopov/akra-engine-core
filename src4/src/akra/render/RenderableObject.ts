@@ -46,15 +46,15 @@ module akra.render {
 		}
 
 		getEffect(): IEffect {
-			return this._pTechnique.getMethod().effect;
+			return this._pTechnique.getMethod().getEffect();
 		}
 
 		getSurfaceMaterial(): ISurfaceMaterial {
-			return this._pTechnique.getMethod().surfaceMaterial;
+			return this._pTechnique.getMethod().getSurfaceMaterial();
 		}
 
 		getMaterial(): IMaterial {
-			return this.getSurfaceMaterial().material;
+			return this.getSurfaceMaterial().getMaterial();
 		}
 
 		getData(): IRenderData {
@@ -132,8 +132,8 @@ module akra.render {
 				}
 
 				//adding empty, but NOT NULL effect & material
-				pMethod.surfaceMaterial = pRmgr.createSurfaceMaterial(csMethod + ".material." + this.guid);
-				pMethod.effect = pRmgr.createEffect(csMethod + ".effect." + this.guid);
+				pMethod.setSurfaceMaterial(pRmgr.createSurfaceMaterial(csMethod + ".material." + this.guid));
+				pMethod.setEffect(pRmgr.createEffect(csMethod + ".effect." + this.guid));
 			}
 			else {
 				pMethod = <IRenderMethod>arguments[0];
@@ -229,8 +229,8 @@ module akra.render {
 			var pDefaultRm: IRenderMethod = this.getRenderMethodDefault();
 
 			if (!bEnable) {
-				if (pDefaultRm.effect.hasComponent("akra.system.wireframe")) {
-					pDefaultRm.effect.delComponent("akra.system.wireframe", 0, 0);
+				if (pDefaultRm.getEffect().hasComponent("akra.system.wireframe")) {
+					pDefaultRm.getEffect().delComponent("akra.system.wireframe", 0, 0);
 				}
 				return;
 			}
@@ -265,7 +265,7 @@ module akra.render {
 
 			this._bWireframeOverlay = bOverlay;
 
-			pDefaultRm.effect.addComponent("akra.system.wireframe", 0, 0);
+			pDefaultRm.getEffect().addComponent("akra.system.wireframe", 0, 0);
 		}
 
 

@@ -128,7 +128,7 @@ module akra.render {
 				return false;
 			}
 
-			var pComponentPool: IResourcePool = this._pComposer.getEngine().getResourceManager().componentPool;
+			var pComponentPool: IResourcePool<IAFXComponent> = this._pComposer.getEngine().getResourceManager().getComponentPool();
 
 			if (isInt(pComponent)) {
 				pComponent = pComponentPool.getResource(<int>pComponent);
@@ -160,7 +160,7 @@ module akra.render {
 				return false;
 			}
 
-			var pComponentPool: IResourcePool = this._pComposer.getEngine().getResourceManager().componentPool;
+			var pComponentPool: IResourcePool<IAFXComponent> = this._pComposer.getEngine().getResourceManager().getComponentPool();
 
 			if (isInt(pComponent)) {
 				pComponent = pComponentPool.getResource(<int>pComponent);
@@ -185,7 +185,7 @@ module akra.render {
 		}
 
 		hasComponent(sComponent: string, iShift: int = ANY_SHIFT, iPass: uint = ANY_PASS): boolean {
-			return this._pMethod.effect.hasComponent(sComponent, iShift, iPass) || this.hasOwnComponent(sComponent, iShift, iPass);
+			return this._pMethod.getEffect().hasComponent(sComponent, iShift, iPass) || this.hasOwnComponent(sComponent, iShift, iPass);
 		}
 
 		hasOwnComponent(sComponent: string, iShift: int = ANY_SHIFT, iPass: uint = ANY_PASS): boolean {
@@ -193,7 +193,7 @@ module akra.render {
 				return false;
 			}
 
-			var pComponentPool: IResourcePool = this._pComposer.getEngine().getResourceManager().componentPool;
+			var pComponentPool: IResourcePool<IAFXComponent> = this._pComposer.getEngine().getResourceManager().getComponentPool();
 			var pComponent: IAFXComponent = null;
 
 			pComponent = <IAFXComponent>pComponentPool.findResource(sComponent);
@@ -313,7 +313,7 @@ module akra.render {
 			pComposer._setCurrentViewport(pViewport);
 			pComposer._setCurrentSceneObject(pSceneObject);
 			pComposer._setCurrentRenderableObject(pRenderable);
-			pComposer.applySurfaceMaterial(this._pMethod.surfaceMaterial);
+			pComposer.applySurfaceMaterial(this._pMethod.getSurfaceMaterial());
 
 			this._isFreeze = true;
 
@@ -369,7 +369,7 @@ module akra.render {
 				return;
 			}
 
-			var iMethodTotalPasses: uint = pMethod.effect.totalPasses;
+			var iMethodTotalPasses: uint = pMethod.getEffect().getTotalPasses();
 
 			for (var i: uint = 0; i < iMethodTotalPasses; i++) {
 				var pState: IAFXPassInputStateInfo = this.getFreePassState();
@@ -389,7 +389,7 @@ module akra.render {
 
 			var iRenderMethodStartPass: uint = (this._iMinShiftOfOwnBlend < 0) ?
 				(-this._iMinShiftOfOwnBlend) : 0;
-			var iTotalPasses: uint = this._pMethod.effect.totalPasses;
+			var iTotalPasses: uint = this._pMethod.getEffect().getTotalPasses();
 
 			for (var i: uint = 0; i < iTotalPasses; i++) {
 				if (this._pPassBlackList[i + iRenderMethodStartPass]) {

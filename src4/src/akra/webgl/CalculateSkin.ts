@@ -24,9 +24,9 @@ module akra.webgl {
 
 		/*update skinned position program*/
 
-		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.shaderProgramPool.findResource(".WEBGL_skinning_update");
+		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().findResource(".WEBGL_skinning_update");
 		if (isNull(pWebGLProgram)) {
-			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.shaderProgramPool.createResource(".WEBGL_skinning_update");
+			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().createResource(".WEBGL_skinning_update");
 			pWebGLProgram.create(
 
 				"																																\n\

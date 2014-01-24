@@ -4,8 +4,8 @@
 
 module akra {
 	export interface IEffect extends IResourcePoolItem {
-		totalComponents: uint;
-		totalPasses: uint;
+		getTotalComponents(): uint;
+		getTotalPasses(): uint;
 	
 		isEqual(pEffect: IEffect): boolean;
 		isReplicated(): boolean;

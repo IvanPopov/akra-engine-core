@@ -401,7 +401,7 @@ module akra.webgl {
 
 			var iFace: uint = 0;
 			var mip: uint = 0;
-			var pTextureBufferPool: IResourcePool = this.getManager().textureBufferPool;
+			var pTextureBufferPool: IResourcePool<IPixelBuffer> = this.getManager().getTextureBufferPool();
 			var sResourceName: string = this.findResourceName();
 
 			for(iFace = 0; iFace < this.getNumFaces(); iFace++) {

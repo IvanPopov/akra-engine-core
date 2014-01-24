@@ -14,7 +14,8 @@ module akra.pool.resources {
 		protected _pIndexDataArray: IIndexData[] = [];
 		protected _iDataCounter: uint = 0;
 
-		 get length(): uint {
+
+		geLength(): uint {
 			return this._pIndexDataArray.length;
 		}
 

@@ -153,12 +153,11 @@ module akra.terrain {
 					this._pTextures[i].setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);	        	
 				
 					this._pXY[i] = <ISubTextureSettings> {
-											iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
-											iTexX:0, iTexY:0,   /*Координаты мегатекстуры в текстуре*/
-											width: this._pTextures[i].width,
-											height: this._pTextures[i].height,
-											isUpdated : true, isLoaded : false
-										};
+						iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
+						iTexX:0, iTexY:0,   /*Координаты мегатекстуры в текстуре*/
+						width: this._pTextures[i].getWidth(),
+						height: this._pTextures[i].getHeight(),
+						isUpdated : true, isLoaded : false };
 				}
 
 
@@ -541,10 +540,10 @@ module akra.terrain {
 						return;
 					}
 
-					var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
+					var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().getImagePool().findResource(".megatexture.temp_image");
 
 					if(isNull(pTempImg)){
-						pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
+						pTempImg = <IImg>me._pEngine.getResourceManager().getImagePool().createResource(".megatexture.temp_image");
 					}
 					
 					pTempImg.load(pData, sExt, function(isLoaded){

@@ -60,28 +60,28 @@ module akra.pool.resources {
 		private _iFVF: int = 0;
 
 
-		public get modelFormat(): EModelFormats {
+		getModelFormat(): EModelFormats {
 			return EModelFormats.OBJ;
 		}
 
-		public getFilename(): string {
+		getByteLength(): uint {
+			return this._iByteLength;
+		}
+
+		getOptions(): IObjLoadOptions {
+			return this._pOptions;
+		}
+
+		getFilename(): string {
 			return this._sFilename;
+		}
+
+		getBasename(): string {
+			return path.parse(this._pOptions.name || this._sFilename || "unknown").getBaseName();
 		}
 
 		private setFilename(sName: string): void {
 			this._sFilename = sName;
-		}
-
-		public getBasename(): string {
-			return path.parse(this._pOptions.name || this._sFilename || "unknown").getBaseName();
-		}
-
-		public get byteLength(): uint {
-			return this._iByteLength;
-		}
-
-		public get options(): IObjLoadOptions {
-			return this._pOptions;
 		}
 
 		private setOptions(pOptions: IObjLoadOptions): void {
@@ -191,10 +191,10 @@ module akra.pool.resources {
 				logger.log("[OBJ [" + this.findResourceName() + "]]", "model does not have any texture coordinates");
 			}
 
-			pSubMesh.setShadow(this.options.shadows);
-			pSubMesh.getRenderMethod().effect.addComponent("akra.system.mesh_texture");
+			pSubMesh.setShadow(this.getOptions().shadows);
+			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 
-			var pMatrial: IMaterial = pSubMesh.getRenderMethod().surfaceMaterial.material;
+			var pMatrial: IMaterial = pSubMesh.getRenderMethod().getSurfaceMaterial().getMaterial();
 			pMatrial.diffuse = new Color(0.7, 0., 0., 1.);
 			pMatrial.ambient = new Color(0., 0., 0., 1.);
 			pMatrial.specular = new Color(0.7, 0., 0., 1);
@@ -354,7 +354,7 @@ module akra.pool.resources {
 			//results of regexp matching
 			var pm: string[];
 
-			var mTransform: IMat4 = this.options.transform;
+			var mTransform: IMat4 = this.getOptions().transform;
 			var v: IVec4;
 
 			s = s.replace("\r", "");

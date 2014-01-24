@@ -117,13 +117,13 @@ module akra.render {
 
 
 			var pRmgr: IResourcePoolManager = this.getTarget().getRenderer().getEngine().getResourceManager();
-			var pMethodPool: IResourcePool = pRmgr.renderMethodPool;
+			var pMethodPool: IResourcePool<IRenderMethod> = pRmgr.getRenderMethodPool();
 			var pMethod: IRenderMethod = <IRenderMethod>pMethodPool.findResource(".method-color-picker");
 			
 			if (isNull(pMethod)) {
 				pMethod = pRmgr.createRenderMethod(".method-color-picker");
-				pMethod.effect = pRmgr.createEffect(".effect-color-picker");
-				pMethod.effect.addComponent("akra.system.colorPicker");
+				pMethod.setEffect(pRmgr.createEffect(".effect-color-picker"));
+				pMethod.getEffect().addComponent("akra.system.colorPicker");
 			}
 
 			pRenderable.addRenderMethod(pMethod, this._csDefaultRenderMethod);

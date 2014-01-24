@@ -312,9 +312,9 @@ module akra.fx {
 
             if (this._nLastSamplerUpdates !== this._pStatesInfo.samplerKey ||
                 this._pLastSurfaceMaterial !== pSurfaceMaterial ||
-                this._nLastSufraceMaterialTextureUpdates !== pSurfaceMaterial.totalUpdatesOfTextures) {
+                this._nLastSufraceMaterialTextureUpdates !== pSurfaceMaterial.getTotalUpdatesOfTextures()) {
 
-                var iTotalTextures: uint = pSurfaceMaterial.totalTextures;
+                var iTotalTextures: uint = pSurfaceMaterial.getTotalTextures();
                 for (var i: int = 0; i < 16; i++) {
                     if (this._pMaterialNameIndices.textures[i] > 0) {
                         this.textures[this._pMaterialNameIndices.textures[i]] = pSurfaceMaterial.texture(i) || null;
@@ -323,7 +323,7 @@ module akra.fx {
             }
 
             if (this._pMaterialNameIndices.material > 0) {
-                var pMaterial: IMaterial = pSurfaceMaterial.material;
+                var pMaterial: IMaterial = pSurfaceMaterial.getMaterial();
                 var pMatContainer: any = this._pMaterialContainer;
 
                 pMatContainer.DIFFUSE.set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
@@ -344,7 +344,7 @@ module akra.fx {
             // }
 
             this._pLastSurfaceMaterial = pSurfaceMaterial;
-            this._nLastSufraceMaterialTextureUpdates = pSurfaceMaterial.totalUpdatesOfTextures;
+            this._nLastSufraceMaterialTextureUpdates = pSurfaceMaterial.getTotalUpdatesOfTextures();
             this._nLastSamplerUpdates = this._pStatesInfo.samplerKey;
         }
 

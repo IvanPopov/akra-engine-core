@@ -375,7 +375,7 @@ module akra.webgl {
 			var pVertexBuffer: IVertexBuffer = <IVertexBuffer>pData.getBuffer();
 			var iStride: uint = pData.getStride();
 
-			if (pVertexBuffer.type !== EVertexBufferTypes.VBO) {
+			if (pVertexBuffer.getType() !== EVertexBufferTypes.VBO) {
 				return false
 			}
 

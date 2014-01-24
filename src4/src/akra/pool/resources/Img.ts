@@ -27,25 +27,25 @@ module akra.pool.resources {
 
 		protected _pBuffer: Uint8Array = null;
 
-		get byteLength(): uint {
+		getByteLength(): uint {
 			// console.log(__CALLSTACK__);
 			// console.log(this, this._pBuffer, this.isResourceLoaded(), "[", this.findResourceName(), "]");
 			return this._pBuffer.buffer.byteLength;
 		}
 
-		get width(): uint {
+		getWidth(): uint {
 			return this._iWidth;
 		}
 
-		get height(): uint {
+		getHeight(): uint {
 			return this._iHeight;
 		}
 
-		get depth(): uint {
+		getDepth(): uint {
 			return this._iDepth;
 		}
 
-		get numFaces(): uint {
+		getNumFaces(): uint {
 			if (this._iFlags & EImageFlags.CUBEMAP) {
 				var nFace: uint = 0;
 				for (var i: uint = 0; i < 6; i++) {
@@ -62,19 +62,19 @@ module akra.pool.resources {
 			}
 		}
 
-		get numMipMaps(): uint {
+		getNumMipMaps(): uint {
 			return this._nMipMaps;
 		}
 
-		get format(): EPixelFormats {
+		getFormat(): EPixelFormats {
 			return this._eFormat;
 		}
 
-		get flags(): uint {
+		getFlags(): uint {
 			return this._iFlags;
 		}
 
-		get cubeFlags(): uint {
+		getCubeFlags(): uint {
 			return this._iCubeFlags;
 		}
 
@@ -159,14 +159,14 @@ module akra.pool.resources {
 		set(pSrc: IImg): IImg {
 			this.freeMemory();
 
-			this._iWidth = pSrc.width;
-			this._iHeight = pSrc.height;
-			this._iDepth = pSrc.depth;
-			this._eFormat = pSrc.format;
+			this._iWidth = pSrc.getWidth();
+			this._iHeight = pSrc.getHeight();
+			this._iDepth = pSrc.getDepth();
+			this._eFormat = pSrc.getFormat();
 
-			this._iFlags = pSrc.flags;
+			this._iFlags = pSrc.getFlags();
 
-			this._nMipMaps = pSrc.numMipMaps;
+			this._nMipMaps = pSrc.getNumMipMaps();
 
 			this._pBuffer = new Uint8Array(pSrc.getData());
 
@@ -463,13 +463,13 @@ module akra.pool.resources {
 			// face 1, mip 2
 			// etc
 
-			if (iMipMap > this.numMipMaps) {
-				logger.warn("Mipmap index out of range", iMipMap, this.numMipMaps);
+			if (iMipMap > this.getNumMipMaps()) {
+				logger.warn("Mipmap index out of range", iMipMap, this.getNumMipMaps());
 				return null;
 			}
 
-			if (iFace >= this.numFaces) {
-				logger.warn("Face index out of range", iFace, this.numFaces);
+			if (iFace >= this.getNumFaces()) {
+				logger.warn("Face index out of range", iFace, this.getNumFaces());
 				return null;
 			}
 
@@ -492,15 +492,15 @@ module akra.pool.resources {
 			var iMipSize: uint = 0;
 			var iOffset: uint = 0;
 
-			for (var iMip: uint = 0; iMip <= this.numMipMaps; ++iMip) {
+			for (var iMip: uint = 0; iMip <= this.getNumMipMaps(); ++iMip) {
 				if (iMip == iMipMap) {
 					iFinalFaceSize = iFullFaceSize;
 					iFinalWidth = iWidth;
 					iFinalHeight = iHeight;
 					iFinalDepth = iDepth;
-					iMipSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.format);
+					iMipSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.getFormat());
 				}
-				iFullFaceSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.format);
+				iFullFaceSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.getFormat());
 
 				/// Half size in each dimension
 				if (iWidth != 1) iWidth /= 2;
@@ -512,7 +512,7 @@ module akra.pool.resources {
 			iOffset += iFinalFaceSize;
 
 			// Return subface as pixelbox
-			var pSrc: IPixelBox = new pixelUtil.PixelBox(iFinalWidth, iFinalHeight, iFinalDepth, this.format, pData.subarray(iOffset, iOffset + iMipSize));
+			var pSrc: IPixelBox = new pixelUtil.PixelBox(iFinalWidth, iFinalHeight, iFinalDepth, this.getFormat(), pData.subarray(iOffset, iOffset + iMipSize));
 			return pSrc;
 		}
 

@@ -56,14 +56,14 @@ module akra.render {
 			}
 
 			var pRmgr: IResourcePoolManager = this.getTarget().getRenderer().getEngine().getResourceManager();
-			var pMethodPool: IResourcePool = pRmgr.renderMethodPool;
+			var pMethodPool: IResourcePool<IRenderMethod> = pRmgr.getRenderMethodPool();
 
 			var pMethod: IRenderMethod = <IRenderMethod>pMethodPool.findResource(".method-prepare-shadows");
 
 			if (isNull(pMethod)) {
 				pMethod = pRmgr.createRenderMethod(".method-prepare-shadows");
-				pMethod.effect = pRmgr.createEffect(".effect-prepare-shadows");
-				pMethod.effect.addComponent("akra.system.prepareShadows");
+				pMethod.setEffect(pRmgr.createEffect(".effect-prepare-shadows"));
+				pMethod.getEffect().addComponent("akra.system.prepareShadows");
 			}
 
 			pRenderable.addRenderMethod(pMethod, this._csDefaultRenderMethod);

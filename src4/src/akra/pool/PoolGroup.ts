@@ -28,13 +28,13 @@ module akra.pool {
 		/** Массив элементов группы */
 		private pMemberList: IResourcePoolItem[] = null;
 
-		get manager(): IResourcePoolManager { return this.pManager; }
+		getManager(): IResourcePoolManager { return this.pManager; }
 
 		/** 
 		 * Возвращает количесвто свободных мест в группе 
 		 * @
 		 */
-		get totalOpen(): uint {
+		getTotalOpen(): uint {
 			return this.iTotalOpen;
 		}
 
@@ -42,7 +42,7 @@ module akra.pool {
 		 * Возвращает количесвто занятых мест в группе 
 		 * @
 		 */
-		get totalUsed(): uint {
+		getTotalUsed(): uint {
 			return this.iMaxCount - this.iTotalOpen;
 		}
 
@@ -50,7 +50,7 @@ module akra.pool {
 		 * Номер первого свободного элемента в группе
 		 * @
 		 */
-		get firstOpen(): uint {
+		getFirstOpen(): uint {
 			return this.iFirstOpen;
 		}
 

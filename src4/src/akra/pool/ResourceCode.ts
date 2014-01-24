@@ -4,20 +4,20 @@ module akra.pool {
 	export class ResourceCode implements IResourceCode {
 		private _iValue: int = <number>(EResourceCodes.INVALID_CODE);
 
-		get family(): int {
+		getFamily(): int {
 			return this._iValue >> 16;
 		}
 
-		set family(iNewFamily: int) {
+		setFamily(iNewFamily: int): void {
 			this._iValue &= 0x0000FFFF;
 			this._iValue |= iNewFamily << 16;
 		}
 
-		get type(): int {
+		getType(): int {
 			return this._iValue & 0x0000FFFF;
 		}
 
-		set type(iNewType: int) {
+		setType(iNewType: int) : void {
 			this._iValue &= 0xFFFF0000;
 			this._iValue |= iNewType & 0x0000FFFF;
 		}
@@ -41,8 +41,8 @@ module akra.pool {
 					}
 					break;
 				case 2:
-					this.family = arguments[0];
-					this.type = arguments[1];
+					this.setFamily(arguments[0]);
+					this.setType(arguments[1]);
 					break;
 			}
 		}

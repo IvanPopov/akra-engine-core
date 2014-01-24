@@ -159,7 +159,7 @@ module akra.webgl {
 				}
 			}
 			
-			var pProgram: IShaderProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBgl.blit_texture_buffer"); 
+			var pProgram: IShaderProgram = <IShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.blit_texture_buffer"); 
 			var sFloatToVec4Func: string = "\
 				vec4 floatToVec4(float value){						\n\
 					float data = value;								\n\
@@ -237,7 +237,7 @@ module akra.webgl {
 				}													\n";
 
 			if(isNull(pProgram)){
-				pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBgl.blit_texture_buffer");
+				pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().createResource("WEBgl.blit_texture_buffer");
 				pProgram.create(
 				"																									\n\
 				attribute vec2 POSITION;																			\n\
@@ -265,10 +265,10 @@ module akra.webgl {
 				");
 			}
 
-			pProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBgl.decode_depth32_texture");
+			pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.decode_depth32_texture");
 
 			if (isNull(pProgram)) {
-				pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBgl.decode_depth32_texture");
+				pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().createResource("WEBgl.decode_depth32_texture");
 				pProgram.create("																									\n\
 				attribute vec2 POSITION;																			\n\
 				attribute vec3 TEXCOORD;																			\n\
@@ -298,10 +298,10 @@ module akra.webgl {
 				");
 			}
 
-			pProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBgl.decode_float32_texture");
+			pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.decode_float32_texture");
 
 			if (isNull(pProgram)) {
-				pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBgl.decode_float32_texture");
+				pProgram = <IShaderProgram>this.getManager().getShaderProgramPool().createResource("WEBgl.decode_float32_texture");
 				pProgram.create("																									\n\
 				attribute vec2 POSITION;																			\n\
 				attribute vec3 TEXCOORD;																			\n\
@@ -506,7 +506,7 @@ module akra.webgl {
 				}
 
 				// мы не можем читать из данного формата напрямую, поэтому необходимо перерендерить эту текстура в RGB/RGBA 8.
-				var pProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource(
+				var pProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().getShaderProgramPool().findResource(
 					this.format === EPixelFormats.DEPTH32? "WEBgl.decode_depth32_texture": "WEBgl.decode_float32_texture");
 
 				pWebGLTexture = WebGLTextureBuffer.copyTex2DImageByProgram(pProgram, pDestBox, EPixelFormats.R8G8B8A8, this, pData);
@@ -1011,7 +1011,7 @@ module akra.webgl {
 			}
 
 			//Get WebGL program
-			var pWebGLShaderProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBgl.blit_texture_buffer"); 
+			var pWebGLShaderProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().getShaderProgramPool().findResource("WEBgl.blit_texture_buffer"); 
 			pWebGLRenderer.disableAllWebGLVertexAttribs();
 			pWebGLRenderer.useWebGLProgram(pWebGLShaderProgram.getWebGLProgram());
 
@@ -1216,7 +1216,7 @@ module akra.webgl {
 			pWebGLContext.texImage2D(eTarget, 0, iWebGLFormat, iWidth, iHeight, 0, iWebGLFormat, iWebGLDataType, null);
 			pWebGLRenderer.bindWebGLTexture(eTarget, null);
 			
-			var pTextureBufferPool: IResourcePool = this.getManager().textureBufferPool;
+			var pTextureBufferPool: IResourcePool<IPixelBuffer> = this.getManager().getTextureBufferPool();
 			var pTempTexBuffer: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(".temp");
 			// var pTempTexBuffer: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.findResource(".temp");
 			

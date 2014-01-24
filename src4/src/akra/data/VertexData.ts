@@ -483,7 +483,7 @@ module akra.data {
 		}
 
 		getBufferHandle(): int {
-			return this._pVertexBuffer.resourceHandle;
+			return this._pVertexBuffer.getResourceHandle();
 		}
 
 		toString(): string {

@@ -19,8 +19,13 @@ module akra.pool.resources {
 		protected _pVertexDataArray: IVertexData[] = [];
 		protected _iDataCounter: uint = 0;
 
-		get type(): EVertexBufferTypes { return EVertexBufferTypes.UNKNOWN; }
-		get length(): uint { return this._pVertexDataArray.length; }
+		getType(): EVertexBufferTypes {
+			return EVertexBufferTypes.UNKNOWN;
+		}
+
+		getLength(): uint {
+			return this._pVertexDataArray.length;
+		}
 
 		constructor(/*pManager: IResourcePoolManager*/) {
 			super(/*pManager*/);
@@ -238,11 +243,11 @@ module akra.pool.resources {
 		}
 
 		static isVBO(pBuffer: IVertexBuffer): boolean {
-			return pBuffer.type === EVertexBufferTypes.VBO;
+			return pBuffer.getType() === EVertexBufferTypes.VBO;
 		}
 
 		static isTBO(pBuffer: IVertexBuffer): boolean {
-			return pBuffer.type === EVertexBufferTypes.TBO;
+			return pBuffer.getType() === EVertexBufferTypes.TBO;
 		}
 	}
 }

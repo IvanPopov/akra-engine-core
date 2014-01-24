@@ -53,7 +53,7 @@ module akra.scene {
 
 			var iGuid: uint = this.guid;
 			var pRenderMethod: IRenderMethod = pRenderable.getRenderMethod();
-			var pEffect: IEffect = pRenderMethod.effect;
+			var pEffect: IEffect = pRenderMethod.getEffect();
 
 			pEffect.addComponent("akra.system.mesh_texture");
 
@@ -113,10 +113,10 @@ module akra.scene {
 			var pSurfaceMaterial: ISurfaceMaterial = this._pRenderable.getSurfaceMaterial();
 			pSurfaceMaterial.setTexture(ESurfaceMaterialTextures.EMISSIVE, pTex, 0);
 
-			(<IColor>pSurfaceMaterial.material.emissive).set(0.);
-			(<IColor>pSurfaceMaterial.material.diffuse).set(0.);
-			(<IColor>pSurfaceMaterial.material.ambient).set(0.);
-			(<IColor>pSurfaceMaterial.material.specular).set(0.);
+			(<IColor>pSurfaceMaterial.getMaterial().emissive).set(0.);
+			(<IColor>pSurfaceMaterial.getMaterial().diffuse).set(0.);
+			(<IColor>pSurfaceMaterial.getMaterial().ambient).set(0.);
+			(<IColor>pSurfaceMaterial.getMaterial().specular).set(0.);
 
 			this._pRenderable.wireframe(true);
 		}

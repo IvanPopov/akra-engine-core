@@ -11,11 +11,11 @@ module akra.pool.resources {
 		protected _nTotalPasses: uint = 0;
 		protected _nTotalComponents: uint = 0;
 
-		get totalComponents(): uint {
+		getTotalComponents(): uint {
 			return this._nTotalComponents;
 		}
 
-		get totalPasses(): uint {
+		getTotalPasses(): uint {
 			return this._nTotalPasses;
 		}
 
@@ -40,7 +40,7 @@ module akra.pool.resources {
 		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): boolean;
 		addComponent(sComponent: string, iShift?: int, iPass?: uint): boolean;
 		addComponent(pComponent: any, iShift: int = fx.DEFAULT_SHIFT, iPass: uint = fx.ALL_PASSES): boolean {
-			var pComponentPool: IResourcePool = this.getManager().componentPool;
+			var pComponentPool: IResourcePool<IAFXComponent> = this.getManager().getComponentPool();
 
 			if (isInt(pComponent)) {
 				pComponent = pComponentPool.getResource(<int>pComponent);
@@ -64,7 +64,7 @@ module akra.pool.resources {
 
 			this.notifyAltered();
 
-			if (this.totalComponents === 1) {
+			if (this.getTotalComponents() === 1) {
 				this.notifyRestored();
 			}
 
@@ -75,7 +75,7 @@ module akra.pool.resources {
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): boolean;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): boolean;
 		delComponent(pComponent: any, iShift: int = fx.DEFAULT_SHIFT, iPass: uint = fx.ALL_PASSES): boolean {
-			var pComponentPool: IResourcePool = this.getManager().componentPool;
+			var pComponentPool: IResourcePool<IAFXComponent> = this.getManager().getComponentPool();
 
 			if (isInt(pComponent)) {
 				pComponent = pComponentPool.getResource(<int>pComponent);
@@ -99,7 +99,7 @@ module akra.pool.resources {
 
 			this.notifyAltered();
 
-			if (this.totalComponents === 0) {
+			if (this.getTotalComponents() === 0) {
 				this.notifyDisabled();
 			}
 
@@ -107,7 +107,7 @@ module akra.pool.resources {
 		}
 
 		hasComponent(sComponent: string, iShift: int = fx.ANY_SHIFT, iPass: int = fx.ANY_PASS): boolean {
-			var pComponentPool: IResourcePool = this.getManager().componentPool;
+			var pComponentPool: IResourcePool<IAFXComponent> = this.getManager().getComponentPool();
 			var pComponent: IAFXComponent = null;
 
 			pComponent = <IAFXComponent>pComponentPool.findResource(sComponent);

@@ -132,7 +132,7 @@ module akra.data {
 		}
 
 		getBufferHandle(): int {
-			return this._pIndexBuffer.resourceHandle;
+			return this._pIndexBuffer.getResourceHandle();
 		}
 
 		static getPrimitiveCount(eType: EPrimitiveTypes, nVertices: uint): uint {

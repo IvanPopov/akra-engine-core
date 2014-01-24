@@ -178,7 +178,7 @@ module akra.model {
 			this._pSkyBuffer.create(this._nSize, this._nSize, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 			// this._pSkyBackBuffer.create(this._nSize, this._nSize, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
-			this._pSkyBlitBox = new pixelUtil.PixelBox(this._nSize, this._nSize, 1, EPixelFormats.FLOAT32_RGBA, new Uint8Array(this._pSkyBuffer.byteLength));
+			this._pSkyBlitBox = new pixelUtil.PixelBox(this._nSize, this._nSize, 1, EPixelFormats.FLOAT32_RGBA, new Uint8Array(this._pSkyBuffer.getByteLength()));
 
 			if (config.SKY_GPU) {
 				var pScreen: IRenderableObject = this._pScreen = new render.Screen(pEngine.getRenderer());
@@ -188,7 +188,7 @@ module akra.model {
 
 				pSkyDomeUpdateEffect.addComponent("akra.system.SkyDomeUpdate");
 
-				pSkyDomeUpdateMethod.effect = pSkyDomeUpdateEffect;
+				pSkyDomeUpdateMethod.setEffect(pSkyDomeUpdateEffect);
 				pScreen.getTechnique().setMethod(pSkyDomeUpdateMethod);
 
 				var pSkyDomeTarget: IRenderTarget = this._pSkyBuffer.getBuffer().getRenderTarget();
@@ -471,7 +471,7 @@ module akra.model {
 			pSubMesh.getData().index(e, "INDEX0");
 			pSubMesh.setShadow(false);
 
-			var pMatrial: IMaterial = pSubMesh.getRenderMethod().surfaceMaterial.material;
+			var pMatrial: IMaterial = pSubMesh.getRenderMethod().getSurfaceMaterial().getMaterial();
 			pMatrial.diffuse = color.LIGHT_GRAY;
 			pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
 			pMatrial.specular = new Color(0.7, 0.7, 0.7, 1);
@@ -479,14 +479,14 @@ module akra.model {
 			pMatrial.shininess = 30.;
 
 			if ((<core.Engine>this.getEngine()).isDepsLoaded()) {
-				pSubMesh.getRenderMethod().effect.addComponent("akra.system.sky");
+				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.sky");
 			}
 			else {
 				//this.getEngine().bind(SIGNAL(depsLoaded), () => {
 				//	pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
 				//});
 				this.getEngine().depsLoaded.connect(() => {
-					pSubMesh.getRenderMethod().effect.addComponent("akra.system.sky");
+					pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.sky");
 				});
 			}
 

@@ -167,7 +167,7 @@ module akra.terrain {
 				var pMethod: IRenderMethod = null, 
 					pEffect: IEffect = null;
 			    
-			    pMethod = <IRenderMethod>pRmgr.renderMethodPool.findResource(".terrain_render");
+			    pMethod = <IRenderMethod>pRmgr.getRenderMethodPool().findResource(".terrain_render");
 			    
 			    if (!isNull(pMethod)) {
 			        this._pDefaultRenderMethod = pMethod;
@@ -178,9 +178,9 @@ module akra.terrain {
 			    pEffect.addComponent("akra.system.terrain");
 
 			    pMethod = pRmgr.createRenderMethod(".terrain_render");
-			    pMethod.effect = pEffect;
-			    pMethod.surfaceMaterial = pRmgr.createSurfaceMaterial(".terrain_render");
-			    var pMat: IMaterial = pMethod.surfaceMaterial.material;
+			    pMethod.setEffect(pEffect);
+				pMethod.setSurfaceMaterial(pRmgr.createSurfaceMaterial(".terrain_render"));
+			    var pMat: IMaterial = pMethod.getSurfaceMaterial().getMaterial();
 			    pMat.name = "terrain";
 
 			    pMat.shininess = 30;
@@ -198,14 +198,14 @@ module akra.terrain {
 				var pMethod: IRenderMethod = null, 
 					pEffect: IEffect = null;
 
-				pMethod = <IRenderMethod>pRmgr.renderMethodPool.findResource(".terrain_generate_normal");
+				pMethod = <IRenderMethod>pRmgr.getRenderMethodPool().findResource(".terrain_generate_normal");
 
 				if(isNull(pMethod)){
 					pEffect = pRmgr.createEffect(".terrain_generate_normal");
 					pEffect.addComponent("akra.system.generateNormalMapByHeightMap");
 
 					pMethod = pRmgr.createRenderMethod(".terrain_generate_normal");
-			    	pMethod.effect = pEffect;
+			    	pMethod.setEffect(pEffect);
 				}
 
 				this._pDefaultScreen.addRenderMethod(pMethod, ".terrain_generate_normal");
@@ -372,9 +372,9 @@ module akra.terrain {
 
 			    // first, build a table of heights
 			    if (pImageHightMap.isResourceLoaded()) {
-			        if(pImageHightMap.width !== iMaxX && pImageHightMap.height !== iMaxY){
+			        if(pImageHightMap.getWidth() !== iMaxX && pImageHightMap.getHeight() !== iMaxY){
 			        	logger.warn("Размеры карты высот не совпадают с другими размерами. Нужно: " + 
-			        			iMaxX + "x" + iMaxY + ". Есть: " + pImageHightMap.width + "x" + pImageHightMap.height);
+			        			iMaxX + "x" + iMaxY + ". Есть: " + pImageHightMap.getWidth() + "x" + pImageHightMap.getHeight());
 			        	return;
 			        }
 
@@ -428,11 +428,11 @@ module akra.terrain {
 		}
 
 		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3 {
-			if (iMapX >= this._pBaseNormalImage.width) {
-			    iMapX = this._pBaseNormalImage.width - 1;
+			if (iMapX >= this._pBaseNormalImage.getWidth()) {
+				iMapX = this._pBaseNormalImage.getWidth() - 1;
 			}
-			if (iMapY >= this._pBaseNormalImage.height) {
-			    iMapY = this._pBaseNormalImage.height - 1;
+			if (iMapY >= this._pBaseNormalImage.getHeight()) {
+				iMapY = this._pBaseNormalImage.getHeight() - 1;
 			}
 
 			this._pBaseNormalImage.getColorAt(this._pTempNormalColor, iMapX, iMapY);
@@ -490,7 +490,7 @@ module akra.terrain {
 			this._pHeightMapTexture.loadImage(pImageHightMap);
 
 			this._pBaseNormalTexture = pRmgr.createTexture(".terrain-base-normal-texture" + this.guid);
-			this._pBaseNormalTexture.create(pImageHightMap.width, pImageHightMap.height, 1, null, 
+			this._pBaseNormalTexture.create(pImageHightMap.getWidth(), pImageHightMap.getHeight(), 1, null, 
 											ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
 
 			var pTarget: IRenderTarget = this._pBaseNormalTexture.getBuffer().getRenderTarget();
@@ -574,7 +574,7 @@ module akra.terrain {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setSamplerTexture("HEIGHT_SAMPLER", this._pHeightMapTexture);
-			pPass.setUniform("STEPS", Vec2.temp(1./this._pHeightMapTexture.width, 1./this._pHeightMapTexture.height));
+			pPass.setUniform("STEPS", Vec2.temp(1. / this._pHeightMapTexture.getWidth(), 1. / this._pHeightMapTexture.getHeight()));
 			pPass.setUniform("SCALE", this._v3fMapScale.z);
 			pPass.setUniform("CHANNEL", 0);
 		}

@@ -21,9 +21,17 @@ module akra.pool.resources {
 		private _nFilesToBeLoaded: uint;
 		private _pNode: ISceneNode;
 
-		 get node(): ISceneNode { return this._pNode; }
-		 get totalMeshes(): uint { return this._pMeshList.length; }
-		 get totalAnimations(): uint { return this._pAnimController.totalAnimations; }
+		getNode(): ISceneNode {
+			return this._pNode;
+		}
+
+		getTotalMeshes(): uint {
+			return this._pMeshList.length;
+		}
+
+		getTotalAnimations(): uint {
+			return this._pAnimController.getTotalAnimations();
+		}
 
 		constructor () {
 			super();
@@ -80,16 +88,16 @@ module akra.pool.resources {
 		}
 		
 		attachToScene(pNode: ISceneNode): boolean {
-			if (isNull(pScene)) {
+			if (isNull(pNode)) {
 				return false;
 			}
 
 			if (this._pNode) {
-				CRITICAL("TODO: detach from old node...");
+				logger.critical("TODO: detach from old node...");
 			}
 
 			var pNodes: ISceneNode[] = this._pRootNodeList;
-			var pRoot: ISceneNode = pNode.scene.createNode();
+			var pRoot: ISceneNode = pNode.getScene().createNode();
 
 			if (!pRoot.create()) {
 				return false;
@@ -106,7 +114,7 @@ module akra.pool.resources {
 			}
 
 			if (isDefAndNotNull(this._pAnimController)) {
-				this._pAnimController.bind(pRoot);
+				this._pAnimController.attach(pRoot);
 			}
 
 			this._pNode = pRoot;

@@ -4,7 +4,7 @@
 /// <reference path="EPixelFormats.ts" />
 
 module akra {
-	export interface IPixelBuffer extends IHardwareBuffer {
+	export interface IPixelBuffer extends IHardwareBuffer, IRenderResource {
 		/** readonly */ width: uint;
 		/** readonly */ height: uint;
 		/** readonly */ depth: uint;

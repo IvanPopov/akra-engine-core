@@ -14,7 +14,7 @@ module akra.pool.resources {
 		private _pFile: IFile = null;
 		private _pSyntaxTree: parser.IParseTree = null;
 
-		 get byteLength(): uint {
+		getByteLength(): uint {
 			return this._pFile? this._pFile.getByteLength(): 0;
 		}
 

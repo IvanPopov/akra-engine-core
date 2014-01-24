@@ -37,7 +37,7 @@ module akra.render {
 			var pSeeTextureEffect: IEffect = pResMgr.createEffect(DEFAULT_TEXTUREVIEW_NAME + this.guid);
 
 			pSeeTextureEffect.addComponent("akra.system.texture_to_screen");
-			pSeeTextureMethod.effect = pSeeTextureEffect;
+			pSeeTextureMethod.setEffect(pSeeTextureEffect);
 
 			pDefferedView.addRenderMethod(pSeeTextureMethod, DEFAULT_TEXTUREVIEW_NAME);
 

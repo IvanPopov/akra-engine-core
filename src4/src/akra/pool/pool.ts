@@ -2,6 +2,6 @@
 
 module akra.pool {
 	export function isVideoResource(pItem: IResourcePoolItem): boolean {
-		return !isNull(pItem) && pItem.resourceCode.family === EResourceFamilies.VIDEO_RESOURCE;
+		return !isNull(pItem) && pItem.getResourceCode().getFamily() === EResourceFamilies.VIDEO_RESOURCE;
 	}
 }

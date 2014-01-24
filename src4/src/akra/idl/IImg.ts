@@ -22,19 +22,18 @@ module akra {
 	}
 	
 	export interface IImg extends IResourcePoolItem {
-		byteLength: uint;
+		getByteLength(): uint;
 		
-		width: uint;
-		height: uint;
-		depth: uint;
+		getWidth(): uint;
+		getHeight(): uint;
+		getDepth(): uint;
 	
-		numFaces: uint;
-		numMipMaps: uint;
-		format: EPixelFormats;
+		getNumFaces(): uint;
+		getNumMipMaps(): uint;
+		getFormat(): EPixelFormats;
 	
-		flags: uint;
-		cubeFlags:uint;
-	
+		getFlags(): uint;
+		getCubeFlags():uint;	
 		
 		set(pSrc: IImg): IImg;
 	
