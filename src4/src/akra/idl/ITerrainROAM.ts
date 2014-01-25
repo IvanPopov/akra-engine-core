@@ -9,19 +9,24 @@
 
 module akra {
 	export interface ITerrainROAM extends ITerrain {
-		tessellationScale: float;
-		tessellationLimit: float;
-	
-		useTessellationThread: boolean;
-	
-		/** readonly */ verts: float[];
-		/** readonly */ index: Float32Array;
-		/** readonly */ maxTriTreeNodes: uint;
-		/** readonly */ vertexId: uint;
-		/** readonly */ localCameraCoord: IVec3;
-	
-		totalIndex: uint;
-	
+		getVerts(): float[];
+		getIndex(): Float32Array;
+		getMaxTriTreeNodes(): uint;
+		getVertexId(): uint;
+		getLocalCameraCoord(): IVec3;
+
+		getTessellationScale(): float;
+		setTessellationScale(fScale: float): void;
+		
+		getTessellationLimit(): float;
+		setTessellationLimit(fLimit: float): void;
+		
+		getUseTessellationThread(): boolean;
+		setUseTessellationThread(bUseThread: boolean): void;
+		
+		getTotalIndex(): uint;
+		setTotalIndex(iTotalIndices: uint): void;	
+		
 		requestTriNode(): ITriTreeNode;
 	
 		addToTessellationQueue(pSection: ITerrainSectionROAM): boolean;

@@ -17,23 +17,26 @@ module akra {
 	}
 	
 	export interface ITerrain extends ISceneObject {
-		/** readonly */ worldExtents: IRect3d;
-		/** readonly */ worldSize: IVec3;
-		/** readonly */ mapScale: IVec3;
-		/** readonly */ sectorCountX: uint;
-		/** readonly */ sectorCountY: uint;
-		/** readonly */ sectorSize: IVec2;
-		/** readonly */ tableWidth: uint;
-		/** readonly */ tableHeight: uint;
-		/** readonly */ sectorShift: uint;
-		/** readonly */ dataFactory: IRenderDataCollection;
+		getWorldExtents(): IRect3d;
+		getWorldSize(): IVec3;
+		getMapScale(): IVec3;
+		getSectorCountX(): uint;
+		getSectorCountY(): uint;
+		getSectorSize(): IVec2;
+		getTableWidth(): uint;
+		getTableHeight(): uint;
+		getSectorShift(): uint;
+		getDataFactory(): IRenderDataCollection;
 		
-		/** readonly */ maxHeight: float;
-		/** readonly */ terrain2DLength: float;
-		/** readonly */ megaTexture: IMegaTexture;
-	
-		manualMegaTextureInit: boolean;
-		showMegaTexture: boolean;
+		getMaxHeight(): float;
+		getTerrain2DLength(): float;
+		getMegaTexture(): IMegaTexture;
+
+		getManualMegaTextureInit(): boolean;
+		setManualMegaTextureInit(bManual: boolean): void;
+
+		getShowMegaTexture(): boolean;
+		setShowMegaTexture(bShow: boolean): void;	
 		
 		isCreate(): boolean;
 	

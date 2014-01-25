@@ -540,7 +540,7 @@
     <TypeScriptCompile Include="akra\terrain\TerrainROAM.ts" />
     <TypeScriptCompile Include="akra\terrain\TerrainSection.ts" />
     <TypeScriptCompile Include="akra\terrain\TerrainSectionROAM.ts" />
-    <TypeScriptCompile Include="akra\terrain\TriTreeNode.ts" />
+    <TypeScriptCompile Include="akra\terrain\TriangleNodePool.ts" />
     <TypeScriptCompile Include="akra\threading\ThreadManager.ts" />
     <TypeScriptCompile Include="akra\webgl\CalculateSkin.ts" />
     <TypeScriptCompile Include="akra\model\Mesh.ts" />

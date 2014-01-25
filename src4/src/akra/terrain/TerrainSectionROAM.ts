@@ -1,5 +1,6 @@
 /// <reference path="../idl/ITerrainSectionROAM.ts" />
 /// <reference path="TerrainROAM.ts" />
+/// <reference path="TriangleNodePool.ts" />
 
 module akra.terrain {
 	import Vec2 = math.Vec2;
@@ -14,8 +15,8 @@ module akra.terrain {
 		private _iOffsetInVertexBuffer: uint;
 
 		//два дерева треугольников
-		private _pRootTriangleA: ITriTreeNode = new TriTreeNode();
-		private _pRootTriangleB: ITriTreeNode = new TriTreeNode();
+		private _pRootTriangleA: ITriTreeNode = TriangleNodePool.createTriTreeNode();
+		private _pRootTriangleB: ITriTreeNode = TriangleNodePool.createTriTreeNode();
 
 		//Урове5нь погрещности для двух деревьев
 		private _pVarianceTreeA: float[] = null;
@@ -51,19 +52,19 @@ module akra.terrain {
 			super(pScene, eType);
 		}
 
-		get terrainSystem(): ITerrainROAM{
+		getTerrainSystem(): ITerrainROAM{
 			return this._pTerrainSystem;
 		}
 
-		get triangleA(): ITriTreeNode {
+		getTriangleA(): ITriTreeNode {
 			return this._pRootTriangleA;
 		}
 
-		get triangleB(): ITriTreeNode {
+		getTriangleB(): ITriTreeNode {
 			return this._pRootTriangleB;
 		}
 
-		get queueSortValue(): float {
+		getQueueSortValue(): float {
 			return this._fQueueSortValue;
 		}
 
@@ -84,7 +85,7 @@ module akra.terrain {
 													iVerts, iVerts, 
 													pWorldRect);
 
-			if(!(<ITerrainROAM>this.terrainSystem).useTessellationThread){
+			if(!(<ITerrainROAM>this.getTerrainSystem()).getUseTessellationThread()){
 				this._initTessellationData();
 			}
 
@@ -106,26 +107,26 @@ module akra.terrain {
 				this._pVarianceTreeB[i] = 0;
 			}
 
-			var pRoamTerrain: ITerrainROAM = this.terrainSystem;
+			var pRoamTerrain: ITerrainROAM = this.getTerrainSystem();
 			var pNorthSection: ITerrainSectionROAM = pRoamTerrain.findSection(this._iSectorX, this._iSectorY - 1);
 			var pSouthSection: ITerrainSectionROAM = pRoamTerrain.findSection(this._iSectorX, this._iSectorY + 1);
 			var pEastSection: ITerrainSectionROAM  = pRoamTerrain.findSection(this._iSectorX + 1, this._iSectorY);
 			var pWestSection: ITerrainSectionROAM  = pRoamTerrain.findSection(this._iSectorX - 1, this._iSectorY);
 
 			if (pNorthSection) {
-				this._leftNeighborOfA = pNorthSection.triangleB;
+				this._leftNeighborOfA = pNorthSection.getTriangleB();
 			}
 
 			if (pSouthSection) {
-				this._leftNeighborOfB = pSouthSection.triangleA;
+				this._leftNeighborOfB = pSouthSection.getTriangleA();
 			}
 
 			if (pEastSection) {
-				this._rightNeighborOfB = pEastSection.triangleA;
+				this._rightNeighborOfB = pEastSection.getTriangleA();
 			}
 
 			if (pWestSection) {
-				this._rightNeighborOfA = pWestSection.triangleB;
+				this._rightNeighborOfA = pWestSection.getTriangleB();
 			}
 
 			// establish basic links
@@ -141,17 +142,17 @@ module akra.terrain {
 
 			var pCamera: ICamera = pViewport.getCamera();
 
-			if(!this.terrainSystem.resetWithCamera(pCamera)){
+			if(!this.getTerrainSystem().resetWithCamera(pCamera)){
 				return;
 			}
 
-			var v3fViewPoint: IVec3 = this.terrainSystem.localCameraCoord;
+			var v3fViewPoint: IVec3 = this.getTerrainSystem().getLocalCameraCoord();
 
 			// compute view distance to our 4 corners
-			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY));
-			var fHeight1: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY + this._iYVerts));
-			var fHeight2: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY + this._iYVerts));
-			var fHeight3: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY));
+			var fHeight0: float = this.getTerrainSystem().readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY));
+			var fHeight1: float = this.getTerrainSystem().readWorldHeight(math.ceil(this._iHeightMapX), math.ceil(this._iHeightMapY + this._iYVerts));
+			var fHeight2: float = this.getTerrainSystem().readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY + this._iYVerts));
+			var fHeight3: float = this.getTerrainSystem().readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY));
 
 			this._v3fDistance0.set(v3fViewPoint.x-this._pWorldRect.x0, v3fViewPoint.y-this._pWorldRect.y0,v3fViewPoint.z-fHeight0);
 			this._v3fDistance1.set(v3fViewPoint.x-this._pWorldRect.x0, v3fViewPoint.y-this._pWorldRect.y1,v3fViewPoint.z-fHeight1);
@@ -170,11 +171,11 @@ module akra.terrain {
 
 
 			// submit to the tessellation queue of our parent
-			this.terrainSystem.addToTessellationQueue(this);
+			this.getTerrainSystem().addToTessellationQueue(this);
 		}
 
 		reset(): void {
-			if((<ITerrainROAM>this.terrainSystem).useTessellationThread){
+			if((<ITerrainROAM>this.getTerrainSystem()).getUseTessellationThread()){
 				return;
 			}
 
@@ -194,19 +195,19 @@ module akra.terrain {
 		}
 
 		tessellate(fScale: float, fLimit: float): void {
-			if((<ITerrainROAM>this.terrainSystem).useTessellationThread){
+			if((<ITerrainROAM>this.getTerrainSystem()).getUseTessellationThread()){
 				return;
 			}
 
-			var iIndex0: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY);
-			var iIndex1: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY + this._iYVerts-1);
-			var iIndex2: uint =  this.terrainSystem._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY + this._iYVerts-1);
-			var iIndex3: uint =  this.terrainSystem._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY);
+			var iIndex0: uint =  this.getTerrainSystem()._tableIndex(this._iHeightMapX,						this._iHeightMapY);
+			var iIndex1: uint =  this.getTerrainSystem()._tableIndex(this._iHeightMapX,						this._iHeightMapY + this._iYVerts-1);
+			var iIndex2: uint =  this.getTerrainSystem()._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY + this._iYVerts-1);
+			var iIndex3: uint =  this.getTerrainSystem()._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY);
 
-			var fHeight0: float = this.terrainSystem.readWorldHeight(iIndex0);
-			var fHeight1: float = this.terrainSystem.readWorldHeight(iIndex1);
-			var fHeight2: float = this.terrainSystem.readWorldHeight(iIndex2);
-			var fHeight3: float = this.terrainSystem.readWorldHeight(iIndex3);
+			var fHeight0: float = this.getTerrainSystem().readWorldHeight(iIndex0);
+			var fHeight1: float = this.getTerrainSystem().readWorldHeight(iIndex1);
+			var fHeight2: float = this.getTerrainSystem().readWorldHeight(iIndex2);
+			var fHeight3: float = this.getTerrainSystem().readWorldHeight(iIndex3);
 
 			this.recursiveTessellate(
 				this._pRootTriangleA,
@@ -241,14 +242,14 @@ module akra.terrain {
 			}
 			
 			var fMidPointZ: float = (fCornerBZ + fCornerCZ)/2;
-			var fRealMidPointZ: float = this.terrainSystem.readWorldHeight(iMidpointX, iMidpointY);
+			var fRealMidPointZ: float = this.getTerrainSystem().readWorldHeight(iMidpointX, iMidpointY);
 
-			var v3fLoaclCameraCoord: IVec3 = this.terrainSystem.localCameraCoord;
-			var pTerrainExtents: IRect3d = this.terrainSystem.worldExtents;
-			var iHeightMapWidth: uint = this.terrainSystem.tableWidth;
-			var iHeightMapHeight: uint = this.terrainSystem.tableHeight;
-			var fTerrainSizeZ: float = this.terrainSystem.maxHeight;
-			var fTerrainDiagonal: float = this.terrainSystem.terrain2DLength;
+			var v3fLoaclCameraCoord: IVec3 = this.getTerrainSystem().getLocalCameraCoord();
+			var pTerrainExtents: IRect3d = this.getTerrainSystem().getWorldExtents();
+			var iHeightMapWidth: uint = this.getTerrainSystem().getTableWidth();
+			var iHeightMapHeight: uint = this.getTerrainSystem().getTableHeight();
+			var fTerrainSizeZ: float = this.getTerrainSystem().getMaxHeight();
+			var fTerrainDiagonal: float = this.getTerrainSystem().getTerrain2DLength();
 			
 			var fLocalMidX: float = pTerrainExtents.x0 + iMidpointX * pTerrainExtents.sizeX() / iHeightMapWidth;
 			var fLocalMidY: float = pTerrainExtents.y0 + iMidpointY * pTerrainExtents.sizeY() / iHeightMapHeight;
@@ -259,8 +260,8 @@ module akra.terrain {
 
 			// Если треугольник не поделен
 			if (!pTri.leftChild) {
-				var fScale: float = this.terrainSystem.tessellationScale;
-				var fLimit: float = this.terrainSystem.tessellationLimit;
+				var fScale: float = this.getTerrainSystem().getTessellationScale();
+				var fLimit: float = this.getTerrainSystem().getTessellationLimit();
 
 				var fDistance: float = math.sqrt(fDistanceSquare+0.0001);
 				var fRatio: float = 0.;
@@ -300,8 +301,8 @@ module akra.terrain {
 				this.split(pTri.baseNeighbor);
 			}
 			// Create children and link into mesh
-			pTri.leftChild  = this.terrainSystem.requestTriNode();
-			pTri.rightChild = this.terrainSystem.requestTriNode();
+			pTri.leftChild  = this.getTerrainSystem().requestTriNode();
+			pTri.rightChild = this.getTerrainSystem().requestTriNode();
 
 			debug.assert(pTri.leftChild != pTri, "recursive link");
 			debug.assert(pTri.rightChild != pTri, "recursive link");
@@ -373,7 +374,7 @@ module akra.terrain {
 
 		protected _buildIndexBuffer(): boolean {
 			// this._iMaxIndices=a.TerrainROAM.MaxTriTreeNodes*3;
-			this._iMaxIndices = this.terrainSystem.maxTriTreeNodes * 3;
+			this._iMaxIndices = this.getTerrainSystem().getMaxTriTreeNodes() * 3;
 			return true;
 		}
 
@@ -382,21 +383,21 @@ module akra.terrain {
 			this._pWorldRect.z1 = MIN_FLOAT64;
 
 			var nElementSize: uint = 0;
-			if(this.terrainSystem._useVertexNormal()){
+			if(this.getTerrainSystem()._useVertexNormal()){
 				nElementSize = (3/*кординаты вершин*/ + 3/*нормаль*/ + 2/*текстурные координаты*/);
 			}
 			else {
 				nElementSize =  (3/*кординаты вершин*/ + 2/*текстурные координаты*/);
 			}
 
-			var pVerts: float[] = this.terrainSystem.verts;
+			var pVerts: float[] = this.getTerrainSystem().getVerts();
 
 			var v3fNormal: IVec3 = new Vec3();
 
 			// размер ячейки сектора
 			var v2fCellSize: IVec2 = new Vec2();
-			v2fCellSize.set(this.heightX / (this._iXVerts-1),
-				this.heightY / (this._iYVerts-1)); /*размер сектора/количество ячеек в секторе*/
+			v2fCellSize.set(this.getHeightX() / (this._iXVerts-1),
+				this.getHeightY() / (this._iYVerts-1)); /*размер сектора/количество ячеек в секторе*/
 
 			//Координаты вершина в секторе
 			var v2fVert: IVec2 = new Vec2(); 
@@ -408,25 +409,25 @@ module akra.terrain {
 
 				for (var x: uint = 0; x < this._iXVerts; ++x) {
 
-					var fHeight: float = this.terrainSystem.readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
+					var fHeight: float = this.getTerrainSystem().readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
 
 					pVerts[((y * this._iXVerts) + x) * nElementSize + 0 + this._iStartIndex * nElementSize] = v2fVert.x;
 					pVerts[((y * this._iXVerts) + x) * nElementSize + 1 + this._iStartIndex * nElementSize] = v2fVert.y;
 					pVerts[((y * this._iXVerts) + x) * nElementSize + 2 + this._iStartIndex * nElementSize] = fHeight;
 
-					if(this.terrainSystem._useVertexNormal()){
-						this.terrainSystem.readWorldNormal(v3fNormal, this._iHeightMapX + x, this._iHeightMapY + y);
+					if(this.getTerrainSystem()._useVertexNormal()){
+						this.getTerrainSystem().readWorldNormal(v3fNormal, this._iHeightMapX + x, this._iHeightMapY + y);
 
 						pVerts[((y * this._iXVerts) + x) * nElementSize + 3 + this._iStartIndex * nElementSize] = v3fNormal.x;
 						pVerts[((y * this._iXVerts) + x) * nElementSize + 4 + this._iStartIndex * nElementSize] = v3fNormal.y;
 						pVerts[((y * this._iXVerts) + x) * nElementSize + 5 + this._iStartIndex * nElementSize] = v3fNormal.z;
 
-						pVerts[((y * this._iXVerts) + x) * nElementSize + 6 + this._iStartIndex * nElementSize] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
-						pVerts[((y * this._iXVerts) + x) * nElementSize + 7 + this._iStartIndex * nElementSize] = (this._iSectorY + y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
+						pVerts[((y * this._iXVerts) + x) * nElementSize + 6 + this._iStartIndex * nElementSize] = (this._iSectorX + x / (this._iXVerts - 1))/this.getTerrainSystem().getSectorCountX();
+						pVerts[((y * this._iXVerts) + x) * nElementSize + 7 + this._iStartIndex * nElementSize] = (this._iSectorY + y / (this._iYVerts - 1))/this.getTerrainSystem().getSectorCountY();
 					}
 					else {
-						pVerts[((y * this._iXVerts) + x) * nElementSize + 3 + this._iStartIndex * nElementSize] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
-						pVerts[((y * this._iXVerts) + x) * nElementSize + 4 + this._iStartIndex * nElementSize] = (this._iSectorY + y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;	
+						pVerts[((y * this._iXVerts) + x) * nElementSize + 3 + this._iStartIndex * nElementSize] = (this._iSectorX + x / (this._iXVerts - 1))/this.getTerrainSystem().getSectorCountX();
+						pVerts[((y * this._iXVerts) + x) * nElementSize + 4 + this._iStartIndex * nElementSize] = (this._iSectorY + y / (this._iYVerts - 1))/this.getTerrainSystem().getSectorCountY();	
 					}
 
 					this._pWorldRect.z0 = math.min(this._pWorldRect.z0, fHeight);
@@ -440,14 +441,14 @@ module akra.terrain {
 		}
 
 		buildTriangleList(): void {
-			if((<ITerrainROAM>this.terrainSystem).useTessellationThread){
+			if((<ITerrainROAM>this.getTerrainSystem()).getUseTessellationThread()){
 				return;
 			}
 
-			this._iTempTotalIndices = this.terrainSystem.totalIndex;
+			this._iTempTotalIndices = this.getTerrainSystem().getTotalIndex();
 
-			this._pTempIndexList = this.terrainSystem.index;
-			this._iVertexID = this.terrainSystem.vertexId;
+			this._pTempIndexList = this.getTerrainSystem().getIndex();
+			this._iVertexID = this.getTerrainSystem().getVertexId();
 			// add all the triangles to the roamTerrain
 			// in root triangle A
 
@@ -462,7 +463,7 @@ module akra.terrain {
 				this._pRootTriangleB,
 				(this._iYVerts*this._iXVerts)-1, (this._iYVerts-1)*this._iXVerts, this._iXVerts-1);
 
-			this.terrainSystem.totalIndex = this._iTempTotalIndices;
+			this.getTerrainSystem().setTotalIndex(this._iTempTotalIndices);
 
 
 			this._iTempTotalIndices = undefined;
@@ -488,7 +489,7 @@ module akra.terrain {
 			} 
 			else if (this._iTempTotalIndices + 3 < this._iMaxIndices) {
 				var nElementSize: uint = 0;
-				if(this.terrainSystem._useVertexNormal()){
+				if(this.getTerrainSystem()._useVertexNormal()){
 					nElementSize = (3/*кординаты вершин*/ + 3/*нормаль*/ + 2/*текстурные координаты*/);
 				}
 				else {
@@ -507,18 +508,18 @@ module akra.terrain {
 		}
 
 		protected computeVariance(): void {
-			var iTableWidth: uint = this.terrainSystem.tableWidth;
-			var iTableHeight: uint = this.terrainSystem.tableHeight;
+			var iTableWidth: uint = this.getTerrainSystem().getTableWidth();
+			var iTableHeight: uint = this.getTerrainSystem().getTableHeight();
 
-			var iIndex0: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY);
-			var iIndex1: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,						this._iHeightMapY + this._iYVerts-1);
-			var iIndex2: uint =  this.terrainSystem._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY + this._iYVerts-1);
-			var iIndex3: uint =  this.terrainSystem._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY);
+			var iIndex0: uint =  this.getTerrainSystem()._tableIndex(this._iHeightMapX,						this._iHeightMapY);
+			var iIndex1: uint =  this.getTerrainSystem()._tableIndex(this._iHeightMapX,						this._iHeightMapY + this._iYVerts-1);
+			var iIndex2: uint =  this.getTerrainSystem()._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY + this._iYVerts-1);
+			var iIndex3: uint =  this.getTerrainSystem()._tableIndex(this._iHeightMapX + this._iXVerts-1,	this._iHeightMapY);
 
-			var fHeight0: float = this.terrainSystem.readWorldHeight(iIndex0);
-			var fHeight1: float = this.terrainSystem.readWorldHeight(iIndex1);
-			var fHeight2: float = this.terrainSystem.readWorldHeight(iIndex2);
-			var fHeight3: float = this.terrainSystem.readWorldHeight(iIndex3);
+			var fHeight0: float = this.getTerrainSystem().readWorldHeight(iIndex0);
+			var fHeight1: float = this.getTerrainSystem().readWorldHeight(iIndex1);
+			var fHeight2: float = this.getTerrainSystem().readWorldHeight(iIndex2);
+			var fHeight3: float = this.getTerrainSystem().readWorldHeight(iIndex3);
 
 			this.recursiveComputeVariance(
 				this._iHeightMapX, 					 this._iHeightMapY + this._iYVerts-1,
@@ -549,7 +550,7 @@ module akra.terrain {
 					return 0;
 				}
 
-				var fMidHeight: float = this.terrainSystem.readWorldHeight(iMidpointX, iMidpointY);
+				var fMidHeight: float = this.getTerrainSystem().readWorldHeight(iMidpointX, iMidpointY);
 				var fInterpolatedHeight: float = (fHeightB + fHeightC)*0.5;
 				var fVariance: float = math.abs(fMidHeight - fInterpolatedHeight);
 
@@ -577,9 +578,9 @@ module akra.terrain {
 
 
 				// this.drawVariance(iIndex,
-				// 	this.terrainSystem._tableIndex(iCornerAX, iCornerAY),
-				// 	this.terrainSystem._tableIndex(iCornerBX, iCornerBY), 
-				// 	this.terrainSystem._tableIndex(iCornerCX, iCornerCY), pVTree);
+				// 	this.getTerrainSystem()._tableIndex(iCornerAX, iCornerAY),
+				// 	this.getTerrainSystem()._tableIndex(iCornerBX, iCornerBY), 
+				// 	this.getTerrainSystem()._tableIndex(iCornerCX, iCornerCY), pVTree);
 
 				return fVariance;
 			}
@@ -642,8 +643,8 @@ module akra.terrain {
 				p2D.strokeStyle = "#f00"; 
 				p2D.lineWidth = 1;
 				p2D.beginPath();
-				var iTW: uint = this.terrainSystem.tableWidth;
-				var iTH: uint = this.terrainSystem.tableHeight;
+				var iTW: uint = this.getTerrainSystem().getTableWidth();
+				var iTH: uint = this.getTerrainSystem().getTableHeight();
 
 				var iXA: uint = iCornerA%iTW;
 				var iYA: uint = math.floor(iCornerA/iTW);

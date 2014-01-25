@@ -35,35 +35,35 @@ module akra.terrain {
 			super(pScene, eType);
 		}
 
-		get sectorX(): float {
+		getSectorX(): float {
 			return this._iSectorX;
 		}
 
-		get sectorY(): float{
+		getSectorY(): float{
 			return this._iSectorY;
 		}
 
-		get terrainSystem(): ITerrain{
+		getTerrainSystem(): ITerrain{
 			return this._pTerrainSystem;
 		}
 
-		get sectionIndex(): uint {
+		getSectionIndex(): uint {
 			return this._iSectorIndex;
 		}
 
-		get heightX(): float {
+		getHeightX(): float {
 			return math.abs(this._pWorldRect.x1 - this._pWorldRect.x0);
 		}
 
-		get heightY(): float {
+		getHeightY(): float {
 			return math.abs(this._pWorldRect.y1 - this._pWorldRect.y0);
 		}
 
-		get vertexDescription(): IVertexElementInterface[]{
+		getVertexDescription(): IVertexElementInterface[] {
 			return this._pVertexDescription;
 		}
 
-		get totalRenderable(): uint {
+		getTotalRenderable(): uint {
 			return !isNull(this._pRenderableObject) ? 1 : 0;
 		}
 
@@ -85,7 +85,7 @@ module akra.terrain {
 			this._iYVerts = iYVerts;
 			this._iSectorX = iSectorX;
 			this._iSectorY = iSectorY;
-			this._iSectorIndex = (this._iSectorY * this._pTerrainSystem.sectorCountX + this._iSectorX);
+			this._iSectorIndex = (this._iSectorY * this._pTerrainSystem.getSectorCountX() + this._iSectorX);
 			this._pWorldRect.x0 = pWorldRect.x0;
 			this._pWorldRect.x1 = pWorldRect.x1;
 			this._pWorldRect.y0 = pWorldRect.y0;
@@ -94,7 +94,7 @@ module akra.terrain {
 			this._iHeightMapX = iHeightMapX;
 			this._iHeightMapY = iHeightMapY;
 
-			if (this.terrainSystem._useVertexNormal()) {
+			if (this.getTerrainSystem()._useVertexNormal()) {
 				this._pVertexDescription = [VE.float3(data.Usages.POSITION), VE.float3(data.Usages.NORMAL), VE.float2(data.Usages.TEXCOORD)];
 			}
 			else {
@@ -140,7 +140,7 @@ module akra.terrain {
 
 			debug.assert(isNull(pRenderable.getData()), "У терраин сектиона уже созданы данные");
 
-			pRenderable._setRenderData(this.terrainSystem.dataFactory.getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP, 0));
+			pRenderable._setRenderData(this.getTerrainSystem().getDataFactory().getEmptyRenderData(EPrimitiveTypes.TRIANGLESTRIP, 0));
 
 			if (isNull(pRenderable.getData())) {
 				return false;
@@ -155,7 +155,7 @@ module akra.terrain {
 
 			if (!isNull(this.getRenderable())) {
 				var nElementSize: uint = 0;
-				if (this.terrainSystem._useVertexNormal()) {
+				if (this.getTerrainSystem()._useVertexNormal()) {
 					nElementSize = (3/*кординаты вершин*/ + 3/*нормаль*/ + 2/*текстурные координаты*/);
 				}
 				else {
@@ -167,9 +167,9 @@ module akra.terrain {
 
 				//размер ячейки сектора
 				var v2fCellSize: IVec2 = new Vec2();
-				v2fCellSize.set(this.heightX / (this._iXVerts - 1),
+				v2fCellSize.set(this.getHeightX() / (this._iXVerts - 1),
 					//размер сектора/количество ячеек в секторе
-					this.heightY / (this._iYVerts - 1));
+					this.getHeightY() / (this._iYVerts - 1));
 
 				//Координаты вершина в секторе
 				var v2fVert: IVec2 = new Vec2();
@@ -181,25 +181,25 @@ module akra.terrain {
 
 					for (var x: uint = 0; x < this._iXVerts; ++x) {
 
-						var fHeight: float = this.terrainSystem.readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
+						var fHeight: float = this.getTerrainSystem().readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
 
 						pVerts[((y * this._iXVerts) + x) * nElementSize + 0] = v2fVert.x;
 						pVerts[((y * this._iXVerts) + x) * nElementSize + 1] = v2fVert.y;
 						pVerts[((y * this._iXVerts) + x) * nElementSize + 2] = fHeight;
 
-						if (this.terrainSystem._useVertexNormal()) {
-							this.terrainSystem.readWorldNormal(v3fNormal, this._iHeightMapX + x, this._iHeightMapY + y);
+						if (this.getTerrainSystem()._useVertexNormal()) {
+							this.getTerrainSystem().readWorldNormal(v3fNormal, this._iHeightMapX + x, this._iHeightMapY + y);
 
 							pVerts[((y * this._iXVerts) + x) * nElementSize + 3] = v3fNormal.x;
 							pVerts[((y * this._iXVerts) + x) * nElementSize + 4] = v3fNormal.y;
 							pVerts[((y * this._iXVerts) + x) * nElementSize + 5] = v3fNormal.z;
 
-							pVerts[((y * this._iXVerts) + x) * nElementSize + 6] = (this._iSectorX + x / (this._iXVerts - 1)) / this.terrainSystem.sectorCountX;
-							pVerts[((y * this._iXVerts) + x) * nElementSize + 7] = (this._iSectorY + y / (this._iYVerts - 1)) / this.terrainSystem.sectorCountY;
+							pVerts[((y * this._iXVerts) + x) * nElementSize + 6] = (this._iSectorX + x / (this._iXVerts - 1)) / this.getTerrainSystem().getSectorCountX();
+							pVerts[((y * this._iXVerts) + x) * nElementSize + 7] = (this._iSectorY + y / (this._iYVerts - 1)) / this.getTerrainSystem().getSectorCountY();
 						}
 						else {
-							pVerts[((y * this._iXVerts) + x) * nElementSize + 3] = (this._iSectorX + x / (this._iXVerts - 1)) / this.terrainSystem.sectorCountX;
-							pVerts[((y * this._iXVerts) + x) * nElementSize + 4] = (this._iSectorY + y / (this._iYVerts - 1)) / this.terrainSystem.sectorCountY;
+							pVerts[((y * this._iXVerts) + x) * nElementSize + 3] = (this._iSectorX + x / (this._iXVerts - 1)) / this.getTerrainSystem().getSectorCountX();
+							pVerts[((y * this._iXVerts) + x) * nElementSize + 4] = (this._iSectorY + y / (this._iYVerts - 1)) / this.getTerrainSystem().getSectorCountY();
 						}
 
 						this._pWorldRect.z0 = math.min(this._pWorldRect.z0, fHeight);
@@ -209,12 +209,12 @@ module akra.terrain {
 					}
 				}
 
-				this._iVertexID = this.getRenderable().getData().allocateData(this.vertexDescription, new Float32Array(pVerts));
+				this._iVertexID = this.getRenderable().getData().allocateData(this.getVertexDescription(), new Float32Array(pVerts));
 			}
 			else {
 				for (var y: uint = 0; y < this._iYVerts; ++y) {
 					for (var x: uint = 0; x < this._iXVerts; ++x) {
-						var fHeight: float = this.terrainSystem.readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
+						var fHeight: float = this.getTerrainSystem().readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
 
 						this._pWorldRect.z0 = math.min(this._pWorldRect.z0, fHeight);
 						this._pWorldRect.z1 = math.max(this._pWorldRect.z1, fHeight);

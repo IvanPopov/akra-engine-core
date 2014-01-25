@@ -6,7 +6,7 @@
 
 /// <reference path="Terrain.ts" />
 /// <reference path="TerrainSectionROAM.ts" />
-/// <reference path="TriTreeNode.ts" />
+/// <reference path="TriangleNodePool.ts" />
 
 /*
 #ifdef DEBUG
@@ -106,27 +106,55 @@ module akra.terrain {
 			this._pRenderableObject.beforeRender.connect(this, this._onBeforeRender/*, EEventTypes.UNICAST*/);
 		}
 
-		get tessellationScale(): float{
+		getMaxTriTreeNodes(): uint {
+			return this._iMaxTriTreeNodes;
+		}
+
+		getVerts(): float[] {
+			return this._pVerts;
+		}
+
+		getIndex(): Float32Array {
+			return this._pIndexList;
+		}
+
+		getVertexId(): uint {
+			return this._iVertexID;
+		}
+
+		getTotalRenderable(): uint {
+			return !isNull(this._pRenderableObject) ? 1 : 0;
+		}
+
+		getRenderable(i?: uint): IRenderableObject {
+			return this._pRenderableObject;
+		}
+
+		getLocalCameraCoord(): IVec3 {
+			return this._v3fLocalCameraCoord;
+		}
+
+		getTessellationScale(): float{
 			return this._fScale;
 		}
 
-		set tessellationScale(fScale: float){
+		setTessellationScale(fScale: float): void {
 			this._fScale = fScale;
 		}
 
-		get tessellationLimit(): float{
+		getTessellationLimit(): float{
 			return this._fLimit;
 		}
 
-		set tessellationLimit(fLimit: float){
+		setTessellationLimit(fLimit: float): void {
 			this._fLimit = fLimit;
 		}
 
-		get useTessellationThread(): boolean {
+		getUseTessellationThread(): boolean {
 			return this._bUseTessellationThread;
 		}
 
-		set useTessellationThread(bUseThread: boolean) {
+		setUseTessellationThread(bUseThread: boolean): void {
 			this._bUseTessellationThread = bUseThread;
 
 			if(this._isCreate){
@@ -146,47 +174,19 @@ module akra.terrain {
 			}
 		}
 
-		get maxTriTreeNodes(): uint {
-			return this._iMaxTriTreeNodes;
-		}
-
-		get verts(): float[] {
-			return this._pVerts;
-		}
-
-		get index(): Float32Array {
-			return this._pIndexList;
-		}
-
-		get totalIndex(): uint {
+		getTotalIndex(): uint {
 			return this._iTotalIndices;
 		}
 
-		set totalIndex(iTotalIndices: uint) {
+		setTotalIndex(iTotalIndices: uint): void {
 			this._iTotalIndices = iTotalIndices;
-		}
-
-		get vertexId(): uint {
-			return this._iVertexID;
-		}
-
-		get totalRenderable(): uint {
-			return !isNull(this._pRenderableObject) ? 1 : 0;
-		}
-
-		getRenderable(i?: uint): IRenderableObject {
-			return this._pRenderableObject;
-		}
-
-		get localCameraCoord(): IVec3 {
-			return this._v3fLocalCameraCoord;
 		}
 
 
 		init(pImgMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string, pRootNode: ISceneObject = null) {
 			var bResult: boolean = super.init(pImgMap,worldExtents, iShift, iShiftX, iShiftY, sSurfaceTextures, pRootNode);
 			if (bResult) {
-				this._iTessellationQueueSize = this.sectorCountX * this.sectorCountY;
+				this._iTessellationQueueSize = this.getSectorCountX() * this.getSectorCountY();
 				this._pTessellationQueue = new Array(this._iTessellationQueueSize);
 				this._iTessellationQueueCount = 0;
 				this._isCreate = true;
@@ -265,7 +265,7 @@ module akra.terrain {
 				}
 				else {
 					logger.warn("Cannot inititalize tessellation thread. So we will tessellate terraint in main thread.");
-					me.useTessellationThread = false;
+					me.setUseTessellationThread(false);
 					me.terminateTessellationThread();
 				}
 			};
@@ -274,7 +274,7 @@ module akra.terrain {
 				logger.warn("Error occured in tessellation thread. So we will tessellate terraint in main thread.");
 				debug.log(event);
 				pThread.onmessage = null;
-				me.useTessellationThread = false;
+				me.setUseTessellationThread(false);
 				me.terminateTessellationThread();
 			};
 
@@ -287,8 +287,8 @@ module akra.terrain {
 				type: 1,
 				info: {
 					heightMapTable: pHeightTableCopy.buffer,
-					tableWidth: this.tableWidth,
-					tableHeight: this.tableHeight,
+					tableWidth: this.getTableWidth(),
+					tableHeight: this.getTableHeight(),
 					sectorUnits: this._iSectorUnits,
 					sectorCountX: this._iSectorCountX,
 					sectorCountY: this._iSectorCountY,
@@ -301,7 +301,7 @@ module akra.terrain {
 						z0: this._pWorldExtents.z0,
 						z1: this._pWorldExtents.z1
 					},
-					maxHeight: this.maxHeight,
+					maxHeight: this.getMaxHeight(),
 					maxTriTreeNodeCount: this._iMaxTriTreeNodes,
 
 					tessellationScale: this._fScale,
@@ -486,7 +486,7 @@ module akra.terrain {
 
 				// var pSectionIndices: Uint32Array = new Uint32Array(this._pTessellationTransferableData, 16);
 				for (var i: uint = 0; i < this._iTessellationQueueCount; ++i) {
-					pDataView.setUint32(16 + i * 4, this._pTessellationQueue[i].sectionIndex, true);
+					pDataView.setUint32(16 + i * 4, this._pTessellationQueue[i].getSectionIndex(), true);
 					// pSectionIndices[i] = this._pTessellationQueue[i].sectionIndex;
 				}
 
@@ -609,7 +609,7 @@ module akra.terrain {
 				return -1;
 			}
 			else {
-				return pSectionA.queueSortValue - pSectionB.queueSortValue;	
+				return pSectionA.getQueueSortValue() - pSectionB.getQueueSortValue();	
 			}
 		}
 	}

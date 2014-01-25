@@ -87,51 +87,51 @@ module akra.terrain {
 			}
 		}
 
-		get dataFactory(): IRenderDataCollection{
+		getDataFactory(): IRenderDataCollection{
 			return this._pDataFactory;
 		}
 
-		get worldExtents(): IRect3d{
+		getWorldExtents(): IRect3d{
 			return this._pWorldExtents;
 		}
 
-		get worldSize(): IVec3{
+		getWorldSize(): IVec3{
 			return this._v3fWorldSize;
 		}
 
-		get mapScale(): IVec3{
+		getMapScale(): IVec3{
 			return this._v3fMapScale;
 		}
 
-		get sectorCountX(): uint{
+		getSectorCountX(): uint{
 			return this._iSectorCountX;
 		}
 
-		get sectorCountY(): uint{
+		getSectorCountY(): uint{
 			return this._iSectorCountY;
 		}
 
-		get sectorSize(): IVec2{
+		getSectorSize(): IVec2{
 			return this._v2fSectorSize;
 		}
 
-		get tableWidth(): uint{
+		getTableWidth(): uint{
 			return this._iTableWidth;
 		}
 
-		get tableHeight(): uint{
+		getTableHeight(): uint{
 			return this._iTableHeight;
 		}
 
-		get sectorShift(): uint{
+		getSectorShift(): uint{
 			return this._iSectorShift;
 		}
 
-		get maxHeight(): float{
+		getMaxHeight(): float{
 			return this._fMaxHeight;
 		}
 
-		get terrain2DLength(): float{
+		getTerrain2DLength(): float{
 			return this._f2DDiagonal;
 		}
 
@@ -139,23 +139,23 @@ module akra.terrain {
 			return this._isCreate;
 		}
 
-		get megaTexture(): IMegaTexture {
+		getMegaTexture(): IMegaTexture {
 			return this._pMegaTexures;
 		}
 
-		get manualMegaTextureInit(): boolean {
+		getManualMegaTextureInit(): boolean {
 			return this._bManualMegaTextureInit;
 		}
 
-		set manualMegaTextureInit(bManual: boolean) {
+		setManualMegaTextureInit(bManual: boolean): void {
 			this._bManualMegaTextureInit = bManual;
 		}
 
-		get showMegaTexture(): boolean {
+		getShowMegaTexture(): boolean {
 			return this._bShowMegaTexture;
 		}
 
-		set showMegaTexture(bShow: boolean) {
+		setShowMegaTexture(bShow: boolean): void {
 			this._bShowMegaTexture = bShow;
 		}
 
@@ -448,14 +448,14 @@ module akra.terrain {
 
 		    v4fTerrainCoord = this.getInverseWorldMatrix().multiplyVec4(v4fTerrainCoord);
 
-		    if (v4fTerrainCoord.x < this.worldExtents.x0 || v4fTerrainCoord.x > this.worldExtents.x1 ||
-		    	v4fTerrainCoord.y < this.worldExtents.y0 || v4fTerrainCoord.y > this.worldExtents.y1){
+		    if (v4fTerrainCoord.x < this.getWorldExtents().x0 || v4fTerrainCoord.x > this.getWorldExtents().x1 ||
+		    	v4fTerrainCoord.y < this.getWorldExtents().y0 || v4fTerrainCoord.y > this.getWorldExtents().y1){
 
 		    	return false;
 		    }
 
-		    var iMapX: uint = math.floor((v4fTerrainCoord.x - this.worldExtents.x0) / this.worldExtents.sizeX() * this.tableWidth);
-		    var iMapY: uint = math.floor((v4fTerrainCoord.y - this.worldExtents.y0) / this.worldExtents.sizeY() * this.tableHeight);
+		    var iMapX: uint = math.floor((v4fTerrainCoord.x - this.getWorldExtents().x0) / this.getWorldExtents().sizeX() * this.getTableWidth());
+		    var iMapY: uint = math.floor((v4fTerrainCoord.y - this.getWorldExtents().y0) / this.getWorldExtents().sizeY() * this.getTableHeight());
 		    var fHeight: float = this.readWorldHeight(iMapX, iMapY);
 
 		    var v4fTempDestenation: IVec4 = Vec4.temp(v4fTerrainCoord.x, v4fTerrainCoord.y, fHeight, 1.);
