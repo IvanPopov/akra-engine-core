@@ -27,7 +27,7 @@ module akra.color {
 			this.set.apply(this, arguments);
 		}
 
-		get html(): string {
+		getHtml(): string {
 			// LOG(this.r, this.g, this.b);
 			var r = math.round(this.r * 255).toString(16);
 			var g = math.round(this.g * 255).toString(16);
@@ -39,7 +39,7 @@ module akra.color {
 			return "#" + r + g + b;
 		}
 
-		get htmlRgba(): string {
+		getHtmlRgba(): string {
 			return "rgba(" +
 				math.floor(255 * this.r) + ", " +
 				math.floor(255 * this.g) + ", " +
@@ -47,7 +47,7 @@ module akra.color {
 				+ this.a + ")"
 		}
 
-		get rgba(): uint {
+		getRgba(): uint {
 			var val32: uint = 0;
 			// Convert to 32bit pattern
 			val32 = <uint>(this.a * 255) << 24;
@@ -58,7 +58,7 @@ module akra.color {
 			return val32;
 		}
 
-		get argb(): uint {
+		getArgb(): uint {
 			var val32: uint = 0;
 			// Convert to 32bit pattern
 			val32 = <uint>(this.b * 255) << 24;
@@ -69,7 +69,7 @@ module akra.color {
 			return val32;
 		}
 
-		get bgra(): uint {
+		getBgra(): uint {
 			var val32: uint = 0;
 			// Convert to 32bit pattern
 			val32 = <uint>(this.a * 255) << 24;
@@ -80,7 +80,7 @@ module akra.color {
 			return val32;
 		}
 
-		get abgr(): uint {
+		getAbgr(): uint {
 			var val32: uint = 0;
 			// Convert to 32bit pattern
 			val32 = <uint>(this.r * 255) << 24;
@@ -91,7 +91,7 @@ module akra.color {
 			return val32;
 		}
 
-		set rgba(c: uint) {
+		setRgba(c: uint): void {
 			var val32: uint = c;
 
 			// Convert from 32bit pattern
@@ -102,7 +102,7 @@ module akra.color {
 
 		}
 
-		set argb(c: uint) {
+		setArgb(c: uint): void {
 			var val32: uint = c;
 
 			// Convert from 32bit pattern
@@ -113,7 +113,7 @@ module akra.color {
 
 		}
 
-		set bgra(c: uint) {
+		setBgra(c: uint): void {
 			var val32: uint = c;
 
 			// Convert from 32bit pattern
@@ -124,7 +124,7 @@ module akra.color {
 
 		}
 
-		set abgr(c: uint) {
+		setAbgr(c: uint): void {
 			var val32: uint = c;
 
 			// Convert from 32bit pattern
@@ -173,7 +173,7 @@ module akra.color {
 							s = "0x" + s;
 						}
 
-						this.rgba = parseInt(s);
+						this.setRgba(parseInt(s));
 					}
 					else {
 						var v: IColorValue = <IColorValue>arguments[0];
@@ -419,7 +419,7 @@ module akra.color {
 
 		toString(): string {
 			return "{R: " + this.r + ", G: " + this.g + ", B: " + this.b + ", A: " + this.a + "} " +
-				"( 0x" + this.rgba.toString(16) + " )";
+				"( 0x" + this.getRgba().toString(16) + " )";
 		}
 
 		static toFloat32Array(pValue: IColorValue): Float32Array {
