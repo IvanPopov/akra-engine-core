@@ -194,7 +194,7 @@ module akra.deps {
 			pRsc.loaded.disconnect(fn);
 		}
 
-	    pRsc.loaded.disconnect(fn);
+	    pRsc.loaded.connect(fn);
 	}
 
 	export function loadMap(
@@ -230,27 +230,27 @@ module akra.deps {
 		});
 	}
 
-	//export function loadGrammar(
-	//    pEngine: IEngine,
-	//    pDep: IDep,
-	//    fnLoaded: (e: Error, pDep: IDep) => void,
-	//    fnChanged: (pDep: IDep, pProgress: any) => void): void {
+	export function loadGrammar(
+		pEngine: IEngine,
+		pDep: IDep,
+		fnLoaded: (e: Error, pDep: IDep) => void,
+		fnChanged: (pDep: IDep, pProgress: any) => void): void {
 
-	//    var pGrammar: IFile = io.fopen(pDep.path, "r");
+		var pGrammar: IFile = io.fopen(pDep.path, "r");
 
-	//    pGrammar.read((e: Error, sData: string): void => {
-	//        if (!isNull(e)) {
-	//            fnLoaded(e, null);
-	//        }
+		pGrammar.read((e: Error, sData: string): void => {
+			if (!isNull(e)) {
+				fnLoaded(e, null);
+			}
+			//WARNING: only for HLSL grammar files.
+			fx.initAFXParser(sData);
 
-	//        //WARNING: only for HLSL grammar files.
-	//        afx.initParser(sData);
+			pGrammar.close();
 
-	//        pGrammar.close();
-	//        updateStatus(pDep, EDependenceStatuses.LOADED);
-	//        fnLoaded(null, pDep);
-	//    });
-	//}
+			updateStatus(pDep, EDependenceStatuses.LOADED);
+			fnLoaded(null, pDep);
+		});
+	}
 
 	function loadFromPool(
 		pPool: IResourcePool<IResourcePoolItem>,
@@ -638,9 +638,9 @@ module akra.deps {
 					//akra resource archive
 					loadARA(pEngine, pDep, fnLoaded, fnChanged);
 					break;
-				//case "gr":
-				//    loadGrammar(pEngine, pDep, fnLoaded, fnChanged);
-				//    break;
+				case "gr":
+					loadGrammar(pEngine, pDep, fnLoaded, fnChanged);
+					break;
 				case "fx":
 				case "afx":
 					loadAFX(pEngine, pDep, fnLoaded, fnChanged);
@@ -690,23 +690,26 @@ module akra.deps {
 		): void {
 
 		normalize(pDeps, pDeps.root || sRoot);
-		createResources(this.getEngine(), pDeps);
+		createResources(pEngine, pDeps);
+
+		function dependacyLoaded(e: Error, pDep: IDep): void {
+			//get dependencies, contained dep
+			var pDeps: IDependens = pDep.deps;
+
+			if (pDeps.loaded < pDeps.total) {
+				return;
+			}
+
+			if (isDefAndNotNull(pDeps.deps)) {
+				loadDependences(pEngine, pDeps.deps, dependacyLoaded, fnChanged);
+			}
+			else {
+				fnLoaded(null, pDeps);
+			}
+		}
+
 		loadDependences(pEngine, pDeps,
-			(e: Error, pDep: IDependens) => {
-				//get dependencies, contained dep
-				var pDeps: IDependens = pDep.deps;
-
-				if (pDeps.loaded < pDeps.total) {
-					return;
-				}
-
-				if (isDefAndNotNull(pDeps)) {
-					loadDependences(pEngine, pDeps, fnLoaded, fnChanged);
-				}
-				else {
-					fnLoaded(null, pDeps);
-				}
-			},
+			dependacyLoaded,
 			fnChanged);
 	}
 

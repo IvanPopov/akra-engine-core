@@ -100,10 +100,10 @@ module akra.pool.resources {
 			iFlags |= EHardwareBufferFlags.STATIC;
 
 			if (bf.testAny(iFlags, EHardwareBufferFlags.DYNAMIC)) {
-				bf.clearAll(iFlags, EHardwareBufferFlags.STATIC);
+				iFlags = bf.clearAll(iFlags, EHardwareBufferFlags.STATIC);
 
 				if (bf.testAny(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
-					bf.clearAll(iFlags, EHardwareBufferFlags.READABLE);
+					iFlags = bf.clearAll(iFlags, EHardwareBufferFlags.READABLE);
 				}
 			}
 

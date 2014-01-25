@@ -93,7 +93,6 @@ module akra {
 
 		public emit(...pArgs: any[]);
 		public emit() {
-
 			if(!isNull(this._fnSenderCallback)) {
 				switch (arguments.length) {
 					case 0:
@@ -251,7 +250,7 @@ module akra {
 					}
 					else {
 						pSignal = pArguments[0];
-						pReciever = pSignal.getSender();
+						pReciever = pSignal;
 						fnCallback = pSignal.emit;
 					}
 					break;

@@ -252,8 +252,8 @@ module akra.render {
 		private static _iElement: uint = 0;
 
 		static temp(): IUniform {
-			UniformSunShadow._iElement = (UniformSunShadow._iElement === UniformSunShadow._pBuffer.length - 1 ? 0 : UniformSunShadow._pBuffer.length);
-			var p = UniformSunShadow._pBuffer[UniformSunShadow._iElement++];
+			UniformSunShadow._iElement = (UniformSunShadow._iElement === UniformSunShadow._pBuffer.length - 1 ? 0 : (UniformSunShadow._iElement++));
+			var p = UniformSunShadow._pBuffer[UniformSunShadow._iElement];
 			return p;
 		}
 	}

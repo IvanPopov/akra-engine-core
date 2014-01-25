@@ -82,7 +82,7 @@ module akra.fx {
 				this._eExtractExprType = EExtractExprType.k_Header;
 				this._sExtractFunction += "A_extractTextureHeader(";
 			}
-			else if (pExtractType.isEqual(Effect.getSystemType("boolean"))) {
+			else if (pExtractType.isEqual(Effect.getSystemType("bool"))) {
 				this._eExtractExprType = EExtractExprType.k_Bool;
 				this._sExtractFunction += "boolean(A_extractFloat(";
 				this._bNeedSecondBracket = true;

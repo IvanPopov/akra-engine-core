@@ -165,7 +165,7 @@ module akra.io {
 				}
 
 				if (io.isAppend(this._iMode)) {
-					this.position = this.size;
+					this.setPosition(this.size);
 				}
 
 				fnCallback.call(pFile, null, this._pFileMeta);
@@ -179,8 +179,8 @@ module akra.io {
 			this._pFileMeta = null;
 		}
 
-		protected checkIfNotOpen(method: Function, callback: Function): boolean {
-			if (!this.isOpened) {
+		protected checkIfNotOpen(method: Function, callback: Function, ...pArgs: any[]): boolean {
+			if (!this.isOpened()) {
 				var argv: IArguments = arguments;
 				this.open((e) => {
 					if (e) {
@@ -189,7 +189,8 @@ module akra.io {
 						}
 					}
 
-					method.apply(this, argv);
+					pArgs.unshift(callback);
+					method.apply(this, pArgs);
 				});
 
 				return true;
@@ -245,7 +246,6 @@ module akra.io {
 					fnProgress(pData.loaded, pData.total);
 					return false;
 				}
-
 
 				pFile.atEnd();
 				fnCallback.call(pFile, null, pData.data);

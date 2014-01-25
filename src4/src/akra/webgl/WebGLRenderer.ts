@@ -172,11 +172,11 @@ module akra.webgl {
 
 			this._pTextureSlotList = new Array(maxTextureImageUnits);
 
-			for(var i: uint = 0; i < this._pTextureSlotList.length; i++){
+			for (var i: int = 0; i < this._pTextureSlotList.length; i++){
 				this._pTextureSlotList[i] = null;
 			}
 
-			for(var i: uint = 0; i < 4; i++){
+			for (var i: int = 0; i < 4; i++){
 				this._pFreeRenderStatesPool.push(WebGLRenderer.createWebGLContextStates());
 			}
 

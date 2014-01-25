@@ -219,21 +219,21 @@ module akra.render {
 		render: ISignal<{
 			(pViewport: IViewport, pTechnique: IRenderTechnique,
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-		}> = new RenderSignal(this);
+		}> = new RenderSignal(<any>this);
 
-		dragstart: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstartSignal(this);
-		dragstop: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstopSignal(this);
-		dragging: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DraggingSignal(this);
+		dragstart: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstartSignal(<any>this);
+		dragstop: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstopSignal(<any>this);
+		dragging: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DraggingSignal(<any>this);
 
-		click: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new ClickSignal(this);
-		mousemove: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new MousemoveSignal(this);
+		click: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new ClickSignal(<any>this);
+		mousemove: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new MousemoveSignal(<any>this);
 
-		mousedown: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MousedownSignal(this);
-		mouseup: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MouseupSignal(this);
+		mousedown: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MousedownSignal(<any>this);
+		mouseup: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MouseupSignal(<any>this);
 
-		mouseover: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoverSignal(this);
-		mouseout: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoutSignal(this);
-		mousewheel: ISignal<{ (pViewport: IViewport, x: uint, y: uint, fDelta: float): void; }> = new MousewheelSignal(this);
+		mouseover: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoverSignal(<any>this);
+		mouseout: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoutSignal(<any>this);
+		mousewheel: ISignal<{ (pViewport: IViewport, x: uint, y: uint, fDelta: float): void; }> = new MousewheelSignal(<any>this);
 
 		protected _pCamera: ICamera = null;
 		protected _pTarget: IRenderTarget = null;
@@ -395,19 +395,19 @@ module akra.render {
 			}
 
 			if (bf.testAny(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING)) {
-				bf.setAll(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
+				iType = bf.setAll(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
 					E3DEventTypes.MOUSEDOWN | E3DEventTypes.MOUSEUP | E3DEventTypes.MOUSEMOVE);
 			}
 
 			//mouse over and mouse out events require mouse move
 			if (bf.testAny(iType, E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT)) {
-				bf.setAll(iType, E3DEventTypes.MOUSEMOVE);
+				iType = bf.setAll(iType, E3DEventTypes.MOUSEMOVE);
 			}
 
 			//get events that have not yet been activated
 			var iNotActivate: int = (this._i3DEvents ^ MAX_INT32) & iType;
 
-			bf.setAll(this._i3DEvents, iNotActivate);
+			this._i3DEvents = bf.setAll(this._i3DEvents, iNotActivate);
 
 			this.getTarget().enableSupportFor3DEvent(iType);
 

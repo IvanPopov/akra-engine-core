@@ -200,11 +200,12 @@ module akra.fx {
 				this.endScope();
 			}
 			catch (e) {
-				// #ifdef DEBUG
-				throw e;
-				// #else
-				// return false;
-				// #endif
+				if (config.DEBUG) {
+					throw e;
+				}
+				else {
+					return false;
+				}
 			}
 
 			//Stats
@@ -306,7 +307,7 @@ module akra.fx {
 				pType.isEqual(Effect.getSystemType("float"))) {
 				return Number;
 			}
-			else if (pType.isEqual(Effect.getSystemType("boolean"))) {
+			else if (pType.isEqual(Effect.getSystemType("bool"))) {
 				return Boolean;
 			}
 			else if (pType.isEqual(Effect.getSystemType("float2")) ||
@@ -369,7 +370,7 @@ module akra.fx {
 		}
 
 		static isScalarType(pType: IAFXTypeInstruction): boolean {
-			return pType.isEqual(Effect.getSystemType("boolean")) ||
+			return pType.isEqual(Effect.getSystemType("bool")) ||
 				pType.isEqual(Effect.getSystemType("int")) ||
 				pType.isEqual(Effect.getSystemType("ptr")) ||
 				pType.isEqual(Effect.getSystemType("float"));
@@ -397,7 +398,7 @@ module akra.fx {
 		}
 
 		static isBoolBasedType(pType: IAFXTypeInstruction): boolean {
-			return pType.isEqual(Effect.getSystemType("boolean")) ||
+			return pType.isEqual(Effect.getSystemType("bool")) ||
 				pType.isEqual(Effect.getSystemType("bool2")) ||
 				pType.isEqual(Effect.getSystemType("bool3")) ||
 				pType.isEqual(Effect.getSystemType("bool4")) ||
@@ -508,7 +509,7 @@ module akra.fx {
 		private addSystemVariables(): void {
 			this.generateSystemVariable("fragColor", "gl_FragColor", "float4", false, true, true);
 			this.generateSystemVariable("fragCoord", "gl_FragCoord", "float4", false, true, true);
-			this.generateSystemVariable("frontFacing", "gl_FrontFacing", "boolean", false, true, true);
+			this.generateSystemVariable("frontFacing", "gl_FrontFacing", "bool", false, true, true);
 			this.generateSystemVariable("pointCoord", "gl_PointCoord", "float2", false, true, true);
 			this.generateSystemVariable("resultAFXColor", "resultAFXColor", "float4", false, true, true);
 
@@ -642,8 +643,8 @@ module akra.fx {
 			this.generateSystemFunction("inversesqrt", "inversesqrt($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 			this.generateSystemFunction("sqrt", "sqrt($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 
-			this.generateSystemFunction("all", "all($1)", "boolean", [TEMPLATE_TYPE], ["bool2", "bool3", "bool4"]);
-			this.generateSystemFunction("any", "any($1)", "boolean", [TEMPLATE_TYPE], ["bool2", "bool3", "bool4"]);
+			this.generateSystemFunction("all", "all($1)", "bool", [TEMPLATE_TYPE], ["bool2", "bool3", "bool4"]);
+			this.generateSystemFunction("any", "any($1)", "bool", [TEMPLATE_TYPE], ["bool2", "bool3", "bool4"]);
 			this.generateSystemFunction("not", "not($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["bool2", "bool3", "bool4"]);
 
 			this.generateSystemFunction("distance", "distance($1,$2)", "float", [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
@@ -1054,7 +1055,7 @@ module akra.fx {
 		private addSystemTypeScalar(): void {
 			this.generateSystemType("void", "void", 0);
 			this.generateSystemType("int", "int", 1);
-			this.generateSystemType("boolean", "boolean", 1);
+			this.generateSystemType("bool", "bool", 1);
 			this.generateSystemType("float", "float", 1);
 			this.generateSystemType("ptr", "float", 1);
 			this.generateSystemType("string", "", 0);
@@ -1096,7 +1097,7 @@ module akra.fx {
 
 			var pFloat: IAFXTypeInstruction = Effect.getSystemType("float");
 			var pInt: IAFXTypeInstruction = Effect.getSystemType("int");
-			var pBool: IAFXTypeInstruction = Effect.getSystemType("boolean");
+			var pBool: IAFXTypeInstruction = Effect.getSystemType("bool");
 
 			var pFloat2: IAFXTypeInstruction = this.generateSystemType("float2", "vec2", 0, true, pFloat, 2);
 			var pFloat3: IAFXTypeInstruction = this.generateSystemType("float3", "vec3", 0, true, pFloat, 3);
@@ -1134,17 +1135,17 @@ module akra.fx {
 			this.addFieldsToVectorFromSuffixObject(pRGBASuffix, pInt4, "int");
 			this.addFieldsToVectorFromSuffixObject(pSTPQSuffix, pInt4, "int");
 
-			this.addFieldsToVectorFromSuffixObject(pXYSuffix, pBool2, "boolean");
-			this.addFieldsToVectorFromSuffixObject(pRGSuffix, pBool2, "boolean");
-			this.addFieldsToVectorFromSuffixObject(pSTSuffix, pBool2, "boolean");
+			this.addFieldsToVectorFromSuffixObject(pXYSuffix, pBool2, "bool");
+			this.addFieldsToVectorFromSuffixObject(pRGSuffix, pBool2, "bool");
+			this.addFieldsToVectorFromSuffixObject(pSTSuffix, pBool2, "bool");
 
-			this.addFieldsToVectorFromSuffixObject(pXYZSuffix, pBool3, "boolean");
-			this.addFieldsToVectorFromSuffixObject(pRGBSuffix, pBool3, "boolean");
-			this.addFieldsToVectorFromSuffixObject(pSTPSuffix, pBool3, "boolean");
+			this.addFieldsToVectorFromSuffixObject(pXYZSuffix, pBool3, "bool");
+			this.addFieldsToVectorFromSuffixObject(pRGBSuffix, pBool3, "bool");
+			this.addFieldsToVectorFromSuffixObject(pSTPSuffix, pBool3, "bool");
 
-			this.addFieldsToVectorFromSuffixObject(pXYZWSuffix, pBool4, "boolean");
-			this.addFieldsToVectorFromSuffixObject(pRGBASuffix, pBool4, "boolean");
-			this.addFieldsToVectorFromSuffixObject(pSTPQSuffix, pBool4, "boolean");
+			this.addFieldsToVectorFromSuffixObject(pXYZWSuffix, pBool4, "bool");
+			this.addFieldsToVectorFromSuffixObject(pRGBASuffix, pBool4, "bool");
+			this.addFieldsToVectorFromSuffixObject(pSTPQSuffix, pBool4, "bool");
 		}
 
 		private addSystemTypeMatrix(): void {
@@ -2671,7 +2672,7 @@ module akra.fx {
 			pTrueExprType = <IAFXVariableTypeInstruction>pTrueExpr.getType();
 			pFalseExprType = <IAFXVariableTypeInstruction>pFalseExpr.getType();
 
-			pBoolType = Effect.getSystemType("boolean");
+			pBoolType = Effect.getSystemType("bool");
 
 			if (!pConditionType.isEqual(pBoolType)) {
 				this._error(EEffectErrors.BAD_CONDITION_TYPE, { typeName: pConditionType.toString() });
@@ -2807,7 +2808,7 @@ module akra.fx {
 			pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
 			pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
-			pBoolType = Effect.getSystemType("boolean");
+			pBoolType = Effect.getSystemType("bool");
 
 			if (!pLeftType.isEqual(pBoolType)) {
 				this._error(EEffectErrors.BAD_LOGICAL_OPERATION, {
@@ -3512,7 +3513,7 @@ module akra.fx {
 			var pWhileStmt: WhileStmtInstruction = new WhileStmtInstruction();
 			var pCondition: IAFXExprInstruction = null;
 			var pConditionType: IAFXVariableTypeInstruction = null;
-			var pBoolType: IAFXTypeInstruction = Effect.getSystemType("boolean");
+			var pBoolType: IAFXTypeInstruction = Effect.getSystemType("bool");
 			var pStmt: IAFXStmtInstruction = null;
 
 			if (isDoWhile) {
@@ -3562,7 +3563,7 @@ module akra.fx {
 			var pIfStmtInstruction: IfStmtInstruction = new IfStmtInstruction();
 			var pCondition: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
 			var pConditionType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pCondition.getType();
-			var pBoolType: IAFXTypeInstruction = Effect.getSystemType("boolean");
+			var pBoolType: IAFXTypeInstruction = Effect.getSystemType("bool");
 
 			var pIfStmt: IAFXStmtInstruction = null;
 			var pElseStmt: IAFXStmtInstruction = null;
@@ -4431,7 +4432,7 @@ module akra.fx {
 			var isComplex: boolean = pLeftType.isComplex() || pRightType.isComplex();
 			var isArray: boolean = pLeftType.isNotBaseArray() || pRightType.isNotBaseArray();
 			var isSampler: boolean = Effect.isSamplerType(pLeftType) || Effect.isSamplerType(pRightType);
-			var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("boolean").getVariableType();
+			var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("bool").getVariableType();
 
 			if (isArray || isSampler) {
 				return null;
@@ -4600,7 +4601,7 @@ module akra.fx {
 			}
 
 			if (sOperator === "!") {
-				var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("boolean").getVariableType();
+				var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("bool").getVariableType();
 
 				if (pType.isEqual(pBoolType)) {
 					return pBoolType;

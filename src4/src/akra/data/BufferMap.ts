@@ -32,7 +32,7 @@ module akra.data {
 
 	export class BufferMap extends util.ReferenceCounter implements IBufferMap {
 		guid: uint = guid();
-		
+
 		modified: ISignal<{ (pMap: IBufferMap): void; }> = new Signal(<any>this);
 
 		private _pFlows: IDataFlow[] = null;
@@ -137,30 +137,30 @@ module akra.data {
 		}
 
 		private drawArrays(): void {
-//#ifdef WEBGL
-
-
-//				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
-//				webgl.getWebGLPrimitiveType(this._ePrimitiveType),
-//				// GL_POINTS,
-//				this._nStartIndex,
-//				this._nLength);
-
-
-//#else
-			logger.critical("BufferMap::drawElements() unsupported for unknown API.");
+			if (config.WEBGL) {
+				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
+					webgl.getWebGLPrimitiveType(this._ePrimitiveType),
+					// GL_POINTS,
+					this._nStartIndex,
+					this._nLength);
+			}
+			else {
+				logger.critical("BufferMap::drawElements() unsupported for unknown API.");
+			}
 		}
 
 		private drawElements(): void {
-//#ifdef WEBGL
-//				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
-//				webgl.getWebGLPrimitiveType(this._ePrimitiveType),
-//				this._pIndex.getPrimitiveCount(),
-//				webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()),
-//				this._pIndex.byteOffset / 4);
-//			//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
-//#else
-			logger.critical("BufferMap::drawElements() unsupported for unknown API.");
+			if (config.WEBGL) {
+				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
+					webgl.getWebGLPrimitiveType(this._ePrimitiveType),
+					this._pIndex.getPrimitiveCount(),
+					webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()),
+					this._pIndex.getByteOffset() / 4);
+				//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
+			}
+			else {
+				logger.critical("BufferMap::drawElements() unsupported for unknown API.");
+			}
 		}
 
 		getFlow(sSemantics: string, bComplete?: boolean): IDataFlow;
@@ -222,11 +222,11 @@ module akra.data {
 		    this._ePrimitiveType = EPrimitiveTypes.TRIANGLELIST;
 
 
-//#ifdef WEBGL
-//			nFlowLimit = Math.min(16/*webgl.maxVertexTextureImageUnits*/, webgl.maxVertexAttributes);
-//#endif
+			//#ifdef WEBGL
+			//			nFlowLimit = Math.min(16/*webgl.maxVertexTextureImageUnits*/, webgl.maxVertexAttributes);
+			//#endif
 
-		    this._pMappers = [];
+			this._pMappers = [];
 			this._pFlows = new Array<IDataFlow>(nFlowLimit);
 			for (var i = 0; i < nFlowLimit; i++) {
 				this._pFlows[i] = {
@@ -279,7 +279,7 @@ module akra.data {
 					isNull(pVertexData) ? "vertex data is null" : "flow.data alreay has same vertex data");
 				return -1;
 			}
-			
+
 			if (pool.resources.VertexBuffer.isVBO(<IVertexBuffer>pVertexData.getBuffer())) {
 				pFlow.type = EDataFlowTypes.UNMAPPABLE;
 				this.setLength(pVertexData.getLength());

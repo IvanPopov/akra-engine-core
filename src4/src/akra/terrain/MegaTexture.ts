@@ -108,9 +108,9 @@ module akra.terrain {
 
 			var iCountTex: uint = this._iMaxLevel - this._iMinLevel + 1;
 
-			this._pTextures = <ITexture[]> new Array(iCountTex);
-			this._pSectorLoadInfo = <Uint32Array[]> new Array(iCountTex);
-			this._pXY = <ISubTextureSettings[]> new Array(iCountTex);
+			this._pTextures = new Array<ITexture>(iCountTex);
+			this._pSectorLoadInfo = new Array<Uint32Array>(iCountTex);
+			this._pXY = new Array<ISubTextureSettings>(iCountTex);
 
 			this._iBufferWidth = this._v2iTextureLevelSize.x * 1;
 			this._iBufferHeight = this._v2iTextureLevelSize.y * 1;
@@ -484,9 +484,9 @@ module akra.terrain {
 		protected createUniforms(): void {
 			var iCountTex: uint = this._iMaxLevel - this._iMinLevel + 1;
 
-			this._pSamplerUniforms = new Array(iCountTex);
-			this._pLoadStatusUniforms = new Array(iCountTex);
-			this._pTexcoordOffsetUniforms = new Array(iCountTex);
+			this._pSamplerUniforms = new Array<IAFXSamplerState>(iCountTex);
+			this._pLoadStatusUniforms = new Array<uint>(iCountTex);
+			this._pTexcoordOffsetUniforms = new Array<IVec2>(iCountTex);
 
 			for(var i: uint = 0; i < iCountTex; i++){
 				this._pSamplerUniforms[i] = <IAFXSamplerState>{ 

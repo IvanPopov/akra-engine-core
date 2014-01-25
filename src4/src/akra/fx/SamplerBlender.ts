@@ -101,7 +101,7 @@ module akra.fx {
 					}
 
 					for (var j: uint = 0; j < pBlend.getLength(); j++) {
-						sHash += pBlend.value(j).getGuid().toString() + ".";
+						sHash += pBlend.value(j)._getInstructionID().toString() + ".";
 					}
 
 					sHash += ".";

@@ -89,13 +89,13 @@ module akra.scene {
 		}
 
 		createUI(): IUI {
-			if (config.GUI) {
-				var pUI: IUI = new ui.UI(this);
-				return pUI;
-			}
-			else {
+			//if (config.GUI) {
+			//	var pUI: IUI = new ui.UI(this);
+			//	return pUI;
+			//}
+			//else {
 				return null;
-			}
+			//}
 		}
 
 		getScene3D(): IScene3d;

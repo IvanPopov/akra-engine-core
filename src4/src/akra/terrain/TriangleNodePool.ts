@@ -28,7 +28,7 @@ module akra.terrain {
 
 		constructor(iCount: uint) { 
 			this._iMaxCount = iCount;
-			this._pPool = <ITriTreeNode[]>Array(iCount);
+			this._pPool = new Array<ITriTreeNode>(iCount);
 
 			// console.log("TriangleNodePool",this.maxCount);
 

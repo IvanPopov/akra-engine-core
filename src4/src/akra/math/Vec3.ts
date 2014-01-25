@@ -600,8 +600,8 @@ module akra.math {
 		static temp(xy: IVec2, z: float): IVec3;
 		static temp(x: float, y: float, z: float): IVec3;
 		static temp(x?, y?, z?): IVec3 {
-			iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
-			var p = pBuffer[iElement++];
+			iElement = (iElement === pBuffer.length - 1 ? 0 : (iElement++));
+			var p = pBuffer[iElement];
 			return p.set.apply(p, arguments);
 		}
 	}

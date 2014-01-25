@@ -30,7 +30,7 @@ module akra.webgl {
 			iByteSize = math.max(iByteSize, config.webgl.indexbufferMinSize);
 
 			if (bf.testAny(iFlags, EHardwareBufferFlags.READABLE)) {
-				bf.setAll(iFlags, EHardwareBufferFlags.BACKUP_COPY);
+				iFlags = bf.setAll(iFlags, EHardwareBufferFlags.BACKUP_COPY);
 			}
 
 			super.create(iByteSize, iFlags, pData);
@@ -52,7 +52,7 @@ module akra.webgl {
 
 			//Если есть локальная копия то буфер можно читать
 			if (this.isBackupPresent()) {
-				bf.setAll(this._iFlags, EHardwareBufferFlags.READABLE);
+				this._iFlags = bf.setAll(this._iFlags, EHardwareBufferFlags.READABLE);
 			}
 
 			debug.assert(!pData || pData.byteLength <= iByteSize,

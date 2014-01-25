@@ -67,7 +67,7 @@ module akra.scene {
 		}
 
 		setLocalOrientation(qOrient: IQuat4): void {
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 			this._qRotation.set(qOrient);
 		}
 
@@ -76,7 +76,7 @@ module akra.scene {
 		}
 
 		setLocalPosition(v3fPosition: IVec3): void {
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 			this._v3fTranslation.set(v3fPosition);
 		}
 
@@ -85,7 +85,7 @@ module akra.scene {
 		}
 
 		setLocalScale(v3fScale: IVec3): void {
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 			this._v3fScale.set(v3fScale);
 		}
 
@@ -94,7 +94,7 @@ module akra.scene {
 		}
 
 		setLocalMatrix(m4fLocalMatrix: IMat4): void {
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
 			this._m4fLocalMatrix.set(m4fLocalMatrix);
 		}
 
@@ -127,7 +127,7 @@ module akra.scene {
 		getInverseWorldMatrix(): IMat4 {
 			if (bf.testBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix)) {
 				this._m4fWorldMatrix.inverse(this._m4fInverseWorldMatrix);
-				bf.clearBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix);
+				this._iUpdateFlags = bf.clearBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix);
 			}
 
 			return this._m4fInverseWorldMatrix;
@@ -138,7 +138,7 @@ module akra.scene {
 
 				this._m4fWorldMatrix.toMat3(this._m3fNormalMatrix).inverse().transpose();
 
-				bf.clearBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix);
+				this._iUpdateFlags = bf.clearBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix);
 			}
 
 			return this._m3fNormalMatrix;
@@ -156,7 +156,7 @@ module akra.scene {
 		prepareForUpdate(): void {
 			super.prepareForUpdate();
 			// clear the temporary flags
-			bf.clearAll(this._iUpdateFlags, bf.flag(ENodeUpdateFlags.k_NewLocalMatrix) |
+			this._iUpdateFlags = bf.clearAll(this._iUpdateFlags, bf.flag(ENodeUpdateFlags.k_NewLocalMatrix) |
 				bf.flag(ENodeUpdateFlags.k_NewOrientation) | bf.flag(ENodeUpdateFlags.k_NewWorldMatrix));
 		}
 
@@ -273,10 +273,10 @@ module akra.scene {
 				this._v3fWorldPosition.z = pWorldData[__34];
 
 				// set the flag that our world matrix has changed
-				bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewWorldMatrix);
+				this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewWorldMatrix);
 				// and it's inverse & vectors are out of date
-				bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix);
-				bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix);
+				this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix);
+				this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix);
 
 				return true;
 			}
@@ -328,7 +328,7 @@ module akra.scene {
 
 			this._m4fLocalMatrix.setTranslation(Mlc.getTranslation());
 
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
 		}
 
 
@@ -340,7 +340,7 @@ module akra.scene {
 
 			v3fTranslation.set(pPos);
 
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRelPosition(v3fPosition: IVec3): void;
@@ -352,7 +352,7 @@ module akra.scene {
 			this._qRotation.multiplyVec3(pPos);
 			v3fTranslation.set(pPos);
 
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		addPosition(v3fPosition: IVec3): void;
@@ -363,7 +363,7 @@ module akra.scene {
 
 			v3fTranslation.add(pPos);
 
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		addRelPosition(v3fPosition: IVec3): void;
@@ -375,39 +375,39 @@ module akra.scene {
 			this._qRotation.multiplyVec3(pPos);
 			v3fTranslation.add(pPos);
 
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByMatrix(m3fRotation: IMat3): void;
 		setRotationByMatrix(m4fRotation: IMat4): void;
 		setRotationByMatrix(matrix: any): void {
 			matrix.toQuat4(this._qRotation);
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
 			Quat4.fromAxisAngle(v3fAxis, fAngle, this._qRotation);
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
 			Quat4.fromForwardUp(v3fForward, v3fUp, this._qRotation);
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
 			Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, this._qRotation);
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
 			Quat4.fromYawPitchRoll(fY, fX, fZ, this._qRotation);
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotation(q4fRotation: IQuat4): void {
 			this._qRotation.set(q4fRotation);
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		addRelRotationByMatrix(m3fRotation: IMat3): void;
@@ -434,7 +434,7 @@ module akra.scene {
 
 		addRelRotation(q4fRotation: IQuat4): void {
 			this._qRotation.multiply(q4fRotation);
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		addRotationByMatrix(m3fRotation: IMat3): void;
@@ -462,7 +462,7 @@ module akra.scene {
 		addRotation(q4fRotation: IQuat4): void {
 			q4fRotation.multiplyVec3(this._v3fTranslation);
 			q4fRotation.multiply(this._qRotation, this._qRotation);
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 
@@ -475,7 +475,7 @@ module akra.scene {
 
 			v3fScale.scale(pScale);
 
-			bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
+			this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3): void;
@@ -532,7 +532,7 @@ module akra.scene {
 				// adjust my local matrix to be relative to this new parent
 				var m4fInvertedParentMatrix: IMat4 = Mat4.temp();
 				(<Node>this._pParent)._m4fWorldMatrix.inverse(m4fInvertedParentMatrix);
-				bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewWorldMatrix);
+				this._iUpdateFlags = bf.setBit(this._iUpdateFlags, ENodeUpdateFlags.k_NewWorldMatrix);
 
 				return true;
 			}

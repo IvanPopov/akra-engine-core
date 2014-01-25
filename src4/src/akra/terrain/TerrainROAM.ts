@@ -187,7 +187,7 @@ module akra.terrain {
 			var bResult: boolean = super.init(pImgMap,worldExtents, iShift, iShiftX, iShiftY, sSurfaceTextures, pRootNode);
 			if (bResult) {
 				this._iTessellationQueueSize = this.getSectorCountX() * this.getSectorCountY();
-				this._pTessellationQueue = new Array(this._iTessellationQueueSize);
+				this._pTessellationQueue = new Array<ITerrainSectionROAM>(this._iTessellationQueueSize);
 				this._iTessellationQueueCount = 0;
 				this._isCreate = true;
 				this._iTotalIndicesMax=0;

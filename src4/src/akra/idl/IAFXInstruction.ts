@@ -217,7 +217,6 @@ module akra {
 	 * Operator and instructions may be empty.
 	 */
 	export interface IAFXInstruction {
-		getGuid(): uint;
 
 	    setParent(pParent: IAFXInstruction): void;
 	    getParent(): IAFXInstruction;

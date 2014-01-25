@@ -21,10 +21,10 @@ module akra.fx {
 			parser.EParseMode.k_Negate |
 			parser.EParseMode.k_Optimize;
 
-		if (config.DEBUG) {
+		if (config.DEBUG_PARSER) {
 			iMode |= parser.EParseMode.k_DebugMode;
 		}
-			
+		
 		effectParser.init(sGrammar, iMode);
 	}
 }

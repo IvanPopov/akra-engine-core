@@ -136,7 +136,7 @@ module akra.fx {
                     return EAFXShaderVariableType.k_Float;
                 case "int":
                     return EAFXShaderVariableType.k_Int;
-                case "boolean":
+                case "bool":
                     return EAFXShaderVariableType.k_Bool;
 
                 case "float2":

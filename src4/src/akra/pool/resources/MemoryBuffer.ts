@@ -19,7 +19,7 @@ module akra.pool.resources {
 
 		create(iByteSize: uint, iFlags: int = EHardwareBufferFlags.DYNAMIC): boolean {
 
-			bf.clearAll(iFlags,
+			iFlags = bf.clearAll(iFlags,
 				EHardwareBufferFlags.BACKUP_COPY | EHardwareBufferFlags.DISCARDABLE |
 				EHardwareBufferFlags.ALIGNMENT);
 

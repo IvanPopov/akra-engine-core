@@ -267,17 +267,17 @@ module akra.util {
 			// var bUpdated: boolean = false;
 			// update myself
 			if (this.update()) {
-				bf.setAll(this._iStateFlags, AEEntityStates.k_Updated);
+				this._iStateFlags = bf.setAll(this._iStateFlags, AEEntityStates.k_Updated);
 				// bUpdated = true;
 			}
 			// update my sibling
 			if (this._pSibling && this._pSibling.recursiveUpdate()) {
-				bf.setAll(this._iStateFlags, AEEntityStates.k_SiblingsUpdated);
+				this._iStateFlags = bf.setAll(this._iStateFlags, AEEntityStates.k_SiblingsUpdated);
 				// bUpdated = true;
 			}
 			// update my child
 			if (this._pChild && this._pChild.recursiveUpdate()) {
-				bf.setAll(this._iStateFlags, AEEntityStates.k_DescendantsUpdtated);
+				this._iStateFlags = bf.setAll(this._iStateFlags, AEEntityStates.k_DescendantsUpdtated);
 				// bUpdated = true;
 			}
 

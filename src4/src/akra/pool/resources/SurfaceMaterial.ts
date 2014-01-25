@@ -96,7 +96,7 @@ module akra.pool.resources {
 						debug.warn("cannot destroy resource...")
 					}
 
-					bf.clearBit(this._iTextureFlags, iIndex);
+					this._iTextureFlags = bf.clearBit(this._iTextureFlags, iIndex);
 					--this._nTotalTextures;
 				}
 
@@ -104,7 +104,7 @@ module akra.pool.resources {
 				this._pTextures[iIndex] = <ITexture>pRmgr.getTexturePool().loadResource(<string>texture);
 
 				if (this._pTextures[iIndex]) {
-					bf.setBit(this._iTextureFlags, iIndex);
+					this._iTextureFlags = bf.setBit(this._iTextureFlags, iIndex);
 
 					++this._nTotalTextures;
 
@@ -128,14 +128,14 @@ module akra.pool.resources {
 							debug.warn("cannot destroy resource...");
 						}
 
-						bf.clearBit(this._iTextureFlags, iIndex);
+						this._iTextureFlags = bf.clearBit(this._iTextureFlags, iIndex);
 						--this._nTotalTextures;
 					}
 
 					this._pTextures[iIndex] = pTexture;
 
 					this._pTextures[iIndex].addRef();
-					bf.setBit(this._iTextureFlags, iIndex);
+					this._iTextureFlags = bf.setBit(this._iTextureFlags, iIndex);
 					++this._nTotalTextures;
 					this.sync(this._pTextures[iIndex], EResourceItemEvents.LOADED);
 
@@ -167,14 +167,14 @@ module akra.pool.resources {
 							debug.warn("cannot destroy resource...");
 						}
 
-						bf.clearBit(this._iTextureFlags, iIndex);
+						this._iTextureFlags = bf.clearBit(this._iTextureFlags, iIndex);
 						--this._nTotalTextures;
 					}
 
 					this._pTextures[iIndex] = <ITexture>pRmgr.getTexturePool().getResource(<int>texture);
 
 					if (this._pTextures[iIndex]) {
-						bf.setBit(this._iTextureFlags, iIndex);
+						this._iTextureFlags = bf.setBit(this._iTextureFlags, iIndex);
 						++this._nTotalTextures;
 						this.sync(this._pTextures[iIndex], EResourceItemEvents.LOADED);
 					}
@@ -199,7 +199,7 @@ module akra.pool.resources {
 				this._pTextureMatrices[iIndex] = new Mat4(m4fValue);
 			}
 
-			bf.setBit(this._iTextureMatrixFlags, iIndex);
+			this._iTextureFlags = bf.setBit(this._iTextureMatrixFlags, iIndex);
 			return true;
 		}
 

@@ -138,7 +138,7 @@ module akra.pool.resources {
 				this._pIndexDataArray = null;
 			}
 			else {
-				for (var i: int = 0; i < this._pIndexDataArray.length; i ++) {
+				for (var i: uint = 0; i < this._pIndexDataArray.length; i ++) {
 					if(this._pIndexDataArray[i] == pIndexData) {
 						pIndexData.destroy();
 

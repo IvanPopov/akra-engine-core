@@ -114,19 +114,19 @@ module akra.render {
 
 		enableSupportFor3DEvent(iType: int): int {
 			if (bf.testAny(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING)) {
-				bf.setAll(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
+				iType = bf.setAll(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
 					E3DEventTypes.MOUSEDOWN | E3DEventTypes.MOUSEUP | E3DEventTypes.MOUSEMOVE);
 			}
 
 			//mouse over and mouse out events require mouse move
 			if (bf.testAny(iType, E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT)) {
-				bf.setAll(iType, E3DEventTypes.MOUSEMOVE);
+				iType = bf.setAll(iType, E3DEventTypes.MOUSEMOVE);
 			}
 
 			//get events that have not yet been activated
 			var iNotActivate: int = (this._i3DEvents ^ 0x7fffffff) & iType;
 
-			bf.setAll(this._i3DEvents, iNotActivate);
+			this._i3DEvents = bf.setAll(this._i3DEvents, iNotActivate);
 
 			return iNotActivate;
 		}

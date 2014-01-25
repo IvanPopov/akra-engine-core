@@ -1704,8 +1704,8 @@ module akra.math {
 			f5?, f6?, f7?, f8?,
 			f9?, f10?, f11?, f12?,
 			f13?, f14?, f15?, f16?): IMat4 {
-			iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
-			var p = pBuffer[iElement++];
+				iElement = (iElement === pBuffer.length - 1 ? 0 : (iElement++));
+			var p = pBuffer[iElement];
 			return p.set.apply(p, arguments);
 		}
 	}

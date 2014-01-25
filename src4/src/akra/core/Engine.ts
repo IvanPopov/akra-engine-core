@@ -34,8 +34,8 @@
 // #endif
 
 // #ifdef GUI
-/// <reference path="../ui/UI.ts" />
-/// <reference path="../ui/IDE.ts" />
+///// <reference path="../ui/UI.ts" />
+///// <reference path="../ui/IDE.ts" />
 // #endif
 
 
@@ -152,7 +152,7 @@ module akra.core {
 					}
 					debug.log("[ALL DEPTS LOADED]");
 					this._isDepsLoaded = true;
-
+					
 					this.depsLoaded.emit(pDep);
 				},
 				(pDep: IDep, pProgress: any): void => {
@@ -356,12 +356,45 @@ module akra.core {
 			//engine core dependences
 			{
 				files: [
-					{
-						path: "@CORE_ARA", 
-						type: "ARA",
-						name: "core resources" 
+					{ path: "grammars/HLSL.gr" }
+					//{
+					//	path: "../../../src2/data/core.map", 
+					//	type: "map",
+					//	name: "core resources" 
+					//}
+				],
+				deps: {
+					files: [
+						{ path: "effects/SystemEffects.afx" },
+						{ path: "effects/Plane.afx" },
+						{ path: "effects/fxaa.afx" },
+						{ path: "effects/skybox.afx" },
+						{ path: "effects/TextureToScreen.afx" },
+						{ path: "effects/mesh_geometry.afx" },
+						{ path: "effects/prepare_shadows.afx" },
+						{ path: "effects/terrain.afx" },
+						{ path: "effects/prepareDeferredShading.afx" },
+						{ path: "effects/generate_normal_map.afx" },
+						{ path: "effects/sky.afx" },
+						{ path: "effects/motion_blur.afx" },
+						{ path: "effects/edge_detection.afx" },
+						{ path: "effects/wireframe.afx" },
+						{ path: "effects/sprite.afx" }
+					],
+					deps: {
+						files: [
+							{ path: "effects/mesh_texture.afx" },
+							{ path: "effects/deferredShading.afx" },
+							{ path: "effects/apply_lights_and_shadows.afx" }
+						],
+						deps: {
+							files: [
+								{ path: "effects/color_maps.afx" }
+							]
+						}
 					}
-				]
+				},
+				root: "../../../src2/data/"
 			};			
 			
 

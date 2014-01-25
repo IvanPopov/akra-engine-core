@@ -294,15 +294,15 @@ module akra.data {
 			if (arguments.length < 2) {
 				//mark all render data as renderable or not
 				if (<boolean>arguments[0]) {
-					bf.setAll(this._eOptions, ERenderDataOptions.RENDERABLE)
+					this._eOptions = bf.setAll(this._eOptions, ERenderDataOptions.RENDERABLE)
 				}
 				else {
-					bf.clearAll(this._eOptions, ERenderDataOptions.RENDERABLE);
+					this._eOptions = bf.clearAll(this._eOptions, ERenderDataOptions.RENDERABLE);
 				}
 			}
 
 			//mark index set is renderable or not
-			bf.setBit(this._iRenderable, <int>iIndexSet, bValue);
+			this._iRenderable = bf.setBit(this._iRenderable, <int>iIndexSet, bValue);
 		}
 
 		isRenderable(): boolean;

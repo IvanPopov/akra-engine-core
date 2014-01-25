@@ -362,7 +362,7 @@ module akra.pool.resources {
 				this._nMipLevels = iImageMips;
 
 				// Disable flag for auto mip generation
-				bf.clearAll(this._iFlags, ETextureFlags.AUTOMIPMAP);
+				this._iFlags = bf.clearAll(this._iFlags, ETextureFlags.AUTOMIPMAP);
 			}
 			else {
 				this._nMipLevels = 0;

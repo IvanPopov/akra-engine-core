@@ -176,7 +176,7 @@ module akra.pool.resources {
 			var iTotalPasses: uint = pEffect.getTotalPasses();
 
 			if(isNull(this._pPassInputList)){
-				this._pPassInputList = new Array(iTotalPasses);
+				this._pPassInputList = new Array<IAFXPassInputBlend>(iTotalPasses);
 				this._nTotalPasses = 0;
 			}
 

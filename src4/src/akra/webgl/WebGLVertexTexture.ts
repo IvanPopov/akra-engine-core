@@ -75,7 +75,7 @@ module akra.webgl {
 			iByteSize = math.max(iByteSize + iAdditionalHeaderSize, pixelUtil.getMemorySize(iMinWidth, iMinWidth, 1, this._ePixelFormat));
 
 			if (bf.testAny(iFlags, EHardwareBufferFlags.READABLE)) {
-				bf.setAll(iFlags, EHardwareBufferFlags.BACKUP_COPY);
+				iFlags = bf.setAll(iFlags, EHardwareBufferFlags.BACKUP_COPY);
 			}
 
 			super.create(iByteSize, iFlags, pData);
@@ -101,7 +101,7 @@ module akra.webgl {
 
 			//Если есть локальная копия то буфер можно читать
 			if (this.isBackupPresent()) {
-				bf.setAll(this._iFlags, EHardwareBufferFlags.READABLE);
+				this._iFlags = bf.setAll(this._iFlags, EHardwareBufferFlags.READABLE);
 			}
 
 			debug.assert(!pData || pData.byteLength <= iByteSize,
@@ -203,7 +203,7 @@ module akra.webgl {
 				}																									\n\
 				",
 					"									\n\
-				#ifdef gl.ES                        \n\
+				#ifdef GL_ES                        \n\
 					precision highp float;          \n\
 				#endif								\n\
 				varying vec4 color;                 \n\
@@ -248,7 +248,7 @@ module akra.webgl {
 				}																									\n\
 				",
 					"									\n\
-				#ifdef gl.ES                        \n\
+				#ifdef GL_ES                        \n\
 					precision highp float;          \n\
 				#endif								\n\
 				varying vec4 v4fValue;              \n\

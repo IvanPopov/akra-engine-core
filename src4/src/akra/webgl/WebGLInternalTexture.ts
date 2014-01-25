@@ -216,7 +216,7 @@ module akra.webgl {
 			if (this._nMipLevels != 0 && !webgl.hasExtension(EXT_TEXTURE_NPOT_2D_MIPMAP) && (!math.isPowerOfTwo(this._iDepth) || !math.isPowerOfTwo(this._iHeight) || !math.isPowerOfTwo(this._iWidth))) {
 				logger.warn("Мип мапы у текстуры не стпени двойки не поддерживаются, сброс мипмапов в 0");
 				this._nMipLevels = 0;
-				bf.clearAll(this._iFlags, ETextureFlags.AUTOMIPMAP);
+				this._iFlags = bf.clearAll(this._iFlags, ETextureFlags.AUTOMIPMAP);
 			}
 
 			if (!webgl.isWebGLFormatSupport(this._eFormat)) {

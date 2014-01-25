@@ -159,8 +159,8 @@ module akra.pixelUtil {
 		static temp(iWidth: uint, iHeight: uint, iDepth: uint, ePixelFormat: EPixelFormats, pPixelData?: Uint8Array): IPixelBox;
 		static temp(pExtents: IBox, ePixelFormat: EPixelFormats, pPixelData?: Uint8Array): IPixelBox;
 		static temp(): IPixelBox {
-			iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
-			var pPixelBox: IPixelBox = pBuffer[iElement++];
+			iElement = (iElement === pBuffer.length - 1 ? 0 : (iElement++));
+			var pPixelBox: IPixelBox = pBuffer[iElement];
 
 			var pBox: IBox = null;
 			var pPixelData: Uint8Array = null;

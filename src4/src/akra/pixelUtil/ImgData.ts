@@ -5,7 +5,6 @@
 /// <reference path="../pool/resources/Img.ts" />
 
 module akra.pixelUtil {
-	import Img = pool.resources.Img;
 	export class ImgData extends CodecData implements IImgData {
 
 		protected _iHeight: uint = 0;
@@ -78,7 +77,7 @@ module akra.pixelUtil {
 		}
 
 		getSize(): uint {
-			return Img.calculateSize(this.getNumMipMaps(), this.getNumFace(), this.getWidth(), this.getHeight(), this.getDepth(), this.getFormat());
+			return pool.resources.Img.calculateSize(this.getNumMipMaps(), this.getNumFace(), this.getWidth(), this.getHeight(), this.getDepth(), this.getFormat());
 		}
 
 		getNumFace(): uint {

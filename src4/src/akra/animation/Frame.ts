@@ -187,8 +187,8 @@ module akra.animation {
 		}
 
 		static temp(): IFrame {
-			iPositionElement = (iPositionElement === pPositionBuffer.length - 1 ? 0 : pPositionBuffer.length);
-			var p = pPositionBuffer[iPositionElement++];
+			iPositionElement = (iPositionElement === pPositionBuffer.length - 1 ? 0 : (iPositionElement++));
+			var p = pPositionBuffer[iPositionElement];
 			return p.set.apply(p, arguments);
 		}
 	} 

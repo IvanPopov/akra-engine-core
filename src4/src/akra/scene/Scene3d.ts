@@ -362,6 +362,6 @@ module akra.scene {
 		 }
 
 		static DL_DEFAULT: uint8 = 0;
-		static DL_LIGHTING: uint8 = 0;
+		static DL_LIGHTING: uint8 = 1;
 	}
 }

@@ -25,7 +25,7 @@ module akra.webgl {
 				}												\n\
 																\n\
 				float power = 0.;								\n\
-				boolean isFinish = false;							\n\
+				bool isFinish = false;							\n\
 																\n\
 				for(int i = 0; i < 128; i++) {					\n\
 				  if(isFinish){									\n\

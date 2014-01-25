@@ -40,7 +40,7 @@ module akra.render {
 
 				this._pRenderer._renderEntry(pEntry);
 
-				if (config.__VIEW_INTERNALS__) {
+				if (!config.__VIEW_INTERNALS__) {
 					this.releaseEntry(pEntry);
 				}
 			}

@@ -68,7 +68,7 @@ module akra.scene {
 		}
 
 		accessLocalBounds(): IRect3d {
-			bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds);
+			this._iObjectFlags = bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds);
 			return this._pLocalBounds;
 		}
 
@@ -77,7 +77,7 @@ module akra.scene {
 		}
 
 		setShadow(bValue: boolean): void {
-			bValue ? bf.setAll(this._iViewModes, EObjectViewModes.k_Shadows) : bf.clearAll(this._iViewModes, EObjectViewModes.k_Shadows);
+			this._iViewModes = bValue ? bf.setAll(this._iViewModes, EObjectViewModes.k_Shadows) : bf.clearAll(this._iViewModes, EObjectViewModes.k_Shadows);
 
 			for (var i: uint = 0; i < this.getTotalRenderable(); i++) {
 				(<IRenderableObject>this.getRenderable(i)).setShadow(bValue);
@@ -85,7 +85,7 @@ module akra.scene {
 		}
 
 		setBillboard(bValue: boolean): void {
-			bValue ? bf.setAll(this._iViewModes, EObjectViewModes.k_Billboard) : bf.clearAll(this._iViewModes, EObjectViewModes.k_Billboard);
+			this._iViewModes = bValue ? bf.setAll(this._iViewModes, EObjectViewModes.k_Billboard) : bf.clearAll(this._iViewModes, EObjectViewModes.k_Billboard);
 		}
 
 		getBillboard(): boolean {
@@ -165,7 +165,7 @@ module akra.scene {
 		prepareForUpdate(): void {
 			super.prepareForUpdate();
 
-			bf.clearAll(this._iObjectFlags,
+			this._iObjectFlags = bf.clearAll(this._iObjectFlags,
 				bf.flag(ESceneObjectFlags.k_NewLocalBounds) | bf.flag(ESceneObjectFlags.k_NewWorldBounds));
 		}
 
@@ -196,7 +196,7 @@ module akra.scene {
 				this._pWorldBounds.transform(this.getWorldMatrix());
 
 				// set the flag that our bounding box has changed
-				bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewWorldBounds);
+				this._iObjectFlags = bf.setBit(this._iObjectFlags, ESceneObjectFlags.k_NewWorldBounds);
 
 				this.worldBoundsUpdated.emit();
 

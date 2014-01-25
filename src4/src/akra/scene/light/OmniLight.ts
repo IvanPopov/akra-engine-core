@@ -249,7 +249,7 @@ module akra.scene.light {
 				return pResult;
 			}
 
-			var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(Scene3d.DL_DEFAULT);
+			var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(scene.Scene3d.DL_DEFAULT);
 
 			for (var i: int = 0; i < pRawResult.getLength(); i++) {
 				var pObject: ISceneObject = pRawResult.value(i);
@@ -276,7 +276,7 @@ module akra.scene.light {
 				return pResult;
 			}
 
-			var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(Scene3d.DL_DEFAULT);
+			var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(scene.Scene3d.DL_DEFAULT);
 
 			var pTestArray: IPlane3d[] = OmniLight._pFrustumPlanes;
 			var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;

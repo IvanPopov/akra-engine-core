@@ -179,7 +179,7 @@ module akra.webgl {
 					}												\n\
 																	\n\
 					float power = 0.;								\n\
-					boolean isFinish = false;							\n\
+					bool isFinish = false;							\n\
 					for(int i=0;i<128;i++){							\n\
 						if(isFinish){								\n\
 							break;									\n\
@@ -251,7 +251,7 @@ module akra.webgl {
 				}																									\n\
 				",
 				"													\n\
-				#ifdef gl.ES                        				\n\
+				#ifdef GL_ES                        				\n\
 					precision highp float;          				\n\
 				#endif												\n\
 				varying vec3 texcoord;              				\n\
@@ -281,7 +281,7 @@ module akra.webgl {
 				}																									\n\
 				",
 				"													\n\
-				#ifdef gl.ES                        				\n\
+				#ifdef GL_ES                        				\n\
 					precision highp float;          				\n\
 				#endif												\n\
 				varying vec3 texcoord;              				\n\
@@ -316,7 +316,7 @@ module akra.webgl {
 				}																									\n\
 				",
 				"													\n\
-				#ifdef gl.ES                        				\n\
+				#ifdef GL_ES                        				\n\
 					precision highp float;          				\n\
 				#endif												\n\
 																	\n\

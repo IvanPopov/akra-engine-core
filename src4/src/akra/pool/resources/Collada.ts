@@ -858,7 +858,7 @@ module akra.pool.resources {
 
 					pInvMatrixArray = new Float32Array(pJoints.inputs[sInput].array);
 					iCount = pInvMatrixArray.length / 16;
-					pMatrixArray = new Array(iCount);
+					pMatrixArray = new Array<IMat4>(iCount);
 
 					for (var j: uint = 0, n: uint = 0; j < pInvMatrixArray.length; j += 16) {
 						pMatrixArray[n++] = 

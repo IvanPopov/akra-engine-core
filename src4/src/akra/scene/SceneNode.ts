@@ -71,7 +71,7 @@ module akra.scene {
 		}
 
 		freeze(bValue: boolean = true): void {
-			bf.setBit(this._iSceneNodeFlags, ESceneNodeFlags.FROZEN_SELF, bValue);
+			this._iSceneNodeFlags = bf.setBit(this._iSceneNodeFlags, ESceneNodeFlags.FROZEN_SELF, bValue);
 			this.frozen.emit(bValue);
 		}
 
@@ -81,16 +81,16 @@ module akra.scene {
 		}
 
 		hide(bValue: boolean = true): void {
-			bf.setBit(this._iSceneNodeFlags, ESceneNodeFlags.HIDDEN_SELF, bValue);
+			this._iSceneNodeFlags = bf.setBit(this._iSceneNodeFlags, ESceneNodeFlags.HIDDEN_SELF, bValue);
 			this.hidden.emit(bValue);
 		}
 
 		_parentFrozen(pParent: ISceneNode, bValue: boolean): void {
-			bf.setBit(this._iSceneNodeFlags, ESceneNodeFlags.FROZEN_PARENT, bValue);
+			this._iSceneNodeFlags = bf.setBit(this._iSceneNodeFlags, ESceneNodeFlags.FROZEN_PARENT, bValue);
 		}
 
 		_parentHidden(pParent: ISceneNode, bValue: boolean): void {
-			bf.setBit(this._iSceneNodeFlags, ESceneNodeFlags.HIDDEN_PARENT, bValue);
+			this._iSceneNodeFlags = bf.setBit(this._iSceneNodeFlags, ESceneNodeFlags.HIDDEN_PARENT, bValue);
 		}
 
 		create(): boolean {
