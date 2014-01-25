@@ -7,15 +7,15 @@ module akra.fx {
         protected _pExtSystemTypeList: IAFXTypeDeclInstruction[] = null;
         protected _pExtSystemFunctionList: IAFXFunctionDeclInstruction[] = null;
 
-        get macroses(): IAFXSimpleInstruction[] {
+        getMacroses(): IAFXSimpleInstruction[] {
             return this._pExtSystemMacrosList;
         }
 
-        get types(): IAFXTypeDeclInstruction[] {
+        getTypes(): IAFXTypeDeclInstruction[] {
             return this._pExtSystemTypeList;
         }
 
-        get functions(): IAFXFunctionDeclInstruction[] {
+        getFunctions(): IAFXFunctionDeclInstruction[] {
             return this._pExtSystemFunctionList;
         }
 

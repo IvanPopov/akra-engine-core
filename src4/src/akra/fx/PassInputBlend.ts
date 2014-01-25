@@ -567,9 +567,9 @@ module akra.fx {
 
             this.renderStates = render.createRenderStateMap();
 
-            var pUniformKeys: uint[] = this._pCreator.getUniforms().indices;
-            var pForeignKeys: uint[] = this._pCreator.getForeigns().indices;
-            var pTextureKeys: uint[] = this._pCreator.getTextures().indices;
+            var pUniformKeys: uint[] = this._pCreator.getUniforms().getIndices();
+            var pForeignKeys: uint[] = this._pCreator.getForeigns().getIndices();
+            var pTextureKeys: uint[] = this._pCreator.getTextures().getIndices();
 
             var eType: EAFXShaderVariableType = 0;
             var sName: string = "";

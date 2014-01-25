@@ -22,7 +22,7 @@ module akra.fx {
             this._pVariableInfoMap = <IMap<IAFXVariableInfo>>{};
         }
 
-        get indices(): uint[] {
+        getIndices(): uint[] {
             return this._pIndexList;
         }
 

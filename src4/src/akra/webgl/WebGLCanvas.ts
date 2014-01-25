@@ -39,7 +39,7 @@ module akra.webgl {
 		//needed for simulating mouseover/mouseout events
 		protected _p3DEventViewportLast: IViewport = null;
 		protected _p3DEventDragTarget: IViewport = null;
-		protected _p3DEventMouseDownPos: IPoint = {x: 0, y: 0};
+		protected _p3DEventMouseDownPos: IPoint = { x: 0, y: 0 };
 		//на сколько пикселей надо протащить курсор, чтобы сработал dragging
 		protected _i3DEventDragDeadZone: uint = 2;
 		protected _b3DEventDragging: boolean = false;
@@ -49,31 +49,31 @@ module akra.webgl {
 		//клика
 		protected _b3DEventSkipNextClick: boolean = false;
 
-
-
-		get left(): int {
+		getLeft(): int {
 			var el: HTMLElement = this._pCanvas;
 			for (var lx: int = 0; el != null; lx += el.offsetLeft, el = <HTMLElement>el.offsetParent);
 			return lx;
 		}
 
-		get top(): int {
+		setLeft(iLeft: int): void {
+			//TODO
+		}
+
+		getTop(): int {
 			var el: HTMLElement = this._pCanvas;
 			for (var ly: int = 0; el != null; ly += el.offsetTop, el = <HTMLElement>el.offsetParent);
 			return ly;
 		}
 
-		set left(x: int) {
+		setTop(iTop: int): void {
 			//TODO
 		}
 
-		set top(x: int) {
-			//TODO
+		getElement(): HTMLCanvasElement {
+			return this._pCanvas;
 		}
 
-		 get el(): HTMLCanvasElement { return this._pCanvas; }
-
-		constructor (pRenderer: IRenderer) {
+		constructor(pRenderer: IRenderer) {
 			super(pRenderer);
 			this._pCanvas = (<any>pRenderer).getHTMLCanvas();
 			this._pCanvasCreationInfo = info.canvas(this._pCanvas);
@@ -81,20 +81,20 @@ module akra.webgl {
 
 		hideCursor(bHide: boolean = true): void {
 			if (bHide) {
-				this.el.style.cursor = "none";
+				this.getElement().style.cursor = "none";
 			}
 			else {
-				this.el.style.cursor = "auto";
+				this.getElement().style.cursor = "auto";
 			}
 		}
 
 		setCursor(sType: string): void {
-			this.el.style.cursor = sType;
+			this.getElement().style.cursor = sType;
 		}
 
-		create(sName: string = null, iWidth: uint = this._pCanvasCreationInfo.width, 
-				iHeight: uint = this._pCanvasCreationInfo.height, isFullscreen: boolean = false): boolean {
-			
+		create(sName: string = null, iWidth: uint = this._pCanvasCreationInfo.width,
+			iHeight: uint = this._pCanvasCreationInfo.height, isFullscreen: boolean = false): boolean {
+
 			this.setName(sName);
 
 			this.resize(iWidth, iHeight);
@@ -105,12 +105,12 @@ module akra.webgl {
 
 
 		enableSupportFor3DEvent(iType: int): int {
-			
+
 			var iActivated: int = super.enableSupportFor3DEvent(iType);
 
 			if (iActivated & E3DEventTypes.CLICK) {
 				debug.log("WebGLCanvas activate <CLICK> event handing");
-				this.el.addEventListener("click", (e: MouseEvent): boolean => {
+				this.getElement().addEventListener("click", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					//0 --> 149, 149/150 --> 0
 					this.click.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
@@ -120,7 +120,7 @@ module akra.webgl {
 
 			if (iActivated & E3DEventTypes.MOUSEMOVE) {
 				debug.log("WebGLCanvas activate <MOUSEMOVE> event handing");
-				this.el.addEventListener("mousemove", (e: MouseEvent): boolean => {
+				this.getElement().addEventListener("mousemove", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mousemove.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -129,7 +129,7 @@ module akra.webgl {
 
 			if (iActivated & E3DEventTypes.MOUSEDOWN) {
 				debug.log("WebGLCanvas activate <MOUSEDOWN> event handing");
-				this.el.addEventListener("mousedown", (e: MouseEvent): boolean => {
+				this.getElement().addEventListener("mousedown", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mousedown.emit(e.which, e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -138,7 +138,7 @@ module akra.webgl {
 
 			if (iActivated & E3DEventTypes.MOUSEUP) {
 				debug.log("WebGLCanvas activate <MOUSEUP> event handing");
-				this.el.addEventListener("mouseup", (e: MouseEvent): boolean => {
+				this.getElement().addEventListener("mouseup", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mouseup.emit(e.which, e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -147,7 +147,7 @@ module akra.webgl {
 
 			if (iActivated & E3DEventTypes.MOUSEOVER) {
 				debug.log("WebGLCanvas activate <MOUSEOVER> event handing");
-				this.el.addEventListener("mouseover", (e: MouseEvent): boolean => {
+				this.getElement().addEventListener("mouseover", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mouseover.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -156,7 +156,7 @@ module akra.webgl {
 
 			if (iActivated & E3DEventTypes.MOUSEOUT) {
 				debug.log("WebGLCanvas activate <MOUSEOUT> event handing");
-				this.el.addEventListener("mouseout", (e: MouseEvent): boolean => {
+				this.getElement().addEventListener("mouseout", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					this.mouseout.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
@@ -165,7 +165,7 @@ module akra.webgl {
 
 			if (iActivated & E3DEventTypes.MOUSEWHEEL) {
 				debug.log("WebGLCanvas activate <MOUSEWHEEL> event handing");
-				this.el.addEventListener("mousewheel", (e: MouseWheelEvent): boolean => {
+				this.getElement().addEventListener("mousewheel", (e: MouseWheelEvent): boolean => {
 					absorbEvent(e);
 
 					//FIXME: skipping middle button click
@@ -181,7 +181,7 @@ module akra.webgl {
 
 			return iActivated;
 		}
-		
+
 
 		destroy(): void {
 			super.destroy();
@@ -194,14 +194,14 @@ module akra.webgl {
 			return null;
 		}
 
-		setFullscreen(isFullscreen: boolean = true): void  {
+		setFullscreen(isFullscreen: boolean = true): void {
 			var pCanvasElement: HTMLCanvasElement = this._pCanvas;
 			var pScreen: IScreenInfo;
 			var pCanvasInfo: ICanvasInfo;
 			var iRealWidth: uint = this._iRealWidth;
 			var iRealHeight: uint = this._iRealHeight;
 			var pCanvas: WebGLCanvas = this;
-			
+
 			if (this._isFullscreen === isFullscreen) {
 				return;
 			}
@@ -219,9 +219,9 @@ module akra.webgl {
 			}
 
 			var el: any = pCanvasElement,
-				doc: any = document, 
+				doc: any = document,
 				rfs =
-				   el.requestFullScreen
+				el.requestFullScreen
 				|| el.webkitRequestFullScreen
 				|| el.mozRequestFullScreen
 
@@ -231,9 +231,9 @@ module akra.webgl {
 				if (isFullscreen) {
 					rfs.call(el);
 				}
-				
-				el.onfullscreenchange = 
-				el.onmozfullscreenchange = 
+
+				el.onfullscreenchange =
+				el.onmozfullscreenchange =
 				el.onwebkitfullscreenchange = el.onfullscreenchange || ((e): void => {
 
 					if (!!(doc.webkitFullscreenElement ||
@@ -259,7 +259,7 @@ module akra.webgl {
 		isVisible(): boolean { return this._pCanvas.style.display !== "none"; }
 
 		setVisible(bVisible: boolean = true): void {
-			this._pCanvas.style.display = bVisible? "block": "none";
+			this._pCanvas.style.display = bVisible ? "block" : "none";
 		}
 
 		resize(iWidth: uint = this._iWidth, iHeight: uint = this._iHeight): void {
@@ -267,7 +267,7 @@ module akra.webgl {
 				return;
 			}
 
-			var pCanvas: HTMLCanvasElement = this._pCanvas;	
+			var pCanvas: HTMLCanvasElement = this._pCanvas;
 
 			this._iWidth = iWidth;
 			this._iHeight = iHeight;
@@ -282,16 +282,16 @@ module akra.webgl {
 			if (isNull(ppDest)) {
 				var ePixelFormat: EPixelFormats = EPixelFormats.BYTE_RGB;
 
-				ppDest = new pixelUtil.PixelBox(this._iWidth, this._iHeight, 1, ePixelFormat, 
+				ppDest = new pixelUtil.PixelBox(this._iWidth, this._iHeight, 1, ePixelFormat,
 					new Uint8Array(pixelUtil.getMemorySize(this._iWidth, this._iHeight, 1, ePixelFormat)));
 			}
 
 			if ((ppDest.right > this._iWidth) || (ppDest.bottom > this._iHeight) || (ppDest.front != 0) || (ppDest.back != 1)) {
-				logger.critical("Invalid box.", "GLXWindow::copyContentsToMemory" );
+				logger.critical("Invalid box.", "GLXWindow::copyContentsToMemory");
 			}
 
 			if (eFramebuffer == EFramebuffer.AUTO) {
-				eFramebuffer = this._isFullscreen? EFramebuffer.FRONT: EFramebuffer.BACK;
+				eFramebuffer = this._isFullscreen ? EFramebuffer.FRONT : EFramebuffer.BACK;
 			}
 
 			var eFormat: int = getWebGLFormat(ppDest.format);
@@ -309,11 +309,11 @@ module akra.webgl {
 
 			// Must change the packing to ensure no overruns!
 			pWebGLRenderer.pixelStorei(gl.PACK_ALIGNMENT, 1);
-			
+
 			//glReadBuffer((buffer == FB_FRONT)? gl.FRONT : gl.BACK);
 			// LOG("readPixels(", ppDest.left, ppDest.top, ppDest.width, ppDest.height, eFormat, eType, /*ppDest.data,*/ ")");
 			pWebGLContext.readPixels(ppDest.left, ppDest.top, ppDest.getWidth(), ppDest.getHeight(), eFormat, eType, ppDest.data);
-			
+
 			// restore default alignment
 			pWebGLRenderer.pixelStorei(gl.PACK_ALIGNMENT, 4);
 
@@ -323,7 +323,7 @@ module akra.webgl {
 			// 	size_t height = dst.getHeight();
 			// 	uchar *tmpData = new uchar[rowSpan * height];
 			// 	uchar *srcRow = (uchar *)dst.data, *tmpRow = tmpData + (height - 1) * rowSpan;
-				
+
 			// 	while (tmpRow >= tmpData)
 			// 	{
 			// 		memcpy(tmpRow, srcRow, rowSpan);
@@ -331,10 +331,10 @@ module akra.webgl {
 			// 		tmpRow -= rowSpan;
 			// 	}
 			// 	memcpy(dst.data, tmpData, rowSpan * height);
-				
+
 			// 	delete [] tmpData;
 			// }
-			
+
 
 			return ppDest;
 		}
@@ -347,7 +347,7 @@ module akra.webgl {
 			//finding top viewport, taht contains (x, y) point.
 			for (var z in this._pViewportList) {
 				var pVp: IViewport = this._pViewportList[z];
-				if (pVp.getActualLeft() <= x && pVp.getActualTop() <= y && 
+				if (pVp.getActualLeft() <= x && pVp.getActualTop() <= y &&
 					pVp.getActualLeft() + pVp.getActualWidth() > x && pVp.getActualTop() + pVp.getActualHeight() > y) {
 					if (isNull(pViewport) || pVp.getZIndex() > pViewport.getZIndex()) {
 						pViewport = pVp;
@@ -355,7 +355,7 @@ module akra.webgl {
 				}
 			}
 
-			return pViewport;	
+			return pViewport;
 		}
 
 		private getViewportByMouseEvent(x: uint, y: uint): IViewport {
@@ -377,46 +377,6 @@ module akra.webgl {
 			return pViewportCurr;
 		}
 
-		 set onclick(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
-			this.click.connect(fn);
-		}
-
-		 set onmousemove(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
-			this.mousemove.connect(fn);
-		}
-
-		 set onmousedown(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.mousedown.connect(fn);
-		}
-
-		 set onmouseup(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.mouseup.connect(fn);
-		}
-
-		 set onmouseover(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
-			this.mouseover.connect(fn);
-		}
-
-		 set onmouseout(fn: (pCanvas: ICanvas3d, x: uint, y: uint) => void) {
-			this.mouseout.connect(fn);
-		}
-
-		 set onmousewheel(fn: (pCanvas: ICanvas3d, x: uint, y: uint, fDelta: float) => void) {
-			this.mousewheel.connect(fn);
-		}
-
-		 set ondragstart(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.dragstart.connect(fn);
-		}
-
-		 set ondragstop(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.dragstop.connect(fn);
-		}
-
-		 set ondragging(fn: (pCanvas: ICanvas3d, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.dragging.connect(fn);
-		}
-
 		protected _onClick(x: uint, y: uint): void {
 			if (this._b3DEventSkipNextClick) {
 				this._b3DEventSkipNextClick = false;
@@ -432,7 +392,7 @@ module akra.webgl {
 
 		protected _onMousemove(x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
-			
+
 			if (!isNull(pViewport)) {
 				pViewport.mousemove.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
@@ -441,7 +401,7 @@ module akra.webgl {
 				//dragging enabled
 				if (!isNull(this._p3DEventDragTarget)) {
 					//drag start event not emitted
-					if (!this._b3DEventDragging && 
+					if (!this._b3DEventDragging &&
 						//mouse shift from mousedown point greather than drag dead zone constant
 						math.Vec2.temp(x - this._p3DEventMouseDownPos.x, y - this._p3DEventMouseDownPos.y).length() > this._i3DEventDragDeadZone) {
 						this.dragstart.emit(this._e3DEventDragBtn, x, y);
@@ -455,14 +415,14 @@ module akra.webgl {
 
 		protected _onMousedown(eBtn: EMouseButton, x: uint, y: uint): void {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
-			
+
 			this._p3DEventMouseDownPos.x = x;
 			this._p3DEventMouseDownPos.y = y;
 
 			if (!isNull(pViewport)) {
 				pViewport.mousedown.emit(eBtn, x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
-			if (this.is3DEventSupported(E3DEventTypes.DRAGSTART) 
+			if (this.is3DEventSupported(E3DEventTypes.DRAGSTART)
 				&& this._e3DEventDragBtn === EMouseButton.UNKNOWN) {
 				this._p3DEventDragTarget = pViewport;
 				this._e3DEventDragBtn = eBtn;
@@ -480,9 +440,9 @@ module akra.webgl {
 				pViewport.mouseup.emit(eBtn, x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 
-			if (this.is3DEventSupported(E3DEventTypes.DRAGSTOP) && 
-					this._e3DEventDragBtn === eBtn) {
-				
+			if (this.is3DEventSupported(E3DEventTypes.DRAGSTOP) &&
+				this._e3DEventDragBtn === eBtn) {
+
 				if (this._b3DEventDragging) {
 					this.dragstop.emit(eBtn, x, y);
 				}
@@ -526,11 +486,11 @@ module akra.webgl {
 
 		protected _onDragstart(eBtn: EMouseButton, x: uint, y: uint): void {
 			this._b3DEventDragging = true;
-			
+
 			if (!isNull(this._p3DEventDragTarget)) {
 				this._p3DEventDragTarget.dragstart.emit(
 					eBtn,
-					x - this._p3DEventDragTarget.getActualLeft(), 
+					x - this._p3DEventDragTarget.getActualLeft(),
 					y - this._p3DEventDragTarget.getActualTop());
 			}
 		}
@@ -542,7 +502,7 @@ module akra.webgl {
 			if (!isNull(this._p3DEventDragTarget)) {
 				this._p3DEventDragTarget.dragstop.emit(
 					eBtn,
-					x - this._p3DEventDragTarget.getActualLeft(), 
+					x - this._p3DEventDragTarget.getActualLeft(),
 					y - this._p3DEventDragTarget.getActualTop());
 			}
 		}
@@ -551,7 +511,7 @@ module akra.webgl {
 			if (!isNull(this._p3DEventDragTarget)) {
 				this._p3DEventDragTarget.dragging.emit(
 					eBtn,
-					x - this._p3DEventDragTarget.getActualLeft(), 
+					x - this._p3DEventDragTarget.getActualLeft(),
 					y - this._p3DEventDragTarget.getActualTop());
 			}
 		}

@@ -15,8 +15,11 @@ module akra.render {
 		protected _isPrimary: boolean = false;
 		protected _bAutoDeactivatedOnFocusChange: boolean = false;
 
-		left: int = 0;
-		top: int = 0;
+		getLeft(): int { return 0; }
+		setLeft(iLeft: int): void { }
+
+		getTop(): int { return 0; }
+		setTop(iTop: int): void { }
 
 		getType(): ECanvasTypes {
 			return ECanvasTypes.TYPE_3D;

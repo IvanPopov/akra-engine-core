@@ -1307,9 +1307,9 @@ module akra.fx {
 
 			var sCode: string = "";
 
-			var pMacroses = pExtBlock.macroses;
-			var pTypes = pExtBlock.types;
-			var pFunctions = pExtBlock.functions;
+			var pMacroses = pExtBlock.getMacroses();
+			var pTypes = pExtBlock.getTypes();
+			var pFunctions = pExtBlock.getFunctions();
 
 			for (var i: uint = 0; i < pMacroses.length; i++) {
 				sCode += pMacroses[i].toFinalCode() + "\n";

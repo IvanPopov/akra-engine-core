@@ -6,9 +6,11 @@
 
 module akra {
 	export interface ICanvas3d extends ICanvas, IRenderTarget {
-		left: int;
-		top: int;
-	
+		getLeft(): int;
+		setLeft(iLeft: int): void;
+
+		getTop(): int;
+		setTop(iTop: int): void;	
 	
 		create(sName: string, iWidth?: uint, iHeight?: uint, isFullscreen?: boolean): boolean;
 		destroy(): void;

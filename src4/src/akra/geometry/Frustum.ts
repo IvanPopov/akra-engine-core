@@ -54,7 +54,7 @@ module akra.geometry {
             }
         }
 
-        /**  */ get frustumVertices(): IVec3[] {
+        getFrustumVertices(): IVec3[] {
             return this._pFrustumVertices;
         }
 
@@ -280,7 +280,7 @@ module akra.geometry {
         getPlanePoints(sPlaneKey: string, pDestination?: IVec3[]): IVec3[] {
             var pPoints: IVec3[] = (arguments.length === 2) ? pDestination : [Vec3.temp(), Vec3.temp(), Vec3.temp(), Vec3.temp()];
 
-            var pFrustumVertices: IVec3[] = this.frustumVertices;
+            var pFrustumVertices: IVec3[] = this.getFrustumVertices();
             if (pFrustumVertices === null) {
                 pFrustumVertices = this.calculateFrustumVertices();
             }
@@ -371,8 +371,8 @@ module akra.geometry {
 
         testFrustum(pFrustum: IFrustum): boolean {
 
-            var pFrustumVertices1: IVec3[] = this.frustumVertices;
-            var pFrustumVertices2: IVec3[] = pFrustum.frustumVertices;
+            var pFrustumVertices1: IVec3[] = this.getFrustumVertices();
+            var pFrustumVertices2: IVec3[] = pFrustum.getFrustumVertices();
 
             if (pFrustumVertices1 == null) {
                 pFrustumVertices1 = this.calculateFrustumVertices();

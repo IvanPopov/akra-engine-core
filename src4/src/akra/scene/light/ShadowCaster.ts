@@ -245,7 +245,7 @@ module akra.scene.light {
 				pDestination = new geometry.Rect2d();
 			}
 			var m4fProjView: IMat4 = this.getProjViewMatrix();
-			var pFrusutumVertices: IVec3[] = pEffectiveCameraFrustum.frustumVertices;
+			var pFrusutumVertices: IVec3[] = pEffectiveCameraFrustum.getFrustumVertices();
 
 			var v4fTmp: IVec4 = Vec4.temp();
 			var v2fTmp: IVec2 = Vec2.temp();
