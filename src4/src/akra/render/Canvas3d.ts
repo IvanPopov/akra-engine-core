@@ -18,7 +18,7 @@ module akra.render {
 		left: int = 0;
 		top: int = 0;
 
-		get type(): ECanvasTypes {
+		getType(): ECanvasTypes {
 			return ECanvasTypes.TYPE_3D;
 		}
 

@@ -57,7 +57,6 @@ module  akra.render {
 
 	export class Renderer implements IRenderer {
 		guid: uint = guid();
-		type: ERenderers = ERenderers.UNKNOWN;
 
 		active: ISignal<{ (pRender: IRenderer, pEngine: IEngine): void; }> = new Signal(<any>this, this._activated);
 		inactive: ISignal<{ (pRender: IRenderer, pEngine: IEngine): void; }> = new Signal(<any>this, this._inactivated);
@@ -82,6 +81,9 @@ module  akra.render {
 			this._pRenderQueue = new RenderQueue(this);
 		}
 
+		getType(): ERenderers {
+			return ERenderers.UNKNOWN;
+		}
 
 		getEngine(): IEngine {
 			return this._pEngine;
@@ -122,11 +124,11 @@ module  akra.render {
 				return false;
 			}
 
-			var pList: IRenderTarget[] = this._pPrioritisedRenderTargets[pTarget.priority];
+			var pList: IRenderTarget[] = this._pPrioritisedRenderTargets[pTarget.getPriority()];
 
 			if (!isDef(pList)) {
-				pList = this._pPrioritisedRenderTargets[pTarget.priority] = [];
-				this._pPriorityList.push(pTarget.priority);
+				pList = this._pPrioritisedRenderTargets[pTarget.getPriority()] = [];
+				this._pPriorityList.push(pTarget.getPriority());
 				this._pPriorityList.sort(sort.minMax);
 			}
 
@@ -146,8 +148,8 @@ module  akra.render {
 
 			this._pRenderTargets.splice(i, 1);
 
-			i = this._pPrioritisedRenderTargets[pTarget.priority].indexOf(pTarget);
-			this._pPrioritisedRenderTargets[pTarget.priority].splice(i, 1);
+			i = this._pPrioritisedRenderTargets[pTarget.getPriority()].indexOf(pTarget);
+			this._pPrioritisedRenderTargets[pTarget.getPriority()].splice(i, 1);
 
 			return true;
 		}

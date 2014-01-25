@@ -67,7 +67,7 @@ module akra.scene.light {
 		}
 
 		_optimizeProjectionMatrix(pEffectiveCameraFrustum: IFrustum): void {
-			if (this._pAffectedObjects.length == 0) {
+			if (this._pAffectedObjects.getLength() == 0) {
 				this._m4fOptimizedProj.set(this.getProjectionMatrix());
 				return;
 			}
@@ -96,7 +96,7 @@ module akra.scene.light {
 
 			var fTmp: float;
 
-			for (var i: int = 0; i < pAffectedObjects.length; i++) {
+			for (var i: int = 0; i < pAffectedObjects.getLength(); i++) {
 				var pObject: ISceneObject = pAffectedObjects.value(i);
 
 				if (!pObject.getShadow()) {

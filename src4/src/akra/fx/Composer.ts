@@ -828,8 +828,8 @@ module akra.fx {
 			}
 
 			if (!isNull(pViewport)) {
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_FramebufferSize]] = Vec2.temp(pViewport.width, pViewport.height);
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewportSize]] = Vec2.temp(pViewport.actualWidth, pViewport.actualHeight);
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_FramebufferSize]] = Vec2.temp(pViewport.getWidth(), pViewport.getHeight());
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewportSize]] = Vec2.temp(pViewport.getActualWidth(), pViewport.getActualHeight());
 
 				var pCamera: ICamera = pViewport.getCamera();
 				if (!isNull(pCamera)) {
@@ -865,7 +865,7 @@ module akra.fx {
 				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureSize]] =
 				Vec2.temp(pLastTexture.getWidth(), pLastTexture.getHeight());
 				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureRatio]] =
-				Vec2.temp(this._pCurrentViewport.actualWidth / pLastTexture.getWidth(), this._pCurrentViewport.actualHeight / pLastTexture.getHeight());
+				Vec2.temp(this._pCurrentViewport.getActualWidth() / pLastTexture.getWidth(), this._pCurrentViewport.getActualHeight() / pLastTexture.getHeight());
 
 			}
 
@@ -948,10 +948,10 @@ module akra.fx {
 			var pRenderer: IRenderer = this._pEngine.getRenderer();
 
 			if (pRenderTechnique.hasPostEffect()) {
-				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
-					pEntry.viewport.actualHeight > this._pRenderTargetA.height) {
+				if (pEntry.viewport.getActualWidth() > this._pRenderTargetA.getWidth() ||
+					pEntry.viewport.getActualHeight()  > this._pRenderTargetA.getHeight()) {
 
-					this.resizePostEffectTextures(pEntry.viewport.actualWidth, pEntry.viewport.actualHeight);
+					this.resizePostEffectTextures(pEntry.viewport.getActualWidth(), pEntry.viewport.getActualHeight());
 				}
 
 				if (pRenderTechnique.isFirstPass(iPass)) {
@@ -962,8 +962,7 @@ module akra.fx {
 
 					var pViewportState: IViewportState = pRenderViewport._getViewportState();
 					this._pPostEffectViewport.setDimensions(0., 0.,
-						pRenderViewport.actualWidth / this._pRenderTargetA.width,
-						pRenderViewport.actualHeight / this._pRenderTargetA.height);
+						pRenderViewport.getActualWidth() / this._pRenderTargetA.getWidth(), pRenderViewport.getActualHeight() / this._pRenderTargetA.getHeight());
 					this._pPostEffectViewport.setDepthParams(pViewportState.depthTest, pViewportState.depthWrite, pViewportState.depthFunction);
 					this._pPostEffectViewport.setCullingMode(pViewportState.cullingMode);
 

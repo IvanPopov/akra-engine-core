@@ -26,23 +26,27 @@ module akra {
 	}
 	
 	export interface IViewport extends IEventProvider, IClickable {
-		left: float;
-		top: float;
-		width: float;
-		height: float;
+		getLeft(): float;
+		getTop(): float;
+		getWidth(): float;
+		getHeight(): float;
 
 		//in pixels
-		actualLeft: uint;
-		actualTop: uint;
-		actualWidth: uint;
-		actualHeight: uint;
+		getActualLeft(): uint;
+		getActualTop(): uint;
+		getActualWidth(): uint;
+		getActualHeight(): uint;
 
-		zIndex: int;
+		getZIndex(): int;
 
-		backgroundColor: IColor;
-		depthClear: float;
+		getType(): EViewportTypes;
 
-		type: EViewportTypes;
+		getBackgroundColor(): IColor;
+		setBackgroundColor(cColor: IColor): void;
+
+		getDepthClear(): float;
+		setDepthClear(fDepth: float): void;
+
 
 		viewportDimensionsChanged: ISignal<{ (pViewport: IViewport): void; }>;
 		viewportCameraChanged: ISignal<{ (pViewport: IViewport): void; }>;

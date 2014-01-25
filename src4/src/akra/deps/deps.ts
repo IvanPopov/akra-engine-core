@@ -395,7 +395,7 @@ module akra.deps {
 	}
 
 	function createARADLocalName(sFilename: string, sEntry: string): string {
-		return "filesystem:" + info.uri.scheme + "//" + info.uri.host + "/temporary/" + sEntry + "/" + sFilename;
+		return "filesystem:" + info.uri.getScheme() + "//" + info.uri.getHost() + "/temporary/" + sEntry + "/" + sFilename;
 	}
 
 	function extractARADependence(pEntry: ZipEntry, sHash: string, fnCallback: Function): void {

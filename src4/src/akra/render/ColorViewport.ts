@@ -17,7 +17,9 @@ module akra.render {
 			return this._pGuidToColorMap;
 		}
 
-		get type(): EViewportTypes { return EViewportTypes.COLORVIEWPORT; }
+		getType(): EViewportTypes {
+			return EViewportTypes.COLORVIEWPORT;
+		}
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
 			super(pCamera, DEFAULT_COLORPICKER_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -27,7 +29,7 @@ module akra.render {
 			var pVisibleObjects: IObjectArray<ISceneObject> = this.getCamera().display();
 			var pRenderable: IRenderableObject;
 			
-			for(var i: int = 0; i < pVisibleObjects.length; ++ i){
+			for (var i: int = 0; i < pVisibleObjects.getLength(); ++ i){
 				pVisibleObjects.value(i).prepareForRender(this);
 			}
 
@@ -44,7 +46,7 @@ module akra.render {
 			var r = 1;
 			var s = 1;
 
-			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
+			for (var i: int = 0; i < pVisibleObjects.getLength(); ++ i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 				
 				this._pGuidToColorMap[pSceneObject.guid] = s;

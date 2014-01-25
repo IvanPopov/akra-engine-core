@@ -223,14 +223,14 @@ module akra.scene {
 
 				var pNodeList: IObjectList<IOcTreeNode> = pParentNode.childrenList[iWay];
 
-				if (pNodeList.length === 0) {
+				if (pNodeList.getLength() === 0) {
 					pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
 					pNodeList.push(pNode);
 					return pNode;
 				}
 
 				var iPosition: int = 0;
-				var pTestNode: IOcTreeNode = pNodeList.first;
+				var pTestNode: IOcTreeNode = pNodeList.getFirst();
 
 				var iTestMask: int = (iDepth >= i + 2) ? 1 << (iDepth - i - 2) : 0;
 
@@ -276,7 +276,7 @@ module akra.scene {
 							pNodeList.takeAt(iPosition);
 							if (iPosition === 0) {
 								pNodeList.seek(0);
-								pTestNode = pNodeList.first;
+								pTestNode = pNodeList.getFirst();
 								continue;
 							}
 							pNodeList.seek(iPosition - 1);
@@ -387,7 +387,7 @@ module akra.scene {
 		deleteNodeFromTree(pNode: IOcTreeNode): void {
 			var pParentNode: IOcTreeNode = pNode.rearNodeLink;
 
-			debug.assert(pNode.membersList.length == 0, "list members of node don't empty");
+			debug.assert(pNode.membersList.getLength() == 0, "list members of node don't empty");
 
 			var iDepth: int = this._iDepth;
 			var iParentLevel: int = pParentNode.level;
@@ -413,7 +413,7 @@ module akra.scene {
 
 			for (var i: uint = 0; i < 8; i++) {
 				var pChildrens: IObjectList<IOcTreeNode> = pNode.childrenList[i];
-				while (pChildrens.length > 0) {
+				while (pChildrens.getLength() > 0) {
 					var pChildNode: IOcTreeNode = pChildrens.pop();
 					pChildNode.rearNodeLink = pParentNode;
 					pParentBranch.push(pChildNode);
@@ -458,7 +458,7 @@ module akra.scene {
 				//надо проводить дополнительные тесты
 
 				var pMemberList: IObjectList<ISceneObject> = pNode.membersList;
-				var pObject: ISceneObject = pMemberList.first;
+					var pObject: ISceneObject = pMemberList.getFirst();
 				while (isDefAndNotNull(pObject)) {
 					if (geometry.intersect.rect3dRect3d(pSearchRect, pObject.getWorldBounds())) {
 						pResultList.push(pObject);
@@ -468,7 +468,7 @@ module akra.scene {
 
 				for (var i: int = 0; i < 8; i++) {
 					var pChildrenList: IObjectList<IOcTreeNode> = pNode.childrenList[i];
-					var pChildNode: IOcTreeNode = pChildrenList.first;
+					var pChildNode: IOcTreeNode = pChildrenList.getFirst();
 
 					while (isDefAndNotNull(pChildNode)) {
 						this._buildSearchResultsByRect(pSearchRect, pChildNode, pResultList);
@@ -497,7 +497,7 @@ module akra.scene {
 				else if (kTestResult == EVolumeClassifications.INTERSECTING) {
 					//объект попал частично
 					var pMemberList: IObjectList<ISceneObject> = pNode.membersList;
-					var pObject: ISceneObject = pMemberList.first;
+					var pObject: ISceneObject = pMemberList.getFirst();
 					while (isDefAndNotNull(pObject)) {
 						if (pFrustum.testRect(pObject.getWorldBounds())) {
 							pResultList.push(pObject);
@@ -508,7 +508,7 @@ module akra.scene {
 					for (var i: int = 0; i < 8; i++) {
 						//TODO: test by child rect
 						var pChildrenList: IObjectList<IOcTreeNode> = pNode.childrenList[i];
-						var pChildNode: IOcTreeNode = pChildrenList.first;
+						var pChildNode: IOcTreeNode = pChildrenList.getFirst();
 						while (isDefAndNotNull(pChildNode)) {
 							this._buildSearchResultsByRectAndFrustum(pSearchRect, pFrustum, pChildNode, pResultList);
 							pChildNode = pChildrenList.next();
@@ -521,7 +521,7 @@ module akra.scene {
 		protected _includeAllTreeSubbranch(pNode: IOcTreeNode, pResultList: IObjectArray<ISceneObject>) {
 			//console.warn("----------------> including all subbranch <------------------");
 			var pMemberList: IObjectList<ISceneObject> = pNode.membersList;
-			var pObject: ISceneObject = pMemberList.first;
+			var pObject: ISceneObject = pMemberList.getFirst();
 
 			while (isDefAndNotNull(pObject)) {
 				pResultList.push(pObject);
@@ -530,7 +530,7 @@ module akra.scene {
 
 			for (var i: int = 0; i < 8; i++) {
 				var pChildrenList: IObjectList<IOcTreeNode> = pNode.childrenList[i];
-				var pChildNode: IOcTreeNode = pChildrenList.first;
+				var pChildNode: IOcTreeNode = pChildrenList.getFirst();
 
 				while (isDefAndNotNull(pChildNode)) {
 					this._includeAllTreeSubbranch(pChildNode, pResultList);
@@ -567,7 +567,7 @@ module akra.scene {
 
 
 			var pMemberList: IObjectList<ISceneObject> = pNode.membersList;
-			var pObject: ISceneObject = pMemberList.first;
+			var pObject: ISceneObject = pMemberList.getFirst();
 			while (isDefAndNotNull(pObject)) {
 				pResult.members.push(pObject.getWorldBounds().toString());
 				pObject = pMemberList.next();
@@ -575,7 +575,7 @@ module akra.scene {
 
 			for (var i: int = 0; i < 8; i++) {
 				var pList: IObjectList<IOcTreeNode> = pNode.childrenList[i];
-				var pChildNode: IOcTreeNode = pList.first;
+				var pChildNode: IOcTreeNode = pList.getFirst();
 
 				while (isDefAndNotNull(pChildNode)) {
 					pResult.childrens[i].push(this._toSimpleObject(pChildNode));

@@ -71,8 +71,8 @@ module akra.webgl {
 		}
 
 		isCompatible(pTarget: IRenderTarget): boolean {
-			if( this._iWidth >= pTarget.width &&
-				this._iHeight >= pTarget.height ){
+			if( this._iWidth >= pTarget.getWidth() &&
+				this._iHeight >= pTarget.getHeight() ){
 				return true;
 			}
 

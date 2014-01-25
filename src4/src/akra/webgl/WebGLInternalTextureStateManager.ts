@@ -61,7 +61,7 @@ module akra.webgl {
 		}
 
 		reset(): void {
-			var iLength: uint = this._pActiveTextureList.length;
+			var iLength: uint = this._pActiveTextureList.getLength();
 
 			for(var i: uint = 0; i < iLength; i++){
 				var pTextureState: WebGLInternalTextureState = this._pActiveTextureStateMap[this._pActiveTextureList.value(i)];

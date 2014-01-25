@@ -61,17 +61,37 @@ module akra.render {
 		//3d event handing
 		private _i3DEvents: int = 0;
 
-		get name(): string { return this._sName; }
-		set name(sName: string) { this._sName = sName; }
+		getWidth(): uint {
+			return this._iWidth;
+		}
 
-		get width(): uint { return this._iWidth; }
-		get height(): uint { return this._iHeight; }
-		get colorDepth(): int { return this._iColorDepth; }
+		getHeight(): uint {
+			return this._iHeight;
+		}
 
-		get totalViewports(): uint { return this._pViewportList.length; }
-		get totalFrames(): uint { return this._iFrameCount; }
+		getColorDepth(): int {
+			return this._iColorDepth;
+		}
 
-		get priority(): uint { return this._iPriority; }
+		getTotalViewports(): uint {
+			return this._pViewportList.length;
+		}
+
+		getTotalFrames(): uint {
+			return this._iFrameCount;
+		}
+
+		getPriority(): uint {
+			return this._iPriority;
+		}
+
+		getName(): string {
+			return this._sName;
+		}
+
+		setName(sName: string) {
+			this._sName = sName;
+		}
 
 		constructor(pRenderer: IRenderer) {
 			this._pRenderer = pRenderer;
@@ -255,7 +275,7 @@ module akra.render {
 				return null;
 			}
 
-			var iZIndex: int = pViewport.zIndex;
+			var iZIndex: int = pViewport.getZIndex();
 
 			if (isDefAndNotNull(this._pViewportList[iZIndex])) {
 				logger.critical("Can't create another viewport for %s with Z-index %s \
@@ -347,7 +367,7 @@ module akra.render {
 			pStats.time.worst = 0;
 
 			//FIXME: get right time!!!
-			this._fLastTime = this._pTimer.appTime;
+			this._fLastTime = this._pTimer.getAppTime();
 			this._fLastSecond = this._fLastTime;
 			this._iFrameCount = 0;
 		}
@@ -355,7 +375,7 @@ module akra.render {
 		updateStats(): void {
 			this._iFrameCount++;
 
-			var fThisTime: float = this._pTimer.appTime;
+			var fThisTime: float = this._pTimer.getAppTime();
 
 			var fFrameTime: float = fThisTime - this._fLastTime;
 

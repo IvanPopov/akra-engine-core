@@ -51,7 +51,7 @@ module akra.io {
 		}
 
 		getName(): string {
-			return path.parse(this._pUri.path).getBaseName();
+			return path.parse(this._pUri.getPath()).getBaseName();
 		}
 
 		getMeta(): IFileMeta {
@@ -336,7 +336,7 @@ module akra.io {
 
 			logger.assert(!pName.getDirName(), 'only filename can be specified.');
 
-			this.move(path.parse(this._pUri.path).getDirName() + "/" + pName.getBaseName(), fnCallback);
+			this.move(path.parse(this._pUri.getPath()).getDirName() + "/" + pName.getBaseName(), fnCallback);
 		}
 
 		remove(fnCallback: Function = TFile.defaultCallback): void {
@@ -411,13 +411,13 @@ module akra.io {
 			var pUri: IURI = uri.parse(sFilename);
 			var pUriLocal: IURI;
 
-			if (pUri.scheme === "filesystem:") {
-				pUriLocal = uri.parse(pUri.path);
+			if (pUri.getScheme() === "filesystem:") {
+				pUriLocal = uri.parse(pUri.getPath());
 				// console.log(pUriLocal.toString());
-				logger.assert(!(pUriLocal.protocol && pUriLocal.host != info.uri.host),
+				logger.assert(!(pUriLocal.getProtocol() && pUriLocal.getHost() != info.uri.getHost()),
 					"It supports only local files within the current domain.");
 
-				var pFolders: string[] = pUriLocal.path.split('/');
+				var pFolders: string[] = pUriLocal.getPath().split('/');
 
 
 				if (pFolders[0] == "" || pFolders[0] == ".") {

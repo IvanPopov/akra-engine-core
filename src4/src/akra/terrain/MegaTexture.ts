@@ -85,6 +85,14 @@ module akra.terrain {
 
 		private _bStreaming: boolean = false;
 
+		getManualMinLevelLoad(): boolean {
+			return this._bManualMinLevelLoad;
+		}
+
+		setManualMinLevelLoad(bManual: boolean): void {
+			this._bManualMinLevelLoad = bManual;
+		}
+
 		constructor(pEngine: IEngine) {
 			this._pEngine = pEngine;
 		}
@@ -207,14 +215,6 @@ module akra.terrain {
 			this._bStreaming = false;
 		}
 
-		set manualMinLevelLoad(bManual: boolean) {
-			this._bManualMinLevelLoad = bManual;
-		}
-
-		get manualMinLevelLoad(): boolean {
-			return this._bManualMinLevelLoad;
-		}
-
 		private _bError: boolean = false;
 		private _tLastTime: float = 0;
 		prepareForRender(pViewport: IViewport): void {
@@ -232,7 +232,7 @@ module akra.terrain {
 				return;
 			}
 
-			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+			var tCurrentTime: uint = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
 
 			if(tCurrentTime - this._tLastTime < 30){
 				return;
@@ -517,7 +517,7 @@ module akra.terrain {
 			var me: MegaTexture = this;
 			var sExt: string = "dds";
 
-			this._pSectorLoadInfo[0][0] = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+			this._pSectorLoadInfo[0][0] = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
 			this._iTryCount++;
 
 			if(this._iTryCount > 5){
@@ -589,7 +589,7 @@ module akra.terrain {
 			iAreaEndY = math.min(iAreaEndY, this.getHeightOrig(iLevelTex));
 
 			var isLoaded: boolean = true;
-			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+			var tCurrentTime: uint = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
 
 			for (var i: uint = iOrigTexY; i < iOrigTexEndY; i += iBlockSize) {
 				for (var j: uint = iOrigTexX; j < iOrigTexEndX; j += iBlockSize) {

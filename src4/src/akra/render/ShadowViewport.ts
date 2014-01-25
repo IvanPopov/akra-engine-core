@@ -8,14 +8,16 @@ module akra.render {
 
 	export class ShadowViewport extends Viewport implements IViewport {
 
-		get type(): EViewportTypes { return EViewportTypes.SHADOWVIEWPORT; }
+		getType(): EViewportTypes {
+			return EViewportTypes.SHADOWVIEWPORT;
+		}
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, DEFAULT_SHADOW_TECHNIQUE_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
 
 			this.setClearEveryFrame(true, EFrameBufferTypes.DEPTH);
 			this.setDepthParams(true, true, ECompareFunction.LESS);
-			this.depthClear = 1.;
+			this.setDepthClear(1.);
 		}
 
 		_updateImpl(): void {
@@ -28,7 +30,7 @@ module akra.render {
 
 			var nShadowsCasted: uint = 0;
 
-			for (var i: int = 0; i < pAffectedObjects.length; i++) {
+			for (var i: int = 0; i < pAffectedObjects.getLength(); i++) {
 				pSceneObject = pAffectedObjects.value(i);
 
 				if (pSceneObject.getShadow()) {

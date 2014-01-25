@@ -74,7 +74,7 @@ module akra.core {
 		private _fElapsedAppTime: float = 0.0;
 
 		getTime(): float {
-			return this._pTimer.appTime;
+			return this._pTimer.getAppTime();
 		}
 
 		getElapsedTime(): float {
@@ -242,7 +242,7 @@ module akra.core {
 		getTimer(): IUtilTimer { return <IUtilTimer>this._pTimer; }
 
 		renderFrame(): boolean {
-		    this._fElapsedAppTime = this._pTimer.elapsedTime;
+		    this._fElapsedAppTime = this._pTimer.getElapsedTime();
 
 		    if (0. == this._fElapsedAppTime && this._isFrameMoving) {
 		        return true;

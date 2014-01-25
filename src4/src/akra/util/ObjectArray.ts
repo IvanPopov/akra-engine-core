@@ -8,7 +8,7 @@ module akra.util {
         protected _bLock: boolean = false;
         protected _iLength: uint = 0;
 
-        get length(): uint {
+        getLength(): uint {
             return this._iLength;
         }
 
@@ -127,7 +127,7 @@ module akra.util {
         takeAt(iPos): T {
             var pValue: T = this.value(iPos);
 
-            for (var i = iPos + 1, j = iPos; i < this.length; ++i, ++j) {
+            for (var i = iPos + 1, j = iPos; i < this.getLength(); ++i, ++j) {
                 this._pData[j] = this._pData[i];
             }
 

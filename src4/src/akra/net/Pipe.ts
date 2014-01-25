@@ -60,10 +60,10 @@ module akra.net {
 			}
 
 			// pipe to websocket
-			if (pAddr.protocol.toLowerCase() === "ws") {
+			if (pAddr.getProtocol().toLowerCase() === "ws") {
 				//unknown port
-				if (!(pAddr.port > 0)) {
-					pAddr.port = WEBSOCKET_PORT;
+				if (!(pAddr.getPort() > 0)) {
+					pAddr.setPort(WEBSOCKET_PORT);
 				}
 
 				//websocket unsupported
@@ -78,7 +78,7 @@ module akra.net {
 				pSocket.binaryType = "arraybuffer";
 				eType = EPipeTypes.WEBSOCKET;
 			}
-			else if (path.parse(pAddr.path).getExt().toLowerCase() === "js") {
+			else if (path.parse(pAddr.getPath()).getExt().toLowerCase() === "js") {
 				if (!isDefAndNotNull(Worker)) {
 					logger.error("Your browser does not support webworker api.");
 					return false;

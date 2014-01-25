@@ -2,7 +2,7 @@ module akra {
 	/** ObjectArray export interface */
 	export interface IObjectArray<T> {
 		/** number of element in array */
-		length: uint;
+		getLength(): uint;
 	
 		/** lock array for writing */
 		lock(): void;

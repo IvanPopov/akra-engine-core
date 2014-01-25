@@ -30,11 +30,11 @@ module akra.render {
 
 		execute(bSort: boolean = false): void {
 			this._pRenderer._beginRender();
-			if (bSort && this._pEntryList.length > 0) {
-				this.quickSortQueue(0, this._pEntryList.length - 1);
+			if (bSort && this._pEntryList.getLength() > 0) {
+				this.quickSortQueue(0, this._pEntryList.getLength() - 1);
 			}
 
-			for (var i: int = 0; i < this._pEntryList.length; i++) {
+			for (var i: int = 0; i < this._pEntryList.getLength(); i++) {
 				var pEntry: IRenderEntry = this._pEntryList.value(i);
 
 
@@ -83,7 +83,7 @@ module akra.render {
 		}
 
 		static createEntry(): IRenderEntry {
-			return RenderQueue.pool.length > 0 ? RenderQueue.pool.pop() : new RenderEntry;
+			return RenderQueue.pool.getLength() > 0 ? RenderQueue.pool.pop() : new RenderEntry;
 		}
 
 		static releaseEntry(pEntry: IRenderEntry): void {

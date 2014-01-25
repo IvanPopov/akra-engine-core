@@ -37,16 +37,12 @@ module akra.render {
 
 		protected static pRenderMethodPassStatesPool: IObjectArray<IAFXPassInputStateInfo> = new util.ObjectArray<IAFXPassInputStateInfo>();
 
-		get modified(): uint {
+		getModified(): uint {
 			return this.guid;
 		}
 
-		get totalPasses(): uint {
+		getTotalPasses(): uint {
 			return this._pComposer.getTotalPassesForTechnique(this);
-		}
-
-		get data(): IAFXComponentBlend {
-			return null;
 		}
 
 		constructor(pMethod: IRenderMethod = null) {
@@ -214,7 +210,7 @@ module akra.render {
 		}
 
 		isLastPass(iPass: uint): boolean {
-			var iMaxPass: uint = this.totalPasses - 1;
+			var iMaxPass: uint = this.getTotalPasses() - 1;
 
 			if (iMaxPass === iPass) {
 				return true;
@@ -268,7 +264,7 @@ module akra.render {
 		updatePasses(bSaveOldUniformValue: boolean): void {
 			this._isFreeze = true;
 
-			var iTotalPasses: uint = this.totalPasses;
+			var iTotalPasses: uint = this.getTotalPasses();
 
 			for (var i: uint = this._pPassList.length; i < iTotalPasses; i++) {
 				if (!isDef(this._pPassBlackList[i]) || this._pPassBlackList[i] === false) {
@@ -319,7 +315,7 @@ module akra.render {
 
 			this.takePassInputsFromRenderMethod();
 
-			var iTotalPasses: uint = this.totalPasses;
+			var iTotalPasses: uint = this.getTotalPasses();
 			for (var i: uint = 0; i < iTotalPasses; i++) {
 				if (this._pPassBlackList[i] === false && this._pPassList[i].isActive()) {
 					this.activatePass(i);
@@ -357,7 +353,7 @@ module akra.render {
 		}
 
 		private prepareRenderMethodPassStateInfo(pMethod: IRenderMethod): void {
-			var iLength: uint = this._pRenderMethodPassStateList.length;
+			var iLength: uint = this._pRenderMethodPassStateList.getLength();
 
 			for (var i: uint = 0; i < iLength; i++) {
 				this.freePassState(this._pRenderMethodPassStateList.value(i));
@@ -404,7 +400,7 @@ module akra.render {
 				}
 
 				var pOldStates: IAFXPassInputStateInfo = this._pRenderMethodPassStateList.value(i);
-				var pCurrentStates: IAFXPassInputStateInfo = pRenderMethodPassInput.statesInfo;
+				var pCurrentStates: IAFXPassInputStateInfo = pRenderMethodPassInput.getStatesInfo();
 
 				if (pOldStates.uniformKey !== pCurrentStates.uniformKey) {
 					pPassInput._copyUniformsFromInput(pRenderMethodPassInput);
@@ -434,7 +430,7 @@ module akra.render {
 		}
 
 		private getFreePassState(): IAFXPassInputStateInfo {
-			if (RenderTechnique.pRenderMethodPassStatesPool.length > 0) {
+			if (RenderTechnique.pRenderMethodPassStatesPool.getLength() > 0) {
 				return RenderTechnique.pRenderMethodPassStatesPool.pop();
 			}
 			else {

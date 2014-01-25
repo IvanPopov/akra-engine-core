@@ -44,14 +44,14 @@ module akra.control {
 			}, false);
 
 			window.addEventListener('MozGamepadDisconnected', (e: GamepadEvent) => {
-				for (var i: int = 0; i < pCollection.length; ++i) {
+				for (var i: int = 0; i < pCollection.getLength(); ++i) {
 					if (<int>pCollection.value(i).index == e.gamepad.index) {
 						this.disconnected.emit(pCollection.takeAt(i));
 						break;
 					}
 				}
 
-				if (pCollection.length == 0) {
+				if (pCollection.getLength() === 0) {
 					this.stopPolling();
 				}
 			}, false);
@@ -85,7 +85,7 @@ module akra.control {
 			}
 
 			if (!isNull(sID)) {
-				for (i = 0; i < this._pCollection.length; ++i) {
+				for (i = 0; i < this._pCollection.getLength(); ++i) {
 					if (this._pCollection.value(i).id == sID) {
 						return this._pCollection.value(i);
 					}
@@ -117,7 +117,7 @@ module akra.control {
 
 			this.pollGamepads();
 
-			for (var i = 0; i < this._pCollection.length; ++i) {
+			for (var i = 0; i < this._pCollection.getLength(); ++i) {
 				var pGamepad: Gamepad = this._pCollection.value(i);
 
 				if (pGamepad.timestamp && (pGamepad.timestamp == this._pPrevTimestamps[i])) {

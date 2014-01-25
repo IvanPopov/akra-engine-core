@@ -13,7 +13,9 @@ module akra.render {
 		private _pEffect: IEffect;
 		private _v4fMapping: IVec4 = new Vec4(0., 0., 1., 1.);
 
-		get type(): EViewportTypes { return EViewportTypes.TEXTUREVIEWPORT; }
+		getType(): EViewportTypes {
+			return EViewportTypes.TEXTUREVIEWPORT; 
+		}
 
 		constructor(pTexture: ITexture, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(null, DEFAULT_TEXTUREVIEW_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -21,7 +23,7 @@ module akra.render {
 			this._pTargetTexture = pTexture;
 		}
 
-		get effect(): IEffect {
+		getEffect(): IEffect {
 			return this._pEffect;
 		}
 

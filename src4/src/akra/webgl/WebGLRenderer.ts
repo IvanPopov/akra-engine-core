@@ -70,8 +70,6 @@ module akra.webgl {
 	}
 
 	export class WebGLRenderer extends render.Renderer {
-		type: ERenderers = ERenderers.WEBGL;
-
 		private _pCanvas: HTMLCanvasElement = null;
 
 		private _pWebGLContext: WebGLRenderingContext;
@@ -105,6 +103,10 @@ module akra.webgl {
 			antialias: false,
 			preserveDrawingBuffer: false
 		};
+
+		getType(): ERenderers {
+			return ERenderers.WEBGL;
+		}
 
 		constructor (pEngine: IEngine);
 		constructor (pEngine: IEngine, sCanvas: string);
@@ -638,14 +640,14 @@ module akra.webgl {
 
 			var isNeedPopRenderStates: boolean = this.applyInputRenderStates(pInput.renderStates);
 
-			var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>(pMaker).shaderProgram;
+			var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>(pMaker).getShaderProgram();
 
 			this.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
 			this.enableWebGLVertexAttribs(pWebGLProgram.totalAttributes);
 
 			var pAttribLocations: IMap<int> = pWebGLProgram._getActiveAttribLocations();
-			var pAttributeInfo: IAFXBaseAttrInfo[] = pMaker.attributeInfo;
+			var pAttributeInfo: IAFXBaseAttrInfo[] = pMaker.getAttributeInfo();
 
 			var pBufferMap: IBufferMap = pEntry.bufferMap;
 
@@ -682,7 +684,7 @@ module akra.webgl {
 									pVertexElement.offset);
 			}
 
-			var pUniformNames: string[] = pMaker.uniformNames;
+			var pUniformNames: string[] = pMaker.getUniformNames();
 
 			for (var i: uint = 0; i < pUniformNames.length; i++) {
 				pMaker.setUniform(i, pInput.uniforms[i]);
@@ -718,10 +720,10 @@ module akra.webgl {
 				if(isViewportUpdate){
 					this._pActiveViewport = pViewport;
 
-					var x: uint = pViewport.actualLeft,
-						y: uint = pViewport.actualTop,
-						w: uint = pViewport.actualWidth,
-						h: uint = pViewport.actualHeight;
+					var x: uint = pViewport.getActualLeft(),
+						y: uint = pViewport.getActualTop(),
+						w: uint = pViewport.getActualWidth(),
+						h: uint = pViewport.getActualHeight();
 
 					this._pWebGLContext.viewport(x, y, w, h);
 					this._pWebGLContext.scissor(x, y, w, h);
@@ -997,7 +999,7 @@ module akra.webgl {
 		}
 
 		_popRenderStates(isForce: boolean): void {
-			if(this._pRenderStatesPool.length === 0) {
+			if (this._pRenderStatesPool.getLength() === 0) {
 				debug.warn("Can not pop context render states. Pool of context is empty.");
 			}
 
@@ -1296,7 +1298,7 @@ module akra.webgl {
 		}
 
 		private getFreeRenderStates(): IWebGLContextStates {
-			if(this._pFreeRenderStatesPool.length > 0){
+			if (this._pFreeRenderStatesPool.getLength() > 0){
 				return this._pFreeRenderStatesPool.pop();
 			}
 			else {

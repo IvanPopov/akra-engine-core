@@ -19,11 +19,11 @@ module akra.fx {
 		protected _pIdToSlotMap: IMap<int> = null;
 		protected _pIdList: uint[] = null;
 
-		get slots(): ObjectArray<IAFXVariableDeclInstruction>[] {
+		getSlots(): ObjectArray<IAFXVariableDeclInstruction>[] {
 			return this._pSlotList;
 		}
 
-		get totalActiveSlots(): uint {
+		getTotalActiveSlots(): uint {
 			return this._nActiveSlots;
 		}
 
@@ -41,7 +41,7 @@ module akra.fx {
 		}
 
 		getSamplersBySlot(iSlot: uint): ObjectArray<IAFXVariableDeclInstruction> {
-			return this.slots[iSlot];
+			return this.getSlots()[iSlot];
 		}
 
 		clear(): void {
@@ -58,7 +58,7 @@ module akra.fx {
 
 		clearSamplerNames(): void {
 			for (var i: uint = 0; i < this._nActiveSlots; i++) {
-				for (var j: uint = 0; j < this._pSlotList[i].length; j++) {
+				for (var j: uint = 0; j < this._pSlotList[i].getLength(); j++) {
 					var pSampler: IAFXVariableDeclInstruction = this._pSlotList[i].value(j);
 					pSampler.setRealName(pSampler.getSemantic() || pSampler.getName());
 					pSampler.defineByZero(false);
@@ -95,14 +95,14 @@ module akra.fx {
 			for (var i: uint = 0; i < this._nActiveSlots; i++) {
 				var pBlend: ObjectArray<IAFXVariableDeclInstruction> = this._pSlotList[i];
 
-				if (pBlend.length > 0) {
+				if (pBlend.getLength() > 0) {
 					if (i === 0) {
 						sHash += "Z";
 					}
 
-                    for (var j: uint = 0; j < pBlend.length; j++) {
-                        sHash += pBlend.value(j).getGuid().toString() + ".";
-                    }
+					for (var j: uint = 0; j < pBlend.getLength(); j++) {
+						sHash += pBlend.value(j).getGuid().toString() + ".";
+					}
 
 					sHash += ".";
 				}

@@ -47,15 +47,15 @@ module akra.fx {
 
 		protected _sHash: string = "";
 
-		get attrsInfo(): IAFXVariableBlendInfo[] {
-			return this.varsInfo;
+		getAttrsInfo(): IAFXVariableBlendInfo[] {
+			return this.getVarsInfo();
 		}
 
-		get totalSlots(): uint {
+		getTotalSlots(): uint {
 			return this._nSlots;
 		}
 
-		get totalBufferSlots(): uint {
+		getTotalBufferSlots(): uint {
 			return this._nBufferSlots;
 		}
 
@@ -137,7 +137,7 @@ module akra.fx {
 		}
 
 		finalize(): void {
-			this._nSemantics = this.attrsInfo.length;
+			this._nSemantics = this.getAttrsInfo().length;
 
 			this._pSlotBySemanticIndex = new Array(this._nSemantics);
 			this._pTypeInfoBySemanticIndex = new Array<AITypeInfo>(this._nSemantics);
@@ -170,7 +170,7 @@ module akra.fx {
 			this._pOffsetVarsBySemanticMap = <AIAFXVaribaleListMap>{};
 			this._pOffsetDefaultMap = <IMap<int>>{};
 
-			var pAttrs: IAFXVariableBlendInfo[] = this.attrsInfo;
+			var pAttrs: IAFXVariableBlendInfo[] = this.getAttrsInfo();
 
 			for (var i: uint = 0; i < pAttrs.length; i++) {
 				var pAttrInfo: IAFXVariableBlendInfo = pAttrs[i];
@@ -216,7 +216,7 @@ module akra.fx {
 				return;
 			}
 
-			var pAttrs: IAFXVariableBlendInfo[] = this.attrsInfo;
+			var pAttrs: IAFXVariableBlendInfo[] = this.getAttrsInfo();
 			var iHash: uint = 0;
 
 			for (var i: uint = 0; i < pAttrs.length; i++) {

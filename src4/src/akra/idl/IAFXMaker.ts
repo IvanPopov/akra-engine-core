@@ -16,9 +16,9 @@ module akra {
 	}
 	
 	export interface IAFXMaker extends IUnique {
-		shaderProgram: IShaderProgram;
-		uniformNames: string[];
-		attributeInfo: IAFXBaseAttrInfo[];
+		getShaderProgram(): IShaderProgram;
+		getUniformNames(): string[];
+		getAttributeInfo(): IAFXBaseAttrInfo[];
 	
 		_create(sVertex: string, sPixel: string): boolean;
 		

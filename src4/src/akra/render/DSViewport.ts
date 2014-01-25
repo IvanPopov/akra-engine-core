@@ -63,18 +63,19 @@ module akra.render {
 		private _pHighlightedObject: IRIDPair = {object: null, renderable: null};
 
 
-		get type(): EViewportTypes { return EViewportTypes.DSVIEWPORT; }
+		getType(): EViewportTypes {
+			return EViewportTypes.DSVIEWPORT;
+		}
 
-
-		get effect(): IEffect {
+		getEffect(): IEffect {
 			return this._pDeferredEffect;
 		}
 
-		get depth(): ITexture {
+		getDepthTexture(): ITexture {
 			return this._pDeferredDepthTexture;
 		}
 
-		get view(): IRenderableObject {
+		getView(): IRenderableObject {
 			return this._pDeferredView;
 		}
 
@@ -101,8 +102,8 @@ module akra.render {
 			var iGuid: int = this.guid;
 
 			//Float point texture must be power of two.
-			var iWidth: uint = math.ceilingPowerOfTwo(this.actualWidth);
-			var iHeight: uint = math.ceilingPowerOfTwo(this.actualHeight);
+			var iWidth: uint = math.ceilingPowerOfTwo(this.getActualWidth());
+			var iHeight: uint = math.ceilingPowerOfTwo(this.getActualHeight());
 
 			//detect max texture resolution correctly
 			if (config.WEBGL) {
@@ -129,7 +130,7 @@ module akra.render {
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
 				pDeferredData[i].setAutoUpdated(false);
 				pViewport = pDeferredData[i].addViewport(new Viewport(this.getCamera(), "deferred_shading_pass_" + i, 
-					0, 0, this.actualWidth / pDeferredTextures[i].getWidth(), this.actualHeight / pDeferredTextures[i].getHeight()));
+					0, 0, this.getActualWidth() / pDeferredTextures[i].getWidth(), this.getActualHeight() / pDeferredTextures[i].getHeight()));
 				pDeferredData[i].attachDepthTexture(pDepthTexture);
 
 				if (i === 1) {
@@ -180,11 +181,11 @@ module akra.render {
 			var pDeferredTextures: ITexture[] = this._pDeferredColorTextures;
 
 			if (isDefAndNotNull(this._pDeferredDepthTexture)) {
-				this._pDeferredDepthTexture.reset(math.ceilingPowerOfTwo(this.actualWidth), math.ceilingPowerOfTwo(this.actualHeight));
+				this._pDeferredDepthTexture.reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
 				for (var i = 0; i < 2; ++ i) {
-					pDeferredTextures[i].reset(math.ceilingPowerOfTwo(this.actualWidth), math.ceilingPowerOfTwo(this.actualHeight));
+					pDeferredTextures[i].reset(math.ceilingPowerOfTwo(this.getActualWidth()), math.ceilingPowerOfTwo(this.getActualHeight()));
 					pDeferredTextures[i].getBuffer().getRenderTarget().getViewport(0)
-						.setDimensions(0., 0., this.actualWidth / pDeferredTextures[i].getWidth(), this.actualHeight / pDeferredTextures[i].getHeight())
+						.setDimensions(0., 0., this.getActualWidth() / pDeferredTextures[i].getWidth(), this.getActualHeight() / pDeferredTextures[i].getHeight())
 				}
 			}
 
@@ -207,7 +208,7 @@ module akra.render {
 			//TODO: Display techniques return sceneNodes, LightPoints and SceneObjects
 			var pLights: IObjectArray<ILightPoint> = <IObjectArray<any>>this.getCamera().display(Scene3d.DL_LIGHTING);
 			
-			for (var i: int = 0; i < pLights.length; i++) {
+			for (var i: int = 0; i < pLights.getLength(); i++) {
 				pLights.value(i)._calculateShadows();
 			}
 
@@ -224,7 +225,7 @@ module akra.render {
 		prepareForDeferredShading(): void {
 			var pNodeList: IObjectArray<ISceneObject> = this.getCamera().display();
 
-			for (var i: int = 0; i < pNodeList.length; ++ i) {
+			for (var i: int = 0; i < pNodeList.getLength(); ++ i) {
 				var pSceneObject: ISceneObject = pNodeList.value(i);
 
 				for (var k: int = 0; k < pSceneObject.getTotalRenderable(); k++) {
@@ -235,7 +236,7 @@ module akra.render {
 						var sMethod: string = "deferred_shading_pass_" + j;
 						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
 
-						if (isNull(pTechnique) || pTechCurr.modified > pTechnique.modified) {
+						if (isNull(pTechnique) || pTechCurr.getModified() > pTechnique.getModified()) {
 							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethodByName(), sMethod)) {
 								logger.critical("cannot clone active render method");
 							}
@@ -252,7 +253,7 @@ module akra.render {
 								pTechnique._blockPass(0);
 							}
 
-							if (pTechnique.totalPasses > j) {
+							if (pTechnique.getTotalPasses() > j) {
 								var pPass: IRenderPass = pTechnique.getPass(j);
 								pPass.blend("akra.system.prepareForDeferredShading", j);
 							}
@@ -308,8 +309,8 @@ module akra.render {
 		}
 
 		_getDeferredTexValue(iTex: int, x: int, y: int): IColor {
-			logger.assert(x < this.actualWidth && y < this.actualHeight, 
-				"invalid pixel: {" + x + "(" + this.actualWidth + ")" + ", " + y + "(" + this.actualHeight + ")" + "}");
+			logger.assert(x < this.getActualWidth() && y < this.getActualHeight(), 
+				"invalid pixel: {" + x + "(" + this.getActualWidth() + ")" + ", " + y + "(" + this.getActualHeight() + ")" + "}");
 			
 			var pColorTexture: ITexture = this._pDeferredColorTextures[iTex];
 
@@ -327,7 +328,7 @@ module akra.render {
 		}
 
 		getDepth(x: int, y: int): float {
-			logger.assert(x < this.actualWidth && y < this.actualHeight, "invalid pixel: {" + x + ", " + y + "}");
+			logger.assert(x < this.getActualWidth() && y < this.getActualHeight(), "invalid pixel: {" + x + ", " + y + "}");
 			
 			var pDepthTexture: ITexture = this._pDeferredDepthTexture;
 
@@ -420,7 +421,7 @@ module akra.render {
 		}
 
 		isFXAA(): boolean {
-			return this.effect.hasComponent("akra.system.fxaa");
+			return this.getEffect().hasComponent("akra.system.fxaa");
 		}
 
 
@@ -477,7 +478,7 @@ module akra.render {
 					pPass.setUniform("SHADOW_CONSTANT", 5.e+2);
 
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
-						Vec2.temp(this.actualWidth / pDepthTexture.getWidth(), this.actualHeight / pDepthTexture.getHeight()));
+						Vec2.temp(this.getActualWidth() / pDepthTexture.getWidth(), this.getActualHeight() / pDepthTexture.getHeight()));
 
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setTexture("DEFERRED_TEXTURE1", pDeferredTextures[1]);
@@ -490,7 +491,7 @@ module akra.render {
 					pPass.setTexture("SKYBOX_TEXTURE", this._pDeferredSkyTexture);
 
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
-						Vec2.temp(this.actualWidth / pDepthTexture.getWidth(), this.actualHeight / pDepthTexture.getHeight()));
+						Vec2.temp(this.getActualWidth() / pDepthTexture.getWidth(), this.getActualHeight() / pDepthTexture.getHeight()));
 					//outline
 					var p: IRIDPair = this._pHighlightedObject;
 
@@ -504,7 +505,7 @@ module akra.render {
 
 					pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
 					pPass.setUniform("SCREEN_TEXTURE_RATIO",
-						Vec2.temp(this.actualWidth / pDepthTexture.getWidth(), this.actualHeight / pDepthTexture.getHeight()));
+						Vec2.temp(this.getActualWidth() / pDepthTexture.getWidth(), this.getActualHeight() / pDepthTexture.getHeight()));
 					break;
 				// case 2:
 				// 	pPass.setTexture("DEFERRED_TEXTURE0", pDeferredTextures[0]);
@@ -538,7 +539,7 @@ module akra.render {
 
 			this.resetUniforms();
 
-			for (i = 0; i < pLightPoints.length; i++) {
+			for (i = 0; i < pLightPoints.getLength(); i++) {
 				pLight = pLightPoints.value(i);
 
 				//all cameras in list already enabled

@@ -95,7 +95,7 @@ module akra.webgl {
 		create(sName: string = null, iWidth: uint = this._pCanvasCreationInfo.width, 
 				iHeight: uint = this._pCanvasCreationInfo.height, isFullscreen: boolean = false): boolean {
 			
-			this.name = sName;
+			this.setName(sName);
 
 			this.resize(iWidth, iHeight);
 			this.setFullscreen(isFullscreen);
@@ -113,7 +113,7 @@ module akra.webgl {
 				this.el.addEventListener("click", (e: MouseEvent): boolean => {
 					absorbEvent(e);
 					//0 --> 149, 149/150 --> 0
-					this.click.emit(e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					this.click.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -122,7 +122,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEMOVE> event handing");
 				this.el.addEventListener("mousemove", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mousemove.emit(e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					this.mousemove.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -131,7 +131,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEDOWN> event handing");
 				this.el.addEventListener("mousedown", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mousedown.emit(e.which, e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					this.mousedown.emit(e.which, e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -140,7 +140,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEUP> event handing");
 				this.el.addEventListener("mouseup", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mouseup.emit(e.which, e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					this.mouseup.emit(e.which, e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -149,7 +149,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEOVER> event handing");
 				this.el.addEventListener("mouseover", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mouseover.emit(e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					this.mouseover.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -158,7 +158,7 @@ module akra.webgl {
 				debug.log("WebGLCanvas activate <MOUSEOUT> event handing");
 				this.el.addEventListener("mouseout", (e: MouseEvent): boolean => {
 					absorbEvent(e);
-					this.mouseout.emit(e.offsetX, this.height - e.offsetY - 1/*, e*/);
+					this.mouseout.emit(e.offsetX, this.getHeight() - e.offsetY - 1/*, e*/);
 					return false;
 				}, true);
 			}
@@ -174,7 +174,7 @@ module akra.webgl {
 						return;
 					}
 
-					this.mousewheel.emit(e.offsetX, this.height - e.offsetY - 1, e.wheelDelta/*, e*/);
+					this.mousewheel.emit(e.offsetX, this.getHeight() - e.offsetY - 1, e.wheelDelta/*, e*/);
 					return false;
 				}, true);
 			}
@@ -263,7 +263,7 @@ module akra.webgl {
 		}
 
 		resize(iWidth: uint = this._iWidth, iHeight: uint = this._iHeight): void {
-			if (this.width === iWidth && this.height === iHeight) {
+			if (this.getWidth() === iWidth && this.getHeight() === iHeight) {
 				return;
 			}
 
@@ -347,9 +347,9 @@ module akra.webgl {
 			//finding top viewport, taht contains (x, y) point.
 			for (var z in this._pViewportList) {
 				var pVp: IViewport = this._pViewportList[z];
-				if (pVp.actualLeft <= x && pVp.actualTop <= y && 
-					pVp.actualLeft + pVp.actualWidth > x && pVp.actualTop + pVp.actualHeight > y) {
-					if (isNull(pViewport) || pVp.zIndex > pViewport.zIndex) {
+				if (pVp.getActualLeft() <= x && pVp.getActualTop() <= y && 
+					pVp.getActualLeft() + pVp.getActualWidth() > x && pVp.getActualTop() + pVp.getActualHeight() > y) {
+					if (isNull(pViewport) || pVp.getZIndex() > pViewport.getZIndex()) {
 						pViewport = pVp;
 					}
 				}
@@ -364,11 +364,11 @@ module akra.webgl {
 
 			if (pViewportPrev !== pViewportCurr) {
 				if (!isNull(pViewportPrev)) {
-					pViewportPrev.mouseout.emit(x - pViewportPrev.actualLeft, y - pViewportPrev.actualTop);
+					pViewportPrev.mouseout.emit(x - pViewportPrev.getActualLeft(), y - pViewportPrev.getActualTop());
 				}
 
 				if (!isNull(pViewportCurr)) {
-					pViewportCurr.mouseover.emit(x - pViewportCurr.actualLeft, y - pViewportCurr.actualTop);
+					pViewportCurr.mouseover.emit(x - pViewportCurr.getActualLeft(), y - pViewportCurr.getActualTop());
 				}
 			}
 
@@ -426,7 +426,7 @@ module akra.webgl {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
 			if (!isNull(pViewport)) {
-				pViewport.click.emit(x - pViewport.actualLeft, y - pViewport.actualTop);
+				pViewport.click.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 		}
 
@@ -434,7 +434,7 @@ module akra.webgl {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 			
 			if (!isNull(pViewport)) {
-				pViewport.mousemove.emit(x - pViewport.actualLeft, y - pViewport.actualTop);
+				pViewport.mousemove.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 
 			if (this.is3DEventSupported(E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP)) {
@@ -460,7 +460,7 @@ module akra.webgl {
 			this._p3DEventMouseDownPos.y = y;
 
 			if (!isNull(pViewport)) {
-				pViewport.mousedown.emit(eBtn, x - pViewport.actualLeft, y - pViewport.actualTop);
+				pViewport.mousedown.emit(eBtn, x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 			if (this.is3DEventSupported(E3DEventTypes.DRAGSTART) 
 				&& this._e3DEventDragBtn === EMouseButton.UNKNOWN) {
@@ -477,7 +477,7 @@ module akra.webgl {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
 			if (!isNull(pViewport)) {
-				pViewport.mouseup.emit(eBtn, x - pViewport.actualLeft, y - pViewport.actualTop);
+				pViewport.mouseup.emit(eBtn, x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 
 			if (this.is3DEventSupported(E3DEventTypes.DRAGSTOP) && 
@@ -496,7 +496,7 @@ module akra.webgl {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
 			if (!isNull(pViewport)) {
-				pViewport.mouseover.emit(x - pViewport.actualLeft, y - pViewport.actualTop);
+				pViewport.mouseover.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 		}
 
@@ -504,7 +504,7 @@ module akra.webgl {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
 			if (!isNull(pViewport)) {
-				pViewport.mouseout.emit(x - pViewport.actualLeft, y - pViewport.actualTop);
+				pViewport.mouseout.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop());
 			}
 
 			//stop dragging if mouse goes out of target
@@ -520,7 +520,7 @@ module akra.webgl {
 			var pViewport: IViewport = this.getViewportByMouseEvent(x, y);
 
 			if (!isNull(pViewport)) {
-				pViewport.mousewheel.emit(x - pViewport.actualLeft, y - pViewport.actualTop, fDelta);
+				pViewport.mousewheel.emit(x - pViewport.getActualLeft(), y - pViewport.getActualTop(), fDelta);
 			}
 		}
 
@@ -530,8 +530,8 @@ module akra.webgl {
 			if (!isNull(this._p3DEventDragTarget)) {
 				this._p3DEventDragTarget.dragstart.emit(
 					eBtn,
-					x - this._p3DEventDragTarget.actualLeft, 
-					y - this._p3DEventDragTarget.actualTop);
+					x - this._p3DEventDragTarget.getActualLeft(), 
+					y - this._p3DEventDragTarget.getActualTop());
 			}
 		}
 
@@ -542,8 +542,8 @@ module akra.webgl {
 			if (!isNull(this._p3DEventDragTarget)) {
 				this._p3DEventDragTarget.dragstop.emit(
 					eBtn,
-					x - this._p3DEventDragTarget.actualLeft, 
-					y - this._p3DEventDragTarget.actualTop);
+					x - this._p3DEventDragTarget.getActualLeft(), 
+					y - this._p3DEventDragTarget.getActualTop());
 			}
 		}
 
@@ -551,8 +551,8 @@ module akra.webgl {
 			if (!isNull(this._p3DEventDragTarget)) {
 				this._p3DEventDragTarget.dragging.emit(
 					eBtn,
-					x - this._p3DEventDragTarget.actualLeft, 
-					y - this._p3DEventDragTarget.actualTop);
+					x - this._p3DEventDragTarget.getActualLeft(), 
+					y - this._p3DEventDragTarget.getActualTop());
 			}
 		}
 

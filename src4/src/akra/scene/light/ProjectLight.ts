@@ -150,11 +150,11 @@ module akra.scene.light {
 
 				if (!this.getIsShadowCaster()) {
 					var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(pCamera);
-					return (pResult.length == 0) ? false : true;
+					return (pResult.getLength() === 0) ? false : true;
 				}
 				else {
 					var pResult: IObjectArray<ISceneObject> = this._defineShadowInfluence(pCamera);
-					return (pResult.length == 0) ? false : true;
+					return (pResult.getLength() === 0) ? false : true;
 				}
 			}
 		}
@@ -174,7 +174,7 @@ module akra.scene.light {
 
 			var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(Scene3d.DL_DEFAULT);
 
-			for (var i: int = 0; i < pRawResult.length; i++) {
+			for (var i: int = 0; i < pRawResult.getLength(); i++) {
 				var pObject: ISceneObject = pRawResult.value(i);
 
 				if (pCameraFrustum.testRect(pObject.getWorldBounds())) {
@@ -219,7 +219,7 @@ module akra.scene.light {
 			var v3fShadowDir: IVec3 = Vec3.temp();
 			var v3fCameraDir: IVec3 = Vec3.temp();
 
-			for (var i: int = 0; i < pRawResult.length; i++) {
+			for (var i: int = 0; i < pRawResult.getLength(); i++) {
 				var pObject: ISceneObject = pRawResult.value(i);
 				var pWorldBounds: IRect3d = pObject.getWorldBounds();
 

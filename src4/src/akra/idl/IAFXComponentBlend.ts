@@ -22,9 +22,9 @@ module akra {
 	
 	
 	export interface IAFXComponentPassInputBlend {
-		uniforms: IAFXVariableContainer;
-		textures: IAFXVariableContainer;
-		foreigns: IAFXVariableContainer;
+		getUniforms(): IAFXVariableContainer;
+		getTextures(): IAFXVariableContainer;
+		getForeigns(): IAFXVariableContainer;
 	
 		addDataFromPass(pPass: IAFXPassInstruction): void;
 		finalizeInput(): void;

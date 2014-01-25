@@ -4,17 +4,17 @@
 
 module akra {
 	export interface IClickable extends IEventProvider {
-		onclick: (target: any, x: int, y: int) => void;
-		onmousemove: (target: any, x: int, y: int) => void;
-		onmousedown: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
-		onmouseup: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
-		onmouseover: (target: any, x: int, y: int) => void;
-		onmouseout: (target: any, x: int, y: int) => void;
-		onmousewheel: (target: any, x: int, y: int, delta: float) => void;
+		setOnClick?(fnCallbak: (target: any, x: int, y: int) => void): void;
+		setOnMouseMove?(fnCallbak: (target: any, x: int, y: int) => void): void;
+		setOnMouseDown?(fnCallbak: (target: any, eBtn: EMouseButton, x: int, y: int) => void): void;
+		setOnMouseUp?(fnCallbak: (target: any, eBtn: EMouseButton, x: int, y: int) => void): void;
+		setOnMouseOver?(fnCallbak: (target: any, x: int, y: int) => void): void;
+		setOnMouseOut?(fnCallbak: (target: any, x: int, y: int) => void): void;
+		setOnMouseWheel?(fnCallbak: (target: any, x: int, y: int, delta: float) => void): void;
 
-		ondragstart: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
-		ondragstop: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
-		ondragging: (target: any, eBtn: EMouseButton, x: int, y: int) => void;
+		setOnDragStart?(fnCallbak: (target: any, eBtn: EMouseButton, x: int, y: int) => void): void;
+		setOnDragStop?(fnCallbak: (target: any, eBtn: EMouseButton, x: int, y: int) => void): void;
+		setOnDragging?(fnCallbak: (target: any, eBtn: EMouseButton, x: int, y: int) => void): void;
 
 		dragstart: ISignal<{ (pTarget: any, eBtn: EMouseButton, x: uint, y: uint): void; }>;
 		dragstop: ISignal<{ (pTarget: any, eBtn: EMouseButton, x: uint, y: uint): void; }>;

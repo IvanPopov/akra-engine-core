@@ -217,7 +217,7 @@ module akra.scene.light {
 				if (!this.getIsShadowCaster()) {
 					for (var i = 0; i < 6; i++) {
 						var pResult: IObjectArray<ISceneObject> = this._defineLightingInfluence(pCamera, i);
-						if (pResult.length != 0) {
+						if (pResult.getLength() !== 0) {
 							haveInfluence = true;
 						}
 					}
@@ -226,7 +226,7 @@ module akra.scene.light {
 				else {
 					for (var i = 0; i < 6; i++) {
 						var pResult: IObjectArray<ISceneObject> = this._defineShadowInfluence(pCamera, i);
-						if (pResult.length != 0) {
+						if (pResult.getLength() !== 0) {
 							haveInfluence = true;
 						}
 					}
@@ -251,7 +251,7 @@ module akra.scene.light {
 
 			var pRawResult: IObjectArray<ISceneObject> = pShadowCaster.display(Scene3d.DL_DEFAULT);
 
-			for (var i: int = 0; i < pRawResult.length; i++) {
+			for (var i: int = 0; i < pRawResult.getLength(); i++) {
 				var pObject: ISceneObject = pRawResult.value(i);
 
 				if (pCameraFrustum.testRect(pObject.getWorldBounds())) {
@@ -289,7 +289,7 @@ module akra.scene.light {
 			var v3fShadowDir: IVec3 = Vec3.temp();
 			var v3fCameraDir: IVec3 = Vec3.temp();
 
-			for (var i: int = 0; i < pRawResult.length; i++) {
+			for (var i: int = 0; i < pRawResult.getLength(); i++) {
 				var pObject: ISceneObject = pRawResult.value(i);
 				var pWorldBounds: IRect3d = pObject.getWorldBounds();
 
