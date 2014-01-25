@@ -441,7 +441,7 @@ module akra.webgl {
 					pWebGLRenderer.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 				}
 				if (pDestBox.left === 0 && pDestBox.top === 0 && 
-					pDestBox.getWidth() >= this.width && pDestBox.getHeight() >= this.height) 
+					pDestBox.getWidth() >= this.getWidth() && pDestBox.getHeight() >= this.getHeight()) 
 				{
 					pWebGLContext.texImage2D(this._eFaceTarget,
 										this._iLevel,
@@ -488,26 +488,26 @@ module akra.webgl {
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
-			if(!checkFBOAttachmentFormat(this.format)) {
-				logger.critical("Read from texture this format not support(" + this.format + ")");
+			if(!checkFBOAttachmentFormat(this.getFormat())) {
+				logger.critical("Read from texture this format not support(" + this.getFormat() + ")");
 			}
 
-			if (!checkReadPixelFormat(this.format)) {
+			if (!checkReadPixelFormat(this.getFormat())) {
 				logger.assert (
-					this.format === EPixelFormats.DEPTH32 || 
-					this.format === EPixelFormats.FLOAT32_RGB ||
-					this.format === EPixelFormats.FLOAT32_RGBA, "TODO: downloading for all formats");
+					this.getFormat() === EPixelFormats.DEPTH32 || 
+					this.getFormat() === EPixelFormats.FLOAT32_RGB ||
+					this.getFormat() === EPixelFormats.FLOAT32_RGBA, "TODO: downloading for all formats");
 
-				var eFormat: EPixelFormats = this.format;
-				var pDestBox: IBox = geometry.Box.temp(0, 0, 0, pData.getWidth() * pixelUtil.getComponentCount(this.format), pData.getHeight(), pData.getDepth());
+				var eFormat: EPixelFormats = this.getFormat();
+				var pDestBox: IBox = geometry.Box.temp(0, 0, 0, pData.getWidth() * pixelUtil.getComponentCount(this.getFormat()), pData.getHeight(), pData.getDepth());
 
-				if (this.format === EPixelFormats.DEPTH32) {
+				if (this.getFormat() === EPixelFormats.DEPTH32) {
 					eFormat = EPixelFormats.FLOAT32_DEPTH;
 				}
 
 				// мы не можем читать из данного формата напрямую, поэтому необходимо перерендерить эту текстура в RGB/RGBA 8.
 				var pProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().getShaderProgramPool().findResource(
-					this.format === EPixelFormats.DEPTH32? "WEBgl.decode_depth32_texture": "WEBgl.decode_float32_texture");
+					this.getFormat() === EPixelFormats.DEPTH32? "WEBgl.decode_depth32_texture": "WEBgl.decode_float32_texture");
 
 				pWebGLTexture = WebGLTextureBuffer.copyTex2DImageByProgram(pProgram, pDestBox, EPixelFormats.R8G8B8A8, this, pData);
 
@@ -517,7 +517,7 @@ module akra.webgl {
 				else {
 					pSrcBox = new pixelUtil.PixelBox(pData, eFormat, 
 						new Uint8Array(pixelUtil.getMemorySize(
-							pData.getWidth() * pixelUtil.getComponentCount(this.format), 
+							pData.getWidth() * pixelUtil.getComponentCount(this.getFormat()), 
 							pData.getHeight(), 
 							pData.getDepth(), 
 							EPixelFormats.R8G8B8A8)));
@@ -705,7 +705,7 @@ module akra.webgl {
 		blit(pSource: IPixelBuffer, pSrcBox?: IBox, pDestBox?: IBox): boolean {
 			if (arguments.length === 1) {
 				return this.blit(pSource, 
-					new geometry.Box(0, 0, 0, pSource.width, pSource.height, pSource.depth), 
+					new geometry.Box(0, 0, 0, pSource.getWidth(), pSource.getHeight(), pSource.getDepth()), 
 					new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth)
 				);
 			}
@@ -817,7 +817,7 @@ module akra.webgl {
 			pWebGLContext.vertexAttribPointer(iPosAttrIndex, 2, gl.FLOAT, false, 0, 0);
 
 			pWebGLShaderProgram.setInt("uSampler", 0);
-			pWebGLShaderProgram.setInt("src_components_num", pixelUtil.getComponentCount(pSource.format));
+			pWebGLShaderProgram.setInt("src_components_num", pixelUtil.getComponentCount(pSource.getFormat()));
 			pWebGLShaderProgram.setInt("dst_width", pDestBox.getWidth());
 			pWebGLShaderProgram.setInt("dst_height", pDestBox.getHeight());
 			// LOG("dest size: ", pDestBox.width, "x", pDestBox.height, "cn: ", pixelUtil.getComponentCount(pSource.format));
@@ -825,16 +825,16 @@ module akra.webgl {
 			var iSlice: int = 0;
 			for(iSlice = pDestBox.front; iSlice < pDestBox.back; ++iSlice) {
 				/// Calculate source texture coordinates
-				var u1: float = <float>pSrcBox.left / <float>pSource.width;
-				var v1: float = <float>pSrcBox.top / <float>pSource.height;
-				var u2: float = <float>pSrcBox.right / <float>pSource.width;
-				var v2: float = <float>pSrcBox.bottom / <float>pSource.height;
+				var u1: float = <float>pSrcBox.left / <float>pSource.getWidth();
+				var v1: float = <float>pSrcBox.top / <float>pSource.getHeight();
+				var u2: float = <float>pSrcBox.right / <float>pSource.getWidth();
+				var v2: float = <float>pSrcBox.bottom / <float>pSource.getHeight();
 				/// Calculate source slice for this destination slice
 				var w: float = <float>(iSlice - pDestBox.front) / <float>pDestBox.getDepth();
 				/// Get slice # in source
 				w = w * <float>pSrcBox.getDepth() + pSrcBox.front;
 				/// Normalise to texture coordinate in 0.0 .. 1.0
-				w = (w + 0.5) / <float>pSource.depth;
+				w = (w + 0.5) / <float>pSource.getDepth();
 				
 				pTexCoords[0] = u1;
 				pTexCoords[1] = v1;
@@ -896,8 +896,8 @@ module akra.webgl {
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
-			if (this.format === pSource.format && 
-				checkCopyTexImage(this.format) &&
+			if (this.getFormat() === pSource.getFormat() && 
+				checkCopyTexImage(this.getFormat()) &&
 				this._pBuffer.contains(pDestBox) &&
 				pSrcBox.getWidth() === pDestBox.getWidth() &&
 				pSrcBox.getHeight() === pDestBox.getHeight() &&
@@ -913,7 +913,7 @@ module akra.webgl {
 
 				pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
 
-				if (pDestBox.getWidth() === this.width && pDestBox.getHeight() === this.height){
+				if (pDestBox.getWidth() === this.getWidth() && pDestBox.getHeight() === this.getHeight()){
 					pWebGLContext.copyTexImage2D(this._eFaceTarget, this._iLevel, 
 						getWebGLFormat(this._eFormat),
 						pSrcBox.left, pSrcBox.top,
@@ -1045,16 +1045,16 @@ module akra.webgl {
 				}
 
 				/// Calculate source texture coordinates
-				var u1: float = <float>pSrcBox.left / <float>pSource.width;
-				var v1: float = <float>pSrcBox.top / <float>pSource.height;
-				var u2: float = <float>pSrcBox.right / <float>pSource.width;
-				var v2: float = <float>pSrcBox.bottom / <float>pSource.height;
+				var u1: float = <float>pSrcBox.left / <float>pSource.getWidth();
+				var v1: float = <float>pSrcBox.top / <float>pSource.getHeight();
+				var u2: float = <float>pSrcBox.right / <float>pSource.getWidth();
+				var v2: float = <float>pSrcBox.bottom / <float>pSource.getHeight();
 				/// Calculate source slice for this destination slice
 				var w: float = <float>(iSlice - pDestBox.front) / <float>pDestBox.getDepth();
 				/// Get slice # in source
 				w = w * <float>pSrcBox.getDepth() + pSrcBox.front;
 				/// Normalise to texture coordinate in 0.0 .. 1.0
-				w = (w + 0.5) / <float>pSource.depth;
+				w = (w + 0.5) / <float>pSource.getDepth();
 				
 				pTexCoords[0] = u1;
 				pTexCoords[1] = v1;

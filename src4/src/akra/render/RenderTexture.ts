@@ -18,9 +18,9 @@ module akra.render {
 			super(pRenderer);
 			this._pBuffer = pBuffer;
 			this._iZOffset = iZOffset;
-			this._iWidth = pBuffer.width;
-			this._iHeight = pBuffer.height;
-			this._iColorDepth = pixelUtil.getNumElemBits(pBuffer.format);
+			this._iWidth = pBuffer.getWidth();
+			this._iHeight = pBuffer.getHeight();
+			this._iColorDepth = pixelUtil.getNumElemBits(pBuffer.getFormat());
 		}
 
 		enableSupportFor3DEvent(iType: int): int {
@@ -37,7 +37,7 @@ module akra.render {
 		}
 
 		suggestPixelFormat(): EPixelFormats {
-			return this._pBuffer.format;
+			return this._pBuffer.getFormat();
 		}
 
 		copyContentsToMemory(pDest: IPixelBox, eBuffer: EFramebuffer): void {

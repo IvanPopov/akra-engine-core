@@ -14,14 +14,19 @@ module akra.webgl {
 		private _pLockData: Uint8Array = null;
 		protected _sCS: string = null;
 
-		 get type(): EVertexBufferTypes { return EVertexBufferTypes.VBO; }
-		 get byteLength(): uint { return this._iByteSize; }
+		getType(): EVertexBufferTypes {
+			return EVertexBufferTypes.VBO;
+		}
 
-		constructor (/*pManager: IResourcePoolManager*/) {
+		getByteLength(): uint {
+			return this._iByteSize;
+		}
+
+		constructor(/*pManager: IResourcePoolManager*/) {
 			super(/*pManager*/);
 		}
 
-		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): boolean{
+		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): boolean {
 
 			iByteSize = math.max(iByteSize, config.webgl.vertexbufferMinSize);
 
@@ -50,23 +55,23 @@ module akra.webgl {
 			if (this.isBackupPresent()) {
 				bf.setAll(this._iFlags, EHardwareBufferFlags.READABLE);
 			}
-			
-			debug.assert(!pData || pData.byteLength <= iByteSize, 
+
+			debug.assert(!pData || pData.byteLength <= iByteSize,
 				"Размер переданного массива больше переданного размера буфера");
-			
+
 
 			this._pWebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 
 			if (!this._pWebGLBuffer) {
 				logger.critical("Не удалось создать буфер");
-				
+
 				this.destroy();
 				return false;
 			}
 
 			pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, this._pWebGLBuffer);
 			pWebGLContext.bufferData(gl.ARRAY_BUFFER, this._iByteSize, getWebGLUsage(this._iFlags));
-			
+
 			if (isDefAndNotNull(pData)) {
 				/*pWebGLContext.bufferSubData(
 					gl.ARRAY_BUFFER, 0, isArrayBuffer(pData)? <ArrayBuffer>pData: (<Uint8Array>pData).buffer);*/
@@ -91,13 +96,13 @@ module akra.webgl {
 
 		readData(ppDest: ArrayBufferView): boolean;
 		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): boolean;
-		readData(iOffset: any, iSize?: any, ppDest?: any): boolean { 
+		readData(iOffset: any, iSize?: any, ppDest?: any): boolean {
 			debug.assert(!isNull(this._pWebGLBuffer), "Буффер еще не создан");
 
 			if (!this.isBackupPresent()) {
 				return false;
 			}
-			
+
 			if (arguments.length === 1) {
 				this._pBackupCopy.readData(arguments[0]);
 			}
@@ -110,17 +115,17 @@ module akra.webgl {
 
 		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: boolean): boolean;
 		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: boolean): boolean;
-		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: boolean = false): boolean { 
-			
+		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: boolean = false): boolean {
+
 			debug.assert(!isNull(this._pWebGLBuffer), "WebGL buffer not exists");
-			
+
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
-			
+
 			pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, this._pWebGLBuffer);
-			
+
 			debug.assert(pData.byteLength <= iSize, "Размер переданного массива больше переданного размера");
-			debug.assert(this.byteLength >= iOffset + iSize, "Данные выйдут за предел буфера");
+			debug.assert(this.getByteLength() >= iOffset + iSize, "Данные выйдут за предел буфера");
 
 			var pU8Data: Uint8Array = null;
 
@@ -130,11 +135,11 @@ module akra.webgl {
 			else {
 				pU8Data = new Uint8Array(pData.buffer, pData.byteOffset, pData.byteLength);
 			}
-			
+
 			pU8Data = pU8Data.subarray(0, iSize);
 
 			pWebGLContext.bufferSubData(gl.ARRAY_BUFFER, iOffset, pU8Data);
-			
+
 			if (this.isBackupPresent()) {
 				this._pBackupCopy.writeData(pU8Data, iOffset);
 			}
@@ -153,39 +158,39 @@ module akra.webgl {
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
-			if(!this.isBackupPresent()) {
+			if (!this.isBackupPresent()) {
 				debug.log("Not resized, because backup not present!");
-				return false;		
+				return false;
 			}
 
-			debug.log("WebGLVertexBuffer resized from " + this.byteLength + " to " + iSize + "(" + this.guid + ")");
+			debug.log("WebGLVertexBuffer resized from " + this.getByteLength() + " to " + iSize + "(" + this.guid + ")");
 			// debug.log(__CALLSTACK__);
 
 
-			if(iSize < this.byteLength) {
-				for(var k: int = 0; k < this._pVertexDataArray.length; ++ k) {
+			if (iSize < this.getByteLength()) {
+				for (var k: int = 0; k < this._pVertexDataArray.length; ++k) {
 					pVertexData = this._pVertexDataArray[k];
 
-					if(pVertexData.getByteOffset() + pVertexData.getByteLength() > iMax) {
+					if (pVertexData.getByteOffset() + pVertexData.getByteLength() > iMax) {
 						iMax = pVertexData.getByteOffset() + pVertexData.getByteLength();
-					}		
-				}	
+					}
+				}
 
 				debug.assert(iMax <= iSize,
 					"Уменьшение невозможно. Страая разметка не укладывается в новый размер");
 			}
-			
-			if(pWebGLContext.isBuffer(this._pWebGLBuffer)) {
+
+			if (pWebGLContext.isBuffer(this._pWebGLBuffer)) {
 				pWebGLRenderer.deleteWebGLBuffer(this._pWebGLBuffer);
-			}		
-			
+			}
+
 			eUsage = getWebGLUsage(this._iFlags);
 
 			this._pWebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 
 			if (!this._pWebGLBuffer) {
 				logger.critical("Не удалось создать буфер");
-				
+
 				this.destroy();
 				return false;
 			}
@@ -193,9 +198,9 @@ module akra.webgl {
 
 			pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, this._pWebGLBuffer);
 			pWebGLContext.bufferData(gl.ARRAY_BUFFER, iSize, eUsage);
-			
+
 			pData = new Uint8Array(this._iByteSize);
-			
+
 			if (!this.readData(pData)) {
 				debug.warn("cannot read data from buffer");
 				return false;
@@ -204,14 +209,14 @@ module akra.webgl {
 
 			this.writeData(pData, 0, this._iByteSize);
 			this._pBackupCopy.resize(iSize);
-			this._iByteSize = iSize;	
+			this._iByteSize = iSize;
 
 			this.notifyAltered();
-			
+
 			return true;
 		}
 
-		 getWebGLBuffer(): WebGLBuffer {
+		getWebGLBuffer(): WebGLBuffer {
 			return this._pWebGLBuffer;
 		}
 

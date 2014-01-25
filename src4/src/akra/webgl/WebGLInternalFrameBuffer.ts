@@ -12,13 +12,13 @@
 
 module akra.webgl {
 	export interface IWebGLAttachments {
-		[webGLAttachment: uint] : WebGLPixelBuffer;
+		[webGLAttachment: uint]: WebGLPixelBuffer;
 	}
 
 	export class WebGLInternalFrameBuffer {
 		private _pWebGLRenderer: WebGLRenderer = null;
 		private _pWebGLFramebuffer: WebGLFramebuffer = null;
-		private _pAttachments: IWebGLAttachments = null; 
+		private _pAttachments: IWebGLAttachments = null;
 		private _iWebglActiveAttachment: uint = 0;
 
 		constructor(pWebGLRenderer: IRenderer) {
@@ -27,7 +27,7 @@ module akra.webgl {
 			this._pWebGLFramebuffer = this._pWebGLRenderer.createWebGLFramebuffer();
 			this._pAttachments = <IWebGLAttachments>{};
 
-			for(var i: uint = 0; i < webgl.maxColorAttachments; i++) {
+			for (var i: uint = 0; i < webgl.maxColorAttachments; i++) {
 				this._pAttachments[gl.COLOR_ATTACHMENT0 + i] = null;
 			}
 
@@ -41,34 +41,34 @@ module akra.webgl {
 			this._pWebGLFramebuffer = null;
 		}
 
-		 get width(): uint {
-			return this._pAttachments[gl.COLOR_ATTACHMENT0].width;
+		getWidth(): uint {
+			return this._pAttachments[gl.COLOR_ATTACHMENT0].getWidth();
 		}
 
-		 get height(): uint {
-			return this._pAttachments[gl.COLOR_ATTACHMENT0].height;
+		getHeight(): uint {
+			return this._pAttachments[gl.COLOR_ATTACHMENT0].getHeight();
 		}
 
-		 get format(): uint {
-			return this._pAttachments[gl.COLOR_ATTACHMENT0].format;
+		getFormat(): uint {
+			return this._pAttachments[gl.COLOR_ATTACHMENT0].getFormat();
 		}
 
-		 getColorAttachment(iAttachment: uint): WebGLPixelBuffer {
+		getColorAttachment(iAttachment: uint): WebGLPixelBuffer {
 			return this._pAttachments[gl.COLOR_ATTACHMENT0 + iAttachment];
 		}
 
-		 getAttachment(iWebGLAttachment: uint): WebGLPixelBuffer {
+		getAttachment(iWebGLAttachment: uint): WebGLPixelBuffer {
 			return this._pAttachments[iWebGLAttachment];
 		}
 
 		bindSurface(iWebGLAttachment: uint, pSurface: IPixelBuffer): void {
-			if(!isDef(this._pAttachments[iWebGLAttachment])){
+			if (!isDef(this._pAttachments[iWebGLAttachment])) {
 				return;
 			}
-			
+
 			this.releaseAttachment(iWebGLAttachment);
 			this._pAttachments[iWebGLAttachment] = <WebGLPixelBuffer>pSurface;
-			if(this.checkAttachment(iWebGLAttachment)){
+			if (this.checkAttachment(iWebGLAttachment)) {
 				this._bind();
 				(<WebGLPixelBuffer>pSurface)._bindToFramebuffer(iWebGLAttachment, 0);
 				(<WebGLPixelBuffer>pSurface).addRef();
@@ -76,21 +76,21 @@ module akra.webgl {
 		}
 
 		unbindSurface(iWebGLAttachment: uint): void {
-			if(!isDef(this._pAttachments[iWebGLAttachment])){
+			if (!isDef(this._pAttachments[iWebGLAttachment])) {
 				return;
 			}
 			var pWebGLContext: WebGLRenderingContext = this._pWebGLRenderer.getWebGLContext();
 			this.releaseAttachment(iWebGLAttachment);
 			this._pAttachments[iWebGLAttachment] = null;
 			pWebGLContext.framebufferRenderbuffer(gl.FRAMEBUFFER, iWebGLAttachment,
-												  gl.RENDERBUFFER, null);
+				gl.RENDERBUFFER, null);
 		}
 
-		 bindColorSurface(iAttachment: uint, pSurface: IPixelBuffer): void {
+		bindColorSurface(iAttachment: uint, pSurface: IPixelBuffer): void {
 			this.bindSurface(gl.COLOR_ATTACHMENT0 + iAttachment, pSurface);
 		}
 
-		 _bind(): void {
+		_bind(): void {
 			this._pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, this._pWebGLFramebuffer);
 		}
 
@@ -100,26 +100,26 @@ module akra.webgl {
 
 			this._pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, this._pWebGLFramebuffer);
 
-			if(!isNull(pDepthBuffer)) {
-				var pDepthRenderBuffer: WebGLInternalRenderBuffer = (<WebGLDepthBuffer>pDepthBuffer).depthBuffer;
-				var pStencilRenderBuffer: WebGLInternalRenderBuffer = (<WebGLDepthBuffer>pDepthBuffer).stencilBuffer;
+			if (!isNull(pDepthBuffer)) {
+				var pDepthRenderBuffer: WebGLInternalRenderBuffer = (<WebGLDepthBuffer>pDepthBuffer).getDepthBuffer();
+				var pStencilRenderBuffer: WebGLInternalRenderBuffer = (<WebGLDepthBuffer>pDepthBuffer).getStencilBuffer();
 
-				if(!isNull(pDepthRenderBuffer)){
+				if (!isNull(pDepthRenderBuffer)) {
 					pDepthRenderBuffer._bindToFramebuffer(gl.DEPTH_ATTACHMENT, 0);
 					this.releaseAttachment(gl.DEPTH_ATTACHMENT);
 					this._pAttachments[gl.DEPTH_ATTACHMENT] = pDepthRenderBuffer;
 					pDepthRenderBuffer.addRef();
 				}
 
-				if(!isNull(pStencilRenderBuffer)){
+				if (!isNull(pStencilRenderBuffer)) {
 					pStencilRenderBuffer._bindToFramebuffer(gl.STENCIL_ATTACHMENT, 0);
 					this.releaseAttachment(gl.STENCIL_ATTACHMENT);
 					this._pAttachments[gl.STENCIL_ATTACHMENT] = pStencilRenderBuffer;
 					pDepthRenderBuffer.addRef();
 				}
 
-				if( !this.checkAttachment(gl.DEPTH_ATTACHMENT) ||
-					!this.checkAttachment(gl.STENCIL_ATTACHMENT) ) {
+				if (!this.checkAttachment(gl.DEPTH_ATTACHMENT) ||
+					!this.checkAttachment(gl.STENCIL_ATTACHMENT)) {
 					logger.error("Invalid frame buffer depthbuffer attachment. Wrong size.");
 					return;
 				}
@@ -128,10 +128,10 @@ module akra.webgl {
 			else {
 
 				pWebGLContext.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
-													  gl.RENDERBUFFER, null);
+					gl.RENDERBUFFER, null);
 
 				pWebGLContext.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT,
-													  gl.RENDERBUFFER, null);
+					gl.RENDERBUFFER, null);
 
 				this.releaseAttachment(gl.DEPTH_ATTACHMENT);
 				this.releaseAttachment(gl.STENCIL_ATTACHMENT);
@@ -152,7 +152,7 @@ module akra.webgl {
 			this._bind();
 			this.unbindSurface(gl.DEPTH_ATTACHMENT);
 		}
-		
+
 		detachDepthBuffer(): void {
 			var pWebGLContext: WebGLRenderingContext = this._pWebGLRenderer.getWebGLContext();
 			var pOldFramebuffer: WebGLFramebuffer = this._pWebGLRenderer.getParameter(gl.FRAMEBUFFER_BINDING);
@@ -160,10 +160,10 @@ module akra.webgl {
 			this._pWebGLRenderer.bindWebGLFramebuffer(gl.FRAMEBUFFER, this._pWebGLFramebuffer);
 
 			pWebGLContext.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
-												  gl.RENDERBUFFER, null);
+				gl.RENDERBUFFER, null);
 
 			pWebGLContext.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT,
-												  gl.RENDERBUFFER, null);
+				gl.RENDERBUFFER, null);
 
 			this.releaseAttachment(gl.DEPTH_ATTACHMENT);
 			this.releaseAttachment(gl.STENCIL_ATTACHMENT);
@@ -177,45 +177,45 @@ module akra.webgl {
 
 		}
 
-		private checkAttachment(iWebGLAttachment: int): boolean{
-			if(iWebGLAttachment === gl.COLOR_ATTACHMENT0){	
+		private checkAttachment(iWebGLAttachment: int): boolean {
+			if (iWebGLAttachment === gl.COLOR_ATTACHMENT0) {
 				var isOk: boolean = true;
 
-				for(var i: uint = 1; i < webgl.maxColorAttachments; i++) {
+				for (var i: uint = 1; i < webgl.maxColorAttachments; i++) {
 					isOk = this.checkAttachment(gl.COLOR_ATTACHMENT0 + i);
-					if(!isOk) return false;
+					if (!isOk) return false;
 				}
 
 				isOk = this.checkAttachment(gl.DEPTH_ATTACHMENT);
-				if(!isOk) return false;
+				if (!isOk) return false;
 				isOk = this.checkAttachment(gl.STENCIL_ATTACHMENT);
-				if(!isOk) return false;
+				if (!isOk) return false;
 				isOk = this.checkAttachment(gl.DEPTH_STENCIL_ATTACHMENT);
-				if(!isOk) return false;
+				if (!isOk) return false;
 
 				return true;
 			}
 			else {
 				var pBuffer: IPixelBuffer = this._pAttachments[iWebGLAttachment];
-				if(isNull(pBuffer)) return true;
+				if (isNull(pBuffer)) return true;
 
-				if(this.width === 0 && this.height === 0) return true;
+				if (this.getWidth() === 0 && this.getHeight() === 0) return true;
 
-				if(this.width !== pBuffer.width && this.height !== pBuffer.height) return false;
+				if (this.getWidth() !== pBuffer.getWidth() && this.getHeight() !== pBuffer.getHeight()) return false;
 
-				if(iWebGLAttachment > gl.COLOR_ATTACHMENT0 && 
-				   iWebGLAttachment < gl.COLOR_ATTACHMENT0 + webgl.maxColorAttachments) {
+				if (iWebGLAttachment > gl.COLOR_ATTACHMENT0 &&
+					iWebGLAttachment < gl.COLOR_ATTACHMENT0 + webgl.maxColorAttachments) {
 
 					if (!isNull(this._pAttachments[gl.COLOR_ATTACHMENT0]) &&
-						this.format !== pBuffer.format) return false;
+						this.getFormat() !== pBuffer.getFormat()) return false;
 				}
 
 				return true;
 			}
 		}
 
-		private  releaseAttachment(iWebGLAttachment): void {
-			if(!isNull(this._pAttachments[iWebGLAttachment])){
+		private releaseAttachment(iWebGLAttachment): void {
+			if (!isNull(this._pAttachments[iWebGLAttachment])) {
 				this._pAttachments[iWebGLAttachment].release();
 			}
 		}

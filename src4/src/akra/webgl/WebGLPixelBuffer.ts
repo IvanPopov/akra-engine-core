@@ -30,13 +30,23 @@ module akra.webgl {
 
 		protected _iByteSize: uint;
 
-		get byteLength(): uint { return this._iByteSize; }
+		getByteLength(): uint {
+			return this._iByteSize;
+		}
 
-		get width(): uint { return this._iWidth; }
-		get height(): uint { return this._iHeight; }
-		get depth(): uint { return this._iDepth; }
+		getWidth(): uint {
+			return this._iWidth;
+		}
 
-		get format(): EPixelFormats { return this._eFormat; }
+		getHeight(): uint {
+			return this._iHeight;
+		}
+
+		getDepth(): uint {
+			return this._iDepth;
+		}
+
+		getFormat(): EPixelFormats { return this._eFormat; }
 
 		constructor () {
 			super();
@@ -138,7 +148,7 @@ module akra.webgl {
 		blit(pSource: IPixelBuffer, pSrcBox?: IBox, pDestBox?: IBox): boolean {
 			if (arguments.length == 1) {
 				return this.blit(pSource, 
-					new geometry.Box(0, 0, 0, pSource.width, pSource.height, pSource.depth), 
+					new geometry.Box(0, 0, 0, pSource.getWidth(), pSource.getHeight(), pSource.getDepth()), 
 					new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth)
 				);
 			}
@@ -308,7 +318,7 @@ module akra.webgl {
 				if(arguments.length === 1){
 					iLockFlags = arguments[0];
 					iOffset = 0;
-					iSize = this.byteLength;
+					iSize = this.getByteLength();
 				}
 				else {
 					iOffset = arguments[0];
@@ -318,7 +328,7 @@ module akra.webgl {
 				
 				logger.assert(!this.isLocked(), 
 					   "Cannot lock this buffer, it is already locked!");
-				logger.assert(iOffset === 0 && iSize === this.byteLength, 
+				logger.assert(iOffset === 0 && iSize === this.getByteLength(), 
 					  "Cannot lock memory region, most lock box or entire buffer");
 
 				pLockBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
@@ -349,7 +359,7 @@ module akra.webgl {
 				return;
 			}
 
-			this._pBuffer.data = new Uint8Array(this.byteLength);
+			this._pBuffer.data = new Uint8Array(this.getByteLength());
 		}
 
 		protected freeBuffer(): void {

@@ -10,20 +10,20 @@ module akra.webgl {
 		constructor() {
 			super();
 		}
-		
-		 get depthBuffer(): WebGLInternalRenderBuffer {
+
+		getDepthBuffer(): WebGLInternalRenderBuffer {
 			return this._pDepthBuffer;
 		}
-		
-		 get stencilBuffer(): WebGLInternalRenderBuffer {
+
+		getStencilBuffer(): WebGLInternalRenderBuffer {
 			return this._pStencilBuffer;
 		}
 
 		create(iBitDepth: uint, iWidth: uint, iHeight: uint, bManual: boolean): boolean;
 		create(pDepth: WebGLInternalRenderBuffer, pStencil: WebGLInternalRenderBuffer,
-			   iWidth: uint, iHeight: uint, isManual: boolean): boolean;
+			iWidth: uint, iHeight: uint, isManual: boolean): boolean;
 		create(): boolean {
-			if(arguments.length !== 5){
+			if (arguments.length !== 5) {
 				logger.critical("Invalid number of arguments. For WebGLDepthBuffer it must be five");
 			}
 
@@ -34,21 +34,21 @@ module akra.webgl {
 			this._pDepthBuffer = pDepth;
 			this._pStencilBuffer = pStencil;
 
-			if(!isNull(pDepth)) {
-				switch(pDepth._getWebGLFormat()) { 
+			if (!isNull(pDepth)) {
+				switch (pDepth._getWebGLFormat()) {
 					case gl.DEPTH_COMPONENT16:
 						this._iBitDepth = 16;
 						break;
 					case gl.DEPTH_COMPONENT24_OES:
-		            case gl.DEPTH_COMPONENT32_OES:
-	            	case gl.DEPTH24_STENCIL8_OES:
-	            		if (webgl.hasExtension(OES_DEPTH24) ||
-	            			webgl.hasExtension(OES_DEPTH32) ||
-	            			webgl.hasExtension(OES_PACKED_DEPTH_STENCIL)){
-	            				
-	            			this._iBitDepth = 32;
-	            		}
-	            		break;	
+					case gl.DEPTH_COMPONENT32_OES:
+					case gl.DEPTH24_STENCIL8_OES:
+						if (webgl.hasExtension(OES_DEPTH24) ||
+							webgl.hasExtension(OES_DEPTH32) ||
+							webgl.hasExtension(OES_PACKED_DEPTH_STENCIL)) {
+
+							this._iBitDepth = 32;
+						}
+						break;
 				}
 			}
 
@@ -58,11 +58,11 @@ module akra.webgl {
 		destroy(): void {
 			super.destroy();
 
-			if(!isNull(this._pStencilBuffer) && this._pStencilBuffer !== this._pDepthBuffer){
+			if (!isNull(this._pStencilBuffer) && this._pStencilBuffer !== this._pDepthBuffer) {
 				this._pStencilBuffer.release();
 			}
 
-			if(!isNull(this._pDepthBuffer)){
+			if (!isNull(this._pDepthBuffer)) {
 				this._pDepthBuffer.release();
 			}
 
@@ -71,8 +71,8 @@ module akra.webgl {
 		}
 
 		isCompatible(pTarget: IRenderTarget): boolean {
-			if( this._iWidth >= pTarget.getWidth() &&
-				this._iHeight >= pTarget.getHeight() ){
+			if (this._iWidth >= pTarget.getWidth() &&
+				this._iHeight >= pTarget.getHeight()) {
 				return true;
 			}
 

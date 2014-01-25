@@ -173,12 +173,12 @@ module akra.render {
 
 		attachDepthPixelBuffer(pBuffer: IPixelBuffer): boolean {
 
-			if (this._iWidth !== pBuffer.width ||
-				this._iHeight !== pBuffer.height) {
+			if (this._iWidth !== pBuffer.getWidth() ||
+				this._iHeight !== pBuffer.getHeight()) {
 				return false;
 			}
 
-			var eFormat: EPixelFormats = pBuffer.format;
+			var eFormat: EPixelFormats = pBuffer.getFormat();
 			if (eFormat !== EPixelFormats.FLOAT32_DEPTH ||
 				eFormat !== EPixelFormats.DEPTH8) {
 				return false;

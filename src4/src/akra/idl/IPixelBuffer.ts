@@ -5,11 +5,11 @@
 
 module akra {
 	export interface IPixelBuffer extends IHardwareBuffer, IRenderResource {
-		/** readonly */ width: uint;
-		/** readonly */ height: uint;
-		/** readonly */ depth: uint;
+		getWidth(): uint;
+		getHeight(): uint;
+		getDepth(): uint;
 	
-		/** readonly */ format: EPixelFormats;
+		getFormat(): EPixelFormats;
 	
 		create(iFlags: int): boolean;
 		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): boolean;

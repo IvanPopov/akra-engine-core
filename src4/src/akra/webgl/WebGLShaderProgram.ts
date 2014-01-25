@@ -43,7 +43,7 @@ module akra.webgl {
 
 		compile(csVertex: string = GLSL_VS_SHADER_MIN, csPixel: string = GLSL_FS_SHADER_MIN): boolean {
 			var pWebGLRenderer: WebGLRenderer = this._pWebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
-			var pWebGLContext: WebGLRenderingContext = this._pWebGLContext =pWebGLRenderer.getWebGLContext();
+			var pWebGLContext: WebGLRenderingContext = this._pWebGLContext = pWebGLRenderer.getWebGLContext();
 			var pWebGLProgram: WebGLProgram = this._pWebGLProgram = pWebGLRenderer.createWebGLProgram();
 
 			var pWebGLVs: WebGLShader = this.createWebGLShader(gl.VERTEX_SHADER, csVertex);
@@ -56,7 +56,7 @@ module akra.webgl {
 
 			pWebGLContext.attachShader(pWebGLProgram, pWebGLVs);
 			pWebGLContext.attachShader(pWebGLProgram, pWebGLFs);
-			
+
 			pWebGLContext.linkProgram(pWebGLProgram);
 
 			// logger.log("================================", this.findResourceName());
@@ -78,7 +78,7 @@ module akra.webgl {
 							"\ntranslated(from GLSL) PS shader: \n" +
 							pWebGLContext.getExtension(WEBGL_DEBUG_SHADERS).getTranslatedShaderSource(pWebGLFs));
 					}
-				}			
+				}
 
 				return false;
 			}
@@ -100,42 +100,42 @@ module akra.webgl {
 			return true;
 		}
 
-		 get totalAttributes(): uint {
+		getTotalAttributes(): uint {
 			return this._iTotalAttributes;
 		}
 
-		 _getActiveUniformNames(): string[] {
+		_getActiveUniformNames(): string[] {
 			return Object.keys(this._pWebGLUniformLocations);
 		}
 
-		 _getActiveAttributeNames(): string[] {
+		_getActiveAttributeNames(): string[] {
 			return Object.keys(this._pWebGLAttributeLocations);
 		}
 
-		 _getActiveAttribLocations(): IMap<int> {
+		_getActiveAttribLocations(): IMap<int> {
 			return this._pWebGLAttributeLocations;
 		}
 
 		isLinked(): boolean {
-			return isDefAndNotNull(this._pWebGLProgram) && 
+			return isDefAndNotNull(this._pWebGLProgram) &&
 				<boolean>this._pWebGLContext.getProgramParameter(this._pWebGLProgram, gl.LINK_STATUS);
 		}
-		
+
 		isValid(): boolean {
-			return isDefAndNotNull(this._pWebGLProgram) && 
+			return isDefAndNotNull(this._pWebGLProgram) &&
 				<boolean>this._pWebGLContext.getProgramParameter(this._pWebGLProgram, gl.VALIDATE_STATUS);
 		}
 
 		isActive(): boolean {
-			return (isDefAndNotNull(this._pWebGLProgram) && 
+			return (isDefAndNotNull(this._pWebGLProgram) &&
 				<WebGLProgram>this._pWebGLContext.getParameter(gl.CURRENT_PROGRAM) === this._pWebGLProgram);
 		}
 
-		 setFloat(sName: string, fValue: float): void {
+		setFloat(sName: string, fValue: float): void {
 			this._pWebGLContext.uniform1f(this._pWebGLUniformLocations[sName], fValue);
 		}
 
-		 setInt(sName: string, iValue: int): void {
+		setInt(sName: string, iValue: int): void {
 			this._pWebGLContext.uniform1i(this._pWebGLUniformLocations[sName], iValue);
 		}
 
@@ -143,7 +143,7 @@ module akra.webgl {
 			this._pWebGLContext.uniform2f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y);
 		}
 
-		
+
 		setVec2i(sName: string, v2iValue: IVec2): void {
 			this._pWebGLContext.uniform2i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y);
 		}
@@ -151,7 +151,7 @@ module akra.webgl {
 		setVec3(sName: string, v3fValue: IVec3): void {
 			this._pWebGLContext.uniform3f(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z);
 		}
-		
+
 		setVec3i(sName: string, v3iValue: IVec3): void {
 			this._pWebGLContext.uniform3i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z);
 		}
@@ -163,7 +163,7 @@ module akra.webgl {
 		setVec4i(sName: string, v4iValue: IVec4): void {
 			this._pWebGLContext.uniform4i(this._pWebGLUniformLocations[sName], arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
 		}
- 
+
 		setMat3(sName: string, m3fValue: IMat3): void {
 			this._pWebGLContext.uniformMatrix3fv(this._pWebGLUniformLocations[sName], false, m3fValue.data);
 		}
@@ -184,18 +184,18 @@ module akra.webgl {
 
 		setVec2Array(sName: string, pValue: IVec2[]): void {
 			var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
-			for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 			}
-			
+
 			this._pWebGLContext.uniform2fv(this._pWebGLUniformLocations[sName], pBuffer);
 		}
 
 		setVec2iArray(sName: string, pValue: IVec2[]): void {
 			var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
-			for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 			}
 
@@ -204,8 +204,8 @@ module akra.webgl {
 
 		setVec3Array(sName: string, pValue: IVec3[]): void {
 			var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 3);
-			for (var i: int = 0, j: int = 0; j < pValue.length; i += 3, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; j < pValue.length; i += 3, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 				pBuffer[i + 2] = pValue[j].z;
 			}
@@ -215,8 +215,8 @@ module akra.webgl {
 
 		setVec3iArray(sName: string, pValue: IVec3[]): void {
 			var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 3);
-			for (var i: int = 0, j: int = 0; j < pValue.length; i += 3, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; j < pValue.length; i += 3, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 				pBuffer[i + 2] = pValue[j].z;
 			}
@@ -226,8 +226,8 @@ module akra.webgl {
 
 		setVec4Array(sName: string, pValue: IVec4[]): void {
 			var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 4);
-			for (var i: int = 0, j: int = 0; j < pValue.length; i += 4, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; j < pValue.length; i += 4, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 				pBuffer[i + 2] = pValue[j].z;
 				pBuffer[i + 3] = pValue[j].w;
@@ -238,8 +238,8 @@ module akra.webgl {
 
 		setVec4iArray(sName: string, pValue: IVec4[]): void {
 			var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 4);
-			for (var i: int = 0, j: int = 0; j < pValue.length; i += 4, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; j < pValue.length; i += 4, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 				pBuffer[i + 2] = pValue[j].z;
 				pBuffer[i + 3] = pValue[j].w;
@@ -249,84 +249,84 @@ module akra.webgl {
 		}
 
 
-		 setMat3Array(sName: string, pValue: IMat3[]): void {
+		setMat3Array(sName: string, pValue: IMat3[]): void {
 			var pBuffer: Int32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 9);
-			for (var i: int = 0; i < pValue.length; i ++) {
-				pBuffer.set(pValue[i].data, 9*i);
+			for (var i: int = 0; i < pValue.length; i++) {
+				pBuffer.set(pValue[i].data, 9 * i);
 			}
 			this._pWebGLContext.uniformMatrix3fv(this._pWebGLUniformLocations[sName], false, pBuffer);
 		}
 
-		 setMat4Array(sName: string, pValue: IMat4[]): void {
+		setMat4Array(sName: string, pValue: IMat4[]): void {
 			var pBuffer: Int32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 16);
-			for (var i: int = 0; i < pValue.length; i ++) {
-				pBuffer.set(pValue[i].data, 16*i);
+			for (var i: int = 0; i < pValue.length; i++) {
+				pBuffer.set(pValue[i].data, 16 * i);
 			}
 			this._pWebGLContext.uniformMatrix4fv(this._pWebGLUniformLocations[sName], false, pBuffer);
 		}
 
-		 setStruct(sName: string, pData: Object): void {
-			
+		setStruct(sName: string, pData: Object): void {
+
 		}
 
-		 setSampler(sName: string, pSampler: IAFXSamplerState): void {
-		   var iSlot: int = this.applySamplerState(pSampler);
-		   this.setInt(sName, iSlot);
+		setSampler(sName: string, pSampler: IAFXSamplerState): void {
+			var iSlot: int = this.applySamplerState(pSampler);
+			this.setInt(sName, iSlot);
 		}
 
-		 setVertexBuffer(sName: string, pBuffer: IVertexBuffer): void {
+		setVertexBuffer(sName: string, pBuffer: IVertexBuffer): void {
 			var iSlot: uint = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(gl.TEXTURE_2D, (<WebGLVertexTexture>pBuffer).getWebGLTexture());
 			this.setInt(sName, iSlot);
 		}
 
-		 setSamplerArray(sName: string, pList: IAFXSamplerState[]): void {
+		setSamplerArray(sName: string, pList: IAFXSamplerState[]): void {
 			var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pList.length);
-			
-			for (var i: int = 0; i < pList.length; ++ i) {
-				pBuffer[i] = this.applySamplerState(pList[i]);                
+
+			for (var i: int = 0; i < pList.length; ++i) {
+				pBuffer[i] = this.applySamplerState(pList[i]);
 			}
-			
+
 			this.setInt32Array(sName, pBuffer);
 		}
 
 
-		 setTexture(sName: string, pData: ITexture): void {
-			
+		setTexture(sName: string, pData: ITexture): void {
+
 		}
 
 		private applySamplerState(pSampler: IAFXSamplerState): int {
 			var pTexture: WebGLInternalTexture = <WebGLInternalTexture>pSampler.texture;
-			
-			if(isNull(pTexture)){
-				return ;
+
+			if (isNull(pTexture)) {
+				return;
 			}
 
 			var pTextureStateManager: WebGLInternalTextureStateManager = this._pWebGLRenderer._getTextureStateManager();
 			var pStates: IMap<int> = pTextureStateManager.add(pTexture);
 			var iSlot: int = this._pWebGLRenderer.activateWebGLTextureInAutoSlot(pTexture._getWebGLTextureTarget(), pTexture.getWebGLTexture());
 
-			if(pSampler.min_filter){
+			if (pSampler.min_filter) {
 				pTexture.setFilter(ETextureParameters.MIN_FILTER, pSampler.min_filter);
 			}
 			else {
 				pTexture.setFilter(ETextureParameters.MIN_FILTER, pStates[ETextureParameters.MIN_FILTER]);
 			}
 
-			if(pSampler.mag_filter){
+			if (pSampler.mag_filter) {
 				pTexture.setFilter(ETextureParameters.MAG_FILTER, pSampler.mag_filter);
 			}
 			else {
 				pTexture.setFilter(ETextureParameters.MAG_FILTER, pStates[ETextureParameters.MAG_FILTER]);
 			}
 
-			if(pSampler.wrap_s){
+			if (pSampler.wrap_s) {
 				pTexture.setWrapMode(ETextureParameters.WRAP_S, pSampler.wrap_s);
 			}
 			else {
 				pTexture.setWrapMode(ETextureParameters.WRAP_S, pStates[ETextureParameters.WRAP_S]);
 			}
 
-			if(pSampler.wrap_t){
+			if (pSampler.wrap_t) {
 				pTexture.setWrapMode(ETextureParameters.WRAP_T, pSampler.wrap_t);
 			}
 			else {
@@ -349,7 +349,7 @@ module akra.webgl {
 			// pTexture._setFilterInternalTexture(ETextureParameters.MAG_FILTER, pSampler.mag_filter || pTexture.getFilter(ETextureParameters.MAG_FILTER));
 			// pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_S, pSampler.wrap_s || pTexture.getWrapMode(ETextureParameters.WRAP_S));
 			// pTexture._setWrapModeInternalTexture(ETextureParameters.WRAP_T, pSampler.wrap_t || pTexture.getWrapMode(ETextureParameters.WRAP_T));
-			
+
 			// if(pSampler.min_filter){
 			//     pTexture._setFilterInternalTexture(ETextureParameters.MIN_FILTER, pSampler.min_filter);
 			// }
@@ -383,43 +383,43 @@ module akra.webgl {
 			var pVertexElement: IVertexElement;
 			var iLoc: int;
 
-			for (var i: int = 0; i < pVertexDecl.getLength(); ++ i) {
+			for (var i: int = 0; i < pVertexDecl.getLength(); ++i) {
 				pVertexElement = pVertexDecl[i];
 				iLoc = this.getWebGLAttributeLocation(pVertexElement.usage);
 
 				if (iLoc < 0) {
-					debug.warn("founded invalid GLSL attribute location(guid: %s): %s", 
-						this.guid, 
+					debug.warn("founded invalid GLSL attribute location(guid: %s): %s",
+						this.guid,
 						pVertexElement.usage);
 					continue;
 				}
 
 				pWebGLRenderer.bindWebGLBuffer(gl.ARRAY_BUFFER, (<WebGLVertexBuffer>pVertexBuffer).getWebGLBuffer());
-				pWebGLContext.vertexAttribPointer(iLoc, 
-												  pVertexElement.count,
-												  pVertexElement.type,
-												  false,
-												  iStride,
-												  pVertexElement.offset);
+				pWebGLContext.vertexAttribPointer(iLoc,
+					pVertexElement.count,
+					pVertexElement.type,
+					false,
+					iStride,
+					pVertexElement.offset);
 			}
 
 			return true;
 		}
 
 
-		 _setFloat(pWebGLUniformLocation: WebGLUniformLocation, fValue: float): void {
+		_setFloat(pWebGLUniformLocation: WebGLUniformLocation, fValue: float): void {
 			this._pWebGLContext.uniform1f(pWebGLUniformLocation, fValue);
 		}
 
-		 _setInt(pWebGLUniformLocation: WebGLUniformLocation, iValue: int): void {
+		_setInt(pWebGLUniformLocation: WebGLUniformLocation, iValue: int): void {
 			this._pWebGLContext.uniform1i(pWebGLUniformLocation, iValue);
 		}
-		
+
 		_setVec2(pWebGLUniformLocation: WebGLUniformLocation, v2fValue: IVec2): void {
 			this._pWebGLContext.uniform2f(pWebGLUniformLocation, v2fValue.x, v2fValue.y);
 		}
 
-		
+
 		_setVec2i(pWebGLUniformLocation: WebGLUniformLocation, v2iValue: IVec2): void {
 			this._pWebGLContext.uniform2i(pWebGLUniformLocation, v2iValue.x, v2iValue.y);
 		}
@@ -427,7 +427,7 @@ module akra.webgl {
 		_setVec3(pWebGLUniformLocation: WebGLUniformLocation, v3fValue: IVec3): void {
 			this._pWebGLContext.uniform3f(pWebGLUniformLocation, v3fValue.x, v3fValue.y, v3fValue.z);
 		}
-		
+
 		_setVec3i(pWebGLUniformLocation: WebGLUniformLocation, v3iValue: IVec3): void {
 			this._pWebGLContext.uniform3i(pWebGLUniformLocation, v3iValue.x, v3iValue.y, v3iValue.z);
 		}
@@ -438,7 +438,7 @@ module akra.webgl {
 
 		_setVec4i(pWebGLUniformLocation: WebGLUniformLocation, v4iValue: IVec4): void {
 			this._pWebGLContext.uniform4i(pWebGLUniformLocation, v4iValue.x, v4iValue.y, v4iValue.z, v4iValue.w);
-		}      
+		}
 
 		_setMat3(pWebGLUniformLocation: WebGLUniformLocation, m3fValue: IMat3): void {
 			this._pWebGLContext.uniformMatrix3fv(pWebGLUniformLocation, false, m3fValue.data);
@@ -463,8 +463,8 @@ module akra.webgl {
 
 			var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
 
-			for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 			}
 
@@ -473,8 +473,8 @@ module akra.webgl {
 
 		_setVec2iArray(pWebGLUniformLocation: WebGLUniformLocation, pValue: IVec2[]): void {
 			var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 2);
-			for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; j < pValue.length; i += 2, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 			}
 
@@ -483,8 +483,8 @@ module akra.webgl {
 
 		_setVec3Array(pWebGLUniformLocation: WebGLUniformLocation, pValue: IVec3[]): void {
 			var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 3);
-			for (var i: int = 0, j: int = 0; i < pValue.length; i += 3, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; i < pValue.length; i += 3, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 				pBuffer[i + 2] = pValue[j].z;
 			}
@@ -494,8 +494,8 @@ module akra.webgl {
 
 		_setVec3iArray(pWebGLUniformLocation: WebGLUniformLocation, pValue: IVec3[]): void {
 			var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 3);
-			for (var i: int = 0, j: int = 0; i < pValue.length; i += 3, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; i < pValue.length; i += 3, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 				pBuffer[i + 2] = pValue[j].z;
 			}
@@ -505,8 +505,8 @@ module akra.webgl {
 
 		_setVec4Array(pWebGLUniformLocation: WebGLUniformLocation, pValue: IVec4[]): void {
 			var pBuffer: Float32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 4);
-			for (var i: int = 0, j: int = 0; i < pValue.length; i += 4, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; i < pValue.length; i += 4, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 				pBuffer[i + 2] = pValue[j].z;
 				pBuffer[i + 3] = pValue[j].w;
@@ -517,8 +517,8 @@ module akra.webgl {
 
 		_setVec4iArray(pWebGLUniformLocation: WebGLUniformLocation, pValue: IVec4[]): void {
 			var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 4);
-			for (var i: int = 0, j: int = 0; i < pValue.length; i += 4, ++ j) {
-				pBuffer[i    ] = pValue[j].x;
+			for (var i: int = 0, j: int = 0; i < pValue.length; i += 4, ++j) {
+				pBuffer[i] = pValue[j].x;
 				pBuffer[i + 1] = pValue[j].y;
 				pBuffer[i + 2] = pValue[j].z;
 				pBuffer[i + 3] = pValue[j].w;
@@ -529,16 +529,16 @@ module akra.webgl {
 
 		_setMat3Array(pWebGLUniformLocation: WebGLUniformLocation, pValue: IMat3[]): void {
 			var pBuffer: Int32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 9);
-			for (var i: int = 0; i < pValue.length; i ++) {
-				pBuffer.set(pValue[i].data, 9*i);
+			for (var i: int = 0; i < pValue.length; i++) {
+				pBuffer.set(pValue[i].data, 9 * i);
 			}
 			this._pWebGLContext.uniformMatrix3fv(pWebGLUniformLocation, false, pBuffer);
 		}
 
 		_setMat4Array(pWebGLUniformLocation: WebGLUniformLocation, pValue: IMat4[]): void {
 			var pBuffer: Int32Array = new Float32Array(WebGLShaderProgram.uniformBuffer, 0, pValue.length * 16);
-			for (var i: int = 0; i < pValue.length; i ++) {
-				pBuffer.set(pValue[i].data, 16*i);
+			for (var i: int = 0; i < pValue.length; i++) {
+				pBuffer.set(pValue[i].data, 16 * i);
 			}
 			this._pWebGLContext.uniformMatrix4fv(pWebGLUniformLocation, false, pBuffer);
 		}
@@ -555,11 +555,11 @@ module akra.webgl {
 
 		_setSamplerArray(pWebGLUniformLocation: WebGLUniformLocation, pList: IAFXSamplerState[]): void {
 			var pBuffer: Int32Array = new Int32Array(WebGLShaderProgram.uniformBuffer, 0, pList.length);
-			
-			for (var i: int = 0; i < pList.length; ++ i) {
-				pBuffer[i] = this.applySamplerState(pList[i]);                
+
+			for (var i: int = 0; i < pList.length; ++i) {
+				pBuffer[i] = this.applySamplerState(pList[i]);
 			}
-			
+
 			this._setInt32Array(pWebGLUniformLocation, pBuffer);
 		}
 
@@ -674,7 +674,7 @@ module akra.webgl {
 			var iLoc: WebGLUniformLocation;
 			var pUniformInfo: WebGLActiveInfo;
 
-			for (var i: int = 0; i < nUniforms; ++ i) {
+			for (var i: int = 0; i < nUniforms; ++i) {
 				pUniformInfo = pWebGLContext.getActiveUniform(this._pWebGLProgram, i);
 				iLoc = pWebGLContext.getUniformLocation(this._pWebGLProgram, pUniformInfo.name);
 				pUniformLocations[pUniformInfo.name] = iLoc;
@@ -693,7 +693,7 @@ module akra.webgl {
 			var iLoc: int;
 			var pAttributeInfo: WebGLActiveInfo;
 
-			for (var i: int = 0; i < nAttributes; ++ i) {
+			for (var i: int = 0; i < nAttributes; ++i) {
 				pAttributeInfo = pWebGLContext.getActiveAttrib(this._pWebGLProgram, i);
 				iLoc = pWebGLContext.getAttribLocation(this._pWebGLProgram, pAttributeInfo.name);
 				if (config.DEBUG) {

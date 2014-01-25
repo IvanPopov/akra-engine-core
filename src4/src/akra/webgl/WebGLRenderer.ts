@@ -644,7 +644,7 @@ module akra.webgl {
 
 			this.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
-			this.enableWebGLVertexAttribs(pWebGLProgram.totalAttributes);
+			this.enableWebGLVertexAttribs(pWebGLProgram.getTotalAttributes());
 
 			var pAttribLocations: IMap<int> = pWebGLProgram._getActiveAttribLocations();
 			var pAttributeInfo: IAFXBaseAttrInfo[] = pMaker.getAttributeInfo();

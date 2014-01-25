@@ -10,17 +10,22 @@ module akra.webgl {
 	export class WebGLRenderTexture extends render.RenderTexture {
 		protected _pFrameBuffer: WebGLInternalFrameBuffer = null;
 
-		 get width(): uint { return this._iWidth = this._pFrameBuffer.width; }
-		 get height(): uint { return this._iHeight = this._pFrameBuffer.height; }
+		getWidth(): uint {
+			return this._iWidth = this._pFrameBuffer.getWidth();
+		}
 
-		constructor(pRenderer: IRenderer, pTarget: IPixelBuffer){
+		getHeight(): uint {
+			return this._iHeight = this._pFrameBuffer.getHeight();
+		}
+
+		constructor(pRenderer: IRenderer, pTarget: IPixelBuffer) {
 			super(pRenderer, pTarget, 0);
 			this._pFrameBuffer = new WebGLInternalFrameBuffer(pRenderer);
-			
+
 			this._pFrameBuffer.bindSurface(gl.COLOR_ATTACHMENT0, pTarget);
-			
-			this._iWidth = this._pFrameBuffer.width;
-			this._iHeight = this._pFrameBuffer.height;
+
+			this._iWidth = this._pFrameBuffer.getWidth();
+			this._iHeight = this._pFrameBuffer.getHeight();
 
 		}
 
@@ -33,7 +38,7 @@ module akra.webgl {
 		}
 
 		getCustomAttribute(sName: string): any {
-			if(sName === "FBO") {
+			if (sName === "FBO") {
 				return this._pFrameBuffer;
 			}
 
@@ -48,7 +53,7 @@ module akra.webgl {
 			var bResult: boolean = false;
 			bResult = super.attachDepthBuffer(pDepthBuffer);
 
-			if(bResult){
+			if (bResult) {
 				this._pFrameBuffer.attachDepthBuffer(pDepthBuffer);
 			}
 
@@ -57,10 +62,10 @@ module akra.webgl {
 
 		attachDepthPixelBuffer(pBuffer: IPixelBuffer): boolean {
 			var bResult: boolean = false;
-			
+
 			bResult = super.attachDepthPixelBuffer(pBuffer);
-			if(bResult) {
-				if(pBuffer.format !== EPixelFormats.DEPTH8){
+			if (bResult) {
+				if (pBuffer.getFormat() !== EPixelFormats.DEPTH8) {
 					this.detachDepthPixelBuffer();
 					return false;
 				}
