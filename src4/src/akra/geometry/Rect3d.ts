@@ -847,8 +847,8 @@ module akra.geometry {
 		static temp(fX0: float, fX1: float, fY0: float,
 			fY1: float, fZ0: float, fZ1: float): IRect3d;
 		static temp(): IRect3d {
-			iElement = (iElement === pBuffer.length - 1 ? 0 : (iElement++));
-			var p = pBuffer[iElement];
+			iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
+			var p = pBuffer[iElement++];
 			return p.set.apply(p, arguments);
 		}
 

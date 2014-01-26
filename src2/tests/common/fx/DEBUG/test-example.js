@@ -2,7 +2,7 @@
 
 
 /*---------------------------------------------
- * assembled at: Thu Sep 12 2013 14:52:50 GMT+0400 (Московское время (лето))
+ * assembled at: Sun Jan 26 2014 15:05:20 GMT+0400 (Московское время (зима))
  * directory: tests/common/fx/DEBUG/
  * file: tests/common/fx/test-example.ts
  * name: test-example
@@ -25,7 +25,7 @@ var akra;
         pMainScene = $("<div id='main-scene'/>");
         $(document.body).append(pMainScene);
         pMainScene.append(pCanvasElement);
-        pCanvas.resize(800, 600);
+        pCanvas.resize(window.innerWidth, window.innerHeight);
     }
     function createSceneEnvironment() {
         var pSceneQuad = akra.util.createQuad(pScene, 100.);
@@ -70,14 +70,11 @@ var akra;
     function createViewports() {
         akra.pViewport = new akra.render.DSViewport(akra.pCamera);
         pCanvas.addViewport(akra.pViewport);
-        var pStats = pUI.createComponent("RenderTargetStats");
-        pStats.target = akra.pViewport.getTarget();
-        pStats.render(pMainScene);
-        pStats.el.css({
-            position: "relative",
-            top: "-600"
-        });
-    }
+        // var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>pUI.createComponent("RenderTargetStats");
+        // pStats.target = pViewport.getTarget();
+        // pStats.render(pMainScene);
+        // pStats.el.css({position: "relative", top: "-600"});
+            }
     function createLighting() {
         var pOmniLight = pScene.createLightPoint(akra.ELightTypes.OMNI, false, 0, "test-omni-0");
         pOmniLight.attachToParent(pScene.getRootNode());
@@ -281,8 +278,8 @@ var akra;
         // var pCube2: ISceneNode = loadModel("../../../data/models/cube.dae");
         // pCube2.setPosition(2., 0.8, -5.);
         // pCube2.scale(0.1);
-        // loadManyModels(300, DATA + "models/cube.dae");
-        loadManyModels(100, akra.DATA + "models/box/opened_box.dae");
+        // loadManyModels(400, akra.DATA + "models/cube.dae");
+        loadManyModels(150, akra.DATA + "models/box/opened_box.dae");
     }
     akra.pEngine.bind("depsLoaded", main);
     akra.pEngine.exec();

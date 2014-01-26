@@ -830,8 +830,8 @@ module akra.math {
 		static temp(f1?, f2?, f3?,
 			f4?, f5?, f6?,
 			f7?, f8?, f9?): IMat3 {
-				iElement = (iElement === pBuffer.length - 1 ? 0 : (iElement++));
-			var p = pBuffer[iElement];
+				iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
+			var p = pBuffer[iElement++];
 			return p.set.apply(p, arguments);
 		}
 

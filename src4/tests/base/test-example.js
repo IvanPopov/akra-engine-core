@@ -33,6 +33,7 @@ var akra;
         akra.pCanvas.addViewport(pViewport);
         akra.pCanvas.resize(window.innerWidth, window.innerHeight);
 
+        //(<render.DSViewport>pViewport).setFXAA(false);
         return pViewport;
     }
 
@@ -60,6 +61,77 @@ var akra;
         });
     }
 
+    function loadModel(sPath, fnCallback) {
+        var pModelRoot = akra.pScene.createNode();
+        var pModel = akra.pEngine.getResourceManager().loadModel(sPath);
+
+        pModelRoot.attachToParent(akra.pScene.getRootNode());
+
+        function fnLoadModel(pModel) {
+            pModel.attachToScene(pModelRoot);
+
+            if (pModel.isAnimationLoaded()) {
+                var pController = akra.pEngine.createAnimationController();
+                var pContainer = akra.animation.createContainer();
+                var pAnimation = pModel.extractAnimation(0);
+
+                pController.attach(pModelRoot);
+
+                pContainer.setAnimation(pAnimation);
+                pContainer.useLoop(true);
+                pController.addAnimation(pContainer);
+            }
+
+            akra.pScene.beforeUpdate.connect(function () {
+                pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+                // pController.update();
+            });
+
+            if (akra.isFunction(fnCallback)) {
+                fnCallback(pModelRoot);
+            }
+        }
+
+        if (pModel.isResourceLoaded()) {
+            fnLoadModel(pModel);
+        } else {
+            pModel.loaded.connect(fnLoadModel);
+        }
+
+        return pModelRoot;
+    }
+
+    function loadManyModels(nCount, sPath) {
+        var iRow = 0;
+        var iCountInRow = 0;
+
+        var fDX = 2.;
+        var fDZ = 2.;
+
+        var fShiftX = 0.;
+        var fShiftZ = 0.;
+
+        var pCube = pCube = loadModel(sPath, function (pModelRoot) {
+            for (var i = 0; i < nCount; i++) {
+                if (iCountInRow > iRow) {
+                    iCountInRow = 0;
+                    iRow++;
+
+                    fShiftX = -iRow * fDX / 2;
+                    fShiftZ = -iRow * fDZ;
+                }
+
+                pCube = i === 0 ? pCube : loadModel(sPath);
+                pCube.setPosition(fShiftX, 0.8, fShiftZ - 2.);
+                pCube.scale(0.1);
+
+                fShiftX += fDX;
+                iCountInRow++;
+            }
+            //pEngine.renderFrame();
+        });
+    }
+
     function main(pEngine) {
         setup(akra.pCanvas);
 
@@ -69,7 +141,11 @@ var akra;
         createLighting();
         createSkyBox();
 
+        //loadManyModels(1, "../../../src2/data/" + "models/cube.dae");
+        loadManyModels(150, "../../../src2/data/" + "models/box/opened_box.dae");
+
         pEngine.exec();
+        //pEngine.renderFrame();
     }
 
     akra.pEngine.depsLoaded.connect(main);

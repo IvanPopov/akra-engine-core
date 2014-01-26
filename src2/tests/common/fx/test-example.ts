@@ -91,11 +91,11 @@ module akra {
 		pViewport = new render.DSViewport(pCamera);
 		pCanvas.addViewport(pViewport);
 		
-		var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>pUI.createComponent("RenderTargetStats");
-		pStats.target = pViewport.getTarget();
-		pStats.render(pMainScene);
+		// var pStats: IUIRenderTargetStats = <IUIRenderTargetStats>pUI.createComponent("RenderTargetStats");
+		// pStats.target = pViewport.getTarget();
+		// pStats.render(pMainScene);
 
-		pStats.el.css({position: "relative", top: "-600"});
+		// pStats.el.css({position: "relative", top: "-600"});
 	}
 
 	function createLighting(): void {

@@ -454,8 +454,8 @@ module akra.color {
 		static temp(fGray: float, fAlpha: float): IColor;
 		static temp(fGray: float): IColor;
 		static temp(r?: any, g?: any, b?: any, a?: any): IColor {
-			iElement = (iElement === pBuffer.length - 1 ? 0 : (iElement++));
-			var p = pBuffer[iElement];
+			iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
+			var p = pBuffer[iElement++];
 			return p.set.apply(p, arguments);
 		}
 	}

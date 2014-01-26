@@ -60,7 +60,7 @@ module akra.render {
 		private static _iElement: uint = 0;
 
 		static temp(): IUniform {
-			UniformOmni._iElement = (UniformOmni._iElement === UniformOmni._pBuffer.length - 1 ? 0 : UniformOmni._pBuffer.length);
+			UniformOmni._iElement = (UniformOmni._iElement === UniformOmni._pBuffer.length - 1 ? 0 : UniformOmni._iElement);
 			var p = UniformOmni._pBuffer[UniformOmni._iElement++];
 			return p;
 		}
@@ -88,7 +88,7 @@ module akra.render {
 		private static _iElement: uint = 0;
 
 		static temp(): IUniform {
-			UniformProject._iElement = (UniformProject._iElement === UniformProject._pBuffer.length - 1 ? 0 : UniformProject._pBuffer.length);
+			UniformProject._iElement = (UniformProject._iElement === UniformProject._pBuffer.length - 1 ? 0 : UniformProject._iElement);
 			var p = UniformProject._pBuffer[UniformProject._iElement++];
 			return p;
 		}
@@ -126,7 +126,7 @@ module akra.render {
 		private static _iElement: uint = 0;
 
 		static temp(): IUniform {
-			UniformProjectShadow._iElement = (UniformProjectShadow._iElement === UniformProjectShadow._pBuffer.length - 1 ? 0 : UniformProjectShadow._pBuffer.length);
+			UniformProjectShadow._iElement = (UniformProjectShadow._iElement === UniformProjectShadow._pBuffer.length - 1 ? 0 : UniformProjectShadow._iElement);
 			var p = UniformProjectShadow._pBuffer[UniformProjectShadow._iElement++];
 			return p;
 		}
@@ -174,7 +174,7 @@ module akra.render {
 		private static _iElement: uint = 0;
 
 		static temp(): IUniform {
-			UniformOmniShadow._iElement = (UniformOmniShadow._iElement === UniformOmniShadow._pBuffer.length - 1 ? 0 : UniformOmniShadow._pBuffer.length);
+			UniformOmniShadow._iElement = (UniformOmniShadow._iElement === UniformOmniShadow._pBuffer.length - 1 ? 0 : UniformOmniShadow._iElement);
 			var p = UniformOmniShadow._pBuffer[UniformOmniShadow._iElement++];
 			return p;
 		}
@@ -206,7 +206,7 @@ module akra.render {
 		private static _iElement: uint = 0;
 
 		static temp(): IUniform {
-			UniformSun._iElement = (UniformSun._iElement === UniformSun._pBuffer.length - 1 ? 0 : UniformSun._pBuffer.length);
+			UniformSun._iElement = (UniformSun._iElement === UniformSun._pBuffer.length - 1 ? 0 : UniformSun._iElement);
 			var p = UniformSun._pBuffer[UniformSun._iElement++];
 			return p;
 		}
@@ -252,8 +252,8 @@ module akra.render {
 		private static _iElement: uint = 0;
 
 		static temp(): IUniform {
-			UniformSunShadow._iElement = (UniformSunShadow._iElement === UniformSunShadow._pBuffer.length - 1 ? 0 : (UniformSunShadow._iElement++));
-			var p = UniformSunShadow._pBuffer[UniformSunShadow._iElement];
+			UniformSunShadow._iElement = (UniformSunShadow._iElement === UniformSunShadow._pBuffer.length - 1 ? 0 : UniformSunShadow._iElement);
+			var p = UniformSunShadow._pBuffer[UniformSunShadow._iElement++];
 			return p;
 		}
 	}

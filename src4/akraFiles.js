@@ -1,6 +1,6 @@
 akraFiles = {
   'akraCore': [
-    // 'src/minErr.js',
+    'src/akra/akra.ts',
   ],
 
   'akraParser': [

@@ -13,7 +13,7 @@
 
 module akra.util {
 
-	enum AEEntityStates {
+	enum EEntityStates {
 		//обновился ли сам узел?
 		k_Updated = 0x01,
 		//есть ли среди потомков обновленные узлы
@@ -256,28 +256,28 @@ module akra.util {
 		}
 
 		isUpdated(): boolean {
-			return bf.testAll(this._iStateFlags, AEEntityStates.k_Updated);
+			return bf.testAll(this._iStateFlags, EEntityStates.k_Updated);
 		}
 
 		hasUpdatedSubNodes(): boolean {
-			return bf.testAll(this._iStateFlags, AEEntityStates.k_DescendantsUpdtated);
+			return bf.testAll(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
 		}
 
 		recursiveUpdate(): boolean {
 			// var bUpdated: boolean = false;
 			// update myself
 			if (this.update()) {
-				this._iStateFlags = bf.setAll(this._iStateFlags, AEEntityStates.k_Updated);
+				this._iStateFlags = bf.setAll(this._iStateFlags, EEntityStates.k_Updated);
 				// bUpdated = true;
 			}
 			// update my sibling
 			if (this._pSibling && this._pSibling.recursiveUpdate()) {
-				this._iStateFlags = bf.setAll(this._iStateFlags, AEEntityStates.k_SiblingsUpdated);
+				this._iStateFlags = bf.setAll(this._iStateFlags, EEntityStates.k_SiblingsUpdated);
 				// bUpdated = true;
 			}
 			// update my child
 			if (this._pChild && this._pChild.recursiveUpdate()) {
-				this._iStateFlags = bf.setAll(this._iStateFlags, AEEntityStates.k_DescendantsUpdtated);
+				this._iStateFlags = bf.setAll(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
 				// bUpdated = true;
 			}
 

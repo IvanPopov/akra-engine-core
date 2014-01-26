@@ -384,7 +384,7 @@ module akra.pool.resources {
 
 		private COLLADAScaleMatrix(pXML: Element): IMat4 {
 			var pData: float[] = new Array(3);
-
+			
 			conv.stofa(stringData(pXML), pData);
 
 			return new Mat4(pData[0], pData[1], pData[2], 1.0);

@@ -91,6 +91,8 @@ float4 fs_fxaa_shading(VS_OUT IN) : COLOR{
 		color.xyz=rgbB;
 	}
 
+	color = float4(tex2D(screenSampler, texCoords).xyz, 1.);
+
 	return color;
 };	
 

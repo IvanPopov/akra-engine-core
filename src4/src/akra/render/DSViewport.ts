@@ -267,16 +267,16 @@ module akra.render {
 
 		getSkybox(): ITexture { return this._pDeferredSkyTexture; }
 
-		protected _getDepthRangeImpl(): IDepthRange{
-			var pRange: IDepthRange = config.WEBGL? 
-				webgl.getDepthRange(this._pDeferredDepthTexture):
-				<IDepthRange>{min: 0., max: 1.};
-			//[0,1] -> [-1, 1]
-			pRange.min = pRange.min * 2. - 1.;
-			pRange.max = pRange.max * 2. - 1.;
+		//protected _getDepthRangeImpl(): IDepthRange{
+		//	var pRange: IDepthRange = config.WEBGL ? 
+		//		webgl.getDepthRange(this._pDeferredDepthTexture):
+		//		<IDepthRange>{min: 0., max: 1.};
+		//	//[0,1] -> [-1, 1]
+		//	pRange.min = pRange.min * 2. - 1.;
+		//	pRange.max = pRange.max * 2. - 1.;
 
-			return pRange;
-		}
+		//	return pRange;
+		//}
 		
 		
 

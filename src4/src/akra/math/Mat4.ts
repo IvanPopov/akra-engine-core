@@ -8,22 +8,22 @@
 
 module akra.math {
 
-	import __11 = math.__11;
-	import __12 = math.__12;
-	import __13 = math.__13;
-	import __14 = math.__14;
-	import __21 = math.__21;
-	import __22 = math.__22;
-	import __23 = math.__23;
-	import __24 = math.__24;
-	import __31 = math.__31;
-	import __32 = math.__32;
-	import __33 = math.__33;
-	import __34 = math.__34;
-	import __41 = math.__41;
-	import __42 = math.__42;
-	import __43 = math.__43;
-	import __44 = math.__44; 
+	//import __11 = math.__11;
+	//import __12 = math.__12;
+	//import __13 = math.__13;
+	//import __14 = math.__14;
+	//import __21 = math.__21;
+	//import __22 = math.__22;
+	//import __23 = math.__23;
+	//import __24 = math.__24;
+	//import __31 = math.__31;
+	//import __32 = math.__32;
+	//import __33 = math.__33;
+	//import __34 = math.__34;
+	//import __41 = math.__41;
+	//import __42 = math.__42;
+	//import __43 = math.__43;
+	//import __44 = math.__44; 
 
 	var pBuffer: IMat4[];
 	var iElement: uint;
@@ -1704,8 +1704,8 @@ module akra.math {
 			f5?, f6?, f7?, f8?,
 			f9?, f10?, f11?, f12?,
 			f13?, f14?, f15?, f16?): IMat4 {
-				iElement = (iElement === pBuffer.length - 1 ? 0 : (iElement++));
-			var p = pBuffer[iElement];
+				iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
+			var p = pBuffer[iElement++];
 			return p.set.apply(p, arguments);
 		}
 	}

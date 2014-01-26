@@ -133,8 +133,8 @@ module akra.geometry {
 		static temp(iLeft: uint, iTop: uint, iRight: uint, iBottom: uint): IBox;
 		static temp(iLeft: uint, iTop: uint, iFront: uint, iRight: uint, iBottom: uint, iBack: uint): IBox;
 		static temp(): IBox {
-			iElement = (iElement === pBuffer.length - 1 ? 0 : (iElement++));
-			var pBox = pBuffer[iElement];
+			iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
+			var pBox = pBuffer[iElement++];
 
 			var iLeft: uint = 0,
 				iTop: uint = 0,

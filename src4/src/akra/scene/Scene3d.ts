@@ -34,7 +34,7 @@ module akra.scene {
 
 	export class Scene3d implements IScene3d {
 		guid: uint = guid();
-		
+
 		displayListAdded: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(<any>this);
 		displayListRemoved: ISignal<{ (pScene: IScene3d, pList: IDisplayList<ISceneNode>, iIndex: int): void; }> = new Signal(<any>this);
 
@@ -67,7 +67,7 @@ module akra.scene {
 			return this._sName;
 		}
 
-		constructor (pSceneManager: ISceneManager, sName: string = null) {
+		constructor(pSceneManager: ISceneManager, sName: string = null) {
 			this._pSceneManager = pSceneManager;
 			this._sName = sName;
 			this._pRootNode = this.createNode("root-node");
@@ -103,15 +103,15 @@ module akra.scene {
 
 		}
 
-		 getManager(): ISceneManager{
+		getManager(): ISceneManager {
 			return this._pSceneManager;
 		}
 
-		 isUpdated(): boolean {
+		isUpdated(): boolean {
 			return this._isUpdated;
 		}
 
-		 getRootNode(): ISceneNode {
+		getRootNode(): ISceneNode {
 			return this._pRootNode;
 		}
 
@@ -138,7 +138,7 @@ module akra.scene {
 
 		createObject(sName: string = null): ISceneObject {
 			var pNode: ISceneNode = new SceneObject(this);
-			
+
 			if (!pNode.create()) {
 				logger.error("cannot create scene node..");
 				return null;
@@ -146,11 +146,11 @@ module akra.scene {
 
 			return <ISceneObject>this.setupNode(pNode, sName);
 		}
-		
+
 
 		createNode(sName: string = null): ISceneNode {
 			var pNode: ISceneNode = new SceneNode(this);
-			
+
 			if (!pNode.create()) {
 				logger.error("cannot create scene node..");
 				return null;
@@ -161,7 +161,7 @@ module akra.scene {
 
 		createModel(sName: string = null): ISceneModel {
 			var pNode: ISceneModel = new SceneModel(this);
-			
+
 			if (!pNode.create()) {
 				logger.error("cannot create model..");
 				return null;
@@ -172,35 +172,35 @@ module akra.scene {
 
 		createCamera(sName: string = null): ICamera {
 			var pCamera: ICamera = new objects.Camera(this);
-			
+
 			if (!pCamera.create()) {
 				logger.error("cannot create camera..");
 				return null;
 			}
-			
+
 			return <ICamera>this.setupNode(pCamera, sName);
 		}
 
 		createLightPoint(eType: ELightTypes = ELightTypes.UNKNOWN, isShadowCaster: boolean = true,
-						 iMaxShadowResolution: uint = 256, sName: string = null): ILightPoint {
+			iMaxShadowResolution: uint = 256, sName: string = null): ILightPoint {
 
 			var pLight: ILightPoint;
 
-			switch(eType){
-				case ELightTypes.PROJECT: 
+			switch (eType) {
+				case ELightTypes.PROJECT:
 					pLight = <ILightPoint>(new light.ProjectLight(this));
 					break;
-				case ELightTypes.OMNI: 
+				case ELightTypes.OMNI:
 					pLight = <ILightPoint>(new light.OmniLight(this));
 					break;
 				case ELightTypes.SUN:
 					pLight = <ILightPoint>(new light.SunLight(this));
 					break;
-				default: 
+				default:
 					return null;
 			}
-			
-			if(!pLight.create(isShadowCaster, iMaxShadowResolution)){
+
+			if (!pLight.create(isShadowCaster, iMaxShadowResolution)) {
 				logger.error("cannot create light");
 				return null;
 			}
@@ -211,7 +211,7 @@ module akra.scene {
 
 		createSprite(sName: string = null): ISprite {
 			var pSprite: ISprite = new Sprite(this);
-			
+
 			if (!pSprite.create()) {
 				logger.error("cannot create sprite..");
 				return null;
@@ -234,29 +234,29 @@ module akra.scene {
 
 		createTerrain(sName?: string): ITerrain {
 			var pTerrain: ITerrain = new terrain.Terrain(this);
-			
+
 			if (!pTerrain.create()) {
 				logger.error("cannot create terrain..");
 				return null;
 			}
-			
+
 			return <ITerrain>this.setupNode(pTerrain, sName);
 		}
 
 		createTerrainROAM(sName?: string): ITerrainROAM {
 			var pTerrainROAM: ITerrainROAM = new terrain.TerrainROAM(this);
-			
+
 			if (!pTerrainROAM.create()) {
 				logger.error("cannot create terrain..");
 				return null;
 			}
-			
+
 			return <ITerrainROAM>this.setupNode(pTerrainROAM, sName);
 		}
 
 		createTerrainSection(sName?: string): ITerrainSection {
 			var pNode: ISceneNode = new terrain.TerrainSection(this);
-			
+
 			if (!pNode.create()) {
 				logger.error("cannot create terrain section..");
 				return null;
@@ -267,7 +267,7 @@ module akra.scene {
 
 		createTerrainSectionROAM(sName?: string): ITerrainSectionROAM {
 			var pNode: ISceneNode = new terrain.TerrainSectionROAM(this);
-			
+
 			if (!pNode.create()) {
 				logger.error("cannot create terrain section roam..");
 				return null;
@@ -276,24 +276,24 @@ module akra.scene {
 			return <ITerrainSectionROAM>this.setupNode(pNode, sName);
 		}
 
-		_createShadowCaster(pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X, sName: string = null){
+		_createShadowCaster(pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X, sName: string = null) {
 			var pShadowCaster: IShadowCaster = new light.ShadowCaster(pLightPoint, iFace);
-			
+
 			if (!pShadowCaster.create()) {
 				logger.error("cannot create shadow caster..");
 				return null;
 			}
-			
+
 			return <IShadowCaster>this.setupNode(pShadowCaster, sName);
 		}
 
-		 getDisplayList(i: uint): IDisplayList<ISceneNode> {
+		getDisplayList(i: uint): IDisplayList<ISceneNode> {
 			debug.assert(isDefAndNotNull(this._pDisplayLists[i]), "display list not defined");
 			return this._pDisplayLists[i];
 		}
 
 		getDisplayListByName(csName: string): int {
-			for (var i: int = 0; i < this._pDisplayLists.length; ++ i) {
+			for (var i: int = 0; i < this._pDisplayLists.length; ++i) {
 				if (this._pDisplayLists[i].getName() === csName) {
 					return i;
 				}
@@ -303,7 +303,7 @@ module akra.scene {
 		}
 
 		_render(pCamera: ICamera, pViewport: IViewport): void {
-			
+
 		}
 
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {
@@ -318,11 +318,11 @@ module akra.scene {
 		delDisplayList(index: uint): boolean {
 			var pLists: IDisplayList<ISceneNode>[] = this._pDisplayLists;
 
-			for (var i: int = 0; i < pLists.length; ++ i) {
+			for (var i: int = 0; i < pLists.length; ++i) {
 				if (i === index && isDefAndNotNull(pLists[i])) {
 					pLists[i] = null;
-					this._pDisplayListsCount --;
-					
+					this._pDisplayListsCount--;
+
 					this.displayListRemoved.emit(pLists[i], i);
 
 					return true;
@@ -333,14 +333,14 @@ module akra.scene {
 		}
 
 		addDisplayList(pList: IDisplayList<ISceneNode>): int {
-			debug.assert(isDefAndNotNull(this.getDisplayListByName(pList.getName())), 
+			debug.assert(isDefAndNotNull(this.getDisplayListByName(pList.getName())),
 				"DL with name <" + pList.getName() + "> already exists");
 
 
 			var pLists: IDisplayList<ISceneNode>[] = this._pDisplayLists;
 			var iIndex: uint = this._pDisplayLists.length;
 
-			for (var i: int = 0; i < pLists.length; ++ i) {
+			for (var i: int = 0; i < pLists.length; ++i) {
 				if (pLists[i] === null) {
 					pLists[i] = pList;
 					iIndex = i;
@@ -356,10 +356,10 @@ module akra.scene {
 
 			this.displayListAdded.emit(pList, iIndex);
 
-			this._pDisplayListsCount ++;
+			this._pDisplayListsCount++;
 
 			return iIndex;
-		 }
+		}
 
 		static DL_DEFAULT: uint8 = 0;
 		static DL_LIGHTING: uint8 = 1;

@@ -33,6 +33,7 @@ module akra {
 		pCanvas.addViewport(pViewport);
 		pCanvas.resize(window.innerWidth, window.innerHeight);
 
+		//(<render.DSViewport>pViewport).setFXAA(false);
 		return pViewport;
 	}
 
@@ -59,6 +60,78 @@ module akra {
 		});
 	}
 
+	function loadModel(sPath, fnCallback?: Function): ISceneNode {
+		var pModelRoot: ISceneNode = pScene.createNode();
+		var pModel: ICollada = <ICollada>pEngine.getResourceManager().loadModel(sPath);
+
+		pModelRoot.attachToParent(pScene.getRootNode());
+
+		function fnLoadModel(pModel: ICollada): void {
+			pModel.attachToScene(pModelRoot);
+
+			if (pModel.isAnimationLoaded()) {
+				var pController: IAnimationController = pEngine.createAnimationController();
+				var pContainer: IAnimationContainer = animation.createContainer();
+				var pAnimation: IAnimation = pModel.extractAnimation(0);
+
+				pController.attach(pModelRoot);
+
+				pContainer.setAnimation(pAnimation);
+				pContainer.useLoop(true);
+				pController.addAnimation(pContainer);
+			}
+
+			pScene.beforeUpdate.connect(() => {
+				pModelRoot.addRelRotationByXYZAxis(0.00, 0.01, 0);
+				// pController.update();
+			});
+
+			if (isFunction(fnCallback)) {
+				fnCallback(pModelRoot);
+			}
+		}
+
+		if (pModel.isResourceLoaded()) {
+			fnLoadModel(pModel);
+		}
+		else {
+			pModel.loaded.connect(fnLoadModel);
+		}
+
+		return pModelRoot;
+	}
+
+	function loadManyModels(nCount: uint, sPath: string): void {
+		var iRow: uint = 0;
+		var iCountInRow: uint = 0;
+
+		var fDX: float = 2.;
+		var fDZ: float = 2.;
+
+		var fShiftX: float = 0.;
+		var fShiftZ: float = 0.;
+
+		var pCube: ISceneNode = pCube = loadModel(sPath, (pModelRoot: ISceneNode) => {
+			for (var i: uint = 0; i < nCount; i++) {
+				if (iCountInRow > iRow) {
+					iCountInRow = 0;
+					iRow++;
+
+					fShiftX = -iRow * fDX / 2;
+					fShiftZ = -iRow * fDZ;
+				}
+
+				pCube = i === 0 ? pCube : loadModel(sPath);
+				pCube.setPosition(fShiftX, 0.8, fShiftZ - 2.);
+				pCube.scale(0.1);
+
+				fShiftX += fDX;
+				iCountInRow++;
+			}
+			//pEngine.renderFrame();
+		});
+	}
+
 	function main(pEngine: IEngine) {
 		setup(pCanvas);
 
@@ -68,7 +141,11 @@ module akra {
 		createLighting();
 		createSkyBox();
 
+		//loadManyModels(1, "../../../src2/data/" + "models/cube.dae");
+		loadManyModels(150, "../../../src2/data/" + "models/box/opened_box.dae");
+
 		pEngine.exec();
+		//pEngine.renderFrame();
 	}
 
 	pEngine.depsLoaded.connect(main);

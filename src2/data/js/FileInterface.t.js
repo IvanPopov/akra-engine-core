@@ -139,4 +139,4 @@ onmessage = function (pEvent) {
             postMessage(remove(pFile));
             break;
     }
-};
+};  
