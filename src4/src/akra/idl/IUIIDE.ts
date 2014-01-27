@@ -42,19 +42,19 @@ module akra {
 	export interface IUIIDE extends IUIComponent {
 		//системные объект для быстрого доступа к основным функциям API
 		_apiEntry: any;
-	
+
 		selectedObject: ISceneObject;
-	
+
 		getEngine(): IEngine;
 		getResourceManager(): IResourcePoolManager;
 		getScene(): IScene3d;
 		getViewport(): IViewport;
 		getCamera(): ICamera;
 		getCanvas(): ICanvas3d;
-	
+
 		cmd(eCommand: ECMD, ...argv: any[]): boolean;
-	
-		signal created(): void;
+
+		created: ISignal<{ (pIDE: IUIIDE): void; }>;
 	}
 	
 	//var ide: IUIIDE = null;

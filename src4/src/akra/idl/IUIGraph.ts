@@ -38,5 +38,8 @@ module akra {
 		connectTo(pConnector: IUIGraphConnector): void;
 	
 		isReadyForConnect(): boolean;
+
+		connectionBegin: ISignal<{ (pGraph: IUIGraph, pRoute: IUIGraphRoute): void; }>;
+		connectionEnd: ISignal<{ (pGraph: IUIGraph): void; }>;
 	}
 }

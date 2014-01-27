@@ -7,10 +7,15 @@
 /// <reference path="../idl/IUITabs.ts" />
 /// <reference path="../idl/IUIPopup.ts" />
 /// <reference path="../idl/IUICheckboxList.ts" />
+/// <reference path="../idl/IUIAnimationControls.ts" />
 /// <reference path="../idl/IUIIDE.ts" />
 /// <reference path="../idl/IRID.ts" />
 
 module akra.ui {
+
+	import Vec2 = math.Vec2;
+	import Vec3 = math.Vec3;
+	import Vec4 = math.Vec4;
 
 	export enum IAxis {
 		X = 0x01,
@@ -108,7 +113,8 @@ module akra.ui {
 			this._pEngine = getUI(parent).getManager().getEngine();
 			debug.assert(!isNull(this._pEngine), "Engine required!");
 
-			this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
+			//this.connect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
+			this.getCanvas().viewportAdded.connect(this, this._viewportAdded);
 
 			this.template("IDE.tpl");
 
@@ -128,13 +134,18 @@ module akra.ui {
 			//setup 3d controls
 			var p3DControls: IUICheckboxList = this._p3DControls = <IUICheckboxList>this.findEntity("3d-controls");
 
-			this.connect(<IUICheckbox>p3DControls.findEntity("pick"), SIGNAL(changed), SLOT(_enablePickMode));
-			this.connect(<IUICheckbox>p3DControls.findEntity("translate"), SIGNAL(changed), SLOT(_enableTranslateMode));
-			this.connect(<IUICheckbox>p3DControls.findEntity("rotate"), SIGNAL(changed), SLOT(_enableRotateMode));
-			this.connect(<IUICheckbox>p3DControls.findEntity("scale-control"), SIGNAL(changed), SLOT(_enableScaleMode));
+			//this.connect(<IUICheckbox>p3DControls.findEntity("pick"), SIGNAL(changed), SLOT(_enablePickMode));
+			//this.connect(<IUICheckbox>p3DControls.findEntity("translate"), SIGNAL(changed), SLOT(_enableTranslateMode));
+			//this.connect(<IUICheckbox>p3DControls.findEntity("rotate"), SIGNAL(changed), SLOT(_enableRotateMode));
+			//this.connect(<IUICheckbox>p3DControls.findEntity("scale-control"), SIGNAL(changed), SLOT(_enableScaleMode));
+			(<IUICheckbox>p3DControls.findEntity("pick")).changed.connect(this, this._enablePickMode);
+			(<IUICheckbox>p3DControls.findEntity("translate")).changed.connect(this, this._enableTranslateMode);
+			(<IUICheckbox>p3DControls.findEntity("rotate")).changed.connect(this, this._enableRotateMode);
+			(<IUICheckbox>p3DControls.findEntity("scale-control")).changed.connect(this, this._enableScaleMode);
 
 			//connect node properties to scene tree
-			this.connect(pInspector, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
+			//this.connect(pInspector, SIGNAL(nodeNameChanged), SLOT(_updateSceneNodeName));
+			pInspector.nodeNameChanged.connect(this, this._updateSceneNodeName);
 
 			var pTabs: IUITabs = this._pTabs = <IUITabs>this.findEntity("WorkTabs");
 
@@ -148,9 +159,9 @@ module akra.ui {
 
 			// this._pModelBasis = pBasis;
 
-			var pBasisTranslation: ICollada = <ICollada>this.getResourceManager().loadModel(DATA + "/models/basis_translation.DAE", {shadows: false});
+			var pBasisTranslation: ICollada = <ICollada>this.getResourceManager().loadModel(config.data + "/models/basis_translation.DAE", {shadows: false});
 
-			pBasisTranslation.bind(SIGNAL(loaded), (pModel: ICollada): void => {
+			pBasisTranslation.loaded.connect((pModel: ICollada): void => {
 				var pModelRoot: IModelEntry = pModel.attachToScene(pScene);
 				
 				pModelRoot.attachToParent(pScene.getRootNode());
@@ -230,8 +241,8 @@ module akra.ui {
 
 					var fX: float = (cosAlpha * vB.length()) / vA.length();
 					//длинна вектора на который надо сдвинуть объект в пространстве камеры.
-					var vAx: IVec2 = vec2(vA.x * fX, vA.y * fX);
-					var vC: IVec2 = vO.add(vAx, vec2(0.));
+					var vAx: IVec2 = Vec2.temp(vA.x * fX, vA.y * fX);
+					var vC: IVec2 = vO.add(vAx, Vec2.temp(0.));
 
 					var vC3d: IVec3 = vAxisOrigin.xyz.scale(fX);
 
@@ -278,9 +289,9 @@ module akra.ui {
 					}
 
 					pNodes[i].ondragging = (pModel: ISceneModel, pViewport: IViewport, pSubset: IMeshSubset, x, y) => {
-						vec2(x, y).subtract(vO, vB);
+						Vec2.temp(x, y).subtract(vO, vB);
 
-						var vPos: IVec3 = vec3(0.);
+						var vPos: IVec3 = Vec3.temp(0.);
 						
 						if (iAxis & IAxis.X) {
 							vPos.add(applyAxisModifier(am[IAxis.X]));
@@ -357,7 +368,8 @@ module akra.ui {
 		}
 
 		_viewportAdded(pTarget: IRenderTarget, pViewport: IViewport): void {
-			this.disconnect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
+			//this.disconnect(this.getCanvas(), SIGNAL(viewportAdded), SLOT(_viewportAdded));
+			this.getCanvas().viewportAdded.disconnect(this, this._viewportAdded);
 
 			pViewport.enableSupportFor3DEvent(E3DEventTypes.CLICK|E3DEventTypes.MOUSEOVER|E3DEventTypes.MOUSEOUT|
 				E3DEventTypes.DRAGSTART|E3DEventTypes.DRAGSTOP);
@@ -365,10 +377,11 @@ module akra.ui {
 			this._pPreview.setViewport(pViewport);	
 			this.setupApiEntry();	
 
-			this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_sceneUpdate));
-			this.created();
+			//this.connect(this.getScene(), SIGNAL(beforeUpdate), SLOT(_sceneUpdate));
+			this.getScene().beforeUpdate.connect(this, this._sceneUpdate);
+			this.created.emit();
 
-			pViewport.bind(SIGNAL(click), (pViewport: IDSViewport, x: uint, y: uint): void => {
+			pViewport.click.connect((pViewport: IDSViewport, x: uint, y: uint): void => {
 				if (this.editMode !== EEditModes.NONE) {
 					var pRes: IRIDPair = pViewport.pick(x, y);
 					
@@ -390,7 +403,7 @@ module akra.ui {
 			}
 
 			if (!isNull(pObjectPrev)) {
-				if (akra.scene.isModel(pObjectPrev)) {
+				if (akra.scene.SceneModel.isModel(pObjectPrev)) {
 					(<ISceneModel>pObjectPrev).mesh.hideBoundingBox();
 				}
 			}
@@ -402,13 +415,13 @@ module akra.ui {
 			if (this.editMode !== EEditModes.NONE) {
 				pViewport.highlight(pObject, pRenderable);
 
-				if (akra.scene.isModel(pObject)) {
+				if (akra.scene.SceneModel.isModel(pObject)) {
 					(<ISceneModel>pObject).mesh.hideBoundingBox();
 				}
 			}
 
 			if (this.editMode === EEditModes.MOVE && !isNull(pObject)) {
-				if (akra.scene.isModel(pObject)) {
+				if (akra.scene.SceneModel.isModel(pObject)) {
 					(<ISceneModel>pObject).mesh.showBoundingBox();
 				}
 
@@ -466,7 +479,7 @@ module akra.ui {
 		}
 
 		protected saveScreenshot(): boolean {
-			saveAs(util.dataURItoBlob(this.getCanvasElement().toDataURL("image/png")), "screen.png");
+			saveAs(conv.dutob(this.getCanvasElement().toDataURL("image/png")), "screen.png");
 			return true;
 		}
 
@@ -490,7 +503,7 @@ module akra.ui {
 				return false;
 			}
 
-			this._pSceneTree.selectByGuid(pNode.getGuid());
+			this._pSceneTree.selectByGuid(pNode.guid);
 			this._pInspector.inspectNode(pNode);
 			return true;
 		}
@@ -501,13 +514,13 @@ module akra.ui {
 		}
 
 		protected editAnimationController(pController: IAnimationController): boolean {
-			var sName: string = "controller-" + pController.getGuid();
+			var sName: string = "controller-" + pController.guid;
 			var iTab: int = this._pTabs.findTab(sName);
 			
 			if (iTab < 0) {
 				var pControls: IUIAnimationControls = 
 					<IUIAnimationControls>this._pTabs.createComponent("animation.Controls", {
-						title: "Edit controller: " + pController.getGuid(), 
+						title: "Edit controller: " + pController.guid, 
 						name: sName
 					});
 

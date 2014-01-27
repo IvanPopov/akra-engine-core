@@ -1,9 +1,6 @@
-#ifndef UIGRAPHCONTROLS_TS
-#define UIGRAPHCONTROLS_TS
-
-#include "IUIGraph.ts"
-#include "IUIGraphControls.ts"
-#include "../Panel.ts"
+/// <reference path="../../idl/IUIGraph.ts" />
+/// <reference path="../../idl/IUIGraphControls.ts" />
+/// <reference path="../Panel.ts" />
 
 module akra.ui.graph {
 	export class Controls extends Panel implements IUIGraphControls {
@@ -29,8 +26,8 @@ module akra.ui.graph {
 			return new graph.Node(this.graph);
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-graphcontrols");
 		}
 	}
@@ -38,4 +35,3 @@ module akra.ui.graph {
 	register("graph.Controls", Controls);
 }
 
-#endif

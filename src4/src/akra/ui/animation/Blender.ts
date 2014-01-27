@@ -1,11 +1,12 @@
-#ifndef UIANIMATIONBLENDER_TS
-#define UIANIMATIONBLENDER_TS
+/// <reference path="../../idl/IUIAnimationMask.ts" />
+/// <reference path="../../idl/IUIAnimationBlender.ts" />
+/// <reference path="../../idl/IUISlider.ts" />
+/// <reference path="../../idl/IUILabel.ts" />
 
-#include "Node.ts"
-#include "Mask.ts"
-#include "IUIAnimationMask.ts"
-#include "IUIAnimationBlender.ts"
-#include "animation/Blend.ts"
+/// <reference path="../../animation/Blend.ts" />
+
+/// <reference path="Node.ts" />
+/// <reference path="Mask.ts" />
 
 module akra.ui.animation {
 	export interface IBlenderSliderContainer {
@@ -36,12 +37,15 @@ module akra.ui.animation {
 			this.linkAreas();
 
 			this._pNameLabel = <IUILabel>this.findEntity("name");
-			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_textChanged));
+			//this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_textChanged));
+			this._pNameLabel.changed.connect(this, this._textChanged);
 
 			this._pBlend = pBlender = pBlender || akra.animation.createBlend();
 
-			this.connect(this._pBlend, SIGNAL(weightUpdated), SLOT(_weightUpdated));
-			this.connect(this._pBlend, SIGNAL(durationUpdated), SLOT(_durationUpdated));
+			//this.connect(this._pBlend, SIGNAL(weightUpdated), SLOT(_weightUpdated));
+			//this.connect(this._pBlend, SIGNAL(durationUpdated), SLOT(_durationUpdated));
+			this._pBlend.weightUpdated.connect(this, this._weightUpdated);
+			this._pBlend.durationUpdated.connect(this, this._durationUpdated);
 
 			this.graph.addAnimation(pBlender);
 			this._pNameLabel.text = pBlender.name;
@@ -81,24 +85,24 @@ module akra.ui.animation {
 
 		setup(): void {
 			var pBlend: IAnimationBlend = this._pBlend;
-		    
-		    for (var i: int = 0; i < pBlend.totalAnimations; i ++) {
-		        for (var j = 0; j < this._pSliders.length; ++ j) {
-		            if (this._pSliders[j].animation === pBlend.getAnimation(i)) {
-		                this._pSliders[j].slider.value = pBlend.getAnimationWeight(i);
-		            }
-		        }
-		    }
+			
+			for (var i: int = 0; i < pBlend.totalAnimations; i ++) {
+				for (var j = 0; j < this._pSliders.length; ++ j) {
+					if (this._pSliders[j].animation === pBlend.getAnimation(i)) {
+						this._pSliders[j].slider.value = pBlend.getAnimationWeight(i);
+					}
+				}
+			}
 
-		    this._pNameLabel.text = pBlend.name;
+			this._pNameLabel.text = pBlend.name;
 		}
 
 		_weightUpdated(pBlend: IAnimationBlend, iAnim: int, fWeight: float): void {
 			var pSlider: IUISlider = this._pSliders[iAnim].slider;
 			var pRoute: IUIGraphRoute = this.areas["in"].connectors[iAnim].route;
 
-        	pRoute.enabled = fWeight !== 0;
-        	pSlider.text = <any>fWeight.toFixed(2);
+			pRoute.enabled = fWeight !== 0;
+			pSlider.text = <any>fWeight.toFixed(2);
 		}
 
 		_durationUpdated(pBlend: IAnimationBlend, fDuration: float): void {
@@ -109,47 +113,47 @@ module akra.ui.animation {
 			if (pFrom.direction === EUIGraphDirections.IN) {
 				var pTarget: IUIAnimationNode = (<IUIAnimationNode>pTo.node);
 
-		        var pAnimation: IAnimationBase = pTarget.animation;
-		        var pBlend: IAnimationBlend = this._pBlend;
-		        var pSlider: IUISlider = null;
-		        
-		        var pMask: FloatMap;
-		        var iAnim: int = pBlend.getAnimationIndex(pAnimation.name);
+				var pAnimation: IAnimationBase = pTarget.animation;
+				var pBlend: IAnimationBlend = this._pBlend;
+				var pSlider: IUISlider = null;
+				
+				var pMask: IMap<float>;
+				var iAnim: int = pBlend.getAnimationIndex(pAnimation.name);
 
-		        pSlider = <IUISlider>this.createComponent("Slider", {show: false});
-		        pSlider.render(this.el.find("td.graph-node-center > div.controls:first"));
-		        pSlider.range = 100;
+				pSlider = <IUISlider>this.createComponent("Slider", {show: false});
+				pSlider.render(this.el.find("td.graph-node-center > div.controls:first"));
+				pSlider.range = 100;
 
-		        
-		        if (iAnim == -1) {
-		        	iAnim = pBlend.addAnimation(pAnimation);
-		        	this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
-		        }
-		        else {
-		        	this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
-		        	//animation already exists, and all parameters already setuped right
-		        	pSlider.value = pBlend.getAnimationWeight(iAnim);
-		        	this._weightUpdated(pBlend, iAnim, pBlend.getAnimationWeight(iAnim));
-		        }
+				
+				if (iAnim == -1) {
+					iAnim = pBlend.addAnimation(pAnimation);
+					this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
+				}
+				else {
+					this._pSliders[iAnim] = {slider: pSlider, animation: pAnimation};
+					//animation already exists, and all parameters already setuped right
+					pSlider.value = pBlend.getAnimationWeight(iAnim);
+					this._weightUpdated(pBlend, iAnim, pBlend.getAnimationWeight(iAnim));
+				}
 
 
-		        pSlider.bind(SIGNAL(updated), (pSlider: IUISlider, fWeight: int) => {
-		        	pBlend.setAnimationWeight(iAnim, fWeight);
-		        });
+				pSlider.updated.connect((pSlider: IUISlider, fWeight: int) => {
+					pBlend.setAnimationWeight(iAnim, fWeight);
+				});
 
-		        pSlider.updated(pSlider.value);
+				pSlider.updated.emit(pSlider.value);
 
-		        if (pTarget.graphNodeType === EUIGraphNodes.ANIMATION_MASK) {
-		            pMask = (<IUIAnimationMask>pTarget).getMask();
+				if (pTarget.graphNodeType === EUIGraphNodes.ANIMATION_MASK) {
+					pMask = (<IUIAnimationMask>pTarget).getMask();
 
-		            pBlend.setAnimationMask(iAnim, pMask);
-		            this.setMaskNode(iAnim, <IUIAnimationMask>pTarget);
-		        }
-		    }
+					pBlend.setAnimationMask(iAnim, pMask);
+					this.setMaskNode(iAnim, <IUIAnimationMask>pTarget);
+				}
+			}
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-animationblender");
 		}
 	}
@@ -158,4 +162,3 @@ module akra.ui.animation {
 	register("animation.Blender", Blender);
 }
 
-#endif

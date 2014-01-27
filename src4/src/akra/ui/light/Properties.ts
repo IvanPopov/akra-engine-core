@@ -1,10 +1,7 @@
-#ifndef UILIGHTPROPERTIES_TS
-#define UILIGHTPROPERTIES_TS
-
-#include "../Component.ts"
-#include "IUILabel.ts"
-#include "IUISwitch.ts"
-#include "ILightPoint.ts"
+/// <reference path="../../idl/IUILabel.ts" />
+/// <reference path="../../idl/IUISwitch.ts" />
+/// <reference path="../../idl/ILightPoint.ts" />
+/// <reference path="../Component.ts" />
 
 module akra.ui.light {
 	export class Properties extends Component {
@@ -30,13 +27,19 @@ module akra.ui.light {
 			this._pSpecular = <IUIVector>this.findEntity("specular");
 			this._pAttenuation = <IUIVector>this.findEntity("attenuation");
 
-			this.connect(this._pEnabled, SIGNAL(changed), SLOT(_enableLight));
-			this.connect(this._pShadows, SIGNAL(changed), SLOT(_useShadows));
+			//this.connect(this._pEnabled, SIGNAL(changed), SLOT(_enableLight));
+			this._pEnabled.changed.connect(this, this._enableLight);
+			//this.connect(this._pShadows, SIGNAL(changed), SLOT(_useShadows));
+			this._pShadows.changed.connect(this, this._useShadows);
 
-			this.connect(this._pAmbient, SIGNAL(changed), SLOT(_ambientUpdated));
-			this.connect(this._pDiffuse, SIGNAL(changed), SLOT(_diffuseUpdated));
-			this.connect(this._pSpecular, SIGNAL(changed), SLOT(_specularUpdated));
-			this.connect(this._pAttenuation, SIGNAL(changed), SLOT(_attenuationUpdated));
+			//this.connect(this._pAmbient, SIGNAL(changed), SLOT(_ambientUpdated));
+			this._pAmbient.changed.connect(this, this._ambientUpdated);
+			//this.connect(this._pDiffuse, SIGNAL(changed), SLOT(_diffuseUpdated));
+			this._pDiffuse.changed.connect(this, this._diffuseUpdated);
+			//this.connect(this._pSpecular, SIGNAL(changed), SLOT(_specularUpdated));
+			this._pSpecular.changed.connect(this, this._specularUpdated);
+			//this.connect(this._pAttenuation, SIGNAL(changed), SLOT(_attenuationUpdated));
+			this._pAttenuation.changed.connect(this, this._attenuationUpdated);
 
 		}
 
@@ -92,8 +95,8 @@ module akra.ui.light {
 			this._pAttenuation.setVec3((<IProjectLight>this._pLight).params.attenuation);
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-lightproperties");
 		}
 	}
@@ -101,5 +104,4 @@ module akra.ui.light {
 	register("light.Properties", Properties);
 }
 
-#endif
 

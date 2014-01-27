@@ -1,17 +1,15 @@
-#ifndef UIANIMATIONMASK_TS
-#define UIANIMATIONMASK_TS
+/// <reference path="../../idl/IUISlider.ts" />
+/// <reference path="../../idl/IUIButton.ts" />
+/// <reference path="../../idl/IUIAnimationMask.ts" />
+/// <reference path="../../idl/IUIGraphRoute.ts" />
+/// <reference path="../../idl/IUIIDE.ts" />
 
-#include "IUISlider.ts"
-#include "IUIButton.ts"
-#include "IUIAnimationMask.ts"
-#include "IUIGraphRoute.ts"
-#include "Node.ts"
-#include "IUIIDE.ts"
+/// <reference path="Node.ts" />
 
 module akra.ui.animation {
 	export class Mask extends Node implements IUIAnimationMask {
 		private _pAnimation: IAnimationBase = null;
-		private _pMask: FloatMap = null;
+		private _pMask: IMap<float> = null;
 		private _pSliders: IUISlider[] = [];
 		private _pEditBtn: IUIButton = null;
 		private _pEditPanel: IUIPanel = null;
@@ -23,10 +21,10 @@ module akra.ui.animation {
 		 set animation(pAnim: IAnimationBase) {
 			this._pAnimation = pAnim;
 			this._pMask = this._pMask || pAnim.createAnimationMask();
-			this.selected(true);
+			this.selected.emit(true);
 		}
 
-		constructor (pGraph: IUIGraph, pMask: FloatMap = null) {
+		constructor (pGraph: IUIGraph, pMask: IMap<float> = null) {
 			super(pGraph, {init: false}, EUIGraphNodes.ANIMATION_MASK);
 
 			this.template("animation.Mask.tpl");
@@ -37,13 +35,13 @@ module akra.ui.animation {
 		}
 
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-animationmask");
 		}
 
 
-		 getMask(): FloatMap {
+		 getMask(): IMap<float> {
 			return this._pMask;
 		}
 	}
@@ -55,4 +53,3 @@ module akra.ui.animation {
 	register("animation.Mask", Mask);
 }
 
-#endif

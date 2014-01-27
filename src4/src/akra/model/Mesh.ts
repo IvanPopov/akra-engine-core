@@ -32,7 +32,7 @@ module akra.model {
 		}, IMesh> {
 
 		constructor(pViewport: IMesh) {
-			super(pViewport, null, EEventTypes.UNICAST);
+			super(pViewport, EEventTypes.UNICAST);
 		}
 
 		emit(pSubMesh?: IMeshSubset, bShadow?: boolean): void {

@@ -1,8 +1,5 @@
-#ifndef UIGRAPHMOUSECONNECTOR_TS
-#define UIGRAPHMOUSECONNECTOR_TS
-
-#include "IUIGraph.ts"
-#include "Connector.ts"
+/// <reference path="../../idl/IUIGraph.ts" />
+/// <reference path="Connector.ts" />
 
 module akra.ui.graph {
 	export class MouseConnector extends Connector {
@@ -10,7 +7,7 @@ module akra.ui.graph {
 		constructor (pGraph: IUIGraph, options?) {
 			super(pGraph, options);
 
-			this.connect(pGraph, SIGNAL("mousemove"), SLOT(_onMouseMove));
+			pGraph.mousemove.connect(this, this._onMouseMove);
 
 			this.setDraggable();
 
@@ -27,5 +24,4 @@ module akra.ui.graph {
 	}
 }
 
-#endif
 

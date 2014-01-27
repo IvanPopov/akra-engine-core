@@ -1,10 +1,7 @@
-#ifndef UIRESOURCEPROPERTIES_TS
-#define UIRESOURCEPROPERTIES_TS
-
-#include "../Component.ts"
-#include "IUILabel.ts"
-#include "IResourcePoolItem.ts"
-#include "ui/animation/ColladaAnimation.ts"
+/// <reference path="../../idl/IUILabel.ts" />
+/// <reference path="../../idl/IResourcePoolItem.ts" />
+/// <reference path="../animation/ColladaAnimation.ts" />
+/// <reference path="../Component.ts" />
 
 module akra.ui.resource {
 	export class Properties extends Component {
@@ -85,5 +82,4 @@ module akra.ui.resource {
 	register("resource.Properties", Properties);
 }
 
-#endif
 

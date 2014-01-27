@@ -1,12 +1,9 @@
-#ifndef UIMODELMESHPROPERTIES_TS
-#define UIMODELMESHPROPERTIES_TS
+/// <reference path="../../idl/IUILabel.ts" />
+/// <reference path="../../idl/IUISwitch.ts" />
+/// <reference path="../../idl/IMesh.ts" />
 
-#include "IUILabel.ts"
-#include "IUISwitch.ts"
-#include "IMesh.ts"
-
-#include "../Component.ts"
-#include "MeshSubsetProperties.ts"
+/// <reference path="../Component.ts" />
+/// <reference path="MeshSubsetProperties.ts" />
 
 module akra.ui.model {
 	export class MeshProperties extends Component {
@@ -27,9 +24,13 @@ module akra.ui.model {
 			this._pBoundingBox = <IUISwitch>this.findEntity("bounding-box");
 			this._pBoundingSphere = <IUISwitch>this.findEntity("bounding-sphere");
 
-			this.connect(this._pShadows, SIGNAL(changed), SLOT(_useShadows));
-			this.connect(this._pBoundingBox, SIGNAL(changed), SLOT(_useBoundingBox));
-			this.connect(this._pBoundingSphere, SIGNAL(changed), SLOT(_useBoundingSphere));
+			//this.connect(this._pShadows, SIGNAL(changed), SLOT(_useShadows));
+			//this.connect(this._pBoundingBox, SIGNAL(changed), SLOT(_useBoundingBox));
+			//this.connect(this._pBoundingSphere, SIGNAL(changed), SLOT(_useBoundingSphere));
+
+			this._pShadows.changed.connect(this, this._useShadows);
+			this._pBoundingBox.changed.connect(this, this._useBoundingBox);
+			this._pBoundingSphere.changed.connect(this, this._useBoundingSphere);
 		}
 
 		_useShadows(pSwc: IUISwitch, bValue: boolean): void {
@@ -85,8 +86,8 @@ module akra.ui.model {
 			}
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-meshproperties");
 		}
 	}
@@ -94,5 +95,4 @@ module akra.ui.model {
 	register("model.MeshProperties", MeshProperties);
 }
 
-#endif
 

@@ -1,9 +1,7 @@
-#ifndef UICAMERAEVENTS_TS
-#define UICAMERAEVENTS_TS
+/// <reference path="../../idl/IUIButton.ts" />
+/// <reference path="../../idl/ICamera.ts" />
 
-#include "../Component.ts"
-#include "IUIButton.ts"
-#include "ICamera.ts"
+/// <reference path="../Component.ts" />
 
 module akra.ui.camera {
 	export class Events extends Component {
@@ -22,10 +20,13 @@ module akra.ui.camera {
 			this._pPreRenderEvtBtn = <IUIButton>this.findEntity("pre-render-scene");
 			this._pPostRenderEvtBtn = <IUIButton>this.findEntity("post-render-scene");
 
-			this.connect(this._pLookThrough, SIGNAL(click), SLOT(_lookThrough));
+			//this.connect(this._pLookThrough, SIGNAL(click), SLOT(_lookThrough));
+			this._pLookThrough.click.connect(this, this._lookThrough);
 
-			this.connect(this._pPreRenderEvtBtn, SIGNAL(click), SLOT(_editPreRenderEvent));
-			this.connect(this._pPostRenderEvtBtn, SIGNAL(click), SLOT(_editPostRenderEvent));
+			//this.connect(this._pPreRenderEvtBtn, SIGNAL(click), SLOT(_editPreRenderEvent));
+			//this.connect(this._pPostRenderEvtBtn, SIGNAL(click), SLOT(_editPostRenderEvent));
+			this._pPreRenderEvtBtn.click.connect(this, this._editPreRenderEvent);
+			this._pPostRenderEvtBtn.click.connect(this, this._editPostRenderEvent);
 		}
 
 		_lookThrough(pBtn: IUIButton): void {
@@ -33,11 +34,11 @@ module akra.ui.camera {
 		}
 
 		_editPreRenderEvent(pBtn: IUIButton, e: IUIEvent): void {
-			ide.cmd(ECMD.EDIT_EVENT, this._pCamera, SIGNAL(preRenderScene));
+			ide.cmd(ECMD.EDIT_EVENT, this._pCamera, "preRenderScene");
 		}
 
 		_editPostRenderEvent(pBtn: IUIButton, e: IUIEvent): void {
-			ide.cmd(ECMD.EDIT_EVENT, this._pCamera, SIGNAL(postRenderScene));
+			ide.cmd(ECMD.EDIT_EVENT, this._pCamera, "postRenderScene");
 		}
 
 		setCamera(pCamera: ICamera): void {
@@ -49,8 +50,8 @@ module akra.ui.camera {
 			this._pCamera = pCamera;
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-cameraevents");
 		}
 	}
@@ -58,5 +59,5 @@ module akra.ui.camera {
 	register("camera.Events", Events);
 }
 
-#endif
+
 

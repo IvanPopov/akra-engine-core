@@ -1,16 +1,14 @@
-#ifndef UIANIMATIONDATA_TS
-#define UIANIMATIONDATA_TS
+/// <reference path="../../idl/IAnimation.ts" />
+/// <reference path="../../idl/IUIAnimationData.ts" />
+/// <reference path="../../idl/IUILabel.ts" />
 
-#include "IAnimation.ts"
-#include "IUIAnimationData.ts"
-#include "IUILabel.ts"
-#include "Node.ts"
+/// <reference path="Node.ts" />
 
 module akra.ui.animation {
 	export class Data extends Node implements IUIAnimationData {
 		private _pAnimation: IAnimation = null;
 
-		 get animation(): IAnimationBase {
+		get animation(): IAnimation {
 			return this._pAnimation;
 		}
 
@@ -31,8 +29,8 @@ module akra.ui.animation {
 			this.linkAreas();
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-animationdata");
 		}
 
@@ -41,4 +39,4 @@ module akra.ui.animation {
 	register("animation.Data", Data);
 }
 
-#endif
+

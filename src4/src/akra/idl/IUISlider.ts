@@ -1,6 +1,3 @@
-// IUISlider export interface
-// [write description here...]
-
 /// <reference path="IUIComponent.ts" />
 
 module akra {

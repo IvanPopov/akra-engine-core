@@ -29,5 +29,7 @@ module akra {
 	
 		isEditable(): boolean;
 		editable(bValue?: boolean): void;
+
+		changed: ISignal<{ (pVector: IUIVector, v: any): void; }>;
 	}
 }

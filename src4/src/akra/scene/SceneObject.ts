@@ -21,7 +21,7 @@ module akra.scene {
 	}
 
 	export class SceneObject extends SceneNode implements ISceneObject {
-		worldBoundsUpdated: ISignal<{ (pObject: ISceneObject): void; }> = new Signal(<any>this, null, EEventTypes.UNICAST);
+		worldBoundsUpdated: ISignal<{ (pObject: ISceneObject): void; }> = new Signal(<any>this, EEventTypes.UNICAST);
 
 		click: ISignal<{ (pObject: ISceneObject, pViewport: IViewport, pRenderable: IRenderableObject, x: int, y: int): void; }>
 		= new Signal(<any>this);

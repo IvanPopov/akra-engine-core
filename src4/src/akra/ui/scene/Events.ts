@@ -1,9 +1,7 @@
-#ifndef UISCENEEVENTS_TS
-#define UISCENEEVENTS_TS
+/// <reference path="../../idl/IUIButton.ts" />
+/// <reference path="../../idl/IScene.ts" />
 
-#include "../Component.ts"
-#include "IUIButton.ts"
-#include "IScene.ts"
+/// <reference path="../Component.ts" />
 
 module akra.ui.scene {
 	export class Events extends Component {
@@ -21,35 +19,35 @@ module akra.ui.scene {
 			this._pPostUpdateEvtBtn = <IUIButton>this.findEntity("post-update");
 			this._pBeforeUpdateEvtBtn = <IUIButton>this.findEntity("before-update");
 
-			this.connect(this._pPreUpdateEvtBtn, SIGNAL(click), SLOT(_editPreUpdateEvent));
-			this.connect(this._pPostUpdateEvtBtn, SIGNAL(click), SLOT(_editPostUpdateEvent));
-			this.connect(this._pBeforeUpdateEvtBtn, SIGNAL(click), SLOT(_editBeforeUpdateEvent));
+			//this.connect(this._pPreUpdateEvtBtn, SIGNAL(click), SLOT(_editPreUpdateEvent));
+			//this.connect(this._pPostUpdateEvtBtn, SIGNAL(click), SLOT(_editPostUpdateEvent));
+			//this.connect(this._pBeforeUpdateEvtBtn, SIGNAL(click), SLOT(_editBeforeUpdateEvent));
+			this._pPreUpdateEvtBtn.click.connect(this, this._editPreUpdateEvent);
+			this._pPostUpdateEvtBtn.click.connect(this, this._editPostUpdateEvent);
+			this._pBeforeUpdateEvtBtn.click.connect(this, this._editBeforeUpdateEvent);
 		}
 
 		_editPreUpdateEvent(pBtn: IUIButton, e: IUIEvent): void {
-			ide.cmd(ECMD.EDIT_EVENT, this._pScene, SIGNAL(preUpdate));
+			ide.cmd(ECMD.EDIT_EVENT, this._pScene, "preUpdate");
 		}
 
 		_editPostUpdateEvent(pBtn: IUIButton, e: IUIEvent): void {
-			ide.cmd(ECMD.EDIT_EVENT, this._pScene, SIGNAL(postUpdate));
+			ide.cmd(ECMD.EDIT_EVENT, this._pScene, "postUpdate");
 		}
 
 		_editBeforeUpdateEvent(pBtn: IUIButton, e: IUIEvent): void {
-			ide.cmd(ECMD.EDIT_EVENT, this._pScene, SIGNAL(beforeUpdate));
+			ide.cmd(ECMD.EDIT_EVENT, this._pScene, "beforeUpdate");
 		}
 
 		setScene(pScene: IScene): void {
 			this._pScene = pScene;
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-sceneevents");
 		}
 	}
 
 	register("scene.Events", Events);
 }
-
-#endif
-

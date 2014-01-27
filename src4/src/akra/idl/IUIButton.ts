@@ -4,13 +4,12 @@
 /// <reference path="IUIComponent.ts" />
 
 module akra {
-export interface IUIButtonOptions extends IUIComponentOptions {
-	text?: string;
+	export interface IUIButtonOptions extends IUIComponentOptions {
+		text?: string;
+	}
+
+	export interface IUIButton extends IUIComponent {
+		text: string;
+	}
 }
 
-export interface IUIButton extends IUIComponent {
-	text: string;
-}
-}
-
-#endif

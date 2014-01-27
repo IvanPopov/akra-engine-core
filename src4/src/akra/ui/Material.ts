@@ -1,11 +1,8 @@
-#ifndef UIMATERIAL_TS
-#define UIMATERIAL_TS
+/// <reference path="../idl/IMaterial.ts" />
+/// <reference path="../idl/IUIVector.ts" />
+/// <reference path="../idl/IUILabel.ts" />
 
-#include "IMaterial.ts"
-#include "IUIVector.ts"
-#include "IUILabel.ts"
-
-#include "Component.ts"
+/// <reference "Component.ts" />
 
 module akra.ui {
 	export class Material extends Component {
@@ -30,12 +27,12 @@ module akra.ui {
 
 			this._pShininess = <IUILabel>this.findEntity("shininess");
 
-			this.connect(this._pDiffuse, SIGNAL(changed), SLOT(_diffuseUpdated));
-			this.connect(this._pAmbient, SIGNAL(changed), SLOT(_ambientUpdated));
-			this.connect(this._pSpecular, SIGNAL(changed), SLOT(_specularUpdated));
-			this.connect(this._pEmissive, SIGNAL(changed), SLOT(_emissiveUpdated));
+			this._pDiffuse.changed.connect(this, this._diffuseUpdated);
+			this._pAmbient.changed.connect(this, this._ambientUpdated);
+			this._pSpecular.changed.connect(this, this._specularUpdated);
+			this._pEmissive.changed.connect(this, this._emissiveUpdated);
 
-			this.connect(this._pShininess, SIGNAL(changed), SLOT(_shininessUpdated));
+			this._pShininess.changed.connect(this, this._shininessUpdated);
 		}
 
 		set(pMaterial: IMaterial): void {
@@ -71,7 +68,7 @@ module akra.ui {
 			this._pMat.emissive.a = pValue.w;
 		}
 
-		_shininessUpdated(pVec: IUIVector, sValue: string): void {
+		_shininessUpdated(pVec: IUILabel, sValue: string): void {
 			this._pMat.shininess = parseFloat(sValue) || 0.;
 		}
 
@@ -85,8 +82,8 @@ module akra.ui {
 			
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-material");
 		}
 	}
@@ -94,5 +91,4 @@ module akra.ui {
 	register("Material", Material);
 }
 
-#endif
 

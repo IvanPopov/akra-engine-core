@@ -1,12 +1,11 @@
-#ifndef UIANIMATIONPLAYER_TS
-#define UIANIMATIONPLAYER_TS
+/// <reference path="../../IDL/IAnimation.ts" />
+/// <reference path="../../IDL/IAnimationContainer.ts" />
+/// <reference path="../../IDL/IUIAnimationGraph.ts" />
+/// <reference path="../../IDL/IUIAnimationPlayer.ts" />
 
-#include "IAnimation.ts"
-#include "IAnimationContainer.ts"
-#include "IUIAnimationGraph.ts"
-#include "IUIAnimationPlayer.ts"
-#include "Node.ts"
-#include "animation/Container.ts"
+/// <reference path="../../animation/Container.ts" />
+
+/// <reference path="Node.ts" />
 
 module akra.ui.animation {
 	export class Player extends Node implements IUIAnimationPlayer {
@@ -59,17 +58,27 @@ module akra.ui.animation {
 			this._pAnimation = pContainer = pContainer || akra.animation.createContainer();
 			this.graph.addAnimation(pContainer);
 
-			this.connect(pContainer, SIGNAL(enterFrame), SLOT(_enterFrame));
-			this.connect(pContainer, SIGNAL(durationUpdated), SLOT(_durationUpdated));
+			//this.connect(pContainer, SIGNAL(enterFrame), SLOT(_enterFrame));
+			//this.connect(pContainer, SIGNAL(durationUpdated), SLOT(_durationUpdated));
+			pContainer.enterFrame.connect(this, this._enterFrame);
+			pContainer.durationUpdated.connect(this, this._durationUpdated);
 
-			this.connect(this._pEnableBtn, SIGNAL(changed), SLOT(_enabled));
-			this.connect(this._pLoopBtn, SIGNAL(changed), SLOT(_useLoop));
-			this.connect(this._pReverseBtn, SIGNAL(changed), SLOT(_reverse));
-			this.connect(this._pPlayBtn, SIGNAL(changed), SLOT(_play));
-			this.connect(this._pSpeedLabel, SIGNAL(changed), SLOT(_setSpeed));
-			this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_setName));
-			this.connect(this._pLeftInf, SIGNAL(changed), SLOT(_setLeftInf));
-			this.connect(this._pRightInf, SIGNAL(changed), SLOT(_setRightInf));
+			//this.connect(this._pEnableBtn, SIGNAL(changed), SLOT(_enabled));
+			//this.connect(this._pLoopBtn, SIGNAL(changed), SLOT(_useLoop));
+			//this.connect(this._pReverseBtn, SIGNAL(changed), SLOT(_reverse));
+			//this.connect(this._pPlayBtn, SIGNAL(changed), SLOT(_play));
+			//this.connect(this._pSpeedLabel, SIGNAL(changed), SLOT(_setSpeed));
+			//this.connect(this._pNameLabel, SIGNAL(changed), SLOT(_setName));
+			//this.connect(this._pLeftInf, SIGNAL(changed), SLOT(_setLeftInf));
+			//this.connect(this._pRightInf, SIGNAL(changed), SLOT(_setRightInf));
+			this._pEnableBtn.changed.connect(this, this._enabled);
+			this._pLoopBtn.changed.connect(this, this._useLoop);
+			this._pReverseBtn.changed.connect(this, this._reverse);
+			this._pPlayBtn.changed.connect(this, this._play);
+			this._pSpeedLabel.changed.connect(this, this._setSpeed);
+			this._pNameLabel.changed.connect(this, this._setName);
+			this._pLeftInf.changed.connect(this, this._setLeftInf);
+			this._pRightInf.changed.connect(this, this._setRightInf);
 			
 
 
@@ -159,12 +168,16 @@ module akra.ui.animation {
 			this._pAnimation.pause(!bValue);
 
 			if (!bValue) {
-				this.connect(this._pSlider, SIGNAL(updated), SLOT(_setTime));
-				this.disconnect(this._pAnimation, SIGNAL(enterFrame), SLOT(_enterFrame));
+				//this.connect(this._pSlider, SIGNAL(updated), SLOT(_setTime));
+				this._pSlider.updated.connect(this, this._setTime);
+				//this.disconnect(this._pAnimation, SIGNAL(enterFrame), SLOT(_enterFrame));
+				this._pAnimation.enterFrame.disconnect(this, this._enterFrame);
 			}
 			else {
-				this.disconnect(this._pSlider, SIGNAL(updated), SLOT(_setTime));
-				this.connect(this._pAnimation, SIGNAL(enterFrame), SLOT(_enterFrame));
+				//this.disconnect(this._pSlider, SIGNAL(updated), SLOT(_setTime));
+				this._pSlider.updated.disconnect(this, this._setTime);
+				//this.connect(this._pAnimation, SIGNAL(enterFrame), SLOT(_enterFrame));
+				this._pAnimation.enterFrame.connect(this, this._enterFrame);
 			}
 		}
 
@@ -205,8 +218,8 @@ module akra.ui.animation {
 		    }
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-animationplayer");
 		}
 	}
@@ -214,4 +227,3 @@ module akra.ui.animation {
 	register("animation.Player", Player);
 }
 
-#endif

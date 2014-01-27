@@ -44,7 +44,7 @@ module akra {
 		
 		routing(): void;
 	
-		signal selected(bModified: boolean): void;
-		signal beforeDestroy(): void;
+		beforeDestroy: ISignal<{ (pNode: IUIGraphNode); void; }>;
+		selected: ISignal<{ (pNode: IUIGraphNode, bModified: boolean); void; }>;
 	}
 }

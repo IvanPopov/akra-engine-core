@@ -1,8 +1,5 @@
-#ifndef COLLADAANIMATIONS_TS
-#define COLLADAANIMATIONS_TS
-
-#include "ICollada.ts"
-#include "ui/Component.ts"
+/// <reference path="../../idl/ICollada.ts" />
+/// <reference path="../Component.ts" />
 
 module akra.ui.animation {
 	export class ColladaAnimation extends Component {
@@ -29,7 +26,8 @@ module akra.ui.animation {
 			this.template("animation.ColladaAnimation.tpl");
 
 			this._pNameLb = <IUILabel>this.findEntity("collada-animation-name");
-			this.connect(this._pNameLb, SIGNAL(changed), SLOT(_nameChanged));
+			//this.connect(this._pNameLb, SIGNAL(changed), SLOT(_nameChanged));
+			this._pNameLb.changed.connect(this, this._nameChanged);
 		}
 
 		setAnimation(pCollada: ICollada, iAnimation: int): void {
@@ -41,8 +39,8 @@ module akra.ui.animation {
 			this.animation.name = sName;
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-colladaanimation");
 
 			this.setDraggable(true, {
@@ -57,4 +55,3 @@ module akra.ui.animation {
 	register("animation.ColladaAnimation", ColladaAnimation);
 }
 
-#endif

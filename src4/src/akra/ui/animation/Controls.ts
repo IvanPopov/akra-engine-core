@@ -1,15 +1,14 @@
-#ifndef UIANIMATIONCONTROLS_TS
-#define UIANIMATIONCONTROLS_TS
+/// <reference path="../../idl/IUIGraphNode.ts" />
+/// <reference path="../../idl/IUIAnimationControls.ts" />
 
-#include "IUIGraphNode.ts"
-#include "IUIAnimationControls.ts"
-#include "../graph/Controls.ts"
-#include "Data.ts"
-#include "Player.ts"
-#include "Blender.ts"
-#include "Mask.ts"
+/// <reference path="../graph/Controls.ts" />
 
-#include "io/Exporter.ts"
+/// <reference path="Data.ts" />
+/// <reference path="Player.ts" />
+/// <reference path="Blender.ts" />
+/// <reference path="Mask.ts" />
+
+/// <reference path="../../io/Exporter.ts"
 
 module akra.ui.animation {
 	export class Controls extends graph.Controls implements IUIAnimationControls {
@@ -29,13 +28,20 @@ module akra.ui.animation {
 			var pExportBtn: IUIButton = new Button(pControlPanel, {text: "{ save controller }"})
 			var pExportBinBtn: IUIButton = new Button(pControlPanel, {text: "{ save controller (binary) }"})
 
-			//this.connect(pDataBtn, SIGNAL(click), SLOT(createData));
-			this.connect(pPlayerBtn, SIGNAL(click), SLOT(createPlayer));
-			this.connect(pBlenderBtn, SIGNAL(click), SLOT(createBlender));
-			this.connect(pMaskBtn, SIGNAL(click), SLOT(createMask));
+			////this.connect(pDataBtn, SIGNAL(click), SLOT(createData));
+			//this.connect(pPlayerBtn, SIGNAL(click), SLOT(createPlayer));
+			//this.connect(pBlenderBtn, SIGNAL(click), SLOT(createBlender));
+			//this.connect(pMaskBtn, SIGNAL(click), SLOT(createMask));
 
-			this.connect(pExportBtn, SIGNAL(click), SLOT(exportController));
-			this.connect(pExportBinBtn, SIGNAL(click), SLOT(exportBinController));
+			pPlayerBtn.click.connect(this, this.createPlayer);
+			pBlenderBtn.click.connect(this, this.createBlender);
+			pMaskBtn.click.connect(this, this.createMask);
+
+			//this.connect(pExportBtn, SIGNAL(click), SLOT(exportController));
+			//this.connect(pExportBinBtn, SIGNAL(click), SLOT(exportBinController));
+
+			pExportBtn.click.connect(this, this.exportController);
+			pExportBinBtn.click.connect(this, this.exportBinController);
 		}	
 
 
@@ -64,7 +70,7 @@ module akra.ui.animation {
 			
 			for (var i = 0; i < pController.totalAnimations; ++ i) {
 				var pAnimation: IAnimationBase = pController.getAnimation(i);
-				var pEntry: IAnimationBaseEntry = <IAnimationBaseEntry>pExporter.findEntry(pAnimation.getGuid());
+				var pEntry: IAnimationBaseEntry = <IAnimationBaseEntry>pExporter.findEntry(pAnimation.guid);
 				var pGraphNode: IUIAnimationNode = this.graph.findNodeByAnimation(pAnimation);
 
 				var pOffset = pGraphNode.el.offset();
@@ -94,13 +100,12 @@ module akra.ui.animation {
 			pExporter.saveAs((pController.name || "untitled") + ".json");
 		}
 
-		selected(): void {
-			super.selected();
-			// ide.cmd(ECMD.INSPECT_ANIMATION_CONTROLLER, this.graph.getController());
-		}
+		//selected(): void {
+		//	super.selected();
+		//	// ide.cmd(ECMD.INSPECT_ANIMATION_CONTROLLER, this.graph.getController());
+		//}
 	}
 
 	register("animation.Controls", Controls);
 }
 
-#endif

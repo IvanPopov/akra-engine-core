@@ -49,9 +49,9 @@ module akra {
 
 		sendEvent(e: IUIGraphEvent): void;
 
-		signal activated(bValue: boolean): void;
-		signal routeBreaked(pRoute: IUIGraphRoute): void;
-		signal connected(pTarget: IUIGraphConnector);
+		activated: ISignal<{ (pConnector: IUIGraphConnector, bValue: boolean): void; }>;
+		connected: ISignal<{ (pConnector: IUIGraphConnector, pTarget: IUIGraphConnector): void; }>;
+		routeBreaked: ISignal<{ (pConnector: IUIGraphConnector, pRoute: IUIGraphRoute): void; }>;
 	}
 }
 

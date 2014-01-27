@@ -1,5 +1,5 @@
-/// <referece path="../idl/IUISlider.ts" />
 /// <referece path="Component.ts" />
+/// <referece path="../idl/IUISlider.ts" />
 
 module akra.ui {
 	export class Slider extends Component implements IUISlider {

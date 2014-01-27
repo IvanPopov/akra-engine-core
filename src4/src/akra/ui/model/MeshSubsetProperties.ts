@@ -1,10 +1,7 @@
-#ifndef UIMODELMESHSUBSETPROPERTIES_TS
-#define UIMODELMESHSUBSETPROPERTIES_TS
+/// <reference path="../../idl/IMeshSubset.ts" />
 
-#include "IMeshSubset.ts"
-
-#include "ui/Panel.ts"
-#include "ui/Material.ts"
+/// <reference path="../Panel.ts" />
+/// <reference path="../Material.ts" />
 
 module akra.ui.model {
 	export class MeshSubsetProperties extends Panel {
@@ -30,10 +27,14 @@ module akra.ui.model {
 			this._pBoundingSphere = <IUISwitch>this.findEntity("sub-bounding-sphere");
 			this._pGuid = <IUILabel>this.findEntity("sub-guid");
 
-			this.connect(this._pVisible, SIGNAL(changed), SLOT(_setVisible));
-			this.connect(this._pShadows, SIGNAL(changed), SLOT(_useShadows));
-			this.connect(this._pBoundingBox, SIGNAL(changed), SLOT(_useBoundingBox));
-			this.connect(this._pBoundingSphere, SIGNAL(changed), SLOT(_useBoundingSphere));
+			//this.connect(this._pVisible, SIGNAL(changed), SLOT(_setVisible));
+			//this.connect(this._pShadows, SIGNAL(changed), SLOT(_useShadows));
+			//this.connect(this._pBoundingBox, SIGNAL(changed), SLOT(_useBoundingBox));
+			//this.connect(this._pBoundingSphere, SIGNAL(changed), SLOT(_useBoundingSphere));
+			this._pVisible.changed.connect(this, this._setVisible);
+			this._pShadows.changed.connect(this, this._useShadows);
+			this._pBoundingBox.changed.connect(this, this._useBoundingBox);
+			this._pBoundingSphere.changed.connect(this, this._useBoundingSphere);
 
 			this.setCollapsible();
 			this.collapse(true);
@@ -72,11 +73,11 @@ module akra.ui.model {
 			this._pBoundingBox._setValue(this._pSubset.isBoundingBoxVisible());
 			this._pBoundingSphere._setValue(this._pSubset.isBoundingSphereVisible());
 			this._pVisible._setValue(this._pSubset.isVisible());
-			this._pGuid.text = <any>this._pSubset.getGuid();
+			this._pGuid.text = <any>this._pSubset.guid;
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-meshsubsetproperties");
 		}
 	}
@@ -84,5 +85,4 @@ module akra.ui.model {
 	register("model.MeshSubsetProperties", MeshSubsetProperties);
 }
 
-#endif
 

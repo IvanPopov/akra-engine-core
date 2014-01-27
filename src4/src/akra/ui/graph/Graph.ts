@@ -1,15 +1,69 @@
-#ifndef UIGRAPH_TS
-#define UIGRAPH_TS
+/// <reference path="../../idl/IUIGraphRoute.ts" />
+/// <reference path="../../idl/IUIGraph.ts" />
+/// <reference path="../../idl/IUIGraphNode.ts" />
+/// <reference path="../../idl/IUIGraphConnector.ts" />
 
-#include "IUIGraphRoute.ts"
-#include "IUIGraph.ts"
-#include "IUIGraphNode.ts"
-#include "IUIGraphConnector.ts"
-
-#include "Route.ts"
-#include "../Component.ts"
+/// <reference path="Route.ts" />
+/// <reference path="../Component.ts" />
 
 module akra.ui.graph {
+
+	class KeydownSignal extends Signal<{ (pGraph: IUIGraph, e: IUIEvent): void;}, IUIGraph> {
+		emit(e?: IUIEvent): void {
+			var pGraph: IUIGraph = this.getSender();
+			var pNodes: IUIGraphNode[] = pGraph.nodes;
+
+			for (var i: int = 0; i < pNodes.length; ++i) {
+				var iKeyCode: int = (<KeyboardEvent><any>e).keyCode;
+				if (iKeyCode === EKeyCodes.DELETE) {
+					pNodes[i].sendEvent(Graph.event(EUIGraphEvents.DELETE));
+				}
+			}
+
+			super.emit(e);
+		}
+	}
+
+	class MouseupSignal extends Signal<{ (pGraph: IUIGraph, e: IUIEvent): void; }, IUIGraph> {
+		emit(e?: IUIEvent): void {
+			var pGraph: Graph = <Graph>this.getSender();
+
+			if (!isNull(pGraph.tempRoute)) {
+				pGraph.removeTempRoute();
+			}
+		}
+	}
+
+	class MousemoveSignal extends Signal<{ (pGraph: IUIGraph, e: IUIEvent): void; }, IUIGraph> {
+		emit(e?: IUIEvent): void {
+			var pGraph: Graph = <Graph>this.getSender();
+
+			if (!isNull(pGraph.tempRoute)) {
+				var pOffset = pGraph.el.offset();
+				pGraph.tempRoute.routing({ x: e.pageX - pOffset.left, y: e.pageY - pOffset.top });
+			}
+		}
+	}
+
+
+	class ClickSignal extends Signal<{ (pGraph: IUIGraph, e: IUIEvent): void; }, IUIGraph> {
+		emit(e?: IUIEvent): void {
+			var pGraph: IUIGraph = this.getSender();
+
+			super.emit(e);
+
+			var pNodes: IUIGraphNode[] = pGraph.nodes;
+
+			for (var i: int = 0; i < pNodes.length; ++i) {
+				// LOG("deactivate node > ", pNodes[i]);
+				pNodes[i].activate(false);
+			}
+
+			super.emit(e);
+
+			
+		}
+	}
 
 	export class Graph extends Component implements IUIGraph {
 		protected _eGraphType: EUIGraphTypes;
@@ -27,6 +81,10 @@ module akra.ui.graph {
 			}
 
 			return pNodes;
+		 }
+
+		get tempRoute(): IUITempGraphRoute {
+			return this._pTempRoute;
 		}
 
 		 get graphType(): EUIGraphTypes { return this._eGraphType; }
@@ -43,16 +101,26 @@ module akra.ui.graph {
 			this.handleEvent("mouseup mousemove keydown click");
 		}
 
+		protected setupSignals(): void {
+			this.keydown = this.keydown || new KeydownSignal(this);
+			this.mousemove = this.mousemove || new MousemoveSignal(this);
+			this.mouseup = this.mouseup || new MouseupSignal(this);
+			this.click = this.click || new ClickSignal(this);
+
+			this.connectionBegin = this.connectionBegin || new Signal(<any>this);
+			this.connectionEnd = this.connectionEnd || new Signal(<any>this);
+			super.setupSignals();
+		}
 
 		createRouteFrom(pFrom: IUIGraphConnector): void {
 			this._pTempRoute = new TempRoute(pFrom);
-			this.connectionBegin(this._pTempRoute);
+			this.connectionBegin.emit(this._pTempRoute);
 		}
 
 		removeTempRoute(): void {
 			this._pTempRoute.destroy();
 			this._pTempRoute = null;
-			this.connectionEnd();
+			this.connectionEnd.emit();
 		}
 
 		isReadyForConnect(): boolean {
@@ -79,8 +147,8 @@ module akra.ui.graph {
 			this.removeTempRoute();
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 
 			this._pCanvas = Raphael(this.getHTMLElement(), 0, 0);
 
@@ -94,49 +162,16 @@ module akra.ui.graph {
 			this.el.addClass("component-graph");
 		}
 
-		mouseup(e: IUIEvent): void {
-			if (!isNull(this._pTempRoute)) {
-				// LOG("remove temp route!");
-				this.removeTempRoute();
-			}
-		}
 
-		mousemove(e: IUIEvent): void {
-			if (!isNull(this._pTempRoute)) {
-				var pOffset = this.el.offset();
-				this._pTempRoute.routing({x: e.pageX - pOffset.left, y: e.pageY - pOffset.top});
-			}
-		}
+		connectionBegin: ISignal<{ (pGraph: IUIGraph, pRoute: IUIGraphRoute): void; }>;
+		connectionEnd: ISignal<{ (pGraph: IUIGraph): void; }>;
 
-		keydown(e: IUIEvent): void {
-			var pNodes: IUIGraphNode[] = this.nodes;
 
-			for (var i: int = 0; i < pNodes.length; ++ i) {
-				var iKeyCode: int = (<KeyboardEvent><any>e).keyCode;
-				if (iKeyCode === EKeyCodes.DELETE) {
-					pNodes[i].sendEvent(Graph.event(EUIGraphEvents.DELETE));
-				}
-			}
+		static KeydownSignal = KeydownSignal;
+		static MousemoveSignal = MousemoveSignal;
+		static MouseupSignal = MouseupSignal;
+		static ClickSignal = ClickSignal;
 
-			super.keydown(e);
-		}
-
-		click(e: IUIEvent): void {
-			super.click(e);
-
-			var pNodes: IUIGraphNode[] = this.nodes;
-			
-			for (var i: int = 0; i < pNodes.length; ++ i) {
-				// LOG("deactivate node > ", pNodes[i]);
-				pNodes[i].activate(false);
-			}
-
-			super.click(e);
-		}
-
-		BROADCAST(connectionBegin, CALL(pRoute));
-		BROADCAST(connectionEnd, VOID);
-		
 		static event(eType: EUIGraphEvents): IUIGraphEvent {
 			return {
 				type: eType,
@@ -147,6 +182,3 @@ module akra.ui.graph {
 
 	register("Graph", Graph);
 }
-
-#endif
-

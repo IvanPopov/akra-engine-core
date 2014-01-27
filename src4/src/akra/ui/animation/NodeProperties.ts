@@ -1,8 +1,6 @@
-#ifndef UIANIMATIONNODEPROPERTIES_TS
-#define UIANIMATIONNODEPROPERTIES_TS
+/// <reference path="../../IDL/IUILabel.ts" />
 
-#include "ui/Component.ts"
-#include "IUILabel.ts"
+/// <reference path="../Component.ts" />
 
 module akra.ui.animation {
 	export class NodeProperties extends Component {
@@ -19,13 +17,11 @@ module akra.ui.animation {
 			this._pNameLb.text = pNode.animation.name;
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-animationnodeproperties");
 		}
 	}
 
 	register("animation.NodeProperties", NodeProperties);
 }
-
-#endif

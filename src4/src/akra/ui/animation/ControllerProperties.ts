@@ -1,10 +1,7 @@
-#ifndef UIANIMATIONCONTROLLERPROPERTIES_TS
-#define UIANIMATIONCONTROLLERPROPERTIES_TS
-
-#include "../Component.ts"
-#include "IUILabel.ts"
-#include "IResourcePoolItem.ts"
-#include "IAnimationController.ts"
+/// <reference path="../../idl/IAnimationController.ts" />
+/// <reference path="../../idl/IResourcePoolItem.ts" />
+/// <reference path="../../idl/IUILabel.ts" />
+/// <reference path="../Component.ts" />
 
 module akra.ui.animation {
 	export class ControllerProperties extends Component {
@@ -24,7 +21,8 @@ module akra.ui.animation {
 
 			this._pEditBtn = <IUIButton>this.findEntity("edit");
 
-			this.connect(this._pEditBtn, SIGNAL(click), SLOT(_editController));
+			//this.connect(this._pEditBtn, SIGNAL(click), SLOT(_editController));
+			this._pEditBtn.click.connect(this, this._editController);
 		}
 
 		_editController(pButton: IUIButton): void {
@@ -33,11 +31,14 @@ module akra.ui.animation {
 
 		setController(pController: IAnimationController): void {
 			if (!isNull(this._pController)) {
-				this.disconnect(this._pController, SIGNAL(animationAdded), SLOT(updateProperties));
+				//this.disconnect(this._pController, SIGNAL(animationAdded), SLOT(updateProperties));
+				this._pController.animationAdded.disconnect(this, this.updateProperties);
 			}
 
-			this.connect(pController, SIGNAL(animationAdded), SLOT(updateProperties));
-			this.connect(pController, SIGNAL(play), SLOT(updateProperties));
+			//this.connect(pController, SIGNAL(animationAdded), SLOT(updateProperties));
+			//this.connect(pController, SIGNAL(play), SLOT(updateProperties));
+			pController.animationAdded.connect(this, this.updateProperties);
+			pController.play.connect(this, this.updateProperties);
 
 			this._pController = pController;
 			this.updateProperties();
@@ -49,8 +50,8 @@ module akra.ui.animation {
 			this._pActiveAnimation.text = pController.active? pController.active.name: "[not selected]";
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-animationcontrollerproperties");
 		}
 	}
@@ -58,5 +59,4 @@ module akra.ui.animation {
 	register("AnimationControllerProperties", ControllerProperties);
 }
 
-#endif
 

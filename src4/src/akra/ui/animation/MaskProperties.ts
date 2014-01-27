@@ -1,20 +1,18 @@
-#ifndef UIANIMATIONMASKPROPERTIES_TS
-#define UIANIMATIONMASKPROPERTIES_TS
+/// <reference path="../../idl/IUIAnimationMask.ts" />
 
-#include "ui/Component.ts"
-#include "IUIAnimationMask.ts"
+/// <reference path="../Component.ts" />
 
 module akra.ui.animation {
 	export class MaskProperties extends Component {
 		protected _pNode: IUIAnimationMask = null;
-		protected _pMask: FloatMap = null;
+		protected _pMask: IMap<float> = null;
 
 		constructor (parent, options?) {
 			super(parent, options, EUIComponents.UNKNOWN);
 		}
 
 		setMask(pNode: IUIAnimationMask): void {
-			var pMask: FloatMap = pNode.getMask();
+			var pMask: IMap<float> = pNode.getMask();
 			var pBones: string[] = Object.keys(pMask);
 			var nTotal: int = pBones.length;
 			var nSliders: int = this.childCount();
@@ -75,8 +73,8 @@ module akra.ui.animation {
 			this._pMask[pSlider.name] = fValue;
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-animationmaskproperties");
 		}
 	}
@@ -84,4 +82,3 @@ module akra.ui.animation {
 	register("animation.MaskProperties", MaskProperties);
 }
 
-#endif

@@ -1,8 +1,9 @@
-#ifndef UIGRAPHCONNECTIONAREA_TS
-#define UIGRAPHCONNECTIONAREA_TS
-
-#include "IUIGraphConnectionArea.ts"
-#include "../Panel.ts" 
+/// <reference path="../../idl/IUIGraphConnectionArea.ts" />
+/// <reference path="../../idl/IUIGraphConnector.ts" />
+/// <reference path="../../idl/IUIGraph.ts" />
+/// <reference path="../../idl/IUIGraphNode.ts" />
+/// <reference path="../Panel.ts" />
+/// <reference path="Connector.ts" />
 
 module akra.ui.graph {
 	export class ConnectionArea extends Panel implements IUIGraphConnectionArea {
@@ -49,11 +50,18 @@ module akra.ui.graph {
 			this.el.disableSelection();
 		}
 
+		protected setupSignals(): void {
+			this.connected = this.connected || new Signal(<any>this);
+			super.setupSignals();
+		}
+
 		attachToParent(pParent: IUIGraphNode): boolean {
 			logger.assert(isComponent(pParent, EUIComponents.GRAPH_NODE), "only graph node can be parent!!");
 			if (super.attachToParent(pParent)) {
-				this.connect(this.node, SIGNAL(mouseenter), SLOT(_onNodeMouseover));
-				this.connect(this.node, SIGNAL(mouseleave), SLOT(_onNodeMouseout));
+				//this.connect(this.node, SIGNAL(mouseenter), SLOT(_onNodeMouseover));
+				this.node.mouseenter.connect(this, this._onNodeMouseover);
+				//this.connect(this.node, SIGNAL(mouseleave), SLOT(_onNodeMouseout));
+				this.node.mouseleave.connect(this, this._onNodeMouseout);
 			}
 
 			return false;
@@ -143,12 +151,12 @@ module akra.ui.graph {
 
 		 isSupportsIncoming(): boolean {
 			return this.connectorsCount(EUIGraphDirections.IN) < this._iInConnectionLimit && 
-				TEST_ANY(this._iMode, EUIGraphDirections.IN) && !this.isLimitReached();
+				bf.testAny(this._iMode, EUIGraphDirections.IN) && !this.isLimitReached();
 		}
 
 		 isSupportsOutgoing(): boolean {
 			return this.connectorsCount(EUIGraphDirections.OUT) < this._iOutConnectionLimit && 
-				TEST_ANY(this._iMode, EUIGraphDirections.OUT) && !this.isLimitReached();
+				bf.testAny(this._iMode, EUIGraphDirections.OUT) && !this.isLimitReached();
 		}
 
 		 isLimitReached(): boolean {
@@ -187,8 +195,11 @@ module akra.ui.graph {
 			var pConnector: IUIGraphConnector = this._pTempConnect = new Connector(this);
 			pConnector.orient = this._eConectorOrient;
 			//this.graph.isReadyForConnect()? pConnector.input(): pConnector.output();
-			this.connect(pConnector, SIGNAL(routeBreaked), SLOT(destroyTempConnect));
-			this.connect(pConnector, SIGNAL(connected), SLOT(onConnection));
+			//this.connect(pConnector, SIGNAL(routeBreaked), SLOT(destroyTempConnect));
+			pConnector.routeBreaked.connect(this, this.destroyTempConnect);
+			//this.connect(pConnector, SIGNAL(connected), SLOT(onConnection));
+			pConnector.connected.connect(this, this.onConnection);
+
 			return pConnector;
 		}
 
@@ -212,11 +223,12 @@ module akra.ui.graph {
 		private onConnection(pConnector: IUIGraphConnector, pTarget: IUIGraphConnector): void {
 			debug.assert(pConnector === this._pTempConnect, "oO!!");
 			// LOG("connected!! node(" + this.node.getGuid() + ") connector(" + pConnector.getGuid() + ")");
-			this.disconnect(pConnector, SIGNAL(connected), SLOT(onConnection));
+			//this.disconnect(pConnector, SIGNAL(connected), SLOT(onConnection));
+			pConnector.connected.disconnect(this, this.onConnection);
 			this._pTempConnect = null;
 			this._pConnectors.push(pConnector);
 
-			this.connected(pConnector, pTarget);
+			this.connected.emit(pConnector, pTarget);
 		}
 
 		private destroyTempConnect(): void {
@@ -243,12 +255,13 @@ module akra.ui.graph {
 			}
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-connectionarea");
 		}
 
-		BROADCAST(connected, CALL(pFrom, pTo));
+		//BROADCAST(connected, CALL(pFrom, pTo));
+		connected: ISignal<{ (pArea: IUIGraphConnectionArea, pFrom: IUIGraphConnector, pTo: IUIGraphConnector): void; }>;
 	}
 
 	export  function isConnectionArea(pEntity: IEntity): boolean {
@@ -257,5 +270,3 @@ module akra.ui.graph {
 
 	register("GraphConnectionArea", ConnectionArea);
 }
-
-#endif

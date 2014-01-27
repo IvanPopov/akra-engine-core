@@ -1,15 +1,17 @@
-#ifndef UIGRAPHCONNECTOR_TS
-#define UIGRAPHCONNECTOR_TS
-
-#define UIGRAPH_INVALID_CONNECTION -1
-
-#include "IUIGraph.ts"
-#include "IUIGraphNode.ts"
-#include "IUIGraphConnector.ts"
-#include "IUIGraphConnectionArea.ts"
-#include "../Component.ts"
+/// <reference path="../../idl/IUIGraph.ts" />
+/// <reference path="../../idl/IUIGraphNode.ts" />
+/// <reference path="../../idl/IUIGraphConnector.ts" />
+/// <reference path="../../idl/IUIGraphConnectionArea.ts"/>
+/// <reference path="../Component.ts" />
 
 module akra.ui.graph {
+	class ConnectedSignal extends Signal<{ (pConnector: IUIGraphConnector, pTarget: IUIGraphConnector): void; }, IUIGraphConnector> {
+		emit(pTarget?: IUIGraphConnector): void {
+			this.getSender().el.addClass("connected");
+			super.emit(pTarget);
+		}
+	}
+
 	export class Connector extends Component implements IUIGraphConnector {
 		protected _eOrient: EGraphConnectorOrient = EGraphConnectorOrient.UNKNOWN;
 		protected _eDirect: EUIGraphDirections = EUIGraphDirections.IN;
@@ -35,11 +37,11 @@ module akra.ui.graph {
 				
 				if (this === pRoute.left) {
 					this.output();
-					this.connected(pRoute.right);
+					this.connected.emit(pRoute.right);
 				}
 				else {
 					this.input();
-					this.connected(pRoute.left);
+					this.connected.emit(pRoute.left);
 				}
 			}
 		}
@@ -49,6 +51,13 @@ module akra.ui.graph {
 
 			this.handleEvent("mousedown mouseup");
 			this.el.disableSelection();
+		}
+
+		protected setupSignals(): void {
+			this.activated = this.activated || new Signal(<any>this);
+			this.connected = this.connected || new ConnectedSignal(this);
+			this.routeBreaked = this.routeBreaked || new Signal(<any>this);
+			super.setupSignals();
 		}
 
 
@@ -76,8 +85,8 @@ module akra.ui.graph {
 			return !isNull(this.route);
 		}
 
-		rendered(): void {
-			super.rendered();
+		protected finalizeRender(): void {
+			super.finalizeRender();
 			this.el.addClass("component-graphconnector");
 		}
 
@@ -95,7 +104,7 @@ module akra.ui.graph {
 			}
 
 			this._bActive = bValue;
-			this.activated(bValue);
+			this.activated.emit(bValue);
 			this.highlight(bValue);
 
 			this.route.activate(bValue);
@@ -131,18 +140,16 @@ module akra.ui.graph {
 			this.route.routing();
 		}		
 
-		connected(pTarget: IUIGraphConnector): void {
-			this.el.addClass("connected");
-			EMIT_BROADCAST(connected, _CALL(pTarget));
-		}
+		
+		activated: ISignal<{ (pConnector: IUIGraphConnector, bValue: boolean): void; }>;
+		connected: ISignal<{ (pConnector: IUIGraphConnector, pTarget: IUIGraphConnector): void; }>;
+		routeBreaked: ISignal<{ (pConnector: IUIGraphConnector, pRoute: IUIGraphRoute): void; }>;
 
-		BROADCAST(activated, CALL(value));	
-		BROADCAST(routeBreaked, CALL(pRoute)); /*when route is destroyd(called from route)*/
+		static UIGRAPH_INVALID_CONNECTION = -1;
+
+		static ConnectedSignal = ConnectedSignal;
 	}
 
 	register("GraphConnector", Connector);
+
 }
-
-#include "MouseConnector.ts"
-
-#endif
