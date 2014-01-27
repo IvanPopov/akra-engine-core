@@ -16,25 +16,17 @@ module akra {
 	}
 
 	export interface IRenderableObject extends IEventProvider {
-		renderMethod: IRenderMethod;
-		shadow: boolean;
+		getRenderMethod(): IRenderMethod;
+		setRenderMethod(pMethod: IRenderMethod): void;
 
-		/** readonly */ type: ERenderableTypes;
-		/** readonly */ effect: IEffect;
-		/** readonly */ surfaceMaterial: ISurfaceMaterial;
-		/** readonly */ data: IRenderData;
-		/** readonly */ material: IMaterial;
+		getShadow(): boolean;
+		setShadow(bValue: boolean): void;
 
-		/** writeonly */ onclick: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
-		/** writeonly */ onmousemove: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
-		/** writeonly */ onmousedown: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
-		/** writeonly */ onmouseup: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
-		/** writeonly */ onmouseover: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
-		/** writeonly */ onmouseout: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
-
-		/** writeonly */ ondragstart: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
-		/** writeonly */ ondragstop: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
-		/** writeonly */ ondragging: (pRenderable: IRenderableObject, pViewport: IViewport, pObject: ISceneObject, x: uint, y: uint) => void;
+		getType(): ERenderableTypes;
+		getEffect(): IEffect;
+		getSurfaceMaterial(): ISurfaceMaterial;
+		getData(): IRenderData;
+		getMaterial(): IMaterial;
 
 		getRenderer(): IRenderer;
 		getTechnique(sName?: string): IRenderTechnique;
@@ -52,7 +44,7 @@ module akra {
 		switchRenderMethod(pMethod: IRenderMethod): boolean;
 
 		removeRenderMethod(csName: string): boolean;
-		getRenderMethod(csName?: string): IRenderMethod;
+		getRenderMethodByName(csName?: string): IRenderMethod;
 
 		getRenderMethodDefault(): IRenderMethod;
 

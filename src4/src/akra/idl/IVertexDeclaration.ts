@@ -1,7 +1,8 @@
 module akra {
 	export interface IVertexDeclaration {
 		stride: uint;
-		/** readonly */ length: uint;
+		getLength(): uint;
+
 		append(...pElement: IVertexElementInterface[]): boolean;
 		append(pElements: IVertexElementInterface[]): boolean;
 	

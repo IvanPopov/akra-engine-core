@@ -73,7 +73,7 @@ module akra.conv {
 
 	export function string2Array<T>(
 		sData: string, ppData: T[],
-		fnConv: (data: string, ...args: any[]) => T, iFrom?: number): number {
+		fnConv: (data: string, ...args: any[]) => T, iFrom: uint = 0): uint {
 		var pData: string[] = sData.split(/[\s]+/g);
 
 		for (var i = 0, n = pData.length, j = 0; i < n; ++i) {

@@ -21,18 +21,25 @@ module akra {
 	};
 	
 	export interface INode extends IEntity {
-		localOrientation: IQuat4;
-		localPosition: IVec3;
-		localScale: IVec3;
-		localMatrix: IMat4;
+		getLocalOrientation(): IQuat4;
+		setLocalOrientation(qOrient: IQuat4): void;
+
+		getLocalPosition(): IVec3;
+		setLocalPosition(v3fPosition: IVec3): void;
+
+		getLocalScale(): IVec3;
+		setLocalScale(v3fScale: IVec3): void;
+
+		getLocalMatrix(): IMat4;
+		setLocalMatrix(m4fLocal: IMat4): void;
 		
-		/** readonly */ worldMatrix: IMat4;
-		/** readonly */ worldPosition: IVec3;
-		/** readonly */ worldOrientation: IQuat4;
-		/** readonly */ worldScale: IVec3;
+		getWorldMatrix(): IMat4;
+		getWorldPosition(): IVec3;
+		getWorldOrientation(): IQuat4;
+		getWorldScale(): IVec3;
 		
-		/** readonly */ inverseWorldMatrix: IMat4;
-		/** readonly */ normalMatrix: IMat3;
+		getInverseWorldMatrix(): IMat4;
+		getNormalMatrix(): IMat3;
 	
 		create(): boolean;
 	

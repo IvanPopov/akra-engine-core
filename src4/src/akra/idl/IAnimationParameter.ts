@@ -4,9 +4,9 @@
 
 module akra {
 	export interface IAnimationParameter {
-		/** readonly */ totalFrames: uint;
-		/** readonly */ duration: float;
-		/** readonly */ first: float;
+		getTotalFrames(): uint;
+		getDuration(): float;
+		getFirst(): float;
 	
 		/** Get keyframe by number */
 		getKeyFrame(iFrame: int): IFrame;

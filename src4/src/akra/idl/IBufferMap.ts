@@ -24,35 +24,38 @@ module akra {
 	}
 	
 	export interface IBufferMap extends IReferenceCounter, IEventProvider {
-		primType: EPrimitiveTypes;
-		index: IIndexData;
-		length: uint;
+		getPrimType(): EPrimitiveTypes;
+		setPrimType(eType: EPrimitiveTypes): void;
 
+		getIndex(): IIndexData;
+		setIndex(pIndex: IIndexData): void;
+
+		getLength(): uint;
+		setLength(iLength: uint): void;
 		//FIXME: hack for terraing, for force limiting length of drawinf index.
-		/** writeonly */ _length: uint;
+		_setLengthForce(iLength: uint): void;
 
-		/** readonly */ totalUpdates: uint;
-
+		getTotalUpdates(): uint;
 		/** Number of primitives. */
-		/** readonly */ primCount: uint;
+		getPrimCount(): uint;
 		/** Maximum flow available in buffer map. */
-		/** readonly */ limit: uint;
+		getLimit(): uint;
 		/** Start index for drawning. */
-		/** readonly */ startIndex: uint;
+		getStartIndex(): uint;
 		/** Number of completed flows. */
-		/** readonly */ size: uint;
+		getSize(): uint;
 		/** Completed flows. */
-		/** readonly */ flows: IDataFlow[];
+		getFlows(): IDataFlow[];
 		/** 
 		 * Mappers. 
 		 * @private
 		 */
-		/** readonly */ mappers: IDataMapper[];
+		getMappers(): IDataMapper[];
 		/** 
 		 * Offset in bytes for drawing with global idnex. 
 		 * @deprecated
 		 */
-		/** readonly */ offset: uint;
+		getOffset(): uint;
 
 		/**
 		 * Find flow by semantics in.

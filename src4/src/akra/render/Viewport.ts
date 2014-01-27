@@ -219,21 +219,21 @@ module akra.render {
 		render: ISignal<{
 			(pViewport: IViewport, pTechnique: IRenderTechnique,
 				iPass: uint, pRenderable: IRenderableObject, pSceneObject: ISceneObject): void;
-		}> = new RenderSignal(this);
+		}> = new RenderSignal(<any>this);
 
-		dragstart: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstartSignal(this);
-		dragstop: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstopSignal(this);
-		dragging: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DraggingSignal(this);
+		dragstart: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstartSignal(<any>this);
+		dragstop: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DragstopSignal(<any>this);
+		dragging: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new DraggingSignal(<any>this);
 
-		click: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new ClickSignal(this);
-		mousemove: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new MousemoveSignal(this);
+		click: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new ClickSignal(<any>this);
+		mousemove: ISignal<{ (pViewport: IViewport, x: int, y: int): void; }> = new MousemoveSignal(<any>this);
 
-		mousedown: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MousedownSignal(this);
-		mouseup: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MouseupSignal(this);
+		mousedown: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MousedownSignal(<any>this);
+		mouseup: ISignal<{ (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint): void; }> = new MouseupSignal(<any>this);
 
-		mouseover: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoverSignal(this);
-		mouseout: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoutSignal(this);
-		mousewheel: ISignal<{ (pViewport: IViewport, x: uint, y: uint, fDelta: float): void; }> = new MousewheelSignal(this);
+		mouseover: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoverSignal(<any>this);
+		mouseout: ISignal<{ (pViewport: IViewport, x: uint, y: uint): void; }> = new MouseoutSignal(<any>this);
+		mousewheel: ISignal<{ (pViewport: IViewport, x: uint, y: uint, fDelta: float): void; }> = new MousewheelSignal(<any>this);
 
 		protected _pCamera: ICamera = null;
 		protected _pTarget: IRenderTarget = null;
@@ -288,69 +288,62 @@ module akra.render {
 		private _p3DEventPickLast: IRIDPair = { object: null, renderable: null }
 		private _p3DEventDragTarget: IRIDPair = { object: null, renderable: null }
 
-		get zIndex(): int {
+		getLeft(): float {
+			return this._fRelLeft;
+		}
+
+		getTop(): float {
+			return this._fRelTop;
+		}
+
+		getWidth(): float {
+			return this._fRelWidth;
+		}
+
+		getHeight(): float {
+			return this._fRelHeight;
+		}
+
+		getActualLeft(): uint {
+			return this._iActLeft;
+		}
+
+		getActualTop(): uint {
+			return this._iActTop;
+		}
+
+		getActualWidth(): uint {
+			return this._iActWidth;
+		}
+
+		getActualHeight(): uint {
+			return this._iActHeight;
+		}
+
+		getZIndex(): int {
 			return this._iZIndex;
 		}
 
-		get left(): float { return this._fRelLeft; }
-		get top(): float { return this._fRelTop; }
-		get width(): float { return this._fRelWidth; }
-		get height(): float { return this._fRelHeight; }
+		getType(): EViewportTypes {
+			return EViewportTypes.DEFAULT;
+		}	
 
-		get actualLeft(): uint { return this._iActLeft; }
-		get actualTop(): uint { return this._iActTop; }
-		get actualWidth(): uint { return this._iActWidth; }
-		get actualHeight(): uint { return this._iActHeight; }
-
-		get backgroundColor(): IColor { return this._pViewportState.clearColor; }
-		set backgroundColor(cColor: IColor) { this._pViewportState.clearColor.set(cColor); }
-
-		get depthClear(): float { return this._pViewportState.clearDepth; }
-		set depthClear(fDepthClearValue: float) { this._pViewportState.clearDepth = fDepthClearValue; }
-
-
-		get type(): EViewportTypes { return EViewportTypes.DEFAULT; }
-
-		set onclick(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
-			this.click.connect(fn);
+		getBackgroundColor(): IColor {
+			return this._pViewportState.clearColor;
 		}
 
-		set onmousemove(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
-			this.mousemove.connect(fn);
+		setBackgroundColor(cColor: IColor): void {
+			this._pViewportState.clearColor.set(cColor);
 		}
 
-		set onmousedown(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.mousedown.connect(fn);
+		getDepthClear(): float {
+			return this._pViewportState.clearDepth;
 		}
 
-		set onmouseup(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.mouseup.connect(fn);
+		setDepthClear(fDepthClearValue: float): void {
+			this._pViewportState.clearDepth = fDepthClearValue;
 		}
-
-		set onmouseover(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
-			this.mouseover.connect(fn);
-		}
-
-		set onmouseout(fn: (pViewport: IViewport, x: uint, y: uint) => void) {
-			this.mouseout.connect(fn);
-		}
-
-		set onmousewheel(fn: (pViewport: IViewport, x: uint, y: uint, fDelta: float) => void) {
-			this.mousewheel.connect(fn);
-		}
-
-		set ondragstart(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.dragstart.connect(fn);
-		}
-
-		set ondragstop(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.dragstop.connect(fn);
-		}
-
-		set ondragging(fn: (pViewport: IViewport, eBtn: EMouseButton, x: uint, y: uint) => void) {
-			this.dragging.connect(fn);
-		}
-		
+	
 		/**
 		 * @param csRenderMethod Name of render technique, that will be selected in the renderable for render.
 		 */ 
@@ -402,19 +395,19 @@ module akra.render {
 			}
 
 			if (bf.testAny(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING)) {
-				bf.setAll(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
+				iType = bf.setAll(iType, E3DEventTypes.DRAGSTART | E3DEventTypes.DRAGSTOP | E3DEventTypes.DRAGGING |
 					E3DEventTypes.MOUSEDOWN | E3DEventTypes.MOUSEUP | E3DEventTypes.MOUSEMOVE);
 			}
 
 			//mouse over and mouse out events require mouse move
 			if (bf.testAny(iType, E3DEventTypes.MOUSEOVER | E3DEventTypes.MOUSEOUT)) {
-				bf.setAll(iType, E3DEventTypes.MOUSEMOVE);
+				iType = bf.setAll(iType, E3DEventTypes.MOUSEMOVE);
 			}
 
 			//get events that have not yet been activated
 			var iNotActivate: int = (this._i3DEvents ^ MAX_INT32) & iType;
 
-			bf.setAll(this._i3DEvents, iNotActivate);
+			this._i3DEvents = bf.setAll(this._i3DEvents, iNotActivate);
 
 			this.getTarget().enableSupportFor3DEvent(iType);
 
@@ -473,7 +466,7 @@ module akra.render {
 			if (isDefAndNotNull(pCamera)) {
 				// update aspect ratio of new camera if needed.
 				if (!pCamera.isConstantAspect()) {
-					pCamera.aspect = (<float> this._iActWidth / <float> this._iActHeight);
+					pCamera.setAspect(<float> this._iActWidth / <float> this._iActHeight);
 				}
 				pCamera._keepLastViewport(this);
 			}
@@ -491,10 +484,10 @@ module akra.render {
 			}
 			else {
 				pRect = <IRect2d>arguments[0];
-				this._fRelLeft = pRect.left;
-				this._fRelTop = pRect.top;
-				this._fRelWidth = pRect.width;
-				this._fRelHeight = pRect.height;
+				this._fRelLeft = pRect.getLeft();
+				this._fRelTop = pRect.getTop();
+				this._fRelWidth = pRect.getWidth();
+				this._fRelHeight = pRect.getHeight();
 			}
 
 			this._updateDimensions();
@@ -533,8 +526,8 @@ module akra.render {
 		isAutoUpdated(): boolean { return this._isAutoUpdated; }
 
 		_updateDimensions(bEmitEvent: boolean = true): void {
-			var fHeight: float = <float>this._pTarget.height;
-			var fWidth: float = <float>this._pTarget.width;
+			var fHeight: float = <float>this._pTarget.getHeight();
+			var fWidth: float = <float>this._pTarget.getWidth();
 
 			this._iActLeft = <int>math.round(this._fRelLeft * fWidth);
 			this._iActTop = <int>math.round(this._fRelTop * fHeight);
@@ -549,7 +542,7 @@ module akra.render {
 
 			if (this._pCamera) {
 				if (!this._pCamera.isConstantAspect())
-					this._pCamera.aspect = (<float> this._iActWidth / <float> this._iActHeight);
+					this._pCamera.setAspect(<float> this._iActWidth / <float> this._iActHeight);
 
 			}
 
@@ -611,14 +604,14 @@ module akra.render {
 			var pVisibleObjects: IObjectArray<ISceneObject> = pCamera.display();
 			var pRenderable: IRenderableObject;
 
-			for (var i: int = 0; i < pVisibleObjects.length; ++i) {
+			for (var i: int = 0; i < pVisibleObjects.getLength(); ++i) {
 				pVisibleObjects.value(i).prepareForRender(this);
 			}
 
-			for (var i: int = 0; i < pVisibleObjects.length; ++i) {
+			for (var i: int = 0; i < pVisibleObjects.getLength(); ++i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 
-				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
+				for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
 					pRenderable = pSceneObject.getRenderable(j);
 
 					if (!isNull(pRenderable)) {
@@ -663,8 +656,8 @@ module akra.render {
 			fZ = fZ * 0.5 + 0.5;
 
 			//from top left angle of element
-			fX = this.actualLeft + this.actualWidth * fX;
-			fY = this.actualTop + this.actualHeight * fY;
+			fX = this.getActualLeft() + this.getActualWidth() * fX;
+			fY = this.getActualTop() + this.getActualHeight() * fY;
 
 			return v3fResult.set(fX, fY, fZ);
 		}
@@ -691,19 +684,19 @@ module akra.render {
 			}
 
 			var pCamera: ICamera = this.getCamera();
-			var m4fProjection: IMat4 = pCamera.projectionMatrix;
-			var m4fWorld: IMat4 = pCamera.worldMatrix;
+			var m4fProjection: IMat4 = pCamera.getProjectionMatrix();
+			var m4fWorld: IMat4 = pCamera.getWorldMatrix();
 
 			var v4fIn: IVec4 = Vec4.temp(), v4fOut: IVec4 = Vec4.temp();
 
 			//Transformation of normalized coordinates between -1 and 1
-			v4fIn.x = ((x - this.actualLeft) / this.actualWidth * 2.0 - 1.0);
+			v4fIn.x = ((x - this.getActualLeft()) / this.getActualWidth() * 2.0 - 1.0);
 			//Y-axis look down for viewport, but look UP in GL
-			v4fIn.y = ((y - this.actualTop) / this.actualHeight * 2.0 - 1.0);
+			v4fIn.y = ((y - this.getActualTop()) / this.getActualHeight() * 2.0 - 1.0);
 			v4fIn.z = 2.0 * this.getDepth(x, y) - 1.0;
 			v4fIn.w = 1.0;
 
-			v3fDestination.set(m4fWorld.multiplyVec4(m4fProjection.unproj(v4fIn, v4fOut)).xyz);
+			v3fDestination.set(m4fWorld.multiplyVec4(m4fProjection.unproj(v4fIn, v4fOut)).clone("xyz"));
 			return v3fDestination;
 		}
 

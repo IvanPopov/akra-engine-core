@@ -42,8 +42,8 @@ module akra.model {
 			pMesh._setShadow(bShadow)
 
 			if (!bShadow) {
-				for (var i: int = 0; i < pMesh.length; ++i) {
-					if (pMesh.getSubset(i).shadow) {
+				for (var i: int = 0; i < pMesh.getLength(); ++i) {
+					if (pMesh.getSubset(i).getShadow()) {
 						pMesh._setShadow(true);
 						break;
 					}
@@ -71,31 +71,23 @@ module akra.model {
 		private _bShadow: boolean = true;
 		private _pSkinList: ISkin[] = [];
 		
-		 get length(): uint {
+		getLength(): uint {
 			return this._pSubMeshes.length;
 		}
 
-		 get flexMaterials(): IMaterial[] {
+		getFlexMaterials(): IMaterial[] {
 			return this._pFlexMaterials;
 		}
 
-		 get name(): string{
+		getName(): string{
 			return this._sName;
 		}
 
-		 get data(): IRenderDataCollection {
+		getData(): IRenderDataCollection {
 			return this._pBuffer;
 		}
 
-		 get skeleton(): ISkeleton {
-			return this._pSkeleton;
-		}
-
-		 set skeleton(pSkeleton: ISkeleton){
-			this._pSkeleton = pSkeleton;
-		}
-
-		 get boundingBox(): IRect3d {
+		getBoundingBox(): IRect3d {
 			if (isNull(this._pBoundingBox)) {
 				if (!this.createBoundingBox()) {
 					logger.warn("could not compute bounding box fo mesh");
@@ -105,7 +97,7 @@ module akra.model {
 			return this._pBoundingBox;
 		}
 
-		 get boundingSphere(): ISphere {
+		getBoundingSphere(): ISphere {
 			if (isNull(this._pBoundingSphere)) {
 				if (!this.createBoundingSphere()) {
 					logger.warn("could not compute bounding sphere for mesh");
@@ -115,16 +107,30 @@ module akra.model {
 			return this._pBoundingSphere;
 		}
 
+		getSkeleton(): ISkeleton {
+			return this._pSkeleton;
+		}
+
+		setSkeleton(pSkeleton: ISkeleton): void {
+			this._pSkeleton = pSkeleton;
+		}
+
+		getShadow(): boolean {
+			return this._bShadow;
+		}
+
+		setShadow(bValue: boolean): void {
+			for (var i: int = 0; i < this._pSubMeshes.length; ++i) {
+				this._pSubMeshes[i].setShadow(bValue);
+			}
+		}
+
 		constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
 			super();
 
 			this._sName = sName || null;
 			this._pEngine = pEngine;
 			this.setup(sName, eOptions, pDataBuffer);
-		}
-
-		setSkeleton(pSkeleton: ISkeleton): void {
-			this.skeleton = pSkeleton;
 		}
 
 		getOptions(): int {
@@ -140,7 +146,7 @@ module akra.model {
 		}
 
 		_draw(): void {
-			for (var i: int = 0; i < this.length; i++) {
+			for (var i: int = 0; i < this.getLength(); i++) {
 				this._pSubMeshes[i]._draw();
 			};
 		}
@@ -190,7 +196,7 @@ module akra.model {
 		}
 
 		appendSubset(sName: string, pData: IRenderData): IMeshSubset {
-			debug.assert(pData.buffer === this._pBuffer, "invalid data used");
+			debug.assert(pData.getBuffer() === this._pBuffer, "invalid data used");
 
 			var pSubMesh: IMeshSubset = new MeshSubset(this, pData, sName);
 			this._pSubMeshes.push(pSubMesh);
@@ -283,10 +289,10 @@ module akra.model {
 		setFlexMaterial(csName: string): boolean;
 		setFlexMaterial(iMaterial): boolean {
 			var bResult: boolean = true;
-			for (var i: int = 0; i < this.length; ++ i) {
+			for (var i: int = 0; i < this.getLength(); ++ i) {
 				if (!this._pSubMeshes[i].setFlexMaterial(<int>iMaterial)) {
-					logger.warn("cannot set material<" + iMaterial + "> for mesh<" + this.name + 
-						"> subset<" + this._pSubMeshes[i].name + ">");
+					logger.warn("cannot set material<" + iMaterial + "> for mesh<" + this.getName() + 
+						"> subset<" + this._pSubMeshes[i].getName() + ">");
 					bResult = false;
 				}
 			}
@@ -307,8 +313,8 @@ module akra.model {
 				return this._pSubMeshes[arguments[0]] || null;
 			}
 			else {
-				for (var i = 0; i < this.length; ++ i) {
-					if (this._pSubMeshes[i].name == <string>arguments[0]) {
+				for (var i = 0; i < this.getLength(); ++ i) {
+					if (this._pSubMeshes[i].getName() == <string>arguments[0]) {
 						return this._pSubMeshes[i];
 					}
 				}
@@ -318,7 +324,7 @@ module akra.model {
 		}
 
 		setSkin(pSkin: ISkin): void {
-			for (var i = 0; i < this.length; ++ i) {
+			for (var i = 0; i < this.getLength(); ++ i) {
 				this._pSubMeshes[i].setSkin(pSkin);
 			}
 		}
@@ -334,16 +340,16 @@ module akra.model {
 			var pSubMesh: IMeshSubset;
 
 			if (iCloneOptions & EMeshCloneOptions.SHARED_GEOMETRY) {
-				pClone = this.getEngine().createMesh(this.name, this.getOptions(), this.data);
+				pClone = this.getEngine().createMesh(this.getName(), this.getOptions(), this.getData());
 				
-				for (var i = 0; i < this.length; ++ i) {
-					pRenderData = this._pSubMeshes[i].data;
+				for (var i = 0; i < this.getLength(); ++ i) {
+					pRenderData = this._pSubMeshes[i].getData();
 					pRenderData.addRef();
-					pClone.appendSubset(this._pSubMeshes[i].name, pRenderData);
-					pClone.getSubset(i).material.name = this._pSubMeshes[i].material.name;
+					pClone.appendSubset(this._pSubMeshes[i].getName(), pRenderData);
+					pClone.getSubset(i).getMaterial().name = this._pSubMeshes[i].getMaterial().name;
 				}
 
-				pClone.replaceFlexMaterials(this.flexMaterials);
+				pClone.replaceFlexMaterials(this.getFlexMaterials());
 
 				//trace('created clone', pClone);
 			}
@@ -362,7 +368,7 @@ module akra.model {
 		}
 
 		createAndShowSubBoundingBox(): void {
-			for(var i = 0; i < this.length; i++) {
+			for (var i = 0; i < this.getLength(); i++) {
 				var pSubMesh: IMeshSubset = this.getSubset(i);
 				if (pSubMesh.createBoundingBox()) {
 					if (!pSubMesh.showBoundingBox()) {
@@ -377,7 +383,7 @@ module akra.model {
 		}
 
 		createAndShowSubBoundingSphere(): void {
-			for(var i = 0; i < this.length; i ++) {
+			for (var i = 0; i < this.getLength(); i ++) {
 				var pSubMesh: IMeshSubset = this.getSubset(i);
 				pSubMesh.createBoundingSphere();
 				pSubMesh.showBoundingSphere();
@@ -396,7 +402,7 @@ module akra.model {
 			pTempBoundingBox = new geometry.Rect3d();
 
 			pSubMesh = this.getSubset(0);
-			pVertexData = pSubMesh.data._getData(DeclUsages.POSITION);
+			pVertexData = pSubMesh.getData()._getData(DeclUsages.POSITION);
 			
 			if(isNull(pVertexData)) {
 				return false;
@@ -406,14 +412,14 @@ module akra.model {
 				return false;
 
 			if (pSubMesh.isSkinned()) {
-				pNewBoundingBox.transform(pSubMesh.skin.getBindMatrix());    
-				pNewBoundingBox.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName));    
+				pNewBoundingBox.transform(pSubMesh.getSkin().getBindMatrix());    
+				pNewBoundingBox.transform(pSubMesh.getSkin().getBoneOffsetMatrix(pSubMesh.getSkin().getSkeleton().getRoot().getBoneName()));    
 			}
 
-			for(i = 1; i < this.length; i++) {
+			for (i = 1; i < this.getLength(); i++) {
 
 				pSubMesh = this.getSubset(i);
-				pVertexData = pSubMesh.data._getData(DeclUsages.POSITION);
+				pVertexData = pSubMesh.getData()._getData(DeclUsages.POSITION);
 				//trace(pSubMesh.name);
 				
 				if(!pVertexData) {
@@ -427,8 +433,8 @@ module akra.model {
 				//trace('>>> before box >>');
 				if (pSubMesh.isSkinned()) {
 					//trace('calc skinned box');
-					pTempBoundingBox.transform(pSubMesh.skin.getBindMatrix());     
-					pTempBoundingBox.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName)); 
+					pTempBoundingBox.transform(pSubMesh.getSkin().getBindMatrix());     
+					pTempBoundingBox.transform(pSubMesh.getSkin().getBoneOffsetMatrix(pSubMesh.getSkin().getSkeleton().getRoot().getBoneName())); 
 				}
 		   // trace('<<< after box <<');
 
@@ -477,27 +483,27 @@ module akra.model {
 					return false;
 				}
 
-				iData = pSubMesh.data.allocateData([VE.float3(DeclUsages.POSITION)], new Float32Array(pPoints));
+				iData = pSubMesh.getData().allocateData([VE.float3(DeclUsages.POSITION)], new Float32Array(pPoints));
 
-				pSubMesh.data.allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
+				pSubMesh.getData().allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 
-				pSubMesh.data.index(iData, DeclUsages.INDEX0);
+				pSubMesh.getData().index(iData, DeclUsages.INDEX0);
 
 				// pSubMesh.applyFlexMaterial(".MaterialBoundingBox");
-				pMaterial = pSubMesh.material;/*getFlexMaterial(".MaterialBoundingBox");*/
+				pMaterial = pSubMesh.getMaterial();/*getFlexMaterial(".MaterialBoundingBox");*/
 				pMaterial.emissive = new Color(1.0, 1.0, 1.0, 1.0);
 				pMaterial.diffuse = new Color(1.0, 1.0, 1.0, 1.0);
 				pMaterial.ambient = new Color(1.0, 1.0, 1.0, 1.0);
 				pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
 
-				pSubMesh.effect.addComponent("akra.system.mesh_texture");
-				pSubMesh.shadow = false;
+				pSubMesh.getEffect().addComponent("akra.system.mesh_texture");
+				pSubMesh.setShadow(false);
 			}
 			else {
-				pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
+				pSubMesh.getData()._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
 			}
 
-			pSubMesh.data.setRenderable(pSubMesh.data.getIndexSet(), true);
+			pSubMesh.getData().setRenderable(pSubMesh.getData().getIndexSet(), true);
 			return true;
 		}
 
@@ -509,7 +515,7 @@ module akra.model {
 			}
 
 			//TODO: hide bounding box!!
-			pSubMesh.data.setRenderable(pSubMesh.data.getIndexSet(), false);
+			pSubMesh.getData().setRenderable(pSubMesh.getData().getIndexSet(), false);
 			return true;
 		}
 
@@ -520,7 +526,7 @@ module akra.model {
 				return false;
 			}
 
-			return pSubMesh.data.isRenderable(pSubMesh.data.getIndexSet());
+			return pSubMesh.getData().isRenderable(pSubMesh.getData().getIndexSet());
 		}
 
 		createBoundingSphere(): boolean {
@@ -535,7 +541,7 @@ module akra.model {
 
 
 			pSubMesh = this.getSubset(0);
-			pVertexData = pSubMesh.data._getData(DeclUsages.POSITION);
+			pVertexData = pSubMesh.getData()._getData(DeclUsages.POSITION);
 			
 			if(!pVertexData) {
 				return false;
@@ -547,14 +553,14 @@ module akra.model {
 			}
 
 			if (pSubMesh.isSkinned()) {
-				pNewBoundingSphere.transform(pSubMesh.skin.getBindMatrix());    
-				pNewBoundingSphere.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName));    
+				pNewBoundingSphere.transform(pSubMesh.getSkin().getBindMatrix());    
+				pNewBoundingSphere.transform(pSubMesh.getSkin().getBoneOffsetMatrix(pSubMesh.getSkin().getSkeleton().getRoot().getBoneName()));    
 			}
 
-			for(i = 1; i < this.length; i++) {
+			for (i = 1; i < this.getLength(); i++) {
 
 				pSubMesh = this.getSubset(i);
-				pVertexData = pSubMesh.data._getData(DeclUsages.POSITION);
+				pVertexData = pSubMesh.getData()._getData(DeclUsages.POSITION);
 				
 				if(isNull(pVertexData))
 					return false;
@@ -564,8 +570,8 @@ module akra.model {
 
 
 				if (pSubMesh.isSkinned()) {
-					pTempBoundingSphere.transform(pSubMesh.skin.getBindMatrix());    
-					pTempBoundingSphere.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName));    
+					pTempBoundingSphere.transform(pSubMesh.getSkin().getBindMatrix());    
+					pTempBoundingSphere.transform(pSubMesh.getSkin().getBoneOffsetMatrix(pSubMesh.getSkin().getSkeleton().getRoot().getBoneName()));    
 					// trace(pTempBoundingSphere.fRadius, '<<<');
 				}
 
@@ -607,29 +613,29 @@ module akra.model {
 				if(isNull(pSubMesh))
 					return false;
 
-				iData=pSubMesh.data.allocateData(
+				iData = pSubMesh.getData().allocateData(
 					[VE.float3(DeclUsages.POSITION)],
 					new Float32Array(pPoints));
 
-				pSubMesh.data.allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
-				pSubMesh.data.index(iData, DeclUsages.INDEX0);
+				pSubMesh.getData().allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
+				pSubMesh.getData().index(iData, DeclUsages.INDEX0);
 
 				// pSubMesh.applyFlexMaterial(".MaterialBoundingSphere");
 				// //pSubMesh.getFlexMaterial(".MaterialBoundingSphere");
-				pMaterial = pSubMesh.material;
+				pMaterial = pSubMesh.getMaterial();
 				pMaterial.emissive = new Color(1.0, 1.0, 1.0, 1.0);
 				pMaterial.diffuse  = new Color(1.0, 1.0, 1.0, 1.0);
 				pMaterial.ambient  = new Color(1.0, 1.0, 1.0, 1.0);
 				pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
 
-				pSubMesh.effect.addComponent("akra.system.mesh_texture");
-				pSubMesh.shadow = false;
+				pSubMesh.getEffect().addComponent("akra.system.mesh_texture");
+				pSubMesh.setShadow(false);
 			}
 			else {
-				pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
+				pSubMesh.getData()._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
 			}
 
-			pSubMesh.data.setRenderable(pSubMesh.data.getIndexSet(), true);
+			pSubMesh.getData().setRenderable(pSubMesh.getData().getIndexSet(), true);
 
 			return true;
 		}
@@ -643,7 +649,7 @@ module akra.model {
 				return false;
 			}
 
-			pSubMesh.data.setRenderable(pSubMesh.data.getIndexSet(), false);
+			pSubMesh.getData().setRenderable(pSubMesh.getData().getIndexSet(), false);
 			return true;
 		}
 
@@ -654,17 +660,7 @@ module akra.model {
 				return false;
 			}
 
-			return pSubMesh.data.isRenderable(pSubMesh.data.getIndexSet());
-		}
-
-		get shadow(): boolean {
-			return this._bShadow;
-		}
-
-		set shadow(bValue: boolean) {
-			for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-				this._pSubMeshes[i].shadow = bValue;
-			}            
+			return pSubMesh.getData().isRenderable(pSubMesh.getData().getIndexSet());
 		}
 
 		toSceneModel(pParent: ISceneNode, sName: string = null): ISceneModel {
@@ -672,13 +668,13 @@ module akra.model {
 				return null;
 			}
 
-			var pSceneModel: ISceneModel = pParent.scene.createModel(sName);
+			var pSceneModel: ISceneModel = pParent.getScene().createModel(sName);
 			
 			if (!pSceneModel.create()) {
 				return null;
 			}
 
-			pSceneModel.mesh = this;
+			pSceneModel.setMesh(this);
 			pSceneModel.attachToParent(pParent);
 
 			return pSceneModel;
@@ -692,7 +688,7 @@ module akra.model {
 			}
 
 			if(isOk){
-				for (var i: uint = 0; i < this.length; ++ i) {
+				for (var i: uint = 0; i < this.getLength(); ++ i) {
 					if(this._pSubMeshes[i].isSkinned()){
 						this._pSubMeshes[i]._calculateSkin();
 					}

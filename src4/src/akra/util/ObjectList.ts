@@ -11,21 +11,21 @@ module akra.util {
 		protected _bLock: boolean = false;
 
 
-		get length(): uint {
+		getLength(): uint {
 			return this._iLength;
 		}
 
-		get first(): T {
+		getFirst(): T {
 			this._pCurrent = this._pHead;
 			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
 		}
 
-		get last(): T {
+		getLast(): T {
 			this._pCurrent = this._pTail;
 			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
 		}
 
-		get current(): T {
+		getCurrent(): T {
 			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
 		}
 
@@ -124,7 +124,7 @@ module akra.util {
 
 		removeAll(pData: T): uint {
 			var i: int;
-			var n: uint = this.length;
+			var n: uint = this.getLength();
 
 			while ((i = this.indexOf(pData)) >= 0) {
 				this.removeAt(i);
@@ -156,11 +156,11 @@ module akra.util {
 		add(pList: IObjectList<T>): IObjectList<T> {
 			pList.seek(0);
 			//FIXME: what's this mean?
-			if (pList.length > 1) {
-				this.push(pList.first);
+			if (pList.getLength() > 1) {
+				this.push(pList.getFirst());
 			}
 
-			for (var i: uint = 1; i < pList.length; i++) {
+			for (var i: uint = 1; i < pList.getLength(); i++) {
 				this.push(pList.next());
 			}
 
@@ -289,7 +289,7 @@ module akra.util {
 		}
 
 		private createItem(): IObjectListItem<T> {
-			if (ObjectList._pool.length == 0) {
+			if (ObjectList._pool.getLength() === 0) {
 			return { next: null, prev: null, data: null }
 		}
 			return <IObjectListItem<T>>ObjectList._pool.pop();
@@ -341,13 +341,13 @@ module akra.util {
 		}
 
 		isEqual(pList: IObjectList<T>): boolean {
-			if (this._iLength == pList.length) {
+			if (this._iLength == pList.getLength()) {
 				if (this === pList) {
 					return true;
 				}
 
-				var l1: T = this.first;
-				var l2: T = pList.first;
+				var l1: T = this.getFirst();
+				var l2: T = pList.getFirst();
 
 				for (var i: uint = 0; i < this._iLength; ++i) {
 					if (l1 !== l2) {

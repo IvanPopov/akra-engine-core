@@ -30,6 +30,7 @@ module akra {
 	export interface IListener<T extends Function> {
 		reciever: any;
 		callback: T;
+		callbackName?: string;
 		type: EEventTypes;
 	}
 	

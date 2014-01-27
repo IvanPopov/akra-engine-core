@@ -58,19 +58,19 @@
 	protected _pBroadcastSlotList: IEventSlotListMap = null;				\
 	protected static _pEventTable: IEventTable = new events.EventTable(); 							\
 																									\
-	inline getEventTable(): IEventTable { return object._pEventTable; } 												\
+	inline getEventTable(): IEventTable { return object._pEventTable; } 		;										\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
 		return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\
 	inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
 		return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
-	}																													\
+	};																													\
 	inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { 									\
 		return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType);							\
-	}																													\
+	};																													\
 	inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool {									\
 		return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType);							\
-	}																													\
+	};																													\
 	inline _syncTable(pFrom: IEventProvider): void {																	\
 		this.getEventTable()._sync(this, pFrom);										\
 	}

@@ -23,22 +23,30 @@ module akra {
 	
 	
 	export interface ICamera extends ISceneNode {
-		/** readonly */ viewMatrix: IMat4;
-		/** readonly */ projectionMatrix: IMat4;
-		/** readonly */ projViewMatrix: IMat4;
+		getViewMatrix(): IMat4;
+		getProjectionMatrix(): IMat4;
+		getProjViewMatrix(): IMat4;
+		getTargetPos(): IVec3;
+
+		getViewDistance(): float;
+		getSearchRect(): IRect3d;
+		getFrustum(): IFrustum;
+		
+		getFOV(): float;
+		setFOV(fValue: float): void;
+
+		getAspect(): float;
+		setAspect(fValue: float): void;
+
+		getNearPlane(): float;
+		setNearPlane(fValue: float): void;
+
+		getFarPlane(): float;
+		setFarPlane(fValue: float): void;		
+	
 		// /** readonly */ internalProjectionMatrix: IMat4;
 		// /** readonly */ internalViewProjMatrix: IMat4;
-		/** readonly */ targetPos: IVec3;
-		
-		fov: float;
-		aspect: float;
-		nearPlane: float;
-		farPlane: float;
-		
-		/** readonly */ viewDistance: float;
-		/** readonly */ searchRect: IRect3d;
-		/** readonly */ frustum: IFrustum;
-	
+
 		setParameter(eParam: ECameraParameters, pValue: any): void;
 		isConstantAspect(): boolean;
 		

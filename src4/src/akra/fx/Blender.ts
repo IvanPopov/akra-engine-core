@@ -234,8 +234,8 @@ module akra.fx {
 				var pVertexShader: IAFXFunctionDeclInstruction = pPass.getVertexShader();
 				var pPixelShader: IAFXFunctionDeclInstruction = pPass.getPixelShader();
 
-				this._pPassBlendHashTree.has(isNull(pVertexShader) ? 0 : pVertexShader.getGuid());
-				this._pPassBlendHashTree.has(isNull(pPixelShader) ? 0 : pPixelShader.getGuid());
+				this._pPassBlendHashTree.has(isNull(pVertexShader) ? 0 : pVertexShader._getInstructionID());
+				this._pPassBlendHashTree.has(isNull(pPixelShader) ? 0 : pPixelShader._getInstructionID());
 			}
 
 			var pBlend: IAFXPassBlend = this._pPassBlendHashTree.getContent();

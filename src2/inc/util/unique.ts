@@ -5,6 +5,6 @@
 
 #define UNIQUE() \
 	protected _iGuid: int = sid();											\
-	inline getGuid(): uint { return this._iGuid; }
+	inline getGuid(): uint { return this._iGuid; };
 
 #endif

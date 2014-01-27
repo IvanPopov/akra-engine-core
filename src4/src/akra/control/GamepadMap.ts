@@ -16,6 +16,11 @@ module akra.control {
 	import ObjectArray = util.ObjectArray;
 
 	export class GamepadMap implements IGamepadMap {
+
+		connected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
+		disconnected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
+		updated: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
+
 		public guid: uint = guid();
 
 		private _bTicking: boolean = false;
@@ -25,7 +30,7 @@ module akra.control {
 
 		init(): boolean {
 
-			if (!info.api.gamepad) {
+			if (!info.api.getGamepad()) {
 				logger.warn("Gamepad API is unsupported.");
 				return false;
 			}
@@ -39,14 +44,14 @@ module akra.control {
 			}, false);
 
 			window.addEventListener('MozGamepadDisconnected', (e: GamepadEvent) => {
-				for (var i: int = 0; i < pCollection.length; ++i) {
+				for (var i: int = 0; i < pCollection.getLength(); ++i) {
 					if (<int>pCollection.value(i).index == e.gamepad.index) {
 						this.disconnected.emit(pCollection.takeAt(i));
 						break;
 					}
 				}
 
-				if (pCollection.length == 0) {
+				if (pCollection.getLength() === 0) {
 					this.stopPolling();
 				}
 			}, false);
@@ -80,7 +85,7 @@ module akra.control {
 			}
 
 			if (!isNull(sID)) {
-				for (i = 0; i < this._pCollection.length; ++i) {
+				for (i = 0; i < this._pCollection.getLength(); ++i) {
 					if (this._pCollection.value(i).id == sID) {
 						return this._pCollection.value(i);
 					}
@@ -112,7 +117,7 @@ module akra.control {
 
 			this.pollGamepads();
 
-			for (var i = 0; i < this._pCollection.length; ++i) {
+			for (var i = 0; i < this._pCollection.getLength(); ++i) {
 				var pGamepad: Gamepad = this._pCollection.value(i);
 
 				if (pGamepad.timestamp && (pGamepad.timestamp == this._pPrevTimestamps[i])) {
@@ -152,10 +157,6 @@ module akra.control {
 				//}
 			}
 		}
-
-		connected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
-		disconnected: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
-		updated: ISignal<{ (pGamepadMap: IGamepadMap, pGamepad: Gamepad): void; }> = new Signal(<any>this);
 	}
 
 

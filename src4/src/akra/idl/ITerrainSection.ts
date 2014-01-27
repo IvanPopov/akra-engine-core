@@ -7,13 +7,13 @@
 
 module akra {
 	export interface ITerrainSection extends ISceneObject {
-		/** readonly */ sectorX: uint;
-		/** readonly */ sectorY: uint;
-		/** readonly */ terrainSystem: ITerrain;
-		/** readonly */ sectionIndex: uint;
-		/** readonly */ heightY: float;
-		/** readonly */ heightX: float;
-		/** readonly */ vertexDescription: IVertexElementInterface[];
+		getSectorX(): uint;
+		getSectorY(): uint;
+		getTerrainSystem(): ITerrain;
+		getSectionIndex(): uint;
+		getHeightY(): float;
+		getHeightX(): float;
+		getVertexDescription(): IVertexElementInterface[];
 	
 		_internalCreate(pParentSystem: ITerrain, 
 						iSectorX: uint, iSectorY: uint, 

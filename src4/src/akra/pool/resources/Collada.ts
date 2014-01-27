@@ -125,9 +125,6 @@ module akra.pool.resources {
 			"specular"
 		];
 
-		 get modelFormat(): EModelFormats {
-			return EModelFormats.COLLADA;
-		}
 
 		//=======================================================================================
 		
@@ -148,19 +145,25 @@ module akra.pool.resources {
 
 		private _iByteLength: uint = 0;
 
+		getModelFormat(): EModelFormats {
+			return EModelFormats.COLLADA;
+		}
+
+		// polygon index convertion
+
+		getOptions(): IColladaLoadOptions {
+			return this._pOptions;
+		}
+
+		getByteLength(): uint {
+			return this._iByteLength;
+		}
 	
 
 		constructor () {
 			super();
 
 		}
-
-		// polygon index convertion
-	
-		get options(): IColladaLoadOptions {
-			return this._pOptions;
-		}
-
 
 		isShadowsEnabled(): boolean {
 			return this._pOptions.shadows;
@@ -381,7 +384,7 @@ module akra.pool.resources {
 
 		private COLLADAScaleMatrix(pXML: Element): IMat4 {
 			var pData: float[] = new Array(3);
-
+			
 			conv.stofa(stringData(pXML), pData);
 
 			return new Mat4(pData[0], pData[1], pData[2], 1.0);
@@ -837,7 +840,7 @@ module akra.pool.resources {
 
 					case "INV_BIND_MATRIX":
 						pJoints.inputs["INV_BIND_MATRIX"] = this.COLLADAInput(pXMLData);
-						if (this.options.debug) {
+						if (this.getOptions().debug) {
 							console.log(pJoints.inputs["INV_BIND_MATRIX"]);
 						}
 						break;
@@ -855,7 +858,7 @@ module akra.pool.resources {
 
 					pInvMatrixArray = new Float32Array(pJoints.inputs[sInput].array);
 					iCount = pInvMatrixArray.length / 16;
-					pMatrixArray = new Array(iCount);
+					pMatrixArray = new Array<IMat4>(iCount);
 
 					for (var j: uint = 0, n: uint = 0; j < pInvMatrixArray.length; j += 16) {
 						pMatrixArray[n++] = 
@@ -1206,7 +1209,7 @@ module akra.pool.resources {
 
 				CLD_PRINT(this, "load texture \"" + pImage.path + "\"...");
 
-				var pTex: ITexture = <ITexture>this.getManager().texturePool.loadResource(pImage.path);
+				var pTex: ITexture = <ITexture>this.getManager().getTexturePool().loadResource(pImage.path);
 				// var pModel = this;
 				// pTex.bind("loaded", () => {
 				//     logger.log(pTex.findResourceName(), "loaded", pModel.isResourceLoaded());
@@ -1988,7 +1991,7 @@ module akra.pool.resources {
 			}
 
 			if (!isNull(pTrack)) {
-				pTrack.targetName = sNodeId;
+				pTrack.setTargetName(sNodeId);
 			}
 
 			return pTrack;
@@ -2055,7 +2058,7 @@ module akra.pool.resources {
 				var fUnit: float = pAsset.unit.meter;
 				var sUPaxis: string = pAsset.upAxis;
 
-				pNode.localScale = Vec3.temp(fUnit);
+				pNode.setLocalScale(Vec3.temp(fUnit));
 
 				if (sUPaxis.toUpperCase() == "Z_UP") {
 					//pNode.addRelRotation([1, 0, 0], -.5 * math.PI);
@@ -2091,10 +2094,10 @@ module akra.pool.resources {
 		private buildDefaultMaterials(pMesh: IMesh): IMesh {
 			var pDefaultMaterial: IMaterial = material.create("default");
 
-			for (var j: int = 0; j < pMesh.length; ++j) {
+			for (var j: int = 0; j < pMesh.getLength(); ++j) {
 				var pSubMesh: IMeshSubset = pMesh.getSubset(j);
-				pSubMesh.material.set(pDefaultMaterial);
-				pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+				pSubMesh.getMaterial().set(pDefaultMaterial);
+				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 				// pSubMesh.renderMethod.effect.addComponent("akra.system.wireframe");
 			}
 
@@ -2120,18 +2123,18 @@ module akra.pool.resources {
 
 				pMaterial.set(<IMaterialBase>pPhongMaterial);
 
-				for (var j: int = 0; j < pMesh.length; ++j) {
+				for (var j: int = 0; j < pMesh.getLength(); ++j) {
 					var pSubMesh: IMeshSubset = pMesh.getSubset(j);
 
 					//if (pSubMesh.surfaceMaterial.findResourceName() === sMaterial) {
-					if (pSubMesh.material.name === sMaterial) {
+					if (pSubMesh.getMaterial().name === sMaterial) {
 						//setup materials
-						pSubMesh.material.set(pMaterial);
+						pSubMesh.getMaterial().set(pMaterial);
 						//FIXME: remove flex material setup(needs only demo with flexmats..)
 						// pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
 
 
-						pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+						pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 						
 						//setup textures
 						for (var sTextureType in pPhongMaterial.textures) {
@@ -2151,8 +2154,8 @@ module akra.pool.resources {
 							var pColladaImage: IColladaImage = pColladaTexture.image;
 
 
-							var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.surfaceMaterial;
-							var pTexture: ITexture = <ITexture>this.getManager().texturePool.findResource(pColladaImage.path);
+							var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.getSurfaceMaterial();
+							var pTexture: ITexture = <ITexture>this.getManager().getTexturePool().findResource(pColladaImage.path);
 
 							if (this.getImageOptions().flipY === true) {
 								logger.error("TODO: flipY for image unsupported!");
@@ -2228,7 +2231,7 @@ module akra.pool.resources {
 				this.sharedBuffer());    /*shared buffer, if supported*/
 
 			var pPolyGroup: IColladaPolygons[] = pNodeData.polygons;
-			var pMeshData: IRenderDataCollection = pMesh.data;
+			var pMeshData: IRenderDataCollection = pMesh.getData();
 
 			//creating subsets
 			for (var i: int = 0; i < pPolyGroup.length; ++i) {
@@ -2302,10 +2305,10 @@ module akra.pool.resources {
 			for (var i: int = 0; i < pPolyGroup.length; ++i) {
 				var pPolygons: IColladaPolygons = pPolyGroup[i];
 				var pSubMesh: IMeshSubset = pMesh.getSubset(i);
-				var pSubMeshData: IRenderData = pSubMesh.data;
+				var pSubMeshData: IRenderData = pSubMesh.getData();
 				var pIndexDecl: IVertexDeclaration = data.VertexDeclaration.normalize(undefined);
 				var pSurfaceMaterial: ISurfaceMaterial = null;
-				var pSurfacePool: IResourcePool = null;
+				var pSurfacePool: IResourcePool<ISurfaceMaterial> = null;
 
 				for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
 					var iOffset: int = pPolygons.inputs[j].offset;
@@ -2336,13 +2339,13 @@ module akra.pool.resources {
 				//     pSubMesh.surfaceMaterial = pSurfaceMaterial;
 				// }
 				
-				pSubMesh.material.name = pPolygons.material;
+				pSubMesh.getMaterial().name = pPolygons.material;
 			}
 
 			// logger.assert(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
 			// logger.assert(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
 
-			pMesh.shadow = this.isShadowsEnabled();
+			pMesh.setShadow(this.isShadowsEnabled());
 
 			//adding all data to cahce data
 			this.addMesh(pMesh);
@@ -2407,7 +2410,7 @@ module akra.pool.resources {
 				debug.assert(isDefAndNotNull(pMesh), "cannot find instance <" + pControllers[m].url + ">\"s data");
 
 				if (!isNull(pSceneNode)) {
-					pSceneNode.mesh = pMesh;
+					pSceneNode.setMesh(pMesh);
 				}
 			}
 
@@ -2425,7 +2428,7 @@ module akra.pool.resources {
 				debug.assert(isDefAndNotNull(pMesh), "cannot find instance <" + pGeometries[m].url + ">\"s data");
 
 				if (!isNull(pSceneNode)) {
-					pSceneNode.mesh = pMesh;
+					pSceneNode.setMesh(pMesh);
 				}
 			}
 
@@ -2449,7 +2452,7 @@ module akra.pool.resources {
 				}
 
 				if (!scene.SceneModel.isModel(pModelNode) && pNode.geometry.length > 0) {
-					pModelNode = pModelNode.scene.createModel(".joint-to-model-link-" + guid());
+					pModelNode = pModelNode.getScene().createModel(".joint-to-model-link-" + guid());
 					pModelNode.attachToParent(pNode.constructedNode);
 				}
 
@@ -2464,7 +2467,7 @@ module akra.pool.resources {
 
 		private buildSceneNode(pNode: IColladaNode, pParentNode: ISceneNode): ISceneNode {
 			var pSceneNode: ISceneNode = pNode.constructedNode;
-			var pScene: IScene3d = pParentNode.scene;
+			var pScene: IScene3d = pParentNode.getScene();
 
 			if (isDefAndNotNull(pSceneNode)) {
 				return pSceneNode;
@@ -2502,11 +2505,11 @@ module akra.pool.resources {
 				return null;
 			}
 
-			pJointNode = pParentNode.scene.createJoint();
+			pJointNode = pParentNode.getScene().createJoint();
 				
 			logger.assert(pJointNode.create(), "Can not initialize joint node!");
 
-			pJointNode.boneName = sJointSid;
+			pJointNode.setBoneName(sJointSid);
 			pJointNode.attachToParent(pParentNode);
 
 
@@ -2525,7 +2528,7 @@ module akra.pool.resources {
 		
 		private buildCamera(pColladaInstanceCamera: IColladaInstanceCamera, pParent: ISceneNode): ICamera {
 			var pColladaCamera: IColladaCamera = pColladaInstanceCamera.camera;
-			var pCamera: ICamera = pParent.scene.createCamera(pColladaCamera.name || pColladaCamera.id || null);
+			var pCamera: ICamera = pParent.getScene().createCamera(pColladaCamera.name || pColladaCamera.id || null);
 
 			pCamera.setInheritance(ENodeInheritance.ALL);
 			pCamera.attachToParent(pParent);
@@ -2566,12 +2569,12 @@ module akra.pool.resources {
 					pHierarchyNode = this.buildSceneNode(pNode, pParentNode);
 				}
 
-				pHierarchyNode.name = (pNode.id || pNode.name);
+				pHierarchyNode.setName(pNode.id || pNode.name);
 				pHierarchyNode.setInheritance(ENodeInheritance.ALL);
 
 				//cache already constructed nodes
 				pNode.constructedNode = pHierarchyNode;
-				pHierarchyNode.localMatrix = pNode.transform;
+				pHierarchyNode.setLocalMatrix(pNode.transform);
 
 				this.buildNodes(pNode.childNodes, pHierarchyNode);
 
@@ -2606,14 +2609,14 @@ module akra.pool.resources {
 		}
 
 		private buildInititalPose(pNodes: IColladaNode[], pSkeleton: ISkeleton): IAnimation {
-			var sPose: string = "Pose-" + this.getBasename() + "-" + pSkeleton.name;
+			var sPose: string = "Pose-" + this.getBasename() + "-" + pSkeleton.getName();
 			var pPose: IAnimation = animation.createAnimation(sPose);
 			var pNodeList: ISceneNode[] = pSkeleton.getNodeList();
 			var pNodeMap: IMap<ISceneNode> = {};
 			var pTrack: IAnimationTrack;
 
 			for (var i: int = 0; i < pNodeList.length; ++i) {
-				pNodeMap[pNodeList[i].name] = pNodeList[i];
+				pNodeMap[pNodeList[i].getName()] = pNodeList[i];
 			}
 
 			this.findNode(pNodes, null, function (pNode: IColladaNode) {
@@ -2625,7 +2628,7 @@ module akra.pool.resources {
 				}
 
 				pTrack = animation.createTrack(sJoint);
-				pTrack.targetName = sNodeId;
+				pTrack.setTargetName(sNodeId);
 				pTrack.keyFrame(0.0, pNode.transform);
 
 				pPose.push(pTrack);
@@ -2710,8 +2713,8 @@ module akra.pool.resources {
 		}
 
 		private addMesh(pMesh: IMesh): void {
-			this._pCache.meshMap[pMesh.name] = pMesh;
-			this.sharedBuffer(pMesh.data);
+			this._pCache.meshMap[pMesh.getName()] = pMesh;
+			this.sharedBuffer(pMesh.getData());
 		}
 
 		private sharedBuffer(pBuffer?: IRenderDataCollection): IRenderDataCollection {
@@ -2802,7 +2805,7 @@ module akra.pool.resources {
 		}
 
 		public  getBasename(): string {
-			return path.parse(this._pOptions.name || this._sFilename || "unknown").basename;
+			return path.parse(this._pOptions.name || this._sFilename || "unknown").getBaseName();
 		}
 
 		public  getFilename(): string {
@@ -2832,10 +2835,6 @@ module akra.pool.resources {
 					pLibraries[sLib] = null;
 				}
 			}
-		}
-
-		 get byteLength(): uint {
-			return this._iByteLength;
 		}
 
 		parse(sXMLData: string, pOptions: IColladaLoadOptions = null): boolean {
@@ -2947,7 +2946,7 @@ module akra.pool.resources {
 			if (parent instanceof scene.Node) {
 				//attach collada scene to give node
 				pNode = <ISceneNode>parent;
-				pScene = pNode.scene;
+				pScene = pNode.getScene();
 
 			}
 			else {
@@ -2958,7 +2957,7 @@ module akra.pool.resources {
 
 			pRoot = pScene._createModelEntry(this);
 			pRoot.create();
-			pRoot.name = this.getBasename();
+			pRoot.setName(this.getBasename());
 			pRoot.setInheritance(ENodeInheritance.ALL);
 
 			if (!pRoot.attachToParent(pNode)) {
@@ -3270,10 +3269,10 @@ module akra.pool.resources {
 
 
 	export function isModelResource(pItem: IResourcePoolItem): boolean {
-		return pool.isVideoResource(pItem) && pItem.resourceCode.type === EVideoResources.MODEL_RESOURCE;
+		return pool.isVideoResource(pItem) && pItem.getResourceCode().getType() === EVideoResources.MODEL_RESOURCE;
 	}
 
 	export function isColladaResource(pItem: IResourcePoolItem): boolean {
-		return isModelResource(pItem) && (<IModel>pItem).modelFormat === EModelFormats.COLLADA;
+		return isModelResource(pItem) && (<IModel>pItem).getModelFormat() === EModelFormats.COLLADA;
 	}
 }

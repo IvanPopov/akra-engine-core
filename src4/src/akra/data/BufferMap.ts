@@ -32,7 +32,7 @@ module akra.data {
 
 	export class BufferMap extends util.ReferenceCounter implements IBufferMap {
 		guid: uint = guid();
-		
+
 		modified: ISignal<{ (pMap: IBufferMap): void; }> = new Signal(<any>this);
 
 		private _pFlows: IDataFlow[] = null;
@@ -61,28 +61,21 @@ module akra.data {
 			});
 		}
 
-		get totalUpdates(): uint {
-			return this._nUpdates;
-		}
 
-		get primType(): EPrimitiveTypes {
+		getPrimType(): EPrimitiveTypes {
 			return this._pIndex ? this._pIndex.getPrimitiveType() : this._ePrimitiveType;
 		}
 
-		set primType(eType: EPrimitiveTypes) {
+		setPrimType(eType: EPrimitiveTypes): void {
 			this._ePrimitiveType = eType;
 			this.modified.emit();
 		}
 
-		get primCount(): uint {
-			return IndexData.getPrimitiveCount(this.primType, this.length);
-		}
-
-		get index(): IIndexData {
+		getIndex(): IIndexData {
 			return this._pIndex;
 		}
 
-		set index(pIndexData: IIndexData) {
+		setIndex(pIndexData: IIndexData): void {
 			if (this._pIndex === pIndexData) {
 				return;
 			}
@@ -91,42 +84,50 @@ module akra.data {
 			this.update();
 		}
 
-		get limit(): uint {
-			return this._pFlows.length;
+		getLength(): uint {
+			return (this._pIndex ? this._pIndex.getLength() : this._nLength);
 		}
 
-		get length(): uint {
-			return (this._pIndex ? this._pIndex.length : this._nLength);
-		}
-
-		set length(nLength: uint) {
+		setLength(nLength: uint): void {
 			this._nLength = Math.min(this._nLength, nLength);
 			this.modified.emit();
 		}
 
-		set _length(nLength: uint) {
+		_setLengthForce(nLength: uint): void {
 			this._nLength = nLength;
 			this.modified.emit();
 		}
 
-		get startIndex(): uint {
+		getTotalUpdates(): uint {
+			return this._nUpdates;
+		}
+
+		getPrimCount(): uint {
+			return IndexData.getPrimitiveCount(this.getPrimType(), this.getLength());
+		}
+
+		getLimit(): uint {
+			return this._pFlows.length;
+		}
+
+		getStartIndex(): uint {
 			return this._nStartIndex;
 		}
 
-		get size(): uint {
+		getSize(): uint {
 			return this._nCompleteFlows;
 		}
 
-		get flows(): IDataFlow[] {
+		getFlows(): IDataFlow[] {
 			return this._pCompleteFlows;
 		}
 
-		get mappers(): IDataMapper[] {
+		getMappers(): IDataMapper[] {
 			return this._pMappers;
 		}
 
-		get offset(): uint {
-			return (this._pIndex ? this._pIndex.byteOffset : 0);
+		getOffset(): uint {
+			return (this._pIndex ? this._pIndex.getByteOffset() : 0);
 		}
 
 		_draw(): void {
@@ -136,30 +137,30 @@ module akra.data {
 		}
 
 		private drawArrays(): void {
-//#ifdef WEBGL
-
-
-//				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
-//				webgl.getWebGLPrimitiveType(this._ePrimitiveType),
-//				// GL_POINTS,
-//				this._nStartIndex,
-//				this._nLength);
-
-
-//#else
-			logger.critical("BufferMap::drawElements() unsupported for unknown API.");
+			if (config.WEBGL) {
+				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
+					webgl.getWebGLPrimitiveType(this._ePrimitiveType),
+					// GL_POINTS,
+					this._nStartIndex,
+					this._nLength);
+			}
+			else {
+				logger.critical("BufferMap::drawElements() unsupported for unknown API.");
+			}
 		}
 
 		private drawElements(): void {
-//#ifdef WEBGL
-//				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
-//				webgl.getWebGLPrimitiveType(this._ePrimitiveType),
-//				this._pIndex.getPrimitiveCount(),
-//				webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()),
-//				this._pIndex.byteOffset / 4);
-//			//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
-//#else
-			logger.critical("BufferMap::drawElements() unsupported for unknown API.");
+			if (config.WEBGL) {
+				(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
+					webgl.getWebGLPrimitiveType(this._ePrimitiveType),
+					this._pIndex.getPrimitiveCount(),
+					webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()),
+					this._pIndex.getByteOffset() / 4);
+				//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
+			}
+			else {
+				logger.critical("BufferMap::drawElements() unsupported for unknown API.");
+			}
 		}
 
 		getFlow(sSemantics: string, bComplete?: boolean): IDataFlow;
@@ -221,11 +222,11 @@ module akra.data {
 		    this._ePrimitiveType = EPrimitiveTypes.TRIANGLELIST;
 
 
-//#ifdef WEBGL
-//			nFlowLimit = Math.min(16/*webgl.maxVertexTextureImageUnits*/, webgl.maxVertexAttributes);
-//#endif
+			//#ifdef WEBGL
+			//			nFlowLimit = Math.min(16/*webgl.maxVertexTextureImageUnits*/, webgl.maxVertexAttributes);
+			//#endif
 
-		    this._pMappers = [];
+			this._pMappers = [];
 			this._pFlows = new Array<IDataFlow>(nFlowLimit);
 			for (var i = 0; i < nFlowLimit; i++) {
 				this._pFlows[i] = {
@@ -270,18 +271,18 @@ module akra.data {
 
 			pFlow = this._pFlows[iFlow];
 
-			debug.assert(iFlow < this.limit,
-				'Invalid strem. Maximum allowable number of stream ' + this.limit + '.');
+			debug.assert(iFlow < this.getLimit(),
+				'Invalid strem. Maximum allowable number of stream ' + this.getLimit() + '.');
 
 			if (!pVertexData || pFlow.data === pVertexData) {
 				debug.warn("BufferMap::flow(", iFlow, pVertexData, ") failed.",
 					isNull(pVertexData) ? "vertex data is null" : "flow.data alreay has same vertex data");
 				return -1;
 			}
-			
-			if (pool.resources.VertexBuffer.isVBO(<IVertexBuffer>pVertexData.buffer)) {
+
+			if (pool.resources.VertexBuffer.isVBO(<IVertexBuffer>pVertexData.getBuffer())) {
 				pFlow.type = EDataFlowTypes.UNMAPPABLE;
-				this.length = pVertexData.length;
+				this.setLength(pVertexData.getLength());
 				//this.startIndex = pVertexData.getStartIndex();
 				isOk = this.checkData(pVertexData);
 				debug.assert(isOk, "You can use several unmappable data flows from one buffer.");
@@ -310,7 +311,7 @@ module akra.data {
 		private linkFlow(pFlow: IDataFlow): void {
 			var pDecl: IVertexDeclaration = pFlow.data.getVertexDeclaration();
 
-			for (var i: int = 0; i < pDecl.length; ++i) {
+			for (var i: int = 0; i < pDecl.getLength(); ++i) {
 				var pElement: data.VertexElement = <data.VertexElement>pDecl.element(i);
 				var sSemantics: string = pElement.semantics;
 
@@ -342,7 +343,7 @@ module akra.data {
 		checkData(pData: IVertexData): boolean {
 			var pEtalon = this._pBuffersCompatibleMap[pData.getBufferHandle()];
 
-			if (!pEtalon || pEtalon.byteOffset === pData.byteOffset) {
+			if (!pEtalon || pEtalon.getByteOffset() === pData.getByteOffset()) {
 				return true;
 			}
 
@@ -401,7 +402,7 @@ module akra.data {
 				}
 
 		        this._pMappers.push(pMapper);
-				this.length = pMap.length;
+				this.setLength(pMap.getLength());
 				this.trackData(pMap);
 			}
 
@@ -457,8 +458,8 @@ module akra.data {
 				this.linkFlow(pFlow);
 
 				if (isMappable) {
-					nCurStartIndex = pMapper.data.startIndex;
-					pVideoBuffer = <IVertexBuffer>pFlow.data.buffer;
+					nCurStartIndex = pMapper.data.getStartIndex();
+					pVideoBuffer = <IVertexBuffer>pFlow.data.getBuffer();
 					for (var j = 0; j < nCompleteVideoBuffers; j++) {
 						if (pCompleteVideoBuffers[j] === pVideoBuffer) {
 							isVideoBufferAdded = true;
@@ -470,7 +471,7 @@ module akra.data {
 					}
 				}
 				else {
-					nCurStartIndex = pFlow.data.startIndex;
+					nCurStartIndex = pFlow.data.getStartIndex();
 				}
 
 				if (nStartIndex === MAX_INT32) {
@@ -566,14 +567,14 @@ module akra.data {
 					_an('[ ' + (pDecl.element(0).usage !== DeclUsages.END ? pDecl.element(0).usage : '<end>') + ' ]', 20) +
 					' : ' + _an(pDecl.element(0).offset, 6, true) + ' / ' + _an(pDecl.element(0).size, 6) +
 					' | ' +
-					_an(pVertexData.getBufferHandle(), 8, true) + ' / ' + _an(pVertexData.byteOffset, 8) +
+					_an(pVertexData.getBufferHandle(), 8, true) + ' / ' + _an(pVertexData.getByteOffset(), 8) +
 					' : ' +
 					(pMapper ? _an(pMapper.semantics, 15, true) + ' / ' + _an(pMapper.addition, 7) + ': ' +
 					_an(pMapper.data.getVertexDeclaration().findElement(pMapper.semantics).offset, 6) :
 					_an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
 
 
-					for (var j = 1; j < pDecl.length; ++j) {
+					for (var j = 1; j < pDecl.getLength(); ++j) {
 						s += '    ' +
 						_an('[ ' + (pDecl.element(j).usage !== DeclUsages.END ? pDecl.element(j).usage : '<end>') + ' ]', 20) + ' : ' + _an(pDecl.element(j).offset, 6, true) + ' / ' + _an(pDecl.element(j).size, 6) +
 						' |                     :                          :        |                  \n';
@@ -581,11 +582,11 @@ module akra.data {
 					s += t;
 				}
 				s += '=================================================================\n';
-				s += '      PRIMITIVE TYPE : ' + '0x' + Number(this.primType).toString(16) + '\n';
-				s += '     PRIMITIVE COUNT : ' + this.primCount + '\n';
-				s += '         START INDEX : ' + this.startIndex + '\n';
-				s += '              LENGTH : ' + this.length + '\n';
-				s += '  USING INDEX BUFFER : ' + (this.index ? 'TRUE' : 'FALSE') + '\n';
+				s += '      PRIMITIVE TYPE : ' + '0x' + Number(this.getPrimType()).toString(16) + '\n';
+				s += '     PRIMITIVE COUNT : ' + this.getPrimCount() + '\n';
+				s += '         START INDEX : ' + this.getStartIndex() + '\n';
+				s += '              LENGTH : ' + this.getLength() + '\n';
+				s += '  USING INDEX BUFFER : ' + (this.getIndex() ? 'TRUE' : 'FALSE') + '\n';
 				s += '=================================================================\n';
 
 				return s + '\n\n';

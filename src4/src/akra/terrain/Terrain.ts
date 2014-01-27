@@ -87,51 +87,51 @@ module akra.terrain {
 			}
 		}
 
-		get dataFactory(): IRenderDataCollection{
+		getDataFactory(): IRenderDataCollection{
 			return this._pDataFactory;
 		}
 
-		get worldExtents(): IRect3d{
+		getWorldExtents(): IRect3d{
 			return this._pWorldExtents;
 		}
 
-		get worldSize(): IVec3{
+		getWorldSize(): IVec3{
 			return this._v3fWorldSize;
 		}
 
-		get mapScale(): IVec3{
+		getMapScale(): IVec3{
 			return this._v3fMapScale;
 		}
 
-		get sectorCountX(): uint{
+		getSectorCountX(): uint{
 			return this._iSectorCountX;
 		}
 
-		get sectorCountY(): uint{
+		getSectorCountY(): uint{
 			return this._iSectorCountY;
 		}
 
-		get sectorSize(): IVec2{
+		getSectorSize(): IVec2{
 			return this._v2fSectorSize;
 		}
 
-		get tableWidth(): uint{
+		getTableWidth(): uint{
 			return this._iTableWidth;
 		}
 
-		get tableHeight(): uint{
+		getTableHeight(): uint{
 			return this._iTableHeight;
 		}
 
-		get sectorShift(): uint{
+		getSectorShift(): uint{
 			return this._iSectorShift;
 		}
 
-		get maxHeight(): float{
+		getMaxHeight(): float{
 			return this._fMaxHeight;
 		}
 
-		get terrain2DLength(): float{
+		getTerrain2DLength(): float{
 			return this._f2DDiagonal;
 		}
 
@@ -139,23 +139,23 @@ module akra.terrain {
 			return this._isCreate;
 		}
 
-		get megaTexture(): IMegaTexture {
+		getMegaTexture(): IMegaTexture {
 			return this._pMegaTexures;
 		}
 
-		get manualMegaTextureInit(): boolean {
+		getManualMegaTextureInit(): boolean {
 			return this._bManualMegaTextureInit;
 		}
 
-		set manualMegaTextureInit(bManual: boolean) {
+		setManualMegaTextureInit(bManual: boolean): void {
 			this._bManualMegaTextureInit = bManual;
 		}
 
-		get showMegaTexture(): boolean {
+		getShowMegaTexture(): boolean {
 			return this._bShowMegaTexture;
 		}
 
-		set showMegaTexture(bShow: boolean) {
+		setShowMegaTexture(bShow: boolean): void {
 			this._bShowMegaTexture = bShow;
 		}
 
@@ -167,7 +167,7 @@ module akra.terrain {
 				var pMethod: IRenderMethod = null, 
 					pEffect: IEffect = null;
 			    
-			    pMethod = <IRenderMethod>pRmgr.renderMethodPool.findResource(".terrain_render");
+			    pMethod = <IRenderMethod>pRmgr.getRenderMethodPool().findResource(".terrain_render");
 			    
 			    if (!isNull(pMethod)) {
 			        this._pDefaultRenderMethod = pMethod;
@@ -178,9 +178,9 @@ module akra.terrain {
 			    pEffect.addComponent("akra.system.terrain");
 
 			    pMethod = pRmgr.createRenderMethod(".terrain_render");
-			    pMethod.effect = pEffect;
-			    pMethod.surfaceMaterial = pRmgr.createSurfaceMaterial(".terrain_render");
-			    var pMat: IMaterial = pMethod.surfaceMaterial.material;
+			    pMethod.setEffect(pEffect);
+				pMethod.setSurfaceMaterial(pRmgr.createSurfaceMaterial(".terrain_render"));
+			    var pMat: IMaterial = pMethod.getSurfaceMaterial().getMaterial();
 			    pMat.name = "terrain";
 
 			    pMat.shininess = 30;
@@ -198,19 +198,19 @@ module akra.terrain {
 				var pMethod: IRenderMethod = null, 
 					pEffect: IEffect = null;
 
-				pMethod = <IRenderMethod>pRmgr.renderMethodPool.findResource(".terrain_generate_normal");
+				pMethod = <IRenderMethod>pRmgr.getRenderMethodPool().findResource(".terrain_generate_normal");
 
 				if(isNull(pMethod)){
 					pEffect = pRmgr.createEffect(".terrain_generate_normal");
 					pEffect.addComponent("akra.system.generateNormalMapByHeightMap");
 
 					pMethod = pRmgr.createRenderMethod(".terrain_generate_normal");
-			    	pMethod.effect = pEffect;
+			    	pMethod.setEffect(pEffect);
 				}
 
 				this._pDefaultScreen.addRenderMethod(pMethod, ".terrain_generate_normal");
 
-				this._pDefaultScreen.getTechnique(".terrain_generate_normal").render.connect(this._onGenerateNormalRender);
+				this._pDefaultScreen.getTechnique(".terrain_generate_normal").render.connect(this, this._onGenerateNormalRender);
 			}
 
 		    return true;
@@ -321,7 +321,7 @@ module akra.terrain {
 			        var iYPixel: uint = y << this._iSectorShift;
 			        var iIndex: uint = (y * this._iSectorCountX) + x;
 
-			        this._pSectorArray[iIndex] = this.scene.createTerrainSection();
+			        this._pSectorArray[iIndex] = this.getScene().createTerrainSection();
 			        this._pSectorArray[iIndex]._createRenderable();
 
 			        if (!this._pSectorArray[iIndex]._internalCreate(
@@ -354,7 +354,7 @@ module akra.terrain {
 		        pSection = this._pSectorArray[i];
 
 		        pSection.getRenderable().getTechnique().setMethod(this._pDefaultRenderMethod);
-				pSection.getRenderable().getTechnique().render.connect(this._onRender);
+				pSection.getRenderable().getTechnique().render.connect(this, this._onRender);
 		    }
 		}
 
@@ -372,9 +372,9 @@ module akra.terrain {
 
 			    // first, build a table of heights
 			    if (pImageHightMap.isResourceLoaded()) {
-			        if(pImageHightMap.width !== iMaxX && pImageHightMap.height !== iMaxY){
+			        if(pImageHightMap.getWidth() !== iMaxX && pImageHightMap.getHeight() !== iMaxY){
 			        	logger.warn("Размеры карты высот не совпадают с другими размерами. Нужно: " + 
-			        			iMaxX + "x" + iMaxY + ". Есть: " + pImageHightMap.width + "x" + pImageHightMap.height);
+			        			iMaxX + "x" + iMaxY + ". Есть: " + pImageHightMap.getWidth() + "x" + pImageHightMap.getHeight());
 			        	return;
 			        }
 
@@ -428,11 +428,11 @@ module akra.terrain {
 		}
 
 		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3 {
-			if (iMapX >= this._pBaseNormalImage.width) {
-			    iMapX = this._pBaseNormalImage.width - 1;
+			if (iMapX >= this._pBaseNormalImage.getWidth()) {
+				iMapX = this._pBaseNormalImage.getWidth() - 1;
 			}
-			if (iMapY >= this._pBaseNormalImage.height) {
-			    iMapY = this._pBaseNormalImage.height - 1;
+			if (iMapY >= this._pBaseNormalImage.getHeight()) {
+				iMapY = this._pBaseNormalImage.getHeight() - 1;
 			}
 
 			this._pBaseNormalImage.getColorAt(this._pTempNormalColor, iMapX, iMapY);
@@ -446,21 +446,21 @@ module akra.terrain {
 		projectPoint(v3fCoord: IVec3, v3fDestenation: IVec3): boolean {
 			var v4fTerrainCoord: IVec4 = Vec4.temp(v3fCoord, 1.);
 
-		    v4fTerrainCoord = this.inverseWorldMatrix.multiplyVec4(v4fTerrainCoord);
+		    v4fTerrainCoord = this.getInverseWorldMatrix().multiplyVec4(v4fTerrainCoord);
 
-		    if (v4fTerrainCoord.x < this.worldExtents.x0 || v4fTerrainCoord.x > this.worldExtents.x1 ||
-		    	v4fTerrainCoord.y < this.worldExtents.y0 || v4fTerrainCoord.y > this.worldExtents.y1){
+		    if (v4fTerrainCoord.x < this.getWorldExtents().x0 || v4fTerrainCoord.x > this.getWorldExtents().x1 ||
+		    	v4fTerrainCoord.y < this.getWorldExtents().y0 || v4fTerrainCoord.y > this.getWorldExtents().y1){
 
 		    	return false;
 		    }
 
-		    var iMapX: uint = math.floor((v4fTerrainCoord.x - this.worldExtents.x0) / this.worldExtents.sizeX() * this.tableWidth);
-		    var iMapY: uint = math.floor((v4fTerrainCoord.y - this.worldExtents.y0) / this.worldExtents.sizeY() * this.tableHeight);
+		    var iMapX: uint = math.floor((v4fTerrainCoord.x - this.getWorldExtents().x0) / this.getWorldExtents().sizeX() * this.getTableWidth());
+		    var iMapY: uint = math.floor((v4fTerrainCoord.y - this.getWorldExtents().y0) / this.getWorldExtents().sizeY() * this.getTableHeight());
 		    var fHeight: float = this.readWorldHeight(iMapX, iMapY);
 
 		    var v4fTempDestenation: IVec4 = Vec4.temp(v4fTerrainCoord.x, v4fTerrainCoord.y, fHeight, 1.);
 
-		    v4fTempDestenation = this.worldMatrix.multiplyVec4(v4fTempDestenation);
+		    v4fTempDestenation = this.getWorldMatrix().multiplyVec4(v4fTempDestenation);
 		    v3fDestenation.set(v4fTempDestenation.x, v4fTempDestenation.y, v4fTempDestenation.z);
 
 		    return true;
@@ -490,7 +490,7 @@ module akra.terrain {
 			this._pHeightMapTexture.loadImage(pImageHightMap);
 
 			this._pBaseNormalTexture = pRmgr.createTexture(".terrain-base-normal-texture" + this.guid);
-			this._pBaseNormalTexture.create(pImageHightMap.width, pImageHightMap.height, 1, null, 
+			this._pBaseNormalTexture.create(pImageHightMap.getWidth(), pImageHightMap.getHeight(), 1, null, 
 											ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.R8G8B8A8);
 
 			var pTarget: IRenderTarget = this._pBaseNormalTexture.getBuffer().getRenderTarget();
@@ -533,7 +533,7 @@ module akra.terrain {
 			fX1 = fY1 = fZ1 = MIN_FLOAT64;
 
 			for(var i: uint = 0; i < this._pSectorArray.length; i++) {
-				var pSectionBox: IRect3d = this._pSectorArray[i].localBounds;
+				var pSectionBox: IRect3d = this._pSectorArray[i].getLocalBounds();
 
 				fX0 = math.min(fX0, pSectionBox.x0);
 				fY0 = math.min(fY0, pSectionBox.y0);
@@ -574,7 +574,7 @@ module akra.terrain {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setSamplerTexture("HEIGHT_SAMPLER", this._pHeightMapTexture);
-			pPass.setUniform("STEPS", Vec2.temp(1./this._pHeightMapTexture.width, 1./this._pHeightMapTexture.height));
+			pPass.setUniform("STEPS", Vec2.temp(1. / this._pHeightMapTexture.getWidth(), 1. / this._pHeightMapTexture.getHeight()));
 			pPass.setUniform("SCALE", this._v3fMapScale.z);
 			pPass.setUniform("CHANNEL", 0);
 		}

@@ -22,9 +22,9 @@ module akra {
 	// }
 	
 	export interface IRenderDataCollection extends /*IHardwareBuffer*/IBuffer, IReferenceCounter {
-		/** readonly */ buffer: IVertexBuffer;
-		/** readonly */ byteLength: uint;
-		/** readonly */ length: uint;
+		getBuffer(): IVertexBuffer;
+		getByteLength(): uint;
+		getLength(): uint;
 	
 		getEngine(): IEngine;
 		getOptions(): int;

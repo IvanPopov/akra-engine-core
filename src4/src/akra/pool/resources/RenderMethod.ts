@@ -14,14 +14,14 @@ module akra.pool.resources {
 		protected _pPassInputList: IAFXPassInputBlend[] = null;
 		protected _nTotalPasses: uint = 0;
 
-		 get effect(): IEffect{
+		getEffect(): IEffect{
 			return this._pEffect;
 		}
 
-		set effect(pEffect: IEffect) {
+		setEffect(pEffect: IEffect): void {
 			if(!isNull(this._pEffect)){
 				this.unsync(this._pEffect, EResourceItemEvents.LOADED);
-				this._pEffect.altered.disconnect(this.updateEffect, EEventTypes.BROADCAST);
+				this._pEffect.altered.disconnect(this, this.updateEffect, EEventTypes.BROADCAST);
 				this._pEffect.release();
 			}
 
@@ -29,21 +29,21 @@ module akra.pool.resources {
 			
 			if(!isNull(pEffect)){
 				this.sync(this._pEffect, EResourceItemEvents.LOADED);
-				this._pEffect.altered.connect(this.updateEffect, EEventTypes.BROADCAST);
+				this._pEffect.altered.connect(this, this.updateEffect, EEventTypes.BROADCAST);
 				this._pEffect.addRef();
 			}
 
 			this.updateEffect(pEffect);
 		}
 
-		 get surfaceMaterial(): ISurfaceMaterial {
+		getSurfaceMaterial(): ISurfaceMaterial {
 			return this._pSurfaceMaterial;
 		}
 
-		 set surfaceMaterial(pMaterial: ISurfaceMaterial) {
+		setSurfaceMaterial(pMaterial: ISurfaceMaterial): void {
 			if(!isNull(this._pSurfaceMaterial)){
 				this.unsync(this._pSurfaceMaterial, EResourceItemEvents.LOADED);
-				this._pSurfaceMaterial.altered.disconnect(this.notifyAltered, EEventTypes.BROADCAST);
+				this._pSurfaceMaterial.altered.disconnect(this, this.notifyAltered, EEventTypes.BROADCAST);
 				this._pSurfaceMaterial.release();
 			}
 
@@ -51,7 +51,7 @@ module akra.pool.resources {
 			
 			if(!isNull(pMaterial)){
 				this.sync(this._pSurfaceMaterial, EResourceItemEvents.LOADED);
-				this._pSurfaceMaterial.altered.connect(this.notifyAltered, EEventTypes.BROADCAST);
+				this._pSurfaceMaterial.altered.connect(this, this.notifyAltered, EEventTypes.BROADCAST);
 			}
 
 			this._pSurfaceMaterial.addRef();
@@ -59,8 +59,8 @@ module akra.pool.resources {
 			this.notifyAltered();
 		}
 
-		get material(): IMaterial {
-			return this.surfaceMaterial.material;
+		getMaterial(): IMaterial {
+			return this.getSurfaceMaterial().getMaterial();
 		}
 
 		isEqual(pRenderMethod: IRenderMethod): boolean {return false;}
@@ -173,10 +173,10 @@ module akra.pool.resources {
 			}
 
 			var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
-			var iTotalPasses: uint = pEffect.totalPasses;
+			var iTotalPasses: uint = pEffect.getTotalPasses();
 
 			if(isNull(this._pPassInputList)){
-				this._pPassInputList = new Array(iTotalPasses);
+				this._pPassInputList = new Array<IAFXPassInputBlend>(iTotalPasses);
 				this._nTotalPasses = 0;
 			}
 

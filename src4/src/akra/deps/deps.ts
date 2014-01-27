@@ -129,7 +129,7 @@ module akra.deps {
 }
 
 	export function detectType(pDep: IDep): string {
-		return pDep.type || path.parse(pDep.path).ext || "";
+		return pDep.type || path.parse(pDep.path).getExt() || "";
 	}
 
 	export function createResources(pEngine: IEngine, pDeps: IDependens): void {
@@ -141,8 +141,8 @@ module akra.deps {
 			switch (sExt.toLowerCase()) {
 				case "fx":
 				case "afx":
-					if (!pRmgr.effectDataPool.findResource(sResource)) {
-						pRmgr.effectDataPool.createResource(sResource);
+					if (!pRmgr.getEffectDataPool().findResource(sResource)) {
+						pRmgr.getEffectDataPool().createResource(sResource);
 					}
 					break;
 				case "jpg":
@@ -151,13 +151,13 @@ module akra.deps {
 				case "bmp":
 				case "gif":
 				case "dds":
-					if (!pRmgr.imagePool.findResource(sResource)) {
-						pRmgr.imagePool.createResource(sResource);
+					if (!pRmgr.getImagePool().findResource(sResource)) {
+						pRmgr.getImagePool().createResource(sResource);
 					}
 					break;
 				case "dae":
-					if (!pRmgr.colladaPool.findResource(sResource)) {
-						pRmgr.colladaPool.createResource(sResource);
+					if (!pRmgr.getColladaPool().findResource(sResource)) {
+						pRmgr.getColladaPool().createResource(sResource);
 					}
 					break;
 			}
@@ -194,7 +194,7 @@ module akra.deps {
 			pRsc.loaded.disconnect(fn);
 		}
 
-	    pRsc.loaded.disconnect(fn);
+	    pRsc.loaded.connect(fn);
 	}
 
 	export function loadMap(
@@ -230,30 +230,30 @@ module akra.deps {
 		});
 	}
 
-	//export function loadGrammar(
-	//    pEngine: IEngine,
-	//    pDep: IDep,
-	//    fnLoaded: (e: Error, pDep: IDep) => void,
-	//    fnChanged: (pDep: IDep, pProgress: any) => void): void {
+	export function loadGrammar(
+		pEngine: IEngine,
+		pDep: IDep,
+		fnLoaded: (e: Error, pDep: IDep) => void,
+		fnChanged: (pDep: IDep, pProgress: any) => void): void {
 
-	//    var pGrammar: IFile = io.fopen(pDep.path, "r");
+		var pGrammar: IFile = io.fopen(pDep.path, "r");
 
-	//    pGrammar.read((e: Error, sData: string): void => {
-	//        if (!isNull(e)) {
-	//            fnLoaded(e, null);
-	//        }
+		pGrammar.read((e: Error, sData: string): void => {
+			if (!isNull(e)) {
+				fnLoaded(e, null);
+			}
+			//WARNING: only for HLSL grammar files.
+			fx.initAFXParser(sData);
 
-	//        //WARNING: only for HLSL grammar files.
-	//        afx.initParser(sData);
+			pGrammar.close();
 
-	//        pGrammar.close();
-	//        updateStatus(pDep, EDependenceStatuses.LOADED);
-	//        fnLoaded(null, pDep);
-	//    });
-	//}
+			updateStatus(pDep, EDependenceStatuses.LOADED);
+			fnLoaded(null, pDep);
+		});
+	}
 
 	function loadFromPool(
-		pPool: IResourcePool,
+		pPool: IResourcePool<IResourcePoolItem>,
 		pDep: IDep,
 		fnLoaded: (e: Error, pDep: IDep) => void,
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
@@ -277,7 +277,7 @@ module akra.deps {
 		pDep: IDep,
 		fnLoaded: (e: Error, pDep: IDep) => void,
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
-		loadFromPool(pEngine.getResourceManager().effectDataPool, pDep, fnLoaded, fnChanged);
+		loadFromPool(pEngine.getResourceManager().getEffectDataPool(), pDep, fnLoaded, fnChanged);
 	}
 
 	export function loadImage(
@@ -286,7 +286,7 @@ module akra.deps {
 		fnLoaded: (e: Error, pDep: IDep) => void,
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
 
-		loadFromPool(pEngine.getResourceManager().imagePool, pDep, fnLoaded, fnChanged);
+		loadFromPool(pEngine.getResourceManager().getImagePool(), pDep, fnLoaded, fnChanged);
 	}
 
 	export function loadDAE(
@@ -295,7 +295,7 @@ module akra.deps {
 		fnLoaded: (e: Error, pDep: IDep) => void,
 		fnChanged: (pDep: IDep, pProgress: any) => void): void {
 
-		loadFromPool(pEngine.getResourceManager().colladaPool, pDep, fnLoaded, fnChanged);
+		loadFromPool(pEngine.getResourceManager().getColladaPool(), pDep, fnLoaded, fnChanged);
 	}
 
 	export function loadCustom(
@@ -395,7 +395,7 @@ module akra.deps {
 	}
 
 	function createARADLocalName(sFilename: string, sEntry: string): string {
-		return "filesystem:" + info.uri.scheme + "//" + info.uri.host + "/temporary/" + sEntry + "/" + sFilename;
+		return "filesystem:" + info.uri.getScheme() + "//" + info.uri.getHost() + "/temporary/" + sEntry + "/" + sFilename;
 	}
 
 	function extractARADependence(pEntry: ZipEntry, sHash: string, fnCallback: Function): void {
@@ -638,9 +638,9 @@ module akra.deps {
 					//akra resource archive
 					loadARA(pEngine, pDep, fnLoaded, fnChanged);
 					break;
-				//case "gr":
-				//    loadGrammar(pEngine, pDep, fnLoaded, fnChanged);
-				//    break;
+				case "gr":
+					loadGrammar(pEngine, pDep, fnLoaded, fnChanged);
+					break;
 				case "fx":
 				case "afx":
 					loadAFX(pEngine, pDep, fnLoaded, fnChanged);
@@ -690,23 +690,26 @@ module akra.deps {
 		): void {
 
 		normalize(pDeps, pDeps.root || sRoot);
-		createResources(this.getEngine(), pDeps);
+		createResources(pEngine, pDeps);
+
+		function dependacyLoaded(e: Error, pDep: IDep): void {
+			//get dependencies, contained dep
+			var pDeps: IDependens = pDep.deps;
+
+			if (pDeps.loaded < pDeps.total) {
+				return;
+			}
+
+			if (isDefAndNotNull(pDeps.deps)) {
+				loadDependences(pEngine, pDeps.deps, dependacyLoaded, fnChanged);
+			}
+			else {
+				fnLoaded(null, pDeps);
+			}
+		}
+
 		loadDependences(pEngine, pDeps,
-			(e: Error, pDep: IDependens) => {
-				//get dependencies, contained dep
-				var pDeps: IDependens = pDep.deps;
-
-				if (pDeps.loaded < pDeps.total) {
-					return;
-				}
-
-				if (isDefAndNotNull(pDeps)) {
-					loadDependences(pEngine, pDeps, fnLoaded, fnChanged);
-				}
-				else {
-					fnLoaded(null, pDeps);
-				}
-			},
+			dependacyLoaded,
 			fnChanged);
 	}
 

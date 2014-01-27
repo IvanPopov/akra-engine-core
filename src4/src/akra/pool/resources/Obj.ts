@@ -60,28 +60,28 @@ module akra.pool.resources {
 		private _iFVF: int = 0;
 
 
-		public get modelFormat(): EModelFormats {
+		getModelFormat(): EModelFormats {
 			return EModelFormats.OBJ;
 		}
 
-		public getFilename(): string {
+		getByteLength(): uint {
+			return this._iByteLength;
+		}
+
+		getOptions(): IObjLoadOptions {
+			return this._pOptions;
+		}
+
+		getFilename(): string {
 			return this._sFilename;
+		}
+
+		getBasename(): string {
+			return path.parse(this._pOptions.name || this._sFilename || "unknown").getBaseName();
 		}
 
 		private setFilename(sName: string): void {
 			this._sFilename = sName;
-		}
-
-		public getBasename(): string {
-			return path.parse(this._pOptions.name || this._sFilename || "unknown").basename;
-		}
-
-		public get byteLength(): uint {
-			return this._iByteLength;
-		}
-
-		public get options(): IObjLoadOptions {
-			return this._pOptions;
 		}
 
 		private setOptions(pOptions: IObjLoadOptions): void {
@@ -114,7 +114,7 @@ module akra.pool.resources {
 			if (parent instanceof scene.Node) {
 				//attach collada scene to give node
 				pNode = <ISceneNode>parent;
-				pScene = pNode.scene;
+				pScene = pNode.getScene();
 
 			}
 			else {
@@ -125,7 +125,7 @@ module akra.pool.resources {
 
 			pRoot = pScene._createModelEntry(this);
 			pRoot.create();
-			pRoot.name = this.getBasename();
+			pRoot.setName(this.getBasename());
 			pRoot.setInheritance(ENodeInheritance.ALL);
 
 			if (!pRoot.attachToParent(pNode)) {
@@ -160,50 +160,50 @@ module akra.pool.resources {
 			pMesh = model.createMesh(pEngine, this.getBasename(), EMeshOptions.HB_READABLE);
 			pSubMesh = pMesh.createSubset(this.getBasename(), EPrimitiveTypes.TRIANGLELIST);
 
-			iPos = pSubMesh.data.allocateData([VE.float3('POSITION')], pVerticesData);
-			pSubMesh.data.allocateIndex([VE.float('INDEX0')], pVertexIndicesData);
-			pSubMesh.data.index(iPos, 'INDEX0');
+			iPos = pSubMesh.getData().allocateData([VE.float3('POSITION')], pVerticesData);
+			pSubMesh.getData().allocateIndex([VE.float('INDEX0')], pVertexIndicesData);
+			pSubMesh.getData().index(iPos, 'INDEX0');
 			// console.log(pVerticesData, pVertexIndicesData);
 
 			if (this.hasNormals()) {
-				iNorm = pSubMesh.data.allocateData([VE.float3('NORMAL')], pNormalsData);
+				iNorm = pSubMesh.getData().allocateData([VE.float3('NORMAL')], pNormalsData);
 
 				if (this._pNormalIndexes.length > 0) {
-					pSubMesh.data.allocateIndex([VE.float('INDEX1')], pNormalIndicesData);
-					pSubMesh.data.index(iNorm, 'INDEX1');
+					pSubMesh.getData().allocateIndex([VE.float('INDEX1')], pNormalIndicesData);
+					pSubMesh.getData().index(iNorm, 'INDEX1');
 					// console.log(pNormalsData, pNormalIndicesData);
 				}
 				else {
 					logger.log("[OBJ [" + this.findResourceName() + "]]", "normal index was replaced with vertex index");
-					pSubMesh.data.allocateIndex([VE.float('INDEX1')], pVertexIndicesData);
-					pSubMesh.data.index(iNorm, 'INDEX1');
+					pSubMesh.getData().allocateIndex([VE.float('INDEX1')], pVertexIndicesData);
+					pSubMesh.getData().index(iNorm, 'INDEX1');
 				}
 			}
 
 			if (this.hasTexcoords()) {
 				logger.log("[OBJ [" + this.findResourceName() + "]]", "model have texture coordinates");
-				iTexcoord = pSubMesh.data.allocateData([VE.float2('TEXCOORD0')], pTexcoordsData);
-				pSubMesh.data.allocateIndex([VE.float('INDEX2')], pTexcoordIndicesData);
-				pSubMesh.data.index('TEXCOORD0', 'INDEX2');
+				iTexcoord = pSubMesh.getData().allocateData([VE.float2('TEXCOORD0')], pTexcoordsData);
+				pSubMesh.getData().allocateIndex([VE.float('INDEX2')], pTexcoordIndicesData);
+				pSubMesh.getData().index('TEXCOORD0', 'INDEX2');
 				// console.log(pTexcoordsData, pTexcoordIndicesData);
 			}
 			else {
 				logger.log("[OBJ [" + this.findResourceName() + "]]", "model does not have any texture coordinates");
 			}
 
-			pSubMesh.shadow = this.options.shadows;
-			pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+			pSubMesh.setShadow(this.getOptions().shadows);
+			pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.mesh_texture");
 
-			var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
+			var pMatrial: IMaterial = pSubMesh.getRenderMethod().getSurfaceMaterial().getMaterial();
 			pMatrial.diffuse = new Color(0.7, 0., 0., 1.);
 			pMatrial.ambient = new Color(0., 0., 0., 1.);
 			pMatrial.specular = new Color(0.7, 0., 0., 1);
 			pMatrial.emissive = new Color(0., 0., 0., 1.);
 			pMatrial.shininess = 30.;
 
-			var pSceneModel: ISceneModel = pRoot.scene.createModel(this.getBasename());
+			var pSceneModel: ISceneModel = pRoot.getScene().createModel(this.getBasename());
 			pSceneModel.setInheritance(ENodeInheritance.ALL);
-			pSceneModel.mesh = pMesh;
+			pSceneModel.setMesh(pMesh);
 
 			pSubMesh.wireframe(true);
 
@@ -337,7 +337,7 @@ module akra.pool.resources {
 				this._pNormals[j + 2] = n.z;
 			}
 
-			bf.setAll(this._iFVF, EObjFVF.NORMAL);
+			this._iFVF = bf.setAll(this._iFVF, EObjFVF.NORMAL);
 		}
 
 		static VERTEX_REGEXP: RegExp = /^v[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)[\s]+([-+]?[\d]*[\.|\,]?[\de-]*?)([\s]+[-+]?[\d]*[\.|\,]?[\de-]*?)?[\s]*$/i;
@@ -354,7 +354,7 @@ module akra.pool.resources {
 			//results of regexp matching
 			var pm: string[];
 
-			var mTransform: IMat4 = this.options.transform;
+			var mTransform: IMat4 = this.getOptions().transform;
 			var v: IVec4;
 
 			s = s.replace("\r", "");
@@ -369,7 +369,7 @@ module akra.pool.resources {
 
 				this._pVertices.push(v.x, v.y, v.z);
 
-				bf.setAll(this._iFVF, EObjFVF.XYZ);
+				this._iFVF = bf.setAll(this._iFVF, EObjFVF.XYZ);
 			}
 
 			//Texture coordinates, in (u,v[,w]) coordinates, w is optional.
@@ -377,7 +377,7 @@ module akra.pool.resources {
 				pm = s.match(Obj.TEXCOORD_REGEXP);
 				debug.assert(!isNull(pm), "invalid line detected: <" + s + "> (" + Obj.TEXCOORD_REGEXP.toString() + ")");
 				regExpResultToFloatArray(pm, this._pTextureCoords);
-				bf.setAll(this._iFVF, EObjFVF.UV);
+				this._iFVF = bf.setAll(this._iFVF, EObjFVF.UV);
 			}
 			//Normals in (x,y,z) form; normals might not be unit.	
 			else if (ch == 'n') {
@@ -386,7 +386,7 @@ module akra.pool.resources {
 				regExpResultToFloatArray(pm, Obj.row, 0);
 				v = mTransform.multiplyVec4(Vec4.temp(Obj.row[0], Obj.row[1], Obj.row[2], 1.));
 				this._pNormals.push(v.x, v.y, v.z);
-				bf.setAll(this._iFVF, EObjFVF.NORMAL);
+				this._iFVF = bf.setAll(this._iFVF, EObjFVF.NORMAL);
 			}
 		}
 

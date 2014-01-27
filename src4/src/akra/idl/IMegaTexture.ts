@@ -7,7 +7,8 @@
 
 module akra {
 	export interface IMegaTexture extends IEventProvider {
-		manualMinLevelLoad: boolean;
+		getManualMinLevelLoad(): boolean;
+		setManualMinLevelLoad(bManual: boolean): void;
 	
 		init(pObject: ISceneObject, sSurfaceTextures: string): void;
 		prepareForRender(pViewport: IViewport): void;

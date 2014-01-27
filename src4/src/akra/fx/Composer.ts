@@ -176,7 +176,7 @@ module akra.fx {
 		}
 
 		getComponentByName(sComponentName: string): IAFXComponent {
-			return <IAFXComponent>this._pEngine.getResourceManager().componentPool.findResource(sComponentName);
+			return <IAFXComponent>this._pEngine.getResourceManager().getComponentPool().findResource(sComponentName);
 		}
 
 		/**  */ getEngine(): IEngine {
@@ -188,7 +188,7 @@ module akra.fx {
 		//-----------------------------------------------------------------------------//
 
 		getComponentCountForEffect(pEffectResource: IEffect): uint {
-			var id: uint = pEffectResource.resourceHandle;
+			var id: uint = pEffectResource.getResourceHandle();
 
 			if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
 				return this._pEffectResourceToComponentBlendMap[id].getComponentCount();
@@ -199,7 +199,7 @@ module akra.fx {
 		}
 
 		getTotalPassesForEffect(pEffectResource: IEffect): uint {
-			var id: uint = pEffectResource.resourceHandle;
+			var id: uint = pEffectResource.getResourceHandle();
 
 			if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
 				return this._pEffectResourceToComponentBlendMap[id].getTotalPasses();
@@ -210,7 +210,7 @@ module akra.fx {
 		}
 
 		addComponentToEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int, iPass: uint): boolean {
-			var id: uint = pEffectResource.resourceHandle;
+			var id: uint = pEffectResource.getResourceHandle();
 			var pCurrentBlend: IAFXComponentBlend = null;
 
 			if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
@@ -227,7 +227,7 @@ module akra.fx {
 		}
 
 		removeComponentFromEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int, iPass: uint): boolean {
-			var id: uint = pEffectResource.resourceHandle;
+			var id: uint = pEffectResource.getResourceHandle();
 			var pCurrentBlend: IAFXComponentBlend = null;
 
 			if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
@@ -245,7 +245,7 @@ module akra.fx {
 
 		hasComponentForEffect(pEffectResource: IEffect,
 			pComponent: IAFXComponent, iShift: int, iPass: uint): boolean {
-			var id: uint = pEffectResource.resourceHandle;
+			var id: uint = pEffectResource.getResourceHandle();
 			var pCurrentBlend: IAFXComponentBlend = null;
 
 			if (isDef(this._pEffectResourceToComponentBlendMap[id])) {
@@ -260,7 +260,7 @@ module akra.fx {
 		}
 
 		activateEffectResource(pEffectResource: IEffect, iShift: int): boolean {
-			var id: uint = pEffectResource.resourceHandle;
+			var id: uint = pEffectResource.getResourceHandle();
 			var pComponentBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
 
 			if (!isDef(pComponentBlend)) {
@@ -289,7 +289,7 @@ module akra.fx {
 		}
 
 		deactivateEffectResource(pEffectResource: IEffect): boolean {
-			var id: uint = pEffectResource.resourceHandle;
+			var id: uint = pEffectResource.getResourceHandle();
 			var iStackLength: uint = this._pGlobalEffectResorceIdStack.length;
 
 			if (iStackLength === 0) {
@@ -316,7 +316,7 @@ module akra.fx {
 		}
 
 		getPassInputBlendForEffect(pEffectResource: IEffect, iPass: uint): IAFXPassInputBlend {
-			var id: uint = pEffectResource.resourceHandle;
+			var id: uint = pEffectResource.getResourceHandle();
 			var pBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[id];
 
 			if (!isDef(this._pEffectResourceToComponentBlendMap[id])) {
@@ -427,7 +427,7 @@ module akra.fx {
 			var isNeedToUpdatePasses: boolean = false;
 
 			if (isTechniqueUpdate || isUpdateGlobalBlend) {
-				var iEffect: uint = pRenderTechnique.getMethod().effect.resourceHandle;
+				var iEffect: uint = pRenderTechnique.getMethod().getEffect().getResourceHandle();
 				var pEffectBlend: IAFXComponentBlend = this._pEffectResourceToComponentBlendMap[iEffect] || null;
 				var pTechniqueBlend: IAFXComponentBlend = this._pTechniqueToOwnBlendMap[id] || null;
 
@@ -657,7 +657,7 @@ module akra.fx {
 
 		private initComponent(pTechnique: IAFXTechniqueInstruction): boolean {
 			var sTechniqueName: string = pTechnique.getName();
-			var pComponentPool: IResourcePool = this._pEngine.getResourceManager().componentPool;
+			var pComponentPool: IResourcePool<IAFXComponent> = this._pEngine.getResourceManager().getComponentPool();
 
 			if (!isNull(pComponentPool.findResource(sTechniqueName))) {
 				return false;
@@ -814,33 +814,33 @@ module akra.fx {
 			var iIndex: uint = 0;
 
 			if (!isNull(pSceneObject)) {
-				pSceneObject.worldMatrix
-			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ModelMatrix]] = pSceneObject.worldMatrix;
+				pSceneObject.getWorldMatrix()
+			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ModelMatrix]] = pSceneObject.getWorldMatrix();
 
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldPosition]] = pSceneObject.worldPosition;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldScale]] = pSceneObject.worldScale;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldOrientation]] = pSceneObject.worldOrientation;
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldPosition]] = pSceneObject.getWorldPosition();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldScale]] = pSceneObject.getWorldScale();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_WorldOrientation]] = pSceneObject.getWorldOrientation();
 
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalScale]] = pSceneObject.localScale;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalPosition]] = pSceneObject.localPosition;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalOrientation]] = pSceneObject.localOrientation;
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalMatrix]] = pSceneObject.localMatrix;
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalScale]] = pSceneObject.getLocalScale();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalPosition]] = pSceneObject.getLocalPosition();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalOrientation]] = pSceneObject.getLocalOrientation();
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_LocalMatrix]] = pSceneObject.getLocalMatrix();
 			}
 
 			if (!isNull(pViewport)) {
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_FramebufferSize]] = Vec2.temp(pViewport.width, pViewport.height);
-				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewportSize]] = Vec2.temp(pViewport.actualWidth, pViewport.actualHeight);
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_FramebufferSize]] = Vec2.temp(pViewport.getWidth(), pViewport.getHeight());
+				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewportSize]] = Vec2.temp(pViewport.getActualWidth(), pViewport.getActualHeight());
 
 				var pCamera: ICamera = pViewport.getCamera();
 				if (!isNull(pCamera)) {
 
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewMatrix]] = pCamera.viewMatrix;
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ProjMatrix]] = pCamera.projectionMatrix;
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InvViewCameraMat]] = pCamera.worldMatrix;
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_CameraPosition]] = pCamera.worldPosition;
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ViewMatrix]] = pCamera.getViewMatrix();
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_ProjMatrix]] = pCamera.getProjectionMatrix();
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InvViewCameraMat]] = pCamera.getWorldMatrix();
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_CameraPosition]] = pCamera.getWorldPosition();
 
-					if (pCamera.type === EEntityTypes.SHADOW_CASTER) {
-						pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_OptimizedProjMatrix]] = (<IShadowCaster>pCamera).optimizedProjection;
+					if (pCamera.getType() === EEntityTypes.SHADOW_CASTER) {
+						pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_OptimizedProjMatrix]] = (<IShadowCaster>pCamera).getOptimizedProjection();
 					}
 				}
 			}
@@ -848,7 +848,7 @@ module akra.fx {
 			if (!isNull(pRenderable)) {
 
 				if (MeshSubset.isMeshSubset(pRenderable) && (<IMeshSubset>pRenderable).isSkinned()) {
-					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_BindShapeMatrix]] = (<IMeshSubset>pRenderable).skin.getBindMatrix();
+					pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_BindShapeMatrix]] = (<IMeshSubset>pRenderable).getSkin().getBindMatrix();
 				}
 
 				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_RenderObjectId]] = iRenderableID;
@@ -863,14 +863,11 @@ module akra.fx {
 				pPassInput.setSamplerTexture("INPUT_SAMPLER", pLastTexture);
 
 				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureSize]] =
-				Vec2.temp(pLastTexture.width, pLastTexture.height);
+				Vec2.temp(pLastTexture.getWidth(), pLastTexture.getHeight());
 				pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_InputTextureRatio]] =
-				Vec2.temp(this._pCurrentViewport.actualWidth / pLastTexture.width, this._pCurrentViewport.actualHeight / pLastTexture.height);
+				Vec2.temp(this._pCurrentViewport.getActualWidth() / pLastTexture.getWidth(), this._pCurrentViewport.getActualHeight() / pLastTexture.getHeight());
 
 			}
-
-
-
 
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_useNormal]] = this.bUseNormalMap;
 			pPassInput.uniforms[this._pSystemUniformsNameIndexList[AESystemUniformsIndices.k_isDebug]] = this.bIsDebug;
@@ -890,7 +887,7 @@ module akra.fx {
 
 		private prepareComposerState(): void {
 			if (!isNull(this._pCurrentRenderable)) {
-				this._pComposerState.renderable.isAdvancedIndex = this._pCurrentRenderable.data.useAdvancedIndex();
+				this._pComposerState.renderable.isAdvancedIndex = this._pCurrentRenderable.getData().useAdvancedIndex();
 				this._pComposerState.object.isBillboard = this._pCurrentSceneObject && this._pCurrentSceneObject.isBillboard();
 
 
@@ -905,7 +902,7 @@ module akra.fx {
 			}
 
 			if (!isNull(this._pCurrentSceneObject)) {
-				if (this._pCurrentSceneObject.type === EEntityTypes.TERRAIN_ROAM) {
+				if (this._pCurrentSceneObject.getType() === EEntityTypes.TERRAIN_ROAM) {
 					this._pComposerState.terrain.isROAM = true;
 				}
 				else {
@@ -931,7 +928,7 @@ module akra.fx {
 			this._pRenderTargetA = this._pPostEffectTextureA.getBuffer().getRenderTarget();
 			this._pRenderTargetB = this._pPostEffectTextureB.getBuffer().getRenderTarget();
 
-			this._pPostEffectDepthBuffer = <webgl.WebGLInternalRenderBuffer>pRmgr.renderBufferPool.createResource(".global-post-effect-depth");
+			this._pPostEffectDepthBuffer = <webgl.WebGLInternalRenderBuffer>pRmgr.getRenderBufferPool().createResource(".global-post-effect-depth");
 			(<webgl.WebGLInternalRenderBuffer>this._pPostEffectDepthBuffer).create(gl.DEPTH_COMPONENT, 512, 512, false);
 
 			this._pRenderTargetA.attachDepthPixelBuffer(this._pPostEffectDepthBuffer);
@@ -951,10 +948,10 @@ module akra.fx {
 			var pRenderer: IRenderer = this._pEngine.getRenderer();
 
 			if (pRenderTechnique.hasPostEffect()) {
-				if (pEntry.viewport.actualWidth > this._pRenderTargetA.width ||
-					pEntry.viewport.actualHeight > this._pRenderTargetA.height) {
+				if (pEntry.viewport.getActualWidth() > this._pRenderTargetA.getWidth() ||
+					pEntry.viewport.getActualHeight()  > this._pRenderTargetA.getHeight()) {
 
-					this.resizePostEffectTextures(pEntry.viewport.actualWidth, pEntry.viewport.actualHeight);
+					this.resizePostEffectTextures(pEntry.viewport.getActualWidth(), pEntry.viewport.getActualHeight());
 				}
 
 				if (pRenderTechnique.isFirstPass(iPass)) {
@@ -965,8 +962,7 @@ module akra.fx {
 
 					var pViewportState: IViewportState = pRenderViewport._getViewportState();
 					this._pPostEffectViewport.setDimensions(0., 0.,
-						pRenderViewport.actualWidth / this._pRenderTargetA.width,
-						pRenderViewport.actualHeight / this._pRenderTargetA.height);
+						pRenderViewport.getActualWidth() / this._pRenderTargetA.getWidth(), pRenderViewport.getActualHeight() / this._pRenderTargetA.getHeight());
 					this._pPostEffectViewport.setDepthParams(pViewportState.depthTest, pViewportState.depthWrite, pViewportState.depthFunction);
 					this._pPostEffectViewport.setCullingMode(pViewportState.cullingMode);
 

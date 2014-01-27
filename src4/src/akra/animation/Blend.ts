@@ -17,7 +17,7 @@ module akra.animation {
 			super(EAnimationTypes.BLEND, sName);
 		}
 
-		get totalAnimations(): int {
+		getTotalAnimations(): int {
 			return this._pAnimationList.length;
 		}
 
@@ -147,7 +147,7 @@ module akra.animation {
 					continue;
 				}
 
-				fSumm += pAnimationList[i].weight * pAnimationList[i].animation.duration;
+				fSumm += pAnimationList[i].weight * pAnimationList[i].animation.getDuration();
 				fWeight += pAnimationList[i].weight;
 			}
 
@@ -163,7 +163,7 @@ module akra.animation {
 						continue;
 					}
 
-					pAnimationList[i].acceleration = pAnimationList[i].animation.duration / this.duration;
+					pAnimationList[i].acceleration = pAnimationList[i].animation.getDuration() / this.duration;
 					//trace(pAnimationList[i].animation.name, '> acceleration > ', pAnimationList[i].acceleration);
 				}
 			}
@@ -175,7 +175,7 @@ module akra.animation {
 			var pAnimationList: IAnimationElement[] = this._pAnimationList;
 
 			for (var i: int = 0; i < pAnimationList.length; i++) {
-				if (pAnimationList[i].animation.name === sName) {
+				if (pAnimationList[i].animation.getName() === sName) {
 					return i;
 				}
 			};
@@ -380,7 +380,7 @@ module akra.animation {
 		}
 
 		static isBlend(pAnimation: IAnimationBase): boolean {
-			return pAnimation.type === EAnimationTypes.BLEND;
+			return pAnimation.getType() === EAnimationTypes.BLEND;
 		}
 	}
 

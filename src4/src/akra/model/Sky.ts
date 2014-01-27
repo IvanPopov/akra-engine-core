@@ -86,7 +86,7 @@ module akra.model {
 
 			var pSceneModel: ISceneModel = _pEngine.getScene().createModel("dome" + this.guid);
 
-			pSceneModel.mesh = pDomeMesh;
+			pSceneModel.setMesh(pDomeMesh);
 			pSceneModel.accessLocalBounds().set(MAX_UINT32, MAX_UINT32, MAX_UINT32);
 			// pSceneModel.scale(this._fOuterRadius);
 
@@ -95,7 +95,7 @@ module akra.model {
 			this.sun = <ISunLight>_pEngine.getScene().createLightPoint(ELightTypes.SUN, true, 2048);
 
 			this.sun.attachToParent(this.skyDome);
-			this.sun.skyDome = this.skyDome;
+			this.sun.setSkyDome(this.skyDome);
 		}
 
 		getEngine(): IEngine {
@@ -178,7 +178,7 @@ module akra.model {
 			this._pSkyBuffer.create(this._nSize, this._nSize, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 			// this._pSkyBackBuffer.create(this._nSize, this._nSize, 1, null, ETextureFlags.RENDERTARGET, 0, 0, ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
-			this._pSkyBlitBox = new pixelUtil.PixelBox(this._nSize, this._nSize, 1, EPixelFormats.FLOAT32_RGBA, new Uint8Array(this._pSkyBuffer.byteLength));
+			this._pSkyBlitBox = new pixelUtil.PixelBox(this._nSize, this._nSize, 1, EPixelFormats.FLOAT32_RGBA, new Uint8Array(this._pSkyBuffer.getByteLength()));
 
 			if (config.SKY_GPU) {
 				var pScreen: IRenderableObject = this._pScreen = new render.Screen(pEngine.getRenderer());
@@ -188,7 +188,7 @@ module akra.model {
 
 				pSkyDomeUpdateEffect.addComponent("akra.system.SkyDomeUpdate");
 
-				pSkyDomeUpdateMethod.effect = pSkyDomeUpdateEffect;
+				pSkyDomeUpdateMethod.setEffect(pSkyDomeUpdateEffect);
 				pScreen.getTechnique().setMethod(pSkyDomeUpdateMethod);
 
 				var pSkyDomeTarget: IRenderTarget = this._pSkyBuffer.getBuffer().getRenderTarget();
@@ -346,11 +346,11 @@ module akra.model {
 				// pPixelBuffer.unlock();
 				// this._bSkyBuffer = !this._bSkyBuffer;
 				if (this.sun) {
-					this.sun.params.groundC0.set(this._v3fGroundc0);
-					this.sun.params.groundC1.set(this._v3fGroundc1);
-					this.sun.params.eyePosition.set(this._v3fEye);
-					this.sun.params.sunDir.set(this._v3fSunDir);
-					this.sun.params.hg.set(this._v3fHG);
+					this.sun.getParams().groundC0.set(this._v3fGroundc0);
+					this.sun.getParams().groundC1.set(this._v3fGroundc1);
+					this.sun.getParams().eyePosition.set(this._v3fEye);
+					this.sun.getParams().sunDir.set(this._v3fSunDir);
+					this.sun.getParams().hg.set(this._v3fHG);
 
 					// LOG(this._v3fGroundc0.toString(), this._v3fGroundc1.toString())
 				}
@@ -466,12 +466,12 @@ module akra.model {
 
 			var pSubMesh: IMeshSubset = pDome.createSubset("main", EPrimitiveTypes.TRIANGLELIST);
 
-			var e = pSubMesh.data.allocateData([VE.float3("POSITION"), VE.float2("TEXCOORD0")], pVertices);
-			pSubMesh.data.allocateIndex([VE.float("INDEX0")], pIndices);
-			pSubMesh.data.index(e, "INDEX0");
-			pSubMesh.shadow = false;
+			var e = pSubMesh.getData().allocateData([VE.float3("POSITION"), VE.float2("TEXCOORD0")], pVertices);
+			pSubMesh.getData().allocateIndex([VE.float("INDEX0")], pIndices);
+			pSubMesh.getData().index(e, "INDEX0");
+			pSubMesh.setShadow(false);
 
-			var pMatrial: IMaterial = pSubMesh.renderMethod.surfaceMaterial.material;
+			var pMatrial: IMaterial = pSubMesh.getRenderMethod().getSurfaceMaterial().getMaterial();
 			pMatrial.diffuse = color.LIGHT_GRAY;
 			pMatrial.ambient = new Color(0.7, 0.7, 0.7, 1.);
 			pMatrial.specular = new Color(0.7, 0.7, 0.7, 1);
@@ -479,14 +479,14 @@ module akra.model {
 			pMatrial.shininess = 30.;
 
 			if ((<core.Engine>this.getEngine()).isDepsLoaded()) {
-				pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
+				pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.sky");
 			}
 			else {
 				//this.getEngine().bind(SIGNAL(depsLoaded), () => {
 				//	pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
 				//});
 				this.getEngine().depsLoaded.connect(() => {
-					pSubMesh.renderMethod.effect.addComponent("akra.system.sky");
+					pSubMesh.getRenderMethod().getEffect().addComponent("akra.system.sky");
 				});
 			}
 
@@ -499,17 +499,17 @@ module akra.model {
 		k: uint = 1;
 		// update(pModelView: IMat4, pProjection: IMat4, pPass: IRenderPass): void {
 		update(pSceneObject: ISceneObject, pCamera: ICamera, pPass: IRenderPass): void {
-			var pProjection: IMat4 = pCamera.projectionMatrix;
-			var m4fModel: IMat4 = Mat4.temp(pSceneObject.worldMatrix);
+			var pProjection: IMat4 = pCamera.getProjectionMatrix();
+			var m4fModel: IMat4 = Mat4.temp(pSceneObject.getWorldMatrix());
 
 			// pModelView.data[__41] = 0.0;
 			// pModelView.data[__42] = 0.0;
 			// pModelView.data[__43] = 0.0;
 
-			m4fModel.setTranslation(Vec3.temp(0.0, -this._fInnerRadius - 1.0e-6, 0.0).add(pCamera.worldPosition));
+			m4fModel.setTranslation(Vec3.temp(0.0, -this._fInnerRadius - 1.0e-6, 0.0).add(pCamera.getWorldPosition()));
 			m4fModel.scaleRight(Vec3.temp(this._fOuterRadius * this.k));
 
-			var pModelView: IMat4 = pCamera.viewMatrix.multiply(m4fModel, Mat4.temp());
+			var pModelView: IMat4 = pCamera.getViewMatrix().multiply(m4fModel, Mat4.temp());
 
 			// var m4fTranslation: IMat4 = Mat4.temp(1.).setTranslation(Vec3.temp(0.0, -this._fInnerRadius - 1.0e-6, 0.0));
 			// pModelView.multiply(m4fTranslation);

@@ -52,30 +52,30 @@ module akra {
 	
 	/** Конструктор класса, занимается очисткой списков пулов по семействам ресурсвов и краты пулов по коду ресурсов */
 	export interface IResourcePoolManager extends IManager {
-		texturePool: IResourcePool;
-		surfaceMaterialPool: IResourcePool;
-		vertexBufferPool: IResourcePool;
-		videoBufferPool: IResourcePool;
-		indexBufferPool: IResourcePool;
-		textureBufferPool: IResourcePool;
-		renderMethodPool: IResourcePool;
-		colladaPool: IResourcePool;
-		objPool: IResourcePool;
-		imagePool: IResourcePool;			
+		getTexturePool(): IResourcePool<ITexture>;
+		getSurfaceMaterialPool(): IResourcePool<ISurfaceMaterial>;
+		getVertexBufferPool(): IResourcePool<IVertexBuffer>;
+		getVideoBufferPool(): IResourcePool<IResourcePoolItem>;
+		getIndexBufferPool(): IResourcePool<IIndexBuffer>;
+		getTextureBufferPool(): IResourcePool<IPixelBuffer>;
+		getRenderMethodPool(): IResourcePool<IRenderMethod>;
+		getColladaPool(): IResourcePool<ICollada>;
+		getObjPool(): IResourcePool<IObj>;
+		getImagePool(): IResourcePool<IImg>;			
 		//ex: private
-		shaderProgramPool: IResourcePool;		
+		getShaderProgramPool(): IResourcePool<IShaderProgram>;		
 		//ex: private
-		effectPool: IResourcePool;				
+		getEffectPool(): IResourcePool<IEffect>;				
 		//ex: private
-		componentPool: IResourcePool;			
-		effectDataPool: IResourcePool;
+		getComponentPool(): IResourcePool<IAFXComponent>;			
+		getEffectDataPool(): IResourcePool<IResourcePoolItem>;
 	
-		renderBufferPool: IResourcePool;
+		getRenderBufferPool(): IResourcePool<IPixelBuffer>;
 	
 		/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
-		registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;
+		registerResourcePool(pCode: IResourceCode, pPool: IResourcePool<IResourcePoolItem>): void;
 		/** Удаляет пул ресурсов опредленного типа в менеджере русурсов */
-		unregisterResourcePool(pCode: IResourceCode): IResourcePool;
+		unregisterResourcePool(pCode: IResourceCode): IResourcePool<IResourcePoolItem>;
 	
 		/** Удаление ресурсов определенного семества */
 		destroyResourceFamily(eFamily: EResourceFamilies): void;
@@ -88,7 +88,7 @@ module akra {
 		disableResourceType(pCode: IResourceCode): void;
 		cleanResourceType(pCode: IResourceCode): void;
 		/** Возвращает пул ресурса опредленного типа по его коду */
-		findResourcePool(pCode: IResourceCode): IResourcePool;
+		findResourcePool(pCode: IResourceCode): IResourcePool<IResourcePoolItem>;
 		/**
 		 * Возвращает хендл конкретного ресурса по его имени из конкретного пула опредленного типа
 		 **/
@@ -97,7 +97,7 @@ module akra {
 		findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
 		findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
 	
-		getModelPoolByFormat(eFormat: EModelFormats): IResourcePool;
+		getModelPoolByFormat(eFormat: EModelFormats): IResourcePool<IResourcePoolItem>;
 	
 		/**
 		 * @deprecated

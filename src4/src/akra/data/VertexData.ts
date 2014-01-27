@@ -34,14 +34,32 @@ module akra.data {
 		private _pVertexDeclaration: VertexDeclaration;
 		private _iId: uint;
 
-		get id(): uint { return this._iId; }
-		get length(): uint { return this._iLength; }
-		get byteOffset(): uint { return this._iOffset; }
-		get byteLength(): uint { return this._iLength * this._iStride; }
-		get buffer(): IVertexBuffer { return this._pVertexBuffer; }
-		get stride(): uint { return this._iStride; }
-		get startIndex(): uint {
-			var iIndex: uint = this.byteOffset / this.stride;
+		getID(): uint {
+			return this._iId;
+		}
+
+		getLength(): uint {
+			return this._iLength;
+		}
+
+		getByteOffset(): uint {
+			return this._iOffset;
+		}
+
+		getByteLength(): uint {
+			return this._iLength * this._iStride;
+		}
+
+		getBuffer(): IVertexBuffer {
+			return this._pVertexBuffer;
+		}
+
+		getStride(): uint {
+			return this._iStride;
+		}
+
+		getStartIndex(): uint {
+			var iIndex: uint = this.getByteOffset() / this.getStride();
 			logger.assert(iIndex % 1 == 0, "cannot calc first element index");
 			return iIndex;
 		}
@@ -66,7 +84,7 @@ module akra.data {
 				this.setVertexDeclaration(pDecl);
 			}
 
-			logger.assert(pVertexBuffer.byteLength >= this.byteLength + this.byteOffset,
+			logger.assert(pVertexBuffer.getByteLength() >= this.getByteLength() + this.getByteOffset(),
 				"vertex data out of array limits");
 		}
 
@@ -89,7 +107,7 @@ module akra.data {
 
 			logger.assert(iStride < <number>AEVertexDataLimits.k_MaxElementsSize,
 				"stride max is 255 bytes");
-			logger.assert(iStride <= this.stride,
+			logger.assert(iStride <= this.getStride(),
 				"stride in VertexDeclaration grather than stride in construtor");
 
 			this.declarationChanged.emit(this._pVertexDeclaration);
@@ -98,7 +116,7 @@ module akra.data {
 		}
 
 		getVertexElementCount(): uint {
-			return this._pVertexDeclaration.length;
+			return this._pVertexDeclaration.getLength();
 		}
 
 		hasSemantics(sUsage: string): boolean {
@@ -118,21 +136,21 @@ module akra.data {
 			pDecl = VertexDeclaration.normalize(pDecl);
 
 			if (isNull(pData)) {
-				pData = new Uint8Array(this.length * pDecl.stride);
+				pData = new Uint8Array(this.getLength() * pDecl.stride);
 			}
 			else {
 				pData = new Uint8Array(pData.buffer);
 			}
 
-			logger.assert(this.length === pData.byteLength / pDecl.stride, 'invalid data size for extending');
+			logger.assert(this.getLength() === pData.byteLength / pDecl.stride, 'invalid data size for extending');
 
 			var nCount: uint = this._iLength;
 			//strides modifications
 			var nStrideNew: uint = pDecl.stride;
-			var nStridePrev: uint = this.stride;
+			var nStridePrev: uint = this.getStride();
 			var nStrideNext: uint = nStridePrev + nStrideNew;
 			//total bytes after extending
-			var nTotalSize: uint = nStrideNext * this.length;
+			var nTotalSize: uint = nStrideNext * this.getLength();
 			var pDeclNew: IVertexDeclaration = this.getVertexDeclaration().clone();
 
 			//data migration
@@ -161,7 +179,7 @@ module akra.data {
 		resize(nCount: uint, iStride?: uint): boolean;
 		resize(nCount: uint, pDecl?: any) {
 			var iStride: uint = 0;
-			var iOldOffset: uint = this.byteOffset;
+			var iOldOffset: uint = this.getByteOffset();
 			var pOldVertexBuffer: IVertexBuffer;
 			var pOldVertexDeclaration: IVertexDeclaration;
 			var iOldStride: uint
@@ -176,7 +194,7 @@ module akra.data {
 					iStride = (<IVertexDeclaration>pDecl).stride;
 				}
 
-				if (nCount * iStride <= this.byteLength) {
+				if (nCount * iStride <= this.getByteLength()) {
 					this._iLength = nCount;
 					this._iStride = iStride;
 					this._pVertexDeclaration = null;
@@ -185,11 +203,11 @@ module akra.data {
 						this.setVertexDeclaration(pDecl);
 					}
 
-					this.resized.emit(this.byteLength);
+					this.resized.emit(this.getByteLength());
 					return true;
 				}
 				else {
-					pOldVertexBuffer = this.buffer;
+					pOldVertexBuffer = this.getBuffer();
 
 					pOldVertexBuffer.freeVertexData(this);
 
@@ -197,25 +215,25 @@ module akra.data {
 						return false;
 					}
 
-					if (this.byteOffset != iOldOffset) {
-						logger.warn("vertex data moved from " + iOldOffset + " ---> " + this.byteOffset);
-						this.relocated.emit(iOldOffset, this.byteOffset);
+					if (this.getByteOffset() != iOldOffset) {
+						logger.warn("vertex data moved from " + iOldOffset + " ---> " + this.getByteOffset());
+						this.relocated.emit(iOldOffset, this.getByteOffset());
 					}
 
-					this.resized.emit(this.byteLength);
+					this.resized.emit(this.getByteLength());
 					return true;
 				}
 			}
 			else if (arguments.length == 1) {
-				if (nCount <= this.length) {
+				if (nCount <= this.getLength()) {
 					this._iLength = nCount;
-					this.resized.emit(this.byteLength);
+					this.resized.emit(this.getByteLength());
 					return true;
 				}
 				else {
-					pOldVertexBuffer = this.buffer;
+					pOldVertexBuffer = this.getBuffer();
 					pOldVertexDeclaration = this.getVertexDeclaration();
-					iOldStride = this.stride;
+					iOldStride = this.getStride();
 
 					pOldVertexBuffer.freeVertexData(this);
 
@@ -225,12 +243,12 @@ module akra.data {
 
 					this.setVertexDeclaration(pOldVertexDeclaration);
 
-					if (this.byteOffset != iOldOffset) {
-						logger.warn("vertex data moved from " + iOldOffset + " ---> " + this.byteOffset);
-						this.relocated.emit(iOldOffset, this.byteOffset);
+					if (this.getByteOffset() != iOldOffset) {
+						logger.warn("vertex data moved from " + iOldOffset + " ---> " + this.getByteOffset());
+						this.relocated.emit(iOldOffset, this.getByteOffset());
 					}
 
-					this.resized.emit(this.byteLength);
+					this.resized.emit(this.getByteLength());
 					return true;
 				}
 			}
@@ -276,16 +294,16 @@ module akra.data {
 					nCountStart = arguments[3];
 					nCount = arguments[4];
 
-					iStride = this.stride;
+					iStride = this.getStride();
 					pDataU8 = new Uint8Array(pData.buffer);
 					if (iStride != iSize) {
 						//FIXME: очень тормознутое место, крайне медленно работает...
 						if (pVertexBuffer.isBackupPresent() && nCount > 1) {
 							// console.log(pVertexBuffer.byteLength);
-							pBackupBuf = new Uint8Array(pVertexBuffer.byteLength);
+							pBackupBuf = new Uint8Array(pVertexBuffer.getByteLength());
 							pVertexBuffer.readData(pBackupBuf);
 
-							iOffsetBuffer = this.byteOffset;
+							iOffsetBuffer = this.getByteOffset();
 
 							for (var i = nCountStart; i < nCount + nCountStart; i++) {
 								for (k = 0; k < iSize; k++) {
@@ -294,7 +312,7 @@ module akra.data {
 								}
 							}
 
-							pVertexBuffer.writeData(pBackupBuf, 0, pVertexBuffer.byteLength);
+							pVertexBuffer.writeData(pBackupBuf, 0, pVertexBuffer.getByteLength());
 						}
 						else {
 							for (var i: uint = 0; i < nCount; i++) {
@@ -303,7 +321,7 @@ module akra.data {
 								pVertexBuffer.writeData(
 									/*pData.buffer.slice*/
 									pDataU8.subarray(iSize * i, iSize * (i + 1)),
-									iStride * iCurrent + iOffset + this.byteOffset,
+									iStride * iCurrent + iOffset + this.getByteOffset(),
 									iSize);
 							}
 						}
@@ -315,7 +333,7 @@ module akra.data {
 							//stride == size => iOffset = 0;
 							pDataU8.subarray(0,
 								iStride * nCount),
-							/*iOffset + */this.byteOffset + iStride * nCountStart,
+							/*iOffset + */this.getByteOffset() + iStride * nCountStart,
 							iStride * nCount);
 					}
 
@@ -413,12 +431,12 @@ module akra.data {
 
 					iCount = math.min(iCount, this._iLength);
 
-					var iStride: uint = this.stride;
+					var iStride: uint = this.getStride();
 					var pBufferData: Uint8Array = new Uint8Array(iSize * iCount);
 
 					for (var i: int = 0; i < iCount; i++) {
 						var iCurrent: uint = iFrom + i;
-						var isOk: boolean = this._pVertexBuffer.readData(iStride * iCurrent + iOffset + this.byteOffset,
+						var isOk: boolean = this._pVertexBuffer.readData(iStride * iCurrent + iOffset + this.getByteOffset(),
 							iSize, pBufferData.subarray(i * iSize, (i + 1) * iSize));
 						//debug_assert(isOk,"cannot read buffer");
 					}
@@ -465,7 +483,7 @@ module akra.data {
 		}
 
 		getBufferHandle(): int {
-			return this._pVertexBuffer.resourceHandle;
+			return this._pVertexBuffer.getResourceHandle();
 		}
 
 		toString(): string {
@@ -473,14 +491,14 @@ module akra.data {
 
 				var s: string = "";
 
-				s += "		  VERTEX DATA  #" + this.id + "\n";
+				s += "		  VERTEX DATA  #" + this.getID() + "\n";
 				s += "---------------+-----------------------\n";
 				s += "		BUFFER : " + this.getBufferHandle() + "\n";
-				s += "		  SIZE : " + this.byteLength + " b.\n";
-				s += "		OFFSET : " + this.byteOffset + " b.\n";
+				s += "		  SIZE : " + this.getByteLength() + " b.\n";
+				s += "		OFFSET : " + this.getByteOffset() + " b.\n";
 				s += "---------------+-----------------------\n";
-				s += " MEMBERS COUNT : " + this.length + " \n";
-				s += "		STRIDE : " + this.stride + " \n";
+				s += " MEMBERS COUNT : " + this.getLength() + " \n";
+				s += "		STRIDE : " + this.getStride() + " \n";
 				s += "---------------+-----------------------\n";
 				s += this.getVertexDeclaration().toString();
 

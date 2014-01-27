@@ -1,16 +1,15 @@
-
 /// <reference path="IHardwareBuffer.ts" />
 /// <reference path="IRenderTarget.ts" />
 /// <reference path="IBox.ts" />
 /// <reference path="EPixelFormats.ts" />
 
 module akra {
-	export interface IPixelBuffer extends IHardwareBuffer {
-		/** readonly */ width: uint;
-		/** readonly */ height: uint;
-		/** readonly */ depth: uint;
+	export interface IPixelBuffer extends IHardwareBuffer, IRenderResource {
+		getWidth(): uint;
+		getHeight(): uint;
+		getDepth(): uint;
 	
-		/** readonly */ format: EPixelFormats;
+		getFormat(): EPixelFormats;
 	
 		create(iFlags: int): boolean;
 		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): boolean;
@@ -26,8 +25,8 @@ module akra {
 	
 		getRenderTarget(): IRenderTarget;
 	
-		lock(iLockFlags: int): any;
-		lock(iOffset: uint, iSize: uint, iLockFlags?: int): any;
+		lock(iLockFlags: int): IPixelBox;
+		lock(iOffset: uint, iSize: uint, iLockFlags?: int): IPixelBox;
 		lock(pLockBox: IBox, iLockFlags?: int): IPixelBox;
 	
 		readPixels(pDestBox: IPixelBox): boolean;

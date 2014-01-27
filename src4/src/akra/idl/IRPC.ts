@@ -74,9 +74,9 @@ module akra {
 	
 	
 	export interface IRPC extends IEventProvider {
-		options: IRPCOptions;
-		remote: any;
-		group: int;                 //????
+		getOptions(): IRPCOptions;
+		getRemote(): any;
+		getGroup(): int;                 //????
 
 		join(sAddr?: string): void;
 		rejoin(): void;

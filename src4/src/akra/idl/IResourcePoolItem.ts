@@ -27,15 +27,15 @@ module akra {
 	
 	export interface IResourcePoolItem extends IReferenceCounter, IEventProvider {
 		/** resource code */
-		/** readonly */ resourceCode: IResourceCode;
+		getResourceCode(): IResourceCode;
 		/** resource pool */
-		/** readonly */ resourcePool: IResourcePool;
+		getResourcePool(): IResourcePool<IResourcePoolItem>;
 		/** resource handle */
-		/** readonly */ resourceHandle: int;
+		getResourceHandle(): int;
 		/** resource flags */
-		/** readonly */ resourceFlags: int;
+		getResourceFlags(): int;
 		/** Проверка был ли изменен ресур после загрузки */
-		/** readonly */ alteredFlag: boolean;
+		getAlteredFlag(): boolean;
 
 	
 		
@@ -113,7 +113,7 @@ module akra {
 		release(): uint;
 	
 		setResourceCode(pCode: IResourceCode): void;
-		setResourcePool(pPool: IResourcePool): void;
+		setResourcePool(pPool: IResourcePool<IResourcePoolItem>): void;
 		setResourceHandle(iHandle: int): void;
 	
 		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: boolean): boolean;

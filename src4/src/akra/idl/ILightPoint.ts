@@ -21,20 +21,24 @@ module akra {
 	}
 	
 	export interface ILightPoint extends ISceneNode {
-		params: ILightParameters;
-		enabled: boolean;
-		lightType: ELightTypes;
-	
-		isShadowCaster: boolean;
-		lightingDistance: float;
-	
-		//optimized camera frustum for better shadow casting
-		/** readonly */ optimizedCameraFrustum: IFrustum;
+		getParams(): ILightParameters;
+		getLightType(): ELightTypes;
+
+		/** optimized camera frustum for better shadow casting */
+		getPptimizedCameraFrustum(): IFrustum;
+		
+		getEnabled(): boolean;
+		setEnabled(bValue: boolean): void;
+
+		getIsShadowCaster(): boolean;
+		setIsShadowCaster(bValue: boolean): void;
+
+		getLightingDistance(): float;
+		setLightingDistance(fValue: float): void;		
 	
 		create(isShadowCaster?: boolean, iMaxShadowResolution?: uint): boolean;
 	
-		//false if lighting not active 
-		//or it's effect don't seen
+		/** false if lighting not active or it's effect don't seen */
 		_prepareForLighting(pCamera: ICamera): boolean;
 	
 		_calculateShadows(): void;

@@ -6,19 +6,22 @@ module akra {
 	}
 	
 	export interface IFile {
-		/** readonly */ path: string;
-		/** readonly */ name: string;
-		mode: int;
-	
-		/** @deprecated */
-		onread: (e: Error, data: any) => void;
-		/** @deprecated */
-		onopen: Function;
-	
-		position: uint;
-		byteLength: uint;
-	
-		/** readonly */ meta: IFileMeta;
+		getPath(): string;
+		getName(): string;
+		getByteLength(): uint;
+		getMeta(): IFileMeta;
+		
+		getMode(): int;
+		setMode(sMode: string): void;
+		setMode(iMode: int): void;
+
+		getPosition(): uint;
+		setPosition(iPos: uint): void;
+
+		///** @deprecated */
+		setOnRead(fnCallback: (e: Error, data: any) => void): void;
+		///** @deprecated */
+		setOnOpen(fnCallback: Function): void;		
 	
 		// binarayType: EFileBinaryType;
 	

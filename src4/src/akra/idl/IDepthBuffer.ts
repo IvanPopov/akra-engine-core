@@ -3,9 +3,9 @@
 
 module akra {
 	export interface IDepthBuffer extends IRenderResource {
-		bitDepth: uint;
-		width: uint;
-		height: uint;
+		getBitDepth(): uint;
+		getWidth(): uint;
+		getHeight(): uint;
 	
 		create(iBitDepth: uint, iWidth: uint, iHeight: uint, bManual: boolean): void;
 	

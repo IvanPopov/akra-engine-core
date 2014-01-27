@@ -12,15 +12,15 @@ module akra.util {
 		private _iLastElapsedTime: int = 0;
 		private _iBaseTime: int = 0;
 
-		get absoluteTime(): float {
+		getAbsoluteTime(): float {
 			return this.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
 		}
 
-		get appTime(): float {
+		getAppTime(): float {
 			return this.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
 		}
 
-		get elapsedTime(): float {
+		getElapsedTime(): float {
 			return this.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
 		}
 

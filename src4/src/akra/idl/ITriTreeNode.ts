@@ -8,6 +8,14 @@ module akra {
 	}
 	
 	export interface ITriangleNodePool {
+		getMaxCount(): uint;
+		
+		getNextTriNode(): uint;
+		setNextTriNode(iNextTriNode: uint): void;
+
+		getPool(): ITriTreeNode[];
+		setPool(pPool: ITriTreeNode[]): void;
+
 	    request(): ITriTreeNode;
 	    reset(): void;
 	}	

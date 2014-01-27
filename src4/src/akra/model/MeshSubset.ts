@@ -28,11 +28,25 @@ module akra.model {
 		protected _pBoundingSphere: ISphere = null;
 		protected _isOptimizedSkinned: boolean = false;
 
-		get boundingBox(): IRect3d { return this._pBoundingBox; }
-		get boundingSphere(): ISphere { return this._pBoundingSphere; }
-		get skin(): ISkin { return this._pSkin; }
-		get name(): string { return this._sName; }
-		get mesh(): IMesh { return this._pMesh; }
+		getBoundingBox(): IRect3d {
+			return this._pBoundingBox;
+		}
+
+		getBoundingSphere(): ISphere {
+			return this._pBoundingSphere;
+		}
+
+		getSkin(): ISkin {
+			return this._pSkin;
+		}
+
+		getName(): string {
+			return this._sName;
+		}
+
+		getMesh(): IMesh {
+			return this._pMesh;
+		}
 
 
 		constructor(pMesh: IMesh, pRenderData: IRenderData, sName: string = null) {
@@ -55,7 +69,7 @@ module akra.model {
 			var pNewBoundingBox: IRect3d;
 
 			pNewBoundingBox = new geometry.Rect3d();
-			pVertexData = this.data._getData(DeclUsages.POSITION);
+			pVertexData = this.getData()._getData(DeclUsages.POSITION);
 
 			if (isNull(pVertexData))
 				return false;
@@ -92,19 +106,19 @@ module akra.model {
 
 			geometry.computeDataForCascadeBoundingBox(this._pBoundingBox, pPoints, pIndexes, 10.0);
 
-			iCurrentIndexSet = this.data.getIndexSet();
+			iCurrentIndexSet = this.getData().getIndexSet();
 
-			if (!this.data.selectIndexSet(".BoundingBox")) {
-				if (this.data.addIndexSet(false, EPrimitiveTypes.LINELIST, ".BoundingBox") == -1) {
+			if (!this.getData().selectIndexSet(".BoundingBox")) {
+				if (this.getData().addIndexSet(false, EPrimitiveTypes.LINELIST, ".BoundingBox") == -1) {
 					logger.error("could not add index set '.BoundingBox'");
 					return false;
 				}
 
-				iData = this.data.allocateData([VE.float3(DeclUsages.POSITION)], new Float32Array(pPoints));
+				iData = this.getData().allocateData([VE.float3(DeclUsages.POSITION)], new Float32Array(pPoints));
 
-				this.data.allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
+				this.getData().allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
 
-				this.data.index(iData, DeclUsages.INDEX0);
+				this.getData().index(iData, DeclUsages.INDEX0);
 
 				// this.applyFlexMaterial(".MaterialBoundingBox");
 
@@ -114,31 +128,31 @@ module akra.model {
 				// pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
 			}
 			else {
-				this.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
+				this.getData()._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
 			}
 
-			this.data.setRenderable(this.data.getIndexSet(), true);
-			this.data.selectIndexSet(iCurrentIndexSet);
+			this.getData().setRenderable(this.getData().getIndexSet(), true);
+			this.getData().selectIndexSet(iCurrentIndexSet);
 
 			return true;
 		}
 
 		isBoundingBoxVisible(): boolean {
-			return this.data.isRenderable(this.data.findIndexSet(".BoundingBox"));
+			return this.getData().isRenderable(this.getData().findIndexSet(".BoundingBox"));
 		}
 
 		hideBoundingBox(): boolean {
 			var iCurrentIndexSet: int;
-			iCurrentIndexSet = this.data.getIndexSet();
+			iCurrentIndexSet = this.getData().getIndexSet();
 
-			if (!this.data.selectIndexSet(".BoundingBox")) {
+			if (!this.getData().selectIndexSet(".BoundingBox")) {
 				return false;
 			}
 			else {
-				this.data.setRenderable(this.data.getIndexSet(), false);
+				this.getData().setRenderable(this.getData().getIndexSet(), false);
 			}
 
-			return this.data.selectIndexSet(iCurrentIndexSet);
+			return this.getData().selectIndexSet(iCurrentIndexSet);
 		}
 
 		createBoundingSphere(): boolean {
@@ -146,7 +160,7 @@ module akra.model {
 			var pNewBoundingSphere: ISphere;
 
 			pNewBoundingSphere = new geometry.Sphere();
-			pVertexData = this.data._getData(DeclUsages.POSITION);
+			pVertexData = this.getData()._getData(DeclUsages.POSITION);
 
 			if (!pVertexData) {
 				return false;
@@ -185,14 +199,14 @@ module akra.model {
 			pIndexes = new Array();
 			geometry.computeDataForCascadeBoundingSphere(this._pBoundingSphere, pPoints, pIndexes);
 
-			iCurrentIndexSet = this.data.getIndexSet();
-			if (!this.data.selectIndexSet(".BoundingSphere")) {
-				this.data.addIndexSet(false, EPrimitiveTypes.LINELIST, ".BoundingSphere");
+			iCurrentIndexSet = this.getData().getIndexSet();
+			if (!this.getData().selectIndexSet(".BoundingSphere")) {
+				this.getData().addIndexSet(false, EPrimitiveTypes.LINELIST, ".BoundingSphere");
 
-				iData = this.data.allocateData([VE.float3(DeclUsages.POSITION)], new Float32Array(pPoints));
+				iData = this.getData().allocateData([VE.float3(DeclUsages.POSITION)], new Float32Array(pPoints));
 
-				this.data.allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
-				this.data.index(iData, DeclUsages.INDEX0);
+				this.getData().allocateIndex([VE.float(DeclUsages.INDEX0)], new Float32Array(pIndexes));
+				this.getData().index(iData, DeclUsages.INDEX0);
 
 				// this.applyFlexMaterial(".MaterialBoundingSphere");
 
@@ -201,26 +215,26 @@ module akra.model {
 				// pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
 			}
 			else {
-				this.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
+				this.getData()._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
 			}
 
-			this.data.setRenderable(this.data.getIndexSet(), true);
-			this.data.selectIndexSet(iCurrentIndexSet);
+			this.getData().setRenderable(this.getData().getIndexSet(), true);
+			this.getData().selectIndexSet(iCurrentIndexSet);
 
 			return true;
 		}
 
 
 		/*wireframe(bEnable: boolean = true): boolean {
-			if(this.data.findIndexSet(".wireframe") == -1) {
-				var ePrimType: EPrimitiveTypes = this.data.getPrimitiveType();
+			if(this.getData().findIndexSet(".wireframe") == -1) {
+				var ePrimType: EPrimitiveTypes = this.getData().getPrimitiveType();
 
 				if (ePrimType !== EPrimitiveTypes.TRIANGLELIST) {
 					logger.warn("wireframe supported only for TRIANGLELIST");
 					return false;
 				}
 
-				var pIndices: Float32Array = <Float32Array>this.data.getIndexFor("POSITION");
+				var pIndices: Float32Array = <Float32Array>this.getData().getIndexFor("POSITION");
 
 				var pWFindices: int[] = [];
 				var pWFCache: BoolMap = <any>{};
@@ -251,43 +265,43 @@ module akra.model {
 					}
 				}
 
-				var iData: int = this.data.getDataLocation("POSITION");
-				var iCurrentIndexSet: int = this.data.getIndexSet();
-				var iWireframeSet: int = this.data.addIndexSet(false, EPrimitiveTypes.LINELIST, ".wireframe");
+				var iData: int = this.getData().getDataLocation("POSITION");
+				var iCurrentIndexSet: int = this.getData().getIndexSet();
+				var iWireframeSet: int = this.getData().addIndexSet(false, EPrimitiveTypes.LINELIST, ".wireframe");
 
-				this.data.allocateIndex([VE.float("WF_INDEX")], new Float32Array(pWFindices));
-				this.data.index(iData, "WF_INDEX", false, 0, true);
+				this.getData().allocateIndex([VE.float("WF_INDEX")], new Float32Array(pWFindices));
+				this.getData().index(iData, "WF_INDEX", false, 0, true);
 				
-				this.data.setRenderable(iWireframeSet, true);
-				this.data.setRenderable(iCurrentIndexSet, false);
+				this.getData().setRenderable(iWireframeSet, true);
+				this.getData().setRenderable(iCurrentIndexSet, false);
 
-				this.data.selectIndexSet(iCurrentIndexSet);
+				this.getData().selectIndexSet(iCurrentIndexSet);
 			}
 
-			var iWireframeSet: int = this.data.findIndexSet(".wireframe");
+			var iWireframeSet: int = this.getData().findIndexSet(".wireframe");
 			var iCurrentIndexSet: int = 0;
 
-			this.data.setRenderable(iWireframeSet, bEnable);
-			this.data.setRenderable(iCurrentIndexSet, !bEnable);
+			this.getData().setRenderable(iWireframeSet, bEnable);
+			this.getData().setRenderable(iCurrentIndexSet, !bEnable);
 
 			return true;
 		}*/
 
 		isBoundingSphereVisible(): boolean {
-			return this.data.isRenderable(this.data.findIndexSet(".BoundingSphere"));
+			return this.getData().isRenderable(this.getData().findIndexSet(".BoundingSphere"));
 		}
 
 		hideBoundingSphere(): boolean {
-			var iCurrentIndexSet: int = this.data.getIndexSet();
+			var iCurrentIndexSet: int = this.getData().getIndexSet();
 
-			if (!this.data.selectIndexSet(".BoundingSphere")) {
+			if (!this.getData().selectIndexSet(".BoundingSphere")) {
 				return false;
 			}
 			else {
-				this.data.setRenderable(this.data.getIndexSet(), false);
+				this.getData().setRenderable(this.getData().getIndexSet(), false);
 			}
 
-			return this.data.selectIndexSet(iCurrentIndexSet);
+			return this.getData().selectIndexSet(iCurrentIndexSet);
 		}
 
 
@@ -309,10 +323,6 @@ module akra.model {
 
 		isOptimizedSkinned(): boolean {
 			return this.isSkinned() && this._isOptimizedSkinned;
-		}
-
-		getSkin(): ISkin {
-			return this._pSkin;
 		}
 
 		applyFlexMaterial(sMaterial: string, pMaterialData: IMaterial = null): boolean {
@@ -339,7 +349,7 @@ module akra.model {
 			var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
 
 			if (isNull(pMaterial)) {
-				logger.warn("could not find material <" + iMaterial + "> in sub mesh <" + this.name + ">");
+				logger.warn("could not find material <" + iMaterial + "> in sub mesh <" + this.getName() + ">");
 				return false;
 			}
 
@@ -349,7 +359,7 @@ module akra.model {
 			var eSemantics: string = DeclUsages.INDEX10;
 			var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
 			var iMatFlow: int;
-			var iMat: int = (<IFlexMaterial>pMaterial).data.byteOffset;
+			var iMat: int = (<IFlexMaterial>pMaterial).data.getByteOffset();
 
 			if (pMatFlow) {
 				iMatFlow = pMatFlow.flow;
@@ -362,7 +372,7 @@ module akra.model {
 			}
 
 			pIndexDecl = VertexDeclaration.normalize([VE.float(eSemantics)]);
-			pFloatArray = new Float32Array((<IVertexData>pIndexData).length);
+			pFloatArray = new Float32Array((<IVertexData>pIndexData).getLength());
 			iMatFlow = pRenderData._addData((<IFlexMaterial>pMaterial).data);
 
 			debug.assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
@@ -381,20 +391,20 @@ module akra.model {
 		}
 
 		show(): void {
-			this.data.setRenderable(true);
+			this.getData().setRenderable(true);
 		}
 
 		hide(): void {
-			this.data.setRenderable(false);
+			this.getData().setRenderable(false);
 		}
 
 		isRenderable(): boolean {
-			return this.data.isRenderable();
+			return this.getData().isRenderable();
 		}
 
 		//исходим из того, что данные скина 1:1 соотносятся с вершинами.
 		setSkin(pSkin: ISkin): boolean {
-			var pRenderData: IRenderData = this.data;
+			var pRenderData: IRenderData = this.getData();
 			var pPosData: IVertexData;
 			var pPositionFlow: IDataFlow;
 			var pNormalFlow: IDataFlow;
@@ -429,7 +439,7 @@ module akra.model {
 
 			//проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
 			//или его клону.
-			debug.assert(this.data.buffer == pSkin.data,
+			debug.assert(this.getData().getBuffer() == pSkin.getData(),
 				"can not bind to skin mesh subset that does not belong skin's mesh.")
 
 		    //подвязывем скин, к данным с вершинами текущего подмеша.
@@ -467,8 +477,8 @@ module akra.model {
 
 			//выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
 			pInfMetaData = pSkin.getInfluenceMetaData();
-			iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
-			iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
+			iInfMetaDataLoc = pInfMetaData.getByteOffset() / EDataTypeSizes.BYTES_PER_FLOAT;
+			iInfMetaDataStride = pInfMetaData.getStride() / EDataTypeSizes.BYTES_PER_FLOAT;
 
 			var iCount: uint = pMetaData.byteLength / pDeclaration.stride;
 			var iOffset: uint = pVEMeta.offset / EDataTypeSizes.BYTES_PER_FLOAT;
@@ -487,17 +497,17 @@ module akra.model {
 			var pIndex0: Float32Array = <Float32Array>pIndexData.getTypedData(pPositionFlow.mapper.semantics);
 			var pIndex1: Float32Array = <Float32Array>pIndexData.getTypedData(pNormalFlow.mapper.semantics);
 
-			var iAdditionPosition: uint = pPosData.byteOffset;
-			var iAdditionNormal: uint = pNormalFlow.data.byteOffset;
+			var iAdditionPosition: uint = pPosData.getByteOffset();
+			var iAdditionNormal: uint = pNormalFlow.data.getByteOffset();
 
 			for (var i: uint = 0; i < pIndex0.length; i++) {
-				pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition) / pPositionFlow.data.stride;
-				pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal) / pNormalFlow.data.stride;
+				pIndex0[i] = (pIndex0[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionPosition) / pPositionFlow.data.getStride();
+				pIndex1[i] = (pIndex1[i] * EDataTypeSizes.BYTES_PER_FLOAT - iAdditionNormal) / pNormalFlow.data.getStride();
 			}
 
 			//update position index
-			var pUPPositionIndex: Float32Array = new Float32Array(pPosData.length);
-			for (var i: uint = 0; i < pPosData.length; i++) {
+			var pUPPositionIndex: Float32Array = new Float32Array(pPosData.getLength());
+			for (var i: uint = 0; i < pPosData.getLength(); i++) {
 				pUPPositionIndex[i] = i;
 			}
 
@@ -527,7 +537,7 @@ module akra.model {
 				}
 			}
 
-			var iSkinnedPos: uint = pRenderData.allocateData([VE.float3("SKINNED_POSITION"), VE.end(16)], new Float32Array(pPosData.length * 4));
+			var iSkinnedPos: uint = pRenderData.allocateData([VE.float3("SKINNED_POSITION"), VE.end(16)], new Float32Array(pPosData.getLength() * 4));
 			/*skinned vertices uses same index as vertices*/
 			pRenderData.allocateIndex([VE.float("SP_INDEX")], pIndex0);
 			pRenderData.index(iSkinnedPos, "SP_INDEX");
@@ -541,15 +551,15 @@ module akra.model {
 
 			var iUPIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_position");
 			pRenderData.allocateIndex([VE.float("UPP_INDEX")], pUPPositionIndex);
-			pRenderData.index(pPosData.byteOffset, "UPP_INDEX");
+			pRenderData.index(pPosData.getByteOffset(), "UPP_INDEX");
 			pRenderData.allocateIndex([VE.float("DESTINATION_SP")], pUPPositionIndex);
 			pRenderData.index(iSkinnedPos, "DESTINATION_SP");
 
 			var iUNIndexSet: uint = pRenderData.addIndexSet(true, EPrimitiveTypes.POINTLIST, ".update_skinned_normal");
 			pRenderData.allocateIndex([VE.float("UNP_INDEX")], new Float32Array(pUNPositionIndex));
-			pRenderData.index(pPosData.byteOffset, "UNP_INDEX");
+			pRenderData.index(pPosData.getByteOffset(), "UNP_INDEX");
 			pRenderData.allocateIndex([VE.float("UNN_INDEX")], new Float32Array(pUNNormalIndex));
-			pRenderData.index(pRenderData._getFlow(DeclUsages.NORMAL, false).data.byteOffset, "UNN_INDEX");
+			pRenderData.index(pRenderData._getFlow(DeclUsages.NORMAL, false).data.getByteOffset(), "UNN_INDEX");
 			pRenderData.allocateIndex([VE.float("DESTINATION_SN")], new Float32Array(pDestinationSkinnedNormalIndex));
 			pRenderData.index(iSkinnedNorm, "DESTINATION_SN");
 
@@ -585,7 +595,7 @@ module akra.model {
 		}
 
 		static isMeshSubset(pObject: IRenderableObject): boolean {
-			return pObject.type === ERenderableTypes.MESH_SUBSET;
+			return pObject.getType() === ERenderableTypes.MESH_SUBSET;
 		}
 	}
 }

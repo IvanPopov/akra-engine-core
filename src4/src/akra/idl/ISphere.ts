@@ -4,13 +4,15 @@
 /// <reference path="ICircle.ts" />
 
 module akra {
-	export interface ISphere {
-	
+	export interface ISphere {	
 		center: IVec3;
 		radius: float;
 	
-		circle: ICircle;
-		z: float;
+		getCircle(): ICircle;
+		setCircle(pCircle: ICircle): void;
+
+		getZ(): float;
+		setZ(fZ: float): void;
 	
 		set(): ISphere;
 		set(pSphere: ISphere): ISphere;

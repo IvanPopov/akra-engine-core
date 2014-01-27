@@ -29,8 +29,8 @@ module akra {
 	}
 	
 	export interface IEngine extends IEventProvider {
-		time: float;
-		elapsedTime: float;
+		getTime(): float;
+		getElapsedTime(): float;
 	
 		getScene(): IScene3d;
 	

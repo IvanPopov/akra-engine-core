@@ -6,279 +6,297 @@
 
 module akra.math {
 
-    var pBuffer: IVec2[];
-    var iElement: uint;
+	var pBuffer: IVec2[];
+	var iElement: uint;
 
-    export class Vec2 implements IVec2 {
-        x: float = 0.;
-        y: float = 0.;
+	export class Vec2 implements IVec2 {
+		x: float = 0.;
+		y: float = 0.;
+		
+		constructor();
+		constructor(xy: float);
+		constructor(xy: IVec2);
+		constructor(xy: float[]);
+		constructor(x: float, y: float);
+		constructor(x?, y?) {
+			var n: uint = arguments.length;
+			var v: IVec2 = this;
 
-        get xx(): IVec2 {
-            return Vec2.temp(this.x, this.x);
-        }
-        set xx(v2fVec: IVec2) {
-            this.x = v2fVec.x; this.x = v2fVec.y;
-        }
+			switch (n) {
+				case 1:
+					v.set(arguments[0]);
+					break;
+				case 2:
+					v.set(arguments[0], arguments[1]);
+					break;
+				default:
+					v.x = v.y = 0.;
+			}
+		}
 
-        get xy(): IVec2 {
-            return Vec2.temp(this.x, this.y);
-        }
-        set xy(v2fVec: IVec2) {
-            this.x = v2fVec.x; this.y = v2fVec.y;
-        }
+		set(): IVec2;
+		set(xy: float): IVec2;
+		set(xy: IVec2): IVec2;
+		set(xy: float[]): IVec2;
+		set(x: float, y: float): IVec2;
+		set(x?, y?): IVec2 {
+			var n: uint = arguments.length;
 
-        get yx(): IVec2 {
-            return Vec2.temp(this.y, this.x);
-        }
-        set yx(v2fVec: IVec2) {
-            this.y = v2fVec.x; this.x = v2fVec.y;
-        }
+			switch (n) {
+				case 0:
+					this.x = this.y = 0.;
+					break;
+				case 1:
+					if (isFloat(arguments[0])) {
+						this.x = this.y = arguments[0];
+					}
+					else if (arguments[0] instanceof Vec2) {
+						var v2fVec: IVec2 = arguments[0];
 
-        get yy(): IVec2 {
-            return Vec2.temp(this.y, this.y);
-        }
-        set yy(v2fVec: IVec2) {
-            this.y = v2fVec.x; this.y = v2fVec.y;
-        }
+						this.x = v2fVec.x;
+						this.y = v2fVec.y;
+					}
+					else {
+						var pArray: float[] = arguments[0];
 
-        constructor();
-        constructor(xy: float);
-        constructor(xy: IVec2);
-        constructor(xy: float[]);
-        constructor(x: float, y: float);
-        constructor(x?, y?) {
-            var n: uint = arguments.length;
-            var v: IVec2 = this;
+						this.x = pArray[0];
+						this.y = pArray[1];
+					}
+					break;
+				case 2:
+					this.x = arguments[0];
+					this.y = arguments[1];
+					break;
+			}
 
-            switch (n) {
-                case 1:
-                    v.set(arguments[0]);
-                    break;
-                case 2:
-                    v.set(arguments[0], arguments[1]);
-                    break;
-                default:
-                    v.x = v.y = 0.;
-            }
-        }
+			return this;
+		}
 
-        set(): IVec2;
-        set(xy: float): IVec2;
-        set(xy: IVec2): IVec2;
-        set(xy: float[]): IVec2;
-        set(x: float, y: float): IVec2;
-        set(x?, y?): IVec2 {
-            var n: uint = arguments.length;
+		/**  */ clear(): IVec2 {
+			this.x = this.y = 0.;
+			return this;
+		}
 
-            switch (n) {
-                case 0:
-                    this.x = this.y = 0.;
-                    break;
-                case 1:
-                    if (isFloat(arguments[0])) {
-                        this.x = this.y = arguments[0];
-                    }
-                    else if (arguments[0] instanceof Vec2) {
-                        var v2fVec: IVec2 = arguments[0];
+		add(v2fVec: IVec2, v2fDestination?: IVec2): IVec2 {
+			if (!isDef(v2fDestination)) {
+				v2fDestination = this;
+			}
 
-                        this.x = v2fVec.x;
-                        this.y = v2fVec.y;
-                    }
-                    else {
-                        var pArray: float[] = arguments[0];
+			v2fDestination.x = this.x + v2fVec.x;
+			v2fDestination.y = this.y + v2fVec.y;
 
-                        this.x = pArray[0];
-                        this.y = pArray[1];
-                    }
-                    break;
-                case 2:
-                    this.x = arguments[0];
-                    this.y = arguments[1];
-                    break;
-            }
+			return v2fDestination;
+		}
 
-            return this;
-        }
+		subtract(v2fVec: IVec2, v2fDestination?: IVec2): IVec2 {
+			if (!isDef(v2fDestination)) {
+				v2fDestination = this;
+			}
 
-        /**  */ clear(): IVec2 {
-            this.x = this.y = 0.;
-            return this;
-        }
+			v2fDestination.x = this.x - v2fVec.x;
+			v2fDestination.y = this.y - v2fVec.y;
 
-        add(v2fVec: IVec2, v2fDestination?: IVec2): IVec2 {
-            if (!isDef(v2fDestination)) {
-                v2fDestination = this;
-            }
+			return v2fDestination;
+		}
 
-            v2fDestination.x = this.x + v2fVec.x;
-            v2fDestination.y = this.y + v2fVec.y;
+		/**  */ dot(v2fVec: IVec2): float {
+			return this.x * v2fVec.x + this.y * v2fVec.y;
+		}
 
-            return v2fDestination;
-        }
+		isEqual(v2fVec: IVec2, fEps: float = 0.): boolean {
+			if (fEps === 0.) {
+				if (this.x != v2fVec.x
+					|| this.y != v2fVec.y) {
 
-        subtract(v2fVec: IVec2, v2fDestination?: IVec2): IVec2 {
-            if (!isDef(v2fDestination)) {
-                v2fDestination = this;
-            }
+					return false;
+				}
+			}
+			else {
+				if (abs(this.x - v2fVec.x) > fEps
+					|| abs(this.y - v2fVec.y) > fEps) {
 
-            v2fDestination.x = this.x - v2fVec.x;
-            v2fDestination.y = this.y - v2fVec.y;
+					return false;
+				}
+			}
 
-            return v2fDestination;
-        }
+			return true;
+		}
 
-        /**  */ dot(v2fVec: IVec2): float {
-            return this.x * v2fVec.x + this.y * v2fVec.y;
-        }
+		isClear(fEps: float = 0.): boolean {
+			if (fEps === 0.) {
+				if (this.x != 0.
+					|| this.y != 0.) {
 
-        isEqual(v2fVec: IVec2, fEps: float = 0.): boolean {
-            if (fEps === 0.) {
-                if (this.x != v2fVec.x
-                    || this.y != v2fVec.y) {
+					return false;
+				}
+			}
+			else {
+				if (math.abs(this.x) > fEps
+					|| math.abs(this.y) > fEps) {
 
-                    return false;
-                }
-            }
-            else {
-                if (abs(this.x - v2fVec.x) > fEps
-                    || abs(this.y - v2fVec.y) > fEps) {
+					return false;
+				}
+			}
 
-                    return false;
-                }
-            }
+			return true;
+		}
 
-            return true;
-        }
+		negate(v2fDestination?: IVec2): IVec2 {
+			if (!isDef(v2fDestination)) {
+				v2fDestination = this;
+			}
 
-        isClear(fEps: float = 0.): boolean {
-            if (fEps === 0.) {
-                if (this.x != 0.
-                    || this.y != 0.) {
+			v2fDestination.x = -this.x;
+			v2fDestination.y = -this.y;
 
-                    return false;
-                }
-            }
-            else {
-                if (math.abs(this.x) > fEps
-                    || math.abs(this.y) > fEps) {
+			return v2fDestination;
+		}
 
-                    return false;
-                }
-            }
+		scale(fScale: float, v2fDestination?: IVec2): IVec2 {
+			if (!isDef(v2fDestination)) {
+				v2fDestination = this;
+			}
 
-            return true;
-        }
+			v2fDestination.x = this.x * fScale;
+			v2fDestination.y = this.y * fScale;
 
-        negate(v2fDestination?: IVec2): IVec2 {
-            if (!isDef(v2fDestination)) {
-                v2fDestination = this;
-            }
+			return v2fDestination;
+		}
 
-            v2fDestination.x = -this.x;
-            v2fDestination.y = -this.y;
+		normalize(v2fDestination?: IVec2): IVec2 {
+			if (!isDef(v2fDestination)) {
+				v2fDestination = this;
+			}
 
-            return v2fDestination;
-        }
+			var x: float = this.x, y: float = this.y;
+			var fLength: float = math.sqrt(x * x + y * y);
 
-        scale(fScale: float, v2fDestination?: IVec2): IVec2 {
-            if (!isDef(v2fDestination)) {
-                v2fDestination = this;
-            }
+			if (fLength !== 0.) {
+				var fInvLength: float = 1. / fLength;
 
-            v2fDestination.x = this.x * fScale;
-            v2fDestination.y = this.y * fScale;
+				x *= fInvLength;
+				y *= fInvLength;
+			}
 
-            return v2fDestination;
-        }
+			v2fDestination.x = x;
+			v2fDestination.y = y;
 
-        normalize(v2fDestination?: IVec2): IVec2 {
-            if (!isDef(v2fDestination)) {
-                v2fDestination = this;
-            }
+			return v2fDestination;
+		}
 
-            var x: float = this.x, y: float = this.y;
-            var fLength: float = math.sqrt(x * x + y * y);
+		/**  */ length(): float {
+			var x: float = this.x, y: float = this.y;
+			return math.sqrt(x * x + y * y);
+		}
 
-            if (fLength !== 0.) {
-                var fInvLength: float = 1. / fLength;
+		/**  */ lengthSquare(): float {
+			var x: float = this.x, y: float = this.y;
+			return x * x + y * y;
+		}
 
-                x *= fInvLength;
-                y *= fInvLength;
-            }
+		direction(v2fVec: IVec2, v2fDestination?: IVec2): IVec2 {
+			if (!isDef(v2fDestination)) {
+				v2fDestination = this;
+			}
 
-            v2fDestination.x = x;
-            v2fDestination.y = y;
+			var x: float = v2fVec.x - this.x;
+			var y: float = v2fVec.y - this.y;
 
-            return v2fDestination;
-        }
+			var fLength: float = math.sqrt(x * x + y * y);
 
-        /**  */ length(): float {
-            var x: float = this.x, y: float = this.y;
-            return math.sqrt(x * x + y * y);
-        }
+			if (fLength !== 0.) {
+				var fInvLength: float = 1. / fLength;
 
-        /**  */ lengthSquare(): float {
-            var x: float = this.x, y: float = this.y;
-            return x * x + y * y;
-        }
+				x *= fInvLength;
+				y *= fInvLength;
+			}
 
-        direction(v2fVec: IVec2, v2fDestination?: IVec2): IVec2 {
-            if (!isDef(v2fDestination)) {
-                v2fDestination = this;
-            }
+			v2fDestination.x = x;
+			v2fDestination.y = y;
 
-            var x: float = v2fVec.x - this.x;
-            var y: float = v2fVec.y - this.y;
+			return v2fDestination;
+		}
 
-            var fLength: float = math.sqrt(x * x + y * y);
+		mix(v2fVec: IVec2, fA: float, v2fDestination?: IVec2): IVec2 {
+			if (!isDef(v2fDestination)) {
+				v2fDestination = this;
+			}
 
-            if (fLength !== 0.) {
-                var fInvLength: float = 1. / fLength;
+			fA = math.clamp(fA, 0., 1.);
 
-                x *= fInvLength;
-                y *= fInvLength;
-            }
+			var fA1: float = 1. - fA;
+			var fA2: float = fA;
 
-            v2fDestination.x = x;
-            v2fDestination.y = y;
+			v2fDestination.x = fA1 * this.x + fA2 * v2fVec.x;
+			v2fDestination.y = fA1 * this.y + fA2 * v2fVec.y;
 
-            return v2fDestination;
-        }
+			return v2fDestination;
+		}
 
-        mix(v2fVec: IVec2, fA: float, v2fDestination?: IVec2): IVec2 {
-            if (!isDef(v2fDestination)) {
-                v2fDestination = this;
-            }
+		/**  */ toString(): string {
+			return "[x: " + this.x + ", y: " + this.y + "]";
+		}
 
-            fA = math.clamp(fA, 0., 1.);
+		clone(sForm: string, v2fDest?: IVec2): IVec2 {
+			if (!isDefAndNotNull(v2fDest)) {
+				v2fDest = Vec2.temp();
+			}
 
-            var fA1: float = 1. - fA;
-            var fA2: float = fA;
+			switch (sForm) {
+				case "xx":
+					return v2fDest.set(this.x);
+				case "xy":
+					return v2fDest.set(this.x, this.y);
+				case "yx":
+					return v2fDest.set(this.y, this.x);
+				case "yy":
+					return v2fDest.set(this.y);
+			}
+			
+			logger.error("Bad vector form", sForm);
+			return null;
+		}
 
-            v2fDestination.x = fA1 * this.x + fA2 * v2fVec.x;
-            v2fDestination.y = fA1 * this.y + fA2 * v2fVec.y;
+		copy(sForm: string, v2fFrom: IVec2): IVec2;
+		copy(sForm: string, fValue: float): IVec2;
+		copy(sForm: string, pVec2OrFloat: any): IVec2 {
+			var v2fFrom: IVec2 = isFloat(pVec2OrFloat) ? Vec2.temp(<float>pVec2OrFloat) : <IVec2>pVec2OrFloat;
 
-            return v2fDestination;
-        }
+			switch (sForm) {
+				case "xx":
+					this.x = v2fFrom.x;	this.x = v2fFrom.y;
+					break;
+				case "xy":
+					this.x = v2fFrom.x;	this.y = v2fFrom.y;
+					break;
+				case "yx":
+					this.y = v2fFrom.x;	this.x = v2fFrom.y;
+					break;
+				case "yy":
+					this.y = v2fFrom.x;	this.y = v2fFrom.y;
+					break;
+				default:
+					logger.error("Bad vector form", sForm);
+					break;
+			}
 
-        /**  */ toString(): string {
-            return "[x: " + this.x + ", y: " + this.y + "]";
-        }
+			return this;
+		}
 
-        static temp(): IVec2;
-        static temp(xy: float): IVec2;
-        static temp(xy: IVec2): IVec2;
-        static temp(xy: float[]): IVec2;
-        static temp(x: float, y: float): IVec2;
-        static temp(x?, y?): IVec2 {
-            iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
-            var p = pBuffer[iElement++];
-            return p.set.apply(p, arguments);
-        }
-    }
+		static temp(): IVec2;
+		static temp(xy: float): IVec2;
+		static temp(xy: IVec2): IVec2;
+		static temp(xy: float[]): IVec2;
+		static temp(x: float, y: float): IVec2;
+		static temp(x?, y?): IVec2 {
+			iElement = ((iElement === pBuffer.length - 1) ? 0 : iElement);
+			var p = pBuffer[iElement++];
+			return p.set.apply(p, arguments);
+		}
+	}
 
 
-    pBuffer = gen.array<IVec3>(256, Vec2);
-    iElement = 0;
+	pBuffer = gen.array<IVec2>(256, Vec2);
+	iElement = 0;
 
 }

@@ -8,11 +8,11 @@
 
 module akra {
 	export interface IVertexData extends IBufferData, IBuffer, IEventProvider {
-		/** readonly */ stride: uint;
-		/** readonly */ startIndex: uint;
-		/** readonly */ id: int;
+		getStride(): uint;
+		getStartIndex(): uint;
+		getID(): int;
 	
-	    getVertexDeclaration(): IVertexDeclaration;
+		getVertexDeclaration(): IVertexDeclaration;
 		setVertexDeclaration(pDecl: IVertexDeclaration): boolean;
 		
 		getVertexElementCount(): uint;
@@ -39,13 +39,13 @@ module akra {
 		toString(): string;
 	
 		//when data moved in memory(in parent Hardware Buffer)
-        relocated: ISignal<{ (pData: IVertexData, from: uint, to: uint): void; }>;
+		relocated: ISignal<{ (pData: IVertexData, from: uint, to: uint): void; }>;
 		//when data size changed
-        resized: ISignal<{ (pData: IVertexData, iByteLength: uint): void; }>;
+		resized: ISignal<{ (pData: IVertexData, iByteLength: uint): void; }>;
 		//when declaration changed
-        declarationChanged: ISignal<{ (pData: IVertexData, pDecl: IVertexDeclaration): void; }>;
+		declarationChanged: ISignal<{ (pData: IVertexData, pDecl: IVertexDeclaration): void; }>;
 		//when data has been modified
-        updated: ISignal<{ (pData: IVertexData): void; }>;
+		updated: ISignal<{ (pData: IVertexData): void; }>;
 	}
 	
 }

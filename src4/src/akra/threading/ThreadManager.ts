@@ -79,7 +79,7 @@ module akra.threading {
                 return false;
             }
 
-            if (!info.api.webWorker) {
+            if (!info.api.getWebWorker()) {
                 logger.error("WebWorkers unsupprted..");
                 return false;
             }

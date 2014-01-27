@@ -6,14 +6,19 @@
 
 module akra {
 	export interface IAnimationContainer extends IAnimationBase {
-		/** readonly */ animationName: string;
-		/** readonly */ speed: float;
-		/** readonly */ animationTime: float;
-		/** readonly */ time: float;
+		getAnimationName(): string;
+		getAnimationTime(): float;
+		getTime(): float;
+
+		getSpeed(): float;
+		setSpeed(fSpeed: float): void;
 	
-		setAnimation(pAnimation: IAnimationBase): void;
 		getAnimation(): IAnimationBase;
+		setAnimation(pAnimation: IAnimationBase): void;
 	
+		setStartTime(fRealTime: float): void;
+		getStartTime(): float;
+
 		enable(): void;
 		disable(): void;
 		isEnabled(): boolean;
@@ -21,14 +26,9 @@ module akra {
 		leftInfinity(bValue: boolean): void;
 		rightInfinity(bValue: boolean): void;
 	
-		setStartTime(fRealTime: float): void;
-		getStartTime(): float;
 	
 		inLeftInfinity(): boolean;
 		inRightInfinity(): boolean;
-	
-		setSpeed(fSpeed: float): void;
-		getSpeed(): float;
 	
 		useLoop(bValue: boolean): void;
 		inLoop(): boolean;

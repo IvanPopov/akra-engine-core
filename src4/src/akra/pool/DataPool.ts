@@ -43,7 +43,7 @@ module akra.pool {
 		private iIndexShift: int = 0;
 
 
-		 get manager(): IResourcePoolManager { return this.pManager; }
+		getManager(): IResourcePoolManager { return this.pManager; }
 
 		constructor(pManager: IResourcePoolManager, tTemplate: IResourcePoolItemType) {
 			this.pManager = pManager;
@@ -88,7 +88,7 @@ module akra.pool {
 				pGroup.release(iItemIndex);
 				var pGroupBack: PoolGroup = this.pGroupList[this.pGroupList.length - 1];
 
-				if (pGroupBack.totalOpen == this.iGroupCount) {
+				if (pGroupBack.getTotalOpen() == this.iGroupCount) {
 					pGroupBack.destroy();
 					this.pGroupList.splice(this.pGroupList.length - 1, 1);
 				}
@@ -127,7 +127,7 @@ module akra.pool {
 			var iGroupNumber: uint = 0;
 			for (var iGroupIter: uint = 0; iGroupIter < this.pGroupList.length; iGroupIter++) {
 				
-				var nCallbackCount: uint = this.pGroupList[iGroupIter].totalUsed;
+				var nCallbackCount: uint = this.pGroupList[iGroupIter].getTotalUsed();
 				var iItemIndex: uint = 0;
 
 				while (nCallbackCount != 0 && iItemIndex < this.iGroupCount) {
@@ -244,7 +244,7 @@ module akra.pool {
 
 			//найдем и вренем первую группу имеющую свободную группу
 			for (var iGroupIter: uint = 0; iGroupIter < this.pGroupList.length; iGroupIter++) {
-				if (this.pGroupList[iGroupIter].totalOpen > 0) {
+				if (this.pGroupList[iGroupIter].getTotalOpen() > 0) {
 					return this.pGroupList[iGroupIter];
 				}
 

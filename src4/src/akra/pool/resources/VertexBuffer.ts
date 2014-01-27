@@ -19,8 +19,13 @@ module akra.pool.resources {
 		protected _pVertexDataArray: IVertexData[] = [];
 		protected _iDataCounter: uint = 0;
 
-		get type(): EVertexBufferTypes { return EVertexBufferTypes.UNKNOWN; }
-		get length(): uint { return this._pVertexDataArray.length; }
+		getType(): EVertexBufferTypes {
+			return EVertexBufferTypes.UNKNOWN;
+		}
+
+		getLength(): uint {
+			return this._pVertexDataArray.length;
+		}
 
 		constructor(/*pManager: IResourcePoolManager*/) {
 			super(/*pManager*/);
@@ -82,58 +87,58 @@ module akra.pool.resources {
 
 			while (true) {
 
-				pHole[0] = { start: 0, end: this.byteLength };
+				pHole[0] = { start: 0, end: this.getByteLength() };
 
 				for (var k: uint = 0; k < this._pVertexDataArray.length; ++k) {
 					pVertexData = this._pVertexDataArray[k];
 
 					for (i = 0; i < pHole.length; i++) {
 						//Полностью попадает внутрь
-						if (pVertexData.byteOffset > pHole[i].start &&
-							pVertexData.byteOffset + pVertexData.byteLength < pHole[i].end) {
+						if (pVertexData.getByteOffset() > pHole[i].start &&
+							pVertexData.getByteOffset() + pVertexData.getByteLength() < pHole[i].end) {
 							iTemp = pHole[i].end;
-							pHole[i].end = pVertexData.byteOffset;
-							pHole.splice(i + 1, 0, { start: pVertexData.byteOffset + pVertexData.byteLength, end: iTemp });
+							pHole[i].end = pVertexData.getByteOffset();
+							pHole.splice(i + 1, 0, { start: pVertexData.getByteOffset() + pVertexData.getByteLength(), end: iTemp });
 							i--;
 						}
-						else if (pVertexData.byteOffset == pHole[i].start &&
-							pVertexData.byteOffset + pVertexData.byteLength < pHole[i].end) {
-							pHole[i].start = pVertexData.byteOffset + pVertexData.byteLength;
+						else if (pVertexData.getByteOffset() == pHole[i].start &&
+							pVertexData.getByteOffset() + pVertexData.getByteLength() < pHole[i].end) {
+							pHole[i].start = pVertexData.getByteOffset() + pVertexData.getByteLength();
 						}
-						else if (pVertexData.byteOffset > pHole[i].start &&
-							pVertexData.byteOffset + pVertexData.byteLength == pHole[i].end) {
+						else if (pVertexData.getByteOffset() > pHole[i].start &&
+							pVertexData.getByteOffset() + pVertexData.getByteLength() == pHole[i].end) {
 
 						}
-						else if (pVertexData.byteOffset == pHole[i].start &&
-							pVertexData.byteLength == (pHole[i].end - pHole[i].start)) {
+						else if (pVertexData.getByteOffset() == pHole[i].start &&
+							pVertexData.getByteLength() == (pHole[i].end - pHole[i].start)) {
 							pHole.splice(i, 1);
 							i--;
 						}
 						//Перекрывает снизу
-						else if (pVertexData.byteOffset < pHole[i].start &&
-							pVertexData.byteOffset + pVertexData.byteLength > pHole[i].start &&
-							pVertexData.byteOffset + pVertexData.byteLength < pHole[i].end) {
-							pHole[i].start = pVertexData.byteOffset + pVertexData.byteLength;
+						else if (pVertexData.getByteOffset() < pHole[i].start &&
+							pVertexData.getByteOffset() + pVertexData.getByteLength() > pHole[i].start &&
+							pVertexData.getByteOffset() + pVertexData.getByteLength() < pHole[i].end) {
+							pHole[i].start = pVertexData.getByteOffset() + pVertexData.getByteLength();
 						}
-						else if (pVertexData.byteOffset < pHole[i].start &&
-							pVertexData.byteOffset + pVertexData.byteLength > pHole[i].start &&
-							pVertexData.byteOffset + pVertexData.byteLength == pHole[i].end) {
+						else if (pVertexData.getByteOffset() < pHole[i].start &&
+							pVertexData.getByteOffset() + pVertexData.getByteLength() > pHole[i].start &&
+							pVertexData.getByteOffset() + pVertexData.getByteLength() == pHole[i].end) {
 							pHole.splice(i, 1);
 							i--;
 						}
 						//Перекрывается сверху
-						else if (pVertexData.byteOffset + pVertexData.byteLength > pHole[i].end &&
-							pVertexData.byteOffset > pHole[i].start && pVertexData.byteOffset < pHole[i].end) {
-							pHole[i].end = pVertexData.byteOffset;
+						else if (pVertexData.getByteOffset() + pVertexData.getByteLength() > pHole[i].end &&
+							pVertexData.getByteOffset() > pHole[i].start && pVertexData.getByteOffset() < pHole[i].end) {
+							pHole[i].end = pVertexData.getByteOffset();
 						}
-						else if (pVertexData.byteOffset + pVertexData.byteLength > pHole[i].end &&
-							pVertexData.byteOffset == pHole[i].start && pVertexData.byteOffset < pHole[i].end) {
+						else if (pVertexData.getByteOffset() + pVertexData.getByteLength() > pHole[i].end &&
+							pVertexData.getByteOffset() == pHole[i].start && pVertexData.getByteOffset() < pHole[i].end) {
 							pHole.splice(i, 1);
 							i--;
 						}
 						//полнстью перекрывает
-						else if (pVertexData.byteOffset < pHole[i].start &&
-							pVertexData.byteOffset + pVertexData.byteLength > pHole[i].end) {
+						else if (pVertexData.getByteOffset() < pHole[i].start &&
+							pVertexData.getByteOffset() + pVertexData.getByteLength() > pHole[i].end) {
 							i--;
 						}
 					}
@@ -167,7 +172,7 @@ module akra.pool.resources {
 							return pVertexData;
 						}
 						else if (arguments.length == 3) {
-							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, ppVertexDataIn.id, iAligStart, iCount, pDeclData);
+							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, ppVertexDataIn.getID(), iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(ppVertexDataIn);
 
 							this.notifyAltered();
@@ -178,11 +183,11 @@ module akra.pool.resources {
 					}
 				}
 
-				iNewSize = math.max(this.byteLength * 2, this.byteLength + iCount * iStride);
+				iNewSize = math.max(this.getByteLength() * 2, this.getByteLength() + iCount * iStride);
 
 				if (this.resize(iNewSize) == false) {
 					debug.warn("cannot resize buffer from " +
-						this.byteLength + " bytes to " + iNewSize + " bytes ");
+						this.getByteLength() + " bytes to " + iNewSize + " bytes ");
 					break;
 				}
 			}
@@ -238,11 +243,11 @@ module akra.pool.resources {
 		}
 
 		static isVBO(pBuffer: IVertexBuffer): boolean {
-			return pBuffer.type === EVertexBufferTypes.VBO;
+			return pBuffer.getType() === EVertexBufferTypes.VBO;
 		}
 
 		static isTBO(pBuffer: IVertexBuffer): boolean {
-			return pBuffer.type === EVertexBufferTypes.TBO;
+			return pBuffer.getType() === EVertexBufferTypes.TBO;
 		}
 	}
 }

@@ -1,5 +1,3 @@
-
-
 /// <reference path="ILightPoint.ts" />
 /// <reference path="ICamera.ts" />
 /// <reference path="ISceneModel.ts" />
@@ -15,8 +13,10 @@ module akra {
 	}
 	
 	export interface ISunLight extends ILightPoint {
-		params: ISunParameters;
-		skyDome: ISceneModel;
+		getParams(): ISunParameters;
+
+		getSkyDome(): ISceneModel;
+		setSkyDome(pSkyDome: ISceneModel): void;
 	
 		updateSunDirection(v3fSunDir: IVec3): void;
 		

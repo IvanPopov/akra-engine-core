@@ -18,9 +18,9 @@ module akra {
 	}
 	
 	export interface IUtilTimer {
-		absoluteTime: float;
-		appTime: float;
-		elapsedTime: float;
+		getAbsoluteTime(): float;
+		getAppTime(): float;
+		getElapsedTime(): float;
 	
 		start(): boolean;
 		stop(): boolean;

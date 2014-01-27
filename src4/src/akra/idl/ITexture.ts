@@ -80,25 +80,14 @@ module akra {
 	// }
 	
 	export interface ITexture extends IRenderResource {
-		width: uint;
-		height: uint;
-		depth: uint;
+		getWidth(): uint;
+		getHeight(): uint;
+		getDepth(): uint;
 	
-		format: EPixelFormats;
-		mipLevels: uint;
-	
-		textureType: ETextureTypes;
-	
-		/** readonly */ byteLength: uint;
-	
-		//desiredIntegerBitDepth: uint;
-		//desiredFloatBitDepth: uint;	 
-	
-		///** readonly */ desiredFormat: EPixelFormats;
-		///** readonly */ srcFormat: EPixelFormats;
-		///** readonly */ srcWidth: uint;
-		///** readonly */ srcHeight: uint;
-		///** readonly */ srcDepth: uint;
+		getFormat(): EPixelFormats;
+		getMipLevels(): uint;
+		getTextureType(): ETextureTypes;
+		getByteLength(): uint;
 	
 		setFlags(iTextureFlag: int): void;
 		getFlags(): int;   

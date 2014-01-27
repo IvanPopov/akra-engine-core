@@ -15,10 +15,11 @@ module akra.config {
 	export var GUI: boolean = false;
 
 	//temporary 
+	export var DEBUG_PARSER: boolean = false;
 	export var SKY: boolean = true;
 	export var SKY_GPU: boolean = false;
-	export var AFX_ENABLE_TEXT_EFFECTS: boolean;
-	export var __VIEW_INTERNALS__: boolean = true;
+	export var AFX_ENABLE_TEXT_EFFECTS: boolean = true;
+	export var __VIEW_INTERNALS__: boolean = false;
 	export var DETAILED_LOG: boolean = false;
 	export var LOGGER_API: boolean = true;
 	export var CRYPTO_API: boolean = false;
@@ -74,8 +75,8 @@ module akra.config {
 		//thread file config
 		tfile: {
 			interface: "FileInterface.t.js",
-			local: "LocalFile.t.js",
-			remote: "RemoteFile.t.js"
+			local: "../../../src2/data/js/LocalFile.t.js",
+			remote: "../../../src2/data/js/RemoteFile.t.js"
 		},
 		//local file config
 		local: {
@@ -127,6 +128,13 @@ module akra.config {
 		roam: {
 			tessellationThread: "TessellationThread.t.js"
 		}
+	}
+
+	export var webgl = {
+		preparedFramebuffersNum: 32,
+		indexbufferMinSize: 1024,
+		vertexbufferMinSize: 1024,
+		vertexTextureMinSize: 32
 	}
 }
 

@@ -107,41 +107,69 @@ module akra.scene.objects {
 		// protected _pPrevObjects: ISceneNode[] = null;
 		// protected _p
 
-		get viewMatrix(): IMat4 { return this._m4fView; }
+		getViewMatrix(): IMat4 {
+			return this._m4fView;
+		}
 
-		get projectionMatrix(): IMat4 { return this._m4fProj; }
+		getProjectionMatrix(): IMat4 {
+			return this._m4fProj;
+		}
 
-		get projViewMatrix(): IMat4 { return this._m4fProjView; }
+		getProjViewMatrix(): IMat4 {
+			return this._m4fProjView;
+		}
 
-		get targetPos(): IVec3 { return this._v3fTargetPos; }
+		getTargetPos(): IVec3 {
+			return this._v3fTargetPos;
+		}
 
-		get fov(): float { return this._fFOV; }
-		set fov(fFOV: float) {
+		getViewDistance(): float {
+			return this._fFarPlane - this._fNearPlane;
+		}
+
+		getSearchRect(): IRect3d {
+			return this._pSearchRect;
+		}
+
+		getFrustum(): IFrustum {
+			return this._pFrustum;
+		}
+
+		getFOV(): float {
+			return this._fFOV;
+		}
+
+		setFOV(fFOV: float): void {
 			this._fFOV = fFOV;
-			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+			this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
-		get aspect(): float { return this._fAspect; }
-		set aspect(fAspect: float) {
+		getAspect(): float {
+			return this._fAspect;
+		}
+
+		setAspect(fAspect: float): void {
 			this._fAspect = fAspect;
-			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+			this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
-		get nearPlane(): float { return this._fNearPlane; }
-		set nearPlane(fNearPlane: float) {
+		getNearPlane(): float {
+			return this._fNearPlane;
+		}
+
+		setNearPlane(fNearPlane: float): void {
 			this._fNearPlane = fNearPlane;
-			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+			this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
-		get farPlane(): float { return this._fFarPlane; }
-		set farPlane(fFarPlane: float) {
+		getFarPlane(): float {
+			return this._fFarPlane;
+		}
+
+		setFarPlane(fFarPlane: float): void {
 			this._fFarPlane = fFarPlane;
-			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+			this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
-
-		get viewDistance(): float { return this._fFarPlane - this._fNearPlane; }
-		get searchRect(): IRect3d { return this._pSearchRect; }
-		get frustum(): IFrustum { return this._pFrustum; }
 
 		constructor(pScene: IScene3d, eType: EEntityTypes = EEntityTypes.CAMERA) {
 			super(pScene, eType);
@@ -165,7 +193,7 @@ module akra.scene.objects {
 				pScene.displayListAdded.connect(this, this._addDisplayList);
 				pScene.displayListRemoved.connect(this, this._removeDisplayList);
 
-				for (var i: uint = 0; i < pScene.totalDL; ++i) {
+				for (var i: uint = 0; i < pScene.getTotalDL(); ++i) {
 					var pList: IDisplayList<ISceneObject> =
 						<IDisplayList<ISceneObject>>pScene.getDisplayList(i);
 
@@ -196,7 +224,7 @@ module akra.scene.objects {
 						this._fMinY, this._fMaxY, this._fNearPlane, this._fFarPlane, this._m4fProj);
 					break;
 			}
-			bf.clearBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
+			this._iUpdateProjectionFlags = bf.clearBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionParams);
 		}
 
 		prepareForUpdate(): void {
@@ -223,7 +251,7 @@ module akra.scene.objects {
 
 		setParameter(eParam: ECameraParameters, pValue: any): void {
 			if (eParam === ECameraParameters.CONST_ASPECT && <boolean>pValue) {
-				bf.setAll(this._iCameraOptions, <int>eParam);
+				this._iCameraOptions = bf.setAll(this._iCameraOptions, <int>eParam);
 			}
 		}
 
@@ -249,7 +277,7 @@ module akra.scene.objects {
 			// the unit space around the camera
 			// Mat4.perspective(fFOV, fAspect, 0.01, 2.0, this._m4fUnitProj);
 
-			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
+			this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
 		}
 
 		setOrthoParams(fWidth: float, fHeight: float, fNearPlane: float, fFarPlane: float): void {
@@ -269,7 +297,7 @@ module akra.scene.objects {
 			// the unit space around the camera
 			// Mat4.matrixOrthoRH(fWidth, fHeight, 0.01, 2.0, this._m4fUnitProj);
 
-			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
+			this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
 		}
 
 		setOffsetOrthoParams(fMinX: float, fMaxX: float, fMinY: float, fMaxY: float, fNearPlane: float, fFarPlane: float): void {
@@ -293,7 +321,7 @@ module akra.scene.objects {
 			// Mat4.orthogonalProjectionorthogonalProjectionAsymmetric(fMinX, fMaxX, fMinY, fMaxY,
 			//                             0.01, 2.0, this._m4fUnitProj);
 
-			bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
+			this._iUpdateProjectionFlags = bf.setBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
 		}
 
 		private recalcMatrices(): void {
@@ -306,7 +334,7 @@ module akra.scene.objects {
 
 			// the camera view matrix is the
 			// inverse of the world matrix
-			this._m4fView.set(this.inverseWorldMatrix);
+			this._m4fView.set(this.getInverseWorldMatrix());
 			// sky boxes use the inverse 
 			// world matrix of the camera (the
 			// camera view matrix) without 
@@ -351,7 +379,7 @@ module akra.scene.objects {
 				this._m4fProj.multiply(this._m4fView, this._m4fProjView);
 				isUpdated = true;
 
-				bf.clearBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
+				this._iUpdateProjectionFlags = bf.clearBit(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
 			}
 
 			return isUpdated;
@@ -399,7 +427,7 @@ module akra.scene.objects {
 
 		toString(isRecursive: boolean = false, iDepth: int = 0): string {
 			if (!isRecursive) {
-				return "<camera" + (this._sName ? " " + this._sName : "") + ">" + " height: " + this.worldPosition.y;
+				return "<camera" + (this._sName ? " " + this._sName : "") + ">" + " height: " + this.getWorldPosition().y;
 			}
 
 			return super.toString(isRecursive, iDepth);
@@ -410,8 +438,8 @@ module akra.scene.objects {
 				v3fDestination = v3fPoint;
 			}
 
-			var m4fView: IMat4 = this.viewMatrix;
-			var m4fProj: IMat4 = this.projectionMatrix;
+			var m4fView: IMat4 = this.getViewMatrix();
+			var m4fProj: IMat4 = this.getProjectionMatrix();
 
 			var v4fTmp: IVec4 = Vec4.temp(v3fPoint, 1.);
 
@@ -421,7 +449,7 @@ module akra.scene.objects {
 				return null;
 			}
 
-			v3fDestination.set((v4fTmp.scale(1. / v4fTmp.w)).xyz);
+			v3fDestination.set((v4fTmp.scale(1. / v4fTmp.w)).clone("xyz"));
 
 			var fX: float = math.abs(v3fDestination.x);
 			var fY: float = math.abs(v3fDestination.y);
@@ -455,7 +483,7 @@ module akra.scene.objects {
 		}
 
 		static isCamera(pNode: IEntity): boolean {
-			return pNode.type >= EEntityTypes.CAMERA && pNode.type <= EEntityTypes.SHADOW_CASTER;
+			return pNode.getType() >= EEntityTypes.CAMERA && pNode.getType() <= EEntityTypes.SHADOW_CASTER;
 		}
 	}
 }

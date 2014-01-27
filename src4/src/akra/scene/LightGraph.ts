@@ -31,7 +31,7 @@ module akra.scene {
 
 			var pList: IObjectList<ILightPoint> = this._pLightPoints;
 
-			var pLightPoint: ILightPoint = pList.first;
+			var pLightPoint: ILightPoint = pList.getFirst();
 
 			while (isDefAndNotNull(pLightPoint)) {
 

@@ -5,7 +5,7 @@
 
 module akra.model {
 
-	class Skeleton implements ISkeleton{
+	class Skeleton implements ISkeleton {
 		private _sName: string;
 		private _pRootJoints: IJoint[] = [];
 		private _pJointMap: IJointMap = null;
@@ -14,19 +14,19 @@ module akra.model {
 		// private _iFlags: boolean = false;
 
 
-		 get totalBones(): int{
+		getTotalBones(): int {
 			return Object.keys(this._pJointMap).length;
 		}
 
-		 get totalNodes(): int{
+		getTotalNodes(): int {
 			return this._pNodeList.length;
 		}
 
-		 get name(): string{
+		getName(): string {
 			return this._sName;
 		}
 
-		 get root(): IJoint {
+		getRoot(): IJoint {
 			return this._pRootJoints[0] || null;
 		}
 
@@ -34,19 +34,19 @@ module akra.model {
 			this._sName = sName;
 		}
 
-		 getRootJoint(): IJoint {
+		getRootJoint(): IJoint {
 			return this.getRootJoints()[0];
 		}
 
-		 getRootJoints(): IJoint[] {
+		getRootJoints(): IJoint[] {
 			return this._pRootJoints;
 		}
 
-		 getJointMap(): IJointMap {
+		getJointMap(): IJointMap {
 			return this._pJointMap;
 		}
 
-		 getNodeList(): ISceneNode[] {
+		getNodeList(): ISceneNode[] {
 			return this._pNodeList;
 		}
 
@@ -80,7 +80,7 @@ module akra.model {
 
 		    	if (!isNull(pNode)) {
 		    		if (scene.Joint.isJoint(pNode)) {
-			    		sJoint = (<IJoint>pNode).boneName;
+			    		sJoint = (<IJoint>pNode).getBoneName();
 			    	}
 
 			    	if (!isNull(sJoint)) {
@@ -92,8 +92,8 @@ module akra.model {
 
 			    	pNodeList.push(pNode);
 
-			    	findNodes(<ISceneNode>pNode.sibling);
-			    	findNodes(<ISceneNode>pNode.child);
+			    	findNodes(<ISceneNode>pNode.getSibling());
+			    	findNodes(<ISceneNode>pNode.getChild());
 		    	}
 		    }
 
@@ -118,7 +118,7 @@ module akra.model {
 
 		findJointByName(sName: string): IJoint {
 			for (var s in this._pJointMap) {
-				if (this._pJointMap[s].name === sName) {
+				if (this._pJointMap[s].getName() === sName) {
 					return this._pJointMap[s];
 				}
 			}
@@ -127,18 +127,18 @@ module akra.model {
 		}
 
 		attachMesh(pMesh: IMesh): boolean {
-			if (isNull(this.root)) {
+			if (isNull(this.getRoot())) {
 				return false;
 			}
 
 		    if (this._pMeshNode == null) {
-		    	this._pMeshNode = this.root.scene.createModel();
+		    	this._pMeshNode = this.getRoot().getScene().createModel();
 		    	this._pMeshNode.setInheritance(ENodeInheritance.ALL);
-		    	this._pMeshNode.attachToParent(this.root);
+		    	this._pMeshNode.attachToParent(this.getRoot());
 		    }
 
-		    this._pMeshNode.name = this.name + "[mesh-container]";
-		    this._pMeshNode.mesh = (pMesh);
+		    this._pMeshNode.setName(this.getName() + "[mesh-container]");
+		    this._pMeshNode.setMesh(pMesh);
 
 		    return true;
 		}

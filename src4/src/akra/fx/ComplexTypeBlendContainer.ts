@@ -10,11 +10,11 @@ module akra.fx {
         private _pTypeListMap: IAFXTypeMap = null;
         private _pTypeKeys: string[] = null;
 
-        get keys(): string[] {
+        getKeys(): string[] {
             return this._pTypeKeys;
         }
 
-        get types(): IAFXTypeMap {
+        getTypes(): IAFXTypeMap {
             return this._pTypeListMap;
         }
 
@@ -58,7 +58,7 @@ module akra.fx {
                 return true;
             }
 
-            var pVarInfoList: IAFXVariableBlendInfo[] = pContainer.varsInfo;
+            var pVarInfoList: IAFXVariableBlendInfo[] = pContainer.getVarsInfo();
 
             for (var i: uint = 0; i < pVarInfoList.length; i++) {
                 var pType: IAFXTypeInstruction = pContainer.getBlendType(i).getBaseType();

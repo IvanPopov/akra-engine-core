@@ -14,7 +14,7 @@ module akra {
 	}
 	
 	export interface IAnimationBlend extends IAnimationBase {
-		/** readonly */ totalAnimations: int;
+		getTotalAnimations(): int;
 	
 	    addAnimation(pAnimation: IAnimationBase, fWeight?: float, pMask?: IMap<float>): int;
 	    setAnimation(iAnimation: int, pAnimation: IAnimationBase, fWeight?: float, pMask?: IMap<float>): boolean;

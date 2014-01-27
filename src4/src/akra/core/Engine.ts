@@ -38,9 +38,15 @@
 /// <reference path="../ui/IDE.ts" />
 
 
-
 module akra.core {
 	export class Engine implements IEngine {
+
+		frameStarted: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
+		frameEnded: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
+		depsLoaded: ISignal<{ (pEngine: IEngine, pDeps: IDependens): void; }> = new Signal(<any>this);
+		inactive: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._inactivate);
+		active: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._activate);
+
 		public guid: uint = guid();
 
 		private _pResourceManager: IResourcePoolManager;
@@ -66,17 +72,11 @@ module akra.core {
 
 		private _fElapsedAppTime: float = 0.0;
 
-		frameStarted: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
-		frameEnded: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this);
-		depsLoaded: ISignal<{ (pEngine: IEngine, pDeps: IDependens): void; }> = new Signal(<any>this);
-		inactive: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._inactivate);
-		active: ISignal<{ (pEngine: IEngine): void; }> = new Signal(<any>this, this._activate);
-
-		get time(): float {
-			return this._pTimer.appTime;
+		getTime(): float {
+			return this._pTimer.getAppTime();
 		}
 
-		get elapsedTime(): float {
+		getElapsedTime(): float {
 			return this._fElapsedAppTime;
 		}
 
@@ -151,7 +151,7 @@ module akra.core {
 					}
 					debug.log("[ALL DEPTS LOADED]");
 					this._isDepsLoaded = true;
-
+					
 					this.depsLoaded.emit(pDep);
 				},
 				(pDep: IDep, pProgress: any): void => {
@@ -241,7 +241,7 @@ module akra.core {
 		getTimer(): IUtilTimer { return <IUtilTimer>this._pTimer; }
 
 		renderFrame(): boolean {
-		    this._fElapsedAppTime = this._pTimer.elapsedTime;
+		    this._fElapsedAppTime = this._pTimer.getElapsedTime();
 
 		    if (0. == this._fElapsedAppTime && this._isFrameMoving) {
 		        return true;
@@ -355,12 +355,45 @@ module akra.core {
 			//engine core dependences
 			{
 				files: [
-					{
-						path: "@CORE_ARA", 
-						type: "ARA",
-						name: "core resources" 
+					{ path: "grammars/HLSL.gr" }
+					//{
+					//	path: "../../../src2/data/core.map", 
+					//	type: "map",
+					//	name: "core resources" 
+					//}
+				],
+				deps: {
+					files: [
+						{ path: "effects/SystemEffects.afx" },
+						{ path: "effects/Plane.afx" },
+						{ path: "effects/fxaa.afx" },
+						{ path: "effects/skybox.afx" },
+						{ path: "effects/TextureToScreen.afx" },
+						{ path: "effects/mesh_geometry.afx" },
+						{ path: "effects/prepare_shadows.afx" },
+						{ path: "effects/terrain.afx" },
+						{ path: "effects/prepareDeferredShading.afx" },
+						{ path: "effects/generate_normal_map.afx" },
+						{ path: "effects/sky.afx" },
+						{ path: "effects/motion_blur.afx" },
+						{ path: "effects/edge_detection.afx" },
+						{ path: "effects/wireframe.afx" },
+						{ path: "effects/sprite.afx" }
+					],
+					deps: {
+						files: [
+							{ path: "effects/mesh_texture.afx" },
+							{ path: "effects/deferredShading.afx" },
+							{ path: "effects/apply_lights_and_shadows.afx" }
+						],
+						deps: {
+							files: [
+								{ path: "effects/color_maps.afx" }
+							]
+						}
 					}
-				]
+				},
+				root: "../../../src2/data/"
 			};			
 			
 

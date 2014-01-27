@@ -15,7 +15,7 @@
 
 module akra {
 	export interface ICollada extends IModel {
-		options: IColladaLoadOptions;
+		getOptions(): IColladaLoadOptions;
 	
 		getAsset(): IColladaAsset;
 		getAnimations(): IColladaAnimation[];

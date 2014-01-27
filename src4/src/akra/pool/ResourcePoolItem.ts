@@ -36,7 +36,7 @@ module akra.pool {
 
 		//private pManager: IResourcePoolManager;
 		private _pResourceCode: IResourceCode;
-		private _pResourcePool: IResourcePool = null;
+		private _pResourcePool: IResourcePool<IResourcePoolItem> = null;
 		private _iResourceHandle: int = 0;
 		private _iResourceFlags: int = 0;
 		private _pCallbackFunctions: IResourceNotifyRoutineFunc[];
@@ -44,23 +44,23 @@ module akra.pool {
 		private _pCallbackSlots: ICallbackSlot[][];
 
 
-		get resourceCode(): IResourceCode {
+		getResourceCode(): IResourceCode {
 			return this._pResourceCode;
 		}
 
-		get resourcePool(): IResourcePool {
+		getResourcePool(): IResourcePool<IResourcePoolItem> {
 			return this._pResourcePool;
 		}
 
-		get resourceHandle(): int {
+		getResourceHandle(): int {
 			return this._iResourceHandle;
 		}
 
-		get resourceFlags(): int {
+		getResourceFlags(): int {
 			return this._iResourceFlags;
 		}
 
-		get alteredFlag(): boolean {
+		getAlteredFlag(): boolean {
 			return bf.testBit(this._iResourceFlags, <number>EResourceItemEvents.ALTERED);
 		}
 
@@ -86,7 +86,7 @@ module akra.pool {
 		}
 
 		getManager(): IResourcePoolManager {
-			return (<IResourcePool>this._pResourcePool).manager;
+			return (<IResourcePool<IResourcePoolItem>>this._pResourcePool).getManager();
 		}
 
 		createResource(): boolean {
@@ -160,7 +160,7 @@ module akra.pool {
 
 			pSignSlots = pSlots[eSlot];
 			n = pSignSlots.length;
-			bState = bf.testBit(pResourceItem.resourceFlags, <number>eSignal);
+			bState = bf.testBit(pResourceItem.getResourceFlags(), <number>eSignal);
 
 			fn = function (eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: boolean) {
 				if (eFlag == <number>eSignal) {
@@ -170,7 +170,7 @@ module akra.pool {
 					for (var i: int = 0; i < pSignSlots.length; ++i) {
 						if (pSignSlots[i].bState === false) {
 
-							if (bf.testBit(me.resourceFlags, <number>eFlag)) {
+							if (bf.testBit(me.getResourceFlags(), <number>eFlag)) {
 								me.setResourceFlag(eFlag, false);
 							}
 
@@ -184,7 +184,7 @@ module akra.pool {
 
 			pSignSlots.push({ bState: bState, fn: fn, pResourceItem: pResourceItem });
 
-			fn.call(pResourceItem, eSignal, pResourceItem.resourceFlags, bState);
+			fn.call(pResourceItem, eSignal, pResourceItem.getResourceFlags(), bState);
 			pResourceItem.setChangesNotifyRoutine(fn);
 
 			return true;
@@ -329,7 +329,7 @@ module akra.pool {
 		 * Чтобы ресурс знал какому пулу ресурсов принадлжит
 		 * @
 		 */
-		setResourcePool(pPool: IResourcePool): void {
+		setResourcePool(pPool: IResourcePool<IResourcePoolItem>): void {
 			this._pResourcePool = pPool;
 		}
 

@@ -9,11 +9,11 @@ module akra {
 		y0: float;
 		y1: float;
 	
-		left: float;
-		top: float;
+		getLeft(): float;
+		getTop(): float;
 	
-		width: float;
-		height: float;
+		getWidth(): float;
+		getHeight(): float;
 	
 		set(): IRect2d;
 		set(pRect: IRect2d): IRect2d;

@@ -6,7 +6,7 @@
 module akra.webgl {
 	import Vec2 = math.Vec2;
 	export function calculateSkin(pMeshSubset: IMeshSubset): boolean {
-		var pRenderData: IRenderData = pMeshSubset.data;
+		var pRenderData: IRenderData = pMeshSubset.getData();
 
 		var isOk: boolean = pRenderData.selectIndexSet(".update_skinned_position");
 
@@ -14,19 +14,19 @@ module akra.webgl {
 			return false;
 		}
 
-		var pEngine: IEngine = pRenderData.buffer.getEngine();
+		var pEngine: IEngine = pRenderData.getBuffer().getEngine();
 		var pResourceManager: IResourcePoolManager = pEngine.getResourceManager();
 		var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>pEngine.getRenderer();
 		var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
-		var pWebGLVertexTexture: webgl.WebGLVertexTexture = <webgl.WebGLVertexTexture>pRenderData.buffer.buffer;
+		var pWebGLVertexTexture: webgl.WebGLVertexTexture = <webgl.WebGLVertexTexture>pRenderData.getBuffer().getBuffer();
 		var pWebGLTexture: WebGLTexture = pWebGLVertexTexture.getWebGLTexture();
 
 		/*update skinned position program*/
 
-		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.shaderProgramPool.findResource(".WEBGL_skinning_update");
+		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().findResource(".WEBGL_skinning_update");
 		if (isNull(pWebGLProgram)) {
-			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.shaderProgramPool.createResource(".WEBGL_skinning_update");
+			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.getShaderProgramPool().createResource(".WEBGL_skinning_update");
 			pWebGLProgram.create(
 
 				"																																\n\
@@ -228,7 +228,7 @@ module akra.webgl {
 		//get data from renderData for position update
 		pRenderData.selectIndexSet(".update_skinned_position");
 		var pIndexData: IVertexData = <IVertexData>pRenderData.getIndices();
-		var pBuffer: webgl.WebGLVertexBuffer = <webgl.WebGLVertexBuffer>pIndexData.buffer;
+		var pBuffer: webgl.WebGLVertexBuffer = <webgl.WebGLVertexBuffer>pIndexData.getBuffer();
 		var pDeclaration: IVertexDeclaration = pIndexData.getVertexDeclaration();
 
 		//LOG(pIndexData.toString());
@@ -257,18 +257,18 @@ module akra.webgl {
 		pWebGLProgram.setInt("videoBuffer", 0);
 		pWebGLProgram.setVec2("frameBufferSize", Vec2.temp(iWidth, iHeight));
 		pWebGLProgram.setInt("type", 0);
-		pWebGLProgram.setMat4("bind_matrix", pMeshSubset.skin.getBindMatrix());
+		pWebGLProgram.setMat4("bind_matrix", pMeshSubset.getSkin().getBindMatrix());
 
 		pWebGLContext.viewport(0, 0, iWidth, iHeight);
 		//PASS 1
 		///////////////////////////////////////////////
-		pWebGLContext.drawArrays(gl.POINTS, pIndexData.byteOffset / iStride, pIndexData.length);
+		pWebGLContext.drawArrays(gl.POINTS, pIndexData.getByteOffset() / iStride, pIndexData.getLength());
 		///////////////////////////////////////////////
 
 		//get data from renderData for normal update
 		pRenderData.selectIndexSet(".update_skinned_normal");
 		pIndexData = <IVertexData>pRenderData.getIndices();
-		pBuffer = <webgl.WebGLVertexBuffer>pIndexData.buffer;
+		pBuffer = <webgl.WebGLVertexBuffer>pIndexData.getBuffer();
 		pDeclaration = pIndexData.getVertexDeclaration();
 
 		//LOG(pIndexData.toString());
@@ -287,7 +287,7 @@ module akra.webgl {
 
 		//PASS 2
 		///////////////////////////////////////////////
-		pWebGLContext.drawArrays(gl.POINTS, pIndexData.byteOffset / iStride, pIndexData.length);
+		pWebGLContext.drawArrays(gl.POINTS, pIndexData.getByteOffset() / iStride, pIndexData.getLength());
 		///////////////////////////////////////////////
 
 		pWebGLContext.flush();

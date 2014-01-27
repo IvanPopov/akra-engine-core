@@ -15,15 +15,15 @@ module akra.animation {
 			super(EAnimationTypes.ANIMATION, sName);
 		}
 
-		get totalTracks(): float {
+		getTotalTracks(): float {
 			return this._pTracks.length;
 		}
 
 		push(pTrack: IAnimationTrack): void {
 			this._pTracks.push(pTrack);
-			this._fDuration = math.max(this._fDuration, pTrack.duration);
-			this._fFirst = math.min(this.first, pTrack.first);
-			this.addTarget(pTrack.targetName);
+			this._fDuration = math.max(this._fDuration, pTrack.getDuration());
+			this._fFirst = math.min(this.getFirst(), pTrack.getFirst());
+			this.addTarget(pTrack.getTargetName());
 		}
 
 		attach(pTarget: ISceneNode): void {
@@ -32,10 +32,10 @@ module akra.animation {
 
 			for (var i = 0; i < pTracks.length; ++i) {
 				if (!pTracks[i].bind(pTarget)) {
-					logger.log("cannot bind animation track [", i, "] to joint <", pTracks[i].target, ">");
+					logger.log("cannot bind animation track [", i, "] to joint <", pTracks[i].getTarget(), ">");
 				}
 				else {
-					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
+					pPointer = this.setTarget(pTracks[i].getTargetName(), pTracks[i].getTarget());
 					pPointer.track = pTracks[i];
 				}
 			}
@@ -63,7 +63,7 @@ module akra.animation {
 			var pTracks: IAnimationTrack[] = pAnimation.getTracks();
 
 			for (var i = 0; i < pTracks.length; ++i) {
-				if (!this.getTarget(pTracks[i].targetName)) {
+				if (!this.getTarget(pTracks[i].getTargetName())) {
 					this.push(pTracks[i]);
 				}
 			}
@@ -73,9 +73,9 @@ module akra.animation {
 		toString(): string {
 			if (config.DEBUG) {
 				var s = super.toString();
-				s += "total tracks : " + this.totalTracks + "\n";
+				s += "total tracks : " + this.getTotalTracks() + "\n";
 
-				for (var i: int = 0; i < this.totalTracks; ++i) {
+				for (var i: int = 0; i < this.getTotalTracks(); ++i) {
 					s += "\t" + i + ". " + this.getTrack(i) + "\n";
 				}
 
@@ -87,7 +87,7 @@ module akra.animation {
 
 
 		static isAnimation(pAnimation: IAnimationBase): boolean {
-			return pAnimation.type === EAnimationTypes.ANIMATION;
+			return pAnimation.getType() === EAnimationTypes.ANIMATION;
 		}
 	}
 

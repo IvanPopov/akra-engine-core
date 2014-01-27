@@ -14,7 +14,8 @@ module akra.pool.resources {
 		protected _pIndexDataArray: IIndexData[] = [];
 		protected _iDataCounter: uint = 0;
 
-		 get length(): uint {
+
+		geLength(): uint {
 			return this._pIndexDataArray.length;
 		}
 
@@ -57,7 +58,7 @@ module akra.pool.resources {
 			var i: int;
 			var pIndexData: IIndexData;
 
-			pHole[0] = {start: 0, end: this.byteLength};
+			pHole[0] = {start: 0, end: this.getByteLength()};
 			
 			//console.log(pHole[0].end);
 			for(var k: int = 0; k < this._pIndexDataArray.length; ++ k) {
@@ -67,46 +68,46 @@ module akra.pool.resources {
 				for (i = 0; i < pHole.length; i ++) {
 					//console.log("pHole:",pHole[i].start,pHole[i].end);
 					//Полностью попадает внутрь
-					if (pIndexData.byteOffset > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength < pHole[i].end) {
+					if (pIndexData.getByteOffset() > pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() < pHole[i].end) {
 						var iTemp: int = pHole[i].end;
 
-						pHole[i].end = pIndexData.byteOffset;
-						pHole.splice(i + 1, 0, {start: pIndexData.byteOffset + pIndexData.byteLength, end: iTemp});
+						pHole[i].end = pIndexData.getByteOffset();
+						pHole.splice(i + 1, 0, {start: pIndexData.getByteOffset() + pIndexData.getByteLength(), end: iTemp});
 						
 						i--;
 					}
-					else if(pIndexData.byteOffset == pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength < pHole[i].end) {
-						pHole[i].start = pIndexData.byteOffset + pIndexData.byteLength;
+					else if(pIndexData.getByteOffset() == pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() < pHole[i].end) {
+						pHole[i].start = pIndexData.getByteOffset() + pIndexData.getByteLength();
 					}
-					else if(pIndexData.byteOffset > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength == pHole[i].end) {
+					else if(pIndexData.getByteOffset() > pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() == pHole[i].end) {
 						
 					}
-					else if(pIndexData.byteOffset == pHole[i].start && pIndexData.byteLength == (pHole[i].end - pHole[i].start)) {
+					else if(pIndexData.getByteOffset() == pHole[i].start && pIndexData.getByteLength() == (pHole[i].end - pHole[i].start)) {
 						pHole.splice(i, 1);		
 						i--;
 					}
 					//Перекрывает снизу
-					else if(pIndexData.byteOffset<pHole[i].start &&
-						pIndexData.byteOffset + pIndexData.byteLength > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength < pHole[i].end) {
-						pHole[i].start = pIndexData.byteOffset + pIndexData.byteLength;
+					else if(pIndexData.getByteOffset()<pHole[i].start &&
+						pIndexData.getByteOffset() + pIndexData.getByteLength() > pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() < pHole[i].end) {
+						pHole[i].start = pIndexData.getByteOffset() + pIndexData.getByteLength();
 					}
-					else if(pIndexData.byteOffset < pHole[i].start &&
-						pIndexData.byteOffset + pIndexData.byteLength > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength == pHole[i].end) {
+					else if(pIndexData.getByteOffset() < pHole[i].start &&
+						pIndexData.getByteOffset() + pIndexData.getByteLength() > pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() == pHole[i].end) {
 						pHole.splice(i, 1);
 						i--;
 					}
 					//Перекрывается сверху
-					else if(pIndexData.byteOffset + pIndexData.byteLength>pHole[i].end &&
-						pIndexData.byteOffset > pHole[i].start && pIndexData.byteOffset < pHole[i].end) {
-						pHole[i].end = pIndexData.byteOffset;
+					else if(pIndexData.getByteOffset() + pIndexData.getByteLength()>pHole[i].end &&
+						pIndexData.getByteOffset() > pHole[i].start && pIndexData.getByteOffset() < pHole[i].end) {
+						pHole[i].end = pIndexData.getByteOffset();
 					}
-					else if(pIndexData.byteOffset + pIndexData.byteLength > pHole[i].end &&
-						pIndexData.byteOffset == pHole[i].start && pIndexData.byteOffset < pHole[i].end) {
+					else if(pIndexData.getByteOffset() + pIndexData.getByteLength() > pHole[i].end &&
+						pIndexData.getByteOffset() == pHole[i].start && pIndexData.getByteOffset() < pHole[i].end) {
 						pHole.splice(i, 1);
 						i--;
 					}
 					//полнстью перекрывает
-					else if(pIndexData.byteOffset < pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength > pHole[i].end) {
+					else if(pIndexData.getByteOffset() < pHole[i].start && pIndexData.getByteOffset() + pIndexData.getByteLength() > pHole[i].end) {
 						i--;
 					}			
 				}
@@ -115,7 +116,7 @@ module akra.pool.resources {
 			pHole.sort((a: IBufferHole, b: IBufferHole): number => ((a.end - a.start) - (b.end - b.start))); 
 			
 			for (i = 0; i < pHole.length; i ++) {		
-				if((pHole[i].end - pHole[i].start) >= iCount * getTypeSize(eElementsType)) {
+				if((pHole[i].end - pHole[i].start) >= iCount * sizeof(eElementsType)) {
 					pIndexData = new data.IndexData(this, this._iDataCounter ++, pHole[i].start, iCount, ePrimitiveType, eElementsType);
 					
 					this._pIndexDataArray.push(pIndexData);
@@ -137,7 +138,7 @@ module akra.pool.resources {
 				this._pIndexDataArray = null;
 			}
 			else {
-				for (var i: int = 0; i < this._pIndexDataArray.length; i ++) {
+				for (var i: uint = 0; i < this._pIndexDataArray.length; i ++) {
 					if(this._pIndexDataArray[i] == pIndexData) {
 						pIndexData.destroy();
 
@@ -156,7 +157,7 @@ module akra.pool.resources {
 
 		allocateData(ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes, pData: ArrayBufferView): IIndexData {
 			var pIndexData: IIndexData;
-		    var iCount: uint = pData.byteLength / getTypeSize(eElementsType);
+		    var iCount: uint = pData.byteLength / sizeof(eElementsType);
 
 		    debug.assert(iCount === math.floor(iCount), "data size should be a multiple of the vertex declaration");
 

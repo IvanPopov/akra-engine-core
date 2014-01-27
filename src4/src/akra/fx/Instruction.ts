@@ -18,10 +18,6 @@ module akra.fx {
 
 		private _isVisible: boolean = true;
 
-		getGuid(): uint {
-			return this._getInstructionID();
-		}
-
 		getParent(): IAFXInstruction {
 			return this._pParentInstruction;
 		}

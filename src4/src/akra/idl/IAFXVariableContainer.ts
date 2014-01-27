@@ -46,7 +46,7 @@ module akra {
 	}
 	
 	export interface IAFXVariableContainer {
-		indices: uint[];
+		getIndices(): uint[];
 	
 		add(pVar: IAFXVariableDeclInstruction): void;
 		addSystemEntry(sName: string, eType: EAFXShaderVariableType): void;

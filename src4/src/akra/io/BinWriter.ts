@@ -58,7 +58,7 @@ module akra.io {
          */
         protected _iCountData: int = 0;
 
-        /**  */ get byteLength(): uint {
+        getByteLength(): uint {
             return this._iCountData;
         }
 
@@ -160,7 +160,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam uint iValue число.
          */
-        /**  */ uint8(iValue: uint): void {
+        uint8(iValue: uint): void {
             this.uintX(iValue, 8);
         }
 
@@ -173,7 +173,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam uint iValue число.
          */
-        /**  */ uint16(iValue: uint): void {
+        uint16(iValue: uint): void {
             this.uintX(iValue, 16);
         }
 
@@ -185,7 +185,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam uint iValue число.
          */
-        /**  */ uint32(iValue: uint): void {
+        uint32(iValue: uint): void {
             this.uintX(iValue, 32);
         }
 
@@ -197,7 +197,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam boolean bValue число.
          */
-        /**  */ boolean(bValue: boolean): void {
+        boolean(bValue: boolean): void {
             // LOG(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BOOL >>> ");
             this.uintX(bValue ? 1 : 0, 8);
         }
@@ -316,7 +316,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam uint iValue число.
          */
-        /**  */ int8(iValue: int): void {
+        int8(iValue: int): void {
             this.intX(iValue, 8);
         }
 
@@ -329,7 +329,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam int iValue число.
          */
-        /**  */ int16(iValue: int): void {
+        int16(iValue: int): void {
             this.intX(iValue, 16);
         }
 
@@ -341,7 +341,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam int iValue число.
          */
-        /**  */ int32(iValue: int): void {
+        int32(iValue: int): void {
             this.intX(iValue, 32);
         }
 
@@ -446,7 +446,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam float fValue число.
          */
-        /**  */ float32(fValue) {
+        float32(fValue) {
             this.floatX(fValue, 32);
         }
 
@@ -458,7 +458,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam float fValue число.
          */
-        /**  */ float64(fValue) {
+        float64(fValue) {
             this.floatX(fValue, 64);
         }
 
@@ -564,7 +564,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam Uint8Array arrUint массив uint8.
          */
-        /**  */ uint8Array(arrUint: Uint8Array): void {
+        uint8Array(arrUint: Uint8Array): void {
             this.uintXArray(arrUint, 8);
         }
 
@@ -578,7 +578,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam Uint16Array arrUint массив uint16.
          */
-        /**  */ uint16Array(arrUint: Uint16Array): void {
+        uint16Array(arrUint: Uint16Array): void {
             this.uintXArray(arrUint, 16);
         }
 
@@ -592,7 +592,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam Uint32Array arrUint массив uint32.
          */
-        /**  */ uint32Array(arrUint: Uint32Array): void {
+        uint32Array(arrUint: Uint32Array): void {
             this.uintXArray(arrUint, 32);
         }
 
@@ -674,7 +674,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam Int8Array arrInt массив int8.
          */
-        /**  */ int8Array(arrInt: Int8Array): void {
+        int8Array(arrInt: Int8Array): void {
             this.intXArray(arrInt, 8);
         }
 
@@ -688,7 +688,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam Int16Array arrInt массив int16.
          */
-        /**  */ int16Array(arrInt: Int16Array): void {
+        int16Array(arrInt: Int16Array): void {
             this.intXArray(arrInt, 16);
         }
 
@@ -702,7 +702,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam Int32Array arrInt массив int32.
          */
-        /**  */ int32Array(arrInt: Int32Array): void {
+        int32Array(arrInt: Int32Array): void {
             this.intXArray(arrInt, 32);
         }
 
@@ -760,7 +760,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam Float32Array arrFloat массив float32.
          */
-        /**  */ float32Array(arrFloat: Float32Array): void {
+        float32Array(arrFloat: Float32Array): void {
             this.floatXArray(arrFloat, 32);
         }
 
@@ -775,7 +775,7 @@ module akra.io {
          * @memberof BinWriter
          * @tparam Float64Array arrFloat массив float64.
          */
-        /**  */ float64Array(arrFloat: Float64Array): void {
+        float64Array(arrFloat: Float64Array): void {
             this.floatXArray(arrFloat, 64);
         }
 
@@ -786,7 +786,7 @@ module akra.io {
          * @memberof BinWriter
          * @treturn ArrayBuffer.
          */
-        /**  */ data(): ArrayBuffer {
+        data(): ArrayBuffer {
             return this.dataAsUint8Array().buffer;
         }
 

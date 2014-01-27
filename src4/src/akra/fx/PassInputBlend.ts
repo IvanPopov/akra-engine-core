@@ -68,7 +68,7 @@ module akra.fx {
 
         renderStates: IMap<ERenderStateValues> = null;
 
-        get statesInfo(): IAFXPassInputStateInfo {
+        getStatesInfo(): IAFXPassInputStateInfo {
             return this._pStatesInfo;
         }
 
@@ -86,25 +86,25 @@ module akra.fx {
         }
 
         hasUniform(sName: string): boolean {
-            return this._pCreator.uniforms.hasVariableWithRealName(sName);
+            return this._pCreator.getUniforms().hasVariableWithRealName(sName);
         }
 
         hasTexture(sName: string): boolean {
-            return this._pCreator.textures.hasVariableWithRealName(sName);
+            return this._pCreator.getTextures().hasVariableWithRealName(sName);
         }
 
         hasForeign(sName: string): boolean {
-            return this._pCreator.foreigns.hasVariableWithRealName(sName);
+            return this._pCreator.getForeigns().hasVariableWithRealName(sName);
         }
 
         setUniform(sName: string, pValue: any): void {
-            var iIndex: uint = this._pCreator.uniforms.getIndexByRealName(sName);
+            var iIndex: uint = this._pCreator.getUniforms().getIndexByRealName(sName);
 
             if (iIndex === 0) {
                 return;
             }
 
-            var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(iIndex);
+            var pInfo: IAFXVariableInfo = this._pCreator.getUniforms().getVarInfoByIndex(iIndex);
 
             if (pInfo.type === EAFXShaderVariableType.k_Sampler2D ||
                 pInfo.type === EAFXShaderVariableType.k_SamplerCUBE) {
@@ -135,7 +135,7 @@ module akra.fx {
         }
 
         setTexture(sName: string, pValue: any): void {
-            var iIndex: uint = this._pCreator.textures.getIndexByRealName(sName);
+            var iIndex: uint = this._pCreator.getTextures().getIndexByRealName(sName);
 
             if (iIndex === 0) {
                 return;
@@ -151,7 +151,7 @@ module akra.fx {
         }
 
         setForeign(sName: string, pValue: any): void {
-            var iIndex: uint = this._pCreator.foreigns.getIndexByRealName(sName);
+            var iIndex: uint = this._pCreator.getForeigns().getIndexByRealName(sName);
 
             if (iIndex === 0) {
                 return;
@@ -171,13 +171,13 @@ module akra.fx {
         }
 
         setSampler(sName: string, pValue: IAFXSamplerState): void {
-            var iIndex: uint = this._pCreator.uniforms.getIndexByRealName(sName);
+            var iIndex: uint = this._pCreator.getUniforms().getIndexByRealName(sName);
 
             if (iIndex === 0) {
                 return;
             }
 
-            var eType: EAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
+            var eType: EAFXShaderVariableType = this._pCreator.getUniforms().getTypeByIndex(iIndex);
 
             if (eType !== EAFXShaderVariableType.k_Sampler2D &&
                 eType !== EAFXShaderVariableType.k_SamplerCUBE) {
@@ -189,13 +189,13 @@ module akra.fx {
         }
 
         setSamplerArray(sName: string, pValue: IAFXSamplerState[]): void {
-            var iIndex: uint = this._pCreator.uniforms.getIndexByRealName(sName);
+            var iIndex: uint = this._pCreator.getUniforms().getIndexByRealName(sName);
 
             if (iIndex === 0) {
                 return;
             }
 
-            var eType: EAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
+            var eType: EAFXShaderVariableType = this._pCreator.getUniforms().getTypeByIndex(iIndex);
 
             if (eType !== EAFXShaderVariableType.k_Sampler2D &&
                 eType !== EAFXShaderVariableType.k_SamplerCUBE) {
@@ -218,13 +218,13 @@ module akra.fx {
         setSamplerTexture(sName: string, sTexture: string): void;
         setSamplerTexture(sName: string, pTexture: ITexture): void;
         setSamplerTexture(sName: string, pTexture: any): void {
-            var iIndex: uint = this._pCreator.uniforms.getIndexByRealName(sName);
+            var iIndex: uint = this._pCreator.getUniforms().getIndexByRealName(sName);
 
             if (iIndex === 0) {
                 return;
             }
 
-            var eType: EAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
+            var eType: EAFXShaderVariableType = this._pCreator.getUniforms().getTypeByIndex(iIndex);
 
             if (eType !== EAFXShaderVariableType.k_Sampler2D &&
                 eType !== EAFXShaderVariableType.k_SamplerCUBE) {
@@ -251,13 +251,13 @@ module akra.fx {
         }
 
         _setSamplerTextureObject(sName: string, pTexture: ITexture): void {
-            var iIndex: uint = this._pCreator.uniforms.getIndexByRealName(sName);
+            var iIndex: uint = this._pCreator.getUniforms().getIndexByRealName(sName);
 
             if (iIndex === 0) {
                 return;
             }
 
-            var eType: EAFXShaderVariableType = this._pCreator.uniforms.getTypeByIndex(iIndex);
+            var eType: EAFXShaderVariableType = this._pCreator.getUniforms().getTypeByIndex(iIndex);
 
             if (eType !== EAFXShaderVariableType.k_Sampler2D &&
                 eType !== EAFXShaderVariableType.k_SamplerCUBE) {
@@ -286,7 +286,7 @@ module akra.fx {
             if (this._isFirstSetSurfaceNaterial) {
                 for (var i: int = 0; i < 16; i++) {
                     if (this.hasTexture("TEXTURE" + i.toString())) {
-                        this._pMaterialNameIndices.textures[i] = this._pCreator.textures.getIndexByRealName("TEXTURE" + i.toString());
+                        this._pMaterialNameIndices.textures[i] = this._pCreator.getTextures().getIndexByRealName("TEXTURE" + i.toString());
                     }
                     else {
                         this._pMaterialNameIndices.textures[i] = 0;
@@ -294,27 +294,27 @@ module akra.fx {
                 }
 
                 this._pMaterialNameIndices.material = this.hasUniform("MATERIAL") ?
-                this._pCreator.uniforms.getIndexByRealName("MATERIAL") : 0;
+                this._pCreator.getUniforms().getIndexByRealName("MATERIAL") : 0;
 
                 this._pMaterialNameIndices.diffuse = this.hasUniform("S_DIFFUSE") ?
-                this._pCreator.uniforms.getIndexByRealName("S_DIFFUSE") : 0;
+                this._pCreator.getUniforms().getIndexByRealName("S_DIFFUSE") : 0;
                 this._pMaterialNameIndices.ambient = this.hasUniform("S_AMBIENT") ?
-                this._pCreator.uniforms.getIndexByRealName("S_AMBIENT") : 0;
+                this._pCreator.getUniforms().getIndexByRealName("S_AMBIENT") : 0;
                 this._pMaterialNameIndices.specular = this.hasUniform("S_SPECULAR") ?
-                this._pCreator.uniforms.getIndexByRealName("S_SPECULAR") : 0;
+                this._pCreator.getUniforms().getIndexByRealName("S_SPECULAR") : 0;
                 this._pMaterialNameIndices.emissive = this.hasUniform("S_EMISSIVE") ?
-                this._pCreator.uniforms.getIndexByRealName("S_EMISSIVE") : 0;
+                this._pCreator.getUniforms().getIndexByRealName("S_EMISSIVE") : 0;
                 this._pMaterialNameIndices.normal = this.hasUniform("S_NORMAL") ?
-                this._pCreator.uniforms.getIndexByRealName("S_NORMAL") : 0;
+                this._pCreator.getUniforms().getIndexByRealName("S_NORMAL") : 0;
 
                 this._isFirstSetSurfaceNaterial = false;
             }
 
             if (this._nLastSamplerUpdates !== this._pStatesInfo.samplerKey ||
                 this._pLastSurfaceMaterial !== pSurfaceMaterial ||
-                this._nLastSufraceMaterialTextureUpdates !== pSurfaceMaterial.totalUpdatesOfTextures) {
+                this._nLastSufraceMaterialTextureUpdates !== pSurfaceMaterial.getTotalUpdatesOfTextures()) {
 
-                var iTotalTextures: uint = pSurfaceMaterial.totalTextures;
+                var iTotalTextures: uint = pSurfaceMaterial.getTotalTextures();
                 for (var i: int = 0; i < 16; i++) {
                     if (this._pMaterialNameIndices.textures[i] > 0) {
                         this.textures[this._pMaterialNameIndices.textures[i]] = pSurfaceMaterial.texture(i) || null;
@@ -323,7 +323,7 @@ module akra.fx {
             }
 
             if (this._pMaterialNameIndices.material > 0) {
-                var pMaterial: IMaterial = pSurfaceMaterial.material;
+                var pMaterial: IMaterial = pSurfaceMaterial.getMaterial();
                 var pMatContainer: any = this._pMaterialContainer;
 
                 pMatContainer.DIFFUSE.set(pMaterial.diffuse.r, pMaterial.diffuse.g, pMaterial.diffuse.b, pMaterial.diffuse.a);
@@ -344,7 +344,7 @@ module akra.fx {
             // }
 
             this._pLastSurfaceMaterial = pSurfaceMaterial;
-            this._nLastSufraceMaterialTextureUpdates = pSurfaceMaterial.totalUpdatesOfTextures;
+            this._nLastSufraceMaterialTextureUpdates = pSurfaceMaterial.getTotalUpdatesOfTextures();
             this._nLastSamplerUpdates = this._pStatesInfo.samplerKey;
         }
 
@@ -357,31 +357,31 @@ module akra.fx {
         }
 
         _getForeignVarNameIndex(sName: string): uint {
-            return this._pCreator.foreigns.getIndexByRealName(sName);
+            return this._pCreator.getForeigns().getIndexByRealName(sName);
         }
 
         _getForeignVarNameByIndex(iNameIndex: uint): string {
-            return this._pCreator.foreigns.getVarInfoByIndex(iNameIndex).realName;
+            return this._pCreator.getForeigns().getVarInfoByIndex(iNameIndex).realName;
         }
 
         _getUniformVarNameIndex(sName: string): uint {
-            return this._pCreator.uniforms.getIndexByRealName(sName);
+            return this._pCreator.getUniforms().getIndexByRealName(sName);
         }
 
         _getUniformVar(iNameIndex: uint): IAFXVariableDeclInstruction {
-            return this._pCreator.uniforms.getVarByIndex(iNameIndex);
+            return this._pCreator.getUniforms().getVarByIndex(iNameIndex);
         }
 
         _getUniformVarNameByIndex(iNameIndex: uint): string {
-            return this._pCreator.uniforms.getVarInfoByIndex(iNameIndex).realName;
+            return this._pCreator.getUniforms().getVarInfoByIndex(iNameIndex).realName;
         }
 
         _getUniformLength(iNameIndex: uint): uint {
-            return this._pCreator.uniforms.getVarByIndex(iNameIndex).getType().getLength();
+            return this._pCreator.getUniforms().getVarByIndex(iNameIndex).getType().getLength();
         }
 
         _getUniformType(iNameIndex: uint): EAFXShaderVariableType {
-            return this._pCreator.uniforms.getTypeByIndex(iNameIndex);
+            return this._pCreator.getUniforms().getTypeByIndex(iNameIndex);
         }
 
         _getSamplerState(iNameIndex: uint): IAFXSamplerState {
@@ -400,7 +400,7 @@ module akra.fx {
             }
             else if (pSamplerState.textureName !== "") {
                 if (this.hasTexture(pSamplerState.textureName)) {
-                    pTexture = this.textures[this._pCreator.textures.getIndexByRealName(pSamplerState.textureName)];
+                    pTexture = this.textures[this._pCreator.getTextures().getIndexByRealName(pSamplerState.textureName)];
                 }
             }
 
@@ -409,7 +409,7 @@ module akra.fx {
 
         _release(): void {
             for (var i: uint = 0; i < this.uniformKeys.length; i++) {
-                var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.uniformKeys[i]);
+                var pInfo: IAFXVariableInfo = this._pCreator.getUniforms().getVarInfoByIndex(this.uniformKeys[i]);
                 var pDefaultValue: any = pInfo.variable.getDefaultValue();
 
                 this.uniforms[this.uniformKeys[i]] = pDefaultValue;
@@ -424,7 +424,7 @@ module akra.fx {
             }
 
             for (var i: uint = 0; i < this.samplerKeys.length; i++) {
-                var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.samplerKeys[i]);
+                var pInfo: IAFXVariableInfo = this._pCreator.getUniforms().getVarInfoByIndex(this.samplerKeys[i]);
                 var pDefaultState: IAFXSamplerState = pInfo.variable.getDefaultValue();
                 var pSamplerState: IAFXSamplerState = this.samplers[this.samplerKeys[i]];
 
@@ -440,7 +440,7 @@ module akra.fx {
             }
 
             for (var i: uint = 0; i < this.samplerArrayKeys.length; i++) {
-                var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(this.samplerArrayKeys[i]);
+                var pInfo: IAFXVariableInfo = this._pCreator.getUniforms().getVarInfoByIndex(this.samplerArrayKeys[i]);
                 var pDefaultStateList: IAFXSamplerState[] = pInfo.variable.getDefaultValue();
                 var pStateList: IAFXSamplerState[] = this.samplerArrays[this.samplerArrayKeys[i]];
 
@@ -567,9 +567,9 @@ module akra.fx {
 
             this.renderStates = render.createRenderStateMap();
 
-            var pUniformKeys: uint[] = this._pCreator.uniforms.indices;
-            var pForeignKeys: uint[] = this._pCreator.foreigns.indices;
-            var pTextureKeys: uint[] = this._pCreator.textures.indices;
+            var pUniformKeys: uint[] = this._pCreator.getUniforms().getIndices();
+            var pForeignKeys: uint[] = this._pCreator.getForeigns().getIndices();
+            var pTextureKeys: uint[] = this._pCreator.getTextures().getIndices();
 
             var eType: EAFXShaderVariableType = 0;
             var sName: string = "";
@@ -577,7 +577,7 @@ module akra.fx {
 
             for (var i: uint = 0; i < pUniformKeys.length; i++) {
                 var iIndex: uint = pUniformKeys[i];
-                var pInfo: IAFXVariableInfo = this._pCreator.uniforms.getVarInfoByIndex(iIndex);
+                var pInfo: IAFXVariableInfo = this._pCreator.getUniforms().getVarInfoByIndex(iIndex);
                 var pDefaultValue: any = pInfo.variable.getDefaultValue();
 
                 if (pInfo.type === EAFXShaderVariableType.k_Sampler2D ||

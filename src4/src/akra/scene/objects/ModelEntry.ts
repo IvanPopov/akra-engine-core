@@ -5,7 +5,7 @@ module akra.scene.objects {
 	export class ModelEntry extends SceneNode implements IModelEntry {
 		protected _pModelResource: IModel = null;
 
-		get resource(): IModel {
+		getResource(): IModel {
 			return this._pModelResource;
 		}
 
@@ -16,7 +16,7 @@ module akra.scene.objects {
 		}
 
 		static isModelEntry(pEntity: IEntity): boolean {
-			return !isNull(pEntity) && pEntity.type === EEntityTypes.MODEL_ENTRY;
+			return !isNull(pEntity) && pEntity.getType() === EEntityTypes.MODEL_ENTRY;
 		}
 	}
 }

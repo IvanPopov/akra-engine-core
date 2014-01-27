@@ -245,8 +245,7 @@ module akra {
 	// }
 	
 	export interface IRenderer extends IEventProvider {
-		/*readonly*/ type: ERenderers;
-	
+		getType(): ERenderers;	
 		getEngine(): IEngine;
 	
 		debug(bValue?: boolean, useApiTrace?: boolean): boolean;

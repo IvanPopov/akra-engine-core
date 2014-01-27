@@ -2,10 +2,10 @@
 module akra {
 	export interface IBuffer {
 		//number of elements
-		/** readonly */ length: int;
+		getLength(): int;
 		
 		//size in bytes
-		/** readonly */ byteLength: int;
+		getByteLength(): int;
 	}
 	
 }

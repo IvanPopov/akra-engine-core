@@ -15,15 +15,15 @@ module akra.geometry {
 		bottom: uint = 0;
 		back: uint = 0;
 
-		get width(): uint {
+		getWidth(): uint {
 			return this.right - this.left;
 		}
 
-		get height(): uint {
+		getHeight(): uint {
 			return this.bottom - this.top;
 		}
 
-		get depth(): uint {
+		getDepth(): uint {
 			return this.back - this.front;
 		}
 
@@ -133,7 +133,7 @@ module akra.geometry {
 		static temp(iLeft: uint, iTop: uint, iRight: uint, iBottom: uint): IBox;
 		static temp(iLeft: uint, iTop: uint, iFront: uint, iRight: uint, iBottom: uint, iBack: uint): IBox;
 		static temp(): IBox {
-			iElement = (iElement === pBuffer.length - 1 ? 0 : pBuffer.length);
+			iElement = (iElement === pBuffer.length - 1 ? 0 : iElement);
 			var pBox = pBuffer[iElement++];
 
 			var iLeft: uint = 0,

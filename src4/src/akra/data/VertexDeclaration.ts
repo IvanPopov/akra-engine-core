@@ -14,7 +14,7 @@ module akra.data {
 
 		private _pElements: IVertexElement[] = [];
 
-		get length(): uint {
+		getLength(): uint {
 			return this._pElements.length;
 		}
 
@@ -76,7 +76,7 @@ module akra.data {
 		_update(): boolean {
 			var iStride: int;
 
-			for (var i: int = 0; i < this.length; ++i) {
+			for (var i: int = 0; i < this.getLength(); ++i) {
 				//move "END" element to end of declaration
 				if (this._pElements[i].usage === Usages.END) {
 					this._pElements.swap(i, i + 1);
@@ -105,8 +105,8 @@ module akra.data {
 			var pDecl: VertexDeclaration = <VertexDeclaration>decl;
 			var pElement: IVertexElement;
 
-			for (var i = 0; i < this.length; ++i) {
-				for (var j = 0; j < pDecl.length; ++j) {
+			for (var i = 0; i < this.getLength(); ++i) {
+				for (var j = 0; j < pDecl.getLength(); ++j) {
 					if (pDecl.element(j).usage == this._pElements[i].usage) {
 						logger.log('inconsistent declarations:', this, pDecl);
 						//'The attempt to combine the declaration containing the exact same semantics.'
@@ -115,7 +115,7 @@ module akra.data {
 				}
 			}
 
-			for (var i = 0; i < pDecl.length; i++) {
+			for (var i = 0; i < pDecl.getLength(); i++) {
 				pElement = pDecl.element(i).clone();
 				pElement.offset += this.stride;
 				this._pElements.push(pElement);
@@ -131,7 +131,7 @@ module akra.data {
 		findElement(sSemantics: string, iCount: uint = MAX_INT32): IVertexElement {
 			sSemantics = sSemantics.toUpperCase();
 
-			for (var i = 0; i < this.length; ++i) {
+			for (var i = 0; i < this.getLength(); ++i) {
 				if (this._pElements[i].usage === sSemantics && (iCount === MAX_INT32 || this._pElements[i].count == iCount)) {
 					return this._pElements[i];
 				}
@@ -144,7 +144,7 @@ module akra.data {
 			var pElements: IVertexElement[] = [];
 			var pDecl: VertexDeclaration;
 
-			for (var i = 0; i < this.length; ++i) {
+			for (var i = 0; i < this.getLength(); ++i) {
 				pElements.push(this._pElements[i].clone());
 			}
 
@@ -164,7 +164,7 @@ module akra.data {
 				s += "  VERTEX DECLARATION ( " + this.stride + " b. ) \n";
 				s += "---------------------------------------\n";
 
-				for (var i = 0; i < this.length; ++i) {
+				for (var i = 0; i < this.getLength(); ++i) {
 					s += this._pElements[i].toString() + '\n';
 				}
 

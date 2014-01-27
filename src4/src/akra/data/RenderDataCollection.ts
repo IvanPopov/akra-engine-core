@@ -12,16 +12,16 @@ module akra.data {
 		private _eDataOptions: ERenderDataBufferOptions = 0;
 		private _pDataArray: IRenderData[] = [];
 
-		get buffer(): IVertexBuffer {
+		getBuffer(): IVertexBuffer {
 			return this._pDataBuffer;
 		}
 
-		get length(): int {
+		getLength(): int {
 			return this._pDataArray.length;
 		}
 
-		get byteLength(): int {
-			return this._pDataBuffer.byteLength;
+		getByteLength(): int {
+			return this._pDataBuffer.getByteLength();
 		}
 
 
@@ -56,7 +56,7 @@ module akra.data {
 			var n: uint;
 
 			if (!isNull(pBuffer)) {
-				n = this._pDataBuffer.length;
+				n = this._pDataBuffer.getLength();
 
 				if (isString(arguments[0])) {
 					for (var i: int = 0; i < n; i++) {
@@ -69,7 +69,7 @@ module akra.data {
 				else {
 					for (var i: int = 0; i < n; i++) {
 						pData = pBuffer.getVertexData(i);
-						if (pData.byteOffset === <uint>arguments[0]) {
+						if (pData.getByteOffset() === <uint>arguments[0]) {
 							return pData;
 						}
 					}
@@ -118,7 +118,7 @@ module akra.data {
 			var pDataDecl: IVertexDeclaration = VertexDeclaration.normalize(<IVertexElementInterface[]>pDecl);
 
 			if (config.DEBUG) {
-				for (var i: int = 0; i < pDataDecl.length; i++) {
+				for (var i: int = 0; i < pDataDecl.getLength(); i++) {
 					if (this.getData(pDataDecl.element(i).usage) !== null && pDataDecl.element(i).count !== 0) {
 						logger.warn("data buffer already contains data with similar vertex decloration <" +
 							pDataDecl.element(i).usage + ">.");
@@ -134,17 +134,17 @@ module akra.data {
 				}
 			}
 
-			return pVertexData.byteOffset;
+			return pVertexData.getByteOffset();
 		}
 
 		getDataLocation(sSemantics: string): int {
 			if (this._pDataBuffer) {
 				var pData: IVertexData;
 
-				for (var i: int = 0, n: uint = this._pDataBuffer.length; i < n; i++) {
+				for (var i: int = 0, n: uint = this._pDataBuffer.getLength(); i < n; i++) {
 					pData = this._pDataBuffer.getVertexData(i);
 					if (pData.hasSemantics(sSemantics)) {
-						return pData.byteOffset;
+						return pData.getByteOffset();
 					}
 				}
 			}

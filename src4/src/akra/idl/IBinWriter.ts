@@ -1,6 +1,6 @@
 module akra {
 	export interface IBinWriter {
-		byteLength: uint;
+		getByteLength(): uint;
 	
 		string(sData: string): void;
 		

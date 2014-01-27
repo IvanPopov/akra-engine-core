@@ -7,6 +7,7 @@ module akra.fx {
 		logger.registerCode(iErr, sDesc);
 	}
 
+	logger.registerCodeFamily(2200, 2500, "EffectSyntaxErrors");
 
 	registerCode(EEffectErrors.REDEFINE_SYSTEM_TYPE,
 		"You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -255,6 +256,6 @@ module akra.fx {
 		console["error"].call(console, sMessage);
 	}
 
-	logger.setCodeFamilyRoutine("EffectSyntaxErrors", syntaxErrorLogRoutine, ELogLevel.ERROR);
+	logger.setCodeFamilyRoutine("EffectSyntaxErrors", syntaxErrorLogRoutine, ELogLevel.ERROR | ELogLevel.CRITICAL);
 
 }

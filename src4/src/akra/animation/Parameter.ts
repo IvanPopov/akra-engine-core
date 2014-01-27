@@ -5,15 +5,15 @@ module akra.animation {
 	export class Parameter implements IAnimationParameter {
 		private _pKeyFrames: IFrame[] = [];
 
-		 get totalFrames(): uint {
+		getTotalFrames(): uint {
 			return this._pKeyFrames.length;
 		}
 
-		 get duration(): float {
+		getDuration(): float {
 			return (<IFrame>(this._pKeyFrames.last)).time;
 		}
 
-		 get first(): float {
+		getFirst(): float {
 			return (<IFrame>(this._pKeyFrames.first)).time;
 		}
 
@@ -34,7 +34,7 @@ module akra.animation {
 		}
 
 		getKeyFrame(iFrame: int): IFrame {
-			debug.assert(iFrame < this.totalFrames, 
+			debug.assert(iFrame < this.getTotalFrames(), 
 				"iFrame must be less then number of total jey frames.");
 
 			return this._pKeyFrames[iFrame];

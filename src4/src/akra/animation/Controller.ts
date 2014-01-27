@@ -20,8 +20,8 @@ module akra.animation {
 		emit(pAnimation?: any): void {
 			var pController: IAnimationController = this.getSender();
 			var pAnimationNext: IAnimationBase = pController.findAnimation(arguments[0]);
-			var pAnimationPrev: IAnimationBase = pController.active;
-			var fRealTime: float = pController.getEngine().time;
+			var pAnimationPrev: IAnimationBase = pController.getActive();
+			var fRealTime: float = pController.getEngine().getTime();
 
 			if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
 
@@ -52,15 +52,15 @@ module akra.animation {
 	    private _pTarget: ISceneNode = null;
 
 
-	     get totalAnimations(): int{
+	    getTotalAnimations(): int{
 			return this._pAnimations.length;
 		}
 
-		 get active(): IAnimationBase{
+		getActive(): IAnimationBase{
 			return this._pActiveAnimation;
 		}
 
-		 get target(): ISceneNode { 
+		getTarget(): ISceneNode { 
 			return this._pTarget;
 		}
 
@@ -70,7 +70,7 @@ module akra.animation {
 			this.name = sName;
 		}
 
-		 getEngine(): IEngine {
+		getEngine(): IEngine {
 			return this._pEngine;
 		}
 
@@ -80,8 +80,8 @@ module akra.animation {
 
 
 		addAnimation(pAnimation: IAnimationBase): boolean {
-			if (this.findAnimation(pAnimation.name)) {
-				logger.warn("Animation with name <" + pAnimation.name + "> already exists in this controller");
+			if (this.findAnimation(pAnimation.getName())) {
+				logger.warn("Animation with name <" + pAnimation.getName() + "> already exists in this controller");
 				return false;
 			}
 
@@ -89,8 +89,8 @@ module akra.animation {
 			
 			this._pAnimations.push(pAnimation);
 			this._pActiveAnimation = pAnimation;
-			if (/*!pAnimation.isAttached() && */!isNull(this.target)) {
-				pAnimation.attach(this.target);
+			if (/*!pAnimation.isAttached() && */!isNull(this.getTarget())) {
+				pAnimation.attach(this.getTarget());
 			}
 			else {
 				//TODO: detach animation
@@ -109,7 +109,7 @@ module akra.animation {
 			for (var i = 0; i < pAnimations.length; ++ i) { 
 				if (pAnimations[i] === pAnimation) {
 					pAnimations.splice(i, 1);
-					logger.log("animation controller :: remove animation >> ", pAnimation.name);
+					logger.log("animation controller :: remove animation >> ", pAnimation.getName());
 					return true;
 				}
 			}
@@ -129,7 +129,7 @@ module akra.animation {
 				sAnimation = arguments[0];
 
 				for (var i = 0; i < pAnimations.length; ++ i) { 
-					if (pAnimations[i].name === sAnimation) {
+					if (pAnimations[i].getName() === sAnimation) {
 						return pAnimations[i];
 					}
 				}
@@ -159,24 +159,24 @@ module akra.animation {
 			var pAnimations: IAnimationBase[] = this._pAnimations;
 
 		    for (var i: int = 0; i < pAnimations.length; ++ i) {
-		        if (!pAnimations[i].isAttached() || this.target !== pTarget) {
+		        if (!pAnimations[i].isAttached() || this.getTarget() !== pTarget) {
 		        	pAnimations[i].attach(pTarget);
 		        }
 		    }
 
-			if (this.target) {
-				this.target.scene.postUpdate.disconnect(this, this.update);
+			if (this.getTarget()) {
+				this.getTarget().getScene().postUpdate.disconnect(this, this.update);
 		    	//this.disconnect(this.target.scene, SIGNAL(postUpdate), SLOT(update));
 		    }
 
 			this._pTarget = pTarget;
-			this.target.scene.postUpdate.connect(this, this.update);
+			this.getTarget().getScene().postUpdate.connect(this, this.update);
 		    //this.connect(this.target.scene, SIGNAL(postUpdate), SLOT(update));
 		}
 
 		stop(): void {
 			if (this._pActiveAnimation) {
-				this._pActiveAnimation.stop(this._pEngine.time);
+				this._pActiveAnimation.stop(this._pEngine.getTime());
 			}
 
 			this._pActiveAnimation = null;
@@ -185,7 +185,7 @@ module akra.animation {
 		update(): void {
 			var pAnim: IAnimationBase = this._pActiveAnimation;
 			if (!isNull(pAnim)) {
-				if (!pAnim.apply(this._pEngine.time)) {
+				if (!pAnim.apply(this._pEngine.getTime())) {
 
 					// this._pActiveAnimation = null;
 					// pAnim.stop(this._pEngine.time);
@@ -200,10 +200,10 @@ module akra.animation {
 		toString(bFullInfo: boolean = false): string {
 			if (config.DEBUG) {
 				var s: string = "\n";
-				s += "ANIMATION CONTROLLER (total: " + this.totalAnimations + " animations)\n";
+				s += "ANIMATION CONTROLLER (total: " + this.getTotalAnimations() + " animations)\n";
 				s += "-----------------------------------------------------\n";
 
-				for (var i: int = 0; i < this.totalAnimations; ++i) {
+				for (var i: int = 0; i < this.getTotalAnimations(); ++i) {
 					s += this.getAnimation(i).toString();
 				}
 

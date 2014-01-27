@@ -17,7 +17,9 @@ module akra.render {
 			return this._pGuidToColorMap;
 		}
 
-		get type(): EViewportTypes { return EViewportTypes.COLORVIEWPORT; }
+		getType(): EViewportTypes {
+			return EViewportTypes.COLORVIEWPORT;
+		}
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0){
 			super(pCamera, DEFAULT_COLORPICKER_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
@@ -27,7 +29,7 @@ module akra.render {
 			var pVisibleObjects: IObjectArray<ISceneObject> = this.getCamera().display();
 			var pRenderable: IRenderableObject;
 			
-			for(var i: int = 0; i < pVisibleObjects.length; ++ i){
+			for (var i: int = 0; i < pVisibleObjects.getLength(); ++ i){
 				pVisibleObjects.value(i).prepareForRender(this);
 			}
 
@@ -44,14 +46,14 @@ module akra.render {
 			var r = 1;
 			var s = 1;
 
-			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
+			for (var i: int = 0; i < pVisibleObjects.getLength(); ++ i) {
 				var pSceneObject: ISceneObject = pVisibleObjects.value(i);
 				
 				this._pGuidToColorMap[pSceneObject.guid] = s;
 				this._pColorToSceneObjectMap[s] = pSceneObject;
 				s ++;
 				
-				for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
+				for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
 					pRenderable = pSceneObject.getRenderable(j);
 					
 					if (!isNull(pRenderable) && !pRenderable.isFrozen()) {
@@ -98,7 +100,7 @@ module akra.render {
 			var pPass: IRenderPass = pTechnique.getPass(iPass);
 
 			pPass.setUniform("RENDERABLE_ID", this.getGuidToColorMap()[pRenderable.guid]);
-			pPass.setUniform("OPTIMIZED_PROJ_MATRIX", this.getCamera().projectionMatrix);
+			pPass.setUniform("OPTIMIZED_PROJ_MATRIX", this.getCamera().getProjectionMatrix());
 			//pPass.setUniform("color", util.colorToVec4(util.randomColor(true)));
 
 			if (!isNull(pSceneObject)) {
@@ -117,13 +119,13 @@ module akra.render {
 
 
 			var pRmgr: IResourcePoolManager = this.getTarget().getRenderer().getEngine().getResourceManager();
-			var pMethodPool: IResourcePool = pRmgr.renderMethodPool;
+			var pMethodPool: IResourcePool<IRenderMethod> = pRmgr.getRenderMethodPool();
 			var pMethod: IRenderMethod = <IRenderMethod>pMethodPool.findResource(".method-color-picker");
 			
 			if (isNull(pMethod)) {
 				pMethod = pRmgr.createRenderMethod(".method-color-picker");
-				pMethod.effect = pRmgr.createEffect(".effect-color-picker");
-				pMethod.effect.addComponent("akra.system.colorPicker");
+				pMethod.setEffect(pRmgr.createEffect(".effect-color-picker"));
+				pMethod.getEffect().addComponent("akra.system.colorPicker");
 			}
 
 			pRenderable.addRenderMethod(pMethod, this._csDefaultRenderMethod);

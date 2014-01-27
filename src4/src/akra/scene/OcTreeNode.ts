@@ -77,7 +77,7 @@ module akra.scene {
 				//this.disconnect(pObject, SIGNAL(worldBoundsUpdated), SLOT(OcTreeObjectMoved), EEventTypes.UNICAST);
 			}
 
-			if (this.membersList.length === 0) {
+			if (this.membersList.getLength() === 0) {
 				this.tree.deleteNodeFromTree(this);
 			}
 		}
@@ -107,11 +107,11 @@ module akra.scene {
 		constructor(pTree: IOcTree) {
 			super(pTree);
 
-			var iTmp: int = (1 << this.tree.depth);
+			var iTmp: int = (1 << this.tree.getDepth());
 
 			this._pBasicWorldBounds = new geometry.Rect3d(0, iTmp, 0, iTmp, 0, iTmp);
-			this._pBasicWorldBounds.divSelf(this.tree.worldScale);
-			this._pBasicWorldBounds.subSelf(this.tree.worldOffset);
+			this._pBasicWorldBounds.divSelf(this.tree.getWorldScale());
+			this._pBasicWorldBounds.subSelf(this.tree.getWorldOffset());
 
 			this.worldBounds.set(this._pBasicWorldBounds);
 		}
@@ -142,9 +142,9 @@ module akra.scene {
 			var pNodeWorldBounds: IRect3d = this.worldBounds;
 			pNodeWorldBounds.set(this._pBasicWorldBounds);
 
-			var pObject: ISceneObject = this.membersList.first;
+			var pObject: ISceneObject = this.membersList.getFirst();
 			while (isDefAndNotNull(pObject)) {
-				pNodeWorldBounds.unionRect(pObject.worldBounds);
+				pNodeWorldBounds.unionRect(pObject.getWorldBounds());
 
 				pObject = this.membersList.next();
 			}

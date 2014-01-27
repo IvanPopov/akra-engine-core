@@ -3,9 +3,9 @@
 
 module akra {
 	export interface IDSViewport extends IViewport {
-		/** readonly */ effect: IEffect;
-		/** readonly */ depth: ITexture;
-		/** readonly */ view: IRenderableObject;
+		getEffect(): IEffect;
+		getDepthTexture(): ITexture;
+		getView(): IRenderableObject;
 	
 		getSkybox(): ITexture;
 		setSkybox(pSkyTexture: ITexture): void;

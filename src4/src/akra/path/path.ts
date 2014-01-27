@@ -8,23 +8,43 @@ module akra.path {
 		private _sExtension: string = null;
 		private _sFilename: string = null;
 
-		get path(): string { return this.toString(); }
-		set path(sPath: string) { this.set(sPath); }
+		getPath(): string {
+			return this.toString();
+		}
 
-		get dirname(): string { return this._sDirname; }
-		set dirname(sDirname: string) { this._sDirname = sDirname; }
+		setPath(sPath: string): void {
+			this.set(sPath);
+		}
 
-		get filename(): string { return this._sFilename; }
-		set filename(sFilename: string) { this._sFilename = sFilename; }
+		getDirName(): string {
+			return this._sDirname;
+		}
 
-		get ext(): string { return this._sExtension; }
-		set ext(sExtension: string) { this._sExtension = sExtension; }
+		setDirName(sDirname: string): void {
+			this._sDirname = sDirname;
+		}
 
-		get basename(): string {
+		getFileName(): string {
+			return this._sFilename;
+		}
+
+		setFileName(sFilename: string): void {
+			this._sFilename = sFilename;
+		}
+
+		getExt(): string {
+			return this._sExtension;
+		}
+
+		setExt(sExtension: string): void {
+			this._sExtension = sExtension;
+		}
+
+		getBaseName(): string {
 			return (this._sFilename ? this._sFilename + (this._sExtension ? "." + this._sExtension : "") : "");
 		}
 
-		set basename(sBasename: string) {
+		setBaseName(sBasename: string): void {
 			var nPos: uint = sBasename.lastIndexOf(".");
 
 			if (nPos < 0) {
@@ -53,7 +73,7 @@ module akra.path {
 			if (isString(sPath)) {
 				var pParts: string[] = sPath.replace('\\', '/').split('/');
 
-				this.basename = pParts.pop();
+				this.setBaseName(pParts.pop());
 
 				this._sDirname = pParts.join('/');
 			}
@@ -75,7 +95,7 @@ module akra.path {
 
 
 		toString(): string {
-			return (this._sDirname ? this._sDirname + "/" : "") + (this.basename);
+			return (this._sDirname ? this._sDirname + "/" : "") + (this.getBaseName());
 		}
 	}
 
@@ -109,7 +129,7 @@ module akra.path {
 	export function normalize(sPath: string): string {
 		var info: IPathinfo = parse(sPath);
 		var isAbsolute: boolean = info.isAbsolute();
-		var tail: string = info.dirname;
+		var tail: string = info.getDirName();
 		var trailingSlash: boolean = /[\\\/]$/.test(tail);
 
 		tail = normalizeArray(tail.split(/[\\\/]+/).filter(function (p) {
@@ -120,7 +140,7 @@ module akra.path {
 			tail += "/";
 		}
 
-		info.dirname = (isAbsolute ? "/" : "") + tail;
+		info.setDirName((isAbsolute ? "/" : "") + tail);
 
 		return info.toString();
 	}

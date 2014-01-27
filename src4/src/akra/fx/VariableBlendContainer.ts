@@ -10,7 +10,7 @@ module akra.fx {
         protected _pNameToIndexMap: IMap<int> = null;
         protected _pNameIndexToIndexMap: IMap<int> = null;
 
-        get varsInfo(): IAFXVariableBlendInfo[] {
+        getVarsInfo(): IAFXVariableBlendInfo[] {
             return this._pVarBlendInfoList;
         }
 

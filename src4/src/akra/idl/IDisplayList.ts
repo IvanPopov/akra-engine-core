@@ -3,7 +3,8 @@
 
 module akra {
 	export interface IDisplayList<T extends ISceneNode> extends IEventProvider {
-		/** readonly */ name: string;
+		getName(): string;
+		
 		//если используется <quick search>, то в случае если узлы сцены не были изменены, выдается null.
 		_findObjects(pCamera: ICamera, pResultArray?: IObjectArray<T>,
 			bQuickSearch?: boolean): IObjectArray<T>;

@@ -3,13 +3,20 @@
 
 module akra {
 	export interface IColor extends IColorValue {
-		rgba: uint;
-		argb: uint;
-		bgra: uint;
-		abgr: uint;
+		getRgba(): uint;
+		setRgba(iValue: uint): void;
+
+		getArgb(): uint;
+		setArgb(iValue: uint): void;
+
+		getBgra(): uint;
+		setBgra(iValue: uint): void;
+
+		getAbgr(): uint;
+		setAbgr(iValue: uint): void;
 	
-		/** readonly */ html: string;
-		/** readonly */ htmlRgba: string;
+		getHtml(): string;
+		getHtmlRgba(): string;
 	
 		set(cColor: IColorValue): IColor;
 		set(cColor: IColor): IColor;

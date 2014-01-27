@@ -14,13 +14,13 @@ module akra {
 	/** ObjectList export interface. */
 	export interface IObjectList<T> {
 		/** Number of elements in list */
-		length: uint;
+		getLength(): uint;
 		/** First element in list */
-	    first: T;
+	    getFirst(): T;
 		/** Last element in list */
-	    last: T;
+	    getLast(): T;
 		/** Current element in list */
-	    current: T;
+	    getCurrent(): T;
 	
 		/** Lock list for midifications. */
 		lock(): void;

@@ -12,15 +12,15 @@ module akra.fx {
 
         private _pFreePassInputBlendList: IAFXPassInputBlend[] = null;
 
-        get uniforms(): IAFXVariableContainer {
+        getUniforms(): IAFXVariableContainer {
             return this._pUniformsContainer;
         }
 
-        get textures(): IAFXVariableContainer {
+        getTextures(): IAFXVariableContainer {
             return this._pTexturesContainer;
         }
 
-        get foreigns(): IAFXVariableContainer {
+        getForeigns(): IAFXVariableContainer {
             return this._pForeignsContainer;
         }
 

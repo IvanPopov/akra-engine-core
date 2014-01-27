@@ -20,9 +20,8 @@ module akra {
 	}
 	
 	export interface IModel extends IResourcePoolItem {
-		byteLength: uint;
-	
-		modelFormat: EModelFormats;
+		getByteLength(): uint;	
+		getModelFormat(): EModelFormats;
 	
 		loadResource(sFilename?: string, pOptions?: IModelLoadOptions): boolean;
 		attachToScene(pNode: ISceneNode): IModelEntry;

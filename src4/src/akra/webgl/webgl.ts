@@ -69,14 +69,15 @@ module akra.webgl {
 	export var OES_PACKED_DEPTH_STENCIL = "OES_packed_depth_stencil";
 	export var EXT_TEXTURE_NPOT_2D_MIPMAP = "EXT_texture_npot_2D_mipmap";
 
-
+	export var GLSL_VS_SHADER_MIN: string = "void main(void){gl_Position = vec4(0., 0., 0., 1.);}";
+	export var GLSL_FS_SHADER_MIN: string = "void main(void){}";
 
 
 	function makeDebugContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
 		if (isDef((<any>window).WebGLDebugUtils)) {
 			pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLContext,
 				(err: int, funcName: string, args: IArguments): void => {
-					//debug_print(__CALLSTACK__);
+					//debug.log(__CALLSTACK__);
 					throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
 				},
 				(funcName: string, args: IArguments): void => {
@@ -98,17 +99,17 @@ module akra.webgl {
 		if (pWebGLExtension = pWebGLContext.getExtension(sExtName)) {
 
 			if (isDefAndNotNull(pWebGLExtentionList[sExtName])) {
-				// debug_print("Extension " + sExtName + " already loaded for this context.");
+				// debug.log("Extension " + sExtName + " already loaded for this context.");
 				return true;
 			}
 
 			pWebGLExtentionList[sExtName] = pWebGLExtension;
 
-			//debug_print("loaded WebGL extension: ", sExtName);
+			//debug.log("loaded WebGL extension: ", sExtName);
 
 			for (var j in pWebGLExtension) {
 				if (isFunction(pWebGLExtension[j])) {
-					//debug_print("created func WebGLRenderingContext::" + j + "(...)");
+					//debug.log("created func WebGLRenderingContext::" + j + "(...)");
 					pWebGLContext[j] = function () {
 						pWebGLContext[j] = new Function(
 							"var t = this.extentionList[" + sExtName + "];" +
@@ -117,7 +118,7 @@ module akra.webgl {
 
 				}
 				else {
-					//debug_print("created const WebGLRenderingContext::" + j + " = " + pWebGLExtension[j]);
+					//debug.log("created const WebGLRenderingContext::" + j + " = " + pWebGLExtension[j]);
 					pWebGLContext[j] = pWebGLExtension[j];
 				}
 			}
@@ -160,18 +161,18 @@ module akra.webgl {
 		pWebGLContext.linkProgram(pProgram);
 
 		if (!pWebGLContext.getProgramParameter(pProgram, gl.LINK_STATUS)) {
-			//debug_error("cannot compile GLSL shader for ANGLE renderer");
+			//debug.error("cannot compile GLSL shader for ANGLE renderer");
 
-			//debug_print(pWebGLContext.getShaderInfoLog(pVertexShader));
-			//debug_print(pWebGLContext.getShaderSource(pVertexShader) || sVertex);
+			//debug.log(pWebGLContext.getShaderInfoLog(pVertexShader));
+			//debug.log(pWebGLContext.getShaderSource(pVertexShader) || sVertex);
 
-			//debug_print(pWebGLContext.getShaderInfoLog(pFragmentShader));
-			//debug_print(pWebGLContext.getShaderSource(pFragmentShader) || sFragment);
+			//debug.log(pWebGLContext.getShaderInfoLog(pFragmentShader));
+			//debug.log(pWebGLContext.getShaderSource(pFragmentShader) || sFragment);
 
 			return false;
 		}
 
-		//debug_assert(pWebGLContext.getProgramParameter(pProgram, gl.ACTIVE_UNIFORMS) > 0,
+		//debug.assert(pWebGLContext.getProgramParameter(pProgram, gl.ACTIVE_UNIFORMS) > 0,
 		//    "no uniforms founded in angle test shader!");
 
 		return pWebGLContext.getActiveUniform(pProgram, 0).name != "s[0].b[0]";
@@ -219,7 +220,7 @@ module akra.webgl {
 			}
 		}
 
-		//debug_warning("cannot get 3d device");
+		//debug.warn("cannot get 3d device");
 
 		return null;
 	}

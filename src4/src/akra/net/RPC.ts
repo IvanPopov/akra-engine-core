@@ -25,26 +25,26 @@ module akra.net {
 	var OPTIONS: IRPCOptions = config.rpc;
 
 	function hasLimitedDeferredCalls(pRpc: IRPC): boolean {
-		return (pRpc.options.deferredCallsLimit >= 0)
+		return (pRpc.getOptions().deferredCallsLimit >= 0)
 	}
 
 	function hasReconnect(pRpc: IRPC): boolean {
-		return (pRpc.options.reconnectTimeout > 0);
+		return (pRpc.getOptions().reconnectTimeout > 0);
 	}
 
 	function hasSystemRoutine(pRpc: IRPC): boolean {
-		return (pRpc.options.systemRoutineInterval > 0)
+		return (pRpc.getOptions().systemRoutineInterval > 0)
 	}
 	function hasCallbackLifetime(pRpc: IRPC): boolean { 
-		return (pRpc.options.callbackLifetime > 0)
+		return (pRpc.getOptions().callbackLifetime > 0)
 	}
 
 	function hasGroupCalls(pRpc: IRPC): boolean {
-		return (pRpc.options.callsFrequency > 0);
+		return (pRpc.getOptions().callsFrequency > 0);
 	}
 
 	function hasCallbacksCountLimit(pRpc: IRPC): boolean {
-		return (pRpc.options.maxCallbacksCount > 0);
+		return (pRpc.getOptions().maxCallbacksCount > 0);
 	}
 
 	class RPC implements IRPC {
@@ -79,9 +79,9 @@ module akra.net {
 		protected _iGroupCallRoutine: int = -1;
 
 
-		get remote(): any { return this._pRemoteAPI; }
-		get options(): IRPCOptions { return this._pOption; }
-		get group(): int { return !isNull(this._pGroupCalls) ? this._iGroupID : -1; }
+		getRemote(): any { return this._pRemoteAPI; }
+		getOptions(): IRPCOptions { return this._pOption; }
+		getGroup(): int { return !isNull(this._pGroupCalls) ? this._iGroupID : -1; }
 
 		constructor(sAddr?: string, pOption?: IRPCOptions);
 		constructor(pAddr: any = null, pOption: IRPCOptions = {}) {
@@ -142,18 +142,18 @@ module akra.net {
 						this._startRoutines();
 
 						//if we have unhandled call in deffered...
-						if (pDeffered.length) {
+						if (pDeffered.getLength()) {
 							pDeffered.seek(0);
 
-							while (pDeffered.length > 0) {
-								pPipe.write(pDeffered.current);
+							while (pDeffered.getLength() > 0) {
+								pPipe.write(pDeffered.getCurrent());
 								this._releaseRequest(<IRPCRequest>pDeffered.takeCurrent());
 							}
 
-							logger.presume(pDeffered.length === 0, "something going wrong. length is: " + pDeffered.length);
+							logger.presume(pDeffered.getLength() === 0, "something going wrong. length is: " + pDeffered.getLength());
 						}
 
-						this.proc(this.options.procListName,
+						this.proc(this.getOptions().procListName,
 							function (pError: Error, pList: string[]) {
 								if (!isNull(pError)) {
 									logger.critical("could not get proc. list");
@@ -234,7 +234,7 @@ module akra.net {
 				if (hasReconnect(this)) {
 					this._iReconnect = setTimeout(() => {
 						pRPC.join();
-					}, this.options.reconnectTimeout);
+					}, this.getOptions().reconnectTimeout);
 				}
 			}
 		}
@@ -291,7 +291,7 @@ module akra.net {
 				}
 				else {
 					var pStack: IObjectList<IRPCCallback> = this._pCallbacksList;
-					pCallback = <IRPCCallback>pStack.last;
+					pCallback = <IRPCCallback>pStack.getLast();
 					do {
 						// LOG("#n: ", nSerial, " result: ", pResult);
 						if (pCallback.n === nSerial) {
@@ -323,7 +323,7 @@ module akra.net {
 
 		private freeRequests(): void {
 			var pStack: IObjectList<IRPCRequest> = this._pDefferedRequests;
-			var pReq: IRPCRequest = <IRPCRequest>pStack.first;
+			var pReq: IRPCRequest = <IRPCRequest>pStack.getFirst();
 
 			if (pReq) {
 				do {
@@ -340,7 +340,7 @@ module akra.net {
 			}
 			else {
 				var pStack: IObjectList<IRPCCallback> = this._pCallbacksList;
-				var pCallback: IRPCCallback = <IRPCCallback>pStack.first;
+				var pCallback: IRPCCallback = <IRPCCallback>pStack.getFirst();
 
 				if (pCallback) {
 					do {
@@ -393,10 +393,10 @@ module akra.net {
 		}
 
 		setProcedureOption(sProc: string, sOpt: string, pValue: any): void {
-			var pOptions: IRPCProcOptions = this.options.procMap[sProc];
+			var pOptions: IRPCProcOptions = this.getOptions().procMap[sProc];
 
 			if (!pOptions) {
-				pOptions = this.options.procMap[sProc] = {
+				pOptions = this.getOptions().procMap[sProc] = {
 					lifeTime: -1
 				}
 		}
@@ -439,7 +439,7 @@ module akra.net {
 
 			if (isNull(pPipe) || !pPipe.isOpened()) {
 				if (!hasLimitedDeferredCalls(this) ||
-					this._pDefferedRequests.length <= this.options.deferredCallsLimit) {
+					this._pDefferedRequests.getLength() <= this.getOptions().deferredCallsLimit) {
 
 					this._pDefferedRequests.push(pProc);
 
@@ -505,13 +505,13 @@ module akra.net {
 			if (hasSystemRoutine(this)) {
 				this._iSystemRoutine = setInterval(() => {
 					pRPC._systemRoutine();
-				}, this.options.systemRoutineInterval);
+				}, this.getOptions().systemRoutineInterval);
 			}
 
 			if (hasGroupCalls(this)) {
 				this._iGroupCallRoutine = setInterval(() => {
 					pRPC.groupCall();
-				}, this.options.callsFrequency);
+				}, this.getOptions().callsFrequency);
 			}
 		}
 
@@ -580,17 +580,17 @@ module akra.net {
 			}
 			else {
 				var pCallbacks: IObjectList<IRPCCallback> = this._pCallbacksList;
-				pCallback = <IRPCCallback>pCallbacks.first;
+				pCallback = <IRPCCallback>pCallbacks.getFirst();
 				while (!isNull(pCallback)) {
 
-					if (hasCallbackLifetime(this) && (iNow - pCallback.timestamp) >= this.options.callbackLifetime) {
+					if (hasCallbackLifetime(this) && (iNow - pCallback.timestamp) >= this.getOptions().callbackLifetime) {
 						fn = pCallback.fn;
 						if (config.DEBUG) {
 							sInfo = pCallback.procInfo;
 						}
 						this._releaseCallback(<IRPCCallback>pCallbacks.takeCurrent());
 
-						pCallback = pCallbacks.current;
+						pCallback = pCallbacks.getCurrent();
 
 						if (!isNull(fn)) {
 							// logger.log("procedure info: ", sInfo);
@@ -616,7 +616,7 @@ module akra.net {
 		}
 
 		private _createRequest(): IRPCRequest {
-			if (RPC.requestPool.length == 0) {
+			if (RPC.requestPool.getLength() == 0) {
 			// LOG("allocated rpc request");
 			return { n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null, next: null, lt: 0, pr: 0 }
 		}
@@ -634,7 +634,7 @@ module akra.net {
 		}
 
 		private _createCallback(): IRPCCallback {
-			if (RPC.callbackPool.length == 0) {
+			if (RPC.callbackPool.getLength() == 0) {
 			// LOG("allocated callback");
 			return { n: 0, fn: null, timestamp: 0, procInfo: <string>null }
 		}

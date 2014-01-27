@@ -84,51 +84,49 @@ module akra.io {
 		private _nCursorPosition: uint = 0;
 
 
-
-
-		get path(): string {
+		getPath(): string {
 			logger.assert(isDefAndNotNull(this._pFile), "There is no file handle open.");
 			return this._pUri.toString();
 		}
 
-		get name(): string {
-			return path.parse(this._pUri.path).basename;
+		getName(): string {
+			return path.parse(this._pUri.getPath()).getBaseName();
 		}
 
-		get mode(): int {
-			return this._iMode;
-		}
-
-		get meta(): IFileMeta {
+		getMeta(): IFileMeta {
 			return null;
 		}
 
-		//set mode(sMode: string);
-		//set mode(iMode: int);
-		set mode(sMode: int) {
+		getByteLength(): uint {
+			return this._pFile ? this._pFile.size : 0;
+		}
+
+		getMode(): int {
+			return this._iMode;
+		}
+
+		setMode(sMode: string): void;
+		setMode(iMode: int): void;
+		setMode(sMode: any): void {
 			this._iMode = isString(sMode) ? io.filemode(<any>sMode) : sMode;
 		}
 
-		set onread(fnCallback: (e: Error, data: any) => void) {
+		setOnRead(fnCallback: (e: Error, data: any) => void): void {
 			this.read(fnCallback);
 		}
 
-		set onopen(fnCallback: Function) {
+		setOnOpen(fnCallback: Function): void {
 			this.open(fnCallback);
 		}
 
-		get position(): uint {
+		getPosition(): uint {
 			logger.assert(isDefAndNotNull(this._pFile), "There is no file handle open.");
 			return this._nCursorPosition;
 		}
 
-		set position(iOffset: uint) {
+		setPosition(iOffset: uint): void {
 			logger.assert(isDefAndNotNull(this._pFile), "There is no file handle open.");
 			this._nCursorPosition = iOffset;
-		}
-
-		get byteLength(): uint {
-			return this._pFile ? this._pFile.size : 0;
 		}
 
 
@@ -178,7 +176,7 @@ module akra.io {
 			fnCallback = fnCallback || LocalFile.defaultCallback;
 
 			if (this.isOpened()) {
-				logger.warn("file already opened: " + this.name);
+				logger.warn("file already opened: " + this.getName());
 				(<Function>fnCallback)(null, this._pFile);
 			}
 
@@ -194,7 +192,7 @@ module akra.io {
 				if (e.code == FileError.NOT_FOUND_ERR && io.canCreate(this.mode)) {
 					LocalFile.createDir(
 						pFileSystem.root,
-						path.parse(this.path).dirname.split('/'),
+						path.parse(this.path).getDirName().split('/'),
 						function (e) {
 							if (!isNull(e)) {
 								fnCallback.call(this, e);
@@ -333,7 +331,7 @@ module akra.io {
 				fnCallback.call(this, null, pData);
 			}
 
-		if (io.isBinary(this.mode)) {
+		if (io.isBinary(this.getMode())) {
 				pReader.readAsArrayBuffer(pFileObject);
 			}
 			else {
@@ -359,7 +357,7 @@ module akra.io {
 			var pFileEntry: FileEntry = this._pFileEntry;
 
 			pFileEntry.createWriter(function (pWriter: FileWriter) {
-				pWriter.seek(pFile.position);
+				pWriter.seek(pFile.getPosition());
 
 				pWriter.onerror = function (e: FileError) {
 					fnCallback.call(pFileEntry, e);
@@ -419,9 +417,9 @@ module akra.io {
 		rename(sFilename: string, fnCallback: Function = LocalFile.defaultCallback): void {
 			var pName: IPathinfo = path.parse(sFilename);
 
-			logger.assert(!pName.dirname, 'only filename can be specified.');
+			logger.assert(!pName.getDirName(), 'only filename can be specified.');
 
-			this.move(path.parse(this._pUri.path).dirname + "/" + pName.basename, fnCallback);
+			this.move(path.parse(this._pUri.getPath()).getDirName() + "/" + pName.getBaseName(), fnCallback);
 		}
 
 		remove(fnCallback: Function = LocalFile.defaultCallback): void {
@@ -439,7 +437,7 @@ module akra.io {
 
 		//return current position
 		atEnd(): int {
-			this.position = this.byteLength;
+			this.setPosition(this.getByteLength());
 			return this._nCursorPosition;
 		}
 		//return current position;
@@ -448,10 +446,10 @@ module akra.io {
 
 			var nSeek: int = this._nCursorPosition + iOffset;
 			if (nSeek < 0) {
-				nSeek = this.byteLength - (math.abs(nSeek) % this.byteLength);
+				nSeek = this.getByteLength() - (math.abs(nSeek) % this.getByteLength());
 			}
 
-			logger.assert(nSeek >= 0 && nSeek <= this.byteLength, "Invalid offset parameter");
+			logger.assert(nSeek >= 0 && nSeek <= this.getByteLength(), "Invalid offset parameter");
 
 			this._nCursorPosition = nSeek;
 
@@ -504,19 +502,19 @@ module akra.io {
 			var pUri: IURI = uri.parse(sFilename);
 			var pUriLocal: IURI;
 
-			if (pUri.protocol === "filesystem") {
-				pUriLocal = uri.parse(pUri.path);
+			if (pUri.getProtocol() === "filesystem") {
+				pUriLocal = uri.parse(pUri.getPath());
 
-				logger.assert(!(pUriLocal.protocol && pUriLocal.host != info.uri.host),
+				logger.assert(!(pUriLocal.getProtocol() && pUriLocal.getHost() !== info.uri.getHost()),
 					"Поддерживаются только локальные файлы в пределах текущего домена.");
 
-				var pFolders: string[] = pUriLocal.path.split('/');
+				var pFolders: string[] = pUriLocal.getPath().split('/');
 
 				if (pFolders[0] == "" || pFolders[0] == ".") {
 					pFolders = pFolders.slice(1);
 				}
 
-				logger.assert(pUri.host === "temporary",
+				logger.assert(pUri.getHost() === "temporary",
 					"Поддерживаются только файловые системы типа \"temporary\".");
 
 				this._pUri = uri.parse(pFolders.join("/"));

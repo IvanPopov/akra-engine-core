@@ -6,10 +6,10 @@
 
 module akra {
 	export interface IIndexData extends IBufferData, IBuffer {
-		/** readonly */ type: EDataTypes;
-		/** readonly */ length: uint;
-		/** readonly */ bytesPerIndex: uint;
-		/** readonly */ id: uint;
+		getType(): EDataTypes;
+		getLength(): uint;
+		getBytesPerIndex(): uint;
+		getID(): uint;
 	
 		getData(iOffset: int, iSize: int): ArrayBuffer;
 		getTypedData(iStart: uint, iCount: uint): ArrayBufferView;

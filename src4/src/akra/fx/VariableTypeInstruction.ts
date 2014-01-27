@@ -25,12 +25,12 @@ module akra.fx {
 		private _isArray: boolean = false;
 		private _isPointer: boolean = false;
 		private _isStrictPointer: boolean = false;
-		private _isPointIndex: boolean = false;
-		private _isUniform: boolean = false;
-		private _isGlobal: boolean = false;
-		private _isConst: boolean = false;
-		private _isShared: boolean = false;
-		private _isForeign: boolean = false;
+		private _isPointIndex: boolean = null;
+		private _isUniform: boolean = null;
+		private _isGlobal: boolean = null;
+		private _isConst: boolean = null;
+		private _isShared: boolean = null;
+		private _isForeign: boolean = null;
 		private _iLength: uint = Instruction.UNDEFINE_LENGTH;
 		private _isNeedToUpdateLength: boolean = false;
 

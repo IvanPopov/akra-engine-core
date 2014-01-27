@@ -14,7 +14,7 @@ module akra {
 		nearPlane: IPlane3d;
 		farPlane: IPlane3d;
 	
-		/** readonly */ frustumVertices: IVec3[];
+		getFrustumVertices(): IVec3[];
 	
 		set(): IFrustum;
 		set(pFrustum: IFrustum): IFrustum;

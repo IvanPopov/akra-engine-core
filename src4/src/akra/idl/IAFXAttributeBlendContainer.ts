@@ -2,7 +2,7 @@
 
 module akra {
 	export interface IAFXAttributeBlendContainer {
-	    /*readonly*/ attrsInfo: IAFXVariableBlendInfo[];
+	    getAttrsInfo(): IAFXVariableBlendInfo[];
 	
 	    getTexcoordVar(iSlot: uint): IAFXVariableDeclInstruction;
 	    hasTexcoord(iSlot: uint): boolean;

@@ -19,81 +19,6 @@ module akra {
 	    y: float;
 	    z: float;
 	
-	    /*represents two-component vector from original vector*/
-	    xx: IVec2;
-	    /*represents two-component vector from original vector*/
-	    xy: IVec2;
-	    /*represents two-component vector from original vector*/
-	    xz: IVec2;
-	    /*represents two-component vector from original vector*/
-	    yx: IVec2;
-	    /*represents two-component vector from original vector*/
-	    yy: IVec2;
-	    /*represents two-component vector from original vector*/
-	    yz: IVec2;
-	    /*represents two-component vector from original vector*/
-	    zx: IVec2;
-	    /*represents two-component vector from original vector*/
-	    zy: IVec2;
-	    /*represents two-component vector from original vector*/
-	    zz: IVec2;
-	
-	    /*represents three-component vector from original vector*/
-	    xxx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xxy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xxz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xyx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xyy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xyz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xzx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xzy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    xzz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yxx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yxy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yxz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yyx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yyy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yyz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yzx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yzy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    yzz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zxx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zxy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zxz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zyx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zyy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zyz: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zzx: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zzy: IVec3;
-	    /*represents three-component vector from original vector*/
-	    zzz: IVec3;
-	
-	
 	    set(): IVec3;
 	    set(fValue: float): IVec3;
 	    set(v3fVec: IVec3): IVec3;
@@ -127,7 +52,127 @@ module akra {
 	    toArray(): float[];
 	    toTranslationMatrix(m4fDestination?: IMat4);
 	
-	    vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3;
+		vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3;
+
+		//clone(sForm: string, pVec2OrVec3?: any): any;
+		clone(sForm: "xx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "xy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "xz", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "yz", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zx", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zy", v2fDest?: IVec2): IVec2;
+		clone(sForm: "zz", v2fDest?: IVec2): IVec2;
+
+		clone(sForm: "xxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "xzz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "yzz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zxz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zyz", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzx", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzy", v3fDest?: IVec3): IVec3;
+		clone(sForm: "zzz", v3fDest?: IVec3): IVec3;
+
+		clone(sForm: string, v2fDest?: IVec2): IVec2;
+		clone(sForm: string, v3fDest?: IVec3): IVec3;
+
+		copy(sForm: "xx", v2fFrom: IVec2): IVec3;
+		copy(sForm: "xx", fValue: float): IVec3;
+		copy(sForm: "xy", v2fFrom: IVec2): IVec3;
+		copy(sForm: "xy", fValue: float): IVec3;
+		copy(sForm: "xz", v2fFrom: IVec2): IVec3;
+		copy(sForm: "xz", fValue: float): IVec3;
+		copy(sForm: "yx", v2fFrom: IVec2): IVec3;
+		copy(sForm: "yx", fValue: float): IVec3;
+		copy(sForm: "yy", v2fFrom: IVec2): IVec3;
+		copy(sForm: "yy", fValue: float): IVec3;
+		copy(sForm: "yz", v2fFrom: IVec2): IVec3;
+		copy(sForm: "yz", fValue: float): IVec3;
+		copy(sForm: "zx", v2fFrom: IVec2): IVec3;
+		copy(sForm: "zx", fValue: float): IVec3;
+		copy(sForm: "zy", v2fFrom: IVec2): IVec3;
+		copy(sForm: "zy", fValue: float): IVec3;
+		copy(sForm: "zz", v2fFrom: IVec2): IVec3;
+		copy(sForm: "zz", fValue: float): IVec3;
+
+		copy(sForm: "xxx", v3fFrom: IVec3): IVec3;
+		copy(sForm: "xxx", fValue: float): IVec3;
+		copy(sForm: "xxy", v3fFrom: IVec3): IVec3;
+		copy(sForm: "xxy", fValue: float): IVec3;
+		copy(sForm: "xxz", v3fFrom: IVec3): IVec3;
+		copy(sForm: "xxz", fValue: float): IVec3;
+		copy(sForm: "xyx", v3fFrom: IVec3): IVec3;
+		copy(sForm: "xyx", fValue: float): IVec3;
+		copy(sForm: "xyy", v3fFrom: IVec3): IVec3;
+		copy(sForm: "xyy", fValue: float): IVec3;
+		copy(sForm: "xyz", v3fFrom: IVec3): IVec3;
+		copy(sForm: "xyz", fValue: float): IVec3;
+		copy(sForm: "xzx", v3fFrom: IVec3): IVec3;
+		copy(sForm: "xzx", fValue: float): IVec3;
+		copy(sForm: "xzy", v3fFrom: IVec3): IVec3;
+		copy(sForm: "xzy", fValue: float): IVec3;
+		copy(sForm: "xzz", v3fFrom: IVec3): IVec3;
+		copy(sForm: "xzz", fValue: float): IVec3;
+		copy(sForm: "yxx", v3fFrom: IVec3): IVec3;
+		copy(sForm: "yxx", fValue: float): IVec3;
+		copy(sForm: "yxy", v3fFrom: IVec3): IVec3;
+		copy(sForm: "yxy", fValue: float): IVec3;
+		copy(sForm: "yxz", v3fFrom: IVec3): IVec3;
+		copy(sForm: "yxz", fValue: float): IVec3;
+		copy(sForm: "yyx", v3fFrom: IVec3): IVec3;
+		copy(sForm: "yyx", fValue: float): IVec3;
+		copy(sForm: "yyy", v3fFrom: IVec3): IVec3;
+		copy(sForm: "yyy", fValue: float): IVec3;
+		copy(sForm: "yyz", v3fFrom: IVec3): IVec3;
+		copy(sForm: "yyz", fValue: float): IVec3;
+		copy(sForm: "yzx", v3fFrom: IVec3): IVec3;
+		copy(sForm: "yzx", fValue: float): IVec3;
+		copy(sForm: "yzy", v3fFrom: IVec3): IVec3;
+		copy(sForm: "yzy", fValue: float): IVec3;
+		copy(sForm: "yzz", v3fFrom: IVec3): IVec3;
+		copy(sForm: "yzz", fValue: float): IVec3;
+		copy(sForm: "zxx", v3fFrom: IVec3): IVec3;
+		copy(sForm: "zxx", fValue: float): IVec3;
+		copy(sForm: "zxy", v3fFrom: IVec3): IVec3;
+		copy(sForm: "zxy", fValue: float): IVec3;
+		copy(sForm: "zxz", v3fFrom: IVec3): IVec3;
+		copy(sForm: "zxz", fValue: float): IVec3;
+		copy(sForm: "zyx", v3fFrom: IVec3): IVec3;
+		copy(sForm: "zyx", fValue: float): IVec3;
+		copy(sForm: "zyy", v3fFrom: IVec3): IVec3;
+		copy(sForm: "zyy", fValue: float): IVec3;
+		copy(sForm: "zyz", v3fFrom: IVec3): IVec3;
+		copy(sForm: "zyz", fValue: float): IVec3;
+		copy(sForm: "zzx", v3fFrom: IVec3): IVec3;
+		copy(sForm: "zzx", fValue: float): IVec3;
+		copy(sForm: "zzy", v3fFrom: IVec3): IVec3;
+		copy(sForm: "zzy", fValue: float): IVec3;
+		copy(sForm: "zzz", v3fFrom: IVec3): IVec3;
+		copy(sForm: "zzz", fValue: float): IVec3;
+
+		copy(sForm: string, fValue: float): IVec3;
+		copy(sForm: string, v2fFrom: IVec2): IVec3;
+		copy(sForm: string, v3fFrom: IVec3): IVec3;
 	}
 	
 	

@@ -1,10 +1,13 @@
-/// <reference path="../idl/ITerrainSection.ts" />
+#ifndef TERRAIN_SECTION_TS
+#define TERRAIN_SECTION_TS
 
-/// <reference path="../scene/SceneObject.ts" />
-/// <reference path="../data/RenderData.ts" />
-/// <reference path="../render/RenderableObject.ts" />
+#include "ITerrainSection.ts"
 
-/// <reference path="Terrain.ts" />
+#include "scene/SceneObject.ts"
+#include "render/RenderData.ts"
+#include "render/RenderableObject.ts"
+
+#include "Terrain.ts"
 
 module akra.terrain {
 	export class TerrainSection implements ITerrainSection extends scene.SceneObject{
@@ -71,9 +74,9 @@ module akra.terrain {
 						iSectorX: uint, iSectorY: uint, 
 						iHeightMapX: uint, iHeightMapY: uint, 
 						iXVerts: uint, iYVerts: uint, 
-						pWorldRect: IRect2d): boolean {
+						pWorldRect: IRect2d): bool {
 
-			var bResult: boolean = false;
+			var bResult: bool = false;
 
 			this._pTerrainSystem = pParentSystem;
 			this._iXVerts = iXVerts;
@@ -126,7 +129,7 @@ module akra.terrain {
 			}
 		}
 
-		protected _createRenderDataForVertexAndIndex(): boolean {
+		protected _createRenderDataForVertexAndIndex(): bool {
 			var pRenderable: IRenderableObject = this.getRenderable();
 
 			if(isNull(pRenderable)){
@@ -144,7 +147,7 @@ module akra.terrain {
 			return true;
 		}
 
-		protected _buildVertexBuffer(): boolean {
+		protected _buildVertexBuffer(): bool {
 			this._pWorldRect.z0 = MAX_FLOAT64;
 			this._pWorldRect.z1 = MIN_FLOAT64;
 
@@ -220,7 +223,7 @@ module akra.terrain {
 			return true;
 		}
 
-		protected _buildIndexBuffer(): boolean {
+		protected _buildIndexBuffer(): bool {
 			if(!isNull(this.getRenderable())){
 				var pIndexList: Float32Array = new Float32Array(TerrainSection.getCountIndexForStripGrid(this._iXVerts, this._iYVerts));
 
@@ -294,3 +297,5 @@ module akra.terrain {
 
 	}
 }
+
+#endif

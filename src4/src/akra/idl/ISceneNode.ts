@@ -13,8 +13,8 @@ module akra {
 	}
 	
 	export interface ISceneNode extends INode {
-		/** readonly */ scene: IScene3d;
-		/** readonly */ totalControllers: uint;
+		getScene(): IScene3d;
+		getTotalControllers(): uint;
 	
 		getController(i?: uint): IAnimationController;
 		addController(pController: IAnimationController): void;

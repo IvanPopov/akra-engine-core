@@ -46,11 +46,12 @@ module akra.geometry {
 			}
 		}
 
-		get circle(): ICircle {
+		getCircle(): ICircle {
 			var v3fCenter: IVec3 = this.center;
 			return new Circle(v3fCenter.x, v3fCenter.y, this.radius);
 		}
-		set circle(pCircle: ICircle) {
+
+		setCircle(pCircle: ICircle): void {
 			var v3fCenter: IVec3 = this.center;
 			var v2fCircleCenter: IVec2 = pCircle.center;
 			v3fCenter.x = v2fCircleCenter.x;
@@ -58,10 +59,11 @@ module akra.geometry {
 			this.radius = pCircle.radius;
 		}
 
-		get z(): float {
+		getZ(): float {
 			return this.center.z;
 		}
-		set z(fZ: float) {
+
+		setZ(fZ: float): void {
 			this.center.z = fZ;
 		}
 
@@ -137,7 +139,7 @@ module akra.geometry {
 			var v4fTmp: IVec4 = Vec4.temp(this.center, 1.);
 			v4fTmp = m4fMatrix.multiplyVec4(v4fTmp);
 
-			this.center.set(v4fTmp.xyz);
+			this.center.set(v4fTmp.clone("xyz"));
 
 			var m3fTmp: IMat3 = m4fMatrix.toMat3(Mat3.temp());
 			var v3fScale: IVec3 = Vec3.temp();

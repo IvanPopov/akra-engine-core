@@ -2,71 +2,73 @@
 /// <reference path="util/Logger.ts" />
 
 module akra {
-    //export var logger: ILogger = util.Logger.getInstance();
-    export var logger: ILogger = new util.Logger();
+	//export var logger: ILogger = util.Logger.getInstance();
+	export var logger: ILogger = new util.Logger();
 
-    logger.init();
-    logger.setUnknownCode(0, "unknown");
-    logger.setLogLevel(ELogLevel.ALL);
+	logger.init();
+	logger.setUnknownCode(0, "unknown");
+	logger.setLogLevel(ELogLevel.ALL);
 
-    //Default log routines
+	logger.registerCodeFamily(0, 100, "SystemCodes");
 
-    function sourceLocationToString(pLocation: ISourceLocation): string {
-        var pDate: Date = new Date;
-        var sTime: string = pDate.getHours() + ":" + pDate.getMinutes() + "." + pDate.getSeconds();
-        var sLocation: string = "[" + pLocation.file + ":" + pLocation.line.toString() + " " + sTime + "]: ";
-        return sLocation;
-    }
+	//Default log routines
 
-    function logRoutine(pLogEntity: ILoggerEntity): void {
-        var pArgs: any[] = pLogEntity.info;
+	function sourceLocationToString(pLocation: ISourceLocation): string {
+		var pDate: Date = new Date;
+		var sTime: string = pDate.getHours() + ":" + pDate.getMinutes() + "." + pDate.getSeconds();
+		var sLocation: string = "[" + pLocation.file + ":" + pLocation.line.toString() + " " + sTime + "]: ";
+		return sLocation;
+	}
 
-        var sLocation: string = sourceLocationToString(pLogEntity.location);
+	function logRoutine(pLogEntity: ILoggerEntity): void {
+		var pArgs: any[] = pLogEntity.info;
 
-        if (isString(pArgs[0])) {
-            pArgs[0] = sLocation + " " + pArgs[0];
-        }
-        else {
-            pArgs.unshift(sLocation);
-        }
+		var sLocation: string = sourceLocationToString(pLogEntity.location);
 
-        console.log.apply(console, pArgs);
-    }
+		if (isString(pArgs[0])) {
+			pArgs[0] = sLocation + " " + pArgs[0];
+		}
+		else {
+			pArgs.unshift(sLocation);
+		}
 
-    function warningRoutine(pLogEntity: ILoggerEntity): void {
-        var pArgs: any[] = pLogEntity.info;
+		console.log.apply(console, pArgs);
+	}
 
-        var sCodeInfo: string = "Code: " + pLogEntity.code.toString() + ".";
-        var sLocation: string = sourceLocationToString(pLogEntity.location);
+	function warningRoutine(pLogEntity: ILoggerEntity): void {
+		var pArgs: any[] = pLogEntity.info;
 
-        if (isString(pArgs[0])) {
-            pArgs[0] = sLocation + " " + sCodeInfo + " " + pArgs[0];
-        }
-        else {
-            pArgs.unshift(sLocation + " " + sCodeInfo);
-        }
+		var sCodeInfo: string = "Code: " + pLogEntity.code.toString() + ".";
+		var sLocation: string = sourceLocationToString(pLogEntity.location);
 
-        console.warn.apply(console, pArgs);
-    }
+		if (isString(pArgs[0])) {
+			pArgs[0] = sLocation + " " + sCodeInfo + " " + pArgs[0];
+		}
+		else {
+			pArgs.unshift(sLocation + " " + sCodeInfo);
+		}
 
-    function errorRoutine(pLogEntity: ILoggerEntity): void {
-        var pArgs: any[] = pLogEntity.info;
+		console.warn.apply(console, pArgs);
+	}
 
-        var sMessage: string = pLogEntity.message;
-        var sCodeInfo: string = "Error code: " + pLogEntity.code.toString() + ".";
-        var sLocation: string = sourceLocationToString(pLogEntity.location);
+	function errorRoutine(pLogEntity: ILoggerEntity): void {
+		var pArgs: any[] = pLogEntity.info;
 
-        if (isString(pArgs[0])) {
-            pArgs[0] = sLocation + " " + sCodeInfo + " " + sMessage + " " + pArgs[0];
-        }
-        else {
-            pArgs.unshift(sLocation + " " + sCodeInfo + " " + sMessage);
-        }
+		var sMessage: string = pLogEntity.message;
+		var sCodeInfo: string = "Error code: " + pLogEntity.code.toString() + ".";
+		var sLocation: string = sourceLocationToString(pLogEntity.location);
 
-        console.error.apply(console, pArgs);
-    }
+		if (isString(pArgs[0])) {
+			pArgs[0] = sLocation + " " + sCodeInfo + " " + sMessage + " " + pArgs[0];
+		}
+		else {
+			pArgs.unshift(sLocation + " " + sCodeInfo + " " + sMessage);
+		}
 
-    logger.setLogRoutine(logRoutine, ELogLevel.LOG | ELogLevel.INFORMATION);
-    logger.setLogRoutine(warningRoutine, ELogLevel.WARNING);
-    logger.setLogRoutine(errorRoutine, ELogLevel.ERROR | ELogLevel.CRITICAL);
+		console.error.apply(console, pArgs);
+	}
+
+	logger.setLogRoutine(logRoutine, ELogLevel.LOG | ELogLevel.INFORMATION);
+	logger.setLogRoutine(warningRoutine, ELogLevel.WARNING);
+	logger.setLogRoutine(errorRoutine, ELogLevel.ERROR | ELogLevel.CRITICAL);
 }

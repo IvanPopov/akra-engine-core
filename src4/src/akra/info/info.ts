@@ -36,12 +36,12 @@ module akra.info {
 		 */
 		var mobile: boolean = (/mobile|iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i)
 			.test(navigator.userAgent.toLowerCase());
-		var linux: boolean = browser.os === 'Linux';
-		var windows: boolean = browser.os === 'Windows';
-		var mac: boolean = browser.os === 'Mac';
-		var iPhone: boolean = browser.os === 'iPhone';
+		var linux: boolean = browser.getOS() === 'Linux';
+		var windows: boolean = browser.getOS() === 'Windows';
+		var mac: boolean = browser.getOS() === 'Mac';
+		var iPhone: boolean = browser.getOS() === 'iPhone';
 
-		var Opera: boolean = browser.name === "Opera";
+		var Opera: boolean = browser.getName() === "Opera";
 	}
 
 

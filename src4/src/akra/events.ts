@@ -12,6 +12,7 @@ module akra {
 		private _eType: EEventTypes = EEventTypes.BROADCAST;
 		private _fnForerunnerTrigger: Function = null;
 
+
 		private static _pEmptyListenersList: IListener<T>[] = [];
 		private static _nEmptyListenersCount: uint = 0;
 
@@ -26,6 +27,10 @@ module akra {
 			if (this._eType === EEventTypes.BROADCAST) {
 				this._pBroadcastListeners = [];
 			}
+
+			//if (!isNull(this._pSender)) {
+			//	this._sSenderCallbackName = this.findCallbacknameForListener(this._pSender, this._fnSenderCallback);
+			//}
 		}
 
 		// Проверяем, существует ли функция в прототипе сендера, чтобы не подавались noname 
@@ -117,7 +122,6 @@ module akra {
 
 		public emit(...pArgs: any[]);
 		public emit() {
-
 			if (!isNull(this._fnForerunnerTrigger)) {
 				switch (arguments.length) {
 					case 0:
@@ -265,6 +269,7 @@ module akra {
 		private fromParamsToListener(pArguments: IArguments): IListener<T> {
 			var pReciever: any = null;
 			var fnCallback: any = null;
+			var sCallbackName: string = "";
 			var pSignal: ISignal<T> = null;
 			var eType: any = this._eType;
 
@@ -275,8 +280,9 @@ module akra {
 					}
 					else {
 						pSignal = pArguments[0];
-						pReciever = pSignal.getSender();
+						pReciever = pSignal;
 						fnCallback = pSignal.emit;
+						sCallbackName = "emit";
 					}
 					break;
 				case 2:
@@ -308,6 +314,9 @@ module akra {
 					fnCallback = pReciever[fnCallback]
 				}
 			}
+			//else if(!isNull(pReciever)){
+			//	sCallbackName = this.findCallbacknameForListener(pReciever, fnCallback);
+			//}
 
 			if (eType !== this._eType || fnCallback === undefined || fnCallback === null) {
 				return null;
@@ -319,11 +328,23 @@ module akra {
 			var pListener: IListener<T> = this.getEmptyListener();
 			pListener.reciever = pReciever;
 			pListener.callback = fnCallback;
+			//pListener.callbackName = sCallbackName;
 			pListener.type = eType;
 
 			return pListener;
 		}
 
+		private findCallbacknameForListener(pReciever: any, fnCallback: Function): string {
+			if (!isNull(fnCallback)) {
+				for (var i in pReciever) {
+					if (pReciever[i] === fnCallback) {
+						return i;
+					}
+				}
+			}
+
+			return "";
+		}
 		private indexOfBroadcastListener(pReciever: any, fnCallback: T): int {
 			for (var i: uint = 0; i < this._nBroadcastListenersCount; i++) {
 				if (this._pBroadcastListeners[i].reciever === pReciever && this._pBroadcastListeners[i].callback === fnCallback) {
@@ -370,136 +391,3 @@ module akra {
 		}
 	}
 }
-
-////////////////////////////// TESTS /////////////////////////
-//var sTestPackName: string = "";
-//var nFailTests: uint = 0;
-//var nTests: uint = 0;
-
-//function startTest(sName: string = "DEFAULT") {
-//    sTestPackName = sName;
-//    console.log("-------START TEST PACK " + sTestPackName + "-------");
-//}
-
-//function endTest() {
-//    if (nFailTests === 0) {
-//        console.log("SUCCESS!! All tests: " + nTests + ". Fail tests: " + nFailTests + ".");
-//    }
-//    else {
-//        console.error("FAIL!! All tests: " + nTests + ". Fail tests: " + nFailTests + ".");
-//    }
-
-//    console.log("-------END TEST PACK " + sTestPackName + "-------");
-//    nTests = 0;
-//    nFailTests = 0;
-//}
-
-//function passTest(pResult, pRequire) {
-//    if (pResult === pRequire) {
-//        console.log("Pass test #" + (nTests++));
-//    }
-//    else {
-//        console.error("Fail test#" + (nTests++));
-//        nFailTests++;
-//    }
-//}
-
-
-//class Test {
-//    signal1: ISignal<{ (sender: Test, msg: string) }, Test> = new Signal(this);
-//    signal2: ISignal<{ (sender: Test, msg: string) }, Test> = new Signal(this, EEventTypes.UNICAST);
-
-//    constructor(public id: uint = 0) { }
-
-
-//    test1(pSender: Test, sMsg: string) {
-//        passTest(pSender != null, true);
-//        passTest(this != null, true);
-//        passTest(sMsg.length > 0, true);
-
-//        console.log("#1 Sender:", pSender.id, "Reciever:", this.id, sMsg);
-//    }
-
-//    test2 = function (pSender: Test, sMsg: string) {
-//        passTest(pSender != null, true);
-//        passTest(this != null, true);
-//        passTest(sMsg.length > 0, true);
-
-//        console.log("#2 Sender:", pSender.id, "Reciever:", this.id, sMsg);
-//    }
-
-//    test3(pSender: Test, sMsg: string) {
-//        passTest(pSender != null, true);
-//        passTest(this != null, true);
-//        passTest(sMsg.length > 0, true);
-
-//        console.log("#3 Sender:", pSender.id, "Reciever:", this.id, sMsg);
-//    }
-
-
-//}
-
-//var t1 = new Test(1);
-//var t2 = new Test(2);
-
-//startTest("(CONNECT TO BROADCAST SIGNAL)");
-//passTest(t1.signal1.connect(t2, t2.test1), true);
-//passTest(t1.signal1.connect(t2, t2.test2, EEventTypes.UNICAST), false);
-//passTest(t1.signal1.connect(t2, t2.test2), true);
-//passTest(t1.signal1.connect(t2, "test3"), true);
-//passTest(t1.signal1.connect(t2, t2.test3), false);
-//endTest();
-
-//startTest("(CONNECT TO UNICAST SIGNAL)");
-//passTest(t1.signal2.connect(t2, t2.test1, EEventTypes.BROADCAST), false);
-//passTest(t1.signal2.connect(t2, "test2"), true);
-//passTest(t1.signal2.connect(t2, t2.test1), false);
-//endTest();
-
-//startTest("(HASLISTENERS OF SIGNAL)");
-//passTest(t1.signal1.hasListeners(), true);
-//passTest(t1.signal2.hasListeners(), true);
-//endTest();
-
-//startTest("(EMIT BROADCAST SIGNAL)");
-//t1.signal1.emit("message1");
-//endTest();
-
-//startTest("(EMIT UNICAST SIGNAL)");
-//t1.signal2.emit("message2");
-//endTest();
-
-//startTest("(DISCONNECT FROM BROADCAST SIGNAL)");
-//passTest(t1.signal1.disconnect(t2, t2.test2), true);
-//endTest();
-
-//startTest("(DISCONNECT FROM UNICAST SIGNAL)");
-//passTest(t1.signal2.disconnect(t2, t2.test2), true);
-//endTest();
-
-//startTest("(EMIT BROADCAST SIGNAL)");
-//t1.signal1.emit("message1");
-//endTest();
-
-//startTest("(EMIT UNICAST SIGNAL)");
-//t1.signal2.emit("message2");
-//endTest();
-
-
-//startTest("(CONNECT TO UNICAST SIGNAL AGAIN)");
-//passTest(t1.signal2.connect(t2, t2.test1), true);
-//endTest();
-
-//startTest("(EMIT UNICAST SIGNAL)");
-//t1.signal2.emit("message2");
-//endTest();
-
-//startTest("(CLEAR SIGNALS)");
-//t1.signal1.clear();
-//t1.signal2.clear();
-//endTest();
-
-//startTest("(EMIT SIGNALS AGAIN)");
-//t1.signal1.emit("msg1");
-//t1.signal2.emit("msg2");
-//endTest();

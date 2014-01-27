@@ -6,7 +6,9 @@
 
 module akra {
 	export interface IJoint extends ISceneNode {
-		boneName: string;
+		getBoneName(): string;
+		setBoneName(sName: string): void;
+
 		// getEngine(): IEngine;
 		create(): boolean;
 		// toString(isRecursive: boolean, iDepth: int): string;

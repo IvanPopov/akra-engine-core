@@ -14,26 +14,26 @@ module akra.uri {
         private sQuery: string = null;
         private sFragment: string = null;
 
-        get urn(): string {
+        getURN(): string {
             return (this.sPath ? this.sPath : "") +
                 (this.sQuery ? '?' + this.sQuery : "") +
                 (this.sFragment ? '#' + this.sFragment : "");
         }
 
-        get url(): string {
-            return (this.sScheme ? this.sScheme : "") + this.authority;
+        getURL(): string {
+            return (this.sScheme ? this.sScheme : "") + this.getAuthority();
         }
 
-        get authority(): string {
+        getAuthority(): string {
             return (this.sHost ? '//' + (this.sUserinfo ? this.sUserinfo + '@' : "") +
                 this.sHost + (this.nPort ? ':' + this.nPort : "") : "");
         }
 
-        get scheme(): string {
+        getScheme(): string {
             return this.sScheme;
         }
 
-        get protocol(): string {
+        getProtocol(): string {
             if (!this.sScheme) {
                 return this.sScheme;
             }
@@ -41,48 +41,48 @@ module akra.uri {
             return (this.sScheme.substr(0, this.sScheme.lastIndexOf(':')));
         }
 
-        get userinfo(): string {
+        getUserInfo(): string {
             return this.sUserinfo;
         }
 
-        get host(): string {
+        getHost(): string {
             return this.sHost;
         }
 
-        set host(sHost: string) {
+        setHost(sHost: string): void {
             //TODO: check host format
             this.sHost = sHost;
         }
 
-        get port(): uint {
+        getPort(): uint {
             return this.nPort;
         }
 
-        set port(iPort: uint) {
+        setPort(iPort: uint): void {
             this.nPort = iPort;
         }
 
-        get path(): string {
+        getPath(): string {
             return this.sPath;
         }
 
-        set path(sPath: string) {
+        setPath(sPath: string): void {
             // debug_assert(!isNull(sPath.match(new RegExp("^(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)$"))), 
             // 	"invalid path used: " + sPath);
             //TODO: check path format
             this.sPath = sPath;
         }
 
-        get query(): string {
+        getQuery(): string {
             //TODO: check query format
             return this.sQuery;
         }
 
-        set query(sQuery: string) {
+        setQuery(sQuery: string): void {
             this.sQuery = sQuery;
         }
 
-        get fragment(): string {
+        getFragment(): string {
             return this.sFragment;
         }
 
@@ -128,7 +128,7 @@ module akra.uri {
         }
 
         toString(): string {
-            return this.url + this.urn;
+            return this.getURL() + this.getURN();
         }
 
         static here(): IURI {
@@ -181,15 +181,15 @@ module akra.uri {
 
 
     function normalizeURIPath(pFile: IURI): IURI {
-        if (!isNull(pFile.path)) {
-            if (pFile.scheme === "filesystem:") {
-                var pUri: IURI = parse(pFile.path);
+        if (!isNull(pFile.getPath())) {
+            if (pFile.getScheme() === "filesystem:") {
+                var pUri: IURI = parse(pFile.getPath());
 
-                pUri.path = path.normalize(pUri.path);
-                pFile.path = pUri.toString();
+                pUri.setPath(path.normalize(pUri.getPath()));
+                pFile.setPath(pUri.toString());
             }
             else {
-                pFile.path = path.normalize(pFile.path);
+                pFile.setPath(path.normalize(pFile.getPath()));
             }
         }
 
@@ -206,13 +206,13 @@ module akra.uri {
         normalizeURIPath(pFile);
         normalizeURIPath(pCurrentPath);
 
-        if (!isNull(pFile.scheme) || !isNull(pFile.host) || path.parse(pFile.path).isAbsolute()) {
+        if (!isNull(pFile.getScheme()) || !isNull(pFile.getHost()) || path.parse(pFile.getPath()).isAbsolute()) {
             //another server or absolute path
             return sFrom;
         }
 
-        sDirname = path.parse(pCurrentPath.path).dirname;
-        pCurrentPath.path = sDirname ? sDirname + "/" + sFrom : sFrom;
+        sDirname = path.parse(pCurrentPath.getPath()).getDirName();
+        pCurrentPath.setPath(sDirname ? (sDirname + "/" + sFrom) : sFrom);
 
         return normalizeURIPath(pCurrentPath).toString();
     }

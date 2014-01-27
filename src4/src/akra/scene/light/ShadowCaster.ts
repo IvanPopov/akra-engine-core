@@ -35,44 +35,45 @@ module akra.scene.light {
 		protected _m4fOptimizedProj: IMat4 = new Mat4();
 		protected _isShadowCasted: boolean = false;
 
-		get lightPoint(): ILightPoint {
+		getLightPoint(): ILightPoint {
 			return this._pLightPoint;
 		}
 
-		get face(): uint {
+		getFace(): uint {
 			return this._iFace;
 		}
 
-		get affectedObjects(): IObjectArray<ISceneObject> {
+		getAffectedObjects(): IObjectArray<ISceneObject> {
 			return this._pAffectedObjects;
 		}
 
-		get optimizedProjection(): IMat4 {
+		getOptimizedProjection(): IMat4 {
 			return this._m4fOptimizedProj;
 		}
 
-		get isShadowCasted(): boolean {
+		getIsShadowCasted(): boolean {
 			return this._isShadowCasted;
 		}
-		set isShadowCasted(isShadowCasted: boolean) {
+
+		setIsShadowCasted(isShadowCasted: boolean): void {
 			this._isShadowCasted = isShadowCasted;
 		}
 
 		constructor(pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X) {
-			super(pLightPoint.scene, EEntityTypes.SHADOW_CASTER);
+			super(pLightPoint.getScene(), EEntityTypes.SHADOW_CASTER);
 
 			this._pLightPoint = pLightPoint;
 			this._iFace = iFace;
 		}
 
 		_optimizeProjectionMatrix(pEffectiveCameraFrustum: IFrustum): void {
-			if (this._pAffectedObjects.length == 0) {
-				this._m4fOptimizedProj.set(this.projectionMatrix);
+			if (this._pAffectedObjects.getLength() == 0) {
+				this._m4fOptimizedProj.set(this.getProjectionMatrix());
 				return;
 			}
 
-			var m4fView: IMat4 = this.viewMatrix;
-			var m4fProj: IMat4 = this.projectionMatrix;
+			var m4fView: IMat4 = this.getViewMatrix();
+			var m4fProj: IMat4 = this.getProjectionMatrix();
 			var m4fProjData: Float32Array = m4fProj.data;
 
 			var pBox: IRect3d = geometry.Rect3d.temp();
@@ -95,14 +96,14 @@ module akra.scene.light {
 
 			var fTmp: float;
 
-			for (var i: int = 0; i < pAffectedObjects.length; i++) {
+			for (var i: int = 0; i < pAffectedObjects.getLength(); i++) {
 				var pObject: ISceneObject = pAffectedObjects.value(i);
 
-				if (!pObject.shadow) {
+				if (!pObject.getShadow()) {
 					continue;
 				}
 
-				pBox.set(pObject.worldBounds);
+				pBox.set(pObject.getWorldBounds());
 				pBox.transform(m4fView);
 
 				fX0 = pBox.x0; fX1 = pBox.x1;
@@ -243,8 +244,8 @@ module akra.scene.light {
 			if (!isDef(pDestination)) {
 				pDestination = new geometry.Rect2d();
 			}
-			var m4fProjView: IMat4 = this.projViewMatrix;
-			var pFrusutumVertices: IVec3[] = pEffectiveCameraFrustum.frustumVertices;
+			var m4fProjView: IMat4 = this.getProjViewMatrix();
+			var pFrusutumVertices: IVec3[] = pEffectiveCameraFrustum.getFrustumVertices();
 
 			var v4fTmp: IVec4 = Vec4.temp();
 			var v2fTmp: IVec2 = Vec2.temp();
@@ -269,6 +270,6 @@ module akra.scene.light {
 	}
 
 	export function isShadowCaster(pEntity: IEntity): boolean {
-		return !isNull(pEntity) && pEntity.type === EEntityTypes.SHADOW_CASTER;
+		return !isNull(pEntity) && pEntity.getType() === EEntityTypes.SHADOW_CASTER;
 	}
 }

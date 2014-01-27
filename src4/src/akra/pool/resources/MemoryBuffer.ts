@@ -9,17 +9,17 @@ module akra.pool.resources {
 
 		protected _pData: Uint8Array;
 
-		get byteLength(): uint {
+		getByteLength(): uint {
 			return this._pData.byteLength;
 		}
 
-		get length(): uint {
-			return this.byteLength;
+		getLength(): uint {
+			return this.getByteLength();
 		}
 
 		create(iByteSize: uint, iFlags: int = EHardwareBufferFlags.DYNAMIC): boolean {
 
-			bf.clearAll(iFlags,
+			iFlags = bf.clearAll(iFlags,
 				EHardwareBufferFlags.BACKUP_COPY | EHardwareBufferFlags.DISCARDABLE |
 				EHardwareBufferFlags.ALIGNMENT);
 
@@ -38,7 +38,7 @@ module akra.pool.resources {
 		resize(iSize: uint): boolean {
 			var pData: Uint8Array = new Uint8Array(iSize);
 
-			if (iSize >= this.byteLength) {
+			if (iSize >= this.getByteLength()) {
 				pData.set(this._pData);
 			}
 			else {
@@ -73,7 +73,7 @@ module akra.pool.resources {
 				ppDest = arguments[2];
 			}
 
-			logger.assert((iOffset + iSize) <= this.byteLength);
+			logger.assert((iOffset + iSize) <= this.getByteLength());
 			copy((<ArrayBufferView>ppDest).buffer, (<ArrayBufferView>ppDest).byteOffset, this._pData.buffer, iOffset, iSize);
 
 			return true;
@@ -83,7 +83,7 @@ module akra.pool.resources {
 		writeData(pData: ArrayBufferView, iOffset: uint = 0, iSize: uint = pData.byteLength, bDiscardWholeBuffer: boolean = false): boolean {
 			// writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: boolean = false): boolean { 
 
-			logger.assert((iOffset + iSize) <= this.byteLength);
+			logger.assert((iOffset + iSize) <= this.getByteLength());
 
 			if (isDefAndNotNull(pData)) {
 				copy(this._pData.buffer, iOffset, (<ArrayBufferView>pData).buffer, (<ArrayBufferView>pData).byteOffset, iSize);

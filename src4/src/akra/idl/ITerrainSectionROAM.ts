@@ -7,10 +7,10 @@
 
 module akra {
 	export interface ITerrainSectionROAM extends ITerrainSection {
-	    /** readonly */ triangleA: ITriTreeNode;
-	    /** readonly */ triangleB: ITriTreeNode;
-	    /** readonly */ queueSortValue: float;
-	    /** readonly */ terrainSystem: ITerrainROAM;
+	    getTriangleA(): ITriTreeNode;
+	    getTriangleB(): ITriTreeNode;
+	    getQueueSortValue(): float;
+	    getTerrainSystem(): ITerrainROAM;
 	
 	    _internalCreate(pParentSystem: ITerrainROAM,
 	        iSectorX: uint, iSectorY: uint,

@@ -196,12 +196,12 @@ module akra.webgl {
 		var pWebGLDepthTexture: WebGLTexture = (<webgl.WebGLInternalTexture>pDepthTexture).getWebGLTexture();
 
 		var pWebGLProgram: webgl.WebGLShaderProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.
-														shaderProgramPool.findResource(".WEBGL_depth_range");
+														getShaderProgramPool().findResource(".WEBGL_depth_range");
 		
 
 		if(isNull(pWebGLProgram)){
 			pWebGLProgram = <webgl.WebGLShaderProgram><IShaderProgram>pResourceManager.
-														shaderProgramPool.createResource(".WEBGL_depth_range");
+														getShaderProgramPool().createResource(".WEBGL_depth_range");
 
 			pWebGLProgram.create(sVertexCode, sPixelCode);
 		}
@@ -229,8 +229,8 @@ module akra.webgl {
 		pWebGLContext.bufferData(gl.ARRAY_BUFFER, pF32ScreenCoords, gl.STATIC_DRAW);
 		pWebGLContext.vertexAttribPointer(iPositionAttribLocation, 2, gl.FLOAT, false, 0, 0);
 
-		var iSrcTextureSizeX: uint = pDepthTexture.width;
-		var iSrcTextureSizeY: uint = pDepthTexture.height;
+		var iSrcTextureSizeX: uint = pDepthTexture.getWidth();
+		var iSrcTextureSizeY: uint = pDepthTexture.getHeight();
 
 		var pWebGLTexture1: WebGLTexture = pWebGLContext.createTexture();
 		var pWebGLTexture2: WebGLTexture = pWebGLContext.createTexture();

@@ -13,10 +13,21 @@ module akra.geometry {
 		y0: float;
 		y1: float;
 
-		get left(): float { return this.x0; }
-		get top(): float { return this.y0; }
-		get width(): float { return this.x1 - this.x0; }
-		get height(): float { return this.y1 - this.y0; }
+		getLeft(): float {
+			return this.x0;
+		}
+
+		getTop(): float {
+			return this.y0;
+		}
+
+		getWidth(): float {
+			return this.x1 - this.x0;
+		}
+
+		getHeight(): float {
+			return this.y1 - this.y0;
+		}
 
 		constructor();
 		constructor(pRect: IRect2d);

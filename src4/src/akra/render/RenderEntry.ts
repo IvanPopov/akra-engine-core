@@ -1,8 +1,5 @@
-#ifndef RENDERRENDERENTRY_TS
-#define RENDERRENDERENTRY_TS
-
-#include "IRenderEntry.ts"
-#include "IShaderInput.ts"
+/// <reference path="../idl/IRenderEntry.ts" />
+/// <reference path="../idl/IShaderInput.ts" />
 
 module akra.render {
 	export class RenderEntry implements IRenderEntry {
@@ -30,5 +27,3 @@ module akra.render {
 		}
 	}
 }
-
-#endif

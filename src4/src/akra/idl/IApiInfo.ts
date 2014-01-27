@@ -1,16 +1,16 @@
 
 module akra {
 	export interface IApiInfo {
-		gamepad: boolean;
-		webGL: boolean;
-		webAudio: boolean;
-		file: boolean;
-		fileSystem: boolean;
-		webWorker: boolean;
-		transferableObjects: boolean;
-		localStorage: boolean;
-		webSocket: boolean;
-		zip: boolean;
+		getGamepad(): boolean;
+		getWebGL(): boolean;
+		getWebAudio(): boolean;
+		getFile(): boolean;
+		getFileSystem(): boolean;
+		getWebWorker(): boolean;
+		getTransferableObjects(): boolean;
+		getLocalStorage(): boolean;
+		getWebSocket(): boolean;
+		getZip(): boolean;
 	}
 	
 	

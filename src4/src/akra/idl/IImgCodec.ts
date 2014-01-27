@@ -6,17 +6,29 @@ module akra {
 	}
 	
 	export interface IImgData extends ICodecData{
-		height: uint;
-		width:uint;
-		depth:uint;
-		size:uint;
-	
-		numMipMaps:uint;
-		flags: uint;
-		cubeFlags:uint;
-	
-		format: EPixelFormats;
-		numFace: uint;
+		getHeight(): uint;
+		setHeight(iHeight: uint): void;
+
+		getWidth():uint;
+		setWidth(iWidth: uint): void;
+
+		getDepth(): uint;
+		setDepth(iDepth: uint): void;
+
+		getNumMipMaps(): uint;
+		setNumMipMaps(nMipMaps: uint): void;
+
+		getFlags(): uint;
+		setFlags(iFlags: uint): void;
+
+		getCubeFlags(): uint;
+		setCubeFlags(iFlags: uint): void;
+
+		getFormat(): EPixelFormats;
+		setFormat(eFormat: EPixelFormats): void;
+
+		getSize(): uint;
+		getNumFace(): uint;
 	
 	}
 	

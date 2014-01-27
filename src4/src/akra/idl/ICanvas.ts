@@ -6,8 +6,7 @@ module akra {
 	};
 	
 	export interface ICanvas {
-		type: ECanvasTypes;
-	
+		getType(): ECanvasTypes;	
 	
 		isFullscreen(): boolean;
 		setFullscreen(isFullscreen?: boolean): void;

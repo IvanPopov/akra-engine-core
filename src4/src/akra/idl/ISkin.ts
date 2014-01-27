@@ -14,9 +14,9 @@ module akra {
 	// }
 	
 	export interface ISkin {
-		/** readonly */ data: IRenderDataCollection;
-		/** readonly */ skeleton: ISkeleton;
-		/** readonly */ totalBones: uint;
+		getData(): IRenderDataCollection;
+		getSkeleton(): ISkeleton;
+		getTotalBones(): uint;
 	
 		/**
 		 * Set binding matrix. 

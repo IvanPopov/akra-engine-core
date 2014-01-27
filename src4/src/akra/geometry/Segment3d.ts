@@ -12,19 +12,19 @@ module akra.geometry {
             this.distance = 0.;
         }
 
-        get point(): IVec3 {
+        getPoint(): IVec3 {
             return this.ray.point;
         }
 
-        set point(v3fPoint: IVec3) {
+        setPoint(v3fPoint: IVec3): void {
             this.ray.point.set(v3fPoint);
         }
 
-        get normal(): IVec3 {
+        getNormal(): IVec3 {
             return this.ray.normal;
         }
 
-        set normal(v3fNormal: IVec3) {
+        setNormal(v3fNormal: IVec3): void {
             this.ray.normal.set(v3fNormal);
         }
     }

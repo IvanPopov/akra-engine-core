@@ -14,8 +14,8 @@ module akra.pool.resources {
 		private _pFile: IFile = null;
 		private _pSyntaxTree: parser.IParseTree = null;
 
-		 get byteLength(): uint {
-			return this._pFile? this._pFile.byteLength: 0;
+		getByteLength(): uint {
+			return this._pFile? this._pFile.getByteLength(): 0;
 		}
 
 		loadResource(sFileName?: string): boolean {

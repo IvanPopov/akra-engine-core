@@ -85,13 +85,21 @@ module akra.terrain {
 
 		private _bStreaming: boolean = false;
 
+		getManualMinLevelLoad(): boolean {
+			return this._bManualMinLevelLoad;
+		}
+
+		setManualMinLevelLoad(bManual: boolean): void {
+			this._bManualMinLevelLoad = bManual;
+		}
+
 		constructor(pEngine: IEngine) {
 			this._pEngine = pEngine;
 		}
 
 		init(pObject: ISceneObject, sSurfaceTextures: string): void {
 			this._pObject = pObject;
-			this._pWorldExtents = pObject.localBounds;
+			this._pWorldExtents = pObject.getLocalBounds();
 			this._sSurfaceTextures = sSurfaceTextures;
 
 			if(!this.checkTextureSizeSettings()){
@@ -100,9 +108,9 @@ module akra.terrain {
 
 			var iCountTex: uint = this._iMaxLevel - this._iMinLevel + 1;
 
-			this._pTextures = <ITexture[]> new Array(iCountTex);
-			this._pSectorLoadInfo = <Uint32Array[]> new Array(iCountTex);
-			this._pXY = <ISubTextureSettings[]> new Array(iCountTex);
+			this._pTextures = new Array<ITexture>(iCountTex);
+			this._pSectorLoadInfo = new Array<Uint32Array>(iCountTex);
+			this._pXY = new Array<ISubTextureSettings>(iCountTex);
 
 			this._iBufferWidth = this._v2iTextureLevelSize.x * 1;
 			this._iBufferHeight = this._v2iTextureLevelSize.y * 1;
@@ -153,12 +161,11 @@ module akra.terrain {
 					this._pTextures[i].setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);	        	
 				
 					this._pXY[i] = <ISubTextureSettings> {
-											iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
-											iTexX:0, iTexY:0,   /*Координаты мегатекстуры в текстуре*/
-											width: this._pTextures[i].width,
-											height: this._pTextures[i].height,
-											isUpdated : true, isLoaded : false
-										};
+						iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
+						iTexX:0, iTexY:0,   /*Координаты мегатекстуры в текстуре*/
+						width: this._pTextures[i].getWidth(),
+						height: this._pTextures[i].getHeight(),
+						isUpdated : true, isLoaded : false };
 				}
 
 
@@ -171,8 +178,8 @@ module akra.terrain {
 			this._pRPC = net.createRpc();
 
 			if(!this._bManualMinLevelLoad){
-				this._pRPC.joined.connect(this.loadMinTextureLevel, EEventTypes.BROADCAST);
-				this._pRPC.error.connect(this.rpcErrorOccured, EEventTypes.BROADCAST);
+				this._pRPC.joined.connect(this, this.loadMinTextureLevel, EEventTypes.BROADCAST);
+				this._pRPC.error.connect(this, this.rpcErrorOccured, EEventTypes.BROADCAST);
 			}
 			
 
@@ -208,14 +215,6 @@ module akra.terrain {
 			this._bStreaming = false;
 		}
 
-		set manualMinLevelLoad(bManual: boolean) {
-			this._bManualMinLevelLoad = bManual;
-		}
-
-		get manualMinLevelLoad(): boolean {
-			return this._bManualMinLevelLoad;
-		}
-
 		private _bError: boolean = false;
 		private _tLastTime: float = 0;
 		prepareForRender(pViewport: IViewport): void {
@@ -233,7 +232,7 @@ module akra.terrain {
 				return;
 			}
 
-			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+			var tCurrentTime: uint = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
 
 			if(tCurrentTime - this._tLastTime < 30){
 				return;
@@ -241,7 +240,7 @@ module akra.terrain {
 			this._tLastTime = tCurrentTime;
 
 			var pCamera: ICamera = pViewport.getCamera();
-			var v4fCameraCoord: IVec4 = Vec4.temp(pCamera.worldPosition, 1.);
+			var v4fCameraCoord: IVec4 = Vec4.temp(pCamera.getWorldPosition(), 1.);
 			var m4fTransposeInverse: IMat4 = this._pObject.inverseWorldMatrix;
 
 			v4fCameraCoord = m4fTransposeInverse.multiplyVec4(v4fCameraCoord);
@@ -485,9 +484,9 @@ module akra.terrain {
 		protected createUniforms(): void {
 			var iCountTex: uint = this._iMaxLevel - this._iMinLevel + 1;
 
-			this._pSamplerUniforms = new Array(iCountTex);
-			this._pLoadStatusUniforms = new Array(iCountTex);
-			this._pTexcoordOffsetUniforms = new Array(iCountTex);
+			this._pSamplerUniforms = new Array<IAFXSamplerState>(iCountTex);
+			this._pLoadStatusUniforms = new Array<uint>(iCountTex);
+			this._pTexcoordOffsetUniforms = new Array<IVec2>(iCountTex);
 
 			for(var i: uint = 0; i < iCountTex; i++){
 				this._pSamplerUniforms[i] = <IAFXSamplerState>{ 
@@ -518,7 +517,7 @@ module akra.terrain {
 			var me: MegaTexture = this;
 			var sExt: string = "dds";
 
-			this._pSectorLoadInfo[0][0] = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+			this._pSectorLoadInfo[0][0] = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
 			this._iTryCount++;
 
 			if(this._iTryCount > 5){
@@ -541,10 +540,10 @@ module akra.terrain {
 						return;
 					}
 
-					var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().imagePool.findResource(".megatexture.temp_image");
+					var pTempImg: IImg = <IImg>me._pEngine.getResourceManager().getImagePool().findResource(".megatexture.temp_image");
 
 					if(isNull(pTempImg)){
-						pTempImg = <IImg>me._pEngine.getResourceManager().imagePool.createResource(".megatexture.temp_image");
+						pTempImg = <IImg>me._pEngine.getResourceManager().getImagePool().createResource(".megatexture.temp_image");
 					}
 					
 					pTempImg.load(pData, sExt, function(isLoaded){
@@ -590,7 +589,7 @@ module akra.terrain {
 			iAreaEndY = math.min(iAreaEndY, this.getHeightOrig(iLevelTex));
 
 			var isLoaded: boolean = true;
-			var tCurrentTime: uint = (this._pEngine.getTimer().absoluteTime * 1000) >>> 0;
+			var tCurrentTime: uint = (this._pEngine.getTimer().getAbsoluteTime() * 1000) >>> 0;
 
 			for (var i: uint = iOrigTexY; i < iOrigTexEndY; i += iBlockSize) {
 				for (var j: uint = iOrigTexX; j < iOrigTexEndX; j += iBlockSize) {

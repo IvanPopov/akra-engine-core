@@ -7,9 +7,11 @@
 /// <reference path="IResourcePoolManager.ts" />
 	
 module akra {
-		export interface IResourcePool extends IEventProvider {
-			iFourcc: int;
-			/** readonly */ manager: IResourcePoolManager;
+		export interface IResourcePool<T extends IResourcePoolItem> extends IEventProvider {
+			getFourcc(): int;
+			setFourcc(iFourcc: int): void;
+
+			getManager(): IResourcePoolManager;
 
 			/** Добавление данного пула в менеджер ресурсво по его коду */
 			registerResourcePool(pCode: IResourceCode): void;
@@ -38,15 +40,15 @@ module akra {
 			//callbackRestore(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
 			//callbackClean(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
 
-			createResource(sResourceName: string): IResourcePoolItem;
-			loadResource(sResourceName: string): IResourcePoolItem;
-			saveResource(pResource: IResourcePoolItem): boolean;
-			destroyResource(pResource: IResourcePoolItem): void;
+			createResource(sResourceName: string): T;
+			loadResource(sResourceName: string): T;
+			saveResource(pResource: T): boolean;
+			destroyResource(pResource: T): void;
 
-			findResource(sName: string): IResourcePoolItem;
-			getResource(iHandle: int): IResourcePoolItem;
-			getResources(): IResourcePoolItem[];
+			findResource(sName: string): T;
+			getResource(iHandle: int): T;
+			getResources(): T[];
 
-			createdResource: ISignal<{ (pPool: IResourcePool, pResource: IResourcePoolItem): void; }>;
+			createdResource: ISignal<{ (pPool: IResourcePool<T>, pResource: T): void; }>;
 		}
 }

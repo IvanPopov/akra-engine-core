@@ -1,33 +1,31 @@
-#ifndef RENDERER_TS
-#define RENDERER_TS
+/// <reference path="../idl/IRenderer.ts" />
 
-#include "IRenderer.ts"
+/// <reference path="../idl/IAFXComponent.ts" />
+/// <reference path="../idl/IAFXEffect.ts" />
+/// <reference path="../idl/IAFXPreRenderState.ts" />
+/// <reference path="../idl/IAFXComponentBlend.ts" />
+/// <reference path="../idl/IAFXPassBlend.ts" />
+/// <reference path="../idl/IMesh.ts" />
+/// <reference path="../idl/IRenderableObject.ts" />
+/// <reference path="../idl/ISceneObject.ts" />
+/// <reference path="../idl/IBufferMap.ts" />
+/// <reference path="../idl/IShaderProgram.ts" />
+/// <reference path="../idl/ISurfaceMaterial.ts" />
+/// <reference path="../idl/IVertexData.ts" />
+/// <reference path="../idl/IVertexBuffer.ts" />
+/// <reference path="../idl/ITexture.ts" />
+/// <reference path="../idl/IIndexBuffer.ts" />
+/// <reference path="../idl/IRenderResource.ts" />
+/// <reference path="../idl/IRenderEntry.ts" />
+/// <reference path="../idl/IViewport.ts" />
+/// <reference path="../idl/ICanvas3d.ts" />
 
-#include "IAFXComponent.ts"
-#include "IAFXEffect.ts"
-#include "IAFXPreRenderState.ts"
-#include "IAFXComponentBlend.ts"
-#include "IAFXPassBlend.ts"
-#include "IMesh.ts"
-#include "IRenderableObject.ts"
-#include "ISceneObject.ts"
-#include "IBufferMap.ts"
-#include "IShaderProgram.ts"
-#include "ISurfaceMaterial.ts"
-#include "IVertexData.ts"
-#include "IVertexBuffer.ts"
-#include "ITexture.ts"
-#include "IIndexBuffer.ts"
-#include "IRenderResource.ts"
-#include "IRenderEntry.ts"
-#include "IViewport.ts"
-#include "ICanvas3d.ts"
-#include "Viewport.ts"
+/// <reference path="Viewport.ts" />
+/// <reference path="../events.ts" />
 
-#include "events/events.ts"
-
-#include "render/RenderTarget.ts"
-#include "render/RenderQueue.ts"
+/// <reference path="../render/RenderTarget.ts" />
+/// <reference path="../render/RenderQueue.ts" />
+/// <reference path="../sort/sort.ts" />
 
 module  akra.render {
 	export var SShaderPrefixes = {
@@ -58,120 +56,130 @@ module  akra.render {
 	}
 
 	export class Renderer implements IRenderer {
-		protected _isActive: bool = false;
+		guid: uint = guid();
+
+		active: ISignal<{ (pRender: IRenderer, pEngine: IEngine): void; }> = new Signal(<any>this, this._activated);
+		inactive: ISignal<{ (pRender: IRenderer, pEngine: IEngine): void; }> = new Signal(<any>this, this._inactivated);
+
+		protected _isActive: boolean = false;
 		protected _pEngine: IEngine;
 		protected _pRenderTargets: IRenderTarget[] = [];
-		protected _pPrioritisedRenderTargets: IRenderTargetPriorityMap = <IRenderTargetPriorityMap>{};
+		protected _pPrioritisedRenderTargets: IMap<IRenderTarget[]> = {};
 		protected _pPriorityList: int[] = [];
 		protected _pRenderQueue: RenderQueue = null;
 		protected _pActiveViewport: IViewport = null;
 		protected _pActiveRenderTarget: IRenderTarget = null;
 		/** TODO: FIX RENDER TARGET LOCK*/
-		protected _bLockRenderTarget: bool = false;
+		protected _bLockRenderTarget: boolean = false;
 
-		constructor (pEngine: IEngine) {
+		constructor(pEngine: IEngine) {
 			this._pEngine = pEngine;
 
-			this.connect(pEngine, SIGNAL(active), SLOT(active));
-			this.connect(pEngine, SIGNAL(inactive), SLOT(inactive));
+			pEngine.active.connect(this.active);
+			pEngine.inactive.connect(this.inactive);
 
 			this._pRenderQueue = new RenderQueue(this);
 		}
 
-
-		inline getEngine(): IEngine { return this._pEngine; }
-		
-
-	    hasCapability(eCapability: ERenderCapabilities): bool {
-	      return false;
-	    }
-
-
-		debug(bValue?: bool, useApiTrace?: bool): bool {
-			return false;
+		getType(): ERenderers {
+			return ERenderers.UNKNOWN;
 		}
-		
-		isDebug(): bool {
+
+		getEngine(): IEngine {
+			return this._pEngine;
+		}
+
+
+		hasCapability(eCapability: ERenderCapabilities): boolean {
 			return false;
 		}
 
-		isValid(): bool {
+
+		debug(bValue?: boolean, useApiTrace?: boolean): boolean {
+			return false;
+		}
+
+		isDebug(): boolean {
+			return false;
+		}
+
+		isValid(): boolean {
 			return true;
 		}
 
-		inline getError(): string {
+		getError(): string {
 			return null;
 		}
 
 		_beginRender(): void { }
-		
+
 		_renderEntry(pEntry: IRenderEntry): void { }
 
 		_endRender(): void { }
 
 		clearFrameBuffer(iBuffer: int, cColor: IColor, fDepth: float, iStencil: uint): void { }
 
- 		attachRenderTarget(pTarget: IRenderTarget): bool {
- 			if (this._pRenderTargets.indexOf(pTarget) != -1) {
- 				return false;
- 			}
+		attachRenderTarget(pTarget: IRenderTarget): boolean {
+			if (this._pRenderTargets.indexOf(pTarget) != -1) {
+				return false;
+			}
 
- 			var pList: IRenderTarget[] = this._pPrioritisedRenderTargets[pTarget.priority];
- 			
- 			if (!isDef(pList)) {
- 				pList = this._pPrioritisedRenderTargets[pTarget.priority] = [];
- 				this._pPriorityList.push(pTarget.priority);
- 				this._pPriorityList.sort(fnSortMinMax);
- 			}
- 			
- 			pList.push(pTarget);
+			var pList: IRenderTarget[] = this._pPrioritisedRenderTargets[pTarget.getPriority()];
 
- 			this._pRenderTargets.push(pTarget);
+			if (!isDef(pList)) {
+				pList = this._pPrioritisedRenderTargets[pTarget.getPriority()] = [];
+				this._pPriorityList.push(pTarget.getPriority());
+				this._pPriorityList.sort(sort.minMax);
+			}
 
- 			return true; 			
- 		}
+			pList.push(pTarget);
 
-        detachRenderTarget(pTarget: IRenderTarget): bool {
-       		var i = this._pRenderTargets.indexOf(pTarget);
-       		
-       		if (i == -1) {
-       			return false;
-       		}
+			this._pRenderTargets.push(pTarget);
 
-       		this._pRenderTargets.splice(i, 1);
+			return true;
+		}
 
-       		i = this._pPrioritisedRenderTargets[pTarget.priority].indexOf(pTarget);
-       		this._pPrioritisedRenderTargets[pTarget.priority].splice(i, 1);
+		detachRenderTarget(pTarget: IRenderTarget): boolean {
+			var i = this._pRenderTargets.indexOf(pTarget);
 
-       		return true;
-        }
+			if (i == -1) {
+				return false;
+			}
 
-        destroyRenderTarget(pTarget: IRenderTarget): void {
-        	var hasTarget: bool = this.detachRenderTarget(pTarget);
-        	if(hasTarget){
-        		pTarget.destroy();
-        		pTarget = null;
-        	}
-        }
+			this._pRenderTargets.splice(i, 1);
 
-        getActiveProgram(): IShaderProgram {
-        	CRITICAL("Renderer::getActiveProgram() is uncompleted method!");
-        	return null;
-        }
+			i = this._pPrioritisedRenderTargets[pTarget.getPriority()].indexOf(pTarget);
+			this._pPrioritisedRenderTargets[pTarget.getPriority()].splice(i, 1);
 
-		inline _disableAllTextureUnits(): void {
+			return true;
+		}
+
+		destroyRenderTarget(pTarget: IRenderTarget): void {
+			var hasTarget: boolean = this.detachRenderTarget(pTarget);
+			if (hasTarget) {
+				pTarget.destroy();
+				pTarget = null;
+			}
+		}
+
+		getActiveProgram(): IShaderProgram {
+			logger.critical("Renderer::getActiveProgram() is uncompleted method!");
+			return null;
+		}
+
+		_disableAllTextureUnits(): void {
 			this._disableTextureUnitsFrom(0);
 		}
 
-		inline _disableTextureUnitsFrom(iUnit: uint): void {
+		_disableTextureUnitsFrom(iUnit: uint): void {
 
 		}
 
 		_initRenderTargets(): void {
 			// Init stats
-	        for(var i: int = 0; i < this._pRenderTargets.length; ++ i) {
-	            this._pRenderTargets[i].resetStatistics();
-	        }
+			for (var i: int = 0; i < this._pRenderTargets.length; ++i) {
+				this._pRenderTargets[i].resetStatistics();
+			}
 		}
 
 		_updateAllRenderTargets(): void {
@@ -180,34 +188,34 @@ module  akra.render {
 				var iPriority: int = this._pPriorityList[i];
 				var pTargetList: IRenderTarget[] = this._pPrioritisedRenderTargets[iPriority];
 
-				for (var j = 0; j < pTargetList.length; ++ j) {
+				for (var j = 0; j < pTargetList.length; ++j) {
 					pTarget = pTargetList[j];
-					
+
 					if (pTarget.isActive() && pTarget.isAutoUpdated()) {
 						pTarget.update();
 					}
 				}
 			}
-			
+
 		}
 
-		_setViewport(pViewport: IViewport): void {}
+		_setViewport(pViewport: IViewport): void { }
 
 		_setViewportForRender(pViewport: IViewport): void {
-			var isViewportUpdate: bool = pViewport !== this._pActiveViewport || pViewport.isUpdated();
-			var isRenderTargetUpdate: bool = pViewport.getTarget() !== this._pActiveRenderTarget;
-			
-			if(isViewportUpdate || isRenderTargetUpdate){
+			var isViewportUpdate: boolean = pViewport !== this._pActiveViewport || pViewport.isUpdated();
+			var isRenderTargetUpdate: boolean = pViewport.getTarget() !== this._pActiveRenderTarget;
+
+			if (isViewportUpdate || isRenderTargetUpdate) {
 				this._setViewport(pViewport);
 
-				if(isViewportUpdate){
+				if (isViewportUpdate) {
 					// pViewport._clearForFrame();
 					var pState: IViewportState = pViewport._getViewportState();
 
 					this._setCullingMode(pState.cullingMode);
-		        	this._setDepthBufferParams(pState.depthTest, pState.depthWrite, 
-	        							   pState.depthFunction, pState.clearDepth);
-	        	}
+					this._setDepthBufferParams(pState.depthTest, pState.depthWrite,
+						pState.depthFunction, pState.clearDepth);
+				}
 			}
 		}
 
@@ -215,57 +223,52 @@ module  akra.render {
 			return this._pActiveViewport;
 		}
 
-		_setRenderTarget(pTarget: IRenderTarget): void {}
+		_setRenderTarget(pTarget: IRenderTarget): void { }
 
-		_setCullingMode(eMode: ECullingMode): void {}
+		_setCullingMode(eMode: ECullingMode): void { }
 
-        _setDepthBufferParams(bDepthTest: bool, bDepthWrite: bool, 
-        					  eDepthFunction: ECompareFunction, fClearDepth?: float): void {}
+		_setDepthBufferParams(bDepthTest: boolean, bDepthWrite: boolean,
+			eDepthFunction: ECompareFunction, fClearDepth?: float): void { }
 
 		getDefaultCanvas(): ICanvas3d {
 			return null;
 		}
 
-		inline createEntry(): IRenderEntry {
+		createEntry(): IRenderEntry {
 			return this._pRenderQueue.createEntry();
 		}
 
-        inline releaseEntry(pEntry: IRenderEntry): void {
-        	this._pRenderQueue.releaseEntry(pEntry);
-        }
-
-        inline pushEntry(pEntry: IRenderEntry): void{
-        	this._pRenderQueue.push(pEntry);
-        }
-
-        inline executeQueue(bSort?: bool = false): void {
-        	this._pRenderQueue.execute(bSort);
-        }
-
-        inline _lockRenderTarget(): void {
-        	this._bLockRenderTarget = true;
-        }
-
-        inline _unlockRenderTarget(): void {
-        	this._bLockRenderTarget = false;
-        }
-
-        inline _isLockRenderTarget(): bool {
-        	return this._bLockRenderTarget;
-        }
-
-		CREATE_EVENT_TABLE(Renderer);
-		signal active(pEngine: IEngine): void {
-			this._isActive = true;
-			EMIT_BROADCAST(active, _CALL(pEngine));
+		releaseEntry(pEntry: IRenderEntry): void {
+			this._pRenderQueue.releaseEntry(pEntry);
 		}
 
-		signal inactive(pEngine: IEngine): void {
+		pushEntry(pEntry: IRenderEntry): void {
+			this._pRenderQueue.push(pEntry);
+		}
+
+		executeQueue(bSort: boolean = false): void {
+			this._pRenderQueue.execute(bSort);
+		}
+
+		_lockRenderTarget(): void {
+			this._bLockRenderTarget = true;
+		}
+
+		_unlockRenderTarget(): void {
+			this._bLockRenderTarget = false;
+		}
+
+		_isLockRenderTarget(): boolean {
+			return this._bLockRenderTarget;
+		}
+
+		protected _activated(): void {
+			this._isActive = true;
+		}
+
+		protected _inactivated(): void {
 			this._isActive = false;
-			EMIT_BROADCAST(inactive, _CALL(pEngine));
 		}
 		
 	}
-};
-
-#endif
+}

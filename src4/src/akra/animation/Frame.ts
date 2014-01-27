@@ -187,7 +187,7 @@ module akra.animation {
 		}
 
 		static temp(): IFrame {
-			iPositionElement = (iPositionElement === pPositionBuffer.length - 1 ? 0 : pPositionBuffer.length);
+			iPositionElement = (iPositionElement === pPositionBuffer.length - 1 ? 0 : iPositionElement);
 			var p = pPositionBuffer[iPositionElement++];
 			return p.set.apply(p, arguments);
 		}
@@ -230,7 +230,7 @@ module akra.animation {
 			return this;
 		}
 
-		 toMatrix(): IMat4 {
+		toMatrix(): IMat4 {
 			return this.matrix;
 		}
 
@@ -271,7 +271,7 @@ module akra.animation {
 		}
 
 		static temp(): IFrame {
-			iMatrixElement = (iMatrixElement === pMatrixBuffer.length - 1 ? 0 : pMatrixBuffer.length);
+			iMatrixElement = (iMatrixElement === pMatrixBuffer.length - 1 ? 0 : iMatrixElement);
 			var p = pMatrixBuffer[iMatrixElement++];
 			return p.set.apply(p, arguments);
 		}

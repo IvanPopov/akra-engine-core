@@ -15,15 +15,15 @@ module akra.pool.resources {
 			super();
 		}
 
-		 get bitDepth(): uint {
+		getBitDepth(): uint {
 			return this._iBitDepth;
 		}
 
-		 get width(): uint {
+		getWidth(): uint {
 			return this._iWidth;
 		}
 
-		 get height(): uint {
+		getHeight(): uint {
 			return this._iHeight;
 		}
 
@@ -55,8 +55,8 @@ module akra.pool.resources {
 		}
 
 		isCompatible(pTarget: IRenderTarget): boolean {
-			if( this._iWidth >= pTarget.width &&
-				this._iHeight >= pTarget.height ){
+			if( this._iWidth >= pTarget.getWidth() &&
+				this._iHeight >= pTarget.getHeight() ){
 				return true;
 			}
 

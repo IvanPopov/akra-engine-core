@@ -12,7 +12,7 @@ module akra.fx {
             super();
 
             this._bValue = true;
-            this._pType = Effect.getSystemType("boolean").getVariableType();
+            this._pType = Effect.getSystemType("bool").getVariableType();
             this._eInstructionType = EAFXInstructionTypes.k_BoolInstruction;
         }
 

@@ -37,16 +37,14 @@ module akra {
 	}
 
 	export interface IRenderTarget extends IEventProvider {
-		name: string;
-		width: uint;
-		height: uint;
+		getName(): string;
+		setName(sName: string): void;
 
-
-		colorDepth: uint;
-
-		totalViewports: uint;
-
-		priority: int;
+		getWidth(): uint;
+		getHeight(): uint;
+		getColorDepth(): uint;
+		getTotalViewports(): uint;
+		getPriority(): int;
 
 		getRenderer(): IRenderer;
 

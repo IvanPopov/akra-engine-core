@@ -5,8 +5,12 @@ module akra {
 	}
 	
 	export interface IResourceCode {
-		family: int;
-		type: int;
+		getFamily(): int;
+		setFamily(iFamily: int): void;
+
+		getType(): int;
+		setType(iType: int): void;
+
 		/** Пеерводит текущее состояние идентифиакора в невалидное */
 		setInvalid(): void;
 		/** operator "<" */

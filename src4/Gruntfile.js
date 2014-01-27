@@ -51,10 +51,10 @@ module.exports = function (grunt) {
                 dest: "build/akra.js",
                 options: {
                     target: "es5",
-                    module: "commonjs",
+                    //module: "commonjs",
                     removeComments: false,
-                    sourceMap: true,
-                    propagateEnumConstants: true
+                    //sourceMap: true,
+                    //propagateEnumConstants: true
                 }
             }
         },

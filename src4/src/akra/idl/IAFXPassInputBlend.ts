@@ -32,7 +32,7 @@ module akra {
 	
 		renderStates: IMap<ERenderStateValues>;
 	
-		/** readonly */ statesInfo: IAFXPassInputStateInfo;
+		getStatesInfo(): IAFXPassInputStateInfo;
 	
 		hasUniform(sName: string): boolean;
 		hasTexture(sName: string): boolean;

@@ -27,16 +27,18 @@ module akra {
 	}
 	
 	export interface IMesh extends IEventProvider {
-		flexMaterials: IMaterial[];
-		name: string;
-		data: IRenderDataCollection;
-		length: uint; /*<! number of submeshes in. */
-		boundingBox: IRect3d;
-		boundingSphere: ISphere;
+		getFlexMaterials(): IMaterial[];
+		getName(): string;
+		getData(): IRenderDataCollection;
+		getLength(): uint; /*<! number of submeshes in. */
+		getBoundingBox(): IRect3d;
+		getBoundingSphere(): ISphere;
 
-		skeleton: ISkeleton;
-		shadow: boolean;
+		getSkeleton(): ISkeleton;
+		setSkeleton(pSceleton: ISkeleton): void;
 
+		getShadow(): boolean;
+		setShadow(bValue: boolean): void;
 
 		getOptions(): int;
 		getEngine(): IEngine;
@@ -63,7 +65,6 @@ module akra {
 		appendSubset(sName: string, pData: IRenderData): IMeshSubset;
 
 		setSkin(pSkin: ISkin): void;
-		setSkeleton(pSkeleton: ISkeleton): void;
 		createSkin(): ISkin;
 
 		createBoundingBox(): boolean;

@@ -8,34 +8,36 @@ module akra.render {
 
 	export class ShadowViewport extends Viewport implements IViewport {
 
-		get type(): EViewportTypes { return EViewportTypes.SHADOWVIEWPORT; }
+		getType(): EViewportTypes {
+			return EViewportTypes.SHADOWVIEWPORT;
+		}
 
 		constructor(pCamera: ICamera, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			super(pCamera, DEFAULT_SHADOW_TECHNIQUE_NAME, fLeft, fTop, fWidth, fHeight, iZIndex);
 
 			this.setClearEveryFrame(true, EFrameBufferTypes.DEPTH);
 			this.setDepthParams(true, true, ECompareFunction.LESS);
-			this.depthClear = 1.;
+			this.setDepthClear(1.);
 		}
 
 		_updateImpl(): void {
 			// LOG("SAHDOW VIEWPORT #" + this.getGuid());
 			var pShadowCaster: IShadowCaster = <IShadowCaster> this._pCamera;
-			var pAffectedObjects: IObjectArray<ISceneObject> = pShadowCaster.affectedObjects;
+			var pAffectedObjects: IObjectArray<ISceneObject> = pShadowCaster.getAffectedObjects();
 
 			var pRenderable: IRenderableObject;
 			var pSceneObject: ISceneObject;
 
 			var nShadowsCasted: uint = 0;
 
-			for (var i: int = 0; i < pAffectedObjects.length; i++) {
+			for (var i: int = 0; i < pAffectedObjects.getLength(); i++) {
 				pSceneObject = pAffectedObjects.value(i);
 
-				if (pSceneObject.shadow) {
-					for (var j: int = 0; j < pSceneObject.totalRenderable; j++) {
+				if (pSceneObject.getShadow()) {
+					for (var j: int = 0; j < pSceneObject.getTotalRenderable(); j++) {
 						pRenderable = pSceneObject.getRenderable(j);
 
-						if (!isNull(pRenderable) && pRenderable.shadow) {
+						if (!isNull(pRenderable) && pRenderable.getShadow()) {
 							this.prepareRenderableForShadows(pRenderable);
 							pRenderable.render(this, this._csDefaultRenderMethod, pSceneObject);
 							nShadowsCasted++;
@@ -45,7 +47,7 @@ module akra.render {
 				}
 			}
 
-			pShadowCaster.isShadowCasted = (nShadowsCasted > 0) ? true : false;
+			pShadowCaster.setIsShadowCasted((nShadowsCasted > 0) ? true : false);
 		}
 
 		private prepareRenderableForShadows(pRenderable: IRenderableObject): void {
@@ -56,14 +58,14 @@ module akra.render {
 			}
 
 			var pRmgr: IResourcePoolManager = this.getTarget().getRenderer().getEngine().getResourceManager();
-			var pMethodPool: IResourcePool = pRmgr.renderMethodPool;
+			var pMethodPool: IResourcePool<IRenderMethod> = pRmgr.getRenderMethodPool();
 
 			var pMethod: IRenderMethod = <IRenderMethod>pMethodPool.findResource(".method-prepare-shadows");
 
 			if (isNull(pMethod)) {
 				pMethod = pRmgr.createRenderMethod(".method-prepare-shadows");
-				pMethod.effect = pRmgr.createEffect(".effect-prepare-shadows");
-				pMethod.effect.addComponent("akra.system.prepareShadows");
+				pMethod.setEffect(pRmgr.createEffect(".effect-prepare-shadows"));
+				pMethod.getEffect().addComponent("akra.system.prepareShadows");
 			}
 
 			pRenderable.addRenderMethod(pMethod, this._csDefaultRenderMethod);
@@ -73,14 +75,14 @@ module akra.render {
 			var pDepthTexture: ITexture;
 			var pShadowCaster: IShadowCaster = <IShadowCaster>this._pCamera;
 
-			var pLightPoint: ILightPoint = pShadowCaster.lightPoint;
+			var pLightPoint: ILightPoint = pShadowCaster.getLightPoint();
 
-			switch (pLightPoint.lightType) {
+			switch (pLightPoint.getLightType()) {
 				case ELightTypes.PROJECT:
 					pDepthTexture = (<IProjectLight>pLightPoint).getDepthTexture();
 					break;
 				case ELightTypes.OMNI:
-					pDepthTexture = (<IOmniLight>pLightPoint).getDepthTextureCube()[pShadowCaster.face];
+					pDepthTexture = (<IOmniLight>pLightPoint).getDepthTextureCube()[pShadowCaster.getFace()];
 					break;
 				default:
 					pDepthTexture = null;

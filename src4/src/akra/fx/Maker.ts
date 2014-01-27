@@ -215,15 +215,15 @@ module akra.fx {
 			return this._pShaderUniformInfoMap[sName].length;
 		}
 
-		get shaderProgram(): IShaderProgram {
+		getShaderProgram(): IShaderProgram {
 			return this._pShaderProgram;
 		}
 
-		get attributeInfo(): IAFXBaseAttrInfo[] {
+		getAttributeInfo(): IAFXBaseAttrInfo[] {
 			return <IAFXBaseAttrInfo[]>this._pShaderAttrInfoList;
 		}
 
-		get uniformNames(): string[] {
+		getUniformNames(): string[] {
 			return this._pRealUniformNameList;
 		}
 
@@ -293,7 +293,7 @@ module akra.fx {
 		}
 
 		_getShaderInput(): IShaderInput {
-			return this._pDataPoolArray.length > 0 ? this._pDataPoolArray.pop() : this._createDataPool();
+			return this._pDataPoolArray.getLength() > 0 ? this._pDataPoolArray.pop() : this._createDataPool();
 		}
 
 		_releaseShaderInput(pPool: IShaderInput): void {
@@ -402,7 +402,7 @@ module akra.fx {
 			}
 
 			/* Initialize info about samplers*/
-			var iTotalSamplerSlots: uint = pBlend.totalActiveSlots;
+			var iTotalSamplerSlots: uint = pBlend.getTotalActiveSlots();
 			this._pInputSamplerInfoList = [];
 
 			for (var i: uint = 0; i < iTotalSamplerSlots; i++) {
@@ -481,7 +481,7 @@ module akra.fx {
 				this._pInputSamplerArrayInfoList.push(pInputUniformInfo);
 			}
 
-			var pAttrInfoList: IAFXVariableBlendInfo[] = pAttrs.attrsInfo;
+			var pAttrInfoList: IAFXVariableBlendInfo[] = pAttrs.getAttrsInfo();
 
 			var nPreparedAttrs: int = -1;
 			var nPreparedBuffers: int = -1;
@@ -658,7 +658,7 @@ module akra.fx {
 				pInput.attrs[pAttrInfo.location] = pFlow;
 
 				if (pAttrInfo.isMappable) {
-					pInput.uniforms[pAttrInfo.vertexTextureInfo.location] = pFlow.data.buffer;
+					pInput.uniforms[pAttrInfo.vertexTextureInfo.location] = pFlow.data.getBuffer();
 
 					if (!isNull(pAttrInfo.offsets)) {
 						var pVertexDecl: IVertexDeclaration = pFlow.data.getVertexDeclaration();

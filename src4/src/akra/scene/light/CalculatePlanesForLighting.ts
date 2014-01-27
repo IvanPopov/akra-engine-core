@@ -176,7 +176,7 @@ module akra.scene.light {
                 var pTestPlane: IPlane3d = pResultArray[nAdditionalTestLength];
                 pTestPlane.set(v3fNormal, -v3fNormal.dot(pPoint1));
 
-                var pVertices: IVec3[] = pCameraFrustum.frustumVertices;
+                var pVertices: IVec3[] = pCameraFrustum.getFrustumVertices();
 
                 //test on right orientation new plane (two point already on plane)
                 var iTest: uint = 0;
